@@ -178,7 +178,7 @@ Ubicación: %1$s
     <string name="settings_osc_timeout_never">On-screen controls timeout: never</string>
     <string name="settings_osc_never_hide">Never hide on-screen controls</string>
     <string name="settings_upscale_default">Upscale: 1x</string>
-    <string name="settings_upscale_value">Upscale: %1$dx</string>
+    <string name="settings_upscale_value">Upscale: %1$sx</string>
     <string name="settings_texture_filtering">Texture Filtering</string>
     <string name="settings_interlace_mode">Interlace Mode</string>
     <string name="settings_cas_mode">CAS Mode</string>
