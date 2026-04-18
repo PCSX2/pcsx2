@@ -176,7 +176,7 @@
     <string name="settings_osc_timeout_never">مهلة أختفاء أزرار الشاشة: أبدًا </string>
     <string name="settings_osc_never_hide">لا تخفي أژرار الشاشة أبدًا</string>
     <string name="settings_upscale_default">رفع الدقة: 1x</string>
-    <string name="settings_upscale_value">رفع الدقة: %1$dx</string>
+    <string name="settings_upscale_value">Upscale: %1$sx</string>
     <string name="settings_texture_filtering">تصفية الـTextures</string>
     <string name="settings_interlace_mode">وضع التداخل (interlace)</string>
     <string name="settings_cas_mode">وضع CAS</string>
