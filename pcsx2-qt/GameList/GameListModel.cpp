@@ -282,6 +282,11 @@ QVariant GameListModel::data(const QModelIndex& index, const int role) const
 		{
 			switch (index.column())
 			{
+				case Column_Title:
+				case Column_FileTitle:
+					if (ge->is_favorite)
+						return m_favorite_pixmap;
+					return QVariant();
 				case Column_Type:
 					return m_type_pixmaps[static_cast<u32>(ge->type)];
 
@@ -308,6 +313,13 @@ QVariant GameListModel::data(const QModelIndex& index, const int role) const
 				default:
 					return QVariant();
 			}
+		}
+
+		case NeedsFavoriteBadgeRole:
+		{
+			if (index.column() == Column_Cover)
+				return ge->is_favorite;
+			return QVariant();
 		}
 
 		case Qt::SizeHintRole:
@@ -357,7 +369,7 @@ bool GameListModel::titlesLessThan(const int left_row, const int right_row) cons
 			   QString::fromStdString(right->GetTitleSort(m_prefer_english_titles))) < 0;
 }
 
-bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& right_index, const int column) const
+bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& right_index, const int column, Qt::SortOrder sort_order) const
 {
 	if (!left_index.isValid() || !right_index.isValid())
 		return false;
@@ -375,6 +387,10 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
 	const GameList::Entry* right = GameList::GetEntryByIndex(right_row);
 	if (!left || !right)
 		return false;
+
+	// Favorites always sort to the top regardless of column
+	if (left->is_favorite != right->is_favorite)
+		return sort_order == Qt::AscendingOrder ? left->is_favorite : right->is_favorite;
 
 	switch (column)
 	{
@@ -464,6 +480,7 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
 void GameListModel::loadSettings()
 {
 	m_prefer_english_titles = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
+	m_show_titles_for_covers = Host::GetBaseBoolSettingValue("UI", "GameListShowCoverTitles", true);
 }
 
 QIcon GameListModel::getIconForType(const GameList::EntryType type)
@@ -504,6 +521,7 @@ void GameListModel::loadCommonImages()
 		m_compatibility_pixmaps[rating] = QIcon((QStringLiteral("%1/icons/star-%2.svg").arg(base_path).arg(rating - 1))).pixmap(QSize(88, 16), m_dpr);
 
 	m_placeholder_pixmap.load(QStringLiteral("%1/cover-placeholder.png").arg(base_path));
+	m_favorite_pixmap = QIcon(QStringLiteral("%1/icons/star-fill.svg").arg(base_path)).pixmap(QSize(16, 16), m_dpr);
 }
 
 void GameListModel::setColumnDisplayNames()

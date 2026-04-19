@@ -50,16 +50,17 @@ static constexpr int DEFAULT_SORT_INDEX = static_cast<int>(DEFAULT_SORT_COLUMN);
 static constexpr Qt::SortOrder DEFAULT_SORT_ORDER = Qt::AscendingOrder;
 
 static constexpr std::array<int, GameListModel::Column_Count> DEFAULT_COLUMN_WIDTHS = {{
-	55, // type
-	85, // code
-	-1, // title
-	-1, // file title
-	75, // crc
-	95, // time played
-	90, // last played
-	80, // size
-	60, // region
-	120 // compatibility
+	55,  // type
+	85,  // code
+	-1,  // title
+	-1,  // file title
+	75,  // crc
+	95,  // time played
+	90,  // last played
+	80,  // size
+	60,  // region
+	120, // compatibility
+	-1,  // cover
 }};
 static_assert(static_cast<int>(DEFAULT_COLUMN_WIDTHS.size()) <= GameListModel::Column_Count,
 	"Game List: More default column widths than column types.");
@@ -117,7 +118,7 @@ public:
 
 	bool lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const override
 	{
-		return m_model->lessThan(source_left, source_right, source_left.column());
+		return m_model->lessThan(source_left, source_right, source_left.column(), sortOrder());
 	}
 
 private:
@@ -133,6 +134,8 @@ namespace
 	class GameListIconStyleDelegate final : public QStyledItemDelegate
 	{
 	public:
+		static constexpr int STAR_MARGIN = 4;
+
 		GameListIconStyleDelegate(QWidget* parent)
 			: QStyledItemDelegate(parent)
 		{
@@ -145,7 +148,7 @@ namespace
 			Q_ASSERT(index.isValid());
 
 			// Draw highlight for cell.
-			QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &option, painter, option.widget);
+			QStyledItemDelegate::paint(painter, option, index);
 
 			// Fetch icon pixmap and stop if no icon exists
 			const QPixmap icon = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
@@ -153,51 +156,27 @@ namespace
 			if (icon.isNull())
 				return;
 
-			// Save painter state and restore later so clip setting doesn't persist across cell draws.
-			painter->save();
-
-			// Clip pixmap so it doesn't extend outside the cell.
-			const QRect rect = option.rect;
-			painter->setClipRect(rect);
-
-			// Determine starting location of icon (Qt uses top-left origin).
-			const int icon_width = static_cast<int>(static_cast<qreal>(icon.width()) / icon.devicePixelRatio());
-			const int icon_height = static_cast<int>(static_cast<qreal>(icon.height()) / icon.devicePixelRatio());
-			const QPoint icon_top_left = QPoint((rect.width() - icon_width) / 2, (rect.height() - icon_height) / 2);
-
-			// Change palette if the item is selected.
-			if (option.state & QStyle::State_Selected)
+			// Draw star overlay on bottom-right corner if game is favorited.
+			const bool is_favorite = index.data(GameListModel::NeedsFavoriteBadgeRole).toBool();
+			if (is_favorite)
 			{
-				// Set color based on whether cell is enabled.
-				const bool enabled = option.state & QStyle::State_Enabled;
-				QColor color = option.palette.color(enabled ? QPalette::Normal : QPalette::Disabled, QPalette::Highlight);
-				color.setAlphaF(0.3f);
+				painter->save();
 
-				// Fetch pixmap from cache or construct a new one.
-				const QString key = QString::fromStdString(fmt::format("{:016X}-{:d}-{:08X}", icon.cacheKey(), enabled, color.rgba()));
-				QPixmap highlighted_icon;
-				if (!QPixmapCache::find(key, &highlighted_icon))
-				{
-					QImage img = icon.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
+				const QRect rect = option.rect;
+				const int icon_width = static_cast<int>(static_cast<qreal>(icon.width()) / icon.devicePixelRatio());
+				const int icon_height = static_cast<int>(static_cast<qreal>(icon.height()) / icon.devicePixelRatio());
+				const QPoint icon_top_left = rect.topLeft() + QPoint((rect.width() - icon_width) / 2, 0);
 
-					QPainter tinted_painter(&img);
-					tinted_painter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
-					tinted_painter.fillRect(0, 0, img.width(), img.height(), color);
-					tinted_painter.end();
+				const auto* sort_model = static_cast<const QSortFilterProxyModel*>(index.model());
+				const auto* game_model = static_cast<const GameListModel*>(sort_model->sourceModel());
+				const QPixmap& star = game_model->getFavoritePixmap();
+				const QPoint icon_bottom_right = icon_top_left + QPoint(icon_width, icon_height);
+				const QSizeF size = star.deviceIndependentSize();
+				const QPoint star_pos = icon_bottom_right - QPoint(size.width() + STAR_MARGIN, size.height() + STAR_MARGIN);
+				painter->drawPixmap(star_pos, star);
 
-					highlighted_icon = QPixmap(QPixmap::fromImage(img));
-					QPixmapCache::insert(key, highlighted_icon);
-				}
-
-				painter->drawPixmap(rect.topLeft() + icon_top_left, highlighted_icon);
+				painter->restore();
 			}
-			else
-			{
-				painter->drawPixmap(rect.topLeft() + icon_top_left, icon);
-			}
-
-			// Restore the old clip path.
-			painter->restore();
 		}
 	};
 } // namespace
@@ -272,9 +251,9 @@ void GameListWidget::initialize()
 	m_table_view->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
 
 	// Custom painter to center-align DisplayRoles (icons)
-	m_table_view->setItemDelegateForColumn(0, new GameListIconStyleDelegate(this));
-	m_table_view->setItemDelegateForColumn(8, new GameListIconStyleDelegate(this));
-	m_table_view->setItemDelegateForColumn(9, new GameListIconStyleDelegate(this));
+	m_table_view->setItemDelegateForColumn(static_cast<int>(GameListModel::Column_Type), new GameListIconStyleDelegate(this));
+	m_table_view->setItemDelegateForColumn(static_cast<int>(GameListModel::Column_Region), new GameListIconStyleDelegate(this));
+	m_table_view->setItemDelegateForColumn(static_cast<int>(GameListModel::Column_Compatibility), new GameListIconStyleDelegate(this));
 
 	connect(m_table_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
 		&GameListWidget::onSelectionModelCurrentChanged);
@@ -318,6 +297,7 @@ void GameListWidget::initialize()
 	m_list_view = new GameListGridListView(m_ui.stack);
 	m_list_view->setModel(m_sort_model);
 	m_list_view->setModelColumn(GameListModel::Column_Cover);
+	m_list_view->setItemDelegate(new GameListIconStyleDelegate(this));
 	m_list_view->setSelectionMode(QAbstractItemView::SingleSelection);
 	m_list_view->setViewMode(QListView::IconMode);
 	m_list_view->setResizeMode(QListView::Adjust);
