@@ -37,6 +37,7 @@
     <string name="settings_section_controller">Controller</string>
     <string name="settings_section_customization">Aanpassingen</string>
     <string name="settings_section_storage">Opslag &amp; Gegevens</string>
+    <string name="settings_section_memory">Memory Cards</string>
     <string name="settings_section_achievements">Connecties</string>
     <string name="settings_on_screen_ui_style">Opmaak scherm UI</string>
     <string name="dialog_on_screen_ui_style_title">Opmaak scherm UI</string>
@@ -171,6 +172,8 @@ Open het later vanuit Instellingen → Open ARMSX2 map.</string>
     <string name="settings_custom_fps_limit_default">Aangepaste FPS-limiet: 60</string>
     <string name="settings_custom_fps_limit_value">Aangepaste FPS-limiet: %1$d</string>
     <string name="settings_fast_boot">Snel Opstarten</string>
+    <string name="settings_warn_unsafe_settings">Warn About Unsafe Settings</string>
+    <string name="settings_warn_unsafe_settings_summary">Show on-screen notifications when settings that may cause instability or glitches are active.</string>
     <string name="settings_brightness_default">Helderheid: 1.00</string>
     <string name="settings_brightness_value">Helderheid: %1$.2f</string>
     <string name="settings_osc_timeout_default">Schermbediening verbergen na: 3s</string>
@@ -230,6 +233,18 @@ Open het later vanuit Instellingen → Open ARMSX2 map.</string>
     <string name="settings_add_secondary_game_directory">Secundaire spelmap toevoegen</string>
     <string name="settings_memory_card">Geheugenkaart</string>
     <string name="settings_import_memory_card">Importeer Geheugenkaart</string>
+    <string name="settings_create_new_card">Create New Card</string>
+    <string name="settings_create_new_card_summary">Creates a new memory card.</string>
+    <string name="settings_import_memory_card_summary">Imports a memory card from storage.</string>
+    <string name="settings_swap_cards">Swap Cards</string>
+    <string name="settings_swap_cards_summary">Quick swaps the memory cards in port 1 and 2.</string>
+    <string name="settings_folder_memcard_filter">Folder Memory Card Filter</string>
+    <string name="settings_folder_memcard_filter_summary">Disabling  this option will allow the PS2 system to recognize save files on the Memory card folder in the BIOS.</string>
+    <string name="settings_memory_card_1">Memory Card 1</string>
+    <string name="settings_memory_card_2">Memory Card 2</string>
+    <string name="settings_card_enabled">Card Enabled</string>
+    <string name="settings_card_enabled_summary">If not set, this card will be considered unplugged.</string>
+    <string name="settings_card_name">Card Name</string>
     <string name="settings_storage_access_error">Android heeft directe bestandstoegang geweigerd voor:\n%1$s\n\nGeef \"Toegang tot alle bestanden toestaan\" in de systeeminstellingen of kies een map binnen de ARMSX2-opslag.</string>
     <string name="settings_discord_title">Discord</string>
     <string name="settings_discord_status_connect">Verbind om je activiteit op Discord te tonen.</string>
@@ -254,6 +269,7 @@ Open het later vanuit Instellingen → Open ARMSX2 map.</string>
     <string name="settings_controller_settings_applied">Controller instellingen toegepast</string>
     <string name="settings_memory_card_inserted_slot1">Geheugenkaart geplaatst (sleuf 1)</string>
     <string name="settings_memory_card_import_failed">Geheugenkaart importeren mislukt</string>
+    <string name="settings_memory_card_already_in_use">This memory card is already selected in Slot %d.</string>
     <string name="settings_secondary_game_directory_added">Secundaire spelmap toegevoegd</string>
     <string name="settings_secondary_game_directory_add_failed">Secundaire spelmap toevoegen mislukt</string>
     <string name="settings_achievements_title">Retro Achievements</string>
