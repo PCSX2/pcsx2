@@ -37,6 +37,7 @@
     <string name="settings_section_controller">Controller</string>
     <string name="settings_section_customization">Personalizzazione</string>
     <string name="settings_section_storage">Archiviazione e dati</string>
+    <string name="settings_section_memory">Memory Cards</string>
     <string name="settings_section_achievements">Connessioni</string>
     <string name="settings_on_screen_ui_style">Stile UI sullo schermo</string>
     <string name="dialog_on_screen_ui_style_title">Stile UI sullo schermo</string>
@@ -171,6 +172,8 @@ Aprilo più tardi da Impostazioni → Apri la directory ARMSX2.</string>
     <string name="settings_custom_fps_limit_default">Limite FPS Personalizzato: 60</string>
     <string name="settings_custom_fps_limit_value">Limite Fps Personalizzato: %1$d</string>
     <string name="settings_fast_boot">Avvio veloce</string>
+    <string name="settings_warn_unsafe_settings">Warn About Unsafe Settings</string>
+    <string name="settings_warn_unsafe_settings_summary">Show on-screen notifications when settings that may cause instability or glitches are active.</string>
     <string name="settings_brightness_default">Luminosità: 1.00</string>
     <string name="settings_brightness_value">Luminosità: %1$.2f</string>
     <string name="settings_osc_timeout_default">Timeout controlli a schermo: 3s</string>
@@ -230,6 +233,18 @@ Aprilo più tardi da Impostazioni → Apri la directory ARMSX2.</string>
     <string name="settings_add_secondary_game_directory">Aggiungi directory di gioco secondaria</string>
     <string name="settings_memory_card">Memory Card</string>
     <string name="settings_import_memory_card">Importa Memory Card</string>
+    <string name="settings_create_new_card">Create New Card</string>
+    <string name="settings_create_new_card_summary">Creates a new memory card.</string>
+    <string name="settings_import_memory_card_summary">Imports a memory card from storage.</string>
+    <string name="settings_swap_cards">Swap Cards</string>
+    <string name="settings_swap_cards_summary">Quick swaps the memory cards in port 1 and 2.</string>
+    <string name="settings_folder_memcard_filter">Folder Memory Card Filter</string>
+    <string name="settings_folder_memcard_filter_summary">Disabling  this option will allow the PS2 system to recognize save files on the Memory card folder in the BIOS.</string>
+    <string name="settings_memory_card_1">Memory Card 1</string>
+    <string name="settings_memory_card_2">Memory Card 2</string>
+    <string name="settings_card_enabled">Card Enabled</string>
+    <string name="settings_card_enabled_summary">If not set, this card will be considered unplugged.</string>
+    <string name="settings_card_name">Card Name</string>
     <string name="settings_storage_access_error">Android ha negato l\'accesso diretto ai file per:
 \n%1$s\n\n
 Concedi l\'autorizzazione \"Accesso a tutti i file\" nelle impostazioni di sistema o scegli una cartella all\'interno dell\'archiviazione di ARMSX2.</string>
@@ -256,6 +271,7 @@ Concedi l\'autorizzazione \"Accesso a tutti i file\" nelle impostazioni di siste
     <string name="settings_controller_settings_applied">Impostazioni controller applicate</string>
     <string name="settings_memory_card_inserted_slot1">Memory card inserita (Slot 1)</string>
     <string name="settings_memory_card_import_failed">Impossibile importare la memory card</string>
+    <string name="settings_memory_card_already_in_use">This memory card is already selected in Slot %d.</string>
     <string name="settings_secondary_game_directory_added">Directory di gioco secondaria aggiunta</string>
     <string name="settings_secondary_game_directory_add_failed">Impossibile aggiungere la directory di gioco secondaria</string>
     <string name="settings_achievements_title">Retro Obiettivi</string>
