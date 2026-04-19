@@ -178,7 +178,7 @@ Daha sonra Ayarlar → ARMSX2 dizinini aç seçeneğinden açabilirsiniz.</strin
     <string name="settings_osc_timeout_never">Ekrandaki kontrollerin zaman aşımı: asla</string>
     <string name="settings_osc_never_hide">Ekrandaki kontrolleri asla gizleme</string>
     <string name="settings_upscale_default">Upscale: 1x</string>
-    <string name="settings_upscale_value">Upscale: %1$sx</string>
+    <string name="settings_upscale_value">Ölçek: %1$sx</string>
     <string name="settings_texture_filtering">Doku Filtreleme</string>
     <string name="settings_interlace_mode">Interlace Modu</string>
     <string name="settings_cas_mode">CAS Modu</string>
