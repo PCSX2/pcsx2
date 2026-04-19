@@ -29,6 +29,20 @@ namespace usb_msd
 		"00000000000PCSX2",
 	};
 
+	static const USBDescStrings olympus_camera_desc_strings = {
+		"",
+		"OLYMPUS",
+		"USB Mass Storage",
+		"00000000000PCSX2",
+	};
+
+	static const USBDescStrings olympus_mo_desc_strings = {
+		"",
+		"OLYMPUS",
+		"MOS3412",
+		"00000000000PCSX2",
+	};
+
 	static const USBDescStrings sony_msac_desc_strings = {
 		"",
 		"Sony",
@@ -38,14 +52,14 @@ namespace usb_msd
 	static const uint8_t zip100_dev_descriptor[] = {
 		0x12,        // bLength
 		0x01,        // bDescriptorType (Device)
-		0x10, 0x01,  // bcdUSB 0.10
+		0x10, 0x01,  // bcdUSB 1.10
 		0x00,        // bDeviceClass (Use class information in the Interface Descriptors)
 		0x00,        // bDeviceSubClass
 		0x00,        // bDeviceProtocol
 		0x40,        // bMaxPacketSize0 8
 		0x9B, 0x05,  // idVendor 0x059B
 		0x34, 0x00,  // idProduct 0x0034
-		0x00, 0x01,  // bcdDevice 0.00
+		0x00, 0x01,  // bcdDevice 1.00
 		0x01,        // iManufacturer (String Index)
 		0x02,        // iProduct (String Index)
 		0x03,        // iSerialNumber (String Index)
@@ -92,6 +106,23 @@ namespace usb_msd
 		0x03,        // bmAttributes (Interrupt)
 		0x02, 0x00,  // wMaxPacketSize 8
 		0x20,        // bInterval 32 (unit depends on device speed)
+	};
+
+	static const uint8_t olympus_dev_descriptor[] = {
+		0x12,        // bLength
+		0x01,        // bDescriptorType (Device)
+		0x10, 0x01,  // bcdUSB 1.10
+		0x00,        // bDeviceClass (Use class information in the Interface Descriptors)
+		0x00,        // bDeviceSubClass
+		0x00,        // bDeviceProtocol
+		0x40,        // bMaxPacketSize0 8
+		0xb4, 0x07,  // idVendor 0x07b4
+		0x02, 0x01,  // idProduct 0x0102
+		0x00, 0x01,  // bcdDevice 1.00
+		0x01,        // iManufacturer (String Index)
+		0x02,        // iProduct (String Index)
+		0x03,        // iSerialNumber (String Index)
+		0x01,        // bNumConfigurations 1
 	};
 
 	static const uint8_t sony_msac_dev_descriptor[] = {
@@ -535,7 +566,7 @@ namespace usb_msd
 		len = std::min<size_t>(len, s->f.data_len);
 
 		//TODO No async reader/writer so do it right here
-		if (s->f.tag == s->f.file_op_tag)
+		if (s->f.file_op_tag)
 		{
 			switch (s->f.mode)
 			{
@@ -586,6 +617,7 @@ namespace usb_msd
 
 		s->f.result = COMMAND_PASSED;
 		s->f.off = 0;
+		s->f.file_op_tag = false;
 		if (cbw->cmd[0] != REQUEST_SENSE)
 			set_sense(s, SENSE_CODE(NO_SENSE));
 
@@ -698,7 +730,7 @@ namespace usb_msd
 					xfer_len = bswap32(*(uint32_t*)&cbw->cmd[6]);
 
 				s->f.data_len = xfer_len * LBA_BLOCK_SIZE;
-				s->f.file_op_tag = s->f.tag;
+				s->f.file_op_tag = true;
 
 
 				if (xfer_len == 0) // nothing to do
@@ -733,7 +765,7 @@ namespace usb_msd
 					xfer_len = bswap32(*(uint32_t*)&cbw->cmd[6]);
 
 				s->f.data_len = xfer_len * LBA_BLOCK_SIZE;
-				s->f.file_op_tag = s->f.tag;
+				s->f.file_op_tag = true;
 
 				if (xfer_len == 0) //nothing to do
 					break;
@@ -1125,6 +1157,26 @@ namespace usb_msd
 				s->dev.klass.handle_control = usb_msd_handle_control;
 				s->dev.klass.handle_data = usb_msd_handle_data;
 				break;
+			case OLYMPUS_CAMERA:
+				path = USB::GetConfigString(si, port, TypeName(), "ImagePathOlympusCamera");
+				s->desc.str = olympus_camera_desc_strings;
+				if (usb_desc_parse_dev(olympus_dev_descriptor, sizeof(olympus_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				if (usb_desc_parse_config(zip100_config_descriptor, sizeof(zip100_config_descriptor), s->desc_dev) < 0)
+					goto fail;
+				s->dev.klass.handle_control = usb_msd_handle_control;
+				s->dev.klass.handle_data = usb_msd_handle_data;
+				break;
+			case OLYMPUS_MO:
+				path = USB::GetConfigString(si, port, TypeName(), "ImagePathOlympusMD");
+				s->desc.str = olympus_mo_desc_strings;
+				if (usb_desc_parse_dev(olympus_dev_descriptor, sizeof(olympus_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				if (usb_desc_parse_config(zip100_config_descriptor, sizeof(zip100_config_descriptor), s->desc_dev) < 0)
+					goto fail;
+				s->dev.klass.handle_control = usb_msd_handle_control;
+				s->dev.klass.handle_data = usb_msd_handle_data;
+				break;
 			case SONY_MSAC_US1:
 				path = USB::GetConfigString(si, port, TypeName(), "ImagePathMsac");
 				s->desc.str = sony_msac_desc_strings;
@@ -1230,6 +1282,8 @@ namespace usb_msd
 	{
 		static const char* subtypes[] = {
 			TRANSLATE_NOOP("USB", "Iomega Zip-100 (Generic)"),
+			TRANSLATE_NOOP("USB", "Olympus Camera"),
+			TRANSLATE_NOOP("USB", "Olympus Turbo MO"),
 			TRANSLATE_NOOP("USB", "Sony MSAC-US1 (PictureParadise)")
 		};
 		return subtypes;
@@ -1241,18 +1295,42 @@ namespace usb_msd
 		{
 			case IOMEGA_ZIP_100:
 			{
-				static constexpr const SettingInfo settings[] = {
-					{SettingInfo::Type::Path, "ImagePathMsd", TRANSLATE_NOOP("USB", "Image Path"),
-						TRANSLATE_NOOP("USB", "Sets the path to the disk image which will back the virtual mass storage device.")},
-				};
+				static constexpr const SettingInfo settings[] = {{
+					.type = SettingInfo::Type::Path,
+					.name = "ImagePathMsd",
+					.display_name = TRANSLATE_NOOP("USB", "Image Path"),
+					.description = TRANSLATE_NOOP("USB", "Sets the path to the disk image which will back the virtual mass storage device.")
+				}};
+				return settings;
+			}
+			case OLYMPUS_CAMERA:
+			{
+				static constexpr const SettingInfo settings[] = {{
+					.type = SettingInfo::Type::Path,
+					.name = "ImagePathOlympusCamera",
+					.display_name = TRANSLATE_NOOP("USB", "Image Path"),
+					.description = TRANSLATE_NOOP("USB", "Sets the path to the disk image which will back the virtual mass storage device.")
+				}};
+				return settings;
+			}
+			case OLYMPUS_MO:
+			{
+				static constexpr const SettingInfo settings[] = {{
+					.type = SettingInfo::Type::Path,
+					.name = "ImagePathOlympusMD",
+					.display_name = TRANSLATE_NOOP("USB", "Image Path"),
+					.description = TRANSLATE_NOOP("USB", "Sets the path to the disk image which will back the virtual mass storage device.")
+				}};
 				return settings;
 			}
 			case SONY_MSAC_US1:
 			{
-				static constexpr const SettingInfo settings[] = {
-					{SettingInfo::Type::Path, "ImagePathMsac", TRANSLATE_NOOP("USB", "Image Path"),
-						TRANSLATE_NOOP("USB", "Sets the path to the disk image which will back the virtual mass storage device.")},
-				};
+				static constexpr const SettingInfo settings[] = {{
+					.type = SettingInfo::Type::Path,
+					.name = "ImagePathMsac",
+					.display_name = TRANSLATE_NOOP("USB", "Image Path"),
+					.description = TRANSLATE_NOOP("USB", "Sets the path to the disk image which will back the virtual mass storage device.")
+				}};
 				return settings;
 			}
 			default:

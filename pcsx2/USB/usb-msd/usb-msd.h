@@ -10,6 +10,8 @@ namespace usb_msd
 	enum MSDType
 	{
 		IOMEGA_ZIP_100,
+		OLYMPUS_CAMERA,
+		OLYMPUS_MO,
 		SONY_MSAC_US1,
 	};
 
