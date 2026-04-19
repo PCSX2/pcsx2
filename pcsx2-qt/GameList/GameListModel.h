@@ -37,6 +37,11 @@ public:
 		Column_Count
 	};
 
+	enum : int
+	{
+		NeedsFavoriteBadgeRole = Qt::UserRole
+	};
+
 	static std::optional<Column> getColumnIdForName(std::string_view name);
 	static const char* getColumnName(Column col);
 
@@ -58,10 +63,11 @@ public:
 
 	bool titlesLessThan(int left_row, int right_row) const;
 
-	bool lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const;
+	bool lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column, Qt::SortOrder sort_order) const;
 
 	bool getShowCoverTitles() const { return m_show_titles_for_covers; }
 	void setShowCoverTitles(bool enabled) { m_show_titles_for_covers = enabled; }
+	const QPixmap& getFavoritePixmap() const { return m_favorite_pixmap; }
 
 	float getCoverScale() const { return m_cover_scale; }
 	void setCoverScale(float scale);
@@ -99,5 +105,6 @@ private:
 	qreal m_dpr;
 
 	std::array<QPixmap, static_cast<int>(GameList::CompatibilityRatingCount)> m_compatibility_pixmaps;
+	QPixmap m_favorite_pixmap;
 	mutable LRUCache<std::string, QPixmap> m_cover_pixmap_cache;
 };
