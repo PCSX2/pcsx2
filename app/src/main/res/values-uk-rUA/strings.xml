@@ -37,6 +37,7 @@
     <string name="settings_section_controller">Контролер</string>
     <string name="settings_section_customization">Персоналізація</string>
     <string name="settings_section_storage">Сховище &amp; Дані</string>
+    <string name="settings_section_memory">Memory Cards</string>
     <string name="settings_section_achievements">З\'єднання</string>
     <string name="settings_on_screen_ui_style">UI стиль на екрані</string>
     <string name="dialog_on_screen_ui_style_title">UI стиль на екрані</string>
@@ -171,6 +172,8 @@
     <string name="settings_custom_fps_limit_default">Custom FPS Limit: 60</string>
     <string name="settings_custom_fps_limit_value">Custom FPS Limit: %1$d</string>
     <string name="settings_fast_boot">Fast Boot</string>
+    <string name="settings_warn_unsafe_settings">Warn About Unsafe Settings</string>
+    <string name="settings_warn_unsafe_settings_summary">Show on-screen notifications when settings that may cause instability or glitches are active.</string>
     <string name="settings_brightness_default">Brightness: 1.00</string>
     <string name="settings_brightness_value">Brightness: %1$.2f</string>
     <string name="settings_osc_timeout_default">On-screen controls timeout: 3s</string>
@@ -230,6 +233,18 @@
     <string name="settings_add_secondary_game_directory">Add secondary game directory</string>
     <string name="settings_memory_card">Memory Card</string>
     <string name="settings_import_memory_card">Import Memory Card</string>
+    <string name="settings_create_new_card">Create New Card</string>
+    <string name="settings_create_new_card_summary">Creates a new memory card.</string>
+    <string name="settings_import_memory_card_summary">Imports a memory card from storage.</string>
+    <string name="settings_swap_cards">Swap Cards</string>
+    <string name="settings_swap_cards_summary">Quick swaps the memory cards in port 1 and 2.</string>
+    <string name="settings_folder_memcard_filter">Folder Memory Card Filter</string>
+    <string name="settings_folder_memcard_filter_summary">Disabling  this option will allow the PS2 system to recognize save files on the Memory card folder in the BIOS.</string>
+    <string name="settings_memory_card_1">Memory Card 1</string>
+    <string name="settings_memory_card_2">Memory Card 2</string>
+    <string name="settings_card_enabled">Card Enabled</string>
+    <string name="settings_card_enabled_summary">If not set, this card will be considered unplugged.</string>
+    <string name="settings_card_name">Card Name</string>
     <string name="settings_storage_access_error">Android denied direct file access for:\n%1$s\n\nGrant \"Allow access to all files\" in system settings or choose a folder inside ARMSX2 storage.</string>
     <string name="settings_discord_title">Discord</string>
     <string name="settings_discord_status_connect">Connect to show your activity on Discord.</string>
@@ -254,6 +269,7 @@
     <string name="settings_controller_settings_applied">Controller settings applied</string>
     <string name="settings_memory_card_inserted_slot1">Memory card inserted (Slot 1)</string>
     <string name="settings_memory_card_import_failed">Failed to import memory card</string>
+    <string name="settings_memory_card_already_in_use">This memory card is already selected in Slot %d.</string>
     <string name="settings_secondary_game_directory_added">Secondary game directory added</string>
     <string name="settings_secondary_game_directory_add_failed">Failed to add secondary game directory</string>
     <string name="settings_achievements_title">Retro Achievements</string>
