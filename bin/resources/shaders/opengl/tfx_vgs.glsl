@@ -37,7 +37,7 @@ out SHADER
 		flat vec4 c;
 	#endif
 	float inv_cov; // We use the inverse to make it simpler to interpolate.
-	uint interior; // 1 for triangle interior; 0 for edge;
+	flat uint interior; // 1 for triangle interior; 0 for edge.
 } VSout;
 
 const float exp_min32 = exp2(-32.0f);
@@ -138,8 +138,8 @@ uint load_index(uint _i)
 {
 	uint i = _i + BaseIndex;
 	// i is even => load lower 16 bits; i odd => load upper 16 bits.
-	uint shift = (i & 1) << 4;
-	return (index_buffer[i >> 1] >> shift) & 0xFFFF;
+	uint shift = (i & 1u) << 4u;
+	return (index_buffer[i >> 1u] >> shift) & 0xFFFFu;
 }
 
 ProcessedVertex load_vertex(uint index)
