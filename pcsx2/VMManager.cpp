@@ -1743,6 +1743,22 @@ void VMManager::Shutdown(bool save_resume_state)
 	LoadSettings();
 }
 
+bool VMManager::RequestReset()
+{
+	if (MemcardBusy::IsBusy())
+	{
+		Host::AddIconOSDMessage("RequestReset", ICON_FA_TRIANGLE_EXCLAMATION,
+			TRANSLATE_STR("VMManager",
+				"The memory card is busy, so the reset operation has been cancelled to prevent data loss."),
+			Host::OSD_WARNING_DURATION);
+		return false;
+	}
+
+	VMManager::Reset();
+
+	return true;
+}
+
 void VMManager::Reset()
 {
 	pxAssert(HasValidVM());
