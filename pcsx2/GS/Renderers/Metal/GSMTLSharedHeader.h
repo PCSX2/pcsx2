@@ -212,4 +212,5 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_MANUAL_LOD,
 	GSMTLConstantIndex_PS_REGION_RECT,
 	GSMTLConstantIndex_PS_SCANMSK,
+	GSMTLConstantIndex_PS_SW_ANISO,
 };

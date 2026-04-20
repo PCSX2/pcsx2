@@ -1374,15 +1374,6 @@ GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 
 	glSamplerParameteri(sampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	const int anisotropy = GSConfig.MaxAnisotropy;
-	if (anisotropy > 1 && sel.aniso)
-	{
-		if (GLAD_GL_ARB_texture_filter_anisotropic)
-			glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY, static_cast<float>(anisotropy));
-		else if (GLAD_GL_EXT_texture_filter_anisotropic)
-			glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, static_cast<float>(anisotropy));
-	}
-
 	return sampler;
 }
 
@@ -1602,6 +1593,7 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_ZTST {}\n", sel.ztst)
 		+ fmt::format("#define PS_AA1 {}\n", static_cast<u32>(sel.aa1))
 		+ fmt::format("#define PS_ABE {}\n", sel.abe)
+		+ fmt::format("#define PS_ANISOTROPIC_FILTERING {}", sel.sw_aniso)
 	;
 
 	std::string src = GenGlslHeader("ps_main", GL_FRAGMENT_SHADER, macro);

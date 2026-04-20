@@ -1467,6 +1467,7 @@ static void DumpPSSelector(DrawConfigWriter& out, const GSHWDrawConfig::PSSelect
 	out.WriteLn("scanmsk: {} ({})", GSUtil::GetSCANMSKName(ps.scanmsk), ps.scanmsk);
 	out.WriteLn("aa1: {} ({})", static_cast<u32>(ps.aa1), GetPSAA1Name(static_cast<u32>(ps.aa1)));
 	out.WriteLn("abe: {}", static_cast<u32>(ps.abe));
+	out.WriteLn("sw_aniso: {}", ps.sw_aniso);
 }
 
 static void DumpVSSelector(DrawConfigWriter& out, const GSHWDrawConfig::VSSelector& vs)
@@ -1512,7 +1513,6 @@ static void DumpSamplerSelector(DrawConfigWriter& out, const GSHWDrawConfig::Sam
 	out.WriteLn("tav: {}", ss.tav);
 	out.WriteLn("biln: {}", ss.biln);
 	out.WriteLn("triln: {} ({})", GetSSTrilnName(static_cast<GS_MIN_FILTER>(ss.triln)), ss.triln);
-	out.WriteLn("aniso: {}", ss.aniso);
 	out.WriteLn("lodclamp: {}", ss.lodclamp);
 }
 

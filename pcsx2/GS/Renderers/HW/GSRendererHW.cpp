@@ -7834,7 +7834,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 	if (shader_emulated_sampler)
 	{
 		m_conf.sampler.biln = 0;
-		m_conf.sampler.aniso = 0;
+		m_conf.ps.sw_aniso = 0;
 
 		// Remove linear from trilinear, since we're doing the bilinear in the shader, and we only want this for mip selection.
 		m_conf.sampler.triln = (trilinear >= static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Nearest)) ?
@@ -7847,7 +7847,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		// Aniso filtering doesn't work with textureLod so use texture (automatic_lod) instead.
 		// Enable aniso only for triangles. Sprites are flat so aniso is likely useless (it would save perf for others primitives).
 		const bool anisotropic = m_vt.m_primclass == GS_TRIANGLE_CLASS && !trilinear_manual;
-		m_conf.sampler.aniso = anisotropic;
+		m_conf.ps.sw_aniso = anisotropic ? GSConfig.MaxAnisotropy : 0;
 		m_conf.sampler.triln = trilinear;
 		if (anisotropic && !trilinear_manual)
 			m_conf.ps.automatic_lod = 1;

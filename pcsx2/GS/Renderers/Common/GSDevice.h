@@ -423,6 +423,9 @@ struct alignas(16) GSHWDrawConfig
 				// AA1
 				PS_AA1 aa1 : 2; // Pixel shader AA1 primitive. Must be used in conjunction with VS AA1 expand.
 				u32 abe : 1; // Alpha blend enabled. Currently only used for emulating AA1/ABE interaction.
+
+				// Anisotropic filtering
+				u32 sw_aniso : 5;
 			};
 
 			struct
@@ -505,7 +508,6 @@ struct alignas(16) GSHWDrawConfig
 				u8 tav      : 1;
 				u8 biln     : 1;
 				u8 triln    : 3;
-				u8 aniso    : 1;
 				u8 lodclamp : 1;
 			};
 			u8 key;
