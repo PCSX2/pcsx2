@@ -838,7 +838,7 @@ static MRCOwned<id<MTLSamplerState>> CreateSampler(id<MTLDevice> dev, GSHWDrawCo
 	[sdesc setTAddressMode:sel.tav ? MTLSamplerAddressModeRepeat : MTLSamplerAddressModeClampToEdge];
 	[sdesc setRAddressMode:MTLSamplerAddressModeClampToEdge];
 
-	[sdesc setMaxAnisotropy:GSConfig.MaxAnisotropy && sel.aniso ? GSConfig.MaxAnisotropy : 1];
+	[sdesc setMaxAnisotropy:1];
 	bool clampLOD = sel.lodclamp || !sel.UseMipmapFiltering();
 	const char* clampdesc = clampLOD ? " LODClamp" : "";
 	[sdesc setLodMaxClamp:clampLOD ? 0.25f : FLT_MAX];
@@ -1886,6 +1886,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantB(m_fn_constants, pssel.manual_lod,            GSMTLConstantIndex_PS_MANUAL_LOD);
 		setFnConstantB(m_fn_constants, pssel.region_rect,           GSMTLConstantIndex_PS_REGION_RECT);
 		setFnConstantI(m_fn_constants, pssel.scanmsk,               GSMTLConstantIndex_PS_SCANMSK);
+		setFnConstantI(m_fn_constants, pssel.sw_aniso,              GSMTLConstantIndex_PS_SW_ANISO);
 		auto newps = LoadShader(@"ps_main");
 		ps = newps;
 		m_hw_ps.insert(std::make_pair(pssel, std::move(newps)));
