@@ -5428,8 +5428,6 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
 					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
 					m_conf.indices_per_prim = 6;
-					m_conf.ps.aa1 = GSHWDrawConfig::PS_AA1::LINE;
-					m_conf.ps.abe = PRIM->ABE != 0;
 					ExpandLineIndices();
 				}
 				else if (unscale_pt_ln)
@@ -5496,9 +5494,6 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
 					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
 					m_conf.indices_per_prim = 3;
-					m_conf.ps.aa1 = m_cached_ctx.DepthWrite() ? GSHWDrawConfig::PS_AA1::TRIANGLE_SW_Z :
-					                                            GSHWDrawConfig::PS_AA1::TRIANGLE;
-					m_conf.ps.abe = PRIM->ABE != 0;
 				}
 				else
 				{
@@ -5792,7 +5787,7 @@ void GSRendererHW::DetermineAlphaScaling(GSTextureCache::Target* rt, GSTextureCa
 	}
 }
 
-void GSRendererHW::EmulateZbufferAA1()
+void GSRendererHW::EmulateAA1()
 {
 	const GSDevice::FeatureSupport& features = g_gs_device->Features();
 
@@ -5800,29 +5795,34 @@ void GSRendererHW::EmulateZbufferAA1()
 
 	if (IsCoverageAlphaSupported())
 	{
+		m_conf.ps.abe = PRIM->ABE; // ABE flag determines how coverage is used for alpha.
+
 		if (m_vt.m_primclass == GS_LINE_CLASS)
 		{
+			GL_INS("HW: AA1 lines. No depth write.");
+
 			// AA1: Z is not written on lines since coverage is always less than 0x80.
 			m_conf.depth.zwe = false;
+			m_cached_ctx.ZBUF.ZMSK = 1;
+
+			m_conf.ps.aa1 = GSHWDrawConfig::PS_AA1::LINE;
 		}
 		else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
 		{
 			// Force SW depth so that Z writes can be prevented for edge pixels.
 			if (m_cached_ctx.DepthWrite())
 			{
-				// Z test must be also done in the shader.
-				if (m_conf.depth.ztst == ZTST_GEQUAL || m_conf.depth.ztst == ZTST_GREATER)
-				{
-					m_conf.ps.ztst = m_conf.depth.ztst; // Enable shader Z test.
-					m_conf.depth.ztst = ZTST_ALWAYS; // Disable HW Z test.
+				GL_INS("HW: AA1 triangles with depth feedback.");
 
-					// We need barriers for the feedback
-					if (features.feedback_loops())
-					{
-						m_conf.require_one_barrier |= (m_prim_overlap == PRIM_OVERLAP_NO);
-						m_conf.require_full_barrier |= (m_prim_overlap != PRIM_OVERLAP_NO);
-					}
-				}
+				m_conf.ps.aa1 = GSHWDrawConfig::PS_AA1::TRIANGLE_SW_Z; // Allows discarding depth on edge pixels.
+
+				ConfigureDepthFeedback(); // Enable barriers/SW depth test.
+			}
+			else
+			{
+				GL_INS("HW: AA1 triangles with no depth write.");
+
+				m_conf.ps.aa1 = GSHWDrawConfig::PS_AA1::TRIANGLE; // No special depth handling.
 			}
 		}
 		else
@@ -6950,9 +6950,9 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 		}
 	}
 
-	if (m_conf.alpha_test == GSHWDrawConfig::AlphaTestMode::FEEDBACK && !features.depth_feedback)
+	if (m_conf.ps.IsFeedbackLoopDepth() && !features.depth_feedback)
 	{
-		// If we are doing feedback alpha test with a second RT we must use SW blending to avoid
+		// If we are doing depth feedback with a second RT we must use SW blending to avoid
 		// mixing dual source blending with multiple render targets.
 		sw_blending = true;
 		color_dest_blend = false;
@@ -8420,12 +8420,12 @@ void GSRendererHW::EmulateAlphaTest(DATEOptions& date_options)
 
 	// Determine whether the feedback methods require a single pass.
 	const bool feedback_one_pass = simple_fb_only || simple_rgb_only || simple_zb_only;
-
-	// If we already have the required barriers for the accurate feedback path and
-	// do not require depth feedback.
+	
+	// If we already have the required barriers for the accurate feedback path.
 	const bool free_barrier_feedback =
 		((m_conf.require_one_barrier && feedback_one_pass) || m_conf.require_full_barrier) &&
-		features.feedback_loops() && !afail_needs_depth;
+		features.feedback_loops() &&
+		(!afail_needs_depth || m_conf.ps.IsFeedbackLoopDepth());
 
 	// Determine if we can use FB-fetch for color only feedback.
 	const bool free_fbfetch_feedback = features.framebuffer_fetch && !afail_needs_depth;
@@ -8460,26 +8460,21 @@ void GSRendererHW::EmulateAlphaTest(DATEOptions& date_options)
 			m_conf.require_full_barrier |= !feedback_one_pass;
 		}
 
-		// Handle SW depth writing and/or testing.
 		if (afail_needs_depth)
 		{
 			pxAssert(zwe);
-			GL_INS("Enable SW depth write for depth feedback");
+
+			// Let the pipeline know we need depth feedback with RGB_ONLY.
 			if (afail == AFAIL_RGB_ONLY)
 				m_conf.ps.afail = PS_AFAIL::RGB_ONLY_SW_Z;
-
-			if (m_cached_ctx.DepthRead())
-			{
-				GL_INS("Enable SW depth testing for depth feedback");
-				m_conf.ps.ztst = m_cached_ctx.TEST.ZTST; // Enable SW Z test.
-				m_conf.depth.ztst = ZTST_ALWAYS; // Disable HW Z test.
-			}
 		}
 		else
 		{
 			// Should have early exited
 			pxAssert(afail != AFAIL_FB_ONLY);
 		}
+
+		ConfigureDepthFeedback(); // Enable barriers/SW depth test if needed.
 
 		m_conf.alpha_test = GSHWDrawConfig::AlphaTestMode::FEEDBACK;
 	}
@@ -8672,6 +8667,30 @@ void GSRendererHW::EmulateAlphaTestSecondPass()
 		m_conf.alpha_test = GSHWDrawConfig::AlphaTestMode::ABORT_DRAW;
 }
 
+// Setup barriers and/or SW depth testing for depth feedback.
+void GSRendererHW::ConfigureDepthFeedback()
+{
+	if (m_conf.ps.IsFeedbackLoopDepth())
+	{
+		const GSDevice::FeatureSupport& features = g_gs_device->Features();
+
+		// We need barriers for the feedback.
+		if (features.feedback_loops())
+		{
+			m_conf.require_one_barrier |= (m_prim_overlap == PRIM_OVERLAP_NO);
+			m_conf.require_full_barrier |= (m_prim_overlap != PRIM_OVERLAP_NO);
+		}
+		
+		// We need to do SW depth testing if it's used.
+		if (m_cached_ctx.DepthRead())
+		{
+			GL_INS("HW: Enable SW depth test and disable HW.");
+			m_conf.ps.ztst = m_cached_ctx.TEST.ZTST; // Enable SW Z test.
+			m_conf.depth.ztst = ZTST_ALWAYS; // Disable HW Z test.
+		}
+	}
+}
+
 void GSRendererHW::CleanupDraw(bool invalidate_temp_src)
 {
 	// Remove any RT source.
@@ -8738,7 +8757,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	m_prim_overlap = PrimitiveOverlap(false);
 
-	EmulateZbufferAA1();
+	// Do AA1 setup early so we can mask depth if possible.
+	EmulateAA1();
 
 	if (rt)
 	{
