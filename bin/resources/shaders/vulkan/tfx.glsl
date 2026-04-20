@@ -140,8 +140,8 @@ uint load_index(uint _i)
 {
 	uint i = _i + BaseIndex;
 	// i is even => load lower 16 bits; i odd => load upper 16 bits.
-	uint shift = (i & 1) << 4;
-	return (index_buffer[i >> 1] >> shift) & 0xFFFF;
+	uint shift = (i & 1u) << 4u;
+	return (index_buffer[i >> 1u] >> shift) & 0xFFFFu;
 }
 
 ProcessedVertex load_vertex(uint index)
