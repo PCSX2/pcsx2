@@ -70,23 +70,9 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* settings_dialog
 					std::clamp(Host::GetBaseIntSettingValue("EmuCore/Speedhacks", "EECycleRate", DEFAULT_EE_CYCLE_RATE) - MINIMUM_EE_CYCLE_RATE,
 						0, MAXIMUM_EE_CYCLE_RATE - MINIMUM_EE_CYCLE_RATE))));
 
-		// Disable cheats, use the cheats panel instead (move fastcvd up in its spot).
-		const int count = m_ui.systemSettingsLayout->count();
-		for (int i = 0; i < count; i++)
-		{
-			QLayoutItem* item = m_ui.systemSettingsLayout->itemAt(i);
-			if (item && item->widget() == m_ui.cheats)
-			{
-				int row, col, rowSpan, colSpan;
-				m_ui.systemSettingsLayout->getItemPosition(i, &row, &col, &rowSpan, &colSpan);
-				delete m_ui.systemSettingsLayout->takeAt(i);
-				m_ui.systemSettingsLayout->removeWidget(m_ui.fastCDVD);
-				m_ui.systemSettingsLayout->addWidget(m_ui.fastCDVD, row, col);
-				delete m_ui.cheats;
-				m_ui.cheats = nullptr;
-				break;
-			}
-		}
+		// Disable cheats, use the cheats panel instead
+		m_ui.systemSettingsLayout->removeWidget(m_ui.cheats);
+		m_ui.cheats->hide();
 	}
 	else
 	{
@@ -96,8 +82,10 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* settings_dialog
 
 		// Allow for FastCDVD for per-game settings only
 		m_ui.systemSettingsLayout->removeWidget(m_ui.fastCDVD);
-		m_ui.fastCDVD->deleteLater();
+		m_ui.fastCDVD->hide();
 	}
+
+	reflowCheckBoxes(m_ui.systemSettingsLayout);
 
 	const std::optional<int> cycle_rate =
 		dialog()->getIntValue("EmuCore/Speedhacks", "EECycleRate", sif ? std::nullopt : std::optional<int>(DEFAULT_EE_CYCLE_RATE));
