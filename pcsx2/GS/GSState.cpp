@@ -6438,11 +6438,6 @@ void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
 		min = 128;
 		max = 128;
 	}
-	else if (IsCoverageAlphaSupported())
-	{
-		min = 0;
-		max = 128;
-	}
 	else
 	{
 		const GSDrawingContext* context = m_context;
@@ -6520,7 +6515,34 @@ void GSState::CalcAlphaMinMax(const int tex_alpha_min, const int tex_alpha_max)
 
 	m_vt.m_alpha.min = min;
 	m_vt.m_alpha.max = max;
+	m_vt.m_alpha.depth_min = min;
+	m_vt.m_alpha.depth_max = max;
 	m_vt.m_alpha.valid = true;
+
+	if (IsCoverageAlphaSupported())
+	{
+		// Expand the alpha range depending on what the AA1 can do to the alpha.
+		
+		if (PRIM->ABE)
+		{
+			// ABE==1: Coverage is used for alpha only used when incoming alpha is exactly 128.
+			// If 128 is in the incoming range, expand it down to 0, since edges could be 0-127.
+			// Don't change depth min, since depth isn't written on the edges.
+			if (min <= 128 && 128 <= max)
+			{
+				m_vt.m_alpha.min = std::min(0, min);
+			}
+		}
+		else
+		{
+			// ABE==0: Coverage is always used for alpha, so assume exactly 0-128.
+			// Assume exactly 128 for depth, since depth isn't written on the edges.
+			m_vt.m_alpha.min = 0;
+			m_vt.m_alpha.max = 128;
+			m_vt.m_alpha.depth_min = 128;
+			m_vt.m_alpha.depth_max = 128;
+		}
+	}
 }
 
 void GSState::CorrectATEAlphaMinMax(const u32 atst, const int aref)
@@ -6586,107 +6608,127 @@ bool GSState::TryAlphaTest(u32& fm, u32& zm)
 				return true;
 			break;
 		default:
-			ASSUME(0);
+			pxFailRel("Impossible.");
+			break;
 	}
 
-	bool pass = true;
+	enum AlphaTestResult
+	{
+		UNKNOWN,
+		ALL_PASS,
+		ALL_FAIL,
+	};
+
+	AlphaTestResult result, depth_result;
 
 	if (m_context->TEST.ATST == ATST_NEVER)
 	{
-		pass = false; // Shortcut to avoid GetAlphaMinMax below
+		// Shortcut for NEVER to avoid GetAlphaMinMax below.
+		result = ALL_FAIL;
+		depth_result = ALL_FAIL;
 	}
 	else
 	{
 		const GSVertexTrace::VertexAlpha& aminmax = GetAlphaMinMax();
-		const int amin = aminmax.min;
-		const int amax = aminmax.max;
 
 		const int aref = m_context->TEST.AREF;
 
-		switch (m_context->TEST.ATST)
-		{
-			case ATST_NEVER:
-				pass = false;
-				break;
-			case ATST_ALWAYS:
-				pass = true;
-				break;
-			case ATST_LESS:
-				if (amax < aref)
-					pass = true;
-				else if (amin >= aref)
-					pass = false;
-				else
-					return false;
-				break;
-			case ATST_LEQUAL:
-				if (amax <= aref)
-					pass = true;
-				else if (amin > aref)
-					pass = false;
-				else
-					return false;
-				break;
-			case ATST_EQUAL:
-				if (amin == aref && amax == aref)
-					pass = true;
-				else if (amin > aref || amax < aref)
-					pass = false;
-				else
-					return false;
-				break;
-			case ATST_GEQUAL:
-				if (amin >= aref)
-					pass = true;
-				else if (amax < aref)
-					pass = false;
-				else
-					return false;
-				break;
-			case ATST_GREATER:
-				if (amin > aref)
-					pass = true;
-				else if (amax <= aref)
-					pass = false;
-				else
-					return false;
-				break;
-			case ATST_NOTEQUAL:
-				if (amin == aref && amax == aref)
-					pass = false;
-				else if (amin > aref || amax < aref)
-					pass = true;
-				else
-					return false;
-				break;
-			default:
-				ASSUME(0);
-		}
+		const auto GetResult = [&](int amin, int amax) {
+			switch (m_context->TEST.ATST)
+			{
+				case ATST_NEVER:
+					return ALL_FAIL;
+				case ATST_ALWAYS:
+					return ALL_PASS;
+				case ATST_LESS:
+				{
+					if (amax < aref)
+						return ALL_PASS;
+					else if (amin >= aref)
+						return ALL_FAIL;
+					else
+						return UNKNOWN;
+				}
+				case ATST_LEQUAL:
+				{
+					if (amax <= aref)
+						return ALL_PASS;
+					else if (amin > aref)
+						return ALL_FAIL;
+					else
+						return UNKNOWN;
+				}
+				case ATST_EQUAL:
+				{
+					if (amin == aref && amax == aref)
+						return ALL_PASS;
+					else if (amin > aref || amax < aref)
+						return ALL_FAIL;
+					else
+						return UNKNOWN;
+				}
+				case ATST_GEQUAL:
+				{
+					if (amin >= aref)
+						return ALL_PASS;
+					else if (amax < aref)
+						return ALL_FAIL;
+					else
+						return UNKNOWN;
+				}
+				case ATST_GREATER:
+				{
+					if (amin > aref)
+						return ALL_PASS;
+					else if (amax <= aref)
+						return ALL_FAIL;
+					else
+						return UNKNOWN;
+				}
+				case ATST_NOTEQUAL:
+				{
+					if (amin == aref && amax == aref)
+						return ALL_FAIL;
+					else if (amin > aref || amax < aref)
+						return ALL_PASS;
+					else
+						return UNKNOWN;
+				}
+				default:
+					pxFailRel("Impossible");
+					return UNKNOWN;
+			}
+		};
+
+		result = GetResult(aminmax.min, aminmax.max);
+		depth_result = (result != UNKNOWN) ? result : GetResult(aminmax.depth_min, aminmax.depth_max);
 	}
 
-	if (!pass)
+	const u32 fail_fm = (result == ALL_FAIL) ? 0xffffffff : 0x0;
+	const u32 fail_zm = (depth_result == ALL_FAIL) ? 0xffffffff : 0x0;
+
+	switch (fail_type)
 	{
-		switch (fail_type)
-		{
-			case AFAIL_KEEP:
-				fm = zm = 0xffffffff;
-				break;
-			case AFAIL_FB_ONLY:
-				zm = 0xffffffff;
-				break;
-			case AFAIL_ZB_ONLY:
-				fm = 0xffffffff;
-				break;
-			case AFAIL_RGB_ONLY:
-				fm |= 0xff000000;
-				zm = 0xffffffff;
-				break;
-			default:
-				ASSUME(0);
-		}
+		case AFAIL_KEEP:
+			fm |= fail_fm;
+			zm |= fail_zm;
+			break;
+		case AFAIL_FB_ONLY:
+			zm |= fail_zm;
+			break;
+		case AFAIL_ZB_ONLY:
+			fm |= fail_fm;
+			break;
+		case AFAIL_RGB_ONLY:
+			fm |= (fail_fm & 0xff000000);
+			zm |= fail_zm;
+			break;
+		default:
+			pxFailRel("Impossible.");
+			break;
 	}
 
-	return true;
+	return result != UNKNOWN;
 }
 
 bool GSState::IsFlatShaded()
@@ -6756,6 +6798,7 @@ bool GSState::IsCoverageAlphaFixedOne()
 
 bool GSState::IsCoverageAlphaSupported()
 {
+	pxFailRel("Not implemented");
 	return false;
 }
 
