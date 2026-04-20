@@ -175,9 +175,9 @@ Später über Einstellungen → ARMSX2-Verzeichnis öffnen.</string>
     <string name="settings_warn_unsafe_settings">Warn About Unsafe Settings</string>
     <string name="settings_warn_unsafe_settings_summary">Show on-screen notifications when settings that may cause instability or glitches are active.</string>
     <string name="settings_brightness_default">Brightness: 1.00</string>
-    <string name="settings_brightness_value">Brightness: %1$.2f</string>
-    <string name="settings_osc_timeout_default">On-screen controls timeout: 3s</string>
-    <string name="settings_osc_timeout_seconds">On-screen controls timeout: %1$ds</string>
+    <string name="settings_brightness_value">Helligkeit: %1$.2f</string>
+    <string name="settings_osc_timeout_default">On-Screen Steuerung Timeout: 3s</string>
+    <string name="settings_osc_timeout_seconds">In-Screen Steuerung Timeout: %1$ds</string>
     <string name="settings_osc_timeout_never">On-screen controls timeout: never</string>
     <string name="settings_osc_never_hide">Never hide on-screen controls</string>
     <string name="settings_upscale_default">Upscale: 1x</string>
