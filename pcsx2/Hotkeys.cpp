@@ -238,7 +238,7 @@ DEFINE_HOTKEY("ShutdownVM", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP(
 DEFINE_HOTKEY("ResetVM", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Reset Virtual Machine"),
 	[](s32 pressed) {
 		if (!pressed && VMManager::HasValidVM())
-			VMManager::Reset();
+			VMManager::RequestReset();
 	})
 DEFINE_HOTKEY("ReloadPatches", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Reload Patches"),
 	[](s32 pressed) {

@@ -124,6 +124,9 @@ namespace VMManager
 	/// Destroys all system components.
 	void Shutdown(bool save_resume_state);
 
+	/// Resets all subsystems to a cold boot if it's safe to do so.
+	bool RequestReset();
+
 	/// Resets all subsystems to a cold boot.
 	void Reset();
 
