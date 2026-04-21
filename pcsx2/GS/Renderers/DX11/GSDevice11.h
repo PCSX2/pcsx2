@@ -370,6 +370,7 @@ public:
 	void SendHWDraw(const GSHWDrawConfig& config,
 		GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
 		const bool one_barrier, const bool full_barrier);
+	void SetRenderHWShaderResources(const GSHWDrawConfig& config, GSTexture* primid_texture);
 
 	void ClearSamplerCache() override;
 
