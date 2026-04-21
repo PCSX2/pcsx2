@@ -1283,6 +1283,31 @@ void Host::OnCaptureStopped()
 	emit g_emu_thread->onCaptureStopped();
 }
 
+static void CheckAndLogVersionUpdate()
+{
+	const std::string current_version = BuildVersion::GitRev;
+	const std::string last_ver_path = Path::Combine(EmuFolders::Settings, "last_version.txt");
+	const std::string log_path = Path::Combine(EmuFolders::Settings, "update_log.txt");
+
+	const std::optional<std::string> last_version = FileSystem::ReadFileToString(last_ver_path.c_str());
+	const std::string last_version_trimmed = last_version.has_value() ? std::string(StringUtil::StripWhitespace(last_version.value())) : std::string();
+	if (!last_version_trimmed.empty() && last_version_trimmed != current_version)
+	{
+		const std::time_t t = std::time(nullptr);
+		char timestamp[32];
+		std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", std::localtime(&t));
+
+		const std::string entry = fmt::format("[{}] Updated from {} to {}\n", timestamp, last_version_trimmed, current_version);
+
+		if (auto fp = FileSystem::OpenManagedCFile(log_path.c_str(), "ab"))
+		{
+			std::fwrite(entry.c_str(), 1, entry.size(), fp.get());
+		}
+	}
+
+	FileSystem::WriteStringToFile(last_ver_path.c_str(), current_version);
+}
+
 bool QtHost::InitializeConfig()
 {
 	Error error;
@@ -1312,6 +1337,8 @@ bool QtHost::InitializeConfig()
 
 	// Write crash dumps to the data directory, since that'll be accessible for certain.
 	CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
+
+	CheckAndLogVersionUpdate();
 
 	// Load main settings ini
 	const std::string path = Path::Combine(EmuFolders::Settings, "PCSX2.ini");
@@ -2297,8 +2324,8 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 		Console.Warning("Skipping autoboot due to no boot parameters.");
 		autoboot.reset();
 	}
-	
-	if(autoboot && autoboot->start_turbo.value_or(false) && autoboot->start_unlimited.value_or(false))
+
+	if (autoboot && autoboot->start_turbo.value_or(false) && autoboot->start_unlimited.value_or(false))
 	{
 		Console.Warning("Both turbo and unlimited frame limit modes requested. Using unlimited.");
 		autoboot->start_turbo.reset();
