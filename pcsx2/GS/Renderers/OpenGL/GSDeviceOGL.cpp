@@ -883,7 +883,7 @@ bool GSDeviceOGL::CheckFeatures()
 		Console.Warning("GLAD_GL_ARB_conservative_depth is not supported. This will reduce performance.");
 	}
 	
-	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && (m_features.texture_barrier || m_features.multidraw_fb_copy);
+	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
 
 	return true;
 }

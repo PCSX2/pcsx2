@@ -5796,7 +5796,7 @@ void GSRendererHW::EmulateZbufferAA1()
 {
 	const GSDevice::FeatureSupport& features = g_gs_device->Features();
 
-	pxAssert(!features.aa1 || features.texture_barrier || features.multidraw_fb_copy);
+	pxAssert(!features.aa1 || features.feedback_loops());
 
 	if (IsCoverageAlphaSupported())
 	{
@@ -5817,7 +5817,7 @@ void GSRendererHW::EmulateZbufferAA1()
 					m_conf.depth.ztst = ZTST_ALWAYS; // Disable HW Z test.
 
 					// We need barriers for the feedback
-					if (features.texture_barrier || features.multidraw_fb_copy)
+					if (features.feedback_loops())
 					{
 						m_conf.require_one_barrier |= (m_prim_overlap == PRIM_OVERLAP_NO);
 						m_conf.require_full_barrier |= (m_prim_overlap != PRIM_OVERLAP_NO);
@@ -5938,7 +5938,7 @@ void GSRendererHW::EmulateDATESelectMethod(DATEOptions& date_options, GSTextureC
 			m_conf.require_full_barrier = true;
 			date_options.barrier = true;
 		}
-		else if ((features.texture_barrier || features.multidraw_fb_copy) && m_conf.require_full_barrier)
+		else if (features.feedback_loops() && m_conf.require_full_barrier)
 		{
 			// Full barrier is enabled (likely sw fbmask), we need to use date barrier.
 			GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
@@ -5950,7 +5950,7 @@ void GSRendererHW::EmulateDATESelectMethod(DATEOptions& date_options, GSTextureC
 			GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
 			date_options.primid = true;
 		}
-		else if (features.texture_barrier || features.multidraw_fb_copy)
+		else if (features.feedback_loops())
 		{
 			GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
 			m_conf.require_full_barrier = true;
@@ -6162,19 +6162,19 @@ void GSRendererHW::DetermineBarriers(GSTextureCache::Target* rt)
 	pxAssert(!m_conf.require_full_barrier || !m_conf.ps.colclip_hw);
 
 	// Swap full barrier for one barrier when there's no overlap, or a shuffle.
-	if ((features.texture_barrier || features.multidraw_fb_copy) && m_conf.require_full_barrier && (m_prim_overlap == PRIM_OVERLAP_NO || m_conf.ps.shuffle || m_channel_shuffle))
+	if (features.feedback_loops() && m_conf.require_full_barrier && (m_prim_overlap == PRIM_OVERLAP_NO || m_conf.ps.shuffle || m_channel_shuffle))
 	{
 		m_conf.require_full_barrier = false;
 		m_conf.require_one_barrier = true;
 	}
-	else if (!(features.texture_barrier || features.multidraw_fb_copy))
+	else if (!features.feedback_loops())
 	{
 		// These shouldn't be enabled if texture barriers aren't supported, make sure they are off.
 		m_conf.ps.write_rg = 0;
 		m_conf.require_full_barrier = false;
 	}
 
-	if (m_conf.require_full_barrier && (g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy))
+	if (m_conf.require_full_barrier && features.feedback_loops())
 	{
 		ComputeDrawlistGetSize(rt->m_scale);
 		m_conf.drawlist = &m_drawlist;
@@ -6246,9 +6246,8 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 
 		// If date is enabled you need to test the green channel instead of the alpha channel.
 		// Only enable this code in DATE mode to reduce the number of shaders.
-		m_conf.ps.write_rg = (process_rg & SHUFFLE_WRITE) && (features.texture_barrier || features.multidraw_fb_copy) &&
-		                     m_cached_ctx.TEST.DATE;
-		
+		m_conf.ps.write_rg = (process_rg & SHUFFLE_WRITE) && features.feedback_loops() && m_cached_ctx.TEST.DATE;
+
 		m_conf.ps.real16src = m_texture_shuffle.real_16_bit_source;
 
 		// Shuffle that copies B to A, which are in the same column.
@@ -6362,7 +6361,7 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 			   have been invalidated before subsequent Draws are executed.
 			 */
 			// No blending so hit unsafe path.
-			if (!PRIM->ABE || !(~ff_fbmask & ~zero_fbmask & 0x7) || !(features.texture_barrier || features.multidraw_fb_copy))
+			if (!PRIM->ABE || !(~ff_fbmask & ~zero_fbmask & 0x7) || !features.feedback_loops())
 			{
 				GL_INS("HW: FBMASK Unsafe SW emulated fb_mask:%x on %d bits format", m_cached_ctx.FRAME.FBMSK,
 					(m_conf.ps.dst_fmt == GSLocalMemory::PSM_FMT_16) ? 16 : 32);
@@ -6872,7 +6871,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 	// Condition 2: One barrier is already enabled, prims don't overlap or is a channel shuffle so let's use sw blend instead.
 	// Condition 3: A texture shuffle is unlikely to overlap, so we can prefer full sw blend.
 	// Condition 4: If it's tex in fb draw and there's no overlap prefer sw blend, fb is already being read.
-	const bool prefer_sw_blend = ((features.texture_barrier || features.multidraw_fb_copy) && m_conf.require_full_barrier) || (m_conf.require_one_barrier && (no_prim_overlap || m_channel_shuffle)) || m_conf.ps.shuffle || (no_prim_overlap && (m_conf.tex == m_conf.rt));
+	const bool prefer_sw_blend = (features.feedback_loops() && m_conf.require_full_barrier) || (m_conf.require_one_barrier && (no_prim_overlap || m_channel_shuffle)) || m_conf.ps.shuffle || (no_prim_overlap && (m_conf.tex == m_conf.rt));
 	const bool free_blend = blend_non_recursive // Free sw blending, doesn't require barriers or reading fb
 	                        || accumulation_blend; // Mix of hw/sw blending
 
@@ -6883,7 +6882,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 	const bool blend_multipass_group = blend_multi_pass_support && !features.texture_barrier &&
 		(bmix1_multi_pass1 || bmix1_multi_pass2 || bmix3_multi_pass || (blend_flag & (BLEND_HW3 | BLEND_HW4 | BLEND_HW5 | BLEND_HW6 | BLEND_HW7 | BLEND_HW8 | BLEND_HW9)));
 
-	const bool barriers_supported = features.texture_barrier || features.multidraw_fb_copy;
+	const bool barriers_supported = features.feedback_loops();
 	const bool blend_requires_barrier =
 		// We don't want the cases to be enabled if barriers aren't supported so limit it to no overlap.
 		(no_prim_overlap || barriers_supported)
@@ -7049,7 +7048,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 
 				m_conf.ps.pabe = 1;
 			}
-			else if (features.texture_barrier || features.multidraw_fb_copy)
+			else if (features.feedback_loops())
 			{
 				// PABE sw blend:
 				// Disable hw/sw mix and do pure sw blend with reading the framebuffer.
@@ -7222,7 +7221,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 			const bool blend_non_recursive_one_barrier = blend_non_recursive && blend_ad_alpha_masked;
 			if (blend_non_recursive_one_barrier)
 				m_conf.require_one_barrier |= true;
-			else if (features.texture_barrier || features.multidraw_fb_copy)
+			else if (features.feedback_loops())
 				m_conf.require_full_barrier |= !blend_non_recursive;
 			else
 				m_conf.require_one_barrier |= !blend_non_recursive;
@@ -7875,7 +7874,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			{
 				m_conf.tex = nullptr;
 				m_conf.ps.tex_is_fb = true;
-				if (m_prim_overlap == PRIM_OVERLAP_NO || !(g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy))
+				if (m_prim_overlap == PRIM_OVERLAP_NO || !g_gs_device->Features().feedback_loops())
 					m_conf.require_one_barrier = true;
 				else
 					m_conf.require_full_barrier = true;
@@ -7955,7 +7954,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			const int horizontal_offset = ((page_offset % src_target->m_TEX0.TBW) * GSLocalMemory::m_psm[src_target->m_TEX0.PSM].pgs.x);
 			const int vertical_offset = ((page_offset / src_target->m_TEX0.TBW) * GSLocalMemory::m_psm[src_target->m_TEX0.PSM].pgs.y);
 
-			if (g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy)
+			if (g_gs_device->Features().feedback_loops())
 			{
 				const u32 max_skip = ((m_channel_shuffle_finish || !m_channel_shuffle_width) ? 1 : m_channel_shuffle_width) << 5;
 				const bool new_shuffle = !(m_last_channel_shuffle_fbmsk == m_context->FRAME.FBMSK &&
@@ -8179,7 +8178,7 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 	}
 
 	// No barriers -> we can't use tex-is-fb when there's overlap.
-	if (!(g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy) && m_prim_overlap != PRIM_OVERLAP_NO)
+	if (!g_gs_device->Features().feedback_loops() && m_prim_overlap != PRIM_OVERLAP_NO)
 	{
 		GL_CACHE("HW: Disabling tex-is-fb due to no barriers.");
 		return false;
@@ -8426,14 +8425,13 @@ void GSRendererHW::EmulateAlphaTest(DATEOptions& date_options)
 	// do not require depth feedback.
 	const bool free_barrier_feedback =
 		((m_conf.require_one_barrier && feedback_one_pass) || m_conf.require_full_barrier) &&
-		(features.texture_barrier || features.multidraw_fb_copy) &&
-		!afail_needs_depth;
+		features.feedback_loops() && !afail_needs_depth;
 
 	// Determine if we can use FB-fetch for color only feedback.
 	const bool free_fbfetch_feedback = features.framebuffer_fetch && !afail_needs_depth;
 
 	// Determine if we have the correct features for depth feedback.
-	const bool depth_feedback_supported = features.texture_barrier || features.multidraw_fb_copy;
+	const bool depth_feedback_supported = features.feedback_loops();
 
 	// We need depth feedback but do not have the correct features.
 	const bool avoid_feedback = afail_needs_depth && !depth_feedback_supported;
@@ -8456,7 +8454,7 @@ void GSRendererHW::EmulateAlphaTest(DATEOptions& date_options)
 		m_conf.cb_ps.FogColor_AREF.a = ps_aref;
 		m_conf.ps.afail = static_cast<PS_AFAIL>(afail);
 
-		if ((afail_needs_rt || afail_needs_depth) && (features.texture_barrier || features.multidraw_fb_copy))
+		if ((afail_needs_rt || afail_needs_depth) && features.feedback_loops())
 		{
 			m_conf.require_one_barrier |= feedback_one_pass;
 			m_conf.require_full_barrier |= !feedback_one_pass;
