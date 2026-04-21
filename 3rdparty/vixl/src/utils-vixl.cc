@@ -34,14 +34,19 @@ namespace vixl {
 const double kFP64DefaultNaN = RawbitsToDouble(UINT64_C(0x7ff8000000000000));
 const float kFP32DefaultNaN = RawbitsToFloat(0x7fc00000);
 const Float16 kFP16DefaultNaN = RawbitsToFloat16(0x7e00);
+const BFloat16 kBFP16DefaultNaN = RawbitsToBFloat16(0x7fc0);
 
 // Floating-point zero values.
 const Float16 kFP16PositiveZero = RawbitsToFloat16(0x0);
 const Float16 kFP16NegativeZero = RawbitsToFloat16(0x8000);
+const BFloat16 kBFP16PositiveZero = RawbitsToBFloat16(0x0);
+const BFloat16 kBFP16NegativeZero = RawbitsToBFloat16(0x8000);
 
 // Floating-point infinity values.
 const Float16 kFP16PositiveInfinity = RawbitsToFloat16(0x7c00);
 const Float16 kFP16NegativeInfinity = RawbitsToFloat16(0xfc00);
+const BFloat16 kBFP16PositiveInfinity = RawbitsToBFloat16(0x7f80);
+const BFloat16 kBFP16NegativeInfinity = RawbitsToBFloat16(0xff80);
 const float kFP32PositiveInfinity = RawbitsToFloat(0x7f800000);
 const float kFP32NegativeInfinity = RawbitsToFloat(0xff800000);
 const double kFP64PositiveInfinity =
@@ -56,6 +61,14 @@ bool IsZero(Float16 value) {
 }
 
 uint16_t Float16ToRawbits(Float16 value) { return value.rawbits_; }
+
+bool IsZero(BFloat16 value) {
+  uint16_t bits = BFloat16ToRawbits(value);
+  return (bits == BFloat16ToRawbits(kBFP16PositiveZero) ||
+          bits == BFloat16ToRawbits(kBFP16NegativeZero));
+}
+
+uint16_t BFloat16ToRawbits(BFloat16 value) { return value.rawbits_; }
 
 uint32_t FloatToRawbits(float value) {
   uint32_t bits = 0;
@@ -73,6 +86,13 @@ uint64_t DoubleToRawbits(double value) {
 
 Float16 RawbitsToFloat16(uint16_t bits) {
   Float16 f;
+  f.rawbits_ = bits;
+  return f;
+}
+
+
+BFloat16 RawbitsToBFloat16(uint16_t bits) {
+  BFloat16 f;
   f.rawbits_ = bits;
   return f;
 }
@@ -550,6 +570,78 @@ Float16 FPToFloat16(double value,
 
   VIXL_UNREACHABLE();
   return kFP16PositiveZero;
+}
+
+BFloat16 FPToBFloat16(float value,
+                      FPRounding round_mode,
+                      UseDefaultNaN DN,
+                      bool* exception) {
+  // Only the FPTieEven rounding mode is implemented.
+  VIXL_ASSERT(round_mode == FPTieEven);
+  USE(round_mode);
+
+  uint32_t raw = FloatToRawbits(value);
+  int32_t sign = raw >> 31;
+  int32_t exponent =
+      static_cast<int32_t>(ExtractUnsignedBitfield32(30, 23, raw)) - 127;
+  uint32_t mantissa = ExtractUnsignedBitfield32(22, 0, raw);
+
+  switch (std::fpclassify(value)) {
+    case FP_NAN: {
+      if (IsSignallingNaN(value)) {
+        if (exception != NULL) {
+          *exception = true;
+        }
+      }
+      if (DN == kUseDefaultNaN) return kBFP16DefaultNaN;
+
+      // Convert NaNs as the processor would:
+      //  - The sign is propagated.
+      //  - The payload (mantissa) is transferred as much as possible, except
+      //    that the top bit is forced to '1', making the result a quiet NaN.
+      uint16_t result = (sign == 0) ? BFloat16ToRawbits(kBFP16PositiveInfinity)
+                                    : BFloat16ToRawbits(kBFP16NegativeInfinity);
+      result |= mantissa >> (kFloatMantissaBits - kBFloat16MantissaBits);
+      result |= (1 << 6);  // Force a quiet NaN;
+      return RawbitsToBFloat16(result);
+    }
+
+    case FP_ZERO:
+      return (sign == 0) ? kBFP16PositiveZero : kBFP16NegativeZero;
+
+    case FP_INFINITE:
+      return (sign == 0) ? kBFP16PositiveInfinity : kBFP16NegativeInfinity;
+
+    case FP_NORMAL:
+      // Add the implicit '1' bit to the mantissa.
+      mantissa += (1 << 23);
+      break;
+
+    case FP_SUBNORMAL:
+      // Reduce exponent to account for MSB of mantissa.
+      int32_t leading_mantissa_bits =
+          CountLeadingZeros(mantissa) - (32 - kFloatMantissaBits);
+      exponent -= leading_mantissa_bits;
+      break;
+  }
+
+  // Convert float-to-half as the processor would, assuming that FPCR.FZ
+  // (flush-to-zero) is not set.
+  return FPRoundToBFloat16(sign, exponent, mantissa, round_mode);
+}
+
+BFloat16 FPToBFloat16(double value,
+                      FPRounding round_mode,
+                      UseDefaultNaN DN,
+                      bool* exception) {
+  USE(value);
+  USE(round_mode);
+  USE(DN);
+  USE(exception);
+  // TODO: Implement this for correct conversion of doubles to BFloat (without
+  // implicit NaN silencing.)
+  VIXL_UNIMPLEMENTED();
+  return kBFP16PositiveZero;
 }
 
 }  // namespace vixl

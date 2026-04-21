@@ -373,6 +373,7 @@ class Instruction {
 
   std::pair<int, int> GetSVEPermuteIndexAndLaneSizeLog2() const;
 
+  std::pair<int, int> GetNEONMulRmAndIndex() const;
   std::pair<int, int> GetSVEMulZmAndIndex() const;
   std::pair<int, int> GetSVEMulLongZmAndIndex() const;
 
@@ -855,11 +856,13 @@ class NEONFormatDecoder {
   // Set the format mapping for all or individual substitutions.
   void SetFormatMaps(const NEONFormatMap* format0,
                      const NEONFormatMap* format1 = NULL,
-                     const NEONFormatMap* format2 = NULL) {
+                     const NEONFormatMap* format2 = NULL,
+                     const NEONFormatMap* format3 = NULL) {
     VIXL_ASSERT(format0 != NULL);
     formats_[0] = format0;
     formats_[1] = (format1 == NULL) ? formats_[0] : format1;
     formats_[2] = (format2 == NULL) ? formats_[1] : format2;
+    formats_[3] = (format3 == NULL) ? formats_[2] : format3;
   }
   void SetFormatMap(unsigned index, const NEONFormatMap* format) {
     VIXL_ASSERT(index <= ArrayLength(formats_));
@@ -878,12 +881,15 @@ class NEONFormatDecoder {
   const char* Substitute(const char* string,
                          SubstitutionMode mode0 = kFormat,
                          SubstitutionMode mode1 = kFormat,
-                         SubstitutionMode mode2 = kFormat) {
+                         SubstitutionMode mode2 = kFormat,
+                         SubstitutionMode mode3 = kFormat) {
     const char* subst0 = GetSubstitute(0, mode0);
     const char* subst1 = GetSubstitute(1, mode1);
     const char* subst2 = GetSubstitute(2, mode2);
+    const char* subst3 = GetSubstitute(3, mode3);
 
-    if ((subst0 == NULL) || (subst1 == NULL) || (subst2 == NULL)) {
+    if ((subst0 == NULL) || (subst1 == NULL) || (subst2 == NULL) ||
+        (subst3 == NULL)) {
       return NULL;
     }
 
@@ -892,7 +898,8 @@ class NEONFormatDecoder {
              string,
              subst0,
              subst1,
-             subst2);
+             subst2,
+             subst3);
     return form_buffer_;
   }
 
@@ -1130,7 +1137,7 @@ class NEONFormatDecoder {
   }
 
   Instr instrbits_;
-  const NEONFormatMap* formats_[3];
+  const NEONFormatMap* formats_[4];
   char form_buffer_[64];
   char mne_buffer_[16];
 };

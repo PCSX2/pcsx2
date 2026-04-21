@@ -27,11 +27,6 @@
 #ifndef VIXL_AARCH64_CONSTANTS_AARCH64_H_
 #define VIXL_AARCH64_CONSTANTS_AARCH64_H_
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-enum-enum-conversion"
-#endif
-
 #include "../globals-vixl.h"
 
 namespace vixl {
@@ -502,11 +497,12 @@ class SystemRegisterEncoder {
 // System/special register names.
 // This information is not encoded as one field but as the concatenation of
 // multiple fields (Op0, Op1, Crn, Crm, Op2).
-enum SystemRegister : uint32_t {
+enum SystemRegister {
   NZCV = SystemRegisterEncoder<3, 3, 4, 2, 0>::value,
   FPCR = SystemRegisterEncoder<3, 3, 4, 4, 0>::value,
   RNDR = SystemRegisterEncoder<3, 3, 2, 4, 0>::value,    // Random number.
-  RNDRRS = SystemRegisterEncoder<3, 3, 2, 4, 1>::value   // Reseeded random number.
+  RNDRRS = SystemRegisterEncoder<3, 3, 2, 4, 1>::value,  // Reseeded random number.
+  DCZID_EL0 = SystemRegisterEncoder<3, 3, 0, 0, 7>::value
 };
 
 template<int op1, int crn, int crm, int op2>
@@ -519,11 +515,11 @@ class CacheOpEncoder {
        (op2 << SysOp2_offset)) >> SysOp_offset;
 };
 
-enum InstructionCacheOp : uint32_t {
+enum InstructionCacheOp {
   IVAU = CacheOpEncoder<3, 7, 5, 1>::value
 };
 
-enum DataCacheOp : uint32_t {
+enum DataCacheOp {
   CVAC = CacheOpEncoder<3, 7, 10, 1>::value,
   CVAU = CacheOpEncoder<3, 7, 11, 1>::value,
   CVAP = CacheOpEncoder<3, 7, 12, 1>::value,
@@ -540,7 +536,7 @@ enum DataCacheOp : uint32_t {
   CIGDVAC = CacheOpEncoder<3, 7, 14, 5>::value
 };
 
-enum GCSOp : uint32_t {
+enum GCSOp {
   GCSPUSHM = CacheOpEncoder<3, 7, 7, 0>::value,
   GCSPOPM = CacheOpEncoder<3, 7, 7, 1>::value,
   GCSSS1 = CacheOpEncoder<3, 7, 7, 2>::value,
@@ -598,7 +594,7 @@ enum SVEPredicateConstraint {
 
 
 // Generic fields.
-enum GenericInstrField : uint32_t {
+enum GenericInstrField {
   SixtyFourBits        = 0x80000000,
   ThirtyTwoBits        = 0x00000000,
 
@@ -608,7 +604,7 @@ enum GenericInstrField : uint32_t {
   FP64                 = 0x00400000
 };
 
-enum NEONFormatField : uint32_t {
+enum NEONFormatField {
   NEONFormatFieldMask   = 0x40C00000,
   NEON_Q                = 0x40000000,
   NEON_8B               = 0x00000000,
@@ -621,7 +617,7 @@ enum NEONFormatField : uint32_t {
   NEON_2D               = 0x00C00000 | NEON_Q
 };
 
-enum NEONFPFormatField : uint32_t {
+enum NEONFPFormatField {
   NEONFPFormatFieldMask = 0x40400000,
   NEON_FP_4H            = FP16,
   NEON_FP_2S            = FP32,
@@ -630,7 +626,7 @@ enum NEONFPFormatField : uint32_t {
   NEON_FP_2D            = FP64 | NEON_Q
 };
 
-enum NEONLSFormatField : uint32_t {
+enum NEONLSFormatField {
   NEONLSFormatFieldMask = 0x40000C00,
   LS_NEON_8B            = 0x00000000,
   LS_NEON_16B           = LS_NEON_8B | NEON_Q,
@@ -642,7 +638,7 @@ enum NEONLSFormatField : uint32_t {
   LS_NEON_2D            = LS_NEON_1D | NEON_Q
 };
 
-enum NEONScalarFormatField : uint32_t {
+enum NEONScalarFormatField {
   NEONScalarFormatFieldMask = 0x00C00000,
   NEONScalar                = 0x10000000,
   NEON_B                    = 0x00000000,
@@ -651,7 +647,7 @@ enum NEONScalarFormatField : uint32_t {
   NEON_D                    = 0x00C00000
 };
 
-enum SVESizeField : uint32_t {
+enum SVESizeField {
   SVESizeFieldMask = 0x00C00000,
   SVE_B            = 0x00000000,
   SVE_H            = 0x00400000,
@@ -660,7 +656,7 @@ enum SVESizeField : uint32_t {
 };
 
 // PC relative addressing.
-enum PCRelAddressingOp : uint32_t {
+enum PCRelAddressingOp {
   PCRelAddressingFixed = 0x10000000,
   PCRelAddressingFMask = 0x1F000000,
   PCRelAddressingMask  = 0x9F000000,
@@ -670,7 +666,7 @@ enum PCRelAddressingOp : uint32_t {
 
 // Add/sub (immediate, shifted and extended.)
 const int kSFOffset = 31;
-enum AddSubOp : uint32_t {
+enum AddSubOp {
   AddSubOpMask      = 0x60000000,
   AddSubSetFlagsBit = 0x20000000,
   ADD               = 0x00000000,
@@ -685,7 +681,7 @@ enum AddSubOp : uint32_t {
   V(SUB),                   \
   V(SUBS)
 
-enum AddSubImmediateOp : uint32_t {
+enum AddSubImmediateOp {
   AddSubImmediateFixed = 0x11000000,
   AddSubImmediateFMask = 0x1F800000,
   AddSubImmediateMask  = 0xFF800000,
@@ -696,7 +692,7 @@ enum AddSubImmediateOp : uint32_t {
   #undef ADD_SUB_IMMEDIATE
 };
 
-enum AddSubShiftedOp : uint32_t  {
+enum AddSubShiftedOp {
   AddSubShiftedFixed   = 0x0B000000,
   AddSubShiftedFMask   = 0x1F200000,
   AddSubShiftedMask    = 0xFF200000,
@@ -707,7 +703,7 @@ enum AddSubShiftedOp : uint32_t  {
   #undef ADD_SUB_SHIFTED
 };
 
-enum AddSubExtendedOp : uint32_t {
+enum AddSubExtendedOp {
   AddSubExtendedFixed  = 0x0B200000,
   AddSubExtendedFMask  = 0x1F200000,
   AddSubExtendedMask   = 0xFFE00000,
@@ -719,7 +715,7 @@ enum AddSubExtendedOp : uint32_t {
 };
 
 // Add/sub with carry.
-enum AddSubWithCarryOp : uint32_t {
+enum AddSubWithCarryOp {
   AddSubWithCarryFixed = 0x1A000000,
   AddSubWithCarryFMask = 0x1FE00000,
   AddSubWithCarryMask  = 0xFFE0FC00,
@@ -736,7 +732,7 @@ enum AddSubWithCarryOp : uint32_t {
 };
 
 // Rotate right into flags.
-enum RotateRightIntoFlagsOp : uint32_t {
+enum RotateRightIntoFlagsOp {
   RotateRightIntoFlagsFixed = 0x1A000400,
   RotateRightIntoFlagsFMask = 0x1FE07C00,
   RotateRightIntoFlagsMask  = 0xFFE07C10,
@@ -744,7 +740,7 @@ enum RotateRightIntoFlagsOp : uint32_t {
 };
 
 // Evaluate into flags.
-enum EvaluateIntoFlagsOp : uint32_t {
+enum EvaluateIntoFlagsOp {
   EvaluateIntoFlagsFixed = 0x1A000800,
   EvaluateIntoFlagsFMask = 0x1FE03C00,
   EvaluateIntoFlagsMask  = 0xFFE07C1F,
@@ -754,7 +750,7 @@ enum EvaluateIntoFlagsOp : uint32_t {
 
 
 // Logical (immediate and shifted register).
-enum LogicalOp : uint32_t {
+enum LogicalOp {
   LogicalOpMask = 0x60200000,
   NOT   = 0x00200000,
   AND   = 0x00000000,
@@ -768,7 +764,7 @@ enum LogicalOp : uint32_t {
 };
 
 // Logical immediate.
-enum LogicalImmediateOp : uint32_t {
+enum LogicalImmediateOp {
   LogicalImmediateFixed = 0x12000000,
   LogicalImmediateFMask = 0x1F800000,
   LogicalImmediateMask  = 0xFF800000,
@@ -783,7 +779,7 @@ enum LogicalImmediateOp : uint32_t {
 };
 
 // Logical shifted register.
-enum LogicalShiftedOp : uint32_t {
+enum LogicalShiftedOp {
   LogicalShiftedFixed = 0x0A000000,
   LogicalShiftedFMask = 0x1F000000,
   LogicalShiftedMask  = 0xFF200000,
@@ -814,7 +810,7 @@ enum LogicalShiftedOp : uint32_t {
 };
 
 // Move wide immediate.
-enum MoveWideImmediateOp : uint32_t {
+enum MoveWideImmediateOp {
   MoveWideImmediateFixed = 0x12800000,
   MoveWideImmediateFMask = 0x1F800000,
   MoveWideImmediateMask  = 0xFF800000,
@@ -831,7 +827,7 @@ enum MoveWideImmediateOp : uint32_t {
 
 // Bitfield.
 const int kBitfieldNOffset = 22;
-enum BitfieldOp : uint32_t {
+enum BitfieldOp {
   BitfieldFixed = 0x13000000,
   BitfieldFMask = 0x1F800000,
   BitfieldMask  = 0xFF800000,
@@ -848,7 +844,7 @@ enum BitfieldOp : uint32_t {
 };
 
 // Extract.
-enum ExtractOp : uint32_t {
+enum ExtractOp {
   ExtractFixed = 0x13800000,
   ExtractFMask = 0x1F800000,
   ExtractMask  = 0xFFA00000,
@@ -858,7 +854,7 @@ enum ExtractOp : uint32_t {
 };
 
 // Unconditional branch.
-enum UnconditionalBranchOp : uint32_t {
+enum UnconditionalBranchOp {
   UnconditionalBranchFixed = 0x14000000,
   UnconditionalBranchFMask = 0x7C000000,
   UnconditionalBranchMask  = 0xFC000000,
@@ -867,7 +863,7 @@ enum UnconditionalBranchOp : uint32_t {
 };
 
 // Unconditional branch to register.
-enum UnconditionalBranchToRegisterOp : uint32_t {
+enum UnconditionalBranchToRegisterOp {
   UnconditionalBranchToRegisterFixed = 0xD6000000,
   UnconditionalBranchToRegisterFMask = 0xFE000000,
   UnconditionalBranchToRegisterMask  = 0xFFFFFC00,
@@ -888,7 +884,7 @@ enum UnconditionalBranchToRegisterOp : uint32_t {
 };
 
 // Compare and branch.
-enum CompareBranchOp : uint32_t {
+enum CompareBranchOp {
   CompareBranchFixed = 0x34000000,
   CompareBranchFMask = 0x7E000000,
   CompareBranchMask  = 0xFF000000,
@@ -901,7 +897,7 @@ enum CompareBranchOp : uint32_t {
 };
 
 // Test and branch.
-enum TestBranchOp : uint32_t {
+enum TestBranchOp {
   TestBranchFixed = 0x36000000,
   TestBranchFMask = 0x7E000000,
   TestBranchMask  = 0x7F000000,
@@ -910,7 +906,7 @@ enum TestBranchOp : uint32_t {
 };
 
 // Conditional branch.
-enum ConditionalBranchOp : uint32_t {
+enum ConditionalBranchOp {
   ConditionalBranchFixed = 0x54000000,
   ConditionalBranchFMask = 0xFE000000,
   ConditionalBranchMask  = 0xFF000010,
@@ -922,12 +918,12 @@ enum ConditionalBranchOp : uint32_t {
 // and CR fields to encode parameters. To handle this cleanly, the system
 // instructions are split into more than one enum.
 
-enum SystemOp : uint32_t {
+enum SystemOp {
   SystemFixed = 0xD5000000,
   SystemFMask = 0xFFC00000
 };
 
-enum SystemSysRegOp : uint32_t {
+enum SystemSysRegOp {
   SystemSysRegFixed = 0xD5100000,
   SystemSysRegFMask = 0xFFD00000,
   SystemSysRegMask  = 0xFFF00000,
@@ -935,7 +931,7 @@ enum SystemSysRegOp : uint32_t {
   MSR               = SystemSysRegFixed | 0x00000000
 };
 
-enum SystemPStateOp : uint32_t {
+enum SystemPStateOp {
   SystemPStateFixed = 0xD5004000,
   SystemPStateFMask = 0xFFF8F000,
   SystemPStateMask  = 0xFFFFF0FF,
@@ -944,14 +940,14 @@ enum SystemPStateOp : uint32_t {
   AXFLAG            = SystemPStateFixed | 0x0000005F
 };
 
-enum SystemHintOp : uint32_t {
+enum SystemHintOp {
   SystemHintFixed = 0xD503201F,
   SystemHintFMask = 0xFFFFF01F,
   SystemHintMask  = 0xFFFFF01F,
   HINT            = SystemHintFixed | 0x00000000
 };
 
-enum SystemSysOp : uint32_t {
+enum SystemSysOp {
   SystemSysFixed  = 0xD5080000,
   SystemSysFMask  = 0xFFF80000,
   SystemSysMask   = 0xFFF80000,
@@ -960,7 +956,7 @@ enum SystemSysOp : uint32_t {
 };
 
 // Exception.
-enum ExceptionOp : uint32_t {
+enum ExceptionOp {
   ExceptionFixed = 0xD4000000,
   ExceptionFMask = 0xFF000000,
   ExceptionMask  = 0xFFE0001F,
@@ -974,7 +970,7 @@ enum ExceptionOp : uint32_t {
   DCPS3          = ExceptionFixed | 0x00A00003
 };
 
-enum MemBarrierOp : uint32_t {
+enum MemBarrierOp {
   MemBarrierFixed = 0xD503309F,
   MemBarrierFMask = 0xFFFFF09F,
   MemBarrierMask  = 0xFFFFF0FF,
@@ -983,14 +979,14 @@ enum MemBarrierOp : uint32_t {
   ISB             = MemBarrierFixed | 0x00000040
 };
 
-enum SystemExclusiveMonitorOp : uint32_t {
+enum SystemExclusiveMonitorOp {
   SystemExclusiveMonitorFixed = 0xD503305F,
   SystemExclusiveMonitorFMask = 0xFFFFF0FF,
   SystemExclusiveMonitorMask  = 0xFFFFF0FF,
   CLREX                       = SystemExclusiveMonitorFixed
 };
 
-enum SystemPAuthOp : uint32_t {
+enum SystemPAuthOp {
   SystemPAuthFixed = 0xD503211F,
   SystemPAuthFMask = 0xFFFFFD1F,
   SystemPAuthMask  = 0xFFFFFFFF,
@@ -1013,13 +1009,13 @@ enum SystemPAuthOp : uint32_t {
 };
 
 // Any load or store.
-enum LoadStoreAnyOp : uint32_t {
+enum LoadStoreAnyOp {
   LoadStoreAnyFMask = 0x0a000000,
   LoadStoreAnyFixed = 0x08000000
 };
 
 // Any load pair or store pair.
-enum LoadStorePairAnyOp : uint32_t {
+enum LoadStorePairAnyOp {
   LoadStorePairAnyFMask = 0x3a000000,
   LoadStorePairAnyFixed = 0x28000000
 };
@@ -1038,7 +1034,7 @@ enum LoadStorePairAnyOp : uint32_t {
   V(LDP, q,   0x84400000)
 
 // Load/store pair (post, pre and offset.)
-enum LoadStorePairOp : uint32_t {
+enum LoadStorePairOp {
   LoadStorePairMask = 0xC4400000,
   LoadStorePairLBit = 1 << 22,
   #define LOAD_STORE_PAIR(A, B, C) \
@@ -1047,7 +1043,7 @@ enum LoadStorePairOp : uint32_t {
   #undef LOAD_STORE_PAIR
 };
 
-enum LoadStorePairPostIndexOp : uint32_t {
+enum LoadStorePairPostIndexOp {
   LoadStorePairPostIndexFixed = 0x28800000,
   LoadStorePairPostIndexFMask = 0x3B800000,
   LoadStorePairPostIndexMask  = 0xFFC00000,
@@ -1057,7 +1053,7 @@ enum LoadStorePairPostIndexOp : uint32_t {
   #undef LOAD_STORE_PAIR_POST_INDEX
 };
 
-enum LoadStorePairPreIndexOp : uint32_t {
+enum LoadStorePairPreIndexOp {
   LoadStorePairPreIndexFixed = 0x29800000,
   LoadStorePairPreIndexFMask = 0x3B800000,
   LoadStorePairPreIndexMask  = 0xFFC00000,
@@ -1067,7 +1063,7 @@ enum LoadStorePairPreIndexOp : uint32_t {
   #undef LOAD_STORE_PAIR_PRE_INDEX
 };
 
-enum LoadStorePairOffsetOp : uint32_t {
+enum LoadStorePairOffsetOp {
   LoadStorePairOffsetFixed = 0x29000000,
   LoadStorePairOffsetFMask = 0x3B800000,
   LoadStorePairOffsetMask  = 0xFFC00000,
@@ -1077,7 +1073,7 @@ enum LoadStorePairOffsetOp : uint32_t {
   #undef LOAD_STORE_PAIR_OFFSET
 };
 
-enum LoadStorePairNonTemporalOp : uint32_t {
+enum LoadStorePairNonTemporalOp {
   LoadStorePairNonTemporalFixed = 0x28000000,
   LoadStorePairNonTemporalFMask = 0x3B800000,
   LoadStorePairNonTemporalMask  = 0xFFC00000,
@@ -1095,7 +1091,7 @@ enum LoadStorePairNonTemporalOp : uint32_t {
 };
 
 // Load with pointer authentication.
-enum LoadStorePACOp : uint32_t {
+enum LoadStorePACOp {
   LoadStorePACFixed  = 0xF8200400,
   LoadStorePACFMask  = 0xFF200400,
   LoadStorePACMask   = 0xFFA00C00,
@@ -1107,7 +1103,7 @@ enum LoadStorePACOp : uint32_t {
 };
 
 // Load literal.
-enum LoadLiteralOp : uint32_t {
+enum LoadLiteralOp {
   LoadLiteralFixed = 0x18000000,
   LoadLiteralFMask = 0x3B000000,
   LoadLiteralMask  = 0xFF000000,
@@ -1146,7 +1142,7 @@ enum LoadLiteralOp : uint32_t {
   V(LD, R, q,   0x04C00000)
 
 // Load/store (post, pre, offset and unsigned.)
-enum LoadStoreOp : uint32_t {
+enum LoadStoreOp {
   LoadStoreMask = 0xC4C00000,
   LoadStoreVMask = 0x04000000,
   #define LOAD_STORE(A, B, C, D)  \
@@ -1157,7 +1153,7 @@ enum LoadStoreOp : uint32_t {
 };
 
 // Load/store unscaled offset.
-enum LoadStoreUnscaledOffsetOp : uint32_t {
+enum LoadStoreUnscaledOffsetOp {
   LoadStoreUnscaledOffsetFixed = 0x38000000,
   LoadStoreUnscaledOffsetFMask = 0x3B200C00,
   LoadStoreUnscaledOffsetMask  = 0xFFE00C00,
@@ -1169,7 +1165,7 @@ enum LoadStoreUnscaledOffsetOp : uint32_t {
 };
 
 // Load/store post index.
-enum LoadStorePostIndex : uint32_t {
+enum LoadStorePostIndex {
   LoadStorePostIndexFixed = 0x38000400,
   LoadStorePostIndexFMask = 0x3B200C00,
   LoadStorePostIndexMask  = 0xFFE00C00,
@@ -1180,7 +1176,7 @@ enum LoadStorePostIndex : uint32_t {
 };
 
 // Load/store pre index.
-enum LoadStorePreIndex : uint32_t {
+enum LoadStorePreIndex {
   LoadStorePreIndexFixed = 0x38000C00,
   LoadStorePreIndexFMask = 0x3B200C00,
   LoadStorePreIndexMask  = 0xFFE00C00,
@@ -1191,7 +1187,7 @@ enum LoadStorePreIndex : uint32_t {
 };
 
 // Load/store unsigned offset.
-enum LoadStoreUnsignedOffset : uint32_t {
+enum LoadStoreUnsignedOffset {
   LoadStoreUnsignedOffsetFixed = 0x39000000,
   LoadStoreUnsignedOffsetFMask = 0x3B000000,
   LoadStoreUnsignedOffsetMask  = 0xFFC00000,
@@ -1203,7 +1199,7 @@ enum LoadStoreUnsignedOffset : uint32_t {
 };
 
 // Load/store register offset.
-enum LoadStoreRegisterOffset : uint32_t {
+enum LoadStoreRegisterOffset {
   LoadStoreRegisterOffsetFixed = 0x38200800,
   LoadStoreRegisterOffsetFMask = 0x3B200C00,
   LoadStoreRegisterOffsetMask  = 0xFFE00C00,
@@ -1214,7 +1210,7 @@ enum LoadStoreRegisterOffset : uint32_t {
   #undef LOAD_STORE_REGISTER_OFFSET
 };
 
-enum LoadStoreExclusive : uint32_t {
+enum LoadStoreExclusive {
   LoadStoreExclusiveFixed = 0x08000000,
   LoadStoreExclusiveFMask = 0x3F000000,
   LoadStoreExclusiveMask  = 0xFFE08000,
@@ -1296,7 +1292,7 @@ enum LoadStoreExclusive : uint32_t {
 };
 
 // Load/store RCpc unscaled offset.
-enum LoadStoreRCpcUnscaledOffsetOp : uint32_t {
+enum LoadStoreRCpcUnscaledOffsetOp {
   LoadStoreRCpcUnscaledOffsetFixed = 0x19000000,
   LoadStoreRCpcUnscaledOffsetFMask = 0x3F200C00,
   LoadStoreRCpcUnscaledOffsetMask  = 0xFFE00C00,
@@ -1326,7 +1322,7 @@ enum LoadStoreRCpcUnscaledOffsetOp : uint32_t {
   V(LDUMIN, 0x00007000)
 
 // Atomic memory.
-enum AtomicMemoryOp : uint32_t {
+enum AtomicMemoryOp {
   AtomicMemoryFixed = 0x38200000,
   AtomicMemoryFMask = 0x3B200C00,
   AtomicMemoryMask = 0xFFE0FC00,
@@ -1377,14 +1373,14 @@ enum AtomicMemoryOp : uint32_t {
 };
 
 // Conditional compare.
-enum ConditionalCompareOp : uint32_t {
+enum ConditionalCompareOp {
   ConditionalCompareMask = 0x60000000,
   CCMN                   = 0x20000000,
   CCMP                   = 0x60000000
 };
 
 // Conditional compare register.
-enum ConditionalCompareRegisterOp : uint32_t {
+enum ConditionalCompareRegisterOp {
   ConditionalCompareRegisterFixed = 0x1A400000,
   ConditionalCompareRegisterFMask = 0x1FE00800,
   ConditionalCompareRegisterMask  = 0xFFE00C10,
@@ -1395,7 +1391,7 @@ enum ConditionalCompareRegisterOp : uint32_t {
 };
 
 // Conditional compare immediate.
-enum ConditionalCompareImmediateOp : uint32_t {
+enum ConditionalCompareImmediateOp {
   ConditionalCompareImmediateFixed = 0x1A400800,
   ConditionalCompareImmediateFMask = 0x1FE00800,
   ConditionalCompareImmediateMask  = 0xFFE00C10,
@@ -1406,7 +1402,7 @@ enum ConditionalCompareImmediateOp : uint32_t {
 };
 
 // Conditional select.
-enum ConditionalSelectOp : uint32_t {
+enum ConditionalSelectOp {
   ConditionalSelectFixed = 0x1A800000,
   ConditionalSelectFMask = 0x1FE00000,
   ConditionalSelectMask  = 0xFFE00C00,
@@ -1425,7 +1421,7 @@ enum ConditionalSelectOp : uint32_t {
 };
 
 // Data processing 1 source.
-enum DataProcessing1SourceOp : uint32_t {
+enum DataProcessing1SourceOp {
   DataProcessing1SourceFixed = 0x5AC00000,
   DataProcessing1SourceFMask = 0x5FE00000,
   DataProcessing1SourceMask  = 0xFFFFFC00,
@@ -1468,7 +1464,7 @@ enum DataProcessing1SourceOp : uint32_t {
 };
 
 // Data processing 2 source.
-enum DataProcessing2SourceOp : uint32_t {
+enum DataProcessing2SourceOp {
   DataProcessing2SourceFixed = 0x1AC00000,
   DataProcessing2SourceFMask = 0x5FE00000,
   DataProcessing2SourceMask  = 0xFFE0FC00,
@@ -1502,7 +1498,7 @@ enum DataProcessing2SourceOp : uint32_t {
 };
 
 // Data processing 3 source.
-enum DataProcessing3SourceOp : uint32_t {
+enum DataProcessing3SourceOp {
   DataProcessing3SourceFixed = 0x1B000000,
   DataProcessing3SourceFMask = 0x1F000000,
   DataProcessing3SourceMask  = 0xFFE08000,
@@ -1521,7 +1517,7 @@ enum DataProcessing3SourceOp : uint32_t {
 };
 
 // Floating point compare.
-enum FPCompareOp : uint32_t {
+enum FPCompareOp {
   FPCompareFixed = 0x1E202000,
   FPCompareFMask = 0x5F203C00,
   FPCompareMask  = 0xFFE0FC1F,
@@ -1544,7 +1540,7 @@ enum FPCompareOp : uint32_t {
 };
 
 // Floating point conditional compare.
-enum FPConditionalCompareOp : uint32_t {
+enum FPConditionalCompareOp {
   FPConditionalCompareFixed = 0x1E200400,
   FPConditionalCompareFMask = 0x5F200C00,
   FPConditionalCompareMask  = 0xFFE00C10,
@@ -1559,7 +1555,7 @@ enum FPConditionalCompareOp : uint32_t {
 };
 
 // Floating point conditional select.
-enum FPConditionalSelectOp : uint32_t {
+enum FPConditionalSelectOp {
   FPConditionalSelectFixed = 0x1E200C00,
   FPConditionalSelectFMask = 0x5F200C00,
   FPConditionalSelectMask  = 0xFFE00C00,
@@ -1570,7 +1566,7 @@ enum FPConditionalSelectOp : uint32_t {
 };
 
 // Floating point immediate.
-enum FPImmediateOp : uint32_t {
+enum FPImmediateOp {
   FPImmediateFixed = 0x1E201000,
   FPImmediateFMask = 0x5F201C00,
   FPImmediateMask  = 0xFFE01C00,
@@ -1580,7 +1576,7 @@ enum FPImmediateOp : uint32_t {
 };
 
 // Floating point data processing 1 source.
-enum FPDataProcessing1SourceOp : uint32_t {
+enum FPDataProcessing1SourceOp {
   FPDataProcessing1SourceFixed = 0x1E204000,
   FPDataProcessing1SourceFMask = 0x5F207C00,
   FPDataProcessing1SourceMask  = 0xFFFFFC00,
@@ -1649,7 +1645,7 @@ enum FPDataProcessing1SourceOp : uint32_t {
 };
 
 // Floating point data processing 2 source.
-enum FPDataProcessing2SourceOp : uint32_t {
+enum FPDataProcessing2SourceOp {
   FPDataProcessing2SourceFixed = 0x1E200800,
   FPDataProcessing2SourceFMask = 0x5F200C00,
   FPDataProcessing2SourceMask  = 0xFFE0FC00,
@@ -1692,7 +1688,7 @@ enum FPDataProcessing2SourceOp : uint32_t {
 };
 
 // Floating point data processing 3 source.
-enum FPDataProcessing3SourceOp : uint32_t {
+enum FPDataProcessing3SourceOp {
   FPDataProcessing3SourceFixed = 0x1F000000,
   FPDataProcessing3SourceFMask = 0x5F000000,
   FPDataProcessing3SourceMask  = 0xFFE08000,
@@ -1711,7 +1707,7 @@ enum FPDataProcessing3SourceOp : uint32_t {
 };
 
 // Conversion between floating point and integer.
-enum FPIntegerConvertOp : uint32_t {
+enum FPIntegerConvertOp {
   FPIntegerConvertFixed = 0x1E200000,
   FPIntegerConvertFMask = 0x5F20FC00,
   FPIntegerConvertMask  = 0xFFFFFC00,
@@ -1813,7 +1809,7 @@ enum FPIntegerConvertOp : uint32_t {
 };
 
 // Conversion between fixed point and floating point.
-enum FPFixedPointConvertOp : uint32_t {
+enum FPFixedPointConvertOp {
   FPFixedPointConvertFixed = 0x1E000000,
   FPFixedPointConvertFMask = 0x5F200000,
   FPFixedPointConvertMask  = 0xFFFF0000,
@@ -1848,25 +1844,25 @@ enum FPFixedPointConvertOp : uint32_t {
 };
 
 // Crypto - two register SHA.
-enum Crypto2RegSHAOp : uint32_t {
+enum Crypto2RegSHAOp {
   Crypto2RegSHAFixed = 0x5E280800,
   Crypto2RegSHAFMask = 0xFF3E0C00
 };
 
 // Crypto - three register SHA.
-enum Crypto3RegSHAOp : uint32_t {
+enum Crypto3RegSHAOp {
   Crypto3RegSHAFixed = 0x5E000000,
   Crypto3RegSHAFMask = 0xFF208C00
 };
 
 // Crypto - AES.
-enum CryptoAESOp : uint32_t {
+enum CryptoAESOp {
   CryptoAESFixed = 0x4E280800,
   CryptoAESFMask = 0xFF3E0C00
 };
 
 // NEON instructions with two register operands.
-enum NEON2RegMiscOp : uint32_t {
+enum NEON2RegMiscOp {
   NEON2RegMiscFixed = 0x0E200800,
   NEON2RegMiscFMask = 0x9F3E0C00,
   NEON2RegMiscMask  = 0xBF3FFC00,
@@ -1952,7 +1948,7 @@ enum NEON2RegMiscOp : uint32_t {
 };
 
 // NEON instructions with two register operands (FP16).
-enum NEON2RegMiscFP16Op : uint32_t {
+enum NEON2RegMiscFP16Op {
   NEON2RegMiscFP16Fixed = 0x0E780800,
   NEON2RegMiscFP16FMask = 0x9F7E0C00,
   NEON2RegMiscFP16Mask  = 0xBFFFFC00,
@@ -1988,7 +1984,7 @@ enum NEON2RegMiscFP16Op : uint32_t {
 };
 
 // NEON instructions with three same-type operands.
-enum NEON3SameOp : uint32_t {
+enum NEON3SameOp {
   NEON3SameFixed = 0x0E200400,
   NEON3SameFMask = 0x9F200400,
   NEON3SameMask =  0xBF20FC00,
@@ -2091,7 +2087,7 @@ enum NEON3SameOp : uint32_t {
 };
 
 
-enum NEON3SameFP16 : uint32_t {
+enum NEON3SameFP16 {
   NEON3SameFP16Fixed = 0x0E400400,
   NEON3SameFP16FMask = 0x9F60C400,
   NEON3SameFP16Mask =  0xBFE0FC00,
@@ -2123,7 +2119,7 @@ enum NEON3SameFP16 : uint32_t {
 
 
 // 'Extra' NEON instructions with three same-type operands.
-enum NEON3SameExtraOp : uint32_t {
+enum NEON3SameExtraOp {
   NEON3SameExtraFixed = 0x0E008400,
   NEON3SameExtraUBit = 0x20000000,
   NEON3SameExtraFMask = 0x9E208400,
@@ -2146,7 +2142,7 @@ enum NEON3SameExtraOp : uint32_t {
 };
 
 // NEON instructions with three different-type operands.
-enum NEON3DifferentOp : uint32_t {
+enum NEON3DifferentOp {
   NEON3DifferentFixed = 0x0E200000,
   NEON3DifferentFMask = 0x9F200C00,
   NEON3DifferentMask  = 0xFF20FC00,
@@ -2205,7 +2201,7 @@ enum NEON3DifferentOp : uint32_t {
 };
 
 // NEON instructions operating across vectors.
-enum NEONAcrossLanesOp : uint32_t {
+enum NEONAcrossLanesOp {
   NEONAcrossLanesFixed = 0x0E300800,
   NEONAcrossLanesFMask = 0x9F3E0C00,
   NEONAcrossLanesMask  = 0xBF3FFC00,
@@ -2237,7 +2233,7 @@ enum NEONAcrossLanesOp : uint32_t {
 };
 
 // NEON instructions with indexed element operand.
-enum NEONByIndexedElementOp : uint32_t {
+enum NEONByIndexedElementOp {
   NEONByIndexedElementFixed = 0x0F000000,
   NEONByIndexedElementFMask = 0x9F000400,
   NEONByIndexedElementMask  = 0xBF00F400,
@@ -2291,7 +2287,7 @@ enum NEONByIndexedElementOp : uint32_t {
 };
 
 // NEON register copy.
-enum NEONCopyOp : uint32_t {
+enum NEONCopyOp {
   NEONCopyFixed = 0x0E000400,
   NEONCopyFMask = 0x9FE08400,
   NEONCopyMask  = 0x3FE08400,
@@ -2310,14 +2306,14 @@ enum NEONCopyOp : uint32_t {
 };
 
 // NEON extract.
-enum NEONExtractOp : uint32_t {
+enum NEONExtractOp {
   NEONExtractFixed = 0x2E000000,
   NEONExtractFMask = 0xBF208400,
   NEONExtractMask =  0xBFE08400,
   NEON_EXT = NEONExtractFixed | 0x00000000
 };
 
-enum NEONLoadStoreMultiOp : uint32_t {
+enum NEONLoadStoreMultiOp {
   NEONLoadStoreMultiL    = 0x00400000,
   NEONLoadStoreMulti1_1v = 0x00007000,
   NEONLoadStoreMulti1_2v = 0x0000A000,
@@ -2329,7 +2325,7 @@ enum NEONLoadStoreMultiOp : uint32_t {
 };
 
 // NEON load/store multiple structures.
-enum NEONLoadStoreMultiStructOp : uint32_t {
+enum NEONLoadStoreMultiStructOp {
   NEONLoadStoreMultiStructFixed = 0x0C000000,
   NEONLoadStoreMultiStructFMask = 0xBFBF0000,
   NEONLoadStoreMultiStructMask  = 0xBFFFF000,
@@ -2353,7 +2349,7 @@ enum NEONLoadStoreMultiStructOp : uint32_t {
 };
 
 // NEON load/store multiple structures with post-index addressing.
-enum NEONLoadStoreMultiStructPostIndexOp : uint32_t {
+enum NEONLoadStoreMultiStructPostIndexOp {
   NEONLoadStoreMultiStructPostIndexFixed = 0x0C800000,
   NEONLoadStoreMultiStructPostIndexFMask = 0xBFA00000,
   NEONLoadStoreMultiStructPostIndexMask  = 0xBFE0F000,
@@ -2374,7 +2370,7 @@ enum NEONLoadStoreMultiStructPostIndexOp : uint32_t {
   NEON_ST4_post = NEON_ST4 | NEONLoadStoreMultiStructPostIndex
 };
 
-enum NEONLoadStoreSingleOp : uint32_t {
+enum NEONLoadStoreSingleOp {
   NEONLoadStoreSingle1        = 0x00000000,
   NEONLoadStoreSingle2        = 0x00200000,
   NEONLoadStoreSingle3        = 0x00002000,
@@ -2389,7 +2385,7 @@ enum NEONLoadStoreSingleOp : uint32_t {
 };
 
 // NEON load/store single structure.
-enum NEONLoadStoreSingleStructOp : uint32_t {
+enum NEONLoadStoreSingleStructOp {
   NEONLoadStoreSingleStructFixed = 0x0D000000,
   NEONLoadStoreSingleStructFMask = 0xBF9F0000,
   NEONLoadStoreSingleStructMask  = 0xBFFFE000,
@@ -2454,7 +2450,7 @@ enum NEONLoadStoreSingleStructOp : uint32_t {
 };
 
 // NEON load/store single structure with post-index addressing.
-enum NEONLoadStoreSingleStructPostIndexOp : uint32_t {
+enum NEONLoadStoreSingleStructPostIndexOp {
   NEONLoadStoreSingleStructPostIndexFixed = 0x0D800000,
   NEONLoadStoreSingleStructPostIndexFMask = 0xBF800000,
   NEONLoadStoreSingleStructPostIndexMask  = 0xBFE0E000,
@@ -2501,7 +2497,7 @@ enum NEONLoadStoreSingleStructPostIndexOp : uint32_t {
 };
 
 // NEON modified immediate.
-enum NEONModifiedImmediateOp : uint32_t {
+enum NEONModifiedImmediateOp {
   NEONModifiedImmediateFixed = 0x0F000400,
   NEONModifiedImmediateFMask = 0x9FF80400,
   NEONModifiedImmediateOpBit = 0x20000000,
@@ -2513,7 +2509,7 @@ enum NEONModifiedImmediateOp : uint32_t {
 };
 
 // NEON shift immediate.
-enum NEONShiftImmediateOp : uint32_t {
+enum NEONShiftImmediateOp {
   NEONShiftImmediateFixed = 0x0F000400,
   NEONShiftImmediateFMask = 0x9F800400,
   NEONShiftImmediateMask  = 0xBF80FC00,
@@ -2549,7 +2545,7 @@ enum NEONShiftImmediateOp : uint32_t {
 };
 
 // NEON table.
-enum NEONTableOp : uint32_t {
+enum NEONTableOp {
   NEONTableFixed = 0x0E000000,
   NEONTableFMask = 0xBF208C00,
   NEONTableExt   = 0x00001000,
@@ -2565,7 +2561,7 @@ enum NEONTableOp : uint32_t {
 };
 
 // NEON perm.
-enum NEONPermOp : uint32_t {
+enum NEONPermOp {
   NEONPermFixed = 0x0E000800,
   NEONPermFMask = 0xBF208C00,
   NEONPermMask  = 0x3F20FC00,
@@ -2578,7 +2574,7 @@ enum NEONPermOp : uint32_t {
 };
 
 // NEON scalar instructions with two register operands.
-enum NEONScalar2RegMiscOp : uint32_t {
+enum NEONScalar2RegMiscOp {
   NEONScalar2RegMiscFixed = 0x5E200800,
   NEONScalar2RegMiscFMask = 0xDF3E0C00,
   NEONScalar2RegMiscMask = NEON_Q | NEONScalar | NEON2RegMiscMask,
@@ -2625,7 +2621,7 @@ enum NEONScalar2RegMiscOp : uint32_t {
 };
 
 // NEON instructions with two register operands (FP16).
-enum NEONScalar2RegMiscFP16Op : uint32_t {
+enum NEONScalar2RegMiscFP16Op {
   NEONScalar2RegMiscFP16Fixed = 0x5E780800,
   NEONScalar2RegMiscFP16FMask = 0xDF7E0C00,
   NEONScalar2RegMiscFP16Mask  = 0xFFFFFC00,
@@ -2652,7 +2648,7 @@ enum NEONScalar2RegMiscFP16Op : uint32_t {
 };
 
 // NEON scalar instructions with three same-type operands.
-enum NEONScalar3SameOp : uint32_t {
+enum NEONScalar3SameOp {
   NEONScalar3SameFixed = 0x5E200400,
   NEONScalar3SameFMask = 0xDF200400,
   NEONScalar3SameMask  = 0xFF20FC00,
@@ -2695,7 +2691,7 @@ enum NEONScalar3SameOp : uint32_t {
 };
 
 // NEON scalar FP16 instructions with three same-type operands.
-enum NEONScalar3SameFP16Op : uint32_t {
+enum NEONScalar3SameFP16Op {
   NEONScalar3SameFP16Fixed = 0x5E400400,
   NEONScalar3SameFP16FMask = 0xDF60C400,
   NEONScalar3SameFP16Mask  = 0xFFE0FC00,
@@ -2711,7 +2707,7 @@ enum NEONScalar3SameFP16Op : uint32_t {
 };
 
 // 'Extra' NEON scalar instructions with three same-type operands.
-enum NEONScalar3SameExtraOp : uint32_t {
+enum NEONScalar3SameExtraOp {
   NEONScalar3SameExtraFixed = 0x5E008400,
   NEONScalar3SameExtraFMask = 0xDF208400,
   NEONScalar3SameExtraMask = 0xFF20FC00,
@@ -2720,7 +2716,7 @@ enum NEONScalar3SameExtraOp : uint32_t {
 };
 
 // NEON scalar instructions with three different-type operands.
-enum NEONScalar3DiffOp : uint32_t {
+enum NEONScalar3DiffOp {
   NEONScalar3DiffFixed = 0x5E200000,
   NEONScalar3DiffFMask = 0xDF200C00,
   NEONScalar3DiffMask  = NEON_Q | NEONScalar | NEON3DifferentMask,
@@ -2730,7 +2726,7 @@ enum NEONScalar3DiffOp : uint32_t {
 };
 
 // NEON scalar instructions with indexed element operand.
-enum NEONScalarByIndexedElementOp : uint32_t {
+enum NEONScalarByIndexedElementOp {
   NEONScalarByIndexedElementFixed = 0x5F000000,
   NEONScalarByIndexedElementFMask = 0xDF000400,
   NEONScalarByIndexedElementMask  = 0xFF00F400,
@@ -2761,7 +2757,7 @@ enum NEONScalarByIndexedElementOp : uint32_t {
 };
 
 // NEON scalar register copy.
-enum NEONScalarCopyOp : uint32_t {
+enum NEONScalarCopyOp {
   NEONScalarCopyFixed = 0x5E000400,
   NEONScalarCopyFMask = 0xDFE08400,
   NEONScalarCopyMask  = 0xFFE0FC00,
@@ -2769,7 +2765,7 @@ enum NEONScalarCopyOp : uint32_t {
 };
 
 // NEON scalar pairwise instructions.
-enum NEONScalarPairwiseOp : uint32_t {
+enum NEONScalarPairwiseOp {
   NEONScalarPairwiseFixed = 0x5E300800,
   NEONScalarPairwiseFMask = 0xDF3E0C00,
   NEONScalarPairwiseMask  = 0xFFB1F800,
@@ -2787,7 +2783,7 @@ enum NEONScalarPairwiseOp : uint32_t {
 };
 
 // NEON scalar shift immediate.
-enum NEONScalarShiftImmediateOp : uint32_t {
+enum NEONScalarShiftImmediateOp {
   NEONScalarShiftImmediateFixed = 0x5F000400,
   NEONScalarShiftImmediateFMask = 0xDF800400,
   NEONScalarShiftImmediateMask  = 0xFF80FC00,
@@ -2817,7 +2813,7 @@ enum NEONScalarShiftImmediateOp : uint32_t {
   NEON_FCVTZU_imm_scalar = NEON_Q | NEONScalar | NEON_FCVTZU_imm
 };
 
-enum SVE32BitGatherLoadHalfwords_ScalarPlus32BitScaledOffsetsOp : uint32_t {
+enum SVE32BitGatherLoadHalfwords_ScalarPlus32BitScaledOffsetsOp {
   SVE32BitGatherLoadHalfwords_ScalarPlus32BitScaledOffsetsFixed = 0x84A00000,
   SVE32BitGatherLoadHalfwords_ScalarPlus32BitScaledOffsetsFMask = 0xFFA08000,
   SVE32BitGatherLoadHalfwords_ScalarPlus32BitScaledOffsetsMask = 0xFFA0E000,
@@ -2827,7 +2823,7 @@ enum SVE32BitGatherLoadHalfwords_ScalarPlus32BitScaledOffsetsOp : uint32_t {
   LDFF1H_z_p_bz_s_x32_scaled = SVE32BitGatherLoadHalfwords_ScalarPlus32BitScaledOffsetsFixed | 0x00006000
 };
 
-enum SVE32BitGatherLoadWords_ScalarPlus32BitScaledOffsetsOp : uint32_t {
+enum SVE32BitGatherLoadWords_ScalarPlus32BitScaledOffsetsOp {
   SVE32BitGatherLoadWords_ScalarPlus32BitScaledOffsetsFixed = 0x85200000,
   SVE32BitGatherLoadWords_ScalarPlus32BitScaledOffsetsFMask = 0xFFA08000,
   SVE32BitGatherLoadWords_ScalarPlus32BitScaledOffsetsMask = 0xFFA0E000,
@@ -2835,7 +2831,7 @@ enum SVE32BitGatherLoadWords_ScalarPlus32BitScaledOffsetsOp : uint32_t {
   LDFF1W_z_p_bz_s_x32_scaled = SVE32BitGatherLoadWords_ScalarPlus32BitScaledOffsetsFixed | 0x00006000
 };
 
-enum SVE32BitGatherLoad_ScalarPlus32BitUnscaledOffsetsOp : uint32_t {
+enum SVE32BitGatherLoad_ScalarPlus32BitUnscaledOffsetsOp {
   SVE32BitGatherLoad_ScalarPlus32BitUnscaledOffsetsFixed = 0x84000000,
   SVE32BitGatherLoad_ScalarPlus32BitUnscaledOffsetsFMask = 0xFE208000,
   SVE32BitGatherLoad_ScalarPlus32BitUnscaledOffsetsMask = 0xFFA0E000,
@@ -2851,7 +2847,7 @@ enum SVE32BitGatherLoad_ScalarPlus32BitUnscaledOffsetsOp : uint32_t {
   LDFF1W_z_p_bz_s_x32_unscaled = SVE32BitGatherLoad_ScalarPlus32BitUnscaledOffsetsFixed | 0x01006000
 };
 
-enum SVE32BitGatherLoad_VectorPlusImmOp : uint32_t {
+enum SVE32BitGatherLoad_VectorPlusImmOp {
   SVE32BitGatherLoad_VectorPlusImmFixed = 0x84208000,
   SVE32BitGatherLoad_VectorPlusImmFMask = 0xFE608000,
   SVE32BitGatherLoad_VectorPlusImmMask = 0xFFE0E000,
@@ -2867,7 +2863,7 @@ enum SVE32BitGatherLoad_VectorPlusImmOp : uint32_t {
   LDFF1W_z_p_ai_s = SVE32BitGatherLoad_VectorPlusImmFixed | 0x01006000
 };
 
-enum SVE32BitGatherPrefetch_ScalarPlus32BitScaledOffsetsOp : uint32_t {
+enum SVE32BitGatherPrefetch_ScalarPlus32BitScaledOffsetsOp {
   SVE32BitGatherPrefetch_ScalarPlus32BitScaledOffsetsFixed = 0x84200000,
   SVE32BitGatherPrefetch_ScalarPlus32BitScaledOffsetsFMask = 0xFFA08010,
   SVE32BitGatherPrefetch_ScalarPlus32BitScaledOffsetsMask = 0xFFA0E010,
@@ -2877,7 +2873,7 @@ enum SVE32BitGatherPrefetch_ScalarPlus32BitScaledOffsetsOp : uint32_t {
   PRFD_i_p_bz_s_x32_scaled = SVE32BitGatherPrefetch_ScalarPlus32BitScaledOffsetsFixed | 0x00006000
 };
 
-enum SVE32BitGatherPrefetch_VectorPlusImmOp : uint32_t {
+enum SVE32BitGatherPrefetch_VectorPlusImmOp {
   SVE32BitGatherPrefetch_VectorPlusImmFixed = 0x8400E000,
   SVE32BitGatherPrefetch_VectorPlusImmFMask = 0xFE60E010,
   SVE32BitGatherPrefetch_VectorPlusImmMask = 0xFFE0E010,
@@ -2887,7 +2883,7 @@ enum SVE32BitGatherPrefetch_VectorPlusImmOp : uint32_t {
   PRFD_i_p_ai_s = SVE32BitGatherPrefetch_VectorPlusImmFixed | 0x01800000
 };
 
-enum SVE32BitScatterStore_ScalarPlus32BitScaledOffsetsOp : uint32_t {
+enum SVE32BitScatterStore_ScalarPlus32BitScaledOffsetsOp {
   SVE32BitScatterStore_ScalarPlus32BitScaledOffsetsFixed = 0xE4608000,
   SVE32BitScatterStore_ScalarPlus32BitScaledOffsetsFMask = 0xFE60A000,
   SVE32BitScatterStore_ScalarPlus32BitScaledOffsetsMask = 0xFFE0A000,
@@ -2895,7 +2891,7 @@ enum SVE32BitScatterStore_ScalarPlus32BitScaledOffsetsOp : uint32_t {
   ST1W_z_p_bz_s_x32_scaled = SVE32BitScatterStore_ScalarPlus32BitScaledOffsetsFixed | 0x01000000
 };
 
-enum SVE32BitScatterStore_ScalarPlus32BitUnscaledOffsetsOp : uint32_t {
+enum SVE32BitScatterStore_ScalarPlus32BitUnscaledOffsetsOp {
   SVE32BitScatterStore_ScalarPlus32BitUnscaledOffsetsFixed = 0xE4408000,
   SVE32BitScatterStore_ScalarPlus32BitUnscaledOffsetsFMask = 0xFE60A000,
   SVE32BitScatterStore_ScalarPlus32BitUnscaledOffsetsMask = 0xFFE0A000,
@@ -2904,7 +2900,7 @@ enum SVE32BitScatterStore_ScalarPlus32BitUnscaledOffsetsOp : uint32_t {
   ST1W_z_p_bz_s_x32_unscaled = SVE32BitScatterStore_ScalarPlus32BitUnscaledOffsetsFixed | 0x01000000
 };
 
-enum SVE32BitScatterStore_VectorPlusImmOp : uint32_t {
+enum SVE32BitScatterStore_VectorPlusImmOp {
   SVE32BitScatterStore_VectorPlusImmFixed = 0xE460A000,
   SVE32BitScatterStore_VectorPlusImmFMask = 0xFE60E000,
   SVE32BitScatterStore_VectorPlusImmMask = 0xFFE0E000,
@@ -2913,7 +2909,7 @@ enum SVE32BitScatterStore_VectorPlusImmOp : uint32_t {
   ST1W_z_p_ai_s = SVE32BitScatterStore_VectorPlusImmFixed | 0x01000000
 };
 
-enum SVE64BitGatherLoad_ScalarPlus32BitUnpackedScaledOffsetsOp : uint32_t {
+enum SVE64BitGatherLoad_ScalarPlus32BitUnpackedScaledOffsetsOp {
   SVE64BitGatherLoad_ScalarPlus32BitUnpackedScaledOffsetsFixed = 0xC4200000,
   SVE64BitGatherLoad_ScalarPlus32BitUnpackedScaledOffsetsFMask = 0xFE208000,
   SVE64BitGatherLoad_ScalarPlus32BitUnpackedScaledOffsetsMask = 0xFFA0E000,
@@ -2929,7 +2925,7 @@ enum SVE64BitGatherLoad_ScalarPlus32BitUnpackedScaledOffsetsOp : uint32_t {
   LDFF1D_z_p_bz_d_x32_scaled = SVE64BitGatherLoad_ScalarPlus32BitUnpackedScaledOffsetsFixed | 0x01806000
 };
 
-enum SVE64BitGatherLoad_ScalarPlus64BitScaledOffsetsOp : uint32_t {
+enum SVE64BitGatherLoad_ScalarPlus64BitScaledOffsetsOp {
   SVE64BitGatherLoad_ScalarPlus64BitScaledOffsetsFixed = 0xC4608000,
   SVE64BitGatherLoad_ScalarPlus64BitScaledOffsetsFMask = 0xFE608000,
   SVE64BitGatherLoad_ScalarPlus64BitScaledOffsetsMask = 0xFFE0E000,
@@ -2945,7 +2941,7 @@ enum SVE64BitGatherLoad_ScalarPlus64BitScaledOffsetsOp : uint32_t {
   LDFF1D_z_p_bz_d_64_scaled = SVE64BitGatherLoad_ScalarPlus64BitScaledOffsetsFixed | 0x01806000
 };
 
-enum SVE64BitGatherLoad_ScalarPlus64BitUnscaledOffsetsOp : uint32_t {
+enum SVE64BitGatherLoad_ScalarPlus64BitUnscaledOffsetsOp {
   SVE64BitGatherLoad_ScalarPlus64BitUnscaledOffsetsFixed = 0xC4408000,
   SVE64BitGatherLoad_ScalarPlus64BitUnscaledOffsetsFMask = 0xFE608000,
   SVE64BitGatherLoad_ScalarPlus64BitUnscaledOffsetsMask = 0xFFE0E000,
@@ -2965,7 +2961,7 @@ enum SVE64BitGatherLoad_ScalarPlus64BitUnscaledOffsetsOp : uint32_t {
   LDFF1D_z_p_bz_d_64_unscaled = SVE64BitGatherLoad_ScalarPlus64BitUnscaledOffsetsFixed | 0x01806000
 };
 
-enum SVE64BitGatherLoad_ScalarPlusUnpacked32BitUnscaledOffsetsOp : uint32_t {
+enum SVE64BitGatherLoad_ScalarPlusUnpacked32BitUnscaledOffsetsOp {
   SVE64BitGatherLoad_ScalarPlusUnpacked32BitUnscaledOffsetsFixed = 0xC4000000,
   SVE64BitGatherLoad_ScalarPlusUnpacked32BitUnscaledOffsetsFMask = 0xFE208000,
   SVE64BitGatherLoad_ScalarPlusUnpacked32BitUnscaledOffsetsMask = 0xFFA0E000,
@@ -2985,7 +2981,7 @@ enum SVE64BitGatherLoad_ScalarPlusUnpacked32BitUnscaledOffsetsOp : uint32_t {
   LDFF1D_z_p_bz_d_x32_unscaled = SVE64BitGatherLoad_ScalarPlusUnpacked32BitUnscaledOffsetsFixed | 0x01806000
 };
 
-enum SVE64BitGatherLoad_VectorPlusImmOp : uint32_t {
+enum SVE64BitGatherLoad_VectorPlusImmOp {
   SVE64BitGatherLoad_VectorPlusImmFixed = 0xC4208000,
   SVE64BitGatherLoad_VectorPlusImmFMask = 0xFE608000,
   SVE64BitGatherLoad_VectorPlusImmMask = 0xFFE0E000,
@@ -3005,7 +3001,7 @@ enum SVE64BitGatherLoad_VectorPlusImmOp : uint32_t {
   LDFF1D_z_p_ai_d = SVE64BitGatherLoad_VectorPlusImmFixed | 0x01806000
 };
 
-enum SVE64BitGatherPrefetch_ScalarPlus64BitScaledOffsetsOp : uint32_t {
+enum SVE64BitGatherPrefetch_ScalarPlus64BitScaledOffsetsOp {
   SVE64BitGatherPrefetch_ScalarPlus64BitScaledOffsetsFixed = 0xC4608000,
   SVE64BitGatherPrefetch_ScalarPlus64BitScaledOffsetsFMask = 0xFFE08010,
   SVE64BitGatherPrefetch_ScalarPlus64BitScaledOffsetsMask = 0xFFE0E010,
@@ -3015,7 +3011,7 @@ enum SVE64BitGatherPrefetch_ScalarPlus64BitScaledOffsetsOp : uint32_t {
   PRFD_i_p_bz_d_64_scaled = SVE64BitGatherPrefetch_ScalarPlus64BitScaledOffsetsFixed | 0x00006000
 };
 
-enum SVE64BitGatherPrefetch_ScalarPlusUnpacked32BitScaledOffsetsOp : uint32_t {
+enum SVE64BitGatherPrefetch_ScalarPlusUnpacked32BitScaledOffsetsOp {
   SVE64BitGatherPrefetch_ScalarPlusUnpacked32BitScaledOffsetsFixed = 0xC4200000,
   SVE64BitGatherPrefetch_ScalarPlusUnpacked32BitScaledOffsetsFMask = 0xFFA08010,
   SVE64BitGatherPrefetch_ScalarPlusUnpacked32BitScaledOffsetsMask = 0xFFA0E010,
@@ -3025,7 +3021,7 @@ enum SVE64BitGatherPrefetch_ScalarPlusUnpacked32BitScaledOffsetsOp : uint32_t {
   PRFD_i_p_bz_d_x32_scaled = SVE64BitGatherPrefetch_ScalarPlusUnpacked32BitScaledOffsetsFixed | 0x00006000
 };
 
-enum SVE64BitGatherPrefetch_VectorPlusImmOp : uint32_t {
+enum SVE64BitGatherPrefetch_VectorPlusImmOp {
   SVE64BitGatherPrefetch_VectorPlusImmFixed = 0xC400E000,
   SVE64BitGatherPrefetch_VectorPlusImmFMask = 0xFE60E010,
   SVE64BitGatherPrefetch_VectorPlusImmMask = 0xFFE0E010,
@@ -3035,7 +3031,7 @@ enum SVE64BitGatherPrefetch_VectorPlusImmOp : uint32_t {
   PRFD_i_p_ai_d = SVE64BitGatherPrefetch_VectorPlusImmFixed | 0x01800000
 };
 
-enum SVE64BitScatterStore_ScalarPlus64BitScaledOffsetsOp : uint32_t {
+enum SVE64BitScatterStore_ScalarPlus64BitScaledOffsetsOp {
   SVE64BitScatterStore_ScalarPlus64BitScaledOffsetsFixed = 0xE420A000,
   SVE64BitScatterStore_ScalarPlus64BitScaledOffsetsFMask = 0xFE60E000,
   SVE64BitScatterStore_ScalarPlus64BitScaledOffsetsMask = 0xFFE0E000,
@@ -3044,7 +3040,7 @@ enum SVE64BitScatterStore_ScalarPlus64BitScaledOffsetsOp : uint32_t {
   ST1D_z_p_bz_d_64_scaled = SVE64BitScatterStore_ScalarPlus64BitScaledOffsetsFixed | 0x01800000
 };
 
-enum SVE64BitScatterStore_ScalarPlus64BitUnscaledOffsetsOp : uint32_t {
+enum SVE64BitScatterStore_ScalarPlus64BitUnscaledOffsetsOp {
   SVE64BitScatterStore_ScalarPlus64BitUnscaledOffsetsFixed = 0xE400A000,
   SVE64BitScatterStore_ScalarPlus64BitUnscaledOffsetsFMask = 0xFE60E000,
   SVE64BitScatterStore_ScalarPlus64BitUnscaledOffsetsMask = 0xFFE0E000,
@@ -3054,7 +3050,7 @@ enum SVE64BitScatterStore_ScalarPlus64BitUnscaledOffsetsOp : uint32_t {
   ST1D_z_p_bz_d_64_unscaled = SVE64BitScatterStore_ScalarPlus64BitUnscaledOffsetsFixed | 0x01800000
 };
 
-enum SVE64BitScatterStore_ScalarPlusUnpacked32BitScaledOffsetsOp : uint32_t {
+enum SVE64BitScatterStore_ScalarPlusUnpacked32BitScaledOffsetsOp {
   SVE64BitScatterStore_ScalarPlusUnpacked32BitScaledOffsetsFixed = 0xE4208000,
   SVE64BitScatterStore_ScalarPlusUnpacked32BitScaledOffsetsFMask = 0xFE60A000,
   SVE64BitScatterStore_ScalarPlusUnpacked32BitScaledOffsetsMask = 0xFFE0A000,
@@ -3063,7 +3059,7 @@ enum SVE64BitScatterStore_ScalarPlusUnpacked32BitScaledOffsetsOp : uint32_t {
   ST1D_z_p_bz_d_x32_scaled = SVE64BitScatterStore_ScalarPlusUnpacked32BitScaledOffsetsFixed | 0x01800000
 };
 
-enum SVE64BitScatterStore_ScalarPlusUnpacked32BitUnscaledOffsetsOp : uint32_t {
+enum SVE64BitScatterStore_ScalarPlusUnpacked32BitUnscaledOffsetsOp {
   SVE64BitScatterStore_ScalarPlusUnpacked32BitUnscaledOffsetsFixed = 0xE4008000,
   SVE64BitScatterStore_ScalarPlusUnpacked32BitUnscaledOffsetsFMask = 0xFE60A000,
   SVE64BitScatterStore_ScalarPlusUnpacked32BitUnscaledOffsetsMask = 0xFFE0A000,
@@ -3073,7 +3069,7 @@ enum SVE64BitScatterStore_ScalarPlusUnpacked32BitUnscaledOffsetsOp : uint32_t {
   ST1D_z_p_bz_d_x32_unscaled = SVE64BitScatterStore_ScalarPlusUnpacked32BitUnscaledOffsetsFixed | 0x01800000
 };
 
-enum SVE64BitScatterStore_VectorPlusImmOp : uint32_t {
+enum SVE64BitScatterStore_VectorPlusImmOp {
   SVE64BitScatterStore_VectorPlusImmFixed = 0xE440A000,
   SVE64BitScatterStore_VectorPlusImmFMask = 0xFE60E000,
   SVE64BitScatterStore_VectorPlusImmMask = 0xFFE0E000,
@@ -3083,7 +3079,7 @@ enum SVE64BitScatterStore_VectorPlusImmOp : uint32_t {
   ST1D_z_p_ai_d = SVE64BitScatterStore_VectorPlusImmFixed | 0x01800000
 };
 
-enum SVEAddressGenerationOp : uint32_t {
+enum SVEAddressGenerationOp {
   SVEAddressGenerationFixed = 0x0420A000,
   SVEAddressGenerationFMask = 0xFF20F000,
   SVEAddressGenerationMask = 0xFFE0F000,
@@ -3093,7 +3089,7 @@ enum SVEAddressGenerationOp : uint32_t {
   ADR_z_az_d_same_scaled = SVEAddressGenerationFixed | 0x00C00000
 };
 
-enum SVEBitwiseLogicalUnpredicatedOp : uint32_t {
+enum SVEBitwiseLogicalUnpredicatedOp {
   SVEBitwiseLogicalUnpredicatedFixed = 0x04202000,
   SVEBitwiseLogicalUnpredicatedFMask = 0xFF20E000,
   SVEBitwiseLogicalUnpredicatedMask = 0xFFE0FC00,
@@ -3103,7 +3099,7 @@ enum SVEBitwiseLogicalUnpredicatedOp : uint32_t {
   BIC_z_zz = SVEBitwiseLogicalUnpredicatedFixed | 0x00C01000
 };
 
-enum SVEBitwiseLogicalWithImm_UnpredicatedOp : uint32_t {
+enum SVEBitwiseLogicalWithImm_UnpredicatedOp {
   SVEBitwiseLogicalWithImm_UnpredicatedFixed = 0x05000000,
   SVEBitwiseLogicalWithImm_UnpredicatedFMask = 0xFF3C0000,
   SVEBitwiseLogicalWithImm_UnpredicatedMask = 0xFFFC0000,
@@ -3112,7 +3108,7 @@ enum SVEBitwiseLogicalWithImm_UnpredicatedOp : uint32_t {
   AND_z_zi = SVEBitwiseLogicalWithImm_UnpredicatedFixed | 0x00800000
 };
 
-enum SVEBitwiseLogical_PredicatedOp : uint32_t {
+enum SVEBitwiseLogical_PredicatedOp {
   SVEBitwiseLogical_PredicatedFixed = 0x04180000,
   SVEBitwiseLogical_PredicatedFMask = 0xFF38E000,
   SVEBitwiseLogical_PredicatedMask = 0xFF3FE000,
@@ -3122,7 +3118,7 @@ enum SVEBitwiseLogical_PredicatedOp : uint32_t {
   BIC_z_p_zz = SVEBitwiseLogical_PredicatedFixed | 0x00030000
 };
 
-enum SVEBitwiseShiftByImm_PredicatedOp : uint32_t {
+enum SVEBitwiseShiftByImm_PredicatedOp {
   SVEBitwiseShiftByImm_PredicatedFixed = 0x04008000,
   SVEBitwiseShiftByImm_PredicatedFMask = 0xFF30E000,
   SVEBitwiseShiftByImm_PredicatedMask = 0xFF3FE000,
@@ -3132,7 +3128,7 @@ enum SVEBitwiseShiftByImm_PredicatedOp : uint32_t {
   ASRD_z_p_zi = SVEBitwiseShiftByImm_PredicatedFixed | 0x00040000
 };
 
-enum SVEBitwiseShiftByVector_PredicatedOp : uint32_t {
+enum SVEBitwiseShiftByVector_PredicatedOp {
   SVEBitwiseShiftByVector_PredicatedFixed = 0x04108000,
   SVEBitwiseShiftByVector_PredicatedFMask = 0xFF38E000,
   SVEBitwiseShiftByVector_PredicatedMask = 0xFF3FE000,
@@ -3144,7 +3140,7 @@ enum SVEBitwiseShiftByVector_PredicatedOp : uint32_t {
   LSLR_z_p_zz = SVEBitwiseShiftByVector_PredicatedFixed | 0x00070000
 };
 
-enum SVEBitwiseShiftByWideElements_PredicatedOp : uint32_t {
+enum SVEBitwiseShiftByWideElements_PredicatedOp {
   SVEBitwiseShiftByWideElements_PredicatedFixed = 0x04188000,
   SVEBitwiseShiftByWideElements_PredicatedFMask = 0xFF38E000,
   SVEBitwiseShiftByWideElements_PredicatedMask = 0xFF3FE000,
@@ -3153,7 +3149,7 @@ enum SVEBitwiseShiftByWideElements_PredicatedOp : uint32_t {
   LSL_z_p_zw = SVEBitwiseShiftByWideElements_PredicatedFixed | 0x00030000
 };
 
-enum SVEBitwiseShiftUnpredicatedOp : uint32_t {
+enum SVEBitwiseShiftUnpredicatedOp {
   SVEBitwiseShiftUnpredicatedFixed = 0x04208000,
   SVEBitwiseShiftUnpredicatedFMask = 0xFF20E000,
   SVEBitwiseShiftUnpredicatedMask = 0xFF20FC00,
@@ -3165,49 +3161,49 @@ enum SVEBitwiseShiftUnpredicatedOp : uint32_t {
   LSL_z_zi = SVEBitwiseShiftUnpredicatedFixed | 0x00001C00
 };
 
-enum SVEBroadcastBitmaskImmOp : uint32_t {
+enum SVEBroadcastBitmaskImmOp {
   SVEBroadcastBitmaskImmFixed = 0x05C00000,
   SVEBroadcastBitmaskImmFMask = 0xFFFC0000,
   SVEBroadcastBitmaskImmMask = 0xFFFC0000,
   DUPM_z_i = SVEBroadcastBitmaskImmFixed
 };
 
-enum SVEBroadcastFPImm_UnpredicatedOp : uint32_t {
+enum SVEBroadcastFPImm_UnpredicatedOp {
   SVEBroadcastFPImm_UnpredicatedFixed = 0x2539C000,
   SVEBroadcastFPImm_UnpredicatedFMask = 0xFF39C000,
   SVEBroadcastFPImm_UnpredicatedMask = 0xFF3FE000,
   FDUP_z_i = SVEBroadcastFPImm_UnpredicatedFixed
 };
 
-enum SVEBroadcastGeneralRegisterOp : uint32_t {
+enum SVEBroadcastGeneralRegisterOp {
   SVEBroadcastGeneralRegisterFixed = 0x05203800,
   SVEBroadcastGeneralRegisterFMask = 0xFF3FFC00,
   SVEBroadcastGeneralRegisterMask = 0xFF3FFC00,
   DUP_z_r = SVEBroadcastGeneralRegisterFixed
 };
 
-enum SVEBroadcastIndexElementOp : uint32_t {
+enum SVEBroadcastIndexElementOp {
   SVEBroadcastIndexElementFixed = 0x05202000,
   SVEBroadcastIndexElementFMask = 0xFF20FC00,
   SVEBroadcastIndexElementMask = 0xFF20FC00,
   DUP_z_zi = SVEBroadcastIndexElementFixed
 };
 
-enum SVEBroadcastIntImm_UnpredicatedOp : uint32_t {
+enum SVEBroadcastIntImm_UnpredicatedOp {
   SVEBroadcastIntImm_UnpredicatedFixed = 0x2538C000,
   SVEBroadcastIntImm_UnpredicatedFMask = 0xFF39C000,
   SVEBroadcastIntImm_UnpredicatedMask = 0xFF3FC000,
   DUP_z_i = SVEBroadcastIntImm_UnpredicatedFixed
 };
 
-enum SVECompressActiveElementsOp : uint32_t {
+enum SVECompressActiveElementsOp {
   SVECompressActiveElementsFixed = 0x05A18000,
   SVECompressActiveElementsFMask = 0xFFBFE000,
   SVECompressActiveElementsMask = 0xFFBFE000,
   COMPACT_z_p_z = SVECompressActiveElementsFixed
 };
 
-enum SVEConditionallyBroadcastElementToVectorOp : uint32_t {
+enum SVEConditionallyBroadcastElementToVectorOp {
   SVEConditionallyBroadcastElementToVectorFixed = 0x05288000,
   SVEConditionallyBroadcastElementToVectorFMask = 0xFF3EE000,
   SVEConditionallyBroadcastElementToVectorMask = 0xFF3FE000,
@@ -3215,7 +3211,7 @@ enum SVEConditionallyBroadcastElementToVectorOp : uint32_t {
   CLASTB_z_p_zz = SVEConditionallyBroadcastElementToVectorFixed | 0x00010000
 };
 
-enum SVEConditionallyExtractElementToGeneralRegisterOp : uint32_t {
+enum SVEConditionallyExtractElementToGeneralRegisterOp {
   SVEConditionallyExtractElementToGeneralRegisterFixed = 0x0530A000,
   SVEConditionallyExtractElementToGeneralRegisterFMask = 0xFF3EE000,
   SVEConditionallyExtractElementToGeneralRegisterMask = 0xFF3FE000,
@@ -3223,7 +3219,7 @@ enum SVEConditionallyExtractElementToGeneralRegisterOp : uint32_t {
   CLASTB_r_p_z = SVEConditionallyExtractElementToGeneralRegisterFixed | 0x00010000
 };
 
-enum SVEConditionallyExtractElementToSIMDFPScalarOp : uint32_t {
+enum SVEConditionallyExtractElementToSIMDFPScalarOp {
   SVEConditionallyExtractElementToSIMDFPScalarFixed = 0x052A8000,
   SVEConditionallyExtractElementToSIMDFPScalarFMask = 0xFF3EE000,
   SVEConditionallyExtractElementToSIMDFPScalarMask = 0xFF3FE000,
@@ -3231,7 +3227,7 @@ enum SVEConditionallyExtractElementToSIMDFPScalarOp : uint32_t {
   CLASTB_v_p_z = SVEConditionallyExtractElementToSIMDFPScalarFixed | 0x00010000
 };
 
-enum SVEConditionallyTerminateScalarsOp : uint32_t {
+enum SVEConditionallyTerminateScalarsOp {
   SVEConditionallyTerminateScalarsFixed = 0x25202000,
   SVEConditionallyTerminateScalarsFMask = 0xFF20FC0F,
   SVEConditionallyTerminateScalarsMask = 0xFFA0FC1F,
@@ -3239,14 +3235,14 @@ enum SVEConditionallyTerminateScalarsOp : uint32_t {
   CTERMNE_rr = SVEConditionallyTerminateScalarsFixed | 0x00800010
 };
 
-enum SVEConstructivePrefix_UnpredicatedOp : uint32_t {
+enum SVEConstructivePrefix_UnpredicatedOp {
   SVEConstructivePrefix_UnpredicatedFixed = 0x0420BC00,
   SVEConstructivePrefix_UnpredicatedFMask = 0xFF20FC00,
   SVEConstructivePrefix_UnpredicatedMask = 0xFFFFFC00,
   MOVPRFX_z_z = SVEConstructivePrefix_UnpredicatedFixed
 };
 
-enum SVEContiguousFirstFaultLoad_ScalarPlusScalarOp : uint32_t {
+enum SVEContiguousFirstFaultLoad_ScalarPlusScalarOp {
   SVEContiguousFirstFaultLoad_ScalarPlusScalarFixed = 0xA4006000,
   SVEContiguousFirstFaultLoad_ScalarPlusScalarFMask = 0xFE00E000,
   SVEContiguousFirstFaultLoad_ScalarPlusScalarMask = 0xFFE0E000,
@@ -3268,7 +3264,7 @@ enum SVEContiguousFirstFaultLoad_ScalarPlusScalarOp : uint32_t {
   LDFF1D_z_p_br_u64 = SVEContiguousFirstFaultLoad_ScalarPlusScalarFixed | 0x01E00000
 };
 
-enum SVEContiguousLoad_ScalarPlusImmOp : uint32_t {
+enum SVEContiguousLoad_ScalarPlusImmOp {
   SVEContiguousLoad_ScalarPlusImmFixed = 0xA400A000,
   SVEContiguousLoad_ScalarPlusImmFMask = 0xFE10E000,
   SVEContiguousLoad_ScalarPlusImmMask = 0xFFF0E000,
@@ -3290,7 +3286,7 @@ enum SVEContiguousLoad_ScalarPlusImmOp : uint32_t {
   LD1D_z_p_bi_u64 = SVEContiguousLoad_ScalarPlusImmFixed | 0x01E00000
 };
 
-enum SVEContiguousLoad_ScalarPlusScalarOp : uint32_t {
+enum SVEContiguousLoad_ScalarPlusScalarOp {
   SVEContiguousLoad_ScalarPlusScalarFixed = 0xA4004000,
   SVEContiguousLoad_ScalarPlusScalarFMask = 0xFE00E000,
   SVEContiguousLoad_ScalarPlusScalarMask = 0xFFE0E000,
@@ -3312,7 +3308,7 @@ enum SVEContiguousLoad_ScalarPlusScalarOp : uint32_t {
   LD1D_z_p_br_u64 = SVEContiguousLoad_ScalarPlusScalarFixed | 0x01E00000
 };
 
-enum SVEContiguousNonFaultLoad_ScalarPlusImmOp : uint32_t {
+enum SVEContiguousNonFaultLoad_ScalarPlusImmOp {
   SVEContiguousNonFaultLoad_ScalarPlusImmFixed = 0xA410A000,
   SVEContiguousNonFaultLoad_ScalarPlusImmFMask = 0xFE10E000,
   SVEContiguousNonFaultLoad_ScalarPlusImmMask = 0xFFF0E000,
@@ -3334,7 +3330,7 @@ enum SVEContiguousNonFaultLoad_ScalarPlusImmOp : uint32_t {
   LDNF1D_z_p_bi_u64 = SVEContiguousNonFaultLoad_ScalarPlusImmFixed | 0x01E00000
 };
 
-enum SVEContiguousNonTemporalLoad_ScalarPlusImmOp : uint32_t {
+enum SVEContiguousNonTemporalLoad_ScalarPlusImmOp {
   SVEContiguousNonTemporalLoad_ScalarPlusImmFixed = 0xA400E000,
   SVEContiguousNonTemporalLoad_ScalarPlusImmFMask = 0xFE70E000,
   SVEContiguousNonTemporalLoad_ScalarPlusImmMask = 0xFFF0E000,
@@ -3344,7 +3340,7 @@ enum SVEContiguousNonTemporalLoad_ScalarPlusImmOp : uint32_t {
   LDNT1D_z_p_bi_contiguous = SVEContiguousNonTemporalLoad_ScalarPlusImmFixed | 0x01800000
 };
 
-enum SVEContiguousNonTemporalLoad_ScalarPlusScalarOp : uint32_t {
+enum SVEContiguousNonTemporalLoad_ScalarPlusScalarOp {
   SVEContiguousNonTemporalLoad_ScalarPlusScalarFixed = 0xA400C000,
   SVEContiguousNonTemporalLoad_ScalarPlusScalarFMask = 0xFE60E000,
   SVEContiguousNonTemporalLoad_ScalarPlusScalarMask = 0xFFE0E000,
@@ -3354,7 +3350,7 @@ enum SVEContiguousNonTemporalLoad_ScalarPlusScalarOp : uint32_t {
   LDNT1D_z_p_br_contiguous = SVEContiguousNonTemporalLoad_ScalarPlusScalarFixed | 0x01800000
 };
 
-enum SVEContiguousNonTemporalStore_ScalarPlusImmOp : uint32_t {
+enum SVEContiguousNonTemporalStore_ScalarPlusImmOp {
   SVEContiguousNonTemporalStore_ScalarPlusImmFixed = 0xE410E000,
   SVEContiguousNonTemporalStore_ScalarPlusImmFMask = 0xFE70E000,
   SVEContiguousNonTemporalStore_ScalarPlusImmMask = 0xFFF0E000,
@@ -3364,7 +3360,7 @@ enum SVEContiguousNonTemporalStore_ScalarPlusImmOp : uint32_t {
   STNT1D_z_p_bi_contiguous = SVEContiguousNonTemporalStore_ScalarPlusImmFixed | 0x01800000
 };
 
-enum SVEContiguousNonTemporalStore_ScalarPlusScalarOp : uint32_t {
+enum SVEContiguousNonTemporalStore_ScalarPlusScalarOp {
   SVEContiguousNonTemporalStore_ScalarPlusScalarFixed = 0xE4006000,
   SVEContiguousNonTemporalStore_ScalarPlusScalarFMask = 0xFE60E000,
   SVEContiguousNonTemporalStore_ScalarPlusScalarMask = 0xFFE0E000,
@@ -3374,7 +3370,7 @@ enum SVEContiguousNonTemporalStore_ScalarPlusScalarOp : uint32_t {
   STNT1D_z_p_br_contiguous = SVEContiguousNonTemporalStore_ScalarPlusScalarFixed | 0x01800000
 };
 
-enum SVEContiguousPrefetch_ScalarPlusImmOp : uint32_t {
+enum SVEContiguousPrefetch_ScalarPlusImmOp {
   SVEContiguousPrefetch_ScalarPlusImmFixed = 0x85C00000,
   SVEContiguousPrefetch_ScalarPlusImmFMask = 0xFFC08010,
   SVEContiguousPrefetch_ScalarPlusImmMask = 0xFFC0E010,
@@ -3384,7 +3380,7 @@ enum SVEContiguousPrefetch_ScalarPlusImmOp : uint32_t {
   PRFD_i_p_bi_s = SVEContiguousPrefetch_ScalarPlusImmFixed | 0x00006000
 };
 
-enum SVEContiguousPrefetch_ScalarPlusScalarOp : uint32_t {
+enum SVEContiguousPrefetch_ScalarPlusScalarOp {
   SVEContiguousPrefetch_ScalarPlusScalarFixed = 0x8400C000,
   SVEContiguousPrefetch_ScalarPlusScalarFMask = 0xFE60E010,
   SVEContiguousPrefetch_ScalarPlusScalarMask = 0xFFE0E010,
@@ -3394,7 +3390,7 @@ enum SVEContiguousPrefetch_ScalarPlusScalarOp : uint32_t {
   PRFD_i_p_br_s = SVEContiguousPrefetch_ScalarPlusScalarFixed | 0x01800000
 };
 
-enum SVEContiguousStore_ScalarPlusImmOp : uint32_t {
+enum SVEContiguousStore_ScalarPlusImmOp {
   SVEContiguousStore_ScalarPlusImmFixed = 0xE400E000,
   SVEContiguousStore_ScalarPlusImmFMask = 0xFE10E000,
   SVEContiguousStore_ScalarPlusImmMask = 0xFF90E000,
@@ -3404,7 +3400,7 @@ enum SVEContiguousStore_ScalarPlusImmOp : uint32_t {
   ST1D_z_p_bi = SVEContiguousStore_ScalarPlusImmFixed | 0x01800000
 };
 
-enum SVEContiguousStore_ScalarPlusScalarOp : uint32_t {
+enum SVEContiguousStore_ScalarPlusScalarOp {
   SVEContiguousStore_ScalarPlusScalarFixed = 0xE4004000,
   SVEContiguousStore_ScalarPlusScalarFMask = 0xFE00E000,
   SVEContiguousStore_ScalarPlusScalarMask = 0xFF80E000,
@@ -3414,35 +3410,35 @@ enum SVEContiguousStore_ScalarPlusScalarOp : uint32_t {
   ST1D_z_p_br = SVEContiguousStore_ScalarPlusScalarFixed | 0x01800000
 };
 
-enum SVECopyFPImm_PredicatedOp : uint32_t {
+enum SVECopyFPImm_PredicatedOp {
   SVECopyFPImm_PredicatedFixed = 0x0510C000,
   SVECopyFPImm_PredicatedFMask = 0xFF30E000,
   SVECopyFPImm_PredicatedMask = 0xFF30E000,
   FCPY_z_p_i = SVECopyFPImm_PredicatedFixed
 };
 
-enum SVECopyGeneralRegisterToVector_PredicatedOp : uint32_t {
+enum SVECopyGeneralRegisterToVector_PredicatedOp {
   SVECopyGeneralRegisterToVector_PredicatedFixed = 0x0528A000,
   SVECopyGeneralRegisterToVector_PredicatedFMask = 0xFF3FE000,
   SVECopyGeneralRegisterToVector_PredicatedMask = 0xFF3FE000,
   CPY_z_p_r = SVECopyGeneralRegisterToVector_PredicatedFixed
 };
 
-enum SVECopyIntImm_PredicatedOp : uint32_t {
+enum SVECopyIntImm_PredicatedOp {
   SVECopyIntImm_PredicatedFixed = 0x05100000,
   SVECopyIntImm_PredicatedFMask = 0xFF308000,
   SVECopyIntImm_PredicatedMask = 0xFF308000,
   CPY_z_p_i = SVECopyIntImm_PredicatedFixed
 };
 
-enum SVECopySIMDFPScalarRegisterToVector_PredicatedOp : uint32_t {
+enum SVECopySIMDFPScalarRegisterToVector_PredicatedOp {
   SVECopySIMDFPScalarRegisterToVector_PredicatedFixed = 0x05208000,
   SVECopySIMDFPScalarRegisterToVector_PredicatedFMask = 0xFF3FE000,
   SVECopySIMDFPScalarRegisterToVector_PredicatedMask = 0xFF3FE000,
   CPY_z_p_v = SVECopySIMDFPScalarRegisterToVector_PredicatedFixed
 };
 
-enum SVEElementCountOp : uint32_t {
+enum SVEElementCountOp {
   SVEElementCountFixed = 0x0420E000,
   SVEElementCountFMask = 0xFF30F800,
   SVEElementCountMask = 0xFFF0FC00,
@@ -3452,7 +3448,7 @@ enum SVEElementCountOp : uint32_t {
   CNTD_r_s = SVEElementCountFixed | 0x00C00000
 };
 
-enum SVEExtractElementToGeneralRegisterOp : uint32_t {
+enum SVEExtractElementToGeneralRegisterOp {
   SVEExtractElementToGeneralRegisterFixed = 0x0520A000,
   SVEExtractElementToGeneralRegisterFMask = 0xFF3EE000,
   SVEExtractElementToGeneralRegisterMask = 0xFF3FE000,
@@ -3460,7 +3456,7 @@ enum SVEExtractElementToGeneralRegisterOp : uint32_t {
   LASTB_r_p_z = SVEExtractElementToGeneralRegisterFixed | 0x00010000
 };
 
-enum SVEExtractElementToSIMDFPScalarRegisterOp : uint32_t {
+enum SVEExtractElementToSIMDFPScalarRegisterOp {
   SVEExtractElementToSIMDFPScalarRegisterFixed = 0x05228000,
   SVEExtractElementToSIMDFPScalarRegisterFMask = 0xFF3EE000,
   SVEExtractElementToSIMDFPScalarRegisterMask = 0xFF3FE000,
@@ -3468,28 +3464,28 @@ enum SVEExtractElementToSIMDFPScalarRegisterOp : uint32_t {
   LASTB_v_p_z = SVEExtractElementToSIMDFPScalarRegisterFixed | 0x00010000
 };
 
-enum SVEFFRInitialiseOp : uint32_t {
+enum SVEFFRInitialiseOp {
   SVEFFRInitialiseFixed = 0x252C9000,
   SVEFFRInitialiseFMask = 0xFF3FFFFF,
   SVEFFRInitialiseMask = 0xFFFFFFFF,
   SETFFR_f = SVEFFRInitialiseFixed
 };
 
-enum SVEFFRWriteFromPredicateOp : uint32_t {
+enum SVEFFRWriteFromPredicateOp {
   SVEFFRWriteFromPredicateFixed = 0x25289000,
   SVEFFRWriteFromPredicateFMask = 0xFF3FFE1F,
   SVEFFRWriteFromPredicateMask = 0xFFFFFE1F,
   WRFFR_f_p = SVEFFRWriteFromPredicateFixed
 };
 
-enum SVEFPAccumulatingReductionOp : uint32_t {
+enum SVEFPAccumulatingReductionOp {
   SVEFPAccumulatingReductionFixed = 0x65182000,
   SVEFPAccumulatingReductionFMask = 0xFF38E000,
   SVEFPAccumulatingReductionMask = 0xFF3FE000,
   FADDA_v_p_z = SVEFPAccumulatingReductionFixed
 };
 
-enum SVEFPArithmeticUnpredicatedOp : uint32_t {
+enum SVEFPArithmeticUnpredicatedOp {
   SVEFPArithmeticUnpredicatedFixed = 0x65000000,
   SVEFPArithmeticUnpredicatedFMask = 0xFF20E000,
   SVEFPArithmeticUnpredicatedMask = 0xFF20FC00,
@@ -3501,7 +3497,7 @@ enum SVEFPArithmeticUnpredicatedOp : uint32_t {
   FRSQRTS_z_zz = SVEFPArithmeticUnpredicatedFixed | 0x00001C00
 };
 
-enum SVEFPArithmeticWithImm_PredicatedOp : uint32_t {
+enum SVEFPArithmeticWithImm_PredicatedOp {
   SVEFPArithmeticWithImm_PredicatedFixed = 0x65188000,
   SVEFPArithmeticWithImm_PredicatedFMask = 0xFF38E3C0,
   SVEFPArithmeticWithImm_PredicatedMask = 0xFF3FE3C0,
@@ -3515,7 +3511,7 @@ enum SVEFPArithmeticWithImm_PredicatedOp : uint32_t {
   FMIN_z_p_zs = SVEFPArithmeticWithImm_PredicatedFixed | 0x00070000
 };
 
-enum SVEFPArithmetic_PredicatedOp : uint32_t {
+enum SVEFPArithmetic_PredicatedOp {
   SVEFPArithmetic_PredicatedFixed = 0x65008000,
   SVEFPArithmetic_PredicatedFMask = 0xFF30E000,
   SVEFPArithmetic_PredicatedMask = 0xFF3FE000,
@@ -3534,7 +3530,7 @@ enum SVEFPArithmetic_PredicatedOp : uint32_t {
   FDIV_z_p_zz = SVEFPArithmetic_PredicatedFixed | 0x000D0000
 };
 
-enum SVEFPCompareVectorsOp : uint32_t {
+enum SVEFPCompareVectorsOp {
   SVEFPCompareVectorsFixed = 0x65004000,
   SVEFPCompareVectorsFMask = 0xFF204000,
   SVEFPCompareVectorsMask = 0xFF20E010,
@@ -3547,7 +3543,7 @@ enum SVEFPCompareVectorsOp : uint32_t {
   FACGT_p_p_zz = SVEFPCompareVectorsFixed | 0x0000A010
 };
 
-enum SVEFPCompareWithZeroOp : uint32_t {
+enum SVEFPCompareWithZeroOp {
   SVEFPCompareWithZeroFixed = 0x65102000,
   SVEFPCompareWithZeroFMask = 0xFF38E000,
   SVEFPCompareWithZeroMask = 0xFF3FE010,
@@ -3559,21 +3555,21 @@ enum SVEFPCompareWithZeroOp : uint32_t {
   FCMNE_p_p_z0 = SVEFPCompareWithZeroFixed | 0x00030000
 };
 
-enum SVEFPComplexAdditionOp : uint32_t {
+enum SVEFPComplexAdditionOp {
   SVEFPComplexAdditionFixed = 0x64008000,
   SVEFPComplexAdditionFMask = 0xFF3EE000,
   SVEFPComplexAdditionMask = 0xFF3EE000,
   FCADD_z_p_zz = SVEFPComplexAdditionFixed
 };
 
-enum SVEFPComplexMulAddOp : uint32_t {
+enum SVEFPComplexMulAddOp {
   SVEFPComplexMulAddFixed = 0x64000000,
   SVEFPComplexMulAddFMask = 0xFF208000,
   SVEFPComplexMulAddMask = 0xFF208000,
   FCMLA_z_p_zzz = SVEFPComplexMulAddFixed
 };
 
-enum SVEFPComplexMulAddIndexOp : uint32_t {
+enum SVEFPComplexMulAddIndexOp {
   SVEFPComplexMulAddIndexFixed = 0x64201000,
   SVEFPComplexMulAddIndexFMask = 0xFF20F000,
   SVEFPComplexMulAddIndexMask = 0xFFE0F000,
@@ -3581,7 +3577,7 @@ enum SVEFPComplexMulAddIndexOp : uint32_t {
   FCMLA_z_zzzi_s = SVEFPComplexMulAddIndexFixed | 0x00C00000
 };
 
-enum SVEFPConvertPrecisionOp : uint32_t {
+enum SVEFPConvertPrecisionOp {
   SVEFPConvertPrecisionFixed = 0x6508A000,
   SVEFPConvertPrecisionFMask = 0xFF3CE000,
   SVEFPConvertPrecisionMask = 0xFFFFE000,
@@ -3593,7 +3589,7 @@ enum SVEFPConvertPrecisionOp : uint32_t {
   FCVT_z_p_z_s2d = SVEFPConvertPrecisionFixed | 0x00C30000
 };
 
-enum SVEFPConvertToIntOp : uint32_t {
+enum SVEFPConvertToIntOp {
   SVEFPConvertToIntFixed = 0x6518A000,
   SVEFPConvertToIntFMask = 0xFF38E000,
   SVEFPConvertToIntMask = 0xFFFFE000,
@@ -3613,14 +3609,14 @@ enum SVEFPConvertToIntOp : uint32_t {
   FCVTZU_z_p_z_d2x = SVEFPConvertToIntFixed | 0x00C70000
 };
 
-enum SVEFPExponentialAcceleratorOp : uint32_t {
+enum SVEFPExponentialAcceleratorOp {
   SVEFPExponentialAcceleratorFixed = 0x0420B800,
   SVEFPExponentialAcceleratorFMask = 0xFF20FC00,
   SVEFPExponentialAcceleratorMask = 0xFF3FFC00,
   FEXPA_z_z = SVEFPExponentialAcceleratorFixed
 };
 
-enum SVEFPFastReductionOp : uint32_t {
+enum SVEFPFastReductionOp {
   SVEFPFastReductionFixed = 0x65002000,
   SVEFPFastReductionFMask = 0xFF38E000,
   SVEFPFastReductionMask = 0xFF3FE000,
@@ -3631,7 +3627,7 @@ enum SVEFPFastReductionOp : uint32_t {
   FMINV_v_p_z = SVEFPFastReductionFixed | 0x00070000
 };
 
-enum SVEFPMulAddOp : uint32_t {
+enum SVEFPMulAddOp {
   SVEFPMulAddFixed = 0x65200000,
   SVEFPMulAddFMask = 0xFF200000,
   SVEFPMulAddMask = 0xFF20E000,
@@ -3645,7 +3641,7 @@ enum SVEFPMulAddOp : uint32_t {
   FNMSB_z_p_zzz = SVEFPMulAddFixed | 0x0000E000
 };
 
-enum SVEFPMulAddIndexOp : uint32_t {
+enum SVEFPMulAddIndexOp {
   SVEFPMulAddIndexFixed = 0x64200000,
   SVEFPMulAddIndexFMask = 0xFF20F800,
   SVEFPMulAddIndexMask = 0xFFE0FC00,
@@ -3659,7 +3655,7 @@ enum SVEFPMulAddIndexOp : uint32_t {
   FMLS_z_zzzi_d = SVEFPMulAddIndexFixed | 0x00C00400
 };
 
-enum SVEFPMulIndexOp : uint32_t {
+enum SVEFPMulIndexOp {
   SVEFPMulIndexFixed = 0x64202000,
   SVEFPMulIndexFMask = 0xFF20FC00,
   SVEFPMulIndexMask = 0xFFE0FC00,
@@ -3669,7 +3665,7 @@ enum SVEFPMulIndexOp : uint32_t {
   FMUL_z_zzi_d = SVEFPMulIndexFixed | 0x00C00000
 };
 
-enum SVEFPRoundToIntegralValueOp : uint32_t {
+enum SVEFPRoundToIntegralValueOp {
   SVEFPRoundToIntegralValueFixed = 0x6500A000,
   SVEFPRoundToIntegralValueFMask = 0xFF38E000,
   SVEFPRoundToIntegralValueMask = 0xFF3FE000,
@@ -3682,21 +3678,21 @@ enum SVEFPRoundToIntegralValueOp : uint32_t {
   FRINTI_z_p_z = SVEFPRoundToIntegralValueFixed | 0x00070000
 };
 
-enum SVEFPTrigMulAddCoefficientOp : uint32_t {
+enum SVEFPTrigMulAddCoefficientOp {
   SVEFPTrigMulAddCoefficientFixed = 0x65108000,
   SVEFPTrigMulAddCoefficientFMask = 0xFF38FC00,
   SVEFPTrigMulAddCoefficientMask = 0xFF38FC00,
   FTMAD_z_zzi = SVEFPTrigMulAddCoefficientFixed
 };
 
-enum SVEFPTrigSelectCoefficientOp : uint32_t {
+enum SVEFPTrigSelectCoefficientOp {
   SVEFPTrigSelectCoefficientFixed = 0x0420B000,
   SVEFPTrigSelectCoefficientFMask = 0xFF20F800,
   SVEFPTrigSelectCoefficientMask = 0xFF20FC00,
   FTSSEL_z_zz = SVEFPTrigSelectCoefficientFixed
 };
 
-enum SVEFPUnaryOpOp : uint32_t {
+enum SVEFPUnaryOpOp {
   SVEFPUnaryOpFixed = 0x650CA000,
   SVEFPUnaryOpFMask = 0xFF3CE000,
   SVEFPUnaryOpMask = 0xFF3FE000,
@@ -3704,7 +3700,7 @@ enum SVEFPUnaryOpOp : uint32_t {
   FSQRT_z_p_z = SVEFPUnaryOpFixed | 0x00010000
 };
 
-enum SVEFPUnaryOpUnpredicatedOp : uint32_t {
+enum SVEFPUnaryOpUnpredicatedOp {
   SVEFPUnaryOpUnpredicatedFixed = 0x65083000,
   SVEFPUnaryOpUnpredicatedFMask = 0xFF38F000,
   SVEFPUnaryOpUnpredicatedMask = 0xFF3FFC00,
@@ -3712,7 +3708,7 @@ enum SVEFPUnaryOpUnpredicatedOp : uint32_t {
   FRSQRTE_z_z = SVEFPUnaryOpUnpredicatedFixed | 0x00070000
 };
 
-enum SVEIncDecByPredicateCountOp : uint32_t {
+enum SVEIncDecByPredicateCountOp {
   SVEIncDecByPredicateCountFixed = 0x25288000,
   SVEIncDecByPredicateCountFMask = 0xFF38F000,
   SVEIncDecByPredicateCountMask = 0xFF3FFE00,
@@ -3734,7 +3730,7 @@ enum SVEIncDecByPredicateCountOp : uint32_t {
   DECP_r_p_r = SVEIncDecByPredicateCountFixed | 0x00050800
 };
 
-enum SVEIncDecRegisterByElementCountOp : uint32_t {
+enum SVEIncDecRegisterByElementCountOp {
   SVEIncDecRegisterByElementCountFixed = 0x0430E000,
   SVEIncDecRegisterByElementCountFMask = 0xFF30F800,
   SVEIncDecRegisterByElementCountMask = 0xFFF0FC00,
@@ -3748,7 +3744,7 @@ enum SVEIncDecRegisterByElementCountOp : uint32_t {
   DECD_r_rs = SVEIncDecRegisterByElementCountFixed | 0x00C00400
 };
 
-enum SVEIncDecVectorByElementCountOp : uint32_t {
+enum SVEIncDecVectorByElementCountOp {
   SVEIncDecVectorByElementCountFixed = 0x0430C000,
   SVEIncDecVectorByElementCountFMask = 0xFF30F800,
   SVEIncDecVectorByElementCountMask = 0xFFF0FC00,
@@ -3760,7 +3756,7 @@ enum SVEIncDecVectorByElementCountOp : uint32_t {
   DECD_z_zs = SVEIncDecVectorByElementCountFixed | 0x00C00400
 };
 
-enum SVEIndexGenerationOp : uint32_t {
+enum SVEIndexGenerationOp {
   SVEIndexGenerationFixed = 0x04204000,
   SVEIndexGenerationFMask = 0xFF20F000,
   SVEIndexGenerationMask = 0xFF20FC00,
@@ -3770,21 +3766,21 @@ enum SVEIndexGenerationOp : uint32_t {
   INDEX_z_rr = SVEIndexGenerationFixed | 0x00000C00
 };
 
-enum SVEInsertGeneralRegisterOp : uint32_t {
+enum SVEInsertGeneralRegisterOp {
   SVEInsertGeneralRegisterFixed = 0x05243800,
   SVEInsertGeneralRegisterFMask = 0xFF3FFC00,
   SVEInsertGeneralRegisterMask = 0xFF3FFC00,
   INSR_z_r = SVEInsertGeneralRegisterFixed
 };
 
-enum SVEInsertSIMDFPScalarRegisterOp : uint32_t {
+enum SVEInsertSIMDFPScalarRegisterOp {
   SVEInsertSIMDFPScalarRegisterFixed = 0x05343800,
   SVEInsertSIMDFPScalarRegisterFMask = 0xFF3FFC00,
   SVEInsertSIMDFPScalarRegisterMask = 0xFF3FFC00,
   INSR_z_v = SVEInsertSIMDFPScalarRegisterFixed
 };
 
-enum SVEIntAddSubtractImm_UnpredicatedOp : uint32_t {
+enum SVEIntAddSubtractImm_UnpredicatedOp {
   SVEIntAddSubtractImm_UnpredicatedFixed = 0x2520C000,
   SVEIntAddSubtractImm_UnpredicatedFMask = 0xFF38C000,
   SVEIntAddSubtractImm_UnpredicatedMask = 0xFF3FC000,
@@ -3797,7 +3793,7 @@ enum SVEIntAddSubtractImm_UnpredicatedOp : uint32_t {
   UQSUB_z_zi = SVEIntAddSubtractImm_UnpredicatedFixed | 0x00070000
 };
 
-enum SVEIntAddSubtractVectors_PredicatedOp : uint32_t {
+enum SVEIntAddSubtractVectors_PredicatedOp {
   SVEIntAddSubtractVectors_PredicatedFixed = 0x04000000,
   SVEIntAddSubtractVectors_PredicatedFMask = 0xFF38E000,
   SVEIntAddSubtractVectors_PredicatedMask = 0xFF3FE000,
@@ -3806,7 +3802,7 @@ enum SVEIntAddSubtractVectors_PredicatedOp : uint32_t {
   SUBR_z_p_zz = SVEIntAddSubtractVectors_PredicatedFixed | 0x00030000
 };
 
-enum SVEIntArithmeticUnpredicatedOp : uint32_t {
+enum SVEIntArithmeticUnpredicatedOp {
   SVEIntArithmeticUnpredicatedFixed = 0x04200000,
   SVEIntArithmeticUnpredicatedFMask = 0xFF20E000,
   SVEIntArithmeticUnpredicatedMask = 0xFF20FC00,
@@ -3818,7 +3814,7 @@ enum SVEIntArithmeticUnpredicatedOp : uint32_t {
   UQSUB_z_zz = SVEIntArithmeticUnpredicatedFixed | 0x00001C00
 };
 
-enum SVEIntCompareScalarCountAndLimitOp : uint32_t {
+enum SVEIntCompareScalarCountAndLimitOp {
   SVEIntCompareScalarCountAndLimitFixed = 0x25200000,
   SVEIntCompareScalarCountAndLimitFMask = 0xFF20E000,
   SVEIntCompareScalarCountAndLimitMask = 0xFF20EC10,
@@ -3828,7 +3824,7 @@ enum SVEIntCompareScalarCountAndLimitOp : uint32_t {
   WHILELS_p_p_rr = SVEIntCompareScalarCountAndLimitFixed | 0x00000C10
 };
 
-enum SVEIntCompareSignedImmOp : uint32_t {
+enum SVEIntCompareSignedImmOp {
   SVEIntCompareSignedImmFixed = 0x25000000,
   SVEIntCompareSignedImmFMask = 0xFF204000,
   SVEIntCompareSignedImmMask = 0xFF20E010,
@@ -3840,7 +3836,7 @@ enum SVEIntCompareSignedImmOp : uint32_t {
   CMPNE_p_p_zi = SVEIntCompareSignedImmFixed | 0x00008010
 };
 
-enum SVEIntCompareUnsignedImmOp : uint32_t {
+enum SVEIntCompareUnsignedImmOp {
   SVEIntCompareUnsignedImmFixed = 0x24200000,
   SVEIntCompareUnsignedImmFMask = 0xFF200000,
   SVEIntCompareUnsignedImmMask = 0xFF202010,
@@ -3850,7 +3846,7 @@ enum SVEIntCompareUnsignedImmOp : uint32_t {
   CMPLS_p_p_zi = SVEIntCompareUnsignedImmFixed | 0x00002010
 };
 
-enum SVEIntCompareVectorsOp : uint32_t {
+enum SVEIntCompareVectorsOp {
   SVEIntCompareVectorsFixed = 0x24000000,
   SVEIntCompareVectorsFMask = 0xFF200000,
   SVEIntCompareVectorsMask = 0xFF20E010,
@@ -3872,7 +3868,7 @@ enum SVEIntCompareVectorsOp : uint32_t {
   CMPLS_p_p_zw = SVEIntCompareVectorsFixed | 0x0000E010
 };
 
-enum SVEIntConvertToFPOp : uint32_t {
+enum SVEIntConvertToFPOp {
   SVEIntConvertToFPFixed = 0x6510A000,
   SVEIntConvertToFPFMask = 0xFF38E000,
   SVEIntConvertToFPMask = 0xFFFFE000,
@@ -3892,7 +3888,7 @@ enum SVEIntConvertToFPOp : uint32_t {
   UCVTF_z_p_z_x2d = SVEIntConvertToFPFixed | 0x00C70000
 };
 
-enum SVEIntDivideVectors_PredicatedOp : uint32_t {
+enum SVEIntDivideVectors_PredicatedOp {
   SVEIntDivideVectors_PredicatedFixed = 0x04140000,
   SVEIntDivideVectors_PredicatedFMask = 0xFF3CE000,
   SVEIntDivideVectors_PredicatedMask = 0xFF3FE000,
@@ -3902,7 +3898,7 @@ enum SVEIntDivideVectors_PredicatedOp : uint32_t {
   UDIVR_z_p_zz = SVEIntDivideVectors_PredicatedFixed | 0x00030000
 };
 
-enum SVEIntMinMaxDifference_PredicatedOp : uint32_t {
+enum SVEIntMinMaxDifference_PredicatedOp {
   SVEIntMinMaxDifference_PredicatedFixed = 0x04080000,
   SVEIntMinMaxDifference_PredicatedFMask = 0xFF38E000,
   SVEIntMinMaxDifference_PredicatedMask = 0xFF3FE000,
@@ -3914,7 +3910,7 @@ enum SVEIntMinMaxDifference_PredicatedOp : uint32_t {
   UABD_z_p_zz = SVEIntMinMaxDifference_PredicatedFixed | 0x00050000
 };
 
-enum SVEIntMinMaxImm_UnpredicatedOp : uint32_t {
+enum SVEIntMinMaxImm_UnpredicatedOp {
   SVEIntMinMaxImm_UnpredicatedFixed = 0x2528C000,
   SVEIntMinMaxImm_UnpredicatedFMask = 0xFF38C000,
   SVEIntMinMaxImm_UnpredicatedMask = 0xFF3FE000,
@@ -3924,7 +3920,7 @@ enum SVEIntMinMaxImm_UnpredicatedOp : uint32_t {
   UMIN_z_zi = SVEIntMinMaxImm_UnpredicatedFixed | 0x00030000
 };
 
-enum SVEIntMulAddPredicatedOp : uint32_t {
+enum SVEIntMulAddPredicatedOp {
   SVEIntMulAddPredicatedFixed = 0x04004000,
   SVEIntMulAddPredicatedFMask = 0xFF204000,
   SVEIntMulAddPredicatedMask = 0xFF20E000,
@@ -3934,7 +3930,7 @@ enum SVEIntMulAddPredicatedOp : uint32_t {
   MSB_z_p_zzz = SVEIntMulAddPredicatedFixed | 0x0000A000
 };
 
-enum SVEIntMulAddUnpredicatedOp : uint32_t {
+enum SVEIntMulAddUnpredicatedOp {
   SVEIntMulAddUnpredicatedFixed = 0x44000000,
   SVEIntMulAddUnpredicatedFMask = 0xFF208000,
   SVEIntMulAddUnpredicatedMask = 0xFF20FC00,
@@ -3942,14 +3938,14 @@ enum SVEIntMulAddUnpredicatedOp : uint32_t {
   UDOT_z_zzz = SVEIntMulAddUnpredicatedFixed | 0x00000400
 };
 
-enum SVEIntMulImm_UnpredicatedOp : uint32_t {
+enum SVEIntMulImm_UnpredicatedOp {
   SVEIntMulImm_UnpredicatedFixed = 0x2530C000,
   SVEIntMulImm_UnpredicatedFMask = 0xFF38C000,
   SVEIntMulImm_UnpredicatedMask = 0xFF3FE000,
   MUL_z_zi = SVEIntMulImm_UnpredicatedFixed
 };
 
-enum SVEIntMulVectors_PredicatedOp : uint32_t {
+enum SVEIntMulVectors_PredicatedOp {
   SVEIntMulVectors_PredicatedFixed = 0x04100000,
   SVEIntMulVectors_PredicatedFMask = 0xFF3CE000,
   SVEIntMulVectors_PredicatedMask = 0xFF3FE000,
@@ -3958,14 +3954,14 @@ enum SVEIntMulVectors_PredicatedOp : uint32_t {
   UMULH_z_p_zz = SVEIntMulVectors_PredicatedFixed | 0x00030000
 };
 
-enum SVEMovprfxOp : uint32_t {
+enum SVEMovprfxOp {
   SVEMovprfxFixed = 0x04002000,
   SVEMovprfxFMask = 0xFF20E000,
   SVEMovprfxMask = 0xFF3EE000,
   MOVPRFX_z_p_z = SVEMovprfxFixed | 0x00100000
 };
 
-enum SVEIntReductionOp : uint32_t {
+enum SVEIntReductionOp {
   SVEIntReductionFixed = 0x04002000,
   SVEIntReductionFMask = 0xFF20E000,
   SVEIntReductionMask = 0xFF3FE000,
@@ -3977,7 +3973,7 @@ enum SVEIntReductionOp : uint32_t {
   UMINV_r_p_z = SVEIntReductionFixed | 0x000B0000
 };
 
-enum SVEIntReductionLogicalOp : uint32_t {
+enum SVEIntReductionLogicalOp {
   SVEIntReductionLogicalFixed = 0x04182000,
   SVEIntReductionLogicalFMask = 0xFF38E000,
   SVEIntReductionLogicalMask = 0xFF3FE000,
@@ -3986,7 +3982,7 @@ enum SVEIntReductionLogicalOp : uint32_t {
   ANDV_r_p_z = SVEIntReductionLogicalFixed | 0x001A0000
 };
 
-enum SVEIntUnaryArithmeticPredicatedOp : uint32_t {
+enum SVEIntUnaryArithmeticPredicatedOp {
   SVEIntUnaryArithmeticPredicatedFixed = 0x0400A000,
   SVEIntUnaryArithmeticPredicatedFMask = 0xFF20E000,
   SVEIntUnaryArithmeticPredicatedMask = 0xFF3FE000,
@@ -4007,7 +4003,7 @@ enum SVEIntUnaryArithmeticPredicatedOp : uint32_t {
   NOT_z_p_z = SVEIntUnaryArithmeticPredicatedFixed | 0x001E0000
 };
 
-enum SVELoadAndBroadcastElementOp : uint32_t {
+enum SVELoadAndBroadcastElementOp {
   SVELoadAndBroadcastElementFixed = 0x84408000,
   SVELoadAndBroadcastElementFMask = 0xFE408000,
   SVELoadAndBroadcastElementMask = 0xFFC0E000,
@@ -4029,7 +4025,7 @@ enum SVELoadAndBroadcastElementOp : uint32_t {
   LD1RD_z_p_bi_u64 = SVELoadAndBroadcastElementFixed | 0x01806000
 };
 
-enum SVELoadAndBroadcastQuadword_ScalarPlusImmOp : uint32_t {
+enum SVELoadAndBroadcastQuadword_ScalarPlusImmOp {
   SVELoadAndBroadcastQuadword_ScalarPlusImmFixed = 0xA4002000,
   SVELoadAndBroadcastQuadword_ScalarPlusImmFMask = 0xFE10E000,
   SVELoadAndBroadcastQuadword_ScalarPlusImmMask = 0xFFF0E000,
@@ -4039,7 +4035,7 @@ enum SVELoadAndBroadcastQuadword_ScalarPlusImmOp : uint32_t {
   LD1RQD_z_p_bi_u64 = SVELoadAndBroadcastQuadword_ScalarPlusImmFixed | 0x01800000
 };
 
-enum SVELoadAndBroadcastQuadword_ScalarPlusScalarOp : uint32_t {
+enum SVELoadAndBroadcastQuadword_ScalarPlusScalarOp {
   SVELoadAndBroadcastQuadword_ScalarPlusScalarFixed = 0xA4000000,
   SVELoadAndBroadcastQuadword_ScalarPlusScalarFMask = 0xFE00E000,
   SVELoadAndBroadcastQuadword_ScalarPlusScalarMask = 0xFFE0E000,
@@ -4049,7 +4045,7 @@ enum SVELoadAndBroadcastQuadword_ScalarPlusScalarOp : uint32_t {
   LD1RQD_z_p_br_contiguous = SVELoadAndBroadcastQuadword_ScalarPlusScalarFixed | 0x01800000
 };
 
-enum SVELoadMultipleStructures_ScalarPlusImmOp : uint32_t {
+enum SVELoadMultipleStructures_ScalarPlusImmOp {
   SVELoadMultipleStructures_ScalarPlusImmFixed = 0xA400E000,
   SVELoadMultipleStructures_ScalarPlusImmFMask = 0xFE10E000,
   SVELoadMultipleStructures_ScalarPlusImmMask = 0xFFF0E000,
@@ -4067,7 +4063,7 @@ enum SVELoadMultipleStructures_ScalarPlusImmOp : uint32_t {
   LD4D_z_p_bi_contiguous = SVELoadMultipleStructures_ScalarPlusImmFixed | 0x01E00000
 };
 
-enum SVELoadMultipleStructures_ScalarPlusScalarOp : uint32_t {
+enum SVELoadMultipleStructures_ScalarPlusScalarOp {
   SVELoadMultipleStructures_ScalarPlusScalarFixed = 0xA400C000,
   SVELoadMultipleStructures_ScalarPlusScalarFMask = 0xFE00E000,
   SVELoadMultipleStructures_ScalarPlusScalarMask = 0xFFE0E000,
@@ -4085,21 +4081,21 @@ enum SVELoadMultipleStructures_ScalarPlusScalarOp : uint32_t {
   LD4D_z_p_br_contiguous = SVELoadMultipleStructures_ScalarPlusScalarFixed | 0x01E00000
 };
 
-enum SVELoadPredicateRegisterOp : uint32_t {
+enum SVELoadPredicateRegisterOp {
   SVELoadPredicateRegisterFixed = 0x85800000,
   SVELoadPredicateRegisterFMask = 0xFFC0E010,
   SVELoadPredicateRegisterMask = 0xFFC0E010,
   LDR_p_bi = SVELoadPredicateRegisterFixed
 };
 
-enum SVELoadVectorRegisterOp : uint32_t {
+enum SVELoadVectorRegisterOp {
   SVELoadVectorRegisterFixed = 0x85804000,
   SVELoadVectorRegisterFMask = 0xFFC0E000,
   SVELoadVectorRegisterMask = 0xFFC0E000,
   LDR_z_bi = SVELoadVectorRegisterFixed
 };
 
-enum SVEMulIndexOp : uint32_t {
+enum SVEMulIndexOp {
   SVEMulIndexFixed = 0x44200000,
   SVEMulIndexFMask = 0xFF200000,
   SVEMulIndexMask = 0xFFE0FC00,
@@ -4109,7 +4105,7 @@ enum SVEMulIndexOp : uint32_t {
   UDOT_z_zzzi_d = SVEMulIndexFixed | 0x00C00400
 };
 
-enum SVEPartitionBreakConditionOp : uint32_t {
+enum SVEPartitionBreakConditionOp {
   SVEPartitionBreakConditionFixed = 0x25104000,
   SVEPartitionBreakConditionFMask = 0xFF3FC200,
   SVEPartitionBreakConditionMask = 0xFFFFC200,
@@ -4119,7 +4115,7 @@ enum SVEPartitionBreakConditionOp : uint32_t {
   BRKBS_p_p_p_z = SVEPartitionBreakConditionFixed | 0x00C00000
 };
 
-enum SVEPermutePredicateElementsOp : uint32_t {
+enum SVEPermutePredicateElementsOp {
   SVEPermutePredicateElementsFixed = 0x05204000,
   SVEPermutePredicateElementsFMask = 0xFF30E210,
   SVEPermutePredicateElementsMask = 0xFF30FE10,
@@ -4131,14 +4127,14 @@ enum SVEPermutePredicateElementsOp : uint32_t {
   TRN2_p_pp = SVEPermutePredicateElementsFixed | 0x00001400
 };
 
-enum SVEPermuteVectorExtractOp : uint32_t {
+enum SVEPermuteVectorExtractOp {
   SVEPermuteVectorExtractFixed = 0x05200000,
   SVEPermuteVectorExtractFMask = 0xFF20E000,
   SVEPermuteVectorExtractMask = 0xFFE0E000,
   EXT_z_zi_des = SVEPermuteVectorExtractFixed
 };
 
-enum SVEPermuteVectorInterleavingOp : uint32_t {
+enum SVEPermuteVectorInterleavingOp {
   SVEPermuteVectorInterleavingFixed = 0x05206000,
   SVEPermuteVectorInterleavingFMask = 0xFF20E000,
   SVEPermuteVectorInterleavingMask = 0xFF20FC00,
@@ -4150,21 +4146,21 @@ enum SVEPermuteVectorInterleavingOp : uint32_t {
   TRN2_z_zz = SVEPermuteVectorInterleavingFixed | 0x00001400
 };
 
-enum SVEPredicateCountOp : uint32_t {
+enum SVEPredicateCountOp {
   SVEPredicateCountFixed = 0x25208000,
   SVEPredicateCountFMask = 0xFF38C000,
   SVEPredicateCountMask = 0xFF3FC200,
   CNTP_r_p_p = SVEPredicateCountFixed
 };
 
-enum SVEPredicateFirstActiveOp : uint32_t {
+enum SVEPredicateFirstActiveOp {
   SVEPredicateFirstActiveFixed = 0x2518C000,
   SVEPredicateFirstActiveFMask = 0xFF3FFE10,
   SVEPredicateFirstActiveMask = 0xFFFFFE10,
   PFIRST_p_p_p = SVEPredicateFirstActiveFixed | 0x00400000
 };
 
-enum SVEPredicateInitializeOp : uint32_t {
+enum SVEPredicateInitializeOp {
   SVEPredicateInitializeFixed = 0x2518E000,
   SVEPredicateInitializeFMask = 0xFF3EFC10,
   SVEPredicateInitializeMask = 0xFF3FFC10,
@@ -4173,7 +4169,7 @@ enum SVEPredicateInitializeOp : uint32_t {
   PTRUES_p_s = SVEPredicateInitializeFixed | SVEPredicateInitializeSetFlagsBit
 };
 
-enum SVEPredicateLogicalOp : uint32_t {
+enum SVEPredicateLogicalOp {
   SVEPredicateLogicalFixed = 0x25004000,
   SVEPredicateLogicalFMask = 0xFF30C000,
   SVEPredicateLogicalMask = 0xFFF0C210,
@@ -4195,14 +4191,14 @@ enum SVEPredicateLogicalOp : uint32_t {
   SEL_p_p_pp = SVEPredicateLogicalFixed | 0x00000210
 };
 
-enum SVEPredicateNextActiveOp : uint32_t {
+enum SVEPredicateNextActiveOp {
   SVEPredicateNextActiveFixed = 0x2519C400,
   SVEPredicateNextActiveFMask = 0xFF3FFE10,
   SVEPredicateNextActiveMask = 0xFF3FFE10,
   PNEXT_p_p_p = SVEPredicateNextActiveFixed
 };
 
-enum SVEPredicateReadFromFFR_PredicatedOp : uint32_t {
+enum SVEPredicateReadFromFFR_PredicatedOp {
   SVEPredicateReadFromFFR_PredicatedFixed = 0x2518F000,
   SVEPredicateReadFromFFR_PredicatedFMask = 0xFF3FFE10,
   SVEPredicateReadFromFFR_PredicatedMask = 0xFFFFFE10,
@@ -4210,28 +4206,28 @@ enum SVEPredicateReadFromFFR_PredicatedOp : uint32_t {
   RDFFRS_p_p_f = SVEPredicateReadFromFFR_PredicatedFixed | 0x00400000
 };
 
-enum SVEPredicateReadFromFFR_UnpredicatedOp : uint32_t {
+enum SVEPredicateReadFromFFR_UnpredicatedOp {
   SVEPredicateReadFromFFR_UnpredicatedFixed = 0x2519F000,
   SVEPredicateReadFromFFR_UnpredicatedFMask = 0xFF3FFFF0,
   SVEPredicateReadFromFFR_UnpredicatedMask = 0xFFFFFFF0,
   RDFFR_p_f = SVEPredicateReadFromFFR_UnpredicatedFixed
 };
 
-enum SVEPredicateTestOp : uint32_t {
+enum SVEPredicateTestOp {
   SVEPredicateTestFixed = 0x2510C000,
   SVEPredicateTestFMask = 0xFF3FC210,
   SVEPredicateTestMask = 0xFFFFC21F,
   PTEST_p_p = SVEPredicateTestFixed | 0x00400000
 };
 
-enum SVEPredicateZeroOp : uint32_t {
+enum SVEPredicateZeroOp {
   SVEPredicateZeroFixed = 0x2518E400,
   SVEPredicateZeroFMask = 0xFF3FFFF0,
   SVEPredicateZeroMask = 0xFFFFFFF0,
   PFALSE_p = SVEPredicateZeroFixed
 };
 
-enum SVEPropagateBreakOp : uint32_t {
+enum SVEPropagateBreakOp {
   SVEPropagateBreakFixed = 0x2500C000,
   SVEPropagateBreakFMask = 0xFF30C000,
   SVEPropagateBreakMask = 0xFFF0C210,
@@ -4241,7 +4237,7 @@ enum SVEPropagateBreakOp : uint32_t {
   BRKPBS_p_p_pp = SVEPropagateBreakFixed | 0x00400010
 };
 
-enum SVEPropagateBreakToNextPartitionOp : uint32_t {
+enum SVEPropagateBreakToNextPartitionOp {
   SVEPropagateBreakToNextPartitionFixed = 0x25184000,
   SVEPropagateBreakToNextPartitionFMask = 0xFFBFC210,
   SVEPropagateBreakToNextPartitionMask = 0xFFFFC210,
@@ -4249,21 +4245,21 @@ enum SVEPropagateBreakToNextPartitionOp : uint32_t {
   BRKNS_p_p_pp = SVEPropagateBreakToNextPartitionFixed | 0x00400000
 };
 
-enum SVEReversePredicateElementsOp : uint32_t {
+enum SVEReversePredicateElementsOp {
   SVEReversePredicateElementsFixed = 0x05344000,
   SVEReversePredicateElementsFMask = 0xFF3FFE10,
   SVEReversePredicateElementsMask = 0xFF3FFE10,
   REV_p_p = SVEReversePredicateElementsFixed
 };
 
-enum SVEReverseVectorElementsOp : uint32_t {
+enum SVEReverseVectorElementsOp {
   SVEReverseVectorElementsFixed = 0x05383800,
   SVEReverseVectorElementsFMask = 0xFF3FFC00,
   SVEReverseVectorElementsMask = 0xFF3FFC00,
   REV_z_z = SVEReverseVectorElementsFixed
 };
 
-enum SVEReverseWithinElementsOp : uint32_t {
+enum SVEReverseWithinElementsOp {
   SVEReverseWithinElementsFixed = 0x05248000,
   SVEReverseWithinElementsFMask = 0xFF3CE000,
   SVEReverseWithinElementsMask = 0xFF3FE000,
@@ -4273,7 +4269,7 @@ enum SVEReverseWithinElementsOp : uint32_t {
   RBIT_z_p_z = SVEReverseWithinElementsFixed | 0x00030000
 };
 
-enum SVESaturatingIncDecRegisterByElementCountOp : uint32_t {
+enum SVESaturatingIncDecRegisterByElementCountOp {
   SVESaturatingIncDecRegisterByElementCountFixed = 0x0420F000,
   SVESaturatingIncDecRegisterByElementCountFMask = 0xFF20F000,
   SVESaturatingIncDecRegisterByElementCountMask = 0xFFF0FC00,
@@ -4311,7 +4307,7 @@ enum SVESaturatingIncDecRegisterByElementCountOp : uint32_t {
   UQDECD_r_rs_x = SVESaturatingIncDecRegisterByElementCountFixed | 0x00D00C00
 };
 
-enum SVESaturatingIncDecVectorByElementCountOp : uint32_t {
+enum SVESaturatingIncDecVectorByElementCountOp {
   SVESaturatingIncDecVectorByElementCountFixed = 0x0420C000,
   SVESaturatingIncDecVectorByElementCountFMask = 0xFF30F000,
   SVESaturatingIncDecVectorByElementCountMask = 0xFFF0FC00,
@@ -4329,7 +4325,7 @@ enum SVESaturatingIncDecVectorByElementCountOp : uint32_t {
   UQDECD_z_zs = SVESaturatingIncDecVectorByElementCountFixed | 0x00C00C00
 };
 
-enum SVEStackFrameAdjustmentOp : uint32_t {
+enum SVEStackFrameAdjustmentOp {
   SVEStackFrameAdjustmentFixed = 0x04205000,
   SVEStackFrameAdjustmentFMask = 0xFFA0F800,
   SVEStackFrameAdjustmentMask = 0xFFE0F800,
@@ -4337,14 +4333,14 @@ enum SVEStackFrameAdjustmentOp : uint32_t {
   ADDPL_r_ri = SVEStackFrameAdjustmentFixed | 0x00400000
 };
 
-enum SVEStackFrameSizeOp : uint32_t {
+enum SVEStackFrameSizeOp {
   SVEStackFrameSizeFixed = 0x04BF5000,
   SVEStackFrameSizeFMask = 0xFFFFF800,
   SVEStackFrameSizeMask = 0xFFFFF800,
   RDVL_r_i = SVEStackFrameSizeFixed
 };
 
-enum SVEStoreMultipleStructures_ScalarPlusImmOp : uint32_t {
+enum SVEStoreMultipleStructures_ScalarPlusImmOp {
   SVEStoreMultipleStructures_ScalarPlusImmFixed = 0xE410E000,
   SVEStoreMultipleStructures_ScalarPlusImmFMask = 0xFE10E000,
   SVEStoreMultipleStructures_ScalarPlusImmMask = 0xFFF0E000,
@@ -4362,7 +4358,7 @@ enum SVEStoreMultipleStructures_ScalarPlusImmOp : uint32_t {
   ST4D_z_p_bi_contiguous = SVEStoreMultipleStructures_ScalarPlusImmFixed | 0x01E00000
 };
 
-enum SVEStoreMultipleStructures_ScalarPlusScalarOp : uint32_t {
+enum SVEStoreMultipleStructures_ScalarPlusScalarOp {
   SVEStoreMultipleStructures_ScalarPlusScalarFixed = 0xE4006000,
   SVEStoreMultipleStructures_ScalarPlusScalarFMask = 0xFE00E000,
   SVEStoreMultipleStructures_ScalarPlusScalarMask = 0xFFE0E000,
@@ -4380,28 +4376,28 @@ enum SVEStoreMultipleStructures_ScalarPlusScalarOp : uint32_t {
   ST4D_z_p_br_contiguous = SVEStoreMultipleStructures_ScalarPlusScalarFixed | 0x01E00000
 };
 
-enum SVEStorePredicateRegisterOp : uint32_t {
+enum SVEStorePredicateRegisterOp {
   SVEStorePredicateRegisterFixed = 0xE5800000,
   SVEStorePredicateRegisterFMask = 0xFFC0E010,
   SVEStorePredicateRegisterMask = 0xFFC0E010,
   STR_p_bi = SVEStorePredicateRegisterFixed
 };
 
-enum SVEStoreVectorRegisterOp : uint32_t {
+enum SVEStoreVectorRegisterOp {
   SVEStoreVectorRegisterFixed = 0xE5804000,
   SVEStoreVectorRegisterFMask = 0xFFC0E000,
   SVEStoreVectorRegisterMask = 0xFFC0E000,
   STR_z_bi = SVEStoreVectorRegisterFixed
 };
 
-enum SVETableLookupOp : uint32_t {
+enum SVETableLookupOp {
   SVETableLookupFixed = 0x05203000,
   SVETableLookupFMask = 0xFF20FC00,
   SVETableLookupMask = 0xFF20FC00,
   TBL_z_zz_1 = SVETableLookupFixed
 };
 
-enum SVEUnpackPredicateElementsOp : uint32_t {
+enum SVEUnpackPredicateElementsOp {
   SVEUnpackPredicateElementsFixed = 0x05304000,
   SVEUnpackPredicateElementsFMask = 0xFFFEFE10,
   SVEUnpackPredicateElementsMask = 0xFFFFFE10,
@@ -4409,7 +4405,7 @@ enum SVEUnpackPredicateElementsOp : uint32_t {
   PUNPKHI_p_p = SVEUnpackPredicateElementsFixed | 0x00010000
 };
 
-enum SVEUnpackVectorElementsOp : uint32_t {
+enum SVEUnpackVectorElementsOp {
   SVEUnpackVectorElementsFixed = 0x05303800,
   SVEUnpackVectorElementsFMask = 0xFF3CFC00,
   SVEUnpackVectorElementsMask = 0xFF3FFC00,
@@ -4419,21 +4415,21 @@ enum SVEUnpackVectorElementsOp : uint32_t {
   UUNPKHI_z_z = SVEUnpackVectorElementsFixed | 0x00030000
 };
 
-enum SVEVectorSelectOp : uint32_t {
+enum SVEVectorSelectOp {
   SVEVectorSelectFixed = 0x0520C000,
   SVEVectorSelectFMask = 0xFF20C000,
   SVEVectorSelectMask = 0xFF20C000,
   SEL_z_p_zz = SVEVectorSelectFixed
 };
 
-enum SVEVectorSpliceOp : uint32_t {
+enum SVEVectorSpliceOp {
   SVEVectorSpliceFixed = 0x052C8000,
   SVEVectorSpliceFMask = 0xFF3FE000,
   SVEVectorSpliceMask = 0xFF3FE000,
   SPLICE_z_p_zz_des = SVEVectorSpliceFixed
 };
 
-enum ReservedOp : uint32_t {
+enum ReservedOp {
   ReservedFixed = 0x00000000,
   ReservedFMask = 0x1E000000,
   ReservedMask = 0xFFFF0000,
@@ -4442,12 +4438,12 @@ enum ReservedOp : uint32_t {
 
 // Unimplemented and unallocated instructions. These are defined to make fixed
 // bit assertion easier.
-enum UnimplementedOp : uint32_t {
+enum UnimplementedOp {
   UnimplementedFixed = 0x00000000,
   UnimplementedFMask = 0x00000000
 };
 
-enum UnallocatedOp : uint32_t {
+enum UnallocatedOp {
   UnallocatedFixed = 0x00000000,
   UnallocatedFMask = 0x00000000
 };

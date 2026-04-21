@@ -643,7 +643,7 @@ class SimVRegister : public SimRegisterBase<kZRegMaxSize> {
 class LogicPRegister {
  public:
   inline LogicPRegister(
-      SimPRegister& other)  // NOLINT(runtime/references)(runtime/explicit)
+      SimPRegister& other)  // NOLINT(google-runtime-references)
       : register_(other) {}
 
   // Set a conveniently-sized block to 16 bits as the minimum predicate length
@@ -744,7 +744,7 @@ using vixl_uint128_t = std::pair<uint64_t, uint64_t>;
 class LogicVRegister {
  public:
   inline LogicVRegister(
-      SimVRegister& other)  // NOLINT(runtime/references)(runtime/explicit)
+      SimVRegister& other)  // NOLINT(google-runtime-references)
       : register_(other) {
     for (size_t i = 0; i < ArrayLength(saturated_); i++) {
       saturated_[i] = kNotSaturated;
@@ -872,10 +872,9 @@ class LogicVRegister {
       SetUint(vform, index, value.second);
       return;
     }
-    // TODO: Extend this to SVE.
-    VIXL_ASSERT((vform == kFormat1Q) && (index == 0));
-    SetUint(kFormat2D, 0, value.second);
-    SetUint(kFormat2D, 1, value.first);
+    VIXL_ASSERT((vform == kFormat1Q) || (vform == kFormatVnQ));
+    SetUint(kFormatVnD, 2 * index, value.second);
+    SetUint(kFormatVnD, 2 * index + 1, value.first);
   }
 
   void SetUintArray(VectorFormat vform, const uint64_t* src) const {
@@ -1447,6 +1446,7 @@ class Simulator : public DecoderVisitor {
 
 #define DECLARE(A) virtual void Visit##A(const Instruction* instr);
   VISITOR_LIST_THAT_RETURN(DECLARE)
+  SIM_AUD_VISITOR_LIST_THAT_RETURN(DECLARE)
 #undef DECLARE
 #define DECLARE(A) \
   VIXL_NO_RETURN virtual void Visit##A(const Instruction* instr);
@@ -1504,6 +1504,7 @@ class Simulator : public DecoderVisitor {
   void SimulateSVESaturatingMulAddHigh(const Instruction* instr);
   void SimulateSVESaturatingMulHighIndex(const Instruction* instr);
   void SimulateSVEFPConvertLong(const Instruction* instr);
+  void SimulateSVEPmull128(const Instruction* instr);
   void SimulateMatrixMul(const Instruction* instr);
   void SimulateSVEFPMatrixMul(const Instruction* instr);
   void SimulateNEONMulByElementLong(const Instruction* instr);
@@ -1532,8 +1533,16 @@ class Simulator : public DecoderVisitor {
   void SimulateSignedMinMax(const Instruction* instr);
   void SimulateUnsignedMinMax(const Instruction* instr);
   void SimulateSHA512(const Instruction* instr);
+  void SimulateFPConvert(const Instruction* instr);
+  void SimulateFPRoundInt(const Instruction* instr);
+  void SimulateFPRoundIntToSize(const Instruction* instr);
+  void SimulateNEONRoundInt(const Instruction* instr);
+  void SimulateNEONRoundIntToSize(const Instruction* instr);
+  void SimulateNEONFPConvert(const Instruction* instr);
+  void SimulateNEONFP2RegMisc(const Instruction* instr);
 
   void VisitCryptoSM3(const Instruction* instr);
+  void VisitCryptoSM4(const Instruction* instr);
 
   // Integer register accessors.
 
@@ -2574,6 +2583,14 @@ class Simulator : public DecoderVisitor {
   void PrintPWrite(int rt_code, uintptr_t address) {
     PrintPAccess(rt_code, "->", address);
   }
+  void PrintWriteU64(uint64_t x, uintptr_t address) {
+    fprintf(stream_,
+            "#      0x%016" PRIx64 " -> %s0x%016" PRIxPTR "%s\n",
+            x,
+            clr_memory_address,
+            address,
+            clr_normal);
+  }
 
   // Like Print* (above), but respect GetTraceParameters().
   void LogRead(int rt_code, PrintRegisterFormat format, uintptr_t address) {
@@ -2607,6 +2624,9 @@ class Simulator : public DecoderVisitor {
   }
   void LogPWrite(int rt_code, uintptr_t address) {
     if (ShouldTraceWrites()) PrintPWrite(rt_code, address);
+  }
+  void LogWriteU64(uint64_t x, uintptr_t address) {
+    if (ShouldTraceWrites()) PrintWriteU64(x, address);
   }
   void LogMemTransfer(uintptr_t dst, uintptr_t src, uint8_t value) {
     if (ShouldTraceWrites()) PrintMemTransfer(dst, src, value);
@@ -4587,6 +4607,11 @@ class Simulator : public DecoderVisitor {
                         int index,
                         bool is_a);
 
+  LogicVRegister sm4(LogicVRegister dst,
+                     const LogicVRegister& src1,
+                     const LogicVRegister& src2,
+                     bool is_key);
+
 #define NEON_3VREG_LOGIC_LIST(V) \
   V(addhn)                       \
   V(addhn2)                      \
@@ -4883,6 +4908,12 @@ class Simulator : public DecoderVisitor {
   LogicVRegister fcvtxn2(VectorFormat vform,
                          LogicVRegister dst,
                          const LogicVRegister& src);
+  LogicVRegister bfcvtn(VectorFormat vform,
+                        LogicVRegister dst,
+                        const LogicVRegister& src);
+  LogicVRegister bfcvtn2(VectorFormat vform,
+                         LogicVRegister dst,
+                         const LogicVRegister& src);
   LogicVRegister fsqrt(VectorFormat vform,
                        LogicVRegister dst,
                        const LogicVRegister& src);
@@ -5000,7 +5031,7 @@ class Simulator : public DecoderVisitor {
   uint32_t Crc32Checksum(uint32_t acc, T val, uint32_t poly);
   uint32_t Crc32Checksum(uint32_t acc, uint64_t val, uint32_t poly);
 
-  void SysOp_W(int op, int64_t val);
+  bool SysOp_W(int op, int64_t val);
 
   template <typename T>
   T FPRecipSqrtEstimate(T op);
@@ -5343,7 +5374,7 @@ class Simulator : public DecoderVisitor {
                          std::function<void(Simulator*, const Instruction*)>>;
   static const FormToVisitorFnMap* GetFormToVisitorFnMap();
 
-  uint32_t form_hash_;
+  uint32_t form_hash_{};
 
   static const PACKey kPACKeyIA;
   static const PACKey kPACKeyIB;
@@ -5421,9 +5452,10 @@ class Simulator : public DecoderVisitor {
   // in vreg is non-zero. Clear the flag, otherwise. This is almost the opposite
   // operation to ExpandToSimVRegister(), except that any non-zero lane is
   // interpreted as true.
-  void ExtractFromSimVRegister(VectorFormat vform,
-                               SimPRegister& pd,  // NOLINT(runtime/references)
-                               SimVRegister vreg);
+  void ExtractFromSimVRegister(
+      VectorFormat vform,
+      SimPRegister& pd,  // NOLINT(google-runtime-references)
+      SimVRegister vreg);
 
   bool coloured_trace_;
 
@@ -5450,6 +5482,9 @@ class Simulator : public DecoderVisitor {
   // A configurable size of SVE vector registers.
   unsigned vector_length_;
 
+  // DC ZVA enable (= 0) status and block size.
+  unsigned dczid_ = (0 << 4) | 4;  // 2^4 words => 64-byte block size.
+
   // Representation of memory attributes such as MTE tagging and BTI page
   // protection in addition to branch interceptions.
   MetaDataDepot meta_data_;
@@ -5462,19 +5497,54 @@ class Simulator : public DecoderVisitor {
 
   // The Guarded Control Stack is represented using a vector, where the more
   // recently stored addresses are at higher-numbered indices.
-  using GuardedControlStack = std::vector<uint64_t>;
+  using GuardedControlStackStorage = std::vector<uint64_t>;
 
+ public:
+  struct GuardedControlStack {
+    GuardedControlStackStorage* ptr;
+    uint64_t token;
+  };
+
+ private:
   // The GCSManager handles the synchronisation of GCS across multiple
   // Simulator instances. Each Simulator has its own stack, but all share
   // a GCSManager instance. This allows exchanging stacks between Simulators
   // in a threaded application.
   class GCSManager {
    public:
-    // Allocate a new Guarded Control Stack and add it to the vector of stacks.
+    // Interface for users outside the Simulator.
+
+    // Allocate a new Guarded Control Stack. This method returns a token, which
+    // uniquely identifies the GCS, and can be passed *once* to the stack
+    // switching instructions (GSSS*), when the stack has not been used yet.
+    // Later arguments to the stack switching instructions must either be
+    // fresh tokens, or return values from the stack switching instructions.
     uint64_t AllocateStack() {
+      GuardedControlStack gcs = AllocateStackInternal();
+      return gcs.token;
+    }
+
+    // Free a Guarded Control Stack based on its token.
+    void FreeStack(uint64_t token) {
+      const std::lock_guard<std::mutex> lock(stacks_mtx_);
+      uint64_t gcs_index = GetGCSIndexFromToken(token);
+      GuardedControlStackStorage* gcsptr = stacks_[gcs_index];
+      if (gcsptr == nullptr) {
+        VIXL_ABORT_WITH_MSG("Tried to double free GCS ");
+      } else {
+        delete gcsptr;
+        // To ensure other tokens remain valid, we do not remove this element
+        // but set it to nullptr instead.
+        stacks_[gcs_index] = nullptr;
+      }
+    }
+
+   private:
+    // Allocate a new Guarded Control Stack and add it to the vector of stacks.
+    GuardedControlStack AllocateStackInternal() {
       const std::lock_guard<std::mutex> lock(stacks_mtx_);
 
-      GuardedControlStack* new_stack = new GuardedControlStack;
+      GuardedControlStackStorage* new_stack = new GuardedControlStackStorage;
       uint64_t result;
 
       // Put the new stack into the first available slot.
@@ -5490,42 +5560,46 @@ class Simulator : public DecoderVisitor {
         stacks_.push_back(new_stack);
       }
 
-      // Shift the index to look like a stack pointer aligned to a page.
-      result <<= kPageSizeLog2;
+      result = GetGCSTokenFromIndex(result);
 
       // Push the tagged index onto the new stack as a seal.
       new_stack->push_back(result + 1);
-      return result;
+
+      return {new_stack, result};
     }
 
-    // Free a Guarded Control Stack and set the stacks_ slot to null.
-    void FreeStack(uint64_t gcs) {
+    // Get a pointer to the GCS storage using a GCS index.
+    GuardedControlStackStorage* GetGCSPtr(uint64_t gcs_index) {
       const std::lock_guard<std::mutex> lock(stacks_mtx_);
-      uint64_t gcs_index = GetGCSIndex(gcs);
-      GuardedControlStack* gcsptr = stacks_[gcs_index];
-      if (gcsptr == nullptr) {
-        VIXL_ABORT_WITH_MSG("Tried to free unallocated GCS ");
-      } else {
-        delete gcsptr;
-        stacks_[gcs_index] = nullptr;
-      }
+      return stacks_.at(GetGCSIndexFromToken(gcs_index));
     }
 
-    // Get a pointer to the GCS vector using a GCS id.
-    GuardedControlStack* GetGCSPtr(uint64_t gcs) const {
-      return stacks_[GetGCSIndex(gcs)];
+    // Get an index into stacks_ given a GCS token.
+    static uint64_t GetGCSIndexFromToken(uint64_t token) {
+      return token >> kPageSizeLog2;
     }
 
-   private:
-    uint64_t GetGCSIndex(uint64_t gcs) const { return gcs >> 12; }
+    // Get a GCS token from an index into stacks_.
+    static uint64_t GetGCSTokenFromIndex(uint64_t index) {
+      // Shift the index to look like a stack pointer aligned to a page.
+      return index << kPageSizeLog2;
+    }
 
-    std::vector<GuardedControlStack*> stacks_;
+    std::vector<GuardedControlStackStorage*> stacks_;
     std::mutex stacks_mtx_;
+
+    friend class Simulator;
   };
+
+  GuardedControlStackStorage* GetGCSStorage() { return gcs_.ptr; }
+  uint64_t GetGCSToken() { return gcs_.token; }
 
   // A GCS id indicating no GCS has been allocated.
   static const uint64_t kGCSNoStack = kPageSize - 1;
-  uint64_t gcs_;
+  // We cache both the GCS token, and the pointer to the GCS underlying
+  // storage, which allows us to avoid calls into GCSManager that
+  // would require synchronisation.
+  GuardedControlStack gcs_;
   bool gcs_enabled_;
 
  public:
@@ -5539,37 +5613,45 @@ class Simulator : public DecoderVisitor {
   bool IsGCSCheckEnabled() const { return gcs_enabled_; }
 
  private:
-  bool IsAllocatedGCS(uint64_t gcs) const { return gcs != kGCSNoStack; }
   void ResetGCSState() {
     GCSManager& m = GetGCSManager();
-    if (IsAllocatedGCS(gcs_)) {
-      m.FreeStack(gcs_);
+    // This method is also called in the constructor, before we have set up the
+    // GCS, so the call to FreeStack must be conditional.
+    if (GetGCSStorage() != nullptr) {
+      m.FreeStack(GetGCSToken());
     }
-    ActivateGCS(m.AllocateStack());
+    ActivateGCS(m.AllocateStackInternal());
     GCSPop();  // Remove seal.
   }
 
-  GuardedControlStack* GetGCSPtr(uint64_t gcs) {
+  GuardedControlStackStorage* GetGCSPtr(uint64_t gcs) {
     GCSManager& m = GetGCSManager();
-    GuardedControlStack* result = m.GetGCSPtr(gcs);
+    GuardedControlStackStorage* result = m.GetGCSPtr(gcs);
     return result;
   }
-  GuardedControlStack* GetActiveGCSPtr() { return GetGCSPtr(gcs_); }
 
-  uint64_t ActivateGCS(uint64_t gcs) {
-    uint64_t outgoing_gcs = gcs_;
-    gcs_ = gcs;
-    return outgoing_gcs;
+  GuardedControlStack ActivateGCS(GuardedControlStack incoming) {
+    GuardedControlStack outgoing = gcs_;
+    gcs_ = incoming;
+    return outgoing;
+  }
+
+  GuardedControlStack ActivateGCS(uint64_t token) {
+    GuardedControlStack incoming = {GetGCSPtr(token), token};
+    GuardedControlStack outgoing = gcs_;
+    gcs_ = incoming;
+    return outgoing;
   }
 
   void GCSPush(uint64_t addr) {
-    GetActiveGCSPtr()->push_back(addr);
-    size_t entry = GetActiveGCSPtr()->size() - 1;
+    GuardedControlStackStorage* gcs = GetGCSStorage();
+    gcs->push_back(addr);
+    size_t entry = gcs->size() - 1;
     LogGCS(/* is_push = */ true, addr, entry);
   }
 
   uint64_t GCSPop() {
-    GuardedControlStack* gcs = GetActiveGCSPtr();
+    GuardedControlStackStorage* gcs = GetGCSStorage();
     if (gcs->empty()) {
       return 0;
     }
@@ -5581,7 +5663,7 @@ class Simulator : public DecoderVisitor {
   }
 
   uint64_t GCSPeek() {
-    GuardedControlStack* gcs = GetActiveGCSPtr();
+    GuardedControlStackStorage* gcs = GetGCSStorage();
     if (gcs->empty()) {
       return 0;
     }
@@ -5590,8 +5672,8 @@ class Simulator : public DecoderVisitor {
   }
 
   void ReportGCSFailure(const char* msg) {
+    GuardedControlStackStorage* gcs = GetGCSStorage();
     if (IsGCSCheckEnabled()) {
-      GuardedControlStack* gcs = GetActiveGCSPtr();
       printf("%s", msg);
       if (gcs == nullptr) {
         printf("GCS pointer is null\n");
@@ -5604,7 +5686,7 @@ class Simulator : public DecoderVisitor {
             gcs->pop_back();
             int index = most_recent_index - i;
             printf(" gcs%" PRIu64 "[%d]: 0x%016" PRIx64 "\n",
-                   gcs_,
+                   GCSManager::GetGCSIndexFromToken(GetGCSToken()),
                    index,
                    entry);
           }

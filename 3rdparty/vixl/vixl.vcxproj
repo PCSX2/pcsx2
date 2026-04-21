@@ -76,6 +76,7 @@
     <ClCompile Include="src\aarch64\cpu-aarch64.cc" />
     <ClCompile Include="src\aarch64\cpu-features-auditor-aarch64.cc" />
     <ClCompile Include="src\aarch64\decoder-aarch64.cc" />
+    <ClCompile Include="src\aarch64\debugger-aarch64.cc" />
     <ClCompile Include="src\aarch64\disasm-aarch64.cc" />
     <ClCompile Include="src\aarch64\instructions-aarch64.cc" />
     <ClCompile Include="src\aarch64\logic-aarch64.cc" />
@@ -84,6 +85,7 @@
     <ClCompile Include="src\aarch64\operands-aarch64.cc" />
     <ClCompile Include="src\aarch64\pointer-auth-aarch64.cc" />
     <ClCompile Include="src\aarch64\registers-aarch64.cc" />
+    <ClCompile Include="src\aarch64\simulator-aarch64.cc" />
     <ClCompile Include="src\code-buffer-vixl.cc" />
     <ClCompile Include="src\compiler-intrinsics-vixl.cc" />
     <ClCompile Include="src\cpu-features.cc" />

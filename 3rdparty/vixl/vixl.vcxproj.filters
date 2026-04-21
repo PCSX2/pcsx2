@@ -65,6 +65,9 @@
     <ClCompile Include="src\aarch64\decoder-aarch64.cc">
       <Filter>aarch64</Filter>
     </ClCompile>
+    <ClCompile Include="src\aarch64\debugger-aarch64.cc">
+      <Filter>aarch64</Filter>
+    </ClCompile>
     <ClCompile Include="src\aarch64\disasm-aarch64.cc">
       <Filter>aarch64</Filter>
     </ClCompile>
@@ -87,6 +90,9 @@
       <Filter>aarch64</Filter>
     </ClCompile>
     <ClCompile Include="src\aarch64\registers-aarch64.cc">
+      <Filter>aarch64</Filter>
+    </ClCompile>
+    <ClCompile Include="src\aarch64\simulator-aarch64.cc">
       <Filter>aarch64</Filter>
     </ClCompile>
     <ClCompile Include="src\aarch64\assembler-aarch64.cc">

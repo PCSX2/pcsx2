@@ -30,246 +30,254 @@
 #include <list>
 #include <map>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "../globals-vixl.h"
 
 #include "instructions-aarch64.h"
 
 // List macro containing all visitors needed by the decoder class.
-#define VISITOR_LIST_THAT_RETURN(V)                              \
-  V(AddSubExtended)                                              \
-  V(AddSubImmediate)                                             \
-  V(AddSubShifted)                                               \
-  V(AddSubWithCarry)                                             \
-  V(AtomicMemory)                                                \
-  V(Bitfield)                                                    \
-  V(CompareBranch)                                               \
-  V(ConditionalBranch)                                           \
-  V(ConditionalCompareImmediate)                                 \
-  V(ConditionalCompareRegister)                                  \
-  V(ConditionalSelect)                                           \
-  V(Crypto2RegSHA)                                               \
-  V(Crypto3RegSHA)                                               \
-  V(CryptoAES)                                                   \
-  V(DataProcessing1Source)                                       \
-  V(DataProcessing2Source)                                       \
-  V(DataProcessing3Source)                                       \
-  V(EvaluateIntoFlags)                                           \
-  V(Exception)                                                   \
-  V(Extract)                                                     \
-  V(FPCompare)                                                   \
-  V(FPConditionalCompare)                                        \
-  V(FPConditionalSelect)                                         \
-  V(FPDataProcessing1Source)                                     \
-  V(FPDataProcessing2Source)                                     \
-  V(FPDataProcessing3Source)                                     \
-  V(FPFixedPointConvert)                                         \
-  V(FPImmediate)                                                 \
-  V(FPIntegerConvert)                                            \
-  V(LoadLiteral)                                                 \
-  V(LoadStoreExclusive)                                          \
-  V(LoadStorePAC)                                                \
-  V(LoadStorePairNonTemporal)                                    \
-  V(LoadStorePairOffset)                                         \
-  V(LoadStorePairPostIndex)                                      \
-  V(LoadStorePairPreIndex)                                       \
-  V(LoadStorePostIndex)                                          \
-  V(LoadStorePreIndex)                                           \
-  V(LoadStoreRCpcUnscaledOffset)                                 \
-  V(LoadStoreRegisterOffset)                                     \
-  V(LoadStoreUnscaledOffset)                                     \
-  V(LoadStoreUnsignedOffset)                                     \
-  V(LogicalImmediate)                                            \
-  V(LogicalShifted)                                              \
-  V(MoveWideImmediate)                                           \
-  V(NEON2RegMisc)                                                \
-  V(NEON2RegMiscFP16)                                            \
-  V(NEON3Different)                                              \
-  V(NEON3Same)                                                   \
-  V(NEON3SameExtra)                                              \
-  V(NEON3SameFP16)                                               \
-  V(NEONAcrossLanes)                                             \
-  V(NEONByIndexedElement)                                        \
-  V(NEONCopy)                                                    \
-  V(NEONExtract)                                                 \
-  V(NEONLoadStoreMultiStruct)                                    \
-  V(NEONLoadStoreMultiStructPostIndex)                           \
-  V(NEONLoadStoreSingleStruct)                                   \
-  V(NEONLoadStoreSingleStructPostIndex)                          \
-  V(NEONModifiedImmediate)                                       \
-  V(NEONPerm)                                                    \
-  V(NEONScalar2RegMisc)                                          \
+#define VISITOR_LIST_THAT_RETURN(V) \
+  V(SVEBroadcastBitmaskImm)         \
+  V(Unallocated)                    \
+  V(Unimplemented)
+
+#define SIM_AUD_VISITOR_LIST_THAT_RETURN(V)                      \
   V(NEONScalar2RegMiscFP16)                                      \
-  V(NEONScalar3Diff)                                             \
-  V(NEONScalar3Same)                                             \
-  V(NEONScalar3SameExtra)                                        \
   V(NEONScalar3SameFP16)                                         \
-  V(NEONScalarByIndexedElement)                                  \
-  V(NEONScalarCopy)                                              \
-  V(NEONScalarPairwise)                                          \
-  V(NEONScalarShiftImmediate)                                    \
-  V(NEONShiftImmediate)                                          \
-  V(NEONTable)                                                   \
-  V(PCRelAddressing)                                             \
-  V(RotateRightIntoFlags)                                        \
-  V(SVE32BitGatherLoad_ScalarPlus32BitUnscaledOffsets)           \
-  V(SVE32BitGatherLoad_VectorPlusImm)                            \
+  V(NEONScalar3SameExtra)                                        \
   V(SVE32BitGatherLoadHalfwords_ScalarPlus32BitScaledOffsets)    \
   V(SVE32BitGatherLoadWords_ScalarPlus32BitScaledOffsets)        \
+  V(SVE32BitGatherLoad_ScalarPlus32BitUnscaledOffsets)           \
   V(SVE32BitGatherPrefetch_ScalarPlus32BitScaledOffsets)         \
-  V(SVE32BitGatherPrefetch_VectorPlusImm)                        \
   V(SVE32BitScatterStore_ScalarPlus32BitScaledOffsets)           \
   V(SVE32BitScatterStore_ScalarPlus32BitUnscaledOffsets)         \
-  V(SVE32BitScatterStore_VectorPlusImm)                          \
   V(SVE64BitGatherLoad_ScalarPlus32BitUnpackedScaledOffsets)     \
   V(SVE64BitGatherLoad_ScalarPlus64BitScaledOffsets)             \
   V(SVE64BitGatherLoad_ScalarPlus64BitUnscaledOffsets)           \
   V(SVE64BitGatherLoad_ScalarPlusUnpacked32BitUnscaledOffsets)   \
-  V(SVE64BitGatherLoad_VectorPlusImm)                            \
-  V(SVE64BitGatherPrefetch_ScalarPlus64BitScaledOffsets)         \
-  V(SVE64BitGatherPrefetch_ScalarPlusUnpacked32BitScaledOffsets) \
-  V(SVE64BitGatherPrefetch_VectorPlusImm)                        \
   V(SVE64BitScatterStore_ScalarPlus64BitScaledOffsets)           \
   V(SVE64BitScatterStore_ScalarPlus64BitUnscaledOffsets)         \
   V(SVE64BitScatterStore_ScalarPlusUnpacked32BitScaledOffsets)   \
   V(SVE64BitScatterStore_ScalarPlusUnpacked32BitUnscaledOffsets) \
-  V(SVE64BitScatterStore_VectorPlusImm)                          \
-  V(SVEAddressGeneration)                                        \
-  V(SVEBitwiseLogicalUnpredicated)                               \
-  V(SVEBitwiseShiftUnpredicated)                                 \
+  V(SVEBitwiseLogical_Predicated)                                \
+  V(SVEBitwiseShiftByVector_Predicated)                          \
+  V(SVEConditionallyBroadcastElementToVector)                    \
+  V(SVEConditionallyExtractElementToSIMDFPScalar)                \
+  V(SVEConstructivePrefix_Unpredicated)                          \
+  V(SVEContiguousNonTemporalLoad_ScalarPlusScalar)               \
+  V(SVEContiguousNonTemporalStore_ScalarPlusScalar)              \
+  V(SVEContiguousStore_ScalarPlusScalar)                         \
+  V(SVEExtractElementToSIMDFPScalarRegister)                     \
   V(SVEFFRInitialise)                                            \
   V(SVEFFRWriteFromPredicate)                                    \
-  V(SVEFPAccumulatingReduction)                                  \
-  V(SVEFPArithmeticUnpredicated)                                 \
-  V(SVEFPCompareVectors)                                         \
-  V(SVEFPCompareWithZero)                                        \
-  V(SVEFPComplexAddition)                                        \
-  V(SVEFPComplexMulAdd)                                          \
+  V(SVEFPConvertToInt)                                           \
+  V(SVEInsertSIMDFPScalarRegister)                               \
+  V(SVEIntAddSubtractVectors_Predicated)                         \
+  V(SVEIntMinMaxDifference_Predicated)                           \
+  V(SVEIntMinMaxImm_Unpredicated)                                \
+  V(SVEIntMulImm_Unpredicated)                                   \
+  V(SVEIntMulVectors_Predicated)                                 \
+  V(SVELoadAndBroadcastQOWord_ScalarPlusScalar)                  \
+  V(SVELoadMultipleStructures_ScalarPlusImm)                     \
+  V(SVELoadMultipleStructures_ScalarPlusScalar)                  \
+  V(SVEPartitionBreakCondition)                                  \
+  V(SVEPermutePredicateElements)                                 \
+  V(SVEPredicateFirstActive)                                     \
+  V(SVEPredicateReadFromFFR_Unpredicated)                        \
+  V(SVEPredicateTest)                                            \
+  V(SVEPredicateZero)                                            \
+  V(SVEPropagateBreakToNextPartition)                            \
+  V(SVEStoreMultipleStructures_ScalarPlusImm)                    \
+  V(SVEStoreMultipleStructures_ScalarPlusScalar)                 \
+  V(SVETableLookup)                                              \
+  V(SVEUnpackPredicateElements)                                  \
+  V(SVEVectorSplice)                                             \
   V(SVEFPComplexMulAddIndex)                                     \
-  V(SVEFPFastReduction)                                          \
   V(SVEFPMulIndex)                                               \
-  V(SVEFPMulAdd)                                                 \
   V(SVEFPMulAddIndex)                                            \
-  V(SVEFPUnaryOpUnpredicated)                                    \
   V(SVEIncDecByPredicateCount)                                   \
-  V(SVEIndexGeneration)                                          \
   V(SVEIntArithmeticUnpredicated)                                \
   V(SVEIntCompareSignedImm)                                      \
   V(SVEIntCompareUnsignedImm)                                    \
   V(SVEIntCompareVectors)                                        \
   V(SVEIntMulAddPredicated)                                      \
-  V(SVEIntMulAddUnpredicated)                                    \
-  V(SVEIntReduction)                                             \
-  V(SVEIntUnaryArithmeticPredicated)                             \
   V(SVEMovprfx)                                                  \
-  V(SVEMulIndex)                                                 \
   V(SVEPermuteVectorExtract)                                     \
   V(SVEPermuteVectorInterleaving)                                \
   V(SVEPredicateCount)                                           \
-  V(SVEPredicateLogical)                                         \
+  V(SVEPredicateNextActive)                                      \
+  V(SVEPredicateReadFromFFR_Predicated)                          \
   V(SVEPropagateBreak)                                           \
   V(SVEStackFrameAdjustment)                                     \
   V(SVEStackFrameSize)                                           \
-  V(SVEVectorSelect)                                             \
-  V(SVEBitwiseLogical_Predicated)                                \
-  V(SVEBitwiseLogicalWithImm_Unpredicated)                       \
-  V(SVEBitwiseShiftByImm_Predicated)                             \
-  V(SVEBitwiseShiftByVector_Predicated)                          \
-  V(SVEBitwiseShiftByWideElements_Predicated)                    \
-  V(SVEBroadcastBitmaskImm)                                      \
-  V(SVEBroadcastFPImm_Unpredicated)                              \
-  V(SVEBroadcastGeneralRegister)                                 \
-  V(SVEBroadcastIndexElement)                                    \
-  V(SVEBroadcastIntImm_Unpredicated)                             \
-  V(SVECompressActiveElements)                                   \
-  V(SVEConditionallyBroadcastElementToVector)                    \
-  V(SVEConditionallyExtractElementToSIMDFPScalar)                \
-  V(SVEConditionallyExtractElementToGeneralRegister)             \
-  V(SVEConditionallyTerminateScalars)                            \
-  V(SVEConstructivePrefix_Unpredicated)                          \
-  V(SVEContiguousFirstFaultLoad_ScalarPlusScalar)                \
-  V(SVEContiguousLoad_ScalarPlusImm)                             \
   V(SVEContiguousLoad_ScalarPlusScalar)                          \
-  V(SVEContiguousNonFaultLoad_ScalarPlusImm)                     \
-  V(SVEContiguousNonTemporalLoad_ScalarPlusImm)                  \
-  V(SVEContiguousNonTemporalLoad_ScalarPlusScalar)               \
-  V(SVEContiguousNonTemporalStore_ScalarPlusImm)                 \
-  V(SVEContiguousNonTemporalStore_ScalarPlusScalar)              \
-  V(SVEContiguousPrefetch_ScalarPlusImm)                         \
-  V(SVEContiguousPrefetch_ScalarPlusScalar)                      \
-  V(SVEContiguousStore_ScalarPlusImm)                            \
-  V(SVEContiguousStore_ScalarPlusScalar)                         \
-  V(SVECopySIMDFPScalarRegisterToVector_Predicated)              \
-  V(SVECopyFPImm_Predicated)                                     \
-  V(SVECopyGeneralRegisterToVector_Predicated)                   \
-  V(SVECopyIntImm_Predicated)                                    \
-  V(SVEElementCount)                                             \
-  V(SVEExtractElementToSIMDFPScalarRegister)                     \
-  V(SVEExtractElementToGeneralRegister)                          \
-  V(SVEFPArithmetic_Predicated)                                  \
-  V(SVEFPArithmeticWithImm_Predicated)                           \
-  V(SVEFPConvertPrecision)                                       \
-  V(SVEFPConvertToInt)                                           \
-  V(SVEFPExponentialAccelerator)                                 \
-  V(SVEFPRoundToIntegralValue)                                   \
-  V(SVEFPTrigMulAddCoefficient)                                  \
-  V(SVEFPTrigSelectCoefficient)                                  \
-  V(SVEFPUnaryOp)                                                \
-  V(SVEIncDecRegisterByElementCount)                             \
-  V(SVEIncDecVectorByElementCount)                               \
-  V(SVEInsertSIMDFPScalarRegister)                               \
-  V(SVEInsertGeneralRegister)                                    \
-  V(SVEIntAddSubtractImm_Unpredicated)                           \
-  V(SVEIntAddSubtractVectors_Predicated)                         \
-  V(SVEIntCompareScalarCountAndLimit)                            \
-  V(SVEIntConvertToFP)                                           \
-  V(SVEIntDivideVectors_Predicated)                              \
-  V(SVEIntMinMaxImm_Unpredicated)                                \
-  V(SVEIntMinMaxDifference_Predicated)                           \
-  V(SVEIntMulImm_Unpredicated)                                   \
-  V(SVEIntMulVectors_Predicated)                                 \
-  V(SVELoadAndBroadcastElement)                                  \
-  V(SVELoadAndBroadcastQOWord_ScalarPlusImm)                     \
-  V(SVELoadAndBroadcastQOWord_ScalarPlusScalar)                  \
-  V(SVELoadMultipleStructures_ScalarPlusImm)                     \
-  V(SVELoadMultipleStructures_ScalarPlusScalar)                  \
-  V(SVELoadPredicateRegister)                                    \
-  V(SVELoadVectorRegister)                                       \
-  V(SVEPartitionBreakCondition)                                  \
-  V(SVEPermutePredicateElements)                                 \
-  V(SVEPredicateFirstActive)                                     \
+  V(RotateRightIntoFlags)                                        \
+  V(EvaluateIntoFlags)                                           \
+  V(ConditionalCompareRegister)                                  \
+  V(ConditionalCompareImmediate)                                 \
+  V(PCRelAddressing)                                             \
+  V(UnconditionalBranch)                                         \
+  V(DataProcessing1Source)                                       \
+  V(CompareBranch)                                               \
+  V(TestBranch)                                                  \
+  V(LoadStoreRCpcUnscaledOffset)                                 \
+  V(LoadStoreUnscaledOffset)                                     \
+  V(LoadLiteral)                                                 \
+  V(LoadStorePairNonTemporal)                                    \
+  V(LoadStorePAC)                                                \
+  V(FPCompare)                                                   \
+  V(FPConditionalCompare)                                        \
+  V(FPConditionalSelect)                                         \
+  V(FPDataProcessing2Source)                                     \
+  V(FPDataProcessing3Source)                                     \
+  V(FPIntegerConvert)                                            \
+  V(FPFixedPointConvert)                                         \
+  V(Exception)                                                   \
+  V(Crypto2RegSHA)                                               \
+  V(Crypto3RegSHA)                                               \
+  V(CryptoAES)                                                   \
+  V(NEON2RegMiscFP16)                                            \
+  V(SVEContiguousLoad_ScalarPlusImm)                             \
   V(SVEPredicateInitialize)                                      \
-  V(SVEPredicateNextActive)                                      \
-  V(SVEPredicateReadFromFFR_Predicated)                          \
-  V(SVEPredicateReadFromFFR_Unpredicated)                        \
-  V(SVEPredicateTest)                                            \
-  V(SVEPredicateZero)                                            \
-  V(SVEPropagateBreakToNextPartition)                            \
+  V(SVEIndexGeneration)                                          \
+  V(SVEAddressGeneration)                                        \
+  V(SVELoadAndBroadcastQOWord_ScalarPlusImm)                     \
+  V(SVEIntAddSubtractImm_Unpredicated)                           \
+  V(SVEIntCompareScalarCountAndLimit)                            \
+  V(FPImmediate)                                                 \
+  V(FPDataProcessing1Source)                                     \
+  V(NEONModifiedImmediate)                                       \
+  V(NEONTable)                                                   \
+  V(SVEIntReduction)                                             \
+  V(SVEMulIndex)                                                 \
+  V(NEON3SameFP16)                                               \
+  V(NEONLoadStoreSingleStruct)                                   \
+  V(NEONLoadStoreSingleStructPostIndex)                          \
+  V(NEONLoadStoreMultiStructPostIndex)                           \
+  V(LoadStorePreIndex)                                           \
+  V(LoadStorePostIndex)                                          \
+  V(LoadStoreUnsignedOffset)                                     \
+  V(LoadStoreRegisterOffset)                                     \
+  V(LoadStorePairPostIndex)                                      \
+  V(LoadStorePairOffset)                                         \
+  V(LoadStorePairPreIndex)                                       \
+  V(SVEBitwiseShiftByWideElements_Predicated)                    \
+  V(NEONScalarPairwise)                                          \
+  V(SVEFPUnaryOp)                                                \
+  V(SVEFPRoundToIntegralValue)                                   \
+  V(SVEFPUnaryOpUnpredicated)                                    \
+  V(SVEFPMulAdd)                                                 \
+  V(SVEFPFastReduction)                                          \
+  V(SVEFPComplexMulAdd)                                          \
+  V(SVEFPComplexAddition)                                        \
+  V(SVEFPCompareWithZero)                                        \
+  V(SVEFPCompareVectors)                                         \
+  V(SVEFPArithmeticUnpredicated)                                 \
+  V(SVEFPAccumulatingReduction)                                  \
+  V(SVEIntUnaryArithmeticPredicated)                             \
+  V(SVEBitwiseShiftUnpredicated)                                 \
+  V(SVEUnpackVectorElements)                                     \
+  V(SVEIntConvertToFP)                                           \
+  V(SVEReverseWithinElements)                                    \
   V(SVEReversePredicateElements)                                 \
   V(SVEReverseVectorElements)                                    \
-  V(SVEReverseWithinElements)                                    \
-  V(SVESaturatingIncDecRegisterByElementCount)                   \
-  V(SVESaturatingIncDecVectorByElementCount)                     \
-  V(SVEStoreMultipleStructures_ScalarPlusImm)                    \
-  V(SVEStoreMultipleStructures_ScalarPlusScalar)                 \
-  V(SVEStorePredicateRegister)                                   \
-  V(SVEStoreVectorRegister)                                      \
-  V(SVETableLookup)                                              \
-  V(SVEUnpackPredicateElements)                                  \
-  V(SVEUnpackVectorElements)                                     \
-  V(SVEVectorSplice)                                             \
-  V(System)                                                      \
-  V(TestBranch)                                                  \
-  V(Unallocated)                                                 \
-  V(UnconditionalBranch)                                         \
+  V(SVEInsertGeneralRegister)                                    \
+  V(SVEFPTrigSelectCoefficient)                                  \
+  V(SVEFPTrigMulAddCoefficient)                                  \
+  V(SVEFPExponentialAccelerator)                                 \
+  V(SVEFPArithmetic_Predicated)                                  \
+  V(SVEFPArithmeticWithImm_Predicated)                           \
+  V(SVEBitwiseLogicalWithImm_Unpredicated)                       \
   V(UnconditionalBranchToRegister)                               \
-  V(Unimplemented)
+  V(NEONExtract)                                                 \
+  V(ConditionalSelect)                                           \
+  V(LogicalImmediate)                                            \
+  V(AddSubImmediate)                                             \
+  V(AddSubShifted)                                               \
+  V(AddSubExtended)                                              \
+  V(LogicalShifted)                                              \
+  V(Extract)                                                     \
+  V(DataProcessing2Source)                                       \
+  V(DataProcessing3Source)                                       \
+  V(ConditionalBranch)                                           \
+  V(Bitfield)                                                    \
+  V(AtomicMemory)                                                \
+  V(SVEVectorSelect)                                             \
+  V(SVEPredicateLogical)                                         \
+  V(SVEIntDivideVectors_Predicated)                              \
+  V(SVEBroadcastIntImm_Unpredicated)                             \
+  V(SVEBroadcastFPImm_Unpredicated)                              \
+  V(SVEBroadcastGeneralRegister)                                 \
+  V(SVECompressActiveElements)                                   \
+  V(SVEConditionallyTerminateScalars)                            \
+  V(SVEConditionallyExtractElementToGeneralRegister)             \
+  V(SVEBitwiseShiftByImm_Predicated)                             \
+  V(SVECopyGeneralRegisterToVector_Predicated)                   \
+  V(SVECopyIntImm_Predicated)                                    \
+  V(SVECopySIMDFPScalarRegisterToVector_Predicated)              \
+  V(SVECopyFPImm_Predicated)                                     \
+  V(SVEExtractElementToGeneralRegister)                          \
+  V(SVEIntMulAddUnpredicated)                                    \
+  V(SVEContiguousStore_ScalarPlusImm)                            \
+  V(SVEContiguousPrefetch_ScalarPlusScalar)                      \
+  V(SVEContiguousPrefetch_ScalarPlusImm)                         \
+  V(SVEContiguousNonFaultLoad_ScalarPlusImm)                     \
+  V(SVEBitwiseLogicalUnpredicated)                               \
+  V(SVE64BitGatherPrefetch_ScalarPlus64BitScaledOffsets)         \
+  V(SVE64BitGatherPrefetch_ScalarPlusUnpacked32BitScaledOffsets) \
+  V(SVE64BitGatherPrefetch_VectorPlusImm)                        \
+  V(SVE32BitGatherPrefetch_VectorPlusImm)                        \
+  V(SVELoadVectorRegister)                                       \
+  V(SVEStoreVectorRegister)                                      \
+  V(SVELoadPredicateRegister)                                    \
+  V(SVEStorePredicateRegister)                                   \
+  V(SVEFPConvertPrecision)                                       \
+  V(SVE32BitGatherLoad_VectorPlusImm)                            \
+  V(SVE32BitScatterStore_VectorPlusImm)                          \
+  V(SVE64BitScatterStore_VectorPlusImm)                          \
+  V(SVEContiguousFirstFaultLoad_ScalarPlusScalar)                \
+  V(SVEContiguousNonTemporalLoad_ScalarPlusImm)                  \
+  V(SVEContiguousNonTemporalStore_ScalarPlusImm)                 \
+  V(SVELoadAndBroadcastElement)                                  \
+  V(NEONPerm)                                                    \
+  V(NEONLoadStoreMultiStruct)                                    \
+  V(NEON3Same)                                                   \
+  V(NEON3SameExtra)                                              \
+  V(NEON2RegMisc)                                                \
+  V(NEONByIndexedElement)                                        \
+  V(SVE64BitGatherLoad_VectorPlusImm)                            \
+  V(NEONShiftImmediate)                                          \
+  V(NEONCopy)                                                    \
+  V(NEONScalar2RegMisc)                                          \
+  V(NEONScalar3Diff)                                             \
+  V(NEONScalar3Same)                                             \
+  V(NEONScalarCopy)                                              \
+  V(NEONScalarByIndexedElement)                                  \
+  V(NEONAcrossLanes)                                             \
+  V(NEONScalarShiftImmediate)                                    \
+  V(NEON3Different)                                              \
+  V(MoveWideImmediate)                                           \
+  V(SVEElementCount)                                             \
+  V(SVEIncDecRegisterByElementCount)                             \
+  V(SVEIncDecVectorByElementCount)                               \
+  V(SVESaturatingIncDecVectorByElementCount)                     \
+  V(SVESaturatingIncDecRegisterByElementCount)                   \
+  V(LoadStoreExclusive)                                          \
+  V(SVEBroadcastIndexElement)                                    \
+  V(System)                                                      \
+  V(AddSubWithCarry)
 
 #define VISITOR_LIST_THAT_DONT_RETURN(V) V(Reserved)
 
 #define VISITOR_LIST(V)       \
   VISITOR_LIST_THAT_RETURN(V) \
   VISITOR_LIST_THAT_DONT_RETURN(V)
+
+#define SIM_AUD_VISITOR_LIST(V) \
+  VISITOR_LIST(V)               \
+  SIM_AUD_VISITOR_LIST_THAT_RETURN(V)
 
 namespace vixl {
 namespace aarch64 {
@@ -311,7 +319,10 @@ class CompiledDecodeNode;
 // handles the instruction.
 class Decoder {
  public:
-  Decoder() { ConstructDecodeGraph(); }
+  Decoder() {
+    ConstructDecodeGraph();
+    PopulatePerInstructionUnallocatedMap(&form_to_unalloc_);
+  }
 
   // Top-level wrappers around the actual decoding function.
   void Decode(const Instruction* instr);
@@ -392,6 +403,13 @@ class Decoder {
 
   // Map of node names to DecodeNodes.
   std::map<std::string, DecodeNode> decode_nodes_;
+
+  // Map from instruction form strings to a mask/value of encodings for that
+  // form.
+  using FormToUnallocMap = std::unordered_multimap<uint32_t, uint64_t>;
+  FormToUnallocMap form_to_unalloc_;
+
+  static void PopulatePerInstructionUnallocatedMap(FormToUnallocMap* ftm);
 };
 
 typedef void (Decoder::*DecodeFnPtr)(const Instruction*);
@@ -471,7 +489,7 @@ class CompiledDecodeNode {
   bool IsLeafNode() const {
     VIXL_ASSERT(((instruction_name_ == "node") && (bit_extract_fn_ != NULL)) ||
                 ((instruction_name_ != "node") && (bit_extract_fn_ == NULL)));
-    return instruction_name_ != "node";
+    return bit_extract_fn_ == NULL;
   }
 
   // Get a pointer to the next node required in the decode process, based on the

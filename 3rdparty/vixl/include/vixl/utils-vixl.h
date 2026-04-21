@@ -49,7 +49,7 @@ namespace vixl {
 #ifdef __GNUC__
 #define VIXL_HAS_DEPRECATED_WITH_MSG
 #elif defined(__clang__)
-#if __has_extension(attribute_deprecated_with_message)
+#ifdef __has_extension(attribute_deprecated_with_message)
 #define VIXL_HAS_DEPRECATED_WITH_MSG
 #endif
 #endif
@@ -258,9 +258,22 @@ class Float16 {
   uint16_t rawbits_;
 };
 
-// Floating point representation.
 uint16_t Float16ToRawbits(Float16 value);
+Float16 RawbitsToFloat16(uint16_t bits);
 
+class BFloat16 {
+ public:
+  explicit BFloat16(float value);
+  BFloat16() : rawbits_(0) {}
+  friend uint16_t BFloat16ToRawbits(BFloat16 value);
+  friend BFloat16 RawbitsToBFloat16(uint16_t bits);
+
+ protected:
+  uint16_t rawbits_;
+};
+
+uint16_t BFloat16ToRawbits(BFloat16 value);
+BFloat16 RawbitsToBFloat16(uint16_t bits);
 
 uint32_t FloatToRawbits(float value);
 VIXL_DEPRECATED("FloatToRawbits",
@@ -273,8 +286,6 @@ VIXL_DEPRECATED("DoubleToRawbits",
                 inline uint64_t double_to_rawbits(double value)) {
   return DoubleToRawbits(value);
 }
-
-Float16 RawbitsToFloat16(uint16_t bits);
 
 float RawbitsToFloat(uint32_t bits);
 VIXL_DEPRECATED("RawbitsToFloat",
@@ -629,8 +640,8 @@ bool IsRepeatingPattern(T value) {
   VIXL_ASSERT(IsMultiple(sizeof(value) * kBitsPerByte, BITS));
   VIXL_ASSERT(IsMultiple(BITS, 2));
   VIXL_STATIC_ASSERT(BITS >= 2);
-#if (defined(__x86_64__) || defined(__i386)) && \
-    __clang_major__ >= 17 && __clang_major__ <= 19
+#if (defined(__x86_64__) || defined(__i386)) && __clang_major__ >= 17 && \
+    __clang_major__ <= 19
   // Workaround for https://github.com/llvm/llvm-project/issues/108722
   unsigned hbits = BITS / 2;
   T midmask = (~static_cast<T>(0) >> BITS) << hbits;
@@ -1132,6 +1143,8 @@ const unsigned kFloatMantissaBits = 23;
 const unsigned kFloatExponentBits = 8;
 const unsigned kFloat16MantissaBits = 10;
 const unsigned kFloat16ExponentBits = 5;
+const unsigned kBFloat16MantissaBits = 7;
+const unsigned kBFloat16ExponentBits = kFloatExponentBits;
 
 enum FPRounding {
   // The first four values are encodable directly by FPCR<RMode>.
@@ -1388,6 +1401,16 @@ static inline float FPRoundToFloat(int64_t sign,
   return RawbitsToFloat(bits);
 }
 
+// See FPRound for a description of this function.
+static inline BFloat16 FPRoundToBFloat16(int64_t sign,
+                                         int64_t exponent,
+                                         uint64_t mantissa,
+                                         FPRounding round_mode) {
+  return RawbitsToBFloat16(
+      FPRound<uint16_t, kBFloat16ExponentBits, kBFloat16MantissaBits>(
+          sign, exponent, mantissa, round_mode));
+}
+
 
 float FPToFloat(Float16 value, UseDefaultNaN DN, bool* exception = NULL);
 float FPToFloat(double value,
@@ -1407,6 +1430,16 @@ Float16 FPToFloat16(double value,
                     FPRounding round_mode,
                     UseDefaultNaN DN,
                     bool* exception = NULL);
+
+BFloat16 FPToBFloat16(float value,
+                      FPRounding round_mode,
+                      UseDefaultNaN DN,
+                      bool* exception = NULL);
+
+BFloat16 FPToBFloat16(double value,
+                      FPRounding round_mode,
+                      UseDefaultNaN DN,
+                      bool* exception = NULL);
 
 // Like static_cast<T>(value), but with specialisations for the Float16 type.
 template <typename T, typename F>
@@ -1480,7 +1513,7 @@ constexpr uint32_t Hash(const char* str, uint32_t hash = 0) {
   }
 }
 
-constexpr uint32_t operator"" _h(const char* x, size_t) { return Hash(x); }
+constexpr uint32_t operator""_h(const char* x, size_t) { return Hash(x); }
 
 }  // namespace vixl
 

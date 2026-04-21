@@ -550,8 +550,7 @@ void MacroAssembler::B(Label* label) {
   b(label);
 }
 
-
-void MacroAssembler::B(Label* label, Condition cond) {
+void MacroAssembler::Bcommon(Label* label, Condition cond, bool use_bc) {
   // We don't need to check the size of the literal pool, because the size of
   // the literal pool is already bounded by the literal range, which is smaller
   // than the range of this branch.
@@ -563,7 +562,11 @@ void MacroAssembler::B(Label* label, Condition cond) {
 
   if (label->IsBound() && LabelIsOutOfRange(label, CondBranchType)) {
     Label done;
-    b(&done, InvertCondition(cond));
+    if (use_bc) {
+      bc(&done, InvertCondition(cond));
+    } else {
+      b(&done, InvertCondition(cond));
+    }
     b(label);
     bind(&done);
   } else {
@@ -572,7 +575,11 @@ void MacroAssembler::B(Label* label, Condition cond) {
                                             label,
                                             CondBranchType);
     }
-    b(label, cond);
+    if (use_bc) {
+      bc(label, cond);
+    } else {
+      b(label, cond);
+    }
   }
 }
 
