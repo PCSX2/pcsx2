@@ -39,7 +39,7 @@ layout(location = 0) out VSOutput
 	#endif
 
 	float inv_cov; // We use the inverse to make it simpler to interpolate.
-	uint interior; // 1 for triangle interior; 0 for edge;
+	flat uint interior; // 1 for triangle interior; 0 for edge;
 } vsOut;
 
 #if VS_EXPAND == VS_EXPAND_NONE
