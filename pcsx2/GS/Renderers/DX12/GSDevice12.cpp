@@ -1464,6 +1464,18 @@ void GSDevice12::DrawPrimitive()
 	GetCommandList().list4->DrawInstanced(m_vertex.count, 1, m_vertex.start, 0);
 }
 
+void GSDevice12::DrawIndexedPrimitive()
+{
+	DrawIndexedPrimitive(0, m_index.count);
+}
+
+void GSDevice12::DrawIndexedPrimitive(int offset, int count)
+{
+	pxAssert(offset + count <= (int)m_index.count);
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+	GetCommandList().list4->DrawIndexedInstanced(count, 1, m_index.start + offset, m_vertex.start, 0);
+}
+
 void GSDevice12::DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_indexing, int vs_indexing_expansion)
 {
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
@@ -1479,17 +1491,23 @@ void GSDevice12::DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_ind
 	}
 }
 
-void GSDevice12::DrawIndexedPrimitive()
+void GSDevice12::Draw(const GSHWDrawConfig& config, int offset, int count)
 {
-	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	GetCommandList().list4->DrawIndexedInstanced(m_index.count, 1, m_index.start, m_vertex.start, 0);
+	if (config.vs.expand != GSHWDrawConfig::VSExpand::None)
+	{
+		const bool vs_indexing = config.vs.UseVSExpandIndexBuffer();
+		const u32 vs_indexing_expansion = GetExpansionFactor(config.vs.expand);
+		DrawIndexedPrimitiveVSExpand(offset, count, vs_indexing, vs_indexing_expansion);
+	}
+	else
+	{
+		DrawIndexedPrimitive(offset, count);
+	}
 }
 
-void GSDevice12::DrawIndexedPrimitive(int offset, int count)
+void GSDevice12::Draw(const GSHWDrawConfig& config)
 {
-	pxAssert(offset + count <= (int)m_index.count);
-	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	GetCommandList().list4->DrawIndexedInstanced(count, 1, m_index.start + offset, m_vertex.start, 0);
+	Draw(config, 0, m_index.count);
 }
 
 void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
@@ -4138,7 +4156,7 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 	init_pipe.ps.no_color = false;
 	init_pipe.ps.no_color1 = true;
 	if (BindDrawPipeline(init_pipe))
-		DrawIndexedPrimitive();
+		Draw(config);
 
 	// image is initialized/prepass is done, so finish up and get ready to do the "real" draw
 	EndRenderPass();
@@ -4458,7 +4476,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		pipe.ps.blend_hw = config.blend_multi_pass.blend_hw;
 		pipe.ps.dither = config.blend_multi_pass.dither;
 		if (BindDrawPipeline(pipe))
-			DrawIndexedPrimitive();
+			Draw(config);
 	}
 
 	// and the alpha pass
@@ -4522,29 +4540,15 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 	GSTexture12* draw_ds, const bool feedback_rt, const bool feedback_depth, const bool one_barrier,
 	const bool full_barrier)
 {
-	if (BindDrawPipeline(pipe) && !m_features.texture_barrier) [[unlikely]]
+	const int n_barriers = static_cast<int>(feedback_rt) + static_cast<int>(feedback_depth);
+
+	if (!m_features.texture_barrier) [[unlikely]]
 	{
-		DrawIndexedPrimitive();
+		if (BindDrawPipeline(pipe))
+			Draw(config);
 		return;
 	}
 
-	const int n_barriers = static_cast<int>(feedback_rt) + static_cast<int>(feedback_depth);
-
-	const bool vs_expand = config.vs.expand != GSHWDrawConfig::VSExpand::None;
-	const bool vs_indexing = config.vs.UseVSExpandIndexBuffer();
-	const u32 vs_indexing_expansion = GetExpansionFactor(config.vs.expand);
-
-	auto Draw = [&](int offset, int count) {
-		if (vs_expand)
-		{
-			DrawIndexedPrimitiveVSExpand(offset, count, vs_indexing, vs_indexing_expansion);
-		}
-		else
-		{
-			DrawIndexedPrimitive(offset, count);
-		}
-	};
-	
 	if (feedback_rt || feedback_depth)
 	{
 #ifdef PCSX2_DEVBUILD
@@ -4577,7 +4581,7 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 					FeedbackBarrier(draw_ds);
 
 				if (BindDrawPipeline(pipe))
-					Draw(p, count);
+					Draw(config, p, count);
 				p += count;
 			}
 
@@ -4596,7 +4600,7 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 	}
 
 	if (BindDrawPipeline(pipe))
-		Draw(0, m_index.count);
+		Draw(config);
 }
 
 void GSDevice12::UpdateHWPipelineSelector(GSHWDrawConfig& config)

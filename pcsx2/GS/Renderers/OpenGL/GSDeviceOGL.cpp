@@ -1200,15 +1200,11 @@ void GSDeviceOGL::DrawPrimitive()
 
 void GSDeviceOGL::DrawIndexedPrimitive()
 {
-	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	glDrawElementsBaseVertex(m_draw_topology, static_cast<u32>(m_index.count), GL_UNSIGNED_SHORT,
-		reinterpret_cast<void*>(static_cast<u32>(m_index.start) * sizeof(u16)), static_cast<GLint>(m_vertex.start));
+	DrawIndexedPrimitive(0, m_index.count);
 }
 
 void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 {
-	//ASSERT(offset + count <= (int)m_index.count);
-
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 	glDrawElementsBaseVertex(m_draw_topology, count, GL_UNSIGNED_SHORT,
 		reinterpret_cast<void*>((static_cast<u32>(m_index.start) + static_cast<u32>(offset)) * sizeof(u16)),
@@ -1217,8 +1213,6 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 
 void GSDeviceOGL::DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_indexing, int vs_indexing_expansion)
 {
-	//ASSERT(offset + count <= (int)m_index.count);
-
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 	if (vs_indexing)
 	{
@@ -1231,6 +1225,25 @@ void GSDeviceOGL::DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_in
 		glDrawElementsBaseVertex(m_draw_topology, count, GL_UNSIGNED_SHORT,
 			reinterpret_cast<void*>((static_cast<u32>(m_index.start) + static_cast<u32>(offset)) * sizeof(u16)), 0);
 	}
+}
+
+void GSDeviceOGL::Draw(const GSHWDrawConfig& config, int offset, int count)
+{
+	if (config.vs.expand != GSHWDrawConfig::VSExpand::None)
+	{
+		const bool vs_indexing = config.vs.UseVSExpandIndexBuffer();
+		const u32 vs_indexing_expansion = GetExpansionFactor(config.vs.expand);
+		DrawIndexedPrimitiveVSExpand(offset, count, vs_indexing, vs_indexing_expansion);
+	}
+	else
+	{
+		DrawIndexedPrimitive(offset, count);
+	}
+}
+
+void GSDeviceOGL::Draw(const GSHWDrawConfig& config)
+{
+	Draw(config, 0, m_index.count);
 }
 
 void GSDeviceOGL::CommitClear(GSTexture* t, bool use_write_fbo)
@@ -2898,7 +2911,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		SetupOM(dss);
 
 		// Compute primitiveID max that pass the date test (Draw without barrier)
-		DrawIndexedPrimitive();
+		Draw(config);
 
 		psel.ps.date = 3;
 		config.alpha_second_pass.ps.date = 3;
@@ -3007,7 +3020,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		psel.ps.blend_hw = config.blend_multi_pass.blend_hw;
 		psel.ps.dither = config.blend_multi_pass.dither;
 		SetupPipeline(psel);
-		DrawIndexedPrimitive();
+		Draw(config);
 	}
 
 	if (config.alpha_second_pass.enable)
@@ -3059,27 +3072,6 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 	GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
 	const bool one_barrier, const bool full_barrier)
 {
-	const bool vs_expand = config.vs.expand != GSHWDrawConfig::VSExpand::None;
-	const bool vs_indexing = config.vs.UseVSExpandIndexBuffer();
-	const u32 vs_indexing_expansion = GetExpansionFactor(config.vs.expand);
-
-	auto Draw = [&](int offset, int count) {
-		if (vs_expand)
-		{
-			DrawIndexedPrimitiveVSExpand(offset, count, vs_indexing, vs_indexing_expansion);
-		}
-		else
-		{
-			DrawIndexedPrimitive(offset, count);
-		}
-	};
-
-	if (!m_features.texture_barrier) [[unlikely]]
-	{
-		Draw(0, m_index.count);
-		return;
-	}
-
 #ifdef PCSX2_DEVBUILD
 	if ((one_barrier || full_barrier) && !(config.ps.IsFeedbackLoopRT() || config.ps.IsFeedbackLoopDepth())) [[unlikely]]
 		Console.Warning("OpenGL: Possible unnecessary barrier detected.");
@@ -3129,7 +3121,7 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 				CopyAndBind(ProcessCopyArea(rtsize, original_bbox));
 			}
 
-			Draw(p, count);
+			Draw(config, p, count);
 			p += count;
 		}
 
@@ -3150,7 +3142,7 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 		}
 	}
 
-	Draw(0, m_index.count);
+	Draw(config);
 }
 
 // Note: used as a callback of DebugMessageCallback. Don't change the signature

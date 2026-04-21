@@ -1180,9 +1180,7 @@ void GSDevice11::DrawPrimitive()
 
 void GSDevice11::DrawIndexedPrimitive()
 {
-	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	PSUpdateShaderState(true, true);
-	m_ctx->DrawIndexed(m_index.count, m_index.start, m_vertex.start);
+	DrawIndexedPrimitive(0, m_index.count);
 }
 
 void GSDevice11::DrawIndexedPrimitive(int offset, int count)
@@ -1209,6 +1207,25 @@ void GSDevice11::DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_ind
 		VSSetPushConstants(m_vertex.start);
 		m_ctx->DrawIndexed(count, m_index.start + offset, 0);
 	}
+}
+
+void GSDevice11::Draw(const GSHWDrawConfig& config, int offset, int count)
+{
+	if (config.vs.expand != GSHWDrawConfig::VSExpand::None)
+	{
+		const bool vs_indexing = config.vs.UseVSExpandIndexBuffer();
+		const u32 vs_indexing_expansion = GetExpansionFactor(config.vs.expand);
+		DrawIndexedPrimitiveVSExpand(offset, count, vs_indexing, vs_indexing_expansion);
+	}
+	else
+	{
+		DrawIndexedPrimitive(offset, count);
+	}
+}
+
+void GSDevice11::Draw(const GSHWDrawConfig& config)
+{
+	Draw(config, 0, m_index.count);
 }
 
 void GSDevice11::CommitClear(GSTexture* t)
@@ -2917,7 +2934,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		SetupOM(dss, blend, 0);
 		OMSetRenderTargets(primid_texture, config.ds, &config.scissor, read_only_dsv);
 		SetRenderHWShaderResources(config, nullptr);
-		DrawIndexedPrimitive();
+		Draw(config);
 
 		config.ps.date = 3;
 		config.alpha_second_pass.ps.date = 3;
@@ -2975,7 +2992,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		config.ps.dither = config.blend_multi_pass.dither;
 		SetupPS(config.ps, &config.cb_ps, config.sampler);
 		SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend_multi_pass.blend), config.blend_multi_pass.blend.constant);
-		DrawIndexedPrimitive();
+		Draw(config);
 	}
 
 	if (config.alpha_second_pass.enable)
@@ -3017,21 +3034,6 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 	GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
 	const bool one_barrier, const bool full_barrier)
 {
-	const bool vs_expand = config.vs.expand != GSHWDrawConfig::VSExpand::None;
-	const bool vs_indexing = config.vs.UseVSExpandIndexBuffer();
-	const u32 vs_indexing_expansion = GetExpansionFactor(config.vs.expand);
-
-	auto Draw = [&](int offset, int count) {
-		if (vs_expand)
-		{
-			DrawIndexedPrimitiveVSExpand(offset, count, vs_indexing, vs_indexing_expansion);
-		}
-		else
-		{
-			DrawIndexedPrimitive(offset, count);
-		}
-	};
-
 	if (draw_rt_clone || draw_ds_clone)
 	{
 #ifdef PCSX2_DEVBUILD
@@ -3072,7 +3074,7 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 				const GSVector4i original_bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
 				CopyAndBind(ProcessCopyArea(rtsize, original_bbox));
 
-				Draw(p, count);
+				Draw(config, p, count);
 				
 				p += count;
 			}
@@ -3084,7 +3086,7 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 		CopyAndBind(ProcessCopyArea(rtsize, config.drawarea));
 	}
 
-	Draw(0, m_index.count);
+	Draw(config);
 }
 
 void GSDevice11::SetRenderHWShaderResources(const GSHWDrawConfig& config, GSTexture* primid_texture)
