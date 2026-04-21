@@ -2704,14 +2704,10 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		CommitClear(rt);
 		rtv = *static_cast<GSTexture11*>(rt);
 	}
-	if (read_only_dsv)
-	{
-		dsv = read_only_dsv;
-	}
-	else if (ds)
+	if (ds)
 	{
 		CommitClear(ds);
-		dsv = *static_cast<GSTexture11*>(ds);
+		dsv = read_only_dsv ? read_only_dsv : *static_cast<GSTexture11*>(ds);
 	}
 
 	const bool changed = (m_state.rtv != rtv || m_state.dsv != dsv);
