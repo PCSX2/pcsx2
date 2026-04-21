@@ -6,7 +6,7 @@
 #include <riscv/linux/api.h>
 
 /* ISA structure to hold supported extensions. */
-struct cpuinfo_riscv_isa cpuinfo_isa;
+struct cpuinfo_riscv_isa cpuinfo_isa = {0};
 
 /* Helper function to bitmask flags and ensure operator precedence. */
 static inline bool bitmask_all(uint32_t flags, uint32_t mask) {
@@ -320,7 +320,8 @@ void cpuinfo_riscv_linux_init(void) {
 		cpuinfo_riscv_linux_decode_vendor_uarch_from_hwprobe(
 			processor,
 			&riscv_linux_processors[processor].core.vendor,
-			&riscv_linux_processors[processor].core.uarch);
+			&riscv_linux_processors[processor].core.uarch,
+			&cpuinfo_isa);
 
 		/* Populate frequency information of this core. */
 		uint32_t frequency = cpuinfo_linux_get_processor_cur_frequency(processor);

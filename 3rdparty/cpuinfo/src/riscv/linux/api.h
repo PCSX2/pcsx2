@@ -61,11 +61,13 @@ CPUINFO_INTERNAL void cpuinfo_riscv_linux_decode_isa_from_hwcap(struct cpuinfo_r
  * @param[processor] - The Linux ID of the target processor.
  * @param[vendor] - Reference to the cpuinfo_vendor to populate.
  * @param[uarch] - Reference to the cpuinfo_uarch to populate.
+ * @param[isa] - Reference to the cpuinfo_riscv_isa to populate isa extensions.
  */
 CPUINFO_INTERNAL void cpuinfo_riscv_linux_decode_vendor_uarch_from_hwprobe(
 	uint32_t processor,
 	enum cpuinfo_vendor vendor[restrict static 1],
-	enum cpuinfo_uarch uarch[restrict static 1]);
+	enum cpuinfo_uarch uarch[restrict static 1],
+	struct cpuinfo_riscv_isa isa[restrict static 1]);
 
 /* Used to determine which uarch is associated with the current thread. */
 extern CPUINFO_INTERNAL const uint32_t* cpuinfo_linux_cpu_to_uarch_index_map;
