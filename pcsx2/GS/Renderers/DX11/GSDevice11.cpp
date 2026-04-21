@@ -1393,13 +1393,6 @@ void GSDevice11::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextur
 	GSVector2i ds;
 	if (dTex)
 	{
-		// preemptively bind srv if possible
-		if (m_state.current_rt != sTex && m_state.current_ds != sTex)
-			PSSetShaderResource(0, sTex);
-
-		// ps unbind conflicting srvs
-		PSUnbindConflictingSRVs(dTex);
-
 		ds = dTex->GetSize();
 		if (draw_in_depth)
 			OMSetRenderTargets(nullptr, dTex);
@@ -1467,13 +1460,6 @@ void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	GSVector2i ds;
 	if (dTex)
 	{
-		// preemptively bind srv if possible
-		if (m_state.current_rt != sTex && m_state.current_ds != sTex)
-			PSSetShaderResource(0, sTex);
-
-		// ps unbind conflicting srvs
-		PSUnbindConflictingSRVs(dTex);
-
 		ds = dTex->GetSize();
 		OMSetRenderTargets(dTex, nullptr);
 	}
@@ -1594,7 +1580,6 @@ void GSDevice11::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_re
 
 	VSSetShader(m_convert.vs.get(), nullptr);
 	PSSetShader(m_convert.ps[static_cast<int>(shader)].get(), nullptr);
-	PSUnbindConflictingSRVs(dTex);
 
 	OMSetDepthStencilState(dTex->IsRenderTarget() ? m_convert.dss.get() : m_convert.dss_write.get(), 0);
 	OMSetRenderTargets(dTex->IsRenderTarget() ? dTex : nullptr, dTex->IsDepthStencil() ? dTex : nullptr);
@@ -2288,15 +2273,6 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSV
 
 	m_ctx->ClearDepthStencilView(*static_cast<GSTexture11*>(ds), D3D11_CLEAR_STENCIL, 0.0f, 0);
 
-	// preemptively bind srv if possible
-
-	if (m_state.current_rt != rt && m_state.current_ds != rt)
-		PSSetShaderResource(0, rt);
-
-	// ps unbind conflicting srvs
-
-	PSUnbindConflictingSRVs(ds);
-
 	// om
 
 	OMSetDepthStencilState(m_date.dss.get(), 1);
@@ -2731,6 +2707,9 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 		m_state.dsv = dsv;
 		m_state.current_ds = ds;
 	}
+
+	PSUnbindConflictingSRVs(m_state.current_rt, read_only_dsv ? nullptr : m_state.current_ds);
+
 	if (changed)
 		m_ctx->OMSetRenderTargets(1, &rtv, dsv);
 
@@ -2926,29 +2905,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			config.tex = nullptr;
 	}
 
-	// Preemptively bind srv if possible.
-	// We update the local state, then if there are srv conflicts PSUnbindConflictingSRVs will update the gpu state.
-	if (config.tex && config.tex != config.rt)
-	{
-		CommitClear(config.tex);
-		if (m_state.current_rt != config.tex && m_state.current_ds != config.tex)
-			PSSetShaderResource(0, config.tex);
-	}
-	if (config.pal)
-	{
-		CommitClear(config.pal);
-		if (m_state.current_rt != config.pal && m_state.current_ds != config.pal)
-			PSSetShaderResource(1, config.pal);
-	}
-
-	// Should be called before changing current gpu state.
-	PSUnbindConflictingSRVs(colclip_rt ? colclip_rt : config.rt, read_only_dsv ? nullptr : config.ds);
-
-	if (config.tex && config.tex != config.rt)
-		PSSetShaderResource(0, config.tex);
-	if (config.pal)
-		PSSetShaderResource(1, config.pal);
-
 	SetupVS(config.vs, &config.cb_vs);
 	SetupPS(config.ps, &config.cb_ps, config.sampler);
 
@@ -2960,12 +2916,12 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			GSHWDrawConfig::BlendState(true, CONST_ONE, CONST_ONE, 3 /* MIN */, CONST_ONE, CONST_ZERO, false, 0));
 		SetupOM(dss, blend, 0);
 		OMSetRenderTargets(primid_texture, config.ds, &config.scissor, read_only_dsv);
+		SetRenderHWShaderResources(config, nullptr);
 		DrawIndexedPrimitive();
 
 		config.ps.date = 3;
 		config.alpha_second_pass.ps.date = 3;
 		SetupPS(config.ps, nullptr, config.sampler);
-		PSSetShaderResource(3, primid_texture);
 	}
 
 	// Avoid changing framebuffer just to switch from rt+depth to rt and vice versa.
@@ -2973,7 +2929,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	GSTexture* draw_ds = config.ds;
 	// Make sure no tex is bound as both rtv and srv at the same time.
 	// All conflicts should've been taken care of by PSUnbindConflictingSRVs.
-	// It is fine to do the optimiation when on slot 0 tex is fb, tex is ds, and slot 2 sw blend as they are copies bound to srv.
 	if (!draw_rt && draw_ds && m_state.rtv && m_state.current_rt && m_state.rtv == *static_cast<GSTexture11*>(m_state.current_rt) &&
 		m_state.current_ds == draw_ds && config.tex != m_state.current_rt && m_state.current_rt->GetSize() == draw_ds->GetSize())
 	{
@@ -3003,6 +2958,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 
 	OMSetRenderTargets(draw_rt, draw_ds, &config.scissor, read_only_dsv);
+	SetRenderHWShaderResources(config, primid_texture);
 	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
 
 	// Clear stencil as close as possible to the RT bind, to avoid framebuffer swaps.
@@ -3129,4 +3085,20 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 	}
 
 	Draw(0, m_index.count);
+}
+
+void GSDevice11::SetRenderHWShaderResources(const GSHWDrawConfig& config, GSTexture* primid_texture)
+{
+	if (config.tex && config.tex != config.rt)
+	{
+		CommitClear(config.tex);
+		PSSetShaderResource(0, config.tex);
+	}
+	if (config.pal)
+	{
+		CommitClear(config.pal);
+		PSSetShaderResource(1, config.pal);
+	}
+	if (primid_texture)
+		PSSetShaderResource(3, primid_texture);
 }
