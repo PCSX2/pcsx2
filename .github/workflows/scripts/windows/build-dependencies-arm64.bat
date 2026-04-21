@@ -62,8 +62,8 @@ set FREETYPE=2.14.3
 set HARFBUZZ=14.0.0
 set SDL=SDL3-3.4.8
 set LIBJPEGTURBO=3.1.4.1
-set LIBPNG=1656
-set LIBPNGLONG=1.6.56
+set LIBPNG=1658
+set LIBPNGLONG=1.6.58
 set LZ4=1.10.0
 set WEBP=1.6.0
 set ZLIB=1.3.2
@@ -90,8 +90,8 @@ call :downloadfile "QtApng-%QTAPNG%.zip" "https://github.com/jurplel/QtApng/arch
 
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://sourceforge.net/projects/freetype/files/freetype2/%FREETYPE%/freetype-%FREETYPE%.tar.gz/download e61b31ab26358b946e767ed7eb7f4bb2e507da1cfefeb7a8861ace7fd5c899a1 || goto error
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip f4b86f4d107bc4f0b005c97d6cde43e548a125ee2810fa00d41844b46b6fe16a || goto error
-call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1656.zip 1ccf023c5f4ee1a7b75c5624f53acede5066f79b2fb14ddffaa28369adf9baac || goto error
-call :downloadfile "lpng%LIBPNG%-apng.patch.gz" https://download.sourceforge.net/libpng-apng/libpng-%LIBPNGLONG%-apng.patch.gz 9ce32d4a2763a2ac5f258726ba2f49e9011327c1ee8c30862a32d0f30889fbe8 || goto error
+call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1658.zip b32f170855dbbe3e6d9e645af40b538137041773672c3ba3e02db5816c82d376 || goto error
+call :downloadfile "lpng%LIBPNG%-apng.patch.gz" https://download.sourceforge.net/libpng-apng/libpng-%LIBPNGLONG%-apng.patch.gz eee7dea22ed502868017971c86c63c4ed1e6085de0baebfdcc3d3322f00f3eb0 || goto error
 call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" ecae8008e2cc9ade2f2c1bb9d5e6d4fb73e7c433866a056bd82980741571a022 || goto error
 call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564 || goto error
 call :downloadfile "%SDL%.zip" "https://libsdl.org/release/%SDL%.zip" 506206e02f90c1f37e048eacaf9e8a3a7dc682fd27783eb0ff15a7d2dcc9c2af || goto error

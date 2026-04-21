@@ -14,21 +14,21 @@
   "sources": [
     {
       "type": "archive",
-      "url": "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.56/libpng-1.6.56.tar.xz",
-      "sha256": "f7d8bf1601b7804f583a254ab343a6549ca6cf27d255c302c47af2d9d36a6f18"
+      "url": "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.58/libpng-1.6.58.tar.xz",
+      "sha256": "28eb403f51f0f7405249132cecfe82ea5c0ef97f1b32c5a65828814ae0d34775"
     },
     {
       "type": "file",
-      "url": "https://download.sourceforge.net/libpng-apng/libpng-1.6.56-apng.patch.gz",
-      "dest-filename": "libpng-1.6.56-apng.patch.gz",
-      "sha256": "9ce32d4a2763a2ac5f258726ba2f49e9011327c1ee8c30862a32d0f30889fbe8"
+      "url": "https://download.sourceforge.net/libpng-apng/libpng-1.6.58-apng.patch.gz",
+      "dest-filename": "libpng-1.6.58-apng.patch.gz",
+      "sha256": "eee7dea22ed502868017971c86c63c4ed1e6085de0baebfdcc3d3322f00f3eb0"
     },
     {
       "type": "shell",
       "commands":
       [
-          "gunzip -f libpng-1.6.56-apng.patch.gz",
-          "patch -p1  < \"libpng-1.6.56-apng.patch\""
+          "gunzip -f libpng-1.6.58-apng.patch.gz",
+          "patch -p1  < \"libpng-1.6.58-apng.patch\""
       ]
     }
   ],
