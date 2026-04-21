@@ -946,12 +946,14 @@ public:
 		bool stencil_buffer       : 1; ///< Supports stencil buffer, and can use for DATE.
 		bool cas_sharpening       : 1; ///< Supports sufficient functionality for contrast adaptive sharpening.
 		bool test_and_sample_depth: 1; ///< Supports concurrently binding the depth-stencil buffer for sampling and depth testing.
-		bool depth_feedback       : 1; ///< Depth feedback loops can be done with DS directly (otherwise need to copy to separate RT).
+		bool depth_feedback       : 1; ///< Depth feedback loops can be done with DS directly (otherwise need to copy to separate RT).  Implies `feedback_loops`.
 		bool aa1                  : 1; ///< Supports the GS AA1 feature.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));
 		}
+		/// Supports feedback loops through either texture barriers or rt copies.
+		bool feedback_loops() const { return texture_barrier || multidraw_fb_copy; }
 	};
 
 	struct MultiStretchRect
