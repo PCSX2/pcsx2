@@ -24,20 +24,20 @@ struct EEInternalThread
 	u32 prev;
 	u32 next;
 	int status;
-	u32 entry;
-	u32 stack;
+	u32 resumeAddr; // address to return to when switching
+	u32 regCtx; // points to the saved regs on stack
 	u32 gpReg;
-	short currentPriority;
 	short initPriority;
+	short currentPriority;
 	int waitType;
 	int semaId;
 	int wakeupCount;
 	int attr;
 	int option;
-	u32 entry_init;
+	u32 entry;
 	int argc;
 	u32 argstring;
-	u32 stack_bottom; //FIXME
+	u32 stackBottom;
 	int stackSize;
 	u32 root;
 	u32 heap_base;
@@ -113,7 +113,7 @@ public:
 	~EEThread() override = default;
 
 	[[nodiscard]] u32 TID() const override { return tid; };
-	[[nodiscard]] u32 PC() const override { return data.entry; };
+	[[nodiscard]] u32 PC() const override { return data.resumeAddr; };
 	[[nodiscard]] ThreadStatus Status() const override { return static_cast<ThreadStatus>(data.status); };
 	[[nodiscard]] WaitState Wait() const override
 	{
@@ -130,8 +130,8 @@ public:
 		return WaitState::NONE;
 	};
 	[[nodiscard]] u32 WaitId() const override { return data.semaId; };
-	[[nodiscard]] u32 EntryPoint() const override { return data.entry_init; };
-	[[nodiscard]] u32 StackTop() const override { return data.stack; };
+	[[nodiscard]] u32 EntryPoint() const override { return data.entry; };
+	[[nodiscard]] u32 StackTop() const override { return data.stackBottom + data.stackSize; };
 	[[nodiscard]] u32 Priority() const override { return data.currentPriority; };
 
 private:
