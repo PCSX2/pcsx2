@@ -18,6 +18,17 @@ enum class ThreadStatus
 	THS_DORMANT = 0x10,
 };
 
+struct EEInternalCtx
+{
+	u32 sa;
+	u32 fcsr;
+	u32 float_thing;
+	u32 unk;
+	// gpr excluding $zero
+	// k0/k1 contains hi, hi1, lo, lo1
+	u128 gpr[31];
+	float fpr[32];
+};
 
 struct EEInternalThread
 { // internal struct
