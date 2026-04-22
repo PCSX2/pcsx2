@@ -71,14 +71,13 @@ enum class IOPWaitStatus
 enum class EEWaitStatus
 {
 	WAIT_NONE = 0,
-	WAIT_WAKEUP_REQ = 1,
+	WAIT_SLEEP = 1,
 	WAIT_SEMA = 2,
 };
 
 enum class WaitState
 {
 	NONE,
-	WAKEUP_REQ,
 	SEMA,
 	SLEEP,
 	DELAY,
@@ -122,8 +121,8 @@ public:
 		{
 			case EEWaitStatus::WAIT_NONE:
 				return WaitState::NONE;
-			case EEWaitStatus::WAIT_WAKEUP_REQ:
-				return WaitState::WAKEUP_REQ;
+			case EEWaitStatus::WAIT_SLEEP:
+				return WaitState::SLEEP;
 			case EEWaitStatus::WAIT_SEMA:
 				return WaitState::SEMA;
 		}

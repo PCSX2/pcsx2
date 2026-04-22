@@ -71,8 +71,6 @@ private:
 		//: Refers to a Thread Wait State in the Debugger.
 		{WaitState::NONE, tr("NONE")},
 		//: Refers to a Thread Wait State in the Debugger.
-		{WaitState::WAKEUP_REQ, tr("WAKEUP REQUEST")},
-		//: Refers to a Thread Wait State in the Debugger.
 		{WaitState::SEMA, tr("SEMAPHORE")},
 		//: Refers to a Thread Wait State in the Debugger.
 		{WaitState::SLEEP, tr("SLEEP")},
