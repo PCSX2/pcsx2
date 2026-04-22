@@ -1540,6 +1540,11 @@ void Achievements::DisableHardcoreMode()
 		if (RA_HardcoreModeIsActive())
 			RA_DisableHardcore();
 
+		if (s_hardcore_mode && !RA_HardcoreModeIsActive())
+		{
+			s_hardcore_mode = false;
+			Host::OnAchievementsHardcoreModeChanged(false);
+		}
 		return;
 	}
 #endif
@@ -1552,6 +1557,18 @@ bool Achievements::ResetHardcoreMode(bool is_booting)
 {
 	if (!IsActive())
 		return false;
+
+#ifdef ENABLE_RAINTEGRATION
+	if (IsUsingRAIntegration())
+	{
+		const bool ra_hardcore = (RA_HardcoreModeIsActive() != 0);
+		if (ra_hardcore == s_hardcore_mode)
+			return false;
+		s_hardcore_mode = ra_hardcore;
+		Host::OnAchievementsHardcoreModeChanged(ra_hardcore);
+		return true;
+	}
+#endif
 
 	const auto lock = GetLock();
 
@@ -3721,7 +3738,13 @@ void Achievements::RAIntegration::RACallbackCausePause()
 
 void Achievements::RAIntegration::RACallbackRebuildMenu()
 {
-	// unused, we build the menu on demand
+	// Sync hardcore state in case the user changed it via the RA menu.
+	const bool ra_hardcore = (RA_HardcoreModeIsActive() != 0);
+	if (ra_hardcore != s_hardcore_mode)
+	{
+		s_hardcore_mode = ra_hardcore;
+		Host::OnAchievementsHardcoreModeChanged(ra_hardcore);
+	}
 }
 
 void Achievements::RAIntegration::RACallbackEstimateTitle(char* buf)
