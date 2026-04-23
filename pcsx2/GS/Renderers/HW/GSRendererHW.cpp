@@ -5888,24 +5888,31 @@ void GSRendererHW::EmulateDATESelectMethod(DATEOptions& date_options, GSTextureC
 	if (features.framebuffer_fetch)
 	{
 		// Full DATE is "free" with framebuffer fetch. The barrier gets cleared below.
+		GL_PERF("DATE: Accurate with framebuffer fetch");
 		date_options.barrier = true;
 		m_conf.require_full_barrier = true;
 	}
-	else if (IsCoverageAlphaSupported())
+	else if (features.feedback_loops() && IsCoverageAlphaSupported())
 	{
 		// We're using AA1 for this draw so use only full barrier DATE, to avoid the complications
 		// with stencil/primid setup with AA1 vertex shaders. AA1 triangles usually require full barriers anyway.
+		GL_PERF("DATE: Accurate with IsCoverageAlphaSupported");
 		date_options.barrier = true;
 		m_conf.require_full_barrier = true;
 	}
-	else if ((features.texture_barrier && m_prim_overlap == PRIM_OVERLAP_NO) || m_texture_shuffle)
+	else if ((features.texture_barrier && m_prim_overlap == PRIM_OVERLAP_NO))
 	{
-		GL_PERF("DATE: Accurate with %s", (features.texture_barrier && m_prim_overlap == PRIM_OVERLAP_NO) ? "no overlap" : "texture shuffle");
-		if (features.texture_barrier)
-		{
-			m_conf.require_full_barrier = true;
-			date_options.barrier = true;
-		}
+		// We only enable this for texture barriers as it's fast, multidraw fb copy might be slower.
+		GL_PERF("DATE: Accurate with no overlap");
+		m_conf.require_full_barrier = true;
+		date_options.barrier = true;
+	}
+	else if (features.feedback_loops() && m_texture_shuffle)
+	{
+		// Ensure texture shuffles run with full barrier DATE.
+		GL_PERF("DATE: Accurate with texture shuffle");
+		m_conf.require_full_barrier = true;
+		date_options.barrier = true;
 	}
 	// When Blending is disabled and Edge Anti Aliasing is enabled,
 	// the output alpha is Coverage (which we force to 128) so DATE will fail/pass guaranteed on second pass.
@@ -5989,7 +5996,7 @@ void GSRendererHW::EmulateDATEGetConfig(DATEOptions& date_options, bool scale_rt
 
 	// Always swap DATE with DATE_BARRIER if we have barriers on when alpha write is masked.
 	// This is always enabled on VK/GL/DX12 but not on DX11 as copies are slow so we can selectively enable it like now.
-	if (!m_conf.colormask.wa && (m_conf.require_one_barrier || (m_conf.require_full_barrier && (features.texture_barrier || features.multidraw_fb_copy))))
+	if (!m_conf.colormask.wa && (m_conf.require_one_barrier || (m_conf.require_full_barrier && features.feedback_loops())))
 		date_options.barrier = true;
 
 	if (m_conf.ps.scanmsk & 2)
@@ -6158,7 +6165,7 @@ void GSRendererHW::DetermineBarriers(GSTextureCache::Target* rt)
 
 		// If we use depth feedback directly, we must use barriers for the depth texture.
 		// If we use depth-as-color feedback, then FB fetch can be used for depth also.
-		bool need_barriers_for_depth = m_conf.ps.IsFeedbackLoopDepth() && features.depth_feedback;
+		const bool need_barriers_for_depth = m_conf.ps.IsFeedbackLoopDepth() && features.depth_feedback;
 
 		if (!need_barriers_for_depth)
 		{
@@ -6908,7 +6915,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 	{
 		case AccBlendLevel::Maximum:
 			sw_blending |= true;
-			accumulation_blend &= (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 32);
+			accumulation_blend &= !barriers_supported || (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 32);
 			[[fallthrough]];
 		case AccBlendLevel::Full:
 			sw_blending |= m_conf.ps.blend_a != m_conf.ps.blend_b && alpha_c0_high_max_one;
