@@ -4250,7 +4250,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Destination Alpha Setup
-	const bool need_barrier = m_features.texture_barrier && (config.require_one_barrier || config.require_full_barrier);
+	const bool need_barrier = config.require_one_barrier || (config.require_full_barrier && m_features.texture_barrier);
 	switch (config.destination_alpha)
 	{
 		case GSHWDrawConfig::DestinationAlphaMode::Off: // No setup

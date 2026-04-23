@@ -5989,7 +5989,7 @@ void GSRendererHW::EmulateDATEGetConfig(DATEOptions& date_options, bool scale_rt
 
 	// Always swap DATE with DATE_BARRIER if we have barriers on when alpha write is masked.
 	// This is always enabled on VK/GL/DX12 but not on DX11 as copies are slow so we can selectively enable it like now.
-	if (!m_conf.colormask.wa && (m_conf.require_one_barrier || m_conf.require_full_barrier))
+	if (!m_conf.colormask.wa && (m_conf.require_one_barrier || (m_conf.require_full_barrier && (features.texture_barrier || features.multidraw_fb_copy))))
 		date_options.barrier = true;
 
 	if (m_conf.ps.scanmsk & 2)
@@ -6049,7 +6049,7 @@ void GSRendererHW::EmulateDATEGetConfig(DATEOptions& date_options, bool scale_rt
 	}
 	else if (date_options.stencil_one)
 	{
-		const bool multidraw_fb_copy = features.multidraw_fb_copy && (m_conf.require_one_barrier || m_conf.require_full_barrier);
+		const bool multidraw_fb_copy = m_conf.require_one_barrier || (m_conf.require_full_barrier && features.multidraw_fb_copy);
 		if (features.texture_barrier || multidraw_fb_copy)
 		{
 			m_conf.require_one_barrier = true;
@@ -6179,7 +6179,6 @@ void GSRendererHW::DetermineBarriers(GSTextureCache::Target* rt)
 	else if (!features.feedback_loops())
 	{
 		// These shouldn't be enabled if texture barriers aren't supported, make sure they are off.
-		m_conf.ps.write_rg = 0;
 		m_conf.require_full_barrier = false;
 	}
 
@@ -6255,7 +6254,7 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 
 		// If date is enabled you need to test the green channel instead of the alpha channel.
 		// Only enable this code in DATE mode to reduce the number of shaders.
-		m_conf.ps.write_rg = (process_rg & SHUFFLE_WRITE) && features.feedback_loops() && m_cached_ctx.TEST.DATE;
+		m_conf.ps.write_rg = (process_rg & SHUFFLE_WRITE) &&  m_cached_ctx.TEST.DATE;
 
 		m_conf.ps.real16src = m_texture_shuffle.real_16_bit_source;
 
