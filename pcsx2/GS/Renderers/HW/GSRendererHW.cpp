@@ -6009,17 +6009,25 @@ void GSRendererHW::EmulateDATEGetConfig(DATEOptions& date_options, bool scale_rt
 	else
 		m_conf.datm = static_cast<SetDATM>(m_cached_ctx.TEST.DATM);
 
-	if (m_conf.destination_alpha >= GSHWDrawConfig::DestinationAlphaMode::Stencil &&
-		m_conf.destination_alpha <= GSHWDrawConfig::DestinationAlphaMode::StencilOne && !m_conf.ds)
+	// DATE Stencil always needs a depth stencil texture.
+	const bool date_stencil_needs_ds = !m_conf.ds &&
+		(m_conf.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil || m_conf.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne);
+	if (date_stencil_needs_ds)
 	{
-		const bool is_one_barrier = (features.texture_barrier && m_conf.require_full_barrier &&
-			(m_prim_overlap == PRIM_OVERLAP_NO || m_conf.ps.shuffle || m_channel_shuffle));
+		const bool need_barrier = m_conf.require_one_barrier || (m_conf.require_full_barrier && features.feedback_loops());
 		if ((temp_ds.reset(g_gs_device->CreateDepthStencil(m_conf.rt->GetWidth(), m_conf.rt->GetHeight(),
 			GSTexture::Format::DepthStencil, false)), temp_ds))
 		{
 			m_conf.ds = temp_ds.get();
 		}
-		else if (features.primitive_id && !(m_conf.ps.scanmsk & 2) && (!m_conf.require_full_barrier || is_one_barrier))
+		else if (need_barrier)
+		{
+			date_options.stencil_one = false;
+			date_options.barrier = true;
+			m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Full;
+			DevCon.Warning("HW: Depth buffer creation failed for Stencil Date. Fallback to Full.");
+		}
+		else if (features.primitive_id && !(m_conf.ps.scanmsk & 2))
 		{
 			date_options.stencil_one = false;
 			date_options.primid = true;
