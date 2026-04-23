@@ -49,7 +49,7 @@ std::vector<std::unique_ptr<BiosThread>> getIOPThreads()
 			return {};
 		}
 
-		data.stackBottom = iopMemRead32(item + 0x3c);
+		data.stacMem = iopMemRead32(item + 0x3c);
 		data.stackSize = iopMemRead32(item + 0x40);
 		data.status = iopMemRead8(item + 0xc);
 		data.tid = iopMemRead16(item + 0xa);

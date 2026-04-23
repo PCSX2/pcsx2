@@ -20,5 +20,5 @@ namespace MipsStackWalk {
 		int stackSize;
 	};
 
-	std::vector<StackFrame> Walk(DebugInterface* cpu, u32 pc, u32 ra, u32 sp, u32 threadEntry, u32 threadStackTop);
+	std::vector<StackFrame> Walk(DebugInterface* cpu, u32 pc, u32 ra, u32 sp, u32 threadEntry);
 };

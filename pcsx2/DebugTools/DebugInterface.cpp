@@ -713,7 +713,7 @@ std::vector<MipsStackWalk::StackFrame> R5900DebugInterface::StackTrace(const Bio
 	if (thread.Status() == ThreadStatus::THS_RUN)
 	{
 		return MipsStackWalk::Walk(this, getPC(), getRegister(0, 31), getRegister(0, 29),
-			thread.EntryPoint(), thread.StackTop());
+			thread.EntryPoint());
 	}
 
 	EEInternalCtx* ctx = static_cast<EEInternalCtx*>(PSM(thread.RegCtx()));
@@ -722,7 +722,7 @@ std::vector<MipsStackWalk::StackFrame> R5900DebugInterface::StackTrace(const Bio
 	u32 ra = ctx->gpr[31 - 1]._u32[0];
 	u32 sp = ctx->gpr[29 - 1]._u32[0];
 
-	return MipsStackWalk::Walk(this, pc, ra, sp, thread.EntryPoint(), thread.StackTop());
+	return MipsStackWalk::Walk(this, pc, ra, sp, thread.EntryPoint());
 }
 
 std::vector<IopMod> R5900DebugInterface::GetModuleList() const
@@ -1071,7 +1071,7 @@ std::vector<MipsStackWalk::StackFrame> R3000DebugInterface::StackTrace(const Bio
 	if (thread.Status() == ThreadStatus::THS_RUN)
 	{
 		return MipsStackWalk::Walk(this, getPC(), getRegister(0, 31), getRegister(0, 29),
-			thread.EntryPoint(), thread.StackTop());
+			thread.EntryPoint());
 	}
 
 	u32 p = thread.RegCtx();
@@ -1079,7 +1079,7 @@ std::vector<MipsStackWalk::StackFrame> R3000DebugInterface::StackTrace(const Bio
 	u32 ra = Read32(p + 0x7c);
 	u32 sp = Read32(p + 0x74);
 
-	return MipsStackWalk::Walk(this, pc, ra, sp, thread.EntryPoint(), thread.StackTop());
+	return MipsStackWalk::Walk(this, pc, ra, sp, thread.EntryPoint());
 }
 
 std::vector<IopMod> R3000DebugInterface::GetModuleList() const
