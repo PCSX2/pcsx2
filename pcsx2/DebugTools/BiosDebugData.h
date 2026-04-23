@@ -59,8 +59,9 @@ struct IOPInternalThread
 {
 	u32 tid;
 	u32 PC;
-	u32 stackTop;
-	u32 SavedSP;
+	u32 stackBottom;
+	u32 stackSize;
+	u32 regCtx;
 	u32 status;
 	u32 entrypoint;
 	u32 waitstate;
@@ -189,9 +190,9 @@ public:
 	};
 	[[nodiscard]] u32 WaitId() const override { return data.waitId; };
 	[[nodiscard]] u32 EntryPoint() const override { return data.entrypoint; };
-	[[nodiscard]] u32 StackTop() const override { return data.stackTop; };
+	[[nodiscard]] u32 StackTop() const override { return data.stackBottom + data.stackSize; };
 	[[nodiscard]] u32 Priority() const override { return data.initPriority; };
-	[[nodiscard]] u32 RegCtx() const override { return 0; };
+	[[nodiscard]] u32 RegCtx() const override { return data.regCtx; };
 
 private:
 	IOPInternalThread data;

@@ -1074,7 +1074,12 @@ std::vector<MipsStackWalk::StackFrame> R3000DebugInterface::StackTrace(const Bio
 			thread.EntryPoint(), thread.StackTop());
 	}
 
-	return {};
+	u32 p = thread.RegCtx();
+	u32 pc = Read32(p + 0x8c);
+	u32 ra = Read32(p + 0x7c);
+	u32 sp = Read32(p + 0x74);
+
+	return MipsStackWalk::Walk(this, pc, ra, sp, thread.EntryPoint(), thread.StackTop());
 }
 
 std::vector<IopMod> R3000DebugInterface::GetModuleList() const
