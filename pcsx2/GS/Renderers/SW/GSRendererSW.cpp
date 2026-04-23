@@ -1393,7 +1393,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 				gd.sel.pabe = 1;
 			}
 
-			if (PRIM->AA1 && (primclass == GS_LINE_CLASS || primclass == GS_TRIANGLE_CLASS))
+			if (IsCoverageAlpha())
 			{
 				gd.sel.aa1 = 1;
 			}
@@ -1521,6 +1521,11 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	}
 
 	return true;
+}
+
+bool GSRendererSW::IsCoverageAlphaSupported()
+{
+	return IsCoverageAlpha();
 }
 
 GSRendererSW::SharedData::SharedData()
