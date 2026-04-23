@@ -5892,6 +5892,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Destination Alpha Setup
+	const bool need_barrier = config.require_one_barrier || (config.require_full_barrier && m_features.texture_barrier);
 	switch (config.destination_alpha)
 	{
 		case GSHWDrawConfig::DestinationAlphaMode::Off: // No setup
@@ -5901,7 +5902,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		case GSHWDrawConfig::DestinationAlphaMode::StencilOne: // setup is done below
 		{
 			// we only need to do the setup here if we don't have barriers, in which case do full DATE.
-			if (!m_features.texture_barrier)
+			if (!need_barrier)
 			{
 				SetupDATE(draw_rt, config.ds, config.datm, config.drawarea);
 				config.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Stencil;
