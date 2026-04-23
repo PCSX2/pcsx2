@@ -183,7 +183,7 @@ namespace MipsStackWalk
 		return ScanForEntry(cpu, frame, newPossibleEntry, ra);
 	}
 
-	std::vector<StackFrame> Walk(DebugInterface* cpu, u32 pc, u32 ra, u32 sp, u32 threadEntry, u32 threadStackTop)
+	std::vector<StackFrame> Walk(DebugInterface* cpu, u32 pc, u32 ra, u32 sp, u32 threadEntry)
 	{
 		std::vector<StackFrame> frames;
 		StackFrame current;

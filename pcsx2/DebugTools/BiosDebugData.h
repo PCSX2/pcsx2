@@ -48,7 +48,7 @@ struct EEInternalThread
 	u32 entry;
 	int argc;
 	u32 argstring;
-	u32 stackBottom;
+	u32 stackMem;
 	int stackSize;
 	u32 root;
 	u32 heap_base;
@@ -59,7 +59,7 @@ struct IOPInternalThread
 {
 	u32 tid;
 	u32 PC;
-	u32 stackBottom;
+	u32 stacMem;
 	u32 stackSize;
 	u32 regCtx;
 	u32 status;
@@ -109,7 +109,6 @@ public:
 	[[nodiscard]] virtual WaitState Wait() const = 0;
 	[[nodiscard]] virtual u32 WaitId() const = 0;
 	[[nodiscard]] virtual u32 EntryPoint() const = 0;
-	[[nodiscard]] virtual u32 StackTop() const = 0;
 	[[nodiscard]] virtual u32 Priority() const = 0;
 
 	// Only call RegCtx on threads that aren't running
@@ -145,7 +144,6 @@ public:
 	};
 	[[nodiscard]] u32 WaitId() const override { return data.semaId; };
 	[[nodiscard]] u32 EntryPoint() const override { return data.entry; };
-	[[nodiscard]] u32 StackTop() const override { return data.stackBottom + data.stackSize; };
 	[[nodiscard]] u32 Priority() const override { return data.currentPriority; };
 	[[nodiscard]] u32 RegCtx() const override { return data.regCtx; };
 
@@ -190,7 +188,6 @@ public:
 	};
 	[[nodiscard]] u32 WaitId() const override { return data.waitId; };
 	[[nodiscard]] u32 EntryPoint() const override { return data.entrypoint; };
-	[[nodiscard]] u32 StackTop() const override { return data.stackBottom + data.stackSize; };
 	[[nodiscard]] u32 Priority() const override { return data.initPriority; };
 	[[nodiscard]] u32 RegCtx() const override { return data.regCtx; };
 
