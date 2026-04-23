@@ -20719,7 +20719,7 @@ SLES-52558:
   name: "Crimson Sea 2"
   region: "PAL-G"
 SLES-52559:
-  name: "FIFA 2005"
+  name: "FIFA Football 2005"
   region: "PAL-E"
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
@@ -20728,9 +20728,10 @@ SLES-52559:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
     nativeScaling: 1 # Fixes misaligned bloom.
-    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
+    cpuSpriteRenderBW: 2 # Fixes player outfit rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-52560:
-  name: "FIFA 2005"
+  name: "FIFA Football 2005"
   region: "PAL-G"
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
@@ -20739,9 +20740,10 @@ SLES-52560:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
     nativeScaling: 1 # Fixes misaligned bloom.
-    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
+    cpuSpriteRenderBW: 2 # Fixes player outfit rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-52561:
-  name: "FIFA 2005"
+  name: "FIFA Football 2005"
   region: "PAL-P-S"
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
@@ -20750,9 +20752,10 @@ SLES-52561:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
     nativeScaling: 1 # Fixes misaligned bloom.
-    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
+    cpuSpriteRenderBW: 2 # Fixes player outfit rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-52562:
-  name: "FIFA 2005"
+  name: "FIFA Football 2005"
   region: "PAL-I"
   gameFixes:
     - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
@@ -20761,7 +20764,8 @@ SLES-52562:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
     nativeScaling: 1 # Fixes misaligned bloom.
-    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
+    cpuSpriteRenderBW: 2 # Fixes player outfit rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-52563:
   name: "FIFA Football 2005"
   region: "PAL-M6"
@@ -20772,7 +20776,8 @@ SLES-52563:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
     nativeScaling: 1 # Fixes misaligned bloom.
-    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
+    cpuSpriteRenderBW: 2 # Fixes player outfit rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-52567:
   name: "Catwoman"
   region: "PAL-M7"
@@ -21839,28 +21844,32 @@ SLES-52909:
   gameFixes:
     - EETimingHack # Fixes graphical corruption.
   gsHWFixes:
-    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
+    cpuSpriteRenderBW: 2 # Fixes player outfit rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-52910:
-  name: "UEFA Champions League 2005"
+  name: "UEFA Champions League 2004-2005"
   region: "PAL-F-G"
   gameFixes:
     - EETimingHack # Fixes graphical corruption.
   gsHWFixes:
-    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
+    cpuSpriteRenderBW: 2 # Fixes player outfit rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-52911:
-  name: "UEFA Champions League 2005"
+  name: "UEFA Champions League 2004-2005"
   region: "PAL-I-S"
   gameFixes:
     - EETimingHack # Fixes graphical corruption.
   gsHWFixes:
-    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
+    cpuSpriteRenderBW: 2 # Fixes player outfit rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-52912:
-  name: "UEFA Champions League 2005"
+  name: "UEFA Champions League 2004-2005"
   region: "PAL-E-DU"
   gameFixes:
     - EETimingHack # Fixes graphical corruption.
   gsHWFixes:
-    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
+    cpuSpriteRenderBW: 2 # Fixes player outfit rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-52913:
   name: "Suikoden IV"
   region: "PAL-M5"
@@ -32128,7 +32137,8 @@ SLKA-25209:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
     nativeScaling: 1 # Fixes misaligned bloom.
-    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
+    cpuSpriteRenderBW: 2 # Fixes player outfit rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLKA-25210:
   name: "서머 히트 비치 발리볼" # Undumped on ReDump as of 2025-08-28
   name-en: "Summer Heat Beach Volleyball"
@@ -69655,7 +69665,7 @@ SLUS-21050:
     getSkipCount: "GSC_BurnoutGames"
     beforeDraw: "OI_BurnoutGames"
 SLUS-21051:
-  name: "FIFA 2005"
+  name: "FIFA Soccer 2005"
   region: "NTSC-U"
   compat: 5
   gameFixes:
@@ -69665,7 +69675,8 @@ SLUS-21051:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
     nativeScaling: 1 # Fixes misaligned bloom.
-    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
+    cpuSpriteRenderBW: 2 # Fixes player outfit rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21052:
   name: "Disney/Pixar Monsters, Inc."
   region: "NTSC-U"
@@ -75575,7 +75586,8 @@ SLUS-29127:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
     nativeScaling: 1 # Fixes misaligned bloom.
-    mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
+    cpuSpriteRenderBW: 2 # Fixes player outfit rendering.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-29129:
   name: "25 to Life [Public Beta Vol.1.0]"
   region: "NTSC-U"
