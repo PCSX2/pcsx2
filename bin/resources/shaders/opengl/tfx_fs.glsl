@@ -1323,10 +1323,7 @@ void ps_main()
 		uvec2 denorm_TA = uvec2(vec2(TA.xy) * 255.0f + 0.5f);
 
 		C.rb = vec2(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
-		if (bool(denorm_c.a & 0x80u))
-			C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80u)));
-		else
-			C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
+		C.ga = vec2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
 	#elif PS_SHUFFLE_ACROSS
 		#if(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE)
 			C.br = C.rb;

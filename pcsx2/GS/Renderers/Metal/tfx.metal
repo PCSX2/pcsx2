@@ -1431,10 +1431,7 @@ struct PSMain
 				uint2 denorm_TA = uint2(cb.ta * 255.5f);
 				
 				C.rb = (denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7) << 5);
-				if (denorm_c.a & 0x80)
-					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.y & 0x80);
-				else
-					C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80);
+				C.ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80);
 			}
 			else if (PS_SHUFFLE_ACROSS)
 			{
