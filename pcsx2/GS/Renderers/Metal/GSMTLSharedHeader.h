@@ -11,6 +11,7 @@ enum GSMTLBufferIndices
 	GSMTLBufferIndexUniforms,
 	GSMTLBufferIndexHWVertices,
 	GSMTLBufferIndexHWUniforms,
+	GSMTLBufferIndexHWIndices,
 };
 
 enum GSMTLTextureIndex
@@ -216,5 +217,7 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_MANUAL_LOD,
 	GSMTLConstantIndex_PS_REGION_RECT,
 	GSMTLConstantIndex_PS_SCANMSK,
+	GSMTLConstantIndex_PS_AA1,
+	GSMTLConstantIndex_PS_ABE,
 	GSMTLConstantIndex_PS_SW_ANISO,
 };

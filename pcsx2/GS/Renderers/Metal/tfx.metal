@@ -72,16 +72,20 @@ constant bool PS_AUTOMATIC_LOD      [[function_constant(GSMTLConstantIndex_PS_AU
 constant bool PS_MANUAL_LOD         [[function_constant(GSMTLConstantIndex_PS_MANUAL_LOD)]];
 constant bool PS_REGION_RECT        [[function_constant(GSMTLConstantIndex_PS_REGION_RECT)]];
 constant uint PS_SCANMSK            [[function_constant(GSMTLConstantIndex_PS_SCANMSK)]];
+constant uint PS_AA1_RAW            [[function_constant(GSMTLConstantIndex_PS_AA1)]];
+constant bool PS_ABE                [[function_constant(GSMTLConstantIndex_PS_ABE)]];
 constant uint PS_SW_ANISO           [[function_constant(GSMTLConstantIndex_PS_SW_ANISO)]];
 
 using GSShader::VSExpand;
 using AFAIL = GSShader::PS_AFAIL;
 using ATST = GSShader::PS_ATST;
 using GSShader::ZTST;
+using AA1 = GSShader::PS_AA1;
 constant VSExpand VS_EXPAND_TYPE = static_cast<VSExpand>(VS_EXPAND_TYPE_RAW);
 constant AFAIL PS_AFAIL = static_cast<AFAIL>(PS_AFAIL_RAW);
 constant ATST  PS_ATST  = static_cast<ATST>(PS_ATST_RAW);
 constant ZTST  PS_ZTST  = static_cast<ZTST>(PS_ZTST_RAW);
+constant AA1   PS_AA1   = static_cast<AA1>(PS_AA1_RAW);
 
 #if defined(__METAL_MACOS__) && __METAL_VERSION__ >= 220
 	#define PRIMID_SUPPORT 1
@@ -112,7 +116,8 @@ constant bool NEEDS_RT_FOR_AFAIL = PS_AFAIL == AFAIL::ZB_ONLY || PS_AFAIL == AFA
 constant bool NEEDS_RT = NEEDS_RT_FOR_AFAIL || NEEDS_RT_EARLY || (!PS_PRIM_CHECKING_INIT && (PS_FBMASK || NEEDS_RT_FOR_BLEND));
 constant bool NEEDS_DEPTH_FOR_AFAIL = PS_AFAIL == AFAIL::FB_ONLY || PS_AFAIL == AFAIL::RGB_ONLY_SW_Z;
 constant bool NEEDS_DEPTH_FOR_ZTST  = PS_ZTST == ZTST::GEQUAL || PS_ZTST == ZTST::GREATER;
-constant bool SW_DEPTH = NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST;
+constant bool NEEDS_DEPTH_FOR_AA1   = PS_AA1 == AA1::TRIANGLE_SW_Z;
+constant bool SW_DEPTH = NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST || NEEDS_DEPTH_FOR_AA1;
 
 constant bool PS_COLOR0 = !PS_NO_COLOR;
 constant bool PS_COLOR1 = !PS_NO_COLOR1;
@@ -120,6 +125,11 @@ constant bool PS_ZOUTPUT = PS_ZCLAMP || PS_ZFLOOR || SW_DEPTH;
 constant bool PS_ZOUTPUT_LESS = PS_ZOUTPUT && !SW_DEPTH;
 constant bool PS_ZOUTPUT_ANY  = PS_ZOUTPUT && SW_DEPTH;
 constant bool PS_ZOUTPUT_COLOR = PS_ZOUTPUT_ANY && !DEPTH_FEEDBACK;
+constant bool VS_NEEDS_INDEX_BUFFER = VS_EXPAND_TYPE == VSExpand::TriangleAA1;
+constant bool VS_COVERAGE = VS_EXPAND_TYPE == VSExpand::LineAA1 || VS_EXPAND_TYPE == VSExpand::TriangleAA1;
+constant bool VS_INTERIOR = VS_EXPAND_TYPE == VSExpand::TriangleAA1;
+constant bool PS_COVERAGE = PS_AA1 != AA1::NONE;
+constant bool PS_INTERIOR = PS_AA1 == AA1::TRIANGLE_SW_Z;
 
 struct MainVSIn
 {
@@ -139,6 +149,8 @@ struct MainVSOut
 	float4 ti;
 	float4 c [[function_constant(IIP)]];
 	float4 fc [[flat, function_constant(NOT_IIP)]];
+	float inv_cov [[function_constant(VS_COVERAGE)]];
+	uint interior [[function_constant(VS_INTERIOR)]];
 	float point_size [[point_size, function_constant(VS_POINT_SIZE)]];
 };
 
@@ -149,6 +161,8 @@ struct MainPSIn
 	float4 ti;
 	float4 c [[function_constant(IIP)]];
 	float4 fc [[flat, function_constant(NOT_IIP)]];
+	float inv_cov [[function_constant(PS_COVERAGE)]];
+	uint interior [[function_constant(PS_INTERIOR)]];
 };
 
 struct MainPSOut
@@ -242,7 +256,8 @@ static MainVSIn load_vertex(GSMTLMainVertex base)
 vertex MainVSOut vs_main_expand(
 	uint vid [[vertex_id]],
 	device const GSMTLMainVertex* vertices [[buffer(GSMTLBufferIndexHWVertices)]],
-	constant GSMTLMainVSUniform& cb [[buffer(GSMTLBufferIndexHWUniforms)]])
+	constant GSMTLMainVSUniform& cb [[buffer(GSMTLBufferIndexHWUniforms)]],
+	device const ushort* indices [[buffer(GSMTLBufferIndexHWIndices), function_constant(VS_NEEDS_INDEX_BUFFER)]])
 {
 	switch (VS_EXPAND_TYPE)
 	{
@@ -258,6 +273,7 @@ vertex MainVSOut vs_main_expand(
 			return point;
 		}
 		case VSExpand::Line:
+		case VSExpand::LineAA1:
 		{
 			uint vid_base = vid >> 2;
 			bool is_bottom = vid & 2;
@@ -266,12 +282,26 @@ vertex MainVSOut vs_main_expand(
 			MainVSOut point = vs_main_run(load_vertex(vertices[vid_base]), cb);
 			MainVSOut other = vs_main_run(load_vertex(vertices[vid_other]), cb);
 
-			float2 line_vector = normalize(point.p.xy - other.p.xy);
-			float2 line_normal = float2(line_vector.y, -line_vector.x);
-			float2 line_width = (line_normal * cb.point_size) / 2;
-			// line_normal is inverted for bottom point
-			float2 offset = (is_bottom ^ is_right) ? line_width : -line_width;
+			// Use bottom minus top for delta regardless of which vertex we are expanding.
+			float2 line_delta = is_bottom ? point.p.xy - other.p.xy : other.p.xy - point.p.xy;
+			float2 line_expand;
+			if (VS_EXPAND_TYPE == VSExpand::Line)
+			{
+				float2 line_vector = normalize(line_delta);
+				line_expand = float2(line_vector.y, -line_vector.x);
+			}
+			else
+			{
+				// Expand in y direction for shallow lines and x direction for steep lines.
+				line_delta /= cb.vertex_scale;
+				line_expand = abs(line_delta.x) >= abs(line_delta.y) ? float2(0, 2) : float2(2, 0);
+			}
+			float2 line_width = (line_expand * cb.point_size) / 2;
+			float2 offset = is_right ? line_width : -line_width;
 			point.p.xy += offset;
+
+			if (VS_EXPAND_TYPE == VSExpand::LineAA1)
+				point.inv_cov = is_right ? 1.f : -1.f;
 
 			// Lines will be run as (0 1 2) (1 2 3)
 			// This means that both triangles will have a point based off the top line point as their first point
@@ -304,6 +334,68 @@ vertex MainVSOut vs_main_expand(
 				out.p.y = lt.p.y;
 				out.t.y = lt.t.y;
 				out.ti.yw = lt.ti.yw;
+			}
+
+			return out;
+		}
+		case VSExpand::TriangleAA1:
+		{
+			// Triangles with AA1 are expanded as follows:
+			// - Vertices 0-2: Interior of triangle (1 triangle).
+			// - Vertices 3-8: First edge expanded (2 triangles).
+			// - Vertices 9-14: Second edge expanded (2 triangles).
+			// - Vertices 15-20: Third edge expanded (2 triangles).
+
+			uint prim_id = vid / 21;
+			uint prim_offset = vid - 21 * prim_id; // range: 0-20
+			bool interior = prim_offset < 3;
+			uint i0 = interior ? prim_offset : (prim_offset - 3) / 6;
+			uint i1 = (i0 >= 2) ? i0 - 2 : i0 + 1;
+			uint i2 = (i0 >= 1) ? i0 - 1 : i0 + 2;
+			MainVSOut out      = vs_main_run(load_vertex(vertices[indices[3 * prim_id + i0]]), cb);
+			MainVSOut other    = vs_main_run(load_vertex(vertices[indices[3 * prim_id + i1]]), cb);
+			MainVSOut opposite = vs_main_run(load_vertex(vertices[indices[3 * prim_id + i2]]), cb);
+			if (interior)
+			{
+				out.inv_cov = 0.f;
+				out.interior = 1;
+			}
+			else
+			{
+				// Vertex indices for this edge. We need all 3 for determining exterior/interior.
+				uint prim_offset_edges = prim_offset - 3; // range: 0-17
+				uint edge_offset = prim_offset_edges - 6 * i0; // range: 0-5
+
+				// Note: order of top/bottom, inside/outside order is arbitrary,
+				// as long as it assembles into two triangles forming a quad.
+				bool is_bottom = (2 <= edge_offset) && (edge_offset <= 4);
+				bool is_outside = (edge_offset & 1) != 0;
+
+				// Similar expansion to line AA1 except instead of expanding on both sides of
+				// the line we expand on on the side towards the outside of the triangle.
+				float2 line_delta = out.p.xy - other.p.xy;
+				float2 line_normal = normalize(float2(line_delta.y, -line_delta.x));
+				float2 line_expand = abs(line_delta.x) >= abs(line_delta.y) ? float2(0, 2) : float2(2, 0);
+				if ((dot(line_expand, line_normal) >= 0.0f) == (dot(opposite.p.xy - out.p.xy, line_normal) >= 0.0f))
+				{
+					// Expand direction point towards the interior so flip it.
+					line_expand = -line_expand;
+				}
+				float2 line_width = (line_expand * cb.point_size) / 2;
+
+				if (is_bottom)
+					out = other;
+				if (is_outside)
+				{
+					out.p.xy += line_width;
+					out.inv_cov = 1.0f; // No coverage
+				}
+				else
+				{
+					out.inv_cov = 0.0f; // Full coverage
+				}
+
+				out.interior = 0;
 			}
 
 			return out;
@@ -1249,17 +1341,24 @@ struct PSMain
 		}
 
 		float4 C = ps_color();
-		bool atst_pass = atst(C);
-		if (PS_AFAIL == GSShader::PS_AFAIL::KEEP && !atst_pass)
-			discard_fragment();
 
 		// Must be done before alpha correction
 
-		// AA (Fixed one) will output a coverage of 1.0 as alpha
-		if (PS_FIXED_ONE_A)
+		if (PS_AA1 != AA1::NONE)
 		{
+			float cov = saturate(1.f - abs(in.inv_cov));
+			if (!PS_ABE || floor(C.a) == 128.f) // The coverage is only used if the fragment alpha is 128.
+				C.a = 128.f * cov;
+		}
+		else if (PS_FIXED_ONE_A)
+		{
+			// AA (Fixed one) will output a coverage of 1.0 as alpha
 			C.a = 128.0f;
 		}
+
+		bool atst_pass = atst(C);
+		if (PS_AFAIL == AFAIL::KEEP && !atst_pass)
+			discard_fragment();
 
 		float4 alpha_blend = float4(0.f);
 		if (SW_AD_TO_HW)
@@ -1378,6 +1477,9 @@ struct PSMain
 
 		if (PS_ZCLAMP)
 			input_z = min(input_z, cb.max_depth);
+
+		if (PS_AA1 == AA1::TRIANGLE_SW_Z && !in.interior)
+			input_z = current_depth; // No depth update for triangle edges.
 
 		if (!atst_pass)
 		{

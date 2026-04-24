@@ -971,6 +971,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_features.cas_sharpening = true;
 	m_features.test_and_sample_depth = true;
 	m_features.depth_feedback = getDepthFeedback(m_dev, m_features.framebuffer_fetch);
+	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand;
 	m_max_texture_size = m_dev.features.max_texsize;
 
 	// Init metal stuff
@@ -1115,13 +1116,8 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		setFnConstantB(m_fn_constants, sel.fst,        GSMTLConstantIndex_FST);
 		setFnConstantB(m_fn_constants, sel.iip,        GSMTLConstantIndex_IIP);
 		setFnConstantB(m_fn_constants, sel.point_size, GSMTLConstantIndex_VS_POINT_SIZE);
-		NSString* shader = @"vs_main";
-		if (sel.expand != GSShader::VSExpand::None)
-		{
-			setFnConstantI(m_fn_constants, sel.expand, GSMTLConstantIndex_VS_EXPAND_TYPE);
-			shader = @"vs_main_expand";
-		}
-		m_hw_vs[i] = LoadShader(shader);
+		setFnConstantI(m_fn_constants, sel.expand,     GSMTLConstantIndex_VS_EXPAND_TYPE);
+		m_hw_vs[i] = LoadShader(sel.expand == GSShader::VSExpand::None ? @"vs_main" : @"vs_main_expand");
 	}
 
 	// Init pipelines
@@ -1993,6 +1989,8 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantB(m_fn_constants, pssel.manual_lod,            GSMTLConstantIndex_PS_MANUAL_LOD);
 		setFnConstantB(m_fn_constants, pssel.region_rect,           GSMTLConstantIndex_PS_REGION_RECT);
 		setFnConstantI(m_fn_constants, pssel.scanmsk,               GSMTLConstantIndex_PS_SCANMSK);
+		setFnConstantI(m_fn_constants, pssel.aa1,                   GSMTLConstantIndex_PS_AA1);
+		setFnConstantB(m_fn_constants, pssel.abe,                   GSMTLConstantIndex_PS_ABE);
 		setFnConstantI(m_fn_constants, pssel.sw_aniso,              GSMTLConstantIndex_PS_SW_ANISO);
 		auto newps = LoadShader(@"ps_main");
 		ps = newps;
@@ -2086,14 +2084,27 @@ void GSDeviceMTL::MRESetTexture(GSTexture* tex, int pos)
 
 void GSDeviceMTL::MRESetVertices(id<MTLBuffer> buffer, size_t offset)
 {
-	if (m_current_render.vertex_buffer != (__bridge void*)buffer)
+	if (m_current_render.vertex_buffer != buffer)
 	{
-		m_current_render.vertex_buffer = (__bridge void*)buffer;
+		m_current_render.vertex_buffer = buffer;
 		[m_current_render.encoder setVertexBuffer:buffer offset:offset atIndex:GSMTLBufferIndexHWVertices];
 	}
 	else
 	{
 		[m_current_render.encoder setVertexBufferOffset:offset atIndex:GSMTLBufferIndexHWVertices];
+	}
+}
+
+void GSDeviceMTL::MRESetVSIndices(id<MTLBuffer> buffer, size_t offset)
+{
+	if (m_current_render.vs_index_buffer != buffer)
+	{
+		m_current_render.vs_index_buffer = buffer;
+		[m_current_render.encoder setVertexBuffer:buffer offset:offset atIndex:GSMTLBufferIndexHWIndices];
+	}
+	else
+	{
+		[m_current_render.encoder setVertexBufferOffset:offset atIndex:GSMTLBufferIndexHWIndices];
 	}
 }
 
@@ -2236,6 +2247,8 @@ void GSDeviceMTL::MREInitHWDraw(GSHWDrawConfig& config, const Map& verts)
 	MRESetCB(config.cb_vs);
 	MRESetCB(config.cb_ps);
 	MRESetVertices(verts.gpu_buffer, verts.gpu_offset);
+	if (config.vs.UseVSExpandIndexBuffer())
+		MRESetVSIndices(verts.gpu_buffer, verts.gpu_offset + config.nverts * sizeof(*config.verts));
 }
 
 void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
@@ -2248,18 +2261,27 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	Map allocation = Allocate(m_vertex_upload_buf, vertsize + idxsize);
 	memcpy(allocation.cpu_buffer, config.verts, vertsize);
 
-	id<MTLBuffer> index_buffer;
-	size_t index_buffer_offset;
+	id<MTLBuffer> index_buffer = nil;
+	size_t index_buffer_offset = 0;
 	if (!config.vs.UseFixedExpandIndexBuffer())
 	{
 		memcpy(static_cast<u8*>(allocation.cpu_buffer) + vertsize, config.indices, idxsize);
-		index_buffer = allocation.gpu_buffer;
-		index_buffer_offset = allocation.gpu_offset + vertsize;
+		if (config.vs.UseVSExpandIndexBuffer())
+		{
+			// VS expand index buffer is bound to the VS instead of the input assembler
+			u32 expand = GetExpansionFactor(config.vs.expand);
+			config.nindices *= expand;
+			config.indices_per_prim *= expand;
+		}
+		else
+		{
+			index_buffer = allocation.gpu_buffer;
+			index_buffer_offset = allocation.gpu_offset + vertsize;
+		}
 	}
 	else
 	{
 		index_buffer = m_expand_index_buffer;
-		index_buffer_offset = 0;
 	}
 
 	FlushClears(config.tex);
@@ -2434,6 +2456,24 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		Recycle(primid_tex);
 }}
 
+static void EncodeDraw(id<MTLRenderCommandEncoder> enc, MTLPrimitiveType topology, size_t count, id<MTLBuffer> indices, size_t off, size_t base_vertex)
+{
+	if (indices)
+	{
+		[enc drawIndexedPrimitives:topology
+		                indexCount:count
+		                 indexType:MTLIndexTypeUInt16
+		               indexBuffer:indices
+		         indexBufferOffset:off + base_vertex * sizeof(uint16_t)];
+	}
+	else
+	{
+		[enc drawPrimitives:topology
+		        vertexStart:base_vertex
+		        vertexCount:count];
+	}
+}
+
 void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder> enc, id<MTLBuffer> buffer, size_t off, bool one_barrier, bool full_barrier)
 {
 	MTLPrimitiveType topology;
@@ -2446,14 +2486,8 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 
 	if (!m_features.texture_barrier) [[unlikely]]
 	{
-		[enc drawIndexedPrimitives:topology
-		                indexCount:config.nindices
-		                 indexType:MTLIndexTypeUInt16
-		               indexBuffer:buffer
-		         indexBufferOffset:off];
-
+		EncodeDraw(enc, topology, config.nindices, buffer, off, 0);
 		g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-		
 		return;
 	}
 
@@ -2486,13 +2520,9 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 
 		for (u32 n = 0, p = 0; n < draw_list_size; n++)
 		{
-			const u32 count = (*config.drawlist)[n] * indices_per_prim;
+			const size_t count = (*config.drawlist)[n] * indices_per_prim;
 			textureBarrier(enc);
-			[enc drawIndexedPrimitives:topology
-			                indexCount:count
-			                 indexType:MTLIndexTypeUInt16
-			               indexBuffer:buffer
-			         indexBufferOffset:off + p * sizeof(*config.indices)];
+			EncodeDraw(enc, topology, count, buffer, off, p);
 			p += count;
 		}
 
@@ -2506,12 +2536,7 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 		g_perfmon.Put(GSPerfMon::Barriers, 1);
 	}
 
-	[enc drawIndexedPrimitives:topology
-	                indexCount:config.nindices
-	                 indexType:MTLIndexTypeUInt16
-	               indexBuffer:buffer
-	         indexBufferOffset:off];
-
+	EncodeDraw(enc, topology, config.nindices, buffer, off, 0);
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 }
 
