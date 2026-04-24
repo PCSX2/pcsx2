@@ -265,7 +265,7 @@ public:
 	MRCOwned<id<MTLRenderPipelineState>> m_shadeboost_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_imgui_pipeline;
 
-	MRCOwned<id<MTLFunction>> m_hw_vs[1 << 5];
+	MRCOwned<id<MTLFunction>> m_hw_vs[6 << 3];
 	std::unordered_map<PSSelector, MRCOwned<id<MTLFunction>>> m_hw_ps;
 	std::unordered_map<PipelineSelectorMTL, MRCOwned<id<MTLRenderPipelineState>>> m_hw_pipeline;
 
@@ -290,7 +290,8 @@ public:
 		GSTexture* depth_target = nullptr;
 		GSTexture* stencil_target = nullptr;
 		GSTexture* tex[GSMTLTextureIndexCount] = {};
-		void* vertex_buffer = nullptr;
+		id<MTLBuffer> vertex_buffer = nullptr;
+		id<MTLBuffer> vs_index_buffer = nullptr;
 		void* name = nullptr;
 		struct Has
 		{
@@ -430,6 +431,7 @@ public:
 	void MRESetSampler(SamplerSelector sel);
 	void MRESetTexture(GSTexture* tex, int pos);
 	void MRESetVertices(id<MTLBuffer> buffer, size_t offset);
+	void MRESetVSIndices(id<MTLBuffer> buffer, size_t offset);
 	void MRESetScissor(const GSVector4i& scissor);
 	void MREClearScissor();
 	void MRESetCB(const GSHWDrawConfig::VSConstantBuffer& cb_vs);
