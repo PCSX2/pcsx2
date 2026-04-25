@@ -2931,9 +2931,12 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		glTextureBarrier();
 	}
 
-	if (draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy) || (config.tex && config.tex == config.rt)) &&
-		!m_features.texture_barrier)
+	const bool tex_is_fb = config.tex && config.tex == draw_rt;
+	if (draw_rt && (((config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) && config.ps.IsFeedbackLoopRT()) ||
+		tex_is_fb) && !m_features.texture_barrier)
 	{
+		config.require_one_barrier |= (tex_is_fb && !config.require_full_barrier);
+
 		// Requires a copy of the RT.
 		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true);
 		if (!draw_rt_clone)
@@ -3006,9 +3009,10 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		{
 			OMSetBlendState();
 		}
+		const bool one_barrier = config.alpha_second_pass.require_one_barrier && m_features.feedback_loops();
 		SetupOM(config.alpha_second_pass.depth);
 		SendHWDraw(config, draw_rt_clone, draw_rt, draw_ds_clone, draw_ds,
-			m_features.texture_barrier ? config.alpha_second_pass.require_one_barrier : false, config.alpha_second_pass.require_full_barrier);
+			one_barrier, config.alpha_second_pass.require_full_barrier);
 	}
 
 	if (colclip_rt)
