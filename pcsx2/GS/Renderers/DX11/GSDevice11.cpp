@@ -2944,8 +2944,11 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		draw_ds = m_state.current_ds;
 	}
 
-	if (draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy) || (config.tex && config.tex == config.rt)))
+	const bool tex_is_fb = config.tex && config.tex == draw_rt;
+	if (draw_rt && (((config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) && config.ps.IsFeedbackLoopRT()) || tex_is_fb))
 	{
+		config.require_one_barrier |= (tex_is_fb && !config.require_full_barrier);
+
 		// Requires a copy of the RT.
 		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true);
 		if (!draw_rt_clone)
@@ -2995,9 +2998,10 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			SetupPS(config.alpha_second_pass.ps, nullptr, config.sampler);
 		}
 
+		const bool one_barrier = config.alpha_second_pass.require_one_barrier && m_features.multidraw_fb_copy;
 		SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
 		SendHWDraw(config, draw_rt_clone, draw_rt, draw_ds_clone, draw_ds,
-			false, config.alpha_second_pass.require_full_barrier);
+			one_barrier, config.alpha_second_pass.require_full_barrier);
 	}
 
 	if (colclip_rt)
@@ -3021,57 +3025,54 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 	GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
 	const bool one_barrier, const bool full_barrier)
 {
-	if (draw_rt_clone || draw_ds_clone)
-	{
 #ifdef PCSX2_DEVBUILD
-		if ((one_barrier || full_barrier) && !(config.ps.IsFeedbackLoopRT() || config.ps.IsFeedbackLoopDepth())) [[unlikely]]
-			Console.Warning("D3D11: Possible unnecessary copy detected.");
+	if ((one_barrier || full_barrier) && !(config.ps.IsFeedbackLoopRT() || config.ps.IsFeedbackLoopDepth())) [[unlikely]]
+		Console.Warning("D3D11: Possible unnecessary copy detected.");
 #endif
 
-		auto CopyAndBind = [&](GSVector4i drawarea) {
-			if (draw_rt_clone)
-			{
-				CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
-				if ((one_barrier || full_barrier))
-					PSSetShaderResource(2, draw_rt_clone);
-				if (config.tex && config.tex == draw_rt)
-					PSSetShaderResource(0, draw_rt_clone);
-			}
-			if (draw_ds_clone)
-			{
-				CopyRect(draw_ds, draw_ds_clone, drawarea, drawarea.left, drawarea.top);
-				PSSetShaderResource(4, draw_ds_clone);
-			}
-		};
-
-		const GSVector4i rtsize(0, 0, (draw_rt ? draw_rt : draw_ds)->GetWidth(), (draw_rt ? draw_rt : draw_ds)->GetHeight());
-
-		if (full_barrier)
+	auto CopyAndBind = [&](GSVector4i drawarea) {
+		if (draw_rt_clone)
 		{
-			const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
-			const u32 indices_per_prim = config.indices_per_prim;
+			CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
+			if ((one_barrier || full_barrier))
+				PSSetShaderResource(2, draw_rt_clone);
+			if (config.tex && config.tex == draw_rt)
+				PSSetShaderResource(0, draw_rt_clone);
+		}
+		if (draw_ds_clone)
+		{
+			CopyRect(draw_ds, draw_ds_clone, drawarea, drawarea.left, drawarea.top);
+			PSSetShaderResource(4, draw_ds_clone);
+		}
+	};
 
-			pxAssert(config.drawlist && !config.drawlist->empty());
-			pxAssert(config.drawlist_bbox && static_cast<u32>(config.drawlist_bbox->size()) == draw_list_size);
+	const GSVector4i rtsize(0, 0, (draw_rt ? draw_rt : draw_ds)->GetWidth(), (draw_rt ? draw_rt : draw_ds)->GetHeight());
 
-			for (u32 n = 0, p = 0; n < draw_list_size; n++)
-			{
-				const u32 count = (*config.drawlist)[n] * indices_per_prim;
+	if (full_barrier)
+	{
+		const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
+		const u32 indices_per_prim = config.indices_per_prim;
 
-				const GSVector4i original_bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
-				CopyAndBind(ProcessCopyArea(rtsize, original_bbox));
+		pxAssert(config.drawlist && !config.drawlist->empty());
+		pxAssert(config.drawlist_bbox && static_cast<u32>(config.drawlist_bbox->size()) == draw_list_size);
 
-				Draw(config, p, count);
-				
-				p += count;
-			}
+		for (u32 n = 0, p = 0; n < draw_list_size; n++)
+		{
+			const u32 count = (*config.drawlist)[n] * indices_per_prim;
 
-			return;
+			const GSVector4i original_bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
+			CopyAndBind(ProcessCopyArea(rtsize, original_bbox));
+
+			Draw(config, p, count);
+
+			p += count;
 		}
 
-		// Optimization: For alpha second pass we can reuse the copy snapshot from the first pass.
-		CopyAndBind(ProcessCopyArea(rtsize, config.drawarea));
+		return;
 	}
+
+	if (one_barrier)
+		CopyAndBind(ProcessCopyArea(rtsize, config.drawarea));
 
 	Draw(config);
 }
