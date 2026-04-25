@@ -2945,7 +2945,8 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 
 	const bool tex_is_fb = config.tex && config.tex == draw_rt;
-	if (draw_rt && (((config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) && config.ps.IsFeedbackLoopRT()) || tex_is_fb))
+	if (draw_rt && (((config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
+		(config.ps.IsFeedbackLoopRT() || config.alpha_second_pass.ps.IsFeedbackLoopRT())) || tex_is_fb))
 	{
 		config.require_one_barrier |= (tex_is_fb && !config.require_full_barrier);
 
@@ -2956,7 +2957,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	}
 
 	if (draw_ds && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
-		m_features.depth_feedback && config.ps.IsFeedbackLoopDepth())
+		m_features.depth_feedback && (config.ps.IsFeedbackLoopDepth() || config.alpha_second_pass.ps.IsFeedbackLoopDepth()))
 	{
 		// Requires a copy of the DS.
 		draw_ds_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_ds->GetFormat(), true);

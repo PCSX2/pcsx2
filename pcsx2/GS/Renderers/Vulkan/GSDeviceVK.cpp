@@ -5992,7 +5992,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		pipe.feedback_loop_flags |= m_current_framebuffer_feedback_loop;
 	}
 
-	if (draw_rt && ((config.require_one_barrier && config.ps.IsFeedbackLoopRT()) || (config.tex && config.tex == config.rt)) && !m_features.texture_barrier)
+	if (draw_rt && ((config.require_one_barrier && (config.ps.IsFeedbackLoopRT() || config.alpha_second_pass.ps.IsFeedbackLoopRT())) ||
+		(config.tex && config.tex == config.rt)) && !m_features.texture_barrier)
 	{
 		// Requires a copy of the RT.
 		draw_rt_clone = static_cast<GSTextureVK*>(CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true));
