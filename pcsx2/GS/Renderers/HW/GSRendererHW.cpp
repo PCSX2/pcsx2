@@ -5362,7 +5362,7 @@ void GSRendererHW::HandleProvokingVertexFirst()
 	}
 }
 
-void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert_backup)
+void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert_backup, const bool no_rt)
 {
 	GL_PUSH("HW: IA");
 
@@ -5376,6 +5376,7 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 
 	const bool unscale_pt_ln = !GSConfig.UserHacks_DisableSafeFeatures && (target_scale != 1.0f);
 	const GSDevice::FeatureSupport features = g_gs_device->Features();
+	const bool draw_aa1 = !no_rt && PRIM->AA1 && features.aa1;
 
 	pxAssert(VerifyIndices());
 
@@ -5419,7 +5420,7 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 			{
 				m_conf.topology = GSHWDrawConfig::Topology::Line;
 				m_conf.indices_per_prim = 2;
-				if (PRIM->AA1 && features.aa1)
+				if (draw_aa1)
 				{
 					// AA1 expansion uses a similar path as upscale expansion but it is used
 					// for both upscaling and native resolution drawing.
@@ -5487,7 +5488,7 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 
 		case GS_TRIANGLE_CLASS:
 			{
-				if (PRIM->AA1 && features.aa1)
+				if (draw_aa1)
 				{
 					GL_INS("HW: AA1 triangle expand.");
 					m_conf.vs.expand = GSHWDrawConfig::VSExpand::TriangleAA1;
@@ -8943,7 +8944,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	HandleProvokingVertexFirst();
 
-	SetupIA(rtscale, vs_scale_x, vs_scale_y, m_channel_shuffle_width != 0);
+	SetupIA(rtscale, vs_scale_x, vs_scale_y, m_channel_shuffle_width != 0, no_rt);
 
 	if (m_conf.ds && m_conf.ps.IsFeedbackLoopDepth() && !g_gs_device->Features().depth_feedback)
 	{
@@ -10493,5 +10494,5 @@ std::size_t GSRendererHW::ComputeDrawlistGetSize(float scale)
 
 bool GSRendererHW::IsCoverageAlphaSupported()
 {
-	return IsCoverageAlpha() && g_gs_device->Features().aa1;
+	return IsCoverageAlpha() && IsRTWritten() && g_gs_device->Features().aa1;
 }
