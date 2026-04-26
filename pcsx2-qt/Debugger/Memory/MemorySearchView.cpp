@@ -27,7 +27,6 @@ MemorySearchView::MemorySearchView(const DebuggerViewParameters& parameters)
 	: DebuggerView(parameters, MONOSPACE_FONT)
 {
 	m_ui.setupUi(this);
-	this->repaint();
 
 	m_ui.listSearchResults->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(m_ui.btnSearch, &QPushButton::clicked, this, &MemorySearchView::onSearchButtonClicked);

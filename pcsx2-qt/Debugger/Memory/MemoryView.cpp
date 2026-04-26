@@ -741,7 +741,7 @@ bool MemoryView::fromJson(const JsonValueWrapper& json)
 	if (little_endian != json.value().MemberEnd() && little_endian->value.IsBool())
 		m_table.SetLittleEndian(little_endian->value.GetBool());
 
-	repaint();
+	update();
 
 	return true;
 }
@@ -764,7 +764,7 @@ void MemoryView::mousePressEvent(QMouseEvent* event)
 		return;
 
 	m_table.SelectAt(event->pos());
-	repaint();
+	update();
 }
 
 void MemoryView::openContextMenu(QPoint pos)
@@ -859,7 +859,7 @@ void MemoryView::openContextMenu(QPoint pos)
 
 	menu->popup(this->mapToGlobal(pos));
 
-	this->repaint();
+	update();
 	return;
 }
 
@@ -934,7 +934,7 @@ void MemoryView::wheelEvent(QWheelEvent* event)
 	{
 		m_table.UpdateStartAddress(m_table.startAddress - 0x10);
 	}
-	this->repaint();
+	update();
 }
 
 void MemoryView::keyPressEvent(QKeyEvent* event)
@@ -954,7 +954,7 @@ void MemoryView::keyPressEvent(QKeyEvent* event)
 				break;
 		}
 	}
-	this->repaint();
+	update();
 	DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 }
 
@@ -962,8 +962,8 @@ void MemoryView::gotoAddress(u32 address)
 {
 	m_table.UpdateStartAddress(address & ~0xF);
 	m_table.selectedAddress = address;
-	this->repaint();
-	this->setFocus();
+	update();
+	setFocus();
 }
 
 #include "moc_MemoryView.cpp"

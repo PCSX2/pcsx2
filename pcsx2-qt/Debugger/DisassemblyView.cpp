@@ -86,7 +86,7 @@ bool DisassemblyView::fromJson(const JsonValueWrapper& json)
 	if (show_instruction_bytes != json.value().MemberEnd() && show_instruction_bytes->value.IsBool())
 		m_showInstructionBytes = show_instruction_bytes->value.GetBool();
 
-	repaint();
+	update();
 
 	return true;
 }
@@ -222,7 +222,7 @@ void DisassemblyView::contextRunToCursor()
 void DisassemblyView::contextJumpToCursor()
 {
 	cpu().setPc(m_selectedAddressStart);
-	this->repaint();
+	update();
 }
 
 void DisassemblyView::contextToggleBreakpoint()
@@ -378,7 +378,7 @@ void DisassemblyView::contextRestoreFunction()
 void DisassemblyView::contextShowInstructionBytes()
 {
 	m_showInstructionBytes = !m_showInstructionBytes;
-	this->repaint();
+	update();
 }
 
 QString DisassemblyView::GetLineDisasm(u32 address)
@@ -610,7 +610,7 @@ void DisassemblyView::mousePressEvent(QMouseEvent* event)
 				m_selectedAddressEnd = selectedAddress;
 			}
 		}
-		this->repaint();
+		update();
 	}
 }
 
@@ -637,7 +637,7 @@ void DisassemblyView::wheelEvent(QWheelEvent* event)
 	{
 		m_visibleStart -= 4;
 	}
-	this->repaint();
+	update();
 }
 
 void DisassemblyView::keyPressEvent(QKeyEvent* event)
@@ -709,7 +709,7 @@ void DisassemblyView::keyPressEvent(QKeyEvent* event)
 			break;
 	}
 
-	this->repaint();
+	update();
 }
 
 void DisassemblyView::openContextMenu(QPoint pos)
@@ -1014,9 +1014,9 @@ void DisassemblyView::gotoAddress(u32 address, bool should_set_focus)
 	m_selectedAddressStart = destAddress;
 	m_selectedAddressEnd = destAddress;
 
-	this->repaint();
+	update();
 	if (should_set_focus)
-		this->setFocus();
+		setFocus();
 }
 
 void DisassemblyView::toggleBreakpoint(u32 address)
@@ -1034,7 +1034,7 @@ void DisassemblyView::toggleBreakpoint(u32 address)
 		QtHost::RunOnUIThread([view, cpu]() {
 			BreakpointModel::getInstance(*cpu)->refreshData();
 			if (view)
-				view->repaint();
+				view->update();
 		});
 	});
 }
