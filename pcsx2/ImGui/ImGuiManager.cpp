@@ -1205,11 +1205,11 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, InputLayout
 
 void ImGuiManager::ProcessGenericAxisEvent(GenericInputBinding negative_key, GenericInputBinding positive_key, InputLayout layout, float value)
 {
-	static constexpr float DEADZONE = 0.25f;
+	// Hysteresis prevents wobble: activate at 0.5, release at 0.2.
+	static constexpr float ACTIVATE_THRESHOLD = 0.5f;
+	static constexpr float RELEASE_THRESHOLD = 0.2f;
 
-	// Ignore diagonal analog stick input — neither axis fires when both exceed the deadzone.
-	// Also track last sent binary state per direction to avoid bursting duplicate events when
-	// the controller sends many axis updates in quick succession.
+	// Ignore diagonal input and track binary state per direction to suppress duplicate events.
 	struct AxisState
 	{
 		float x = 0.0f, y = 0.0f;
@@ -1249,7 +1249,7 @@ void ImGuiManager::ProcessGenericAxisEvent(GenericInputBinding negative_key, Gen
 	if (state)
 	{
 		const float other = is_x_axis ? state->y : state->x;
-		if (std::abs(other) > DEADZONE)
+		if (std::abs(other) > ACTIVATE_THRESHOLD)
 			suppressed_value = 0.0f;
 	}
 
@@ -1259,8 +1259,10 @@ void ImGuiManager::ProcessGenericAxisEvent(GenericInputBinding negative_key, Gen
 
 	if (negative_key != GenericInputBinding::Unknown)
 	{
-		const bool active = suppressed_value < -DEADZONE;
-		if (!neg_active_ptr || active != *neg_active_ptr)
+		const bool currently_active = neg_active_ptr ? *neg_active_ptr : false;
+		const float threshold = currently_active ? RELEASE_THRESHOLD : ACTIVATE_THRESHOLD;
+		const bool active = suppressed_value < -threshold;
+		if (!neg_active_ptr || active != currently_active)
 		{
 			if (neg_active_ptr)
 				*neg_active_ptr = active;
@@ -1269,8 +1271,10 @@ void ImGuiManager::ProcessGenericAxisEvent(GenericInputBinding negative_key, Gen
 	}
 	if (positive_key != GenericInputBinding::Unknown)
 	{
-		const bool active = suppressed_value > DEADZONE;
-		if (!pos_active_ptr || active != *pos_active_ptr)
+		const bool currently_active = pos_active_ptr ? *pos_active_ptr : false;
+		const float threshold = currently_active ? RELEASE_THRESHOLD : ACTIVATE_THRESHOLD;
+		const bool active = suppressed_value > threshold;
+		if (!pos_active_ptr || active != currently_active)
 		{
 			if (pos_active_ptr)
 				*pos_active_ptr = active;

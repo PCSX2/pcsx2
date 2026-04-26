@@ -271,7 +271,9 @@ namespace InputManager
 
 	/// Updates internal state for any binds for this key, and fires callbacks as needed.
 	/// Returns true if anything was bound to this key, otherwise false.
-	bool InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key = GenericInputBinding::Unknown);
+	bool InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key = GenericInputBinding::Unknown,
+		GenericInputBinding axis_neg_key = GenericInputBinding::Unknown,
+		GenericInputBinding axis_pos_key = GenericInputBinding::Unknown);
 
 	/// Clears internal state for any binds with a matching source/index.
 	void ClearBindStateFromSource(InputBindingKey key);
