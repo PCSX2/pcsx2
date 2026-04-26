@@ -12,6 +12,7 @@
 #include "QtHost.h"
 
 #include <QtCore/QLocale>
+#include <QtGui/QScreen>
 
 const char* InterfaceSettingsWidget::THEME_NAMES[] = {
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Native"),
@@ -123,6 +124,16 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 	{
 		m_ui.mouseLock->setEnabled(false);
 	}
+
+	m_ui.displayMonitor->addItem(tr("Primary Monitor"));
+	const QList<QScreen*> screens = QGuiApplication::screens();
+	for (int i = 0; i < screens.size(); i++)
+		m_ui.displayMonitor->addItem(tr("Monitor %1: %2").arg(i + 1).arg(screens[i]->name()));
+	m_ui.displayMonitor->setCurrentIndex(Host::GetBaseIntSettingValue("UI", "DisplayMonitor", 0));
+	connect(m_ui.displayMonitor, &QComboBox::currentIndexChanged, this, [](int index) {
+		Host::SetBaseIntSettingValue("UI", "DisplayMonitor", index);
+		Host::CommitBaseSettingChanges();
+	});
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreen, "UI", "StartFullscreen", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.doubleClickTogglesFullscreen, "UI", "DoubleClickTogglesFullscreen", true);
