@@ -525,7 +525,15 @@ static u32 GetFontIndex(const ImGuiManager::FontInfo& font)
 {
 	if (!font.face_name)
 		return 0; // No face name selected
-#define RET_IF_ERR(x) do { if ((x) != FT_Err_Ok) [[unlikely]] { assert(0); return 0; } } while (0)
+#define RET_IF_ERR(x) \
+	do \
+	{ \
+		if ((x) != FT_Err_Ok) [[unlikely]] \
+		{ \
+			assert(0); \
+			return 0; \
+		} \
+	} while (0)
 	if (!s_ft_lib)
 		RET_IF_ERR(FT_Init_FreeType(&s_ft_lib));
 	u32 face_idx = 0;
@@ -898,7 +906,7 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
 	const float padding = std::ceil(8.0f * scale);
 	const float rounding = std::ceil(5.0f * scale);
 	const float max_width = s_window_width - (margin + padding) * 2.0f;
-	
+
 	float position_y = margin;
 	switch (GSConfig.OsdMessagesPos)
 	{
@@ -907,20 +915,20 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
 		case OsdOverlayPos::TopRight:
 			position_y = margin;
 			break;
-			
+
 		case OsdOverlayPos::CenterLeft:
 		case OsdOverlayPos::Center:
 		case OsdOverlayPos::CenterRight:
 			position_y = s_window_height * 0.5f;
 			break;
-			
+
 		case OsdOverlayPos::BottomLeft:
 		case OsdOverlayPos::BottomCenter:
 		case OsdOverlayPos::BottomRight:
 			// For bottom positions, start from the bottom and let messages stack upward
 			position_y = s_window_height - margin;
 			break;
-			
+
 		case OsdOverlayPos::None:
 		default:
 			position_y = margin;
@@ -992,16 +1000,16 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
 		const ImVec2 text_size(
 			font->CalcTextSizeA(font_size, max_width, max_width, msg.text.c_str(), msg.text.c_str() + msg.text.length()));
 		const ImVec2 size(text_size.x + padding * 2.0f, text_size.y + padding * 2.0f);
-		
+
 		// For bottom positions, adjust actual_y to try to account for message height
 		float final_y = actual_y;
-		if (GSConfig.OsdMessagesPos == OsdOverlayPos::BottomLeft || 
-		    GSConfig.OsdMessagesPos == OsdOverlayPos::BottomCenter || 
-		    GSConfig.OsdMessagesPos == OsdOverlayPos::BottomRight)
+		if (GSConfig.OsdMessagesPos == OsdOverlayPos::BottomLeft ||
+			GSConfig.OsdMessagesPos == OsdOverlayPos::BottomCenter ||
+			GSConfig.OsdMessagesPos == OsdOverlayPos::BottomRight)
 		{
 			final_y = actual_y - size.y;
 		}
-		
+
 		const ImVec2 base_pos = CalculateOSDPosition(GSConfig.OsdMessagesPos, margin, size, s_window_width, s_window_height);
 		const ImVec2 pos(base_pos.x, final_y);
 		const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
@@ -1011,11 +1019,11 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
 		dl->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x48, 0x48, 0x48, opacity), rounding);
 		dl->AddText(font, font_size, ImVec2(text_rect.x, text_rect.y), IM_COL32(0xff, 0xff, 0xff, opacity), msg.text.c_str(),
 			msg.text.c_str() + msg.text.length(), max_width, &text_rect);
-		
+
 		// Stack direction depends on the position upward for bottom positions, downward for others
-		if (GSConfig.OsdMessagesPos == OsdOverlayPos::BottomLeft || 
-		    GSConfig.OsdMessagesPos == OsdOverlayPos::BottomCenter || 
-		    GSConfig.OsdMessagesPos == OsdOverlayPos::BottomRight)
+		if (GSConfig.OsdMessagesPos == OsdOverlayPos::BottomLeft ||
+			GSConfig.OsdMessagesPos == OsdOverlayPos::BottomCenter ||
+			GSConfig.OsdMessagesPos == OsdOverlayPos::BottomRight)
 		{
 			position_y -= (size.y + spacing); // Stack upward for bottom positions
 		}

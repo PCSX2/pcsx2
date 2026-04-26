@@ -645,7 +645,7 @@ void InputManager::AddBindings(const std::vector<std::string>& bindings, const I
 			// INISettingsInterface, can just update directly
 			si.SetStringList(section, key, new_bindings);
 			si.Save();
-		} 
+		}
 		else
 		{
 			// LayeredSettingsInterface, Need to find which layer our binding came from
@@ -1629,7 +1629,7 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 	for (u32 axis = 0; axis <= static_cast<u32>(InputPointerAxis::Y); axis++)
 	{
 		s_pointer_axis_speed[axis] = si.GetFloatValue("Pad", fmt::format("Pointer{}Speed", s_pointer_axis_setting_names[axis]).c_str(), 40.0f) /
-									 ui_ctrl_range * pointer_sensitivity;
+		                             ui_ctrl_range * pointer_sensitivity;
 		s_pointer_axis_dead_zone[axis] = std::min(
 			si.GetFloatValue("Pad", fmt::format("Pointer{}DeadZone", s_pointer_axis_setting_names[axis]).c_str(), 20.0f) / ui_ctrl_range, 1.0f);
 		s_pointer_axis_range[axis] = 1.0f - s_pointer_axis_dead_zone[axis];
