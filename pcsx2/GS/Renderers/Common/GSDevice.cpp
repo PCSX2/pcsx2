@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <ostream>
 #include <fstream>
+#include <tuple>
 
 int SetDATMShader(SetDATM datm)
 {
@@ -814,7 +815,7 @@ void GSDevice::SortMultiStretchRects(MultiStretchRect* rects, u32 num_rects)
 {
 	// Depending on num_rects, insertion sort may be better here.
 	std::sort(rects, rects + num_rects, [](const MultiStretchRect& lhs, const MultiStretchRect& rhs) {
-		return lhs.src < rhs.src || lhs.linear < rhs.linear;
+		return std::tie(lhs.src, lhs.linear) < std::tie(rhs.src, rhs.linear);
 	});
 }
 
