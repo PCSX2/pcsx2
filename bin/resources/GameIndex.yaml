@@ -20778,6 +20778,9 @@ SLES-52563:
     nativeScaling: 1 # Fixes misaligned bloom.
     cpuSpriteRenderBW: 2 # Fixes player outfit rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
+  memcardFilters: # Football Fusion with Total Club Manager 2005
+    - "SLES-52674"
+    - "SLES-52563"
 SLES-52567:
   name: "Catwoman"
   region: "PAL-M7"
@@ -21172,10 +21175,13 @@ SLES-52673:
   name: "NHL 2005"
   region: "PAL-M5"
 SLES-52674:
-  name: "Fussball Manager 2005"
+  name: "Total Club Manager 2005"
   region: "PAL-M5"
   clampModes:
     vu1ClampMode: 3 # Fixes 3D rendering.
+  memcardFilters: # Football Fusion with Total Club Manager 2005
+    - "SLES-52674"
+    - "SLES-52563"
 SLES-52675:
   name: "Hugo - Cannon Cruise"
   region: "PAL-Unk"
