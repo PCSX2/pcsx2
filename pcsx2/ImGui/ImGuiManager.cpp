@@ -1171,6 +1171,21 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, InputLayout
 	if (static_cast<u32>(key) >= std::size(key_map) || key_map[static_cast<u32>(key)] == ImGuiKey_None)
 		return false;
 
+	// Ignore diagonal D-pad input — neither direction fires when both axes are held simultaneously.
+	static bool s_dpad_h_held = false, s_dpad_v_held = false;
+	const bool is_dpad_h = (key == GenericInputBinding::DPadLeft || key == GenericInputBinding::DPadRight);
+	const bool is_dpad_v = (key == GenericInputBinding::DPadUp || key == GenericInputBinding::DPadDown);
+	if (is_dpad_h || is_dpad_v)
+	{
+		if (is_dpad_h)
+			s_dpad_h_held = (value > 0.0f);
+		else
+			s_dpad_v_held = (value > 0.0f);
+
+		if (s_dpad_h_held && s_dpad_v_held)
+			return false;
+	}
+
 	MTGS::RunOnGSThread(
 		[key = key_map[static_cast<u32>(key)], value, layout]() mutable {
 			if (s_gamepad_swap_noth_west)
@@ -1192,11 +1207,41 @@ void ImGuiManager::ProcessGenericAxisEvent(GenericInputBinding negative_key, Gen
 {
 	static constexpr float DEADZONE = 0.25f;
 
+	// Ignore diagonal analog stick input — neither axis fires when both exceed the deadzone.
+	static float s_left_stick_x = 0.0f, s_left_stick_y = 0.0f;
+	static float s_right_stick_x = 0.0f, s_right_stick_y = 0.0f;
+
+	float suppressed_value = value;
+	if (negative_key == GenericInputBinding::LeftStickLeft)
+	{
+		s_left_stick_x = value;
+		if (std::abs(s_left_stick_y) > DEADZONE)
+			suppressed_value = 0.0f;
+	}
+	else if (negative_key == GenericInputBinding::LeftStickUp)
+	{
+		s_left_stick_y = value;
+		if (std::abs(s_left_stick_x) > DEADZONE)
+			suppressed_value = 0.0f;
+	}
+	else if (negative_key == GenericInputBinding::RightStickLeft)
+	{
+		s_right_stick_x = value;
+		if (std::abs(s_right_stick_y) > DEADZONE)
+			suppressed_value = 0.0f;
+	}
+	else if (negative_key == GenericInputBinding::RightStickUp)
+	{
+		s_right_stick_y = value;
+		if (std::abs(s_right_stick_x) > DEADZONE)
+			suppressed_value = 0.0f;
+	}
+
 	// Treat as binary like the D-pad: either fully pressed or released, with a deadzone.
 	if (negative_key != GenericInputBinding::Unknown)
-		ProcessGenericInputEvent(negative_key, layout, (value < -DEADZONE) ? 1.0f : 0.0f);
+		ProcessGenericInputEvent(negative_key, layout, (suppressed_value < -DEADZONE) ? 1.0f : 0.0f);
 	if (positive_key != GenericInputBinding::Unknown)
-		ProcessGenericInputEvent(positive_key, layout, (value > DEADZONE) ? 1.0f : 0.0f);
+		ProcessGenericInputEvent(positive_key, layout, (suppressed_value > DEADZONE) ? 1.0f : 0.0f);
 }
 
 void ImGuiManager::SwapGamepadNorthWest(bool value)
