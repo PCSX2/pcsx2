@@ -2308,12 +2308,12 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	}
 	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Glyph Style"),
 			FSUI_CSTR("Changes which gamepad button glyph set is used in Big Picture UI and input binding displays."),
-			(glyph_index < std::size(glyph_values)) ? FSUI_CSTR(glyph_names[glyph_index]) : FSUI_CSTR("Unknown")))
+			(glyph_index < std::size(glyph_values)) ? Host::TranslateToCString(TR_CONTEXT, glyph_names[glyph_index]) : FSUI_CSTR("Unknown")))
 	{
 		ImGuiFullscreen::ChoiceDialogOptions cd_options;
 		cd_options.reserve(std::size(glyph_values));
 		for (size_t i = 0; i < std::size(glyph_values); i++)
-			cd_options.emplace_back(FSUI_STR(glyph_names[i]), i == static_cast<size_t>(glyph_index));
+			cd_options.emplace_back(Host::TranslateToString(TR_CONTEXT, glyph_names[i]), i == static_cast<size_t>(glyph_index));
 
 		OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Glyph Style"), false, std::move(cd_options), [](s32 index, const std::string& title, bool checked) {
 			if (index >= 0 && static_cast<size_t>(index) < std::size(glyph_values))
@@ -2356,7 +2356,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	swap_summery.format(FSUI_FSTR("Uses {} as confirm when using a controller."),
 		glyphs.confirm(ImGui::GetIO().ConfigNavSwapGamepadButtons));
 	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Swap OK/Cancel in Big Picture Mode"), swap_summery.c_str(),
-			(swap_index < std::size(swap_values)) ? FSUI_CSTR(swap_names[swap_index]) : FSUI_CSTR("Unknown")))
+			(swap_index < std::size(swap_values)) ? Host::TranslateToCString(TR_CONTEXT, swap_names[swap_index]) : FSUI_CSTR("Unknown")))
 	{
 		ImGuiFullscreen::ChoiceDialogOptions cd_options;
 		cd_options.reserve(std::size(swap_values));
@@ -2390,7 +2390,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	swap_summery.format(FSUI_FSTR("Swaps both {}/{} (When Swap OK/Cancel is set to automatic) and {}/{} buttons"),
 		glyphs.south, glyphs.east, glyphs.west, glyphs.north);
 	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Use Legacy Nintendo Layout in Big Picture Mode"), swap_summery.c_str(),
-			(nintendo_index < std::size(swap_values)) ? FSUI_CSTR(swap_names[nintendo_index]) : FSUI_CSTR("Unknown")))
+			(nintendo_index < std::size(swap_values)) ? Host::TranslateToCString(TR_CONTEXT, swap_names[nintendo_index]) : FSUI_CSTR("Unknown")))
 	{
 		ImGuiFullscreen::ChoiceDialogOptions cd_options;
 		cd_options.reserve(std::size(swap_values));
