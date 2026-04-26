@@ -12,6 +12,8 @@
 #include "SPU2/spu2.h"
 #include "VMManager.h"
 #include "SIO/Memcard/MemoryCardFile.h"
+#include "SIO/PAD/Pad.h"
+#include "INISettingsInterface.h"
 
 #include "common/Assertions.h"
 #include "common/Error.h"
@@ -115,6 +117,44 @@ static void HotkeySaveStateSlot(s32 slot)
 	VMManager::SaveStateToSlot(slot, true, [slot](const std::string& error) {
 		FullscreenUI::ReportStateSaveError(error, slot);
 	});
+}
+
+static void HotkeyCycleInputProfile(s32 amount)
+{
+	if (!VMManager::HasValidVM())
+		return;
+
+	const u32 crc = VMManager::GetCurrentCRC();
+	// Try the legacy format (crc.ini) first
+	std::string filename(VMManager::GetGameSettingsPath({}, crc));
+	if (!FileSystem::FileExists(filename.c_str()))
+		filename = VMManager::GetGameSettingsPath(VMManager::GetSerialForGameSettings(), crc);
+	const std::unique_ptr<INISettingsInterface> game_settings = std::make_unique<INISettingsInterface>(std::move(filename));
+	game_settings->Load();
+
+	const std::string current_profile = game_settings->GetStringValue("EmuCore", "InputProfileName");
+	const std::vector<std::string> profiles = Pad::GetInputProfileNames();
+	const s32 current_i = std::find(profiles.begin(), profiles.end(), current_profile) - profiles.begin();
+	// Calculate the array index of the new profile to load, or profiles.size() for the shared profile
+	s32 new_i = (current_i + amount) % (static_cast<s32>(profiles.size()) + 1);
+	while (new_i < 0)
+		new_i += profiles.size() + 1;
+
+	if (new_i < profiles.size())
+	{
+		game_settings->SetStringValue("EmuCore", "InputProfileName", profiles.at(new_i).c_str());
+		Host::AddIconOSDMessage("InputProfileChanged", ICON_FA_KEYBOARD,
+			fmt::format(TRANSLATE_FS("Hotkeys", "Game input profile switched to {}"), profiles.at(new_i)));
+	}
+	else
+	{
+		game_settings->DeleteValue("EmuCore", "InputProfileName");
+		Host::AddIconOSDMessage("InputProfileChanged", ICON_FA_KEYBOARD,
+			TRANSLATE_STR("Hotkeys", "Game input profile switched to Shared"));
+	}
+	game_settings->Save();
+
+	Host::RunOnCPUThread([]() { VMManager::ReloadGameSettings(); });
 }
 
 static bool CanPause()
@@ -354,5 +394,15 @@ DEFINE_HOTKEY("ToggleMouseLock", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_
 	[](s32 pressed) {
 		if (!pressed)
 			Host::SetMouseLock(!Host::GetBoolSettingValue("EmuCore", "EnableMouseLock"));
+	})
+DEFINE_HOTKEY("CycleInputProfileForwards", TRANSLATE_NOOP("Hotkeys", "Input"), TRANSLATE_NOOP("Hotkeys", "Cycle Game input profile forwards (alphabetically)"),
+	[](s32 pressed) {
+		if (!pressed)
+			HotkeyCycleInputProfile(1);
+	})
+DEFINE_HOTKEY("CycleInputProfileBackwards", TRANSLATE_NOOP("Hotkeys", "Input"), TRANSLATE_NOOP("Hotkeys", "Cycle Game input profile backwards (alphabetically)"),
+	[](s32 pressed) {
+		if (!pressed)
+			HotkeyCycleInputProfile(-1);
 	})
 END_HOTKEY_LIST()
