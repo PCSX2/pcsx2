@@ -1,4 +1,5 @@
 add_pcsx2_test(core_test
+	GS/gs_device_tests.cpp
 	patch_tests.cpp
 	MockMemoryInterface.h
 	StubHost.cpp
