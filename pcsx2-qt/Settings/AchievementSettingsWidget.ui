@@ -12,12 +12,117 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="QGroupBox" name="loginBox">
+     <property name="title">
+      <string>Account</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
+      <item>
+       <layout class="QGridLayout" name="acccountLayout">
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="enable">
+          <property name="text">
+           <string>Enable Achievements</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="loginStatus">
+          <property name="text">
+           <string>Username:
+Login token generated at:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+          </property>
+          <property name="buddy">
+           <cstring>viewProfile</cstring>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="achievementButtons">
+        <item>
+         <widget class="QPushButton" name="viewProfile">
+          <property name="text">
+           <string>View Profile...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="loginButton">
+          <property name="text">
+           <string>Login...</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="gameInfoBox">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>75</height>
+      </size>
+     </property>
+     <property name="title">
+      <string>Game Info</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="0" column="0">
+       <widget class="QLabel" name="gameInfo">
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
+        </property>
+        <property name="buddy">
+         <cstring>viewProfile</cstring>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="rcheevosDisclaimer">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;retroachievements.org&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::TextFormat::RichText</enum>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+     <property name="margin">
+      <number>8</number>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+     <property name="buddy">
+      <cstring>enable</cstring>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="settingsBox">
      <property name="title">
       <string>Settings</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
-      <item row="2" column="0">
+      <item row="1" column="1">
        <widget class="QCheckBox" name="unofficialAchievements">
         <property name="text">
          <string>Test Unofficial Achievements</string>
@@ -25,23 +130,16 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QCheckBox" name="hardcoreMode">
+       <widget class="QCheckBox" name="spectatorMode">
         <property name="text">
-         <string>Enable Hardcore Mode</string>
+         <string>Enable Spectator Mode</string>
         </property>
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QCheckBox" name="enable">
+       <widget class="QCheckBox" name="hardcoreMode">
         <property name="text">
-         <string>Enable Achievements</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="spectatorMode">
-        <property name="text">
-         <string>Enable Spectator Mode</string>
+         <string>Enable Hardcore Mode</string>
         </property>
        </widget>
       </item>
@@ -424,94 +522,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="loginBox">
-     <property name="title">
-      <string>Account</string>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
-      <item>
-       <widget class="QLabel" name="loginStatus">
-        <property name="text">
-         <string>Username:
-Login token generated at:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
-        </property>
-        <property name="buddy">
-         <cstring>viewProfile</cstring>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="achievementButtons">
-        <item>
-         <widget class="QPushButton" name="viewProfile">
-          <property name="text">
-           <string>View Profile...</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="loginButton">
-          <property name="text">
-           <string>Login...</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="gameInfoBox">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>75</height>
-      </size>
-     </property>
-     <property name="title">
-      <string>Game Info</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_3">
-      <item row="0" column="0">
-       <widget class="QLabel" name="gameInfo">
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="rcheevosDisclaimer">
-     <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;https://retroachievements.org/&quot;&gt;retroachievements.org&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;To view the achievement list in-game, press the hotkey for &lt;span style=&quot; font-weight:600;&quot;&gt;Open Pause Menu&lt;/span&gt; and select &lt;span style=&quot; font-weight:600;&quot;&gt;Achievements&lt;/span&gt; from the menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="textFormat">
-      <enum>Qt::TextFormat::RichText</enum>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-     <property name="margin">
-      <number>8</number>
-     </property>
-     <property name="openExternalLinks">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
@@ -528,9 +538,11 @@ Login token generated at:</string>
  </widget>
  <tabstops>
   <tabstop>enable</tabstop>
+  <tabstop>viewProfile</tabstop>
+  <tabstop>loginButton</tabstop>
   <tabstop>hardcoreMode</tabstop>
-  <tabstop>encoreMode</tabstop>
   <tabstop>spectatorMode</tabstop>
+  <tabstop>encoreMode</tabstop>
   <tabstop>unofficialAchievements</tabstop>
   <tabstop>achievementNotifications</tabstop>
   <tabstop>achievementNotificationsDuration</tabstop>
@@ -556,8 +568,6 @@ Login token generated at:</string>
   <tabstop>lbSoundBrowse</tabstop>
   <tabstop>lbSoundOpen</tabstop>
   <tabstop>lbSoundReset</tabstop>
-  <tabstop>viewProfile</tabstop>
-  <tabstop>loginButton</tabstop>
  </tabstops>
  <resources>
   <include location="../resources/resources.qrc"/>

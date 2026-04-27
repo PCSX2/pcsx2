@@ -120,6 +120,10 @@ void AchievementSettingsWidget::updateEnableState()
 	const bool info = enabled && sound && dialog()->getEffectiveBoolValue("Achievements", "InfoSound", true);
 	const bool unlock = enabled && sound && dialog()->getEffectiveBoolValue("Achievements", "UnlockSound", true);
 	const bool lbsound = enabled && sound && dialog()->getEffectiveBoolValue("Achievements", "LBSubmitSound", true);
+
+	m_ui.viewProfile->setEnabled(enabled);
+	m_ui.loginButton->setEnabled(enabled);
+
 	m_ui.hardcoreMode->setEnabled(enabled);
 	m_ui.achievementNotifications->setEnabled(enabled);
 	m_ui.leaderboardNotifications->setEnabled(enabled);
