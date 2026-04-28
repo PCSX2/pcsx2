@@ -3,7 +3,7 @@
     <string name="app_name">ARMSX2</string>
     <string name="app_name_tv">ARMSX2 for Android TV</string>
     <string name="app_name_desktop">ARMSX2 for Desktop</string>
-    <string name="controller_mapping_button">Edit Controller Mapping</string>
+    <string name="controller_mapping_button">컨트롤러 매핑 설정</string>
     <string name="controller_mapping_title">Controller Mapping</string>
     <string name="controller_mapping_instruction">Select an action to rebind. When prompted, press the new controller button.</string>
     <string name="controller_mapping_rebind">Rebind</string>
@@ -27,8 +27,8 @@
     <string name="controller_action_r3">R3</string>
     <string name="controller_action_select">Select</string>
     <string name="controller_action_start">Start</string>
-    <string name="settings_aspect_ratio">Aspect Ratio</string>
-    <string name="settings_record_logs">Record Logs</string>
+    <string name="settings_aspect_ratio">화면 비율</string>
+    <string name="settings_record_logs">로그 기록</string>
     <string name="settings_record_logs_summary">Capture full Android logcat (emulator output, crashes, ADB) to ANDROID_LOG.txt in your data directory. May reduce performance.</string>
     <string name="settings_section_general">General</string>
     <string name="settings_section_graphics">Graphics</string>
@@ -37,7 +37,7 @@
     <string name="settings_section_controller">Controller</string>
     <string name="settings_section_customization">Customization</string>
     <string name="settings_section_storage">Storage &amp; Data</string>
-    <string name="settings_section_memory">Memory Cards</string>
+    <string name="settings_section_memory">메모리 카드</string>
     <string name="settings_section_achievements">Connections</string>
     <string name="settings_on_screen_ui_style">On-screen UI style</string>
     <string name="dialog_on_screen_ui_style_title">On-screen UI style</string>
@@ -46,7 +46,7 @@
     <string name="onboarding_title">Welcome</string>
     <string name="onboarding_back">Back</string>
     <string name="onboarding_continue">Continue</string>
-    <string name="onboarding_finish">Finish</string>
+    <string name="onboarding_finish">완료</string>
     <string name="onboarding_welcome_title">Welcome to ARMSX2</string>
     <string name="onboarding_welcome_message">Let’s get you ready to play. We’ll guide you through BIOS and storage setup—you can change these later in Settings.</string>
     <string name="onboarding_bios_title">PlayStation 2 BIOS</string>
