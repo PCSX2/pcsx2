@@ -97,6 +97,7 @@ public Q_SLOTS:
 	void gridZoomOut();
 	void gridIntScale(int int_scale);
 	void refreshGridCovers();
+	void handleControllerNavigation(int qtKey);
 
 protected:
 	void showEvent(QShowEvent* event) override;

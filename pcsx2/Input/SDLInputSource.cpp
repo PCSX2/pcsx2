@@ -1489,7 +1489,19 @@ bool SDLInputSource::HandleGamepadAxisEvent(const SDL_GamepadAxisEvent* ev)
 		return false;
 
 	const InputBindingKey key(MakeGenericControllerAxisKey(InputSourceType::SDL, it->player_id, ev->axis));
-	InputManager::InvokeEvents(key, NormalizeS16(ev->value));
+	const float value = NormalizeS16(ev->value);
+	InputManager::InvokeEvents(key, value);
+
+	// Fire directional generic events so UI navigation (game list) receives proper unipolar
+	// magnitudes for each direction — the bipolar raw value isn't usable for threshold checks.
+	if (ev->axis < std::size(s_sdl_generic_binding_axis_mapping))
+	{
+		InputManager::InvokeUINavigationEvent(s_sdl_generic_binding_axis_mapping[ev->axis][0],
+			(value < 0.0f) ? -value : 0.0f);
+		InputManager::InvokeUINavigationEvent(s_sdl_generic_binding_axis_mapping[ev->axis][1],
+			(value > 0.0f) ? value : 0.0f);
+	}
+
 	return true;
 }
 

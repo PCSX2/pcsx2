@@ -136,6 +136,9 @@ static std::mutex s_binding_map_write_lock;
 static std::mutex m_event_intercept_mutex;
 static InputInterceptHook::Callback m_event_intercept_callback;
 
+// UI navigation callback (game list controller support)
+static InputManager::UINavigationCallback s_ui_nav_callback;
+
 // Input sources. Keyboard/mouse don't exist here.
 static std::array<std::unique_ptr<InputSource>, static_cast<u32>(InputSourceType::Count)> s_input_sources;
 
@@ -1279,6 +1282,9 @@ bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInpu
 		InputLayout layout = s_input_sources[static_cast<u32>(InputSourceType::SDL)]->GetControllerLayout(key.source_index);
 		if (ImGuiManager::ProcessGenericInputEvent(generic_key, layout, value) && value != 0.0f)
 			return true;
+
+		if (s_ui_nav_callback && s_ui_nav_callback(generic_key, value))
+			return true;
 	}
 
 	return false;
@@ -1527,6 +1533,22 @@ bool InputManager::HasHook()
 {
 	std::unique_lock<std::mutex> lock(m_event_intercept_mutex);
 	return (bool)m_event_intercept_callback;
+}
+
+void InputManager::SetUINavigationCallback(UINavigationCallback callback)
+{
+	s_ui_nav_callback = std::move(callback);
+}
+
+void InputManager::RemoveUINavigationCallback()
+{
+	s_ui_nav_callback = {};
+}
+
+void InputManager::InvokeUINavigationEvent(GenericInputBinding key, float value)
+{
+	if (s_ui_nav_callback)
+		s_ui_nav_callback(key, value);
 }
 
 bool InputManager::DoEventHook(InputBindingKey key, float value)
