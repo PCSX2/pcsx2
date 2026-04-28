@@ -22,6 +22,7 @@
 #include <QtCore/QSortFilterProxyModel>
 #include <QtCore/QDir>
 #include <QtCore/QString>
+#include <QtGui/QKeyEvent>
 #include <QtGui/QPainter>
 #include <QtGui/QPixmap>
 #include <QtGui/QPixmapCache>
@@ -650,6 +651,32 @@ void GameListWidget::gridIntScale(int int_scale)
 void GameListWidget::refreshGridCovers()
 {
 	m_model->refreshCovers();
+}
+
+void GameListWidget::handleControllerNavigation(int qtKey)
+{
+	// Only route to visible game views; ignore if showing the empty-game-directory widget.
+	if (!isShowingGameList() && !isShowingGameGrid())
+		return;
+
+	QAbstractItemView* view = isShowingGameGrid() ? static_cast<QAbstractItemView*>(m_list_view) : static_cast<QAbstractItemView*>(m_table_view);
+
+	// If nothing is selected yet, pick the first item so navigation has somewhere to start.
+	if (!view->currentIndex().isValid())
+	{
+		const QModelIndex first = view->model()->index(0, 0);
+		if (!first.isValid())
+			return;
+		view->setCurrentIndex(first);
+		if (qtKey == Qt::Key_Return)
+		{
+			// Treat confirm on an unselected list as just selecting the first item.
+			return;
+		}
+	}
+
+	QApplication::postEvent(view, new QKeyEvent(QEvent::KeyPress, qtKey, Qt::NoModifier));
+	QApplication::postEvent(view, new QKeyEvent(QEvent::KeyRelease, qtKey, Qt::NoModifier));
 }
 
 void GameListWidget::showGameList()

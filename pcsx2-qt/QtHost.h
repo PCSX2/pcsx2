@@ -169,6 +169,9 @@ Q_SIGNALS:
 	void onCoverDownloaderOpenRequested();
 	void onCreateMemoryCardOpenRequested();
 
+	/// Emitted when a controller navigation event is received while no VM is running.
+	void navigationKeyPressed(int qtKey);
+
 	/// Called when video capture starts/stops.
 	void onCaptureStarted(const QString& filename);
 	void onCaptureStopped();
