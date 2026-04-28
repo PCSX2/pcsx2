@@ -184,10 +184,6 @@ void OSDSettingsWidget::onBrowseOsdFontPathClicked()
 		saveOsdFontPathSetting(QDir::toNativeSeparators(selected));
 	});
 
-	connect(m_font_picker, &QObject::destroyed, this, [this]() {
-		m_font_picker = nullptr;
-	});
-
 	m_font_picker->show();
 }
 
