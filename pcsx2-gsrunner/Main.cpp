@@ -799,6 +799,12 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 				s_perf_enable = true;
 				continue;
 			}
+			else if (CHECK_ARG("-debugdevice"))
+			{
+				Console.WriteLn("Enable debug device");
+				s_settings_interface.SetBoolValue("EmuCore/GS", "UseDebugDevice", true);
+				continue;
+			}
 			else if (CHECK_ARG("--"))
 			{
 				no_more_args = true;
