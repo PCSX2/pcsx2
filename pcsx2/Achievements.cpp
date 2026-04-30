@@ -44,6 +44,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #ifdef ENABLE_RAINTEGRATION
@@ -242,6 +243,63 @@ namespace Achievements
 	static std::optional<AchievementProgressIndicator> s_active_progress_indicator;
 } // namespace Achievements
 
+static u8* _get_ee_mem_address(u32 address)
+{
+	// Given a virtual address and optional size argument, returns a pair of pointers to two
+	// bytes that address and address+size correspond to. If either address or address+size is
+	// invalid, nullptr is returned instead expressing that the range is invalid.
+
+	// When operating in 128MB mode, both system memory and Scratchpad memory will correspond
+	// to the virtual addresses used by the console.
+	// --
+	// When operating outside of the 128MB mode, the Retroachievements integration places Scratchpad in 2 locations:
+	// 1. (Legacy) Scratchpad is mapped directly above directly above the main 32MB of memory.
+	// 2. (Modern) Scratchpad is mapped to its virtual address, 0x70000000U.
+	// The second mapping ensures that scratchpad can be consistently accessed regardless of if 128MB memory is enabled,
+	// while the first is for temporary backwards compatibility.
+
+	u32 max_ee_size = Ps2MemSize::MainRam;
+	if (EmuConfig.Cpu.ExtraMemory)
+		max_ee_size += Ps2MemSize::ExtraRam;
+
+	if (address < max_ee_size)
+	{
+		// Main memory mapping
+		return &eeMem->Main[address];
+	}
+	else if (!EmuConfig.Cpu.ExtraMemory && address < Ps2MemSize::MainRam + Ps2MemSize::Scratch)
+	{
+		// 1. Legacy Scratchpad mapping (Scratchpad @ 0x02000000-0x02003FFF)
+		return &eeMem->Scratch[address - Ps2MemSize::MainRam];
+	}
+	else if (address >= 0x70000000U && address < 0x70000000U + Ps2MemSize::Scratch)
+	{
+		// 2. Modern Scratchpad mapping (Scratchpad @ 0x70000000-0x70003FFF)
+		address &= 0x0FFFFFFF;
+		return &eeMem->Scratch[address];
+	}
+	return nullptr;
+}
+
+static std::pair<u8*, u8*> get_ee_mem_address(u32 address, u32 size = 1)
+{
+	if (size != 0)
+		size -= 1;
+
+	u32 end_address = address + size;
+	u8* first = _get_ee_mem_address(address);
+	if (size == 0)
+		return {first, first};
+
+	// Make sure that the start address and end address are not in different
+	// sections of memory (i.e. the start is in main RAM and end is in scratchpad),
+	// and that an overflow did not occur
+	u32 full_size = Ps2MemSize::MainRam + Ps2MemSize::ExtraRam;
+	if ((address < full_size && address + size >= full_size) || address + size < address) [[unlikely]]
+		return {first, nullptr};
+
+	return {first, _get_ee_mem_address(end_address)};
+}
 
 std::unique_lock<std::recursive_mutex> Achievements::GetLock()
 {
@@ -488,7 +546,7 @@ bool Achievements::Initialize()
 
 u32 Achievements::GetExposedEEMemorySize()
 {
-	return Ps2MemSize::ExposedRam + Ps2MemSize::Scratch;
+	return Ps2MemSize::ExposedRam + Ps2MemSize::ExtraRam + Ps2MemSize::Scratch;
 }
 
 bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
@@ -714,16 +772,13 @@ void Achievements::ClientMessageCallback(const char* message, const rc_client_t*
 
 uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client)
 {
-	if ((static_cast<u64>(address) + num_bytes) > GetExposedEEMemorySize()) [[unlikely]]
+	const auto [ptr, end] = get_ee_mem_address(address, num_bytes);
+
+	if (ptr == nullptr || end == nullptr) [[unlikely]]
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds memory peek of %u bytes at %08X.", num_bytes, address);
 		return 0u;
 	}
-
-	// RA uses a fake memory map with the scratchpad directly above physical memory.
-	// The scratchpad is not meant to be accessible via physical addressing, only virtual.
-	// This also means that the upper 96MB of memory will never be accessible to achievements.
-	const u8* ptr = (address < Ps2MemSize::ExposedRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::ExposedRam];
 
 	// Fast paths for known data sizes.
 	switch (num_bytes)
@@ -3767,27 +3822,30 @@ void Achievements::RAIntegration::RACallbackLoadROM(const char* unused)
 
 unsigned char Achievements::RAIntegration::RACallbackReadMemory(unsigned int address)
 {
-	if ((static_cast<u64>(address) + sizeof(unsigned char)) > GetExposedEEMemorySize())
+	const auto [ptr, end] = get_ee_mem_address(address, sizeof(unsigned char));
+
+	if (ptr == nullptr || end == nullptr) [[unlikely]]
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds memory peek at %08X.", address);
 		return 0u;
 	}
 
 	unsigned char value;
-	const u8* ptr = (address < Ps2MemSize::ExposedRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::ExposedRam];
 	std::memcpy(&value, ptr, sizeof(value));
 	return value;
 }
 
 unsigned int Achievements::RAIntegration::RACallbackReadBlock(unsigned int address, unsigned char* buffer, unsigned int bytes)
 {
-	if ((address >= GetExposedEEMemorySize())) [[unlikely]]
+	const auto [ptr, end] = get_ee_mem_address(address, bytes);
+
+	if (ptr == nullptr || end == nullptr) [[unlikely]]
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds block memory read for %u bytes at %08X.", bytes, address);
 		return 0u;
 	}
 
-	if (address < Ps2MemSize::ExposedRam && (address + bytes) > Ps2MemSize::ExposedRam) [[unlikely]]
+	if (!EmuConfig.Cpu.ExtraMemory && address < Ps2MemSize::ExposedRam && (address + bytes) > Ps2MemSize::ExposedRam) [[unlikely]]
 	{
 		// Split across RAM+Scratch.
 		const unsigned int bytes_from_ram = Ps2MemSize::ExposedRam - address;
@@ -3796,21 +3854,20 @@ unsigned int Achievements::RAIntegration::RACallbackReadBlock(unsigned int addre
 				RACallbackReadBlock(address + bytes_from_ram, buffer + bytes_from_ram, bytes_from_scratch));
 	}
 
-	const unsigned int read_byte_count = std::min<unsigned int>(GetExposedEEMemorySize() - address, bytes);
-	const u8* ptr = (address < Ps2MemSize::ExposedRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::ExposedRam];
-	std::memcpy(buffer, ptr, read_byte_count);
-	return read_byte_count;
+	std::memcpy(buffer, ptr, bytes);
+	return bytes;
 }
 
 void Achievements::RAIntegration::RACallbackWriteMemory(unsigned int address, unsigned char value)
 {
-	if ((static_cast<u64>(address) + sizeof(value)) > GetExposedEEMemorySize()) [[unlikely]]
+	const auto [ptr, end] = get_ee_mem_address(address, sizeof(value));
+
+	if (ptr == nullptr || end == nullptr) [[unlikely]]
 	{
 		DevCon.Warning("[Achievements] Ignoring out of bounds memory poke at %08X (value %08X).", address, value);
 		return;
 	}
 
-	u8* ptr = (address < Ps2MemSize::ExposedRam) ? &eeMem->Main[address] : &eeMem->Scratch[address - Ps2MemSize::ExposedRam];
 	std::memcpy(ptr, &value, sizeof(value));
 }
 
