@@ -74,17 +74,17 @@ public class JoystickView extends View {
     
     private void init() {
         basePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        basePaint.setColor(0x40FFFFFF); 
+        basePaint.setColor(0x0DFFFFFF); 
         basePaint.setStyle(Paint.Style.FILL);
-        
+
         knobPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        knobPaint.setColor(0xFFFFFFFF); 
+        knobPaint.setColor(0x26FFFFFF); 
         knobPaint.setStyle(Paint.Style.FILL);
-        
+
         strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        strokePaint.setColor(0x80000000); 
+        strokePaint.setColor(0x66FFFFFF); 
         strokePaint.setStyle(Paint.Style.STROKE);
-        strokePaint.setStrokeWidth(4.0f);
+        strokePaint.setStrokeWidth(2.0f);
         
         knobPosition = new PointF();
     }

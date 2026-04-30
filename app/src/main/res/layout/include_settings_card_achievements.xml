@@ -146,7 +146,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Discord"
+                android:text="@string/settings_discord_title"
                 android:textColor="?attr/colorPrimary"
                 android:textSize="18sp"
                 android:textStyle="bold"
@@ -156,7 +156,7 @@
                 android:id="@+id/tv_discord_status"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Connect to show your activity on Discord."
+                android:text="@string/settings_discord_status_connect"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="14sp"
                 android:layout_marginBottom="12dp" />
@@ -197,14 +197,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="Connect Discord" />
+                android:text="@string/settings_discord_connect" />
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_discord_logout"
                 style="@style/Widget.Material3.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Log Out"
+                android:text="@string/settings_discord_logout"
                 android:visibility="gone" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

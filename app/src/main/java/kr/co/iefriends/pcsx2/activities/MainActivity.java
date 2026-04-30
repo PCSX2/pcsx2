@@ -78,12 +78,14 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -497,7 +499,7 @@ public class MainActivity extends AppCompatActivity {
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         if (toolbar != null) {
             String displayName = DeviceProfiles.getProductDisplayName(this, getString(R.string.app_name));
-            toolbar.setTitle(displayName + " Game Selector");
+            toolbar.setTitle(getString(R.string.home_game_selector_title_format, displayName));
             try {
                 androidx.appcompat.graphics.drawable.DrawerArrowDrawable dd = new androidx.appcompat.graphics.drawable.DrawerArrowDrawable(this);
                 dd.setProgress(0f); 
@@ -546,7 +548,7 @@ public class MainActivity extends AppCompatActivity {
                             Class<?> rnClass = Class.forName("kr.co.iefriends.pcsx2.RNActivity");
                             startActivity(new Intent(this, rnClass));
                         } catch (Throwable t) {
-                            try { Toast.makeText(this, "React Native screen unavailable", Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
+                            try { Toast.makeText(this, R.string.home_react_native_unavailable, Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
                         }
                         return true;
                     }
@@ -569,12 +571,12 @@ public class MainActivity extends AppCompatActivity {
                 pickGamesFolder();
         } else if (id == R.id.menu_refresh) {
             if (gamesFolderUri != null) scanGamesFolder(gamesFolderUri);
-            else try { Toast.makeText(this, "Choose a games folder first", Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
+            else try { Toast.makeText(this, R.string.home_choose_folder_first, Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
         } else if (id == R.id.menu_covers) {
             promptForCoversUrl();
         } else if (id == R.id.menu_clear_cover_url) {
             setCoversUrlTemplate("");
-            try { Toast.makeText(this, "Cover URL cleared.", Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
+            try { Toast.makeText(this, R.string.home_cover_url_cleared, Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
             if (gamesFolderUri != null) scanGamesFolder(gamesFolderUri);
         } else if (id == R.id.menu_bg_landscape) {
             pickBackgroundImage(false);
@@ -900,7 +902,6 @@ public class MainActivity extends AppCompatActivity {
                             ge.gameTitle = cached.second;
                         }
                     }
-                    continue;
                 }
                 boolean needsSerial = TextUtils.isEmpty(ge.serial);
                 boolean needsTitle = TextUtils.isEmpty(ge.gameTitle);
@@ -914,6 +915,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                     if (needsTitle && !TextUtils.isEmpty(rd.name)) {
                         ge.gameTitle = rd.name;
+                    }
+                    if (isChdEntry(ge.uri, ge.title)) {
+                        persistChdMetadata(ge.uri, ge.serial, ge.gameTitle);
                     }
                 }
             } catch (Throwable ignored) {}
@@ -1947,12 +1951,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void ensureBiosPresent() {
     if (!hasBios()) {
-        Toast.makeText(this, "ARMSX2 no bios found!", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, R.string.home_bios_missing_toast, Toast.LENGTH_LONG).show();
         new MaterialAlertDialogBuilder(this)
-            .setMessage("No PS2 BIOS found. Please choose a BIOS file.")
+            .setMessage(R.string.home_bios_missing_message)
             .setCancelable(true)
-            .setNegativeButton("Close", (d, w) -> d.dismiss())
-            .setPositiveButton("Choose BIOS", (d, w) -> openBiosPicker())
+            .setNegativeButton(R.string.home_close, (d, w) -> d.dismiss())
+            .setPositiveButton(R.string.onboarding_bios_select, (d, w) -> openBiosPicker())
             .show();
         } else {
             // BIOS is present, signal we’re gameplay-ready.
@@ -1998,9 +2002,9 @@ public class MainActivity extends AppCompatActivity {
             int n;
             while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
             out.flush();
-            Toast.makeText(this, "BIOS saved", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.onboarding_bios_saved, Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Toast.makeText(this, "Failed to save BIOS", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.onboarding_bios_write_error, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -2049,9 +2053,9 @@ public class MainActivity extends AppCompatActivity {
             int n;
             while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
             out.flush();
-            Toast.makeText(this, "Imported BIOS: " + outFile.getName(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.home_bios_imported, outFile.getName()), Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            Toast.makeText(this, "Failed to import BIOS", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.home_bios_import_failed, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -2080,16 +2084,16 @@ public class MainActivity extends AppCompatActivity {
         } catch (Throwable ignored) {}
 
         MaterialAlertDialogBuilder b = new MaterialAlertDialogBuilder(this)
-                .setTitle("BIOS Selection")
+                .setTitle(R.string.home_bios_selection_title)
                 .setSingleChoiceItems(names, checked, (d, which) -> {
                     try {
                         String path = biosList.get(which).getAbsolutePath();
                         NativeApp.setSetting("Filenames", "BIOS", "string", path);
-                        Toast.makeText(this, "Current BIOS: " + biosList.get(which).getName(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getString(R.string.home_bios_current, biosList.get(which).getName()), Toast.LENGTH_SHORT).show();
                     } catch (Throwable ignored) {}
                 })
-                .setNegativeButton("Close", (d, w) -> d.dismiss())
-                .setPositiveButton("Import", (d, w) -> openBiosImportForManager());
+                .setNegativeButton(R.string.home_close, (d, w) -> d.dismiss())
+                .setPositiveButton(R.string.home_import, (d, w) -> openBiosImportForManager());
         b.show();
     }
 
@@ -2208,6 +2212,14 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        MaterialButton btnChangeDisc = findViewById(R.id.drawer_btn_change_disc);
+        if (btnChangeDisc != null) {
+            btnChangeDisc.setOnClickListener(v -> {
+                closeInGameDrawer();
+                SwapDisc();
+            });
+        }
+
         MaterialButton btnTestController = findViewById(R.id.drawer_btn_test_controller);
         if (btnTestController != null) {
             btnTestController.setOnClickListener(v -> {
@@ -2236,7 +2248,7 @@ public class MainActivity extends AppCompatActivity {
         if (btnImportCheats != null) {
             btnImportCheats.setOnClickListener(v -> {
                 closeInGameDrawer();
-                launchCheatImportPicker();
+                openPnachPicker();
             });
         }
 
@@ -2630,25 +2642,29 @@ public class MainActivity extends AppCompatActivity {
             ArrayAdapter<CharSequence> scaleAdapter = ArrayAdapter.createFromResource(this, R.array.resolution_scales, android.R.layout.simple_spinner_item);
             scaleAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             scaleSpinner.setAdapter(scaleAdapter);
-            int current = 0;
+            final String[] scales = getResources().getStringArray(R.array.resolution_scales);
+            int current = 2;
             try {
                 String value = NativeApp.getSetting("EmuCore/GS", "upscale_multiplier", "float");
                 if (value != null && !value.isEmpty()) {
-                    float parsed = Float.parseFloat(value);
-                    current = Math.max(1, Math.min(scaleAdapter.getCount(), Math.round(parsed))) - 1;
+                    float f = Float.parseFloat(value);
+                    String search = (f == (int)f) ? (int)f + "x" : f + "x";
+                    for (int i = 0; i < scales.length; i++) {
+                        if (scales[i].equalsIgnoreCase(search)) {
+                            current = i;
+                            break;
+                        }
+                    }
                 }
             } catch (Exception ignored) {}
-            if (current < 0 || current >= scaleAdapter.getCount()) current = 0;
             scaleSpinner.setSelection(current, false);
             scaleSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    NativeApp.setSetting("EmuCore/GS", "upscale_multiplier", "float", String.valueOf(position + 1));
+                    String val = scales[position].replace("x", "");
+                    NativeApp.setSetting("EmuCore/GS", "upscale_multiplier", "float", val);
                 }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-                }
+                @Override public void onNothingSelected(AdapterView<?> parent) {}
             });
         }
 
@@ -2938,24 +2954,24 @@ public class MainActivity extends AppCompatActivity {
 
     private void showGameStateDialog() {
         CharSequence[] items = new CharSequence[]{
-                "Save state (slot 1)",
-                "Load state (slot 1)"
+                getString(R.string.home_game_state_save_slot_1),
+                getString(R.string.home_game_state_load_slot_1)
         };
     new MaterialAlertDialogBuilder(this)
-        .setTitle("Game State")
+        .setTitle(R.string.home_game_state_title)
                 .setItems(items, (dialog, which) -> {
                     if (which == 0) {
                         pauseVmForStateOperation();
                         boolean ok = NativeApp.saveStateToSlot(1);
                         try {
-                            Toast.makeText(this, ok ? "State saved" : "Failed to save state", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, ok ? R.string.home_game_state_saved : R.string.home_game_state_save_failed, Toast.LENGTH_SHORT).show();
                         } catch (Throwable ignored) {}
                         resumeVmAfterStateOperation();
                     } else if (which == 1) {
                         pauseVmForStateOperation();
                         boolean ok = NativeApp.loadStateFromSlot(1);
                         try {
-                            Toast.makeText(this, ok ? "State loaded" : "Failed to load state", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, ok ? R.string.home_game_state_loaded : R.string.home_game_state_load_failed, Toast.LENGTH_SHORT).show();
                         } catch (Throwable ignored) {}
                         if (!ok) {
                             resumeVmAfterStateOperation();
@@ -3184,7 +3200,7 @@ public class MainActivity extends AppCompatActivity {
         boolean isNether = STYLE_NETHER.equals(currentOnScreenUiStyle);
         PSButtonView btn_pad_select = findViewById(R.id.btn_pad_select);
         if (btn_pad_select != null) {
-            applyButtonIcon(btn_pad_select, R.drawable.playstation3_button_select, "ic_controller_select_button.png");
+            applyButtonIcon(btn_pad_select, R.drawable.ic_ps_select, "ic_controller_select_button.png");
             btn_pad_select.setRectangular(true);
             float selectScale = isNether ? 0.75f : 1.0f;
             btn_pad_select.setScaleX(selectScale);
@@ -3194,7 +3210,7 @@ public class MainActivity extends AppCompatActivity {
 
         PSButtonView btn_pad_start = findViewById(R.id.btn_pad_start);
         if (btn_pad_start != null) {
-            applyButtonIcon(btn_pad_start, R.drawable.playstation3_button_start, "ic_controller_start_button.png");
+            applyButtonIcon(btn_pad_start, R.drawable.ic_ps_start, "ic_controller_start_button.png");
             float selectScale = isNether ? 0.75f : 1.0f;
             btn_pad_start.setScaleX(selectScale);
             btn_pad_start.setScaleY(selectScale);
@@ -3205,7 +3221,7 @@ public class MainActivity extends AppCompatActivity {
 
         PSButtonView btn_pad_a = findViewById(R.id.btn_pad_a);
         if (btn_pad_a != null) {
-            applyButtonIcon(btn_pad_a, R.drawable.playstation_button_color_cross_outline, "ic_controller_cross_button.png");
+            applyButtonIcon(btn_pad_a, R.drawable.ic_ps_cross, "ic_controller_cross_button.png");
             btn_pad_a.setScaleX(faceScale);
             btn_pad_a.setScaleY(faceScale);
             btn_pad_a.setOnPSButtonListener(pressed -> {
@@ -3216,7 +3232,7 @@ public class MainActivity extends AppCompatActivity {
 
         PSButtonView btn_pad_b = findViewById(R.id.btn_pad_b);
         if (btn_pad_b != null) {
-            applyButtonIcon(btn_pad_b, R.drawable.playstation_button_color_circle_outline, "ic_controller_circle_button.png");
+            applyButtonIcon(btn_pad_b, R.drawable.ic_ps_circle, "ic_controller_circle_button.png");
             btn_pad_b.setScaleX(faceScale);
             btn_pad_b.setScaleY(faceScale);
             btn_pad_b.setOnPSButtonListener(pressed -> {
@@ -3227,7 +3243,7 @@ public class MainActivity extends AppCompatActivity {
 
         PSButtonView btn_pad_x = findViewById(R.id.btn_pad_x);
         if (btn_pad_x != null) {
-            applyButtonIcon(btn_pad_x, R.drawable.playstation_button_color_square_outline, "ic_controller_square_button.png");
+            applyButtonIcon(btn_pad_x, R.drawable.ic_ps_square, "ic_controller_square_button.png");
             btn_pad_x.setScaleX(faceScale);
             btn_pad_x.setScaleY(faceScale);
             btn_pad_x.setOnPSButtonListener(pressed -> {
@@ -3238,7 +3254,7 @@ public class MainActivity extends AppCompatActivity {
 
         PSButtonView btn_pad_y = findViewById(R.id.btn_pad_y);
         if (btn_pad_y != null) {
-            applyButtonIcon(btn_pad_y, R.drawable.playstation_button_color_triangle_outline, "ic_controller_triangle_button.png");
+            applyButtonIcon(btn_pad_y, R.drawable.ic_ps_triangle, "ic_controller_triangle_button.png");
             btn_pad_y.setScaleX(faceScale);
             btn_pad_y.setScaleY(faceScale);
             btn_pad_y.setOnPSButtonListener(pressed -> {
@@ -3249,7 +3265,7 @@ public class MainActivity extends AppCompatActivity {
 
         PSShoulderButtonView btn_pad_l1 = findViewById(R.id.btn_pad_l1);
         if (btn_pad_l1 != null) {
-            applyShoulderIcon(btn_pad_l1, R.drawable.playstation_trigger_l1_alternative_outline, "ic_controller_l1_button.png");
+            applyShoulderIcon(btn_pad_l1, R.drawable.ic_ps_l1, "ic_controller_l1_button.png");
             btn_pad_l1.setScaleX(1.0f);
             btn_pad_l1.setScaleY(isNether ? 0.6f : 1.0f);
             btn_pad_l1.setOnPSShoulderButtonListener(pressed -> NativeApp.setPadButton(KeyEvent.KEYCODE_BUTTON_L1, 0, pressed));
@@ -3257,7 +3273,7 @@ public class MainActivity extends AppCompatActivity {
 
         PSShoulderButtonView btn_pad_r1 = findViewById(R.id.btn_pad_r1);
         if (btn_pad_r1 != null) {
-            applyShoulderIcon(btn_pad_r1, R.drawable.playstation_trigger_r1_alternative_outline, "ic_controller_r1_button.png");
+            applyShoulderIcon(btn_pad_r1, R.drawable.ic_ps_r1, "ic_controller_r1_button.png");
             btn_pad_r1.setScaleX(1.0f);
             btn_pad_r1.setScaleY(isNether ? 0.6f : 1.0f);
             btn_pad_r1.setOnPSShoulderButtonListener(pressed -> NativeApp.setPadButton(KeyEvent.KEYCODE_BUTTON_R1, 0, pressed));
@@ -3265,7 +3281,7 @@ public class MainActivity extends AppCompatActivity {
 
         PSShoulderButtonView btn_pad_l2 = findViewById(R.id.btn_pad_l2);
         if (btn_pad_l2 != null) {
-            applyShoulderIcon(btn_pad_l2, R.drawable.playstation_trigger_l2_alternative_outline, "ic_controller_l2_button.png");
+            applyShoulderIcon(btn_pad_l2, R.drawable.ic_ps_l2, "ic_controller_l2_button.png");
             btn_pad_l2.setScaleX(1.0f);
             btn_pad_l2.setScaleY(isNether ? 0.6f : 1.0f);
             btn_pad_l2.setOnPSShoulderButtonListener(pressed -> NativeApp.setPadButton(KeyEvent.KEYCODE_BUTTON_L2, 0, pressed));
@@ -3273,7 +3289,7 @@ public class MainActivity extends AppCompatActivity {
 
         PSShoulderButtonView btn_pad_r2 = findViewById(R.id.btn_pad_r2);
         if (btn_pad_r2 != null) {
-            applyShoulderIcon(btn_pad_r2, R.drawable.playstation_trigger_r2_alternative_outline, "ic_controller_r2_button.png");
+            applyShoulderIcon(btn_pad_r2, R.drawable.ic_ps_r2, "ic_controller_r2_button.png");
             btn_pad_r2.setScaleX(1.0f);
             btn_pad_r2.setScaleY(isNether ? 0.6f : 1.0f);
             btn_pad_r2.setOnPSShoulderButtonListener(pressed -> NativeApp.setPadButton(KeyEvent.KEYCODE_BUTTON_R2, 0, pressed));
@@ -3281,13 +3297,13 @@ public class MainActivity extends AppCompatActivity {
 
         PSButtonView btn_pad_l3 = findViewById(R.id.btn_pad_l3);
         if (btn_pad_l3 != null) {
-            applyButtonIcon(btn_pad_l3, R.drawable.playstation_button_l3_outline, "ic_controller_l3_button.png");
+            applyButtonIcon(btn_pad_l3, R.drawable.ic_ps_l3, "ic_controller_l3_button.png");
             btn_pad_l3.setOnPSButtonListener(pressed -> NativeApp.setPadButton(KeyEvent.KEYCODE_BUTTON_THUMBL, 0, pressed));
         }
 
         PSButtonView btn_pad_r3 = findViewById(R.id.btn_pad_r3);
         if (btn_pad_r3 != null) {
-            applyButtonIcon(btn_pad_r3, R.drawable.playstation_button_r3_outline, "ic_controller_r3_button.png");
+            applyButtonIcon(btn_pad_r3, R.drawable.ic_ps_r3, "ic_controller_r3_button.png");
             btn_pad_r3.setOnPSButtonListener(pressed -> NativeApp.setPadButton(KeyEvent.KEYCODE_BUTTON_THUMBR, 0, pressed));
         }
 
@@ -3736,9 +3752,9 @@ public class MainActivity extends AppCompatActivity {
                 NativeApp.setSetting("MemoryCards", "Slot1_Enable", "bool", "false");
                 NativeApp.setSetting("MemoryCards", "Slot1_Filename", "string", "Mcd001.ps2");
                 NativeApp.setSetting("MemoryCards", "Slot1_Enable", "bool", "true");
-                Toast.makeText(this, "Memory card inserted (Slot 1)", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.settings_memory_card_inserted_slot1, Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Failed to import memory card", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.settings_memory_card_import_failed, Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -3936,7 +3952,7 @@ public class MainActivity extends AppCompatActivity {
         String resolvedPath = DataDirectoryManager.resolveTreeUriToPath(this, tree);
         if (resolvedPath == null || resolvedPath.trim().isEmpty()) {
             try {
-                Toast.makeText(this, "Unable to use selected folder", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.onboarding_storage_unusable, Toast.LENGTH_LONG).show();
             } catch (Throwable ignored) {}
             storagePromptShown = false;
             maybeShowDataDirectoryPrompt();
@@ -3945,7 +3961,7 @@ public class MainActivity extends AppCompatActivity {
         File targetDir = new File(resolvedPath);
         if (!targetDir.exists() && !targetDir.mkdirs()) {
             try {
-                Toast.makeText(this, "Cannot create folders in the selected location", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.onboarding_storage_create_failed, Toast.LENGTH_LONG).show();
             } catch (Throwable ignored) {}
             storagePromptShown = false;
             maybeShowDataDirectoryPrompt();
@@ -3964,7 +3980,7 @@ public class MainActivity extends AppCompatActivity {
             DataDirectoryManager.markPromptDone(this);
             storagePromptShown = true;
             try {
-                Toast.makeText(this, "Already using that folder", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.onboarding_storage_already_using, Toast.LENGTH_SHORT).show();
             } catch (Throwable ignored) {}
             return;
         }
@@ -3990,11 +4006,11 @@ public class MainActivity extends AppCompatActivity {
                     DataDirectoryManager.markPromptDone(this);
                     storagePromptShown = true;
                     try {
-                        Toast.makeText(this, "Data location updated", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, R.string.onboarding_storage_moved, Toast.LENGTH_LONG).show();
                     } catch (Throwable ignored) {}
                 } else {
                     try {
-                        Toast.makeText(this, "Failed to move data", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, R.string.onboarding_storage_move_failed, Toast.LENGTH_LONG).show();
                     } catch (Throwable ignored) {}
                     storagePromptShown = false;
                     maybeShowDataDirectoryPrompt();
@@ -4071,7 +4087,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     String p = m_szGamefile;
                     if (p != null && !p.isEmpty()) {
-                        Toast.makeText(this, "Launching: " + p, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getString(R.string.home_launching_game, p), Toast.LENGTH_SHORT).show();
                     }
                 } catch (Throwable ignored) {}
             });
@@ -4462,7 +4478,7 @@ public class MainActivity extends AppCompatActivity {
             i.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
             startActivityResultPickIso.launch(i);
         } catch (Throwable t) {
-            try { Toast.makeText(this, "Unable to open file picker", Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
+            try { Toast.makeText(this, R.string.home_unable_open_file_picker, Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
         }
     }
 
@@ -4980,20 +4996,70 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+    private final ActivityResultLauncher<Intent> startActivityResultImportPnach = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    if (uri != null) {
+                        processSelectedPnach(uri);
+                    }
+                }
+            });
+
     private void pickGamesFolder() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         startActivityResultPickFolder.launch(intent);
     }
 
-    private void launchCheatImportPicker() {
+    private void openPnachPicker() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
-        intent.putExtra(Intent.EXTRA_TITLE, getString(R.string.drawer_import_cheats_picker_title));
-        intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"application/x-pnach", "application/octet-stream", "text/plain"});
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-        startActivityResultImportCheats.launch(intent);
+        startActivityResultImportPnach.launch(intent);
+    }
+
+    private void processSelectedPnach(Uri uri) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            try (InputStream is = getContentResolver().openInputStream(uri);
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String trimmed = line.trim();
+                    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                        sb.append("// ").append(line).append("\n");
+                    } else {
+                        sb.append(line).append("\n");
+                    }
+                }
+            }
+
+            String serial = NativeApp.getGameSerial();
+            int crcInt = NativeApp.getGameCRC();
+
+            if (TextUtils.isEmpty(serial) || crcInt == 0) {
+                Toast.makeText(this, "Erro: Start the Game First", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String fileName = String.format("%s_%08X.pnach", serial, crcInt);
+            File cheatsDir = new File(DataDirectoryManager.getDataRoot(this), "cheats");
+            if (!cheatsDir.exists()) cheatsDir.mkdirs();
+
+            File targetFile = new File(cheatsDir, fileName);
+            try (FileOutputStream fos = new FileOutputStream(targetFile)) {
+                fos.write(sb.toString().getBytes());
+            }
+            NativeApp.reloadCheats();
+            NativeApp.setEnableCheats(false);
+            NativeApp.setEnableCheats(true);
+
+            Toast.makeText(this, "Cheat Imported: " + fileName, Toast.LENGTH_LONG).show();
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Erro: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void launchTextureImportPicker() {
@@ -5024,7 +5090,8 @@ public class MainActivity extends AppCompatActivity {
             try {
                 if (ge != null && (ge.serial == null || ge.serial.isEmpty())) {
                     String name = ge.title != null ? ge.title.toLowerCase() : "";
-                    if (name.endsWith(".iso") || name.endsWith(".img") || name.endsWith(".bin"))
+                    if (name.endsWith(".iso") || name.endsWith(".img") || name.endsWith(".bin") ||
+                            name.endsWith(".chd") || name.endsWith(".cso") || name.endsWith(".zso") || name.endsWith(".gz"))
                         toResolve.add(ge);
                 }
             } catch (Throwable ignored) {}
@@ -5035,18 +5102,23 @@ public class MainActivity extends AppCompatActivity {
                 int n = 0;
                 for (GameEntry ge : toResolve) {
                     try {
-                        RedumpDB.Result rd = RedumpDB.lookupByFile(cr, ge.uri);
-                        if (rd != null && rd.serial != null && !rd.serial.isEmpty()) {
-                            ge.serial = rd.serial;
-                            ge.gameTitle = rd.name;
-                            n++;
-                            if (n % 2 == 1) {
-                                runOnUiThread(() -> gamesAdapter.notifyDataSetChanged());
+                        String info = NativeApp.getDiskInfo(ge.uri.toString());
+                        if (!TextUtils.isEmpty(info)) {
+                            String[] parts = info.split("\\|");
+                            if (parts.length >= 3) {
+                                ge.gameTitle = parts[0];
+                                ge.serial = parts[1];
+                                ge.region = parts[2];
+                                if (isChdEntry(ge.uri, ge.title)) {
+                                    persistChdMetadata(ge.uri, ge.serial, ge.gameTitle);
+                                }
+                                n++;
                             }
+                            if (n > 0) runOnUiThread(() -> gamesAdapter.notifyDataSetChanged());
                         }
-                    } catch (Throwable ignored) {}
+                    } catch (Throwable ignored) {
+                    }
                 }
-                if (n > 0) runOnUiThread(() -> gamesAdapter.notifyDataSetChanged());
             }, "RedumpResolve").start();
         }
         if (etSearch != null && etSearch.getText() != null && etSearch.length() > 0) {
@@ -5064,9 +5136,9 @@ public class MainActivity extends AppCompatActivity {
             });
         }
         boolean empty = entries.isEmpty();
-    try { Toast.makeText(this, "Found " + entries.size() + " game(s)", Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
+    try { Toast.makeText(this, getString(R.string.home_games_found_count, entries.size()), Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
         if (tvEmpty != null) {
-            tvEmpty.setText(empty ? "No games detected in this folder" : "");
+            tvEmpty.setText(empty ? getString(R.string.home_no_games_detected) : "");
             tvEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
         }
         if (emptyContainer != null) emptyContainer.setVisibility(empty ? View.VISIBLE : View.GONE);
@@ -5148,7 +5220,7 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (Throwable ignored) {}
         if (show && tvEmpty != null && gamesFolderUri == null) {
-            tvEmpty.setText("Choose a games folder");
+            tvEmpty.setText(R.string.home_nav_choose_games_folder);
             tvEmpty.setVisibility(View.VISIBLE);
             if (emptyContainer != null) emptyContainer.setVisibility(View.VISIBLE);
             if (rvGames != null) rvGames.setVisibility(View.GONE);
@@ -5243,6 +5315,39 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             });
+
+    private final ActivityResultLauncher<Intent> startActivityResultSwapDisc = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    if (uri != null) {
+                        try {
+                            getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        } catch (Exception ignored) {}
+
+                        String displayName = queryOpenableDisplayName(uri);
+                        if (displayName == null) {
+                            displayName = uri.getLastPathSegment();
+                        }
+                        if (NativeApp.changeDisc(uri.toString())) {
+                            Toast.makeText(this, "Disc Changed: " + displayName, Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, "Failure to Change Disk: " + displayName, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+            });
+
+    private void SwapDisc() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        String[] mimeTypes = {"application/octet-stream", "application/x-iso9660-image", "application/x-cd-image"};
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+        startActivityResultSwapDisc.launch(intent);
+    }
+
     private void applySavedBackground() {
         if (bgImage == null) return;
         android.content.SharedPreferences sp = getSharedPreferences(PREFS, MODE_PRIVATE);
@@ -5269,7 +5374,7 @@ public class MainActivity extends AppCompatActivity {
     private void clearBackgroundImages() {
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().remove(PREF_BG_L).remove(PREF_BG_P).apply();
         if (bgImage != null) { bgImage.setImageDrawable(null); bgImage.setVisibility(View.GONE); }
-        try { Toast.makeText(this, "Background cleared.", Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
+        try { Toast.makeText(this, R.string.home_background_cleared, Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
     }
     // endregion Background image picker
 
@@ -5285,7 +5390,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         // Start BIOS first
-        try { Toast.makeText(this, "Preflight: booting BIOS…", Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
+        try { Toast.makeText(this, R.string.home_preflight_boot_bios, Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
         pendingGameUri = uri;
         pendingLaunchRetries = 0;
         bootBios();
@@ -5296,7 +5401,7 @@ public class MainActivity extends AppCompatActivity {
     private final Runnable pendingLaunchRunnable = new Runnable() {
         @Override public void run() {
             if (pendingGameUri == null) return;
-            try { Toast.makeText(MainActivity.this, "Preflight: launching selected game…", Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
+            try { Toast.makeText(MainActivity.this, R.string.home_preflight_launch_selected_game, Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
             Uri toLaunch = pendingGameUri;
             pendingGameUri = null;
             handleSelectedGameUri(toLaunch);
@@ -5335,7 +5440,8 @@ public class MainActivity extends AppCompatActivity {
         final String title;      
         final Uri uri;
         String serial;           
-        String gameTitle;        
+        String gameTitle;
+        public String region;
         GameEntry(String t, Uri u) { title = t; uri = u; }
         String fileTitleNoExt() {
             int i = title.lastIndexOf('.');
@@ -6058,20 +6164,26 @@ public class MainActivity extends AppCompatActivity {
                 long total = 0;
                 final int BUF = 1024 * 1024;
                 byte[] buf = new byte[BUF];
+                boolean isChd = file.toString().toLowerCase().endsWith(".chd");
+                long maxRead = isChd ? 16L * 1024 * 1024 : -1;
                 try (java.io.InputStream in = CsoUtils.openInputStream(cr, file)) {
-                    if (in == null) return null;
                     while (true) {
+                        if (maxRead > 0 && total >= maxRead) break;
                         int r = in.read(buf);
                         if (r <= 0) break;
                         md.update(buf, 0, r);
                         total += r;
                     }
+                    if (isChd) {
+                        try (android.content.res.AssetFileDescriptor afd = cr.openAssetFileDescriptor(file, "r")) {
+                            if (afd != null) total = afd.getLength();
+                        }
+                    }
                 }
                 String md5 = new java.math.BigInteger(1, md.digest()).toString(16);
                 while (md5.length() < 32) md5 = "0" + md5;
                 String key = md5ToLower(md5) + "|" + Long.toString(total);
-                Result r = sMd5SizeToResult.get(key);
-                return r;
+                return sMd5SizeToResult.get(key);
             } catch (Exception ignored) {
                 return null;
             }
@@ -6108,11 +6220,13 @@ public class MainActivity extends AppCompatActivity {
         interface OnClick { void onClick(GameEntry e); }
         static class VH extends RecyclerView.ViewHolder {
             final TextView tv;
+            final TextView tvRegion;
             final android.widget.ImageView img;
             final TextView tvOverlay;
             VH(View v) {
                 super(v);
                 this.tv = v.findViewById(R.id.tv_title);
+                this.tvRegion = v.findViewById(R.id.tv_region);
                 this.img = v.findViewById(R.id.img_cover);
                 this.tvOverlay = v.findViewById(R.id.tv_cover_fallback);
             }
@@ -6195,26 +6309,41 @@ public class MainActivity extends AppCompatActivity {
         @Override public void onBindViewHolder(@NonNull VH holder, int position) {
             GameEntry e = filtered.get(position);
             String tpl = ((MainActivity)holder.itemView.getContext()).getCoversUrlTemplate();
+            String requestKey = (e.uri != null ? e.uri.toString() : e.title) + "|" +
+                    (e.serial != null ? e.serial : "") + "|" +
+                    (e.gameTitle != null ? e.gameTitle : "");
+            if (requestKey.equals(holder.img.getTag(R.id.tag_request_key))) {
+                return;
+            }
+            holder.img.setTag(R.id.tag_request_key, requestKey);
             boolean loaded = false;
-            try { holder.img.setImageDrawable(null); } catch (Throwable ignored) {}
-            try { holder.img.setBackgroundColor(android.graphics.Color.TRANSPARENT); } catch (Throwable ignored) {}
+            android.graphics.Bitmap fastCache = sCoverCache.get(requestKey);
+            if (fastCache != null) {
+                holder.img.setImageBitmap(fastCache);
+                loaded = true;
+            } else {
+                try { holder.img.setImageDrawable(null); } catch (Throwable ignored) {}
+            }
             if (holder.tvOverlay != null) holder.tvOverlay.setVisibility(View.GONE);
-            try {
-                String gameKey = gameKeyFromEntry(e);
-                String manual = ((MainActivity)holder.itemView.getContext()).getManualCoverUri(gameKey);
-                if (manual != null && !manual.isEmpty()) {
-                    android.net.Uri mu = android.net.Uri.parse(manual);
-                    try (java.io.InputStream is = holder.itemView.getContext().getContentResolver().openInputStream(mu)) {
-                        if (is != null) {
+
+            if (!loaded) {
+                try {
+                    String gameKey = gameKeyFromEntry(e);
+                    String manual = ((MainActivity)holder.itemView.getContext()).getManualCoverUri(gameKey);
+                    if (manual != null && !manual.isEmpty()) {
+                        android.net.Uri mu = android.net.Uri.parse(manual);
+                        try (java.io.InputStream is = holder.itemView.getContext().getContentResolver().openInputStream(mu)) {
                             android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeStream(is);
                             if (bmp != null) {
                                 holder.img.setImageBitmap(bmp);
+                                sCoverCache.put(requestKey, bmp);
                                 loaded = true;
                             }
-                        }
-                    } catch (Throwable ignored) {}
-                }
-            } catch (Throwable ignored) {}
+                        } catch (Throwable ignored) {}
+                    }
+                } catch (Throwable ignored) {}
+            }
+
             if (!loaded) {
                 File cachedLocal = findCachedCoverFile(holder.itemView.getContext(), e);
                 if (cachedLocal != null && cachedLocal.exists()) {
@@ -6222,12 +6351,14 @@ public class MainActivity extends AppCompatActivity {
                     android.graphics.Bitmap cachedBmp = sCoverCache.get(localKey);
                     if (cachedBmp != null) {
                         holder.img.setImageBitmap(cachedBmp);
+                        sCoverCache.put(requestKey, cachedBmp);
                         loaded = true;
                     } else {
                         android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeFile(localKey);
                         if (bmp != null) {
                             holder.img.setImageBitmap(bmp);
                             sCoverCache.put(localKey, bmp);
+                            sCoverCache.put(requestKey, bmp);
                             loaded = true;
                         }
                     }
@@ -6236,19 +6367,19 @@ public class MainActivity extends AppCompatActivity {
             boolean online = MainActivity.hasInternetConnection(holder.itemView.getContext());
             if (!loaded && online && tpl != null && !tpl.isEmpty()) {
                 java.util.List<String> urls = MainActivity.buildCoverCandidateUrls(e, tpl);
-                String requestKey = (e.uri != null ? e.uri.toString() : e.title) + "|" + (e.serial != null ? e.serial : "") + "|" + (e.title != null ? e.title : "");
-                holder.img.setTag(R.id.tag_request_key, requestKey);
                 for (String u : urls) {
                     if (u == null || u.isEmpty() || u.contains("${")) continue;
                     android.graphics.Bitmap cached = sCoverCache.get(u);
                     if (cached != null) {
-                        loaded = true;
                         holder.img.setImageBitmap(cached);
+                        sCoverCache.put(requestKey, cached);
+                        loaded = true;
                         break;
                     }
                 }
-                if (!loaded && !urls.isEmpty())
+                if (!loaded && !urls.isEmpty()) {
                     loadImageWithFallback(holder.img, holder.tvOverlay, holder.itemView.getContext(), e, urls, requestKey);
+                }
             }
             holder.img.setVisibility(View.VISIBLE);
             if (listMode) {
@@ -6267,6 +6398,10 @@ public class MainActivity extends AppCompatActivity {
                         holder.tvOverlay.bringToFront();
                     }
                 }
+            }
+            if (holder.tvRegion != null) {
+                holder.tvRegion.setText(e.region != null ? e.region : "");
+                holder.tvRegion.setVisibility(TextUtils.isEmpty(e.region) ? View.GONE : View.VISIBLE);
             }
             holder.itemView.setOnClickListener(v -> onClick.onClick(e));
             holder.itemView.setOnKeyListener((v, keyCode, event) -> {

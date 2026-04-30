@@ -28,7 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:text="Fullscreen UI"
+            android:text="@string/settings_fullscreen_ui"
             app:useMaterialThemeColors="true" />
 
         <LinearLayout
@@ -51,41 +51,6 @@
                 android:text="@string/settings_expand_cutout_summary"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="14sp" />
-        </LinearLayout>
-
-        <com.google.android.material.materialswitch.MaterialSwitch
-            android:id="@+id/sw_frame_limiter"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="Frame Limiter"
-            app:useMaterialThemeColors="true" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/tv_fps_limit_value"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Custom FPS Limit: 60"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="16sp" />
-
-            <com.google.android.material.slider.Slider
-                android:id="@+id/sb_fps_limit"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:value="60"
-                android:valueFrom="30"
-                android:valueTo="180"
-                android:stepSize="1"
-                app:haloRadius="16dp"
-                app:labelBehavior="gone"
-                app:tickVisible="false" />
         </LinearLayout>
 
         <LinearLayout
@@ -113,8 +78,30 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Fast Boot"
+            android:text="@string/settings_fast_boot"
             app:useMaterialThemeColors="true" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:orientation="vertical">
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/sw_warn_unsafe_settings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_warn_unsafe_settings"
+                app:useMaterialThemeColors="true" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/settings_warn_unsafe_settings_summary"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="14sp" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -148,7 +135,7 @@
                 android:id="@+id/tv_brightness_value"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Brightness: 1.00"
+                android:text="@string/settings_brightness_default"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -175,7 +162,7 @@
                 android:id="@+id/tv_osc_timeout_value"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="On-screen controls timeout: 3s"
+                android:text="@string/settings_osc_timeout_default"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -196,7 +183,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Never hide on-screen controls"
+                android:text="@string/settings_osc_never_hide"
                 app:useMaterialThemeColors="true" />
         </LinearLayout>
     </LinearLayout>

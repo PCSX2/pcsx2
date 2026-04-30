@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Controller Calibration"
+        android:text="@string/settings_controller_calibration_title"
         android:textColor="?attr/colorOnSurface"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -26,7 +26,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Left Stick Deadzone: 0.10"
+            android:text="@string/settings_left_stick_deadzone_default"
             android:textColor="?attr/colorOnSurface"
             android:textSize="16sp"
             android:id="@+id/tv_left_deadzone_value" />
@@ -49,7 +49,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Right Stick Deadzone: 0.10"
+            android:text="@string/settings_right_stick_deadzone_default"
             android:textColor="?attr/colorOnSurface"
             android:textSize="16sp"
             android:id="@+id/tv_right_deadzone_value" />
@@ -72,7 +72,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Left Stick Sensitivity: 1.00"
+            android:text="@string/settings_left_stick_sensitivity_default"
             android:textColor="?attr/colorOnSurface"
             android:textSize="16sp"
             android:id="@+id/tv_left_sensitivity_value" />
@@ -95,7 +95,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Right Stick Sensitivity: 1.00"
+            android:text="@string/settings_right_stick_sensitivity_default"
             android:textColor="?attr/colorOnSurface"
             android:textSize="16sp"
             android:id="@+id/tv_right_sensitivity_value" />
@@ -129,7 +129,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="Apply"
+            android:text="@string/settings_apply"
             style="@style/Widget.Material3.Button" />
     </LinearLayout>
 </LinearLayout>

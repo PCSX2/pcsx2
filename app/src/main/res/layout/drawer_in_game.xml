@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:paddingBottom="12dp"
-            android:text="In-game options"
+            android:text="@string/drawer_title_in_game_options"
             android:textColor="?attr/colorPrimary"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -253,7 +253,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:text="Games"
+            android:text="@string/drawer_button_games"
             android:textAllCaps="false"
             android:textColor="?attr/colorOnSurface"
             app:icon="@drawable/stadia_controller_24px"
@@ -264,12 +264,27 @@
             app:iconTintMode="src_in" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/drawer_btn_change_disc"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="Change Discs"
+            android:textAllCaps="false"
+            android:textColor="?attr/colorOnSurface"
+            app:icon="@drawable/ic_folder_24"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconSize="20dp"
+            app:iconTint="?attr/colorPrimary" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/drawer_btn_game_state"
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:text="Game State"
+            android:text="@string/drawer_button_game_state"
             android:textAllCaps="false"
             android:textColor="?attr/colorOnSurface"
             app:icon="@drawable/save_24px"
@@ -346,7 +361,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="4dp"
-            android:text="Resolution Scale"
+            android:text="@string/drawer_resolution_scale"
             android:textColor="?attr/colorPrimary"
             android:textStyle="bold" />
 
@@ -374,7 +389,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="8dp"
-            android:text="Patches"
+            android:text="@string/drawer_patches"
             android:textColor="?attr/colorPrimary"
             android:textStyle="bold" />
 
@@ -391,14 +406,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:text="No Interlacing"
+            android:text="@string/drawer_no_interlacing"
             android:textColor="?attr/colorOnSurface" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="8dp"
-            android:text="Textures"
+            android:text="@string/drawer_textures"
             android:textColor="?attr/colorPrimary"
             android:textStyle="bold" />
 
@@ -430,7 +445,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="8dp"
-            android:text="Developer"
+            android:text="@string/drawer_developer"
             android:textColor="?attr/colorPrimary"
             android:textStyle="bold" />
 
@@ -439,7 +454,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Dev: HUD overlay"
+            android:text="@string/drawer_dev_hud_overlay"
             android:textColor="?attr/colorOnSurface" />
 
         <TextView
@@ -454,7 +469,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="4dp"
-            android:text="Controller Mode"
+            android:text="@string/drawer_controller_mode"
             android:textColor="?attr/colorOnSurface"
             android:textSize="14sp" />
 
@@ -470,7 +485,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:text="Test Controller Input"
+            android:text="@string/drawer_test_controller_input"
             android:textAllCaps="false"
             android:textColor="?attr/colorOnSurface" />
 
@@ -478,7 +493,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="8dp"
-            android:text="About"
+            android:text="@string/drawer_about"
             android:textColor="?attr/colorPrimary"
             android:textStyle="bold" />
 
@@ -488,7 +503,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:text="Settings"
+            android:text="@string/drawer_settings"
             android:textAllCaps="false"
             android:textColor="?attr/colorOnSurface"
             app:icon="@drawable/ic_settings_24"
@@ -504,7 +519,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="About ARMSX2"
+            android:text="@string/drawer_about_armsx2"
             android:textAllCaps="false"
             android:textColor="?attr/colorOnSurface"
             app:icon="@drawable/info_24px"

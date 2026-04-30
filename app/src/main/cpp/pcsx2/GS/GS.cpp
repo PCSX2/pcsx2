@@ -185,8 +185,8 @@ static void GSClampUpscaleMultiplier(Pcsx2Config::GSOptions& config)
 	if (config.UpscaleMultiplier <= static_cast<float>(max_upscale_multiplier))
 	{
 		// Shouldn't happen, but just in case.
-		if (config.UpscaleMultiplier < 1.0f)
-			config.UpscaleMultiplier = 1.0f;
+		if (config.UpscaleMultiplier < 0.25)
+			config.UpscaleMultiplier = 0.25;
 		return;
 	}
 

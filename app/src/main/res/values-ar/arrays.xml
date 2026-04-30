@@ -1,24 +1,27 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string-array name="renderers">
         <item>تلقائي</item>
         <item>OpenGL</item>
-        <item>Software</item>
+        <item>سوفتوير</item>
         <item>Vulkan</item>
     </string-array>
+
     <string-array name="gpu_profile_override">
-        <item>تلقائي (مُفضَّل)</item>
-        <item>إجبار Mali</item>
-        <item>إجبار Adreno</item>
+        <item>تلقائي (موصى به)</item>
+        <item>فرض Mali</item>
+        <item>فرض Adreno</item>
     </string-array>
+
     <string-array name="texture_filtering">
-        <item>PS2 (المُفترض)</item>
-        <item>مجبور </item>
-        <item>الأقرب</item>
+        <item>PS2 (افتراضي)</item>
+        <item>اجباري</item>
+        <item>الاقرب</item>
     </string-array>
+
     <string-array name="interlace_modes">
         <item>تلقائي</item>
-        <item>إطفاء</item>
+        <item>ايقاف</item>
         <item>Weave TFF</item>
         <item>Weave BFF</item>
         <item>Bob TFF</item>
@@ -28,56 +31,68 @@
         <item>Adaptive TFF</item>
         <item>Adaptive BFF</item>
     </string-array>
+
     <string-array name="cas_modes">
-        <item>لا شيء (المُفترض)</item>
-        <item>حادًّا فقط (داخليًا)</item>
-        <item>الحدّة وتغيير الحجم (العرض)</item>
+        <item>بدون (افتراضي)</item>
+        <item>شحذ فقط (داخلي)</item>
+        <item>شحذ وتغيير الحجم (العرض)</item>
     </string-array>
+
     <string-array name="texture_preloading">
-        <item>إطفاء</item>
-        <item>جُزئيّا</item>
-        <item>Full</item>
+        <item>ايقاف</item>
+        <item>جزئي</item>
+        <item>كامل</item>
     </string-array>
+
     <string-array name="bilinear_present">
-        <item>إطفاء</item>
-        <item>Bilinear (سلس)</item>
-        <item>Bilinear (Sharp)</item>
+        <item>ايقاف</item>
+        <item>ثنائي خطي (ناعم)</item>
+        <item>ثنائي خطي (حاد)</item>
     </string-array>
+
     <string-array name="trilinear_filtering">
         <item>تلقائي</item>
-        <item>إطفاء</item>
+        <item>ايقاف</item>
         <item>PS2</item>
-        <item>مجبور</item>
+        <item>اجباري</item>
     </string-array>
+
     <string-array name="dithering_modes">
-        <item>إطفاء</item>
-        <item>قياسي</item>
-        <item>غير قياسي (المُفترض)</item>
-        <item>Force 32-bit</item>
+        <item>ايقاف</item>
+        <item>مع التحجيم</item>
+        <item>بدون تحجيم (افتراضي)</item>
+        <item>إجبار 32-بت</item>
     </string-array>
+
     <string-array name="acc_blending">
-        <item>الأدنى</item>
-        <item>الأساسي</item>
+        <item>اقل</item>
+        <item>اساسي</item>
         <item>متوسط</item>
-        <item>High</item>
-        <item>Full</item>
-        <item>الأقصى</item>
+        <item>عالي</item>
+        <item>كامل</item>
+        <item>اقصى</item>
     </string-array>
+
     <string-array name="anisotropic">
-        <item>إطفاء</item>
+        <item>ايقاف</item>
         <item>2x</item>
         <item>4x</item>
         <item>8x</item>
         <item>16x</item>
     </string-array>
+
     <string-array name="aspect_ratios">
-        <item>مُتَّسَع</item>
+        <item>تمديد</item>
         <item>تلقائي 4:3/3:2</item>
         <item>4:3</item>
         <item>16:9</item>
         <item>10:7</item>
     </string-array>
+
     <string-array name="resolution_scales">
+        <item>0.25x</item>
+        <item>0.5x</item>
+        <item>0.75x</item>
         <item>1x</item>
         <item>2x</item>
         <item>3x</item>
@@ -87,18 +102,21 @@
         <item>7x</item>
         <item>8x</item>
     </string-array>
+
     <string-array name="auto_flush_hw">
-        <item>غير مفعل</item>
-        <item>Sprites Only</item>
-        <item>مُفعل</item>
+        <item>معطل</item>
+        <item>Sprites فقط</item>
+        <item>مفعل</item>
     </string-array>
+
     <string-array name="cpu_cores_basic">
-        <item>المُترجم (المُفترض)</item>
-        <item>المُفسر</item>
+        <item>المترجم (افتراضي)</item>
+        <item>المفسر</item>
     </string-array>
+
     <string-array name="network_ethapi">
-        <item>غير مُحدد</item>
-        <item>PCAP bridged</item>
+        <item>غير محدد</item>
+        <item>PCAP Bridged</item>
         <item>PCAP Switched</item>
         <item>Sockets</item>
     </string-array>

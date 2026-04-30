@@ -89,7 +89,7 @@
                 android:id="@+id/tv_upscale_value"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Upscale: 1x"
+                android:text="@string/settings_upscale_default"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -97,10 +97,10 @@
                 android:id="@+id/sb_upscale"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:value="1"
-                android:valueFrom="1"
-                android:valueTo="8"
-                android:stepSize="1"
+                android:value="1.0"
+                android:valueFrom="0.25"
+                android:valueTo="8.0"
+                android:stepSize="0.25"
                 app:haloRadius="16dp"
                 app:labelBehavior="gone"
                 app:tickVisible="false" />
@@ -116,7 +116,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="Texture Filtering"
+                android:text="@string/settings_texture_filtering"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -136,7 +136,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="Interlace Mode"
+                android:text="@string/settings_interlace_mode"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -326,7 +326,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="CAS Mode"
+                android:text="@string/settings_cas_mode"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -346,7 +346,7 @@
                 android:id="@+id/tv_cas_sharpness_value"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="CAS Sharpness: 50%"
+                android:text="@string/settings_cas_sharpness_default"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -368,7 +368,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Hardware Mipmapping"
+            android:text="@string/settings_hardware_mipmapping"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -376,7 +376,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="VSync"
+            android:text="@string/settings_vsync"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -384,7 +384,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Auto Flush (Software)"
+            android:text="@string/settings_auto_flush_software"
             app:useMaterialThemeColors="true" />
 
         <LinearLayout
@@ -396,7 +396,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="Auto Flush (Hardware)"
+                android:text="@string/settings_auto_flush_hardware"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 

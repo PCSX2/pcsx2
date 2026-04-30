@@ -1,53 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 	<group android:checkableBehavior="none">
-		<item android:title="Emulation" android:enabled="false" />
+		<item android:title="@string/home_nav_section_emulation" android:enabled="false" />
 		<item
 			android:id="@+id/menu_boot_bios"
 			android:icon="@drawable/ic_cd_24"
-			android:title="Boot BIOS" />
+			android:title="@string/home_nav_boot_bios" />
 
 		<item
 			android:id="@+id/menu_manage_bios"
 			android:icon="@drawable/ic_cd_24"
-			android:title="BIOS" />
+			android:title="@string/home_nav_bios" />
 
-		<item android:title="Library" android:enabled="false" />
+		<item android:title="@string/home_nav_section_library" android:enabled="false" />
 		<item
 			android:id="@+id/menu_choose_folder"
 			android:icon="@drawable/ic_folder_24"
-			android:title="Choose games folder" />
+			android:title="@string/home_nav_choose_games_folder" />
 		<item
 			android:id="@+id/menu_refresh"
 			android:icon="@drawable/ic_refresh_24"
-			android:title="Refresh games" />
+			android:title="@string/home_nav_refresh_games" />
 		<item
 			android:id="@+id/menu_covers"
 			android:icon="@drawable/ic_image_24"
-			android:title="Covers" />
+			android:title="@string/home_nav_covers" />
 		<item
 			android:id="@+id/menu_clear_cover_url"
 			android:icon="@drawable/ic_refresh_24"
-			android:title="Remove cover URL" />
+			android:title="@string/home_nav_remove_cover_url" />
 
-		<item android:title="Background" android:enabled="false" />
+		<item android:title="@string/home_nav_section_background" android:enabled="false" />
 		<item
 			android:id="@+id/menu_bg_landscape"
 			android:icon="@drawable/ic_image_24"
-			android:title="Choose landscape background" />
+			android:title="@string/home_nav_choose_landscape_background" />
 		<item
 			android:id="@+id/menu_bg_portrait"
 			android:icon="@drawable/ic_image_24"
-			android:title="Choose portrait background" />
+			android:title="@string/home_nav_choose_portrait_background" />
 		<item
 			android:id="@+id/menu_bg_clear"
 			android:icon="@drawable/ic_refresh_24"
-			android:title="Clear background" />
+			android:title="@string/home_nav_clear_background" />
 
-		<item android:title="Settings" android:enabled="false" />
+		<item android:title="@string/home_nav_section_settings" android:enabled="false" />
 		<item
 			android:id="@+id/menu_open_settings"
 			android:icon="@drawable/ic_settings_24"
-			android:title="Settings" />
+			android:title="@string/drawer_settings" />
 	</group>
 </menu>

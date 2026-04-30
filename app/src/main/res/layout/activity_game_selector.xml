@@ -31,7 +31,7 @@
 			android:layout_height="wrap_content"
 			android:background="?attr/colorSurface"
 			android:theme="@style/ThemeOverlay.Material3.ActionBar"
-			app:title="ARMSX2 Game Selector"
+			app:title="@string/home_game_selector_title"
 			app:titleTextColor="?attr/colorOnSurface"
 			app:navigationIconTint="?attr/colorOnSurface"
 			app:layout_constraintTop_toTopOf="parent"
@@ -43,7 +43,7 @@
 			android:id="@+id/et_search"
 			android:layout_width="0dp"
 			android:layout_height="wrap_content"
-			android:hint="Search games…"
+			android:hint="@string/home_search_games_hint"
 			android:imeOptions="actionDone"
 			android:singleLine="true"
 			android:padding="12dp"
@@ -71,7 +71,7 @@
 				android:id="@+id/tv_empty"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:text="Please select a game folder"
+				android:text="@string/home_choose_folder_empty"
 				android:textColor="?attr/colorOnSurfaceVariant"
 				android:textSize="18sp"
 				android:layout_marginBottom="16dp"/>
@@ -81,7 +81,7 @@
 				style="@style/Widget.Material3.Button.OutlinedButton"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:text="Choose games folder"
+				android:text="@string/home_nav_choose_games_folder"
 				android:textColor="?attr/colorPrimary"/>
 		</LinearLayout>
 
@@ -102,7 +102,7 @@
 			android:id="@+id/fab_actions"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:contentDescription="Actions"
+			android:contentDescription="@string/home_fab_actions_content_description"
 			android:src="@drawable/ic_cd_24"
 			app:tint="?attr/colorOnPrimary"
 			app:backgroundTint="?attr/colorPrimary"

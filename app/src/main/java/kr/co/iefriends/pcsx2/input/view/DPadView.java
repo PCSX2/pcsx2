@@ -85,17 +85,17 @@ public class DPadView extends View {
     private void init() {
         // Base D-pad color
         basePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        basePaint.setColor(0x60FFFFFF); 
+        basePaint.setColor(0x1AFFFFFF); 
         basePaint.setStyle(Paint.Style.FILL);
         
         // Pressed state color
         pressedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        pressedPaint.setColor(0xFFFFFFFF); 
+        pressedPaint.setColor(0x4DFFFFFF); 
         pressedPaint.setStyle(Paint.Style.FILL);
         
         // Stroke for outline
         strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        strokePaint.setColor(0x80000000); 
+        strokePaint.setColor(0x80FFFFFF); 
         strokePaint.setStyle(Paint.Style.STROKE);
         strokePaint.setStrokeWidth(3.0f);
         
@@ -266,7 +266,7 @@ public class DPadView extends View {
             }
         } else {
             Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            textPaint.setColor(0xFF000000);
+            textPaint.setColor(0xCCFFFFFF);
             textPaint.setTextSize(bounds.width() * 0.12f);
             textPaint.setTextAlign(Paint.Align.CENTER);
             

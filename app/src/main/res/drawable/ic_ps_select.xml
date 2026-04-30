@@ -1,0 +1,17 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="128dp"
+    android:height="128dp"
+    android:viewportWidth="128"
+    android:viewportHeight="128">
+    <!-- Contorno do botão (Cápsula) -->
+    <path
+        android:pathData="M35,54h58c5.5,0 10,4.5 10,10v0c0,5.5 -4.5,10 -10,10h-58c-5.5,0 -10,-4.5 -10,-10v0c0,-5.5 4.5,-10 10,-10z"
+        android:strokeColor="#88FFFFFF"
+        android:strokeWidth="5" />
+    <!-- Símbolo Select (Barra) -->
+    <path
+        android:pathData="M52,64h24"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="8"
+        android:strokeLineCap="round" />
+</vector>

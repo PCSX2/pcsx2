@@ -28,7 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:text="Performance Overlay"
+            android:text="@string/settings_performance_overlay"
             app:useMaterialThemeColors="true" />
 
         <LinearLayout
@@ -41,7 +41,7 @@
                 android:id="@+id/tv_osd_scale"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="On-Screen Display Scale: 100"
+                android:text="@string/settings_osd_scale_default"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp" />
 
@@ -63,7 +63,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:text="Show FPS"
+            android:text="@string/settings_show_fps"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -71,7 +71,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:text="Show VPS"
+            android:text="@string/settings_show_vps"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -79,7 +79,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:text="Show Speed"
+            android:text="@string/settings_show_speed"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -87,7 +87,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Show CPU"
+            android:text="@string/settings_show_cpu"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -95,7 +95,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Show GPU"
+            android:text="@string/settings_show_gpu"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -103,7 +103,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Show Resolution"
+            android:text="@string/settings_show_resolution"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -111,7 +111,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Show GS Stats"
+            android:text="@string/settings_show_gs_stats"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -119,7 +119,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Show Indicators"
+            android:text="@string/settings_show_indicators"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -127,7 +127,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Show Settings"
+            android:text="@string/settings_show_settings"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -135,7 +135,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Show Inputs"
+            android:text="@string/settings_show_inputs"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -143,7 +143,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Show Frame Times"
+            android:text="@string/settings_show_frame_times"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -151,7 +151,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Show Version"
+            android:text="@string/settings_show_version"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -159,7 +159,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Show Hardware Info"
+            android:text="@string/settings_show_hardware_info"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -167,7 +167,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Show Video Capture"
+            android:text="@string/settings_show_video_capture"
             app:useMaterialThemeColors="true" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -175,7 +175,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Show Input Rec"
+            android:text="@string/settings_show_input_rec"
             app:useMaterialThemeColors="true" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

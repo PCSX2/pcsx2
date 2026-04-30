@@ -17,7 +17,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Storage"
+            android:text="@string/settings_storage_card_title"
             android:textColor="?attr/colorPrimary"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -39,12 +39,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Choose new location" />
+            android:text="@string/settings_choose_new_location" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Game Directories"
+            android:text="@string/settings_game_directories"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -53,7 +53,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Add additional folders to scan for games"
+            android:text="@string/settings_game_directories_summary"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="13sp"
             android:layout_marginBottom="12dp" />
@@ -63,6 +63,6 @@
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add secondary game directory" />
+            android:text="@string/settings_add_secondary_game_directory" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

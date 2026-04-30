@@ -5,8 +5,8 @@
 # ARMSX2
 
 [![License](https://img.shields.io/github/license/ARMSX2/ARMSX2)](https://www.gnu.org/licenses/gpl-3.0.html)
-[![Discord](https://img.shields.io/discord/914421153827794975?logo=discord&logoColor=white&label=ARMSX2%20Discord&color=5865F2)](https://discord.gg/KwAChKDctz)
-[![Patreon](https://img.shields.io/endpoint?url=https%3A%2F%2Fshieldsio-patreon.vercel.app%2Fapi%3Fusername%3DARMSX2&label=Patreon)](https://patreon.com/ARMSX2)
+[![Discord](https://img.shields.io/discord/914421153827794975?logo=discord&logoColor=white&label=ARMSX2%20Discord&color=5865F2)](https://discord.gg/6yyawTtCnX)
+(https://patreon.com/ARMSX2)
 [![Nightly Build](https://github.com/ARMSX2/ARMSX2/actions/workflows/android_nightly_build.yml/badge.svg)](https://github.com/ARMSX2/ARMSX2/actions/workflows/android_nightly_build.yml)
 
 </div>
@@ -29,6 +29,10 @@ Please note that a BIOS dump from a legitimately-owned PS2 console is required t
 
 Any other website is not affiliated with ARMSX2. 
 
+## Translation 
+
+[Help translate ARMSX2](https://crowdin.com/project/armsx2-translations/invite?h=940eaf6355b31b5fdb1771183c694ca32710218)
+
 ## Download
 
 ARMSX2 is available on the Google Play Store once released. 
@@ -45,7 +49,7 @@ We are NOT affiliated with ARM Holding LTD in any way shape or form. We chose th
 
 [PCSX2_ARM64](https://github.com/pontos2024/PCSX2_ARM64) - ARMSX2 originally started off as a fork of developer Pontos work. 
 
-Thank you to [@fffathur](https://github.com/fffathur) and [@Vivimagic](https://github.com/Vivimagic) for creating and working on the logo! 
+Thank you to [@Vivimagic](https://github.com/Vivimagic) for creating and working on the logo! 
 
 Thank you to developers [@tanosshi](https://github.com/tanosshi) [@jpolo1224](https://github.com/jpolo1224) [@MoonPower](https://github.com/momo-AUX1) for working on the ARMSX2 website!
 

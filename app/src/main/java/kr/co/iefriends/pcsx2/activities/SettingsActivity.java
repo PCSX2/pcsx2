@@ -90,7 +90,8 @@ public class SettingsActivity extends AppCompatActivity {
 	private static final int SECTION_CONTROLLER = 4;
 	private static final int SECTION_CUSTOMIZATION = 5;
 	private static final int SECTION_STORAGE = 6;
-	private static final int SECTION_ACHIEVEMENTS = 7;
+    private static final int SECTION_MEMORY = 7;
+	private static final int SECTION_ACHIEVEMENTS = 8;
 	private static final String PREF_GPU_PROFILE_OVERRIDE_FALLBACK = "gpu_profile_override_fallback";
 	private static final String STATE_SELECTED_SECTION = "settings_selected_section";
 	private static final String EXTRA_SHOW_ADVANCED = "android.provider.extra.SHOW_ADVANCED";
@@ -151,7 +152,7 @@ public class SettingsActivity extends AppCompatActivity {
         String displayName = DeviceProfiles.getProductDisplayName(this, getString(R.string.app_name));
         toolbar = findViewById(R.id.settings_toolbar);
         if (toolbar != null) {
-            toolbar.setTitle(displayName + " Settings");
+            toolbar.setTitle(getString(R.string.settings_toolbar_title, displayName));
             toolbar.setSubtitle(getString(R.string.settings_section_general));
             setSupportActionBar(toolbar);
             if (getSupportActionBar() != null) {
@@ -159,7 +160,7 @@ public class SettingsActivity extends AppCompatActivity {
             }
             toolbar.setNavigationOnClickListener(v -> finish());
         } else {
-            setTitle(displayName + " Settings");
+            setTitle(getString(R.string.settings_toolbar_title, displayName));
         }
 
 		initializeGeneralSettings();
@@ -324,11 +325,11 @@ public class SettingsActivity extends AppCompatActivity {
 	    boolean discordAvailable = DiscordBridge.isAvailable();
 	    if (!discordAvailable) {
 	    	if (tvDiscordStatus != null) {
-		    	tvDiscordStatus.setText("Discord integration is unavailable in this build.");
+		    	tvDiscordStatus.setText(R.string.settings_discord_unavailable_status);
 		    }
 		    if (btnDiscordConnect != null) {
 			    btnDiscordConnect.setEnabled(false);
-			    btnDiscordConnect.setText("Discord Unavailable");
+			    btnDiscordConnect.setText(R.string.settings_discord_unavailable_button);
 		    }
             if (btnDiscordLogout != null) {
                 btnDiscordLogout.setVisibility(View.GONE);
@@ -352,7 +353,7 @@ public class SettingsActivity extends AppCompatActivity {
                 DiscordBridge.clearTokens();
                 updateDiscordUi(false);
                 try {
-                    Toast.makeText(this, "Disconnected from Discord.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.settings_discord_disconnected, Toast.LENGTH_SHORT).show();
                 } catch (Throwable ignored) {}
             });
         }
@@ -381,14 +382,14 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-    private void updateDiscordUi(boolean loggedIn) {
+	private void updateDiscordUi(boolean loggedIn) {
         if (tvDiscordStatus == null || btnDiscordConnect == null) {
             return;
         }
 		if (!DiscordBridge.isAvailable()) {
-			tvDiscordStatus.setText("Discord integration is unavailable in this build.");
+			tvDiscordStatus.setText(R.string.settings_discord_unavailable_status);
 			btnDiscordConnect.setEnabled(false);
-			btnDiscordConnect.setText("Discord Unavailable");
+			btnDiscordConnect.setText(R.string.settings_discord_unavailable_button);
 			if (tvDiscordLoggedInAs != null) {
 				tvDiscordLoggedInAs.setVisibility(View.GONE);
 			}
@@ -404,13 +405,13 @@ public class SettingsActivity extends AppCompatActivity {
 			return;
 		}
         if (loggedIn) {
-            tvDiscordStatus.setText("Discord Rich Presence is active.");
+            tvDiscordStatus.setText(R.string.settings_discord_status_active);
             btnDiscordConnect.setEnabled(false);
-            btnDiscordConnect.setText("Connect Discord");
+            btnDiscordConnect.setText(R.string.settings_discord_connect);
             if (tvDiscordLoggedInAs != null) {
                 String username = DiscordBridge.getLoggedInUsername();
                 if (TextUtils.isEmpty(username)) {
-                    username = "Unknown user";
+                    username = getString(R.string.settings_discord_unknown_user);
                 }
 				tvDiscordLoggedInAs.setText(getString(R.string.settings_identity_logged_in_as, username));
 				tvDiscordLoggedInAs.setVisibility(View.VISIBLE);
@@ -431,9 +432,9 @@ public class SettingsActivity extends AppCompatActivity {
                 btnDiscordLogout.setEnabled(true);
             }
         } else {
-            tvDiscordStatus.setText("Connect to show your ARMSX2 activity on Discord.");
+            tvDiscordStatus.setText(R.string.settings_discord_status_connect_activity);
             btnDiscordConnect.setEnabled(true);
-            btnDiscordConnect.setText("Connect Discord");
+            btnDiscordConnect.setText(R.string.settings_discord_connect);
             if (tvDiscordLoggedInAs != null) {
                 tvDiscordLoggedInAs.setVisibility(View.GONE);
             }
@@ -708,70 +709,6 @@ public class SettingsActivity extends AppCompatActivity {
 			});
 		}
 
-		final Slider sbFpsLimit = findViewById(R.id.sb_fps_limit);
-		final TextView tvFpsLimit = findViewById(R.id.tv_fps_limit_value);
-
-		MaterialSwitch swFrameLimiter = findViewById(R.id.sw_frame_limiter);
-		if (swFrameLimiter != null) {
-			try {
-				String ns = NativeApp.getSetting("Framerate", "NominalScalar", "float");
-				float scalar = (ns == null || ns.isEmpty()) ? 1.0f : Float.parseFloat(ns);
-				swFrameLimiter.setChecked(scalar < 5.0f);
-			} catch (Exception ignored) {}
-			swFrameLimiter.setOnCheckedChangeListener((buttonView, isChecked) -> {
-				if (!isChecked) {
-					NativeApp.setSetting("Framerate", "NominalScalar", "float", Float.toString(10.0f));
-				} else {
-					float baseFps = 59.94f;
-					try {
-						String ntsc = NativeApp.getSetting("EmuCore/GS", "FramerateNTSC", "float");
-						if (ntsc != null && !ntsc.isEmpty()) {
-							baseFps = Float.parseFloat(ntsc);
-						}
-					} catch (Exception ignored2) {}
-					int fps = 60;
-					if (sbFpsLimit != null) {
-						fps = Math.max(30, Math.min(180, Math.round(sbFpsLimit.getValue())));
-					}
-					float scalar = fps / baseFps;
-					NativeApp.setSetting("Framerate", "NominalScalar", "float", Float.toString(scalar));
-				}
-			});
-		}
-
-		if (sbFpsLimit != null && tvFpsLimit != null) {
-			try {
-				float baseFps = 59.94f;
-				try {
-					String ntsc = NativeApp.getSetting("EmuCore/GS", "FramerateNTSC", "float");
-					if (ntsc != null && !ntsc.isEmpty()) baseFps = Float.parseFloat(ntsc);
-				} catch (Exception ignored2) {}
-
-				String ns = NativeApp.getSetting("Framerate", "NominalScalar", "float");
-				float scalar = (ns == null || ns.isEmpty()) ? 1.0f : Float.parseFloat(ns);
-				int fpsValue = Math.round(scalar * baseFps);
-				if (fpsValue < 30) fpsValue = 30;
-				if (fpsValue > 180) fpsValue = 180;
-				sbFpsLimit.setValue(fpsValue);
-				tvFpsLimit.setText("Custom FPS Limit: " + fpsValue);
-			} catch (Exception ignored) {
-				sbFpsLimit.setValue(60f);
-				tvFpsLimit.setText("Custom FPS Limit: 60");
-			}
-			sbFpsLimit.addOnChangeListener((slider, value, fromUser) -> {
-				int fps = Math.max(30, Math.min(180, Math.round(value)));
-				if (fps != Math.round(value)) slider.setValue(fps);
-				tvFpsLimit.setText("Custom FPS Limit: " + fps);
-				float baseFps = 59.94f;
-				try {
-					String ntsc = NativeApp.getSetting("EmuCore/GS", "FramerateNTSC", "float");
-					if (ntsc != null && !ntsc.isEmpty()) baseFps = Float.parseFloat(ntsc);
-				} catch (Exception ignored2) {}
-				float scalar = fps / baseFps;
-				NativeApp.setSetting("Framerate", "NominalScalar", "float", Float.toString(scalar));
-			});
-		}
-
 		Spinner spAspectRatio = findViewById(R.id.sp_aspect_ratio);
 		ArrayAdapter<CharSequence> aspectAdapter = ArrayAdapter.createFromResource(this, R.array.aspect_ratios, android.R.layout.simple_spinner_item);
 		aspectAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -811,6 +748,17 @@ public class SettingsActivity extends AppCompatActivity {
 					NativeApp.setSetting("EmuCore", "EnableFastBoot", "bool", isChecked ? "true" : "false"));
 		}
 
+        MaterialSwitch swWarnUnsafe = findViewById(R.id.sw_warn_unsafe_settings);
+        if (swWarnUnsafe != null) {
+            try {
+                String warn = NativeApp.getSetting("EmuCore", "WarnAboutUnsafeSettings", "bool");
+                swWarnUnsafe.setChecked(!"false".equalsIgnoreCase(warn));
+            } catch (Exception ignored) {}
+            swWarnUnsafe.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                NativeApp.setSetting("EmuCore", "WarnAboutUnsafeSettings", "bool", isChecked ? "true" : "false");
+            });
+        }
+
 		MaterialSwitch swRecordLogs = findViewById(R.id.sw_record_logs);
 		if (swRecordLogs != null) {
 			boolean recordLogs = false;
@@ -835,16 +783,16 @@ public class SettingsActivity extends AppCompatActivity {
 				int prog = Math.round(val * 100f);
 				prog = Math.max(0, Math.min(200, prog));
 				sbBrightness.setValue(prog);
-				tvBrightness.setText(String.format("Brightness: %.2f", val));
+				tvBrightness.setText(getString(R.string.settings_brightness_value, val));
 			} catch (Exception ignored) {
 				sbBrightness.setValue(100f);
-				tvBrightness.setText("Brightness: 1.00");
+				tvBrightness.setText(R.string.settings_brightness_default);
 			}
 			sbBrightness.addOnChangeListener((slider, value, fromUser) -> {
 				int clamped = Math.max(0, Math.min(200, Math.round(value)));
 				if (clamped != Math.round(value)) slider.setValue(clamped);
 				float scale = clamped / 100f;
-				tvBrightness.setText(String.format("Brightness: %.2f", scale));
+				tvBrightness.setText(getString(R.string.settings_brightness_value, scale));
 				NativeApp.setSetting("EmuCore/GS", "BrightnessScale", "float", Float.toString(scale));
 			});
 		}
@@ -863,19 +811,21 @@ public class SettingsActivity extends AppCompatActivity {
 			try { cur = sp.getInt(prefKey, 3); } catch (Throwable ignored) {}
 			if (cur < 0) cur = 0;
 			if (cur > 60) cur = 60;
-			tvOsc.setText(cur == 0 ? "On-screen controls timeout: never" : ("On-screen controls timeout: " + cur + "s"));
+			tvOsc.setText(cur == 0
+				? getString(R.string.settings_osc_timeout_never)
+				: getString(R.string.settings_osc_timeout_seconds, cur));
 			sbOsc.setValue(cur == 0 ? 3f : cur);
 			swOscNever.setChecked(cur == 0);
 			sbOsc.setEnabled(cur != 0);
 			swOscNever.setOnCheckedChangeListener((b, checked) -> {
 				if (checked) {
 					sp.edit().putInt(prefKey, 0).apply();
-					tvOsc.setText("On-screen controls timeout: never");
+					tvOsc.setText(R.string.settings_osc_timeout_never);
 					sbOsc.setEnabled(false);
 				} else {
 					int val = Math.max(1, Math.min(60, Math.round(sbOsc.getValue())));
 					sp.edit().putInt(prefKey, val).apply();
-					tvOsc.setText("On-screen controls timeout: " + val + "s");
+					tvOsc.setText(getString(R.string.settings_osc_timeout_seconds, val));
 					sbOsc.setEnabled(true);
 				}
 			});
@@ -884,7 +834,7 @@ public class SettingsActivity extends AppCompatActivity {
 				int val = Math.max(1, Math.min(60, Math.round(value)));
 				if (val != Math.round(value)) slider.setValue(val);
 				sp.edit().putInt(prefKey, val).apply();
-				tvOsc.setText("On-screen controls timeout: " + val + "s");
+				tvOsc.setText(getString(R.string.settings_osc_timeout_seconds, val));
 			});
 		} else if (oscGroup != null) {
 			oscGroup.setVisibility(View.GONE);
@@ -972,26 +922,30 @@ public class SettingsActivity extends AppCompatActivity {
 			});
 		}
 
-		Slider sbUpscale = findViewById(R.id.sb_upscale);
-		TextView tvUpscale = findViewById(R.id.tv_upscale_value);
-		if (sbUpscale != null && tvUpscale != null) {
-			try {
-				String up = NativeApp.getSetting("EmuCore/GS", "upscale_multiplier", "float");
-				float f = up == null || up.isEmpty() ? 1f : Float.parseFloat(up);
-				int mult = Math.max(1, Math.min(8, Math.round(f)));
-				sbUpscale.setValue(mult);
-				tvUpscale.setText("Upscale: " + mult + "x");
-			} catch (Exception ignored) {
-				sbUpscale.setValue(1f);
-				tvUpscale.setText("Upscale: 1x");
-			}
-			sbUpscale.addOnChangeListener((slider, value, fromUser) -> {
-				int mult = Math.max(1, Math.min(8, Math.round(value)));
-				if (mult != Math.round(value)) slider.setValue(mult);
-				tvUpscale.setText("Upscale: " + mult + "x");
-				NativeApp.setSetting("EmuCore/GS", "upscale_multiplier", "float", String.valueOf(mult));
-			});
-		}
+        Slider sbUpscale = findViewById(R.id.sb_upscale);
+        TextView tvUpscale = findViewById(R.id.tv_upscale_value);
+        if (sbUpscale != null && tvUpscale != null) {
+            try {
+                String up = NativeApp.getSetting("EmuCore/GS", "upscale_multiplier", "float");
+                float f = (up == null || up.isEmpty()) ? 1.0f : Float.parseFloat(up);
+                float clamped = Math.max(0.25f, Math.min(8.0f, f));
+                sbUpscale.setValue(clamped);
+                String formattedInitial = (clamped == (int) clamped)
+                        ? String.valueOf((int) clamped) : String.valueOf(clamped);
+                tvUpscale.setText(getString(R.string.settings_upscale_value, formattedInitial));
+            } catch (Exception ignored) {
+                sbUpscale.setValue(1.0f);
+                tvUpscale.setText(R.string.settings_upscale_default);
+            }
+            sbUpscale.addOnChangeListener((slider, value, fromUser) -> {
+                String valStr = (value == (int) value) ? String.valueOf((int) value) : String.valueOf(value);
+                tvUpscale.setText(getString(R.string.settings_upscale_value, valStr));
+
+                NativeApp.setSetting("EmuCore/GS", "upscale_multiplier", "float", String.valueOf(value));
+                NativeApp.renderUpscalemultiplier(value);
+                markSettingsResultChanged();
+            });
+        }
 
 		// Texture Filtering
 		Spinner spFiltering = findViewById(R.id.sp_filtering);
@@ -1194,15 +1148,15 @@ public class SettingsActivity extends AppCompatActivity {
                 if (v < 0) v = 0;
                 if (v > 100) v = 100;
                 sbCas.setValue(v);
-                tvCas.setText("CAS Sharpness: " + v + "%");
+                tvCas.setText(getString(R.string.settings_cas_sharpness_value, v));
             } catch (Exception ignored) {
                 sbCas.setValue(50f);
-                tvCas.setText("CAS Sharpness: 50%");
+                tvCas.setText(R.string.settings_cas_sharpness_default);
             }
             sbCas.addOnChangeListener((slider, value, fromUser) -> {
                 int v = Math.max(0, Math.min(100, Math.round(value)));
                 if (v != Math.round(value)) slider.setValue(v);
-                tvCas.setText("CAS Sharpness: " + v + "%");
+                tvCas.setText(getString(R.string.settings_cas_sharpness_value, v));
                 NativeApp.setSetting("EmuCore/GS", "CASSharpness", "int", Integer.toString(v));
             });
         }
@@ -1405,15 +1359,15 @@ public class SettingsActivity extends AppCompatActivity {
                 if (v < 0) v = 0;
                 if (v > 3) v = 3;
                 sbHwDownloadMode.setValue(v);
-                tvHwDownloadMode.setText("Hardware Download Mode: " + v);
+                tvHwDownloadMode.setText(getString(R.string.settings_hw_download_mode_value, v));
             } catch (Exception ignored) {
                 sbHwDownloadMode.setValue(0f);
-                tvHwDownloadMode.setText("Hardware Download Mode: 0");
+                tvHwDownloadMode.setText(R.string.settings_hw_download_mode_default);
             }
             sbHwDownloadMode.addOnChangeListener((slider, value, fromUser) -> {
                 int v = Math.max(-3, Math.min(3, Math.round(value)));
                 if (v != Math.round(value)) slider.setValue(v);
-                tvHwDownloadMode.setText("Hardware Download Mode: " + v);
+                tvHwDownloadMode.setText(getString(R.string.settings_hw_download_mode_value, v));
                 NativeApp.setSetting("EmuCore/GS", "HWDownloadMode", "int", Integer.toString(v));
             });
         }
@@ -1438,15 +1392,15 @@ public class SettingsActivity extends AppCompatActivity {
                 if (v < -3) v = -3;
                 if (v > 3) v = 3;
                 sbEeRate.setValue(v);
-                tvEeRate.setText("EE Cycle Rate: " + v);
+                tvEeRate.setText(getString(R.string.settings_ee_cycle_rate_value, v));
             } catch (Exception ignored) {
                 sbEeRate.setValue(0f);
-                tvEeRate.setText("EE Cycle Rate: 0");
+                tvEeRate.setText(R.string.settings_ee_cycle_rate_default);
             }
             sbEeRate.addOnChangeListener((slider, value, fromUser) -> {
                 int v = Math.max(-3, Math.min(3, Math.round(value)));
                 if (v != Math.round(value)) slider.setValue(v);
-                tvEeRate.setText("EE Cycle Rate: " + v);
+                tvEeRate.setText(getString(R.string.settings_ee_cycle_rate_value, v));
                 NativeApp.setSetting("EmuCore/Speedhacks", "EECycleRate", "int", Integer.toString(v));
             });
         }
@@ -1460,15 +1414,15 @@ public class SettingsActivity extends AppCompatActivity {
                 if (v < 0) v = 0;
                 if (v > 3) v = 3;
                 sbEeSkip.setValue(v);
-                tvEeSkip.setText("EE Cycle Skip: " + v);
+                tvEeSkip.setText(getString(R.string.settings_ee_cycle_skip_value, v));
             } catch (Exception ignored) {
                 sbEeSkip.setValue(0f);
-                tvEeSkip.setText("EE Cycle Skip: 0");
+                tvEeSkip.setText(R.string.settings_ee_cycle_skip_default);
             }
             sbEeSkip.addOnChangeListener((slider, value, fromUser) -> {
                 int v = Math.max(0, Math.min(3, Math.round(value)));
                 if (v != Math.round(value)) slider.setValue(v);
-                tvEeSkip.setText("EE Cycle Skip: " + v);
+                tvEeSkip.setText(getString(R.string.settings_ee_cycle_skip_value, v));
                 NativeApp.setSetting("EmuCore/Speedhacks", "EECycleSkip", "int", Integer.toString(v));
             });
         }
@@ -1543,7 +1497,7 @@ public class SettingsActivity extends AppCompatActivity {
 				NativeApp.setSetting("EmuCore/Speedhacks", "vuThread", "bool", isChecked ? "true" : "false");
 				if (swInstantVu1 != null) {
 					if (isChecked && swInstantVu1.isChecked()) {
-						swInstantVu1.setChecked(false);
+						swInstantVu1.setChecked(true);
 					}
 					swInstantVu1.setEnabled(!isChecked);
 				}
@@ -1559,6 +1513,133 @@ public class SettingsActivity extends AppCompatActivity {
             } catch (Exception ignored) {}
             swFastCdvd.setOnCheckedChangeListener((b, isChecked) ->
                     NativeApp.setSetting("EmuCore/Speedhacks", "fastCDVD", "bool", isChecked ? "true" : "false"));
+        }
+
+        // Frame Limiter
+        final Slider sbFpsLimit = findViewById(R.id.sb_fps_limit);
+        final TextView tvFpsLimit = findViewById(R.id.tv_fps_limit_value);
+
+        MaterialSwitch swFrameLimiter = findViewById(R.id.sw_frame_limiter);
+        if (swFrameLimiter != null) {
+            try {
+                String ns = NativeApp.getSetting("Framerate", "NominalScalar", "float");
+                float scalar = (ns == null || ns.isEmpty()) ? 1.0f : Float.parseFloat(ns);
+                swFrameLimiter.setChecked(scalar < 5.0f);
+            } catch (Exception ignored) {}
+            swFrameLimiter.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (!isChecked) {
+                    NativeApp.setSetting("Framerate", "NominalScalar", "float", Float.toString(10.0f));
+                } else {
+                    float baseFps = 59.94f;
+                    try {
+                        String ntsc = NativeApp.getSetting("EmuCore/GS", "FramerateNTSC", "float");
+                        if (ntsc != null && !ntsc.isEmpty()) {
+                            baseFps = Float.parseFloat(ntsc);
+                        }
+                    } catch (Exception ignored2) {}
+                    int fps = 60;
+                    if (sbFpsLimit != null) {
+                        fps = Math.max(30, Math.min(180, Math.round(sbFpsLimit.getValue())));
+                    }
+                    float scalar = fps / baseFps;
+                    NativeApp.setSetting("Framerate", "NominalScalar", "float", Float.toString(scalar));
+                }
+            });
+        }
+
+        if (sbFpsLimit != null && tvFpsLimit != null) {
+            try {
+                float baseFps = 59.94f;
+                try {
+                    String ntsc = NativeApp.getSetting("EmuCore/GS", "FramerateNTSC", "float");
+                    if (ntsc != null && !ntsc.isEmpty()) baseFps = Float.parseFloat(ntsc);
+                } catch (Exception ignored2) {}
+
+                String ns = NativeApp.getSetting("Framerate", "NominalScalar", "float");
+                float scalar = (ns == null || ns.isEmpty()) ? 1.0f : Float.parseFloat(ns);
+                int fpsValue = Math.round(scalar * baseFps);
+                if (fpsValue < 30) fpsValue = 30;
+                if (fpsValue > 180) fpsValue = 180;
+                sbFpsLimit.setValue(fpsValue);
+                tvFpsLimit.setText(getString(R.string.settings_custom_fps_limit_value, fpsValue));
+            } catch (Exception ignored) {
+                sbFpsLimit.setValue(60f);
+                tvFpsLimit.setText(R.string.settings_custom_fps_limit_default);
+            }
+            sbFpsLimit.addOnChangeListener((slider, value, fromUser) -> {
+                int fps = Math.max(30, Math.min(180, Math.round(value)));
+                if (fps != Math.round(value)) slider.setValue(fps);
+                tvFpsLimit.setText(getString(R.string.settings_custom_fps_limit_value, fps));
+                float baseFps = 59.94f;
+                try {
+                    String ntsc = NativeApp.getSetting("EmuCore/GS", "FramerateNTSC", "float");
+                    if (ntsc != null && !ntsc.isEmpty()) baseFps = Float.parseFloat(ntsc);
+                } catch (Exception ignored2) {}
+                float scalar = fps / baseFps;
+                NativeApp.setSetting("Framerate", "NominalScalar", "float", Float.toString(scalar));
+            });
+        }
+
+        // Framerate Control
+        //NTSC
+        final Slider sbNtscRate = findViewById(R.id.sb_ntsc_framerate);
+        final TextView tvNtscRate = findViewById(R.id.tv_ntsc_framerate);if (sbNtscRate != null && tvNtscRate != null) {
+            try {
+                String rate = NativeApp.getSetting("EmuCore/GS", "FramerateNTSC", "float");
+                float v = (rate == null || rate.isEmpty()) ? 59.94f : Float.parseFloat(rate);
+                sbNtscRate.setValue(v);
+                tvNtscRate.setText(getString(R.string.settings_ntsc_framerate_value, v));
+            } catch (Exception ignored) {
+                sbNtscRate.setValue(59.94f);
+            }
+            sbNtscRate.addOnChangeListener((slider, value, fromUser) -> {
+                tvNtscRate.setText(getString(R.string.settings_ntsc_framerate_value, value));
+                NativeApp.setSetting("EmuCore/GS", "FramerateNTSC", "float", String.valueOf(value));
+            });
+        }
+        //PAL
+        final Slider sbPalRate = findViewById(R.id.sb_pal_framerate);
+        final TextView tvPalRate = findViewById(R.id.tv_pal_framerate);
+        if (sbPalRate != null && tvPalRate != null) {
+            try {
+                String rate = NativeApp.getSetting("EmuCore/GS", "FrameratePAL", "float");
+                float v = (rate == null || rate.isEmpty()) ? 50.00f : Float.parseFloat(rate);
+                sbPalRate.setValue(v);
+                tvPalRate.setText(getString(R.string.settings_pal_framerate_value, v));
+            } catch (Exception ignored) {
+                sbPalRate.setValue(50.00f);
+            }
+            sbPalRate.addOnChangeListener((slider, value, fromUser) -> {
+                tvPalRate.setText(getString(R.string.settings_pal_framerate_value, value));
+                NativeApp.setSetting("EmuCore/GS", "FrameratePAL", "float", String.valueOf(value));
+            });
+        }
+
+        // Reset Framrates
+        MaterialButton btnResetFramerates = findViewById(R.id.btn_reset_framerates);
+
+        if (btnResetFramerates != null) {
+            btnResetFramerates.setOnClickListener(v -> {
+                float defaultNtsc = 59.94f;
+                float defaultPal = 50.00f;
+
+                if (sbNtscRate != null) sbNtscRate.setValue(defaultNtsc);
+                if (sbPalRate != null) sbPalRate.setValue(defaultPal);
+
+                if (tvNtscRate != null) tvNtscRate.setText(getString(R.string.settings_ntsc_framerate_value, defaultNtsc));
+                if (tvPalRate != null) tvPalRate.setText(getString(R.string.settings_pal_framerate_value, defaultPal));
+
+                NativeApp.setSetting("EmuCore/GS", "FramerateNTSC", "float", String.valueOf(defaultNtsc));
+                NativeApp.setSetting("EmuCore/GS", "FrameratePAL", "float", String.valueOf(defaultPal));
+
+                if (sbFpsLimit != null) sbFpsLimit.setValue(60f);
+                if (tvFpsLimit != null) tvFpsLimit.setText(R.string.settings_custom_fps_limit_default);
+                if (swFrameLimiter != null) swFrameLimiter.setChecked(true);
+
+                NativeApp.setSetting("Framerate", "NominalScalar", "float", "1.0");
+
+                Toast.makeText(this, "Default FrameRates", Toast.LENGTH_SHORT).show();
+            });
         }
     }
 
@@ -1587,15 +1668,15 @@ public class SettingsActivity extends AppCompatActivity {
                 if (v < 50) v = 50;
                 if (v > 100) v = 100;
                 sbOsdScale.setValue(v);
-                tvOsdScale.setText("On-Screen Display Scale: " + v);
+                tvOsdScale.setText(getString(R.string.settings_osd_scale_value, v));
             } catch (Exception ignored) {
                 sbOsdScale.setValue(100f);
-                tvOsdScale.setText("On-Screen Display Scale: 100");
+                tvOsdScale.setText(R.string.settings_osd_scale_default);
             }
             sbOsdScale.addOnChangeListener((slider, value, fromUser) -> {
                 int v = Math.max(50, Math.min(100, Math.round(value)));
                 if (v != Math.round(value)) slider.setValue(v);
-                tvOsdScale.setText("On-Screen Display Scale: " + v);
+                tvOsdScale.setText(getString(R.string.settings_osd_scale_value, v));
                 NativeApp.setSetting("EmuCore/GS", "OsdScale", "int", Integer.toString(v));
             });
         }
@@ -1900,18 +1981,238 @@ public class SettingsActivity extends AppCompatActivity {
 		}
 	}
 
-	private void initializeMemoryCardSettings() {
-		Button btnImportMc = findViewById(R.id.btn_import_memcard);
-		btnImportMc.setOnClickListener(v -> {
-			Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-			i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-			i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
-			i.setType("application/octet-stream");
-			String[] types = new String[]{"application/octet-stream", "application/x-binary"};
-			i.putExtra(Intent.EXTRA_MIME_TYPES, types);
-			startActivityForResult(Intent.createChooser(i, "Select memory card"), REQ_IMPORT_MEMCARD);
-		});
-	}
+    private void initializeMemoryCardSettings() {
+        View btnCreateCard = findViewById(R.id.btn_create_card);
+        if (btnCreateCard != null) {
+            btnCreateCard.setOnClickListener(v -> showCreateCardDialog());
+        }
+        View btnImportMc = findViewById(R.id.btn_import_memcard);
+        if (btnImportMc != null) {
+            btnImportMc.setOnClickListener(v -> {
+                Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                i.setType("*/*");
+                startActivityForResult(Intent.createChooser(i, "Select memory card"), REQ_IMPORT_MEMCARD);
+            });
+        }
+
+        View btnSwapCards = findViewById(R.id.btn_swap_cards);
+        if (btnSwapCards != null) {
+            btnSwapCards.setOnClickListener(v -> {
+                String slot1 = NativeApp.getSetting("MemoryCards", "Slot1_Filename", "string");
+                String slot2 = NativeApp.getSetting("MemoryCards", "Slot2_Filename", "string");
+                NativeApp.setSetting("MemoryCards", "Slot1_Filename", "string", slot2);
+                NativeApp.setSetting("MemoryCards", "Slot2_Filename", "string", slot1);
+                updateMemoryCardUi();
+                Toast.makeText(this, R.string.settings_swap_cards, Toast.LENGTH_SHORT).show();
+            });
+        }
+        MaterialSwitch swFilter = findViewById(R.id.sw_memcard_filter);
+        if (swFilter != null) {
+            try {
+                String val = NativeApp.getSetting("EmuCore", "McdFolderAutoManage", "bool");
+                swFilter.setChecked("true".equalsIgnoreCase(val));
+            } catch (Exception ignored) {}
+            swFilter.setOnCheckedChangeListener((b, isChecked) ->
+                    NativeApp.setSetting("EmuCore", "McdFolderAutoManage", "bool", isChecked ? "true" : "false"));
+        }
+        setupCardSlotControls(1, R.id.sw_card_1_enabled, R.id.btn_card_1_name, R.id.tv_card_1_name_value);
+        setupCardSlotControls(2, R.id.sw_card_2_enabled, R.id.btn_card_2_name, R.id.tv_card_2_name_value);
+    }
+
+    private void setupCardSlotControls(int slot, int swId, int btnId, int tvId) {
+        MaterialSwitch sw = findViewById(swId);
+        View btn = findViewById(btnId);
+        TextView tv = findViewById(tvId);
+        String section = "MemoryCards";
+        String keyEnable = "Slot" + slot + "_Enable";
+        String keyFile = "Slot" + slot + "_Filename";
+
+        if (sw != null) {
+            try {
+                String enabled = NativeApp.getSetting(section, keyEnable, "bool");
+                sw.setChecked("true".equalsIgnoreCase(enabled));
+            } catch (Exception ignored) {}
+            sw.setOnCheckedChangeListener((b, isChecked) ->
+                    NativeApp.setSetting(section, keyEnable, "bool", isChecked ? "true" : "false"));
+        }
+        if (tv != null) {
+            try {
+                String filename = NativeApp.getSetting(section, keyFile, "string");
+                tv.setText(TextUtils.isEmpty(filename) ? "None" : filename);
+            } catch (Exception ignored) {}
+        }
+        if (btn != null) {
+            btn.setOnClickListener(v -> showMemoryCardSelector(slot));
+        }
+    }
+
+    private void showCreateCardDialog() {
+        final TextInputEditText input = new TextInputEditText(this);
+        input.setHint("Memory card name (e.g. MySave)");
+
+        final String[] options = {
+                "8 MB (Standard High compatibility)",
+                "16 MB (May cause issues)",
+                "32 MB (May cause issues)",
+                "64 MB (Too Large - May cause issues)",
+                "Folder (Recommended - Unlimited size)"
+        };
+
+        final long[] sizes = {
+                8650752,       // 8MB
+                17301504,      // 16MB
+                34603008,      // 32MB
+                69206016,      // 64MB
+                -1             // Folder
+        };
+
+        final int[] selectedOption = {0};
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Create New Memory Card")
+                .setView(input)
+                .setSingleChoiceItems(options, 0, (dialog, which) -> {
+                    selectedOption[0] = which;
+                })
+                .setPositiveButton("Create", (dialog, which) -> {
+                    String name = input.getText().toString().trim();
+                    if (TextUtils.isEmpty(name)) return;
+
+                    if (!name.toLowerCase().endsWith(".ps2")) {
+                        name += ".ps2";
+                    }
+
+                    File memcardsDir = new File(DataDirectoryManager.getDataRoot(this), "memcards");
+                    if (!memcardsDir.exists() && !memcardsDir.mkdirs()) return;
+
+                    long size = sizes[selectedOption[0]];
+
+                    if (size == -1) {
+                        File folderCard = new File(memcardsDir, name);
+                        if (folderCard.exists()) {
+                            Toast.makeText(this, "Folder or File already exists", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        if (folderCard.mkdirs()) {
+                            Toast.makeText(this, "Folder memory card created!", Toast.LENGTH_SHORT).show();
+                            updateMemoryCardUi();
+                        }
+                    } else {
+                        File fileCard = new File(memcardsDir, name);
+                        if (fileCard.exists()) {
+                            Toast.makeText(this, "File already exists", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        try {
+                            if (fileCard.createNewFile()) {
+                                java.io.RandomAccessFile raf = new java.io.RandomAccessFile(fileCard, "rw");
+                                byte[] buffer = new byte[1024 * 1024];
+                                java.util.Arrays.fill(buffer, (byte) 0xFF);
+
+                                long bytesWritten = 0;
+                                while (bytesWritten < size) {
+                                    long toWrite = Math.min(buffer.length, size - bytesWritten);
+                                    raf.write(buffer, 0, (int) toWrite);
+                                    bytesWritten += toWrite;
+                                }
+                                raf.close();
+                                Toast.makeText(this, "File card created: " + name, Toast.LENGTH_SHORT).show();
+                                updateMemoryCardUi();
+                            }
+                        } catch (Exception e) {
+                            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void showMemoryCardSelector(int slot) {
+        File memcardsDir = new File(DataDirectoryManager.getDataRoot(this), "memcards");
+        if (!memcardsDir.exists()) memcardsDir.mkdirs();
+
+        File[] files = memcardsDir.listFiles((dir, name) -> name.toLowerCase().endsWith(".ps2"));
+        if (files == null || files.length == 0) {
+            Toast.makeText(this, "No memory cards found in /memcards", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String[] displayNames = new String[files.length];
+        String[] realNames = new String[files.length];
+
+        for (int i = 0; i < files.length; i++) {
+            realNames[i] = files[i].getName();
+            if (files[i].isDirectory()) {
+                displayNames[i] = files[i].getName() + " (Folder)";
+            } else {
+                displayNames[i] = files[i].getName();
+            }
+        }
+
+        new MaterialAlertDialogBuilder(this)
+                .setItems(displayNames, (dialog, which) -> {
+                    String selected = realNames[which];
+                    int otherSlot = (slot == 1) ? 2 : 1;
+                    String otherCard = NativeApp.getSetting("MemoryCards", "Slot" + otherSlot + "_Filename", "string");
+                    if (selected.equals(otherCard)) {
+                        Toast.makeText(this, getString(R.string.settings_memory_card_already_in_use, otherSlot), Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    NativeApp.setSetting("MemoryCards", "Slot" + slot + "_Filename", "string", selected);
+                    updateMemoryCardUi();
+                    Toast.makeText(this, "Slot " + slot + " set to: " + selected, Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void updateMemoryCardUi() {
+        TextView tvSlot1 = findViewById(R.id.tv_card_1_name_value);
+        TextView tvSlot2 = findViewById(R.id.tv_card_2_name_value);
+
+        String name1 = NativeApp.getSetting("MemoryCards", "Slot1_Filename", "string");
+        String name2 = NativeApp.getSetting("MemoryCards", "Slot2_Filename", "string");
+
+        File memcardsDir = new File(DataDirectoryManager.getDataRoot(this), "memcards");
+
+        if (!TextUtils.isEmpty(name1)) {
+            File file1 = new File(memcardsDir, name1);
+            if (!file1.exists()) {
+                NativeApp.setSetting("MemoryCards", "Slot1_Filename", "string", "");
+                name1 = "";
+            }
+        }
+
+        if (!TextUtils.isEmpty(name2)) {
+            File file2 = new File(memcardsDir, name2);
+            if (!file2.exists()) {
+                NativeApp.setSetting("MemoryCards", "Slot2_Filename", "string", "");
+                name2 = "";
+            }
+        }
+
+        if (tvSlot1 != null) {
+            if (TextUtils.isEmpty(name1)) {
+                tvSlot1.setText("None");
+            } else {
+                File f1 = new File(memcardsDir, name1);
+                String suffix = f1.isDirectory() ? " (Folder)" : "";
+                tvSlot1.setText(name1 + suffix);
+            }
+        }
+
+        if (tvSlot2 != null) {
+            if (TextUtils.isEmpty(name2)) {
+                tvSlot2.setText("None");
+            } else {
+                File f2 = new File(memcardsDir, name2);
+                String suffix = f2.isDirectory() ? " (Folder)" : "";
+                tvSlot2.setText(name2 + suffix);
+            }
+        }
+    }
 
 	private void initializeStorageSettings() {
 		tvDataDirPath = findViewById(R.id.tv_data_dir_path);
@@ -2141,6 +2442,7 @@ public class SettingsActivity extends AppCompatActivity {
                 sectionTabs.addTab(sectionTabs.newTab().setText(R.string.settings_section_controller));
                 sectionTabs.addTab(sectionTabs.newTab().setText(R.string.settings_section_customization));
                 sectionTabs.addTab(sectionTabs.newTab().setText(R.string.settings_section_storage));
+                sectionTabs.addTab(sectionTabs.newTab().setText(R.string.settings_section_memory));
                 sectionTabs.addTab(sectionTabs.newTab().setText(R.string.settings_section_achievements));
 		}
 			sectionTabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -2214,6 +2516,7 @@ public class SettingsActivity extends AppCompatActivity {
             case SECTION_CONTROLLER: return R.string.settings_section_controller;
             case SECTION_CUSTOMIZATION: return R.string.settings_section_customization;
             case SECTION_STORAGE: return R.string.settings_section_storage;
+            case SECTION_MEMORY: return R.string.settings_section_memory;
             case SECTION_ACHIEVEMENTS: return R.string.settings_section_achievements;
             case SECTION_GENERAL:
             default: return R.string.settings_section_general;
@@ -2227,6 +2530,7 @@ public class SettingsActivity extends AppCompatActivity {
         if (buttonId == R.id.btn_section_controller) return SECTION_CONTROLLER;
         if (buttonId == R.id.btn_section_customization) return SECTION_CUSTOMIZATION;
         if (buttonId == R.id.btn_section_storage) return SECTION_STORAGE;
+        if (buttonId == R.id.btn_section_memory) return SECTION_MEMORY;
         if (buttonId == R.id.btn_section_achievements) return SECTION_ACHIEVEMENTS;
         return SECTION_GENERAL;
     }
@@ -2239,6 +2543,7 @@ public class SettingsActivity extends AppCompatActivity {
             case SECTION_CONTROLLER: return R.id.btn_section_controller;
             case SECTION_CUSTOMIZATION: return R.id.btn_section_customization;
             case SECTION_STORAGE: return R.id.btn_section_storage;
+            case SECTION_MEMORY: return R.id.btn_section_memory;
             case SECTION_ACHIEVEMENTS: return R.id.btn_section_achievements;
             case SECTION_GENERAL:
             default: return R.id.btn_section_general;
@@ -2254,12 +2559,12 @@ public class SettingsActivity extends AppCompatActivity {
 	private void handleDataDirectorySelection(@NonNull Uri tree) {
 		String resolvedPath = DataDirectoryManager.resolveTreeUriToPath(this, tree);
 		if (resolvedPath == null || resolvedPath.trim().isEmpty()) {
-			try { Toast.makeText(this, "Unable to use selected folder", Toast.LENGTH_LONG).show(); } catch (Throwable ignored) {}
+			try { Toast.makeText(this, R.string.onboarding_storage_unusable, Toast.LENGTH_LONG).show(); } catch (Throwable ignored) {}
 			return;
 		}
 		File targetDir = new File(resolvedPath);
 		if (!targetDir.exists() && !targetDir.mkdirs()) {
-			try { Toast.makeText(this, "Cannot create folders in the selected location", Toast.LENGTH_LONG).show(); } catch (Throwable ignored) {}
+			try { Toast.makeText(this, R.string.onboarding_storage_create_failed, Toast.LENGTH_LONG).show(); } catch (Throwable ignored) {}
 			return;
 		}
 		if (!DataDirectoryManager.canUseDirectFileAccess(targetDir)) {
@@ -2271,7 +2576,7 @@ public class SettingsActivity extends AppCompatActivity {
 			DataDirectoryManager.storeCustomDataRoot(getApplicationContext(), targetDir.getAbsolutePath(), tree.toString());
 			NativeApp.setDataRootOverride(targetDir.getAbsolutePath());
 			updateDataDirSummary();
-			try { Toast.makeText(this, "Already using that folder", Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
+			try { Toast.makeText(this, R.string.onboarding_storage_already_using, Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
 			return;
 		}
 		beginDataDirectoryMigration(currentDir, targetDir, tree.toString());
@@ -2292,9 +2597,9 @@ public class SettingsActivity extends AppCompatActivity {
 			runOnUiThread(() -> {
 				dismissDataDirProgressDialog();
 				if (success) {
-					try { Toast.makeText(this, "Data location updated", Toast.LENGTH_LONG).show(); } catch (Throwable ignored) {}
+					try { Toast.makeText(this, R.string.onboarding_storage_moved, Toast.LENGTH_LONG).show(); } catch (Throwable ignored) {}
 				} else {
-					try { Toast.makeText(this, "Failed to move data", Toast.LENGTH_LONG).show(); } catch (Throwable ignored) {}
+					try { Toast.makeText(this, R.string.onboarding_storage_move_failed, Toast.LENGTH_LONG).show(); } catch (Throwable ignored) {}
 				}
 				updateDataDirSummary();
 			});
@@ -2310,8 +2615,8 @@ public class SettingsActivity extends AppCompatActivity {
 			int padding = dpToPx(24);
 			progressBar.setPadding(padding, padding, padding, padding);
 			dataDirProgressDialog = new MaterialAlertDialogBuilder(this)
-					.setTitle("Moving data")
-					.setMessage("Moving emulator data to the selected folder…")
+					.setTitle(R.string.onboarding_storage_moving_title)
+					.setMessage(R.string.onboarding_storage_moving_message)
 					.setView(progressBar)
 					.setCancelable(false)
 					.create();
@@ -2392,14 +2697,13 @@ public class SettingsActivity extends AppCompatActivity {
 
 	private void showStorageAccessError(File targetDir) {
 		boolean canGrant = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !DataDirectoryManager.hasAllFilesAccess();
-		String message = "Android denied direct file access for:\n" + targetDir.getAbsolutePath() +
-			"\n\nGrant 'Allow access to all files' in system settings or choose a folder inside ARMSX2's storage.";
+		String message = getString(R.string.settings_storage_access_error, targetDir.getAbsolutePath());
         AlertDialog.Builder builder = new MaterialAlertDialogBuilder(this)
-				.setTitle("Permission required")
+				.setTitle(R.string.onboarding_storage_access_title)
 				.setMessage(message)
-				.setNegativeButton("OK", (d, w) -> d.dismiss());
+				.setNegativeButton(android.R.string.ok, (d, w) -> d.dismiss());
 		if (canGrant) {
-			builder.setPositiveButton("Open settings", (d, w) -> {
+			builder.setPositiveButton(R.string.onboarding_storage_access_settings, (d, w) -> {
 				d.dismiss();
 				openAllFilesAccessSettings();
 			});
@@ -2432,12 +2736,12 @@ public class SettingsActivity extends AppCompatActivity {
 			String message = "ARMSX2 (" + versionName + ")\n" +
         		"by ARMSX2 team\n\n" +
         		"Core contributors:\n" +
-        		"- MoonPower — App developer\n" +
-        		"- jpolo — Management\n" +
-        		"- Medievalshell — Web developer\n" +
-        		"- set l — Web developer\n" +
-        		"- Alex — QA tester\n" +
-        		"- Yua — QA tester\n\n" +
+        		"- MoonPower â€” App developer\n" +
+        		"- jpolo â€” Management\n" +
+        		"- Medievalshell â€” Web developer\n" +
+        		"- set l â€” Web developer\n" +
+        		"- Alex â€” QA tester\n" +
+        		"- Yua â€” QA tester\n\n" +
         		"Thanks to:\n" +
         		"- pontos2024 (emulator base)\n" +
         		"- PCSX2 v2.3.430 (core emulator)\n" +
@@ -2445,9 +2749,9 @@ public class SettingsActivity extends AppCompatActivity {
         		"- Fffathur (icon design)\n" +
 				"- vivimagic0 (icon design)";
 			new MaterialAlertDialogBuilder(this)
-					.setTitle("About")
+					.setTitle(R.string.drawer_about)
 					.setMessage(message)
-					.setPositiveButton("OK", (d, w) -> d.dismiss())
+					.setPositiveButton(android.R.string.ok, (d, w) -> d.dismiss())
 					.show();
 		});
 
@@ -2470,12 +2774,12 @@ public class SettingsActivity extends AppCompatActivity {
 			float value = deadzone == null || deadzone.isEmpty() ? 0.10f : Float.parseFloat(deadzone);
 			int progress = Math.round(value * 100);
 			sbLeftDeadzone.setProgress(progress);
-			tvLeftDeadzone.setText("Left Stick Deadzone: " + String.format("%.2f", value));
+			tvLeftDeadzone.setText(getString(R.string.settings_left_stick_deadzone_value, value));
 		} catch (Exception ignored) {}
 		sbLeftDeadzone.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				float value = progress / 100.0f;
-				tvLeftDeadzone.setText("Left Stick Deadzone: " + String.format("%.2f", value));
+				tvLeftDeadzone.setText(getString(R.string.settings_left_stick_deadzone_value, value));
 			}
 			@Override public void onStartTrackingTouch(SeekBar seekBar) {}
 			@Override public void onStopTrackingTouch(SeekBar seekBar) {}
@@ -2489,12 +2793,12 @@ public class SettingsActivity extends AppCompatActivity {
 			float value = deadzone == null || deadzone.isEmpty() ? 0.10f : Float.parseFloat(deadzone);
 			int progress = Math.round(value * 100);
 			sbRightDeadzone.setProgress(progress);
-			tvRightDeadzone.setText("Right Stick Deadzone: " + String.format("%.2f", value));
+			tvRightDeadzone.setText(getString(R.string.settings_right_stick_deadzone_value, value));
 		} catch (Exception ignored) {}
 		sbRightDeadzone.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				float value = progress / 100.0f;
-				tvRightDeadzone.setText("Right Stick Deadzone: " + String.format("%.2f", value));
+				tvRightDeadzone.setText(getString(R.string.settings_right_stick_deadzone_value, value));
 			}
 			@Override public void onStartTrackingTouch(SeekBar seekBar) {}
 			@Override public void onStopTrackingTouch(SeekBar seekBar) {}
@@ -2508,12 +2812,12 @@ public class SettingsActivity extends AppCompatActivity {
 			float value = sensitivity == null || sensitivity.isEmpty() ? 1.0f : Float.parseFloat(sensitivity);
 			int progress = Math.round(value * 100);
 			sbLeftSensitivity.setProgress(progress);
-			tvLeftSensitivity.setText("Left Stick Sensitivity: " + String.format("%.2f", value));
+			tvLeftSensitivity.setText(getString(R.string.settings_left_stick_sensitivity_value, value));
 		} catch (Exception ignored) {}
 		sbLeftSensitivity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				float value = progress / 100.0f;
-				tvLeftSensitivity.setText("Left Stick Sensitivity: " + String.format("%.2f", value));
+				tvLeftSensitivity.setText(getString(R.string.settings_left_stick_sensitivity_value, value));
 			}
 			@Override public void onStartTrackingTouch(SeekBar seekBar) {}
 			@Override public void onStopTrackingTouch(SeekBar seekBar) {}
@@ -2527,12 +2831,12 @@ public class SettingsActivity extends AppCompatActivity {
 			float value = sensitivity == null || sensitivity.isEmpty() ? 1.0f : Float.parseFloat(sensitivity);
 			int progress = Math.round(value * 100);
 			sbRightSensitivity.setProgress(progress);
-			tvRightSensitivity.setText("Right Stick Sensitivity: " + String.format("%.2f", value));
+			tvRightSensitivity.setText(getString(R.string.settings_right_stick_sensitivity_value, value));
 		} catch (Exception ignored) {}
 		sbRightSensitivity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				float value = progress / 100.0f;
-				tvRightSensitivity.setText("Right Stick Sensitivity: " + String.format("%.2f", value));
+				tvRightSensitivity.setText(getString(R.string.settings_right_stick_sensitivity_value, value));
 			}
 			@Override public void onStartTrackingTouch(SeekBar seekBar) {}
 			@Override public void onStopTrackingTouch(SeekBar seekBar) {}
@@ -2553,7 +2857,7 @@ public class SettingsActivity extends AppCompatActivity {
 			NativeApp.setSetting("InputSources/SDL", "ControllerDeadzone", "float", String.valueOf(Math.max(leftDeadzone, rightDeadzone)));
 			NativeApp.setSetting("InputSources/SDL", "ControllerSensitivity", "float", String.valueOf(Math.max(leftSensitivity, rightSensitivity)));
 			
-			Toast.makeText(this, "Controller settings applied", Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, R.string.settings_controller_settings_applied, Toast.LENGTH_SHORT).show();
 			dialog.dismiss();
 		});
 
@@ -2563,18 +2867,26 @@ public class SettingsActivity extends AppCompatActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == REQ_IMPORT_MEMCARD && resultCode == RESULT_OK && data != null && data.getData() != null) {
-			Uri uri = data.getData();
-			try { 
-				getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION); 
-			} catch (Exception ignored) {}
-			if (importMemcardToSlot1(uri)) {
-				NativeApp.setSetting("MemoryCards", "Slot1_Enable", "bool", "false");
-				NativeApp.setSetting("MemoryCards", "Slot1_Filename", "string", "Mcd001.ps2");
-				NativeApp.setSetting("MemoryCards", "Slot1_Enable", "bool", "true");
-				Toast.makeText(this, "Memory card inserted (Slot 1)", Toast.LENGTH_SHORT).show();
-			} else {
-				Toast.makeText(this, "Failed to import memory card", Toast.LENGTH_LONG).show();
+        if (requestCode == REQ_IMPORT_MEMCARD && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri uri = data.getData();
+            String fileName = "imported_card.ps2";
+            try (android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME);
+                    if (nameIndex != -1) fileName = cursor.getString(nameIndex);
+                }
+            } catch (Exception ignored) {}
+
+            try {
+                getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            } catch (Exception ignored) {}
+
+            if (importMemcardToSlot1(uri, fileName)) {
+                NativeApp.setSetting("MemoryCards", "Slot1_Filename", "string", fileName);
+                updateMemoryCardUi();
+                Toast.makeText(this, "Imported: " + fileName, Toast.LENGTH_SHORT).show();
+            } else {
+				Toast.makeText(this, R.string.settings_memory_card_import_failed, Toast.LENGTH_LONG).show();
 			}
 		} else if (requestCode == 9912 && resultCode == RESULT_OK && data != null && data.getData() != null) {
 			Uri uri = data.getData();
@@ -2590,21 +2902,21 @@ public class SettingsActivity extends AppCompatActivity {
 				newDirs.add(uriString);
 				prefs.edit().putStringSet("secondary_game_dirs", newDirs).apply();
 				
-				Toast.makeText(this, "Secondary game directory added", Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, R.string.settings_secondary_game_directory_added, Toast.LENGTH_SHORT).show();
 			} catch (Exception e) {
-				Toast.makeText(this, "Failed to add secondary game directory", Toast.LENGTH_LONG).show();
+				Toast.makeText(this, R.string.settings_secondary_game_directory_add_failed, Toast.LENGTH_LONG).show();
 			}
 		}
 	}
 
-	private boolean importMemcardToSlot1(Uri uri) {
-		try {
-			File base = DataDirectoryManager.getDataRoot(getApplicationContext());
-			File memDir = new File(base, "memcards");
-			if (!memDir.exists() && !memDir.mkdirs()) return false;
-			File out = new File(memDir, "Mcd001.ps2");
-			try (InputStream in = getContentResolver().openInputStream(uri);
-				 OutputStream os = new FileOutputStream(out)) {
+    private boolean importMemcardToSlot1(Uri uri, String fileName) {
+        try {
+            File base = DataDirectoryManager.getDataRoot(getApplicationContext());
+            File memDir = new File(base, "memcards");
+            if (!memDir.exists() && !memDir.mkdirs()) return false;
+            File out = new File(memDir, fileName);
+            try (InputStream in = getContentResolver().openInputStream(uri);
+                 OutputStream os = new FileOutputStream(out)) {
 				if (in == null) return false;
 				byte[] buf = new byte[8192];
 				int n;
@@ -2694,3 +3006,4 @@ public class SettingsActivity extends AppCompatActivity {
 		}
 	}
 }
+

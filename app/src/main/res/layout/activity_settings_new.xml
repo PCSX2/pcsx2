@@ -93,6 +93,14 @@
                 android:text="@string/settings_section_storage" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_section_memory"
+                style="@style/Widget.ARMSX2.SegmentedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="0dp"
+                android:text="@string/settings_section_memory" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_section_achievements"
                 style="@style/Widget.ARMSX2.SegmentedButton"
                 android:layout_width="wrap_content"
@@ -236,9 +244,23 @@
 
                 <include layout="@layout/include_settings_card_data_access" />
 
-                <include layout="@layout/include_settings_card_memory" />
-
                 <include layout="@layout/include_settings_card_dev9" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/settings_section_memory"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:padding="@dimen/settings_content_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include layout="@layout/include_settings_card_memory" />
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 
@@ -277,7 +299,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
-            android:text="About" />
+            android:text="@string/drawer_about" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_back"
@@ -286,6 +308,6 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:text="Back" />
+            android:text="@string/onboarding_back" />
     </LinearLayout>
 </LinearLayout>

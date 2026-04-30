@@ -29,7 +29,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:text="Calibrate Controller" />
+            android:text="@string/settings_calibrate_controller" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_edit_controller_mapping"
@@ -43,7 +43,7 @@
             android:id="@+id/sw_vibration"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Vibration"
+            android:text="@string/settings_vibration"
             app:useMaterialThemeColors="true" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

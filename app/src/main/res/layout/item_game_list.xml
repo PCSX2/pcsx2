@@ -28,7 +28,21 @@
         app:layout_constraintStart_toEndOf="@id/img_cover"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/img_cover"
-        app:layout_constraintBottom_toBottomOf="@id/img_cover" />
+        app:layout_constraintBottom_toTopOf="@+id/tv_region"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/tv_region"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="12sp"
+        android:alpha="0.7"
+        app:layout_constraintTop_toBottomOf="@+id/tv_title"
+        app:layout_constraintStart_toStartOf="@+id/tv_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/img_cover"
+        android:text="Region" />
 
     <TextView
         android:id="@+id/tv_cover_fallback"
@@ -41,4 +55,3 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-

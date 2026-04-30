@@ -10,7 +10,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:scaleType="centerCrop"
-		android:contentDescription="Header image" />
+		android:contentDescription="@string/home_header_image_content_description" />
 
 	<!-- Bottom blurred overlay -->
 	<ImageView
@@ -18,7 +18,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:scaleType="centerCrop"
-		android:contentDescription="Header blurred image"
+		android:contentDescription="@string/home_header_blur_image_content_description"
 		android:alpha="0.9"
 		android:layout_gravity="bottom"
 		android:foreground="@drawable/gradient_header_fade_up" />
@@ -43,7 +43,7 @@
 			android:id="@+id/tv_header_sub"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="Game Selector"
+			android:text="@string/home_game_selector_subtitle"
 			android:textSize="14sp"
 			android:textColor="?attr/colorOnPrimaryContainer"/>
 	</LinearLayout>
