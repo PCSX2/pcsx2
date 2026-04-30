@@ -85,6 +85,8 @@ public class NativeApp {
 	private static native void reloadDataRoot(String path);
 	public static native String getGameTitle(String path);
 	public static native String getGameSerial();
+	public static native int getGameCRC();
+	public static native void reloadCheats();
 	public static native boolean hasWidescreenPatch();
 	public static native float getFPS();
 
@@ -159,4 +161,6 @@ public class NativeApp {
     public static native void setCustomDriverPath(String path);
     public static native String getCustomDriverPath();
     public static native void setNativeLibraryDir(String path);
+	public static native boolean changeDisc(String path);
+	public static native String getDiskInfo(String path);
 }

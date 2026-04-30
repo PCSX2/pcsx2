@@ -90,6 +90,9 @@
     </string-array>
 
     <string-array name="resolution_scales">
+        <item>0.25x</item>
+        <item>0.5x</item>
+        <item>0.75x</item>
         <item>1x</item>
         <item>2x</item>
         <item>3x</item>

@@ -264,6 +264,21 @@
             app:iconTintMode="src_in" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/drawer_btn_change_disc"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="Change Discs"
+            android:textAllCaps="false"
+            android:textColor="?attr/colorOnSurface"
+            app:icon="@drawable/ic_folder_24"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconSize="20dp"
+            app:iconTint="?attr/colorPrimary" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/drawer_btn_game_state"
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
