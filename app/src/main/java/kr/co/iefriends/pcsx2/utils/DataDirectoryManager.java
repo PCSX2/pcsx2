@@ -64,6 +64,37 @@ public final class DataDirectoryManager {
         return fallback;
     }
 
+    @Nullable
+    public static String resolveUriToPath(Context context, Uri uri) {
+        if (uri == null) return null;
+        String path = resolveTreeUriToPath(context, uri);
+        if (path != null) return path;
+        try {
+            if (android.provider.DocumentsContract.isDocumentUri(context, uri)) {
+                String docId = android.provider.DocumentsContract.getDocumentId(uri);
+                if (docId.startsWith("raw:")) {
+                    return docId.substring(4);
+                }
+                String[] split = docId.split(":");
+                String type = split[0];
+                String relPath = split.length > 1 ? split[1] : "";
+
+                if ("primary".equalsIgnoreCase(type)) {
+                    return android.os.Environment.getExternalStorageDirectory() + "/" + relPath;
+                } else {
+                    return "/storage/" + type + "/" + relPath;
+                }
+            }
+        } catch (Exception ignored) {}
+
+        // 3. Handle traditional file:// URIs
+        if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
+        }
+
+        return null;
+    }
+
     public static File getDefaultDataRoot(Context context) {
         File base = context.getExternalFilesDir(null);
         if (base == null) {

@@ -12,6 +12,11 @@
 			android:icon="@drawable/ic_cd_24"
 			android:title="@string/home_nav_bios" />
 
+		<item
+			android:id="@+id/menu_run_elf"
+			android:icon="@drawable/ic_folder_24"
+			android:title="@string/settings_run_elf" />
+
 		<item android:title="@string/home_nav_section_library" android:enabled="false" />
 		<item
 			android:id="@+id/menu_choose_folder"

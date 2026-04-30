@@ -748,6 +748,18 @@ public class SettingsActivity extends AppCompatActivity {
 					NativeApp.setSetting("EmuCore", "EnableFastBoot", "bool", isChecked ? "true" : "false"));
 		}
 
+        // Hostfs
+        MaterialSwitch swHostFs = findViewById(R.id.sw_hostfs);
+        if (swHostFs != null) {
+            try {
+                String hostfs = NativeApp.getSetting("EmuCore", "HostFs", "bool");
+                swHostFs.setChecked("true".equalsIgnoreCase(hostfs));
+            } catch (Exception ignored) {}
+            swHostFs.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                NativeApp.setSetting("EmuCore", "HostFs", "bool", isChecked ? "true" : "false");
+            });
+        }
+
         MaterialSwitch swWarnUnsafe = findViewById(R.id.sw_warn_unsafe_settings);
         if (swWarnUnsafe != null) {
             try {
