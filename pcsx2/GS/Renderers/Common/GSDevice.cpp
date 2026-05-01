@@ -1559,8 +1559,51 @@ static void DumpBlendMultipass(DrawConfigWriter& out, const GSHWDrawConfig::Blen
 	DumpBlendState(out.WithIndent(), bmp.blend);
 }
 
+template<typename T, typename U = int>
+static void DumpVector4(DrawConfigWriter& out, const char* name, const T& val)
+{
+	out.WriteLn("{}: [{}, {}, {}, {}]", name, val.x, val.y, val.z, val.w);
+};
+
+template<typename T>
+static void DumpVector2(DrawConfigWriter& out, const char* name, const T& val)
+{
+	out.WriteLn("{}: [{}, {}]", name, val.x, val.y);
+};
+
+static void DumpPSConstantBuffer(DrawConfigWriter& out, const GSHWDrawConfig::PSConstantBuffer& cb)
+{
+	DumpVector4(out, "FogColor_AREF", cb.FogColor_AREF);
+	DumpVector4(out, "WH", cb.WH);
+	DumpVector4(out, "TA_MaxDepth_Af", cb.TA_MaxDepth_Af);
+	DumpVector4(out, "FbMask", cb.FbMask);
+	DumpVector4(out, "HalfTexel", cb.HalfTexel);
+	DumpVector4(out, "MinMax", cb.MinMax);
+	DumpVector4(out, "LODParams", cb.LODParams);
+	DumpVector4(out, "STRange", cb.STRange);
+	DumpVector4(out, "ChannelShuffle", cb.ChannelShuffle);
+	DumpVector2(out, "ChannelShuffleOffset", cb.ChannelShuffleOffset);
+	DumpVector2(out, "TCOffsetHack", cb.TCOffsetHack);
+	DumpVector2(out, "STScale", cb.STScale);
+	DumpVector4(out, "DitherMatrix_0", cb.DitherMatrix[0]);
+	DumpVector4(out, "DitherMatrix_1", cb.DitherMatrix[1]);
+	DumpVector4(out, "DitherMatrix_2", cb.DitherMatrix[2]);
+	DumpVector4(out, "DitherMatrix_3", cb.DitherMatrix[3]);
+	DumpVector4(out, "ScaleFactor", cb.ScaleFactor);
+}
+
+static void DumpVSConstantBuffer(DrawConfigWriter& out, const GSHWDrawConfig::VSConstantBuffer& cb)
+{
+	DumpVector2(out, "vertex_scale", cb.vertex_scale);
+	DumpVector2(out, "vertex_offset", cb.vertex_offset);
+	DumpVector2(out, "texture_scale", cb.texture_scale);
+	DumpVector2(out, "texture_offset", cb.texture_offset);
+	DumpVector2(out, "point_size", cb.point_size);
+	DumpVector2(out, "max_depth", cb.max_depth);
+}
+
 static void DumpConfig(DrawConfigWriter& out, const GSHWDrawConfig& conf,
-	bool ps, bool vs, bool bs, bool dss, bool ss, bool asp, bool bmp)
+	bool ps, bool vs, bool bs, bool dss, bool ss, bool asp, bool bmp, bool cbvs, bool cbps)
 {
 	out.WriteLn("topology: {} ({})", GetTopologyName(conf.topology), static_cast<u32>(conf.topology));
 	out.WriteLn("require_one_barrier: {}", conf.require_one_barrier);
@@ -1612,15 +1655,27 @@ static void DumpConfig(DrawConfigWriter& out, const GSHWDrawConfig& conf,
 		out.WriteLn("blend_multi_pass:");
 		DumpBlendMultipass(out.WithIndent(), conf.blend_multi_pass);
 	}
+
+	if (cbvs)
+	{
+		out.WriteLn("cb_vs:");
+		DumpVSConstantBuffer(out.WithIndent(), conf.cb_vs);
+	}
+	
+	if (cbps)
+	{
+		out.WriteLn("cb_ps:");
+		DumpPSConstantBuffer(out.WithIndent(), conf.cb_ps);
+	}
 }
 
 void GSHWDrawConfig::DumpConfig(const std::string& path, const GSHWDrawConfig& conf,
-	bool ps, bool vs, bool bs, bool dss, bool ss, bool asp, bool bmp)
+	bool ps, bool vs, bool bs, bool dss, bool ss, bool asp, bool bmp, bool cbvs, bool cbps)
 {
 	if (FileSystem::ManagedCFilePtr file = FileSystem::OpenManagedCFile(path.c_str(), "w"))
 	{
 		DrawConfigWriter writer;
-		::DumpConfig(writer, conf, ps, vs, bs, dss, ss, asp, bmp);
+		::DumpConfig(writer, conf, ps, vs, bs, dss, ss, asp, bmp, cbvs, cbps);
 		fwrite(writer.buffer.data(), 1, writer.buffer.size(), file.get());
 	}
 }

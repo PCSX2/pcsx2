@@ -879,7 +879,8 @@ struct alignas(16) GSHWDrawConfig
 
 	// Dumping
 	static void DumpConfig(const std::string& path, const GSHWDrawConfig& conf,
-		bool ps = true, bool vs = true, bool bs = true, bool dss = true, bool ss = true, bool asp = true, bool bmp = true);
+		bool ps = true, bool vs = true, bool bs = true, bool dss = true, bool ss = true, bool asp = true, bool bmp = true,
+		bool cbvs = true, bool cbps = true);
 };
 
 static inline u32 GetExpansionFactor(GSHWDrawConfig::VSExpand expand)
