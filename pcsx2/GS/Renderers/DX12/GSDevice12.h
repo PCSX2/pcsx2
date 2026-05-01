@@ -191,6 +191,14 @@ public:
 	void UploadIndices(D3D12StreamBuffer& buffer, const void* index, size_t count);
 
 private:
+	// For pipeline statistics
+	enum class QueryState
+	{
+		None,
+		Querying,
+		Ready,
+	};
+
 	struct CommandListResources
 	{
 		std::array<ComPtr<ID3D12CommandAllocator>, 2> command_allocators;
@@ -202,6 +210,7 @@ private:
 		u64 ready_fence_value = 0;
 		bool init_command_list_used = false;
 		bool has_timestamp_query = false;
+		QueryState pipeline_statistics_query = QueryState::None;
 	};
 
 	void LoadAgilitySDK();
@@ -210,6 +219,7 @@ private:
 	bool CreateDescriptorHeaps();
 	bool CreateCommandLists();
 	bool CreateTimestampQuery();
+	bool CreatePipelineStatisticsQuery();
 	void MoveToNextCommandList();
 	void DestroyPendingResources(CommandListResources& cmdlist);
 
@@ -233,6 +243,12 @@ private:
 	float m_accumulated_gpu_time = 0.0f;
 	bool m_gpu_timing_enabled = false;
 	bool m_programmable_sample_positions = false;
+
+	ComPtr<ID3D12QueryHeap> m_pipeline_statistics_query_heap;
+	ComPtr<ID3D12Resource> m_pipeline_statistics_query_buffer;
+	ComPtr<D3D12MA::Allocation> m_pipeline_statistics_query_allocation;
+	GPUPipelineStatistics m_accumulated_gpu_pipeline_statistics{};
+	bool m_gpu_pipeline_statistics_enabled = false;
 
 	D3D12DescriptorHeapManager m_descriptor_heap_manager;
 	D3D12DescriptorHeapManager m_rtv_heap_manager;
@@ -509,6 +525,9 @@ public:
 
 	bool SetGPUTimingEnabled(bool enabled) override;
 	float GetAndResetAccumulatedGPUTime() override;
+
+	bool SetGPUPipelineStatisticsEnabled(bool enabled) override;
+	GPUPipelineStatistics GetAndResetAccumulatedGPUPipelineStatistics() override;
 
 	void PushDebugGroup(const char* fmt, ...) override;
 	void PopDebugGroup() override;
