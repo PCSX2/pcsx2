@@ -56,6 +56,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
 import androidx.core.util.Pair;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.WindowCompat;
@@ -1873,7 +1874,12 @@ public class MainActivity extends AppCompatActivity {
         View root = findViewById(R.id.in_game_root);
         if (root != null) {
             ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
-                v.setPadding(0, 0, 0, 0); // remove any padding for status/nav/cutout
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                if (isHomeVisible()) {
+                    v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                } else {
+                    v.setPadding(0, 0, 0, 0);
+                }
                 return WindowInsetsCompat.CONSUMED;
             });
         }
