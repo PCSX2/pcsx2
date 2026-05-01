@@ -56,6 +56,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
 import androidx.core.util.Pair;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.WindowCompat;
@@ -564,6 +565,15 @@ public class MainActivity extends AppCompatActivity {
                 bootBios();
             } else if (id == R.id.menu_manage_bios) {
                 showBiosManagerDialog();
+            } else if (id == R.id.menu_run_elf) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !android.os.Environment.isExternalStorageManager()) {
+                    checkAndRequestStoragePermission();
+                } else {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("*/*");
+                    startPickElfLauncher.launch(intent);
+                }
             } else if (id == R.id.menu_open_settings) {
                 Intent si = new Intent(this, SettingsActivity.class);
                 startActivityForResult(si, 7722);
@@ -1864,7 +1874,12 @@ public class MainActivity extends AppCompatActivity {
         View root = findViewById(R.id.in_game_root);
         if (root != null) {
             ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
-                v.setPadding(0, 0, 0, 0); // remove any padding for status/nav/cutout
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                if (isHomeVisible()) {
+                    v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                } else {
+                    v.setPadding(0, 0, 0, 0);
+                }
                 return WindowInsetsCompat.CONSUMED;
             });
         }
@@ -3785,6 +3800,58 @@ public class MainActivity extends AppCompatActivity {
                     maybeStartOnboardingFlow();
                 }
             });
+
+    private final ActivityResultLauncher<Intent> startPickElfLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    if (uri != null) {
+                        try {
+                            getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            String path = DataDirectoryManager.resolveUriToPath(this, uri);
+
+                            if (path != null && new File(path).exists()) {
+                                NativeApp.setSetting("EmuCore", "HostFs", "bool", "true");
+                                m_szGamefile = path;
+                                showHome(false);
+                                restartEmuThread();
+                            } else {
+                                String cachePath = copyToCache(uri, queryOpenableDisplayName(uri));
+                                if (cachePath != null) {
+                                    m_szGamefile = cachePath;
+                                    showHome(false);
+                                    restartEmuThread();
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Toast.makeText(this, "Failed to load ELF", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+            });
+
+    private void checkAndRequestStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!android.os.Environment.isExternalStorageManager()) {
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle("Storage Access Required")
+                        .setMessage("To load ELF files from external folders")
+                        .setPositiveButton("Settings", (dialog, which) -> {
+                            try {
+                                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                                intent.setData(Uri.parse("package:" + getPackageName()));
+                                startActivity(intent);
+                            } catch (Exception e) {
+                                Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                                startActivity(intent);
+                            }
+                        })
+                        .setNegativeButton("Later", null)
+                        .show();
+            }
+        }
+    }
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration p_newConfig) {
