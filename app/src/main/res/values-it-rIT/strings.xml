@@ -172,6 +172,8 @@ Aprilo più tardi da Impostazioni → Apri la directory ARMSX2.</string>
     <string name="settings_custom_fps_limit_default">Limite FPS Personalizzato: 60</string>
     <string name="settings_custom_fps_limit_value">Limite Fps Personalizzato: %1$d</string>
     <string name="settings_fast_boot">Avvio veloce</string>
+    <string name="settings_enable_hostfs">Enable HostFS</string>
+    <string name="settings_enable_hostfs_summary">Allow the emulator to access files directly from the host file system.</string>
     <string name="settings_warn_unsafe_settings">Warn About Unsafe Settings</string>
     <string name="settings_warn_unsafe_settings_summary">Show on-screen notifications when settings that may cause instability or glitches are active.</string>
     <string name="settings_brightness_default">Luminosità: 1.00</string>
@@ -373,6 +375,7 @@ Concedi l\'autorizzazione \"Accesso a tutti i file\" nelle impostazioni di siste
     <string name="home_nav_section_emulation">Emulazione</string>
     <string name="home_nav_boot_bios">Avvia il BIOS</string>
     <string name="home_nav_bios">BIOS</string>
+    <string name="settings_run_elf">Run ELF</string>
     <string name="home_nav_section_library">Raccolta</string>
     <string name="home_nav_choose_games_folder">Scegliere la cartella dei giochi</string>
     <string name="home_nav_refresh_games">Aggiorna i giochi</string>
