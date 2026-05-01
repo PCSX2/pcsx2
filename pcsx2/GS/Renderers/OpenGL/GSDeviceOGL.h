@@ -147,6 +147,7 @@ public:
 
 private:
 	static constexpr u8 NUM_TIMESTAMP_QUERIES = 5;
+	static constexpr u8 NUM_PIPELINE_STATISTICS_QUERIES = 5;
 
 	std::unique_ptr<GLContext> m_gl_context;
 
@@ -253,6 +254,15 @@ private:
 	bool m_timestamp_query_started = false;
 	bool m_gpu_timing_enabled = false;
 
+	std::array<std::array<GLuint, 2>, NUM_PIPELINE_STATISTICS_QUERIES> m_pipeline_statistics_queries = {};
+	GPUPipelineStatistics m_accumulated_gpu_pipeline_statistics = {};
+	u8 m_read_pipeline_statistics_query = 0;
+	u8 m_write_pipeline_statistics_query = 0;
+	u8 m_waiting_pipeline_statistics_queries = 0;
+	bool m_pipeline_statistics_query_started = false;
+	bool m_gpu_pipeline_statistics_enabled = false;
+	bool m_gpu_pipeline_statistics_supported = false;
+
 	GSHWDrawConfig::VSConstantBuffer m_vs_cb_cache;
 	GSHWDrawConfig::PSConstantBuffer m_ps_cb_cache;
 	GSHWDrawConfig::VSPushConstants m_vs_pc_cache;
@@ -271,6 +281,11 @@ private:
 	void KickTimestampQuery();
 
 	GSTexture* CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format) override;
+
+	void CreatePipelineStatisticsQueries();
+	void DestroyPipelineStatisticsQueries();
+	void PopPipelineStatisticsQuery();
+	void KickPipelineStatisticsQuery();
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter) override;
 	void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, Filter filter, const InterlaceConstantBuffer& cb) override;
@@ -336,6 +351,9 @@ public:
 
 	bool SetGPUTimingEnabled(bool enabled) override;
 	float GetAndResetAccumulatedGPUTime() override;
+
+	bool SetGPUPipelineStatisticsEnabled(bool enabled) override;
+	GPUPipelineStatistics GetAndResetAccumulatedGPUPipelineStatistics() override;
 
 	// Helpers and utility draws.
 	void DrawPrimitive();
