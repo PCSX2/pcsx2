@@ -170,6 +170,8 @@
     <string name="settings_custom_fps_limit_default">الحد المخصص للإطارات (FPS): 60</string>
     <string name="settings_custom_fps_limit_value">الحد المخصص للإطارات (FPS): %1$d</string>
     <string name="settings_fast_boot">أقلاع سريع</string>
+    <string name="settings_enable_hostfs">Enable HostFS</string>
+    <string name="settings_enable_hostfs_summary">Allow the emulator to access files directly from the host file system.</string>
     <string name="settings_warn_unsafe_settings">التحذيرات من الإعدادات الغير آمنة</string>
     <string name="settings_warn_unsafe_settings_summary">إظهار التنبيهات على الشاشة عندما الإعدادات قد تسبب عدم أستقرار أو أعطال نشطة.</string>
     <string name="settings_brightness_default">السطوع: 1.00</string>
@@ -369,6 +371,7 @@
     <string name="home_nav_section_emulation">المحاكاة</string>
     <string name="home_nav_boot_bios">تشغيل BIOS</string>
     <string name="home_nav_bios">BIOS</string>
+    <string name="settings_run_elf">Run ELF</string>
     <string name="home_nav_section_library">المكتبة</string>
     <string name="home_nav_choose_games_folder">أختر ملف الألعاب</string>
     <string name="home_nav_refresh_games">تحديث الألعاب</string>
