@@ -172,6 +172,8 @@ Daha sonra Ayarlar → ARMSX2 dizinini aç seçeneğinden açabilirsiniz.</strin
     <string name="settings_custom_fps_limit_default">Özel FPS Limiti: 60</string>
     <string name="settings_custom_fps_limit_value">Özel FPS Limiti: %1$d</string>
     <string name="settings_fast_boot">Hızlı Önyükleme</string>
+    <string name="settings_enable_hostfs">Enable HostFS</string>
+    <string name="settings_enable_hostfs_summary">Allow the emulator to access files directly from the host file system.</string>
     <string name="settings_warn_unsafe_settings">Güvensiz Ayarlar Hakkında Uyar</string>
     <string name="settings_warn_unsafe_settings_summary">Sistemde kararsızlığa veya aksaklıklara neden olabilecek ayarlar etkinleştirildiğinde ekranda bildirim göster.</string>
     <string name="settings_brightness_default">Parlaklık: 1.00</string>
@@ -371,6 +373,7 @@ Daha sonra Ayarlar → ARMSX2 dizinini aç seçeneğinden açabilirsiniz.</strin
     <string name="home_nav_section_emulation">Emülasyon</string>
     <string name="home_nav_boot_bios">BIOS\'u Önyükle</string>
     <string name="home_nav_bios">BIOS</string>
+    <string name="settings_run_elf">Run ELF</string>
     <string name="home_nav_section_library">Kütüphane</string>
     <string name="home_nav_choose_games_folder">Oyunlar klasörünü seç</string>
     <string name="home_nav_refresh_games">Oyunları yenile</string>
