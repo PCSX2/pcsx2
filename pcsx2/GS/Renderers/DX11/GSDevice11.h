@@ -315,6 +315,8 @@ public:
 	void Draw(const GSHWDrawConfig& config);
 	void Draw(const GSHWDrawConfig& config, int offset, int count);
 
+	void DrawFullScreenTriangle();
+
 	void PushDebugGroup(const char* fmt, ...) override;
 	void PopDebugGroup() override;
 	void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) override;

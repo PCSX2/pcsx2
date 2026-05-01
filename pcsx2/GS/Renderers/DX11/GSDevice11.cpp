@@ -1242,6 +1242,13 @@ void GSDevice11::Draw(const GSHWDrawConfig& config)
 	Draw(config, 0, m_index.count);
 }
 
+void GSDevice11::DrawFullScreenTriangle()
+{
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+	PSUpdateShaderState(true, false);
+	m_ctx->Draw(3, 0);
+}
+
 void GSDevice11::CommitClear(GSTexture* t)
 {
 	GSTexture11* T = static_cast<GSTexture11*>(t);
@@ -1527,12 +1534,9 @@ void GSDevice11::BlitOnetoOne(GSTexture* sTexRT, GSTexture* dTexRT, GSTexture* s
 	else
 		PSSetShader(m_convert.ps_blit_1to1_color.get(), nullptr);
 
-	PSUpdateShaderState(true, false);
-
 	// draw
 
-	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
-	m_ctx->Draw(3, 0);
+	DrawFullScreenTriangle();
 }
 
 void GSDevice11::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
