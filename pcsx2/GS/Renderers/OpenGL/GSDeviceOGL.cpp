@@ -632,6 +632,8 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	if (!CreateImGuiProgram())
 		return false;
 
+	m_gpu_pipeline_statistics_supported = (GLAD_GL_ARB_pipeline_statistics_query != 0);
+
 	// Basic to ensure structures are correctly packed
 	static_assert(sizeof(VSSelector) == 1, "Wrong VSSelector size");
 	static_assert(sizeof(PSSelector) == 12, "Wrong PSSelector size");
@@ -649,6 +651,7 @@ void GSDeviceOGL::Destroy()
 	if (m_gl_context)
 	{
 		DestroyTimestampQueries();
+		DestroyPipelineStatisticsQueries();
 		DestroyResources();
 
 		m_gl_context->DoneCurrent();
@@ -1059,6 +1062,10 @@ GSDevice::PresentResult GSDeviceOGL::BeginPresent(bool frame_skip)
 	if (frame_skip || m_window_info.type == WindowInfo::Type::Surfaceless)
 		return PresentResult::FrameSkipped;
 
+	// Get the pipeline statistics for this frame before postprocessing.
+	if (m_gpu_pipeline_statistics_enabled)
+		PopPipelineStatisticsQuery();
+
 	OMSetFBO(0);
 	OMSetColorMaskState();
 
@@ -1085,6 +1092,9 @@ void GSDeviceOGL::EndPresent()
 
 	if (m_gpu_timing_enabled)
 		KickTimestampQuery();
+
+	if (m_gpu_pipeline_statistics_enabled)
+		KickPipelineStatisticsQuery();
 }
 
 void GSDeviceOGL::CreateTimestampQueries()
@@ -1164,6 +1174,100 @@ float GSDeviceOGL::GetAndResetAccumulatedGPUTime()
 	const float value = m_accumulated_gpu_time;
 	m_accumulated_gpu_time = 0.0f;
 	return value;
+}
+
+void GSDeviceOGL::PopPipelineStatisticsQuery()
+{
+	while (m_waiting_pipeline_statistics_queries > 0)
+	{
+		GLint available[2] = {};
+		glGetQueryObjectiv(m_pipeline_statistics_queries[m_read_pipeline_statistics_query][0], GL_QUERY_RESULT_AVAILABLE, &available[0]);
+		glGetQueryObjectiv(m_pipeline_statistics_queries[m_read_pipeline_statistics_query][1], GL_QUERY_RESULT_AVAILABLE, &available[1]);
+
+		if (!(available[0] && available[1]))
+			break;
+
+		GPUPipelineStatistics stats = {};
+		glGetQueryObjectui64v(m_pipeline_statistics_queries[m_read_pipeline_statistics_query][0], GL_QUERY_RESULT, &stats.vs_invocations);
+		glGetQueryObjectui64v(m_pipeline_statistics_queries[m_read_pipeline_statistics_query][1], GL_QUERY_RESULT, &stats.ps_invocations);
+		m_accumulated_gpu_pipeline_statistics.vs_invocations += stats.vs_invocations;
+		m_accumulated_gpu_pipeline_statistics.ps_invocations += stats.ps_invocations;
+		m_read_pipeline_statistics_query = (m_read_pipeline_statistics_query + 1) % NUM_PIPELINE_STATISTICS_QUERIES;
+		m_waiting_pipeline_statistics_queries--;
+	}
+
+	if (m_pipeline_statistics_query_started)
+	{
+		glEndQuery(GL_VERTEX_SHADER_INVOCATIONS_ARB);
+		glEndQuery(GL_FRAGMENT_SHADER_INVOCATIONS_ARB);
+
+		m_write_pipeline_statistics_query = (m_write_pipeline_statistics_query + 1) % NUM_TIMESTAMP_QUERIES;
+		m_pipeline_statistics_query_started = false;
+		m_waiting_pipeline_statistics_queries++;
+	}
+}
+
+void GSDeviceOGL::KickPipelineStatisticsQuery()
+{
+	if (m_pipeline_statistics_query_started || m_waiting_pipeline_statistics_queries == NUM_PIPELINE_STATISTICS_QUERIES)
+		return;
+
+	glBeginQuery(GL_VERTEX_SHADER_INVOCATIONS_ARB, m_pipeline_statistics_queries[m_write_pipeline_statistics_query][0]);
+	glBeginQuery(GL_FRAGMENT_SHADER_INVOCATIONS_ARB, m_pipeline_statistics_queries[m_write_pipeline_statistics_query][1]);
+	m_pipeline_statistics_query_started = true;
+}
+
+void GSDeviceOGL::CreatePipelineStatisticsQueries()
+{
+	for (int i = 0; i < NUM_PIPELINE_STATISTICS_QUERIES; i++)
+	{
+		glGenQueries(2, m_pipeline_statistics_queries[i].data());
+	}
+	KickPipelineStatisticsQuery();
+}
+
+void GSDeviceOGL::DestroyPipelineStatisticsQueries()
+{
+	if (m_pipeline_statistics_queries[0][0] == 0)
+		return;
+
+	if (m_pipeline_statistics_query_started)
+	{
+		glEndQuery(GL_VERTEX_SHADER_INVOCATIONS_ARB);
+		glEndQuery(GL_FRAGMENT_SHADER_INVOCATIONS_ARB);
+	}
+
+	for (int i = 0; i < m_pipeline_statistics_queries.size(); i++)
+	{
+		glDeleteQueries(2, m_pipeline_statistics_queries[i].data());
+		m_pipeline_statistics_queries[i].fill(0);
+	}
+	m_read_pipeline_statistics_query = 0;
+	m_write_pipeline_statistics_query = 0;
+	m_waiting_pipeline_statistics_queries = 0;
+	m_pipeline_statistics_query_started = false;
+}
+
+GPUPipelineStatistics GSDeviceOGL::GetAndResetAccumulatedGPUPipelineStatistics()
+{
+	GPUPipelineStatistics stats = m_accumulated_gpu_pipeline_statistics;
+	m_accumulated_gpu_pipeline_statistics = {};
+	return stats;
+}
+
+bool GSDeviceOGL::SetGPUPipelineStatisticsEnabled(bool enabled)
+{
+	if (m_gpu_pipeline_statistics_enabled == enabled)
+		return true;
+
+	m_gpu_pipeline_statistics_enabled = enabled && m_gpu_pipeline_statistics_supported;
+
+	if (m_gpu_pipeline_statistics_enabled)
+		CreatePipelineStatisticsQueries();
+	else
+		DestroyPipelineStatisticsQueries();
+
+	return true;
 }
 
 void GSDeviceOGL::DrawPrimitive()

@@ -88,6 +88,7 @@ private:
 		VERTEX_BUFFER_SIZE = 32 * 1024 * 1024,
 		INDEX_BUFFER_SIZE = 16 * 1024 * 1024,
 		NUM_TIMESTAMP_QUERIES = 5,
+		NUM_PIPELINE_STATISTICS_QUERIES = 5,
 	};
 
 	void SetFeatures(IDXGIAdapter1* adapter);
@@ -101,6 +102,11 @@ private:
 	void DestroyTimestampQueries();
 	void PopTimestampQuery();
 	void KickTimestampQuery();
+
+	bool CreatePipelineStatisticsQueries();
+	void DestroyPipelineStatisticsQueries();
+	void PopPipelineStatisticsQuery();
+	void KickPipelineStatisticsQuery();
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const bool linear) override;
 	void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb) override;
@@ -177,6 +183,14 @@ private:
 	u8 m_waiting_timestamp_queries = 0;
 	bool m_timestamp_query_started = false;
 	bool m_gpu_timing_enabled = false;
+
+	std::array<wil::com_ptr_nothrow<ID3D11Query>, NUM_PIPELINE_STATISTICS_QUERIES> m_pipeline_statistics_queries = {};
+	GPUPipelineStatistics m_accumulated_gpu_pipeline_statistics{};
+	u8 m_read_pipeline_statistics_query = 0;
+	u8 m_write_pipeline_statistics_query = 0;
+	u8 m_waiting_pipeline_statistics_queries = 0;
+	bool m_gpu_pipeline_statistics_enabled = false;
+	bool m_pipeline_statistics_query_started = false;
 
 	struct
 	{
@@ -300,6 +314,9 @@ public:
 
 	bool SetGPUTimingEnabled(bool enabled) override;
 	float GetAndResetAccumulatedGPUTime() override;
+
+	bool SetGPUPipelineStatisticsEnabled(bool enabled) override;
+	GPUPipelineStatistics GetAndResetAccumulatedGPUPipelineStatistics() override;
 
 	// Helpers and utility draws.
 	void DrawPrimitive();

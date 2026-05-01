@@ -405,6 +405,9 @@ public:
 	float GetAndResetAccumulatedGPUTime() override;
 	void AccumulateCommandBufferTime(id<MTLCommandBuffer> buffer);
 
+	bool SetGPUPipelineStatisticsEnabled(bool enabled) override { return false; }
+	GPUPipelineStatistics GetAndResetAccumulatedGPUPipelineStatistics() override { return {}; }
+
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
 	void ClearSamplerCache() override;

@@ -525,6 +525,39 @@ void GSDevice12::MoveToNextCommandList()
 			m_current_command_list * NUM_TIMESTAMP_QUERIES_PER_CMDLIST);
 	}
 
+	if (res.pipeline_statistics_query == QueryState::Ready)
+	{
+		// Collect the pipeline statistics from the last time this cmdlist was used.
+		res.pipeline_statistics_query = QueryState::None;
+		const u32 offset = (m_current_command_list * sizeof(D3D12_QUERY_DATA_PIPELINE_STATISTICS));
+		const D3D12_RANGE read_range = { offset, offset + sizeof(D3D12_QUERY_DATA_PIPELINE_STATISTICS) };
+		void* map;
+		HRESULT hr = m_pipeline_statistics_query_buffer->Map(0, &read_range, &map);
+		if (SUCCEEDED(hr))
+		{
+			D3D12_QUERY_DATA_PIPELINE_STATISTICS stats;
+			std::memcpy(&stats, static_cast<const u8*>(map) + offset, sizeof(stats));
+			
+			m_accumulated_gpu_pipeline_statistics.vs_invocations += stats.VSInvocations;
+			m_accumulated_gpu_pipeline_statistics.ps_invocations += stats.PSInvocations;
+
+			const D3D12_RANGE write_range = {};
+			m_pipeline_statistics_query_buffer->Unmap(0, &write_range);
+		}
+		else
+		{
+			Console.Warning("D3D12: Map() for pipeline statistics query failed: %08X", hr);
+		}
+	}
+
+	if (m_gpu_pipeline_statistics_enabled)
+	{
+		pxAssert(res.pipeline_statistics_query == QueryState::None);
+		res.pipeline_statistics_query = QueryState::Querying;
+		res.command_lists[1].list4->BeginQuery(
+			m_pipeline_statistics_query_heap.get(), D3D12_QUERY_TYPE_PIPELINE_STATISTICS, m_current_command_list);
+	}
+
 	ID3D12DescriptorHeap* heaps[2] = {
 		res.descriptor_allocator.GetDescriptorHeap(), res.sampler_allocator.GetDescriptorHeap()};
 	res.command_lists[1].list4->SetDescriptorHeaps(std::size(heaps), heaps);
@@ -568,6 +601,18 @@ bool GSDevice12::ExecuteCommandList(WaitType wait_for_completion)
 		res.command_lists[1].list4->ResolveQueryData(m_timestamp_query_heap.get(), D3D12_QUERY_TYPE_TIMESTAMP,
 			m_current_command_list * NUM_TIMESTAMP_QUERIES_PER_CMDLIST, NUM_TIMESTAMP_QUERIES_PER_CMDLIST,
 			m_timestamp_query_buffer.get(), m_current_command_list * (sizeof(u64) * NUM_TIMESTAMP_QUERIES_PER_CMDLIST));
+	}
+
+	if ((res.pipeline_statistics_query == QueryState::Querying) || (res.pipeline_statistics_query == QueryState::Ready))
+	{
+		if (res.pipeline_statistics_query == QueryState::Querying)
+		{
+			// Didn't end query in BeginPresent() so end it here.
+			res.pipeline_statistics_query = QueryState::Ready;
+			res.command_lists[1].list4->EndQuery(m_pipeline_statistics_query_heap.get(), D3D12_QUERY_TYPE_PIPELINE_STATISTICS, m_current_command_list);
+		}
+		res.command_lists[1].list4->ResolveQueryData(m_pipeline_statistics_query_heap.get(), D3D12_QUERY_TYPE_PIPELINE_STATISTICS,
+			m_current_command_list, 1, m_pipeline_statistics_query_buffer.get(), m_current_command_list * sizeof(D3D11_QUERY_DATA_PIPELINE_STATISTICS));
 	}
 
 	if (res.init_command_list_used)
@@ -722,6 +767,36 @@ void GSDevice12::WaitForGPUIdle()
 	}
 }
 
+bool GSDevice12::CreatePipelineStatisticsQuery()
+{
+	constexpr u32 QUERY_COUNT = NUM_COMMAND_LISTS;
+	constexpr u32 BUFFER_SIZE = sizeof(D3D12_QUERY_DATA_PIPELINE_STATISTICS) * QUERY_COUNT;
+
+	const D3D12_QUERY_HEAP_DESC desc = { D3D12_QUERY_HEAP_TYPE_PIPELINE_STATISTICS, QUERY_COUNT };
+	HRESULT hr = m_device->CreateQueryHeap(&desc, IID_PPV_ARGS(m_pipeline_statistics_query_heap.put()));
+	if (FAILED(hr))
+	{
+		Console.Error("D3D12: CreateQueryHeap() for pipeline statistics failed with %08X", hr);
+		return false;
+	}
+
+	const D3D12MA::ALLOCATION_DESC allocation_desc = { D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_READBACK };
+	const D3D12_RESOURCE_DESCU resource_desc = { {D3D12_RESOURCE_DIMENSION_BUFFER, 0, BUFFER_SIZE, 1, 1, 1,
+		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE} };
+	if (m_enhanced_barriers)
+		hr = m_allocator->CreateResource3(&allocation_desc, &resource_desc.desc1, D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr,
+			0, nullptr, m_pipeline_statistics_query_allocation.put(), IID_PPV_ARGS(m_pipeline_statistics_query_buffer.put()));
+	else
+		hr = m_allocator->CreateResource(&allocation_desc, &resource_desc.desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+			m_pipeline_statistics_query_allocation.put(), IID_PPV_ARGS(m_pipeline_statistics_query_buffer.put()));
+	if (FAILED(hr))
+	{
+		Console.Error("D3D12: CreateResource() for pipeline statistics failed with %08X", hr);
+		return false;
+	}
+	return true;
+}
+
 bool GSDevice12::CreateTimestampQuery()
 {
 	constexpr u32 QUERY_COUNT = NUM_TIMESTAMP_QUERIES_PER_CMDLIST * NUM_COMMAND_LISTS;
@@ -772,6 +847,19 @@ float GSDevice12::GetAndResetAccumulatedGPUTime()
 bool GSDevice12::SetGPUTimingEnabled(bool enabled)
 {
 	m_gpu_timing_enabled = enabled;
+	return true;
+}
+
+GPUPipelineStatistics GSDevice12::GetAndResetAccumulatedGPUPipelineStatistics()
+{
+	GPUPipelineStatistics stats = m_accumulated_gpu_pipeline_statistics;
+	m_accumulated_gpu_pipeline_statistics = {};
+	return stats;
+}
+
+bool GSDevice12::SetGPUPipelineStatisticsEnabled(bool enabled)
+{
+	m_gpu_pipeline_statistics_enabled = enabled;
 	return true;
 }
 
@@ -869,7 +957,7 @@ bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	m_name = D3D::GetAdapterName(m_adapter.get());
 
-	if (!CreateDescriptorHeaps() || !CreateCommandLists() || !CreateTimestampQuery())
+	if (!CreateDescriptorHeaps() || !CreateCommandLists() || !CreateTimestampQuery() || !CreatePipelineStatisticsQuery())
 		return false;
 
 	if (!AcquireWindow(true) || (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain()))
@@ -1279,6 +1367,14 @@ GSDevice::PresentResult GSDevice12::BeginPresent(bool frame_skip)
 	{
 		Host::RunOnCPUThread([]() { Host::SetFullscreen(false); });
 		return PresentResult::FrameSkipped;
+	}
+
+	// End the pipeline statistics for this cmdlist before postprocessing.
+	CommandListResources& res = m_command_lists[m_current_command_list];
+	if (res.pipeline_statistics_query == QueryState::Querying)
+	{
+		res.pipeline_statistics_query = QueryState::Ready;
+		res.command_lists[1].list4->EndQuery(m_pipeline_statistics_query_heap.get(), D3D12_QUERY_TYPE_PIPELINE_STATISTICS, m_current_command_list);
 	}
 
 	GSTexture12* swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer].get();
@@ -3104,6 +3200,8 @@ void GSDevice12::DestroyResources()
 	m_descriptor_heap_manager.Free(&m_null_srv_descriptor);
 	m_timestamp_query_buffer.reset();
 	m_timestamp_query_allocation.reset();
+	m_pipeline_statistics_query_buffer.reset();
+	m_pipeline_statistics_query_allocation.reset();
 	m_sampler_heap_manager.Destroy();
 	m_dsv_heap_manager.Destroy();
 	m_rtv_heap_manager.Destroy();

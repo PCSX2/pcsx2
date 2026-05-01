@@ -575,6 +575,7 @@ void GSDevice11::Destroy()
 	GSDevice::Destroy();
 	DestroySwapChain();
 	DestroyTimestampQueries();
+	DestroyPipelineStatisticsQueries();
 
 	m_convert = {};
 	m_present = {};
@@ -1003,6 +1004,10 @@ GSDevice::PresentResult GSDevice11::BeginPresent(bool frame_skip)
 	if (m_vsync_mode == GSVSyncMode::FIFO && m_gpu_timing_enabled)
 		PopTimestampQuery();
 
+	// Get the pipeline statistics for this frame before postprocessing.
+	if (m_gpu_pipeline_statistics_enabled)
+		PopPipelineStatisticsQuery();
+
 	m_ctx->ClearRenderTargetView(m_swap_chain_rtv.get(), s_present_clear_color.data());
 	m_ctx->OMSetRenderTargets(1, m_swap_chain_rtv.addressof(), nullptr);
 	if (m_state.rtv)
@@ -1034,6 +1039,9 @@ void GSDevice11::EndPresent()
 	if (m_vsync_mode != GSVSyncMode::FIFO && m_gpu_timing_enabled)
 		PopTimestampQuery();
 
+	if (m_gpu_pipeline_statistics_enabled)
+		PopPipelineStatisticsQuery();
+
 	// clear out the swap chain view, it might get resized..
 	OMSetRenderTargets(nullptr, nullptr);
 
@@ -1043,6 +1051,9 @@ void GSDevice11::EndPresent()
 
 	if (m_gpu_timing_enabled)
 		KickTimestampQuery();
+
+	if (m_gpu_pipeline_statistics_enabled)
+		KickPipelineStatisticsQuery();
 }
 
 bool GSDevice11::CreateTimestampQueries()
@@ -1161,6 +1172,95 @@ float GSDevice11::GetAndResetAccumulatedGPUTime()
 	const float value = m_accumulated_gpu_time;
 	m_accumulated_gpu_time = 0.0f;
 	return value;
+}
+
+bool GSDevice11::CreatePipelineStatisticsQueries()
+{
+	for (u32 i = 0; i < NUM_PIPELINE_STATISTICS_QUERIES; i++)
+	{
+		const CD3D11_QUERY_DESC qdesc(D3D11_QUERY_PIPELINE_STATISTICS);
+		const HRESULT hr = m_dev->CreateQuery(&qdesc, m_pipeline_statistics_queries[i].put());
+		if (FAILED(hr))
+		{
+			m_pipeline_statistics_queries = {};
+			return false;
+		}
+	}
+
+	KickPipelineStatisticsQuery();
+	return true;
+}
+
+void GSDevice11::KickPipelineStatisticsQuery()
+{
+	if (m_pipeline_statistics_query_started || !m_pipeline_statistics_queries[0] ||
+		m_waiting_pipeline_statistics_queries == NUM_PIPELINE_STATISTICS_QUERIES)
+		return;
+
+	m_ctx->Begin(m_pipeline_statistics_queries[m_write_pipeline_statistics_query].get());
+	m_pipeline_statistics_query_started = true;
+}
+
+void GSDevice11::DestroyPipelineStatisticsQueries()
+{
+	if (!m_pipeline_statistics_queries[0])
+		return;
+
+	if (m_pipeline_statistics_query_started)
+		m_ctx->End(m_pipeline_statistics_queries[m_write_timestamp_query].get());
+
+	m_timestamp_queries = {};
+	m_read_timestamp_query = 0;
+	m_write_timestamp_query = 0;
+	m_waiting_timestamp_queries = 0;
+	m_timestamp_query_started = 0;
+}
+
+void GSDevice11::PopPipelineStatisticsQuery()
+{
+	while (m_waiting_pipeline_statistics_queries > 0)
+	{
+		D3D11_QUERY_DATA_PIPELINE_STATISTICS stats{};
+		const HRESULT stats_hr = m_ctx->GetData(
+			m_pipeline_statistics_queries[m_read_pipeline_statistics_query].get(), &stats, sizeof(stats), 0);
+		if (stats_hr != S_OK)
+			break;
+
+		m_accumulated_gpu_pipeline_statistics.vs_invocations += stats.VSInvocations;
+		m_accumulated_gpu_pipeline_statistics.ps_invocations += stats.PSInvocations;
+		m_read_pipeline_statistics_query = (m_read_pipeline_statistics_query + 1) % NUM_PIPELINE_STATISTICS_QUERIES;
+		m_waiting_pipeline_statistics_queries--;
+	}
+
+	if (m_pipeline_statistics_query_started)
+	{
+		m_ctx->End(m_pipeline_statistics_queries[m_write_pipeline_statistics_query].get());
+		m_write_pipeline_statistics_query = (m_write_pipeline_statistics_query + 1) % NUM_PIPELINE_STATISTICS_QUERIES;
+		m_pipeline_statistics_query_started = false;
+		m_waiting_pipeline_statistics_queries++;
+	}
+}
+
+GPUPipelineStatistics GSDevice11::GetAndResetAccumulatedGPUPipelineStatistics()
+{
+	GPUPipelineStatistics stats = m_accumulated_gpu_pipeline_statistics;
+	m_accumulated_gpu_pipeline_statistics = {};
+	return stats;
+}
+
+bool GSDevice11::SetGPUPipelineStatisticsEnabled(bool enabled)
+{
+	m_gpu_pipeline_statistics_enabled = enabled;
+	
+	if (m_gpu_pipeline_statistics_enabled)
+	{
+		return CreatePipelineStatisticsQueries();
+	}
+	else
+	{
+		DestroyPipelineStatisticsQueries();
+		return true;
+	}
 }
 
 void GSDevice11::DrawPrimitive()
