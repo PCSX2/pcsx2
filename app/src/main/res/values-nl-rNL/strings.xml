@@ -172,6 +172,8 @@ Open het later vanuit Instellingen → Open ARMSX2 map.</string>
     <string name="settings_custom_fps_limit_default">Aangepaste FPS-limiet: 60</string>
     <string name="settings_custom_fps_limit_value">Aangepaste FPS-limiet: %1$d</string>
     <string name="settings_fast_boot">Snel Opstarten</string>
+    <string name="settings_enable_hostfs">Enable HostFS</string>
+    <string name="settings_enable_hostfs_summary">Allow the emulator to access files directly from the host file system.</string>
     <string name="settings_warn_unsafe_settings">Warn About Unsafe Settings</string>
     <string name="settings_warn_unsafe_settings_summary">Show on-screen notifications when settings that may cause instability or glitches are active.</string>
     <string name="settings_brightness_default">Helderheid: 1.00</string>
@@ -371,6 +373,7 @@ Open het later vanuit Instellingen → Open ARMSX2 map.</string>
     <string name="home_nav_section_emulation">Emulatie</string>
     <string name="home_nav_boot_bios">BIOS Opstarten</string>
     <string name="home_nav_bios">BIOS</string>
+    <string name="settings_run_elf">Run ELF</string>
     <string name="home_nav_section_library">Bibliotheek</string>
     <string name="home_nav_choose_games_folder">Kies spelmap</string>
     <string name="home_nav_refresh_games">Spellen vernieuwen</string>
