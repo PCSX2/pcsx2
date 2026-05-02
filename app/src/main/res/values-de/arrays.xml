@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="renderers">
+        <item>Automatisch</item>
+        <item>OpenGL</item>
+        <item>Software</item>
+        <item>Vulkan</item>
+    </string-array>
+    <string-array name="gpu_profile_override">
+        <item>Automatisch (Empfohlen)</item>
+        <item>Mali erzwingen</item>
+        <item>Adreno erzwingen</item>
+    </string-array>
+    <string-array name="texture_filtering">
+        <item>PS2 (Standard)</item>
+        <item>Erzwungen</item>
+        <item>Nächste</item>
+    </string-array>
+    <string-array name="interlace_modes">
+        <item>Automatisch</item>
+        <item>Aus</item>
+        <item>Weave TFF</item>
+        <item>Weave BFF</item>
+        <item>Bob TFF</item>
+        <item>Bob BFF</item>
+        <item>Blend TFF</item>
+        <item>Blend BFF</item>
+        <item>Adaptive TFF</item>
+        <item>Adaptive BFF</item>
+    </string-array>
+    <string-array name="cas_modes">
+        <item>Keine (Standard)</item>
+        <item>Nur Schärfen (Intern)</item>
+        <item>Schärfen und Vergrößern (Display)</item>
+    </string-array>
+    <string-array name="texture_preloading">
+        <item>Aus</item>
+        <item>Partiell</item>
+        <item>Vollständig</item>
+    </string-array>
+    <string-array name="bilinear_present">
+        <item>Aus</item>
+        <item>Bilinear (Glatt)</item>
+        <item>Bilinear (Scharf)</item>
+    </string-array>
+    <string-array name="trilinear_filtering">
+        <item>Automatisch</item>
+        <item>Aus</item>
+        <item>PS2</item>
+        <item>Erzwungen</item>
+    </string-array>
+    <string-array name="dithering_modes">
+        <item>Aus</item>
+        <item>Skaliert</item>
+        <item>Unskaliert (Standard)</item>
+        <item>32-Bit erzwingen</item>
+    </string-array>
+    <string-array name="acc_blending">
+        <item>Minimal</item>
+        <item>Einfach</item>
+        <item>Mittel</item>
+        <item>Hoch</item>
+        <item>Vollständig</item>
+        <item>Maximal</item>
+    </string-array>
+    <string-array name="anisotropic">
+        <item>Aus</item>
+        <item>2x</item>
+        <item>4x</item>
+        <item>8x</item>
+        <item>16x</item>
+    </string-array>
+    <string-array name="aspect_ratios">
+        <item>Strecken</item>
+        <item>Auto 4:3/3:2</item>
+        <item>4:3</item>
+        <item>16:9</item>
+        <item>10:7</item>
+    </string-array>
+    <string-array name="resolution_scales">
+        <item>1x</item>
+        <item>2x</item>
+        <item>3x</item>
+        <item>4x</item>
+        <item>5x</item>
+        <item>6x</item>
+        <item>7x</item>
+        <item>8x</item>
+    </string-array>
+    <string-array name="auto_flush_hw">
+        <item>Deaktiviert</item>
+        <item>Nur Sprites</item>
+        <item>Aktiviert</item>
+    </string-array>
+    <string-array name="cpu_cores_basic">
+        <item>Übersetzer (Standard)</item>
+        <item>Interpreter</item>
+    </string-array>
+    <string-array name="network_ethapi">
+        <item>Nicht festgelegt</item>
+        <item>PCAP Bridged</item>
+        <item>PCAP Switched</item>
+        <item>Sockel</item>
+    </string-array>
+</resources>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="renderers">
+        <item>Auto</item>
+        <item>OpenGL</item>
+        <item>Software</item>
+        <item>Vulkan</item>
+    </string-array>
+    <string-array name="gpu_profile_override">
+        <item>Auto (Geadviseerd)</item>
+        <item>Mali forceren</item>
+        <item>Adreno forceren</item>
+    </string-array>
+    <string-array name="texture_filtering">
+        <item>PS2 (Standaard)</item>
+        <item>Geforceerd</item>
+        <item>Dichtsbezijnde</item>
+    </string-array>
+    <string-array name="interlace_modes">
+        <item>Automatisch</item>
+        <item>Uit</item>
+        <item>Weave TFF</item>
+        <item>Weave BFF</item>
+        <item>Bob TFF</item>
+        <item>Bob BFF</item>
+        <item>TFF samenvoegen</item>
+        <item>BFF samenvoegen</item>
+        <item>Aanpasbare TFF</item>
+        <item>Aanpasbare BFF</item>
+    </string-array>
+    <string-array name="cas_modes">
+        <item>Geen (Standaard)</item>
+        <item>Alleen verscherpen (intern)</item>
+        <item>Verscherpen en aanpassen (Display)</item>
+    </string-array>
+    <string-array name="texture_preloading">
+        <item>Uit</item>
+        <item>Gedeeltelijk</item>
+        <item>Volledig</item>
+    </string-array>
+    <string-array name="bilinear_present">
+        <item>Uit</item>
+        <item>Bilineair (vloeiend)</item>
+        <item>Bilineair (scherp)</item>
+    </string-array>
+    <string-array name="trilinear_filtering">
+        <item>Automatisch</item>
+        <item>Uit</item>
+        <item>PS2</item>
+        <item>Geforceerd</item>
+    </string-array>
+    <string-array name="dithering_modes">
+        <item>Uit</item>
+        <item>Geschaald</item>
+        <item>Niet-geschaald (standaard)</item>
+        <item>Forceer 32-bit</item>
+    </string-array>
+    <string-array name="acc_blending">
+        <item>Minimum</item>
+        <item>Algemeen</item>
+        <item>Gemiddeld</item>
+        <item>Hoog</item>
+        <item>Volledig</item>
+        <item>Maximum</item>
+    </string-array>
+    <string-array name="anisotropic">
+        <item>Uit</item>
+        <item>2x</item>
+        <item>4x</item>
+        <item>8x</item>
+        <item>16x</item>
+    </string-array>
+    <string-array name="aspect_ratios">
+        <item>Uitrekken</item>
+        <item>Automatisch 4:3/3:2</item>
+        <item>4:3</item>
+        <item>16:9</item>
+        <item>10:7</item>
+    </string-array>
+    <string-array name="resolution_scales">
+        <item>1x</item>
+        <item>2x</item>
+        <item>3x</item>
+        <item>4x</item>
+        <item>5x</item>
+        <item>6x</item>
+        <item>7 x</item>
+        <item>8x</item>
+    </string-array>
+    <string-array name="auto_flush_hw">
+        <item>Uitgeschakeld</item>
+        <item>Alleen sprites</item>
+        <item>Ingeschakeld</item>
+    </string-array>
+    <string-array name="cpu_cores_basic">
+        <item>Vertaler (Standaard)</item>
+        <item>Interpreter</item>
+    </string-array>
+    <string-array name="network_ethapi">
+        <item>Niet ingesteld</item>
+        <item>PCAP-Bridged</item>
+        <item>PCAP-Switched</item>
+        <item>Sockets</item>
+    </string-array>
+</resources>

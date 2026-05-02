@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="renderers">
+        <item>Otomatis</item>
+        <item>OpenGL</item>
+        <item>Software</item>
+        <item>Vulkan</item>
+    </string-array>
+    <string-array name="gpu_profile_override">
+        <item>Otomatis (Disarankan)</item>
+        <item>Paksa Mali</item>
+        <item>Paksa Adreno</item>
+    </string-array>
+    <string-array name="texture_filtering">
+        <item>PS2 (Bawaan)</item>
+        <item>Paksa</item>
+        <item>Terdekat</item>
+    </string-array>
+    <string-array name="interlace_modes">
+        <item>Otomatis</item>
+        <item>Mati</item>
+        <item>Weave TFF</item>
+        <item>Weave BFF</item>
+        <item>Bob TFF</item>
+        <item>Bob BFF</item>
+        <item>Blend TFF</item>
+        <item>Blend BFF</item>
+        <item>Adaptif TFF</item>
+        <item>Adaptif BFF</item>
+    </string-array>
+    <string-array name="cas_modes">
+        <item>Tidak Ada (Bawaan)</item>
+        <item>Hanya Pertajam (Internal)</item>
+        <item>Pertajam dan Ubah Ukuran (Tampilan)</item>
+    </string-array>
+    <string-array name="texture_preloading">
+        <item>Mati</item>
+        <item>Sebagian</item>
+        <item>Lengkap</item>
+    </string-array>
+    <string-array name="bilinear_present">
+        <item>Mati</item>
+        <item>Bilinear (Halus)</item>
+        <item>Bilinear (Tajam)</item>
+    </string-array>
+    <string-array name="trilinear_filtering">
+        <item>Otomatis</item>
+        <item>Mati</item>
+        <item>PS2</item>
+        <item>Paksa</item>
+    </string-array>
+    <string-array name="dithering_modes">
+        <item>Mati</item>
+        <item>Disesuaikan</item>
+        <item>Tidak Disesuaikan (Bawaan)</item>
+        <item>Paksa 32-bit</item>
+    </string-array>
+    <string-array name="acc_blending">
+        <item>Minimal</item>
+        <item>Dasar</item>
+        <item>Sedang</item>
+        <item>Tinggi</item>
+        <item>Lengkap</item>
+        <item>Maksimal</item>
+    </string-array>
+    <string-array name="anisotropic">
+        <item>Mati</item>
+        <item>2x</item>
+        <item>4x</item>
+        <item>8x</item>
+        <item>16x</item>
+    </string-array>
+    <string-array name="aspect_ratios">
+        <item>Rentang</item>
+        <item>Otomatis 4:3/3:2</item>
+        <item>4:3</item>
+        <item>16:9</item>
+        <item>10:7</item>
+    </string-array>
+    <string-array name="resolution_scales">
+        <item>0.25x</item>
+        <item>0.5x</item>
+        <item>0.75x</item>
+        <item>1x</item>
+        <item>2x</item>
+        <item>3x</item>
+        <item>4x</item>
+        <item>5x</item>
+        <item>6x</item>
+        <item>7x</item>
+        <item>8x</item>
+    </string-array>
+    <string-array name="auto_flush_hw">
+        <item>Nonaktif</item>
+        <item>Hanya Sprite</item>
+        <item>Aktifkan</item>
+    </string-array>
+    <string-array name="cpu_cores_basic">
+        <item>Translator (Bawaan)</item>
+        <item>Interpreter</item>
+    </string-array>
+    <string-array name="network_ethapi">
+        <item>Batalkan Pengaturan</item>
+        <item>PCAP Terhubung</item>
+        <item>PCAP Beralih</item>
+        <item>Soket</item>
+    </string-array>
+</resources>

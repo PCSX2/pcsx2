@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="game_selector_grid_padding">12dp</dimen>
+    <dimen name="game_selector_tile_spacing">8dp</dimen>
+    <dimen name="settings_content_padding">16dp</dimen>
+    <dimen name="settings_column_spacing">16dp</dimen>
+    <dimen name="in_game_toggle_fab_size">28dp</dimen>
+    <dimen name="in_game_toggle_fab_icon">20dp</dimen>
+    <dimen name="in_game_drawer_width">320dp</dimen>
+</resources>
