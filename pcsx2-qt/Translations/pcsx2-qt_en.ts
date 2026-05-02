@@ -12171,12 +12171,12 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/DX11/GSDevice11.cpp" line="128"/>
+        <location filename="../../pcsx2/GS/Renderers/DX11/GSDevice11.cpp" line="129"/>
         <source>Failed to create D3D11 device: 0x{:08X}. A GPU which supports Direct3D Feature Level 10.0 is required.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/DX11/GSDevice11.cpp" line="565"/>
+        <location filename="../../pcsx2/GS/Renderers/DX11/GSDevice11.cpp" line="566"/>
         <source>The Direct3D 11 renderer is running at feature level 10.0. This is an UNSUPPORTED configuration.
 Do not request support, please upgrade your hardware/drivers first.</source>
         <translation type="unfinished"></translation>
@@ -20106,64 +20106,64 @@ Slot 2: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="91"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="90"/>
         <source>Copy Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="108"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="107"/>
         <source>Remove Result</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="441"/>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="449"/>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="455"/>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="490"/>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="514"/>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="528"/>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="541"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="440"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="448"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="454"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="489"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="513"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="527"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="540"/>
         <source>Debugger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="441"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="440"/>
         <source>Invalid start address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="449"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="448"/>
         <source>Invalid end address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="455"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="454"/>
         <source>Start address can&apos;t be equal to or greater than the end address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="490"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="489"/>
         <source>Invalid search value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="514"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="513"/>
         <source>Value is larger than type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="528"/>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="541"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="527"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="540"/>
         <source>This search comparison can only be used with filter searches.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="554"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="553"/>
         <source>%0 results found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="572"/>
+        <location filename="../Debugger/Memory/MemorySearchView.cpp" line="571"/>
         <source>Searching...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -22210,80 +22210,80 @@ Ejecting {2} and replacing it with {3}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/RegisterView.cpp" line="257"/>
-        <location filename="../Debugger/RegisterView.cpp" line="270"/>
+        <location filename="../Debugger/RegisterView.cpp" line="258"/>
+        <location filename="../Debugger/RegisterView.cpp" line="271"/>
         <source>Show as Float</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/RegisterView.cpp" line="283"/>
+        <location filename="../Debugger/RegisterView.cpp" line="284"/>
         <source>Copy Top Half</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/RegisterView.cpp" line="284"/>
+        <location filename="../Debugger/RegisterView.cpp" line="285"/>
         <source>Copy Bottom Half</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/RegisterView.cpp" line="285"/>
+        <location filename="../Debugger/RegisterView.cpp" line="286"/>
         <source>Copy Segment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/RegisterView.cpp" line="289"/>
+        <location filename="../Debugger/RegisterView.cpp" line="290"/>
         <source>Copy Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/RegisterView.cpp" line="296"/>
+        <location filename="../Debugger/RegisterView.cpp" line="297"/>
         <source>Change Top Half</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/RegisterView.cpp" line="298"/>
+        <location filename="../Debugger/RegisterView.cpp" line="299"/>
         <source>Change Bottom Half</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/RegisterView.cpp" line="300"/>
+        <location filename="../Debugger/RegisterView.cpp" line="301"/>
         <source>Change Segment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/RegisterView.cpp" line="305"/>
+        <location filename="../Debugger/RegisterView.cpp" line="306"/>
         <source>Change Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/RegisterView.cpp" line="367"/>
+        <location filename="../Debugger/RegisterView.cpp" line="368"/>
         <source>Change %1</source>
         <extracomment>Changing the value in a CPU register (e.g. &quot;Change t0&quot;)</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/RegisterView.cpp" line="377"/>
-        <location filename="../Debugger/RegisterView.cpp" line="387"/>
+        <location filename="../Debugger/RegisterView.cpp" line="378"/>
+        <location filename="../Debugger/RegisterView.cpp" line="388"/>
         <source>Invalid register value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/RegisterView.cpp" line="377"/>
+        <location filename="../Debugger/RegisterView.cpp" line="378"/>
         <source>Invalid hexadecimal register value.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/RegisterView.cpp" line="387"/>
+        <location filename="../Debugger/RegisterView.cpp" line="388"/>
         <source>Invalid floating-point register value.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/RegisterView.cpp" line="467"/>
+        <location filename="../Debugger/RegisterView.cpp" line="468"/>
         <source>Invalid target address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/RegisterView.cpp" line="468"/>
+        <location filename="../Debugger/RegisterView.cpp" line="469"/>
         <source>This register holds an invalid address.</source>
         <translation type="unfinished"></translation>
     </message>
