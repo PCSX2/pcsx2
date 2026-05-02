@@ -89,6 +89,13 @@ private:
 		INDEX_BUFFER_SIZE = 16 * 1024 * 1024,
 		NUM_TIMESTAMP_QUERIES = 5,
 	};
+	enum class PipelineType : u8
+	{
+		PIPE_MAIN,
+		PIPE_PRIMID,
+		PIPE_BLEND_MULTI_PASS,
+		PIPE_ALPHA_SECOND_PASS
+	};
 
 	void SetFeatures(IDXGIAdapter1* adapter);
 
@@ -382,7 +389,8 @@ public:
 	void RenderHW(GSHWDrawConfig& config) override;
 	void SendHWDraw(GSHWDrawConfig& config,
 		GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds, ID3D11DepthStencilView* read_only_dsv, GSTexture* primid_texture,
-		const bool one_barrier, const bool full_barrier, const bool shader_blit, const bool alpha_second_pass);
+		const bool one_barrier, const bool full_barrier, const bool shader_blit, const PipelineType& pipe);
+	void SetPipeline(GSHWDrawConfig& config, const PipelineType& pipe);
 	void SetRenderHWShaderResources(const GSHWDrawConfig& config, GSTexture* primid_texture);
 
 	void ClearSamplerCache() override;

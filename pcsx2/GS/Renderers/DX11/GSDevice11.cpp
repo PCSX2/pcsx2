@@ -2996,14 +2996,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	if (primid_texture)
 	{
-		IASetPrimitiveTopology(IAGetPrimitiveTopology(config.topology));
-		OMDepthStencilSelector dss = config.depth;
-		dss.zwe = 0;
-		const OMBlendSelector blend(GSHWDrawConfig::ColorMaskSelector(1),
-			GSHWDrawConfig::BlendState(true, CONST_ONE, CONST_ONE, 3 /* MIN */, CONST_ONE, CONST_ZERO, false, 0));
-		SetupOM(dss, blend, 0);
-		SetupVS(config.vs, &config.cb_vs);
-		SetupPS(config.ps, &config.cb_ps, config.sampler);
+		SetPipeline(config, PipelineType::PIPE_PRIMID);
 		OMSetRenderTargets(primid_texture, config.ds, &config.scissor, read_only_dsv);
 		SetRenderHWShaderResources(config, nullptr);
 		Draw(config);
@@ -3072,15 +3065,11 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		m_ctx->ClearDepthStencilView(*static_cast<GSTexture11*>(draw_ds), D3D11_CLEAR_STENCIL, 0.0f, 1);
 
 	SendHWDraw(config, rt_feedbackloop_pass1 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass1 ? draw_ds_clone : nullptr, draw_ds, read_only_dsv, primid_texture,
-		config.require_one_barrier, config.require_full_barrier, combined_copy, false);
+		config.require_one_barrier, config.require_full_barrier, combined_copy, PipelineType::PIPE_MAIN);
 
 	if (config.blend_multi_pass.enable)
 	{
-		config.ps.no_color1 = config.blend_multi_pass.no_color1;
-		config.ps.blend_hw = config.blend_multi_pass.blend_hw;
-		config.ps.dither = config.blend_multi_pass.dither;
-		SetupPS(config.ps, &config.cb_ps, config.sampler);
-		SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend_multi_pass.blend), config.blend_multi_pass.blend.constant);
+		SetPipeline(config, PipelineType::PIPE_BLEND_MULTI_PASS);
 		Draw(config);
 	}
 
@@ -3088,7 +3077,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	{
 		const bool one_barrier = config.alpha_second_pass.require_one_barrier && m_features.multidraw_fb_copy;
 		SendHWDraw(config, rt_feedbackloop_pass2 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass2 ? draw_ds_clone : nullptr, draw_ds, read_only_dsv, primid_texture,
-			one_barrier, config.alpha_second_pass.require_full_barrier, combined_copy, config.alpha_second_pass.enable);
+			one_barrier, config.alpha_second_pass.require_full_barrier, combined_copy, PipelineType::PIPE_ALPHA_SECOND_PASS);
 	}
 
 	if (colclip_rt)
@@ -3110,7 +3099,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 void GSDevice11::SendHWDraw(GSHWDrawConfig& config,
 	GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds, ID3D11DepthStencilView* read_only_dsv, GSTexture* primid_texture,
-	const bool one_barrier, const bool full_barrier, const bool shader_blit, const bool alpha_second_pass)
+	const bool one_barrier, const bool full_barrier, const bool shader_blit, const PipelineType& pipe)
 {
 #ifdef PCSX2_DEVBUILD
 	if ((one_barrier || full_barrier) && !(config.ps.IsFeedbackLoopRT() || config.ps.IsFeedbackLoopDepth())) [[unlikely]]
@@ -3118,28 +3107,8 @@ void GSDevice11::SendHWDraw(GSHWDrawConfig& config,
 #endif
 	// InitializePipeline must be called after CopyAndBind and before Draw.
 	auto InitializePipeline = [&]() {
-		IASetPrimitiveTopology(IAGetPrimitiveTopology(config.topology));
-		SetupVS(config.vs, &config.cb_vs);
-		if (alpha_second_pass)
-		{
-			if (config.cb_ps.FogColor_AREF.a != config.alpha_second_pass.ps_aref)
-			{
-				config.cb_ps.FogColor_AREF.a = config.alpha_second_pass.ps_aref;
-				SetupPS(config.alpha_second_pass.ps, &config.cb_ps, config.sampler);
-			}
-			else
-			{
-				// ps cbuffer hasn't changed, so don't bother checking
-				SetupPS(config.alpha_second_pass.ps, &config.cb_ps, config.sampler);
-			}
-
-			SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
-		}
-		else
-		{
-			SetupPS(config.ps, &config.cb_ps, config.sampler);
-			SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
-		}
+		// Pipeline setup.
+		SetPipeline(config, pipe);
 		OMSetRenderTargets(draw_rt, draw_ds, &config.scissor, read_only_dsv);
 
 		// Set Shader resources, must be done after OMSetRenderTargets.
@@ -3202,6 +3171,50 @@ void GSDevice11::SendHWDraw(GSHWDrawConfig& config,
 
 	InitializePipeline();
 	Draw(config);
+}
+
+void GSDevice11::SetPipeline(GSHWDrawConfig& config, const PipelineType& pipe)
+{
+	IASetPrimitiveTopology(IAGetPrimitiveTopology(config.topology));
+	SetupVS(config.vs, &config.cb_vs);
+
+	if (pipe == PipelineType::PIPE_MAIN)
+	{
+		SetupPS(config.ps, &config.cb_ps, config.sampler);
+		SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
+	}
+	else if (pipe == PipelineType::PIPE_PRIMID)
+	{	
+		OMDepthStencilSelector dss = config.depth;
+		dss.zwe = 0;
+		const OMBlendSelector blend(GSHWDrawConfig::ColorMaskSelector(1),
+			GSHWDrawConfig::BlendState(true, CONST_ONE, CONST_ONE, 3 /* MIN */, CONST_ONE, CONST_ZERO, false, 0));
+		SetupOM(dss, blend, 0);
+		SetupPS(config.ps, &config.cb_ps, config.sampler);
+	}
+	else if (pipe == PipelineType::PIPE_BLEND_MULTI_PASS)
+	{
+		config.ps.no_color1 = config.blend_multi_pass.no_color1;
+		config.ps.blend_hw = config.blend_multi_pass.blend_hw;
+		config.ps.dither = config.blend_multi_pass.dither;
+		SetupPS(config.ps, &config.cb_ps, config.sampler);
+		SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend_multi_pass.blend), config.blend_multi_pass.blend.constant);
+	}
+	else if (pipe == PipelineType::PIPE_ALPHA_SECOND_PASS)
+	{
+		if (config.cb_ps.FogColor_AREF.a != config.alpha_second_pass.ps_aref)
+		{
+			config.cb_ps.FogColor_AREF.a = config.alpha_second_pass.ps_aref;
+			SetupPS(config.alpha_second_pass.ps, &config.cb_ps, config.sampler);
+		}
+		else
+		{
+			// ps cbuffer hasn't changed, so don't bother checking
+			SetupPS(config.alpha_second_pass.ps, &config.cb_ps, config.sampler);
+		}
+
+		SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
+	}
 }
 
 void GSDevice11::SetRenderHWShaderResources(const GSHWDrawConfig& config, GSTexture* primid_texture)
