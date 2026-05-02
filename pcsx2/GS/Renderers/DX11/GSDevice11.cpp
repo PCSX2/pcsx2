@@ -3062,7 +3062,12 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	// Clear stencil as close as possible to the RT bind, to avoid framebuffer swaps.
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && need_barrier)
+	{
+		// We need to set render target first before clearing, but because we moved the rendertarget set to SendHWDraw
+		// we can just call it here again to make sure it's before a clear.
+		OMSetRenderTargets(draw_rt, draw_ds, &config.scissor, read_only_dsv);
 		m_ctx->ClearDepthStencilView(*static_cast<GSTexture11*>(draw_ds), D3D11_CLEAR_STENCIL, 0.0f, 1);
+	}
 
 	SendHWDraw(config, rt_feedbackloop_pass1 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass1 ? draw_ds_clone : nullptr, draw_ds, read_only_dsv, primid_texture,
 		config.require_one_barrier, config.require_full_barrier, combined_copy, PipelineType::PIPE_MAIN);
