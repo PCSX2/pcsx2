@@ -503,7 +503,7 @@ public class MainActivity extends AppCompatActivity {
             toolbar.setTitle(getString(R.string.home_game_selector_title_format, displayName));
             try {
                 androidx.appcompat.graphics.drawable.DrawerArrowDrawable dd = new androidx.appcompat.graphics.drawable.DrawerArrowDrawable(this);
-                dd.setProgress(0f); 
+                dd.setProgress(0f);
                 toolbar.setNavigationIcon(dd);
             } catch (Throwable ignored) {}
             toolbar.setNavigationOnClickListener(v -> {
@@ -1868,6 +1868,10 @@ public class MainActivity extends AppCompatActivity {
         } else {
             controller.show(WindowInsetsCompat.Type.systemBars());
             controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_DEFAULT);
+            boolean isDarkMode = (getResources().getConfiguration().uiMode &
+                    Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+            controller.setAppearanceLightStatusBars(!isDarkMode);
+            controller.setAppearanceLightNavigationBars(!isDarkMode);
         }
 
         // 7️⃣ Consume all insets on root layout so no padding is added

@@ -37,7 +37,7 @@
 			android:text="ARMSX2"
 			android:textStyle="bold"
 			android:textSize="20sp"
-			android:textColor="?attr/colorOnPrimaryContainer"/>
+			android:textColor="@android:color/white"/>
 
 		<TextView
 			android:id="@+id/tv_header_sub"
@@ -45,7 +45,7 @@
 			android:layout_height="wrap_content"
 			android:text="@string/home_game_selector_subtitle"
 			android:textSize="14sp"
-			android:textColor="?attr/colorOnPrimaryContainer"/>
+			android:textColor="@android:color/white"/>
 	</LinearLayout>
 
 </FrameLayout>
