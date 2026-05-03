@@ -745,11 +745,18 @@ void Achievements::ClientServerCall(
 {
 	HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data)
 	{
+		const bool is_error = (status_code <= 0);
+		const bool is_retryable =
+			is_error && (status_code == HTTPDownloader::HTTP_STATUS_TIMEOUT);
+
 		rc_api_server_response_t rr;
-		rr.http_status_code = (status_code <= 0) ? (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED ?
-		                                                   RC_API_SERVER_RESPONSE_CLIENT_ERROR :
-		                                                   RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR)
-		                                         : status_code;
+		rr.http_status_code =
+			is_error
+			? (is_retryable
+				? RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR
+				: RC_API_SERVER_RESPONSE_CLIENT_ERROR)
+			: status_code;
+
 		rr.body_length = data.size();
 		rr.body = reinterpret_cast<const char*>(data.data());
 
