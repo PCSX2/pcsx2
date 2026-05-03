@@ -492,7 +492,10 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 	if (rt1)
 	{
 		pxAssert(md);
-		desc.colorAttachments[1].texture = GetRT1DepthTexture(md);
+		MTLRenderPassColorAttachmentDescriptor* color1 = desc.colorAttachments[1];
+		color1.texture = GetRT1DepthTexture(md);
+		if (m_features.framebuffer_fetch)
+			color1.clearColor = MTLClearColorMake(depth_load == MTLLoadActionClear ? depth_clear : -1, 0, 0, 0);
 	}
 
 	EndRenderPass();
@@ -1031,15 +1034,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		{
 			MTLRenderPassColorAttachmentDescriptor* color1 = [[desc colorAttachments] objectAtIndexedSubscript:1];
 			[color1 setStoreAction:MTLStoreActionDontCare];
-			if (m_features.framebuffer_fetch)
-			{
-				[color1 setLoadAction:MTLLoadActionClear];
-				[color1 setClearColor:MTLClearColorMake(-1, 0, 0, 0)];
-			}
-			else
-			{
-				[color1 setLoadAction:MTLLoadActionLoad];
-			}
+			[color1 setLoadAction:m_features.framebuffer_fetch ? MTLLoadActionClear : MTLLoadActionLoad];
 		}
 		m_render_pass_desc[i] = desc;
 	}
