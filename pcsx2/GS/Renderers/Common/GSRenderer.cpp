@@ -718,7 +718,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 			const GSTexture* current = g_gs_device->GetCurrent();
 			const GSVector2i internal_res = GetInternalResolution();
 
-			if (current->GetWidth() > internal_res.x || current->GetHeight() > internal_res.y)
+			if (current && (current->GetWidth() > internal_res.x || current->GetHeight() > internal_res.y))
 				g_gs_device->Resize(internal_res.x, internal_res.y);
 		}
 
