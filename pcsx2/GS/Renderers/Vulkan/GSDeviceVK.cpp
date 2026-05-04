@@ -13,6 +13,7 @@
 
 #include "BuildVersion.h"
 #include "Host.h"
+#include "ImGui/ImGuiManager.h"
 
 #include "common/Console.h"
 #include "common/BitUtils.h"
@@ -2353,6 +2354,7 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 		if (res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_OUT_OF_DATE_KHR)
 		{
 			ResizeWindow(0, 0, m_window_info.surface_scale);
+			ImGuiManager::WindowResized();
 			res = m_swap_chain->AcquireNextImage();
 		}
 		else if (res == VK_ERROR_SURFACE_LOST_KHR)
