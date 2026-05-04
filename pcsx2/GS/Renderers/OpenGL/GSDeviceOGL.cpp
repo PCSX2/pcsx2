@@ -9,6 +9,7 @@
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
 #include "Host.h"
+#include "ImGui/ImGuiManager.h"
 
 #include "common/Console.h"
 #include "common/Error.h"
@@ -1030,6 +1031,8 @@ void GSDeviceOGL::ResizeWindow(u32 new_window_width, u32 new_window_height, floa
 
 	m_gl_context->ResizeSurface(new_window_width, new_window_height);
 	m_window_info = m_gl_context->GetWindowInfo();
+
+	ImGuiManager::WindowResized();
 }
 
 bool GSDeviceOGL::SupportsExclusiveFullscreen() const
