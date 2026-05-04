@@ -3735,32 +3735,44 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 7722 && resultCode == Activity.RESULT_OK && data != null) {
-            if (data.hasExtra("SET_RENDERER")) {
-                int r = data.getIntExtra("SET_RENDERER", -1000);
-                if (r != -1000) {
-                    applyRendererSelection(r);
+        if (requestCode == 7722) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                if (data.getBooleanExtra("RELOAD_GAMES", false)) {
+                    scanGamesFolder(gamesFolderUri);
                 }
-            }
-            if (data.getBooleanExtra(EXTRA_SETTINGS_LAYOUT_CHANGED, false)) {
-                applyFullscreen();
-            }
-            if (data.hasExtra(EXTRA_SETTINGS_GPU_PROFILE_OVERRIDE)) {
-                String selected = data.getStringExtra(EXTRA_SETTINGS_GPU_PROFILE_OVERRIDE);
-                boolean persisted = data.getBooleanExtra(EXTRA_SETTINGS_GPU_PROFILE_PERSISTED, true);
-                if (!TextUtils.isEmpty(selected) && !persisted) {
-                    boolean recovered = false;
-                    try {
-                        NativeApp.setSetting("EmuCore/GS", "AndroidGpuProfileOverride", "string", selected);
-                        String verify = NativeApp.getSetting("EmuCore/GS", "AndroidGpuProfileOverride", "string");
-                        recovered = selected.equalsIgnoreCase(verify);
-                    } catch (Throwable ignored) {}
-                    int msg = recovered
-                            ? R.string.settings_gpu_profile_persist_recovered
-                            : R.string.settings_gpu_profile_persist_failed;
-                    try { Toast.makeText(this, msg, Toast.LENGTH_LONG).show(); } catch (Throwable ignored) {}
-                } else if (!TextUtils.isEmpty(selected)) {
-                    try { Toast.makeText(this, R.string.settings_gpu_profile_saved_hint, Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
+                if (data.hasExtra("SET_RENDERER")) {
+                    int r = data.getIntExtra("SET_RENDERER", -1000);
+                    if (r != -1000) {
+                        applyRendererSelection(r);
+                    }
+                }
+                if (data.getBooleanExtra(EXTRA_SETTINGS_LAYOUT_CHANGED, false)) {
+                    applyFullscreen();
+                }
+                if (data.hasExtra(EXTRA_SETTINGS_GPU_PROFILE_OVERRIDE)) {
+                    String selected = data.getStringExtra(EXTRA_SETTINGS_GPU_PROFILE_OVERRIDE);
+                    boolean persisted = data.getBooleanExtra(EXTRA_SETTINGS_GPU_PROFILE_PERSISTED, true);
+                    if (!TextUtils.isEmpty(selected) && !persisted) {
+                        boolean recovered = false;
+                        try {
+                            NativeApp.setSetting("EmuCore/GS", "AndroidGpuProfileOverride", "string", selected);
+                            String verify = NativeApp.getSetting("EmuCore/GS", "AndroidGpuProfileOverride", "string");
+                            recovered = selected.equalsIgnoreCase(verify);
+                        } catch (Throwable ignored) {
+                        }
+                        int msg = recovered
+                                ? R.string.settings_gpu_profile_persist_recovered
+                                : R.string.settings_gpu_profile_persist_failed;
+                        try {
+                            Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+                        } catch (Throwable ignored) {
+                        }
+                    } else if (!TextUtils.isEmpty(selected)) {
+                        try {
+                            Toast.makeText(this, R.string.settings_gpu_profile_saved_hint, Toast.LENGTH_SHORT).show();
+                        } catch (Throwable ignored) {
+                        }
+                    }
                 }
             }
         }
@@ -5144,9 +5156,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void scanGamesFolder(Uri folder) {
-    List<GameEntry> entries = GameScanner.scanFolder(this, folder);
+        LinkedHashSet<Uri> roots = collectGameRootUris();
+        if (folder != null) {
+            roots.add(folder);
+        }
+        List<GameEntry> allEntries = new ArrayList<>();
+        for (Uri root : roots) {
+            try {
+                List<GameEntry> folderEntries = GameScanner.scanFolder(this, root);
+                if (folderEntries != null && !folderEntries.isEmpty()) {
+                    allEntries.addAll(folderEntries);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         try {
-            java.util.Collections.sort(entries, (a, b) -> {
+            java.util.Collections.sort(allEntries, (a, b) -> {
                 String ta = a != null ? (a.title != null ? a.title : "") : "";
                 String tb = b != null ? (b.title != null ? b.title : "") : "";
                 int ga = sortGroup(ta);
@@ -5155,9 +5181,11 @@ public class MainActivity extends AppCompatActivity {
                 return ta.compareToIgnoreCase(tb);
             });
         } catch (Throwable ignored) {}
-    gamesAdapter.update(entries);
+
+        gamesAdapter.update(allEntries);
+
         final List<GameEntry> toResolve = new ArrayList<>();
-        for (GameEntry ge : entries) {
+        for (GameEntry ge : allEntries) {
             try {
                 if (ge != null && (ge.serial == null || ge.serial.isEmpty())) {
                     String name = ge.title != null ? ge.title.toLowerCase() : "";
@@ -5169,7 +5197,6 @@ public class MainActivity extends AppCompatActivity {
         }
         if (!toResolve.isEmpty()) {
             new Thread(() -> {
-                android.content.ContentResolver cr = getContentResolver();
                 int n = 0;
                 for (GameEntry ge : toResolve) {
                     try {
@@ -5206,8 +5233,12 @@ public class MainActivity extends AppCompatActivity {
                 }, 100); 
             });
         }
-        boolean empty = entries.isEmpty();
-    try { Toast.makeText(this, getString(R.string.home_games_found_count, entries.size()), Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
+
+        boolean empty = allEntries.isEmpty();
+        try {
+            Toast.makeText(this, getString(R.string.home_games_found_count, allEntries.size()), Toast.LENGTH_SHORT).show();
+        } catch (Throwable ignored) {}
+
         if (tvEmpty != null) {
             tvEmpty.setText(empty ? getString(R.string.home_no_games_detected) : "");
             tvEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);

@@ -2913,8 +2913,8 @@ public class SettingsActivity extends AppCompatActivity {
 				java.util.Set<String> newDirs = new java.util.HashSet<>(existingDirs);
 				newDirs.add(uriString);
 				prefs.edit().putStringSet("secondary_game_dirs", newDirs).apply();
-				
-				Toast.makeText(this, R.string.settings_secondary_game_directory_added, Toast.LENGTH_SHORT).show();
+                setResult(RESULT_OK, new Intent().putExtra("RELOAD_GAMES", true));
+                Toast.makeText(this, R.string.settings_secondary_game_directory_added, Toast.LENGTH_SHORT).show();
 			} catch (Exception e) {
 				Toast.makeText(this, R.string.settings_secondary_game_directory_add_failed, Toast.LENGTH_LONG).show();
 			}
