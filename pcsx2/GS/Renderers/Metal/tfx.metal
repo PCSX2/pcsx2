@@ -464,6 +464,10 @@ struct PSMain
 		// HW sampler will reject bad UVs, match that here.
 		uv = any(isnan(uv) | isinf(uv)) ? float2(0, 0) : uv;
 
+		// Large floating point values risk NaN/Inf values.
+		// Above this value floats lose decimal precision, so seems a resonable limit for UVs.
+		uv = clamp(uv, -8388608.0f, 8388608.0f);
+
 		// Below taken from https://microsoft.github.io/DirectX-Specs/d3d/archive/D3D11_3_FunctionalSpec.htm#7.18.11%20LOD%20Calculations
 		// With guidance from https://pema.dev/2025/05/09/mipmaps-too-much-detail/
 		float2 sz = float2(get_tex_dims());
