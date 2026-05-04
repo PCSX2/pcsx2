@@ -214,21 +214,23 @@ GSRendererType GSUtil::GetPreferredRenderer()
 		// Use D3D device info to select renderer.
 		preferred_renderer = D3D::GetPreferredRenderer();
 #else
-		// Linux: Prefer Vulkan if the driver isn't buggy.
-#if defined(ENABLE_VULKAN)
-		if (GSDeviceVK::IsSuitableDefaultRenderer())
-			preferred_renderer = GSRendererType::VK;
-#endif
-
-			// Otherwise, whatever is available.
-	if (preferred_renderer == GSRendererType::Auto) // If it's still auto, VK wasn't selected.
+		// Linux/Android: Prefer OpenGL over Vulkan for better compatibility and stability.
 #if defined(ENABLE_OPENGL)
 		preferred_renderer = GSRendererType::OGL;
 #elif defined(ENABLE_VULKAN)
-		preferred_renderer = GSRendererType::VK;
-#else
-		preferred_renderer = GSRendererType::SW;
+		if (GSDeviceVK::IsSuitableDefaultRenderer())
+			preferred_renderer = GSRendererType::VK;
 #endif
+		if (preferred_renderer == GSRendererType::Auto)
+		{
+#if defined(ENABLE_VULKAN)
+			preferred_renderer = GSRendererType::VK;
+#elif defined(ENABLE_OPENGL)
+			preferred_renderer = GSRendererType::OGL;
+#else
+			preferred_renderer = GSRendererType::SW;
+#endif
+		}
 #endif
 	}
 
