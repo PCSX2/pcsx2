@@ -1314,7 +1314,7 @@ void ImGuiManager::ProcessGenericAxisEvent(GenericInputBinding negative_key, Gen
 	if (state)
 	{
 		const float other = is_x_axis ? state->y : state->x;
-		if (std::abs(other) > ACTIVATE_THRESHOLD)
+		if (std::abs(other) > std::abs(value))
 			suppressed_value = 0.0f;
 	}
 
