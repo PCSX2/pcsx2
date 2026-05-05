@@ -59,10 +59,10 @@ static constexpr std::array<int, GameListModel::Column_Count> DEFAULT_COLUMN_WID
 	90, // last played
 	80, // size
 	60, // region
-	120 // compatibility
+	120, // compatibility
+	120, // achievements
+	0, // cover
 }};
-static_assert(static_cast<int>(DEFAULT_COLUMN_WIDTHS.size()) <= GameListModel::Column_Count,
-	"Game List: More default column widths than column types.");
 
 class GameListSortModel final : public QSortFilterProxyModel
 {
@@ -790,6 +790,7 @@ void GameListWidget::resizeTableViewColumnsToFit()
 														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_Size],
 														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_Region],
 														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_Compatibility],
+														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_Achivements],
 													 });
 }
 
