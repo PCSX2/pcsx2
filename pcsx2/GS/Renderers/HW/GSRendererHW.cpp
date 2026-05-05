@@ -2256,6 +2256,7 @@ void GSRendererHW::HandleManualDeswizzle()
 
 	GSVector4i tex_rect = GSVector4i(m_vt.m_min.t.x, m_vt.m_min.t.y, m_vt.m_max.t.x, m_vt.m_max.t.y);
 	ReplaceVerticesWithSprite(m_r, tex_rect, GSVector2i(1 << m_cached_ctx.TEX0.TW, 1 << m_cached_ctx.TEX0.TH), m_context->scissor.in);
+	m_manual_deswizzle = true;
 }
 
 void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
@@ -2745,6 +2746,15 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
+	GSConfig.UserHacks_AlignSpriteX = false;
+	GSConfig.UserHacks_MergePPSprite = false;
+	GSConfig.UserHacks_ForceEvenSpritePosition = false;
+	GSConfig.UserHacks_HalfPixelOffset = GSHalfPixelOffset::Off;
+	GSConfig.UserHacks_RoundSprite = 0;
+	GSConfig.UserHacks_NativeScaling = GSNativeScaling::Off;
+	GSConfig.UserHacks_TCOffsetX = 0;
+	GSConfig.UserHacks_TCOffsetY = 0;
+	
 	static u32 num_skipped_channel_shuffle_draws = 0;
 
 	// We mess with this state as an optimization, so take a copy and use that instead.
@@ -5373,6 +5383,8 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 
 	pxAssert(VerifyIndices());
 
+	const bool shader_uv_rounding = m_conf.vs.round_uv || m_conf.vs.clamp_uv || m_conf.vs.align_uv;
+
 	switch (m_vt.m_primclass)
 	{
 		case GS_POINT_CLASS:
@@ -5446,7 +5458,7 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 			{
 				// Need to pre-divide ST by Q if Q is very large, to avoid precision issues on some GPUs.
 				// May as well just expand the whole thing out with the CPU path in such a case.
-				if (features.vs_expand && !m_vt.m_accurate_stq)
+				if (features.vs_expand && (!m_vt.m_accurate_stq || shader_uv_rounding))
 				{
 					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
 					m_conf.vs.expand = GSHWDrawConfig::VSExpand::Sprite;
@@ -5493,10 +5505,11 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 				{
 					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
 					m_conf.indices_per_prim = 3;
+					m_conf.vs.expand = shader_uv_rounding ? GSHWDrawConfig::VSExpand::Triangle : GSHWDrawConfig::VSExpand::None;
 				}
 
 				// See note above in GS_SPRITE_CLASS.
-				if (m_vt.m_accurate_stq && m_vt.m_eq.stq) [[unlikely]]
+				if (m_vt.m_accurate_stq && m_vt.m_eq.stq && !shader_uv_rounding) [[unlikely]]
 				{
 					GSVertex* const v = m_vertex->buff;
 					const GSVector4 v_q = GSVector4(v[0].RGBAQ.Q);
@@ -8935,18 +8948,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	m_conf.drawarea = m_channel_shuffle ? scissor : scissor.rintersect(ComputeBoundingBox(rtsize, rtscale));
 	m_conf.scissor = (date_options.enabled && !date_options.barrier) ? m_conf.drawarea : scissor;
 
-	// Round UV handling.
-	if (GetUpscaleMultiplier() == 1.0f && m_conf.ps.tfx != TFX_NONE && !m_channel_shuffle && !m_texture_shuffle)
-	{
-		if (GetVertexUVRoundingInfo())
-		{
-			GL_INS("HW: Doing shader UV rounding.%s", PRIM->FST ? "" : " Converting ST to UV (pre-divide Q).");
-			m_conf.ps.round_uv = true;
-			m_conf.vs.round_uv = true;
-			m_conf.ps.fst = true;
-			m_conf.vs.fst = true;
-		}
-	}
+	SetupSpriteRoundClampAlign(rt, ds, tex);
 
 	HandleProvokingVertexFirst();
 
@@ -10501,4 +10503,62 @@ std::size_t GSRendererHW::ComputeDrawlistGetSize(float scale)
 bool GSRendererHW::IsCoverageAlphaSupported()
 {
 	return IsCoverageAlpha() && IsRTWritten() && g_gs_device->Features().aa1;
+}
+
+void GSRendererHW::SetupSpriteRoundClampAlign(GSTextureCache::Target* rt, GSTextureCache::Target* ds, GSTextureCache::Source* tex)
+{
+	const GSTextureCache::Target* target = rt ? rt : ds;
+	
+	m_conf.cb_vs.xy_offset = { static_cast<int>(m_context->XYOFFSET.OFX), static_cast<int>(m_context->XYOFFSET.OFY) };
+	m_conf.cb_vs.upscale = { target->GetScale(), tex ? tex->GetScale() : 0.0f };
+	m_conf.cb_ps.ScaleFactor.w = tex ? tex->GetScale() : 0.0f;
+	
+	const bool tex_enabled = (m_conf.ps.tfx != TFX_NONE);
+
+	const bool rounding = GSConfig.AccurateUVRounding != GSAccurateUVRoundingMode::Off;
+	const bool aligning = GSConfig.SpriteAlign != GSSpriteAlignMode::Off;
+	const bool clamping = GSConfig.SpriteAlign == GSSpriteAlignMode::AlignClamp;
+
+	if (GetVertexUVRoundingInfo(tex_enabled, target->GetScale() != 1.0))
+	{
+		GL_INS("HW: Doing shader UV rounding.%s", PRIM->FST ? "" : " Converting ST to UV (pre-divide Q).");
+
+		const float rt_scale = target->GetScale();
+		const float tex_scale = tex_enabled ? tex->GetScale() : 0.0f;
+
+		if (tex_enabled)
+		{
+			// Hackfix - make shuffle/deswizzle always round up since they usually use powers of 2.
+			if (m_channel_shuffle || m_texture_shuffle || m_manual_deswizzle)
+			{
+				for (int i = 0; i < static_cast<int>(m_index->tail); i++)
+				{
+					m_vertex->buff[m_index->buff[i]].RGBAQ.U32[1] =
+						(m_vertex->buff[m_index->buff[i]].RGBAQ.U32[1] & 0xFFFFFF) | 0x55000000;
+				}
+			}
+
+			m_conf.ps.round_uv = rounding ? (m_vt.IsRealLinear() ? 2 : 1) : 0;
+			m_conf.vs.round_uv = rounding;
+
+			m_conf.vs.clamp_uv = m_conf.ps.clamp_uv = (rt_scale != 1.0f) && clamping;
+
+			if (m_conf.vs.clamp_uv && m_vt.IsRealLinear())
+			{
+				m_conf.vs.clamp_uv = 2; // Bilinear clamping.
+			}
+
+			m_conf.ps.fst = true;
+			m_conf.vs.fst = true;
+
+			if (m_conf.alpha_second_pass.enable)
+			{
+				m_conf.alpha_second_pass.ps.round_uv = m_conf.ps.round_uv;
+				m_conf.alpha_second_pass.ps.clamp_uv = m_conf.ps.clamp_uv;
+				m_conf.alpha_second_pass.ps.fst = m_conf.ps.fst;
+			}
+		}
+
+		m_conf.vs.align_uv = aligning;
+	}
 }

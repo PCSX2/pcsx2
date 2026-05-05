@@ -231,7 +231,7 @@ public:
 
 		__fi PipelineSelector() { std::memset(this, 0, sizeof(*this)); }
 	};
-	static_assert(sizeof(PipelineSelector) == 24, "Pipeline selector is 24 bytes");
+	static_assert(sizeof(PipelineSelector) == 40, "Pipeline selector is 40 bytes");
 
 	struct PipelineSelectorHash
 	{
@@ -358,7 +358,7 @@ private:
 	ComPtr<ID3D12PipelineState> m_shadeboost_pipeline;
 	ComPtr<ID3D12PipelineState> m_imgui_pipeline;
 
-	std::unordered_map<u32, ComPtr<ID3DBlob>> m_tfx_vertex_shaders;
+	std::unordered_map<u64, ComPtr<ID3DBlob>> m_tfx_vertex_shaders;
 	std::unordered_map<GSHWDrawConfig::PSSelector, ComPtr<ID3DBlob>, GSHWDrawConfig::PSSelectorHash>
 		m_tfx_pixel_shaders;
 	std::unordered_map<PipelineSelector, ComPtr<ID3D12PipelineState>, PipelineSelectorHash> m_tfx_pipelines;

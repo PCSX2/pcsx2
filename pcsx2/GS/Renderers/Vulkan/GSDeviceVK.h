@@ -334,7 +334,7 @@ public:
 		__fi bool IsDepthFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteDepth) != 0); }
 		__fi bool IsTestingAndSamplingDepth() const { return ((feedback_loop_flags & (FeedbackLoopFlag_ReadDepth | FeedbackLoopFlag_ReadAndWriteDepth)) != 0); }
 	};
-	static_assert(sizeof(PipelineSelector) == 24, "Pipeline selector is 24 bytes");
+	static_assert(sizeof(PipelineSelector) == 40, "Pipeline selector is 40 bytes");
 
 	struct PipelineSelectorHash
 	{
@@ -410,7 +410,7 @@ private:
 	VkPipeline m_fxaa_pipeline = {};
 	VkPipeline m_shadeboost_pipeline = {};
 
-	std::unordered_map<u32, VkShaderModule> m_tfx_vertex_shaders;
+	std::unordered_map<u64, VkShaderModule> m_tfx_vertex_shaders;
 	std::unordered_map<GSHWDrawConfig::PSSelector, VkShaderModule, GSHWDrawConfig::PSSelectorHash>
 		m_tfx_fragment_shaders;
 	std::unordered_map<PipelineSelector, VkPipeline, PipelineSelectorHash> m_tfx_pipelines;

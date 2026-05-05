@@ -311,6 +311,8 @@ private:
 	GSVector4i m_channel_shuffle_src_valid = GSVector4i::zero();
 	bool m_full_screen_shuffle = false;
 
+	bool m_manual_deswizzle = false;
+
 	GSTextureCache::Target* m_last_rt;
 
 	GIFRegFRAME m_split_clear_start = {};
@@ -403,4 +405,7 @@ public:
 
 	/// Does the current draw allow using AA1 coverage (if AA1 is enabled).
 	bool IsCoverageAlphaSupported() override;
+
+	/// Handle UV rounding and sprite alignment/clamping.
+	void SetupSpriteRoundClampAlign(GSTextureCache::Target* rt, GSTextureCache::Target* ds, GSTextureCache::Source* tex);
 };
