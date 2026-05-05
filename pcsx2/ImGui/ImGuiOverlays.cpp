@@ -898,6 +898,8 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 			APPEND("ETR ");
 		if (GSConfig.UserHacks_DrawBuffering)
 			APPEND("DRWB");
+		if (GSConfig.UserHacks_RewriteLargeST)
+			APPEND("RWST ");
 		if (GSConfig.HWSpinGPUForReadbacks)
 			APPEND("RBSG ");
 		if (GSConfig.HWSpinCPUForReadbacks)

@@ -154,6 +154,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_fixes.readTCOnClose, "EmuCore/GS", "UserHacks_ReadTCOnClose", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_fixes.estimateTextureRegion, "EmuCore/GS", "UserHacks_EstimateTextureRegion", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_fixes.drawBuffering, "EmuCore/GS", "UserHacks_DrawBuffering", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_fixes.rewriteLargeST, "EmuCore/GS", "UserHacks_RewriteLargeST", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_fixes.gpuPaletteConversion, "EmuCore/GS", "paltex", false);
 	connect(m_fixes.cpuSpriteRenderBW, &QComboBox::currentIndexChanged, this,
 		&GraphicsSettingsWidget::onCPUSpriteRenderBWChanged);
@@ -618,6 +619,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 		dialog()->registerWidgetHelp(m_fixes.drawBuffering, tr("Draw Buffering"), tr("Unchecked"),
 			tr("Attempts to reduce draw calls in games which do heavy context switching for blending purposes."));
+		
+		dialog()->registerWidgetHelp(m_fixes.rewriteLargeST, tr("Rewrite Large ST"), tr("Unchecked"),
+			tr("Rewrite large ST coordinates and clamp the values (mainly for Ridge Racer V)."));
 	}
 
 	// Upscaling Fixes tab
