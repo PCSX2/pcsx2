@@ -792,6 +792,8 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 			dst->m_alpha_min = 0;
 			dst->m_alpha_max = 255;
 			dst->m_alpha_range = true;
+			dst->m_valid_alpha_high = true;
+			dst->m_valid_alpha_low = true;
 			dst->UpdateValidChannels(PSMCT32, fbmsk);
 			dst->UpdateValidity(GSVector4i::loadh(size));
 

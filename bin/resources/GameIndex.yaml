@@ -457,6 +457,7 @@ PAPX-90508:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 PAPX-90511:
   name: "SIREN [体験版]"
@@ -478,6 +479,7 @@ PAPX-90512:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 PAPX-90514:
   name: "冬のオススメソフト おためしDISC"
@@ -535,6 +537,7 @@ PAPX-90523:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 PAPX-90524:
   name: "ワイルドアームズ ザ フィフスヴァンガード [体験版]"
@@ -753,6 +756,7 @@ PBPX-95523:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   # vuClampMode = 2  Text in GT mode works.
 PBPX-95524:
@@ -762,6 +766,7 @@ PBPX-95524:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   # vuClampMode = 2  Text in GT mode works.
 PBPX-95525:
@@ -781,6 +786,7 @@ PBPX-95601:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -1160,6 +1166,7 @@ PCPX-96649:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 PCPX-96653:
   name: "ラチェット&クランク3 突撃！ガラクチック★レンジャーズ [店頭体験版]"
@@ -1656,6 +1663,7 @@ SCAJ-20066:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -2678,6 +2686,7 @@ SCAJ-30006:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -2701,6 +2710,7 @@ SCAJ-30007:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCAJ-30008:
   name: "Gran Turismo 4 [PlayStation2 the Best]"
@@ -2712,6 +2722,7 @@ SCAJ-30008:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -2875,6 +2886,7 @@ SCCS-60002:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCED-50041:
   name: "Tekken Tag Tournament [Demo]"
@@ -3874,6 +3886,7 @@ SCED-52578:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCED-52580:
   name: "Magazine Ufficiale PlayStation 2 Italia 06/04"
@@ -3891,6 +3904,7 @@ SCED-52681:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCED-52687:
   name: "Formula One 04 [Demo]"
@@ -5533,6 +5547,7 @@ SCES-51719:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   memcardFilters:
     - "SCES-51719"
@@ -5794,6 +5809,7 @@ SCES-52438:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   memcardFilters:
     - "SCES-51719"
@@ -7334,6 +7350,7 @@ SCKA-20022:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   # vuClampMode = 2  Text in GT mode works.
 SCKA-20023:
@@ -8269,6 +8286,7 @@ SCKA-30001:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCKA-30002:
   name: "GOD OF WAR 영혼의 반역자"
@@ -8296,6 +8314,7 @@ SCKA-30004:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCKA-30005:
   name: "로그 갤럭시"
@@ -8420,6 +8439,7 @@ SCPM-85304:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCPN-60101:
   name: "PlayStation BB Navigator - Version 0.10 [Prerelease] [Disc 1]"
@@ -9084,6 +9104,7 @@ SCPS-15055:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -9715,6 +9736,7 @@ SCPS-17001:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -10002,6 +10024,7 @@ SCPS-19252:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -10069,6 +10092,7 @@ SCPS-19304:
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   memcardFilters:
     - "SCAJ-20066"
@@ -11030,6 +11054,7 @@ SCUS-90682:
     vuClampMode: 2 # Text in GT mode works.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCUS-94346:
   name: "SingStar - Latino"
@@ -11916,6 +11941,7 @@ SCUS-97328:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   memcardFilters: # Allows car imports from GT3 or something.
     - "SCUS-97328"
@@ -12356,6 +12382,7 @@ SCUS-97436:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
   memcardFilters:
     - "SCUS-97328"
@@ -12579,6 +12606,7 @@ SCUS-97483:
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
     autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCUS-97484:
   name: "Sly 3 - Honor Among Thieves [E3 Demo]"
@@ -12966,6 +12994,7 @@ SCUS-97563:
     vuClampMode: 2 # Text in GT mode works.
   gsHWFixes:
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
+    textureInsideRT: 1 # Fixes some transition effect handling.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 SCUS-97564:
   name: "Jampack Demo Disc Vol.15 [T-Rated]"
