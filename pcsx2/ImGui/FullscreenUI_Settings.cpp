@@ -18,6 +18,7 @@
 #include "USB/USB.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
+#include "DEV9/ATA/HddChdImage.h"
 #include "DEV9/ATA/HddCreate.h"
 #include "DEV9/pcap_io.h"
 #include "DEV9/sockets.h"
@@ -3974,17 +3975,20 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 
 		FileSystem::FindResultsArray results;
 		FileSystem::FindFiles(EmuFolders::DataRoot.c_str(), "*.raw", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &results);
+		FileSystem::FindFiles(EmuFolders::DataRoot.c_str(), "*.chd", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_KEEP_ARRAY, &results);
+		FileSystem::FindFiles(EmuFolders::DataRoot.c_str(), "*.CHD", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_KEEP_ARRAY, &results);
 		for (const FILESYSTEM_FIND_DATA& fd : results)
 		{
 			const std::string full_path = fd.FileName;
 			const std::string filename = std::string(Path::GetFileName(full_path));
 
 			// Get file size and determine LBA mode
-			const s64 file_size = FileSystem::GetPathFileSize(full_path.c_str());
-			if (file_size > 0)
+			const std::optional<u64> logical_size = ChdHddImage::GetHddImageLogicalSize(full_path);
+			if (logical_size.has_value() && logical_size.value() > 0)
 			{
+				const u64 file_size = logical_size.value();
 				const int size_gb = static_cast<int>(file_size / _1gb);
-				const bool uses_lba48 = (file_size > static_cast<s64>(120) * _1gb);
+				const bool uses_lba48 = (file_size > static_cast<u64>(120) * _1gb);
 				const std::string lba_mode = uses_lba48 ? "LBA48" : "LBA28";
 
 				choices.emplace_back(fmt::format("{} ({} GB, {})", filename, size_gb, lba_mode),
@@ -4016,7 +4020,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 							SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
 							bsi->SetStringValue("DEV9/Hdd", "HddFile", path.c_str());
 							SetSettingsChanged(bsi);
-							ShowToast(std::string(), fmt::format(FSUI_FSTR("Selected HDD image: {}"), Path::GetFileName(path))); }, {"*.raw", "*"}, EmuFolders::DataRoot);
+							ShowToast(std::string(), fmt::format(FSUI_FSTR("Selected HDD image: {}"), Path::GetFileName(path))); }, {"*.raw", "*.chd", "*"}, EmuFolders::DataRoot);
 				}
 				else if (values[index] == "__create__")
 				{

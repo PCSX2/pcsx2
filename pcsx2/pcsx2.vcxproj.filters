@@ -863,6 +863,9 @@
     <ClCompile Include="DEV9\ATA\ATA_Transfer.cpp">
       <Filter>System\Ps2\DEV9\ATA</Filter>
     </ClCompile>
+    <ClCompile Include="DEV9\ATA\HddChdImage.cpp">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClCompile>
     <ClCompile Include="DEV9\ATA\HddCreate.cpp">
       <Filter>System\Ps2\DEV9\ATA</Filter>
     </ClCompile>
@@ -1758,6 +1761,9 @@
       <Filter>System\Ps2\DEV9</Filter>
     </ClInclude>
     <ClInclude Include="DEV9\ATA\ATA.h">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\ATA\HddChdImage.h">
       <Filter>System\Ps2\DEV9\ATA</Filter>
     </ClInclude>
     <ClInclude Include="DEV9\ATA\HddCreate.h">

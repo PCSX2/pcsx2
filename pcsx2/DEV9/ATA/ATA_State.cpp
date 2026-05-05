@@ -5,6 +5,7 @@
 #include "common/FileSystem.h"
 
 #include "ATA.h"
+#include "HddChdImage.h"
 #include "DEV9/DEV9.h"
 
 #if _WIN32
@@ -30,8 +31,7 @@ ATA::ATA()
 
 ATA::~ATA()
 {
-	if (hddImage)
-		std::fclose(hddImage);
+	Close();
 }
 
 int ATA::Open(const std::string& hddPath)
@@ -46,12 +46,29 @@ int ATA::Open(const std::string& hddPath)
 	if (!FileSystem::FileExists(hddPath.c_str()))
 		return -1;
 
-	hddImage = FileSystem::OpenCFile(hddPath.c_str(), "r+b");
-	const s64 size = hddImage ? FileSystem::FSize64(hddImage) : -1;
-	if (!hddImage || size < 0)
+	const bool use_chd = ChdHddImage::IsChdFileName(hddPath);
+	if (use_chd)
 	{
-		Console.Error("DEV9: ATA: Failed to open HDD image '%s'", hddPath.c_str());
-		return -1;
+		hddChdImage = std::make_unique<ChdHddImage>();
+		if (!hddChdImage->Open(hddPath))
+		{
+			Console.Error("DEV9: ATA: Failed to open CHD HDD image '%s'", hddPath.c_str());
+			hddChdImage.reset();
+			return -1;
+		}
+		hddImageSize = hddChdImage->GetSize();
+	}
+	else
+	{
+		hddImage = FileSystem::OpenCFile(hddPath.c_str(), "r+b");
+		const s64 size = hddImage ? FileSystem::FSize64(hddImage) : -1;
+		if (!hddImage || size < 0)
+		{
+			Console.Error("DEV9: ATA: Failed to open HDD image '%s'", hddPath.c_str());
+			return -1;
+		}
+
+		hddImageSize = static_cast<u64>(size);
 	}
 
 	// Open and read the content of the hddid file
@@ -94,13 +111,12 @@ int ATA::Open(const std::string& hddPath)
 		// 0x80 and up - zero filled
 	}
 
-	//Store HddImage size for later use
-	hddImageSize = static_cast<u64>(size);
 	lba48Supported = (hddImageSize > ((static_cast<s64>(1) << 28) - 1) * 512);
 
 	CreateHDDinfo(hddImageSize / 512);
 
-	InitSparseSupport(hddPath);
+	if (!use_chd)
+		InitSparseSupport(hddPath);
 
 	{
 		std::lock_guard ioSignallock(ioMutex);
@@ -287,6 +303,7 @@ void ATA::Close()
 		std::fclose(hddImage);
 		hddImage = nullptr;
 	}
+	hddChdImage.reset();
 
 	delete[] readBuffer;
 	readBuffer = nullptr;
@@ -514,7 +531,7 @@ void ATA::Write(u32 addr, u16 value, int width)
 
 void ATA::Async(uint cycles)
 {
-	if (!hddImage)
+	if (!hddImage && !hddChdImage)
 		return;
 
 	if ((regStatus & (ATA_STAT_BUSY | ATA_STAT_DRQ)) == 0 ||

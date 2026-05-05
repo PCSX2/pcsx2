@@ -8,11 +8,14 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
+#include <memory>
 
 #include "common/RedtapeWindows.h"
 #include "common/Path.h"
 
 #include "DEV9/SimpleQueue.h"
+
+class ChdHddImage;
 
 class ATA
 {
@@ -25,6 +28,7 @@ private:
 	bool lba48Supported = false;
 
 	std::FILE* hddImage = nullptr;
+	std::unique_ptr<ChdHddImage> hddChdImage;
 	u64 hddImageSize;
 
 	bool hddSparse = false;

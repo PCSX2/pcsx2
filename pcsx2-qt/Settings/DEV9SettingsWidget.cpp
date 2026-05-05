@@ -12,6 +12,7 @@
 #include "pcsx2/Host.h"
 #include "pcsx2/INISettingsInterface.h"
 
+#include "DEV9/ATA/HddChdImage.h"
 #include "DEV9SettingsWidget.h"
 #include "QtHost.h"
 #include "QtUtils.h"
@@ -608,7 +609,7 @@ void DEV9SettingsWidget::onHddBrowseFileClicked()
 	QString path =
 		QDir::toNativeSeparators(QFileDialog::getSaveFileName(QtUtils::GetRootWidget(this), tr("HDD Image File"),
 			!m_ui.hddFile->text().isEmpty() ? m_ui.hddFile->text() : (!m_ui.hddFile->placeholderText().isEmpty() ? m_ui.hddFile->placeholderText() : "DEV9hdd.raw"),
-			tr("HDD (*.raw)"), nullptr, QFileDialog::DontConfirmOverwrite));
+			tr("HDD (*.raw *.chd)"), nullptr, QFileDialog::DontConfirmOverwrite));
 
 	if (path.isEmpty())
 		return;
@@ -741,9 +742,10 @@ void DEV9SettingsWidget::UpdateHddSizeUIValues()
 	if (!FileSystem::FileExists(hddPath.c_str()))
 		return;
 
-	const s64 size = FileSystem::GetPathFileSize(hddPath.c_str());
-	if (size < 0)
+	const std::optional<u64> logical_size = ChdHddImage::GetHddImageLogicalSize(hddPath);
+	if (!logical_size.has_value())
 		return;
+	const s64 size = static_cast<s64>(logical_size.value());
 
 	if (size > static_cast<s64>(120) * 1024 * 1024 * 1024)
 		m_ui.hddLBA48->setChecked(true);

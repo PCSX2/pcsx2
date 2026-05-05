@@ -5,6 +5,7 @@
 #include "common/FileSystem.h"
 
 #include "ATA.h"
+#include "HddChdImage.h"
 #include "DEV9/DEV9.h"
 
 #if __POSIX__
@@ -68,8 +69,17 @@ void ATA::IO_Read()
 	}
 
 	const u64 pos = lba * 512;
-	if (FileSystem::FSeek64(hddImage, pos, SEEK_SET) != 0 ||
-		std::fread(readBuffer,  512, nsector, hddImage) != static_cast<size_t>(nsector))
+	if (hddChdImage)
+	{
+		if (!hddChdImage->ReadSectors(lba, nsector, readBuffer))
+		{
+			Console.Error("DEV9: ATA: CHD file read error");
+			pxAssert(false);
+			abort();
+		}
+	}
+	else if (FileSystem::FSeek64(hddImage, pos, SEEK_SET) != 0 ||
+		std::fread(readBuffer, 512, nsector, hddImage) != static_cast<size_t>(nsector))
 	{
 		Console.Error("DEV9: ATA: File read error");
 		pxAssert(false);
@@ -92,6 +102,19 @@ bool ATA::IO_Write()
 	}
 
 	const u64 imagePos = entry.sector * 512;
+	if (hddChdImage)
+	{
+		if (!hddChdImage->WriteSectors(entry.sector, entry.length / 512, entry.data))
+		{
+			Console.Error("DEV9: ATA: CHD overlay write error");
+			pxAssert(false);
+			abort();
+		}
+
+		delete[] entry.data;
+		return true;
+	}
+
 	if (FileSystem::FSeek64(hddImage, imagePos, SEEK_SET) != 0)
 	{
 		Console.Error("DEV9: ATA: File seek error");
