@@ -150,6 +150,8 @@ bool ChdHddImage::OpenChd(const std::string& path)
 	m_logical_size = header->logicalbytes;
 	m_hunk_size = header->hunkbytes;
 	m_hunk_count = header->totalhunks;
+	DevCon.WriteLn("DEV9: ATA: CHD HDD logical size: %llu bytes, hunk size: %u bytes, hunks: %u",
+		static_cast<unsigned long long>(m_logical_size), m_hunk_size, m_hunk_count);
 
 	char metadata[256] = {};
 	if (chd_get_metadata(m_chd, HARD_DISK_METADATA_TAG, 0, metadata, sizeof(metadata), nullptr, nullptr, nullptr) == CHDERR_NONE)
