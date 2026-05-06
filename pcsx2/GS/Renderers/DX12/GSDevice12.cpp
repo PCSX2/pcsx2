@@ -3131,9 +3131,16 @@ const ID3DBlob* GSDevice12::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 
 	ShaderMacro sm;
 	sm.AddMacro("VERTEX_SHADER", 1);
+	sm.AddMacro("ROUND_UV_THRESHOLD", fmt::format("{}", static_cast<float>(ROUND_UV_THRESHOLD)));
+	sm.AddMacro("ROUND_UV_UP", fmt::format("{}", static_cast<int>(ROUND_UV_UP)));
+	sm.AddMacro("ROUND_UV_DOWN", fmt::format("{}", static_cast<int>(ROUND_UV_DOWN)));
+	sm.AddMacro("ROUND_UV_PER_PIXEL", fmt::format("{}", static_cast<int>(ROUND_UV_PER_PIXEL)));
 	sm.AddMacro("VS_TME", sel.tme);
 	sm.AddMacro("VS_FST", sel.fst);
 	sm.AddMacro("VS_IIP", sel.iip);
+	sm.AddMacro("VS_ROUND_UV", static_cast<int>(sel.round_uv));
+	sm.AddMacro("VS_CLAMP_UV", static_cast<int>(sel.clamp_uv));
+	sm.AddMacro("VS_ALIGN_UV", static_cast<int>(sel.align_uv));
 	sm.AddMacro("VS_EXPAND", static_cast<int>(sel.expand));
 
 	const char* entry_point = (sel.expand != GSHWDrawConfig::VSExpand::None) ? "vs_main_expand" : "vs_main";
@@ -3150,6 +3157,10 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 
 	ShaderMacro sm;
 	sm.AddMacro("PIXEL_SHADER", 1);
+	sm.AddMacro("ROUND_UV_THRESHOLD", fmt::format("{}", static_cast<float>(ROUND_UV_THRESHOLD)));
+	sm.AddMacro("ROUND_UV_UP", fmt::format("{}", static_cast<int>(ROUND_UV_UP)));
+	sm.AddMacro("ROUND_UV_DOWN", fmt::format("{}", static_cast<int>(ROUND_UV_DOWN)));
+	sm.AddMacro("ROUND_UV_PER_PIXEL", fmt::format("{}", static_cast<int>(ROUND_UV_PER_PIXEL)));
 	sm.AddMacro("PS_HAS_CONSERVATIVE_DEPTH", 1);
 	sm.AddMacro("PS_FST", sel.fst);
 	sm.AddMacro("PS_WMS", sel.wms);
@@ -3212,6 +3223,8 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_AA1", static_cast<u32>(sel.aa1));
 	sm.AddMacro("PS_ABE", sel.abe);
 	sm.AddMacro("PS_ANISOTROPIC_FILTERING", sel.sw_aniso);
+	sm.AddMacro("PS_ROUND_UV", sel.round_uv);
+	sm.AddMacro("PS_CLAMP_UV", sel.clamp_uv);
 
 	ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(m_tfx_source, sm.GetPtr(), "ps_main"));
 	it = m_tfx_pixel_shaders.emplace(sel, std::move(ps)).first;

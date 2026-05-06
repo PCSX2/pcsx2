@@ -312,17 +312,19 @@ struct alignas(16) GSHWDrawConfig
 		{
 			struct
 			{
-				u8 fst : 1;
-				u8 tme : 1;
-				u8 iip : 1;
-				u8 point_size : 1;		///< Set when points need to be expanded without VS expanding.
+				u32 fst : 1;
+				u32 tme : 1;
+				u32 iip : 1;
+				u32 point_size : 1;		///< Set when points need to be expanded without VS expanding.
+				u32 round_uv : 2;
+				u32 clamp_uv : 2;
+				u32 align_uv : 2;
 				VSExpand expand : 3;
-				u8 _free : 1;
 			};
-			u8 key;
+			u64 key;
 		};
 		VSSelector(): key(0) {}
-		VSSelector(u8 k): key(k) {}
+		VSSelector(u64 k): key(k) {}
 
 		/// Returns true if the fixed index buffer should be used.
 		__fi bool UseFixedExpandIndexBuffer() const { return (expand == VSExpand::Point || expand == VSExpand::Sprite); }
@@ -330,8 +332,10 @@ struct alignas(16) GSHWDrawConfig
 		/// Return true if the index buffer should be bound as a vertex shader resource.
 		__fi bool UseVSExpandIndexBuffer() const { return (expand == VSExpand::TriangleAA1); }
 	};
-	static_assert(sizeof(VSSelector) == 1, "VSSelector is a single byte");
+	static_assert(sizeof(VSSelector) == 8, "VSSelector is 8 bytes");
+#pragma pack(pop)
 
+#pragma pack(push, 1)
 	struct PSSelector
 	{
 		// Performance note: there are too many shader combinations
@@ -426,12 +430,16 @@ struct alignas(16) GSHWDrawConfig
 
 				// Anisotropic filtering
 				u32 sw_aniso : 5;
+				
+				// Round UV
+				u32 round_uv : 2;
+				u32 clamp_uv : 1;
 			};
 
 			struct
 			{
 				u64 key_lo;
-				u32 key_hi;
+				u64 key_hi;
 			};
 		};
 		__fi PSSelector() : key_lo(0), key_hi(0) {}
@@ -486,7 +494,7 @@ struct alignas(16) GSHWDrawConfig
 			}
 		}
 	};
-	static_assert(sizeof(PSSelector) == 12, "PSSelector is 12 bytes");
+	static_assert(sizeof(PSSelector) == 16, "PSSelector is 16 bytes");
 #pragma pack(pop)
 	struct PSSelectorHash
 	{
@@ -613,6 +621,8 @@ struct alignas(16) GSHWDrawConfig
 		GSVector2 texture_offset;
 		GSVector2 point_size;
 		GSVector2i max_depth;
+		GSVector2i xy_offset;
+		GSVector2 upscale;
 		__fi VSConstantBuffer()
 		{
 			memset(static_cast<void*>(this), 0, sizeof(*this));
@@ -907,6 +917,8 @@ static inline u32 GetVertexAlignment(GSHWDrawConfig::VSExpand expand)
 		case GSHWDrawConfig::VSExpand::Sprite:
 			// Sprite expand does a 2-4 expansion, and relies on the low bit of the vertex ID to figure out if it's the first or second coordinate.
 			return 2;
+		case GSHWDrawConfig::VSExpand::Triangle:
+			return 3;
 		default:
 			return 1;
 	}

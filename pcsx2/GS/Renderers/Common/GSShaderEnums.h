@@ -17,6 +17,7 @@ enum class VSExpand : uint8_t
 	Sprite      = 3,
 	LineAA1     = 4,
 	TriangleAA1 = 5,
+	Triangle    = 6,
 };
 
 enum class PS_ATST : uint32_t
