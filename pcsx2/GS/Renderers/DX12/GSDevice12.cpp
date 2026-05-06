@@ -892,7 +892,7 @@ bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		m_tfx_source = std::move(*shader);
 	}
 
-	if (!m_shader_cache.Open(m_feature_level, GSConfig.UseDebugDevice))
+	if (!m_shader_cache.Open(D3D::ShaderModel::SM51, GSConfig.UseDebugDevice))
 		Console.Warning("D3D12: Shader cache failed to open.");
 
 	if (!CreateRootSignatures())
