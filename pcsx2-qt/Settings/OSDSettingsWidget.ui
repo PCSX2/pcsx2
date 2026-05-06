@@ -492,6 +492,13 @@
           </property>
          </widget>
         </item>
+        <item row="11" column="0">
+         <widget class="QCheckBox" name="showStatsGPU">
+          <property name="text">
+           <string>Show GPU Pipeline Statistics</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>
@@ -530,6 +537,7 @@
   <tabstop>showGSStats</tabstop>
   <tabstop>showUsageCPU</tabstop>
   <tabstop>showUsageGPU</tabstop>
+  <tabstop>showStatsGPU</tabstop>
   <tabstop>showStatusIndicators</tabstop>
   <tabstop>showFrameTimes</tabstop>
  </tabstops>

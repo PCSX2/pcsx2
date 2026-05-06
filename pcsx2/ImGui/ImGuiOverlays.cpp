@@ -70,6 +70,7 @@ std::vector<SmallString> s_software_thread_lines;
 SmallString s_capture_line;
 SmallString s_gpu_usage_line;
 SmallString s_gpu_debug_info_line;
+SmallString s_gpu_stats_line;
 SmallString s_speed_icon;
 
 constexpr ImU32 white_color = IM_COL32(255, 255, 255, 255);
@@ -502,6 +503,24 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				}
 #endif
 			}
+
+			if (GSConfig.OsdShowGPUStats)
+			{
+				const auto FormatUnits = [](double val) {
+					if (val >= 1e9)
+						return fmt::format("{:.5}B", val / 1e9);
+					if (val >= 1e6)
+						return fmt::format("{:.5}M", val / 1e6);
+					if (val >= 1e3)
+						return fmt::format("{:.5}K", val / 1e3);
+					return fmt::format("{:.5}", val);
+				};
+
+				s_gpu_stats_line.format("VSI: {} | PSI: {}",
+					FormatUnits(PerformanceMetrics::GetGPUAverageVSInvocations()),
+					FormatUnits(PerformanceMetrics::GetGPUAveragePSInvocations()));
+				DRAW_LINE(osd_font, font_size, s_gpu_stats_line.c_str(), white_color);
+			}
 		}
 		// No refresh yet. Display cached lines.
 		else
@@ -553,6 +572,11 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				if (g_gs_device->GetRenderAPI() == RenderAPI::D3D12)
 					DRAW_LINE(osd_font, font_size, s_gpu_debug_info_line.c_str(), white_color);
 #endif
+			}
+
+			if (GSConfig.OsdShowGPUStats)
+			{
+				DRAW_LINE(osd_font, font_size, s_gpu_stats_line.c_str(), white_color);
 			}
 		}
 

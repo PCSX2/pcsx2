@@ -14,6 +14,12 @@
 #include "GS/GSExtra.h"
 #include <array>
 
+struct GPUPipelineStatistics
+{
+	u64 vs_invocations;
+	u64 ps_invocations;
+};
+
 enum class ShaderConvert
 {
 	COPY = 0,
@@ -1161,6 +1167,12 @@ public:
 
 	/// Returns the amount of GPU time utilized since the last time this method was called.
 	virtual float GetAndResetAccumulatedGPUTime() = 0;
+
+	/// Enables/disables GPU pipeline statistics.
+	virtual bool SetGPUPipelineStatisticsEnabled(bool enabled) = 0;
+
+	/// Get the pipeline statistics for the last frame.
+	virtual GPUPipelineStatistics GetAndResetAccumulatedGPUPipelineStatistics() = 0;
 
 	/// Returns true if not enough time has passed for present to not block.
 	bool ShouldSkipPresentingFrame();

@@ -62,6 +62,7 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showUsageCPU, "EmuCore/GS", "OsdShowCPU", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showUsageGPU, "EmuCore/GS", "OsdShowGPU", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showDebugGPU, "EmuCore/GS", "OsdShowGPUDebug", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showStatsGPU, "EmuCore/GS", "OsdShowGPUStats", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showStatusIndicators, "EmuCore/GS", "OsdShowIndicators", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFrameTimes, "EmuCore/GS", "OsdShowFrameTimes", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showHardwareInfo, "EmuCore/GS", "OsdShowHardwareInfo", false);
@@ -127,6 +128,8 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 	dialog()->registerWidgetHelp(m_ui.showDebugGPU, tr("Show GPU Debug Info"),
 		tr("Unchecked"), tr("Shows debug information about the renderer."));
 #endif
+	dialog()->registerWidgetHelp(m_ui.showDebugGPU, tr("Show GPU Pipeline Statistics"),
+		tr("Unchecked"), tr("Shows GPU vertex shader and pixels shader invocations."));
 	dialog()->registerWidgetHelp(m_ui.showFrameTimes, tr("Show Frame Times"), tr("Unchecked"),
 		tr("Displays a graph showing the average frametimes."));
 
@@ -243,6 +246,7 @@ void OSDSettingsWidget::onPerformancePosChanged()
 	m_ui.showGSStats->setEnabled(enabled);
 	m_ui.showUsageCPU->setEnabled(enabled);
 	m_ui.showUsageGPU->setEnabled(enabled);
+	m_ui.showStatsGPU->setEnabled(enabled);
 	m_ui.showStatusIndicators->setEnabled(enabled);
 	m_ui.showFrameTimes->setEnabled(enabled);
 	m_ui.showHardwareInfo->setEnabled(enabled);
@@ -291,6 +295,7 @@ void OSDSettingsWidget::onDeselectAllClicked()
 		m_ui.showGSStats,
 		m_ui.showUsageCPU,
 		m_ui.showUsageGPU,
+		m_ui.showStatsGPU,
 		m_ui.showFrameTimes,
 		m_ui.showHardwareInfo,
 		m_ui.showVersion,
