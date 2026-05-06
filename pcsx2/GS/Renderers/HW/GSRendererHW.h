@@ -245,7 +245,7 @@ private:
 
 	void DetermineVSConfig(GSTextureCache::Target* rt, float rtscale, const GSVector2i& rtsize,
 		const GSVector2i& unscaled_size, float& vs_scale_x, float& vs_scale_y);
-	void DetermineBarriers(GSTextureCache::Target* rt);
+	void DetermineBarriers(GSTextureCache::Target* rt, GSTextureCache::Source* tex);
 
 	void SetTCOffset();
 	bool NextDrawColClip() const;

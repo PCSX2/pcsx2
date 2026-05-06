@@ -3058,7 +3058,54 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 		}
 	};
 
-	const GSVector4i rtsize(0, 0, (draw_rt ? draw_rt : draw_ds)->GetWidth(), (draw_rt ? draw_rt : draw_ds)->GetHeight());
+	const GSVector4i rtsize((draw_rt ? draw_rt : draw_ds)->GetRect());
+
+	if (config.autoflush)
+	{
+		const u32 indices_per_prim = config.indices_per_prim;
+		const u32 autoflush_list_size = static_cast<u32>(config.autoflush_list->size());
+
+		GL_PUSH("Split the draw (autoflush)");
+
+		const GSVector4i tex_rect = config.tex->GetRect();
+
+		// a: autoflush drawlist position
+		// n: barrier drawlist position
+		// p: number of indices drawn
+		for (u32 a = 0, n = 0, p = 0; a < autoflush_list_size; a++)
+		{
+			const GSVector4i bbox = (*config.autoflush_bbox)[a].rintersect(tex_rect);
+
+			if (!bbox.rempty())
+			{
+				CopyRect(config.rt, config.tex, bbox, bbox.x, bbox.y);
+
+				PSSetShaderResource(0, config.tex);
+				OMSetRenderTargets(config.rt, config.ds, &config.scissor);
+			}
+
+			int prims = static_cast<int>((*config.autoflush_list)[a]);
+
+			while (prims > 0)
+			{
+				const u32 count = (*config.drawlist)[n] * indices_per_prim;
+
+				if (draw_rt_clone || draw_ds_clone)
+				{
+					const GSVector4i original_bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
+					CopyAndBind(ProcessCopyArea(rtsize, original_bbox));
+				}
+
+				DrawIndexedPrimitive(p, count);
+
+				prims -= (*config.drawlist)[n];
+				p += count;
+				n++;
+			}
+		}
+
+		return;
+	}
 
 	if (full_barrier)
 	{

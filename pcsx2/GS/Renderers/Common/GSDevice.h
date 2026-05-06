@@ -822,6 +822,9 @@ struct alignas(16) GSHWDrawConfig
 	u32 indices_per_prim; ///< Number of indices that make up one primitive
 	const std::vector<size_t>* drawlist;          ///< For reducing barriers on sprites
 	const std::vector<GSVector4i>* drawlist_bbox; ///< For RT copy when barriers not available.
+	const std::vector<size_t>* autoflush_list;     ///< For batched autoflush drawing.
+	const std::vector<GSVector4i>* autoflush_bbox; ///< For batched autoflush drawing.
+	bool autoflush;                                ///< Do a batched autoflush draw.
 	GSVector4i scissor; ///< Scissor rect
 	GSVector4i drawarea; ///< Area in the framebuffer which will be modified.
 	Topology topology;  ///< Draw topology
