@@ -11,6 +11,24 @@
 #include "common/Console.h"
 #include "common/BitUtils.h"
 
+VkFramebuffer GSTextureVK::CreateNullFramebuffer()
+{
+	const VkRenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(
+		VK_FORMAT_UNDEFINED,
+		VK_FORMAT_UNDEFINED,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+		VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, false, false);
+
+	if (!rp)
+		return VK_NULL_HANDLE;
+	
+	Vulkan::FramebufferBuilder fbb;
+	fbb.SetSize(16384, 16384, 1);
+	fbb.SetRenderPass(rp);
+
+	return fbb.Create(GSDeviceVK::GetInstance()->GetDevice());
+}
+
 static constexpr const VkComponentMapping s_identity_swizzle{VK_COMPONENT_SWIZZLE_IDENTITY,
 	VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
 
@@ -101,7 +119,7 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 			pxAssert(levels == 1);
 			ici.usage =
 				VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT |
 				(GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT
 				                                                    : VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
 		}
@@ -196,6 +214,15 @@ void GSTextureVK::Destroy(bool defer)
 {
 	GSDeviceVK::GetInstance()->UnbindTexture(this);
 
+	if (m_depth_color)
+	{
+		GetDepthColor()->Destroy(defer);
+		m_depth_color.release();
+		m_depth_color_active = false;
+	}
+
+	ResetROVState();
+
 	if (m_type == Type::RenderTarget || m_type == Type::DepthStencil)
 	{
 		for (const auto& [other_tex, fb, feedback_color, feedback_depth] : m_framebuffers)
@@ -239,11 +266,15 @@ void GSTextureVK::Destroy(bool defer)
 		m_image = VK_NULL_HANDLE;
 		m_allocation = VK_NULL_HANDLE;
 	}
+
+#ifdef PCSX2_DEVBUILD
+	m_debug_name.clear();
+#endif
 }
 
 VkImageLayout GSTextureVK::GetVkLayout() const
 {
-	return GetVkImageLayout(m_layout);
+	return GetVkImageLayout(GetLayout());
 }
 
 void* GSTextureVK::GetNativeHandle() const
@@ -305,6 +336,8 @@ VkBuffer GSTextureVK::AllocateUploadStagingBuffer(const void* data, u32 pitch, u
 void GSTextureVK::UpdateFromBuffer(VkCommandBuffer cmdbuf, int level, u32 x, u32 y, u32 width, u32 height,
 	u32 buffer_height, u32 row_length, VkBuffer buffer, u32 buffer_offset)
 {
+	pxAssert(!IsDepthColor());
+
 	const Layout old_layout = m_layout;
 	if (old_layout == Layout::Undefined)
 		TransitionToLayout(cmdbuf, Layout::TransferDst);
@@ -323,6 +356,11 @@ void GSTextureVK::UpdateFromBuffer(VkCommandBuffer cmdbuf, int level, u32 x, u32
 
 bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
+	if (IsDepthColor())
+	{
+		ExitDepthColor("GSTextureVK::Update");
+	}
+
 	if (layer >= m_mipmap_levels)
 		return false;
 
@@ -402,6 +440,8 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 bool GSTextureVK::Map(GSMap& m, const GSVector4i* r, int layer)
 {
+	pxAssert(!IsDepthColor());
+
 	if (layer >= m_mipmap_levels || IsCompressedFormat())
 		return false;
 
@@ -442,6 +482,8 @@ bool GSTextureVK::Map(GSMap& m, const GSVector4i* r, int layer)
 
 void GSTextureVK::Unmap()
 {
+	pxAssert(!IsDepthColor());
+
 	// this can't handle blocks/compressed formats at the moment.
 	pxAssert(m_map_level < m_mipmap_levels && !IsCompressedFormat());
 	g_perfmon.Put(GSPerfMon::TextureUploads, 1);
@@ -483,6 +525,8 @@ void GSTextureVK::Unmap()
 
 void GSTextureVK::GenerateMipmap()
 {
+	pxAssert(!IsDepthColor());
+
 	const VkCommandBuffer cmdbuf = GetCommandBufferForUpdate();
 
 	if (m_layout == Layout::Undefined)
@@ -523,6 +567,8 @@ void GSTextureVK::SetDebugName(std::string_view name)
 
 	Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), m_image, "%.*s", static_cast<int>(name.size()), name.data());
 	Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), m_view, "%.*s", static_cast<int>(name.size()), name.data());
+
+	m_debug_name = name;
 }
 
 #endif
@@ -543,16 +589,29 @@ void GSTextureVK::CommitClear(VkCommandBuffer cmdbuf)
 
 	if (IsDepthStencil())
 	{
-		const VkClearDepthStencilValue cv = {m_clear_value.depth};
-		const VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 1u, 0u, 1u};
-		vkCmdClearDepthStencilImage(cmdbuf, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &cv, 1, &srr);
+		if (IsDepthColor())
+		{
+			alignas(16) VkClearColorValue cv = {{m_clear_value.depth, 0.0f, 0.0f, 0.0f}};
+			const VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u};
+			vkCmdClearColorImage(cmdbuf, GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &cv, 1, &srr);
+		}
+		else
+		{
+			const VkClearDepthStencilValue cv = {m_clear_value.depth};
+			const VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 1u, 0u, 1u};
+			vkCmdClearDepthStencilImage(cmdbuf, GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &cv, 1, &srr);
+		}
 	}
-	else
+	else if (IsRenderTarget())
 	{
 		alignas(16) VkClearColorValue cv;
 		GSVector4::store<true>(cv.float32, GetUNormClearColor());
 		const VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u};
 		vkCmdClearColorImage(cmdbuf, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &cv, 1, &srr);
+	}
+	else
+	{
+		pxFailRel("Illegal texture type for clear.");
 	}
 
 	SetState(GSTexture::State::Dirty);
@@ -560,6 +619,7 @@ void GSTextureVK::CommitClear(VkCommandBuffer cmdbuf)
 
 void GSTextureVK::OverrideImageLayout(Layout new_layout)
 {
+	pxAssert(!IsDepthColor());
 	m_layout = new_layout;
 }
 
@@ -570,19 +630,61 @@ void GSTextureVK::TransitionToLayout(Layout layout)
 
 void GSTextureVK::TransitionToLayout(VkCommandBuffer command_buffer, Layout new_layout)
 {
-	if (m_layout == new_layout)
+	if (GetLayout() == new_layout)
 		return;
 
-	TransitionSubresourcesToLayout(command_buffer, 0, m_mipmap_levels, m_layout, new_layout);
+	TransitionSubresourcesToLayout(command_buffer, 0, m_mipmap_levels, GetLayout(), new_layout);
 
-	m_layout = new_layout;
+	SetLayout(new_layout);
 }
+
+#ifdef PCSX2_DEVBUILD
+static void DebugCheckUAVLayout(const GSTextureVK* tex,
+	GSTextureVK::Layout old_layout, GSTextureVK::Layout new_layout)
+{
+	// This is to make sure that we don't accidentally transition depth to the wrong layout when using the color clone for ROV draws.
+	// The current system requires explicitly transitioning depth in/out of depth color (aka UAV) mode, so that we don't have unexpected
+	// shader copies messing things up.
+	if (tex->IsDepthStencil())
+	{
+		if (tex->IsDepthColor())
+		{
+			// Depth color so don't mix with real depth stencil.
+			pxAssert(old_layout != GSTextureVK::Layout::DepthStencilAttachment &&
+				new_layout != GSTextureVK::Layout::DepthStencilAttachment);
+		}
+		else
+		{
+			// Real depth stencil mode so don't mix with UAV.
+			pxAssert(old_layout != GSTextureVK::Layout::ReadWriteImage &&
+				new_layout != GSTextureVK::Layout::ReadWriteImage);
+		}
+	}
+}
+#endif
 
 void GSTextureVK::TransitionSubresourcesToLayout(
 	VkCommandBuffer command_buffer, int start_level, int num_levels, Layout old_layout, Layout new_layout)
 {
+#ifdef PCSX2_DEVBUILD
+	DebugCheckUAVLayout(this, old_layout, new_layout);
+#endif
+	// Windows RDNA2 drivers don't always correctly transition the layout(?) when ROV is involved.
+	// ReadWriteImage -> Feedback transitions are broken.
+	// ReadWriteImage -> Read only layout  -> Feedback transitions are broken.
+	// ReadWriteImage -> General layout    -> Feedback transitions are broken.
+	// ReadWriteImage -> Write only layout -> Feedback transitions works fine.
+	// Not every broken transition gives broken rendering, the Shadow of the colossus eagle dump is fine after the 1st frame.
+	// Transition to a write only layout using an extra barrier, then to feedback fixes this issue.
+	if (old_layout == Layout::ReadWriteImage && new_layout != Layout::ColorAttachment && new_layout != Layout::ReadWriteImage)
+	{
+		GL_INS("VK: Doing extra transition for broken RDNA2 feedback transitions");
+		TransitionSubresourcesToLayout(command_buffer, 0, num_levels, old_layout, Layout::ColorAttachment);
+		old_layout = Layout::ColorAttachment;
+	}
+
 	VkImageAspectFlags aspect;
-	if (m_type == Type::DepthStencil)
+	if (IsDepthStencil() && !IsDepthColor())
 	{
 		aspect = g_gs_device->Features().stencil_buffer ? (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) :
 		                                                  VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -593,7 +695,7 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 	}
 
 	VkImageMemoryBarrier barrier = {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, 0, 0, GetVkImageLayout(old_layout),
-		GetVkImageLayout(new_layout), VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, m_image,
+		GetVkImageLayout(new_layout), VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, GetImage(),
 		{aspect, static_cast<u32>(start_level), static_cast<u32>(num_levels), 0u, 1u}};
 
 	// srcStageMask -> Stages that must complete before the barrier
@@ -754,6 +856,14 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 			break;
 	}
 	vkCmdPipelineBarrier(command_buffer, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+	// Count as a UAV barrier if we transition to/from UAV.
+	if (IsRenderTargetOrDepthStencil() &&
+		(old_layout == Layout::ReadWriteImage || new_layout == Layout::ReadWriteImage))
+	{
+		g_perfmon.Put(GSPerfMon::Barriers, 1);
+		g_perfmon.Put(GSPerfMon::BarriersROV, 1);
+	}
 }
 
 VkFramebuffer GSTextureVK::GetFramebuffer(bool feedback_loop)
@@ -845,6 +955,11 @@ void GSDownloadTextureVK::CopyFromTexture(
 	const GSVector4i& drc, GSTexture* stex, const GSVector4i& src, u32 src_level, bool use_transfer_pitch)
 {
 	GSTextureVK* const vkTex = static_cast<GSTextureVK*>(stex);
+
+	if (vkTex->IsDepthColor())
+	{
+		vkTex->ExitDepthColor("CopyFromTexture");
+	}
 
 	pxAssert(vkTex->GetFormat() == m_format);
 	pxAssert(drc.width() == src.width() && drc.height() == src.height());

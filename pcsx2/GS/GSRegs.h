@@ -203,8 +203,8 @@ enum GS_AFAIL
 
 enum GS_ALPHA_BITS
 {
-	ALPHA_ABC_CS = 0,
-	ALPHA_ABC_CD = 1,
+	ALPHA_ABD_CS = 0,
+	ALPHA_ABD_CD = 1,
 	ALPHA_C_AS   = 0,
 	ALPHA_C_AD   = 1,
 	ALPHA_C_FIX  = 2,

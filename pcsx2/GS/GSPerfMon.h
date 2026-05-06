@@ -23,6 +23,9 @@ public:
 		SyncPoint,
 		Barriers,
 		RenderPasses,
+		DepthCopiesROV, // Overlaps with regular texture copies.
+		DrawCallsROV, // Overlaps with regular draw calls.
+		BarriersROV, // Overlaps with regular barriers.
 		CounterLast,
 
 		// Reused counters for HW.

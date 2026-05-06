@@ -91,6 +91,9 @@ static double s_last_barriers = 0;
 static double s_last_copies = 0;
 static double s_last_uploads = 0;
 static double s_last_readbacks = 0;
+static double s_last_depth_copies_rov = 0;
+static double s_last_draws_rov = 0;
+static double s_last_barriers_rov = 0;
 static u64 s_total_internal_draws = 0;
 static u64 s_total_draws = 0;
 static u64 s_total_render_passes = 0;
@@ -98,6 +101,9 @@ static u64 s_total_barriers = 0;
 static u64 s_total_copies = 0;
 static u64 s_total_uploads = 0;
 static u64 s_total_readbacks = 0;
+static u64 s_total_depth_copies_rov = 0;
+static u64 s_total_draws_rov = 0;
+static u64 s_total_barriers_rov = 0;
 static u32 s_total_frames = 0;
 static u32 s_total_drawn_frames = 0;
 
@@ -287,6 +293,9 @@ void Host::BeginPresentFrame()
 		update_stat(GSPerfMon::TextureCopies, s_total_copies, s_last_copies);
 		update_stat(GSPerfMon::TextureUploads, s_total_uploads, s_last_uploads);
 		update_stat(GSPerfMon::Readbacks, s_total_readbacks, s_last_readbacks);
+		update_stat(GSPerfMon::DepthCopiesROV, s_total_depth_copies_rov, s_last_depth_copies_rov);
+		update_stat(GSPerfMon::DrawCallsROV, s_total_draws_rov, s_last_draws_rov);
+		update_stat(GSPerfMon::BarriersROV, s_total_barriers_rov, s_last_barriers_rov);
 
 		const bool idle_frame = s_total_frames && (last_draws == s_total_internal_draws && last_uploads == s_total_uploads);
 
@@ -907,6 +916,9 @@ void GSRunner::DumpStats()
 	Console.WriteLn(fmt::format("@HWSTAT@ Copies: {} (avg {})", s_total_copies, static_cast<u64>(std::ceil(s_total_copies / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn(fmt::format("@HWSTAT@ Uploads: {} (avg {})", s_total_uploads, static_cast<u64>(std::ceil(s_total_uploads / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn(fmt::format("@HWSTAT@ Readbacks: {} (avg {})", s_total_readbacks, static_cast<u64>(std::ceil(s_total_readbacks / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Depth Copies (ROV): {} (avg {})", s_total_depth_copies_rov, static_cast<u64>(std::ceil(s_total_depth_copies_rov / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Draws Calls (ROV): {} (avg {})", s_total_draws_rov, static_cast<u64>(std::ceil(s_total_draws_rov / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Barriers (ROV): {} (avg {})", s_total_barriers_rov, static_cast<u64>(std::ceil(s_total_barriers_rov / static_cast<double>(s_total_drawn_frames)))));
 	if (s_perf_enable)
 	{
 		Console.WriteLn(fmt::format("@HWSTAT@ Minimum Frame Time: {:.3f} ms ({:.3f} FPS)", PerformanceMetrics::GetMinimumFrameTime(), 1000.0f / PerformanceMetrics::GetMinimumFrameTime()));

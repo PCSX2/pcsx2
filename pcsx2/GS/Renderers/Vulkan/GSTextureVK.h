@@ -39,9 +39,44 @@ public:
 
 	void Destroy(bool defer);
 
-	__fi VkImage GetImage() const { return m_image; }
-	__fi VkImageView GetView() const { return m_view; }
-	__fi Layout GetLayout() const { return m_layout; }
+	__fi VkImage GetImage() const
+	{
+		if (IsDepthColor())
+		{
+			return GetDepthColor()->m_image;
+		}
+		else
+		{
+			return m_image;
+		}
+	}
+
+	__fi VkImageView GetView() const
+	{
+		if (IsDepthColor())
+		{
+			return GetDepthColor()->m_view;
+		}
+		else
+		{
+			return m_view;
+		}
+	}
+
+	__fi Layout GetLayout() const
+	{
+		if (IsDepthColor())
+		{
+			return GetDepthColor()->m_layout;
+		}
+		else
+		{
+			return m_layout;
+		}
+	}
+
+	virtual bool IsUnorderedAccess() const override { return GetLayout() == Layout::ReadWriteImage; }
+
 	__fi VkFormat GetVkFormat() const { return m_vk_format; }
 
 	VkImageLayout GetVkLayout() const;
@@ -70,6 +105,8 @@ public:
 	void TransitionSubresourcesToLayout(
 		VkCommandBuffer command_buffer, int start_level, int num_levels, Layout old_layout, Layout new_layout);
 
+	static VkFramebuffer CreateNullFramebuffer();
+
 	/// Framebuffers are lazily allocated.
 	VkFramebuffer GetFramebuffer(bool feedback_loop);
 
@@ -79,6 +116,18 @@ public:
 	__fi void SetUseFenceCounter(u64 counter) { m_use_fence_counter = counter; }
 
 private:
+	__fi void SetLayout(Layout new_layout)
+	{
+		if (IsDepthColor())
+		{
+			GetDepthColor()->m_layout = new_layout;
+		}
+		else
+		{
+			m_layout = new_layout;
+		}
+	}
+
 	GSTextureVK(Type type, Format format, int width, int height, int levels, VkImage image, VmaAllocation allocation,
 		VkImageView view, VkFormat vk_format);
 
@@ -87,6 +136,9 @@ private:
 	VkBuffer AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height) const;
 	void UpdateFromBuffer(VkCommandBuffer cmdbuf, int level, u32 x, u32 y, u32 width, u32 height, u32 buffer_height,
 		u32 row_length, VkBuffer buffer, u32 buffer_offset);
+
+	GSTextureVK* GetDepthColor() { return static_cast<GSTextureVK*>(m_depth_color.get()); }
+	const GSTextureVK* GetDepthColor() const { return static_cast<const GSTextureVK*>(m_depth_color.get()); }
 
 	VkImage m_image = VK_NULL_HANDLE;
 	VmaAllocation m_allocation = VK_NULL_HANDLE;
