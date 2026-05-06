@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Host.h"
+#include "ImGui/ImGuiManager.h"
 #include "GS/GSGL.h"
 #include "GS/Renderers/Metal/GSMetalCPPAccessible.h"
 #include "GS/Renderers/Metal/GSDeviceMTL.h"
@@ -1343,6 +1344,8 @@ void GSDeviceMTL::ResizeWindow(u32 new_window_width, u32 new_window_height, floa
 	{
 		[m_layer setDrawableSize:CGSizeMake(new_window_width, new_window_height)];
 	}
+
+	ImGuiManager::WindowResized();
 }
 
 void GSDeviceMTL::UpdateTexture(id<MTLTexture> texture, u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_stride)

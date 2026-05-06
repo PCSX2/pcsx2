@@ -9,6 +9,7 @@
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
 #include "Host.h"
+#include "ImGui/ImGuiManager.h"
 
 #include "common/BitUtils.h"
 #include "common/Error.h"
@@ -978,6 +979,8 @@ void GSDevice11::ResizeWindow(u32 new_window_width, u32 new_window_height, float
 
 	if (!CreateSwapChainRTV())
 		pxFailRel("Failed to recreate swap chain RTV after resize");
+
+	ImGuiManager::WindowResized();
 }
 
 bool GSDevice11::SupportsExclusiveFullscreen() const

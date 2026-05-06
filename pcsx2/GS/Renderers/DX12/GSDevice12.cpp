@@ -10,6 +10,7 @@
 #include "GS/Renderers/DX12/D3D12Builders.h"
 #include "GS/Renderers/DX12/D3D12ShaderCache.h"
 #include "Host.h"
+#include "ImGui/ImGuiManager.h"
 #include "ShaderCacheVersion.h"
 
 #include "common/Console.h"
@@ -1247,6 +1248,8 @@ void GSDevice12::ResizeWindow(u32 new_window_width, u32 new_window_height, float
 
 	if (!CreateSwapChainRTV())
 		pxFailRel("Failed to recreate swap chain RTV after resize");
+
+	ImGuiManager::WindowResized();
 }
 
 bool GSDevice12::SupportsExclusiveFullscreen() const
