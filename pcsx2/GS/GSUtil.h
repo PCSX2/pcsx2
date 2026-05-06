@@ -6,6 +6,7 @@
 #include "GS.h"
 #include "GSRegs.h"
 #include "GSPerfMon.h"
+#include <climits>
 
 class GSUtil
 {
