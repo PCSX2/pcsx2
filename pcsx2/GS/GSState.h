@@ -258,15 +258,15 @@ public:
 	{
 		EE_to_GS,
 		GS_to_GS,
-		GS_to_EE
+		GS_to_EE,
+		Clear
 	};
 
 	struct GSUploadQueue
 	{
 		GIFRegBITBLTBUF blit;
-		GSVector4i rect;
 		u64 draw;
-		bool zero_clear;
+		GSVector4i rect;
 		EEGS_TransferType transfer_type;
 	};
 

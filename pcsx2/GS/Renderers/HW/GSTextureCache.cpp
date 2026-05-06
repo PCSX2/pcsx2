@@ -3482,14 +3482,15 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 						else
 							eerect = eerect.runion(targetr);
 
+						const bool transfer_is_clear = iter->transfer_type == GSRendererHW::GetInstance()->EEGS_TransferType::Clear;
 						// Later writes might be partial over a previously cleared area. We want to upload in these cases.
-						hw_clear = hw_clear.has_value() ? (hw_clear.value() && iter->zero_clear) : iter->zero_clear;
+						hw_clear = hw_clear.has_value() ? (hw_clear.value() && transfer_is_clear) : transfer_is_clear;
 
 						// When the write covers the entire target, don't bother checking any earlier writes.
 						if (iter->blit.DBP <= TEX0.TBP0 && transfer_end >= rect_end)
 						{
 							// If it was a clear draw then we can use that as our target size.
-							if (iter->zero_clear && iter->blit.DBP == TEX0.TBP0 && iter->blit.DPSM == TEX0.PSM)
+							if (iter->transfer_type == GSRendererHW::GetInstance()->EEGS_TransferType::Clear && iter->blit.DBP == TEX0.TBP0 && iter->blit.DPSM == TEX0.PSM)
 								dst->UpdateValidity(iter->rect);
 
 							// Some games clear RT and Z at the same time, only erase if it's specifically this target.
@@ -3528,7 +3529,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 					if (iter->draw < (GSState::s_n - 1))
 						break;
 
-					if (iter->zero_clear && iter->blit.DBP == TEX0.TBP0 && iter->blit.DBW == TEX0.TBW)
+					if (iter->transfer_type == GSRendererHW::GetInstance()->EEGS_TransferType::Clear && iter->blit.DBP == TEX0.TBP0 && iter->blit.DBW == TEX0.TBW)
 					{
 						hw_clear = true;
 						transfers.erase(std::next(iter).base());
@@ -3863,7 +3864,6 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 	const u32 bp = TEX0.TBP0;
 
 	Target* dst = nullptr;
-	Target* dst_match = nullptr;
 	auto* list = &m_dst[RenderTarget];
 
 	// Let's try to find a perfect frame that contains valid data
@@ -4019,7 +4019,7 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 				else
 					eerect = eerect.runion(targetr);
 
-				if (iter->zero_clear && iter->draw == last_draw)
+				if (iter->transfer_type == GSRendererHW::GetInstance()->EEGS_TransferType::Clear && iter->draw == last_draw)
 				{
 					can_create = false;
 					break;
