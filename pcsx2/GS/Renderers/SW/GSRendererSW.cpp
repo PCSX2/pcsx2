@@ -206,7 +206,7 @@ GSTexture* GSRendererSW::GetFeedbackOutput(float& scale)
 MULTI_ISA_DEF(void GSVertexSWInitStatic();)
 
 #if MULTI_ISA_COMPILE_ONCE
-GSVertexSW::ConvertVertexBufferPtr GSVertexSW::s_cvb[4][2][2][2];
+GSVertexSW::ConvertVertexBufferPtr GSVertexSW::s_cvb[4][2][2][2][2];
 void GSVertexSW::InitStatic()
 {
 	MULTI_ISA_SELECT(GSVertexSWInitStatic)();
@@ -215,7 +215,7 @@ void GSVertexSW::InitStatic()
 
 MULTI_ISA_UNSHARED_START
 
-template <u32 primclass, u32 tme, u32 fst, u32 q_div>
+template <u32 primclass, u32 tme, u32 fst, u32 q_div, u32 round_uv>
 void ConvertVertexBuffer(const GSDrawingContext* RESTRICT ctx, GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, u32 count)
 {
 	// FIXME q_div wasn't added to AVX2 code path.
@@ -240,7 +240,15 @@ void ConvertVertexBuffer(const GSDrawingContext* RESTRICT ctx, GSVertexSW* RESTR
 		{
 			if (fst)
 			{
-				t = GSVector4(xyzuvf.uph16() << (16 - 4));
+				if (round_uv)
+				{
+					t = stcq.xyww() * static_cast<float>(1 << (16 - 4));
+					t = t.insert32<3, 2>(stcq); // Get rounding data saved in Q.
+				}
+				else
+				{
+					t = GSVector4(xyzuvf.uph16() << (16 - 4));
+				}
 			}
 			else if (q_div)
 			{
@@ -408,7 +416,8 @@ void GSRendererSW::RewriteVerticesIfSTOverflow()
 
 void GSVertexSWInitStatic()
 {
-#define InitCVB4(P, T, F, Q) GSVertexSW::s_cvb[P][T][F][Q] = ConvertVertexBuffer<P, T, F, Q>;
+#define InitCVB5(P, T, F, Q, R) GSVertexSW::s_cvb[P][T][F][Q][R] = ConvertVertexBuffer<P, T, F, Q, R>;
+#define InitCVB4(P, T, F, Q) InitCVB5(P, T, F, Q, 0) InitCVB5(P, T, F, Q, 1)
 #define InitCVB3(P, T, F) InitCVB4(P, T, F, 0) InitCVB4(P, T, F, 1)
 #define InitCVB2(P, T) InitCVB3(P, T, 0) InitCVB3(P, T, 1)
 #define InitCVB1(P) InitCVB2(P, 0) InitCVB2(P, 1)
@@ -420,6 +429,7 @@ void GSVertexSWInitStatic()
 #undef InitCVB2
 #undef InitCVB3
 #undef InitCVB4
+#undef InitCVB5
 }
 
 MULTI_ISA_UNSHARED_END
@@ -446,6 +456,9 @@ void GSRendererSW::Draw()
 			pxFailRel("Unknown primitive class.");
 			break;
 	}
+
+	const u32 round_uv = static_cast<u32>(GetVertexUVRoundingInfo());
+	const u32 fst = PRIM->FST | round_uv; // UV rounding pre-divides ST by Q and saves as UVs.
 	
 	auto data = m_vertex_heap.make_shared<SharedData>().cast<GSRasterizerData>();
 	SharedData* sd = static_cast<SharedData*>(data.get());
@@ -463,7 +476,7 @@ void GSRendererSW::Draw()
 	// If you have both GS_SPRITE_CLASS && m_vt.m_eq.q, it will depends on the first part of the 'OR'
 	u32 q_div = !IsMipMapActive() && ((m_vt.m_eq.q && m_vt.m_min.t.z != 1.0f) || (!m_vt.m_eq.q && m_vt.m_primclass == GS_SPRITE_CLASS));
 
-	GSVertexSW::s_cvb[m_vt.m_primclass][PRIM->TME][PRIM->FST][q_div](m_context, sd->vertex, m_vertex->buff, m_vertex->next);
+	GSVertexSW::s_cvb[m_vt.m_primclass][PRIM->TME][fst][q_div][round_uv](m_context, sd->vertex, m_vertex->buff, m_vertex->next);
 
 	std::memcpy(sd->index, m_index->buff, sizeof(u16) * m_index->tail);
 
@@ -476,7 +489,7 @@ void GSRendererSW::Draw()
 	sd->bbox = bbox;
 	sd->frame = g_perfmon.GetFrame();
 
-	if (!GetScanlineGlobalData(sd))
+	if (!GetScanlineGlobalData(sd, round_uv))
 	{
 		return;
 	}
@@ -1027,7 +1040,7 @@ bool GSRendererSW::CheckSourcePages(SharedData* sd)
 	return false;
 }
 
-bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
+bool GSRendererSW::GetScanlineGlobalData(SharedData* data, bool round_uv)
 {
 	GSScanlineGlobalData& gd = data->global;
 
@@ -1131,8 +1144,9 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 		{
 			gd.sel.tfx = context->TEX0.TFX;
 			gd.sel.tcc = context->TEX0.TCC;
-			gd.sel.fst = PRIM->FST;
+			gd.sel.fst = PRIM->FST | round_uv;
 			gd.sel.ltf = m_vt.IsLinear();
+			gd.sel.rounduv = round_uv;
 
 			if (GSLocalMemory::m_psm[context->TEX0.PSM].pal > 0)
 			{

@@ -69,8 +69,10 @@ using namespace Xbyak;
 
 #if USING_YMM
 static constexpr const GSScanlineConstantData256B& g_const = g_const_256b;
+using GSScanlineConstantDataT = GSScanlineConstantData256B;
 #else
 static constexpr const GSScanlineConstantData128B& g_const = g_const_128b;
+using GSScanlineConstantDataT = GSScanlineConstantData128B;
 #endif
 
 template <typename A, typename B>
@@ -182,6 +184,16 @@ void GSDrawScanlineCodeGenerator::broadcastsd(const XYm& reg, const Address& mem
 	vbroadcastsd(reg, mem);
 #else
 	movddup(reg, mem);
+#endif
+}
+
+void GSDrawScanlineCodeGenerator::broadcastss(const XYm& reg, const Address& mem)
+{
+#if USING_YMM
+	vbroadcastss(reg, mem);
+#else
+	movd(reg, mem);
+	pshufd(reg, reg, 0);
 #endif
 }
 
@@ -703,6 +715,62 @@ void GSDrawScanlineCodeGenerator::Init()
 	mov(rax, _rip_global(fzbc));
 	lea(t0, ptr[rax + rbx * 2]);
 
+	if (m_sel.rounduv)
+	{
+		// local.temp.round.left = left;
+
+		mov(_rip_local(temp.round.left), ebx);
+
+		// const u32 bits = scan.t.U32[2];
+
+		mov(eax, ptr[a3 + offsetof(GSVertexSW, t.z)]);
+
+		// const int prim_left = (bits >> 0) & 0xFFF;
+		// local.temp.round.prim_left = prim_left;
+
+		mov(ebx, eax);
+		and_(ebx, 0xFFF);
+		mov(_rip_local(temp.round.prim_left), ebx);
+
+		// const int flags_u = (bits >> 24) & 0xF;
+		// local.temp.round.flags_u = flags_u;
+
+		mov(ebx, eax);
+		shr(ebx, 24);
+		and_(ebx, 0xF);
+		mov(_rip_local(temp.round.flags_u), ebx);
+
+		// const int prim_top = (bits >> 12) & 0xFFF;
+		// int flags_v = (bits >> 28) & 0xF;
+		
+		mov(ebx, eax);
+		shr(ebx, 12);
+		and_(ebx, 0xFFF);
+		shr(eax, 28);
+		
+		static_assert((ROUND_UV_DOWN >> 1) == ROUND_UV_UP);
+		// if (prim_top == top)
+		// {
+		//   flags_v = ((flags_v & ROUND_UV_DOWN) >> 1) | (flags_v & ~ROUND_UV_DOWN);
+		// }
+		
+		Label end_if;
+		cmp(ebx, a2.cvt32());
+		je("@f");
+		jmp(end_if);
+		L("@@");
+		mov(ebx, eax);
+		and_(ebx, ROUND_UV_DOWN);
+		shr(ebx, 1);
+		and_(eax, ~ROUND_UV_DOWN);
+		or_(eax, ebx);
+		L(end_if);
+		
+		// local.temp.round.flags_v = flags_v;
+
+		mov(_rip_local(temp.round.flags_v), eax);
+	}
+
 	if ((m_sel.prim != GS_SPRITE_CLASS && ((m_sel.fwrite && m_sel.fge) || m_sel.zb)) || (m_sel.fb && (m_sel.edge || m_sel.tfx != TFX_NONE || m_sel.iip)))
 	{
 		// a1 = &m_local.d[skip] // note a1 was (skip << 4)
@@ -1063,6 +1131,15 @@ void GSDrawScanlineCodeGenerator::Step()
 		pmovsxbd(_test, ptr[rax + _m_const + offsetof(GSScanlineConstantData256B, m_test[0])]);
 #endif
 	}
+
+	if (m_sel.rounduv)
+	{
+		// local.temp.round.left += vlen;
+
+		mov(eax, _rip_local(temp.round.left));
+		add(eax, vecints);
+		mov(_rip_local(temp.round.left), eax);
+	}
 }
 
 /// Inputs: xym0[x86]=z, xym7[x64]=z0, t1=fza_base, t0=fza_offset, _test
@@ -1235,6 +1312,11 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 		movdqa(xym3, _t);
 	}
 
+	if (m_sel.rounduv)
+	{
+		RoundUV(xym2, xym3, xym0, xym1, xym4, xym5, xym6, xym7);
+	}
+
 	if (m_sel.ltf)
 	{
 		const XYm& vf = xym7;
@@ -1245,7 +1327,7 @@ void GSDrawScanlineCodeGenerator::SampleTexture()
 		pshufhw(xym4, xym4, _MM_SHUFFLE(2, 2, 0, 0));
 		psrlw(xym4, 12);
 
-		if (m_sel.prim != GS_SPRITE_CLASS)
+		if (m_sel.prim != GS_SPRITE_CLASS || m_sel.rounduv)
 		{
 			// GSVector4i vf = v.xxzzlh().srl16(12);
 
@@ -3372,4 +3454,101 @@ void GSDrawScanlineCodeGenerator::ReadTexelImpl(const Xmm& dst, const Xmm& addr,
 		movd(dst, src);
 	else
 		pinsrd(dst, src, i);
+}
+
+void GSDrawScanlineCodeGenerator::RoundUV(const XYm& u, const XYm& v, const XYm& tmp1,
+	const XYm& tmp2, const XYm& tmp3, const XYm& tmp4, const XYm& tmp5, const XYm& tmp6)
+{
+	for (int i = 0; i < 2; i++)
+	{
+		// i == 0: U rounding.
+		// i == 1: V rounding.
+
+		if (i == 0)
+		{
+			// const VectorI curr_x = VectorI(local.temp.round.left) + VectorI::load<true>(g_const.m_offsets);
+
+			broadcastss(tmp1, _rip_local(temp.round.left));
+			paddd(tmp1, ptr[_m_const + offsetof(GSScanlineConstantDataT, m_offsets)]);
+
+			// const VectorI at_left = VectorI(local.temp.round.prim_left) == curr_x;
+
+			broadcastss(tmp2, _rip_local(temp.round.prim_left));
+			pcmpeqd(tmp1, tmp2);
+		}
+
+		// const VectorI round_setting_u = VectorI(local.temp.round.flags_u);
+		// const VectorI round_setting_v = VectorI(local.temp.round.flags_v);
+
+		broadcastss(tmp2, i == 0 ? _rip_local(temp.round.flags_u) : _rip_local(temp.round.flags_v));
+
+		// const VectorI round_down_const = VectorI::load<true>(g_const.m_round_down);
+		// const VectorI round_down_u = (round_setting_u == round_down_const) & ~at_left;
+		// const VectorI round_down_v = (round_setting_v == round_down_const);
+
+		movaps(tmp3, ptr[_m_const + offsetof(GSScanlineConstantDataT, m_round_down)]);
+		pcmpeqd(tmp3, tmp2);
+		if (i == 0)
+		{
+			movaps(tmp4, tmp3);
+			movaps(tmp3, tmp1);
+			pandn(tmp3, tmp4);
+		}
+
+		// const VectorI round_up_const = VectorI::load<true>(g_const.m_round_up);
+		// const VectorI round_up_u = (round_setting_u == round_up_const) |
+		//                            ((round_setting_u == round_down_const) & at_left);
+		// const VectorI round_up_v = (round_setting_v == round_up_const);
+
+		movaps(tmp4, ptr[_m_const + offsetof(GSScanlineConstantDataT, m_round_up)]);
+		pcmpeqd(tmp4, tmp2);
+		if (i == 0)
+		{
+			movaps(tmp5, ptr[_m_const + offsetof(GSScanlineConstantDataT, m_round_down)]);
+			pcmpeqd(tmp5, tmp2);
+			pand(tmp5, tmp1);
+			por(tmp4, tmp5);
+		}
+
+		// const VectorI quarter_texel = VectorI::load<true>(g_const.m_quarter_texel);
+		// const VectorI half_texel_mask = VectorI::load<true>(g_const.m_half_texel_mask);
+		// VectorI ui = (u + quarter_texel) & half_texel_mask;
+		// VectorI vi = (v + quarter_texel) & half_texel_mask;
+
+		const XYm& uv = i == 0 ? u : v;
+		movaps(tmp1, ptr[_m_const + offsetof(GSScanlineConstantDataT, m_quarter_texel)]);
+		paddd(tmp1, uv);
+		pand(tmp1, ptr[_m_const + offsetof(GSScanlineConstantDataT, m_half_texel_mask)]);
+
+		// const VectorI threshold = VectorI::load<true>(g_const.m_round_threshold);
+		// VectorI close_u = (u - ui).abs32() <= threshold;
+		// VectorI close_v = (v - vi).abs32() <= threshold;
+
+		movaps(tmp2, uv);
+		psubd(tmp2, tmp1);
+		pabsd(tmp2, tmp2);
+		movaps(tmp5, ptr[_m_const + offsetof(GSScanlineConstantDataT, m_round_threshold)]);
+		pcmpgtd(tmp2, tmp5);
+		pcmpeqd(tmp6, tmp6);
+		pxor(tmp2, tmp6);
+
+		// u = u.blend8(ui - threshold, close_u & round_down_u);
+		// u = u.blend8(ui + threshold, close_u & round_up_u);
+		// v = v.blend8(vi - threshold, close_v & round_down_v);
+		// v = v.blend8(vi + threshold, close_v & round_up_v);
+		
+		pand(tmp3, tmp2);
+		pand(tmp4, tmp2);		
+		movaps(tmp2, tmp1);
+		movaps(tmp6, tmp1);
+		psubd(tmp2, tmp5);
+		paddd(tmp6, tmp5);
+		pand(tmp2, tmp3);
+		pand(tmp6, tmp4);
+		por(tmp3, tmp4);
+		pandn(tmp3, uv);
+		por(tmp3, tmp2);
+		por(tmp3, tmp6);
+		movaps(uv, tmp3);
+	}
 }

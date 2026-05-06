@@ -486,6 +486,44 @@ __ri static void WritePixel(const T& src, int addr, int i, u32 psm, const GSScan
 	}
 }
 
+__fi static void RoundUV(VectorI& u, VectorI& v, const GSScanlineLocalData& local)
+{
+	// Determine if we're at left edge of prim. Top edge handling is in init.
+	const VectorI curr_x = VectorI(local.temp.round.left) + VectorI::load<true>(g_const_256b.m_offsets);
+	const VectorI at_left = curr_x == VectorI(local.temp.round.prim_left);
+
+	// Get round settings from memory.
+	const VectorI round_setting_u = VectorI(local.temp.round.flags_u);
+	const VectorI round_setting_v = VectorI(local.temp.round.flags_v);
+
+	// Determine round down.
+	const VectorI round_down_const = VectorI::load<true>(g_const_256b.m_round_down);
+	const VectorI round_down_u = (round_setting_u == round_down_const) & ~at_left;
+	const VectorI round_down_v = (round_setting_v == round_down_const);
+
+	// Determine round up.
+	// U round down gets converted to round up at left pixels.
+	const VectorI round_up_const = VectorI::load<true>(g_const_256b.m_round_up);
+	const VectorI round_up_u = (round_setting_u == round_up_const) |
+	                           ((round_setting_u == round_down_const) & at_left);
+	const VectorI round_up_v = (round_setting_v == round_up_const);
+
+	// Round U, V, to nearest half texel.
+	const VectorI quarter_texel = VectorI::load<true>(g_const_256b.m_quarter_texel);
+	const VectorI half_texel_mask = VectorI::load<true>(g_const_256b.m_half_texel_mask);
+	VectorI ui = (u + quarter_texel) & half_texel_mask;
+	VectorI vi = (v + quarter_texel) & half_texel_mask;
+
+	const VectorI threshold = VectorI::load<true>(g_const_256b.m_round_threshold);
+	VectorI close_u = (u - ui).abs32() <= threshold;
+	VectorI close_v = (v - vi).abs32() <= threshold;
+
+	u = u.blend8(ui - threshold, close_u & round_down_u);
+	u = u.blend8(ui + threshold, close_u & round_up_u);
+	v = v.blend8(vi - threshold, close_v & round_down_v);
+	v = v.blend8(vi + threshold, close_v & round_up_v);
+}
+
 void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSVertexSW& scan, GSScanlineLocalData& local)
 {
 	CDrawScanline(pixels, left, top, scan, local, GlobalFromLocal(local).sel);
@@ -533,6 +571,29 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 
 	const GSVector2i* fza_base = &global.fzbr[top];
 	const GSVector2i* fza_offset = &global.fzbc[left >> 2];
+
+	if (sel.rounduv)
+	{
+		local.temp.round.left = left;
+
+		const u32 bits = scan.t.U32[2];
+		const int prim_left = (bits >> 0) & 0xFFF;
+		const int prim_top = (bits >> 12) & 0xFFF;
+		const int flags_u = (bits >> 24) & 0xF;
+		int flags_v = (bits >> 28) & 0xF;
+
+		if (prim_top == top)
+		{
+			// For top pixels, round up V instead of round-down.
+			static_assert((ROUND_UV_DOWN >> 1) == ROUND_UV_UP);
+			flags_v = ((flags_v & ROUND_UV_DOWN) >> 1) | (flags_v & ~ROUND_UV_DOWN);
+		}
+
+		local.temp.round.left = left;
+		local.temp.round.prim_left = prim_left;
+		local.temp.round.flags_u = flags_u;
+		local.temp.round.flags_v = flags_v;
+	}
 
 	if (sel.prim != GS_SPRITE_CLASS)
 	{
@@ -1090,11 +1151,16 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 						v = VectorI::cast(t);
 					}
 
+					if (sel.rounduv)
+					{
+						RoundUV(u, v, local);
+					}
+
 					if (sel.ltf)
 					{
 						uf = u.xxzzlh().srl16<12>();
 
-						if (sel.prim != GS_SPRITE_CLASS)
+						if (sel.prim != GS_SPRITE_CLASS || sel.rounduv)
 						{
 							vf = v.xxzzlh().srl16<12>();
 						}
@@ -1754,6 +1820,11 @@ __ri void GSDrawScanline::CDrawScanline(int pixels, int left, int top, const GSV
 #else
 			test = const_test[7 + (steps & (steps >> 31))];
 #endif
+		}
+
+		if (sel.rounduv)
+		{
+			local.temp.round.left += vlen;
 		}
 	}
 }

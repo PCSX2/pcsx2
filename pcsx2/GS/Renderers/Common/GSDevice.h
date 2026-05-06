@@ -316,8 +316,8 @@ struct alignas(16) GSHWDrawConfig
 				u8 tme : 1;
 				u8 iip : 1;
 				u8 point_size : 1;		///< Set when points need to be expanded without VS expanding.
+				u8 round_uv : 1;
 				VSExpand expand : 3;
-				u8 _free : 1;
 			};
 			u8 key;
 		};
@@ -426,6 +426,9 @@ struct alignas(16) GSHWDrawConfig
 
 				// Anisotropic filtering
 				u32 sw_aniso : 5;
+				
+				// Round UV
+				u32 round_uv : 1;
 			};
 
 			struct

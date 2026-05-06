@@ -78,3 +78,16 @@ __forceinline_odr GSVector4i GetVertexFOG(const GSVertex& v)
 {
 	return GSVector4i(v.m[1]).wwww();
 }
+
+// Threshold for determining when to round UVs. Chosen by hand based on ad hoc testing of some dumps.
+// Use twice the denominator in the threshold as we allow position/texture coordinates to be at
+// half-texel increments for rounding.
+constexpr int ROUND_UV_DENOMINATOR = 32;
+constexpr float ROUND_UV_THRESHOLD = 16.0f / static_cast<float>(2 * ROUND_UV_DENOMINATOR); // 16.0f = 1 texel.
+
+// Bits to send to shader or scanline renderer to determine rounding behavior.
+enum
+{
+	ROUND_UV_UP = 1,
+	ROUND_UV_DOWN = 2,
+};
