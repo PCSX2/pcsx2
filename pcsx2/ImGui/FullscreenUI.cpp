@@ -649,7 +649,7 @@ void FullscreenUI::Render()
 	if (s_about_window_open)
 		DrawAboutWindow();
 
-	if (s_achievements_login_open)
+	if (s_achievements_login_open || ImGui::IsPopupOpen("RetroAchievements"))
 		DrawAchievementsLoginWindow();
 
 	if (s_input_binding_type != InputBindingInfo::Type::Unknown)
@@ -3499,14 +3499,18 @@ bool FullscreenUI::OpenAchievementsWindow()
 
 void FullscreenUI::DrawAchievementsLoginWindow()
 {
-	ImGui::SetNextWindowSize(LayoutScale(400.0f, 330.0f));
+	if (s_achievements_login_open && !ImGui::IsPopupOpen("RetroAchievements"))
+		ImGui::OpenPopup("RetroAchievements");
+
+	const float dialog_width = std::clamp(LayoutScale(420.0f), 300.0f, ImGui::GetIO().DisplaySize.x);
+	ImGui::SetNextWindowSizeConstraints(ImVec2(dialog_width, 0.0f), ImVec2(dialog_width, ImGui::GetIO().DisplaySize.y));
 	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(ImGuiFullscreen::LAYOUT_WINDOW_ROUNDING));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(24.0f, 24.0f));
 	ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.13f, 0.13f, 0.13f, 0.95f));
 
-	if (ImGui::BeginPopupModal("RetroAchievements", &s_achievements_login_open, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar))
+	if (ImGui::BeginPopupModal("RetroAchievements", &s_achievements_login_open, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize))
 	{
 		const float content_width = ImGui::GetContentRegionAvail().x;
 
@@ -3553,7 +3557,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
 		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
 
-		if (s_achievements_login_logging_in)
+		if (s_achievements_login_logging_in || s_achievements_login_show_dismiss)
 			ImGui::BeginDisabled();
 
 		ImGui::SetNextItemWidth(content_width);
@@ -3567,7 +3571,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 		ImGui::PopStyleColor(5);
 		ImGui::PopStyleVar(3);
 
-		if (s_achievements_login_logging_in)
+		if (s_achievements_login_logging_in || s_achievements_login_show_dismiss)
 			ImGui::EndDisabled();
 
 		ImGui::Spacing();
@@ -3582,20 +3586,67 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 			ImGui::PopStyleColor();
 			ImGui::Spacing();
 		}
+		else if (s_achievements_login_show_dismiss)
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.35f, 0.9f, 0.35f, 1.0f));
+			const TinyString username = Host::GetBaseTinyStringSettingValue("Achievements", "Username", "");
+			const SmallString success_text = SmallString::from_format(
+				FSUI_FSTR("Successfully logged in as {}."), username.empty() ? "Unknown" : username.view());
+			const float status_width = ImGui::CalcTextSize(success_text.c_str()).x;
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (content_width - status_width) * 0.5f);
+			ImGui::TextUnformatted(success_text.c_str());
+			ImGui::PopStyleColor();
+			ImGui::Spacing();
+		}
 
-		const float button_height = LayoutScale(36.0f);
-		const float button_width = LayoutScale(100.0f);
+		const float button_height = std::max(LayoutScale(36.0f), 28.0f);
 		const float button_spacing = LayoutScale(12.0f);
-		const float total_width = (button_width * 2) + button_spacing;
-		const float start_x = (content_width - total_width) * 0.5f;
+		const float button_width = (content_width - button_spacing) * 0.5f;
 
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + start_x);
+		auto CloseLoginPopup = []() {
+			ImGui::CloseCurrentPopup();
+			s_achievements_login_open = false;
+			s_achievements_login_logging_in = false;
+			s_achievements_login_show_dismiss = false;
+
+			s_achievements_login_username[0] = '\0';
+			s_achievements_login_password[0] = '\0';
+		};
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(ImGuiFullscreen::LAYOUT_FRAME_ROUNDING));
 
-		const bool can_login = !s_achievements_login_logging_in &&
-							   strlen(s_achievements_login_username) > 0 &&
-							   strlen(s_achievements_login_password) > 0;
+		const bool can_login = !s_achievements_login_show_dismiss && !s_achievements_login_logging_in &&
+		                       strlen(s_achievements_login_username) > 0 &&
+		                       strlen(s_achievements_login_password) > 0;
+
+		if (s_achievements_login_show_dismiss)
+		{
+			// keep dialog open and let user explicitly dismiss.
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 0.9f, 1.0f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 1.0f, 1.0f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.4f, 0.8f, 1.0f));
+
+			if (ImGui::Button(FSUI_CSTR("Dismiss"), ImVec2(button_width, button_height)) && !s_achievements_login_logging_in)
+				CloseLoginPopup();
+
+			ImGui::PopStyleColor(3);
+
+			ImGui::SameLine(0, button_spacing);
+
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+			ImGui::BeginDisabled();
+			ImGui::Button(FSUI_CSTR("Login"), ImVec2(button_width, button_height));
+			ImGui::EndDisabled();
+			ImGui::PopStyleColor(3);
+
+			ImGui::PopStyleVar();
+			ImGui::EndPopup();
+			ImGui::PopStyleColor();
+			ImGui::PopStyleVar(2);
+			return;
+		}
 
 		if (can_login)
 		{
@@ -3613,6 +3664,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 		if (ImGui::Button(FSUI_CSTR("Login"), ImVec2(button_width, button_height)) && can_login)
 		{
 			s_achievements_login_logging_in = true;
+			s_achievements_login_show_dismiss = false;
 
 			Host::RunOnCPUThread([username = std::string(s_achievements_login_username),
 									 password = std::string(s_achievements_login_password)]() {
@@ -3624,14 +3676,10 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 				if (!result)
 				{
 					ShowToast(std::string(), fmt::format(FSUI_FSTR("Login failed.\nError: {}\n\nPlease check your username and password, and try again."),
-									 error.GetDescription()));
+												 error.GetDescription()));
 					return;
 				}
 
-				ImGui::CloseCurrentPopup();
-				s_achievements_login_open = false;
-
-				s_achievements_login_username[0] = '\0';
 				s_achievements_login_password[0] = '\0';
 
 				if (s_achievements_login_reason == Achievements::LoginRequestReason::UserInitiated)
@@ -3683,11 +3731,12 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 							});
 					}
 				}
+
+				s_achievements_login_show_dismiss = true;
 			});
 		}
 
 		ImGui::PopStyleColor(3);
-
 		ImGui::SameLine(0, button_spacing);
 
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
@@ -3702,12 +3751,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 					Achievements::DisableHardcoreMode();
 			}
 
-			ImGui::CloseCurrentPopup();
-			s_achievements_login_open = false;
-			s_achievements_login_logging_in = false;
-
-			s_achievements_login_username[0] = '\0';
-			s_achievements_login_password[0] = '\0';
+			CloseLoginPopup();
 		}
 
 		ImGui::PopStyleColor(3);
@@ -3718,9 +3762,6 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
 	ImGui::PopStyleColor();
 	ImGui::PopStyleVar(2);
-
-	if (!ImGui::IsPopupOpen("RetroAchievements"))
-		ImGui::OpenPopup("RetroAchievements");
 }
 
 bool FullscreenUI::IsAchievementsWindowOpen()
@@ -3960,11 +4001,14 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 			"sounds/achievements/lbsubmit.wav", FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Select Leaderboard Submit Sound"));
 
 		MenuHeading(FSUI_CSTR("Account"));
-		if (bsi->ContainsValue("Achievements", "Token"))
+		SettingsInterface* secrets_si = Host::Internal::GetSecretsSettingsLayer();
+		const TinyString username = bsi->GetTinyStringValue("Achievements", "Username", "");
+		const bool has_token = (secrets_si && secrets_si->ContainsValue("Achievements", "Token"));
+		if (has_token)
 		{
 			ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
 			ActiveButton(SmallString::from_format(
-							 fmt::runtime(FSUI_ICONSTR(ICON_FA_USER, "Username: {}")), bsi->GetTinyStringValue("Achievements", "Username")),
+							 fmt::runtime(FSUI_ICONSTR(ICON_FA_USER, "Username: {}")), username.empty() ? "Unknown" : username.view()),
 				false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 			ActiveButton(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_CLOCK, "Login token generated on {}")),
 							 TimeToPrintableString(static_cast<time_t>(
@@ -3984,6 +4028,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 			if (MenuButton(FSUI_ICONSTR(ICON_FA_KEY, "Login"), FSUI_CSTR("Logs in to RetroAchievements.")))
 			{
 				s_achievements_login_reason = Achievements::LoginRequestReason::UserInitiated;
+				s_achievements_login_show_dismiss = false;
 				s_achievements_login_open = true;
 			}
 		}
