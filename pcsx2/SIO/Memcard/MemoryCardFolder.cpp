@@ -1788,32 +1788,26 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 			std::string filePath(Path::Combine(dirPath, fd.FileName));
 			if (!(fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY))
 			{
-				std::optional<ryml::Tree> yaml = loadYamlFile(Path::Combine(dirPath, "_pcsx2_index").c_str());
+				const std::optional<ryml::Tree> yaml = loadYamlFile(Path::Combine(dirPath, "_pcsx2_index").c_str());
 
 				EnumeratedFileEntry entry{fd.FileName, fd.CreationTime, fd.ModificationTime, true};
 				int64_t newOrder = orderForLegacyFiles--;
 				if (yaml.has_value() && !yaml.value().empty())
 				{
-					ryml::NodeRef index = yaml.value().rootref();
-					for (const auto& n : index.children())
+					const ryml::ConstNodeRef index_node = yaml.value().crootref();
+					if (const ryml::ConstNodeRef child_node = index_node.find_child(ryml::to_csubstr(fd.FileName)); child_node.readable())
 					{
-						auto key = std::string(n.key().str, n.key().len);
-					}
-					if (index.has_child(ryml::to_csubstr(fd.FileName)))
-					{
-						const auto& node = index[ryml::to_csubstr(fd.FileName)];
-						if (node.has_child("timeCreated"))
-						{
-							node["timeCreated"] >> entry.m_timeCreated;
-						}
-						if (node.has_child("timeModified"))
-						{
-							node["timeModified"] >> entry.m_timeModified;
-						}
-						if (node.has_child("order"))
-						{
-							node["order"] >> newOrder;
-						}
+						const ryml::ConstNodeRef time_created = child_node.find_child("timeCreated");
+						if (time_created.readable() && time_created.has_val() && time_created.val().is_integer())
+							ryml::from_chars(time_created.val(), &entry.m_timeCreated);
+
+						const ryml::ConstNodeRef time_modified = child_node.find_child("timeModified");
+						if (time_modified.readable() && time_modified.has_val() && time_modified.val().is_integer())
+							ryml::from_chars(time_modified.val(), &entry.m_timeModified);
+
+						const ryml::ConstNodeRef order = child_node.find_child("order");
+						if (order.readable() && order.has_val() && order.val().is_integer())
+							ryml::from_chars(order.val(), &newOrder);
 					}
 				}
 
