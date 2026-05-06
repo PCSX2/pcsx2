@@ -186,6 +186,12 @@ private:
 	/// Poll at half the vsync rate for FSUI to reduce the chance of getting a press+release in the same frame.
 	static constexpr u32 FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL = 8;
 
+	/// Initial delay before auto-repeat begins (ms).
+	static constexpr u32 NAV_REPEAT_INITIAL_DELAY = 400;
+
+	/// Interval between repeated navigation events while a direction is held (ms).
+	static constexpr u32 NAV_REPEAT_INTERVAL = 100;
+
 	void destroyVM();
 
 	void createBackgroundControllerPollTimer();
@@ -198,12 +204,17 @@ private Q_SLOTS:
 	void onDisplayWindowResized(u32 width, u32 height, float scale);
 	void onApplicationStateChanged(Qt::ApplicationState state);
 	void redrawDisplayWindow();
+	void startNavRepeatTimer();
+	void stopNavRepeatTimer();
+	void onNavRepeatTimeout();
 
 private:
 	QThread* m_ui_thread;
 	QSemaphore m_started_semaphore;
 	QEventLoop* m_event_loop = nullptr;
 	QTimer* m_background_controller_polling_timer = nullptr;
+	QTimer* m_nav_repeat_timer = nullptr;
+	std::atomic<int> m_nav_held_key{-1};
 
 	std::atomic_bool m_shutdown_flag{false};
 	std::atomic_bool m_run_fullscreen_ui{false};

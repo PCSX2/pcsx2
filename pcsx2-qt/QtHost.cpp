@@ -434,10 +434,17 @@ void EmuThread::run()
 		{
 			s_nav_state |= bit;
 			emit g_emu_thread->navigationKeyPressed(qt_key);
+			g_emu_thread->m_nav_held_key.store(qt_key, std::memory_order_release);
+			QMetaObject::invokeMethod(g_emu_thread, &EmuThread::startNavRepeatTimer, Qt::QueuedConnection);
 		}
 		else if (!pressed && was_pressed)
 		{
 			s_nav_state &= ~bit;
+			if (g_emu_thread->m_nav_held_key.load(std::memory_order_acquire) == qt_key)
+			{
+				g_emu_thread->m_nav_held_key.store(-1, std::memory_order_release);
+				QMetaObject::invokeMethod(g_emu_thread, &EmuThread::stopNavRepeatTimer, Qt::QueuedConnection);
+			}
 		}
 
 		// Consume the event so it doesn't reach InvokeEvents/pad bindings.
@@ -508,12 +515,19 @@ void EmuThread::createBackgroundControllerPollTimer()
 	m_background_controller_polling_timer->setSingleShot(false);
 	m_background_controller_polling_timer->setTimerType(Qt::CoarseTimer);
 	connect(m_background_controller_polling_timer, &QTimer::timeout, this, &EmuThread::doBackgroundControllerPoll);
+
+	m_nav_repeat_timer = new QTimer(this);
+	m_nav_repeat_timer->setSingleShot(false);
+	connect(m_nav_repeat_timer, &QTimer::timeout, this, &EmuThread::onNavRepeatTimeout);
 }
 
 void EmuThread::destroyBackgroundControllerPollTimer()
 {
 	delete m_background_controller_polling_timer;
 	m_background_controller_polling_timer = nullptr;
+
+	delete m_nav_repeat_timer;
+	m_nav_repeat_timer = nullptr;
 }
 
 void EmuThread::startBackgroundControllerPollTimer()
@@ -536,6 +550,31 @@ void EmuThread::stopBackgroundControllerPollTimer()
 void EmuThread::doBackgroundControllerPoll()
 {
 	VMManager::IdlePollUpdate();
+}
+
+void EmuThread::startNavRepeatTimer()
+{
+	m_nav_repeat_timer->setInterval(static_cast<int>(NAV_REPEAT_INITIAL_DELAY));
+	m_nav_repeat_timer->start();
+}
+
+void EmuThread::stopNavRepeatTimer()
+{
+	m_nav_repeat_timer->stop();
+}
+
+void EmuThread::onNavRepeatTimeout()
+{
+	const int key = m_nav_held_key.load(std::memory_order_acquire);
+	if (key < 0 || VMManager::HasValidVM() || FullscreenUI::IsInitialized())
+	{
+		m_nav_held_key.store(-1, std::memory_order_release);
+		m_nav_repeat_timer->stop();
+		return;
+	}
+	if (m_nav_repeat_timer->interval() != static_cast<int>(NAV_REPEAT_INTERVAL))
+		m_nav_repeat_timer->setInterval(static_cast<int>(NAV_REPEAT_INTERVAL));
+	emit navigationKeyPressed(key);
 }
 
 void EmuThread::toggleFullscreen()
