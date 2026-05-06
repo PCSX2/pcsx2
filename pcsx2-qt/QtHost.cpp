@@ -387,7 +387,7 @@ void EmuThread::run()
 
 	// Install controller navigation callback so D-pad/analog stick can navigate the game list.
 	InputManager::SetUINavigationCallback([](GenericInputBinding key, float value) -> bool {
-		if (VMManager::HasValidVM())
+		if (VMManager::HasValidVM() || FullscreenUI::IsInitialized())
 			return false;
 
 		static constexpr float NAV_THRESHOLD = 0.5f;
