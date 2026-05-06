@@ -4979,6 +4979,8 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 		MenuHeading(FSUI_CSTR("Graphics"));
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BUG, "Use Debug Device"), FSUI_CSTR("Enables API-level validation of graphics commands."), "EmuCore/GS",
 			"UseDebugDevice", false);
+
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BUG, "Use Debug Blend"), FSUI_CSTR("Forces SW blending and disables several optimizations."), "EmuCore/GS", "UseDebugBlend", false);
 	}
 
 	EndMenuButtons();

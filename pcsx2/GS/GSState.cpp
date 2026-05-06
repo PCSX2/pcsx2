@@ -4647,13 +4647,13 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlistImpl(bool save_drawlis
 			};
 
 			// First check: see if the triangles are part of a triangle strip.
-			if (!got_bbox && !using_aa1)
+			if (!got_bbox && !using_aa1 && !GSConfig.UseDebugBlend)
 			{
 				got_bbox = CheckTriangleStrips(j, skip, bbox, saved_tristrip);
 			}
 
 			// Second check: see if the triangles are part of triangle fan.
-			if (!got_bbox && !using_aa1)
+			if (!got_bbox && !using_aa1 && !GSConfig.UseDebugBlend)
 			{
 				got_bbox = CheckTriangleQuads.template operator()<1>(j, skip, bbox);
 			}
