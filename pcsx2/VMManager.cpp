@@ -46,6 +46,7 @@
 #include "common/Console.h"
 #include "common/Error.h"
 #include "common/FileSystem.h"
+#include "common/Path.h"
 #include "common/FPControl.h"
 #include "common/ScopedGuard.h"
 #include "common/SettingsWrapper.h"
@@ -1235,8 +1236,75 @@ bool VMManager::HasBootedELF()
 	return s_current_crc != 0 && s_elf_executed;
 }
 
+static std::string s_current_m3u_playlist_source;
+static std::vector<std::string> s_current_m3u_playlist_entries;
+static int s_current_m3u_playlist_index = -1;
+
+static void ClearM3UPlaylist()
+{
+	s_current_m3u_playlist_source.clear();
+	s_current_m3u_playlist_entries.clear();
+	s_current_m3u_playlist_index = -1;
+}
+
+static void SetM3UPlaylist(const std::string& m3u_path, std::vector<std::string> entries, int current_index)
+{
+	s_current_m3u_playlist_source = m3u_path;
+	s_current_m3u_playlist_entries = std::move(entries);
+	s_current_m3u_playlist_index = current_index;
+}
+
+static void UpdateM3UPlaylistCurrentIndex(const std::string& current_disc_path)
+{
+	s_current_m3u_playlist_index = -1;
+	for (size_t i = 0; i < s_current_m3u_playlist_entries.size(); ++i)
+	{
+		if (s_current_m3u_playlist_entries[i] == current_disc_path)
+		{
+			s_current_m3u_playlist_index = static_cast<int>(i);
+			return;
+		}
+	}
+}
+
+static std::vector<std::string> ParseM3UPlaylist(const std::string& m3u_path)
+{
+	std::vector<std::string> disc_paths;
+
+	const std::optional<std::string> content = FileSystem::ReadFileToString(m3u_path.c_str());
+	if (!content.has_value())
+		return disc_paths;
+
+	const std::string_view m3u_dir = Path::GetDirectory(m3u_path);
+
+	const std::vector<std::string_view> lines = StringUtil::SplitString(*content, '\n', false);
+	for (const std::string_view line : lines)
+	{
+		// Skip empty lines and comments
+		const std::string_view trimmed = StringUtil::StripWhitespace(line);
+		if (trimmed.empty() || trimmed[0] == '#')
+			continue;
+
+		// Resolve relative paths
+		std::string disc_path;
+		if (Path::IsAbsolute(trimmed))
+		{
+			disc_path = std::string(trimmed);
+		}
+		else
+		{
+			disc_path = Path::Combine(m3u_dir, trimmed);
+		}
+
+		disc_paths.push_back(std::move(disc_path));
+	}
+
+	return disc_paths;
+}
+
 bool VMManager::AutoDetectSource(const std::string& filename, Error* error)
 {
+	ClearM3UPlaylist();
 	if (!filename.empty())
 	{
 		if (!FileSystem::FileExists(filename.c_str()))
@@ -1244,7 +1312,7 @@ bool VMManager::AutoDetectSource(const std::string& filename, Error* error)
 			Error::SetStringFmt(error, TRANSLATE_FS("VMManager", "Requested filename '{}' does not exist."), filename);
 			return false;
 		}
-
+		
 		if (IsGSDumpFileName(filename))
 		{
 			CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
@@ -1266,6 +1334,20 @@ bool VMManager::AutoDetectSource(const std::string& filename, Error* error)
 			}
 
 			s_elf_override = filename;
+			return true;
+		}
+		else if (StringUtil::EndsWithNoCase(filename, ".m3u"))
+		{
+			const std::vector<std::string> disc_paths = ParseM3UPlaylist(filename);
+			if (disc_paths.empty())
+			{
+				Error::SetStringFmt(error, TRANSLATE_FS("VMManager", "M3U playlist '{}' does not contain any valid disc paths."), filename);
+				return false;
+			}
+
+			SetM3UPlaylist(filename, disc_paths, 0);
+			CDVDsys_SetFile(CDVD_SourceType::Iso, s_current_m3u_playlist_entries[0]);
+			CDVDsys_ChangeSource(CDVD_SourceType::Iso);
 			return true;
 		}
 		else
@@ -2333,6 +2415,28 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 	const CDVD_SourceType old_type = CDVDsys_GetSourceType();
 	const std::string old_path(CDVDsys_GetFile(old_type));
 
+	if (source == CDVD_SourceType::Iso && StringUtil::EndsWithNoCase(path, ".m3u"))
+	{
+		const std::vector<std::string> disc_paths = ParseM3UPlaylist(path);
+		if (disc_paths.empty())
+		{
+			return false;
+		}
+
+		SetM3UPlaylist(path, disc_paths, 0);
+		path = s_current_m3u_playlist_entries[0];
+	}
+	else if (source != CDVD_SourceType::Iso)
+	{
+		ClearM3UPlaylist();
+	}
+	else if (!path.empty())
+	{
+		UpdateM3UPlaylistCurrentIndex(path);
+		if (s_current_m3u_playlist_index < 0)
+			ClearM3UPlaylist();
+	}
+
 	CDVDsys_ChangeSource(source);
 	if (!path.empty())
 		CDVDsys_SetFile(source, path);
@@ -2385,6 +2489,16 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 	cdvd.Tray.trayState = CDVD_DISC_OPEN;
 	UpdateDiscDetails(false);
 	return result;
+}
+
+const std::vector<std::string>& VMManager::GetM3UPlaylistEntries()
+{
+	return s_current_m3u_playlist_entries;
+}
+
+int VMManager::GetM3UPlaylistCurrentIndex()
+{
+	return s_current_m3u_playlist_index;
 }
 
 bool VMManager::SetELFOverride(std::string path)
@@ -2440,7 +2554,7 @@ bool VMManager::IsSaveStateFileName(const std::string_view path)
 
 bool VMManager::IsDiscFileName(const std::string_view path)
 {
-	static const char* extensions[] = {".iso", ".bin", ".img", ".mdf", ".gz", ".cso", ".zso", ".chd"};
+	static const char* extensions[] = {".iso", ".bin", ".img", ".mdf", ".gz", ".cso", ".zso", ".chd", ".m3u"};
 
 	for (const char* test_extension : extensions)
 	{
