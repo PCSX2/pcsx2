@@ -1142,12 +1142,12 @@ void Achievements::DisplayAchievementSummary()
 				ImGuiFullscreen::AddNotification(
 					"achievement_summary", ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME, std::move(title), std::move(summary), std::move(icon));
 			}
-		});
+	});
 	}
 
 	if (EmuConfig.Achievements.SoundEffects && EmuConfig.Achievements.InfoSound)
 		Common::PlaySoundAsync(
-			(EmuConfig.Achievements.InfoSoundName.empty()
+			(EmuConfig.Achievements.InfoSoundName.empty() || !FileSystem::FileExists(EmuConfig.Achievements.InfoSoundName.c_str())
 				? Path::Combine(EmuFolders::Resources, DEFAULT_INFO_SOUND_NAME)
 				: EmuConfig.Achievements.InfoSoundName).c_str()
 		);
@@ -1203,7 +1203,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 
 	if (EmuConfig.Achievements.SoundEffects && EmuConfig.Achievements.UnlockSound)
 		Common::PlaySoundAsync(
-			(EmuConfig.Achievements.UnlockSoundName.empty()
+			(EmuConfig.Achievements.UnlockSoundName.empty() || !FileSystem::FileExists(EmuConfig.Achievements.UnlockSoundName.c_str())
 				? Path::Combine(EmuFolders::Resources, DEFAULT_UNLOCK_SOUND_NAME)
 				: EmuConfig.Achievements.UnlockSoundName).c_str()
 		);
@@ -1328,7 +1328,7 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
 
 	if (EmuConfig.Achievements.SoundEffects && EmuConfig.Achievements.LBSubmitSound)
 		Common::PlaySoundAsync(
-			(EmuConfig.Achievements.LBSubmitSoundName.empty()
+			(EmuConfig.Achievements.LBSubmitSoundName.empty() || !FileSystem::FileExists(EmuConfig.Achievements.LBSubmitSoundName.c_str())
 				? Path::Combine(EmuFolders::Resources, DEFAULT_LBSUBMIT_SOUND_NAME)
 				: EmuConfig.Achievements.LBSubmitSoundName).c_str()
 		);

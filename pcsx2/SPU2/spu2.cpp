@@ -150,12 +150,13 @@ void SPU2::UpdateSampleRate()
 
 u32 SPU2::GetOutputVolume()
 {
-	return s_output_stream->GetOutputVolume();
+	return s_output_stream ? s_output_stream->GetOutputVolume() : 0;
 }
 
 void SPU2::SetOutputVolume(u32 volume)
 {
-	s_output_stream->SetOutputVolume(volume);
+	if (s_output_stream)
+		s_output_stream->SetOutputVolume(volume);
 }
 
 float SPU2::GetNominalRate()
@@ -198,9 +199,9 @@ void SPU2::SaveOutputVolume()
 	if (!s_output_muted)
 	{
 		if (VMManager::GetTargetSpeed() == 1.0f)
-			s_standard_volume = s_output_stream->GetOutputVolume();
+			s_standard_volume = GetOutputVolume();
 		else
-			s_fast_forward_volume = s_output_stream->GetOutputVolume();
+			s_fast_forward_volume = GetOutputVolume();
 	}
 }
 
@@ -268,12 +269,12 @@ void SPU2::OnTargetSpeedChanged()
 	{
 		if (VMManager::GetTargetSpeed() == 1.0f)
 		{
-			s_fast_forward_volume = s_output_stream->GetOutputVolume();
+			s_fast_forward_volume = GetOutputVolume();
 			s_output_stream->SetOutputVolume(s_standard_volume);
 		}
 		else
 		{
-			s_standard_volume = s_output_stream->GetOutputVolume();
+			s_standard_volume = GetOutputVolume();
 			s_output_stream->SetOutputVolume(s_fast_forward_volume);
 		}
 	}
