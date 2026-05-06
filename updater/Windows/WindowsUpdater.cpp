@@ -10,6 +10,9 @@
 #include "common/StringUtil.h"
 #include "common/ProgressCallback.h"
 #include "common/RedtapeWilCom.h"
+#include "common/Path.h"
+#include <fmt/format.h>
+#include <ctime>
 
 #include <CommCtrl.h>
 #include <shellapi.h>
@@ -433,10 +436,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		progress.ModalError("Failed to parse command line.");
 		return 1;
 	}
-	if (argc != 5)
+	if (argc != 7)
 	{
-		progress.ModalError("Expected 4 arguments: parent process id, output directory, update zip, program to "
-							"launch.\n\nThis program is not intended to be run manually, please use the main PCSX2 application and "
+		progress.ModalError("Expected 6 arguments: parent process id, output directory, update zip, program to "
+							"launch, old version, new version.\n\nThis program is not intended to be run manually, please use the main PCSX2 application and "
 							"click Help->Check for Updates.");
 		return 1;
 	}
@@ -445,6 +448,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	const std::string destination_directory = StringUtil::WideStringToUTF8String(argv[2]);
 	const std::string zip_path = StringUtil::WideStringToUTF8String(argv[3]);
 	const std::wstring program_to_launch(argv[4]);
+	const std::string old_version = StringUtil::WideStringToUTF8String(argv[5]);
+	const std::string new_version = StringUtil::WideStringToUTF8String(argv[6]);
 	argv.reset();
 
 	if (parent_process_id <= 0 || destination_directory.empty() || zip_path.empty() || program_to_launch.empty())
@@ -493,6 +498,18 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 	updater.CleanupStagingDirectory();
 	updater.RemoveUpdateZip();
+
+	// Log the version transition for regression bisecting
+	if (!old_version.empty() && !new_version.empty())
+	{
+		const std::string log_path = Path::Combine(destination_directory, "update_log.txt");
+		const std::time_t t = std::time(nullptr);
+		char timestamp[32];
+		std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", std::localtime(&t));
+		const std::string entry = fmt::format("[{}] Updated PCSX2 from {} to {}\n", timestamp, old_version, new_version);
+		if (auto fp = FileSystem::OpenManagedCFile(log_path.c_str(), "ab"))
+			std::fwrite(entry.c_str(), 1, entry.size(), fp.get());
+	}
 
 	// Rename the new executable to match the existing one
 	if (std::string actual_exe = updater.FindPCSX2Exe(); !actual_exe.empty())
