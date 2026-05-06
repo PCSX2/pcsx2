@@ -747,9 +747,11 @@ void Achievements::ClientServerCall(
 	{
 		rc_api_server_response_t rr;
 		rr.http_status_code = (status_code <= 0) ? (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED ?
-		                                                   RC_API_SERVER_RESPONSE_CLIENT_ERROR :
-		                                                   RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR)
-		                                         : status_code;
+        												RC_API_SERVER_RESPONSE_CLIENT_ERROR :
+    												status_code == HTTPDownloader::HTTP_STATUS_TIMEOUT ?
+        												RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR :
+        												RC_API_SERVER_RESPONSE_CLIENT_ERROR)  // HTTP_STATUS_ERROR = hard fail, don't retry
+    											: status_code;
 		rr.body_length = data.size();
 		rr.body = reinterpret_cast<const char*>(data.data());
 

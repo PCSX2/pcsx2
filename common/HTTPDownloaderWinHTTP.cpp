@@ -56,6 +56,11 @@ bool HTTPDownloaderWinHttp::Initialize(std::string user_agent)
 		return false;
 	}
 
+	DWORD timeout_ms = 15000;
+	WinHttpSetOption(m_hSession, WINHTTP_OPTION_CONNECT_TIMEOUT, &timeout_ms, sizeof(timeout_ms));
+	WinHttpSetOption(m_hSession, WINHTTP_OPTION_SEND_TIMEOUT, &timeout_ms, sizeof(timeout_ms));
+	WinHttpSetOption(m_hSession, WINHTTP_OPTION_RECEIVE_TIMEOUT, &timeout_ms, sizeof(timeout_ms));
+
 	return true;
 }
 
@@ -286,14 +291,16 @@ bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)
 
 	if (!result && GetLastError() != ERROR_IO_PENDING)
 	{
-		Console.Error("WinHttpSendRequest() failed: %u", GetLastError());
-		req->status_code = HTTP_STATUS_ERROR;
-		req->state.store(Request::State::Complete);
+    Console.Error("WinHttpSendRequest() failed: %u", GetLastError());
+    req->status_code = HTTP_STATUS_ERROR;
+    req->state.store(Request::State::Complete);
 	}
-
-	DevCon.WriteLn("Started HTTP request for '%s'", req->url.c_str());
-	req->state = Request::State::Started;
-	req->start_time = Common::Timer::GetCurrentValue();
+	else
+	{
+    DevCon.WriteLn("Started HTTP request for '%s'", req->url.c_str());
+    req->state = Request::State::Started;
+    req->start_time = Common::Timer::GetCurrentValue();
+	}
 	return true;
 }
 
