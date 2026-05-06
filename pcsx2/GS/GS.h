@@ -43,8 +43,14 @@ enum class GSDisplayAlignment
 
 struct GSAdapterInfo
 {
+	struct MonitorInfo
+	{
+		std::string name;
+		std::vector<std::string> fullscreen_modes;
+	};
+
 	std::string name;
-	std::vector<std::string> fullscreen_modes;
+	std::vector<MonitorInfo> monitors;
 	u32 max_texture_size;
 	u32 max_upscale_multiplier;
 };

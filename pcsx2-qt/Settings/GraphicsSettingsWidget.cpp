@@ -5,6 +5,7 @@
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 #include "SettingsWindow.h"
+#include <QtGui/QStandardItemModel>
 #include <QtWidgets/QMessageBox>
 
 #include "pcsx2/Host.h"
@@ -1112,11 +1113,24 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 
 		if (current_adapter_info)
 		{
-			for (const std::string& fs_mode : current_adapter_info->fullscreen_modes)
+			for (const GSAdapterInfo::MonitorInfo& monitor : current_adapter_info->monitors)
 			{
-				m_display.fullscreenModes->addItem(QString::fromStdString(fs_mode));
-				if (current_mode == fs_mode)
-					m_display.fullscreenModes->setCurrentIndex(m_display.fullscreenModes->count() - 1);
+				// Add a disabled separator item as a group header for this monitor.
+				const int separator_index = m_display.fullscreenModes->count();
+				m_display.fullscreenModes->addItem(QString::fromStdString(monitor.name));
+				QStandardItemModel* model = qobject_cast<QStandardItemModel*>(m_display.fullscreenModes->model());
+				if (model)
+				{
+					QStandardItem* separator = model->item(separator_index);
+					separator->setFlags(separator->flags() & ~Qt::ItemIsEnabled & ~Qt::ItemIsSelectable);
+				}
+
+				for (const std::string& fs_mode : monitor.fullscreen_modes)
+				{
+					m_display.fullscreenModes->addItem(QString::fromStdString(fs_mode));
+					if (current_mode == fs_mode)
+						m_display.fullscreenModes->setCurrentIndex(m_display.fullscreenModes->count() - 1);
+				}
 			}
 		}
 	}
