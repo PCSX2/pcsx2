@@ -385,6 +385,67 @@ void EmuThread::run()
 	createBackgroundControllerPollTimer();
 	startBackgroundControllerPollTimer();
 
+	// Install controller navigation callback so D-pad/analog stick can navigate the game list.
+	InputManager::SetUINavigationCallback([](GenericInputBinding key, float value) -> bool {
+		if (VMManager::HasValidVM() || FullscreenUI::IsInitialized())
+			return false;
+
+		static constexpr float NAV_THRESHOLD = 0.5f;
+		static u8 s_nav_state = 0;
+
+		u8 bit = 0;
+		int qt_key = -1;
+
+		switch (key)
+		{
+			case GenericInputBinding::DPadUp:
+			case GenericInputBinding::LeftStickUp:
+				bit = (1 << 0);
+				qt_key = Qt::Key_Up;
+				break;
+			case GenericInputBinding::DPadDown:
+			case GenericInputBinding::LeftStickDown:
+				bit = (1 << 1);
+				qt_key = Qt::Key_Down;
+				break;
+			case GenericInputBinding::DPadLeft:
+			case GenericInputBinding::LeftStickLeft:
+				bit = (1 << 2);
+				qt_key = Qt::Key_Left;
+				break;
+			case GenericInputBinding::DPadRight:
+			case GenericInputBinding::LeftStickRight:
+				bit = (1 << 3);
+				qt_key = Qt::Key_Right;
+				break;
+			case GenericInputBinding::Cross:
+			case GenericInputBinding::Start:
+				bit = (1 << 4);
+				qt_key = Qt::Key_Return;
+				break;
+			default:
+				return false;
+		}
+
+		const bool pressed = (value >= NAV_THRESHOLD);
+		const bool was_pressed = (s_nav_state & bit) != 0;
+
+		if (pressed && !was_pressed)
+		{
+			s_nav_state |= bit;
+			emit g_emu_thread->navigationKeyPressed(qt_key);
+		}
+		else if (!pressed && was_pressed)
+		{
+			s_nav_state &= ~bit;
+		}
+
+		// Consume the event so it doesn't reach InvokeEvents/pad bindings.
+		// If it were forwarded, the pad plugin would buffer the button state
+		// and the game would see a spurious press on launch.
+		return true;
+	});
+
 	// Main CPU thread loop.
 	while (!m_shutdown_flag.load())
 	{
@@ -418,6 +479,7 @@ void EmuThread::run()
 	}
 
 	// Teardown in reverse order.
+	InputManager::RemoveUINavigationCallback();
 	stopBackgroundControllerPollTimer();
 	destroyBackgroundControllerPollTimer();
 	VMManager::Internal::CPUThreadShutdown();
@@ -1235,6 +1297,11 @@ void Host::RequestExitApplication(bool allow_confirm)
 void Host::RequestExitBigPicture()
 {
 	g_emu_thread->stopFullscreenUI();
+}
+
+void Host::RequestEnterBigPicture()
+{
+	g_emu_thread->startFullscreenUI(false);
 }
 
 void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool default_save_state)

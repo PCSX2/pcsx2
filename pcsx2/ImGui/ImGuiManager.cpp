@@ -1165,6 +1165,20 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, InputLayout
 		ImGuiKey_GamepadL2, // R2
 	};
 
+	// Guide/Xbox button toggles Big Picture Mode, but only when no game is running.
+	// This is checked before the ImGui context guard so it works from the Qt desktop view too.
+	if (key == GenericInputBinding::System)
+	{
+		if (value > 0.0f && !VMManager::HasValidVM())
+		{
+			if (FullscreenUI::IsInitialized())
+				Host::RequestExitBigPicture();
+			else
+				Host::RequestEnterBigPicture();
+		}
+		return true;
+	}
+
 	if (!ImGui::GetCurrentContext())
 		return false;
 

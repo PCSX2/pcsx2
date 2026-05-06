@@ -286,6 +286,17 @@ namespace InputManager
 	/// Returns true if there is an interception hook present.
 	bool HasHook();
 
+	/// Sets a callback to receive generic input events not consumed by ImGui or pad bindings.
+	/// Intended for UI navigation (e.g. controller-driven game list navigation) when no VM is running.
+	/// The callback is invoked on the EmuThread. Return true to consume the event.
+	using UINavigationCallback = std::function<bool(GenericInputBinding, float)>;
+	void SetUINavigationCallback(UINavigationCallback callback);
+	void RemoveUINavigationCallback();
+
+	/// Directly invokes the UI navigation callback with the given generic binding and value.
+	/// Used by input sources to fire directional axis events with proper unipolar magnitudes.
+	void InvokeUINavigationEvent(GenericInputBinding key, float value);
+
 	/// Internal method used by pads to dispatch vibration updates to input sources.
 	/// Intensity is normalized from 0 to 1.
 	void SetUSBVibrationIntensity(u32 port, float large_or_single_motor_intensity, float small_motor_intensity);

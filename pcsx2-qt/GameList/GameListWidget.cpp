@@ -22,6 +22,7 @@
 #include <QtCore/QSortFilterProxyModel>
 #include <QtCore/QDir>
 #include <QtCore/QString>
+#include <QtGui/QKeyEvent>
 #include <QtGui/QPainter>
 #include <QtGui/QPixmap>
 #include <QtGui/QPixmapCache>
@@ -530,6 +531,7 @@ void GameListWidget::onRefreshComplete()
 		m_ui.stack->setCurrentIndex(2);
 		setFocusProxy(nullptr);
 	}
+
 }
 
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -650,6 +652,58 @@ void GameListWidget::gridIntScale(int int_scale)
 void GameListWidget::refreshGridCovers()
 {
 	m_model->refreshCovers();
+}
+
+void GameListWidget::handleControllerNavigation(int qtKey)
+{
+	// If a modal dialog is active (e.g. the resume-state prompt), redirect navigation there
+	// instead of the game list. Map directional inputs to Tab/Shift+Tab since that is how
+	// focus moves between dialog buttons.
+	if (QApplication::activeModalWidget())
+	{
+		QWidget* target = QApplication::focusWidget();
+		if (!target)
+			target = QApplication::activeModalWidget();
+
+		int nav_key = qtKey;
+		Qt::KeyboardModifiers mods = Qt::NoModifier;
+		if (qtKey == Qt::Key_Up || qtKey == Qt::Key_Left)
+		{
+			nav_key = Qt::Key_Tab;
+			mods = Qt::ShiftModifier;
+		}
+		else if (qtKey == Qt::Key_Down || qtKey == Qt::Key_Right)
+		{
+			nav_key = Qt::Key_Tab;
+		}
+
+		QApplication::postEvent(target, new QKeyEvent(QEvent::KeyPress, nav_key, mods));
+		QApplication::postEvent(target, new QKeyEvent(QEvent::KeyRelease, nav_key, mods));
+		return;
+	}
+
+	// Only route to visible game views; ignore if showing the empty-game-directory widget.
+	if (!isShowingGameList() && !isShowingGameGrid())
+		return;
+
+	QAbstractItemView* view = isShowingGameGrid() ? static_cast<QAbstractItemView*>(m_list_view) : static_cast<QAbstractItemView*>(m_table_view);
+
+	// Nothing is visually highlighted yet (currentIndex may exist but not be selected).
+	// Snap to item #1 and consume this input so the user sees it highlighted first.
+	if (!view->selectionModel()->hasSelection())
+	{
+		const QModelIndex first = view->model()->index(0, 0);
+		if (!first.isValid())
+			return;
+		view->setFocus();
+		view->setCurrentIndex(first);
+		view->selectionModel()->select(first, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+		view->scrollToTop();
+		return;
+	}
+
+	QApplication::postEvent(view, new QKeyEvent(QEvent::KeyPress, qtKey, Qt::NoModifier));
+	QApplication::postEvent(view, new QKeyEvent(QEvent::KeyRelease, qtKey, Qt::NoModifier));
 }
 
 void GameListWidget::showGameList()

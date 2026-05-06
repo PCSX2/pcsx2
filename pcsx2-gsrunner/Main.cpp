@@ -394,6 +394,10 @@ void Host::RequestExitBigPicture()
 {
 }
 
+void Host::RequestEnterBigPicture()
+{
+}
+
 void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool default_save_state)
 {
 	VMManager::SetState(VMState::Stopping);
