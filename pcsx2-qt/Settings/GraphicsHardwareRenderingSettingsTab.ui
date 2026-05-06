@@ -128,6 +128,11 @@
        <string>Bilinear (Forced excluding sprite)</string>
       </property>
      </item>
+     <item>
+      <property name="text">
+       <string>Bilinear (PS2 except flat nearest)</string>
+      </property>
+     </item>
     </widget>
    </item>
    <item row="4" column="0">

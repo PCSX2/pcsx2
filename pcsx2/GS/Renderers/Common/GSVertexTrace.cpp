@@ -112,6 +112,11 @@ void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, in
 				m_filter.opt_linear = (m_primclass == GS_SPRITE_CLASS) ? m_filter.linear : 1;
 				break;
 
+			case BiFiltering::PS2_But_Flat_Nearest:
+				// Special case to reduce UI blurriness when upscaling is enabled
+				m_filter.opt_linear = (m_primclass == GS_SPRITE_CLASS || m_eq.z) ? 0 : m_filter.linear;
+				break;
+
 			case BiFiltering::Forced:
 				m_filter.opt_linear = 1;
 				break;
