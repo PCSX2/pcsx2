@@ -5,6 +5,7 @@
 
 #include "GS/GSVector.h"
 
+#include <memory>
 #include <string>
 #include <string_view>
 
@@ -66,6 +67,11 @@ protected:
 	Format m_format = Format::Invalid;
 	State m_state = State::Dirty;
 
+	// ROV state tracking
+	std::unique_ptr<GSTexture> m_depth_color; // For depth texture points to the parallel color texture.
+	bool m_depth_color_active = false; // Tracks if depth is being used as color.
+	float m_avg_barriers_rov = 1.0f; // Value >= 1.0 indicating roughly how many barriers are saved by using as ROV.
+
 	// frame number (arbitrary base) the texture was recycled on
 	// different purpose than texture cache ages, do not attempt to merge
 	u32 m_last_frame_used = 0;
@@ -73,6 +79,9 @@ protected:
 	bool m_needs_mipmaps_generated = true;
 	ClearValue m_clear_value = {};
 
+#ifdef PCSX2_DEVBUILD
+	std::string m_debug_name;
+#endif
 public:
 	GSTexture();
 	virtual ~GSTexture();
@@ -161,6 +170,35 @@ public:
 	// Typical size of a RGBA texture
 	u32 GetMemUsage() const { return m_size.x * m_size.y * (m_format == Format::UNorm8 ? 1 : 4); }
 
+	// ROV/UAV functions
+	__fi float GetAvgBarriersROV() const
+	{
+		return m_avg_barriers_rov;
+	}
+	__fi void SetAvgBarriersROV(float barriers)
+	{
+		m_avg_barriers_rov = barriers;
+	}
+	__fi bool IsDepthColor() const
+	{
+		return m_depth_color_active;
+	}
+	__fi void ResetROVState()
+	{
+		m_depth_color_active = false;
+		m_avg_barriers_rov = 0.0f;
+	}
+	virtual bool IsUnorderedAccess() const
+	{
+		pxFailRel("Not implemented");
+		return false;
+	}
+private:
+	void CreateDepthColor(); // Create the texture for depth color.
+public:
+	void EnterDepthColor(); // Change mode to depth color for ROV use.
+	void ExitDepthColor(const char* debug_caller); // Change mode back to real depth for non-ROV use.
+public:
 	// Helper routines for formats/types
 	static bool IsCompressedFormat(Format format) { return (format >= Format::BC1 && format <= Format::BC7); }
 };

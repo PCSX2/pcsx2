@@ -718,6 +718,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	IntegerScaling = false;
 	LinearPresent = GSPostBilinearMode::BilinearSmooth;
 	UseDebugDevice = false;
+	UseDebugBlend = false;
 	UseBlitSwapChain = false;
 	DisableShaderCache = false;
 	DisableFramebufferFetch = false;
@@ -754,6 +755,9 @@ Pcsx2Config::GSOptions::GSOptions()
 	HWMipmap = true;
 	HWAccurateAlphaTest = false;
 	HWAA1 = false;
+	HWROV = false;
+	HWROVLogging = false;
+	HWROVBarriersVK = GSROVBarriersVKMode::None;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -857,6 +861,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(UserHacks_BilinearHack) &&
 		OpEqu(OverrideTextureBarriers) &&
 		OpEqu(DepthFeedbackMode) &&
+		OpEqu(HWROVBarriersVK) &&
 
 		OpEqu(CAS_Sharpness) &&
 		OpEqu(ShadeBoost_Brightness) &&
@@ -951,6 +956,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBoolEx(PCRTCOverscan, "pcrtc_overscan");
 	SettingsWrapBitBool(IntegerScaling);
 	SettingsWrapBitBool(UseDebugDevice);
+	SettingsWrapBitBool(UseDebugBlend);
 	SettingsWrapBitBool(UseBlitSwapChain);
 	SettingsWrapBitBool(DisableShaderCache);
 	SettingsWrapBitBool(DisableFramebufferFetch);
@@ -1041,6 +1047,9 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBoolEx(HWMipmap, "hw_mipmap");
 	SettingsWrapBitBool(HWAccurateAlphaTest);
 	SettingsWrapBitBool(HWAA1);
+	SettingsWrapBitBool(HWROV);
+	SettingsWrapBitBool(HWROVLogging);
+	SettingsWrapIntEnumEx(HWROVBarriersVK, "HWROVBarriersVK");
 	SettingsWrapIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
 	SettingsWrapIntEnumEx(TextureFiltering, "filter");
 	SettingsWrapIntEnumEx(TexturePreloading, "texture_preloading");

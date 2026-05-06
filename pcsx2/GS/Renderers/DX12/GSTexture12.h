@@ -46,15 +46,98 @@ public:
 		int width, int height, int levels, DXGI_FORMAT dxgi_format, DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format,
 		DXGI_FORMAT dsv_format, DXGI_FORMAT uav_format, ResourceState resource_state);
 
-	__fi const D3D12DescriptorHandle& GetSRVDescriptor() const { return m_srv_descriptor; }
-	__fi const D3D12DescriptorHandle& GetWriteDescriptor() const { return m_write_descriptor; }
-	__fi const D3D12DescriptorHandle& GetReadDepthViewDescriptor() const { return m_read_dsv_descriptor; }
-	__fi const D3D12DescriptorHandle& GetUAVDescriptor() const { return m_uav_descriptor; }
-	__fi const D3D12DescriptorHandle& GetFBLDescriptor() const { return m_fbl_descriptor; }
-	__fi ResourceState GetResourceState() const { return m_resource_state; }
+	__fi const D3D12DescriptorHandle& GetReadDepthViewDescriptor() const
+	{
+		pxAssertRel(!IsDepthColor(), "Access read depth view descriptor for depth color");
+		return m_read_dsv_descriptor;
+	}
+	
+	__fi const D3D12DescriptorHandle& GetSRVDescriptor() const
+	{
+		if (IsDepthColor())
+		{
+			return GetDepthColor()->m_srv_descriptor;
+		}
+		else
+		{
+			return m_srv_descriptor;
+		}
+	}
+	
+	__fi const D3D12DescriptorHandle& GetWriteDescriptor() const
+	{
+		pxAssertRel(!IsDepthColor(), "Access write descriptor for depth color");
+		return m_write_descriptor;
+	}
+
+	__fi const D3D12DescriptorHandle& GetUAVDescriptor() const
+	{
+		if (IsDepthColor())
+		{
+			return GetDepthColor()->m_uav_descriptor;
+		}
+		else
+		{
+			return m_uav_descriptor;
+		}
+	}
+
+	__fi const D3D12DescriptorHandle& GetFBLDescriptor() const
+	{
+		pxAssertRel(!IsDepthColor(), "Access FBL descriptor for depth color");
+		return m_fbl_descriptor;
+	}
+
+	__fi ResourceState GetResourceState() const
+	{
+		if (IsDepthColor())
+		{
+			return GetDepthColor()->m_resource_state;
+		}
+		else
+		{
+			return m_resource_state;
+		}
+	}
+
+	__fi void SetResourceState(ResourceState state)
+	{
+		if (IsDepthColor())
+		{
+			GetDepthColor()->m_resource_state = state;
+		}
+		else
+		{
+			m_resource_state = state;
+		}
+	}
+
 	__fi DXGI_FORMAT GetDXGIFormat() const { return m_dxgi_format; }
-	__fi ID3D12Resource* GetResource() const { return m_resource.get(); }
-	__fi ID3D12Resource* GetFBLResource() const { return m_resource_fbl.get(); }
+
+	__fi ID3D12Resource* GetResource() const
+	{
+		if (IsDepthColor())
+		{
+			return GetDepthColor()->m_resource.get();
+		}
+		else
+		{
+			return m_resource.get();
+		}
+	}
+
+	__fi ID3D12Resource* GetFBLResource() const
+	{
+		pxAssertRel(!IsDepthColor(), "Access FBL resource for depth color");
+		return m_resource_fbl.get();
+	}
+
+	__fi bool IsSimultaneousAccess() const
+	{
+		return IsDepthColor() ? GetDepthColor()->IsSimultaneousAccess() : m_simultaneous_tex;
+	}
+	
+	virtual bool IsUnorderedAccess() const override { return GetResourceState() == ResourceState::PixelShaderUAV; }
 
 	void* GetNativeHandle() const override;
 
@@ -104,6 +187,9 @@ private:
 	const D3D12CommandList& GetCommandBufferForUpdate();
 	ID3D12Resource* AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height) const;
 	void CopyTextureDataForUpload(void* dst, const void* src, u32 pitch, u32 upload_pitch, u32 height) const;
+
+	GSTexture12* GetDepthColor() { return static_cast<GSTexture12*>(m_depth_color.get()); }
+	const GSTexture12* GetDepthColor() const { return static_cast<const GSTexture12*>(m_depth_color.get()); }
 
 	wil::com_ptr_nothrow<ID3D12Resource> m_resource;
 	wil::com_ptr_nothrow<ID3D12Resource> m_resource_fbl;

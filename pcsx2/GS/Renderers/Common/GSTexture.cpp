@@ -4,6 +4,8 @@
 #include "GS/Renderers/Common/GSTexture.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/GSPng.h"
+#include "GS/GSPerfMon.h"
+#include "GS/GSGL.h"
 
 #include "common/Console.h"
 #include "common/BitUtils.h"
@@ -181,6 +183,59 @@ void GSTexture::GenerateMipmapsIfNeeded()
 
 	m_needs_mipmaps_generated = false;
 	GenerateMipmap();
+}
+
+void GSTexture::CreateDepthColor()
+{
+	pxAssert(!m_depth_color);
+
+	GL_ROV("HW: CreateDepthColor (tex=%016p)", this);
+
+	m_depth_color.reset(g_gs_device->CreateRenderTarget(GetWidth(), GetHeight(), Format::Float32, false));
+#ifdef PCSX2_DEVBUILD
+	if (GSConfig.UseDebugDevice)
+	{
+		m_depth_color->SetDebugName(m_debug_name + " (color clone)");
+	}
+#endif
+}
+
+void GSTexture::EnterDepthColor()
+{
+	pxAssert(IsDepthStencil() && !IsDepthColor());
+
+	GL_PUSH_ROV("HW: EnterDepthColor (tex=%016p)", this);
+
+	// Create depth color if it doesn't exist.
+	if (!m_depth_color)
+		CreateDepthColor();
+
+	// Simply propagate clears.
+	if (GetState() != State::Cleared)
+	{
+		const ShaderConvert shader = ShaderConvert::FLOAT32_DEPTH_TO_COLOR;
+		g_gs_device->StretchRect(this, m_depth_color.get(), GSVector4(GetRect()), shader, false);
+		g_perfmon.Put(GSPerfMon::DepthCopiesROV, 1);
+	}
+
+	m_depth_color_active = true; // Needs to set after StretchRect.
+}
+
+void GSTexture::ExitDepthColor(const char* debug_caller)
+{
+	pxAssert(IsDepthStencil() && IsDepthColor());
+
+	GL_PUSH_ROV("HW: ExitDepthColor (caller=%s, tex=%016p)", debug_caller, this);
+
+	m_depth_color_active = false; // Needs to set before StretchRect.
+
+	// Simply propagate clears.
+	if (GetState() != State::Cleared)
+	{
+		const ShaderConvert shader = ShaderConvert::FLOAT32_COLOR_TO_DEPTH;
+		g_gs_device->StretchRect(m_depth_color.get(), this, GSVector4(GetRect()), shader, false);
+		g_perfmon.Put(GSPerfMon::DepthCopiesROV, 1);
+	}
 }
 
 GSDownloadTexture::GSDownloadTexture(u32 width, u32 height, GSTexture::Format format)

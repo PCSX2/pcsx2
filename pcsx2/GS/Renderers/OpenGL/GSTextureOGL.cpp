@@ -335,6 +335,8 @@ void GSTextureOGL::SetDebugName(std::string_view name)
 
 	if (glObjectLabel)
 		glObjectLabel(GL_TEXTURE, m_texture_id, static_cast<GLsizei>(name.length()), static_cast<const GLchar*>(name.data()));
+
+	m_debug_name = name;
 }
 
 #endif

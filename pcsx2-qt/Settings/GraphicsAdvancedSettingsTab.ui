@@ -128,6 +128,35 @@
         </item>
        </layout>
       </item>
+      <item row="7" column="1">
+       <widget class="QComboBox" name="rovBarriersVK">
+        <item>
+         <property name="text">
+          <string>None</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Every Draw</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Ever Render Pass</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="rovBarriersVKLabel">
+        <property name="text">
+         <string>ROV Barriers Vulkan:</string>
+        </property>
+        <property name="buddy">
+         <cstring>rovBarriersVK</cstring>
+        </property>
+       </widget>
+      </item>
       <item row="6" column="0">
        <widget class="QLabel" name="exclussiveFSLabel">
         <property name="text">
@@ -321,6 +350,13 @@
           </property>
          </widget>
         </item>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="useDebugBlend">
+          <property name="text">
+           <string>Use Debug Blend</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>
@@ -346,6 +382,7 @@
   <tabstop>gsDumpCompression</tabstop>
   <tabstop>texturePreloading</tabstop>
   <tabstop>exclusiveFullscreenControl</tabstop>
+  <tabstop>rovBarriersVK</tabstop>
   <tabstop>useBlitSwapChain</tabstop>
   <tabstop>extendedUpscales</tabstop>
   <tabstop>disableMailboxPresentation</tabstop>
@@ -355,6 +392,7 @@
   <tabstop>palFrameRate</tabstop>
   <tabstop>overrideTextureBarriers</tabstop>
   <tabstop>useDebugDevice</tabstop>
+  <tabstop>useDebugBlend</tabstop>
   <tabstop>disableFramebufferFetch</tabstop>
   <tabstop>disableShaderCache</tabstop>
   <tabstop>disableVertexShaderExpand</tabstop>

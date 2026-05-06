@@ -46,6 +46,7 @@ public:
 		bool vk_khr_driver_properties : 1;
 		bool vk_khr_shader_non_semantic_info : 1;
 		bool vk_ext_attachment_feedback_loop_layout : 1;
+		bool vk_ext_fragment_shader_interlock : 1;
 	};
 
 	// Global state accessors
@@ -61,8 +62,8 @@ public:
 	// The interaction between raster order attachment access and fbfetch is unclear.
 	__fi bool UseFeedbackLoopLayout() const
 	{
-		return (m_optional_extensions.vk_ext_attachment_feedback_loop_layout &&
-				!m_optional_extensions.vk_ext_rasterization_order_attachment_access);
+		return m_optional_extensions.vk_ext_attachment_feedback_loop_layout &&
+		       !m_optional_extensions.vk_ext_rasterization_order_attachment_access;
 	}
 
 	// Helpers for getting constants
@@ -301,6 +302,25 @@ public:
 		FeedbackLoopFlag_ReadAndWriteDepth = 4,
 	};
 
+	enum class ResourceType
+	{
+		SRV, // Shader resource view (read only)
+		UAV, // Unordered access (read/write)
+	};
+
+	static constexpr GSTextureVK::Layout GetResourceLayout(ResourceType type)
+	{
+		switch (type)
+		{
+			default:
+				pxFailRel("Impossible.");
+			case ResourceType::SRV:
+				return GSTextureVK::Layout::ShaderReadOnly;
+			case ResourceType::UAV:
+				return GSTextureVK::Layout::ReadWriteImage;
+		}
+	}
+
 	struct alignas(8) PipelineSelector
 	{
 		GSHWDrawConfig::PSSelector ps;
@@ -334,7 +354,7 @@ public:
 		__fi bool IsDepthFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteDepth) != 0); }
 		__fi bool IsTestingAndSamplingDepth() const { return ((feedback_loop_flags & (FeedbackLoopFlag_ReadDepth | FeedbackLoopFlag_ReadAndWriteDepth)) != 0); }
 	};
-	static_assert(sizeof(PipelineSelector) == 24, "Pipeline selector is 24 bytes");
+	static_assert(sizeof(PipelineSelector) == 32, "Pipeline selector is 32 bytes");
 
 	struct PipelineSelectorHash
 	{
@@ -368,6 +388,8 @@ public:
 		TFX_TEXTURE_RT,
 		TFX_TEXTURE_PRIMID,
 		TFX_TEXTURE_DEPTH,
+		TFX_TEXTURE_RT_ROV,
+		TFX_TEXTURE_DEPTH_ROV,
 
 		NUM_TFX_TEXTURES
 	};
@@ -575,11 +597,12 @@ public:
 	void IASetIndexBuffer(const void* index, size_t count);
 	void VSSetIndexBuffer(const void* index, size_t count);
 
-	void PSSetShaderResource(int i, GSTexture* sr, bool check_state);
+	void PSSetUnorderedAccess(GSTexture* rt, GSTexture* ds, bool write_rt, bool write_ds);
+	void PSSetShaderResource(int i, GSTexture* sr, bool check_state, ResourceType type = ResourceType::SRV);
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
 
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor,
-		FeedbackLoopFlag feedback_loop = FeedbackLoopFlag_None);
+		FeedbackLoopFlag feedback_loop = FeedbackLoopFlag_None, const GSVector2i& viewport_size = {});
 
 	void SetVSConstantBuffer(const GSHWDrawConfig::VSConstantBuffer& cb);
 	void SetPSConstantBuffer(const GSHWDrawConfig::PSConstantBuffer& cb);
@@ -643,28 +666,31 @@ public:
 private:
 	enum DIRTY_FLAG : u32
 	{
-		DIRTY_FLAG_TFX_TEXTURE_0 = (1 << 0), // 0, 1, 2, 3, 4
-		DIRTY_FLAG_TFX_UBO = (1 << 5),
-		DIRTY_FLAG_UTILITY_TEXTURE = (1 << 6),
-		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 7),
-		DIRTY_FLAG_LINE_WIDTH = (1 << 8),
-		DIRTY_FLAG_INDEX_BUFFER = (1 << 9),
-		DIRTY_FLAG_VIEWPORT = (1 << 10),
-		DIRTY_FLAG_SCISSOR = (1 << 11),
-		DIRTY_FLAG_PIPELINE = (1 << 12),
-		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 13),
-		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 14),
-		DIRTY_FLAG_VS_PUSH_CONSTANTS = (1 << 15),
+		DIRTY_FLAG_TFX_TEXTURE_0 = (1 << 0), // 0, 1, 2, 3, 4, 5, 6
+		DIRTY_FLAG_TFX_UBO = (1 << 7),
+		DIRTY_FLAG_UTILITY_TEXTURE = (1 << 8),
+		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 9),
+		DIRTY_FLAG_LINE_WIDTH = (1 << 10),
+		DIRTY_FLAG_INDEX_BUFFER = (1 << 11),
+		DIRTY_FLAG_VIEWPORT = (1 << 12),
+		DIRTY_FLAG_SCISSOR = (1 << 13),
+		DIRTY_FLAG_PIPELINE = (1 << 14),
+		DIRTY_FLAG_VS_CONSTANT_BUFFER = (1 << 15),
+		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 16),
+		DIRTY_FLAG_VS_PUSH_CONSTANTS = (1 << 17),
 
 		DIRTY_FLAG_TFX_TEXTURE_TEX = (DIRTY_FLAG_TFX_TEXTURE_0 << 0),
 		DIRTY_FLAG_TFX_TEXTURE_PALETTE = (DIRTY_FLAG_TFX_TEXTURE_0 << 1),
 		DIRTY_FLAG_TFX_TEXTURE_RT = (DIRTY_FLAG_TFX_TEXTURE_0 << 2),
 		DIRTY_FLAG_TFX_TEXTURE_PRIMID = (DIRTY_FLAG_TFX_TEXTURE_0 << 3),
 		DIRTY_FLAG_TFX_TEXTURE_DEPTH = (DIRTY_FLAG_TFX_TEXTURE_0 << 4),
+		DIRTY_FLAG_TFX_TEXTURE_RT_ROV = (DIRTY_FLAG_TFX_TEXTURE_0 << 5),
+		DIRTY_FLAG_TFX_TEXTURE_DEPTH_ROV = (DIRTY_FLAG_TFX_TEXTURE_0 << 6),
 
 		DIRTY_FLAG_TFX_TEXTURES = DIRTY_FLAG_TFX_TEXTURE_TEX | DIRTY_FLAG_TFX_TEXTURE_PALETTE |
 		                          DIRTY_FLAG_TFX_TEXTURE_RT | DIRTY_FLAG_TFX_TEXTURE_PRIMID |
-		                          DIRTY_FLAG_TFX_TEXTURE_DEPTH,
+		                          DIRTY_FLAG_TFX_TEXTURE_DEPTH | DIRTY_FLAG_TFX_TEXTURE_RT_ROV |
+		                          DIRTY_FLAG_TFX_TEXTURE_DEPTH_ROV,
 
 		DIRTY_BASE_STATE = DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PIPELINE | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR |
 		                   DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_LINE_WIDTH,
@@ -705,7 +731,7 @@ private:
 	float m_current_line_width = 1.0f;
 	u8 m_blend_constant_color = 0;
 
-	std::array<const GSTextureVK*, NUM_TFX_TEXTURES> m_tfx_textures{};
+	std::array<GSTextureVK*, NUM_TFX_TEXTURES> m_tfx_textures{};
 	VkSampler m_tfx_sampler = VK_NULL_HANDLE;
 	u32 m_tfx_sampler_sel = 0;
 	VkDescriptorSet m_tfx_ubo_descriptor_set = VK_NULL_HANDLE;
@@ -721,6 +747,7 @@ private:
 	VkPipeline m_current_pipeline = VK_NULL_HANDLE;
 
 	std::unique_ptr<GSTextureVK> m_null_texture;
+	VkFramebuffer m_null_framebuffer;
 
 	// current pipeline selector - we save this in the struct to avoid re-zeroing it every draw
 	PipelineSelector m_pipeline_selector = {};
