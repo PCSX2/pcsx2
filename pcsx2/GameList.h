@@ -100,6 +100,7 @@ namespace GameList
 		u32 crc = 0;
 
 		CompatibilityRating compatibility_rating = CompatibilityRating::Unknown;
+		bool is_favorite = false;
 
 		__fi bool IsDisc() const { return (type == EntryType::PS1Disc || type == EntryType::PS2Disc); }
 	};
@@ -160,5 +161,6 @@ namespace GameList
 	void CheckCustomAttributesForPath(const std::string& path, bool& has_custom_title, bool& has_custom_region);
 	void SaveCustomTitleForPath(const std::string& path, const std::string& custom_title);
 	void SaveCustomRegionForPath(const std::string& path, int custom_region);
+	void SaveFavoriteForPath(const std::string& path, bool favorite);
 	std::string GetCustomTitleForPath(const std::string& path);
 } // namespace GameList
