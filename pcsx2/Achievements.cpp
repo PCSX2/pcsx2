@@ -183,6 +183,8 @@ namespace Achievements
 	static void DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, bool is_self, float rank_column_width,
 		float name_column_width, float time_column_width, float column_spacing);
 	static void OpenSubset(const rc_client_subset_t* subset);
+	static void DrawSubsetSidebar(float sidebar_width, bool& sidebar_has_focus, bool leaderboards_only);
+	static void DrawSubsetSidebarFooter(bool sidebar_has_focus);
 	static void OpenLeaderboard(const rc_client_leaderboard_t* lboard);
 	static void LeaderboardFetchNearbyCallback(
 		int result, const char* error_message, rc_client_leaderboard_entry_list_t* list, rc_client_t* client, void* callback_userdata);
@@ -236,6 +238,9 @@ namespace Achievements
 	static bool s_restore_leaderboard_focus = false;
 	static float s_leaderboard_list_scroll = 0.0f;
 	static bool s_restore_leaderboard_scroll = false;
+
+	static std::map<std::pair<u32, u32>, bool> s_achievement_buckets_collapsed;
+	static std::map<std::pair<u32, u8>, bool> s_leaderboard_buckets_collapsed;
 
 	static std::vector<LeaderboardTrackerIndicator> s_active_leaderboard_trackers;
 	static std::vector<AchievementChallengeIndicator> s_active_challenge_indicators;
@@ -2025,6 +2030,9 @@ void Achievements::ClearUIState()
 		rc_client_destroy_achievement_list(s_achievement_list);
 		s_achievement_list = nullptr;
 	}
+
+	s_achievement_buckets_collapsed.clear();
+	s_leaderboard_buckets_collapsed.clear();
 }
 
 template <typename T>
@@ -2412,6 +2420,9 @@ bool Achievements::PrepareAchievementsWindow()
 	CloseSubset();
 
 	s_subset_list = rc_client_create_subset_list(s_client);
+	if (!s_subset_list)
+		Console.Warning("Achievements: rc_client_create_subset_list() returned null");
+	s_achievement_buckets_collapsed.clear();
 
 	if (s_achievement_list)
 		rc_client_destroy_achievement_list(s_achievement_list);
@@ -2424,6 +2435,133 @@ bool Achievements::PrepareAchievementsWindow()
 	}
 
 	return true;
+}
+
+void Achievements::DrawSubsetSidebar(float sidebar_width, bool& sidebar_has_focus, bool leaderboards_only)
+{
+	if (!s_subset_list)
+		return;
+
+	using ImGuiFullscreen::g_medium_font;
+	using ImGuiFullscreen::LayoutScale;
+
+	static constexpr float alpha = 0.8f;
+	const ImVec4 sidebar_bg(0.10f, 0.10f, 0.10f, alpha);
+	ImGui::PushStyleColor(ImGuiCol_ChildBg, sidebar_bg);
+
+	if (ImGui::BeginChild("subset_sidebar", ImVec2(sidebar_width, 0.0f), ImGuiChildFlags_NavFlattened, 0))
+	{
+		ImGuiFullscreen::BeginMenuButtons();
+
+		for (u32 i = 0; i < s_subset_list->num_subsets; i++)
+		{
+			const rc_client_subset_t* subset = s_subset_list->subsets[i];
+			if (leaderboards_only && subset->num_leaderboards == 0)
+				continue;
+
+			TinyString id_str;
+			id_str.format("sidebar_subset_{}", subset->id);
+
+			ImRect bb;
+			bool visible, hovered;
+			ImGuiFullscreen::MenuButtonFrame(id_str, true, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
+				&visible, &hovered, &bb.Min, &bb.Max, 0, 1.0f);
+
+			if (ImGui::IsItemHovered() || ImGui::IsItemFocused())
+				sidebar_has_focus = true;
+
+			const float padding = LayoutScale(10.0f);
+			const float spacing = LayoutScale(8.0f);
+			const float icon_size = LayoutScale(28.0f);
+
+			if (s_open_subset && s_open_subset->id == subset->id)
+			{
+				const float line_width = LayoutScale(4.0f);
+				ImGui::GetWindowDrawList()->AddRectFilled(
+					ImVec2(bb.Min.x, bb.Min.y), ImVec2(bb.Min.x + line_width, bb.Max.y), IM_COL32(52, 152, 219, 255));
+			}
+
+			const ImVec2 icon_min(bb.Min.x + padding, bb.Min.y + (bb.Max.y - bb.Min.y - icon_size) * 0.5f);
+			const ImVec2 icon_max(icon_min.x + icon_size, icon_min.y + icon_size);
+
+			std::string badge_path = GetSubsetBadgePath(subset);
+			if (!badge_path.empty())
+			{
+				GSTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(badge_path);
+				if (badge)
+				{
+					ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(badge->GetNativeHandle()),
+						icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+				}
+			}
+
+			const float text_x = icon_max.x + spacing;
+			const ImRect text_bb(ImVec2(text_x, bb.Min.y), ImVec2(bb.Max.x - padding, bb.Max.y));
+
+			ImGui::PushFont(g_medium_font.first, g_medium_font.second);
+			ImGuiFullscreen::RenderTextClippedWithShadow(
+				text_bb.Min, text_bb.Max, subset->title, nullptr, nullptr, ImVec2(0.0f, 0.5f), &text_bb);
+			ImGui::PopFont();
+
+			if (ImGui::IsItemClicked() || ImGui::IsItemActivated())
+				OpenSubset(subset);
+		}
+
+		ImGuiFullscreen::EndMenuButtons();
+	}
+	ImGui::EndChild();
+
+	if (ImGui::IsItemHovered() || ImGui::IsItemFocused())
+		sidebar_has_focus = true;
+
+	ImGui::PopStyleColor();
+	ImGui::SameLine();
+}
+
+void Achievements::DrawSubsetSidebarFooter(bool sidebar_has_focus)
+{
+	if (ImGuiFullscreen::IsGamepadInputSource())
+	{
+		const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
+		const auto glyphs = ImGuiFullscreen::GetGamepadGlyphs();
+		if (sidebar_has_focus)
+		{
+			ImGuiFullscreen::SetFullscreenFooterText(std::array{
+				std::make_pair(glyphs.dpad_ud, TRANSLATE_SV("Achievements", "Navigate Subsets")),
+				std::make_pair(glyphs.dpad_lr, TRANSLATE_SV("Achievements", "Back to List")),
+				std::make_pair(glyphs.confirm(circleOK), TRANSLATE_SV("Achievements", "Select")),
+				std::make_pair(glyphs.cancel(circleOK), TRANSLATE_SV("Achievements", "Back")),
+			});
+		}
+		else
+		{
+			ImGuiFullscreen::SetFullscreenFooterText(std::array{
+				std::make_pair(glyphs.dpad_lr, TRANSLATE_SV("Achievements", "Navigate Subsets")),
+				std::make_pair(glyphs.dpad_ud, TRANSLATE_SV("Achievements", "Change Selection")),
+				std::make_pair(glyphs.cancel(circleOK), TRANSLATE_SV("Achievements", "Back")),
+			});
+		}
+	}
+	else
+	{
+		if (sidebar_has_focus)
+		{
+			ImGuiFullscreen::SetFullscreenFooterText(std::array{
+				std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, TRANSLATE_SV("Achievements", "Navigate Subsets")),
+				std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, TRANSLATE_SV("Achievements", "Back to List")),
+				std::make_pair(ICON_PF_ENTER, TRANSLATE_SV("Achievements", "Select")),
+				std::make_pair(ICON_PF_ESC, TRANSLATE_SV("Achievements", "Back")),
+			});
+		}
+		else
+		{
+			ImGuiFullscreen::SetFullscreenFooterText(std::array{
+				std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, TRANSLATE_SV("Achievements", "Navigate Subsets")),
+				std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, TRANSLATE_SV("Achievements", "Change Selection")),
+				std::make_pair(ICON_PF_ESC, TRANSLATE_SV("Achievements", "Back")),
+			});
+		}
+	}
 }
 
 void Achievements::DrawAchievementsWindow()
@@ -2442,7 +2580,7 @@ void Achievements::DrawAchievementsWindow()
 	Achievements::IdleUpdate();
 
 	const bool has_multiple_subsets = (s_subset_list && s_subset_list->num_subsets > 1);
-	bool s_sidebar_has_focus = false;
+	bool sidebar_has_focus = false;
 
 	static constexpr float alpha = 0.8f;
 	static constexpr float heading_alpha = 0.95f;
@@ -2581,77 +2719,7 @@ void Achievements::DrawAchievementsWindow()
 			"achievements", background, 0.0f, ImVec2(0.0f, 0.0f), 0))
 	{
 		if (has_multiple_subsets)
-		{
-			const ImVec4 sidebar_bg(0.10f, 0.10f, 0.10f, alpha);
-			ImGui::PushStyleColor(ImGuiCol_ChildBg, sidebar_bg);
-
-			if (ImGui::BeginChild("subset_sidebar", ImVec2(sidebar_width, 0.0f), ImGuiChildFlags_NavFlattened, 0))
-			{
-				ImGuiFullscreen::BeginMenuButtons();
-
-				for (u32 i = 0; i < s_subset_list->num_subsets; i++)
-				{
-					const rc_client_subset_t* subset = s_subset_list->subsets[i];
-					TinyString id_str;
-					id_str.format("sidebar_subset_{}", subset->id);
-
-					ImRect bb;
-					bool visible, hovered;
-					ImGuiFullscreen::MenuButtonFrame(id_str, true, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-						&visible, &hovered, &bb.Min, &bb.Max, 0, 1.0f);
-
-					if (ImGui::IsItemHovered() || ImGui::IsItemFocused())
-						s_sidebar_has_focus = true;
-
-					const float padding = LayoutScale(10.0f);
-					const float spacing = LayoutScale(8.0f);
-					const float icon_size = LayoutScale(28.0f);
-
-					if (s_open_subset && s_open_subset->id == subset->id)
-					{
-						const float line_width = LayoutScale(4.0f);
-						const ImVec2 line_min(bb.Min.x, bb.Min.y);
-						const ImVec2 line_max(bb.Min.x + line_width, bb.Max.y);
-						ImGui::GetWindowDrawList()->AddRectFilled(line_min, line_max, IM_COL32(52, 152, 219, 255));
-					}
-
-					const ImVec2 icon_min(bb.Min.x + padding, bb.Min.y + (bb.Max.y - bb.Min.y - icon_size) * 0.5f);
-					const ImVec2 icon_max(icon_min.x + icon_size, icon_min.y + icon_size);
-
-					std::string badge_path = GetSubsetBadgePath(subset);
-					if (!badge_path.empty())
-					{
-						GSTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(badge_path);
-						if (badge)
-						{
-							ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(badge->GetNativeHandle()),
-								icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
-						}
-					}
-
-					const float text_x = icon_max.x + spacing;
-					const ImRect text_bb(ImVec2(text_x, bb.Min.y), ImVec2(bb.Max.x - padding, bb.Max.y));
-
-					ImGui::PushFont(g_medium_font.first, g_medium_font.second);
-					ImGuiFullscreen::RenderTextClippedWithShadow(
-						text_bb.Min, text_bb.Max, subset->title, nullptr, nullptr, ImVec2(0.0f, 0.5f), &text_bb);
-					ImGui::PopFont();
-
-					if (ImGui::IsItemClicked() || ImGui::IsItemActivated())
-						OpenSubset(subset);
-				}
-
-				ImGuiFullscreen::EndMenuButtons();
-			}
-			ImGui::EndChild();
-
-			if (ImGui::IsItemHovered() || ImGui::IsItemFocused())
-				s_sidebar_has_focus = true;
-
-			ImGui::PopStyleColor();
-
-			ImGui::SameLine();
-		}
+			DrawSubsetSidebar(sidebar_width, sidebar_has_focus, false);
 
 		const float content_width = has_multiple_subsets ? (display_size.x - sidebar_width) : display_size.x;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f));
@@ -2663,9 +2731,8 @@ void Achievements::DrawAchievementsWindow()
 		if (ImGui::BeginChild("achievements_content", ImVec2(content_width, 0.0f), ImGuiChildFlags_NavFlattened, 0))
 		{
 			if (ImGui::IsWindowHovered() || ImGui::IsWindowFocused())
-				s_sidebar_has_focus = false;
+				sidebar_has_focus = false;
 
-			static std::map<std::pair<u32, u32>, bool> buckets_collapsed;
 			static const char* bucket_names[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {
 				TRANSLATE_NOOP("Achievements", "Unknown"),
 				TRANSLATE_NOOP("Achievements", "Locked"),
@@ -2694,7 +2761,7 @@ void Achievements::DrawAchievementsWindow()
 
 					pxAssert(bucket.bucket_type < NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS);
 
-					bool& bucket_collapsed = buckets_collapsed[std::make_pair(bucket.subset_id, bucket.bucket_type)];
+					bool& bucket_collapsed = s_achievement_buckets_collapsed[std::make_pair(bucket.subset_id, bucket.bucket_type)];
 					const char* translated_bucket_name = Host::TranslateToCString("Achievements", bucket_names[bucket.bucket_type]);
 
 					bucket_collapsed ^=
@@ -2719,54 +2786,9 @@ void Achievements::DrawAchievementsWindow()
 	ImGuiFullscreen::EndFullscreenWindow();
 
 	if (has_multiple_subsets)
-	{
-		if (ImGuiFullscreen::IsGamepadInputSource())
-		{
-			const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
-			const auto glyphs = ImGuiFullscreen::GetGamepadGlyphs();
-			if (s_sidebar_has_focus)
-			{
-				ImGuiFullscreen::SetFullscreenFooterText(std::array{
-					std::make_pair(glyphs.dpad_ud, TRANSLATE_SV("Achievements", "Navigate Subsets")),
-					std::make_pair(glyphs.dpad_lr, TRANSLATE_SV("Achievements", "Back to List")),
-					std::make_pair(glyphs.confirm(circleOK), TRANSLATE_SV("Achievements", "Select")),
-					std::make_pair(glyphs.cancel(circleOK), TRANSLATE_SV("Achievements", "Back")),
-				});
-			}
-			else
-			{
-				ImGuiFullscreen::SetFullscreenFooterText(std::array{
-					std::make_pair(glyphs.dpad_lr, TRANSLATE_SV("Achievements", "Navigate Subsets")),
-					std::make_pair(glyphs.dpad_ud, TRANSLATE_SV("Achievements", "Change Selection")),
-					std::make_pair(glyphs.cancel(circleOK), TRANSLATE_SV("Achievements", "Back")),
-				});
-			}
-		}
-		else
-		{
-			if (s_sidebar_has_focus)
-			{
-				ImGuiFullscreen::SetFullscreenFooterText(std::array{
-					std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, TRANSLATE_SV("Achievements", "Navigate Subsets")),
-					std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, TRANSLATE_SV("Achievements", "Back to List")),
-					std::make_pair(ICON_PF_ENTER, TRANSLATE_SV("Achievements", "Select")),
-					std::make_pair(ICON_PF_ESC, TRANSLATE_SV("Achievements", "Back")),
-				});
-			}
-			else
-			{
-				ImGuiFullscreen::SetFullscreenFooterText(std::array{
-					std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, TRANSLATE_SV("Achievements", "Navigate Subsets")),
-					std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, TRANSLATE_SV("Achievements", "Change Selection")),
-					std::make_pair(ICON_PF_ESC, TRANSLATE_SV("Achievements", "Back")),
-				});
-			}
-		}
-	}
+		DrawSubsetSidebarFooter(sidebar_has_focus);
 	else
-	{
 		FullscreenUI::SetStandardSelectionFooterText(true);
-	}
 }
 
 void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
@@ -2982,9 +3004,21 @@ bool Achievements::PrepareLeaderboardsWindow()
 
 	s_achievement_badge_paths = {};
 	CloseLeaderboard();
+
+	if (s_subset_list)
+	{
+		rc_client_destroy_subset_list(s_subset_list);
+		s_subset_list = nullptr;
+	}
+	CloseSubset();
+	s_subset_list = rc_client_create_subset_list(client);
+	if (!s_subset_list)
+		Console.Warning("Achievements: rc_client_create_subset_list() returned null");
+	s_leaderboard_buckets_collapsed.clear();
+
 	if (s_leaderboard_list)
 		rc_client_destroy_leaderboard_list(s_leaderboard_list);
-	s_leaderboard_list = rc_client_create_leaderboard_list(client, RC_CLIENT_LEADERBOARD_LIST_GROUPING_NONE);
+	s_leaderboard_list = rc_client_create_leaderboard_list(client, RC_CLIENT_LEADERBOARD_LIST_GROUPING_TRACKING);
 	if (!s_leaderboard_list)
 	{
 		Console.Error("Achievements: rc_client_create_leaderboard_list() returned null");
@@ -2996,6 +3030,18 @@ bool Achievements::PrepareLeaderboardsWindow()
 	s_last_selected_leaderboard_id = 0;
 	s_restore_leaderboard_scroll = false;
 	s_leaderboard_list_scroll = 0.0f;
+
+	if (s_subset_list)
+	{
+		for (u32 i = 0; i < s_subset_list->num_subsets; i++)
+		{
+			if (s_subset_list->subsets[i]->num_leaderboards > 0)
+			{
+				OpenSubset(s_subset_list->subsets[i]);
+				break;
+			}
+		}
+	}
 
 	return true;
 }
@@ -3019,6 +3065,17 @@ void Achievements::DrawLeaderboardsWindow()
 
 	const bool is_leaderboard_open = (s_open_leaderboard != nullptr);
 	bool close_leaderboard_on_exit = false;
+
+	u32 subsets_with_leaderboards = 0;
+	if (s_subset_list)
+	{
+		for (u32 i = 0; i < s_subset_list->num_subsets; i++)
+		{
+			if (s_subset_list->subsets[i]->num_leaderboards > 0)
+				subsets_with_leaderboards++;
+		}
+	}
+	const bool has_multiple_subsets = (subsets_with_leaderboards > 1);
 
 	ImRect bb;
 
@@ -3243,36 +3300,108 @@ void Achievements::DrawLeaderboardsWindow()
 
 	if (!is_leaderboard_open)
 	{
+		bool sidebar_has_focus = false;
+		const float sidebar_width = has_multiple_subsets ? LayoutScale(200.0f) : 0.0f;
+
 		if (ImGuiFullscreen::BeginFullscreenWindow(
 				ImVec2(0.0f, heading_height),
 				ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
-				"leaderboards", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
+				"leaderboards", background, 0.0f, ImVec2(0.0f, 0.0f), 0))
 		{
-			if (s_restore_leaderboard_scroll)
+			if (has_multiple_subsets)
+				DrawSubsetSidebar(sidebar_width, sidebar_has_focus, true);
+
+			const float content_width = has_multiple_subsets ? (display_size.x - sidebar_width) : display_size.x;
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f));
+			ImGui::PushStyleColor(ImGuiCol_ChildBg, background);
+			ImGui::PushStyleColor(ImGuiCol_Header, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryDarkColor));
+			ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryColor));
+			ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImGui::GetColorU32(ImGuiFullscreen::UISecondaryColor));
+
+			if (ImGui::BeginChild("leaderboards_content", ImVec2(content_width, 0.0f), ImGuiChildFlags_NavFlattened, 0))
 			{
-				ImGui::SetScrollY(s_leaderboard_list_scroll);
-				s_restore_leaderboard_scroll = false;
+				if (ImGui::IsWindowHovered() || ImGui::IsWindowFocused())
+					sidebar_has_focus = false;
+
+				if (s_restore_leaderboard_scroll)
+				{
+					ImGui::SetScrollY(s_leaderboard_list_scroll);
+					s_restore_leaderboard_scroll = false;
+				}
+
+				const bool had_pending_focus_request = s_restore_leaderboard_focus;
+
+				ImGuiFullscreen::BeginMenuButtons();
+
+				static const char* lboard_bucket_names[NUM_RC_CLIENT_LEADERBOARD_BUCKETS] = {
+					TRANSLATE_NOOP("Achievements", "Unknown"),
+					TRANSLATE_NOOP("Achievements", "Inactive"),
+					TRANSLATE_NOOP("Achievements", "Active"),
+					TRANSLATE_NOOP("Achievements", "Unsupported"),
+					TRANSLATE_NOOP("Achievements", "All"),
+				};
+				const bool show_bucket_headers = (s_leaderboard_list->num_buckets > 1);
+
+				for (u32 bucket_index = 0; bucket_index < s_leaderboard_list->num_buckets; bucket_index++)
+				{
+					const rc_client_leaderboard_bucket_t& bucket = s_leaderboard_list->buckets[bucket_index];
+					if (s_open_subset && bucket.subset_id != 0 && bucket.subset_id != s_open_subset->id)
+						continue;
+					if (show_bucket_headers)
+					{
+						pxAssert(bucket.bucket_type < NUM_RC_CLIENT_LEADERBOARD_BUCKETS);
+						const char* type_name =
+							Host::TranslateToCString("Achievements", lboard_bucket_names[bucket.bucket_type]);
+
+						TinyString bucket_label;
+						if (bucket.subset_id != 0 && !s_open_subset && s_subset_list)
+						{
+							const char* subset_title = nullptr;
+							for (u32 k = 0; k < s_subset_list->num_subsets; k++)
+							{
+								if (s_subset_list->subsets[k]->id == bucket.subset_id)
+								{
+									subset_title = s_subset_list->subsets[k]->title;
+									break;
+								}
+							}
+							if (subset_title)
+								bucket_label.format("{} - {}", subset_title, type_name);
+							else
+								bucket_label.assign(type_name);
+						}
+						else
+						{
+							bucket_label.assign(type_name);
+						}
+
+						bool& bucket_collapsed = s_leaderboard_buckets_collapsed[std::make_pair(bucket.subset_id, bucket.bucket_type)];
+						if (ImGuiFullscreen::MenuHeadingButton(
+								bucket_label, bucket_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP))
+							bucket_collapsed = !bucket_collapsed;
+						if (bucket_collapsed)
+							continue;
+					}
+					for (u32 i = 0; i < bucket.num_leaderboards; i++)
+						DrawLeaderboardListEntry(bucket.leaderboards[i]);
+				}
+
+				ImGuiFullscreen::EndMenuButtons();
+
+				if (had_pending_focus_request && s_restore_leaderboard_focus)
+					s_restore_leaderboard_focus = false;
 			}
+			ImGui::EndChild();
 
-			const bool had_pending_focus_request = s_restore_leaderboard_focus;
-
-			ImGuiFullscreen::BeginMenuButtons();
-
-			for (u32 bucket_index = 0; bucket_index < s_leaderboard_list->num_buckets; bucket_index++)
-			{
-				const rc_client_leaderboard_bucket_t& bucket = s_leaderboard_list->buckets[bucket_index];
-				for (u32 i = 0; i < bucket.num_leaderboards; i++)
-					DrawLeaderboardListEntry(bucket.leaderboards[i]);
-			}
-
-			ImGuiFullscreen::EndMenuButtons();
-
-			if (had_pending_focus_request && s_restore_leaderboard_focus)
-				s_restore_leaderboard_focus = false;
+			ImGui::PopStyleColor(4);
+			ImGui::PopStyleVar();
 		}
 		ImGuiFullscreen::EndFullscreenWindow();
 
-		FullscreenUI::SetStandardSelectionFooterText(true);
+		if (has_multiple_subsets)
+			DrawSubsetSidebarFooter(sidebar_has_focus);
+		else
+			FullscreenUI::SetStandardSelectionFooterText(true);
 	}
 	else
 	{
