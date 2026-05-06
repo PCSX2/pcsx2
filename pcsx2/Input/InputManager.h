@@ -291,6 +291,10 @@ namespace InputManager
 	void SetUSBVibrationIntensity(u32 port, float large_or_single_motor_intensity, float small_motor_intensity);
 	void SetPadVibrationIntensity(u32 pad_index, float large_or_single_motor_intensity, float small_motor_intensity);
 
+	/// Returns the current vibration intensity for the given pad index.
+	/// Large motor is index 0, small motor is index 1.
+	std::pair<float, float> getPadVibrationIntensity(u32 pad_index);
+
 	/// Zeros all vibration intensities. Call when pausing.
 	/// The pad vibration state will internally remain, so that when emulation is unpaused, the effect resumes.
 	void PauseVibration();

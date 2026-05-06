@@ -117,6 +117,9 @@ namespace InputManager
 	static bool PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key);
 	static bool ProcessEvent(InputBindingKey key, float value, bool skip_button_handlers);
 
+	static float s_pad_requested_large_intensity[Pad::NUM_CONTROLLER_PORTS + USB::NUM_PORTS] = {};
+	static float s_pad_requested_small_intensity[Pad::NUM_CONTROLLER_PORTS + USB::NUM_PORTS] = {};
+
 	template <typename T>
 	static void UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock, InputSourceType type);
 } // namespace InputManager
@@ -1394,6 +1397,12 @@ void InputManager::SetUSBVibrationIntensity(u32 port, float large_or_single_moto
 
 void InputManager::SetPadVibrationIntensity(u32 pad_index, float large_or_single_motor_intensity, float small_motor_intensity)
 {
+		// Store requested intensity regardless of hardware support, for OSD display.
+	if (pad_index < (Pad::NUM_CONTROLLER_PORTS + USB::NUM_PORTS))
+	{
+		s_pad_requested_large_intensity[pad_index] = large_or_single_motor_intensity;
+		s_pad_requested_small_intensity[pad_index] = small_motor_intensity;
+	}
 	for (PadVibrationBinding& pad : s_pad_vibration_array)
 	{
 		if (pad.pad_index != pad_index)
@@ -1456,6 +1465,14 @@ void InputManager::PauseVibration()
 			motor.source->UpdateMotorState(motor.binding, 0.0f);
 		}
 	}
+}
+
+std::pair<float, float> InputManager::getPadVibrationIntensity(u32 pad_index)
+{
+	if (pad_index < (Pad::NUM_CONTROLLER_PORTS + USB::NUM_PORTS))
+		return {s_pad_requested_large_intensity[pad_index], s_pad_requested_small_intensity[pad_index]};
+
+	return {0.0f, 0.0f};
 }
 
 void InputManager::UpdateContinuedVibration()
