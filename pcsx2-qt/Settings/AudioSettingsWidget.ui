@@ -304,10 +304,16 @@
         <item>
          <widget class="QSlider" name="fastForwardVolume">
           <property name="maximum">
-           <number>200</number>
+           <number>5</number>
+          </property>
+          <property name="singleStep">
+           <number>1</number>
+          </property>
+          <property name="pageStep">
+           <number>1</number>
           </property>
           <property name="value">
-           <number>100</number>
+           <number>5</number>
           </property>
           <property name="orientation">
            <enum>Qt::Orientation::Horizontal</enum>
@@ -316,7 +322,7 @@
            <enum>QSlider::TickPosition::TicksBothSides</enum>
           </property>
           <property name="tickInterval">
-           <number>10</number>
+           <number>1</number>
           </property>
          </widget>
         </item>
@@ -329,7 +335,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>100%</string>
+           <string>1.00x</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -339,7 +345,7 @@
         <item>
          <widget class="QToolButton" name="resetFastForwardVolume">
           <property name="toolTip">
-           <string>Reset Fast Forward Volume</string>
+           <string>Reset Fast Forward Volume Multiplier</string>
           </property>
           <property name="icon">
            <iconset theme="restart-line"/>
