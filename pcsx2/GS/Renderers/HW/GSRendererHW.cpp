@@ -790,11 +790,14 @@ void GSRendererHW::DetectTextureShuffle()
 
 void GSRendererHW::DetectTextureShuffleSecondPass(GSTextureCache::Target* rt, GSTextureCache::Source* tex)
 {
-	const auto HasLowerOnes = [&](u32 x) { return x != 0 && (x & (x + 1)) == 0; };
+	if (!m_process_texture || !rt)
+	{
+		GL_INS("HW: Texture shuffle detection (2): Not detected.");
+		m_texture_shuffle.Disable();
+		return;
+	}
 
-	const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM];
 	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
-
 	if (frame_psm.bpp != 16)
 	{
 		GL_INS("HW: Texture shuffle detection (2): Failed (not 16 bit RT).");
@@ -804,7 +807,7 @@ void GSRendererHW::DetectTextureShuffleSecondPass(GSTextureCache::Target* rt, GS
 
 	if (m_texture_shuffle)
 	{
-		if (tex->m_32_bits_fmt)
+		if (tex && tex->m_32_bits_fmt)
 		{
 			GL_INS("HW: Texture shuffle detection (2): Passed.");
 		}
@@ -812,9 +815,9 @@ void GSRendererHW::DetectTextureShuffleSecondPass(GSTextureCache::Target* rt, GS
 		{
 			// Detects when the source texture is really a 16 bit texture instead of 32 bit being reinterpreted as 16 bit.
 			// Make sure it's opaque and not bilinear to reduce false positives.
-
+			const auto HasLowerOnes = [&](u32 x) { return x != 0 && (x & (x + 1)) == 0; };
 			if (m_cached_ctx.TEX0.TBP0 != m_cached_ctx.FRAME.Block() &&
-				rt->m_32_bits_fmt == true && IsOpaque() && !m_vt.IsRealLinear() &&
+				rt && rt->m_32_bits_fmt == true && IsOpaque() && !m_vt.IsRealLinear() &&
 				HasLowerOnes(m_cached_ctx.FRAME.FBMSK))
 			{
 				GL_INS("HW: Texture shuffle detection (2): Passed (real 16 bit source).");
@@ -832,10 +835,10 @@ void GSRendererHW::DetectTextureShuffleSecondPass(GSTextureCache::Target* rt, GS
 		// Last ditch check for reinterpreting a 32 bit source and RT as 16 bits.
 		// These "shuffles" appear to not do anything useful for games, but using the texture shuffle
 		// path helps to maintain correct sizes in the texture cache. Occurs in NFS Most Wanted.
-
+		const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM];
 		if (PRIM->TME &&
 			((m_vt.m_primclass == GS_SPRITE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS) && TrianglesAreQuads(true)) &&
-			(tex_psm.bpp == 16) && (frame_psm.bpp == 16) && rt->m_32_bits_fmt && tex->m_32_bits_fmt)
+			(tex_psm.bpp == 16) && (frame_psm.bpp == 16) && rt && rt->m_32_bits_fmt && tex && tex->m_32_bits_fmt)
 		{
 			GL_INS("HW: Texture shuffle detection (2): Passed (HACK: reinterpreting both source/RT as 16 bit).");
 			m_texture_shuffle.type = TextureShuffleType::HackShuffle;
@@ -4388,15 +4391,15 @@ void GSRendererHW::Draw()
 		}
 	}
 
+	// Second pass texture shuffle detection using RT and source.
+	DetectTextureShuffleSecondPass(rt, src);
+
 	if (m_process_texture)
 	{
 		GIFRegCLAMP MIP_CLAMP = m_cached_ctx.CLAMP;
 
 		if (rt)
 		{
-			// Second pass texture shuffle detection using RT and source.
-			DetectTextureShuffleSecondPass(rt, src);
-
 			if (m_texture_shuffle)
 			{
 				if (IsSplitTextureShuffle(rt->m_TEX0, rt->m_valid))
