@@ -9,6 +9,7 @@ It targets platforms and software outside the usual retail console path, includi
 - Full security process support end to end.
 - Bring your own keys.
 - Support for all Konami Python 2 titles.
+- Support for CHD-compressed internal HDD images with writable overlays.
 - Switch keying mode between Developer, Retail, Arcade, and Prototype on both mechacon and memory cards.
 - Support raw PS2 memory card dumps with proper keying.
 - Support for utility discs such as HDD installers and DVD installers.
@@ -49,10 +50,11 @@ PCSX2 memory cards expect the ECC data to be present. Some memorycard dumping ut
 ### Konami Python 2
 Python 2 games require pairing of the game hdd image, the associated nvram, the white and black dongle data, as well as other hardware specifics like your e-amuse card id. This can all be configured through a `.py2` file that the game library scanner can read and interpret. Details on this file format are listed in this [wiki article](https://github.com/987123879113/pcsx2/wiki/PY2-Game-Entry-File-Example).
 
+Python 2 HDD images can be provided as either raw `.raw` files or CHD-compressed `.chd` files. CHD images are opened read-only as the base image to reduce collection size, while any writes made by the emulated HDD are stored in a separate writable overlay under `hdd-overlays/` in the emulator settings directory. This keeps the compressed source CHD unchanged and allows per-install or per-user runtime data to persist. To reset a CHD-backed HDD to its base image, close the emulator and delete the matching `.overlay` and `.map` files.
+
 The Python 2 IO board (P2IO) is available as a USB device in the controller configuration screen. It must be plugged into port 1 for the inputs and dongles to be authenticated correctly.
 ![p2io-config.png](docs/p2io-config.png)
 
 ### Retail/Utility Disks
 If your bios is a proper dump, and your mechacon and memory cards are setup in Retail mode, then any HDD based functionality will work like a real console. This lets you do things like run the HDD Utility disks, boot FMCB, install game HDD functionality or boot DVD update payloads.
 ![hdd-utility.png](docs/hdd-utility.png)
-
