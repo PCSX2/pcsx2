@@ -5687,7 +5687,10 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 				sw_blending |= blend_mix;
 				[[fallthrough]];
 			case AccBlendLevel::Minimum:
-				break;
+				sw_blending |= blend_non_recursive || alpha_eq_less_one || alpha_c0_high_max_one;
+				blend_mix &= !sw_blending;
+				sw_blending |= blend_mix;
+                break;
 		}
 	}
 	else
@@ -5728,7 +5731,10 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 				sw_blending |= blend_mix;
 				[[fallthrough]];
 			case AccBlendLevel::Minimum:
-				break;
+                sw_blending |= blend_non_recursive || alpha_eq_less_one || alpha_c0_high_max_one;
+				blend_mix &= !sw_blending;
+				sw_blending |= blend_mix;
+                break;
 		}
 	}
 
