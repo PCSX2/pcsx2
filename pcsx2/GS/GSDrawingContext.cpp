@@ -91,8 +91,8 @@ void GSDrawingContext::UpdateScissor()
 	scissor.in = rscissor + GSVector4i::cxpr(0, 0, 1, 1);
 
 	// Fixed-point scissor min/max, used for rejecting primitives which are entirely outside.
-	// Bottom-right end point should be exclusive for rectangle intersection test to work correctly.
-	scissor.cull = rscissor.sll32<4>() + GSVector4i::cxpr(0, 0, 1, 1);
+	// Add half a pixel around the edges for upscaling and lines/points.
+	scissor.cull = rscissor.sll32<4>() + GSVector4i(-8, -8, 8, 8);
 
 	// Offset applied to vertices for culling.
 	scissor.xyof = GSVector4i::loadl(&XYOFFSET.U64).xyxy();

@@ -5930,39 +5930,46 @@ __forceinline void GSState::VertexKick(u32 skip)
 			bbox = v0.runion(v1).runion(v2);
 		}
 
-		if (m_nativeres && (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS))
+		if constexpr (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS)
 		{
-			// For triangles and sprites at native res take the region strictly within the bounds
-			// omitting the bottom/right.
-			bbox = (bbox + GSVector4i(0xF, 0xF, -1, -1)) & GSVector4i(~0xF);
+			if (m_nativeres)
+			{
+				// For triangles and sprites at native res take the interior pixel centers.
+				const GSVector4i interior = (bbox + GSVector4i(0xF, 0xF, -1, -1)) & GSVector4i(~0xF);
+				bbox = interior + GSVector4i(0, 0, 1, 1); // +1 to bottom/right so empty test works correctly.
+			}
+			else
+			{
+				// For upscaling, remove bottom/right subtexels.
+				bbox -= ((bbox & GSVector4i(0xF)) == GSVector4i(0)) & GSVector4i(0, 0, 1, 1);
+			}
+
+			// For AA1 triangles and lines, expand the bounds by 1 pixel on all sides.
+			// Note: redundant check for the AA1 flag to avoid calling a function if not needed.
+			if (PRIM->AA1 && IsCoverageAlphaSupported())
+			{
+				bbox += GSVector4i(-0x10, -0x10, 0x10, 0x10);
+			}
 		}
 
-		// For AA1 triangles and lines, expand the bounds by 1 pixel on all sides.
-		// Note: redundant check for the AA1 flag to avoid calling a function if not needed.
-		if ((primclass == GS_TRIANGLE_CLASS || primclass == GS_LINE_CLASS) && PRIM->AA1 && IsCoverageAlphaSupported())
+		// Do scissor test.
+		const GSVector4i bbox_ex = bbox + GSVector4i(0, 0, 1, 1); // Exclusive coords for the scissor test.
+		const GSVector4i& scissor = m_context->scissor.cull;
+		u32 test = static_cast<u32>(!bbox_ex.rintersects(scissor));
+
+		// Test for empty bbox.
+		if constexpr (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS)
 		{
-			bbox += GSVector4i(-0x10, -0x10, 0x10, 0x10);
+			test |= static_cast<u32>(bbox.rempty());
 		}
-
-		// Make the bottom-right endpoints exclusive for rectangle intersection to work correctly.
-		bbox += GSVector4i::cxpr(0, 0, 1, 1);
-
-		// Do scissor test and empty bbox test.
-		GSVector4i test = GSVector4i(bbox.rintersects(m_context->scissor.cull)) == GSVector4i::cxpr(0);
 
 		// Test for degenerate triangle.
-		if (primclass == GS_TRIANGLE_CLASS)
+		if constexpr (primclass == GS_TRIANGLE_CLASS)
 		{
-			test |= v0.eq64(v1) | v1.eq64(v2) | v0.eq64(v2);
+			test |= static_cast<u32>(v0.eq(v1)) | static_cast<u32>(v1.eq(v2)) | static_cast<u32>(v0.eq(v2));
 		}
 
-#ifndef ARCH_ARM64
-		// We only care about the xy passing the skip test.
-		skip |= test.mask();
-#else
-		// mask() is slow on ARM, so just pull the bits out instead, thankfully we only care about the first 4 bytes.
-		skip |= (static_cast<u64>(test.extract64<0>()) & UINT64_C(0x8080808080808080)) != 0;
-#endif
+		skip |= test;
 	}
 
 	if (skip != 0)
