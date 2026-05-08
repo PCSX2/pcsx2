@@ -35,7 +35,7 @@ from_chars_result_t<UC>
     ++first;
   }
   if (last - first >= 3) {
-    if (fastfloat_strncasecmp(first, str_const_nan<UC>(), 3)) {
+    if (fastfloat_strncasecmp3(first, str_const_nan<UC>())) {
       answer.ptr = (first += 3);
       value = minusSign ? -std::numeric_limits<T>::quiet_NaN()
                         : std::numeric_limits<T>::quiet_NaN();
@@ -54,9 +54,9 @@ from_chars_result_t<UC>
       }
       return answer;
     }
-    if (fastfloat_strncasecmp(first, str_const_inf<UC>(), 3)) {
+    if (fastfloat_strncasecmp3(first, str_const_inf<UC>())) {
       if ((last - first >= 8) &&
-          fastfloat_strncasecmp(first + 3, str_const_inf<UC>() + 3, 5)) {
+          fastfloat_strncasecmp5(first + 3, str_const_inf<UC>() + 3)) {
         answer.ptr = first + 8;
       } else {
         answer.ptr = first + 3;
@@ -155,7 +155,7 @@ template <> struct from_chars_caller<std::float32_t> {
     // if std::float32_t is defined, and we are in C++23 mode; macro set for
     // float32; set value to float due to equivalence between float and
     // float32_t
-    float val;
+    float val = 0.0f;
     auto ret = from_chars_advanced(first, last, val, options);
     value = val;
     return ret;
@@ -172,7 +172,7 @@ template <> struct from_chars_caller<std::float64_t> {
     // if std::float64_t is defined, and we are in C++23 mode; macro set for
     // float64; set value as double due to equivalence between double and
     // float64_t
-    double val;
+    double val = 0.0;
     auto ret = from_chars_advanced(first, last, val, options);
     value = val;
     return ret;
@@ -251,7 +251,7 @@ clinger_fast_path_impl(uint64_t mantissa, int64_t exponent, bool is_negative,
  * parsing options or other parsing custom function implemented by user.
  */
 template <typename T, typename UC>
-FASTFLOAT_CONSTEXPR20 from_chars_result_t<UC>
+fastfloat_really_inline FASTFLOAT_CONSTEXPR20 from_chars_result_t<UC>
 from_chars_advanced(parsed_number_string_t<UC> &pns, T &value) noexcept {
   static_assert(is_supported_float_type<T>::value,
                 "only some floating-point types are supported");
@@ -290,7 +290,7 @@ from_chars_advanced(parsed_number_string_t<UC> &pns, T &value) noexcept {
 }
 
 template <typename T, typename UC>
-FASTFLOAT_CONSTEXPR20 from_chars_result_t<UC>
+fastfloat_really_inline FASTFLOAT_CONSTEXPR20 from_chars_result_t<UC>
 from_chars_float_advanced(UC const *first, UC const *last, T &value,
                           parse_options_t<UC> options) noexcept {
 
@@ -344,44 +344,79 @@ from_chars(UC const *first, UC const *last, T &value, int base) noexcept {
   return from_chars_advanced(first, last, value, options);
 }
 
-FASTFLOAT_CONSTEXPR20 inline double
-integer_times_pow10(uint64_t mantissa, int decimal_exponent) noexcept {
-  double value;
+template <typename T>
+FASTFLOAT_CONSTEXPR20
+    typename std::enable_if<is_supported_float_type<T>::value, T>::type
+    integer_times_pow10(uint64_t mantissa, int decimal_exponent) noexcept {
+  T value;
   if (clinger_fast_path_impl(mantissa, decimal_exponent, false, value))
     return value;
 
   adjusted_mantissa am =
-      compute_float<binary_format<double>>(decimal_exponent, mantissa);
+      compute_float<binary_format<T>>(decimal_exponent, mantissa);
   to_float(false, am, value);
   return value;
 }
 
-FASTFLOAT_CONSTEXPR20 inline double
-integer_times_pow10(int64_t mantissa, int decimal_exponent) noexcept {
+template <typename T>
+FASTFLOAT_CONSTEXPR20
+    typename std::enable_if<is_supported_float_type<T>::value, T>::type
+    integer_times_pow10(int64_t mantissa, int decimal_exponent) noexcept {
   const bool is_negative = mantissa < 0;
   const uint64_t m = static_cast<uint64_t>(is_negative ? -mantissa : mantissa);
 
-  double value;
+  T value;
   if (clinger_fast_path_impl(m, decimal_exponent, is_negative, value))
     return value;
 
-  adjusted_mantissa am =
-      compute_float<binary_format<double>>(decimal_exponent, m);
+  adjusted_mantissa am = compute_float<binary_format<T>>(decimal_exponent, m);
   to_float(is_negative, am, value);
   return value;
 }
 
+FASTFLOAT_CONSTEXPR20 inline double
+integer_times_pow10(uint64_t mantissa, int decimal_exponent) noexcept {
+  return integer_times_pow10<double>(mantissa, decimal_exponent);
+}
+
+FASTFLOAT_CONSTEXPR20 inline double
+integer_times_pow10(int64_t mantissa, int decimal_exponent) noexcept {
+  return integer_times_pow10<double>(mantissa, decimal_exponent);
+}
+
 // the following overloads are here to avoid surprising ambiguity for int,
 // unsigned, etc.
+template <typename T, typename Int>
+FASTFLOAT_CONSTEXPR20
+    typename std::enable_if<is_supported_float_type<T>::value &&
+                                std::is_integral<Int>::value &&
+                                !std::is_signed<Int>::value,
+                            T>::type
+    integer_times_pow10(Int mantissa, int decimal_exponent) noexcept {
+  return integer_times_pow10<T>(static_cast<uint64_t>(mantissa),
+                                decimal_exponent);
+}
+
+template <typename T, typename Int>
+FASTFLOAT_CONSTEXPR20
+    typename std::enable_if<is_supported_float_type<T>::value &&
+                                std::is_integral<Int>::value &&
+                                std::is_signed<Int>::value,
+                            T>::type
+    integer_times_pow10(Int mantissa, int decimal_exponent) noexcept {
+  return integer_times_pow10<T>(static_cast<int64_t>(mantissa),
+                                decimal_exponent);
+}
+
 template <typename Int>
-FASTFLOAT_CONSTEXPR20 inline typename std::enable_if<
+FASTFLOAT_CONSTEXPR20 typename std::enable_if<
     std::is_integral<Int>::value && !std::is_signed<Int>::value, double>::type
 integer_times_pow10(Int mantissa, int decimal_exponent) noexcept {
   return integer_times_pow10(static_cast<uint64_t>(mantissa), decimal_exponent);
 }
 
 template <typename Int>
-FASTFLOAT_CONSTEXPR20 inline typename std::enable_if<
+FASTFLOAT_CONSTEXPR20 typename std::enable_if<
     std::is_integral<Int>::value && std::is_signed<Int>::value, double>::type
 integer_times_pow10(Int mantissa, int decimal_exponent) noexcept {
   return integer_times_pow10(static_cast<int64_t>(mantissa), decimal_exponent);
@@ -421,7 +456,7 @@ template <size_t TypeIx> struct from_chars_advanced_caller {
 
 template <> struct from_chars_advanced_caller<1> {
   template <typename T, typename UC>
-  FASTFLOAT_CONSTEXPR20 static from_chars_result_t<UC>
+  fastfloat_really_inline FASTFLOAT_CONSTEXPR20 static from_chars_result_t<UC>
   call(UC const *first, UC const *last, T &value,
        parse_options_t<UC> options) noexcept {
     return from_chars_float_advanced(first, last, value, options);
@@ -430,7 +465,7 @@ template <> struct from_chars_advanced_caller<1> {
 
 template <> struct from_chars_advanced_caller<2> {
   template <typename T, typename UC>
-  FASTFLOAT_CONSTEXPR20 static from_chars_result_t<UC>
+  fastfloat_really_inline FASTFLOAT_CONSTEXPR20 static from_chars_result_t<UC>
   call(UC const *first, UC const *last, T &value,
        parse_options_t<UC> options) noexcept {
     return from_chars_int_advanced(first, last, value, options);
@@ -438,7 +473,7 @@ template <> struct from_chars_advanced_caller<2> {
 };
 
 template <typename T, typename UC>
-FASTFLOAT_CONSTEXPR20 from_chars_result_t<UC>
+fastfloat_really_inline FASTFLOAT_CONSTEXPR20 from_chars_result_t<UC>
 from_chars_advanced(UC const *first, UC const *last, T &value,
                     parse_options_t<UC> options) noexcept {
   return from_chars_advanced_caller<
