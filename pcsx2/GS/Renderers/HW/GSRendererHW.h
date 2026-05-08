@@ -233,7 +233,11 @@ private:
 
 	void EmulateZbuffer(const GSTextureCache::Target* ds);
 	void EmulateAA1();
+	void EmulateAA1MultiPass();
+	static void SimplifyAlphaTest(const GSHWDrawConfig::ColorMaskSelector& colormask, const bool zwe, u32& atst, u32& afail);
+	void OptimizeAlphaTestAndMasks(TryAlphaTestRegion region, GIFRegTEST& test, GSHWDrawConfig::ColorMaskSelector& colormask, bool& zwe);
 	static void GetAlphaTestConfigPS(const u32 atst, const u8 aref, const bool invert_test, PS_ATST& ps_atst_out, float& aref_out);
+	static void GetAlphaTestRGBOnlyDSBConfig(GSHWDrawConfig::BlendState& bs, GSHWDrawConfig::BlendMultiPass* blend_multi_mass = nullptr);
 	void EmulateAlphaTest(DATEOptions& date_options);
 	void EmulateAlphaTestSecondPass();
 	void ConfigureDepthFeedback(bool rov_depth = false);
@@ -340,6 +344,13 @@ private:
 
 	GSHWDrawConfig m_conf = {};
 	HWCachedCtx m_cached_ctx;
+
+	// For AA1 alpha test optimizations.
+	GIFRegTEST m_interior_test = {};
+	GIFRegTEST m_edge_test = {};
+	GSHWDrawConfig::ColorMaskSelector m_interior_mask = 0;
+	GSHWDrawConfig::ColorMaskSelector m_edge_mask = 0;
+	bool m_interior_depth_write = 0;
 
 	// software sprite renderer state
 	std::vector<GSVertexSW> m_sw_vertex_buffer;
