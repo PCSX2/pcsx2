@@ -2995,7 +2995,7 @@ void GSRendererHW::Draw()
 	// I hate that I have to do this, but some games (like Pac-Man World Rally) troll us by causing a flush with degenerate triangles, so we don't have all available information about the next draw.
 	// So we have to check when the next draw happens if our frame has changed or if it's become recursive.
 	const bool has_colclip_texture = g_gs_device->GetColorClipTexture() != nullptr;
-	if (!no_rt && has_colclip_texture && (m_conf.colclip_frame.FBP != m_cached_ctx.FRAME.FBP || m_conf.colclip_frame.Block() == m_cached_ctx.TEX0.TBP0))
+	if (!no_rt && has_colclip_texture && (m_conf.colclip_frame.FBP != m_cached_ctx.FRAME.FBP || (PRIM->TME && m_conf.colclip_frame.Block() == m_cached_ctx.TEX0.TBP0)))
 	{
 		GIFRegTEX0 FRAME;
 		FRAME.TBP0 = m_conf.colclip_frame.Block();
