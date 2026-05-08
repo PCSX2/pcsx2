@@ -26,6 +26,8 @@ layout(std140, binding = 1) uniform cb20
 #define VS_EXPAND_SPRITE 3
 #define VS_EXPAND_LINE_AA1 4
 #define VS_EXPAND_TRIANGLE_AA1 5
+#define VS_EXPAND_TRIANGLE_AA1_INTERIOR 6
+#define VS_EXPAND_TRIANGLE_AA1_EDGE 7
 #endif
 
 out SHADER
@@ -361,7 +363,7 @@ void main()
 	vtx.t_float.y = is_bottom ? lt.t_float.y : vtx.t_float.y;
 	vtx.t_int.yw = is_bottom ? lt.t_int.yw : vtx.t_int.yw;
 
-#elif VS_EXPAND == VS_EXPAND_TRIANGLE_AA1
+#elif (VS_EXPAND == VS_EXPAND_TRIANGLE_AA1 || VS_EXPAND == VS_EXPAND_TRIANGLE_AA1_INTERIOR || VS_EXPAND == VS_EXPAND_TRIANGLE_AA1_EDGE)
 
 	// Triangles with AA1 are expanded as follows:
 	// - Vertices 0-2: Interior of triangle (1 triangle).
@@ -371,22 +373,36 @@ void main()
 	// - Vertices 21-26: First corner cap (2 triangles).
 	// - Vertices 27-32: Second corner cap (2 triangles).
 	// - Vertices 33-38: Third corner cap (2 triangles).
+	// With INTERIOR or EDGE the corresponding vertices are omitted.
 
+#if VS_EXPAND == VS_EXPAND_TRIANGLE_AA1
 	uint prim_id = vid / 39u;
-	uint prim_offset = vid - 39u * prim_id; // range: 0-38
-	bool interior = prim_offset < 3u;
-	bool edge = 3u <= prim_offset && prim_offset < 21u;
+	uint prim_offset_interior = vid - 39u * prim_id; // used range: 0-2
+	uint prim_offset_edges = prim_offset_interior - 3u; // used range: 0-17
+	uint prim_offset_caps = prim_offset_edges - 18u; // used range: 0-17
+#elif VS_EXPAND == VS_EXPAND_TRIANGLE_AA1_INTERIOR
+	uint prim_id = vid / 3u;
+	uint prim_offset_interior = vid - 3u * prim_id; // used range: 0-2
+	uint prim_offset_edges = uint(-1); // unused
+	uint prim_offset_caps = uint(-1); // unused
+#elif VS_EXPAND == VS_EXPAND_TRIANGLE_AA1_EDGE
+	uint prim_id = vid / 36u;
+	uint prim_offset_interior = uint(-1); // unused
+	uint prim_offset_edges = vid - 36u * prim_id; // used range: 0-17
+	uint prim_offset_caps = prim_offset_edges - 18u; // used range: 0-17
+#endif
+	bool interior = 0u <= prim_offset_interior && prim_offset_interior < 3u;
+	bool edge = 0u <= prim_offset_edges && prim_offset_edges < 18u;
 
 	if (interior)
 	{
-		vtx = load_vertex(load_index(3u * prim_id + prim_offset));
+		vtx = load_vertex(load_index(3u * prim_id + prim_offset_interior));
 		VSout.inv_cov = 0.0f; // Full coverage
 		VSout.interior = 1u;
 	}
 	else if (edge)
 	{
 		// Vertex indices for this edge. We need all 3 for determining exterior/interior.
-		uint prim_offset_edges = prim_offset - 3u; // range: 0-17
 		uint i0 = prim_offset_edges / 6u;
 		uint i1 = (i0 >= 2u) ? i0 - 2u : i0 + 1u;
 		uint i2 = (i0 >= 1u) ? i0 - 1u : i0 + 2u;
@@ -415,11 +431,10 @@ void main()
 	else // Corner cap
 	{
 		// Vertex indices for this cap. We need all 3 for determining exterior/interior.
-		uint prim_offset_cap = prim_offset - 21u; // range: 0-8
-		uint i0 = prim_offset_cap / 6u;
+		uint i0 = prim_offset_caps / 6u;
 		uint i1 = (i0 >= 2u) ? i0 - 2u : i0 + 1u;
 		uint i2 = (i0 >= 1u) ? i0 - 1u : i0 + 2u;
-		uint cap_offset = prim_offset_cap - 6u * i0; // range: 0-5
+		uint cap_offset = prim_offset_caps - 6u * i0; // range: 0-5
 
 		bool is_near_corner = cap_offset == 0u || cap_offset == 3u;
 		bool is_far_corner = cap_offset == 2u || cap_offset == 5u;

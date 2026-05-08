@@ -38,6 +38,8 @@
 #define PS_AA1_LINE 1
 #define PS_AA1_TRIANGLE 2
 #define PS_AA1_TRIANGLE_SW_Z 3
+#define PS_AA1_TRIANGLE_PRIMID 4
+#define PS_AA1_TRIANGLE_PRIMID_INIT 5
 #endif
 
 // TEX_COORD_DEBUG output the uv coordinate as color. It is useful
@@ -63,6 +65,7 @@
 #define NEEDS_TEX (PS_TFX != 4)
 #define SW_DEPTH (NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST || NEEDS_DEPTH_FOR_AA1)
 #define ZWRITE (SW_DEPTH || PS_ZCLAMP || PS_ZFLOOR)
+#define PRIMID_SETUP (PS_DATE == 1 || PS_DATE == 2 || PS_AA1 == PS_AA1_TRIANGLE_PRIMID_INIT)
 
 layout(std140, binding = 0) uniform cb21
 {
@@ -134,7 +137,7 @@ in SHADER
 	#endif
 #endif
 
-#if !PS_NO_COLOR && !PS_NO_COLOR1
+#if !PS_NO_COLOR && !PS_NO_COLOR1 && !PRIMID_SETUP
 	// Same buffer but 2 colors for dual source blending
 	layout(location = 0, index = 0) TARGET_0_QUALIFIER vec4 o_col0;
 	layout(location = 0, index = 1) out vec4 o_col1;
@@ -144,7 +147,7 @@ in SHADER
 
 // Depth feedback mode 2 is for depth as color.
 // Use FB fetch for the feedback if it's available.
-#if SW_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2)
+#if SW_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2) && !PRIMID_SETUP
 	#if HAS_FRAMEBUFFER_FETCH
 		layout(location = 1) inout float o_col1;
 	#else
@@ -161,7 +164,7 @@ layout(binding = 1) uniform sampler2D PaletteSampler;
 layout(binding = 2) uniform sampler2D RtSampler; // note 2 already use by the image below
 #endif
 
-#if PS_DATE == 3
+#if PS_DATE == 3 || (PS_AA1 == PS_AA1_TRIANGLE_PRIMID)
 layout(binding = 3) uniform sampler2D img_prim_min;
 #endif
 
@@ -1240,17 +1243,28 @@ void ps_main()
 		discard;
 	}
 
-#endif
+#endif // PS_DATE >= 5
+
+#if PS_DATE == 3 || PS_AA1 == PS_AA1_TRIANGLE_PRIMID
+	int primid_limit = int(texelFetch(img_prim_min, ivec2(gl_FragCoord.xy), 0).r);
 
 #if PS_DATE == 3
-	int stencil_ceil = int(texelFetch(img_prim_min, ivec2(gl_FragCoord.xy), 0).r);
-	// Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
+	// Note gl_PrimitiveID == primid_limit will be the primitive that will update
 	// the bad alpha value so we must keep it.
-
-	if (gl_PrimitiveID > stencil_ceil) {
+	if (gl_PrimitiveID > primid_limit) {
 		discard;
 	}
 #endif
+
+#if PS_AA1 == PS_AA1_TRIANGLE_PRIMID
+	// Discard if this edge is under a previous triangle interior.
+	// Edge should never overlap with its own interior so < and <= should be the same here.
+	if (gl_PrimitiveID <= primid_limit) {
+		discard;
+	}
+#endif
+
+#endif // primid DATE/AA1 discard
 
 	vec4 C = ps_color();
 
@@ -1310,6 +1324,10 @@ void ps_main()
 	// Pixel with alpha equal to 0 will failed (0-127)
 	o_col0 = (C.a < 127.5f) ? vec4(gl_PrimitiveID) : vec4(0x7FFFFFFF);
 	return;
+#elif PS_AA1 == PS_AA1_TRIANGLE_PRIMID_INIT
+	// Multiply by 12 because there are 12x as many edge triangles as interior triangles.
+	o_col0 = vec4(12 * gl_PrimitiveID);
+	return;
 #endif
 
 	ps_blend(C, alpha_blend);
@@ -1362,7 +1380,7 @@ void ps_main()
 
 	ps_fbmask(C);
 
-#if (PS_AFAIL == AFAIL_RGB_ONLY_DSB) && !PS_NO_COLOR1
+#if (PS_AFAIL == AFAIL_RGB_ONLY_DSB) && !PS_NO_COLOR1 && !PRIMID_SETUP
 	// Use alpha blend factor to determine whether to update A.
 	alpha_blend.a = float(atst_pass);
 #endif
@@ -1400,7 +1418,7 @@ void ps_main()
 	// FB fetch in sample_from_rt().
 	o_col0 = C;
 
-	#if !PS_NO_COLOR1
+	#if !PS_NO_COLOR1 && !PRIMID_SETUP
 		o_col1 = alpha_blend;
 	#endif
 #endif
@@ -1416,7 +1434,7 @@ void ps_main()
 
 // Writing back depth
 #if ZWRITE
-	#if SW_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2)
+	#if SW_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2) && !PRIMID_SETUP
 		// Depth as color write. For depth as color feedback we write to both
 		// color copy and real depth to avoid having to copy back to real depth.
 		// Warning: do not write o_col1 until the end since the value might
