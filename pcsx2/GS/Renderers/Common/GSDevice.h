@@ -696,7 +696,7 @@ struct alignas(16) GSHWDrawConfig
 		__fi bool UseFixedExpandIndexBuffer() const { return (expand == VSExpand::Point || expand == VSExpand::Sprite); }
 		
 		/// Return true if the index buffer should be bound as a vertex shader resource.
-		__fi bool UseVSExpandIndexBuffer() const { return (expand == VSExpand::TriangleAA1); }
+		__fi bool UseVSExpandIndexBuffer() const { return (expand >= VSExpand::TriangleAA1 && expand <= VSExpand::TriangleAA1Edge); }
 	};
 	static_assert(sizeof(VSSelector) == 1, "VSSelector is a single byte");
 
@@ -788,7 +788,7 @@ struct alignas(16) GSHWDrawConfig
 				u32 scanmsk : 2;
 
 				// AA1
-				PS_AA1 aa1 : 2; // Pixel shader AA1 primitive. Must be used in conjunction with VS AA1 expand.
+				PS_AA1 aa1 : 3; // Pixel shader AA1 primitive. Must be used in conjunction with VS AA1 expand.
 				u32 abe : 1; // Alpha blend enabled. Currently only used for emulating AA1/ABE interaction.
 
 				// Anisotropic filtering
@@ -905,6 +905,12 @@ struct alignas(16) GSHWDrawConfig
 		__fi bool HasDepthROVWrite() const
 		{
 			return rov_depth == PS_ROV_DEPTH::READ_WRITE;
+		}
+
+		__fi void DisableAlphaTest()
+		{
+			atst = PS_ATST::NONE;
+			afail = PS_AFAIL::KEEP;
 		}
 	};
 	static_assert(sizeof(PSSelector) == 16, "PSSelector is 12 bytes");
@@ -1228,6 +1234,20 @@ struct alignas(16) GSHWDrawConfig
 		Full,           ///< Full emulation (using barriers / ROV)
 	};
 
+	enum class AA1Mode : u8
+	{
+		Off,             ///< No AA1
+		OnePass,         ///< Lines or triangles without depth write
+		TwoPass,         ///< Two passes: interiors then edges
+		ThreePassPrimid, ///< Three passes: primid setup, interiors, then edges (with primid discard)
+		DepthFeedback,   ///< Full emulation (using depth feedback barriers)
+	};
+
+	static constexpr bool IsAA1MultiPass(AA1Mode mode)
+	{
+		return mode == AA1Mode::TwoPass || mode == AA1Mode::ThreePassPrimid;
+	}
+
 	enum class ColClipMode : u8
 	{
 		NoModify = 0,
@@ -1272,6 +1292,8 @@ struct alignas(16) GSHWDrawConfig
 	} tex_hazard;
 
 	AlphaTestMode alpha_test;
+	
+	AA1Mode aa1_mode;
 
 	DestinationAlphaMode destination_alpha;
 	SetDATM datm;
@@ -1303,6 +1325,19 @@ struct alignas(16) GSHWDrawConfig
 
 	BlendMultiPass blend_multi_pass;
 
+	struct AA1Pass
+	{
+		alignas(8) VSSelector vs;
+		alignas(8) PSSelector ps;
+		bool enable : 1;
+		ColorMaskSelector colormask;
+		DepthStencilSelector depth;
+		BlendState blend;
+		float ps_aref;
+	};
+
+	AA1Pass aa1_multi_pass;
+
 	VSConstantBuffer cb_vs;
 	PSConstantBuffer cb_ps;
 	
@@ -1325,11 +1360,119 @@ struct alignas(16) GSHWDrawConfig
 	{
 		return blend.enable || blend_multi_pass.enable || ps.IsSWBlending();
 	}
+	
+	// Draw pass selectors
+	enum class DrawPass
+	{
+		Main,
+		AlphaSecond,
+		AA1Second,
+		PrimID,
+		Blend,
+	};
+
+	bool GetFullBarrier(DrawPass pass) const
+	{
+		switch (pass)
+		{
+			default:
+			case DrawPass::Main: return require_full_barrier;
+			case DrawPass::AlphaSecond: return alpha_second_pass.require_full_barrier;
+			case DrawPass::AA1Second: return require_full_barrier;
+			case DrawPass::PrimID: return false;
+			case DrawPass::Blend: return false;
+		}
+	}
+
+	bool GetOneBarrier(DrawPass pass) const
+	{
+		switch (pass)
+		{
+			default:
+			case DrawPass::Main: return require_one_barrier;
+			case DrawPass::AlphaSecond: return alpha_second_pass.require_one_barrier;
+			case DrawPass::AA1Second: return require_one_barrier;
+			case DrawPass::PrimID: return false;
+			case DrawPass::Blend: return false;
+		}
+	}
+
+	const VSSelector& GetVS(DrawPass pass) const
+	{
+		switch (pass)
+		{
+			default:
+			case DrawPass::Main: return vs;
+			case DrawPass::AlphaSecond: return vs;
+			case DrawPass::AA1Second: return aa1_multi_pass.vs;
+			case DrawPass::Blend: return vs;
+			case DrawPass::PrimID: return vs;
+		}
+	}
+
+	const PSSelector& GetPS(DrawPass pass) const
+	{
+		switch (pass)
+		{
+			default:
+			case DrawPass::Main: return ps;
+			case DrawPass::AlphaSecond: return alpha_second_pass.ps;
+			case DrawPass::AA1Second: return aa1_multi_pass.ps;
+			case DrawPass::Blend: return ps;
+			case DrawPass::PrimID: return ps;
+		}
+	}
+
+	ColorMaskSelector GetColorMask(DrawPass pass) const
+	{
+		switch (pass)
+		{
+			default:
+			case DrawPass::Main: return colormask;
+			case DrawPass::AlphaSecond: return alpha_second_pass.colormask;
+			case DrawPass::AA1Second: return aa1_multi_pass.colormask;
+			case DrawPass::Blend: return colormask;
+			case DrawPass::PrimID: return GSHWDrawConfig::ColorMaskSelector(1);
+		}
+	}
+
+	DepthStencilSelector GetDepth(DrawPass pass) const
+	{
+		switch (pass)
+		{
+			default:
+			case DrawPass::Main: return depth;
+			case DrawPass::AlphaSecond: return alpha_second_pass.depth;
+			case DrawPass::AA1Second: return aa1_multi_pass.depth;
+			case DrawPass::Blend: return depth;
+			case DrawPass::PrimID:
+			{
+				DepthStencilSelector primid_depth = depth;
+				primid_depth.zwe = false;
+				return primid_depth;
+			}
+		}
+	}
+
+	bool IsAA1Enabled() const
+	{
+		return aa1_mode != AA1Mode::Off;
+	}
+
+	// Disables all AA1 config EXCEPT for vertex shader, which cannot be disabled without additional info.
+	void DisableAA1()
+	{
+		aa1_mode = AA1Mode::Off;
+		aa1_multi_pass.enable = false;
+		ps.aa1 = PS_AA1::NONE;
+		if (alpha_second_pass.enable)
+			ps.aa1 = PS_AA1::NONE;
+	}
 
 	// Dumping
 	static void DumpConfig(const std::string& path, const GSHWDrawConfig& conf,
 		bool ps = true, bool vs = true, bool bs = true, bool dss = true, bool ss = true, bool asp = true, bool bmp = true,
-		bool cbvs = true, bool cbps = true);
+		bool aa1mp = true, bool cbvs = true, bool cbps = true);
 };
 
 static inline u32 GetExpansionFactor(GSHWDrawConfig::VSExpand expand)
@@ -1344,6 +1487,10 @@ static inline u32 GetExpansionFactor(GSHWDrawConfig::VSExpand expand)
 			return 2;
 		case GSHWDrawConfig::VSExpand::TriangleAA1:
 			return 13;
+		case GSHWDrawConfig::VSExpand::TriangleAA1Interior:
+			return 1;
+		case GSHWDrawConfig::VSExpand::TriangleAA1Edge:
+			return 12;
 		default:
 			return 1;
 	}

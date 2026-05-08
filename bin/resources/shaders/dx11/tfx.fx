@@ -48,6 +48,8 @@
 #define PS_AA1_LINE 1
 #define PS_AA1_TRIANGLE 2
 #define PS_AA1_TRIANGLE_SW_Z 3
+#define PS_AA1_TRIANGLE_PRIMID 4
+#define PS_AA1_TRIANGLE_PRIMID_INIT 5
 #endif
 
 #ifndef PS_ROV_DEPTH_NONE
@@ -128,6 +130,8 @@
 #define VS_EXPAND_SPRITE 3
 #define VS_EXPAND_LINE_AA1 4
 #define VS_EXPAND_TRIANGLE_AA1 5
+#define VS_EXPAND_TRIANGLE_AA1_INTERIOR 6
+#define VS_EXPAND_TRIANGLE_AA1_EDGE 7
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
@@ -139,11 +143,12 @@
 #define NEEDS_DEPTH_FOR_AA1 (PS_AA1 == PS_AA1_TRIANGLE_SW_Z)
 #define SW_DEPTH (NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST || NEEDS_DEPTH_FOR_AA1)
 #define ZWRITE (PS_ZFLOOR || PS_ZCLAMP || SW_DEPTH)
+#define PRIMID_SETUP (PS_DATE == 1 || PS_DATE == 2 || PS_AA1 == PS_AA1_TRIANGLE_PRIMID_INIT)
 
 #define PS_RETURN_COLOR_ROV (!PS_NO_COLOR && PS_ROV_COLOR)
 #define PS_RETURN_COLOR (!PS_NO_COLOR && !PS_ROV_COLOR)
 #define PS_RETURN_DEPTH_ROV (PS_ROV_DEPTH == PS_ROV_DEPTH_READ_WRITE)
-#define PS_RETURN_DEPTH (ZWRITE && !PS_ROV_DEPTH)
+#define PS_RETURN_DEPTH (ZWRITE && !PS_ROV_DEPTH && !PRIMID_SETUP)
 #define PS_ROV_EARLYDEPTHSTENCIL (PS_ROV_COLOR && !PS_ROV_DEPTH && !ZWRITE)
 
 struct VS_INPUT
@@ -185,7 +190,8 @@ struct PS_INPUT
 #endif
 	float inv_cov : COLOR1; // We use the inverse to make it simpler to interpolate.
 	nointerpolation uint interior : COLOR2; // 1 for triangle interior; 0 for edge;
-#if (PS_DATE >= 1 && PS_DATE <= 3) || GS_FORWARD_PRIMID
+#if (PS_DATE >= 1 && PS_DATE <= 3) || (PS_AA1 == PS_AA1_TRIANGLE_PRIMID) || \
+	(PS_AA1 == PS_AA1_TRIANGLE_PRIMID_INIT) || GS_FORWARD_PRIMID
 	uint primid : SV_PrimitiveID;
 #endif
 };
@@ -197,18 +203,13 @@ struct PS_OUTPUT
 #define NUM_RTS 0
 
 #if PS_RETURN_COLOR
-	#if PS_DATE == 1 || PS_DATE == 2
-		float c : SV_Target;
-	#else
-		
-		float4 c0 : SV_Target0;
+	float4 c0 : SV_Target0;
 
-		#undef NUM_RTS
-		#define NUM_RTS 1
-		
-		#if !PS_NO_COLOR1
-			float4 c1 : SV_Target1;
-		#endif
+	#undef NUM_RTS
+	#define NUM_RTS 1
+	
+	#if !PS_NO_COLOR1 && !PRIMID_SETUP
+		float4 c1 : SV_Target1;
 	#endif
 #endif
 
@@ -1441,23 +1442,31 @@ if (bad)
 	discard;
 #endif
 
-#if PS_DATE == 3
-	// Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
-	// the bad alpha value so we must keep it.
-	int stencil_ceil = int(PrimMinTexture.Load(int3(input.p.xy, 0)));
-	if (int(input.primid) > stencil_ceil)
-		discard;
-#endif
+#if PS_DATE == 3 || PS_AA1 == PS_AA1_TRIANGLE_PRIMID
+
+	int primid_limit = int(PrimMinTexture.Load(int3(input.p.xy, 0)));
+
+	#if PS_DATE == 3
+		// Note gl_PrimitiveID == primid_limit will be the primitive that will update
+		// the bad alpha value so we must keep it.
+		if (int(input.primid) > primid_limit)
+			discard;
+	#endif
+
+	#if PS_AA1 == PS_AA1_TRIANGLE_PRIMID
+		// Discard if this edge is under a previous triangle interior.
+		// Edge should never overlap with its own interior so < and <= should be the same here.
+		if (int(input.primid) <= primid_limit)
+			discard;
+	#endif
+
+#endif // primid DATE/AA1 discard
 
 	// Output values
 #if !PS_NO_COLOR
-	#if PS_DATE == 1 || PS_DATE == 2
-		float o_col0;
-	#else
-		float4 o_col0;
-		#if !PS_NO_COLOR1
-			float4 o_col1;
-		#endif
+	float4 o_col0;
+	#if !PS_NO_COLOR1 && !PRIMID_SETUP
+		float4 o_col1;
 	#endif
 #endif
 
@@ -1473,8 +1482,13 @@ if (bad)
 	// Pixel with alpha equal to 0 will failed (0-127)
 	o_col0 = (C.a < 127.5f) ? float(input.primid) : float(0x7FFFFFFF);
 
+#elif PS_AA1 == PS_AA1_TRIANGLE_PRIMID_INIT
+
+	// Multiply by 12 because there are 12x as many edge/cap triangles as interior triangles.
+	o_col0 = float(12 * input.primid);
+	
 #else
-	// Not primid DATE setup
+	// Not primid DATE/AA1 setup
 
 	ps_blend(C, alpha_blend, input.p.xy);
 
@@ -1541,7 +1555,7 @@ if (bad)
 
 	ps_fbmask(C, input.p.xy);
 
-#if (PS_AFAIL == AFAIL_RGB_ONLY_DSB) && !PS_NO_COLOR1
+#if (PS_AFAIL == AFAIL_RGB_ONLY_DSB) && !PS_NO_COLOR1 && !PRIMID_SETUP
 	// Use alpha blend factor to determine whether to update A.
 	alpha_blend.a = float(atst_pass);
 #endif
@@ -1550,7 +1564,7 @@ if (bad)
 #if !PS_NO_COLOR
 	o_col0.a = PS_RTA_CORRECTION ? C.a / 128.0f : C.a / 255.0f;
 	o_col0.rgb = PS_COLCLIP_HW ? float3(C.rgb / 65535.0f) : C.rgb / 255.0f;
-#if !PS_NO_COLOR1
+#if !PS_NO_COLOR1 && !PRIMID_SETUP
 	o_col1 = alpha_blend;
 #endif
 #endif // !PS_NO_COLOR
@@ -1590,7 +1604,7 @@ if (bad)
 	// Color write back
 #if PS_RETURN_COLOR
 	output.c0 = o_col0;
-	#if !PS_NO_COLOR1
+	#if !PS_NO_COLOR1 && !PRIMID_SETUP
 		output.c1 = o_col1;
 	#endif
 #elif PS_RETURN_COLOR_ROV
@@ -1920,7 +1934,7 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 
 	return vtx;
 
-#elif VS_EXPAND == VS_EXPAND_TRIANGLE_AA1
+#elif (VS_EXPAND == VS_EXPAND_TRIANGLE_AA1 || VS_EXPAND == VS_EXPAND_TRIANGLE_AA1_INTERIOR || VS_EXPAND == VS_EXPAND_TRIANGLE_AA1_EDGE)
 
 	// Triangles with AA1 are expanded as follows:
 	// - Vertices 0-2: Interior of triangle (1 triangle).
@@ -1930,23 +1944,37 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 	// - Vertices 21-26: First corner cap (2 triangles).
 	// - Vertices 27-32: Second corner cap (2 triangles).
 	// - Vertices 33-38: Third corner cap (2 triangles).
+	// With INTERIOR or EDGE the corresponding vertices are omitted.
 
+#if VS_EXPAND == VS_EXPAND_TRIANGLE_AA1
 	uint prim_id = vid / 39;
-	uint prim_offset = vid - 39 * prim_id; // range: 0-38
-	bool interior = prim_offset < 3;
-	bool edge = 3 <= prim_offset && prim_offset < 21;
+	uint prim_offset_interior = vid - 39 * prim_id; // used range: 0-2
+	uint prim_offset_edges = prim_offset_interior - 3; // used range: 0-17
+	uint prim_offset_caps = prim_offset_edges - 18; // used range: 0-17
+#elif VS_EXPAND == VS_EXPAND_TRIANGLE_AA1_INTERIOR
+	uint prim_id = vid / 3;
+	uint prim_offset_interior = vid - 3 * prim_id; // used range: 0-2
+	uint prim_offset_edges = -1; // unused
+	uint prim_offset_caps = -1; // unused
+#elif VS_EXPAND == VS_EXPAND_TRIANGLE_AA1_EDGE
+	uint prim_id = vid / 36;
+	uint prim_offset_interior = -1; // unused
+	uint prim_offset_edges = vid - 36 * prim_id; // used range: 0-17
+	uint prim_offset_caps = prim_offset_edges - 18; // used range: 0-17
+#endif
+	bool interior = 0 <= prim_offset_interior && prim_offset_interior < 3;
+	bool edge = 0 <= prim_offset_edges && prim_offset_edges < 18;
 
 	VS_OUTPUT vtx;
 	if (interior)
 	{
-		vtx = vs_main(load_vertex(load_index(3 * prim_id + prim_offset)));
+		vtx = vs_main(load_vertex(load_index(3 * prim_id + prim_offset_interior)));
 		vtx.inv_cov = 0.0f; // Full coverage
 		vtx.interior = 1;
 	}
 	else if (edge)
 	{
 		// Vertex indices for this edge. We need all 3 for determining exterior/interior.
-		uint prim_offset_edges = prim_offset - 3; // range: 0-17
 		uint i0 = prim_offset_edges / 6;
 		uint i1 = (i0 >= 2) ? i0 - 2 : i0 + 1;
 		uint i2 = (i0 >= 1) ? i0 - 1 : i0 + 2;
@@ -1975,11 +2003,10 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 	else // Corner cap
 	{
 		// Vertex indices for this cap. We need all 3 for determining exterior/interior.
-		uint prim_offset_cap = prim_offset - 21; // range: 0-8
-		uint i0 = prim_offset_cap / 6;
+		uint i0 = prim_offset_caps / 6;
 		uint i1 = (i0 >= 2) ? i0 - 2 : i0 + 1;
 		uint i2 = (i0 >= 1) ? i0 - 1 : i0 + 2;
-		uint cap_offset = prim_offset_cap - 6 * i0; // range: 0-5
+		uint cap_offset = prim_offset_caps - 6 * i0; // range: 0-5
 
 		bool is_near_corner = cap_offset == 0 || cap_offset == 3;
 		bool is_far_corner = cap_offset == 2 || cap_offset == 5;
