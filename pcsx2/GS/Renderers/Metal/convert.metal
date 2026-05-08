@@ -130,6 +130,11 @@ fragment float4 ps_primid_rta_init_datm0(float4 p [[position]], DirectReadTextur
 	return tex.read(p).a > (254.5f / 255.f) ? GSShader::PRIMID_MIN : GSShader::PRIMID_MAX;
 }
 
+fragment float4 ps_primid_init_aa1()
+{
+	return -1;
+}
+
 fragment float4 ps_rta_correction(ConvertShaderData data [[stage_in]], ConvertPSRes res)
 {
 	float4 in = res.sample(data.t);
