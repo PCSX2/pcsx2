@@ -3284,7 +3284,7 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_IMAGES,
 				TRANSLATE_SV("VMManager", "Accurate Alpha Test is enabled, this may reduce performance."));
 		}
-		if (EmuConfig.GS.HWAA1)
+		if (EmuConfig.GS.HWAA1 != GSHWAA1Level::Off)
 		{
 			append(ICON_FA_CIRCLE_EXCLAMATION,
 				TRANSLATE_SV("VMManager", "AA1 is enabled, this may severely degrade performance."));
