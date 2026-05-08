@@ -2349,7 +2349,7 @@ void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache:
 							const GSVector4 target_drect = GSVector4(target_drect_unscaled) * target->m_scale;
 
 							const bool valid_color = t->m_valid_rgb;
-							const bool valid_alpha = (t->m_valid_alpha_high | t->m_valid_alpha_low) && (GSUtil::GetChannelMask(t->m_TEX0.PSM) & 0x8);
+							const bool valid_alpha = (t->m_valid_alpha_high || t->m_valid_alpha_low) && (GSUtil::GetChannelMask(t->m_TEX0.PSM) & 0x8);
 
 							target->m_valid_alpha_high |= t->m_valid_alpha_high;
 							target->m_valid_alpha_low |= t->m_valid_alpha_low;

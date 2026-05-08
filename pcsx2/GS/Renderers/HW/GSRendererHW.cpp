@@ -2918,7 +2918,7 @@ void GSRendererHW::Draw()
 	}
 
 	//  Test if we can optimize Alpha Test as a NOP
-	m_cached_ctx.TEST.ATE = m_cached_ctx.TEST.ATE && !GSRenderer::TryAlphaTest(fm, zm);
+	m_cached_ctx.TEST.ATE = !!m_cached_ctx.TEST.ATE && !GSRenderer::TryAlphaTest(fm, zm);
 
 	// Need to fix the alpha test, since the alpha will be fixed to 1.0 if ABE is disabled and AA1 is enabled
 	// So if it doesn't meet the condition, always fail, if it does, always pass (turn off the test).
@@ -6261,7 +6261,7 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 
 		// If date is enabled you need to test the green channel instead of the alpha channel.
 		// Only enable this code in DATE mode to reduce the number of shaders.
-		m_conf.ps.write_rg = (process_rg & SHUFFLE_WRITE) &&  m_cached_ctx.TEST.DATE;
+		m_conf.ps.write_rg = !!(process_rg & SHUFFLE_WRITE) && !!m_cached_ctx.TEST.DATE;
 
 		m_conf.ps.real16src = m_texture_shuffle.real_16_bit_source;
 
@@ -8804,7 +8804,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	EmulateDATESelectMethod(date_options, rt, blend_alpha_min, blend_alpha_max);
 
 	// Before emulateblending, dither will be used
-	m_conf.ps.dither = GSConfig.Dithering > 0 && m_conf.ps.dst_fmt == GSLocalMemory::PSM_FMT_16 && env.DTHE.DTHE;
+	m_conf.ps.dither = GSConfig.Dithering > 0 && m_conf.ps.dst_fmt == GSLocalMemory::PSM_FMT_16 && !!env.DTHE.DTHE;
 
 	if (m_conf.ps.dst_fmt == GSLocalMemory::PSM_FMT_24)
 	{

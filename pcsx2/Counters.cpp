@@ -876,7 +876,7 @@ static __fi void rcntEndGate(bool isVblank, u64 sCycle)
 					isVblank ? "vblank" : "hblank", counters[i].mode.GateMode, counters[i].count);
 				counters[i].count = 0;
 				counters[i].target &= 0xffff;
-				counters[i].startCycle = sCycle & ~(counters[i].rate - 1);
+				counters[i].startCycle = sCycle & ~(static_cast<u64>(counters[i].rate - 1));
 				break;
 		}
 	}

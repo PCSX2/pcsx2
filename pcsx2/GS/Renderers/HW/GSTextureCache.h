@@ -263,7 +263,7 @@ public:
 
 		bool OverlapsValid(u32 bp, u32 bw, u32 psm, const GSVector4i& rect) const;
 
-		__fi bool HasValidAlpha() const { return (m_valid_alpha_low | m_valid_alpha_high); }
+		__fi bool HasValidAlpha() const { return (m_valid_alpha_low || m_valid_alpha_high); }
 		bool HasValidBitsForFormat(u32 psm, bool req_color, bool req_alpha, bool width_match);
 
 		void ResizeDrawn(const GSVector4i& rect);
