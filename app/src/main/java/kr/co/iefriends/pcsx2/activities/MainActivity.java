@@ -5487,17 +5487,7 @@ public class MainActivity extends AppCompatActivity {
     // Cheap but effective: if emulator isn't running yet, boot BIOS first, then load the game like the File button flow.
     private void launchGameWithPreflight(@NonNull Uri uri) {
         applyPerGameSettingsForUri(uri);
-        if (isThread()) {
-            handleSelectedGameUri(uri);
-            return;
-        }
-        // Start BIOS first
-        try { Toast.makeText(this, R.string.home_preflight_boot_bios, Toast.LENGTH_SHORT).show(); } catch (Throwable ignored) {}
-        pendingGameUri = uri;
-        pendingLaunchRetries = 0;
-        bootBios();
-        getWindow().getDecorView().postDelayed(pendingLaunchRunnable, 900);
-        schedulePreflightFallback();
+        handleSelectedGameUri(uri);
     }
 
     private final Runnable pendingLaunchRunnable = new Runnable() {
