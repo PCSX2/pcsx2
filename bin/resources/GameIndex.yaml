@@ -31969,6 +31969,9 @@ SLKA-25176:
   name: "펌프 잇 업 익시드"
   name-en: "Pump It Up - Exceed"
   region: "NTSC-K"
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes graphical corruption in musical notes.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLKA-25180:
   name: "스플린터 셀 - 판도라 투머로우"
   name-en: "Tom Clancy's Splinter Cell - Pandora Tomorrow"
@@ -70115,6 +70118,9 @@ SLUS-21131:
   name: "Pump It Up - Exceed"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    cpuSpriteRenderBW: 4 # Fixes graphical corruption in musical notes.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21132:
   name: "Stella Deus - The Gate of Eternity"
   region: "NTSC-U"
