@@ -2261,20 +2261,34 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 			}
 		}
 
-		if (src->m_from_target && src->m_target_direct && src->m_region.HasEither())
+		if (src->m_from_target && src->m_target_direct)
 		{
-			if (src->m_from_target->m_TEX0.TBP0 == src->m_TEX0.TBP0)
+			GSVector4i req_rect = r;
+
+			// The read area might be offset but the start of the texture is at the beginning of the space.
+			req_rect.x = region.HasX() ? region.GetMinX() : 0;
+			req_rect.y = region.HasY() ? region.GetMinY() : 0;
+
+			const bool dirty_overlap = !src->m_from_target->m_dirty.GetTotalRect(src->m_from_target->m_TEX0, src->m_from_target->m_unscaled_size).rintersect(req_rect).rempty();
+
+			if (dirty_overlap)
+				src->m_from_target->Update();
+
+			if (src->m_region.HasEither())
 			{
-				src->m_region.bits = 0;
-				src->m_region.SetX(0, region.HasX() ? region.GetMaxX() : (1 << TEX0.TW));
-				src->m_region.SetY(0, region.HasY() ? region.GetMaxY() : (1 << TEX0.TH));
-			}
-			else if (src->m_TEX0.TBP0 > src->m_from_target->m_TEX0.TBP0)
-			{
-				GSVector4i dst_offset = TranslateAlignedRectByPage(src->m_from_target, src->m_TEX0.TBP0, src->m_TEX0.PSM, src->m_TEX0.TBW, GSVector4i(0, 0, 1, 1), false);
-				src->m_region.bits = 0;
-				src->m_region.SetX(dst_offset.x, dst_offset.x + (region.HasX() ? std::min(region.GetMaxX(), (1 << TEX0.TW)) : (1 << TEX0.TW)));
-				src->m_region.SetY(dst_offset.y, dst_offset.y + (region.HasY() ? std::min(region.GetMaxY(), (1 << TEX0.TH)) : (1 << TEX0.TH)));
+				if (src->m_from_target->m_TEX0.TBP0 == src->m_TEX0.TBP0)
+				{
+					src->m_region.bits = 0;
+					src->m_region.SetX(0, region.HasX() ? region.GetMaxX() : (1 << TEX0.TW));
+					src->m_region.SetY(0, region.HasY() ? region.GetMaxY() : (1 << TEX0.TH));
+				}
+				else if (src->m_TEX0.TBP0 > src->m_from_target->m_TEX0.TBP0)
+				{
+					GSVector4i dst_offset = TranslateAlignedRectByPage(src->m_from_target, src->m_TEX0.TBP0, src->m_TEX0.PSM, src->m_TEX0.TBW, GSVector4i(0, 0, 1, 1), false);
+					src->m_region.bits = 0;
+					src->m_region.SetX(dst_offset.x, dst_offset.x + (region.HasX() ? std::min(region.GetMaxX(), (1 << TEX0.TW)) : (1 << TEX0.TW)));
+					src->m_region.SetY(dst_offset.y, dst_offset.y + (region.HasY() ? std::min(region.GetMaxY(), (1 << TEX0.TH)) : (1 << TEX0.TH)));
+				}
 			}
 		}
 
