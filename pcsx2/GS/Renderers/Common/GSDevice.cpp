@@ -1257,12 +1257,15 @@ static const char* GetVSExpandName(GSHWDrawConfig::VSExpand vsexpand)
 {
 	switch (vsexpand)
 	{
-		case GSHWDrawConfig::VSExpand::None:        return "None";
-		case GSHWDrawConfig::VSExpand::Point:       return "Point";
-		case GSHWDrawConfig::VSExpand::Line:        return "Line";
-		case GSHWDrawConfig::VSExpand::Sprite:      return "Sprite";
-		case GSHWDrawConfig::VSExpand::LineAA1:     return "LineAA1";
-		case GSHWDrawConfig::VSExpand::TriangleAA1: return "TriangleAA1";
+		case GSHWDrawConfig::VSExpand::None:                return "None";
+		case GSHWDrawConfig::VSExpand::Point:               return "Point";
+		case GSHWDrawConfig::VSExpand::Line:                return "Line";
+		case GSHWDrawConfig::VSExpand::Sprite:              return "Sprite";
+		case GSHWDrawConfig::VSExpand::LineAA1:             return "LineAA1";
+		case GSHWDrawConfig::VSExpand::TriangleAA1:         return "TriangleAA1";
+		case GSHWDrawConfig::VSExpand::TriangleAA1Interior: return "TriangleAA1Interior";
+		case GSHWDrawConfig::VSExpand::TriangleAA1Edge:     return "TriangleAA1Edge";
+		default: break;
 	}
 	return "Unknown";
 }
@@ -1479,6 +1482,20 @@ static const char* GetDestinationAlphaModeName(GSHWDrawConfig::DestinationAlphaM
 	return "Unknown";
 }
 
+static const char* GetAA1ModeName(GSHWDrawConfig::AA1Mode datm)
+{
+	switch (datm)
+	{
+		case GSHWDrawConfig::AA1Mode::Off:             return "Off";
+		case GSHWDrawConfig::AA1Mode::OnePass:         return "OnePass";
+		case GSHWDrawConfig::AA1Mode::TwoPass:         return "TwoPass";
+		case GSHWDrawConfig::AA1Mode::ThreePassPrimid: return "ThreePassPrimid";
+		case GSHWDrawConfig::AA1Mode::DepthFeedback:   return "DepthFeedback";
+	}
+	return "Unknown";
+}
+
+
 static const char* GetColClipModeName(GSHWDrawConfig::ColClipMode ccmode)
 {
 	switch (ccmode)
@@ -1631,7 +1648,7 @@ static void DumpBlendState(DrawConfigWriter& out, const GSHWDrawConfig::BlendSta
 	DumpBlendEquation(out, "equation_alpha", GSDevice::OP_ADD, bs.src_factor_alpha, bs.dst_factor_alpha);
 }
 
-static void DumpDepthStencilSelctor(DrawConfigWriter& out, const GSHWDrawConfig::DepthStencilSelector& dss)
+static void DumpDepthStencilSelector(DrawConfigWriter& out, const GSHWDrawConfig::DepthStencilSelector& dss)
 {
 	out.WriteLn("ztst: {} ({})", GSUtil::GetZTSTName(dss.ztst), dss.ztst);
 	out.WriteLn("zwe: {}", dss.zwe);
@@ -1660,7 +1677,7 @@ static void DumpAlphaPass(DrawConfigWriter& out, const GSHWDrawConfig::AlphaPass
 	DumpPSSelector(out.WithIndent(), ap.ps);
 
 	out.WriteLn("dss:");
-	DumpDepthStencilSelctor(out.WithIndent(), ap.depth);
+	DumpDepthStencilSelector(out.WithIndent(), ap.depth);
 }
 
 static void DumpBlendMultipass(DrawConfigWriter& out, const GSHWDrawConfig::BlendMultiPass& bmp)
@@ -1672,6 +1689,25 @@ static void DumpBlendMultipass(DrawConfigWriter& out, const GSHWDrawConfig::Blen
 
 	out.WriteLn("blend:");
 	DumpBlendState(out.WithIndent(), bmp.blend);
+}
+
+static void DumpAA1Pass(DrawConfigWriter& out, const GSHWDrawConfig::AA1Pass& ap)
+{
+	out.WriteLn("enable: {}", ap.enable);
+	out.WriteLn("colormask: {:x}", ap.colormask.wrgba);
+	out.WriteLn("ps_aref: {}", ap.ps_aref);
+
+	out.WriteLn("vs:");
+	DumpVSSelector(out.WithIndent(), ap.vs);
+
+	out.WriteLn("ps:");
+	DumpPSSelector(out.WithIndent(), ap.ps);
+
+	out.WriteLn("dss:");
+	DumpDepthStencilSelector(out.WithIndent(), ap.depth);
+
+	out.WriteLn("blend:");
+	DumpBlendState(out.WithIndent(), ap.blend);
 }
 
 template<typename T, typename U = int>
@@ -1720,7 +1756,7 @@ static void DumpVSConstantBuffer(DrawConfigWriter& out, const GSHWDrawConfig::VS
 }
 
 static void DumpConfig(DrawConfigWriter& out, const GSHWDrawConfig& conf,
-	bool ps, bool vs, bool bs, bool dss, bool ss, bool asp, bool bmp, bool cbvs, bool cbps)
+	bool ps, bool vs, bool bs, bool dss, bool ss, bool asp, bool bmp, bool aa1mp, bool cbvs, bool cbps)
 {
 	out.WriteLn("topology: {} ({})", GetTopologyName(conf.topology), static_cast<u32>(conf.topology));
 	out.WriteLn("require_one_barrier: {}", conf.require_one_barrier);
@@ -1733,6 +1769,8 @@ static void DumpConfig(DrawConfigWriter& out, const GSHWDrawConfig& conf,
 	out.WriteLn("datm: {} ({})", GetSetDATMName(conf.datm), static_cast<u32>(conf.datm));
 	out.WriteLn("line_expand: {}", conf.line_expand);
 	out.WriteLn("colormask: {:x}", conf.colormask.wrgba);
+
+	out.WriteLn("aa1_mode: {} ({})", GetAA1ModeName(conf.aa1_mode), static_cast<u32>(conf.aa1_mode));
 
 	if (ps)
 	{
@@ -1761,7 +1799,7 @@ static void DumpConfig(DrawConfigWriter& out, const GSHWDrawConfig& conf,
 	if (dss)
 	{
 		out.WriteLn("depth:");
-		DumpDepthStencilSelctor(out.WithIndent(), conf.depth);
+		DumpDepthStencilSelector(out.WithIndent(), conf.depth);
 	}
 	
 	if (asp)
@@ -1774,6 +1812,12 @@ static void DumpConfig(DrawConfigWriter& out, const GSHWDrawConfig& conf,
 	{
 		out.WriteLn("blend_multi_pass:");
 		DumpBlendMultipass(out.WithIndent(), conf.blend_multi_pass);
+	}
+
+	if (aa1mp)
+	{
+		out.WriteLn("aa1_multi_pass:");
+		DumpAA1Pass(out.WithIndent(), conf.aa1_multi_pass);
 	}
 
 	if (cbvs)
@@ -1790,12 +1834,12 @@ static void DumpConfig(DrawConfigWriter& out, const GSHWDrawConfig& conf,
 }
 
 void GSHWDrawConfig::DumpConfig(const std::string& path, const GSHWDrawConfig& conf,
-	bool ps, bool vs, bool bs, bool dss, bool ss, bool asp, bool bmp, bool cbvs, bool cbps)
+	bool ps, bool vs, bool bs, bool dss, bool ss, bool asp, bool bmp, bool aa1mp, bool cbvs, bool cbps)
 {
 	if (FileSystem::ManagedCFilePtr file = FileSystem::OpenManagedCFile(path.c_str(), "w"))
 	{
 		DrawConfigWriter writer;
-		::DumpConfig(writer, conf, ps, vs, bs, dss, ss, asp, bmp, cbvs, cbps);
+		::DumpConfig(writer, conf, ps, vs, bs, dss, ss, asp, bmp, aa1mp, cbvs, cbps);
 		fwrite(writer.buffer.data(), 1, writer.buffer.size(), file.get());
 	}
 }

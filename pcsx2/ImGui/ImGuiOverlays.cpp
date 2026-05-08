@@ -912,9 +912,9 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 
 		if (GSConfig.HWAccurateAlphaTest)
 			APPEND("AAT ");
-
-		if (GSConfig.HWAA1)
-			APPEND("AA1 ");
+		
+		if (GSConfig.HWAA1 != GSHWAA1Level::Off)
+			APPEND("AA1={} ", static_cast<unsigned>(GSConfig.HWAA1));
 
 		if (GSConfig.HWROV)
 			APPEND("ROV ");
