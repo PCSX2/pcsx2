@@ -12,8 +12,8 @@
     {
       "type": "git",
       "url": "https://github.com/biojppm/rapidyaml.git",
-      "tag": "v0.11.1",
-      "commit": "119b6042064d3828819e428e32e5a0f3035d5643"
+      "tag": "v0.12.1",
+      "commit": "b56567b0bd24e9ce7beb08d6950a5732f62f6e74"
     }
   ],
   "cleanup": [
