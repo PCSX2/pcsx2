@@ -1842,13 +1842,7 @@ public class MainActivity extends AppCompatActivity {
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
         // 3️⃣ Handle display cutout (notch/punch-hole)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            WindowManager.LayoutParams attrs = getWindow().getAttributes();
-            attrs.layoutInDisplayCutoutMode = emulationVisible
-                    ? WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-                    : WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
-            getWindow().setAttributes(attrs);
-        }
+        applyDisplayCutoutMode(emulationVisible);
 
         // 4️⃣ Get decor view
         View decorView = getWindow().getDecorView();
@@ -1879,10 +1873,23 @@ public class MainActivity extends AppCompatActivity {
         if (root != null) {
             ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
                 Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                Insets cutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout());
+                int left   = Math.max(systemBars.left,   cutout.left);
+                int top    = Math.max(systemBars.top,    cutout.top);
+                int right  = Math.max(systemBars.right,  cutout.right);
+                int bottom = Math.max(systemBars.bottom, cutout.bottom);
                 if (isHomeVisible()) {
-                    v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                    v.setPadding(left, top, right, bottom);
+                    View homeContainer = findViewById(R.id.home_container);
+                    if (homeContainer != null) {
+                        homeContainer.setPadding(left, top, right, bottom);
+                    }
                 } else {
                     v.setPadding(0, 0, 0, 0);
+                    View homeContainer = findViewById(R.id.home_container);
+                    if (homeContainer != null) {
+                        homeContainer.setPadding(0, 0, 0, 0);
+                    }
                 }
                 return WindowInsetsCompat.CONSUMED;
             });
@@ -1929,12 +1936,19 @@ public class MainActivity extends AppCompatActivity {
 
         final WindowManager.LayoutParams attrs = getWindow().getAttributes();
         final int targetMode;
-        if (!emulationVisible) {
-            targetMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
-        } else if (isDisplayCutoutExpansionEnabled()) {
-            targetMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+
+        if (emulationVisible) {
+            if (isDisplayCutoutExpansionEnabled()) {
+                targetMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            } else {
+                targetMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER;
+            }
         } else {
-            targetMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER;
+            if (Build.VERSION.SDK_INT >= 30) {
+                targetMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+            } else {
+                targetMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            }
         }
 
         if (attrs.layoutInDisplayCutoutMode != targetMode) {
