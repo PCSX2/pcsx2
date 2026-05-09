@@ -15,24 +15,24 @@
     {
       "type": "git",
       "url": "https://github.com/google/shaderc.git",
-      "commit": "301b4ede53d59b68bf55f95bb26412d9233c8187"
+      "commit": "d5f08ae5c5a9a45165578445cbd0f9adf0223448"
     },
     {
       "type": "archive",
-      "url": "https://github.com/KhronosGroup/glslang/archive/f0bd0257c308b9a26562c1a30c4748a0219cc951.tar.gz",
-      "sha256": "bd58dca4dac67dcf7640292d7d63e0416274d40ee2200f7301878cec11ac6647",
+      "url": "https://github.com/KhronosGroup/glslang/archive/275822a6261ee689aadb1da5f09a0ec2f058685c.tar.gz",
+      "sha256": "971848a1cc639ce8dc244e778b17efe0f690e32ac398a75e31d1c67ad06d3e0a",
       "dest": "third_party/glslang"
     },
     {
       "type": "archive",
-      "url": "https://github.com/KhronosGroup/SPIRV-Headers/archive/04f10f650d514df88b76d25e83db360142c7b174.tar.gz",
-      "sha256": "1b220e3eec1714f0451b0e3652979bd280edf10893f617837b88e6359a804ded",
+      "url": "https://github.com/KhronosGroup/SPIRV-Headers/archive/58006c901d1d5c37dece6b6610e9af87fa951375.tar.gz",
+      "sha256": "a6cb1b300bb8171795e116457e858e555334749f9cacaed8068ae0ef8681110c",
       "dest": "third_party/spirv-headers"
     },
     {
       "type": "archive",
-      "url": "https://github.com/KhronosGroup/SPIRV-Tools/archive/fbe4f3ad913c44fe8700545f8ffe35d1382b7093.tar.gz",
-      "sha256": "cabb35f4eef0da3ef72ad9edd596af4191d7507a8f35c05df526d2d5ff889f59",
+      "url": "https://github.com/KhronosGroup/SPIRV-Tools/archive/6337eb62cadd7d124ac6789bf39c0f71148f0a73.tar.gz",
+      "sha256": "e156be0bd81c8812f1bff8e520422bfa9df61b3045587b9eb483185f1074a7b2",
       "dest": "third_party/spirv-tools"
     },
     {
