@@ -291,6 +291,12 @@ bool PCAPAdapter::InitPCAP(const std::string& adapter, bool promiscuous)
 			 )) == nullptr)
 	{
 		Console.Error("DEV9: %s", errbuf);
+#if defined(__linux__)
+		Console.Error("DEV9: PCAP on Linux requires CAP_NET_RAW and CAP_NET_ADMIN capabilities.");
+		Console.Error("DEV9: Flatpak: raw packet capture is not supported; use the Sockets backend instead.");
+		Console.Error("DEV9: AppImage: extract the image first (--appimage-extract), then run setcap on the extracted binary.");
+		Console.Error("DEV9: Note: applying file capabilities to the main PCSX2 executable breaks Steam overlay/Input.");
+#endif
 		Console.Error("DEV9: Unable to open the adapter. %s is not supported by pcap", adapter.c_str());
 		return false;
 	}
