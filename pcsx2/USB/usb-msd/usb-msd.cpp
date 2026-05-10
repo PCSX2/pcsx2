@@ -1034,6 +1034,16 @@ namespace usb_msd
 			case ClassInterfaceOutRequest:
 				switch (data[0])
 				{
+					case TEST_UNIT_READY:
+					case START_STOP:
+					case SEND_DIAGNOSTIC:
+						break;
+					case MODE_SENSE_10:
+						s->f.mode = USB_MSDM_CBW;
+						s->f.data_len = 0x08;
+						memset(s->f.buf, 0, s->f.data_len);
+						s->f.buf[1] = 0x06;
+						break;
 					case REQUEST_SENSE:
 					{
 						s->f.mode = USB_MSDM_CBW;
