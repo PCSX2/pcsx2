@@ -54509,6 +54509,7 @@ SLPM-74405:
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Stops crash after intro movie.
+    - InstantDMAHack # Stops hang when entering Sword Select screen.
 SLPM-74406:
   name: "WRC ～WORLD RALLY CHAMPIONSHIP～ [PlayStation2 the Best]"
   name-sort: "WRC ～わーるど らりー ちゃんぴおんしっぷ～ [PlayStation2 the Best]"
