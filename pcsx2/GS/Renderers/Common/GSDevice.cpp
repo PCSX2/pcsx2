@@ -23,6 +23,7 @@
 #include <fstream>
 
 #ifdef ENABLE_LIBRASHADER
+#include "GS/LibrashaderParams.h"
 #include <librashader/librashader.h>
 #endif
 
@@ -1119,18 +1120,7 @@ void GSDevice::Librashader()
 				libra_error_t err = libra_preset_create(requested_preset.c_str(), &preset);
 				if (err)
 				{
-					char* error_message = nullptr;
-					const LIBRA_ERRNO error_code = libra_error_errno(err);
-					if (libra_error_write(err, &error_message) == 0 && error_message)
-					{
-						result.error_message = StringUtil::StdStringFromFormat("%s (errno=%d)", error_message, static_cast<int>(error_code));
-						libra_error_free_string(&error_message);
-					}
-					else
-					{
-						result.error_message = StringUtil::StdStringFromFormat("unknown parse error (errno=%d)", static_cast<int>(error_code));
-					}
-					libra_error_free(&err);
+					result.error_message = GetLibrashaderError(err);
 					return result;
 				}
 

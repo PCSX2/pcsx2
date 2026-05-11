@@ -6607,3 +6607,120 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 	if (config.ps.HasColorROV() || config.ps.HasDepthROV())
 		g_perfmon.Put(GSPerfMon::DrawCallsROV, 1);
 }
+
+#ifdef ENABLE_LIBRASHADER
+#define LIBRA_RUNTIME_VULKAN
+#include "GS/LibrashaderParams.h"
+#include <librashader/librashader.h>
+
+bool GSDeviceVK::CreateLibrashaderFilterChain(const std::string& preset_path)
+{
+	libra_shader_preset_t preset = nullptr;
+	libra_error_t err = libra_preset_create(preset_path.c_str(), &preset);
+	if (err)
+	{
+		Console.ErrorFmt("librashader: Vulkan preset create failed for '{}': {}", preset_path, GetLibrashaderError(err));
+		return false;
+	}
+
+	libra_device_vk_t vk_device = {};
+	vk_device.physical_device = m_physical_device;
+	vk_device.instance = m_instance;
+	vk_device.device = m_device;
+	vk_device.queue = m_graphics_queue;
+	vk_device.entry = vkGetInstanceProcAddr;
+
+	filter_chain_vk_opt_t opts = {};
+	opts.version = LIBRASHADER_CURRENT_VERSION;
+	// Needs VK 1.3+ to use dynamic rendering.
+	opts.use_dynamic_rendering = false;
+
+	libra_vk_filter_chain_t chain = nullptr;
+	err = libra_vk_filter_chain_create(&preset, vk_device, &opts, &chain);
+	if (err)
+	{
+		Console.ErrorFmt("librashader: Vulkan chain create failed for '{}': {}", preset_path, GetLibrashaderError(err));
+		libra_preset_free(&preset);
+		return false;
+	}
+	if (!chain)
+	{
+		Console.ErrorFmt("librashader: Vulkan chain create failed for '{}': no error returned and no chain created", preset_path);
+		return false;
+	}
+	m_librashader_chain = chain;
+
+	return true;
+}
+
+void GSDeviceVK::DestroyLibrashaderFilterChain()
+{
+	if (m_librashader_chain)
+	{
+		libra_vk_filter_chain_t chain = static_cast<libra_vk_filter_chain_t>(m_librashader_chain);
+		libra_vk_filter_chain_free(&chain);
+		m_librashader_chain = nullptr;
+	}
+}
+
+bool GSDeviceVK::DoLibrashader(GSTexture* sTex, GSTexture* dTex)
+{
+	GSTextureVK& src = static_cast<GSTextureVK&>(*sTex);
+	GSTextureVK& dst = static_cast<GSTextureVK&>(*dTex);
+
+	EndRenderPass();
+
+	src.TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
+	dst.TransitionToLayout(GSTextureVK::Layout::ColorAttachment);
+
+	const libra_image_vk_t src_image = {src.GetImage(), src.GetVkFormat(),
+		static_cast<u32>(src.GetWidth()), static_cast<u32>(src.GetHeight())};
+	const libra_image_vk_t dst_image = {dst.GetImage(), dst.GetVkFormat(),
+		static_cast<u32>(dst.GetWidth()), static_cast<u32>(dst.GetHeight())};
+	const libra_viewport_t vp = {0.0f, 0.0f, static_cast<u32>(dst.GetWidth()), static_cast<u32>(dst.GetHeight())};
+
+	frame_vk_opt_t frame_opts = {};
+	frame_opts.version = LIBRASHADER_CURRENT_VERSION;
+	frame_opts.frame_direction = 1;
+	frame_opts.total_subframes = 1;
+	frame_opts.current_subframe = 1;
+
+	libra_vk_filter_chain_t chain = static_cast<libra_vk_filter_chain_t>(m_librashader_chain);
+	libra_error_t err = libra_vk_filter_chain_frame(
+		&chain,
+		m_current_command_buffer,
+		m_librashader_frame_count,
+		src_image,
+		dst_image,
+		&vp,
+		nullptr,
+		&frame_opts);
+
+	if (err)
+	{
+		Console.ErrorFmt("librashader: Vulkan frame rendering failed: {}", GetLibrashaderError(err));
+		return false;
+	}
+
+	dst.TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
+
+	// librashader binds its own descriptors/pipeline so all our caches lie.
+	ExecuteCommandBuffer(false);
+	m_dirty_flags |= ALL_DIRTY_STATE;
+	return true;
+}
+
+void GSDeviceVK::ApplyLibrashaderChainParams(const std::vector<std::pair<std::string, float>>& params)
+{
+	if (!m_librashader_chain)
+		return;
+	libra_vk_filter_chain_t chain = static_cast<libra_vk_filter_chain_t>(m_librashader_chain);
+	for (const auto& [name, value] : params)
+	{
+		libra_error_t err = libra_vk_filter_chain_set_param(&chain, name.c_str(), value);
+		if (err)
+			libra_error_free(&err);
+	}
+}
+
+#endif // ENABLE_LIBRASHADER

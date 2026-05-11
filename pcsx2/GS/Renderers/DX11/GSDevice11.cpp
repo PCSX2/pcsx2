@@ -3415,3 +3415,99 @@ void GSDevice11::SetRenderHWShaderResources(const GSHWDrawConfig& config, GSText
 	if (primid_texture)
 		PSSetShaderResource(TEXTURE_PRIMID, primid_texture);
 }
+
+#ifdef ENABLE_LIBRASHADER
+#define LIBRA_RUNTIME_D3D11
+#include "GS/LibrashaderParams.h"
+#include <librashader/librashader.h>
+
+bool GSDevice11::CreateLibrashaderFilterChain(const std::string& preset_path)
+{
+	libra_shader_preset_t preset = nullptr;
+	libra_error_t err = libra_preset_create(preset_path.c_str(), &preset);
+	if (err)
+	{
+		Console.ErrorFmt("librashader: D3D11 preset create failed for '{}': {}", preset_path, GetLibrashaderError(err));
+		return false;
+	}
+
+	filter_chain_d3d11_opt_t opts = {};
+	opts.version = LIBRASHADER_CURRENT_VERSION;
+
+	libra_d3d11_filter_chain_t chain = nullptr;
+	err = libra_d3d11_filter_chain_create(&preset, m_dev.get(), &opts, &chain);
+	if (err)
+	{
+		Console.ErrorFmt("librashader: D3D11 chain create failed for '{}': {}", preset_path, GetLibrashaderError(err));
+		libra_preset_free(&preset);
+		return false;
+	}
+	if (!chain)
+	{
+		Console.ErrorFmt("librashader: D3D11 chain create failed for '{}': no error returned and no chain created", preset_path);
+		return false;
+	}
+	m_librashader_chain = chain;
+
+	return true;
+}
+
+void GSDevice11::DestroyLibrashaderFilterChain()
+{
+	if (m_librashader_chain)
+	{
+		libra_d3d11_filter_chain_t chain = static_cast<libra_d3d11_filter_chain_t>(m_librashader_chain);
+		libra_d3d11_filter_chain_free(&chain);
+		m_librashader_chain = nullptr;
+	}
+}
+
+bool GSDevice11::DoLibrashader(GSTexture* sTex, GSTexture* dTex)
+{
+	GSTexture11& src = static_cast<GSTexture11&>(*sTex);
+	GSTexture11& dst = static_cast<GSTexture11&>(*dTex);
+
+	const libra_viewport_t vp = {0.0f, 0.0f, static_cast<u32>(dst.GetWidth()), static_cast<u32>(dst.GetHeight())};
+	frame_d3d11_opt_t frame_opts = {};
+	frame_opts.version = LIBRASHADER_CURRENT_VERSION;
+	frame_opts.frame_direction = 1;
+	frame_opts.total_subframes = 1;
+	frame_opts.current_subframe = 1;
+
+	libra_d3d11_filter_chain_t chain = static_cast<libra_d3d11_filter_chain_t>(m_librashader_chain);
+	libra_error_t err = libra_d3d11_filter_chain_frame(
+		&chain,
+		m_ctx.get(),
+		m_librashader_frame_count,
+		static_cast<ID3D11ShaderResourceView*>(src),
+		static_cast<ID3D11RenderTargetView*>(dst),
+		&vp,
+		nullptr,
+		&frame_opts);
+
+	if (err)
+	{
+		Console.ErrorFmt("librashader: D3D11 frame rendering failed: {}", GetLibrashaderError(err));
+		return false;
+	}
+
+	// librashader binds its own RT/SRVs/shaders so we invalidate the cache so the
+	// next draw rebinds everything.
+	m_state = {};
+	return true;
+}
+
+void GSDevice11::ApplyLibrashaderChainParams(const std::vector<std::pair<std::string, float>>& params)
+{
+	if (!m_librashader_chain)
+		return;
+	libra_d3d11_filter_chain_t chain = static_cast<libra_d3d11_filter_chain_t>(m_librashader_chain);
+	for (const auto& [name, value] : params)
+	{
+		libra_error_t err = libra_d3d11_filter_chain_set_param(&chain, name.c_str(), value);
+		if (err)
+			libra_error_free(&err);
+	}
+}
+
+#endif // ENABLE_LIBRASHADER
