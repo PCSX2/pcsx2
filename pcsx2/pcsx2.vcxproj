@@ -377,6 +377,7 @@
     <ClCompile Include="GS\Renderers\SW\GSTextureCacheSW.cpp" />
     <ClCompile Include="GS\GSUtil.cpp" />
     <ClCompile Include="GS\GSVector.cpp" />
+    <ClCompile Include="GS\LibrashaderParams.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSVertexTrace.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSVertexTraceFMM.cpp" />
     <ClCompile Include="GS\GSXXH.cpp" />
@@ -818,6 +819,7 @@
     <ClInclude Include="GS\Renderers\SW\GSTextureCacheSW.h" />
     <ClInclude Include="GS\GSJobQueue.h" />
     <ClInclude Include="GS\GSUtil.h" />
+    <ClInclude Include="GS\LibrashaderParams.h" />
     <ClInclude Include="GS\GSVector.h" />
     <ClInclude Include="GS\GSVector4i.h" />
     <ClInclude Include="GS\GSVector4.h" />
