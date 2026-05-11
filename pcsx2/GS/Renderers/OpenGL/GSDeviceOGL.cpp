@@ -3441,3 +3441,120 @@ void GSDeviceOGL::InsertDebugMessage(DebugMessageCategory category, const char* 
 		glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, type, id, severity, buf.size(), buf.c_str());
 #endif
 }
+
+#ifdef ENABLE_LIBRASHADER
+#define LIBRA_RUNTIME_OPENGL
+#include "GS/LibrashaderParams.h"
+#include <librashader/librashader.h>
+
+const void* GSDeviceOGL::LibrashaderGLLoader(const char* name)
+{
+	return GetInstance()->m_gl_context->GetProcAddress(name);
+}
+
+bool GSDeviceOGL::CreateLibrashaderFilterChain(const std::string& preset_path)
+{
+	libra_shader_preset_t preset = nullptr;
+	libra_error_t err = libra_preset_create(preset_path.c_str(), &preset);
+	if (err)
+	{
+		Console.ErrorFmt("librashader: OpenGL preset create failed for '{}': {}", preset_path, GetLibrashaderError(err));
+		return false;
+	}
+
+	filter_chain_gl_opt_t opts = {};
+	opts.version = LIBRASHADER_CURRENT_VERSION;
+	if (GLAD_GL_VERSION_4_6)
+		opts.glsl_version = 460;
+	else if (GLAD_GL_VERSION_4_5)
+		opts.glsl_version = 450;
+	else if (GLAD_GL_VERSION_4_4)
+		opts.glsl_version = 440;
+	else if (GLAD_GL_VERSION_4_3)
+		opts.glsl_version = 430;
+	else
+		opts.glsl_version = 330;
+	opts.use_dsa = GLAD_GL_ARB_direct_state_access;
+
+	libra_gl_filter_chain_t chain = nullptr;
+	err = libra_gl_filter_chain_create(&preset, reinterpret_cast<libra_gl_loader_t>(LibrashaderGLLoader), &opts, &chain);
+	if (err)
+	{
+		Console.ErrorFmt("librashader: OpenGL chain create failed for '{}': {}", preset_path, GetLibrashaderError(err));
+		libra_preset_free(&preset);
+		return false;
+	}
+	if (!chain)
+	{
+		Console.ErrorFmt("librashader: OpenGL chain create failed for '{}': no error returned and no chain created", preset_path);
+		libra_preset_free(&preset);
+		return false;
+	}
+	m_librashader_chain = chain;
+
+	return true;
+}
+
+void GSDeviceOGL::DestroyLibrashaderFilterChain()
+{
+	if (m_librashader_chain)
+	{
+		libra_gl_filter_chain_t chain = static_cast<libra_gl_filter_chain_t>(m_librashader_chain);
+		libra_gl_filter_chain_free(&chain);
+		m_librashader_chain = nullptr;
+	}
+}
+
+bool GSDeviceOGL::DoLibrashader(GSTexture* sTex, GSTexture* dTex)
+{
+	GSTextureOGL& src = static_cast<GSTextureOGL&>(*sTex);
+	GSTextureOGL& dst = static_cast<GSTextureOGL&>(*dTex);
+
+	const GLuint src_id = src.GetID();
+	const GLuint dst_id = dst.GetID();
+	const GLenum src_fmt = src.GetIntFormat();
+	const GLenum dst_fmt = dst.GetIntFormat();
+
+	const libra_image_gl_t input = {src_id, src_fmt,
+		static_cast<u32>(src.GetWidth()), static_cast<u32>(src.GetHeight())};
+	const libra_image_gl_t output = {dst_id, dst_fmt,
+		static_cast<u32>(dst.GetWidth()), static_cast<u32>(dst.GetHeight())};
+
+	const libra_viewport_t vp = {0.0f, 0.0f, static_cast<u32>(dst.GetWidth()), static_cast<u32>(dst.GetHeight())};
+
+	frame_gl_opt_t frame_opts = {};
+	frame_opts.version = LIBRASHADER_CURRENT_VERSION;
+	frame_opts.frame_direction = 1;
+	frame_opts.total_subframes = 1;
+	frame_opts.current_subframe = 1;
+
+	glTextureBarrier();
+
+	libra_gl_filter_chain_t chain = static_cast<libra_gl_filter_chain_t>(m_librashader_chain);
+	libra_error_t err = libra_gl_filter_chain_frame(&chain, m_librashader_frame_count, input, output, &vp, nullptr, &frame_opts);
+	if (err)
+	{
+		libra_error_free(&err);
+		GLState::Clear();
+		return false;
+	}
+
+	// librashader binds its own program/FBO/samplers wipe our cache so the next call rebinds.
+	GLState::Clear();
+	return true;
+}
+
+void GSDeviceOGL::ApplyLibrashaderChainParams(const std::vector<std::pair<std::string, float>>& params)
+{
+	if (!m_librashader_chain)
+		return;
+	libra_gl_filter_chain_t chain = static_cast<libra_gl_filter_chain_t>(m_librashader_chain);
+	for (const auto& [name, value] : params)
+	{
+		libra_error_t err = libra_gl_filter_chain_set_param(&chain, name.c_str(), value);
+		if (err)
+			libra_error_free(&err);
+	}
+}
+
+#endif // ENABLE_LIBRASHADER
