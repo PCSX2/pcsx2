@@ -1729,6 +1729,11 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 		}
 
 		vtx.interior = 0;
+
+		#if !VS_IIP
+			// Get the provoking vertex color (first vertex in DX)
+			vtx.c = i0 == 0 ? vtx.c : (i1 == 0 ? other.c : opposite.c);
+		#endif
 	}
 
 	return vtx;

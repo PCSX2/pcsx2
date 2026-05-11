@@ -316,6 +316,11 @@ void main()
 		}
 
 		vsOut.interior = 0;
+
+		#if !VS_IIP
+			// Get the provoking vertex color (last vertex in VK)
+			vtx.c = i0 == 2 ? vtx.c : (i1 == 2 ? other.c : opposite.c);
+		#endif
 	}
 
 #endif

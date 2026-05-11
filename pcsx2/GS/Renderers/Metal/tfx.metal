@@ -396,6 +396,12 @@ vertex MainVSOut vs_main_expand(
 				}
 
 				out.interior = 0;
+
+				if (NOT_IIP)
+				{
+					// Get the provoking vertex color (first vertex in Metal)
+					out.fc = i0 == 0 ? out.fc : (i1 == 0 ? other.fc : opposite.fc);
+				}
 			}
 
 			return out;
