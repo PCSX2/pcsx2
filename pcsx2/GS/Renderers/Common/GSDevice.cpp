@@ -23,6 +23,7 @@
 #include <fstream>
 
 #ifdef ENABLE_LIBRASHADER
+#include "GS/LibrashaderParams.h"
 #include <librashader/librashader.h>
 #endif
 
