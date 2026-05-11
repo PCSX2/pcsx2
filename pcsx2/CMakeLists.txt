@@ -510,6 +510,7 @@ set(pcsx2GSSources
 	GS/GSTables.cpp
 	GS/GSUtil.cpp
 	GS/GSVector.cpp
+	GS/LibrashaderParams.cpp
 	GS/MultiISA.cpp
 	GS/Renderers/Common/GSDevice.cpp
 	GS/Renderers/Common/GSDirtyRect.cpp
@@ -550,6 +551,7 @@ set(pcsx2GSHeaders
 	GS/GSUtil.h
 	GS/GSVector.h
 	GS/GSXXH.h
+	GS/LibrashaderParams.h
 	GS/MultiISA.h
 	GS/Renderers/Common/GSDevice.h
 	GS/Renderers/Common/GSDirtyRect.h

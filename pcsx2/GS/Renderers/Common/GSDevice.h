@@ -13,6 +13,7 @@
 #include "GS/GSAlignedClass.h"
 #include "GS/GSExtra.h"
 #include <array>
+#include <future>
 #include <span>
 
 enum class Filter
@@ -1399,6 +1400,27 @@ public:
 		Performance
 	};
 
+#ifdef ENABLE_LIBRASHADER
+	enum class LibrashaderCompileState : u8
+	{
+		Idle,
+		Compiling,
+		Ready,
+		Failed
+	};
+
+	struct LibrashaderCompileStatus
+	{
+		LibrashaderCompileState state = LibrashaderCompileState::Idle;
+		std::string preset_name;
+		std::string error_message;
+		u64 request_id = 0;
+		u64 started_ticks = 0;
+		u32 params_applied = 0;
+		u32 params_total = 0;
+	};
+#endif
+
 	// clang-format off
 	struct FeatureSupport
 	{
@@ -1511,6 +1533,30 @@ protected:
 
 	GSVector4 m_blur_source_rect = GSVector4::zero();
 
+#ifdef ENABLE_LIBRASHADER
+	GSTexture* m_librashader = nullptr;
+
+	// The libra_*_filter_chain is in each backend, since librashader.h has to be
+	// included with a runtime #define that can't happen here.
+	struct LibrashaderPresetLoadResult
+	{
+		bool success = false;
+		std::string error_message;
+		u64 request_id = 0;
+		std::string preset_path;
+	};
+
+	u32 m_librashader_frame_count = 0;
+	std::string m_librashader_loaded_preset;
+	std::vector<std::pair<std::string, float>> m_librashader_applied_params;
+	LibrashaderCompileStatus m_librashader_compile_status;
+	std::future<LibrashaderPresetLoadResult> m_librashader_pending_preset;
+	u64 m_librashader_request_id = 0;
+	bool m_librashader_restart_pending = false;
+	std::string m_librashader_queued_preset;
+	bool m_librashader_queued_reset = false;
+#endif
+
 	bool AcquireWindow(bool recreate_window);
 
 	virtual GSTexture* CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format) = 0;
@@ -1528,6 +1574,13 @@ protected:
 
 	/// Applies Gaussian blur and writes to the destination texture.
 	void DoGaussianBlur(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, GSTexture* tempTex);
+
+#ifdef ENABLE_LIBRASHADER
+	virtual bool CreateLibrashaderFilterChain(const std::string& preset_path) { return false; }
+	virtual void DestroyLibrashaderFilterChain() {}
+	virtual bool DoLibrashader(GSTexture* sTex, GSTexture* dTex) { return false; }
+	virtual void ApplyLibrashaderChainParams(const std::vector<std::pair<std::string, float>>& params) {}
+#endif
 
 	/// Perform texture operations for ImGui
 	void UpdateImGuiTextures();
@@ -1736,6 +1789,11 @@ public:
 	void Resize(int width, int height);
 
 	void CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, const GSVector4& draw_rect, bool sharpen_only);
+#ifdef ENABLE_LIBRASHADER
+	void Librashader(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, const GSVector4& draw_rect);
+	LibrashaderCompileStatus GetLibrashaderCompileStatus() const { return m_librashader_compile_status; }
+#endif
+
 	bool GaussianBlur(GSTexture*& tex, GSVector4& src_uv, const GSVector4& draw_rect, float scale, bool refresh);
 
 	bool ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_contents, bool recycle);

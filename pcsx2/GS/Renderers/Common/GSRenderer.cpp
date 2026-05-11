@@ -655,7 +655,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		if ((g_perfmon.GetFrame() & 0x1f) == 0)
 			g_perfmon.Update();
 
-		// Little bit ugly, but we can't do CAS or background blur inside the render pass.
+		// Little bit ugly, but we can't do post-processing inside the render pass.
 		GSVector4i src_rect;
 		GSVector4 src_uv, draw_rect;
 		GSTexture* current = g_gs_device->GetCurrent();
@@ -689,6 +689,10 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 					cas_log_once = true;
 				}
 			}
+#ifdef ENABLE_LIBRASHADER
+			if (!m_background_blurred && GSConfig.LibrashaderEnabled)
+				g_gs_device->Librashader(current, src_rect, src_uv, draw_rect);
+#endif
 		}
 
 		if (BeginPresentFrame(false))
