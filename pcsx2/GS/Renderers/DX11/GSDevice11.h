@@ -305,6 +305,10 @@ private:
 	D3D11ShaderCache m_shader_cache;
 	std::string m_tfx_source;
 
+#ifdef ENABLE_LIBRASHADER
+	void* m_librashader_chain = nullptr;
+#endif
+
 protected:
 	using GSDevice::DoStretchRect; // Suppress overloaded virtual function warning
 	virtual void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
@@ -426,6 +430,13 @@ public:
 	void SetRenderHWShaderResources(const GSHWDrawConfig& config, GSTexture* primid_texture);
 
 	void ClearSamplerCache() override;
+
+#ifdef ENABLE_LIBRASHADER
+	bool CreateLibrashaderFilterChain(const std::string& preset_path) override;
+	void DestroyLibrashaderFilterChain() override;
+	bool DoLibrashader(GSTexture* sTex, GSTexture* dTex) override;
+	void ApplyLibrashaderChainParams(const std::vector<std::pair<std::string, float>>& params) override;
+#endif
 
 	ID3D11Device1* operator->() { return m_dev.get(); }
 	operator ID3D11Device1*() { return m_dev.get(); }
