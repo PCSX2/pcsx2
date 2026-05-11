@@ -22,6 +22,10 @@
 #include <ostream>
 #include <fstream>
 
+#ifdef ENABLE_LIBRASHADER
+#include <librashader/librashader.h>
+#endif
+
 const char* ShaderEntryPoint(ShaderConvert value)
 {
 	switch (value)
@@ -387,6 +391,15 @@ void GSDevice::Destroy()
 {
 	ClearCurrent();
 	PurgePool();
+#ifdef ENABLE_LIBRASHADER
+	DestroyLibrashaderFilterChain();
+	if (m_librashader_pending_preset.valid())
+		m_librashader_pending_preset.wait();
+	m_librashader_frame_count = 0;
+	m_librashader_loaded_preset.clear();
+	m_librashader_applied_params.clear();
+	m_librashader_compile_status = {};
+#endif
 }
 
 bool GSDevice::AcquireWindow(bool recreate_window)
@@ -1038,6 +1051,170 @@ void GSDevice::ShadeBoost()
 		m_current = m_target_tmp;
 	}
 }
+
+#ifdef ENABLE_LIBRASHADER
+void GSDevice::Librashader()
+{
+	const std::string& current_or_queued_preset = m_librashader_loaded_preset.empty() ? m_librashader_queued_preset : m_librashader_loaded_preset;
+	const bool preset_changed = (current_or_queued_preset != GSConfig.LibrashaderPreset);
+	// librashader has no API to reset parameters to their defaults, so when the user clears
+	// all overrides we recreate the chain to pick up the preset's built-in defaults.
+	const bool need_reset = (GSConfig.LibrashaderPresetParams.empty() && !m_librashader_applied_params.empty());
+
+	if (preset_changed || need_reset)
+	{
+		DestroyLibrashaderFilterChain();
+		m_librashader_loaded_preset.clear();
+		m_librashader_applied_params.clear();
+		m_librashader_frame_count = 0;
+		m_librashader_compile_status = {};
+	}
+
+	if (GSConfig.LibrashaderPreset.empty())
+	{
+		if (m_librashader_pending_preset.valid() &&
+			m_librashader_pending_preset.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
+		{
+			m_librashader_pending_preset.get();
+		}
+		m_librashader_compile_status = {};
+		++m_librashader_request_id;
+		m_librashader_restart_pending = false;
+		m_librashader_queued_preset.clear();
+		m_librashader_queued_reset = false;
+		return;
+	}
+
+	if (m_librashader_compile_status.state == LibrashaderCompileState::Failed &&
+		!preset_changed && !need_reset)
+	{
+		return;
+	}
+
+	if (m_librashader_loaded_preset.empty())
+	{
+		if (!m_librashader_pending_preset.valid() || m_librashader_restart_pending)
+		{
+			m_librashader_restart_pending = false;
+			m_librashader_queued_preset = GSConfig.LibrashaderPreset;
+			m_librashader_queued_reset = need_reset;
+
+			const u64 request_id = ++m_librashader_request_id;
+			const std::string requested_preset = m_librashader_queued_preset;
+
+			m_librashader_compile_status.state = LibrashaderCompileState::Compiling;
+			m_librashader_compile_status.preset_name = Path::GetFileName(requested_preset);
+			m_librashader_compile_status.error_message.clear();
+			m_librashader_compile_status.request_id = request_id;
+			m_librashader_compile_status.started_ticks = GetCPUTicks();
+			m_librashader_compile_status.params_applied = 0;
+			m_librashader_compile_status.params_total = 0;
+
+			m_librashader_pending_preset = std::async(std::launch::async, [request_id, requested_preset]() {
+				LibrashaderPresetLoadResult result;
+				result.request_id = request_id;
+				result.preset_path = requested_preset;
+
+				libra_shader_preset_t preset = nullptr;
+				libra_error_t err = libra_preset_create(requested_preset.c_str(), &preset);
+				if (err)
+				{
+					char* error_message = nullptr;
+					const LIBRA_ERRNO error_code = libra_error_errno(err);
+					if (libra_error_write(err, &error_message) == 0 && error_message)
+					{
+						result.error_message = StringUtil::StdStringFromFormat("%s (errno=%d)", error_message, static_cast<int>(error_code));
+						libra_error_free_string(&error_message);
+					}
+					else
+					{
+						result.error_message = StringUtil::StdStringFromFormat("unknown parse error (errno=%d)", static_cast<int>(error_code));
+					}
+					libra_error_free(&err);
+					return result;
+				}
+
+				libra_preset_free(&preset);
+				result.success = true;
+				return result;
+			});
+		}
+
+		if (!m_librashader_pending_preset.valid())
+			return;
+
+		if (m_librashader_pending_preset.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready)
+		{
+			if (GSConfig.LibrashaderPreset != m_librashader_queued_preset)
+				m_librashader_restart_pending = true;
+			return;
+		}
+
+		LibrashaderPresetLoadResult result = m_librashader_pending_preset.get();
+		const bool stale_request = (result.request_id != m_librashader_request_id ||
+									result.preset_path != GSConfig.LibrashaderPreset || m_librashader_queued_reset != need_reset);
+		if (stale_request)
+		{
+			m_librashader_restart_pending = true;
+			return;
+		}
+
+		if (!result.success)
+		{
+			m_librashader_compile_status.state = LibrashaderCompileState::Failed;
+			m_librashader_compile_status.error_message = std::move(result.error_message);
+			Console.Error("librashader: Failed to parse preset '%s': %s", GSConfig.LibrashaderPreset.c_str(), m_librashader_compile_status.error_message.c_str());
+			return;
+		}
+
+		const bool create_ok = CreateLibrashaderFilterChain(GSConfig.LibrashaderPreset);
+
+		if (!create_ok)
+		{
+			m_librashader_compile_status.state = LibrashaderCompileState::Failed;
+			m_librashader_compile_status.error_message = "Failed to create filter chain";
+			Console.Error("librashader: Failed to create filter chain from '%s'", GSConfig.LibrashaderPreset.c_str());
+			return;
+		}
+
+		m_librashader_loaded_preset = GSConfig.LibrashaderPreset;
+		m_librashader_compile_status.state = LibrashaderCompileState::Compiling;
+		m_librashader_compile_status.error_message.clear();
+	}
+
+	if (m_librashader_applied_params != GSConfig.LibrashaderPresetParams)
+	{
+		m_librashader_compile_status.params_applied = 0;
+		m_librashader_compile_status.params_total = static_cast<u32>(GSConfig.LibrashaderPresetParams.size());
+		ApplyLibrashaderChainParams(GSConfig.LibrashaderPresetParams);
+		m_librashader_applied_params = GSConfig.LibrashaderPresetParams;
+		m_librashader_compile_status.params_applied = static_cast<u32>(m_librashader_applied_params.size());
+		m_librashader_compile_status.params_total = static_cast<u32>(m_librashader_applied_params.size());
+		m_librashader_compile_status.state = LibrashaderCompileState::Ready;
+	}
+	else
+	{
+		m_librashader_compile_status.params_applied = static_cast<u32>(m_librashader_applied_params.size());
+		m_librashader_compile_status.params_total = static_cast<u32>(m_librashader_applied_params.size());
+		if (m_librashader_compile_status.state == LibrashaderCompileState::Compiling)
+			m_librashader_compile_status.state = LibrashaderCompileState::Ready;
+	}
+
+	if (m_librashader_compile_status.state != LibrashaderCompileState::Ready)
+		return;
+
+	GSTexture*& dTex = (m_current == m_target_tmp) ? m_merge : m_target_tmp;
+	if (ResizeRenderTarget(&dTex, m_current->GetWidth(), m_current->GetHeight(), false, false))
+	{
+		if (DoLibrashader(m_current, dTex))
+		{
+			dTex->SetState(GSTexture::State::Dirty);
+			m_current = dTex;
+			++m_librashader_frame_count;
+		}
+	}
+}
+#endif
 
 void GSDevice::Resize(int width, int height)
 {
