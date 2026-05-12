@@ -209,6 +209,7 @@ jobs:
           gh release upload "${TAG_VAL}" ${{ github.WORKSPACE }}/ci-artifacts/out/*  --repo PCSX2/pcsx2 --clobber
 
       - name: Publish Release
+        if: github.event_name != 'workflow_dispatch' || inputs.is_prerelease == 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
