@@ -90,17 +90,15 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* settings_di
 	}
 	else
 	{
-		// remove login and game info, not relevant for per-game
+		// hide login and game info, not relevant for per-game
 		m_ui.verticalLayout->removeWidget(m_ui.gameInfoBox);
-		m_ui.gameInfoBox->deleteLater();
-		m_ui.gameInfoBox = nullptr;
+		m_ui.gameInfoBox->hide();
 		m_ui.verticalLayout->removeWidget(m_ui.loginBox);
-		m_ui.loginBox->deleteLater();
-		m_ui.loginBox = nullptr;
+		m_ui.loginBox->hide();
 
 		// sound effects
 		m_ui.verticalLayout->removeWidget(m_ui.soundEffectsBox);
-		m_ui.soundEffectsBox->deleteLater();
+		m_ui.soundEffectsBox->hide();
 		m_ui.soundEffectsBox = nullptr;
 	}
 
@@ -120,9 +118,6 @@ void AchievementSettingsWidget::updateEnableState()
 	const bool info = enabled && sound && dialog()->getEffectiveBoolValue("Achievements", "InfoSound", true);
 	const bool unlock = enabled && sound && dialog()->getEffectiveBoolValue("Achievements", "UnlockSound", true);
 	const bool lbsound = enabled && sound && dialog()->getEffectiveBoolValue("Achievements", "LBSubmitSound", true);
-
-	m_ui.viewProfile->setEnabled(enabled);
-	m_ui.loginButton->setEnabled(enabled);
 
 	m_ui.hardcoreMode->setEnabled(enabled);
 	m_ui.achievementNotifications->setEnabled(enabled);
