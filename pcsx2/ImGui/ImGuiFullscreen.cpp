@@ -3248,7 +3248,7 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 			ImVec2(box_max.x + shadow_size, box_max.y + shadow_size),
 			IM_COL32(20, 20, 20, (180 * opacity) / 255u), rounding, ImDrawFlags_RoundCornersAll);
 		dl->AddRectFilled(box_min, box_max, background_color, rounding, ImDrawFlags_RoundCornersAll);
-		dl->AddRect(box_min, box_max, border_color, rounding, ImDrawFlags_RoundCornersAll, ImGuiFullscreen::LayoutScale(1.0f));
+		dl->AddRect(box_min, box_max, border_color, rounding, ImGuiFullscreen::LayoutScale(1.0f), ImDrawFlags_RoundCornersAll);
 
 		const ImVec2 badge_min(box_min.x + horizontal_padding, box_min.y + vertical_padding);
 		const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);
