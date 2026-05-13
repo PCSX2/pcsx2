@@ -32,6 +32,7 @@ public:
 		Column_Size,
 		Column_Region,
 		Column_Compatibility,
+		Column_Achivements,
 		Column_Cover,
 
 		Column_Count

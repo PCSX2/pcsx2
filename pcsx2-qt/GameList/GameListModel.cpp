@@ -4,9 +4,13 @@
 #include "GameListModel.h"
 #include "QtHost.h"
 #include "QtUtils.h"
+
+#include "Achievements.h"
+
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
+
 #include "fmt/format.h"
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
@@ -18,7 +22,7 @@
 #include <QtGui/QPainter>
 
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {
-	{"Type", "Code", "Title", "File Title", "CRC", "Time Played", "Last Played", "Size", "Region", "Compatibility", "Cover"}};
+	{"Type", "Code", "Title", "File Title", "CRC", "Time Played", "Last Played", "Size", "Region", "Compatibility", "Achievements", "Cover"}};
 
 static constexpr int COVER_ART_WIDTH = 350;
 static constexpr int COVER_ART_HEIGHT = 512;
@@ -270,6 +274,20 @@ QVariant GameListModel::data(const QModelIndex& index, const int role) const
 				case Column_Size:
 					return QString("%1 MB").arg(static_cast<double>(ge->total_size) / 1048576.0, 0, 'f', 2);
 
+				case Column_Achivements:
+				{
+					std::optional<Achievements::CacheEntry> achievements = Achievements::LookupCacheEntry(ge->crc);
+					if (!achievements.has_value())
+						return tr("Unknown");
+
+					if (!achievements->supported)
+						return tr("Unsupported");
+
+					return tr("%1 / %2")
+					    .arg(achievements->num_unlocked_achievements)
+					    .arg(achievements->num_core_achievements);
+				}
+
 				case Column_Cover:
 					return m_show_titles_for_covers ? QString::fromStdString(ge->GetTitle(m_prefer_english_titles)) : QVariant();
 
@@ -456,6 +474,23 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
 			return (left->last_played_time < right->last_played_time);
 		}
 
+		case Column_Achivements:
+		{
+			std::optional<Achievements::CacheEntry> achievements_left = Achievements::LookupCacheEntry(left->crc);
+			std::optional<Achievements::CacheEntry> achievements_right = Achievements::LookupCacheEntry(right->crc);
+			if (!achievements_left.has_value() || !achievements_right.has_value())
+				return false;
+
+			float completion_left =
+				static_cast<float>(achievements_left->num_unlocked_achievements) /
+				achievements_left->num_unlocked_achievements;
+			float completion_right =
+				static_cast<float>(achievements_right->num_unlocked_achievements) /
+				achievements_right->num_unlocked_achievements;
+
+			return completion_left < completion_right;
+		}
+
 		default:
 			return false;
 	}
@@ -518,6 +553,7 @@ void GameListModel::setColumnDisplayNames()
 	m_column_display_names[Column_Size] = tr("Size");
 	m_column_display_names[Column_Region] = tr("Region");
 	m_column_display_names[Column_Compatibility] = tr("Compatibility");
+	m_column_display_names[Column_Achivements] = tr("Achievements");
 }
 
 #include "moc_GameListModel.cpp"
