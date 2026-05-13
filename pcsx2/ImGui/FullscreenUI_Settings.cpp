@@ -1945,7 +1945,6 @@ void FullscreenUI::DrawSettingsWindow()
 		{
 			s_post_processing_subview = PostProcessingSubview::Main;
 			s_librashader_editing_param_index.reset();
-			s_librashader_float_popup_manual_input = false;
 		}
 
 		switch (s_settings_page)
@@ -3063,7 +3062,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		{
 			DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Rasterizer Ordered View"),
 				FSUI_CSTR("Enables Rasterizer Ordered View (ROV), which allows feedback loops to be executed with fewer draw calls. Can improve performance in feedback heavy games "
-					  "with higher accuracy settings."),
+						  "with higher accuracy settings."),
 				"EmuCore/GS", "HWROV", false);
 		}
 	}
@@ -3341,9 +3340,14 @@ namespace
 		const std::optional<SmallString> preset_value(bsi->GetOptionalSmallStringValue(
 			"EmuCore/GS", "LibrashaderPreset", game_settings ? std::nullopt : std::optional<const char*>("")));
 		if (preset_value.has_value())
-			return std::string(preset_value->c_str());
+			return Path::ToNativePath(StringUtil::StripWhitespace(preset_value->c_str()));
 
-		return Host::Internal::GetBaseSettingsLayer()->GetStringValue("EmuCore/GS", "LibrashaderPreset", "");
+		return Path::ToNativePath(StringUtil::StripWhitespace(Host::Internal::GetBaseSettingsLayer()->GetStringValue("EmuCore/GS", "LibrashaderPreset", "")));
+	}
+
+	std::string GetLibrashaderParamPopupId(const LibrashaderParam& param, size_t param_index)
+	{
+		return fmt::format("{}##LibrashaderParam{}", param.GetLabel(), param_index);
 	}
 
 	const char* GetLibrashaderLoadErrorString(LibrashaderLoadError error)
@@ -3382,7 +3386,6 @@ namespace
 		FullscreenUI::s_librashader_pass_names.clear();
 		FullscreenUI::s_librashader_param_search.clear();
 		FullscreenUI::s_librashader_editing_param_index.reset();
-		FullscreenUI::s_librashader_float_popup_manual_input = false;
 #ifdef ENABLE_LIBRASHADER
 		FullscreenUI::s_librashader_params.clear();
 #endif
@@ -3489,39 +3492,22 @@ void FullscreenUI::PollLibrashaderLoad()
 #endif
 }
 
-void FullscreenUI::DrawLibrashaderBoolParam(SettingsInterface* bsi, LibrashaderParam& param, const std::string& preset_path, bool enabled)
-{
-#ifdef ENABLE_LIBRASHADER
-	bool state = param.value >= 0.5f;
-	const std::string label = GetLibrashaderParamLabel(param);
-	if (ToggleButton(label.c_str(), nullptr, &state, enabled))
-	{
-		param.value = state ? 1.0f : 0.0f;
-		CommitLibrashaderParams(bsi, preset_path);
-	}
-#else
-	(void)bsi;
-	(void)param;
-	(void)preset_path;
-	(void)enabled;
-#endif
-}
-
 void FullscreenUI::DrawLibrashaderFloatParam(size_t param_index, const LibrashaderParam& param, bool enabled)
 {
 #ifdef ENABLE_LIBRASHADER
 	ImGui::PushID(static_cast<int>(param_index));
-	const std::string label = GetLibrashaderParamLabel(param);
-	const std::string value_text = FormatLibrashaderValue(param.value, param.minimum, param.maximum, param.step);
+	const std::string label = param.GetLabel();
+	const std::string value_text = param.FormatValue(param.value);
 
-	if (MenuButtonWithValue(label.c_str(), nullptr, value_text.c_str(), enabled))
+	const bool pressed = MenuButtonWithValue(label.c_str(), nullptr, value_text.c_str(), enabled);
+	ImGui::PopID();
+
+	if (pressed)
 	{
 		s_librashader_editing_param_index = param_index;
-		s_librashader_float_popup_manual_input = false;
-		ImGui::OpenPopup("LibrashaderParamEdit");
+		const std::string popup_id = GetLibrashaderParamPopupId(param, param_index);
+		ImGui::OpenPopup(popup_id.c_str());
 	}
-
-	ImGui::PopID();
 #else
 	(void)param_index;
 	(void)param;
@@ -3552,9 +3538,9 @@ void FullscreenUI::DrawLibrashaderFloatParamPopup(SettingsInterface* bsi, const 
 		dlg_value = param.value;
 	}
 
-	const std::string value_text = FormatLibrashaderValue(dlg_value, param.minimum, param.maximum, param.step);
+	const std::string popup_id = GetLibrashaderParamPopupId(param, param_index);
 
-	ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
+	ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
 	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
 	ImGui::PushFont(g_large_font.first, g_large_font.second);
@@ -3565,94 +3551,39 @@ void FullscreenUI::DrawLibrashaderFloatParamPopup(SettingsInterface* bsi, const 
 		LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING, ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
 
 	bool is_open = true;
-	if (ImGui::BeginPopupModal("LibrashaderParamEdit", &is_open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+	if (ImGui::BeginPopupModal(popup_id.c_str(), &is_open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar))
 	{
 		BeginMenuButtons();
 
-		ActiveButton(GetLibrashaderParamLabel(param).c_str(), false, false);
+		const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
+		ImGui::SetNextItemWidth(end);
 
-		bool dlg_value_changed = false;
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(ImGuiFullscreen::LAYOUT_FRAME_ROUNDING));
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, LayoutScale(8.0f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25f, 0.25f, 0.25f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImVec4(0.45f, 0.65f, 0.95f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.55f, 0.75f, 1.0f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
 
-		char str_value[32];
-		std::snprintf(str_value, std::size(str_value), "%s", value_text.c_str());
-
-		if (s_librashader_float_popup_manual_input)
+		if (ImGui::SliderFloat("##value", &dlg_value, param.minimum, param.maximum, param.SliderFormat(),
+				ImGuiSliderFlags_NoInput) &&
+			enabled)
 		{
-			const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
-			ImGui::SetNextItemWidth(end);
-
-			if (auto tmp_value = StringUtil::FromChars<float>(str_value); tmp_value.has_value())
-			{
-				std::snprintf(str_value, std::size(str_value),
-					((tmp_value.value() - std::floor(tmp_value.value())) < 0.01f) ? "%.0f" : "%f", tmp_value.value());
-			}
-
-			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(ImGuiFullscreen::LAYOUT_FRAME_ROUNDING));
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(12.0f, 10.0f));
-			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
-			ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25f, 0.25f, 0.25f, 1.0f));
-			ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
-			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-
-			if (ImGui::InputText("##value", str_value, std::size(str_value), ImGuiInputTextFlags_CharsDecimal))
-			{
-				const float new_value = StringUtil::FromChars<float>(str_value).value_or(dlg_value);
-				dlg_value_changed = (dlg_value != new_value);
-				dlg_value = new_value;
-			}
-
-			ImGui::PopStyleColor(4);
-			ImGui::PopStyleVar(2);
-
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-		}
-		else
-		{
-			const ImVec2& padding(ImGui::GetStyle().FramePadding);
-			ImVec2 button_pos(ImGui::GetCursorPos());
-
-			ImGui::SetCursorPosY(
-				button_pos.y + ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font.second) * 0.5f);
-			ImGui::TextUnformatted(str_value);
-
-			float step = 0.0f;
-			if (FloatingButton(
-					ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, enabled, g_large_font, &button_pos, true))
-			{
-				step = param.step > 0.0f ? param.step : ((param.maximum - param.minimum) / 100.0f);
-			}
-			if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, enabled, g_large_font,
-					&button_pos, true))
-			{
-				step = param.step > 0.0f ? -param.step : (-(param.maximum - param.minimum) / 100.0f);
-			}
-			if (FloatingButton(
-					ICON_FA_KEYBOARD, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, enabled, g_large_font, &button_pos))
-			{
-				s_librashader_float_popup_manual_input = true;
-			}
-			if (FloatingButton(
-					ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, enabled, g_large_font, &button_pos))
-			{
-				dlg_value = param.default_value;
-				dlg_value_changed = true;
-			}
-
-			if (step != 0.0f)
-			{
-				dlg_value += step;
-				dlg_value_changed = true;
-			}
-
-			ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) + LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + 10.0f));
+			dlg_value = param.SnapValue(dlg_value);
 		}
 
-		if (dlg_value_changed)
-			dlg_value = SnapLibrashaderValue(dlg_value, param.minimum, param.maximum, param.step);
+		ImGui::PopStyleColor(7);
+		ImGui::PopStyleVar(3);
 
-		if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font, ImVec2(0.5f, 0.0f)))
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+
+		if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), enabled, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font, ImVec2(0.5f, 0.0f)))
 		{
-			const float snapped_value = SnapLibrashaderValue(dlg_value, param.minimum, param.maximum, param.step);
+			const float snapped_value = param.SnapValue(dlg_value);
 			if (snapped_value != param.value)
 			{
 				param.value = snapped_value;
@@ -3661,7 +3592,6 @@ void FullscreenUI::DrawLibrashaderFloatParamPopup(SettingsInterface* bsi, const 
 
 			popup_param_index = std::numeric_limits<size_t>::max();
 			s_librashader_editing_param_index.reset();
-			s_librashader_float_popup_manual_input = false;
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -3672,7 +3602,6 @@ void FullscreenUI::DrawLibrashaderFloatParamPopup(SettingsInterface* bsi, const 
 	{
 		popup_param_index = std::numeric_limits<size_t>::max();
 		s_librashader_editing_param_index.reset();
-		s_librashader_float_popup_manual_input = false;
 	}
 
 	ImGui::PopStyleVar(4);
@@ -3697,7 +3626,6 @@ void FullscreenUI::DrawLibrashaderParamsPage(SettingsInterface* bsi)
 	if (MenuButton(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back"), FSUI_CSTR("Return to Post-Processing settings.")))
 	{
 		s_librashader_editing_param_index.reset();
-		s_librashader_float_popup_manual_input = false;
 		s_post_processing_subview = PostProcessingSubview::Main;
 	}
 
@@ -3771,15 +3699,17 @@ void FullscreenUI::DrawLibrashaderParamsPage(SettingsInterface* bsi)
 	}
 	else
 	{
-		const std::vector<size_t> visible_indices = FilterLibrashaderParams(s_librashader_params, s_librashader_param_search);
-		if (visible_indices.empty())
+		const LibrashaderVisiblePage visible =
+			GetVisibleLibrashaderPage(s_librashader_params, s_librashader_param_search, s_librashader_page_index);
+		s_librashader_page_index = visible.page.page_index;
+
+		if (visible.indices.empty())
 		{
 			ActiveButton(FSUI_CSTR("No parameters match the current search."), false, false);
 		}
 		else
 		{
-			const LibrashaderPage page = GetLibrashaderPage(visible_indices.size(), s_librashader_page_index);
-			s_librashader_page_index = page.page_index;
+			const LibrashaderPage& page = visible.page;
 
 			const SmallString page_label = SmallString::from_format(FSUI_FSTR("Page {}/{} ({} parameters)"),
 				static_cast<int>(page.page_index + 1), static_cast<int>(page.total_pages), static_cast<int>(page.total_params));
@@ -3807,12 +3737,29 @@ void FullscreenUI::DrawLibrashaderParamsPage(SettingsInterface* bsi)
 			MenuHeading(FSUI_CSTR("Parameters"));
 			for (size_t visible_index = page.start; visible_index < page.end; ++visible_index)
 			{
-				const size_t index = visible_indices[visible_index];
+				const size_t index = visible.indices[visible_index];
 				LibrashaderParam& param = s_librashader_params[index];
-				if (param.IsBool())
-					DrawLibrashaderBoolParam(bsi, param, preset_path, enabled);
-				else
-					DrawLibrashaderFloatParam(index, param, enabled);
+				switch (param.GetControl())
+				{
+					case LibrashaderParam::Control::Spacer:
+						continue;
+					case LibrashaderParam::Control::Label:
+						MenuHeading(param.GetLabel().c_str());
+						break;
+					case LibrashaderParam::Control::Bool:
+					{
+						bool state = param.GetBoolValue();
+						if (ToggleButton(param.GetLabel().c_str(), nullptr, &state, enabled))
+						{
+							param.SetBoolValue(state);
+							CommitLibrashaderParams(bsi, preset_path);
+						}
+					}
+					break;
+					case LibrashaderParam::Control::Float:
+						DrawLibrashaderFloatParam(index, param, enabled);
+						break;
+				}
 			}
 		}
 	}

@@ -418,7 +418,6 @@ namespace FullscreenUI
 	void StartLibrashaderLoad(SettingsInterface* bsi, const std::string& preset_path);
 	void PollLibrashaderLoad();
 	void CommitLibrashaderParams(SettingsInterface* bsi, const std::string& preset_path);
-	void DrawLibrashaderBoolParam(SettingsInterface* bsi, LibrashaderParam& param, const std::string& preset_path, bool enabled);
 	void DrawLibrashaderFloatParam(size_t param_index, const LibrashaderParam& param, bool enabled);
 	void DrawLibrashaderFloatParamPopup(SettingsInterface* bsi, const std::string& preset_path, bool enabled);
 	void DrawOSDSettingsPage();
@@ -524,7 +523,6 @@ namespace FullscreenUI
 	inline std::string s_librashader_pending_preset;
 	inline std::string s_librashader_param_search;
 	inline std::optional<size_t> s_librashader_editing_param_index;
-	inline bool s_librashader_float_popup_manual_input = false;
 	inline size_t s_librashader_page_index = 0;
 	inline u64 s_librashader_load_request_id = 0;
 	inline std::atomic<bool> s_librashader_load_pending{false};
