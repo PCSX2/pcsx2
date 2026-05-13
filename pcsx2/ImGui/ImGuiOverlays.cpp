@@ -1027,6 +1027,11 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 			APPEND("RBSC ");
 	}
 
+	if (GSConfig.LibrashaderEnabled)
+		APPEND("LSHD ");
+	if (GSConfig.FXAA || GSConfig.ShadeBoost || GSConfig.CASMode != GSCASMode::Disabled || GSConfig.TVShader != 0)
+		APPEND("PSHD ");
+
 #undef APPEND
 
 	if (text.empty())
