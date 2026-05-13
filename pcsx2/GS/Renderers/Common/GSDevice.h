@@ -894,7 +894,7 @@ static inline u32 GetExpansionFactor(GSHWDrawConfig::VSExpand expand)
 		case GSHWDrawConfig::VSExpand::Sprite:
 			return 2;
 		case GSHWDrawConfig::VSExpand::TriangleAA1:
-			return 7;
+			return 13;
 		default:
 			return 1;
 	}
