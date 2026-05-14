@@ -56,6 +56,44 @@ public:
 		D3D12_RESOURCE_DESC desc;
 	};
 
+	enum class ResourceType
+	{
+		SRV, // Shader resource view
+		FBL, // Feedback loop
+		UAV, // Unordered access
+	};
+
+	D3D12DescriptorHandle GetResourceDescriptor(GSTexture12* tex, ResourceType type) const
+	{
+		switch (type)
+		{
+			case ResourceType::SRV:
+				return tex->GetSRVDescriptor();
+			case ResourceType::FBL:
+				return m_enhanced_barriers ? tex->GetSRVDescriptor() : tex->GetFBLDescriptor();
+			case ResourceType::UAV:
+				return tex->GetUAVDescriptor();
+			default:
+				pxFailRel("Impossible.");
+				return D3D12DescriptorHandle{ 0, 0 };
+		}
+	}
+
+	static constexpr GSTexture12::ResourceState GetResourceState(ResourceType type)
+	{
+		switch (type)
+		{
+			case ResourceType::SRV:
+			case ResourceType::FBL:
+				return GSTexture12::ResourceState::PixelShaderResource;
+			case ResourceType::UAV:
+				return GSTexture12::ResourceState::PixelShaderUAV;
+			default:
+				pxFailRel("Impossible.");
+				return static_cast<GSTexture12::ResourceState>(-1);
+		}
+	}
+
 	__fi IDXGIAdapter1* GetAdapter() const { return m_adapter.get(); }
 	__fi ID3D12Device* GetDevice() const { return m_device.get(); }
 	__fi ID3D12CommandQueue* GetCommandQueue() const { return m_command_queue.get(); }
@@ -96,7 +134,6 @@ public:
 	D3D12DescriptorHeapManager& GetRTVHeapManager() { return m_rtv_heap_manager; }
 	D3D12DescriptorHeapManager& GetDSVHeapManager() { return m_dsv_heap_manager; }
 	D3D12DescriptorHeapManager& GetSamplerHeapManager() { return m_sampler_heap_manager; }
-	const D3D12DescriptorHandle& GetNullSRVDescriptor() const { return m_null_srv_descriptor; }
 	D3D12StreamBuffer& GetTextureStreamBuffer() { return m_texture_stream_buffer; }
 
 	// Root signature access.
@@ -198,7 +235,6 @@ private:
 	D3D12DescriptorHeapManager m_rtv_heap_manager;
 	D3D12DescriptorHeapManager m_dsv_heap_manager;
 	D3D12DescriptorHeapManager m_sampler_heap_manager;
-	D3D12DescriptorHandle m_null_srv_descriptor;
 
 	D3D_FEATURE_LEVEL m_feature_level = D3D_FEATURE_LEVEL_11_0;
 
@@ -224,14 +260,13 @@ public:
 		GSHWDrawConfig::VSSelector vs;
 		GSHWDrawConfig::DepthStencilSelector dss;
 		GSHWDrawConfig::ColorMaskSelector cms;
-		u8 pad;
 
 		__fi bool operator==(const PipelineSelector& p) const { return BitEqual(*this, p); }
 		__fi bool operator!=(const PipelineSelector& p) const { return !BitEqual(*this, p); }
 
 		__fi PipelineSelector() { std::memset(this, 0, sizeof(*this)); }
 	};
-	static_assert(sizeof(PipelineSelector) == 24, "Pipeline selector is 24 bytes");
+	static_assert(sizeof(PipelineSelector) == 32, "Pipeline selector is 32 bytes");
 
 	struct PipelineSelectorHash
 	{
@@ -282,11 +317,14 @@ public:
 		TEXTURE_RT = 2,
 		TEXTURE_PRIMID = 3,
 		TEXTURE_DEPTH = 4,
+		TEXTURE_RT_UAV = 5,
+		TEXTURE_DEPTH_UAV = 6,
 
 		NUM_TFX_CONSTANT_BUFFERS = 2,
 		NUM_TFX_TEXTURES = 2,
 		NUM_TFX_RT_TEXTURES = 3,
-		NUM_TOTAL_TFX_TEXTURES = NUM_TFX_TEXTURES + NUM_TFX_RT_TEXTURES,
+		NUM_TFX_UAV_TEXTURES = 2,
+		NUM_TOTAL_TFX_TEXTURES = NUM_TFX_TEXTURES + NUM_TFX_RT_TEXTURES + NUM_TFX_UAV_TEXTURES,
 		NUM_TFX_SAMPLERS = 1,
 		NUM_UTILITY_TEXTURES = 1,
 		NUM_UTILITY_SAMPLERS = 1,
@@ -376,7 +414,7 @@ private:
 	std::string m_tfx_source;
 
 	void LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
-		DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format) const;
+		DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format, DXGI_FORMAT* uav_format) const;
 
 	u32 GetSwapChainBufferCount() const;
 	bool CreateSwapChain();
@@ -502,11 +540,12 @@ public:
 	void IASetIndexBuffer(const void* index, size_t count);
 	void VSSetIndexBuffer(const void* index, size_t count);
 
-	void PSSetShaderResource(int i, GSTexture* sr, bool check_state, bool feedback = false);
+	void PSSetShaderResource(int i, GSTexture* sr, bool check_state, ResourceType type = ResourceType::SRV);
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
+	void PSSetUnorderedAccess(GSTexture* rt, GSTexture* ds, bool write_rt, bool write_ds);
 
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, GSTexture* ds_as_rt, const GSVector4i& scissor,
-		bool depth_read = false);
+		bool depth_read = false, const GSVector2i& viewport_size = {});
 
 	void SetVSConstantBuffer(const GSHWDrawConfig::VSConstantBuffer& cb);
 	void SetPSConstantBuffer(const GSHWDrawConfig::PSConstantBuffer& cb);
@@ -515,8 +554,8 @@ public:
 
 	void RenderHW(GSHWDrawConfig& config) override;
 	void SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt,
-		GSTexture12* draw_ds, const bool feedback_rt, const bool feedback_depth, const bool one_barrier,
-		const bool full_barrier);
+		GSTexture12* draw_ds, GSTexture12* draw_rt_rov, GSTexture12* draw_ds_rov,
+		const bool feedback_rt, const bool feedback_depth, const bool one_barrier, const bool full_barrier);
 
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config);
 	void UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config);
@@ -582,8 +621,8 @@ private:
 		DIRTY_FLAG_PS_CONSTANT_BUFFER_BINDING = (1 << 6),
 		DIRTY_FLAG_VS_VERTEX_BUFFER_BINDING = (1 << 7),
 		DIRTY_FLAG_VS_INDEX_BUFFER_BINDING = (1 << 8),
-		DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE = (1 << 9),
-		DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE = (1 << 10),
+		DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE = (1 << 9),
+		DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE = (1 << 10),
 		DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2 = (1 << 11),
 		DIRTY_FLAG_VS_PUSH_CONSTANTS = (1 << 12),
 
@@ -646,6 +685,7 @@ private:
 
 	std::array<D3D12_GPU_VIRTUAL_ADDRESS, NUM_TFX_CONSTANT_BUFFERS> m_tfx_constant_buffers{};
 	std::array<D3D12DescriptorHandle, NUM_TOTAL_TFX_TEXTURES> m_tfx_textures{};
+	std::array<GSTexture12*, NUM_TFX_UAV_TEXTURES> m_tfx_textures_uav{};
 	D3D12DescriptorHandle m_tfx_sampler;
 	u32 m_tfx_sampler_sel = 0;
 	D3D12DescriptorHandle m_tfx_textures_handle_gpu;

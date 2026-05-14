@@ -230,7 +230,7 @@ private:
 	static void GetAlphaTestConfigPS(const u32 atst, const u8 aref, const bool invert_test, PS_ATST& ps_atst_out, float& aref_out);
 	void EmulateAlphaTest(DATEOptions& date_options);
 	void EmulateAlphaTestSecondPass();
-	void ConfigureDepthFeedback();
+	void ConfigureDepthFeedback(bool rov_depth = false);
 
 	void CalculateAlphaRange(GSTextureCache::Target* rt, GSTextureCache::Target* ds, DATEOptions& date_options,
 		int& blend_alpha_min, int& blend_alpha_max, int& rt_new_alpha_min, int& rt_new_alpha_max);
@@ -246,6 +246,10 @@ private:
 	void DetermineVSConfig(GSTextureCache::Target* rt, float rtscale, const GSVector2i& rtsize,
 		const GSVector2i& unscaled_size, float& vs_scale_x, float& vs_scale_y);
 	void DetermineBarriers(GSTextureCache::Target* rt);
+
+	void GetForcedROVUsage(bool& color_cov, bool& depth_rov); // Whether having color or depth with the current config forces the other.
+	void DetermineROVUsage(); // Heuristics to determine whether to enable/disable ROV
+	void ConfigureROV(bool color_rov, bool depth_rov); // Actual config for ROV
 
 	void SetTCOffset();
 	bool NextDrawColClip() const;
@@ -323,6 +327,31 @@ private:
 	float m_userhacks_tcoffset_y = 0.0f;
 
 	GSVector2i m_lod = {}; // Min & Max level of detail
+
+	GIFRegALPHA m_optimized_blend = {}; // Save for ROV setup
+
+	// Settings for the ROV enable/disable heuristic.
+	// Testing suggested that a simple heuristic that activates ROV when >= 2 barriers are enountered and
+	// keeps it activated as long as possible has the better performance than more complicated schemes that
+	// use a weighted average of historical barriers seen.
+	static constexpr u32 m_rov_max_barriers = 2;
+	static constexpr float m_rov_history_weight = 0.0f;
+	static constexpr float m_rov_barriers_enable = 2.0f;
+	static constexpr float m_rov_barriers_disable = 1.0f;
+
+	// Other ROV presets tried in the past:
+
+	// Balanced preset: Need 8 barriers to activate at once or a string of > 2.
+	// m_rov_max_barriers = 16;
+	// m_rov_history_weight = 0.75f;
+	// m_rov_barriers_enable = 2.0f;
+	// m_rov_barriers_disable = 1.125f;
+	
+	// Conservative preset: Need 16 barriers to activate at once or a string of > 4.
+	// m_rov_max_barriers = 32;
+	// m_rov_history_weight = 0.75f;
+	// m_rov_barriers_enable = 4.0f;
+	// m_rov_barriers_disable = 1.25f;
 
 	GSHWDrawConfig m_conf = {};
 	HWCachedCtx m_cached_ctx;
