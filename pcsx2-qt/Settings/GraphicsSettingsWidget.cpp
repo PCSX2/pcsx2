@@ -113,6 +113,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.mipmapping, "EmuCore/GS", "hw_mipmap", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.accurateAlphaTest, "EmuCore/GS", "HWAccurateAlphaTest", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.hwAA1, "EmuCore/GS", "HWAA1", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.rov, "EmuCore/GS", "HWROV", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_hw.blending, "EmuCore/GS", "accurate_blending_unit", static_cast<int>(AccBlendLevel::Basic));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.enableHWFixes, "EmuCore/GS", "UserHacks", false);
@@ -229,6 +230,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.disableMailboxPresentation, "EmuCore/GS", "DisableMailboxPresentation", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.extendedUpscales, "EmuCore/GS", "ExtendedUpscalingMultipliers", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.exclusiveFullscreenControl, "EmuCore/GS", "ExclusiveFullscreenControl", -1, -1);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.rovBarriersVK, "EmuCore/GS", "HWROVBarriersVK", static_cast<int>(GSROVBarriersVKMode::None));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.overrideTextureBarriers, "EmuCore/GS", "OverrideTextureBarriers", -1, -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.gsDumpCompression, "EmuCore/GS", "GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::Zstandard));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.disableFramebufferFetch, "EmuCore/GS", "DisableFramebufferFetch", false);
@@ -496,6 +498,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 		dialog()->registerWidgetHelp(
 			m_hw.hwAA1, tr("AA1"), tr("Unchecked"), tr("Enables AA1 (PS2 antialiasing), which some games require to render correctly. This may result in a heavy performance penalty."));
+
+		dialog()->registerWidgetHelp(
+			m_hw.rov, tr("ROV"), tr("Unchecked"), tr("Enables ROV (Rasterizer Ordered View), which allows feedback loops to be executed with fewer draw calls. Can improve performance in feedback heavy games with higher accuracy settings."));
 
 		dialog()->registerWidgetHelp(
 			m_hw.textureFiltering, tr("Texture Filtering"), tr("Bilinear (PS2)"),

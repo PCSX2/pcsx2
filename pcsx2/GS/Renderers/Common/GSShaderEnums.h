@@ -56,4 +56,11 @@ enum class PS_AA1 : uint32_t
 	TRIANGLE_SW_Z = 3, ///< AA1 triangles with software Z discard
 };
 
+enum class PS_ROV_DEPTH :uint32_t
+{
+	NONE = 0,
+	READ_WRITE = 1,
+	READ_ONLY = 2,
+};
+
 } // namespace GSShader

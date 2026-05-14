@@ -20,6 +20,52 @@ class GSTexture11 final : public GSTexture
 	wil::com_ptr_nothrow<ID3D11DepthStencilView> m_read_only_dsv;
 	D3D11_TEXTURE2D_DESC m_desc;
 
+	GSTexture11* GetDepthColor() { return static_cast<GSTexture11*>(m_depth_color.get()); }
+	const GSTexture11* GetDepthColor() const { return static_cast<const GSTexture11*>(m_depth_color.get()); }
+
+	__fi ID3D11Texture2D* GetD3D11Texture()
+	{
+		return static_cast<ID3D11Texture2D*>(*this);
+	}
+
+	__fi D3D11_TEXTURE2D_DESC& GetDesc()
+	{
+		return IsDepthColor() ? GetDepthColor()->m_desc : m_desc;
+	}
+
+	__fi const D3D11_TEXTURE2D_DESC& GetDesc() const
+	{
+		return IsDepthColor() ? GetDepthColor()->m_desc : m_desc;
+	}
+
+	__fi wil::com_ptr_nothrow<ID3D11ShaderResourceView>& GetSRV()
+	{
+		return IsDepthColor() ? GetDepthColor()->m_srv : m_srv;
+	}
+
+	__fi wil::com_ptr_nothrow<ID3D11RenderTargetView>& GetRTV()
+	{
+		pxAssert(IsRenderTarget() || IsDepthColor());
+		return IsDepthColor() ? GetDepthColor()->m_rtv : m_rtv;
+	}
+
+	__fi wil::com_ptr_nothrow<ID3D11DepthStencilView>& GetDSV()
+	{
+		pxAssert(IsDepthStencil() && !IsDepthColor());
+		return m_dsv;
+	}
+
+	__fi wil::com_ptr_nothrow<ID3D11DepthStencilView>& GetReadOnlyDSV()
+	{
+		pxAssert(IsDepthStencil() && !IsDepthColor());
+		return m_read_only_dsv;
+	}
+
+	__fi wil::com_ptr_nothrow<ID3D11UnorderedAccessView>& GetUAV()
+	{
+		pxAssert(IsRenderTarget() || IsDepthColor());
+		return IsDepthColor() ? GetDepthColor()->m_uav : m_uav;
+	}
 public:
 	explicit GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, const D3D11_TEXTURE2D_DESC& desc,
 		GSTexture::Type type, GSTexture::Format format);
@@ -44,6 +90,11 @@ public:
 	operator ID3D11UnorderedAccessView*();
 
 	ID3D11DepthStencilView* ReadOnlyDepthStencilView();
+
+	virtual bool IsUnorderedAccess() const override
+	{
+		return IsRenderTarget() || IsDepthColor();
+	}
 };
 
 class GSDownloadTexture11 final : public GSDownloadTexture

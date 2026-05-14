@@ -22,17 +22,41 @@ private:
 	u32 m_map_offset = 0;
 
 	// internal opengl format/type/alignment
+	GLenum m_gl_format = 0;
 	GLenum m_int_format = 0;
 	GLenum m_int_type = 0;
 	u32 m_int_shift = 0;
+
+	const GSTextureOGL* GetDepthColor() const
+	{
+		return static_cast<const GSTextureOGL*>(m_depth_color.get());
+	}
+
+	GSTextureOGL* GetDepthColor()
+	{
+		return static_cast<GSTextureOGL*>(m_depth_color.get());
+	}
 
 public:
 	explicit GSTextureOGL(Type type, int width, int height, int levels, Format format);
 	~GSTextureOGL() override;
 
-	__fi GLenum GetIntFormat() const { return m_int_format; }
-	__fi GLenum GetIntType() const { return m_int_type; }
-	__fi u32 GetIntShift() const { return m_int_shift; }
+	__fi GLenum GetGLFormat() const
+	{
+		return IsDepthColor() ? GetDepthColor()->m_gl_format : m_gl_format;
+	}
+	__fi GLenum GetIntFormat() const
+	{
+		return IsDepthColor() ? GetDepthColor()->m_int_format : m_int_format;
+	}
+	__fi GLenum GetIntType() const
+	{
+		return IsDepthColor() ? GetDepthColor()->m_int_type : m_int_type;
+	}
+	__fi u32 GetIntShift() const
+	{
+		return IsDepthColor() ? GetDepthColor()->m_int_shift : m_int_shift;
+	}
 
 	void* GetNativeHandle() const override;
 
@@ -47,14 +71,22 @@ public:
 
 	bool IsIntegerFormat() const
 	{
-		return (m_int_format == GL_RED_INTEGER || m_int_format == GL_RGBA_INTEGER);
+		return (GetIntFormat() == GL_RED_INTEGER || GetIntFormat() == GL_RGBA_INTEGER);
 	}
 	bool IsUnsignedFormat() const
 	{
-		return (m_int_type == GL_UNSIGNED_BYTE || m_int_type == GL_UNSIGNED_SHORT || m_int_type == GL_UNSIGNED_INT);
+		return (GetIntType() == GL_UNSIGNED_BYTE || GetIntType() == GL_UNSIGNED_SHORT || GetIntType() == GL_UNSIGNED_INT);
 	}
 
-	__fi u32 GetID() { return m_texture_id; }
+	__fi u32 GetID() const
+	{
+		return IsDepthColor() ? GetDepthColor()->m_texture_id : m_texture_id;
+	}
+
+	bool IsUnorderedAccess() const override
+	{
+		return IsRenderTarget() || IsDepthColor();
+	}
 };
 
 class GSDownloadTextureOGL final : public GSDownloadTexture

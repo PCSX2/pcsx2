@@ -28,23 +28,24 @@ DXGI_FORMAT GSTexture11::GetDXGIFormat(Format format)
 	// clang-format off
 	switch (format)
 	{
-	case GSTexture::Format::Color:        return DXGI_FORMAT_R8G8B8A8_UNORM;
-	case GSTexture::Format::ColorHQ:      return DXGI_FORMAT_R10G10B10A2_UNORM;
-	case GSTexture::Format::ColorHDR:     return DXGI_FORMAT_R16G16B16A16_FLOAT;
-	case GSTexture::Format::ColorClip:    return DXGI_FORMAT_R16G16B16A16_UNORM;
-	case GSTexture::Format::DepthStencil: return DXGI_FORMAT_R32G8X24_TYPELESS;
-	case GSTexture::Format::UNorm8:       return DXGI_FORMAT_A8_UNORM;
-	case GSTexture::Format::UInt16:       return DXGI_FORMAT_R16_UINT;
-	case GSTexture::Format::UInt32:       return DXGI_FORMAT_R32_UINT;
-	case GSTexture::Format::PrimID:       return DXGI_FORMAT_R32_FLOAT;
-	case GSTexture::Format::BC1:          return DXGI_FORMAT_BC1_UNORM;
-	case GSTexture::Format::BC2:          return DXGI_FORMAT_BC2_UNORM;
-	case GSTexture::Format::BC3:          return DXGI_FORMAT_BC3_UNORM;
-	case GSTexture::Format::BC7:          return DXGI_FORMAT_BC7_UNORM;
-	case GSTexture::Format::Invalid:
-	default:
-		pxAssert(0);
-		return DXGI_FORMAT_UNKNOWN;
+		case GSTexture::Format::Color:        return DXGI_FORMAT_R8G8B8A8_UNORM;
+		case GSTexture::Format::ColorHQ:      return DXGI_FORMAT_R10G10B10A2_UNORM;
+		case GSTexture::Format::ColorHDR:     return DXGI_FORMAT_R16G16B16A16_FLOAT;
+		case GSTexture::Format::ColorClip:    return DXGI_FORMAT_R16G16B16A16_UNORM;
+		case GSTexture::Format::DepthStencil: return DXGI_FORMAT_R32G8X24_TYPELESS;
+		case GSTexture::Format::Float32:      return DXGI_FORMAT_R32_FLOAT;
+		case GSTexture::Format::UNorm8:       return DXGI_FORMAT_A8_UNORM;
+		case GSTexture::Format::UInt16:       return DXGI_FORMAT_R16_UINT;
+		case GSTexture::Format::UInt32:       return DXGI_FORMAT_R32_UINT;
+		case GSTexture::Format::PrimID:       return DXGI_FORMAT_R32_FLOAT;
+		case GSTexture::Format::BC1:          return DXGI_FORMAT_BC1_UNORM;
+		case GSTexture::Format::BC2:          return DXGI_FORMAT_BC2_UNORM;
+		case GSTexture::Format::BC3:          return DXGI_FORMAT_BC3_UNORM;
+		case GSTexture::Format::BC7:          return DXGI_FORMAT_BC7_UNORM;
+		case GSTexture::Format::Invalid:
+		default:
+			pxAssert(0);
+			return DXGI_FORMAT_UNKNOWN;
 	}
 	// clang-format on
 }
@@ -56,6 +57,11 @@ void* GSTexture11::GetNativeHandle() const
 
 bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
+	if (IsDepthColor())
+	{
+		ExitDepthColor("GSTexture11::Update");
+	}
+
 	if (layer >= m_mipmap_levels)
 		return false;
 
@@ -101,20 +107,22 @@ void GSTexture11::SetDebugName(std::string_view name)
 		GSDevice11::SetD3DDebugObjectName(m_srv.get(), fmt::format("{} SRV", name));
 	if (m_rtv)
 		GSDevice11::SetD3DDebugObjectName(m_rtv.get(), fmt::format("{} RTV", name));
+
+	m_debug_name = name;
 }
 
 #endif
 
 GSTexture11::operator ID3D11Texture2D*()
 {
-	return m_texture.get();
+	return IsDepthColor() ? GetDepthColor()->m_texture.get() : m_texture.get();
 }
 
 GSTexture11::operator ID3D11ShaderResourceView*()
 {
-	if (!m_srv)
+	if (!GetSRV())
 	{
-		if (m_desc.Format == DXGI_FORMAT_R32G8X24_TYPELESS)
+		if (GetDesc().Format == DXGI_FORMAT_R32G8X24_TYPELESS)
 		{
 			D3D11_SHADER_RESOURCE_VIEW_DESC srvd = {};
 
@@ -122,30 +130,30 @@ GSTexture11::operator ID3D11ShaderResourceView*()
 			srvd.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 			srvd.Texture2D.MipLevels = 1;
 
-			GSDevice11::GetInstance()->GetD3DDevice()->CreateShaderResourceView(m_texture.get(), &srvd, m_srv.put());
+			GSDevice11::GetInstance()->GetD3DDevice()->CreateShaderResourceView(GetD3D11Texture(), &srvd, GetSRV().put());
 		}
 		else
 		{
-			GSDevice11::GetInstance()->GetD3DDevice()->CreateShaderResourceView(m_texture.get(), nullptr, m_srv.put());
+			GSDevice11::GetInstance()->GetD3DDevice()->CreateShaderResourceView(GetD3D11Texture(), nullptr, GetSRV().put());
 		}
 	}
 
-	return m_srv.get();
+	return GetSRV().get();
 }
 
 GSTexture11::operator ID3D11RenderTargetView*()
 {
-	if (!m_rtv)
+	if (!GetRTV())
 	{
-		GSDevice11::GetInstance()->GetD3DDevice()->CreateRenderTargetView(m_texture.get(), nullptr, m_rtv.put());
+		GSDevice11::GetInstance()->GetD3DDevice()->CreateRenderTargetView(GetD3D11Texture(), nullptr, GetRTV().put());
 	}
 
-	return m_rtv.get();
+	return GetRTV().get();
 }
 
 GSTexture11::operator ID3D11DepthStencilView*()
 {
-	if (!m_dsv)
+	if (!GetDSV())
 	{
 		if (m_desc.Format == DXGI_FORMAT_R32G8X24_TYPELESS)
 		{
@@ -154,41 +162,41 @@ GSTexture11::operator ID3D11DepthStencilView*()
 			dsvd.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
 			dsvd.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 
-			GSDevice11::GetInstance()->GetD3DDevice()->CreateDepthStencilView(m_texture.get(), &dsvd, m_dsv.put());
+			GSDevice11::GetInstance()->GetD3DDevice()->CreateDepthStencilView(GetD3D11Texture(), &dsvd, GetDSV().put());
 		}
 		else
 		{
-			GSDevice11::GetInstance()->GetD3DDevice()->CreateDepthStencilView(m_texture.get(), nullptr, m_dsv.put());
+			GSDevice11::GetInstance()->GetD3DDevice()->CreateDepthStencilView(GetD3D11Texture(), nullptr, GetDSV().put());
 		}
 	}
 
-	return m_dsv.get();
+	return GetDSV().get();
 }
 
 GSTexture11::operator ID3D11UnorderedAccessView*()
 {
-	if (!m_uav)
-		GSDevice11::GetInstance()->GetD3DDevice()->CreateUnorderedAccessView(m_texture.get(), nullptr, m_uav.put());
+	if (!GetUAV())
+		GSDevice11::GetInstance()->GetD3DDevice()->CreateUnorderedAccessView(GetD3D11Texture(), nullptr, GetUAV().put());
 
-	return m_uav.get();
+	return GetUAV().get();
 }
 
 ID3D11DepthStencilView* GSTexture11::ReadOnlyDepthStencilView()
 {
-	if (!m_read_only_dsv)
+	if (!GetReadOnlyDSV())
 	{
-		if (m_desc.Format == DXGI_FORMAT_R32G8X24_TYPELESS || m_desc.Format == DXGI_FORMAT_D32_FLOAT_S8X24_UINT)
+		if (GetDesc().Format == DXGI_FORMAT_R32G8X24_TYPELESS || GetDesc().Format == DXGI_FORMAT_D32_FLOAT_S8X24_UINT)
 		{
 			D3D11_DEPTH_STENCIL_VIEW_DESC desc = {};
 			desc.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
 			desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 			desc.Flags = D3D11_DSV_READ_ONLY_DEPTH;
 
-			GSDevice11::GetInstance()->GetD3DDevice()->CreateDepthStencilView(m_texture.get(), &desc, m_read_only_dsv.put());
+			GSDevice11::GetInstance()->GetD3DDevice()->CreateDepthStencilView(GetD3D11Texture(), &desc, GetReadOnlyDSV().put());
 		}
 	}
 
-	return m_read_only_dsv.get();
+	return GetReadOnlyDSV().get();
 }
 
 GSDownloadTexture11::GSDownloadTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> tex, u32 width, u32 height, GSTexture::Format format)
@@ -235,6 +243,11 @@ void GSDownloadTexture11::CopyFromTexture(
 	pxAssert(src.z <= stex->GetWidth() && src.w <= stex->GetHeight());
 	pxAssert(static_cast<u32>(drc.z) <= m_width && static_cast<u32>(drc.w) <= m_height);
 	pxAssert(src_level < static_cast<u32>(stex->GetMipmapLevels()));
+
+	if (static_cast<GSTexture11*>(stex)->IsDepthColor())
+	{
+		static_cast<GSTexture11*>(stex)->ExitDepthColor("CopyFromTexture");
+	}
 
 	GSDevice11::GetInstance()->CommitClear(stex);
 

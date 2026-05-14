@@ -38,14 +38,21 @@ namespace GLState
 	GSTextureOGL* ds_as_rt = nullptr;
 	GSTextureOGL* ds = nullptr;
 
+	GSTextureOGL* rt_uav = nullptr;
+	GSTextureOGL* ds_uav = nullptr;
+
 	bool rt_written;
 	bool ds_as_rt_written;
 	bool ds_written;
 
+	bool rt_uav_written;
+	bool ds_uav_written;
+
 	u32 draw_buffers;
 
 	GLuint tex_unit[8];
-	GLuint64 tex_handle[8];
+
+	GLuint image_unit[8];
 
 	u32 UpdateDrawBuffers()
 	{
@@ -83,13 +90,20 @@ namespace GLState
 		ds_as_rt = nullptr;
 		ds = nullptr;
 
+		rt_uav = nullptr;
+		ds_uav = nullptr;
+
 		rt_written = false;
 		ds_as_rt_written = false;
 		ds_written = false;
 
+		rt_uav_written = false;
+		ds_uav_written = false;
+
 		draw_buffers = 0;
 
 		std::fill(std::begin(tex_unit), std::end(tex_unit), 0);
-		std::fill(std::begin(tex_handle), std::end(tex_handle), 0);
+
+		std::fill(std::begin(image_unit), std::end(image_unit), 0);
 	}
 } // namespace GLState
