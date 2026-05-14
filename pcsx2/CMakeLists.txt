@@ -1151,7 +1151,6 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	imgui
 	fmt::fmt
 	libchdr
-	libzip::zip
 	cpuinfo
 	cubeb
 	rcheevos
