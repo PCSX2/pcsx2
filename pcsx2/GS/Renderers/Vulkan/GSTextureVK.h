@@ -42,6 +42,8 @@ public:
 	__fi VkImage GetImage() const { return m_image; }
 	__fi VkImageView GetView() const { return m_view; }
 	__fi Layout GetLayout() const { return m_layout; }
+	virtual bool IsUnorderedAccess() const override { return GetLayout() == Layout::ReadWriteImage; }
+
 	__fi VkFormat GetVkFormat() const { return m_vk_format; }
 
 	VkImageLayout GetVkLayout() const;
@@ -69,6 +71,8 @@ public:
 	void TransitionToLayout(VkCommandBuffer command_buffer, Layout new_layout);
 	void TransitionSubresourcesToLayout(
 		VkCommandBuffer command_buffer, int start_level, int num_levels, Layout old_layout, Layout new_layout);
+
+	static VkFramebuffer CreateNullFramebuffer();
 
 	/// Framebuffers are lazily allocated.
 	VkFramebuffer GetFramebuffer(bool feedback_loop);

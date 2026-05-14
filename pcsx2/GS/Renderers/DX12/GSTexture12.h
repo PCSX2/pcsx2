@@ -56,6 +56,8 @@ public:
 	__fi ID3D12Resource* GetResource() const { return m_resource.get(); }
 	__fi ID3D12Resource* GetFBLResource() const { return m_resource_fbl.get(); }
 
+	virtual bool IsUnorderedAccess() const override { return GetResourceState() == ResourceState::PixelShaderUAV; }
+
 	void* GetNativeHandle() const override;
 
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) override;

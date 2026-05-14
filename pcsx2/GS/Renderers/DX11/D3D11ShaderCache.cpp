@@ -65,6 +65,7 @@ bool D3D11ShaderCache::Open(D3D_FEATURE_LEVEL feature_level, bool debug)
 			m_shader_model = D3D::ShaderModel::SM41;
 			break;
 		case D3D_FEATURE_LEVEL_11_0:
+		case D3D_FEATURE_LEVEL_11_1:
 			m_shader_model = D3D::ShaderModel::SM50;
 			break;
 		default:

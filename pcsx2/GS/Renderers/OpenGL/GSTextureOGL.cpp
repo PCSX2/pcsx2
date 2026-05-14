@@ -30,34 +30,33 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 	m_type = type;
 	m_texture_id = 0;
 	m_mipmap_levels = 1;
-	int gl_fmt = 0;
 
 	// Bunch of constant parameter
 	switch (m_format)
 	{
 		// 1 Channel integer
 		case Format::PrimID:
-			gl_fmt = GL_R32F;
+			m_gl_format = GL_R32F;
 			m_int_format = GL_RED;
 			m_int_type = GL_INT;
 			m_int_shift = 2;
 			break;
 		case Format::UInt32:
-			gl_fmt = GL_R32UI;
+			m_gl_format = GL_R32UI;
 			m_int_format = GL_RED_INTEGER;
 			m_int_type = GL_UNSIGNED_INT;
 			m_int_shift = 2;
 			break;
 		case Format::UInt16:
-			gl_fmt = GL_R16UI;
+			m_gl_format = GL_R16UI;
 			m_int_format = GL_RED_INTEGER;
 			m_int_type = GL_UNSIGNED_SHORT;
 			m_int_shift = 1;
 			break;
 
-		// 1 Channel normalized
+			// 1 Channel normalized
 		case Format::UNorm8:
-			gl_fmt = GL_R8;
+			m_gl_format = GL_R8;
 			m_int_format = GL_RED;
 			m_int_type = GL_UNSIGNED_BYTE;
 			m_int_shift = 0;
@@ -65,7 +64,7 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 		
 		// 1 channel float
 		case Format::DepthColor:
-			gl_fmt = GL_R32F;
+			m_gl_format = GL_R32F;
 			m_int_format = GL_RED;
 			m_int_type = GL_FLOAT;
 			m_int_shift = 2;
@@ -75,7 +74,7 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 		case Format::Color:
 		case Format::ColorHQ:
 		case Format::ColorHDR:
-			gl_fmt = GL_RGBA8;
+			m_gl_format = GL_RGBA8;
 			m_int_format = GL_RGBA;
 			m_int_type = GL_UNSIGNED_BYTE;
 			m_int_shift = 2;
@@ -83,7 +82,7 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 
 		// 4 channel float
 		case Format::ColorClip:
-			gl_fmt = GL_RGBA16;
+			m_gl_format = GL_RGBA16;
 			m_int_format = GL_RGBA;
 			m_int_type = GL_UNSIGNED_SHORT;
 			m_int_shift = 3;
@@ -94,14 +93,14 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 		{
 			if (!g_gs_device->Features().framebuffer_fetch)
 			{
-				gl_fmt = GL_DEPTH32F_STENCIL8;
+				m_gl_format = GL_DEPTH32F_STENCIL8;
 				m_int_format = GL_DEPTH_STENCIL;
 				m_int_type = GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
 				m_int_shift = 3; // 4 bytes for depth + 4 bytes for stencil by texels
 			}
 			else
 			{
-				gl_fmt = GL_DEPTH_COMPONENT32F;
+				m_gl_format = GL_DEPTH_COMPONENT32F;
 				m_int_format = GL_DEPTH_COMPONENT;
 				m_int_type = GL_FLOAT;
 				m_int_shift = 2;
@@ -110,28 +109,28 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 		break;
 
 		case Format::BC1:
-			gl_fmt = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+			m_gl_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 			m_int_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 			m_int_type = GL_UNSIGNED_BYTE;
 			m_int_shift = 1;
 			break;
 
 		case Format::BC2:
-			gl_fmt = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+			m_gl_format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 			m_int_format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 			m_int_type = GL_UNSIGNED_BYTE;
 			m_int_shift = 1;
 			break;
 
 		case Format::BC3:
-			gl_fmt = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+			m_gl_format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 			m_int_format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 			m_int_type = GL_UNSIGNED_BYTE;
 			m_int_shift = 1;
 			break;
 
 		case Format::BC7:
-			gl_fmt = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
+			m_gl_format = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
 			m_int_format = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB;
 			m_int_type = GL_UNSIGNED_BYTE;
 			m_int_shift = 1;
@@ -157,7 +156,7 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 		glTextureParameteri(m_texture_id, GL_TEXTURE_SWIZZLE_A, GL_RED);
 	}
 
-	glTextureStorage2D(m_texture_id, m_mipmap_levels, gl_fmt, m_size.x, m_size.y);
+	glTextureStorage2D(m_texture_id, m_mipmap_levels, m_gl_format, m_size.x, m_size.y);
 }
 
 GSTextureOGL::~GSTextureOGL()
@@ -335,6 +334,8 @@ void GSTextureOGL::SetDebugName(std::string_view name)
 
 	if (glObjectLabel)
 		glObjectLabel(GL_TEXTURE, m_texture_id, static_cast<GLsizei>(name.length()), static_cast<const GLchar*>(name.data()));
+
+	m_debug_name = name;
 }
 
 #endif

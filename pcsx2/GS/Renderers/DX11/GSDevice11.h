@@ -83,6 +83,11 @@ public:
 private:
 	enum : u32
 	{
+		TEXTURE_TEXTURE = 0,
+		TEXTURE_PALETTE = 1,
+		TEXTURE_RT = 2,
+		TEXTURE_PRIMID = 3,
+		TEXTURE_DEPTH = 4,
 		MAX_TEXTURES = 5,
 		MAX_SAMPLERS = 1,
 		VERTEX_BUFFER_SIZE = 32 * 1024 * 1024,
@@ -129,6 +134,8 @@ private:
 	wil::com_ptr_nothrow<ID3D11ShaderResourceView> m_expand_vb_srv;
 	wil::com_ptr_nothrow<ID3D11ShaderResourceView> m_expand_ib_vs_srv;
 
+	GSTexture* m_null_texture;
+
 	D3D_FEATURE_LEVEL m_feature_level = D3D_FEATURE_LEVEL_10_0;
 	u32 m_vb_pos = 0; // bytes
 	u32 m_ib_pos = 0; // indices/sizeof(u16)
@@ -141,6 +148,7 @@ private:
 	bool m_is_exclusive_fullscreen = false;
 	bool m_conservative_depth = false;
 	bool m_rgba16_unorm_hw_blend = false;
+	bool m_uav_texture = false;
 
 	struct
 	{
@@ -166,8 +174,12 @@ private:
 		u8 bf;
 		ID3D11RenderTargetView* rtv;
 		ID3D11DepthStencilView* dsv;
+		ID3D11UnorderedAccessView* rt_uav;
+		ID3D11UnorderedAccessView* ds_uav;
 		GSTexture* current_rt;
 		GSTexture* current_ds;
+		GSTexture* current_rt_uav;
+		GSTexture* current_ds_uav;
 	} m_state;
 
 	std::array<std::array<wil::com_ptr_nothrow<ID3D11Query>, 3>, NUM_TIMESTAMP_QUERIES> m_timestamp_queries = {};
@@ -370,7 +382,8 @@ public:
 
 	void OMSetDepthStencilState(ID3D11DepthStencilState* dss, u8 sref);
 	void OMSetBlendState(ID3D11BlendState* bs, u8 bf);
-	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = nullptr, ID3D11DepthStencilView* read_only_dsv = nullptr);
+	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, GSTexture* rt_uav = nullptr, GSTexture* ds_uav = nullptr,
+		const GSVector4i* scissor = nullptr, ID3D11DepthStencilView* read_only_dsv = nullptr);
 	void SetViewport(const GSVector2i& viewport);
 	void SetScissor(const GSVector4i& scissor);
 
@@ -389,7 +402,7 @@ public:
 		const GSVector4i& copyarea, const GSVector4i& samplearea);
 	void SendHWDraw(const GSHWDrawConfig& config,
 		GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
-		const bool one_barrier, const bool full_barrier);
+		const bool one_barrier, const bool full_barrier, GSVector2i rtsize);
 	void SetRenderHWShaderResources(const GSHWDrawConfig& config, GSTexture* primid_texture);
 
 	void ClearSamplerCache() override;
