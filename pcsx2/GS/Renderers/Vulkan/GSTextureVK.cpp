@@ -609,6 +609,20 @@ void GSTextureVK::TransitionToLayout(VkCommandBuffer command_buffer, Layout new_
 void GSTextureVK::TransitionSubresourcesToLayout(
 	VkCommandBuffer command_buffer, int start_level, int num_levels, Layout old_layout, Layout new_layout)
 {
+	// Windows RDNA2 drivers don't always correctly transition the layout(?) when ROV is involved.
+	// ReadWriteImage -> Feedback transitions are broken.
+	// ReadWriteImage -> Read only layout  -> Feedback transitions are broken.
+	// ReadWriteImage -> General layout    -> Feedback transitions are broken.
+	// ReadWriteImage -> Write only layout -> Feedback transitions works fine.
+	// Not every broken transition gives broken rendering, the Shadow of the colossus eagle dump is fine after the 1st frame.
+	// Transition to a write only layout using an extra barrier, then to feedback fixes this issue.
+	if (old_layout == Layout::ReadWriteImage && new_layout != Layout::ColorAttachment && new_layout != Layout::ReadWriteImage)
+	{
+		GL_INS("VK: Doing extra transition for broken RDNA2 feedback transitions");
+		TransitionSubresourcesToLayout(command_buffer, 0, num_levels, old_layout, Layout::ColorAttachment);
+		old_layout = Layout::ColorAttachment;
+	}
+
 	VkImageAspectFlags aspect;
 	if (IsDepthStencil())
 	{
