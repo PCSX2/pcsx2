@@ -7,6 +7,7 @@
 #include "GS/Renderers/Metal/GSDeviceMTL.h"
 #include "GS/Renderers/Metal/GSTextureMTL.h"
 #include "GS/GSPerfMon.h"
+#include "GS/GSShaderCompileIndicator.h"
 
 #include "common/Console.h"
 #include "common/HostSys.h"
@@ -712,6 +713,7 @@ MRCOwned<id<MTLFunction>> GSDeviceMTL::LoadShader(NSString* name)
 
 MRCOwned<id<MTLRenderPipelineState>> GSDeviceMTL::MakePipeline(MTLRenderPipelineDescriptor* desc, id<MTLFunction> vertex, id<MTLFunction> fragment, NSString* name)
 {
+	const GSShaderCompileIndicator::ScopedCompilation compiling;
 	[desc setLabel:name];
 	[desc setVertexFunction:vertex];
 	[desc setFragmentFunction:fragment];
@@ -728,6 +730,7 @@ MRCOwned<id<MTLRenderPipelineState>> GSDeviceMTL::MakePipeline(MTLRenderPipeline
 
 MRCOwned<id<MTLComputePipelineState>> GSDeviceMTL::MakeComputePipeline(id<MTLFunction> compute, NSString* name)
 {
+	const GSShaderCompileIndicator::ScopedCompilation compiling;
 	MRCOwned<MTLComputePipelineDescriptor*> desc = MRCTransfer([MTLComputePipelineDescriptor new]);
 	[desc setLabel:name];
 	[desc setComputeFunction:compute];

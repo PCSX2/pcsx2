@@ -3,6 +3,7 @@
 
 #include "GS/Renderers/DX12/D3D12ShaderCache.h"
 #include "GS/GS.h"
+#include "GS/GSShaderCompileIndicator.h"
 
 #include "Config.h"
 #include "ShaderCacheVersion.h"
@@ -540,6 +541,8 @@ D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::CompileAndAddShaderBlob(
 D3D12ShaderCache::ComPtr<ID3D12PipelineState> D3D12ShaderCache::CompileAndAddPipeline(
 	ID3D12Device* device, const CacheIndexKey& key, const D3D12_GRAPHICS_PIPELINE_STATE_DESC& gpdesc)
 {
+	const GSShaderCompileIndicator::ScopedCompilation compiling;
+
 	ComPtr<ID3D12PipelineState> pso;
 	HRESULT hr = device->CreateGraphicsPipelineState(&gpdesc, IID_PPV_ARGS(pso.put()));
 	if (FAILED(hr))
@@ -555,6 +558,8 @@ D3D12ShaderCache::ComPtr<ID3D12PipelineState> D3D12ShaderCache::CompileAndAddPip
 D3D12ShaderCache::ComPtr<ID3D12PipelineState> D3D12ShaderCache::CompileAndAddPipeline(
 	ID3D12Device* device, const CacheIndexKey& key, const D3D12_COMPUTE_PIPELINE_STATE_DESC& gpdesc)
 {
+	const GSShaderCompileIndicator::ScopedCompilation compiling;
+
 	ComPtr<ID3D12PipelineState> pso;
 	HRESULT hr = device->CreateComputePipelineState(&gpdesc, IID_PPV_ARGS(pso.put()));
 	if (FAILED(hr))

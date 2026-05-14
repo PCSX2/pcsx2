@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Config.h"
+#include "GS/GSShaderCompileIndicator.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/Renderers/DX11/D3D.h"
 #include "GS/GSExtra.h"
@@ -487,6 +488,8 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D::Sha
 	const std::string_view code, const D3D_SHADER_MACRO* macros /* = nullptr */,
 	const char* entry_point /* = "main" */)
 {
+	const GSShaderCompileIndicator::ScopedCompilation compiling;
+
 	const char* target;
 	switch (shader_model)
 	{

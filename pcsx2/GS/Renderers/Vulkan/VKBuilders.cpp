@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/Vulkan/VKBuilders.h"
+#include "GS/GSShaderCompileIndicator.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"
@@ -279,6 +280,8 @@ void Vulkan::GraphicsPipelineBuilder::Clear()
 VkPipeline Vulkan::GraphicsPipelineBuilder::Create(
 	VkDevice device, VkPipelineCache pipeline_cache, bool clear /* = true */)
 {
+	const GSShaderCompileIndicator::ScopedCompilation compiling;
+
 	VkPipeline pipeline;
 	VkResult res = vkCreateGraphicsPipelines(device, pipeline_cache, 1, &m_ci, nullptr, &pipeline);
 	if (res != VK_SUCCESS)
@@ -588,6 +591,8 @@ void Vulkan::ComputePipelineBuilder::Clear()
 VkPipeline Vulkan::ComputePipelineBuilder::Create(
 	VkDevice device, VkPipelineCache pipeline_cache /*= VK_NULL_HANDLE*/, bool clear /*= true*/)
 {
+	const GSShaderCompileIndicator::ScopedCompilation compiling;
+
 	VkPipeline pipeline;
 	VkResult res = vkCreateComputePipelines(device, pipeline_cache, 1, &m_ci, nullptr, &pipeline);
 	if (res != VK_SUCCESS)
