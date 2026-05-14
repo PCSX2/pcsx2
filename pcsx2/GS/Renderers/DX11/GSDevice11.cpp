@@ -2955,7 +2955,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		(rt_feedbackloop_pass1 || rt_feedbackloop_pass2))))
 	{
 		config.require_one_barrier |= (tex_is_fb && !config.require_full_barrier);
-		config.alpha_second_pass.require_one_barrier |= (tex_is_fb && !config.require_full_barrier);
+		config.alpha_second_pass.require_one_barrier |= (tex_is_fb && !config.alpha_second_pass.require_full_barrier);
 
 		// Requires a copy of the RT.
 		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true);
