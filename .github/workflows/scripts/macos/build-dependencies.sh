@@ -20,7 +20,7 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 	INSTALLDIR="$PWD/$INSTALLDIR"
 fi
 
-QT=6.11.0
+QT=6.11.1
 QTAPNG=1.3.0
 
 FREETYPE=2.14.3
@@ -61,11 +61,11 @@ CMAKE_COMMON=(
 )
 
 grep . > SHASUMS <<EOF
-231ad85979864d914dc9568a1b71c91d6cf20d7b2021d059103bf0eb51cb755e  qtbase-everywhere-src-$QT.tar.xz
-d3adb02ac5e2fe24068dbdaee0d7cc68cc3fa8553291c1bfce77c9fe8e940cc8  qtimageformats-everywhere-src-$QT.tar.xz
-dfa8d653be07087d9407ed4a4ebae847f8953e0b7abd829f089803ab652a30e6  qtsvg-everywhere-src-$QT.tar.xz
-cfb1993d7a10848965b01b9cf33a54b8a4ba4e5e3a6d28d59483e73f10d9fc76  qttools-everywhere-src-$QT.tar.xz
-54f48b2fe4316892ff930195f170a5385644acc7393505f3155c066b8e1ffe56  qttranslations-everywhere-src-$QT.tar.xz
+d9594a31228aa23ad6b531719a29b45f0f3989fe6c136d45767ea179f233c1ac  qtbase-everywhere-src-$QT.tar.xz
+b2bf6c6845ac175ed7f819145483ba4676f617aaa6a5012c8efee63c8bbac413  qtimageformats-everywhere-src-$QT.tar.xz
+7f3cf02f4824bf03c2c5859ea6db173bf1482a1daf24e6cdf7bc78cfa26a8a94  qtsvg-everywhere-src-$QT.tar.xz
+8e61835a679c93fa9c6065b142353c2071ba68e297898937c32a03777fcaf50d  qttools-everywhere-src-$QT.tar.xz
+37c02c81206594c7bb4edca85ac93e8e55a9836b70c960fde6cb0f8623ec5677  qttranslations-everywhere-src-$QT.tar.xz
 f1d3be3489f758efe1a8f12118a212febbe611aa670af32e0159fa3c1feab2a6  QtApng-$QTAPNG.tar.gz
 
 36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f  freetype-$FREETYPE.tar.xz
