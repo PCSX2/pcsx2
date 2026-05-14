@@ -2821,7 +2821,19 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	SetupPipeline(psel);
 
-	bool rt_hazard_barrier = config.tex && (config.tex == config.ds || config.tex == config.rt);
+	bool rt_hazard_barrier = config.tex && config.tex == config.rt;
+	if (config.tex && config.tex == config.ds)
+	{
+		if (m_features.test_and_sample_depth && !config.depth.zwe && !config.ps.IsFeedbackLoopDepth() && !config.alpha_second_pass.ps.IsFeedbackLoopDepth())
+		{
+			// Do nothing.
+		}
+		else if (m_features.texture_barrier)
+			rt_hazard_barrier = true;
+		else
+			config.tex = nullptr;
+	}
+
 	// In Time Crisis:
 	// 1. Fullscreen sprite reads depth and writes alpha (rt_hazard_barrier true from config.ds == config.tex)
 	// 2. Fullscreen sprite writes gray, rta hw blend blends based on dst alpha.
