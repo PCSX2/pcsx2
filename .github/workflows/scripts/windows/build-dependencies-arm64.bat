@@ -54,7 +54,7 @@ echo INSTALLDIR=%INSTALLDIR%
 
 cd "%BUILDDIR%"
 
-set QT=6.11.0
+set QT=6.11.1
 set QTMINOR=6.11
 set QTAPNG=1.3.0
 
@@ -81,11 +81,11 @@ set SHADERC_SPIRVTOOLS=6337eb62cadd7d124ac6789bf39c0f71148f0a73
 
 set AGILITYSDK=1.619.2
 
-call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 590d5ae246c85fa14d6458a36ff75a11236acfe8987c2475090aab1770acbdf8 || goto error
-call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 5dfb3c0cb84d2c935c1716b3b86358ca496fb9216676e7e28fee1357fb4a050e || goto error
-call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" c92e1b46170b8671bbd46c783939f0c2dba4986882c5ebd37aaa9eba5b224fbe || goto error
-call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" ded4420823cb7b1bc49f38c5c56dd43ec27b6577ccbc7f620790abfabcc33b62 || goto error
-call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" f9c4fd4fd73dff51e9043d2825b04361b678f63798ed798021ef47f1ff0bfccf || goto error
+call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 3529cc37297a5a7aae4486843b9fd41c30df1d79a770f85e240b537dcc327ca5 || goto error
+call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 37fba768f2780580dfae535ad6654cb9dc0bf2272e71b9b9781988de9ed0dac0 || goto error
+call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" 767730188d4610a89bf8da502f87acf1c8881a3ac54f1e0eb167ab1e08b03a75 || goto error
+call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" 2d6ed2a98f458152e3cb17bf0be0494250194933a2d937b5a434e5b2006efca9 || goto error
+call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" eef43700ffd079f5893e435aca1330c8bdbf2a94ae45013e3fc63870df53d3b0 || goto error
 call :downloadfile "QtApng-%QTAPNG%.zip" "https://github.com/jurplel/QtApng/archive/refs/tags/%QTAPNG%.zip" 5176082cdd468047a7eb1ec1f106b032f57df207aa318d559b29606b00d159ac || goto error
 
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://sourceforge.net/projects/freetype/files/freetype2/%FREETYPE%/freetype-%FREETYPE%.tar.gz/download e61b31ab26358b946e767ed7eb7f4bb2e507da1cfefeb7a8861ace7fd5c899a1 || goto error
