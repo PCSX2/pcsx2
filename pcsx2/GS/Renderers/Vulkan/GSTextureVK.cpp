@@ -11,6 +11,24 @@
 #include "common/Console.h"
 #include "common/BitUtils.h"
 
+VkFramebuffer GSTextureVK::CreateNullFramebuffer()
+{
+	const VkRenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(
+		VK_FORMAT_UNDEFINED,
+		VK_FORMAT_UNDEFINED,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+		VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, false, false);
+
+	if (!rp)
+		return VK_NULL_HANDLE;
+	
+	Vulkan::FramebufferBuilder fbb;
+	fbb.SetSize(16384, 16384, 1);
+	fbb.SetRenderPass(rp);
+
+	return fbb.Create(GSDeviceVK::GetInstance()->GetDevice());
+}
+
 static constexpr const VkComponentMapping s_identity_swizzle{VK_COMPONENT_SWIZZLE_IDENTITY,
 	VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
 
@@ -101,7 +119,7 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 			pxAssert(levels == 1);
 			ici.usage =
 				VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT |
 				(GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT
 				                                                    : VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
 		}
@@ -239,6 +257,10 @@ void GSTextureVK::Destroy(bool defer)
 		m_image = VK_NULL_HANDLE;
 		m_allocation = VK_NULL_HANDLE;
 	}
+
+#ifdef PCSX2_DEVBUILD
+	m_debug_name.clear();
+#endif
 }
 
 VkImageLayout GSTextureVK::GetVkLayout() const
@@ -523,6 +545,8 @@ void GSTextureVK::SetDebugName(std::string_view name)
 
 	Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), m_image, "%.*s", static_cast<int>(name.size()), name.data());
 	Vulkan::SetObjectName(GSDeviceVK::GetInstance()->GetDevice(), m_view, "%.*s", static_cast<int>(name.size()), name.data());
+
+	m_debug_name = name;
 }
 
 #endif
@@ -547,12 +571,16 @@ void GSTextureVK::CommitClear(VkCommandBuffer cmdbuf)
 		const VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 1u, 0u, 1u};
 		vkCmdClearDepthStencilImage(cmdbuf, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &cv, 1, &srr);
 	}
-	else
+	else if (IsRenderTarget())
 	{
 		alignas(16) VkClearColorValue cv;
 		GSVector4::store<true>(cv.float32, GetClearForFormat());
 		const VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u};
 		vkCmdClearColorImage(cmdbuf, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &cv, 1, &srr);
+	}
+	else
+	{
+		pxFailRel("Illegal texture type for clear.");
 	}
 
 	SetState(GSTexture::State::Dirty);
@@ -582,7 +610,7 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 	VkCommandBuffer command_buffer, int start_level, int num_levels, Layout old_layout, Layout new_layout)
 {
 	VkImageAspectFlags aspect;
-	if (m_type == Type::DepthStencil)
+	if (IsDepthStencil())
 	{
 		aspect = g_gs_device->Features().stencil_buffer ? (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) :
 		                                                  VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -754,6 +782,14 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 			break;
 	}
 	vkCmdPipelineBarrier(command_buffer, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+	// Count as a UAV barrier if we transition to/from UAV.
+	if (IsRenderTargetOrDepthStencil() &&
+		(old_layout == Layout::ReadWriteImage || new_layout == Layout::ReadWriteImage))
+	{
+		g_perfmon.Put(GSPerfMon::Barriers, 1);
+		g_perfmon.Put(GSPerfMon::BarriersROV, 1);
+	}
 }
 
 VkFramebuffer GSTextureVK::GetFramebuffer(bool feedback_loop)

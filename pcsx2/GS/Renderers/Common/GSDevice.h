@@ -666,6 +666,7 @@ struct alignas(16) GSHWDrawConfig
 	using PS_ATST  = GSShader::PS_ATST;
 	using PS_AFAIL = GSShader::PS_AFAIL;
 	using PS_AA1   = GSShader::PS_AA1;
+	using PS_ROV_DEPTH = GSShader::PS_ROV_DEPTH;
 #pragma pack(push, 1)
 	struct VSSelector
 	{
@@ -786,12 +787,16 @@ struct alignas(16) GSHWDrawConfig
 
 				// Anisotropic filtering
 				u32 sw_aniso : 5;
+				
+				// ROVs
+				u32 rov_color : 1;
+				PS_ROV_DEPTH rov_depth : 2;
 			};
 
 			struct
 			{
 				u64 key_lo;
-				u32 key_hi;
+				u64 key_hi;
 			};
 		};
 		__fi PSSelector() : key_lo(0), key_hi(0) {}
@@ -799,6 +804,21 @@ struct alignas(16) GSHWDrawConfig
 		__fi bool operator==(const PSSelector& rhs) const { return (key_lo == rhs.key_lo && key_hi == rhs.key_hi); }
 		__fi bool operator!=(const PSSelector& rhs) const { return (key_lo != rhs.key_lo || key_hi != rhs.key_hi); }
 		__fi bool operator<(const PSSelector& rhs) const { return (key_lo < rhs.key_lo || key_hi < rhs.key_hi); }
+
+		__fi bool IsSWBlending() const
+		{
+			return blend_a || blend_b || blend_d;
+		}
+
+		__fi bool IsZTesting() const
+		{
+			return ztst == ZTST_GEQUAL || ztst == ZTST_GREATER;
+		}
+
+		__fi bool IsAlphaTesting() const
+		{
+			return atst != PS_ATST::NONE;
+		}
 
 		__fi bool IsFeedbackLoopRT() const
 		{
@@ -814,6 +834,11 @@ struct alignas(16) GSHWDrawConfig
 			const bool ztst_needs_depth = ztst == ZTST_GEQUAL || ztst == ZTST_GREATER;
 			const bool aa1_needs_depth = aa1 == PS_AA1::TRIANGLE_SW_Z;
 			return afail_needs_depth || ztst_needs_depth || aa1_needs_depth;
+		}
+
+		__fi bool HasShaderDiscard() const
+		{
+			return (IsAlphaTesting() && afail == PS_AFAIL::KEEP) || scanmsk || date || IsZTesting();
 		}
 
 		/// Disables color output from the pixel shader, this is done when all channels are masked.
@@ -844,9 +869,39 @@ struct alignas(16) GSHWDrawConfig
 			{
 				aa1 = PS_AA1::TRIANGLE;
 			}
+
+			if (rov_depth == PS_ROV_DEPTH::READ_WRITE)
+			{
+				rov_depth = PS_ROV_DEPTH::READ_ONLY;
+			}
+		}
+
+		__fi bool HasColorOutput() const
+		{
+			return !no_color;
+		}
+
+		__fi bool HasDepthOutput() const
+		{
+			return zfloor || zclamp || IsFeedbackLoopDepth() || (rov_depth == PS_ROV_DEPTH::READ_WRITE);
+		}
+
+		__fi bool HasColorROV() const
+		{
+			return rov_color != 0;
+		}
+
+		__fi bool HasDepthROV() const
+		{
+			return rov_depth == PS_ROV_DEPTH::READ_ONLY || rov_depth == PS_ROV_DEPTH::READ_WRITE;
+		}
+
+		__fi bool HasDepthROVWrite() const
+		{
+			return rov_depth == PS_ROV_DEPTH::READ_WRITE;
 		}
 	};
-	static_assert(sizeof(PSSelector) == 12, "PSSelector is 12 bytes");
+	static_assert(sizeof(PSSelector) == 16, "PSSelector is 12 bytes");
 #pragma pack(pop)
 	struct PSSelectorHash
 	{
@@ -1255,6 +1310,11 @@ struct alignas(16) GSHWDrawConfig
 	{
 		return ps.IsFeedbackLoopDepth() || (tex_hazard == TEX_HAZARD_DEPTH);
 	}
+	
+	bool IsBlending()
+	{
+		return blend.enable || blend_multi_pass.enable || ps.IsSWBlending();
+	}
 
 	// Dumping
 	static void DumpConfig(const std::string& path, const GSHWDrawConfig& conf,
@@ -1330,6 +1390,7 @@ public:
 		bool test_and_sample_depth: 1; ///< Supports concurrently binding the depth-stencil buffer for sampling and depth testing.
 		bool depth_feedback       : 1; ///< Depth feedback loops can be done with DS directly (otherwise need to copy to separate RT).  Implies `feedback_loops`.
 		bool aa1                  : 1; ///< Supports the GS AA1 feature.
+		bool rov                  : 1; ///< Supports rasterizer ordered views for both depth and color.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));
@@ -1563,9 +1624,11 @@ public:
 
 	GSTexture* CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
 	GSTexture* CreateDepthStencil(int w, int h, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreateDepthColor(int w, int h, bool clear = true, bool prefer_reuse = true);
 	GSTexture* CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse = false);
 	GSTexture* CreateRenderTarget(const GSVector2i& size, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
 	GSTexture* CreateDepthStencil(const GSVector2i& size, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreateDepthColor(const GSVector2i& size, bool clear = true, bool prefer_reuse = true);
 	GSTexture* CreateTexture(const GSVector2i& size, int mipmap_levels, GSTexture::Format format, bool prefer_reuse = false);
 	GSTexture* CreateCompatible(GSTexture* tex, bool clear = true, bool prefer_reuse = true);
 	GSTexture* CreateCompatible(GSTexture* tex, const GSVector2i& size, bool clear = true, bool prefer_reuse = true);

@@ -236,7 +236,7 @@ private:
 	static void GetAlphaTestConfigPS(const u32 atst, const u8 aref, const bool invert_test, PS_ATST& ps_atst_out, float& aref_out);
 	void EmulateAlphaTest(DATEOptions& date_options);
 	void EmulateAlphaTestSecondPass();
-	void ConfigureDepthFeedback();
+	void ConfigureDepthFeedback(bool rov_depth = false);
 
 	void CalculateAlphaRange(GSTextureCache::Target* rt, GSTextureCache::Target* ds, DATEOptions& date_options,
 		int& blend_alpha_min, int& blend_alpha_max, int& rt_new_alpha_min, int& rt_new_alpha_max);
@@ -252,6 +252,11 @@ private:
 	void DetermineVSConfig(GSTextureCache::Target* rt, float rtscale, const GSVector2i& rtsize,
 		const GSVector2i& unscaled_size, float& vs_scale_x, float& vs_scale_y);
 	void DetermineBarriers(GSTextureCache::Target* rt, GSTextureCache::Source* tex);
+
+	void GetForcedROVUsage(bool& color_cov, bool& depth_rov); // Whether having color or depth with the current config forces the other.
+	void DetermineROVUsage(GSTextureCache::Target* rt, GSTextureCache::Target* ds); // Heuristics to determine whether to enable/disable ROV
+	void ConfigureROV(bool color_rov, bool depth_rov); // Actual config for ROV
+	void ConvertDepthFormatROV(GSTextureCache::Target* ds); // Convert between depth and depth color if needed.
 
 	void SetTCOffset();
 	bool NextDrawColClip() const;
@@ -329,6 +334,8 @@ private:
 	float m_userhacks_tcoffset_y = 0.0f;
 
 	GSVector2i m_lod = {}; // Min & Max level of detail
+
+	GIFRegALPHA m_optimized_blend = {}; // Save for ROV setup
 
 	GSHWDrawConfig m_conf = {};
 	HWCachedCtx m_cached_ctx;

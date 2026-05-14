@@ -755,6 +755,9 @@ Pcsx2Config::GSOptions::GSOptions()
 	HWAccurateAlphaTest = false;
 	HWAA1 = false;
 	UseDebugBlend = false;
+	HWROV = false;
+	HWROVLogging = false;
+	HWROVBarriersVK = false;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -1043,6 +1046,9 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(HWAccurateAlphaTest);
 	SettingsWrapBitBool(HWAA1);
 	SettingsWrapBitBool(UseDebugBlend);
+	SettingsWrapBitBool(HWROV);
+	SettingsWrapBitBool(HWROVLogging);
+	SettingsWrapBitBool(HWROVBarriersVK);
 	SettingsWrapIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
 	SettingsWrapIntEnumEx(TextureFiltering, "filter");
 	SettingsWrapIntEnumEx(TexturePreloading, "texture_preloading");
