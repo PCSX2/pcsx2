@@ -2907,7 +2907,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	ID3D11DepthStencilView* read_only_dsv = nullptr;
 	if (config.tex && config.tex == config.ds)
 	{
-		if (m_features.test_and_sample_depth && !config.depth.zwe && !config.ps.IsFeedbackLoopDepth())
+		if (m_features.test_and_sample_depth && !config.depth.zwe && !config.ps.IsFeedbackLoopDepth() && !config.alpha_second_pass.ps.IsFeedbackLoopDepth())
 			read_only_dsv = static_cast<GSTexture11*>(config.ds)->ReadOnlyDepthStencilView();
 		else
 			config.tex = nullptr;
