@@ -762,6 +762,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout.<br>"
 			   "Disallowing exclusive fullscreen may enable smoother task switching and overlays, but increase input latency."));
 
+		dialog()->registerWidgetHelp(m_advanced.rovBarriersVK, tr("ROV Barriers Vulkan"), tr("None"),
+			tr("Forces extra barriers when using ROV with Vulkan to fix graphical issues present in some games and hardware configurations."));
+
 		dialog()->registerWidgetHelp(m_advanced.disableMailboxPresentation, tr("Disable Mailbox Presentation"), tr("Unchecked"),
 			tr("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
 			   "Usually results in worse frame pacing."));

@@ -3034,6 +3034,10 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			"EmuCore/GS", "HWAA1", false);
 		DrawToggleSetting(
 			bsi, FSUI_ICONSTR(ICON_FA_BULLSEYE, "Mipmapping"), FSUI_CSTR("Enables emulation of the GS's texture mipmapping."), "EmuCore/GS", "hw_mipmap", true);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "ROV"),
+			FSUI_CSTR("Enables ROV (Rasterizer Ordered View), which allows feedback loops to be executed with fewer draw calls. Can improve performance in "
+					  "feedback heavy games with higher accuracy settings."),
+			"EmuCore/GS", "HWROV", false);
 	}
 	else
 	{
@@ -3315,6 +3319,12 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			"EmuCore/GS", "DisableShaderCache", false);
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BAN, "Disable Vertex Shader Expand"), FSUI_CSTR("Falls back to the CPU for expanding sprites/lines."),
 			"EmuCore/GS", "DisableVertexShaderExpand", false);
+		if (is_hardware && effective_renderer == GSRendererType::VK)
+		{
+			DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ROAD_BARRIER, "ROV Barriers Vulkan"),
+				FSUI_CSTR("Forces extra barriers when using ROV with Vulkan to fix graphical issues present in some games and hardware configurations."),
+				"EmuCore/GS", "HWROVBarriersVK", false);
+		}
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Texture Preloading"),
 			FSUI_CSTR(
 				"Uploads full textures to the GPU on use, rather than only the utilized regions. Can improve performance in some games."),
