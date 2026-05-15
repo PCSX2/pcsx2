@@ -2866,6 +2866,11 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		FSUI_NSTR("Unsynchronized (Non-Deterministic)"),
 		FSUI_NSTR("Disabled (Ignore Transfers)"),
 	};
+	static constexpr const char* s_rov_barriers_vk_options[] = {
+		FSUI_NSTR("None"),
+		FSUI_NSTR("Every Draw"),
+		FSUI_NSTR("Every Render Pass"),
+	};
 	static constexpr const char* s_screenshot_sizes[] = {
 		FSUI_NSTR("Display Resolution (Aspect Corrected)"),
 		FSUI_NSTR("Internal Resolution (Aspect Corrected)"),
@@ -3032,6 +3037,10 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			"accurate_blending_unit", static_cast<int>(AccBlendLevel::Basic), s_blending_options, std::size(s_blending_options), true);
 		DrawToggleSetting(
 			bsi, FSUI_ICONSTR(ICON_FA_BULLSEYE, "Mipmapping"), FSUI_CSTR("Enables emulation of the GS's texture mipmapping."), "EmuCore/GS", "hw_mipmap", true);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "ROV"),
+			FSUI_CSTR("Enables ROV (Rasterizer Ordered View), which allows feedback loops to be executed with fewer draw calls. Can improve performance in "
+					  "feedback heavy games with higher accuracy settings."),
+			"EmuCore/GS", "HWROV", false);
 	}
 	else
 	{
@@ -3307,6 +3316,13 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SHIELD_HALVED, "Override Texture Barriers"),
 			FSUI_CSTR("Forces texture barrier functionality to the specified value."), "EmuCore/GS", "OverrideTextureBarriers", -1,
 			s_generic_options, std::size(s_generic_options), true, -1);
+		if (is_hardware && effective_renderer == GSRendererType::VK)
+		{
+			DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_ROAD_BARRIER, "ROV Barriers Vulkan"),
+				FSUI_CSTR("Forces extra barriers when using ROV with Vulkan to fix graphical issues present in some games and hardware configurations."),
+				"EmuCore/GS", "HWROVBarriersVK", static_cast<int>(GSROVBarriersVKMode::None), s_rov_barriers_vk_options,
+				std::size(s_rov_barriers_vk_options), true);
+		}
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_ZIPPER, "GS Dump Compression"), FSUI_CSTR("Sets the compression algorithm for GS dumps."), "EmuCore/GS",
 			"GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::LZMA), s_gsdump_compression, std::size(s_gsdump_compression), true);
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BAN, "Disable Framebuffer Fetch"),
