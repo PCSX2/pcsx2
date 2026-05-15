@@ -231,7 +231,7 @@ std::optional<VKShaderCache::SPIRVCodeVector> VKShaderCache::CompileShaderToSPV(
 	if (!dyn_shaderc::Open())
 		return ret;
 
-	const GSShaderCompileIndicator::ScopedCompilation compiling;
+	const GSShaderCompileIndicator::CompileTimer compile_timer;
 
 	shaderc_compile_options_t options = dyn_shaderc::shaderc_compile_options_initialize();
 	pxAssertRel(options, "shaderc_compile_options_initialize() failed");

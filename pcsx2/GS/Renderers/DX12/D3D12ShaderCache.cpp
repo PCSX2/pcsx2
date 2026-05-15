@@ -541,7 +541,7 @@ D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::CompileAndAddShaderBlob(
 D3D12ShaderCache::ComPtr<ID3D12PipelineState> D3D12ShaderCache::CompileAndAddPipeline(
 	ID3D12Device* device, const CacheIndexKey& key, const D3D12_GRAPHICS_PIPELINE_STATE_DESC& gpdesc)
 {
-	const GSShaderCompileIndicator::ScopedCompilation compiling;
+	const GSShaderCompileIndicator::CompileTimer compile_timer;
 
 	ComPtr<ID3D12PipelineState> pso;
 	HRESULT hr = device->CreateGraphicsPipelineState(&gpdesc, IID_PPV_ARGS(pso.put()));
@@ -558,7 +558,7 @@ D3D12ShaderCache::ComPtr<ID3D12PipelineState> D3D12ShaderCache::CompileAndAddPip
 D3D12ShaderCache::ComPtr<ID3D12PipelineState> D3D12ShaderCache::CompileAndAddPipeline(
 	ID3D12Device* device, const CacheIndexKey& key, const D3D12_COMPUTE_PIPELINE_STATE_DESC& gpdesc)
 {
-	const GSShaderCompileIndicator::ScopedCompilation compiling;
+	const GSShaderCompileIndicator::CompileTimer compile_timer;
 
 	ComPtr<ID3D12PipelineState> pso;
 	HRESULT hr = device->CreateComputePipelineState(&gpdesc, IID_PPV_ARGS(pso.put()));

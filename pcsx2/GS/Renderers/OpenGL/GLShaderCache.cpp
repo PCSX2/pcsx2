@@ -367,7 +367,7 @@ bool GLShaderCache::WriteToBlobFile(const CacheIndexKey& key, const std::vector<
 std::optional<GLProgram> GLShaderCache::CompileProgram(const std::string_view vertex_shader,
 	const std::string_view fragment_shader, const PreLinkCallback& callback, bool set_retrievable)
 {
-	const GSShaderCompileIndicator::ScopedCompilation compiling;
+	const GSShaderCompileIndicator::CompileTimer compile_timer;
 
 	GLProgram prog;
 	if (!prog.Compile(vertex_shader, fragment_shader))
@@ -388,7 +388,7 @@ std::optional<GLProgram> GLShaderCache::CompileProgram(const std::string_view ve
 std::optional<GLProgram> GLShaderCache::CompileComputeProgram(
 	const std::string_view glsl, const PreLinkCallback& callback, bool set_retrievable)
 {
-	const GSShaderCompileIndicator::ScopedCompilation compiling;
+	const GSShaderCompileIndicator::CompileTimer compile_timer;
 
 	GLProgram prog;
 	if (!prog.CompileCompute(glsl))

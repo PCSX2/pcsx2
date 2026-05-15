@@ -280,7 +280,7 @@ void Vulkan::GraphicsPipelineBuilder::Clear()
 VkPipeline Vulkan::GraphicsPipelineBuilder::Create(
 	VkDevice device, VkPipelineCache pipeline_cache, bool clear /* = true */)
 {
-	const GSShaderCompileIndicator::ScopedCompilation compiling;
+	const GSShaderCompileIndicator::CompileTimer compile_timer;
 
 	VkPipeline pipeline;
 	VkResult res = vkCreateGraphicsPipelines(device, pipeline_cache, 1, &m_ci, nullptr, &pipeline);
@@ -591,7 +591,7 @@ void Vulkan::ComputePipelineBuilder::Clear()
 VkPipeline Vulkan::ComputePipelineBuilder::Create(
 	VkDevice device, VkPipelineCache pipeline_cache /*= VK_NULL_HANDLE*/, bool clear /*= true*/)
 {
-	const GSShaderCompileIndicator::ScopedCompilation compiling;
+	const GSShaderCompileIndicator::CompileTimer compile_timer;
 
 	VkPipeline pipeline;
 	VkResult res = vkCreateComputePipelines(device, pipeline_cache, 1, &m_ci, nullptr, &pipeline);

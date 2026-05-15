@@ -3,87 +3,97 @@
 
 #pragma once
 
+#include "common/Pcsx2Types.h"
+#include "common/Timer.h"
+
 #include <atomic>
-#include <chrono>
-#include <cstdint>
 
 namespace GSShaderCompileIndicator
 {
-	inline constexpr std::uint64_t OSD_RECENT_COMPILE_NS = 500'000'000ULL;
+	inline constexpr u64 RECENT_COMPILE_HOLD_NS = 1'500'000'000ULL;
 
-	inline std::atomic<std::uint32_t> s_active_compilations{0};
-	inline std::atomic<std::uint64_t> s_last_compile_activity_ns{0};
+	inline std::atomic<u32> s_count{0};
+	inline std::atomic<u64> s_time_ns{0};
+	inline std::atomic<u64> s_last_time{0};
 
-	namespace detail
+	inline u64 GetRecentCompileHold()
 	{
-		inline std::uint64_t steady_now_ns()
+		static const u64 hold = static_cast<u64>(Common::Timer::ConvertNanosecondsToValue(static_cast<double>(RECENT_COMPILE_HOLD_NS)));
+		return hold;
+	}
+
+	inline void OnCompileDone(u64 duration_ns, u64 start_time)
+	{
+		const u64 now = Common::Timer::GetCurrentValue();
+		const u64 last = s_last_time.load(std::memory_order_relaxed);
+		if (last != 0 && start_time > last && (start_time - last) >= GetRecentCompileHold())
 		{
-			return static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
-				std::chrono::steady_clock::now().time_since_epoch())
-					.count());
+			s_count.store(0, std::memory_order_relaxed);
+			s_time_ns.store(0, std::memory_order_relaxed);
 		}
-	} // namespace detail
 
-	inline void TouchCompileActivity()
-	{
-		s_last_compile_activity_ns.store(detail::steady_now_ns(), std::memory_order_relaxed);
+		s_count.fetch_add(1, std::memory_order_relaxed);
+		s_time_ns.fetch_add(duration_ns, std::memory_order_relaxed);
+		s_last_time.store(now, std::memory_order_relaxed);
 	}
 
-	inline void BeginCompilation()
+	inline u32 GetCount()
 	{
-		TouchCompileActivity();
-		s_active_compilations.fetch_add(1, std::memory_order_relaxed);
+		return s_count.load(std::memory_order_relaxed);
 	}
 
-	inline void EndCompilation()
+	inline u32 GetTimeMs()
 	{
-		s_active_compilations.fetch_sub(1, std::memory_order_relaxed);
-		TouchCompileActivity();
+		const u64 time_ns = s_time_ns.load(std::memory_order_relaxed);
+		const u32 ms = static_cast<u32>(time_ns / 1000000);
+		if (ms > 0)
+			return ms;
+
+		return GetCount() > 0 ? 1u : 0u;
 	}
 
-	inline std::uint32_t GetActiveCompilationCount()
+	inline bool IsVisible()
 	{
-		return s_active_compilations.load(std::memory_order_relaxed);
-	}
+		if (GetCount() == 0)
+			return false;
 
-	inline bool ShouldShowOnOSD(std::uint64_t hold_ns = OSD_RECENT_COMPILE_NS)
-	{
-		if (GetActiveCompilationCount() != 0)
-			return true;
-
-		const std::uint64_t last = s_last_compile_activity_ns.load(std::memory_order_relaxed);
+		const u64 last = s_last_time.load(std::memory_order_relaxed);
 		if (last == 0)
 			return false;
 
-		const std::uint64_t now = detail::steady_now_ns();
-		return now > last && (now - last) < hold_ns;
+		return (Common::Timer::GetCurrentValue() - last) < GetRecentCompileHold();
 	}
 
-	inline float GetPostCompileFadeAlpha(std::uint64_t hold_ns = OSD_RECENT_COMPILE_NS)
+	inline float GetFadeAlpha()
 	{
-		if (GetActiveCompilationCount() != 0)
-			return 1.0f;
-
-		const std::uint64_t last = s_last_compile_activity_ns.load(std::memory_order_relaxed);
+		const u64 last = s_last_time.load(std::memory_order_relaxed);
 		if (last == 0)
 			return 0.0f;
 
-		const std::uint64_t now = detail::steady_now_ns();
+		const u64 now = Common::Timer::GetCurrentValue();
 		if (now <= last)
 			return 1.0f;
 
-		const std::uint64_t elapsed = now - last;
-		if (elapsed >= hold_ns)
+		const u64 hold = GetRecentCompileHold();
+		const u64 elapsed = now - last;
+		if (elapsed >= hold)
 			return 0.0f;
 
-		return 1.0f - static_cast<float>(elapsed) / static_cast<float>(hold_ns);
+		return 1.0f - static_cast<float>(elapsed) / static_cast<float>(hold);
 	}
 
-	struct ScopedCompilation
+	struct CompileTimer
 	{
-		ScopedCompilation() { BeginCompilation(); }
-		~ScopedCompilation() { EndCompilation(); }
-		ScopedCompilation(const ScopedCompilation&) = delete;
-		ScopedCompilation& operator=(const ScopedCompilation&) = delete;
+		Common::Timer timer;
+
+		CompileTimer() = default;
+
+		~CompileTimer()
+		{
+			OnCompileDone(static_cast<u64>(timer.GetTimeNanoseconds()), timer.GetStartValue());
+		}
+
+		CompileTimer(const CompileTimer&) = delete;
+		CompileTimer& operator=(const CompileTimer&) = delete;
 	};
 } // namespace GSShaderCompileIndicator

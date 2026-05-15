@@ -488,7 +488,7 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D::Sha
 	const std::string_view code, const D3D_SHADER_MACRO* macros /* = nullptr */,
 	const char* entry_point /* = "main" */)
 {
-	const GSShaderCompileIndicator::ScopedCompilation compiling;
+	const GSShaderCompileIndicator::CompileTimer compile_timer;
 
 	const char* target;
 	switch (shader_model)

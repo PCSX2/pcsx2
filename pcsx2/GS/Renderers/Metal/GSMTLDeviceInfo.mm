@@ -3,7 +3,6 @@
 
 #include "GSMTLDeviceInfo.h"
 #include "GS/GS.h"
-#include "GS/GSShaderCompileIndicator.h"
 #include "common/Console.h"
 #include "common/Path.h"
 
@@ -57,10 +56,7 @@ static bool detectPrimIDSupport(id<MTLDevice> dev, id<MTLLibrary> lib)
 	[desc setFragmentFunction:MRCTransfer([lib newFunctionWithName:@"primid_test"])];
 	[[desc colorAttachments][0] setPixelFormat:MTLPixelFormatR8Uint];
 	NSError* err;
-	{
-		const GSShaderCompileIndicator::ScopedCompilation compiling;
-		[[dev newRenderPipelineStateWithDescriptor:desc error:&err] release];
-	}
+	[[dev newRenderPipelineStateWithDescriptor:desc error:&err] release];
 	return !err;
 }
 
@@ -92,11 +88,7 @@ static DetectionResult detectIntelGPU(id<MTLDevice> dev, id<MTLLibrary> lib)
 	[pdesc setVertexFunction:MRCTransfer([lib newFunctionWithName:@"fs_triangle"])];
 	[pdesc setFragmentFunction:MRCTransfer([lib newFunctionWithName:@"fbfetch_test"])];
 	[[pdesc colorAttachments][0] setPixelFormat:MTLPixelFormatRGBA8Unorm];
-	MRCOwned<id<MTLRenderPipelineState>> pipe;
-	{
-		const GSShaderCompileIndicator::ScopedCompilation compiling;
-		pipe = MRCTransfer([dev newRenderPipelineStateWithDescriptor:pdesc error:nil]);
-	}
+	auto pipe = MRCTransfer([dev newRenderPipelineStateWithDescriptor:pdesc error:nil]);
 	if (!pipe)
 		return DetectionResult::HaswellOrNotIntel;
 	auto buf = MRCTransfer([dev newBufferWithLength:4 options:MTLResourceStorageModeShared]);

@@ -713,7 +713,7 @@ MRCOwned<id<MTLFunction>> GSDeviceMTL::LoadShader(NSString* name)
 
 MRCOwned<id<MTLRenderPipelineState>> GSDeviceMTL::MakePipeline(MTLRenderPipelineDescriptor* desc, id<MTLFunction> vertex, id<MTLFunction> fragment, NSString* name)
 {
-	const GSShaderCompileIndicator::ScopedCompilation compiling;
+	const GSShaderCompileIndicator::CompileTimer compile_timer;
 	[desc setLabel:name];
 	[desc setVertexFunction:vertex];
 	[desc setFragmentFunction:fragment];
@@ -730,7 +730,7 @@ MRCOwned<id<MTLRenderPipelineState>> GSDeviceMTL::MakePipeline(MTLRenderPipeline
 
 MRCOwned<id<MTLComputePipelineState>> GSDeviceMTL::MakeComputePipeline(id<MTLFunction> compute, NSString* name)
 {
-	const GSShaderCompileIndicator::ScopedCompilation compiling;
+	const GSShaderCompileIndicator::CompileTimer compile_timer;
 	MRCOwned<MTLComputePipelineDescriptor*> desc = MRCTransfer([MTLComputePipelineDescriptor new]);
 	[desc setLabel:name];
 	[desc setComputeFunction:compute];

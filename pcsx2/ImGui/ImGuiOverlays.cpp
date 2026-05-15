@@ -785,7 +785,7 @@ __ri void ImGuiManager::DrawShaderCompileIndicator(float scale, float margin, fl
 	static bool s_indicator_was_visible = false;
 	static double s_indicator_fade_in_start = 0.0;
 
-	if (!GSConfig.OsdShowGPU || !GSShaderCompileIndicator::ShouldShowOnOSD())
+	if (!GSConfig.OsdShowGPU || !GSShaderCompileIndicator::IsVisible())
 	{
 		s_indicator_was_visible = false;
 		return;
@@ -799,14 +799,23 @@ __ri void ImGuiManager::DrawShaderCompileIndicator(float scale, float margin, fl
 	constexpr double fade_in_seconds = 0.12;
 	const float fade_in_alpha = static_cast<float>(
 		std::min(1.0, (imgui_time - s_indicator_fade_in_start) / fade_in_seconds));
-	const float fade_out_alpha = GSShaderCompileIndicator::GetPostCompileFadeAlpha();
-	const float indicator_alpha = std::clamp(fade_in_alpha * fade_out_alpha, 0.0f, 1.0f);
-	const ImU32 text_col = IM_COL32(255, 255, 255, static_cast<int>(std::lround(255.0f * indicator_alpha)));
-	const ImU32 shadow_col = IM_COL32(0, 0, 0, static_cast<int>(std::lround(100.0f * indicator_alpha)));
-	const ImU32 spinner_track_col =
-		IM_COL32(255, 255, 255, static_cast<int>(std::lround(45.0f * indicator_alpha)));
+	const float fade_out_alpha = GSShaderCompileIndicator::GetFadeAlpha();
+	const float alpha = std::clamp(fade_in_alpha * fade_out_alpha, 0.0f, 1.0f);
+	const ImU32 text_col = IM_COL32(255, 255, 255, static_cast<int>(std::lround(255.0f * alpha)));
+	const ImU32 shadow_col = IM_COL32(0, 0, 0, static_cast<int>(std::lround(100.0f * alpha)));
+	const ImU32 spinner_track_col = IM_COL32(255, 255, 255, static_cast<int>(std::lround(45.0f * alpha)));
 
-	const std::string label = TRANSLATE_STR("ImGuiOverlays", "Compiling Shaders");
+	static constexpr const char* COMPILED_ONE =
+		TRANSLATE_NOOP("ImGuiOverlays", "Compiled {0} shader in {1}ms");
+	static constexpr const char* COMPILED_MANY =
+		TRANSLATE_NOOP("ImGuiOverlays", "Compiled {0} shaders in {1}ms");
+
+	const u32 count = GSShaderCompileIndicator::GetCount();
+	const u32 time_ms = GSShaderCompileIndicator::GetTimeMs();
+	const std::string label = (count == 1) ?
+	                              fmt::format(TRANSLATE_FS("ImGuiOverlays", COMPILED_ONE), count, time_ms) :
+	                              fmt::format(TRANSLATE_FS("ImGuiOverlays", COMPILED_MANY), count, time_ms);
+
 	ImFont* const font = ImGuiManager::GetOSDFont();
 	const float font_size = ImGuiManager::GetFontSizeStandard();
 	const float baseline_y =
