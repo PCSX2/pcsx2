@@ -2946,7 +2946,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	const bool tex_is_fb = config.tex && config.tex == draw_rt;
 	const bool rt_feedbackloop_pass1 = config.ps.IsFeedbackLoopRT() || tex_is_fb;
 	const bool rt_feedbackloop_pass2 = config.alpha_second_pass.ps.IsFeedbackLoopRT() || tex_is_fb;
-	if (draw_rt && !m_features.texture_barrier && (((config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
+	if (draw_rt && !m_features.texture_barrier && (((config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy) || tex_is_fb) &&
 		(rt_feedbackloop_pass1 || rt_feedbackloop_pass2))))
 	{
 		config.require_one_barrier |= (tex_is_fb && !config.require_full_barrier);
@@ -3056,7 +3056,8 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 	const bool one_barrier, const bool full_barrier)
 {
 #ifdef PCSX2_DEVBUILD
-	if ((one_barrier || full_barrier) && !(config.ps.IsFeedbackLoopRT() || config.ps.IsFeedbackLoopDepth())) [[unlikely]]
+	if ((one_barrier || full_barrier) &&
+		!((!m_features.texture_barrier && config.tex && config.tex == draw_rt) || config.ps.IsFeedbackLoopRT() || config.ps.IsFeedbackLoopDepth())) [[unlikely]]
 		Console.Warning("OpenGL: Possible unnecessary barrier detected.");
 #endif
 
