@@ -112,7 +112,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* settings_dialog
 	dialog()->registerWidgetHelp(m_ui.eeCycleRate, tr("EE Cycle Rate"), tr("100% (Normal Speed)"),
 		tr("Higher values may increase internal framerate in games, but will increase CPU requirements substantially. "
 		   "Lower values will reduce the CPU load allowing lightweight games to run full speed on weaker CPUs."));
-	dialog()->registerWidgetHelp(m_ui.eeCycleSkipping, tr("EE Cycle Skip"), tr("Disabled"),
+	dialog()->registerWidgetHelp(m_ui.eeCycleSkipping, tr("EE Cycle Skipping"), tr("Disabled"),
 		tr("Makes the emulated Emotion Engine skip cycles. "
 		   //: SOTC = Shadow of the Colossus. A game's title, should not be translated unless an official translation exists.
 		   "Helps a small subset of games like SOTC. Most of the time it's harmful to performance."));

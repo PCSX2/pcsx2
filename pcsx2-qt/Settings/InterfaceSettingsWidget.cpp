@@ -201,7 +201,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		tr("Unchecked"), tr("Pauses the emulator when a controller with bindings is disconnected."));
 	dialog()->registerWidgetHelp(m_ui.promptOnStateLoadSaveFailure, tr("Prompt On State Load/Save Failure"),
 		tr("Checked"), tr("Displays a modal dialog when a save state load/save operation fails."));
-	dialog()->registerWidgetHelp(m_ui.preferEnglishGameList, tr("Prefer English Titles"), tr("Unchecked"),
+	dialog()->registerWidgetHelp(m_ui.preferEnglishGameList, tr("Prefer English Game Titles"), tr("Unchecked"),
 		tr("For games with both a title in the game's native language and one in English, prefer the English title. Affects how game titles are displayed on the game list, window title and Discord Presence"));
 	dialog()->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"), tr("Unchecked"),
 		tr("Automatically switches to fullscreen mode when a game is started."));
@@ -228,7 +228,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		m_ui.disableWindowResizing, tr("Disable Window Resizing"), tr("Unchecked"),
 		tr("Prevents the main window from being resized."));
 	dialog()->registerWidgetHelp(
-		m_ui.startFullscreenUI, tr("Start Big Picture Mode"), tr("Unchecked"),
+		m_ui.startFullscreenUI, tr("Start In Big Picture Mode"), tr("Unchecked"),
 		tr("Automatically starts Big Picture Mode instead of the regular Qt interface when PCSX2 launches."));
 	dialog()->registerWidgetHelp(
 		m_ui.backgroundBrowse, tr("Game List Background"), tr("None"),
