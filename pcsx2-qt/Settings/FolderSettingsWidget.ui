@@ -294,7 +294,7 @@
       <item row="4" column="0">
        <widget class="QCheckBox" name="organizeVideoDumpByGame">
         <property name="text">
-         <string>Save Video Recording in Game-Specific Folders</string>
+         <string>Save Video Recordings in Game-Specific Folders</string>
         </property>
        </widget>
       </item>

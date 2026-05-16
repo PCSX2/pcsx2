@@ -49,7 +49,7 @@ static void HotkeyAdjustVolume(const s32 delta)
 	// Volume-adjusting hotkeys override mute toggle hotkey. EmuConfig.SPU2.OutputMuted overrides hotkeys.
 	if (!SPU2::SetOutputMuted(false))
 	{
-		Host::AddIconOSDMessage("VolumeChanged", ICON_FA_VOLUME_XMARK, TRANSLATE_STR("Hotkeys", "Volume: Muted in Settings"));
+		Host::AddIconOSDMessage("VolumeChanged", ICON_FA_VOLUME_XMARK, TRANSLATE_STR("Hotkeys_Volume", "Volume: Muted in Settings"));
 		return;
 	}
 
@@ -63,12 +63,12 @@ static void HotkeyAdjustVolume(const s32 delta)
 	if (new_volume > 0 && new_volume < maximum_volume)
 	{
 		Host::AddIconOSDMessage("VolumeChanged", new_volume < 100 ? ICON_FA_VOLUME_LOW : ICON_FA_VOLUME_HIGH,
-			fmt::format(TRANSLATE_FS("Hotkeys", "Volume: {} to {}%"), delta < 0 ? TRANSLATE_STR("Hotkeys", "Decreased") : TRANSLATE_STR("Hotkeys", "Increased"), new_volume));
+			fmt::format(TRANSLATE_FS("Hotkeys_Volume", "Volume: {} to {}%"), delta < 0 ? TRANSLATE_STR("Hotkeys_Volume", "Decreased") : TRANSLATE_STR("Hotkeys_Volume", "Increased"), new_volume));
 	}
 	else
 	{
 		Host::AddIconOSDMessage("VolumeChanged", delta < 0 ? ICON_FA_VOLUME_OFF : ICON_FA_VOLUME_HIGH,
-			fmt::format(TRANSLATE_FS("Hotkeys", "Volume: {} {}% Reached"), delta < 0 ? TRANSLATE_STR("Hotkeys", "Minimum") : TRANSLATE_STR("Hotkeys", "Maximum"), new_volume));
+			fmt::format(TRANSLATE_FS("Hotkeys_Volume", "Volume: {} {}% Reached"), delta < 0 ? TRANSLATE_STR("Hotkeys_Volume", "Minimum") : TRANSLATE_STR("Hotkeys_Volume", "Maximum"), new_volume));
 	}
 }
 
@@ -81,16 +81,16 @@ static void HotkeyToggleMute()
 	if (SPU2::SetOutputMuted(!SPU2::IsOutputMuted()))
 	{
 		if (SPU2::IsOutputMuted())
-			Host::AddIconOSDMessage("VolumeChanged", ICON_FA_VOLUME_XMARK, TRANSLATE_STR("Hotkeys", "Volume: Muted"));
+			Host::AddIconOSDMessage("VolumeChanged", ICON_FA_VOLUME_XMARK, TRANSLATE_STR("Hotkeys_Volume", "Volume: Muted"));
 		else
 		{
 			const u32 current_volume = SPU2::GetOutputVolume();
 			Host::AddIconOSDMessage("VolumeChanged", current_volume < 100 ? (current_volume == 0 ? ICON_FA_VOLUME_OFF : ICON_FA_VOLUME_LOW) : ICON_FA_VOLUME_HIGH,
-				fmt::format(TRANSLATE_FS("Hotkeys", "Volume: Unmuted to {}%"), current_volume));
+				fmt::format(TRANSLATE_FS("Hotkeys_Volume", "Volume: Unmuted to {}%"), current_volume));
 		}
 	}
 	else
-		Host::AddIconOSDMessage("VolumeChanged", ICON_FA_VOLUME_XMARK, TRANSLATE_STR("Hotkeys", "Volume: Muted in Settings"));
+		Host::AddIconOSDMessage("VolumeChanged", ICON_FA_VOLUME_XMARK, TRANSLATE_STR("Hotkeys_Volume", "Volume: Muted in Settings"));
 }
 
 static void HotkeyLoadStateSlot(s32 slot)

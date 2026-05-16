@@ -153,7 +153,7 @@
       <item row="3" column="0">
        <widget class="QCheckBox" name="startFullscreenUI">
         <property name="text">
-         <string>Start Big Picture UI</string>
+         <string>Start In Big Picture Mode</string>
         </property>
        </widget>
       </item>
