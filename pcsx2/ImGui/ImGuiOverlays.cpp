@@ -848,11 +848,11 @@ __ri void ImGuiManager::DrawShaderCompileIndicator(float scale, float margin, fl
 
 	dl->PathClear();
 	dl->PathArcTo(center, radius, 0.0f, 2.0f * IM_PI, 32);
-	dl->PathStroke(spinner_track_col, false, std::max(1.0f, thickness * 0.65f));
+	dl->PathStroke(spinner_track_col, std::max(1.0f, thickness * 0.65f), false);
 
 	dl->PathClear();
 	dl->PathArcTo(center, radius, a0, a1, 24);
-	dl->PathStroke(text_col, false, thickness);
+	dl->PathStroke(text_col, thickness, false);
 }
 
 __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spacing)
