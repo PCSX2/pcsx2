@@ -160,6 +160,8 @@
     <ClCompile Include="Settings\ControllerSettingsWindow.cpp" />
     <ClCompile Include="Settings\AudioSettingsWidget.cpp" />
     <ClCompile Include="Settings\MemoryCardConvertDialog.cpp" />
+    <ClCompile Include="Settings\MemoryCardBackupModel.cpp" />
+    <ClCompile Include="Settings\MemoryCardBackupWidget.cpp" />
     <ClCompile Include="Settings\MemoryCardSettingsWidget.cpp" />
     <ClCompile Include="Settings\DEV9DnsHostDialog.cpp" />
     <ClCompile Include="Settings\DEV9SettingsWidget.cpp" />
@@ -205,6 +207,8 @@
     <QtMoc Include="Settings\ControllerSettingsWindow.h" />
     <QtMoc Include="Settings\AudioSettingsWidget.h" />
     <QtMoc Include="Settings\MemoryCardConvertDialog.h" />
+    <QtMoc Include="Settings\MemoryCardBackupModel.h" />
+    <QtMoc Include="Settings\MemoryCardBackupWidget.h" />
     <QtMoc Include="Settings\MemoryCardSettingsWidget.h" />
     <QtMoc Include="Settings\DEV9DnsHostDialog.h" />
     <QtMoc Include="Settings\DEV9SettingsWidget.h" />
@@ -362,6 +366,7 @@
     <QtUi Include="Settings\InterfaceSettingsWidget.ui" />
     <QtUi Include="Settings\MemoryCardConvertDialog.ui" />
     <QtUi Include="Settings\MemoryCardCreateDialog.ui" />
+    <QtUi Include="Settings\MemoryCardBackupWidget.ui" />
     <QtUi Include="Settings\MemoryCardSettingsWidget.ui" />
     <QtUi Include="Settings\OSDSettingsWidget.ui" />
     <QtUi Include="Settings\OsdFontPickerDialog.ui" />

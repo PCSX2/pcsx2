@@ -16,6 +16,7 @@
 #include <string>
 
 struct AvailableMcdInfo;
+class MemoryCardBackupWidget;
 
 class MemoryCardListWidget final : public QTreeWidget
 {
@@ -104,6 +105,7 @@ private:
 	void convertCard();
 
 	Ui::MemoryCardSettingsWidget m_ui;
+	MemoryCardBackupWidget* m_backup_widget = nullptr;
 
 	std::array<SlotGroup, MAX_SLOTS> m_slots;
 };

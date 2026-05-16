@@ -158,6 +158,7 @@ namespace EmuFolders
 	std::string Snapshots;
 	std::string Savestates;
 	std::string MemoryCards;
+	std::string MemoryCardBackups;
 	std::string Logs;
 	std::string Cheats;
 	std::string Patches;
@@ -1875,6 +1876,52 @@ bool Pcsx2Config::PadOptions::Port::operator!=(const PadOptions::Port& right) co
 	return !this->operator==(right);
 }
 
+void Pcsx2Config::MemoryCardBackupOptions::LoadSave(SettingsWrapper& wrap)
+{
+	SettingsWrapSection("MemoryCards/Backup");
+
+	SettingsWrapBitBool(EnableAutomaticBackups);
+	SettingsWrapBitBool(EnableZstdCompression);
+	SettingsWrapBitfield(MinimumBackupsToKeep);
+	SettingsWrapBitfield(MaximumBackupsToKeep);
+	SettingsWrapBitfield(DriveSpaceUsageLimitMiB);
+}
+
+Pcsx2Config::MemoryCardOptions::MemoryCardOptions()
+{
+	for (uint slot = 0; slot < NUM_SLOTS; slot++)
+	{
+		Slots[slot].Enabled = !FileMcd_IsMultitapSlot(slot); // enables main 2 slots
+		Slots[slot].Filename = FileMcd_GetDefaultName(slot);
+		// Folder memory card is autodetected later.
+		Slots[slot].Type = MemoryCardType::File;
+	}
+}
+
+void Pcsx2Config::MemoryCardOptions::LoadSave(SettingsWrapper& wrap)
+{
+	for (uint slot = 0; slot < 2; ++slot)
+	{
+		wrap.Entry("MemoryCards", StringUtil::StdStringFromFormat("Slot%u_Enable", slot + 1).c_str(),
+			Slots[slot].Enabled, Slots[slot].Enabled);
+		wrap.Entry("MemoryCards", StringUtil::StdStringFromFormat("Slot%u_Filename", slot + 1).c_str(),
+			Slots[slot].Filename, Slots[slot].Filename);
+	}
+
+	for (uint slot = 2; slot < NUM_SLOTS; ++slot)
+	{
+		int mtport = FileMcd_GetMtapPort(slot) + 1;
+		int mtslot = FileMcd_GetMtapSlot(slot) + 1;
+
+		wrap.Entry("MemoryCards", StringUtil::StdStringFromFormat("Multitap%u_Slot%u_Enable", mtport, mtslot).c_str(),
+			Slots[slot].Enabled, Slots[slot].Enabled);
+		wrap.Entry("MemoryCards", StringUtil::StdStringFromFormat("Multitap%u_Slot%u_Filename", mtport, mtslot).c_str(),
+			Slots[slot].Filename, Slots[slot].Filename);
+	}
+
+	Backup.LoadSave(wrap);
+}
+
 Pcsx2Config::AchievementsOptions::AchievementsOptions()
 {
 	bitset = 0;
@@ -1953,15 +2000,6 @@ Pcsx2Config::Pcsx2Config()
 	ManuallySetRealTimeClock = false;
 	UseSystemLocaleFormat = false;
 
-	// To be moved to FileMemoryCard pluign (someday)
-	for (uint slot = 0; slot < 8; ++slot)
-	{
-		Mcd[slot].Enabled = !FileMcd_IsMultitapSlot(slot); // enables main 2 slots
-		Mcd[slot].Filename = FileMcd_GetDefaultName(slot);
-		// Folder memory card is autodetected later.
-		Mcd[slot].Type = MemoryCardType::File;
-	}
-
 	GzipIsoIndexTemplate = "$(f).pindex.tmp";
 	PINESlot = 28011;
 	RtcYear = 0;
@@ -2032,7 +2070,6 @@ void Pcsx2Config::LoadSaveCore(SettingsWrapper& wrap)
 
 	BaseFilenames.LoadSave(wrap);
 	EmulationSpeed.LoadSave(wrap);
-	LoadSaveMemcards(wrap);
 
 	if (wrap.IsLoading())
 	{
@@ -2050,28 +2087,7 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	LoadSaveCore(wrap);
 	USB.LoadSave(wrap);
 	Pad.LoadSave(wrap);
-}
-
-void Pcsx2Config::LoadSaveMemcards(SettingsWrapper& wrap)
-{
-	for (uint slot = 0; slot < 2; ++slot)
-	{
-		wrap.Entry("MemoryCards", StringUtil::StdStringFromFormat("Slot%u_Enable", slot + 1).c_str(),
-			Mcd[slot].Enabled, Mcd[slot].Enabled);
-		wrap.Entry("MemoryCards", StringUtil::StdStringFromFormat("Slot%u_Filename", slot + 1).c_str(),
-			Mcd[slot].Filename, Mcd[slot].Filename);
-	}
-
-	for (uint slot = 2; slot < 8; ++slot)
-	{
-		int mtport = FileMcd_GetMtapPort(slot) + 1;
-		int mtslot = FileMcd_GetMtapSlot(slot) + 1;
-
-		wrap.Entry("MemoryCards", StringUtil::StdStringFromFormat("Multitap%u_Slot%u_Enable", mtport, mtslot).c_str(),
-			Mcd[slot].Enabled, Mcd[slot].Enabled);
-		wrap.Entry("MemoryCards", StringUtil::StdStringFromFormat("Multitap%u_Slot%u_Filename", mtport, mtslot).c_str(),
-			Mcd[slot].Filename, Mcd[slot].Filename);
-	}
+	MemoryCard.LoadSave(wrap);
 }
 
 std::string Pcsx2Config::FullpathToBios() const
@@ -2084,7 +2100,7 @@ std::string Pcsx2Config::FullpathToBios() const
 
 std::string Pcsx2Config::FullpathToMcd(uint slot) const
 {
-	return Path::Combine(EmuFolders::MemoryCards, Mcd[slot].Filename);
+	return Path::Combine(EmuFolders::MemoryCards, MemoryCard.Slots[slot].Filename);
 }
 
 void Pcsx2Config::CopyRuntimeConfig(Pcsx2Config& cfg)
@@ -2096,10 +2112,8 @@ void Pcsx2Config::CopyRuntimeConfig(Pcsx2Config& cfg)
 	CurrentCustomAspectRatio = cfg.CurrentCustomAspectRatio;
 	IsPortableMode = cfg.IsPortableMode;
 
-	for (u32 i = 0; i < sizeof(Mcd) / sizeof(Mcd[0]); i++)
-	{
-		Mcd[i].Type = cfg.Mcd[i].Type;
-	}
+	for (u32 i = 0; i < MemoryCardOptions::NUM_SLOTS; i++)
+		MemoryCard.Slots[i].Type = cfg.MemoryCard.Slots[i].Type;
 }
 
 void Pcsx2Config::CopyConfiguration(SettingsInterface* dest_si, SettingsInterface& src_si)
@@ -2284,6 +2298,7 @@ void EmuFolders::SetDefaults(SettingsInterface& si)
 	si.SetStringValue("Folders", "Snapshots", "snaps");
 	si.SetStringValue("Folders", "Savestates", "sstates");
 	si.SetStringValue("Folders", "MemoryCards", "memcards");
+	si.SetStringValue("Folders", "MemoryCardBackups", "memcardbackups");
 	si.SetStringValue("Folders", "Logs", "logs");
 	si.SetStringValue("Folders", "Cheats", "cheats");
 	si.SetStringValue("Folders", "Patches", "patches");
@@ -2310,6 +2325,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
 	Snapshots = LoadPathFromSettings(si, DataRoot, "Snapshots", "snaps");
 	Savestates = LoadPathFromSettings(si, DataRoot, "Savestates", "sstates");
 	MemoryCards = LoadPathFromSettings(si, DataRoot, "MemoryCards", "memcards");
+	MemoryCardBackups = LoadPathFromSettings(si, DataRoot, "MemoryCardBackups", "memcardbackups");
 	Logs = LoadPathFromSettings(si, DataRoot, "Logs", "logs");
 	Cheats = LoadPathFromSettings(si, DataRoot, "Cheats", "cheats");
 	Patches = LoadPathFromSettings(si, DataRoot, "Patches", "patches");
@@ -2326,7 +2342,8 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
 	Console.WriteLn("BIOS Directory: %s", Bios.c_str());
 	Console.WriteLn("Snapshots Directory: %s", Snapshots.c_str());
 	Console.WriteLn("Savestates Directory: %s", Savestates.c_str());
-	Console.WriteLn("MemoryCards Directory: %s", MemoryCards.c_str());
+	Console.WriteLn("Memory Cards Directory: %s", MemoryCards.c_str());
+	Console.WriteLn("Memory Card Backups Directory: %s", MemoryCardBackups.c_str());
 	Console.WriteLn("Logs Directory: %s", Logs.c_str());
 	Console.WriteLn("Cheats Directory: %s", Cheats.c_str());
 	Console.WriteLn("Patches Directory: %s", Patches.c_str());
@@ -2349,6 +2366,7 @@ bool EmuFolders::EnsureFoldersExist()
 	result = FileSystem::CreateDirectoryPath(Snapshots.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(Savestates.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(MemoryCards.c_str(), false) && result;
+	result = FileSystem::CreateDirectoryPath(MemoryCardBackups.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(Logs.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(Cheats.c_str(), false) && result;
 	result = FileSystem::CreateDirectoryPath(Patches.c_str(), false) && result;
