@@ -1469,7 +1469,7 @@ static void DumpPSSelector(DrawConfigWriter& out, const GSHWDrawConfig::PSSelect
 	out.WriteLn("no_color: {}", ps.no_color);
 	out.WriteLn("no_color1: {}", ps.no_color1);
 	out.WriteLn("channel: {} ({})", GetPSChannelName(static_cast<ChannelFetch>(ps.channel)), ps.channel);
-	out.WriteLn("channel_fb: {}", ps.channel_fb);
+	out.WriteLn("tex_hazard: {}", ps.tex_hazard);
 	out.WriteLn("dither: {} ({})", GetPSDitherName(ps.dither), ps.dither);
 	out.WriteLn("dither_adjust: {}", ps.dither_adjust);
 	out.WriteLn("zclamp: {}", ps.zclamp);

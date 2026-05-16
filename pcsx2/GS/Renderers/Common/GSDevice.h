@@ -397,7 +397,7 @@ struct alignas(16) GSHWDrawConfig
 
 				// Others ways to fetch the texture
 				u32 channel : 3;
-				u32 channel_fb : 1;
+				u32 tex_hazard : 2; // 1 rt, 2 ds
 
 				// Dithering
 				u32 dither : 2;
@@ -445,7 +445,7 @@ struct alignas(16) GSHWDrawConfig
 			const u32 sw_blend_bits = blend_a | blend_b | blend_d;
 			const bool sw_blend_needs_rt = (sw_blend_bits != 0 && ((sw_blend_bits | blend_c) & 1u)) || ((a_masked & blend_c) != 0);
 			const bool afail_needs_rt = afail == PS_AFAIL::ZB_ONLY || afail == PS_AFAIL::RGB_ONLY || afail == PS_AFAIL::RGB_ONLY_SW_Z;
-			return channel_fb || tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt || afail_needs_rt;
+			return tex_hazard == 1 || tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt || afail_needs_rt;
 		}
 
 		__fi bool IsFeedbackLoopDepth() const
@@ -453,7 +453,7 @@ struct alignas(16) GSHWDrawConfig
 			const bool afail_needs_depth = afail == PS_AFAIL::FB_ONLY || afail == PS_AFAIL::RGB_ONLY_SW_Z;
 			const bool ztst_needs_depth = ztst == ZTST_GEQUAL || ztst == ZTST_GREATER;
 			const bool aa1_needs_depth = aa1 == PS_AA1::TRIANGLE_SW_Z;
-			return afail_needs_depth || ztst_needs_depth || aa1_needs_depth;
+			return tex_hazard == 2 || afail_needs_depth || ztst_needs_depth || aa1_needs_depth;
 		}
 
 		/// Disables color output from the pixel shader, this is done when all channels are masked.
