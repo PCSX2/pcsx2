@@ -256,13 +256,30 @@ Texture2D<float> DepthTexture : register(t4);
 #endif
 SamplerState TextureSampler : register(s0);
 
+#if DX12
+	#define RT_UAV_SLOT u0
+	#define DS_UAV_SLOT u1
+#else
+	// DX11 has strange rules about UAV slots in the pixel shader
+	// when an RT is also bound.
+	#if !PS_NO_COLOR && !PS_ROV_COLOR
+		// RT bound to OM and at most depth UAV
+		#define RT_UAV_SLOT ERROR
+		#define DS_UAV_SLOT u0
+	#else
+		// No RTs bound to OM
+		#define RT_UAV_SLOT u0
+		#define DS_UAV_SLOT u1
+	#endif
+#endif
+
 #if PS_ROV_COLOR
-RasterizerOrderedTexture2D<unorm float4> RtTextureRov : register(u0);
+RasterizerOrderedTexture2D<unorm float4> RtTextureRov : register(RT_UAV_SLOT);
 static float4 rov_rt_value;
 #endif
 
 #if PS_ROV_DEPTH
-RasterizerOrderedTexture2D<float> DepthTextureRov : register(u1);
+RasterizerOrderedTexture2D<float> DepthTextureRov : register(DS_UAV_SLOT);
 static float rov_depth_value;
 #endif
 
