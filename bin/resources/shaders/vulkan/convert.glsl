@@ -36,6 +36,7 @@ layout(location = 0) out float o_col0;
 	!defined(ps_convert_rgba8_float24_biln) && \
 	!defined(ps_convert_rgba8_float16_biln) && \
 	!defined(ps_convert_rgb5a1_float16_biln) && \
+	!defined(ps_convert_float32_float24) && \
 	!defined(ps_depth_copy)
 layout(location = 0) out vec4 o_col0;
 #endif

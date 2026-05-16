@@ -45,7 +45,20 @@ layout(binding = 0) uniform sampler2D TextureSampler;
 layout(location = 0) out uint SV_Target1;
 #elif defined(ps_convert_float32_depth_to_color)
 layout(location = 0) out float SV_Target0;
-#else
+#elif !defined(ps_datm1) && \
+	!defined(ps_datm0) && \
+	!defined(ps_datm1_rta_correction) && \
+	!defined(ps_datm0_rta_correction) && \
+	!defined(ps_convert_rgba8_float32) && \
+	!defined(ps_convert_rgba8_float24) && \
+	!defined(ps_convert_rgba8_float16) && \
+	!defined(ps_convert_rgb5a1_float16) && \
+	!defined(ps_convert_rgba8_float32_biln) && \
+	!defined(ps_convert_rgba8_float24_biln) && \
+	!defined(ps_convert_rgba8_float16_biln) && \
+	!defined(ps_convert_rgb5a1_float16_biln) && \
+	!defined(ps_convert_float32_float24) && \
+	!defined(ps_depth_copy)
 layout(location = 0) out vec4 SV_Target0;
 #endif
 
