@@ -4207,13 +4207,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	// figure out the pipeline
 	UpdateHWPipelineSelector(config);
 
-	// Handle RT hazard when no barrier was requested
-	if (m_features.texture_barrier && config.tex && (config.tex == config.rt) && !(config.require_one_barrier || config.require_full_barrier))
-	{
-		g_perfmon.Put(GSPerfMon::Barriers, 1);
-		FeedbackBarrier(draw_rt);
-	}
-
 	// now blit the colclip texture back to the original target
 	if (colclip_rt)
 	{
