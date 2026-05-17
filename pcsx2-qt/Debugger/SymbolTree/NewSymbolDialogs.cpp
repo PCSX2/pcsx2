@@ -567,7 +567,6 @@ bool NewParameterVariableDialog::parseUserInput()
 			return;
 		}
 
-		std::variant<ccc::RegisterStorage, ccc::StackStorage> storage;
 		switch (storageType())
 		{
 			case GLOBAL_STORAGE:
@@ -577,13 +576,13 @@ bool NewParameterVariableDialog::parseUserInput()
 			}
 			case REGISTER_STORAGE:
 			{
-				ccc::RegisterStorage& register_storage = storage.emplace<ccc::RegisterStorage>();
+				ccc::RegisterStorage& register_storage = m_storage.emplace<ccc::RegisterStorage>();
 				register_storage.dbx_register_number = m_ui.registerComboBox->currentIndex();
 				break;
 			}
 			case STACK_STORAGE:
 			{
-				ccc::StackStorage& stack_storage = storage.emplace<ccc::StackStorage>();
+				ccc::StackStorage& stack_storage = m_storage.emplace<ccc::StackStorage>();
 				stack_storage.stack_pointer_offset = m_ui.stackPointerOffsetSpinBox->value();
 
 				// Convert to caller sp relative.
