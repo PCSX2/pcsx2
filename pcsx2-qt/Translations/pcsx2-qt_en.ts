@@ -17085,7 +17085,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1751"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1760"/>
         <source>Save slot {0} selected ({1}).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17094,102 +17094,107 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <name>ImGuiOverlays</name>
     <message>
         <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="809"/>
-        <source>Compiling Shaders</source>
+        <source>Compiled {0} shader in {1}ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1182"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="811"/>
+        <source>Compiled {0} shaders in {1}ms</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1191"/>
         <source>{} Recording Input</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1186"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1195"/>
         <source>{} Replaying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1322"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1331"/>
         <source>{} Paused</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1351"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1360"/>
         <source>Saved {0} days ago at {1:%H:%M} on {1:%a} {1:%Y/%m/%d}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1353"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1362"/>
         <source>Saved in the future at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1355"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1364"/>
         <source>Saved {0} hours, {1} minutes ago at {2:%H:%M}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1356"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1365"/>
         <source>Saved {0} minutes ago at {1:%H:%M}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1357"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1366"/>
         <source>Saved {} seconds ago</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1358"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1367"/>
         <source>Saved just now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1387"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1396"/>
         <source>Save state selector is unavailable without a valid game serial.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1472"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1481"/>
         <source>Empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1477"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1486"/>
         <source>Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1479"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1488"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1481"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1490"/>
         <source>Select Previous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1483"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1492"/>
         <source>Select Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1485"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1494"/>
         <source>Close Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1538"/>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1560"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1547"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1569"/>
         <source>Save Slot {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1561"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1570"/>
         <source>No save present in this slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1748"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1757"/>
         <source>no save yet</source>
         <translation type="unfinished"></translation>
     </message>
