@@ -1830,6 +1830,7 @@ void main()
 		imageStore(RtImageRov, ivec2(gl_FragCoord.xy), o_col0);
 	#endif
 	
+	// Writing back depth
 	#if PS_RETURN_DEPTH
 		gl_FragDepth = input_z;
 	#elif PS_RETURN_DEPTH_ROV

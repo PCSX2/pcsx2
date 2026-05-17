@@ -115,6 +115,21 @@ public:
 	using OMDepthStencilSelector = GSHWDrawConfig::DepthStencilSelector;
 	using OMColorMaskSelector = GSHWDrawConfig::ColorMaskSelector;
 
+	enum TextureUnit : u32
+	{
+		TEXTURE_TEXTURE,
+		TEXTURE_PALETTE,
+		TEXTURE_RT,
+		TEXTURE_PRIMID,
+		TEXTURE_DEPTH,
+	};
+
+	enum ImageUnit : u32
+	{
+		IMAGE_RT_ROV,
+		IMAGE_DEPTH_ROV,
+	};
+
 	struct alignas(16) ProgramSelector
 	{
 		PSSelector ps;
@@ -274,6 +289,8 @@ private:
 	void OMAttachDs(GSTexture* ds = nullptr);
 	void OMSetFBO(GLuint fbo);
 
+	void PSBindImage(GLuint image_unit, GSTexture* img);
+
 	void DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds);
 
 	void SetIndexBuffer(std::unique_ptr<GLStreamBuffer>& buffer, const void* index, size_t count);
@@ -354,7 +371,7 @@ public:
 	void RenderHW(GSHWDrawConfig& config) override;
 	void SendHWDraw(const GSHWDrawConfig& config,
 		GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
-		const bool one_barrier, const bool full_barrier);
+		const bool one_barrier, const bool full_barrier, const GSVector2i& rtsize);
 	void SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox);
 
 	void VSSetUniformBuffer(GSHWDrawConfig::VSConstantBuffer& cb);
@@ -367,6 +384,7 @@ public:
 	void IASetIndexBuffer(const void* index, size_t count);
 	void VSSetIndexBuffer(const void* index, size_t count);
 
+	void PSSetUnorderedAccess(GSTexture* rt, GSTexture* ds);
 	void PSSetShaderResource(int i, GSTexture* sr);
 	void PSSetSamplerState(GLuint ss);
 	void ClearSamplerCache() override;
@@ -374,7 +392,8 @@ public:
 	void OMSetDepthStencilState(GSDepthStencilOGL* dss);
 	void OMSetBlendState(bool enable = false, GLenum src_factor = GL_ONE, GLenum dst_factor = GL_ZERO, GLenum op = GL_FUNC_ADD,
 		GLenum src_factor_alpha = GL_ONE, GLenum dst_factor_alpha = GL_ZERO, bool is_constant = false, u8 constant = 0);
-	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, const GSVector4i* scissor = nullptr);
+	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, const GSVector4i* scissor = nullptr,
+		const GSVector2i* viewport = nullptr);
 	void OMSetColorMaskState(OMColorMaskSelector sel = OMColorMaskSelector());
 	void OMUnbindTexture(GSTextureOGL* tex);
 
