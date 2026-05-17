@@ -1426,6 +1426,17 @@ static const char* GetPSAA1Name(u32 aa1)
 	return "Unknown";
 }
 
+static const char* GetTexHazardName(u32 tex_hazard)
+{
+	switch (tex_hazard)
+	{
+		case GSHWDrawConfig::TEX_HAZARD_NONE: return "NONE";
+		case GSHWDrawConfig::TEX_HAZARD_RT: return "RT";
+		case GSHWDrawConfig::TEX_HAZARD_DEPTH: return "DEPTH";
+	}
+	return "Unknown";
+}
+
 static void DumpPSSelector(DrawConfigWriter& out, const GSHWDrawConfig::PSSelector& ps)
 {
 	out.WriteLn("aem_fmt: {}", ps.aem_fmt);
@@ -1469,7 +1480,6 @@ static void DumpPSSelector(DrawConfigWriter& out, const GSHWDrawConfig::PSSelect
 	out.WriteLn("no_color: {}", ps.no_color);
 	out.WriteLn("no_color1: {}", ps.no_color1);
 	out.WriteLn("channel: {} ({})", GetPSChannelName(static_cast<ChannelFetch>(ps.channel)), ps.channel);
-	out.WriteLn("tex_hazard: {}", ps.tex_hazard);
 	out.WriteLn("dither: {} ({})", GetPSDitherName(ps.dither), ps.dither);
 	out.WriteLn("dither_adjust: {}", ps.dither_adjust);
 	out.WriteLn("zclamp: {}", ps.zclamp);
@@ -1608,6 +1618,7 @@ static void DumpConfig(DrawConfigWriter& out, const GSHWDrawConfig& conf,
 	out.WriteLn("topology: {} ({})", GetTopologyName(conf.topology), static_cast<u32>(conf.topology));
 	out.WriteLn("require_one_barrier: {}", conf.require_one_barrier);
 	out.WriteLn("require_full_barrier: {}", conf.require_full_barrier);
+	out.WriteLn("tex_hazard: {}", GetTexHazardName(conf.tex_hazard));
 
 	out.WriteLn("destination_alpha: {} ({})", GetDestinationAlphaModeName(conf.destination_alpha), static_cast<u32>(conf.destination_alpha));
 	out.WriteLn("datm: {} ({})", GetSetDATMName(conf.datm), static_cast<u32>(conf.datm));

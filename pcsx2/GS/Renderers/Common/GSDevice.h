@@ -397,7 +397,6 @@ struct alignas(16) GSHWDrawConfig
 
 				// Others ways to fetch the texture
 				u32 channel : 3;
-				u32 tex_hazard : 2; // 1 rt, 2 ds
 
 				// Dithering
 				u32 dither : 2;
@@ -445,7 +444,7 @@ struct alignas(16) GSHWDrawConfig
 			const u32 sw_blend_bits = blend_a | blend_b | blend_d;
 			const bool sw_blend_needs_rt = (sw_blend_bits != 0 && ((sw_blend_bits | blend_c) & 1u)) || ((a_masked & blend_c) != 0);
 			const bool afail_needs_rt = afail == PS_AFAIL::ZB_ONLY || afail == PS_AFAIL::RGB_ONLY || afail == PS_AFAIL::RGB_ONLY_SW_Z;
-			return tex_hazard == 1 || tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt || afail_needs_rt;
+			return tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt || afail_needs_rt;
 		}
 
 		__fi bool IsFeedbackLoopDepth() const
@@ -453,7 +452,7 @@ struct alignas(16) GSHWDrawConfig
 			const bool afail_needs_depth = afail == PS_AFAIL::FB_ONLY || afail == PS_AFAIL::RGB_ONLY_SW_Z;
 			const bool ztst_needs_depth = ztst == ZTST_GEQUAL || ztst == ZTST_GREATER;
 			const bool aa1_needs_depth = aa1 == PS_AA1::TRIANGLE_SW_Z;
-			return tex_hazard == 2 || afail_needs_depth || ztst_needs_depth || aa1_needs_depth;
+			return afail_needs_depth || ztst_needs_depth || aa1_needs_depth;
 		}
 
 		/// Disables color output from the pixel shader, this is done when all channels are masked.
@@ -820,10 +819,12 @@ struct alignas(16) GSHWDrawConfig
 	u32 nverts;           ///< Number of vertices
 	u32 nindices;         ///< Number of indices
 	u32 indices_per_prim; ///< Number of indices that make up one primitive
-	const std::vector<size_t>* drawlist;          ///< For reducing barriers on sprites
-	const std::vector<GSVector4i>* drawlist_bbox; ///< For RT copy when barriers not available.
+	const std::vector<size_t>* drawlist;              ///< For reducing barriers on sprites
+	const std::vector<GSVector4i>* drawlist_bbox;     ///< For RT copy when barriers not available.
+	const std::vector<GSVector4i>* drawlist_bbox_tex; ///< Additionally if we need to sample not from the same pixel of the RT.
 	GSVector4i scissor; ///< Scissor rect
 	GSVector4i drawarea; ///< Area in the framebuffer which will be modified.
+	GSVector4i samplearea; ///< Area in the texture which will be sampled.
 	Topology topology;  ///< Draw topology
 
 	alignas(8) PSSelector ps;
@@ -836,6 +837,13 @@ struct alignas(16) GSHWDrawConfig
 
 	bool require_one_barrier;  ///< Require texture barrier before draw (also used to requst an rt copy if texture barrier isn't supported)
 	bool require_full_barrier; ///< Require texture barrier between all prims
+
+	enum : u32
+	{
+		TEX_HAZARD_NONE,
+		TEX_HAZARD_RT,
+		TEX_HAZARD_DEPTH,
+	} tex_hazard;
 
 	AlphaTestMode alpha_test;
 
@@ -876,6 +884,16 @@ struct alignas(16) GSHWDrawConfig
 	ColClipMode colclip_mode;
 	GIFRegFRAME colclip_frame;
 	GSVector4i colclip_update_area; ///< Area in the framebuffer which colclip will modify;
+
+	__fi bool IsFeedbackLoopRT(const PSSelector& ps) const
+	{
+		return ps.IsFeedbackLoopRT() || (tex_hazard == TEX_HAZARD_RT);
+	}
+
+	__fi bool IsFeedbackLoopDepth(const PSSelector& ps) const
+	{
+		return ps.IsFeedbackLoopDepth() || (tex_hazard == TEX_HAZARD_DEPTH);
+	}
 
 	// Dumping
 	static void DumpConfig(const std::string& path, const GSHWDrawConfig& conf,
