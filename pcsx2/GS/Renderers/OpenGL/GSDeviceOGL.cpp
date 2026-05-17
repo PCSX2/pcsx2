@@ -2828,7 +2828,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	// Pretty sure GL is supposed to guarantee that the blend unit is coherent with previous pixel write out, so calling this a bug.
 	bool broken_blend_coherency_barrier = false;
 	if (m_bugs.broken_blend_coherency)
-		broken_blend_coherency_barrier = (psel.ps.IsFeedbackLoopRT() || psel.ps.blend_c == 1) && GLState::rt == config.rt;
+		broken_blend_coherency_barrier = (config.IsFeedbackLoopRT(psel.ps) || psel.ps.blend_c == 1) && GLState::rt == config.rt;
 	if (config.require_one_barrier || !m_features.texture_barrier)
 	{
 		broken_blend_coherency_barrier = false;
@@ -2929,8 +2929,8 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		glTextureBarrier();
 	}
 
-	const bool rt_feedbackloop_pass1 = config.ps.IsFeedbackLoopRT();
-	const bool rt_feedbackloop_pass2 = config.alpha_second_pass.ps.IsFeedbackLoopRT();
+	const bool rt_feedbackloop_pass1 = config.IsFeedbackLoopRT(config.ps);
+	const bool rt_feedbackloop_pass2 = config.IsFeedbackLoopRT(config.alpha_second_pass.ps);
 	if (draw_rt && !m_features.texture_barrier && (((config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
 		(rt_feedbackloop_pass1 || rt_feedbackloop_pass2))))
 	{
@@ -3039,7 +3039,7 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 {
 #ifdef PCSX2_DEVBUILD
 	if ((one_barrier || full_barrier) &&
-		!((!m_features.texture_barrier && config.tex && config.tex == draw_rt) || config.ps.IsFeedbackLoopRT() || config.ps.IsFeedbackLoopDepth())) [[unlikely]]
+		!((!m_features.texture_barrier && config.tex && config.tex == draw_rt) || config.IsFeedbackLoopRT(config.ps) || config.IsFeedbackLoopDepth(config.ps))) [[unlikely]]
 		Console.Warning("OpenGL: Possible unnecessary barrier detected.");
 #endif
 
@@ -3104,7 +3104,28 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 		else
 		{
 			// Optimization: For alpha second pass we can reuse the copy snapshot from the first pass.
-			CopyAndBind(ProcessCopyArea(rtsize, config.drawarea));
+			if (config.tex_hazard)
+			{
+				GSVector4i union_rect = config.drawarea.runion(config.samplearea);
+				u32 size_union = union_rect.width() * union_rect.height();
+				u32 size_indiv = config.drawarea.width() * config.drawarea.height() +
+				                 config.samplearea.width() * config.samplearea.height();
+
+				// Do an individual copy if the union is larger than the sum of individual areas.
+				if (size_union > size_indiv)
+				{
+					CopyAndBind(ProcessCopyArea(rtsize, config.drawarea));
+					CopyAndBind(ProcessCopyArea(rtsize, config.samplearea));
+				}
+				else
+				{
+					CopyAndBind(ProcessCopyArea(rtsize, union_rect));
+				}
+			}
+			else
+			{
+				CopyAndBind(ProcessCopyArea(rtsize, config.drawarea));
+			}
 		}
 	}
 
