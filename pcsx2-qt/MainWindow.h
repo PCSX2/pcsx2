@@ -163,6 +163,7 @@ private Q_SLOTS:
 	void onViewToolbarActionToggled(bool checked);
 	void onViewLockToolbarActionToggled(bool checked);
 	void onViewStatusBarActionToggled(bool checked);
+	void onViewMainWindowFullscreenActionToggled(bool checked);
 	void onViewGameListActionTriggered();
 	void onViewGameGridActionTriggered();
 	void onViewSystemDisplayTriggered();
@@ -245,6 +246,7 @@ private:
 	void updateGameGridActions(const bool show_game_grid);
 	void updateStatusBarWidgetVisibility();
 	void updateAdvancedSettingsVisibility();
+	void updateMainWindowFullscreenAction();
 	void updateWindowTitle();
 	void updateWindowState(bool force_visible = false);
 	void setProgressBar(int current, int total);

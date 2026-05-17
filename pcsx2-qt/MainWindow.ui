@@ -166,6 +166,7 @@
     <addaction name="actionViewLockToolbar"/>
     <addaction name="actionViewStatusBar"/>
     <addaction name="actionViewStatusBarVerbose"/>
+    <addaction name="actionViewMainWindowFullscreen"/>
     <addaction name="separator"/>
     <addaction name="actionViewGameList"/>
     <addaction name="actionViewGameGrid"/>
@@ -754,6 +755,17 @@
    </property>
    <property name="text">
     <string>&amp;Verbose Status</string>
+   </property>
+  </action>
+  <action name="actionViewMainWindowFullscreen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="fullscreen-line"/>
+   </property>
+   <property name="text">
+    <string>Main Window F&amp;ullscreen</string>
    </property>
   </action>
   <action name="actionViewGameList">

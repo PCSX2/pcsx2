@@ -199,6 +199,8 @@ void MainWindow::setupAdditionalUi()
 	m_ui.actionViewStatusBar->setChecked(status_bar_visible);
 	m_ui.statusBar->setVisible(status_bar_visible);
 
+	updateMainWindowFullscreenAction();
+
 	const bool show_game_grid = Host::GetBaseBoolSettingValue("UI", "GameListGridView", false);
 	updateGameGridActions(show_game_grid);
 
@@ -347,6 +349,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionViewToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarActionToggled);
 	connect(m_ui.actionViewLockToolbar, &QAction::toggled, this, &MainWindow::onViewLockToolbarActionToggled);
 	connect(m_ui.actionViewStatusBar, &QAction::toggled, this, &MainWindow::onViewStatusBarActionToggled);
+	connect(m_ui.actionViewMainWindowFullscreen, &QAction::toggled, this, &MainWindow::onViewMainWindowFullscreenActionToggled);
 	connect(m_ui.actionViewGameList, &QAction::triggered, this, &MainWindow::onViewGameListActionTriggered);
 	connect(m_ui.actionViewGameGrid, &QAction::triggered, this, &MainWindow::onViewGameGridActionTriggered);
 	connect(m_ui.actionViewSystemDisplay, &QAction::triggered, this, &MainWindow::onViewSystemDisplayTriggered);
@@ -939,6 +942,8 @@ void MainWindow::restoreStateFromConfig()
 				showFullScreen();
 		}
 	}
+
+	updateMainWindowFullscreenAction();
 }
 
 void MainWindow::updateEmulationActions(bool starting, bool running, bool stopping)
@@ -1040,6 +1045,12 @@ void MainWindow::updateStatusBarWidgetVisibility()
 	Update(m_status_fps_widget, s_vm_valid, 0);
 	Update(m_status_vps_widget, s_vm_valid, 0);
 	Update(m_status_speed_widget, s_vm_valid, 0);
+}
+
+void MainWindow::updateMainWindowFullscreenAction()
+{
+	QSignalBlocker blocker(m_ui.actionViewMainWindowFullscreen);
+	m_ui.actionViewMainWindowFullscreen->setChecked(isFullScreen());
 }
 
 void MainWindow::updateWindowTitle()
@@ -1777,6 +1788,19 @@ void MainWindow::onViewStatusBarActionToggled(bool checked)
 	m_ui.statusBar->setVisible(checked);
 }
 
+void MainWindow::onViewMainWindowFullscreenActionToggled(bool checked)
+{
+	Host::SetBaseBoolSettingValue("UI", "MainWindowFullscreen", checked);
+	Host::CommitBaseSettingChanges();
+
+	if (checked)
+		showFullScreen();
+	else
+		setWindowState(windowState() & ~Qt::WindowFullScreen);
+
+	updateMainWindowFullscreenAction();
+}
+
 void MainWindow::onViewGameListActionTriggered()
 {
 	switchToGameListView();
@@ -2307,6 +2331,9 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::changeEvent(QEvent* event)
 {
 	QMainWindow::changeEvent(event);
+
+	if (event->type() == QEvent::WindowStateChange)
+		updateMainWindowFullscreenAction();
 
 	if (event->type() == QEvent::StyleChange)
 	{
