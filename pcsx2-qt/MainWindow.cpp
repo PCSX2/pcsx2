@@ -153,6 +153,14 @@ void MainWindow::initialize()
 	switchToGameListView();
 	updateWindowTitle();
 	updateGameDependentActions();
+	updateEmulationActions(false, s_vm_valid, false);
+	updateStatusBarWidgetVisibility();
+
+	if (s_vm_paused)
+	{
+		m_ui.actionPause->setChecked(true);
+		m_ui.actionToolbarPause->setChecked(true);
+	}
 
 #ifdef _WIN32
 	registerForDeviceNotifications();
@@ -720,6 +728,9 @@ void MainWindow::recreate()
 		g_main_window->updateEmulationActions(false, s_vm_valid, false);
 		g_main_window->onFullscreenUIStateChange(g_emu_thread->isRunningFullscreenUI());
 	}
+
+	if (s_vm_valid)
+		g_emu_thread->updatePerformanceMetrics(true);
 }
 
 void MainWindow::recreateSettings()
