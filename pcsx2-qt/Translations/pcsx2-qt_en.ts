@@ -20580,32 +20580,32 @@ Slot 2: {}</source>
     </message>
     <message>
         <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="566"/>
-        <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="622"/>
+        <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="621"/>
         <source>Invalid function.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="575"/>
+        <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="574"/>
         <source>Invalid storage type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="594"/>
+        <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="593"/>
         <source>Cannot determine stack frame size of selected function.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="629"/>
+        <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="628"/>
         <source>Cannot create symbol source.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="637"/>
+        <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="636"/>
         <source>Cannot create symbol.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="652"/>
+        <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="651"/>
         <source>Cannot Create Parameter Variable</source>
         <translation type="unfinished"></translation>
     </message>
