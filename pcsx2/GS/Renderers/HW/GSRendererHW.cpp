@@ -8975,7 +8975,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	const float rtscale = rt_or_ds->GetScale();
 	const GSVector2i rtsize = rt_or_ds->GetTexture()->GetSize();
 	const GSVector2i rt_unscaled_size = rt_or_ds->GetUnscaledSize();
-	
+
 	const float texscale = tex ? tex->GetScale() : 0.0f;
 	const GSVector2i texsize = tex ? tex->GetTexture()->GetSize() : GSVector2i(0, 0);
 
@@ -9025,7 +9025,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	const GSVector4i scissor(GSVector4i(GSVector4(rtscale) * GSVector4(hacked_scissor)).rintersect(GSVector4i::loadh(rtsize)));
 
 	m_conf.drawarea = m_channel_shuffle ? scissor : scissor.rintersect(ComputeBoundingBoxRT(rtsize, rtscale));
-	
+
 	const GSVector4i tex_region = tex ? tex->GetRegionRect() : GSVector4i::zero();
 	m_conf.samplearea = m_channel_shuffle ? scissor :
 		GSVector4i::loadh(texsize).rintersect(ComputeBoundingBoxTex(texsize, tex_region, texscale));

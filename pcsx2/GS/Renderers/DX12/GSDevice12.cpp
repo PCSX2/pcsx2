@@ -4378,11 +4378,34 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 				config.drawarea.left, config.drawarea.top,
 				config.drawarea.width(), config.drawarea.height());
 			EndRenderPass();
-			const GSVector4i snapped_drawarea = ProcessCopyArea(GSVector4i(0, 0, rtsize.x, rtsize.y), config.drawarea);
-			CopyRect(draw_rt, draw_rt_clone, snapped_drawarea, snapped_drawarea.left, snapped_drawarea.top);
+			if (config.tex_hazard)
+			{
+				const GSVector4i union_rect = config.drawarea.runion(config.samplearea);
+				const u32 size_union = union_rect.width() * union_rect.height();
+				const u32 size_indiv = config.drawarea.width() * config.drawarea.height() +
+				                       config.samplearea.width() * config.samplearea.height();
+
+				// Do an individual copy if the union is larger than the sum of individual areas.
+				if (size_union > size_indiv)
+				{
+					const GSVector4i snapped_drawarea = ProcessCopyArea(GSVector4i(0, 0, rtsize.x, rtsize.y), config.drawarea);
+					const GSVector4i snapped_samplearea = ProcessCopyArea(GSVector4i(0, 0, rtsize.x, rtsize.y), config.samplearea);
+					CopyRect(draw_rt, draw_rt_clone, snapped_drawarea, snapped_drawarea.left, snapped_drawarea.top);
+					CopyRect(draw_rt, draw_rt_clone, snapped_samplearea, snapped_samplearea.left, snapped_samplearea.top);
+				}
+				else
+				{
+					CopyRect(draw_rt, draw_rt_clone, union_rect, union_rect.left, union_rect.top);
+				}
+			}
+			else
+			{
+				CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+			}
+
 			if (config.require_one_barrier)
 				PSSetShaderResource(2, draw_rt_clone, true);
-			if (config.tex && config.tex == config.rt)
+			if (config.tex && config.tex == draw_rt)
 				PSSetShaderResource(0, draw_rt_clone, true);
 		}
 		else
