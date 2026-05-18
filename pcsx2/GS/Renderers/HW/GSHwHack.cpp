@@ -62,7 +62,6 @@ bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
 			int horizontal_offset = page_offset % std::max(rt->m_TEX0.TBW, 1U) * rt_psm.pgs.x;
 
 			GSVector4i draw_size = GSVector4i(0, 0, 64, 32) + GSVector4i(horizontal_offset, vertical_offset, horizontal_offset, vertical_offset);
-			rt->UnscaleRTAlpha();
 
 			// We need the original red back now for the next channel shuffle.
 			GSHWDrawConfig& config = r.BeginHLEHardwareDraw(
@@ -82,10 +81,7 @@ bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
 			config.ps.rta_source_correction = 0;
 			config.ps.tfx = TFX_DECAL;
 			config.ps.tcc = true;
-			r.EndHLEHardwareDraw(true);
-
-			rt->m_alpha_min = 0;
-			rt->m_alpha_max = 255;
+			r.EndHLEHardwareDraw(false);
 
 			rt = nullptr;
 			src = nullptr;
@@ -150,7 +146,6 @@ bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
 				int horizontal_offset = page_offset % std::max(rt->m_TEX0.TBW, 1U) * rt_psm.pgs.x;
 
 				draw_size = draw_size + GSVector4i(horizontal_offset, vertical_offset, horizontal_offset, vertical_offset);
-				rt->UnscaleRTAlpha();
 
 				// Shuffle the blue channel in to red, but swap them, we'll need the original red later.
 				GSHWDrawConfig& config = r.BeginHLEHardwareDraw(
@@ -170,10 +165,7 @@ bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
 				config.ps.rta_source_correction = 0;
 				config.ps.tfx = TFX_DECAL;
 				config.ps.tcc = true;
-				r.EndHLEHardwareDraw(true);
-
-				rt->m_alpha_min = 0;
-				rt->m_alpha_max = 255;
+				r.EndHLEHardwareDraw(false);
 
 				rt = nullptr;
 				src = nullptr;
