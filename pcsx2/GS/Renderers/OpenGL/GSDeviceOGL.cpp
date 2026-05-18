@@ -3106,10 +3106,10 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 			// Optimization: For alpha second pass we can reuse the copy snapshot from the first pass.
 			if (config.tex_hazard)
 			{
-				GSVector4i union_rect = config.drawarea.runion(config.samplearea);
-				u32 size_union = union_rect.width() * union_rect.height();
-				u32 size_indiv = config.drawarea.width() * config.drawarea.height() +
-				                 config.samplearea.width() * config.samplearea.height();
+				const GSVector4i union_rect = config.drawarea.runion(config.samplearea);
+				const u32 size_union = union_rect.width() * union_rect.height();
+				const u32 size_indiv = config.drawarea.width() * config.drawarea.height() +
+				                       config.samplearea.width() * config.samplearea.height();
 
 				// Do an individual copy if the union is larger than the sum of individual areas.
 				if (size_union > size_indiv)
