@@ -7888,7 +7888,13 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 	const int frame_diff = rt ? static_cast<int>(m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) : 0;
 
 	// Needs to be called everywhere we return early except tex is fb, or read only depth.
-	auto HandleBarrierHazard = [&](bool src_empty) {
+	auto HandleBarrierHazard = [&](bool src_empty) -> bool {
+		// Feedback loops conditions explained:
+		// RT: If texture barrier/multidraw fb copy is not supported we do an rt copy anyway in device
+		// which is why we allow the conditions to pass with one barrier.
+		// DS: If texture barrier/multidraw fb copy is not supported then we disable HandleBarrierHazard since DX12/VK
+		// aren't setup to handle copies like dx11/gl are.
+
 		if (rt && m_conf.tex == m_conf.rt)
 		{
 			m_conf.tex_hazard = GSHWDrawConfig::TEX_HAZARD_RT;
@@ -7896,28 +7902,29 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 				m_conf.require_one_barrier = true;
 			else
 				m_conf.require_full_barrier = true;
+
+			return true;
 		}
 		else if (ds && m_conf.tex == m_conf.ds)
 		{
-			// This might be hit again if it's called when there's no match.
-			if (g_gs_device->Features().test_and_sample_depth && (m_cached_ctx.ZBUF.ZMSK || m_cached_ctx.TEST.ZTST == ZTST_NEVER))
-			{
-				// No barrier, depth can be read safely.
-			}
-			// TODO: Add gpu copies for depth on VK/DX12 that doesn't rely on feedback loops.
-			else if (g_gs_device->Features().feedback_loops())
+			if (g_gs_device->Features().feedback_loops())
 			{
 				m_conf.tex_hazard = GSHWDrawConfig::TEX_HAZARD_DEPTH;
 				if (m_prim_overlap == PRIM_OVERLAP_NO || src_empty || m_channel_shuffle)
 					m_conf.require_one_barrier = true;
 				else
 					m_conf.require_full_barrier = true;
+
+				return true;
 			}
 			else
 			{
-				m_conf.tex = nullptr;
+				return false;
 			}
 		}
+
+		// No hazards detected.
+		return true;
 	};
 
 	// Detect framebuffer read that will need special handling
@@ -7949,10 +7956,12 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 				// If the two don't overlap, there's no need to copy.
 				if (m_r.rintersect(src_rect).rempty())
 				{
-					HandleBarrierHazard(true);
-					unscaled_size = rt->GetUnscaledSize();
-					scale = rt->GetScale();
-					return;
+					if (HandleBarrierHazard(true))
+					{
+						unscaled_size = rt->GetUnscaledSize();
+						scale = rt->GetScale();
+						return;
+					}
 				}
 			}
 			GL_CACHE("HW: Source is render target, taking copy.");
@@ -7979,10 +7988,12 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 				// If the two don't overlap, there's no need to copy.
 				if (m_r.rintersect(src_rect).rempty())
 				{
-					HandleBarrierHazard(true);
-					unscaled_size = ds->GetUnscaledSize();
-					scale = ds->GetScale();
-					return;
+					if (HandleBarrierHazard(true))
+					{
+						unscaled_size = ds->GetUnscaledSize();
+						scale = ds->GetScale();
+						return;
+					}
 				}
 			}
 
@@ -7997,7 +8008,6 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 		else
 		{
 			// No match.
-			HandleBarrierHazard(false);
 			return;
 		}
 	}
