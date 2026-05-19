@@ -6164,11 +6164,6 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/EmulationSettingsWidget.cpp" line="115"/>
-        <source>EE Cycle Skip</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="123"/>
         <source>Enable Multithreaded VU1 (MTVU1)</source>
         <translation type="unfinished"></translation>
@@ -6216,6 +6211,11 @@ Do you want to overwrite?</source>
     <message>
         <location filename="../Settings/EmulationSettingsWidget.cpp" line="140"/>
         <source>Sets the maximum number of frames that can be queued up to the GS, before the CPU thread will wait for one of them to complete before continuing. Higher values can assist with smoothing out irregular frame times, but increase input lag.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/EmulationSettingsWidget.cpp" line="115"/>
+        <source>EE Cycle Skipping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6490,7 +6490,8 @@ The URL was: %1</source>
     </message>
     <message>
         <location filename="../Settings/FolderSettingsWidget.ui" line="297"/>
-        <source>Save Video Recording in Game-Specific Folders</source>
+        <location filename="../Settings/FolderSettingsWidget.cpp" line="27"/>
+        <source>Save Video Recordings in Game-Specific Folders</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6500,6 +6501,7 @@ The URL was: %1</source>
     </message>
     <message>
         <location filename="../Settings/FolderSettingsWidget.ui" line="152"/>
+        <location filename="../Settings/FolderSettingsWidget.cpp" line="25"/>
         <source>Save Snapshots in Game-Specific Folders</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6520,18 +6522,8 @@ The URL was: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/FolderSettingsWidget.cpp" line="25"/>
-        <source>Organize Snapshots by Game</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../Settings/FolderSettingsWidget.cpp" line="26"/>
         <source>Saves snapshots to per-game subfolders instead of a shared folder.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/FolderSettingsWidget.cpp" line="27"/>
-        <source>Organize Video Recordings by Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12169,7 +12161,7 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5215"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5221"/>
         <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15142,18 +15134,8 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="413"/>
-        <source>Enable Widescreen Patches</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="414"/>
         <source>Automatically loads and applies widescreen patches on game start. Can cause issues.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="416"/>
-        <source>Enable No-Interlacing Patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15518,11 +15500,6 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="770"/>
-        <source>Enable Debug Blend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="771"/>
         <source>Forces SW blending and disables several optimizations.</source>
         <translation type="unfinished"></translation>
@@ -15801,6 +15778,16 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="43"/>
         <source>Software Renderer</source>
         <extracomment>Graphics backend/engine type (refers to emulating the GS in software, on the CPU). Translate accordingly.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="413"/>
+        <source>Apply Widescreen Patches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="416"/>
+        <source>Apply No-Interlacing Patches</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -16168,12 +16155,17 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="767"/>
-        <source>Enable Debug Device</source>
+        <source>Use Debug Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/GraphicsSettingsWidget.cpp" line="768"/>
         <source>Enables API-level validation of graphics commands.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/GraphicsSettingsWidget.cpp" line="770"/>
+        <source>Use Debug Blend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -16669,26 +16661,6 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1309"/>
-        <source>Basic</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1310"/>
-        <source>Medium</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1311"/>
-        <source>High</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1312"/>
-        <source>Full</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../pcsx2/GS/GS.cpp" line="1320"/>
         <source>Blending Accuracy set to {}.</source>
         <translation type="unfinished"></translation>
@@ -16741,11 +16713,6 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
         <location filename="../../pcsx2/Hotkeys.cpp" line="39"/>
         <source>Target speed set to {:.0f}%.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="84"/>
-        <source>Volume: Muted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -16863,49 +16830,6 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
         <location filename="../../pcsx2/Hotkeys.cpp" line="254"/>
         <source>Swap Memory Cards</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="52"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="93"/>
-        <source>Volume: Muted in Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="66"/>
-        <source>Volume: {} to {}%</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="66"/>
-        <source>Decreased</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="66"/>
-        <source>Increased</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="71"/>
-        <source>Volume: {} {}% Reached</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1308"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="71"/>
-        <source>Minimum</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/GS/GS.cpp" line="1313"/>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="71"/>
-        <source>Maximum</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/Hotkeys.cpp" line="89"/>
-        <source>Volume: Unmuted to {}%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -17087,6 +17011,88 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
         <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1760"/>
         <source>Save slot {0} selected ({1}).</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Hotkeys_BlendAcc</name>
+    <message>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1308"/>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1309"/>
+        <source>Basic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1310"/>
+        <source>Medium</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1311"/>
+        <source>High</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1312"/>
+        <source>Full</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GS/GS.cpp" line="1313"/>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Hotkeys_Volume</name>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="52"/>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="93"/>
+        <source>Volume: Muted in Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="66"/>
+        <source>Volume: {} to {}%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="66"/>
+        <source>Decreased</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="66"/>
+        <source>Increased</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="71"/>
+        <source>Volume: {} {}% Reached</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="71"/>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="71"/>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="84"/>
+        <source>Volume: Muted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Hotkeys.cpp" line="89"/>
+        <source>Volume: Unmuted to {}%</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -17603,6 +17609,7 @@ Right click to clear binding</source>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="91"/>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="204"/>
         <source>Prefer English Game Titles</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17649,7 +17656,8 @@ Right click to clear binding</source>
     </message>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.ui" line="156"/>
-        <source>Start Big Picture UI</source>
+        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="231"/>
+        <source>Start In Big Picture Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -17881,11 +17889,6 @@ Right click to clear binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="204"/>
-        <source>Prefer English Titles</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="205"/>
         <source>For games with both a title in the game&apos;s native language and one in English, prefer the English title. Affects how game titles are displayed on the game list, window title and Discord Presence</source>
         <translation type="unfinished"></translation>
@@ -17913,11 +17916,6 @@ Right click to clear binding</source>
     <message>
         <location filename="../Settings/InterfaceSettingsWidget.cpp" line="229"/>
         <source>Prevents the main window from being resized.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/InterfaceSettingsWidget.cpp" line="231"/>
-        <source>Start Big Picture Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
