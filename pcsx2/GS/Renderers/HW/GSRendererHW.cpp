@@ -7568,156 +7568,65 @@ void GSRendererHW::DetermineROVUsage()
 
 	const bool multipass_depth = (full_barrier && m_conf.ps.IsFeedbackLoopDepth()) || two_pass_alpha;
 
-	bool use_rov_color = color_write && multipass_color;
+	// If already ROV, just continue the usage.
+	const bool color_is_rov = m_conf.rt && m_conf.rt->IsUnorderedAccess();
+	const bool depth_is_rov = m_conf.ds && m_conf.ds->IsDepthColor();
 
-	bool use_rov_depth = depth_write && multipass_depth;
+	bool use_rov_color = (color_write && multipass_color) || color_is_rov;
+	bool use_rov_depth = (depth_write && multipass_depth) || depth_is_rov;
 
 	// In certain cases, ROV in color or depth will force ROV in the other for correctness.
 	GetForcedROVUsage(use_rov_color, use_rov_depth);
 
 	// Get the number of barriers that would be used with the current config.
-	u32 barriers_i; 
+	u32 barriers = 1; 
 	if (full_barrier)
 	{
 		if (m_drawlist.size() > 0)
 		{
-			barriers_i = std::min(m_rov_max_barriers, static_cast<u32>(m_drawlist.size())); // Already computed
+			barriers = static_cast<u32>(m_drawlist.size()); // Already computed
 		}
 		else
 		{
-			// Tells drawlist computation to stop after reaching a certain limit to reduce CPU burden
-			// as well as prevent outliers from influencing history too much.
-			barriers_i = m_rov_max_barriers;
-			GetPrimitiveOverlapDrawlist(false, false, 1.0f, &barriers_i);
+			barriers = 2; // Tells drawlist computation to stop after reaching 2.
+			GetPrimitiveOverlapDrawlist(false, false, 1.0f, &barriers);
 		}
-	}
-	else
-	{
-		barriers_i = 1;
-	}
-	const float multiplier = m_conf.alpha_second_pass.enable ? 2.0f : 1.0f; // Alpha second pass doubles the barriers
-	const float barriers = static_cast<float>(barriers_i) * multiplier;
-
-	const auto Mix = [](float x, float y, float w) { return x * w + y * (1.0f - w); };
-
-	// Get saved history for RT and DS
-	float curr_avg_barriers_color = m_conf.rt ? m_conf.rt->GetAvgBarriersROV() : 0.0f;
-	float curr_avg_barriers_depth = m_conf.ds ? m_conf.ds->GetAvgBarriersROV() : 0.0f;
-
-	// Updated barrier values
-	float avg_barriers_color = 0.0f;
-	float avg_barriers_depth = 0.0f;
-
-	// Up weight the barriers if we will be using the texture as a ROV, otherwise down weight.
-	if (m_conf.rt)
-	{
-		avg_barriers_color = Mix(curr_avg_barriers_color, use_rov_color ? barriers : 1.0f, m_rov_history_weight);
-	}
-	if (m_conf.ds)
-	{
-		avg_barriers_depth = Mix(curr_avg_barriers_depth, use_rov_depth ? barriers : 1.0f, m_rov_history_weight);
-	}
-
-	const bool color_is_rov = m_conf.rt && m_conf.rt->IsUnorderedAccess();
-	const bool depth_is_rov = m_conf.ds && m_conf.ds->IsDepthColor();
-
-	const bool color_needs_enabling = use_rov_color && !color_is_rov;
-	const bool depth_needs_enabling = use_rov_depth && !depth_is_rov;
-
-	const bool needs_enabling = color_needs_enabling || depth_needs_enabling;
-	const bool needs_disabling = color_is_rov || depth_is_rov;
-
-	if (!(needs_enabling || needs_disabling))
-	{
-		GL_ROV("ROV: Draw=%05lld | C=%016p | D=%016p | BAR=%.2f | No action taken.", s_n, m_conf.rt, m_conf.ds, barriers);
-		return;
 	}
 	
-	// There's a lot of flags here that implement a state machine to decide when to enable/disable/continue
-	// color and/or depth ROVs depending on how many barriers have been used, whether the textures are already
-	// in UAV mode, etc.
+	const u32 multiplier = m_conf.alpha_second_pass.enable ? 2 : 1; // Alpha second pass doubles the barriers.
+	barriers *= multiplier;
 
-	const float test_barriers_enable = depth_needs_enabling ? avg_barriers_depth : avg_barriers_color;
-	const float test_barriers_disable = color_is_rov ? avg_barriers_color : avg_barriers_depth;
-	const float test_barriers = needs_enabling ? test_barriers_enable : test_barriers_disable;
-	const float threshold = needs_enabling ? m_rov_barriers_enable : m_rov_barriers_disable;
-
-	// The previous use_rov flags are suggestions to determine the heuristic.
-	// These flags are the final say in whether we enable/disable ROVs.
-	bool use_rov_color_final;
-	bool use_rov_depth_final;
-
-	if (test_barriers >= threshold)
+	if (!(use_rov_color || use_rov_depth))
 	{
-		// Enable or continue color
-		use_rov_color_final = use_rov_color || color_is_rov;
-
-		// Use depth only if needed for correctness or else try to disable it.
-		if (use_rov_depth)
-		{
-			use_rov_depth_final = true; // We must use depth ROV for correctness.
-		}
-		else if (depth_is_rov)
-		{
-			// We are in depth UAV but don't need it; only use if historical barriers
-			// suggest it is useful.
-			use_rov_depth_final = (avg_barriers_depth >= m_rov_barriers_disable);
-		}
-		else
-		{
-			use_rov_depth_final = false; // No reason to use it.
-		}
-
-		GetForcedROVUsage(use_rov_color_final, use_rov_depth_final);
-
-		GL_ROV("ROV: Draw=%05lld | C=%016p | D=%016p | BAR=%.2f | AVGBAR=%.2f >= %.2f => %s | C=%d => %d | D=%d => %d.",
-			s_n, m_conf.rt, m_conf.ds, barriers, test_barriers, threshold, needs_enabling ? "Enable ROV" : "Continue ROV",
-			use_rov_color, use_rov_color_final, use_rov_depth, use_rov_depth_final);
+		GL_ROV("No ROV usage: Draw=%05lld | C=%016p | D=%016p | BAR=%d.", s_n, m_conf.rt, m_conf.ds, barriers);
+		return;
 	}
-	else
+
+	// Check if the heuristic suggested we should enable color/depth ROV.
+	if (use_rov_color != color_is_rov || use_rov_depth != depth_is_rov)
 	{
-		// Disable or continue non-ROVs.
-		use_rov_color_final = false;
-		use_rov_depth_final = false;
-		
-		GL_ROV("ROV: Draw=%05lld | C=%016p | D=%016p | BAR=%.2f | AVGBAR=%.2f < %.2f => %s | C=%d => %d | D=%d => %d.",
-			s_n, m_conf.rt, m_conf.ds, barriers, test_barriers, threshold, needs_enabling ? "Continue non-ROV" : "Disable ROV",
-			use_rov_color, use_rov_color_final, use_rov_depth, use_rov_depth_final);
+		if (barriers < 2)
+		{
+			// Not enough barriers, so just continue whatever ROV is already enabled.
+			use_rov_color = color_is_rov;
+			use_rov_depth = depth_is_rov;
+		}
+
+		// In certain cases, ROV in color or depth will force ROV in the other for correctness.
+		GetForcedROVUsage(use_rov_color, use_rov_depth);
+
+		if (use_rov_color != color_is_rov || use_rov_depth != depth_is_rov)
+		{
+			GL_ROV("ROV change: Draw=%05lld | C=%016p | D=%016p | BAR=%d | C=[%d=>%d] | D=[%d=>%d].",
+				s_n, m_conf.rt, m_conf.ds, barriers, color_is_rov, use_rov_color, depth_is_rov, use_rov_depth);
+		}
 	}
 
 	GL_INS("ROV: Color ROV %s / depth ROV %s",
-		use_rov_color_final ? "enabled" : "disabled", use_rov_depth_final ? "enabled" : "disabled");
-
-	// Update the average barrier history based on whether we decided to use ROVs
-	if (m_conf.rt)
-	{
-		avg_barriers_color = Mix(curr_avg_barriers_color, use_rov_color_final ? barriers : 1.0f, m_rov_history_weight);
-	}
-	if (m_conf.ds)
-	{
-		avg_barriers_depth = Mix(curr_avg_barriers_depth, use_rov_depth_final ? barriers : 1.0f, m_rov_history_weight);
-	}
-
-	// If both color and depth ROV are used, make their average barriers the same to avoid frequent switching.
-	// This can happen, for example, if the game keeps turning Z write on/off.
-	if (use_rov_color_final && use_rov_depth_final)
-	{
-		avg_barriers_color = avg_barriers_depth = std::max(avg_barriers_color, avg_barriers_depth);
-	}
-
-	// Update the final barrier values.
-	if (m_conf.rt)
-	{
-		m_conf.rt->SetAvgBarriersROV(avg_barriers_color);
-	}
-
-	if (m_conf.ds)
-	{
-		m_conf.ds->SetAvgBarriersROV(avg_barriers_depth);
-	}
+		use_rov_color ? "enabled" : "disabled", use_rov_depth ? "enabled" : "disabled");
 
 	// Do the actual pipeline config
-	ConfigureROV(use_rov_color_final, use_rov_depth_final);
+	ConfigureROV(use_rov_color, use_rov_depth);
 }
 
 void GSRendererHW::ConfigureROV(bool color_rov, bool depth_rov)
