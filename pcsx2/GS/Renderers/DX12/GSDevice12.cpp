@@ -4405,7 +4405,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 
 			if (config.require_one_barrier)
 				PSSetShaderResource(2, draw_rt_clone, true);
-			if (config.tex && config.tex == draw_rt)
+			if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_RT)
 				PSSetShaderResource(0, draw_rt_clone, true);
 		}
 		else
@@ -4569,7 +4569,7 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 #endif
 		if ((one_barrier || full_barrier) && feedback_rt)
 			PSSetShaderResource(2, draw_rt, false, true);
-		if (config.tex && config.tex == config.rt)
+		if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_RT)
 			PSSetShaderResource(0, draw_rt, false, true);
 		if ((one_barrier || full_barrier) && feedback_depth)
 			PSSetShaderResource(4, draw_ds, false, true);
