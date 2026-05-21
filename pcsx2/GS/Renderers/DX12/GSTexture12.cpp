@@ -128,7 +128,7 @@ static D3D12_BARRIER_LAYOUT GetD3D12BarrierLayout(GSTexture12::ResourceState sta
 			return D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_WRITE;
 		case GSTexture12::ResourceState::PixelShaderResource:
 		case GSTexture12::ResourceState::ComputeShaderResource:
-			return D3D12_BARRIER_LAYOUT_SHADER_RESOURCE;
+			return D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_SHADER_RESOURCE;
 		case GSTexture12::ResourceState::CopySrc:
 			return D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_COPY_SOURCE;
 		case GSTexture12::ResourceState::CopyDst:
