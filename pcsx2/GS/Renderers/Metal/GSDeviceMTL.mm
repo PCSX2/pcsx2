@@ -402,7 +402,25 @@ void GSDeviceMTL::EndRenderPass()
 	}
 }
 
-void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadAction color_load, GSTexture* depth, MTLLoadAction depth_load, GSTexture* stencil, MTLLoadAction stencil_load, bool rt1)
+static GSVector4 GetRTLoadInfo(GSTextureMTL* tex, MTLLoadAction* load_action)
+{
+	if (tex)
+	{
+		if (tex->GetState() == GSTexture::State::Invalidated)
+		{
+			*load_action = MTLLoadActionDontCare;
+		}
+		else if (tex->GetState() == GSTexture::State::Cleared && *load_action != MTLLoadActionDontCare)
+		{
+			*load_action = MTLLoadActionClear;
+			return tex->GetClearForFormat();
+		}
+	}
+	return {};
+};
+
+void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadAction color_load,
+	GSTexture* depth, MTLLoadAction depth_load, GSTexture* stencil, MTLLoadAction stencil_load, bool rt1)
 {
 	GSTextureMTL* mc = static_cast<GSTextureMTL*>(color);
 	GSTextureMTL* md = static_cast<GSTextureMTL*>(depth);
@@ -411,31 +429,16 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 	              || depth   != m_current_render.depth_target
 	              || stencil != m_current_render.stencil_target
 	              || rt1     != m_current_render.has.rt1_depth;
-	GSVector4 color_clear;
-	float depth_clear;
-	// Depth and stencil might be the same, so do all invalidation checks before resetting invalidation
-#define CHECK_CLEAR(tex, load_action, clear, ClearGetter) \
-	if (tex) \
-	{ \
-		if (tex->GetState() == GSTexture::State::Invalidated) \
-		{ \
-			load_action = MTLLoadActionDontCare; \
-		} \
-		else if (tex->GetState() == GSTexture::State::Cleared && load_action != MTLLoadActionDontCare) \
-		{ \
-			clear = tex->ClearGetter(); \
-			load_action = MTLLoadActionClear; \
-		} \
-	}
 
-	CHECK_CLEAR(mc, color_load, color_clear, GetUNormClearColor)
-	CHECK_CLEAR(md, depth_load, depth_clear, GetClearDepth)
-#undef CHECK_CLEAR
+	// Depth and stencil might be the same, so do all invalidation checks before resetting invalidation
+	GSVector4 color_clear = GetRTLoadInfo(mc, &color_load);
+	GSVector4 depth_clear = GetRTLoadInfo(md, &depth_load);
+
 	// Stencil and depth are one texture, stencil clears aren't supported
 	if (ms && ms->GetState() == GSTexture::State::Invalidated)
 		stencil_load = MTLLoadActionDontCare;
-	needs_new |= mc && color_load   == MTLLoadActionClear;
-	needs_new |= md && depth_load   == MTLLoadActionClear;
+	needs_new |= mc && color_load == MTLLoadActionClear;
+	needs_new |= md && depth_load == MTLLoadActionClear;
 
 	// Reset texture state
 	if (mc) mc->SetState(GSTexture::State::Dirty);
@@ -480,7 +483,7 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 		md->m_last_write = m_current_draw;
 		desc.depthAttachment.texture = md->GetTexture();
 		if (depth_load == MTLLoadActionClear)
-			desc.depthAttachment.clearDepth = depth_clear;
+			desc.depthAttachment.clearDepth = depth_clear.x;
 		desc.depthAttachment.loadAction = depth_load;
 	}
 	if (ms)
@@ -496,7 +499,7 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 		MTLRenderPassColorAttachmentDescriptor* color1 = desc.colorAttachments[1];
 		color1.texture = GetRT1DepthTexture(md);
 		if (m_features.framebuffer_fetch)
-			color1.clearColor = MTLClearColorMake(depth_load == MTLLoadActionClear ? depth_clear : -1, 0, 0, 0);
+			color1.clearColor = MTLClearColorMake(depth_load == MTLLoadActionClear ? depth_clear.x : -1, 0, 0, 0);
 	}
 
 	EndRenderPass();
@@ -524,7 +527,7 @@ static constexpr MTLPixelFormat ConvertPixelFormat(GSTexture::Format format)
 {
 	switch (format)
 	{
-		case GSTexture::Format::Float32:      return MTLPixelFormatR32Float;
+		case GSTexture::Format::DepthColor:   return MTLPixelFormatR32Float;
 		case GSTexture::Format::PrimID:       return MTLPixelFormatR32Float;
 		case GSTexture::Format::UInt32:       return MTLPixelFormatR32Uint;
 		case GSTexture::Format::UInt16:       return MTLPixelFormatR16Uint;
@@ -625,7 +628,7 @@ void GSDeviceMTL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 
 	// Save 2nd output
 	if (feedback_write_2) // FIXME I'm not sure dRect[1] is always correct
-		DoStretchRect(dTex, full_r, sTex[2], dRect[1], m_convert_pipeline[static_cast<int>(ShaderConvert::YUV)], linear, LoadAction::DontCareIfFull, &cb_yuv, sizeof(cb_yuv));
+		DoStretchRect(dTex, full_r, sTex[2], dRect[1], GetConvertPipeline(ShaderConvert::YUV), linear, LoadAction::DontCareIfFull, &cb_yuv, sizeof(cb_yuv));
 
 	if (feedback_write_2_but_blend_bg)
 		ClearRenderTarget(dTex, c);
@@ -885,6 +888,25 @@ static bool getDepthFeedback(const GSMTLDevice& dev, bool fbfetch)
 		case GSDepthFeedbackMode::Depth:
 			// Depth feedback + FBFetch not supported
 			return !fbfetch;
+		default:
+			return false;
+	}
+}
+
+// Some shaders are only used by methods on MTLDevice, which currently use separately-compiled shaders
+static bool ConvertShaderNotNeeded(ShaderConvert shader)
+{
+	switch (shader)
+	{
+		case ShaderConvert::DATM_0:
+		case ShaderConvert::DATM_1:
+		case ShaderConvert::DATM_0_RTA_CORRECTION:
+		case ShaderConvert::DATM_1_RTA_CORRECTION:
+		case ShaderConvert::CLUT_4:
+		case ShaderConvert::CLUT_8:
+		case ShaderConvert::COLCLIP_INIT:
+		case ShaderConvert::COLCLIP_RESOLVE:
+			return true;
 		default:
 			return false;
 	}
@@ -1164,97 +1186,57 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		NSString* name = [NSString stringWithFormat:@"ps_interlace%zu", i];
 		m_interlace_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), name);
 	}
-	for (size_t i = 0; i < std::size(m_convert_pipeline); i++)
+
+	m_convert_pipeline.resize(ShaderConvertSelector::NUM_TOTAL_SHADERS);
+	for (u32 i = 0; i < ShaderConvertSelector::NUM_TOTAL_SHADERS; i++)
 	{
-		ShaderConvert conv = static_cast<ShaderConvert>(i);
-		NSString* name = [NSString stringWithCString:shaderName(conv) encoding:NSUTF8StringEncoding];
-		switch (conv)
+		const ShaderConvertSelector shader = ShaderConvertSelector::Get(i);
+		if (ConvertShaderNotNeeded(shader.Shader()))
+			continue;
+		NSString* shader_name = [NSString stringWithCString:shader.EntryPoint() encoding:NSUTF8StringEncoding];
+		if (shader.DepthOutput())
 		{
-			case ShaderConvert::Count:
-			case ShaderConvert::DATM_0:
-			case ShaderConvert::DATM_1:
-			case ShaderConvert::DATM_0_RTA_CORRECTION:
-			case ShaderConvert::DATM_1_RTA_CORRECTION:
-			case ShaderConvert::CLUT_4:
-			case ShaderConvert::CLUT_8:
-			case ShaderConvert::COLCLIP_INIT:
-			case ShaderConvert::COLCLIP_RESOLVE:
-				continue;
-			case ShaderConvert::FLOAT32_TO_32_BITS:
-				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::UInt32);
-				pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
-				break;
-			case ShaderConvert::FLOAT32_TO_16_BITS:
-			case ShaderConvert::RGBA8_TO_16_BITS:
-				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::UInt16);
-				pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
-				break;
-			case ShaderConvert::DEPTH_COPY:
-			case ShaderConvert::FLOAT32_TO_FLOAT24:
-			case ShaderConvert::FLOAT32_COLOR_TO_DEPTH:
-			case ShaderConvert::RGBA8_TO_FLOAT32:
-			case ShaderConvert::RGBA8_TO_FLOAT24:
-			case ShaderConvert::RGBA8_TO_FLOAT16:
-			case ShaderConvert::RGB5A1_TO_FLOAT16:
-			case ShaderConvert::RGBA8_TO_FLOAT32_BILN:
-			case ShaderConvert::RGBA8_TO_FLOAT24_BILN:
-			case ShaderConvert::RGBA8_TO_FLOAT16_BILN:
-			case ShaderConvert::RGB5A1_TO_FLOAT16_BILN:
-				pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
-				pdesc.depthAttachmentPixelFormat = ConvertPixelFormat(GSTexture::Format::DepthStencil);
-				break;
-			case ShaderConvert::COPY:
-			case ShaderConvert::DOWNSAMPLE_COPY:
-			case ShaderConvert::RGBA_TO_8I: // Yes really
-			case ShaderConvert::RGB5A1_TO_8I:
-			case ShaderConvert::RTA_CORRECTION:
-			case ShaderConvert::RTA_DECORRECTION:
-			case ShaderConvert::TRANSPARENCY_FILTER:
-			case ShaderConvert::FLOAT32_TO_RGBA8:
-			case ShaderConvert::FLOAT32_TO_RGB8:
-			case ShaderConvert::FLOAT16_TO_RGB5A1:
-			case ShaderConvert::YUV:
-				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
-				pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
-				break;
-			case ShaderConvert::FLOAT32_DEPTH_TO_COLOR:
-				pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Float32);
-				pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
-				break;
+			pdesc.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
+			pdesc.depthAttachmentPixelFormat = ConvertPixelFormat(GSTexture::Format::DepthStencil);
 		}
-		const u32 scmask = ShaderConvertWriteMask(conv);
+		else
+		{
+			pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(shader.OutputFormat());
+			pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
+		}
+		NSString* name = shader_name;
+		if (shader.VariableWriteMask())
+			name = [name stringByAppendingString:[NSString stringWithFormat:@" Mask=%x", shader.Mask()]];
+		if (shader.Biln())
+			name = [name stringByAppendingString:@" Biln"];
+		if (shader.Float32Input())
+			name = [name stringByAppendingString:shader.DepthInput() ? @" Depth" : @" Float"];
+		if (shader.Float32Output())
+			name = [name stringByAppendingString:shader.DepthOutput() ? @" → Depth" : @" → Float"];
+
+		const u32 scmask = shader.Mask();
 		MTLColorWriteMask mask = MTLColorWriteMaskNone;
 		if (scmask & 1) mask |= MTLColorWriteMaskRed;
 		if (scmask & 2) mask |= MTLColorWriteMaskGreen;
 		if (scmask & 4) mask |= MTLColorWriteMaskBlue;
 		if (scmask & 8) mask |= MTLColorWriteMaskAlpha;
 		pdesc.colorAttachments[0].writeMask = mask;
-		m_convert_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), name);
+		setFnConstantB(m_fn_constants, shader.Biln(),        GSMTLConstantIndex_BILN);
+		setFnConstantB(m_fn_constants, shader.DepthInput(),  GSMTLConstantIndex_DEPTH_IN);
+		setFnConstantB(m_fn_constants, shader.DepthOutput(), GSMTLConstantIndex_DEPTH_OUT);
+		m_convert_pipeline[shader.Index()] = MakePipeline(pdesc, vs_convert, LoadShader(shader_name), name);
 	}
 	pdesc.colorAttachments[0].writeMask = MTLColorWriteMaskAll;
 	pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
 	for (size_t i = 0; i < std::size(m_present_pipeline); i++)
 	{
 		PresentShader conv = static_cast<PresentShader>(i);
-		NSString* name = [NSString stringWithCString:shaderName(conv) encoding:NSUTF8StringEncoding];
+		NSString* name = [NSString stringWithCString:ShaderEntryPoint(conv) encoding:NSUTF8StringEncoding];
 		pdesc.colorAttachments[0].pixelFormat = layer_px_fmt;
-		m_present_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), [NSString stringWithFormat:@"present_%s", shaderName(conv) + 3]);
+		m_present_pipeline[i] = MakePipeline(pdesc, vs_convert, LoadShader(name), [NSString stringWithFormat:@"present_%s", ShaderEntryPoint(conv) + 3]);
 	}
 
 	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
-	for (size_t i = 0; i < std::size(m_convert_pipeline_copy_mask); i++)
-	{
-		MTLColorWriteMask mask = MTLColorWriteMaskNone;
-		if (i & 1) mask |= MTLColorWriteMaskRed;
-		if (i & 2) mask |= MTLColorWriteMaskGreen;
-		if (i & 4) mask |= MTLColorWriteMaskBlue;
-		if (i & 8) mask |= MTLColorWriteMaskAlpha;
-		NSString* name = [NSString stringWithFormat:@"copy_%s%s%s%s%s",
-		                  i & 1 ? "r" : "", i & 2 ? "g" : "", i & 4 ? "b" : "", i & 8 ? "a" : "", i & 16 ? "_rta" : ""];
-		pdesc.colorAttachments[0].writeMask = mask;
-		m_convert_pipeline_copy_mask[i] = MakePipeline(pdesc, vs_convert, i & 16 ? ps_copy_rta_correct : ps_copy, name);
-	}
-
 	pdesc.colorAttachments[0].blendingEnabled = YES;
 	pdesc.colorAttachments[0].rgbBlendOperation = MTLBlendOperationAdd;
 	pdesc.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
@@ -1667,16 +1649,12 @@ void GSDeviceMTL::RenderCopy(GSTexture* sTex, id<MTLRenderPipelineState> pipelin
 }
 
 void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	GSHWDrawConfig::ColorMaskSelector cms, ShaderConvert shader, bool linear)
+	ShaderConvertSelector shader, bool linear)
 { @autoreleasepool {
 
-	const LoadAction load_action = (cms.wrgba == 0xf) ? LoadAction::DontCareIfFull : LoadAction::Load;
-	id<MTLRenderPipelineState> pipeline;
-	if (HasVariableWriteMask(shader))
-		pipeline = m_convert_pipeline_copy_mask[GetShaderIndexForMask(shader, cms.wrgba)];
-	else
-		pipeline = m_convert_pipeline[static_cast<int>(shader)];
-	pxAssertRel(pipeline, fmt::format("No pipeline for {}", shaderName(shader)).c_str());
+	const LoadAction load_action = (shader.Mask() == 0xf) ? LoadAction::DontCareIfFull : LoadAction::Load;
+	id<MTLRenderPipelineState> pipeline = GetConvertPipeline(shader);
+	pxAssertRel(pipeline, fmt::format("No pipeline for {}", ShaderEntryPoint(shader.Shader())).c_str());
 
 	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, linear, load_action, nullptr, 0);
 }}
@@ -1715,7 +1693,7 @@ void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	}
 }}
 
-void GSDeviceMTL::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader)
+void GSDeviceMTL::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvertSelector shader)
 { @autoreleasepool {
 	BeginStretchRect(@"MultiStretchRect", dTex, MTLLoadActionLoad);
 
@@ -1737,13 +1715,11 @@ void GSDeviceMTL::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_r
 		const u32 end = i * 4;
 		const u32 vertex_count = end - start;
 		const u32 index_count = vertex_count + (vertex_count >> 1); // 6 indices per 4 vertices
-		pxAssert(HasVariableWriteMask(shader) || wmask == 0xf);
-		id<MTLRenderPipelineState> new_pipeline = wmask == 0xf ? m_convert_pipeline[static_cast<int>(shader)]
-		                                                       : m_convert_pipeline_copy_mask[GetShaderIndexForMask(shader, wmask)];
+		id<MTLRenderPipelineState> new_pipeline = GetConvertPipeline(shader.SetMask(wmask));
 		if (new_pipeline != pipeline)
 		{
 			pipeline = new_pipeline;
-			pxAssertRel(pipeline, fmt::format("No pipeline for {}", shaderName(shader)).c_str());
+			pxAssertRel(pipeline, fmt::format("No pipeline for {}", ShaderEntryPoint(shader.Shader())).c_str());
 			MRESetPipeline(pipeline);
 		}
 		MRESetSampler(linear ? SamplerSelector::Linear() : SamplerSelector::Point());
@@ -1790,7 +1766,7 @@ void GSDeviceMTL::UpdateCLUTTexture(GSTexture* sTex, float sScale, u32 offsetX, 
 void GSDeviceMTL::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM)
 { @autoreleasepool {
 	const ShaderConvert shader = ((SPSM & 0xE) == 0) ? ShaderConvert::RGBA_TO_8I : ShaderConvert::RGB5A1_TO_8I;
-	id<MTLRenderPipelineState> pipeline = m_convert_pipeline[static_cast<int>(shader)];
+	id<MTLRenderPipelineState> pipeline = GetConvertPipeline(shader);
 	if (!pipeline)
 		[NSException raise:@"StretchRect Missing Pipeline" format:@"No pipeline for %d", static_cast<int>(shader)];
 
@@ -1803,7 +1779,7 @@ void GSDeviceMTL::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 off
 void GSDeviceMTL::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect)
 { @autoreleasepool {
 	const ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
-	id<MTLRenderPipelineState> pipeline = m_convert_pipeline[static_cast<int>(shader)];
+	id<MTLRenderPipelineState> pipeline = GetConvertPipeline(shader);
 	if (!pipeline)
 		[NSException raise:@"StretchRect Missing Pipeline" format:@"No pipeline for %d", static_cast<int>(shader)];
 
@@ -1847,7 +1823,7 @@ void GSDeviceMTL::BeginDSAsRT(GSTexture* ds, const GSVector4i& drawarea)
 			return;
 		if (m_ds_as_rt_gstexture)
 			Recycle(m_ds_as_rt_gstexture);
-		m_ds_as_rt_gstexture = CreateRenderTarget(needed_width, needed_height, GSTexture::Format::Float32, false, true);
+		m_ds_as_rt_gstexture = CreateRenderTarget(needed_width, needed_height, GSTexture::Format::DepthColor, false, true);
 		m_ds_as_rt_texture = static_cast<GSTextureMTL*>(m_ds_as_rt_gstexture)->GetTexture();
 		@autoreleasepool
 		{

@@ -3,21 +3,12 @@
 
 //#version 420 // Keep it for editor detection
 
-
 #ifdef VERTEX_SHADER
 
 layout(location = 0) in vec2 POSITION;
 layout(location = 1) in vec2 TEXCOORD0;
 layout(location = 7) in vec4 COLOR;
 
-// FIXME set the interpolation (don't know what dx do)
-// flat means that there is no interpolation. The value given to the fragment shader is based on the provoking vertex conventions.
-//
-// noperspective means that there will be linear interpolation in window-space. This is usually not what you want, but it can have its uses.
-//
-// smooth, the default, means to do perspective-correct interpolation.
-//
-// The centroid qualifier only matters when multisampling. If this qualifier is not present, then the value is interpolated to the pixel's center, anywhere in the pixel, or to one of the pixel's samples. This sample may lie outside of the actual primitive being rendered, since a primitive can cover only part of a pixel's area. The centroid qualifier is used to prevent this; the interpolation point must fall within both the pixel's area and the primitive's area.
 out vec4 PSin_p;
 out vec2 PSin_t;
 out vec4 PSin_c;
@@ -40,44 +31,125 @@ in vec4 PSin_c;
 
 layout(binding = 0) uniform sampler2D TextureSampler;
 
-// Give a different name so I remember there is a special case!
-#if defined(ps_convert_rgba8_16bits) || defined(ps_convert_float32_32bits)
-layout(location = 0) out uint SV_Target1;
-#elif defined(ps_convert_float32_depth_to_color)
-layout(location = 0) out float SV_Target0;
-#elif !defined(ps_datm1) && \
-	!defined(ps_datm0) && \
-	!defined(ps_datm1_rta_correction) && \
-	!defined(ps_datm0_rta_correction) && \
-	!defined(ps_convert_rgba8_float32) && \
-	!defined(ps_convert_rgba8_float24) && \
-	!defined(ps_convert_rgba8_float16) && \
-	!defined(ps_convert_rgb5a1_float16) && \
-	!defined(ps_convert_rgba8_float32_biln) && \
-	!defined(ps_convert_rgba8_float24_biln) && \
-	!defined(ps_convert_rgba8_float16_biln) && \
-	!defined(ps_convert_rgb5a1_float16_biln) && \
-	!defined(ps_convert_float32_float24) && \
-	!defined(ps_depth_copy)
-layout(location = 0) out vec4 SV_Target0;
+#if HAS_INTEGER_OUTPUT
+	layout(location = 0) out uint o_col0;
+	#define OUTPUT o_col0
+#elif HAS_DEPTH_OUTPUT
+	out float gl_FragDepth;
+	#define OUTPUT gl_FragDepth
+#elif HAS_FLOAT32_OUTPUT
+	layout(location = 0) out float o_col0;
+	#define OUTPUT o_col0
+#elif HAS_STENCIL_OUTPUT
+#else
+	layout(location = 0) out vec4 o_col0;
+	#define OUTPUT o_col0
 #endif
+
+#if HAS_FLOAT32_INPUT
+
+float sample_c()
+{
+	return texture(TextureSampler, PSin_t).r;
+}
+
+#else
 
 vec4 sample_c()
 {
 	return texture(TextureSampler, PSin_t);
 }
 
+#endif
+
+uint rgba8_to_uint(vec4 c)
+{
+	uvec4 i = uvec4(c * 255.5f) & 0xFFu;
+	return i.r | (i.g << 8) | (i.b << 16) | (i.a << 24);
+}
+
+uint rgb5a1_to_uint(vec4 c)
+{
+	uvec4 i = uvec4(c * 255.5f) & uvec4(0xF8u, 0xF8u, 0xF8u, 0x80u);
+	return (i.r >> 3) | (i.g << 2) | (i.b << 7) | (i.a << 8);
+}
+
+uint depth_to_uint(float d)
+{
+	return uint(d * exp2(32.0f));
+}
+
+vec4 uint_to_rgba8(uint i)
+{
+	return vec4((i & 0xFFu), ((i >> 8) & 0xFFu), ((i >> 16) & 0xFFu), ((i >> 24) & 0xFFu)) / 255.0f;
+}
+
+vec4 uint_to_rgb5a1(uint i)
+{
+	return vec4(uvec4(i << 3, i >> 2, i >> 7, i >> 8) & uvec4(0xF8u, 0xF8u, 0xF8u, 0x80u)) / 255.0f;
+}
+
+float uint_to_depth32(uint i)
+{
+	return float(i) * exp2(-32.0f);
+}
+
+float uint_to_depth24(uint i)
+{
+	return float(i & 0xFFFFFFu) * exp2(-32.0f);
+}
+
+float uint_to_depth16(uint i)
+{
+	return float(i & 0xFFFFu) * exp2(-32.0f);
+}
+
+float rgba8_to_depth32(vec4 val)
+{
+	return uint_to_depth32(rgba8_to_uint(val));
+}
+
+float rgba8_to_depth24(vec4 val)
+{
+	return uint_to_depth24(rgba8_to_uint(val));
+}
+
+float rgba8_to_depth16(vec4 val)
+{
+	return uint_to_depth16(rgba8_to_uint(val));
+}
+
+float rgb5a1_to_depth16(vec4 val)
+{
+	return uint_to_depth16(rgb5a1_to_uint(val));
+}
+
+vec4 depth32_to_rgba8(float d)
+{
+	return uint_to_rgba8(depth_to_uint(d));
+}
+
+vec4 depth16_to_rgb5a1(float d)
+{
+	return uint_to_rgb5a1(depth_to_uint(d));
+}
+
+float depth32_to_depth24(float d)
+{
+	return uint_to_depth24(depth_to_uint(d));
+}
+
 #ifdef ps_copy
 void ps_copy()
 {
-	SV_Target0 = sample_c();
+	OUTPUT = sample_c();
 }
 #endif
 
 #ifdef ps_depth_copy
 void ps_depth_copy()
 {
-  gl_FragDepth = sample_c().r;
+	OUTPUT = sample_c();
 }
 #endif
 
@@ -96,126 +168,47 @@ void ps_downsample_copy()
 		for (int xoff = 0; xoff < DownsampleFactor; xoff++)
 			result += texelFetch(TextureSampler, coord + ivec2(xoff * StepMultiplier, yoff * StepMultiplier), 0);
 	}
-	SV_Target0 = result / Weight;
+	o_col0 = result / Weight;
 }
 #endif
 
-#ifdef ps_convert_rgba8_16bits
-// Need to be careful with precision here, it can break games like Spider-Man 3 and Dogs Life
-void ps_convert_rgba8_16bits()
+#ifdef ps_convert_rgb5a1_16bits
+void ps_convert_rgb5a1_16bits()
 {
-	highp uvec4 i = uvec4(sample_c() * vec4(255.5f, 255.5f, 255.5f, 255.5f));
-
-	SV_Target1 = ((i.x & 0x00F8u) >> 3) | ((i.y & 0x00F8u) << 2) | ((i.z & 0x00f8u) << 7) | ((i.w & 0x80u) << 8);
+	// Need to be careful with precision here, it can break games like Spider-Man 3 and Dogs Life
+	OUTPUT = rgb5a1_to_uint(sample_c());
 }
 #endif
 
-#ifdef ps_convert_float32_32bits
-void ps_convert_float32_32bits()
+#ifdef ps_convert_depth32_32bits
+void ps_convert_depth32_32bits()
 {
 	// Convert a GL_FLOAT32 depth texture into a 32 bits UINT texture
-	SV_Target1 = uint(exp2(32.0f) * sample_c().r);
+	OUTPUT = depth_to_uint(sample_c());
 }
 #endif
 
-#ifdef ps_convert_float32_rgba8
-void ps_convert_float32_rgba8()
+#ifdef ps_convert_depth32_rgba8
+void ps_convert_depth32_rgba8()
 {
 	// Convert a GL_FLOAT32 depth texture into a RGBA color texture
-	uint d = uint(sample_c().r * exp2(32.0f));
-	SV_Target0 = vec4(uvec4((d & 0xFFu), ((d >> 8) & 0xFFu), ((d >> 16) & 0xFFu), (d >> 24))) / vec4(255.0);
+	OUTPUT = depth32_to_rgba8(sample_c());
 }
 #endif
 
-#ifdef ps_convert_float16_rgb5a1
-void ps_convert_float16_rgb5a1()
+#ifdef ps_convert_depth16_rgb5a1
+void ps_convert_depth16_rgb5a1()
 {
 	// Convert a GL_FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
-	uint d = uint(sample_c().r * exp2(32.0f));
-	SV_Target0 = vec4(uvec4(d << 3, d >> 2, d >> 7, d >> 8) & uvec4(0xf8, 0xf8, 0xf8, 0x80)) / 255.0f;
+	OUTPUT = depth16_to_rgb5a1(sample_c());
 }
 #endif
 
-float rgba8_to_depth32(vec4 unorm)
-{
-	uvec4 c = uvec4(unorm * vec4(255.5f));
-	return float(c.r | (c.g << 8) | (c.b << 16) | (c.a << 24)) * exp2(-32.0f);
-}
-
-float rgba8_to_depth24(vec4 unorm)
-{
-	uvec3 c = uvec3(unorm.rgb * vec3(255.5f));
-	return float(c.r | (c.g << 8) | (c.b << 16)) * exp2(-32.0f);
-}
-
-float rgba8_to_depth16(vec4 unorm)
-{
-	uvec2 c = uvec2(unorm.rg * vec2(255.5f));
-	return float(c.r | (c.g << 8)) * exp2(-32.0f);
-}
-
-float rgb5a1_to_depth16(vec4 unorm)
-{
-	uvec4 c = uvec4(unorm * vec4(255.5f));
-	return float(((c.r & 0xF8u) >> 3) | ((c.g & 0xF8u) << 2) | ((c.b & 0xF8u) << 7) | ((c.a & 0x80u) << 8)) * exp2(-32.0f);
-}
-
-#ifdef ps_convert_float32_depth_to_color
-void ps_convert_float32_depth_to_color()
-{
-	SV_Target0 = sample_c().r;
-}
-#endif
-
-#ifdef ps_convert_float32_color_to_depth
-void ps_convert_float32_color_to_depth()
-{
-	gl_FragDepth = sample_c().r;
-}
-#endif
-
-#ifdef ps_convert_float32_float24
-void ps_convert_float32_float24()
+#ifdef ps_convert_depth32_depth24
+void ps_convert_depth32_depth24()
 {
 	// Truncates depth value to 24bits
-	uint d = uint(sample_c().r * exp2(32.0f)) & 0xFFFFFFu;
-	gl_FragDepth = float(d) * exp2(-32.0f);
-}
-#endif
-
-#ifdef ps_convert_rgba8_float32
-void ps_convert_rgba8_float32()
-{
-	// Convert an RGBA texture into a float depth texture
-	gl_FragDepth = rgba8_to_depth32(sample_c());
-}
-#endif
-
-#ifdef ps_convert_rgba8_float24
-void ps_convert_rgba8_float24()
-{
-	// Same as above but without the alpha channel (24 bits Z)
-
-	// Convert an RGBA texture into a float depth texture
-	gl_FragDepth = rgba8_to_depth24(sample_c());
-}
-#endif
-
-#ifdef ps_convert_rgba8_float16
-void ps_convert_rgba8_float16()
-{
-	// Same as above but without the A/B channels (16 bits Z)
-
-	// Convert an RGBA texture into a float depth texture
-	gl_FragDepth = rgba8_to_depth16(sample_c());
-}
-#endif
-
-#ifdef ps_convert_rgb5a1_float16
-void ps_convert_rgb5a1_float16()
-{
-	// Convert an RGB5A1 (saved as RGBA8) color to a 16 bit Z
-	gl_FragDepth = rgb5a1_to_depth16(sample_c());
+	OUTPUT = depth32_to_depth24(sample_c());
 }
 #endif
 
@@ -229,41 +222,55 @@ void ps_convert_rgb5a1_float16()
 	float depthTR = CONVERT_FN(texelFetch(TextureSampler, coords.zy, 0)); \
 	float depthBL = CONVERT_FN(texelFetch(TextureSampler, coords.xw, 0)); \
 	float depthBR = CONVERT_FN(texelFetch(TextureSampler, coords.zw, 0)); \
-	gl_FragDepth = mix(mix(depthTL, depthTR, mix_vals.x), mix(depthBL, depthBR, mix_vals.x), mix_vals.y);
+	OUTPUT = mix(mix(depthTL, depthTR, mix_vals.x), mix(depthBL, depthBR, mix_vals.x), mix_vals.y);
 
-#ifdef ps_convert_rgba8_float32_biln
-void ps_convert_rgba8_float32_biln()
+#ifdef ps_convert_rgba8_depth32
+void ps_convert_rgba8_depth32()
 {
 	// Convert an RGBA texture into a float depth texture
+#if HAS_BILN
 	SAMPLE_RGBA_DEPTH_BILN(rgba8_to_depth32);
+#else
+	OUTPUT = rgba8_to_depth32(sample_c());
+#endif
 }
 #endif
 
-#ifdef ps_convert_rgba8_float24_biln
-void ps_convert_rgba8_float24_biln()
+#ifdef ps_convert_rgba8_depth24
+void ps_convert_rgba8_depth24()
 {
 	// Same as above but without the alpha channel (24 bits Z)
-
 	// Convert an RGBA texture into a float depth texture
+#if HAS_BILN
 	SAMPLE_RGBA_DEPTH_BILN(rgba8_to_depth24);
+#else
+	OUTPUT = rgba8_to_depth24(sample_c());
+#endif
 }
 #endif
 
-#ifdef ps_convert_rgba8_float16_biln
-void ps_convert_rgba8_float16_biln()
+#ifdef ps_convert_rgba8_depth16
+void ps_convert_rgba8_depth16()
 {
 	// Same as above but without the A/B channels (16 bits Z)
-
 	// Convert an RGBA texture into a float depth texture
+#if HAS_BILN
 	SAMPLE_RGBA_DEPTH_BILN(rgba8_to_depth16);
+#else
+	OUTPUT = rgba8_to_depth16(sample_c());
+#endif
 }
 #endif
 
-#ifdef ps_convert_rgb5a1_float16_biln
-void ps_convert_rgb5a1_float16_biln()
+#ifdef ps_convert_rgb5a1_depth16
+void ps_convert_rgb5a1_depth16()
 {
 	// Convert an RGB5A1 (saved as RGBA8) color to a 16 bit Z
+#if HAS_BILN
 	SAMPLE_RGBA_DEPTH_BILN(rgb5a1_to_depth16);
+#else
+	OUTPUT = rgb5a1_to_depth16(sample_c());
+#endif
 }
 #endif
 
@@ -373,7 +380,7 @@ void ps_convert_rgb5a1_8i()
 		uint red = (denorm_c.r >> 3) & 0x1Fu;
 		uint green = (denorm_c.g >> 3) & 0x1Fu;
 
-		SV_Target0 = vec4(float(((green << 5) | red) & 0xFFu) / 255.0f);
+		o_col0 = vec4(float(((green << 5) | red) & 0xFFu) / 255.0f);
 	}
 	else
 	{
@@ -381,7 +388,7 @@ void ps_convert_rgb5a1_8i()
 		uint blue = (denorm_c.b >> 3) & 0x1Fu;
 		uint alpha = denorm_c.a & 0x80u;
 
-		SV_Target0 = vec4(float((alpha | (blue << 2) | (green >> 3)) & 0xFFu) / 255.0f);
+		o_col0 = vec4(float((alpha | (blue << 2) | (green >> 3)) & 0xFFu) / 255.0f);
 	}
 }
 #endif
@@ -430,7 +437,7 @@ void ps_convert_rgba_8i()
 	vec4 pixel = texelFetch(TextureSampler, ivec2(coord), 0);
 	vec2  sel0 = (pos.y & 2u) == 0u ? pixel.rb : pixel.ga;
 	float sel1 = (pos.x & 8u) == 0u ? sel0.x : sel0.y;
-	SV_Target0 = vec4(sel1);
+	o_col0 = vec4(sel1);
 }
 #endif
 
@@ -438,7 +445,7 @@ void ps_convert_rgba_8i()
 void ps_filter_transparency()
 {
 	vec4 c = sample_c();
-	SV_Target0 = vec4(c.rgb, 1.0);
+	o_col0 = vec4(c.rgb, 1.0);
 }
 #endif
 
@@ -486,7 +493,7 @@ void ps_datm0_rta_correction()
 void ps_rta_correction()
 {
 	vec4 value = sample_c();
-	SV_Target0 = vec4(value.rgb, value.a / (128.25f / 255.0f));
+	o_col0 = vec4(value.rgb, value.a / (128.25f / 255.0f));
 }
 #endif
 
@@ -494,7 +501,7 @@ void ps_rta_correction()
 void ps_rta_decorrection()
 {
 	vec4 value = sample_c();
-	SV_Target0 = vec4(value.rgb, value.a * (128.25f / 255.0f));
+	o_col0 = vec4(value.rgb, value.a * (128.25f / 255.0f));
 }
 #endif
 
@@ -502,7 +509,7 @@ void ps_rta_decorrection()
 void ps_colclip_init()
 {
 	vec4 value = sample_c();
-	SV_Target0 = vec4(round(value.rgb * 255.0f) / 65535.0f, value.a);
+	o_col0 = vec4(round(value.rgb * 255.0f) / 65535.0f, value.a);
 }
 #endif
 
@@ -510,7 +517,7 @@ void ps_colclip_init()
 void ps_colclip_resolve()
 {
 	vec4 value = sample_c();
-	SV_Target0 = vec4(vec3(uvec3(value.rgb * 65535.0f) & 255u) / 255.0f, value.a);
+	o_col0 = vec4(vec3(uvec3(value.rgb * 65535.0f) & 255u) / 255.0f, value.a);
 }
 #endif
 
@@ -525,7 +532,7 @@ void ps_convert_clut_4()
 	uvec2 pos = uvec2(index % 8u, index / 8u);
 
 	ivec2 final = ivec2(floor(vec2(offset.xy + pos) * vec2(scale)));
-	SV_Target0 = texelFetch(TextureSampler, final, 0);
+	o_col0 = texelFetch(TextureSampler, final, 0);
 }
 #endif
 
@@ -545,7 +552,7 @@ void ps_convert_clut_8()
 	pos.y = ((index / 32u) * 2u) + (subgroup % 2u);
 
 	ivec2 final = ivec2(floor(vec2(offset.xy + pos) * vec2(scale)));
-	SV_Target0 = texelFetch(TextureSampler, final, 0);
+	o_col0 = texelFetch(TextureSampler, final, 0);
 }
 #endif
 
@@ -600,31 +607,31 @@ void ps_yuv()
 			break;
 	}
 
-	SV_Target0 = o;
+	o_col0 = o;
 }
 #endif
 
-#if defined(ps_stencil_image_init_0) || defined(ps_stencil_image_init_1) || defined(ps_stencil_image_init_2) || defined(ps_stencil_image_init_3)
+#if defined(ps_primid_image_init_0) || defined(ps_primid_image_init_1) || defined(ps_primid_image_init_2) || defined(ps_primid_image_init_3)
 
 void main()
 {
-	SV_Target0 = vec4(0x7FFFFFFF);
+	o_col0 = vec4(0x7FFFFFFF);
 
-	#ifdef ps_stencil_image_init_0
+	#ifdef ps_primid_image_init_0
 		if((127.5f / 255.0f) < sample_c().a) // < 0x80 pass (== 0x80 should not pass)
-			SV_Target0 = vec4(-1);
+			o_col0 = vec4(-1);
 	#endif
-	#ifdef ps_stencil_image_init_1
+	#ifdef ps_primid_image_init_1
 		if(sample_c().a < (127.5f / 255.0f)) // >= 0x80 pass
-			SV_Target0 = vec4(-1);
+			o_col0 = vec4(-1);
 	#endif
-	#ifdef ps_stencil_image_init_2
+	#ifdef ps_primid_image_init_2
 		if((254.5f / 255.0f) < sample_c().a) // < 0x80 pass (== 0x80 should not pass)
-			SV_Target0 = vec4(-1);
+			o_col0 = vec4(-1);
 	#endif
-	#ifdef ps_stencil_image_init_3
+	#ifdef ps_primid_image_init_3
 		if(sample_c().a < (254.5f / 255.0f)) // >= 0x80 pass
-			SV_Target0 = vec4(-1);
+			o_col0 = vec4(-1);
 	#endif
 }
 #endif

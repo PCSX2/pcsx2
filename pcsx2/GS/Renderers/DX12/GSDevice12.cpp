@@ -34,10 +34,6 @@
 static u32 s_debug_scope_depth = 0;
 #endif
 
-static bool IsDATMConvertShader(ShaderConvert i)
-{
-	return (i == ShaderConvert::DATM_0 || i == ShaderConvert::DATM_1 || i == ShaderConvert::DATM_0_RTA_CORRECTION || i == ShaderConvert::DATM_1_RTA_CORRECTION);
-}
 static bool IsDATEModePrimIDInit(u32 flag)
 {
 	return flag == 1 || flag == 2;
@@ -1524,7 +1520,7 @@ void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_f
 				DXGI_FORMAT_UNKNOWN}, // ColorClip
 			{DXGI_FORMAT_D32_FLOAT_S8X24_UINT, DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS, DXGI_FORMAT_UNKNOWN,
 				DXGI_FORMAT_D32_FLOAT_S8X24_UINT}, // DepthStencil
-			{DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_UNKNOWN}, // Float32
+			{DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_UNKNOWN}, // DepthColor
 			{DXGI_FORMAT_A8_UNORM, DXGI_FORMAT_A8_UNORM, DXGI_FORMAT_A8_UNORM, DXGI_FORMAT_UNKNOWN}, // UNorm8
 			{DXGI_FORMAT_R16_UINT, DXGI_FORMAT_R16_UINT, DXGI_FORMAT_R16_UINT, DXGI_FORMAT_UNKNOWN}, // UInt16
 			{DXGI_FORMAT_R32_UINT, DXGI_FORMAT_R32_UINT, DXGI_FORMAT_R32_UINT, DXGI_FORMAT_UNKNOWN}, // UInt32
@@ -1613,7 +1609,7 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 			{
 				dTex12->TransitionToState(GSTexture12::ResourceState::RenderTarget);
 				GetCommandList().list4->ClearRenderTargetView(
-					dTex12->GetWriteDescriptor(), sTex12->GetUNormClearColor().v, 0, nullptr);
+					dTex12->GetWriteDescriptor(), sTex12->GetClearForFormat().v, 0, nullptr);
 			}
 			else
 			{
@@ -1673,16 +1669,20 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 }
 
 void GSDevice12::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	GSHWDrawConfig::ColorMaskSelector cms, ShaderConvert shader, bool linear)
+	ShaderConvertSelector shader, bool linear)
 {
-	const bool allow_discard = (cms.wrgba == 0xf);
-	const ID3D12PipelineState* state;
-	if (HasVariableWriteMask(shader))
-		state = m_color_copy[GetShaderIndexForMask(shader, cms.wrgba)].get();
-	else
-		state = dTex ? m_convert[static_cast<int>(shader)].get() : m_present[static_cast<int>(shader)].get();
+	pxAssert(dTex);
+	shader = ProcessShaderConvertSelector(shader); // Removes depth input
+	const bool allow_discard = (shader.Mask() == 0xf);
 	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
-		state, linear, allow_discard);
+		GetConvertPipeline(shader), linear, allow_discard);
+}
+
+void GSDevice12::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, const GSVector4& dRect,
+	PresentShader shader, bool linear)
+{
+	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, nullptr, dRect,
+		m_present[static_cast<u32>(shader)].get(), linear, true);
 }
 
 void GSDevice12::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
@@ -1717,7 +1717,7 @@ void GSDevice12::UpdateCLUTTexture(
 	const GSVector4 dRect(0, 0, dSize, 1);
 	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
 	DoStretchRect(static_cast<GSTexture12*>(sTex), GSVector4::zero(), static_cast<GSTexture12*>(dTex), dRect,
-		m_convert[static_cast<int>(shader)].get(), false, true);
+		GetConvertPipeline(shader), false, true);
 }
 
 void GSDevice12::ConvertToIndexedTexture(
@@ -1739,7 +1739,7 @@ void GSDevice12::ConvertToIndexedTexture(
 	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	const ShaderConvert shader = ((SPSM & 0xE) == 0) ? ShaderConvert::RGBA_TO_8I : ShaderConvert::RGB5A1_TO_8I;
 	DoStretchRect(static_cast<GSTexture12*>(sTex), GSVector4::zero(), static_cast<GSTexture12*>(dTex), dRect,
-		m_convert[static_cast<int>(shader)].get(), false, true);
+		GetConvertPipeline(shader), false, true);
 }
 
 void GSDevice12::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect)
@@ -1762,12 +1762,14 @@ void GSDevice12::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32
 	//const GSVector4 dRect = GSVector4(dTex->GetRect());
 	const ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
 	DoStretchRect(static_cast<GSTexture12*>(sTex), GSVector4::zero(), static_cast<GSTexture12*>(dTex), dRect,
-		m_convert[static_cast<int>(shader)].get(), false, true);
+		GetConvertPipeline(shader), false, true);
 }
 
 void GSDevice12::DrawMultiStretchRects(
-	const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader)
+	const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvertSelector shader)
 {
+	shader = ProcessShaderConvertSelector(shader);  // Removes depth input
+
 	GSTexture* last_tex = rects[0].src;
 	bool last_linear = rects[0].linear;
 	u8 last_wmask = rects[0].wmask.wrgba;
@@ -1808,7 +1810,7 @@ void GSDevice12::DrawMultiStretchRects(
 }
 
 void GSDevice12::DoMultiStretchRects(
-	const MultiStretchRect* rects, u32 num_rects, GSTexture12* dTex, ShaderConvert shader)
+	const MultiStretchRect* rects, u32 num_rects, GSTexture12* dTex, ShaderConvertSelector shader)
 {
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
@@ -1879,10 +1881,7 @@ void GSDevice12::DoMultiStretchRects(
 	SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	SetUtilityTexture(rects[0].src, rects[0].linear ? m_linear_sampler_cpu : m_point_sampler_cpu);
 
-	pxAssert(HasVariableWriteMask(shader) || rects[0].wmask.wrgba == 0xf);
-	SetPipeline((rects[0].wmask.wrgba != 0xf) ?
-		m_color_copy[GetShaderIndexForMask(shader, rects[0].wmask.wrgba)].get() :
-		m_convert[static_cast<int>(shader)].get());
+	SetPipeline(GetConvertPipeline(shader.SetMask(rects[0].wmask.wrgba)));
 
 	if (ApplyUtilityState())
 		DrawIndexedPrimitive();
@@ -1901,7 +1900,7 @@ void GSDevice12::BeginRenderPassForStretchRect(
 		BeginRenderPass(load_op, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			dTex->GetUNormClearColor());
+			dTex->GetClearForFormat());
 	}
 	else
 	{
@@ -2032,7 +2031,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, GSVector4::unorm8(c));
 		SetUtilityRootSignature();
-		SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY)].get());
+		SetPipeline(GetConvertPipeline(ShaderConvert::COPY));
 		DrawStretchRect(sRect[1], PMODE.SLBG ? dRect[2] : dRect[1], dsize);
 		dTex->SetState(GSTexture::State::Dirty);
 		dcleared = true;
@@ -2053,7 +2052,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		if (dcleared)
 		{
 			SetUtilityRootSignature();
-			SetPipeline(m_convert[static_cast<int>(ShaderConvert::YUV)].get());
+			SetPipeline(GetConvertPipeline(ShaderConvert::YUV));
 			DrawStretchRect(full_r, dRect[2], fbsize);
 		}
 		EndRenderPass();
@@ -2096,7 +2095,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	{
 		EndRenderPass();
 		SetUtilityRootSignature();
-		SetPipeline(m_convert[static_cast<int>(ShaderConvert::YUV)].get());
+		SetPipeline(GetConvertPipeline(ShaderConvert::YUV));
 		SetUtilityTexture(dTex, sampler);
 		OMSetRenderTargets(sTex[2], nullptr, nullptr, fbarea);
 		BeginRenderPass(
@@ -2598,6 +2597,7 @@ static void AddUtilityVertexAttributes(D3D12::GraphicsPipelineBuilder& gpb)
 GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityVertexShader(const std::string& source, const char* entry_point)
 {
 	ShaderMacro sm_model;
+	sm_model.AddMacro("VERTEX_SHADER", "1");
 	return m_shader_cache.GetVertexShader(source, sm_model.GetPtr(), entry_point);
 }
 
@@ -2703,14 +2703,14 @@ bool GSDevice12::CreateRootSignatures()
 
 bool GSDevice12::CompileConvertPipelines()
 {
-	std::optional<std::string> shader = ReadShaderSource("shaders/dx11/convert.fx");
-	if (!shader)
+	std::optional<std::string> source = ReadShaderSource("shaders/dx11/convert.fx");
+	if (!source)
 	{
 		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/convert.fx.");
 		return false;
 	}
 
-	m_convert_vs = GetUtilityVertexShader(*shader, "vs_main");
+	m_convert_vs = GetUtilityVertexShader(*source, "vs_main");
 	if (!m_convert_vs)
 		return false;
 
@@ -2721,50 +2721,29 @@ bool GSDevice12::CompileConvertPipelines()
 	gpb.SetNoBlendingState();
 	gpb.SetVertexShader(m_convert_vs.get());
 
-	for (ShaderConvert i = ShaderConvert::COPY; i < ShaderConvert::Count; i = static_cast<ShaderConvert>(static_cast<int>(i) + 1))
-	{
-		const bool depth = HasDepthOutput(i);
-		const int index = static_cast<int>(i);
+	const auto WrapEntryPointMacro = [](const std::string& s) { return fmt::format("__{}__", s); };
 
-		switch (i)
+	m_convert.resize(ShaderConvertSelector::NUM_TOTAL_SHADERS);
+	for (u32 i = 0; i < ShaderConvertSelector::NUM_TOTAL_SHADERS; i++)
+	{
+		const ShaderConvertSelector shader = ShaderConvertSelector::Get(i);
+
+		GSTexture::Format format = shader.OutputFormat();
+		DXGI_FORMAT dxgi_format;
+		LookupNativeFormat(format, nullptr, nullptr, &dxgi_format, nullptr);
+
+		if (shader.DATMConvertShader() || shader.DepthOutput())
 		{
-			case ShaderConvert::RGBA8_TO_16_BITS:
-			case ShaderConvert::FLOAT32_TO_16_BITS:
-			{
-				gpb.SetRenderTarget(0, DXGI_FORMAT_R16_UINT);
-				gpb.SetDepthStencilFormat(DXGI_FORMAT_UNKNOWN);
-			}
-			break;
-			case ShaderConvert::FLOAT32_TO_32_BITS:
-			{
-				gpb.SetRenderTarget(0, DXGI_FORMAT_R32_UINT);
-				gpb.SetDepthStencilFormat(DXGI_FORMAT_UNKNOWN);
-			}
-			break;
-			case ShaderConvert::DATM_0:
-			case ShaderConvert::DATM_1:
-			case ShaderConvert::DATM_0_RTA_CORRECTION:
-			case ShaderConvert::DATM_1_RTA_CORRECTION:
-			{
-				gpb.ClearRenderTargets();
-				gpb.SetDepthStencilFormat(DXGI_FORMAT_D32_FLOAT_S8X24_UINT);
-			}
-			break;
-			case ShaderConvert::FLOAT32_DEPTH_TO_COLOR:
-			{
-				gpb.SetRenderTarget(0, DXGI_FORMAT_R32_FLOAT);
-				gpb.SetDepthStencilFormat(DXGI_FORMAT_UNKNOWN);
-			}
-			break;
-			default:
-			{
-				depth ? gpb.ClearRenderTargets() : gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
-				gpb.SetDepthStencilFormat(depth ? DXGI_FORMAT_D32_FLOAT_S8X24_UINT : DXGI_FORMAT_UNKNOWN);
-			}
-			break;
+			gpb.ClearRenderTargets();
+			gpb.SetDepthStencilFormat(DXGI_FORMAT_D32_FLOAT_S8X24_UINT);
+		}
+		else
+		{
+			gpb.SetRenderTarget(0, dxgi_format);
+			gpb.SetDepthStencilFormat(DXGI_FORMAT_UNKNOWN);
 		}
 
-		if (IsDATMConvertShader(i))
+		if (shader.DATMConvertShader())
 		{
 			const D3D12_DEPTH_STENCILOP_DESC sos = {
 				D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_REPLACE, D3D12_COMPARISON_FUNC_ALWAYS};
@@ -2773,63 +2752,47 @@ bool GSDevice12::CompileConvertPipelines()
 		}
 		else
 		{
-			gpb.SetDepthState(depth, depth, D3D12_COMPARISON_FUNC_ALWAYS);
+			gpb.SetDepthState(shader.DepthOutput(), shader.DepthOutput(), D3D12_COMPARISON_FUNC_ALWAYS);
 			gpb.SetNoStencilState();
 		}
 
-		gpb.SetColorWriteMask(0, ShaderConvertWriteMask(i));
+		gpb.SetColorWriteMask(0, shader.Mask());
 
-		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, shaderName(i)));
+		const char* entry_point = shader.EntryPoint();
+		std::string entry_point_macro = WrapEntryPointMacro(entry_point);
+
+		ShaderMacro sm;
+		sm.AddMacro("PIXEL_SHADER", 1);
+		sm.AddMacro("HAS_BILN", static_cast<int>(shader.Biln()));
+		sm.AddMacro("HAS_STENCIL_OUTPUT", static_cast<int>(shader.StencilOutput()));
+		sm.AddMacro("HAS_INTEGER_OUTPUT", static_cast<int>(shader.IntegerOutputBpp() != 0));
+		sm.AddMacro("HAS_DEPTH_INPUT", 0); // unused
+		sm.AddMacro("HAS_DEPTH_OUTPUT", static_cast<int>(shader.DepthOutput()));
+		sm.AddMacro("HAS_FLOAT32_INPUT", static_cast<int>(shader.Float32Input()));
+		sm.AddMacro("HAS_FLOAT32_OUTPUT", static_cast<int>(shader.Float32Output()));
+		sm.AddMacro(entry_point_macro.c_str(), 1);
+
+		ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(*source, sm.GetPtr(), shader.EntryPoint()));
 		if (!ps)
 			return false;
 
 		gpb.SetPixelShader(ps.get());
 
-		m_convert[index] = gpb.Create(m_device.get(), m_shader_cache, false);
-		if (!m_convert[index])
+		ComPtr<ID3D12PipelineState> pipe = gpb.Create(m_device.get(), m_shader_cache, false);
+					
+		if (!pipe)
 			return false;
 
-		D3D12::SetObjectName(m_convert[index].get(), TinyString::from_format("Convert pipeline {}", static_cast<int>(i)));
+		D3D12::SetObjectName(pipe.get(),
+			TinyString::from_format("Convert pipeline ({}, mask={:x}, depth={}, biln={})",
+				shader.Name(), shader.Mask(), static_cast<int>(shader.DepthOutput()),
+				static_cast<int>(shader.Biln())));
 
-		if (i == ShaderConvert::COPY)
-		{
-			// compile color copy pipelines
-			gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
-			gpb.SetDepthStencilFormat(DXGI_FORMAT_UNKNOWN);
-			for (u32 j = 0; j < 16; j++)
-			{
-				pxAssert(!m_color_copy[j]);
-				gpb.SetBlendState(0, false, D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, D3D12_BLEND_ONE,
-					D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, static_cast<u8>(j));
-				m_color_copy[j] = gpb.Create(m_device.get(), m_shader_cache, false);
-				if (!m_color_copy[j])
-					return false;
+		m_convert[i] = pipe;
 
-				D3D12::SetObjectName(m_color_copy[j].get(), TinyString::from_format("Color copy pipeline (r={}, g={}, b={}, a={})",
-					j & 1u, (j >> 1) & 1u, (j >> 2) & 1u, (j >> 3) & 1u));
-			}
-		}
-		else if (i == ShaderConvert::RTA_CORRECTION)
+		if (shader.Shader() == ShaderConvert::COLCLIP_INIT || shader.Shader() == ShaderConvert::COLCLIP_RESOLVE)
 		{
-			// compile color copy pipelines
-			gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
-			gpb.SetDepthStencilFormat(DXGI_FORMAT_UNKNOWN);
-			for (u32 j = 16; j < 32; j++)
-			{
-				pxAssert(!m_color_copy[j]);
-				gpb.SetBlendState(0, false, D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, D3D12_BLEND_ONE,
-					D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, static_cast<u8>(j - 16));
-				m_color_copy[j] = gpb.Create(m_device.get(), m_shader_cache, false);
-				if (!m_color_copy[j])
-					return false;
-
-				D3D12::SetObjectName(m_color_copy[j].get(), TinyString::from_format("Color copy pipeline (r={}, g={}, b={}, a={})",
-																j & 1u, (j >> 1) & 1u, (j >> 2) & 1u, (j >> 3) & 1u));
-			}
-		}
-		else if (i == ShaderConvert::COLCLIP_INIT || i == ShaderConvert::COLCLIP_RESOLVE)
-		{
-			const bool is_setup = i == ShaderConvert::COLCLIP_INIT;
+			const bool is_setup = shader.Shader() == ShaderConvert::COLCLIP_INIT;
 			std::array<ComPtr<ID3D12PipelineState>, 2>& arr = is_setup ? m_colclip_setup_pipelines : m_colclip_finish_pipelines;
 			for (u32 ds = 0; ds < 2; ds++)
 			{
@@ -2848,8 +2811,15 @@ bool GSDevice12::CompileConvertPipelines()
 
 	for (u32 datm = 0; datm < 4; datm++)
 	{
-		const std::string entry_point(StringUtil::StdStringFromFormat("ps_stencil_image_init_%d", datm));
-		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, entry_point.c_str()));
+		const std::string entry_point(StringUtil::StdStringFromFormat("ps_primid_image_init_%d", datm));
+
+		const std::string entry_point_macro = WrapEntryPointMacro(entry_point);
+
+		ShaderMacro sm;
+		sm.AddMacro("PIXEL_SHADER", "1");
+		sm.AddMacro(entry_point_macro.c_str(), "1");
+
+		ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(*source, sm.GetPtr(), entry_point.c_str()));
 		if (!ps)
 			return false;
 
@@ -2864,11 +2834,11 @@ bool GSDevice12::CompileConvertPipelines()
 		for (u32 ds = 0; ds < 2; ds++)
 		{
 			gpb.SetDepthStencilFormat(ds ? DXGI_FORMAT_D32_FLOAT_S8X24_UINT : DXGI_FORMAT_UNKNOWN);
-			m_date_image_setup_pipelines[ds][datm] = gpb.Create(m_device.get(), m_shader_cache, false);
-			if (!m_date_image_setup_pipelines[ds][datm])
+			m_primid_image_setup_pipelines[ds][datm] = gpb.Create(m_device.get(), m_shader_cache, false);
+			if (!m_primid_image_setup_pipelines[ds][datm])
 				return false;
 
-			D3D12::SetObjectName(m_date_image_setup_pipelines[ds][datm].get(),
+			D3D12::SetObjectName(m_primid_image_setup_pipelines[ds][datm].get(),
 				TinyString::from_format("DATE image clear pipeline (ds={}, datm={})", ds, (datm == 1 || datm == 3)));
 		}
 	}
@@ -2903,7 +2873,7 @@ bool GSDevice12::CompilePresentPipelines()
 	{
 		const int index = static_cast<int>(i);
 
-		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, shaderName(i)));
+		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, ShaderEntryPoint(i)));
 		if (!ps)
 			return false;
 
@@ -3063,12 +3033,11 @@ void GSDevice12::DestroyResources()
 	m_tfx_vertex_shaders.clear();
 	m_interlace = {};
 	m_merge = {};
-	m_color_copy = {};
 	m_present = {};
-	m_convert = {};
+	m_convert.clear();
 	m_colclip_setup_pipelines = {};
 	m_colclip_finish_pipelines = {};
-	m_date_image_setup_pipelines = {};
+	m_primid_image_setup_pipelines = {};
 	m_fxaa_pipeline.reset();
 	m_shadeboost_pipeline.reset();
 	m_imgui_pipeline.reset();
@@ -3698,7 +3667,7 @@ void GSDevice12::RenderTextureMipmap(
 	cmdlist.list4->RSSetScissorRects(1, &scissor);
 
 	SetUtilityRootSignature();
-	SetPipeline(m_convert[static_cast<int>(ShaderConvert::COPY)].get());
+	SetPipeline(GetConvertPipeline(ShaderConvert::COPY));
 	DrawStretchRect(GSVector4(0.0f, 0.0f, 1.0f, 1.0f),
 		GSVector4(0.0f, 0.0f, static_cast<float>(dst_width), static_cast<float>(dst_height)),
 		GSVector2i(dst_width, dst_height));
@@ -4077,7 +4046,7 @@ void GSDevice12::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSV
 	OMSetRenderTargets(nullptr, nullptr, ds, bbox);
 	IASetVertexBuffer(vertices, sizeof(vertices[0]), 4);
 	SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	SetPipeline(m_convert[SetDATMShader(datm)].get());
+	SetPipeline(GetConvertPipeline(SetDATMShader(datm)));
 	// Reference stencil value set on Create()
 	BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
@@ -4132,7 +4101,7 @@ GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, Pipe
 	};
 	SetUtilityRootSignature();
 	SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	SetPipeline(m_date_image_setup_pipelines[pipe.ds][static_cast<u8>(config.datm)].get());
+	SetPipeline(m_primid_image_setup_pipelines[pipe.ds][static_cast<u8>(config.datm)].get());
 	IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
 	if (ApplyUtilityState())
 		DrawPrimitive();
@@ -4225,7 +4194,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 				GetLoadOpForTexture(draw_ds),
 				draw_ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 				D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-				draw_rt->GetUNormClearColor(), 0.0f, 0);
+				draw_rt->GetClearForFormat(), 0.0f, 0);
 
 			const GSVector4 sRect(GSVector4(config.colclip_update_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
 			SetPipeline(m_colclip_finish_pipelines[pipe.ds].get());
@@ -4430,7 +4399,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	// Begin render pass if new target or out of the area.
 	if (!InRenderPass())
 	{
-		GSVector4 clear_color = draw_rt ? draw_rt->GetUNormClearColor() : GSVector4::zero();
+		GSVector4 clear_color = draw_rt ? draw_rt->GetClearForFormat() : GSVector4::zero();
 		if (pipe.ps.colclip_hw)
 		{
 			// Denormalize clear color for hw colclip.
@@ -4536,7 +4505,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 				GetLoadOpForTexture(draw_ds),
 				draw_ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 				D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-				draw_rt->GetUNormClearColor(), 0.0f, 0);
+				draw_rt->GetClearForFormat(), 0.0f, 0);
 
 			const GSVector4 sRect(GSVector4(config.colclip_update_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
 			SetPipeline(m_colclip_finish_pipelines[pipe.ds].get());
