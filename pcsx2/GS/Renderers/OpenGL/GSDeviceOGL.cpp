@@ -2797,7 +2797,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 	IASetPrimitiveTopology(topology);
 
-	if (config.tex && (m_features.texture_barrier || (config.tex != config.rt)))
+	if (config.tex && (m_features.texture_barrier || config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_NONE))
 		PSSetShaderResource(0, config.tex);
 	if (config.pal)
 		PSSetShaderResource(1, config.pal);
@@ -3038,8 +3038,7 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 	const bool one_barrier, const bool full_barrier)
 {
 #ifdef PCSX2_DEVBUILD
-	if ((one_barrier || full_barrier) &&
-		!((!m_features.texture_barrier && config.tex && config.tex == draw_rt) || config.IsFeedbackLoopRT(config.ps) || config.IsFeedbackLoopDepth(config.ps))) [[unlikely]]
+	if ((one_barrier || full_barrier) && !(config.IsFeedbackLoopRT(config.ps) || config.IsFeedbackLoopDepth(config.ps))) [[unlikely]]
 		Console.Warning("OpenGL: Possible unnecessary barrier detected.");
 #endif
 
@@ -3049,13 +3048,16 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 			CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
 			if ((one_barrier || full_barrier))
 				PSSetShaderResource(2, draw_rt_clone);
-			if (config.tex && config.tex == draw_rt)
+			if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_RT)
 				PSSetShaderResource(0, draw_rt_clone);
 		}
 		if (draw_ds_clone)
 		{
 			CopyRect(draw_ds, draw_ds_clone, drawarea, drawarea.left, drawarea.top);
-			PSSetShaderResource(4, draw_ds_clone);
+			if ((one_barrier || full_barrier))
+				PSSetShaderResource(4, draw_ds_clone);
+			if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_DEPTH)
+				PSSetShaderResource(0, draw_ds_clone);
 		}
 	};
 
