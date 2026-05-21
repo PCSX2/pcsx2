@@ -267,6 +267,9 @@ void ImGuiManager::WindowResized()
 
 	// Scale might have changed as a result of window resize.
 	RequestScaleUpdate();
+
+	if (GImGui->NavWindow != nullptr)
+		ImGui::NavInitWindow(GImGui->NavWindow, true);
 }
 
 void ImGuiManager::RequestScaleUpdate()
