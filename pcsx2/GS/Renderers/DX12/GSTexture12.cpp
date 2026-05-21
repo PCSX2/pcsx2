@@ -1159,7 +1159,7 @@ void GSTexture12::CommitClear(const D3D12CommandList& cmdlist)
 	else
 	{
 		TransitionToState(cmdlist, ResourceState::RenderTarget);
-		cmdlist.list4->ClearRenderTargetView(GetWriteDescriptor(), GSVector4::unorm8(m_clear_value.color).v, 0, nullptr);
+		cmdlist.list4->ClearRenderTargetView(GetWriteDescriptor(), GetClearForFormat().v, 0, nullptr);
 	}
 
 	SetState(GSTexture::State::Dirty);

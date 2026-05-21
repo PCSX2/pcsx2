@@ -182,12 +182,22 @@ private:
 	struct
 	{
 		std::string vs;
-		GLProgram ps[static_cast<int>(ShaderConvert::Count)]; // program object
+		std::vector<GLProgram> ps; // program object
 		GLuint ln = 0; // sampler object
 		GLuint pt = 0; // sampler object
 		GSDepthStencilOGL* dss = nullptr;
 		GSDepthStencilOGL* dss_write = nullptr;
 	} m_convert;
+
+	GLProgram& GetConvertProgram(ShaderConvertSelector shader)
+	{
+		return m_convert.ps[shader.Index()];
+	}
+
+	GLProgram& GetConvertProgram(ShaderConvert shader)
+	{
+		return m_convert.ps[ShaderConvertSelector(shader).Index()];
+	}
 
 	GLProgram m_present[static_cast<int>(PresentShader::Count)];
 
@@ -280,8 +290,12 @@ private:
 
 protected:
 	virtual void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-		GSHWDrawConfig::ColorMaskSelector cms, ShaderConvert shader, bool linear) override;
-
+		ShaderConvertSelector shader, bool linear) override;
+	virtual ShaderConvertSelector ProcessShaderConvertSelector(ShaderConvertSelector shader) const
+	{
+		// Depth input is handled same as color. Color mask is handled separately.
+		return shader.SetDepthInput(false).SetMask(0xf);
+	}
 public:
 	GSDeviceOGL();
 	virtual ~GSDeviceOGL();
@@ -348,7 +362,7 @@ public:
 	void ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM) override;
 	void FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect) override;
 
-	void DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader) override;
+	void DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvertSelector shader) override;
 	void DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds);
 
 	void RenderHW(GSHWDrawConfig& config) override;

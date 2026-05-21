@@ -398,17 +398,26 @@ private:
 
 	std::unordered_map<u32, VkSampler> m_samplers;
 
-	std::array<VkPipeline, static_cast<int>(ShaderConvert::Count)> m_convert{};
+	std::vector<VkPipeline> m_convert;
 	std::array<VkPipeline, static_cast<int>(PresentShader::Count)> m_present{};
-	std::array<VkPipeline, 32> m_color_copy{};
 	std::array<VkPipeline, 2> m_merge{};
 	std::array<VkPipeline, NUM_INTERLACE_SHADERS> m_interlace{};
 	VkPipeline m_colclip_setup_pipelines[2][2] = {}; // [depth][feedback_loop]
 	VkPipeline m_colclip_finish_pipelines[2][2] = {}; // [depth][feedback_loop]
-	VkRenderPass m_date_image_setup_render_passes[2][2] = {}; // [depth][clear]
-	VkPipeline m_date_image_setup_pipelines[2][4] = {}; // [depth][datm]
+	VkRenderPass m_primid_image_setup_render_passes[2][2] = {}; // [depth][clear]
+	VkPipeline m_primid_image_setup_pipelines[2][4] = {}; // [depth][datm]
 	VkPipeline m_fxaa_pipeline = {};
 	VkPipeline m_shadeboost_pipeline = {};
+
+	VkPipeline GetConvertPipeline(ShaderConvertSelector shader) const
+	{
+		return m_convert[shader.Index()];
+	}
+
+	VkPipeline GetConvertPipeline(ShaderConvert shader) const
+	{
+		return m_convert[ShaderConvertSelector(shader).Index()];
+	}
 
 	std::unordered_map<u32, VkShaderModule> m_tfx_vertex_shaders;
 	std::unordered_map<GSHWDrawConfig::PSSelector, VkShaderModule, GSHWDrawConfig::PSSelectorHash>
@@ -483,8 +492,14 @@ private:
 
 protected:
 	virtual void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-		GSHWDrawConfig::ColorMaskSelector cms, ShaderConvert shader, bool linear) override;
-
+		ShaderConvertSelector shader, bool linear) override;
+	virtual void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, const GSVector4& dRect,
+		PresentShader shader, bool linear) override;
+	ShaderConvertSelector ProcessShaderConvertSelector(ShaderConvertSelector shader) const
+	{
+		// Depth input handled same as color input.
+		return shader.SetDepthInput(false);
+	}
 public:
 	GSDeviceVK();
 	~GSDeviceVK() override;
@@ -550,8 +565,8 @@ public:
 	void PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 		PresentShader shader, float shaderTime, bool linear) override;
 	void DrawMultiStretchRects(
-		const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvert shader) override;
-	void DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTextureVK* dTex, ShaderConvert shader);
+		const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvertSelector shader) override;
+	void DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTextureVK* dTex, ShaderConvertSelector shader);
 
 	void BeginRenderPassForStretchRect(
 		GSTextureVK* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc, bool allow_discard = true);

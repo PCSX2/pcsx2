@@ -575,10 +575,10 @@ public:
 		HashCacheEntry* hc_entry, bool new_texture_is_shared);
 
 	/// Converts single color value to depth using the specified shader expression.
-	static float ConvertColorToDepth(u32 c, ShaderConvert convert);
+	static float ConvertColorToDepth(u32 c, u32 src_bpp, u32 dst_bpp);
 
 	/// Converts single depth value to colour using the specified shader expression.
-	static u32 ConvertDepthToColor(float d, ShaderConvert convert);
+	static u32 ConvertDepthToColor(float d, u32 dst_bpp);
 
 	/// Copies RGB channels from depth target to a color target.
 	bool CopyRGBFromDepthToColor(Target* dst, Target* depth_src);

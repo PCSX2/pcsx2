@@ -28,23 +28,24 @@ DXGI_FORMAT GSTexture11::GetDXGIFormat(Format format)
 	// clang-format off
 	switch (format)
 	{
-	case GSTexture::Format::Color:        return DXGI_FORMAT_R8G8B8A8_UNORM;
-	case GSTexture::Format::ColorHQ:      return DXGI_FORMAT_R10G10B10A2_UNORM;
-	case GSTexture::Format::ColorHDR:     return DXGI_FORMAT_R16G16B16A16_FLOAT;
-	case GSTexture::Format::ColorClip:    return DXGI_FORMAT_R16G16B16A16_UNORM;
-	case GSTexture::Format::DepthStencil: return DXGI_FORMAT_R32G8X24_TYPELESS;
-	case GSTexture::Format::UNorm8:       return DXGI_FORMAT_A8_UNORM;
-	case GSTexture::Format::UInt16:       return DXGI_FORMAT_R16_UINT;
-	case GSTexture::Format::UInt32:       return DXGI_FORMAT_R32_UINT;
-	case GSTexture::Format::PrimID:       return DXGI_FORMAT_R32_FLOAT;
-	case GSTexture::Format::BC1:          return DXGI_FORMAT_BC1_UNORM;
-	case GSTexture::Format::BC2:          return DXGI_FORMAT_BC2_UNORM;
-	case GSTexture::Format::BC3:          return DXGI_FORMAT_BC3_UNORM;
-	case GSTexture::Format::BC7:          return DXGI_FORMAT_BC7_UNORM;
-	case GSTexture::Format::Invalid:
-	default:
-		pxAssert(0);
-		return DXGI_FORMAT_UNKNOWN;
+		case GSTexture::Format::Color:        return DXGI_FORMAT_R8G8B8A8_UNORM;
+		case GSTexture::Format::ColorHQ:      return DXGI_FORMAT_R10G10B10A2_UNORM;
+		case GSTexture::Format::ColorHDR:     return DXGI_FORMAT_R16G16B16A16_FLOAT;
+		case GSTexture::Format::ColorClip:    return DXGI_FORMAT_R16G16B16A16_UNORM;
+		case GSTexture::Format::DepthStencil: return DXGI_FORMAT_R32G8X24_TYPELESS;
+		case GSTexture::Format::DepthColor:   return DXGI_FORMAT_R32_FLOAT;
+		case GSTexture::Format::UNorm8:       return DXGI_FORMAT_A8_UNORM;
+		case GSTexture::Format::UInt16:       return DXGI_FORMAT_R16_UINT;
+		case GSTexture::Format::UInt32:       return DXGI_FORMAT_R32_UINT;
+		case GSTexture::Format::PrimID:       return DXGI_FORMAT_R32_FLOAT;
+		case GSTexture::Format::BC1:          return DXGI_FORMAT_BC1_UNORM;
+		case GSTexture::Format::BC2:          return DXGI_FORMAT_BC2_UNORM;
+		case GSTexture::Format::BC3:          return DXGI_FORMAT_BC3_UNORM;
+		case GSTexture::Format::BC7:          return DXGI_FORMAT_BC7_UNORM;
+		case GSTexture::Format::Invalid:
+		default:
+			pxAssert(0);
+			return DXGI_FORMAT_UNKNOWN;
 	}
 	// clang-format on
 }

@@ -64,7 +64,7 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 			break;
 		
 		// 1 channel float
-		case Format::Float32:
+		case Format::DepthColor:
 			gl_fmt = GL_R32F;
 			m_int_format = GL_RED;
 			m_int_type = GL_FLOAT;
