@@ -6438,21 +6438,6 @@ __ri u32 GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool t
 			m_conf.ps.urban_chaos_hle = 1;
 		}
 	}
-	else if (m_index->tail <= 64 && !IsPageCopy() && m_cached_ctx.CLAMP.WMT == 3)
-	{
-		// Blood will tell. I think it is channel effect too but again
-		// implemented in a different way. I don't want to add more CRC stuff. So
-		// let's disable channel when the signature is different
-		//
-		// Note: Tales Of Abyss and Tekken5 could hit this path too. Those games are
-		// handled above.
-		GL_INS("HW: Might not be channel shuffle");
-		if (test_only)
-			return ChannelFetch_NONE;
-
-		m_channel_shuffle = false;
-		return false;
-	}
 	else if (m_cached_ctx.CLAMP.WMS == 3 && ((m_cached_ctx.CLAMP.MAXU & 0x8) == 8))
 	{
 		const ChannelFetch channel_select = ((m_cached_ctx.CLAMP.WMT != 3 && (m_vertex->buff[m_index->buff[0]].V & 0x20) == 0) || (m_cached_ctx.CLAMP.WMT == 3 && ((m_cached_ctx.CLAMP.MAXV & 0x2) == 0))) ? ChannelFetch_BLUE : ChannelFetch_ALPHA;
@@ -6625,6 +6610,9 @@ __ri u32 GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool t
 		}
 
 		m_channel_shuffle_finish = false;
+
+		m_vertex->head = m_vertex->tail = m_vertex->next = 2;
+		m_index->tail = 2;
 	}
 	else
 	{
@@ -6644,16 +6632,22 @@ __ri u32 GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool t
 		}
 
 		m_in_target_draw |= frame_page_offset > 0;
-		GSVertex* s = &m_vertex->buff[0];
-		s[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + (m_r.x << 4));
-		s[1].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + (m_r.z << 4));
-		s[0].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + (m_r.y << 4));
-		s[1].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + (m_r.w << 4));
 
-		s[0].U = m_r.x << 4;
-		s[1].U = m_r.z << 4;
-		s[0].V = m_r.y << 4;
-		s[1].V = m_r.w << 4;
+		if (!(m_index->tail <= 64 && !IsPageCopy() && m_cached_ctx.CLAMP.WMT == 3))
+		{
+			GSVertex* s = &m_vertex->buff[0];
+			s[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + (m_r.x << 4));
+			s[1].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + (m_r.z << 4));
+			s[0].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + (m_r.y << 4));
+			s[1].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + (m_r.w << 4));
+
+			s[0].U = m_r.x << 4;
+			s[1].U = m_r.z << 4;
+			s[0].V = m_r.y << 4;
+			s[1].V = m_r.w << 4;
+			m_vertex->head = m_vertex->tail = m_vertex->next = 2;
+			m_index->tail = 2;
+		}
 
 		// If we're doing per page copying, then set the valid 1 frame ahead if we're continuing, as this will save the target lookup making a new target for the new row.
 		const u32 frame_offset = m_cached_ctx.FRAME.Block() + (IsPageCopy() ? 0x20 : 0);
@@ -6676,8 +6670,6 @@ __ri u32 GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool t
 		m_channel_shuffle_finish = true;
 	}
 
-	m_vertex->head = m_vertex->tail = m_vertex->next = 2;
-	m_index->tail = 2;
 
 	m_primitive_covers_without_gaps = NoGapsType::FullCover;
 	m_conf.cb_ps.ChannelShuffleOffset = GSVector2(0, 0);
@@ -8012,8 +8004,16 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			GL_CACHE("HW: Source is depth buffer, unsafe to read, taking copy.");
 			src_target = ds;
 		}
-		else if (m_channel_shuffle && tex->m_from_target && tex_diff != frame_diff)
+		else if (m_channel_shuffle && tex->m_from_target)
 		{
+			const int tex_page_h = ((m_vt.m_min.t.x + (m_cached_ctx.CLAMP.WMS == CLAMP_REGION_REPEAT ? m_cached_ctx.CLAMP.MAXU : 0)) / GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pgs.x);
+			const int tex_page_v = ((m_vt.m_min.t.y + (m_cached_ctx.CLAMP.WMT == CLAMP_REGION_REPEAT ? m_cached_ctx.CLAMP.MAXV : 0)) / GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pgs.y);
+			const int frame_page_h = m_r.x / GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x;
+			const int frame_page_v = m_r.y / GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y;
+
+			if (tex_diff == frame_diff && tex_page_h == frame_page_h && tex_page_v == frame_page_v)
+				return;
+
 			src_target = tex->m_from_target;
 		}
 		else
@@ -8051,14 +8051,19 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			copy_size = src_unscaled_size;
 		}
 
-		GSVector4i::storel(&copy_dst_offset, copy_range);
-		if (m_channel_shuffle && (tex_diff || frame_diff))
+		const int tex_page_h = m_vt.m_min.t.x / GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pgs.x;
+		const int tex_page_v = m_vt.m_min.t.y / GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pgs.y;
+		const int frame_page_h = m_r.x / GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x;
+		const int frame_page_v = m_r.y / GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y;
+		if (m_channel_shuffle && (tex_diff || frame_diff || tex_page_h != frame_page_h || tex_page_v != frame_page_v))
 		{
-			const int page_offset = (m_cached_ctx.TEX0.TBP0 - src_target->m_TEX0.TBP0) >> 5;
+			const int clamp_horizontal_page_offset = m_cached_ctx.CLAMP.WMS == CLAMP_REGION_REPEAT ? (m_cached_ctx.CLAMP.MAXU / GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pgs.x) : 0;
+			const int clamp_vertical_page_offset = m_cached_ctx.CLAMP.WMT == CLAMP_REGION_REPEAT ? (m_cached_ctx.CLAMP.MAXV / GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pgs.y) : 0;
+			const int page_offset = ((m_cached_ctx.TEX0.TBP0 - src_target->m_TEX0.TBP0) >> 5) + clamp_horizontal_page_offset + clamp_vertical_page_offset;
 			const int horizontal_offset = ((page_offset % src_target->m_TEX0.TBW) * GSLocalMemory::m_psm[src_target->m_TEX0.PSM].pgs.x);
 			const int vertical_offset = ((page_offset / src_target->m_TEX0.TBW) * GSLocalMemory::m_psm[src_target->m_TEX0.PSM].pgs.y);
 
-			if (HandleBarrierHazard(false))
+			if (HandleBarrierHazard(false) || (rt != tex->m_from_target && ds != tex->m_from_target))
 			{
 				m_conf.cb_ps.ChannelShuffleOffset = GSVector2((horizontal_offset - m_r.x) * tex->GetScale(), (vertical_offset - m_r.y) * tex->GetScale());
 				target_region = false;
@@ -8074,6 +8079,8 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 				copy_range.y += vertical_offset;
 				copy_range.z += horizontal_offset;
 				copy_range.w += vertical_offset;
+
+				GSVector4i::storel(&copy_dst_offset, copy_range);
 
 				if (!m_channel_shuffle)
 				{
@@ -8097,6 +8104,10 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 				copy_range.z = std::min(copy_range.z, src_target->m_unscaled_size.x);
 				copy_range.w = std::min(copy_range.w, src_target->m_unscaled_size.y);
 			}
+		}
+		else
+		{
+			GSVector4i::storel(&copy_dst_offset, copy_range);
 		}
 	}
 	else
