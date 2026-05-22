@@ -2640,6 +2640,7 @@ SCAJ-25047:
   name: "Dororo"
   region: "NTSC-Unk"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes broken shuffles.
     minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SCAJ-30001:
   name: "Xenosaga Episode I - Der Wille zur Macht [PlayStation2 the Best]"
@@ -13366,6 +13367,7 @@ SLAJ-25047:
   name: "Dororo"
   region: "NTSC-C-J"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes broken shuffles.
     minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SLAJ-25048:
   name: "Sengoku Musou Moushouden"
@@ -21471,6 +21473,7 @@ SLES-52755:
   name: "Blood Will Tell - Tezuka Osamu's Dororo"
   region: "PAL-M5"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes broken shuffles.
     minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SLES-52760:
   name: "Pro Evolution Soccer 4"
@@ -32323,6 +32326,7 @@ SLKA-25225:
   region: "NTSC-K"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes broken shuffles.
     minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SLKA-25226:
   name: "인크레더블"
@@ -35999,6 +36003,7 @@ SLPM-60248:
   name-en: "Dororo [Trial]"
   region: "NTSC-J"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes broken shuffles.
     minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SLPM-60250:
   name: "ニード・フォー・スピード アンダーグラウンド2 [体験版]"
@@ -44294,6 +44299,7 @@ SLPM-65526:
   name-en: "Dororo"
   region: "NTSC-J"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes broken shuffles.
     minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SLPM-65527:
   name: "FIFA トータルフットボール"
@@ -48387,6 +48393,7 @@ SLPM-66207:
   name-en: "Dororo [Sega the Best 2800]"
   region: "NTSC-J"
   gsHWFixes:
+    textureInsideRT: 1 # Fixes broken shuffles.
     minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SLPM-66208:
   name: "サクラ大戦Ⅴ EPISODE 0 ～荒野のサムライ娘～ [SEGA THE BEST 2800]"
@@ -68176,6 +68183,7 @@ SLUS-20782:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    textureInsideRT: 1 # Fixes broken shuffles.
     minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SLUS-20784:
   name: "The Italian Job"
