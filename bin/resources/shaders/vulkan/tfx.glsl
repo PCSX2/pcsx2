@@ -24,7 +24,7 @@ layout(std140, set = 0, binding = 0) uniform cb0
 	vec2 TextureOffset;
 	vec2 PointSize;
 	uint MaxDepth;
-	uint pad_cb0;
+	float LineAA1Width;
 };
 
 layout(location = 0) out VSOutput
@@ -319,11 +319,9 @@ void main()
 	// Use bottom minus top for delta regardless of which vertex we are expanding.
 	vec2 line_delta = is_bottom ? (vtx.p.xy - other.p.xy) : (other.p.xy - vtx.p.xy);
 	vec2 line_vector = normalize(line_delta / VertexScale);
-#if VS_EXPAND == VS_EXPAND_LINE
 	vec2 line_expand = vec2(line_vector.y, -line_vector.x);
-#elif VS_EXPAND == VS_EXPAND_LINE_AA1
-	// Expand in y direction for shallow lines and x direction for steep lines.
-	vec2 line_expand = abs(line_vector.x) >= abs(line_vector.y) ? vec2(0.0f, 2.0f) : vec2(2.0f, 0.0f);
+#if VS_EXPAND == VS_EXPAND_LINE_AA1
+	line_expand *= 2.0f * LineAA1Width;
 #endif
 	vec2 line_width = (line_expand * PointSize) / 2;
 	vec2 offset = is_right ? line_width : -line_width;
@@ -624,6 +622,12 @@ layout(std140, set = 0, binding = 1) uniform cb1
 	mat4 DitherMatrix;
 	float ScaledScaleFactor;
 	float RcpScaleFactor;
+	float _pad0_cb1;
+	float _pad1_cb1;
+	float LineCovScale;
+	float _pad2_cb1;
+	float _pad3_cb1;
+	float _pad4_cb1;
 };
 
 layout(location = 0) in VSOutput
@@ -1804,7 +1808,12 @@ void main()
 	vec4 C = ps_color();
 
 #if PS_AA1
-	float cov = clamp(1.0f - abs(vsIn.inv_cov), 0.0f, 1.0f);
+	#if PS_AA1 == PS_AA1_LINE
+		// Blur only outer part of the line by scaling coverage.
+		float cov = clamp(LineCovScale * (1.0f - abs(vsIn.inv_cov)), 0.0f, 1.0f);
+	#else
+		float cov = clamp(1.0f - abs(vsIn.inv_cov), 0.0f, 1.0f);
+	#endif
 	#if PS_ABE
 		if (floor(C.a) == 128.0f) // The coverage is only used if the fragment alpha is 128.
 			C.a = 128.0f * cov;

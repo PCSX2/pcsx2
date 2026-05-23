@@ -398,16 +398,11 @@ vertex MainVSOut vs_main_expand(
 			// Use bottom minus top for delta regardless of which vertex we are expanding.
 			float2 line_delta = is_bottom ? point.p.xy - other.p.xy : other.p.xy - point.p.xy;
 			float2 line_vector = normalize(line_delta / cb.vertex_scale);
-			float2 line_expand;
-			if (VS_EXPAND_TYPE == VSExpand::Line)
-			{
-				line_expand = float2(line_vector.y, -line_vector.x);
-			}
-			else
-			{
-				// Expand in y direction for shallow lines and x direction for steep lines.
-				line_expand = abs(line_vector.x) >= abs(line_vector.y) ? float2(0, 2) : float2(2, 0);
-			}
+			float2 line_expand = float2(line_vector.y, -line_vector.x);
+
+			if (VS_EXPAND_TYPE == VSExpand::LineAA1)
+				line_expand *= 2.f * cb.line_aa1_width;
+
 			float2 line_width = (line_expand * cb.point_size) / 2;
 			float2 offset = is_right ? line_width : -line_width;
 			point.p.xy += offset;
@@ -1507,7 +1502,9 @@ struct PSMain
 
 		if (PS_AA1 != AA1::NONE)
 		{
-			float cov = saturate(1.f - abs(in.inv_cov));
+			float cov = PS_AA1 == AA1::LINE ?
+				saturate(cb.line_cov_scale * (1.f - abs(in.inv_cov))) : // Blur only outer part of the line by scaling coverage.
+			  saturate(1.f - abs(in.inv_cov));
 			if (!PS_ABE || floor(C.a) == 128.f) // The coverage is only used if the fragment alpha is 128.
 				C.a = 128.f * cov;
 		}
