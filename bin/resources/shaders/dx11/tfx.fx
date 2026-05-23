@@ -261,10 +261,21 @@ float manual_lod(float uv_w)
 #endif
 
 #if PS_ANISOTROPIC_FILTERING > 1
+bool2 nan_or_inf(float2 xy)
+{
+	// FXC (<=SM5.1) may optimise away isnan and isinf.
+	// DXC (>=SM6.0) will preserve them.
+#ifdef __hlsl_dx_compiler
+	return isinf(xy) | isnan(xy);
+#else
+	return (asuint(xy) & 0x7f800000) == 0x7f800000;
+#endif
+}
+
 float4 sample_c_af(float2 uv, float uv_w)
 {
 	// HW sampler will reject bad UVs, match that here.
-	uv = any(isnan(uv) | isinf(uv)) ? float2(0, 0) : uv;
+	uv = any(nan_or_inf(uv)) ? float2(0, 0) : uv;
 
 	// Large floating point values risk NaN/Inf values.
 	// Above this value floats lose decimal precision, so seems a resonable limit for UVs.
@@ -281,7 +292,7 @@ float4 sample_c_af(float2 uv, float uv_w)
 	bool d_zero = length(dX) == 0 || length(dY) == 0;
 	bool d_par = (dX.x * dY.y - dY.x * dX.y) == 0;
 	bool d_per = dot(dX, dY) == 0;
-	bool d_inf_nan = any(isinf(dX) | isinf(dY) | isnan(dX) | isnan(dY));
+	bool d_inf_nan = any(nan_or_inf(dX) | nan_or_inf(dY));
 
 	if (!(d_zero || d_par || d_per || d_inf_nan))
 	{
@@ -305,7 +316,7 @@ float4 sample_c_af(float2 uv, float uv_w)
 			sqrt(F * (t + p) / (t * (q - t)))
 		);
 		
-		d_inf_nan = any(isinf(new_dX) | isinf(new_dY) | isnan(new_dX) | isnan(new_dY));
+		d_inf_nan = any(nan_or_inf(new_dX) | nan_or_inf(new_dY));
 		if (!d_inf_nan)
 		{
 			dX = new_dX;
