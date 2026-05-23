@@ -53,8 +53,14 @@ private:
 
 		__ri bool DepthWrite() const
 		{
-			if (TEST.ATE && TEST.ATST == ATST_NEVER &&
-				TEST.AFAIL != AFAIL_ZB_ONLY) // alpha test, all pixels fail, z buffer is not updated
+			// Alpha test, all pixels fail, z buffer is not updated.
+			if (TEST.ATE && TEST.ATST == ATST_NEVER && TEST.AFAIL != AFAIL_ZB_ONLY)
+			{
+				return false;
+			}
+
+			// Depth test enabled, all pixels fail.
+			if (TEST.ZTE && TEST.ZTST == ZTST_NEVER)
 			{
 				return false;
 			}
