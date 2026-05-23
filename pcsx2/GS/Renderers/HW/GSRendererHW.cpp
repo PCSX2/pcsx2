@@ -7901,7 +7901,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 		{
 			// Check if we have depth feedback, if we do then we need to make a copy as
 			// GL/DX12 has issues with depth feedback and depth as rt will basically do the same.
-			const bool no_depth_write = (m_cached_ctx.ZBUF.ZMSK || m_cached_ctx.TEST.ZTST == ZTST_NEVER);
+			const bool no_depth_write = !m_cached_ctx.DepthWrite();
 			if (g_gs_device->Features().test_and_sample_depth && no_depth_write)
 			{
 				return true;
@@ -7970,7 +7970,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 		{
 			// If this is our current Z buffer, we might not be able to read it directly if it's being written to.
 			// Rather than leaving the backend to do it, we'll check it here.
-			if ((!m_channel_shuffle || tex_diff == frame_diff) && (m_cached_ctx.ZBUF.ZMSK || m_cached_ctx.TEST.ZTST == ZTST_NEVER))
+			if ((!m_channel_shuffle || tex_diff == frame_diff) && !m_cached_ctx.DepthWrite())
 			{
 				// We need to make sure test_and_sample_depth is supported, otherwise we might still need a barrier/copy.
 				if (HandleBarrierHazard(true))
