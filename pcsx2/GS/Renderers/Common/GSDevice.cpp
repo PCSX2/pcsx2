@@ -1705,6 +1705,7 @@ static void DumpPSConstantBuffer(DrawConfigWriter& out, const GSHWDrawConfig::PS
 	DumpVector4(out, "DitherMatrix_2", cb.DitherMatrix[2]);
 	DumpVector4(out, "DitherMatrix_3", cb.DitherMatrix[3]);
 	DumpVector4(out, "ScaleFactor", cb.ScaleFactor);
+	out.WriteLn("LineCovScale: {}", cb.LineCovScale);
 }
 
 static void DumpVSConstantBuffer(DrawConfigWriter& out, const GSHWDrawConfig::VSConstantBuffer& cb)
@@ -1714,7 +1715,8 @@ static void DumpVSConstantBuffer(DrawConfigWriter& out, const GSHWDrawConfig::VS
 	DumpVector2(out, "texture_scale", cb.texture_scale);
 	DumpVector2(out, "texture_offset", cb.texture_offset);
 	DumpVector2(out, "point_size", cb.point_size);
-	DumpVector2(out, "max_depth", cb.max_depth);
+	out.WriteLn("max_depth: {}", cb.max_depth);
+	out.WriteLn("line_aa1_width: {}", cb.line_aa1_width);
 }
 
 static void DumpConfig(DrawConfigWriter& out, const GSHWDrawConfig& conf,

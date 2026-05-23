@@ -290,6 +290,12 @@ cbuffer cb1
 	float4x4 DitherMatrix;
 	float ScaledScaleFactor;
 	float RcpScaleFactor;
+	float _pad0_cb1;
+	float _pad1_cb1;
+	float LineCovScale;
+	float _pad2_cb1;
+	float _pad3_cb1;
+	float _pad4_cb1;
 };
 
 float4 RtLoad(int2 xy)
@@ -1362,7 +1368,12 @@ void ps_main(PS_INPUT input)
 	float4 C = ps_color(input);
 
 #if PS_AA1
-	float cov = clamp(1.0f - abs(input.inv_cov), 0.0f, 1.0f);
+	#if PS_AA1 == PS_AA1_LINE
+		// Blur only outer part of the line by scaling coverage.
+		float cov = clamp(LineCovScale * (1.0f - abs(input.inv_cov)), 0.0f, 1.0f);
+	#else
+		float cov = clamp(1.0f - abs(input.inv_cov), 0.0f, 1.0f);
+	#endif
 	#if PS_ABE
 		if (floor(C.a) == 128.0f) // The coverage is only used if the fragment alpha is 128.
 			C.a = 128.0f * cov;
@@ -1632,7 +1643,7 @@ cbuffer cb0
 	float2 TextureOffset;
 	float2 PointSize;
 	uint MaxDepth;
-	uint _cb0_pad0;
+	float LineAA1Width;
 };
 
 #ifdef DX12
@@ -1875,11 +1886,9 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 	// Use bottom minus top for delta regardless of which vertex we are expanding.
 	float2 line_delta = is_bottom ? (vtx.p.xy - other.p.xy) : (other.p.xy - vtx.p.xy);
 	float2 line_vector = normalize(line_delta / VertexScale);
-#if VS_EXPAND == VS_EXPAND_LINE
 	float2 line_expand = float2(line_vector.y, -line_vector.x);
-#elif VS_EXPAND == VS_EXPAND_LINE_AA1
-	// Expand in y direction for shallow lines and x direction for steep lines.
-	float2 line_expand = abs(line_vector.x) >= abs(line_vector.y) ? float2(0.0f, 2.0f) : float2(2.0f, 0.0f);
+#if VS_EXPAND == VS_EXPAND_LINE_AA1
+	line_expand *= 2.0f * LineAA1Width;
 #endif
 	float2 line_width = (line_expand * PointSize) / 2;
 	float2 offset = is_right ? line_width : -line_width;
