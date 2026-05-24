@@ -1824,27 +1824,23 @@ void GSHWDrawConfig::DumpConfig(const std::string& path, const GSHWDrawConfig& c
 	}
 }
 
-static constexpr u32 NUM_REMAP_INPUTS = static_cast<u32>(ShaderConvert::Count) * 8;
+static constexpr u32 NUM_REMAP_INPUTS = static_cast<u32>(ShaderConvert::Count) * 4;
 
 static constexpr ShaderConvertSelector GetRemappedShader(u32 idx)
 {
-	ShaderConvert convert = static_cast<ShaderConvert>(idx >> 3);
-	bool depth_in = (idx >> 0) & 1;
-	bool depth_out = (idx >> 1) & 1;
-	bool biln = (idx >> 2) & 1;
-	return ShaderConvertSelector(convert, 0xf, depth_in, depth_out, biln);
+	ShaderConvert convert = static_cast<ShaderConvert>(idx >> 2);
+	bool depth_out = (idx >> 0) & 1;
+	bool biln = (idx >> 1) & 1;
+	return ShaderConvertSelector(convert, 0xf, depth_out, biln);
 }
 
 static constexpr bool RemapIndexIsValid(u32 idx)
 {
-	ShaderConvert convert = static_cast<ShaderConvert>(idx >> 3);
-	bool depth_in = (idx >> 0) & 1;
-	bool depth_out = (idx >> 1) & 1;
-	bool biln = (idx >> 2) & 1;
-	if (HasVariableWriteMask(convert) && !depth_in && !depth_out && !biln)
+	ShaderConvert convert = static_cast<ShaderConvert>(idx >> 2);
+	bool depth_out = (idx >> 0) & 1;
+	bool biln = (idx >> 1) & 1;
+	if (HasVariableWriteMask(convert) && !depth_out && !biln)
 		return false; // Handled as variable write mask
-	if (depth_in && !HasFloat32Input(convert))
-		return false;
 	if (depth_out && !HasFloat32Output(convert))
 		return false;
 	if (biln && !SupportsBilinear(convert))

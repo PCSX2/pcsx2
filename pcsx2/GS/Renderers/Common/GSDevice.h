@@ -248,7 +248,6 @@ class ShaderConvertSelector
 		{
 			u32 shader : 8; // Main shader
 			u32 mask : 8; // Variable color mask
-			u32 depth_in : 1; // Depth texture input
 			u32 depth_out : 1; // Depth texture output
 			u32 biln : 1; // Shader bilinear (HW bilinear is specified separately)
 		};
@@ -259,11 +258,11 @@ class ShaderConvertSelector
 	static_assert(sizeof(fields) == 4);
 
 public:
-	constexpr ShaderConvertSelector(ShaderConvert shader = ShaderConvert::COPY, u8 mask = 0xf, bool depth_in = false,
+	constexpr ShaderConvertSelector(ShaderConvert shader = ShaderConvert::COPY, u8 mask = 0xf,
  		bool depth_out = false, bool biln = false)
 		: fields { static_cast<u32>(shader) }
 	{
-		*this = SetMask(mask).SetDepthInput(depth_in).SetDepthOutput(depth_out).SetBiln(biln);
+		*this = SetMask(mask).SetDepthOutput(depth_out).SetBiln(biln);
 	}
 
 	constexpr ShaderConvert Shader() const
@@ -299,11 +298,6 @@ public:
 	constexpr bool DepthOutput() const
 	{
 		return fields.depth_out;
-	}
-
-	constexpr bool DepthInput() const
-	{
-		return fields.depth_in;
 	}
 
 	constexpr bool StencilOutput() const
@@ -351,7 +345,7 @@ public:
 		return ShaderEntryPoint(Shader());
 	}
 
-	constexpr ShaderConvertSelector SetMask(u8 mask) const
+	constexpr ShaderConvertSelector SetMask(u8 mask = 0xf) const
 	{
 		ShaderConvertSelector tmp = *this;
 		tmp.fields.mask = VariableWriteMask() ? (mask & 0xf) : DefaultMask();
@@ -361,13 +355,6 @@ public:
 	constexpr ShaderConvertSelector SetMask(bool wr, bool wg, bool wb, bool wa) const
 	{
 		return SetMask((wr ? 1 : 0) | (wg ? 2 : 0) | (wb ? 4 : 0) | (wa ? 8 : 0));
-	}
-
-	constexpr ShaderConvertSelector SetDepthInput(bool depth_in) const
-	{
-		ShaderConvertSelector tmp = *this;
-		tmp.fields.depth_in = Float32Input() && depth_in;
-		return tmp;
 	}
 
 	constexpr ShaderConvertSelector SetDepthOutput(bool depth_out) const
@@ -386,7 +373,7 @@ public:
 
 	GSTexture::Format OutputFormat() const
 	{
-		if (fields.depth_out)
+		if (DepthOutput())
 			return GSTexture::Format::DepthStencil;
 		else if (int bpp = IntegerOutputBpp())
 			return bpp == 16 ? GSTexture::Format::UInt16 : GSTexture::Format::UInt32;
@@ -403,7 +390,7 @@ public:
 private:
 	// Helper variables for packing valid shaders into a contiguous range.
 	static const std::span<const ShaderConvertSelector> SHADERS;
-	static const std::array<u8, static_cast<u32>(ShaderConvert::Count) * 8> INDEX_REMAP;
+	static const std::array<u8, static_cast<u32>(ShaderConvert::Count) * 4> INDEX_REMAP;
 	static const u32 NUM_REMAPPED_SHADERS;
 
 public:
@@ -412,12 +399,11 @@ public:
 
 	u32 Index() const
 	{
-		if (VariableWriteMask() && !fields.depth_in && !fields.depth_out && !fields.biln)
+		if (VariableWriteMask() && !fields.depth_out && !fields.biln)
 			return GetShaderIndexForMask(Shader(), fields.mask) + NUM_REMAPPED_SHADERS;
-		u32 remapped = INDEX_REMAP[(fields.depth_in  << 0) +
-		                           (fields.depth_out << 1) +
-		                           (fields.biln      << 2) +
-		                           (fields.shader    << 3)];
+		u32 remapped = INDEX_REMAP[(fields.depth_out << 0) +
+		                           (fields.biln      << 1) +
+		                           (fields.shader    << 2)];
 		pxAssert(remapped < NUM_REMAPPED_SHADERS);
 		return remapped;
 	}
@@ -513,8 +499,7 @@ static inline ShaderConvertSelector GetConvertShader(GSTexture::Format src, GSTe
 			break;
 	}
 
-	return ShaderConvertSelector(shader, mask, src == GSTexture::Format::DepthStencil,
-		dst == GSTexture::Format::DepthStencil);
+	return ShaderConvertSelector(shader, mask, dst == GSTexture::Format::DepthStencil);
 }
 
 static inline ShaderConvertSelector GetConvertShader(const GSTexture* src, const GSTexture* dst, u32 src_bpp, u32 dst_bpp, u8 mask = 0xf)

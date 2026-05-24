@@ -427,7 +427,6 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 			macro += fmt::format("#define HAS_BILN {}\n", static_cast<int>(shader.Biln()));
 			macro += fmt::format("#define HAS_STENCIL_OUTPUT {}\n", static_cast<int>(shader.StencilOutput()));
 			macro += fmt::format("#define HAS_INTEGER_OUTPUT {}\n", static_cast<int>(shader.IntegerOutputBpp() != 0));
-			macro += fmt::format("#define HAS_DEPTH_INPUT {}\n", 0); // unused
 			macro += fmt::format("#define HAS_DEPTH_OUTPUT {}\n", static_cast<int>(shader.DepthOutput()));
 			macro += fmt::format("#define HAS_FLOAT32_INPUT {}\n", static_cast<int>(shader.Float32Input()));
 			macro += fmt::format("#define HAS_FLOAT32_OUTPUT {}\n", static_cast<int>(shader.Float32Output()));
@@ -1677,7 +1676,7 @@ void GSDeviceOGL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextu
 	ShaderConvertSelector shader, bool linear)
 {
 	const u8 mask = shader.Mask();
-	shader = ProcessShaderConvertSelector(shader);  // Removes mask and depth input.
+	shader = shader.SetMask(); // Mask is handled separately from program.
 	DoStretchRect(sTex, sRect, dTex, dRect, GetConvertProgram(shader), false, OMColorMaskSelector(mask), linear);
 }
 
@@ -1868,7 +1867,7 @@ void GSDeviceOGL::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect
 void GSDeviceOGL::DrawMultiStretchRects(
 	const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvertSelector shader)
 {
-	shader = ProcessShaderConvertSelector(shader);
+	shader = shader.SetMask(); // Mask is handled separately from program.
 
 	IASetVAO(m_vao);
 	IASetPrimitiveTopology(GL_TRIANGLE_STRIP);
