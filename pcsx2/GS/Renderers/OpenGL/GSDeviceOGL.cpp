@@ -1677,6 +1677,7 @@ void GSDeviceOGL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextu
 {
 	const u8 mask = shader.Mask();
 	shader = shader.SetMask(); // Mask is handled separately from program.
+	linear &= !shader.SupportsBilinear(); // Don't allow HW bilinear if SW bilinear is needed.
 	DoStretchRect(sTex, sRect, dTex, dRect, GetConvertProgram(shader), false, OMColorMaskSelector(mask), linear);
 }
 

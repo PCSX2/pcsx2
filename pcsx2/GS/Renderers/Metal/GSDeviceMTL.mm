@@ -1580,7 +1580,7 @@ void GSDeviceMTL::BeginStretchRect(NSString* name, GSTexture* dTex, MTLLoadActio
 	MRESetDSS(dsel);
 }
 
-void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, id<MTLRenderPipelineState> pipeline, bool linear, LoadAction load_action, const void* frag_uniform, size_t frag_uniform_len)
+void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, id<MTLRenderPipelineState> pipeline, std::optional<bool> linear, LoadAction load_action, const void* frag_uniform, size_t frag_uniform_len)
 {
 	FlushClears(sTex);
 
@@ -1601,7 +1601,8 @@ void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextu
 	if (frag_uniform && frag_uniform_len)
 		[m_current_render.encoder setFragmentBytes:frag_uniform length:frag_uniform_len atIndex:GSMTLBufferIndexUniforms];
 
-	MRESetSampler(linear ? SamplerSelector::Linear() : SamplerSelector::Point());
+	if (linear)
+		MRESetSampler(*linear ? SamplerSelector::Linear() : SamplerSelector::Point());
 
 	DrawStretchRect(sRect, dRect, GSVector2(static_cast<float>(ds.x), static_cast<float>(ds.y)));
 }
@@ -1652,8 +1653,9 @@ void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextu
 	const LoadAction load_action = (shader.Mask() == 0xf) ? LoadAction::DontCareIfFull : LoadAction::Load;
 	id<MTLRenderPipelineState> pipeline = GetConvertPipeline(shader);
 	pxAssertRel(pipeline, fmt::format("No pipeline for {}", ShaderEntryPoint(shader.Shader())).c_str());
+	std::optional<bool> linear_if_needed = shader.SupportsBilinear() ? std::nullopt : std::make_optional(linear);
 
-	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, linear, load_action, nullptr, 0);
+	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, linear_if_needed, load_action, nullptr, 0);
 }}
 
 static_assert(sizeof(DisplayConstantBuffer) == sizeof(GSMTLPresentPSUniform));

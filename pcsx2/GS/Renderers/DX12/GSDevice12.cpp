@@ -1672,6 +1672,7 @@ void GSDevice12::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextur
 	ShaderConvertSelector shader, bool linear)
 {
 	pxAssert(dTex);
+	linear &= !shader.SupportsBilinear(); // Don't allow HW bilinear if SW bilinear is needed.
 	const bool allow_discard = (shader.Mask() == 0xf);
 	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
 		GetConvertPipeline(shader), linear, allow_discard);
