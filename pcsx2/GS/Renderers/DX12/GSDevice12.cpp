@@ -1672,7 +1672,6 @@ void GSDevice12::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextur
 	ShaderConvertSelector shader, bool linear)
 {
 	pxAssert(dTex);
-	shader = ProcessShaderConvertSelector(shader); // Removes depth input
 	const bool allow_discard = (shader.Mask() == 0xf);
 	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
 		GetConvertPipeline(shader), linear, allow_discard);
@@ -1768,8 +1767,6 @@ void GSDevice12::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32
 void GSDevice12::DrawMultiStretchRects(
 	const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvertSelector shader)
 {
-	shader = ProcessShaderConvertSelector(shader);  // Removes depth input
-
 	GSTexture* last_tex = rects[0].src;
 	bool last_linear = rects[0].linear;
 	u8 last_wmask = rects[0].wmask.wrgba;
@@ -2766,7 +2763,6 @@ bool GSDevice12::CompileConvertPipelines()
 		sm.AddMacro("HAS_BILN", static_cast<int>(shader.Biln()));
 		sm.AddMacro("HAS_STENCIL_OUTPUT", static_cast<int>(shader.StencilOutput()));
 		sm.AddMacro("HAS_INTEGER_OUTPUT", static_cast<int>(shader.IntegerOutputBpp() != 0));
-		sm.AddMacro("HAS_DEPTH_INPUT", 0); // unused
 		sm.AddMacro("HAS_DEPTH_OUTPUT", static_cast<int>(shader.DepthOutput()));
 		sm.AddMacro("HAS_FLOAT32_INPUT", static_cast<int>(shader.Float32Input()));
 		sm.AddMacro("HAS_FLOAT32_OUTPUT", static_cast<int>(shader.Float32Output()));

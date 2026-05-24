@@ -443,11 +443,6 @@ protected:
 		ShaderConvertSelector shader, bool linear) override;
 	virtual void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, const GSVector4& dRect,
 		PresentShader shader, bool linear) override;
-	ShaderConvertSelector ProcessShaderConvertSelector(ShaderConvertSelector shader) const
-	{
-		// Depth input handled same as color input.
-		return shader.SetDepthInput(false);
-	}
 public:
 	GSDevice12();
 	~GSDevice12() override;

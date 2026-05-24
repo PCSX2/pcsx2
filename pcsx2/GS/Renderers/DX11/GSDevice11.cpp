@@ -242,7 +242,6 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		sm_ps.AddMacro("HAS_BILN", static_cast<int>(shader.Biln()));
 		sm_ps.AddMacro("HAS_STENCIL_OUTPUT", static_cast<int>(shader.StencilOutput()));
 		sm_ps.AddMacro("HAS_INTEGER_OUTPUT", static_cast<int>(shader.IntegerOutputBpp() != 0));
-		sm_ps.AddMacro("HAS_DEPTH_INPUT", 0); // unused
 		sm_ps.AddMacro("HAS_DEPTH_OUTPUT", static_cast<int>(shader.DepthOutput()));
 		sm_ps.AddMacro("HAS_FLOAT32_INPUT", static_cast<int>(shader.Float32Input()));
 		sm_ps.AddMacro("HAS_FLOAT32_OUTPUT", static_cast<int>(shader.Float32Output()));
@@ -1413,7 +1412,7 @@ void GSDevice11::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextur
 	ShaderConvertSelector shader, bool linear)
 {
 	const u8 mask = shader.Mask();
-	shader = ProcessShaderConvertSelector(shader); // Removes mask and depth output.
+	shader = shader.SetMask(); // Mask is handled separately from program.
 	DoStretchRect(sTex, sRect, dTex, dRect, GetConvertShader(shader), nullptr, m_convert.bs[mask].get(), linear);
 }
 
@@ -1615,7 +1614,7 @@ void GSDevice11::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32
 
 void GSDevice11::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvertSelector shader)
 {
-	shader = ProcessShaderConvertSelector(shader);
+	shader = shader.SetMask(); // Mask is handled separately from program.
 
 	IASetInputLayout(m_convert.il.get());
 	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);

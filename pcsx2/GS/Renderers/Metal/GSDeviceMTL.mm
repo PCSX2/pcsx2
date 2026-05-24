@@ -1209,8 +1209,6 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 			name = [name stringByAppendingString:[NSString stringWithFormat:@" Mask=%x", shader.Mask()]];
 		if (shader.Biln())
 			name = [name stringByAppendingString:@" Biln"];
-		if (shader.Float32Input())
-			name = [name stringByAppendingString:shader.DepthInput() ? @" Depth" : @" Float"];
 		if (shader.Float32Output())
 			name = [name stringByAppendingString:shader.DepthOutput() ? @" → Depth" : @" → Float"];
 
@@ -1222,7 +1220,6 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		if (scmask & 8) mask |= MTLColorWriteMaskAlpha;
 		pdesc.colorAttachments[0].writeMask = mask;
 		setFnConstantB(m_fn_constants, shader.Biln(),        GSMTLConstantIndex_BILN);
-		setFnConstantB(m_fn_constants, shader.DepthInput(),  GSMTLConstantIndex_DEPTH_IN);
 		setFnConstantB(m_fn_constants, shader.DepthOutput(), GSMTLConstantIndex_DEPTH_OUT);
 		m_convert_pipeline[shader.Index()] = MakePipeline(pdesc, vs_convert, LoadShader(shader_name), name);
 	}

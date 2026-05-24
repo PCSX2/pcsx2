@@ -280,11 +280,6 @@ private:
 protected:
 	virtual void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 		ShaderConvertSelector shader, bool linear) override;
-	ShaderConvertSelector ProcessShaderConvertSelector(ShaderConvertSelector shader) const
-	{
-		// Depth input is handled same as color input. Mask is handled separately from program.
-		return shader.SetDepthInput(false).SetMask(0xf);
-	}
 public:
 	GSDevice11();
 	~GSDevice11() override;
