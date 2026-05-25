@@ -474,17 +474,12 @@
         </item>
         <item>
          <property name="text">
-          <string>Deflate64</string>
+          <string>Deflate</string>
          </property>
         </item>
         <item>
          <property name="text">
           <string>Zstandard</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>LZMA2</string>
          </property>
         </item>
        </widget>

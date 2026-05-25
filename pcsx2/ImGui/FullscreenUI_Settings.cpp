@@ -4900,9 +4900,8 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 
 	static constexpr const char* s_savestate_compression_type[] = {
 		FSUI_NSTR("Uncompressed"),
-		FSUI_NSTR("Deflate64"),
+		FSUI_NSTR("Deflate"),
 		FSUI_NSTR("Zstandard"),
-		FSUI_NSTR("LZMA2"),
 	};
 
 	static constexpr const char* s_savestate_compression_ratio[] = {

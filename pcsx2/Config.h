@@ -384,9 +384,8 @@ enum class GSDumpCompressionMethod : u8
 enum class SavestateCompressionMethod : u8
 {
 	Uncompressed = 0,
-	Deflate64 = 1,
-	Zstandard = 2,
-	LZMA2 = 3
+	Deflate = 1,
+	Zstandard = 2
 };
 
 enum class SavestateCompressionLevel : u8
