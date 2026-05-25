@@ -176,6 +176,8 @@ public:
 	// Move all the symbols from the passed list into this list.
 	void merge_from(SymbolList<SymbolType>& list);
 	
+	void merge_from_vector(std::vector<SymbolType> & symbols);
+
 	// Mark a symbol for destruction. If the correct symbol database pointer is
 	// passed, all descendants will also be marked. For example, marking a
 	// function will also mark its parameters and local variables.

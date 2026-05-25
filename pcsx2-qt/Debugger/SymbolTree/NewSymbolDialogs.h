@@ -10,6 +10,8 @@
 #include "DebugTools/DebugInterface.h"
 #include "ui_NewSymbolDialog.h"
 
+#include "Debugger/DebugCommands/DebugCommandStack.h"
+
 // Base class for symbol creation dialogs.
 class NewSymbolDialog : public QDialog
 {
@@ -22,7 +24,7 @@ public:
 	void setCustomSize(u32 size);
 
 protected:
-	explicit NewSymbolDialog(u32 flags, u32 alignment, DebugInterface& cpu, QWidget* parent = nullptr);
+	explicit NewSymbolDialog(u32 flags, u32 alignment, DebugInterface& cpu, QWidget* parent = nullptr, DebugCommandStack* stack = nullptr);
 
 	enum Flags
 	{
@@ -84,6 +86,8 @@ protected:
 
 	u32 m_alignment;
 	std::vector<ccc::FunctionHandle> m_functions;
+
+	DebugCommandStack* m_stack = nullptr;
 };
 
 class NewFunctionDialog : public NewSymbolDialog
@@ -91,7 +95,7 @@ class NewFunctionDialog : public NewSymbolDialog
 	Q_OBJECT
 
 public:
-	NewFunctionDialog(DebugInterface& cpu, QWidget* parent = nullptr);
+	NewFunctionDialog(DebugInterface& cpu, QWidget* parent = nullptr, DebugCommandStack * stack = nullptr);
 
 protected:
 	bool parseUserInput() override;
@@ -101,6 +105,7 @@ protected:
 	u32 m_address = 0;
 	u32 m_size = 0;
 	ccc::FunctionHandle m_existing_function;
+	u32 m_original_existing_function_size = 0;
 	u32 m_new_existing_function_size = 0;
 };
 

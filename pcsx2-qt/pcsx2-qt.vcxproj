@@ -89,6 +89,11 @@
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Debugger\DebugCommands\CommandContext.cpp" />
+    <ClCompile Include="Debugger\DebugCommands\AddFunctionCommand.cpp" />
+    <ClCompile Include="Debugger\DebugCommands\DebugCommandStack.cpp" />
+    <ClCompile Include="Debugger\DebugCommands\DeleteFunctionCommand.cpp" />
+    <ClCompile Include="Debugger\DebugCommands\RenameFunctionCommand.cpp" />
     <ClCompile Include="AsyncDialogs.cpp" />
     <ClCompile Include="ColorPickerButton.cpp" />
     <ClCompile Include="Debugger\SymbolTree\NewSymbolDialogs.cpp" />
@@ -186,6 +191,12 @@
     <ClCompile Include="VCRuntimeChecker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Debugger\DebugCommands\CommandContext.h" />
+    <ClInclude Include="Debugger\DebugCommands\AddFunctionCommand.h" />
+    <ClInclude Include="Debugger\DebugCommands\DebugCommandStack.h" />
+    <ClInclude Include="Debugger\DebugCommands\DeleteFunctionCommand.h" />
+    <ClInclude Include="Debugger\DebugCommands\IDebugCommand.h" />
+    <ClInclude Include="Debugger\DebugCommands\RenameFunctionCommand.h" />
     <ClInclude Include="AsyncDialogs.h" />
     <QtMoc Include="SetupWizardDialog.h" />
     <QtMoc Include="Settings\InterfaceSettingsWidget.h" />

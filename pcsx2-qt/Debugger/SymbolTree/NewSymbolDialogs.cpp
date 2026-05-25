@@ -6,15 +6,18 @@
 #include "AsyncDialogs.h"
 #include "Debugger/DebuggerWindow.h"
 #include "Debugger/SymbolTree/TypeString.h"
+#include "Debugger/DebugCommands/AddFunctionCommand.h"
 
 #include <QtCore/QTimer>
 #include <QtCore/QMetaMethod>
 #include <QtWidgets/QPushButton>
 
-NewSymbolDialog::NewSymbolDialog(u32 flags, u32 alignment, DebugInterface& cpu, QWidget* parent)
+
+NewSymbolDialog::NewSymbolDialog(u32 flags, u32 alignment, DebugInterface& cpu, QWidget* parent, DebugCommandStack* stack)
 	: QDialog(parent)
 	, m_cpu(cpu)
 	, m_alignment(alignment)
+	, m_stack{stack}
 {
 	m_ui.setupUi(this);
 
@@ -240,8 +243,8 @@ u32 NewSymbolDialog::parseAddress(QString& error_message)
 
 // *****************************************************************************
 
-NewFunctionDialog::NewFunctionDialog(DebugInterface& cpu, QWidget* parent)
-	: NewSymbolDialog(GLOBAL_STORAGE | SIZE_FIELD | EXISTING_FUNCTIONS_FIELD, 4, cpu, parent)
+NewFunctionDialog::NewFunctionDialog(DebugInterface& cpu, QWidget* parent, DebugCommandStack * stack)
+	: NewSymbolDialog(GLOBAL_STORAGE | SIZE_FIELD | EXISTING_FUNCTIONS_FIELD, 4, cpu, parent, stack)
 {
 	setWindowTitle(tr("New Function"));
 
@@ -321,8 +324,11 @@ bool NewFunctionDialog::parseUserInput()
 
 			if (m_ui.shrinkExistingRadioButton->isChecked())
 			{
+				m_original_existing_function_size = existing_function->size();
 				m_new_existing_function_size = m_address - existing_function->address().value;
 				m_existing_function = existing_function->handle();
+
+				//error_message = QString::number (m_original_existing_function_size);
 			}
 		}
 	});
@@ -337,27 +343,42 @@ void NewFunctionDialog::createSymbol()
 		return;
 
 	QString error_message;
-	m_cpu.GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
-		ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("User-Defined");
-		if (!source.success())
-		{
-			error_message = tr("Cannot create symbol source.");
-			return;
-		}
+	if (m_stack == nullptr)
+	{
+		m_cpu.GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
+			ccc::Result<ccc::SymbolSourceHandle> source = database.get_symbol_source("User-Defined");
+			if (!source.success())
+			{
+				error_message = tr("Cannot create symbol source.");
+				return;
+			}
 
-		ccc::Result<ccc::Function*> function = database.functions.create_symbol(std::move(m_name), m_address, *source, nullptr);
-		if (!function.success())
-		{
-			error_message = tr("Cannot create symbol.");
-			return;
-		}
+			ccc::Result<ccc::Function*> function = database.functions.create_symbol(std::move(m_name), m_address, *source, nullptr);
+			if (!function.success())
+			{
+				error_message = tr("Cannot create symbol.");
+				return;
+			}
 
-		(*function)->set_size(m_size);
+			(*function)->set_size(m_size);
 
-		ccc::Function* existing_function = database.functions.symbol_from_handle(m_existing_function);
-		if (existing_function)
-			existing_function->set_size(m_new_existing_function_size);
-	});
+			ccc::Function* existing_function = database.functions.symbol_from_handle(m_existing_function);
+			if (existing_function)
+				existing_function->set_size(m_new_existing_function_size);
+		});
+
+	}
+	else
+	{
+		m_stack->Push<AddFunctionCommand>(m_address, m_name, m_address, m_size, m_existing_function, m_original_existing_function_size, m_new_existing_function_size);
+		m_stack->Do(m_cpu, m_address);
+
+		auto result = m_stack->GetErrorMessage(m_address);
+
+		if (result.has_value())
+			error_message = tr(result->c_str ());
+
+	}
 
 	if (!error_message.isEmpty())
 		AsyncDialogs::warning(g_debugger_window, tr("Cannot Create Function"), error_message);

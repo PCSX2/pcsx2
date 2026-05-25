@@ -22,6 +22,9 @@
 #include "SymbolTree/NewSymbolDialogs.h"
 #include "common/StringUtil.h"
 
+#include "Debugger/DebugCommands/RenameFunctionCommand.h"
+#include "Debugger/DebugCommands/DeleteFunctionCommand.h"
+
 using namespace QtUtils;
 
 DisassemblyView::DisassemblyView(const DebuggerViewParameters& parameters)
@@ -264,7 +267,7 @@ void DisassemblyView::contextGoToAddress()
 
 void DisassemblyView::contextAddFunction()
 {
-	NewFunctionDialog* dialog = new NewFunctionDialog(cpu(), this);
+	NewFunctionDialog* dialog = new NewFunctionDialog(cpu(), this, &m_commandStack);
 	dialog->setName(QString("func_%1").arg(m_selectedAddressStart, 8, 16, QChar('0')));
 	dialog->setAddress(m_selectedAddressStart);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);
@@ -285,18 +288,12 @@ void DisassemblyView::contextCopyFunctionName()
 
 void DisassemblyView::contextRemoveFunction()
 {
-	cpu().GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
-		ccc::Function* curFunc = database.functions.symbol_overlapping_address(m_selectedAddressStart);
-		if (!curFunc)
-			return;
-
-		ccc::Function* previousFunc = database.functions.symbol_overlapping_address(curFunc->address().value - 4);
-		if (previousFunc)
-			previousFunc->set_size(curFunc->size() + previousFunc->size());
-
-		database.functions.mark_symbol_for_destruction(curFunc->handle(), &database);
-		database.destroy_marked_symbols();
-	});
+	const FunctionInfo curFunc = cpu().GetSymbolGuardian().FunctionOverlappingAddress(m_selectedAddressStart);
+	if (!curFunc.size)
+		return;
+	const FunctionInfo prevFunc = cpu().GetSymbolGuardian().FunctionOverlappingAddress(curFunc.address.value - 4);
+	m_commandStack.Push<DeleteFunctionCommand>(curFunc.address, curFunc.handle);
+	m_commandStack.Do(cpu(), curFunc.address);
 }
 
 void DisassemblyView::contextRenameFunction()
@@ -312,16 +309,16 @@ void DisassemblyView::contextRenameFunction()
 	const QString label = tr("Function name");
 	const QString oldName = QString::fromStdString(curFunc.name);
 
-	AsyncDialogs::getText(this, title, label, oldName, [this, curFunc](QString newName) {
+	AsyncDialogs::getText(this, title, label, oldName, [this, oldName, curFunc](QString newName) {
 		if (newName.isEmpty())
 		{
 			AsyncDialogs::warning(this, tr("Rename Function Error"), tr("Function name cannot be nothing."));
 			return;
 		}
 
-		cpu().GetSymbolGuardian().ReadWrite([&](ccc::SymbolDatabase& database) {
-			database.functions.rename_symbol(curFunc.handle, newName.toStdString());
-		});
+		m_commandStack.Push<RenameFunctionCommand>(curFunc.address, oldName.toStdString(), newName.toStdString(), curFunc.handle);
+		m_commandStack.Do(cpu(), curFunc.address);
+
 	});
 }
 
@@ -721,6 +718,12 @@ void DisassemblyView::openContextMenu(QPoint pos)
 	if (pos.y() / m_rowHeight == 0)
 		return;
 
+	const FunctionInfo curFunc = cpu().GetSymbolGuardian().FunctionOverlappingAddress(m_selectedAddressStart);
+	std::optional<ccc::Address> selectedAddressFunction = std::nullopt;
+	if (curFunc.address.valid ())
+		selectedAddressFunction = curFunc.address;
+
+
 	QMenu* menu = new QMenu(this);
 	menu->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -803,6 +806,33 @@ void DisassemblyView::openContextMenu(QPoint pos)
 	QAction* remove_function_action = menu->addAction(tr("Remove Function"));
 	menu->addAction(remove_function_action);
 	connect(remove_function_action, &QAction::triggered, this, &DisassemblyView::contextRemoveFunction);
+
+	if (selectedAddressFunction.has_value())
+	{
+		auto functionAddress = selectedAddressFunction.value();
+		if (m_commandStack.CanUndo(cpu(), functionAddress))
+		{
+			std::string actionName = m_commandStack.GetUndoName(functionAddress);
+
+			QAction* undo_action = menu->addAction(tr(actionName.c_str ()));
+			menu->addAction(undo_action);
+
+			connect(undo_action, &QAction::triggered, this, [=]() {
+				m_commandStack.Undo(cpu(), functionAddress);
+			});
+		}
+		if (m_commandStack.CanDo(cpu(), functionAddress))
+		{
+			std::string actionName = m_commandStack.GetRedoName(functionAddress);
+
+			QAction* undo_action = menu->addAction(tr(actionName.c_str()));
+			menu->addAction(undo_action);
+
+			connect(undo_action, &QAction::triggered, this, [=]() {
+				m_commandStack.Do(cpu(), functionAddress);
+			});
+		}
+	}
 
 	if (FunctionCanRestore(m_selectedAddressStart))
 	{
