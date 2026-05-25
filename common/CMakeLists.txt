@@ -149,6 +149,7 @@ elseif(APPLE)
 		Darwin/DarwinThreads.cpp
 		Darwin/DarwinMisc.cpp
 		Darwin/DarwinMisc.h
+		Linux/LnxHostSys.cpp
 	)
 	target_compile_options(common PRIVATE -fobjc-arc)
 	target_link_options(common PRIVATE -fobjc-link-runtime)
@@ -210,7 +211,7 @@ target_link_libraries(common PRIVATE
 target_link_libraries(common PUBLIC
 	fmt::fmt
 	fast_float
-	rapidyaml::rapidyaml
+	ryml::ryml
 )
 
 fixup_file_properties(common)

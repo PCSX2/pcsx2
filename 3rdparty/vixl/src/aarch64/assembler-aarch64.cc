@@ -263,6 +263,10 @@ void Assembler::b(int64_t imm19, Condition cond) {
   Emit(B_cond | ImmCondBranch(imm19) | cond);
 }
 
+void Assembler::bc(int64_t imm19, Condition cond) {
+  VIXL_ASSERT(CPUHas(CPUFeatures::kHBC));
+  Emit(B_cond | ImmCondBranch(imm19) | (1 << 4) | cond);
+}
 
 void Assembler::b(Label* label) {
   int64_t offset = LinkAndGetInstructionOffsetTo(label);
@@ -277,6 +281,11 @@ void Assembler::b(Label* label, Condition cond) {
   b(static_cast<int>(offset), cond);
 }
 
+void Assembler::bc(Label* label, Condition cond) {
+  int64_t offset = LinkAndGetInstructionOffsetTo(label);
+  VIXL_ASSERT(Instruction::IsValidImmPCOffset(CondBranchType, offset));
+  bc(static_cast<int>(offset), cond);
+}
 
 void Assembler::bl(int64_t imm26) { Emit(BL | ImmUncondBranch(imm26)); }
 
@@ -3689,6 +3698,23 @@ void Assembler::fjcvtzs(const Register& rd, const VRegister& vn) {
   Emit(FJCVTZS | Rn(vn) | Rd(rd));
 }
 
+void Assembler::bfcvt(const VRegister& vd, const VRegister& vn) {
+  VIXL_ASSERT(CPUHas(CPUFeatures::kFP, CPUFeatures::kBF16));
+  VIXL_ASSERT(vd.Is1H() && vn.Is1S());
+  Emit(0x1e634000 | Rn(vn) | Rd(vd));
+}
+
+void Assembler::bfcvtn(const VRegister& vd, const VRegister& vn) {
+  VIXL_ASSERT(CPUHas(CPUFeatures::kNEON, CPUFeatures::kBF16));
+  VIXL_ASSERT(vn.Is4S() && vd.Is4H());
+  Emit(0x0ea16800 | Rn(vn) | Rd(vd));
+}
+
+void Assembler::bfcvtn2(const VRegister& vd, const VRegister& vn) {
+  VIXL_ASSERT(CPUHas(CPUFeatures::kNEON, CPUFeatures::kBF16));
+  VIXL_ASSERT(vn.Is4S() && vd.Is8H());
+  Emit(0x4ea16800 | Rn(vn) | Rd(vd));
+}
 
 void Assembler::NEONFPConvertToInt(const Register& rd,
                                    const VRegister& vn,
@@ -4527,7 +4553,10 @@ void Assembler::fcmla(const VRegister& vd,
   VIXL_ASSERT(vd.IsVector() && AreSameFormat(vd, vn));
   VIXL_ASSERT((vm.IsH() && (vd.Is8H() || vd.Is4H())) ||
               (vm.IsS() && vd.Is4S()));
-  if (vd.IsLaneSizeH()) VIXL_ASSERT(CPUHas(CPUFeatures::kNEONHalf));
+  if (vd.IsLaneSizeH()) {
+    VIXL_ASSERT(CPUHas(CPUFeatures::kNEONHalf));
+    VIXL_ASSERT(vd.Is8H() || (vm_index <= 1));
+  }
   int index_num_bits = vd.Is4S() ? 1 : 2;
   Emit(VFormat(vd) | Rm(vm) | NEON_FCMLA_byelement |
        ImmNEONHLM(vm_index, index_num_bits) | ImmRotFcmlaSca(rot) | Rn(vn) |
@@ -6117,6 +6146,24 @@ void Assembler::sm3tt2b(const VRegister& vd, const VRegister& vn, const VRegiste
   Emit(0xce408c00 | Rd(vd) | Rn(vn) | Rm(vm) | i);
 }
 
+void Assembler::sm4e(const VRegister& vd, const VRegister& vn) {
+  VIXL_ASSERT(CPUHas(CPUFeatures::kNEON));
+  VIXL_ASSERT(CPUHas(CPUFeatures::kSM4));
+  VIXL_ASSERT(vd.Is4S() && vn.Is4S());
+
+  Emit(0xcec08400 | Rd(vd) | Rn(vn));
+}
+
+void Assembler::sm4ekey(const VRegister& vd, const VRegister& vn, const VRegister& vm) {
+  VIXL_ASSERT(CPUHas(CPUFeatures::kNEON));
+  VIXL_ASSERT(CPUHas(CPUFeatures::kSM4));
+  VIXL_ASSERT(vd.Is4S() && vn.Is4S() && vm.Is4S());
+
+  Emit(0xce60c800 | Rd(vd) | Rn(vn) | Rm(vm));
+}
+
+void Assembler::yield() { hint(YIELD); }
+
 // Note:
 // For all ToImm instructions below, a difference in case
 // for the same letter indicates a negated bit.
@@ -7161,6 +7208,7 @@ bool Assembler::CPUHas(SystemRegister sysreg) const {
       return CPUHas(CPUFeatures::kRNG);
     case FPCR:
     case NZCV:
+    case DCZID_EL0:
       break;
   }
   return true;

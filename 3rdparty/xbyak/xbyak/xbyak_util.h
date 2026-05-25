@@ -101,6 +101,8 @@
 #endif
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include <sched.h>
 #endif
 namespace Xbyak { namespace util {
 class CpuTopology;
@@ -526,16 +528,16 @@ public:
 	XBYAK_DEFINE_TYPE(36, tAVX512DQ);
 	XBYAK_DEFINE_TYPE(37, tAVX512_IFMA);
 	XBYAK_DEFINE_TYPE(37, tAVX512IFMA);// = tAVX512_IFMA;
-	XBYAK_DEFINE_TYPE(38, tAVX512PF);
-	XBYAK_DEFINE_TYPE(39, tAVX512ER);
+//	XBYAK_DEFINE_TYPE(38, tAVX512PF); // Xeon Phi only
+//	XBYAK_DEFINE_TYPE(39, tAVX512ER);
 	XBYAK_DEFINE_TYPE(40, tAVX512CD);
 	XBYAK_DEFINE_TYPE(41, tAVX512BW);
 	XBYAK_DEFINE_TYPE(42, tAVX512VL);
 	XBYAK_DEFINE_TYPE(43, tAVX512_VBMI);
 	XBYAK_DEFINE_TYPE(43, tAVX512VBMI); // = tAVX512_VBMI; // changed by Intel's manual
-	XBYAK_DEFINE_TYPE(44, tAVX512_4VNNIW);
-	XBYAK_DEFINE_TYPE(45, tAVX512_4FMAPS);
-	XBYAK_DEFINE_TYPE(46, tPREFETCHWT1);
+//	XBYAK_DEFINE_TYPE(44, tAVX512_4VNNIW);
+//	XBYAK_DEFINE_TYPE(45, tAVX512_4FMAPS);
+//	XBYAK_DEFINE_TYPE(46, tPREFETCHWT1);
 	XBYAK_DEFINE_TYPE(47, tPREFETCHW);
 	XBYAK_DEFINE_TYPE(48, tSHA);
 	XBYAK_DEFINE_TYPE(49, tMPX);
@@ -587,6 +589,7 @@ public:
 	XBYAK_DEFINE_TYPE(95, tAMX_FP8);
 	XBYAK_DEFINE_TYPE(96, tMOVRS);
 	XBYAK_DEFINE_TYPE(97, tHYBRID);
+	XBYAK_DEFINE_TYPE(98, tAMX_COMPLEX);
 
 #undef XBYAK_SPLIT_ID
 #undef XBYAK_DEFINE_TYPE
@@ -679,8 +682,6 @@ public:
 					if (type_ & tAVX512F) {
 						if (ebx & (1U << 17)) type_ |= tAVX512DQ;
 						if (ebx & (1U << 21)) type_ |= tAVX512_IFMA;
-						if (ebx & (1U << 26)) type_ |= tAVX512PF;
-						if (ebx & (1U << 27)) type_ |= tAVX512ER;
 						if (ebx & (1U << 28)) type_ |= tAVX512CD;
 						if (ebx & (1U << 30)) type_ |= tAVX512BW;
 						if (ebx & (1U << 31)) type_ |= tAVX512VL;
@@ -689,8 +690,6 @@ public:
 						if (ecx & (1U << 11)) type_ |= tAVX512_VNNI;
 						if (ecx & (1U << 12)) type_ |= tAVX512_BITALG;
 						if (ecx & (1U << 14)) type_ |= tAVX512_VPOPCNTDQ;
-						if (edx & (1U << 2)) type_ |= tAVX512_4VNNIW;
-						if (edx & (1U << 3)) type_ |= tAVX512_4FMAPS;
 						if (edx & (1U << 8)) type_ |= tAVX512_VP2INTERSECT;
 						if ((type_ & tAVX512BW) && (edx & (1U << 23))) type_ |= tAVX512_FP16;
 					}
@@ -713,7 +712,6 @@ public:
 			if (ebx & (1U << 23)) type_ |= tCLFLUSHOPT;
 			if (ebx & (1U << 24)) type_ |= tCLWB;
 			if (ebx & (1U << 29)) type_ |= tSHA;
-			if (ecx & (1U << 0)) type_ |= tPREFETCHWT1;
 			if (ecx & (1U << 5)) type_ |= tWAITPKG;
 			if (ecx & (1U << 8)) type_ |= tGFNI;
 			if (ecx & (1U << 9)) type_ |= tVAES;
@@ -745,6 +743,7 @@ public:
 				if (eax & (1U << 31)) type_ |= tMOVRS;
 				if (edx & (1U << 4)) type_ |= tAVX_VNNI_INT8;
 				if (edx & (1U << 5)) type_ |= tAVX_NE_CONVERT;
+				if (edx & (1U << 8)) type_ |= tAMX_COMPLEX;
 				if (edx & (1U << 10)) type_ |= tAVX_VNNI_INT16;
 				if (edx & (1U << 14)) type_ |= tPREFETCHITI;
 				if (edx & (1U << 19)) type_ |= tAVX10;
@@ -1296,10 +1295,56 @@ inline uint32_t popcnt(uint64_t mask)
 #endif
 }
 
+// fall back to CPUID leaf 0x1A
+inline CoreType getCoreType()
+{
+	uint32_t data[4] = {};
+	Cpu::getCpuidEx(0x1A, 0, data);
+	const uint32_t coreTypeField = (data[0] >> 24) & 0xFF;
+	if (coreTypeField == 0x40) return Performance; // P-core
+	if (coreTypeField == 0x20) return Efficient; // E-core
+	return Standard;
+}
+
 #ifdef _WIN32
 
 typedef std::vector<uint32_t> U32Vec;
+
+#if (defined(NTDDI_VERSION) && NTDDI_VERSION >= 0x06010000) || (defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0601)
+	#define XBYAK_WINSDK_HAS_RELATIONSHIP_GROUP_AFFINITY 1
+#else
+	#define XBYAK_WINSDK_HAS_RELATIONSHIP_GROUP_AFFINITY 0
+#endif
+
+#if (defined(NTDDI_VERSION) && NTDDI_VERSION >= 0x0A000000) || (defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0A00)
+	#define XBYAK_WINSDK_HAS_EFFICIENCY_CLASS 1
+#else
+	#define XBYAK_WINSDK_HAS_EFFICIENCY_CLASS 0
+#endif
+
+// GroupMasks[] / GroupCount on CACHE_RELATIONSHIP added in Win10 20H1 (SDK 10.0.19041, NTDDI_WIN10_VB)
+// NOTE: _WIN32_WINNT has no sub-version granularity for Win10, so only
+// NTDDI_VERSION can distinguish 20H1 (0x0A00000C) from earlier Win10 builds.
+// If NTDDI_VERSION is not set, this macro will be 0 (safe/conservative fallback).
+#if defined(NTDDI_VERSION) && NTDDI_VERSION >= 0x0A00000C
+	#define XBYAK_WINSDK_HAS_CACHE_RELATIONSHIP_GROUPMASKS 1
+#else
+	#define XBYAK_WINSDK_HAS_CACHE_RELATIONSHIP_GROUPMASKS 0
+#endif
+
+#if XBYAK_WINSDK_HAS_RELATIONSHIP_GROUP_AFFINITY
 typedef SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX ProcInfo;
+
+inline CoreType getCoreTypeForAffinity(const GROUP_AFFINITY& affinity)
+{
+	GROUP_AFFINITY previousMask = {};
+	if (!SetThreadGroupAffinity(GetCurrentThread(), &affinity, &previousMask)) {
+		return Standard;
+	}
+	CoreType type = impl::getCoreType();
+	SetThreadGroupAffinity(GetCurrentThread(), &previousMask, NULL);
+	return type;
+}
 
 // return total logical cpus if sucessful, 0 if failed
 inline uint32_t getGroupAcc(U32Vec& v)
@@ -1346,10 +1391,12 @@ static inline uint32_t getCores(std::vector<LogicalCpu>& cpus, bool isHybrid, co
 			cpu.coreId = coreIdx++;
 			if (!isHybrid) {
 				cpu.coreType = Standard;
-			} else if (core.EfficiencyClass > 0) {
-				cpu.coreType = Performance;
 			} else {
-				cpu.coreType = Efficient;
+#if XBYAK_WINSDK_HAS_EFFICIENCY_CLASS
+				cpu.coreType = core.EfficiencyClass > 0 ? Performance : Efficient;
+#else
+				cpu.coreType = getCoreTypeForAffinity(core.GroupMask[0]);
+#endif
 			}
 
 			const GROUP_AFFINITY* masks = core.GroupMask;
@@ -1374,13 +1421,19 @@ static inline uint32_t getCores(std::vector<LogicalCpu>& cpus, bool isHybrid, co
 
 inline bool convertMask(CpuMask& mask, const U32Vec& groupAcc, const CACHE_RELATIONSHIP& cache)
 {
-	const GROUP_AFFINITY* masks = cache.GroupMasks;
-
-	for (WORD i = 0; i < cache.GroupCount; i++) {
-		const WORD group = masks[i].Group;
-		const KAFFINITY m = masks[i].Mask;
-		const uint32_t base = groupAcc[group];
-
+#if XBYAK_WINSDK_HAS_CACHE_RELATIONSHIP_GROUPMASKS
+	const WORD count = cache.GroupCount;
+#else
+	const WORD count = 1;
+#endif
+	for (WORD i = 0; i < count; i++) {
+#if XBYAK_WINSDK_HAS_CACHE_RELATIONSHIP_GROUPMASKS
+		const GROUP_AFFINITY& cg = cache.GroupMasks[i];
+#else
+		const GROUP_AFFINITY& cg = cache.GroupMask;
+#endif
+		const KAFFINITY m = cg.Mask;
+		const uint32_t base = groupAcc[cg.Group];
 		for (uint32_t b = 0; b < sizeof(KAFFINITY) * 8; b++) {
 			if (m & (KAFFINITY(1) << b)) {
 				if (!mask.append(base + b)) return false;
@@ -1441,7 +1494,17 @@ inline bool initCpuTopology(CpuTopology& cpuTopo)
 	}
 	return true;
 }
-
+#else
+inline bool initCpuTopology(CpuTopology& cpuTopo)
+{
+	(void)cpuTopo;
+	return false;
+}
+#endif
+// unset WinSDK version macros to avoid Macro pollution
+#undef XBYAK_WINSDK_HAS_RELATIONSHIP_GROUP_AFFINITY
+#undef XBYAK_WINSDK_HAS_EFFICIENCY_CLASS
+#undef XBYAK_WINSDK_HAS_CACHE_RELATIONSHIP_GROUPMASKS
 #elif defined(__linux__) // Linux
 
 struct WrapFILE {
@@ -1469,6 +1532,15 @@ inline bool parseCpuList(CpuMask& mask, const char* path) {
 	size_t n = strlen(buf);
 	if (n > 0 && buf[n - 1] == '\n') buf[n - 1] = '\0';
 	return setStr(mask, buf);
+}
+
+inline CoreType setAffinityAndGetCoreType(uint32_t cpu)
+{
+	cpu_set_t cpuMask;
+	CPU_ZERO(&cpuMask);
+	CPU_SET(cpu, &cpuMask);
+	if (sched_setaffinity(0, sizeof(cpu_set_t), &cpuMask)) return Standard;
+	return impl::getCoreType();
 }
 
 inline bool initCpuTopology(CpuTopology& cpuTopo)
@@ -1564,9 +1636,10 @@ inline bool initCpuTopology(CpuTopology& cpuTopo)
 	// Assign core types for hybrid architectures
 	const bool isHybrid = cpuTopo.isHybrid();
 	if (isHybrid) {
-		// For hybrid systems, read P-core and E-core lists from sysfs
+		// For hybrid systems, try toread P-core and E-core lists from sysfs first
 		CpuMask pCoreMask;
-		if (parseCpuList(pCoreMask, "/sys/devices/cpu_core/cpus")) {
+		const bool hasPCoreSysfs = parseCpuList(pCoreMask, "/sys/devices/cpu_core/cpus");
+		if (hasPCoreSysfs) {
 			// Set Performance core types
 			for (CpuMask::const_iterator it = pCoreMask.begin(); it != pCoreMask.end(); ++it) {
 				uint32_t cpuIdx = *it;
@@ -1576,13 +1649,25 @@ inline bool initCpuTopology(CpuTopology& cpuTopo)
 			}
 		}
 		CpuMask eCoreMask;
-		if (parseCpuList(eCoreMask, "/sys/devices/cpu_atom/cpus")) {
+		const bool hasECoreSysfs = parseCpuList(eCoreMask, "/sys/devices/cpu_atom/cpus");
+		if (hasECoreSysfs) {
 			// Set Efficient core types
 			for (CpuMask::const_iterator it = eCoreMask.begin(); it != eCoreMask.end(); ++it) {
 				uint32_t cpuIdx = *it;
 				if (cpuIdx < logicalCpuNum) {
 					cpuTopo.logicalCpus_[cpuIdx].coreType = Efficient;
 				}
+			}
+		}
+		// Fallback: if either sysfs paths are unavailable, detect both core type per-CPU
+		if (!hasPCoreSysfs || !hasECoreSysfs) {
+			cpu_set_t originalMask;
+			CPU_ZERO(&originalMask);
+			if (sched_getaffinity(0, sizeof(cpu_set_t), &originalMask) == 0) {
+				for (uint32_t cpu = 0; cpu < logicalCpuNum; cpu++) {
+					cpuTopo.logicalCpus_[cpu].coreType = impl::setAffinityAndGetCoreType(cpu);
+				}
+				sched_setaffinity(0, sizeof(cpu_set_t), &originalMask);
 			}
 		}
 	}
@@ -1645,8 +1730,6 @@ private:
 };
 
 #ifdef XBYAK64
-const int UseRCX = 1 << 6;
-const int UseRDX = 1 << 7;
 
 class Pack {
 	static const size_t maxTblNum = 15;
@@ -1745,28 +1828,35 @@ public:
 	}
 };
 
+// start from a bit position larger than the number of GPRs
+const int UseRBP = 1 << 5;
+const int UseRCX = 1 << 6;
+const int UseRDX = 1 << 7;
+const int UseRSI = 1 << 8;
+const int UseRDI = 1 << 9;
+const int UseRBPAsFramePointer = UseRBP | (1 << 10);
+
 class StackFrame {
 #ifdef XBYAK64_WIN
 	static const int noSaveNum = 6;
-	static const int rcxPos = 0;
-	static const int rdxPos = 1;
 #else
 	static const int noSaveNum = 8;
-	static const int rcxPos = 3;
-	static const int rdxPos = 2;
 #endif
+	static const int maxPnum = 4;
 	static const int maxRegNum = 14; // maxRegNum = 16 - rsp - rax
+	static const int calleeSaveNum = maxRegNum - noSaveNum;
+	static const int UseMASK = UseRCX|UseRDX|UseRSI|UseRDI|UseRBP;
 	Xbyak::CodeGenerator *code_;
-	Xbyak::Reg64 pTbl_[4];
+	Xbyak::Reg64 pTbl_[maxPnum];
 	Xbyak::Reg64 tTbl_[maxRegNum];
 	Pack p_;
 	Pack t_;
 	int pNum_;
 	int tNum_;
+	int useRegs_;
 	int saveNum_;
+	int saveRegs_[calleeSaveNum];
 	int P_;
-	bool useRcx_;
-	bool useRdx_;
 	bool makeEpilog_;
 	StackFrame(const StackFrame&);
 	void operator=(const StackFrame&);
@@ -1776,45 +1866,69 @@ public:
 	/*
 		make stack frame
 		@param sf [in] this
-		@param pNum [in] num of function parameter(0 <= pNum <= 4)
-		@param tNum [in] num of temporary register(0 <= tNum, with UseRCX, UseRDX) #{pNum + tNum [+rcx] + [rdx]} <= 14
+		@param pNum [in] number of function parameters(0 <= pNum <= 4)
+		@param tNum [in] number of temporary registers(0 <= tNum, can be OR-ed with Use{RCX,RDX,RSI,RDI,RBP}, e.g., 3|UseRCX)
 		@param stackSizeByte [in] local stack size
 		@param makeEpilog [in] automatically call close() if true
 
+		pNum + tNum + #Use must be <= 14
+
 		you can use
 		rax
-		gp0, ..., gp(pNum - 1)
-		gt0, ..., gt(tNum-1)
-		rcx if tNum & UseRCX
-		rdx if tNum & UseRDX
-		rsp[0..stackSizeByte - 1]
+		p[0], ..., p[pNum-1] as function parameters
+		t[0], ..., t[tNum-1] as temporary registers
+		{rcx,rdx,rsi,rdi,rbp} are explicitly available by specifying Use{RCX,RDX,RSI,RDI,RBP} in tNum
+		rsp[0..stackSizeByte-1] if stackSizeByte > 0
 	*/
 	StackFrame(Xbyak::CodeGenerator *code, int pNum, int tNum = 0, int stackSizeByte = 0, bool makeEpilog = true)
 		: code_(code)
 		, pNum_(pNum)
-		, tNum_(tNum & ~(UseRCX | UseRDX))
+		, tNum_(tNum & ~(UseMASK|UseRBPAsFramePointer))
+		, useRegs_(tNum & UseMASK) // drop UseRBPAsFramePointer bit
 		, saveNum_(0)
 		, P_(0)
-		, useRcx_((tNum & UseRCX) != 0)
-		, useRdx_((tNum & UseRDX) != 0)
 		, makeEpilog_(makeEpilog)
 		, p(p_)
 		, t(t_)
 	{
-		using namespace Xbyak;
 		if (pNum < 0 || pNum > 4) XBYAK_THROW(ERR_BAD_PNUM)
-		const int allRegNum = pNum + tNum_ + (useRcx_ ? 1 : 0) + (useRdx_ ? 1 : 0);
-		if (tNum_ < 0 || allRegNum > maxRegNum) XBYAK_THROW(ERR_BAD_TNUM)
-		const Reg64& _rsp = code->rsp;
-		saveNum_ = local::max_(0, allRegNum - noSaveNum);
-		const int *tbl = getOrderTbl() + noSaveNum;
-		for (int i = 0; i < saveNum_; i++) {
-			code->push(Reg64(tbl[i]));
+		if (tNum < 0) XBYAK_THROW(ERR_BAD_TNUM)
+		const int *const fullTbl = getRegEntryTbl();
+		const int *const calleeTbl = fullTbl + noSaveNum;
+		int callerUseNum = 0;
+		int calleeUseNum = 0;
+		for (int i = 0; i < maxRegNum; i++) {
+			if (useRegs_ & useFlagOf(fullTbl[i])) {
+				if (i < noSaveNum) {
+					callerUseNum++;
+				} else {
+					calleeUseNum++;
+				}
+			}
+		}
+		const int useNum = callerUseNum + calleeUseNum;
+		if (pNum + tNum_ + useNum > maxRegNum) XBYAK_THROW(ERR_BAD_TNUM)
+		const int baseSaveNum = local::max_(0, pNum + tNum_ + useNum - noSaveNum);
+		bool pushedRbp = false;
+		if (useRegs_ & UseRBP) {
+			code->push(rbp);
+			saveRegs_[saveNum_++] = Operand::RBP;
+			pushedRbp = true;
+			if ((tNum & UseRBPAsFramePointer) == UseRBPAsFramePointer) code->mov(rbp, rsp);
+		}
+		for (int i = 0; i < calleeSaveNum; i++) {
+			int r = calleeTbl[i];
+			if (i < baseSaveNum || isUseReg(r)) {
+				if (pushedRbp && r == Operand::RBP) continue;
+				saveRegs_[saveNum_++] = r;
+				code->push(Reg64(r));
+			}
 		}
 		P_ = (stackSizeByte + 7) / 8;
-		if (P_ > 0 && (P_ & 1) == (saveNum_ & 1)) P_++; // (rsp % 16) == 8, then increment P_ for 16 byte alignment
+		// (rsp % 16) == 8, then increment P_ for 16 byte alignment
+		if (P_ > 0 && (P_ & 1) == (saveNum_ & 1)) P_++;
 		P_ *= 8;
-		if (P_ > 0) code->sub(_rsp, P_);
+		if (P_ > 0) code->sub(rsp, P_);
 		int pos = 0;
 		for (int i = 0; i < pNum; i++) {
 			pTbl_[i] = Xbyak::Reg64(getRegIdx(pos));
@@ -1822,8 +1936,13 @@ public:
 		for (int i = 0; i < tNum_; i++) {
 			tTbl_[i] = Xbyak::Reg64(getRegIdx(pos));
 		}
-		if (useRcx_ && rcxPos < pNum) code_->mov(code_->r10, code_->rcx);
-		if (useRdx_ && rdxPos < pNum) code_->mov(code_->r11, code_->rdx);
+		// replace reserved reg with backup reg if needed
+		for (size_t i = 0; i < maxPnum; i++) {
+			const RegSlot& rp = getRegSlotTbl()[i];
+			if (isUseReg(rp.target) && rp.pos < pNum && rp.alt >= 0) {
+				code->mov(Xbyak::Reg64(rp.alt), Xbyak::Reg64(rp.target));
+			}
+		}
 		p_.init(pTbl_, pNum);
 		t_.init(tTbl_, tNum_);
 	}
@@ -1833,14 +1952,10 @@ public:
 	*/
 	void close(bool callRet = true)
 	{
-		using namespace Xbyak;
-		const Reg64& _rsp = code_->rsp;
-		const int *tbl = getOrderTbl() + noSaveNum;
-		if (P_ > 0) code_->add(_rsp, P_);
-		for (int i = 0; i < saveNum_; i++) {
-			code_->pop(Reg64(tbl[saveNum_ - 1 - i]));
+		if (P_ > 0) code_->add(code_->rsp, P_);
+		for (int i = saveNum_ - 1; i >= 0; i--) {
+			code_->pop(Reg64(saveRegs_[i]));
 		}
-
 		if (callRet) code_->ret();
 	}
 	~StackFrame()
@@ -1849,10 +1964,48 @@ public:
 		close();
 	}
 private:
-	const int *getOrderTbl() const
+	static int useFlagOf(int r)
 	{
-		using namespace Xbyak;
-		static const int tbl[] = {
+		switch (r) {
+		case Operand::RCX: return UseRCX;
+		case Operand::RDX: return UseRDX;
+		case Operand::RSI: return UseRSI;
+		case Operand::RDI: return UseRDI;
+		case Operand::RBP: return UseRBP;
+		default: return 0;
+		}
+	}
+	bool isUseReg(int r) const { return (useRegs_ & useFlagOf(r)) != 0; }
+	// Register allocation for the first 4 function parameters
+	struct RegSlot {
+		int target;
+		int pos; // position of target in getRegEntryTbl()
+		int alt; // alternative if target is used for parameter. -1 means no alternative.
+	};
+	const RegSlot *getRegSlotTbl() const
+	{
+		// Win: p[] = rcx(r10), rdx(r11), r8, r9:
+		// Linux: p[] = rdi(r8), rsi(r9), rdx(r11), rcx(r10)
+		// reg(alt) means a reserved reg if Use<reg> is used.
+
+		static const RegSlot tbl[maxPnum] = {
+#ifdef XBYAK64_WIN
+			{ Operand::RCX, 0, Operand::R10 },
+			{ Operand::RDX, 1, Operand::R11 },
+			{ Operand::RDI, 6, -1 },
+			{ Operand::RSI, 7, -1 },
+#else
+			{ Operand::RCX, 3, Operand::R10 },
+			{ Operand::RDX, 2, Operand::R11 },
+			{ Operand::RDI, 0, Operand::R8 },
+			{ Operand::RSI, 1, Operand::R9 },
+#endif
+		};
+		return tbl;
+	}
+	const int *getRegEntryTbl() const
+	{
+		static const int tbl[maxRegNum] = {
 #ifdef XBYAK64_WIN
 			Operand::RCX, Operand::RDX, Operand::R8, Operand::R9, Operand::R10, Operand::R11, Operand::RDI, Operand::RSI,
 #else
@@ -1862,21 +2015,28 @@ private:
 		};
 		return &tbl[0];
 	}
+	// get an available register index from tbl, skipping reserved registers
 	int getRegIdx(int& pos) const
 	{
-		assert(pos < maxRegNum);
-		using namespace Xbyak;
-		const int *tbl = getOrderTbl();
-		int r = tbl[pos++];
-		if (useRcx_) {
-			if (r == Operand::RCX) { return Operand::R10; }
-			if (r == Operand::R10) { r = tbl[pos++]; }
+		const int *tbl = getRegEntryTbl();
+		const RegSlot *slotTbl = getRegSlotTbl();
+		for (;;) {
+		NEXT:;
+			assert(pos < maxRegNum);
+			int r = tbl[pos++];
+			// if r is a Use*** target with alt, return alt as backup
+			// otherwise skip Use*** targets, their alts, and UseRBP's rbp
+			for (size_t i = 0; i < maxPnum; i++) {
+				const RegSlot& slot = slotTbl[i];
+				if (!isUseReg(slot.target)) continue;
+				if (r == slot.alt) goto NEXT;
+				if (r == slot.target) {
+					if (slot.alt >= 0) return slot.alt;
+					goto NEXT;
+				}
+			}
+			if (!isUseReg(r)) return r;
 		}
-		if (useRdx_) {
-			if (r == Operand::RDX) { return Operand::R11; }
-			if (r == Operand::R11) { return tbl[pos++]; }
-		}
-		return r;
 	}
 };
 #endif

@@ -585,8 +585,9 @@ cubeb_destroy(cubeb * context);
                                 NULL if this stream is input only. When input
                                 and output stream parameters are supplied, their
                                 rate has to be the same.
-    @param latency_frames Stream latency in frames.  Valid range
-                          is [1, 96000].
+    @param latency_frames Requested stream latency in frames. Valid range is
+                          [1, 96000]. The actual latency may differ depending
+                          on the backend, platform, and hardware.
     @param data_callback Will be called to preroll data before playback is
                          started by cubeb_stream_start.
     @param state_callback A pointer to a state callback.

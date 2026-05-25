@@ -264,7 +264,7 @@ static bool match_sm(const char* start, const char* end, struct cpuinfo_arm_chip
 	/* Return parsed chipset. */
 	*chipset = (struct cpuinfo_arm_chipset){
 		.vendor = cpuinfo_arm_chipset_vendor_qualcomm,
-		.series = cpuinfo_arm_chipset_series_qualcomm_snapdragon,
+		.series = cpuinfo_arm_chipset_series_qualcomm_sm,
 		.model = model,
 	};
 	return true;
@@ -3491,6 +3491,36 @@ struct cpuinfo_arm_chipset cpuinfo_arm_android_decode_chipset_from_ro_chipname(
 		.series = cpuinfo_arm_chipset_series_unknown,
 	};
 }
+
+struct cpuinfo_arm_chipset cpuinfo_arm_android_decode_chipset_from_ro_soc_model(
+	const char soc_model[restrict static CPUINFO_BUILD_PROP_VALUE_MAX]) {
+	struct cpuinfo_arm_chipset chipset;
+	const size_t soc_model_length = strnlen(soc_model, CPUINFO_BUILD_PROP_VALUE_MAX);
+	const char* soc_model_end = soc_model + soc_model_length;
+
+	/* Check Qualcomm SMxxxx signature */
+	if (match_sm(soc_model, soc_model_end, &chipset)) {
+		cpuinfo_log_debug(
+			"matched Qualcomm SM signature in ro.soc.model string \"%.*s\"",
+			(int)soc_model_length,
+			soc_model);
+		return chipset;
+	}
+
+	/* Check Qualcomm MSM/APQ signatures */
+	if (match_msm_apq(soc_model, soc_model_end, &chipset)) {
+		cpuinfo_log_debug(
+			"matched Qualcomm MSM/APQ signature in ro.soc.model string \"%.*s\"",
+			(int)soc_model_length,
+			soc_model);
+		return chipset;
+	}
+
+	return (struct cpuinfo_arm_chipset){
+		.vendor = cpuinfo_arm_chipset_vendor_unknown,
+		.series = cpuinfo_arm_chipset_series_unknown,
+	};
+}
 #endif /* __ANDROID__ */
 
 /*
@@ -3837,6 +3867,7 @@ static const char* chipset_series_string[cpuinfo_arm_chipset_series_max] = {
 	[cpuinfo_arm_chipset_series_qualcomm_msm] = "MSM",
 	[cpuinfo_arm_chipset_series_qualcomm_apq] = "APQ",
 	[cpuinfo_arm_chipset_series_qualcomm_snapdragon] = "Snapdragon ",
+	[cpuinfo_arm_chipset_series_qualcomm_sm] = "SM",
 	[cpuinfo_arm_chipset_series_mediatek_mt] = "MT",
 	[cpuinfo_arm_chipset_series_samsung_exynos] = "Exynos ",
 	[cpuinfo_arm_chipset_series_hisilicon_k3v] = "K3V",
@@ -4074,6 +4105,8 @@ struct cpuinfo_arm_chipset cpuinfo_arm_android_decode_chipset(
 			cpuinfo_arm_android_decode_chipset_from_ro_chipname(properties->ro_chipname),
 		[cpuinfo_android_chipset_property_ro_hardware_chipname] =
 			cpuinfo_arm_android_decode_chipset_from_ro_chipname(properties->ro_hardware_chipname),
+		[cpuinfo_android_chipset_property_ro_soc_model] =
+			cpuinfo_arm_android_decode_chipset_from_ro_soc_model(properties->ro_soc_model),
 	};
 	enum cpuinfo_arm_chipset_vendor vendor = cpuinfo_arm_chipset_vendor_unknown;
 	for (size_t i = 0; i < cpuinfo_android_chipset_property_max; i++) {

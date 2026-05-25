@@ -89,7 +89,7 @@ bool DisassemblyView::fromJson(const JsonValueWrapper& json)
 	if (show_instruction_bytes != json.value().MemberEnd() && show_instruction_bytes->value.IsBool())
 		m_showInstructionBytes = show_instruction_bytes->value.GetBool();
 
-	repaint();
+	update();
 
 	return true;
 }
@@ -207,7 +207,7 @@ void DisassemblyView::contextRestoreInstruction()
 		{
 			u32 address = start + i * 4;
 			if (original_instructions[i].has_value())
-				cpu->write32(address, *original_instructions[i]);
+				cpu->Write32(address, *original_instructions[i]);
 		}
 		DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 	});
@@ -225,7 +225,7 @@ void DisassemblyView::contextRunToCursor()
 void DisassemblyView::contextJumpToCursor()
 {
 	cpu().setPc(m_selectedAddressStart);
-	this->repaint();
+	update();
 }
 
 void DisassemblyView::contextToggleBreakpoint()
@@ -329,11 +329,11 @@ void DisassemblyView::contextStubFunction()
 
 	const QPointer<DisassemblyView> view(this);
 	Host::RunOnCPUThread([view, address, cpu = &cpu()] {
-		const u32 first_instruction = cpu->read32(address);
-		const u32 second_instruction = cpu->read32(address + 4);
+		const u32 first_instruction = cpu->Read32(address);
+		const u32 second_instruction = cpu->Read32(address + 4);
 
-		cpu->write32(address, 0x03E00008); // jr ra
-		cpu->write32(address + 4, 0x00000000); // nop
+		cpu->Write32(address, 0x03E00008); // jr ra
+		cpu->Write32(address + 4, 0x00000000); // nop
 
 		QtHost::RunOnUIThread([view, address, first_instruction, second_instruction]() {
 			if (!view)
@@ -361,8 +361,8 @@ void DisassemblyView::contextRestoreFunction()
 		m_stubbedFunctions.erase(stub);
 
 		Host::RunOnCPUThread([address, cpu = &cpu(), first_instruction, second_instruction] {
-			cpu->write32(address, first_instruction);
-			cpu->write32(address + 4, second_instruction);
+			cpu->Write32(address, first_instruction);
+			cpu->Write32(address + 4, second_instruction);
 			DebuggerView::broadcastEvent(DebuggerEvents::VMUpdate());
 		});
 	}
@@ -375,7 +375,7 @@ void DisassemblyView::contextRestoreFunction()
 void DisassemblyView::contextShowInstructionBytes()
 {
 	m_showInstructionBytes = !m_showInstructionBytes;
-	this->repaint();
+	update();
 }
 
 QString DisassemblyView::GetLineDisasm(u32 address)
@@ -607,7 +607,7 @@ void DisassemblyView::mousePressEvent(QMouseEvent* event)
 				m_selectedAddressEnd = selectedAddress;
 			}
 		}
-		this->repaint();
+		update();
 	}
 }
 
@@ -634,7 +634,7 @@ void DisassemblyView::wheelEvent(QWheelEvent* event)
 	{
 		m_visibleStart -= 4;
 	}
-	this->repaint();
+	update();
 }
 
 void DisassemblyView::keyPressEvent(QKeyEvent* event)
@@ -706,7 +706,7 @@ void DisassemblyView::keyPressEvent(QKeyEvent* event)
 			break;
 	}
 
-	this->repaint();
+	update();
 }
 
 void DisassemblyView::openContextMenu(QPoint pos)
@@ -949,7 +949,7 @@ inline QString DisassemblyView::DisassemblyStringFromAddress(u32 address, QFont 
 
 	if (showOpcode)
 	{
-		const u32 opcode = cpu().read32(address);
+		const u32 opcode = cpu().Read32(address);
 		lineString = lineString.arg(QtUtils::FilledQStringFromValue(opcode, 16));
 	}
 
@@ -1019,7 +1019,7 @@ QString DisassemblyView::FetchSelectionInfo(SelectionInfo selInfo)
 		}
 		else // INSTRUCTIONHEX
 		{
-			infoBlock += FilledQStringFromValue(cpu().read32(i), 16);
+			infoBlock += FilledQStringFromValue(cpu().Read32(i), 16);
 		}
 	}
 	return infoBlock;
@@ -1044,9 +1044,9 @@ void DisassemblyView::gotoAddress(u32 address, bool should_set_focus)
 	m_selectedAddressStart = destAddress;
 	m_selectedAddressEnd = destAddress;
 
-	this->repaint();
+	update();
 	if (should_set_focus)
-		this->setFocus();
+		setFocus();
 }
 
 void DisassemblyView::toggleBreakpoint(u32 address)
@@ -1064,7 +1064,7 @@ void DisassemblyView::toggleBreakpoint(u32 address)
 		QtHost::RunOnUIThread([view, cpu]() {
 			BreakpointModel::getInstance(*cpu)->refreshData();
 			if (view)
-				view->repaint();
+				view->update();
 		});
 	});
 }
@@ -1080,8 +1080,8 @@ void DisassemblyView::setInstructions(u32 start, u32 end, u32 value)
 		for (u32 i = 0; i < count; i++)
 		{
 			const u32 address = start + i * 4;
-			original_instructions.emplace_back(cpu->read32(address));
-			cpu->write32(address, value);
+			original_instructions.emplace_back(cpu->Read32(address));
+			cpu->Write32(address, value);
 		}
 
 		QtHost::RunOnUIThread([view, start, count, original_instructions = std::move(original_instructions)]() {

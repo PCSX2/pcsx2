@@ -18,26 +18,37 @@ enum class ThreadStatus
 	THS_DORMANT = 0x10,
 };
 
+struct EEInternalCtx
+{
+	u32 sa;
+	u32 fcsr;
+	u32 float_thing;
+	u32 unk;
+	// gpr excluding $zero
+	// k0/k1 contains hi, hi1, lo, lo1
+	u128 gpr[31];
+	float fpr[32];
+};
 
 struct EEInternalThread
 { // internal struct
 	u32 prev;
 	u32 next;
 	int status;
-	u32 entry;
-	u32 stack;
+	u32 resumeAddr; // address to return to when switching
+	u32 regCtx; // points to the saved regs on stack
 	u32 gpReg;
-	short currentPriority;
 	short initPriority;
+	short currentPriority;
 	int waitType;
 	int semaId;
 	int wakeupCount;
 	int attr;
 	int option;
-	u32 entry_init;
+	u32 entry;
 	int argc;
 	u32 argstring;
-	u32 stack_bottom; //FIXME
+	u32 stackMem;
 	int stackSize;
 	u32 root;
 	u32 heap_base;
@@ -48,8 +59,9 @@ struct IOPInternalThread
 {
 	u32 tid;
 	u32 PC;
-	u32 stackTop;
-	u32 SavedSP;
+	u32 stacMem;
+	u32 stackSize;
+	u32 regCtx;
 	u32 status;
 	u32 entrypoint;
 	u32 waitstate;
@@ -71,14 +83,13 @@ enum class IOPWaitStatus
 enum class EEWaitStatus
 {
 	WAIT_NONE = 0,
-	WAIT_WAKEUP_REQ = 1,
+	WAIT_SLEEP = 1,
 	WAIT_SEMA = 2,
 };
 
 enum class WaitState
 {
 	NONE,
-	WAKEUP_REQ,
 	SEMA,
 	SLEEP,
 	DELAY,
@@ -98,8 +109,10 @@ public:
 	[[nodiscard]] virtual WaitState Wait() const = 0;
 	[[nodiscard]] virtual u32 WaitId() const = 0;
 	[[nodiscard]] virtual u32 EntryPoint() const = 0;
-	[[nodiscard]] virtual u32 StackTop() const = 0;
 	[[nodiscard]] virtual u32 Priority() const = 0;
+
+	// Only call RegCtx on threads that aren't running
+	[[nodiscard]] virtual u32 RegCtx() const = 0;
 };
 
 class EEThread : public BiosThread
@@ -113,7 +126,7 @@ public:
 	~EEThread() override = default;
 
 	[[nodiscard]] u32 TID() const override { return tid; };
-	[[nodiscard]] u32 PC() const override { return data.entry; };
+	[[nodiscard]] u32 PC() const override { return data.resumeAddr; };
 	[[nodiscard]] ThreadStatus Status() const override { return static_cast<ThreadStatus>(data.status); };
 	[[nodiscard]] WaitState Wait() const override
 	{
@@ -122,17 +135,17 @@ public:
 		{
 			case EEWaitStatus::WAIT_NONE:
 				return WaitState::NONE;
-			case EEWaitStatus::WAIT_WAKEUP_REQ:
-				return WaitState::WAKEUP_REQ;
+			case EEWaitStatus::WAIT_SLEEP:
+				return WaitState::SLEEP;
 			case EEWaitStatus::WAIT_SEMA:
 				return WaitState::SEMA;
 		}
 		return WaitState::NONE;
 	};
 	[[nodiscard]] u32 WaitId() const override { return data.semaId; };
-	[[nodiscard]] u32 EntryPoint() const override { return data.entry_init; };
-	[[nodiscard]] u32 StackTop() const override { return data.stack; };
+	[[nodiscard]] u32 EntryPoint() const override { return data.entry; };
 	[[nodiscard]] u32 Priority() const override { return data.currentPriority; };
+	[[nodiscard]] u32 RegCtx() const override { return data.regCtx; };
 
 private:
 	u32 tid;
@@ -175,8 +188,8 @@ public:
 	};
 	[[nodiscard]] u32 WaitId() const override { return data.waitId; };
 	[[nodiscard]] u32 EntryPoint() const override { return data.entrypoint; };
-	[[nodiscard]] u32 StackTop() const override { return data.stackTop; };
 	[[nodiscard]] u32 Priority() const override { return data.initPriority; };
+	[[nodiscard]] u32 RegCtx() const override { return data.regCtx; };
 
 private:
 	IOPInternalThread data;

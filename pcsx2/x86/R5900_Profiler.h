@@ -367,14 +367,13 @@ struct eeProfiler
 		}
 	}
 
-	// Warning dirty ebx
-	void EmitMem()
+	void EmitMem(int addr_reg)
 	{
 		// Compact the 4GB virtual address to a 512KB virtual address
 		if (g_cpu.hasBMI2)
 		{
-			xPEXT(ebx, ecx, ptr[&memMask]);
-			xADD(ptr32[(rbx * 4) + memStats], 1);
+			xPEXT(arg1regd, xRegister32(addr_reg), ptr[&memMask]);
+			xADD(ptr32[(arg1reg * 4) + memStats], 1);
 		}
 	}
 
@@ -406,7 +405,7 @@ struct eeProfiler
 	__fi void Reset() {}
 	__fi void EmitOp(eeOpcode op) {}
 	__fi void Print() {}
-	__fi void EmitMem() {}
+	__fi void EmitMem(int addrReg) {}
 	__fi void EmitConstMem(u32 add) {}
 	__fi void EmitSlowMem() {}
 	__fi void EmitFastMem() {}

@@ -598,7 +598,7 @@ void MatchFinder_Init(void *_p)
 
 #ifdef MY_CPU_X86_OR_AMD64
   #if defined(__clang__) && (__clang_major__ >= 4) \
-    || defined(Z7_GCC_VERSION) && (Z7_GCC_VERSION >= 40701)
+    || defined(Z7_GCC_VERSION) && (Z7_GCC_VERSION >= 40900)
     // || defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 1900)
 
       #define USE_LZFIND_SATUR_SUB_128

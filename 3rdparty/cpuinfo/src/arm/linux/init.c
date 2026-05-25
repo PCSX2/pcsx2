@@ -1,5 +1,7 @@
+#include <ctype.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -13,6 +15,92 @@
 #include <cpuinfo/internal-api.h>
 #include <cpuinfo/log.h>
 #include <linux/api.h>
+
+/* Parse a uint32 from sysfs file content */
+static bool uint32_parser(const char* filename, const char* text_start, const char* text_end, void* context) {
+	uint32_t* value_ptr = (uint32_t*)context;
+	if (text_start == text_end) {
+		return false;
+	}
+	uint32_t value = 0;
+	for (const char* p = text_start; p < text_end && *p >= '0' && *p <= '9'; p++) {
+		value = value * 10 + (*p - '0');
+	}
+	*value_ptr = value;
+	return value > 0;
+}
+
+/* Parse cache size with K/M suffix from /sys/devices/system/cpu/cpuN/cache/indexN/size (e.g. "2048K", "1M") */
+static bool cache_size_parser(const char* filename, const char* text_start, const char* text_end, void* context) {
+	uint32_t* size_ptr = (uint32_t*)context;
+	if (text_start == text_end) {
+		return false;
+	}
+	uint32_t value = 0;
+	const char* p = text_start;
+	while (p < text_end && *p >= '0' && *p <= '9') {
+		value = value * 10 + (*p - '0');
+		p++;
+	}
+	if (p == text_start || value == 0) {
+		return false;
+	}
+	uint32_t multiplier = 1024;
+	if (p < text_end && toupper(*p) == 'M') {
+		multiplier = 1024 * 1024;
+	}
+	*size_ptr = value * multiplier;
+	return true;
+}
+
+/* Check if /sys/devices/system/cpu/cpuN/cache/index2/shared_cpu_list indicates a single CPU (per-core cache) */
+static bool shared_cpu_list_parser(const char* filename, const char* text_start, const char* text_end, void* context) {
+	bool* is_per_core = (bool*)context;
+	for (const char* p = text_start; p < text_end; p++) {
+		if (*p == ',' || *p == '-') {
+			*is_per_core = false;
+			return true;
+		}
+	}
+	*is_per_core = (text_start != text_end);
+	return *is_per_core;
+}
+
+/*
+ * Read cache size from sysfs.
+ *
+ * ARM CPUs lack a CPUID-equivalent instruction to query cache properties,
+ * so the library relies on hardcoded values that are often incorrect.
+ * Linux exposes cache topology via sysfs (existed before 2008, documented 2014):
+ * https://raw.githubusercontent.com/torvalds/linux/master/Documentation/ABI/testing/sysfs-devices-system-cpu
+ *
+ */
+static uint32_t cpuinfo_linux_read_sysfs_cache_size(uint32_t cpu_id, uint32_t cache_level) {
+	char path[256];
+
+	/* Verify the index corresponds to the requested cache level */
+	snprintf(path, sizeof(path), "/sys/devices/system/cpu/cpu%u/cache/index%u/level", cpu_id, cache_level);
+	uint32_t actual_level = 0;
+	if (!cpuinfo_linux_parse_small_file(path, 16, uint32_parser, &actual_level) || actual_level != cache_level) {
+		return 0;
+	}
+
+	snprintf(path, sizeof(path), "/sys/devices/system/cpu/cpu%u/cache/index%u/size", cpu_id, cache_level);
+	uint32_t size = 0;
+	if (!cpuinfo_linux_parse_small_file(path, 32, cache_size_parser, &size)) {
+		return 0;
+	}
+	return size;
+}
+
+/* Check if L2 cache is per-core by reading sysfs shared_cpu_list */
+static bool cpuinfo_linux_is_l2_per_core(uint32_t cpu_id) {
+	char path[256];
+	snprintf(path, sizeof(path), "/sys/devices/system/cpu/cpu%u/cache/index2/shared_cpu_list", cpu_id);
+	bool is_per_core = false;
+	cpuinfo_linux_parse_small_file(path, 128, shared_cpu_list_parser, &is_per_core);
+	return is_per_core;
+}
 
 struct cpuinfo_arm_isa cpuinfo_isa = {0};
 
@@ -719,11 +807,21 @@ void cpuinfo_arm_linux_init(void) {
 			 */
 			shared_l3 = false;
 			if (temp_l2.size != 0) {
-				/* Assume L2 is shared by cores in the same
-				 * cluster */
-				if (arm_linux_processors[i].package_leader_id ==
-				    arm_linux_processors[i].system_processor_id) {
+				/* Check if L2 is per-core using sysfs */
+				uint32_t sysfs_l2_size = cpuinfo_linux_read_sysfs_cache_size(
+					arm_linux_processors[i].system_processor_id, 2);
+				bool l2_is_per_core = (sysfs_l2_size > 0) &&
+					cpuinfo_linux_is_l2_per_core(arm_linux_processors[i].system_processor_id);
+
+				if (l2_is_per_core) {
+					/* L2 is private to each core */
 					l2_count += 1;
+				} else {
+					/* Assume L2 is shared by cores in the same cluster */
+					if (arm_linux_processors[i].package_leader_id ==
+					    arm_linux_processors[i].system_processor_id) {
+						l2_count += 1;
+					}
 				}
 			}
 		}
@@ -771,10 +869,27 @@ void cpuinfo_arm_linux_init(void) {
 			&temp_l2,
 			&temp_l3);
 
-		if (temp_l3.size != 0) {
+		/* Try to read L2 cache size from sysfs (more accurate) */
+		uint32_t sysfs_l2_size =
+			cpuinfo_linux_read_sysfs_cache_size(arm_linux_processors[i].system_processor_id, 2);
+		if (sysfs_l2_size > 0) {
+			temp_l2.size = sysfs_l2_size;
+			/* Recalculate sets to maintain consistency: size = associativity * sets * partitions *
+			 * line_size */
+			if (temp_l2.associativity > 0 && temp_l2.line_size > 0 && temp_l2.partitions > 0) {
+				temp_l2.sets = sysfs_l2_size /
+					(temp_l2.associativity * temp_l2.partitions * temp_l2.line_size);
+			}
+		}
+
+		/* Check if L2 is per-core by reading sysfs */
+		bool l2_is_per_core = (sysfs_l2_size > 0) &&
+			cpuinfo_linux_is_l2_per_core(arm_linux_processors[i].system_processor_id);
+
+		if (temp_l3.size != 0 || l2_is_per_core) {
 			/*
 			 * Assumptions:
-			 * - L2 is private to each core
+			 * - L2 is private to each core (either has L3, or sysfs confirms per-core L2)
 			 * - L3 is shared by cores in the same cluster
 			 * - If cores in different clusters report the same L3,
 			 * it is shared between all cores.

@@ -11,6 +11,10 @@ obj/
 *.pyc
 *.pyo
 
+# Bazel-related files
+bazel-*
+MODULE.bazel.lock
+
 # System files
 .DS_Store
 .DS_Store?

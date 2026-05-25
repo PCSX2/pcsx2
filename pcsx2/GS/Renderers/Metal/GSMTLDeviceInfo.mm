@@ -147,7 +147,7 @@ GSMTLDevice::GSMTLDevice(MRCOwned<id<MTLDevice>> dev)
 
 	if (@available(macOS 11.0, iOS 13.0, *))
 		if ([dev supportsFamily:MTLGPUFamilyApple1])
-			features.framebuffer_fetch = true;
+			features.framebuffer_fetch = features.memoryless_textures = true;
 
 	if (@available(macOS 10.15, iOS 13.0, *))
 		if ([dev supportsFamily:MTLGPUFamilyMac2] || [dev supportsFamily:MTLGPUFamilyApple1])
@@ -164,20 +164,48 @@ GSMTLDevice::GSMTLDevice(MRCOwned<id<MTLDevice>> dev)
 	if (features.primid && !detectPrimIDSupport(dev, shaders))
 		features.primid = false;
 
-	if (!features.framebuffer_fetch && features.shader_version >= MetalVersion::Metal23)
+	features.depth_feedback = false;
+
+	NSString* name = [dev name];
+	if ([name containsString:@"Intel"])
 	{
-		switch (detectIntelGPU(dev, shaders))
+		if (!features.framebuffer_fetch && features.shader_version >= MetalVersion::Metal23)
 		{
-			case DetectionResult::HaswellOrNotIntel:
-				break;
-			case DetectionResult::Broadwell:
-				features.primid = false; // Broken
-				break;
-			case DetectionResult::Skylake:
-				features.primid = false; // Broken
-				features.framebuffer_fetch = true;
-				break;
+			switch (detectIntelGPU(dev, shaders))
+			{
+				case DetectionResult::HaswellOrNotIntel:
+					// Older Intel GPUs seem to be fine with depth feedback
+					features.depth_feedback = true;
+					break;
+				case DetectionResult::Broadwell:
+					features.primid = false; // Broken
+					break;
+				case DetectionResult::Skylake:
+					features.primid = false; // Broken
+					features.framebuffer_fetch = true;
+					break;
+			}
 		}
+	}
+	else if ([name containsString:@"AMD"])
+	{
+		// RDNA+ seems to work fine with depth feedback
+		if (@available(macOS 13, iOS 16, *))
+			if ([dev supportsFamily:MTLGPUFamilyMetal3])
+				features.depth_feedback = true;
+	}
+	else if ([name containsString:@"NVIDIA"])
+	{
+		// macOS only supports Kepler, which seems to work fine with depth feedback
+		features.depth_feedback = true;
+	}
+	else if ([name containsString:@"Apple"])
+	{
+		// No special settings
+	}
+	else
+	{
+		Console.Warning("Unrecognized GPU vendor %s", [name UTF8String]);
 	}
 
 	if (features.framebuffer_fetch && GSConfig.DisableFramebufferFetch)
@@ -191,14 +219,24 @@ GSMTLDevice::GSMTLDevice(MRCOwned<id<MTLDevice>> dev)
 	else
 		features.slow_color_compression = [[dev name] containsString:@"AMD"] || [[dev name] isEqualToString:@"Intel HD Graphics 4000"];
 
-	features.max_texsize = 8192;
-	if ([dev supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v1])
-		features.max_texsize = 16384;
-	if (@available(macOS 10.15, iOS 13.0, *))
-		if ([dev supportsFamily:MTLGPUFamilyApple3])
-			features.max_texsize = 16384;
+	features.max_texsize = GetMaxTextureSize(dev);
 
 	this->dev = std::move(dev);
+}
+
+u32 GSMTLDevice::GetMaxTextureSize(id<MTLDevice> dev)
+{
+	if (@available(macOS 10.15, iOS 13.0, *))
+	{
+		MTLGPUFamily apple10 = static_cast<MTLGPUFamily>(1010); // Avoid relying on latest SDK, define ourselves
+		if ([dev supportsFamily:apple10])
+			return 32768;
+		if ([dev supportsFamily:MTLGPUFamilyApple3])
+			return 16384;
+	}
+	if ([dev supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v1])
+		return 16384;
+	return 8192;
 }
 
 const char* to_string(GSMTLDevice::MetalVersion ver)

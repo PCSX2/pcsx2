@@ -82,6 +82,7 @@ const IDRegister::Field AA64ISAR1::kI8MM(52);
 const IDRegister::Field AA64ISAR2::kWFXT(0);
 const IDRegister::Field AA64ISAR2::kRPRES(4);
 const IDRegister::Field AA64ISAR2::kMOPS(16);
+const IDRegister::Field AA64ISAR2::kHBC(20);
 const IDRegister::Field AA64ISAR2::kCSSC(52);
 
 const IDRegister::Field AA64MMFR0::kECV(60);
@@ -198,6 +199,7 @@ CPUFeatures AA64ISAR2::GetCPUFeatures() const {
   if (Get(kWFXT) >= 2) f.Combine(CPUFeatures::kWFXT);
   if (Get(kRPRES) >= 1) f.Combine(CPUFeatures::kRPRES);
   if (Get(kMOPS) >= 1) f.Combine(CPUFeatures::kMOPS);
+  if (Get(kHBC) >= 1) f.Combine(CPUFeatures::kHBC);
   if (Get(kCSSC) >= 1) f.Combine(CPUFeatures::kCSSC);
   return f;
 }

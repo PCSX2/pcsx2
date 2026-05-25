@@ -16,7 +16,6 @@ public:
 	D3D11ShaderCache();
 	~D3D11ShaderCache();
 
-	D3D_FEATURE_LEVEL GetFeatureLevel() const { return m_feature_level; }
 	bool UsingDebugShaders() const { return m_debug; }
 
 	bool Open(D3D_FEATURE_LEVEL feature_level, bool debug);
@@ -74,7 +73,7 @@ private:
 
 	using CacheIndex = std::unordered_map<CacheIndexKey, CacheIndexData, CacheIndexEntryHasher>;
 
-	static std::string GetCacheBaseFileName(D3D_FEATURE_LEVEL feature_level, bool debug);
+	static std::string GetCacheBaseFileName(D3D::ShaderModel shader_mode, bool debug);
 	static CacheIndexKey GetCacheKey(D3D::ShaderType type, const std::string_view shader_code,
 		const D3D_SHADER_MACRO* macros, const char* entry_point);
 
@@ -89,6 +88,6 @@ private:
 
 	CacheIndex m_index;
 
-	D3D_FEATURE_LEVEL m_feature_level = D3D_FEATURE_LEVEL_11_0;
+	D3D::ShaderModel m_shader_model = D3D::ShaderModel::SM50;
 	bool m_debug = false;
 };

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/DX12/D3D12ShaderCache.h"
-#include "GS/Renderers/DX11/D3D.h"
 #include "GS/GS.h"
+#include "GS/GSShaderCompileIndicator.h"
 
 #include "Config.h"
 #include "ShaderCacheVersion.h"
@@ -54,16 +54,18 @@ bool D3D12ShaderCache::CacheIndexKey::operator!=(const CacheIndexKey& key) const
 			source_length != key.source_length);
 }
 
-bool D3D12ShaderCache::Open(D3D_FEATURE_LEVEL feature_level, bool debug)
+bool D3D12ShaderCache::Open(D3D::ShaderModel shader_model, bool debug)
 {
-	m_feature_level = feature_level;
+	// Only support SM5.1 for now, which is the minimum for D3D12.
+	pxAssert(shader_model >= D3D::ShaderModel::SM51);
+	m_shader_model = shader_model;
 	m_debug = debug;
 
 	bool result = true;
 
 	if (!GSConfig.DisableShaderCache)
 	{
-		const std::string base_shader_filename = GetCacheBaseFileName("shaders", feature_level, debug);
+		const std::string base_shader_filename = GetCacheBaseFileName("shaders", m_shader_model, debug);
 		const std::string shader_index_filename = base_shader_filename + ".idx";
 		const std::string shader_blob_filename = base_shader_filename + ".bin";
 
@@ -75,7 +77,7 @@ bool D3D12ShaderCache::Open(D3D_FEATURE_LEVEL feature_level, bool debug)
 
 		if (result)
 		{
-			const std::string base_pipelines_filename = GetCacheBaseFileName("pipelines", feature_level, debug);
+			const std::string base_pipelines_filename = GetCacheBaseFileName("pipelines", m_shader_model, debug);
 			const std::string pipelines_index_filename = base_pipelines_filename + ".idx";
 			const std::string pipelines_blob_filename = base_pipelines_filename + ".bin";
 
@@ -133,7 +135,7 @@ void D3D12ShaderCache::InvalidatePipelineCache()
 	if (GSConfig.DisableShaderCache)
 		return;
 
-	const std::string base_pipelines_filename = GetCacheBaseFileName("pipelines", m_feature_level, m_debug);
+	const std::string base_pipelines_filename = GetCacheBaseFileName("pipelines", m_shader_model, m_debug);
 	const std::string pipelines_index_filename = base_pipelines_filename + ".idx";
 	const std::string pipelines_blob_filename = base_pipelines_filename + ".bin";
 	CreateNew(pipelines_index_filename, pipelines_blob_filename, m_pipeline_index_file, m_pipeline_blob_file);
@@ -253,21 +255,12 @@ bool D3D12ShaderCache::ReadExisting(const std::string& index_filename, const std
 	return true;
 }
 
-std::string D3D12ShaderCache::GetCacheBaseFileName(const std::string_view type, D3D_FEATURE_LEVEL feature_level, bool debug)
+std::string D3D12ShaderCache::GetCacheBaseFileName(const std::string_view type, D3D::ShaderModel shader_model, bool debug)
 {
 	std::string base_filename = "d3d12_";
 	base_filename += type;
 	base_filename += "_";
-
-	switch (feature_level)
-	{
-		case D3D_FEATURE_LEVEL_11_0:
-			base_filename += "sm50";
-			break;
-		default:
-			base_filename += "unk";
-			break;
-	}
+	base_filename += D3D::ShaderModelToCacheString(shader_model);
 
 	if (debug)
 		base_filename += "_debug";
@@ -497,15 +490,15 @@ D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::CompileAndAddShaderBlob(
 	{
 		case EntryType::VertexShader:
 			blob =
-				D3D::CompileShader(D3D::ShaderType::Vertex, m_feature_level, m_debug, shader_code, macros, entry_point);
+				D3D::CompileShader(D3D::ShaderType::Vertex, m_shader_model, m_debug, shader_code, macros, entry_point);
 			break;
 		case EntryType::PixelShader:
 			blob =
-				D3D::CompileShader(D3D::ShaderType::Pixel, m_feature_level, m_debug, shader_code, macros, entry_point);
+				D3D::CompileShader(D3D::ShaderType::Pixel, m_shader_model, m_debug, shader_code, macros, entry_point);
 			break;
 		case EntryType::ComputeShader:
-			blob = D3D::CompileShader(
-				D3D::ShaderType::Compute, m_feature_level, m_debug, shader_code, macros, entry_point);
+			blob =
+				D3D::CompileShader(D3D::ShaderType::Compute, m_shader_model, m_debug, shader_code, macros, entry_point);
 			break;
 		default:
 			break;
@@ -548,6 +541,8 @@ D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::CompileAndAddShaderBlob(
 D3D12ShaderCache::ComPtr<ID3D12PipelineState> D3D12ShaderCache::CompileAndAddPipeline(
 	ID3D12Device* device, const CacheIndexKey& key, const D3D12_GRAPHICS_PIPELINE_STATE_DESC& gpdesc)
 {
+	const GSShaderCompileIndicator::CompileTimer compile_timer;
+
 	ComPtr<ID3D12PipelineState> pso;
 	HRESULT hr = device->CreateGraphicsPipelineState(&gpdesc, IID_PPV_ARGS(pso.put()));
 	if (FAILED(hr))
@@ -563,6 +558,8 @@ D3D12ShaderCache::ComPtr<ID3D12PipelineState> D3D12ShaderCache::CompileAndAddPip
 D3D12ShaderCache::ComPtr<ID3D12PipelineState> D3D12ShaderCache::CompileAndAddPipeline(
 	ID3D12Device* device, const CacheIndexKey& key, const D3D12_COMPUTE_PIPELINE_STATE_DESC& gpdesc)
 {
+	const GSShaderCompileIndicator::CompileTimer compile_timer;
+
 	ComPtr<ID3D12PipelineState> pso;
 	HRESULT hr = device->CreateComputePipelineState(&gpdesc, IID_PPV_ARGS(pso.put()));
 	if (FAILED(hr))

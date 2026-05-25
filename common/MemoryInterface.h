@@ -12,12 +12,15 @@ concept MemoryAccessType = std::is_same_v<Value, u8> || std::is_same_v<Value, s8
                            std::is_same_v<Value, u16> || std::is_same_v<Value, s16> ||
                            std::is_same_v<Value, u32> || std::is_same_v<Value, s32> ||
                            std::is_same_v<Value, u64> || std::is_same_v<Value, s64> ||
-                           std::is_same_v<Value, u128> || std::is_same_v<Value, s128>;
+                           std::is_same_v<Value, u128> || std::is_same_v<Value, s128> ||
+                           std::is_same_v<Value, float> || std::is_same_v<Value, double>;
 
 /// Interface for reading/writing guest memory.
 class MemoryInterface
 {
 public:
+	virtual ~MemoryInterface() {}
+
 	virtual u8 Read8(u32 address, bool* valid = nullptr) = 0;
 	virtual u16 Read16(u32 address, bool* valid = nullptr) = 0;
 	virtual u32 Read32(u32 address, bool* valid = nullptr) = 0;

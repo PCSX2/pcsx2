@@ -44,3 +44,37 @@ struct alignas(32) GSVertexPT1
 
 static_assert(sizeof(GSVertexPT1) == sizeof(GSVertex));
 
+__forceinline_odr GSVector4i GetVertexXY(const GSVertex& v)
+{
+	return GSVector4i(v.m[1]).upl16().xyxy();
+}
+
+__forceinline_odr GSVector4i GetVertexZ(const GSVertex& v)
+{
+	return GSVector4i(v.m[1]).yyyy();
+}
+
+__forceinline_odr GSVector4i GetVertexUV(const GSVertex& v)
+{
+	return GSVector4i(v.m[1]).uph16().xyxy();
+}
+
+__forceinline_odr GSVector4 GetVertexST(const GSVertex& v)
+{
+	return GSVector4::cast(GSVector4i(v.m[0])).xyxy();
+}
+
+__forceinline_odr GSVector4i GetVertexRGBA(const GSVertex& v)
+{
+	return GSVector4i(v.m[0]).uph8().upl16();
+}
+
+__forceinline_odr GSVector4 GetVertexQ(const GSVertex& v)
+{
+	return GSVector4::cast(GSVector4i(v.m[0])).wwww();
+}
+
+__forceinline_odr GSVector4i GetVertexFOG(const GSVertex& v)
+{
+	return GSVector4i(v.m[1]).wwww();
+}

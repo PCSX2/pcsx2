@@ -56,12 +56,27 @@ bool D3D11ShaderCache::CacheIndexKey::operator!=(const CacheIndexKey& key) const
 
 bool D3D11ShaderCache::Open(D3D_FEATURE_LEVEL feature_level, bool debug)
 {
-	m_feature_level = feature_level;
+	switch (feature_level)
+	{
+		case D3D_FEATURE_LEVEL_10_0:
+			m_shader_model = D3D::ShaderModel::SM40;
+			break;
+		case D3D_FEATURE_LEVEL_10_1:
+			m_shader_model = D3D::ShaderModel::SM41;
+			break;
+		case D3D_FEATURE_LEVEL_11_0:
+			m_shader_model = D3D::ShaderModel::SM50;
+			break;
+		default:
+			pxAssert(false);
+			return false;
+	}
+
 	m_debug = debug;
 
 	if (!GSConfig.DisableShaderCache)
 	{
-		const std::string base_filename = GetCacheBaseFileName(feature_level, debug);
+		const std::string base_filename = GetCacheBaseFileName(m_shader_model, debug);
 		const std::string index_filename = base_filename + ".idx";
 		const std::string blob_filename = base_filename + ".bin";
 
@@ -198,19 +213,10 @@ bool D3D11ShaderCache::ReadExisting(const std::string& index_filename, const std
 	return true;
 }
 
-std::string D3D11ShaderCache::GetCacheBaseFileName(D3D_FEATURE_LEVEL feature_level, bool debug)
+std::string D3D11ShaderCache::GetCacheBaseFileName(D3D::ShaderModel shader_model, bool debug)
 {
 	std::string base_filename = "d3d_shaders_";
-
-	switch (feature_level)
-	{
-		case D3D_FEATURE_LEVEL_11_0:
-			base_filename += "sm50";
-			break;
-		default:
-			base_filename += "unk";
-			break;
-	}
+	base_filename += D3D::ShaderModelToCacheString(shader_model);
 
 	if (debug)
 		base_filename += "_debug";
@@ -400,7 +406,7 @@ wil::com_ptr_nothrow<ID3DBlob> D3D11ShaderCache::CompileAndAddShaderBlob(const C
 	const std::string_view shader_code, const D3D_SHADER_MACRO* macros, const char* entry_point)
 {
 	wil::com_ptr_nothrow<ID3DBlob> blob =
-		D3D::CompileShader(key.shader_type, m_feature_level, m_debug, shader_code, macros, entry_point);
+		D3D::CompileShader(key.shader_type, m_shader_model, m_debug, shader_code, macros, entry_point);
 	if (!blob)
 		return {};
 

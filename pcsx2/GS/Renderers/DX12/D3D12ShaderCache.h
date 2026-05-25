@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #pragma once
+#include "GS/Renderers/DX11/D3D.h"
 
 #include "common/Pcsx2Defs.h"
 #include "common/HashCombine.h"
@@ -32,10 +33,9 @@ public:
 	D3D12ShaderCache();
 	~D3D12ShaderCache();
 
-	__fi D3D_FEATURE_LEVEL GetFeatureLevel() const { return m_feature_level; }
 	__fi bool UsingDebugShaders() const { return m_debug; }
 
-	bool Open(D3D_FEATURE_LEVEL feature_level, bool debug);
+	bool Open(D3D::ShaderModel shader_model, bool debug);
 	void Close();
 
 	__fi ComPtr<ID3DBlob> GetVertexShader(
@@ -95,7 +95,7 @@ private:
 
 	using CacheIndex = std::unordered_map<CacheIndexKey, CacheIndexData, CacheIndexEntryHasher>;
 
-	static std::string GetCacheBaseFileName(const std::string_view type, D3D_FEATURE_LEVEL feature_level, bool debug);
+	static std::string GetCacheBaseFileName(const std::string_view type, D3D::ShaderModel shader_model, bool debug);
 	static CacheIndexKey GetShaderCacheKey(
 		EntryType type, const std::string_view shader_code, const D3D_SHADER_MACRO* macros, const char* entry_point);
 	static CacheIndexKey GetPipelineCacheKey(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& gpdesc);
@@ -123,6 +123,6 @@ private:
 	std::FILE* m_pipeline_blob_file = nullptr;
 	CacheIndex m_pipeline_index;
 
-	D3D_FEATURE_LEVEL m_feature_level = D3D_FEATURE_LEVEL_11_0;
+	D3D::ShaderModel m_shader_model = D3D::ShaderModel::SM51;
 	bool m_debug = false;
 };

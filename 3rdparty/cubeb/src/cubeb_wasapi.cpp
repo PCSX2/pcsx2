@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <atomic>
 #include <audioclient.h>
+#include <audiopolicy.h>
 #include <avrt.h>
 #include <cmath>
 #include <devicetopology.h>
@@ -317,6 +318,7 @@ struct cubeb {
 };
 
 class wasapi_endpoint_notification_client;
+class wasapi_session_notification_client;
 
 /* We have three possible callbacks we can use with a stream:
  * - input only
@@ -415,6 +417,10 @@ struct cubeb_stream {
      audio device changes and route the audio to the new default audio output
      device */
   com_ptr<wasapi_endpoint_notification_client> notification_client;
+  /* Session notification client, to be notified when the audio session is
+     disconnected (e.g. when an audio device is removed from the system). */
+  com_ptr<IAudioSessionControl> session_control;
+  com_ptr<wasapi_session_notification_client> session_notification_client;
   /* Main andle to the WASAPI capture stream. */
   com_ptr<IAudioClient> input_client;
   /* Interface to use the event driven capture interface */
@@ -431,6 +437,10 @@ struct cubeb_stream {
    * practice, we read from the input stream in the output callback, so
    * this is not used, but it is necessary to start getting input data. */
   HANDLE input_available_event = 0;
+  /* Signaled by stream_start/stream_stop when the active state changes,
+     so the render thread can promote/demote its MMCSS task accordingly
+     instead of remaining promoted while idle. */
+  HANDLE mmcss_event = 0;
   /* Each cubeb_stream has its own thread. */
   HANDLE thread = 0;
   /* The lock protects all members that are touched by the render thread or
@@ -832,6 +842,89 @@ private:
   ERole role;
   std::unique_ptr<const wchar_t[]> default_device_id;
   DWORD last_device_change;
+};
+
+class wasapi_session_notification_client : public IAudioSessionEvents {
+public:
+  ULONG STDMETHODCALLTYPE AddRef() { return InterlockedIncrement(&ref_count); }
+
+  ULONG STDMETHODCALLTYPE Release()
+  {
+    ULONG ulRef = InterlockedDecrement(&ref_count);
+    if (0 == ulRef) {
+      delete this;
+    }
+    return ulRef;
+  }
+
+  HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, VOID ** ppvInterface)
+  {
+    if (__uuidof(IUnknown) == riid) {
+      AddRef();
+      *ppvInterface = (IUnknown *)this;
+    } else if (__uuidof(IAudioSessionEvents) == riid) {
+      AddRef();
+      *ppvInterface = (IAudioSessionEvents *)this;
+    } else {
+      *ppvInterface = NULL;
+      return E_NOINTERFACE;
+    }
+    return S_OK;
+  }
+
+  wasapi_session_notification_client(HANDLE event)
+      : ref_count(1), reconfigure_event(event)
+  {
+  }
+
+  virtual ~wasapi_session_notification_client() {}
+
+  HRESULT STDMETHODCALLTYPE
+  OnSessionDisconnected(AudioSessionDisconnectReason reason)
+  {
+    LOG("session: Audio session disconnected, reason: %d", reason);
+    BOOL ok = SetEvent(reconfigure_event);
+    if (!ok) {
+      LOG("session: SetEvent on reconfigure_event failed: %lx", GetLastError());
+    }
+    return S_OK;
+  }
+
+  HRESULT STDMETHODCALLTYPE OnDisplayNameChanged(LPCWSTR value,
+                                                 LPCGUID event_context)
+  {
+    return S_OK;
+  }
+  HRESULT STDMETHODCALLTYPE OnIconPathChanged(LPCWSTR value,
+                                              LPCGUID event_context)
+  {
+    return S_OK;
+  }
+  HRESULT STDMETHODCALLTYPE OnSimpleVolumeChanged(float volume, BOOL mute,
+                                                  LPCGUID event_context)
+  {
+    return S_OK;
+  }
+  HRESULT STDMETHODCALLTYPE OnChannelVolumeChanged(DWORD channel_count,
+                                                   float volumes[],
+                                                   DWORD changed_channel,
+                                                   LPCGUID event_context)
+  {
+    return S_OK;
+  }
+  HRESULT STDMETHODCALLTYPE OnGroupingParamChanged(LPCGUID grouping_param,
+                                                   LPCGUID event_context)
+  {
+    return S_OK;
+  }
+  HRESULT STDMETHODCALLTYPE OnStateChanged(AudioSessionState state)
+  {
+    return S_OK;
+  }
+
+private:
+  LONG ref_count;
+  HANDLE reconfigure_event;
 };
 
 namespace {
@@ -1414,8 +1507,9 @@ static unsigned int __stdcall wasapi_stream_render_loop(LPVOID stream)
   } com;
 
   bool is_playing = true;
-  HANDLE wait_array[4] = {stm->shutdown_event, stm->reconfigure_event,
-                          stm->refill_event, stm->input_available_event};
+  HANDLE wait_array[5] = {stm->shutdown_event, stm->mmcss_event,
+                          stm->reconfigure_event, stm->refill_event,
+                          stm->input_available_event};
   HANDLE mmcss_handle = NULL;
   HRESULT hr = 0;
   DWORD mmcss_task_index = 0;
@@ -1426,15 +1520,6 @@ static unsigned int __stdcall wasapi_stream_render_loop(LPVOID stream)
   if (!ok) {
     LOG("thread_ready SetEvent failed: %lx", GetLastError());
     return 0;
-  }
-
-  /* We could consider using "Pro Audio" here for WebAudio and
-     maybe WebRTC. */
-  mmcss_handle = AvSetMmThreadCharacteristicsA("Audio", &mmcss_task_index);
-  if (!mmcss_handle) {
-    /* This is not fatal, but we might glitch under heavy load. */
-    LOG("Unable to use mmcss to bump the render thread priority: %lx",
-        GetLastError());
   }
 
   while (is_playing) {
@@ -1450,7 +1535,30 @@ static unsigned int __stdcall wasapi_stream_render_loop(LPVOID stream)
       }
       continue;
     }
-    case WAIT_OBJECT_0 + 1: { /* reconfigure */
+    case WAIT_OBJECT_0 + 1: { /* mmcss: active state changed */
+      /* stm->active was set by wasapi_stream_start/_stop before signaling,
+         and SetEvent provides the necessary memory barrier. */
+      if (stm->active && !mmcss_handle) {
+        /* We could consider using "Pro Audio" here for WebAudio and
+           maybe WebRTC. */
+        mmcss_handle =
+            AvSetMmThreadCharacteristicsA("Audio", &mmcss_task_index);
+        if (!mmcss_handle) {
+          /* This is not fatal, but we might glitch under heavy load. */
+          LOG("Unable to use mmcss to bump the render thread priority: %lx",
+              GetLastError());
+        } else {
+          LOG("MMCSS render thread promoted (task index %lu)",
+              mmcss_task_index);
+        }
+      } else if (!stm->active && mmcss_handle) {
+        AvRevertMmThreadCharacteristics(mmcss_handle);
+        mmcss_handle = NULL;
+        LOG("MMCSS render thread demoted");
+      }
+      continue;
+    }
+    case WAIT_OBJECT_0 + 2: { /* reconfigure */
       auto_lock lock(stm->stream_reset_lock);
       if (!stm->active) {
         /* Avoid reconfiguring, stream start will handle it. */
@@ -1460,13 +1568,12 @@ static unsigned int __stdcall wasapi_stream_render_loop(LPVOID stream)
       XASSERT(stm->output_client || stm->input_client);
       LOG("Reconfiguring the stream");
       /* Close the stream */
-      bool was_running = false;
       if (stm->output_client) {
-        was_running = stm->output_client->Stop() == S_OK;
+        stm->output_client->Stop();
         LOG("Output stopped.");
       }
       if (stm->input_client) {
-        was_running = stm->input_client->Stop() == S_OK;
+        stm->input_client->Stop();
         LOG("Input stopped.");
       }
       close_wasapi_stream(stm);
@@ -1484,7 +1591,7 @@ static unsigned int __stdcall wasapi_stream_render_loop(LPVOID stream)
       }
       LOG("Stream setup successfuly.");
       XASSERT(stm->output_client || stm->input_client);
-      if (was_running && stm->output_client) {
+      if (stm->output_client) {
         hr = stm->output_client->Start();
         if (FAILED(hr)) {
           LOG("Error starting output after reconfigure, error: %lx", hr);
@@ -1493,7 +1600,7 @@ static unsigned int __stdcall wasapi_stream_render_loop(LPVOID stream)
         }
         LOG("Output started after reconfigure.");
       }
-      if (was_running && stm->input_client) {
+      if (stm->input_client) {
         hr = stm->input_client->Start();
         if (FAILED(hr)) {
           LOG("Error starting input after reconfiguring, error: %lx", hr);
@@ -1504,12 +1611,12 @@ static unsigned int __stdcall wasapi_stream_render_loop(LPVOID stream)
       }
       break;
     }
-    case WAIT_OBJECT_0 + 2: /* refill */
+    case WAIT_OBJECT_0 + 3: /* refill */
       XASSERT((has_input(stm) && has_output(stm)) ||
               (!has_input(stm) && has_output(stm)));
       is_playing = stm->refill_callback(stm);
       break;
-    case WAIT_OBJECT_0 + 3: { /* input available */
+    case WAIT_OBJECT_0 + 4: { /* input available */
       bool rv = get_input_buffer(stm);
       if (!rv) {
         is_playing = false;
@@ -2643,6 +2750,22 @@ setup_wasapi_stream(cubeb_stream * stm)
       return CUBEB_ERROR;
     }
 
+    hr = stm->output_client->GetService(__uuidof(IAudioSessionControl),
+                                        stm->session_control.receive_vpp());
+    if (SUCCEEDED(hr)) {
+      stm->session_notification_client.reset(
+          new wasapi_session_notification_client(stm->reconfigure_event));
+      hr = stm->session_control->RegisterAudioSessionNotification(
+          stm->session_notification_client.get());
+      if (FAILED(hr)) {
+        LOG("Could not register session notification client: %lx", hr);
+        stm->session_notification_client = nullptr;
+        stm->session_control = nullptr;
+      }
+    } else {
+      LOG("Could not get the IAudioSessionControl: %lx", hr);
+    }
+
 #ifdef CUBEB_WASAPI_USE_IAUDIOSTREAMVOLUME
     /* Restore the stream volume over a device change. */
     if (stream_set_volume(stm, stm->volume) != CUBEB_OK) {
@@ -2842,6 +2965,12 @@ wasapi_stream_init(cubeb * context, cubeb_stream ** stream,
     return CUBEB_ERROR;
   }
 
+  stm->mmcss_event = CreateEvent(NULL, 0, 0, NULL);
+  if (!stm->mmcss_event) {
+    LOG("Can't create the mmcss event, error: %lx", GetLastError());
+    return CUBEB_ERROR;
+  }
+
   stm->thread_ready_event = CreateEvent(NULL, 0, 0, NULL);
   if (!stm->thread_ready_event) {
     LOG("Can't create the thread ready event, error: %lx", GetLastError());
@@ -2906,6 +3035,13 @@ close_wasapi_stream(cubeb_stream * stm)
 
   stm->stream_reset_lock.assert_current_thread_owns();
 
+  if (stm->session_control && stm->session_notification_client) {
+    stm->session_control->UnregisterAudioSessionNotification(
+        stm->session_notification_client.get());
+    stm->session_notification_client = nullptr;
+    stm->session_control = nullptr;
+  }
+
 #ifdef CUBEB_WASAPI_USE_IAUDIOSTREAMVOLUME
   stm->audio_stream_volume = nullptr;
 #endif
@@ -2960,6 +3096,7 @@ wasapi_stream_release(cubeb_stream * stm)
     CloseHandle(stm->reconfigure_event);
     CloseHandle(stm->refill_event);
     CloseHandle(stm->input_available_event);
+    CloseHandle(stm->mmcss_event);
 
     CloseHandle(stm->thread);
 
@@ -3056,6 +3193,11 @@ wasapi_stream_start(cubeb_stream * stm)
 
   stm->active = true;
 
+  if (!SetEvent(stm->mmcss_event)) {
+    LOG("wasapi_stream_start: SetEvent(mmcss_event) failed: %lx",
+        GetLastError());
+  }
+
   stm->state_callback(stm, stm->user_ptr, CUBEB_STATE_STARTED);
 
   return CUBEB_OK;
@@ -3087,6 +3229,11 @@ wasapi_stream_stop(cubeb_stream * stm)
     }
 
     stm->active = false;
+
+    if (!SetEvent(stm->mmcss_event)) {
+      LOG("wasapi_stream_stop: SetEvent(mmcss_event) failed: %lx",
+          GetLastError());
+    }
 
     wasapi_state_callback(stm, stm->user_ptr, CUBEB_STATE_STOPPED);
   }
@@ -3563,11 +3710,13 @@ wasapi_register_device_collection_changed(
   }
 
   if (collection_changed_callback) {
-    // Make sure it has been unregistered first.
-    XASSERT(((devtype & CUBEB_DEVICE_TYPE_INPUT) &&
-             !context->input_collection_changed_callback) ||
-            ((devtype & CUBEB_DEVICE_TYPE_OUTPUT) &&
-             !context->output_collection_changed_callback));
+    if (((devtype & CUBEB_DEVICE_TYPE_INPUT) &&
+         context->input_collection_changed_callback) ||
+        ((devtype & CUBEB_DEVICE_TYPE_OUTPUT) &&
+         context->output_collection_changed_callback)) {
+      LOG("register_device_collection_changed: callback already registered");
+      return CUBEB_ERROR_INVALID_PARAMETER;
+    }
 
     // Stop the notification client. Notifications arrive on
     // a separate thread. We stop them here to avoid

@@ -41,9 +41,12 @@ class GSDrawScanlineCodeGenerator : public GSNewCodeGenerator
 	constexpr static int _64_top = 8 * 0;
 	// XMM registers will be saved to `rsp + _64_win_xmm_start + id - 6`
 	// Which will put xmm6 after the temporaries, them xmm7, etc
-	constexpr static int _64_win_xmm_start = 8 * 2;
+	constexpr static int _64_win_xmm_start = 8 * 1;
+	// Align the xmm variables on the stack with this
+	// Since we don't call any other functions, we don't need to keep rsp itself aligned
+	constexpr static int _64_win_xmm_align = 8 * 1;
 	// Windows has no redzone and also has 10 xmm registers to save
-	constexpr static int _64_win_stack_size = _64_win_xmm_start + 16 * 10;
+	constexpr static int _64_win_stack_size = _64_win_xmm_align + _64_win_xmm_start + 16 * 10;
 #else
 	// System-V has a redzone so stick everything there
 	constexpr static int _64_rz_rbx = -8 * 1;
@@ -62,7 +65,7 @@ class GSDrawScanlineCodeGenerator : public GSNewCodeGenerator
 	/// Note: a2 and t3 are only available on x86-64
 	/// Outside of Init, usable registers are a0, t0, t1, t2, t3[x64], rax, rbx, rdx, r10+
 	const AddressReg a0, a1, a2, a3, t0, t1, t2, t3;
-	const AddressReg _m_local, _m_local__gd, _m_local__gd__vm, _m_local__gd__clut;
+	const AddressReg _m_local, _m_const, _m_local__gd, _m_local__gd__vm, _m_local__gd__clut;
 	// If use_lod, m_local.gd->tex, else m_local.gd->tex[0]
 	const AddressReg _m_local__gd__tex;
 	/// Available on both x86 and x64, not always valid

@@ -45,6 +45,7 @@ enum cpuinfo_arm_chipset_series {
 	cpuinfo_arm_chipset_series_qualcomm_msm,
 	cpuinfo_arm_chipset_series_qualcomm_apq,
 	cpuinfo_arm_chipset_series_qualcomm_snapdragon,
+	cpuinfo_arm_chipset_series_qualcomm_sm,
 	cpuinfo_arm_chipset_series_mediatek_mt,
 	cpuinfo_arm_chipset_series_samsung_exynos,
 	cpuinfo_arm_chipset_series_hisilicon_k3v,

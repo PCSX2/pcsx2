@@ -63,6 +63,16 @@ namespace D3D
 		Compute
 	};
 
-	wil::com_ptr_nothrow<ID3DBlob> CompileShader(ShaderType type, D3D_FEATURE_LEVEL feature_level, bool debug,
+	enum class ShaderModel
+	{
+		SM40 = 0x40, // DX11 FL 10_0
+		SM41 = 0x41, // DX11 FL 10_1
+		SM50 = 0x50, // DX11 FL 11_0
+		SM51 = 0x51, // DX12
+	};
+
+	const char* ShaderModelToCacheString(ShaderModel shader_model);
+
+	wil::com_ptr_nothrow<ID3DBlob> CompileShader(ShaderType type, ShaderModel shader_model, bool debug,
 		const std::string_view code, const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main");
 }; // namespace D3D

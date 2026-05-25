@@ -294,6 +294,9 @@ set_timeout(struct timeval * timeout, unsigned int ms)
 static void
 stream_buffer_decrement(cubeb_stream * stm, long count)
 {
+  if (count < 0 || (snd_pcm_uframes_t)count > stm->bufframes) {
+    count = stm->bufframes;
+  }
   char * bufremains =
       stm->buffer + WRAP(snd_pcm_frames_to_bytes)(stm->pcm, count);
   memmove(stm->buffer, bufremains,

@@ -118,30 +118,12 @@ bool PCAPAdapter::recv(NetPacket* pkt)
 	if (!blocking && NetAdapter::recv(pkt))
 		return true;
 
-	pcap_pkthdr* header;
-	const u_char* pkt_data;
-
-	// pcap bridged will pick up packets not intended for us, returning false on those packets will incur a 1ms wait.
-	// This delays getting packets we need, so instead loop untill a valid packet, or no packet, is returned from pcap_next_ex.
-	while (pcap_next_ex(hpcap, &header, &pkt_data) > 0)
+	while (RecvPCAPPacket(pkt))
 	{
-		// 1518 is the largest Ethernet frame we can get using an MTU of 1500 (assuming no VLAN tagging).
-		// This includes the FCS, which should be trimmed (PS2 SDK dosn't allow extra space for this).
-		if (header->len > 1518)
-		{
-			Console.Error("DEV9: Dropped jumbo frame of size: %u", header->len);
-			continue;
-		}
-
-		pxAssert(header->len == header->caplen);
-
-		memcpy(pkt->buffer, pkt_data, header->len);
-		pkt->size = static_cast<int>(header->len);
-
 		if (!switched)
 			SetMACBridgedRecv(pkt);
 
-		if (VerifyPkt(pkt, header->len))
+		if (VerifyPkt(pkt, pkt->size))
 		{
 			HandleFrameCheckSequence(pkt);
 
@@ -173,10 +155,39 @@ bool PCAPAdapter::send(NetPacket* pkt)
 	if (!switched)
 		SetMACBridgedSend(pkt);
 
-	if (pcap_sendpacket(hpcap, (u_char*)pkt->buffer, pkt->size))
-		return false;
-	else
+	return SendPCAPPacket(pkt);
+}
+
+bool PCAPAdapter::RecvPCAPPacket(NetPacket* pkt)
+{
+	pcap_pkthdr* header;
+	const u_char* pkt_data;
+
+	// pcap bridged will pick up packets not intended for us, returning false on those packets will incur a 1ms wait.
+	// This delays getting packets we need, so instead loop untill a valid packet, or no packet, is returned from pcap_next_ex.
+	while (pcap_next_ex(hpcap, &header, &pkt_data) > 0)
+	{
+		// 1518 is the largest Ethernet frame we can get using an MTU of 1500 (assuming no VLAN tagging).
+		// This includes the FCS, which should be trimmed (PS2 SDK dosn't allow extra space for this).
+		if (header->len > 1518)
+		{
+			Console.Error("DEV9: Dropped jumbo frame of size: %u", header->len);
+			continue;
+		}
+
+		pxAssert(header->len == header->caplen);
+
+		memcpy(pkt->buffer, pkt_data, header->len);
+		pkt->size = static_cast<int>(header->len);
 		return true;
+	}
+
+	return false;
+}
+
+bool PCAPAdapter::SendPCAPPacket(const NetPacket* pkt)
+{
+	return pcap_sendpacket(hpcap, reinterpret_cast<const u_char*>(pkt->buffer), pkt->size) == 0;
 }
 
 void PCAPAdapter::reloadSettings()
@@ -280,6 +291,12 @@ bool PCAPAdapter::InitPCAP(const std::string& adapter, bool promiscuous)
 			 )) == nullptr)
 	{
 		Console.Error("DEV9: %s", errbuf);
+#if defined(__linux__)
+		Console.Error("DEV9: PCAP on Linux requires CAP_NET_RAW and CAP_NET_ADMIN capabilities.");
+		Console.Error("DEV9: Flatpak: raw packet capture is not supported; use the Sockets backend instead.");
+		Console.Error("DEV9: AppImage: extract the image first (--appimage-extract), then run setcap on the extracted binary.");
+		Console.Error("DEV9: Note: applying file capabilities to the main PCSX2 executable breaks Steam overlay/Input.");
+#endif
 		Console.Error("DEV9: Unable to open the adapter. %s is not supported by pcap", adapter.c_str());
 		return false;
 	}

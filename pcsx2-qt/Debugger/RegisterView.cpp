@@ -36,7 +36,7 @@ RegisterView::RegisterView(const DebuggerViewParameters& parameters)
 		ui.registerTabs->addTab(cpu().getRegisterCategoryName(i));
 	}
 
-	connect(ui.registerTabs, &QTabBar::currentChanged, [this]() { this->repaint(); });
+	connect(ui.registerTabs, &QTabBar::currentChanged, [this]() { update(); });
 
 	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
 		update();
@@ -69,7 +69,7 @@ bool RegisterView::fromJson(const JsonValueWrapper& json)
 	if (show_fpr_float != json.value().MemberEnd() && show_fpr_float->value.IsBool())
 		m_showFPRFloat = show_fpr_float->value.GetBool();
 
-	repaint();
+	update();
 
 	return true;
 }
@@ -209,7 +209,8 @@ void RegisterView::mousePressEvent(QMouseEvent* event)
 			}
 		}
 	}
-	this->repaint();
+
+	update();
 }
 
 void RegisterView::wheelEvent(QWheelEvent* event)
@@ -223,7 +224,7 @@ void RegisterView::wheelEvent(QWheelEvent* event)
 		m_rowStart -= 1;
 	}
 
-	this->repaint();
+	update();
 }
 
 void RegisterView::mouseDoubleClickEvent(QMouseEvent* event)
@@ -259,7 +260,7 @@ void RegisterView::customMenuRequested(QPoint pos)
 		action->setChecked(m_showFPRFloat);
 		connect(action, &QAction::triggered, this, [this]() {
 			m_showFPRFloat = !m_showFPRFloat;
-			repaint();
+			update();
 		});
 
 		menu->addSeparator();
@@ -272,7 +273,7 @@ void RegisterView::customMenuRequested(QPoint pos)
 		action->setChecked(m_showVU0FFloat);
 		connect(action, &QAction::triggered, this, [this]() {
 			m_showVU0FFloat = !m_showVU0FFloat;
-			repaint();
+			update();
 		});
 
 		menu->addSeparator();

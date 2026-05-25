@@ -6,6 +6,7 @@
 #include "GS.h"
 #include "GSRegs.h"
 #include "GSPerfMon.h"
+#include <climits>
 
 class GSUtil
 {
@@ -27,6 +28,8 @@ public:
 	static const char* GetTCCName(u32 tcc);
 	static const char* GetACName(u32 ac);
 	static const char* GetPerfMonCounterName(GSPerfMon::counter_t counter, bool hw = true);
+
+	static bool IsValidPSM(int psm);
 
 	static const u32* HasSharedBitsPtr(u32 dpsm);
 	static bool HasSharedBits(u32 spsm, const u32* ptr);
@@ -154,6 +157,14 @@ public:
 		return {
 			bbox0.blend(bbox0 + GSVector4i(0, 0, 1, 1), bbox0.xyxy() == bbox0.zwzw()),
 			bbox1.blend(bbox1 + GSVector4i(0, 0, 1, 1), bbox1.xyxy() == bbox1.zwzw()),
+		};
+	}
+
+	BoundingOct ExpandOne() const
+	{
+		return {
+			bbox0 + GSVector4i(-1, -1, 1, 1),
+			bbox1 + GSVector4i(-1, -1, 1, 1),
 		};
 	}
 

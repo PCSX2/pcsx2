@@ -30,6 +30,8 @@ public:
 
 	constexpr static u32 MAX_BP = 0x3fff;
 
+	constexpr static GSVector4 FullSrcRect = GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f);
+
 	constexpr static bool CheckOverlap(const u32 a_bp, const u32 a_bp_end, const u32 b_bp, const u32 b_bp_end) noexcept
 	{
 		u32 b_bp_start_synced = b_bp;
@@ -141,6 +143,7 @@ public:
 		Surface();
 		~Surface();
 
+		bool OverlapsHelper(u32 start_block0, u32 end_block0, u32 bp, u32 bw, u32 psm, const GSVector4i& rect) const;
 	public:
 		GSTexture* m_texture = nullptr;
 		GIFRegTEX0 m_TEX0 = {};
@@ -167,8 +170,8 @@ public:
 		/// Can be used for overlap tests.
 		u32 UnwrappedEndBlock() const { return (m_end_block + (Wraps() ? GS_MAX_BLOCKS : 0)); }
 
-		bool Inside(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
-		bool Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i& rect);
+		bool Inside(u32 bp, u32 bw, u32 psm, const GSVector4i& rect) const;
+		bool Overlaps(u32 bp, u32 bw, u32 psm, const GSVector4i& rect) const;
 	};
 
 	struct PaletteKey
@@ -258,7 +261,9 @@ public:
 
 		static Target* Create(GIFRegTEX0 TEX0, int w, int h, float scale, int type, bool clear);
 
-		__fi bool HasValidAlpha() const { return (m_valid_alpha_low | m_valid_alpha_high); }
+		bool OverlapsValid(u32 bp, u32 bw, u32 psm, const GSVector4i& rect) const;
+
+		__fi bool HasValidAlpha() const { return (m_valid_alpha_low || m_valid_alpha_high); }
 		bool HasValidBitsForFormat(u32 psm, bool req_color, bool req_alpha, bool width_match);
 
 		void ResizeDrawn(const GSVector4i& rect);
@@ -349,7 +354,7 @@ public:
 	class PaletteMap
 	{
 	private:
-		static const u16 MAX_SIZE = 65535; // Max size of each map.
+		static const u16 MAX_CACHED_PALETES = 4096; // Max size of each map.
 
 		// Array of 2 maps, the first for 64B palettes and the second for 1024B palettes.
 		// Each map stores the key PaletteKey (clut copy, pal value) pointing to the relevant shared pointer to Palette object.
@@ -482,6 +487,20 @@ protected:
 
 	Source* CreateMergedSource(GIFRegTEX0 TEX0, GIFRegTEXA TEXA, SourceRegion region, float scale);
 
+	// Used in target lookup functions to determine new sizes of targets.
+	struct RescaleHelper
+	{
+		RescaleHelper(const GSVector2i& size, float scale);
+		void CalcRescale(const Target* tgt);
+		void SetNewSize(const GSVector2i& new_size, float scale);
+
+		const GSVector2i m_size;
+		float m_scale;
+		GSVector2i m_new_size{};
+		GSVector2i m_new_scaled_size{};
+		GSVector4 m_dRect{};
+		bool m_clear = true;
+	};
 public:
 	GSTextureCache();
 	~GSTextureCache();
@@ -513,13 +532,23 @@ public:
 
 	Target* FindTargetOverlap(Target* target, int type, int psm);
 	void CombineAlignedInsideTargets(Target* target, GSTextureCache::Source* src = nullptr);
-	Target* LookupTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type, bool used = true, u32 fbmask = 0,
-		bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preserve_rgb = true, bool preserve_alpha = true,
-		const GSVector4i draw_rc = GSVector4i::zero(), bool is_shuffle = false, bool possible_clear = false, bool preserve_scale = false, GSTextureCache::Source* src = nullptr, GSTextureCache::Target* ds = nullptr, int offset = -1);
-	Target* CreateTarget(GIFRegTEX0 TEX0, const GSVector2i& size, const GSVector2i& valid_size, float scale, int type, bool used = true, u32 fbmask = 0,
-		bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preserve_target = true,
+
+private:
+	Target* ProcessTargetAfterLookup(RescaleHelper& rescaler, Target* dst, GIFRegTEX0 TEX0, const GSVector2i& size, int type,
+		bool used, u32 fbmask, bool is_frame, bool preload, bool preserve_rgb = true, bool preserve_alpha = true,
+		const GSVector4i draw_rc = GSVector4i::zero(), bool is_shuffle = false, bool possible_clear = false,
+		bool preserve_scale = false, GSTextureCache::Source* src = nullptr, GSTextureCache::Target* ds = nullptr, int offset = -1);
+
+public:
+	Target* CreateTarget(GIFRegTEX0 TEX0, const GSVector2i& size, const GSVector2i& valid_size, float scale, int type, bool used = true,
+		u32 fbmask = 0, bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preserve_target = true,
 		const GSVector4i draw_rc = GSVector4i::zero(), GSTextureCache::Source* src = nullptr);
+
 	Target* LookupDisplayTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, bool is_feedback);
+
+	Target* LookupDrawTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, int type, bool used = true, u32 fbmask = 0,
+		bool preload = GSConfig.PreloadFrameWithGSData, bool preserve_rgb = true, bool preserve_alpha = true,
+		const GSVector4i draw_rc = GSVector4i::zero(), bool is_shuffle = false, bool possible_clear = false, bool preserve_scale = false, GSTextureCache::Source* src = nullptr, GSTextureCache::Target* ds = nullptr, int offset = -1);
 
 	/// Looks up a target in the cache, and only returns it if the BP/BW match exactly.
 	Target* GetExactTarget(u32 BP, u32 BW, int type, u32 end_bp);

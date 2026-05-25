@@ -27,7 +27,6 @@ MemorySearchView::MemorySearchView(const DebuggerViewParameters& parameters)
 	: DebuggerView(parameters, MONOSPACE_FONT)
 {
 	m_ui.setupUi(this);
-	this->repaint();
 
 	m_ui.listSearchResults->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(m_ui.btnSearch, &QPushButton::clicked, this, &MemorySearchView::onSearchButtonClicked);
@@ -110,46 +109,6 @@ void MemorySearchView::onListSearchResultsContextMenu(QPoint pos)
 	}
 
 	menu->popup(m_ui.listSearchResults->viewport()->mapToGlobal(pos));
-}
-
-template <typename T>
-T readValueAtAddress(DebugInterface* cpu, u32 addr);
-template <>
-float readValueAtAddress<float>(DebugInterface* cpu, u32 addr)
-{
-	return std::bit_cast<float>(cpu->read32(addr));
-}
-
-template <>
-double readValueAtAddress<double>(DebugInterface* cpu, u32 addr)
-{
-	return std::bit_cast<double>(cpu->read64(addr));
-}
-
-template <typename T>
-T readValueAtAddress(DebugInterface* cpu, u32 addr)
-{
-	T val = 0;
-	switch (sizeof(T))
-	{
-		case sizeof(u8):
-			val = cpu->read8(addr);
-			break;
-		case sizeof(u16):
-			val = cpu->read16(addr);
-			break;
-		case sizeof(u32):
-		{
-			val = cpu->read32(addr);
-			break;
-		}
-		case sizeof(u64):
-		{
-			val = cpu->read64(addr);
-			break;
-		}
-	}
-	return val;
 }
 
 template <typename T>
@@ -294,7 +253,7 @@ void searchWorker(DebugInterface* cpu, std::vector<SearchResult>& searchResults,
 			if (!cpu->isValidAddress(addr))
 				continue;
 
-			T readValue = readValueAtAddress<T>(cpu, addr);
+			T readValue = cpu->Read<T>(addr);
 			if (handleSearchComparison(searchComparison, addr, nullptr, searchValue, readValue))
 			{
 				searchResults.push_back(MemorySearchView::SearchResult(addr, QVariant::fromValue(readValue), searchType));
@@ -308,7 +267,7 @@ void searchWorker(DebugInterface* cpu, std::vector<SearchResult>& searchResults,
 			if (!cpu->isValidAddress(addr))
 				return true;
 
-			const auto readValue = readValueAtAddress<T>(cpu, addr);
+			const auto readValue = cpu->Read<T>(addr);
 
 			const bool doesMatch = handleSearchComparison(searchComparison, addr, &searchResult, searchValue, readValue);
 			if (doesMatch)
@@ -325,7 +284,7 @@ static bool compareByteArrayAtAddress(DebugInterface* cpu, SearchComparison sear
 	const bool isNotOperator = searchComparison == SearchComparison::NotEquals;
 	for (qsizetype i = 0; i < value.length(); i++)
 	{
-		const char nextByte = cpu->read8(addr + i);
+		const char nextByte = cpu->Read8(addr + i);
 		switch (searchComparison)
 		{
 			case SearchComparison::Equals:
@@ -383,7 +342,7 @@ static QByteArray readArrayAtAddress(DebugInterface* cpu, u32 address, u32 lengt
 	QByteArray readArray;
 	for (u32 i = address; i < address + length; i++)
 	{
-		readArray.append(cpu->read8(i));
+		readArray.append(cpu->Read8(i));
 	}
 	return readArray;
 }

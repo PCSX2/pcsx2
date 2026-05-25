@@ -30,6 +30,10 @@ public:
 	struct VertexAlpha
 	{
 		int min, max;
+
+		// Separate inference for depth if using AA1 coverage alpha, since edges don't write depth.
+		int depth_min, depth_max;
+
 		bool valid;
 	};
 	bool m_accurate_stq = false;

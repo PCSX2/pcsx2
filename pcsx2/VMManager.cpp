@@ -199,6 +199,9 @@ static bool s_screensaver_inhibited = false;
 
 static bool s_discord_presence_active = false;
 static time_t s_discord_presence_time_epoch;
+static const char* s_discord_presence_app_id = "1458595419499139094";
+static const char* s_discord_presence_large_image_key = "4k-pcsx2";
+static const char* s_discord_presence_large_image_text = "PCSX2 PS2 Emulator";
 
 // Making GSDumpReplayer.h dependent on R5900.h is a no-no, since the GS uses it.
 extern R5900cpu GSDumpReplayerCpu;
@@ -341,7 +344,7 @@ std::string VMManager::GetTitle(bool prefer_en)
 {
 	std::unique_lock lock(s_info_mutex);
 	std::string out = s_title;
-	if (!s_title_en_search.empty())
+	if (prefer_en && !s_title_en_search.empty())
 	{
 		size_t pos = out.find(s_title_en_search);
 		if (pos != out.npos)
@@ -1221,8 +1224,10 @@ void VMManager::ReportGameChangeToHost()
 {
 	const std::string& disc_path = CDVDsys_GetFile(CDVDsys_GetSourceType());
 	const u32 crc_to_report = HasBootedELF() ? s_current_crc : 0;
-	FullscreenUI::GameChanged(disc_path, s_disc_serial, GetTitle(true), s_disc_crc, crc_to_report);
-	Host::OnGameChanged(s_title, s_elf_override, disc_path, s_disc_serial, s_disc_crc, crc_to_report);
+	const bool prefer_english = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
+	const std::string game_title = GetTitle(prefer_english);
+	FullscreenUI::GameChanged(disc_path, s_disc_serial, game_title, s_disc_crc, crc_to_report);
+	Host::OnGameChanged(game_title, s_elf_override, disc_path, s_disc_serial, s_disc_crc, crc_to_report);
 }
 
 bool VMManager::HasBootedELF()
@@ -1736,6 +1741,22 @@ void VMManager::Shutdown(bool save_resume_state)
 
 	// clear out any potentially-incorrect settings from the last game
 	LoadSettings();
+}
+
+bool VMManager::RequestReset()
+{
+	if (MemcardBusy::IsBusy())
+	{
+		Host::AddIconOSDMessage("RequestReset", ICON_FA_TRIANGLE_EXCLAMATION,
+			TRANSLATE_STR("VMManager",
+				"The memory card is busy, so the reset operation has been cancelled to prevent data loss."),
+			Host::OSD_WARNING_DURATION);
+		return false;
+	}
+
+	VMManager::Reset();
+
+	return true;
 }
 
 void VMManager::Reset()
@@ -3251,6 +3272,11 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_CIRCLE_EXCLAMATION,
 				TRANSLATE_SV("VMManager", "Estimate texture region is enabled, this may reduce performance."));
 		}
+		if (EmuConfig.GS.UserHacks_DrawBuffering)
+		{
+			append(ICON_FA_CIRCLE_EXCLAMATION,
+				TRANSLATE_SV("VMManager", "Draw Buffering is enabled, this may result in graphical errors."));
+		}
 		if (EmuConfig.GS.DumpReplaceableTextures)
 		{
 			append(ICON_FA_CIRCLE_EXCLAMATION,
@@ -3265,6 +3291,16 @@ void VMManager::WarnAboutUnsafeSettings()
 		{
 			append(ICON_FA_IMAGES,
 				TRANSLATE_SV("VMManager", "Accurate Alpha Test is enabled, this may reduce performance."));
+		}
+		if (EmuConfig.GS.HWAA1)
+		{
+			append(ICON_FA_CIRCLE_EXCLAMATION,
+				TRANSLATE_SV("VMManager", "AA1 is enabled, this may severely degrade performance."));
+		}
+		if (EmuConfig.GS.DepthFeedbackMode != GSDepthFeedbackMode::Auto)
+		{
+			append(ICON_FA_IMAGES,
+				TRANSLATE_SV("VMManager", "Overriding default depth feedback mode, this may break rendering in some games."));
 		}
 		if (EmuConfig.GS.UseDebugDevice)
 		{
@@ -3295,6 +3331,11 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_CIRCLE_EXCLAMATION,
 				TRANSLATE_SV("VMManager", "Graphics API is not set to Automatic. This may cause performance problems and graphical issues."));
 		}
+	}
+	if (EmuConfig.GS.DumpGSData)
+	{
+		const std::string& dir = is_sw_renderer ? EmuConfig.GS.SWDumpDirectory : EmuConfig.GS.HWDumpDirectory;
+		append(ICON_FA_LAYER_GROUP, fmt::format(TRANSLATE_FS("VMManager", "Dumping draw data to {}."), dir));
 	}
 	if (EmuConfig.GS.TextureFiltering != BiFiltering::PS2)
 	{
@@ -3732,7 +3773,7 @@ void VMManager::InitializeDiscordPresence()
 		return;
 
 	DiscordEventHandlers handlers = {};
-	Discord_Initialize("1025789002055430154", &handlers, 0, nullptr);
+	Discord_Initialize(s_discord_presence_app_id, &handlers, 0, nullptr);
 	s_discord_presence_active = true;
 
 	UpdateDiscordPresence(true);
@@ -3757,12 +3798,21 @@ void VMManager::UpdateDiscordPresence(bool update_session_time)
 	if (update_session_time)
 		s_discord_presence_time_epoch = std::time(nullptr);
 
+	std::string rp_title;
+	const bool prefer_english = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
+	if (!s_title.empty())
+		rp_title = GetTitle(prefer_english);
+
 	// https://discord.com/developers/docs/rich-presence/how-to#updating-presence-update-presence-payload-fields
 	DiscordRichPresence rp = {};
-	rp.largeImageKey = "4k-pcsx2";
-	rp.largeImageText = "PCSX2 PS2 Emulator";
+	rp.largeImageKey = s_discord_presence_large_image_key;
+	rp.largeImageText = s_discord_presence_large_image_text;
 	rp.startTimestamp = s_discord_presence_time_epoch;
-	rp.details = s_title.empty() ? TRANSLATE("VMManager", "No Game Running") : s_title.c_str();
+
+	if (rp_title.empty())
+		rp.details = TRANSLATE("VMManager", "No Game Running");
+	else
+		rp.details = rp_title.c_str();
 
 	std::string state_string;
 

@@ -32,7 +32,7 @@ template <typename UC> fastfloat_really_inline constexpr bool has_simd_opt() {
 // able to optimize it well.
 template <typename UC>
 fastfloat_really_inline constexpr bool is_integer(UC c) noexcept {
-  return !(c > UC('9') || c < UC('0'));
+  return (unsigned)(c - UC('0')) <= 9u;
 }
 
 fastfloat_really_inline constexpr uint64_t byteswap(uint64_t val) {
@@ -40,6 +40,11 @@ fastfloat_really_inline constexpr uint64_t byteswap(uint64_t val) {
          (val & 0x0000FF0000000000) >> 24 | (val & 0x000000FF00000000) >> 8 |
          (val & 0x00000000FF000000) << 8 | (val & 0x0000000000FF0000) << 24 |
          (val & 0x000000000000FF00) << 40 | (val & 0x00000000000000FF) << 56;
+}
+
+fastfloat_really_inline constexpr uint32_t byteswap_32(uint32_t val) {
+  return (val >> 24) | ((val >> 8) & 0x0000FF00u) | ((val << 8) & 0x00FF0000u) |
+         (val << 24);
 }
 
 // Read 8 UC into a u64. Truncates UC if not char.
@@ -63,6 +68,25 @@ read8_to_u64(UC const *chars) {
   return val;
 }
 
+// Read 4 UC into a u32. Truncates UC if not char.
+template <typename UC>
+fastfloat_really_inline FASTFLOAT_CONSTEXPR20 uint32_t
+read4_to_u32(UC const *chars) {
+  if (cpp20_and_in_constexpr() || !std::is_same<UC, char>::value) {
+    uint32_t val = 0;
+    for (int i = 0; i < 4; ++i) {
+      val |= uint32_t(uint8_t(*chars)) << (i * 8);
+      ++chars;
+    }
+    return val;
+  }
+  uint32_t val;
+  ::memcpy(&val, chars, sizeof(uint32_t));
+#if FASTFLOAT_IS_BIG_ENDIAN == 1
+  val = byteswap_32(val);
+#endif
+  return val;
+}
 #ifdef FASTFLOAT_SSE2
 
 fastfloat_really_inline uint64_t simd_read8_to_u64(__m128i const data) {
@@ -142,6 +166,18 @@ fastfloat_really_inline constexpr bool
 is_made_of_eight_digits_fast(uint64_t val) noexcept {
   return !((((val + 0x4646464646464646) | (val - 0x3030303030303030)) &
             0x8080808080808080));
+}
+
+fastfloat_really_inline constexpr bool
+is_made_of_four_digits_fast(uint32_t val) noexcept {
+  return !((((val + 0x46464646) | (val - 0x30303030)) & 0x80808080));
+}
+
+fastfloat_really_inline FASTFLOAT_CONSTEXPR14 uint32_t
+parse_four_digits_unrolled(uint32_t val) noexcept {
+  val -= 0x30303030;
+  val = (val * 10) + (val >> 8);
+  return (((val & 0x00FF00FF) * 0x00640001) >> 16) & 0xFFFF;
 }
 
 #ifdef FASTFLOAT_HAS_SIMD
@@ -508,6 +544,148 @@ parse_int_string(UC const *p, UC const *pend, T &value,
   bool const has_leading_zeros = p > start_num;
 
   UC const *const start_digits = p;
+
+  FASTFLOAT_IF_CONSTEXPR17((std::is_same<T, std::uint8_t>::value)) {
+    if (base == 10) {
+      const size_t len = (size_t)(pend - p);
+      if (len == 0) {
+        if (has_leading_zeros) {
+          value = 0;
+          answer.ec = std::errc();
+          answer.ptr = p;
+        } else {
+          answer.ec = std::errc::invalid_argument;
+          answer.ptr = first;
+        }
+        return answer;
+      }
+
+      uint32_t digits;
+
+#if FASTFLOAT_HAS_IS_CONSTANT_EVALUATED && FASTFLOAT_HAS_BIT_CAST
+      if (std::is_constant_evaluated()) {
+        uint8_t str[4]{};
+        for (size_t j = 0; j < 4 && j < len; ++j) {
+          str[j] = static_cast<uint8_t>(p[j]);
+        }
+        digits = std::bit_cast<uint32_t>(str);
+#if FASTFLOAT_IS_BIG_ENDIAN
+        digits = byteswap_32(digits);
+#endif
+      }
+#else
+      if (false) {
+      }
+#endif
+      else if (len >= 4) {
+        ::memcpy(&digits, p, 4);
+#if FASTFLOAT_IS_BIG_ENDIAN
+        digits = byteswap_32(digits);
+#endif
+      } else {
+        uint32_t b0 = static_cast<uint8_t>(p[0]);
+        uint32_t b1 = (len > 1) ? static_cast<uint8_t>(p[1]) : 0xFFu;
+        uint32_t b2 = (len > 2) ? static_cast<uint8_t>(p[2]) : 0xFFu;
+        uint32_t b3 = 0xFFu;
+        digits = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+      }
+
+      uint32_t magic =
+          ((digits + 0x46464646u) | (digits - 0x30303030u)) & 0x80808080u;
+      uint32_t tz = (uint32_t)countr_zero_32(magic); // 7, 15, 23, 31, or 32
+      uint32_t nd = (tz == 32) ? 4 : (tz >> 3);
+      nd = (uint32_t)(nd < len ? nd : len);
+      if (nd == 0) {
+        if (has_leading_zeros) {
+          value = 0;
+          answer.ec = std::errc();
+          answer.ptr = p;
+          return answer;
+        }
+        answer.ec = std::errc::invalid_argument;
+        answer.ptr = first;
+        return answer;
+      }
+      if (nd > 3) {
+        const UC *q = p + nd;
+        size_t rem = len - nd;
+        while (rem) {
+          if (*q < UC('0') || *q > UC('9'))
+            break;
+          ++q;
+          --rem;
+        }
+        answer.ec = std::errc::result_out_of_range;
+        answer.ptr = q;
+        return answer;
+      }
+
+      digits ^= 0x30303030u;
+      digits <<= ((4 - nd) * 8);
+
+      uint32_t check = ((digits >> 24) & 0xff) | ((digits >> 8) & 0xff00) |
+                       ((digits << 8) & 0xff0000);
+      if (check > 0x00020505) {
+        answer.ec = std::errc::result_out_of_range;
+        answer.ptr = p + nd;
+        return answer;
+      }
+      value = (uint8_t)((0x640a01 * digits) >> 24);
+      answer.ec = std::errc();
+      answer.ptr = p + nd;
+      return answer;
+    }
+  }
+
+  FASTFLOAT_IF_CONSTEXPR17((std::is_same<T, std::uint16_t>::value)) {
+    if (base == 10) {
+      const size_t len = size_t(pend - p);
+      if (len == 0) {
+        if (has_leading_zeros) {
+          value = 0;
+          answer.ec = std::errc();
+          answer.ptr = p;
+        } else {
+          answer.ec = std::errc::invalid_argument;
+          answer.ptr = first;
+        }
+        return answer;
+      }
+
+      if (len >= 4) {
+        uint32_t digits = read4_to_u32(p);
+        if (is_made_of_four_digits_fast(digits)) {
+          uint32_t v = parse_four_digits_unrolled(digits);
+          if (len >= 5 && is_integer(p[4])) {
+            v = v * 10 + uint32_t(p[4] - '0');
+            if (len >= 6 && is_integer(p[5])) {
+              answer.ec = std::errc::result_out_of_range;
+              const UC *q = p + 5;
+              while (q != pend && is_integer(*q)) {
+                q++;
+              }
+              answer.ptr = q;
+              return answer;
+            }
+            if (v > 65535) {
+              answer.ec = std::errc::result_out_of_range;
+              answer.ptr = p + 5;
+              return answer;
+            }
+            value = uint16_t(v);
+            answer.ec = std::errc();
+            answer.ptr = p + 5;
+            return answer;
+          }
+          // 4 digits
+          value = uint16_t(v);
+          answer.ec = std::errc();
+          answer.ptr = p + 4;
+          return answer;
+        }
+      }
+    }
+  }
 
   uint64_t i = 0;
   if (base == 10) {

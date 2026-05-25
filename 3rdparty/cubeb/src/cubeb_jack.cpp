@@ -405,11 +405,14 @@ cbjack_process(jack_nframes_t nframes, void * arg)
 
   for (int j = 0; j < MAX_STREAMS; j++) {
     cubeb_stream * stm = &ctx->streams[j];
-    float * bufs_out[stm->out_params.channels];
-    float * bufs_in[stm->in_params.channels];
 
     if (!stm->in_use)
       continue;
+
+    float * bufs_out[MAX_CHANNELS] = {};
+    float * bufs_in[MAX_CHANNELS] = {};
+    XASSERT(stm->out_params.channels <= MAX_CHANNELS);
+    XASSERT(stm->in_params.channels <= MAX_CHANNELS);
 
     // handle xruns by skipping audio that should have been played
     stm->position += t_jack_xruns * ctx->fragment_size * stm->ratio;
@@ -848,6 +851,14 @@ cbjack_stream_init(cubeb * context, cubeb_stream ** stream,
   if (input_stream_params &&
       (input_stream_params->format != CUBEB_SAMPLE_FLOAT32NE &&
        input_stream_params->format != CUBEB_SAMPLE_S16NE)) {
+    return CUBEB_ERROR_INVALID_FORMAT;
+  }
+
+  if ((output_stream_params &&
+       (output_stream_params->channels < 1 ||
+        output_stream_params->channels > MAX_CHANNELS)) ||
+      (input_stream_params && (input_stream_params->channels < 1 ||
+                               input_stream_params->channels > MAX_CHANNELS))) {
     return CUBEB_ERROR_INVALID_FORMAT;
   }
 

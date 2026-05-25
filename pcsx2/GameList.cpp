@@ -85,6 +85,8 @@ namespace GameList
 		const std::string& path, const std::string& serial, std::time_t last_time, std::time_t add_time);
 
 	static std::string GetCustomPropertiesFile();
+
+	static std::string EncodeIniKey(const std::string_view& input);
 } // namespace GameList
 
 static std::vector<GameList::Entry> s_entries;
@@ -784,12 +786,12 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
 		entry.total_played_time = iter->second.total_played_time;
 	}
 
-	auto custom_title = custom_attributes_ini.GetOptionalStringValue(entry.path.c_str(), "Title");
+	auto custom_title = custom_attributes_ini.GetOptionalStringValue(EncodeIniKey(entry.path).c_str(), "Title");
 	if (custom_title)
 	{
 		entry.title = std::move(custom_title.value());
 	}
-	const auto custom_region = custom_attributes_ini.GetOptionalIntValue(entry.path.c_str(), "Region");
+	const auto custom_region = custom_attributes_ini.GetOptionalIntValue(EncodeIniKey(entry.path).c_str(), "Region");
 	if (custom_region)
 	{
 		const int custom_region_value = custom_region.value();
@@ -1464,8 +1466,8 @@ void GameList::CheckCustomAttributesForPath(const std::string& path, bool& has_c
 	INISettingsInterface names(GetCustomPropertiesFile());
 	if (names.Load())
 	{
-		has_custom_title = names.ContainsValue(path.c_str(), "Title");
-		has_custom_region = names.ContainsValue(path.c_str(), "Region");
+		has_custom_title = names.ContainsValue(EncodeIniKey(path).c_str(), "Title");
+		has_custom_region = names.ContainsValue(EncodeIniKey(path).c_str(), "Region");
 	}
 }
 
@@ -1476,11 +1478,11 @@ void GameList::SaveCustomTitleForPath(const std::string& path, const std::string
 
 	if (!custom_title.empty())
 	{
-		names.SetStringValue(path.c_str(), "Title", custom_title.c_str());
+		names.SetStringValue(EncodeIniKey(path).c_str(), "Title", custom_title.c_str());
 	}
 	else
 	{
-		names.DeleteValue(path.c_str(), "Title");
+		names.DeleteValue(EncodeIniKey(path).c_str(), "Title");
 	}
 
 	if (names.Save())
@@ -1497,11 +1499,11 @@ void GameList::SaveCustomRegionForPath(const std::string& path, int custom_regio
 
 	if (custom_region >= 0)
 	{
-		names.SetIntValue(path.c_str(), "Region", custom_region);
+		names.SetIntValue(EncodeIniKey(path).c_str(), "Region", custom_region);
 	}
 	else
 	{
-		names.DeleteValue(path.c_str(), "Region");
+		names.DeleteValue(EncodeIniKey(path).c_str(), "Region");
 	}
 
 	if (names.Save())
@@ -1516,11 +1518,29 @@ std::string GameList::GetCustomTitleForPath(const std::string& path)
 	std::string ret;
 
 	std::unique_lock lock(s_mutex);
-	const GameList::Entry* entry = GetEntryForPath(path.c_str());
+	const GameList::Entry* entry = GetEntryForPath(EncodeIniKey(path).c_str());
 	if (entry)
 	{
 		ret = entry->title;
 	}
 
 	return ret;
+}
+
+static std::string GameList::EncodeIniKey(const std::string_view& input)
+{
+	std::string out;
+	out.reserve(input.size());
+
+	for (char c : input)
+	{
+		if (c == '[')
+			out += "{{";
+		else if (c == ']')
+			out += "}}";
+		else
+			out += c;
+	}
+
+	return out;
 }

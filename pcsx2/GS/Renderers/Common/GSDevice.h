@@ -7,6 +7,7 @@
 #include "common/WindowInfo.h"
 #include "GS/GS.h"
 #include "GS/Renderers/Common/GSFastList.h"
+#include "GS/Renderers/Common/GSShaderEnums.h"
 #include "GS/Renderers/Common/GSTexture.h"
 #include "GS/Renderers/Common/GSVertex.h"
 #include "GS/GSAlignedClass.h"
@@ -300,13 +301,10 @@ struct alignas(16) GSHWDrawConfig
 		Line,
 		Triangle,
 	};
-	enum class VSExpand: u8
-	{
-		None,
-		Point,
-		Line,
-		Sprite,
-	};
+	using VSExpand = GSShader::VSExpand;
+	using PS_ATST  = GSShader::PS_ATST;
+	using PS_AFAIL = GSShader::PS_AFAIL;
+	using PS_AA1   = GSShader::PS_AA1;
 #pragma pack(push, 1)
 	struct VSSelector
 	{
@@ -318,8 +316,8 @@ struct alignas(16) GSHWDrawConfig
 				u8 tme : 1;
 				u8 iip : 1;
 				u8 point_size : 1;		///< Set when points need to be expanded without VS expanding.
-				VSExpand expand : 2;
-				u8 _free : 2;
+				VSExpand expand : 3;
+				u8 _free : 1;
 			};
 			u8 key;
 		};
@@ -327,31 +325,13 @@ struct alignas(16) GSHWDrawConfig
 		VSSelector(u8 k): key(k) {}
 
 		/// Returns true if the fixed index buffer should be used.
-		__fi bool UseExpandIndexBuffer() const { return (expand == VSExpand::Point || expand == VSExpand::Sprite); }
+		__fi bool UseFixedExpandIndexBuffer() const { return (expand == VSExpand::Point || expand == VSExpand::Sprite); }
+		
+		/// Return true if the index buffer should be bound as a vertex shader resource.
+		__fi bool UseVSExpandIndexBuffer() const { return (expand == VSExpand::TriangleAA1); }
 	};
 	static_assert(sizeof(VSSelector) == 1, "VSSelector is a single byte");
-#pragma pack(pop)
 
-	enum PSAlphaTest
-	{
-		PS_ATST_NONE = 0,
-		PS_ATST_LEQUAL = 1,
-		PS_ATST_GEQUAL = 2,
-		PS_ATST_EQUAL = 3,
-		PS_ATST_NOTEQUAL = 4
-	};
-
-	// Identical with the usual GS enum except for the RGB_ONLY_DSB
-	enum PSAfail
-	{
-		PS_AFAIL_KEEP = 0,
-		PS_AFAIL_FB_ONLY = 1,
-		PS_AFAIL_ZB_ONLY = 2,
-		PS_AFAIL_RGB_ONLY = 3,
-		PS_AFAIL_RGB_ONLY_DSB = 4 // RGB only with dual source blend.
-	};
-
-#pragma pack(push, 4)
 	struct PSSelector
 	{
 		// Performance note: there are too many shader combinations
@@ -375,8 +355,8 @@ struct alignas(16) GSHWDrawConfig
 				u32 iip : 1;
 				// Pixel test
 				u32 date : 3;
-				u32 atst : 3;
-				u32 afail : 3;
+				PS_ATST atst : 3;
+				PS_AFAIL afail : 3;
 				u32 ztst : 2;
 				// Color sampling
 				u32 fst : 1; // Investigate to do it on the VS
@@ -417,7 +397,6 @@ struct alignas(16) GSHWDrawConfig
 
 				// Others ways to fetch the texture
 				u32 channel : 3;
-				u32 channel_fb : 1;
 
 				// Dithering
 				u32 dither : 2;
@@ -426,7 +405,6 @@ struct alignas(16) GSHWDrawConfig
 				// Depth writing
 				u32 zclamp : 1;
 				u32 zfloor : 1;
-				u32 zwrite : 1;
 
 				// Hack
 				u32 tcoffsethack : 1;
@@ -441,9 +419,12 @@ struct alignas(16) GSHWDrawConfig
 				// Scan mask
 				u32 scanmsk : 2;
 
-				// Feedback
-				u32 color_feedback : 1;
-				u32 depth_feedback : 1;
+				// AA1
+				PS_AA1 aa1 : 2; // Pixel shader AA1 primitive. Must be used in conjunction with VS AA1 expand.
+				u32 abe : 1; // Alpha blend enabled. Currently only used for emulating AA1/ABE interaction.
+
+				// Anisotropic filtering
+				u32 sw_aniso : 5;
 			};
 
 			struct
@@ -462,12 +443,16 @@ struct alignas(16) GSHWDrawConfig
 		{
 			const u32 sw_blend_bits = blend_a | blend_b | blend_d;
 			const bool sw_blend_needs_rt = (sw_blend_bits != 0 && ((sw_blend_bits | blend_c) & 1u)) || ((a_masked & blend_c) != 0);
-			return color_feedback || channel_fb || tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt;
+			const bool afail_needs_rt = afail == PS_AFAIL::ZB_ONLY || afail == PS_AFAIL::RGB_ONLY || afail == PS_AFAIL::RGB_ONLY_SW_Z;
+			return tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt || afail_needs_rt;
 		}
 
 		__fi bool IsFeedbackLoopDepth() const
 		{
-			return depth_feedback;
+			const bool afail_needs_depth = afail == PS_AFAIL::FB_ONLY || afail == PS_AFAIL::RGB_ONLY_SW_Z;
+			const bool ztst_needs_depth = ztst == ZTST_GEQUAL || ztst == ZTST_GREATER;
+			const bool aa1_needs_depth = aa1 == PS_AA1::TRIANGLE_SW_Z;
+			return afail_needs_depth || ztst_needs_depth || aa1_needs_depth;
 		}
 
 		/// Disables color output from the pixel shader, this is done when all channels are masked.
@@ -484,6 +469,20 @@ struct alignas(16) GSHWDrawConfig
 
 			// disable both outputs.
 			no_color = no_color1 = 1;
+		}
+
+		/// Disables depth output from the pixel shader.
+		__fi void DisableDepthOutput()
+		{
+			if (afail == PS_AFAIL::RGB_ONLY_SW_Z)
+			{
+				afail = PS_AFAIL::RGB_ONLY;
+			}
+
+			if (aa1 == PS_AA1::TRIANGLE_SW_Z)
+			{
+				aa1 = PS_AA1::TRIANGLE;
+			}
 		}
 	};
 	static_assert(sizeof(PSSelector) == 12, "PSSelector is 12 bytes");
@@ -508,7 +507,6 @@ struct alignas(16) GSHWDrawConfig
 				u8 tav      : 1;
 				u8 biln     : 1;
 				u8 triln    : 3;
-				u8 aniso    : 1;
 				u8 lodclamp : 1;
 			};
 			u8 key;
@@ -644,6 +642,46 @@ struct alignas(16) GSHWDrawConfig
 			return true;
 		}
 	};
+
+	struct alignas(16) VSPushConstants
+	{
+		u32 base_vertex;
+		u32 base_index;
+		u32 _pad0;
+		u32 _pad1;
+
+		__fi VSPushConstants()
+		{
+			memset(static_cast<void*>(this), 0, sizeof(*this));
+		}
+		__fi VSPushConstants(const VSPushConstants& other)
+		{
+			memcpy(static_cast<void*>(this), static_cast<const void*>(&other), sizeof(*this));
+		}
+		__fi VSPushConstants& operator=(const VSPushConstants& other)
+		{
+			new (this) VSPushConstants(other);
+			return *this;
+		}
+		__fi bool operator==(const VSPushConstants& other) const
+		{
+			return BitEqual(*this, other);
+		}
+		__fi bool operator!=(const VSPushConstants& other) const
+		{
+			return !(*this == other);
+		}
+		__fi bool Update(const VSPushConstants& other)
+		{
+			if (*this == other)
+				return false;
+
+			memcpy(static_cast<void*>(this), static_cast<const void*>(&other), sizeof(*this));
+			return true;
+		}
+	};
+	static_assert(sizeof(VSPushConstants) == 16, "VSPushConstants wrong size");
+
 	struct alignas(16) PSConstantBuffer
 	{
 		GSVector4 FogColor_AREF;
@@ -773,7 +811,6 @@ struct alignas(16) GSHWDrawConfig
 	};
 
 	GSTexture* rt;        ///< Render target
-	GSTexture* ds_as_rt;  ///< Depth as color (if supported)
 	GSTexture* ds;        ///< Depth stencil
 	GSTexture* tex;       ///< Source texture
 	GSTexture* pal;       ///< Palette texture
@@ -782,10 +819,12 @@ struct alignas(16) GSHWDrawConfig
 	u32 nverts;           ///< Number of vertices
 	u32 nindices;         ///< Number of indices
 	u32 indices_per_prim; ///< Number of indices that make up one primitive
-	const std::vector<size_t>* drawlist;          ///< For reducing barriers on sprites
-	const std::vector<GSVector4i>* drawlist_bbox; ///< For RT copy when barriers not available.
+	const std::vector<size_t>* drawlist;              ///< For reducing barriers on sprites
+	const std::vector<GSVector4i>* drawlist_bbox;     ///< For RT copy when barriers not available.
+	const std::vector<GSVector4i>* drawlist_bbox_tex; ///< Additionally if we need to sample not from the same pixel of the RT.
 	GSVector4i scissor; ///< Scissor rect
 	GSVector4i drawarea; ///< Area in the framebuffer which will be modified.
+	GSVector4i samplearea; ///< Area in the texture which will be sampled.
 	Topology topology;  ///< Draw topology
 
 	alignas(8) PSSelector ps;
@@ -799,11 +838,18 @@ struct alignas(16) GSHWDrawConfig
 	bool require_one_barrier;  ///< Require texture barrier before draw (also used to requst an rt copy if texture barrier isn't supported)
 	bool require_full_barrier; ///< Require texture barrier between all prims
 
+	enum : u32
+	{
+		TEX_HAZARD_NONE,
+		TEX_HAZARD_RT,
+		TEX_HAZARD_DEPTH,
+	} tex_hazard;
+
 	AlphaTestMode alpha_test;
 
 	DestinationAlphaMode destination_alpha;
-	SetDATM datm : 2;
-	bool line_expand : 1;
+	SetDATM datm;
+	bool line_expand;
 
 	struct AlphaPass
 	{
@@ -839,36 +885,20 @@ struct alignas(16) GSHWDrawConfig
 	GIFRegFRAME colclip_frame;
 	GSVector4i colclip_update_area; ///< Area in the framebuffer which colclip will modify;
 
+	__fi bool IsFeedbackLoopRT(const PSSelector& ps) const
+	{
+		return ps.IsFeedbackLoopRT() || (tex_hazard == TEX_HAZARD_RT);
+	}
+
+	__fi bool IsFeedbackLoopDepth(const PSSelector& ps) const
+	{
+		return ps.IsFeedbackLoopDepth() || (tex_hazard == TEX_HAZARD_DEPTH);
+	}
+
 	// Dumping
-	static std::string GetTopologyName(u32 topology);
-	static std::string GetVSExpandName(u32 vsexpand);
-	static std::string GetPSAlphaTestName(u32 dstfmt);
-	static std::string GetPSDstFmtName(u32 dstfmt);
-	static std::string GetPSDepthFmtName(u32 depthfmt);
-	static std::string GetPSBlendABDName(u32 abd);
-	static std::string GetPSBlendCName(u32 c);
-	static std::string GetPSBlendHWName(u32 blendhw);
-	static std::string GetPSBlendMixName(u32 blendmix);
-	static std::string GetPSDitherName(u32 dither);
-	static std::string GetPSChannelName(u32 channel);
-	static std::string GetSSTrilnName(u32 triln);
-	static std::string GetBlendOpName(u32 blendop);
-	static std::string GetBlendFactorName(u32 blendfactor);
-	static std::string GetDestinationAlphaModeName(u32 datm);
-	static std::string GetPSDateName(u32 date);
-	static std::string GetColClipModeName(u32 ccmode);
-	static std::string GetSetDATMName(u32 setdatm);
-	static void DumpPSSelector(std::ostream& out, const PSSelector& ps, const std::string& indent = "");
-	static void DumpVSSelector(std::ostream& out, const VSSelector& vs, const std::string& indent = "");
-	static void DumpBlendState(std::ostream& out, const BlendState& bs, const std::string& indent = "");
-	static void DumpDepthStencilSelctor(std::ostream& out, const DepthStencilSelector& ds, const std::string& indent = "");
-	static void DumpSamplerSelector(std::ostream& out, const SamplerSelector& ss, const std::string& indent = "");
-	static void DumpAlphaPass(std::ostream& out, const AlphaPass& ap, const std::string& indent = "");
-	static void DumpBlendMultipass(std::ostream& out, const BlendMultiPass& bmp, const std::string& indent = "");
-	static void DumpConfig(std::ostream& out, const GSHWDrawConfig& conf,
-		bool ps = true, bool vs = true, bool bs = true, bool dss = true, bool ss = true, bool asp = true, bool bmp = true);
-	static void DumpConfig(const std::string& fn, const GSHWDrawConfig& conf,
-		bool ps = true, bool vs = true, bool bs = true, bool dss = true, bool ss = true, bool asp = true, bool bmp = true);
+	static void DumpConfig(const std::string& path, const GSHWDrawConfig& conf,
+		bool ps = true, bool vs = true, bool bs = true, bool dss = true, bool ss = true, bool asp = true, bool bmp = true,
+		bool cbvs = true, bool cbps = true);
 };
 
 static inline u32 GetExpansionFactor(GSHWDrawConfig::VSExpand expand)
@@ -877,9 +907,12 @@ static inline u32 GetExpansionFactor(GSHWDrawConfig::VSExpand expand)
 	{
 		case GSHWDrawConfig::VSExpand::Point:
 		case GSHWDrawConfig::VSExpand::Line:
+		case GSHWDrawConfig::VSExpand::LineAA1:
 			return 4;
 		case GSHWDrawConfig::VSExpand::Sprite:
 			return 2;
+		case GSHWDrawConfig::VSExpand::TriangleAA1:
+			return 13;
 		default:
 			return 1;
 	}
@@ -916,13 +949,6 @@ public:
 		Performance
 	};
 
-	enum class DepthFeedbackSupport : u8
-	{
-		None,      // No support for depth feedback loops.
-		Depth,     // Implement depth feedback loops directly on the depth buffer.
-		DepthAsRT, // Implement depth feedback loops by first converting depth to a color RT.
-	};
-
 	// clang-format off
 	struct FeatureSupport
 	{
@@ -941,11 +967,14 @@ public:
 		bool stencil_buffer       : 1; ///< Supports stencil buffer, and can use for DATE.
 		bool cas_sharpening       : 1; ///< Supports sufficient functionality for contrast adaptive sharpening.
 		bool test_and_sample_depth: 1; ///< Supports concurrently binding the depth-stencil buffer for sampling and depth testing.
-		DepthFeedbackSupport depth_feedback : 2; ///< Support for depth feedback loops.
+		bool depth_feedback       : 1; ///< Depth feedback loops can be done with DS directly (otherwise need to copy to separate RT).  Implies `feedback_loops`.
+		bool aa1                  : 1; ///< Supports the GS AA1 feature.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));
 		}
+		/// Supports feedback loops through either texture barriers or rt copies.
+		bool feedback_loops() const { return texture_barrier || multidraw_fb_copy; }
 	};
 
 	struct MultiStretchRect
@@ -1023,6 +1052,7 @@ protected:
 	GSTexture* m_current = nullptr;
 	GSTexture* m_cas = nullptr;
 	GSTexture* m_colclip_rt = nullptr; ///< Temp hw colclip texture
+	GSTexture* m_ds_as_rt = nullptr; ///< Depth as color
 
 	bool AcquireWindow(bool recreate_window);
 
@@ -1059,6 +1089,11 @@ public:
 	GSTexture* GetColorClipTexture() const { return m_colclip_rt; }
 		
 	void SetColorClipTexture(GSTexture* tex) { m_colclip_rt = tex; }
+
+	bool IsDSInRTActive() const { return m_ds_as_rt; }
+	/// Create a temporary color clone of depth for depth feedback
+	virtual void BeginDSAsRT(GSTexture* ds, const GSVector4i& drawarea);
+	void EndDSAsRT();
 
 	/// Returns a string representing the specified API.
 	static const char* RenderAPIToString(RenderAPI api);

@@ -14,16 +14,10 @@
 #include "VMManager.h"
 
 #if defined(_WIN32)
-#include "common/RedtapeWindows.h"
+#include "common/RedtapeWilCom.h"
 #include <shlobj.h>
-#include <winnls.h>
 #include <shobjidl.h>
-#include <objbase.h>
-#include <objidl.h>
-#include <shlguid.h>
 #include <comdef.h>
-
-#include <wrl/client.h>
 #endif
 
 ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& title, const QString& path)
@@ -41,10 +35,10 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 	m_ui.shortcutStartMenu->setText(tr("Application Launcher"));
 #endif
 
-	QButtonGroup* buttonGroup = new QButtonGroup(this);
-	buttonGroup->setExclusive(true);
-	buttonGroup->addButton(m_ui.fastForwardTurboOption);
-	buttonGroup->addButton(m_ui.fastForwardUnlimitedOption);
+	QButtonGroup* speedGroup = new QButtonGroup(this);
+	speedGroup->setExclusive(true);
+	speedGroup->addButton(m_ui.fastForwardTurboOption);
+	speedGroup->addButton(m_ui.fastForwardUnlimitedOption);
 	m_ui.fastForwardTurboOption->setChecked(true);
 
 	connect(m_ui.overrideBootELFButton, &QPushButton::clicked, [&]() {
@@ -74,6 +68,37 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 	});
 
 	m_ui.loadStateIndex->setMaximum(VMManager::NUM_SAVE_STATE_SLOTS);
+
+	m_ui.iconPreview->setPixmap(QtHost::GetAppIcon().pixmap(m_ui.iconPreview->size()));
+	m_ui.resetIconButton->setEnabled(false);
+
+	connect(m_ui.browseIconButton, &QPushButton::clicked, [&]() {
+#if defined(_WIN32)
+		const QString filter = tr("Icon Files (*.ico);;All Files (*.*)");
+#else
+		const QString filter = tr("Image Files (*.png *.jpg *.svg *.webp);;All Files (*.*)");
+#endif
+		const QString icon_file = QFileDialog::getOpenFileName(this, tr("Select Icon"), QString(), filter);
+		if (!icon_file.isEmpty())
+		{
+			QPixmap pixmap(icon_file);
+			if (pixmap.isNull())
+			{
+				QMessageBox::critical(this, tr("Invalid Icon"), tr("The selected file could not be loaded as an icon."));
+				return;
+			}
+
+			m_ui.iconPath->setText(Path::ToNativePath(icon_file.toStdString()).c_str());
+			m_ui.iconPreview->setPixmap(pixmap.scaled(m_ui.iconPreview->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+			m_ui.resetIconButton->setEnabled(true);
+		}
+	});
+
+	connect(m_ui.resetIconButton, &QPushButton::clicked, [&]() {
+		m_ui.iconPath->clear();
+		m_ui.iconPreview->setPixmap(QtHost::GetAppIcon().pixmap(m_ui.iconPreview->size()));
+		m_ui.resetIconButton->setEnabled(false);
+	});
 
 	if (std::getenv("container"))
 	{
@@ -107,7 +132,7 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 		if (m_ui.loadStateIndexToggle->isChecked())
 		{
 			const s32 load_state_index = m_ui.loadStateIndex->value();
-			if (load_state_index >= 1 && load_state_index <= VMManager::NUM_SAVE_STATE_SLOTS)
+			if (load_state_index > 0 && load_state_index <= VMManager::NUM_SAVE_STATE_SLOTS)
 			{
 				args.push_back("-state");
 				args.push_back(StringUtil::ToChars(load_state_index));
@@ -135,14 +160,15 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 		}
 
 		std::string custom_args = m_ui.customArgsInput->text().toStdString();
+		std::string icon_path = m_ui.iconPath->text().toStdString();
 
-		ShortcutCreationDialog::CreateShortcut(title.toStdString(), path.toStdString(), args, custom_args, m_ui.shortcutDesktop->isChecked());
+		ShortcutCreationDialog::CreateShortcut(title.toStdString(), path.toStdString(), args, custom_args, icon_path, m_ui.shortcutDesktop->isChecked());
 
 		accept();
 	});
 }
 
-void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::string game_path, std::vector<std::string> passed_cli_args, std::string custom_args, bool is_desktop)
+void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::string game_path, std::vector<std::string> passed_cli_args, std::string custom_args, const std::string icon_path, bool is_desktop)
 {
 #if defined(_WIN32)
 	if (name.empty())
@@ -165,10 +191,9 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	// https://learn.microsoft.com/en-us/windows/win32/api/shlobj_core/nf-shlobj_core-shgetknownfolderpath
 	// https://learn.microsoft.com/en-us/windows/win32/shell/knownfolderid
 	std::string link_file;
-	if (PWSTR directory; SUCCEEDED(SHGetKnownFolderPath(is_desktop ? FOLDERID_Desktop : FOLDERID_Programs, 0, NULL, &directory)))
+	if (wil::unique_cotaskmem_string directory; SUCCEEDED(SHGetKnownFolderPath(is_desktop ? FOLDERID_Desktop : FOLDERID_Programs, 0, NULL, &directory)))
 	{
-		std::string directory_utf8 = StringUtil::WideStringToUTF8String(directory);
-		CoTaskMemFree(directory);
+		std::string directory_utf8 = StringUtil::WideStringToUTF8String(directory.get());
 
 		if (is_desktop)
 			link_file = Path::ToNativePath(fmt::format("{}/{}.lnk", directory_utf8, clean_name));
@@ -186,7 +211,6 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	}
 	else
 	{
-		CoTaskMemFree(directory);
 		QMessageBox::critical(this, tr("Failed to create shortcut"), is_desktop ? tr("'Desktop' directory not found") : tr("User's 'Start Menu\\Programs' directory not found"), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
@@ -205,7 +229,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 
 	if (!lossless)
 	{
-		QMessageBox::warning(this, tr("Failed to create shortcut"), tr("File path contains invalid character(s)."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("File path contains invalid character(s)."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
 
@@ -231,23 +255,19 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		return;
 	}
 
-	Microsoft::WRL::ComPtr<IShellLink> pShellLink;
-	Microsoft::WRL::ComPtr<IPersistFile> pPersistFile;
+	wil::unique_couninitialize_call co_cleanup;
 
-	const auto cleanup = [&](bool return_value, const QString& fail_reason) -> bool {
-		if (!return_value)
-		{
-			Console.ErrorFmt("Failed to create shortcut: {}", fail_reason.toStdString());
-			QMessageBox::critical(this, tr("Failed to create shortcut"), fail_reason, QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
-		}
-		CoUninitialize();
-		return return_value;
+	const auto report_error = [&](const QString& reason) {
+		Console.ErrorFmt("Failed to create shortcut: {}", reason.toStdString());
+		QMessageBox::critical(this, tr("Failed to create shortcut"), reason, QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 	};
 
-	res = CoCreateInstance(__uuidof(ShellLink), NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pShellLink));
-	if (FAILED(res))
+	wil::com_ptr_nothrow<IShellLink> pShellLink = wil::CoCreateInstanceNoThrow<IShellLink>(CLSID_ShellLink);
+	wil::com_ptr_nothrow<IPersistFile> pPersistFile;
+
+	if (!pShellLink)
 	{
-		cleanup(false, tr("CoCreateInstance failed"));
+		report_error(tr("CoCreateInstance failed"));
 		return;
 	}
 
@@ -256,7 +276,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	res = pShellLink->SetPath(target_file.c_str());
 	if (FAILED(res))
 	{
-		cleanup(false, tr("SetPath failed (%1)").arg(str_error(res)));
+		report_error(tr("SetPath failed (%1)").arg(str_error(res)));
 		return;
 	}
 
@@ -265,7 +285,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	res = pShellLink->SetWorkingDirectory(working_dir.c_str());
 	if (FAILED(res))
 	{
-		cleanup(false, tr("SetWorkingDirectory failed (%1)").arg(str_error(res)));
+		report_error(tr("SetWorkingDirectory failed (%1)").arg(str_error(res)));
 		return;
 	}
 
@@ -276,26 +296,40 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		res = pShellLink->SetArguments(target_cli_args.c_str());
 		if (FAILED(res))
 		{
-			cleanup(false, tr("SetArguments failed (%1)").arg(str_error(res)));
+			report_error(tr("SetArguments failed (%1)").arg(str_error(res)));
 			return;
 		}
 	}
 
 	// Set the icon
-	std::string icon_path = Path::ToNativePath(Path::Combine(Path::GetDirectory(FileSystem::GetProgramPath()), "resources/icons/AppIconLarge.ico"));
-	const std::wstring w_icon_path = StringUtil::UTF8StringToWideString(icon_path);
+	std::string final_icon_path;
+	if (!icon_path.empty())
+	{
+		final_icon_path = Path::ToNativePath(icon_path);
+		if (!FileSystem::FileExists(final_icon_path.c_str()))
+		{
+			QMessageBox::critical(this, tr("Failed to create shortcut"), tr("The selected icon file does not exist."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+			return;
+		}
+	}
+	else
+	{
+		final_icon_path = Path::ToNativePath(Path::Combine(Path::GetDirectory(FileSystem::GetProgramPath()), "resources/icons/AppIconLarge.ico"));
+	}
+
+	const std::wstring w_icon_path = StringUtil::UTF8StringToWideString(final_icon_path);
 	res = pShellLink->SetIconLocation(w_icon_path.c_str(), 0);
 	if (FAILED(res))
 	{
-		cleanup(false, tr("SetIconLocation failed (%1)").arg(str_error(res)));
+		report_error(tr("SetIconLocation failed (%1)").arg(str_error(res)));
 		return;
 	}
 
 	// Use the IPersistFile object to save the shell link
-	res = pShellLink.As(&pPersistFile);
+	res = pShellLink.query_to(&pPersistFile);
 	if (FAILED(res))
 	{
-		cleanup(false, tr("QueryInterface failed (%1)").arg(str_error(res)));
+		report_error(tr("QueryInterface failed (%1)").arg(str_error(res)));
 		return;
 	}
 
@@ -304,11 +338,9 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 	res = pPersistFile->Save(w_link_file.c_str(), TRUE);
 	if (FAILED(res))
 	{
-		cleanup(false, tr("Failed to save the shortcut (%1)").arg(str_error(res)));
+		report_error(tr("Failed to save the shortcut (%1)").arg(str_error(res)));
 		return;
 	}
-
-	cleanup(true, {});
 
 #else
 
@@ -365,25 +397,38 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		return;
 	}
 
-	// Copy PCSX2 icon
-	std::string icon_dest;
-	if (xdg_data_home)
-		icon_dest = fmt::format("{}/icons/hicolor/512x512/apps/", xdg_data_home);
-	else
-		icon_dest = fmt::format("{}/.local/share/icons/hicolor/512x512/apps/", home);
-
 	std::string icon_name;
-	if (is_flatpak) // Flatpak
+	if (!icon_path.empty())
 	{
-		executable_path = "flatpak run net.pcsx2.PCSX2";
-		icon_name = "net.pcsx2.PCSX2";
+		if (!FileSystem::FileExists(icon_path.c_str()))
+		{
+			QMessageBox::critical(this, tr("Failed to create shortcut"), tr("The selected icon file does not exist."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+			return;
+		}
+		icon_name = icon_path;
 	}
 	else
 	{
-		icon_name = "PCSX2";
-		std::string icon_path = fmt::format("{}/{}.png", icon_dest, icon_name).c_str();
-		if (FileSystem::EnsureDirectoryExists(icon_dest.c_str(), true))
-			FileSystem::CopyFilePath(Path::Combine(EmuFolders::Resources, "icons/AppIconLarge.png").c_str(), icon_path.c_str(), false);
+		// Copy PCSX2 icon
+		std::string icon_dest;
+		if (xdg_data_home)
+			icon_dest = fmt::format("{}/icons/hicolor/512x512/apps/", xdg_data_home);
+		else
+			icon_dest = fmt::format("{}/.local/share/icons/hicolor/512x512/apps/", home);
+
+		if (is_flatpak) // Flatpak
+		{
+			executable_path = "flatpak run net.pcsx2.PCSX2";
+			icon_name = "net.pcsx2.PCSX2";
+		}
+		else
+		{
+			icon_name = "PCSX2";
+			std::string icon_path_dest = fmt::format("{}/{}.png", icon_dest, icon_name).c_str();
+			if (FileSystem::EnsureDirectoryExists(icon_dest.c_str(), true))
+				if (!FileSystem::FileExists(icon_path_dest.c_str()))
+					FileSystem::CopyFilePath(Path::Combine(EmuFolders::Resources, "icons/AppIconLarge.png").c_str(), icon_path_dest.c_str(), false);
+		}
 	}
 
 	// Shortcut CmdLine Args
@@ -393,7 +438,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 
 	if (!lossless)
 	{
-		QMessageBox::warning(this, tr("Failed to create shortcut"), tr("File path contains invalid character(s)."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+		QMessageBox::critical(this, tr("Failed to create shortcut"), tr("File path contains invalid character(s)."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 		return;
 	}
 

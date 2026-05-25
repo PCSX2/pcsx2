@@ -7410,13 +7410,13 @@ void Assembler::pmullb(const ZRegister& zd,
   //  size<23:22> | Zm<20:16> | op<12> | U<11> | T<10> | Zn<9:5> | Zd<4:0>
 
   VIXL_ASSERT(CPUHas(CPUFeatures::kSVE2));
+  VIXL_ASSERT(CPUHas(CPUFeatures::kSVEPmull128) || !zd.IsLaneSizeQ());
   VIXL_ASSERT(AreSameLaneSize(zn, zm));
   VIXL_ASSERT(!zd.IsLaneSizeB() && !zd.IsLaneSizeS());
   VIXL_ASSERT(zd.GetLaneSizeInBytes() == zn.GetLaneSizeInBytes() * 2);
-  // SVEPmull128 is not supported
-  VIXL_ASSERT(!zd.IsLaneSizeQ());
+  Instr size = zd.IsLaneSizeQ() ? 0 : SVESize(zd);
 
-  Emit(0x45006800 | SVESize(zd) | Rd(zd) | Rn(zn) | Rm(zm));
+  Emit(0x45006800 | size | Rd(zd) | Rn(zn) | Rm(zm));
 }
 
 void Assembler::pmullt(const ZRegister& zd,
@@ -7427,13 +7427,13 @@ void Assembler::pmullt(const ZRegister& zd,
   //  size<23:22> | Zm<20:16> | op<12> | U<11> | T<10> | Zn<9:5> | Zd<4:0>
 
   VIXL_ASSERT(CPUHas(CPUFeatures::kSVE2));
+  VIXL_ASSERT(CPUHas(CPUFeatures::kSVEPmull128) || !zd.IsLaneSizeQ());
   VIXL_ASSERT(AreSameLaneSize(zn, zm));
   VIXL_ASSERT(!zd.IsLaneSizeB() && !zd.IsLaneSizeS());
   VIXL_ASSERT(zd.GetLaneSizeInBytes() == zn.GetLaneSizeInBytes() * 2);
-  // SVEPmull128 is not supported
-  VIXL_ASSERT(!zd.IsLaneSizeQ());
+  Instr size = zd.IsLaneSizeQ() ? 0 : SVESize(zd);
 
-  Emit(0x45006c00 | SVESize(zd) | Rd(zd) | Rn(zn) | Rm(zm));
+  Emit(0x45006c00 | size | Rd(zd) | Rn(zn) | Rm(zm));
 }
 
 void Assembler::raddhnb(const ZRegister& zd,
@@ -9893,6 +9893,26 @@ void Assembler::sudot(const ZRegister& zda,
   VIXL_ASSERT(IsUint2(index));
 
   Emit(0x44a01c00 | Rx<18, 16>(zm) | (index << 19) | Rd(zda) | Rn(zn));
+}
+
+void Assembler::bfcvt(const ZRegister& zd,
+                      const PRegisterM& pg,
+                      const ZRegister& zn) {
+  VIXL_ASSERT(CPUHas(CPUFeatures::kSVE));
+  VIXL_ASSERT(CPUHas(CPUFeatures::kBF16));
+  VIXL_ASSERT(zd.IsLaneSizeH() && zn.IsLaneSizeS());
+
+  Emit(0x658aa000 | Rd(zd) | PgLow8(pg) | Rn(zn));
+}
+
+void Assembler::bfcvtnt(const ZRegister& zd,
+                        const PRegisterM& pg,
+                        const ZRegister& zn) {
+  VIXL_ASSERT(CPUHas(CPUFeatures::kSVE));
+  VIXL_ASSERT(CPUHas(CPUFeatures::kBF16));
+  VIXL_ASSERT(zd.IsLaneSizeH() && zn.IsLaneSizeS());
+
+  Emit(0x648aa000 | Rd(zd) | PgLow8(pg) | Rn(zn));
 }
 
 }  // namespace aarch64

@@ -41,6 +41,9 @@ namespace ImGuiFullscreen
 	static constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
 	static constexpr float LAYOUT_HORIZONTAL_MENU_PADDING = 30.0f;
 	static constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_WIDTH = 250.0f;
+	static constexpr float LAYOUT_WINDOW_ROUNDING = 8.0f;
+	static constexpr float LAYOUT_FRAME_ROUNDING = 6.0f;
+	static constexpr float LAYOUT_SCROLLBAR_ROUNDING = 5.0f;
 
 	extern std::pair<ImFont*, float> g_standard_font;
 	extern std::pair<ImFont*, float> g_medium_font;
@@ -165,6 +168,22 @@ namespace ImGuiFullscreen
 	bool IsGamepadInputSource();
 	void ReportGamepadLayout(InputLayout layout);
 	InputLayout GetGamepadLayout();
+	struct GamepadGlyphs
+	{
+		const char* south;
+		const char* east;
+		const char* west;
+		const char* north;
+		const char* dpad;
+		const char* dpad_lr;
+		const char* dpad_ud;
+		const char* select;
+		const char* start;
+
+		const char* confirm(bool circleOK) const { return circleOK ? east : south; }
+		const char* cancel(bool circleOK) const { return circleOK ? south : east; }
+	};
+	GamepadGlyphs GetGamepadGlyphs();
 	void CreateFooterTextString(SmallStringBase& dest, std::span<const std::pair<const char*, std::string_view>> items);
 	void SetFullscreenFooterText(std::string_view text);
 	void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items);
@@ -173,12 +192,17 @@ namespace ImGuiFullscreen
 	void DrawFullscreenFooter();
 
 	void PrerenderMenuButtonBorder();
+	void AddTextWithShadow(ImDrawList* dl, std::pair<ImFont*, float> font, const ImVec2& pos, ImU32 col, const char* text,
+		const char* text_end = nullptr, float wrap_width = 0.0f, const ImVec4* cpu_fine_clip_rect = nullptr,
+		ImU32 shadow_col = IM_COL32(0, 0, 0, 64), bool strip_id_suffix = false);
+	void RenderTextClippedWithShadow(const ImVec2& pos_min, const ImVec2& pos_max, const char* text, const char* text_end = nullptr,
+		const ImVec2* text_size_if_known = nullptr, const ImVec2& align = ImVec2(0.0f, 0.0f), const ImRect* clip_rect = nullptr);
 	void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding = LAYOUT_MENU_BUTTON_X_PADDING,
 		float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING, float item_height = LAYOUT_MENU_BUTTON_HEIGHT);
 	void EndMenuButtons();
 	void GetMenuButtonFrameBounds(float height, ImVec2* pos, ImVec2* size);
 	bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visible, bool* hovered, ImVec2* min, ImVec2* max,
-		ImGuiButtonFlags flags = 0, float hover_alpha = 1.0f);
+		ImGuiButtonFlags flags = 0, float hover_alpha = 0.7f);
 	void DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, ImU32 fill_col, bool border = true, float rounding = 0.0f);
 	void ResetMenuButtonFrame();
 	void MenuHeading(const char* title, bool draw_line = true);

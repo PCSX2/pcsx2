@@ -5,9 +5,13 @@
 #include "Config.h"
 #include "Counters.h"
 #include "GS/GS.h"
+#include "GS/GSShaderCompileIndicator.h"
 #include "GS/GSCapture.h"
 #include "GS/GSVector.h"
 #include "GS/Renderers/Common/GSDevice.h"
+#ifdef _WIN32
+#include "GS/Renderers/DX12/GSDevice12.h"
+#endif
 #include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "Host.h"
 #include "IconsFontAwesome.h"
@@ -66,6 +70,7 @@ SmallString s_cpu_usage_vu_line;
 std::vector<SmallString> s_software_thread_lines;
 SmallString s_capture_line;
 SmallString s_gpu_usage_line;
+SmallString s_gpu_debug_info_line;
 SmallString s_speed_icon;
 
 constexpr ImU32 white_color = IM_COL32(255, 255, 255, 255);
@@ -139,6 +144,7 @@ namespace ImGuiManager
 {
 	static void FormatProcessorStat(SmallStringBase& text, double usage, double time);
 	static void DrawPerformanceOverlay(float& position_y, float scale, float margin, float spacing);
+	static void DrawShaderCompileIndicator(float scale, float margin, float spacing);
 	static void DrawSettingsOverlay(float scale, float margin, float spacing);
 	static void DrawInputsOverlay(float scale, float margin, float spacing);
 	static void DrawInputRecordingOverlay(float& position_y, float scale, float margin, float spacing);
@@ -482,6 +488,22 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				FormatProcessorStat(s_gpu_usage_line, PerformanceMetrics::GetGPUUsage(), PerformanceMetrics::GetGPUAverageTime());
 				DRAW_LINE(osd_font, font_size, s_gpu_usage_line.c_str(), white_color);
 			}
+
+			if (GSConfig.OsdShowGPUDebug)
+			{
+#ifdef _WIN32
+				if (g_gs_device->GetRenderAPI() == RenderAPI::D3D12)
+				{
+					GSDevice12* dev12 = static_cast<GSDevice12*>(g_gs_device.get());
+
+					s_gpu_debug_info_line.format("D3D12 Descriptor Heaps | SRV/UAV: {}/{} | RTV: {}/{} | DSV {}/{}",
+						dev12->GetDescriptorHeapManager().GetAllocatedDescriptors(), dev12->GetDescriptorHeapManager().GetNumDescriptors(),
+						dev12->GetRTVHeapManager().GetAllocatedDescriptors(), dev12->GetRTVHeapManager().GetNumDescriptors(),
+						dev12->GetDSVHeapManager().GetAllocatedDescriptors(), dev12->GetDSVHeapManager().GetNumDescriptors());
+					DRAW_LINE(osd_font, font_size, s_gpu_debug_info_line.c_str(), white_color);
+				}
+#endif
+			}
 		}
 		// No refresh yet. Display cached lines.
 		else
@@ -526,6 +548,14 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 
 			if (GSConfig.OsdShowGPU)
 				DRAW_LINE(osd_font, font_size, s_gpu_usage_line.c_str(), white_color);
+
+			if (GSConfig.OsdShowGPUDebug)
+			{
+#ifdef _WIN32
+				if (g_gs_device->GetRenderAPI() == RenderAPI::D3D12)
+					DRAW_LINE(osd_font, font_size, s_gpu_debug_info_line.c_str(), white_color);
+#endif
+			}
 		}
 
 		// Check every OSD frame because this is an animation.
@@ -750,6 +780,81 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 #undef DRAW_LINE
 }
 
+__ri void ImGuiManager::DrawShaderCompileIndicator(float scale, float margin, float spacing)
+{
+	static bool s_indicator_was_visible = false;
+	static double s_indicator_fade_in_start = 0.0;
+
+	if (!GSConfig.OsdShowGPU || !GSShaderCompileIndicator::IsVisible())
+	{
+		s_indicator_was_visible = false;
+		return;
+	}
+
+	const double imgui_time = ImGui::GetTime();
+	if (!s_indicator_was_visible)
+		s_indicator_fade_in_start = imgui_time;
+	s_indicator_was_visible = true;
+
+	constexpr double fade_in_seconds = 0.12;
+	const float fade_in_alpha = static_cast<float>(
+		std::min(1.0, (imgui_time - s_indicator_fade_in_start) / fade_in_seconds));
+	const float fade_out_alpha = GSShaderCompileIndicator::GetFadeAlpha();
+	const float alpha = std::clamp(fade_in_alpha * fade_out_alpha, 0.0f, 1.0f);
+	const ImU32 text_col = IM_COL32(255, 255, 255, static_cast<int>(std::lround(255.0f * alpha)));
+	const ImU32 shadow_col = IM_COL32(0, 0, 0, static_cast<int>(std::lround(100.0f * alpha)));
+	const ImU32 spinner_track_col = IM_COL32(255, 255, 255, static_cast<int>(std::lround(45.0f * alpha)));
+
+	static constexpr const char* COMPILED_ONE =
+		TRANSLATE_NOOP("ImGuiOverlays", "Compiled {0} shader in {1}ms");
+	static constexpr const char* COMPILED_MANY =
+		TRANSLATE_NOOP("ImGuiOverlays", "Compiled {0} shaders in {1}ms");
+
+	const u32 count = GSShaderCompileIndicator::GetCount();
+	const u32 time_ms = GSShaderCompileIndicator::GetTimeMs();
+	const std::string label = (count == 1) ?
+	                              fmt::format(TRANSLATE_FS("ImGuiOverlays", COMPILED_ONE), count, time_ms) :
+	                              fmt::format(TRANSLATE_FS("ImGuiOverlays", COMPILED_MANY), count, time_ms);
+
+	ImFont* const font = ImGuiManager::GetOSDFont();
+	const float font_size = ImGuiManager::GetFontSizeStandard();
+	const float baseline_y =
+		GetWindowHeight() - margin - (GSConfig.OsdShowSettings ? font_size : 0.0f);
+	const float radius = std::ceil(10.0f * scale);
+	const float cx = GetWindowWidth() - margin - radius;
+	const float cy = baseline_y - spacing - radius;
+	const ImVec2 center(cx, cy);
+
+	const ImVec2 text_size = font->CalcTextSizeA(
+		font_size, std::numeric_limits<float>::max(), -1.0f, label.c_str(), label.c_str() + label.length(), nullptr);
+	const float shadow_offset = std::ceil(scale);
+	const float text_gap = std::ceil(6.0f * scale);
+	const float text_x = cx - radius - text_gap - text_size.x;
+	const float text_y = cy - font_size * 0.5f;
+
+	ImDrawList* const dl = ImGui::GetBackgroundDrawList();
+	const float a0 = static_cast<float>(ImGui::GetTime()) * 10.0f;
+	const float a1 = a0 + IM_PI * 1.12f;
+	const float thickness = std::ceil(2.5f * scale);
+
+	dl->AddText(font, font_size, ImVec2(text_x + shadow_offset, text_y + shadow_offset), shadow_col,
+		label.c_str(), label.c_str() + label.length());
+	dl->AddText(font, font_size, ImVec2(text_x, text_y), text_col, label.c_str(), label.c_str() + label.length());
+	if (GSConfig.OsdBoldText)
+	{
+		dl->AddText(font, font_size, ImVec2(text_x + 0.6f, text_y), text_col, label.c_str(),
+			label.c_str() + label.length());
+	}
+
+	dl->PathClear();
+	dl->PathArcTo(center, radius, 0.0f, 2.0f * IM_PI, 32);
+	dl->PathStroke(spinner_track_col, std::max(1.0f, thickness * 0.65f), false);
+
+	dl->PathClear();
+	dl->PathArcTo(center, radius, a0, a1, 24);
+	dl->PathStroke(text_col, thickness, false);
+}
+
 __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spacing)
 {
 	if (!GSConfig.OsdShowSettings ||
@@ -807,6 +912,9 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 
 		if (GSConfig.HWAccurateAlphaTest)
 			APPEND("AAT ");
+		
+		if (GSConfig.HWAA1)
+			APPEND("AA1 ");
 
 		// deliberately test global and print local here for auto values
 		if (EmuConfig.GS.TextureFiltering != BiFiltering::PS2)
@@ -865,6 +973,8 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 			APPEND("PLFD ");
 		if (GSConfig.UserHacks_EstimateTextureRegion)
 			APPEND("ETR ");
+		if (GSConfig.UserHacks_DrawBuffering)
+			APPEND("DRWB");
 		if (GSConfig.HWSpinGPUForReadbacks)
 			APPEND("RBSG ");
 		if (GSConfig.HWSpinCPUForReadbacks)
@@ -1665,6 +1775,7 @@ void ImGuiManager::RenderOverlays()
 	if (GSConfig.OsdPerformancePos != OsdOverlayPos::None)
 		DrawPerformanceOverlay(position_y, scale, margin, spacing);
 	DrawSettingsOverlay(scale, margin, spacing);
+	DrawShaderCompileIndicator(scale, margin, spacing);
 	DrawInputsOverlay(scale, margin, spacing);
 	if (SaveStateSelectorUI::s_open)
 		SaveStateSelectorUI::Draw();

@@ -42,6 +42,7 @@ void mVUreset(microVU& mVU, bool resetReserve)
 		VU0.VI[REG_VPU_STAT].UL &= ~0x100;
 	}
 
+	xSetTextPtr(mVU.textPtr());
 	xSetPtr(mVU.cache);
 	mVUdispatcherAB(mVU);
 	mVUdispatcherCD(mVU);

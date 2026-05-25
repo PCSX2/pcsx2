@@ -123,7 +123,7 @@ struct Gif_Tag
 		u64 REGS64;
 		std::memcpy(&REGS64, tag.REGS, sizeof(u64));
 		REGS64 &= (0xFFFFFFFFFFFFFFFFULL >> (64 - nRegs * 4));
-		uint8x16_t vregs = vsetq_lane_u64(REGS64, vdupq_n_u64(0), 0);
+		uint8x16_t vregs = vreinterpretq_u8_u64(vsetq_lane_u64(REGS64, vdupq_n_u64(0), 0));
 
 		// get upper nibbles, interleave with lower nibbles, clear upper bits from low nibbles
 		vregs = vandq_u8(vzip1q_u8(vregs, vshrq_n_u8(vregs, 4)), vdupq_n_u8(0x0F));

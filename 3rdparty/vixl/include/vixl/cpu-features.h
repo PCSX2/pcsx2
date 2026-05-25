@@ -202,7 +202,8 @@ namespace vixl {
   V(kEBF16,               "EBF16",                  "ebf16")                   \
   V(kSVE_EBF16,           "EBF16 (SVE)",            "sveebf16")                \
   V(kCSSC,                "CSSC",                   "cssc")                    \
-  V(kGCS,                 "GCS",                    "gcs")
+  V(kGCS,                 "GCS",                    "gcs")                     \
+  V(kHBC,                 "HBC",                    "hbc")
 // clang-format on
 
 

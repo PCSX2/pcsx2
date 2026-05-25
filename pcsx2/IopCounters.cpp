@@ -709,7 +709,7 @@ __fi void psxRcntWmode32(int index, u32 value)
 
 	// Current counter *always* resets on mode write.
 	counter.count = 0;
-	counter.startCycle = psxRegs.cycle & ~(counter.rate - 1);
+	counter.startCycle = psxRegs.cycle & ~(static_cast<u64>(counter.rate - 1));
 	counter.target &= 0xffffffff;
 	_rcntSet(index);
 }

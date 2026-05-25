@@ -35,6 +35,7 @@
     "modules/25-plutosvg.json",
     "modules/26-libpng.json",
     "modules/27-qtapng.json",
+    "modules/28-rapidyaml.json",
     {
       "name": "pcsx2",
       "buildsystem": "cmake-ninja",
@@ -79,4 +80,3 @@
     }
   ]
 }
-

@@ -294,11 +294,6 @@ void GameListWidget::initialize()
 	if (Host::ContainsBaseSettingValue("GameListTableView", "HeaderState"))
 	{
 		loadTableHeaderState();
-		// Enforce at least one column is visible immediately after loading.
-		// This handles cases where a config (perhaps from an older version) has 0 columns and
-		// no games are visible to be changed (such as per-game config) or played as you can't click on any.
-		// Will automatically repair a broken header state from config (PCSX2.ini) file.
-		ensureMinimumOneColumnVisible();
 	}
 	else
 	{
@@ -811,6 +806,14 @@ void GameListWidget::loadTableHeaderState()
 
 	QSignalBlocker blocker(header);
 	header->restoreState(QByteArray::fromBase64(QByteArray::fromStdString(state_setting)));
+
+	header->setSectionHidden(GameListModel::Column_Cover, true);
+
+	// Enforce at least one column is visible immediately after loading.
+	// This handles cases where a config (perhaps from an older version) has 0 columns and
+	// no games are visible to be changed (such as per-game config) or played as you can't click on any.
+	// Will automatically repair a broken header state from config (PCSX2.ini) file.
+	ensureMinimumOneColumnVisible();
 }
 
 void GameListWidget::ensureMinimumOneColumnVisible()

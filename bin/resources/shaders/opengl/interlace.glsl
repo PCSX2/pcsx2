@@ -181,10 +181,10 @@ void ps_main4()
 				// compared to the new centre line and the high line (with some threshold of about 25 color steps), then reconstruct.
 				vec3 mhln = hn.rgb - ln.rgb;
 				vec3 mchn = hn.rgb - cn.rgb;
-				
+
 				mhln = max(mhln, -mhln) - motion_thr;
 				mchn = max(mchn, -mchn) - motion_thr;
-				
+
 				float mhln_max = max(max(mhln.x, mhln.y), mhln.z);
 				float mchn_max = max(max(mchn.x, mchn.y), mchn.z);
 

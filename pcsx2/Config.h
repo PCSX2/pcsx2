@@ -760,6 +760,7 @@ struct Pcsx2Config
 					PCRTCOverscan : 1,
 					IntegerScaling : 1,
 					UseDebugDevice : 1,
+					UseDebugBlend : 1,
 					UseBlitSwapChain : 1,
 					DisableShaderCache : 1,
 					DisableFramebufferFetch : 1,
@@ -772,6 +773,7 @@ struct Pcsx2Config
 					OsdShowGSStats : 1,
 					OsdShowCPU : 1,
 					OsdShowGPU : 1,
+					OsdShowGPUDebug : 1,
 					OsdShowIndicators : 1,
 					OsdShowFrameTimes : 1,
 					OsdShowHardwareInfo : 1,
@@ -790,7 +792,8 @@ struct Pcsx2Config
 					PreloadFrameWithGSData : 1,
 					Mipmap : 1,
 					HWMipmap : 1,
-					HWAccurateAlphaTest: 1,
+					HWAccurateAlphaTest : 1,
+					HWAA1 : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
 					UserHacks_CPUFBConversion : 1,
@@ -803,6 +806,7 @@ struct Pcsx2Config
 					UserHacks_ForceEvenSpritePosition : 1,
 					UserHacks_NativePaletteDraw : 1,
 					UserHacks_EstimateTextureRegion : 1,
+					UserHacks_DrawBuffering : 1,
 					FXAA : 1,
 					ShadeBoost : 1,
 					DumpGSData : 1,
@@ -829,7 +833,8 @@ struct Pcsx2Config
 					VideoCaptureAutoResolution : 1,
 					EnableAudioCapture : 1,
 					EnableAudioCaptureParameters : 1,
-					OrganizeSnapshotsByGame : 1;
+					OrganizeSnapshotsByGame : 1,
+					OrganizeVideoCaptureByGame : 1;
 			};
 		};
 
@@ -1283,9 +1288,6 @@ struct Pcsx2Config
 		static constexpr u32 MAXIMUM_NOTIFICATION_DURATION = 30;
 		static constexpr u32 DEFAULT_NOTIFICATION_DURATION = 5;
 		static constexpr u32 DEFAULT_LEADERBOARD_DURATION = 10;
-		static constexpr const char* DEFAULT_INFO_SOUND_NAME = "sounds/achievements/message.wav";
-		static constexpr const char* DEFAULT_UNLOCK_SOUND_NAME = "sounds/achievements/unlock.wav";
-		static constexpr const char* DEFAULT_LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit.wav";
 
 		static const char* OverlayPositionNames[(size_t)AchievementOverlayPosition::MaxCount + 1];
 
@@ -1402,6 +1404,7 @@ struct Pcsx2Config
 	std::string CurrentBlockdump;
 	std::string CurrentIRX;
 	std::string CurrentGameArgs;
+	std::string CustomDataPath;
 	AspectRatioType CurrentAspectRatio = AspectRatioType::RAuto4_3_3_2;
 	// Fall back aspect ratio for games that have patches (when AspectRatioType::RAuto4_3_3_2) is active.
 	float CurrentCustomAspectRatio = 0.f;

@@ -7,6 +7,7 @@
 
 #include <QtWidgets/QWidget>
 
+class QGridLayout;
 class QScrollArea;
 class QTabWidget;
 
@@ -44,6 +45,10 @@ protected:
 	void addPageHeader(QWidget* header, bool custom_margins = false);
 	QWidget* addTab(QString name, QWidget* contents, bool custom_margins = false);
 	void setTabVisible(QWidget* tab, bool is_visible, QWidget* switch_to = nullptr);
+
+	// Rearrange the checkboxes in a group so that there aren't any gaps. To be
+	// used if checkboxes have been hidden programmatically.
+	void reflowCheckBoxes(QGridLayout* layout);
 
 private:
 	void updateTabMargins(QScrollArea* scroll_area);

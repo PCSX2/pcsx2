@@ -12,6 +12,9 @@
 #include "common/StringUtil.h"
 #include <bit>
 
+using PS_ATST  = GSShader::PS_ATST;
+using PS_AFAIL = GSShader::PS_AFAIL;
+
 GSRendererHW::GSRendererHW()
 	: GSRenderer()
 {
@@ -150,7 +153,8 @@ GSTexture* GSRendererHW::GetOutput(int i, float& scale, int& y_offset)
 	GSPCRTCRegs::PCRTCDisplay& curFramebuffer = PCRTCDisplays.PCRTCDisplays[index];
 	const GSVector2i framebufferSize(PCRTCDisplays.GetFramebufferSize(i));
 
-	if (curFramebuffer.framebufferRect.rempty() || curFramebuffer.FBW == 0)
+	// Try to avoid broken/incomplete setups which are probably ignored on console, but can cause us problems.
+	if (curFramebuffer.framebufferRect.rempty() || curFramebuffer.FBW == 0 || framebufferSize.x < 0 || framebufferSize.y < 0)
 		return nullptr;
 
 	PCRTCDisplays.RemoveFramebufferOffset(i);
@@ -218,7 +222,7 @@ void GSRendererHW::Lines2Sprites()
 
 	// each sprite converted to quad needs twice the space
 
-	while (m_vertex.tail * 2 > m_vertex.maxcount)
+	while (m_vertex->tail * 2 > m_vertex->maxcount)
 	{
 		GrowVertexBuffer();
 	}
@@ -226,14 +230,14 @@ void GSRendererHW::Lines2Sprites()
 	// assume vertices are tightly packed and sequentially indexed (it should be the case)
 	const bool predivide_q = PRIM->TME && !PRIM->FST && m_vt.m_accurate_stq;
 
-	if (m_vertex.next >= 2)
+	if (m_vertex->next >= 2)
 	{
-		const u32 count = m_vertex.next;
+		const u32 count = m_vertex->next;
 
 		int i = static_cast<int>(count) * 2 - 4;
-		GSVertex* s = &m_vertex.buff[count - 2];
-		GSVertex* q = &m_vertex.buff[count * 2 - 4];
-		u16* RESTRICT index = &m_index.buff[count * 3 - 6];
+		GSVertex* s = &m_vertex->buff[count - 2];
+		GSVertex* q = &m_vertex->buff[count * 2 - 4];
+		u16* RESTRICT index = &m_index->buff[count * 3 - 6];
 
 		// Sprites are flat shaded, so the provoking vertex doesn't matter here.
 		constexpr GSVector4i indices = GSVector4i::cxpr16(0, 1, 2, 1, 2, 3, 0, 0);
@@ -287,19 +291,19 @@ void GSRendererHW::Lines2Sprites()
 			std::memcpy(&index[4], &high, sizeof(high));
 		}
 
-		m_vertex.head = m_vertex.tail = m_vertex.next = count * 2;
-		m_index.tail = count * 3;
+		m_vertex->head = m_vertex->tail = m_vertex->next = count * 2;
+		m_index->tail = count * 3;
 	}
 }
 
 void GSRendererHW::ExpandLineIndices()
 {
-	const u32 process_count = (m_index.tail + 7) / 8 * 8;
+	const u32 process_count = (m_index->tail + 7) / 8 * 8;
 	constexpr u32 expansion_factor = 3;
-	m_index.tail *= expansion_factor;
-	GSVector4i* end = reinterpret_cast<GSVector4i*>(m_index.buff);
-	GSVector4i* read = reinterpret_cast<GSVector4i*>(m_index.buff + process_count);
-	GSVector4i* write = reinterpret_cast<GSVector4i*>(m_index.buff + process_count * expansion_factor);
+	m_index->tail *= expansion_factor;
+	GSVector4i* end = reinterpret_cast<GSVector4i*>(m_index->buff);
+	GSVector4i* read = reinterpret_cast<GSVector4i*>(m_index->buff + process_count);
+	GSVector4i* write = reinterpret_cast<GSVector4i*>(m_index->buff + process_count * expansion_factor);
 
 	constexpr GSVector4i mask0 = GSVector4i::cxpr8(0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 2, 3, 4, 5, 4, 5);
 	constexpr GSVector4i mask1 = GSVector4i::cxpr8(6, 7, 4, 5, 6, 7, 6, 7, 8, 9, 8, 9, 10, 11, 8, 9);
@@ -321,596 +325,951 @@ void GSRendererHW::ExpandLineIndices()
 	}
 }
 
-// Return true if the sprite reverses the same 8 pixels between the src and dst.
-// Used by games to corrected reversed pixels in a texture shuffle.
-__fi bool GSRendererHW::Is8PixelReverseSprite(const GSVertex& v0, const GSVertex& v1)
+template<u32 primclass, bool fst>
+GSRendererHW::TextureShuffleInfo GSRendererHW::DetectTextureShuffleImpl()
 {
-	pxAssert(m_vt.m_primclass == GS_SPRITE_CLASS);
+	static_assert(primclass == GS_SPRITE_CLASS || primclass == GS_TRIANGLE_CLASS);
 
-	const GIFRegXYOFFSET& o = m_context->XYOFFSET;
-	const float tw = static_cast<float>(1u << m_cached_ctx.TEX0.TW);
+	const GIFRegFRAME& frame = m_context->FRAME;
+	const GIFRegTEX0& tex0 = m_context->TEX0;
+	const GIFRegCLAMP& clamp = m_context->CLAMP;
+	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[frame.PSM];
+	const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[tex0.PSM];
+	const GSVertex* RESTRICT verts = m_vertex->buff;
+	const u16* RESTRICT index = m_index->buff;
+	constexpr u32 verts_per_quad = primclass == GS_SPRITE_CLASS ? 2 : 6;
+	const u32 num_quads = m_index->tail / verts_per_quad;
 
-	int pos0 = std::max(static_cast<int>(v0.XYZ.X) - static_cast<int>(o.OFX), 0);
-	int pos1 = std::max(static_cast<int>(v1.XYZ.X) - static_cast<int>(o.OFX), 0);
+	// Early exit if not texture mapping, not enough vertices to form a quad,
+	// or the RT is not a 16 bit format.
+	if (!PRIM->TME ||
+		(primclass == GS_SPRITE_CLASS && m_index->tail < 2) ||
+		(primclass == GS_TRIANGLE_CLASS && m_index->tail < 6) ||
+		(m_index->tail % verts_per_quad != 0) ||
+		(frame_psm.bpp != 16))
+	{
+		return { TextureShuffleType::None, TextureShuffleChannels_None };
+	}
 
-	const bool rev_pos = pos0 > pos1;
-	if (rev_pos)
-		std::swap(pos0, pos1);
+	const auto GetQuadXYUV = [&](u32 i, GSVector4i& xyout, GSVector4i& uvout) {
+		GSVertex v0, v1;
+		if (!GetQuadCorners(verts, index + verts_per_quad * i, v0, v1))
+			return false;
 
-	int tex0 = (PRIM->FST) ? v0.U : static_cast<int>(tw * v0.ST.S * 16.0f);
-	int tex1 = (PRIM->FST) ? v1.U : static_cast<int>(tw * v1.ST.S * 16.0f);
+		GSVector4 xy, uv;
+		GetQuadBBoxWindow(v0, v1, xy, uv);
 
-	const bool rev_tex = tex0 > tex1;
-	if (rev_tex)
-		std::swap(tex0, tex1);
+		GetQuadRasterizedPoints(xy, uv);
 
-	// Sprite flips a single column and does nothing else.
-	return std::abs(pos1 - pos0) < 136 &&
-	       std::abs(pos0 - tex0) <= 8 && std::abs(pos1 - tex1) <= 8 &&
-	       rev_pos != rev_tex;
+		const GSVector4i exclusive(0, 0, 1, 1);
+		xyout = GSVector4i(xy) + exclusive;
+
+		// Swap order UV coords so that they are top-left and bottom-right before applying
+		// exclusive bias, and then swap back.
+		const int uvswap = (uv.xyxy() > uv.zwzw()).mask();
+		uvout = GSVector4i(uv.floor());
+		uvout = uvout.xyxy().runion(uvout.zwzw()) + exclusive;
+		if (uvswap & 1)
+			uvout = uvout.zyxw();
+		if (uvswap & 2)
+			uvout = uvout.xwzy();
+		
+		return true;
+	};
+
+	const auto Is8PixelReversal = [](const GSVector4i& xy, const GSVector4i& uv) {
+		const int x_pixels = xy.width();
+		return x_pixels == 8 && (xy.xxzz() == uv.zzxx()).alltrue();
+	};
+
+	GL_PUSH("HW: Texture shuffle detection");
+
+	int first_quad = 0;
+
+	GSVector4i xy;
+	GSVector4i uv;
+	if (!GetQuadXYUV(first_quad, xy, uv))
+		return { TextureShuffleType::None, TextureShuffleChannels_None };
+
+	// In some cases the first quad doesn't do any other than reversing the
+	// pixels in a single columns, so ignore such a quad.
+	if (Is8PixelReversal(xy, uv))
+	{
+		if (!GetQuadXYUV(++first_quad, xy, uv))
+			return { TextureShuffleType::None, TextureShuffleChannels_None };
+	}
+
+	GL_INS("Detecting based on quad: pos={%d, %d, %d, %d}, tex={%d, %d, %d, %d}",
+		xy.x, xy.y, xy.z, xy.w, uv.x, uv.y, uv.z, uv.w);
+
+	const int x_pixels = xy.width();
+	const int y_pixels = xy.height();
+	const int u_pixels = std::abs(uv.width());
+	const int v_pixels = std::abs(uv.height());
+
+	const int x_u_offset = std::abs(xy.x - uv.x) % 16;
+
+	// Handle the two pixel Powerdrome shuffle as a one-off, since
+	// it doesn't fit nicely into the other detection.
+	const bool two_pixel = x_pixels == 2 && y_pixels == 2 && u_pixels == 1 && v_pixels == 1 &&
+	                       tex_psm.bpp == 16 && frame_psm.bpp == 16 && num_quads == 1;
+
+	if (x_pixels != u_pixels && !two_pixel)
+	{
+		GL_INS("Not a shuffle (X pixels != U pixels)");
+		return { TextureShuffleType::None, TextureShuffleChannels_None };
+	}
+
+	if ((x_pixels % 8) != 0 && !two_pixel)
+	{
+		GL_INS("Not a shuffle (X width not multiple of 8)");
+		return { TextureShuffleType::None, TextureShuffleChannels_None };
+	}
+
+	const auto CheckSwizzleShuffle = [&]() {
+		// All the quads must be 8 x 8 pixels.
+		if (!(x_pixels == 8 && y_pixels == 8 && u_pixels == 8 && v_pixels == 8))
+			return false;
+
+		// Position and texture coords must be moving in opposite axes to swizzle.
+		GSVector4i xy_1(GSVector4i::zero()), uv_1(GSVector4i::zero());
+		if (!GetQuadXYUV(first_quad + 1, xy_1, uv_1))
+			return false;
+
+		const GSVector4i dxy = (xy_1.xyxy() - xy.xyxy()).abs32();
+		const GSVector4i duv = (uv_1.xyxy() - uv.xyxy()).abs32();
+
+		return (dxy == duv.yxyx()).alltrue();
+	};
+
+	const auto CheckQuadOffsetXU = [&](
+		int offset, const GSVector4i& xy0, const GSVector4i& uv0,
+		const GSVector4i& xy1, const GSVector4i& uv1) {
+			// Check whether the two quads are offset by the given number of pixels. 
+			return
+				((std::abs(xy1.x - xy0.z) == offset) && (std::abs(uv1.x - uv0.z) == offset)) ||
+				((std::abs(xy0.x - xy1.z) == offset) && (std::abs(uv0.x - uv1.z) == offset));
+	};
+
+	// Checks that the next quad is offset by the specified pixels.
+	const auto CheckNextQuadOffsetXU = [&](int offset) {
+		GSVector4i xy_1(GSVector4i::zero()), uv_1(GSVector4i::zero());
+		if (!GetQuadXYUV(first_quad + 1, xy_1, uv_1))
+			return false;
+
+		// Check both left-to-right and right-to-left ordering.
+		return CheckQuadOffsetXU(offset, xy, uv, xy_1, uv_1);
+	};
+
+	// Checks that the next quad is offset by the specified pixels.
+	const auto CheckGappedSwizzleShuffle = [&]() {
+		if (!CheckSwizzleShuffle())
+			return false;
+
+		GSVector4i xy_1(GSVector4i::zero()), uv_1(GSVector4i::zero()), xy_2(GSVector4i::zero()), uv_2(GSVector4i::zero());
+		if (!GetQuadXYUV(first_quad + 1, xy_1, uv_1))
+			return false;
+		if (!GetQuadXYUV(first_quad + 2, xy_2, uv_2))
+			return false;
+
+		// The third quad should be offset 16 pixels vertically from the second.
+		return xy_2.y - xy_1.w == 16;
+	};
+
+	// Bitmask with lower bits all ones.
+	const auto HasLowerOnes = [](int x) { return x != 0 && (x & (x + 1)) == 0; };
+
+	const auto RegionRepeatClears8 = [&]() {
+		return !(clamp.MINU & 8) && HasLowerOnes(clamp.MINU | 8);
+	};
+
+	const auto RegionRepeatSets8 = [&]() {
+		return clamp.MAXU == 8;
+	};
+
+	const auto CheckRegionRepeat8 = [&]() {
+		// Region repeat mode for selecting specific columns by manipulating bit 3.
+		return (clamp.WMS == CLAMP_REGION_REPEAT) && (RegionRepeatClears8() || RegionRepeatSets8());
+	};
+
+	const auto CheckRegionRepeat16 = [&]() {
+		// Region repeat mode for selecting specific columns by manipulating bit 4.
+		return (clamp.WMS == CLAMP_REGION_REPEAT) && clamp.MINU == 0xF && ((clamp.MAXU & 0xF) == 0);
+	};
+
+	// Heuristics to determine the type of texture shuffle.
+	TextureShuffleType shuffle_type = TextureShuffleType::None;
+	if (tex_psm.bpp == 32)
+	{
+		// 32 bit source format.
+
+		// C32 -> C16 shuffle: usually copying B to A since that cannot be done with a C16 -> C16 shuffle.
+		if (CheckSwizzleShuffle() && frame.FBMSK == 0xFFFF)
+		{
+			shuffle_type = TextureShuffleType::SwizzleTex32;
+			GL_INS("SwizzleTex32 shuffle detected.");
+		}
+	}
+	else
+	{
+		// 16 bit source format.
+
+		if (two_pixel)
+		{
+			// TwoPixel shuffle: copying 1 source pixel into 4 pixels. Only known to be done by Powerdrome.
+			shuffle_type = TextureShuffleType::TwoPixel;
+			GL_INS("TwoPixel shuffle detected.");
+		}
+		else if ((x_u_offset == 0) && (num_quads == 1 || CheckNextQuadOffsetXU(0) || CheckNextQuadOffsetXU(8)) &&
+			HasLowerOnes(frame.FBMSK) && tex0.TBP0 != frame.Block() && IsOpaque() && !m_vt.IsRealLinear())
+		{
+			// Copy shuffle: simply copying the same channel instead of swapping.
+			// Usually copying A so should have lower bits masked.
+			shuffle_type = TextureShuffleType::Copy;
+			GL_INS("Copy shuffle detected.");
+		}
+		else if (x_u_offset == 8 && (num_quads == 1 || CheckNextQuadOffsetXU(0) || CheckNextQuadOffsetXU(8)) &&
+			clamp.WMS != CLAMP_REGION_REPEAT)
+		{
+			// Offset shuffle: X and U offset, usually to copy G <-> A and/or R <-> B.
+			shuffle_type = TextureShuffleType::Offset;
+			GL_INS("Offset shuffle detected.");
+		}
+		else if (CheckRegionRepeat8())
+		{
+			// Region repeat 8 shuffle: region repeat is used to select the channel to copy by setting/clearing bit 3.
+			shuffle_type = TextureShuffleType::RegionRepeat8;
+			GL_INS("RegionRepeat8 shuffle detected: UMSK=%x UFIX=%x", clamp.MINU, clamp.MAXU);
+		}
+		else if (CheckRegionRepeat16() && x_pixels == 16 && clamp.MAXU == xy.x && num_quads == 1)
+		{
+			// RegionRepeat16 shuffle: region repeat is used to select the channel to copy by setting/clearing bit 4.
+			shuffle_type = TextureShuffleType::RegionRepeat16;
+			GL_INS("RegionRepeat16 shuffle detected: UMSK=%x UFIX=%x", clamp.MINU, clamp.MAXU);
+		}
+		else if ((x_u_offset == 0) && (x_pixels == 16) && (u_pixels == 16) &&
+			(xy.x < xy.z) != (uv.x < uv.z))
+		{
+			// Reverse shuffle: order of X and U is reversed so it effectively swaps R <-> B
+			// and/or G <-> A depending on the mask.
+			shuffle_type = TextureShuffleType::Reverse;
+			GL_INS("Reverse shuffle detected.");
+		}
+		else if (CheckGappedSwizzleShuffle())
+		{
+			// Gapped swizzle: swizzle but with missing rows in between.
+			// Currently handled with a CRC hack for NFS Undercover.
+			shuffle_type = TextureShuffleType::GappedSwizzle;
+			GL_INS("GappedSwizzle shuffle detected (NFS Undercover).");
+		}
+		else if (CheckSwizzleShuffle())
+		{
+			// Swizzles shuffle: swizzles between different formats.
+			shuffle_type = TextureShuffleType::Swizzle;
+			GL_INS("Swizzle shuffle detected.");
+		}
+	}
+
+	if (shuffle_type == TextureShuffleType::None)
+	{
+		GL_INS("No shuffle (none passed detection).");
+		return { shuffle_type, TextureShuffleChannels_None };
+	}
+
+	const u32 fbmsk16 = GetEffectiveTextureShuffleFbmsk();
+	const u32 rb_mask = (((fbmsk16 >> 0) & 0xFF) == 0xFF) ? 0 : 0xFFFFFF;
+	const u32 ga_mask = (((fbmsk16 >> 8) & 0xFF) == 0xFF) ? 0 : 0xFFFFFF;
+
+	u32 r_mask = rb_mask;
+	u32 g_mask = ga_mask;
+	u32 b_mask = rb_mask;
+	u32 a_mask = ga_mask;
+
+	// For 8 pixel wide strips, we will be writing to only R, G or B, A.
+	if (x_pixels <= 8)
+	{
+		const int x_offset = std::abs(xy.x) % 16;
+		if (x_offset == 0)
+		{
+			b_mask = 0;
+			a_mask = 0;
+			GL_INS("Small width (dX = 8): writing to only R, G.");
+		}
+		else if (x_offset == 8)
+		{
+			r_mask = 0;
+			g_mask = 0;
+			GL_INS("Small width (dX = 8): writing to only B, A.");
+		}
+		else
+		{
+			pxFail("Impossible.");
+		}
+	}
+
+	// Indicates that the group with R, G is being swapped with the group B, A.
+	const bool swap_columns = x_u_offset != 0 || shuffle_type == TextureShuffleType::Reverse;
+
+	// Determine bitmask of the channels being shuffled.
+	u32 shuffle_channels = 0;
+	
+	switch (shuffle_type)
+	{
+		case TextureShuffleType::TwoPixel:
+		case TextureShuffleType::Copy:
+		case TextureShuffleType::Offset:
+		case TextureShuffleType::Reverse:
+		case TextureShuffleType::GappedSwizzle:
+		case TextureShuffleType::Swizzle:
+		case TextureShuffleType::RegionRepeat16:
+		{
+			if (swap_columns)
+			{
+				shuffle_channels |= TextureShuffleChannels_RedToBlue & b_mask;
+				shuffle_channels |= TextureShuffleChannels_BlueToRed & r_mask;
+				shuffle_channels |= TextureShuffleChannels_GreenToAlpha & a_mask;
+				shuffle_channels |= TextureShuffleChannels_AlphaToGreen & g_mask;
+			}
+			else
+			{
+				shuffle_channels |= TextureShuffleChannels_RedCopy & r_mask;
+				shuffle_channels |= TextureShuffleChannels_BlueCopy & b_mask;
+				shuffle_channels |= TextureShuffleChannels_GreenCopy & g_mask;
+				shuffle_channels |= TextureShuffleChannels_AlphaCopy & a_mask;
+			}
+		}
+		break;
+
+		case TextureShuffleType::RegionRepeat8:
+		{
+			if (RegionRepeatClears8())
+			{
+				// Only reading from R, G.
+				shuffle_channels |= TextureShuffleChannels_RedCopy & r_mask;
+				shuffle_channels |= TextureShuffleChannels_RedToBlue & b_mask;
+				shuffle_channels |= TextureShuffleChannels_GreenCopy & g_mask;
+				shuffle_channels |= TextureShuffleChannels_GreenToAlpha & a_mask;
+			}
+			else if (RegionRepeatSets8())
+			{
+				// Only reading from B, A.
+				shuffle_channels |= TextureShuffleChannels_BlueCopy & r_mask;
+				shuffle_channels |= TextureShuffleChannels_BlueToRed & b_mask;
+				shuffle_channels |= TextureShuffleChannels_AlphaCopy & g_mask;
+				shuffle_channels |= TextureShuffleChannels_AlphaToGreen & a_mask;
+			}
+		}
+		break;
+
+		case TextureShuffleType::SwizzleTex32:
+		{
+			shuffle_channels = TextureShuffleChannels_BlueToAlpha;
+		}
+		break;
+
+		default:
+			pxFail("Unhandled shuffle type.");
+			break;
+	}
+
+	// Remove redundant channel copies in recursive draws.
+	if (frame.Block() == tex0.TBP0)
+	{
+		if (shuffle_channels & TextureShuffleChannels_RedCopy)
+		{
+			GL_INS("Disable R -> R, recursive draw.");
+			shuffle_channels &= ~TextureShuffleChannels_RedCopy;
+		}
+		if (shuffle_channels & TextureShuffleChannels_GreenCopy)
+		{
+			GL_INS("Disable G -> G, recursive draw.");
+			shuffle_channels &= ~TextureShuffleChannels_GreenCopy;
+		}
+		if (shuffle_channels & TextureShuffleChannels_BlueCopy)
+		{
+			GL_INS("Disable B -> B, recursive draw.");
+			shuffle_channels &= ~TextureShuffleChannels_BlueCopy;
+		}
+		if (shuffle_channels & TextureShuffleChannels_AlphaCopy)
+		{
+			GL_INS("Disable A -> A, recursive draw.");
+			shuffle_channels &= ~TextureShuffleChannels_AlphaCopy;
+		}
+	}
+
+	// Sometimes the game doesn't care about certain channels and draws
+	// wide quads that clobber them, so disable such writes for non-recursive draws.
+	const bool disable_clobber_write = frame.Block() != tex0.TBP0;
+
+	// Determine if quads are wide enough and X, U are offset so that clobbering happens.
+	const bool quad_mixes_16_pixel_groups =
+		x_u_offset == 8 && x_pixels >= 16 && shuffle_type != TextureShuffleType::RegionRepeat16;
+
+	if (disable_clobber_write && quad_mixes_16_pixel_groups)
+	{
+		const auto RoundPage = [](int x) { return (x + 32) & ~63; };
+
+		const int x_page_offset = xy.x - RoundPage(xy.x);
+		const int u_page_offset = uv.x - RoundPage(uv.x);
+
+		bool r_clobber = false;
+		bool g_clobber = false;
+		bool b_clobber = false;
+		bool a_clobber = false;
+
+		if ((x_page_offset == 0 && u_page_offset == 8) ||
+			(x_page_offset == -8 && u_page_offset == 0))
+		{
+			b_clobber = (shuffle_channels & TextureShuffleChannels_WriteBlue) != 0;
+			a_clobber = (shuffle_channels & TextureShuffleChannels_WriteAlpha) != 0;
+		}
+		else if ((x_page_offset == 8 && u_page_offset == 0) ||
+			(x_page_offset == 0 && u_page_offset == -8))
+		{
+			r_clobber = (shuffle_channels & TextureShuffleChannels_WriteRed) != 0;
+			g_clobber = (shuffle_channels & TextureShuffleChannels_WriteGreen) != 0;
+		}
+
+		GL_INS("Non-recursive draw, disable writes to clobbered channels: R: %d, G: %d, B: %d, A: %d.",
+			r_clobber, g_clobber, b_clobber, a_clobber);
+
+		if (r_clobber)
+			shuffle_channels &= ~TextureShuffleChannels_WriteRed;
+		if (g_clobber)
+			shuffle_channels &= ~TextureShuffleChannels_WriteGreen;
+		if (b_clobber)
+			shuffle_channels &= ~TextureShuffleChannels_WriteBlue;
+		if (a_clobber)
+			shuffle_channels &= ~TextureShuffleChannels_WriteAlpha;
+	}
+
+	// Log which channels are read/written.
+	if (shuffle_channels & TextureShuffleChannels_RedToBlue)
+		GL_INS("Color shuffle: R -> B.");
+	if (shuffle_channels & TextureShuffleChannels_BlueToRed)
+		GL_INS("Color shuffle: B -> R.");
+	if (shuffle_channels & TextureShuffleChannels_GreenToAlpha)
+		GL_INS("Color shuffle: G -> A.");
+	if (shuffle_channels & TextureShuffleChannels_AlphaToGreen)
+		GL_INS("Color shuffle: A -> G.");
+	if (shuffle_channels & TextureShuffleChannels_RedCopy)
+		GL_INS("Color shuffle: R -> R.");
+	if (shuffle_channels & TextureShuffleChannels_GreenCopy)
+		GL_INS("Color shuffle: G -> G.");
+	if (shuffle_channels & TextureShuffleChannels_BlueCopy)
+		GL_INS("Color shuffle: B -> B.");
+	if (shuffle_channels & TextureShuffleChannels_AlphaCopy)
+		GL_INS("Color shuffle: A -> A.");
+	if (shuffle_channels & TextureShuffleChannels_BlueToAlpha)
+		GL_INS("Color shuffle: B -> A.");
+
+	return { shuffle_type, static_cast<TextureShuffleChannels>(shuffle_channels) };
 }
 
-// Fix the vertex position/tex_coordinate from 16 bits color to 32 bits color
-void GSRendererHW::ConvertSpriteTextureShuffle(u32& process_rg, u32& process_ba, bool& shuffle_across, GSTextureCache::Target* rt, GSTextureCache::Source* tex)
+void GSRendererHW::DetectTextureShuffle()
 {
-	pxAssert(m_vertex.next % 2 == 0); // Either sprites or an even number of triangles.
-
-	const bool recursive_draw = m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0;
-	const bool sprites = m_vt.m_primclass == GS_SPRITE_CLASS;
-
-	u32 count = m_vertex.next;
-	GSVertex* v = &m_vertex.buff[0];
-	const GIFRegXYOFFSET& o = m_context->XYOFFSET;
-	// Could be drawing upside down or just back to front on the actual verts.
-	// Iterate through the sprites in order and find one to infer which channels are being shuffled.
-	const int prim_order = v[0].XYZ.X <= v[count - 2].XYZ.X ? 1 : -1;
-	const int prim_start = prim_order > 0 ? 0 : count - 2;
-	const int prim_end = prim_order > 0 ? count - 2 : 0;
-	int tries = 0;
-	int prim = prim_start;
-	for (prim = prim_start;; prim += 2 * prim_order, tries++)
+	if (m_vt.m_primclass == GS_SPRITE_CLASS)
 	{
-		if (!(recursive_draw && sprites && Is8PixelReverseSprite(v[prim], v[prim + 1])))
-			break; // Found the right prim.
-
-		// Two tries at most, by the second prim we should be able to infer the channels.
-		if (prim == prim_end || tries >= 2) 
-		{
-			prim = prim_start; // Use the first prim in order by default.
-			GL_INS("Warning: ConvertSpriteTextureShuffle: Could not find correct prim for shuffle.");
-			break;
-		}
-	}
-
-	// Get first and second vertex for the prim we will use to infer shuffled channels.
-	const bool rev_pos = v[prim].XYZ.X > v[prim + 1].XYZ.X;
-	const GSVertex& first_vert = rev_pos ? v[prim + 1] : v[prim];
-	const GSVertex& second_vert = rev_pos ? v[prim] : v[prim + 1];
-	const int pos = (static_cast<int>(first_vert.XYZ.X) - static_cast<int>(o.OFX)) & 0xFF;
-
-	// Read texture is 8 to 16 pixels (same as above)
-	const float tw = static_cast<float>(1u << m_cached_ctx.TEX0.TW);
-	const int u0 = PRIM->FST ? v[prim].U : static_cast<int>(tw * v[prim].ST.S * 16.0f);
-	const int u1 = PRIM->FST ? v[prim + 1].U : static_cast<int>(tw * v[prim + 1].ST.S * 16.0f);
-	const bool rev_tex = u0 > u1;
-	int tex_pos = rev_tex ? u1 : u0;
-	tex_pos &= 0xFF;
-	shuffle_across = (((tex_pos + 8) >> 4) ^ ((pos + 8) >> 4)) & 0x8;
-
-	const bool full_width = ((second_vert.XYZ.X - first_vert.XYZ.X) >> 4) >= 16 && m_r.width() > 8 && tex && tex->m_from_target && rt == tex->m_from_target;
-	const bool width_multiple_16 = (((second_vert.XYZ.X - first_vert.XYZ.X) >> 7) & 1) == 0;
-	const bool rev_pixels = rev_pos != rev_tex; // Whether pixels are reversed between src and dst.
-	shuffle_across |= full_width && rev_pixels;
-	process_ba = ((pos > 112 && pos < 136) || full_width) ? SHUFFLE_WRITE : 0;
-	process_rg = (!process_ba || full_width) ? SHUFFLE_WRITE : 0;
-	// "same group" means it can read blue and write alpha using C32 tricks
-	process_ba |= ((tex_pos > 112 && tex_pos < 144) || (m_same_group_texture_shuffle && (m_cached_ctx.FRAME.FBMSK & 0xFFFF0000) != 0xFFFF0000) || full_width) ? SHUFFLE_READ : 0;
-	process_rg |= (!(process_ba & SHUFFLE_READ) || full_width) ? SHUFFLE_READ : 0;
-
-	// Another way of selecting whether to read RG/BA is to use region repeat.
-	// Ace Combat 04 reads RG, writes to RGBA by setting a MINU of 1015.
-	if (m_cached_ctx.CLAMP.WMS == CLAMP_REGION_REPEAT)
-	{
-		GL_INS("HW: REGION_REPEAT clamp with texture shuffle, FBMSK=%08x, MINU=%u, MINV=%u, MAXU=%u, MAXV=%u",
-			m_cached_ctx.FRAME.FBMSK, m_cached_ctx.CLAMP.MINU, m_cached_ctx.CLAMP.MINV, m_cached_ctx.CLAMP.MAXU,
-			m_cached_ctx.CLAMP.MAXV);
-
-		// offset coordinates swap around RG/BA.
-		const u32 maxu = (m_cached_ctx.CLAMP.MAXU & 8);
-		const u32 minu = (m_cached_ctx.CLAMP.MINU & 8);
-		if (maxu)
-		{
-			process_ba |=  SHUFFLE_READ;
-			process_rg &= ~SHUFFLE_READ;
-			if (!PRIM->ABE && (process_rg & SHUFFLE_WRITE))
-			{
-				process_ba &= ~SHUFFLE_WRITE;
-				shuffle_across = true;
-			}
-		}
-		else if (minu == 0)
-		{
-			process_rg |=  SHUFFLE_READ;
-			process_ba &= ~SHUFFLE_READ;
-
-			if (!PRIM->ABE && (process_ba & SHUFFLE_WRITE))
-			{
-				process_rg &= ~SHUFFLE_WRITE;
-				shuffle_across = true;
-			}
-		}
-	}
-	bool half_right_vert = true;
-	bool half_bottom_vert = true;
-
-	if (m_split_texture_shuffle_pages > 0 || m_same_group_texture_shuffle)
-	{
-		if (m_same_group_texture_shuffle)
-		{
-			if (m_r.x & 8)
-			{
-				m_r.x &= ~8;
-				m_vt.m_min.p.x = m_r.x;
-			}
-			else if ((m_r.z + 1) & 8)
-			{
-				m_r.z += 8;
-				m_vt.m_max.p.z = m_r.z;
-			}
-
-			if (m_cached_ctx.FRAME.FBW != rt->m_TEX0.TBW && m_cached_ctx.FRAME.FBW == rt->m_TEX0.TBW * 2)
-			{
-				half_bottom_vert = false;
-				m_vt.m_min.p.x /= 2.0f;
-				m_vt.m_max.p.x = floor(m_vt.m_max.p.y + 1.9f) / 2.0f;
-			}
-			else
-			{
-				half_right_vert = false;
-				m_vt.m_min.p.y /= 2.0f;
-				m_vt.m_max.p.y = floor(m_vt.m_max.p.y + 1.9f) / 2.0f;
-			}
-
-			m_context->scissor.in.x = m_vt.m_min.p.x;
-			m_context->scissor.in.z = m_vt.m_max.p.x + 0.9f;
-			m_context->scissor.in.y = m_vt.m_min.p.y;
-			m_context->scissor.in.w = m_vt.m_max.p.y + 0.9f;
-		}
-
-		// Input vertices might be bad, so rewrite them.
-		// We can't use the draw rect exactly here, because if the target was actually larger
-		// for some reason... unhandled clears, maybe, it won't have been halved correctly.
-		// So, halve it ourselves.
-
-		const GSVector4i dr = m_r;
-		const GSVector4i r = half_bottom_vert ? dr.blend32<0xA>(dr.sra32<1>()) : dr.blend32<5>(dr.sra32<1>()); // Half Y : Half X
-		GL_CACHE("HW: ConvertSpriteTextureShuffle: Rewrite from %d,%d => %d,%d to %d,%d => %d,%d",
-			static_cast<int>(m_vt.m_min.p.x), static_cast<int>(m_vt.m_min.p.y), static_cast<int>(m_vt.m_min.p.z),
-			static_cast<int>(m_vt.m_min.p.w), r.x, r.y, r.z, r.w);
-
-		const GSVector4i fpr = r.sll32<4>();
-		v[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + fpr.x);
-		v[0].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + fpr.y);
-
-		v[1].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + fpr.z);
-		v[1].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + fpr.w);
-
-		if (m_same_group_texture_shuffle)
-		{
-			// no need to adjust v[0] because it should already be correct.
-			if (PRIM->FST)
-			{
-				v[1].U = v[m_index.buff[m_index.tail - 1]].U;
-				v[1].V = v[m_index.buff[m_index.tail - 1]].V;
-			}
-			else
-			{
-				v[1].ST = v[m_index.buff[m_index.tail - 1]].ST;
-			}
-		}
+		if (PRIM->FST)
+			m_texture_shuffle = DetectTextureShuffleImpl<GS_SPRITE_CLASS, true>();
 		else
-		{
-			if (PRIM->FST)
-			{
-				v[0].U = fpr.x;
-				v[0].V = fpr.y;
-				v[1].U = fpr.z;
-				v[1].V = fpr.w;
-			}
-			else
-			{
-				const float th = static_cast<float>(1 << m_cached_ctx.TEX0.TH);
-				const GSVector4 st = GSVector4(r) / GSVector4(GSVector2(tw, th)).xyxy();
-				GSVector4::storel(&v[0].ST.S, st);
-				GSVector4::storeh(&v[1].ST.S, st);
-			}
-		}
-		m_r = r;
-		m_vertex.head = m_vertex.tail = m_vertex.next = 2;
-		m_index.tail = 2;
+			m_texture_shuffle = DetectTextureShuffleImpl<GS_SPRITE_CLASS, false>();
+	}
+	else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+	{
+		if (PRIM->FST)
+			m_texture_shuffle = DetectTextureShuffleImpl<GS_TRIANGLE_CLASS, true>();
+		else
+			m_texture_shuffle = DetectTextureShuffleImpl<GS_TRIANGLE_CLASS, false>();
+	}
+	else
+	{
+		m_texture_shuffle = TextureShuffleInfo();
+	}
+}
+
+void GSRendererHW::DetectTextureShuffleSecondPass(GSTextureCache::Target* rt, GSTextureCache::Source* tex)
+{
+	if (!m_process_texture || !rt)
+	{
+		GL_INS("HW: Texture shuffle detection (2): Not detected.");
+		m_texture_shuffle.Disable();
 		return;
 	}
 
-	bool half_right_uv = !m_copy_16bit_to_target_shuffle && !m_same_group_texture_shuffle;
-	bool half_bottom_uv = !m_copy_16bit_to_target_shuffle && !m_same_group_texture_shuffle;
-
+	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
+	if (frame_psm.bpp != 16)
 	{
-		// Different source (maybe?)
-		// If a game does the texture and frame doubling differently, they can burn in hell.
-		if (!m_copy_16bit_to_target_shuffle && m_cached_ctx.TEX0.TBP0 != m_cached_ctx.FRAME.Block())
+		GL_INS("HW: Texture shuffle detection (2): Failed (not 16 bit RT).");
+		m_texture_shuffle.Disable();
+		return;
+	}
+
+	if (m_texture_shuffle)
+	{
+		if (tex && tex->m_32_bits_fmt)
 		{
-			// No super source of truth here, since the width can get batted around, the valid is probably our best bet.
-			// Dogs will reuse the Z in a different size format for a completely unrelated draw with an FBW of 2, then go back to using it in full width
-			const bool size_is_wrong = tex->m_target ? (static_cast<int>(tex->m_from_target_TEX0.TBW * 64) < tex->m_from_target->m_valid.z / 2) : false;
-			const u32 draw_page_width = std::max(static_cast<int>(m_vt.m_max.p.x + (!(process_ba & SHUFFLE_WRITE) ? 8.9f : 0.9f)) / 64, 1);
-			const bool single_direction_doubled = (m_vt.m_max.p.y > rt->m_valid.w) != (m_vt.m_max.p.x > rt->m_valid.z) || (IsSinglePageDraw() && m_r.height() > 32);
-
-			if (size_is_wrong || (rt && ((rt->m_TEX0.TBW % draw_page_width) == 0 || single_direction_doubled)))
-			{
-				unsigned int max_tex_draw_width = std::min(static_cast<int>(floor(m_vt.m_max.t.x + (!(process_ba & SHUFFLE_READ) ? 8.9f : 0.9f))), 1 << m_cached_ctx.TEX0.TW);
-				const unsigned int clamp_minu = m_context->CLAMP.MINU;
-				const unsigned int clamp_maxu = m_context->CLAMP.MAXU;
-
-				switch (m_context->CLAMP.WMS)
-				{
-					case CLAMP_REGION_CLAMP:
-						max_tex_draw_width = std::min(max_tex_draw_width, clamp_maxu);
-						break;
-					case CLAMP_REGION_REPEAT:
-						max_tex_draw_width = std::min(max_tex_draw_width, (clamp_maxu | clamp_minu));
-						break;
-					default:
-						break;
-				}
-
-				const int width_diff = static_cast<int>(m_env.CTXT[m_env.PRIM.CTXT].TEX0.TBW) - static_cast<int>((m_cached_ctx.FRAME.FBW + 1) >> 1);
-				// We can check the future for a clue as this can be more accurate, be careful of different draws like channel shuffles or single page draws.
-				if (m_env.PRIM.TME && m_env.CTXT[m_env.PRIM.CTXT].TEX0.TBP0 == m_cached_ctx.FRAME.Block() && GSLocalMemory::m_psm[m_env.CTXT[m_env.PRIM.CTXT].TEX0.PSM].bpp == 32 && width_diff >= 0)
-				{
-					// width_diff will be zero is both are BW == 1, so be careful of that.
-					const bool same_width = width_diff > 0 || (m_cached_ctx.FRAME.FBW == 1 && width_diff == 0);
-					// Draw is double width and the draw is twice the width of the next draws texture.
-					if ((!same_width && max_tex_draw_width >= (m_cached_ctx.FRAME.FBW * 64)) || (single_direction_doubled && (m_vt.m_max.p.x >= (rt->m_valid.z * 2))))
-					{
-						half_bottom_uv = false;
-						half_bottom_vert = false;
-					}
-					else
-					{
-						half_right_uv = false;
-						half_right_vert = false;
-					}
-				}
-				else
-				{
-					const int tex_width = tex->m_target ? std::min(tex->m_from_target->m_valid.z, size_is_wrong ? tex->m_from_target->m_valid.z : static_cast<int>(tex->m_from_target_TEX0.TBW * 64)) : max_tex_draw_width;
-					const int tex_tbw = tex->m_target ? tex->m_from_target_TEX0.TBW : tex->m_TEX0.TBW;
-
-					if (static_cast<int>(m_cached_ctx.TEX0.TBW * 64) >= (tex_width * 2) && tex_tbw != m_cached_ctx.TEX0.TBW)
-					{
-						half_bottom_uv = false;
-						half_bottom_vert = false;
-					}
-					else
-					{
-						half_right_uv = false;
-						half_right_vert = false;
-					}
-				}
-			}
-			else
-			{
-				half_bottom_uv = false;
-				half_bottom_vert = false;
-				half_right_uv = false;
-				half_right_vert = false;
-			}
+			GL_INS("HW: Texture shuffle detection (2): Passed.");
 		}
 		else
 		{
-			if (((m_r.width() + 8) & ~(GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x - 1)) != GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x && (floor(m_vt.m_max.p.y) <= rt->m_valid.w) && ((floor(m_vt.m_max.p.x) > (m_cached_ctx.FRAME.FBW * 64)) || (rt->m_TEX0.TBW < m_cached_ctx.FRAME.FBW)))
+			// Detects when the source texture is really a 16 bit texture instead of 32 bit being reinterpreted as 16 bit.
+			// Make sure it's opaque and not bilinear to reduce false positives.
+			const auto HasLowerOnes = [&](u32 x) { return x != 0 && (x & (x + 1)) == 0; };
+			if (m_cached_ctx.TEX0.TBP0 != m_cached_ctx.FRAME.Block() &&
+				rt && rt->m_32_bits_fmt == true && IsOpaque() && !m_vt.IsRealLinear() &&
+				HasLowerOnes(m_cached_ctx.FRAME.FBMSK))
 			{
-				half_bottom_vert = false;
-				half_bottom_uv = false;
+				GL_INS("HW: Texture shuffle detection (2): Passed (real 16 bit source).");
+				m_texture_shuffle.real_16_bit_source = true;
 			}
 			else
 			{
-				half_right_vert = false;
-				half_right_uv = false;
-			}
-		}
-	}
-
-	// If necessary, cull sprites that only do single column pixels reversal.
-	// Only known game that requires this path is Colin McRae Rally 2005.
-	if (recursive_draw && sprites && rev_pixels)
-	{
-		u32 ri, wi; // read/write index.
-		for (wi = ri = 0; ri < count; ri += 2)
-		{
-			if (!Is8PixelReverseSprite(v[ri], v[ri + 1]))
-			{
-				if (wi != ri)
-				{
-					v[wi] = v[ri];
-					v[wi + 1] = v[ri + 1];
-				}
-				wi += 2;
-			}
-		}
-		if (wi != count)
-		{
-			count = m_vertex.head = m_vertex.tail = m_vertex.next = wi;
-			m_index.tail = wi;
-		}
-	}
-
-	if (PRIM->FST)
-	{
-		GL_INS("HW: First vertex is  P: %d => %d    T: %d => %d", v[0].XYZ.X, v[1].XYZ.X, v[0].U, v[1].U);
-		const int reversed_pos = (v[0].XYZ.X > v[1].XYZ.X) ? 1 : 0;
-		const int reversed_U = (v[0].U > v[1].U) ? 1 : 0;
-		for (u32 i = 0; i < count; i += 2)
-		{
-			if (rev_pixels)
-				std::swap(v[i].U, v[i + 1].U);
-			if (!full_width)
-			{
-				if (process_ba & SHUFFLE_WRITE)
-					v[i + reversed_pos].XYZ.X -= 128u;
-				else
-					v[i + 1 - reversed_pos].XYZ.X += 128u;
-
-				if (process_ba & SHUFFLE_READ)
-					v[i + reversed_U].U -= 128u;
-				else
-					v[i + 1 - reversed_U].U += 128u;
-			}
-			else if (!width_multiple_16)
-			{
-				// In this case the sprite does not span an exact columns boundary
-				// probably because some of the copied channels are not being used/discarded.
-				// Just align the range to the nearest column boundary and copy all
-				// channels regardless.
-				if ((((v[i + reversed_pos].XYZ.X - o.OFX) + 8) >> 4) & 0x8)
-					v[i + reversed_pos].XYZ.X -= 128u;
-				if ((((v[i + reversed_pos].XYZ.X - o.OFX) + 8) >> 4) & 0x8)
-					v[i + 1 - reversed_pos].XYZ.X += 128u;
-				if (v[i + reversed_U].U & 128)
-					v[i + reversed_U].U -= 128u;
-				if (v[i + 1 - reversed_U].U & 128)
-					v[i + 1 - reversed_U].U += 128u;
-			}
-			else
-			{
-				if (((pos + 8) >> 4) & 0x8)
-				{
-					v[i + reversed_pos].XYZ.X -= 128u;
-					v[i + 1 - reversed_pos].XYZ.X -= 128u;
-				}
-				// Needed for when there's no barriers.
-				if (v[i + reversed_U].U & 128)
-				{
-					v[i + reversed_U].U -= 128u;
-					v[i + 1 - reversed_U].U -= 128u;
-				}
-			}
-
-			if (half_bottom_vert)
-			{
-				// Height is too big (2x).
-				const int tex_offset = v[i].V & 0xF;
-				const GSVector4i offset(o.OFY, tex_offset, o.OFY, tex_offset);
-
-				GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i + 1].XYZ.Y, v[i + 1].V);
-				tmp = GSVector4i(tmp - offset).srl32<1>() + offset;
-
-				v[i].XYZ.Y = static_cast<u16>(tmp.x);
-				v[i + 1].XYZ.Y = static_cast<u16>(tmp.z);
-
-				if (half_bottom_uv)
-				{
-					v[i].V = static_cast<u16>(tmp.y);
-					v[i + 1].V = static_cast<u16>(tmp.w);
-				}
-			}
-			else if (half_right_vert)
-			{
-				// Width is too big (2x).
-				const int tex_offset = v[i].U & 0xF;
-				const GSVector4i offset(o.OFX, tex_offset, o.OFX, tex_offset);
-
-				GSVector4i tmp(v[i].XYZ.X, v[i].U, v[i + 1].XYZ.X, v[i + 1].U);
-				tmp = GSVector4i(tmp - offset).srl32<1>() + offset;
-
-				v[i].XYZ.X = static_cast<u16>(tmp.x);
-				v[i + 1].XYZ.X = static_cast<u16>(tmp.z);
-
-				if (half_right_uv)
-				{
-					v[i].U = static_cast<u16>(tmp.y);
-					v[i + 1].U = static_cast<u16>(tmp.w);
-				}
+				GL_INS("HW: Texture shuffle detection (2): Failed (not reinterpreting source as 16 bit).");
+				m_texture_shuffle.Disable();
 			}
 		}
 	}
 	else
 	{
-		const float offset_8pix = 8.0f / tw;
-		GL_INS("HW: First vertex is  P: %d => %d    T: %f => %f (offset %f)", v[0].XYZ.X, v[1].XYZ.X, v[0].ST.S, v[1].ST.S, offset_8pix);
-		const int reversed_pos = (v[0].XYZ.X > v[1].XYZ.X) ? 1 : 0;
-		const int reversed_S = (v[0].ST.S > v[1].ST.S) ? 1 : 0;
-
-		for (u32 i = 0; i < count; i += 2)
+		// Last ditch check for reinterpreting a 32 bit source and RT as 16 bits.
+		// These "shuffles" appear to not do anything useful for games, but using the texture shuffle
+		// path helps to maintain correct sizes in the texture cache. Occurs in NFS Most Wanted.
+		const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM];
+		if (PRIM->TME &&
+			((m_vt.m_primclass == GS_SPRITE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS) && TrianglesAreQuads(true)) &&
+			(tex_psm.bpp == 16) && (frame_psm.bpp == 16) && rt && rt->m_32_bits_fmt && tex && tex->m_32_bits_fmt)
 		{
-			if (rev_pixels)
-				std::swap(v[i].ST.S, v[i + 1].ST.S);
-			if (!full_width)
-			{
-				if (process_ba & SHUFFLE_WRITE)
-					v[i + reversed_pos].XYZ.X -= 128u;
-				else
-					v[i + 1 - reversed_pos].XYZ.X += 128u;
+			GL_INS("HW: Texture shuffle detection (2): Passed (HACK: reinterpreting both source/RT as 16 bit).");
+			m_texture_shuffle.type = TextureShuffleType::HackShuffle;
+		}
+		else
+		{
+			GL_INS("HW: Texture shuffle detection (2): Failed.");
+			m_texture_shuffle.Disable();
+		}
+	}
+}
 
-				if (process_ba & SHUFFLE_READ)
-					v[i + reversed_S].ST.S -= offset_8pix;
+template<u32 primclass, bool fst>
+void GSRendererHW::ConvertSpriteTextureShuffleImpl(GSTextureCache::Target* rt, GSTextureCache::Source* tex)
+{
+	const GSVector4i xyof = m_context->scissor.xyof.xyxy();
+	const float tw = static_cast<float>(1 << m_cached_ctx.TEX0.TW);
+	const float th = static_cast<float>(1 << m_cached_ctx.TEX0.TH);
+	const bool bilinear = m_vt.IsRealLinear();
+	
+	// Copy the attributes from the provoking vertex.
+	GSVertex v_default = primclass == GS_SPRITE_CLASS ? m_vertex->buff[m_index->buff[1]] :
+	                                                    m_vertex->buff[m_index->buff[2]];
+
+	const auto SetTexCoords = [&](float u, float v, GSVertex& vtx_out) {
+		if constexpr (fst)
+		{
+			vtx_out.U = static_cast<u32>(u * 16.0f);
+			vtx_out.V = static_cast<u32>(v * 16.0f);
+		}
+		else
+		{
+			vtx_out.ST.S = u / tw;
+			vtx_out.ST.T = v / th;
+			vtx_out.RGBAQ.Q = 1.0f;
+		}
+	};
+
+	const auto SetPosCoords = [&](float x, float y, GSVertex& vtx_out) {
+		vtx_out.XYZ.X = xyof.x + static_cast<u32>(x * 16.0f);
+		vtx_out.XYZ.Y = xyof.y + static_cast<u32>(y * 16.0f);
+	};
+
+	const auto WriteQuad = [&](const GSVector4i& xyi, const GSVector4i& uvi, GSVertex*& vout, u16*& iout) {
+		GSVector4 xy(xyi);
+		GSVector4 uv(uvi);
+
+		if (bilinear)
+		{
+			// Translate to texel center for bilinear.
+			GL_INS("HW: Translate to texel center for bilinear.");
+			uv += GSVector4(0.5f) / rt->GetScale();
+		}
+
+		if constexpr (primclass == GS_SPRITE_CLASS)
+		{
+			vout[0] = v_default;
+			vout[1] = v_default;
+
+			SetPosCoords(xy.x, xy.y, vout[0]);
+			SetPosCoords(xy.z, xy.w, vout[1]);
+
+			SetTexCoords(uv.x, uv.y, vout[0]);
+			SetTexCoords(uv.z, uv.w, vout[1]);
+
+			iout[0] = 0;
+			iout[1] = 1;
+
+			vout += 2;
+			iout += 2;
+		}
+		else
+		{
+			vout[0] = v_default;
+			vout[1] = v_default;
+			vout[2] = v_default;
+			vout[3] = v_default;
+
+			SetPosCoords(xy.x, xy.y, vout[0]);
+			SetPosCoords(xy.z, xy.y, vout[1]);
+			SetPosCoords(xy.x, xy.w, vout[2]);
+			SetPosCoords(xy.z, xy.w, vout[3]);
+
+			SetTexCoords(uv.x, uv.y, vout[0]);
+			SetTexCoords(uv.z, uv.y, vout[1]);
+			SetTexCoords(uv.x, uv.w, vout[2]);
+			SetTexCoords(uv.z, uv.w, vout[3]);
+
+			iout[0] = 0;
+			iout[1] = 1;
+			iout[2] = 2;
+			iout[3] = 1;
+			iout[4] = 2;
+			iout[5] = 3;
+
+			vout += 4;
+			iout += 6;
+		}
+	};
+
+	// Compensates for the 8 pixel offsetting done by the shuffle to write to specific channels.
+	// Some games also add small offsets to compensate for GS rounding errors with nearest.
+	const auto ShiftAlignRect = [&](const GSVector4& rf) {
+		GSVector4i ri;
+		
+		const float rf_w = rf.z - rf.x;
+		if (m_texture_shuffle.type != TextureShuffleType::TwoPixel || rf_w >= 8.0f)
+		{
+			// Snap to nearest column.
+			const GSVector4 rf_snapped = (rf / 8.0f).round<Round_NearestInt>() * 8.0f;
+			ri = GSVector4i(rf_snapped);
+			
+			// Offset in case there is a vertical shift.
+			const GSVector4 rf_offset = (rf - rf_snapped).round<Round_Truncate>();
+			ri = ri.blend32<0xA>(ri + GSVector4i(rf_offset));
+		}
+		else
+		{
+			// Powerdrome two pixel shuffle: rects are only 1 or 2 pixels so use a different
+			// heuristic to adjust the coords. Should not be used for other shuffles.
+			ri = GSVector4i(rf.floor()) + GSVector4i(0, 0, 1, 1);
+		}
+
+		const int w = ri.width();
+		if (w >= 8 && (w & 8))
+		{
+			ri = ri.ralign<Align_Outside>(GSVector2i(16, 1));
+		}
+		else if (ri.x & 8)
+		{
+			ri.x -= 8;
+			ri.z -= 8;
+		}
+		else if (ri.z & 8)
+		{
+			ri.x += 8;
+			ri.z += 8;
+		}
+		return ri;
+	};
+
+	m_r = ShiftAlignRect(m_vt.m_min.p.xyxy(m_vt.m_max.p));
+	GSVector4i tex_r = ShiftAlignRect(m_vt.m_min.t.xyxy(m_vt.m_max.t));
+	GSVector4i scissor_r = ShiftAlignRect(GSVector4(m_context->scissor.in));
+
+	GL_PUSH("HW: Converting to single quad for texture shuffle.");
+	
+	GL_INS("HW: Before adjustment: pos={%d, %d, %d, %d}, tex={%d, %d, %d, %d}, scissor={%d, %d, %d, %d}",
+		m_r.x ,m_r.y, m_r.z, m_r.w, tex_r.x, tex_r.y, tex_r.z, tex_r.w,
+		scissor_r.x, scissor_r.y, scissor_r.z, scissor_r.w);
+
+	// Heuristics for determining the region to use for the shuffle.
+	bool half_x = true;
+	bool half_y = true;
+	bool half_u = true;
+	bool half_v = true;
+
+	if (m_texture_shuffle.real_16_bit_source)
+	{
+		GL_INS("HW: Real 16 bit source: no tex coord change.");
+		half_u = false;
+		half_v = false;
+	}
+
+	if (m_split_texture_shuffle_pages > 0 ||
+		m_texture_shuffle.type == TextureShuffleType::TwoPixel ||
+		m_texture_shuffle.type == TextureShuffleType::HackShuffle)
+	{
+		GL_INS("HW: Split shuffle/TwoPixel/HackShuffle: no pos or tex coord change.");
+		half_x = false;
+		half_y = false;
+		half_u = false;
+		half_v = false;
+	}
+	else if (m_texture_shuffle.type == TextureShuffleType::GappedSwizzle)
+	{
+		// Currently, this shuffle is done with the NFS CRC hack.
+		// It is a split texture shuffle, but the draws are skipped with the hack instead of
+		// being combined in the usual way, so we need to adjust the draw rect here.
+		GL_INS("HW: GappedSwizzle (NFS Undercover): rewriting rects to use full area.");
+
+		half_x = false;
+		half_y = false;
+		half_u = false;
+		half_v = false;
+
+		m_r = rt->GetUnscaledRect();
+		tex_r = tex->GetUnscaledRect();
+		scissor_r = m_r;
+	}
+	else if (m_texture_shuffle.type == TextureShuffleType::Swizzle ||
+	    m_texture_shuffle.type == TextureShuffleType::SwizzleTex32)
+	{
+		GL_INS("HW: Swizzle/SwizzleTex32: no tex coord change.");
+
+		if (m_cached_ctx.FRAME.FBW == rt->m_TEX0.TBW * 2)
+		{
+			half_y = false;
+		}
+		else
+		{
+			half_x = false;
+		}
+
+		half_u = false;
+		half_v = false;
+	}
+	else if (m_cached_ctx.TEX0.TBP0 != m_cached_ctx.FRAME.Block())
+	{
+		// Handle non-recursive draws.
+		// No super source of truth here, since the width can get batted around, the valid is probably our best bet.
+		// Dogs will reuse the Z in a different size format for a completely unrelated draw with an FBW of 2,
+		// then go back to using it in full width.
+		GL_INS("HW: Non-recursive draw, complex case.");
+
+		const bool tex_tbw_is_wrong =
+			tex->m_target &&
+			(static_cast<int>(tex->m_from_target_TEX0.TBW * 64) < tex->m_from_target->m_valid.z / 2);
+
+		const u32 draw_bw = std::max(m_r.z / 64, 1);
+
+		const bool single_direction_doubled =
+			((m_r.w > rt->m_valid.w) != (m_r.z > rt->m_valid.z)) ||
+			(IsSinglePageDraw() && m_r.height() > 32);
+
+		if (tex_tbw_is_wrong || (rt->m_TEX0.TBW % draw_bw) == 0 || single_direction_doubled)
+		{
+			u32 max_tex_draw_width = std::min(m_r.z, 1 << m_cached_ctx.TEX0.TW);
+
+			const u32 clamp_minu = m_context->CLAMP.MINU;
+			const u32 clamp_maxu = m_context->CLAMP.MAXU;
+
+			switch (m_context->CLAMP.WMS)
+			{
+				case CLAMP_REGION_CLAMP:
+					max_tex_draw_width = std::min(max_tex_draw_width, clamp_maxu);
+					break;
+				case CLAMP_REGION_REPEAT:
+					max_tex_draw_width = std::min(max_tex_draw_width, (clamp_maxu | clamp_minu));
+					break;
+				default:
+					break;
+			}
+
+			const int width_diff =
+				static_cast<int>(m_env.CTXT[m_env.PRIM.CTXT].TEX0.TBW) -
+				static_cast<int>((m_cached_ctx.FRAME.FBW + 1) >> 1);
+			
+			// We can check the future for a clue as this can be more accurate,
+			// be careful of different draws like channel shuffles or single page draws.
+			if (m_env.PRIM.TME && m_env.CTXT[m_env.PRIM.CTXT].TEX0.TBP0 == m_cached_ctx.FRAME.Block() &&
+				GSLocalMemory::m_psm[m_env.CTXT[m_env.PRIM.CTXT].TEX0.PSM].bpp == 32 && width_diff >= 0)
+			{
+				// width_diff will be zero is both are BW == 1, so be careful of that.
+				const bool keep_width = width_diff > 0 || (m_cached_ctx.FRAME.FBW == 1 && width_diff == 0);
+
+				// Draw is double width and the draw is twice the width of the next draws texture.
+				if ((!keep_width && max_tex_draw_width >= m_cached_ctx.FRAME.FBW * 64) ||
+					(single_direction_doubled && m_r.z >= rt->m_valid.z * 2))
+				{
+					half_v = false;
+					half_y = false;
+				}
 				else
-					v[i + 1 - reversed_S].ST.S += offset_8pix;
+				{
+					half_u = false;
+					half_x = false;
+				}
 			}
 			else
 			{
-				if (static_cast<int>(v[i + reversed_S].ST.S * tw) & 8)
+				const u32 tex_width =
+					tex_tbw_is_wrong ? tex->m_from_target->m_valid.z :
+					tex->m_target ? tex->m_from_target_TEX0.TBW * 64 :
+					max_tex_draw_width;
+
+				const u32 tex_tbw = tex->m_target ? tex->m_from_target_TEX0.TBW : tex->m_TEX0.TBW;
+
+				if ((m_cached_ctx.TEX0.TBW * 64 >= tex_width * 2) && (tex_tbw != m_cached_ctx.TEX0.TBW))
 				{
-					v[i + reversed_S].ST.S -= offset_8pix;
-					v[i + 1 - reversed_S].ST.S -= offset_8pix;
+					half_v = false;
+					half_y = false;
 				}
-			}
-
-			if (half_bottom_vert)
-			{
-				// Height is too big (2x).
-				const GSVector4i offset(o.OFY, o.OFY);
-
-				GSVector4i tmp(v[i].XYZ.Y, v[i + 1].XYZ.Y);
-				tmp = GSVector4i(tmp - offset).srl32<1>() + offset;
-
-				//fprintf(stderr, "HW: Before %d, After %d\n", v[i + 1].XYZ.Y, tmp.y);
-				v[i].XYZ.Y = static_cast<u16>(tmp.x);
-				v[i + 1].XYZ.Y = static_cast<u16>(tmp.y);
-
-				if (half_bottom_uv)
+				else
 				{
-					v[i].ST.T /= 2.0f;
-					v[i + 1].ST.T /= 2.0f;
-				}
-			}
-			else if (half_right_vert)
-			{
-				// Width is too big (2x).
-				const GSVector4i offset(o.OFX, o.OFX);
-
-				GSVector4i tmp(v[i].XYZ.X, v[i + 1].XYZ.X);
-				tmp = GSVector4i(tmp - offset).srl32<1>() + offset;
-
-				//fprintf(stderr, "HW: Before %d, After %d\n", v[i + 1].XYZ.Y, tmp.y);
-				v[i].XYZ.X = static_cast<u16>(tmp.x);
-				v[i + 1].XYZ.X = static_cast<u16>(tmp.y);
-
-				if (half_right_uv)
-				{
-					v[i].ST.S /= 2.0f;
-					v[i + 1].ST.S /= 2.0f;
+					half_u = false;
+					half_x = false;
 				}
 			}
 		}
-	}
-
-	if (m_index.tail == 0)
-	{
-		GL_INS("HW: ConvertSpriteTextureShuffle: Culled all vertices; exiting.");
-		return;
-	}
-
-	if (!full_width)
-	{
-		// Update vertex trace too. Avoid issue to compute bounding box
-		if (process_ba & SHUFFLE_WRITE)
-			m_vt.m_min.p.x -= 8.0f;
 		else
-			m_vt.m_max.p.x += 8.0f;
-
-		if (!m_same_group_texture_shuffle)
 		{
-			if (process_ba & SHUFFLE_READ)
-				m_vt.m_min.t.x -= 8.0f;
-			else
-				m_vt.m_max.t.x += 8.0f;
+			half_v = false;
+			half_y = false;
+			half_u = false;
+			half_x = false;
 		}
 	}
 	else
 	{
-		if (fmod(std::floor(m_vt.m_min.p.x), 64.0f) == 8.0f)
+		// Handle recursive draws.
+		GL_INS("HW: Recursive draw, complex case.");
+
+		const GSVector2i& frame_pgs = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs;
+
+		const u32 draw_page_width = m_r.width() / frame_pgs.x;
+
+		if (draw_page_width != 1 && (m_r.w <= rt->m_valid.w) &&
+			((m_r.z > static_cast<int>(m_cached_ctx.FRAME.FBW * 64)) || (rt->m_TEX0.TBW < m_cached_ctx.FRAME.FBW)))
 		{
-			m_vt.m_min.p.x -= 8.0f;
-			m_vt.m_max.p.x -= 8.0f;
+			half_y = false;
+			half_v = false;
+		}
+		else
+		{
+			half_x = false;
+			half_u = false;
 		}
 	}
 
-	if (half_right_vert)
+	GL_INS("HW: Halving: X: %d, Y: %d, U: %d, V: %d", half_x, half_y, half_u, half_v);
+
+	if (half_x)
 	{
-		m_vt.m_min.p.x /= 2.0f;
-		m_vt.m_max.p.x = floor(m_vt.m_max.p.x + 1.9f) / 2.0f;
+		m_r.x /= 2;
+		m_r.z /= 2;
+		scissor_r.x /= 2;
+		scissor_r.z /= 2;
 	}
 
-	if (half_bottom_vert)
+	if (half_y)
 	{
-		m_vt.m_min.p.y /= 2.0f;
-		m_vt.m_max.p.y = floor(m_vt.m_max.p.y + 1.9f) / 2.0f;
+		m_r.y /= 2;
+		m_r.w /= 2;
+		scissor_r.y /= 2;
+		scissor_r.w /= 2;
 	}
 
-	if (m_context->scissor.in.x & 8)
+	if (half_u)
 	{
-		m_context->scissor.in.x &= ~0xf; //m_vt.m_min.p.x;
-
-		if (half_right_vert)
-			m_context->scissor.in.x /= 2;
-	}
-	if (m_context->scissor.in.z & 8)
-	{
-		m_context->scissor.in.z += 8; //m_vt.m_min.p.x;
-
-		if (half_right_vert)
-			m_context->scissor.in.z /= 2;
-	}
-	if (half_bottom_vert)
-	{
-		m_context->scissor.in.y /= 2;
-		m_context->scissor.in.w /= 2;
+		tex_r.x /= 2;
+		tex_r.z /= 2;
 	}
 
-	// Only do this is the source is being interpreted as 16bit
-	if (half_bottom_uv)
+	if (half_v)
 	{
-		m_vt.m_min.t.y /= 2.0f;
-		m_vt.m_max.t.y = (m_vt.m_max.t.y + 1.9f) / 2.0f;
+		tex_r.y /= 2;
+		tex_r.w /= 2;
 	}
 
-	if (half_right_uv)
+	// Special case used in Call of Duty - World at War where it doubles the height and halves the width,
+	// but the height is double doubled. Check the height of the original texture,
+	// if it's half of the draw height, then make it wide instead.
+	if (half_v && tex->m_from_target && m_cached_ctx.TEX0.TBW == m_cached_ctx.FRAME.FBW &&
+		tex->m_from_target->m_TEX0.TBW == (m_cached_ctx.TEX0.TBW * 2) &&
+		static_cast<int>(m_cached_ctx.TEX0.TBW * 64) == m_r.z &&
+		m_r.w > tex->m_from_target->m_valid.w)
 	{
-		m_vt.m_min.t.x /= 2.0f;
-		m_vt.m_max.t.x = (m_vt.m_max.t.x + 1.9f) / 2.0f;
-	}
-
-	// Special case used in Call of Duty - World at War where it doubles the height and halves the width, but the height is double doubled.
-	// Check the height of the original texture, if it's half of the draw height, then make it wide instead.
-	if (half_bottom_uv && tex->m_from_target && m_cached_ctx.TEX0.TBW == m_cached_ctx.FRAME.FBW &&
-		tex->m_from_target->m_TEX0.TBW == (m_cached_ctx.TEX0.TBW * 2) && (m_cached_ctx.TEX0.TBW * 64) == floor(m_vt.m_max.t.x) && m_vt.m_max.t.y > tex->m_from_target->m_valid.w)
-	{
+		m_r.x *= 2;
 		m_r.z *= 2;
+		m_r.y /= 2;
 		m_r.w /= 2;
 
-		m_vt.m_max.t.y /= 2;
-		m_vt.m_max.t.x *= 2;
-		m_vt.m_max.p.y /= 2;
-		m_vt.m_max.p.x *= 2;
-		m_context->scissor.in.w /= 2;
-		m_context->scissor.in.z *= 2;
+		scissor_r.x *= 2;
+		scissor_r.z *= 2;
+		scissor_r.y /= 2;
+		scissor_r.w /= 2;
 
-		v[1].XYZ.X = ((v[m_index.buff[m_index.tail - 1]].XYZ.X - m_context->XYOFFSET.OFX) * 2) + m_context->XYOFFSET.OFX;
-		v[1].XYZ.Y = ((v[m_index.buff[m_index.tail - 1]].XYZ.Y - m_context->XYOFFSET.OFY) / 2) + m_context->XYOFFSET.OFY;
+		tex_r.x *= 2;
+		tex_r.z *= 2;
+		tex_r.y /= 2;
+		tex_r.w /= 2;
 
-		v[1].U = v[m_index.buff[m_index.tail - 1]].U * 2;
-		v[1].V = v[m_index.buff[m_index.tail - 1]].V / 2;
+		GL_CACHE("HW: Half width/double height shuffle detected, BW changed to %d", m_cached_ctx.FRAME.FBW);
+	}
 
-		v[1].ST.S = v[m_index.buff[m_index.tail - 1]].ST.S * 2;
-		v[1].ST.T = v[m_index.buff[m_index.tail - 1]].ST.T / 2;
+	GL_INS("HW: After adjustment: pos={%d, %d, %d, %d}, tex={%d, %d, %d, %d}, scissor={%d, %d, %d, %d}",
+		m_r.x, m_r.y, m_r.z, m_r.w, tex_r.x, tex_r.y, tex_r.z, tex_r.w,
+		scissor_r.x, scissor_r.y, scissor_r.z, scissor_r.w);
 
-		m_vertex.head = m_vertex.tail = m_vertex.next = 2;
-		m_index.tail = 2;
+	m_vt.m_min.p.x = static_cast<float>(m_r.x);
+	m_vt.m_min.p.y = static_cast<float>(m_r.y);
+	m_vt.m_max.p.x = static_cast<float>(m_r.z);
+	m_vt.m_max.p.y = static_cast<float>(m_r.w);
 
-		m_cached_ctx.TEX0.TBW *= 2;
-		m_cached_ctx.FRAME.FBW *= 2;
-		GL_CACHE("HW: Half width/double height shuffle detected, width changed to %d", m_cached_ctx.FRAME.FBW);
+	m_vt.m_min.t.x = static_cast<float>(tex_r.x);
+	m_vt.m_min.t.y = static_cast<float>(tex_r.y);
+	m_vt.m_max.t.x = static_cast<float>(tex_r.z);
+	m_vt.m_max.t.y = static_cast<float>(tex_r.w);
+
+	m_context->scissor.in = scissor_r;
+
+	m_index->tail = 0;
+	m_vertex->head = m_vertex->tail = m_vertex->next = 0;
+
+	GSVertex* vout = m_vertex->buff;
+	u16* iout = m_index->buff;
+
+	WriteQuad(m_r, tex_r, vout, iout);
+
+	m_index->tail = iout - m_index->buff;
+	m_vertex->head = m_vertex->tail = m_vertex->next = vout - m_vertex->buff;
+}
+
+void GSRendererHW::ConvertSpriteTextureShuffle(GSTextureCache::Target* rt, GSTextureCache::Source* tex)
+{
+	if (m_vt.m_primclass == GS_SPRITE_CLASS)
+	{
+		if (PRIM->FST)
+		{
+			ConvertSpriteTextureShuffleImpl<GS_SPRITE_CLASS, true>(rt, tex);
+		}
+		else
+		{
+			ConvertSpriteTextureShuffleImpl<GS_SPRITE_CLASS, false>(rt, tex);
+		}
+	}
+	else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+	{
+		if (PRIM->FST)
+		{
+			ConvertSpriteTextureShuffleImpl<GS_TRIANGLE_CLASS, true>(rt, tex);
+		}
+		else
+		{
+			ConvertSpriteTextureShuffleImpl<GS_TRIANGLE_CLASS, false>(rt, tex);
+		}
+	}
+	else
+	{
+		pxFail("Wrong primclass for texture shuffle.");
 	}
 }
 
@@ -918,12 +1277,13 @@ GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Sou
 {
 	if (GSConfig.UserHacks_HalfPixelOffset <= GSHalfPixelOffset::Normal ||
 		GSConfig.UserHacks_HalfPixelOffset >= GSHalfPixelOffset::Native ||
-		GetUpscaleMultiplier() == 1.0f || m_downscale_source || tex->GetScale() == 1.0f)
+		GetUpscaleMultiplier() == 1.0f || m_downscale_source || tex->GetScale() == 1.0f ||
+		m_texture_shuffle) // Do not apply HPO on texture shuffles as it already aligns the coordinates.
 	{
 		return GSVector4(0.0f);
 	}
 
-	const GSVertex* v = &m_vertex.buff[0];
+	const GSVertex* v = &m_vertex->buff[0];
 	const float scale = tex->GetScale();
 	const bool linear = m_vt.IsRealLinear();
 	const int t_position = v[0].U;
@@ -991,11 +1351,18 @@ GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Sou
 	return half_offset;
 }
 
-GSVector4i GSRendererHW::ComputeBoundingBox(const GSVector2i& rtsize, float rtscale)
+GSVector4i GSRendererHW::ComputeBoundingBoxRT(const GSVector2i& rtsize, float rtscale)
 {
 	const GSVector4 offset = GSVector4(-1.0f, 1.0f); // Round value
 	const GSVector4 box = m_vt.m_min.p.upld(m_vt.m_max.p) + offset.xxyy();
 	return GSVector4i(box * GSVector4(rtscale)).rintersect(GSVector4i(0, 0, rtsize.x, rtsize.y));
+}
+
+GSVector4i GSRendererHW::ComputeBoundingBoxTex(const GSVector2i& texsize, const GSVector4i& region, float texscale)
+{
+	const GSVector4 offset = GSVector4(region.xyxy()) + GSVector4(-1.0f, -1.0f, 1.0f, 1.0f); // Region offset + round value
+	const GSVector4 box = m_vt.m_min.t.upld(m_vt.m_max.t) + offset;
+	return GSVector4i(box * GSVector4(texscale)).rintersect(GSVector4i(0, 0, texsize.x, texsize.y));
 }
 
 void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
@@ -1009,7 +1376,7 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 			// neither in a fast way. So instead let's just take the hypothesis that all sprites must have the same
 			// size.
 			// Tested on Tekken 5.
-			const GSVertex* v = &m_vertex.buff[0];
+			const GSVertex* v = &m_vertex->buff[0];
 			bool is_paving = true;
 			bool is_paving_h = true;
 			bool is_paving_v = true;
@@ -1018,7 +1385,7 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 			const int first_dpU = v[1].U - v[0].U;
 			const int first_dpY = v[1].XYZ.Y - v[0].XYZ.Y;
 			const int first_dpV = v[1].V - v[0].V;
-			for (u32 i = 0; i < m_vertex.next; i += 2)
+			for (u32 i = 0; i < m_vertex->next; i += 2)
 			{
 				const int dpX = v[i + 1].XYZ.X - v[i].XYZ.X;
 				const int dpU = v[i + 1].U - v[i].U;
@@ -1043,14 +1410,14 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 			const GSVector4 delta_p = m_vt.m_max.p - m_vt.m_min.p;
 			const GSVector4 delta_t = m_vt.m_max.t - m_vt.m_min.t;
 			const bool is_blit = PrimitiveOverlap() == PRIM_OVERLAP_NO;
-			GL_INS("HW: PP SAMPLER: Dp %f %f Dt %f %f. Is blit %d, is paving %d, count %d", delta_p.x, delta_p.y, delta_t.x, delta_t.y, is_blit, is_paving, m_vertex.tail);
+			GL_INS("HW: PP SAMPLER: Dp %f %f Dt %f %f. Is blit %d, is paving %d, count %d", delta_p.x, delta_p.y, delta_t.x, delta_t.y, is_blit, is_paving, m_vertex->tail);
 #endif
 
 			if (is_paving)
 			{
 				// Replace all sprite with a single fullscreen sprite.
 				u32 unique_verts = 2;
-				GSVertex* s = &m_vertex.buff[0];
+				GSVertex* s = &m_vertex->buff[0];
 				if (is_paving_h)
 				{
 					s[0].XYZ.X = static_cast<u16>((16.0f * m_vt.m_min.p.x) + m_context->XYOFFSET.OFX);
@@ -1061,7 +1428,7 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 				}
 				else
 				{
-					for (u32 i = 2; i < (m_vertex.tail & ~1); i++)
+					for (u32 i = 2; i < (m_vertex->tail & ~1); i++)
 					{
 						bool unique_found = false;
 
@@ -1102,7 +1469,7 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 				}
 				else
 				{
-					for (u32 i = 2; i < (m_vertex.tail & ~1); i++)
+					for (u32 i = 2; i < (m_vertex->tail & ~1); i++)
 					{
 						bool unique_found = false;
 
@@ -1133,8 +1500,8 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 					}
 				}
 
-				m_vertex.head = m_vertex.tail = m_vertex.next = unique_verts;
-				m_index.tail = unique_verts;
+				m_vertex->head = m_vertex->tail = m_vertex->next = unique_verts;
+				m_index->tail = unique_verts;
 			}
 		}
 	}
@@ -1261,7 +1628,7 @@ bool GSRendererHW::IsPossibleChannelShuffle() const
 {
 	if (!PRIM->TME || m_cached_ctx.TEX0.PSM != PSMT8 || // 8-bit texture draw
 		m_vt.m_primclass != GS_SPRITE_CLASS || // draw_sprite_tex
-		(m_vertex.tail <= 2 && (((m_vt.m_max.p - m_vt.m_min.p) <= GSVector4(8.0f)).mask() & 0x3) == 0x3)) // Powerdrome does a tiny shuffle on a couple of pixels, can't reliably translate this.
+		(m_vertex->tail <= 2 && (((m_vt.m_max.p - m_vt.m_min.p) <= GSVector4(8.0f)).mask() & 0x3) == 0x3)) // Powerdrome does a tiny shuffle on a couple of pixels, can't reliably translate this.
 	{
 		return false;
 	}
@@ -1269,7 +1636,7 @@ bool GSRendererHW::IsPossibleChannelShuffle() const
 	const int mask = (((m_vt.m_max.p - m_vt.m_min.p) <= GSVector4(64.0f)).mask() & 0x3);
 	if (mask == 0x3) // single_page
 	{
-		const GSVertex* v = &m_vertex.buff[0];
+		const GSVertex* v = &m_vertex->buff[0];
 
 		const int draw_width = std::abs(v[1].XYZ.X - v[0].XYZ.X) >> 4;
 		const int draw_height = std::abs(v[1].XYZ.Y - v[0].XYZ.Y) >> 4;
@@ -1291,7 +1658,7 @@ bool GSRendererHW::IsPossibleChannelShuffle() const
 	if (m_cached_ctx.TEX0.TBW == (m_cached_ctx.FRAME.FBW * 2) &&
 		GSLocalMemory::IsPageAligned(m_cached_ctx.FRAME.PSM, GSVector4i(m_vt.m_min.p.upld(m_vt.m_max.p))))
 	{
-		const GSVertex* v = &m_vertex.buff[0];
+		const GSVertex* v = &m_vertex->buff[0];
 
 		const int draw_width = std::abs(v[1].XYZ.X - v[0].XYZ.X) >> 4;
 		const int draw_height = std::abs(v[1].XYZ.Y - v[0].XYZ.Y) >> 4;
@@ -1357,7 +1724,7 @@ bool GSRendererHW::IsSplitTextureShuffle(GIFRegTEX0& rt_TEX0, GSVector4i& valid_
 		return false;
 
 	// Different channel being shuffled, so needs to be handled separately (misdetection in 50 Cent)
-	if (m_vertex.buff[m_index.buff[0]].U != m_v.U)
+	if (m_vertex->buff[m_index->buff[0]].U != m_v.U)
 		return false;
 
 	// Check that both the position and texture coordinates are page aligned, so we can work in pages instead of coordinates.
@@ -1470,16 +1837,82 @@ GSVector4i GSRendererHW::GetSplitTextureShuffleDrawRect() const
 	return r.insert64<0>(0).ralign<Align_Outside>(frame_psm.pgs);
 }
 
+void GSRendererHW::FixSplitTextureShuffleState()
+{
+	if (m_split_texture_shuffle_pages == 0)
+		return;
+
+	const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM];
+	const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
+
+	// Adjust the draw rectangle to the new page range, so we get the correct fb height.
+	const GSVector4i new_r = GetSplitTextureShuffleDrawRect();
+	GL_CACHE(
+		"Split texture shuffle: FBP %x -> %x, TBP0 %x -> %x, draw %d,%d => %d,%d -> %d,%d => %d,%d",
+		m_cached_ctx.FRAME.Block(), m_split_texture_shuffle_start_FBP * GS_BLOCKS_PER_PAGE,
+		m_cached_ctx.TEX0.TBP0, m_split_texture_shuffle_start_TBP,
+		m_r.x, m_r.y, m_r.z, m_r.w,
+		new_r.x, new_r.y, new_r.z, new_r.w);
+	m_r = new_r;
+
+	// Adjust the scissor too, if it's in two parts, this will be wrong.
+	m_context->scissor.in = new_r;
+
+	// Fudge FRAME and TEX0 to point to the start of the shuffle.
+	m_cached_ctx.TEX0.TBP0 = m_split_texture_shuffle_start_TBP;
+
+	// We correct this again at the end of the split
+	SetNewFRAME(m_split_texture_shuffle_start_FBP << 5, m_context->FRAME.FBW, m_cached_ctx.FRAME.PSM);
+
+	// TEX0 may also be just using single width with offsets also, so let's deal with that.
+	if (m_split_texture_shuffle_pages > 1 && !NextDrawMatchesShuffle())
+	{
+		if (m_context->FRAME.FBW != m_split_texture_shuffle_fbw && m_cached_ctx.TEX0.TBW == 1)
+		{
+			// This is the final draw of the shuffle, so let's fudge the numbers
+			// Need to update the final rect as it could be wrong.
+			if (m_context->FRAME.FBW == 1 && m_split_texture_shuffle_fbw != m_context->FRAME.FBW)
+			{
+				m_r.x = 0; // Need to keep the X offset to calculate the shuffle.
+				m_r.z = m_split_texture_shuffle_fbw * frame_psm.pgs.x;
+				m_r.y = 0;
+				m_r.w = std::min(1024U, m_split_texture_shuffle_pages_high * frame_psm.pgs.y); // Max we can shuffle is 1024 (512)
+
+				//Fudge the scissor and frame
+				m_context->scissor.in = m_r;
+
+				SetNewFRAME(m_split_texture_shuffle_start_FBP << 5, m_split_texture_shuffle_fbw, m_cached_ctx.FRAME.PSM);
+			}
+
+			const int pages = m_split_texture_shuffle_pages + 1;
+			const int width = m_split_texture_shuffle_fbw;
+			const int height = (pages >= width) ? (pages / width) : 1;
+			// We must update the texture size! It will likely be 64x64, which is no good, so let's fudge that.
+			m_cached_ctx.TEX0.TW = std::ceil(std::log2(std::min(1024, width * tex_psm.pgs.x)));
+			m_cached_ctx.TEX0.TH = std::ceil(std::log2(std::min(1024, height * tex_psm.pgs.y)));
+			m_cached_ctx.TEX0.TBW = m_split_texture_shuffle_fbw;
+		}
+
+		m_vt.m_min.p.x = m_r.x;
+		m_vt.m_min.p.y = m_r.y;
+		m_vt.m_min.t.x = m_r.x;
+		m_vt.m_min.t.y = m_r.y;
+		m_vt.m_max.p.x = m_r.z;
+		m_vt.m_max.p.y = m_r.w;
+		m_vt.m_max.t.x = m_r.z;
+		m_vt.m_max.t.y = m_r.w;
+	}
+}
+
+u32 GSRendererHW::Convert32BitTo16BitMask(u32 m)
+{
+	return ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
+}
+
 u32 GSRendererHW::GetEffectiveTextureShuffleFbmsk() const
 {
-	pxAssert(m_texture_shuffle);
-	const u32 m = m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk;
-	const u32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
-	const u32 rb_mask = fbmask & 0xFF;
-	const u32 ga_mask = (fbmask >> 8) & 0xFF;
-	const u32 eff_mask =
-		((rb_mask == 0xFF && ga_mask == 0xFF) ? 0x00FFFFFFu : 0) | ((ga_mask == 0xFF) ? 0xFF000000u : 0);
-	return eff_mask;
+	const u32 fbmsk16 = Convert32BitTo16BitMask(m_cached_ctx.FRAME.FBMSK);
+	return fbmsk16 | (fbmsk16 << 16);
 }
 
 GSVector4i GSRendererHW::GetDrawRectForPages(u32 bw, u32 psm, u32 num_pages)
@@ -1745,7 +2178,7 @@ bool GSRendererHW::IsDepthAlwaysPassing()
 	// Depth is always pass/fail (no read) and write are discarded.
 	return (!m_cached_ctx.TEST.ZTE || m_cached_ctx.TEST.ZTST <= ZTST_ALWAYS) ||
 	       // Depth test will always pass
-	       (m_cached_ctx.TEST.ZTST == ZTST_GEQUAL && m_vt.m_eq.z && std::min(m_vertex.buff[check_index].XYZ.Z, max_z) == max_z);
+	       (m_cached_ctx.TEST.ZTST == ZTST_GEQUAL && m_vt.m_eq.z && std::min(m_vertex->buff[check_index].XYZ.Z, max_z) == max_z);
 }
 
 bool GSRendererHW::IsUsingCsInBlend()
@@ -1784,7 +2217,7 @@ bool GSRendererHW::IsTBPFrameOrZ(u32 tbp, bool frame_only)
 	                       // Depth is always pass/fail (no read) and write are discarded.
 	                       (zm != 0 && m_cached_ctx.TEST.ZTST <= ZTST_ALWAYS) ||
 	                       // Depth test will always pass
-	                       (zm != 0 && m_cached_ctx.TEST.ZTST == ZTST_GEQUAL && m_vt.m_eq.z && std::min(m_vertex.buff[0].XYZ.Z, max_z) == max_z) ||
+	                       (zm != 0 && m_cached_ctx.TEST.ZTST == ZTST_GEQUAL && m_vt.m_eq.z && std::min(m_vertex->buff[0].XYZ.Z, max_z) == max_z) ||
 	                       // Depth will be written through the RT
 	                       (!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && zm == 0 && (fm & fm_mask) == 0 && m_cached_ctx.TEST.ZTE)) ||
 	                   // No color or Z being written.
@@ -1801,17 +2234,17 @@ void GSRendererHW::HandleManualDeswizzle()
 
 	// Check if it's doing manual deswizzling first (draws are 32x16), if they are, check if the Z is flat, if not,
 	// we're gonna have to get creative and swap around the quandrants, but that's a TODO.
-	GSVertex* v = &m_vertex.buff[0];
+	GSVertex* v = &m_vertex->buff[0];
 
 	// Check for page quadrant and compare it to the quadrant from the verts, if it does match then we need to do correction.
 	const GSVector2i page_quadrant = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs / 2;
 
 	if (PRIM->FST)
 	{
-		for (u32 i = 0; i < m_index.tail; i += 2)
+		for (u32 i = 0; i < m_index->tail; i += 2)
 		{
-			const u32 index_first = m_index.buff[i];
-			const u32 index_last = m_index.buff[i + 1];
+			const u32 index_first = m_index->buff[i];
+			const u32 index_last = m_index->buff[i + 1];
 
 			if ((abs((v[index_last].U) - (v[index_first].U)) >> 4) != page_quadrant.x || (abs((v[index_last].V) - (v[index_first].V)) >> 4) != page_quadrant.y)
 				return;
@@ -1819,10 +2252,10 @@ void GSRendererHW::HandleManualDeswizzle()
 	}
 	else
 	{
-		for (u32 i = 0; i < m_index.tail; i += 2)
+		for (u32 i = 0; i < m_index->tail; i += 2)
 		{
-			const u32 index_first = m_index.buff[i];
-			const u32 index_last = m_index.buff[i + 1];
+			const u32 index_first = m_index->buff[i];
+			const u32 index_last = m_index->buff[i + 1];
 			const u32 x = abs(((v[index_last].ST.S / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TW)) - ((v[index_first].ST.S / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TW)));
 			const u32 y = abs(((v[index_last].ST.T / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TH)) - ((v[index_first].ST.T / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TH)));
 
@@ -2027,7 +2460,7 @@ void GSRendererHW::SwSpriteRender()
 
 	const bool alpha_blending_enabled = NeedsBlending();
 
-	const GSVertex& v = m_index.tail > 0 ? m_vertex.buff[m_index.buff[m_index.tail - 1]] : GSVertex(); // Last vertex if any.
+	const GSVertex& v = m_index->tail > 0 ? m_vertex->buff[m_index->buff[m_index->tail - 1]] : GSVertex(); // Last vertex if any.
 	const GSVector4i vc = GSVector4i(v.RGBAQ.R, v.RGBAQ.G, v.RGBAQ.B, v.RGBAQ.A) // 0x000000AA000000BB000000GG000000RR
 	                          .ps32();                                           // 0x00AA00BB00GG00RR00AA00BB00GG00RR
 
@@ -2156,10 +2589,10 @@ bool GSRendererHW::CanUseSwSpriteRender()
 		return false;
 	if (PRIM->PRIM != GS_TRIANGLESTRIP && PRIM->PRIM != GS_SPRITE) // Triangle strip or sprite draw
 		return false;
-	if (m_vt.m_primclass == GS_TRIANGLE_CLASS && (PRIM->PRIM != GS_TRIANGLESTRIP || m_vertex.tail != 4)) // If triangle class, strip draw with 4 vertices (two prims, emulating single sprite prim)
+	if (m_vt.m_primclass == GS_TRIANGLE_CLASS && (PRIM->PRIM != GS_TRIANGLESTRIP || m_vertex->tail != 4)) // If triangle class, strip draw with 4 vertices (two prims, emulating single sprite prim)
 		return false;
 	// TODO If GS_TRIANGLESTRIP draw, check that the draw is axis aligned
-	if (m_vt.m_primclass == GS_SPRITE_CLASS && (PRIM->PRIM != GS_SPRITE || m_vertex.tail != 2)) // If sprite class, sprite draw with 2 vertices (one prim)
+	if (m_vt.m_primclass == GS_SPRITE_CLASS && (PRIM->PRIM != GS_SPRITE || m_vertex->tail != 2)) // If sprite class, sprite draw with 2 vertices (one prim)
 		return false;
 	if (m_cached_ctx.DepthRead() || m_cached_ctx.DepthWrite()) // No depth handling
 		return false;
@@ -2203,8 +2636,8 @@ void GSRendererHW::RoundSpriteOffset()
 #if defined(DEBUG_V) || defined(DEBUG_U)
 	bool debug = linear;
 #endif
-	const u32 count = m_vertex.next;
-	GSVertex* v = &m_vertex.buff[0];
+	const u32 count = m_vertex->next;
+	GSVertex* v = &m_vertex->buff[0];
 
 	for (u32 i = 0; i < count; i += 2)
 	{
@@ -2462,6 +2895,9 @@ void GSRendererHW::Draw()
 		(m_state_flush_reason != GSFlushReason::CONTEXTCHANGE && m_dirty_gs_regs) ? " AND POSSIBLE CONTEXT CHANGE" :
 																					"");
 
+	// First pass texture shuffle detection using context/vertices.
+	DetectTextureShuffle();
+
 	// When the format is 24bit (Z or C), DATE ceases to function.
 	// It was believed that in 24bit mode all pixels pass because alpha doesn't exist
 	// however after testing this on a PS2 it turns out nothing passes, it ignores the draw.
@@ -2492,11 +2928,11 @@ void GSRendererHW::Draw()
 	}
 
 	//  Test if we can optimize Alpha Test as a NOP
-	m_cached_ctx.TEST.ATE = m_cached_ctx.TEST.ATE && !GSRenderer::TryAlphaTest(fm, zm);
+	m_cached_ctx.TEST.ATE = !!m_cached_ctx.TEST.ATE && !GSRenderer::TryAlphaTest(fm, zm);
 
 	// Need to fix the alpha test, since the alpha will be fixed to 1.0 if ABE is disabled and AA1 is enabled
 	// So if it doesn't meet the condition, always fail, if it does, always pass (turn off the test).
-	if (IsCoverageAlpha() && m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST > 1)
+	if (IsCoverageAlphaFixedOne() && m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST > 1)
 	{
 		const float aref = static_cast<float>(m_cached_ctx.TEST.AREF);
 		const int old_ATST = m_cached_ctx.TEST.ATST;
@@ -2566,15 +3002,15 @@ void GSRendererHW::Draw()
 	// I hate that I have to do this, but some games (like Pac-Man World Rally) troll us by causing a flush with degenerate triangles, so we don't have all available information about the next draw.
 	// So we have to check when the next draw happens if our frame has changed or if it's become recursive.
 	const bool has_colclip_texture = g_gs_device->GetColorClipTexture() != nullptr;
-	if (!no_rt && has_colclip_texture && (m_conf.colclip_frame.FBP != m_cached_ctx.FRAME.FBP || m_conf.colclip_frame.Block() == m_cached_ctx.TEX0.TBP0))
+	if (!no_rt && has_colclip_texture && (m_conf.colclip_frame.FBP != m_cached_ctx.FRAME.FBP || (PRIM->TME && m_conf.colclip_frame.Block() == m_cached_ctx.TEX0.TBP0)))
 	{
 		GIFRegTEX0 FRAME;
 		FRAME.TBP0 = m_conf.colclip_frame.Block();
 		FRAME.TBW = m_conf.colclip_frame.FBW;
 		FRAME.PSM = m_conf.colclip_frame.PSM;
 
-		GSTextureCache::Target* old_rt = g_texture_cache->LookupTarget(FRAME, GSVector2i(1, 1), GetTextureScaleFactor(), GSTextureCache::RenderTarget, true,
-			fm, false, false, true, true, GSVector4i(0, 0, 1, 1), true, false, false);
+		GSTextureCache::Target* old_rt = g_texture_cache->LookupDrawTarget(FRAME, GSVector2i(1, 1), GetTextureScaleFactor(), GSTextureCache::RenderTarget, true,
+			fm, false, true, true, GSVector4i(0, 0, 1, 1), true, false, false);
 
 		if (old_rt)
 		{
@@ -2702,73 +3138,10 @@ void GSRendererHW::Draw()
 		}
 	}
 
-	m_texture_shuffle = false;
-	m_copy_16bit_to_target_shuffle = false;
-	m_same_group_texture_shuffle = false;
 	m_using_temp_z = false;
 
-	const bool is_split_texture_shuffle = (m_split_texture_shuffle_pages > 0);
-	if (is_split_texture_shuffle)
-	{
-		// Adjust the draw rectangle to the new page range, so we get the correct fb height.
-		const GSVector4i new_r = GetSplitTextureShuffleDrawRect();
-		GL_CACHE(
-			"Split texture shuffle: FBP %x -> %x, TBP0 %x -> %x, draw %d,%d => %d,%d -> %d,%d => %d,%d",
-			m_cached_ctx.FRAME.Block(), m_split_texture_shuffle_start_FBP * GS_BLOCKS_PER_PAGE,
-			m_cached_ctx.TEX0.TBP0, m_split_texture_shuffle_start_TBP,
-			m_r.x, m_r.y, m_r.z, m_r.w,
-			new_r.x, new_r.y, new_r.z, new_r.w);
-		m_r = new_r;
-
-		// Adjust the scissor too, if it's in two parts, this will be wrong.
-		m_context->scissor.in = new_r;
-
-		// Fudge FRAME and TEX0 to point to the start of the shuffle.
-		m_cached_ctx.TEX0.TBP0 = m_split_texture_shuffle_start_TBP;
-
-		// We correct this again at the end of the split
-		SetNewFRAME(m_split_texture_shuffle_start_FBP << 5, m_context->FRAME.FBW, m_cached_ctx.FRAME.PSM);
-
-		// TEX0 may also be just using single width with offsets also, so let's deal with that.
-		if (m_split_texture_shuffle_pages > 1 && !NextDrawMatchesShuffle())
-		{
-			if (m_context->FRAME.FBW != m_split_texture_shuffle_fbw && m_cached_ctx.TEX0.TBW == 1)
-			{
-				const GSLocalMemory::psm_t& frame_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
-				// This is the final draw of the shuffle, so let's fudge the numbers
-				// Need to update the final rect as it could be wrong.
-				if (m_context->FRAME.FBW == 1 && m_split_texture_shuffle_fbw != m_context->FRAME.FBW)
-				{
-					m_r.x = 0; // Need to keep the X offset to calculate the shuffle.
-					m_r.z = m_split_texture_shuffle_fbw * frame_psm.pgs.x;
-					m_r.y = 0;
-					m_r.w = std::min(1024U, m_split_texture_shuffle_pages_high * frame_psm.pgs.y); // Max we can shuffle is 1024 (512)
-
-					//Fudge the scissor and frame
-					m_context->scissor.in = m_r;
-
-					SetNewFRAME(m_split_texture_shuffle_start_FBP << 5, m_split_texture_shuffle_fbw, m_cached_ctx.FRAME.PSM);
-				}
-
-				const int pages = m_split_texture_shuffle_pages + 1;
-				const int width = m_split_texture_shuffle_fbw;
-				const int height = (pages >= width) ? (pages / width) : 1;
-				// We must update the texture size! It will likely be 64x64, which is no good, so let's fudge that.
-				m_cached_ctx.TEX0.TW = std::ceil(std::log2(std::min(1024, width * tex_psm.pgs.x)));
-				m_cached_ctx.TEX0.TH = std::ceil(std::log2(std::min(1024, height * tex_psm.pgs.y)));
-				m_cached_ctx.TEX0.TBW = m_split_texture_shuffle_fbw;
-			}
-
-			m_vt.m_min.p.x = m_r.x;
-			m_vt.m_min.p.y = m_r.y;
-			m_vt.m_min.t.x = m_r.x;
-			m_vt.m_min.t.y = m_r.y;
-			m_vt.m_max.p.x = m_r.z;
-			m_vt.m_max.p.y = m_r.w;
-			m_vt.m_max.t.x = m_r.z;
-			m_vt.m_max.t.y = m_r.w;
-		}
-	}
+	// Fix up the state if we are the middle of a split (multi-draw) texture shuffle.
+	FixSplitTextureShuffleState();
 
 	if (!GSConfig.UserHacks_DisableSafeFeatures && is_possible_mem_clear)
 	{
@@ -2807,7 +3180,7 @@ void GSRendererHW::Draw()
 		}
 
 		const u32 vert_index = (m_vt.m_primclass == GS_TRIANGLE_CLASS) ? 2 : 1;
-		u32 const_color = m_vertex.buff[m_index.buff[vert_index]].RGBAQ.U32[0];
+		u32 const_color = m_vertex->buff[m_index->buff[vert_index]].RGBAQ.U32[0];
 		u32 fb_mask = m_cached_ctx.FRAME.FBMSK;
 
 		// If we could just check the colour, it would be great, but Echo Night decided it's going to set the alpha and green to 128, for some reason, and actually be 32bit, so it ruined my day.
@@ -2843,7 +3216,7 @@ void GSRendererHW::Draw()
 			m_cached_ctx.TEXA.TA0 = 0;
 			m_cached_ctx.TEXA.TA1 = 128;
 			m_cached_ctx.FRAME.PSM = (m_cached_ctx.FRAME.PSM & 2) ? m_cached_ctx.FRAME.PSM : PSMCT16;
-			m_vertex.buff[m_index.buff[1]].RGBAQ.U32[0] = const_color;
+			m_vertex->buff[m_index->buff[1]].RGBAQ.U32[0] = const_color;
 			ReplaceVerticesWithSprite(m_r, GSVector2i(m_r.width(), m_r.height()));
 		}
 
@@ -3060,13 +3433,13 @@ void GSRendererHW::Draw()
 		const u32 page_alignment = GSLocalMemory::IsPageAlignedMasked(m_cached_ctx.TEX0.PSM, m_r);
 		const bool page_aligned = (page_alignment & 0xF0F0) != 0; // Make sure Y is page aligned.
 		if (!no_rt && page_aligned && m_cached_ctx.ZBUF.ZMSK && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp >= 16 &&
-			(m_vt.m_primclass == GS_SPRITE_CLASS || (m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_index.tail % 6) == 0 && TrianglesAreQuads(true) && m_index.tail > 6)))
+			(m_vt.m_primclass == GS_SPRITE_CLASS || (m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_index->tail % 6) == 0 && TrianglesAreQuads(true) && m_index->tail > 6)))
 		{
 			// Tail check is to make sure we have enough strips to go all the way across the page, or if it's using a region clamp could be used to draw strips.
 			if (GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 &&
-				(m_index.tail >= (m_cached_ctx.TEX0.TBW * 2) || m_cached_ctx.TEX0.TBP0 == m_cached_ctx.FRAME.Block() || m_cached_ctx.CLAMP.WMS > CLAMP_CLAMP || m_cached_ctx.CLAMP.WMT > CLAMP_CLAMP))
+				(m_index->tail >= (m_cached_ctx.TEX0.TBW * 2) || m_cached_ctx.TEX0.TBP0 == m_cached_ctx.FRAME.Block() || m_cached_ctx.CLAMP.WMS > CLAMP_CLAMP || m_cached_ctx.CLAMP.WMT > CLAMP_CLAMP))
 			{
-				const GSVertex* v = &m_vertex.buff[0];
+				const GSVertex* v = &m_vertex->buff[0];
 
 				const int first_x = std::clamp((static_cast<int>(((v[0].XYZ.X - m_context->XYOFFSET.OFX) + 8))) >> 4, 0, 2048);
 				const bool offset_last = PRIM->FST ? (v[1].U > v[0].U) : ((v[1].ST.S / v[1].RGBAQ.Q) > (v[0].ST.S / v[1].RGBAQ.Q));
@@ -3092,11 +3465,11 @@ void GSRendererHW::Draw()
 			{
 				bool shuffle_channel_reads = !m_cached_ctx.FRAME.FBMSK;
 				const u32 increment = (m_vt.m_primclass == GS_TRIANGLE_CLASS) ? 3 : 2;
-				const GSVertex* v = &m_vertex.buff[0];
+				const GSVertex* v = &m_vertex->buff[0];
 
 				if (shuffle_channel_reads)
 				{
-					for (u32 i = 0; i < m_index.tail; i += increment)
+					for (u32 i = 0; i < m_index->tail; i += increment)
 					{
 						const int first_u = (PRIM->FST ? v[i].U : static_cast<int>(v[i].ST.S / v[(increment == 2) ? i + 1 : i].RGBAQ.Q)) >> 4;
 						const int second_u = (PRIM->FST ? v[i + 1].U : static_cast<int>(v[i + 1].ST.S / v[i + 1].RGBAQ.Q)) >> 4;
@@ -3322,8 +3695,8 @@ void GSRendererHW::Draw()
 		ZBUF_TEX0.TBW = m_cached_ctx.FRAME.FBW;
 		ZBUF_TEX0.PSM = m_cached_ctx.ZBUF.PSM;
 
-		ds = g_texture_cache->LookupTarget(ZBUF_TEX0, t_size, target_scale, GSTextureCache::DepthStencil,
-			m_cached_ctx.DepthWrite(), 0, false, force_preload, preserve_depth, preserve_depth, unclamped_draw_rect, IsPossibleChannelShuffle(), is_possible_mem_clear && ZBUF_TEX0.TBP0 != m_cached_ctx.FRAME.Block(), !no_rt,
+		ds = g_texture_cache->LookupDrawTarget(ZBUF_TEX0, t_size, target_scale, GSTextureCache::DepthStencil,
+			m_cached_ctx.DepthWrite(), 0, force_preload, preserve_depth, preserve_depth, unclamped_draw_rect, IsPossibleChannelShuffle(), is_possible_mem_clear && ZBUF_TEX0.TBP0 != m_cached_ctx.FRAME.Block(), !no_rt,
 			src, nullptr, -1);
 
 		ZBUF_TEX0.TBW = m_channel_shuffle ? src->m_from_target_TEX0.TBW : m_cached_ctx.FRAME.FBW;
@@ -3445,9 +3818,9 @@ void GSRendererHW::Draw()
 
 			if (vertical_offset || horizontal_offset)
 			{
-				GSVertex* v = &m_vertex.buff[0];
+				GSVertex* v = &m_vertex->buff[0];
 
-				for (u32 i = 0; i < m_vertex.tail; i++)
+				for (u32 i = 0; i < m_vertex->tail; i++)
 				{
 					v[i].XYZ.X += horizontal_offset << 4;
 					v[i].XYZ.Y += vertical_offset << 4;
@@ -3582,8 +3955,8 @@ void GSRendererHW::Draw()
 		// Of course if this size is different (in width) or this is a shuffle happening, this will be bypassed.
 		const bool preserve_downscale_draw = (GSConfig.UserHacks_NativeScaling != GSNativeScaling::Off && ((std::abs(scale_draw) == 1 && !scaled_copy) || (scale_draw == 0 && src && src->m_from_target && src->m_from_target->m_downscaled))) || is_possible_mem_clear == ClearType::ClearWithDraw;
 
-		rt = g_texture_cache->LookupTarget(FRAME_TEX0, t_size, ((src && src->m_scale != 1) && (GSConfig.UserHacks_NativeScaling == GSNativeScaling::Normal || GSConfig.UserHacks_NativeScaling == GSNativeScaling::NormalUpscaled) && !possible_shuffle) ? GetTextureScaleFactor() : target_scale, GSTextureCache::RenderTarget, true,
-			fm, false, force_preload, preserve_rt_rgb, preserve_rt_alpha, lookup_rect, possible_shuffle, is_possible_mem_clear && FRAME_TEX0.TBP0 != m_cached_ctx.ZBUF.Block(),
+		rt = g_texture_cache->LookupDrawTarget(FRAME_TEX0, t_size, ((src && src->m_scale != 1) && (GSConfig.UserHacks_NativeScaling == GSNativeScaling::Normal || GSConfig.UserHacks_NativeScaling == GSNativeScaling::NormalUpscaled) && !possible_shuffle) ? GetTextureScaleFactor() : target_scale, GSTextureCache::RenderTarget, true,
+			fm, force_preload, preserve_rt_rgb, preserve_rt_alpha, lookup_rect, possible_shuffle, is_possible_mem_clear && FRAME_TEX0.TBP0 != m_cached_ctx.ZBUF.Block(),
 			GSConfig.UserHacks_NativeScaling != GSNativeScaling::Off && preserve_downscale_draw && is_possible_mem_clear != ClearType::NormalClear, src, ds, (no_ds || !ds) ? -1 : (m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0));
 
 		// Draw skipped because it was a clear and there was no target.
@@ -3742,9 +4115,9 @@ void GSRendererHW::Draw()
 
 			if (vertical_offset || horizontal_offset)
 			{
-				GSVertex* v = &m_vertex.buff[0];
+				GSVertex* v = &m_vertex->buff[0];
 
-				for (u32 i = 0; i < m_vertex.tail; i++)
+				for (u32 i = 0; i < m_vertex->tail; i++)
 				{
 					v[i].XYZ.X += horizontal_offset << 4;
 					v[i].XYZ.Y += vertical_offset << 4;
@@ -3964,8 +4337,8 @@ void GSRendererHW::Draw()
 		ZBUF_TEX0.TBW = m_cached_ctx.FRAME.FBW;
 		ZBUF_TEX0.PSM = m_cached_ctx.ZBUF.PSM;
 
-		ds = g_texture_cache->LookupTarget(ZBUF_TEX0, t_size, target_scale, GSTextureCache::DepthStencil,
-			m_cached_ctx.DepthWrite(), 0, false, force_preload, preserve_depth, preserve_depth, unclamped_draw_rect, IsPossibleChannelShuffle(), is_possible_mem_clear && ZBUF_TEX0.TBP0 != m_cached_ctx.FRAME.Block(), false,
+		ds = g_texture_cache->LookupDrawTarget(ZBUF_TEX0, t_size, target_scale, GSTextureCache::DepthStencil,
+			m_cached_ctx.DepthWrite(), 0, force_preload, preserve_depth, preserve_depth, unclamped_draw_rect, IsPossibleChannelShuffle(), is_possible_mem_clear && ZBUF_TEX0.TBP0 != m_cached_ctx.FRAME.Block(), false,
 			src, nullptr, -1);
 
 		ZBUF_TEX0.TBW = m_channel_shuffle ? src->m_from_target_TEX0.TBW : m_cached_ctx.FRAME.FBW;
@@ -4025,42 +4398,27 @@ void GSRendererHW::Draw()
 		}
 	}
 
+	// Second pass texture shuffle detection using RT and source.
+	DetectTextureShuffleSecondPass(rt, src);
+
 	if (m_process_texture)
 	{
 		GIFRegCLAMP MIP_CLAMP = m_cached_ctx.CLAMP;
-		const GSVertex* v = &m_vertex.buff[0];
 
 		if (rt)
 		{
-			// Hypothesis: texture shuffle is used as a postprocessing effect so texture will be an old target.
-			// Initially code also tested the RT but it gives too much false-positive
-			const int horizontal_offset = ((static_cast<int>((m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0)) / 32) % static_cast<int>(std::max(rt->m_TEX0.TBW, 1U))) * frame_psm.pgs.x;
-			const int first_x = (((v[0].XYZ.X - m_context->XYOFFSET.OFX) + 8) >> 4) - horizontal_offset;
-			const int first_u = PRIM->FST ? ((v[0].U + 8) >> 4) : static_cast<int>(((1 << m_cached_ctx.TEX0.TW) * (v[0].ST.S / v[1].RGBAQ.Q)) + 0.5f);
-			const bool shuffle_coords = (first_x ^ first_u) & 8;
-
-			// copy of a 16bit source in to this target, make sure it's opaque and not bilinear to reduce false positives.
-			m_copy_16bit_to_target_shuffle = m_cached_ctx.TEX0.TBP0 != m_cached_ctx.FRAME.Block() && rt->m_32_bits_fmt == true && IsOpaque()
-			                              && !(context->TEX1.MMIN & 1) && !src->m_32_bits_fmt && m_cached_ctx.FRAME.FBMSK;
-
-			// It's not actually possible to do a C16->C16 texture shuffle of B to A as they are the same group
-			// However you can do it by using C32 and offsetting the target verticies to point to B A, then mask as appropriate.
-			m_same_group_texture_shuffle = draw_uses_target && (m_cached_ctx.TEX0.PSM & 0xE) == PSMCT32 && (m_cached_ctx.FRAME.PSM & 0x7) == PSMCT16 && (m_vt.m_min.p.x == 8.0f);
-
-			// Both input and output are 16 bits and texture was initially 32 bits! Same for the target, Sonic Unleash makes a new target which really is 16bit.
-			m_texture_shuffle = ((m_same_group_texture_shuffle || (tex_psm.bpp == 16)) && (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16) && (shuffle_coords || rt->m_32_bits_fmt)) &&
-			                    (src->m_32_bits_fmt || m_copy_16bit_to_target_shuffle) &&
-			                    (draw_sprite_tex || (m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_index.tail % 6) == 0 && TrianglesAreQuads(true)));
-
-			if (m_texture_shuffle && IsSplitTextureShuffle(rt->m_TEX0, rt->m_valid))
+			if (m_texture_shuffle)
 			{
-				// If TEX0 == FBP, we're going to have a source left in the TC.
-				// That source will get used in the actual draw unsafely, so kick it out.
-				if (m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0)
-					g_texture_cache->InvalidateVideoMem(context->offset.fb, m_r, false);
+				if (IsSplitTextureShuffle(rt->m_TEX0, rt->m_valid))
+				{
+					// If TEX0 == FBP, we're going to have a source left in the TC.
+					// That source will get used in the actual draw unsafely, so kick it out.
+					if (m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0)
+						g_texture_cache->InvalidateVideoMem(context->offset.fb, m_r, false);
 
-				CleanupDraw(true);
-				return;
+					CleanupDraw(true);
+					return;
+				}
 			}
 		}
 
@@ -4218,13 +4576,13 @@ void GSRendererHW::Draw()
 	if (!m_texture_shuffle && !m_channel_shuffle)
 	{
 		// Try to turn blits in to single sprites, saves upscaling problems when striped clears/blits.
-		if (m_vt.m_primclass == GS_SPRITE_CLASS && m_primitive_covers_without_gaps == NoGapsType::FullCover && m_index.tail > 2 && (!PRIM->TME || TextureCoversWithoutGapsNotEqual()) && m_vt.m_eq.rgba == 0xFFFF)
+		if (m_vt.m_primclass == GS_SPRITE_CLASS && m_primitive_covers_without_gaps == NoGapsType::FullCover && m_index->tail > 2 && (!PRIM->TME || TextureCoversWithoutGapsNotEqual()) && m_vt.m_eq.rgba == 0xFFFF)
 		{
 			// Full final framebuffer only.
 			const GSVector2i fb_size = PCRTCDisplays.GetFramebufferSize(-1);
 			if (std::abs(fb_size.x - m_r.width()) <= 1 && std::abs(fb_size.y - m_r.height()) <= 1)
 			{
-				GSVertex* v = m_vertex.buff;
+				GSVertex* v = m_vertex->buff;
 
 				v[0].XYZ.Z = v[1].XYZ.Z;
 				v[0].RGBAQ = v[1].RGBAQ;
@@ -4233,23 +4591,23 @@ void GSRendererHW::Draw()
 				m_vt.m_eq.z = true;
 				m_vt.m_eq.f = true;
 
-				v[1].XYZ.X = v[m_index.tail - 1].XYZ.X;
-				v[1].XYZ.Y = v[m_index.tail - 1].XYZ.Y;
+				v[1].XYZ.X = v[m_index->tail - 1].XYZ.X;
+				v[1].XYZ.Y = v[m_index->tail - 1].XYZ.Y;
 
 				if (PRIM->FST)
 				{
-					v[1].U = v[m_index.tail - 1].U;
-					v[1].V = v[m_index.tail - 1].V;
+					v[1].U = v[m_index->tail - 1].U;
+					v[1].V = v[m_index->tail - 1].V;
 				}
 				else
 				{
-					v[1].ST.S = v[m_index.tail - 1].ST.S;
-					v[1].ST.T = v[m_index.tail - 1].ST.T;
-					v[1].RGBAQ.Q = v[m_index.tail - 1].RGBAQ.Q;
+					v[1].ST.S = v[m_index->tail - 1].ST.S;
+					v[1].ST.T = v[m_index->tail - 1].ST.T;
+					v[1].RGBAQ.Q = v[m_index->tail - 1].RGBAQ.Q;
 				}
 
-				m_vertex.head = m_vertex.tail = m_vertex.next = 2;
-				m_index.tail = 2;
+				m_vertex->head = m_vertex->tail = m_vertex->next = 2;
+				m_index->tail = 2;
 			}
 		}
 
@@ -4318,11 +4676,6 @@ void GSRendererHW::Draw()
 			ds->m_TEX0.PSM = ZBUF_TEX0.PSM;
 		}
 	}
-	// Probably grabbed an old 16bit target (Band Hero)
-	/*else if (m_texture_shuffle && GSLocalMemory::m_psm[rt->m_TEX0.PSM].bpp == 16)
-	{
-		rt->m_TEX0.PSM = PSMCT32;
-	}*/
 
 	// Figure out which channels we're writing.
 	if (rt)
@@ -4342,7 +4695,7 @@ void GSRendererHW::Draw()
 		const GIFRegTEX0& draw_TEX0 = rt ? rt->m_TEX0 : ds->m_TEX0;
 		const int buffer_width = std::max(draw_TEX0.TBW, 1U) * 64;
 		// We need to adjust the size if it's a texture shuffle as we could end up making the RT twice the size.
-		if (src && m_texture_shuffle && !m_copy_16bit_to_target_shuffle)
+		if (src && m_texture_shuffle && !m_texture_shuffle.real_16_bit_source)
 		{
 			if ((new_size.x > src->m_valid_rect.z && m_vt.m_max.p.x == new_size.x) || (new_size.y > src->m_valid_rect.w && m_vt.m_max.p.y == new_size.y))
 			{
@@ -4713,8 +5066,8 @@ void GSRendererHW::Draw()
 	// but it still needs to adjust native stuff from memory as it's not been compensated for upscaling (Dragon Quest 8 font for example).
 	if (CanUpscale() && (m_vt.m_primclass == GS_SPRITE_CLASS) && rt && rt->GetScale() > 1.0f)
 	{
-		const u32 count = m_vertex.next;
-		GSVertex* v = &m_vertex.buff[0];
+		const u32 count = m_vertex->next;
+		GSVertex* v = &m_vertex->buff[0];
 
 		// Hack to avoid vertical black line in various games (ace combat/tekken)
 		if (GSConfig.UserHacks_AlignSpriteX)
@@ -4941,30 +5294,30 @@ bool GSRendererHW::VerifyIndices()
 	switch (m_vt.m_primclass)
 	{
 		case GS_SPRITE_CLASS:
-			if (m_index.tail % 2 != 0)
+			if (m_index->tail % 2 != 0)
 				return false;
 			[[fallthrough]];
 		case GS_POINT_CLASS:
 			// Expect indices to be flat increasing
-			for (u32 i = 0; i < m_index.tail; i++)
+			for (u32 i = 0; i < m_index->tail; i++)
 			{
-				if (m_index.buff[i] != i)
+				if (m_index->buff[i] != i)
 					return false;
 			}
 			break;
 		case GS_LINE_CLASS:
-			if (m_index.tail % 2 != 0)
+			if (m_index->tail % 2 != 0)
 				return false;
 			// Expect each line to be a pair next to each other
 			// VS expand relies on this!
-			for (u32 i = 0; i < m_index.tail; i += 2)
+			for (u32 i = 0; i < m_index->tail; i += 2)
 			{
-				if (m_index.buff[i] + 1 != m_index.buff[i + 1])
+				if (m_index->buff[i] + 1 != m_index->buff[i + 1])
 					return false;
 			}
 			break;
 		case GS_TRIANGLE_CLASS:
-			if (m_index.tail % 3 != 0)
+			if (m_index->tail % 3 != 0)
 				return false;
 			break;
 		case GS_INVALID_CLASS:
@@ -4989,9 +5342,9 @@ void GSRendererHW::HandleProvokingVertexFirst()
 
 	// If all first/last vertices have the same color there is nothing to do.
 	bool first_eq_last = true;
-	for (u32 i = 0; i < m_index.tail; i += n)
+	for (u32 i = 0; i < m_index->tail; i += n)
 	{
-		if (m_vertex.buff[m_index.buff[i]].RGBAQ.U32[0] != m_vertex.buff[m_index.buff[i + n - 1]].RGBAQ.U32[0])
+		if (m_vertex->buff[m_index->buff[i]].RGBAQ.U32[0] != m_vertex->buff[m_index->buff[i + n - 1]].RGBAQ.U32[0])
 		{
 			first_eq_last = false;
 			break;
@@ -5001,36 +5354,39 @@ void GSRendererHW::HandleProvokingVertexFirst()
 		return;
 
 	// De-index the vertices using the copy buffer
-	while (m_vertex.maxcount < m_index.tail)
+	while (m_vertex->maxcount < m_index->tail)
 		GrowVertexBuffer();
-	for (int i = static_cast<int>(m_index.tail) - 1; i >= 0; i--)
+	for (int i = static_cast<int>(m_index->tail) - 1; i >= 0; i--)
 	{
-		m_vertex.buff_copy[i] = m_vertex.buff[m_index.buff[i]];
-		m_index.buff[i] = static_cast<u16>(i);
+		m_vertex->buff_copy[i] = m_vertex->buff[m_index->buff[i]];
+		m_index->buff[i] = static_cast<u16>(i);
 	}
-	std::swap(m_vertex.buff, m_vertex.buff_copy);
-	m_vertex.head = m_vertex.next = m_vertex.tail = m_index.tail;
+	std::swap(m_vertex->buff, m_vertex->buff_copy);
+	m_vertex->head = m_vertex->next = m_vertex->tail = m_index->tail;
 
 	// Put correct color in the first vertex
-	for (u32 i = 0; i < m_index.tail; i += n)
+	for (u32 i = 0; i < m_index->tail; i += n)
 	{
-		m_vertex.buff[i].RGBAQ.U32[0] = m_vertex.buff[i + n - 1].RGBAQ.U32[0];
-		m_vertex.buff[i + n - 1].RGBAQ.U32[0] = 0xff; // Make last vertex red for debugging if used improperly
+		m_vertex->buff[i].RGBAQ.U32[0] = m_vertex->buff[i + n - 1].RGBAQ.U32[0];
+		m_vertex->buff[i + n - 1].RGBAQ.U32[0] = 0xff; // Make last vertex red for debugging if used improperly
 	}
 }
 
-void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert_backup)
+void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert_backup, const bool no_rt)
 {
 	GL_PUSH("HW: IA");
 
-	if (GSConfig.UserHacks_ForceEvenSpritePosition && !m_isPackedUV_HackFlag && m_process_texture && PRIM->FST)
+	// Do not force even sprite positive for texture shuffles since the coordinates are already aligned.
+	if (GSConfig.UserHacks_ForceEvenSpritePosition && !m_isPackedUV_HackFlag && m_process_texture && PRIM->FST &&
+		!m_texture_shuffle)
 	{
-		for (u32 i = 0; i < m_vertex.next; i++)
-			m_vertex.buff[i].UV &= 0x3FEF3FEF;
+		for (u32 i = 0; i < m_vertex->next; i++)
+			m_vertex->buff[i].UV &= 0x3FEF3FEF;
 	}
 
 	const bool unscale_pt_ln = !GSConfig.UserHacks_DisableSafeFeatures && (target_scale != 1.0f);
 	const GSDevice::FeatureSupport features = g_gs_device->Features();
+	const bool draw_aa1 = !no_rt && PRIM->AA1 && features.aa1;
 
 	pxAssert(VerifyIndices());
 
@@ -5052,9 +5408,9 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 						m_conf.vs.expand = GSHWDrawConfig::VSExpand::Point;
 						m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
 						m_conf.topology = GSHWDrawConfig::Topology::Triangle;
-						m_conf.verts = m_vertex.buff;
-						m_conf.nverts = m_vertex.next;
-						m_conf.nindices = m_index.tail * 6;
+						m_conf.verts = m_vertex->buff;
+						m_conf.nverts = m_vertex->next;
+						m_conf.nindices = m_index->tail * 6;
 						m_conf.indices_per_prim = 6;
 						return;
 					}
@@ -5074,7 +5430,18 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 			{
 				m_conf.topology = GSHWDrawConfig::Topology::Line;
 				m_conf.indices_per_prim = 2;
-				if (unscale_pt_ln)
+				if (draw_aa1)
+				{
+					// AA1 expansion uses a similar path as upscale expansion but it is used
+					// for both upscaling and native resolution drawing.
+					GL_INS("HW: AA1 line expand.");
+					m_conf.vs.expand = GSHWDrawConfig::VSExpand::LineAA1;
+					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
+					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
+					m_conf.indices_per_prim = 6;
+					ExpandLineIndices();
+				}
+				else if (unscale_pt_ln)
 				{
 					if (features.line_expand)
 					{
@@ -5103,19 +5470,19 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 
 					if (req_vert_backup)
 					{
-						memcpy(m_draw_vertex.buff, m_vertex.buff, sizeof(GSVertex) * m_vertex.next);
-						memcpy(m_draw_index.buff, m_index.buff, sizeof(u16) * m_index.tail);
+						memcpy(m_draw_vertex.buff, m_vertex->buff, sizeof(GSVertex) * m_vertex->next);
+						memcpy(m_draw_index.buff, m_index->buff, sizeof(u16) * m_index->tail);
 
 						m_conf.verts = m_draw_vertex.buff;
 						m_conf.indices = m_draw_index.buff;
 					}
 					else
 					{
-						m_conf.verts = m_vertex.buff;
-						m_conf.indices = m_index.buff;
+						m_conf.verts = m_vertex->buff;
+						m_conf.indices = m_index->buff;
 					}
-					m_conf.nverts = m_vertex.next;
-					m_conf.nindices = m_index.tail * 3;
+					m_conf.nverts = m_vertex->next;
+					m_conf.nindices = m_index->tail * 3;
 					m_conf.indices_per_prim = 6;
 					return;
 				}
@@ -5131,15 +5498,26 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 
 		case GS_TRIANGLE_CLASS:
 			{
-				m_conf.topology = GSHWDrawConfig::Topology::Triangle;
-				m_conf.indices_per_prim = 3;
+				if (draw_aa1)
+				{
+					GL_INS("HW: AA1 triangle expand.");
+					m_conf.vs.expand = GSHWDrawConfig::VSExpand::TriangleAA1;
+					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
+					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
+					m_conf.indices_per_prim = 3;
+				}
+				else
+				{
+					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
+					m_conf.indices_per_prim = 3;
+				}
 
 				// See note above in GS_SPRITE_CLASS.
 				if (m_vt.m_accurate_stq && m_vt.m_eq.stq) [[unlikely]]
 				{
-					GSVertex* const v = m_vertex.buff;
+					GSVertex* const v = m_vertex->buff;
 					const GSVector4 v_q = GSVector4(v[0].RGBAQ.Q);
-					for (u32 i = 0; i < m_vertex.next; i++)
+					for (u32 i = 0; i < m_vertex->next; i++)
 					{
 						// v[i].ST.ST /= v[i].RGBAQ.Q; v[i].RGBAQ.Q = 1.0f; (Q / Q = 1)
 						GSVector4 v_st = GSVector4::load<true>(&v[i].ST);
@@ -5156,19 +5534,19 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 
 	if (req_vert_backup)
 	{
-		memcpy(m_draw_vertex.buff, m_vertex.buff, sizeof(GSVertex) * m_vertex.next);
-		memcpy(m_draw_index.buff, m_index.buff, sizeof(u16) * m_index.tail);
+		memcpy(m_draw_vertex.buff, m_vertex->buff, sizeof(GSVertex) * m_vertex->next);
+		memcpy(m_draw_index.buff, m_index->buff, sizeof(u16) * m_index->tail);
 
 		m_conf.verts = m_draw_vertex.buff;
 		m_conf.indices = m_draw_index.buff;
 	}
 	else
 	{
-		m_conf.verts = m_vertex.buff;
-		m_conf.indices = m_index.buff;
+		m_conf.verts = m_vertex->buff;
+		m_conf.indices = m_index->buff;
 	}
-	m_conf.nverts = m_vertex.next;
-	m_conf.nindices = m_index.tail;
+	m_conf.nverts = m_vertex->next;
+	m_conf.nindices = m_index->tail;
 }
 
 void GSRendererHW::EmulateZbuffer(const GSTextureCache::Target* ds)
@@ -5223,101 +5601,726 @@ void GSRendererHW::EmulateZbuffer(const GSTextureCache::Target* ds)
 			m_conf.ps.zclamp = true;
 		}
 	}
+}
 
-	// Enables writing to depth (e.g. SV_Depth or gl_FragDepth) in the pixel shader.
-	m_conf.ps.zwrite = m_conf.ps.zfloor || m_conf.ps.zclamp;
+void GSRendererHW::CalculateAlphaRange(GSTextureCache::Target* rt, GSTextureCache::Target* ds,
+	DATEOptions& date_options, int& blend_alpha_min, int& blend_alpha_max, int& rt_new_alpha_min, int& rt_new_alpha_max)
+{
+	// Calculate alpha range for RT.
+	if (rt)
+	{
+		GL_INS("HW: RT alpha was %s before draw", rt->m_rt_alpha_scale ? "scaled" : "NOT scaled");
+
+		blend_alpha_min = rt_new_alpha_min = rt->m_alpha_min;
+		blend_alpha_max = rt_new_alpha_max = rt->m_alpha_max;
+
+		const int fba_value = m_draw_env->CTXT[m_draw_env->PRIM.CTXT].FBA.FBA * 128;
+		const bool is_24_bit = (GSLocalMemory::m_psm[rt->m_TEX0.PSM].trbpp == 24);
+		if (is_24_bit)
+		{
+			// C24/Z24 - alpha is 1.
+			blend_alpha_min = 128;
+			blend_alpha_max = 128;
+		}
+
+		if (GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x8 && !m_texture_shuffle)
+		{
+			const int s_alpha_max = GetAlphaMinMax().max | fba_value;
+			const int s_alpha_min = GetAlphaMinMax().min | fba_value;
+
+			const bool afail_always_fb_alpha = m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY || (m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].trbpp != 32);
+			const bool always_passing_alpha = !m_cached_ctx.TEST.ATE || afail_always_fb_alpha || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ATST_ALWAYS);
+			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && m_primitive_covers_without_gaps == NoGapsType::FullCover &&
+				!(date_options.enabled || !always_passing_alpha || !IsDepthAlwaysPassing());
+
+			// On DX FBMask emulation can be missing on lower blend levels, so we'll do whatever the API does.
+			const u32 fb_mask = m_conf.colormask.wa ? (m_conf.ps.fbmask ? m_conf.cb_ps.FbMask.a : 0) : 0xFF;
+			const u32 alpha_mask = (GSLocalMemory::m_psm[rt->m_TEX0.PSM].fmsk & 0xFF000000) >> 24;
+			if ((fb_mask & alpha_mask) == 0)
+			{
+				if (full_cover)
+				{
+					rt_new_alpha_max = s_alpha_max;
+					rt_new_alpha_min = s_alpha_min;
+				}
+				else
+				{
+					rt_new_alpha_max = std::max(s_alpha_max, rt_new_alpha_max);
+					rt_new_alpha_min = std::min(s_alpha_min, rt_new_alpha_min);
+				}
+			}
+			else if ((fb_mask & alpha_mask) != alpha_mask) // We can't be sure of the alpha if it's partially masked.
+			{
+				// Any number of bits could be set, so let's be paranoid about it
+				const u32 new_max_alpha = (s_alpha_max != s_alpha_min) ? (std::min(s_alpha_max, ((1 << (32 - std::countl_zero(static_cast<u32>(s_alpha_max)))) - 1)) & ~fb_mask) : (s_alpha_max & ~fb_mask);
+				const u32 curr_max = (rt_new_alpha_max != rt_new_alpha_min && rt->m_alpha_range) ? (((1 << (32 - std::countl_zero(static_cast<u32>(rt_new_alpha_max)))) - 1) & fb_mask) : ((rt_new_alpha_max | rt_new_alpha_min) & fb_mask);
+				if (full_cover)
+					rt_new_alpha_max = new_max_alpha | curr_max;
+				else
+					rt_new_alpha_max = std::max(static_cast<int>(new_max_alpha | curr_max), rt_new_alpha_max);
+
+				rt_new_alpha_min = std::min(s_alpha_min, rt_new_alpha_min);
+			}
+
+			if ((fb_mask & alpha_mask) != alpha_mask)
+			{
+				if (full_cover && (fb_mask & alpha_mask) == 0)
+					rt->m_alpha_range = s_alpha_max != s_alpha_min;
+				else
+					rt->m_alpha_range |= (s_alpha_max & ~fb_mask) != (s_alpha_min & ~fb_mask);
+			}
+		}
+		else if ((m_texture_shuffle && m_conf.colormask.wa))
+		{
+			// in shuffles, the alpha top bit values are set according to TEXA
+			const GSVector4i shuffle_rect = GSVector4i(m_vt.m_min.p.x, m_vt.m_min.p.y, m_vt.m_max.p.x, m_vt.m_max.p.y);
+			if (!rt->m_valid.rintersect(shuffle_rect).eq(rt->m_valid) || (m_cached_ctx.FRAME.FBMSK & 0xFFFC0000))
+			{
+				rt_new_alpha_max = std::max(static_cast<int>((std::max(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80) + 127), rt_new_alpha_max) | fba_value;
+				rt_new_alpha_min = std::min(static_cast<int>(std::min(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80), rt_new_alpha_min);
+			}
+			else
+			{
+				rt_new_alpha_max = (std::max(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80) + 127 | fba_value;
+				rt_new_alpha_min = (std::min(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80) | fba_value;
+			}
+			rt->m_alpha_range = true;
+		}
+
+		GL_INS("HW: RT Alpha Range: %d-%d => %d-%d", blend_alpha_min, blend_alpha_max, rt_new_alpha_min, rt_new_alpha_max);
+
+		// If there's no overlap, the values in the RT before FB write will be the old values.
+		if (m_prim_overlap != PRIM_OVERLAP_NO)
+		{
+			// Otherwise, it may be a mix of the old/new values.
+			blend_alpha_min = std::min(blend_alpha_min, rt_new_alpha_min);
+			blend_alpha_max = std::max(blend_alpha_max, rt_new_alpha_max);
+		}
+
+		if (!rt->m_32_bits_fmt)
+		{
+			rt_new_alpha_max &= 128;
+			rt_new_alpha_min &= 128;
+
+			if (rt_new_alpha_max == rt_new_alpha_min)
+				rt->m_alpha_range = false;
+		}
+	}
+
+	// Calculate alpha range for DS.
+	if (ds)
+	{
+		ds->m_alpha_max = std::max(static_cast<u32>(ds->m_alpha_max), static_cast<u32>(m_vt.m_max.p.z) >> 24);
+		ds->m_alpha_min = std::min(static_cast<u32>(ds->m_alpha_min), static_cast<u32>(m_vt.m_min.p.z) >> 24);
+		GL_INS("HW: New DS Alpha Range: %d-%d", ds->m_alpha_min, ds->m_alpha_max);
+
+		if (GSLocalMemory::m_psm[ds->m_TEX0.PSM].bpp == 16)
+		{
+			ds->m_alpha_max &= 128;
+			ds->m_alpha_min &= 128;
+		}
+	}
+}
+
+void GSRendererHW::DetermineAlphaScaling(GSTextureCache::Target* rt, GSTextureCache::Source* tex,
+	bool req_src_update, int rt_new_alpha_max, bool& can_scale_rt_alpha, bool& new_scale_rt_alpha)
+{
+	if (rt)
+	{
+		const bool needs_ad = rt && m_context->ALPHA.C == 1 && rt->m_alpha_min != rt->m_alpha_max && rt->m_alpha_max > 128;
+
+		can_scale_rt_alpha = !needs_ad && (GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x8) && rt_new_alpha_max <= 128;
+
+		const bool partial_fbmask = (m_conf.ps.fbmask && m_conf.cb_ps.FbMask.a != 0xFF && m_conf.cb_ps.FbMask.a != 0);
+		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || (m_conf.colormask.wa && (rt_new_alpha_max > 128 || partial_fbmask));
+
+		if (rta_decorrection)
+		{
+			if (m_texture_shuffle)
+			{
+				if (m_conf.ps.process_ba & SHUFFLE_READ)
+				{
+					can_scale_rt_alpha = false;
+
+					rt->UnscaleRTAlpha();
+					m_conf.rt = rt->m_texture;
+
+					if (req_src_update)
+						tex->m_texture = rt->m_texture;
+				}
+				else if (m_conf.colormask.wa)
+				{
+					if (!(m_cached_ctx.FRAME.FBMSK & 0xFFFC0000))
+					{
+						can_scale_rt_alpha = false;
+						rt->m_rt_alpha_scale = false;
+					}
+					else if (m_cached_ctx.FRAME.FBMSK & 0xFFFC0000)
+					{
+						can_scale_rt_alpha = false;
+						rt->UnscaleRTAlpha();
+						m_conf.rt = rt->m_texture;
+
+						if (req_src_update)
+							tex->m_texture = rt->m_texture;
+					}
+				}
+			}
+			else if (m_channel_shuffle)
+			{
+				if (m_conf.ps.tales_of_abyss_hle || (tex && tex->m_from_target && tex->m_from_target == rt && m_conf.ps.channel == ChannelFetch_ALPHA) || partial_fbmask || rt_new_alpha_max > 128)
+				{
+					can_scale_rt_alpha = false;
+					rt->UnscaleRTAlpha();
+					m_conf.rt = rt->m_texture;
+
+					if (req_src_update)
+						tex->m_texture = rt->m_texture;
+				}
+			}
+			else if (rt->m_last_draw == s_n)
+			{
+				can_scale_rt_alpha = false;
+				rt->m_rt_alpha_scale = false;
+			}
+			else
+			{
+				can_scale_rt_alpha = false;
+				rt->UnscaleRTAlpha();
+				m_conf.rt = rt->m_texture;
+
+				if (req_src_update)
+					tex->m_texture = rt->m_texture;
+			}
+		}
+
+		new_scale_rt_alpha = rt->m_rt_alpha_scale;
+	}
+}
+
+void GSRendererHW::EmulateAA1()
+{
+	const GSDevice::FeatureSupport& features = g_gs_device->Features();
+
+	pxAssert(!features.aa1 || features.feedback_loops());
+
+	if (IsCoverageAlphaSupported())
+	{
+		m_conf.ps.abe = PRIM->ABE; // ABE flag determines how coverage is used for alpha.
+
+		if (m_vt.m_primclass == GS_LINE_CLASS)
+		{
+			GL_INS("HW: AA1 lines. No depth write.");
+
+			// AA1: Z is not written on lines since coverage is always less than 0x80.
+			m_conf.depth.zwe = false;
+			m_cached_ctx.ZBUF.ZMSK = 1;
+
+			m_conf.ps.aa1 = GSHWDrawConfig::PS_AA1::LINE;
+		}
+		else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+		{
+			// Force SW depth so that Z writes can be prevented for edge pixels.
+			if (m_cached_ctx.DepthWrite())
+			{
+				GL_INS("HW: AA1 triangles with depth feedback.");
+
+				m_conf.ps.aa1 = GSHWDrawConfig::PS_AA1::TRIANGLE_SW_Z; // Allows discarding depth on edge pixels.
+
+				ConfigureDepthFeedback(); // Enable barriers/SW depth test.
+			}
+			else
+			{
+				GL_INS("HW: AA1 triangles with no depth write.");
+
+				m_conf.ps.aa1 = GSHWDrawConfig::PS_AA1::TRIANGLE; // No special depth handling.
+			}
+		}
+		else
+		{
+			pxFail("Unsupported primclass for AA1"); // Impossible
+		}
+	}
+}
+
+bool GSRendererHW::EmulateDATEEarlyFail(DATEOptions& date, GSTextureCache::Target* rt)
+{
+	if (!date.enabled)
+		return false;
+
+	const bool is_overlap_alpha = m_prim_overlap != PRIM_OVERLAP_NO && !(m_cached_ctx.FRAME.FBMSK & 0x80000000);
+	if (m_cached_ctx.TEST.DATM == 0)
+	{
+		// Some pixels are >= 1 so some fail, or some pixels get written but the written alpha matches or exceeds 1 (so overlap doesn't always pass).
+		date.enabled = rt->m_alpha_max >= 128 || (is_overlap_alpha && rt->m_alpha_min < 128 && (GetAlphaMinMax().max >= 128 || (m_context->FBA.FBA || IsCoverageAlphaFixedOne())));
+
+		// All pixels fail.
+		if (date.enabled && rt->m_alpha_min >= 128)
+			return true;
+	}
+	else
+	{
+		// Some pixels are < 1 so some fail, or some pixels get written but the written alpha goes below 1 (so overlap doesn't always pass).
+		date.enabled = rt->m_alpha_min < 128 || (is_overlap_alpha && rt->m_alpha_max >= 128 && (GetAlphaMinMax().min < 128 && !(m_context->FBA.FBA || IsCoverageAlphaFixedOne())));
+
+		// All pixels fail.
+		if (date.enabled && rt->m_alpha_max < 128)
+			return true;
+	}
+
+	return false;
+}
+
+void GSRendererHW::EmulateDATESelectMethod(DATEOptions& date_options, GSTextureCache::Target* rt, int& blend_alpha_min, int& blend_alpha_max)
+{
+	if (!date_options.enabled)
+		return;
+
+	const GSDevice::FeatureSupport& features = g_gs_device->Features();
+
+	const bool complex_alpha_test = m_cached_ctx.TEST.ATE &&
+	                                m_cached_ctx.TEST.ATST != ATST_ALWAYS &&
+	                                m_cached_ctx.TEST.ATST != ATST_NEVER &&
+	                                m_cached_ctx.TEST.AFAIL != AFAIL_KEEP;
+	if (m_cached_ctx.TEST.DATM)
+	{
+		blend_alpha_min = std::max(blend_alpha_min, 128);
+		blend_alpha_max = std::max(blend_alpha_max, 128);
+	}
+	else
+	{
+		blend_alpha_min = std::min(blend_alpha_min, 127);
+		blend_alpha_max = std::min(blend_alpha_max, 127);
+	}
+
+	// It is way too complex to emulate texture shuffle with DATE, so use accurate path.
+	// No overlap should be triggered on gl/vk only as they support DATE_BARRIER.
+	if (features.framebuffer_fetch)
+	{
+		// Full DATE is "free" with framebuffer fetch. The barrier gets cleared below.
+		GL_PERF("DATE: Accurate with framebuffer fetch");
+		date_options.barrier = true;
+		m_conf.require_full_barrier = true;
+	}
+	else if (features.feedback_loops() && IsCoverageAlphaSupported())
+	{
+		// We're using AA1 for this draw so use only full barrier DATE, to avoid the complications
+		// with stencil/primid setup with AA1 vertex shaders. AA1 triangles usually require full barriers anyway.
+		GL_PERF("DATE: Accurate with IsCoverageAlphaSupported");
+		date_options.barrier = true;
+		m_conf.require_full_barrier = true;
+	}
+	else if ((features.texture_barrier && m_prim_overlap == PRIM_OVERLAP_NO))
+	{
+		// We only enable this for texture barriers as it's fast, multidraw fb copy might be slower.
+		GL_PERF("DATE: Accurate with no overlap");
+		m_conf.require_full_barrier = true;
+		date_options.barrier = true;
+	}
+	else if (features.feedback_loops() && m_texture_shuffle)
+	{
+		// Ensure texture shuffles run with full barrier DATE.
+		GL_PERF("DATE: Accurate with texture shuffle");
+		m_conf.require_full_barrier = true;
+		date_options.barrier = true;
+	}
+	// When Blending is disabled and Edge Anti Aliasing is enabled,
+	// the output alpha is Coverage (which we force to 128) so DATE will fail/pass guaranteed on second pass.
+	else if (m_conf.colormask.wa && (m_context->FBA.FBA || IsCoverageAlphaFixedOne()) && features.stencil_buffer)
+	{
+		GL_PERF("DATE: Fast with FBA, all pixels will be >= 128");
+		date_options.stencil_one = !m_cached_ctx.TEST.DATM;
+	}
+	else if (m_conf.colormask.wa && !complex_alpha_test && !(m_cached_ctx.FRAME.FBMSK & 0x80000000))
+	{
+		// Performance note: check alpha range with GetAlphaMinMax()
+		// Note: all my dump are already above 120fps, but it seems to reduce GPU load
+		// with big upscaling
+		if (m_cached_ctx.TEST.DATM && GetAlphaMinMax().max < 128 && features.stencil_buffer)
+		{
+			// Only first pixel (write 0) will pass (alpha is 1)
+			GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+			date_options.stencil_one = true;
+		}
+		else if (!m_cached_ctx.TEST.DATM && GetAlphaMinMax().min >= 128 && features.stencil_buffer)
+		{
+			// Only first pixel (write 1) will pass (alpha is 0)
+			GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+			date_options.stencil_one = true;
+		}
+		else if (features.texture_barrier && ((m_vt.m_primclass == GS_SPRITE_CLASS && ComputeDrawlistGetSize(rt->m_scale) < 10) || (m_index->tail < 30)))
+		{
+			// texture barrier will split the draw call into n draw call. It is very efficient for
+			// few primitive draws. Otherwise it sucks.
+			GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+			m_conf.require_full_barrier = true;
+			date_options.barrier = true;
+		}
+		else if (features.feedback_loops() && m_conf.require_full_barrier)
+		{
+			// Full barrier is enabled (likely sw fbmask), we need to use date barrier.
+			GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+			m_conf.require_full_barrier = true;
+			date_options.barrier = true;
+		}
+		else if (features.primitive_id)
+		{
+			GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+			date_options.primid = true;
+		}
+		else if (features.feedback_loops())
+		{
+			GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+			m_conf.require_full_barrier = true;
+			date_options.barrier = true;
+		}
+		else if (features.stencil_buffer)
+		{
+			// Might be inaccurate in some cases but we shouldn't hit this path.
+			GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
+			date_options.stencil_one = true;
+		}
+	}
+	else if (features.texture_barrier && !m_conf.colormask.wa)
+	{
+		GL_PERF("DATE: Accurate with no alpha write");
+		m_conf.require_one_barrier = true;
+		date_options.barrier = true;
+	}
+
+	// Will save my life !
+	pxAssert(!(date_options.barrier && date_options.stencil_one));
+	pxAssert(!(date_options.primid && date_options.stencil_one));
+	pxAssert(!(date_options.primid && date_options.barrier));
+}
+
+void GSRendererHW::EmulateDATEGetConfig(DATEOptions& date_options, bool scale_rt_alpha, GSDevice::RecycledTexture& temp_ds)
+{
+	if (!date_options.enabled)
+	{
+		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Off;
+		return;
+	}
+
+	const GSDevice::FeatureSupport& features = g_gs_device->Features();
+
+	// Always swap DATE with DATE_BARRIER if we have barriers on when alpha write is masked.
+	// This is always enabled on VK/GL/DX12 but not on DX11 as copies are slow so we can selectively enable it like now.
+	if (!m_conf.colormask.wa && (m_conf.require_one_barrier || (m_conf.require_full_barrier && features.feedback_loops())))
+		date_options.barrier = true;
+
+	if (m_conf.ps.scanmsk & 2)
+		date_options.primid = false; // to have discard in the shader work correctly
+
+	if (date_options.stencil_one)
+		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::StencilOne;
+	else if (date_options.primid)
+		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking;
+	else if (date_options.barrier)
+		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Full;
+	else if (features.stencil_buffer)
+		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Stencil;
+
+	if (scale_rt_alpha)
+		m_conf.datm = static_cast<SetDATM>(m_cached_ctx.TEST.DATM + 2);
+	else
+		m_conf.datm = static_cast<SetDATM>(m_cached_ctx.TEST.DATM);
+
+	// DATE Stencil always needs a depth stencil texture.
+	const bool date_stencil_needs_ds = !m_conf.ds &&
+		(m_conf.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil || m_conf.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne);
+	if (date_stencil_needs_ds)
+	{
+		const bool need_barrier = m_conf.require_one_barrier || (m_conf.require_full_barrier && features.feedback_loops());
+		if ((temp_ds.reset(g_gs_device->CreateDepthStencil(m_conf.rt->GetWidth(), m_conf.rt->GetHeight(),
+			GSTexture::Format::DepthStencil, false)), temp_ds))
+		{
+			m_conf.ds = temp_ds.get();
+		}
+		else if (need_barrier)
+		{
+			date_options.stencil_one = false;
+			date_options.barrier = true;
+			m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Full;
+			DevCon.Warning("HW: Depth buffer creation failed for Stencil Date. Fallback to Full.");
+		}
+		else if (features.primitive_id && !(m_conf.ps.scanmsk & 2))
+		{
+			date_options.stencil_one = false;
+			date_options.primid = true;
+			m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking;
+			DevCon.Warning("HW: Depth buffer creation failed for Stencil Date. Fallback to PrimIDTracking.");
+		}
+		else
+		{
+			date_options.enabled = false;
+			date_options.stencil_one = false;
+			m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Off;
+			DevCon.Warning("HW: Depth buffer creation failed for Stencil Date.");
+		}
+	}
+
+	if (date_options.barrier)
+	{
+		m_conf.ps.date = 5 + m_cached_ctx.TEST.DATM;
+	}
+	else if (date_options.stencil_one)
+	{
+		const bool multidraw_fb_copy = m_conf.require_one_barrier || (m_conf.require_full_barrier && features.multidraw_fb_copy);
+		if (features.texture_barrier || multidraw_fb_copy)
+		{
+			m_conf.require_one_barrier = true;
+			m_conf.ps.date = 5 + m_cached_ctx.TEST.DATM;
+		}
+		m_conf.depth.date = 1;
+		m_conf.depth.date_one = 1;
+	}
+	else if (date_options.primid)
+	{
+		m_conf.ps.date = 1 + m_cached_ctx.TEST.DATM;
+	}
+	else if (date_options.enabled)
+	{
+		m_conf.depth.date = 1;
+	}
+}
+
+void GSRendererHW::DetermineVSConfig(GSTextureCache::Target* rt, float rtscale, const GSVector2i& rtsize,
+	const GSVector2i& unscaled_size, float& scale_x, float& scale_y)
+{
+	m_conf.vs.tme = m_process_texture;
+	m_conf.vs.fst = PRIM->FST;
+
+	float sx, sy, ox2, oy2;
+	const float ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
+	const float oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
+
+	// Do not apply HPO on texture shuffle draws, as the coordinates are already aligned.
+	if ((GSConfig.UserHacks_HalfPixelOffset < GSHalfPixelOffset::Native || m_texture_shuffle) && rtscale > 1.0f)
+	{
+		sx = 2.0f * rtscale / (rtsize.x << 4);
+		sy = 2.0f * rtscale / (rtsize.y << 4);
+		ox2 = -1.0f / rtsize.x;
+		oy2 = -1.0f / rtsize.y;
+		float mod_xy = 0.0f;
+
+		//This hack subtracts around half a pixel from OFX and OFY.
+		//The resulting shifted output aligns better with common blending / corona / blurring effects,
+		//but introduces a few bad pixels on the edges.
+		if (!rt)
+			mod_xy = GetModXYOffset();
+		else
+			mod_xy = rt->OffsetHack_modxy;
+
+		if (mod_xy > 1.0f)
+		{
+			ox2 *= mod_xy;
+			oy2 *= mod_xy;
+		}
+	}
+	else
+	{
+		// Align coordinates to native resolution framebuffer, hope for the best.
+		const int unscaled_x = unscaled_size.x;
+		const int unscaled_y = unscaled_size.y;
+		sx = 2.0f / (unscaled_x << 4);
+		sy = 2.0f / (unscaled_y << 4);
+
+		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset)
+		{
+			ox2 = (-1.0f / (unscaled_x * rtscale));
+			oy2 = (-1.0f / (unscaled_y * rtscale));
+
+			// Having the vertex negatively offset is a common thing for copying sprites but this causes problems
+			// when upscaling, so we need to further adjust the offset.
+			// This kinda screws things up when using ST, so let's not.
+			if (m_vt.m_primclass == GS_SPRITE_CLASS && rtscale > 1.0f && (m_process_texture && PRIM->FST))
+			{
+				const GSVertex* v = &m_vertex->buff[0];
+				const int x1_frac = ((v[1].XYZ.X - m_context->XYOFFSET.OFX) & 0xf);
+				const int y1_frac = ((v[1].XYZ.Y - m_context->XYOFFSET.OFY) & 0xf);
+				if (x1_frac & 8)
+					ox2 *= 1.0f + ((static_cast<float>(16 - x1_frac) / 8.0f) * rtscale);
+
+				if (y1_frac & 8)
+					oy2 *= 1.0f + ((static_cast<float>(16 - y1_frac) / 8.0f) * rtscale);
+			}
+		}
+		else
+		{
+			ox2 = -1.0f / unscaled_x;
+			oy2 = -1.0f / unscaled_y;
+		}
+	}
+
+	scale_x = sx;
+	scale_y = sy;
+	m_conf.cb_vs.vertex_scale = GSVector2(sx, sy);
+	m_conf.cb_vs.vertex_offset = GSVector2(ox * sx + ox2 + 1, oy * sy + oy2 + 1);
+
+	m_conf.vs.iip = !IsFlatShaded();
+}
+
+void GSRendererHW::DetermineBarriers(GSTextureCache::Target* rt)
+{
+	const GSDevice::FeatureSupport& features = g_gs_device->Features();
+
+	if (features.framebuffer_fetch)
+	{
+		// Intel GPUs on Metal lock up if you try to use DSB and framebuffer fetch at once
+		// We should never need to do that (since using framebuffer fetch means you should be able to do all blending in shader),
+		// but sometimes it slips through
+		if (m_conf.require_one_barrier || m_conf.require_full_barrier)
+			pxAssert(!m_conf.blend.enable);
+
+		// If we use depth feedback directly, we must use barriers for the depth texture.
+		// If we use depth-as-color feedback, then FB fetch can be used for depth also.
+		const bool need_barriers_for_depth = m_conf.ps.IsFeedbackLoopDepth() && features.depth_feedback;
+
+		if (!need_barriers_for_depth)
+		{
+			// Barriers aren't needed with fbfetch
+			m_conf.require_one_barrier = false;
+			m_conf.require_full_barrier = false;
+		}
+	}
+	// Multi-pass algorithms shouldn't be needed with full barrier and backends may not handle this correctly
+	pxAssert(!m_conf.require_full_barrier || !m_conf.ps.colclip_hw);
+
+	// Swap full barrier for one barrier when there's no overlap, or a shuffle.
+	if (features.feedback_loops() && m_conf.require_full_barrier && (m_prim_overlap == PRIM_OVERLAP_NO || m_conf.ps.shuffle || m_channel_shuffle))
+	{
+		m_conf.require_full_barrier = false;
+		m_conf.require_one_barrier = true;
+	}
+	else if (!features.feedback_loops())
+	{
+		// These shouldn't be enabled if texture barriers aren't supported, make sure they are off.
+		m_conf.require_full_barrier = false;
+	}
+
+	if (m_conf.require_full_barrier && features.feedback_loops())
+	{
+		ComputeDrawlistGetSize(rt->m_scale);
+		m_conf.drawlist = &m_drawlist;
+		m_conf.drawlist_bbox = &m_drawlist_bbox;
+	}
+}
+
+void GSRendererHW::EmulateDither()
+{
+	if (m_conf.ps.dither || m_conf.blend_multi_pass.dither)
+	{
+		const GIFRegDIMX& DIMX = m_draw_env->DIMX;
+		GL_DBG("DITHERING mode %d (%d)", (GSConfig.Dithering == 3) ? "Force 32bit" : ((GSConfig.Dithering == 0) ? "Disabled" : "Enabled"), GSConfig.Dithering);
+
+		if (m_conf.ps.dither || GSConfig.Dithering == 3)
+			m_conf.ps.dither = GSConfig.Dithering;
+
+		m_conf.cb_ps.DitherMatrix[0] = GSVector4(DIMX.DM00, DIMX.DM01, DIMX.DM02, DIMX.DM03);
+		m_conf.cb_ps.DitherMatrix[1] = GSVector4(DIMX.DM10, DIMX.DM11, DIMX.DM12, DIMX.DM13);
+		m_conf.cb_ps.DitherMatrix[2] = GSVector4(DIMX.DM20, DIMX.DM21, DIMX.DM22, DIMX.DM23);
+		m_conf.cb_ps.DitherMatrix[3] = GSVector4(DIMX.DM30, DIMX.DM31, DIMX.DM32, DIMX.DM33);
+	}
+	else if (GSConfig.Dithering > 2)
+	{
+		m_conf.ps.dither = GSConfig.Dithering;
+		m_conf.blend_multi_pass.dither = GSConfig.Dithering;
+	}
 }
 
 void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GSTextureCache::Source* tex)
 {
 	// Uncomment to disable texture shuffle emulation.
-	// m_texture_shuffle = false;
+	// m_texture_shuffle.Disable();
 
 	const bool enable_fbmask_emulation = GSConfig.AccurateBlendingUnit != AccBlendLevel::Minimum;
 	const GSDevice::FeatureSupport features = g_gs_device->Features();
 
 	if (m_texture_shuffle)
 	{
+		ConvertSpriteTextureShuffle(rt, tex);
+
 		m_conf.ps.shuffle = 1;
 		m_conf.ps.dst_fmt = GSLocalMemory::PSM_FMT_32;
 
 		u32 process_rg = 0;
 		u32 process_ba = 0;
-		bool shuffle_across = true;
 
-		ConvertSpriteTextureShuffle(process_rg, process_ba, shuffle_across, rt, tex);
+		if (m_texture_shuffle.channels & TextureShuffleChannels_ReadRedGreen)
+		{
+			process_rg |= SHUFFLE_READ;
+		}
 
-		if (m_index.tail == 0)
-			return; // Rewriting sprites can result in an empty draw.
+		if (m_texture_shuffle.channels & TextureShuffleChannels_ReadBlueAlpha)
+		{
+			process_ba |= SHUFFLE_READ;
+		}
+
+		if (m_texture_shuffle.channels & TextureShuffleChannels_WriteRedGreen)
+		{
+			process_rg |= SHUFFLE_WRITE;
+		}
+
+		if (m_texture_shuffle.channels & TextureShuffleChannels_WriteBlueAlpha)
+		{
+			process_ba |= SHUFFLE_WRITE;
+		}
+
+		const bool shuffle_across = (m_texture_shuffle.channels & TextureShuffleChannels_ShuffleAcross) != 0;
 
 		// If date is enabled you need to test the green channel instead of the alpha channel.
 		// Only enable this code in DATE mode to reduce the number of shaders.
-		m_conf.ps.write_rg = (process_rg & SHUFFLE_WRITE) && (features.texture_barrier || features.multidraw_fb_copy) && m_cached_ctx.TEST.DATE;
-		m_conf.ps.real16src = m_copy_16bit_to_target_shuffle;
-		m_conf.ps.shuffle_same = m_same_group_texture_shuffle;
-		// Please bang my head against the wall!
-		// 1/ Reduce the frame mask to a 16 bit format
-		const u32 m = m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk;
+		m_conf.ps.write_rg = !!(process_rg & SHUFFLE_WRITE) && !!m_cached_ctx.TEST.DATE;
 
-		// fbmask is converted to a 16bit version to represent the 2 32bit channels it's writing to.
-		// The lower 8 bits represents the Red/Blue channels, the top 8 bits is Green/Alpha, depending on write_ba.
-		const u32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
-		// r = rb mask, g = ga mask
-		const GSVector2i rb_ga_mask = GSVector2i(fbmask & 0xFF, (fbmask >> 8) & 0xFF);
+		m_conf.ps.real16src = m_texture_shuffle.real_16_bit_source;
+
+		// Shuffle that copies B to A, which are in the same column.
+		m_conf.ps.shuffle_same = m_texture_shuffle.SameGroupShuffle();
+
+		// Convert FBMSK to a 16bit version to represent the 32bit channels it's writing to.
+		// The lower 8 bits represents the Red/Blue channels, the top 8 bits is Green/Alpha.
+		const u32 fbmask = GetEffectiveTextureShuffleFbmsk();
+		u32 fbmask_r = (fbmask >> 0) & 0xFF;
+		u32 fbmask_g = (fbmask >> 8) & 0xFF;
+		u32 fbmask_b = (fbmask >> 16) & 0xFF;
+		u32 fbmask_a = (fbmask >> 24) & 0xFF;
+
+		// Asjust the mask for the channels that are selected by the shuffle.
+		if (!(m_texture_shuffle.channels & TextureShuffleChannels_WriteRed))
+			fbmask_r = 0xFF;
+		if (!(m_texture_shuffle.channels & TextureShuffleChannels_WriteGreen))
+			fbmask_g = 0xFF;
+		if (!(m_texture_shuffle.channels & TextureShuffleChannels_WriteBlue))
+			fbmask_b = 0xFF;
+		if (!(m_texture_shuffle.channels & TextureShuffleChannels_WriteAlpha))
+			fbmask_a = 0xFF;
 
 		m_conf.ps.process_rg = process_rg;
 		m_conf.ps.process_ba = process_ba;
 		m_conf.ps.shuffle_across = shuffle_across;
-		// Ace Combat 04 sets FBMSK to 0 for the shuffle, duplicating RG across RGBA.
-		// Given how touchy texture shuffles are, I'm not ready to make it 100% dependent on the real FBMSK yet.
-		// TODO: Remove this if, and see what breaks.
-		m_conf.colormask.wrgba = 0;
+		
+		m_conf.colormask.wr = fbmask_r != 0xFF;
+		m_conf.colormask.wg = fbmask_g != 0xFF;
+		m_conf.colormask.wb = fbmask_b != 0xFF;
+		m_conf.colormask.wa = fbmask_a != 0xFF;
 
-		// 2 Select the new mask
-		if (rb_ga_mask.r != 0xFF)
-		{
-			if (process_ba & SHUFFLE_WRITE)
-			{
-				GL_INS("HW: Color shuffle %s => B", ((process_rg & SHUFFLE_READ) && shuffle_across) ? "R" : "B");
-				m_conf.colormask.wb = 1;
-			}
-
-			if (process_rg & SHUFFLE_WRITE)
-			{
-				GL_INS("HW: Color shuffle %s => R", ((process_ba & SHUFFLE_READ) && shuffle_across) ? "B" : "R");
-				m_conf.colormask.wr = 1;
-			}
-			if (rb_ga_mask.r)
-				m_conf.ps.fbmask = 1;
-		}
-
-		if (rb_ga_mask.g != 0xFF)
-		{
-			if (process_ba & SHUFFLE_WRITE)
-			{
-				GL_INS("HW: Color shuffle %s => A", ((process_rg & SHUFFLE_READ) && shuffle_across) ? "G" : "A");
-				m_conf.colormask.wa = 1;
-			}
-
-			if (process_rg & SHUFFLE_WRITE)
-			{
-				GL_INS("HW: Color shuffle %s => G", ((process_ba & SHUFFLE_READ) && shuffle_across) ? "A" : "G");
-				m_conf.colormask.wg = 1;
-			}
-			if (rb_ga_mask.g)
-				m_conf.ps.fbmask = 1;
-		}
+		m_conf.ps.fbmask =
+			(fbmask_r != 0 && fbmask_r != 0xFF) ||
+			(fbmask_g != 0 && fbmask_g != 0xFF) ||
+			(fbmask_b != 0 && fbmask_b != 0xFF) ||
+			(fbmask_a != 0 && fbmask_a != 0xFF);
 
 		if (m_conf.ps.fbmask && enable_fbmask_emulation)
 		{
-			m_conf.cb_ps.FbMask.r = rb_ga_mask.r;
-			m_conf.cb_ps.FbMask.g = rb_ga_mask.g;
-			m_conf.cb_ps.FbMask.b = rb_ga_mask.r;
-			m_conf.cb_ps.FbMask.a = rb_ga_mask.g;
+			m_conf.cb_ps.FbMask.r = fbmask_r;
+			m_conf.cb_ps.FbMask.g = fbmask_g;
+			m_conf.cb_ps.FbMask.b = fbmask_b;
+			m_conf.cb_ps.FbMask.a = fbmask_a;
 
-			// No need for full barrier on fbmask with shuffle.
-			GL_INS("HW: FBMASK SW emulated fb_mask:%x on tex shuffle", fbmask);
+			// No overlap with a texture shuffle, so use one barrier.
 			m_conf.require_one_barrier = true;
+			GL_INS("HW: FBMASK SW emulated fbmask=%x on tex shuffle", fbmask);
 		}
 		else
 		{
@@ -5334,7 +6337,7 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 		m_split_texture_shuffle_start_FBP = 0;
 		m_split_texture_shuffle_start_TBP = 0;
 
-		// Get rid of any clamps, we're basically overriding this (more of an issue for D3D).
+		// Get rid of any clamps, we're basically overriding this.
 		if (m_cached_ctx.CLAMP.WMS > CLAMP_CLAMP)
 			m_cached_ctx.CLAMP.WMS = m_cached_ctx.CLAMP.WMS == CLAMP_REGION_CLAMP ? CLAMP_CLAMP : CLAMP_REPEAT;
 		if (m_cached_ctx.CLAMP.WMT > CLAMP_CLAMP)
@@ -5383,7 +6386,7 @@ void GSRendererHW::EmulateTextureShuffleAndFbmask(GSTextureCache::Target* rt, GS
 			   have been invalidated before subsequent Draws are executed.
 			 */
 			// No blending so hit unsafe path.
-			if (!PRIM->ABE || !(~ff_fbmask & ~zero_fbmask & 0x7) || !(features.texture_barrier || features.multidraw_fb_copy))
+			if (!PRIM->ABE || !(~ff_fbmask & ~zero_fbmask & 0x7) || !features.feedback_loops())
 			{
 				GL_INS("HW: FBMASK Unsafe SW emulated fb_mask:%x on %d bits format", m_cached_ctx.FRAME.FBMSK,
 					(m_conf.ps.dst_fmt == GSLocalMemory::PSM_FMT_16) ? 16 : 32);
@@ -5435,24 +6438,9 @@ __ri u32 GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool t
 			m_conf.ps.urban_chaos_hle = 1;
 		}
 	}
-	else if (m_index.tail <= 64 && !IsPageCopy() && m_cached_ctx.CLAMP.WMT == 3)
-	{
-		// Blood will tell. I think it is channel effect too but again
-		// implemented in a different way. I don't want to add more CRC stuff. So
-		// let's disable channel when the signature is different
-		//
-		// Note: Tales Of Abyss and Tekken5 could hit this path too. Those games are
-		// handled above.
-		GL_INS("HW: Might not be channel shuffle");
-		if (test_only)
-			return ChannelFetch_NONE;
-
-		m_channel_shuffle = false;
-		return false;
-	}
 	else if (m_cached_ctx.CLAMP.WMS == 3 && ((m_cached_ctx.CLAMP.MAXU & 0x8) == 8))
 	{
-		const ChannelFetch channel_select = ((m_cached_ctx.CLAMP.WMT != 3 && (m_vertex.buff[m_index.buff[0]].V & 0x20) == 0) || (m_cached_ctx.CLAMP.WMT == 3 && ((m_cached_ctx.CLAMP.MAXV & 0x2) == 0))) ? ChannelFetch_BLUE : ChannelFetch_ALPHA;
+		const ChannelFetch channel_select = ((m_cached_ctx.CLAMP.WMT != 3 && (m_vertex->buff[m_index->buff[0]].V & 0x20) == 0) || (m_cached_ctx.CLAMP.WMT == 3 && ((m_cached_ctx.CLAMP.MAXV & 0x2) == 0))) ? ChannelFetch_BLUE : ChannelFetch_ALPHA;
 
 		// MGS3/Kill Zone
 		if (test_only)
@@ -5466,7 +6454,7 @@ __ri u32 GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool t
 	{
 		// Read either Red or Green. Let's check the V coordinate. 0-1 is likely top so
 		// red. 2-3 is likely bottom so green (actually depends on texture base pointer offset)
-		const bool green = (m_cached_ctx.CLAMP.WMT == 3 && ((m_cached_ctx.CLAMP.MAXV & 0x2) == 2)) || (PRIM->FST && (m_vertex.buff[0].V & 32));
+		const bool green = (m_cached_ctx.CLAMP.WMT == 3 && ((m_cached_ctx.CLAMP.MAXV & 0x2) == 2)) || (PRIM->FST && (m_vertex->buff[0].V & 32));
 		if (green && (m_cached_ctx.FRAME.FBMSK & 0x00FFFFFF) == 0x00FFFFFF)
 		{
 			// Typically used in Terminator 3
@@ -5599,7 +6587,7 @@ __ri u32 GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool t
 	m_channel_shuffle_src_valid = src->m_valid;
 	if (GSConfig.UserHacks_TextureInsideRt == GSTextureInRtMode::Disabled || ((src->m_TEX0.TBW == rt->m_TEX0.TBW) && (!m_in_target_draw && IsPageCopy())) || m_conf.ps.urban_chaos_hle || m_conf.ps.tales_of_abyss_hle)
 	{
-		GSVertex* s = &m_vertex.buff[0];
+		GSVertex* s = &m_vertex->buff[0];
 		s[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + 0);
 		s[1].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + 16384);
 		s[0].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + 0);
@@ -5622,6 +6610,9 @@ __ri u32 GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool t
 		}
 
 		m_channel_shuffle_finish = false;
+
+		m_vertex->head = m_vertex->tail = m_vertex->next = 2;
+		m_index->tail = 2;
 	}
 	else
 	{
@@ -5641,16 +6632,22 @@ __ri u32 GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool t
 		}
 
 		m_in_target_draw |= frame_page_offset > 0;
-		GSVertex* s = &m_vertex.buff[0];
-		s[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + (m_r.x << 4));
-		s[1].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + (m_r.z << 4));
-		s[0].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + (m_r.y << 4));
-		s[1].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + (m_r.w << 4));
 
-		s[0].U = m_r.x << 4;
-		s[1].U = m_r.z << 4;
-		s[0].V = m_r.y << 4;
-		s[1].V = m_r.w << 4;
+		if (!(m_index->tail <= 64 && !IsPageCopy() && m_cached_ctx.CLAMP.WMT == 3))
+		{
+			GSVertex* s = &m_vertex->buff[0];
+			s[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + (m_r.x << 4));
+			s[1].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + (m_r.z << 4));
+			s[0].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + (m_r.y << 4));
+			s[1].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + (m_r.w << 4));
+
+			s[0].U = m_r.x << 4;
+			s[1].U = m_r.z << 4;
+			s[0].V = m_r.y << 4;
+			s[1].V = m_r.w << 4;
+			m_vertex->head = m_vertex->tail = m_vertex->next = 2;
+			m_index->tail = 2;
+		}
 
 		// If we're doing per page copying, then set the valid 1 frame ahead if we're continuing, as this will save the target lookup making a new target for the new row.
 		const u32 frame_offset = m_cached_ctx.FRAME.Block() + (IsPageCopy() ? 0x20 : 0);
@@ -5673,8 +6670,6 @@ __ri u32 GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool t
 		m_channel_shuffle_finish = true;
 	}
 
-	m_vertex.head = m_vertex.tail = m_vertex.next = 2;
-	m_index.tail = 2;
 
 	m_primitive_covers_without_gaps = NoGapsType::FullCover;
 	m_conf.cb_ps.ChannelShuffleOffset = GSVector2(0, 0);
@@ -5682,20 +6677,18 @@ __ri u32 GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool t
 	return true;
 }
 
-void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const bool DATE, bool& DATE_PRIMID, bool& DATE_BARRIER,
+void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptions& date_options,
 	GSTextureCache::Target* rt, bool can_scale_rt_alpha, bool& new_rt_alpha_scale)
 {
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
 	{
-		// AA1: Blending needs to be enabled on draw.
-		const bool AA1 = PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS || m_vt.m_primclass == GS_TRIANGLE_CLASS);
 		// PABE: Check condition early as an optimization, no blending when As < 128.
 		// For Cs*As + Cd*(1 - As) if As is 128 then blending can be disabled as well.
 		const bool PABE_skip = m_draw_env->PABE.PABE &&
 			((GetAlphaMinMax().max < 128) || (GetAlphaMinMax().max == 128 && ALPHA.A == 0 && ALPHA.B == 1 && ALPHA.C == 0 && ALPHA.D == 1));
 
 		// No blending or coverage anti-aliasing so early exit
-		if (PABE_skip || !(NeedsBlending() || AA1))
+		if (PABE_skip || !(NeedsBlending() || IsCoverageAlpha()))
 		{
 			m_conf.blend = {};
 
@@ -5895,7 +6888,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	// Condition 2: One barrier is already enabled, prims don't overlap or is a channel shuffle so let's use sw blend instead.
 	// Condition 3: A texture shuffle is unlikely to overlap, so we can prefer full sw blend.
 	// Condition 4: If it's tex in fb draw and there's no overlap prefer sw blend, fb is already being read.
-	const bool prefer_sw_blend = ((features.texture_barrier || features.multidraw_fb_copy) && m_conf.require_full_barrier) || (m_conf.require_one_barrier && (no_prim_overlap || m_channel_shuffle)) || m_conf.ps.shuffle || (no_prim_overlap && (m_conf.tex == m_conf.rt));
+	const bool prefer_sw_blend = (features.feedback_loops() && m_conf.require_full_barrier) || (m_conf.require_one_barrier && (no_prim_overlap || m_channel_shuffle)) || m_conf.ps.shuffle || (no_prim_overlap && (m_conf.tex == m_conf.rt));
 	const bool free_blend = blend_non_recursive // Free sw blending, doesn't require barriers or reading fb
 	                        || accumulation_blend; // Mix of hw/sw blending
 
@@ -5906,7 +6899,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	const bool blend_multipass_group = blend_multi_pass_support && !features.texture_barrier &&
 		(bmix1_multi_pass1 || bmix1_multi_pass2 || bmix3_multi_pass || (blend_flag & (BLEND_HW3 | BLEND_HW4 | BLEND_HW5 | BLEND_HW6 | BLEND_HW7 | BLEND_HW8 | BLEND_HW9)));
 
-	const bool barriers_supported = features.texture_barrier || features.multidraw_fb_copy;
+	const bool barriers_supported = features.feedback_loops();
 	const bool blend_requires_barrier =
 		// We don't want the cases to be enabled if barriers aren't supported so limit it to no overlap.
 		(no_prim_overlap || barriers_supported)
@@ -5924,7 +6917,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	{
 		case AccBlendLevel::Maximum:
 			sw_blending |= true;
-			accumulation_blend &= (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 32);
+			accumulation_blend &= !barriers_supported || (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 32);
 			[[fallthrough]];
 		case AccBlendLevel::Full:
 			sw_blending |= m_conf.ps.blend_a != m_conf.ps.blend_b && alpha_c0_high_max_one;
@@ -5943,7 +6936,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 		case AccBlendLevel::Basic:
 		default:
 			// Prefer sw blend if possible.
-			color_dest_blend &= !(m_channel_shuffle || m_conf.ps.dither);
+			color_dest_blend &= !m_conf.ps.dither;
 			color_dest_blend2 &= !(prefer_sw_blend || m_conf.ps.dither);
 			blend_zero_to_one_range &= !(prefer_sw_blend || m_conf.ps.dither);
 			accumulation_blend &= !prefer_sw_blend;
@@ -5961,28 +6954,26 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			break;
 	}
 
-	if (features.framebuffer_fetch)
-	{
+	const bool force_sw_blending =
 		// If we have fbfetch, use software blending when we need the fb value for anything else.
 		// This saves outputting the second color when it's not needed.
-		if (one_barrier || m_conf.require_full_barrier)
-		{
-			sw_blending = true;
-			color_dest_blend = false;
-			accumulation_blend = false;
-			blend_mix = false;
-		}
-	}
+		(features.framebuffer_fetch && (one_barrier || m_conf.require_full_barrier)) ||
 
-	if (m_conf.alpha_test == GSHWDrawConfig::AlphaTestMode::FEEDBACK &&
-		features.depth_feedback == GSDevice::DepthFeedbackSupport::DepthAsRT)
-	{
-		// If we are doing feedback alpha test with a second RT we must use SW blending to avoid
+		// If we are doing depth feedback with a second RT we must use SW blending to avoid
 		// mixing dual source blending with multiple render targets.
+		(m_conf.ps.IsFeedbackLoopDepth() && !features.depth_feedback) ||
+		
+		// Force SW blending with barriers.
+		GSConfig.UseDebugBlend;
+	
+	if (force_sw_blending)
+	{
 		sw_blending = true;
 		color_dest_blend = false;
 		accumulation_blend = false;
 		blend_mix = false;
+		color_dest_blend2 = false;
+		blend_zero_to_one_range = false;
 	}
 
 	// Color clip
@@ -6073,7 +7064,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 
 				m_conf.ps.pabe = 1;
 			}
-			else if (features.texture_barrier || features.multidraw_fb_copy)
+			else if (features.feedback_loops())
 			{
 				// PABE sw blend:
 				// Disable hw/sw mix and do pure sw blend with reading the framebuffer.
@@ -6116,7 +7107,8 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 		if (can_scale_rt_alpha && !new_rt_alpha_scale && m_conf.colormask.wa)
 		{
 			const bool afail_fb_only = m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY;
-			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && m_primitive_covers_without_gaps == NoGapsType::FullCover && !(DATE || !afail_fb_only || !IsDepthAlwaysPassing());
+			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && m_primitive_covers_without_gaps == NoGapsType::FullCover &&
+				!(date_options.enabled || !afail_fb_only || !IsDepthAlwaysPassing());
 
 			// Restrict this to only when we're overwriting the whole target.
 			new_rt_alpha_scale = full_cover;
@@ -6245,7 +7237,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 			const bool blend_non_recursive_one_barrier = blend_non_recursive && blend_ad_alpha_masked;
 			if (blend_non_recursive_one_barrier)
 				m_conf.require_one_barrier |= true;
-			else if (features.texture_barrier || features.multidraw_fb_copy)
+			else if (features.feedback_loops())
 				m_conf.require_full_barrier |= !blend_non_recursive;
 			else
 				m_conf.require_one_barrier |= !blend_non_recursive;
@@ -6263,7 +7255,8 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 		{
 			const bool afail_always_fb_alpha = m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY || (m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].trbpp != 32);
 			const bool always_passing_alpha = !m_cached_ctx.TEST.ATE || afail_always_fb_alpha || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ATST_ALWAYS);
-			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && m_primitive_covers_without_gaps == NoGapsType::FullCover && !(DATE_PRIMID || DATE_BARRIER || !always_passing_alpha || !IsDepthAlwaysPassing());
+			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && m_primitive_covers_without_gaps == NoGapsType::FullCover &&
+				!(date_options.primid || date_options.barrier || !always_passing_alpha || !IsDepthAlwaysPassing());
 
 			if (!full_cover)
 			{
@@ -6461,12 +7454,12 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, const boo
 	// Switch DATE_PRIMID with DATE_BARRIER in such cases to ensure accuracy.
 	// No mix of COLCLIP + sw blend + DATE_PRIMID, neither sw fbmask + DATE_PRIMID.
 	// Note: Do the swap in the end, saves the expensive draw splitting/barriers when mixed software blending is used.
-	if (sw_blending && DATE_PRIMID && m_conf.require_full_barrier &&
+	if (sw_blending && date_options.primid && m_conf.require_full_barrier &&
 		(features.texture_barrier || (features.multidraw_fb_copy && !no_prim_overlap)))
 	{
 		GL_PERF("DATE: Swap DATE_PRIMID with DATE_BARRIER");
-		DATE_PRIMID = false;
-		DATE_BARRIER = true;
+		date_options.primid = false;
+		date_options.barrier = true;
 	}
 }
 
@@ -6622,14 +7615,15 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 
 		// Can be seen with the cabin part of the ship in God of War, offsets are required when using FST.
 		// ST uses a normalized position so doesn't need an offset here, will break Bionicle Heroes.
-		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset)
+		// Do not apply HPO on texture shuffles as it already aligns the coordinates.
+		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset && !m_texture_shuffle)
 		{
 			const u32 psm = rt ? rt->m_TEX0.PSM : ds->m_TEX0.PSM;
 			const bool can_offset = m_r.width() > GSLocalMemory::m_psm[psm].pgs.x || m_r.height() > GSLocalMemory::m_psm[psm].pgs.y;
 
 			if (can_offset && tex->m_scale > 1.0f)
 			{
-				const GSVertex* v = &m_vertex.buff[0];
+				const GSVertex* v = &m_vertex->buff[0];
 				if (PRIM->FST)
 				{
 					const int x1_frac = ((v[1].XYZ.X - m_context->XYOFFSET.OFX) & 0xf);
@@ -6700,7 +7694,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 
 			if (can_offset && tex->m_scale > 1.0f)
 			{
-				const GSVertex* v = &m_vertex.buff[0];
+				const GSVertex* v = &m_vertex->buff[0];
 				if (PRIM->FST)
 				{
 					const int x1_frac = ((v[1].XYZ.X - m_context->XYOFFSET.OFX) & 0xf);
@@ -6723,7 +7717,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 			}
 		}
 
-		if (m_vt.m_primclass == GS_SPRITE_CLASS && m_index.tail >= 4 && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp >= 16 &&
+		if (m_vt.m_primclass == GS_SPRITE_CLASS && m_index->tail >= 4 && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp >= 16 &&
 			((tex->m_from_target_TEX0.PSM & 0x30) == 0x30 || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pal > 0))
 		{
 			HandleManualDeswizzle();
@@ -6853,7 +7847,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 	if (shader_emulated_sampler)
 	{
 		m_conf.sampler.biln = 0;
-		m_conf.sampler.aniso = 0;
+		m_conf.ps.sw_aniso = 0;
 
 		// Remove linear from trilinear, since we're doing the bilinear in the shader, and we only want this for mip selection.
 		m_conf.sampler.triln = (trilinear >= static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Nearest)) ?
@@ -6866,7 +7860,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		// Aniso filtering doesn't work with textureLod so use texture (automatic_lod) instead.
 		// Enable aniso only for triangles. Sprites are flat so aniso is likely useless (it would save perf for others primitives).
 		const bool anisotropic = m_vt.m_primclass == GS_TRIANGLE_CLASS && !trilinear_manual;
-		m_conf.sampler.aniso = anisotropic;
+		m_conf.ps.sw_aniso = anisotropic ? GSConfig.MaxAnisotropy : 0;
 		m_conf.sampler.triln = trilinear;
 		if (anisotropic && !trilinear_manual)
 			m_conf.ps.automatic_lod = 1;
@@ -6885,18 +7879,65 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 	const int tex_diff = tex->m_from_target ? static_cast<int>(m_cached_ctx.TEX0.TBP0 - tex->m_from_target->m_TEX0.TBP0) : static_cast<int>(m_cached_ctx.TEX0.TBP0 - tex->m_TEX0.TBP0);
 	const int frame_diff = rt ? static_cast<int>(m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) : 0;
 
+	// Needs to be called everywhere we return early except tex is fb, or read only depth.
+	auto HandleBarrierHazard = [&](bool src_empty) -> bool {
+		// Feedback loops conditions explained:
+		// RT: If texture barrier/multidraw fb copy is not supported we do an rt copy anyway in device
+		// which is why we allow the conditions to pass with one barrier.
+		// DS: If texture barrier/multidraw fb copy is not supported then we disable HandleBarrierHazard since DX12/VK
+		// aren't setup to handle copies like dx11/gl are.
+
+		if (rt && m_conf.tex == m_conf.rt)
+		{
+			m_conf.tex_hazard = GSHWDrawConfig::TEX_HAZARD_RT;
+			if (m_prim_overlap == PRIM_OVERLAP_NO || src_empty || m_channel_shuffle || !g_gs_device->Features().feedback_loops())
+				m_conf.require_one_barrier = true;
+			else
+				m_conf.require_full_barrier = true;
+
+			return true;
+		}
+		else if (ds && m_conf.tex == m_conf.ds)
+		{
+			// Check if we have depth feedback, if we do then we need to make a copy as
+			// GL/DX12 has issues with depth feedback and depth as rt will basically do the same.
+			const bool no_depth_write = !m_cached_ctx.DepthWrite();
+			if (g_gs_device->Features().test_and_sample_depth && no_depth_write)
+			{
+				return true;
+			}
+			else if (g_gs_device->Features().feedback_loops() && no_depth_write)
+			{
+				m_conf.tex_hazard = GSHWDrawConfig::TEX_HAZARD_DEPTH;
+				if (m_prim_overlap == PRIM_OVERLAP_NO || src_empty || m_channel_shuffle)
+					m_conf.require_one_barrier = true;
+				else
+					m_conf.require_full_barrier = true;
+
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		// No hazards detected.
+		return true;
+	};
+
 	// Detect framebuffer read that will need special handling
 	const GSTextureCache::Target* src_target = nullptr;
 	if (!m_downscale_source || !tex->m_from_target)
 	{
-		if (rt && m_conf.tex == m_conf.rt && !(m_channel_shuffle && tex && tex_diff != frame_diff))
+		if (rt && m_conf.tex == m_conf.rt)
 		{
 			// Can we read the framebuffer directly? (i.e. sample location matches up).
-			if (CanUseTexIsFB(rt, tex, tmm))
+			if (CanUseTexIsFB(rt, tex, tmm) && !(m_channel_shuffle && tex_diff != frame_diff))
 			{
 				m_conf.tex = nullptr;
 				m_conf.ps.tex_is_fb = true;
-				if (m_prim_overlap == PRIM_OVERLAP_NO || !(g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy))
+				if (m_prim_overlap == PRIM_OVERLAP_NO || !g_gs_device->Features().feedback_loops())
 					m_conf.require_one_barrier = true;
 				else
 					m_conf.require_full_barrier = true;
@@ -6906,32 +7947,73 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 				return;
 			}
 
+			if (!m_channel_shuffle)
+			{
+				const GSVector4i src_box_rect = GSVector4i(m_vt.m_min.t.x, m_vt.m_min.t.y, m_vt.m_max.t.x, m_vt.m_max.t.y);
+				const GSVector4i src_rect = src_box_rect + source_region.GetRect(rt->GetUnscaledSize().x, rt->GetUnscaledSize().y).xyxy();
+
+				// If the two don't overlap, there's no need to copy.
+				if (m_r.rintersect(src_rect).rempty())
+				{
+					if (HandleBarrierHazard(true))
+					{
+						unscaled_size = rt->GetUnscaledSize();
+						scale = rt->GetScale();
+						return;
+					}
+				}
+			}
 			GL_CACHE("HW: Source is render target, taking copy.");
 			src_target = rt;
 		}
-		// Be careful of single page channel shuffles where depth is the source but it's not going to the same place, we can't read this directly.
-		else if (ds && m_conf.tex == m_conf.ds && (!m_channel_shuffle || (rt && static_cast<int>(m_cached_ctx.FRAME.Block() - rt->m_TEX0.TBP0) == static_cast<int>(m_cached_ctx.ZBUF.Block() - ds->m_TEX0.TBP0))))
+		else if (ds && m_conf.tex == m_conf.ds)
 		{
-			// GL, Vulkan (in General layout), DirectX11 (binding dsv as read only) no support for DirectX12 yet!
-			const bool can_read_current_depth_buffer = g_gs_device->Features().test_and_sample_depth;
-
 			// If this is our current Z buffer, we might not be able to read it directly if it's being written to.
 			// Rather than leaving the backend to do it, we'll check it here.
-			if (can_read_current_depth_buffer && (m_cached_ctx.ZBUF.ZMSK || m_cached_ctx.TEST.ZTST == ZTST_NEVER))
+			if ((!m_channel_shuffle || tex_diff == frame_diff) && !m_cached_ctx.DepthWrite())
 			{
-				// Safe to read!
-				GL_CACHE("HW: Source is depth buffer, not writing, safe to read.");
-				unscaled_size = ds->GetUnscaledSize();
-				scale = ds->GetScale();
-				return;
+				// We need to make sure test_and_sample_depth is supported, otherwise we might still need a barrier/copy.
+				if (HandleBarrierHazard(true))
+				{
+					// Safe to read!
+					GL_CACHE("HW: Source is depth buffer, not writing, safe to read.");
+					unscaled_size = ds->GetUnscaledSize();
+					scale = ds->GetScale();
+					return;
+				}
+			}
+
+			if (!m_channel_shuffle)
+			{
+				const GSVector4i src_box_rect = GSVector4i(m_vt.m_min.t.x, m_vt.m_min.t.y, m_vt.m_max.t.x, m_vt.m_max.t.y);
+				const GSVector4i src_rect = src_box_rect + source_region.GetRect(rt->GetUnscaledSize().x, rt->GetUnscaledSize().y).xyxy();
+
+				// If the two don't overlap, there's no need to copy.
+				if (m_r.rintersect(src_rect).rempty())
+				{
+					if (HandleBarrierHazard(true))
+					{
+						unscaled_size = ds->GetUnscaledSize();
+						scale = ds->GetScale();
+						return;
+					}
+				}
 			}
 
 			// Can't safely read the depth buffer, so we need to take a copy of it.
 			GL_CACHE("HW: Source is depth buffer, unsafe to read, taking copy.");
 			src_target = ds;
 		}
-		else if (m_channel_shuffle && tex->m_from_target && tex_diff != frame_diff)
+		else if (m_channel_shuffle && tex->m_from_target)
 		{
+			const int tex_page_h = ((m_vt.m_min.t.x + (m_cached_ctx.CLAMP.WMS == CLAMP_REGION_REPEAT ? m_cached_ctx.CLAMP.MAXU : 0)) / GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pgs.x);
+			const int tex_page_v = ((m_vt.m_min.t.y + (m_cached_ctx.CLAMP.WMT == CLAMP_REGION_REPEAT ? m_cached_ctx.CLAMP.MAXV : 0)) / GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pgs.y);
+			const int frame_page_h = m_r.x / GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x;
+			const int frame_page_v = m_r.y / GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y;
+
+			if (tex_diff == frame_diff && tex_page_h == frame_page_h && tex_page_v == frame_page_v)
+				return;
+
 			src_target = tex->m_from_target;
 		}
 		else
@@ -6969,30 +8051,21 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 			copy_size = src_unscaled_size;
 		}
 
-		GSVector4i::storel(&copy_dst_offset, copy_range);
-		if (m_channel_shuffle && (tex_diff || frame_diff))
+		const int tex_page_h = m_vt.m_min.t.x / GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pgs.x;
+		const int tex_page_v = m_vt.m_min.t.y / GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pgs.y;
+		const int frame_page_h = m_r.x / GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x;
+		const int frame_page_v = m_r.y / GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y;
+		if (m_channel_shuffle && (tex_diff || frame_diff || tex_page_h != frame_page_h || tex_page_v != frame_page_v))
 		{
-			const int page_offset = (m_cached_ctx.TEX0.TBP0 - src_target->m_TEX0.TBP0) >> 5;
+			const int clamp_horizontal_page_offset = m_cached_ctx.CLAMP.WMS == CLAMP_REGION_REPEAT ? (m_cached_ctx.CLAMP.MAXU / GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pgs.x) : 0;
+			const int clamp_vertical_page_offset = m_cached_ctx.CLAMP.WMT == CLAMP_REGION_REPEAT ? (m_cached_ctx.CLAMP.MAXV / GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pgs.y) : 0;
+			const int page_offset = ((m_cached_ctx.TEX0.TBP0 - src_target->m_TEX0.TBP0) >> 5) + clamp_horizontal_page_offset + clamp_vertical_page_offset;
 			const int horizontal_offset = ((page_offset % src_target->m_TEX0.TBW) * GSLocalMemory::m_psm[src_target->m_TEX0.PSM].pgs.x);
 			const int vertical_offset = ((page_offset / src_target->m_TEX0.TBW) * GSLocalMemory::m_psm[src_target->m_TEX0.PSM].pgs.y);
 
-			if (g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy)
+			if (HandleBarrierHazard(false) || (rt != tex->m_from_target && ds != tex->m_from_target))
 			{
-				const u32 max_skip = ((m_channel_shuffle_finish || !m_channel_shuffle_width) ? 1 : m_channel_shuffle_width) << 5;
-				const bool new_shuffle = !(m_last_channel_shuffle_fbmsk == m_context->FRAME.FBMSK &&
-										   m_last_channel_shuffle_fbp <= m_context->FRAME.Block() && (m_last_channel_shuffle_fbp + max_skip) >= m_context->FRAME.Block() &&
-										   m_last_channel_shuffle_end_block > m_context->FRAME.Block() && m_last_channel_shuffle_tbp <= m_context->TEX0.TBP0 && (m_last_channel_shuffle_tbp + max_skip) >= m_context->TEX0.TBP0);
-
-				if (rt == tex->m_from_target && new_shuffle)
-				{
-					if (m_prim_overlap == PRIM_OVERLAP_NO)
-						m_conf.require_one_barrier = true;
-					else
-						m_conf.require_full_barrier = true;
-				}
-
 				m_conf.cb_ps.ChannelShuffleOffset = GSVector2((horizontal_offset - m_r.x) * tex->GetScale(), (vertical_offset - m_r.y) * tex->GetScale());
-				m_conf.ps.channel_fb = 1;
 				target_region = false;
 				source_region.bits = 0;
 
@@ -7006,6 +8079,8 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 				copy_range.y += vertical_offset;
 				copy_range.z += horizontal_offset;
 				copy_range.w += vertical_offset;
+
+				GSVector4i::storel(&copy_dst_offset, copy_range);
 
 				if (!m_channel_shuffle)
 				{
@@ -7029,6 +8104,10 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 				copy_range.z = std::min(copy_range.z, src_target->m_unscaled_size.x);
 				copy_range.w = std::min(copy_range.w, src_target->m_unscaled_size.y);
 			}
+		}
+		else
+		{
+			GSVector4i::storel(&copy_dst_offset, copy_range);
 		}
 	}
 	else
@@ -7200,7 +8279,7 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 	}
 
 	// No barriers -> we can't use tex-is-fb when there's overlap.
-	if (!(g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy) && m_prim_overlap != PRIM_OVERLAP_NO)
+	if (!g_gs_device->Features().feedback_loops() && m_prim_overlap != PRIM_OVERLAP_NO)
 	{
 		GL_CACHE("HW: Disabling tex-is-fb due to no barriers.");
 		return false;
@@ -7293,7 +8372,7 @@ bool GSRendererHW::CanUseTexIsFB(const GSTextureCache::Target* rt, const GSTextu
 	return false;
 }
 
-void GSRendererHW::GetAlphaTestConfigPS(const u32 atst, const u8 aref, const bool invert_test, u32& ps_atst_out, float& aref_out)
+void GSRendererHW::GetAlphaTestConfigPS(const u32 atst, const u8 aref, const bool invert_test, PS_ATST& ps_atst_out, float& aref_out)
 {
 	static const u32 inverted_atst[] = {
 		ATST_ALWAYS,
@@ -7312,37 +8391,37 @@ void GSRendererHW::GetAlphaTestConfigPS(const u32 atst, const u8 aref, const boo
 	{
 		case ATST_LESS:
 			aref_out = static_cast<float>(aref) - small_val;
-			ps_atst_out = GSHWDrawConfig::PS_ATST_LEQUAL;
+			ps_atst_out = PS_ATST::LEQUAL;
 			break;
 		case ATST_LEQUAL:
 			aref_out = static_cast<float>(aref) - small_val + 1.0f;
-			ps_atst_out = GSHWDrawConfig::PS_ATST_LEQUAL;
+			ps_atst_out = PS_ATST::LEQUAL;
 			break;
 		case ATST_GEQUAL:
 			aref_out = static_cast<float>(aref) - small_val;
-			ps_atst_out = GSHWDrawConfig::PS_ATST_GEQUAL;
+			ps_atst_out = PS_ATST::GEQUAL;
 			break;
 		case ATST_GREATER:
 			aref_out = static_cast<float>(aref) - small_val + 1.0f;
-			ps_atst_out = GSHWDrawConfig::PS_ATST_GEQUAL;
+			ps_atst_out = PS_ATST::GEQUAL;
 			break;
 		case ATST_EQUAL:
 			aref_out = static_cast<float>(aref);
-			ps_atst_out = GSHWDrawConfig::PS_ATST_EQUAL;
+			ps_atst_out = PS_ATST::EQUAL;
 			break;
 		case ATST_NOTEQUAL:
 			aref_out = static_cast<float>(aref);
-			ps_atst_out = GSHWDrawConfig::PS_ATST_NOTEQUAL;
+			ps_atst_out = PS_ATST::NOTEQUAL;
 			break;
 		case ATST_NEVER:
 		case ATST_ALWAYS:
 		default:
-			ps_atst_out = GSHWDrawConfig::PS_ATST_NONE;
+			ps_atst_out = PS_ATST::NONE;
 			break;
 	}
 }
 
-void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& DATE_one, bool& DATE_PRIMID)
+void GSRendererHW::EmulateAlphaTest(DATEOptions& date_options)
 {
 	const GSDevice::FeatureSupport& features = g_gs_device->Features();
 
@@ -7356,7 +8435,7 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 	GL_PUSH("HW: Alpha test config (1)");
 
 	// Temp pixel shader constants for the setup.
-	u32 ps_atst;
+	PS_ATST ps_atst;
 	float ps_aref;
 
 	u32 atst = m_cached_ctx.TEST.ATST;
@@ -7413,7 +8492,7 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 		GetAlphaTestConfigPS(atst, aref, false, ps_atst, ps_aref);
 		m_conf.ps.atst = ps_atst;
 		m_conf.cb_ps.FogColor_AREF.a = ps_aref;
-		m_conf.ps.afail = GSHWDrawConfig::PS_AFAIL_KEEP;
+		m_conf.ps.afail = PS_AFAIL::KEEP;
 		m_conf.alpha_test = GSHWDrawConfig::AlphaTestMode::KEEP;
 		return;
 	}
@@ -7438,28 +8517,22 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 
 	// Determine where RT and/or depth are needed for the feedback methods.
 	const bool afail_needs_rt = (afail == AFAIL_ZB_ONLY) || (afail == AFAIL_RGB_ONLY);
-	const bool afail_needs_depth = (afail == AFAIL_FB_ONLY) || ((afail == AFAIL_RGB_ONLY) && zwe);
+	const bool afail_needs_depth = (afail == AFAIL_FB_ONLY || afail == AFAIL_RGB_ONLY) && zwe;
 
 	// Determine whether the feedback methods require a single pass.
 	const bool feedback_one_pass = simple_fb_only || simple_rgb_only || simple_zb_only;
-
-	// If we already have the required barriers for the accurate feedback path and
-	// do not require depth feedback.
+	
+	// If we already have the required barriers for the accurate feedback path.
 	const bool free_barrier_feedback =
 		((m_conf.require_one_barrier && feedback_one_pass) || m_conf.require_full_barrier) &&
-		(features.texture_barrier || features.multidraw_fb_copy) &&
-		!afail_needs_depth;
+		features.feedback_loops() &&
+		(!afail_needs_depth || m_conf.ps.IsFeedbackLoopDepth());
 
 	// Determine if we can use FB-fetch for color only feedback.
 	const bool free_fbfetch_feedback = features.framebuffer_fetch && !afail_needs_depth;
 
 	// Determine if we have the correct features for depth feedback.
-	const bool depth_feedback_supported = features.depth_feedback != GSDevice::DepthFeedbackSupport::None;
-
-	// Determine if the method for doing depth feedback uses multiple render targets.
-	// This should not be used in conjunction with dual source blend.
-	const bool depth_as_rt_feedback = afail_needs_depth &&
-		(features.depth_feedback == GSDevice::DepthFeedbackSupport::DepthAsRT);
+	const bool depth_feedback_supported = features.feedback_loops();
 
 	// We need depth feedback but do not have the correct features.
 	const bool avoid_feedback = afail_needs_depth && !depth_feedback_supported;
@@ -7480,30 +8553,29 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 		GetAlphaTestConfigPS(atst, aref, false, ps_atst, ps_aref);
 		m_conf.ps.atst = ps_atst;
 		m_conf.cb_ps.FogColor_AREF.a = ps_aref;
-		m_conf.ps.afail = afail;
+		m_conf.ps.afail = static_cast<PS_AFAIL>(afail);
 
-		m_conf.ps.color_feedback |= afail_needs_rt;
-		m_conf.ps.depth_feedback |= afail_needs_depth;
-
-		if (!free_fbfetch_feedback && (features.texture_barrier || features.multidraw_fb_copy))
+		if ((afail_needs_rt || afail_needs_depth) && features.feedback_loops())
 		{
 			m_conf.require_one_barrier |= feedback_one_pass;
 			m_conf.require_full_barrier |= !feedback_one_pass;
 		}
 
-		// Handle SW depth writing and/or testing.
-		if (afail_needs_depth && zwe)
+		if (afail_needs_depth)
 		{
-			GL_INS("Enable SW depth write for depth feedback");
-			m_conf.ps.zwrite = true; // Make sure pixel shader writes to depth.
+			pxAssert(zwe);
 
-			if (m_cached_ctx.DepthRead())
-			{
-				GL_INS("Enable SW depth testing for depth feedback");
-				m_conf.ps.ztst = m_cached_ctx.TEST.ZTST; // Enable SW Z test.
-				m_conf.depth.ztst = ZTST_ALWAYS; // Disable HW Z test.
-			}
+			// Let the pipeline know we need depth feedback with RGB_ONLY.
+			if (afail == AFAIL_RGB_ONLY)
+				m_conf.ps.afail = PS_AFAIL::RGB_ONLY_SW_Z;
 		}
+		else
+		{
+			// Should have early exited
+			pxAssert(afail != AFAIL_FB_ONLY);
+		}
+
+		ConfigureDepthFeedback(); // Enable barriers/SW depth test if needed.
 
 		m_conf.alpha_test = GSHWDrawConfig::AlphaTestMode::FEEDBACK;
 	}
@@ -7523,18 +8595,18 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 		GetAlphaTestConfigPS(atst, aref, false, ps_atst, ps_aref);
 		m_conf.ps.atst = ps_atst;
 		m_conf.cb_ps.FogColor_AREF.a = ps_aref;
-		m_conf.ps.afail = GSHWDrawConfig::PS_AFAIL_RGB_ONLY_DSB;
+		m_conf.ps.afail = PS_AFAIL::RGB_ONLY_DSB;
 		m_conf.ps.no_color1 = false;
 
 		// Swap stencil DATE for PrimID DATE, for both Z on and off cases.
 		// Because we're making some pixels pass, but not updating A, the stencil won't be synced.
-		if (DATE && !DATE_BARRIER && features.primitive_id)
+		if (date_options.enabled && !date_options.barrier && features.primitive_id)
 		{
-			if (!DATE_PRIMID)
+			if (!date_options.primid)
 				GL_INS("Alpha test: Swap stencil DATE for PrimID, due to AFAIL");
 
-			DATE_one = false;
-			DATE_PRIMID = true;
+			date_options.stencil_one = false;
+			date_options.primid = true;
 		}
 
 		// The actual blend setup will be done later after determining blending.
@@ -7550,7 +8622,7 @@ void GSRendererHW::EmulateAlphaTest(const bool& DATE, bool& DATE_BARRIER, bool& 
 		GetAlphaTestConfigPS(atst, aref, false, ps_atst, ps_aref);
 		m_conf.ps.atst = ps_atst;
 		m_conf.cb_ps.FogColor_AREF.a = ps_aref;
-		m_conf.ps.afail = GSHWDrawConfig::PS_AFAIL_KEEP;
+		m_conf.ps.afail = PS_AFAIL::KEEP;
 		m_conf.alpha_test = GSHWDrawConfig::AlphaTestMode::PASS_THEN_FAIL;
 	}
 }
@@ -7569,7 +8641,7 @@ void GSRendererHW::EmulateAlphaTestSecondPass()
 	const u32 aref = m_cached_ctx.TEST.AREF;
 
 	// Temp variables for PS config.
-	u32 ps_atst;
+	PS_ATST ps_atst;
 	float ps_aref;
 
 	std::memcpy(&m_conf.alpha_second_pass.ps, &m_conf.ps, sizeof(m_conf.ps));
@@ -7593,7 +8665,7 @@ void GSRendererHW::EmulateAlphaTestSecondPass()
 			m_conf.alpha_second_pass.enable = true;
 			m_conf.alpha_second_pass.ps.atst = ps_atst;
 			m_conf.alpha_second_pass.ps_aref = ps_aref;
-			m_conf.alpha_second_pass.ps.afail = GSHWDrawConfig::PS_AFAIL_KEEP;
+			m_conf.alpha_second_pass.ps.afail = PS_AFAIL::KEEP;
 		}
 
 		// Setup for RBG_ONLY dual source blend selection
@@ -7650,7 +8722,7 @@ void GSRendererHW::EmulateAlphaTestSecondPass()
 			m_conf.alpha_second_pass.enable = true;
 			m_conf.alpha_second_pass.ps.atst = ps_atst;
 			m_conf.alpha_second_pass.ps_aref = ps_aref;
-			m_conf.alpha_second_pass.ps.afail = GSHWDrawConfig::PS_AFAIL_KEEP;
+			m_conf.alpha_second_pass.ps.afail = PS_AFAIL::KEEP;
 		}
 	}
 
@@ -7660,12 +8732,22 @@ void GSRendererHW::EmulateAlphaTestSecondPass()
 			"Alpha second pass has no color/depth write.");
 	}
 
+	// Some housekeeping for the first pass.
+	if (!m_conf.depth.zwe)
+	{
+		m_conf.ps.DisableDepthOutput();
+	}
+
 	// Some housekeeping for the second pass.
 	if (m_conf.alpha_second_pass.colormask.wrgba == 0)
 	{
 		m_conf.alpha_second_pass.ps.DisableColorOutput();
 	}
-	if (m_conf.alpha_second_pass.ps.IsFeedbackLoopRT() || m_conf.alpha_second_pass.ps.IsFeedbackLoopDepth())
+	if (!m_conf.alpha_second_pass.depth.zwe)
+	{
+		m_conf.alpha_second_pass.ps.DisableDepthOutput();
+	}
+	if (m_conf.IsFeedbackLoopRT(m_conf.alpha_second_pass.ps) || m_conf.IsFeedbackLoopDepth(m_conf.alpha_second_pass.ps))
 	{
 		m_conf.alpha_second_pass.require_one_barrier = m_conf.require_one_barrier;
 		m_conf.alpha_second_pass.require_full_barrier = m_conf.require_full_barrier;
@@ -7684,6 +8766,30 @@ void GSRendererHW::EmulateAlphaTestSecondPass()
 	// If the alpha test prevents all writes, abort the draw.
 	if (!(m_conf.colormask.wrgba || m_conf.depth.zwe))
 		m_conf.alpha_test = GSHWDrawConfig::AlphaTestMode::ABORT_DRAW;
+}
+
+// Setup barriers and/or SW depth testing for depth feedback.
+void GSRendererHW::ConfigureDepthFeedback()
+{
+	if (m_conf.ps.IsFeedbackLoopDepth())
+	{
+		const GSDevice::FeatureSupport& features = g_gs_device->Features();
+
+		// We need barriers for the feedback.
+		if (features.feedback_loops())
+		{
+			m_conf.require_one_barrier |= (m_prim_overlap == PRIM_OVERLAP_NO);
+			m_conf.require_full_barrier |= (m_prim_overlap != PRIM_OVERLAP_NO);
+		}
+		
+		// We need to do SW depth testing if it's used.
+		if (m_cached_ctx.DepthRead())
+		{
+			GL_INS("HW: Enable SW depth test and disable HW.");
+			m_conf.ps.ztst = m_cached_ctx.TEST.ZTST; // Enable SW Z test.
+			m_conf.depth.ztst = ZTST_ALWAYS; // Disable HW Z test.
+		}
+	}
 }
 
 void GSRendererHW::CleanupDraw(bool invalidate_temp_src)
@@ -7720,10 +8826,12 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 #endif
 
 	const GSDrawingEnvironment& env = *m_draw_env;
-	bool DATE = rt && m_cached_ctx.TEST.DATE && m_cached_ctx.FRAME.PSM != PSMCT24;
-	bool DATE_PRIMID = false;
-	bool DATE_BARRIER = false;
-	bool DATE_one = false;
+
+	DATEOptions date_options;
+	date_options.enabled = rt && m_cached_ctx.TEST.DATE && m_cached_ctx.FRAME.PSM != PSMCT24;
+	date_options.primid = false;
+	date_options.barrier = false;
+	date_options.stencil_one = false;
 
 	ResetStates();
 
@@ -7750,40 +8858,21 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	m_prim_overlap = PrimitiveOverlap(false);
 
+	// Do AA1 setup early so we can mask depth if possible.
+	EmulateAA1();
+
 	if (rt)
 	{
 		EmulateTextureShuffleAndFbmask(rt, tex);
-		if (m_index.tail == 0)
+		if (m_index->tail == 0)
 		{
 			GL_INS("HW: DrawPrims: Texture shuffle emulation culled all vertices; exiting.");
 			return;
 		}
 	}
 
-	const GSDevice::FeatureSupport features = g_gs_device->Features();
-
-	if (DATE)
-	{
-		const bool is_overlap_alpha = m_prim_overlap != PRIM_OVERLAP_NO && !(m_cached_ctx.FRAME.FBMSK & 0x80000000);
-		if (m_cached_ctx.TEST.DATM == 0)
-		{
-			// Some pixles are >= 1 so some fail, or some pixels get written but the written alpha matches or exceeds 1 (so overlap doesn't always pass).
-			DATE = rt->m_alpha_max >= 128 || (is_overlap_alpha && rt->m_alpha_min < 128 && (GetAlphaMinMax().max >= 128 || (m_context->FBA.FBA || IsCoverageAlpha())));
-
-			// All pixels fail.
-			if (DATE && rt->m_alpha_min >= 128)
-				return;
-		}
-		else
-		{
-			// Some pixles are < 1 so some fail, or some pixels get written but the written alpha goes below 1 (so overlap doesn't always pass).
-			DATE = rt->m_alpha_min < 128 || (is_overlap_alpha && rt->m_alpha_max >= 128 && (GetAlphaMinMax().min < 128 && !(m_context->FBA.FBA || IsCoverageAlpha())));
-
-			// All pixels fail.
-			if (DATE && rt->m_alpha_max < 128)
-				return;
-		}
-	}
+	if (EmulateDATEEarlyFail(date_options, rt))
+		return;
 
 	const int afail_type = m_cached_ctx.TEST.GetAFAIL(m_cached_ctx.FRAME.PSM);
 	if (m_cached_ctx.TEST.ATE && ((afail_type != AFAIL_FB_ONLY && afail_type != AFAIL_RGB_ONLY) || !NeedsBlending() || !IsUsingAsInBlend()))
@@ -7792,237 +8881,21 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		CorrectATEAlphaMinMax(m_cached_ctx.TEST.ATST, aref);
 	}
 
-	const bool needs_ad = rt && m_context->ALPHA.C == 1 && rt->m_alpha_min != rt->m_alpha_max && rt->m_alpha_max > 128;
-
-	// Blend
+	// Determine alpha range before blending.
 	int blend_alpha_min = 0, blend_alpha_max = 255;
 	int rt_new_alpha_min = 0, rt_new_alpha_max = 255;
-	if (rt)
-	{
-		GL_INS("HW: RT alpha was %s before draw", rt->m_rt_alpha_scale ? "scaled" : "NOT scaled");
+	CalculateAlphaRange(rt, ds, date_options, blend_alpha_min, blend_alpha_max, rt_new_alpha_min, rt_new_alpha_max);
 
-		blend_alpha_min = rt_new_alpha_min = rt->m_alpha_min;
-		blend_alpha_max = rt_new_alpha_max = rt->m_alpha_max;
-
-		const int fba_value = m_draw_env->CTXT[m_draw_env->PRIM.CTXT].FBA.FBA * 128;
-		const bool is_24_bit = (GSLocalMemory::m_psm[rt->m_TEX0.PSM].trbpp == 24);
-		if (is_24_bit)
-		{
-			// C24/Z24 - alpha is 1.
-			blend_alpha_min = 128;
-			blend_alpha_max = 128;
-		}
-
-		if (GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x8 && !m_texture_shuffle)
-		{
-			const int s_alpha_max = GetAlphaMinMax().max | fba_value;
-			const int s_alpha_min = GetAlphaMinMax().min | fba_value;
-
-			const bool afail_always_fb_alpha = m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY || (m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].trbpp != 32);
-			const bool always_passing_alpha = !m_cached_ctx.TEST.ATE || afail_always_fb_alpha || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ATST_ALWAYS);
-			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && m_primitive_covers_without_gaps == NoGapsType::FullCover && !(DATE || !always_passing_alpha || !IsDepthAlwaysPassing());
-
-			// On DX FBMask emulation can be missing on lower blend levels, so we'll do whatever the API does.
-			const u32 fb_mask = m_conf.colormask.wa ? (m_conf.ps.fbmask ? m_conf.cb_ps.FbMask.a : 0) : 0xFF;
-			const u32 alpha_mask = (GSLocalMemory::m_psm[rt->m_TEX0.PSM].fmsk & 0xFF000000) >> 24;
-			if ((fb_mask & alpha_mask) == 0)
-			{
-				if (full_cover)
-				{
-					rt_new_alpha_max = s_alpha_max;
-					rt_new_alpha_min = s_alpha_min;
-				}
-				else
-				{
-					rt_new_alpha_max = std::max(s_alpha_max, rt_new_alpha_max);
-					rt_new_alpha_min = std::min(s_alpha_min, rt_new_alpha_min);
-				}
-			}
-			else if ((fb_mask & alpha_mask) != alpha_mask) // We can't be sure of the alpha if it's partially masked.
-			{
-				// Any number of bits could be set, so let's be paranoid about it
-				const u32 new_max_alpha = (s_alpha_max != s_alpha_min) ? (std::min(s_alpha_max, ((1 << (32 - std::countl_zero(static_cast<u32>(s_alpha_max)))) - 1)) & ~fb_mask) : (s_alpha_max & ~fb_mask);
-				const u32 curr_max = (rt_new_alpha_max != rt_new_alpha_min && rt->m_alpha_range) ? (((1 << (32 - std::countl_zero(static_cast<u32>(rt_new_alpha_max)))) - 1) & fb_mask) : ((rt_new_alpha_max | rt_new_alpha_min) & fb_mask);
-				if (full_cover)
-					rt_new_alpha_max = new_max_alpha | curr_max;
-				else
-					rt_new_alpha_max = std::max(static_cast<int>(new_max_alpha | curr_max), rt_new_alpha_max);
-
-				rt_new_alpha_min = std::min(s_alpha_min, rt_new_alpha_min);
-			}
-
-			if ((fb_mask & alpha_mask) != alpha_mask)
-			{
-				if (full_cover && (fb_mask & alpha_mask) == 0)
-					rt->m_alpha_range = s_alpha_max != s_alpha_min;
-				else
-					rt->m_alpha_range |= (s_alpha_max & ~fb_mask) != (s_alpha_min & ~fb_mask);
-			}
-		}
-		else if ((m_texture_shuffle && m_conf.colormask.wa))
-		{
-			// in shuffles, the alpha top bit values are set according to TEXA
-			const GSVector4i shuffle_rect = GSVector4i(m_vt.m_min.p.x, m_vt.m_min.p.y, m_vt.m_max.p.x, m_vt.m_max.p.y);
-			if (!rt->m_valid.rintersect(shuffle_rect).eq(rt->m_valid) || (m_cached_ctx.FRAME.FBMSK & 0xFFFC0000))
-			{
-				rt_new_alpha_max = std::max(static_cast<int>((std::max(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80) + 127), rt_new_alpha_max) | fba_value;
-				rt_new_alpha_min = std::min(static_cast<int>(std::min(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80), rt_new_alpha_min);
-			}
-			else
-			{
-				rt_new_alpha_max = (std::max(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80) + 127 | fba_value;
-				rt_new_alpha_min = (std::min(m_cached_ctx.TEXA.TA1, m_cached_ctx.TEXA.TA0) & 0x80) | fba_value;
-			}
-			rt->m_alpha_range = true;
-		}
-
-		GL_INS("HW: RT Alpha Range: %d-%d => %d-%d", blend_alpha_min, blend_alpha_max, rt_new_alpha_min, rt_new_alpha_max);
-
-		// If there's no overlap, the values in the RT before FB write will be the old values.
-		if (m_prim_overlap != PRIM_OVERLAP_NO)
-		{
-			// Otherwise, it may be a mix of the old/new values.
-			blend_alpha_min = std::min(blend_alpha_min, rt_new_alpha_min);
-			blend_alpha_max = std::max(blend_alpha_max, rt_new_alpha_max);
-		}
-
-		if (!rt->m_32_bits_fmt)
-		{
-			rt_new_alpha_max &= 128;
-			rt_new_alpha_min &= 128;
-
-			if (rt_new_alpha_max == rt_new_alpha_min)
-				rt->m_alpha_range = false;
-		}
-	}
-
-	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
-	const bool complex_alpha_test = m_cached_ctx.TEST.ATE &&
-	                                m_cached_ctx.TEST.ATST != ATST_ALWAYS &&
-	                                m_cached_ctx.TEST.ATST != ATST_NEVER &&
-	                                m_cached_ctx.TEST.AFAIL != AFAIL_KEEP;
-	if (DATE)
-	{
-		if (m_cached_ctx.TEST.DATM)
-		{
-			blend_alpha_min = std::max(blend_alpha_min, 128);
-			blend_alpha_max = std::max(blend_alpha_max, 128);
-		}
-		else
-		{
-			blend_alpha_min = std::min(blend_alpha_min, 127);
-			blend_alpha_max = std::min(blend_alpha_max, 127);
-		}
-
-		// It is way too complex to emulate texture shuffle with DATE, so use accurate path.
-		// No overlap should be triggered on gl/vk only as they support DATE_BARRIER.
-		if (features.framebuffer_fetch)
-		{
-			// Full DATE is "free" with framebuffer fetch. The barrier gets cleared below.
-			DATE_BARRIER = true;
-			m_conf.require_full_barrier = true;
-		}
-		else if ((features.texture_barrier && m_prim_overlap == PRIM_OVERLAP_NO) || m_texture_shuffle)
-		{
-			GL_PERF("DATE: Accurate with %s", (features.texture_barrier && m_prim_overlap == PRIM_OVERLAP_NO) ? "no overlap" : "texture shuffle");
-			if (features.texture_barrier)
-			{
-				m_conf.require_full_barrier = true;
-				DATE_BARRIER = true;
-			}
-		}
-		// When Blending is disabled and Edge Anti Aliasing is enabled,
-		// the output alpha is Coverage (which we force to 128) so DATE will fail/pass guaranteed on second pass.
-		else if (m_conf.colormask.wa && (m_context->FBA.FBA || IsCoverageAlpha()) && features.stencil_buffer)
-		{
-			GL_PERF("DATE: Fast with FBA, all pixels will be >= 128");
-			DATE_one = !m_cached_ctx.TEST.DATM;
-		}
-		else if (m_conf.colormask.wa && !complex_alpha_test && !(m_cached_ctx.FRAME.FBMSK & 0x80000000))
-		{
-			// Performance note: check alpha range with GetAlphaMinMax()
-			// Note: all my dump are already above 120fps, but it seems to reduce GPU load
-			// with big upscaling
-			if (m_cached_ctx.TEST.DATM && GetAlphaMinMax().max < 128 && features.stencil_buffer)
-			{
-				// Only first pixel (write 0) will pass (alpha is 1)
-				GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				DATE_one = true;
-			}
-			else if (!m_cached_ctx.TEST.DATM && GetAlphaMinMax().min >= 128 && features.stencil_buffer)
-			{
-				// Only first pixel (write 1) will pass (alpha is 0)
-				GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				DATE_one = true;
-			}
-			else if (features.texture_barrier && ((m_vt.m_primclass == GS_SPRITE_CLASS && ComputeDrawlistGetSize(rt->m_scale) < 10) || (m_index.tail < 30)))
-			{
-				// texture barrier will split the draw call into n draw call. It is very efficient for
-				// few primitive draws. Otherwise it sucks.
-				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				m_conf.require_full_barrier = true;
-				DATE_BARRIER = true;
-			}
-			else if ((features.texture_barrier || features.multidraw_fb_copy) && m_conf.require_full_barrier)
-			{
-				// Full barrier is enabled (likely sw fbmask), we need to use date barrier.
-				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				m_conf.require_full_barrier = true;
-				DATE_BARRIER = true;
-			}
-			else if (features.primitive_id)
-			{
-				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				DATE_PRIMID = true;
-			}
-			else if (features.texture_barrier || features.multidraw_fb_copy)
-			{
-				GL_PERF("DATE: Accurate with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				m_conf.require_full_barrier = true;
-				DATE_BARRIER = true;
-			}
-			else if (features.stencil_buffer)
-			{
-				// Might be inaccurate in some cases but we shouldn't hit this path.
-				GL_PERF("DATE: Fast with alpha %d-%d", GetAlphaMinMax().min, GetAlphaMinMax().max);
-				DATE_one = true;
-			}
-		}
-		else if (features.texture_barrier && !m_conf.colormask.wa)
-		{
-			GL_PERF("DATE: Accurate with no alpha write");
-			m_conf.require_one_barrier = true;
-			DATE_BARRIER = true;
-		}
-
-		// Will save my life !
-		pxAssert(!(DATE_BARRIER && DATE_one));
-		pxAssert(!(DATE_PRIMID && DATE_one));
-		pxAssert(!(DATE_PRIMID && DATE_BARRIER));
-	}
+	// DATE: selection of the algorithm.
+	EmulateDATESelectMethod(date_options, rt, blend_alpha_min, blend_alpha_max);
 
 	// Before emulateblending, dither will be used
-	m_conf.ps.dither = GSConfig.Dithering > 0 && m_conf.ps.dst_fmt == GSLocalMemory::PSM_FMT_16 && env.DTHE.DTHE;
+	m_conf.ps.dither = GSConfig.Dithering > 0 && m_conf.ps.dst_fmt == GSLocalMemory::PSM_FMT_16 && !!env.DTHE.DTHE;
 
 	if (m_conf.ps.dst_fmt == GSLocalMemory::PSM_FMT_24)
 	{
 		// Disable writing of the alpha channel
 		m_conf.colormask.wa = 0;
-	}
-
-
-	// Not gonna spend too much time with this, it's not likely to be used much, can't be less accurate than it was.
-	if (ds)
-	{
-		ds->m_alpha_max = std::max(static_cast<u32>(ds->m_alpha_max), static_cast<u32>(m_vt.m_max.p.z) >> 24);
-		ds->m_alpha_min = std::min(static_cast<u32>(ds->m_alpha_min), static_cast<u32>(m_vt.m_min.p.z) >> 24);
-		GL_INS("HW: New DS Alpha Range: %d-%d", ds->m_alpha_min, ds->m_alpha_max);
-
-		if (GSLocalMemory::m_psm[ds->m_TEX0.PSM].bpp == 16)
-		{
-			ds->m_alpha_max &= 128;
-			ds->m_alpha_min &= 128;
-		}
 	}
 
 	// If we Correct/Decorrect and tex is rt, we will need to update the texture reference
@@ -8032,75 +8905,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	// because otherwise we'll treat tex-is-fb as a scaled source, when it's not yet.
 	bool can_scale_rt_alpha = false;
 	bool new_scale_rt_alpha = false;
-	if (rt)
-	{
-		can_scale_rt_alpha = !needs_ad && (GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & 0x8) && rt_new_alpha_max <= 128;
-
-		const bool partial_fbmask = (m_conf.ps.fbmask && m_conf.cb_ps.FbMask.a != 0xFF && m_conf.cb_ps.FbMask.a != 0);
-		const bool rta_decorrection = m_channel_shuffle || m_texture_shuffle || (m_conf.colormask.wa && (rt_new_alpha_max > 128 || partial_fbmask));
-
-		if (rta_decorrection)
-		{
-			if (m_texture_shuffle)
-			{
-				if (m_conf.ps.process_ba & SHUFFLE_READ)
-				{
-					can_scale_rt_alpha = false;
-
-					rt->UnscaleRTAlpha();
-					m_conf.rt = rt->m_texture;
-
-					if (req_src_update)
-						tex->m_texture = rt->m_texture;
-				}
-				else if (m_conf.colormask.wa)
-				{
-					if (!(m_cached_ctx.FRAME.FBMSK & 0xFFFC0000))
-					{
-						can_scale_rt_alpha = false;
-						rt->m_rt_alpha_scale = false;
-					}
-					else if (m_cached_ctx.FRAME.FBMSK & 0xFFFC0000)
-					{
-						can_scale_rt_alpha = false;
-						rt->UnscaleRTAlpha();
-						m_conf.rt = rt->m_texture;
-
-						if (req_src_update)
-							tex->m_texture = rt->m_texture;
-					}
-				}
-			}
-			else if (m_channel_shuffle)
-			{
-				if (m_conf.ps.tales_of_abyss_hle || (tex && tex->m_from_target && tex->m_from_target == rt && m_conf.ps.channel == ChannelFetch_ALPHA) || partial_fbmask || rt_new_alpha_max > 128)
-				{
-					can_scale_rt_alpha = false;
-					rt->UnscaleRTAlpha();
-					m_conf.rt = rt->m_texture;
-
-					if (req_src_update)
-						tex->m_texture = rt->m_texture;
-				}
-			}
-			else if (rt->m_last_draw == s_n)
-			{
-				can_scale_rt_alpha = false;
-				rt->m_rt_alpha_scale = false;
-			}
-			else
-			{
-				can_scale_rt_alpha = false;
-				rt->UnscaleRTAlpha();
-				m_conf.rt = rt->m_texture;
-
-				if (req_src_update)
-					tex->m_texture = rt->m_texture;
-			}
-		}
-
-		new_scale_rt_alpha = rt->m_rt_alpha_scale;
-	}
+	DetermineAlphaScaling(rt, tex, req_src_update, rt_new_alpha_max, can_scale_rt_alpha, new_scale_rt_alpha);
 
 	GSDevice::RecycledTexture tex_copy;
 	if (tex)
@@ -8120,14 +8925,14 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	m_conf.ps.no_color1 = true;
 
 	// Perform alpha test first pass setup here as bending depends on it.
-	EmulateAlphaTest(DATE, DATE_BARRIER, DATE_one, DATE_PRIMID);
+	EmulateAlphaTest(date_options);
 
-	// AA1: Set alpha source to coverage 128 when there is no alpha blending.
-	m_conf.ps.fixed_one_a = IsCoverageAlpha();
+	// AA1: Set alpha source to coverage 128 when AA1 is not supported.
+	m_conf.ps.fixed_one_a = IsCoverageAlphaFixedOne();
 
-	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && ((m_conf.colormask.wrgba & 0x7) || (m_texture_shuffle && !m_copy_16bit_to_target_shuffle && !m_same_group_texture_shuffle)))
+	if ((!IsOpaque() || m_context->ALPHA.IsBlack()) && rt && ((m_conf.colormask.wrgba & 0x7) || (m_texture_shuffle && !m_texture_shuffle.real_16_bit_source && !m_texture_shuffle.SameGroupShuffle())))
 	{
-		EmulateBlending(blend_alpha_min, blend_alpha_max, DATE, DATE_PRIMID, DATE_BARRIER, rt, can_scale_rt_alpha, new_scale_rt_alpha);
+		EmulateBlending(blend_alpha_min, blend_alpha_max, date_options, rt, can_scale_rt_alpha, new_scale_rt_alpha);
 	}
 	else
 	{
@@ -8137,7 +8942,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		{
 			const bool afail_always_fb_alpha = m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY || (m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].trbpp != 32);
 			const bool always_passing_alpha = !m_cached_ctx.TEST.ATE || afail_always_fb_alpha || (m_cached_ctx.TEST.ATE && m_cached_ctx.TEST.ATST == ATST_ALWAYS);
-			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && m_primitive_covers_without_gaps == NoGapsType::FullCover && !(DATE || !always_passing_alpha || !IsDepthAlwaysPassing());
+			const bool full_cover = rt->m_valid.rintersect(m_r).eq(rt->m_valid) && m_primitive_covers_without_gaps == NoGapsType::FullCover &&
+				!(date_options.enabled || !always_passing_alpha || !IsDepthAlwaysPassing());
 
 			// Restrict this to only when we're overwriting the whole target.
 			new_scale_rt_alpha = full_cover || rt->m_last_draw >= s_n;
@@ -8145,7 +8951,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 
 	// Similar to IsRTWritten(), check if the rt will change.
-	const bool no_rt = !rt || !(m_conf.colormask.wrgba || m_channel_shuffle);
+	const bool no_rt = !rt || m_conf.colormask.wrgba == 0;
 	const bool no_ds = !ds ||
 		// Depth will be written through the RT.
 		(!no_rt && m_cached_ctx.FRAME.FBP == m_cached_ctx.ZBUF.ZBP && !PRIM->TME && m_cached_ctx.ZBUF.ZMSK == 0 &&
@@ -8158,11 +8964,6 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		GL_INS("HW: Late draw cancel DrawPrims().");
 		return;
 	}
-
-	// Always swap DATE with DATE_BARRIER if we have barriers on when alpha write is masked.
-	// This is always enabled on vk/gl but not on dx11/12 as copies are slow so we can selectively enable it like now.
-	if (DATE && !m_conf.colormask.wa && (m_conf.require_one_barrier || m_conf.require_full_barrier))
-		DATE_BARRIER = true;
 
 	if ((m_conf.ps.tex_is_fb && rt && rt->m_rt_alpha_scale) || (tex && tex->m_from_target && tex->m_target_direct && tex->m_from_target->m_rt_alpha_scale))
 		m_conf.ps.rta_source_correction = 1;
@@ -8184,175 +8985,30 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		m_conf.colormask.wrgba = 0;
 	}
 
-	if (m_conf.ps.scanmsk & 2)
-		DATE_PRIMID = false; // to have discard in the shader work correctly
+	// DATE backend configuration
+	GSDevice::RecycledTexture temp_ds; // If we're doing stencil DATE and we don't have a depth buffer, we need to allocate a temporary one.
+	EmulateDATEGetConfig(date_options, new_scale_rt_alpha, temp_ds);
 
-	// DATE setup, no DATE_BARRIER please
-
-	if (!DATE)
-		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Off;
-	else if (DATE_one)
-		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::StencilOne;
-	else if (DATE_PRIMID)
-		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking;
-	else if (DATE_BARRIER)
-		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Full;
-	else if (features.stencil_buffer)
-		m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Stencil;
-
-	if (new_scale_rt_alpha)
-		m_conf.datm = static_cast<SetDATM>(m_cached_ctx.TEST.DATM + 2);
-	else
-		m_conf.datm = static_cast<SetDATM>(m_cached_ctx.TEST.DATM);
-
-	// If we're doing stencil DATE and we don't have a depth buffer, we need to allocate a temporary one.
-	GSDevice::RecycledTexture temp_ds;
-	if (m_conf.destination_alpha >= GSHWDrawConfig::DestinationAlphaMode::Stencil &&
-		m_conf.destination_alpha <= GSHWDrawConfig::DestinationAlphaMode::StencilOne && !m_conf.ds)
-	{
-		const bool is_one_barrier = (features.texture_barrier && m_conf.require_full_barrier && (m_prim_overlap == PRIM_OVERLAP_NO || m_conf.ps.shuffle || m_channel_shuffle));
-		if ((temp_ds.reset(g_gs_device->CreateDepthStencil(m_conf.rt->GetWidth(), m_conf.rt->GetHeight(), GSTexture::Format::DepthStencil, false)), temp_ds))
-		{
-			m_conf.ds = temp_ds.get();
-		}
-		else if (features.primitive_id && !(m_conf.ps.scanmsk & 2) && (!m_conf.require_full_barrier || is_one_barrier))
-		{
-			DATE_one = false;
-			DATE_PRIMID = true;
-			m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking;
-			DevCon.Warning("HW: Depth buffer creation failed for Stencil Date. Fallback to PrimIDTracking.");
-		}
-		else
-		{
-			DATE = false;
-			DATE_one = false;
-			m_conf.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Off;
-			DevCon.Warning("HW: Depth buffer creation failed for Stencil Date.");
-		}
-	}
-
-	// vs
-
-	m_conf.vs.tme = m_process_texture;
-	m_conf.vs.fst = PRIM->FST;
-
-	// FIXME D3D11 and GL support half pixel center. Code could be easier!!!
 	const GSTextureCache::Target* rt_or_ds = rt ? rt : ds;
 	const float rtscale = rt_or_ds->GetScale();
 	const GSVector2i rtsize = rt_or_ds->GetTexture()->GetSize();
-	float sx, sy, ox2, oy2;
-	const float ox = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFX));
-	const float oy = static_cast<float>(static_cast<int>(m_context->XYOFFSET.OFY));
+	const GSVector2i rt_unscaled_size = rt_or_ds->GetUnscaledSize();
 
-	if ((GSConfig.UserHacks_HalfPixelOffset < GSHalfPixelOffset::Native) && rtscale > 1.0f)
-	{
-		sx = 2.0f * rtscale / (rtsize.x << 4);
-		sy = 2.0f * rtscale / (rtsize.y << 4);
-		ox2 = -1.0f / rtsize.x;
-		oy2 = -1.0f / rtsize.y;
-		float mod_xy = 0.0f;
-		//This hack subtracts around half a pixel from OFX and OFY.
-		//
-		//The resulting shifted output aligns better with common blending / corona / blurring effects,
-		//but introduces a few bad pixels on the edges.
-		if (!rt)
-			mod_xy = GetModXYOffset();
-		else
-			mod_xy = rt->OffsetHack_modxy;
+	const float texscale = tex ? tex->GetScale() : 0.0f;
+	const GSVector2i texsize = tex ? tex->GetTexture()->GetSize() : GSVector2i(0, 0);
 
-		if (mod_xy > 1.0f)
-		{
-			ox2 *= mod_xy;
-			oy2 *= mod_xy;
-		}
-	}
-	else
-	{
-		// Align coordinates to native resolution framebuffer, hope for the best.
-		const int unscaled_x = rt_or_ds ? rt_or_ds->GetUnscaledWidth() : 0;
-		const int unscaled_y = rt_or_ds ? rt_or_ds->GetUnscaledHeight() : 0;
-		sx = 2.0f / (unscaled_x << 4);
-		sy = 2.0f / (unscaled_y << 4);
+	// Vertex shader config
+	float vs_scale_x, vs_scale_y;
+	DetermineVSConfig(rt, rtscale, rtsize, rt_unscaled_size, vs_scale_x, vs_scale_y);
 
-		if (GSConfig.UserHacks_HalfPixelOffset == GSHalfPixelOffset::NativeWTexOffset)
-		{
-			ox2 = (-1.0f / (unscaled_x * rtscale));
-			oy2 = (-1.0f / (unscaled_y * rtscale));
-
-			// Having the vertex negatively offset is a common thing for copying sprites but this causes problems when upscaling, so we need to further adjust the offset.
-			// This kinda screws things up when using ST, so let's not.
-			if (m_vt.m_primclass == GS_SPRITE_CLASS && rtscale > 1.0f && (tex && PRIM->FST))
-			{
-				const GSVertex* v = &m_vertex.buff[0];
-				const int x1_frac = ((v[1].XYZ.X - m_context->XYOFFSET.OFX) & 0xf);
-				const int y1_frac = ((v[1].XYZ.Y - m_context->XYOFFSET.OFY) & 0xf);
-				if (x1_frac & 8)
-					ox2 *= 1.0f + ((static_cast<float>(16 - x1_frac) / 8.0f) * rtscale);
-
-				if (y1_frac & 8)
-					oy2 *= 1.0f + ((static_cast<float>(16 - y1_frac) / 8.0f) * rtscale);
-			}
-		}
-		else
-		{
-			ox2 = -1.0f / unscaled_x;
-			oy2 = -1.0f / unscaled_y;
-		}
-	}
-
-	m_conf.cb_vs.vertex_scale = GSVector2(sx, sy);
-	m_conf.cb_vs.vertex_offset = GSVector2(ox * sx + ox2 + 1, oy * sy + oy2 + 1);
-	// END of FIXME
-
-	// GS_SPRITE_CLASS are already flat (either by CPU or the GS)
-	m_conf.ps.iip = (m_vt.m_primclass == GS_SPRITE_CLASS) ? 0 : PRIM->IIP;
-	m_conf.vs.iip = m_conf.ps.iip;
-
-	if (DATE_BARRIER)
-	{
-		m_conf.ps.date = 5 + m_cached_ctx.TEST.DATM;
-	}
-	else if (DATE_one)
-	{
-		const bool multidraw_fb_copy = features.multidraw_fb_copy && (m_conf.require_one_barrier || m_conf.require_full_barrier);
-		if (features.texture_barrier || multidraw_fb_copy)
-		{
-			m_conf.require_one_barrier = true;
-			m_conf.ps.date = 5 + m_cached_ctx.TEST.DATM;
-		}
-		m_conf.depth.date = 1;
-		m_conf.depth.date_one = 1;
-	}
-	else if (DATE_PRIMID)
-	{
-		m_conf.ps.date = 1 + m_cached_ctx.TEST.DATM;
-	}
-	else if (DATE)
-	{
-		m_conf.depth.date = 1;
-	}
+	m_conf.ps.iip = !IsFlatShaded();
 
 	m_conf.ps.fba = m_context->FBA.FBA;
 
-	if (m_conf.ps.dither || m_conf.blend_multi_pass.dither)
-	{
-		const GIFRegDIMX& DIMX = m_draw_env->DIMX;
-		GL_DBG("DITHERING mode %d (%d)", (GSConfig.Dithering == 3) ? "Force 32bit" : ((GSConfig.Dithering == 0) ? "Disabled" : "Enabled"), GSConfig.Dithering);
+	// Dither config
+	EmulateDither();
 
-		if (m_conf.ps.dither || GSConfig.Dithering == 3)
-			m_conf.ps.dither = GSConfig.Dithering;
-
-		m_conf.cb_ps.DitherMatrix[0] = GSVector4(DIMX.DM00, DIMX.DM01, DIMX.DM02, DIMX.DM03);
-		m_conf.cb_ps.DitherMatrix[1] = GSVector4(DIMX.DM10, DIMX.DM11, DIMX.DM12, DIMX.DM13);
-		m_conf.cb_ps.DitherMatrix[2] = GSVector4(DIMX.DM20, DIMX.DM21, DIMX.DM22, DIMX.DM23);
-		m_conf.cb_ps.DitherMatrix[3] = GSVector4(DIMX.DM30, DIMX.DM31, DIMX.DM32, DIMX.DM33);
-	}
-	else if (GSConfig.Dithering > 2)
-	{
-		m_conf.ps.dither = GSConfig.Dithering;
-		m_conf.blend_multi_pass.dither = GSConfig.Dithering;
-	}
-
+	// Fogging config
 	if (PRIM->FGE)
 	{
 		m_conf.ps.fog = 1;
@@ -8370,41 +9026,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		m_conf.ps.rta_correction = rt->m_rt_alpha_scale;
 	}
 
-	if (features.framebuffer_fetch)
-	{
-		// Intel GPUs on Metal lock up if you try to use DSB and framebuffer fetch at once
-		// We should never need to do that (since using framebuffer fetch means you should be able to do all blending in shader),
-		// but sometimes it slips through
-		if (m_conf.require_one_barrier || m_conf.require_full_barrier)
-			pxAssert(!m_conf.blend.enable);
-
-		// If we use depth feedback directly, we must use barriers for the depth texture.
-		// If we use depth-as-color feedback, then FB fetch can be used for depth also.
-		bool need_barriers_for_depth = m_conf.ps.IsFeedbackLoopDepth() &&
-		                               (features.depth_feedback == GSDevice::DepthFeedbackSupport::Depth);
-
-		if (!need_barriers_for_depth)
-		{
-			// Barriers aren't needed with fbfetch
-			m_conf.require_one_barrier = false;
-			m_conf.require_full_barrier = false;
-		}
-	}
-	// Multi-pass algorithms shouldn't be needed with full barrier and backends may not handle this correctly
-	pxAssert(!m_conf.require_full_barrier || !m_conf.ps.colclip_hw);
-
-	// Swap full barrier for one barrier when there's no overlap, or a shuffle.
-	if ((features.texture_barrier || features.multidraw_fb_copy) && m_conf.require_full_barrier && (m_prim_overlap == PRIM_OVERLAP_NO || m_conf.ps.shuffle || m_channel_shuffle))
-	{
-		m_conf.require_full_barrier = false;
-		m_conf.require_one_barrier = true;
-	}
-	else if (!(features.texture_barrier || features.multidraw_fb_copy))
-	{
-		// These shouldn't be enabled if texture barriers aren't supported, make sure they are off.
-		m_conf.ps.write_rg = 0;
-		m_conf.require_full_barrier = false;
-	}
+	// Barriers must be determined before indices are modified via HandleProvokingVertexFirst/SetupIA.
+	DetermineBarriers(rt);
 
 	// Perform second pass setup here once barriers are determined.
 	EmulateAlphaTestSecondPass();
@@ -8419,22 +9042,34 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	const GSVector4i hacked_scissor = m_channel_shuffle ? GSVector4i::cxpr(0, 0, 1024, 1024) : m_context->scissor.in;
 	const GSVector4i scissor(GSVector4i(GSVector4(rtscale) * GSVector4(hacked_scissor)).rintersect(GSVector4i::loadh(rtsize)));
 
-	m_conf.drawarea = m_channel_shuffle ? scissor : scissor.rintersect(ComputeBoundingBox(rtsize, rtscale));
-	m_conf.scissor = (DATE && !DATE_BARRIER) ? m_conf.drawarea : scissor;
+	m_conf.drawarea = m_channel_shuffle ? scissor : scissor.rintersect(ComputeBoundingBoxRT(rtsize, rtscale));
 
-	// ComputeDrawlistGetSize expects the original index layout, so needs to be called before we modify it via HandleProvokingVertexFirst/SetupIA.
-	if (m_conf.require_full_barrier && (g_gs_device->Features().texture_barrier || g_gs_device->Features().multidraw_fb_copy))
-	{
-		ComputeDrawlistGetSize(rt->m_scale);
-		m_conf.drawlist = &m_drawlist;
-		m_conf.drawlist_bbox = &m_drawlist_bbox;
-	}
+	const GSVector4i tex_region = tex ? tex->GetRegionRect() : GSVector4i::zero();
+	m_conf.samplearea = m_channel_shuffle ? scissor :
+		GSVector4i::loadh(texsize).rintersect(ComputeBoundingBoxTex(texsize, tex_region, texscale));
+
+	m_conf.scissor = (date_options.enabled && !date_options.barrier) ? m_conf.drawarea : scissor;
 
 	HandleProvokingVertexFirst();
 
-	SetupIA(rtscale, sx, sy, m_channel_shuffle_width != 0);
+	SetupIA(rtscale, vs_scale_x, vs_scale_y, m_channel_shuffle_width != 0, no_rt);
 
-	StartDepthAsRTFeedback(); // Depends on the drawarea and alpha test having been determined.
+	if (m_conf.ds && m_conf.ps.IsFeedbackLoopDepth() && !g_gs_device->Features().depth_feedback)
+	{
+		GL_PUSH("HW: Creating temporary R32 RT for depth feedback");
+
+		// Should not be hw blending with multiple render targets.
+		pxAssert(!m_conf.blend.enable && !m_conf.blend_multi_pass.blend.enable);
+		// We should have depth output or feedback doesn't make sense.
+		// We will output to both the depth buffer and color clone simultaneously in the shader.
+		pxAssert(m_conf.depth.zwe);
+		// HW depth test should be disabled in place of SW depth test
+		pxAssert(m_conf.depth.ztst == ZTST_ALWAYS);
+		// Second pass alpha shouldn't be enabled
+		pxAssert(!m_conf.alpha_second_pass.enable);
+
+		g_gs_device->BeginDSAsRT(m_conf.ds, m_conf.drawarea);
+	}
 	
 	if (GSConfig.SaveHWConfig && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
@@ -8446,7 +9081,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	else
 		m_last_rt = rt;
 
-	CleanupDepthAsRTFeedback();
+	if (g_gs_device->IsDSInRTActive())
+		g_gs_device->EndDSAsRT();
 }
 
 // If the EE uploaded a new CLUT since the last draw, use that.
@@ -8722,7 +9358,7 @@ bool GSRendererHW::CanUseSwPrimRender(bool no_rt, bool no_ds, bool draw_sprite_t
 			else
 			{
 				// If the target isn't dirty we might have valid data, so let's check their areas overlap, if so we need to read it back for SW.
-				GSVector4i src_rect = GSVector4i(m_vt.m_min.t.x, m_vt.m_min.t.y, m_vt.m_max.t.x, m_vt.m_max.t.x);
+				GSVector4i src_rect = GSVector4i(m_vt.m_min.t.x, m_vt.m_min.t.y, m_vt.m_max.t.x, m_vt.m_max.t.y);
 				GSVector4i area = g_texture_cache->TranslateAlignedRectByPage(src_target, m_cached_ctx.TEX0.TBP0, m_cached_ctx.TEX0.PSM, m_cached_ctx.TEX0.TBW, src_rect, false);
 				req_readback = !area.rintersect(src_target->m_drawn_since_read).eq(GSVector4i::zero());
 			}
@@ -8778,7 +9414,7 @@ bool GSRendererHW::DetectStripedDoubleClear(bool& no_rt, bool& no_ds)
 	                        !m_cached_ctx.ZBUF.ZMSK &&
 	                        (m_cached_ctx.FRAME.PSM & 0x30) != (m_cached_ctx.ZBUF.PSM & 0x30) &&
 	                        (m_cached_ctx.FRAME.PSM & 0xF) == (m_cached_ctx.ZBUF.PSM & 0xF) && m_vt.m_eq.z == 1 &&
-	                        m_vertex.buff[1].XYZ.Z == m_vertex.buff[1].RGBAQ.U32[0];
+	                        m_vertex->buff[1].XYZ.Z == m_vertex->buff[1].RGBAQ.U32[0];
 
 	// Z and color must be constant and the same and must be drawing strips.
 	if (!z_is_frame || m_vt.m_eq.rgba != 0xFFFF)
@@ -8793,12 +9429,12 @@ bool GSRendererHW::DetectStripedDoubleClear(bool& no_rt, bool& no_ds)
 	// LOTR has 4096 verts, so this isn't going to be super fast on that game, most games will be just 16 verts so they should be ok,
 	// and I could cheat and stop when we get a size that matches, but that might be a lucky misdetection, I don't wanna risk it.
 	int vertex_offset = 0;
-	int last_vertex = m_vertex.buff[0].XYZ.X;
+	int last_vertex = m_vertex->buff[0].XYZ.X;
 
-	for (u32 i = 1; i < m_vertex.tail; i++)
+	for (u32 i = 1; i < m_vertex->tail; i++)
 	{
-		vertex_offset = std::max(static_cast<int>((m_vertex.buff[i].XYZ.X - last_vertex) >> 4), vertex_offset);
-		last_vertex = m_vertex.buff[i].XYZ.X;
+		vertex_offset = std::max(static_cast<int>((m_vertex->buff[i].XYZ.X - last_vertex) >> 4), vertex_offset);
+		last_vertex = m_vertex->buff[i].XYZ.X;
 
 		// Found a gap which is much bigger, no point continuing to scan.
 		if (vertex_offset > strip_size)
@@ -9070,6 +9706,20 @@ bool GSRendererHW::DetectRedundantBufferClear(bool& no_rt, bool& no_ds, u32 fm_m
 	if (((~m_cached_ctx.FRAME.FBMSK & fm_mask) & GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].fmsk) == 0)
 		return false;
 
+	// Frame and Z have different bit depths and we're doing a zero clear. We don't care about page alignment here.
+	// If we don't disable one or the other, the texture cache could get corrupted on target lookup.
+	// Only Tokyo Xtreme Racer 3 is know to hit this path, and draws small vertical strips with 32 bit color and 16 bit depth.
+	const bool is_zero_color_clear = m_vt.m_eq.rgba == 0xFFFF && GetConstantDirectWriteMemClearColor() == 0;
+	const bool is_zero_depth_clear = m_vt.m_eq.z && GetConstantDirectWriteMemClearDepth() == 0;
+	if (GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp != GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].bpp &&
+		is_zero_color_clear && is_zero_depth_clear)
+	{
+		m_cached_ctx.ZBUF.ZMSK = true;
+		no_ds = true;
+		no_rt = false;
+		return true;
+	}
+
 	// Make sure the width is page aligned, so we don't break powerdrome-style clears where Z writes the right side of the page.
 	// We can't check page alignment on the size entirely, because Ratchet does 256x127 clears...
 	// Test cases: Devil May Cry 3, Tom & Jerry.
@@ -9158,7 +9808,7 @@ bool GSRendererHW::TryTargetClear(GSTextureCache::Target* rt, GSTextureCache::Ta
 		if (ds && !preserve_depth && m_r.rintersect(ds->m_valid).eq(ds->m_valid))
 		{
 			const u32 max_z = 0xFFFFFFFF >> (GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].fmt * 8);
-			const u32 z = std::min(max_z, m_vertex.buff[1].XYZ.Z);
+			const u32 z = std::min(max_z, m_vertex->buff[1].XYZ.Z);
 			const float d = static_cast<float>(z) * 0x1p-32f;
 			GL_INS("HW: TryTargetClear(): DS at %x <= %f", ds->m_TEX0.TBP0, d);
 			g_gs_device->ClearDepth(ds->m_texture, d);
@@ -9205,12 +9855,12 @@ bool GSRendererHW::TryGSMemClear(bool no_rt, bool preserve_rt, bool invalidate_r
 				rt_end_bp, m_cached_ctx.FRAME.PSM, m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.FBMSK);
 
 			GSUploadQueue clear_queue;
+			clear_queue.transfer_type = EEGS_TransferType::Clear;
 			clear_queue.draw = s_n;
 			clear_queue.rect = m_r;
 			clear_queue.blit.DBP = m_cached_ctx.FRAME.Block();
 			clear_queue.blit.DBW = m_cached_ctx.FRAME.FBW;
 			clear_queue.blit.DPSM = m_cached_ctx.FRAME.PSM;
-			clear_queue.zero_clear = true;
 			m_draw_transfers.push_back(clear_queue);
 		}
 		else
@@ -9224,7 +9874,7 @@ bool GSRendererHW::TryGSMemClear(bool no_rt, bool preserve_rt, bool invalidate_r
 
 	if (!no_ds && !preserve_z)
 	{
-		ClearGSLocalMemory(m_context->offset.zb, m_r, m_vertex.buff[1].XYZ.Z);
+		ClearGSLocalMemory(m_context->offset.zb, m_r, m_vertex->buff[1].XYZ.Z);
 
 		if (invalidate_z)
 		{
@@ -9235,12 +9885,12 @@ bool GSRendererHW::TryGSMemClear(bool no_rt, bool preserve_rt, bool invalidate_r
 				ds_end_bp, m_cached_ctx.ZBUF.PSM, m_cached_ctx.FRAME.FBW);
 
 			GSUploadQueue clear_queue;
+			clear_queue.transfer_type = EEGS_TransferType::Clear;
 			clear_queue.draw = s_n;
 			clear_queue.rect = m_r;
 			clear_queue.blit.DBP = m_cached_ctx.ZBUF.Block();
 			clear_queue.blit.DBW = m_cached_ctx.FRAME.FBW;
 			clear_queue.blit.DPSM = m_cached_ctx.ZBUF.PSM;
-			clear_queue.zero_clear = true;
 			m_draw_transfers.push_back(clear_queue);
 		}
 	}
@@ -9399,7 +10049,7 @@ void GSRendererHW::ClearGSLocalMemory(const GSOffset& off, const GSVector4i& r, 
 bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Source* tex, const GSVector4i& r_draw)
 {
 	// Not required when using Tex in RT
-	if (r_draw.w > 1024 && (m_vt.m_primclass == GS_SPRITE_CLASS) && (m_vertex.next == 2) && m_process_texture && !PRIM->ABE &&
+	if (r_draw.w > 1024 && (m_vt.m_primclass == GS_SPRITE_CLASS) && (m_vertex->next == 2) && m_process_texture && !PRIM->ABE &&
 		tex && !tex->m_target && m_cached_ctx.TEX0.TBW > 0 && GSConfig.UserHacks_TextureInsideRt == GSTextureInRtMode::Disabled)
 	{
 		GL_PUSH("HW: OI_BlitFMV");
@@ -9510,12 +10160,12 @@ bool GSRendererHW::TextureCoversWithoutGapsNotEqual()
 	}
 
 	// Simple case: one sprite.
-	if (m_index.tail == 2)
+	if (m_index->tail == 2)
 	{
 		return true;
 	}
 
-	const GSVertex* v = &m_vertex.buff[0];
+	const GSVertex* v = &m_vertex->buff[0];
 	const int first_dpY = v[1].XYZ.Y - v[0].XYZ.Y;
 	const int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
 	const int first_dtV = v[1].V - v[0].V;
@@ -9525,7 +10175,7 @@ bool GSRendererHW::TextureCoversWithoutGapsNotEqual()
 	if ((first_dpX >> 4) == m_r.z)
 	{
 		// Borrowed from MergeSprite() modified to calculate heights.
-		for (u32 i = 2; i < m_vertex.next; i += 2)
+		for (u32 i = 2; i < m_vertex->next; i += 2)
 		{
 			const int last_tV = v[i - 1].V;
 			const int dtV = v[i + 1].V - v[i].V;
@@ -9543,7 +10193,7 @@ bool GSRendererHW::TextureCoversWithoutGapsNotEqual()
 	if ((first_dpY >> 4) == m_r.w)
 	{
 		// Borrowed from MergeSprite().
-		for (u32 i = 2; i < m_vertex.next; i += 2)
+		for (u32 i = 2; i < m_vertex->next; i += 2)
 		{
 			const int last_tU = v[i - 1].U;
 			const int this_start_U = v[i].U;
@@ -9593,7 +10243,7 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 		return 0;
 
 	const bool no_resize = (std::abs(draw_size.x - tex_size.x) <= 1 && std::abs(draw_size.y - tex_size.y) <= 1);
-	const bool can_maintain = no_resize || (!is_target_src && m_index.tail == 2);
+	const bool can_maintain = no_resize || (!is_target_src && m_index->tail == 2);
 
 	if (!src || ((!is_target_src || (src->m_from_target->m_downscaled || GSConfig.UserHacks_NativeScaling > GSNativeScaling::Aggressive)) && can_maintain))
 		return -1;
@@ -9629,9 +10279,9 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 	}
 
 	// Last ditched check if it's doing a lot of small draws exactly the same which could be recursive lighting bloom.
-	if (m_vt.m_primclass == GS_SPRITE_CLASS && m_index.tail > 2 && !no_gaps_or_single_sprite && m_context->TEX1.MMAG == 1 && !m_context->ALPHA.IsOpaque())
+	if (m_vt.m_primclass == GS_SPRITE_CLASS && m_index->tail > 2 && !no_gaps_or_single_sprite && m_context->TEX1.MMAG == 1 && !m_context->ALPHA.IsOpaque())
 	{
-		GSVertex* v = &m_vertex.buff[0];
+		GSVertex* v = &m_vertex->buff[0];
 		float tw = 1 << src->m_TEX0.TW;
 		float th = 1 << src->m_TEX0.TH;
 
@@ -9642,7 +10292,7 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 
 		if (first_x > first_u && first_y > first_v && !no_resize && std::abs(draw_size.x - first_x) <= 4 && std::abs(draw_size.y - first_y) <= 4)
 		{
-			for (u32 i = 2; i < m_index.tail; i += 2)
+			for (u32 i = 2; i < m_index->tail; i += 2)
 			{
 				const int next_u = (PRIM->FST) ? (v[i + 1].U - v[i].U) >> 4 : std::floor(static_cast<int>(tw * v[i + 1].ST.S) - static_cast<int>(tw * v[i].ST.S));
 				const int next_v = (PRIM->FST) ? (v[i + 1].V - v[i].V) >> 4 : std::floor(static_cast<int>(th * v[i + 1].ST.T) - static_cast<int>(th * v[i].ST.T));
@@ -9655,7 +10305,7 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 				if (next_u != first_u || next_v != first_v || next_x != first_x || next_y != first_y)
 					break;
 
-				if (i + 2 >= m_index.tail)
+				if (i + 2 >= m_index->tail)
 					return 2;
 			}
 		}
@@ -9666,13 +10316,13 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 
 ClearType GSRendererHW::IsConstantDirectWriteMemClear()
 {
-	const bool direct_draw = (m_vt.m_primclass == GS_SPRITE_CLASS) || (m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_index.tail % 6) == 0 && TrianglesAreQuads());
+	const bool direct_draw = (m_vt.m_primclass == GS_SPRITE_CLASS) || (m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_index->tail % 6) == 0 && TrianglesAreQuads());
 	// Constant Direct Write without texture/test/blending (aka a GS mem clear)
 	if (direct_draw && !PRIM->TME // Direct write
 		&& !(m_draw_env->SCANMSK.MSK & 2) && !m_cached_ctx.TEST.ATE // no alpha test
 		&& !m_cached_ctx.TEST.DATE // no destination alpha test
 		&& (!m_cached_ctx.TEST.ZTE || m_cached_ctx.TEST.ZTST == ZTST_ALWAYS) // no depth test
-		&& (m_vt.m_eq.rgba == 0xFFFF || m_vertex.next == 2) // constant color write
+		&& (m_vt.m_eq.rgba == 0xFFFF || m_vertex->next == 2) // constant color write
 		&& (!PRIM->FGE || m_vt.m_min.p.w == 255.0f)) // No fog effect
 	{
 		if ((PRIM->ABE && !m_context->ALPHA.IsOpaque()) || (m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk))
@@ -9687,7 +10337,7 @@ u32 GSRendererHW::GetConstantDirectWriteMemClearColor() const
 {
 	// Take the vertex colour, but check if the blending would make it black.
 	const u32 vert_index = (m_vt.m_primclass == GS_TRIANGLE_CLASS) ? 2 : 1;
-	u32 vert_color = m_vertex.buff[m_index.buff[vert_index]].RGBAQ.U32[0];
+	u32 vert_color = m_vertex->buff[m_index->buff[vert_index]].RGBAQ.U32[0];
 	if (PRIM->ABE && m_context->ALPHA.IsBlack())
 		vert_color &= 0xFF000000u;
 
@@ -9708,7 +10358,7 @@ u32 GSRendererHW::GetConstantDirectWriteMemClearColor() const
 u32 GSRendererHW::GetConstantDirectWriteMemClearDepth() const
 {
 	const u32 max_z = (0xFFFFFFFF >> (GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].fmt * 8));
-	return std::min(m_vertex.buff[1].XYZ.Z, max_z);
+	return std::min(m_vertex->buff[1].XYZ.Z, max_z);
 }
 
 bool GSRendererHW::IsReallyDithered() const
@@ -9730,7 +10380,7 @@ void GSRendererHW::ReplaceVerticesWithSprite(const GSVector4i& unscaled_rect, co
 {
 	const GSVector4i fpr = unscaled_rect.sll32<4>();
 	const GSVector4i fpuv = unscaled_uv_rect.sll32<4>();
-	GSVertex* v = m_vertex.buff;
+	GSVertex* v = m_vertex->buff;
 
 	v[0].XYZ.X = static_cast<u16>(m_context->XYOFFSET.OFX + fpr.x);
 	v[0].XYZ.Y = static_cast<u16>(m_context->XYOFFSET.OFY + fpr.y);
@@ -9772,8 +10422,8 @@ void GSRendererHW::ReplaceVerticesWithSprite(const GSVector4i& unscaled_rect, co
 	m_vt.m_eq.z = true;
 	m_vt.m_eq.f = true;
 
-	m_vertex.head = m_vertex.tail = m_vertex.next = 2;
-	m_index.tail = 2;
+	m_vertex->head = m_vertex->tail = m_vertex->next = 2;
+	m_index->tail = 2;
 
 	m_r = unscaled_rect;
 	m_context->scissor.in = scissor;
@@ -9799,10 +10449,10 @@ void GSRendererHW::OffsetDraw(s32 fbp_offset, s32 zbp_offset, s32 xoffset, s32 y
 
 	const s32 fp_xoffset = xoffset << 4;
 	const s32 fp_yoffset = yoffset << 4;
-	for (u32 i = 0; i < m_vertex.next; i++)
+	for (u32 i = 0; i < m_vertex->next; i++)
 	{
-		m_vertex.buff[i].XYZ.X += fp_xoffset;
-		m_vertex.buff[i].XYZ.Y += fp_yoffset;
+		m_vertex->buff[i].XYZ.X += fp_xoffset;
+		m_vertex->buff[i].XYZ.Y += fp_yoffset;
 	}
 }
 
@@ -9902,8 +10552,9 @@ void GSRendererHW::EndHLEHardwareDraw(bool force_copy_on_hazard /* = false */)
 		if (!force_copy_on_hazard && config.tex == config.rt)
 		{
 			// Sample RT 1:1.
-			config.require_one_barrier = !features.framebuffer_fetch;
+			config.tex = nullptr;
 			config.ps.tex_is_fb = true;
+			config.require_one_barrier = !features.framebuffer_fetch;
 		}
 		else if (!force_copy_on_hazard && config.tex == config.ds && !config.depth.zwe &&
 				 features.test_and_sample_depth)
@@ -9949,44 +10600,7 @@ std::size_t GSRendererHW::ComputeDrawlistGetSize(float scale)
 	return m_drawlist.size();
 }
 
-void GSRendererHW::StartDepthAsRTFeedback()
+bool GSRendererHW::IsCoverageAlphaSupported()
 {
-	// Create a temporary depth color target
-	if (m_conf.ds && m_conf.ps.IsFeedbackLoopDepth() &&
-		g_gs_device->Features().depth_feedback == GSDevice::DepthFeedbackSupport::DepthAsRT)
-	{
-		GL_PUSH("HW: Creating temporary R32 RT for depth feedback");
-
-		pxAssert(m_conf.ps.no_color1); // Should not be dual-source blending with multiple render targets.
-
-		// We should have depth output or feedback doesn't make sense.
-		// We will output to both the depth buffer and color clone simultaneously in the shader.
-		pxAssert(m_conf.depth.zwe);
-
-		// Disable HW depth test since we will be using SW depth test (if needed).
-		m_conf.depth.ztst = ZTST_ALWAYS;
-		if (m_conf.alpha_second_pass.enable && m_conf.alpha_second_pass.depth.zwe)
-		{
-			// Do the same with the alpha second pass.
-			m_conf.alpha_second_pass.depth.ztst = ZTST_ALWAYS;
-		}
-
-		// Create a temporary RT and copy the area needed for the draw.
-		const int w = m_conf.ds->GetWidth();
-		const int h = m_conf.ds->GetHeight();
-		m_conf.ds_as_rt = g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Float32, false, true);
-		const GSVector4 dRect(m_conf.drawarea);
-		const GSVector4 sRect(dRect.x / w, dRect.y / h, dRect.z / w, dRect.w / h);
-		g_gs_device->StretchRect(m_conf.ds, sRect, m_conf.ds_as_rt, dRect, ShaderConvert::FLOAT32_DEPTH_TO_COLOR, false);
-		g_perfmon.Put(GSPerfMon::TextureCopies, 1.0);
-	}
-}
-
-void GSRendererHW::CleanupDepthAsRTFeedback()
-{
-	if (m_conf.ds_as_rt)
-	{
-		g_gs_device->Recycle(m_conf.ds_as_rt);
-		m_conf.ds_as_rt = nullptr;
-	}
+	return IsCoverageAlpha() && IsRTWritten() && g_gs_device->Features().aa1;
 }

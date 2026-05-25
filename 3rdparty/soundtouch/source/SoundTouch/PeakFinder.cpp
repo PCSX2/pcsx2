@@ -136,10 +136,9 @@ int PeakFinder::findGround(const float *data, int peakpos, int direction) const
 // proceeds to direction defined in 'direction'
 int PeakFinder::findCrossingLevel(const float *data, float level, int peakpos, int direction) const
 {
-    float peaklevel;
     int pos;
 
-    peaklevel = data[peakpos];
+    [[maybe_unused]] float peaklevel = data[peakpos];
     assert(peaklevel >= level);
     pos = peakpos;
     while ((pos >= minPos) && (pos + direction < maxPos))

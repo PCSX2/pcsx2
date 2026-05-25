@@ -5,9 +5,8 @@
 
 #include "Error.h"
 
+#include "ryml.hpp"
 #include "ryml_std.hpp"
-#include "ryml.hpp"
-#include "ryml.hpp"
 
 #include <optional>
 

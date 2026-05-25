@@ -1,7 +1,6 @@
 #ifndef FASTFLOAT_DIGIT_COMPARISON_H
 #define FASTFLOAT_DIGIT_COMPARISON_H
 
-#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <iterator>
@@ -38,11 +37,8 @@ constexpr static uint64_t powers_of_ten_uint64[] = {1UL,
 // this algorithm is not even close to optimized, but it has no practical
 // effect on performance: in order to have a faster algorithm, we'd need
 // to slow down performance for faster algorithms, and this is still fast.
-template <typename UC>
 fastfloat_really_inline FASTFLOAT_CONSTEXPR14 int32_t
-scientific_exponent(parsed_number_string_t<UC> &num) noexcept {
-  uint64_t mantissa = num.mantissa;
-  int32_t exponent = int32_t(num.exponent);
+scientific_exponent(uint64_t mantissa, int32_t exponent) noexcept {
   while (mantissa >= 10000) {
     mantissa /= 10000;
     exponent += 4;
@@ -112,7 +108,7 @@ fastfloat_really_inline FASTFLOAT_CONSTEXPR14 void round(adjusted_mantissa &am,
   if (-am.power2 >= mantissa_shift) {
     // have a denormal float
     int32_t shift = -am.power2 + 1;
-    cb(am, std::min<int32_t>(shift, 64));
+    cb(am, (shift < 64 ? shift : 64));
     // check for round-up: if rounding-nearest carried us to the hidden bit.
     am.power2 = (am.mantissa <
                  (uint64_t(1) << binary_format<T>::mantissa_explicit_bits()))
@@ -398,7 +394,7 @@ inline FASTFLOAT_CONSTEXPR20 adjusted_mantissa negative_digit_comp(
     FASTFLOAT_ASSERT(real_digits.pow2(uint32_t(-pow2_exp)));
   }
 
-  // compare digits, and use it to director rounding
+  // compare digits, and use it to direct rounding
   int ord = real_digits.compare(theor_digits);
   adjusted_mantissa answer = am;
   round<T>(answer, [ord](adjusted_mantissa &a, int32_t shift) {
@@ -419,7 +415,7 @@ inline FASTFLOAT_CONSTEXPR20 adjusted_mantissa negative_digit_comp(
   return answer;
 }
 
-// parse the significant digits as a big integer to unambiguously round the
+// parse the significant digits as a big integer to unambiguously round
 // the significant digits. here, we are trying to determine how to round
 // an extended float representation close to `b+h`, halfway between `b`
 // (the float rounded-down) and `b+u`, the next positive float. this
@@ -438,7 +434,8 @@ digit_comp(parsed_number_string_t<UC> &num, adjusted_mantissa am) noexcept {
   // remove the invalid exponent bias
   am.power2 -= invalid_am_bias;
 
-  int32_t sci_exp = scientific_exponent(num);
+  int32_t sci_exp =
+      scientific_exponent(num.mantissa, static_cast<int32_t>(num.exponent));
   size_t max_digits = binary_format<T>::max_digits();
   size_t digits = 0;
   bigint bigmant;

@@ -450,7 +450,7 @@ void DebuggerWindow::onStepInto()
 		cpu->resumeCpu();
 	});
 
-	repaint();
+	update();
 }
 
 void DebuggerWindow::onStepOver()
@@ -500,7 +500,7 @@ void DebuggerWindow::onStepOver()
 		cpu->resumeCpu();
 	});
 
-	this->repaint();
+	update();
 }
 
 void DebuggerWindow::onStepOut()
@@ -525,8 +525,7 @@ void DebuggerWindow::onStepOut()
 				cpu->getPC(),
 				cpu->getRegister(0, 31),
 				cpu->getRegister(0, 29),
-				thread->EntryPoint(),
-				thread->StackTop());
+				thread->EntryPoint());
 			break;
 		}
 	}
@@ -541,7 +540,7 @@ void DebuggerWindow::onStepOut()
 		cpu->resumeCpu();
 	});
 
-	this->repaint();
+	update();
 }
 
 void DebuggerWindow::changeEvent(QEvent* event)

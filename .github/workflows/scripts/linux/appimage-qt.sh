@@ -43,8 +43,6 @@ STRIP=strip
 
 declare -a MANUAL_LIBS=(
 	"libshaderc_shared.so.1"
-	"libharfbuzz.so.0"
-	"libfreetype.so.6"
 )
 
 set -e

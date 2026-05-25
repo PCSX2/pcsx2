@@ -1099,11 +1099,24 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
     }
   }
 
+  void B(Label* label);
   void B(Label* label, BranchType type, Register reg = NoReg, int bit = -1);
 
-  void B(Label* label);
-  void B(Label* label, Condition cond);
+  void B(Label* label, Condition cond) {
+    Bcommon(label, cond, /* use_bc = */ false);
+  }
+  void Bc(Label* label, Condition cond) {
+    Bcommon(label, cond, /* use_bc = */ true);
+  }
+  // Aliases that match the instruction set ordering.
   void B(Condition cond, Label* label) { B(label, cond); }
+  void Bc(Condition cond, Label* label) { Bc(label, cond); }
+
+ private:
+  // Common method for B and Bc.
+  void Bcommon(Label* label, Condition cond, bool use_bc);
+
+ public:
   void Bfm(const Register& rd,
            const Register& rn,
            unsigned immr,
@@ -1189,6 +1202,31 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
     VIXL_ASSERT(allow_macro_instructions_);
     SingleEmissionCheckScope guard(this);
     retab();
+  }
+  void Bfcvt(const VRegister& vd, const VRegister& vn) {
+    VIXL_ASSERT(allow_macro_instructions_);
+    SingleEmissionCheckScope guard(this);
+    bfcvt(vd, vn);
+  }
+  void Bfcvtn(const VRegister& vd, const VRegister& vn) {
+    VIXL_ASSERT(allow_macro_instructions_);
+    SingleEmissionCheckScope guard(this);
+    bfcvtn(vd, vn);
+  }
+  void Bfcvtn2(const VRegister& vd, const VRegister& vn) {
+    VIXL_ASSERT(allow_macro_instructions_);
+    SingleEmissionCheckScope guard(this);
+    bfcvtn2(vd, vn);
+  }
+  void Bfcvt(const ZRegister& zd, const PRegisterM& pg, const ZRegister& zn) {
+    VIXL_ASSERT(allow_macro_instructions_);
+    SingleEmissionCheckScope guard(this);
+    bfcvt(zd, pg, zn);
+  }
+  void Bfcvtnt(const ZRegister& zd, const PRegisterM& pg, const ZRegister& zn) {
+    VIXL_ASSERT(allow_macro_instructions_);
+    SingleEmissionCheckScope guard(this);
+    bfcvtnt(zd, pg, zn);
   }
   void Braa(const Register& xn, const Register& xm) {
     VIXL_ASSERT(allow_macro_instructions_);
@@ -2814,6 +2852,7 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
   V(shsub, Shsub)                \
   V(sm3partw1, Sm3partw1)        \
   V(sm3partw2, Sm3partw2)        \
+  V(sm4ekey, Sm4ekey)            \
   V(smax, Smax)                  \
   V(smaxp, Smaxp)                \
   V(smin, Smin)                  \
@@ -2964,6 +3003,7 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
   V(sha1su1, Sha1su1)            \
   V(sha256su0, Sha256su0)        \
   V(sha512su0, Sha512su0)        \
+  V(sm4e, Sm4e)                  \
   V(smaxv, Smaxv)                \
   V(sminv, Sminv)                \
   V(sqabs, Sqabs)                \
@@ -7878,6 +7918,12 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
   void Umax(const Register& rd, const Register& rn, const Operand& op);
   void Umin(const Register& rd, const Register& rn, const Operand& op);
 
+  void Yield() {
+    VIXL_ASSERT(allow_macro_instructions_);
+    SingleEmissionCheckScope guard(this);
+    yield();
+  }
+
   template <typename T>
   Literal<T>* CreateLiteralDestroyedWithPool(T value) {
     return new Literal<T>(value,
@@ -8249,9 +8295,10 @@ class MacroAssembler : public Assembler, public MacroAssemblerInterface {
       UseScratchRegisterScope* scratch_scope);
 
   bool LabelIsOutOfRange(Label* label, ImmBranchType branch_type) {
+    int64_t offset = label->GetLocation() - GetCursorOffset();
+    VIXL_ASSERT(IsMultiple(offset, kInstructionSize));
     return !Instruction::IsValidImmPCOffset(branch_type,
-                                            label->GetLocation() -
-                                                GetCursorOffset());
+                                            offset / kInstructionSize);
   }
 
   void ConfigureSimulatorCPUFeaturesHelper(const CPUFeatures& features,

@@ -1305,12 +1305,12 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 					return;
 
 				static constexpr std::array<const char*, static_cast<u8>(AccBlendLevel::MaxCount)> s_blending_option_names = {{
-					TRANSLATE_NOOP("Hotkeys", "Minimum"),
-					TRANSLATE_NOOP("Hotkeys", "Basic"),
-					TRANSLATE_NOOP("Hotkeys", "Medium"),
-					TRANSLATE_NOOP("Hotkeys", "High"),
-					TRANSLATE_NOOP("Hotkeys", "Full"),
-					TRANSLATE_NOOP("Hotkeys", "Maximum"),
+					TRANSLATE_NOOP("Hotkeys_BlendAcc", "Minimum"),
+					TRANSLATE_NOOP("Hotkeys_BlendAcc", "Basic"),
+					TRANSLATE_NOOP("Hotkeys_BlendAcc", "Medium"),
+					TRANSLATE_NOOP("Hotkeys_BlendAcc", "High"),
+					TRANSLATE_NOOP("Hotkeys_BlendAcc", "Full"),
+					TRANSLATE_NOOP("Hotkeys_BlendAcc", "Maximum"),
 				}};
 
 				const AccBlendLevel new_blend_mode = static_cast<AccBlendLevel>(

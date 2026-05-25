@@ -22,6 +22,7 @@ Q_SIGNALS:
 	void themeChanged();
 	void languageChanged();
 	void backgroundChanged();
+	void preferEnglishGameListChanged();
 
 private Q_SLOTS:
 	void onRenderToSeparateWindowChanged();

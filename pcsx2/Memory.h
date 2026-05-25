@@ -98,8 +98,6 @@ namespace HostMemoryMap
 
 namespace SysMemory
 {
-	/// Call this as early as possible to maximize chance of getting the address space we want
-	void ReserveMemory();
 	bool Allocate();
 	void Reset();
 	void Release();

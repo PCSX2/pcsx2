@@ -703,17 +703,17 @@ public:
 
 	__forceinline GSVector4 mul64(const GSVector4& v) const
 	{
-		return GSVector4(vmulq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s)));
+		return GSVector4(vreinterpretq_f32_f64(vmulq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s))));
 	}
 
 	__forceinline GSVector4 add64(const GSVector4& v) const
 	{
-		return GSVector4(vaddq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s)));
+		return GSVector4(vreinterpretq_f32_f64(vaddq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s))));
 	}
 
 	__forceinline GSVector4 sub64(const GSVector4& v) const
 	{
-		return GSVector4(vsubq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s)));
+		return GSVector4(vreinterpretq_f32_f64(vsubq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s))));
 	}
 
 	__forceinline static GSVector4 f32to64(const GSVector4& v)
@@ -728,10 +728,8 @@ public:
 
 	__forceinline GSVector4i f64toi32(bool truncate = true) const
 	{
-		const float64x2_t r = truncate ? v4s : vrndiq_f64(vreinterpretq_f64_f32(v4s));
-		const s32 low = static_cast<s32>(vgetq_lane_f64(r, 0));
-		const s32 high = static_cast<s32>(vgetq_lane_f64(r, 1));
-		return GSVector4i(vsetq_lane_s32(high, vsetq_lane_s32(low, vdupq_n_s32(0), 0), 1));
+		const int64x2_t r = truncate ? vcvtq_s64_f64(vreinterpretq_f64_f32(v4s)) : vcvtnq_s64_f64(vreinterpretq_f64_f32(v4s));
+		return GSVector4i(vcombine_s32(vmovn_s64(r), vdup_n_s32(0)));
 	}
 
 	// clang-format off
@@ -782,6 +780,6 @@ public:
 
 	__forceinline static GSVector4 broadcast64(const void* f)
 	{
-		return GSVector4(vreinterpretq_f64_f32(vld1q_dup_f64((const double*)f)));
+		return GSVector4(vreinterpretq_f32_f64(vld1q_dup_f64((const double*)f)));
 	}
 };

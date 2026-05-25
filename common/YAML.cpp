@@ -3,8 +3,13 @@
 
 #include "YAML.h"
 
+#include "Assertions.h"
+
+#if RYML_VERSION_MAJOR > 0 || RYML_VERSION_MINOR >= 11
+#include "c4/yml/error.def.hpp" // for ryml::err_basic_format etc
+#endif
+
 #include <csetjmp>
-#include <cstdlib>
 
 struct RapidYAMLContext
 {
@@ -18,6 +23,47 @@ std::optional<ryml::Tree> ParseYAMLFromString(ryml::csubstr yaml, ryml::csubstr 
 	context.error = error;
 
 	ryml::Callbacks callbacks;
+
+#if RYML_VERSION_MAJOR > 0 || RYML_VERSION_MINOR >= 11
+	callbacks.set_user_data(static_cast<void*>(&context));
+
+	callbacks.set_error_basic([](ryml::csubstr msg, const ryml::ErrorDataBasic& errdata, void* user_data) {
+		std::string description;
+		auto callback = [&description](ryml::csubstr string) {
+			description.append(string.str, string.len);
+		};
+		ryml::err_basic_format(std::move(callback), msg, errdata);
+
+		// We might have already returned, so don't try to recover.
+		pxFailRel(description.c_str());
+		std::abort();
+	});
+
+	callbacks.set_error_parse([](ryml::csubstr msg, const ryml::ErrorDataParse& errdata, void* user_data) {
+		RapidYAMLContext* context = static_cast<RapidYAMLContext*>(user_data);
+
+		std::string description;
+		auto callback = [&description](ryml::csubstr string) {
+			description.append(string.str, string.len);
+		};
+		ryml::err_parse_format(std::move(callback), msg, errdata);
+
+		Error::SetString(context->error, std::move(description));
+		std::longjmp(context->env, 1);
+	});
+
+	callbacks.set_error_visit([](ryml::csubstr msg, const ryml::ErrorDataVisit& errdata, void* user_data) {
+		std::string description;
+		auto callback = [&description](ryml::csubstr string) {
+			description.append(string.str, string.len);
+		};
+		ryml::err_visit_format(std::move(callback), msg, errdata);
+
+		// We've probably already returned, so don't try to recover.
+		pxFailRel(description.c_str());
+		std::abort();
+	});
+#else
 	callbacks.m_user_data = static_cast<void*>(&context);
 	callbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location location, void* user_data) {
 		RapidYAMLContext* context = static_cast<RapidYAMLContext*>(user_data);
@@ -25,6 +71,7 @@ std::optional<ryml::Tree> ParseYAMLFromString(ryml::csubstr yaml, ryml::csubstr 
 		Error::SetString(context->error, std::string(msg, msg_len));
 		std::longjmp(context->env, 1);
 	};
+#endif
 
 	ryml::EventHandlerTree event_handler(callbacks);
 	ryml::Parser parser(&event_handler);

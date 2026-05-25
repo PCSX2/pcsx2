@@ -84,7 +84,7 @@ namespace MipsStackWalk
 		u32 stop = pc - 32 * 4;
 		for (; cpu->isValidAddress(pc) && pc >= stop; pc -= 4)
 		{
-			u32 rawOp = cpu->read32(pc);
+			u32 rawOp = cpu->Read32(pc);
 			const R5900::OPCODE& op = R5900::GetInstruction(rawOp);
 
 			// We're looking for a "mov fp, sp" close by a "addiu sp, sp, -N".
@@ -103,7 +103,10 @@ namespace MipsStackWalk
 		// TODO: Check if found entry is in the same symbol?  Might be wrong sometimes...
 
 		int ra_offset = -1;
-		const u32 start = frame.pc;
+
+		// The instruction pointed to by pc hasn't been executed yet,
+		// so we don't want to consider it here
+		const u32 start = frame.pc - 4;
 		u32 stop = entry;
 
 		if (entry == INVALIDTARGET)
@@ -113,7 +116,7 @@ namespace MipsStackWalk
 
 		for (u32 pc = start; cpu->isValidAddress(pc) && pc >= stop; pc -= 4)
 		{
-			u32 rawOp = cpu->read32(pc);
+			u32 rawOp = cpu->Read32(pc);
 			const R5900::OPCODE& op = R5900::GetInstruction(rawOp);
 
 			// Look for RA write to ram
@@ -154,7 +157,7 @@ namespace MipsStackWalk
 				frame.stackSize = -_IMM16;
 				if (ra_offset != -1 && cpu->isValidAddress(frame.sp + ra_offset))
 				{
-					ra = cpu->read32(frame.sp + ra_offset);
+					ra = cpu->Read32(frame.sp + ra_offset);
 				}
 				return true;
 			}
@@ -183,7 +186,7 @@ namespace MipsStackWalk
 		return ScanForEntry(cpu, frame, newPossibleEntry, ra);
 	}
 
-	std::vector<StackFrame> Walk(DebugInterface* cpu, u32 pc, u32 ra, u32 sp, u32 threadEntry, u32 threadStackTop)
+	std::vector<StackFrame> Walk(DebugInterface* cpu, u32 pc, u32 ra, u32 sp, u32 threadEntry)
 	{
 		std::vector<StackFrame> frames;
 		StackFrame current;

@@ -117,11 +117,17 @@ class Disassembler : public DecoderVisitor {
   VISITOR_LIST(DECLARE)
 #undef DECLARE
 
+  std::string GetMnemonicAlias(const Instruction* instr);
+
   using FormToVisitorFnMap = std::unordered_map<
       uint32_t,
       std::function<void(Disassembler*, const Instruction*)>>;
   static const FormToVisitorFnMap* GetFormToVisitorFnMap();
 
+  using FormToStringMap = std::unordered_map<uint32_t, const char*>;
+  static void PopulateFormToStringMap(FormToStringMap* fts);
+
+  FormToStringMap form_to_string_;
   std::string mnemonic_;
   uint32_t form_hash_;
 
@@ -132,119 +138,6 @@ class Disassembler : public DecoderVisitor {
     }
   }
 
-  void Disassemble_PdT_PgZ_ZnT_ZmT(const Instruction* instr);
-  void Disassemble_ZdB_Zn1B_Zn2B_imm(const Instruction* instr);
-  void Disassemble_ZdB_ZnB_ZmB(const Instruction* instr);
-  void Disassemble_ZdD_PgM_ZnS(const Instruction* instr);
-  void Disassemble_ZdD_ZnD_ZmD(const Instruction* instr);
-  void Disassemble_ZdD_ZnD_ZmD_imm(const Instruction* instr);
-  void Disassemble_ZdD_ZnS_ZmS_imm(const Instruction* instr);
-  void Disassemble_ZdH_PgM_ZnS(const Instruction* instr);
-  void Disassemble_ZdH_ZnH_ZmH_imm(const Instruction* instr);
-  void Disassemble_ZdS_PgM_ZnD(const Instruction* instr);
-  void Disassemble_ZdS_PgM_ZnH(const Instruction* instr);
-  void Disassemble_ZdS_PgM_ZnS(const Instruction* instr);
-  void Disassemble_ZdS_ZnH_ZmH_imm(const Instruction* instr);
-  void Disassemble_ZdS_ZnS_ZmS(const Instruction* instr);
-  void Disassemble_ZdS_ZnS_ZmS_imm(const Instruction* instr);
-  void Disassemble_ZdT_PgM_ZnT(const Instruction* instr);
-  void Disassemble_ZdT_PgZ_ZnT_ZmT(const Instruction* instr);
-  void Disassemble_ZdT_Pg_Zn1T_Zn2T(const Instruction* instr);
-  void Disassemble_ZdT_Zn1T_Zn2T_ZmT(const Instruction* instr);
-  void Disassemble_ZdT_ZnT_ZmT(const Instruction* instr);
-  void Disassemble_ZdT_ZnT_ZmTb(const Instruction* instr);
-  void Disassemble_ZdT_ZnTb(const Instruction* instr);
-  void Disassemble_ZdT_ZnTb_ZmTb(const Instruction* instr);
-  void Disassemble_ZdaD_ZnD_ZmD_imm(const Instruction* instr);
-  void Disassemble_ZdaD_ZnH_ZmH_imm_const(const Instruction* instr);
-  void Disassemble_ZdaD_ZnS_ZmS_imm(const Instruction* instr);
-  void Disassemble_ZdaH_ZnH_ZmH_imm(const Instruction* instr);
-  void Disassemble_ZdaH_ZnH_ZmH_imm_const(const Instruction* instr);
-  void Disassemble_ZdaS_ZnB_ZmB_imm_const(const Instruction* instr);
-  void Disassemble_ZdaS_ZnH_ZmH(const Instruction* instr);
-  void Disassemble_ZdaS_ZnH_ZmH_imm(const Instruction* instr);
-  void Disassemble_ZdaS_ZnS_ZmS_imm(const Instruction* instr);
-  void Disassemble_ZdaS_ZnS_ZmS_imm_const(const Instruction* instr);
-  void Disassemble_ZdaT_PgM_ZnTb(const Instruction* instr);
-  void Disassemble_ZdaT_ZnT_ZmT(const Instruction* instr);
-  void Disassemble_ZdaT_ZnT_ZmT_const(const Instruction* instr);
-  void Disassemble_ZdaT_ZnT_const(const Instruction* instr);
-  void Disassemble_ZdaT_ZnTb_ZmTb(const Instruction* instr);
-  void Disassemble_ZdaT_ZnTb_ZmTb_const(const Instruction* instr);
-  void Disassemble_ZdnB_ZdnB(const Instruction* instr);
-  void Disassemble_ZdnB_ZdnB_ZmB(const Instruction* instr);
-  void Disassemble_ZdnS_ZdnS_ZmS(const Instruction* instr);
-  void Disassemble_ZdnT_PgM_ZdnT_ZmT(const Instruction* instr);
-  void Disassemble_ZdnT_PgM_ZdnT_const(const Instruction* instr);
-  void Disassemble_ZdnT_ZdnT_ZmT_const(const Instruction* instr);
-  void Disassemble_ZtD_PgZ_ZnD_Xm(const Instruction* instr);
-  void Disassemble_ZtD_Pg_ZnD_Xm(const Instruction* instr);
-  void Disassemble_ZtS_PgZ_ZnS_Xm(const Instruction* instr);
-  void Disassemble_ZtS_Pg_ZnS_Xm(const Instruction* instr);
-  void Disassemble_ZdaS_ZnB_ZmB(const Instruction* instr);
-  void Disassemble_Vd4S_Vn16B_Vm16B(const Instruction* instr);
-
-  void DisassembleCpy(const Instruction* instr);
-  void DisassembleSet(const Instruction* instr);
-  void DisassembleMinMaxImm(const Instruction* instr);
-
-  void DisassembleSVEShiftLeftImm(const Instruction* instr);
-  void DisassembleSVEShiftRightImm(const Instruction* instr);
-  void DisassembleSVEAddSubCarry(const Instruction* instr);
-  void DisassembleSVEAddSubHigh(const Instruction* instr);
-  void DisassembleSVEComplexIntAddition(const Instruction* instr);
-  void DisassembleSVEBitwiseTernary(const Instruction* instr);
-  void DisassembleSVEFlogb(const Instruction* instr);
-  void DisassembleSVEFPPair(const Instruction* instr);
-
-  void DisassembleNoArgs(const Instruction* instr);
-
-  void DisassembleNEONMulByElementLong(const Instruction* instr);
-  void DisassembleNEONDotProdByElement(const Instruction* instr);
-  void DisassembleNEONFPMulByElement(const Instruction* instr);
-  void DisassembleNEONHalfFPMulByElement(const Instruction* instr);
-  void DisassembleNEONFPMulByElementLong(const Instruction* instr);
-  void DisassembleNEONComplexMulByElement(const Instruction* instr);
-  void DisassembleNEON2RegLogical(const Instruction* instr);
-  void DisassembleNEON2RegExtract(const Instruction* instr);
-  void DisassembleNEON2RegAddlp(const Instruction* instr);
-  void DisassembleNEON2RegCompare(const Instruction* instr);
-  void DisassembleNEON2RegFPCompare(const Instruction* instr);
-  void DisassembleNEON2RegFPConvert(const Instruction* instr);
-  void DisassembleNEON2RegFP(const Instruction* instr);
-  void DisassembleNEON3SameLogical(const Instruction* instr);
-  void DisassembleNEON3SameFHM(const Instruction* instr);
-  void DisassembleNEON3SameNoD(const Instruction* instr);
-  void DisassembleNEONShiftLeftLongImm(const Instruction* instr);
-  void DisassembleNEONShiftRightImm(const Instruction* instr);
-  void DisassembleNEONShiftRightNarrowImm(const Instruction* instr);
-  void DisassembleNEONScalarSatMulLongIndex(const Instruction* instr);
-  void DisassembleNEONFPScalarMulIndex(const Instruction* instr);
-  void DisassembleNEONFPScalar3Same(const Instruction* instr);
-  void DisassembleNEONScalar3SameOnlyD(const Instruction* instr);
-  void DisassembleNEONFPAcrossLanes(const Instruction* instr);
-  void DisassembleNEONFP16AcrossLanes(const Instruction* instr);
-  void DisassembleNEONScalarShiftImmOnlyD(const Instruction* instr);
-  void DisassembleNEONScalarShiftRightNarrowImm(const Instruction* instr);
-  void DisassembleNEONScalar2RegMiscOnlyD(const Instruction* instr);
-  void DisassembleNEONFPScalar2RegMisc(const Instruction* instr);
-  void DisassembleNEONPolynomialMul(const Instruction* instr);
-  void DisassembleNEON4Same(const Instruction* instr);
-  void DisassembleNEONXar(const Instruction* instr);
-  void DisassembleNEONRax1(const Instruction* instr);
-  void DisassembleSHA512(const Instruction* instr);
-
-  void DisassembleMTELoadTag(const Instruction* instr);
-  void DisassembleMTEStoreTag(const Instruction* instr);
-  void DisassembleMTEStoreTagPair(const Instruction* instr);
-
-  void Disassemble_XdSP_XnSP_Xm(const Instruction* instr);
-  void Disassemble_XdSP_XnSP_uimm6_uimm4(const Instruction* instr);
-  void Disassemble_Xd_XnSP_Xm(const Instruction* instr);
-  void Disassemble_Xd_XnSP_XmSP(const Instruction* instr);
-
-  void VisitCryptoSM3(const Instruction* instr);
-
   void Format(const Instruction* instr,
               const char* mnemonic,
               const char* format0,
@@ -253,42 +146,39 @@ class Disassembler : public DecoderVisitor {
                                  const char* format0,
                                  const char* format1 = NULL);
 
-  void Substitute(const Instruction* instr, const char* string);
+  int Substitute(const Instruction* instr, const char* string);
   int SubstituteField(const Instruction* instr, const char* format);
   int SubstituteRegisterField(const Instruction* instr, const char* format);
   int SubstitutePredicateRegisterField(const Instruction* instr,
                                        const char* format);
   int SubstituteImmediateField(const Instruction* instr, const char* format);
   int SubstituteLiteralField(const Instruction* instr, const char* format);
-  int SubstituteBitfieldImmediateField(const Instruction* instr,
-                                       const char* format);
-  int SubstituteShiftField(const Instruction* instr, const char* format);
-  int SubstituteExtendField(const Instruction* instr, const char* format);
-  int SubstituteConditionField(const Instruction* instr, const char* format);
   int SubstitutePCRelAddressField(const Instruction* instr, const char* format);
   int SubstituteBranchTargetField(const Instruction* instr, const char* format);
   int SubstituteLSRegOffsetField(const Instruction* instr, const char* format);
-  int SubstitutePrefetchField(const Instruction* instr, const char* format);
-  int SubstituteBarrierField(const Instruction* instr, const char* format);
-  int SubstituteSysOpField(const Instruction* instr, const char* format);
-  int SubstituteCrField(const Instruction* instr, const char* format);
   int SubstituteIntField(const Instruction* instr, const char* format);
-  int SubstituteSVESize(const Instruction* instr, const char* format);
+  int SubstituteFPField(const Instruction* instr, const char* format);
   int SubstituteTernary(const Instruction* instr, const char* format);
+  int SubstituteConditionalBlock(const Instruction* instr, const char* format);
+  int SubstituteGenericArray(const Instruction* instr, const char* format);
+  int SubstituteGenericHash(const Instruction* instr, const char* format);
+  int SubstituteExpression(const Instruction* instr, const char* format);
+  int SubstituteEnd(const Instruction* instr, const char* format);
 
   std::pair<unsigned, unsigned> GetRegNumForField(const Instruction* instr,
                                                   char reg_prefix,
                                                   const char* field);
 
-  bool RdIsZROrSP(const Instruction* instr) const {
+ public:
+  static bool RdIsZROrSP(const Instruction* instr) {
     return (instr->GetRd() == kZeroRegCode);
   }
 
-  bool RnIsZROrSP(const Instruction* instr) const {
+  static bool RnIsZROrSP(const Instruction* instr) {
     return (instr->GetRn() == kZeroRegCode);
   }
 
-  bool RmIsZROrSP(const Instruction* instr) const {
+  static bool RmIsZROrSP(const Instruction* instr) {
     return (instr->GetRm() == kZeroRegCode);
   }
 
@@ -298,6 +188,7 @@ class Disassembler : public DecoderVisitor {
 
   bool IsMovzMovnImm(unsigned reg_size, uint64_t value);
 
+ private:
   int64_t code_address_offset() const { return code_address_offset_; }
 
  protected:

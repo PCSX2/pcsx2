@@ -6118,6 +6118,42 @@ LogicVRegister Simulator::fcvtxn2(VectorFormat vform,
   return dst;
 }
 
+LogicVRegister Simulator::bfcvtn(VectorFormat vform,
+                                 LogicVRegister dst,
+                                 const LogicVRegister& src) {
+  SimVRegister tmp;
+  LogicVRegister srctmp = mov(kFormatVnD, tmp, src);
+  int input_lane_count = LaneCountFromFormat(vform);
+  if (IsSVEFormat(vform)) {
+    input_lane_count /= 2;
+  }
+
+  dst.ClearForWrite(vform);
+  VIXL_ASSERT(LaneSizeInBitsFromFormat(vform) == kHRegSize);
+
+  for (int i = 0; i < input_lane_count; i++) {
+    dst.SetFloat(i,
+                 BFloat16ToRawbits(FPToBFloat16(srctmp.Float<float>(i),
+                                                FPTieEven,
+                                                ReadDN())));
+  }
+  return dst;
+}
+
+LogicVRegister Simulator::bfcvtn2(VectorFormat vform,
+                                  LogicVRegister dst,
+                                  const LogicVRegister& src) {
+  VIXL_ASSERT(LaneSizeInBitsFromFormat(vform) == kHRegSize);
+  dst.ClearForWrite(vform);
+  int lane_count = LaneCountFromFormat(vform) / 2;
+  for (int i = lane_count - 1; i >= 0; i--) {
+    dst.SetFloat(i + lane_count,
+                 BFloat16ToRawbits(
+                     FPToBFloat16(src.Float<float>(i), FPTieEven, ReadDN())));
+  }
+  return dst;
+}
+
 
 // Based on reference C function recip_sqrt_estimate from ARM ARM.
 double Simulator::recip_sqrt_estimate(double a) {
@@ -7853,16 +7889,26 @@ LogicVRegister Simulator::matmul(VectorFormat vform_dst,
 //
 // Are stored in the input vector registers as:
 //
-//           3   2   1   0
-//  src1 = [ d | c | b | a ]
-//  src2 = [ D | B | C | A ]
+//             3   2   1   0
+//    src1 = [ d | c | b | a ]
+//    src2 = [ D | B | C | A ]  nb. transposition
 //
+// Giving:
+//             3   2   1   0
+//  result = [ w | z | y | x ]
+//
+// Where:
+//
+//       x = (a * A) + (b * C) + a
+//       y = (a * B) + (b * D) + b
+//       z = (c * A) + (d * C) + c
+//       w = (c * B) + (d * D) + d
 template <typename T>
 LogicVRegister Simulator::fmatmul(VectorFormat vform,
                                   LogicVRegister srcdst,
                                   const LogicVRegister& src1,
                                   const LogicVRegister& src2) {
-  T result[kZRegMaxSizeInBytes / sizeof(T)];
+  T result[kZRegMaxSizeInBytes / sizeof(T)] = {};
   int T_per_segment = 4;
   int segment_count = GetVectorLengthInBytes() / (T_per_segment * sizeof(T));
   for (int seg = 0; seg < segment_count; seg++) {
@@ -7879,12 +7925,9 @@ LogicVRegister Simulator::fmatmul(VectorFormat vform,
     }
   }
   for (int i = 0; i < LaneCountFromFormat(vform); i++) {
-    // Elements outside a multiple of 4T are set to zero. This happens only
-    // for double precision operations, when the VL is a multiple of 128 bits,
-    // but not a multiple of 256 bits.
-    T value = (i < (T_per_segment * segment_count)) ? result[i] : 0;
-    srcdst.SetFloat<T>(vform, i, value);
+    srcdst.SetFloat<T>(vform, i, result[i]);
   }
+
   return srcdst;
 }
 
@@ -8474,6 +8517,77 @@ LogicVRegister Simulator::sm3tt2(LogicVRegister srcdst,
   srcdst.SetUint(vf, 1, ROL(sd(1), 19));
   tt2 ^= ROL(tt2, 9) ^ ROL(tt2, 17);
   srcdst.SetUint(vf, 3, tt2);
+  return srcdst;
+}
+
+static uint64_t SM4SBox(uint64_t x) {
+  static const uint8_t sbox[256] = {
+      0x48, 0x39, 0xcb, 0xd7, 0x3e, 0x5f, 0xee, 0x79, 0x20, 0x4d, 0xdc, 0x3a,
+      0xec, 0x7d, 0xf0, 0x18, 0x84, 0xc6, 0x6e, 0xc5, 0x09, 0xf1, 0xb9, 0x65,
+      0x7e, 0x77, 0x96, 0x0c, 0x4a, 0x97, 0x69, 0x89, 0xb0, 0xb4, 0xe5, 0xb8,
+      0x12, 0xd0, 0x74, 0x2d, 0xbd, 0x7b, 0xcd, 0xa5, 0x88, 0x31, 0xc1, 0x0a,
+      0xd8, 0x5a, 0x10, 0x1f, 0x41, 0x5c, 0xd9, 0x11, 0x7f, 0xbc, 0xdd, 0xbb,
+      0x92, 0xaf, 0x1b, 0x8d, 0x51, 0x5b, 0x6c, 0x6d, 0x72, 0x6a, 0xff, 0x03,
+      0x2f, 0x8e, 0xfd, 0xde, 0x45, 0x37, 0xdb, 0xd5, 0x6f, 0x4e, 0x53, 0x0d,
+      0xab, 0x23, 0x29, 0xc0, 0x60, 0xca, 0x66, 0x82, 0x2e, 0xe2, 0xf6, 0x1d,
+      0xe3, 0xb1, 0x8c, 0xf5, 0x30, 0x32, 0x93, 0xad, 0x55, 0x1a, 0x34, 0x9b,
+      0xa4, 0x5d, 0xae, 0xe0, 0xa1, 0x15, 0x61, 0xf9, 0xce, 0xf2, 0xf7, 0xa3,
+      0xb5, 0x38, 0xc7, 0x40, 0xd2, 0x8a, 0xbf, 0xea, 0x9e, 0xc8, 0xc4, 0xa0,
+      0xe7, 0x02, 0x36, 0x4c, 0x52, 0x27, 0xd3, 0x9f, 0x57, 0x46, 0x00, 0xd4,
+      0x87, 0x78, 0x21, 0x01, 0x3b, 0x7c, 0x22, 0x25, 0xa2, 0xd1, 0x58, 0x63,
+      0x5e, 0x0e, 0x24, 0x1e, 0x35, 0x9d, 0x56, 0x70, 0x4b, 0x0f, 0xeb, 0xf8,
+      0x8b, 0xda, 0x64, 0x71, 0xb2, 0x81, 0x6b, 0x68, 0xa8, 0x4f, 0x85, 0xe6,
+      0x19, 0x3c, 0x59, 0x83, 0xba, 0x17, 0x73, 0xf3, 0xfc, 0xa7, 0x07, 0x47,
+      0xa6, 0x3f, 0x8f, 0x75, 0xfa, 0x94, 0xdf, 0x80, 0x95, 0xe8, 0x08, 0xc9,
+      0xa9, 0x1c, 0xb3, 0xe4, 0x62, 0xac, 0xcf, 0xed, 0x43, 0x0b, 0x54, 0x33,
+      0x7a, 0x98, 0xef, 0x91, 0xf4, 0x50, 0x42, 0x9c, 0x99, 0x06, 0x86, 0x49,
+      0x26, 0x13, 0x44, 0xaa, 0xc3, 0x04, 0xbe, 0x2a, 0x76, 0x9a, 0x67, 0x2b,
+      0x05, 0x2c, 0xfb, 0x28, 0xc2, 0x14, 0xb6, 0x16, 0xb7, 0x3d, 0xe1, 0xcc,
+      0xfe, 0xe9, 0x90, 0xd6,
+  };
+  uint64_t result = 0;
+  for (int j = 24; j >= 0; j -= 8) {
+    uint8_t s = 255 - ((x >> j) & 0xff);
+    result = (result << 8) | sbox[s];
+  }
+  return result;
+}
+
+LogicVRegister Simulator::sm4(LogicVRegister srcdst,
+                              const LogicVRegister& src1,
+                              const LogicVRegister& src2,
+                              bool is_key) {
+  using namespace std::placeholders;
+  auto ROL = std::bind(RotateLeft, _1, _2, kSRegSize);
+
+  VectorFormat vf = kFormat4S;
+  uint64_t result[4] = {};
+  if (is_key) {
+    src1.UintArray(vf, result);
+  } else {
+    srcdst.UintArray(vf, result);
+  }
+
+  for (int i = 0; i < 4; i++) {
+    uint64_t k = is_key ? src2.Uint(vf, i) : src1.Uint(vf, i);
+    uint64_t intval = result[3] ^ result[2] ^ result[1] ^ k;
+    intval = SM4SBox(intval);
+
+    if (is_key) {
+      intval ^= ROL(intval, 13) ^ ROL(intval, 23);
+    } else {
+      intval ^=
+          ROL(intval, 2) ^ ROL(intval, 10) ^ ROL(intval, 18) ^ ROL(intval, 24);
+    }
+
+    intval ^= result[0];
+
+    result[0] = result[1];
+    result[1] = result[2];
+    result[2] = result[3];
+    result[3] = intval;
+  }
+  srcdst.SetUintArray(vf, result);
   return srcdst;
 }
 

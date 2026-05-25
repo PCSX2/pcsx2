@@ -60,7 +60,7 @@ u8 SymbolTreeLocation::read8(DebugInterface& cpu) const
 				return cpu.getRegister(EECAT_GPR, address)._u8[0];
 			break;
 		case MEMORY:
-			return (u8)cpu.read8(address);
+			return cpu.Read8(address);
 		default:
 		{
 		}
@@ -77,7 +77,7 @@ u16 SymbolTreeLocation::read16(DebugInterface& cpu) const
 				return cpu.getRegister(EECAT_GPR, address)._u16[0];
 			break;
 		case MEMORY:
-			return (u16)cpu.read16(address);
+			return cpu.Read16(address);
 		default:
 		{
 		}
@@ -94,7 +94,7 @@ u32 SymbolTreeLocation::read32(DebugInterface& cpu) const
 				return cpu.getRegister(EECAT_GPR, address)._u32[0];
 			break;
 		case MEMORY:
-			return cpu.read32(address);
+			return cpu.Read32(address);
 		default:
 		{
 		}
@@ -111,7 +111,7 @@ u64 SymbolTreeLocation::read64(DebugInterface& cpu) const
 				return cpu.getRegister(EECAT_GPR, address)._u64[0];
 			break;
 		case MEMORY:
-			return cpu.read64(address);
+			return cpu.Read64(address);
 		default:
 		{
 		}
@@ -128,7 +128,7 @@ u128 SymbolTreeLocation::read128(DebugInterface& cpu) const
 				return cpu.getRegister(EECAT_GPR, address);
 			break;
 		case MEMORY:
-			return cpu.read128(address);
+			return cpu.Read128(address);
 		default:
 		{
 		}
@@ -145,7 +145,7 @@ void SymbolTreeLocation::write8(u8 value, DebugInterface& cpu) const
 				cpu.setRegister(0, address, u128::From32(value));
 			break;
 		case MEMORY:
-			cpu.write8(address, value);
+			cpu.Write8(address, value);
 			break;
 		default:
 		{
@@ -162,7 +162,7 @@ void SymbolTreeLocation::write16(u16 value, DebugInterface& cpu) const
 				cpu.setRegister(0, address, u128::From32(value));
 			break;
 		case MEMORY:
-			cpu.write16(address, value);
+			cpu.Write16(address, value);
 			break;
 		default:
 		{
@@ -179,7 +179,7 @@ void SymbolTreeLocation::write32(u32 value, DebugInterface& cpu) const
 				cpu.setRegister(0, address, u128::From32(value));
 			break;
 		case MEMORY:
-			cpu.write32(address, value);
+			cpu.Write32(address, value);
 			break;
 		default:
 		{
@@ -196,7 +196,7 @@ void SymbolTreeLocation::write64(u64 value, DebugInterface& cpu) const
 				cpu.setRegister(0, address, u128::From64(value));
 			break;
 		case MEMORY:
-			cpu.write64(address, value);
+			cpu.Write64(address, value);
 			break;
 		default:
 		{
@@ -213,7 +213,7 @@ void SymbolTreeLocation::write128(u128 value, DebugInterface& cpu) const
 				cpu.setRegister(0, address, value);
 			break;
 		case MEMORY:
-			cpu.write128(address, value);
+			cpu.Write128(address, value);
 			break;
 		default:
 		{

@@ -91,20 +91,11 @@ static __fi PageProtectionMode PageAccess_Any()
 // --------------------------------------------------------------------------------------
 namespace HostSys
 {
-	// Maps a block of memory for use as a recompiled code buffer.
-	// Returns NULL on allocation failure.
-	extern void* Mmap(void* base, size_t size, const PageProtectionMode& mode);
-
-	// Unmaps a block allocated by SysMmap
-	extern void Munmap(void* base, size_t size);
-
 	extern void MemProtect(void* baseaddr, size_t size, const PageProtectionMode& mode);
 
 	extern std::string GetFileMappingName(const char* prefix);
 	extern void* CreateSharedMemory(const char* name, size_t size);
 	extern void DestroySharedMemory(void* ptr);
-	extern void* MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, const PageProtectionMode& mode);
-	extern void UnmapSharedMemory(void* baseaddr, size_t size);
 
 	/// JIT write protect for Apple Silicon. Needs to be called prior to writing to any RWX pages.
 #if !defined(__APPLE__) || !defined(ARCH_ARM64)
@@ -148,7 +139,7 @@ namespace PageFaultHandler
 class SharedMemoryMappingArea
 {
 public:
-	static std::unique_ptr<SharedMemoryMappingArea> Create(size_t size);
+	static std::unique_ptr<SharedMemoryMappingArea> Create(size_t size, bool jit = false);
 
 	~SharedMemoryMappingArea();
 
@@ -160,7 +151,7 @@ public:
 	__fi u8* PagePointer(size_t page) const { return m_base_ptr + __pagesize * page; }
 
 	u8* Map(void* file_handle, size_t file_offset, void* map_base, size_t map_size, const PageProtectionMode& mode);
-	bool Unmap(void* map_base, size_t map_size);
+	bool Unmap(void* map_base, size_t map_size, bool is_file = true);
 
 private:
 	SharedMemoryMappingArea(u8* base_ptr, size_t size, size_t num_pages);

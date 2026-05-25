@@ -7,6 +7,7 @@ add_library(vixl
 	include/vixl/aarch64/decoder-aarch64.h
 	include/vixl/aarch64/decoder-constants-aarch64.h
 	include/vixl/aarch64/decoder-visitor-map-aarch64.h
+	include/vixl/aarch64/debugger-aarch64.h
 	include/vixl/aarch64/disasm-aarch64.h
 	include/vixl/aarch64/instructions-aarch64.h
 	include/vixl/aarch64/macro-assembler-aarch64.h
@@ -31,6 +32,7 @@ add_library(vixl
 	src/aarch64/cpu-aarch64.cc
 	src/aarch64/cpu-features-auditor-aarch64.cc
 	src/aarch64/decoder-aarch64.cc
+	src/aarch64/debugger-aarch64.cc
 	src/aarch64/disasm-aarch64.cc
 	src/aarch64/instructions-aarch64.cc
 	src/aarch64/logic-aarch64.cc
@@ -39,6 +41,7 @@ add_library(vixl
 	src/aarch64/operands-aarch64.cc
 	src/aarch64/pointer-auth-aarch64.cc
 	src/aarch64/registers-aarch64.cc
+	src/aarch64/simulator-aarch64.cc
 	src/code-buffer-vixl.cc
 	src/compiler-intrinsics-vixl.cc
 	src/cpu-features.cc

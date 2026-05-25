@@ -18,9 +18,10 @@ find_package(Zstd 1.5.5 REQUIRED)
 find_package(LZ4 REQUIRED)
 find_package(WebP REQUIRED) # v1.3.2, spews an error on Linux because no pkg-config.
 find_package(SDL3 3.2.6 REQUIRED)
-find_package(Freetype 2.12 REQUIRED)
+find_package(Freetype 2.10 REQUIRED) # 2.10 is the first with COLRv0 support, which we need for rendering emoji
 find_package(plutovg 1.1.0 REQUIRED)
 find_package(plutosvg 0.0.7 REQUIRED)
+find_package(ryml REQUIRED)
 
 if(USE_VULKAN)
 	find_package(Shaderc REQUIRED)
@@ -80,7 +81,6 @@ endif()
 set(CMAKE_FIND_FRAMEWORK ${FIND_FRAMEWORK_BACKUP})
 
 add_subdirectory(3rdparty/fast_float EXCLUDE_FROM_ALL)
-add_subdirectory(3rdparty/rapidyaml EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/lzma EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libchdr EXCLUDE_FROM_ALL)
 disable_compiler_warnings_for_target(libchdr)
