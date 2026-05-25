@@ -926,8 +926,8 @@ static bool SaveState_ReadScreenshot(zip_t* zf, u32* out_width, u32* out_height,
 // --------------------------------------------------------------------------------------
 static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateScreenshotData* screenshot)
 {
-	u32 compression;
-	u32 compression_level;
+	u32 compression = ZIP_CM_DEFAULT;
+	u32 compression_level = 0;
 
 	if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::Zstandard)
 	{
@@ -942,25 +942,13 @@ static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateSc
 		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::VeryHigh)
 			compression_level = 22;
 	}
-	else if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::Deflate64)
+	else if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::Deflate)
 	{
-		compression = ZIP_CM_DEFLATE64;
+		compression = ZIP_CM_DEFLATE;
 		if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Low)
 			compression_level = 1;
 		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Medium)
-			compression_level = 3;
-		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::High)
-			compression_level = 7;
-		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::VeryHigh)
-			compression_level = 9;
-	}
-	else if (EmuConfig.Savestate.CompressionType == SavestateCompressionMethod::LZMA2)
-	{
-		compression = ZIP_CM_LZMA2;
-		if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Low)
-			compression_level = 1;
-		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::Medium)
-			compression_level = 3;
+			compression_level = 5;
 		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::High)
 			compression_level = 7;
 		else if (EmuConfig.Savestate.CompressionRatio == SavestateCompressionLevel::VeryHigh)
@@ -1006,7 +994,9 @@ static bool SaveState_AddToZip(zip_t* zf, ArchiveEntryList* srclist, SaveStateSc
 			return false;
 		}
 
-		zip_set_file_compression(zf, fi, compression, compression_level);
+		// Don't compress the version indicator file so that builds that don't
+		// support a given compression method can at least still read it.
+		zip_set_file_compression(zf, fi, ZIP_CM_STORE, 0);
 	}
 
 	const uint listlen = srclist->GetLength();
