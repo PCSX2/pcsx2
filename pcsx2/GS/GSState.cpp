@@ -487,15 +487,11 @@ void GSState::PushBuffer()
 		{
 			for (u32 i = 0; i < copy_amt; i++)
 			{
-				GSVector4i* RESTRICT vert_ptr = (GSVector4i*)&m_vertex->buff[m_vertex->head + i];
-				GSVector4i v = vert_ptr[1];
-				v = v.xxxx().u16to32().sub32(m_xyof);
-				v = v.blend32<12>(v.sra32<4>());
-				m_vertex->xy[i & 3] = v;
-				m_vertex->xy_tail = std::min(copy_amt, 2U);
+				m_vertex->xy[i & 3] = m_vertex_buffers[m_current_buffer_idx].xy[((m_vertex_buffers[m_current_buffer_idx].xy_tail - copy_amt) + i) & 3];
+				m_vertex->xy_tail++;
 
 				if (i == 0)
-					m_vertex->xyhead = v;
+					m_vertex->xyhead = m_vertex_buffers[m_current_buffer_idx].xyhead;
 			}
 		}
 		else
@@ -641,18 +637,13 @@ bool GSState::CanBufferNewDraw()
 
 				if (copy_amt)
 				{
-					for (u32 j = 0; j < copy_amt; j++)
+					for (u32 i = 0; i < copy_amt; i++)
 					{
-						GSVector4i* RESTRICT vert_ptr = (GSVector4i*)&m_vertex->buff[m_vertex->head + j];
-						GSVector4i v = vert_ptr[1];
-						v = v.xxxx().u16to32().sub32(m_xyof);
-						v = v.blend32<12>(v.sra32<4>());
-						m_vertex->xy[j & 3] = v;
+						m_vertex->xy[m_vertex->xy_tail & 3] = m_vertex_buffers[m_current_buffer_idx].xy[((m_vertex_buffers[m_current_buffer_idx].xy_tail - copy_amt) + i) & 3];
+						m_vertex->xy_tail++;
 
-						if (j == 0)
-							m_vertex->xyhead = v;
-
-						m_vertex->xy_tail = copy_amt;
+						if (i == 0)
+							m_vertex->xyhead = m_vertex_buffers[m_current_buffer_idx].xyhead;
 					}
 				}
 				else
