@@ -6418,9 +6418,33 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 					}
 
 					const u32 destination_tbw = (dst->m_TEX0.TBP0 == TEX0.TBP0) ? (std::max<u32>(TEX0.TBW, 1u) * 64) : std::max<u32>(dst->m_TEX0.TBW, 1u) * 128;
-					g_gs_device->ConvertToIndexedTexture(sTex, dst->m_scale, x_offset, y_offset,
-						std::max<u32>(dst->m_TEX0.TBW, 1u) * 64, dst->m_TEX0.PSM, dTex,
-						destination_tbw, TEX0.PSM);
+					if (dst->GetScale() > 1.0f)
+					{
+						GSTexture* tmpTex = use_texture ?
+												g_gs_device->CreateTexture(dst->m_unscaled_size.x, dst->m_unscaled_size.y, 1, GSTexture::Format::Color, PreferReusedLabelledTexture()) :
+												g_gs_device->CreateRenderTarget(dst->m_unscaled_size.x, dst->m_unscaled_size.y, GSTexture::Format::Color, false, PreferReusedLabelledTexture());
+
+						const GSVector4 dRect = GSVector4(GSVector4i::loadh(dst->m_unscaled_size));
+
+						if (GSConfig.UserHacks_NativeScaling != GSNativeScaling::Off)
+						{
+							const u32 downsample_factor = static_cast<u32>(dst->GetScale());
+							
+							g_gs_device->FilteredDownsampleTexture(dst->m_texture, tmpTex, downsample_factor, GSVector2i(0, 0), dRect);
+						}
+						else
+							g_gs_device->StretchRect(sTex, tmpTex, dRect, ShaderConvert::COPY, false);
+
+						g_gs_device->ConvertToIndexedTexture(tmpTex, 1, x_offset, y_offset,
+							std::max<u32>(dst->m_TEX0.TBW, 1u) * 64, dst->m_TEX0.PSM, dTex,
+							destination_tbw, TEX0.PSM);
+
+						g_gs_device->Recycle(tmpTex);
+					}
+					else
+						g_gs_device->ConvertToIndexedTexture(sTex, dst->GetScale(), x_offset, y_offset,
+							std::max<u32>(dst->m_TEX0.TBW, 1u) * 64, dst->m_TEX0.PSM, dTex,
+							destination_tbw, TEX0.PSM);
 
 					// Adjust to match a PSMT8 texture (coordinates are double C32, we shouldn't be converting from anything else).
 					x_offset *= 2;
