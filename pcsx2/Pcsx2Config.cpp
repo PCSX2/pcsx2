@@ -722,7 +722,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	DisableShaderCache = false;
 	DisableFramebufferFetch = false;
 	DisableVertexShaderExpand = false;
-	SkipDuplicateFrames = false;
+	SkipDuplicateFrames = true;
 	OsdMessagesPos = OsdOverlayPos::TopLeft;
 	OsdPerformancePos = OsdOverlayPos::TopRight;
 	OsdShowSpeed = false;

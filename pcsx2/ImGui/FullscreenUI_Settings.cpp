@@ -3286,7 +3286,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FORWARD, "Skip Presenting Duplicate Frames"),
 			FSUI_CSTR("Skips displaying frames that don't change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing "
 					  "worse."),
-			"EmuCore/GS", "SkipDuplicateFrames", false);
+			"EmuCore/GS", "SkipDuplicateFrames", true);
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ENVELOPE, "Disable Mailbox Presentation"),
 			FSUI_CSTR("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
 					  "Usually results in worse frame pacing."),
