@@ -2359,14 +2359,11 @@ void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache:
 							const u32 horizontal_offset = page_offset * t_psm.pgs.x;
 							const GSVector4i target_drect_unscaled = t->m_drawn_since_read + GSVector4i(horizontal_offset, vertical_offset).xyxy();
 
-							const GSVector4 source_rect = GSVector4(t->m_drawn_since_read) / (GSVector4(t->m_unscaled_size).xyxy() * t->GetScale());
+							const GSVector4 source_rect = GSVector4(t->m_drawn_since_read) / GSVector4(t->m_unscaled_size).xyxy();
 							const GSVector4 target_drect = GSVector4(target_drect_unscaled) * target->m_scale;
 
 							const bool valid_color = t->m_valid_rgb;
 							const bool valid_alpha = (t->m_valid_alpha_high || t->m_valid_alpha_low) && (GSUtil::GetChannelMask(t->m_TEX0.PSM) & 0x8);
-
-							target->m_valid_alpha_high |= t->m_valid_alpha_high;
-							target->m_valid_alpha_low |= t->m_valid_alpha_low;
 
 							GL_CACHE("Combining %x-%x in to %x-%x draw %lld", t->m_TEX0.TBP0, t->m_end_block, target->m_TEX0.TBP0, target->m_end_block, GSState::s_n);
 
@@ -2382,7 +2379,12 @@ void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache:
 								g_gs_device->StretchRect(t->m_texture, source_rect, target->m_texture, target_drect, ShaderConvert::DEPTH_COPY);
 							}
 
+							target->m_valid_rgb |= t->m_valid_rgb;
+							target->m_valid_alpha_high |= t->m_valid_alpha_high;
+							target->m_valid_alpha_low |= t->m_valid_alpha_low;
+
 							target->UpdateValidity(target_drect_unscaled);
+							target->UpdateDrawn(target_drect_unscaled);
 						}
 					}
 
