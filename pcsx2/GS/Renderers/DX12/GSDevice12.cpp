@@ -4423,7 +4423,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		// Make sure the DSV is in writeable state
 		draw_ds->TransitionToState(GSTexture12::ResourceState::DepthWriteStencil);
 
-		D3D12_RECT rect = {config.drawarea.left, config.drawarea.top, config.drawarea.left + config.drawarea.width(), config.drawarea.top + config.drawarea.height()};
+		const D3D12_RECT rect = {config.drawarea.left, config.drawarea.top, config.drawarea.left + config.drawarea.width(), config.drawarea.top + config.drawarea.height()};
 		GetCommandList().list4->ClearDepthStencilView(draw_ds->GetWriteDescriptor(), D3D12_CLEAR_FLAG_STENCIL, 0.0f, 1, 1, &rect);
 	}
 
@@ -4444,11 +4444,12 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			draw_rt ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 			GetLoadOpForTexture(draw_ds),
 			draw_ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			stencil_DATE ? D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE :
-						   D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
-			stencil_DATE ? (need_barrier ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE :
-										   D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD) :
-						   D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+			draw_ds ? (stencil_DATE ? D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE :
+									  D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD) :
+					  D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
+			draw_ds ? ((stencil_DATE && need_barrier) ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE :
+														D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD) :
+					  D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 			clear_color, draw_ds ? draw_ds->GetClearDepth() : 0.0f, 1);
 	}
 
