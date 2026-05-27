@@ -804,122 +804,60 @@ GSTexture* GSDevice::CreateCompatible(GSTexture* tex, int w, int h, bool clear, 
 }
 
 void GSDevice::DoStretchRectWithAssertions(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex,
-	const GSVector4& dRect, ShaderConvertSelector shader, bool linear)
+	const GSVector4& dRect, ShaderConvertSelector shader, Filter filter)
 {
 	pxAssert((dTex && dTex->IsDepthLike()) == shader.Float32Output());
-	pxAssert(!(linear && shader.SupportsBilinear())); // Don't allow HW bilinear if SW bilinear is required.
+	pxAssert(!(filter == Biln && shader.SupportsBilinear())); // Don't allow HW bilinear if SW bilinear is required.
 	GL_INS("StretchRect(%s) {%d,%d} %dx%d -> {%d,%d) %dx%d", ShaderConvertName(shader.Shader()),
 		int(sRect.left), int(sRect.top),
 		int(sRect.right - sRect.left), int(sRect.bottom - sRect.top), int(dRect.left), int(dRect.top),
 		int(dRect.right - dRect.left), int(dRect.bottom - dRect.top));
-	DoStretchRect(sTex, sRect, dTex, dRect, shader, linear);
+	DoStretchRect(sTex, sRect, dTex, dRect, shader, filter);
 }
 
 void GSDevice::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	ShaderConvertSelector shader, bool linear)
+	ShaderConvertSelector shader, Filter filter)
 {
-	DoStretchRectWithAssertions(sTex, sRect, dTex, dRect, shader, linear);
+	DoStretchRectWithAssertions(sTex, sRect, dTex, dRect, shader, filter);
 }
 
-void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvertSelector shader, bool linear)
+void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvertSelector shader, Filter filter)
 {
-	StretchRect(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, shader, linear);
+	StretchRect(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, shader, filter);
 }
 
-void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, ShaderConvertSelector shader, bool linear)
+void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, ShaderConvertSelector shader, Filter filter)
 {
-	StretchRect(sTex, dTex, GSVector4(dTex->GetRect()), shader, linear);
+	StretchRect(sTex, dTex, GSVector4(dTex->GetRect()), shader, filter);
 }
 
 void GSDevice::StretchRectAuto(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	bool linear, u32 src_bpp, u32 dst_bpp)
+	Filter filter, u32 src_bpp, u32 dst_bpp)
 {
 	ShaderConvertSelector shader = GetConvertShader(sTex, dTex, src_bpp, dst_bpp);
-	if (shader.SupportsBilinear() && linear)
+	if (shader.SupportsBilinear() && filter == Biln)
 	{
 		// Bilinear is emulated in the shader.
-		shader.SetBiln(true);
-		linear = false;
+		shader.SetFilter(Biln);
+		filter = Nearest;
 	}
-	StretchRect(sTex, sRect, dTex, dRect, shader, linear);
+	StretchRect(sTex, sRect, dTex, dRect, shader, filter);
 }
 
-void GSDevice::StretchRectAuto(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, bool linear, u32 src_bpp, u32 dst_bpp)
+void GSDevice::StretchRectAuto(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, Filter filter, u32 src_bpp, u32 dst_bpp)
 {
-	StretchRectAuto(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, linear, src_bpp, dst_bpp);
-	}
-
-void GSDevice::StretchRectAuto(GSTexture* sTex, GSTexture* dTex, bool linear, u32 src_bpp, u32 dst_bpp)
-{
-	StretchRectAuto(sTex, dTex, GSVector4(dTex->GetRect()), linear, src_bpp, dst_bpp);
+	StretchRectAuto(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, filter, src_bpp, dst_bpp);
 }
 
-void GSDevice::StretchRectNearest(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	ShaderConvertSelector shader)
+void GSDevice::StretchRectAuto(GSTexture* sTex, GSTexture* dTex, Filter filter, u32 src_bpp, u32 dst_bpp)
 {
-	StretchRect(sTex, sRect, dTex, dRect, shader, false);
-}
-
-void GSDevice::StretchRectNearest(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvertSelector shader)
-{
-	StretchRectNearest(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, shader);
-}
-
-void GSDevice::StretchRectNearest(GSTexture* sTex, GSTexture* dTex, ShaderConvertSelector shader)
-{
-	StretchRectNearest(sTex, dTex, GSVector4(dTex->GetRect()), shader);
-}
-
-void GSDevice::StretchRectAutoNearest(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, u32 src_bpp, u32 dst_bpp)
-{
-	StretchRectAuto(sTex, sRect, dTex, dRect, false, src_bpp, dst_bpp);
-}
-
-void GSDevice::StretchRectAutoNearest(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, u32 src_bpp, u32 dst_bpp)
-{
-	StretchRectAutoNearest(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, src_bpp, dst_bpp);
-}
-
-void GSDevice::StretchRectAutoNearest(GSTexture* sTex, GSTexture* dTex, u32 src_bpp, u32 dst_bpp)
-{
-	StretchRectAutoNearest(sTex, dTex, GSVector4(dTex->GetRect()), src_bpp, dst_bpp);
-}
-
-void GSDevice::StretchRectBiln(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	ShaderConvertSelector shader)
-{
-	StretchRect(sTex, sRect, dTex, dRect, shader, true);
-}
-
-void GSDevice::StretchRectBiln(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvertSelector shader)
-{
-	StretchRectBiln(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, shader);
-}
-
-void GSDevice::StretchRectBiln(GSTexture* sTex, GSTexture* dTex, ShaderConvertSelector shader)
-{
-	StretchRectBiln(sTex, dTex, GSVector4(dTex->GetRect()), shader);
-}
-
-void GSDevice::StretchRectAutoBiln(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, u32 src_bpp, u32 dst_bpp)
-{
-	StretchRectAuto(sTex, sRect, dTex, dRect, true, src_bpp, dst_bpp);
-}
-
-void GSDevice::StretchRectAutoBiln(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, u32 src_bpp, u32 dst_bpp)
-{
-	StretchRectAutoBiln(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, src_bpp, dst_bpp);
-}
-
-void GSDevice::StretchRectAutoBiln(GSTexture* sTex, GSTexture* dTex, u32 src_bpp, u32 dst_bpp)
-{
-	StretchRectAutoBiln(sTex, dTex, GSVector4(dTex->GetRect()), src_bpp, dst_bpp);
+	StretchRectAuto(sTex, dTex, GSVector4(dTex->GetRect()), filter, src_bpp, dst_bpp);
 }
 
 void GSDevice::StretchRectAutoMask(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 	bool red, bool green, bool blue, bool alpha, u32 src_bpp, u32 dst_bpp)
 {
-	StretchRect(sTex, sRect, dTex, dRect, GetConvertShaderMask(sTex, dTex, src_bpp, dst_bpp, red, green, blue, alpha), false);
+	StretchRect(sTex, sRect, dTex, dRect, GetConvertShaderMask(sTex, dTex, src_bpp, dst_bpp, red, green, blue, alpha), Nearest);
 }
 
 void GSDevice::StretchRectAutoMask(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha, u32 src_bpp, u32 dst_bpp)
@@ -939,7 +877,8 @@ void GSDevice::DrawMultiStretchRects(
 	for (u32 i = 0; i < num_rects; i++)
 	{
 		const MultiStretchRect& sr = rects[i];
-		g_gs_device->StretchRect(sr.src, sr.src_rect, dTex, sr.dst_rect, shader.SetMask(rects[0].wmask.wrgba).SetBiln(sr.linear));
+		g_gs_device->StretchRect(sr.src, sr.src_rect, dTex, sr.dst_rect,
+			shader.SetMask(rects[0].wmask.wrgba).SetFilter(sr.filter), sr.filter);
 	}
 }
 
@@ -947,7 +886,7 @@ void GSDevice::SortMultiStretchRects(MultiStretchRect* rects, u32 num_rects)
 {
 	// Depending on num_rects, insertion sort may be better here.
 	std::sort(rects, rects + num_rects, [](const MultiStretchRect& lhs, const MultiStretchRect& rhs) {
-		return lhs.src < rhs.src || lhs.linear < rhs.linear;
+		return lhs.src < rhs.src || lhs.filter < rhs.filter;
 	});
 }
 
@@ -973,7 +912,7 @@ void GSDevice::ClearCurrent()
 void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c)
 {
 	if (ResizeRenderTarget(&m_merge, fs.x, fs.y, false, false))
-		DoMerge(sTex, sRect, m_merge, dRect, PMODE, EXTBUF, c, GSConfig.PCRTCOffsets);
+		DoMerge(sTex, sRect, m_merge, dRect, PMODE, EXTBUF, c, BilnIf(GSConfig.PCRTCOffsets));
 
 	m_current = m_merge;
 }
@@ -984,7 +923,7 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 	float offset = yoffset * static_cast<float>(field);
 	offset = GSConfig.DisableInterlaceOffset ? 0.0f : offset;
 
-	auto do_interlace = [this](GSTexture* sTex, GSTexture* dTex, ShaderInterlace shader, bool linear, float yoffset, int bufIdx) {
+	auto do_interlace = [this](GSTexture* sTex, GSTexture* dTex, ShaderInterlace shader, Filter filter, float yoffset, int bufIdx) {
 		const GSVector2i ds_i = dTex->GetSize();
 		const GSVector2 ds = GSVector2(static_cast<float>(ds_i.x), static_cast<float>(ds_i.y));
 
@@ -1005,28 +944,28 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 			GSVector4(static_cast<float>(bufIdx), 1.0f / ds.y, ds.y, MAD_SENSITIVITY)
 		};
 
-		GL_PUSH("DoInterlace %dx%d Shader:%d Linear:%d", ds_i.x, ds_i.y, static_cast<int>(shader), linear);
-		DoInterlace(sTex, sRect, dTex, dRect, shader, linear, cb);
+		GL_PUSH("DoInterlace %dx%d Shader:%d Filter:%d", ds_i.x, ds_i.y, static_cast<int>(shader), filter);
+		DoInterlace(sTex, sRect, dTex, dRect, shader, filter, cb);
 	};
 
 	switch (mode)
 	{
 		case 0: // Weave
 			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
-			do_interlace(m_merge, m_weavebob, ShaderInterlace::WEAVE, false, offset, field);
+			do_interlace(m_merge, m_weavebob, ShaderInterlace::WEAVE, Nearest, offset, field);
 			m_current = m_weavebob;
 			break;
 		case 1: // Bob
 			// Field is reversed here as we are countering the bounce.
 			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
-			do_interlace(m_merge, m_weavebob, ShaderInterlace::BOB, true, yoffset * (1 - field), 0);
+			do_interlace(m_merge, m_weavebob, ShaderInterlace::BOB, Biln, yoffset * (1 - field), 0);
 			m_current = m_weavebob;
 			break;
 		case 2: // Blend
 			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
-			do_interlace(m_merge, m_weavebob, ShaderInterlace::WEAVE, false, offset, field);
+			do_interlace(m_merge, m_weavebob, ShaderInterlace::WEAVE, Nearest, offset, field);
 			ResizeRenderTarget(&m_blend, ds.x, ds.y, true, false);
-			do_interlace(m_weavebob, m_blend, ShaderInterlace::BLEND, false, 0, 0);
+			do_interlace(m_weavebob, m_blend, ShaderInterlace::BLEND, Biln, 0, 0);
 			m_current = m_blend;
 			break;
 		case 3: // FastMAD Motion Adaptive Deinterlacing
@@ -1035,9 +974,9 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 			bufIdx |= field;
 			bufIdx &= 3;
 			ResizeRenderTarget(&m_mad, ds.x, ds.y * 2.0f, true, false);
-			do_interlace(m_merge, m_mad, ShaderInterlace::MAD_BUFFER, false, offset, bufIdx);
+			do_interlace(m_merge, m_mad, ShaderInterlace::MAD_BUFFER, Nearest, offset, bufIdx);
 			ResizeRenderTarget(&m_weavebob, ds.x, ds.y, true, false);
-			do_interlace(m_mad, m_weavebob, ShaderInterlace::MAD_RECONSTRUCT, false, 0, bufIdx);
+			do_interlace(m_mad, m_weavebob, ShaderInterlace::MAD_RECONSTRUCT, Nearest, 0, bufIdx);
 			m_current = m_weavebob;
 			break;
 		default:
@@ -1094,7 +1033,7 @@ void GSDevice::Resize(int width, int height)
 	{
 		const GSVector4 sRect(0, 0, 1, 1);
 		const GSVector4 dRect(0, 0, s.x, s.y);
-		StretchRectAutoNearest(m_current, sRect, dTex, dRect);
+		StretchRectAuto(m_current, sRect, dTex, dRect, Nearest);
 		m_current = dTex;
 	}
 }
@@ -1125,7 +1064,7 @@ bool GSDevice::ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_con
 	{
 		constexpr GSVector4 sRect = GSVector4::cxpr(0, 0, 1, 1);
 		const GSVector4 dRect = GSVector4(orig_tex->GetRect());
-		StretchRectBiln(orig_tex, sRect, new_tex, dRect, ShaderConvert::COPY);
+		StretchRect(orig_tex, sRect, new_tex, dRect, ShaderConvert::COPY, Biln);
 	}
 
 	if (orig_tex)
@@ -1148,7 +1087,7 @@ void GSDevice::BeginDSAsRT(GSTexture* ds, const GSVector4i& drawarea)
 	m_ds_as_rt = g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::DepthColor, false, true);
 	const GSVector4 dRect(drawarea);
 	const GSVector4 sRect(dRect.x / w, dRect.y / h, dRect.z / w, dRect.w / h);
-	StretchRectAutoNearest(ds, sRect, m_ds_as_rt, dRect);
+	StretchRectAuto(ds, sRect, m_ds_as_rt, dRect, Nearest);
 }
 
 void GSDevice::EndDSAsRT()
@@ -1830,20 +1769,20 @@ static constexpr ShaderConvertSelector GetRemappedShader(u32 idx)
 {
 	ShaderConvert convert = static_cast<ShaderConvert>(idx >> 2);
 	bool depth_out = (idx >> 0) & 1;
-	bool biln = (idx >> 1) & 1;
-	return ShaderConvertSelector(convert, 0xf, depth_out, biln);
+	Filter filter = static_cast<Filter>((idx >> 1) & 1);
+	return ShaderConvertSelector(convert, 0xf, depth_out, filter);
 }
 
 static constexpr bool RemapIndexIsValid(u32 idx)
 {
 	ShaderConvert convert = static_cast<ShaderConvert>(idx >> 2);
 	bool depth_out = (idx >> 0) & 1;
-	bool biln = (idx >> 1) & 1;
-	if (HasVariableWriteMask(convert) && !depth_out && !biln)
+	Filter filter = static_cast<Filter>((idx >> 1) & 1);
+	if (HasVariableWriteMask(convert) && !depth_out && filter == Nearest)
 		return false; // Handled as variable write mask
 	if (depth_out && !HasFloat32Output(convert))
 		return false;
-	if (biln && !SupportsBilinear(convert))
+	if (filter == Biln && !SupportsBilinear(convert))
 		return false;
 	return true;
 }

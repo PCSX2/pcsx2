@@ -2376,7 +2376,7 @@ void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache:
 							{
 								if (!valid_color || (!valid_alpha && (GSUtil::GetChannelMask(t->m_TEX0.PSM) & 0x8)))
 									GL_CACHE("Warning: CombineAlignedInsideTargets: Depth copy with invalid lower 24 bits or invalid upper 8 bits.");
-								g_gs_device->StretchRectAutoNearest(t->m_texture, source_rect, target->m_texture, target_drect);
+								g_gs_device->StretchRectAuto(t->m_texture, source_rect, target->m_texture, target_drect, Nearest);
 							}
 
 							target->m_valid_rgb |= t->m_valid_rgb;
@@ -2929,8 +2929,8 @@ GSTextureCache::Target* GSTextureCache::LookupDrawTarget(GIFRegTEX0 TEX0, const 
 					else if (dst_match->m_texture->GetState() == GSTexture::State::Dirty)
 					{
 						dst_match->UnscaleRTAlpha();
-						g_gs_device->StretchRectAutoNearest(dst_match->m_texture, FullSrcRect, dst->m_texture,
-							rescaler.m_dRect, src_bpp, dst_bpp);
+						g_gs_device->StretchRectAuto(dst_match->m_texture, FullSrcRect, dst->m_texture,
+							rescaler.m_dRect, Nearest, src_bpp, dst_bpp);
 					}
 				}
 
@@ -2996,7 +2996,7 @@ GSTextureCache::Target* GSTextureCache::ProcessTargetAfterLookup(RescaleHelper& 
 		else
 		{
 			g_gs_device->StretchRectAuto(dst->m_texture, FullSrcRect, tex, rescaler.m_dRect,
-				type == RenderTarget && !preserve_scale);
+				BilnIf(type == RenderTarget && !preserve_scale));
 		}
 
 		m_target_memory_usage = (m_target_memory_usage - dst->m_texture->GetMemUsage()) + tex->GetMemUsage();
@@ -3029,7 +3029,7 @@ GSTextureCache::Target* GSTextureCache::ProcessTargetAfterLookup(RescaleHelper& 
 		GSTexture* tex = g_gs_device->CreateCompatible(dst->m_texture, rescaler.m_new_scaled_size, false);
 		if (!tex)
 			return nullptr;
-		g_gs_device->StretchRectAutoNearest(dst->m_texture, FullSrcRect, tex, rescaler.m_dRect, 32, 24);
+		g_gs_device->StretchRectAuto(dst->m_texture, FullSrcRect, tex, rescaler.m_dRect, Nearest, 32, 24);
 		g_gs_device->Recycle(dst->m_texture);
 
 		dst->m_texture = tex;
@@ -3098,7 +3098,7 @@ GSTextureCache::Target* GSTextureCache::ProcessTargetAfterLookup(RescaleHelper& 
 					if (!tex)
 						return nullptr;
 
-					g_gs_device->StretchRectAutoNearest(dst->m_texture, source_rect, tex, rescaler.m_dRect);
+					g_gs_device->StretchRectAuto(dst->m_texture, source_rect, tex, rescaler.m_dRect, Nearest);
 
 					m_target_memory_usage = m_target_memory_usage + tex->GetMemUsage();
 
@@ -3117,7 +3117,7 @@ GSTextureCache::Target* GSTextureCache::ProcessTargetAfterLookup(RescaleHelper& 
 					if (!tex)
 						return nullptr;
 
-					g_gs_device->StretchRectAutoNearest(dst->m_texture, source_rect, tex, rescaler.m_dRect);
+					g_gs_device->StretchRectAuto(dst->m_texture, source_rect, tex, rescaler.m_dRect, Nearest);
 
 					m_target_memory_usage = (m_target_memory_usage - dst->m_texture->GetMemUsage()) + tex->GetMemUsage();
 
@@ -3195,9 +3195,9 @@ GSTextureCache::Target* GSTextureCache::ProcessTargetAfterLookup(RescaleHelper& 
 						return nullptr;
 					}
 
-					g_gs_device->StretchRectAutoNearest(dst_match->m_texture, GSVector4(0, 0, 1, 1),
+					g_gs_device->StretchRectAuto(dst_match->m_texture, GSVector4(0, 0, 1, 1),
 						dst->m_texture, GSVector4(dst->GetUnscaledRect()) * GSVector4(dst->GetScale()),
-						32, GSLocalMemory::m_psm[dst->m_TEX0.PSM].trbpp);
+						Nearest, 32, GSLocalMemory::m_psm[dst->m_TEX0.PSM].trbpp);
 
 					dst_match->m_valid_rgb = !used;
 					dst_match->m_was_dst_matched = true;
@@ -3809,8 +3809,8 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 
 							const u32 dst_bpp = GSLocalMemory::m_psm[dst->m_TEX0.PSM].trbpp;
 							const u32 src_bpp = (dst_bpp == 16) ? 16 : 32;
-							g_gs_device->StretchRectAutoNearest(old_dst->m_texture, GSVector4(0, 0, 1, 1),
-								dst->m_texture, GSVector4(old_dst->GetUnscaledRect()) * GSVector4(dst->GetScale()), src_bpp, dst_bpp);
+							g_gs_device->StretchRectAuto(old_dst->m_texture, GSVector4(0, 0, 1, 1),
+								dst->m_texture, GSVector4(old_dst->GetUnscaledRect()) * GSVector4(dst->GetScale()), Nearest, src_bpp, dst_bpp);
 
 							break;
 						}
@@ -4150,7 +4150,7 @@ void GSTextureCache::Target::ScaleRTAlpha()
 				// Only copy up the valid area, since there's no point in "correcting" nothing.
 				const GSVector4 dRect(m_texture->GetRect().rintersect(valid_rect));
 				const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
-				g_gs_device->StretchRectNearest(m_texture, sRect, temp_rt, dRect, ShaderConvert::RTA_CORRECTION);
+				g_gs_device->StretchRect(m_texture, sRect, temp_rt, dRect, ShaderConvert::RTA_CORRECTION, Nearest);
 				g_gs_device->Recycle(m_texture);
 				m_texture = temp_rt;
 			}
@@ -4175,7 +4175,7 @@ void GSTextureCache::Target::UnscaleRTAlpha()
 				// Only copy up the valid area, since there's no point in "correcting" nothing.
 				const GSVector4 dRect(m_texture->GetRect().rintersect(valid_rect));
 				const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
-				g_gs_device->StretchRectNearest(m_texture, sRect, temp_rt, dRect, ShaderConvert::RTA_DECORRECTION);
+				g_gs_device->StretchRect(m_texture, sRect, temp_rt, dRect, ShaderConvert::RTA_DECORRECTION, Nearest);
 				g_gs_device->Recycle(m_texture);
 				m_texture = temp_rt;
 			}
@@ -4234,7 +4234,7 @@ void GSTextureCache::ScaleTargetForDisplay(Target* t, const GIFRegTEX0& dispfb, 
 		t->m_unscaled_size.y, t->m_TEX0.TBP0, real_h, dispfb.TBP0, y_offset, needed_height);
 
 	// Fill the new texture with the old data, and discard the old texture.
-	g_gs_device->StretchRectAutoNearest(old_texture, new_texture, GSVector4(old_texture->GetSize()).zwxy());
+	g_gs_device->StretchRectAuto(old_texture, new_texture, GSVector4(old_texture->GetSize()).zwxy(), Nearest);
 	m_target_memory_usage = (m_target_memory_usage - old_texture->GetMemUsage()) + new_texture->GetMemUsage();
 	g_gs_device->Recycle(old_texture);
 	t->m_texture = new_texture;
@@ -4371,9 +4371,9 @@ bool GSTextureCache::CopyRGBFromDepthToColor(Target* dst, Target* depth_src)
 	{
 		const GSVector4 convert_rect = GSVector4(depth_src->GetUnscaledRect().rintersect(GSVector4i::loadh(new_size)));
 		// Update RGB bits only.
-		g_gs_device->StretchRectAutoNearest(
+		g_gs_device->StretchRectAuto(
 			depth_src->m_texture, convert_rect / GSVector4(depth_src->GetUnscaledSize()).xyxy(),
-			tex, convert_rect * GSVector4(dst->GetScale()), 32, 24);
+			tex, convert_rect * GSVector4(dst->GetScale()), Nearest, 32, 24);
 	}
 
 	// Copy in alpha if we're a new texture.
@@ -5420,8 +5420,8 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 			const GSVector4 src_rect = GSVector4(scaled_sx, scaled_sy, scaled_sx + scaled_w, scaled_sy + scaled_h);
 			const GSVector4 tmp_rect = src_rect / (GSVector4(tmp_texture->GetSize()).xyxy());
 			const GSVector4 dst_rect = GSVector4(scaled_dx, scaled_dy, (scaled_dx + scaled_w), (scaled_dy + scaled_h));
-			g_gs_device->StretchRectAutoNearest(src->m_texture, tmp_rect, tmp_texture, src_rect);
-			g_gs_device->StretchRectAutoNearest(tmp_texture, tmp_rect, dst->m_texture, dst_rect);
+			g_gs_device->StretchRectAuto(src->m_texture, tmp_rect, tmp_texture, src_rect, Nearest);
+			g_gs_device->StretchRectAuto(tmp_texture, tmp_rect, dst->m_texture, dst_rect, Nearest);
 		}
 		else
 		{
@@ -5455,13 +5455,13 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		}
 		else if (src->m_type != dst->m_type)
 		{
-			g_gs_device->StretchRectAutoNearest(src->m_texture, src_rect, dst->m_texture, scaled_src_rect,
-				dpsm_s.trbpp == 16 ? 16 : 32, dpsm_s.trbpp);
+			g_gs_device->StretchRectAuto(src->m_texture, src_rect, dst->m_texture, scaled_src_rect,
+				Nearest, dpsm_s.trbpp == 16 ? 16 : 32, dpsm_s.trbpp);
 		}
 		else if (src->m_texture->IsDepthLike())
 		{
 			const GSVector4 dst_rect = GSVector4(scaled_dx, scaled_dy, (scaled_dx + scaled_w), (scaled_dy + scaled_h));
-			g_gs_device->StretchRectAutoNearest(src->m_texture, src_rect, dst->m_texture, dst_rect);
+			g_gs_device->StretchRectAuto(src->m_texture, src_rect, dst->m_texture, dst_rect, Nearest);
 		}
 		else
 		{
@@ -5703,7 +5703,7 @@ void GSTextureCache::CopyPages(Target* src, u32 sbw, u32 src_offset, Target* dst
 		rc.src = src->m_texture;
 		rc.src_rect = GSVector4(src_rect) / src_size;
 		rc.dst_rect = GSVector4(dst_rect) * dst_scale;
-		rc.linear = false;
+		rc.filter = Nearest;
 		rc.wmask.wrgba = 0xf;
 	}
 
@@ -6090,7 +6090,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 				if (dst->m_rt_alpha_scale)
 				{
 					const GSVector4 sRectF = GSVector4(area) / GSVector4(1, 1, sTex->GetWidth(), sTex->GetHeight());
-					g_gs_device->StretchRectNearest(sTex, sRectF, dTex, GSVector4(area), ShaderConvert::RTA_DECORRECTION);
+					g_gs_device->StretchRect(sTex, sRectF, dTex, GSVector4(area), ShaderConvert::RTA_DECORRECTION, Nearest);
 				}
 				else
 					g_gs_device->CopyRect(sTex, dTex, area, 0, 0);
@@ -6402,8 +6402,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 				if (dst->m_rt_alpha_scale)
 				{
 					const GSVector4 sRectF = GSVector4(sRect) / GSVector4(1, 1, sTex->GetWidth(), sTex->GetHeight());
-					g_gs_device->StretchRectNearest(
-						sTex, sRectF, dTex, GSVector4(destX, destY, sRect.width(), sRect.height()), ShaderConvert::RTA_DECORRECTION);
+					g_gs_device->StretchRect(
+						sTex, sRectF, dTex, GSVector4(destX, destY, sRect.width(), sRect.height()), ShaderConvert::RTA_DECORRECTION, Nearest);
 				}
 				else
 					g_gs_device->CopyRect(sTex, dTex, sRect, destX, destY);
@@ -6442,7 +6442,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 							g_gs_device->FilteredDownsampleTexture(dst->m_texture, tmpTex, downsample_factor, GSVector2i(0, 0), dRect);
 						}
 						else
-							g_gs_device->StretchRectAutoNearest(sTex, tmpTex, dRect);
+							g_gs_device->StretchRectAuto(sTex, tmpTex, dRect, Nearest);
 
 						g_gs_device->ConvertToIndexedTexture(tmpTex, 1, x_offset, y_offset,
 							std::max<u32>(dst->m_TEX0.TBW, 1u) * 64, dst->m_TEX0.PSM, dTex,
@@ -6472,7 +6472,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 						shader = ShaderConvert::RTA_DECORRECTION;
 
 					const GSVector4 sRectF = GSVector4(sRect) / GSVector4(1, 1, sTex->GetWidth(), sTex->GetHeight());
-					g_gs_device->StretchRectNearest(sTex, sRectF, dTex, GSVector4(destX, destY, new_size.x, new_size.y), shader);
+					g_gs_device->StretchRect(sTex, sRectF, dTex, GSVector4(destX, destY, new_size.x, new_size.y), shader, Nearest);
 				}
 
 #ifdef PCSX2_DEVBUILD
@@ -6727,7 +6727,7 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 		// Upload texture -> render target.
 		const bool linear = (scale != 1.0f);
 		copy_queue[copy_count++] = {GSVector4(rect) / GSVector4(lmtex->GetSize()).xyxy(),
-			GSVector4(rect) * GSVector4(scale).xyxy(), lmtex, linear, 0xf};
+			GSVector4(rect) * GSVector4(scale).xyxy(), lmtex, BilnIf(linear), 0xf};
 	};
 
 	// The idea: loop through pages that this texture covers, find targets which overlap, and copy them in.
@@ -6853,7 +6853,7 @@ GSTextureCache::Source* GSTextureCache::CreateMergedSource(GIFRegTEX0 TEX0, GIFR
 									GSVector4(t->m_texture->GetSize()).xyxy(),
 								GSVector4(dst_x, dst_y, dst_x + copy_width, dst_y + copy_height) *
 									GSVector4(scale).xyxy(),
-								t->m_texture, linear, 0xf};
+								t->m_texture, BilnIf(linear), 0xf};
 						}
 
 						row_page++;
@@ -7212,7 +7212,7 @@ GSTexture* GSTextureCache::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVec
 				if (!tex)
 					return nullptr;
 
-				g_gs_device->StretchRectAutoNearest(t->m_texture, tex);
+				g_gs_device->StretchRectAuto(t->m_texture, tex, Nearest);
 				m_target_memory_usage = (m_target_memory_usage - t->m_texture->GetMemUsage()) + tex->GetMemUsage();
 				g_gs_device->Recycle(t->m_texture);
 			
@@ -7361,7 +7361,7 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 		GSTexture* tmp = g_gs_device->CreateRenderTarget(drc.z, drc.w, fmt, false);
 		if (tmp)
 		{
-			g_gs_device->StretchRectNearest(t->m_texture, src, tmp, GSVector4(drc), ps_shader);
+			g_gs_device->StretchRect(t->m_texture, src, tmp, GSVector4(drc), ps_shader, Nearest);
 			dltex->get()->CopyFromTexture(drc, tmp, drc, 0, true);
 			g_gs_device->Recycle(tmp);
 		}
@@ -7960,7 +7960,7 @@ void GSTextureCache::Target::Update(bool cannot_scale)
 		drect.src = t;
 		drect.src_rect = GSVector4(update_r - t_offset) / t_sizef;
 		drect.dst_rect = GSVector4(update_r) * GSVector4(m_scale);
-		drect.linear = linear && (m_dirty[i].req_linear || override_linear);
+		drect.filter = BilnIf(linear && (m_dirty[i].req_linear || override_linear));
 
 		// Copy the new GS memory content into the destination texture.
 		if (m_type == RenderTarget)
@@ -8029,12 +8029,12 @@ void GSTextureCache::Target::Update(bool cannot_scale)
 					(z_address_info.offset + total_rect.y) * m_scale,
 					(total_rect.z + (1.0f / m_scale)) * m_scale,
 					(z_address_info.offset + total_rect.w + (1.0f / m_scale)) * m_scale);
-				g_gs_device->StretchRectAutoNearest(m_texture,
+				g_gs_device->StretchRectAuto(m_texture,
 					GSVector4(total_rect.x / static_cast<float>(m_unscaled_size.x),
 					          total_rect.y / static_cast<float>(m_unscaled_size.y),
 					          (total_rect.z + (1.0f / m_scale)) / static_cast<float>(m_unscaled_size.x),
 					          (total_rect.w + (1.0f / m_scale)) / static_cast<float>(m_unscaled_size.y)),
-					g_texture_cache->GetTemporaryZ(), GSVector4(dRect));
+					g_texture_cache->GetTemporaryZ(), GSVector4(dRect), Nearest);
 			}
 		}
 	}
@@ -8183,13 +8183,13 @@ bool GSTextureCache::Target::ResizeTexture(int new_unscaled_width, int new_unsca
 			// Can't do partial copies in DirectX for depth textures, and it's probably not ideal in other
 			// APIs either. So use a fullscreen quad setting depth instead.
 			// Use bilinear to avoid artifacts with upscaling. At native this is equivalent to nearest.
-			g_gs_device->StretchRectAutoBiln(m_texture, tex, GSVector4(rc));
+			g_gs_device->StretchRectAuto(m_texture, tex, GSVector4(rc), Biln);
 		}
 		else
 		{
 			if (require_new_rect)
 			{
-				g_gs_device->StretchRectAutoNearest(m_texture, tex, GSVector4(rc));
+				g_gs_device->StretchRectAuto(m_texture, tex, GSVector4(rc), Nearest);
 			}
 			else
 			{
