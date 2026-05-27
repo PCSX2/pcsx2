@@ -601,7 +601,7 @@ GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Type type, int width, int heigh
 	}
 }}
 
-void GSDeviceMTL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const bool linear)
+void GSDeviceMTL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter)
 { @autoreleasepool {
 	id<MTLCommandBuffer> cmdbuf = GetRenderCmdBuf();
 	GSScopedDebugGroupMTL dbg(cmdbuf, @"DoMerge");
@@ -623,12 +623,12 @@ void GSDeviceMTL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 	{
 		// 2nd output is enabled and selected. Copy it to destination so we can blend it with 1st output
 		// Note: value outside of dRect must contains the background color (c)
-		StretchRect(sTex[1], sRect[1], dTex, dRect[1], ShaderConvert::COPY, linear);
+		StretchRect(sTex[1], sRect[1], dTex, dRect[1], ShaderConvert::COPY, filter);
 	}
 
 	// Save 2nd output
 	if (feedback_write_2) // FIXME I'm not sure dRect[1] is always correct
-		DoStretchRect(dTex, full_r, sTex[2], dRect[1], GetConvertPipeline(ShaderConvert::YUV), linear, LoadAction::DontCareIfFull, &cb_yuv, sizeof(cb_yuv));
+		DoStretchRect(dTex, full_r, sTex[2], dRect[1], GetConvertPipeline(ShaderConvert::YUV), filter, LoadAction::DontCareIfFull, &cb_yuv, sizeof(cb_yuv));
 
 	if (feedback_write_2_but_blend_bg)
 		ClearRenderTarget(dTex, c);
@@ -642,26 +642,27 @@ void GSDeviceMTL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 		if (PMODE.MMOD == 1)
 		{
 			// Blend with a constant alpha
-			DoStretchRect(sTex[0], sRect[0], dTex, dRect[0], pipeline, linear, LoadAction::Load, &cb_c, sizeof(cb_c));
+			DoStretchRect(sTex[0], sRect[0], dTex, dRect[0], pipeline, filter, LoadAction::Load, &cb_c, sizeof(cb_c));
 		}
 		else
 		{
 			// Blend with 2 * input alpha
-			DoStretchRect(sTex[0], sRect[0], dTex, dRect[0], pipeline, linear, LoadAction::Load, nullptr, 0);
+			DoStretchRect(sTex[0], sRect[0], dTex, dRect[0], pipeline, filter, LoadAction::Load, nullptr, 0);
 		}
 	}
 
 	if (feedback_write_1) // FIXME I'm not sure dRect[0] is always correct
-		StretchRect(dTex, full_r, sTex[2], dRect[0], ShaderConvert::YUV, linear);
+		StretchRect(dTex, full_r, sTex[2], dRect[0], ShaderConvert::YUV, filter);
 }}
 
-void GSDeviceMTL::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb)
+void GSDeviceMTL::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, Filter filter, const InterlaceConstantBuffer& cb)
 { @autoreleasepool {
 	id<MTLCommandBuffer> cmdbuf = GetRenderCmdBuf();
 	GSScopedDebugGroupMTL dbg(cmdbuf, @"DoInterlace");
 
 	const bool can_discard = shader == ShaderInterlace::WEAVE || shader == ShaderInterlace::MAD_BUFFER;
-	DoStretchRect(sTex, sRect, dTex, dRect, m_interlace_pipeline[static_cast<int>(shader)], linear, !can_discard ? LoadAction::DontCareIfFull : LoadAction::Load, &cb, sizeof(cb));
+	DoStretchRect(sTex, sRect, dTex, dRect, m_interlace_pipeline[static_cast<int>(shader)], filter,
+		!can_discard ? LoadAction::DontCareIfFull : LoadAction::Load, &cb, sizeof(cb));
 }}
 
 void GSDeviceMTL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
@@ -1580,7 +1581,7 @@ void GSDeviceMTL::BeginStretchRect(NSString* name, GSTexture* dTex, MTLLoadActio
 	MRESetDSS(dsel);
 }
 
-void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, id<MTLRenderPipelineState> pipeline, std::optional<bool> linear, LoadAction load_action, const void* frag_uniform, size_t frag_uniform_len)
+void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, id<MTLRenderPipelineState> pipeline, std::optional<Filter> filter, LoadAction load_action, const void* frag_uniform, size_t frag_uniform_len)
 {
 	FlushClears(sTex);
 
@@ -1601,8 +1602,8 @@ void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextu
 	if (frag_uniform && frag_uniform_len)
 		[m_current_render.encoder setFragmentBytes:frag_uniform length:frag_uniform_len atIndex:GSMTLBufferIndexUniforms];
 
-	if (linear)
-		MRESetSampler(*linear ? SamplerSelector::Linear() : SamplerSelector::Point());
+	if (filter)
+		MRESetSampler(*filter == Biln ? SamplerSelector::Linear() : SamplerSelector::Point());
 
 	DrawStretchRect(sRect, dRect, GSVector2(static_cast<float>(ds.x), static_cast<float>(ds.y)));
 }
@@ -1647,15 +1648,15 @@ void GSDeviceMTL::RenderCopy(GSTexture* sTex, id<MTLRenderPipelineState> pipelin
 }
 
 void GSDeviceMTL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	ShaderConvertSelector shader, bool linear)
+	ShaderConvertSelector shader, Filter filter)
 { @autoreleasepool {
 
 	const LoadAction load_action = (shader.Mask() == 0xf) ? LoadAction::DontCareIfFull : LoadAction::Load;
 	id<MTLRenderPipelineState> pipeline = GetConvertPipeline(shader);
 	pxAssertRel(pipeline, fmt::format("No pipeline for {}", ShaderEntryPoint(shader.Shader())).c_str());
-	std::optional<bool> linear_if_needed = shader.SupportsBilinear() ? std::nullopt : std::make_optional(linear);
+	std::optional<Filter> filter_if_needed = shader.SupportsBilinear() ? std::nullopt : std::make_optional(filter);
 
-	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, linear_if_needed, load_action, nullptr, 0);
+	DoStretchRect(sTex, sRect, dTex, dRect, pipeline, filter_if_needed, load_action, nullptr, 0);
 }}
 
 static_assert(sizeof(DisplayConstantBuffer) == sizeof(GSMTLPresentPSUniform));
@@ -1668,7 +1669,7 @@ static_assert(offsetof(DisplayConstantBuffer, SourceResolution)    == offsetof(G
 static_assert(offsetof(DisplayConstantBuffer, RcpSourceResolution) == offsetof(GSMTLPresentPSUniform, rcp_source_resolution));
 static_assert(offsetof(DisplayConstantBuffer, TimeAndPad.x)        == offsetof(GSMTLPresentPSUniform, time));
 
-void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
+void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, Filter filter)
 { @autoreleasepool {
 	GSVector2i ds = dTex ? dTex->GetSize() : GetWindowSize();
 	DisplayConstantBuffer cb;
@@ -1679,13 +1680,13 @@ void GSDeviceMTL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 	if (dTex)
 	{
-		DoStretchRect(sTex, sRect, dTex, dRect, pipe, linear, LoadAction::DontCareIfFull, &cb, sizeof(cb));
+		DoStretchRect(sTex, sRect, dTex, dRect, pipe, filter, LoadAction::DontCareIfFull, &cb, sizeof(cb));
 	}
 	else
 	{
 		// !dTex → Use current draw encoder
 		[m_current_render.encoder setRenderPipelineState:pipe];
-		[m_current_render.encoder setFragmentSamplerState:m_sampler_hw[linear ? SamplerSelector::Linear().key : SamplerSelector::Point().key] atIndex:0];
+		[m_current_render.encoder setFragmentSamplerState:m_sampler_hw[filter == Biln ? SamplerSelector::Linear().key : SamplerSelector::Point().key] atIndex:0];
 		[m_current_render.encoder setFragmentTexture:static_cast<GSTextureMTL*>(sTex)->GetTexture() atIndex:0];
 		[m_current_render.encoder setFragmentBytes:&cb length:sizeof(cb) atIndex:GSMTLBufferIndexUniforms];
 		DrawStretchRect(sRect, dRect, GSVector2(static_cast<float>(ds.x), static_cast<float>(ds.y)));
@@ -1698,7 +1699,7 @@ void GSDeviceMTL::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_r
 
 	id<MTLRenderPipelineState> pipeline = nullptr;
 	GSTexture* sTex = rects[0].src;
-	bool linear = rects[0].linear;
+	Filter filter = rects[0].filter;
 	u8 wmask = rects[0].wmask.wrgba;
 
 	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
@@ -1721,7 +1722,7 @@ void GSDeviceMTL::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_r
 			pxAssertRel(pipeline, fmt::format("No pipeline for {}", ShaderEntryPoint(shader.Shader())).c_str());
 			MRESetPipeline(pipeline);
 		}
-		MRESetSampler(linear ? SamplerSelector::Linear() : SamplerSelector::Point());
+		MRESetSampler(filter == Biln ? SamplerSelector::Linear() : SamplerSelector::Point());
 		MRESetTexture(sTex, GSMTLTextureIndexNonHW);
 		[enc drawIndexedPrimitives:MTLPrimitiveTypeTriangle
 		                indexCount:index_count
@@ -1737,11 +1738,11 @@ void GSDeviceMTL::DrawMultiStretchRects(const MultiStretchRect* rects, u32 num_r
 	for (u32 i = 0; i < num_rects; i++)
 	{
 		const MultiStretchRect& rect = rects[i];
-		if (rect.src != sTex || rect.linear != linear || rect.wmask.wrgba != wmask)
+		if (rect.src != sTex || rect.filter != filter || rect.wmask.wrgba != wmask)
 		{
 			flush(i);
 			sTex = rect.src;
-			linear = rect.linear;
+			filter = rect.filter;
 			wmask = rect.wmask.wrgba;
 		}
 		*write++ = CalcStrechRectPoints(rect.src_rect, rect.dst_rect, ds);
@@ -1772,7 +1773,7 @@ void GSDeviceMTL::ConvertToIndexedTexture(GSTexture* sTex, float sScale, u32 off
 	GSMTLIndexedConvertPSUniform uniform = { sScale, SBW, DBW, SPSM };
 
 	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
-	DoStretchRect(sTex, GSVector4::zero(), dTex, dRect, pipeline, false, LoadAction::DontCareIfFull, &uniform, sizeof(uniform));
+	DoStretchRect(sTex, GSVector4::zero(), dTex, dRect, pipeline, Nearest, LoadAction::DontCareIfFull, &uniform, sizeof(uniform));
 }}
 
 void GSDeviceMTL::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect)
@@ -1785,7 +1786,7 @@ void GSDeviceMTL::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u3
 	GSMTLDownsamplePSUniform uniform = { {static_cast<uint>(clamp_min.x), static_cast<uint>(clamp_min.x)}, downsample_factor,
 	  static_cast<float>(downsample_factor * downsample_factor), (GSConfig.UserHacks_NativeScaling > GSNativeScaling::Aggressive) ? 2.0f : 1.0f };
 
-	DoStretchRect(sTex, GSVector4::zero(), dTex, dRect, pipeline, false, LoadAction::DontCareIfFull, &uniform, sizeof(uniform));
+	DoStretchRect(sTex, GSVector4::zero(), dTex, dRect, pipeline, Nearest, LoadAction::DontCareIfFull, &uniform, sizeof(uniform));
 }}
 
 static id<MTLTexture> CreateDSAsRTTexture(id<MTLDevice> dev, NSUInteger width, NSUInteger height, MTLStorageMode storage, NSString* name)

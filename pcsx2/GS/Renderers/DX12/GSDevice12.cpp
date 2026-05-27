@@ -1669,24 +1669,24 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 }
 
 void GSDevice12::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	ShaderConvertSelector shader, bool linear)
+	ShaderConvertSelector shader, Filter filter)
 {
 	pxAssert(dTex);
-	linear &= !shader.SupportsBilinear(); // Don't allow HW bilinear if SW bilinear is needed.
+	filter = shader.SupportsBilinear() ? Nearest : filter; // Don't allow HW bilinear if SW bilinear is needed.
 	const bool allow_discard = (shader.Mask() == 0xf);
 	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
-		GetConvertPipeline(shader), linear, allow_discard);
+		GetConvertPipeline(shader), filter, allow_discard);
 }
 
 void GSDevice12::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, const GSVector4& dRect,
-	PresentShader shader, bool linear)
+	PresentShader shader, Filter filter)
 {
 	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, nullptr, dRect,
-		m_present[static_cast<u32>(shader)].get(), linear, true);
+		m_present[static_cast<u32>(shader)].get(), filter, true);
 }
 
 void GSDevice12::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	PresentShader shader, float shaderTime, bool linear)
+	PresentShader shader, float shaderTime, Filter filter)
 {
 	DisplayConstantBuffer cb;
 	cb.SetSource(sRect, sTex->GetSize());
@@ -1696,7 +1696,7 @@ void GSDevice12::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	SetUtilityPushConstants(&cb, sizeof(cb));
 
 	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
-		m_present[static_cast<int>(shader)].get(), linear, true);
+		m_present[static_cast<int>(shader)].get(), filter, true);
 }
 
 void GSDevice12::UpdateCLUTTexture(
@@ -1717,7 +1717,7 @@ void GSDevice12::UpdateCLUTTexture(
 	const GSVector4 dRect(0, 0, dSize, 1);
 	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
 	DoStretchRect(static_cast<GSTexture12*>(sTex), GSVector4::zero(), static_cast<GSTexture12*>(dTex), dRect,
-		GetConvertPipeline(shader), false, true);
+		GetConvertPipeline(shader), Nearest, true);
 }
 
 void GSDevice12::ConvertToIndexedTexture(
@@ -1739,7 +1739,7 @@ void GSDevice12::ConvertToIndexedTexture(
 	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	const ShaderConvert shader = ((SPSM & 0xE) == 0) ? ShaderConvert::RGBA_TO_8I : ShaderConvert::RGB5A1_TO_8I;
 	DoStretchRect(static_cast<GSTexture12*>(sTex), GSVector4::zero(), static_cast<GSTexture12*>(dTex), dRect,
-		GetConvertPipeline(shader), false, true);
+		GetConvertPipeline(shader), Nearest, true);
 }
 
 void GSDevice12::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect)
@@ -1762,14 +1762,14 @@ void GSDevice12::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32
 	//const GSVector4 dRect = GSVector4(dTex->GetRect());
 	const ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
 	DoStretchRect(static_cast<GSTexture12*>(sTex), GSVector4::zero(), static_cast<GSTexture12*>(dTex), dRect,
-		GetConvertPipeline(shader), false, true);
+		GetConvertPipeline(shader), Nearest, true);
 }
 
 void GSDevice12::DrawMultiStretchRects(
 	const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvertSelector shader)
 {
 	GSTexture* last_tex = rects[0].src;
-	bool last_linear = rects[0].linear;
+	Filter last_filter = rects[0].filter;
 	u8 last_wmask = rects[0].wmask.wrgba;
 
 	u32 first = 0;
@@ -1790,7 +1790,7 @@ void GSDevice12::DrawMultiStretchRects(
 
 	for (u32 i = 1; i < num_rects; i++)
 	{
-		if (rects[i].src == last_tex && rects[i].linear == last_linear && rects[i].wmask.wrgba == last_wmask)
+		if (rects[i].src == last_tex && rects[i].filter == last_filter && rects[i].wmask.wrgba == last_wmask)
 		{
 			count++;
 			continue;
@@ -1798,7 +1798,7 @@ void GSDevice12::DrawMultiStretchRects(
 
 		DoMultiStretchRects(rects + first, count, static_cast<GSTexture12*>(dTex), shader);
 		last_tex = rects[i].src;
-		last_linear = rects[i].linear;
+		last_filter = rects[i].filter;
 		last_wmask = rects[i].wmask.wrgba;
 		first += count;
 		count = 1;
@@ -1877,7 +1877,7 @@ void GSDevice12::DoMultiStretchRects(
 	if (!InRenderPass())
 		BeginRenderPassForStretchRect(dTex, rc, rc, false);
 	SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	SetUtilityTexture(rects[0].src, rects[0].linear ? m_linear_sampler_cpu : m_point_sampler_cpu);
+	SetUtilityTexture(rects[0].src, rects[0].filter == Biln ? m_linear_sampler_cpu : m_point_sampler_cpu);
 
 	SetPipeline(GetConvertPipeline(shader.SetMask(rects[0].wmask.wrgba)));
 
@@ -1910,7 +1910,7 @@ void GSDevice12::BeginRenderPassForStretchRect(
 }
 
 void GSDevice12::DoStretchRect(GSTexture12* sTex, const GSVector4& sRect, GSTexture12* dTex, const GSVector4& dRect,
-	const ID3D12PipelineState* pipeline, bool linear, bool allow_discard)
+	const ID3D12PipelineState* pipeline, Filter filter, bool allow_discard)
 {
 	if (sTex->GetResourceState() != GSTexture12::ResourceState::PixelShaderResource)
 	{
@@ -1920,7 +1920,7 @@ void GSDevice12::DoStretchRect(GSTexture12* sTex, const GSVector4& sRect, GSText
 	}
 
 	SetUtilityRootSignature();
-	SetUtilityTexture(sTex, linear ? m_linear_sampler_cpu : m_point_sampler_cpu);
+	SetUtilityTexture(sTex, filter == Biln ? m_linear_sampler_cpu : m_point_sampler_cpu);
 	SetPipeline(pipeline);
 
 	const bool is_present = (!dTex);
@@ -1974,7 +1974,7 @@ void GSDevice12::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect,
 }
 
 void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect,
-	const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const bool linear)
+	const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter)
 {
 	GL_PUSH("DoMerge");
 
@@ -1982,7 +1982,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	const bool feedback_write_2 = PMODE.EN2 && sTex[2] != nullptr && EXTBUF.FBIN == 1;
 	const bool feedback_write_1 = PMODE.EN1 && sTex[2] != nullptr && EXTBUF.FBIN == 0;
 	const bool feedback_write_2_but_blend_bg = feedback_write_2 && PMODE.SLBG == 1;
-	const D3D12DescriptorHandle& sampler = linear ? m_linear_sampler_cpu : m_point_sampler_cpu;
+	const D3D12DescriptorHandle& sampler = filter == Biln ? m_linear_sampler_cpu : m_point_sampler_cpu;
 	// Merge the 2 source textures (sTex[0],sTex[1]). Final results go to dTex. Feedback write will go to sTex[2].
 	// If either 2nd output is disabled or SLBG is 1, a background color will be used.
 	// Note: background color is also used when outside of the unit rectangle area
@@ -2109,7 +2109,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 }
 
 void GSDevice12::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb)
+	ShaderInterlace shader, Filter filter, const InterlaceConstantBuffer& cb)
 {
 	static_cast<GSTexture12*>(dTex)->TransitionToState(GSTexture12::ResourceState::RenderTarget);
 
@@ -2119,7 +2119,7 @@ void GSDevice12::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	EndRenderPass();
 	OMSetRenderTargets(dTex, nullptr, nullptr, clamped_rc);
 	SetUtilityRootSignature();
-	SetUtilityTexture(sTex, linear ? m_linear_sampler_cpu : m_point_sampler_cpu);
+	SetUtilityTexture(sTex, filter == Biln ? m_linear_sampler_cpu : m_point_sampler_cpu);
 	BeginRenderPassForStretchRect(static_cast<GSTexture12*>(dTex), dTex->GetRect(), clamped_rc, false);
 	SetPipeline(m_interlace[static_cast<int>(shader)].get());
 	SetUtilityPushConstants(&cb, sizeof(cb));

@@ -695,7 +695,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 				const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
 
 				g_gs_device->PresentRect(current, src_uv, nullptr, draw_rect,
-					s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
+					s_tv_shader_indices[GSConfig.TVShader], shader_time, BilnIf(GSConfig.LinearPresent != GSPostBilinearMode::Off));
 			}
 
 			EndPresentFrame();
@@ -818,7 +818,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 				GSTexture* temp = g_gs_device->CreateRenderTarget(size.x, size.y, GSTexture::Format::Color, false);
 				if (temp)
 				{
-					g_gs_device->StretchRect(current, temp, GSVector4(0, 0, size.x, size.y));
+					g_gs_device->StretchRect(current, temp, GSVector4(0, 0, size.x, size.y), ShaderConvert::COPY, Biln);
 					GSCapture::DeliverVideoFrame(temp);
 					g_gs_device->Recycle(temp);
 				}
@@ -972,7 +972,7 @@ void GSRenderer::PresentCurrentFrame()
 			const float shader_time = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - m_shader_time_start));
 
 			g_gs_device->PresentRect(current, src_uv, nullptr, draw_rect,
-				s_tv_shader_indices[GSConfig.TVShader], shader_time, GSConfig.LinearPresent != GSPostBilinearMode::Off);
+				s_tv_shader_indices[GSConfig.TVShader], shader_time, BilnIf(GSConfig.LinearPresent != GSPostBilinearMode::Off));
 		}
 
 		EndPresentFrame();
@@ -1086,7 +1086,7 @@ bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool 
 		if (dl)
 		{
 			const GSVector4i rc(0, 0, draw_width, draw_height);
-			g_gs_device->StretchRect(current, src_uv, rt, GSVector4(rc), ShaderConvert::TRANSPARENCY_FILTER);
+			g_gs_device->StretchRect(current, src_uv, rt, GSVector4(rc), ShaderConvert::TRANSPARENCY_FILTER, Biln);
 			dl->CopyFromTexture(rc, rt, rc, 0);
 			dl->Flush();
 

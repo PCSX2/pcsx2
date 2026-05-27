@@ -29,7 +29,7 @@ bool GSTexture::Save(const std::string& fn)
 			return false;
 		}
 
-		g_gs_device->StretchRectAutoNearest(this, temp);
+		g_gs_device->StretchRectAuto(this, temp, Nearest);
 		const bool res = temp->Save(fn);
 		g_gs_device->Recycle(temp);
 		return res;

@@ -2922,24 +2922,24 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 }
 
 void GSDeviceVK::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	ShaderConvertSelector shader, bool linear)
+	ShaderConvertSelector shader, Filter filter)
 {
 	pxAssert(dTex);
-	linear &= !shader.SupportsBilinear(); // Don't allow HW bilinear if SW bilinear is needed.
+	filter = shader.SupportsBilinear() ? Nearest : filter; // Don't allow HW bilinear if SW bilinear is needed.
 	const bool allow_discard = (shader.Mask() == 0xf);
 	DoStretchRect(static_cast<GSTextureVK*>(sTex), sRect, static_cast<GSTextureVK*>(dTex), dRect,
-		GetConvertPipeline(shader), linear, allow_discard);
+		GetConvertPipeline(shader), filter, allow_discard);
 }
 
 void GSDeviceVK::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, const GSVector4& dRect,
-	PresentShader shader, bool linear)
+	PresentShader shader, Filter filter)
 {
 	DoStretchRect(static_cast<GSTextureVK*>(sTex), sRect, nullptr, dRect,
-		m_present.at(static_cast<u32>(shader)), linear, true);
+		m_present.at(static_cast<u32>(shader)), filter, true);
 }
 
 void GSDeviceVK::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	PresentShader shader, float shaderTime, bool linear)
+	PresentShader shader, float shaderTime, Filter filter)
 {
 	DisplayConstantBuffer cb;
 	cb.SetSource(sRect, sTex->GetSize());
@@ -2948,14 +2948,14 @@ void GSDeviceVK::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	SetUtilityPushConstants(&cb, sizeof(cb));
 
 	DoStretchRect(static_cast<GSTextureVK*>(sTex), sRect, static_cast<GSTextureVK*>(dTex), dRect,
-		m_present[static_cast<int>(shader)], linear, true);
+		m_present[static_cast<int>(shader)], filter, true);
 }
 
 void GSDeviceVK::DrawMultiStretchRects(
 	const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvertSelector shader)
 {
 	GSTexture* last_tex = rects[0].src;
-	bool last_linear = rects[0].linear;
+	Filter last_filter = rects[0].filter;
 	u8 last_wmask = rects[0].wmask.wrgba;
 
 	u32 first = 0;
@@ -2976,7 +2976,7 @@ void GSDeviceVK::DrawMultiStretchRects(
 
 	for (u32 i = 1; i < num_rects; i++)
 	{
-		if (rects[i].src == last_tex && rects[i].linear == last_linear && rects[i].wmask.wrgba == last_wmask)
+		if (rects[i].src == last_tex && rects[i].filter == last_filter && rects[i].wmask.wrgba == last_wmask)
 		{
 			count++;
 			continue;
@@ -2984,7 +2984,7 @@ void GSDeviceVK::DrawMultiStretchRects(
 
 		DoMultiStretchRects(rects + first, count, static_cast<GSTextureVK*>(dTex), shader);
 		last_tex = rects[i].src;
-		last_linear = rects[i].linear;
+		last_filter = rects[i].filter;
 		last_wmask = rects[i].wmask.wrgba;
 		first += count;
 		count = 1;
@@ -3061,7 +3061,7 @@ void GSDeviceVK::DoMultiStretchRects(
 	OMSetRenderTargets(dTex->IsRenderTarget() ? dTex : nullptr, dTex->IsDepthStencil() ? dTex : nullptr, rc);
 	if (!InRenderPass())
 		BeginRenderPassForStretchRect(dTex, rc, rc, false);
-	SetUtilityTexture(rects[0].src, rects[0].linear ? m_linear_sampler : m_point_sampler);
+	SetUtilityTexture(rects[0].src, rects[0].filter == Biln ? m_linear_sampler : m_point_sampler);
 
 	SetPipeline(GetConvertPipeline(shader.SetMask(rects[0].wmask.wrgba)));
 
@@ -3113,7 +3113,7 @@ void GSDeviceVK::BeginRenderPassForStretchRect(
 }
 
 void GSDeviceVK::DoStretchRect(GSTextureVK* sTex, const GSVector4& sRect, GSTextureVK* dTex, const GSVector4& dRect,
-	VkPipeline pipeline, bool linear, bool allow_discard)
+	VkPipeline pipeline, Filter filter, bool allow_discard)
 {
 	if (sTex->GetLayout() != GSTextureVK::Layout::ShaderReadOnly)
 	{
@@ -3122,7 +3122,7 @@ void GSDeviceVK::DoStretchRect(GSTextureVK* sTex, const GSVector4& sRect, GSText
 		sTex->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 	}
 
-	SetUtilityTexture(sTex, linear ? m_linear_sampler : m_point_sampler);
+	SetUtilityTexture(sTex, filter == Biln ? m_linear_sampler : m_point_sampler);
 	SetPipeline(pipeline);
 
 	const bool is_present = (!dTex);
@@ -3176,7 +3176,7 @@ void GSDeviceVK::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect,
 }
 
 void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, GSTexture* dTex,
-	const GSVector4i& dRect, u32 dLevel, bool linear)
+	const GSVector4i& dRect, u32 dLevel, Filter filter)
 {
 	GSTextureVK* sTexVK = static_cast<GSTextureVK*>(sTex);
 	GSTextureVK* dTexVK = static_cast<GSTextureVK*>(dTex);
@@ -3199,7 +3199,7 @@ void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, 
 
 	vkCmdBlitImage(GetCurrentCommandBuffer(), sTexVK->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 		dTexVK->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &ib,
-		linear ? VK_FILTER_LINEAR : VK_FILTER_NEAREST);
+		filter == Biln ? VK_FILTER_LINEAR : VK_FILTER_NEAREST);
 }
 
 void GSDeviceVK::UpdateCLUTTexture(
@@ -3219,7 +3219,7 @@ void GSDeviceVK::UpdateCLUTTexture(
 	const GSVector4 dRect(0, 0, dSize, 1);
 	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
 	DoStretchRect(static_cast<GSTextureVK*>(sTex), GSVector4::zero(), static_cast<GSTextureVK*>(dTex), dRect,
-		GetConvertPipeline(shader), false, true);
+		GetConvertPipeline(shader), Nearest, true);
 }
 
 void GSDeviceVK::ConvertToIndexedTexture(
@@ -3241,7 +3241,7 @@ void GSDeviceVK::ConvertToIndexedTexture(
 	const ShaderConvert shader = ((SPSM & 0xE) == 0) ? ShaderConvert::RGBA_TO_8I : ShaderConvert::RGB5A1_TO_8I;
 	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
 	DoStretchRect(static_cast<GSTextureVK*>(sTex), GSVector4::zero(), static_cast<GSTextureVK*>(dTex), dRect,
-		GetConvertPipeline(shader), false, true);
+		GetConvertPipeline(shader), Nearest, true);
 }
 
 void GSDeviceVK::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect)
@@ -3263,11 +3263,11 @@ void GSDeviceVK::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32
 	const ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
 	//const GSVector4 dRect = GSVector4(dTex->GetRect());
 	DoStretchRect(static_cast<GSTextureVK*>(sTex), GSVector4::zero(), static_cast<GSTextureVK*>(dTex), dRect,
-		GetConvertPipeline(shader), false, true);
+		GetConvertPipeline(shader), Nearest, true);
 }
 
 void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect,
-	const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const bool linear)
+	const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter)
 {
 	GL_PUSH("DoMerge");
 
@@ -3277,7 +3277,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 	const bool feedback_write_2 = PMODE.EN2 && sTex[2] != nullptr && EXTBUF.FBIN == 1;
 	const bool feedback_write_1 = PMODE.EN1 && sTex[2] != nullptr && EXTBUF.FBIN == 0;
 	const bool feedback_write_2_but_blend_bg = feedback_write_2 && PMODE.SLBG == 1;
-	const VkSampler& sampler = linear ? m_linear_sampler : m_point_sampler;
+	const VkSampler& sampler = filter == Biln ? m_linear_sampler : m_point_sampler;
 	// Merge the 2 source textures (sTex[0],sTex[1]). Final results go to dTex. Feedback write will go to sTex[2].
 	// If either 2nd output is disabled or SLBG is 1, a background color will be used.
 	// Note: background color is also used when outside of the unit rectangle area
@@ -3388,7 +3388,7 @@ void GSDeviceVK::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 }
 
 void GSDeviceVK::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb)
+	ShaderInterlace shader, Filter filter, const InterlaceConstantBuffer& cb)
 {
 	static_cast<GSTextureVK*>(dTex)->TransitionToLayout(GSTextureVK::Layout::ColorAttachment);
 
@@ -3397,7 +3397,7 @@ void GSDeviceVK::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	const GSVector4i clamped_rc = rc.rintersect(dtex_rc);
 	EndRenderPass();
 	OMSetRenderTargets(dTex, nullptr, clamped_rc);
-	SetUtilityTexture(sTex, linear ? m_linear_sampler : m_point_sampler);
+	SetUtilityTexture(sTex, filter == Biln ? m_linear_sampler : m_point_sampler);
 	BeginRenderPassForStretchRect(static_cast<GSTextureVK*>(dTex), dTex->GetRect(), clamped_rc, false);
 	SetPipeline(m_interlace[static_cast<int>(shader)]);
 	SetUtilityPushConstants(&cb, sizeof(cb));

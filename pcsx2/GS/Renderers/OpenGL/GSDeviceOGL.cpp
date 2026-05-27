@@ -1424,7 +1424,7 @@ GSTexture* GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& are
 		return nullptr;
 
 	GL_PUSH("PrimID Destination Alpha Clear");
-	DoStretchRect(rt, GSVector4(area) / GSVector4(rtsize).xyxy(), tex, GSVector4(area), m_date.primid_ps[static_cast<u8>(datm)], false);
+	DoStretchRect(rt, GSVector4(area) / GSVector4(rtsize).xyxy(), tex, GSVector4(area), m_date.primid_ps[static_cast<u8>(datm)], Nearest);
 	return tex;
 }
 
@@ -1601,7 +1601,7 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 }
 
 // Copy a sub part of texture (same as below but force a conversion)
-void GSDeviceOGL::BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2i& dsize, bool at_origin, bool linear)
+void GSDeviceOGL::BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2i& dsize, bool at_origin, Filter filter)
 {
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
@@ -1620,7 +1620,7 @@ void GSDeviceOGL::BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2
 	OMSetBlendState();
 	OMSetColorMaskState();
 	PSSetShaderResource(0, sTex);
-	PSSetSamplerState(linear ? m_convert.ln : m_convert.pt);
+	PSSetSamplerState(filter == Biln ? m_convert.ln : m_convert.pt);
 	DrawStretchRect(float_r / (GSVector4(sTex->GetSize()).xyxy()), float_r, dsize);
 
 	glEnable(GL_SCISSOR_TEST);
@@ -1673,22 +1673,22 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 }
 
 void GSDeviceOGL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	ShaderConvertSelector shader, bool linear)
+	ShaderConvertSelector shader, Filter filter)
 {
 	const u8 mask = shader.Mask();
 	shader = shader.SetMask(); // Mask is handled separately from program.
-	linear &= !shader.SupportsBilinear(); // Don't allow HW bilinear if SW bilinear is needed.
-	DoStretchRect(sTex, sRect, dTex, dRect, GetConvertProgram(shader), false, OMColorMaskSelector(mask), linear);
+	filter = shader.SupportsBilinear() ? Nearest : filter; // Don't allow HW bilinear if SW bilinear is needed.
+	DoStretchRect(sTex, sRect, dTex, dRect, GetConvertProgram(shader), false, OMColorMaskSelector(mask), filter);
 }
 
 void GSDeviceOGL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	const GLProgram& ps, bool linear)
+	const GLProgram& ps, Filter filter)
 {
-	DoStretchRect(sTex, sRect, dTex, dRect, ps, false, OMColorMaskSelector(), linear);
+	DoStretchRect(sTex, sRect, dTex, dRect, ps, false, OMColorMaskSelector(), filter);
 }
 
 void GSDeviceOGL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
-	const GLProgram& ps, bool alpha_blend, OMColorMaskSelector cms, bool linear)
+	const GLProgram& ps, bool alpha_blend, OMColorMaskSelector cms, Filter filter)
 {
 	CommitClear(sTex, true);
 
@@ -1723,7 +1723,7 @@ void GSDeviceOGL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextu
 	// ************************************
 
 	PSSetShaderResource(0, sTex);
-	PSSetSamplerState(linear ? m_convert.ln : m_convert.pt);
+	PSSetSamplerState(filter == Biln ? m_convert.ln : m_convert.pt);
 
 	// ************************************
 	// Draw
@@ -1731,7 +1731,7 @@ void GSDeviceOGL::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextu
 	DrawStretchRect(sRect, dRect, dTex->GetSize());
 }
 
-void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, bool linear)
+void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, PresentShader shader, float shaderTime, Filter filter)
 {
 	CommitClear(sTex, true);
 
@@ -1758,7 +1758,7 @@ void GSDeviceOGL::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	OMSetColorMaskState();
 
 	PSSetShaderResource(0, sTex);
-	PSSetSamplerState(linear ? m_convert.ln : m_convert.pt);
+	PSSetSamplerState(filter == Biln ? m_convert.ln : m_convert.pt);
 
 	// Flip y axis only when we render in the backbuffer
 	// By default everything is render in the wrong order (ie dx).
@@ -1883,7 +1883,7 @@ void GSDeviceOGL::DrawMultiStretchRects(
 
 	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
 	GSTexture* last_tex = rects[0].src;
-	bool last_linear = rects[0].linear;
+	Filter last_filter = rects[0].filter;
 	u8 last_wmask = rects[0].wmask.wrgba;
 
 	u32 first = 0;
@@ -1891,7 +1891,7 @@ void GSDeviceOGL::DrawMultiStretchRects(
 
 	for (u32 i = 1; i < num_rects; i++)
 	{
-		if (rects[i].src == last_tex && rects[i].linear == last_linear && rects[i].wmask.wrgba == last_wmask)
+		if (rects[i].src == last_tex && rects[i].filter == last_filter && rects[i].wmask.wrgba == last_wmask)
 		{
 			count++;
 			continue;
@@ -1899,7 +1899,7 @@ void GSDeviceOGL::DrawMultiStretchRects(
 
 		DoMultiStretchRects(rects + first, count, ds);
 		last_tex = rects[i].src;
-		last_linear = rects[i].linear;
+		last_filter = rects[i].filter;
 		last_wmask = rects[i].wmask.wrgba;
 		first += count;
 		count = 1;
@@ -1959,12 +1959,12 @@ void GSDeviceOGL::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rec
 	m_index_stream_buffer->Unmap(icount * sizeof(u16));
 
 	PSSetShaderResource(0, rects[0].src);
-	PSSetSamplerState(rects[0].linear ? m_convert.ln : m_convert.pt);
+	PSSetSamplerState(rects[0].filter == Biln ? m_convert.ln : m_convert.pt);
 	OMSetColorMaskState(rects[0].wmask);
 	DrawIndexedPrimitive();
 }
 
-void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const bool linear)
+void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter)
 {
 	GL_PUSH("DoMerge");
 
@@ -1983,7 +1983,7 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 	{
 		// 2nd output is enabled and selected. Copy it to destination so we can blend it with 1st output
 		// Note: value outside of dRect must contains the background color (c)
-		StretchRect(sTex[1], sRect[1], dTex, PMODE.SLBG ? dRect[2] : dRect[1], ShaderConvert::COPY, linear);
+		StretchRect(sTex[1], sRect[1], dTex, PMODE.SLBG ? dRect[2] : dRect[1], ShaderConvert::COPY, filter);
 	}
 
 	// Upload constant to select YUV algo
@@ -1996,7 +1996,7 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 
 	// Save 2nd output
 	if (feedback_write_2)
-		StretchRect(dTex, full_r, sTex[2], dRect[2], ShaderConvert::YUV, linear);
+		StretchRect(dTex, full_r, sTex[2], dRect[2], ShaderConvert::YUV, filter);
 
 	// Restore background color to process the normal merge
 	if (feedback_write_2_but_blend_bg)
@@ -2013,27 +2013,27 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 			// Blend with a constant alpha
 			m_merge_obj.ps[1].Bind();
 			m_merge_obj.ps[1].Uniform4fv(0, GSVector4::unorm8(c).v);
-			DoStretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[1], true, OMColorMaskSelector(), linear);
+			DoStretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[1], true, OMColorMaskSelector(), filter);
 		}
 		else
 		{
 			// Blend with 2 * input alpha
-			DoStretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[0], true, OMColorMaskSelector(), linear);
+			DoStretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[0], true, OMColorMaskSelector(), filter);
 		}
 	}
 
 	if (feedback_write_1)
-		StretchRect(dTex, full_r, sTex[2], dRect[2], ShaderConvert::YUV, linear);
+		StretchRect(dTex, full_r, sTex[2], dRect[2], ShaderConvert::YUV, filter);
 }
 
-void GSDeviceOGL::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, bool linear, const InterlaceConstantBuffer& cb)
+void GSDeviceOGL::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, Filter filter, const InterlaceConstantBuffer& cb)
 {
 	OMSetColorMaskState();
 
 	m_interlace.ps[static_cast<int>(shader)].Bind();
 	m_interlace.ps[static_cast<int>(shader)].Uniform4fv(0, cb.ZrH.F32);
 
-	DoStretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[static_cast<int>(shader)], linear);
+	DoStretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[static_cast<int>(shader)], filter);
 }
 
 bool GSDeviceOGL::CompileFXAAProgram()
@@ -2072,7 +2072,7 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	const GSVector4 sRect(0, 0, 1, 1);
 	const GSVector4 dRect(0, 0, s.x, s.y);
 
-	DoStretchRect(sTex, sRect, dTex, dRect, m_fxaa.ps, true);
+	DoStretchRect(sTex, sRect, dTex, dRect, m_fxaa.ps, Biln);
 }
 
 bool GSDeviceOGL::CompileShadeBoostProgram()
@@ -2106,7 +2106,7 @@ void GSDeviceOGL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float par
 	const GSVector4 sRect(0, 0, 1, 1);
 	const GSVector4 dRect(0, 0, s.x, s.y);
 
-	DoStretchRect(sTex, sRect, dTex, dRect, m_shadeboost.ps, false);
+	DoStretchRect(sTex, sRect, dTex, dRect, m_shadeboost.ps, Nearest);
 }
 
 void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox)
@@ -2726,7 +2726,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			const GSVector2i size = config.rt->GetSize();
 			const GSVector4 dRect(config.colclip_update_area);
 			const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
-			StretchRect(colclip_rt, sRect, config.rt, dRect, ShaderConvert::COLCLIP_RESOLVE, false);
+			StretchRect(colclip_rt, sRect, config.rt, dRect, ShaderConvert::COLCLIP_RESOLVE, Nearest);
 			Recycle(colclip_rt);
 
 			g_gs_device->SetColorClipTexture(nullptr);
@@ -2760,7 +2760,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 			const GSVector4 dRect = GSVector4((config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly) ? GSVector4i::loadh(rtsize) : config.drawarea);
 			const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
-			StretchRect(config.rt, sRect, colclip_rt, dRect, ShaderConvert::COLCLIP_INIT, false);
+			StretchRect(config.rt, sRect, colclip_rt, dRect, ShaderConvert::COLCLIP_INIT, Nearest);
 		}
 	}
 
@@ -3053,7 +3053,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			const GSVector2i size = config.rt->GetSize();
 			const GSVector4 dRect(config.colclip_update_area);
 			const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
-			StretchRect(colclip_rt, sRect, config.rt, dRect, ShaderConvert::COLCLIP_RESOLVE, false);
+			StretchRect(colclip_rt, sRect, config.rt, dRect, ShaderConvert::COLCLIP_RESOLVE, Nearest);
 			Recycle(colclip_rt);
 
 			g_gs_device->SetColorClipTexture(nullptr);

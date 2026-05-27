@@ -3017,10 +3017,10 @@ void GSRendererHW::Draw()
 			GL_CACHE("HW: Pre-draw resolve of colclip! Address: %x", FRAME.TBP0);
 			GSTexture* colclip_texture = g_gs_device->GetColorClipTexture();
 			const GSVector4 colclip_texture_dims = GSVector4(GSVector4i(colclip_texture->GetSize()).xyxy());
-			g_gs_device->StretchRectNearest(
+			g_gs_device->StretchRect(
 				colclip_texture, GSVector4(m_conf.colclip_update_area) / colclip_texture_dims,
 				old_rt->m_texture, GSVector4(m_conf.colclip_update_area),
-				ShaderConvert::COLCLIP_RESOLVE);
+				ShaderConvert::COLCLIP_RESOLVE, Nearest);
 
 			g_gs_device->Recycle(colclip_texture);
 
@@ -4221,7 +4221,7 @@ void GSRendererHW::Draw()
 							static_cast<float>((ds->m_valid.w + vertical_offset + (1.0f / ds->m_scale)) * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight()));
 
 						GL_CACHE("HW: RT in RT Z copy back draw %lld z_vert_offset %d z_offset %d", s_n, z_vertical_offset, vertical_offset);
-						g_gs_device->StretchRectAutoNearest(g_texture_cache->GetTemporaryZ(), sRect, ds->m_texture, GSVector4(dRect));
+						g_gs_device->StretchRectAuto(g_texture_cache->GetTemporaryZ(), sRect, ds->m_texture, GSVector4(dRect), Nearest);
 					}
 
 					g_texture_cache->InvalidateTemporaryZ();
@@ -4237,7 +4237,7 @@ void GSRendererHW::Draw()
 					sRect = sRect.min(GSVector4(1.0f));
 					dRect = dRect.min_u32(GSVector4i(ds->m_unscaled_size.x * ds->m_scale, ds->m_unscaled_size.y * ds->m_scale).xyxy());
 
-					g_gs_device->StretchRectAutoNearest(ds->m_texture, sRect, g_texture_cache->GetTemporaryZ(), GSVector4(dRect));
+					g_gs_device->StretchRectAuto(ds->m_texture, sRect, g_texture_cache->GetTemporaryZ(), GSVector4(dRect), Nearest);
 					z_address_info.rect_since = GSVector4i::zero();
 					g_texture_cache->SetTemporaryZInfo(z_address_info);
 				}
@@ -4284,7 +4284,7 @@ void GSRendererHW::Draw()
 
 					if (m_cached_ctx.TEST.ZTST > ZTST_ALWAYS || !dRect.rintersect(GSVector4i(GSVector4(m_r) * ds->m_scale)).eq(dRect))
 					{
-						g_gs_device->StretchRectAutoNearest(ds->m_texture, sRect, tex, GSVector4(dRect));
+						g_gs_device->StretchRectAuto(ds->m_texture, sRect, tex, GSVector4(dRect), Nearest);
 					}
 					g_texture_cache->SetTemporaryZ(tex);
 					g_texture_cache->SetTemporaryZInfo(ds->m_TEX0.TBP0, page_offset, rt_page_offset);
@@ -4874,7 +4874,7 @@ void GSRendererHW::Draw()
 				{
 					if (GSTexture* tex = g_gs_device->CreateDepthStencil(new_w * ds->m_scale, new_h * ds->m_scale, true))
 					{
-						g_gs_device->StretchRectAutoNearest(g_texture_cache->GetTemporaryZ(), tex);
+						g_gs_device->StretchRectAuto(g_texture_cache->GetTemporaryZ(), tex, Nearest);
 						g_texture_cache->InvalidateTemporaryZ();
 						g_texture_cache->SetTemporaryZ(tex);
 					}
@@ -5180,7 +5180,7 @@ void GSRendererHW::Draw()
 						static_cast<float>((real_rect.w + (1.0f / ds->m_scale)) * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight()));
 
 					GL_CACHE("HW: RT in RT Z copy back draw %lld z_vert_offset %d rt_vert_offset %d z_horz_offset %d rt_horz_offset %d", s_n, z_vertical_offset, vertical_offset, z_horizontal_offset, horizontal_offset);
-					g_gs_device->StretchRectAutoNearest(g_texture_cache->GetTemporaryZ(), sRect, ds->m_texture, GSVector4(dRect));
+					g_gs_device->StretchRectAuto(g_texture_cache->GetTemporaryZ(), sRect, ds->m_texture, GSVector4(dRect), Nearest);
 				}
 				else if (m_temp_z_full_copy)
 				{
@@ -5192,7 +5192,7 @@ void GSRendererHW::Draw()
 						static_cast<float>((ds->m_valid.w + vertical_offset + (1.0f / ds->m_scale)) * ds->m_scale) / static_cast<float>(g_texture_cache->GetTemporaryZ()->GetHeight()));
 
 					GL_CACHE("HW: RT in RT Z copy back draw %lld z_vert_offset %d z_offset %d", s_n, z_vertical_offset, vertical_offset);
-					g_gs_device->StretchRectAutoNearest(g_texture_cache->GetTemporaryZ(), sRect, ds->m_texture, GSVector4(dRect));
+					g_gs_device->StretchRectAuto(g_texture_cache->GetTemporaryZ(), sRect, ds->m_texture, GSVector4(dRect), Nearest);
 				}
 
 				m_temp_z_full_copy = false;
@@ -5222,10 +5222,10 @@ void GSRendererHW::Draw()
 		{
 			GSTexture* colclip_texture = g_gs_device->GetColorClipTexture();
 			const GSVector4 colclip_texture_dims = GSVector4(GSVector4i(colclip_texture->GetSize()).xyxy());
-			g_gs_device->StretchRectNearest(
+			g_gs_device->StretchRect(
 				colclip_texture, GSVector4(m_conf.colclip_update_area) / colclip_texture_dims,
 				rt->m_texture, GSVector4(m_conf.colclip_update_area),
-				ShaderConvert::COLCLIP_RESOLVE);
+				ShaderConvert::COLCLIP_RESOLVE, Nearest);
 		}
 
 		const u64 frame = g_perfmon.GetFrame();
@@ -7004,10 +7004,10 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 			{
 				GL_CACHE("HW: Pre-Blend resolve of colclip due to size change! Address: %x", rt->m_TEX0.TBP0);
 				const GSVector4 colclip_texture_dims = GSVector4(GSVector4i(colclip_texture->GetSize()).xyxy());
-				g_gs_device->StretchRectNearest(
+				g_gs_device->StretchRect(
 					colclip_texture, GSVector4(m_conf.colclip_update_area) / colclip_texture_dims,
 					rt->m_texture, GSVector4(m_conf.colclip_update_area),
-					ShaderConvert::COLCLIP_RESOLVE);
+					ShaderConvert::COLCLIP_RESOLVE, Nearest);
 
 				g_gs_device->Recycle(colclip_texture);
 
@@ -8216,7 +8216,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 		{
 			GSVector4 src_rect = GSVector4(tmm.coverage) / GSVector4(GSVector4i::loadh(src_unscaled_size).zwzw());
 			const GSVector4 dst_rect = GSVector4(tmm.coverage);
-			g_gs_device->StretchRectAutoNearest(src_target->m_texture, src_rect, src_copy.get(), dst_rect);
+			g_gs_device->StretchRectAuto(src_target->m_texture, src_rect, src_copy.get(), dst_rect, Nearest);
 		}
 		else
 		{
@@ -8248,7 +8248,7 @@ __ri void GSRendererHW::HandleTextureHazards(const GSTextureCache::Target* rt, c
 		const GSVector4 src_rect = GSVector4(copy_range) / GSVector4(src_unscaled_size).xyxy();
 		const GSVector4 dst_rect = (GSVector4(copy_range) - GSVector4(offset).xyxy()) * scale;
 
-		g_gs_device->StretchRectAutoNearest(src_target->m_texture, src_rect, src_copy.get(), dst_rect);
+		g_gs_device->StretchRectAuto(src_target->m_texture, src_rect, src_copy.get(), dst_rect, Nearest);
 	}
 	m_conf.tex = src_copy.get();
 }
@@ -10119,7 +10119,7 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 				th = new_height;
 				const GSVector4 sRect(m_vt.m_min.t.x / tw, m_vt.m_min.t.y / th, m_vt.m_max.t.x / tw, m_vt.m_max.t.y / th);
 				const GSVector4i r_full_new(0, 0, tw, th);
-				g_gs_device->StretchRectAuto(tex->m_texture, sRect, rt, dRect, m_vt.IsRealLinear());
+				g_gs_device->StretchRectAuto(tex->m_texture, sRect, rt, dRect, BilnIf(m_vt.IsRealLinear()));
 				g_gs_device->CopyRect(rt, tex->m_texture, r_full_new, 0, 0);
 				g_gs_device->Recycle(rt);
 			}
