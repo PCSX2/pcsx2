@@ -700,6 +700,7 @@ void eeloadHook()
 				{
 					// Overwrite OSDSYS with game's ELF name
 					strcpy((char*)PSM(g_osdsys_str), elfname.c_str());
+					break;
 				}
 			}
 		}
