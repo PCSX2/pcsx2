@@ -1382,7 +1382,21 @@ void GSDeviceOGL::CommitClear(GSTexture* t, bool use_write_fbo)
 
 	if (T->GetState() == GSTexture::State::Invalidated)
 	{
-		if (GLAD_GL_VERSION_4_3)
+		if (T->IsRenderTarget() && !T->IsIntegerFormat())
+		{
+			// Clear instead of invalidating to avoid undefined alpha being
+			// sampled by post-processing shaders.
+			const u32 old_color_mask = GLState::wrgba;
+			OMSetColorMaskState();
+
+			glDisable(GL_SCISSOR_TEST);
+			const float clear_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+			glClearBufferfv(GL_COLOR, 0, clear_color);
+			glEnable(GL_SCISSOR_TEST);
+
+			OMSetColorMaskState(OMColorMaskSelector(old_color_mask));
+		}
+		else if (GLAD_GL_VERSION_4_3)
 		{
 			if (T->IsDepthStencil())
 			{
