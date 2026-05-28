@@ -6454,7 +6454,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 					src->m_region.SetX(x_offset, x_offset + tw);
 					src->m_region.SetY(y_offset, y_offset + th);
 
-					if (!GSConfig.UserHacks_NativePaletteDraw)
+					if (!GSConfig.UserHacks_NativePaletteDraw && tlevels > 1 && ((tw >> 1) > dst->m_valid.z || (th >> 1) > dst->m_valid.w))
 						m_temporary_source = src;
 				}
 				else
