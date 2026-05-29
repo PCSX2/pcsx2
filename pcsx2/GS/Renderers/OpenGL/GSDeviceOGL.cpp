@@ -3033,6 +3033,57 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 }
 
+void GSDeviceOGL::FeedbackCopyAndBind(const GSHWDrawConfig& config,
+	GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone, const GSVector4i& copyarea)
+{
+	if (rt_clone)
+	{
+		CopyRect(rt, rt_clone, copyarea, copyarea.left, copyarea.top);
+		PSSetShaderResource(2, rt_clone);
+		if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_RT)
+			PSSetShaderResource(0, rt_clone);
+	}
+	if (ds_clone)
+	{
+		CopyRect(ds, ds_clone, copyarea, copyarea.left, copyarea.top);
+		PSSetShaderResource(4, ds_clone);
+		if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_DEPTH)
+			PSSetShaderResource(0, ds_clone);
+	}
+}
+
+// Choose the best copy area based on the hazards and whether we need RT and/or DS copies.
+void GSDeviceOGL::FeedbackCopyAndBind(const GSHWDrawConfig& config,
+	GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone,
+	const GSVector4i& copyarea, const GSVector4i& samplearea)
+{
+	const GSVector4i rtsize = (rt ? rt : ds)->GetRect();
+
+	if (config.tex_hazard != GSHWDrawConfig::TEX_HAZARD_NONE)
+	{
+		const GSVector4i union_rect = config.drawarea.runion(config.samplearea);
+		const u32 size_union = union_rect.width() * union_rect.height();
+		const u32 size_indiv = config.drawarea.width() * config.drawarea.height() +
+			config.samplearea.width() * config.samplearea.height();
+
+		// Do an individual copy if the union is larger than the sum of individual areas.
+		if (size_union > size_indiv)
+		{
+			FeedbackCopyAndBind(config, rt, rt_clone, ds, ds_clone, ProcessCopyArea(rtsize, config.drawarea));
+			FeedbackCopyAndBind(config, rt, rt_clone, ds, ds_clone, ProcessCopyArea(rtsize, config.samplearea));
+		}
+		else
+		{
+			FeedbackCopyAndBind(config, rt, rt_clone, ds, ds_clone, ProcessCopyArea(rtsize, union_rect));
+		}
+	}
+	else
+	{
+		// No RT/DS hazards so just need the draw area.
+		FeedbackCopyAndBind(config, rt, rt_clone, ds, ds_clone, ProcessCopyArea(rtsize, config.drawarea));
+	}
+}
+
 void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 	GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
 	const bool one_barrier, const bool full_barrier)
@@ -3041,27 +3092,6 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 	if ((one_barrier || full_barrier) && !(config.IsFeedbackLoopRT(config.ps) || config.IsFeedbackLoopDepth(config.ps))) [[unlikely]]
 		Console.Warning("OpenGL: Possible unnecessary barrier detected.");
 #endif
-
-	auto CopyAndBind = [&](GSVector4i drawarea) {
-		if (draw_rt_clone)
-		{
-			CopyRect(draw_rt, draw_rt_clone, drawarea, drawarea.left, drawarea.top);
-			if ((one_barrier || full_barrier))
-				PSSetShaderResource(2, draw_rt_clone);
-			if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_RT)
-				PSSetShaderResource(0, draw_rt_clone);
-		}
-		if (draw_ds_clone)
-		{
-			CopyRect(draw_ds, draw_ds_clone, drawarea, drawarea.left, drawarea.top);
-			if ((one_barrier || full_barrier))
-				PSSetShaderResource(4, draw_ds_clone);
-			if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_DEPTH)
-				PSSetShaderResource(0, draw_ds_clone);
-		}
-	};
-
-	const GSVector4i rtsize(0, 0, (draw_rt ? draw_rt : draw_ds)->GetWidth(), (draw_rt ? draw_rt : draw_ds)->GetHeight());
 
 	if (full_barrier)
 	{
@@ -3077,7 +3107,7 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 
 		for (u32 n = 0, p = 0; n < draw_list_size; n++)
 		{
-			const u32 count = (*config.drawlist)[n] * indices_per_prim;
+			const u32 count = config.drawlist->at(n) * indices_per_prim;
 
 			if (m_features.texture_barrier)
 			{
@@ -3085,8 +3115,10 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 			}
 			else
 			{
-				const GSVector4i original_bbox = (*config.drawlist_bbox)[n].rintersect(config.drawarea);
-				CopyAndBind(ProcessCopyArea(rtsize, original_bbox));
+				const GSVector4i bbox = config.drawlist_bbox->at(n).rintersect(config.drawarea);
+				const GSVector4i bbox_tex = config.drawlist_bbox_tex ?
+					config.drawlist_bbox_tex->at(n).rintersect(config.samplearea) : GSVector4i::zero();
+				FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, bbox, bbox_tex);
 			}
 
 			Draw(config, p, count);
@@ -3106,28 +3138,7 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 		else
 		{
 			// Optimization: For alpha second pass we can reuse the copy snapshot from the first pass.
-			if (config.tex_hazard)
-			{
-				const GSVector4i union_rect = config.drawarea.runion(config.samplearea);
-				const u32 size_union = union_rect.width() * union_rect.height();
-				const u32 size_indiv = config.drawarea.width() * config.drawarea.height() +
-				                       config.samplearea.width() * config.samplearea.height();
-
-				// Do an individual copy if the union is larger than the sum of individual areas.
-				if (size_union > size_indiv)
-				{
-					CopyAndBind(ProcessCopyArea(rtsize, config.drawarea));
-					CopyAndBind(ProcessCopyArea(rtsize, config.samplearea));
-				}
-				else
-				{
-					CopyAndBind(ProcessCopyArea(rtsize, union_rect));
-				}
-			}
-			else
-			{
-				CopyAndBind(ProcessCopyArea(rtsize, config.drawarea));
-			}
+			FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, config.drawarea, config.samplearea);
 		}
 	}
 

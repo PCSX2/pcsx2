@@ -6161,7 +6161,7 @@ void GSRendererHW::DetermineVSConfig(GSTextureCache::Target* rt, float rtscale, 
 	m_conf.vs.iip = !IsFlatShaded();
 }
 
-void GSRendererHW::DetermineBarriers(GSTextureCache::Target* rt)
+void GSRendererHW::DetermineBarriers(GSTextureCache::Target* rt, GSTextureCache::Source* tex)
 {
 	const GSDevice::FeatureSupport& features = g_gs_device->Features();
 
@@ -6204,6 +6204,16 @@ void GSRendererHW::DetermineBarriers(GSTextureCache::Target* rt)
 		ComputeDrawlistGetSize(rt->m_scale);
 		m_conf.drawlist = &m_drawlist;
 		m_conf.drawlist_bbox = &m_drawlist_bbox;
+
+		if (m_conf.tex_hazard != GSHWDrawConfig::TEX_HAZARD_NONE)
+		{
+			GetPrimitiveOverlapDrawlistTextureBBox(tex->GetScale());
+			m_conf.drawlist_bbox_tex = &m_drawlist_bbox_tex;
+		}
+		else
+		{
+			m_conf.drawlist_bbox_tex = nullptr;
+		}
 	}
 }
 
@@ -9027,7 +9037,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	}
 
 	// Barriers must be determined before indices are modified via HandleProvokingVertexFirst/SetupIA.
-	DetermineBarriers(rt);
+	DetermineBarriers(rt, tex);
 
 	// Perform second pass setup here once barriers are determined.
 	EmulateAlphaTestSecondPass();

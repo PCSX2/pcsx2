@@ -2518,7 +2518,7 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 
 		for (u32 n = 0, p = 0; n < draw_list_size; n++)
 		{
-			const size_t count = (*config.drawlist)[n] * indices_per_prim;
+			const size_t count = config.drawlist->at(n) * indices_per_prim;
 			textureBarrier(enc);
 			EncodeDraw(enc, topology, count, buffer, off, p);
 			p += count;
