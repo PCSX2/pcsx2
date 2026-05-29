@@ -6370,7 +6370,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 		{
 			IssueBarriers();
 
-			const u32 count = (*config.drawlist)[n] * indices_per_prim;
+			const u32 count = config.drawlist->at(n) * indices_per_prim;
 			Draw(config, p, count);
 			p += count;
 		}

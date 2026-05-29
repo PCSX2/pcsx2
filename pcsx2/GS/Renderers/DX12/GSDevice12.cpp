@@ -4585,7 +4585,7 @@ void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& 
 
 			for (u32 n = 0, p = 0; n < draw_list_size; n++)
 			{
-				const u32 count = (*config.drawlist)[n] * indices_per_prim;
+				const u32 count = config.drawlist->at(n) * indices_per_prim;
 
 				if (feedback_rt)
 					FeedbackBarrier(draw_rt);
