@@ -7146,7 +7146,7 @@ The URL was: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5816"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5817"/>
         <source>Mipmapping</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7206,37 +7206,37 @@ The URL was: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5817"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5818"/>
         <source>Software Rendering Threads</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5273"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5274"/>
         <source>Number of threads to use in addition to the main GS thread for rasterization.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5818"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5819"/>
         <source>Auto Flush (Software)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5274"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5275"/>
         <source>Force a primitive flush when a framebuffer is also an input texture.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5819"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5816"/>
         <source>Edge AA (AA1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5275"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5272"/>
         <source>Enables emulation of the GS&apos;s edge anti-aliasing (AA1).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5272"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5273"/>
         <source>Enables emulation of the GS&apos;s texture mipmapping.</source>
         <translation type="unfinished"></translation>
     </message>
