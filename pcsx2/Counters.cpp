@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#include <time.h>
+#include <cstdio>
+#include <ctime>
 #include <cmath>
 
 #include "Common.h"
@@ -505,6 +506,37 @@ static __fi void VSyncStart(u64 sCycle)
 	AutoEject::CountDownTicks();
 	// Memcard IO detection - Uses a tick system to determine when memcards are no longer being written.
 	MemcardBusy::Decrement();
+
+	// [DKWDRV-INSTRUMENT] Periodic EE+IOP RAM dump (every 5 min)
+	{
+		static time_t s_next_dump = 0;
+		static int s_dump_idx = 1;
+		time_t now = std::time(nullptr);
+		if (s_next_dump == 0)
+			s_next_dump = now + 300;
+		if (now >= s_next_dump)
+		{
+			char path[256];
+			// EE RAM (32MB)
+			std::snprintf(path, sizeof(path), "/tmp/dkwdrv_eeram_%02d_%ld.bin", s_dump_idx, (long)now);
+			FILE* f = std::fopen(path, "wb");
+			if (f) {
+				std::fwrite(eeMem->Main, Ps2MemSize::MainRam, 1, f);
+				std::fclose(f);
+				DevCon.Warning("[DKWDRV] EE RAM dumped: %s (%u MB)", path, Ps2MemSize::MainRam >> 20);
+			}
+			// IOP RAM (2MB)
+			std::snprintf(path, sizeof(path), "/tmp/dkwdrv_iopram_%02d_%ld.bin", s_dump_idx, (long)now);
+			f = std::fopen(path, "wb");
+			if (f) {
+				std::fwrite(iopMem->Main, Ps2MemSize::ExposedIopRam, 1, f);
+				std::fclose(f);
+				DevCon.Warning("[DKWDRV] IOP RAM dumped: %s (%u MB)", path, Ps2MemSize::ExposedIopRam >> 20);
+			}
+			s_dump_idx++;
+			s_next_dump = now + 300;
+		}
+	}
 
 	if (!GSSMODE1reg.SINT)
 	{
