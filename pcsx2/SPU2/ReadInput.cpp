@@ -100,7 +100,7 @@ StereoOut32 V_Core::ReadInput_HiFi()
 			cdda_refill_logged = true;
 		}
 
-		if (InputDataLeft >= 0x100)
+		if (InputDataLeft >= 0x100 && !(Index == 0 && g_xa_adma_active))
 		{
 			AutoDMAReadBuffer(0);
 			AdmaInProgress = 1;
@@ -237,7 +237,7 @@ StereoOut32 V_Core::ReadInput()
 			// dead branch — keeping structure
 		}
 
-		if (InputDataLeft >= 0x100)
+		if (InputDataLeft >= 0x100 && !(Index == 0 && g_xa_adma_active))
 		{
 			AutoDMAReadBuffer(0);
 			AdmaInProgress = 1;
