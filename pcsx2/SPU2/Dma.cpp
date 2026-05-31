@@ -173,18 +173,22 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 		InputDataLeft = size;
 		if (InputPosWrite != 0xFFFF)
 		{
-#ifdef PCM24_S1_INTERLEAVE
+			// CDDA/SPDIF path (Core 1, PlayMode 8) uses 24/32-bit packed stream.
+			// Use non-split ADMA copy to preserve sample packing.
 			if ((Index == 1) && ((PlayMode & 8) == 8))
 			{
-				AutoDMAReadBuffer(Index, 1);
+				static bool cdda_mode_logged = false;
+				if (!cdda_mode_logged)
+				{
+					SPU2::ConLog("[DKWDRV HACK] CDDA ADMA mode=1 (packed 24/32-bit copy)\n");
+					cdda_mode_logged = true;
+				}
+				AutoDMAReadBuffer(1);
 			}
 			else
 			{
-				AutoDMAReadBuffer(Index, 0);
+				AutoDMAReadBuffer(0);
 			}
-#else
-			AutoDMAReadBuffer(0);
-#endif
 		}
 		AdmaInProgress = 1;
 	}
