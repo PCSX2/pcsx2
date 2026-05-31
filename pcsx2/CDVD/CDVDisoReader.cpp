@@ -24,7 +24,9 @@ static bool layer1searched = false;
 
 /* ── .cue multi-track support ── */
 static bool cue_parsed = false;
+static bool cue_tried = false;
 static u8 cue_strack = 1, cue_etrack = 1;
+static std::string iso_filename;
 struct CueTrack { u32 lba; u8 type; };
 static std::vector<CueTrack> cue_tracks;
 
@@ -106,9 +108,48 @@ static void ParseCueSheet(const std::string& cue_path) {
 	}
 }
 
+/* Lazy .cue detection: try companion .cue for the current ISO file */
+static void TryCueSheet() {
+	if (cue_tried) return;
+	cue_tried = true;
+	
+	if (iso_filename.empty()) return;
+	
+	/* Try .cue */
+	std::string cue_path = iso_filename;
+	size_t dot = cue_path.find_last_of('.');
+	if (dot != std::string::npos) {
+		cue_path = cue_path.substr(0, dot) + ".cue";
+		ParseCueSheet(cue_path);
+	}
+	if (!cue_parsed) {
+		/* Try .CUE */
+		cue_path = iso_filename;
+		dot = cue_path.find_last_of('.');
+		if (dot != std::string::npos) {
+			cue_path = cue_path.substr(0, dot) + ".CUE";
+			ParseCueSheet(cue_path);
+		}
+	}
+	
+	if (cue_parsed) {
+		for (auto& t : cue_tracks) {
+			if (t.type == CDVD_AUDIO_TRACK) {
+				if (cdtype == CDVD_TYPE_PS2CD) cdtype = CDVD_TYPE_PS2CDDA;
+				else if (cdtype == CDVD_TYPE_PSCD) cdtype = CDVD_TYPE_PSCDDA;
+				break;
+			}
+		}
+	}
+}
+
 static void ISOclose()
 {
 	iso.Close();
+	cue_parsed = false;
+	cue_tried = false;
+	cue_tracks.clear();
+	iso_filename.clear();
 }
 
 static bool ISOopen(std::string filename, Error* error)
@@ -140,34 +181,12 @@ static bool ISOopen(std::string filename, Error* error)
 			break;
 	}
 
-	/* Try to parse companion .cue file for multi-track support */
+	/* Save filename for lazy .cue detection */
+	iso_filename = saved_name;
+	cue_tried = false;
 	cue_parsed = false;
-	std::string cue_path = saved_name;
-	size_t dot = cue_path.find_last_of('.');
-	if (dot != std::string::npos) {
-		cue_path = cue_path.substr(0, dot) + ".cue";
-		ParseCueSheet(cue_path);
-	}
-	if (!cue_parsed) {
-		/* Also try .CUE (uppercase) */
-		cue_path = saved_name;
-		dot = cue_path.find_last_of('.');
-		if (dot != std::string::npos) {
-			cue_path = cue_path.substr(0, dot) + ".CUE";
-			ParseCueSheet(cue_path);
-		}
-	}
-
-	/* If .cue has audio tracks, upgrade cdtype to CDDA variant */
-	if (cue_parsed) {
-		for (auto& t : cue_tracks) {
-			if (t.type == CDVD_AUDIO_TRACK) {
-				if (cdtype == CDVD_TYPE_PS2CD) cdtype = CDVD_TYPE_PS2CDDA;
-				else if (cdtype == CDVD_TYPE_PSCD) cdtype = CDVD_TYPE_PSCDDA;
-				break;
-			}
-		}
-	}
+	cue_tracks.clear();
+	TryCueSheet();
 
 	layer1start = -1;
 	layer1searched = false;
@@ -239,6 +258,8 @@ static s32 ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 
 static s32 ISOgetTN(cdvdTN* Buffer)
 {
+	TryCueSheet(); /* Lazy .cue detection on first TOC query */
+
 	if (cue_parsed) {
 		Buffer->strack = cue_strack;
 		Buffer->etrack = cue_etrack;
@@ -252,6 +273,8 @@ static s32 ISOgetTN(cdvdTN* Buffer)
 
 static s32 ISOgetTD(u8 Track, cdvdTD* Buffer)
 {
+	TryCueSheet(); /* Lazy .cue detection */
+
 	if (cue_parsed) {
 		if (Track == 0) {
 			Buffer->lsn = iso.GetBlockCount();
