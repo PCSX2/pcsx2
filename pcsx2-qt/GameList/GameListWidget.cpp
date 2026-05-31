@@ -75,21 +75,18 @@ public:
 
 	void setFilterType(GameList::EntryType type)
 	{
-		beginFilterChange();
 		m_filter_type = type;
-		endFilterChange(Direction::Rows);
+		invalidateRowsFilter();
 	}
 	void setFilterRegion(GameList::Region region)
 	{
-		beginFilterChange();
 		m_filter_region = region;
-		endFilterChange(Direction::Rows);
+		invalidateRowsFilter();
 	}
 	void setFilterName(const QString& name)
 	{
-		beginFilterChange();
 		m_filter_name = name;
-		endFilterChange(Direction::Rows);
+		invalidateRowsFilter();
 	}
 
 	bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override
