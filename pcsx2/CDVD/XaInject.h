@@ -199,7 +199,7 @@ static void xa_setup_adma_playback(int16_t* pcm, int num_words)
 		int block_samps = (remaining > 28) ? 28 : remaining;
 		xa_encode_adpcm_block(mono + samp_idx, block_samps, block);
 
-		// Wrap ring buffer without loop flag — voice will just keep reading linearly
+		// Wrap write pointer
 		if (wp + 8 >= XA_BUF_BASE + XA_BUF_SIZE) {
 			wp = XA_BUF_BASE;
 		}
@@ -212,21 +212,25 @@ static void xa_setup_adma_playback(int16_t* pcm, int num_words)
 		samp_idx += 28;
 	}
 
-	// Write end-of-data silence block — stop voice (no loop)
-	{
-		uint8_t end_block[16] = {};
-		end_block[1] = 0x01;  // LOOP_END only — voice enters release, stops
-		for (int w = 0; w < 8; w++) {
-			_spu2mem[wp + w] = (int16_t)((uint16_t)end_block[w*2] | ((uint16_t)end_block[w*2+1] << 8));
-		}
-	}
-
 	s_xa.write_pos = wp;
 
 	// Configure voice 23 on first sector
 	if (!s_xa.voice_configured) {
 		s_xa.voice_configured = true;
 		uint32_t ssa = XA_BUF_BASE;
+
+		// Pre-fill entire ring buffer with silent ADPCM blocks (shift=0, no flags)
+		// so voice can loop freely without hitting garbage
+		for (uint32_t addr = XA_BUF_BASE; addr < XA_BUF_BASE + XA_BUF_SIZE; addr += 8) {
+			_spu2mem[addr] = 0;  // shift=0, filter=0
+			_spu2mem[addr+1] = 0; // flags=0 (nothing special)
+			for (int w = 2; w < 8; w++) _spu2mem[addr+w] = 0;
+		}
+		// Last block: set LOOP_END + LOOP (0x03) so voice jumps to loop addr
+		uint32_t last_block = XA_BUF_BASE + XA_BUF_SIZE - 8;
+		_spu2mem[last_block + 1] = 0x03;  // LOOP_END | LOOP
+		// First block: set LOOP_START (0x04) — marks loop target
+		_spu2mem[XA_BUF_BASE + 1] = 0x04;
 
 		// Volume L/R = max
 		SPU2_FastWrite(SPU2_CORE0 + (23 * 16) + 0, 0x3FFF);  // VOLL
@@ -237,13 +241,13 @@ static void xa_setup_adma_playback(int16_t* pcm, int num_words)
 		SPU2_FastWrite(SPU2_CORE0 + (23 * 16) + 6, 0x000F);  // ADSR1
 		SPU2_FastWrite(SPU2_CORE0 + (23 * 16) + 8, 0x1FC0);  // ADSR2
 
-		// Start address
+		// Start address = buffer start
 		uint32_t reg_base = 0x1C0 + 23 * 12;
 		SPU2_FastWrite(SPU2_CORE0 + reg_base + 0, (u16)((ssa >> 16) & 0x3F)); // SSAH
 		SPU2_FastWrite(SPU2_CORE0 + reg_base + 2, (u16)(ssa & 0xFFFF));       // SSAL
-		// Loop address = far end of buffer (will be overwritten before reaching)
-		SPU2_FastWrite(SPU2_CORE0 + reg_base + 4, (u16)(((XA_BUF_BASE + XA_BUF_SIZE - 8) >> 16) & 0x3F));
-		SPU2_FastWrite(SPU2_CORE0 + reg_base + 6, (u16)((XA_BUF_BASE + XA_BUF_SIZE - 8) & 0xFFFF));
+		// Loop address = buffer start (voice loops entire ring)
+		SPU2_FastWrite(SPU2_CORE0 + reg_base + 4, (u16)((ssa >> 16) & 0x3F)); // LSAH
+		SPU2_FastWrite(SPU2_CORE0 + reg_base + 6, (u16)(ssa & 0xFFFF));       // LSAL
 
 		// Ensure voice 23 is in dry mix (VMIXL/VMIXR)
 		SPU2_FastWrite(SPU2_CORE0 + REG_S_VMIXL + 2, (u16)(1 << (23 - 16)));
@@ -252,7 +256,7 @@ static void xa_setup_adma_playback(int16_t* pcm, int num_words)
 		// Key On voice 23
 		SPU2_FastWrite(SPU2_CORE0 + 0x1A0 + 2, (u16)(1 << (23 - 16)));
 
-		Console.WriteLn("[XA-INJECT] Voice 23 configured: SSA=0x%05X pitch=0x0C9A", ssa);
+		Console.WriteLn("[XA-INJECT] Voice 23 configured: SSA=0x%05X, ring buffer %u words, looping", ssa, XA_BUF_SIZE);
 	}
 }
 
