@@ -434,7 +434,8 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 			}
 			case 0x4:
 				Voices[voice].Pitch = value;
-				//ConLog("voice %x Pitch write: %x\n", voice, Voices[voice].Pitch);
+				if (value != 0x3FFF && value != 0)  /* skip noise from init/reset */
+					Console.WriteLn("SPU2: Voice %d Pitch = 0x%04x (%d)  [unity=0x1000, CDDA=0x0EB3]", voice, value, value);
 				break;
 			case 0x6:
 				Voices[voice].StartA = map_spu1to2(value);
