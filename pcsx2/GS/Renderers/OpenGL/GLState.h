@@ -42,21 +42,13 @@ namespace GLState
 	extern GSTextureOGL* ds_as_rt; // Depth-Stencil as color
 	extern GSTextureOGL* ds; // Depth-Stencil
 
-	extern GSTextureOGL* rt_uav; // Color UAV (storage image)
-	extern GSTextureOGL* ds_uav; // Depth UAV (storage image)
-
 	extern u32 draw_buffers; // Number of color attachments to framebuffer.
 
 	extern bool rt_written; // Render Target written
 	extern bool ds_as_rt_written; // Depth Stencil as RT written
 	extern bool ds_written; // Depth Stencil written
 
-	extern bool rt_uav_written; // RT UAV written
-	extern bool ds_uav_written; // Depth UAV written
-
 	extern GLuint tex_unit[8]; // shader input texture
-
-	extern GLuint image_unit[8]; // shader UAV texture
 
 	extern u32 UpdateDrawBuffers();
 	extern void Clear();
