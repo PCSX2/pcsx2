@@ -198,7 +198,8 @@ StereoOut32 V_Core::ReadInput()
 			InputPosWrite = 0x100;
 
 		// XA inject: fill the half that's about to be read next
-		if (Index == 0 && g_xa_adma_active) {
+		// Only fill when ring actually has data; otherwise let normal ADMA work
+		if (Index == 0 && g_xa_adma_active && ((g_xa_pcm_write - g_xa_pcm_read) & XA_RING_MASK) > 0) {
 			int half_to_fill = (ReadIndex == 0x100) ? 0 : (ReadIndex == 0) ? 1 : -1;
 			if (half_to_fill >= 0 && half_to_fill != g_xa_last_half_filled) {
 				// Inline fill: 256 samples from global ring to _spu2mem
