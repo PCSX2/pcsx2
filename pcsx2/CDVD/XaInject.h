@@ -433,6 +433,15 @@ static void xa_inject_stop()
 	// Disable ADMA injection
 	s_xa.adma_started = false;
 	g_xa_adma_active = false;
+	// Restore Core 0 ADMA state so PS1DRV SPU1 driver isn't confused
+	Cores[0].AutoDMACtrl &= ~1;  // clear bit 0 (Core 0 ADMA off)
+	Cores[0].InputDataLeft = 0;
+	Cores[0].AdmaInProgress = 0;
+	Cores[0].InpVol.Left = 0;
+	Cores[0].InpVol.Right = 0;
+	// Flush ring
+	g_xa_pcm_write = 0;
+	g_xa_pcm_read = 0;
 	Console.WriteLn("[XA-INJECT] Stopped (%u sectors decoded)", s_xa.sectors);
 }
 
