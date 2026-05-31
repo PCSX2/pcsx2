@@ -3,6 +3,9 @@
 
 #include "SPU2/spu2.h"
 #include "SPU2/defs.h"
+
+// XA ADMA state — defined in Ps1CD.cpp, reset on SPU2 reset
+extern bool g_xa_adma_active;
 #include "SPU2/Debug.h"
 #include "SPU2/Dma.h"
 #include "Host/AudioStream.h"
@@ -229,6 +232,9 @@ void SPU2::InternalReset(bool psxmode)
 	spu2Mix = MULTI_ISA_SELECT(spu2Mix);
 	ReverbDownsample = MULTI_ISA_SELECT(ReverbDownsample);
 	ReverbUpsample = MULTI_ISA_SELECT(ReverbUpsample);
+
+	// Reset XA ADMA injection state so it doesn't persist across game changes
+	g_xa_adma_active = false;
 
 	s_current_chunk_pos = 0;
 	s_psxmode = psxmode;

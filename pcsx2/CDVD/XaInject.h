@@ -432,6 +432,7 @@ static void xa_inject_stop()
 	s_xa.active = false;
 	// Disable ADMA injection
 	s_xa.adma_started = false;
+	g_xa_adma_active = false;
 	Console.WriteLn("[XA-INJECT] Stopped (%u sectors decoded)", s_xa.sectors);
 }
 
