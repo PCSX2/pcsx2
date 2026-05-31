@@ -58,7 +58,8 @@ StereoOut32 V_Core::ReadInput_HiFi()
 
 	/* ── Original DMA refill logic (unchanged) ── */
 	const u16 ReadIndex = (OutPos * 2) & 0x1FF;
-
+	const bool cdda_spdif = (Index == 1) && ((PlayMode & 8) != 0);
+	const bool cdda_early_refill = cdda_spdif && (ReadIndex == 0x40 || ReadIndex == 0x140);
 	// Simulate MADR increase, GTA VC tracks the MADR address for calculating a certain point in the buffer
 	if (InputDataTransferred)
 	{
@@ -77,12 +78,19 @@ StereoOut32 V_Core::ReadInput_HiFi()
 		}
 	}
 
-	if (ReadIndex == 0x100 || ReadIndex == 0x0 || ReadIndex == 0x80 || ReadIndex == 0x180)
+	if (ReadIndex == 0x100 || ReadIndex == 0x0 || ReadIndex == 0x80 || ReadIndex == 0x180 || cdda_early_refill)
 	{
 		if (ReadIndex == 0x100)
 			InputPosWrite = 0;
 		else if (ReadIndex == 0)
 			InputPosWrite = 0x100;
+
+		static bool cdda_refill_logged = false;
+		if (cdda_early_refill && !cdda_refill_logged)
+		{
+			Console.WriteLn("[DKWDRV HACK] CDDA anti-starve: enabling early ADMA refill checkpoints (0x40/0x140)");
+			cdda_refill_logged = true;
+		}
 
 		if (InputDataLeft >= 0x100)
 		{
