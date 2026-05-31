@@ -158,11 +158,13 @@ void SPU2::UpdateSampleRate()
 
 u32 SPU2::GetOutputVolume()
 {
+	if (!s_output_stream) return 100;
 	return s_output_stream->GetOutputVolume();
 }
 
 void SPU2::SetOutputVolume(u32 volume)
 {
+	if (!s_output_stream) return;
 	s_output_stream->SetOutputVolume(volume);
 }
 
@@ -196,14 +198,15 @@ bool SPU2::IsOutputMuted()
 
 void SPU2::UpdateOutputVolume()
 {
+	if (!s_output_stream) return;
 	s_output_stream->SetOutputVolume(s_output_muted ?
-										 0 : (VMManager::GetTargetSpeed() == 1.0f ?
-										 	s_standard_volume : s_fast_forward_volume));
+									 0 : (VMManager::GetTargetSpeed() == 1.0f ?
+									 	s_standard_volume : s_fast_forward_volume));
 }
 
 void SPU2::SaveOutputVolume()
 {
-	if (!s_output_muted)
+	if (!s_output_muted && s_output_stream)
 	{
 		if (VMManager::GetTargetSpeed() == 1.0f)
 			s_standard_volume = s_output_stream->GetOutputVolume();
@@ -214,6 +217,7 @@ void SPU2::SaveOutputVolume()
 
 void SPU2::SetOutputPaused(bool paused)
 {
+	if (!s_output_stream) return;
 	s_output_stream->SetPaused(paused);
 }
 
