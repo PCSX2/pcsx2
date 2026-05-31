@@ -385,7 +385,7 @@ void GSState::ResetDrawBuffers()
 // exclude_current is used if there is a flush for a reason other than the normal context change.
 void GSState::FlushBuffers(bool flush_base_only, bool use_flush_reason, GSFlushReason flush_reason)
 {
-	const u32 current_idx = m_current_buffer_idx;
+	const int current_idx = m_current_buffer_idx;
 	bool restore_env = false;
 
 	if (m_used_buffers_idx > 0)
@@ -5810,10 +5810,10 @@ bool GSState::CheckOverlapVerts(u32 n)
 
 			if (m_index->tail > 0)
 			{
-				int matching_verts = 0;
+				u32 matching_verts = 0;
 				for (u32 i = 0; i < n; i++)
 				{
-					const int pos = m_index->buff[(m_index->tail - n) + i];
+					const u32 pos = m_index->buff[(m_index->tail - n) + i];
 					const GSVector2i prev_vert = GSVector2i(v[pos].XYZ.X - m_context->XYOFFSET.OFX, v[pos].XYZ.Y - m_context->XYOFFSET.OFY);
 
 					for (u32 j = 0; j < n; j++)
