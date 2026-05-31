@@ -901,21 +901,9 @@ bool GSDeviceOGL::CheckFeatures()
 	
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
 
-	m_features.rov = (GLAD_GL_ARB_fragment_shader_interlock || GLAD_GL_NV_fragment_shader_interlock ||
-	                 GLAD_GL_INTEL_fragment_shader_ordering) && GLAD_GL_ARB_shader_image_load_store && GLAD_GL_VERSION_4_5;
-
-	m_features.rov &= !m_features.framebuffer_fetch; // Prefer FB fetch over ROV.
-
-	m_features.rov &= GSConfig.HWROV;
-
-#if PCSX2_DEVBUILD
-	// Force enable even without FSI extensions (works for debugging on Mesa).
-	m_features.rov = GSConfig.HWROV && GLAD_GL_ARB_shader_image_load_store && GLAD_GL_VERSION_4_5;
-#endif
-
-	if (GSConfig.HWROV && !m_features.rov)
+	if (GSConfig.HWROV)
 	{
-		Console.Warning("GL: ROV is disabled because but the needed extensions are not present or framebuffer fetch is being used.");
+		Console.Warning("GL: ROV is not implemented for GL and will be disabled.");
 	}
 	
 	return true;
@@ -1457,12 +1445,7 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
 {
 	std::string header;
 
-	if (m_features.rov)
-	{
-		// FSI extensions need 4.5 GLSL
-		header = "#version 450 core\n";
-	}
-	else if (m_features.vs_expand && GLAD_GL_VERSION_4_3)
+	if (m_features.vs_expand && GLAD_GL_VERSION_4_3)
 	{
 		// Intel's GL driver doesn't like the readonly qualifier with 3.3 GLSL.
 		header = "#version 430 core\n";
@@ -1522,38 +1505,6 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
 			break;
 		default:
 			pxAssert(0);
-	}
-
-	if (m_features.rov && type == GL_FRAGMENT_SHADER)
-	{
-		header += "#extension GL_ARB_shader_image_load_store : require\n";
-		if (GLAD_GL_ARB_fragment_shader_interlock)
-		{
-			header += "#extension GL_ARB_fragment_shader_interlock : require\n";
-			header += "#define USE_ARB_FSI 1\n";
-			header += "#define USE_NV_FSI 0\n";
-			header += "#define USE_INTEL_FSI 0\n";
-		}
-		else if (GLAD_GL_NV_fragment_shader_interlock)
-		{
-			header += "#extension GL_NV_fragment_shader_interlock : require\n";
-			header += "#define USE_ARB_FSI 0\n";
-			header += "#define USE_NV_FSI 1\n";
-			header += "#define USE_INTEL_FSI 0\n";
-		}
-		else if (GLAD_GL_INTEL_fragment_shader_ordering)
-		{
-			header += "#extension GL_INTEL_fragment_shader_ordering : require\n";
-			header += "#define USE_ARB_FSI 0\n";
-			header += "#define USE_NV_FSI 0\n";
-			header += "#define USE_INTEL_FSI 1\n";
-		}
-	}
-	else
-	{
-		header += "#define USE_ARB_FSI 0\n";
-		header += "#define USE_NV_FSI 0\n";
-		header += "#define USE_INTEL_FSI 0\n";
 	}
 
 	// Don't remove this, the recursive macro breaks some Intel drivers.
@@ -1648,8 +1599,8 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_AA1 {}\n", static_cast<u32>(sel.aa1))
 		+ fmt::format("#define PS_ABE {}\n", sel.abe)
 		+ fmt::format("#define PS_ANISOTROPIC_FILTERING {}\n", sel.sw_aniso)
-		+ fmt::format("#define PS_ROV_COLOR {}\n", sel.rov_color)
-		+ fmt::format("#define PS_ROV_DEPTH {}\n", static_cast<u32>(sel.rov_depth))
+		+ fmt::format("#define PS_ROV_COLOR {}\n", 0)
+		+ fmt::format("#define PS_ROV_DEPTH {}\n", 0)
 	;
 
 	std::string src = GenGlslHeader("ps_main", GL_FRAGMENT_SHADER, macro);
@@ -2290,45 +2241,6 @@ void GSDeviceOGL::IASetPrimitiveTopology(GLenum topology)
 	m_draw_topology = topology;
 }
 
-void GSDeviceOGL::PSBindImage(GLuint image_unit, GSTexture* tex)
-{
-	GLuint id = tex ? static_cast<GSTextureOGL*>(tex)->GetID() : 0;
-	if (GLState::image_unit[image_unit] != id)
-	{
-		GLState::image_unit[image_unit] = id;
-		glBindImageTexture(image_unit, id, 0, GL_FALSE, 0, GL_READ_WRITE,
-			tex ? static_cast<GSTextureOGL*>(tex)->GetGLFormat() : GL_R32F);
-	}
-}
-
-void GSDeviceOGL::PSSetUnorderedAccess(GSTexture* rt, GSTexture* ds)
-{
-	const bool rt_changed = (rt != GLState::rt_uav);
-	const bool ds_changed = (ds != GLState::ds_uav);
-
-	GLState::rt_uav_written = false;
-	GLState::ds_uav_written = false;
-
-	PSBindImage(IMAGE_RT_ROV, rt);
-	if (rt)
-	{
-		CommitClear(rt, false);
-		GLState::rt_uav_written = rt_changed;
-		
-		PSSetShaderResource(TEXTURE_RT, nullptr); // Unbind to avoid conflicts.
-	}
-
-	PSBindImage(IMAGE_DEPTH_ROV, ds);
-	if (ds)
-	{
-		pxAssert(ds->IsDepthColor());
-		CommitClear(ds, false);
-		GLState::ds_uav_written = ds_changed;
-		
-		PSSetShaderResource(TEXTURE_DEPTH, nullptr); // Unbind to avoid conflicts.
-	}
-}
-
 void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)
 {
 	pxAssert(i < static_cast<int>(std::size(GLState::tex_unit)));
@@ -2620,10 +2532,6 @@ void GSDeviceOGL::OMUnbindTexture(GSTextureOGL* tex)
 		OMAttachDsAsRt();
 	if (GLState::ds == tex)
 		OMAttachDs();
-	if (GLState::rt_uav == tex)
-		PSBindImage(IMAGE_RT_ROV, nullptr);
-	if (GLState::ds_uav == tex)
-		PSBindImage(IMAGE_DEPTH_ROV, nullptr);
 }
 
 void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_factor, GLenum op,
@@ -2670,8 +2578,7 @@ void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_fac
 	}
 }
 
-void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, const GSVector4i* scissor,
-	const GSVector2i* viewport)
+void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, const GSVector4i* scissor)
 {
 	const bool rt_changed = (rt != GLState::rt);
 	const bool ds_as_rt_changed = (ds_as_rt != GLState::ds_as_rt);
@@ -2714,22 +2621,18 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTextu
 	else
 		OMAttachDs();
 
-	const GSVector2i size = rt ? rt->GetSize() : (ds_as_rt ? ds_as_rt->GetSize() : (ds ? ds->GetSize() : *viewport));
-	SetViewport(size);
-	SetScissor(scissor ? *scissor : GSVector4i::loadh(size));
+	if (rt || ds_as_rt || ds)
+	{
+		const GSVector2i size = rt ? rt->GetSize() : (ds_as_rt ? ds_as_rt->GetSize() : ds->GetSize());
+		SetViewport(size);
+		SetScissor(scissor ? *scissor : GSVector4i::loadh(size));
+	}
 
 	if (draw_buffers != GLState::UpdateDrawBuffers())
 	{
 		// Always write to the first and second buffer
 		static constexpr GLenum target[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 		glDrawBuffers(GLState::draw_buffers, target);
-	}
-
-	if (!(rt || ds_as_rt || ds))
-	{
-		// Need to set dimensions to avoid an incomplete FBO if we're doing a pure ROV draw.
-		glNamedFramebufferParameteri(m_fbo, GL_FRAMEBUFFER_DEFAULT_WIDTH, size.x);
-		glNamedFramebufferParameteri(m_fbo, GL_FRAMEBUFFER_DEFAULT_HEIGHT, size.y);
 	}
 }
 
@@ -2811,11 +2714,9 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	const GSVector2i rtsize = (config.rt ? config.rt : config.ds)->GetSize();
 	GSTexture* colclip_rt = g_gs_device->GetColorClipTexture();
-	GSTexture* draw_rt = config.ps.HasColorROV() ? nullptr : config.rt;
-	GSTexture* draw_ds = config.ps.HasDepthROV() ? nullptr : config.ds;
-	GSTexture* draw_ds_as_rt = config.ps.HasDepthROV() ? nullptr : m_ds_as_rt;
-	GSTexture* draw_rt_rov = config.ps.HasColorROV() ? config.rt : nullptr;
-	GSTexture* draw_ds_rov = config.ps.HasDepthROV() ? config.ds : nullptr;
+	GSTexture* draw_rt = config.rt;
+	GSTexture* draw_ds = config.ds;
+	GSTexture* draw_ds_as_rt = m_ds_as_rt;
 	GSTexture* draw_rt_clone = nullptr;
 	GSTexture* draw_ds_clone = nullptr;
 	GSTexture* primid_texture = nullptr;
@@ -3037,13 +2938,13 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	// Avoid changing framebuffer just to switch from rt+depth to rt and vice versa.
 	bool fb_optimization_needs_barrier = false;
-	if (!(draw_rt || draw_rt_rov) && GLState::rt && GLState::ds == draw_ds && config.tex != GLState::rt &&
+	if (!draw_rt && GLState::rt && GLState::ds == draw_ds && config.tex != GLState::rt &&
 		draw_ds && GLState::rt->GetSize() == draw_ds->GetSize() && !draw_ds_as_rt)
 	{
 		draw_rt = GLState::rt;
 		fb_optimization_needs_barrier = !GLState::rt_written;
 	}
-	else if (!(draw_ds || draw_ds_rov) && GLState::ds && GLState::rt == draw_rt && config.tex != GLState::ds &&
+	else if (!draw_ds && GLState::ds && GLState::rt == draw_rt && config.tex != GLState::ds &&
 		draw_rt && GLState::ds->GetSize() == draw_rt->GetSize() && !draw_ds_as_rt)
 	{
 		draw_ds = GLState::ds;
@@ -3061,7 +2962,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	const bool rt_feedbackloop_pass1 = config.IsFeedbackLoopRT(config.ps);
 	const bool rt_feedbackloop_pass2 = config.IsFeedbackLoopRT(config.alpha_second_pass.ps);
-	if (draw_rt && !draw_rt_rov && !m_features.texture_barrier && (((config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
+	if (draw_rt && !m_features.texture_barrier && (((config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
 		(rt_feedbackloop_pass1 || rt_feedbackloop_pass2))))
 	{
 		// Requires a copy of the RT.
@@ -3073,7 +2974,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	const bool ds_feedbackloop_pass1 = config.ps.IsFeedbackLoopDepth();
 	const bool ds_feedbackloop_pass2 = config.alpha_second_pass.ps.IsFeedbackLoopDepth();
-	if (draw_ds && !draw_ds_rov && !m_features.texture_barrier && m_features.depth_feedback &&
+	if (draw_ds && !m_features.texture_barrier && m_features.depth_feedback &&
 		(config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) && (ds_feedbackloop_pass1 || ds_feedbackloop_pass2))
 	{
 		// Requires a copy of the DS.
@@ -3083,9 +2984,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			Console.Warning("GL: Failed to allocate temp texture for DS copy.");
 	}
 
-	PSSetUnorderedAccess(draw_rt_rov, draw_ds_rov);
-
-	OMSetRenderTargets(draw_rt, draw_ds_as_rt, draw_ds, &config.scissor, &rtsize);
+	OMSetRenderTargets(draw_rt, draw_ds_as_rt, draw_ds, &config.scissor);
 	OMSetColorMaskState(config.colormask);
 	SetupOM(config.depth);
 
@@ -3103,7 +3002,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 
 	SendHWDraw(config, rt_feedbackloop_pass1 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass1 ? draw_ds_clone : nullptr, draw_ds,
-		config.require_one_barrier, config.require_full_barrier, rtsize);
+		config.require_one_barrier, config.require_full_barrier);
 
 	if (config.blend_multi_pass.enable)
 	{
@@ -3151,7 +3050,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		const bool one_barrier = config.alpha_second_pass.require_one_barrier && m_features.feedback_loops();
 		SetupOM(config.alpha_second_pass.depth);
 		SendHWDraw(config, rt_feedbackloop_pass2 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass2 ? draw_ds_clone : nullptr, draw_ds,
-			one_barrier, config.alpha_second_pass.require_full_barrier, rtsize);
+			one_barrier, config.alpha_second_pass.require_full_barrier);
 	}
 
 	if (colclip_rt)
@@ -3224,7 +3123,7 @@ void GSDeviceOGL::FeedbackCopyAndBind(const GSHWDrawConfig& config,
 
 void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 	GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
-	const bool one_barrier, const bool full_barrier, const GSVector2i& rtsize)
+	const bool one_barrier, const bool full_barrier)
 {
 #ifdef PCSX2_DEVBUILD
 	if ((one_barrier || full_barrier) && !(config.IsFeedbackLoopRT(config.ps) || config.IsFeedbackLoopDepth(config.ps))) [[unlikely]]
@@ -3281,9 +3180,6 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 	}
 
 	Draw(config);
-
-	if (config.ps.HasColorROV() || config.ps.HasDepthROV())
-		g_perfmon.Put(GSPerfMon::DrawCallsROV, 1);
 }
 
 // Note: used as a callback of DebugMessageCallback. Don't change the signature

@@ -54,7 +54,7 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 			m_int_shift = 1;
 			break;
 
-			// 1 Channel normalized
+		// 1 Channel normalized
 		case Format::UNorm8:
 			m_gl_format = GL_R8;
 			m_int_format = GL_RED;
