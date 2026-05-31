@@ -3577,8 +3577,6 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 				const int page_diff = std::abs(static_cast<int>(old_dst->m_TEX0.TBP0 - dst->m_TEX0.TBP0)) >> 5;
 				const u32 new_buffer_width = std::max(1U, dst->m_TEX0.TBW);
 				const u32 old_buffer_width = std::max(1U, old_dst->m_TEX0.TBW);
-				const u32 new_pages_wide = new_buffer_width * 64 / psm_s.pgs.x;
-				const u32 old_pages_wide = old_buffer_width * 64 / psm_s.pgs.x; // Same PSM for old at this point.
 
 				// Handle cases where the buffer widths don't match.
 				if (new_buffer_width != old_buffer_width)
@@ -3593,6 +3591,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 					if (dst->m_TEX0.TBP0 > old_dst->m_TEX0.TBP0 && dst_end_block >= old_dst->UnwrappedEndBlock())
 					{
 						const int block_diff = dst->m_TEX0.TBP0 - old_dst->m_TEX0.TBP0;
+						const u32 old_pages_wide = old_buffer_width * 64 / psm_s.pgs.x;
 						if ((block_diff % (32 * old_pages_wide)) == 0) // Check for left alignment.
 						{
 							const int new_height = block_diff / (32 * old_pages_wide) * psm_s.pgs.y;

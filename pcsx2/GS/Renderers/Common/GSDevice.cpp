@@ -1803,8 +1803,8 @@ static_assert(NUM_REMAPPED_SHADERS <= 256); // We use u8 for the remap indices.
 static constexpr std::array<u8, NUM_REMAP_INPUTS> GenRemapArray()
 {
 	std::array<u8, NUM_REMAP_INPUTS> out{};
-	u32 out_idx = 0;
-	const u32 invalid = 0xffffffff;
+	u8 out_idx = 0;
+	const u8 invalid = 0xff;
 	for (u32 i = 0; i < NUM_REMAP_INPUTS; i++)
 		out[i] = RemapIndexIsValid(i) ? out_idx++ : invalid;
 	return out;
