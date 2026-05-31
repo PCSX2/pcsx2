@@ -15,11 +15,10 @@
 #include <cstdint>
 #include <cstring>
 #include <algorithm>
-#include "SPU2/regs.h"
+#include "SPU2/defs.h"
 #include "R3000A.h"
 
 extern void SPU2writeDMA4Mem(u16* pMem, u32 size);
-extern void SPU2_FastWrite(u32 rmem, u16 value);
 extern s16 _spu2mem[];
 
 // ─── XA ADPCM Decode Constants ─────────────────────────────────────────────
@@ -29,6 +28,8 @@ static const int32_t XA_K0[4] = {  0,   60,  115,  98 };
 static const int32_t XA_K1[4] = {  0,    0,  -52, -55 };
 
 // ─── Decoder State ──────────────────────────────────────────────────────────
+
+static constexpr int XA_PCM_RING_SIZE = 65536;  // must be power of 2
 
 struct XAInjectState {
 	bool     active;
@@ -42,13 +43,17 @@ struct XAInjectState {
 	int      freq;              // 37800 or 18900
 	int      stereo;            // 0=mono, 1=stereo
 	int      nbits;             // 4 or 8
-	// Ring buffer for feeding ADMA at correct rate
-	int16_t  pcm_ring[32768];   // ~430ms at 37.8kHz mono
-	uint32_t ring_write;
-	uint32_t ring_read;
 };
 
 static XAInjectState s_xa = {};
+
+// Shared flag for cross-TU visibility (ReadInput.cpp checks this)
+extern bool g_xa_adma_active;
+extern bool g_xa_adma_stereo;
+extern int16_t g_xa_pcm_ring[];
+extern uint32_t g_xa_pcm_write;
+extern uint32_t g_xa_pcm_read;
+extern int g_xa_last_half_filled;
 
 // ─── XA ADPCM Decode (correct implementation from reference sources) ────────
 //
@@ -69,21 +74,18 @@ static XAInjectState s_xa = {};
 
 static int xa_decode_sector_to_pcm(const uint8_t* raw_sector, int16_t* pcm_out, int max_samples)
 {
-	// raw_sector points to the transfer buffer from cdvd (2328 bytes, sync already stripped)
-	// Subheader is at offset 0-7, audio data at offset 8
-	// Actually in our hook the sector comes from the cdr transfer buffer which has:
-	// [subheader(8)] [audio(2304)] for Mode 2 Form 2
-	// Let's check: in Ps1CD.cpp the transfer[] array after CdlReadS has sync stripped,
-	// so transfer[0..3] = subheader, transfer[4..7] = subheader copy,
-	// transfer[8...] = audio data (18 × 128 = 2304 bytes)
+	// raw_sector = cdr.Transfer from Ps1CD.cpp, read with CDVD_MODE_2340.
+	// Layout: [header(4)] [subheader(4)] [subheader_copy(4)] [data(2328)]
+	// header = MM, SS, FF, Mode (CD sector header, sync already stripped)
+	// subheader = File, Channel, Submode, Coding (starts at offset 4)
+	// audio data starts at offset 12 (18 × 128 = 2304 bytes for XA)
 	
-	const uint8_t* subhdr = raw_sector;
-	const uint8_t* audio_data = raw_sector + 8;  // past 8-byte subheader
+	const uint8_t* subhdr = raw_sector + 4;      // skip 4-byte header
+	const uint8_t* audio_data = raw_sector + 12;  // past header(4) + subheader(4) + copy(4)
 	
 	// Parse coding byte from subheader
-	uint8_t coding = subhdr[2];  // coding info (submode is at [2], coding at [3]...)
-	// Actually: byte 0=file, 1=channel, 2=submode, 3=coding
-	coding = subhdr[3];
+	// subhdr[0]=file, [1]=channel, [2]=submode, [3]=coding
+	uint8_t coding = subhdr[3];
 	
 	int stereo = (coding & 0x03) ? 1 : 0;   // bit 0: 0=mono, 1=stereo
 	int freq_idx = (coding >> 2) & 0x03;     // 0=37800, 1=18900
@@ -295,84 +297,65 @@ static void xa_encode_adpcm_block_v2(const int16_t* pcm_in, int count, uint8_t* 
 
 static void xa_feed_to_spu2(int16_t* pcm, int num_samples)
 {
-	// Write ADPCM blocks with optimal shift into SPU2 RAM ring buffer
-	// Voice 23 Core 0 loops through this buffer continuously.
-	
-	uint32_t wp = s_xa.ring_write;
-	// SPU2 buffer at 0x70000, size 0x10000 words
-	static constexpr uint32_t BUF_BASE = 0x70000;
-	static constexpr uint32_t BUF_SIZE = 0x10000;  // 64K words
-	
-	int samp_idx = 0;
-	while (samp_idx < num_samples) {
-		uint8_t block[16];
-		int remaining = num_samples - samp_idx;
-		int block_samps = (remaining > 28) ? 28 : remaining;
-		xa_encode_adpcm_block_v2(pcm + samp_idx, block_samps, block);
-		
-		// Wrap
-		if (wp + 8 >= BUF_BASE + BUF_SIZE) {
-			wp = BUF_BASE;
+	// Accumulate into the GLOBAL PCM ring buffer (shared with ReadInput.cpp)
+	int16_t peak = 0;
+	for (int i = 0; i < num_samples; i++) {
+		if (pcm[i] > peak) peak = pcm[i];
+		if (-pcm[i] > peak) peak = -pcm[i];
+		g_xa_pcm_ring[g_xa_pcm_write] = pcm[i];
+		g_xa_pcm_write = (g_xa_pcm_write + 1) & (XA_PCM_RING_SIZE - 1);
+		// Overflow protection
+		if (g_xa_pcm_write == g_xa_pcm_read) {
+			g_xa_pcm_read = (g_xa_pcm_read + 1) & (XA_PCM_RING_SIZE - 1);
 		}
-		
-		// Write 16 bytes = 8 words
-		for (int w = 0; w < 8; w++) {
-			_spu2mem[wp + w] = (int16_t)((uint16_t)block[w*2] | ((uint16_t)block[w*2+1] << 8));
-		}
-		wp += 8;
-		samp_idx += 28;
 	}
-	
-	s_xa.ring_write = wp;
+	// Log
+	static int feed_count = 0;
+	feed_count++;
+	if (feed_count <= 10 || feed_count % 100 == 0) {
+		uint32_t ring_avail = (g_xa_pcm_write - g_xa_pcm_read) & (XA_PCM_RING_SIZE - 1);
+		Console.WriteLn("[XA-FEED] #%d: %d samples, peak=%d, ring_avail=%u, pcm[0..3]=%d %d %d %d",
+			feed_count, num_samples, (int)peak, ring_avail,
+			(int)pcm[0], (int)pcm[1], (int)pcm[2], (int)pcm[3]);
+	}
 }
 
-static void xa_configure_voice()
+// xa_adma_fill_half is now inlined in ReadInput.cpp using globals
+
+static void xa_configure_adma()
 {
 	if (s_xa.adma_started) return;
 	s_xa.adma_started = true;
 	
-	static constexpr uint32_t BUF_BASE = 0x70000;
-	static constexpr uint32_t BUF_SIZE = 0x10000;
+	// Sync to globals for ReadInput.cpp
+	g_xa_pcm_write = 0;
+	g_xa_pcm_read = 0;
+	g_xa_last_half_filled = -1;
+	g_xa_adma_stereo = s_xa.stereo;
+	g_xa_adma_active = true;
 	
-	// Pre-fill ring buffer with silence (shift=12, all zeros = perfect silence)
-	for (uint32_t addr = BUF_BASE; addr < BUF_BASE + BUF_SIZE; addr += 8) {
-		_spu2mem[addr] = 0x0C;  // shift=12, filter=0
-		_spu2mem[addr+1] = 0;   // no flags
-		for (int w = 2; w < 8; w++) _spu2mem[addr+w] = 0;
+	// Pre-fill ADMA input area with silence
+	for (int i = 0; i < 0x200; i++) {
+		_spu2mem[0x2000 + i] = 0;
+		_spu2mem[0x2200 + i] = 0;
 	}
-	// Set loop markers
-	_spu2mem[BUF_BASE + 1] = 0x04;  // LOOP_START on first block
-	_spu2mem[BUF_BASE + BUF_SIZE - 8 + 1] = 0x03;  // LOOP_END + LOOP on last block
 	
-	s_xa.ring_write = BUF_BASE;
+	// Enable ADMA on Core 0: AutoDMACtrl bit 0
+	Cores[0].AutoDMACtrl |= 1;
+	// Set input volume to max
+	Cores[0].InpVol.Left = 0x7FFF;
+	Cores[0].InpVol.Right = 0x7FFF;
+	// Provide initial data so ReadInput doesn't starve
+	Cores[0].InputDataLeft = 0x200;
+	Cores[0].AdmaInProgress = 1;
 	
-	// Voice 23, Core 0
-	uint32_t ssa = BUF_BASE;
-	
-	SPU2_FastWrite(SPU2_CORE0 + (23 * 16) + 0, 0x3FFF);  // VOLL
-	SPU2_FastWrite(SPU2_CORE0 + (23 * 16) + 2, 0x3FFF);  // VOLR
-	// Pitch: 37800Hz source / 48000Hz output * 4096 = 3226 = 0x0C9A
-	SPU2_FastWrite(SPU2_CORE0 + (23 * 16) + 4, 0x0C9A);
-	// ADSR: instant attack, full sustain, no release
-	SPU2_FastWrite(SPU2_CORE0 + (23 * 16) + 6, 0x000F);  // ADSR1
-	SPU2_FastWrite(SPU2_CORE0 + (23 * 16) + 8, 0x1FC0);  // ADSR2
-	
-	// SSA
-	uint32_t reg_base = 0x1C0 + 23 * 12;
-	SPU2_FastWrite(SPU2_CORE0 + reg_base + 0, (u16)((ssa >> 16) & 0x3F));
-	SPU2_FastWrite(SPU2_CORE0 + reg_base + 2, (u16)(ssa & 0xFFFF));
-	// LSA = buffer start (loop back to beginning)
-	SPU2_FastWrite(SPU2_CORE0 + reg_base + 4, (u16)((ssa >> 16) & 0x3F));
-	SPU2_FastWrite(SPU2_CORE0 + reg_base + 6, (u16)(ssa & 0xFFFF));
-	
-	// VMIXL/VMIXR
-	SPU2_FastWrite(SPU2_CORE0 + REG_S_VMIXL + 2, (u16)(1 << (23 - 16)));
-	SPU2_FastWrite(SPU2_CORE0 + REG_S_VMIXR + 2, (u16)(1 << (23 - 16)));
-	
-	// Key On
-	SPU2_FastWrite(SPU2_CORE0 + 0x1A0 + 2, (u16)(1 << (23 - 16)));
-	
-	Console.WriteLn("[XA-INJECT] Voice 23 configured with optimal-shift ADPCM, buf=0x%05X size=%u", ssa, BUF_SIZE);
+	Console.WriteLn("[XA-INJECT] ADMA configured: AutoDMACtrl=%d InpVol=0x7FFF stereo=%d",
+		Cores[0].AutoDMACtrl, s_xa.stereo);
+	Console.WriteLn("[XA-INJECT]   Core0 state: OutPos=0x%03X PlayMode=%d InputDataLeft=%d AdmaInProgress=%d",
+		(unsigned)OutPos, PlayMode, (int)Cores[0].InputDataLeft, (int)Cores[0].AdmaInProgress);
+	Console.WriteLn("[XA-INJECT]   Core0 MasterVol: L=0x%04x R=0x%04x  ExtVol: L=0x%04x R=0x%04x",
+		(u16)Cores[0].MasterVol.Left.Value, (u16)Cores[0].MasterVol.Right.Value,
+		(u16)Cores[0].ExtVol.Left, (u16)Cores[0].ExtVol.Right);
 }
 
 // ─── Process one XA sector ──────────────────────────────────────────────────
@@ -383,13 +366,14 @@ static void xa_inject_process(const uint8_t* transfer, [[maybe_unused]] int mode
 	if (!s_xa.active) return;
 	
 	// Check subheader: is this an audio sector?
-	// transfer[0]=file, [1]=channel, [2]=submode, [3]=coding
-	uint8_t submode = transfer[2];
+	// CDVD_MODE_2340: transfer[0..3]=header, transfer[4..7]=subheader
+	// subheader: [4]=file, [5]=channel, [6]=submode, [7]=coding
+	uint8_t submode = transfer[6];
 	if (!(submode & 0x04)) return;  // bit 2 = audio
 	
 	// Filter check
-	uint8_t file = transfer[0];
-	uint8_t chan = transfer[1];
+	uint8_t file = transfer[4];
+	uint8_t chan = transfer[5];
 	if (s_xa.cur_file != 0 && file != s_xa.cur_file) return;
 	if (s_xa.cur_chan != 0 && chan != s_xa.cur_chan) return;
 	
@@ -410,14 +394,16 @@ static void xa_inject_process(const uint8_t* transfer, [[maybe_unused]] int mode
 	s_xa.sectors++;
 	
 	// Configure voice on first sector
-	xa_configure_voice();
+	xa_configure_adma();
 	
 	// Feed to SPU2
 	xa_feed_to_spu2(pcm_buf, num_samples);
 	
 	if (s_xa.sectors <= 5 || (s_xa.sectors % 200) == 0) {
-		Console.WriteLn("[XA-INJECT] Sector %u: %d samples (file=%d ch=%d)", 
-			s_xa.sectors, num_samples, file, chan);
+		uint32_t ring_avail = (g_xa_pcm_write - g_xa_pcm_read) & (XA_PCM_RING_SIZE - 1);
+		Console.WriteLn("[XA-INJECT] Sector %u: %d samples (file=%d ch=%d) ring_avail=%u ADMA_ctrl=%d InpVol=%04x",
+			s_xa.sectors, num_samples, file, chan, ring_avail,
+			Cores[0].AutoDMACtrl, (u16)Cores[0].InpVol.Left);
 	}
 }
 
@@ -429,8 +415,9 @@ static void xa_inject_init()
 	s_xa.adma_started = false;
 	s_xa.hist1 = 0;
 	s_xa.hist2 = 0;
-	s_xa.ring_write = 0x70000;
-	s_xa.ring_read = 0x70000;
+	g_xa_pcm_write = 0;
+	g_xa_pcm_read = 0;
+	g_xa_adma_active = false;
 	s_xa.sectors = 0;
 	s_xa.last_decode_ticks = 0;
 	s_xa.freq = 0;
@@ -443,8 +430,8 @@ static void xa_inject_stop()
 {
 	if (!s_xa.active) return;
 	s_xa.active = false;
-	// Key Off voice 23
-	SPU2_FastWrite(SPU2_CORE0 + 0x1A4 + 2, (u16)(1 << (23 - 16)));
+	// Disable ADMA injection
+	s_xa.adma_started = false;
 	Console.WriteLn("[XA-INJECT] Stopped (%u sectors decoded)", s_xa.sectors);
 }
 

@@ -9,6 +9,15 @@
 #include "SPU2/spu2.h"
 #include "common/Console.h"
 
+// XA ADMA globals (defined in Ps1CD.cpp)
+extern bool g_xa_adma_active;
+extern bool g_xa_adma_stereo;
+extern int16_t g_xa_pcm_ring[];
+extern uint32_t g_xa_pcm_write;
+extern uint32_t g_xa_pcm_read;
+extern int g_xa_last_half_filled;
+static constexpr uint32_t XA_RING_MASK = 65535;
+
 // Core 0 Input is "SPDIF mode" - Source audio is AC3 compressed.
 
 // Core 1 Input is "CDDA mode" - Source audio data is 32 bits.
@@ -121,6 +130,16 @@ StereoOut32 V_Core::ReadInput()
 	StereoOut32 retval;
 	u16 ReadIndex = OutPos;
 
+	// XA instrumentation: log first few ReadInput calls for Core 0
+	if (Index == 0 && g_xa_adma_active) {
+		static uint32_t ri_calls = 0;
+		ri_calls++;
+		if (ri_calls <= 3 || ri_calls == 100 || ri_calls == 1000) {
+			Console.WriteLn("[XA-READINPUT] Core0 call #%u: OutPos=0x%03X PlayMode=%d AutoDMACtrl=%d InputDataLeft=%d AdmaInProgress=%d",
+				ri_calls, (unsigned)ReadIndex, (int)PlayMode, (int)AutoDMACtrl, (int)InputDataLeft, (int)AdmaInProgress);
+		}
+	}
+
 	for (int i = 0; i < 2; i++)
 		if (Cores[i].IRQEnable && (0x2000 + (Index << 10) + ReadIndex) == (Cores[i].IRQA & 0xfffffdff))
 			SetIrqCall(i);
@@ -131,6 +150,17 @@ StereoOut32 V_Core::ReadInput()
 		retval = StereoOut32(
 			(s32)(*GetMemPtr(0x2000 + (Index << 10) + ReadIndex)),
 			(s32)(*GetMemPtr(0x2200 + (Index << 10) + ReadIndex)));
+	}
+
+	// XA instrumentation: log what ReadInput returns for Core 0
+	if (Index == 0 && g_xa_adma_active) {
+		static uint32_t ret_log = 0;
+		ret_log++;
+		if (ret_log <= 5 || ret_log == 512 || ret_log == 1024) {
+			Console.WriteLn("[XA-READINPUT-RET] #%u OutPos=0x%03X retval L=%d R=%d PlayMode=%d cond=%d",
+				ret_log, (unsigned)ReadIndex, retval.Left, retval.Right, (int)PlayMode,
+				(int)((Index == 1) || !(Index == 0 && (PlayMode & 2) != 0)));
+		}
 	}
 
 #ifdef PCSX2_DEVBUILD
@@ -165,6 +195,47 @@ StereoOut32 V_Core::ReadInput()
 			InputPosWrite = 0;
 		else if (ReadIndex == 0)
 			InputPosWrite = 0x100;
+
+		// XA inject: fill the half that's about to be read next
+		if (Index == 0 && g_xa_adma_active) {
+			int half_to_fill = (ReadIndex == 0x100) ? 0 : (ReadIndex == 0) ? 1 : -1;
+			if (half_to_fill >= 0 && half_to_fill != g_xa_last_half_filled) {
+				// Inline fill: 256 samples from global ring to _spu2mem
+				uint32_t base_l = 0x2000 + half_to_fill * 0x100;
+				uint32_t base_r = 0x2200 + half_to_fill * 0x100;
+				int underrun_this = 0;
+				for (int i = 0; i < 0x100; i++) {
+					int16_t sL, sR;
+					if (g_xa_pcm_read != g_xa_pcm_write) {
+						sL = g_xa_pcm_ring[g_xa_pcm_read];
+						g_xa_pcm_read = (g_xa_pcm_read + 1) & XA_RING_MASK;
+					} else { sL = 0; underrun_this++; }
+					if (g_xa_adma_stereo) {
+						if (g_xa_pcm_read != g_xa_pcm_write) {
+							sR = g_xa_pcm_ring[g_xa_pcm_read];
+							g_xa_pcm_read = (g_xa_pcm_read + 1) & XA_RING_MASK;
+						} else { sR = sL; }
+					} else { sR = sL; }
+					_spu2mem[base_l + i] = sL;
+					_spu2mem[base_r + i] = sR;
+				}
+				g_xa_last_half_filled = half_to_fill;
+				InputDataLeft = 0x200;
+				AdmaInProgress = 1;
+				
+				static uint32_t fill_log = 0;
+				fill_log++;
+				if (fill_log <= 10 || fill_log % 500 == 0) {
+					uint32_t ring_avail = (g_xa_pcm_write - g_xa_pcm_read) & XA_RING_MASK;
+					Console.WriteLn("[XA-ADMA-FILL] #%u half=%d underrun=%d ring_avail=%u mem[L]=%d %d %d %d",
+						fill_log, half_to_fill, underrun_this, ring_avail,
+						(int)_spu2mem[base_l], (int)_spu2mem[base_l+1],
+						(int)_spu2mem[base_l+2], (int)_spu2mem[base_l+3]);
+				}
+			}
+		} else if (Index == 0 && g_xa_adma_active && false) {
+			// dead branch — keeping structure
+		}
 
 		if (InputDataLeft >= 0x100)
 		{

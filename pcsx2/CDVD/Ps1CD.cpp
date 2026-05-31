@@ -13,6 +13,14 @@
 
 #include "XaInject.h"  // [DKWDRV HACK] XA-ADPCM decode + SPU2 ADMA inject
 
+// Global shared state for XA ADMA (cross-TU with ReadInput.cpp)
+bool g_xa_adma_active = false;
+bool g_xa_adma_stereo = false;
+int16_t g_xa_pcm_ring[65536] = {};
+uint32_t g_xa_pcm_write = 0;
+uint32_t g_xa_pcm_read = 0;
+int g_xa_last_half_filled = -1;
+
 //THIS ALL IS FOR THE CDROM REGISTERS HANDLING
 
 enum cdrom_registers
