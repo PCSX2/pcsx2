@@ -10,6 +10,10 @@
 
 #include <cstring>
 #include <array>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <algorithm>
 
 static InputIsoFile iso;
 
@@ -17,6 +21,90 @@ static int pmode, cdtype;
 
 static s32 layer1start = -1;
 static bool layer1searched = false;
+
+/* ── .cue multi-track support ── */
+static bool cue_parsed = false;
+static u8 cue_strack = 1, cue_etrack = 1;
+struct CueTrack { u32 lba; u8 type; };
+static std::vector<CueTrack> cue_tracks;
+
+/* Parse MSF string "MM:SS:FF" → LBA */
+static s32 msf_to_lba(const std::string& msf) {
+	int m = 0, s = 0, f = 0;
+	char sep;
+	std::istringstream ss(msf);
+	ss >> m >> sep >> s >> sep >> f;
+	return (m * 60 + s) * 75 + f;
+}
+
+static void ParseCueSheet(const std::string& cue_path) {
+	std::ifstream f(cue_path);
+	if (!f.is_open()) return;
+	
+	cue_tracks.clear();
+	cue_parsed = false;
+	cue_strack = 1;
+	
+	int current_track = 0;
+	u8 current_type = 0;
+	u32 current_lba = 0;
+	bool have_index1 = false;
+	
+	std::string line;
+	while (std::getline(f, line)) {
+		/* Trim */
+		while (!line.empty() && (line.back() == '\r' || line.back() == ' '))
+			line.pop_back();
+		if (line.empty()) continue;
+		
+		std::istringstream ss(line);
+		std::string cmd;
+		ss >> cmd;
+		
+		if (cmd == "TRACK") {
+			/* Flush previous track if any */
+			if (current_track > 0 && have_index1) {
+				CueTrack t;
+				t.lba = current_lba;
+				t.type = current_type;
+				cue_tracks.push_back(t);
+			}
+			int tnum; std::string ttype;
+			ss >> tnum >> ttype;
+			current_track = tnum;
+			have_index1 = false;
+			if (ttype == "AUDIO")
+				current_type = CDVD_AUDIO_TRACK;
+			else if (ttype == "MODE2/2352")
+				current_type = CDVD_MODE2_TRACK;
+			else
+				current_type = CDVD_MODE1_TRACK;
+		}
+		else if (cmd == "INDEX") {
+			int idx; std::string pos;
+			ss >> idx >> pos;
+			if (idx == 1 || (idx == 0 && !have_index1)) {
+				current_lba = msf_to_lba(pos);
+				have_index1 = true;
+			}
+		}
+	}
+	f.close();
+	
+	/* Flush last track */
+	if (current_track > 0 && have_index1) {
+		CueTrack t;
+		t.lba = current_lba;
+		t.type = current_type;
+		cue_tracks.push_back(t);
+	}
+	
+	if (!cue_tracks.empty()) {
+		cue_parsed = true;
+		cue_etrack = (u8)cue_tracks.size();
+		Console.WriteLn("CDVD: Parsed %d tracks from .cue", cue_tracks.size());
+	}
+}
 
 static void ISOclose()
 {
@@ -32,6 +120,9 @@ static bool ISOopen(std::string filename, Error* error)
 		Error::SetString(error, "No filename specified.");
 		return false;
 	}
+
+	/* Save filename before move for .cue detection */
+	std::string saved_name = filename;
 
 	if (!iso.Open(std::move(filename), error))
 		return false;
@@ -49,6 +140,35 @@ static bool ISOopen(std::string filename, Error* error)
 			break;
 	}
 
+	/* Try to parse companion .cue file for multi-track support */
+	cue_parsed = false;
+	std::string cue_path = saved_name;
+	size_t dot = cue_path.find_last_of('.');
+	if (dot != std::string::npos) {
+		cue_path = cue_path.substr(0, dot) + ".cue";
+		ParseCueSheet(cue_path);
+	}
+	if (!cue_parsed) {
+		/* Also try .CUE (uppercase) */
+		cue_path = saved_name;
+		dot = cue_path.find_last_of('.');
+		if (dot != std::string::npos) {
+			cue_path = cue_path.substr(0, dot) + ".CUE";
+			ParseCueSheet(cue_path);
+		}
+	}
+
+	/* If .cue has audio tracks, upgrade cdtype to CDDA variant */
+	if (cue_parsed) {
+		for (auto& t : cue_tracks) {
+			if (t.type == CDVD_AUDIO_TRACK) {
+				if (cdtype == CDVD_TYPE_PS2CD) cdtype = CDVD_TYPE_PS2CDDA;
+				else if (cdtype == CDVD_TYPE_PSCD) cdtype = CDVD_TYPE_PSCDDA;
+				break;
+			}
+		}
+	}
+
 	layer1start = -1;
 	layer1searched = false;
 
@@ -64,6 +184,39 @@ static s32 ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 {
 	// fake it
 	u8 min, sec, frm;
+
+	if (cue_parsed && cue_tracks.size() > 1) {
+		/* Find which track this LSN belongs to */
+		int track = 1;
+		u32 track_start = 0;
+		for (int i = (int)cue_tracks.size() - 1; i >= 0; i--) {
+			if (lsn >= cue_tracks[i].lba) {
+				track = i + 1;
+				track_start = cue_tracks[i].lba;
+				break;
+			}
+		}
+		u32 rel_lsn = lsn - track_start;
+		subq->ctrl = (cue_tracks[track-1].type == CDVD_AUDIO_TRACK) ? 0 : 4;
+		subq->adr = 1;
+		subq->trackNum = itob(track);
+		subq->trackIndex = itob(1);
+
+		lba_to_msf(rel_lsn, &min, &sec, &frm);
+		subq->trackM = itob(min);
+		subq->trackS = itob(sec);
+		subq->trackF = itob(frm);
+
+		subq->pad = 0;
+
+		lba_to_msf(lsn + (2 * 75), &min, &sec, &frm);
+		subq->discM = itob(min);
+		subq->discS = itob(sec);
+		subq->discF = itob(frm);
+
+		return 0;
+	}
+
 	subq->ctrl = 4;
 	subq->adr = 1;
 	subq->trackNum = itob(1);
@@ -86,6 +239,11 @@ static s32 ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 
 static s32 ISOgetTN(cdvdTN* Buffer)
 {
+	if (cue_parsed) {
+		Buffer->strack = cue_strack;
+		Buffer->etrack = cue_etrack;
+		return 0;
+	}
 	Buffer->strack = 1;
 	Buffer->etrack = 1;
 
@@ -94,6 +252,19 @@ static s32 ISOgetTN(cdvdTN* Buffer)
 
 static s32 ISOgetTD(u8 Track, cdvdTD* Buffer)
 {
+	if (cue_parsed) {
+		if (Track == 0) {
+			Buffer->lsn = iso.GetBlockCount();
+			return 0;
+		}
+		int idx = (int)Track - 1;
+		if (idx < 0 || idx >= (int)cue_tracks.size())
+			return -1;
+		Buffer->type = cue_tracks[idx].type;
+		Buffer->lsn = cue_tracks[idx].lba;
+		return 0;
+	}
+
 	if (Track == 0)
 	{
 		Buffer->lsn = iso.GetBlockCount();
