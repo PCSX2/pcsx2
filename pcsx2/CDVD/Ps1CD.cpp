@@ -289,7 +289,7 @@ void cdrInterrupt()
 			break;
 
 		case CdlPause:
-			xa_inject_stop();  // [DKWDRV HACK] Stop XA on CD pause
+			// [DKWDRV HACK] Don't stop XA on pause — game pauses briefly to switch filter
 			SetResultSize(1);
 			cdr.Result[0] = cdr.StatP;
 			cdr.Stat = Acknowledge;
