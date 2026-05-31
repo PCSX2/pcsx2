@@ -11,6 +11,8 @@
 
 #include "common/Threading.h"
 
+#include "XaInject.h"  // [DKWDRV HACK] XA-ADPCM decode + SPU2 ADMA inject
+
 //THIS ALL IS FOR THE CDROM REGISTERS HANDLING
 
 enum cdrom_registers
@@ -591,6 +593,9 @@ void cdrReadInterrupt()
 
 	cdr.Stat = DataReady;
 
+	// [DKWDRV HACK] Intercept XA audio sectors and decode them
+	xa_inject_process(cdr.Transfer, cdr.Mode, cdr.File, cdr.Channel);
+
 	CDVD_LOG(" %x:%x:%x", cdr.Transfer[0], cdr.Transfer[1], cdr.Transfer[2]);
 
 	cdr.SetSector[2]++;
@@ -849,6 +854,7 @@ void cdrWrite1(u8 rt)
 		case CdlSetfilter:
 			cdr.File = cdr.Param[0];
 			cdr.Channel = cdr.Param[1];
+			Console.WriteLn("[XA-INJECT] CdlSetfilter: file=%d channel=%d", cdr.File, cdr.Channel);
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			AddIrqQueue(cdr.Cmd, 0x800);
@@ -934,6 +940,7 @@ void cdrWrite1(u8 rt)
 		case CdlReadS:
 			cdr.Irq = 0;
 			StopReading();
+			xa_inject_init();  // [DKWDRV HACK] Start XA decode on streaming read
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			StartReading(2);
