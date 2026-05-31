@@ -14,6 +14,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <cctype>
 
 static InputIsoFile iso;
 
@@ -143,6 +144,37 @@ static void TryCueSheet() {
 	}
 }
 
+/* Extract .bin filename from a .cue sheet's FILE line.
+   Returns empty string if not found. */
+static std::string ParseCueForBinFile(const std::string& cue_path) {
+	std::ifstream f(cue_path);
+	if (!f.is_open()) return "";
+	
+	std::string line, bin_name;
+	while (std::getline(f, line)) {
+		while (!line.empty() && (line.back() == '\r' || line.back() == ' '))
+			line.pop_back();
+		if (line.empty()) continue;
+		
+		std::istringstream ss(line);
+		std::string cmd;
+		ss >> cmd;
+		if (cmd == "FILE") {
+			/* FILE "filename" BINARY */
+			std::string quoted;
+			ss >> quoted;
+			/* Remove surrounding quotes */
+			if (quoted.size() >= 2 && quoted.front() == '"' && quoted.back() == '"')
+				bin_name = quoted.substr(1, quoted.size() - 2);
+			else
+				bin_name = quoted;
+			break;
+		}
+	}
+	f.close();
+	return bin_name;
+}
+
 static void ISOclose()
 {
 	iso.Close();
@@ -164,6 +196,27 @@ static bool ISOopen(std::string filename, Error* error)
 
 	/* Save filename before move for .cue detection */
 	std::string saved_name = filename;
+
+	/* If user selected a .cue file directly, redirect to the .bin inside it */
+	std::string ext;
+	size_t dot = saved_name.find_last_of('.');
+	if (dot != std::string::npos) {
+		ext = saved_name.substr(dot);
+		for (auto& c : ext) c = (char)std::tolower((unsigned char)c);
+	}
+	if (ext == ".cue") {
+		std::string bin_in_cue = ParseCueForBinFile(saved_name);
+		if (!bin_in_cue.empty()) {
+			std::string cue_dir;
+			size_t slash = saved_name.find_last_of("/\\");
+			if (slash != std::string::npos)
+				cue_dir = saved_name.substr(0, slash + 1);
+			std::string bin_path = cue_dir + bin_in_cue;
+			Console.WriteLn("CDVD: .cue redirect: %s → %s", saved_name.c_str(), bin_path.c_str());
+			filename = bin_path;
+			saved_name = bin_path;
+		}
+	}
 
 	if (!iso.Open(std::move(filename), error))
 		return false;
