@@ -199,9 +199,8 @@ static void xa_setup_adma_playback(int16_t* pcm, int num_words)
 		int block_samps = (remaining > 28) ? 28 : remaining;
 		xa_encode_adpcm_block(mono + samp_idx, block_samps, block);
 
-		// Mark last block with loop flag if we're wrapping
+		// Wrap ring buffer without loop flag — voice will just keep reading linearly
 		if (wp + 8 >= XA_BUF_BASE + XA_BUF_SIZE) {
-			block[1] = 0x01;  // LOOP_START, will make voice loop back
 			wp = XA_BUF_BASE;
 		}
 
@@ -213,10 +212,10 @@ static void xa_setup_adma_playback(int16_t* pcm, int num_words)
 		samp_idx += 28;
 	}
 
-	// Write end-of-data silence block with loop flag
+	// Write end-of-data silence block — stop voice (no loop)
 	{
 		uint8_t end_block[16] = {};
-		end_block[1] = 0x03;  // LOOP_END + LOOP
+		end_block[1] = 0x01;  // LOOP_END only — voice enters release, stops
 		for (int w = 0; w < 8; w++) {
 			_spu2mem[wp + w] = (int16_t)((uint16_t)end_block[w*2] | ((uint16_t)end_block[w*2+1] << 8));
 		}
@@ -227,49 +226,31 @@ static void xa_setup_adma_playback(int16_t* pcm, int num_words)
 	// Configure voice 23 on first sector
 	if (!s_xa.voice_configured) {
 		s_xa.voice_configured = true;
-		// Voice 23 on Core 0:
-		// SSA = buffer start
 		uint32_t ssa = XA_BUF_BASE;
-		SPU2_FastWrite(SPU2_CORE0 + (23 * 12) + 0x1C6, (u16)(ssa & 0xFFFF));        // SSA lo (REG_VA_SSA)  — offset from voice base
-		// Actually use proper voice register offsets
-		// Core 0 voice regs start at 0x000, each voice = 8 regs * 2 bytes = 16 bytes
-		// Voice N base = 0x000 + N*16
-		// Reg layout per voice (word offsets from voice base):
-		//   0: VOLL, 1: VOLR, 2: Pitch, 3: ADSR1, 4: ADSR2, 5: ENVX, 6: VOLXL, 7: VOLXR
-		// SSA is in a different register block: 0x1C0 + voice*12
-		// Let's use the proper defines
 
 		// Volume L/R = max
 		SPU2_FastWrite(SPU2_CORE0 + (23 * 16) + 0, 0x3FFF);  // VOLL
 		SPU2_FastWrite(SPU2_CORE0 + (23 * 16) + 2, 0x3FFF);  // VOLR
-		// Pitch = 37800/44100 * 4096 ≈ 0x0DB2 (for 37.8kHz XA at 44.1kHz output)
-		// Actually 37800/48000 * 4096 = 0x0C9A (SPU2 runs at 48kHz)
+		// Pitch = 37800/48000 * 4096 = 0x0C9A (SPU2 runs at 48kHz)
 		SPU2_FastWrite(SPU2_CORE0 + (23 * 16) + 4, 0x0C9A);  // Pitch
 		// ADSR: instant attack, no decay, full sustain, no release
 		SPU2_FastWrite(SPU2_CORE0 + (23 * 16) + 6, 0x000F);  // ADSR1
 		SPU2_FastWrite(SPU2_CORE0 + (23 * 16) + 8, 0x1FC0);  // ADSR2
 
-		// Start address (word address in SPU2 RAM)
-		// REG_VA_SSA: Core 0 = 0x1C0 base + voice*12 (6 word-regs per voice in address block)
-		// Actually the address regs for Core 0 start at offset 0x1C0:
-		//   Each voice uses 6 half-words at 0x1C0 + voice*12:
-		//   +0: SSAH, +2: SSAL, +4: LSAH, +6: LSAL, +8: NAXH, +10: NAXL
+		// Start address
 		uint32_t reg_base = 0x1C0 + 23 * 12;
 		SPU2_FastWrite(SPU2_CORE0 + reg_base + 0, (u16)((ssa >> 16) & 0x3F)); // SSAH
 		SPU2_FastWrite(SPU2_CORE0 + reg_base + 2, (u16)(ssa & 0xFFFF));       // SSAL
-		// Loop address = same as start (loop back to beginning)
-		SPU2_FastWrite(SPU2_CORE0 + reg_base + 4, (u16)((XA_BUF_BASE >> 16) & 0x3F)); // LSAH
-		SPU2_FastWrite(SPU2_CORE0 + reg_base + 6, (u16)(XA_BUF_BASE & 0xFFFF));       // LSAL
-
-		// Key On voice 23 (bit 23 in KON register)
-		// Core 0 KON = 0x1A0 (KONlow) + 0x1A2 (KONhigh... wait no)
-		// Actually it's a single write: reg 0x1A0 = voices 0-15, 0x1A2 = voices 16-23
-		SPU2_FastWrite(SPU2_CORE0 + 0x1A0 + 2, (u16)(1 << (23 - 16)));  // KON high: bit 7
+		// Loop address = far end of buffer (will be overwritten before reaching)
+		SPU2_FastWrite(SPU2_CORE0 + reg_base + 4, (u16)(((XA_BUF_BASE + XA_BUF_SIZE - 8) >> 16) & 0x3F));
+		SPU2_FastWrite(SPU2_CORE0 + reg_base + 6, (u16)((XA_BUF_BASE + XA_BUF_SIZE - 8) & 0xFFFF));
 
 		// Ensure voice 23 is in dry mix (VMIXL/VMIXR)
-		// VMIXL at 0x188 (4 bytes: low=v0-15, high=v16-23)
 		SPU2_FastWrite(SPU2_CORE0 + REG_S_VMIXL + 2, (u16)(1 << (23 - 16)));
 		SPU2_FastWrite(SPU2_CORE0 + REG_S_VMIXR + 2, (u16)(1 << (23 - 16)));
+
+		// Key On voice 23
+		SPU2_FastWrite(SPU2_CORE0 + 0x1A0 + 2, (u16)(1 << (23 - 16)));
 
 		Console.WriteLn("[XA-INJECT] Voice 23 configured: SSA=0x%05X pitch=0x0C9A", ssa);
 	}
