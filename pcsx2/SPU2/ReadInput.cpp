@@ -19,29 +19,28 @@
 // possible for FMVs and high-def textures.
 //
 
-/* ── CD-DA resampling (nearest-neighbor, no interpolation) ── */
-static double cdda_src_pos_dbl = 0.0;
+/* ── CD-DA read mode ──
+ * Use SPU2 OutPos directly for sample fetch (strict 1:1 ring sync).
+ * Helps avoid phase drift/robotic artifacts from custom source stepping.
+ */
 
 StereoOut32 V_Core::ReadInput_HiFi()
 {
 	if (SPU2::IsRunningPSXMode() && SPU2::MsgToConsole())
 		SPU2::ConLog("ReadInput_HiFi!!!!!\n");
 
-	/* Read one sample pair at the source position, advance at CD-DA rate */
-	u32 ipos = (u32)cdda_src_pos_dbl;
-	const u16 idx = (ipos & 0xFF) * 2;
-	// cdda_src_pos_dbl += 44100.0 / 48000.0;   // 0.91875 per output sample (base)
-	cdda_src_pos_dbl += 0.973381218;            // +1 semitone: 0.91875 * 2^(1/12)
+	/* Read one sample pair at current SPU2 output position (strict ring sync) */
+	const u16 idx = (OutPos * 2) & 0x1FF;
 
 	static int debug_count = 0;
 	if (debug_count == 0)
 	{
 		Console.WriteLn("[DKWDRV HACK] CDDA SPDIF path active: PlayMode=8 ReadInput_HiFi");
-		Console.WriteLn("[DKWDRV HACK] CDDA step=0.973381218 (base=0.918750000, +1 semitone)");
+		Console.WriteLn("[DKWDRV HACK] CDDA step=1.000000000 (forced 1:1 user test)");
 	}
 	if (debug_count == 4800)
 	{
-		Console.WriteLn("[DKWDRV HACK] CDDA timing check: after 0.1s ipos=%u (ideal base ~4410)", ipos);
+		Console.WriteLn("[DKWDRV HACK] CDDA timing check: OutPos ring-sync active (0.1s marker)");
 	}
 	debug_count++;
 
