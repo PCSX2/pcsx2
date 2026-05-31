@@ -279,6 +279,7 @@ void cdrInterrupt()
 			break;
 
 		case CdlStop:
+			xa_inject_stop();  // [DKWDRV HACK] Stop XA on CD stop
 			cdr.CmdProcess = 0;
 			SetResultSize(1);
 			cdr.StatP &= ~STATUS_ROTATING;
@@ -288,6 +289,7 @@ void cdrInterrupt()
 			break;
 
 		case CdlPause:
+			xa_inject_stop();  // [DKWDRV HACK] Stop XA on CD pause
 			SetResultSize(1);
 			cdr.Result[0] = cdr.StatP;
 			cdr.Stat = Acknowledge;
@@ -303,6 +305,7 @@ void cdrInterrupt()
 			break;
 
 		case CdlInit:
+			xa_inject_stop();  // [DKWDRV HACK] Stop XA on CD init
 			SetResultSize(1);
 			cdr.StatP = STATUS_ROTATING;
 			cdr.Mode |= MODE_INIT;
