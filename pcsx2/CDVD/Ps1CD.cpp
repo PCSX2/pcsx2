@@ -865,6 +865,10 @@ void cdrWrite1(u8 rt)
 		case CdlSetfilter:
 			cdr.File = cdr.Param[0];
 			cdr.Channel = cdr.Param[1];
+			xa_inject_setfilter(cdr.File, cdr.Channel);
+			// [DKWDRV HACK] Activate XA inject when filter is set
+			if (!s_xa.active)
+				xa_inject_init();
 			Console.WriteLn("[XA-INJECT] CdlSetfilter: file=%d channel=%d", cdr.File, cdr.Channel);
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
