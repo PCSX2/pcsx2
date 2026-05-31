@@ -951,7 +951,9 @@ void cdrWrite1(u8 rt)
 		case CdlReadS:
 			cdr.Irq = 0;
 			StopReading();
-			xa_inject_init();  // [DKWDRV HACK] Start XA decode on streaming read
+			// [DKWDRV HACK] Only start XA decode if a filter was set (game wants XA audio)
+			if (cdr.File != 0 || cdr.Channel != 0)
+				xa_inject_init();
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
 			StartReading(2);
