@@ -434,8 +434,7 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 			}
 			case 0x4:
 				Voices[voice].Pitch = value;
-				if (value != 0x3FFF && value != 0)  /* skip noise from init/reset */
-					Console.WriteLn("SPU2: Voice %d Pitch = 0x%04x (%d)  [unity=0x1000, CDDA=0x0EB3]", voice, value, value);
+				Console.WriteLn("[DKWDRV HACK] SPU2 Voice %d Pitch = 0x%04x (%d) [unity=0x1000 CDDA=0x0EB3]", voice, value, value);
 				break;
 			case 0x6:
 				Voices[voice].StartA = map_spu1to2(value);
@@ -1590,22 +1589,11 @@ void StartVoices(int core, u32 value)
 
 		Cores[core].Voices[vc].Start();
 
-		if (IsDevBuild)
-		{
-			if (SPU2::MsgKeyOnOff())
-			{
-				V_Voice& thisvc(Cores[core].Voices[vc]);
-
-				SPU2::ConLog("* SPU2: KeyOn: C%dV%02d: SSA: %8x; M: %s%s%s%s; H: %04x; P: %04x V: %04x/%04x; ADSR: %04x%04x\n",
-					   core, vc, thisvc.StartA,
-					   (Cores[core].VoiceGates[vc].DryL) ? "+" : "-", (Cores[core].VoiceGates[vc].DryR) ? "+" : "-",
-					   (Cores[core].VoiceGates[vc].WetL) ? "+" : "-", (Cores[core].VoiceGates[vc].WetR) ? "+" : "-",
-					   *(u16*)GetMemPtr(thisvc.StartA),
-					   thisvc.Pitch,
-					   thisvc.Volume.Left.Value, thisvc.Volume.Right.Value,
-					   thisvc.ADSR.regADSR1, thisvc.ADSR.regADSR2);
-			}
-		}
+		V_Voice& thisvc(Cores[core].Voices[vc]);
+		Console.WriteLn("[DKWDRV HACK] KeyOn: C%dV%02d SSA=%08x Pitch=%04x Vol=%04x/%04x ADSR=%04x%04x",
+			core, vc, thisvc.StartA, thisvc.Pitch,
+			thisvc.Volume.Left.Value, thisvc.Volume.Right.Value,
+			thisvc.ADSR.regADSR1, thisvc.ADSR.regADSR2);
 	}
 }
 

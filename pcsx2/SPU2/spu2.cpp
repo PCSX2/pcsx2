@@ -60,6 +60,11 @@ void SPU2writeDMA4Mem(u16* pMem, u32 size) // size now in 16bit units
 {
 	TimeUpdate(psxRegs.cycle);
 
+	static int dma4_count = 0;
+	if (dma4_count < 20 || dma4_count % 50 == 0)
+		Console.WriteLn("[DKWDRV HACK] DMA4 write #%d: %d bytes → SPU2 addr 0x%05x", dma4_count, size * 2, Cores[0].TSA);
+	dma4_count++;
+
 	SPU2::FileLog("[%10d] SPU2 writeDMA4Mem size %x at address %x\n", Cycles, size << 1, Cores[0].TSA);
 
 	Cores[0].DoDMAwrite(pMem, size);

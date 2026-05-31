@@ -7,6 +7,7 @@
 #include "SPU2/Debug.h"
 #include "SPU2/defs.h"
 #include "SPU2/spu2.h"
+#include "common/Console.h"
 
 // Core 0 Input is "SPDIF mode" - Source audio is AC3 compressed.
 
@@ -17,22 +18,48 @@
 // generally prefer to use ADPCM streaming audio since they need as much storage space as
 // possible for FMVs and high-def textures.
 //
+
+/* ── CD-DA resampling state ──
+ * Each call to ReadInput_HiFi should produce one stereo sample at
+ * 48000 Hz, interpolated from the 44100 Hz CD-DA buffer.
+ * We track a double-precision source position and advance it at
+ * ratio = 44100.0 / 48000.0 = 0.91875 per output sample.
+ */
+static double cdda_src_pos_dbl = 0.0;
+static const double CDDA_RATIO = 44100.0 / 48000.0;  // 0.91875
+
 StereoOut32 V_Core::ReadInput_HiFi()
 {
 	if (SPU2::IsRunningPSXMode() && SPU2::MsgToConsole())
 		SPU2::ConLog("ReadInput_HiFi!!!!!\n");
 
-	const u16 ReadIndex = (OutPos * 2) & 0x1FF;
+	/* CD-DA resampling: interpolate at 44100→48000 rate */
+	u32 ipos = (u32)cdda_src_pos_dbl;               // integer sample pair index
+	double frac = cdda_src_pos_dbl - ipos;           // fractional for lerp
+	cdda_src_pos_dbl += CDDA_RATIO;
 
-	StereoOut32 retval(
-		(s32&)(*GetMemPtr(0x2000 + (Index << 10) + ReadIndex)),
-		(s32&)(*GetMemPtr(0x2200 + (Index << 10) + ReadIndex)));
+	/* Read two consecutive sample pairs from the SPU2 input buffer */
+	const u16 idx0 = (ipos & 0xFF) * 2;
+	const u16 idx1 = ((ipos + 1) & 0xFF) * 2;
+
+	s32 L0 = (s32)((s32&)(*GetMemPtr(0x2000 + (Index << 10) + idx0)));
+	s32 R0 = (s32)((s32&)(*GetMemPtr(0x2200 + (Index << 10) + idx0)));
+	s32 L1 = (s32)((s32&)(*GetMemPtr(0x2000 + (Index << 10) + idx1)));
+	s32 R1 = (s32)((s32&)(*GetMemPtr(0x2200 + (Index << 10) + idx1)));
 
 	if (Index == 1)
 	{
-		retval.Left >>= 16;
-		retval.Right >>= 16;
+		L0 >>= 16; R0 >>= 16;
+		L1 >>= 16; R1 >>= 16;
 	}
+
+	/* Linear interpolation */
+	StereoOut32 retval(
+		(s32)(L0 + (L1 - L0) * frac),
+		(s32)(R0 + (R1 - R0) * frac));
+
+	/* ── Original DMA refill logic (unchanged) ── */
+	const u16 ReadIndex = (OutPos * 2) & 0x1FF;
 
 	// Simulate MADR increase, GTA VC tracks the MADR address for calculating a certain point in the buffer
 	if (InputDataTransferred)
