@@ -16,6 +16,7 @@
 #include <cstring>
 #include <algorithm>
 #include "SPU2/regs.h"
+#include "R3000A.h"
 
 extern void SPU2_FastWrite(u32 rmem, u16 value);
 extern s16 _spu2mem[];
@@ -34,6 +35,9 @@ struct XAInjectState {
 	uint32_t write_pos;           // SPU2 word address (interleaved L/R)
 	uint32_t read_pos;            // Where SPU2 voice is reading (for ring tracking)
 	uint32_t sectors;
+	uint64_t last_decode_ticks;   // EE cycle count at last decode (for rate limiting)
+	uint8_t  cur_file;            // current filter file
+	uint8_t  cur_chan;            // current filter channel
 };
 
 static XAInjectState s_xa = {};
@@ -282,6 +286,7 @@ static void xa_inject_init()
 	s_xa.write_pos = XA_BUF_BASE;
 	s_xa.read_pos = XA_BUF_BASE;
 	s_xa.sectors = 0;
+	s_xa.last_decode_ticks = 0;
 	Console.WriteLn("[XA-INJECT] Started XA decode, ADMA output to Core 0");
 }
 
@@ -315,13 +320,36 @@ static void xa_inject_process(const uint8_t* transfer, int mode, int file_filter
 			return;
 	}
 
+	// Rate limiter: XA at 37.8kHz produces 2016 samples/sector = 53.3ms per sector.
+	// IOP clock = 36.864 MHz. 53.3ms = 1,964,544 IOP cycles.
+	// We use psxRegs.cycle for timing.
+	constexpr uint32_t XA_SECTOR_INTERVAL = 1900000;  // ~51.5ms in IOP cycles (slightly tight)
+	uint64_t now = (uint64_t)psxRegs.cycle;
+	if (s_xa.last_decode_ticks != 0) {
+		uint32_t elapsed = (uint32_t)(now - s_xa.last_decode_ticks);
+		if (elapsed < XA_SECTOR_INTERVAL) {
+			return;  // Too soon — skip this sector
+		}
+	}
+	s_xa.last_decode_ticks = now;
+
+	// Detect filter change — reset voice to avoid playing stale buffer
+	if (s_xa.cur_file != sub_file || s_xa.cur_chan != sub_chan) {
+		s_xa.cur_file = sub_file;
+		s_xa.cur_chan = sub_chan;
+		s_xa.write_pos = XA_BUF_BASE;
+		s_xa.voice_configured = false;  // Re-key voice from new position
+		s_xa.hist[0][0] = s_xa.hist[0][1] = 0;
+		s_xa.hist[1][0] = s_xa.hist[1][1] = 0;
+	}
+
 	// Decode
 	static int16_t pcm[18 * 112 * 2 + 64];  // 4032 + margin
 	int total_words = xa_decode_sector(transfer, pcm, sizeof(pcm)/sizeof(pcm[0]));
 	if (total_words <= 0)
 		return;
 
-	// Feed through ADMA (the real PS1DRV pathway)
+	// Feed through direct SPU2 RAM write
 	xa_setup_adma_playback(pcm, total_words);
 
 	s_xa.sectors++;
