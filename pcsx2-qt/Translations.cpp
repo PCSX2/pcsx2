@@ -250,6 +250,7 @@ std::vector<std::pair<QString, QString>> QtHost::GetAvailableLanguageList()
 		{QCoreApplication::translate("InterfaceSettingsWidget", "System Language [Default]"), QStringLiteral("system")},
 		{QStringLiteral("Afrikaans (af-ZA)"), QStringLiteral("af-ZA")},
 		{QStringLiteral("عربي (ar-SA)"), QStringLiteral("ar-SA")},
+		{QStringLiteral("Azərbaycanca (az-AZ)"), QStringLiteral("az-AZ")},
 		{QStringLiteral("Català (ca-ES)"), QStringLiteral("ca-ES")},
 		{QStringLiteral("Čeština (cs-CZ)"), QStringLiteral("cs-CZ")},
 		{QStringLiteral("Dansk (da-DK)"), QStringLiteral("da-DK")},
