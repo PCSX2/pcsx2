@@ -373,6 +373,7 @@ __forceinline void UpdateSpdifMode()
 	if (Spdif.Out & 0x4) // use 24/32bit PCM data streaming
 	{
 		PlayMode = 8;
+		Console.WriteLn("[DKWDRV HACK] SPDIF -> PlayMode=8 (CDDA path) Out=0x%04x Mode=0x%04x Media=0x%04x", Spdif.Out, Spdif.Mode, Spdif.Media);
 		if (SPU2::MsgToConsole())
 			SPU2::ConLog("* SPU2: WARNING: Possibly CDDA mode set!\n");
 		return;

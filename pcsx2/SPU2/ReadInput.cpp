@@ -19,44 +19,42 @@
 // possible for FMVs and high-def textures.
 //
 
-/* ── CD-DA resampling state ──
- * Each call to ReadInput_HiFi should produce one stereo sample at
- * 48000 Hz, interpolated from the 44100 Hz CD-DA buffer.
- * We track a double-precision source position and advance it at
- * ratio = 44100.0 / 48000.0 = 0.91875 per output sample.
- */
+/* ── CD-DA resampling (nearest-neighbor, no interpolation) ── */
 static double cdda_src_pos_dbl = 0.0;
-static const double CDDA_RATIO = 44100.0 / 48000.0;  // 0.91875
 
 StereoOut32 V_Core::ReadInput_HiFi()
 {
 	if (SPU2::IsRunningPSXMode() && SPU2::MsgToConsole())
 		SPU2::ConLog("ReadInput_HiFi!!!!!\n");
 
-	/* CD-DA resampling: interpolate at 44100→48000 rate */
-	u32 ipos = (u32)cdda_src_pos_dbl;               // integer sample pair index
-	double frac = cdda_src_pos_dbl - ipos;           // fractional for lerp
-	cdda_src_pos_dbl += CDDA_RATIO;
+	/* Read one sample pair at the source position, advance at CD-DA rate */
+	u32 ipos = (u32)cdda_src_pos_dbl;
+	const u16 idx = (ipos & 0xFF) * 2;
+	// cdda_src_pos_dbl += 44100.0 / 48000.0;   // 0.91875 per output sample (base)
+	cdda_src_pos_dbl += 0.973381218;            // +1 semitone: 0.91875 * 2^(1/12)
 
-	/* Read two consecutive sample pairs from the SPU2 input buffer */
-	const u16 idx0 = (ipos & 0xFF) * 2;
-	const u16 idx1 = ((ipos + 1) & 0xFF) * 2;
+	static int debug_count = 0;
+	if (debug_count == 0)
+	{
+		Console.WriteLn("[DKWDRV HACK] CDDA SPDIF path active: PlayMode=8 ReadInput_HiFi");
+		Console.WriteLn("[DKWDRV HACK] CDDA step=0.973381218 (base=0.918750000, +1 semitone)");
+	}
+	if (debug_count == 4800)
+	{
+		Console.WriteLn("[DKWDRV HACK] CDDA timing check: after 0.1s ipos=%u (ideal base ~4410)", ipos);
+	}
+	debug_count++;
 
-	s32 L0 = (s32)((s32&)(*GetMemPtr(0x2000 + (Index << 10) + idx0)));
-	s32 R0 = (s32)((s32&)(*GetMemPtr(0x2200 + (Index << 10) + idx0)));
-	s32 L1 = (s32)((s32&)(*GetMemPtr(0x2000 + (Index << 10) + idx1)));
-	s32 R1 = (s32)((s32&)(*GetMemPtr(0x2200 + (Index << 10) + idx1)));
+	s32 L = (s32)((s32&)(*GetMemPtr(0x2000 + (Index << 10) + idx)));
+	s32 R = (s32)((s32&)(*GetMemPtr(0x2200 + (Index << 10) + idx)));
 
 	if (Index == 1)
 	{
-		L0 >>= 16; R0 >>= 16;
-		L1 >>= 16; R1 >>= 16;
+		L >>= 16;
+		R >>= 16;
 	}
 
-	/* Linear interpolation */
-	StereoOut32 retval(
-		(s32)(L0 + (L1 - L0) * frac),
-		(s32)(R0 + (R1 - R0) * frac));
+	StereoOut32 retval(L, R);
 
 	/* ── Original DMA refill logic (unchanged) ── */
 	const u16 ReadIndex = (OutPos * 2) & 0x1FF;
