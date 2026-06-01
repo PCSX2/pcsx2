@@ -209,6 +209,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	//////////////////////////////////////////////////////////////////////////
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_post.fxaa, "EmuCore/GS", "fxaa", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_post.shadeBoost, "EmuCore/GS", "ShadeBoost", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_post.shadeBoostFMVs, "EmuCore/GS", "ShadeBoostFMVs", true);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.shadeBoostBrightness, "EmuCore/GS", "ShadeBoost_Brightness", Pcsx2Config::GSOptions::DEFAULT_SHADEBOOST_BRIGHTNESS);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.shadeBoostContrast, "EmuCore/GS", "ShadeBoost_Contrast", Pcsx2Config::GSOptions::DEFAULT_SHADEBOOST_CONTRAST);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.shadeBoostGamma, "EmuCore/GS", "ShadeBoost_Gamma", Pcsx2Config::GSOptions::DEFAULT_SHADEBOOST_GAMMA);
@@ -685,6 +686,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Enables saturation, contrast, and brightness to be adjusted. Values of brightness, saturation, and contrast are at default "
 			   "50."));
 
+		dialog()->registerWidgetHelp(m_post.shadeBoostFMVs, tr("Shade Boost for FMVs"), tr("Checked"),
+			tr("Applies saturation, contrast, and brightness adjustments to FMVs"));
+
 		dialog()->registerWidgetHelp(
 			m_post.fxaa, tr("FXAA"), tr("Unchecked"), tr("Applies the FXAA anti-aliasing algorithm to improve the visual quality of games."));
 
@@ -859,6 +863,7 @@ void GraphicsSettingsWidget::onShadeBoostChanged()
 	m_post.shadeBoostContrast->setEnabled(enabled);
 	m_post.shadeBoostGamma->setEnabled(enabled);
 	m_post.shadeBoostSaturation->setEnabled(enabled);
+	m_post.shadeBoostFMVs->setEnabled(enabled);
 }
 
 void GraphicsSettingsWidget::onTextureDumpChanged()

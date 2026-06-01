@@ -809,6 +809,7 @@ struct Pcsx2Config
 					UserHacks_DrawBuffering : 1,
 					FXAA : 1,
 					ShadeBoost : 1,
+					ShadeBoostFMVs : 1,
 					DumpGSData : 1,
 					SaveRT : 1,
 					SaveFrame : 1,
