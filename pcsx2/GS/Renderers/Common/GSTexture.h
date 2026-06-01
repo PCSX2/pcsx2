@@ -184,7 +184,7 @@ public:
 	// The unordered access flag is sticky, so once it's set we keep using ROV for the target
 	// until it's recycled/destroyed. Only used for DX11/GL, which don't track actual resource layout/state.
 	virtual bool IsUnorderedAccess() const { return m_unordered_access; }
-	void UseUnorderedAccess() { m_unordered_access = true; }
+	void SetUnorderedAccess() { m_unordered_access = true; }
 	void ClearUnorderedAccess() { m_unordered_access = false; }
 
 	// Helper routines for formats/types
