@@ -7638,11 +7638,6 @@ void GSRendererHW::DetermineROVUsage(GSTextureCache::Target* rt, GSTextureCache:
 	GL_INS("ROV: Color ROV %s / depth ROV %s",
 		use_rov_color ? "enabled" : "disabled", use_rov_depth ? "enabled" : "disabled");
 
-	// Set unordered access flag for backends that don't explicitly track resource state (DX11/GL).
-	// Used only for heuristic above. Not used for depth, since we check for depth color instead.
-	if (use_rov_color)
-		rt->m_texture->UseUnorderedAccess();
-
 	// Do the actual pipeline config.
 	ConfigureROV(use_rov_color, use_rov_depth);
 }
@@ -7792,6 +7787,19 @@ void GSRendererHW::ConfigureROV(bool color_rov, bool depth_rov)
 	{
 		m_conf.require_full_barrier = false;
 		m_conf.require_one_barrier = false;
+	}
+}
+
+void GSRendererHW::SetUnorderedAccessFlag(GSTextureCache::Target* rt)
+{
+	// Set flag for ROV activation heuristic. Only used by DX11.
+	// Only needed for RT, as we use a different method for depth.
+	if (rt)
+	{
+		if (m_conf.ps.HasColorROV())
+			rt->m_texture->SetUnorderedAccess();
+		else
+			rt->m_texture->ClearUnorderedAccess();
 	}
 }
 
@@ -9429,8 +9437,10 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	// Call before computing the full drawlist in case ROV is used and we don't need it.
 	DetermineROVUsage(rt, ds);
 	ConvertDepthFormatROV(ds);
+	SetUnorderedAccessFlag(rt);
 
 	// Barriers must be determined before indices are modified via HandleProvokingVertexFirst/SetupIA.
+	// This also computes the drawlist if needed.
 	DetermineBarriers(rt, tex);
 
 	// Perform second pass setup here once barriers are determined.
