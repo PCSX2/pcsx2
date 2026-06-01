@@ -20,6 +20,18 @@ jobs:
       cmakeflags: ""
       buildAppImage: true
     secrets: inherit
+  build_linux_debug:
+    name: "Debug"
+    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
+    uses: ./.github/workflows/linux_build_qt.yml
+    with:
+      jobName: "Debug Build"
+      artifactPrefixName: "PCSX2-linux-Qt-x64-debug"
+      compiler: clang
+      cmakeflags: ""
+      buildAppImage: true
+      cmakeBuildType: Debug
+    secrets: inherit
   build_linux_flatpak:
     name: "Flatpak"
     if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
