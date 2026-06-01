@@ -629,8 +629,6 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 			}
 			case MsgVersion:
 			{
-				if (!VMManager::HasValidVM())
-					goto error;
 				u32 size = strlen(BuildVersion::GitRev) + 7;
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size)) [[unlikely]]
 					goto error;
