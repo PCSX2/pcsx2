@@ -5805,7 +5805,7 @@ void GSRendererHW::DetermineAlphaScaling(GSTextureCache::Target* rt, GSTextureCa
 
 void GSRendererHW::EmulateAA1()
 {
-	pxAssert(!features.aa1 || features.feedback_loops());
+	pxAssert(!g_gs_device->Features().aa1 || g_gs_device->Features().feedback_loops());
 
 	if (IsCoverageAlphaSupported())
 	{
