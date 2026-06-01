@@ -39,6 +39,10 @@ on:
         required: false
         type: boolean
         default: false
+      cmakeBuildType:
+        required: false
+        type: string
+        default: Release
 
 jobs:
   build_linux:
@@ -129,7 +133,7 @@ jobs:
           ADDITIONAL_CMAKE_ARGS: ${{ inputs.cmakeflags }}
         run: |
           cmake -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_BUILD_TYPE="${{ inputs.cmakeBuildType }}" \
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
             -DCMAKE_PREFIX_PATH="$HOME/deps" \
             -DCMAKE_C_COMPILER=clang-17 \
