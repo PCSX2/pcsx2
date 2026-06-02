@@ -260,6 +260,23 @@ static void xa_inject_process(const uint8_t* transfer, [[maybe_unused]] int mode
 	// Configure ADMA on first sector
 	xa_configure_adma();
 
+	// Backpressure: drop sector if ring is nearly full (>= 87.5% capacity)
+	// This prevents overwriting unplayed audio. CD will keep delivering sectors
+	// but we simply discard them until drain catches up.
+	{
+		uint32_t ring_avail = (g_xa_pcm_write - g_xa_pcm_read) & XA_RING_MASK;
+		uint32_t threshold = XA_PCM_RING_SIZE - (XA_PCM_RING_SIZE / 8);  // 87.5%
+		if (ring_avail >= threshold) {
+			// Drop this sector — ring is full, let ADMA drain
+			static int drop_count = 0;
+			drop_count++;
+			if (drop_count <= 5 || (drop_count % 100) == 0)
+				Console.WriteLn("[XA-INJECT] DROP sector %u (ring_avail=%u >= threshold=%u, drops=%d)",
+					s_xa.sectors, ring_avail, threshold, drop_count);
+			return;
+		}
+	}
+
 	// Feed to ring buffer
 	xa_feed_to_ring(pcm_buf, num_samples);
 
