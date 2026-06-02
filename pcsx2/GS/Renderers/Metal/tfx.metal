@@ -611,22 +611,27 @@ struct PSMain
 	float4 sample_c_af(float2 uv, float uv_w)
 	{
 		// HW sampler will reject bad UVs, match that here.
-		uv = any(isnan(uv) | isinf(uv)) ? float2(0, 0) : uv;
+		uv = any(isnan(uv) | isinf(uv)) ? float2(0.0f, 0.0f) : uv;
 
 		// Large floating point values risk NaN/Inf values.
 		// Above this value floats lose decimal precision, so seems a resonable limit for UVs.
 		uv = clamp(uv, -8388608.0f, 8388608.0f);
 
 		// Below taken from https://microsoft.github.io/DirectX-Specs/d3d/archive/D3D11_3_FunctionalSpec.htm#7.18.11%20LOD%20Calculations
+		// And https://registry.khronos.org/OpenGL/extensions/EXT/EXT_texture_filter_anisotropic.txt
 		// With guidance from https://pema.dev/2025/05/09/mipmaps-too-much-detail/
 		float2 sz = float2(get_tex_dims());
 		float2 dX = dfdx(uv) * sz;
 		float2 dY = dfdy(uv) * sz;
 
+		float length_x = length(dX);
+		float length_y = length(dY);
+
 		// Calculate Ellipse Transform
-		bool d_zero = length(dX) == 0 || length(dY) == 0;
-		bool d_par = (dX.x * dY.y - dY.x * dX.y) == 0;
-		bool d_per = dot(dX, dY) == 0;
+		bool d_zero = length_x < 0.001f || length_y < 0.001f;
+		float f = (dX.x * dY.y - dX.y * dY.x);
+		bool d_par = f < 0.001f;
+		bool d_per = dot(dX, dY) < 0.001f;
 		bool d_inf_nan = any(isinf(dX) | isinf(dY) | isnan(dX) | isnan(dY));
 
 		if (!(d_zero || d_par || d_per || d_inf_nan))
@@ -634,21 +639,30 @@ struct PSMain
 			float A = dX.y * dX.y + dY.y * dY.y;
 			float B = -2 * (dX.x * dX.y + dY.x * dY.y);
 			float C = dX.x * dX.x + dY.x * dY.x;
-			float f = (dX.x * dY.y - dY.x * dX.y);
 			float F = f * f;
 
 			float p = A - C;
 			float q = A + C;
 			float t = sqrt(p * p + B * B);
 
+			float signB = sign(B);
+			float denom_plus  = t * (q + t);
+			float denom_minus = t * (q - t);
+
+			float sqrtA = sqrt(F * (t + p));
+			float sqrtB = sqrt(F * (t - p));
+
+			float inv_sqrt_denom_plus  = rsqrt(denom_plus);
+			float inv_sqrt_denom_minus = rsqrt(denom_minus);
+
 			float2 new_dX = float2(
-				sqrt(F * (t + p) / (t * (q + t))),
-				sqrt(F * (t - p) / (t * (q + t))) * sign(B)
+				sqrtA * inv_sqrt_denom_plus,
+				sqrtB * inv_sqrt_denom_plus * signB
 			);
 
 			float2 new_dY = float2(
-				sqrt(F * (t - p) / (t * (q - t))) * -sign(B),
-				sqrt(F * (t + p) / (t * (q - t)))
+				sqrtB * inv_sqrt_denom_minus * -signB,
+				sqrtA * inv_sqrt_denom_minus
 			);
 
 			d_inf_nan = any(isinf(new_dX) | isinf(new_dY) | isnan(new_dX) | isnan(new_dY));
@@ -656,16 +670,15 @@ struct PSMain
 			{
 				dX = new_dX;
 				dY = new_dY;
+				length_x = length(dX);
+				length_y = length(dY);
 			}
 		}
 
 		// Compute AF values
-		float squared_length_x = dX.x * dX.x + dX.y * dX.y;
-		float squared_length_y = dY.x * dY.x + dY.y * dY.y;
-		float determinant = abs(dX.x * dY.y - dX.y * dY.x);
-		bool is_major_x = squared_length_x > squared_length_y;
-		float squared_length_major = is_major_x ? squared_length_x : squared_length_y;
-		float length_major = sqrt(squared_length_major);
+		bool is_major_x = length_x > length_y;
+		float length_major = is_major_x ? length_x : length_y;
+		float length_minor = is_major_x ? length_y : length_x;
 
 		float aniso_ratio;
 		float length_lod;
@@ -677,41 +690,25 @@ struct PSMain
 			// Perform isotropic filtering instead.
 			aniso_ratio = 1.0f;
 			length_lod = length_major;
-			aniso_line = float2(0, 0);
+			aniso_line = float2(0.0f, 0.0f);
 		}
 		else
 		{
-			float norm_major = 1.0f / length_major;
+			float2 aniso_line_dir = is_major_x ? dX : dY;
 
-			float2 aniso_line_dir = float2(
-				(is_major_x ? dX.x : dY.x) * norm_major,
-				(is_major_x ? dX.y : dY.y) * norm_major
-			);
-
-			aniso_ratio = squared_length_major / determinant;
-
-			// Calculate the minor length of the ellipse for Lod, while also clamping the ratio of anisotropy.
-			if (aniso_ratio > PS_SW_ANISO)
-			{
-				// ratio is clamped - Lod is based on ratio (preserves area)
-				aniso_ratio = PS_SW_ANISO;
-				length_lod = length_major / PS_SW_ANISO;
-			}
-			else
-			{
-				// ratio not clamped - Lod is based on area
-				length_lod = determinant / length_major;
-			}
+			aniso_ratio = min(length_major / length_minor, float(PS_SW_ANISO));
+			length_lod = length_major / aniso_ratio;
 
 			// clamp to top Lod
 			if (length_lod < 1.0f)
 				aniso_ratio = max(1.0f, aniso_ratio * length_lod);
 
 			aniso_ratio = round(aniso_ratio);
-			aniso_line = aniso_line_dir * 0.5f * length_major * (1.0f / sz);
+
+			aniso_line = aniso_line_dir * 0.5f * (1.0f / sz);
 		}
 
-		float lod = PS_AUTOMATIC_LOD ? log2(length_lod) : PS_MANUAL_LOD ? manual_lod(uv_w) : 0;
+		float lod = PS_AUTOMATIC_LOD ? log2(length_lod) : PS_MANUAL_LOD ? manual_lod(uv_w) : 0.0f;
 
 		float4 colour;
 		if (aniso_ratio == 1.0f)
@@ -720,10 +717,11 @@ struct PSMain
 		}
 		else
 		{
-			float4 num = float4(0, 0, 0, 0);
+			float4 num = float4(0.0f, 0.0f, 0.0f, 0.0f);
+			float2 segment = (2.0f * aniso_line) / aniso_ratio;
 			for (int i = 0; i < aniso_ratio; i++)
 			{
-				float2 d = -aniso_line + (0.5f + i) * (2.0f * aniso_line) / aniso_ratio;
+				float2 d = -aniso_line + (0.5f + i) * segment;
 				float2 uv_sample = uv + d;
 				float4 sample_colour = sample_tex(tex_sampler, uv_sample, level(lod));
 				num += sample_colour;
