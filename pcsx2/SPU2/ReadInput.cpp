@@ -220,10 +220,10 @@ StereoOut32 V_Core::ReadInput()
 		if (Index == 0 && g_xa_adma_active) {
 			int half_to_fill = (ReadIndex == 0x100) ? 0 : (ReadIndex == 0) ? 1 : -1;
 			if (half_to_fill >= 0 && half_to_fill != g_xa_last_half_filled) {
-				// Pump sectors from FIFO to keep ring fed (target: ~50% capacity)
+				// Pump sectors from FIFO to keep ring fed (target: ~4 sectors ahead)
 				uint32_t ring_avail = (g_xa_pcm_write - g_xa_pcm_read) & XA_RING_MASK;
-				if (ring_avail < XA_PCM_RING_SIZE / 2) {
-					xa_pump_fifo_to_ring_impl(XA_PCM_RING_SIZE / 2);
+				if (ring_avail < 32256) {  // < 4 sectors stereo (4 * 4032 * 2)
+					xa_pump_fifo_to_ring_impl(32256);
 				}
 
 				uint32_t base_l = 0x2000 + half_to_fill * 0x100;
@@ -266,8 +266,7 @@ StereoOut32 V_Core::ReadInput()
 				}
 
 				g_xa_last_half_filled = half_to_fill;
-				InputDataLeft = 0x200;
-				AdmaInProgress = 1;
+				// Don't touch InputDataLeft/AdmaInProgress here — let game DMA flow normally
 
 				// Track consecutive underrun fills for mute detection
 				if (underrun_this >= 128) {
