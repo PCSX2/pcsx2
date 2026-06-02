@@ -18,6 +18,12 @@ extern uint32_t g_xa_pcm_read;
 extern int g_xa_last_half_filled;
 extern int g_xa_freq;
 static constexpr uint32_t XA_RING_MASK = 524287;
+static constexpr uint32_t XA_PCM_RING_SIZE = 524288;
+
+// Sector FIFO globals (defined in Ps1CD.cpp)
+extern uint8_t g_xa_sector_fifo[];
+extern uint32_t g_xa_sector_fifo_write;
+extern uint32_t g_xa_sector_fifo_read;
 
 // Fractional resampler state: consume XA ring at g_xa_freq, output at 48000 Hz
 static uint32_t s_xa_phase_acc = 0;
@@ -26,6 +32,9 @@ static int16_t  s_xa_prev_R = 0;
 static int16_t  s_xa_cur_L = 0;
 static int16_t  s_xa_cur_R = 0;
 static uint32_t s_xa_underrun_count = 0;
+
+// Pump sectors from FIFO to ring — declared in XaInject.h, implemented in Ps1CD.cpp
+extern void xa_pump_fifo_to_ring_impl(uint32_t target_ring_avail);
 
 // Core 0 Input is "SPDIF mode" - Source audio is AC3 compressed.
 
@@ -211,6 +220,12 @@ StereoOut32 V_Core::ReadInput()
 		if (Index == 0 && g_xa_adma_active) {
 			int half_to_fill = (ReadIndex == 0x100) ? 0 : (ReadIndex == 0) ? 1 : -1;
 			if (half_to_fill >= 0 && half_to_fill != g_xa_last_half_filled) {
+				// Pump sectors from FIFO to keep ring fed (target: ~50% capacity)
+				uint32_t ring_avail = (g_xa_pcm_write - g_xa_pcm_read) & XA_RING_MASK;
+				if (ring_avail < XA_PCM_RING_SIZE / 2) {
+					xa_pump_fifo_to_ring_impl(XA_PCM_RING_SIZE / 2);
+				}
+
 				uint32_t base_l = 0x2000 + half_to_fill * 0x100;
 				uint32_t base_r = 0x2200 + half_to_fill * 0x100;
 				int underrun_this = 0;

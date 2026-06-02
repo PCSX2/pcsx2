@@ -1,13 +1,15 @@
 // SPDX-FileCopyrightText: 2026 Frente C / DKWDRV Hacking Project
 // SPDX-License-Identifier: GPL-3.0+
 //
-// XA-ADPCM Inject for PCSX2 Ps1CD.cpp — v8 (xa-working-bgm-v2)
+// XA-ADPCM Inject for PCSX2 Ps1CD.cpp — v9 (xa-working-bgm-v2)
 //
-// Decoder: pwndrv validated (5 K0/K1 filters, separate L/R history,
-//          correct stereo nibble layout, 16-bit history clamp).
-// Output:  Stereo-interleaved ring buffer → drain-side resampler in ReadInput.cpp.
-// Fixes:   From xa-fix-pause-drain: soft-pause, ADMA re-apply, audio sector filtering,
-//          CdlInit filter reset, STRSND mode auto-activate.
+// Architecture: Sector FIFO + demand-driven decode.
+//   CD read → raw sector FIFO (never dropped)
+//   ADMA fill callback → decode from FIFO into PCM ring as needed
+//   Resampler drains ring at correct pitch (37800/18900 → 48000 Hz)
+//
+// This eliminates both overflow (ring never overfills) and starvation
+// (full stream is preserved in sector FIFO).
 
 #pragma once
 
@@ -25,10 +27,21 @@ extern s16 _spu2mem[];
 static const int32_t XA_K0[5] = {  0,   60,  115,  98, 122 };
 static const int32_t XA_K1[5] = {  0,    0,  -52, -55, -60 };
 
-// ─── Ring buffer (stereo-interleaved: L,R,L,R,...) ──────────────────────────
+// ─── PCM Ring buffer (stereo-interleaved: L,R,L,R,...) ──────────────────────
 
 static constexpr int XA_PCM_RING_SIZE = 524288;  // ~7s at 37800Hz stereo
 static constexpr uint32_t XA_RING_MASK = XA_PCM_RING_SIZE - 1;
+
+// ─── Sector FIFO (raw 2336-byte XA audio payloads) ──────────────────────────
+
+static constexpr int XA_SECTOR_SIZE = 2336;        // raw audio payload per sector
+static constexpr int XA_SECTOR_FIFO_COUNT = 4096;  // ~218s at 37800Hz stereo
+static constexpr uint32_t XA_SECTOR_FIFO_MASK = XA_SECTOR_FIFO_COUNT - 1;
+
+// Sector FIFO storage (defined in Ps1CD.cpp alongside other globals)
+extern uint8_t g_xa_sector_fifo[];           // [XA_SECTOR_FIFO_COUNT * XA_SECTOR_SIZE]
+extern uint32_t g_xa_sector_fifo_write;       // write index (sectors)
+extern uint32_t g_xa_sector_fifo_read;        // read index (sectors)
 
 // ─── Decoder State ──────────────────────────────────────────────────────────
 
@@ -37,8 +50,8 @@ struct XAInjectState {
 	bool     adma_started;
 	int32_t  h1_l, h2_l;    // separate L/R history (pwndrv)
 	int32_t  h1_r, h2_r;
-	uint32_t sectors;
-	uint64_t last_decode_ticks;
+	uint32_t sectors;        // total sectors received from CD
+	uint32_t decoded;        // total sectors decoded from FIFO
 	uint8_t  cur_file;
 	uint8_t  cur_chan;
 	int      freq;           // 37800 or 18900
@@ -58,12 +71,6 @@ extern int g_xa_last_half_filled;
 extern int g_xa_freq;
 
 // ─── XA ADPCM Decode (pwndrv validated — bit-exact with Python reference) ───
-//
-// Key differences from v6:
-//  - 5 filter coefficients (not 4) — filter index can be 0-4
-//  - Separate L/R ADPCM history
-//  - History clamped to 16-bit before storage (prevents overflow artifacts)
-//  - Stereo nibble layout: byte at 16+s*4+(u/2), even u=low nibble (L), odd u=high (R)
 
 static int xa_decode_sector_to_pcm(const uint8_t* raw_sector, int16_t* pcm_out, int max_samples)
 {
@@ -75,7 +82,7 @@ static int xa_decode_sector_to_pcm(const uint8_t* raw_sector, int16_t* pcm_out, 
 	int freq = ((coding >> 2) & 0x03) ? 18900 : 37800;
 	int nbits = ((coding >> 4) & 0x01) ? 8 : 4;
 
-	// Reset history on format change
+	// Update format on change
 	if (freq != s_xa.freq || stereo != s_xa.stereo || nbits != s_xa.nbits) {
 		s_xa.freq = freq;
 		s_xa.stereo = stereo;
@@ -96,11 +103,10 @@ static int xa_decode_sector_to_pcm(const uint8_t* raw_sector, int16_t* pcm_out, 
 		int num_units = (nbits == 4) ? 8 : 4;
 
 		for (int u = 0; u < num_units; u++) {
-			// Sound parameter index (pwndrv validated)
 			int p_idx = (nbits == 4) ? ((u < 4) ? u : (u - 4 + 8)) : u;
 			uint8_t sp = grp[p_idx];
 			int filter = (sp >> 4) & 0x0F;
-			if (filter > 4) filter = 0;  // safety: only 0-4 valid
+			if (filter > 4) filter = 0;
 			int range = sp & 0x0F;
 			if (range > 12) range = 9;
 
@@ -108,8 +114,6 @@ static int xa_decode_sector_to_pcm(const uint8_t* raw_sector, int16_t* pcm_out, 
 				int32_t sample;
 
 				if (nbits == 4) {
-					// Nibble layout (same for mono and stereo per pwndrv):
-					// byte at 16 + s*4 + (u/2), even u = low nibble, odd u = high nibble
 					int byte_pos = 16 + s * 4 + (u / 2);
 					int get_high = (u & 1);
 					uint8_t byte = grp[byte_pos];
@@ -121,19 +125,16 @@ static int xa_decode_sector_to_pcm(const uint8_t* raw_sector, int16_t* pcm_out, 
 					sample = (int16_t)((uint16_t)(byte << 8)) >> range;
 				}
 
-				// Apply filter + history (separate L/R channels)
 				if (!stereo || (u % 2 == 0)) {
-					// Left channel (or mono)
 					sample += ((XA_K0[filter] * h1l) + (XA_K1[filter] * h2l) + 32) >> 6;
 					h2l = h1l;
-					h1l = std::clamp(sample, -32768, 32767);  // 16-bit clamp on history (ppc_decomp fix)
+					h1l = std::clamp(sample, -32768, 32767);
 					if (out_idx < max_samples)
 						pcm_out[out_idx++] = (int16_t)h1l;
 				} else {
-					// Right channel
 					sample += ((XA_K0[filter] * h1r) + (XA_K1[filter] * h2r) + 32) >> 6;
 					h2r = h1r;
-					h1r = std::clamp(sample, -32768, 32767);  // 16-bit clamp on history
+					h1r = std::clamp(sample, -32768, 32767);
 					if (out_idx < max_samples)
 						pcm_out[out_idx++] = (int16_t)h1r;
 				}
@@ -147,44 +148,54 @@ static int xa_decode_sector_to_pcm(const uint8_t* raw_sector, int16_t* pcm_out, 
 	return out_idx;
 }
 
-// ─── Ring buffer feed (stereo-interleaved) ──────────────────────────────────
+// ─── Feed decoded PCM to ring (stereo-interleaved) ──────────────────────────
 
 static void xa_feed_to_ring(int16_t* pcm, int num_samples)
 {
-	// For mono: duplicate each sample to L,R in ring
-	// For stereo: samples already interleaved L,R,L,R from decoder
-	int16_t peak = 0;
-
 	if (!s_xa.stereo) {
-		// Mono: write each sample as L,R pair
+		// Mono: duplicate each sample as L,R pair
 		for (int i = 0; i < num_samples; i++) {
-			int16_t s = pcm[i];
-			if (s > peak) peak = s;
-			if (-s > peak) peak = -s;
-			g_xa_pcm_ring[g_xa_pcm_write] = s;
+			g_xa_pcm_ring[g_xa_pcm_write] = pcm[i];
 			g_xa_pcm_write = (g_xa_pcm_write + 1) & XA_RING_MASK;
-			g_xa_pcm_ring[g_xa_pcm_write] = s;  // duplicate to R
+			g_xa_pcm_ring[g_xa_pcm_write] = pcm[i];
 			g_xa_pcm_write = (g_xa_pcm_write + 1) & XA_RING_MASK;
 		}
 	} else {
 		// Stereo: already L,R,L,R
 		for (int i = 0; i < num_samples; i++) {
-			int16_t s = pcm[i];
-			if (s > peak) peak = s;
-			if (-s > peak) peak = -s;
-			g_xa_pcm_ring[g_xa_pcm_write] = s;
+			g_xa_pcm_ring[g_xa_pcm_write] = pcm[i];
 			g_xa_pcm_write = (g_xa_pcm_write + 1) & XA_RING_MASK;
 		}
 	}
+}
 
-	// Log
-	static int feed_count = 0;
-	feed_count++;
-	if (feed_count <= 10 || feed_count % 100 == 0) {
+// ─── Demand-driven decode: called from ADMA fill to keep ring fed ───────────
+// Decodes sectors from FIFO until ring has at least target_samples available
+// or FIFO is empty. Called from ReadInput.cpp ADMA fill path.
+
+static void xa_pump_fifo_to_ring(uint32_t target_ring_avail)
+{
+	static int16_t pcm_buf[8192];
+
+	while (true) {
 		uint32_t ring_avail = (g_xa_pcm_write - g_xa_pcm_read) & XA_RING_MASK;
-		Console.WriteLn("[XA-FEED] #%d: %d samples, peak=%d, ring_avail=%u, pcm[0..3]=%d %d %d %d",
-			feed_count, num_samples, (int)peak, ring_avail,
-			(int)pcm[0], (int)pcm[1], (int)pcm[2], (int)pcm[3]);
+		if (ring_avail >= target_ring_avail)
+			break;
+
+		// Check if FIFO has sectors
+		if (g_xa_sector_fifo_read == g_xa_sector_fifo_write)
+			break;  // FIFO empty
+
+		// Decode next sector from FIFO
+		uint8_t* sector = &g_xa_sector_fifo[g_xa_sector_fifo_read * XA_SECTOR_SIZE];
+		g_xa_sector_fifo_read = (g_xa_sector_fifo_read + 1) & XA_SECTOR_FIFO_MASK;
+
+		int num_samples = xa_decode_sector_to_pcm(sector, pcm_buf, 8192);
+		if (num_samples <= 0)
+			continue;
+
+		s_xa.decoded++;
+		xa_feed_to_ring(pcm_buf, num_samples);
 	}
 }
 
@@ -219,14 +230,7 @@ static void xa_configure_adma()
 		Cores[0].AutoDMACtrl, s_xa.stereo, s_xa.freq);
 }
 
-// ─── Reset ADMA flag (called from spu2sys.cpp when game clears AutoDMACtrl) ─
-
-static void xa_inject_reset_adma_flag()
-{
-	s_xa.adma_started = false;
-}
-
-// ─── Process one XA sector ──────────────────────────────────────────────────
+// ─── Process one XA sector from CD read (push to FIFO) ─────────────────────
 
 static void xa_inject_process(const uint8_t* transfer, [[maybe_unused]] int mode,
                               [[maybe_unused]] uint8_t file_filter, [[maybe_unused]] uint8_t chan_filter)
@@ -243,41 +247,38 @@ static void xa_inject_process(const uint8_t* transfer, [[maybe_unused]] int mode
 	if (s_xa.cur_file != 0 && file != s_xa.cur_file) return;
 	if (s_xa.cur_chan != 0 && chan != s_xa.cur_chan) return;
 
-	// Decode XA sector to PCM
-	static int16_t pcm_buf[8192];
-	int num_samples = xa_decode_sector_to_pcm(transfer, pcm_buf, 8192);
-	if (num_samples <= 0) return;
-
 	s_xa.sectors++;
 
-	// Configure ADMA on first sector
-	xa_configure_adma();
-
-	// Backpressure: drop sector if ring is nearly full (>= 87.5% capacity)
-	// This prevents overwriting unplayed audio. CD will keep delivering sectors
-	// but we simply discard them until drain catches up.
-	{
-		uint32_t ring_avail = (g_xa_pcm_write - g_xa_pcm_read) & XA_RING_MASK;
-		uint32_t threshold = XA_PCM_RING_SIZE - (XA_PCM_RING_SIZE / 8);  // 87.5%
-		if (ring_avail >= threshold) {
-			// Drop this sector — ring is full, let ADMA drain
-			static int drop_count = 0;
-			drop_count++;
-			if (drop_count <= 5 || (drop_count % 100) == 0)
-				Console.WriteLn("[XA-INJECT] DROP sector %u (ring_avail=%u >= threshold=%u, drops=%d)",
-					s_xa.sectors, ring_avail, threshold, drop_count);
-			return;
-		}
+	// First sector: detect format and configure ADMA
+	if (s_xa.sectors == 1) {
+		// Parse format from this sector to set freq/stereo before ADMA configure
+		uint8_t coding = transfer[7];  // subheader byte 3
+		int stereo = (coding & 0x01) ? 1 : 0;
+		int freq = ((coding >> 2) & 0x03) ? 18900 : 37800;
+		int nbits = ((coding >> 4) & 0x01) ? 8 : 4;
+		s_xa.freq = freq;
+		s_xa.stereo = stereo;
+		s_xa.nbits = nbits;
+		g_xa_freq = freq;
+		g_xa_adma_stereo = stereo;
+		Console.WriteLn("[XA-INJECT] Format: %dHz %dbit %s", freq, nbits, stereo ? "stereo" : "mono");
+		xa_configure_adma();
 	}
 
-	// Feed to ring buffer
-	xa_feed_to_ring(pcm_buf, num_samples);
+	// Push raw sector to FIFO
+	uint32_t next_write = (g_xa_sector_fifo_write + 1) & XA_SECTOR_FIFO_MASK;
+	if (next_write == g_xa_sector_fifo_read) {
+		// FIFO full — drop oldest (shouldn't happen with 4096 sectors)
+		g_xa_sector_fifo_read = (g_xa_sector_fifo_read + 1) & XA_SECTOR_FIFO_MASK;
+	}
+	memcpy(&g_xa_sector_fifo[g_xa_sector_fifo_write * XA_SECTOR_SIZE], transfer, XA_SECTOR_SIZE);
+	g_xa_sector_fifo_write = next_write;
 
 	if (s_xa.sectors <= 5 || (s_xa.sectors % 200) == 0) {
+		uint32_t fifo_avail = (g_xa_sector_fifo_write - g_xa_sector_fifo_read) & XA_SECTOR_FIFO_MASK;
 		uint32_t ring_avail = (g_xa_pcm_write - g_xa_pcm_read) & XA_RING_MASK;
-		Console.WriteLn("[XA-INJECT] Sector %u: %d samples (file=%d ch=%d) ring_avail=%u ADMA_ctrl=%d InpVol=%04x",
-			s_xa.sectors, num_samples, file, chan, ring_avail,
-			Cores[0].AutoDMACtrl, (u16)Cores[0].InpVol.Left);
+		Console.WriteLn("[XA-INJECT] Sector %u: (file=%d ch=%d) fifo=%u ring_avail=%u",
+			s_xa.sectors, file, chan, fifo_avail, ring_avail);
 	}
 }
 
@@ -293,10 +294,12 @@ static void xa_inject_init()
 	g_xa_pcm_read = 0;
 	g_xa_adma_active = false;
 	s_xa.sectors = 0;
-	s_xa.last_decode_ticks = 0;
+	s_xa.decoded = 0;
 	s_xa.freq = 0;
 	s_xa.stereo = 0;
 	s_xa.nbits = 0;
+	g_xa_sector_fifo_write = 0;
+	g_xa_sector_fifo_read = 0;
 	Console.WriteLn("[XA-INJECT] Started XA decode, ADMA output to Core 0");
 }
 
@@ -312,10 +315,12 @@ static void xa_inject_stop()
 	Cores[0].AdmaInProgress = 0;
 	Cores[0].InpVol.Left = 0;
 	Cores[0].InpVol.Right = 0;
-	// Flush ring
+	// Flush ring + FIFO
 	g_xa_pcm_write = 0;
 	g_xa_pcm_read = 0;
-	Console.WriteLn("[XA-INJECT] Stopped (%u sectors decoded)", s_xa.sectors);
+	g_xa_sector_fifo_write = 0;
+	g_xa_sector_fifo_read = 0;
+	Console.WriteLn("[XA-INJECT] Stopped (%u sectors received, %u decoded)", s_xa.sectors, s_xa.decoded);
 }
 
 static void xa_inject_setfilter(uint8_t file, uint8_t chan)
@@ -326,14 +331,15 @@ static void xa_inject_setfilter(uint8_t file, uint8_t chan)
 		// Reset history on filter change (new track)
 		s_xa.h1_l = s_xa.h2_l = 0;
 		s_xa.h1_r = s_xa.h2_r = 0;
-		// Flush ring on track change — prevents stale data from old stream
-		// triggering backpressure drops on the new stream
+		// Flush ring + FIFO on track change
 		g_xa_pcm_write = 0;
 		g_xa_pcm_read = 0;
+		g_xa_sector_fifo_write = 0;
+		g_xa_sector_fifo_read = 0;
 		s_xa.sectors = 0;
+		s_xa.decoded = 0;
 		s_xa.adma_started = false;  // force re-configure on next sector
 		s_xa.freq = 0;
-		// Preserve ADMA active state — don't kill the output path
-		Console.WriteLn("[XA-INJECT] SetFilter: file=%d channel=%d (history+ring reset)", file, chan);
+		Console.WriteLn("[XA-INJECT] SetFilter: file=%d channel=%d (full reset)", file, chan);
 	}
 }

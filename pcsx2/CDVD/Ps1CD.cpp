@@ -22,6 +22,17 @@ uint32_t g_xa_pcm_write = 0;
 uint32_t g_xa_pcm_read = 0;
 int g_xa_last_half_filled = -1;
 
+// Sector FIFO: 4096 sectors * 2336 bytes = ~9.6 MB
+uint8_t g_xa_sector_fifo[4096 * 2336] = {};
+uint32_t g_xa_sector_fifo_write = 0;
+uint32_t g_xa_sector_fifo_read = 0;
+
+// Non-static wrapper for xa_pump_fifo_to_ring (called from ReadInput.cpp)
+void xa_pump_fifo_to_ring_impl(uint32_t target_ring_avail)
+{
+	xa_pump_fifo_to_ring(target_ring_avail);
+}
+
 //THIS ALL IS FOR THE CDROM REGISTERS HANDLING
 
 enum cdrom_registers
