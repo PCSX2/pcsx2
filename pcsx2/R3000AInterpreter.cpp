@@ -276,6 +276,7 @@ static s32 intExecuteBlock( s32 eeCycles )
 	psxRegs.iopBreak = 0;
 	psxRegs.iopCycleEE = eeCycles;
 	u64 lastIOPCycle = 0;
+	psxRegs.inIop = true;
 
 	while (psxRegs.iopCycleEE > 0)
 	{
@@ -305,6 +306,8 @@ static s32 intExecuteBlock( s32 eeCycles )
 			psxRegs.iopCycleEE -= (psxRegs.cycle - lastIOPCycle) * 8;
 		}
 	}
+
+	psxRegs.inIop = false;
 
 	return psxRegs.iopBreak + psxRegs.iopCycleEE;
 }

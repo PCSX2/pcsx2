@@ -1010,6 +1010,7 @@ static __noinline s32 recExecuteBlock(s32 eeCycles)
 {
 	psxRegs.iopBreak = 0;
 	psxRegs.iopCycleEE = eeCycles;
+	psxRegs.inIop = true;
 
 #ifdef PCSX2_DEVBUILD
 	//if (SysTrace.SIF.IsActive())
@@ -1035,6 +1036,7 @@ static __noinline s32 recExecuteBlock(s32 eeCycles)
 	((void (*)())iopEnterRecompiledCode)();
 
 	return psxRegs.iopBreak + psxRegs.iopCycleEE;
+	psxRegs.inIop = false;
 }
 
 // Returns the offset to the next instruction after any cleared memory

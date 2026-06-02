@@ -139,7 +139,7 @@ __fi void PSX_INT( IopEventId n, s32 ecycle )
 	const float mutiplier = static_cast<float>(PS2CLK) / static_cast<float>(PSXCLK);
 	const s32 iopDelta = (psxRegs.iopNextEventCycle - psxRegs.cycle) * mutiplier;
 
-	if (psxRegs.iopCycleEE < iopDelta)
+	if (psxRegs.inIop == false)
 	{
 		// The EE called this int, so inform it to branch as needed:
 		

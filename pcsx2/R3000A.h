@@ -114,8 +114,10 @@ struct psxRegisters {
 
 	u64 sCycle[32];		// start cycle for signaled ints
 	s32 eCycle[32];		// cycle delta for signaled ints (sCycle + eCycle == branch cycle)
-	//u32 _msflag[32];
-	//u32 _smflag[32];
+
+	bool inIop; // True if the IOP is currently running
+				// Used to know if PSX_INT was called from the EE...
+
 };
 
 alignas(16) extern psxRegisters psxRegs;
