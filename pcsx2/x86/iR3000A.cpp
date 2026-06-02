@@ -153,17 +153,11 @@ static ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* forma
 
 static void iopRecRecompile(u32 startpc);
 
-static const void* iopDispatcherEvent = nullptr;
 static const void* iopDispatcherReg = nullptr;
 static const void* iopJITCompile = nullptr;
 static const void* iopEnterRecompiledCode = nullptr;
 static const void* iopExitRecompiledCode = nullptr;
 static const void* iopUnmappedRecLUTPage = nullptr;
-
-static void recEventTest()
-{
-	_cpuEventTest_Shared();
-}
 
 // The address for all cleared blocks.  It recompiles the current pc and then
 // dispatches to the recompiled block address.
@@ -246,8 +240,6 @@ static void _DynGen_Dispatchers()
 
 	// Place the EventTest and DispatcherReg stuff at the top, because they get called the
 	// most and stand to benefit from strong alignment and direct referencing.
-	iopDispatcherEvent = xGetPtr();
-	xFastCall((void*)recEventTest);
 	iopDispatcherReg = _DynGen_DispatcherReg();
 
 	iopJITCompile = _DynGen_JITCompile();
