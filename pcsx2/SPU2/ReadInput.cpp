@@ -230,8 +230,9 @@ StereoOut32 V_Core::ReadInput()
 				uint32_t base_r = 0x2200 + half_to_fill * 0x100;
 				int underrun_this = 0;
 
-				// Phase increment: (input_freq / 48000) in 16.16 fixed point
-				uint32_t phase_inc = ((uint32_t)g_xa_freq << 16) / 48000;
+				// Phase increment: (input_freq / output_rate) in 16.16 fixed point
+				// PSX mode runs SPU2 at 44100Hz, not 48000Hz
+				uint32_t phase_inc = ((uint32_t)g_xa_freq << 16) / 44100;
 
 				for (int i = 0; i < 0x100; i++) {
 					s_xa_phase_acc += phase_inc;
@@ -266,7 +267,9 @@ StereoOut32 V_Core::ReadInput()
 				}
 
 				g_xa_last_half_filled = half_to_fill;
-				// Don't touch InputDataLeft/AdmaInProgress here — let game DMA flow normally
+				// Signal ADMA in-progress so SPU2 keeps calling ReadInput
+				InputDataLeft = 0x200;
+				AdmaInProgress = 1;
 
 				// Track consecutive underrun fills for mute detection
 				if (underrun_this >= 128) {
