@@ -300,8 +300,8 @@ else()
 	if(CMAKE_INTERPROCEDURAL_OPTIMIZATION)
 		message(WARNING
 			"The CMAKE_INTERPROCEDURAL_OPTIMIZATION option is enabled but the "
-			"CMAKE_POSITION_INDEPENDENT_CODE option is disabled. This has been "
-			"found to result in broken builds on certain platforms.")
+			"POSITION_INDEPENDENT_CODE option is disabled. This has been found "
+			"to result in broken builds on certain platforms.")
 	endif()
 
 	set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
