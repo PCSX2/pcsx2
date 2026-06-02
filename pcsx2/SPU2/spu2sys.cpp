@@ -1204,6 +1204,14 @@ static void RegWrite_Core(u16 value)
 				}
 				return;
 			}
+			// [DKWDRV HACK] Block AutoDMACtrl clear on Core 0 when XA inject is active
+			{
+				extern bool g_xa_adma_active;
+				if (core == 0 && !(value & 1) && g_xa_adma_active) {
+					value |= 1;
+					Console.WriteLn("[XA-INJECT] Blocked AutoDMACtrl clear (forced bit0=1, game wrote 0x%04X)", value);
+				}
+			}
 			thiscore.AutoDMACtrl = value;
 			if (!(value & 0x3) && thiscore.AdmaInProgress)
 			{
@@ -1269,11 +1277,27 @@ static void RegWrite_CoreExt(u16 value)
 			break;
 
 		case REG_P_BVOLL:
+		{
+			// [DKWDRV HACK] Block InpVol zeroing on Core 0 when XA inject is active
+			extern bool g_xa_adma_active;
+			if (core == 0 && g_xa_adma_active && value == 0) {
+				Console.WriteLn("[XA-INJECT] Blocked InpVol.Left=0 write (keeping 0x7FFF)");
+				break;
+			}
 			thiscore.InpVol.Left = SignExtend16(value);
+		}
 			break;
 
 		case REG_P_BVOLR:
+		{
+			// [DKWDRV HACK] Block InpVol zeroing on Core 0 when XA inject is active
+			extern bool g_xa_adma_active;
+			if (core == 0 && g_xa_adma_active && value == 0) {
+				Console.WriteLn("[XA-INJECT] Blocked InpVol.Right=0 write (keeping 0x7FFF)");
+				break;
+			}
 			thiscore.InpVol.Right = SignExtend16(value);
+		}
 			break;
 
 			// MVOLX has been confirmed to not be allowed to be written to, so cases have been added as a no-op.
