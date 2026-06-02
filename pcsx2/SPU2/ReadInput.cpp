@@ -16,7 +16,16 @@ extern int16_t g_xa_pcm_ring[];
 extern uint32_t g_xa_pcm_write;
 extern uint32_t g_xa_pcm_read;
 extern int g_xa_last_half_filled;
-static constexpr uint32_t XA_RING_MASK = 65535;
+extern int g_xa_freq;
+static constexpr uint32_t XA_RING_MASK = 524287;
+
+// Fractional resampler state: consume XA ring at g_xa_freq, output at 48000 Hz
+static uint32_t s_xa_phase_acc = 0;
+static int16_t  s_xa_prev_L = 0;
+static int16_t  s_xa_prev_R = 0;
+static int16_t  s_xa_cur_L = 0;
+static int16_t  s_xa_cur_R = 0;
+static uint32_t s_xa_underrun_count = 0;
 
 // Core 0 Input is "SPDIF mode" - Source audio is AC3 compressed.
 
@@ -197,46 +206,80 @@ StereoOut32 V_Core::ReadInput()
 		else if (ReadIndex == 0)
 			InputPosWrite = 0x100;
 
-		// XA inject: fill the half that's about to be read next
-		// Only fill when ring actually has data; otherwise let normal ADMA work
-		if (Index == 0 && g_xa_adma_active && ((g_xa_pcm_write - g_xa_pcm_read) & XA_RING_MASK) > 0) {
+		// XA inject: fill the half with resampled data (37800/18900 Hz → 48000 Hz)
+		// Uses fractional phase accumulator so playback rate is correct.
+		if (Index == 0 && g_xa_adma_active) {
 			int half_to_fill = (ReadIndex == 0x100) ? 0 : (ReadIndex == 0) ? 1 : -1;
 			if (half_to_fill >= 0 && half_to_fill != g_xa_last_half_filled) {
-				// Inline fill: 256 samples from global ring to _spu2mem
 				uint32_t base_l = 0x2000 + half_to_fill * 0x100;
 				uint32_t base_r = 0x2200 + half_to_fill * 0x100;
 				int underrun_this = 0;
+
+				// Phase increment: (input_freq / 48000) in 16.16 fixed point
+				uint32_t phase_inc = ((uint32_t)g_xa_freq << 16) / 48000;
+
 				for (int i = 0; i < 0x100; i++) {
-					int16_t sL, sR;
-					if (g_xa_pcm_read != g_xa_pcm_write) {
-						sL = g_xa_pcm_ring[g_xa_pcm_read];
-						g_xa_pcm_read = (g_xa_pcm_read + 1) & XA_RING_MASK;
-					} else { sL = 0; underrun_this++; }
-					if (g_xa_adma_stereo) {
+					s_xa_phase_acc += phase_inc;
+
+					while (s_xa_phase_acc >= 0x10000) {
+						s_xa_phase_acc -= 0x10000;
+						s_xa_prev_L = s_xa_cur_L;
+						s_xa_prev_R = s_xa_cur_R;
 						if (g_xa_pcm_read != g_xa_pcm_write) {
-							sR = g_xa_pcm_ring[g_xa_pcm_read];
+							s_xa_cur_L = g_xa_pcm_ring[g_xa_pcm_read];
 							g_xa_pcm_read = (g_xa_pcm_read + 1) & XA_RING_MASK;
-						} else { sR = sL; }
-					} else { sR = sL; }
-					_spu2mem[base_l + i] = sL;
-					_spu2mem[base_r + i] = sR;
+							// Ring is always stereo-interleaved (mono duplicated in feed)
+							if (g_xa_pcm_read != g_xa_pcm_write) {
+								s_xa_cur_R = g_xa_pcm_ring[g_xa_pcm_read];
+								g_xa_pcm_read = (g_xa_pcm_read + 1) & XA_RING_MASK;
+							} else { s_xa_cur_R = s_xa_cur_L; }
+							underrun_this = 0;
+						} else {
+							// Underrun: fade toward zero
+							s_xa_cur_L = s_xa_cur_L * 3 / 4;
+							s_xa_cur_R = s_xa_cur_R * 3 / 4;
+							underrun_this++;
+						}
+					}
+
+					// Linear interpolation
+					uint32_t frac = s_xa_phase_acc;
+					int16_t outL = (int16_t)(((int32_t)s_xa_prev_L * (0x10000 - frac) + (int32_t)s_xa_cur_L * frac) >> 16);
+					int16_t outR = (int16_t)(((int32_t)s_xa_prev_R * (0x10000 - frac) + (int32_t)s_xa_cur_R * frac) >> 16);
+					_spu2mem[base_l + i] = outL;
+					_spu2mem[base_r + i] = outR;
 				}
+
 				g_xa_last_half_filled = half_to_fill;
 				InputDataLeft = 0x200;
 				AdmaInProgress = 1;
-				
+
+				// Track consecutive underrun fills for mute detection
+				if (underrun_this >= 128) {
+					s_xa_underrun_count++;
+					if (s_xa_underrun_count >= 8) {
+						for (int i = 0; i < 0x100; i++) {
+							_spu2mem[base_l + i] = 0;
+							_spu2mem[base_r + i] = 0;
+						}
+						s_xa_cur_L = 0; s_xa_cur_R = 0;
+						s_xa_prev_L = 0; s_xa_prev_R = 0;
+					}
+				} else {
+					s_xa_underrun_count = 0;
+				}
+
 				static uint32_t fill_log = 0;
 				fill_log++;
 				if (fill_log <= 10 || fill_log % 500 == 0) {
 					uint32_t ring_avail = (g_xa_pcm_write - g_xa_pcm_read) & XA_RING_MASK;
-					Console.WriteLn("[XA-ADMA-FILL] #%u half=%d underrun=%d ring_avail=%u mem[L]=%d %d %d %d",
+					Console.WriteLn("[XA-ADMA-FILL] #%u half=%d underrun=%d ring_avail=%u mem[L]=%d %d %d %d phase_inc=0x%04X",
 						fill_log, half_to_fill, underrun_this, ring_avail,
 						(int)_spu2mem[base_l], (int)_spu2mem[base_l+1],
-						(int)_spu2mem[base_l+2], (int)_spu2mem[base_l+3]);
+						(int)_spu2mem[base_l+2], (int)_spu2mem[base_l+3],
+						phase_inc);
 				}
 			}
-		} else if (Index == 0 && g_xa_adma_active && false) {
-			// dead branch — keeping structure
 		}
 
 		// [DKWDRV HACK] Only block normal ADMA when XA ring actually has data

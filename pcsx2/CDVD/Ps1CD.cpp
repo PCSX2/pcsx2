@@ -15,8 +15,9 @@
 
 // Global shared state for XA ADMA (cross-TU with ReadInput.cpp)
 bool g_xa_adma_active = false;
+int g_xa_freq = 37800;
 bool g_xa_adma_stereo = false;
-int16_t g_xa_pcm_ring[65536] = {};
+int16_t g_xa_pcm_ring[524288] = {};
 uint32_t g_xa_pcm_write = 0;
 uint32_t g_xa_pcm_read = 0;
 int g_xa_last_half_filled = -1;
@@ -305,7 +306,10 @@ void cdrInterrupt()
 			break;
 
 		case CdlInit:
-			xa_inject_stop();  // [DKWDRV HACK] Stop XA on CD init
+			// [DKWDRV HACK] Reset XA state on CdInit — clears stale filter
+			xa_inject_stop();
+			cdr.File = 0;
+			cdr.Channel = 0;
 			SetResultSize(1);
 			cdr.StatP = STATUS_ROTATING;
 			cdr.Mode |= MODE_INIT;
@@ -606,6 +610,38 @@ void cdrReadInterrupt()
 
 	// [DKWDRV HACK] Intercept XA audio sectors and decode them
 	xa_inject_process(cdr.Transfer, cdr.Mode, cdr.File, cdr.Channel);
+
+	// [DKWDRV HACK] In ReadS mode with XA active, audio sectors matching
+	// the filter should be consumed silently — NOT delivered to the game.
+	// On real PS1, the CD controller routes matching audio sectors to the
+	// XA-ADPCM decoder and only fires DataReady IRQ for non-audio sectors.
+	if (cdr.Reading == 2 && s_xa.active) {
+		uint8_t submode = cdr.Transfer[4 + 2];  // subheader submode
+		if (submode & 0x04) {  // audio sector
+			uint8_t file = cdr.Transfer[4];
+			uint8_t chan = cdr.Transfer[5];
+			bool matches_filter = true;
+			if (cdr.File != 0 && file != cdr.File) matches_filter = false;
+			if (cdr.Channel != 0 && chan != cdr.Channel) matches_filter = false;
+			if (matches_filter) {
+				// Audio sector consumed by XA inject — skip game delivery
+				cdr.Stat = NoIntr;
+				cdr.SetSector[2]++;
+				if (cdr.SetSector[2] == 75) {
+					cdr.SetSector[2] = 0;
+					cdr.SetSector[1]++;
+					if (cdr.SetSector[1] == 60) {
+						cdr.SetSector[1] = 0;
+						cdr.SetSector[0]++;
+					}
+				}
+				cdr.Readed = 0;
+				ReadTrack();
+				CDREAD_INT((cdr.Mode & 0x80) ? (cdReadTime / 2) : cdReadTime);
+				return;
+			}
+		}
+	}
 
 	CDVD_LOG(" %x:%x:%x", cdr.Transfer[0], cdr.Transfer[1], cdr.Transfer[2]);
 
@@ -955,8 +991,8 @@ void cdrWrite1(u8 rt)
 		case CdlReadS:
 			cdr.Irq = 0;
 			StopReading();
-			// [DKWDRV HACK] Only start XA decode if a filter was set (game wants XA audio)
-			if (cdr.File != 0 || cdr.Channel != 0)
+			// [DKWDRV HACK] Start XA decode if filter set OR STRSND mode (FMV streaming)
+			if ((cdr.File != 0 || cdr.Channel != 0) || (cdr.Mode & MODE_STRSND))
 				xa_inject_init();
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
