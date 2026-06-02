@@ -333,7 +333,14 @@ static void xa_inject_setfilter(uint8_t file, uint8_t chan)
 		// Reset history on filter change (new track)
 		s_xa.h1_l = s_xa.h2_l = 0;
 		s_xa.h1_r = s_xa.h2_r = 0;
-		// Preserve ADMA — don't reset adma_started (xa-fix-pause-drain lesson)
-		Console.WriteLn("[XA-INJECT] SetFilter: file=%d channel=%d (history reset, ADMA preserved)", file, chan);
+		// Flush ring on track change — prevents stale data from old stream
+		// triggering backpressure drops on the new stream
+		g_xa_pcm_write = 0;
+		g_xa_pcm_read = 0;
+		s_xa.sectors = 0;
+		s_xa.adma_started = false;  // force re-configure on next sector
+		s_xa.freq = 0;
+		// Preserve ADMA active state — don't kill the output path
+		Console.WriteLn("[XA-INJECT] SetFilter: file=%d channel=%d (history+ring reset)", file, chan);
 	}
 }
