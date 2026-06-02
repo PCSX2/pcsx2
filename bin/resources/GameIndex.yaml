@@ -5242,17 +5242,17 @@ SCES-50956:
     PCRTCOverscan: 1 # Fixes offscreen image.
 SCES-50957:
   name: "Disney's Stitch - Experiment 626"
-  region: "PAL-NL-I"
+  region: "PAL-M2" # Dutch + Italian
 SCES-50959:
   name: "Disney's Stitch - Experiment 626"
-  region: "PAL-P-S"
+  region: "PAL-M2" # Portuguese + Spanish
 SCES-50960:
   name: "Disney's Stitch - Experiment 626"
-  region: "PAL-F-G"
+  region: "PAL-M2" # French + German
   compat: 5
 SCES-50966:
   name: "Disney's Stitch - Experiment 626"
-  region: "PAL-E-SE"
+  region: "PAL-M2" # English + Swedish
 SCES-50967:
   name: "Kingdom Hearts"
   region: "PAL-E"
@@ -5508,7 +5508,7 @@ SCES-51611:
     PCRTCOffsets: 1 # Fixes boot videos screen size.
 SCES-51612:
   name: "This Is Football 2004"
-  region: "PAL-E-NO"
+  region: "PAL-M2" # English + Norwegian
   gsHWFixes:
     PCRTCOffsets: 1 # Fixes boot videos screen size.
 SCES-51613:
@@ -6603,7 +6603,7 @@ SCES-54507:
   region: "PAL-M3"
 SCES-54524:
   name: "Buzz! Junior - Jungle Party"
-  region: "PAL-AU-SW" # Austria + Switzerland
+  region: "PAL-M2" # Austria + Switzerland
 SCES-54526:
   name: "The Big! Sports Quiz"
   region: "PAL-M"
@@ -6998,13 +6998,13 @@ SCES-55421:
   region: "PAL-M"
 SCES-55423:
   name: "Buzz! Brain of the World"
-  region: "PAL-DK-E-NO"
+  region: "PAL-M3" # Danish + English + Norwegian
 SCES-55424:
   name: "Buzz! Brain of the World"
   region: "PAL-Unk"
 SCES-55425:
   name: "Buzz! Brain of the World"
-  region: "PAL-E-FI-SE"
+  region: "PAL-M3" # English + Finish + Swedish
 SCES-55435:
   name: "SingStar - ABBA"
   region: "PAL-E"
@@ -21931,7 +21931,7 @@ SLES-52895:
     nativeScaling: 2 # Fixes post effects.
 SLES-52896:
   name: "Nickelodeon SpongeBob SquarePants - The Movie"
-  region: "PAL-F-NL"
+  region: "PAL-M2" # Dutch + French
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes missing lights.
     halfPixelOffset: 4 # Aligns post-processing.
@@ -21992,7 +21992,7 @@ SLES-52911:
     cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-52912:
   name: "UEFA Champions League 2004-2005"
-  region: "PAL-E-NL"
+  region: "PAL-M2" # Dutch + English
   gameFixes:
     - EETimingHack # Fixes graphical corruption.
   gsHWFixes:
@@ -25740,7 +25740,7 @@ SLES-54117:
 SLES-54118:
   name: "The Da Vinci Code"
   name-sort: "Da Vinci Code, The"
-  region: "PAL-E-NL"
+  region: "PAL-M2" # Dutch + English
 SLES-54120:
   name: "The Snow Queen Quest"
   name-sort: "Snow Queen Quest, The"
@@ -28008,7 +28008,7 @@ SLES-54779:
     alignSprite: 1 # Fixes vertical lines.
 SLES-54780:
   name: "Harry Potter and the Order of the Phoenix"
-  region: "PAL-E-NL-SC"
+  region: "PAL-M6" # Danish + Dutch + English + Finish + Norwegian + Swedish
   gsHWFixes:
     halfPixelOffset: 1 # Fixes ghosting.
     alignSprite: 1 # Fixes vertical lines.
@@ -28426,7 +28426,7 @@ SLES-54915:
     nativeScaling: 2 # Fixes post effects.
 SLES-54917:
   name: "Agent Hugo - Lemoon Twist"
-  region: "PAL-E-SC"
+  region: "PAL-SC" # Danish + English + Finish + Norwegian + Swedish
 SLES-54918:
   name: "Agent Hugo - Lemoon Twist"
   region: "PAL-M7"
@@ -28481,13 +28481,13 @@ SLES-54940:
     vuClampMode: 3 # Fixes SPS.
 SLES-54942:
   name: "Disney Princess - Enchanted Journey"
-  region: "PAL-F-G-I"
+  region: "PAL-M3" # French + German + Italian
 SLES-54943:
   name: "Disney Princess - Enchanted Journey"
-  region: "PAL-DK-NO"
+  region: "PAL-SC" # Danish + Norwegian
 SLES-54944:
   name: "Disney Princess - Enchanted Journey"
-  region: "PAL-FI-SE"
+  region: "PAL-SC" # Finish + Swedish
 SLES-54945:
   name: "Dragon Ball Z - Budokai Tenkaichi 3"
   region: "PAL-M6"
@@ -28656,7 +28656,7 @@ SLES-54986:
     halfPixelOffset: 3 # Removes ghosting of bloom and shadows.
 SLES-54987:
   name: "Bratz - The Movie"
-  region: "PAL-DK-SE"
+  region: "PAL-SC" # Danish + Swedish
 SLES-54988:
   name: "Bratz - The Movie"
   region: "PAL-G"
@@ -28664,7 +28664,7 @@ SLES-54988:
     halfPixelOffset: 3 # Removes ghosting of bloom and shadows.
 SLES-54989:
   name: "Bratz - The Movie"
-  region: "PAL-I-S"
+  region: "PAL-M2" # Italian + Spanish
   gsHWFixes:
     halfPixelOffset: 3 # Removes ghosting of bloom and shadows.
 SLES-54990:
@@ -28909,7 +28909,7 @@ SLES-55011:
 SLES-55012:
   name: "The Golden Compass"
   name-sort: "Golden Compass, The"
-  region: "PAL-E-NL-SC"
+  region: "PAL-M5" # Danish + Dutch + English + Norwegian + Swedish
   gsHWFixes:
     halfPixelOffset: 4 # Aligns post processing.
     autoFlush: 1 # Fixes light penetrating objects and intensity.
@@ -28979,7 +28979,7 @@ SLES-55025:
     nativeScaling: 2 # Fixes post effects.
 SLES-55026:
   name: "Disney/Pixar Cars - Mater-National Championship"
-  region: "PAL-F-NL"
+  region: "PAL-M2" # Dutch + French
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes ground texture flicker and improves car body reflections.
     autoFlush: 1 # Fixes lens flares and missing sun.
@@ -29011,7 +29011,7 @@ SLES-55029:
     nativeScaling: 2 # Fixes post effects.
 SLES-55030:
   name: "Disney/Pixar Cars - Mater-National Championship"
-  region: "PAL-E-SC"
+  region: "PAL-SC" # Danish + English + Norwegian + Swedish
   gsHWFixes:
     recommendedBlendingLevel: 3 # Fixes ground texture flicker and improves car body reflections.
     autoFlush: 1 # Fixes lens flares and missing sun.
@@ -29033,7 +29033,7 @@ SLES-55034:
   region: "PAL-M5"
 SLES-55035:
   name: "Asterix at the Olympic Games"
-  region: "PAL-E-A"
+  region: "PAL-E"
 SLES-55039:
   name: "Rock Band"
   region: "PAL-M5"
@@ -29048,7 +29048,7 @@ SLES-55042:
   region: "PAL-M5"
 SLES-55043:
   name: "Garfield - Lasagna World Tour"
-  region: "PAL-F-NL"
+  region: "PAL-M2" # Dutch + French
 SLES-55044:
   name: "Premier Manager 09"
   region: "PAL-M4"
@@ -29060,7 +29060,7 @@ SLES-55047:
   region: "PAL-E"
 SLES-55048:
   name: "Star Trek - Conquest"
-  region: "PAL-E-G"
+  region: "PAL-M2" # English + German
   gsHWFixes:
     halfPixelOffset: 2 # Fix text and post blur.
     nativeScaling: 2 # Fixes post effects.
@@ -29105,7 +29105,7 @@ SLES-55069:
   region: "PAL-M5"
 SLES-55074:
   name: "Casper's Scare School"
-  region: "PAL-E-SC"
+  region: "PAL-SC" # Danish + English + Finish + Norwegian + Swedish
 SLES-55075:
   name: "Speed Racer - The Videogame"
   region: "PAL-M6"
@@ -29254,7 +29254,7 @@ SLES-55138:
 SLES-55143:
   name: "The Chronicles of Narnia - Prince Caspian"
   name-sort: "Chronicles of Narnia, The - Prince Caspian"
-  region: "PAL-G-I"
+  region: "PAL-M2" # German + Italian
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but on normal vertex is less ghosting but causes corruption at the sides.
     nativeScaling: 1 # Fixes post-processing position.
@@ -29268,7 +29268,7 @@ SLES-55144:
 SLES-55145:
   name: "The Chronicles of Narnia - Prince Caspian"
   name-sort: "Chronicles of Narnia, The - Prince Caspian"
-  region: "PAL-F-NL"
+  region: "PAL-M2" # Dutch + French
   gsHWFixes:
     halfPixelOffset: 2 # Reduces ghosting but on normal vertex is less ghosting but causes corruption at the sides.
     nativeScaling: 1 # Fixes post-processing position.
@@ -29417,7 +29417,7 @@ SLES-55193:
     autoFlush: 1 # Fixes post lighting.
 SLES-55194:
   name: "Disney/Pixar WALL-E"
-  region: "PAL-E-SC"
+  region: "PAL-SC" # Danish + English + Norwegian + Swedish
   roundModes:
     vuRoundMode: 2 # Fixes very minor lines appearing at certain points during the game.
   gsHWFixes:
@@ -29483,7 +29483,7 @@ SLES-55204:
     halfPixelOffset: 4 # Fixes right side garbage.
 SLES-55205:
   name: "Crash - Mind Over Mutant"
-  region: "PAL-E-SC"
+  region: "PAL-SC" # Danish + English + Finish + Norwegian + Swedish
   gsHWFixes:
     halfPixelOffset: 4 # Fixes right side garbage.
 SLES-55206:
@@ -29537,7 +29537,7 @@ SLES-55220:
 SLES-55227:
   name: "The Legend of Spyro - Dawn of the Dragon"
   name-sort: "Legend of Spyro, The - Dawn of the Dragon"
-  region: "PAL-E-SC"
+  region: "PAL-SC" # Danish + English + Finish + Norwegian + Swedish
   compat: 5
   gsHWFixes:
     halfPixelOffset: 4 # Reduces post misalignment.
@@ -29631,7 +29631,7 @@ SLES-55245:
     mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55246:
   name: "FIFA 09"
-  region: "PAL-E-SC"
+  region: "PAL-SC" # Danish + English + Norwegian + Swedish
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
     nativeScaling: 1 # Fixes misaligned bloom.
@@ -29912,7 +29912,7 @@ SLES-55351:
     - "SLES-52725"
 SLES-55352:
   name: "Need for Speed - Undercover"
-  region: "PAL-E-SC"
+  region: "PAL-SC" # Danish + English + Norwegian + Swedish
   compat: 5
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves car reflections.
@@ -29987,7 +29987,7 @@ SLES-55359:
   region: "PAL-A"
 SLES-55364:
   name: "Agent Hugo - Hula Holiday"
-  region: "PAL-E-SC"
+  region: "PAL-SC" # Danish + English + Finish + Norwegian + Swedish
 SLES-55365:
   name: "Agent Hugo - Hula Holiday"
   region: "PAL-M7"
@@ -30108,18 +30108,18 @@ SLES-55409:
   region: "PAL-M5"
 SLES-55411:
   name: "RTL Winter Sports 2009 - The Next Challenge"
-  region: "PAL-E-F"
+  region: "PAL-M2" # English + French
   clampModes:
     vuClampMode: 3 # Fixes SPS.
 SLES-55415:
   name: "Disney TH!NK Fast"
-  region: "PAL-I-S"
+  region: "PAL-M2" # Italian + Spanish
 SLES-55418:
   name: "Tube Mania"
-  region: "PAL-F-NL"
+  region: "PAL-M2" # Dutch + French
 SLES-55428:
   name: "Disney Bolt"
-  region: "PAL-E-SC"
+  region: "PAL-SC" # Danish + English + Norwegian + Swedish
 SLES-55429:
   name: "Disney Bolt"
   region: "PAL-M3"
@@ -30373,7 +30373,7 @@ SLES-55523:
   region: "PAL-S"
 SLES-55524:
   name: "Disney/Pixar Up"
-  region: "PAL-F-NL"
+  region: "PAL-M2" # Dutch + French
 SLES-55525:
   name: "Disney/Pixar Oben"
   region: "PAL-G"
@@ -30492,14 +30492,14 @@ SLES-55581:
     mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55582:
   name: "FIFA 10"
-  region: "PAL-F-G"
+  region: "PAL-M2" # French + German
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
     nativeScaling: 1 # Fixes misaligned bloom.
     mipmap: 0 # Currently totally breaks player uniform rendering if mipmapping is enabled.
 SLES-55583:
   name: "FIFA 10"
-  region: "PAL-E-SC"
+  region: "PAL-SC" # Danish + English + Norwegian + Swedish
   compat: 5
   gsHWFixes:
     halfPixelOffset: 2 # Fixes misaligned bloom and edge garbage.
@@ -30565,7 +30565,7 @@ SLES-55609:
   region: "PAL-M5"
 SLES-55610:
   name: "Springdale"
-  region: "PAL-E-SC"
+  region: "PAL-SC" # Danish + English + Finish + Norwegian + Swedish
   gsHWFixes:
     halfPixelOffset: 4 # Aligns post-processing.
     nativeScaling: 2 # Fixes post-processing position.
