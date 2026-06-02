@@ -1006,10 +1006,9 @@ static void iopClearRecLUT(BASEBLOCK* base, int count)
 		base[i].SetFnptr((uptr)iopJITCompile);
 }
 
-static __noinline s32 recExecuteBlock(s32 eeCycles)
+static __noinline s32 recExecuteBlock(u64 deadline)
 {
-	psxRegs.iopBreak = 0;
-	psxRegs.iopCycleEE = eeCycles;
+	psxRegs.iopDeadline = deadline;
 	psxRegs.inIop = true;
 
 #ifdef PCSX2_DEVBUILD
@@ -1035,8 +1034,8 @@ static __noinline s32 recExecuteBlock(s32 eeCycles)
 
 	((void (*)())iopEnterRecompiledCode)();
 
-	return psxRegs.iopBreak + psxRegs.iopCycleEE;
 	psxRegs.inIop = false;
+	return 0;
 }
 
 // Returns the offset to the next instruction after any cleared memory
@@ -1144,51 +1143,26 @@ static __fi u32 psxScaleBlockCycles()
 	return s_psxBlockCycles;
 }
 
-static void iPsxAddEECycles(u32 blockCycles)
-{
-	if (!(psxHu32(HW_ICFG) & (1 << 3))) [[likely]]
-	{
-		if (blockCycles != 0xFFFFFFFF)
-			xSUB(ptr32[&psxRegs.iopCycleEE], blockCycles * 8);
-		else
-			xSUB(ptr32[&psxRegs.iopCycleEE], eax);
-		return;
-	}
-
-	// F = gcd(PS2CLK, PSXCLK) = 230400
-	const u32 cnum = 1280; // PS2CLK / F
-	const u32 cdenom = 147; // PSXCLK / F
-
-	if (blockCycles != 0xFFFFFFFF)
-		xMOV(eax, blockCycles * cnum);
-	xADD(eax, ptr32[&psxRegs.iopCycleEECarry]);
-	xMOV(ecx, cdenom);
-	xXOR(edx, edx);
-	xUDIV(ecx);
-	xMOV(ptr32[&psxRegs.iopCycleEECarry], edx);
-	xSUB(ptr32[&psxRegs.iopCycleEE], eax);
-}
-
 static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 {
 	u32 blockCycles = psxScaleBlockCycles();
 
 	if (EmuConfig.Speedhacks.WaitLoop && s_nBlockFF && newpc == s_branchTo)
 	{
-		xMOV(rax, ptr64[&psxRegs.cycle]);
-		xMOV(rcx, rax);
-		xMOV(rdx, ptr32[&psxRegs.iopCycleEE]);
-		xADD(rdx, 7);
-		xSHR(rdx, 3);
-		xADD(rax, rdx);
-		xCMP(rax, ptr64[&psxRegs.iopNextEventCycle]);
-		xCMOVNS(rax, ptr64[&psxRegs.iopNextEventCycle]);
+		// pick the closest cycle target
+		// cycle = min(psxRegs.iopNextEventCycle, psxRegs.iopDeadline)
+		xMOV(rax, ptr64[&psxRegs.iopNextEventCycle]);
+		xCMP(rax, ptr64[&psxRegs.iopDeadline]);
+		xCMOVNS(rax, ptr64[&psxRegs.iopDeadline]);
+
+		// Go directly to target
 		xMOV(ptr64[&psxRegs.cycle], rax);
-		xSUB(rax, rcx);
-		xSHL(rax, 3);
-		iPsxAddEECycles(0xFFFFFFFF);
+
+		// If we've hit the deadline, exit
+		xCMP(ptr64[&psxRegs.iopDeadline], rax);
 		xJLE(iopExitRecompiledCode);
 
+		// Otherwise, check events and continue
 		xFastCall((void*)iopEventTest);
 
 		if (newpc != 0xffffffff)
@@ -1199,12 +1173,15 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 	}
 	else
 	{
+		// Add block cycles to our cycle counter
 		xMOV(r12, ptr64[&psxRegs.cycle]);
 		xADD(r12, blockCycles);
-		xMOV(ptr64[&psxRegs.cycle], r12); // update cycles
+		xMOV(ptr64[&psxRegs.cycle], r12);
 
-		// jump if iopCycleEE <= 0  (iop's timeslice timed out, so time to return control to the EE)
-		iPsxAddEECycles(blockCycles);
+		// If we've reached or deadline we should exit
+		// TODO: should we really exit instantly? what if we have events on the same cycle
+		// We don't check events when entering the IOP JIT so it's a bit weird to skip on exit too
+		xCMP(ptr64[&psxRegs.iopDeadline], r12);
 		xJLE(iopExitRecompiledCode);
 
 		// check if an event is pending
@@ -1255,7 +1232,6 @@ void rpsxSYSCALL()
 	j8Ptr[0] = JE8(0);
 
 	xADD(ptr64[&psxRegs.cycle], psxScaleBlockCycles());
-	iPsxAddEECycles(psxScaleBlockCycles());
 	JMP32((uptr)iopDispatcherReg - ((uptr)x86Ptr + 5));
 
 	// jump target for skipping blockCycle updates
@@ -1277,7 +1253,6 @@ void rpsxBREAK()
 	xCMP(ptr32[&psxRegs.pc], psxpc - 4);
 	j8Ptr[0] = JE8(0);
 	xADD(ptr64[&psxRegs.cycle], psxScaleBlockCycles());
-	iPsxAddEECycles(psxScaleBlockCycles());
 	JMP32((uptr)iopDispatcherReg - ((uptr)x86Ptr + 5));
 	x86SetJ8(j8Ptr[0]);
 
@@ -1780,7 +1755,6 @@ StartRecomp:
 		else
 		{
 			xADD(ptr64[&psxRegs.cycle], psxScaleBlockCycles());
-			iPsxAddEECycles(psxScaleBlockCycles());
 		}
 
 		if (link_next_block || !psxbranch)

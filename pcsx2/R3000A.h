@@ -101,16 +101,8 @@ struct psxRegisters {
 	// Controls when branch tests are performed.
 	u64 iopNextEventCycle;
 
-	// This value is used when the IOP execution is broken to return control to the EE.
-	// (which happens when the IOP throws EE-bound interrupts).  It holds the value of
-	// iopCycleEE (which is set to zero to facilitate the code break), so that the unrun
-	// cycles can be accounted for later.
-	s32 iopBreak;
-
-	// Tracks current number of cycles IOP can run in EE cycles. When it dips below zero,
-	// control is returned to the EE.
-	s32 iopCycleEE;
-	u32 iopCycleEECarry;
+	// The cycle target at which the IOP should yield control back to the EE
+	u64 iopDeadline;
 
 	u64 sCycle[32];		// start cycle for signaled ints
 	s32 eCycle[32];		// cycle delta for signaled ints (sCycle + eCycle == branch cycle)
@@ -183,7 +175,7 @@ extern bool iopIsDelaySlot;
 struct R3000Acpu {
 	void (*Reserve)();
 	void (*Reset)();
-	s32 (*ExecuteBlock)( s32 eeCycles );		// executes the given number of EE cycles.
+	s32 (*ExecuteBlock)(u64 deadline);
 	void (*Clear)(u32 Addr, u32 Size);
 	void (*Shutdown)();
 };

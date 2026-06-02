@@ -686,11 +686,7 @@ static void recSafeExitExecution()
 	else
 	{
 		// IOP might be running, so break out if so.
-		if (psxRegs.iopCycleEE > 0)
-		{
-			psxRegs.iopBreak += psxRegs.iopCycleEE; // record the number of cycles the IOP didn't run.
-			psxRegs.iopCycleEE = 0;
-		}
+		psxRegs.iopDeadline = 0;
 	}
 }
 

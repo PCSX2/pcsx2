@@ -14,9 +14,6 @@ namespace R5900 {
 extern const char* const bios[256];
 }
 
-extern s32 EEsCycle;
-extern u64 EEoCycle;
-
 union GPR_reg {   // Declare union type GPR register
 	u128 UQ;
 	s128 SQ;

@@ -31,9 +31,6 @@
 
 using namespace R5900;	// for R5900 disasm tools
 
-s32 EEsCycle;		// used to sync the IOP to the EE
-u64 EEoCycle;
-
 alignas(16) cpuRegistersPack _cpuRegistersPack;
 alignas(16) tlbs tlb[48];
 cachedTlbs_t cachedTlbs;
@@ -71,8 +68,6 @@ void cpuReset()
 	fpuRegs.fprc[31]		= 0x01000001; // fpu Status/Control
 
 	cpuRegs.nextEventCycle = cpuRegs.cycle + 4;
-	EEsCycle = 0;
-	EEoCycle = cpuRegs.cycle;
 
 	psxReset();
 	pgifInit();
@@ -382,18 +377,16 @@ __fi void _cpuEventTest_Shared()
 	//   cpuEventTest, the IOP generally starts to run way ahead of the EE.
 
 	// It's also important to sync up the IOP before updating the timers, since gates will depend on starting/stopping in the right place!
-	EEsCycle += cpuRegs.cycle - EEoCycle;
-	EEoCycle = cpuRegs.cycle;
 
-	if (EEsCycle > 0)
+	const float multiplier = static_cast<float>(PS2CLK) / static_cast<float>(PSXCLK);
+	s64 iop_delta = cpuRegs.cycle - (psxRegs.cycle * multiplier);
+
+	if (iop_delta > 0)
 		iopEventAction = true;
 
 	if (iopEventAction)
 	{
-		//if( EEsCycle < -450 )
-		//	Console.WriteLn( " IOP ahead by: %d cycles", -EEsCycle );
-
-		EEsCycle = psxCpu->ExecuteBlock(EEsCycle);
+		psxCpu->ExecuteBlock(cpuRegs.cycle / multiplier);
 
 		iopEventAction = false;
 	}
@@ -434,21 +427,19 @@ __fi void _cpuEventTest_Shared()
 	CpuVU1->ExecuteBlock();
 
 	// ---- Schedule Next Event Test --------------
-	const float mutiplier = static_cast<float>(PS2CLK) / static_cast<float>(PSXCLK);
-	const int nextIopEventDeta = ((psxRegs.iopNextEventCycle - psxRegs.cycle) * mutiplier);
+	const s64 nextIopEventDeta = ((psxRegs.iopNextEventCycle - psxRegs.cycle) * multiplier);
 	// 8 or more cycles behind and there's an event scheduled
-	if (EEsCycle >= nextIopEventDeta)
+	if (iop_delta >= nextIopEventDeta)
 	{
 		// EE's running way ahead of the IOP still, so we should branch quickly to give the
 		// IOP extra timeslices in short order.
 
 		cpuSetNextEventDelta(48);
-		//Console.Warning( "EE ahead of the IOP -- Rapid Event!  %d", EEsCycle );
 	}
 	else
 	{
 		// Otherwise IOP is caught up/not doing anything so we can wait for the next event.
-		cpuSetNextEventDelta(((psxRegs.iopNextEventCycle - psxRegs.cycle) * mutiplier) - EEsCycle);
+		cpuSetNextEventDelta(((psxRegs.iopNextEventCycle - psxRegs.cycle) * multiplier));
 	}
 
 	// Apply vsync and other counter nextCycles
@@ -468,10 +459,9 @@ __ri void cpuTestINTCInts()
 		return;
 
 	cpuSetNextEventDelta(4);
-	if (eeEventTestIsActive && (psxRegs.iopCycleEE > 0))
+	if (eeEventTestIsActive && psxRegs.inIop)
 	{
-		psxRegs.iopBreak += psxRegs.iopCycleEE; // record the number of cycles the IOP didn't run.
-		psxRegs.iopCycleEE = 0;
+		psxRegs.iopDeadline = 0;
 	}
 }
 
@@ -487,10 +477,9 @@ __fi void cpuTestDMACInts()
 		return;
 
 	cpuSetNextEventDelta(4);
-	if (eeEventTestIsActive && (psxRegs.iopCycleEE > 0))
+	if (eeEventTestIsActive && psxRegs.inIop)
 	{
-		psxRegs.iopBreak += psxRegs.iopCycleEE; // record the number of cycles the IOP didn't run.
-		psxRegs.iopCycleEE = 0;
+		psxRegs.iopDeadline = 0;
 	}
 }
 
@@ -543,13 +532,12 @@ __fi void CPU_INT( EE_EventType n, s32 ecycle)
 
 	// Interrupt is happening soon: make sure both EE and IOP are aware.
 
-	if (ecycle <= 28 && psxRegs.iopCycleEE > 0)
+	if (ecycle <= 28 && psxRegs.inIop)
 	{
 		// If running in the IOP, force it to break immediately into the EE.
 		// the EE's branch test is due to run.
 
-		psxRegs.iopBreak += psxRegs.iopCycleEE; // record the number of cycles the IOP didn't run.
-		psxRegs.iopCycleEE = 0;
+		psxRegs.iopDeadline = 0;
 	}
 
 	cpuSetNextEventDelta(cpuRegs.eCycle[n]);
