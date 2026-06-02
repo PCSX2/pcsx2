@@ -209,11 +209,14 @@ static const void* _DynGen_EnterRecompiledCode()
 #else
 		xScopedStackFrame frame(false, true);
 #endif
+		xMOV(ptr64[&psxRegs.iopDeadline], arg1reg);
+		xMOV(ptr8[&psxRegs.inIop], 1);
 
 		xJMP((void*)iopDispatcherReg);
 
 		// Save an exit point
 		iopExitRecompiledCode = xGetPtr();
+		xMOV(ptr8[&psxRegs.inIop], 0);
 	}
 
 	xRET();
@@ -241,10 +244,10 @@ static void _DynGen_Dispatchers()
 	// Place the EventTest and DispatcherReg stuff at the top, because they get called the
 	// most and stand to benefit from strong alignment and direct referencing.
 	iopDispatcherReg = _DynGen_DispatcherReg();
-
 	iopJITCompile = _DynGen_JITCompile();
 	iopEnterRecompiledCode = _DynGen_EnterRecompiledCode();
-	iopUnmappedRecLUTPage =  _DynGen_UnmappedRecLUTPage();
+	psxCpu->ExecuteBlock = (int (*)(u64))iopEnterRecompiledCode;
+	iopUnmappedRecLUTPage = _DynGen_UnmappedRecLUTPage();
 
 	recBlocks.SetJITCompile(iopJITCompile);
 
@@ -1006,38 +1009,6 @@ static void iopClearRecLUT(BASEBLOCK* base, int count)
 		base[i].SetFnptr((uptr)iopJITCompile);
 }
 
-static __noinline s32 recExecuteBlock(u64 deadline)
-{
-	psxRegs.iopDeadline = deadline;
-	psxRegs.inIop = true;
-
-#ifdef PCSX2_DEVBUILD
-	//if (SysTrace.SIF.IsActive())
-	//	SysTrace.IOP.R3000A.Write("Switching to IOP CPU for %d cycles", eeCycles);
-#endif
-
-	// [TODO] recExecuteBlock could be replaced by a direct call to the iopEnterRecompiledCode()
-	//   (by assigning its address to the psxRec structure).  But for that to happen, we need
-	//   to move iopBreak/iopCycleEE update code to emitted assembly code. >_<  --air
-
-	// Likely Disasm, as borrowed from MSVC:
-
-	// Entry:
-	// 	mov         eax,dword ptr [esp+4]
-	// 	mov         dword ptr [iopBreak (0E88DCCh)],0
-	// 	mov         dword ptr [iopCycleEE (832A84h)],eax
-
-	// Exit:
-	// 	mov         ecx,dword ptr [iopBreak (0E88DCCh)]
-	// 	mov         edx,dword ptr [iopCycleEE (832A84h)]
-	// 	lea         eax,[edx+ecx]
-
-	((void (*)())iopEnterRecompiledCode)();
-
-	psxRegs.inIop = false;
-	return 0;
-}
-
 // Returns the offset to the next instruction after any cleared memory
 static __fi u32 psxRecClearMem(u32 pc)
 {
@@ -1785,7 +1756,7 @@ StartRecomp:
 R3000Acpu psxRec = {
 	recReserve,
 	recResetIOP,
-	recExecuteBlock,
+	NULL,
 	recClearIOP,
 	recShutdown,
 };

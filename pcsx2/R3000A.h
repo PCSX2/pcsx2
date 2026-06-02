@@ -107,7 +107,7 @@ struct psxRegisters {
 	u64 sCycle[32];		// start cycle for signaled ints
 	s32 eCycle[32];		// cycle delta for signaled ints (sCycle + eCycle == branch cycle)
 
-	bool inIop; // True if the IOP is currently running
+	char inIop; // True if the IOP is currently running
 				// Used to know if PSX_INT was called from the EE...
 
 };
