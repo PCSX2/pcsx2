@@ -165,10 +165,6 @@ static void xa_feed_to_ring(int16_t* pcm, int num_samples)
 			g_xa_pcm_write = (g_xa_pcm_write + 1) & XA_RING_MASK;
 			g_xa_pcm_ring[g_xa_pcm_write] = s;  // duplicate to R
 			g_xa_pcm_write = (g_xa_pcm_write + 1) & XA_RING_MASK;
-			// Overflow: discard oldest
-			if (((g_xa_pcm_write - g_xa_pcm_read) & XA_RING_MASK) >= (XA_PCM_RING_SIZE - 2)) {
-				g_xa_pcm_read = (g_xa_pcm_read + 2) & XA_RING_MASK;
-			}
 		}
 	} else {
 		// Stereo: already L,R,L,R
@@ -178,9 +174,6 @@ static void xa_feed_to_ring(int16_t* pcm, int num_samples)
 			if (-s > peak) peak = -s;
 			g_xa_pcm_ring[g_xa_pcm_write] = s;
 			g_xa_pcm_write = (g_xa_pcm_write + 1) & XA_RING_MASK;
-			if (((g_xa_pcm_write - g_xa_pcm_read) & XA_RING_MASK) >= (XA_PCM_RING_SIZE - 1)) {
-				g_xa_pcm_read = (g_xa_pcm_read + 1) & XA_RING_MASK;
-			}
 		}
 	}
 
