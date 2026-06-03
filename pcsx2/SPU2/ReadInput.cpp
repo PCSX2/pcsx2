@@ -287,9 +287,13 @@ StereoOut32 V_Core::ReadInput()
 		if (Index == 0 && g_xa_adma_active) {
 			int half_to_fill = (ReadIndex == 0x100) ? 0 : (ReadIndex == 0) ? 1 : -1;
 			if (half_to_fill >= 0 && half_to_fill != g_xa_last_half_filled) {
-				// Pump FIFO → ring every fill (drain FIFO eagerly to prevent overflow)
-				// Ring size is 524288; pump up to ~520192 to prevent FIFO accumulation
-				xa_pump_fifo_to_ring_impl(XA_PCM_RING_SIZE - 4096);
+				// Pump FIFO → ring, but cap at ~2s ahead to match real-time delivery
+				// Real PS1 CD delivers XA at ~9.4 sectors/sec; we accept all at once
+				// but limit ring fill to prevent running far ahead of playback
+				uint32_t ring_avail = (g_xa_pcm_write - g_xa_pcm_read) & XA_RING_MASK;
+				if (ring_avail < 75600) {  // ~1s stereo buffer max
+					xa_pump_fifo_to_ring_impl(75600);
+				}
 
 				uint32_t base_l = 0x2000 + half_to_fill * 0x100;
 				uint32_t base_r = 0x2200 + half_to_fill * 0x100;
