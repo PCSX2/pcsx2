@@ -93,6 +93,12 @@ void V_Core::LogAutoDMA(FILE* fp)
 
 void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not split stereo
 {
+	// MDEC-FIX: When our XA injection is active on Core 0, block TBIN's
+	// AutoDMA writes to prevent double-play (chorus/flanging artifact).
+	// TBIN decodes XA independently and writes to the same 0x2000 area.
+	extern bool g_xa_adma_active;
+	if (Index == 0 && g_xa_adma_active)
+		return;
 	u32 spos = InputPosWrite & 0x100; // Starting position passed by TSA
 	bool leftbuffer = !(InputPosWrite & 0x80);
 
