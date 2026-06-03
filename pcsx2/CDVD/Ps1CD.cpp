@@ -741,12 +741,12 @@ void cdrWrite0(u8 rt)
 
 void setPs1CDVDSpeed(int speed)
 {
-	// PS1 CD-ROM max speed is 2x (150 sectors/sec)
-	// PS2 CDVD may report higher speeds (4x, 12x, 24x) — cap to 2x for PS1 compat
-	if (speed > 2) speed = 2;
-	//Console.Warning(L"SPEED: %dX", speed);
-	cdReadTime = (PSXCLK / (75 * speed));
-	//Console.Warning(L"cdReadTime: %d", unsigned(cdReadTime));
+	// PS1 CD-ROM: cdReadTime is the BASE rate (1x = 75 sectors/sec).
+	// The Mode bit 0x80 (double speed) halves this at read time.
+	// So we always set 1x base here regardless of cdvd.Speed,
+	// because the PS1 CD controller only supports 1x/2x via mode bit.
+	(void)speed; // PS2 CDVD speed is irrelevant for PS1 mode
+	cdReadTime = (PSXCLK / 75);
 }
 
 u8 cdrRead1(void)
