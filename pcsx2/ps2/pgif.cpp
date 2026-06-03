@@ -47,6 +47,13 @@ void drainPgpuDmaLl(void);
 void drainPgpuDmaNrToGpu(void);
 void drainPgpuDmaNrToIop(void);
 
+// === MDEC-FIX: GP0 FIFO backpressure ===
+// We cannot reliably detect GP0(A0h) commands in the raw DMA word stream
+// because pixel data can have any top-byte value. Instead, backpressure is applied
+// at the DMA-level: normal DMA to GPU (used for VRAM writes after GP0(A0h))
+// is throttled when the FIFO already has pending data.
+static u32 pgif_backpressure_blocked = 0;
+
 void ringBufPut(struct ringBuf_t* rb, u32* data)
 {
 	if (rb->count < rb->size)
@@ -494,6 +501,13 @@ void fillFifoOnDrain()
 	//This is done here in a loop, rather than recursively in each function, because a very large buffer causes stack oveflow.
 	while ((rb_gp0.count < ((rb_gp0.size) - PGIF_DAT_RB_LEAVE_FREE)) && ((dma.state.to_gpu_active) || (dma.state.ll_active)))
 	{
+		// MDEC-FIX: apply backpressure for normal DMA when FIFO exceeds real HW size (32 words).
+		// This prevents VRAM transfer data from piling up faster than PS1DRV can drain it.
+		if (dma.state.to_gpu_active && rb_gp0.count > 0x20)
+		{
+			pgif_backpressure_blocked++;
+			break;
+		}
 		drainPgpuDmaLl();
 		drainPgpuDmaNrToGpu();
 	}
@@ -549,6 +563,7 @@ void drainPgpuDmaLl()
 		//We are in the middle of linked list transfer
 		u32 data = iopMemRead32(dma.ll_dma.data_read_address);
 		PGPU_DMA_LOG( "PGPU LL DMA data= %08X  addr %08X ", data, dma.ll_dma.data_read_address);
+
 		ringBufPut(&rb_gp0, &data);
 		dma.ll_dma.data_read_address += 4;
 		dma.ll_dma.current_word++;
