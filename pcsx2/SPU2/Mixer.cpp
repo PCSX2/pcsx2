@@ -29,6 +29,9 @@ int g_counter_cache_misses = 0;
 int g_counter_cache_ignores = 0;
 #endif
 
+// Global XA flag (defined in Ps1CD.cpp, outside any ISA namespace)
+extern bool g_xa_adma_active;
+
 MULTI_ISA_UNSHARED_START
 
 static const s32 tbl_XA_Factor[16][2] =
@@ -542,6 +545,13 @@ void spu2Mix()
 	VoiceMixSet VoiceData[2] = {{StereoOut32(), StereoOut32()}, {StereoOut32(), StereoOut32()}}; // mixed voice data for each core.
 
 	MixCoreVoices(VoiceData[0], 0);
+	// [DKWDRV DEBUG] Mute Core 0 voices when XA active to test if they cause ringing
+	{
+		if (g_xa_adma_active) {
+			VoiceData[0].Dry = StereoOut32();
+			VoiceData[0].Wet = StereoOut32();
+		}
+	}
 	MixCoreVoices(VoiceData[1], 1);
 
 	StereoOut32 Ext(MixCore(0, VoiceData[0], InputData[0], StereoOut32::Empty));
