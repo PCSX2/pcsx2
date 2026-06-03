@@ -67,7 +67,7 @@ bool SymbolTreeNode::writeToVM(
 	if (logical_type)
 	{
 		const ccc::ast::Node& physical_type = *logical_type->physical_type(database).first;
-		writeValueFromVariant(m_value, physical_type, cpu);
+		writeValueFromVariant(m_value, physical_type, cpu, database);
 	}
 
 	data_changed |= updateDisplayString(cpu, database, display_options);
@@ -76,10 +76,29 @@ bool SymbolTreeNode::writeToVM(
 	return data_changed;
 }
 
-QVariant SymbolTreeNode::readValueAsVariant(const ccc::ast::Node& physical_type, DebugInterface& cpu, const ccc::SymbolDatabase& database) const
+QVariant SymbolTreeNode::readValueAsVariant(
+	const ccc::ast::Node& physical_type,
+	DebugInterface& cpu,
+	const ccc::SymbolDatabase& database) const
 {
 	switch (physical_type.descriptor)
 	{
+		case ccc::ast::ARRAY:
+		{
+			const ccc::ast::Array& array = physical_type.as<ccc::ast::Array>();
+			const ccc::ast::Node& element_type = *array.element_type->physical_type(database).first;
+
+			if (array.element_count > 0 &&
+				element_type.name == "char" &&
+				location.type == SymbolTreeLocation::MEMORY)
+			{
+				std::optional<std::string> string = cpu.ReadString(location.address, 256);
+				if (string.has_value())
+					return QString::fromStdString(*string);
+			}
+
+			break;
+		}
 		case ccc::ast::BUILTIN:
 		{
 			const ccc::ast::BuiltIn& builtIn = physical_type.as<ccc::ast::BuiltIn>();
@@ -134,10 +153,36 @@ QVariant SymbolTreeNode::readValueAsVariant(const ccc::ast::Node& physical_type,
 	return QVariant();
 }
 
-bool SymbolTreeNode::writeValueFromVariant(QVariant value, const ccc::ast::Node& physical_type, DebugInterface& cpu) const
+bool SymbolTreeNode::writeValueFromVariant(
+	QVariant value,
+	const ccc::ast::Node& physical_type,
+	DebugInterface& cpu,
+	const ccc::SymbolDatabase& database) const
 {
+	if (value.isNull())
+		return false;
+
 	switch (physical_type.descriptor)
 	{
+		case ccc::ast::ARRAY:
+		{
+			const ccc::ast::Array& array = physical_type.as<ccc::ast::Array>();
+			const ccc::ast::Node& element_type = *array.element_type->physical_type(database).first;
+
+			if (array.element_count > 0 &&
+				element_type.name == "char" &&
+				location.type == SymbolTreeLocation::MEMORY)
+			{
+				QByteArray byte_array = value.toString().toLatin1();
+				std::string_view view(
+					byte_array.data(),
+					std::min(static_cast<s32>(byte_array.size()), array.element_count - 1));
+				cpu.WriteString(location.address, view);
+				break;
+			}
+
+			return false;
+		}
 		case ccc::ast::BUILTIN:
 		{
 			const ccc::ast::BuiltIn& built_in = physical_type.as<ccc::ast::BuiltIn>();
@@ -191,6 +236,7 @@ bool SymbolTreeNode::writeValueFromVariant(QVariant value, const ccc::ast::Node&
 					return false;
 				}
 			}
+
 			break;
 		}
 		case ccc::ast::ENUM:
@@ -266,11 +312,14 @@ QString SymbolTreeNode::generateDisplayString(
 			const ccc::ast::Array& array = physical_type.as<ccc::ast::Array>();
 			const ccc::ast::Node& element_type = *array.element_type->physical_type(database).first;
 
-			if (element_type.name == "char" && location.type == SymbolTreeLocation::MEMORY)
+			if (array.element_count > 0 &&
+				element_type.name == "char" &&
+				location.type == SymbolTreeLocation::MEMORY)
 			{
-				char* string = cpu.stringFromPointer(location.address);
-				if (string)
-					return QString("\"%1\"").arg(string);
+				std::optional<std::string> string = cpu.ReadString(
+					location.address, 256, MemoryInterface::ALLOW_LONG_STRINGS);
+				if (string.has_value())
+					return QString("\"%1\"").arg(*string);
 			}
 
 			QString result;
@@ -412,9 +461,10 @@ QString SymbolTreeNode::generateDisplayString(
 
 			if (pointer_or_reference.is_pointer && value_type.name == "char")
 			{
-				const char* string = cpu.stringFromPointer(address);
-				if (string)
-					result += QString(" \"%1\"").arg(string);
+				std::optional<std::string> string = cpu.ReadString(
+					address, 256, MemoryInterface::ALLOW_LONG_STRINGS);
+				if (string.has_value())
+					result += QString(" \"%1\"").arg(*string);
 			}
 			else if (depth == 0)
 			{

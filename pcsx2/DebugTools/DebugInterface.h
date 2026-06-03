@@ -80,7 +80,6 @@ public:
 	bool isCpuPaused();
 	void pauseCpu();
 	void resumeCpu();
-	char* stringFromPointer(u32 p);
 
 	std::optional<u32> getCallerStackPointer(const ccc::Function& currentFunction);
 	std::optional<u32> getStackFrameSize(const ccc::Function& currentFunction);
@@ -115,9 +114,9 @@ public:
 	bool Write32(u32 address, u32 value) override;
 	bool Write64(u32 address, u64 value) override;
 	bool Write128(u32 address, u128 value) override;
-	bool WriteBytes(u32 address, void* src, u32 size) override;
+	bool WriteBytes(u32 address, const void* src, u32 size) override;
 
-	bool CompareBytes(u32 address, void* src, u32 size) override;
+	bool CompareBytes(u32 address, const void* src, u32 size) override;
 
 	// register stuff
 	int getRegisterCategoryCount() override;
@@ -161,9 +160,9 @@ public:
 	bool Write32(u32 address, u32 value) override;
 	bool Write64(u32 address, u64 value) override;
 	bool Write128(u32 address, u128 value) override;
-	bool WriteBytes(u32 address, void* src, u32 size) override;
+	bool WriteBytes(u32 address, const void* src, u32 size) override;
 
-	bool CompareBytes(u32 address, void* src, u32 size) override;
+	bool CompareBytes(u32 address, const void* src, u32 size) override;
 
 	// register stuff
 	int getRegisterCategoryCount() override;
@@ -210,9 +209,9 @@ public:
 	bool Write32(u32 address, u32 value) override;
 	bool Write64(u32 address, u64 value) override;
 	bool Write128(u32 address, u128 value) override;
-	bool WriteBytes(u32 address, void* src, u32 size) override;
+	bool WriteBytes(u32 address, const void* src, u32 size) override;
 
-	bool CompareBytes(u32 address, void* src, u32 size) override;
+	bool CompareBytes(u32 address, const void* src, u32 size) override;
 
 protected:
 	const ccc::ElfFile& m_elf;

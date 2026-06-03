@@ -34,6 +34,34 @@ Value MemoryInterface::Read(u32 address, bool* valid)
 		return Value(0);
 }
 
+std::optional<std::string> MemoryInterface::ReadString(u32 address, u32 max_size, ReadStringFlags flags)
+{
+	std::string string;
+
+	for (u32 i = 0; i < max_size; i++)
+	{
+		bool valid;
+		char c = Read8(address + i, &valid);
+		if (!valid)
+			return std::nullopt;
+
+		if (c == '\0')
+			return string;
+		else if (!(flags & ALLOW_NON_PRINTABLE_CHARACTERS) && (c < ' ' || c > '~'))
+			return std::nullopt;
+
+		string += c;
+	}
+
+	if (flags & ALLOW_LONG_STRINGS)
+	{
+		string += '~';
+		return string;
+	}
+
+	return std::nullopt;
+}
+
 template <MemoryAccessType Value>
 bool MemoryInterface::Write(u32 address, Value value)
 {
@@ -60,6 +88,17 @@ bool MemoryInterface::Write(u32 address, Value value)
 		return Write64(address, std::bit_cast<u64>(value));
 	else
 		return false;
+}
+
+bool MemoryInterface::WriteString(u32 address, std::string_view string)
+{
+	if (!WriteBytes(address, string.data(), static_cast<u32>(string.size())))
+		return false;
+
+	if (!Write8(address + static_cast<u32>(string.size()), '\0'))
+		return false;
+
+	return true;
 }
 
 bool MemoryInterface::IdempotentWrite8(u32 address, u8 value)
