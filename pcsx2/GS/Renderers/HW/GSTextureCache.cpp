@@ -4893,7 +4893,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 	// Could be reading Z24/32 back as CT32 (Gundam Battle Assault 3)
 	if (GSLocalMemory::m_psm[psm].bpp >= 16)
 	{
-		if (GSConfig.HWDownloadMode != GSHardwareDownloadMode::Enabled)
+		if (GSConfig.HWDownloadMode > GSHardwareDownloadMode::EnabledForceFull)
 		{
 			DevCon.Error("TC: Skipping depth readback of %ux%u @ %u,%u", r.width(), r.height(), r.left, r.top);
 			return;
@@ -4926,7 +4926,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 				const bool swizzle_match = GSLocalMemory::m_psm[psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
 				// Calculate the rect offset if the BP doesn't match.
 				GSVector4i targetr = {};
-				if (full_flush || t->readbacks_since_draw > 1)
+				if (full_flush || GSConfig.HWDownloadMode == GSHardwareDownloadMode::EnabledForceFull ||  t->readbacks_since_draw > 1)
 				{
 					targetr = t->m_drawn_since_read;
 				}
@@ -5163,7 +5163,7 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 					}
 				}
 
-				if (GSConfig.HWDownloadMode != GSHardwareDownloadMode::Enabled)
+				if (GSConfig.HWDownloadMode > GSHardwareDownloadMode::EnabledForceFull)
 				{
 					DevCon.Error("TC: Skipping depth readback of %ux%u @ %u,%u", targetr.width(), targetr.height(), targetr.left, targetr.top);
 					continue;
