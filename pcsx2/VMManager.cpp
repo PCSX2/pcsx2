@@ -3252,7 +3252,7 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_PAINTBRUSH,
 				TRANSLATE_SV("VMManager", "Blending Accuracy is below Basic, this may break effects in some games."));
 		}
-		if (EmuConfig.GS.HWDownloadMode != GSHardwareDownloadMode::Enabled)
+		if (EmuConfig.GS.HWDownloadMode > GSHardwareDownloadMode::EnabledForceFull)
 		{
 			append(ICON_FA_DOWNLOAD,
 				TRANSLATE_SV("VMManager", "Hardware Download Mode is not set to Accurate, this may break rendering in some games."));

@@ -399,6 +399,7 @@ enum class SavestateCompressionLevel : u8
 enum class GSHardwareDownloadMode : u8
 {
 	Enabled,
+	EnabledForceFull,
 	NoReadbacks,
 	Unsynchronized,
 	Disabled
