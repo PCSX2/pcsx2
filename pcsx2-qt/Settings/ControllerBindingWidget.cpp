@@ -48,12 +48,10 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 	{
 		static constexpr const std::array<char, 4> s_mtap_slot_names = {{'A', 'B', 'C', 'D'}};
 		const auto [pad_port, pad_slot] = sioConvertPadToPortAndSlot(port);
-		//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
 		m_ui.groupBox->setTitle(tr("Controller Port %1%2").arg(pad_port + 1).arg(s_mtap_slot_names[pad_slot]));
 	}
 	else
 	{
-		//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
 		m_ui.groupBox->setTitle(tr("Controller Port %1").arg(port + 1));
 	}
 
@@ -313,12 +311,10 @@ ControllerMacroWidget::ControllerMacroWidget(ControllerBindingWidget* parent)
 	{
 		static constexpr const std::array<char, 4> s_mtap_slot_names = {{'A', 'B', 'C', 'D'}};
 		const auto [pad_port, pad_slot] = sioConvertPadToPortAndSlot(port);
-		//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
 		setWindowTitle(tr("Controller Port %1%2 Macros").arg(pad_port + 1).arg(s_mtap_slot_names[pad_slot]));
 	}
 	else
 	{
-		//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
 		setWindowTitle(tr("Controller Port %1 Macros").arg(port + 1u));
 	}
 	createWidgets(parent);
