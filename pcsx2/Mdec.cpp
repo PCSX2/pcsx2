@@ -277,15 +277,17 @@ void psxDma1(u32 adr, u32 bcr, u32 chcr)
 	static uint32_t mdec_out_ctr = 0;
 	static bool mdec_was_active = false;
 	mdec_out_ctr++;
-	if (!mdec_was_active) {
-		Console.WriteLn("[MDEC-START] Frame #%u cmd=0x%08X adr=0x%08X bcr=0x%08X (%dx%d pixels)",
-			mdec_out_ctr, mdec.command, adr, bcr,
-			(mdec.command & 0x08000000) ? 16 : 24,
-			(bcr >> 16) * (bcr & 0xffff) * 2 / ((mdec.command & 0x08000000) ? 256 : 384));
-		mdec_was_active = true;
+	{
+		int depth_mode = (mdec.command & 0x08000000) ? 15 : 24;
+		int strip_words = (depth_mode == 15) ? (16*16)/2 : (24*16)/2;
+		Console.WriteLn("[MDEC-OUT] #%u cmd=0x%08X depth=%dbit adr=0x%08X bcr=0x%08X size=%d words (%d strips)",
+			mdec_out_ctr, mdec.command, depth_mode, adr, bcr,
+			(bcr >> 16) * (bcr & 0xffff), 
+			(bcr >> 16) * (bcr & 0xffff) / strip_words);
 	}
-	if (mdec_out_ctr % 100 == 0) {
-		Console.WriteLn("[MDEC-FRAME] #%u still decoding", mdec_out_ctr);
+	if (!mdec_was_active) {
+		Console.WriteLn("[MDEC-START] First frame decode");
+		mdec_was_active = true;
 	}
 
 	if (chcr != 0x01000200)
