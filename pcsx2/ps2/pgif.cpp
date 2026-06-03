@@ -344,6 +344,24 @@ void psxGPUw(int addr, u32 data)
 		}
 		else
 		{
+			// MDEC-FIX: Log display-related GP1 commands for debugging
+			u32 gp1_cmd = (data >> 24) & 0x3F;
+			if (gp1_cmd == 0x05) { // Display area start
+				u32 x = data & 0x3FF;
+				u32 y = (data >> 10) & 0x1FF;
+				Console.WriteLn("[PGIF-GP1] DisplayStart X=%u Y=%u (raw=0x%08X)", x, y, data);
+			} else if (gp1_cmd == 0x06) { // Horizontal display range
+				u32 x1 = data & 0xFFF;
+				u32 x2 = (data >> 12) & 0xFFF;
+				Console.WriteLn("[PGIF-GP1] HorizRange X1=%u X2=%u (raw=0x%08X)", x1, x2, data);
+			} else if (gp1_cmd == 0x07) { // Vertical display range
+				u32 y1 = data & 0x3FF;
+				u32 y2 = (data >> 10) & 0x3FF;
+				Console.WriteLn("[PGIF-GP1] VertRange Y1=%u Y2=%u (raw=0x%08X)", y1, y2, data);
+			} else if (gp1_cmd == 0x08) { // Display mode
+				Console.WriteLn("[PGIF-GP1] DisplayMode raw=0x%08X (24bit=%u interlace=%u)",
+					data, (data >> 4) & 1, (data >> 5) & 1);
+			}
 			triggerPgifInt(0);
 			ringBufPut(&rb_gp1, &data);
 		}
@@ -512,13 +530,6 @@ void fillFifoOnDrain()
 	//This is done here in a loop, rather than recursively in each function, because a very large buffer causes stack oveflow.
 	while ((rb_gp0.count < ((rb_gp0.size) - PGIF_DAT_RB_LEAVE_FREE)) && ((dma.state.to_gpu_active) || (dma.state.ll_active)))
 	{
-		// MDEC-FIX: apply backpressure for normal DMA when FIFO exceeds real HW size (32 words).
-		// This prevents VRAM transfer data from piling up faster than PS1DRV can drain it.
-		if (dma.state.to_gpu_active && rb_gp0.count > 0x20)
-		{
-			pgif_backpressure_blocked++;
-			break;
-		}
 		drainPgpuDmaLl();
 		drainPgpuDmaNrToGpu();
 	}
