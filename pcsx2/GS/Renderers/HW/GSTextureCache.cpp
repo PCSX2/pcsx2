@@ -6426,7 +6426,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 					}
 
 					const u32 destination_tbw = (dst->m_TEX0.TBP0 == TEX0.TBP0) ? (std::max<u32>(TEX0.TBW, 1u) * 64) : std::max<u32>(dst->m_TEX0.TBW, 1u) * 128;
-					if (dst->GetScale() > 1.0f)
+					if (!GSConfig.UserHacks_NativePaletteDraw && dst->GetScale() > 1.0f)
 					{
 						GSTexture* tmpTex = use_texture ?
 							g_gs_device->CreateTexture(dst->m_unscaled_size, 1, GSTexture::Format::Color, PreferReusedLabelledTexture()) :
