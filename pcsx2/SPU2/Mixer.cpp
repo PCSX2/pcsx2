@@ -521,6 +521,11 @@ static __forceinline StereoOut32 MixCore(const uint coreidx, const VoiceMixSet& 
 	if (coreidx == 0 && g_xa_adma_active) {
 		RV = StereoOut32();
 	}
+	// [DKWDRV] Kill reverb output for Core 1 when XA active
+	// Core 0 output feeds Core 1 via ExtVol — Core 1 reverb re-processes it
+	if (coreidx == 1 && g_xa_adma_active) {
+		RV = StereoOut32();
+	}
 
 	// Mix Dry + Wet
 	// (master volume is applied later to the result of both outputs added together).
