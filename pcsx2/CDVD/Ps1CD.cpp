@@ -301,7 +301,13 @@ void cdrInterrupt()
 			break;
 
 		case CdlPause:
-			// [DKWDRV HACK] Don't stop XA on pause — game pauses briefly to switch filter
+			// Stop XA on pause — if the game resumes reading with XA sectors,
+			// xa_inject will restart automatically on the next XA sector arrival.
+			// TODO: SotN pauses briefly to switch XA filter (file/channel) then
+			// resumes ReadS. This stop may cause a brief audio gap (~13ms) during
+			// that transition. If that regresses, add a deferred stop (e.g. 500ms
+			// timeout) that cancels if ReadS resumes before expiry.
+			xa_inject_stop();
 			SetResultSize(1);
 			cdr.Result[0] = cdr.StatP;
 			cdr.Stat = Acknowledge;
