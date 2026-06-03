@@ -241,11 +241,13 @@ static void xa_inject_process(const uint8_t* transfer, [[maybe_unused]] int mode
 	uint8_t submode = transfer[6];
 	if (!(submode & 0x04)) return;  // bit 2 = audio
 
-	// Filter check
+	// Filter check — only apply if MODE_SF (bit 3) is set in cd mode
 	uint8_t file = transfer[4];
 	uint8_t chan = transfer[5];
-	if (s_xa.cur_file != 0 && file != s_xa.cur_file) return;
-	if (s_xa.cur_chan != 0 && chan != s_xa.cur_chan) return;
+	if (mode & 0x08) {  // MODE_SF: channel filter enabled
+		if (s_xa.cur_file != 0 && file != s_xa.cur_file) return;
+		if (s_xa.cur_chan != 0 && chan != s_xa.cur_chan) return;
+	}
 
 	s_xa.sectors++;
 

@@ -632,8 +632,10 @@ void cdrReadInterrupt()
 			uint8_t file = cdr.Transfer[4];
 			uint8_t chan = cdr.Transfer[5];
 			bool matches_filter = true;
-			if (cdr.File != 0 && file != cdr.File) matches_filter = false;
-			if (cdr.Channel != 0 && chan != cdr.Channel) matches_filter = false;
+			if (cdr.Mode & 0x08) {  // MODE_SF: apply filter only when enabled
+				if (cdr.File != 0 && file != cdr.File) matches_filter = false;
+				if (cdr.Channel != 0 && chan != cdr.Channel) matches_filter = false;
+			}
 			if (matches_filter) {
 				// Audio sector consumed by XA inject — skip game delivery
 				cdr.Stat = NoIntr;
