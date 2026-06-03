@@ -261,10 +261,10 @@ StereoOut32 V_Core::ReadInput()
 		if (Index == 0 && g_xa_adma_active) {
 			int half_to_fill = (ReadIndex == 0x100) ? 0 : (ReadIndex == 0) ? 1 : -1;
 			if (half_to_fill >= 0 && half_to_fill != g_xa_last_half_filled) {
-				// Pump FIFO → ring, capped at ~1s
+				// Pump FIFO → ring, capped at ~0.1s (2 sectors)
 				uint32_t ring_avail = (g_xa_pcm_write - g_xa_pcm_read) & XA_RING_MASK;
-				if (ring_avail < 75600) {
-					xa_pump_fifo_to_ring_impl(75600);
+				if (ring_avail < 8064) {
+					xa_pump_fifo_to_ring_impl(8064);
 				}
 
 				uint32_t base_l = 0x2000 + half_to_fill * 0x100;
