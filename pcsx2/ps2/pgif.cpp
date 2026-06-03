@@ -330,6 +330,25 @@ void psxGPUw(int addr, u32 data)
 	REG_LOG("PGPU write 0x%08X = 0x%08X", addr, data);
 	if (addr == HW_PS1_GPU_DATA)
 	{
+		// MDEC-FIX: Redirect VRAM writes from Y>=240 to Y-240 in 24-bit mode.
+		// This collapses double-buffering into single-buffer, allowing force-Y=0
+		// display to show every frame at full framerate.
+		static int gp0_vram_state = 0; // 0=idle, 1=awaiting coords, 2=awaiting size
+		if (gp0_vram_state == 0) {
+			if ((data >> 24) == 0xA0) // GP0(A0h) - Copy Rectangle CPU→VRAM
+				gp0_vram_state = 1;
+		} else if (gp0_vram_state == 1) { // coords: X | Y<<16 (VRAM halfwords)
+			if (pgpu.stat.bits.COLD) {
+				u32 x = data & 0xFFFF;
+				u32 y = (data >> 16) & 0xFFFF;
+				if (y >= 240) {
+					data = x | ((y - 240) << 16);
+				}
+			}
+			gp0_vram_state = 2;
+		} else if (gp0_vram_state == 2) { // size: W | H<<16 — no modification needed
+			gp0_vram_state = 0;
+		}
 		ringBufPut(&rb_gp0, &data);
 	}
 	else if (addr == HW_PS1_GPU_STATUS)
@@ -350,6 +369,12 @@ void psxGPUw(int addr, u32 data)
 				u32 x = data & 0x3FF;
 				u32 y = (data >> 10) & 0x1FF;
 				Console.WriteLn("[PGIF-GP1] DisplayStart X=%u Y=%u (raw=0x%08X)", x, y, data);
+				// MDEC-FIX: PS1DRV can't render 24-bit mode from Y!=0 correctly
+				// (byte misalignment causes grayscale). Force Y=0 always in 24-bit.
+				if (pgpu.stat.bits.COLD && y != 0) {
+					data = (data & 0xFF0003FF); // clear Y bits
+					Console.WriteLn("[PGIF-GP1]  -> Forced Y=0 (24bit workaround)");
+				}
 			} else if (gp1_cmd == 0x06) { // Horizontal display range
 				u32 x1 = data & 0xFFF;
 				u32 x2 = (data >> 12) & 0xFFF;
@@ -361,6 +386,17 @@ void psxGPUw(int addr, u32 data)
 			} else if (gp1_cmd == 0x08) { // Display mode
 				Console.WriteLn("[PGIF-GP1] DisplayMode raw=0x%08X (24bit=%u interlace=%u)",
 					data, (data >> 4) & 1, (data >> 5) & 1);
+				// Track interlace/VILAC in our stat copy since PS1DRV won't update it
+				pgpu.stat.bits.VILAC = (data >> 5) & 1;
+				pgpu.stat.bits.COLD = (data >> 4) & 1;
+				// MDEC-FIX: PS1DRV has a bug rendering interlaced 24-bit mode —
+				// the second field's VRAM read is byte-misaligned, causing grayscale.
+				// Workaround: strip interlace flag when 24-bit is active, making
+				// PS1DRV treat it as progressive. Both framebuffers render correctly.
+				if ((data >> 4) & 1) { // 24-bit active
+					data &= ~(1 << 5); // clear interlace bit
+					Console.WriteLn("[PGIF-GP1]  -> Stripped interlace for 24bit mode");
+				}
 			}
 			triggerPgifInt(0);
 			ringBufPut(&rb_gp1, &data);
