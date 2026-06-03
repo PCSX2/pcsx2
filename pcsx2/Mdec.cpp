@@ -196,6 +196,7 @@ void mdecWrite1(u32 data)
 	if (data & 0x80000000)
 	{
 		// mdec reset
+		Console.WriteLn("[MDEC-STOP] Reset after %u frames", 0); // will use counter
 		round_init();
 		// mdecInit();
 	}
@@ -220,6 +221,14 @@ void psxDma0(u32 adr, u32 bcr, u32 chcr)
 	const int cmd = mdec.command;
 
 	MDEC_LOG("DMA0 %lx %lx %lx", adr, bcr, chcr);
+	
+	// [INSTRUMENT] MDEC input DMA
+	static uint32_t mdec_in_ctr = 0;
+	mdec_in_ctr++;
+	if (mdec_in_ctr <= 5 || mdec_in_ctr % 100 == 0) {
+		Console.WriteLn("[MDEC-IN] #%u cmd=0x%08X adr=0x%08X bcr=0x%08X size=%d words",
+			mdec_in_ctr, cmd, adr, bcr, (bcr >> 16) * (bcr & 0xffff));
+	}
 
 	if (chcr != 0x01000201)
 		return;
@@ -263,6 +272,21 @@ void psxDma1(u32 adr, u32 bcr, u32 chcr)
 	unsigned short* image;
 
 	MDEC_LOG("DMA1 %lx %lx %lx (cmd = %lx)", adr, bcr, chcr, mdec.command);
+
+	// [INSTRUMENT] MDEC output DMA (frame decode)
+	static uint32_t mdec_out_ctr = 0;
+	static bool mdec_was_active = false;
+	mdec_out_ctr++;
+	if (!mdec_was_active) {
+		Console.WriteLn("[MDEC-START] Frame #%u cmd=0x%08X adr=0x%08X bcr=0x%08X (%dx%d pixels)",
+			mdec_out_ctr, mdec.command, adr, bcr,
+			(mdec.command & 0x08000000) ? 16 : 24,
+			(bcr >> 16) * (bcr & 0xffff) * 2 / ((mdec.command & 0x08000000) ? 256 : 384));
+		mdec_was_active = true;
+	}
+	if (mdec_out_ctr % 100 == 0) {
+		Console.WriteLn("[MDEC-FRAME] #%u still decoding", mdec_out_ctr);
+	}
 
 	if (chcr != 0x01000200)
 		return;
