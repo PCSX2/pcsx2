@@ -62,11 +62,20 @@ public:
 		const ccc::SymbolDatabase& database,
 		const SymbolTreeDisplayOptions& display_options);
 
-	QVariant readValueAsVariant(const ccc::ast::Node& physical_type, DebugInterface& cpu, const ccc::SymbolDatabase& database) const;
-	bool writeValueFromVariant(QVariant value, const ccc::ast::Node& physical_type, DebugInterface& cpu) const;
+	QVariant readValueAsVariant(
+		const ccc::ast::Node& physical_type,
+		DebugInterface& cpu,
+		const ccc::SymbolDatabase& database) const;
+
+	bool writeValueFromVariant(
+		QVariant value,
+		const ccc::ast::Node& physical_type,
+		DebugInterface& cpu,
+		const ccc::SymbolDatabase& database) const;
 
 	bool updateDisplayString(
 		DebugInterface& cpu, const ccc::SymbolDatabase& database, const SymbolTreeDisplayOptions& display);
+
 	QString generateDisplayString(
 		const ccc::ast::Node& physical_type,
 		DebugInterface& cpu,

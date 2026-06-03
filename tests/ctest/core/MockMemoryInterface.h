@@ -21,9 +21,9 @@ public:
 	MOCK_METHOD(bool, Write32, (u32 address, u32 value), (override));
 	MOCK_METHOD(bool, Write64, (u32 address, u64 value), (override));
 	MOCK_METHOD(bool, Write128, (u32 address, u128 value), (override));
-	MOCK_METHOD(bool, WriteBytes, (u32 address, void* src, u32 size), (override));
+	MOCK_METHOD(bool, WriteBytes, (u32 address, const void* src, u32 size), (override));
 
-	MOCK_METHOD(bool, CompareBytes, (u32 address, void* src, u32 size), (override));
+	MOCK_METHOD(bool, CompareBytes, (u32 address, const void* src, u32 size), (override));
 
 	struct SetValidOutParameterAction
 	{
