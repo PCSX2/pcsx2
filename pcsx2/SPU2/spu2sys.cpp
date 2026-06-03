@@ -1157,6 +1157,16 @@ static void RegWrite_Core(u16 value)
 			thiscore.WetGate.InpL = (vx & 0x020) ? -1 : 0;
 			thiscore.DryGate.InpR = (vx & 0x040) ? -1 : 0;
 			thiscore.DryGate.InpL = (vx & 0x080) ? -1 : 0;
+			// [DKWDRV HACK] Block wet gate on Core 0 ADMA input when XA active
+			if (core == 0) {
+				extern bool g_xa_adma_active;
+				if (g_xa_adma_active) {
+					thiscore.WetGate.InpL = 0;
+					thiscore.WetGate.InpR = 0;
+					thiscore.DryGate.InpL = -1;
+					thiscore.DryGate.InpR = -1;
+				}
+			}
 			thiscore.WetGate.SndR = (vx & 0x100) ? -1 : 0;
 			thiscore.WetGate.SndL = (vx & 0x200) ? -1 : 0;
 			thiscore.DryGate.SndR = (vx & 0x400) ? -1 : 0;

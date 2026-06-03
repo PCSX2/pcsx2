@@ -226,6 +226,13 @@ static void xa_configure_adma()
 	Cores[0].InputDataLeft = 0x200;
 	Cores[0].AdmaInProgress = 1;
 
+	// Route ADMA to dry output only — disable wet (reverb) path
+	// On real PS1, XA audio goes through CD input volume, not SPU reverb
+	Cores[0].DryGate.InpL = -1;
+	Cores[0].DryGate.InpR = -1;
+	Cores[0].WetGate.InpL = 0;
+	Cores[0].WetGate.InpR = 0;
+
 	Console.WriteLn("[XA-INJECT] ADMA configured: AutoDMACtrl=%d InpVol=0x7FFF stereo=%d freq=%d",
 		Cores[0].AutoDMACtrl, s_xa.stereo, s_xa.freq);
 }
