@@ -174,10 +174,21 @@ static void xa_feed_to_ring(int16_t* pcm, int num_samples)
 			g_xa_pcm_write = (g_xa_pcm_write + 1) & XA_RING_MASK;
 		}
 	} else {
-		// Stereo: already L,R,L,R
-		for (int i = 0; i < num_samples; i++) {
-			g_xa_pcm_ring[g_xa_pcm_write] = pcm[i];
-			g_xa_pcm_write = (g_xa_pcm_write + 1) & XA_RING_MASK;
+		// Stereo: decode output is block-interleaved [28×L][28×R][28×L][28×R]...
+		// Convert to sample-interleaved L,R,L,R for the ring buffer.
+		// Each L/R pair is 28 samples (one sound unit each).
+		int total_pairs = num_samples / 56;  // each pair = 28L + 28R = 56 samples
+		int idx = 0;
+		for (int p = 0; p < total_pairs; p++) {
+			int16_t* left_block = &pcm[idx];
+			int16_t* right_block = &pcm[idx + 28];
+			for (int s = 0; s < 28; s++) {
+				g_xa_pcm_ring[g_xa_pcm_write] = left_block[s];
+				g_xa_pcm_write = (g_xa_pcm_write + 1) & XA_RING_MASK;
+				g_xa_pcm_ring[g_xa_pcm_write] = right_block[s];
+				g_xa_pcm_write = (g_xa_pcm_write + 1) & XA_RING_MASK;
+			}
+			idx += 56;
 		}
 	}
 }
