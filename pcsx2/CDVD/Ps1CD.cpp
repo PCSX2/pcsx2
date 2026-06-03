@@ -741,6 +741,9 @@ void cdrWrite0(u8 rt)
 
 void setPs1CDVDSpeed(int speed)
 {
+	// PS1 CD-ROM max speed is 2x (150 sectors/sec)
+	// PS2 CDVD may report higher speeds (4x, 12x, 24x) — cap to 2x for PS1 compat
+	if (speed > 2) speed = 2;
 	//Console.Warning(L"SPEED: %dX", speed);
 	cdReadTime = (PSXCLK / (75 * speed));
 	//Console.Warning(L"cdReadTime: %d", unsigned(cdReadTime));
@@ -1173,7 +1176,7 @@ void cdrReset()
 	cdr.CurTrack = 1;
 	cdr.File = 1;
 	cdr.Channel = 1;
-	cdReadTime = (PSXCLK / 1757) * BIAS;
+	cdReadTime = (PSXCLK / 75); // 1x speed default (75 sectors/sec) until game sets mode
 }
 
 bool SaveStateBase::cdrFreeze()
