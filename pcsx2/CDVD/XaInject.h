@@ -315,6 +315,11 @@ static void xa_inject_stop()
 	Cores[0].AdmaInProgress = 0;
 	Cores[0].InpVol.Left = 0;
 	Cores[0].InpVol.Right = 0;
+	// Zero ADMA buffer to prevent stale looping
+	for (int i = 0; i < 0x200; i++) {
+		_spu2mem[0x2000 + i] = 0;  // Left
+		_spu2mem[0x2200 + i] = 0;  // Right
+	}
 	// Flush ring + FIFO
 	g_xa_pcm_write = 0;
 	g_xa_pcm_read = 0;
