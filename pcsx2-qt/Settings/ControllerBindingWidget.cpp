@@ -7,6 +7,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollArea>
 #include <algorithm>
+#include <array>
 #include "fmt/format.h"
 
 #include "common/Console.h"
@@ -14,6 +15,7 @@
 
 #include "pcsx2/Host.h"
 #include "pcsx2/SIO/Pad/Pad.h"
+#include "pcsx2/SIO/Sio.h"
 
 #include "Settings/ControllerBindingWidget.h"
 #include "Settings/ControllerSettingsWindow.h"
@@ -41,7 +43,19 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 	, m_port_number(port)
 {
 	m_ui.setupUi(this);
-	m_ui.groupBox->setTitle(tr("Controller Port %1").arg(port + 1));
+
+	if (sioPadIsMultitapSlot(port))
+	{
+		static constexpr const std::array<char, 4> s_mtap_slot_names = {{'A', 'B', 'C', 'D'}};
+		const auto [pad_port, pad_slot] = sioConvertPadToPortAndSlot(port);
+		//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
+		m_ui.groupBox->setTitle(tr("Controller Port %1%2").arg(pad_port + 1).arg(s_mtap_slot_names[pad_slot]));
+	}
+	else
+	{
+		//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
+		m_ui.groupBox->setTitle(tr("Controller Port %1").arg(port + 1));
+	}
 
 	populateControllerTypes();
 	onTypeChanged();
@@ -294,7 +308,19 @@ ControllerMacroWidget::ControllerMacroWidget(ControllerBindingWidget* parent)
 	: QWidget(parent)
 {
 	m_ui.setupUi(this);
-	setWindowTitle(tr("Controller Port %1 Macros").arg(parent->getPortNumber() + 1u));
+	const u32 port = parent->getPortNumber();
+	if (sioPadIsMultitapSlot(port))
+	{
+		static constexpr const std::array<char, 4> s_mtap_slot_names = {{'A', 'B', 'C', 'D'}};
+		const auto [pad_port, pad_slot] = sioConvertPadToPortAndSlot(port);
+		//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
+		setWindowTitle(tr("Controller Port %1%2 Macros").arg(pad_port + 1).arg(s_mtap_slot_names[pad_slot]));
+	}
+	else
+	{
+		//: Controller Port is an official term from Sony. Find the official translation for your language inside the console's manual.
+		setWindowTitle(tr("Controller Port %1 Macros").arg(port + 1u));
+	}
 	createWidgets(parent);
 }
 
