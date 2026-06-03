@@ -654,6 +654,9 @@ void GameListWidget::refreshGridCovers()
 
 void GameListWidget::showGameList()
 {
+	Host::SetBaseBoolSettingValue("UI", "GameListGridView", false);
+	Host::CommitBaseSettingChanges();
+
 	if (m_ui.stack->currentIndex() == 0 || m_model->rowCount() == 0)
 	{
 		// We can click the toolbar multiple times, so keep it correct.
@@ -661,8 +664,6 @@ void GameListWidget::showGameList()
 		return;
 	}
 
-	Host::SetBaseBoolSettingValue("UI", "GameListGridView", false);
-	Host::CommitBaseSettingChanges();
 	m_ui.stack->setCurrentIndex(0);
 	setFocusProxy(m_ui.stack->currentWidget());
 	resizeTableViewColumnsToFit();
@@ -672,6 +673,9 @@ void GameListWidget::showGameList()
 
 void GameListWidget::showGameGrid()
 {
+	Host::SetBaseBoolSettingValue("UI", "GameListGridView", true);
+	Host::CommitBaseSettingChanges();
+
 	if (m_ui.stack->currentIndex() == 1 || m_model->rowCount() == 0)
 	{
 		// We can click the toolbar multiple times, so keep it correct.
@@ -679,8 +683,6 @@ void GameListWidget::showGameGrid()
 		return;
 	}
 
-	Host::SetBaseBoolSettingValue("UI", "GameListGridView", true);
-	Host::CommitBaseSettingChanges();
 	m_ui.stack->setCurrentIndex(1);
 	setFocusProxy(m_ui.stack->currentWidget());
 	updateToolbar();
@@ -703,7 +705,7 @@ void GameListWidget::setShowCoverTitles(bool enabled)
 
 void GameListWidget::updateToolbar()
 {
-	const bool grid_view = isShowingGameGrid();
+	const bool grid_view = Host::GetBaseBoolSettingValue("UI", "GameListGridView", false);
 	{
 		QSignalBlocker sb(m_ui.viewGameGrid);
 		m_ui.viewGameGrid->setChecked(grid_view);
