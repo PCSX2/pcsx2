@@ -68,10 +68,12 @@ static const int16_t s_xa_zigzag[7][29] = {
 
 static inline int16_t xa_zigzag_interpolate(const int16_t* ringbuf, uint32_t table_index, uint32_t p) {
 	const int16_t* table = s_xa_zigzag[table_index];
-	int32_t sum = 0;
+	int64_t sum = 0;
+	// p is the NEXT write position; latest sample is at p-1
+	// Accumulate full precision, shift once at the end to avoid per-tap truncation
 	for (uint32_t i = 0; i < 29; i++)
-		sum += ((int32_t)ringbuf[(p - i) & 0x1F] * (int32_t)table[i]) >> 15;
-	return (int16_t)std::clamp<int32_t>(sum, -0x8000, 0x7FFF);
+		sum += (int32_t)ringbuf[(p - 1 - i) & 0x1F] * (int32_t)table[i];
+	return (int16_t)std::clamp<int64_t>(sum >> 15, -0x8000, 0x7FFF);
 }
 
 // Pump sectors from FIFO to ring — declared in XaInject.h, implemented in Ps1CD.cpp
