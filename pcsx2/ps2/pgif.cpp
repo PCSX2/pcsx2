@@ -325,6 +325,9 @@ void rb_gp0_Get(u32* data)
 
 //PS1 GPU registers I/O handlers:
 
+// Tracked from DisplayStart Y when in 24-bit mode (240=Tekken, 256=SotN)
+static u32 gp0_24bit_ybias = 240;
+
 void psxGPUw(int addr, u32 data)
 {
 	REG_LOG("PGPU write 0x%08X = 0x%08X", addr, data);
@@ -341,8 +344,11 @@ void psxGPUw(int addr, u32 data)
 			if (pgpu.stat.bits.COLD) {
 				u32 x = data & 0xFFFF;
 				u32 y = (data >> 16) & 0xFFFF;
-				if (y >= 240) {
-					data = x | ((y - 240) << 16);
+				if (y >= gp0_24bit_ybias) {
+					// Redirect second framebuffer writes to Y=0 area
+					// Subtract buffer base to preserve strip offsets within the buffer
+					Console.WriteLn("[PGIF-GP0] VRAM write Y=%u -> Y=%u (bias=%u)", y, y - gp0_24bit_ybias, gp0_24bit_ybias);
+					data = x | ((y - gp0_24bit_ybias) << 16);
 				}
 			}
 			gp0_vram_state = 2;
@@ -372,8 +378,10 @@ void psxGPUw(int addr, u32 data)
 				// MDEC-FIX: PS1DRV can't render 24-bit mode from Y!=0 correctly
 				// (byte misalignment causes grayscale). Force Y=0 always in 24-bit.
 				if (pgpu.stat.bits.COLD && y != 0) {
+					// Track the Y bias for GP0(A0h) redirect (240 for Tekken, 256 for SotN)
+					gp0_24bit_ybias = y;
 					data = (data & 0xFF0003FF); // clear Y bits
-					Console.WriteLn("[PGIF-GP1]  -> Forced Y=0 (24bit workaround)");
+					Console.WriteLn("[PGIF-GP1]  -> Forced Y=0 (24bit workaround, ybias=%u)", y);
 				}
 			} else if (gp1_cmd == 0x06) { // Horizontal display range
 				u32 x1 = data & 0xFFF;
@@ -641,6 +649,32 @@ void drainPgpuDmaNrToGpu()
 	{
 		u32 data = iopMemRead32(dma.normal.address);
 		PGPU_DMA_LOG( "To GPU Normal DMA data= %08X  addr %08X ", data, dma.ll_dma.data_read_address);
+
+		// MDEC-FIX: Apply same GP0(A0h) state machine as direct writes
+		// to redirect Y>=ybias VRAM writes to Y=0 area in 24-bit mode.
+		static int dma_gp0_state = 0; // 0=idle, 1=coords, 2=size, 3+=pixel skip
+		static u32 dma_gp0_pixels_remain = 0;
+		if (dma_gp0_pixels_remain > 0) {
+			dma_gp0_pixels_remain--;
+			if (dma_gp0_pixels_remain == 0) dma_gp0_state = 0;
+		} else if (dma_gp0_state == 0) {
+			if ((data >> 24) == 0xA0) dma_gp0_state = 1;
+		} else if (dma_gp0_state == 1) { // coords
+			if (pgpu.stat.bits.COLD) {
+				u32 x = data & 0xFFFF;
+				u32 y = (data >> 16) & 0xFFFF;
+				if (y >= gp0_24bit_ybias) {
+					Console.WriteLn("[PGIF-DMA] VRAM write Y=%u -> Y=%u (bias=%u)", y, y - gp0_24bit_ybias, gp0_24bit_ybias);
+					data = x | ((y - gp0_24bit_ybias) << 16);
+				}
+			}
+			dma_gp0_state = 2;
+		} else if (dma_gp0_state == 2) { // size
+			u32 w = data & 0xFFFF;
+			u32 h = (data >> 16) & 0xFFFF;
+			dma_gp0_pixels_remain = ((w * h + 1) & ~1) / 2;
+			dma_gp0_state = 3;
+		}
 
 		ringBufPut(&rb_gp0, &data);
 		if (dmaRegs.chcr.bits.MAS)
