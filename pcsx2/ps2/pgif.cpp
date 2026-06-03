@@ -54,6 +54,14 @@ void drainPgpuDmaNrToIop(void);
 // is throttled when the FIFO already has pending data.
 static u32 pgif_backpressure_blocked = 0;
 
+// MDEC-FIX: Toggle interlace field bit (GPUSTAT bit 31) on each VBlank.
+// Real PS1 GPU toggles this every VBlank when interlace is enabled.
+// PS1DRV may use it for display timing/field detection.
+void pgifToggleInterlaceField()
+{
+	pgpu.stat.bits.DEO ^= 1;
+}
+
 void ringBufPut(struct ringBuf_t* rb, u32* data)
 {
 	if (rb->count < rb->size)

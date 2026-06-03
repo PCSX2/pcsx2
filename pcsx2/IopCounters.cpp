@@ -431,6 +431,11 @@ void psxVBlankStart()
 {
 	cdvdVsync();
 	iopIntcIrq(0);
+
+	// MDEC-FIX: Toggle GPUSTAT bit 31 (DEO — Drawing Even/Odd lines in interlace mode)
+	// On real PS1, this bit flips every VBlank. PS1DRV may rely on it for display timing.
+	extern void pgifToggleInterlaceField();
+	pgifToggleInterlaceField();
 	
 	_psxCheckStartGate(1);
 	_psxCheckStartGate(3);
