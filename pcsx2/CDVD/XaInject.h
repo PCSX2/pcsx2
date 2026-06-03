@@ -145,6 +145,19 @@ static int xa_decode_sector_to_pcm(const uint8_t* raw_sector, int16_t* pcm_out, 
 	s_xa.h1_l = h1l; s_xa.h2_l = h2l;
 	s_xa.h1_r = h1r; s_xa.h2_r = h2r;
 
+	// [INSTRUMENT] Log raw ADPCM decode output (first 8 samples) periodically
+	static uint32_t decode_log_ctr = 0;
+	decode_log_ctr++;
+	if (decode_log_ctr <= 5 || decode_log_ctr % 200 == 0) {
+		Console.WriteLn("[XA-DECODE] #%u out_idx=%d filt=%d range=%d samples: %d %d %d %d %d %d %d %d",
+			decode_log_ctr, out_idx,
+			(audio_data[0] >> 4) & 0xF, audio_data[0] & 0xF,
+			out_idx > 0 ? (int)pcm_out[0] : 0, out_idx > 1 ? (int)pcm_out[1] : 0,
+			out_idx > 2 ? (int)pcm_out[2] : 0, out_idx > 3 ? (int)pcm_out[3] : 0,
+			out_idx > 4 ? (int)pcm_out[4] : 0, out_idx > 5 ? (int)pcm_out[5] : 0,
+			out_idx > 6 ? (int)pcm_out[6] : 0, out_idx > 7 ? (int)pcm_out[7] : 0);
+	}
+
 	return out_idx;
 }
 

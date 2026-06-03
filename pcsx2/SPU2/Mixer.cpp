@@ -517,6 +517,11 @@ static __forceinline StereoOut32 MixCore(const uint coreidx, const VoiceMixSet& 
 	WaveDump::WriteCore(thiscore.Index, CoreSrc_PostReverb, RV);
 #endif
 
+	// [DKWDRV] Kill reverb output for Core 0 when XA active
+	if (coreidx == 0 && g_xa_adma_active) {
+		RV = StereoOut32();
+	}
+
 	// Mix Dry + Wet
 	// (master volume is applied later to the result of both outputs added together).
 	return TD + ApplyVolume(RV, thiscore.FxVol);
@@ -555,6 +560,20 @@ void spu2Mix()
 	MixCoreVoices(VoiceData[1], 1);
 
 	StereoOut32 Ext(MixCore(0, VoiceData[0], InputData[0], StereoOut32::Empty));
+
+	// [INSTRUMENT] Log Core 0 input vs output to detect downstream processing
+	{
+		static uint32_t mix_log = 0;
+		mix_log++;
+		if (g_xa_adma_active && (mix_log <= 20 || mix_log % 5000 == 0)) {
+			printf("[XA-MIX] #%u Input0=(%d,%d) Voices0_dry=(%d,%d) Ext=(%d,%d) InpVol=(%d,%d)\n",
+				mix_log,
+				InputData[0].Left, InputData[0].Right,
+				VoiceData[0].Dry.Left, VoiceData[0].Dry.Right,
+				Ext.Left, Ext.Right,
+				(int)Cores[0].InpVol.Left, (int)Cores[0].InpVol.Right);
+		}
+	}
 
 	if ((PlayMode & 4) || (Cores[0].Mute != 0))
 		Ext = StereoOut32::Empty;

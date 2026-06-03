@@ -335,12 +335,25 @@ StereoOut32 V_Core::ReadInput()
 
 				static uint32_t fill_log = 0;
 				fill_log++;
-				if (fill_log <= 10 || fill_log % 500 == 0) {
+				if (fill_log <= 20 || fill_log % 100 == 0) {
 					uint32_t ring_avail_now = (g_xa_pcm_write - g_xa_pcm_read) & XA_RING_MASK;
-					Console.WriteLn("[XA-ADMA-FILL] #%u half=%d underrun=%d ring_avail=%u mem[L]=%d %d %d %d zigzag",
+					// Compute peak and RMS of this half
+					int16_t peak_l = 0, peak_r = 0;
+					for (int k = 0; k < 0x100; k++) {
+						int16_t sl = _spu2mem[base_l + k];
+						int16_t sr = _spu2mem[base_r + k];
+						if (sl > peak_l) peak_l = sl;
+						if (sl < -peak_l) peak_l = -sl;
+						if (sr > peak_r) peak_r = sr;
+						if (sr < -peak_r) peak_r = -sr;
+					}
+					Console.WriteLn("[XA-ADMA-FILL] #%u half=%d underrun=%d ring=%u peak_L=%d peak_R=%d sixstep=%u out[0..7]=%d %d %d %d %d %d %d %d",
 						fill_log, half_to_fill, underrun_this, ring_avail_now,
+						(int)peak_l, (int)peak_r, s_xa_sixstep,
 						(int)_spu2mem[base_l], (int)_spu2mem[base_l+1],
-						(int)_spu2mem[base_l+2], (int)_spu2mem[base_l+3]);
+						(int)_spu2mem[base_l+2], (int)_spu2mem[base_l+3],
+						(int)_spu2mem[base_l+4], (int)_spu2mem[base_l+5],
+						(int)_spu2mem[base_l+6], (int)_spu2mem[base_l+7]);
 				}
 			}
 		}
