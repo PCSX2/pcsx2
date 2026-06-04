@@ -69,7 +69,9 @@ cmake -DCMAKE_PREFIX_PATH="/Users/isztld/Documents/projects/pcsx2/pcsx2-deps" \
 # --- Verify the binary is actually arm64 ---
 file build/pcsx2-qt/PCSX2.app/Contents/MacOS/PCSX2   # must say: arm64
 
-# --- Run ---
+# --- Run (macOS: ALWAYS postprocess the bundle first — see below) ---
+cmake --build build --target pcsx2-postprocess-bundle   # macdeployqt: bundle Qt + fix install names
+codesign --force --deep --sign - build/pcsx2-qt/PCSX2.app
 open build/pcsx2-qt/PCSX2.app
 # or for logs in the terminal:
 build/pcsx2-qt/PCSX2.app/Contents/MacOS/PCSX2
@@ -77,6 +79,20 @@ build/pcsx2-qt/PCSX2.app/Contents/MacOS/PCSX2
 # --- Unit tests ---
 cmake --build build --target unittests -j18 && ctest --test-dir build
 ```
+
+**macOS bundle rule (avoids the duplicate-Qt / "Could not load the Qt platform
+plugin cocoa" crash):** `cmake --build build --target pcsx2-qt` only relinks the
+binary — it does **not** run the bundle postprocess, so launching `PCSX2.app`
+straight from a `pcsx2-qt` build half-deploys it (main binary loads Qt from
+`pcsx2-deps/lib` while the bundled Cocoa plugin loads Qt from the app's
+`Frameworks/`). Before launching, run `cmake --build build --target
+pcsx2-postprocess-bundle` (then re-sign), which has `macdeployqt` copy the Qt
+plugins/frameworks and rewrite install names to `@executable_path/../Frameworks/...`.
+Verify with `otool -L .../MacOS/PCSX2 | rg 'Qt6'` — healthy paths are
+`@executable_path/...`, not absolute `pcsx2-deps/lib/...`. (A plain
+`make -C build` builds the `all` target, which already includes the postprocess
+step unless configured with `SKIP_POSTPROCESS_BUNDLE`.) Full detail in
+`arm64-port/CONVENTIONS.md` §3.
 
 If a fresh codesign is needed after a build (rare, for distribution):
 ```bash
