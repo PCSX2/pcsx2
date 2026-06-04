@@ -1620,6 +1620,7 @@ SCAJ-20055:
     vuClampMode: 3 # Stops car from falling through track.
   gsHWFixes:
     textureInsideRT: 1 # Fixes broken splitscreen mode.
+    halfPixelOffset: 4 # Fixes misaligned blur in replays.
 SCAJ-20056:
   name: "Bujingai"
   region: "NTSC-Unk"
@@ -4898,7 +4899,7 @@ SCES-50360:
   name: "Twisted Metal - Black"
   region: "PAL-M5"
   gsHWFixes:
-    recommendedBlendingLevel: 4 # Fixes menu text brightness.
+    minimumBlendingLevel: 4 # Fixes menu text brightness.
     halfPixelOffset: 4 # Fixes misaligned blur during Darkside special.
 SCES-50361:
   name: "Jak and Daxter - The Precursor Legacy"
@@ -5422,7 +5423,7 @@ SCES-51480:
   name: "Twisted Metal - Black Online"
   region: "PAL-M5"
   gsHWFixes:
-    recommendedBlendingLevel: 4 # Fixes menu text brightness.
+    minimumBlendingLevel: 4 # Fixes menu text brightness.
     halfPixelOffset: 4 # Fixes misaligned blur during Darkside special.
 SCES-51513:
   name: "EyeToy - Play"
@@ -11114,7 +11115,7 @@ SCUS-97101:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    recommendedBlendingLevel: 4 # Fixes menu text brightness.
+    minimumBlendingLevel: 4 # Fixes menu text brightness.
     halfPixelOffset: 4 # Fixes misaligned blur during Darkside special.
 SCUS-97102:
   name: "Gran Turismo 3 - A-Spec"
@@ -11377,7 +11378,7 @@ SCUS-97164:
   name: "Twisted Metal - Black [Demo]"
   region: "NTSC-U"
   gsHWFixes:
-    recommendedBlendingLevel: 4 # Fixes menu text brightness.
+    minimumBlendingLevel: 4 # Fixes menu text brightness.
     halfPixelOffset: 4 # Fixes misaligned blur during Darkside special.
 SCUS-97165:
   name: "Official U.S. PlayStation Magazine Demo Disc 051"
@@ -11445,7 +11446,7 @@ SCUS-97179:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    recommendedBlendingLevel: 4 # Fixes menu text brightness.
+    minimumBlendingLevel: 4 # Fixes menu text brightness.
     halfPixelOffset: 4 # Fixes misaligned blur during Darkside special.
 SCUS-97181:
   name: "Official U.S. PlayStation Magazine Demo Disc 055"
@@ -11490,14 +11491,14 @@ SCUS-97195:
   name: "Twisted Metal - Black Online"
   region: "NTSC-U"
   gsHWFixes:
-    recommendedBlendingLevel: 4 # Fixes menu text brightness.
+    minimumBlendingLevel: 4 # Fixes menu text brightness.
     halfPixelOffset: 4 # Fixes misaligned blur during Darkside special.
 SCUS-97196:
   name: "Twisted Metal - Black Online"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    recommendedBlendingLevel: 4 # Fixes menu text brightness.
+    minimumBlendingLevel: 4 # Fixes menu text brightness.
     halfPixelOffset: 4 # Fixes misaligned blur during Darkside special.
 SCUS-97197:
   name: "War of the Monsters"
@@ -13177,7 +13178,8 @@ SCUS-97621:
   clampModes:
     vu1ClampMode: 3 # Fixes missing textures.
   gsHWFixes:
-    recommendedBlendingLevel: 4 # Fixes menu text brightness and smoke effects.
+    minimumBlendingLevel: 4 # Fixes menu text brightness and smoke effects.
+    halfPixelOffset: 4 # Fixes misaligned blur during Darkside special.
   gameFixes:
     - VUSyncHack # Fixes black doors on vehicles.
   patches:
@@ -14821,6 +14823,8 @@ SLES-50113:
   name: "Ring of Red"
   region: "PAL-M3"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMV lines.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLES-50114:
@@ -16220,6 +16224,7 @@ SLES-50731:
   clampModes:
     vuClampMode: 2 # White textures.
   gsHWFixes:
+    drawBuffering: 1 # Reduces draws and improves performance.
     recommendedBlendingLevel: 3 # Improves road quality.
     halfPixelOffset: 2 # Fixes depth line and blur.
 SLES-50735:
@@ -20026,6 +20031,8 @@ SLES-52275:
   name: "Way of the Samurai 2"
   region: "PAL-M3"
   compat: 5
+  gsHWFixes:
+    roundSprite: 2 # Fixes UI lines.
 SLES-52276:
   name: "187 - Ride or Die"
   region: "PAL-M5"
@@ -35535,6 +35542,8 @@ SLPM-60122:
   name-sort: "りんぐ おぶ れっど [たいけんばん]"
   name-en: "Ring of Red [Trial]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMV lines.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPM-60123:
@@ -37312,6 +37321,8 @@ SLPM-62013:
   name-sort: "りんぐ おぶ れっど"
   name-en: "Ring of Red"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMV lines.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPM-62015:
@@ -37669,6 +37680,8 @@ SLPM-62091:
   name-sort: "りんぐ おぶ れっど [KONAMI The BEST]"
   name-en: "Ring of Red [KONAMI The BEST]"
   region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMV lines.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPM-62092:
@@ -42375,7 +42388,9 @@ SLPM-65181:
   clampModes:
     vuClampMode: 2 # White textures.
   gsHWFixes:
-    halfPixelOffset: 1 # Fixes blurriness.
+    drawBuffering: 1 # Reduces draws and improves performance.
+    recommendedBlendingLevel: 3 # Improves road quality.
+    halfPixelOffset: 2 # Fixes depth line and blur.
 SLPM-65183:
   name: "auto modellista モデムパック バージョン"
   name-sort: "おーともでりすた もでむぱっく ばーじょん"
@@ -43566,6 +43581,8 @@ SLPM-65380:
   name-sort: "さむらいどう2 WAY OF THE SAMURAI 2"
   name-en: "Samurai Dou 2"
   region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Fixes UI lines.
 SLPM-65381:
   name: "きまぐれストロベリーカフェ"
   name-sort: "きまぐれすとろべりーかふぇ"
@@ -43877,6 +43894,7 @@ SLPM-65434:
     vuClampMode: 3 # Stops car from falling through track.
   gsHWFixes:
     textureInsideRT: 1 # Fixes broken splitscreen mode.
+    halfPixelOffset: 4 # Fixes misaligned blur in replays.
 SLPM-65435:
   name: "北へ。～Diamond Dust～"
   name-sort: "きたへ Diamond Dust"
@@ -46487,6 +46505,8 @@ SLPM-65884:
   name-sort: "りもーとこんとろーるだんでぃSF"
   name-en: "Remote Control Dandy SF"
   region: "NTSC-J"
+  gsHWFixes:
+    minimumBlendingLevel: 4 # Fixes health bar flickering in tutorial level.
 SLPM-65885:
   name: "RUMBLE ROSES"
   name-sort: "らんぶるろーず"
@@ -48885,6 +48905,8 @@ SLPM-66260:
   name-sort: "りもーとこんとろーるだんでぃSF [KONAMI The BEST]"
   name-en: "Remote Control Dandy SF [KONAMI The BEST]"
   region: "NTSC-J"
+  gsHWFixes:
+    minimumBlendingLevel: 4 # Fixes health bar flickering in tutorial level.
 SLPM-66261:
   name: "OZ -オズ- [KONAMI The BEST]"
   name-sort: "おず [KONAMI The BEST]"
@@ -53693,6 +53715,7 @@ SLPM-67527:
   clampModes:
     vuClampMode: 2 # White textures.
   gsHWFixes:
+    drawBuffering: 1 # Reduces draws and improves performance.
     recommendedBlendingLevel: 3 # Improves road quality.
     halfPixelOffset: 2 # Fixes depth line and blur.
 SLPM-67528:
@@ -65066,6 +65089,8 @@ SLUS-20145:
   name: "Ring of Red"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes FMV lines.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLUS-20146:
@@ -66118,6 +66143,7 @@ SLUS-20362:
   clampModes:
     vuClampMode: 2 # White textures.
   gsHWFixes:
+    drawBuffering: 1 # Reduces draws and improves performance.
     recommendedBlendingLevel: 3 # Improves road quality.
     halfPixelOffset: 2 # Fixes depth line and blur.
 SLUS-20363:
@@ -69015,6 +69041,8 @@ SLUS-20893:
   name: "Way of the Samurai 2"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    roundSprite: 2 # Fixes UI lines.
 SLUS-20894:
   name: "Worms 3D"
   region: "NTSC-U"
@@ -71822,6 +71850,8 @@ SLUS-21327:
   name: "Atelier Iris 2 - The Azoth of Destiny"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts for health and other sprites.
     texturePreloading: 0 # Improves performance and prevents it disabling itself regardless.
