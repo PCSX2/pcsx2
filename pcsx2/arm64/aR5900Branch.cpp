@@ -159,3 +159,24 @@ void armEmitBGEZAL(u32 rs, u32 target, u32 fallthrough, u32 linkpc)
 	emitWriteLink(31, linkpc);
 	emitBranchZero(rs, target, fallthrough, a64::ge);
 }
+
+// ------------------------------------------------------------------------
+// COP1 conditional branches BC1F/BC1T (opcode 0x11, rs==0x08, rt 0x00/0x01).
+// Branch on the FCR31 C (condition) bit set by the C.* compares. The likely
+// forms BC1FL/BC1TL (rt 0x02/0x03) nullify the delay slot and stay on the
+// interpreter fallback, matching the other likely branches.
+static constexpr u32 FPUflagC = 0x00800000;
+
+void armEmitBC1F(u32 target, u32 fallthrough)
+{
+	armAsm->Ldr(RSCRATCHW, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+	armAsm->Tst(RSCRATCHW, FPUflagC);
+	emitSelectPc(target, fallthrough, a64::eq); // C == 0 -> branch
+}
+
+void armEmitBC1T(u32 target, u32 fallthrough)
+{
+	armAsm->Ldr(RSCRATCHW, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+	armAsm->Tst(RSCRATCHW, FPUflagC);
+	emitSelectPc(target, fallthrough, a64::ne); // C != 0 -> branch
+}

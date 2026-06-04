@@ -371,6 +371,14 @@ static bool recEmitBranch(u32 op, u32 branchpc)
 				default: return false; // likely (BLTZL/...) + traps
 			}
 
+		case 0x11: // COP1: BC1 branches live under rs==0x08 (BC); rt selects tf/likely.
+			if (rs == 0x08)
+			{
+				if (rt == 0x00) { armEmitBC1F(btarget, fallthrough); return true; }  // BC1F
+				if (rt == 0x01) { armEmitBC1T(btarget, fallthrough); return true; }  // BC1T
+			}
+			return false; // BC1FL/BC1TL (likely) + non-branch COP1 ops
+
 		default: return false;
 	}
 }
@@ -382,6 +390,7 @@ static bool recIsHandledBranch(u32 op)
 {
 	const u32 opcode = op >> 26;
 	const u32 funct = op & 0x3f;
+	const u32 rs = (op >> 21) & 0x1f;
 	const u32 rt = (op >> 16) & 0x1f;
 	switch (opcode)
 	{
@@ -391,6 +400,8 @@ static bool recIsHandledBranch(u32 op)
 			return funct == 0x08 || funct == 0x09;
 		case 0x01:
 			return rt == 0x00 || rt == 0x01 || rt == 0x10 || rt == 0x11;
+		case 0x11: // COP1: only BC1F/BC1T (rs==BC, rt 0/1); all other COP1 ops are straight-line.
+			return rs == 0x08 && (rt == 0x00 || rt == 0x01);
 		default:
 			return false;
 	}

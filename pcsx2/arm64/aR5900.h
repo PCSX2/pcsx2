@@ -348,3 +348,7 @@ void armEmitBLEZ(u32 rs, u32 target, u32 fallthrough);
 void armEmitBGTZ(u32 rs, u32 target, u32 fallthrough);
 void armEmitBLTZAL(u32 rs, u32 target, u32 fallthrough, u32 linkpc);
 void armEmitBGEZAL(u32 rs, u32 target, u32 fallthrough, u32 linkpc);
+// COP1 FP-condition branches (test the FCR31 C bit). BC1F branches when C==0,
+// BC1T when C!=0. The likely forms (BC1FL/BC1TL) stay on interpreter fallback.
+void armEmitBC1F(u32 target, u32 fallthrough);
+void armEmitBC1T(u32 target, u32 fallthrough);

@@ -2288,4 +2288,36 @@ TEST(Arm64EmitEE, CVT_S_NegativeIntToFloat)
 	EXPECT_EQ(regs.getFPR(8), fpuref::cvts(static_cast<u32>(-5)));
 }
 
+TEST(Arm64EmitEE, BC1F_BranchesWhenConditionClear)
+{
+	GuestRegs regs;
+	regs.setFPRC(31, 0); // C clear -> BC1F taken
+	RunEEGen(regs, [] { armEmitBC1F(/*target*/ 0x1000, /*fallthrough*/ 0x2000); });
+	EXPECT_EQ(regs.getPc(), 0x1000u);
+}
+
+TEST(Arm64EmitEE, BC1F_FallsThroughWhenConditionSet)
+{
+	GuestRegs regs;
+	regs.setFPRC(31, fpuref::kC); // C set -> BC1F not taken
+	RunEEGen(regs, [] { armEmitBC1F(/*target*/ 0x1000, /*fallthrough*/ 0x2000); });
+	EXPECT_EQ(regs.getPc(), 0x2000u);
+}
+
+TEST(Arm64EmitEE, BC1T_BranchesWhenConditionSet)
+{
+	GuestRegs regs;
+	regs.setFPRC(31, fpuref::kC); // C set -> BC1T taken
+	RunEEGen(regs, [] { armEmitBC1T(/*target*/ 0x1000, /*fallthrough*/ 0x2000); });
+	EXPECT_EQ(regs.getPc(), 0x1000u);
+}
+
+TEST(Arm64EmitEE, BC1T_FallsThroughWhenConditionClear)
+{
+	GuestRegs regs;
+	regs.setFPRC(31, 0); // C clear -> BC1T not taken
+	RunEEGen(regs, [] { armEmitBC1T(/*target*/ 0x1000, /*fallthrough*/ 0x2000); });
+	EXPECT_EQ(regs.getPc(), 0x2000u);
+}
+
 #endif // __aarch64__
