@@ -13,24 +13,58 @@
 
 #include "arm64/aR5900.h"
 
+#include "Memory.h"
 #include "R5900.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/Pcsx2Defs.h"
+
+// --------------------------------------------------------------------------------------
+//  EE code-cache layout (Phase 1.3)
+// --------------------------------------------------------------------------------------
+// The EE recompiler region is pre-reserved by SysMemory (HostMemoryMap::EErec*, 64 MB).
+// We do NOT allocate it ourselves; we just carve it:
+//
+//   [ GetEERec() ............................ recPtrEnd )   emitted block code
+//   [ recPtrEnd ............................. GetEERecEnd() )   ArmConstantPool
+//
+// The constant pool holds far-jump trampolines and 64/128-bit literals that VIXL
+// loads PC-relative (see ArmConstantPool in AsmHelpers). x86 has no such pool (it
+// inlines immediates), so this tail carve-out is ARM64-specific. recPtr is the
+// rolling emit cursor; block compilation (Phase 1.4) advances it and resets the
+// whole cache when it runs past recPtrEnd.
+
+// Space reserved at the tail of the EE rec region for the constant pool.
+static constexpr u32 EE_CONSTPOOL_SIZE = static_cast<u32>(_1mb);
+
+static u8* recPtr = nullptr;    // rolling emit cursor (start of next block)
+static u8* recPtrEnd = nullptr; // end of the code region / start of the constant pool
+
+static ArmConstantPool s_const_pool;
 
 static void recReserve()
 {
-	// TODO(Phase 1.3): allocate the EE code cache via HostSys and the constant pool.
+	recPtr = SysMemory::GetEERec();
+	recPtrEnd = SysMemory::GetEERecEnd() - EE_CONSTPOOL_SIZE;
+
+	s_const_pool.Init(recPtrEnd, EE_CONSTPOOL_SIZE);
 }
 
 static void recShutdown()
 {
-	// TODO(Phase 1.3): release the code cache.
+	s_const_pool.Destroy();
+
+	recPtr = nullptr;
+	recPtrEnd = nullptr;
 }
 
 static void recResetEE()
 {
-	// TODO(Phase 1): reset code cache / block map / const-prop state.
+	// Rewind the emit cursor and drop all cached trampolines/literals. Block map
+	// and dispatcher regeneration land in Phase 1.4; const-prop state in Phase 3.6.
+	recPtr = SysMemory::GetEERec();
+	s_const_pool.Reset();
 }
 
 static void recStep()

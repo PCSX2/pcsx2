@@ -28,6 +28,49 @@
 
 ---
 
+## 2026-06-04 — Phase 1.3: EE code-cache reservation + constant pool
+
+**Goal:** Give the EE rec a real code buffer and constant pool so Phase 1.4 can
+emit blocks. No guest code compiled yet.
+
+**What changed:**
+- `pcsx2/arm64/aR5900.cpp`:
+  - Added file-scope `recPtr`/`recPtrEnd` cursor + `static ArmConstantPool s_const_pool`.
+  - `recReserve()`: `recPtr = SysMemory::GetEERec()`, `recPtrEnd = GetEERecEnd() -
+    EE_CONSTPOOL_SIZE`, `s_const_pool.Init(recPtrEnd, EE_CONSTPOOL_SIZE)`.
+  - `recShutdown()`: `s_const_pool.Destroy()` + null the cursors.
+  - `recResetEE()`: rewind `recPtr` to `GetEERec()`, `s_const_pool.Reset()`.
+  - `EE_CONSTPOOL_SIZE = 1 MB` reserved at the tail of the 64 MB EE rec region.
+  - Added `#include "Memory.h"` + `"common/Pcsx2Defs.h"`.
+- Commits: 7f16e2cde ARM64: Reserve EE code cache + constant pool (Phase 1.3)
+
+**Decisions & rationale:**
+- **Do NOT allocate the code cache ourselves — SysMemory already reserves it.** The
+  64 MB EE rec region (`HostMemoryMap::EErec*`) is mapped at startup; x86's
+  `recReserve` likewise just takes `GetEERec()`/`GetEERecEnd()`. So this is a
+  carve, not an `HostSys::Alloc`. (PROGRESS.md said "via HostSys" — corrected: it's
+  via `SysMemory::GetEERec()`, same as the VIF dynarec uses `GetVIFUnpackRec()`.)
+- **Constant pool lives in a 1 MB tail of the EE region.** ARM64 needs PC-relative
+  far-jump trampolines + 64/128-bit literals (x86 inlines immediates and has no
+  pool). Carving the tail keeps pool literals within ±128 MB of all emitted code
+  (the region is 64 MB, well within ADR/LDR-literal range) without a second
+  allocation. 1 MB is a provisional size; revisit if trampolines/literals overflow.
+- **Skipped the x86 LUT/block-map machinery (`recRAMCopy`, `recLutReserve_RAM`,
+  dispatchers).** That belongs to Phase 1.4/4.x (block compile + linking +
+  invalidation), not to cache reservation. Kept 1.3 to exactly "buffer + pool".
+- **`recPtr` is written but not yet read** (only `recReserve`/`recResetEE` set it);
+  no unused-variable warning for file-scope statics. First reader is Phase 1.4.
+
+**Blockers / open questions:**
+- none. Builds, links, binary confirmed arm64, both unittests pass.
+
+**Next step:** Phase 1.4 — minimal block compile loop: `armSetAsmPtr(recPtr,
+recPtrEnd-recPtr, &s_const_pool)` → `armStartBlock()` → emit NOP(s) → `armEndBlock()`
+→ advance `recPtr` (reset cache if `>= recPtrEnd`); then have `recExecute()` enter
+emitted code and return (ref x86 `_DynGen_EnterRecompiledCode` + `recRecompile`).
+
+---
+
 ## 2026-06-04 — Phase 1.1/1.2: EE recompiler skeleton (recCpu)
 
 **Goal:** Stand up the ARM64 EE recompiler translation unit so `recCpu` is defined

@@ -8,12 +8,14 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 0 COMPLETE. Phase 1.1 + 1.2 COMPLETE** — EE rec skeleton (`aR5900.{h,cpp}`)
-defines `recCpu` and builds/links on ARM64.
-Next concrete task: **Phase 1.3** — `recReserve()`/`recShutdown()`: allocate +
-release the EE code cache via `HostSys`/`SysMemory` (ref `x86/ix86-32/iR5900.cpp`
-`recReserveRAM`/`recReserve` and how `arm64/Vif_Dynarec.cpp` gets its buffer from
-`SysMemory::GetVIFUnpackRec()`), and init the `ArmConstantPool`.
+**Phase 0 COMPLETE. Phase 1.1–1.3 COMPLETE** — EE rec skeleton (`aR5900.{h,cpp}`)
+defines `recCpu`, reserves the EE code cache, and inits the constant pool.
+Next concrete task: **Phase 1.4** — minimal block compile loop: in a new
+`recRecompile`-style fn, point `armSetAsmPtr(recPtr, recPtrEnd-recPtr, &s_const_pool)`,
+`armStartBlock()`, emit a couple of NOPs (later: read 1–2 MIPS ops), `armEndBlock()`,
+advance `recPtr`, reset cache when `recPtr >= recPtrEnd`. Then make `recExecute()`
+jump into emitted code and return (ref `x86/ix86-32/iR5900.cpp` `_DynGen_EnterRecompiledCode`
++ `recRecompile`/`recExecuteBlock`).
 
 > When you finish a task, move this pointer to the next one and flip the box below.
 
@@ -37,7 +39,7 @@ understand the existing `pcsx2/arm64/` patterns well enough to copy them.
 
 - [x] 1.1 Created `pcsx2/arm64/aR5900.h` — pins persistent host regs: `RESTATEPTR`=x19 (`&cpuRegs`), `REFASTMEMBASE`=x20 (fastmem base), `REVTLBPTR`=x21 (vtlb base, Phase 2).
 - [x] 1.2 Created `pcsx2/arm64/aR5900.cpp` — defines `recCpu` with stub provider fns (recExecute = `pxFailRel`, rest no-op); added both files to `pcsx2arm64Sources`/`Headers`. Builds + links; binary still arm64; unittests green.
-- [ ] 1.3 `recCpu.Reserve()`: allocate code cache via `HostSys` (ref `x86/BaseblockEx.cpp`).
+- [x] 1.3 `recReserve()`/`recShutdown()`/`recResetEE()`: carve the SysMemory-reserved EE rec region (`GetEERec()`..`GetEERecEnd()`) into a code area + a 1 MB tail `ArmConstantPool`; `recPtr`/`recPtrEnd` cursor. Builds, links, arm64, unittests green.
 - [ ] 1.4 Minimal block compile loop: read 1–2 MIPS ops, emit NOP via VIXL, return; `recCpu.Execute()` jumps in and back.
 - [ ] 1.5 Wire `recCpu` into `VMManager.cpp` (let ARM64 call Reserve/Reset/Shutdown). Keep `Cpu = &intCpu;` until the rec actually works.
 
