@@ -87,6 +87,52 @@ void armEmitEffectiveAddr(const vixl::aarch64::Register& dst, u32 rs, s32 imm);
 void armEmitLoadGpr(u32 bits, bool sign, u32 rt, u32 rs, s32 imm);
 void armEmitStoreGpr(u32 bits, u32 rt, u32 rs, s32 imm);
 
+// --------------------------------------------------------------------------------------
+//  FPU (COP1) register-file offsets
+// --------------------------------------------------------------------------------------
+// fpuRegs lives in the same cpuRegistersPack as cpuRegs, with cpuRegs as the first
+// (offset-0) member. RESTATEPTR is set to &cpuRegs, which is therefore also the base
+// of the pack — so the whole FPU register file is reachable at a fixed offset from
+// RESTATEPTR, exactly like the GPRs. fpr[]/ACC are 32-bit FPRreg slots; fprc[] is the
+// 32-entry control-register array (fprc[31] = FCR31, the flags/status word).
+static_assert(offsetof(cpuRegistersPack, cpuRegs) == 0, "cpuRegs must be first in the pack");
+static constexpr u32 EE_FPU_BASE = static_cast<u32>(offsetof(cpuRegistersPack, fpuRegs));
+static constexpr u32 EE_FPR_OFFSET(u32 n)
+{
+	return EE_FPU_BASE + static_cast<u32>(offsetof(fpuRegisters, fpr)) + n * static_cast<u32>(sizeof(FPRreg));
+}
+static constexpr u32 EE_FPRC_OFFSET(u32 n)
+{
+	return EE_FPU_BASE + static_cast<u32>(offsetof(fpuRegisters, fprc)) + n * static_cast<u32>(sizeof(u32));
+}
+
+// --------------------------------------------------------------------------------------
+//  FPU (COP1) exact-semantics opcode generators (Phase 5.2a)
+// --------------------------------------------------------------------------------------
+// The subset of COP1 that is pure bit/integer movement (no EE-specific float
+// arithmetic quirks), so it is bit-exact against the interpreter on ARM64. The
+// arithmetic ops (ADD_S/SUB_S/MUL_S/DIV_S/SQRT_S/compares/ACC ops/BC1) need the
+// EE's non-IEEE rounding+clamp behaviour and stay on the interpreter for now.
+//
+//   MFC1 : GPR[rt].SD[0] = (s32)fpr[fs].UL    (sign-extend into 64-bit GPR; rt==0 skip)
+//   MTC1 : fpr[fs].UL    = GPR[rt].UL[0]
+//   CFC1 : GPR[rt].SD[0] = (fs==31) ? (s32)fprc[31] : (fs==0) ? 0x2E00 : 0   (rt==0 skip)
+//   CTC1 : if (fs==31) fprc[31] = GPR[rt].UL[0]    (other fs are ignored)
+//   MOV_S: fpr[fd].UL = fpr[fs].UL
+//   ABS_S: fpr[fd].UL = fpr[fs].UL & 0x7fffffff;  clear FCR31 O|U flags
+//   NEG_S: fpr[fd].UL = fpr[fs].UL ^ 0x80000000;  clear FCR31 O|U flags
+//   LWC1 : fpr[ft].UL = mem32[GPR[rs].UL[0] + imm]
+//   SWC1 : mem32[GPR[rs].UL[0] + imm] = fpr[ft].UL
+void armEmitMFC1(u32 rt, u32 fs);
+void armEmitMTC1(u32 fs, u32 rt);
+void armEmitCFC1(u32 rt, u32 fs);
+void armEmitCTC1(u32 fs, u32 rt);
+void armEmitMOV_S(u32 fd, u32 fs);
+void armEmitABS_S(u32 fd, u32 fs);
+void armEmitNEG_S(u32 fd, u32 fs);
+void armEmitLWC1(u32 ft, u32 rs, s32 imm);
+void armEmitSWC1(u32 ft, u32 rs, s32 imm);
+
 // 128-bit LQ/SQ: the effective address is forced to 16-byte alignment and the
 // whole 128-bit GPR is loaded/stored via the Quad vtlb helpers (NEON q access).
 void armEmitLoadQuad(u32 rt, u32 rs, s32 imm);

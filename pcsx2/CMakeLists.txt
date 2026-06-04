@@ -1059,6 +1059,7 @@ set(pcsx2arm64Sources
 	arm64/aR5900Arith.cpp
 	arm64/aR5900MultDiv.cpp
 	arm64/aR5900Branch.cpp
+	arm64/aR5900FPU.cpp
 	)
 
 set(pcsx2arm64Headers

@@ -8,7 +8,30 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 0–4.3 COMPLETE. The EE recompiler now RUNS — `Cpu = &recCpu` boots the BIOS.**
+**Phase 5.2a DONE — FPU register transfer / move / load-store now compiled natively.**
+The bit-exact COP1 ops (`MFC1/MTC1/CFC1/CTC1`, `MOV_S/ABS_S/NEG_S`, `LWC1/SWC1`) are
+emitted inline by `recTranslateOp` instead of single-stepping the interpreter. New
+`pcsx2/arm64/aR5900FPU.cpp` + offset helpers (`EE_FPU_BASE`/`EE_FPR_OFFSET`/
+`EE_FPRC_OFFSET`) in `aR5900.h` (fpuRegs is reachable at a fixed offset from
+RESTATEPTR since it shares `cpuRegistersPack` with cpuRegs). 12 new `Arm64EmitEE.*`
+gtests (extended `GuestRegs` to cover the FPU file). **Verified:** unittests green;
+arm64 binary; **headless BIOS boot** through `Mode Changed to DVD PAL` + `Pad: DS2
+Config Finished` with the rec active — no regression from the inlined FPU ops.
+
+Next concrete task: **Phase 5.2b — FPU float arithmetic** (the hard part). ADD_S/
+SUB_S/MUL_S/DIV_S/SQRT_S/RSQRT_S, the ACC ops (ADDA/MADD/…), C.*.S compares, and
+BC1F/BC1T branches need the EE's non-IEEE behaviour: `fpuDouble()` (denormal→0,
+inf→fmax on *inputs*) + `checkOverflow`/`checkUnderflow` (result clamp to ±fmax / ±0)
++ the FCR31 flag side-effects. These currently fall to the interpreter (correct but
+slow). Mirror the x86 accurate path (`iFPUd.cpp` DOUBLE namespace — computes in
+double precision to reproduce PS2 rounding). Alternatively jump to **Phase 4.4 block
+linking + recLUT** (perf) if FPU arithmetic accuracy proves too involved for one pass.
+
+---
+
+### Earlier focus (kept for context)
+
+**Phase 0–4.3 COMPLETE. The EE recompiler RUNS — `Cpu = &recCpu` boots the BIOS.**
 The dispatcher + delay-slot block compiler are live in `pcsx2/arm64/aR5900.cpp`:
 - `recCompileBlock(startpc)` compiles a straight-line run into one self-contained
   host block (per-block prologue saves x19+LR and sets RESTATEPTR=&cpuRegs; epilogue
@@ -115,7 +138,12 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 ## Phase 5 — EE Coprocessors
 
 - [ ] 5.1 COP0: interpreter fallback (`recCall(Interp::...)`) initially.
-- [ ] 5.2 COP1 (FPU): map FPRs → `d0-d31`; `ADD.S/SUB.S/MUL.S/DIV.S/SQRT.S/...`, `C.*.S`, `BC1T/BC1F`, FPU control/status reg.
+- [~] 5.2 COP1 (FPU):
+  - [x] 5.2a Bit-exact transfer/move/load-store: `MFC1/MTC1/CFC1/CTC1`,
+    `MOV_S/ABS_S/NEG_S`, `LWC1/SWC1` (`aR5900FPU.cpp`). No EE float quirks → exact.
+  - [ ] 5.2b Float arithmetic: `ADD/SUB/MUL/DIV/SQRT/RSQRT.S`, ACC ops, `C.*.S`,
+    `BC1T/BC1F(L)`, `CVT.S/CVT.W` — need EE non-IEEE rounding (`fpuDouble` +
+    over/underflow clamp + FCR31 flags). Ref `iFPUd.cpp`. Interpreter fallback for now.
 - [ ] 5.3 COP2 (VU0 macro): interpreter fallback initially.
 - [ ] 5.4 MMI (128-bit int SIMD): map to NEON where possible (ref `x86/iMMI.cpp`).
 

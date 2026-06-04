@@ -28,6 +28,77 @@
 
 ---
 
+## 2026-06-04 — Phase 5.2a: FPU register transfer / move / load-store (exact ops)
+
+**Goal:** Start COP1 (FPU) codegen with the high-frequency, bit-exact subset — the
+ops that are pure integer/bit movement with no EE-specific float rounding — so they
+stop single-stepping the interpreter. Defer the genuine float arithmetic (which needs
+the EE's non-IEEE behaviour) to a focused follow-up.
+
+**What changed:**
+- New `pcsx2/arm64/aR5900FPU.cpp` — 9 generators:
+  - `armEmitMFC1` (FPR→GPR, sign-extend into UD[0], rt==0 discard), `armEmitMTC1`
+    (GPR→FPR low word), `armEmitCFC1` (control reg→GPR; fs is compile-time so the
+    interpreter's 3-way select collapses: fs==31 → sign-extended FCR31, fs==0 →
+    0x2E00, else 0), `armEmitCTC1` (GPR→FCR31; only fs==31 writes, else no-op).
+  - `armEmitMOV_S` (copy), `armEmitABS_S` (`&0x7fffffff`), `armEmitNEG_S`
+    (`^0x80000000`); ABS/NEG also clear the FCR31 O|U cause flags (read-modify-write
+    fprc[31] via `emitClearFCR31Flags`).
+  - `armEmitLWC1`/`armEmitSWC1` — 32-bit FPR↔memory through the existing slow-path
+    `armEmitVtlbRead/Write` + `armEmitEffectiveAddr` (same plumbing as GPR load/store;
+    LWC1 has no rt==0 discard since FPR0 is a real register).
+- `pcsx2/arm64/aR5900.h` — FPU register-file offset helpers: `EE_FPU_BASE`
+  (= `offsetof(cpuRegistersPack, fpuRegs)`), `EE_FPR_OFFSET(n)`, `EE_FPRC_OFFSET(n)`,
+  + the 9 generator decls. Static-asserts cpuRegs is the pack's first member.
+- `pcsx2/arm64/aR5900.cpp` — `recTranslateOp` decodes COP1 (primary 0x11, sub on the
+  rs field; COP1_S sub on funct) → MFC1/CFC1/MTC1/CTC1/ABS_S/MOV_S/NEG_S; primary
+  0x31/0x39 → LWC1/SWC1. Everything else COP1 (arithmetic, compares, BC1, CVT) still
+  returns false → interpreter fallback, unchanged.
+- `pcsx2/CMakeLists.txt` — added `arm64/aR5900FPU.cpp`.
+- `tests/ctest/core/arm64_emit_test.cpp` — extended `GuestRegs` to span the FPU file
+  (buffer now `EE_FPU_BASE + sizeof(fpuRegisters)`) with `setFPR/getFPR/setFPRC/
+  getFPRC`; 12 new `Arm64EmitEE.*` gtests (MFC1 sign-extend + UD[1]-preserve + rt==0,
+  MTC1, CFC1 ×3 paths, CTC1 write+no-op, MOV/ABS/NEG incl. flag clears, LWC1, SWC1).
+- Commits: (committed with this journal entry)
+
+**Decisions & rationale:**
+- **Split COP1 into "exact" (5.2a) and "float arithmetic" (5.2b).** The EE FPU is
+  *not* IEEE-754: `fpuDouble()` flushes denormal inputs to ±0 and clamps infinities
+  to ±fmax, and `checkOverflow/checkUnderflow` clamp results + set FCR31 flags (see
+  pcsx2/FPU.cpp). Native NEON float ops would not bit-match. But MFC1/…/MOV_S/ABS_S/
+  NEG_S/LWC1/SWC1 are pure bit movement — exact on ARM64 and very common (every float
+  load/store/transfer). Doing them now is a clean, safe, high-traffic win; the quirky
+  arithmetic gets its own increment (mirroring `iFPUd.cpp`'s double-precision path).
+- **fpuRegs reached via a fixed offset from RESTATEPTR, like the GPRs.** fpuRegs and
+  cpuRegs share `cpuRegistersPack` with cpuRegs at offset 0, so `&cpuRegs` (= RESTATEPTR)
+  is the pack base and fpuRegs is at `offsetof(pack, fpuRegs)`. No extra address
+  materialisation; consistent with `EE_GPR_OFFSET`. The offset (~sizeof cpuRegisters)
+  is well within the word-scaled Ldr/Str immediate range, so single-instruction access.
+- **CFC1/CTC1 follow the interpreter, not the x86 rec.** x86 iFPU masks FCR31 with
+  magic bits (`& 0x0083c078 | 0x01000001`); the interpreter (ground truth, per
+  CONVENTIONS) does a plain sign-extend for fs==31 and constants otherwise. Followed
+  the interpreter.
+
+**Blockers / open questions:**
+- none. Known approximation: misaligned LWC1/SWC1 (addr & 3) — the interpreter logs an
+  error and skips; the rec just does the (aligned-assumed) access. Rare; documented.
+
+**Verification:**
+- `unittests` green (both suites); 33 `Arm64EmitEE.*` tests incl. the 12 new FPU ones.
+- arm64 binary confirmed. Headless BIOS boot (`-batch -bios`, no disc) with the rec
+  active: emulog reaches `UpdateVSyncRate: Mode Changed to DVD PAL.` and `Pad: DS2
+  Config Finished`, ran 29s, clean pause/shutdown — same milestones as Phase 4.3, so
+  the now-inlined FPU ops don't regress the running rec. (Boot recipe: copy app to
+  /tmp, `install_name_tool -change` the bundled libQt6Core/Gui/Widgets + kddockwidgets
+  refs to `@executable_path/../Frameworks`, `codesign --force --deep`, `gtimeout`.)
+
+**Next step:** Phase 5.2b — FPU float arithmetic (ADD/SUB/MUL/DIV/SQRT/RSQRT.S, ACC
+ops, C.*.S, BC1*, CVT) with the EE non-IEEE rounding (fpuDouble + over/underflow clamp
++ FCR31 flags), mirroring `iFPUd.cpp`. Or pivot to Phase 4.4 (block linking + recLUT)
+if the FPU accuracy work proves too large for one increment.
+
+---
+
 ## 2026-06-04 — Phase 4.3: dispatcher + delay-slot block compiler (the rec RUNS)
 
 **Goal:** Make the EE recompiler actually execute guest code: a multi-instruction

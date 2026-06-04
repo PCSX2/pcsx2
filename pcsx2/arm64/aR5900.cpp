@@ -147,6 +147,8 @@ enum : u32
 	OP_SW = 0x2b,
 	OP_LD = 0x37,
 	OP_SD = 0x3f,
+	OP_LWC1 = 0x31,
+	OP_SWC1 = 0x39,
 };
 
 // Translate a single guest instruction (cpuRegs.code) into the open block. Returns
@@ -232,6 +234,29 @@ static bool recTranslateOp(u32 op)
 				default:   return false;
 			}
 
+		// COP1 (FPU). Only the bit-exact transfer/move ops are compiled (Phase
+		// 5.2a); the sub-opcode is the rs field, S-format ops sub-decode on funct.
+		// Float arithmetic / compares / BC1 branches return false and fall to the
+		// interpreter (they need the EE's non-IEEE rounding behaviour). Operand
+		// mapping per R5900OpcodeTables: ft=rt, fs=rd, fd=sa.
+		case 0x11:
+			switch (rs)
+			{
+				case 0x00: armEmitMFC1(rt, rd); return true; // MFC1
+				case 0x02: armEmitCFC1(rt, rd); return true; // CFC1
+				case 0x04: armEmitMTC1(rd, rt); return true; // MTC1 (fs=rd)
+				case 0x06: armEmitCTC1(rd, rt); return true; // CTC1 (fs=rd)
+				case 0x10:                                   // COP1_S (single-precision)
+					switch (funct)
+					{
+						case 0x05: armEmitABS_S(sa, rd); return true; // ABS_S (fd=sa, fs=rd)
+						case 0x06: armEmitMOV_S(sa, rd); return true; // MOV_S
+						case 0x07: armEmitNEG_S(sa, rd); return true; // NEG_S
+						default:   return false;
+					}
+				default: return false;
+			}
+
 		// Immediate arithmetic (Phase 3.1)
 		case 0x08: armEmitADDI(rt, rs, imm); return true;
 		case 0x09: armEmitADDIU(rt, rs, imm); return true;
@@ -263,6 +288,10 @@ static bool recTranslateOp(u32 op)
 		// 128-bit quadword load/store (16-byte aligned).
 		case OP_LQ: armEmitLoadQuad(rt, rs, imm); return true;
 		case OP_SQ: armEmitStoreQuad(rt, rs, imm); return true;
+
+		// FPU load/store (Phase 5.2a) — 32-bit transfer between memory and FPR[rt].
+		case OP_LWC1: armEmitLWC1(rt, rs, imm); return true;
+		case OP_SWC1: armEmitSWC1(rt, rs, imm); return true;
 
 		default: return false;
 	}

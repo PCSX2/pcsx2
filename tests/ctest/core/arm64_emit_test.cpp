@@ -307,10 +307,12 @@ namespace
 	// GPR[rt] within it. HI/LO are at indices 32 and 33 (see EE_HI_OFFSET/EE_LO_OFFSET).
 	struct GuestRegs
 	{
-		// Sized to reach cpuRegs.pc (the branch/jump generators write it via
-		// EE_PC_OFFSET). 32 GPRs + HI + LO live in the first 34*16 bytes; CP0/sa/
-		// IsDelaySlot sit between LO and pc and are untouched by these tests.
-		alignas(16) std::array<u8, EE_PC_OFFSET + 16> bytes{};
+		// Sized to reach the FPU register file (fpuRegs), which lives in the same
+		// cpuRegistersPack as cpuRegs at EE_FPU_BASE. That offset is past cpuRegs.pc,
+		// so this also covers the GPR/HI/LO/pc range the integer+branch tests use.
+		// 32 GPRs + HI + LO live in the first 34*16 bytes; CP0/sa/IsDelaySlot sit
+		// between LO and pc; fpr[]/fprc[]/ACC follow at EE_FPU_BASE.
+		alignas(16) std::array<u8, EE_FPU_BASE + sizeof(fpuRegisters)> bytes{};
 
 		void set64(u32 n, u64 v) { std::memcpy(&bytes[n * 16], &v, sizeof(v)); }
 		u64 get64(u32 n) const
@@ -348,6 +350,21 @@ namespace
 		}
 		void set128(u32 n, const u8 v[16]) { std::memcpy(&bytes[n * 16], v, 16); }
 		void get128(u32 n, u8 out[16]) const { std::memcpy(out, &bytes[n * 16], 16); }
+		// FPU register file: fpr[n] (32-bit) and fprc[n] (control regs, [31]=FCR31).
+		void setFPR(u32 n, u32 v) { std::memcpy(&bytes[EE_FPR_OFFSET(n)], &v, sizeof(v)); }
+		u32 getFPR(u32 n) const
+		{
+			u32 v;
+			std::memcpy(&v, &bytes[EE_FPR_OFFSET(n)], sizeof(v));
+			return v;
+		}
+		void setFPRC(u32 n, u32 v) { std::memcpy(&bytes[EE_FPRC_OFFSET(n)], &v, sizeof(v)); }
+		u32 getFPRC(u32 n) const
+		{
+			u32 v;
+			std::memcpy(&v, &bytes[EE_FPRC_OFFSET(n)], sizeof(v));
+			return v;
+		}
 		void setPc(u32 v) { std::memcpy(&bytes[EE_PC_OFFSET], &v, sizeof(v)); }
 		u32 getPc() const
 		{
@@ -1550,6 +1567,143 @@ TEST(Arm64EmitEE, BGEZAL_RsIs31ComparesLinkedValue)
 	RunEEGen(regs, [] { armEmitBGEZAL(31, kTaken, kFall, /*linkpc*/ 0x0010'0008); });
 	EXPECT_EQ(regs.get64(31), 0x0000'0000'0010'0008ull); // linked (positive)
 	EXPECT_EQ(regs.getPc(), kTaken);                     // so branch taken
+}
+
+// ============================================================================
+//  FPU (COP1) exact-semantics ops (Phase 5.2a)
+// ============================================================================
+
+TEST(Arm64EmitEE, MFC1_SignExtendIntoGpr)
+{
+	GuestRegs regs;
+	regs.setFPR(5, 0x8000'0001);                  // fpr[5], sign bit set
+	const u8 hi[16] = {0,0,0,0,0,0,0,0, 0xEE,0xEE,0xEE,0xEE,0xEE,0xEE,0xEE,0xEE};
+	regs.set128(7, hi);                           // poison GPR[7].UD[1]
+	// MFC1 $7, $f5
+	RunEEGen(regs, [] { armEmitMFC1(/*rt*/ 7, /*fs*/ 5); });
+	EXPECT_EQ(regs.get64(7), 0xFFFF'FFFF'8000'0001ull); // sign-extended into UD[0]
+	u8 out[16];
+	regs.get128(7, out);
+	EXPECT_EQ(out[8], 0xEEu);                      // UD[1] untouched
+}
+
+TEST(Arm64EmitEE, MFC1_DiscardZeroRt)
+{
+	GuestRegs regs;
+	regs.setFPR(5, 0xDEAD'BEEF);
+	// MFC1 $0, $f5 — write to $zero must be discarded.
+	RunEEGen(regs, [] { armEmitMFC1(/*rt*/ 0, /*fs*/ 5); });
+	EXPECT_EQ(regs.get64(0), 0u);
+}
+
+TEST(Arm64EmitEE, MTC1_MoveGprToFpr)
+{
+	GuestRegs regs;
+	regs.set64(6, 0xFFFF'FFFF'CAFE'F00Dull); // only low 32 bits transfer
+	// MTC1 $6, $f4
+	RunEEGen(regs, [] { armEmitMTC1(/*fs*/ 4, /*rt*/ 6); });
+	EXPECT_EQ(regs.getFPR(4), 0xCAFE'F00Du);
+}
+
+TEST(Arm64EmitEE, CFC1_Fcr31SignExtended)
+{
+	GuestRegs regs;
+	regs.setFPRC(31, 0x8000'0040);
+	// CFC1 $7, $31
+	RunEEGen(regs, [] { armEmitCFC1(/*rt*/ 7, /*fs*/ 31); });
+	EXPECT_EQ(regs.get64(7), 0xFFFF'FFFF'8000'0040ull);
+}
+
+TEST(Arm64EmitEE, CFC1_Fs0IsConstant)
+{
+	GuestRegs regs;
+	regs.set64(7, 0x1111'1111'1111'1111ull);
+	// CFC1 $7, $0 -> 0x2E00
+	RunEEGen(regs, [] { armEmitCFC1(/*rt*/ 7, /*fs*/ 0); });
+	EXPECT_EQ(regs.get64(7), 0x2E00ull);
+}
+
+TEST(Arm64EmitEE, CFC1_OtherFsIsZero)
+{
+	GuestRegs regs;
+	regs.set64(7, 0x1111'1111'1111'1111ull);
+	// CFC1 $7, $2 -> 0
+	RunEEGen(regs, [] { armEmitCFC1(/*rt*/ 7, /*fs*/ 2); });
+	EXPECT_EQ(regs.get64(7), 0u);
+}
+
+TEST(Arm64EmitEE, CTC1_WritesFcr31Only)
+{
+	GuestRegs regs;
+	regs.set64(6, 0x0000'0000'0000'1234ull);
+	regs.setFPRC(31, 0xFFFF'FFFF);
+	regs.setFPRC(2, 0xAAAA'AAAA);
+	// CTC1 $6, $31 -> fprc[31] = low word; CTC1 $6, $2 is a no-op.
+	RunEEGen(regs, [] { armEmitCTC1(/*fs*/ 31, /*rt*/ 6); });
+	EXPECT_EQ(regs.getFPRC(31), 0x1234u);
+	RunEEGen(regs, [] { armEmitCTC1(/*fs*/ 2, /*rt*/ 6); });
+	EXPECT_EQ(regs.getFPRC(2), 0xAAAA'AAAAu); // unchanged
+}
+
+TEST(Arm64EmitEE, MOV_S_Copies)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x1234'5678);
+	// MOV.S $f8, $f3
+	RunEEGen(regs, [] { armEmitMOV_S(/*fd*/ 8, /*fs*/ 3); });
+	EXPECT_EQ(regs.getFPR(8), 0x1234'5678u);
+}
+
+TEST(Arm64EmitEE, ABS_S_ClearsSignAndFlags)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0xC080'0000);   // negative float
+	regs.setFPRC(31, 0xFFFF'FFFF); // all flags set
+	// ABS.S $f8, $f3
+	RunEEGen(regs, [] { armEmitABS_S(/*fd*/ 8, /*fs*/ 3); });
+	EXPECT_EQ(regs.getFPR(8), 0x4080'0000u);     // sign bit cleared
+	EXPECT_EQ(regs.getFPRC(31), 0xFFFF'3FFFu);   // O|U (0xC000) cleared
+}
+
+TEST(Arm64EmitEE, NEG_S_FlipsSignAndClearsFlags)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x4080'0000);   // positive float
+	regs.setFPRC(31, 0x0000'C000); // only O|U set
+	// NEG.S $f8, $f3
+	RunEEGen(regs, [] { armEmitNEG_S(/*fd*/ 8, /*fs*/ 3); });
+	EXPECT_EQ(regs.getFPR(8), 0xC080'0000u);   // sign bit flipped
+	EXPECT_EQ(regs.getFPRC(31), 0u);           // O|U cleared
+}
+
+TEST(Arm64EmitEE, LWC1_LoadsIntoFpr)
+{
+	alignas(16) std::array<u8, VTLB_PAGE_SIZE> ram{};
+	VtlbMapping map(ram.data(), ram.size());
+
+	const u32 val = 0x3F80'0000; // 1.0f
+	std::memcpy(&ram[0x50], &val, sizeof(val));
+
+	GuestRegs regs;
+	regs.set64(8, kTestVAddr); // $t0 = base
+	// LWC1 $f4, 0x50($t0)
+	RunEEGen(regs, [] { armEmitLWC1(/*ft*/ 4, /*rs*/ 8, /*imm*/ 0x50); });
+	EXPECT_EQ(regs.getFPR(4), 0x3F80'0000u);
+}
+
+TEST(Arm64EmitEE, SWC1_StoresFprToMemory)
+{
+	alignas(16) std::array<u8, VTLB_PAGE_SIZE> ram{};
+	VtlbMapping map(ram.data(), ram.size());
+
+	GuestRegs regs;
+	regs.set64(8, kTestVAddr);
+	regs.setFPR(4, 0x4049'0FDB); // ~pi
+	// SWC1 $f4, 0x60($t0)
+	RunEEGen(regs, [] { armEmitSWC1(/*ft*/ 4, /*rs*/ 8, /*imm*/ 0x60); });
+	u32 in_ram;
+	std::memcpy(&in_ram, &ram[0x60], sizeof(in_ram));
+	EXPECT_EQ(in_ram, 0x4049'0FDBu);
 }
 
 #endif // __aarch64__
