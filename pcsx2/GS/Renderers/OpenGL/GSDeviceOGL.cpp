@@ -3025,12 +3025,6 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		constexpr GLint clear_color = 1;
 		glClearBufferiv(GL_STENCIL, 0, &clear_color);
 	}
-	else if (draw_ds && !(config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
-			config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne))
-	{
-		const GLenum attachments[] = {GL_STENCIL_ATTACHMENT};
-		glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, std::size(attachments), attachments);
-	}
 
 	SendHWDraw(config, rt_feedbackloop_pass1 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass1 ? draw_ds_clone : nullptr, draw_ds,
 		config.require_one_barrier, config.require_full_barrier);
