@@ -28,6 +28,56 @@
 
 ---
 
+## 2026-06-04 — Phase 5.2b (part 2): FPU DIV_S/SQRT_S/RSQRT_S
+
+**Goal:** Land the divide/sqrt family of EE FPU float arithmetic natively (with the
+EE's `checkDivideByZero` / signed-zero / negative-input quirks), reusing the part-1
+clamp helpers, so they stop single-stepping the interpreter. The code had been
+written but left uncommitted from the prior session; this session verified, committed,
+and journaled it.
+
+**What changed:**
+- `pcsx2/arm64/aR5900FPU.cpp` — `armEmitDIV_S/SQRT_S/RSQRT_S`:
+  - DIV_S: tests divisor exponent (denormals count as zero). Zero path RMWs FCR31
+    with D|SD (x/0) or I|SI (0/0) and writes `sign(divisor^dividend) | +fmax`. Normal
+    path is `fpuDouble`-clamped `Fdiv` + `emitStoreClampedResult(setFlags=false)`.
+  - SQRT_S: +/-0/denormal → signed zero with I/D causes cleared; negative input sets
+    I|SI then `Fsqrt(Fabs(...))`; clamped store with no flags.
+  - RSQRT_S: zero ft → D|SD + `sign(ft)|+fmax`; negative ft → I|SI; else
+    `fpuDouble(fs) / Fsqrt(Fabs(fpuDouble(ft)))`, clamped.
+  New FCR31 constants FPUflag I/D/SI/SD.
+- `pcsx2/arm64/aR5900.h` — three generator decls + comment.
+- `pcsx2/arm64/aR5900.cpp` — `recTranslateOp` COP1_S funct switch: 0x03 DIV_S,
+  0x04 SQRT_S (ft=rt), 0x16 RSQRT_S.
+- `tests/ctest/core/arm64_emit_test.cpp` — `fpuref` replica gains `bits/div/sqrt/
+  rsqrt` + `checkDivideByZero`; 10 new `Arm64EmitEE.*` gtests (basic, x/0, 0/0,
+  sqrt pos/neg/negzero, rsqrt pos/zero/neg).
+- `arm64-port/PROGRESS.md` — CURRENT FOCUS + Phase 5.2b checkbox updated.
+- Commit: `fd8342b42 ARM64: EE FPU DIV_S/SQRT_S/RSQRT_S (Phase 5.2b part 2)`
+
+**Decisions & rationale:**
+- Same ground-truth-mirroring rationale as part 1: match the interpreter (FPU.cpp),
+  not iFPUd. `checkDivideByZero` semantics (denormal-as-zero, sign-xor result) and the
+  RSQRT zero path's sign-from-ft were replicated bit-for-bit and asserted against the
+  C++ replica, so moving these ops from interp to JIT is behaviour-neutral.
+- DIV's normal path intentionally does **not** clear stale I/D causes (matches the
+  interpreter, which only sets, never clears, on the non-zero path); SQRT/RSQRT *do*
+  clear I/D up front because their interpreter paths recompute those causes.
+
+**Blockers / open questions:**
+- none
+
+**Verification:**
+- `cmake --build build --target pcsx2-qt -j18` succeeded; binary still `arm64`.
+- `unittests` target green; `core_test --gtest_filter=Arm64EmitEE.*`: 149/149 passed.
+
+**Next step:** Phase 5.2b continued — `MADD/MSUB(/A)_S` (temp = fs*ft then ACC±temp),
+`MAX_S/MIN_S` (integer fp_max/fp_min, no clamp, clear O|U), then the `C.F/C.EQ/C.LT/
+C.LE` compares + `BC1F/BC1T(L)` branches, then `CVT.W/CVT.S`. Helpers
+`emitLoadFpuDouble` / `emitStoreClampedResult` remain reusable.
+
+---
+
 ## 2026-06-04 — Bring-up fix: mark ARM64 RAM blocks for invalidation
 
 **Goal:** Investigate why the BIOS boots but Final Fantasy X stays black after the
