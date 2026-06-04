@@ -17,11 +17,14 @@
 #include "arm64/AsmHelpers.h"
 #include "arm64/aR5900.h"
 
+#include "vtlb.h"
+
 #include <gtest/gtest.h>
 
 #include <array>
 #include <cstdint>
 #include <cstring>
+#include <vector>
 
 #include <sys/mman.h>
 
@@ -243,6 +246,210 @@ TEST(Arm64EmitEE, QuadAddrAlreadyAligned)
 	std::array<u64, 32> gpr{};
 	gpr[8] = 0x0020'0000;
 	EXPECT_EQ(RunAlignedQuadAddr(8, 0x10, gpr), 0x0020'0010u);
+}
+
+// --------------------------------------------------------------------------------------
+//  Phase 2.4: full guest-memory round-trip (load/store/quad generators)
+// --------------------------------------------------------------------------------------
+// Exercises the complete armEmitLoadGpr / armEmitStoreGpr / armEmitLoadQuad /
+// armEmitStoreQuad path against REAL guest memory: a host buffer mapped into the
+// vtlb vmap, accessed through the same vtlb_memRead/Write helpers the interpreter
+// uses (ground truth). This is the first runtime proof that the address calc, the
+// AAPCS64 arg/return marshalling, and the sign/zero extension all compose into a
+// correct memory access — not just the address arithmetic (already proven above).
+//
+// The slow path only consults vtlbdata.vmap; with the default EmuConfig
+// (EnableEE=true) vtlb_memRead/Write reduce to a direct pointer access at
+// vmap[addr>>12].assumePtr(addr), so a hand-built vmap entry pointing at a local
+// buffer is sufficient — no SysMemory reservation, fastmem area, or page-fault
+// handler required.
+namespace
+{
+	using namespace vtlb_private;
+
+	// Guest base address of the test page window. Arbitrary, page-aligned, and well
+	// clear of address 0 so a stray unmapped access faults loudly instead of
+	// silently reading vmap[0].
+	constexpr u32 kTestVAddr = 0x0010'0000;
+
+	// Maps `buffer` (size bytes, a multiple of the vtlb page size) at guest
+	// `kTestVAddr` for the object's lifetime by writing direct-pointer vmap entries,
+	// then restores the previous vmap pointer on destruction. The 4 GB / 4 KB vmap
+	// (8 MB) is allocated per instance; cheap enough for the handful of tests here.
+	class VtlbMapping
+	{
+	public:
+		VtlbMapping(void* buffer, u32 size)
+			: m_saved_vmap(vtlbdata.vmap)
+			, m_vmap(VTLB_VMAP_ITEMS) // default VTLBVirtual{} => raw value 0
+		{
+			vtlbdata.vmap = m_vmap.data();
+			const uptr host = reinterpret_cast<uptr>(buffer);
+			for (u32 off = 0; off < size; off += VTLB_PAGE_SIZE)
+			{
+				vtlbdata.vmap[(kTestVAddr + off) >> VTLB_PAGE_BITS] =
+					VTLBVirtual::fromPointer(host + off, kTestVAddr + off);
+			}
+		}
+
+		~VtlbMapping() { vtlbdata.vmap = m_saved_vmap; }
+
+		VtlbMapping(const VtlbMapping&) = delete;
+		VtlbMapping& operator=(const VtlbMapping&) = delete;
+
+	private:
+		VTLBVirtual* m_saved_vmap;
+		std::vector<VTLBVirtual> m_vmap;
+	};
+
+	// cpuRegs-shaped guest register file (32 * 16-byte GPR slots). RESTATEPTR points
+	// at this; the generators read GPR[rs]/GPR[rt] and write GPR[rt] within it.
+	struct GuestRegs
+	{
+		alignas(16) std::array<u8, 32 * 16> bytes{};
+
+		void set64(u32 n, u64 v) { std::memcpy(&bytes[n * 16], &v, sizeof(v)); }
+		u64 get64(u32 n) const
+		{
+			u64 v;
+			std::memcpy(&v, &bytes[n * 16], sizeof(v));
+			return v;
+		}
+		void set128(u32 n, const u8 v[16]) { std::memcpy(&bytes[n * 16], v, 16); }
+		void get128(u32 n, u8 out[16]) const { std::memcpy(out, &bytes[n * 16], 16); }
+		void* data() { return bytes.data(); }
+	};
+
+	// Emit `void f(void* regfile)` whose body is produced by `emit`, with RESTATEPTR
+	// (x19, callee-saved) pointed at the regfile and LR preserved across the helper
+	// calls the generators make. Then run it once against `regs`.
+	template <typename EmitBody>
+	void RunEEGen(GuestRegs& regs, EmitBody&& emit)
+	{
+		JitBuffer buf(8192);
+		ASSERT_NE(buf.ptr(), nullptr) << "MAP_JIT allocation failed";
+
+		armSetAsmPtr(buf.ptr(), buf.size(), nullptr);
+		u8* const code = armStartBlock();
+		// Preserve RESTATEPTR (caller's x19) and LR; sp stays 16-byte aligned.
+		armAsm->Stp(RESTATEPTR, x30, MemOperand(sp, -16, PreIndex));
+		armAsm->Mov(RESTATEPTR, x0); // x0 = regfile
+		emit();
+		armAsm->Ldp(RESTATEPTR, x30, MemOperand(sp, 16, PostIndex));
+		armAsm->Ret();
+		armEndBlock();
+
+		reinterpret_cast<void (*)(void*)>(code)(regs.data());
+	}
+} // namespace
+
+TEST(Arm64EmitEE, StoreThenLoadWord)
+{
+	alignas(16) std::array<u8, VTLB_PAGE_SIZE> ram{};
+	VtlbMapping map(ram.data(), ram.size());
+
+	GuestRegs regs;
+	regs.set64(8, kTestVAddr);          // $t0 = base
+	regs.set64(9, 0xFFFF'FFFF'DEAD'BEEF); // $t1 = value (only low 32 bits stored)
+
+	// SW $t1, 0x40($t0)
+	RunEEGen(regs, [] { armEmitStoreGpr(32, /*rt*/ 9, /*rs*/ 8, /*imm*/ 0x40); });
+
+	u32 in_ram;
+	std::memcpy(&in_ram, &ram[0x40], sizeof(in_ram));
+	EXPECT_EQ(in_ram, 0xDEAD'BEEFu);
+
+	// LW $t2, 0x40($t0)  — sign-extends the 32-bit value into the 64-bit GPR.
+	RunEEGen(regs, [] { armEmitLoadGpr(32, /*sign*/ true, /*rt*/ 10, /*rs*/ 8, /*imm*/ 0x40); });
+	EXPECT_EQ(regs.get64(10), 0xFFFF'FFFF'DEAD'BEEFull);
+}
+
+TEST(Arm64EmitEE, LoadByteSignAndZeroExtend)
+{
+	alignas(16) std::array<u8, VTLB_PAGE_SIZE> ram{};
+	VtlbMapping map(ram.data(), ram.size());
+	ram[0x10] = 0x80; // high bit set: sign-extends to 0xFFFF..80, zero-extends to 0x80
+
+	GuestRegs regs;
+	regs.set64(8, kTestVAddr);
+
+	RunEEGen(regs, [] { armEmitLoadGpr(8, /*sign*/ true, /*rt*/ 9, /*rs*/ 8, 0x10); });
+	EXPECT_EQ(regs.get64(9), 0xFFFF'FFFF'FFFF'FF80ull);
+
+	RunEEGen(regs, [] { armEmitLoadGpr(8, /*sign*/ false, /*rt*/ 10, /*rs*/ 8, 0x10); });
+	EXPECT_EQ(regs.get64(10), 0x0000'0000'0000'0080ull);
+}
+
+TEST(Arm64EmitEE, StoreLoadDoubleword)
+{
+	alignas(16) std::array<u8, VTLB_PAGE_SIZE> ram{};
+	VtlbMapping map(ram.data(), ram.size());
+
+	GuestRegs regs;
+	regs.set64(8, kTestVAddr);
+	regs.set64(9, 0x0123'4567'89AB'CDEFull);
+
+	// SD $t1, 0x80($t0) ; LD $t2, 0x80($t0)
+	RunEEGen(regs, [] { armEmitStoreGpr(64, 9, 8, 0x80); });
+	u64 in_ram;
+	std::memcpy(&in_ram, &ram[0x80], sizeof(in_ram));
+	EXPECT_EQ(in_ram, 0x0123'4567'89AB'CDEFull);
+
+	RunEEGen(regs, [] { armEmitLoadGpr(64, true, 10, 8, 0x80); });
+	EXPECT_EQ(regs.get64(10), 0x0123'4567'89AB'CDEFull);
+}
+
+TEST(Arm64EmitEE, LoadStoreWritesToZeroRegDiscarded)
+{
+	alignas(16) std::array<u8, VTLB_PAGE_SIZE> ram{};
+	VtlbMapping map(ram.data(), ram.size());
+	u32 marker = 0xCAFEF00Du;
+	std::memcpy(&ram[0x20], &marker, sizeof(marker));
+
+	GuestRegs regs;
+	regs.set64(8, kTestVAddr);
+
+	// LW $zero, 0x20($t0): the load runs (side effects) but the result is discarded.
+	RunEEGen(regs, [] { armEmitLoadGpr(32, true, /*rt*/ 0, /*rs*/ 8, 0x20); });
+	EXPECT_EQ(regs.get64(0), 0u) << "$zero must stay zero after a load targeting it";
+}
+
+TEST(Arm64EmitEE, StoreThenLoadQuad)
+{
+	alignas(16) std::array<u8, VTLB_PAGE_SIZE> ram{};
+	VtlbMapping map(ram.data(), ram.size());
+
+	GuestRegs regs;
+	regs.set64(8, kTestVAddr);
+	const u8 value[16] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+		0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
+	regs.set128(5, value);
+
+	// SQ $5, 0x30($t0) — 0x30 is already 16-byte aligned.
+	RunEEGen(regs, [] { armEmitStoreQuad(/*rt*/ 5, /*rs*/ 8, 0x30); });
+	EXPECT_EQ(std::memcmp(&ram[0x30], value, 16), 0);
+
+	// LQ $6, 0x30($t0)
+	RunEEGen(regs, [] { armEmitLoadQuad(/*rt*/ 6, /*rs*/ 8, 0x30); });
+	u8 loaded[16];
+	regs.get128(6, loaded);
+	EXPECT_EQ(std::memcmp(loaded, value, 16), 0);
+}
+
+TEST(Arm64EmitEE, QuadAccessForcesAlignment)
+{
+	alignas(16) std::array<u8, VTLB_PAGE_SIZE> ram{};
+	VtlbMapping map(ram.data(), ram.size());
+
+	GuestRegs regs;
+	regs.set64(8, kTestVAddr);
+	const u8 value[16] = {0xDE, 0xAD, 0xBE, 0xEF, 0x01, 0x02, 0x03, 0x04,
+		0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C};
+	regs.set128(5, value);
+
+	// SQ $5, 0x37($t0): the EE silently aligns down to 0x30 (& ~0xF).
+	RunEEGen(regs, [] { armEmitStoreQuad(5, 8, 0x37); });
+	EXPECT_EQ(std::memcmp(&ram[0x30], value, 16), 0) << "quad store must align the address down";
 }
 
 #endif // __aarch64__
