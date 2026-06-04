@@ -4865,6 +4865,7 @@ bool GSDevice12::CreateLibrashaderFilterChain(const std::string& preset_path)
 
 	filter_chain_d3d12_opt_t opts = {};
 	opts.version = LIBRASHADER_CURRENT_VERSION;
+	opts.frames_in_flight = NUM_COMMAND_LISTS;
 
 	libra_d3d12_filter_chain_t chain = nullptr;
 	err = libra_d3d12_filter_chain_create(&preset, m_device.get(), &opts, &chain);
