@@ -197,4 +197,52 @@ TEST(Arm64EmitEE, EffectiveAddrUsesLowWordOnly)
 	EXPECT_EQ(RunEffectiveAddr(3, 0x10, gpr), 0x8000'0010u);
 }
 
+// --------------------------------------------------------------------------------------
+//  Phase 2.3: 16-byte alignment of LQ/SQ effective addresses
+// --------------------------------------------------------------------------------------
+// armEmitLoadQuad/armEmitStoreQuad force the computed address to 16-byte alignment
+// (`& ~0x0F`) before the 128-bit access, matching EE quad semantics. The vtlb call
+// they wrap is already proven, so this isolates the new align step: emit exactly
+// the same address sequence the quad generators do (effective addr, then mask).
+namespace
+{
+	u32 RunAlignedQuadAddr(u32 rs, s32 imm, const std::array<u64, 32>& gpr_lo)
+	{
+		alignas(16) std::array<u8, 32 * 16> regfile{};
+		for (u32 i = 0; i < 32; i++)
+			std::memcpy(&regfile[i * 16], &gpr_lo[i], sizeof(u32));
+
+		JitBuffer buf(4096);
+		EXPECT_NE(buf.ptr(), nullptr) << "MAP_JIT allocation failed";
+
+		armSetAsmPtr(buf.ptr(), buf.size(), nullptr);
+		u8* const code = armStartBlock();
+		armAsm->Str(RESTATEPTR, MemOperand(sp, -16, PreIndex));
+		armAsm->Mov(RESTATEPTR, x0);
+		armEmitEffectiveAddr(w0, rs, imm);
+		armAsm->And(w0, w0, ~0x0F); // same mask the quad generators apply
+		armAsm->Ldr(RESTATEPTR, MemOperand(sp, 16, PostIndex));
+		armAsm->Ret();
+		armEndBlock();
+
+		using Fn = u32 (*)(void*);
+		return reinterpret_cast<Fn>(code)(regfile.data());
+	}
+} // namespace
+
+TEST(Arm64EmitEE, QuadAddrAligns16)
+{
+	std::array<u64, 32> gpr{};
+	gpr[8] = 0x0010'0007; // unaligned base
+	// (0x0010'0007 + 0x1B) = 0x0010'0022 -> aligned down to 0x0010'0020.
+	EXPECT_EQ(RunAlignedQuadAddr(8, 0x1B, gpr), 0x0010'0020u);
+}
+
+TEST(Arm64EmitEE, QuadAddrAlreadyAligned)
+{
+	std::array<u64, 32> gpr{};
+	gpr[8] = 0x0020'0000;
+	EXPECT_EQ(RunAlignedQuadAddr(8, 0x10, gpr), 0x0020'0010u);
+}
+
 #endif // __aarch64__

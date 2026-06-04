@@ -175,3 +175,39 @@ void armEmitStoreGpr(u32 bits, u32 rt, u32 rs, s32 imm)
 
 	armEmitVtlbWrite(bits, RWARG1, (bits == 64) ? RXARG2 : RWARG2);
 }
+
+// ------------------------------------------------------------------------
+void armEmitLoadQuad(u32 rt, u32 rs, s32 imm)
+{
+	// Effective address into the read helper's first argument register, then
+	// force 16-byte alignment (the EE silently aligns 128-bit accesses, matching
+	// the x86 `xAND(arg1regd, ~0x0F)` in recLoadQuad).
+	armEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~0x0F);
+
+	// Read the full 128-bit quadword into a vector scratch (the call inside
+	// ReadQuad clobbers v0-v7/v16-v31, so the Mov to RQSCRATCH happens after it).
+	armEmitVtlbReadQuad(RQSCRATCH, RWARG1);
+
+	if (rt == 0)
+		return;
+
+	// Quad loads define the entire 128-bit register (both doublewords).
+	armAsm->Str(RQSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+}
+
+// ------------------------------------------------------------------------
+void armEmitStoreQuad(u32 rt, u32 rs, s32 imm)
+{
+	// Load the full 128-bit GPR[rt] into a vector scratch (GPR[0] reads as zero
+	// straight from cpuRegs, so rt==0 needs no special case). WriteQuad moves it
+	// to q0 before its call, so the scratch only needs to live until then.
+	armAsm->Ldr(RQSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+
+	// Effective address into the write helper's first argument register, 16-byte
+	// aligned to match EE 128-bit store semantics.
+	armEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~0x0F);
+
+	armEmitVtlbWriteQuad(RWARG1, RQSCRATCH);
+}

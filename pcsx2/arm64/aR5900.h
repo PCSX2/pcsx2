@@ -78,3 +78,8 @@ static constexpr u32 EE_GPR_OFFSET(u32 n) { return n * 16u; }
 void armEmitEffectiveAddr(const vixl::aarch64::Register& dst, u32 rs, s32 imm);
 void armEmitLoadGpr(u32 bits, bool sign, u32 rt, u32 rs, s32 imm);
 void armEmitStoreGpr(u32 bits, u32 rt, u32 rs, s32 imm);
+
+// 128-bit LQ/SQ: the effective address is forced to 16-byte alignment and the
+// whole 128-bit GPR is loaded/stored via the Quad vtlb helpers (NEON q access).
+void armEmitLoadQuad(u32 rt, u32 rs, s32 imm);
+void armEmitStoreQuad(u32 rt, u32 rs, s32 imm);

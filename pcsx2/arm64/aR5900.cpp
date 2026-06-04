@@ -77,10 +77,23 @@ static void recStep()
 // --------------------------------------------------------------------------------------
 // MIPS primary opcodes we can translate so far. Everything else falls back to a
 // NOP placeholder for now (interpreter remains the active provider — see below).
+// The unaligned variants (LWL/LWR/LDL/LDR, SWL/SWR/SDL/SDR) need byte-merge
+// codegen and are deferred; scalar + quad aligned access is covered here.
 enum : u32
 {
+	OP_LQ = 0x1e,
+	OP_SQ = 0x1f,
+	OP_LB = 0x20,
+	OP_LH = 0x21,
 	OP_LW = 0x23,
+	OP_LBU = 0x24,
+	OP_LHU = 0x25,
+	OP_LWU = 0x27,
+	OP_SB = 0x28,
+	OP_SH = 0x29,
 	OP_SW = 0x2b,
+	OP_LD = 0x37,
+	OP_SD = 0x3f,
 };
 
 // Translate a single guest instruction (cpuRegs.code) into the open block. Returns
@@ -97,8 +110,26 @@ static bool recTranslateOp(u32 op)
 
 	switch (opcode)
 	{
-		case OP_LW: armEmitLoadGpr(32, true, rt, rs, imm); return true;
+		// Scalar loads. The (bits, sign) pair drives the extend inside the helper:
+		// LWU zero-extends a word, LD is a full 64-bit load (sign is irrelevant).
+		case OP_LB:  armEmitLoadGpr(8,  true,  rt, rs, imm); return true;
+		case OP_LBU: armEmitLoadGpr(8,  false, rt, rs, imm); return true;
+		case OP_LH:  armEmitLoadGpr(16, true,  rt, rs, imm); return true;
+		case OP_LHU: armEmitLoadGpr(16, false, rt, rs, imm); return true;
+		case OP_LW:  armEmitLoadGpr(32, true,  rt, rs, imm); return true;
+		case OP_LWU: armEmitLoadGpr(32, false, rt, rs, imm); return true;
+		case OP_LD:  armEmitLoadGpr(64, false, rt, rs, imm); return true;
+
+		// Scalar stores (the low `bits` bits of GPR[rt]).
+		case OP_SB: armEmitStoreGpr(8,  rt, rs, imm); return true;
+		case OP_SH: armEmitStoreGpr(16, rt, rs, imm); return true;
 		case OP_SW: armEmitStoreGpr(32, rt, rs, imm); return true;
+		case OP_SD: armEmitStoreGpr(64, rt, rs, imm); return true;
+
+		// 128-bit quadword load/store (16-byte aligned).
+		case OP_LQ: armEmitLoadQuad(rt, rs, imm); return true;
+		case OP_SQ: armEmitStoreQuad(rt, rs, imm); return true;
+
 		default: return false;
 	}
 }
