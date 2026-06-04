@@ -8,17 +8,29 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 0 COMPLETE. Phase 1 COMPLETE** — EE rec skeleton (`aR5900.{h,cpp}`)
-defines `recCpu`, reserves the EE code cache + constant pool, has a minimal block
-compile loop, and is now wired into `VMManager.cpp`: ARM64 calls `recReserve`/
-`recResetEE`/`recShutdown` (the `_M_X86` guards at InitializeCPUProviders/
-ShutdownCPUProviders/ClearCPUExecutionCaches got `#else` ARM64 branches). `Cpu`
-stays `&intCpu` — the rec is reserved but NOT selected. **Verified on a real BIOS
-boot** (interpreter ran BIOS to pad-config; Reserve+Reset ran without crashing).
-Next concrete task: **Phase 2.1** — implement `vtlb_DynBackpatchLoadStore` in
-`pcsx2/arm64/RecStubs.cpp` (currently `pxFailRel`). Start with the slow path
-(call the vtlb handler directly, no fastmem patching yet); reference
-`x86/ix86-32/recVTLB.cpp`. This is the gateway to all EE load/store codegen.
+**Phase 0 COMPLETE. Phase 1 COMPLETE. Phase 2.1 DONE** (slow-path vtlb codegen).
+The EE rec skeleton (`aR5900.{h,cpp}`) defines `recCpu`, reserves the code cache +
+const pool, has a minimal block loop, and is wired into `VMManager.cpp`
+(Reserve/Reset/Shutdown; `Cpu` stays `&intCpu`). New `aR5900LoadStore.cpp` provides
+the slow-path memory generators `armEmitVtlbRead/Write[Quad]`, which emit calls to
+the C++ `vtlb_memRead/Write` helpers (same path the interpreter uses → correct by
+construction; no reg allocator / dispatchers needed yet).
+
+**Re-scope note:** the old 2.1 pointed at `vtlb_DynBackpatchLoadStore`, but that
+function is reached *only* on a fastmem SIGSEGV fault (`CHECK_FASTMEM`), so under
+"slow path first / no fastmem" it is never exercised. The real "gateway to EE
+load/store codegen" is the slow-path generators — those are what got built. The
+backpatch + fastmem fast path is deferred to **Phase 2.2** (still a `pxFailRel`
+stub in `RecStubs.cpp`).
+
+Next concrete task: **Phase 2.3 groundwork** — give `recCompileBlock` a real
+single-instruction MIPS decode and guest-GPR access (load base reg from
+`[RESTATEPTR + GPR offset]`, add the sign-extended immediate, call
+`armEmitVtlbRead/Write`, write result back to `cpuRegs`). Land one load + one store
+opcode (e.g. `LW`/`SW`) and validate end-to-end (Phase 2.4). This is the first
+vertical slice that actually executes guest memory ops through the JIT; it pulls in
+the per-instruction decode loop (ref x86 `recRecompile` / `iR5900LoadStore.cpp`),
+done the simple non-allocating way (spill every GPR to `cpuRegs` around each op).
 
 > When you finish a task, move this pointer to the next one and flip the box below.
 
@@ -53,9 +65,9 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 
 ## Phase 2 — vtlb Fast Memory & Load/Store  *(highest priority after skeleton)*
 
-- [ ] 2.1 Implement `vtlb_DynBackpatchLoadStore` in `pcsx2/arm64/RecStubs.cpp` (currently `pxFailRel`). Slow path first, then fast-path patching.
-- [ ] 2.2 Port vtlb backpatch trampoline logic (ref `x86/ix86-32/recVTLB.cpp`); design the ARM64 trampoline calling convention.
-- [ ] 2.3 EE load/store generators: `recLB/LH/LW/LD/LBU/LHU/LWU`, `recSB/SH/SW/SD`, `recLQ/SQ` (128-bit via NEON `ld1`/`st1`).
+- [x] 2.1 Slow-path vtlb load/store codegen in `pcsx2/arm64/aR5900LoadStore.cpp`: `armEmitVtlbRead/Write` + `...Quad`, emitting calls to the C++ `vtlb_memRead/Write` helpers (interpreter-equivalent path). Builds, links, arm64, unittests green. *(Re-scoped from "implement `vtlb_DynBackpatchLoadStore`" — that is fastmem-only and is now Phase 2.2; see JOURNAL.)*
+- [ ] 2.2 **Fastmem fast path:** implement `vtlb_DynBackpatchLoadStore` in `pcsx2/arm64/RecStubs.cpp` (currently `pxFailRel`) + the direct `REFASTMEMBASE`-relative load/store emit + `vtlb_AddLoadStoreInfo`. Single-instruction backpatch (overwrite the faulting op with `B thunk`); thunk does the slow path then branches back. Ref `x86/ix86-32/recVTLB.cpp`.
+- [ ] 2.3 EE load/store opcode generators: `recLB/LH/LW/LD/LBU/LHU/LWU`, `recSB/SH/SW/SD`, `recLQ/SQ` — decode + guest-GPR access wired onto `armEmitVtlbRead/Write[Quad]`. Pulls in the per-instruction block decode loop.
 - [ ] 2.4 Test: compile a simple MIPS load/store block, verify correct memory access.
 
 **Done when:** EE memory ops go through the JIT fastmem path and read/write correctly.

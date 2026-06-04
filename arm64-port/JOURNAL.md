@@ -28,6 +28,59 @@
 
 ---
 
+## 2026-06-04 — Phase 2.1: slow-path vtlb load/store codegen (+ re-scope)
+
+**Goal:** Stand up the EE rec's memory-access codegen — the gateway every
+load/store opcode needs — using the simplest correct path before any reg
+allocator exists.
+
+**What changed:**
+- New `pcsx2/arm64/aR5900LoadStore.cpp` — slow-path generators:
+  - `armEmitVtlbRead(bits, sign, dst, addr)` — move addr→`RWARG1`, `armEmitCall`
+    `vtlb_memRead<T>`, then extend the result into the 64-bit `dst` (Sxtb/Uxtb/
+    Sxth/Uxth/Sxtw/Mov per size+sign).
+  - `armEmitVtlbWrite(bits, addr, data)` — stage data via the VIXL scratch to dodge
+    arg-reg aliasing, set `RWARG1`=addr / `RxARG2`=data, call `vtlb_memWrite<T>`.
+  - `armEmitVtlbReadQuad/WriteQuad` — 128-bit via `vtlb_memRead128`/`vtlb_memWrite128`
+    (r128 = `uint32x4_t` in `q0`).
+- `aR5900.h` — declarations + the clobber/ABI contract comment.
+- `pcsx2/CMakeLists.txt` — added the new source.
+- Commits: <code> ARM64: Add slow-path vtlb load/store codegen (Phase 2.1)
+
+**Decisions & rationale:**
+- **Call the C++ `vtlb_memRead/Write` helpers directly instead of porting the x86
+  inline-vtlb sequence + indirect dispatchers.** Those helpers ARE the interpreter's
+  memory path, so the JIT output is correct by construction (ground truth), and they
+  need no register allocator, no `vtlbdata.vmap` codegen, no dispatcher trampolines.
+  Perfect for bring-up; the inline-fastmem version is a later optimisation (2.2).
+- **Sub-word loads MUST be explicitly extended.** AAPCS64 leaves the high bits of a
+  `u8`/`u16`/`u32` return undefined, and EE loads write the full 64-bit GPR
+  (sign- or zero-extended). So the extend is correctness, not perf.
+- **RE-SCOPED Phase 2.1.** The previous focus said "implement
+  `vtlb_DynBackpatchLoadStore`, slow path first". But that function is invoked
+  *only* from the SIGSEGV handler (`vtlb.cpp:1514 → vtlb_BackpatchLoadStore →
+  vtlb_DynBackpatchLoadStore`) and *only* under `CHECK_FASTMEM`. Under "slow path
+  first / no fastmem" it is never reached — implementing it now would be untested
+  dead code, violating the interpreter-is-ground-truth discipline. The substance the
+  note wanted ("call the vtlb handler directly") is exactly the slow-path generators,
+  which is what I built. Backpatch + fastmem moved to Phase 2.2 (stub untouched).
+- **Helpers take explicit VIXL regs** (not the x86 reg-allocator interface) so they
+  compose cleanly once the EE decode loop + GPR access land in 2.3.
+
+**Blockers / open questions:**
+- No runtime test yet: exercising these needs the EE rec to actually decode a MIPS
+  load/store and access `cpuRegs` (none of that exists — `recCompileBlock` still
+  emits NOP/NOP/RET). First real validation comes with Phase 2.3/2.4 via BIOS boot.
+  The emit primitives used (`armEmitCall`, Mov/Sxt*) are individually proven by the
+  Phase 0.6 harness + the VIF dynarec, so compile-clean is acceptable here.
+
+**Next step:** Phase 2.3 groundwork — give `recCompileBlock` a minimal single-MIPS
+decode + guest-GPR access (load base from `[RESTATEPTR + GPRoff]`, add sign-extended
+imm, call `armEmitVtlbRead/Write`, store result back to `cpuRegs`), land `LW`/`SW`,
+and validate end-to-end (2.4). Ref x86 `recRecompile` + `iR5900LoadStore.cpp`.
+
+---
+
 ## 2026-06-04 — Phase 1.5: wire recCpu into VMManager + first real BIOS-boot verification
 
 **Goal:** Let the ARM64 build actually call the EE rec's Reserve/Reset/Shutdown on
