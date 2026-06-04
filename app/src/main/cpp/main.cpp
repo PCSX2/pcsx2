@@ -47,6 +47,74 @@ namespace
 	static jmethodID s_ra_notify_state_changed = nullptr;
 	static jmethodID s_ra_notify_hardcore_changed = nullptr;
         static std::mutex s_ra_bridge_mutex;
+        static std::mutex s_ra_override_mutex;
+        static std::string s_ra_host_override;
+        static bool s_ra_has_saved_hardcore_mode = false;
+
+	static void ApplyRetroAchievementsHostOverrideLocked()
+	{
+		if (s_ra_host_override.empty())
+		{
+			Achievements::ClearHostOverride();
+			return;
+		}
+
+		Achievements::SetHostOverride(s_ra_host_override);
+	}
+
+	static void RestartAchievementsClientIfNeeded()
+	{
+		if (!EmuConfig.Achievements.Enabled || !Achievements::IsActive())
+			return;
+
+		Achievements::Shutdown(false);
+		Achievements::Initialize();
+	}
+
+	static void SetRetroAchievementsHostOverride(const std::string& host)
+	{
+		std::lock_guard<std::mutex> lock(s_ra_override_mutex);
+		if (!s_ra_has_saved_hardcore_mode)
+		{
+			s_ra_has_saved_hardcore_mode = true;
+		}
+
+		s_ra_host_override = host;
+		ApplyRetroAchievementsHostOverrideLocked();
+
+		if (EmuConfig.Achievements.HardcoreMode)
+		{
+			Pcsx2Config::AchievementsOptions old_config = EmuConfig.Achievements;
+			EmuConfig.Achievements.HardcoreMode = false;
+			Host::SetBaseBoolSettingValue("Achievements", "ChallengeMode", false);
+			Host::CommitBaseSettingChanges();
+			Achievements::UpdateSettings(old_config);
+		}
+
+		RestartAchievementsClientIfNeeded();
+	}
+
+	static void ClearRetroAchievementsHostOverride(bool restore_hardcore, bool hardcore_enabled)
+	{
+		std::lock_guard<std::mutex> lock(s_ra_override_mutex);
+		s_ra_host_override.clear();
+		ApplyRetroAchievementsHostOverrideLocked();
+
+		const bool should_restore = restore_hardcore && s_ra_has_saved_hardcore_mode;
+		const bool restored_hardcore = should_restore ? hardcore_enabled : EmuConfig.Achievements.HardcoreMode;
+		s_ra_has_saved_hardcore_mode = false;
+
+		if (EmuConfig.Achievements.HardcoreMode != restored_hardcore)
+		{
+			Pcsx2Config::AchievementsOptions old_config = EmuConfig.Achievements;
+			EmuConfig.Achievements.HardcoreMode = restored_hardcore;
+			Host::SetBaseBoolSettingValue("Achievements", "ChallengeMode", restored_hardcore);
+			Host::CommitBaseSettingChanges();
+			Achievements::UpdateSettings(old_config);
+		}
+
+		RestartAchievementsClientIfNeeded();
+	}
 
 	static void EnsureAchievementsClientInitialized()
 	{
@@ -1503,6 +1571,23 @@ Java_kr_co_iefriends_pcsx2_utils_RetroAchievementsBridge_nativeSetHardcore(JNIEn
     Host::CommitBaseSettingChanges();
     Achievements::UpdateSettings(old_config);
     NotifyRetroAchievementsState();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_setAchievementsHostOverride(JNIEnv* env, jclass, jstring j_host)
+{
+	SetRetroAchievementsHostOverride(GetJavaString(env, j_host));
+	NotifyRetroAchievementsState();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_clearAchievementsHostOverride(JNIEnv*, jclass, jboolean restore_hardcore,
+	jboolean hardcore_enabled)
+{
+	ClearRetroAchievementsHostOverride(restore_hardcore == JNI_TRUE, hardcore_enabled == JNI_TRUE);
+	NotifyRetroAchievementsState();
 }
 
 extern "C"
