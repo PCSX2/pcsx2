@@ -1432,4 +1432,124 @@ TEST(Arm64EmitEE, JALR_DiscardLinkToZeroReg)
 	EXPECT_EQ(regs.get64(0), 0ull); // $zero stays zero
 }
 
+// ---------------------------------------------------------------------------
+// Conditional branches (Phase 4.2). target = taken, fallthrough = not taken.
+// ---------------------------------------------------------------------------
+static constexpr u32 kTaken = 0x0020'0000;
+static constexpr u32 kFall = 0x0010'0008;
+
+TEST(Arm64EmitEE, BEQ_TakenAndNotTaken)
+{
+	GuestRegs regs;
+	regs.set64(5, 0x1111'2222'3333'4444ull);
+	regs.set64(6, 0x1111'2222'3333'4444ull);
+	RunEEGen(regs, [] { armEmitBEQ(5, 6, kTaken, kFall); });
+	EXPECT_EQ(regs.getPc(), kTaken);
+
+	regs.set64(6, 0x1111'2222'3333'4445ull); // differ in low bit
+	RunEEGen(regs, [] { armEmitBEQ(5, 6, kTaken, kFall); });
+	EXPECT_EQ(regs.getPc(), kFall);
+}
+
+TEST(Arm64EmitEE, BEQ_ComparesFull64Bits)
+{
+	// Differ only in the high word -> not equal (must be a 64-bit compare).
+	GuestRegs regs;
+	regs.set64(5, 0x0000'0001'0000'0000ull);
+	regs.set64(6, 0x0000'0000'0000'0000ull);
+	RunEEGen(regs, [] { armEmitBEQ(5, 6, kTaken, kFall); });
+	EXPECT_EQ(regs.getPc(), kFall);
+}
+
+TEST(Arm64EmitEE, BNE_TakenAndNotTaken)
+{
+	GuestRegs regs;
+	regs.set64(5, 7);
+	regs.set64(6, 8);
+	RunEEGen(regs, [] { armEmitBNE(5, 6, kTaken, kFall); });
+	EXPECT_EQ(regs.getPc(), kTaken);
+
+	regs.set64(6, 7);
+	RunEEGen(regs, [] { armEmitBNE(5, 6, kTaken, kFall); });
+	EXPECT_EQ(regs.getPc(), kFall);
+}
+
+TEST(Arm64EmitEE, BLTZ_SignedAgainstZero)
+{
+	GuestRegs regs;
+	regs.set64(5, 0xFFFF'FFFF'FFFF'FFFFull); // -1
+	RunEEGen(regs, [] { armEmitBLTZ(5, kTaken, kFall); });
+	EXPECT_EQ(regs.getPc(), kTaken);
+
+	regs.set64(5, 0); // not < 0
+	RunEEGen(regs, [] { armEmitBLTZ(5, kTaken, kFall); });
+	EXPECT_EQ(regs.getPc(), kFall);
+}
+
+TEST(Arm64EmitEE, BGEZ_SignedAgainstZero)
+{
+	GuestRegs regs;
+	regs.set64(5, 0); // >= 0 taken
+	RunEEGen(regs, [] { armEmitBGEZ(5, kTaken, kFall); });
+	EXPECT_EQ(regs.getPc(), kTaken);
+
+	regs.set64(5, 0xFFFF'FFFF'FFFF'FFFFull); // -1, not taken
+	RunEEGen(regs, [] { armEmitBGEZ(5, kTaken, kFall); });
+	EXPECT_EQ(regs.getPc(), kFall);
+}
+
+TEST(Arm64EmitEE, BLEZ_SignedAgainstZero)
+{
+	GuestRegs regs;
+	regs.set64(5, 0); // <= 0 taken
+	RunEEGen(regs, [] { armEmitBLEZ(5, kTaken, kFall); });
+	EXPECT_EQ(regs.getPc(), kTaken);
+
+	regs.set64(5, 1); // not taken
+	RunEEGen(regs, [] { armEmitBLEZ(5, kTaken, kFall); });
+	EXPECT_EQ(regs.getPc(), kFall);
+}
+
+TEST(Arm64EmitEE, BGTZ_SignedAgainstZero)
+{
+	GuestRegs regs;
+	regs.set64(5, 1); // > 0 taken
+	RunEEGen(regs, [] { armEmitBGTZ(5, kTaken, kFall); });
+	EXPECT_EQ(regs.getPc(), kTaken);
+
+	regs.set64(5, 0); // not taken
+	RunEEGen(regs, [] { armEmitBGTZ(5, kTaken, kFall); });
+	EXPECT_EQ(regs.getPc(), kFall);
+}
+
+TEST(Arm64EmitEE, BLTZAL_LinksUnconditionally)
+{
+	GuestRegs regs;
+	regs.set64(5, 0); // condition false -> not taken, but link still written
+	regs.set64(31, 0xDEAD'BEEF'DEAD'BEEFull);
+	RunEEGen(regs, [] { armEmitBLTZAL(5, kTaken, kFall, /*linkpc*/ 0x0010'0008); });
+	EXPECT_EQ(regs.getPc(), kFall);
+	EXPECT_EQ(regs.get64(31), 0x0000'0000'0010'0008ull);
+}
+
+TEST(Arm64EmitEE, BGEZAL_TakenAndLinks)
+{
+	GuestRegs regs;
+	regs.set64(5, 5); // >= 0 -> taken
+	RunEEGen(regs, [] { armEmitBGEZAL(5, kTaken, kFall, /*linkpc*/ 0x0010'0008); });
+	EXPECT_EQ(regs.getPc(), kTaken);
+	EXPECT_EQ(regs.get64(31), 0x0000'0000'0010'0008ull);
+}
+
+TEST(Arm64EmitEE, BGEZAL_RsIs31ComparesLinkedValue)
+{
+	// Degenerate rs==31: link is written first, so the (now non-negative) link
+	// value is what the >= 0 test sees -> taken. Mirrors the interpreter.
+	GuestRegs regs;
+	regs.set64(31, 0xFFFF'FFFF'FFFF'FFFFull); // -1 before linking
+	RunEEGen(regs, [] { armEmitBGEZAL(31, kTaken, kFall, /*linkpc*/ 0x0010'0008); });
+	EXPECT_EQ(regs.get64(31), 0x0000'0000'0010'0008ull); // linked (positive)
+	EXPECT_EQ(regs.getPc(), kTaken);                     // so branch taken
+}
+
 #endif // __aarch64__

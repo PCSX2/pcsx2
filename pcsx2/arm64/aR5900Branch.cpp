@@ -85,3 +85,77 @@ void armEmitJALR(u32 rd, u32 rs, u32 linkpc)
 	if (rd != 0)
 		emitWriteLink(rd, linkpc);
 }
+
+// ------------------------------------------------------------------------
+// Conditional branches (Phase 4.2).
+// ------------------------------------------------------------------------
+// Given that a preceding Cmp has set the condition flags, write
+//   cpuRegs.pc = cond ? target : fallthrough.
+// Both constants are materialized straight into their destination registers
+// (x17 = fallthrough, x16 = target), so neither Mov needs a VIXL temp and the
+// flags from the Cmp survive into the Csel.
+static void emitSelectPc(u32 target, u32 fallthrough, a64::Condition cond)
+{
+	armAsm->Mov(RSCRATCHW, fallthrough);
+	armAsm->Mov(RXVIXLSCRATCH.W(), target);
+	armAsm->Csel(RSCRATCHW, RXVIXLSCRATCH.W(), RSCRATCHW, cond);
+	emitWritePcReg(RSCRATCHW);
+}
+
+void armEmitBEQ(u32 rs, u32 rt, u32 target, u32 fallthrough)
+{
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));     // GPR[rs].UD[0]
+	armAsm->Ldr(RXVIXLSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt))); // GPR[rt].UD[0]
+	armAsm->Cmp(RSCRATCH, RXVIXLSCRATCH);
+	emitSelectPc(target, fallthrough, a64::eq);
+}
+
+void armEmitBNE(u32 rs, u32 rt, u32 target, u32 fallthrough)
+{
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Ldr(RXVIXLSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Cmp(RSCRATCH, RXVIXLSCRATCH);
+	emitSelectPc(target, fallthrough, a64::ne);
+}
+
+// Single-operand forms compare signed 64-bit GPR[rs] against zero.
+static void emitBranchZero(u32 rs, u32 target, u32 fallthrough, a64::Condition cond)
+{
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Cmp(RSCRATCH, 0);
+	emitSelectPc(target, fallthrough, cond);
+}
+
+void armEmitBLTZ(u32 rs, u32 target, u32 fallthrough)
+{
+	emitBranchZero(rs, target, fallthrough, a64::lt); // rs <  0
+}
+
+void armEmitBGEZ(u32 rs, u32 target, u32 fallthrough)
+{
+	emitBranchZero(rs, target, fallthrough, a64::ge); // rs >= 0
+}
+
+void armEmitBLEZ(u32 rs, u32 target, u32 fallthrough)
+{
+	emitBranchZero(rs, target, fallthrough, a64::le); // rs <= 0
+}
+
+void armEmitBGTZ(u32 rs, u32 target, u32 fallthrough)
+{
+	emitBranchZero(rs, target, fallthrough, a64::gt); // rs >  0
+}
+
+// *AL forms: the link is written unconditionally and *before* rs is read, matching
+// the interpreter's _SetLink ordering (so a degenerate rs==31 compares the link).
+void armEmitBLTZAL(u32 rs, u32 target, u32 fallthrough, u32 linkpc)
+{
+	emitWriteLink(31, linkpc);
+	emitBranchZero(rs, target, fallthrough, a64::lt);
+}
+
+void armEmitBGEZAL(u32 rs, u32 target, u32 fallthrough, u32 linkpc)
+{
+	emitWriteLink(31, linkpc);
+	emitBranchZero(rs, target, fallthrough, a64::ge);
+}
