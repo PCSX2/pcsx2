@@ -78,10 +78,36 @@ cmake --build build --target pcsx2-qt -j18   # incremental
 cmake --build build --target unittests -j18 && ctest --test-dir build
 ```
 
-Run with logs visible:
+### macOS app bundle rule
+
+`pcsx2-qt` only builds/relinks the app target. It does **not** run the macOS bundle
+postprocess step. Before launching `PCSX2.app` from the build tree, run
+`pcsx2-postprocess-bundle` so `macdeployqt` copies Qt plugins/frameworks and rewrites
+the executable install names to the bundled frameworks. Then re-sign the mutated app.
+
 ```bash
+cmake --build build --target pcsx2-qt -j18
+cmake --build build --target pcsx2-postprocess-bundle
+codesign --force --deep --sign - build/pcsx2-qt/PCSX2.app
+
 build/pcsx2-qt/PCSX2.app/Contents/MacOS/PCSX2
 ```
+
+Equivalent: a default `make -C build -j$(sysctl -n hw.ncpu)` builds the `all` target,
+which includes `pcsx2-postprocess-bundle` unless CMake was configured with
+`SKIP_POSTPROCESS_BUNDLE`.
+
+If launch fails with duplicate Qt classes or `Could not load the Qt platform plugin
+"cocoa"`, the app is likely half-deployed: the main binary is loading Qt from
+`pcsx2-deps/lib` while the bundled Cocoa plugin loads Qt from
+`PCSX2.app/Contents/Frameworks`. Verify the main binary points at bundled Qt:
+
+```bash
+otool -L build/pcsx2-qt/PCSX2.app/Contents/MacOS/PCSX2 | rg 'Qt6|kddock'
+```
+
+Healthy output uses `@executable_path/../Frameworks/...`, not absolute
+`pcsx2-deps/lib/...` paths.
 
 Validation ladder (see PROGRESS.md "Test ladder"): unittests → BIOS boot → 2D game
 → IOP-heavy game → 3D game.
