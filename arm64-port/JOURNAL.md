@@ -28,6 +28,64 @@
 
 ---
 
+## 2026-06-04 — Phase 2.3 complete: full scalar + quad load/store family
+
+**Goal:** Finish the EE aligned load/store family — wire the rest of the scalar
+ops into `recTranslateOp` and add the 128-bit `LQ`/`SQ` path — completing Phase 2.3.
+
+**What changed:**
+- `pcsx2/arm64/aR5900LoadStore.cpp` + `aR5900.h` — new quad generators:
+  - `armEmitLoadQuad(rt, rs, imm)` — effective addr → `And ~0x0F` (16-byte
+    align) → `armEmitVtlbReadQuad(RQSCRATCH, …)` → `Str q30, [RESTATEPTR+rt*16]`
+    (writes the full 128-bit reg; skipped for `rt==0`, load still runs for side
+    effects).
+  - `armEmitStoreQuad(rt, rs, imm)` — `Ldr q30, [RESTATEPTR+rt*16]` → effective
+    addr → `And ~0x0F` → `armEmitVtlbWriteQuad`. `rt==0` reads zero from cpuRegs,
+    no special case.
+- `pcsx2/arm64/aR5900.cpp` — `recTranslateOp` now dispatches the whole aligned
+  family by primary opcode: `LB`(0x20)/`LBU`(0x24)/`LH`(0x21)/`LHU`(0x25)/
+  `LW`(0x23)/`LWU`(0x27)/`LD`(0x37) → `armEmitLoadGpr(bits,sign,…)`;
+  `SB`(0x28)/`SH`(0x29)/`SW`(0x2b)/`SD`(0x3f) → `armEmitStoreGpr`; `LQ`(0x1e)/
+  `SQ`(0x1f) → the new quad generators. Opcode numbers cross-checked against
+  `R5900OpcodeTables.cpp` + the canonical EE primary-opcode map.
+- `tests/ctest/core/arm64_emit_test.cpp` — 2 new gtests `Arm64EmitEE.QuadAddr*`
+  proving the `& ~0x0F` alignment mask at runtime (mirrors the address sequence
+  the quad generators emit). 7 `Arm64EmitEE.*` total, all pass; both ctest
+  suites green.
+- Commits:
+  - `ARM64: Complete scalar + quad load/store family (Phase 2.3)`
+
+**Decisions & rationale:**
+- **`LWU` = `armEmitLoadGpr(32, false, …)` (zero-extend), `LD`/`SD` = 64-bit.**
+  The existing `bits`/`sign` params already cover the whole scalar family, so the
+  rest of 2.3 was pure dispatch wiring — no new generator logic, exactly as the
+  prior journal predicted.
+- **Quad align mirrors x86 `recLoadQuad`/`recStore` `xAND(arg1regd, ~0x0F)`.** EE
+  silently aligns 128-bit accesses; the mask is correctness, applied after the
+  effective-address add and before the access.
+- **Quad uses `RQSCRATCH` (q30) for the 128-bit GPR transfer.** ReadQuad does its
+  `Mov(dst, q0)` *after* the helper call, and WriteQuad moves `data`→q0 *before*
+  the call, so q30 is never live across the clobbering call in either direction.
+- **Unaligned LWL/LWR/LDL/LDR + SWL/SWR/SDL/SDR deferred.** They need byte-offset
+  masking/merge codegen (x86 `recLWL` shifts + OR), not just dispatch — a separate
+  chunk best done after the round-trip harness exists to validate the merge.
+- **Still unit-test only the address/align codegen.** The full
+  load/store/quad round-trip calls the vtlb helpers, which need a live VM — same
+  constraint as before; deferred to 2.4. The vtlb call layer is already proven
+  (2.1 helpers + `armEmitCall`), so dispatch wiring is compile+addr-test validated.
+
+**Blockers / open questions:**
+- **Phase 2.4 (full memory round-trip) still needs an execution context** — a
+  standalone vtlb-init harness (option a) or the Phase 4 dispatcher (option b).
+  Decide when picking up 2.4; (a) is the smaller ground-truth step if vtlb can be
+  initialized standalone — worth a look first.
+
+**Next step:** Phase 2.4 — full guest-memory round-trip validation of the scalar +
+quad generators (vtlb-init gtest harness against real RAM, or wait for the Phase 4
+dispatcher). After that: deferred unaligned LWL/LWR/… family, or Phase 3 (EE int).
+
+---
+
 ## 2026-06-04 — Phase 2.3: EE GPR load/store generators + LW/SW decode
 
 **Goal:** First vertical slice of EE load/store codegen — turn decoded MIPS

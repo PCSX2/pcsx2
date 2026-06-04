@@ -8,30 +8,35 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 0 COMPLETE. Phase 1 COMPLETE. Phase 2.1 DONE. Phase 2.3 STARTED**
-(LW/SW landed). The EE rec skeleton (`aR5900.{h,cpp}`) defines `recCpu`, reserves
-the code cache + const pool, and is wired into `VMManager.cpp` (Reserve/Reset/
-Shutdown; `Cpu` stays `&intCpu`). `aR5900LoadStore.cpp` provides the slow-path
-memory primitives `armEmitVtlbRead/Write[Quad]` (Phase 2.1) **and now** the EE GPR
-load/store generators `armEmitEffectiveAddr` / `armEmitLoadGpr` / `armEmitStoreGpr`
-(Phase 2.3): they read/write guest GPRs through `RESTATEPTR`, compute the EE
-address mode (`GPR[rs].UL[0] + imm`), and route memory access through the slow
-path. `recCompileBlock` decodes the instruction at `cpuRegs.pc` and dispatches
-`LW`/`SW` to those generators (other opcodes → NOP placeholder).
+**Phase 0 COMPLETE. Phase 1 COMPLETE. Phase 2.1 DONE. Phase 2.3 DONE**
+(full scalar + quad load/store family). The EE rec skeleton (`aR5900.{h,cpp}`)
+defines `recCpu`, reserves the code cache + const pool, and is wired into
+`VMManager.cpp` (Reserve/Reset/Shutdown; `Cpu` stays `&intCpu`).
+`aR5900LoadStore.cpp` provides the slow-path memory primitives
+`armEmitVtlbRead/Write[Quad]` (Phase 2.1) and the EE GPR load/store generators
+`armEmitEffectiveAddr` / `armEmitLoadGpr` / `armEmitStoreGpr` /
+`armEmitLoadQuad` / `armEmitStoreQuad` (Phase 2.3): they read/write guest GPRs
+through `RESTATEPTR`, compute the EE address mode (`GPR[rs].UL[0] + imm`), and
+route memory access through the slow path. `recCompileBlock` decodes the
+instruction at `cpuRegs.pc` and `recTranslateOp` dispatches the whole aligned
+load/store family: `LB/LBU/LH/LHU/LW/LWU/LD`, `SB/SH/SW/SD`, `LQ/SQ` (16-byte
+aligned, full 128-bit NEON access). Unaligned variants
+(`LWL/LWR/LDL/LDR`, `SWL/SWR/SDL/SDR`) deferred — need byte-merge codegen.
 
-The address-mode codegen is runtime-proven by 5 new gtests (`Arm64EmitEE.*`). The
-decode/dispatch path is still **inert** (interpreter stays the active provider;
-`recExecute` is never entered — Phase 4 adds the enter-trampoline pinning
-`RESTATEPTR=&cpuRegs`, the block LUT, PC/cycle, and event tests).
+The address-mode + quad-align codegen is runtime-proven by 7 gtests
+(`Arm64EmitEE.*`). The decode/dispatch path is still **inert** (interpreter stays
+the active provider; `recExecute` is never entered — Phase 4 adds the
+enter-trampoline pinning `RESTATEPTR=&cpuRegs`, the block LUT, PC/cycle, and event
+tests).
 
-Next concrete task: **finish the scalar load/store family** in `recTranslateOp` —
-`LB/LBU/LH/LHU/LWU/LD` and `SB/SH/SD` (the generators already take a `bits`/`sign`
-param, so this is mostly dispatch wiring: `LWU` = zero-extend, `LD/SD` = 64-bit),
-then the 128-bit `LQ/SQ` via `armEmitVtlbRead/WriteQuad` + the `~0xF` alignment
-mask + 128-bit GPR access (`Ldr/Str q`). After the family is complete, do **Phase
-2.4 end-to-end validation** — needs either a lightweight vtlb-init test harness
-(real RAM round-trip through the generators) or the Phase 4 dispatcher to enter
-`recExecute` for real. Ref x86 `iR5900LoadStore.cpp` / `recRecompile`.
+Next concrete task: **Phase 2.4 end-to-end validation** — full guest-memory
+round-trip through the scalar + quad generators. Needs either (a) a lightweight
+vtlb-init test harness so a gtest can `armEmitLoadGpr/StoreGpr/LoadQuad/StoreQuad`
+against real RAM (the smaller, ground-truth-friendly step — look at whether vtlb
+can be initialized standalone first), or (b) the Phase 4 dispatcher to enter
+`recExecute` for real. After 2.4, either tackle the deferred unaligned LWL/LWR/…
+family (byte-merge codegen, ref x86 `recLWL`) or move to Phase 3 (EE integer
+arithmetic). Ref x86 `iR5900LoadStore.cpp` / `recRecompile`.
 
 > When you finish a task, move this pointer to the next one and flip the box below.
 
@@ -68,7 +73,7 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 
 - [x] 2.1 Slow-path vtlb load/store codegen in `pcsx2/arm64/aR5900LoadStore.cpp`: `armEmitVtlbRead/Write` + `...Quad`, emitting calls to the C++ `vtlb_memRead/Write` helpers (interpreter-equivalent path). Builds, links, arm64, unittests green. *(Re-scoped from "implement `vtlb_DynBackpatchLoadStore`" — that is fastmem-only and is now Phase 2.2; see JOURNAL.)*
 - [ ] 2.2 **Fastmem fast path:** implement `vtlb_DynBackpatchLoadStore` in `pcsx2/arm64/RecStubs.cpp` (currently `pxFailRel`) + the direct `REFASTMEMBASE`-relative load/store emit + `vtlb_AddLoadStoreInfo`. Single-instruction backpatch (overwrite the faulting op with `B thunk`); thunk does the slow path then branches back. Ref `x86/ix86-32/recVTLB.cpp`.
-- [~] 2.3 EE load/store opcode generators: decode + guest-GPR access wired onto `armEmitVtlbRead/Write[Quad]`. **DONE:** `armEmitEffectiveAddr`/`armEmitLoadGpr`/`armEmitStoreGpr` + `recCompileBlock` single-instruction decode dispatching `LW`/`SW`. **TODO:** rest of the family (`LB/LBU/LH/LHU/LWU/LD`, `SB/SH/SD`) = dispatch wiring; `LQ/SQ` = Quad helpers + `~0xF` align + 128-bit GPR access.
+- [x] 2.3 EE load/store opcode generators: decode + guest-GPR access wired onto `armEmitVtlbRead/Write[Quad]`. `armEmitEffectiveAddr`/`armEmitLoadGpr`/`armEmitStoreGpr` + the 128-bit `armEmitLoadQuad`/`armEmitStoreQuad` (`~0xF` align + NEON q access). `recTranslateOp` dispatches the full aligned family: `LB/LBU/LH/LHU/LW/LWU/LD`, `SB/SH/SW/SD`, `LQ/SQ`. Unaligned `LWL/LWR/LDL/LDR`/`SWL/SWR/SDL/SDR` deferred (byte-merge codegen). Runtime-proven addr+align via 7 `Arm64EmitEE.*` gtests.
 - [ ] 2.4 Test: compile a simple MIPS load/store block, verify correct memory access. (Address-mode codegen already runtime-proven via `Arm64EmitEE.*`; full memory round-trip still pending — see CURRENT FOCUS.)
 
 **Done when:** EE memory ops go through the JIT fastmem path and read/write correctly.
