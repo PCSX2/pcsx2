@@ -26,6 +26,9 @@ layout(std140, binding = 1) uniform cb20
 #define VS_EXPAND_SPRITE 3
 #define VS_EXPAND_LINE_AA1 4
 #define VS_EXPAND_TRIANGLE_AA1 5
+#define VS_EXPAND_POINT_Z_INTEGER 6
+#define VS_EXPAND_LINE_Z_INTEGER 7
+#define VS_EXPAND_TRIANGLE_Z_INTEGER 8
 #endif
 
 out SHADER
@@ -39,6 +42,9 @@ out SHADER
 	#endif
 	float inv_cov; // We use the inverse to make it simpler to interpolate.
 	flat uint interior; // 1 for triangle interior; 0 for edge.
+	#if VS_Z_INTEGER
+		flat uint z_base;
+	#endif
 } VSout;
 
 const float exp_min32 = exp2(-32.0f);
@@ -101,6 +107,11 @@ void vs_main()
 	#if VS_POINT_SIZE
 		gl_PointSize = PointSize.x;
 	#endif
+
+	#if VS_Z_INTEGER
+		VSout.z_base = i_z;
+		gl_Position.z = 0.0f; // Flat Z by default
+	#endif
 }
 
 #else // VS_EXPAND
@@ -139,6 +150,7 @@ struct ProcessedVertex
 	vec4 t_float;
 	vec4 t_int;
 	vec4 c;
+	uint z;
 };
 
 uint load_index(uint _i)
@@ -191,6 +203,12 @@ ProcessedVertex load_vertex(uint index)
 
 	vtx.c = i_c;
 	vtx.t_float.z = i_f.x;
+
+#if VS_Z_INTEGER
+	vtx.z = i_z;
+#else
+	vtx.z = 0;
+#endif
 
 	return vtx;
 }
@@ -312,6 +330,11 @@ void main()
 	vtx.p.x += ((vid & 1u) != 0u) ? PointSize.x : 0.0f;
 	vtx.p.y += ((vid & 2u) != 0u) ? PointSize.y : 0.0f;
 
+#if VS_Z_INTEGER
+	VSout.z_base = vtx.z;
+	vtx.p.z = 0.0f; // Flat Z
+#endif
+
 #elif (VS_EXPAND == VS_EXPAND_LINE) || (VS_EXPAND == VS_EXPAND_LINE_AA1)
 
 	uint vid_base = vid >> 2;
@@ -334,6 +357,11 @@ void main()
 
 #if VS_EXPAND == VS_EXPAND_LINE_AA1
 	VSout.inv_cov = is_right ? 1.0f : -1.0f;
+#endif
+
+#if VS_Z_INTEGER
+	VSout.z_base = min(other.z, vtx.z);
+	vtx.p.z = exp2(-32.0f) * float(vtx.z - VSout.z_base);
 #endif
 
 	// Lines will be run as (0 1 2) (1 2 3)
@@ -361,6 +389,11 @@ void main()
 	vtx.t_float.y = is_bottom ? lt.t_float.y : vtx.t_float.y;
 	vtx.t_int.yw = is_bottom ? lt.t_int.yw : vtx.t_int.yw;
 
+#if VS_Z_INTEGER
+	VSout.z_base = vtx.z;
+	vtx.p.z = 0.0f; // Flat Z
+#endif
+
 #elif VS_EXPAND == VS_EXPAND_TRIANGLE_AA1
 
 	// Triangles with AA1 are expanded as follows:
@@ -382,6 +415,15 @@ void main()
 		vtx = load_vertex(load_index(3 * prim_id + prim_offset));
 		VSout.inv_cov = 0.0f; // Full coverage
 		VSout.interior = 1;
+
+		#if VS_Z_INTEGER
+			uint i1 = (prim_offset >= 2) ? prim_offset - 2 : prim_offset + 1;
+			uint i2 = (prim_offset >= 1) ? prim_offset - 1 : prim_offset + 2;
+			ProcessedVertex other = load_vertex(load_index(3 * prim_id + i1));
+			ProcessedVertex opposite = load_vertex(load_index(3 * prim_id + i2));
+			VSout.z_base = min(vtx.z, min(other.z, opposite.z));
+			vtx.p.z = exp2(-32.0f) * float(vtx.z - VSout.z_base);
+		#endif
 	}
 	else if (edge)
 	{
@@ -460,8 +502,39 @@ void main()
 			// Get the provoking vertex color (last vertex in GL)
 			vtx.c = i0 == 2 ? vtx.c : (i1 == 2 ? other.c : opposite.c);
 		#endif
+
+		#if VS_Z_INTEGER
+			VSout.z_base = min(vtx.z, min(other.z, opposite.z));
+			vtx.p.z = exp2(-32.0f) * float(vtx.z - VSout.z_base);
+		#endif
 	}
 
+#elif VS_Z_INTEGER && (VS_EXPAND == VS_EXPAND_TRIANGLE_Z_INTEGER)
+
+	uint vid_base = 3 * (vid / 3);
+	uint i0 = vid - vid_base;
+	uint i1 = (i0 >= 2) ? i0 - 2 : i0 + 1;
+	uint i2 = (i0 >= 1) ? i0 - 1 : i0 + 2;
+	vtx = load_vertex(load_index(vid_base + i0));
+	ProcessedVertex other = load_vertex(load_index(vid_base + i1));
+	ProcessedVertex opposite = load_vertex(load_index(vid_base + i2));
+
+	VSout.z_base = min(vtx.z, min(other.z, opposite.z));
+	vtx.p.z = exp2(-32.0f) * float(vtx.z - VSout.z_base);
+
+#elif VS_Z_INTEGER && (VS_EXPAND == VS_EXPAND_LINE_Z_INTEGER)
+
+	vtx = load_vertex(load_index(vid));
+
+	ProcessedVertex other = load_vertex(load_index(vid ^ 1));
+
+	VSout.z_base = min(vtx.z, other.z);
+	vtx.p.z = exp2(-32.0f) * float(vtx.z - VSout.z_base);
+
+#elif VS_Z_INTEGER && (VS_EXPAND == VS_EXPAND_POINT_Z_INTEGER)
+	vtx = load_vertex(vid);
+	VSout.z_base = vtx.z;
+	vtx.p.z = 0.0f; // Flat Z
 #endif
 
 	gl_Position = vtx.p;

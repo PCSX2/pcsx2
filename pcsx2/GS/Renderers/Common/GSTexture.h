@@ -34,7 +34,8 @@ public:
 		ColorHDR,     ///< High dynamic range (RGBA16F) color texture
 		ColorClip,    ///< Color texture with more bits for colclip (wrap) emulation, given that blending requires 9bpc (RGBA16Unorm)
 		DepthStencil, ///< Depth stencil texture
-		DepthColor,      ///< For treating depth texture as RT
+		DepthColor,   ///< For treating depth texture as RT
+		DepthInteger, ///< For full 32-bit integer depth emulation
 		UNorm8,       ///< A8UNorm texture for paletted textures and the OSD font
 		UInt16,       ///< UInt16 texture for reading back 16-bit depth
 		UInt32,       ///< UInt32 texture for reading back 24 and 32-bit depth
@@ -53,12 +54,6 @@ public:
 		Invalidated
 	};
 
-	union ClearValue
-	{
-		u32 color;
-		float depth;
-	};
-
 protected:
 	GSVector2i m_size{};
 	int m_mipmap_levels = 0;
@@ -71,7 +66,7 @@ protected:
 	u32 m_last_frame_used = 0;
 
 	bool m_needs_mipmaps_generated = true;
-	ClearValue m_clear_value = {};
+	u32 m_clear_value = 0;
 
 	// For GL/DX11 since they don't track layouts.
 	// Used heuristically to decide whether to use ROV for a draw.
@@ -118,6 +113,7 @@ public:
 	static u32 CalcUploadPitch(Format format, u32 width);
 	static u32 CalcUploadRowLengthFromPitch(Format format, u32 pitch);
 	static u32 CalcUploadSize(Format format, u32 height, u32 pitch);
+	static bool AreFormatsEquivalent(Format format1, Format format2);
 
 	u32 GetCompressedBytesPerBlock() const;
 	u32 GetCompressedBlockSize() const;
@@ -141,13 +137,25 @@ public:
 	{
 		return (m_type == Type::RenderTarget && m_format == Format::DepthColor);
 	}
+	__fi bool IsDepthInteger() const
+	{
+		return (m_type == Type::RenderTarget && m_format == Format::DepthInteger);
+	}
 	__fi bool IsTexture() const
 	{
 		return (m_type == Type::Texture);
 	}
 	__fi bool IsDepthLike() const
 	{
+		return IsDepthStencil() || IsDepthColor() || IsDepthInteger();
+	}
+	__fi bool IsFloat32Like() const
+	{
 		return IsDepthStencil() || IsDepthColor();
+	}
+	__fi bool IsIntegerFormat() const
+	{
+		return m_format == Format::UInt16 || m_format == Format::UInt32 || m_format == Format::DepthInteger;
 	}
 
 	__fi State GetState() const { return m_state; }
@@ -156,24 +164,13 @@ public:
 	__fi u32 GetLastFrameUsed() const { return m_last_frame_used; }
 	void SetLastFrameUsed(u32 frame) { m_last_frame_used = frame; }
 
-	__fi u32 GetClearColor() const { return m_clear_value.color; }
-	__fi float GetClearDepth() const { return m_clear_value.depth; }
-	__fi GSVector4 GetUNormClearColor() const { return GSVector4::unorm8(m_clear_value.color); }
-	__fi GSVector4 GetClearForFormat() const
-	{
-		return IsDepthLike() ? GSVector4(m_clear_value.depth, 0.0f, 0.0f, 0.0f) : GetUNormClearColor();
-	}
-
-	__fi void SetClearColor(u32 color)
+	__fi u32 GetClearValue() const { return m_clear_value; }
+	__fi void SetClearValue(u32 value)
 	{
 		m_state = State::Cleared;
-		m_clear_value.color = color;
+		m_clear_value = value;
 	}
-	__fi void SetClearDepth(float depth)
-	{
-		m_state = State::Cleared;
-		m_clear_value.depth = depth;
-	}
+	__fi float GetClearDepth() const { return static_cast<float>(m_clear_value) * 0x1p-32; }
 
 	void GenerateMipmapsIfNeeded();
 	void ClearMipmapGenerationFlag() { m_needs_mipmaps_generated = false; }

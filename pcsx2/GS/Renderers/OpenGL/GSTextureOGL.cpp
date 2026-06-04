@@ -69,6 +69,14 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 			m_int_type = GL_FLOAT;
 			m_int_shift = 2;
 			break;
+		
+		// 1 channel integer
+		case Format::DepthInteger:
+			m_gl_format = GL_R32UI;
+			m_int_format = GL_RED_INTEGER;
+			m_int_type = GL_UNSIGNED_INT;
+			m_int_shift = 2;
+			break;
 
 		// 4 channel normalized
 		case Format::Color:
@@ -422,7 +430,7 @@ void GSDownloadTextureOGL::CopyFromTexture(
 	GSTextureOGL* const glTex = static_cast<GSTextureOGL*>(stex);
 	GSDeviceOGL::GetInstance()->CommitClear(glTex, true);
 
-	pxAssert(glTex->GetFormat() == m_format);
+	pxAssert(GSTexture::AreFormatsEquivalent(glTex->GetFormat(), m_format));
 	pxAssert(drc.width() == src.width() && drc.height() == src.height());
 	pxAssert(src.z <= glTex->GetWidth() && src.w <= glTex->GetHeight());
 	pxAssert(static_cast<u32>(drc.z) <= m_width && static_cast<u32>(drc.w) <= m_height);
