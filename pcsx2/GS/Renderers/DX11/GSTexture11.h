@@ -43,6 +43,8 @@ public:
 	operator ID3D11UnorderedAccessView*();
 
 	ID3D11DepthStencilView* ReadOnlyDepthStencilView();
+
+	GSVector4 GetDX11ClearValue();
 };
 
 class GSDownloadTexture11 final : public GSDownloadTexture
