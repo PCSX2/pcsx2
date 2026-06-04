@@ -37,16 +37,24 @@ struct ConvertPSDepthRes
 	}
 };
 
+static inline float4 convert_depth32_rgba8(uint value)
+{
+	return float4(as_type<uchar4>(value));
+}
+
 static inline float4 convert_depth32_rgba8(float value)
 {
-	uint val = uint(value * 0x1p32);
-	return float4(as_type<uchar4>(val));
+	return convert_depth32_rgba8(uint(value * 0x1p32));
+}
+
+static inline float4 convert_depth16_rgba8(uint value)
+{
+	return float4(uint4(value << 3, value >> 2, value >> 7, value >> 8) & uint4(0xf8, 0xf8, 0xf8, 0x80));
 }
 
 static inline float4 convert_depth16_rgba8(float value)
 {
-	uint val = uint(value * 0x1p32);
-	return float4(uint4(val << 3, val >> 2, val >> 7, val >> 8) & uint4(0xf8, 0xf8, 0xf8, 0x80));
+	return convert_depth16_rgba8(uint(value * 0x1p32));
 }
 
 #ifndef __HAVE_MUL24__

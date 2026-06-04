@@ -72,6 +72,7 @@ public:
 	void TransitionToState(ResourceState state);
 	void CommitClear();
 	void CommitClear(const D3D12CommandList& cmdlist);
+	GSVector4 GetDX12ClearValue() const;
 
 	void Destroy(bool defer = true);
 
