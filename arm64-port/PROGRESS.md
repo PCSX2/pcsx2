@@ -8,39 +8,62 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 5.4 MMI 128-bit SIMD — multiply-accumulate family DONE.**
-Nine multiply-accumulate ops plus four HI/LO moves now emit inline in
-`pcsx2/arm64/aR5900MMI.cpp`:
+**Phase 5.4 MMI 128-bit SIMD — COMPLETE + correctness pass done.**
 
-**Word multiply-accumulate (lanes 0 and 2):**
-- `PMULTW/PMULTUW`: 32×32→64 signed/unsigned multiply per lane, results to
-  HI/LO (sign-extended per interpreter), optional GPR[rd] write.
-- `PMADDW`: Rs*Rt + (HI<<32) with EE division voodoo (÷4294967295) on lane 0 only.
-- `PMADDUW`: unsigned variant (no voodoo).
-- `PMSUBW`: (HI<<32) - Rs*Rt with division fixup.
+A full review of the unpushed MMI commits + the misc-ops batch found and fixed a
+large set of bugs (all now covered by gtests — the MAC/misc ops were previously
+untested, and the committed test file did not even compile):
 
-**Halfword multiply-accumulate (8 lanes, alternating LO/HI):**
-- `PMULTH`: 16×16→32 signed multiply, 4 lanes × 2 iterations.
-- `PMADDH/PMSUBH`: accumulate/subtract 8 halfword products to/from LO/HI.
-- `PHMADH/PHMSBH`: paired multiply-add/subtract (Rs[n]*Rt[n] ± Rs[n+1]*Rt[n+1]).
+- **Decode (`aR5900.cpp`):** `recTranslateMMI0/1/2/3` + the MMI funct dispatch had
+  many wrong indices. They now mirror `R5900OpcodeTables.cpp tbl_MMI*` exactly.
+  Notably: PLZCW is funct 0x04, PMFHL=0x30, PMTHL=0x31, PSLLH/PSRLH/PSRAH=0x34/36/37,
+  PSLLW/PSRLW/PSRAW=0x3C/3E/3F; PMFHI/PMFLO live in MMI2 (0x08/0x09), PMTHI/PMTLO in
+  MMI3 (0x08/0x09); PMULTW=MMI2 0x0C, PMULTH=0x1C, PMADDH/PMSUBH=0x10/0x14,
+  PHMADH/PHMSBH=0x11/0x15, PEXEH/PREVH/PEXEW=0x1A/1B/1E, PEXCW=MMI3 0x1E,
+  PADSBH=MMI1 0x04, PEXT5/PPAC5=MMI0 0x1E/0x1F.
+- **Emit (`aR5900MMI.cpp`):** PMADDW/PMSUBW divided by −1 (Sxtw of 0xFFFFFFFF) instead
+  of 4294967295, and conflated temp/temp2; PMADDUW dropped the carry into HI;
+  PMULTW/PMULTUW wrote only 32 bits of LO/HI (no sign-extend); PMULTH was a 2-lane
+  word multiply instead of 8-lane halfword; PHMADH/PHMSBH accumulated and skipped the
+  odd lanes; PLZCW was off-by-one; PMFHL.LH had swapped lanes and SLW/SH were silent
+  no-ops; PMTHL clobbered the odd LO/HI words. All fixed and bit-exact vs MMI.cpp.
+- **QFSRV** stays on the interpreter (its shift amount is the runtime SA register
+  `cpuRegs.sa`, not an instruction immediate) — the only intentional MMI fallback.
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 100% (Arm64EmitEE 269/269, core
+354/354). Live game verification still pending.
+
+---
+
+### Original Phase 5.4 inventory (kept for context)
+All MMI ops now emit inline in `pcsx2/arm64/aR5900MMI.cpp`:
+
+**Multiply-accumulate (HI/LO writes):**
+- `PMULTW/PMULTUW`: 32×32→64 signed/unsigned multiply per lane
+- `PMADDW/PMADDUW`: multiply-add with EE division voodoo (signed only)
+- `PMSUBW`: multiply-subtract with division fixup
+- `PMULTH/PMADDH/PMSUBH`: 16×16→32 halfword multiply (8 lanes)
+- `PHMADH/PHMSBH`: paired halfword multiply-add/subtract
 
 **HI/LO moves (full 128-bit):**
-- `PMFHI/PMFLO`: load full 128-bit HI/LO to GPR[rd] via NEON `Ldr/Str q-reg`.
-- `PMTHI/PMTLO`: store full 128-bit GPR[rs] to HI/LO.
+- `PMFHI/PMFLO/PMTHI/PMTLO`: NEON q-reg load/store
+- `PMFHL` (LW/UW/LH variants): extract from HI/LO pairs
+- `PMTHL`: pack GPR to HI/LO
 
-Dispatch wired in `recTranslateMMI2` (sa=0x00→PMADDW, 0x01→PMADDH, 0x04→PMSUBW,
-0x05→PMSUBH, 0x08→PMULTW, 0x09→PMULTH, 0x0C→PHMADH, 0x0D→PHMSBH) and
-`recTranslateMMI3` (sa=0x00→PMADDUW, 0x08→PMULTUW, 0x10→PMFHI, 0x11→PMFLO,
-0x14→PMTHI, 0x15→PMTLO).
+**Misc ops:**
+- `PLZCW`: count leading sign bits (ARM64 `Cls` - 1)
+- `PADSBH`: subtract low 4 / add high 4 halfwords
+- `QFSRV`: quad byte shift right (variable cross-lane)
+- `PEXT5/PPAC5`: 5-bit field expand/compress per lane
 
-**Verified:** `pcsx2-qt` builds arm64; unit tests 334/334 core, 252/252 Arm64EmitEE.
-Live game verification pending (BIOS boot + unit coverage complete).
+Dispatch wired in `recTranslateMMI0/1/2/3`. **Verified:** `pcsx2-qt` builds arm64;
+unit tests 334/334 core, 252/252 Arm64EmitEE. Live game verification pending.
 
-**Still on interpreter fallback (intentional, complex byte-merge):**
-`PADSBH`, `QFSRV`, `PEXT5/PPAC5`, `PLZCW`, `PMFHL/PMTHL`.
+**All Phase 5.4 MMI ops now compiled natively except QFSRV (runtime SA register →
+interpreter), and all are gtest-covered.**
 
-Next concrete task: remaining MMI misc ops (`PADSBH/QFSRV/PEXT5/PPAC5/PLZCW/PMFHL/PMTHL`),
-or Phase 4.4 recLUT (parked on `armjit-reclut-wip` until BIOS stall solved).
+Next concrete task: Phase 4.4 recLUT (parked on `armjit-reclut-wip` until BIOS
+stall solved), or game compatibility testing.
 
 ---
 
@@ -236,7 +259,9 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     - [x] `C.F/C.EQ/C.LT/C.LE` compares, `BC1T/BC1F` branches, `CVT.S/CVT.W`.
     - [ ] Remaining on interpreter fallback: double W/L-format, likely `BC1FL/BC1TL`.
 - [ ] 5.3 COP2 (VU0 macro): interpreter fallback initially.
-- [~] 5.4 MMI (128-bit int SIMD): map to NEON where possible (ref `x86/iMMI.cpp`).
+- [x] 5.4 MMI (128-bit int SIMD): map to NEON where possible (ref `x86/iMMI.cpp`).
+  **COMPLETE** — every MMI op compiles natively except QFSRV (runtime SA register →
+  interpreter). All decode indices match `tbl_MMI*`; full gtest coverage (269 Arm64EmitEE).
   - [x] First batch (`aR5900MMI.cpp`, commit `6b2ceb311`): NEON-mapped ops —
     `PADD*/PSUB*` (+ signed/unsigned saturating), `PCGT*/PCEQ*`, `PMAX*/PMIN*`,
     `PABSW/PABSH`, `PAND/POR/PXOR/PNOR`, `PEXTL*/PEXTU*`, `PPAC*`,
@@ -248,9 +273,12 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
   - [x] Variable shifts (`PSLLVW/PSRLVW/PSRAVW` — amount from GPR[rs], 5-bit masked
     per lane). Scalar GPR shifts (`Lsl`/`Lsr`/`Asr`), 2 lanes per 64-bit store.
     3 gtests, all pass.
-  - [ ] Multiply-accumulate to HI/LO (`PMADD*/PMSUB*/PMULT*/PHMADH/PHMSBH` + the
-    `PMFHI/PMFLO/PMTHI/PMTLO` moves) — stay on interpreter for now.
-  - [ ] Misc (`PADSBH`, `QFSRV`, `PEXT5/PPAC5`, `PLZCW`, `PMFHL/PMTHL`).
+  - [x] Multiply-accumulate to HI/LO (`PMADD*/PMSUB*/PMULT*/PHMADH/PHMSBH` + the
+    `PMFHI/PMFLO/PMTHI/PMTLO` moves). Word ops use scalar `Smull/Umull` + the EE
+    division voodoo (positive 0xFFFFFFFF divisor); halfword ops do 8 lanes to
+    LO/HI.UL[0..3]. gtests seed nonzero HI/LO to exercise the accumulate path.
+  - [x] Misc (`PADSBH`, `PEXT5/PPAC5`, `PLZCW` [ARM64 `Cls`], `PMFHL` [LW/UW/SLW/LH/SH],
+    `PMTHL`). `QFSRV` stays on the interpreter (shift amount = runtime SA register).
 
 ---
 

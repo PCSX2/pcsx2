@@ -158,9 +158,9 @@ enum : u32
 // access via the slow-path vtlb helpers).
 // MMI sub-group decoders (Phase 5.4). The MMI0/1/2/3 classes carry their real
 // opcode in the `sa` field (bits 10:6); each indexes a 32-entry table (see
-// R5900OpcodeTables.cpp tbl_MMI0..3). Only the NEON-mappable SIMD ops are handled
-// here — everything else (multiply-accumulate to HI/LO, permutes, PEXT5/PPAC5,
-// PADSBH, QFSRV, ...) returns false and falls back to the interpreter.
+// R5900OpcodeTables.cpp tbl_MMI0..3) — the case labels below mirror those tables
+// exactly. Any sub-op without a native generator returns false and falls back to
+// the interpreter (e.g. QFSRV, whose shift amount is the runtime SA register).
 static bool recTranslateMMI0(u32 sa, u32 rd, u32 rs, u32 rt)
 {
 	switch (sa)
@@ -188,7 +188,9 @@ static bool recTranslateMMI0(u32 sa, u32 rd, u32 rs, u32 rt)
 		case 0x19: armEmitPSUBSB(rd, rs, rt); return true;
 		case 0x1A: armEmitPEXTLB(rd, rs, rt); return true;
 		case 0x1B: armEmitPPACB(rd, rs, rt); return true;
-		default:   return false; // PEXT5/PPAC5
+		case 0x1E: armEmitPEXT5(rd, rt); return true;
+		case 0x1F: armEmitPPAC5(rd, rt); return true;
+		default:   return false;
 	}
 }
 
@@ -199,6 +201,7 @@ static bool recTranslateMMI1(u32 sa, u32 rd, u32 rs, u32 rt)
 		case 0x01: armEmitPABSW(rd, rt); return true;
 		case 0x02: armEmitPCEQW(rd, rs, rt); return true;
 		case 0x03: armEmitPMINW(rd, rs, rt); return true;
+		case 0x04: armEmitPADSBH(rd, rs, rt); return true;
 		case 0x05: armEmitPABSH(rd, rt); return true;
 		case 0x06: armEmitPCEQH(rd, rs, rt); return true;
 		case 0x07: armEmitPMINH(rd, rs, rt); return true;
@@ -212,31 +215,36 @@ static bool recTranslateMMI1(u32 sa, u32 rd, u32 rs, u32 rt)
 		case 0x18: armEmitPADDUB(rd, rs, rt); return true;
 		case 0x19: armEmitPSUBUB(rd, rs, rt); return true;
 		case 0x1A: armEmitPEXTUB(rd, rs, rt); return true;
-		default:   return false; // PADSBH, QFSRV
+		// 0x1B QFSRV: shift amount comes from the runtime SA register (cpuRegs.sa),
+		// not the instruction — left to the interpreter.
+		default:   return false;
 	}
 }
 
 static bool recTranslateMMI2(u32 sa, u32 rd, u32 rs, u32 rt)
 {
+	// Indices mirror R5900OpcodeTables.cpp tbl_MMI2[(op>>6)&0x1F].
 	switch (sa)
 	{
 		case 0x00: armEmitPMADDW(rd, rs, rt); return true;
-		case 0x01: armEmitPMADDH(rd, rs, rt); return true;
 		case 0x02: armEmitPSLLVW(rd, rs, rt); return true;
 		case 0x03: armEmitPSRLVW(rd, rs, rt); return true;
 		case 0x04: armEmitPMSUBW(rd, rs, rt); return true;
-		case 0x05: armEmitPMSUBH(rd, rs, rt); return true;
-		case 0x08: armEmitPMULTW(rd, rs, rt); return true;
-		case 0x09: armEmitPMULTH(rd, rs, rt); return true;
+		case 0x08: armEmitPMFHI(rd); return true;
+		case 0x09: armEmitPMFLO(rd); return true;
 		case 0x0A: armEmitPINTH(rd, rs, rt); return true;
-		case 0x0C: armEmitPHMADH(rd, rs, rt); return true;
-		case 0x0D: armEmitPHMSBH(rd, rs, rt); return true;
+		case 0x0C: armEmitPMULTW(rd, rs, rt); return true;
 		case 0x0E: armEmitPCPYLD(rd, rs, rt); return true;
+		case 0x10: armEmitPMADDH(rd, rs, rt); return true;
+		case 0x11: armEmitPHMADH(rd, rs, rt); return true;
 		case 0x12: armEmitPAND(rd, rs, rt); return true;
 		case 0x13: armEmitPXOR(rd, rs, rt); return true;
-		case 0x16: armEmitPEXEH(rd, rt); return true;
-		case 0x17: armEmitPREVH(rd, rt); return true;
-		case 0x18: armEmitPEXEW(rd, rt); return true;
+		case 0x14: armEmitPMSUBH(rd, rs, rt); return true;
+		case 0x15: armEmitPHMSBH(rd, rs, rt); return true;
+		case 0x1A: armEmitPEXEH(rd, rt); return true;
+		case 0x1B: armEmitPREVH(rd, rt); return true;
+		case 0x1C: armEmitPMULTH(rd, rs, rt); return true;
+		case 0x1E: armEmitPEXEW(rd, rt); return true;
 		case 0x1F: armEmitPROT3W(rd, rt); return true;
 		default:   return false;
 	}
@@ -244,22 +252,21 @@ static bool recTranslateMMI2(u32 sa, u32 rd, u32 rs, u32 rt)
 
 static bool recTranslateMMI3(u32 sa, u32 rd, u32 rs, u32 rt)
 {
+	// Indices mirror R5900OpcodeTables.cpp tbl_MMI3[(op>>6)&0x1F].
 	switch (sa)
 	{
 		case 0x00: armEmitPMADDUW(rd, rs, rt); return true;
 		case 0x03: armEmitPSRAVW(rd, rs, rt); return true;
-		case 0x08: armEmitPMULTUW(rd, rs, rt); return true;
+		case 0x08: armEmitPMTHI(rs); return true;
+		case 0x09: armEmitPMTLO(rs); return true;
 		case 0x0A: armEmitPINTEH(rd, rs, rt); return true;
+		case 0x0C: armEmitPMULTUW(rd, rs, rt); return true;
 		case 0x0E: armEmitPCPYUD(rd, rs, rt); return true;
-		case 0x10: armEmitPMFHI(rd); return true;
-		case 0x11: armEmitPMFLO(rd); return true;
 		case 0x12: armEmitPOR(rd, rs, rt); return true;
 		case 0x13: armEmitPNOR(rd, rs, rt); return true;
-		case 0x14: armEmitPMTHI(rs); return true;
-		case 0x15: armEmitPMTLO(rs); return true;
 		case 0x1A: armEmitPEXCH(rd, rt); return true;
 		case 0x1B: armEmitPCPYH(rd, rt); return true;
-		case 0x1C: armEmitPEXCW(rd, rt); return true;
+		case 0x1E: armEmitPEXCW(rd, rt); return true;
 		default:   return false;
 	}
 }
@@ -339,18 +346,23 @@ static bool recTranslateOp(u32 op)
 				case 0x19: armEmitMULTU1(rd, rs, rt); return true;
 				case 0x1A: armEmitDIV1(rs, rt); return true;
 				case 0x1B: armEmitDIVU1(rs, rt); return true;
+				// Direct tbl_MMI entries (indexed by funct = op & 0x3F).
+				case 0x04: armEmitPLZCW(rd, rs); return true;
 				// MMI0/1/2/3 SIMD sub-groups (Phase 5.4); sub-op in `sa`.
 				case 0x08: return recTranslateMMI0(sa, rd, rs, rt);
 				case 0x28: return recTranslateMMI1(sa, rd, rs, rt);
 				case 0x09: return recTranslateMMI2(sa, rd, rs, rt);
 				case 0x29: return recTranslateMMI3(sa, rd, rs, rt);
+				// PMFHL variant is in `sa`; PMTHL is only defined for sa==0.
+				case 0x30: return armEmitPMFHL(rd, sa);
+				case 0x31: armEmitPMTHL(rs, sa); return true;
 				// Parallel shifts by immediate (Phase 5.4 continuation).
-				case 0x30: armEmitPSLLH(rd, rt, sa); return true;
-				case 0x32: armEmitPSRLH(rd, rt, sa); return true;
-				case 0x33: armEmitPSRAH(rd, rt, sa); return true;
-				case 0x38: armEmitPSLLW(rd, rt, sa); return true;
-				case 0x3A: armEmitPSRLW(rd, rt, sa); return true;
-				case 0x3B: armEmitPSRAW(rd, rt, sa); return true;
+				case 0x34: armEmitPSLLH(rd, rt, sa); return true;
+				case 0x36: armEmitPSRLH(rd, rt, sa); return true;
+				case 0x37: armEmitPSRAH(rd, rt, sa); return true;
+				case 0x3C: armEmitPSLLW(rd, rt, sa); return true;
+				case 0x3E: armEmitPSRLW(rd, rt, sa); return true;
+				case 0x3F: armEmitPSRAW(rd, rt, sa); return true;
 				default:   return false;
 			}
 

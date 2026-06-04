@@ -499,3 +499,20 @@ void armEmitPMFHI(u32 rd);
 void armEmitPMFLO(u32 rd);
 void armEmitPMTHI(u32 rs);
 void armEmitPMTLO(u32 rs);
+
+// Remaining MMI misc ops (Phase 5.4 completion).
+//   PLZCW  : count leading sign bits (ARM64 CLS) per 32-bit lane
+//   PADSBH : subtract low 4 halfwords, add high 4 (wrapping, no saturation)
+//   PEXT5  : expand four 5-bit fields to 8-bit fields per lane
+//   PPAC5  : compress four 8-bit fields to 5-bit fields per lane
+//   PMFHL  : move from HI/LO (5 variants: LW/UW/SLW/LH/SH). Returns false for an
+//            unhandled variant so the dispatcher falls back to the interpreter.
+//   PMTHL  : move to HI/LO (sa=0 only)
+// QFSRV is intentionally absent: its shift amount comes from the runtime SA
+// register (cpuRegs.sa), not the instruction, so it stays on the interpreter.
+void armEmitPLZCW(u32 rd, u32 rs);
+void armEmitPADSBH(u32 rd, u32 rs, u32 rt);
+void armEmitPEXT5(u32 rd, u32 rt);
+void armEmitPPAC5(u32 rd, u32 rt);
+bool armEmitPMFHL(u32 rd, u32 sa);
+void armEmitPMTHL(u32 rs, u32 sa);

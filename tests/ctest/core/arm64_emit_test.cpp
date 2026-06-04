@@ -357,6 +357,7 @@ namespace
 		void setLO128(const u8 v[16]) { std::memcpy(&bytes[33 * 16], v, 16); }
 		void getLO128(u8 out[16]) const { std::memcpy(out, &bytes[33 * 16], 16); }
 		void set128(u32 n, const u8 v[16]) { std::memcpy(&bytes[n * 16], v, 16); }
+		void get128(u32 n, u8 out[16]) const { std::memcpy(out, &bytes[n * 16], 16); }
 		// FPU register file: fpr[n] (32-bit) and fprc[n] (control regs, [31]=FCR31).
 		void setFPR(u32 n, u32 v) { std::memcpy(&bytes[EE_FPR_OFFSET(n)], &v, sizeof(v)); }
 		u32 getFPR(u32 n) const
@@ -2486,26 +2487,164 @@ namespace mmiref
 		rd.ul[2] = (u32)(temp1 & 0xFFFFFFFF);
 		rd.ul[3] = (u32)(temp1 >> 32);
 	}
-	// PMULTH: 16x16->32 signed multiply, 4 lanes x 2 iterations.
-	// LO.SD[n/2] = low 32 bits, HI.SD[n/2] = high 32 bits, GPR[rd].SD[n/2] = full 64-bit.
+	// PMULTH: eight 16x16->32 signed products written to LO/HI.UL[0..3]:
+	//   LO0,LO1,HI0,HI1,LO2,LO3,HI2,HI3. rd = {LO0, HI0, LO2, HI2}.
 	static void refPMULTH(MQ s, MQ t, u64& lo0, u64& hi0, u64& lo1, u64& hi1, MQ& rd)
 	{
-		s64 temp0 = (s64)(s16)s.us[0] * (s64)(s16)t.us[0];
-		lo0 = (u64)(s32)(temp0 & 0xFFFFFFFF);
-		hi0 = (u64)(s32)(temp0 >> 32);
-		rd.ul[0] = (u32)(temp0 & 0xFFFFFFFF);
-		rd.ul[1] = (u32)(temp0 >> 32);
-		s64 temp1 = (s64)(s16)s.us[4] * (s64)(s16)t.us[4];
-		lo1 = (u64)(s32)(temp1 & 0xFFFFFFFF);
-		hi1 = (u64)(s32)(temp1 >> 32);
-		rd.ul[2] = (u32)(temp1 & 0xFFFFFFFF);
-		rd.ul[3] = (u32)(temp1 >> 32);
+		uint32_t p[8];
+		for (int n = 0; n < 8; n++)
+			p[n] = (uint32_t)((int32_t)(int16_t)s.us[n] * (int32_t)(int16_t)t.us[n]);
+		lo0 = (u64)p[0] | ((u64)p[1] << 32);
+		hi0 = (u64)p[2] | ((u64)p[3] << 32);
+		lo1 = (u64)p[4] | ((u64)p[5] << 32);
+		hi1 = (u64)p[6] | ((u64)p[7] << 32);
+		rd.ul[0] = p[0]; rd.ul[1] = p[2]; rd.ul[2] = p[4]; rd.ul[3] = p[6];
 	}
 	// PMFHI/PMFLO/PMTHI/PMTLO: 128-bit moves.
 	static void refPMFHI(MQ hi, MQ& rd) { rd = hi; }
 	static void refPMFLO(MQ lo, MQ& rd) { rd = lo; }
 	static void refPMTHI(MQ rs, MQ& hi) { hi = rs; }
 	static void refPMTLO(MQ rs, MQ& lo) { lo = rs; }
+
+	// ---- Multiply-accumulate family operating on full 128-bit LO/HI ----
+	// These mirror MMI.cpp exactly: lo/hi are seeded with loIn/hiIn (so the
+	// accumulating variants are actually exercised) and rd is computed too.
+	static bool pmaddwVoodoo(int32_t rs, int32_t rt)
+	{
+		return (((rt & 0x7FFFFFFF) == 0 || (rt & 0x7FFFFFFF) == 0x7FFFFFFF) && rs != rt);
+	}
+	static void refPMADDW(MQ s, MQ t, MQ loIn, MQ hiIn, MQ& lo, MQ& hi, MQ& rd)
+	{
+		lo = loIn; hi = hiIn; rd = MQ{};
+		for (int dd = 0; dd < 2; dd++)
+		{
+			int ss = dd * 2;
+			int64_t temp = (int64_t)(int32_t)s.ul[ss] * (int64_t)(int32_t)t.ul[ss];
+			int64_t temp2 = temp + ((int64_t)(int32_t)hiIn.ul[ss] << 32);
+			if (ss == 0 && pmaddwVoodoo((int32_t)s.ul[ss], (int32_t)t.ul[ss]))
+				temp2 += 0x70000000;
+			temp2 = (int32_t)(temp2 / 4294967295);
+			int32_t loVal = (int32_t)(uint32_t)(temp & 0xffffffff) + (int32_t)loIn.ul[ss];
+			lo.ud[dd] = (uint64_t)(int64_t)loVal;
+			hi.ud[dd] = (uint64_t)(int64_t)(int32_t)temp2;
+			rd.ul[dd * 2] = lo.ul[dd * 2];
+			rd.ul[dd * 2 + 1] = hi.ul[dd * 2];
+		}
+	}
+	static void refPMADDUW(MQ s, MQ t, MQ loIn, MQ hiIn, MQ& lo, MQ& hi, MQ& rd)
+	{
+		lo = loIn; hi = hiIn; rd = MQ{};
+		for (int dd = 0; dd < 2; dd++)
+		{
+			int ss = dd * 2;
+			uint64_t tempu = ((uint64_t)loIn.ul[ss] | ((uint64_t)hiIn.ul[ss] << 32)) +
+							 (uint64_t)s.ul[ss] * (uint64_t)t.ul[ss];
+			lo.ud[dd] = (uint64_t)(int64_t)(int32_t)(tempu & 0xffffffff);
+			hi.ud[dd] = (uint64_t)(int64_t)(int32_t)(tempu >> 32);
+			rd.ud[dd] = tempu;
+		}
+	}
+	static void refPMSUBW(MQ s, MQ t, MQ loIn, MQ hiIn, MQ& lo, MQ& hi, MQ& rd)
+	{
+		lo = loIn; hi = hiIn; rd = MQ{};
+		for (int dd = 0; dd < 2; dd++)
+		{
+			int ss = dd * 2;
+			int64_t temp = (int64_t)(int32_t)s.ul[ss] * (int64_t)(int32_t)t.ul[ss];
+			int64_t temp2 = ((int64_t)(int32_t)hiIn.ul[ss] << 32) - temp;
+			temp2 = (int32_t)(temp2 / 4294967295);
+			int32_t loVal = (int32_t)loIn.ul[ss] - (int32_t)(uint32_t)(temp & 0xffffffff);
+			lo.ud[dd] = (uint64_t)(int64_t)loVal;
+			hi.ud[dd] = (uint64_t)(int64_t)(int32_t)temp2;
+			rd.ul[dd * 2] = lo.ul[dd * 2];
+			rd.ul[dd * 2 + 1] = hi.ul[dd * 2];
+		}
+	}
+	// Halfword multiply-accumulate destinations LO/HI.UL[n] for n=0..7.
+	static void hwMacRd(MQ& lo, MQ& hi, MQ& rd)
+	{
+		rd.ul[0] = lo.ul[0]; rd.ul[1] = hi.ul[0]; rd.ul[2] = lo.ul[2]; rd.ul[3] = hi.ul[2];
+	}
+	static uint32_t* hwLane(MQ& lo, MQ& hi, int n)
+	{
+		static const int isHi[8] = {0, 0, 1, 1, 0, 0, 1, 1};
+		static const int idx[8] = {0, 1, 0, 1, 2, 3, 2, 3};
+		return isHi[n] ? &hi.ul[idx[n]] : &lo.ul[idx[n]];
+	}
+	static void refPMADDH(MQ s, MQ t, MQ loIn, MQ hiIn, MQ& lo, MQ& hi, MQ& rd)
+	{
+		lo = loIn; hi = hiIn; rd = MQ{};
+		for (int n = 0; n < 8; n++)
+			*hwLane(lo, hi, n) += (uint32_t)((int32_t)(int16_t)s.us[n] * (int32_t)(int16_t)t.us[n]);
+		hwMacRd(lo, hi, rd);
+	}
+	static void refPMSUBH(MQ s, MQ t, MQ loIn, MQ hiIn, MQ& lo, MQ& hi, MQ& rd)
+	{
+		lo = loIn; hi = hiIn; rd = MQ{};
+		for (int n = 0; n < 8; n++)
+			*hwLane(lo, hi, n) -= (uint32_t)((int32_t)(int16_t)s.us[n] * (int32_t)(int16_t)t.us[n]);
+		hwMacRd(lo, hi, rd);
+	}
+	// PHMADH/PHMSBH: paired horizontal, no accumulation. Even lane = temp,
+	// odd lane = firsttemp (PHMADH) or ~firsttemp (PHMSBH).
+	static void refPHMacc(MQ s, MQ t, MQ loIn, MQ hiIn, MQ& lo, MQ& hi, MQ& rd, bool sub)
+	{
+		lo = loIn; hi = hiIn; rd = MQ{};
+		const int n[4] = {0, 2, 4, 6};
+		uint32_t* evenDst[4] = {&lo.ul[0], &hi.ul[0], &lo.ul[2], &hi.ul[2]};
+		uint32_t* oddDst[4] = {&lo.ul[1], &hi.ul[1], &lo.ul[3], &hi.ul[3]};
+		for (int k = 0; k < 4; k++)
+		{
+			int32_t firsttemp = (int32_t)(int16_t)s.us[n[k] + 1] * (int32_t)(int16_t)t.us[n[k] + 1];
+			int32_t prod = (int32_t)(int16_t)s.us[n[k]] * (int32_t)(int16_t)t.us[n[k]];
+			*evenDst[k] = (uint32_t)(sub ? (firsttemp - prod) : (firsttemp + prod));
+			*oddDst[k] = (uint32_t)(sub ? ~firsttemp : firsttemp);
+		}
+		hwMacRd(lo, hi, rd);
+	}
+	static void refPHMADH(MQ s, MQ t, MQ loIn, MQ hiIn, MQ& lo, MQ& hi, MQ& rd) { refPHMacc(s, t, loIn, hiIn, lo, hi, rd, false); }
+	static void refPHMSBH(MQ s, MQ t, MQ loIn, MQ hiIn, MQ& lo, MQ& hi, MQ& rd) { refPHMacc(s, t, loIn, hiIn, lo, hi, rd, true); }
+
+	// ---- Misc MMI ops ----
+	static MQ refPLZCW(MQ s)
+	{
+		MQ d{};
+		auto cls = [](int32_t v) -> uint32_t {
+			uint32_t u = (v < 0) ? ~(uint32_t)v : (uint32_t)v;
+			uint32_t lz = 0;
+			if (u == 0)
+				lz = 32;
+			else
+				while ((u & 0x80000000u) == 0) { lz++; u <<= 1; }
+			return lz - 1; // CountLeadingSignBits - 1
+		};
+		d.ul[0] = cls((int32_t)s.ul[0]);
+		d.ul[1] = cls((int32_t)s.ul[1]);
+		return d; // upper 64 bits stay zero (matches a zero-initialised rd)
+	}
+	static MQ refPADSBH(MQ s, MQ t)
+	{
+		MQ d{};
+		for (int n = 0; n < 4; n++) d.us[n] = (uint16_t)(s.us[n] - t.us[n]);
+		for (int n = 4; n < 8; n++) d.us[n] = (uint16_t)(s.us[n] + t.us[n]);
+		return d;
+	}
+	static MQ refPEXT5(MQ t)
+	{
+		MQ d{};
+		for (int n = 0; n < 4; n++)
+			d.ul[n] = ((t.ul[n] & 0x1F) << 3) | ((t.ul[n] & 0x3E0) << 6) |
+					  ((t.ul[n] & 0x7C00) << 9) | ((t.ul[n] & 0x8000) << 16);
+		return d;
+	}
+	static MQ refPPAC5(MQ t)
+	{
+		MQ d{};
+		for (int n = 0; n < 4; n++)
+			d.ul[n] = ((t.ul[n] >> 3) & 0x1F) | ((t.ul[n] >> 6) & 0x3E0) |
+					  ((t.ul[n] >> 9) & 0x7C00) | ((t.ul[n] >> 16) & 0x8000);
+		return d;
+	}
 
 	// Two reusable input vectors with a spread of sign / saturation edge values.
 	static MQ inA() { return make({0x01, 0x00, 0x00, 0x80, 0xFF, 0xFF, 0xFF, 0x7F, 0x05, 0xF0, 0x34, 0x12, 0x00, 0x00, 0x00, 0x80}); }
@@ -2716,6 +2855,7 @@ namespace
 
 MMI_MAC_TEST(PMULTW)
 MMI_MAC_TEST(PMULTUW)
+MMI_MAC_TEST(PMULTH)
 
 // HI/LO move tests (PMFHI/PMFLO/PMTHI/PMTLO).
 TEST(Arm64EmitEE, MMI_PMFHI)
@@ -2792,6 +2932,162 @@ TEST(Arm64EmitEE, MMI_DiscardZeroDest)
 	regs.set128(9, a.uc);
 	RunEEGen(regs, [] { armEmitPADDW(/*rd*/ 0, /*rs*/ 8, /*rt*/ 9); });
 	EXPECT_EQ(regs.get64(0), 0u); // $zero stays zero
+}
+
+// Multiply-accumulate tests with nonzero LO/HI seeds, so the accumulating
+// variants actually exercise the accumulate path. Reference is over full 128-bit
+// LO/HI like the interpreter.
+namespace
+{
+	struct AccResult { MQ lo, hi, rd; };
+
+	AccResult runMMIMACAcc(void (*gen)(u32, u32, u32), MQ s, MQ t, MQ loIn, MQ hiIn)
+	{
+		GuestRegs regs;
+		regs.setLO128(loIn.uc);
+		regs.setHI128(hiIn.uc);
+		regs.set128(8, s.uc);
+		regs.set128(9, t.uc);
+		RunEEGen(regs, [gen] { gen(/*rd*/ 10, /*rs*/ 8, /*rt*/ 9); });
+		AccResult r{};
+		regs.getLO128(r.lo.uc);
+		regs.getHI128(r.hi.uc);
+		regs.get128(10, r.rd.uc);
+		return r;
+	}
+} // namespace
+
+#define MMI_MACACC_TEST(NAME)                                                   \
+	TEST(Arm64EmitEE, MMI_##NAME)                                               \
+	{                                                                          \
+		MQ s = mmiref::inA(), t = mmiref::inB();                               \
+		MQ loIn = mmiref::inB(), hiIn = mmiref::inA();                         \
+		AccResult j = runMMIMACAcc(armEmit##NAME, s, t, loIn, hiIn);           \
+		MQ rlo{}, rhi{}, rrd{};                                                 \
+		mmiref::ref##NAME(s, t, loIn, hiIn, rlo, rhi, rrd);                    \
+		EXPECT_TRUE(eqMQ(j.lo, rlo)) << #NAME " LO";                           \
+		EXPECT_TRUE(eqMQ(j.hi, rhi)) << #NAME " HI";                           \
+		EXPECT_TRUE(eqMQ(j.rd, rrd)) << #NAME " rd";                           \
+	}
+
+MMI_MACACC_TEST(PMADDW)
+MMI_MACACC_TEST(PMADDUW)
+MMI_MACACC_TEST(PMSUBW)
+MMI_MACACC_TEST(PMADDH)
+MMI_MACACC_TEST(PMSUBH)
+MMI_MACACC_TEST(PHMADH)
+MMI_MACACC_TEST(PHMSBH)
+
+// Misc MMI ops.
+TEST(Arm64EmitEE, MMI_PLZCW)
+{
+	EXPECT_TRUE(eqMQ(runMMIUn(armEmitPLZCW, mmiref::inA()), mmiref::refPLZCW(mmiref::inA())));
+	EXPECT_TRUE(eqMQ(runMMIUn(armEmitPLZCW, mmiref::inB()), mmiref::refPLZCW(mmiref::inB())));
+	// Edge values: 0 -> 31, -1 -> 31, 1 -> 30, 0x40000000 -> 0.
+	MQ edge = mmiref::make({0, 0, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF, 1, 0, 0, 0, 0, 0, 0, 0x40});
+	EXPECT_TRUE(eqMQ(runMMIUn(armEmitPLZCW, edge), mmiref::refPLZCW(edge)));
+}
+
+TEST(Arm64EmitEE, MMI_PADSBH)
+{
+	MQ a = mmiref::inA(), b = mmiref::inB();
+	EXPECT_TRUE(eqMQ(runMMIBin(armEmitPADSBH, a, b), mmiref::refPADSBH(a, b)));
+	EXPECT_TRUE(eqMQ(runMMIBin(armEmitPADSBH, b, a), mmiref::refPADSBH(b, a)));
+}
+
+TEST(Arm64EmitEE, MMI_PEXT5)
+{
+	EXPECT_TRUE(eqMQ(runMMIUn(armEmitPEXT5, mmiref::inA()), mmiref::refPEXT5(mmiref::inA())));
+	EXPECT_TRUE(eqMQ(runMMIUn(armEmitPEXT5, mmiref::inB()), mmiref::refPEXT5(mmiref::inB())));
+}
+
+TEST(Arm64EmitEE, MMI_PPAC5)
+{
+	EXPECT_TRUE(eqMQ(runMMIUn(armEmitPPAC5, mmiref::inA()), mmiref::refPPAC5(mmiref::inA())));
+	EXPECT_TRUE(eqMQ(runMMIUn(armEmitPPAC5, mmiref::inB()), mmiref::refPPAC5(mmiref::inB())));
+}
+
+// PMFHL reads HI/LO and writes rd. Reference replicas of MMI.cpp per variant.
+namespace
+{
+	MQ runPMFHL(MQ lo, MQ hi, u32 sa)
+	{
+		GuestRegs regs;
+		regs.setLO128(lo.uc);
+		regs.setHI128(hi.uc);
+		RunEEGen(regs, [sa] { armEmitPMFHL(/*rd*/ 10, sa); });
+		MQ out{};
+		regs.get128(10, out.uc);
+		return out;
+	}
+	MQ refPMFHL(MQ lo, MQ hi, u32 sa)
+	{
+		MQ d{};
+		auto clamp16 = [](int32_t src) -> uint16_t {
+			if (src > 0x7fff) return 0x7fff;
+			if (src < -0x8000) return 0x8000;
+			return (uint16_t)src;
+		};
+		switch (sa)
+		{
+		case 0x00: d.ul[0] = lo.ul[0]; d.ul[1] = hi.ul[0]; d.ul[2] = lo.ul[2]; d.ul[3] = hi.ul[2]; break;
+		case 0x01: d.ul[0] = lo.ul[1]; d.ul[1] = hi.ul[1]; d.ul[2] = lo.ul[3]; d.ul[3] = hi.ul[3]; break;
+		case 0x02:
+			for (int k = 0; k < 2; k++)
+			{
+				int64_t t = ((uint64_t)hi.ul[2 * k] << 32) | (uint64_t)lo.ul[2 * k];
+				if (t >= 0x000000007fffffffLL) d.ud[k] = 0x000000007fffffffULL;
+				else if (t <= -0x80000000LL) d.ud[k] = 0xffffffff80000000ULL;
+				else d.ud[k] = (uint64_t)(int64_t)(int32_t)lo.ul[2 * k];
+			}
+			break;
+		case 0x03:
+			d.us[0] = lo.us[0]; d.us[1] = lo.us[2]; d.us[2] = hi.us[0]; d.us[3] = hi.us[2];
+			d.us[4] = lo.us[4]; d.us[5] = lo.us[6]; d.us[6] = hi.us[4]; d.us[7] = hi.us[6];
+			break;
+		case 0x04:
+			d.us[0] = clamp16((int32_t)lo.ul[0]); d.us[1] = clamp16((int32_t)lo.ul[1]);
+			d.us[2] = clamp16((int32_t)hi.ul[0]); d.us[3] = clamp16((int32_t)hi.ul[1]);
+			d.us[4] = clamp16((int32_t)lo.ul[2]); d.us[5] = clamp16((int32_t)lo.ul[3]);
+			d.us[6] = clamp16((int32_t)hi.ul[2]); d.us[7] = clamp16((int32_t)hi.ul[3]);
+			break;
+		}
+		return d;
+	}
+} // namespace
+
+TEST(Arm64EmitEE, MMI_PMFHL)
+{
+	// LO/HI seeds chosen to hit the SLW/SH clamp boundaries.
+	MQ lo = mmiref::make({0x01, 0x00, 0x00, 0x80, 0xFF, 0xFF, 0xFF, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x34, 0x12, 0x00, 0x00});
+	MQ hi = mmiref::make({0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x7F});
+	for (u32 sa : {0x00u, 0x01u, 0x02u, 0x03u, 0x04u})
+		EXPECT_TRUE(eqMQ(runPMFHL(lo, hi, sa), refPMFHL(lo, hi, sa))) << "PMFHL sa=" << sa;
+}
+
+// PMTHL.LW writes only the even LO/HI words, leaving the odd ones untouched.
+TEST(Arm64EmitEE, MMI_PMTHL)
+{
+	MQ rs = mmiref::inA();
+	GuestRegs regs;
+	MQ loSeed = mmiref::make({0xAA, 0xAA, 0xAA, 0xAA, 0xBB, 0xBB, 0xBB, 0xBB, 0xCC, 0xCC, 0xCC, 0xCC, 0xDD, 0xDD, 0xDD, 0xDD});
+	MQ hiSeed = mmiref::make({0x11, 0x11, 0x11, 0x11, 0x22, 0x22, 0x22, 0x22, 0x33, 0x33, 0x33, 0x33, 0x44, 0x44, 0x44, 0x44});
+	regs.setLO128(loSeed.uc);
+	regs.setHI128(hiSeed.uc);
+	regs.set128(9, rs.uc);
+	RunEEGen(regs, [] { armEmitPMTHL(/*rs*/ 9, /*sa*/ 0); });
+	MQ lo{}, hi{};
+	regs.getLO128(lo.uc);
+	regs.getHI128(hi.uc);
+	// Even words come from rs; odd words keep their seed.
+	EXPECT_EQ(lo.ul[0], rs.ul[0]);
+	EXPECT_EQ(hi.ul[0], rs.ul[1]);
+	EXPECT_EQ(lo.ul[2], rs.ul[2]);
+	EXPECT_EQ(hi.ul[2], rs.ul[3]);
+	EXPECT_EQ(lo.ul[1], loSeed.ul[1]);
+	EXPECT_EQ(lo.ul[3], loSeed.ul[3]);
+	EXPECT_EQ(hi.ul[1], hiSeed.ul[1]);
+	EXPECT_EQ(hi.ul[3], hiSeed.ul[3]);
 }
 
 #endif // __aarch64__

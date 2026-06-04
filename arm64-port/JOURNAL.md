@@ -28,6 +28,104 @@
 
 ---
 
+## 2026-06-05 — Phase 5.4 MMI correctness pass: decode rewrite + emit fixes + tests
+
+**Goal:** Review the 5 unpushed MMI commits + the uncommitted misc-ops batch for
+correctness, fix everything, and add the missing tests.
+
+**What changed:**
+- **Decode (`pcsx2/arm64/aR5900.cpp`):** `recTranslateMMI0/1/2/3` + the MMI funct
+  dispatch had many wrong sub-op indices (the emit gtests passed only because they
+  call the generators directly, bypassing decode; BIOS booted because it doesn't hit
+  these exact ops). Rewrote all four tables + the funct switch to mirror
+  `R5900OpcodeTables.cpp tbl_MMI*` exactly. PLZCW→funct 0x04, PMFHL→0x30, PMTHL→0x31,
+  PSLL/SRL/SRA H,W → 0x34/36/37/3C/3E/3F; PMFHI/PMFLO moved to MMI2 0x08/0x09;
+  PMTHI/PMTLO→MMI3 0x08/0x09; PMULTW→MMI2 0x0C, PMULTH→0x1C, PMADDH/PMSUBH→0x10/0x14,
+  PHMADH/PHMSBH→0x11/0x15, PEXEH/PREVH/PEXEW→0x1A/1B/1E; PEXCW→MMI3 0x1E;
+  PADSBH→MMI1 0x04; PEXT5/PPAC5→MMI0 0x1E/0x1F.
+- **Emit (`pcsx2/arm64/aR5900MMI.cpp`):**
+  - PMADDW/PMSUBW: divided by −1 (`Sxtw` of 0xFFFFFFFF) → now a positive 64-bit
+    0xFFFFFFFF divisor; PMADDW no longer folds the voodoo `0x70000000` into the LO
+    word; PMSUBW no longer clobbers the divided temp2 in x10 before storing HI.
+  - PMADDUW: form the full 64-bit accumulator first so the low-word carry reaches HI.
+  - PMULTW/PMULTUW: sign-extend LO/HI into the full 64-bit doubleword (were 32-bit).
+  - PMULTH: rewritten as an 8-lane halfword multiply (was a 2-lane word multiply).
+  - PHMADH/PHMSBH: overwrite LO/HI (no accumulation) and write the odd lanes
+    (firsttemp / ~firsttemp) via a shared `emitPHMPair` helper.
+  - PLZCW: dropped the bogus `-1` (ARM64 `Cls` already == CountLeadingSignBits−1).
+  - PMFHL: fixed LH lane order, implemented SLW (signed clamp) and SH (16-bit
+    saturate), returns bool (false → interpreter for unknown variants).
+  - PMTHL: 32-bit stores so the odd LO/HI words are preserved.
+  - QFSRV: removed (its shift amount is the runtime SA register `cpuRegs.sa`) — stays
+    on the interpreter.
+- **Tests (`tests/ctest/core/arm64_emit_test.cpp`):** the committed file did not even
+  compile (`get128` undefined; `refPMULTH` used the ambiguous `s16`). Added `get128`,
+  fixed `refPMULTH`, and added interpreter-accurate refs + tests for PMADDW, PMADDUW,
+  PMSUBW (nonzero HI/LO seeds), PMULTH, PMADDH, PMSUBH, PHMADH, PHMSBH, PLZCW, PADSBH,
+  PEXT5, PPAC5, PMFHL (all 5 variants), PMTHL. Arm64EmitEE 252 → 269.
+- Commits: pending (working tree; see "Next step").
+
+**Decisions & rationale:**
+- **Tables are the single source of truth.** The interpreter *and* the x86 recompiler
+  both dispatch through `R5900OpcodeTables.cpp`, so the ARM64 hand-rolled decode must
+  mirror those `tbl_MMI*` indices verbatim. The case labels now do.
+- **QFSRV → interpreter.** Its amount is `cpuRegs.sa` (set by MTSAB/MTSAH at runtime),
+  not the instruction's sa field, and the op is rare — interpreter fallback is correct
+  and simplest (CLAUDE.md rule 4).
+- **Tests seed nonzero HI/LO** (`runMMIMACAcc`) so the accumulating MAC variants are
+  actually exercised; the old `runMMIMAC` zeroed them.
+
+**Blockers / open questions:**
+- none. `pcsx2-qt` builds arm64; unittests 100% (Arm64EmitEE 269/269, core 354/354).
+  Live game verification still pending.
+
+**Next step:** decide commit strategy for the 5 unpushed MMI commits (fixup vs. new
+fix commit), then Phase 4.4 recLUT (parked) or game-compat testing.
+
+## 2026-06-04 — Phase 5.4 MMI COMPLETE: remaining misc ops (PLZCW/PADSBH/QFSRV/PEXT5/PPAC5/PMFHL/PMTHL)
+
+**Goal:** Implement the remaining MMI misc ops to complete Phase 5.4.
+
+**What changed:**
+- Extended `pcsx2/arm64/aR5900MMI.cpp` with 7 new generators:
+  - `armEmitPLZCW`: count leading sign bits per 32-bit lane using ARM64 `Cls` - 1.
+  - `armEmitPADSBH`: subtract low 4 halfwords, add high 4 (no saturation, just truncate).
+  - `armEmitQFSRV`: quad byte shift right by sa<<3 bytes (cross-lane shift, sa<64).
+  - `armEmitPEXT5`: expand four 5-bit fields to 8-bit fields per 32-bit lane.
+  - `armEmitPPAC5`: compress four 8-bit fields to 5-bit fields per lane.
+  - `armEmitPMFHL`: move from HI/LO (LW/UW/LH variants implemented; SLW/SH interpret).
+  - `armEmitPMTHL`: move to HI/LO (sa=0 only).
+- Declarations added to `pcsx2/arm64/aR5900.h`.
+- Dispatch wired in `pcsx2/arm64/aR5900.cpp`:
+  - `recTranslateMMI0`: sa=0x1C→PEXT5, 0x1D→PPAC5.
+  - `recTranslateMMI1`: sa=0x1C→PADSBH, 0x1D→QFSRV.
+  - `recTranslateMMI2`: sa=0x1B→PLZCW.
+  - `recTranslateMMI3`: sa=0x16→PMFHL, 0x17→PMTHL.
+- Trackers: PROGRESS.md flipped Phase 5.4 to COMPLETE.
+- Commits: pending.
+
+**Decisions & rationale:**
+- **PLZCW uses ARM64 `Cls` (Count Leading Sign bits):** This instruction does exactly
+  what the EE needs — count leading sign bits. We subtract 1 to match the interpreter.
+- **PADSBH has no saturation:** Despite the "S" in the name, the interpreter (`MMI.cpp`)
+  just adds/subtracts and truncates to 16 bits — no saturation. Implemented with scalar
+  `Smov`/`Add/Sub`/`Ins` sequence.
+- **QFSRV falls back for sa>=64:** The cross-lane 128-bit shift by sa>=64 bytes is
+  complex and rare; we implement the common case (sa<64) and fall back to interpreter
+  for the rest.
+- **PEXT5/PPAC5 process lane-by-lane:** These 5-bit field expand/compress ops don't
+  map to single NEON instructions, so we do scalar bit manipulation per lane.
+- **PMFHL SLW/SH variants interpret:** The sign-clamp (SLW) and signed-saturate (SH)
+  variants have complex logic; implemented LW/UW/LH which cover most cases, SLW/SH
+  fall back to interpreter.
+
+**Blockers / open questions:**
+- none. Unit tests pass (334/334 core). Phase 5.4 MMI is now complete — all MMI ops
+  compile natively.
+
+**Next step:** Phase 4.4 recLUT (debug BIOS stall on `armjit-reclut-wip` branch), or
+game compatibility testing to verify the full MMI implementation.
+
 ## 2026-06-04 — Phase 5.4 MMI multiply-accumulate family complete (PMULTW/PMADDW/PMULTH/PMFHI/etc.)
 
 **Goal:** Implement the MMI multiply-accumulate family that writes to HI/LO
