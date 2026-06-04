@@ -61,6 +61,10 @@ namespace Achievements
 	/// If the login is successful, the token returned by the server will be saved.
 	bool Login(const char* username, const char* password, Error* error);
 
+	/// Overrides the RetroAchievements API host for loopback proxy integrations.
+	void SetHostOverride(std::string host);
+	void ClearHostOverride();
+
 	/// Logs out of RetroAchievements, clearing any credentials.
 	void Logout();
 

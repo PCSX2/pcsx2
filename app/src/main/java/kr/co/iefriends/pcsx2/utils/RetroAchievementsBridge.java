@@ -20,6 +20,7 @@ By MoonPower (Momo-AUX1) GPLv3 License
 
 package kr.co.iefriends.pcsx2.utils;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -29,6 +30,8 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+
+import kr.co.iefriends.pcsx2.NativeApp;
 
 public final class RetroAchievementsBridge {
 
@@ -212,6 +215,15 @@ public final class RetroAchievementsBridge {
         sMainHandler.post(runnable);
     }
 
+    private static void cacheHardcorePreference(boolean enabled) {
+        Context context = NativeApp.getContext();
+        if (context == null) {
+            return;
+        }
+
+        RetroAchievementsHostOverrideReceiver.cacheHardcorePreference(context, enabled);
+    }
+
     @SuppressWarnings("unused") // Called from native
     static void notifyLoginRequested(int reason) {
         postToMain(() -> {
@@ -263,6 +275,8 @@ public final class RetroAchievementsBridge {
         synchronized (RetroAchievementsBridge.class) {
             sLastState = state;
         }
+
+        cacheHardcorePreference(state.hardcorePreference);
 
         postToMain(() -> {
             Listener listener = sListener;

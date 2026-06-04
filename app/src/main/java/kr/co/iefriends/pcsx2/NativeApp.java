@@ -11,6 +11,7 @@ import java.lang.ref.WeakReference;
 
 import kr.co.iefriends.pcsx2.activities.MainActivity;
 import kr.co.iefriends.pcsx2.utils.DataDirectoryManager;
+import kr.co.iefriends.pcsx2.utils.RetroAchievementsHostOverrideReceiver;
 
 public class NativeApp {
 	static {
@@ -56,6 +57,14 @@ public class NativeApp {
 			externalFilesDir = context.getDataDir();
 		}
 		initialize(externalFilesDir.getAbsolutePath(), android.os.Build.VERSION.SDK_INT);
+
+		String achievementsHostOverride = RetroAchievementsHostOverrideReceiver.getHostOverride(context);
+		if (!TextUtils.isEmpty(achievementsHostOverride)) {
+			setAchievementsHostOverride(achievementsHostOverride);
+		} else if (RetroAchievementsHostOverrideReceiver.hasPendingHardcoreRestore(context)) {
+			clearAchievementsHostOverride(true, RetroAchievementsHostOverrideReceiver.getPendingHardcoreRestoreValue(context));
+			RetroAchievementsHostOverrideReceiver.clearPendingHardcoreRestore(context);
+		}
 	}
 
 	public static void setDataRootOverride(String path) {
@@ -112,6 +121,8 @@ public class NativeApp {
 
 	public static native void setSetting(String section, String key, String type, String value);
 	public static native String getSetting(String section, String key, String type);
+	public static native void setAchievementsHostOverride(String host);
+	public static native void clearAchievementsHostOverride(boolean restoreHardcore, boolean hardcoreEnabled);
 
 	public static native void onNativeSurfaceCreated();
 	public static native void onNativeSurfaceChanged(Surface surface, int w, int h);

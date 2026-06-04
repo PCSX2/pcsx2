@@ -186,6 +186,7 @@ namespace Achievements
 	static void CloseLeaderboard();
 
 	static bool s_hardcore_mode = false;
+	static std::string s_host_override;
 
 #ifdef ENABLE_RAINTEGRATION
 	static bool s_using_raintegration = false;
@@ -442,6 +443,8 @@ bool Achievements::Initialize()
 	if (!CreateClient(&s_client, &s_http_downloader))
 		return false;
 
+	rc_client_set_host(s_client, s_host_override.empty() ? nullptr : s_host_override.c_str());
+
 	// Hardcore starts off. We enable it on first boot.
 	s_hardcore_mode = false;
 
@@ -509,6 +512,26 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownlo
 
 	*client = new_client;
 	return true;
+}
+
+void Achievements::SetHostOverride(std::string host)
+{
+	if (IsUsingRAIntegration())
+		return;
+
+	auto lock = GetLock();
+	s_host_override = std::move(host);
+	rc_client_set_host(s_client, s_host_override.empty() ? nullptr : s_host_override.c_str());
+}
+
+void Achievements::ClearHostOverride()
+{
+	if (IsUsingRAIntegration())
+		return;
+
+	auto lock = GetLock();
+	s_host_override.clear();
+	rc_client_set_host(s_client, nullptr);
 }
 
 void Achievements::DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
