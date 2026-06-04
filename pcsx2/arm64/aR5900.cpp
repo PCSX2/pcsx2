@@ -73,15 +73,50 @@ static void recStep()
 }
 
 // --------------------------------------------------------------------------------------
-//  Minimal block compile loop (Phase 1.4)
+//  Single-instruction decode + dispatch (Phase 2.3)
 // --------------------------------------------------------------------------------------
-// Compile a single block at the rolling emit cursor and return its entry point.
-// This is the smallest possible exercise of the production emission lifecycle
-// (armSetAsmPtr -> armStartBlock -> emit -> armEndBlock) against the real EE code
-// cache + constant pool. The body is a placeholder: a couple of NOPs followed by a
-// RET back to the caller. Later phases replace the NOPs with the ARM64 translation
-// of 1-2 MIPS ops read from cpuRegs.pc, and the bare RET with a tail-jump into the
-// dispatcher (block LUT + linking + event tests land in Phase 4).
+// MIPS primary opcodes we can translate so far. Everything else falls back to a
+// NOP placeholder for now (interpreter remains the active provider — see below).
+enum : u32
+{
+	OP_LW = 0x23,
+	OP_SW = 0x2b,
+};
+
+// Translate a single guest instruction (cpuRegs.code) into the open block. Returns
+// true if a real generator handled it, false if it fell through to a placeholder.
+// Decodes the MIPS fields explicitly and hands them to the Phase 2.3 load/store
+// generators (which read/write guest GPRs through RESTATEPTR and route memory
+// access via the slow-path vtlb helpers).
+static bool recTranslateOp(u32 op)
+{
+	const u32 opcode = op >> 26;
+	const u32 rs = (op >> 21) & 0x1f;
+	const u32 rt = (op >> 16) & 0x1f;
+	const s32 imm = static_cast<s16>(op);
+
+	switch (opcode)
+	{
+		case OP_LW: armEmitLoadGpr(32, true, rt, rs, imm); return true;
+		case OP_SW: armEmitStoreGpr(32, rt, rs, imm); return true;
+		default: return false;
+	}
+}
+
+// --------------------------------------------------------------------------------------
+//  Minimal block compile loop (Phase 1.4, extended in 2.3)
+// --------------------------------------------------------------------------------------
+// Compile a single guest instruction at cpuRegs.pc into a block and return its
+// entry point. This exercises the production emission lifecycle (armSetAsmPtr ->
+// armStartBlock -> emit -> armEndBlock) against the real EE code cache, now with a
+// real MIPS decode + dispatch for LW/SW instead of a fixed NOP body.
+//
+// This path is still INERT in normal operation: the interpreter stays the active
+// Cpu provider (recExecute is never entered — Phase 4 adds the enter-trampoline
+// that pins RESTATEPTR=&cpuRegs, the block LUT, PC/cycle management, and event
+// tests). It is groundwork validated by compile-clean + the Arm64EmitEE unit tests
+// that exercise the generators directly; full guest-memory round-trip validation
+// is Phase 2.4.
 static u8* recCompileBlock()
 {
 	// Whole-cache reset once we run past the code region into the constant-pool tail.
@@ -92,9 +127,11 @@ static u8* recCompileBlock()
 
 	u8* const entry = armStartBlock();
 
-	// Placeholder block body. TODO(Phase 2/3): translate guest ops here.
-	armAsm->Nop();
-	armAsm->Nop();
+	const u32 op = memRead32(cpuRegs.pc);
+	cpuRegs.code = op;
+	if (!recTranslateOp(op))
+		armAsm->Nop(); // unhandled opcode placeholder (most ops, until later phases)
+
 	armAsm->Ret();
 
 	recPtr = armEndBlock();
