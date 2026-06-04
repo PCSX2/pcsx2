@@ -264,12 +264,20 @@ static bool recTranslateOp(u32 op)
 						case 0x1F: armEmitMSUBA_S(rd, rt); return true;     // MSUBA_S (-> ACC)
 						case 0x28: armEmitMAX_S(sa, rd, rt); return true;   // MAX_S
 						case 0x29: armEmitMIN_S(sa, rd, rt); return true;   // MIN_S
+						case 0x24: armEmitCVT_W(sa, rd); return true;       // CVT_W (fd=sa, fs=rd)
+						case 0x30: armEmitC_F(rd, rt); return true;  // C.F  (set FCR31 C-bit; fs=rd, ft=rt)
+						case 0x32: armEmitC_EQ(rd, rt); return true; // C.EQ
+						case 0x34: armEmitC_LT(rd, rt); return true; // C.LT
+						case 0x36: armEmitC_LE(rd, rt); return true; // C.LE
 						// Bit-exact ops (Phase 5.2a).
 						case 0x05: armEmitABS_S(sa, rd); return true; // ABS_S (fd=sa, fs=rd)
 						case 0x06: armEmitMOV_S(sa, rd); return true; // MOV_S
 						case 0x07: armEmitNEG_S(sa, rd); return true; // NEG_S
 						default:   return false;
 					}
+				case 0x14: // COP1_W: only CVT_S (funct 0x20); fd=sa, fs=rd.
+					if (funct == 0x20) { armEmitCVT_S(sa, rd); return true; }
+					return false;
 				default: return false;
 			}
 

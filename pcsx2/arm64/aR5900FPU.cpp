@@ -34,6 +34,7 @@ static constexpr u32 FPUflagSO = 0x00000010; // overflow (sticky)
 static constexpr u32 FPUflagSU = 0x00000008; // underflow (sticky)
 static constexpr u32 FPUflagSI = 0x00000040; // invalid operation (sticky)
 static constexpr u32 FPUflagSD = 0x00000020; // divide by zero (sticky)
+static constexpr u32 FPUflagC = 0x00800000;  // compare condition bit
 
 // IEEE-754 single-precision sentinel bit patterns used by the EE clamp logic.
 static constexpr u32 kPosInfinity = 0x7f800000; // exponent all-ones, mantissa zero
@@ -481,3 +482,74 @@ static void emitFpuMinMax(bool isMax, u32 fd, u32 fs, u32 ft)
 
 void armEmitMAX_S(u32 fd, u32 fs, u32 ft) { emitFpuMinMax(/*isMax*/ true, fd, fs, ft); }
 void armEmitMIN_S(u32 fd, u32 fs, u32 ft) { emitFpuMinMax(/*isMax*/ false, fd, fs, ft); }
+
+// ------------------------------------------------------------------------
+// C.EQ/C.LT/C.LE: set or clear the FCR31 C condition bit from a clamped compare.
+//   _ContVal_ = (fpuDouble(fs) cond fpuDouble(ft)) ? (_ContVal_ | C) : (_ContVal_ & ~C)
+// Both operands are fpuDouble-clamped (so finite, never NaN/inf), making the ARM
+// float condition codes a direct match for the interpreter's C++ float comparison.
+static void emitFpuCompare(a64::Condition cond, u32 fs, u32 ft)
+{
+	const a64::Register wflags = a64::w13;
+	const a64::Register wset = a64::w14;
+	const a64::Register wclr = a64::w15;
+
+	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));
+	emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));
+	armAsm->Fcmp(RSSCRATCH, RSSCRATCH2);
+	armAsm->Ldr(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+	armAsm->Orr(wset, wflags, FPUflagC);
+	armAsm->And(wclr, wflags, ~FPUflagC);
+	armAsm->Csel(wflags, wset, wclr, cond);
+	armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+}
+
+void armEmitC_F(u32 fs, u32 ft) { (void)fs; (void)ft; emitClearFCR31Flags(FPUflagC); }
+void armEmitC_EQ(u32 fs, u32 ft) { emitFpuCompare(a64::eq, fs, ft); }
+void armEmitC_LT(u32 fs, u32 ft) { emitFpuCompare(a64::lt, fs, ft); }
+void armEmitC_LE(u32 fs, u32 ft) { emitFpuCompare(a64::le, fs, ft); }
+
+// ------------------------------------------------------------------------
+// CVT_W: float -> signed int32 with the EE's saturation, no fpuDouble clamp:
+//   if (exp field <= 0x4E800000) fd = (s32)float (round toward zero)
+//   else fd = (sign) ? 0x80000000 : 0x7fffffff
+void armEmitCVT_W(u32 fd, u32 fs)
+{
+	const a64::Register w = a64::w9;
+	const a64::Register wtmp = a64::w10;
+	const a64::Register wcmp = a64::w11;
+	const a64::Register wres = a64::w12;
+	const a64::Register wneg = a64::w13;
+
+	a64::Label convert, store;
+
+	armAsm->Ldr(w, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fs)));
+	armAsm->And(wtmp, w, kExpMask);
+	armAsm->Mov(wcmp, 0x4E800000);
+	armAsm->Cmp(wtmp, wcmp);
+	armAsm->B(&convert, a64::ls); // in range (unsigned <=)
+
+	// out of range -> saturate by sign
+	armAsm->Mov(wres, 0x7fffffff);
+	armAsm->Mov(wneg, 0x80000000);
+	armAsm->Tst(w, kSignBit);
+	armAsm->Csel(wres, wneg, wres, a64::ne);
+	armAsm->B(&store);
+
+	armAsm->Bind(&convert);
+	armAsm->Fmov(RSSCRATCH, w);
+	armAsm->Fcvtzs(wres, RSSCRATCH); // round toward zero, matches (s32)float
+
+	armAsm->Bind(&store);
+	armAsm->Str(wres, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fd)));
+}
+
+// ------------------------------------------------------------------------
+// CVT_S: signed int32 (raw fpr bits) -> float. fd = (float)(s32)fpr[fs].
+void armEmitCVT_S(u32 fd, u32 fs)
+{
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fs)));
+	armAsm->Scvtf(RSSCRATCH, a64::w9);
+	armAsm->Fmov(a64::w9, RSSCRATCH);
+	armAsm->Str(a64::w9, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fd)));
+}

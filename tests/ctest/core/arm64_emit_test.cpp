@@ -1722,6 +1722,7 @@ TEST(Arm64EmitEE, SWC1_StoresFprToMemory)
 namespace fpuref {
 constexpr u32 kI = 0x00020000, kD = 0x00010000, kO = 0x00008000, kU = 0x00004000;
 constexpr u32 kSI = 0x00000040, kSD = 0x00000020, kSO = 0x00000010, kSU = 0x00000008;
+constexpr u32 kC = 0x00800000;
 
 u32 bits(float f)
 {
@@ -1862,6 +1863,26 @@ u32 fp_min(u32 a, u32 b)
 		return (sa > sb) ? a : b; // both negative -> max
 	return (sa < sb) ? a : b;     // -> min
 }
+// C.* compare: returns the updated FCR31. 'F' always clears the C bit.
+u32 ccond(char which, u32 fs, u32 ft, u32 fcr_in)
+{
+	if (which == 'F')
+		return fcr_in & ~kC;
+	const float a = fpuDouble(fs), b = fpuDouble(ft);
+	const bool c = (which == '=') ? (a == b) : (which == '<') ? (a < b) : (a <= b);
+	return c ? (fcr_in | kC) : (fcr_in & ~kC);
+}
+u32 cvtw(u32 fs)
+{
+	if ((fs & 0x7f800000u) <= 0x4e800000u)
+	{
+		float f;
+		std::memcpy(&f, &fs, sizeof(f));
+		return static_cast<u32>(static_cast<std::int32_t>(f));
+	}
+	return (fs & 0x80000000u) ? 0x80000000u : 0x7fffffffu;
+}
+u32 cvts(u32 fs) { return bits(static_cast<float>(static_cast<std::int32_t>(fs))); }
 } // namespace fpuref
 
 // fs op ft -> fpr[fd], with FCR31 flag side-effects, checked against the reference.
@@ -2158,6 +2179,113 @@ TEST(Arm64EmitEE, MIN_S_BothNegativePicksFartherFromZero)
 	RunEEGen(regs, [] { armEmitMIN_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); });
 	EXPECT_EQ(regs.getFPR(8), fpuref::fp_min(0xc0400000, 0xc0000000)); // -3.0
 	EXPECT_EQ(regs.getFPRC(31), 0u);
+}
+
+TEST(Arm64EmitEE, C_LT_TrueSetsConditionBit)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x40000000); // 2.0
+	regs.setFPR(4, 0x40400000); // 3.0
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitC_LT(/*fs*/ 3, /*ft*/ 4); });
+	EXPECT_EQ(regs.getFPRC(31), fpuref::ccond('<', 0x40000000, 0x40400000, 0)); // C set
+}
+
+TEST(Arm64EmitEE, C_LT_FalseClearsConditionBit)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x40400000); // 3.0
+	regs.setFPR(4, 0x40000000); // 2.0
+	regs.setFPRC(31, fpuref::kC); // stale C must be cleared
+	RunEEGen(regs, [] { armEmitC_LT(/*fs*/ 3, /*ft*/ 4); });
+	EXPECT_EQ(regs.getFPRC(31), fpuref::ccond('<', 0x40400000, 0x40000000, fpuref::kC)); // C cleared
+}
+
+TEST(Arm64EmitEE, C_EQ_EqualSetsConditionBit)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x40400000); // 3.0
+	regs.setFPR(4, 0x40400000); // 3.0
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitC_EQ(/*fs*/ 3, /*ft*/ 4); });
+	EXPECT_EQ(regs.getFPRC(31), fpuref::ccond('=', 0x40400000, 0x40400000, 0));
+}
+
+TEST(Arm64EmitEE, C_LE_EqualSetsConditionBit)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x40400000); // 3.0
+	regs.setFPR(4, 0x40400000); // 3.0
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitC_LE(/*fs*/ 3, /*ft*/ 4); });
+	EXPECT_EQ(regs.getFPRC(31), fpuref::ccond('L', 0x40400000, 0x40400000, 0));
+}
+
+TEST(Arm64EmitEE, C_F_AlwaysClearsConditionBit)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x40400000);
+	regs.setFPR(4, 0x40000000);
+	regs.setFPRC(31, fpuref::kC | fpuref::kO);
+	RunEEGen(regs, [] { armEmitC_F(/*fs*/ 3, /*ft*/ 4); });
+	EXPECT_EQ(regs.getFPRC(31), fpuref::ccond('F', 0, 0, fpuref::kC | fpuref::kO)); // only C cleared
+}
+
+TEST(Arm64EmitEE, CVT_W_InRangeTruncatesTowardZero)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x402df3b6); // 2.7185 -> truncates to 2
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitCVT_W(/*fd*/ 8, /*fs*/ 3); });
+	EXPECT_EQ(regs.getFPR(8), fpuref::cvtw(0x402df3b6));
+}
+
+TEST(Arm64EmitEE, CVT_W_NegativeTruncatesTowardZero)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0xc02df3b6); // -2.7185 -> -2
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitCVT_W(/*fd*/ 8, /*fs*/ 3); });
+	EXPECT_EQ(regs.getFPR(8), fpuref::cvtw(0xc02df3b6));
+}
+
+TEST(Arm64EmitEE, CVT_W_OutOfRangePositiveSaturates)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x4f000000); // 2^31, beyond the in-range exponent -> 0x7fffffff
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitCVT_W(/*fd*/ 8, /*fs*/ 3); });
+	EXPECT_EQ(regs.getFPR(8), fpuref::cvtw(0x4f000000));
+	EXPECT_EQ(regs.getFPR(8), 0x7fffffffu);
+}
+
+TEST(Arm64EmitEE, CVT_W_OutOfRangeNegativeSaturates)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0xcf000000); // -2^31 magnitude out of range -> 0x80000000
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitCVT_W(/*fd*/ 8, /*fs*/ 3); });
+	EXPECT_EQ(regs.getFPR(8), fpuref::cvtw(0xcf000000));
+	EXPECT_EQ(regs.getFPR(8), 0x80000000u);
+}
+
+TEST(Arm64EmitEE, CVT_S_IntToFloat)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 100); // integer 100 -> 100.0f
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitCVT_S(/*fd*/ 8, /*fs*/ 3); });
+	EXPECT_EQ(regs.getFPR(8), fpuref::cvts(100));
+	EXPECT_EQ(regs.getFPR(8), 0x42c80000u); // 100.0f
+}
+
+TEST(Arm64EmitEE, CVT_S_NegativeIntToFloat)
+{
+	GuestRegs regs;
+	regs.setFPR(3, static_cast<u32>(-5)); // -5 -> -5.0f
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitCVT_S(/*fd*/ 8, /*fs*/ 3); });
+	EXPECT_EQ(regs.getFPR(8), fpuref::cvts(static_cast<u32>(-5)));
 }
 
 #endif // __aarch64__

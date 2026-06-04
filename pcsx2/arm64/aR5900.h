@@ -171,6 +171,14 @@ void armEmitMADDA_S(u32 fs, u32 ft);
 void armEmitMSUBA_S(u32 fs, u32 ft);
 void armEmitMAX_S(u32 fd, u32 fs, u32 ft);
 void armEmitMIN_S(u32 fd, u32 fs, u32 ft);
+//   C.F/C.EQ/C.LT/C.LE : FCR31 C-bit = (fpuDouble(fs) cond fpuDouble(ft)); C.F always clears
+//   CVT_W : fpr[fd] = (s32)float(fpr[fs]) with EE saturation; CVT_S : fpr[fd] = (float)(s32)fpr[fs]
+void armEmitC_F(u32 fs, u32 ft);
+void armEmitC_EQ(u32 fs, u32 ft);
+void armEmitC_LT(u32 fs, u32 ft);
+void armEmitC_LE(u32 fs, u32 ft);
+void armEmitCVT_W(u32 fd, u32 fs);
+void armEmitCVT_S(u32 fd, u32 fs);
 
 // 128-bit LQ/SQ: the effective address is forced to 16-byte alignment and the
 // whole 128-bit GPR is loaded/stored via the Quad vtlb helpers (NEON q access).
