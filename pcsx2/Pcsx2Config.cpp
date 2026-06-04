@@ -747,6 +747,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	OsdShowTextureReplacements = false;
 
 	HWDownloadMode = GSHardwareDownloadMode::Enabled;
+	HWZIntegerMode = GSHardwareZIntegerMode::Disabled;
 	HWSpinGPUForReadbacks = false;
 	HWSpinCPUForReadbacks = false;
 	GPUPaletteConversion = false;
@@ -866,6 +867,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(UserHacks_TargetPageRearranging) &&
 		OpEqu(OverrideTextureBarriers) &&
 		OpEqu(DepthFeedbackMode) &&
+		OpEqu(HWZIntegerMode) &&
 
 		OpEqu(CAS_Sharpness) &&
 		OpEqu(ShadeBoost_Brightness) &&
@@ -923,6 +925,8 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		   OpEqu(OverrideTextureBarriers) &&
 		   OpEqu(DepthFeedbackMode) &&
 		   OpEqu(HWAA1) &&
+		   ((HWZIntegerMode == GSHardwareZIntegerMode::Disabled) ==
+			   (right.HWZIntegerMode == GSHardwareZIntegerMode::Disabled)) &&
 		   OpEqu(ExclusiveFullscreenControl);
 }
 
@@ -1068,6 +1072,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapIntEnumEx(TexturePreloading, "texture_preloading");
 	SettingsWrapIntEnumEx(GSDumpCompression, "GSDumpCompression");
 	SettingsWrapIntEnumEx(HWDownloadMode, "HWDownloadMode");
+	SettingsWrapIntEnumEx(HWZIntegerMode, "HWZIntegerMode");
 	SettingsWrapIntEnumEx(CASMode, "CASMode");
 	SettingsWrapBitfieldEx(CAS_Sharpness, "CASSharpness");
 	SettingsWrapBitfieldEx(Dithering, "dithering_ps2");
