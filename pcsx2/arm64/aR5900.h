@@ -83,3 +83,29 @@ void armEmitStoreGpr(u32 bits, u32 rt, u32 rs, s32 imm);
 // whole 128-bit GPR is loaded/stored via the Quad vtlb helpers (NEON q access).
 void armEmitLoadQuad(u32 rt, u32 rs, s32 imm);
 void armEmitStoreQuad(u32 rt, u32 rs, s32 imm);
+
+// --------------------------------------------------------------------------------------
+//  EE immediate arithmetic opcode generators (Phase 3.1)
+// --------------------------------------------------------------------------------------
+// Format: OP rt, rs, immediate (I-type). imm is sign-extended (_Imm_) for ADDI/… and
+// zero-extended (_ImmU_) for ANDI/ORI/XORI. $zero writes are discarded.
+//
+// ADDI/ADDIU  : Rt = s32(GPR[rs].UL[0] + imm)   (add as 32-bit, sign-extend)
+// DADDI/DADDIU: Rt = GPR[rs].UD[0] + (s64)imm   (64-bit add, no overflow check)
+// SLTI        : Rt = (GPR[rs].SD[0] <  imm) ? 1 : 0
+// SLTIU       : Rt = (GPR[rs].UD[0] < (u64)(s64)imm) ? 1 : 0
+// ANDI        : Rt = GPR[rs].UD[0] & (u64)imm_u
+// ORI         : Rt = GPR[rs].UD[0] | (u64)imm_u
+// XORI        : Rt = GPR[rs].UD[0] ^ (u64)imm_u
+// LUI         : Rt = s32(imm << 16)
+
+void armEmitADDI(u32 rt, u32 rs, s32 imm);
+void armEmitADDIU(u32 rt, u32 rs, s32 imm);
+void armEmitDADDI(u32 rt, u32 rs, s32 imm);
+void armEmitDADDIU(u32 rt, u32 rs, s32 imm);
+void armEmitSLTI(u32 rt, u32 rs, s32 imm);
+void armEmitSLTIU(u32 rt, u32 rs, s32 imm);
+void armEmitANDI(u32 rt, u32 rs, u32 imm_u);
+void armEmitORI(u32 rt, u32 rs, u32 imm_u);
+void armEmitXORI(u32 rt, u32 rs, u32 imm_u);
+void armEmitLUI(u32 rt, u32 imm);

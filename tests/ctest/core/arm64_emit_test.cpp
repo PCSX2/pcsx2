@@ -452,4 +452,136 @@ TEST(Arm64EmitEE, QuadAccessForcesAlignment)
 	EXPECT_EQ(std::memcmp(&ram[0x30], value, 16), 0) << "quad store must align the address down";
 }
 
+// --------------------------------------------------------------------------------------
+//  Phase 3.1: immediate arithmetic opcode generators
+// --------------------------------------------------------------------------------------
+
+TEST(Arm64EmitEE, ADDI_SignExtend32)
+{
+	GuestRegs regs;
+	// 0x8000'0000 + 0x7FFF = 0x8000'7FFF  (32-bit wrap, then sign-extended to 64)
+	regs.set64(2, 0xFFFF'FFFF'8000'0000ull);
+	RunEEGen(regs, [] { armEmitADDI(/*rt*/ 8, /*rs*/ 2, /*imm*/ 0x7FFF); });
+	EXPECT_EQ(regs.get64(8), 0xFFFF'FFFF'8000'7FFFull);
+}
+
+TEST(Arm64EmitEE, ADDI_ZeroImmIdentity)
+{
+	GuestRegs regs;
+	regs.set64(4, 0x1234'5678'9ABC'DEF0ull);
+	RunEEGen(regs, [] { armEmitADDI(/*rt*/ 9, /*rs*/ 4, /*imm*/ 0); });
+	// A 32-bit add with zero imm still sign-extends the low word.
+	EXPECT_EQ(regs.get64(9), 0xFFFF'FFFF'9ABC'DEF0ull);
+}
+
+TEST(Arm64EmitEE, ADDI_DiscardZero)
+{
+	GuestRegs regs;
+	regs.set64(0, 0); // $zero
+	regs.set64(5, 42);
+	RunEEGen(regs, [] { armEmitADDI(/*rt*/ 0, /*rs*/ 5, /*imm*/ 1); });
+	EXPECT_EQ(regs.get64(0), 0u) << "$zero must stay zero after ADDI targeting it";
+}
+
+TEST(Arm64EmitEE, DADDI_64bitAdd)
+{
+	GuestRegs regs;
+	regs.set64(3, 0x0000'0001'FFFF'FFFEull);
+	RunEEGen(regs, [] { armEmitDADDI(/*rt*/ 10, /*rs*/ 3, /*imm*/ 5); });
+	EXPECT_EQ(regs.get64(10), 0x0000'0002'0000'0003ull);
+}
+
+TEST(Arm64EmitEE, DADDI_NegativeImm)
+{
+	GuestRegs regs;
+	regs.set64(3, 0x0000'0000'0000'0005ull);
+	RunEEGen(regs, [] { armEmitDADDI(/*rt*/ 10, /*rs*/ 3, /*imm*/ -3); });
+	EXPECT_EQ(regs.get64(10), 0x0000'0000'0000'0002ull);
+}
+
+TEST(Arm64EmitEE, SLTI_SignedLessThan)
+{
+	GuestRegs regs;
+	regs.set64(4, -10); // signed negative
+	RunEEGen(regs, [] { armEmitSLTI(/*rt*/ 11, /*rs*/ 4, /*imm*/ -5); });
+	EXPECT_EQ(regs.get64(11), 1u) << "-10 < -5";
+
+	RunEEGen(regs, [] { armEmitSLTI(/*rt*/ 11, /*rs*/ 4, /*imm*/ -20); });
+	EXPECT_EQ(regs.get64(11), 0u) << "-10 < -20 is false";
+}
+
+TEST(Arm64EmitEE, SLTIU_UnsignedLessThan)
+{
+	GuestRegs regs;
+	regs.set64(5, 5);
+	RunEEGen(regs, [] { armEmitSLTIU(/*rt*/ 12, /*rs*/ 5, /*imm*/ 10); });
+	EXPECT_EQ(regs.get64(12), 1u) << "5 < 10";
+
+	RunEEGen(regs, [] { armEmitSLTIU(/*rt*/ 12, /*rs*/ 5, /*imm*/ 3); });
+	EXPECT_EQ(regs.get64(12), 0u) << "5 < 3 is false";
+}
+
+TEST(Arm64EmitEE, ANDI_ZeroExtended)
+{
+	GuestRegs regs;
+	regs.set64(6, 0xFFFF'FFFF'FFFF'FFFFull);
+	RunEEGen(regs, [] { armEmitANDI(/*rt*/ 13, /*rs*/ 6, /*imm_u*/ 0x00FF); });
+	EXPECT_EQ(regs.get64(13), 0x0000'0000'0000'00FFull);
+}
+
+TEST(Arm64EmitEE, ANDI_ZeroImm)
+{
+	GuestRegs regs;
+	regs.set64(6, 0xDEAD'BEEF'CAFE'BABEull);
+	RunEEGen(regs, [] { armEmitANDI(/*rt*/ 13, /*rs*/ 6, /*imm_u*/ 0); });
+	EXPECT_EQ(regs.get64(13), 0u);
+}
+
+TEST(Arm64EmitEE, ORI_ZeroExtended)
+{
+	GuestRegs regs;
+	regs.set64(7, 0x1234'5678'9ABC'DEF0ull);
+	RunEEGen(regs, [] { armEmitORI(/*rt*/ 14, /*rs*/ 7, /*imm_u*/ 0x00FF); });
+	EXPECT_EQ(regs.get64(14), 0x1234'5678'9ABC'DEFFull);
+}
+
+TEST(Arm64EmitEE, ORI_ZeroImmIdentity)
+{
+	GuestRegs regs;
+	regs.set64(7, 0xABCD'EF01'2345'6789ull);
+	RunEEGen(regs, [] { armEmitORI(/*rt*/ 14, /*rs*/ 7, /*imm_u*/ 0); });
+	EXPECT_EQ(regs.get64(14), 0xABCD'EF01'2345'6789ull);
+}
+
+TEST(Arm64EmitEE, XORI_ZeroExtended)
+{
+	GuestRegs regs;
+	regs.set64(8, 0x1234'5678'9ABC'DEF0ull);
+	RunEEGen(regs, [] { armEmitXORI(/*rt*/ 15, /*rs*/ 8, /*imm_u*/ 0x00FF); });
+	EXPECT_EQ(regs.get64(15), 0x1234'5678'9ABC'DE0Full);
+}
+
+TEST(Arm64EmitEE, LUI_SignExtend)
+{
+	GuestRegs regs;
+	// LUI rt, 0x8000  => 0x8000'0000 sign-extended = 0xFFFF'FFFF'8000'0000
+	RunEEGen(regs, [] { armEmitLUI(/*rt*/ 16, /*imm*/ 0x8000); });
+	EXPECT_EQ(regs.get64(16), 0xFFFF'FFFF'8000'0000ull);
+}
+
+TEST(Arm64EmitEE, LUI_PositiveImm)
+{
+	GuestRegs regs;
+	// LUI rt, 0x1234 => 0x1234'0000 sign-extended (positive) = same value
+	RunEEGen(regs, [] { armEmitLUI(/*rt*/ 17, /*imm*/ 0x1234); });
+	EXPECT_EQ(regs.get64(17), 0x0000'0000'1234'0000ull);
+}
+
+TEST(Arm64EmitEE, LUI_ZeroImm)
+{
+	GuestRegs regs;
+	RunEEGen(regs, [] { armEmitLUI(/*rt*/ 18, /*imm*/ 0); });
+	EXPECT_EQ(regs.get64(18), 0u);
+}
+
 #endif // __aarch64__

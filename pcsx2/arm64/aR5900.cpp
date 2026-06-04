@@ -130,6 +130,18 @@ static bool recTranslateOp(u32 op)
 		case OP_LQ: armEmitLoadQuad(rt, rs, imm); return true;
 		case OP_SQ: armEmitStoreQuad(rt, rs, imm); return true;
 
+		// Immediate arithmetic (Phase 3.1)
+		case 0x08: armEmitADDI(rt, rs, imm); return true;
+		case 0x09: armEmitADDIU(rt, rs, imm); return true;
+		case 0x0A: armEmitSLTI(rt, rs, imm); return true;
+		case 0x0B: armEmitSLTIU(rt, rs, imm); return true;
+		case 0x0C: armEmitANDI(rt, rs, static_cast<u16>(op)); return true;
+		case 0x0D: armEmitORI(rt, rs, static_cast<u16>(op)); return true;
+		case 0x0E: armEmitXORI(rt, rs, static_cast<u16>(op)); return true;
+		case 0x0F: armEmitLUI(rt, (op >> 16) & 0x1f); return true; // note: LUI doesn't use rs
+		case 0x18: armEmitDADDI(rt, rs, imm); return true;
+		case 0x19: armEmitDADDIU(rt, rs, imm); return true;
+
 		default: return false;
 	}
 }
