@@ -26,8 +26,17 @@
 namespace a64 = vixl::aarch64;
 
 // FCR31 (fprc[31]) flag bits — see pcsx2/FPU.cpp.
-static constexpr u32 FPUflagO = 0x00008000; // overflow
-static constexpr u32 FPUflagU = 0x00004000; // underflow
+static constexpr u32 FPUflagO = 0x00008000; // overflow (cause)
+static constexpr u32 FPUflagU = 0x00004000; // underflow (cause)
+static constexpr u32 FPUflagSO = 0x00000010; // overflow (sticky)
+static constexpr u32 FPUflagSU = 0x00000008; // underflow (sticky)
+
+// IEEE-754 single-precision sentinel bit patterns used by the EE clamp logic.
+static constexpr u32 kPosInfinity = 0x7f800000; // exponent all-ones, mantissa zero
+static constexpr u32 kPosFmax = 0x7f7fffff;     // largest finite magnitude
+static constexpr u32 kSignBit = 0x80000000;
+static constexpr u32 kExpMask = 0x7f800000;
+static constexpr u32 kMantMask = 0x007fffff;
 
 // Clear the given FCR31 cause flags (read-modify-write fprc[31]). Used by the
 // MOV-family ops that the interpreter documents as clearing O|U every execution.
@@ -147,3 +156,126 @@ void armEmitSWC1(u32 ft, u32 rs, s32 imm)
 	armEmitEffectiveAddr(RWARG1, rs, imm);
 	armEmitVtlbWrite(32, RWARG1, RWARG2);
 }
+
+// ========================================================================
+// Float arithmetic (Phase 5.2b)
+//
+// The EE FPU is not IEEE-754. The interpreter (pcsx2/FPU.cpp, ground truth)
+// implements the quirks with two pieces we reproduce here:
+//   - fpuDouble(f): clamp each operand before the op (denormal/zero -> signed 0,
+//     inf/NaN -> signed fmax);
+//   - checkOverflow/checkUnderflow: clamp the result (inf -> signed fmax,
+//     denormal -> signed 0) and set the FCR31 O/U cause+sticky flags.
+// The op itself is host single-precision NEON (Fadd/Fsub/Fmul), bit-identical to
+// the interpreter's `float OP float` (both IEEE round-to-nearest-even). Generators
+// have no register allocator and make no calls, so they freely use the caller-saved
+// w9-w13 as integer scratch and s29-s31 (RSSCRATCH*) for the float operands.
+// ========================================================================
+
+// Load fpr/ACC at byteOffset, apply the EE fpuDouble() input clamp, leave the
+// resulting single-precision float in dstS.
+static void emitLoadFpuDouble(const a64::VRegister& dstS, u32 byteOffset)
+{
+	const a64::Register w = a64::w9;     // raw bits / clamped result
+	const a64::Register wexp = a64::w10; // exponent field [30:23]
+	const a64::Register wsign = a64::w11;
+	const a64::Register winf = a64::w12;
+
+	armAsm->Ldr(w, a64::MemOperand(RESTATEPTR, byteOffset));
+	armAsm->Ubfx(wexp, w, 23, 8);
+	armAsm->And(wsign, w, kSignBit);
+	// inf/NaN clamp candidate: sign | fmax
+	armAsm->Mov(winf, kPosFmax);
+	armAsm->Orr(winf, wsign, winf);
+	// exp == 0  -> denormal/zero -> result = sign only
+	armAsm->Cmp(wexp, 0);
+	armAsm->Csel(w, wsign, w, a64::eq);
+	// exp == 0xFF -> inf/NaN -> result = sign | fmax
+	armAsm->Cmp(wexp, 0xFF);
+	armAsm->Csel(w, winf, w, a64::eq);
+	armAsm->Fmov(dstS, w);
+}
+
+// Apply checkOverflow + checkUnderflow to the float result in srcS, update the
+// FCR31 flags (when setFlags), and store the (possibly clamped) 32-bit result to
+// the fpr/ACC slot at dstByteOffset. setFlags=false (DIV/SQRT/RSQRT pass 0 for the
+// flag mask) clamps the value but touches no O/U flags.
+static void emitStoreClampedResult(const a64::VRegister& srcS, u32 dstByteOffset, bool setFlags)
+{
+	const a64::Register w = a64::w9;     // result bits
+	const a64::Register wabs = a64::w10;
+	const a64::Register wtmp = a64::w11;
+	const a64::Register wsign = a64::w12;
+	const a64::Register wflags = a64::w13; // FCR31 (only touched when setFlags)
+
+	armAsm->Fmov(w, srcS);
+	if (setFlags)
+		armAsm->Ldr(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+
+	a64::Label overflow, doUnderflow, notUnderflow, done;
+
+	// checkOverflow: (w & ~sign) == +Inf  ->  w = sign | fmax, set O|SO, skip underflow
+	armAsm->And(wabs, w, ~kSignBit);
+	armAsm->Mov(wtmp, kPosInfinity);
+	armAsm->Cmp(wabs, wtmp);
+	armAsm->B(&overflow, a64::eq);
+	if (setFlags) // else-path clears the O cause flag
+		armAsm->And(wflags, wflags, ~FPUflagO);
+	armAsm->B(&doUnderflow);
+
+	armAsm->Bind(&overflow);
+	armAsm->And(wsign, w, kSignBit);
+	armAsm->Mov(wtmp, kPosFmax);
+	armAsm->Orr(w, wsign, wtmp);
+	if (setFlags)
+		armAsm->Orr(wflags, wflags, FPUflagO | FPUflagSO);
+	armAsm->B(&done); // overflow returns true -> underflow not evaluated
+
+	// checkUnderflow: exp==0 && mantissa!=0 (denormal) -> w &= sign, set U|SU
+	armAsm->Bind(&doUnderflow);
+	armAsm->And(wtmp, w, kExpMask);
+	armAsm->Cbnz(wtmp, &notUnderflow); // exp != 0 -> not a denormal
+	armAsm->And(wtmp, w, kMantMask);
+	armAsm->Cbz(wtmp, &notUnderflow); // mantissa == 0 -> it's a true zero, not denormal
+	armAsm->And(w, w, kSignBit);
+	if (setFlags)
+		armAsm->Orr(wflags, wflags, FPUflagU | FPUflagSU);
+	armAsm->B(&done);
+
+	armAsm->Bind(&notUnderflow);
+	if (setFlags) // else-path clears the U cause flag
+		armAsm->And(wflags, wflags, ~FPUflagU);
+
+	armAsm->Bind(&done);
+	if (setFlags)
+		armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+	armAsm->Str(w, a64::MemOperand(RESTATEPTR, dstByteOffset));
+}
+
+enum class FpuBinOp
+{
+	Add,
+	Sub,
+	Mul
+};
+
+// Shared body for the ADD/SUB/MUL (-> fpr[fd]) and ADDA/SUBA/MULA (-> ACC) family.
+static void emitFpuBinary(FpuBinOp op, u32 dstByteOffset, u32 fs, u32 ft)
+{
+	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));
+	emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));
+	switch (op)
+	{
+		case FpuBinOp::Add: armAsm->Fadd(RSSCRATCH, RSSCRATCH, RSSCRATCH2); break;
+		case FpuBinOp::Sub: armAsm->Fsub(RSSCRATCH, RSSCRATCH, RSSCRATCH2); break;
+		case FpuBinOp::Mul: armAsm->Fmul(RSSCRATCH, RSSCRATCH, RSSCRATCH2); break;
+	}
+	emitStoreClampedResult(RSSCRATCH, dstByteOffset, /*setFlags*/ true);
+}
+
+void armEmitADD_S(u32 fd, u32 fs, u32 ft) { emitFpuBinary(FpuBinOp::Add, EE_FPR_OFFSET(fd), fs, ft); }
+void armEmitSUB_S(u32 fd, u32 fs, u32 ft) { emitFpuBinary(FpuBinOp::Sub, EE_FPR_OFFSET(fd), fs, ft); }
+void armEmitMUL_S(u32 fd, u32 fs, u32 ft) { emitFpuBinary(FpuBinOp::Mul, EE_FPR_OFFSET(fd), fs, ft); }
+void armEmitADDA_S(u32 fs, u32 ft) { emitFpuBinary(FpuBinOp::Add, EE_ACC_OFFSET, fs, ft); }
+void armEmitSUBA_S(u32 fs, u32 ft) { emitFpuBinary(FpuBinOp::Sub, EE_ACC_OFFSET, fs, ft); }
+void armEmitMULA_S(u32 fs, u32 ft) { emitFpuBinary(FpuBinOp::Mul, EE_ACC_OFFSET, fs, ft); }

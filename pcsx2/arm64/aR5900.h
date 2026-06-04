@@ -105,6 +105,9 @@ static constexpr u32 EE_FPRC_OFFSET(u32 n)
 {
 	return EE_FPU_BASE + static_cast<u32>(offsetof(fpuRegisters, fprc)) + n * static_cast<u32>(sizeof(u32));
 }
+// Byte offset of the FPU accumulator (ACC) — the destination of the ADDA/SUBA/MULA/
+// MADDA/MSUBA ACC ops.
+static constexpr u32 EE_ACC_OFFSET = EE_FPU_BASE + static_cast<u32>(offsetof(fpuRegisters, ACC));
 
 // --------------------------------------------------------------------------------------
 //  FPU (COP1) exact-semantics opcode generators (Phase 5.2a)
@@ -132,6 +135,27 @@ void armEmitABS_S(u32 fd, u32 fs);
 void armEmitNEG_S(u32 fd, u32 fs);
 void armEmitLWC1(u32 ft, u32 rs, s32 imm);
 void armEmitSWC1(u32 ft, u32 rs, s32 imm);
+
+// --------------------------------------------------------------------------------------
+//  FPU (COP1) float arithmetic opcode generators (Phase 5.2b)
+// --------------------------------------------------------------------------------------
+// These reproduce the EE FPU's *non-IEEE* float behaviour, mirroring the interpreter
+// (pcsx2/FPU.cpp — the project's ground truth and the current fallback):
+//   - inputs run through fpuDouble(): denormals/zeros flush to signed zero, inf/NaN
+//     clamp to signed fmax (0x7f7fffff);
+//   - the single-precision result runs through checkOverflow (inf -> signed fmax) and
+//     checkUnderflow (denormal -> signed zero), updating the FCR31 (fprc[31]) flags.
+// The arithmetic itself is host single-precision NEON, which is bit-identical to the
+// interpreter's `float OP float` (both IEEE round-to-nearest-even).
+//
+//   ADD_S/SUB_S/MUL_S : fpr[fd] = clamp(fpuDouble(fpr[fs]) OP fpuDouble(fpr[ft]))
+//   ADDA_S/SUBA_S/MULA_S : ACC   = clamp(fpuDouble(fpr[fs]) OP fpuDouble(fpr[ft]))
+void armEmitADD_S(u32 fd, u32 fs, u32 ft);
+void armEmitSUB_S(u32 fd, u32 fs, u32 ft);
+void armEmitMUL_S(u32 fd, u32 fs, u32 ft);
+void armEmitADDA_S(u32 fs, u32 ft);
+void armEmitSUBA_S(u32 fs, u32 ft);
+void armEmitMULA_S(u32 fs, u32 ft);
 
 // 128-bit LQ/SQ: the effective address is forced to 16-byte alignment and the
 // whole 128-bit GPR is loaded/stored via the Quad vtlb helpers (NEON q access).

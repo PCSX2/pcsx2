@@ -365,6 +365,13 @@ namespace
 			std::memcpy(&v, &bytes[EE_FPRC_OFFSET(n)], sizeof(v));
 			return v;
 		}
+		void setACC(u32 v) { std::memcpy(&bytes[EE_ACC_OFFSET], &v, sizeof(v)); }
+		u32 getACC() const
+		{
+			u32 v;
+			std::memcpy(&v, &bytes[EE_ACC_OFFSET], sizeof(v));
+			return v;
+		}
 		void setPc(u32 v) { std::memcpy(&bytes[EE_PC_OFFSET], &v, sizeof(v)); }
 		u32 getPc() const
 		{
@@ -1704,6 +1711,146 @@ TEST(Arm64EmitEE, SWC1_StoresFprToMemory)
 	u32 in_ram;
 	std::memcpy(&in_ram, &ram[0x60], sizeof(in_ram));
 	EXPECT_EQ(in_ram, 0x4049'0FDBu);
+}
+
+// ----- FPU float arithmetic (Phase 5.2b) ---------------------------------
+// Reference model mirroring pcsx2/FPU.cpp (the interpreter, ground truth). The JIT
+// uses the same host FPU, so comparing against this C++ replica makes the tests
+// independent of the host FPCR (e.g. flush-to-zero) state: both paths see the same
+// post-op bits and apply the identical clamp logic.
+namespace fpuref {
+constexpr u32 kO = 0x00008000, kU = 0x00004000, kSO = 0x00000010, kSU = 0x00000008;
+
+float fpuDouble(u32 f)
+{
+	u32 r;
+	switch (f & 0x7f800000)
+	{
+		case 0x0: r = f & 0x80000000; break;
+		case 0x7f800000: r = (f & 0x80000000) | 0x7f7fffff; break;
+		default: r = f; break;
+	}
+	float out;
+	std::memcpy(&out, &r, sizeof(out));
+	return out;
+}
+bool checkOverflow(u32& x, u32 flags, u32& fcr)
+{
+	if ((x & ~0x80000000u) == 0x7f800000u)
+	{
+		x = (x & 0x80000000u) | 0x7f7fffffu;
+		fcr |= flags;
+		return true;
+	}
+	else if (flags & kO)
+		fcr &= ~kO;
+	return false;
+}
+void checkUnderflow(u32& x, u32 flags, u32& fcr)
+{
+	if (((x & 0x7f800000u) == 0) && ((x & 0x007fffffu) != 0))
+	{
+		x &= 0x80000000u;
+		fcr |= flags;
+	}
+	else if (flags & kU)
+		fcr &= ~kU;
+}
+// Returns {result bits, fcr31} for the ADD/SUB/MUL family.
+struct Result { u32 val; u32 fcr; };
+Result binop(char op, u32 fs, u32 ft, u32 fcr_in)
+{
+	const float a = fpuDouble(fs), b = fpuDouble(ft);
+	const float r = (op == '+') ? a + b : (op == '-') ? a - b : a * b;
+	u32 bits;
+	std::memcpy(&bits, &r, sizeof(bits));
+	u32 fcr = fcr_in;
+	if (!checkOverflow(bits, kO | kSO, fcr))
+		checkUnderflow(bits, kU | kSU, fcr);
+	return {bits, fcr};
+}
+} // namespace fpuref
+
+// fs op ft -> fpr[fd], with FCR31 flag side-effects, checked against the reference.
+static void CheckBinop(char op, u32 fs_bits, u32 ft_bits, u32 fcr_in)
+{
+	GuestRegs regs;
+	regs.setFPR(3, fs_bits);
+	regs.setFPR(4, ft_bits);
+	regs.setFPRC(31, fcr_in);
+	switch (op)
+	{
+		case '+': RunEEGen(regs, [] { armEmitADD_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); }); break;
+		case '-': RunEEGen(regs, [] { armEmitSUB_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); }); break;
+		case '*': RunEEGen(regs, [] { armEmitMUL_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); }); break;
+	}
+	const fpuref::Result expect = fpuref::binop(op, fs_bits, ft_bits, fcr_in);
+	EXPECT_EQ(regs.getFPR(8), expect.val) << "op=" << op << std::hex << " fs=" << fs_bits << " ft=" << ft_bits;
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr) << "op=" << op << " (flags)";
+}
+
+TEST(Arm64EmitEE, ADD_S_Basic)
+{
+	CheckBinop('+', 0x3f800000 /*1.0*/, 0x40000000 /*2.0*/, 0); // -> 3.0 = 0x40400000
+}
+
+TEST(Arm64EmitEE, SUB_S_Basic)
+{
+	CheckBinop('-', 0x40a00000 /*5.0*/, 0x40000000 /*2.0*/, 0); // -> 3.0
+}
+
+TEST(Arm64EmitEE, MUL_S_Basic)
+{
+	CheckBinop('*', 0x40400000 /*3.0*/, 0x40000000 /*2.0*/, 0); // -> 6.0 = 0x40c00000
+}
+
+TEST(Arm64EmitEE, ADD_S_OverflowClampsToFmaxAndSetsFlags)
+{
+	// fmax + fmax overflows to +inf -> clamped to +fmax, O|SO set.
+	CheckBinop('+', 0x7f7fffff, 0x7f7fffff, 0);
+}
+
+TEST(Arm64EmitEE, ADD_S_InputInfinityClampedToFmax)
+{
+	// fpuDouble(+inf) = +fmax; +fmax + 0 = +fmax (finite, no overflow flag).
+	CheckBinop('+', 0x7f800000 /*+inf*/, 0x00000000, 0);
+}
+
+TEST(Arm64EmitEE, ADD_S_ClearsStaleOverflowFlagWhenNoOverflow)
+{
+	// A normal result must clear the O cause flag that was set on entry (kept SO).
+	CheckBinop('+', 0x3f800000, 0x3f800000, fpuref::kO | fpuref::kSO);
+}
+
+TEST(Arm64EmitEE, MUL_S_DenormalResultUnderflowsToZero)
+{
+	// smallest-normal * 0.5 underflows; result flushed to signed zero, U|SU set
+	// (matches whatever the host FPU produced — see the reference-model note above).
+	CheckBinop('*', 0x00800000, 0x3f000000, 0);
+}
+
+TEST(Arm64EmitEE, ADDA_S_WritesAccumulator)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x3f800000); // 1.0
+	regs.setFPR(4, 0x40000000); // 2.0
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitADDA_S(/*fs*/ 3, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::binop('+', 0x3f800000, 0x40000000, 0);
+	EXPECT_EQ(regs.getACC(), expect.val); // -> 3.0
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
+}
+
+TEST(Arm64EmitEE, MULA_S_WritesAccumulator)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x40400000); // 3.0
+	regs.setFPR(4, 0x40000000); // 2.0
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitMULA_S(/*fs*/ 3, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::binop('*', 0x40400000, 0x40000000, 0);
+	EXPECT_EQ(regs.getACC(), expect.val); // -> 6.0
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
 }
 
 #endif // __aarch64__

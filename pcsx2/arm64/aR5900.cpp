@@ -249,6 +249,14 @@ static bool recTranslateOp(u32 op)
 				case 0x10:                                   // COP1_S (single-precision)
 					switch (funct)
 					{
+						// Float arithmetic (Phase 5.2b): ft=rt, fs=rd, fd=sa.
+						case 0x00: armEmitADD_S(sa, rd, rt); return true; // ADD_S
+						case 0x01: armEmitSUB_S(sa, rd, rt); return true; // SUB_S
+						case 0x02: armEmitMUL_S(sa, rd, rt); return true; // MUL_S
+						case 0x18: armEmitADDA_S(rd, rt); return true;    // ADDA_S (-> ACC)
+						case 0x19: armEmitSUBA_S(rd, rt); return true;    // SUBA_S (-> ACC)
+						case 0x1A: armEmitMULA_S(rd, rt); return true;    // MULA_S (-> ACC)
+						// Bit-exact ops (Phase 5.2a).
 						case 0x05: armEmitABS_S(sa, rd); return true; // ABS_S (fd=sa, fs=rd)
 						case 0x06: armEmitMOV_S(sa, rd); return true; // MOV_S
 						case 0x07: armEmitNEG_S(sa, rd); return true; // NEG_S
