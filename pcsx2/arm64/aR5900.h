@@ -129,3 +129,31 @@ void armEmitXOR(u32 rd, u32 rs, u32 rt);
 void armEmitNOR(u32 rd, u32 rs, u32 rt);
 void armEmitSLT(u32 rd, u32 rs, u32 rt);
 void armEmitSLTU(u32 rd, u32 rs, u32 rt);
+
+// --------------------------------------------------------------------------------------
+//  EE shift opcode generators (Phase 3.3)
+// --------------------------------------------------------------------------------------
+// Format: OP rd, rt, sa (immediate shifts) or OP rd, rt, rs (variable shifts).
+// 32-bit results are sign-extended to 64. $zero writes are discarded.
+//
+//   sa: 5-bit shift amount from the MIPS `sa` field (bits 10:6). DSLL32/DSRL32/DSRA32
+//       add 32 to the effective amount.
+//
+//   rs: variable shift amount is read from GPR[rs].UL[0] (low word). The value is
+//       masked by the shift width by ARM64 hardware (5 bits for W-reg, 6 for X-reg),
+//       matching MIPS semantics.
+void armEmitSLL(u32 rd, u32 rt, u32 sa);
+void armEmitSRL(u32 rd, u32 rt, u32 sa);
+void armEmitSRA(u32 rd, u32 rt, u32 sa);
+void armEmitSLLV(u32 rd, u32 rt, u32 rs);
+void armEmitSRLV(u32 rd, u32 rt, u32 rs);
+void armEmitSRAV(u32 rd, u32 rt, u32 rs);
+void armEmitDSLLV(u32 rd, u32 rt, u32 rs);
+void armEmitDSRLV(u32 rd, u32 rt, u32 rs);
+void armEmitDSRAV(u32 rd, u32 rt, u32 rs);
+void armEmitDSLL(u32 rd, u32 rt, u32 sa);
+void armEmitDSRL(u32 rd, u32 rt, u32 sa);
+void armEmitDSRA(u32 rd, u32 rt, u32 sa);
+void armEmitDSLL32(u32 rd, u32 rt, u32 sa);
+void armEmitDSRL32(u32 rd, u32 rt, u32 sa);
+void armEmitDSRA32(u32 rd, u32 rt, u32 sa);

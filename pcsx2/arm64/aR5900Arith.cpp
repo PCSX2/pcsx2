@@ -422,3 +422,238 @@ void armEmitSLTU(u32 rd, u32 rs, u32 rt)
 	armAsm->Cset(RSCRATCH, a64::lo);
 	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
 }
+
+// ------------------------------------------------------------------------
+// Shift operations (Phase 3.3)
+// ------------------------------------------------------------------------
+//
+// MIPS shift amounts:
+//   - 32-bit shifts: amount masked to 5 bits (0-31). ARM64 variable shifts on
+//     W-registers natively use the low 5 bits of the amount reg.
+//   - 64-bit shifts: amount masked to 6 bits (0-63). ARM64 variable shifts on
+//     X-registers natively use the low 6 bits of the amount reg.
+//
+// All 32-bit results (SLL/SRL/SRA/SLLV/SRLV/SRAV) are sign-extended to 64,
+// matching MIPS semantics and the x86 JIT (xMOVSX(xRegister64, xRegister32)).
+
+// ------------------------------------------------------------------------
+// SLL  (funct 0x00)
+// Rd = (s32)(GPR[rt].UL[0] << sa)
+// ------------------------------------------------------------------------
+void armEmitSLL(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCHW, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Lsl(RSCRATCHW, RSCRATCHW, sa);
+	armAsm->Sxtw(RSCRATCH, RSCRATCHW);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// SRL  (funct 0x02)
+// Rd = (s32)(GPR[rt].UL[0] >> sa)
+// ------------------------------------------------------------------------
+void armEmitSRL(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCHW, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Lsr(RSCRATCHW, RSCRATCHW, sa);
+	armAsm->Sxtw(RSCRATCH, RSCRATCHW);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// SRA  (funct 0x03)
+// Rd = (s32)(GPR[rt].SL[0] >> sa)
+// ------------------------------------------------------------------------
+void armEmitSRA(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCHW, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Asr(RSCRATCHW, RSCRATCHW, sa);
+	armAsm->Sxtw(RSCRATCH, RSCRATCHW);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// SLLV  (funct 0x04)
+// Rd = (s32)(GPR[rt].UL[0] << (GPR[rs].UL[0] & 0x1f))
+// ------------------------------------------------------------------------
+void armEmitSLLV(u32 rd, u32 rt, u32 rs)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCHW, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Ldr(RSCRATCH2W, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Lsl(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	armAsm->Sxtw(RSCRATCH, RSCRATCHW);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// SRLV  (funct 0x06)
+// Rd = (s32)(GPR[rt].UL[0] >> (GPR[rs].UL[0] & 0x1f))
+// ------------------------------------------------------------------------
+void armEmitSRLV(u32 rd, u32 rt, u32 rs)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCHW, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Ldr(RSCRATCH2W, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Lsr(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	armAsm->Sxtw(RSCRATCH, RSCRATCHW);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// SRAV  (funct 0x07)
+// Rd = (s32)(GPR[rt].SL[0] >> (GPR[rs].UL[0] & 0x1f))
+// ------------------------------------------------------------------------
+void armEmitSRAV(u32 rd, u32 rt, u32 rs)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCHW, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Ldr(RSCRATCH2W, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Asr(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	armAsm->Sxtw(RSCRATCH, RSCRATCHW);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// DSLLV  (funct 0x14)
+// Rd = GPR[rt].UD[0] << (GPR[rs].UL[0] & 0x3f)
+// ------------------------------------------------------------------------
+void armEmitDSLLV(u32 rd, u32 rt, u32 rs)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Ldr(RSCRATCH2W, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Lsl(RSCRATCH, RSCRATCH, RSCRATCH2);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// DSRLV  (funct 0x16)
+// Rd = GPR[rt].UD[0] >> (GPR[rs].UL[0] & 0x3f)
+// ------------------------------------------------------------------------
+void armEmitDSRLV(u32 rd, u32 rt, u32 rs)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Ldr(RSCRATCH2W, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Lsr(RSCRATCH, RSCRATCH, RSCRATCH2);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// DSRAV  (funct 0x17)
+// Rd = (s64)(GPR[rt].SD[0] >> (GPR[rs].UL[0] & 0x3f))
+// ------------------------------------------------------------------------
+void armEmitDSRAV(u32 rd, u32 rt, u32 rs)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Ldr(RSCRATCH2W, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Asr(RSCRATCH, RSCRATCH, RSCRATCH2);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// DSLL  (funct 0x38)
+// Rd = GPR[rt].UD[0] << sa
+// ------------------------------------------------------------------------
+void armEmitDSLL(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Lsl(RSCRATCH, RSCRATCH, sa);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// DSRL  (funct 0x3A)
+// Rd = GPR[rt].UD[0] >> sa
+// ------------------------------------------------------------------------
+void armEmitDSRL(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Lsr(RSCRATCH, RSCRATCH, sa);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// DSRA  (funct 0x3B)
+// Rd = (s64)(GPR[rt].SD[0] >> sa)
+// ------------------------------------------------------------------------
+void armEmitDSRA(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Asr(RSCRATCH, RSCRATCH, sa);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// DSLL32  (funct 0x3C)
+// Rd = GPR[rt].UD[0] << (sa + 32)
+// ------------------------------------------------------------------------
+void armEmitDSLL32(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Lsl(RSCRATCH, RSCRATCH, sa + 32);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// DSRL32  (funct 0x3E)
+// Rd = GPR[rt].UD[0] >> (sa + 32)
+// ------------------------------------------------------------------------
+void armEmitDSRL32(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Lsr(RSCRATCH, RSCRATCH, sa + 32);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// DSRA32  (funct 0x3F)
+// Rd = (s64)(GPR[rt].SD[0] >> (sa + 32))
+// ------------------------------------------------------------------------
+void armEmitDSRA32(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Asr(RSCRATCH, RSCRATCH, sa + 32);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}

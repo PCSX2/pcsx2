@@ -110,12 +110,23 @@ static bool recTranslateOp(u32 op)
 	const u32 funct = op & 0x3f;
 	const s32 imm = static_cast<s16>(op);
 
+	const u32 sa = (op >> 6) & 0x1f;
+
 	switch (opcode)
 	{
-		// SPECIAL — R-type register-register ops (Phase 3.2)
+		// SPECIAL — R-type register-register ops (Phase 3.2 + 3.3)
 		case 0x00:
 			switch (funct)
 			{
+				// Shifts (Phase 3.3) — immediate
+				case 0x00: armEmitSLL(rd, rt, sa); return true;
+				case 0x02: armEmitSRL(rd, rt, sa); return true;
+				case 0x03: armEmitSRA(rd, rt, sa); return true;
+				// Shifts (Phase 3.3) — variable
+				case 0x04: armEmitSLLV(rd, rt, rs); return true;
+				case 0x06: armEmitSRLV(rd, rt, rs); return true;
+				case 0x07: armEmitSRAV(rd, rt, rs); return true;
+				// Arithmetic (Phase 3.2)
 				case 0x20: armEmitADD(rd, rs, rt); return true;
 				case 0x21: armEmitADDU(rd, rs, rt); return true;
 				case 0x22: armEmitSUB(rd, rs, rt); return true;
@@ -130,6 +141,17 @@ static bool recTranslateOp(u32 op)
 				case 0x2D: armEmitDADDU(rd, rs, rt); return true;
 				case 0x2E: armEmitDSUB(rd, rs, rt); return true;
 				case 0x2F: armEmitDSUBU(rd, rs, rt); return true;
+				// Shifts (Phase 3.3) — variable 64-bit
+				case 0x14: armEmitDSLLV(rd, rt, rs); return true;
+				case 0x16: armEmitDSRLV(rd, rt, rs); return true;
+				case 0x17: armEmitDSRAV(rd, rt, rs); return true;
+				// Shifts (Phase 3.3) — immediate 64-bit + DS*32
+				case 0x38: armEmitDSLL(rd, rt, sa); return true;
+				case 0x3A: armEmitDSRL(rd, rt, sa); return true;
+				case 0x3B: armEmitDSRA(rd, rt, sa); return true;
+				case 0x3C: armEmitDSLL32(rd, rt, sa); return true;
+				case 0x3E: armEmitDSRL32(rd, rt, sa); return true;
+				case 0x3F: armEmitDSRA32(rd, rt, sa); return true;
 				default:   return false;
 			}
 

@@ -28,6 +28,62 @@
 
 ---
 
+## 2026-06-04 — Phase 3.3: EE shift opcode generators
+
+**Goal:** Implement and unit-test the full MIPS shift opcode family (15 ops),
+completing the EE R-type SPECIAL dispatch table.
+
+**What changed:**
+- Extended `pcsx2/arm64/aR5900Arith.cpp` with 15 shift generators:
+  - **32-bit immediate** (`SLL/SRL/SRA`): load low word → `Lsl/Lsr/Asr` on W-reg
+    → `Sxtw` sign-extend → store 64-bit.
+  - **32-bit variable** (`SLLV/SRLV/SRAV`): load second source into W-reg (amount
+    naturally masked to 5 bits by ARM64) → `Lsl/Lsr/Asr` → `Sxtw`.
+  - **64-bit variable** (`DSLLV/DSRLV/DSRAV`): load full 64-bit source → `Lsl/Lsr/Asr`
+    on X-reg (amount masked to 6 bits) → store.
+  - **64-bit immediate** (`DSLL/DSRL/DSRA`): full 64-bit shift on X-reg.
+  - **+32 variants** (`DSLL32/DSRL32/DSRA32`): add 32 to the `sa` parameter
+    before emitting (matches x86 `recDSLL32`/etc. calling `recDSLLs_(..., Sa_+32)`).
+  - All skip the store for `rd == 0` ($zero discard).
+- `pcsx2/arm64/aR5900.h` — declarations for all 15 generators.
+- `pcsx2/arm64/aR5900.cpp` — `recTranslateOp` now dispatches all 27 non-Unknown
+  FUNCT values in the SPECIAL table (0x0–0x3, 0x4–0x7, 0x14/16/17, 0x20–0x2F,
+  0x38–0x3B, 0x3C/3E/3F). Added `sa` field extraction `(op >> 6) & 0x1f`.
+- `tests/ctest/core/arm64_emit_test.cpp` — 12 new `Arm64EmitEE.*` gtests:
+  `SLL_ShiftAndSignExtend`, `SLL_ZeroAmount`, `SRL_LosesSignBit`, `SRA_PreservesSign`,
+  `SLLV_VariableAmount`, `SRLV_VariableAmount`, `SRAV_VariableAmount`,
+  `DSLLV_64bitVariable`, `DSRLV_64bitVariable`, `DSRAV_64bitVariable`,
+  `DSLL_64bitImmediate`, `DSRL_64bitImmediate`, `DSRA_64bitImmediate`,
+  `DSLL32_Adds32ToShift`, `DSRL32_Adds32ToShift`, `DSRA32_Adds32ToShift`,
+  `Shift_DiscardZeroRd`, `SLLV_AmountMaskedTo5Bits`, `DSLLV_AmountMaskedTo6Bits`.
+  Total `Arm64EmitEE.*` tests: 64; all pass. Two test-expectation bugs caught at
+  runtime (`DSLLV` wrong shift count in expected, `DSRL32` off-by-2 in expected).
+- Commits:
+  - `54dba8de1 ARM64: EE shift ops generators (Phase 3.3)`
+
+**Decisions & rationale:**
+- **Same mem-to-mem pattern.** Load single source GPR, compute in `RSCRATCHADDR`
+  (or W view), store back. 64-bit variable shifts use `RSCRATCH2W` for the amount
+  since ARM64 `Lsl Xreg, Xreg, Wreg` does not exist — but VIXL overloads handle
+  variable-shift with W-reg for the amount on X-reg destinations natively.
+- **`Sxtw` after every 32-bit shift.** Matches MIPS semantics (32-bit result
+  sign-extended to 64-bit) and the x86 JIT (`xMOVSX(xRegister64, xRegister32)`).
+  `SRL` zeroes the sign bit before `Sxtw`; `SRA` preserves it.
+- **DSRAV/DDSRA `Asr` on X-reg treats the source as signed.** This is correct:
+  `DSRA` is the doubleword arithmetic right shift (signed), while `DSRL` is the
+  unsigned/logical right shift. The MIPS funct distinction maps directly.
+- **ARM64 variable-shift masking matches MIPS.** On ARM64, `Lsl/Lsr/Asr` on W-reg
+  uses only bits [4:0] of the amount, and on X-reg uses bits [5:0]. This is
+  exactly the MIPS 5-bit / 6-bit masking semantics, so no explicit `And` needed.
+
+**Blockers / open questions:**
+- none. Phase 3.3 complete.
+
+**Next step:** Phase 3.4 — EE moves (`MOVZ/MOVN` via CSEL, `MFHI/MTHI/MFLO/MTLO`).
+These are simpler than arithmetic/shifts but introduce the HI/LO special registers.
+
+---
+
 ## 2026-06-04 — Phase 3.2: EE register-register arithmetic generators
 
 **Goal:** Implement and unit-test the complete MIPS R-type integer arithmetic

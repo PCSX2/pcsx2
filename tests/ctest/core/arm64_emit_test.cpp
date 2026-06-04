@@ -806,4 +806,187 @@ TEST(Arm64EmitEE, SLTU_UnsignedGreaterWithSignBit)
 		<< "0xFFFF...FFFE < 5 is false in unsigned";
 }
 
+// --------------------------------------------------------------------------------------
+//  Phase 3.3: shift opcode generators
+// --------------------------------------------------------------------------------------
+
+TEST(Arm64EmitEE, SLL_ShiftAndSignExtend)
+{
+	GuestRegs regs;
+	// Low word 0x4000'0001 << 1 = 0x8000'0002. As a 32-bit value bit 31 is set,
+	// so sign-extended to 64 = 0xFFFF'FFFF'8000'0002.
+	regs.set64(2, 0x0000'0000'4000'0001ull);
+	RunEEGen(regs, [] { armEmitSLL(/*rd*/ 10, /*rt*/ 2, /*sa*/ 1); });
+	EXPECT_EQ(regs.get64(10), 0xFFFF'FFFF'8000'0002ull);
+}
+
+TEST(Arm64EmitEE, SLL_ZeroAmount)
+{
+	GuestRegs regs;
+	// SLL by 0 should just sign-extend the low word.
+	regs.set64(3, 0xFFFF'FFFF'7FFF'FFFEull); // low word 0x7FFF_FFFE => bit 31 clear => positive
+	RunEEGen(regs, [] { armEmitSLL(/*rd*/ 11, /*rt*/ 3, /*sa*/ 0); });
+	EXPECT_EQ(regs.get64(11), 0x0000'0000'7FFF'FFFEull);
+}
+
+TEST(Arm64EmitEE, SRL_LosesSignBit)
+{
+	GuestRegs regs;
+	// 0x8000'0001 >> 2 = 0x2000'0000 (bit 31 clear, positive).
+	regs.set64(4, 0xFFFF'FFFF'8000'0001ull);
+	RunEEGen(regs, [] { armEmitSRL(/*rd*/ 12, /*rt*/ 4, /*sa*/ 2); });
+	EXPECT_EQ(regs.get64(12), 0x0000'0000'2000'0000ull);
+}
+
+TEST(Arm64EmitEE, SRA_PreservesSign)
+{
+	GuestRegs regs;
+	// (s32)0x8000'0000 >> 1 = 0xC000'0000; sign-extended = 0xFFFF'FFFF'C000'0000.
+	regs.set64(5, 0x0000'0000'8000'0000ull);
+	RunEEGen(regs, [] { armEmitSRA(/*rd*/ 13, /*rt*/ 5, /*sa*/ 1); });
+	EXPECT_EQ(regs.get64(13), 0xFFFF'FFFF'C000'0000ull);
+}
+
+TEST(Arm64EmitEE, SLLV_VariableAmount)
+{
+	GuestRegs regs;
+	// GPR[rs]=3, GPR[rt]=0x0000'0001 => 1 << 3 = 8, sign-extended positive.
+	regs.set64(6, 3);
+	regs.set64(7, 1);
+	RunEEGen(regs, [] { armEmitSLLV(/*rd*/ 14, /*rt*/ 7, /*rs*/ 6); });
+	EXPECT_EQ(regs.get64(14), 0x0000'0000'0000'0008ull);
+}
+
+TEST(Arm64EmitEE, SRLV_VariableAmount)
+{
+	GuestRegs regs;
+	// GPR[rs]=4, GPR[rt]=0xFFFF'FFFF => 0x0FFF'FFFF, sign-extended positive.
+	regs.set64(8, 4);
+	regs.set64(9, 0xFFFF'FFFF'FFFF'FFFFull);
+	RunEEGen(regs, [] { armEmitSRLV(/*rd*/ 15, /*rt*/ 9, /*rs*/ 8); });
+	EXPECT_EQ(regs.get64(15), 0x0000'0000'0FFF'FFFFull);
+}
+
+TEST(Arm64EmitEE, SRAV_VariableAmount)
+{
+	GuestRegs regs;
+	// GPR[rs]=1, GPR[rt]=(s32)0x8000'0000 => 0xC000'0000, sign-extended negative.
+	regs.set64(10, 1);
+	regs.set64(11, 0x0000'0000'8000'0000ull);
+	RunEEGen(regs, [] { armEmitSRAV(/*rd*/ 16, /*rt*/ 11, /*rs*/ 10); });
+	EXPECT_EQ(regs.get64(16), 0xFFFF'FFFF'C000'0000ull);
+}
+
+TEST(Arm64EmitEE, DSLLV_64bitVariable)
+{
+	GuestRegs regs;
+	// GPR[rs]=8, GPR[rt]=0x0000'0001'0000'0000 => << 8 => 0x0000'0100'0000'0000.
+	regs.set64(12, 8);
+	regs.set64(13, 0x0000'0001'0000'0000ull);
+	RunEEGen(regs, [] { armEmitDSLLV(/*rd*/ 17, /*rt*/ 13, /*rs*/ 12); });
+	EXPECT_EQ(regs.get64(17), 0x0000'0100'0000'0000ull);
+}
+
+TEST(Arm64EmitEE, DSRLV_64bitVariable)
+{
+	GuestRegs regs;
+	// GPR[rs]=16, GPR[rt]=0x0001'0000'0000'0000 => >> 16 => 0x0000'0001'0000'0000.
+	regs.set64(14, 16);
+	regs.set64(15, 0x0001'0000'0000'0000ull);
+	RunEEGen(regs, [] { armEmitDSRLV(/*rd*/ 18, /*rt*/ 15, /*rs*/ 14); });
+	EXPECT_EQ(regs.get64(18), 0x0000'0001'0000'0000ull);
+}
+
+TEST(Arm64EmitEE, DSRAV_64bitVariable)
+{
+	GuestRegs regs;
+	// GPR[rs]=4, GPR[rt]=(s64)0xF000'0000'0000'0000 => >> 4 => 0xFF00'0000'0000'0000.
+	regs.set64(14, 4);
+	regs.set64(15, 0xF000'0000'0000'0000ull);
+	RunEEGen(regs, [] { armEmitDSRAV(/*rd*/ 18, /*rt*/ 15, /*rs*/ 14); });
+	EXPECT_EQ(regs.get64(18), 0xFF00'0000'0000'0000ull);
+}
+
+TEST(Arm64EmitEE, DSLL_64bitImmediate)
+{
+	GuestRegs regs;
+	regs.set64(16, 0x0000'0000'0000'0001ull);
+	RunEEGen(regs, [] { armEmitDSLL(/*rd*/ 19, /*rt*/ 16, /*sa*/ 40); });
+	EXPECT_EQ(regs.get64(19), 0x0000'0100'0000'0000ull);
+}
+
+TEST(Arm64EmitEE, DSRL_64bitImmediate)
+{
+	GuestRegs regs;
+	regs.set64(17, 0x0000'0100'0000'0000ull);
+	RunEEGen(regs, [] { armEmitDSRL(/*rd*/ 20, /*rt*/ 17, /*sa*/ 40); });
+	EXPECT_EQ(regs.get64(20), 0x0000'0000'0000'0001ull);
+}
+
+TEST(Arm64EmitEE, DSRA_64bitImmediate)
+{
+	GuestRegs regs;
+	regs.set64(18, 0xF000'0000'0000'0000ull);
+	RunEEGen(regs, [] { armEmitDSRA(/*rd*/ 21, /*rt*/ 18, /*sa*/ 4); });
+	EXPECT_EQ(regs.get64(21), 0xFF00'0000'0000'0000ull);
+}
+
+TEST(Arm64EmitEE, DSLL32_Adds32ToShift)
+{
+	GuestRegs regs;
+	// DSLL32 rt, 0, 1 => 1 << (1+32) = 1 << 33.
+	regs.set64(19, 0x0000'0000'0000'0001ull);
+	RunEEGen(regs, [] { armEmitDSLL32(/*rd*/ 22, /*rt*/ 19, /*sa*/ 1); });
+	EXPECT_EQ(regs.get64(22), 0x0000'0002'0000'0000ull);
+}
+
+TEST(Arm64EmitEE, DSRL32_Adds32ToShift)
+{
+	GuestRegs regs;
+	// DSRL32 rt, 0, 2 => 0x0004'0000'0000'0000 (== 2^50) >> (2+32) = 2^16 = 0x0000'0001'0000.
+	regs.set64(20, 0x0004'0000'0000'0000ull);
+	RunEEGen(regs, [] { armEmitDSRL32(/*rd*/ 23, /*rt*/ 20, /*sa*/ 2); });
+	EXPECT_EQ(regs.get64(23), 0x0000'0000'0001'0000ull) << "2^50 >> 34 = 2^16 = 65536";
+}
+
+TEST(Arm64EmitEE, DSRA32_Adds32ToShift)
+{
+	GuestRegs regs;
+	// DSRA32 rt, 0, 1 => (s64)0x8000'0000'0000'0000 >> (1+32) = 0xFFFF'FFFF'C000'0000.
+	regs.set64(21, 0x8000'0000'0000'0000ull);
+	RunEEGen(regs, [] { armEmitDSRA32(/*rd*/ 24, /*rt*/ 21, /*sa*/ 1); });
+	EXPECT_EQ(regs.get64(24), 0xFFFF'FFFF'C000'0000ull);
+}
+
+TEST(Arm64EmitEE, Shift_DiscardZeroRd)
+{
+	GuestRegs regs;
+	regs.set64(0, 0);
+	regs.set64(5, 42);
+	RunEEGen(regs, [] { armEmitSLL(/*rd*/ 0, /*rt*/ 5, /*sa*/ 1); });
+	EXPECT_EQ(regs.get64(0), 0u) << "$zero must stay zero after a shift targeting it";
+}
+
+TEST(Arm64EmitEE, SLLV_AmountMaskedTo5Bits)
+{
+	GuestRegs regs;
+	// ARM64 variable Lsl on W-reg uses low 5 bits of amount. 33 & 0x1f = 1.
+	// GPR[rs]=33, GPR[rt]=1 => 1 << 1 = 2.
+	regs.set64(10, 33);
+	regs.set64(11, 1);
+	RunEEGen(regs, [] { armEmitSLLV(/*rd*/ 12, /*rt*/ 11, /*rs*/ 10); });
+	EXPECT_EQ(regs.get64(12), 2u);
+}
+
+TEST(Arm64EmitEE, DSLLV_AmountMaskedTo6Bits)
+{
+	GuestRegs regs;
+	// ARM64 variable Lsl on X-reg uses low 6 bits. 65 & 0x3f = 1.
+	// GPR[rs]=65, GPR[rt]=1 => 1 << 1 = 2.
+	regs.set64(13, 65);
+	regs.set64(14, 1);
+	RunEEGen(regs, [] { armEmitDSLLV(/*rd*/ 15, /*rt*/ 14, /*rs*/ 13); });
+	EXPECT_EQ(regs.get64(15), 2u);
+}
+
 #endif // __aarch64__
