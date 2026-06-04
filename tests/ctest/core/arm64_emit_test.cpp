@@ -577,11 +577,233 @@ TEST(Arm64EmitEE, LUI_PositiveImm)
 	EXPECT_EQ(regs.get64(17), 0x0000'0000'1234'0000ull);
 }
 
+// Regression: LUI previously passed `(op>>16)&0x1f` (5 bits) instead of the
+// full 16-bit immediate. Test with an imm that would truncate.
+TEST(Arm64EmitEE, LUI_Full16BitImm)
+{
+	GuestRegs regs;
+	RunEEGen(regs, [] { armEmitLUI(/*rt*/ 18, /*imm*/ 0xABCD); });
+	// 0xABCD'0000 as a 32-bit value: bit 31 is 1 (0xA = 1010), so sign-extended.
+	EXPECT_EQ(regs.get64(18), 0xFFFF'FFFF'ABCD'0000ull);
+}
+
 TEST(Arm64EmitEE, LUI_ZeroImm)
 {
 	GuestRegs regs;
-	RunEEGen(regs, [] { armEmitLUI(/*rt*/ 18, /*imm*/ 0); });
-	EXPECT_EQ(regs.get64(18), 0u);
+	RunEEGen(regs, [] { armEmitLUI(/*rt*/ 19, /*imm*/ 0); });
+	EXPECT_EQ(regs.get64(19), 0u);
+}
+
+// --------------------------------------------------------------------------------------
+//  Phase 3.2: register-register arithmetic opcode generators
+// --------------------------------------------------------------------------------------
+
+TEST(Arm64EmitEE, ADD_SignExtend32Wrap)
+{
+	GuestRegs regs;
+	// 0x8000'0000 + 0x7FFF'FFFF = 0xFFFF'FFFF (32-bit wrap), sign-extended to 64 = -1.
+	regs.set64(2, 0xFFFF'FFFF'8000'0000ull);
+	regs.set64(3, 0x0000'0000'7FFF'FFFFull);
+	RunEEGen(regs, [] { armEmitADD(/*rd*/ 10, /*rs*/ 2, /*rt*/ 3); });
+	EXPECT_EQ(regs.get64(10), 0xFFFF'FFFF'FFFF'FFFFull);
+}
+
+TEST(Arm64EmitEE, ADD_RSsameRT)
+{
+	GuestRegs regs;
+	regs.set64(4, 0x1234'5678ull);
+	RunEEGen(regs, [] { armEmitADD(/*rd*/ 11, /*rs*/ 4, /*rt*/ 4); });
+	// 0x1234'5678 + 0x1234'5678 = 0x2468'ACF0 as 32-bit, sign-extended = same positive.
+	EXPECT_EQ(regs.get64(11), 0x0000'0000'2468'ACF0ull);
+}
+
+TEST(Arm64EmitEE, ADD_DiscardZeroRd)
+{
+	GuestRegs regs;
+	regs.set64(5, 42);
+	regs.set64(6, 1);
+	RunEEGen(regs, [] { armEmitADD(/*rd*/ 0, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.get64(0), 0u) << "$zero must stay zero";
+}
+
+TEST(Arm64EmitEE, ADDU_IsSameAsADD)
+{
+	GuestRegs regs;
+	regs.set64(7, 0x0000'0000'FFFF'FFFEull);
+	regs.set64(8, 0x0000'0000'0000'0005ull);
+	RunEEGen(regs, [] { armEmitADDU(/*rd*/ 12, /*rs*/ 7, /*rt*/ 8); });
+	// 32-bit wrap: 0xFFFF'FFFE + 5 = 0x0000'0003 (wraparound), sign-extended.
+	EXPECT_EQ(regs.get64(12), 0x0000'0000'0000'0003ull);
+}
+
+TEST(Arm64EmitEE, DADD_64bitAdd)
+{
+	GuestRegs regs;
+	regs.set64(1, 0x0000'0001'FFFF'FFFEull);
+	regs.set64(2, 0x0000'0000'0000'0005ull);
+	RunEEGen(regs, [] { armEmitDADD(/*rd*/ 13, /*rs*/ 1, /*rt*/ 2); });
+	EXPECT_EQ(regs.get64(13), 0x0000'0002'0000'0003ull);
+}
+
+TEST(Arm64EmitEE, DADD_RSsameRT)
+{
+	GuestRegs regs;
+	regs.set64(3, 0x1234'5678'9ABC'DEF0ull);
+	RunEEGen(regs, [] { armEmitDADD(/*rd*/ 14, /*rs*/ 3, /*rt*/ 3); });
+	EXPECT_EQ(regs.get64(14), 0x2468'ACF1'3579'BDE0ull);
+}
+
+TEST(Arm64EmitEE, SUB_SignExtend32Wrap)
+{
+	GuestRegs regs;
+	regs.set64(2, 0x0000'0000'0000'0001ull); // 1
+	regs.set64(3, 0x0000'0000'0000'0002ull); // 2
+	RunEEGen(regs, [] { armEmitSUB(/*rd*/ 15, /*rs*/ 2, /*rt*/ 3); });
+	// 1 - 2 = 0xFFFF'FFFF (32-bit wrap), sign-extended = -1.
+	EXPECT_EQ(regs.get64(15), 0xFFFF'FFFF'FFFF'FFFFull);
+}
+
+TEST(Arm64EmitEE, SUB_RSsameRT)
+{
+	GuestRegs regs;
+	regs.set64(4, 0xDEAD'BEEF'CAFE'BABEull);
+	RunEEGen(regs, [] { armEmitSUB(/*rd*/ 16, /*rs*/ 4, /*rt*/ 4); });
+	EXPECT_EQ(regs.get64(16), 0u) << "rs - rs must be 0";
+}
+
+TEST(Arm64EmitEE, SUBU_IsSameAsSUB)
+{
+	GuestRegs regs;
+	regs.set64(5, 0x0000'0000'0000'000Aull); // 10
+	regs.set64(6, 0xFFFF'FFFF'FFFF'FFFFull); // -1 as 64-bit, low word 0xFFFFFFFF
+	RunEEGen(regs, [] { armEmitSUBU(/*rd*/ 17, /*rs*/ 5, /*rt*/ 6); });
+	// 10 - 0xFFFFFFFF = 11 (32-bit wrap), sign-extended positive.
+	EXPECT_EQ(regs.get64(17), 0x0000'0000'0000'000Bull);
+}
+
+TEST(Arm64EmitEE, DSUB_64bitSub)
+{
+	GuestRegs regs;
+	regs.set64(1, 0x0000'0002'0000'0000ull);
+	regs.set64(2, 0x0000'0001'0000'0001ull);
+	RunEEGen(regs, [] { armEmitDSUB(/*rd*/ 18, /*rs*/ 1, /*rt*/ 2); });
+	EXPECT_EQ(regs.get64(18), 0x0000'0000'FFFF'FFFFull);
+}
+
+TEST(Arm64EmitEE, DSUB_RSsameRT)
+{
+	GuestRegs regs;
+	regs.set64(3, 0xDEAD'BEEF'CAFE'BABEull);
+	RunEEGen(regs, [] { armEmitDSUB(/*rd*/ 19, /*rs*/ 3, /*rt*/ 3); });
+	EXPECT_EQ(regs.get64(19), 0u);
+}
+
+TEST(Arm64EmitEE, AND_Standard)
+{
+	GuestRegs regs;
+	regs.set64(1, 0x0F0F'0F0F'0F0F'0F0Full);
+	regs.set64(2, 0x00FF'00FF'00FF'00FFull);
+	RunEEGen(regs, [] { armEmitAND(/*rd*/ 20, /*rs*/ 1, /*rt*/ 2); });
+	EXPECT_EQ(regs.get64(20), 0x000F'000F'000F'000Full);
+}
+
+TEST(Arm64EmitEE, AND_RSsameRT)
+{
+	GuestRegs regs;
+	regs.set64(3, 0xDEAD'BEEF'CAFE'BABEull);
+	RunEEGen(regs, [] { armEmitAND(/*rd*/ 21, /*rs*/ 3, /*rt*/ 3); });
+	EXPECT_EQ(regs.get64(21), 0xDEAD'BEEF'CAFE'BABEull);
+}
+
+TEST(Arm64EmitEE, OR_Standard)
+{
+	GuestRegs regs;
+	regs.set64(4, 0x0F0F'0F0F'0F0F'0F0Full);
+	regs.set64(5, 0xF0F0'F0F0'F0F0'F0F0ull);
+	RunEEGen(regs, [] { armEmitOR(/*rd*/ 22, /*rs*/ 4, /*rt*/ 5); });
+	EXPECT_EQ(regs.get64(22), 0xFFFF'FFFF'FFFF'FFFFull);
+}
+
+TEST(Arm64EmitEE, OR_RSsameRT)
+{
+	GuestRegs regs;
+	regs.set64(6, 0x1234'5678'9ABC'DEF0ull);
+	RunEEGen(regs, [] { armEmitOR(/*rd*/ 23, /*rs*/ 6, /*rt*/ 6); });
+	EXPECT_EQ(regs.get64(23), 0x1234'5678'9ABC'DEF0ull);
+}
+
+TEST(Arm64EmitEE, XOR_Standard)
+{
+	GuestRegs regs;
+	regs.set64(7, 0xAAAA'AAAA'5555'5555ull);
+	regs.set64(8, 0x5555'5555'AAAA'AAAAull);
+	RunEEGen(regs, [] { armEmitXOR(/*rd*/ 24, /*rs*/ 7, /*rt*/ 8); });
+	EXPECT_EQ(regs.get64(24), 0xFFFF'FFFF'FFFF'FFFFull);
+}
+
+TEST(Arm64EmitEE, XOR_RSsameRT)
+{
+	GuestRegs regs;
+	regs.set64(9, 0xDEAD'BEEF'CAFE'BABEull);
+	RunEEGen(regs, [] { armEmitXOR(/*rd*/ 25, /*rs*/ 9, /*rt*/ 9); });
+	EXPECT_EQ(regs.get64(25), 0u) << "rs ^ rs must be 0";
+}
+
+TEST(Arm64EmitEE, NOR_Standard)
+{
+	GuestRegs regs;
+	regs.set64(10, 0x0F0F'0F0F'0F0F'0F0Full);
+	regs.set64(11, 0x00FF'00FF'00FF'00FFull);
+	RunEEGen(regs, [] { armEmitNOR(/*rd*/ 26, /*rs*/ 10, /*rt*/ 11); });
+	// ~(0x0F0F... | 0x00FF...) = ~0x0FFF'0FFF'0FFF'0FFF = 0xF000'F000'F000'F000.
+	EXPECT_EQ(regs.get64(26), 0xF000'F000'F000'F000ull);
+}
+
+TEST(Arm64EmitEE, NOR_RSsameRT)
+{
+	GuestRegs regs;
+	regs.set64(12, 0xFFFF'0000'FFFF'0000ull);
+	RunEEGen(regs, [] { armEmitNOR(/*rd*/ 27, /*rs*/ 12, /*rt*/ 12); });
+	// ~(rs | rs) == ~rs == 0x0000'FFFF'0000'FFFF.
+	EXPECT_EQ(regs.get64(27), 0x0000'FFFF'0000'FFFFull);
+}
+
+TEST(Arm64EmitEE, SLT_SignedLess)
+{
+	GuestRegs regs;
+	regs.set64(1, -10); // signed negative
+	regs.set64(2, -5);
+	RunEEGen(regs, [] { armEmitSLT(/*rd*/ 28, /*rs*/ 1, /*rt*/ 2); });
+	EXPECT_EQ(regs.get64(28), 1u) << "-10 < -5";
+}
+
+TEST(Arm64EmitEE, SLT_SignedGreater)
+{
+	GuestRegs regs;
+	regs.set64(3, 100);
+	regs.set64(4, 50);
+	RunEEGen(regs, [] { armEmitSLT(/*rd*/ 29, /*rs*/ 3, /*rt*/ 4); });
+	EXPECT_EQ(regs.get64(29), 0u) << "100 < 50 is false";
+}
+
+TEST(Arm64EmitEE, SLTU_UnsignedLess)
+{
+	GuestRegs regs;
+	regs.set64(5, 5);
+	regs.set64(6, 10);
+	RunEEGen(regs, [] { armEmitSLTU(/*rd*/ 30, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.get64(30), 1u) << "5 < 10";
+}
+
+TEST(Arm64EmitEE, SLTU_UnsignedGreaterWithSignBit)
+{
+	GuestRegs regs;
+	// 0xFFFF'FFFF'FFFF'FFFE (as u64: very large) vs 5.
+	regs.set64(7, 0xFFFF'FFFF'FFFF'FFFEull);
+	regs.set64(8, 5);
+	RunEEGen(regs, [] { armEmitSLTU(/*rd*/ 31, /*rs*/ 7, /*rt*/ 8); });
+	EXPECT_EQ(regs.get64(31), 0u)
+		<< "0xFFFF...FFFE < 5 is false in unsigned";
 }
 
 #endif // __aarch64__

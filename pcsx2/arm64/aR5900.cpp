@@ -106,10 +106,45 @@ static bool recTranslateOp(u32 op)
 	const u32 opcode = op >> 26;
 	const u32 rs = (op >> 21) & 0x1f;
 	const u32 rt = (op >> 16) & 0x1f;
+	const u32 rd = (op >> 11) & 0x1f;
+	const u32 funct = op & 0x3f;
 	const s32 imm = static_cast<s16>(op);
 
 	switch (opcode)
 	{
+		// SPECIAL — R-type register-register ops (Phase 3.2)
+		case 0x00:
+			switch (funct)
+			{
+				case 0x20: armEmitADD(rd, rs, rt); return true;
+				case 0x21: armEmitADDU(rd, rs, rt); return true;
+				case 0x22: armEmitSUB(rd, rs, rt); return true;
+				case 0x23: armEmitSUBU(rd, rs, rt); return true;
+				case 0x24: armEmitAND(rd, rs, rt); return true;
+				case 0x25: armEmitOR(rd, rs, rt); return true;
+				case 0x26: armEmitXOR(rd, rs, rt); return true;
+				case 0x27: armEmitNOR(rd, rs, rt); return true;
+				case 0x2A: armEmitSLT(rd, rs, rt); return true;
+				case 0x2B: armEmitSLTU(rd, rs, rt); return true;
+				case 0x2C: armEmitDADD(rd, rs, rt); return true;
+				case 0x2D: armEmitDADDU(rd, rs, rt); return true;
+				case 0x2E: armEmitDSUB(rd, rs, rt); return true;
+				case 0x2F: armEmitDSUBU(rd, rs, rt); return true;
+				default:   return false;
+			}
+
+		// Immediate arithmetic (Phase 3.1)
+		case 0x08: armEmitADDI(rt, rs, imm); return true;
+		case 0x09: armEmitADDIU(rt, rs, imm); return true;
+		case 0x0A: armEmitSLTI(rt, rs, imm); return true;
+		case 0x0B: armEmitSLTIU(rt, rs, imm); return true;
+		case 0x0C: armEmitANDI(rt, rs, static_cast<u16>(op)); return true;
+		case 0x0D: armEmitORI(rt, rs, static_cast<u16>(op)); return true;
+		case 0x0E: armEmitXORI(rt, rs, static_cast<u16>(op)); return true;
+		case 0x0F: armEmitLUI(rt, static_cast<u16>(op)); return true;
+		case 0x18: armEmitDADDI(rt, rs, imm); return true;
+		case 0x19: armEmitDADDIU(rt, rs, imm); return true;
+
 		// Scalar loads. The (bits, sign) pair drives the extend inside the helper:
 		// LWU zero-extends a word, LD is a full 64-bit load (sign is irrelevant).
 		case OP_LB:  armEmitLoadGpr(8,  true,  rt, rs, imm); return true;
@@ -129,18 +164,6 @@ static bool recTranslateOp(u32 op)
 		// 128-bit quadword load/store (16-byte aligned).
 		case OP_LQ: armEmitLoadQuad(rt, rs, imm); return true;
 		case OP_SQ: armEmitStoreQuad(rt, rs, imm); return true;
-
-		// Immediate arithmetic (Phase 3.1)
-		case 0x08: armEmitADDI(rt, rs, imm); return true;
-		case 0x09: armEmitADDIU(rt, rs, imm); return true;
-		case 0x0A: armEmitSLTI(rt, rs, imm); return true;
-		case 0x0B: armEmitSLTIU(rt, rs, imm); return true;
-		case 0x0C: armEmitANDI(rt, rs, static_cast<u16>(op)); return true;
-		case 0x0D: armEmitORI(rt, rs, static_cast<u16>(op)); return true;
-		case 0x0E: armEmitXORI(rt, rs, static_cast<u16>(op)); return true;
-		case 0x0F: armEmitLUI(rt, (op >> 16) & 0x1f); return true; // note: LUI doesn't use rs
-		case 0x18: armEmitDADDI(rt, rs, imm); return true;
-		case 0x19: armEmitDADDIU(rt, rs, imm); return true;
 
 		default: return false;
 	}

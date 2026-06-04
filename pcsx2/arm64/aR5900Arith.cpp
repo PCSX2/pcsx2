@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-// ARM64 EE (R5900) recompiler — immediate arithmetic codegen (Phase 3.1).
+// ARM64 EE (R5900) recompiler — integer arithmetic codegen (Phase 3.2).
 //
-// Generates ARM64 for the MIPS I immediate arithmetic opcodes:
-//   ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI/DADDI/DADDIU
+// Generates ARM64 for the MIPS I-type and R-type integer arithmetic opcodes:
+//   I-type: ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI/DADDI/DADDIU   (Phase 3.1)
+//   R-type: ADD/ADDU/SUB/SUBU/SLT/SLTU/AND/OR/XOR/NOR/DADD/DADDU/DSUB/DSUBU
 //
 // No register allocator yet — every source GPR is loaded from cpuRegs in memory
 // (via RESTATEPTR = &cpuRegs), computed in a scratch register, and stored back.
@@ -177,4 +178,247 @@ void armEmitLUI(u32 rt, u32 imm)
 		armAsm->Sxtw(RSCRATCH, RSCRATCHW);
 	}
 	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+}
+
+// ------------------------------------------------------------------------
+// R-type register-register arithmetic (FUNCT field in bits [5:0]).
+// Format: OP rd, rs, rt
+// ------------------------------------------------------------------------
+
+// Second scratch register for R-type ops that need two source values.
+static const a64::Register RSCRATCH2 = RXVIXLSCRATCH;
+static const a64::Register RSCRATCH2W = RXVIXLSCRATCH.W();
+
+// ------------------------------------------------------------------------
+// ADD / ADDU  (funct 0x20 / 0x21)
+// Rd = (s32)(GPR[rs].UL[0] + GPR[rt].UL[0])
+// The x86 JIT skips the 32-bit overflow trap for ADD; ADDU is identical.
+// ------------------------------------------------------------------------
+void armEmitADD(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCHW, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	if (rs == rt)
+	{
+		// rs + rs in 32-bit, then sign-extend
+		armAsm->Add(RSCRATCHW, RSCRATCHW, RSCRATCHW);
+	}
+	else
+	{
+		armAsm->Ldr(RSCRATCH2W, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+		armAsm->Add(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	}
+	armAsm->Sxtw(RSCRATCH, RSCRATCHW);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+void armEmitADDU(u32 rd, u32 rs, u32 rt)
+{
+	armEmitADD(rd, rs, rt); // identical in the JIT
+}
+
+// ------------------------------------------------------------------------
+// DADD / DADDU  (funct 0x2C / 0x2D)
+// Rd = GPR[rs].UD[0] + GPR[rt].UD[0]
+// ------------------------------------------------------------------------
+void armEmitDADD(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	if (rs == rt)
+	{
+		armAsm->Add(RSCRATCH, RSCRATCH, RSCRATCH);
+	}
+	else
+	{
+		armAsm->Ldr(RSCRATCH2, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+		armAsm->Add(RSCRATCH, RSCRATCH, RSCRATCH2);
+	}
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+void armEmitDADDU(u32 rd, u32 rs, u32 rt)
+{
+	armEmitDADD(rd, rs, rt); // identical in the JIT
+}
+
+// ------------------------------------------------------------------------
+// SUB / SUBU  (funct 0x22 / 0x23)
+// Rd = (s32)(GPR[rs].UL[0] - GPR[rt].UL[0])
+// ------------------------------------------------------------------------
+void armEmitSUB(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCHW, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	if (rs == rt)
+	{
+		armAsm->Mov(RSCRATCHW, 0);
+	}
+	else
+	{
+		armAsm->Ldr(RSCRATCH2W, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+		armAsm->Sub(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	}
+	armAsm->Sxtw(RSCRATCH, RSCRATCHW);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+void armEmitSUBU(u32 rd, u32 rs, u32 rt)
+{
+	armEmitSUB(rd, rs, rt); // identical in the JIT
+}
+
+// ------------------------------------------------------------------------
+// DSUB / DSUBU  (funct 0x2E / 0x2F)
+// Rd = GPR[rs].UD[0] - GPR[rt].UD[0]
+// ------------------------------------------------------------------------
+void armEmitDSUB(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	if (rs == rt)
+	{
+		armAsm->Mov(RSCRATCH, 0);
+	}
+	else
+	{
+		armAsm->Ldr(RSCRATCH2, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+		armAsm->Sub(RSCRATCH, RSCRATCH, RSCRATCH2);
+	}
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+void armEmitDSUBU(u32 rd, u32 rs, u32 rt)
+{
+	armEmitDSUB(rd, rs, rt); // identical in the JIT
+}
+
+// ------------------------------------------------------------------------
+// AND  (funct 0x24)
+// Rd = GPR[rs].UD[0] & GPR[rt].UD[0]
+// ------------------------------------------------------------------------
+void armEmitAND(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	if (rs == rt)
+	{
+		// rs & rs == rs; RSCRATCH already holds the value.
+	}
+	else
+	{
+		armAsm->Ldr(RSCRATCH2, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+		armAsm->And(RSCRATCH, RSCRATCH, RSCRATCH2);
+	}
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// OR  (funct 0x25)
+// Rd = GPR[rs].UD[0] | GPR[rt].UD[0]
+// ------------------------------------------------------------------------
+void armEmitOR(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	if (rs == rt)
+	{
+		// rs | rs == rs
+	}
+	else
+	{
+		armAsm->Ldr(RSCRATCH2, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+		armAsm->Orr(RSCRATCH, RSCRATCH, RSCRATCH2);
+	}
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// XOR  (funct 0x26)
+// Rd = GPR[rs].UD[0] ^ GPR[rt].UD[0]
+// ------------------------------------------------------------------------
+void armEmitXOR(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	if (rs == rt)
+	{
+		armAsm->Mov(RSCRATCH, 0);
+	}
+	else
+	{
+		armAsm->Ldr(RSCRATCH2, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+		armAsm->Eor(RSCRATCH, RSCRATCH, RSCRATCH2);
+	}
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// NOR  (funct 0x27)
+// Rd = ~(GPR[rs].UD[0] | GPR[rt].UD[0])
+// ------------------------------------------------------------------------
+void armEmitNOR(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	if (rs == rt)
+	{
+		// ~(rs | rs) == ~rs
+		armAsm->Orr(RSCRATCH, RSCRATCH, RSCRATCH);
+	}
+	else
+	{
+		armAsm->Ldr(RSCRATCH2, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+		armAsm->Orr(RSCRATCH, RSCRATCH, RSCRATCH2);
+	}
+	armAsm->Mvn(RSCRATCH, RSCRATCH);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// SLT  (funct 0x2A)
+// Rd = (GPR[rs].SD[0] < GPR[rt].SD[0]) ? 1 : 0
+// ------------------------------------------------------------------------
+void armEmitSLT(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Ldr(RSCRATCH2, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Cmp(RSCRATCH, RSCRATCH2);
+	armAsm->Cset(RSCRATCH, a64::lt);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// SLTU  (funct 0x2B)
+// Rd = (GPR[rs].UD[0] < GPR[rt].UD[0]) ? 1 : 0
+// ------------------------------------------------------------------------
+void armEmitSLTU(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Ldr(RSCRATCH2, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Cmp(RSCRATCH, RSCRATCH2);
+	armAsm->Cset(RSCRATCH, a64::lo);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
 }

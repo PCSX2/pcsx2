@@ -109,3 +109,23 @@ void armEmitANDI(u32 rt, u32 rs, u32 imm_u);
 void armEmitORI(u32 rt, u32 rs, u32 imm_u);
 void armEmitXORI(u32 rt, u32 rs, u32 imm_u);
 void armEmitLUI(u32 rt, u32 imm);
+
+// --------------------------------------------------------------------------------------
+//  EE register-register arithmetic opcode generators (Phase 3.2)
+// --------------------------------------------------------------------------------------
+// Format: OP rd, rs, rt (R-type). All operations are on the low 64-bit GPR word;
+// 32-bit results are sign-extended to 64. $zero writes are discarded.
+void armEmitADD(u32 rd, u32 rs, u32 rt);
+void armEmitADDU(u32 rd, u32 rs, u32 rt);
+void armEmitDADD(u32 rd, u32 rs, u32 rt);
+void armEmitDADDU(u32 rd, u32 rs, u32 rt);
+void armEmitSUB(u32 rd, u32 rs, u32 rt);
+void armEmitSUBU(u32 rd, u32 rs, u32 rt);
+void armEmitDSUB(u32 rd, u32 rs, u32 rt);
+void armEmitDSUBU(u32 rd, u32 rs, u32 rt);
+void armEmitAND(u32 rd, u32 rs, u32 rt);
+void armEmitOR(u32 rd, u32 rs, u32 rt);
+void armEmitXOR(u32 rd, u32 rs, u32 rt);
+void armEmitNOR(u32 rd, u32 rs, u32 rt);
+void armEmitSLT(u32 rd, u32 rs, u32 rt);
+void armEmitSLTU(u32 rd, u32 rs, u32 rt);
