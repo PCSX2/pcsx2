@@ -428,6 +428,18 @@ static u32 recScaleBlockCycles(u32 raw)
 	return (scale_cycles < 1) ? 1 : scale_cycles;
 }
 
+// Mark every RAM page covered by a compiled block as recompiled code, so writes
+// to loaded ELF/game code fault through the existing vtlb page-protection path
+// and call Cpu->Clear(). ROM pages return ProtMode_NotRequired and are ignored.
+static void recProtectCompiledRange(u32 startpc, u32 endpc)
+{
+	for (u32 pc = startpc & ~0xfffu; pc < endpc; pc += __pagesize)
+	{
+		if (mmap_GetRamPageInfo(pc) != ProtMode_NotRequired)
+			mmap_MarkCountedRamPage(pc);
+	}
+}
+
 // --------------------------------------------------------------------------------------
 //  Block compiler (Phase 4.3)
 // --------------------------------------------------------------------------------------
@@ -459,6 +471,7 @@ static u8* recCompileBlock(u32 startpc, u32* out_cycles)
 	armMoveAddressToReg(RESTATEPTR, &cpuRegs);
 
 	u32 pc = startpc;
+	u32 endpc = startpc;
 	u32 raw_cycles = 0;
 	u32 compiled = 0;
 	bool ok = true;
@@ -477,6 +490,7 @@ static u8* recCompileBlock(u32 startpc, u32* out_cycles)
 			const u32 delay_op = memRead32(pc + 4);
 			raw_cycles += R5900::GetInstruction(delay_op).cycles;
 			recEmitOp(delay_op); // delay slot — must not write cpuRegs.pc
+			endpc = pc + 8;
 			break;
 		}
 
@@ -486,6 +500,7 @@ static u8* recCompileBlock(u32 startpc, u32* out_cycles)
 		{
 			raw_cycles += info.cycles;
 			pc += 4;
+			endpc = pc;
 			if (++compiled >= MAX_BLOCK_INSTS)
 			{
 				recEmitWritePc(pc); // resume at the next instruction
@@ -522,6 +537,8 @@ static u8* recCompileBlock(u32 startpc, u32* out_cycles)
 	armAsm->Ldp(RESTATEPTR, a64::x30, a64::MemOperand(a64::sp, 16, a64::PostIndex));
 	armAsm->Ret();
 	recPtr = armEndBlock();
+
+	recProtectCompiledRange(startpc, endpc);
 
 	*out_cycles = recScaleBlockCycles(raw_cycles);
 	return entry;

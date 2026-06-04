@@ -21,6 +21,12 @@ check against a C++ replica of FPU.cpp (robust to host flush-to-zero). **Verifie
 unittests green; arm64 binary; headless BIOS boot → `Mode Changed to DVD PAL` + `DS2
 Config Finished`, full 39s, clean pause — no regression.
 
+**Interlude fix:** FFX black-after-BIOS was likely stale EE blocks for RAM code:
+`recCompileBlock()` now marks compiled RAM pages with `mmap_MarkCountedRamPage()`, so
+writes to loaded ELF/game code fault through the existing vtlb protection path and the
+bring-up `recClear()` drops the whole ARM64 block cache. This is coarse but correct for
+bring-up; targeted invalidation remains Phase 4.5.
+
 Next concrete task: **Phase 5.2b continued — DIV_S/SQRT_S/RSQRT_S** (need
 `checkDivideByZero`: divisor exp==0 → set D|SD or I|SI, result = sign-xor | fmax; SQRT
 of negative sets I|SI on |x|; both pass cFlagsToSet=0 to over/underflow so reuse
@@ -134,7 +140,10 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
   interpreter fallback via `intExecuteOneInst`; `Cpu = &recCpu` on ARM64.
 - [ ] 4.4 Block linking (direct branch to already-compiled targets) + recLUT
   (replace the bring-up `s_blocks` unordered_map + recompile-on-miss).
-- [ ] 4.5 Block invalidation on TLB-mapping change.
+- [~] 4.5 Block invalidation on TLB-mapping change. Bring-up RAM-code invalidation
+  landed: compiled ARM64 blocks mark their RAM pages so page-protection writes clear
+  the whole block cache. Still TODO: recLUT-backed targeted invalidation and TLB-aware
+  page identity instead of the current coarse `s_blocks` reset.
 
 ---
 

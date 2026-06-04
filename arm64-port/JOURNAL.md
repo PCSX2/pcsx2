@@ -28,6 +28,50 @@
 
 ---
 
+## 2026-06-04 — Bring-up fix: mark ARM64 RAM blocks for invalidation
+
+**Goal:** Investigate why the BIOS boots but Final Fantasy X stays black after the
+BIOS handoff, where slow execution would be expected instead of no visible progress.
+
+**What changed:**
+- `pcsx2/arm64/aR5900.cpp` — added `recProtectCompiledRange(startpc, endpc)` and call
+  it after successful block emission. Any compiled block whose source range is in EE
+  RAM now calls `mmap_MarkCountedRamPage()` for the covered pages; ROM pages are ignored
+  via `mmap_GetRamPageInfo() == ProtMode_NotRequired`.
+- `arm64-port/PROGRESS.md` — noted that Phase 4.5 now has a coarse bring-up
+  invalidation path, while targeted recLUT/TLB-aware invalidation remains TODO.
+- Commit: pending.
+
+**Decisions & rationale:**
+- The bring-up ARM64 cache is keyed only by guest PC and previously never marked RAM
+  pages as containing recompiled code. BIOS-only boot mostly executes ROM, but game
+  boot loads an ELF into RAM and then executes it; without page tracking, writes/loading
+  can leave stale ARM64 blocks alive at the same PC. Marking pages lets the existing
+  vtlb write-protection/page-fault path call `Cpu->Clear()`, and ARM64 `recClear()`
+  already drops the whole block cache. This is intentionally coarse but correct enough
+  for bring-up.
+
+**Blockers / open questions:**
+- Live FFX verification was not run in this session because direct app launch still
+  hits the known duplicate-Qt bundle issue from the previous journal entry. The fix is
+  built and unit-tested; next live run should use the install-name/codesign recipe or
+  a repaired app bundle.
+
+**Verification:**
+- `cmake --build build --target pcsx2-qt -j18` succeeded.
+- `build/tests/ctest/core/core_test --gtest_filter='Arm64EmitEE.*'`: 140/140 passed.
+- `build/tests/ctest/core/core_test`: 225/225 passed.
+- `build/tests/ctest/common/common_test`: 20/20 passed.
+
+**Next step:** Phase 5.2b continued — `DIV_S/SQRT_S/RSQRT_S` (add a
+`checkDivideByZero` emit helper; reuse `emitStoreClampedResult(..., setFlags=false)`),
+then MADD/MSUB(/A), MAX/MIN, the C.* compares + BC1 branches, then CVT. If FFX still
+black-screens after this invalidation fix, instrument the first post-BIOS game PC,
+block compile count, and `Cpu->Clear()` calls to distinguish stale-code vs opcode
+semantics.
+
+---
+
 ## 2026-06-04 — Phase 5.2b (part 1): FPU float ADD/SUB/MUL + ACC variants
 
 **Goal:** Start the genuine EE FPU float arithmetic — the ops needing the non-IEEE
