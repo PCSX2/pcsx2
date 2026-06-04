@@ -28,43 +28,47 @@
 
 ---
 
-## 2026-06-04 — Phase 5.4 MMI: parallel immediate shifts complete
+## 2026-06-04 — Phase 5.4 MMI: simple lane permutes complete
 
-**Goal:** Extend Phase 5.4 with the six parallel shift-by-immediate ops
-(`PSLLH/PSLLW`, `PSRLH/PSRLW`, `PSRAH/PSRAW`) so they stop single-stepping
-the interpreter.
+**Goal:** Extend Phase 5.4 with five lane-permute ops (`PINTH/PINTEH/PEXEH/PEXEW/PREVH`)
+so they stop single-stepping the interpreter.
 
 **What changed:**
-- New `pcsx2/arm64/aR5900MMI.cpp` generators (6 ops): `armEmitPSLLH/PSLLW`,
-  `armEmitPSRLH/PSRLW`, `armEmitPSRAH/PSRAW`. Each loads GPR[rt] into a scratch
-  q-reg, emits NEON `Shl/Ushr/Sshr`, stores to GPR[rd]. Zero-shift uses a `Mov`
-  copy (VIXL doesn't emit for imm=0). Dispatch wired in `aR5900.cpp:recTranslateOp`
-  case 0x1C by funct value (0x30/0x32/0x33/0x38/0x3A/0x3B).
+- New `pcsx2/arm64/aR5900MMI.cpp` generators (5 ops):
+  - `armEmitPINTH`: interleave low half of Rt with high half of Rs (halfwords)
+  - `armEmitPINTEH`: interleave even-indexed halfwords of Rt and Rs
+  - `armEmitPEXEH`: extract even halfwords (swap 0↔2 within each 64-bit half)
+  - `armEmitPEXEW`: extract even words (swap 32-bit lanes 0↔2)
+  - `armEmitPREVH`: reverse halfwords within each 64-bit half (`Rev64`)
 - Declarations in `pcsx2/arm64/aR5900.h`.
-- 18 new `Arm64EmitEE.MMI_PS*L*` gtests in `tests/ctest/core/arm64_emit_test.cpp`:
-  sa=0, sa=max, sa=masked for each op, comparing against a C++ replica of MMI.cpp.
+- Dispatch wired in `pcsx2/arm64/aR5900.cpp`:
+  - `recTranslateMMI2`: sa=0x0A→PINTH, 0x16→PEXEH, 0x17→PREVH, 0x18→PEXEW
+  - `recTranslateMMI3`: sa=0x0A→PINTEH
+- 5 new `Arm64EmitEE.MMI_{PINTH,PINTEH,PEXEH,PEXEW,PREVH}` gtests in
+  `tests/ctest/core/arm64_emit_test.cpp`: reference functions mirror
+  `pcsx2/MMI.cpp` element indexing; both operand orders tested.
 - Trackers: PROGRESS.md CURRENT FOCUS + Phase 5.4 checkboxes updated.
 - Commit: pending.
 
 **Decisions & rationale:**
-- Dispatch by funct, not through MMI0/1/2/3 sub-tables: the parallel shifts are
-  direct entries in `tbl_MMI` (R5900OpcodeTables.cpp), indexed by the funct field
-  (bits [5:0]), not by the sa-based sub-tables. This matches the interpreter's
-  dispatch path.
-- Zero-shift fast-path with `Mov`: VIXL's shift-with-immediate instructions don't
-  emit when the shift is 0 (treated as a no-op), but the destination register must
-  still be written. Using `Mov(VD, VT)` for sa=0 ensures the copy happens and keeps
-  the generated code efficient.
-- Same mem-to-mem pattern as the existing MMI SIMD ops: load into scratch q-reg,
-  single NEON op, store back. No register allocator needed.
+- Used `Ins` (lane insert) for PINTH/PINTEH/PEXEH/PEXEW: these ops don't map to a
+  single NEON permutation instruction. The `Ins` sequence is correct and clear,
+  though not optimal (8 instructions for PINTH/PINTEH, 5 for PEXEH/PEXEW). Can be
+  optimized later with `Trn`/`Uzp`/`Rev` sequences if profiling shows hotspots.
+- `PREVH` uses single `Rev64(V8H)`: this is the exact semantic match (reverse 16-bit
+  lanes within each 64-bit half), so it's the most efficient of the bunch.
+- Same mem-to-mem pattern as existing MMI ops: load both sources into scratch q-regs
+  (q30/q31), compute into q29, store back. No register allocator needed.
+- $zero destination discard: all generators return early if `rd==0`, matching the
+  interpreter's `if (!_Rd_) return`.
 
 **Blockers / open questions:**
-- none. Unit coverage complete (18/18 tests pass, 323/323 core tests total).
+- none. Unit coverage complete (5/5 tests pass, 328/328 core tests total).
 
-**Next step:** continue Phase 5.4 — either (a) the simple lane permutes
-(`PINTH/PINTEH/PREVH/PEXEH/PEXEW` via NEON `Zip`/`Trn`/`Rev`), or (b) the variable
-shifts (`PSLLVW/PSRLVW/PSRAVW` — shift amount from GPR[rs].UL[0] & 0x1F). Phase 4.4
-recLUT remains parked on `armjit-reclut-wip`.
+**Next step:** continue Phase 5.4 — either (a) variable shifts
+(`PSLLVW/PSRLVW/PSRAVW` — shift amount from GPR[rs].UL[0] & 0x1F, masked), or (b) the
+remaining permutes (`PROT3W` = rotate 3 words, `PEXCH/PEXCW` = extract even halfwords/
+words). Phase 4.4 recLUT remains parked on `armjit-reclut-wip`.
 
 ## 2026-06-04 — Phase 5.4 MMI: first NEON-mapped SIMD batch
 

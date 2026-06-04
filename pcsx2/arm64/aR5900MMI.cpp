@@ -286,3 +286,92 @@ void armEmitPSRAW(u32 rd, u32 rt, u32 sa)
 	}
 	storeQ(VD, rd);
 }
+
+
+// =============================================================================
+// Parallel lane permutes (Phase 5.4 continuation)
+// =============================================================================
+// These rearrange the halfword/word lanes within the 128-bit GPR. They don't
+// map to single NEON instructions, so we use lane-by-lane insertion (Ins).
+
+// --- PINTH: interleave halfwords ---------------------------------------------
+// Output: [Rt[0], Rs[4], Rt[1], Rs[5], Rt[2], Rs[6], Rt[3], Rs[7]]
+void armEmitPINTH(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+	loadQ(VT, rt);
+	loadQ(VS, rs);
+	// Build result lane-by-lane using Ins.
+	armAsm->Mov(VD.V8H(), VT.V8H(), 0);  // VD[0] = Rt[0]
+	armAsm->Ins(VD.V8H(), 1, VS.V8H(), 4); // VD[1] = Rs[4]
+	armAsm->Ins(VD.V8H(), 2, VT.V8H(), 1); // VD[2] = Rt[1]
+	armAsm->Ins(VD.V8H(), 3, VS.V8H(), 5); // VD[3] = Rs[5]
+	armAsm->Ins(VD.V8H(), 4, VT.V8H(), 2); // VD[4] = Rt[2]
+	armAsm->Ins(VD.V8H(), 5, VS.V8H(), 6); // VD[5] = Rs[6]
+	armAsm->Ins(VD.V8H(), 6, VT.V8H(), 3); // VD[6] = Rt[3]
+	armAsm->Ins(VD.V8H(), 7, VS.V8H(), 7); // VD[7] = Rs[7]
+	storeQ(VD, rd);
+}
+
+// --- PINTEH: interleave even halfwords ---------------------------------------
+// Output: [Rt[0], Rs[0], Rt[2], Rs[2], Rt[4], Rs[4], Rt[6], Rs[6]]
+void armEmitPINTEH(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+	loadQ(VT, rt);
+	loadQ(VS, rs);
+	armAsm->Mov(VD.V8H(), VT.V8H(), 0);  // VD[0] = Rt[0]
+	armAsm->Ins(VD.V8H(), 1, VS.V8H(), 0); // VD[1] = Rs[0]
+	armAsm->Ins(VD.V8H(), 2, VT.V8H(), 2); // VD[2] = Rt[2]
+	armAsm->Ins(VD.V8H(), 3, VS.V8H(), 2); // VD[3] = Rs[2]
+	armAsm->Ins(VD.V8H(), 4, VT.V8H(), 4); // VD[4] = Rt[4]
+	armAsm->Ins(VD.V8H(), 5, VS.V8H(), 4); // VD[5] = Rs[4]
+	armAsm->Ins(VD.V8H(), 6, VT.V8H(), 6); // VD[6] = Rt[6]
+	armAsm->Ins(VD.V8H(), 7, VS.V8H(), 6); // VD[7] = Rs[6]
+	storeQ(VD, rd);
+}
+
+// --- PEXEH: extract even halfwords (swap 0<->2 in each 64-bit half) ----------
+// Output: [Rt[2], Rt[1], Rt[0], Rt[3], Rt[6], Rt[5], Rt[4], Rt[7]]
+void armEmitPEXEH(u32 rd, u32 rt)
+{
+	if (rd == 0)
+		return;
+	loadQ(VT, rt);
+	armAsm->Mov(VD.V8H(), VT.V8H(), 2);  // VD[0] = Rt[2]
+	armAsm->Ins(VD.V8H(), 1, VT.V8H(), 1); // VD[1] = Rt[1]
+	armAsm->Ins(VD.V8H(), 2, VT.V8H(), 0); // VD[2] = Rt[0]
+	armAsm->Ins(VD.V8H(), 3, VT.V8H(), 3); // VD[3] = Rt[3]
+	armAsm->Ins(VD.V8H(), 4, VT.V8H(), 6); // VD[4] = Rt[6]
+	armAsm->Ins(VD.V8H(), 5, VT.V8H(), 5); // VD[5] = Rt[5]
+	armAsm->Ins(VD.V8H(), 6, VT.V8H(), 4); // VD[6] = Rt[4]
+	armAsm->Ins(VD.V8H(), 7, VT.V8H(), 7); // VD[7] = Rt[7]
+	storeQ(VD, rd);
+}
+
+// --- PEXEW: extract even words (swap 32-bit lanes 0<->2) ---------------------
+// Output: [Rt[2], Rt[1], Rt[0], Rt[3]]  (32-bit lanes)
+void armEmitPEXEW(u32 rd, u32 rt)
+{
+	if (rd == 0)
+		return;
+	loadQ(VT, rt);
+	armAsm->Mov(VD.V4S(), VT.V4S(), 2);  // VD[0] = Rt[2]
+	armAsm->Ins(VD.V4S(), 1, VT.V4S(), 1); // VD[1] = Rt[1]
+	armAsm->Ins(VD.V4S(), 2, VT.V4S(), 0); // VD[2] = Rt[0]
+	armAsm->Ins(VD.V4S(), 3, VT.V4S(), 3); // VD[3] = Rt[3]
+	storeQ(VD, rd);
+}
+
+// --- PREVH: reverse halfwords within each 64-bit half ------------------------
+// Output: [Rt[3], Rt[2], Rt[1], Rt[0], Rt[7], Rt[6], Rt[5], Rt[4]]
+void armEmitPREVH(u32 rd, u32 rt)
+{
+	if (rd == 0)
+		return;
+	loadQ(VT, rt);
+	armAsm->Rev64(VD.V8H(), VT.V8H()); // Single instruction!
+	storeQ(VD, rd);
+}

@@ -2418,6 +2418,23 @@ namespace mmiref
 	static MQ refPSRAH(MQ t, u32 sa) { MQ d{}; for (int n = 0; n < 8; n++) d.us[n] = (u16)(t.ss[n] >> (sa & 0x0F)); return d; }
 	static MQ refPSRAW(MQ t, u32 sa) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = (u32)(t.sl[n] >> (sa & 0x1F)); return d; }
 
+	// Lane permutes (Phase 5.4 continuation).
+	// PINTH: interleave low half of Rt with high half of Rs (halfwords)
+	// [Rt[0], Rs[4], Rt[1], Rs[5], Rt[2], Rs[6], Rt[3], Rs[7]]
+	static MQ refPINTH(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) { d.us[2 * n] = t.us[n]; d.us[2 * n + 1] = s.us[n + 4]; } return d; }
+	// PINTEH: interleave even-indexed halfwords of Rt and Rs
+	// [Rt[0], Rs[0], Rt[2], Rs[2], Rt[4], Rs[4], Rt[6], Rs[6]]
+	static MQ refPINTEH(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) { d.us[2 * n] = t.us[2 * n]; d.us[2 * n + 1] = s.us[2 * n]; } return d; }
+	// PEXEH: extract even halfwords (reverse within each 64-bit half, swapping 0<->2)
+	// [Rt[2], Rt[1], Rt[0], Rt[3], Rt[6], Rt[5], Rt[4], Rt[7]]
+	static MQ refPEXEH(MQ t) { MQ d{}; d.us[0] = t.us[2]; d.us[1] = t.us[1]; d.us[2] = t.us[0]; d.us[3] = t.us[3]; d.us[4] = t.us[6]; d.us[5] = t.us[5]; d.us[6] = t.us[4]; d.us[7] = t.us[7]; return d; }
+	// PEXEW: extract even words (swap word pairs)
+	// [Rt[2], Rt[1], Rt[0], Rt[3]] in 32-bit lanes
+	static MQ refPEXEW(MQ t) { MQ d{}; d.ul[0] = t.ul[2]; d.ul[1] = t.ul[1]; d.ul[2] = t.ul[0]; d.ul[3] = t.ul[3]; return d; }
+	// PREVH: reverse halfwords within each 64-bit half
+	// [Rt[3], Rt[2], Rt[1], Rt[0], Rt[7], Rt[6], Rt[5], Rt[4]]
+	static MQ refPREVH(MQ t) { MQ d{}; for (int n = 0; n < 4; n++) { d.us[n] = t.us[3 - n]; d.us[n + 4] = t.us[7 - n]; } return d; }
+
 	// Two reusable input vectors with a spread of sign / saturation edge values.
 	static MQ inA() { return make({0x01, 0x00, 0x00, 0x80, 0xFF, 0xFF, 0xFF, 0x7F, 0x05, 0xF0, 0x34, 0x12, 0x00, 0x00, 0x00, 0x80}); }
 	static MQ inB() { return make({0xFF, 0xFF, 0xFF, 0x7F, 0x01, 0x00, 0x00, 0x80, 0x05, 0x10, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00}); }
@@ -2528,6 +2545,26 @@ MMI_UN_TEST(PABSW) MMI_UN_TEST(PABSH) MMI_UN_TEST(PCPYH)
 MMI_SHIFT_TEST(PSLLH) MMI_SHIFT_TEST(PSLLW)
 MMI_SHIFT_TEST(PSRLH) MMI_SHIFT_TEST(PSRLW)
 MMI_SHIFT_TEST(PSRAH) MMI_SHIFT_TEST(PSRAW)
+
+// Lane permutes (Phase 5.4 continuation).
+#define MMI_PERM_TEST(NAME)                                                     \
+	TEST(Arm64EmitEE, MMI_##NAME)                                               \
+	{                                                                          \
+		MQ a = mmiref::inA(), b = mmiref::inB();                               \
+		EXPECT_TRUE(eqMQ(runMMIBin(armEmit##NAME, a, b), mmiref::ref##NAME(a, b))); \
+		EXPECT_TRUE(eqMQ(runMMIBin(armEmit##NAME, b, a), mmiref::ref##NAME(b, a))); \
+	}
+
+#define MMI_PERM_UN_TEST(NAME)                                                  \
+	TEST(Arm64EmitEE, MMI_##NAME)                                               \
+	{                                                                          \
+		MQ a = mmiref::inA(), b = mmiref::inB();                               \
+		EXPECT_TRUE(eqMQ(runMMIUn(armEmit##NAME, a), mmiref::ref##NAME(a)));   \
+		EXPECT_TRUE(eqMQ(runMMIUn(armEmit##NAME, b), mmiref::ref##NAME(b)));   \
+	}
+
+MMI_PERM_TEST(PINTH) MMI_PERM_TEST(PINTEH)
+MMI_PERM_UN_TEST(PEXEH) MMI_PERM_UN_TEST(PEXEW) MMI_PERM_UN_TEST(PREVH)
 
 // rd == 0 must discard the write (matching the interpreter's `if (!_Rd_) return`).
 TEST(Arm64EmitEE, MMI_DiscardZeroDest)

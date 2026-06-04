@@ -430,3 +430,16 @@ void armEmitPSRLH(u32 rd, u32 rt, u32 sa);
 void armEmitPSRLW(u32 rd, u32 rt, u32 sa);
 void armEmitPSRAH(u32 rd, u32 rt, u32 sa);
 void armEmitPSRAW(u32 rd, u32 rt, u32 sa);
+
+// Parallel lane permutes (Phase 5.4 continuation). These rearrange the halfword/word
+// lanes within the 128-bit GPR. Mapped to NEON interleave/reverse instructions.
+//   PINTH  : interleave low half of Rt with high half of Rs (halfwords)
+//   PINTEH : interleave even-indexed halfwords of Rt and Rs
+//   PEXEH  : extract/reverse even halfwords within each 64-bit half
+//   PEXEW  : extract/reverse even words (swap word pairs)
+//   PREVH  : reverse halfwords within each 64-bit half
+void armEmitPINTH(u32 rd, u32 rs, u32 rt);
+void armEmitPINTEH(u32 rd, u32 rs, u32 rt);
+void armEmitPEXEH(u32 rd, u32 rt);
+void armEmitPEXEW(u32 rd, u32 rt);
+void armEmitPREVH(u32 rd, u32 rt);

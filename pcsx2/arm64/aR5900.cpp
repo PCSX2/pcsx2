@@ -220,10 +220,14 @@ static bool recTranslateMMI2(u32 sa, u32 rd, u32 rs, u32 rt)
 {
 	switch (sa)
 	{
+		case 0x0A: armEmitPINTH(rd, rs, rt); return true;
 		case 0x0E: armEmitPCPYLD(rd, rs, rt); return true;
 		case 0x12: armEmitPAND(rd, rs, rt); return true;
 		case 0x13: armEmitPXOR(rd, rs, rt); return true;
-		default:   return false; // PMADD*/PMSUB*/PMULT*/permutes -> interpreter
+		case 0x16: armEmitPEXEH(rd, rt); return true;
+		case 0x17: armEmitPREVH(rd, rt); return true;
+		case 0x18: armEmitPEXEW(rd, rt); return true;
+		default:   return false; // PMADD*/PMSUB*/PMULT*/PROT3W -> interpreter
 	}
 }
 
@@ -231,11 +235,12 @@ static bool recTranslateMMI3(u32 sa, u32 rd, u32 rs, u32 rt)
 {
 	switch (sa)
 	{
+		case 0x0A: armEmitPINTEH(rd, rs, rt); return true;
 		case 0x0E: armEmitPCPYUD(rd, rs, rt); return true;
 		case 0x12: armEmitPOR(rd, rs, rt); return true;
 		case 0x13: armEmitPNOR(rd, rs, rt); return true;
 		case 0x1B: armEmitPCPYH(rd, rt); return true;
-		default:   return false; // PMADDUW/PMULTUW/PMTHI/permutes -> interpreter
+		default:   return false; // PMADDUW/PMULTUW/PMTHI/PEXCH/PEXCW -> interpreter
 	}
 }
 
