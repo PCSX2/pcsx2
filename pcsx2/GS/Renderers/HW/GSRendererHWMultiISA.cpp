@@ -111,7 +111,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, b
 	{
 		if (GSLocalMemory::m_psm[context->TEX0.PSM].pal > 0)
 		{
-			hw.m_mem.m_clut.Read32(context->TEX0, env.TEXA);
+			hw.m_mem.m_clut.Read32(context->TEX0, env.TEXA, env.TEXCLUT);
 		}
 	}
 

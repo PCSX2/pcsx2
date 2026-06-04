@@ -2780,6 +2780,14 @@ void GSState::CheckWriteOverlap(bool req_write, bool req_read)
 					tex_rect = tex_rect.rintersect(tex_draw_rect);
 				}
 
+				if ((prev_ctx.TEX0.PSM & 0x7) >= 3 && prev_ctx.TEX0.CSM == 1)
+				{
+					if (GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.TEX0.CBP, m_prev_env.TEXCLUT.CBW, prev_ctx.TEX0.CPSM, tex_rect))
+					{
+						Flush(GSFlushReason::UPLOADDIRTYTEX);
+						continue;
+					}
+				}
 				if (GSLocalMemory::HasOverlap(blit.DBP, blit.DBW, blit.DPSM, write_rect, prev_ctx.TEX0.TBP0, prev_ctx.TEX0.TBW, prev_ctx.TEX0.PSM, tex_rect))
 				{
 					Flush(GSFlushReason::UPLOADDIRTYTEX);

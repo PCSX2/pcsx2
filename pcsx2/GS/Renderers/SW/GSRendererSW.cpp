@@ -1092,7 +1092,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	{
 		if (GSLocalMemory::m_psm[context->TEX0.PSM].pal > 0)
 		{
-			m_mem.m_clut.Read32(context->TEX0, env.TEXA);
+			m_mem.m_clut.Read32(context->TEX0, env.TEXA, env.TEXCLUT);
 		}
 	}
 

@@ -2920,7 +2920,7 @@ void GSRendererHW::Draw()
 	const GSLocalMemory::psm_t& tex_psm = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM];
 	if (PRIM->TME && tex_psm.pal > 0)
 	{
-		m_mem.m_clut.Read32(m_cached_ctx.TEX0, m_cached_ctx.TEXA);
+		m_mem.m_clut.Read32(m_cached_ctx.TEX0, m_cached_ctx.TEXA, m_draw_env->TEXCLUT);
 		if (m_mem.m_clut.GetGPUTexture())
 		{
 			CalcAlphaMinMax(0, 255);

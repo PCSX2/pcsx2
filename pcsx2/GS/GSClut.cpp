@@ -361,8 +361,12 @@ void GSClut::Read(const GIFRegTEX0& TEX0)
 }
 #endif
 
-void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
+void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegTEXCLUT& TEXCLUT)
 {
+	if (TEX0.CSM == 1)
+	{
+		Write(TEX0, TEXCLUT);
+	}
 	if (m_read.IsDirty(TEX0, TEXA))
 	{
 		m_read.TEX0 = TEX0;

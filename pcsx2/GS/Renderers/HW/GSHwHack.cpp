@@ -377,7 +377,7 @@ bool GSHwHack::GSC_SandGrainGames(GSRendererHW& r, int& skip)
 			if (!rt)
 				return false;
 
-			r.m_mem.m_clut.Read32(next_ctx.TEX0, r.m_env.TEXA);
+			r.m_mem.m_clut.Read32(next_ctx.TEX0, r.m_env.TEXA, r.m_env.TEXCLUT);
 			std::shared_ptr<GSTextureCache::Palette> palette =
 				g_texture_cache->LookupPaletteObject(r.m_mem.m_clut, GSLocalMemory::m_psm[next_ctx.TEX0.PSM].pal, true);
 
@@ -716,7 +716,7 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 		return false;
 
 	// have to set up the palette ourselves too, since GSC executes before it does
-	r.m_mem.m_clut.Read32(RTEX0, r.m_draw_env->TEXA);
+	r.m_mem.m_clut.Read32(RTEX0, r.m_draw_env->TEXA, r.m_env.TEXCLUT);
 	std::shared_ptr<GSTextureCache::Palette> palette =
 		g_texture_cache->LookupPaletteObject(r.m_mem.m_clut, GSLocalMemory::m_psm[RTEX0.PSM].pal, true);
 	if (!palette)
