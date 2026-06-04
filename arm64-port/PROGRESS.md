@@ -8,10 +8,10 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 0 — Tooling & gap verification: COMPLETE.**
-Next concrete task: **Task 0.6 → Phase 1.1** — stand up a VIXL scratch harness to
-prove we can emit + execute ARM64 code, then create the EE recompiler skeleton
-(`pcsx2/arm64/aR5900.{h,cpp}`) wired behind `_M_ARM64` guards in `VMManager.cpp`.
+**Phase 0 — Tooling & gap verification: COMPLETE (incl. proven emit+execute harness).**
+Next concrete task: **Phase 1.1** — create `pcsx2/arm64/aR5900.h` (register-alloc
+structs, `recCpu` extern, REC_FUNC-style macros), then `aR5900.cpp` (1.2) with empty
+`recCpu` functions added to `pcsx2arm64Sources`, mirroring `pcsx2/x86/iR5900.{h,cpp}`.
 
 > When you finish a task, move this pointer to the next one and flip the box below.
 
@@ -23,8 +23,8 @@ prove we can emit + execute ARM64 code, then create the EE recompiler skeleton
 - [x] 0.2 Confirm CPU-provider fallbacks on ARM64 (`VMManager.cpp:2727-2731` force interpreters).
 - [x] 0.3 Gap audit: verified NO dormant EE/IOP/VU rec code exists in repo history — full port required. (See JOURNAL #0.)
 - [x] 0.4 Read existing `pcsx2/arm64/` infra (`AsmHelpers`, `Vif_Dynarec`, `Vif_UnpackNEON`).
-- [ ] 0.5 Study VIXL MacroAssembler API (`3rdparty/vixl/include/vixl/aarch64/macro-assembler-aarch64.h`).
-- [ ] 0.6 Build a VIXL scratch harness: emit a tiny ARM64 function, map executable memory via `HostSys`, call it, assert the return value. Proves the toolchain end-to-end.
+- [x] 0.5 Study VIXL MacroAssembler API + existing `arm64/AsmHelpers.{h,cpp}` block lifecycle (`armSetAsmPtr`/`armStartBlock`/`armEndBlock`, reg-alloc macros, constant pool).
+- [x] 0.6 VIXL scratch harness: `tests/ctest/core/arm64_emit_test.cpp` (gtest `Arm64Emit.*`) mmaps a `MAP_JIT` buffer, emits add/const/load-store via `armAsm`, executes it, asserts results. **All 3 pass.** Proves emit+execute end-to-end.
 
 **Done when:** we can JIT-emit and execute arbitrary ARM64 from a test, and we
 understand the existing `pcsx2/arm64/` patterns well enough to copy them.

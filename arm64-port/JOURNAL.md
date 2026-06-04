@@ -28,6 +28,45 @@
 
 ---
 
+## 2026-06-04 — Phase 0.5/0.6: VIXL emit+execute scratch harness
+
+**Goal:** Prove the ARM64 JIT toolchain end-to-end (emit + execute) before writing
+any recompiler, and internalize the existing `arm64/AsmHelpers` emission lifecycle.
+
+**What changed:**
+- New `tests/ctest/core/arm64_emit_test.cpp` — gtest suite `Arm64Emit.*` (3 tests):
+  `AddTwoArgs` (w0+w1), `ReturnConstant64` (64-bit imm materialization),
+  `LoadStoreThroughPointer` (str through x0). Each mmaps a `MAP_JIT` buffer and
+  runs it through the *real* emit path: `armSetAsmPtr` → `armStartBlock` →
+  `armAsm->...` → `armEndBlock`, then calls the emitted function.
+- `tests/ctest/core/CMakeLists.txt` — adds the file to `core_test` under
+  `if(ARCH_ARM64)`.
+- Commits: <filled at commit>
+
+**Decisions & rationale:**
+- **Reused the production lifecycle, not a one-off mmap+memcpy.** `armStartBlock`/
+  `armEndBlock` already do the Apple-Silicon-critical bits: `BeginCodeWrite`/
+  `EndCodeWrite` (`pthread_jit_write_protect_np` toggle) and
+  `FlushInstructionCache`. Testing through them validates exactly what the EE rec
+  will rely on, and confirms `armAsm` (thread_local) + scratch-reg setup works.
+- **Guard with `__aarch64__`, gate the source in CMake with `ARCH_ARM64`.** Key
+  finding: `_M_ARM64` is **not** defined on this clang/macOS build — cmake only adds
+  `_M_X86=1` for x86 (`BuildParameters.cmake:86`); `ARCH_ARM64` comes from
+  `Pcsx2Defs.h` via `__aarch64__`. CLAUDE.md's `#ifdef _M_ARM64` advice is therefore
+  wrong for this toolchain; use `ARCH_ARM64` / `#ifndef _M_X86` for guards instead.
+- **MAP_JIT mmap mirrors `SharedMemoryMappingArea::Create(.., jit=true)`** in
+  `LnxHostSys.cpp` (which is the POSIX/macOS path). Works in the unsigned test
+  binary (no hardened runtime → no JIT entitlement needed).
+
+**Blockers / open questions:**
+- none. Toolchain confirmed. `core_test` + `common_test` both green via `unittests`.
+
+**Next step:** Phase 1.1 — create `pcsx2/arm64/aR5900.h` (recCpu extern, reg-alloc
+structs, REC_FUNC macros) mirroring `pcsx2/x86/iR5900.h`; then 1.2 empty `aR5900.cpp`
+added to `pcsx2arm64Sources`, confirm it still builds.
+
+---
+
 ## 2026-06-04 — Agentic workflow setup + gap verification
 
 **Goal:** Make the project resumable across fresh Claude Code sessions, and verify
