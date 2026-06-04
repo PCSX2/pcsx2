@@ -28,6 +28,58 @@
 
 ---
 
+## 2026-06-04 — Phase 2.4: full guest-memory round-trip validation
+
+**Goal:** Prove the scalar + quad load/store generators actually read/write the
+right guest bytes at runtime — not just compute the right address — closing
+Phase 2.4 without waiting on the Phase 4 dispatcher.
+
+**What changed:**
+- `tests/ctest/core/arm64_emit_test.cpp` — 6 new `Arm64EmitEE.*` round-trip gtests
+  + the harness behind them:
+  - `VtlbMapping` RAII: allocates a full 4 GB/4 KB `vtlbdata.vmap` (8 MB) and writes
+    direct-pointer entries (`VTLBVirtual::fromPointer`) mapping a local host buffer
+    at guest `0x0010_0000`; restores the prior `vmap` on destruction.
+  - `GuestRegs` (32×16-byte cpuRegs-shaped file) + `RunEEGen()` which emits
+    `void f(void* regfile)` with a prologue saving `RESTATEPTR`(x19)+LR, points
+    `RESTATEPTR` at the regfile, runs the generator, restores, and calls it.
+  - Tests: `StoreThenLoadWord`, `LoadByteSignAndZeroExtend` (sign vs zero),
+    `StoreLoadDoubleword`, `LoadStoreWritesToZeroRegDiscarded` ($zero stays 0),
+    `StoreThenLoadQuad`, `QuadAccessForcesAlignment` (0x37 → aligns to 0x30).
+  - 13 `Arm64EmitEE.*` total, all pass; both ctest suites green.
+- Commits:
+  - `32c331a6d ARM64: Guest-memory round-trip tests for load/store family (Phase 2.4)`
+
+**Decisions & rationale:**
+- **Hand-built direct-pointer `vmap` entry, NOT full vtlb init.** With the default
+  `EmuConfig` (`EnableEE=true` ⇒ `CHECK_EEREC` true, `CHECK_CACHE` false) both
+  `vtlb_memRead<T>`/`vtlb_memWrite<T>` and the quad variants reduce to
+  `*reinterpret_cast<T*>(vmap[addr>>12].assumePtr(addr))` — no handler dispatch,
+  no `CheckCache`. So mapping a buffer needs only one `vmap` entry per page
+  (`fromPointer(host - vaddr)`); `vtlb_Core_Alloc` (SysMemory reservation, fastmem
+  area, page-fault handler) and `vtlb_VMapBuffer` (CHECK_FASTMEM branch) are all
+  avoidable. This is the "option (a), standalone vtlb" the last two entries flagged
+  — confirmed feasible and far smaller than booting the VM.
+- **`armEmitCall` is pool-safe with `nullptr`.** When the pool is null (or target is
+  >±128 MB) it falls back to `Mov(x16,target); Blr(x16)`, so the test's
+  `armSetAsmPtr(..., nullptr)` handles the real `vtlb_memRead/Write` calls fine.
+- **Verified the marshalling that addr-only tests couldn't:** sub-word sign/zero
+  extension into the 64-bit GPR, 64-bit data through `RXARG2`, the 128-bit q0
+  in/out for quad, and the `& ~0xF` quad align — all against ground-truth bytes.
+
+**Blockers / open questions:**
+- none. Phase 2 slow-path load/store is functionally complete and proven. (Fastmem
+  fast path 2.2 still deferred — optimisation, not correctness.)
+
+**Next step:** Phase 3.1 — EE immediate integer ops (`ADDI/ADDIU/SLTI/SLTIU/ANDI/
+ORI/XORI/LUI/DADDI/DADDIU`): add generators in a new `aR5900Arith.cpp` (or extend
+the load/store TU), dispatch from `recTranslateOp`, unit-test the math directly
+(no vtlb needed). Ref x86 `iR5900Arit.cpp`/`iR5900AritImm.cpp`. Alternatively the
+deferred unaligned `LWL/LWR/LDL/LDR`+`SWL/...` family (byte-merge codegen) — but
+Phase 3 is higher-leverage toward a runnable block.
+
+---
+
 ## 2026-06-04 — Phase 2.3 complete: full scalar + quad load/store family
 
 **Goal:** Finish the EE aligned load/store family — wire the rest of the scalar

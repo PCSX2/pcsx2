@@ -8,8 +8,8 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 0 COMPLETE. Phase 1 COMPLETE. Phase 2.1 DONE. Phase 2.3 DONE**
-(full scalar + quad load/store family). The EE rec skeleton (`aR5900.{h,cpp}`)
+**Phase 0 COMPLETE. Phase 1 COMPLETE. Phase 2.1 DONE. Phase 2.3 DONE. Phase 2.4 DONE**
+(full scalar + quad load/store family, runtime round-trip-proven). The EE rec skeleton (`aR5900.{h,cpp}`)
 defines `recCpu`, reserves the code cache + const pool, and is wired into
 `VMManager.cpp` (Reserve/Reset/Shutdown; `Cpu` stays `&intCpu`).
 `aR5900LoadStore.cpp` provides the slow-path memory primitives
@@ -23,20 +23,22 @@ load/store family: `LB/LBU/LH/LHU/LW/LWU/LD`, `SB/SH/SW/SD`, `LQ/SQ` (16-byte
 aligned, full 128-bit NEON access). Unaligned variants
 (`LWL/LWR/LDL/LDR`, `SWL/SWR/SDL/SDR`) deferred — need byte-merge codegen.
 
-The address-mode + quad-align codegen is runtime-proven by 7 gtests
-(`Arm64EmitEE.*`). The decode/dispatch path is still **inert** (interpreter stays
-the active provider; `recExecute` is never entered — Phase 4 adds the
-enter-trampoline pinning `RESTATEPTR=&cpuRegs`, the block LUT, PC/cycle, and event
-tests).
+The full load/store family is now runtime round-trip-proven by 13 gtests
+(`Arm64EmitEE.*`): 7 address/align tests + 6 Phase 2.4 round-trips that store/load
+real bytes through the vtlb (`StoreThenLoadWord`, `LoadByteSignAndZeroExtend`,
+`StoreLoadDoubleword`, `LoadStoreWritesToZeroRegDiscarded`, `StoreThenLoadQuad`,
+`QuadAccessForcesAlignment`). The decode/dispatch path is still **inert**
+(interpreter stays the active provider; `recExecute` is never entered — Phase 4
+adds the enter-trampoline pinning `RESTATEPTR=&cpuRegs`, the block LUT, PC/cycle,
+and event tests).
 
-Next concrete task: **Phase 2.4 end-to-end validation** — full guest-memory
-round-trip through the scalar + quad generators. Needs either (a) a lightweight
-vtlb-init test harness so a gtest can `armEmitLoadGpr/StoreGpr/LoadQuad/StoreQuad`
-against real RAM (the smaller, ground-truth-friendly step — look at whether vtlb
-can be initialized standalone first), or (b) the Phase 4 dispatcher to enter
-`recExecute` for real. After 2.4, either tackle the deferred unaligned LWL/LWR/…
-family (byte-merge codegen, ref x86 `recLWL`) or move to Phase 3 (EE integer
-arithmetic). Ref x86 `iR5900LoadStore.cpp` / `recRecompile`.
+Next concrete task: **pick one of two** — (a) the deferred **unaligned load/store
+family** `LWL/LWR/LDL/LDR` + `SWL/SWR/SDL/SDR` (byte-offset mask/merge codegen,
+ref x86 `recLWL`/`recLWR` in `iR5900LoadStore.cpp`), or (b) **Phase 3 — EE integer
+arithmetic** (3.1 immediate ops first: `ADDI/ADDIU/SLTI/.../LUI`). Phase 3 is the
+higher-leverage path toward a runnable block, since the JIT can't execute anything
+until arithmetic + branches exist; the unaligned ops are a self-contained gap that
+can be filled anytime. Recommend (b) Phase 3.1 next.
 
 > When you finish a task, move this pointer to the next one and flip the box below.
 
@@ -74,7 +76,7 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 - [x] 2.1 Slow-path vtlb load/store codegen in `pcsx2/arm64/aR5900LoadStore.cpp`: `armEmitVtlbRead/Write` + `...Quad`, emitting calls to the C++ `vtlb_memRead/Write` helpers (interpreter-equivalent path). Builds, links, arm64, unittests green. *(Re-scoped from "implement `vtlb_DynBackpatchLoadStore`" — that is fastmem-only and is now Phase 2.2; see JOURNAL.)*
 - [ ] 2.2 **Fastmem fast path:** implement `vtlb_DynBackpatchLoadStore` in `pcsx2/arm64/RecStubs.cpp` (currently `pxFailRel`) + the direct `REFASTMEMBASE`-relative load/store emit + `vtlb_AddLoadStoreInfo`. Single-instruction backpatch (overwrite the faulting op with `B thunk`); thunk does the slow path then branches back. Ref `x86/ix86-32/recVTLB.cpp`.
 - [x] 2.3 EE load/store opcode generators: decode + guest-GPR access wired onto `armEmitVtlbRead/Write[Quad]`. `armEmitEffectiveAddr`/`armEmitLoadGpr`/`armEmitStoreGpr` + the 128-bit `armEmitLoadQuad`/`armEmitStoreQuad` (`~0xF` align + NEON q access). `recTranslateOp` dispatches the full aligned family: `LB/LBU/LH/LHU/LW/LWU/LD`, `SB/SH/SW/SD`, `LQ/SQ`. Unaligned `LWL/LWR/LDL/LDR`/`SWL/SWR/SDL/SDR` deferred (byte-merge codegen). Runtime-proven addr+align via 7 `Arm64EmitEE.*` gtests.
-- [ ] 2.4 Test: compile a simple MIPS load/store block, verify correct memory access. (Address-mode codegen already runtime-proven via `Arm64EmitEE.*`; full memory round-trip still pending — see CURRENT FOCUS.)
+- [x] 2.4 Test: full guest-memory round-trip through the scalar + quad generators. 6 new `Arm64EmitEE.*` gtests map a host buffer into the vtlb `vmap` (hand-built direct-pointer entry — no SysMemory/fastmem/page-fault-handler needed since default `EmuConfig` makes `vtlb_memRead/Write` a plain `*vmap[addr>>12].assumePtr(addr)`) and assert store→load, byte sign/zero-extend, doubleword, `$zero`-discard, and quad store/load + align-down all read/write the right bytes. Validates address calc + AAPCS64 marshalling + extension end-to-end.
 
 **Done when:** EE memory ops go through the JIT fastmem path and read/write correctly.
 
