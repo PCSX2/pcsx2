@@ -176,3 +176,28 @@ void armEmitMFHI(u32 rd);
 void armEmitMTHI(u32 rs);
 void armEmitMFLO(u32 rd);
 void armEmitMTLO(u32 rs);
+
+// --------------------------------------------------------------------------------------
+//  EE multiply/divide opcode generators (Phase 3.5)
+// --------------------------------------------------------------------------------------
+// Format: OP rd, rs, rt (R-type). Results written to the HI/LO special registers
+// (the R5900 has no DMULT/DDIV — those are not EE instructions and are omitted).
+//
+//   MULT    : HI/LO = (s64)(GPR[rs].SL[0] * GPR[rt].SL[0]); if rd!=0 GPR[rd]=LO
+//   MULTU   : HI/LO = (u64)(GPR[rs].UL[0] * GPR[rt].UL[0]); if rd!=0 GPR[rd]=LO
+//   DIV     : LO = quotient, HI = remainder (signed 32-bit, with overflow/div0 handling)
+//   DIVU    : LO = quotient, HI = remainder (unsigned 32-bit, with div0 handling)
+//
+// The "1" variants (MMI group) run on the second multiplier pipeline: results go
+// to the upper doubleword HI1/LO1 (HI.SD[1]/LO.SD[1]) and Rd reads LO.UD[1].
+
+void armEmitMULT(u32 rd, u32 rs, u32 rt);
+void armEmitMULTU(u32 rd, u32 rs, u32 rt);
+void armEmitDIV(u32 rs, u32 rt);
+void armEmitDIVU(u32 rs, u32 rt);
+
+// MMI second-pipeline variants (HI1/LO1).
+void armEmitMULT1(u32 rd, u32 rs, u32 rt);
+void armEmitMULTU1(u32 rd, u32 rs, u32 rt);
+void armEmitDIV1(u32 rs, u32 rt);
+void armEmitDIVU1(u32 rs, u32 rt);

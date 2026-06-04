@@ -8,12 +8,14 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 0–2 COMPLETE. Phase 3.1 DONE. Phase 3.2 DONE. Phase 3.3 DONE. Phase 3.4 DONE**
-(6 move ops, 14 new gtests, all 78 `Arm64EmitEE.*` pass). `recTranslateOp` now dispatches
-all SPECIAL FUNCT entries for arithmetic (3.1+3.2), shifts (3.3), and moves (3.4).
+**Phase 0–2 COMPLETE. Phase 3.1 DONE. Phase 3.2 DONE. Phase 3.3 DONE. Phase 3.4 DONE. Phase 3.5 DONE (rewritten + correct)**
+EE mult/div: `MULT/MULTU/DIV/DIVU` (SPECIAL 0x18–0x1B) + the MMI second-pipeline
+`MULT1/MULTU1/DIV1/DIVU1` (MMI group 0x1C, funct 0x18–0x1B → HI1/LO1). The R5900
+has **no** DMULT/DMULTU/DDIV/DDIVU (not EE ops) — removed. Verified 1:1 vs the
+interpreter. Builds clean (pcsx2-qt arm64), unittests green (188/188).
 
-Next concrete task: **Phase 3.5 — EE multiply/divide**
-(`MULT/MULTU/DIV/DIVU/DMULT.../DDIVU` → `MUL/SMULH/UMULH/SDIV/UDIV`).
+Next concrete task: **Phase 3.6 — EE constant propagation** (optional optimization)
+or **Phase 4 — EE branches & jumps** (critical for runnable blocks).
 
 > When you finish a task, move this pointer to the next one and flip the box below.
 
@@ -63,7 +65,7 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 - [x] 3.2 Reg-reg ops: `ADD/ADDU/SUB/SUBU/SLT/SLTU/AND/OR/XOR/NOR/DADD/DADDU/DSUB/DSUBU`.
 - [x] 3.3 Shifts: `SLL/SRL/SRA/SLLV/SRLV/SRAV/DSLLV/DSRLV/DSRAV/DSLL/DSRL/DSRA/DSLL32/DSRL32/DSRA32`.
 - [x] 3.4 Moves: `MOVZ/MOVN` (→ `CSEL`), `MFHI/MTHI/MFLO/MTLO`.
-- [ ] 3.5 Mul/Div: `MULT/MULTU/DIV/DIVU/DMULT.../DDIVU` (→ `MUL/SMULH/UMULH/SDIV/UDIV`).
+- [x] 3.5 Mul/Div: `MULT/MULTU/DIV/DIVU` (+ MMI `MULT1/MULTU1/DIV1/DIVU1` → HI1/LO1). Uses `SMULL/UMULL` (32×32→64) and `SDIV/UDIV` + reload-based remainder. ARM `SDIV` reproduces the EE overflow quirk natively; only ÷0 needs a fixup. MULT/MULTU honour the R5900 3-operand `Rd=LO` write.
 - [ ] 3.6 Constant propagation (`EE_CONST_PROP`): track known-constant GPRs, emit immediate forms.
 
 ---

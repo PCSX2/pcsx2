@@ -330,6 +330,19 @@ namespace
 			std::memcpy(&v, &bytes[33 * 16], sizeof(v));
 			return v;
 		}
+		// Second-pipeline results (MULT1/DIV1 family): HI.UD[1]/LO.UD[1] at +8.
+		u64 getHI1() const
+		{
+			u64 v;
+			std::memcpy(&v, &bytes[32 * 16 + 8], sizeof(v));
+			return v;
+		}
+		u64 getLO1() const
+		{
+			u64 v;
+			std::memcpy(&v, &bytes[33 * 16 + 8], sizeof(v));
+			return v;
+		}
 		void set128(u32 n, const u8 v[16]) { std::memcpy(&bytes[n * 16], v, 16); }
 		void get128(u32 n, u8 out[16]) const { std::memcpy(out, &bytes[n * 16], 16); }
 		void* data() { return bytes.data(); }
@@ -1136,6 +1149,213 @@ TEST(Arm64EmitEE, MTLO_MoveToLO)
 	regs.set64(6, 0xAABBCCDDEEFF0011ull);
 	RunEEGen(regs, [] { armEmitMTLO(/*rs*/ 6); });
 	EXPECT_EQ(regs.getLO(), 0xAABBCCDDEEFF0011ull);
+}
+
+// --------------------------------------------------------------------------------------
+//  Phase 3.5: multiply/divide opcode generators
+// --------------------------------------------------------------------------------------
+
+TEST(Arm64EmitEE, MULT_Signed32x32Positive)
+{
+	GuestRegs regs;
+	// 100 * 50 = 5000
+	regs.set64(5, 100);
+	regs.set64(6, 50);
+	RunEEGen(regs, [] { armEmitMULT(/*rd*/ 0, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO(), 5000ull);
+	EXPECT_EQ(regs.getHI(), 0ull);
+}
+
+TEST(Arm64EmitEE, MULT_Signed32x32Negative)
+{
+	GuestRegs regs;
+	// (-100) * 50 = -5000
+	regs.set64(5, 0xFFFF'FFFF'FFFF'FF9Cull); // -100 as s64
+	regs.set64(6, 50);
+	RunEEGen(regs, [] { armEmitMULT(/*rd*/ 0, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO(), 0xFFFF'FFFF'FFFF'EC78ull); // -5000 sign-extended
+	EXPECT_EQ(regs.getHI(), 0xFFFF'FFFF'FFFF'FFFFull); // -1 sign-extended
+}
+
+TEST(Arm64EmitEE, MULT_Signed32x32LargePositive)
+{
+	GuestRegs regs;
+	// 0x7FFF'FFFF * 2 = 0xFFFF'FFFE (positive, fits in 32-bit signed)
+	regs.set64(5, 0x0000'0000'7FFF'FFFFull);
+	regs.set64(6, 2);
+	RunEEGen(regs, [] { armEmitMULT(/*rd*/ 0, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO(), 0xFFFF'FFFF'FFFF'FFFEull); // -2 sign-extended (overflow to negative)
+	EXPECT_EQ(regs.getHI(), 0ull);
+}
+
+TEST(Arm64EmitEE, MULT_WritesRdWhenNonZero)
+{
+	GuestRegs regs;
+	// R5900 3-operand form: GPR[rd] = LO (the sign-extended low 32 bits).
+	regs.set64(5, 0xFFFF'FFFF'FFFF'FF9Cull); // -100
+	regs.set64(6, 50);
+	RunEEGen(regs, [] { armEmitMULT(/*rd*/ 7, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO(), 0xFFFF'FFFF'FFFF'EC78ull); // -5000
+	EXPECT_EQ(regs.get64(7), 0xFFFF'FFFF'FFFF'EC78ull); // Rd = LO
+}
+
+TEST(Arm64EmitEE, MULTU_Unsigned32x32)
+{
+	GuestRegs regs;
+	// 0xFFFF'FFFF * 2 = 0x1'FFFF'FFFE (33-bit result).
+	// LO = (s32)(low 32) = (s32)0xFFFF'FFFE = -2 → sign-extended (interpreter
+	// sign-extends even for MULTU). HI = (s32)(high 32) = 1.
+	regs.set64(5, 0x0000'0000'FFFF'FFFFull);
+	regs.set64(6, 2);
+	RunEEGen(regs, [] { armEmitMULTU(/*rd*/ 0, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO(), 0xFFFF'FFFF'FFFF'FFFEull);
+	EXPECT_EQ(regs.getHI(), 0x0000'0000'0000'0001ull);
+}
+
+TEST(Arm64EmitEE, MULTU_Unsigned32x32Small)
+{
+	GuestRegs regs;
+	// 100 * 50 = 5000
+	regs.set64(5, 100);
+	regs.set64(6, 50);
+	RunEEGen(regs, [] { armEmitMULTU(/*rd*/ 0, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO(), 5000ull);
+	EXPECT_EQ(regs.getHI(), 0ull);
+}
+
+TEST(Arm64EmitEE, DIV_Signed32Positive)
+{
+	GuestRegs regs;
+	// 100 / 7 = 14 remainder 2
+	regs.set64(5, 100);
+	regs.set64(6, 7);
+	RunEEGen(regs, [] { armEmitDIV(/*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO(), 14ull);
+	EXPECT_EQ(regs.getHI(), 2ull);
+}
+
+TEST(Arm64EmitEE, DIV_Signed32Negative)
+{
+	GuestRegs regs;
+	// (-100) / 7 = -14 remainder -2
+	regs.set64(5, 0xFFFF'FFFF'FFFF'FF9Cull); // -100
+	regs.set64(6, 7);
+	RunEEGen(regs, [] { armEmitDIV(/*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO(), 0xFFFF'FFFF'FFFF'FFF2ull); // -14
+	EXPECT_EQ(regs.getHI(), 0xFFFF'FFFF'FFFF'FFFEull); // -2
+}
+
+TEST(Arm64EmitEE, DIV_OverflowCase)
+{
+	GuestRegs regs;
+	// 0x80000000 / -1 = 0x80000000 (overflow), remainder 0 — ARM SDIV reproduces this.
+	regs.set64(5, 0xFFFF'FFFF'8000'0000ull); // -2147483648
+	regs.set64(6, 0xFFFF'FFFF'FFFF'FFFFull); // -1
+	RunEEGen(regs, [] { armEmitDIV(/*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO(), 0xFFFF'FFFF'8000'0000ull);
+	EXPECT_EQ(regs.getHI(), 0ull);
+}
+
+TEST(Arm64EmitEE, DIV_DivideByZero)
+{
+	GuestRegs regs;
+	// 100 / 0 → quotient -1 (rs >= 0), remainder = rs = 100
+	regs.set64(5, 100);
+	regs.set64(6, 0);
+	RunEEGen(regs, [] { armEmitDIV(/*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO(), 0xFFFF'FFFF'FFFF'FFFFull); // -1
+	EXPECT_EQ(regs.getHI(), 100ull);
+}
+
+TEST(Arm64EmitEE, DIV_DivideByZeroNegative)
+{
+	GuestRegs regs;
+	// (-100) / 0 → quotient 1 (rs < 0), remainder = rs = -100
+	regs.set64(5, 0xFFFF'FFFF'FFFF'FF9Cull); // -100
+	regs.set64(6, 0);
+	RunEEGen(regs, [] { armEmitDIV(/*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO(), 1ull);
+	EXPECT_EQ(regs.getHI(), 0xFFFF'FFFF'FFFF'FF9Cull);
+}
+
+TEST(Arm64EmitEE, DIVU_Unsigned32Positive)
+{
+	GuestRegs regs;
+	// 100 / 7 = 14 remainder 2
+	regs.set64(5, 100);
+	regs.set64(6, 7);
+	RunEEGen(regs, [] { armEmitDIVU(/*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO(), 14ull);
+	EXPECT_EQ(regs.getHI(), 2ull);
+}
+
+TEST(Arm64EmitEE, DIVU_UnsignedLarge)
+{
+	GuestRegs regs;
+	// 0xFFFF'FFFF / 2 = 0x7FFF'FFFF remainder 1 (quotient sign-extends to itself)
+	regs.set64(5, 0x0000'0000'FFFF'FFFFull);
+	regs.set64(6, 2);
+	RunEEGen(regs, [] { armEmitDIVU(/*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO(), 0x0000'0000'7FFF'FFFFull);
+	EXPECT_EQ(regs.getHI(), 1ull);
+}
+
+TEST(Arm64EmitEE, DIVU_DivideByZero)
+{
+	GuestRegs regs;
+	// 100 / 0 → quotient -1 (full 64-bit per interpreter), remainder = rs = 100
+	regs.set64(5, 100);
+	regs.set64(6, 0);
+	RunEEGen(regs, [] { armEmitDIVU(/*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO(), 0xFFFF'FFFF'FFFF'FFFFull);
+	EXPECT_EQ(regs.getHI(), 100ull);
+}
+
+// The "1" variants run on the second multiplier pipeline: results land in
+// HI1/LO1 (HI.UD[1]/LO.UD[1]); the base HI/LO[0] must be left untouched.
+
+TEST(Arm64EmitEE, MULT1_Pipeline1)
+{
+	GuestRegs regs;
+	regs.set64(5, 0xFFFF'FFFF'FFFF'FF9Cull); // -100
+	regs.set64(6, 50);
+	RunEEGen(regs, [] { armEmitMULT1(/*rd*/ 7, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO1(), 0xFFFF'FFFF'FFFF'EC78ull); // -5000 → LO1
+	EXPECT_EQ(regs.getHI1(), 0xFFFF'FFFF'FFFF'FFFFull); // -1   → HI1
+	EXPECT_EQ(regs.get64(7), 0xFFFF'FFFF'FFFF'EC78ull); // Rd = LO.UD[1]
+	EXPECT_EQ(regs.getLO(), 0ull);                      // base LO untouched
+	EXPECT_EQ(regs.getHI(), 0ull);                      // base HI untouched
+}
+
+TEST(Arm64EmitEE, MULTU1_Pipeline1)
+{
+	GuestRegs regs;
+	regs.set64(5, 0x0000'0000'FFFF'FFFFull);
+	regs.set64(6, 2);
+	RunEEGen(regs, [] { armEmitMULTU1(/*rd*/ 0, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO1(), 0xFFFF'FFFF'FFFF'FFFEull);
+	EXPECT_EQ(regs.getHI1(), 0x0000'0000'0000'0001ull);
+}
+
+TEST(Arm64EmitEE, DIV1_Pipeline1)
+{
+	GuestRegs regs;
+	regs.set64(5, 0xFFFF'FFFF'FFFF'FF9Cull); // -100
+	regs.set64(6, 7);
+	RunEEGen(regs, [] { armEmitDIV1(/*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO1(), 0xFFFF'FFFF'FFFF'FFF2ull); // -14
+	EXPECT_EQ(regs.getHI1(), 0xFFFF'FFFF'FFFF'FFFEull); // -2
+	EXPECT_EQ(regs.getLO(), 0ull);                      // base untouched
+}
+
+TEST(Arm64EmitEE, DIVU1_Pipeline1)
+{
+	GuestRegs regs;
+	regs.set64(5, 100);
+	regs.set64(6, 0); // divide-by-zero on pipeline 1
+	RunEEGen(regs, [] { armEmitDIVU1(/*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.getLO1(), 0xFFFF'FFFF'FFFF'FFFFull); // -1
+	EXPECT_EQ(regs.getHI1(), 100ull);
 }
 
 #endif // __aarch64__

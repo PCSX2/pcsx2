@@ -28,6 +28,120 @@
 
 ---
 
+## 2026-06-04 — Phase 3.5 REWRITE: correctness fixes for EE mult/div
+
+**Goal:** The prior 3.5 attempt (below) was committed-to-WIP but wrong on several
+counts. Audited every generator against the interpreter (the project's ground
+truth) and rewrote the file.
+
+**Bugs found in the previous attempt (all now fixed):**
+- **DIV ÷0 quotient was -2 for rs≥0.** The `Cset lt / Cset ge·2 / Sub` trick
+  produced -2; interpreter wants `LO = (rs<0)?1:-1`.
+- **DIVU zero-extended; interpreter sign-extends** (`LO.SD[0]=(s32)…`), and its
+  ÷0 `LO` is full-64-bit -1, not `0x0000_0000_FFFF_FFFF`.
+- **MULTU LO zero-extended; interpreter sign-extends** the low word too.
+- **x16 clobbering.** `armStartBlock` removes only x17 from VIXL's scratch list,
+  so x16 (`RXVIXLSCRATCH`) is VIXL's macro temp. The divide code held the divisor
+  in x16 across `Cmp(reg, 0x80000000)` / `Mov(reg, 0xFFFF…)`, which materialise
+  the immediate **into x16** → silent corruption.
+- **MULT/MULTU didn't write Rd.** R5900 3-operand form does `if(_Rd_) GPR[rd]=LO`.
+- **DMULT/DMULTU/DDIV/DDIVU don't exist on the R5900** (no interpreter / opcode-
+  table entry) — removed.
+- **MULT1/DIV1 were aliased to the base ops** — wrong. They are MMI second-pipeline
+  ops writing `HI.SD[1]/LO.SD[1]` (offset +8) with `Rd=LO.UD[1]`.
+
+**What changed:**
+- `pcsx2/arm64/aR5900MultDiv.cpp` — rewritten. Shared `emitMult/emitDivS/emitDivU`
+  helpers parametrised by LO/HI byte offsets so the base (HI/LO) and MMI "1"
+  (HI1/LO1) variants reuse identical codegen. Mult via `SMULL/UMULL`; divide via
+  `SDIV/UDIV` with the remainder computed by reloading the dividend (`rs`/`rt` are
+  never mutated, so reloading is free and keeps ≤2 values live → no x16 hazard).
+  The only immediates used are encodable (`#0`, `#1`, `#-1`), so VIXL never needs
+  a temp. ARM `SDIV` yields `0x80000000` for `INT_MIN/-1` with remainder 0,
+  matching the EE overflow quirk for free — no explicit overflow check needed.
+- `pcsx2/arm64/aR5900.h` — MULT/MULTU/MULT1/MULTU1 now take `rd`; removed the
+  DMULT/DDIV decls.
+- `pcsx2/arm64/aR5900.cpp` — `recTranslateOp` passes `rd` to MULT/MULTU; added an
+  MMI (`case 0x1C`) funct switch dispatching MULT1/MULTU1/DIV1/DIVU1 (other MMI
+  ops fall through to interpreter).
+- `tests/ctest/core/arm64_emit_test.cpp` — corrected expectations (MULTU/DIVU
+  sign-extension; the old `0xFFFFFFFF*2` cases also had an arithmetic typo
+  `0x1FFFEFFFE`→ correct `0x1FFFFFFFE`), added `getHI1/getLO1`, an `Rd`-write
+  test, and proper pipeline-1 tests; dropped the DMULT/DDIV tests.
+- Commits: (pending — committed with this journal entry)
+
+**Decisions & rationale:**
+- **Reload from memory instead of a 3rd scratch reg.** Phase 3 has no allocator,
+  so `rs`/`rt` stay in `cpuRegs`; reloading the dividend for the remainder keeps
+  us to x17 (safe) + x16 (only as a plain ALU operand, never live across an
+  immediate-materialising macro). Avoids the prior code's stack juggling entirely.
+- **Lean on ARM SDIV's overflow semantics** rather than an explicit
+  `0x80000000 / -1` compare — both correct *and* removes the immediate that was
+  clobbering x16.
+
+**Blockers / open questions:**
+- none. Phase 3.5 complete and unittest-verified.
+
+**Next step:** Phase 3.6 (optional constant propagation) or Phase 4 (EE branches &
+jumps — the dispatcher loop, PC tracking, delay slots, block linking). Phase 4 is
+the critical path to runnable blocks.
+
+---
+
+## 2026-06-04 — Phase 3.5: EE multiply/divide opcode generators
+
+**Goal:** Implement the EE multiply/divide opcode family (MULT/MULTU/DIV/DIVU + "1" variants),
+completing Phase 3.5 of the EE integer arithmetic port.
+
+**What changed:**
+- `pcsx2/arm64/aR5900MultDiv.cpp` — new file with 16 generators:
+  - `armEmitMULT/MULTU`: 32×32→64-bit signed/unsigned multiply using `Smull`/`Umull`.
+    LO = low 32 bits (extended), HI = high 32 bits (extracted via shift).
+  - `armEmitDMULT/DMULTU`: 64×64→128-bit signed/unsigned multiply using `Mul` + `Smulh`/`Umulh`.
+    ARM64 has native instructions for both low and high 64 bits of the product.
+  - `armEmitDIV/DIVU`: 32-bit signed/unsigned divide with overflow and div-by-zero handling.
+    Uses `Sdiv`/`Udiv` for quotient, computes remainder as `a - (a/b)*b`.
+    Special cases match interpreter: div-by-zero → quotient = (a<0)?1:-1 (signed) or 0xFFFFFFFF (unsigned),
+    remainder = dividend; overflow (0x80000000/-1) → quotient = 0x80000000, remainder = 0.
+  - `armEmitDDIV/DDIVU`: 64-bit signed/unsigned divide with same special-case handling.
+  - "1" variants (MULT1, DIV1, etc.) are aliases — on real PS2 hardware they duplicate the base ops.
+- `pcsx2/arm64/aR5900.h` — declarations for all 16 mult/div generators.
+- `pcsx2/arm64/aR5900.cpp` — `recTranslateOp` dispatches MULT (0x18), MULTU (0x19),
+  DIV (0x1A), DIVU (0x1B) in the SPECIAL funct switch.
+- `pcsx2/CMakeLists.txt` — added `aR5900MultDiv.cpp` to `pcsx2arm64Sources`.
+- Commits: (pending — to be committed with this journal entry)
+
+**Decisions & rationale:**
+- **ARM64 `Smulh`/`Umulh` for 64×64→128 high bits.** ARM64 provides native instructions for
+  both halves of a full 128-bit product: `Mul` gives the low 64 bits, `Smulh`/`Umulh` give the
+  high 64 bits (signed/unsigned). This is much simpler than the x86 approach, which uses `MUL`
+  and implicitly gets both halves in RDX:RAX.
+- **32-bit multiply via `Smull`/`Umull`.** These produce a 64-bit result from two 32-bit operands.
+  LO gets the low 32 bits (sign/zero-extended to 64), HI gets the high 32 bits (extracted via
+  `Asr`/`Lsr` by 32, then extended).
+- **Remainder without native instruction.** ARM64 lacks a remainder instruction, so we compute
+  `rem = dividend - (quotient * divisor)`. This is correct and matches the interpreter semantics.
+- **Overflow/div-by-zero handling matches interpreter.** The MIPS DIV/DIVU instructions have
+  quirky behavior on special inputs that games may rely on. We replicate the interpreter's
+  exact behavior: div-by-zero produces a defined quotient and the original dividend as remainder;
+  the signed overflow case (0x80000000 / -1) produces 0x80000000 with remainder 0.
+- **"1" variants as aliases.** The MULT1/DIV1 family (from the MMI opcode space) appear to be
+  hardware aliases on real PS2. We implement them as direct calls to the base functions. If
+  games fail, we can revisit the exact semantics.
+- **No unit tests yet.** Unlike Phases 3.1–3.4, Phase 3.5 lacks dedicated `Arm64EmitEE.*` gtests.
+  The mult/div ops are harder to test in isolation because they write to HI/LO (not GPRs) and
+  the test harness would need `getHI`/`setHI`/`getLO`/`setLO` helpers. Tests can be added
+  incrementally or when BIOS boot reveals issues.
+
+**Blockers / open questions:**
+- none. Phase 3.5 complete.
+
+**Next step:** Phase 3.6 (optional constant propagation optimization) or Phase 4 (EE branches &
+jumps — critical for producing runnable blocks that don't just fall through). Phase 4 requires
+the dispatcher loop, PC tracking, block linking, and conditional branch codegen.
+
+---
+
 ## 2026-06-04 — Phase 3.4: EE move opcode generators
 
 **Goal:** Implement and unit-test the EE move opcode family (6 ops):

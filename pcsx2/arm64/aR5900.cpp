@@ -159,6 +159,23 @@ static bool recTranslateOp(u32 op)
 				case 0x11: armEmitMTHI(rs); return true;
 				case 0x12: armEmitMFLO(rd); return true;
 				case 0x13: armEmitMTLO(rs); return true;
+				// Multiply/Divide (Phase 3.5)
+				case 0x18: armEmitMULT(rd, rs, rt); return true;
+				case 0x19: armEmitMULTU(rd, rs, rt); return true;
+				case 0x1A: armEmitDIV(rs, rt); return true;
+				case 0x1B: armEmitDIVU(rs, rt); return true;
+				default:   return false;
+			}
+
+		// MMI — second-pipeline multiply/divide (Phase 3.5). Other MMI ops (SIMD,
+		// MFHI1/MFLO1, ...) are not yet implemented and fall through to false.
+		case 0x1C:
+			switch (funct)
+			{
+				case 0x18: armEmitMULT1(rd, rs, rt); return true;
+				case 0x19: armEmitMULTU1(rd, rs, rt); return true;
+				case 0x1A: armEmitDIV1(rs, rt); return true;
+				case 0x1B: armEmitDIVU1(rs, rt); return true;
 				default:   return false;
 			}
 
