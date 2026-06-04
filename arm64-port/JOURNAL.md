@@ -28,6 +28,53 @@
 
 ---
 
+## 2026-06-04 — Phase 4.4 recLUT root-caused (x19) but BIOS-stall; reverted to Phase 4.3
+
+**Goal:** Resume the previous session's Phase 4.4 Commit A (recLUT execution-model
+rewrite), which was written into the working tree but crashed the BIOS at ~0.44s.
+Find and fix the crash, get the BIOS booting.
+
+**What changed:**
+- Diagnosed the crash to root cause with progressively targeted instrumentation
+  (dispatch trace → per-dispatch x19 capture → before/after captures around the
+  external calls). **Root cause: `RESTATEPTR = x19 = &cpuRegs` is pinned once in
+  EnterRecompiledCode and assumed permanent, but `_cpuEventTest_Shared` (reached via
+  DispatcherEvent→recEventTest; services DMA/VIF and runs other ARM64 JIT) clobbers x19
+  and returns. The dispatcher then reads `cpuRegs.pc` via the garbage x19 → unmapped
+  recLUT page → `recExitUnmapped`.** Proven directly: `eventEntryX19=&cpuRegs` /
+  `eventExitX19=garbage` straddling the `recEventTest` call.
+- Fixed on the wip branch by re-pinning `RESTATEPTR=&cpuRegs` at the top of
+  DispatcherReg (every block/event/compile path funnels through it). Crash gone,
+  stable >25s, unit tests green (core 258/258, Arm64EmitEE 173/173).
+- **But the BIOS still does not reach display:** EE bursts to ~365k cycles then stalls
+  in a wait loop (~0x9fc42b08) while events keep firing; VPS stays 0. Separate Commit-A
+  regression vs the Phase 4.3 model, not yet root-caused.
+- **Decision (user-directed): revert `armjit` to the booting Phase 4.3 model**
+  (`s_blocks` + C++ dispatcher loop) and preserve the recLUT attempt + x19 fix on branch
+  `armjit-reclut-wip` (commit `7e3404cf4`). Verified the restored model boots:
+  `Mode Changed to DVD PAL`, `GS CRTC DVD PAL 720x480`, `Pad: DS2 Config Finished`,
+  no crash, 100% CPU.
+- Commits: docs only on `armjit` (this entry + PROGRESS); recLUT code on the wip branch.
+
+**Decisions & rationale:**
+- Reverted instead of pushing through the stall: Phase 4.3 already boots and is the
+  safer baseline for continued EE work (Phase 5.4 MMI etc.); the recLUT optimisation can
+  be resumed later from the wip branch now that its crash is understood.
+- The x19 lesson generalises: **no host register survives an external C++/JIT call in
+  this codebase** (the VIF/DMA dynarec treats x19-x28 as free scratch). Any future
+  pinned-register design must reload at the dispatch funnel or after each external call,
+  not pin-once.
+
+**Blockers / open questions:**
+- recLUT BIOS-stall (~0x9fc42b08) unsolved — likely EE↔IOP sync or a miscompiled op
+  surfaced by the new dispatch/cycle-tail model. Owned by `armjit-reclut-wip`.
+
+**Next step:** On `armjit` (booting baseline), start **Phase 5.4 MMI** (128-bit int
+SIMD → NEON, ref `x86/iMMI.cpp`). Resume Phase 4.4 only on `armjit-reclut-wip`, starting
+from the stall (do NOT re-derive the x19 crash — it's fixed there).
+
+---
+
 ## 2026-06-04 — Phase 5.2b COMPLETE: MADD/MSUB, MAX/MIN, compares, CVT, BC1
 
 **Goal:** Finish the EE FPU single-precision suite — multiply-accumulate, min/max,

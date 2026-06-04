@@ -8,6 +8,40 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 4.4 (recLUT execution model) ATTEMPTED & PARKED — booting Phase 4.3 model restored.**
+The full x86-style rewrite (recLUT page table + emitted DispatcherReg/Event/JITCompile/
+Enter/Unmapped stubs + emitted cycle/event tail, x19 pinned once, `s_blocks` removed) was
+written on a branch and debugged to root cause, but it does **not** boot the BIOS, so
+`armjit` has been reverted to the known-good Phase 4.3 dispatcher (`s_blocks` + C++ loop)
+which boots cleanly (verified: `Mode Changed to DVD PAL` + `Pad: DS2 Config Finished`).
+The recLUT work is preserved on branch **`armjit-reclut-wip`** (commit `7e3404cf4`).
+
+Two bugs were found in the recLUT attempt:
+1. **CRASH (root-caused + fixed on the wip branch):** crash at ~0.44s, `recExitUnmapped`
+   with PC=0x9fc43144. Cause: the model pins `RESTATEPTR=x19=&cpuRegs` once in
+   EnterRecompiledCode and assumes it survives forever, but **`_cpuEventTest_Shared`
+   (reached via DispatcherEvent→recEventTest; it services DMA/VIF and runs other ARM64
+   JIT) does NOT preserve x19** across the C++ call. The dispatcher then reads
+   `cpuRegs.pc` through a garbage x19 and lands on an unmapped recLUT page. Fix on the
+   wip branch: re-pin `RESTATEPTR=&cpuRegs` at the top of DispatcherReg every dispatch.
+   **Lesson for any pinned-register design: no host register survives an external
+   C++/JIT call here — reload it at the dispatch funnel (or after each external call).**
+2. **STALL (open, the reason for the revert):** with the crash fixed the BIOS still does
+   not reach display — the EE bursts to ~365k cycles then stalls in a wait loop
+   (~0x9fc42b08) with events still firing; VPS stays 0. Separate Commit-A regression vs
+   the Phase 4.3 model, not yet root-caused. **Resume the recLUT effort on
+   `armjit-reclut-wip` by diagnosing this stall (suspect EE↔IOP sync / a miscompiled op
+   surfaced by the new dispatch model), NOT by re-deriving the x19 crash.**
+
+Next concrete task on `armjit`: continue the EE work on the booting Phase 4.3 baseline —
+**Phase 5.4 MMI** (128-bit SIMD → NEON, many games lean on it) is the recommended
+highest-leverage follow-up. The recLUT/hardlinking optimisation (Phase 4.4) stays parked
+until the stall above is solved.
+
+---
+
+### Earlier focus (kept for context)
+
 **Phase 5.2b COMPLETE — the EE FPU single-precision suite is compiled natively.**
 All COP1 single-precision ops now emit inline against the interpreter's non-IEEE
 semantics (pcsx2/FPU.cpp ground truth): ADD/SUB/MUL(+ACC), DIV/SQRT/RSQRT,
@@ -136,8 +170,11 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
   Multi-instruction `recCompileBlock`; branch generator + delay slot + exit; C++
   dispatcher loop in `recExecute` (pc→block→`_cpuEventTest_Shared`); per-opcode
   interpreter fallback via `intExecuteOneInst`; `Cpu = &recCpu` on ARM64.
-- [ ] 4.4 Block linking (direct branch to already-compiled targets) + recLUT
-  (replace the bring-up `s_blocks` unordered_map + recompile-on-miss).
+- [!] 4.4 Block linking + recLUT (replace the bring-up `s_blocks` unordered_map +
+  recompile-on-miss). **ATTEMPTED on branch `armjit-reclut-wip` (commit `7e3404cf4`),
+  PARKED — does not boot the BIOS (stalls in an EE wait loop; see CURRENT FOCUS).**
+  The x19-pinning crash it hit is root-caused & fixed there; the remaining stall is the
+  blocker. `armjit` stays on the Phase 4.3 `s_blocks` model meanwhile.
 - [~] 4.5 Block invalidation on TLB-mapping change. Bring-up RAM-code invalidation
   landed: compiled ARM64 blocks mark their RAM pages so page-protection writes clear
   the whole block cache. Still TODO: recLUT-backed targeted invalidation and TLB-aware
