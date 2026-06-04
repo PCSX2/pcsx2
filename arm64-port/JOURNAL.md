@@ -28,6 +28,43 @@
 
 ---
 
+## 2026-06-04 — Phase 1.1/1.2: EE recompiler skeleton (recCpu)
+
+**Goal:** Stand up the ARM64 EE recompiler translation unit so `recCpu` is defined
+and links, giving later phases a place to add codegen. No guest code compiled yet.
+
+**What changed:**
+- New `pcsx2/arm64/aR5900.h` — register-allocation contract: `RESTATEPTR`=x19
+  (`&cpuRegs`), `REFASTMEMBASE`=x20 (fastmem base), `REVTLBPTR`=x21 (vtlb base,
+  wired in Phase 2). Callee-saved (x19-x28) so they survive C ABI calls.
+- New `pcsx2/arm64/aR5900.cpp` — defines the `R5900cpu recCpu` provider (matches
+  R5900.h's `extern`). All entry points are stubs: `recExecute` is `pxFailRel`
+  (loud if ever reached before it's real), the rest are no-ops with phase-tagged
+  TODOs. `recClear` kept `static` (no external refs yet) to dodge -Wmissing-prototypes.
+- `pcsx2/CMakeLists.txt` — added both files to `pcsx2arm64Sources`/`pcsx2arm64Headers`.
+- Commits: <filled at commit>
+
+**Decisions & rationale:**
+- **Skeleton defines `recCpu` but does NOT wire it into VMManager yet.** On ARM64,
+  `recCpu` is currently referenced only inside `#ifdef _M_X86` blocks in
+  VMManager.cpp (2672/2700/2721), so it was never linked. Defining it now is
+  inert/safe; flipping VMManager to actually call Reserve/Reset/Shutdown is Phase
+  1.5, and switching `Cpu` to `&recCpu` waits until codegen works (interpreter
+  stays ground truth). Kept the change minimal + non-behavioral on purpose.
+- **Trimmed the header to just the reg map.** Dropped speculative `extern pc/
+  g_branch/target` and `recClear` decls — nothing on ARM64 references them yet, and
+  `pc`/`target` are too generic to export prematurely. Add them in Phase 1.4 when
+  the compile loop needs them.
+
+**Blockers / open questions:**
+- none. Builds, links, binary confirmed arm64, both unittests pass.
+
+**Next step:** Phase 1.3 — implement `recReserve`/`recShutdown`: allocate the EE
+code cache (`HostSys`/`SysMemory`, ref `recReserveRAM` in x86 and how
+`Vif_Dynarec.cpp` uses `SysMemory::GetVIFUnpackRec()`) and init `ArmConstantPool`.
+
+---
+
 ## 2026-06-04 — Phase 0.5/0.6: VIXL emit+execute scratch harness
 
 **Goal:** Prove the ARM64 JIT toolchain end-to-end (emit + execute) before writing
@@ -41,7 +78,7 @@ any recompiler, and internalize the existing `arm64/AsmHelpers` emission lifecyc
   `armAsm->...` → `armEndBlock`, then calls the emitted function.
 - `tests/ctest/core/CMakeLists.txt` — adds the file to `core_test` under
   `if(ARCH_ARM64)`.
-- Commits: <filled at commit>
+- Commit: 4a90f609d ARM64: Add VIXL emit+execute scratch harness (Phase 0.6)
 
 **Decisions & rationale:**
 - **Reused the production lifecycle, not a one-off mmap+memcpy.** `armStartBlock`/

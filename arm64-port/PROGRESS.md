@@ -8,10 +8,12 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 0 — Tooling & gap verification: COMPLETE (incl. proven emit+execute harness).**
-Next concrete task: **Phase 1.1** — create `pcsx2/arm64/aR5900.h` (register-alloc
-structs, `recCpu` extern, REC_FUNC-style macros), then `aR5900.cpp` (1.2) with empty
-`recCpu` functions added to `pcsx2arm64Sources`, mirroring `pcsx2/x86/iR5900.{h,cpp}`.
+**Phase 0 COMPLETE. Phase 1.1 + 1.2 COMPLETE** — EE rec skeleton (`aR5900.{h,cpp}`)
+defines `recCpu` and builds/links on ARM64.
+Next concrete task: **Phase 1.3** — `recReserve()`/`recShutdown()`: allocate +
+release the EE code cache via `HostSys`/`SysMemory` (ref `x86/ix86-32/iR5900.cpp`
+`recReserveRAM`/`recReserve` and how `arm64/Vif_Dynarec.cpp` gets its buffer from
+`SysMemory::GetVIFUnpackRec()`), and init the `ArmConstantPool`.
 
 > When you finish a task, move this pointer to the next one and flip the box below.
 
@@ -33,8 +35,8 @@ understand the existing `pcsx2/arm64/` patterns well enough to copy them.
 
 ## Phase 1 — EE Recompiler Skeleton
 
-- [ ] 1.1 Create `pcsx2/arm64/aR5900.h` (register-alloc structs, `recCpu` extern, REC_FUNC-style macros).
-- [ ] 1.2 Create `pcsx2/arm64/aR5900.cpp` with empty `recCpu` functions; add to `pcsx2/CMakeLists.txt` (`pcsx2arm64Sources`); confirm it still builds.
+- [x] 1.1 Created `pcsx2/arm64/aR5900.h` — pins persistent host regs: `RESTATEPTR`=x19 (`&cpuRegs`), `REFASTMEMBASE`=x20 (fastmem base), `REVTLBPTR`=x21 (vtlb base, Phase 2).
+- [x] 1.2 Created `pcsx2/arm64/aR5900.cpp` — defines `recCpu` with stub provider fns (recExecute = `pxFailRel`, rest no-op); added both files to `pcsx2arm64Sources`/`Headers`. Builds + links; binary still arm64; unittests green.
 - [ ] 1.3 `recCpu.Reserve()`: allocate code cache via `HostSys` (ref `x86/BaseblockEx.cpp`).
 - [ ] 1.4 Minimal block compile loop: read 1–2 MIPS ops, emit NOP via VIXL, return; `recCpu.Execute()` jumps in and back.
 - [ ] 1.5 Wire `recCpu` into `VMManager.cpp` (let ARM64 call Reserve/Reset/Shutdown). Keep `Cpu = &intCpu;` until the rec actually works.

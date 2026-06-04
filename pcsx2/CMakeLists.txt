@@ -1054,10 +1054,12 @@ set(pcsx2arm64Sources
 	arm64/Vif_Dynarec.cpp
 	arm64/Vif_UnpackNEON.cpp
 	arm64/RecStubs.cpp
+	arm64/aR5900.cpp
 	)
 
 set(pcsx2arm64Headers
 	arm64/AsmHelpers.h
+	arm64/aR5900.h
 )
 
 # These ones benefit a lot from LTO
