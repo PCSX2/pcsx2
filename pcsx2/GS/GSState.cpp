@@ -2607,7 +2607,6 @@ void GSState::FlushPrim()
 		m_quad_check_valid_shuffle = false;
 		m_drawlist.clear();
 		m_drawlist_bbox.clear();
-		m_drawlist_bbox_tex.clear();
 
 		if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 		{
@@ -4739,71 +4738,6 @@ GSState::PRIM_OVERLAP GSState::GetPrimitiveOverlapDrawlist(bool save_drawlist, b
 		default:
 			pxFail("Invalid primclass."); // Impossible.
 			return PRIM_OVERLAP_UNKNOW;
-	}
-}
-
-template <u32 primclass, bool fst>
-void GSState::GetPrimitiveOverlapDrawlistTextureBBoxImpl(float bbox_scale)
-{
-	pxAssert(m_drawlist_bbox_tex.empty()); // Should only call this once per draw.
-
-	constexpr int n = GSUtil::GetClassVertexCount(primclass);
-	const GSVertex* RESTRICT v = m_vertex->buff;
-	const u16* RESTRICT index = m_index->buff;
-	const u32 count = m_index->tail;
-
-	for (u32 i = 0; i < count; i += n)
-	{
-		const float q = primclass == GS_SPRITE_CLASS ? v[index[i + 1]].RGBAQ.Q : v[index[i]].RGBAQ.Q;
-		GSVector4 bbox = GetTexCoordsImpl<fst>(v[index[i]], q);
-
-		for (u32 j = 1; j < n; j++)
-		{
-			const GSVector4 tex = GetTexCoordsImpl<fst>(v[index[i + j]]);
-			bbox = bbox.min(tex).xyzw(bbox.max(tex));
-		}
-
-		bbox = bbox * bbox_scale; // Account for upscaling.
-		bbox = bbox.floor().xyzw(bbox.ceil()); // Round.
-		bbox += GSVector4(-1.0f, -1.0f, 1.0f, 1.0f); // +1 on all sides for bilinear.
-
-		m_drawlist_bbox_tex.push_back(GSVector4i(bbox));
-	}
-}
-
-void GSState::GetPrimitiveOverlapDrawlistTextureBBox(float bbox_scale)
-{
-	pxAssert(PRIM->TME);
-
-	switch (m_vt.m_primclass)
-	{
-		case GS_POINT_CLASS:
-			if (PRIM->FST)
-				GetPrimitiveOverlapDrawlistTextureBBoxImpl<GS_POINT_CLASS, true>(bbox_scale);
-			else
-				GetPrimitiveOverlapDrawlistTextureBBoxImpl<GS_POINT_CLASS, false>(bbox_scale);
-			break;
-		case GS_LINE_CLASS:
-			if (PRIM->FST)
-				GetPrimitiveOverlapDrawlistTextureBBoxImpl<GS_LINE_CLASS, true>(bbox_scale);
-			else
-				GetPrimitiveOverlapDrawlistTextureBBoxImpl<GS_LINE_CLASS, false>(bbox_scale);
-			break;
-		case GS_TRIANGLE_CLASS:
-			if (PRIM->FST)
-				GetPrimitiveOverlapDrawlistTextureBBoxImpl<GS_TRIANGLE_CLASS, true>(bbox_scale);
-			else
-				GetPrimitiveOverlapDrawlistTextureBBoxImpl<GS_TRIANGLE_CLASS, false>(bbox_scale);
-			break;
-		case GS_SPRITE_CLASS:
-			if (PRIM->FST)
-				GetPrimitiveOverlapDrawlistTextureBBoxImpl<GS_SPRITE_CLASS, true>(bbox_scale);
-			else
-				GetPrimitiveOverlapDrawlistTextureBBoxImpl<GS_SPRITE_CLASS, false>(bbox_scale);
-			break;
-		default:
-			pxAssert(false);
-			return;
 	}
 }
 

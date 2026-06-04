@@ -1226,18 +1226,17 @@ struct alignas(16) GSHWDrawConfig
 		EarlyResolve = 4
 	};
 
-	GSTexture* rt;        ///< Render target
-	GSTexture* ds;        ///< Depth stencil
-	GSTexture* tex;       ///< Source texture
-	GSTexture* pal;       ///< Palette texture
-	const GSVertex* verts;///< Vertices to draw
-	const u16* indices;   ///< Indices to draw
-	u32 nverts;           ///< Number of vertices
-	u32 nindices;         ///< Number of indices
-	u32 indices_per_prim; ///< Number of indices that make up one primitive
-	const std::vector<size_t>* drawlist;              ///< For reducing barriers on sprites
-	const std::vector<GSVector4i>* drawlist_bbox;     ///< For RT copy when barriers not available.
-	const std::vector<GSVector4i>* drawlist_bbox_tex; ///< Additionally if we need to sample not from the same pixel of the RT.
+	GSTexture* rt;         ///< Render target
+	GSTexture* ds;         ///< Depth stencil
+	GSTexture* tex;        ///< Source texture
+	GSTexture* pal;        ///< Palette texture
+	const GSVertex* verts; ///< Vertices to draw
+	const u16* indices;    ///< Indices to draw
+	u32 nverts;            ///< Number of vertices
+	u32 nindices;          ///< Number of indices
+	u32 indices_per_prim;  ///< Number of indices that make up one primitive
+	const std::vector<size_t>* drawlist;          ///< For reducing barriers on sprites
+	const std::vector<GSVector4i>* drawlist_bbox; ///< For RT copy when barriers not available.
 	GSVector4i scissor; ///< Scissor rect
 	GSVector4i drawarea; ///< Area in the framebuffer which will be modified.
 	GSVector4i samplearea; ///< Area in the texture which will be sampled.
