@@ -283,6 +283,35 @@ void intDoBranch(u32 target)
 	}
 }
 
+// Interpret exactly one guest instruction at cpuRegs.pc using the interpreter,
+// then return. This is the recompiler's per-instruction fallback: the ARM64 EE
+// rec dispatcher calls it for opcodes it cannot yet compile (likely branches,
+// coprocessor ops, syscalls, traps, ...). It mirrors execI; for branch opcodes
+// the interpreter's own branch functions handle the delay slot and PC redirect
+// (and, when taken, flush the accrued cycle count via doBranch/intUpdateCPUCycles).
+// For every non-branch op we flush the cycle count here so the rec's cpuRegs.cycle
+// stays current. It must NOT do the interpreter's fastjmp exit (intJmpBuf is not
+// set up in rec context); the rec drives exits through its own event test.
+void intExecuteOneInst()
+{
+	const u32 thispc = cpuRegs.pc;
+	// Pre-increment PC: exception handlers and branch target math expect cpuRegs.pc
+	// to already point at the delay slot (matches execI).
+	cpuRegs.pc += 4;
+	cpuRegs.code = memRead32(thispc);
+
+	const OPCODE& opcode = GetCurrentInstruction();
+	cpuBlockCycles += opcode.cycles * (2 - ((cpuRegs.CP0.n.Config >> 18) & 0x1));
+
+	opcode.interpret();
+
+	// Branch ops flush their own cycles inside doBranch when taken; everything else
+	// (including not-taken branches, which just fall through to the delay slot) we
+	// flush immediately so the dynarec's cycle/event accounting doesn't drift.
+	if (!(opcode.flags & IS_BRANCH))
+		intUpdateCPUCycles();
+}
+
 void intSetBranch()
 {
 	branch2 = /*cpuRegs.branch =*/ 1;

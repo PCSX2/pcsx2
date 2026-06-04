@@ -8,29 +8,38 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 0–3.5 COMPLETE. Phase 4.1 + 4.2 codegen DONE (generators only).**
-EE branch/jump *codegen* lives in `pcsx2/arm64/aR5900Branch.cpp`:
-- 4.1 jumps: `J/JAL/JR/JALR` — write `cpuRegs.pc` (+ link GPR for JAL/JALR).
-- 4.2 conditional branches: `BEQ/BNE/BLTZ/BGEZ/BLEZ/BGTZ/BLTZAL/BGEZAL` — Cmp +
-  Csel select `pc = cond ? target : fallthrough`; *AL forms link unconditionally.
+**Phase 0–4.3 COMPLETE. The EE recompiler now RUNS — `Cpu = &recCpu` boots the BIOS.**
+The dispatcher + delay-slot block compiler are live in `pcsx2/arm64/aR5900.cpp`:
+- `recCompileBlock(startpc)` compiles a straight-line run into one self-contained
+  host block (per-block prologue saves x19+LR and sets RESTATEPTR=&cpuRegs; epilogue
+  restores + RET). It stops at the first **handled** control-flow op (emits the
+  branch generator → compiles the delay slot → ends the block), at the length cap
+  (`MAX_BLOCK_INSTS`, writes pc=next), or just before any op it can't compile
+  (writes pc=that op).
+- `recExecute()` is a C++ dispatcher loop: read `cpuRegs.pc` → `recGetBlock` (compile
+  or `s_blocks` cache hit) → run block → `cpuRegs.cycle += block.cycles` →
+  `_cpuEventTest_Shared` when the event cycle is hit. Exit via `fastjmp` on
+  `eeRecExitRequested` (set by `recSafeExitExecution`).
+- **Per-opcode interpreter fallback:** any op the rec can't compile (COP/FPU/MMI,
+  syscalls, traps, likely & COP branches, ...) is run one-at-a-time by the new
+  `intExecuteOneInst()` (Interpreter.cpp) — it mirrors `execI`, and for branch ops
+  the interpreter's own `doBranch` handles the delay slot + PC + cycle flush.
+- Cycle scaling (`recScaleBlockCycles`) mirrors `iR5900.cpp` `scaleblockcycles`.
+- **Verified:** BIOS boots through `Mode Changed to DVD PAL` + `Pad: DS2 Config
+  Finished` with the rec as the active EE provider; unittests green; arm64 binary.
 
-These emit **only the control-flow effect** (the next-PC / link write). They are
-verified 1:1 vs the interpreter by 16 new `Arm64EmitEE.*` gtests (jumps incl.
-rd==rs / $zero edge cases; branches incl. 64-bit BEQ and rs==31 link timing).
-Builds clean (pcsx2-qt arm64), unittests green. The generators are **not yet wired
-into the block compiler** — `recCompileBlock`/`recExecute` are still inert (Phase
-1.4 single-instr stub) and the interpreter is still the active Cpu provider.
+Key bug fixed during bring-up: blocks make calls (vtlb/interp) that clobber LR, so
+each block must save/restore LR itself (the bare-block + shared-trampoline design
+crashed on the block's final RET). Now every block has its own x19+LR prologue/epilogue
+(matching the `RunEEGen` test harness).
 
-Next concrete task: **Phase 4.3 — the dispatcher + delay-slot block compiler**
-(the architectural core that makes the rec actually run). This is the big one:
-rewrite `recCompileBlock` into a multi-instruction loop with a compile-time PC that
-runs straight-line ops until a branch, then compiles the branch generator + its
-delay slot + block exit; add a C++ dispatcher loop in `recExecute` (read cpuRegs.pc
-→ compile/run block → cpuEventTest); add **interpreter fallback** for every opcode
-`recTranslateOp` returns false on (so it's safe to run); then flip `Cpu = &recCpu`
-and validate on BIOS boot. Deferred within Phase 4: "likely" branches
-(BEQL/BNEL/...) that nullify the delay slot, and block linking (4.4) / the recLUT
-optimization.
+Next concrete task: **Phase 4.3-likely or Phase 5.2 (FPU)** — pick the highest-leverage
+follow-up. Candidates: (a) compile the "likely" branches (BEQL/BNEL/BLEZL/BGTZL/
+BLTZL/BGEZL/BLTZALL/BGEZALL — delay-slot nullification) so they stop hitting the
+interpreter; (b) **Phase 4.4 block linking + recLUT** to kill the per-block
+`unordered_map` lookup + recompile-on-miss cost; (c) **Phase 5.2 COP1/FPU** (BIOS +
+most games lean on it heavily and it's currently all interpreter single-steps).
+Recommend (b) or (c) — both are now measurable against a running rec.
 
 > When you finish a task, move this pointer to the next one and flip the box below.
 
@@ -87,17 +96,18 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 
 ## Phase 4 — EE Branches & Jumps
 
-- [~] 4.1 Jumps: `J/JAL/JR/JALR` — **codegen done** (`aR5900Branch.cpp`, write
-  cpuRegs.pc + link). PC update is in the generator; **delay-slot compilation +
-  block exit are 4.3** (not yet wired into the block compiler).
+- [x] 4.1 Jumps: `J/JAL/JR/JALR` — codegen + wired into the block compiler (decoded
+  by `recEmitBranch`, delay slot compiled after, block exits to dispatcher).
 - [~] 4.2 Conditional branches: `BEQ/BNE/BLEZ/BGTZ/BLTZ/BGEZ/BLTZAL/BGEZAL` —
-  **codegen done** (Cmp + Csel pc-select). "Likely" variants (BEQL/BNEL/BLEZL/
-  BGTZL/BLTZL/BGEZL/BLTZALL/BGEZALL — delay-slot nullification) still TODO.
-- [ ] 4.3 **Dispatcher + delay-slot block compiler** (the runnable-rec core):
-  multi-instruction `recCompileBlock` loop w/ compile-time PC; compile branch +
-  delay slot + exit; C++ dispatcher loop in `recExecute` (pc→block→cpuEventTest);
-  interpreter fallback for unhandled opcodes; flip `Cpu = &recCpu`; BIOS-boot test.
-- [ ] 4.4 Block linking (direct branch to already-compiled targets) + recLUT.
+  codegen + wired (`recEmitBranch`). "Likely" variants (BEQL/BNEL/BLEZL/BGTZL/
+  BLTZL/BGEZL/BLTZALL/BGEZALL — delay-slot nullification) run via interpreter
+  fallback for now; native codegen still TODO.
+- [x] 4.3 **Dispatcher + delay-slot block compiler** — DONE & BIOS-boot verified.
+  Multi-instruction `recCompileBlock`; branch generator + delay slot + exit; C++
+  dispatcher loop in `recExecute` (pc→block→`_cpuEventTest_Shared`); per-opcode
+  interpreter fallback via `intExecuteOneInst`; `Cpu = &recCpu` on ARM64.
+- [ ] 4.4 Block linking (direct branch to already-compiled targets) + recLUT
+  (replace the bring-up `s_blocks` unordered_map + recompile-on-miss).
 - [ ] 4.5 Block invalidation on TLB-mapping change.
 
 ---

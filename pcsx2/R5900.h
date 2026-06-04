@@ -290,6 +290,10 @@ void intSetBranch();
 // parts of the Recs (namely COP0's branch codes and stuff).
 void intDoBranch(u32 target);
 
+// Interpret a single instruction at cpuRegs.pc (recompiler per-opcode fallback).
+// See the implementation in Interpreter.cpp for the contract.
+void intExecuteOneInst();
+
 // modules loaded at hardcoded addresses by the kernel
 const u32 EEKERNEL_START	= 0;
 const u32 EENULL_START		= 0x81FC0;

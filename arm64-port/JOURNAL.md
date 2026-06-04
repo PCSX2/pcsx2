@@ -28,6 +28,84 @@
 
 ---
 
+## 2026-06-04 — Phase 4.3: dispatcher + delay-slot block compiler (the rec RUNS)
+
+**Goal:** Make the EE recompiler actually execute guest code: a multi-instruction
+block compiler that consumes the Phase 3/4 generators, a C++ dispatcher loop, a
+per-opcode interpreter fallback, then flip `Cpu = &recCpu` and boot the BIOS.
+
+**What changed:**
+- `pcsx2/arm64/aR5900.cpp` — the big one:
+  - `recCompileBlock(startpc, *out_cycles)`: compile-time-PC loop. Emits a per-block
+    prologue (`Stp x19,x30` + `armMoveAddressToReg(RESTATEPTR,&cpuRegs)`), then
+    straight-line ops via `recTranslateOp`, terminating at the first **handled**
+    control-flow op (`recEmitBranch` → compile delay slot → exit), the length cap
+    (`MAX_BLOCK_INSTS=256`, writes pc=next), or just before any un-compilable op
+    (writes pc=that op). Epilogue restores x19+LR and RETs.
+  - `recEmitBranch(op, branchpc)`: decodes J/JAL/JR/JALR, BEQ/BNE/BLEZ/BGTZ, REGIMM
+    BLTZ/BGEZ/BLTZAL/BGEZAL → the Phase 4.1/4.2 generators with compile-time
+    target/fallthrough/link (using `_PC_ == branchpc+4`). `recIsHandledBranch`
+    mirrors the coverage for the block-terminator test.
+  - `recEmitInterpInline(op)`: delay-slot fallback — `Str` op into `cpuRegs.code`,
+    `armEmitCall` the interpreter handler (no PC write).
+  - `recExecute()`: `fastjmp_set` + `for(;;)` dispatcher: `recGetBlock(cpuRegs.pc)`
+    (compile or `s_blocks` cache) → run block → `cpuRegs.cycle += block.cycles` →
+    `_cpuEventTest_Shared` when `cycle >= nextEventCycle`. Un-compilable starting op
+    → `intExecuteOneInst()`. Exit via `fastjmp` on `eeRecExitRequested`.
+  - `recScaleBlockCycles` (ports `scaleblockcycles_calculation`), reset/exit plumbing
+    (`recResetRaw`/`recResetEE`/`recSafeExitExecution`/`recClear`, `eeRecExecuting`/
+    `eeRecNeedsReset`/`eeRecExitRequested`/`s_jmp_buf`).
+- `pcsx2/Interpreter.cpp` + `R5900.h` — new public `intExecuteOneInst()`: interprets
+  one op at `cpuRegs.pc` (mirrors `execI`); for branch ops the interpreter's own
+  `doBranch` handles delay slot + PC + cycle flush, for everything else it flushes
+  cycles via `intUpdateCPUCycles`. The rec's per-opcode fallback.
+- `pcsx2/arm64/aR5900.h` — `EE_CODE_OFFSET`.
+- `pcsx2/VMManager.cpp` — `UpdateCPUImplementations` ARM64 branch now selects
+  `Cpu = CHECK_EEREC ? &recCpu : &intCpu` (IOP+VU stay interpreters).
+- Commits: (committed with this journal entry)
+
+**Decisions & rationale:**
+- **Each block owns its x19+LR save/restore (no shared enter-trampoline).** First
+  attempt used a generated trampoline that set x19 and `Blr`'d a bare block — but
+  blocks make calls (vtlb load/store, inline interp) that clobber LR, so the block's
+  final `Ret` jumped to garbage → BIOS never progressed past VM init. Giving each
+  block the same prologue/epilogue as the `RunEEGen` unit-test harness (which already
+  proved this exact shape) fixed it: the BIOS booted immediately after.
+- **Compiled blocks and interpreter single-steps never straddle a cycle/event
+  boundary.** The block compiler stops *before* any un-compilable op; the dispatcher
+  then runs that one op via `intExecuteOneInst`. So compiled-block cycles (rec-owned,
+  added to `cpuRegs.cycle` by the dispatcher) and interpreter-op cycles (interpreter-
+  owned via `cpuBlockCycles`/`doBranch`) stay cleanly separated — no double counting,
+  no entanglement. This sidesteps reimplementing the likely/COP/trap branches: they
+  just fall to the interpreter, which already encodes their delay-slot semantics.
+- **Bring-up cache = flat `unordered_map<pc,block>`, recClear = full reset.** The
+  two-level recLUT + hardlinking (4.4) and targeted invalidation (4.5) are deferred;
+  correctness-first. Block cache cleared on every reset (`recResetRaw`).
+- **Branch generators write `cpuRegs.pc` *before* the delay slot is compiled** (their
+  Phase 4.1/4.2 contract). The delay slot is compiled after and never writes pc, so
+  the committed target survives — verified by the BIOS boot exercising real branches.
+
+**Blockers / open questions:**
+- none blocking. Known approximations (all noted, none break execution): likely/COP
+  branches + FPU/COP/MMI + syscalls all single-step through the interpreter (slow but
+  correct); cycle timing drifts by ~the branch op's own cycle for interpreter-handled
+  branches; `recClear` nukes the whole cache.
+
+**Verification:**
+- `unittests` green (both `common_test` + `core_test`); arm64 binary confirmed.
+- Headless BIOS boot (`-batch -bios`, no disc) with the rec as the active EE
+  provider: `emulog` shows `UpdateVSyncRate: Mode Changed to DVD PAL.` and
+  `Pad: DS2 Config Finished` — the same boot milestones the interpreter hit in
+  Phase 1.5 — then a clean pause/shutdown after 24s. The rec is executing real
+  guest code end-to-end. (Run recipe: copy app, `install_name_tool -change` the four
+  Qt libs to `@executable_path/../Frameworks`, `codesign --force --deep`, `gtimeout`.)
+
+**Next step:** Phase 4.4 (block linking + recLUT to remove the per-block map lookup +
+recompile-on-miss) or Phase 5.2 (COP1/FPU codegen — currently all interpreter
+single-steps, heavily used). Both are now measurable against a running rec.
+
+---
+
 ## 2026-06-04 — Phase 4.1 + 4.2: EE branch/jump codegen (generators)
 
 **Goal:** Land the EE control-flow *codegen* — the jump and conditional-branch

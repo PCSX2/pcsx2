@@ -80,6 +80,9 @@ static constexpr u32 EE_GPR_OFFSET(u32 n) { return n * 16u; }
 // Byte offset of cpuRegs.pc (the next-PC field the branch/jump generators write).
 static constexpr u32 EE_PC_OFFSET = static_cast<u32>(offsetof(cpuRegisters, pc));
 
+// Byte offset of cpuRegs.code (the current-instruction field the interpreter reads).
+static constexpr u32 EE_CODE_OFFSET = static_cast<u32>(offsetof(cpuRegisters, code));
+
 void armEmitEffectiveAddr(const vixl::aarch64::Register& dst, u32 rs, s32 imm);
 void armEmitLoadGpr(u32 bits, bool sign, u32 rt, u32 rs, s32 imm);
 void armEmitStoreGpr(u32 bits, u32 rt, u32 rs, s32 imm);

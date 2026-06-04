@@ -2733,7 +2733,10 @@ void VMManager::UpdateCPUImplementations()
 	CpuVU0 = EmuConfig.Cpu.Recompiler.EnableVU0 ? static_cast<BaseVUmicroCPU*>(&CpuMicroVU0) : static_cast<BaseVUmicroCPU*>(&CpuIntVU0);
 	CpuVU1 = EmuConfig.Cpu.Recompiler.EnableVU1 ? static_cast<BaseVUmicroCPU*>(&CpuMicroVU1) : static_cast<BaseVUmicroCPU*>(&CpuIntVU1);
 #else
-	Cpu = &intCpu;
+	// ARM64 (Phase 4.3): the EE recompiler is now functional, so select it when the
+	// EE rec is enabled (it falls back to the interpreter per-opcode for anything it
+	// can't compile yet). IOP + VU remain interpreters until their ports land.
+	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
 	psxCpu = &psxInt;
 
 	CpuVU0 = &CpuIntVU0;

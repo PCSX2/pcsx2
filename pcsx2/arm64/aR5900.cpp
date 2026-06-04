@@ -13,12 +13,20 @@
 
 #include "arm64/aR5900.h"
 
+#include "Config.h"
 #include "Memory.h"
 #include "R5900.h"
+#include "R5900OpcodeTables.h"
+#include "VMManager.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"
+#include "common/FastJmp.h"
 #include "common/Pcsx2Defs.h"
+
+#include <unordered_map>
+
+namespace a64 = vixl::aarch64;
 
 // --------------------------------------------------------------------------------------
 //  EE code-cache layout (Phase 1.3)
@@ -43,6 +51,33 @@ static u8* recPtrEnd = nullptr; // end of the code region / start of the constan
 
 static ArmConstantPool s_const_pool;
 
+// --------------------------------------------------------------------------------------
+//  Block cache + dispatcher state (Phase 4.3)
+// --------------------------------------------------------------------------------------
+// A compiled EE block: its host entry point and the (scaled) guest-cycle cost the
+// dispatcher charges to cpuRegs.cycle after running it. This is the bring-up cache —
+// a flat guest-PC -> block map, cleared wholesale on cache reset. The two-level
+// recLUT + hardlinking optimisation is Phase 4.4.
+struct EEBlock
+{
+	u8* entry;
+	u32 cycles;
+};
+static std::unordered_map<u32, EEBlock> s_blocks;
+
+// Hard cap on instructions per block, so straight-line code can't run the emit
+// cursor away before we get a chance to reset. (x86 uses page/branch boundaries;
+// this is a simpler bring-up bound.)
+static constexpr u32 MAX_BLOCK_INSTS = 256;
+
+// Execution / reset / exit plumbing, mirroring the x86 rec (iR5900.cpp).
+static bool eeRecExecuting = false;
+static bool eeRecNeedsReset = false;
+static bool eeRecExitRequested = false;
+static fastjmp_buf s_jmp_buf;
+
+static void recResetRaw();
+
 static void recReserve()
 {
 	recPtr = SysMemory::GetEERec();
@@ -54,17 +89,35 @@ static void recReserve()
 static void recShutdown()
 {
 	s_const_pool.Destroy();
+	s_blocks.clear();
 
 	recPtr = nullptr;
 	recPtrEnd = nullptr;
 }
 
-static void recResetEE()
+static void recResetRaw()
 {
-	// Rewind the emit cursor and drop all cached trampolines/literals. Block map
-	// and dispatcher regeneration land in Phase 1.4; const-prop state in Phase 3.6.
+	// Rewind the emit cursor and drop the block cache + all cached trampolines/literals.
 	recPtr = SysMemory::GetEERec();
 	s_const_pool.Reset();
+	s_blocks.clear();
+
+	eeRecNeedsReset = false;
+}
+
+static void recResetEE()
+{
+	if (eeRecExecuting)
+	{
+		// Can't safely rewind the code cache out from under a running block; defer
+		// the reset and bail out to the dispatcher loop at the next safe point.
+		eeRecNeedsReset = true;
+		eeRecExitRequested = true;
+		cpuRegs.nextEventCycle = 0; // force an event test promptly
+		return;
+	}
+
+	recResetRaw();
 }
 
 static void recStep()
@@ -216,55 +269,299 @@ static bool recTranslateOp(u32 op)
 }
 
 // --------------------------------------------------------------------------------------
-//  Minimal block compile loop (Phase 1.4, extended in 2.3)
+//  Branch / jump compilation (Phase 4.3)
 // --------------------------------------------------------------------------------------
-// Compile a single guest instruction at cpuRegs.pc into a block and return its
-// entry point. This exercises the production emission lifecycle (armSetAsmPtr ->
-// armStartBlock -> emit -> armEndBlock) against the real EE code cache, now with a
-// real MIPS decode + dispatch for LW/SW instead of a fixed NOP body.
-//
-// This path is still INERT in normal operation: the interpreter stays the active
-// Cpu provider (recExecute is never entered — Phase 4 adds the enter-trampoline
-// that pins RESTATEPTR=&cpuRegs, the block LUT, PC/cycle management, and event
-// tests). It is groundwork validated by compile-clean + the Arm64EmitEE unit tests
-// that exercise the generators directly; full guest-memory round-trip validation
-// is Phase 2.4.
-static u8* recCompileBlock()
+// Decode a control-flow opcode at branchpc and emit the matching Phase 4.1/4.2
+// generator (which writes cpuRegs.pc and any link register). Returns true if a
+// generator handled it. The compile-time target/fallthrough/link constants follow
+// the interpreter's macros with _PC_ == branchpc + 4 (the delay-slot address):
+//   J/JAL  target = (instr_index << 2) | ((branchpc + 4) & 0xF0000000)
+//   branch target = (branchpc + 4) + (s16(imm) << 2)
+//   fallthrough / link = branchpc + 8
+// Likely branches, coprocessor branches, and traps return false (interpreter
+// fallback handles them, including their delay-slot semantics).
+static bool recEmitBranch(u32 op, u32 branchpc)
+{
+	const u32 opcode = op >> 26;
+	const u32 rs = (op >> 21) & 0x1f;
+	const u32 rt = (op >> 16) & 0x1f;
+	const u32 rd = (op >> 11) & 0x1f;
+	const u32 funct = op & 0x3f;
+
+	const u32 delaypc = branchpc + 4;
+	const u32 jtarget = ((op & 0x03ffffff) << 2) | (delaypc & 0xf0000000u);
+	const u32 btarget = delaypc + (static_cast<u32>(static_cast<s32>(static_cast<s16>(op))) << 2);
+	const u32 fallthrough = branchpc + 8;
+	const u32 linkpc = branchpc + 8;
+
+	switch (opcode)
+	{
+		case 0x02: armEmitJ(jtarget); return true;
+		case 0x03: armEmitJAL(jtarget, linkpc); return true;
+		case 0x04: armEmitBEQ(rs, rt, btarget, fallthrough); return true;
+		case 0x05: armEmitBNE(rs, rt, btarget, fallthrough); return true;
+		case 0x06: armEmitBLEZ(rs, btarget, fallthrough); return true;
+		case 0x07: armEmitBGTZ(rs, btarget, fallthrough); return true;
+
+		case 0x00: // SPECIAL: JR / JALR
+			if (funct == 0x08) { armEmitJR(rs); return true; }
+			if (funct == 0x09) { armEmitJALR(rd, rs, linkpc); return true; }
+			return false;
+
+		case 0x01: // REGIMM: BLTZ / BGEZ / BLTZAL / BGEZAL (rt selector)
+			switch (rt)
+			{
+				case 0x00: armEmitBLTZ(rs, btarget, fallthrough); return true;
+				case 0x01: armEmitBGEZ(rs, btarget, fallthrough); return true;
+				case 0x10: armEmitBLTZAL(rs, btarget, fallthrough, linkpc); return true;
+				case 0x11: armEmitBGEZAL(rs, btarget, fallthrough, linkpc); return true;
+				default: return false; // likely (BLTZL/...) + traps
+			}
+
+		default: return false;
+	}
+}
+
+// Is this opcode a control-flow op we have a generator for? (Used to detect the
+// block-terminating branch; everything else is either straight-line codegen or an
+// interpreter fallback.)
+static bool recIsHandledBranch(u32 op)
+{
+	const u32 opcode = op >> 26;
+	const u32 funct = op & 0x3f;
+	const u32 rt = (op >> 16) & 0x1f;
+	switch (opcode)
+	{
+		case 0x02: case 0x03: case 0x04: case 0x05: case 0x06: case 0x07:
+			return true;
+		case 0x00:
+			return funct == 0x08 || funct == 0x09;
+		case 0x01:
+			return rt == 0x00 || rt == 0x01 || rt == 0x10 || rt == 0x11;
+		default:
+			return false;
+	}
+}
+
+// Emit cpuRegs.code = op, then call the interpreter's handler for `op`. Used for a
+// delay-slot instruction the straight-line generators can't handle. Does NOT touch
+// cpuRegs.pc (the branch generator already committed the next PC, and a normal
+// delay-slot op never writes PC). RESTATEPTR(x19) is callee-saved across the call.
+static void recEmitInterpInline(u32 op)
+{
+	armAsm->Mov(RSCRATCHADDR.W(), op);
+	armAsm->Str(RSCRATCHADDR.W(), a64::MemOperand(RESTATEPTR, EE_CODE_OFFSET));
+	armEmitCall(reinterpret_cast<const void*>(R5900::GetInstruction(op).interpret));
+}
+
+// Compile one straight-line or delay-slot instruction: real generator if we have
+// one, otherwise an inline interpreter call.
+static void recEmitOp(u32 op)
+{
+	if (!recTranslateOp(op))
+		recEmitInterpInline(op);
+}
+
+// cpuRegs.pc = imm (block fallthrough / early-exit target).
+static void recEmitWritePc(u32 pc)
+{
+	armAsm->Mov(RSCRATCHADDR.W(), pc);
+	armAsm->Str(RSCRATCHADDR.W(), a64::MemOperand(RESTATEPTR, EE_PC_OFFSET));
+}
+
+// EE cycle scaling — mirrors iR5900.cpp scaleblockcycles_calculation() so block
+// timing matches the x86 rec / interpreter for a given EECycleRate.
+static u32 recScaleBlockCycles(u32 raw)
+{
+	const bool lowcycles = (raw <= 40);
+	const s8 cyclerate = EmuConfig.Speedhacks.EECycleRate;
+	u32 scale_cycles;
+
+	if (cyclerate == 0 || lowcycles || cyclerate < -99 || cyclerate > 3)
+		scale_cycles = raw >> 3;
+	else if (cyclerate > 1)
+		scale_cycles = raw >> (2 + cyclerate);
+	else if (cyclerate == 1)
+		scale_cycles = static_cast<u32>((raw >> 3) / 1.3f);
+	else if (cyclerate == -1)
+		scale_cycles = (raw <= 80 || raw > 168 ? 5 : 7) * raw / 32;
+	else
+		scale_cycles = ((5 + (-2 * (cyclerate + 1))) * raw) >> 5;
+
+	return (scale_cycles < 1) ? 1 : scale_cycles;
+}
+
+// --------------------------------------------------------------------------------------
+//  Block compiler (Phase 4.3)
+// --------------------------------------------------------------------------------------
+// Compile a straight-line run starting at startpc into one host block:
+//   - straight-line ops we can codegen are emitted inline;
+//   - the run stops at the first control-flow op we have a generator for — that
+//     branch + its delay slot are compiled and the block ends (the branch generator
+//     wrote cpuRegs.pc);
+//   - if an op we cannot start a block with is hit first, returns nullptr so the
+//     dispatcher interprets it instead;
+//   - otherwise the block ends at the next un-compilable op (or the length cap),
+//     writing cpuRegs.pc to that address so the dispatcher resumes there.
+// On success fills *out_cycles with the scaled guest-cycle cost. The host block is
+// self-contained: prologue establishes RESTATEPTR(x19) via the enter trampoline (it
+// is set by the caller of the block), and the epilogue is just RET.
+static u8* recCompileBlock(u32 startpc, u32* out_cycles)
 {
 	// Whole-cache reset once we run past the code region into the constant-pool tail.
 	if (recPtr >= recPtrEnd)
-		recResetEE();
+		recResetRaw();
 
 	armSetAsmPtr(recPtr, recPtrEnd - recPtr, &s_const_pool);
-
 	u8* const entry = armStartBlock();
 
-	const u32 op = memRead32(cpuRegs.pc);
-	cpuRegs.code = op;
-	if (!recTranslateOp(op))
-		armAsm->Nop(); // unhandled opcode placeholder (most ops, until later phases)
+	// Block prologue: preserve the caller's RESTATEPTR(x19) + LR (the body's vtlb /
+	// interpreter calls clobber LR), and point RESTATEPTR at the guest cpuRegs file.
+	// Matches the unit-test harness (RunEEGen). sp stays 16-byte aligned.
+	armAsm->Stp(RESTATEPTR, a64::x30, a64::MemOperand(a64::sp, -16, a64::PreIndex));
+	armMoveAddressToReg(RESTATEPTR, &cpuRegs);
 
+	u32 pc = startpc;
+	u32 raw_cycles = 0;
+	u32 compiled = 0;
+	bool ok = true;
+
+	for (;;)
+	{
+		const u32 op = memRead32(pc);
+		const R5900::OPCODE& info = R5900::GetInstruction(op);
+
+		if (recIsHandledBranch(op))
+		{
+			// Terminate the block: branch generator + delay slot + exit.
+			raw_cycles += info.cycles;
+			recEmitBranch(op, pc); // writes cpuRegs.pc (taken/fallthrough/link)
+
+			const u32 delay_op = memRead32(pc + 4);
+			raw_cycles += R5900::GetInstruction(delay_op).cycles;
+			recEmitOp(delay_op); // delay slot — must not write cpuRegs.pc
+			break;
+		}
+
+		// Straight-line op we can codegen? (Generators decode from `op` directly;
+		// they never read cpuRegs.code, so nothing to set here at compile time.)
+		if (recTranslateOp(op))
+		{
+			raw_cycles += info.cycles;
+			pc += 4;
+			if (++compiled >= MAX_BLOCK_INSTS)
+			{
+				recEmitWritePc(pc); // resume at the next instruction
+				break;
+			}
+			continue;
+		}
+
+		// Un-compilable, non-branch op (FPU/COP/MMI/syscall/likely-branch/...).
+		if (compiled == 0)
+		{
+			// Nothing emitted yet — let the dispatcher interpret this single op.
+			ok = false;
+			break;
+		}
+
+		// End the block here; the dispatcher will interpret this op next.
+		recEmitWritePc(pc);
+		break;
+	}
+
+	if (!ok)
+	{
+		// First op isn't compilable — discard this (never-executed) block without
+		// advancing recPtr, so the space is reused. Close the assembler cleanly; the
+		// dispatcher will interpret the op instead.
+		armAsm->Ldp(RESTATEPTR, a64::x30, a64::MemOperand(a64::sp, 16, a64::PostIndex));
+		armAsm->Ret();
+		armEndBlock();
+		return nullptr;
+	}
+
+	// Block epilogue: restore the caller's RESTATEPTR(x19) + LR, then return.
+	armAsm->Ldp(RESTATEPTR, a64::x30, a64::MemOperand(a64::sp, 16, a64::PostIndex));
 	armAsm->Ret();
-
 	recPtr = armEndBlock();
+
+	*out_cycles = recScaleBlockCycles(raw_cycles);
 	return entry;
 }
 
+// Look up (or compile) the block at `pc`. Returns nullptr if `pc` starts on an op
+// the rec can't compile (the caller should interpret one instruction instead).
+static const EEBlock* recGetBlock(u32 pc)
+{
+	const auto it = s_blocks.find(pc);
+	if (it != s_blocks.end())
+		return &it->second;
+
+	u32 cycles = 0;
+	u8* const entry = recCompileBlock(pc, &cycles);
+	if (!entry)
+		return nullptr;
+
+	const auto ins = s_blocks.emplace(pc, EEBlock{entry, cycles});
+	return &ins.first->second;
+}
+
+static void recEventTest()
+{
+	_cpuEventTest_Shared();
+
+	if (eeRecExitRequested)
+	{
+		eeRecExitRequested = false;
+		fastjmp_jmp(&s_jmp_buf, 1);
+	}
+}
+
+// The dispatcher loop. Reads cpuRegs.pc, runs (compiling if needed) the block there
+// — or interprets one instruction when the block starts on an un-compilable op —
+// then charges cycles and runs the EE event test. Exits via fastjmp on request.
 static void recExecute()
 {
-	// Phase 1.4 proof-of-life: compile one trivial block through the real emitter,
-	// enter it, and return. There is no execution loop / dispatcher yet, so this
-	// runs exactly one (empty) block. The interpreter remains the active Cpu
-	// provider (recCpu is not yet selected in VMManager — Phase 1.5), so this path
-	// is not hit in normal operation; it exists to validate emit + enter + return
-	// end-to-end on the EE code cache before real codegen lands.
-	u8* const entry = recCompileBlock();
-	reinterpret_cast<void (*)()>(entry)();
+	if (eeRecNeedsReset)
+		recResetRaw();
+
+	if (fastjmp_set(&s_jmp_buf) != 0)
+	{
+		eeRecExecuting = false;
+		return;
+	}
+
+	eeRecExecuting = true;
+
+	for (;;)
+	{
+		const EEBlock* const block = recGetBlock(cpuRegs.pc);
+		if (block)
+		{
+			// The block establishes RESTATEPTR(x19) itself and returns via its saved
+			// LR, so it can be entered with a plain indirect call.
+			reinterpret_cast<void (*)()>(block->entry)();
+			cpuRegs.cycle += block->cycles;
+		}
+		else
+		{
+			// Block starts on an op we can't compile yet — interpret exactly one
+			// instruction (it handles its own delay slot / PC / cycles).
+			intExecuteOneInst();
+		}
+
+		if (static_cast<s32>(cpuRegs.cycle - cpuRegs.nextEventCycle) >= 0)
+			recEventTest();
+	}
 }
 
 static void recSafeExitExecution()
 {
-	// TODO(Phase 4): signal the dispatcher loop to exit at a safe point.
+	// Ask the dispatcher loop to fastjmp out at the next event test. Forcing the
+	// event cycle to 0 guarantees the test fires after the current block.
+	eeRecExitRequested = true;
+	cpuRegs.nextEventCycle = 0;
 }
 
 static void recCancelInstruction()
@@ -274,7 +571,15 @@ static void recCancelInstruction()
 
 static void recClear(u32 addr, u32 size)
 {
-	// TODO(Phase 4.5): invalidate compiled blocks covering [addr, addr+size).
+	// Bring-up: any code-cache clear (TLB remap, manual invalidation) drops the
+	// whole block cache. Targeted invalidation + the recLUT land in Phase 4.4/4.5.
+	if (eeRecExecuting)
+	{
+		eeRecNeedsReset = true;
+		recSafeExitExecution();
+		return;
+	}
+	recResetRaw();
 }
 
 R5900cpu recCpu = {
