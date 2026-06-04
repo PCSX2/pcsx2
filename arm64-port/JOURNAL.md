@@ -28,6 +28,53 @@
 
 ---
 
+## 2026-06-04 — Phase 5.2b COMPLETE: MADD/MSUB, MAX/MIN, compares, CVT, BC1
+
+**Goal:** Finish the EE FPU single-precision suite — multiply-accumulate, min/max,
+the C.* compares, CVT.W/CVT.S conversions, and the BC1F/BC1T branches — so COP1 no
+longer single-steps the interpreter for the common float path.
+
+**What changed (3 commits, all mirroring pcsx2/FPU.cpp, all with gtests vs a C++ replica):**
+- `19b148eec` MADD/MSUB(/A)_S + MAX_S/MIN_S. Refactored `emitLoadFpuDouble` to expose
+  `emitClampFpuDoubleBits` (clamp a value already in a reg) for the MADD/MSUB product
+  re-clamp. Reproduced the interpreter asymmetry exactly: the fd-form (MADD/MSUB)
+  re-clamps both the accumulator and the product via `fpuDouble`, while the ACC-form
+  (MADDA/MSUBA) uses the *raw* stored ACC float and an *unclamped* product. MAX/MIN are
+  integer-domain `fp_max`/`fp_min` (both-negative via sign bit of `fs&ft`), clearing O|U.
+- `561ab6da8` C.F/C.EQ/C.LT/C.LE + CVT_W/CVT_S. Compares set/clear the FCR31 C bit from
+  a `fpuDouble`-clamped `Fcmp` (operands finite post-clamp, so ARM float conds match the
+  C++ comparison); C.F always clears. CVT_W is float→s32 with EE saturation (exp-field
+  range check, `Fcvtzs` round-to-zero in range, else sign-based saturation); CVT_S is
+  `Scvtf` (lives in COP1_W, rs==0x14, funct 0x20 — added that dispatcher arm).
+- `dbcc51083` BC1F/BC1T. New generators in `aR5900Branch.cpp` test the FCR31 C bit via
+  `Tst` + the existing `emitSelectPc`. Wired into `recEmitBranch` (opcode 0x11, rs==0x08
+  BC, rt 0x00/0x01) and `recIsHandledBranch` so the block compiler terminates on them
+  and compiles the delay slot. Likely BC1FL/BC1TL stay on interpreter fallback.
+- Trackers: PROGRESS.md 5.2/5.2b flipped to `[x]`, CURRENT FOCUS moved to the next EE
+  follow-up (Phase 4.4 block linking + recLUT, or Phase 5.4 MMI).
+
+**Decisions & rationale:**
+- Same ground-truth-mirroring policy as parts 1–2 (match the interpreter, not iFPUd) —
+  every quirk (MADDA raw-ACC asymmetry, CVT_W exp-field saturation, C.* on clamped
+  operands) was replicated bit-for-bit and asserted, so moving ops from interp→JIT is
+  behaviour-neutral.
+- BC1F/BC1T fit the existing branch machinery cleanly; only `recIsHandledBranch` needed
+  `rs`-awareness so COP1 *arithmetic* (also opcode 0x11) is not mistaken for a branch.
+
+**Blockers / open questions:**
+- none. (Live game verification still pending the duplicate-Qt-bundle workaround noted
+  in the RAM-invalidation entry; unit coverage is complete.)
+
+**Verification:**
+- `cmake --build build --target pcsx2-qt -j18` succeeded; binary still `arm64`.
+- `Arm64EmitEE.*` 173/173; full `core_test` 258/258.
+
+**Next step:** Phase 4.4 — block linking + recLUT (replace the bring-up `s_blocks`
+unordered_map + recompile-on-miss), now measurable against a rec that no longer
+single-steps the FPU. Alternative: Phase 5.4 MMI (128-bit int SIMD → NEON).
+
+---
+
 ## 2026-06-04 — Phase 5.2b (part 2): FPU DIV_S/SQRT_S/RSQRT_S
 
 **Goal:** Land the divide/sqrt family of EE FPU float arithmetic natively (with the

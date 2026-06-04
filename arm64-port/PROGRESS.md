@@ -8,16 +8,19 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 5.2b CONTINUED — DIV_S/SQRT_S/RSQRT_S now compiled natively.**
-`DIV_S`, `SQRT_S`, and `RSQRT_S` are emitted inline and reproduce the EE FPU's
-non-IEEE behaviour: `DIV_S` now mirrors `checkDivideByZero` (`denormals count as
-zero`, `0/0 -> I|SI`, `x/0 -> D|SD`, result = sign-xor | fmax), `SQRT_S` handles
-signed zero / negative input with the interpreter's I|SI side-effects, and
-`RSQRT_S` covers the zero and negative cases before falling through to
-`fpuDouble`-clamped host arithmetic. The shared `emitStoreClampedResult` path is
-reused with `setFlags=false` where appropriate. 10 new `Arm64EmitEE.*` gtests cover
-the new cases against a C++ replica of `pcsx2/FPU.cpp`. **Verified:** `pcsx2-qt`
-builds, `unittests` green, `Arm64EmitEE.*` green at 149/149.
+**Phase 5.2b COMPLETE — the EE FPU single-precision suite is compiled natively.**
+All COP1 single-precision ops now emit inline against the interpreter's non-IEEE
+semantics (pcsx2/FPU.cpp ground truth): ADD/SUB/MUL(+ACC), DIV/SQRT/RSQRT,
+MADD/MSUB(+ACC), MAX/MIN, the C.F/C.EQ/C.LT/C.LE compares, CVT.W/CVT.S, and the
+BC1F/BC1T branches. Shared helpers `emitLoadFpuDouble` / `emitClampFpuDoubleBits` /
+`emitStoreClampedResult` carry the `fpuDouble` input clamp + checkOverflow/Underflow
+result clamp + FCR31 flag side-effects; compares/branches test the FCR31 C bit.
+`Arm64EmitEE.*` covers every op against a C++ replica of FPU.cpp. **Verified:**
+`pcsx2-qt` builds, binary arm64, `Arm64EmitEE.*` 173/173, full core suite 258/258.
+
+**Still on interpreter fallback (intentional):** the double-precision W/L-format
+paths and the *likely* FP branches BC1FL/BC1TL (delay-slot nullification), matching
+the policy for the other likely branches.
 
 **Interlude fix:** FFX black-after-BIOS was likely stale EE blocks for RAM code:
 `recCompileBlock()` now marks compiled RAM pages with `mmap_MarkCountedRamPage()`, so
@@ -25,9 +28,11 @@ writes to loaded ELF/game code fault through the existing vtlb protection path a
 bring-up `recClear()` drops the whole ARM64 block cache. This is coarse but correct for
 bring-up; targeted invalidation remains Phase 4.5.
 
-Next concrete task: **Phase 5.2b continued — MADD/MSUB(/A)_S, MAX_S/MIN_S, compares,
-BC1F/BC1T(L), and CVT.W/CVT.S**. Helpers `emitLoadFpuDouble` /
-`emitStoreClampedResult` remain reusable for all of these.
+Next concrete task: pick the next highest-leverage EE follow-up — recommend
+**Phase 4.4 block linking + recLUT** (kill the per-block `unordered_map` lookup +
+recompile-on-miss now that the FPU no longer single-steps), or **Phase 5.4 MMI**
+(128-bit SIMD → NEON) which many games lean on. Phase 5.1 (COP0) and 5.3 (COP2/VU0
+macro) remain interpreter fallbacks for now.
 
 ---
 
@@ -143,17 +148,18 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 ## Phase 5 — EE Coprocessors
 
 - [ ] 5.1 COP0: interpreter fallback (`recCall(Interp::...)`) initially.
-- [~] 5.2 COP1 (FPU):
+- [x] 5.2 COP1 (FPU) — single-precision suite compiled natively:
   - [x] 5.2a Bit-exact transfer/move/load-store: `MFC1/MTC1/CFC1/CTC1`,
     `MOV_S/ABS_S/NEG_S`, `LWC1/SWC1` (`aR5900FPU.cpp`). No EE float quirks → exact.
-  - [~] 5.2b Float arithmetic — needs EE non-IEEE rounding (`fpuDouble` input clamp +
+  - [x] 5.2b Float arithmetic — EE non-IEEE rounding (`fpuDouble` input clamp +
     checkOverflow/checkUnderflow result clamp + FCR31 flags). Mirrors the **interpreter**
     (single precision, FPU.cpp), not iFPUd. Shared helpers `emitLoadFpuDouble` /
-    `emitStoreClampedResult` in `aR5900FPU.cpp`.
+    `emitClampFpuDoubleBits` / `emitStoreClampedResult` in `aR5900FPU.cpp`.
     - [x] `ADD_S/SUB_S/MUL_S` + ACC `ADDA_S/SUBA_S/MULA_S`.
-    - [ ] `DIV_S/SQRT_S/RSQRT_S` (+ `checkDivideByZero`; over/underflow with no flags).
-    - [ ] `MADD/MSUB(/A)_S`, `MAX_S/MIN_S`.
-    - [ ] `C.F/C.EQ/C.LT/C.LE` compares, `BC1T/BC1F(L)` branches, `CVT.S/CVT.W`.
+    - [x] `DIV_S/SQRT_S/RSQRT_S` (+ `checkDivideByZero`; over/underflow with no flags).
+    - [x] `MADD/MSUB(/A)_S`, `MAX_S/MIN_S`.
+    - [x] `C.F/C.EQ/C.LT/C.LE` compares, `BC1T/BC1F` branches, `CVT.S/CVT.W`.
+    - [ ] Remaining on interpreter fallback: double W/L-format, likely `BC1FL/BC1TL`.
 - [ ] 5.3 COP2 (VU0 macro): interpreter fallback initially.
 - [ ] 5.4 MMI (128-bit int SIMD): map to NEON where possible (ref `x86/iMMI.cpp`).
 
