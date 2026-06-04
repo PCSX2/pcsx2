@@ -83,7 +83,13 @@ void vs_main()
 	// example: 133.0625 (133 + 1/16) should start from line 134, ceil(133.0625 - 0.05) still above 133
 	gl_Position.xy = vec2(i_p) - vec2(0.05f, 0.05f);
 	gl_Position.xy = gl_Position.xy * VertexScale - VertexOffset;
-	gl_Position.z = float(z) * exp_min32;
+
+	#if HAS_CLIP_CONTROL
+		gl_Position.z = float(z) * exp_min32;
+	#else
+		gl_Position.z = (float(z) * exp_min32) * 2.0f - 1.0f;
+	#endif
+
 	gl_Position.w = 1.0f;
 
 	texture_coord();
@@ -160,7 +166,13 @@ ProcessedVertex load_vertex(uint index)
 	uint z = min(i_z, MaxDepth);
 	vtx.p.xy = vec2(i_p) - vec2(0.05f, 0.05f);
 	vtx.p.xy = vtx.p.xy * VertexScale - VertexOffset;
-	vtx.p.z = float(z) * exp_min32;
+
+	#if HAS_CLIP_CONTROL
+		vtx.p.z = float(z) * exp_min32;
+	#else
+		vtx.p.z = (float(z) * exp_min32) * 2.0f - 1.0f;
+	#endif
+
 	vtx.p.w = 1.0f;
 
 	vec2 uv = vec2(i_uv) - TextureOffset;
