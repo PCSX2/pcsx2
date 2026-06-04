@@ -443,3 +443,11 @@ void armEmitPINTEH(u32 rd, u32 rs, u32 rt);
 void armEmitPEXEH(u32 rd, u32 rt);
 void armEmitPEXEW(u32 rd, u32 rt);
 void armEmitPREVH(u32 rd, u32 rt);
+
+// Remaining permutes (Phase 5.4 continuation).
+//   PROT3W : rotate 3 words (Rt-only, {Rt[1], Rt[2], Rt[0], Rt[3]})
+//   PEXCH  : extract even halfwords (swap halfword pairs 1<->2 within each 64-bit half)
+//   PEXCW  : extract even words (swap word pairs 1<->2)
+void armEmitPROT3W(u32 rd, u32 rt);
+void armEmitPEXCH(u32 rd, u32 rt);
+void armEmitPEXCW(u32 rd, u32 rt);

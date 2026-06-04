@@ -8,27 +8,30 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 5.4 MMI 128-bit SIMD — simple lane permutes DONE.**
-Five lane-permute ops now emit inline in `pcsx2/arm64/aR5900MMI.cpp`:
+**Phase 5.4 MMI 128-bit SIMD — all lane permutes DONE.**
+Eight lane-permute ops now emit inline in `pcsx2/arm64/aR5900MMI.cpp`:
 `PINTH/PINTEH` (interleave halfwords), `PEXEH/PEXEW` (extract even lanes),
-`PREVH` (reverse halfwords within each 64-bit half). Each loads GPR[rs]/GPR[rt]
-into scratch q-regs, emits NEON lane-manipulation instructions (`Ins` lane insert,
-`Rev64` for PREVH), and stores the result to GPR[rd]. Dispatch wired in
-`recTranslateMMI2` (sa=0x0A/0x16/0x17/0x18 → PINTH/PEXEH/PREVH/PEXEW) and
-`recTranslateMMI3` (sa=0x0A → PINTEH). **Verified:** `pcsx2-qt` builds arm64;
-5 new `Arm64EmitEE.MMI_{PINTH,PINTEH,PEXEH,PEXEW,PREVH}` gtests pass byte-exact
-vs a C++ replica of `pcsx2/MMI.cpp`; Arm64EmitEE 243/243, core 328/328.
+`PREVH` (reverse halfwords within each 64-bit half), `PROT3W` (rotate 3 words),
+`PEXCH` (extract even halfwords), `PEXCW` (extract even words). Each loads
+GPR[rt] into a scratch q-reg, emits NEON lane-manipulation instructions (`Ins`
+lane insert for all ops; `Rev64` was used for PREVH), and stores the result to
+GPR[rd]. Dispatch wired in `recTranslateMMI2` (sa=0x0A/0x16/0x17/0x18/0x1F →
+PINTH/PEXEH/PREVH/PEXEW/PROT3W) and `recTranslateMMI3` (sa=0x0A/0x1A/0x1C →
+PINTEH/PEXCH/PEXCW). **Verified:** `pcsx2-qt` builds arm64; 8 new
+`Arm64EmitEE.MMI_{PINTH,PINTEH,PEXEH,PEXEW,PREVH,PROT3W,PEXCH,PEXCW}` gtests
+pass byte-exact vs a C++ replica of `pcsx2/MMI.cpp`; Arm64EmitEE 246/246,
+core 331/331.
 
 **Still on interpreter fallback (intentional, not NEON-trivial):** the
 multiply-accumulate family (`PMADDH/PHMADH/PMSUBH/PMULTH/PMADDW/PMSUBW/PMULTW/
 PMADDUW/PMULTUW` → HI/LO), the `PMFHI/PMFLO/PMTHI/PMTLO` HI/LO moves, the variable
-shifts (`PSLLVW/PSRLVW/PSRAVW`), remaining permutes (`PROT3W/PEXCH/PEXCW`),
-`PADSBH`, `QFSRV`, `PEXT5/PPAC5`, `PLZCW`, and `PMFHL/PMTHL`.
+shifts (`PSLLVW/PSRLVW/PSRAVW`), `PADSBH`, `QFSRV`, `PEXT5/PPAC5`, `PLZCW`, and
+`PMFHL/PMTHL`.
 
-Next concrete task: continue Phase 5.4 with the variable shifts
-(`PSLLVW/PSRLVW/PSRAVW` — shift amount from GPR[rs].UL[0] & 0x1F), or the remaining
-permutes (`PROT3W` = rotate 3 words, `PEXCH/PEXCW` = extract even halfwords/words).
-Phase 4.4 recLUT stays parked on `armjit-reclut-wip` until its BIOS stall is solved.
+Next concrete task: Phase 5.4 variable shifts (`PSLLVW/PSRLVW/PSRAVW` — shift
+amount from GPR[rs].UL[0] & 0x1F, masked per lane), or the multiply-accumulate
+family. Phase 4.4 recLUT stays parked on `armjit-reclut-wip` until its BIOS
+stall is solved.
 
 ---
 
@@ -231,10 +234,9 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     `PCPYLD/PCPYUD/PCPYH`. 47 byte-exact gtests vs MMI.cpp.
   - [x] Parallel immediate shifts (`PSLLH/W`, `PSRLH/W`, `PSRAH/W`) — NEON
     `Shl/Ushr/Sshr` with sa=0 fast-path (`Mov`). 18 gtests, all pass.
-  - [x] Simple lane permutes (`PINTH/PINTEH/PEXEH/PEXEW/PREVH`) — NEON `Ins`
-    (lane insert), `Rev64` (PREVH). 5 gtests, all pass.
+  - [x] Lane permutes (`PINTH/PINTEH/PEXEH/PEXEW/PREVH/PROT3W/PEXCH/PEXCW`) — NEON
+    `Ins` (lane insert), `Rev64` (PREVH). 8 gtests, all pass.
   - [ ] Variable shifts (`PSLLVW/PSRLVW/PSRAVW` — amount from GPR[rs]).
-  - [ ] Remaining permutes (`PROT3W/PEXCH/PEXCW`).
   - [ ] Multiply-accumulate to HI/LO (`PMADD*/PMSUB*/PMULT*/PHMADH/PHMSBH` + the
     `PMFHI/PMFLO/PMTHI/PMTLO` moves) — stay on interpreter for now.
   - [ ] Misc (`PADSBH`, `QFSRV`, `PEXT5/PPAC5`, `PLZCW`, `PMFHL/PMTHL`).

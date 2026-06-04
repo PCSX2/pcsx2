@@ -2434,6 +2434,15 @@ namespace mmiref
 	// PREVH: reverse halfwords within each 64-bit half
 	// [Rt[3], Rt[2], Rt[1], Rt[0], Rt[7], Rt[6], Rt[5], Rt[4]]
 	static MQ refPREVH(MQ t) { MQ d{}; for (int n = 0; n < 4; n++) { d.us[n] = t.us[3 - n]; d.us[n + 4] = t.us[7 - n]; } return d; }
+	// PROT3W: rotate 3 words (Rt-only, {UL[0],UL[1],UL[2],UL[3]} -> {UL[1],UL[2],UL[0],UL[3]})
+	// [Rt[1], Rt[2], Rt[0], Rt[3]] in 32-bit lanes
+	static MQ refPROT3W(MQ t) { MQ d{}; d.ul[0] = t.ul[1]; d.ul[1] = t.ul[2]; d.ul[2] = t.ul[0]; d.ul[3] = t.ul[3]; return d; }
+	// PEXCH: extract even halfwords (swap halfword pairs 1<->2 within each 64-bit half)
+	// [Rt[0], Rt[2], Rt[1], Rt[3], Rt[4], Rt[6], Rt[5], Rt[7]]
+	static MQ refPEXCH(MQ t) { MQ d{}; d.us[0] = t.us[0]; d.us[1] = t.us[2]; d.us[2] = t.us[1]; d.us[3] = t.us[3]; d.us[4] = t.us[4]; d.us[5] = t.us[6]; d.us[6] = t.us[5]; d.us[7] = t.us[7]; return d; }
+	// PEXCW: extract even words (swap word pairs 1<->2)
+	// [Rt[0], Rt[2], Rt[1], Rt[3]] in 32-bit lanes
+	static MQ refPEXCW(MQ t) { MQ d{}; d.ul[0] = t.ul[0]; d.ul[1] = t.ul[2]; d.ul[2] = t.ul[1]; d.ul[3] = t.ul[3]; return d; }
 
 	// Two reusable input vectors with a spread of sign / saturation edge values.
 	static MQ inA() { return make({0x01, 0x00, 0x00, 0x80, 0xFF, 0xFF, 0xFF, 0x7F, 0x05, 0xF0, 0x34, 0x12, 0x00, 0x00, 0x00, 0x80}); }
@@ -2565,6 +2574,7 @@ MMI_SHIFT_TEST(PSRAH) MMI_SHIFT_TEST(PSRAW)
 
 MMI_PERM_TEST(PINTH) MMI_PERM_TEST(PINTEH)
 MMI_PERM_UN_TEST(PEXEH) MMI_PERM_UN_TEST(PEXEW) MMI_PERM_UN_TEST(PREVH)
+MMI_PERM_UN_TEST(PROT3W) MMI_PERM_UN_TEST(PEXCH) MMI_PERM_UN_TEST(PEXCW)
 
 // rd == 0 must discard the write (matching the interpreter's `if (!_Rd_) return`).
 TEST(Arm64EmitEE, MMI_DiscardZeroDest)

@@ -375,3 +375,54 @@ void armEmitPREVH(u32 rd, u32 rt)
 	armAsm->Rev64(VD.V8H(), VT.V8H()); // Single instruction!
 	storeQ(VD, rd);
 }
+
+// =============================================================================
+// Remaining lane permutes (Phase 5.4 continuation)
+// =============================================================================
+
+// --- PROT3W: rotate 3 words (Rt-only, Rt = {UL[0],UL[1],UL[2],UL[3]} ) --------
+// Output: [Rt[1], Rt[2], Rt[0], Rt[3]]  (32-bit lanes; lane 3 is unchanged)
+void armEmitPROT3W(u32 rd, u32 rt)
+{
+	if (rd == 0)
+		return;
+	loadQ(VT, rt);
+	armAsm->Mov(VD.V4S(), VT.V4S(), 1);  // VD[0] = Rt[1]
+	armAsm->Ins(VD.V4S(), 1, VT.V4S(), 2); // VD[1] = Rt[2]
+	armAsm->Ins(VD.V4S(), 2, VT.V4S(), 0); // VD[2] = Rt[0]
+	armAsm->Ins(VD.V4S(), 3, VT.V4S(), 3); // VD[3] = Rt[3]  (unchanged)
+	storeQ(VD, rd);
+}
+
+// --- PEXCH: extract even halfwords within each 64-bit half -------------------
+// Swaps halfword pairs (1<->2) within each 64-bit half.
+// Output: [Rt[0], Rt[2], Rt[1], Rt[3], Rt[4], Rt[6], Rt[5], Rt[7]]
+void armEmitPEXCH(u32 rd, u32 rt)
+{
+	if (rd == 0)
+		return;
+	loadQ(VT, rt);
+	armAsm->Mov(VD.V8H(), VT.V8H(), 0);  // VD[0] = Rt[0]
+	armAsm->Ins(VD.V8H(), 1, VT.V8H(), 2); // VD[1] = Rt[2]
+	armAsm->Ins(VD.V8H(), 2, VT.V8H(), 1); // VD[2] = Rt[1]
+	armAsm->Ins(VD.V8H(), 3, VT.V8H(), 3); // VD[3] = Rt[3]
+	armAsm->Ins(VD.V8H(), 4, VT.V8H(), 4); // VD[4] = Rt[4]
+	armAsm->Ins(VD.V8H(), 5, VT.V8H(), 6); // VD[5] = Rt[6]
+	armAsm->Ins(VD.V8H(), 6, VT.V8H(), 5); // VD[6] = Rt[5]
+	armAsm->Ins(VD.V8H(), 7, VT.V8H(), 7); // VD[7] = Rt[7]
+	storeQ(VD, rd);
+}
+
+// --- PEXCW: extract even words (swap word pairs 1<->2) -----------------------
+// Output: [Rt[0], Rt[2], Rt[1], Rt[3]]  (32-bit lanes)
+void armEmitPEXCW(u32 rd, u32 rt)
+{
+	if (rd == 0)
+		return;
+	loadQ(VT, rt);
+	armAsm->Mov(VD.V4S(), VT.V4S(), 0);  // VD[0] = Rt[0]
+	armAsm->Ins(VD.V4S(), 1, VT.V4S(), 2); // VD[1] = Rt[2]
+	armAsm->Ins(VD.V4S(), 2, VT.V4S(), 1); // VD[2] = Rt[1]
+	armAsm->Ins(VD.V4S(), 3, VT.V4S(), 3); // VD[3] = Rt[3]
+	storeQ(VD, rd);
+}

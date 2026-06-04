@@ -28,6 +28,49 @@
 
 ---
 
+## 2026-06-04 — Phase 5.4 MMI: remaining lane permutes complete (PROT3W/PEXCH/PEXCW)
+
+**Goal:** Finish Phase 5.4 lane permutes by implementing the remaining three ops
+(`PROT3W`/`PEXCH`/`PEXCW`) so all MMI lane permutation ops stop single-stepping
+the interpreter.
+
+**What changed:**
+- Extended `pcsx2/arm64/aR5900MMI.cpp` with 3 new generators:
+  - `armEmitPROT3W`: rotate 3 words — `[Rt[1], Rt[2], Rt[0], Rt[3]]` (32-bit lanes)
+  - `armEmitPEXCH`: extract even halfwords — swap halfword pairs 1↔2 within each 64-bit half
+  - `armEmitPEXCW`: extract even words — swap word pairs 1↔2
+  All use `Mov` + `Ins` (lane insert) sequence; no single NEON instruction covers these.
+- Declarations added to `pcsx2/arm64/aR5900.h`.
+- Dispatch wired in `pcsx2/arm64/aR5900.cpp`:
+  - `recTranslateMMI2`: sa=0x1F → `PROT3W`
+  - `recTranslateMMI3`: sa=0x1A → `PEXCH`, sa=0x1C → `PEXCW`
+- 3 new `Arm64EmitEE.MMI_{PROT3W,PEXCH,PEXCW}` gtests in
+  `tests/ctest/core/arm64_emit_test.cpp`: reference functions mirror `pcsx2/MMI.cpp`
+  element indexing; both operand orders tested.
+- Trackers: PROGRESS.md CURRENT FOCUS + Phase 5.4 checkboxes updated.
+- Commits: pending.
+
+**Decisions & rationale:**
+- Same mem-to-mem pattern as prior permutes: load GPR[rt] into scratch q-reg (q31),
+  compute into q29 using `Mov` + `Ins` lane insert sequence, store to GPR[rd].
+  No register allocator needed.
+- `PROT3W` is Rt-only (no Rs operand) — matches the interpreter which only reads Rt.
+  The rotation `[Rt[0],Rt[1],Rt[2],Rt[3]] → [Rt[1],Rt[2],Rt[0],Rt[3]]` leaves lane 3
+  unchanged and rotates lanes 0-2.
+- `PEXCH`/`PEXCW` are also Rt-only — they extract even-indexed elements within each
+  64-bit half, which for these ops means swapping element pairs 1↔2.
+- $zero destination discard: all generators return early if `rd==0`, matching the
+  interpreter's `if (!_Rd_) return`.
+
+**Blockers / open questions:**
+- none. Unit coverage complete (3/3 tests pass).
+
+**Next step:** continue Phase 5.4 — variable shifts (`PSLLVW/PSRLVW/PSRAVW` — shift
+amount from GPR[rs].UL[0] & 0x1F, masked per lane), or the multiply-accumulate family
+(`PMADD*/PMSUB*/PMULT*` → HI/LO). Phase 4.4 recLUT remains parked on `armjit-reclut-wip`.
+
+---
+
 ## 2026-06-04 — Phase 5.4 MMI: simple lane permutes complete
 
 **Goal:** Extend Phase 5.4 with five lane-permute ops (`PINTH/PINTEH/PEXEH/PEXEW/PREVH`)
