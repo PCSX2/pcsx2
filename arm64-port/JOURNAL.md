@@ -59,7 +59,7 @@ completing the EE R-type SPECIAL dispatch table.
   Total `Arm64EmitEE.*` tests: 64; all pass. Two test-expectation bugs caught at
   runtime (`DSLLV` wrong shift count in expected, `DSRL32` off-by-2 in expected).
 - Commits:
-  - `54dba8de1 ARM64: EE shift ops generators (Phase 3.3)`
+  - `0060cbb2a ARM64: EE shift ops generators (Phase 3.3)`
 
 **Decisions & rationale:**
 - **Same mem-to-mem pattern.** Load single source GPR, compute in `RSCRATCHADDR`
