@@ -62,6 +62,7 @@ public:
 	void TransitionToLayout(Layout layout);
 	void CommitClear();
 	void CommitClear(VkCommandBuffer cmdbuf);
+	VkClearValue GetVkClearValue() const;
 
 	// Used when the render pass is changing the image layout, or to force it to
 	// VK_IMAGE_LAYOUT_UNDEFINED, if the existing contents of the image is
@@ -77,7 +78,8 @@ public:
 	/// Framebuffers are lazily allocated.
 	VkFramebuffer GetFramebuffer(bool feedback_loop);
 
-	VkFramebuffer GetLinkedFramebuffer(GSTextureVK* depth_texture, bool feedback_loop_color, bool feedback_loop_depth);
+	VkFramebuffer GetLinkedFramebuffer(GSTextureVK* depth_as_color_texture, GSTextureVK* depth_texture,
+		bool feedback_loop_color, bool feedback_loop_depth_as_color, bool feedback_loop_depth);
 
 	// Call when the texture is bound to the pipeline, or read from in a copy.
 	__fi void SetUseFenceCounter(u64 counter) { m_use_fence_counter = counter; }
@@ -107,7 +109,7 @@ private:
 
 	// linked framebuffer is combined with depth texture
 	// list of color textures this depth texture is linked to or vice versa
-	std::vector<std::tuple<GSTextureVK*, VkFramebuffer, bool, bool>> m_framebuffers;
+	std::vector<std::tuple<GSTextureVK*, GSTextureVK*, VkFramebuffer, bool, bool, bool>> m_framebuffers;
 };
 
 class GSDownloadTextureVK final : public GSDownloadTexture

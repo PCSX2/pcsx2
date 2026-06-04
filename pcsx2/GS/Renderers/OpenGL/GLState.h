@@ -28,6 +28,8 @@ namespace GLState
 	extern u8 bf;
 	extern u8 wrgba;
 
+	extern bool ds_as_rt_mask;
+
 	extern bool depth;
 	extern GLenum depth_func;
 	extern bool depth_mask;

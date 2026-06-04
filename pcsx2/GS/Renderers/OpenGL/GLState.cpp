@@ -24,6 +24,8 @@ namespace GLState
 	u8 bf;
 	u8 wrgba;
 
+	bool ds_as_rt_mask;
+
 	bool depth;
 	GLenum depth_func;
 	bool depth_mask;
@@ -67,6 +69,8 @@ namespace GLState
 		f_dA = GL_ZERO;
 		bf = 0;
 		wrgba = 0xF;
+
+		ds_as_rt_mask = false;
 
 		depth = false;
 		depth_func = GL_LESS;
