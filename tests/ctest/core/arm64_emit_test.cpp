@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <vector>
@@ -1719,7 +1720,15 @@ TEST(Arm64EmitEE, SWC1_StoresFprToMemory)
 // independent of the host FPCR (e.g. flush-to-zero) state: both paths see the same
 // post-op bits and apply the identical clamp logic.
 namespace fpuref {
-constexpr u32 kO = 0x00008000, kU = 0x00004000, kSO = 0x00000010, kSU = 0x00000008;
+constexpr u32 kI = 0x00020000, kD = 0x00010000, kO = 0x00008000, kU = 0x00004000;
+constexpr u32 kSI = 0x00000040, kSD = 0x00000020, kSO = 0x00000010, kSU = 0x00000008;
+
+u32 bits(float f)
+{
+	u32 out;
+	std::memcpy(&out, &f, sizeof(out));
+	return out;
+}
 
 float fpuDouble(u32 f)
 {
@@ -1768,6 +1777,53 @@ Result binop(char op, u32 fs, u32 ft, u32 fcr_in)
 	if (!checkOverflow(bits, kO | kSO, fcr))
 		checkUnderflow(bits, kU | kSU, fcr);
 	return {bits, fcr};
+}
+bool checkDivideByZero(u32& x, u32 divisor, u32 dividend, u32 flags_nonzero, u32 flags_zero, u32& fcr)
+{
+	if ((divisor & 0x7f800000u) == 0)
+	{
+		fcr |= ((dividend & 0x7f800000u) == 0) ? flags_zero : flags_nonzero;
+		x = ((divisor ^ dividend) & 0x80000000u) | 0x7f7fffffu;
+		return true;
+	}
+	return false;
+}
+Result div(u32 fs, u32 ft, u32 fcr_in)
+{
+	u32 out = 0;
+	u32 fcr = fcr_in;
+	if (checkDivideByZero(out, ft, fs, kD | kSD, kI | kSI, fcr))
+		return {out, fcr};
+	out = bits(fpuDouble(fs) / fpuDouble(ft));
+	if (!checkOverflow(out, 0, fcr))
+		checkUnderflow(out, 0, fcr);
+	return {out, fcr};
+}
+Result sqrt(u32 ft, u32 fcr_in)
+{
+	u32 fcr = fcr_in & ~(kI | kD);
+	if ((ft & 0x7f800000u) == 0)
+		return {ft & 0x80000000u, fcr};
+	if (ft & 0x80000000u)
+		fcr |= kI | kSI;
+
+	u32 out = bits(std::sqrt(std::fabs(fpuDouble(ft))));
+	if (!checkOverflow(out, 0, fcr))
+		checkUnderflow(out, 0, fcr);
+	return {out, fcr};
+}
+Result rsqrt(u32 fs, u32 ft, u32 fcr_in)
+{
+	u32 fcr = fcr_in & ~(kI | kD);
+	if ((ft & 0x7f800000u) == 0)
+		return {(ft & 0x80000000u) | 0x7f7fffffu, fcr | kD | kSD};
+	if (ft & 0x80000000u)
+		fcr |= kI | kSI;
+
+	u32 out = bits(fpuDouble(fs) / std::sqrt(std::fabs(fpuDouble(ft))));
+	if (!checkOverflow(out, 0, fcr))
+		checkUnderflow(out, 0, fcr);
+	return {out, fcr};
 }
 } // namespace fpuref
 
@@ -1850,6 +1906,111 @@ TEST(Arm64EmitEE, MULA_S_WritesAccumulator)
 	RunEEGen(regs, [] { armEmitMULA_S(/*fs*/ 3, /*ft*/ 4); });
 	const fpuref::Result expect = fpuref::binop('*', 0x40400000, 0x40000000, 0);
 	EXPECT_EQ(regs.getACC(), expect.val); // -> 6.0
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
+}
+
+TEST(Arm64EmitEE, DIV_S_Basic)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x40c00000); // 6.0
+	regs.setFPR(4, 0x40000000); // 2.0
+	regs.setFPRC(31, fpuref::kD | fpuref::kI | fpuref::kSD | fpuref::kSI);
+	RunEEGen(regs, [] { armEmitDIV_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::div(0x40c00000, 0x40000000, fpuref::kD | fpuref::kI | fpuref::kSD | fpuref::kSI);
+	EXPECT_EQ(regs.getFPR(8), expect.val);
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr); // normal DIV does not clear stale I/D in the interpreter
+}
+
+TEST(Arm64EmitEE, DIV_S_DivideByZeroSetsDAndFmax)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0xc0800000); // -4.0 dividend
+	regs.setFPR(4, 0x00000000); // +0 divisor
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitDIV_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::div(0xc0800000, 0x00000000, 0);
+	EXPECT_EQ(regs.getFPR(8), expect.val); // -fmax: sign(divisor ^ dividend)
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
+}
+
+TEST(Arm64EmitEE, DIV_S_ZeroOverZeroSetsInvalid)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x80000000); // -0 dividend
+	regs.setFPR(4, 0x00000000); // +0 divisor
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitDIV_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::div(0x80000000, 0x00000000, 0);
+	EXPECT_EQ(regs.getFPR(8), expect.val);
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
+}
+
+TEST(Arm64EmitEE, SQRT_S_Positive)
+{
+	GuestRegs regs;
+	regs.setFPR(4, 0x40800000); // 4.0
+	regs.setFPRC(31, fpuref::kI | fpuref::kD | fpuref::kSI | fpuref::kSD);
+	RunEEGen(regs, [] { armEmitSQRT_S(/*fd*/ 8, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::sqrt(0x40800000, fpuref::kI | fpuref::kD | fpuref::kSI | fpuref::kSD);
+	EXPECT_EQ(regs.getFPR(8), expect.val);
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr); // clears I/D causes, keeps sticky bits
+}
+
+TEST(Arm64EmitEE, SQRT_S_NegativeSetsInvalidAndUsesAbs)
+{
+	GuestRegs regs;
+	regs.setFPR(4, 0xc0800000); // -4.0
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitSQRT_S(/*fd*/ 8, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::sqrt(0xc0800000, 0);
+	EXPECT_EQ(regs.getFPR(8), expect.val); // sqrt(abs(-4)) = 2
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
+}
+
+TEST(Arm64EmitEE, SQRT_S_NegativeZeroReturnsNegativeZero)
+{
+	GuestRegs regs;
+	regs.setFPR(4, 0x80000000); // -0
+	regs.setFPRC(31, fpuref::kI | fpuref::kD);
+	RunEEGen(regs, [] { armEmitSQRT_S(/*fd*/ 8, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::sqrt(0x80000000, fpuref::kI | fpuref::kD);
+	EXPECT_EQ(regs.getFPR(8), expect.val);
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
+}
+
+TEST(Arm64EmitEE, RSQRT_S_Positive)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x40800000); // 4.0
+	regs.setFPR(4, 0x40800000); // 4.0
+	regs.setFPRC(31, fpuref::kI | fpuref::kD);
+	RunEEGen(regs, [] { armEmitRSQRT_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::rsqrt(0x40800000, 0x40800000, fpuref::kI | fpuref::kD);
+	EXPECT_EQ(regs.getFPR(8), expect.val);
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
+}
+
+TEST(Arm64EmitEE, RSQRT_S_ZeroFtSetsDivideAndFmax)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x40800000); // 4.0
+	regs.setFPR(4, 0x80000000); // -0
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitRSQRT_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::rsqrt(0x40800000, 0x80000000, 0);
+	EXPECT_EQ(regs.getFPR(8), expect.val); // sign comes from ft in the interpreter zero path
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
+}
+
+TEST(Arm64EmitEE, RSQRT_S_NegativeFtSetsInvalid)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x40800000); // 4.0
+	regs.setFPR(4, 0xc0800000); // -4.0
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitRSQRT_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::rsqrt(0x40800000, 0xc0800000, 0);
+	EXPECT_EQ(regs.getFPR(8), expect.val);
 	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
 }
 

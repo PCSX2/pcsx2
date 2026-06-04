@@ -234,11 +234,10 @@ static bool recTranslateOp(u32 op)
 				default:   return false;
 			}
 
-		// COP1 (FPU). Only the bit-exact transfer/move ops are compiled (Phase
-		// 5.2a); the sub-opcode is the rs field, S-format ops sub-decode on funct.
-		// Float arithmetic / compares / BC1 branches return false and fall to the
-		// interpreter (they need the EE's non-IEEE rounding behaviour). Operand
-		// mapping per R5900OpcodeTables: ft=rt, fs=rd, fd=sa.
+		// COP1 (FPU). The sub-opcode is the rs field, S-format ops sub-decode on
+		// funct. Remaining float arithmetic / compares / BC1 branches return false
+		// and fall to the interpreter until they get native EE FPU semantics.
+		// Operand mapping per R5900OpcodeTables: ft=rt, fs=rd, fd=sa.
 		case 0x11:
 			switch (rs)
 			{
@@ -253,6 +252,9 @@ static bool recTranslateOp(u32 op)
 						case 0x00: armEmitADD_S(sa, rd, rt); return true; // ADD_S
 						case 0x01: armEmitSUB_S(sa, rd, rt); return true; // SUB_S
 						case 0x02: armEmitMUL_S(sa, rd, rt); return true; // MUL_S
+						case 0x03: armEmitDIV_S(sa, rd, rt); return true; // DIV_S
+						case 0x04: armEmitSQRT_S(sa, rt); return true;    // SQRT_S (ft=rt)
+						case 0x16: armEmitRSQRT_S(sa, rd, rt); return true; // RSQRT_S
 						case 0x18: armEmitADDA_S(rd, rt); return true;    // ADDA_S (-> ACC)
 						case 0x19: armEmitSUBA_S(rd, rt); return true;    // SUBA_S (-> ACC)
 						case 0x1A: armEmitMULA_S(rd, rt); return true;    // MULA_S (-> ACC)

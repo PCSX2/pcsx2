@@ -10,8 +10,8 @@
 // involve the EE FPU's non-IEEE float rounding/clamping, so the ARM64 codegen is
 // bit-exact against the interpreter (the ground truth — see pcsx2/FPU.cpp).
 //
-// The genuine float arithmetic (ADD_S/SUB_S/MUL_S/DIV_S/SQRT_S/RSQRT_S, the ACC
-// ops, the C.*.S compares, and the BC1* branches) needs the EE's denormal-flush /
+// The remaining float arithmetic (MADD/MSUB, MAX/MIN, CVT, the C.*.S compares,
+// and the BC1* branches) needs the EE's denormal-flush /
 // infinity-clamp / overflow-underflow behaviour (fpuDouble + checkOverflow/
 // checkUnderflow). Those remain interpreter fallbacks until a later increment.
 
@@ -28,8 +28,12 @@ namespace a64 = vixl::aarch64;
 // FCR31 (fprc[31]) flag bits — see pcsx2/FPU.cpp.
 static constexpr u32 FPUflagO = 0x00008000; // overflow (cause)
 static constexpr u32 FPUflagU = 0x00004000; // underflow (cause)
+static constexpr u32 FPUflagI = 0x00020000; // invalid operation (cause)
+static constexpr u32 FPUflagD = 0x00010000; // divide by zero (cause)
 static constexpr u32 FPUflagSO = 0x00000010; // overflow (sticky)
 static constexpr u32 FPUflagSU = 0x00000008; // underflow (sticky)
+static constexpr u32 FPUflagSI = 0x00000040; // invalid operation (sticky)
+static constexpr u32 FPUflagSD = 0x00000020; // divide by zero (sticky)
 
 // IEEE-754 single-precision sentinel bit patterns used by the EE clamp logic.
 static constexpr u32 kPosInfinity = 0x7f800000; // exponent all-ones, mantissa zero
@@ -279,3 +283,115 @@ void armEmitMUL_S(u32 fd, u32 fs, u32 ft) { emitFpuBinary(FpuBinOp::Mul, EE_FPR_
 void armEmitADDA_S(u32 fs, u32 ft) { emitFpuBinary(FpuBinOp::Add, EE_ACC_OFFSET, fs, ft); }
 void armEmitSUBA_S(u32 fs, u32 ft) { emitFpuBinary(FpuBinOp::Sub, EE_ACC_OFFSET, fs, ft); }
 void armEmitMULA_S(u32 fs, u32 ft) { emitFpuBinary(FpuBinOp::Mul, EE_ACC_OFFSET, fs, ft); }
+
+void armEmitDIV_S(u32 fd, u32 fs, u32 ft)
+{
+	const a64::Register wdivisor = a64::w9;
+	const a64::Register wdividend = a64::w10;
+	const a64::Register wtmp = a64::w11;
+	const a64::Register wflags = a64::w13;
+
+	a64::Label normal, done, dividendZero;
+
+	armAsm->Ldr(wdivisor, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(ft)));
+	armAsm->Ldr(wdividend, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fs)));
+	armAsm->And(wtmp, wdivisor, kExpMask);
+	armAsm->Cbnz(wtmp, &normal);
+
+	// checkDivideByZero(): denormal divisors count as zero. z/0 sets D|SD,
+	// 0/0 sets I|SI, and the result is sign(divisor ^ dividend) | +fmax.
+	armAsm->Ldr(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+	armAsm->And(wtmp, wdividend, kExpMask);
+	armAsm->Cbz(wtmp, &dividendZero);
+	armAsm->Orr(wflags, wflags, FPUflagD | FPUflagSD);
+	armAsm->B(&done);
+	armAsm->Bind(&dividendZero);
+	armAsm->Orr(wflags, wflags, FPUflagI | FPUflagSI);
+
+	armAsm->Bind(&done);
+	armAsm->Eor(wtmp, wdivisor, wdividend);
+	armAsm->And(wtmp, wtmp, kSignBit);
+	armAsm->Orr(wtmp, wtmp, kPosFmax);
+	armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+	armAsm->Str(wtmp, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fd)));
+	a64::Label end;
+	armAsm->B(&end);
+
+	armAsm->Bind(&normal);
+	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));
+	emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));
+	armAsm->Fdiv(RSSCRATCH, RSSCRATCH, RSSCRATCH2);
+	emitStoreClampedResult(RSSCRATCH, EE_FPR_OFFSET(fd), /*setFlags*/ false);
+
+	armAsm->Bind(&end);
+}
+
+void armEmitSQRT_S(u32 fd, u32 ft)
+{
+	const a64::Register wraw = a64::w9;
+	const a64::Register wtmp = a64::w10;
+	const a64::Register wflags = a64::w13;
+
+	a64::Label nonzero, positive, done;
+
+	armAsm->Ldr(wraw, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(ft)));
+	armAsm->Ldr(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+	armAsm->And(wflags, wflags, ~(FPUflagI | FPUflagD));
+	armAsm->And(wtmp, wraw, kExpMask);
+	armAsm->Cbnz(wtmp, &nonzero);
+
+	// +/-0 and denormals produce signed zero with I/D cause flags cleared.
+	armAsm->And(wraw, wraw, kSignBit);
+	armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+	armAsm->Str(wraw, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fd)));
+	armAsm->B(&done);
+
+	armAsm->Bind(&nonzero);
+	armAsm->Tbz(wraw, 31, &positive);
+	armAsm->Orr(wflags, wflags, FPUflagI | FPUflagSI);
+	armAsm->Bind(&positive);
+	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(ft));
+	armAsm->Fabs(RSSCRATCH, RSSCRATCH);
+	armAsm->Fsqrt(RSSCRATCH, RSSCRATCH);
+	emitStoreClampedResult(RSSCRATCH, EE_FPR_OFFSET(fd), /*setFlags*/ false);
+	armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+
+	armAsm->Bind(&done);
+}
+
+void armEmitRSQRT_S(u32 fd, u32 fs, u32 ft)
+{
+	const a64::Register wraw = a64::w9;
+	const a64::Register wtmp = a64::w10;
+	const a64::Register wflags = a64::w13;
+
+	a64::Label nonzero, positive, done;
+
+	armAsm->Ldr(wraw, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(ft)));
+	armAsm->Ldr(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+	armAsm->And(wflags, wflags, ~(FPUflagI | FPUflagD));
+	armAsm->And(wtmp, wraw, kExpMask);
+	armAsm->Cbnz(wtmp, &nonzero);
+
+	// Interpreter RSQRT zero path: set D|SD and return sign(ft) | +fmax.
+	armAsm->Orr(wflags, wflags, FPUflagD | FPUflagSD);
+	armAsm->And(wtmp, wraw, kSignBit);
+	armAsm->Orr(wtmp, wtmp, kPosFmax);
+	armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+	armAsm->Str(wtmp, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fd)));
+	armAsm->B(&done);
+
+	armAsm->Bind(&nonzero);
+	armAsm->Tbz(wraw, 31, &positive);
+	armAsm->Orr(wflags, wflags, FPUflagI | FPUflagSI);
+	armAsm->Bind(&positive);
+	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));
+	emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));
+	armAsm->Fabs(RSSCRATCH2, RSSCRATCH2);
+	armAsm->Fsqrt(RSSCRATCH2, RSSCRATCH2);
+	armAsm->Fdiv(RSSCRATCH, RSSCRATCH, RSSCRATCH2);
+	emitStoreClampedResult(RSSCRATCH, EE_FPR_OFFSET(fd), /*setFlags*/ false);
+	armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+
+	armAsm->Bind(&done);
+}

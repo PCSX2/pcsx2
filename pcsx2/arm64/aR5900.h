@@ -149,10 +149,16 @@ void armEmitSWC1(u32 ft, u32 rs, s32 imm);
 // interpreter's `float OP float` (both IEEE round-to-nearest-even).
 //
 //   ADD_S/SUB_S/MUL_S : fpr[fd] = clamp(fpuDouble(fpr[fs]) OP fpuDouble(fpr[ft]))
+//   DIV_S             : fpr[fd] = clamp(fpuDouble(fpr[fs]) / fpuDouble(fpr[ft]))
+//   SQRT_S            : fpr[fd] = sqrt(abs(fpuDouble(fpr[ft]))) with signed-zero/invalid handling
+//   RSQRT_S           : fpr[fd] = clamp(fpuDouble(fpr[fs]) / sqrt(abs(fpuDouble(fpr[ft]))))
 //   ADDA_S/SUBA_S/MULA_S : ACC   = clamp(fpuDouble(fpr[fs]) OP fpuDouble(fpr[ft]))
 void armEmitADD_S(u32 fd, u32 fs, u32 ft);
 void armEmitSUB_S(u32 fd, u32 fs, u32 ft);
 void armEmitMUL_S(u32 fd, u32 fs, u32 ft);
+void armEmitDIV_S(u32 fd, u32 fs, u32 ft);
+void armEmitSQRT_S(u32 fd, u32 ft);
+void armEmitRSQRT_S(u32 fd, u32 fs, u32 ft);
 void armEmitADDA_S(u32 fs, u32 ft);
 void armEmitSUBA_S(u32 fs, u32 ft);
 void armEmitMULA_S(u32 fs, u32 ft);

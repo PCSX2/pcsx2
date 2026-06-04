@@ -8,18 +8,16 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 5.2b STARTED — FPU float ADD/SUB/MUL + ACC variants now compiled natively.**
-`ADD_S/SUB_S/MUL_S` and `ADDA_S/SUBA_S/MULA_S` are emitted inline, reproducing the EE
-FPU's non-IEEE behaviour: the `fpuDouble()` input clamp (`emitLoadFpuDouble`) +
-`checkOverflow`/`checkUnderflow` result clamp & FCR31 flag side-effects
-(`emitStoreClampedResult`), with the op itself host single-precision NEON. **Decision:
-mirror the interpreter (single precision, pcsx2/FPU.cpp), NOT iFPUd (double).** The
-interpreter is the project's ground truth *and* the current fallback, so matching it =
-zero behavioural drift; host `Fadd/Fsub/Fmul` is bit-identical to the interpreter's
-`float OP float` (same FPU). New `EE_ACC_OFFSET`; 11 new `Arm64EmitEE.*` gtests that
-check against a C++ replica of FPU.cpp (robust to host flush-to-zero). **Verified:**
-unittests green; arm64 binary; headless BIOS boot → `Mode Changed to DVD PAL` + `DS2
-Config Finished`, full 39s, clean pause — no regression.
+**Phase 5.2b CONTINUED — DIV_S/SQRT_S/RSQRT_S now compiled natively.**
+`DIV_S`, `SQRT_S`, and `RSQRT_S` are emitted inline and reproduce the EE FPU's
+non-IEEE behaviour: `DIV_S` now mirrors `checkDivideByZero` (`denormals count as
+zero`, `0/0 -> I|SI`, `x/0 -> D|SD`, result = sign-xor | fmax), `SQRT_S` handles
+signed zero / negative input with the interpreter's I|SI side-effects, and
+`RSQRT_S` covers the zero and negative cases before falling through to
+`fpuDouble`-clamped host arithmetic. The shared `emitStoreClampedResult` path is
+reused with `setFlags=false` where appropriate. 10 new `Arm64EmitEE.*` gtests cover
+the new cases against a C++ replica of `pcsx2/FPU.cpp`. **Verified:** `pcsx2-qt`
+builds, `unittests` green, `Arm64EmitEE.*` green at 149/149.
 
 **Interlude fix:** FFX black-after-BIOS was likely stale EE blocks for RAM code:
 `recCompileBlock()` now marks compiled RAM pages with `mmap_MarkCountedRamPage()`, so
@@ -27,14 +25,9 @@ writes to loaded ELF/game code fault through the existing vtlb protection path a
 bring-up `recClear()` drops the whole ARM64 block cache. This is coarse but correct for
 bring-up; targeted invalidation remains Phase 4.5.
 
-Next concrete task: **Phase 5.2b continued — DIV_S/SQRT_S/RSQRT_S** (need
-`checkDivideByZero`: divisor exp==0 → set D|SD or I|SI, result = sign-xor | fmax; SQRT
-of negative sets I|SI on |x|; both pass cFlagsToSet=0 to over/underflow so reuse
-`emitStoreClampedResult(..., setFlags=false)`). Then **MADD/MSUB(/A)_S** (temp = fs*ft
-then ACC±temp), **MAX_S/MIN_S** (integer `fp_max`/`fp_min`, no clamp, clear O|U), the
-**C.F/C.EQ/C.LT/C.LE** compares (set/clear FCR31 C-bit via `fpuDouble` compare) and the
-**BC1F/BC1T(L)** branches, then **CVT.W/CVT.S**. Helpers `emitLoadFpuDouble` /
-`emitStoreClampedResult` are reusable for all of these.
+Next concrete task: **Phase 5.2b continued — MADD/MSUB(/A)_S, MAX_S/MIN_S, compares,
+BC1F/BC1T(L), and CVT.W/CVT.S**. Helpers `emitLoadFpuDouble` /
+`emitStoreClampedResult` remain reusable for all of these.
 
 ---
 
