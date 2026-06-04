@@ -28,6 +28,62 @@
 
 ---
 
+## 2026-06-04 — Phase 3.4: EE move opcode generators
+
+**Goal:** Implement and unit-test the EE move opcode family (6 ops):
+`MOVZ/MOVN` (conditional moves) and `MFHI/MTHI/MFLO/MTLO` (HI/LO special register access),
+completing Phase 3.4 of the EE integer arithmetic port.
+
+**What changed:**
+- `pcsx2/arm64/aR5900.h` — declarations for 6 move generators.
+- `pcsx2/arm64/aR5900Arith.cpp` — implementations:
+  - `armEmitMOVZ` / `armEmitMOVN`: conditional select via `Cmp` + `Csel` (eq/ne).
+    Fast-path: skip entirely if `rs == rd` (no-op regardless of condition).
+  - `armEmitMFHI` / `armEmitMTHI`: load/store HI register (index 32 in cpuRegs).
+  - `armEmitMFLO` / `armEmitMTLO`: load/store LO register (index 33).
+  - All skip write-back for `rd == 0` ($zero discard).
+- `pcsx2/arm64/aR5900.cpp` — `recTranslateOp` dispatches the 6 new ops in the
+  SPECIAL (0x00) funct switch: `MOVZ`(0x0A), `MOVN`(0x0B), `MFHI`(0x10),
+  `MTHI`(0x11), `MFLO`(0x12), `MTLO`(0x13).
+- `tests/ctest/core/arm64_emit_test.cpp` — 14 new `Arm64EmitEE.*` gtests:
+  `MOVZ_ConditionTrue/False/DiscardZeroRd/RsSameAsRd`,
+  `MOVN_ConditionTrue/False/DiscardZeroRd/RsSameAsRd`,
+  `MFHI_MoveFromHI/DiscardZeroRd`, `MTHI_MoveToHI`,
+  `MFLO_MoveFromLO/DiscardZeroRd`, `MTLO_MoveToLO`.
+  Added `setHI`/`getHI`/`setLO`/`getLO` helpers to `GuestRegs` struct
+  (HI/LO at indices 32/33, offset 512/528 bytes).
+  Total `Arm64EmitEE.*` tests: 78; all pass.
+- Commits: (pending — to be committed with this journal entry)
+
+**Decisions & rationale:**
+- **`Csel` for conditional moves.** ARM64's `CSEL` is the natural counterpart to
+  x86's `CMOVE`/`CMOVNE`. The pattern: `Cmp Rt, 0` then `Csel Rd, Rs, Rd, cond`
+  exactly matches the MIPS semantics (`MOVZ`: move if Rt==0; `MOVN`: move if Rt!=0).
+- **Three-register pattern for `Csel`.** VIXL's `Csel` takes (dst, src1, src2, cond)
+  meaning `dst = cond ? src1 : src2`. We load Rd into scratch2 first, then
+  `Csel(scratch2, Rs, scratch2, cond)` gives us `Rd = (cond) ? Rs : Rd`.
+- **`rs == rd` fast-path is a no-op.** If source and destination are the same,
+  the conditional move would just write back the same value, so we skip emission
+  entirely (matches x86 JIT optimization).
+- **HI/LO at indices 32/33 in cpuRegs.** The MIPS `HI` and `LO` special registers
+  live in `cpuRegs` after the 32 GPRs (each 16 bytes), so offsets are `32*16` and
+  `33*16`. This matches the x86 layout (`&cpuRegs.HI.UD[0]` / `&cpuRegs.LO.UD[0]`).
+- **$zero discard for MFHI/MFLO.** Like all MIPS instructions that write to `Rd`,
+  `MFHI` and `MFLO` must discard results when `Rd == 0`. `MTHI`/`MTLO` read from
+  `Rs` so no discard applies (reading $zero just produces 0).
+
+**Blockers / open questions:**
+- none. Phase 3.4 complete.
+
+**Next step:** Phase 3.5 — EE multiply/divide ops
+(`MULT/MULTU/DIV/DIVU/DMULT/DMULTU/DDIV/DDIVU` plus the 64-bit variants).
+These produce 128-bit results in `HI/LO` (multiply) or quotient/remainder
+(divide). ARM64 has `MUL` (low 64), `SMULH`/`UMULH` (high 64 of 64×64),
+`SDIV`/`UDIV` (quotient only — remainder needs extra steps).
+Ref x86 `iR5900Mult.cpp` / `iR5900Div.cpp`.
+
+---
+
 ## 2026-06-04 — Phase 3.3: EE shift opcode generators
 
 **Goal:** Implement and unit-test the full MIPS shift opcode family (15 ops),

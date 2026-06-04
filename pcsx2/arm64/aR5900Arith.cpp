@@ -657,3 +657,114 @@ void armEmitDSRA32(u32 rd, u32 rt, u32 sa)
 	armAsm->Asr(RSCRATCH, RSCRATCH, sa + 32);
 	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
 }
+
+// ------------------------------------------------------------------------
+// Phase 3.4 — Move operations
+// ------------------------------------------------------------------------
+// Offset helpers for HI/LO registers in cpuRegs (they follow GPR[31]).
+static constexpr u32 EE_HI_OFFSET() { return 32 * 16u; }
+static constexpr u32 EE_LO_OFFSET() { return 33 * 16u; }
+
+// ------------------------------------------------------------------------
+// MOVZ  (funct 0x0A)
+// Rd = (GPR[rt].UD[0] == 0) ? GPR[rs].UD[0] : GPR[rd].UD[0]
+// ------------------------------------------------------------------------
+void armEmitMOVZ(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+
+	// If rs == rd, the move is a no-op regardless of the condition.
+	if (rs == rd)
+		return;
+
+	// Load Rt and test if zero.
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Cmp(RSCRATCH, 0);
+
+	// Load Rd (destination current value) into scratch2.
+	armAsm->Ldr(RSCRATCH2, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+
+	// Load Rs into scratch.
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+
+	// Conditional select: if Rt == 0 (eq), use Rs; otherwise keep Rd.
+	armAsm->Csel(RSCRATCH2, RSCRATCH, RSCRATCH2, a64::eq);
+
+	armAsm->Str(RSCRATCH2, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// MOVN  (funct 0x0B)
+// Rd = (GPR[rt].UD[0] != 0) ? GPR[rs].UD[0] : GPR[rd].UD[0]
+// ------------------------------------------------------------------------
+void armEmitMOVN(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+
+	// If rs == rd, the move is a no-op regardless of the condition.
+	if (rs == rd)
+		return;
+
+	// Load Rt and test if zero.
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Cmp(RSCRATCH, 0);
+
+	// Load Rd (destination current value) into scratch2.
+	armAsm->Ldr(RSCRATCH2, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+
+	// Load Rs into scratch.
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+
+	// Conditional select: if Rt != 0 (ne), use Rs; otherwise keep Rd.
+	armAsm->Csel(RSCRATCH2, RSCRATCH, RSCRATCH2, a64::ne);
+
+	armAsm->Str(RSCRATCH2, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// MFHI  (funct 0x10)
+// Rd = HI
+// ------------------------------------------------------------------------
+void armEmitMFHI(u32 rd)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_HI_OFFSET()));
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// MTHI  (funct 0x11)
+// HI = Rs
+// ------------------------------------------------------------------------
+void armEmitMTHI(u32 rs)
+{
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_HI_OFFSET()));
+}
+
+// ------------------------------------------------------------------------
+// MFLO  (funct 0x12)
+// Rd = LO
+// ------------------------------------------------------------------------
+void armEmitMFLO(u32 rd)
+{
+	if (rd == 0)
+		return;
+
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_LO_OFFSET()));
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+// ------------------------------------------------------------------------
+// MTLO  (funct 0x13)
+// LO = Rs
+// ------------------------------------------------------------------------
+void armEmitMTLO(u32 rs)
+{
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_LO_OFFSET()));
+}

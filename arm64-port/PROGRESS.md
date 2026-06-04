@@ -8,13 +8,12 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 0–2 COMPLETE. Phase 3.1 DONE. Phase 3.2 DONE. Phase 3.3 DONE**
-(15 shift ops, 12 new gtests, all 64 `Arm64EmitEE.*` pass). `recTranslateOp` now dispatches
-all 29 FUNCT entries in SPECIAL (0x0–0x3, 0x4–0x7, 0x14/16/17, 0x20–0x2F, 0x38–0x3B, 0x3C/3E/3F)
-covering both arithmetic (3.1+3.2) and shifts (3.3).
+**Phase 0–2 COMPLETE. Phase 3.1 DONE. Phase 3.2 DONE. Phase 3.3 DONE. Phase 3.4 DONE**
+(6 move ops, 14 new gtests, all 78 `Arm64EmitEE.*` pass). `recTranslateOp` now dispatches
+all SPECIAL FUNCT entries for arithmetic (3.1+3.2), shifts (3.3), and moves (3.4).
 
-Next concrete task: **Phase 3.4 — EE moves**
-(`MOVZ/MOVN` → `CSEL`, `MFHI/MTHI/MFLO/MTLO`).
+Next concrete task: **Phase 3.5 — EE multiply/divide**
+(`MULT/MULTU/DIV/DIVU/DMULT.../DDIVU` → `MUL/SMULH/UMULH/SDIV/UDIV`).
 
 > When you finish a task, move this pointer to the next one and flip the box below.
 
@@ -63,7 +62,7 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 - [x] 3.1 Immediate ops: `ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI/DADDI/DADDIU`.
 - [x] 3.2 Reg-reg ops: `ADD/ADDU/SUB/SUBU/SLT/SLTU/AND/OR/XOR/NOR/DADD/DADDU/DSUB/DSUBU`.
 - [x] 3.3 Shifts: `SLL/SRL/SRA/SLLV/SRLV/SRAV/DSLLV/DSRLV/DSRAV/DSLL/DSRL/DSRA/DSLL32/DSRL32/DSRA32`.
-- [ ] 3.4 Moves: `MOVZ/MOVN` (→ `CSEL`), `MFHI/MTHI/MFLO/MTLO`.
+- [x] 3.4 Moves: `MOVZ/MOVN` (→ `CSEL`), `MFHI/MTHI/MFLO/MTLO`.
 - [ ] 3.5 Mul/Div: `MULT/MULTU/DIV/DIVU/DMULT.../DDIVU` (→ `MUL/SMULH/UMULH/SDIV/UDIV`).
 - [ ] 3.6 Constant propagation (`EE_CONST_PROP`): track known-constant GPRs, emit immediate forms.
 

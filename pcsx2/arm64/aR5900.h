@@ -157,3 +157,22 @@ void armEmitDSRA(u32 rd, u32 rt, u32 sa);
 void armEmitDSLL32(u32 rd, u32 rt, u32 sa);
 void armEmitDSRL32(u32 rd, u32 rt, u32 sa);
 void armEmitDSRA32(u32 rd, u32 rt, u32 sa);
+
+// --------------------------------------------------------------------------------------
+//  EE move opcode generators (Phase 3.4)
+// --------------------------------------------------------------------------------------
+// Format: OP rd, rs, rt (R-type conditional moves) or OP rd, fs (HI/LO moves).
+// $zero writes are discarded.
+//
+//   MOVZ: Rd = (Rt == 0) ? Rs : Rd   (conditional move if Rt equals zero)
+//   MOVN: Rd = (Rt != 0) ? Rs : Rd   (conditional move if Rt non-zero)
+//   MFHI: Rd = HI
+//   MTHI: HI = Rs
+//   MFLO: Rd = LO
+//   MTLO: LO = Rs
+void armEmitMOVZ(u32 rd, u32 rs, u32 rt);
+void armEmitMOVN(u32 rd, u32 rs, u32 rt);
+void armEmitMFHI(u32 rd);
+void armEmitMTHI(u32 rs);
+void armEmitMFLO(u32 rd);
+void armEmitMTLO(u32 rs);

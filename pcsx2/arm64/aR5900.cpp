@@ -152,6 +152,13 @@ static bool recTranslateOp(u32 op)
 				case 0x3C: armEmitDSLL32(rd, rt, sa); return true;
 				case 0x3E: armEmitDSRL32(rd, rt, sa); return true;
 				case 0x3F: armEmitDSRA32(rd, rt, sa); return true;
+				// Moves (Phase 3.4)
+				case 0x0A: armEmitMOVZ(rd, rs, rt); return true;
+				case 0x0B: armEmitMOVN(rd, rs, rt); return true;
+				case 0x10: armEmitMFHI(rd); return true;
+				case 0x11: armEmitMTHI(rs); return true;
+				case 0x12: armEmitMFLO(rd); return true;
+				case 0x13: armEmitMTLO(rs); return true;
 				default:   return false;
 			}
 

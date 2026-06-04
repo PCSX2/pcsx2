@@ -302,17 +302,32 @@ namespace
 		std::vector<VTLBVirtual> m_vmap;
 	};
 
-	// cpuRegs-shaped guest register file (32 * 16-byte GPR slots). RESTATEPTR points
-	// at this; the generators read GPR[rs]/GPR[rt] and write GPR[rt] within it.
+	// cpuRegs-shaped guest register file (32 * 16-byte GPR slots + HI/LO).
+	// RESTATEPTR points at this; the generators read GPR[rs]/GPR[rt] and write
+	// GPR[rt] within it. HI/LO are at indices 32 and 33 (see EE_HI_OFFSET/EE_LO_OFFSET).
 	struct GuestRegs
 	{
-		alignas(16) std::array<u8, 32 * 16> bytes{};
+		alignas(16) std::array<u8, 34 * 16> bytes{}; // 32 GPRs + HI + LO
 
 		void set64(u32 n, u64 v) { std::memcpy(&bytes[n * 16], &v, sizeof(v)); }
 		u64 get64(u32 n) const
 		{
 			u64 v;
 			std::memcpy(&v, &bytes[n * 16], sizeof(v));
+			return v;
+		}
+		void setHI(u64 v) { std::memcpy(&bytes[32 * 16], &v, sizeof(v)); }
+		u64 getHI() const
+		{
+			u64 v;
+			std::memcpy(&v, &bytes[32 * 16], sizeof(v));
+			return v;
+		}
+		void setLO(u64 v) { std::memcpy(&bytes[33 * 16], &v, sizeof(v)); }
+		u64 getLO() const
+		{
+			u64 v;
+			std::memcpy(&v, &bytes[33 * 16], sizeof(v));
 			return v;
 		}
 		void set128(u32 n, const u8 v[16]) { std::memcpy(&bytes[n * 16], v, 16); }
@@ -987,6 +1002,140 @@ TEST(Arm64EmitEE, DSLLV_AmountMaskedTo6Bits)
 	regs.set64(14, 1);
 	RunEEGen(regs, [] { armEmitDSLLV(/*rd*/ 15, /*rt*/ 14, /*rs*/ 13); });
 	EXPECT_EQ(regs.get64(15), 2u);
+}
+
+// --------------------------------------------------------------------------------------
+//  Phase 3.4: Move opcode generators
+// --------------------------------------------------------------------------------------
+
+TEST(Arm64EmitEE, MOVZ_ConditionTrue)
+{
+	GuestRegs regs;
+	// Rt == 0, so Rd should become Rs.
+	regs.set64(5, 0xDEADBEEFCAFEBABEull);  // Rs
+	regs.set64(6, 0ull);                    // Rt (condition: zero)
+	regs.set64(7, 0x1111111111111111ull);  // Rd (original value, will be overwritten)
+	RunEEGen(regs, [] { armEmitMOVZ(/*rd*/ 7, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.get64(7), 0xDEADBEEFCAFEBABEull);
+}
+
+TEST(Arm64EmitEE, MOVZ_ConditionFalse)
+{
+	GuestRegs regs;
+	// Rt != 0, so Rd should stay unchanged.
+	regs.set64(5, 0xDEADBEEFCAFEBABEull);  // Rs
+	regs.set64(6, 1ull);                    // Rt (condition: non-zero)
+	regs.set64(7, 0x1111111111111111ull);  // Rd (should stay)
+	RunEEGen(regs, [] { armEmitMOVZ(/*rd*/ 7, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.get64(7), 0x1111111111111111ull);
+}
+
+TEST(Arm64EmitEE, MOVZ_DiscardZeroRd)
+{
+	GuestRegs regs;
+	regs.set64(5, 42);
+	regs.set64(6, 0);
+	RunEEGen(regs, [] { armEmitMOVZ(/*rd*/ 0, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.get64(0), 0u) << "$zero must stay zero";
+}
+
+TEST(Arm64EmitEE, MOVZ_RsSameAsRd)
+{
+	GuestRegs regs;
+	// If Rs == Rd, the operation is a no-op.
+	regs.set64(5, 0x1234567890ABCDEFull);
+	regs.set64(6, 0ull);
+	RunEEGen(regs, [] { armEmitMOVZ(/*rd*/ 5, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.get64(5), 0x1234567890ABCDEFull) << "Rs==Rd should be a no-op";
+}
+
+TEST(Arm64EmitEE, MOVN_ConditionTrue)
+{
+	GuestRegs regs;
+	// Rt != 0, so Rd should become Rs.
+	regs.set64(5, 0xCAFEBABE12345678ull);  // Rs
+	regs.set64(6, 42ull);                   // Rt (condition: non-zero)
+	regs.set64(7, 0x2222222222222222ull);  // Rd (original value, will be overwritten)
+	RunEEGen(regs, [] { armEmitMOVN(/*rd*/ 7, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.get64(7), 0xCAFEBABE12345678ull);
+}
+
+TEST(Arm64EmitEE, MOVN_ConditionFalse)
+{
+	GuestRegs regs;
+	// Rt == 0, so Rd should stay unchanged.
+	regs.set64(5, 0xCAFEBABE12345678ull);  // Rs
+	regs.set64(6, 0ull);                    // Rt (condition: zero)
+	regs.set64(7, 0x2222222222222222ull);  // Rd (should stay)
+	RunEEGen(regs, [] { armEmitMOVN(/*rd*/ 7, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.get64(7), 0x2222222222222222ull);
+}
+
+TEST(Arm64EmitEE, MOVN_DiscardZeroRd)
+{
+	GuestRegs regs;
+	regs.set64(5, 42);
+	regs.set64(6, 1);
+	RunEEGen(regs, [] { armEmitMOVN(/*rd*/ 0, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.get64(0), 0u) << "$zero must stay zero";
+}
+
+TEST(Arm64EmitEE, MOVN_RsSameAsRd)
+{
+	GuestRegs regs;
+	// If Rs == Rd, the operation is a no-op.
+	regs.set64(5, 0xFEDCBA9876543210ull);
+	regs.set64(6, 1ull);
+	RunEEGen(regs, [] { armEmitMOVN(/*rd*/ 5, /*rs*/ 5, /*rt*/ 6); });
+	EXPECT_EQ(regs.get64(5), 0xFEDCBA9876543210ull) << "Rs==Rd should be a no-op";
+}
+
+TEST(Arm64EmitEE, MFHI_MoveFromHI)
+{
+	GuestRegs regs;
+	regs.setHI(0xABCDEF0123456789ull);
+	RunEEGen(regs, [] { armEmitMFHI(/*rd*/ 10); });
+	EXPECT_EQ(regs.get64(10), 0xABCDEF0123456789ull);
+}
+
+TEST(Arm64EmitEE, MFHI_DiscardZeroRd)
+{
+	GuestRegs regs;
+	regs.setHI(0x1234567890ABCDEFull);
+	RunEEGen(regs, [] { armEmitMFHI(/*rd*/ 0); });
+	EXPECT_EQ(regs.get64(0), 0u) << "$zero must stay zero";
+}
+
+TEST(Arm64EmitEE, MTHI_MoveToHI)
+{
+	GuestRegs regs;
+	regs.set64(5, 0x9876543210FEDCBAull);
+	RunEEGen(regs, [] { armEmitMTHI(/*rs*/ 5); });
+	EXPECT_EQ(regs.getHI(), 0x9876543210FEDCBAull);
+}
+
+TEST(Arm64EmitEE, MFLO_MoveFromLO)
+{
+	GuestRegs regs;
+	regs.setLO(0x1111222233334444ull);
+	RunEEGen(regs, [] { armEmitMFLO(/*rd*/ 11); });
+	EXPECT_EQ(regs.get64(11), 0x1111222233334444ull);
+}
+
+TEST(Arm64EmitEE, MFLO_DiscardZeroRd)
+{
+	GuestRegs regs;
+	regs.setLO(0x5555666677778888ull);
+	RunEEGen(regs, [] { armEmitMFLO(/*rd*/ 0); });
+	EXPECT_EQ(regs.get64(0), 0u) << "$zero must stay zero";
+}
+
+TEST(Arm64EmitEE, MTLO_MoveToLO)
+{
+	GuestRegs regs;
+	regs.set64(6, 0xAABBCCDDEEFF0011ull);
+	RunEEGen(regs, [] { armEmitMTLO(/*rs*/ 6); });
+	EXPECT_EQ(regs.getLO(), 0xAABBCCDDEEFF0011ull);
 }
 
 #endif // __aarch64__
