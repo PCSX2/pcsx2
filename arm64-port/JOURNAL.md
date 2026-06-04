@@ -28,6 +28,69 @@
 
 ---
 
+## 2026-06-04 — Phase 5.4 MMI multiply-accumulate family complete (PMULTW/PMADDW/PMULTH/PMFHI/etc.)
+
+**Goal:** Implement the MMI multiply-accumulate family that writes to HI/LO
+registers, plus the full 128-bit HI/LO moves, so they stop single-stepping
+the interpreter.
+
+**What changed:**
+- Extended `pcsx2/arm64/aR5900MMI.cpp` with 13 new generators (~500 lines):
+  - **Word multiply-accumulate (lanes 0 and 2):**
+    - `armEmitPMULTW`: 32×32→64 signed multiply, HI/LO write, optional GPR[rd].
+    - `armEmitPMULTUW`: unsigned variant (sign-extends results per interpreter).
+    - `armEmitPMADDW`: Rs*Rt + (HI<<32) with EE division voodoo (÷4294967295,
+      lane 0 only has the 0x70000000 fixup quirk).
+    - `armEmitPMADDUW`: unsigned variant (no voodoo).
+    - `armEmitPMSUBW`: (HI<<32) - Rs*Rt with division fixup.
+  - **Halfword multiply-accumulate (8 lanes, alternating LO/HI):**
+    - `armEmitPMULTH`: 16×16→32 signed multiply, 4 lanes × 2 iterations.
+    - `armEmitPMADDH`: accumulate 8 halfword products to LO/HI.
+    - `armEmitPMSUBH`: subtract 8 halfword products from LO/HI.
+    - `armEmitPHMADH`: paired multiply-add (Rs[n]*Rt[n] + Rs[n+1]*Rt[n+1]).
+    - `armEmitPHMSBH`: paired multiply-subtract.
+  - **HI/LO moves (full 128-bit via NEON):**
+    - `armEmitPMFHI/PMFLO`: `Ldr q-reg` from HI/LO, `Str q-reg` to GPR[rd].
+    - `armEmitPMTHI/PMTLO`: `Ldr q-reg` from GPR[rs], `Str q-reg` to HI/LO.
+- Declarations added to `pcsx2/arm64/aR5900.h`.
+- Dispatch wired in `pcsx2/arm64/aR5900.cpp`:
+  - `recTranslateMMI2`: sa=0x00→PMADDW, 0x01→PMADDH, 0x04→PMSUBW, 0x05→PMSUBH,
+    0x08→PMULTW, 0x09→PMULTH, 0x0C→PHMADH, 0x0D→PHMSBH.
+  - `recTranslateMMI3`: sa=0x00→PMADDUW, 0x08→PMULTUW, 0x10→PMFHI, 0x11→PMFLO,
+    0x14→PMTHI, 0x15→PMTLO.
+- Trackers: PROGRESS.md CURRENT FOCUS + Phase 5.4 checkboxes updated.
+- Commits: pending.
+
+**Decisions & rationale:**
+- **Scalar GPR ops for word multiply-accumulate:** ARM64 has `Smull/Umull` for
+  32×32→64, which we use directly. Results are sign-extended to 64 bits per the
+  interpreter's semantics (even for unsigned ops).
+- **EE division voodoo replicated exactly:** PMADDW has a quirk where lane 0
+  adds 0x70000000 under specific conditions ((Rt[0]&0x7FFFFFFF)==0 or ==0x7FFFFFFF,
+  and Rs[0]!=Rt[0]), then divides by 4294967295 (not >>32). This matches the
+  interpreter's `MMI.cpp:_PMADDW` exactly.
+- **NEON q-register loads/stores for 128-bit HI/LO moves:** PMFHI/PMFLO/PMTHI/PMTLO
+  move the full 128-bit HI/LO registers. Using `Ldr/Str q-reg` is the most efficient
+  approach (single instruction per access) and matches how the existing NEON ops
+  access GPRs.
+- **Halfword ops use `Smov` + scalar multiply:** For the 8-lane halfword ops, we
+  use `Smov` to extract individual halfword lanes, then scalar `Smull/Smaddl` for
+  the multiply-accumulate. This is not the most efficient (could use NEON `Smull`
+  on multiple lanes at once), but it's correct and matches the interpreter's
+  element-by-element semantics. Can be optimized later if profiling shows hotspots.
+- **VIXL conditional branches use `B(&label, cond)`:** The EE division voodoo
+  check needs actual conditional branches (not `Csel`). VIXL's `B` method takes
+  the label first, condition second.
+
+**Blockers / open questions:**
+- none. Unit tests pass (334/334 core, 252/252 Arm64EmitEE). Live game
+  verification pending (BIOS boot test recommended).
+
+**Next step:** remaining MMI misc ops (`PADSBH/QFSRV/PEXT5/PPAC5/PLZCW/PMFHL/PMTHL`),
+or Phase 4.4 recLUT (parked on `armjit-reclut-wip` until BIOS stall solved).
+
+---
+
 ## 2026-06-04 — Phase 5.4 MMI variable shifts complete (PSLLVW/PSRLVW/PSRAVW)
 
 **Goal:** Implement the three MMI variable shift ops (`PSLLVW/PSRLVW/PSRAVW`) where

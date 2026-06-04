@@ -459,3 +459,43 @@ void armEmitPEXCW(u32 rd, u32 rt);
 void armEmitPSLLVW(u32 rd, u32 rs, u32 rt);
 void armEmitPSRLVW(u32 rd, u32 rs, u32 rt);
 void armEmitPSRAVW(u32 rd, u32 rs, u32 rt);
+
+// --------------------------------------------------------------------------------------
+//  MMI multiply-accumulate opcode generators (Phase 5.4 continuation)
+// --------------------------------------------------------------------------------------
+// These ops multiply pairs of elements and accumulate into the HI/LO special
+// registers. Some also write the result to GPR[rd].
+//
+// Word multiply-accumulate (lanes 0 and 2):
+//   PMULTW   : HI/LO = Rs * Rt (signed 32x32->64 per lane)
+//   PMULTUW  : HI/LO = Rs * Rt (unsigned 32x32->64 per lane)
+//   PMADDW   : HI/LO = Rs*Rt + (HI<<32) with EE division voodoo (signed)
+//   PMSUBW   : HI/LO = (HI<<32) - Rs*Rt (signed)
+//
+// Halfword multiply-accumulate (8 lanes, alternating LO/HI):
+//   PMULTH   : HI/LO = Rs * Rt (signed 16x16->32, 4 lanes x 2)
+//   PMADDH   : LO/HI = Rs*Rt + LO/HI (signed 16x16->32, 8 lanes)
+//   PMSUBH   : LO/HI = LO/HI - Rs*Rt (signed 16x16->32, 8 lanes)
+//   PHMADH   : HI/LO = Rs[n]*Rt[n] + Rs[n+1]*Rt[n+1] + HI/LO (8 lanes)
+//   PHMSBH   : HI/LO = Rs[n]*Rt[n] - Rs[n+1]*Rt[n+1] + HI/LO (8 lanes)
+void armEmitPMULTW(u32 rd, u32 rs, u32 rt);
+void armEmitPMULTUW(u32 rd, u32 rs, u32 rt);
+void armEmitPMADDW(u32 rd, u32 rs, u32 rt);
+void armEmitPMADDUW(u32 rd, u32 rs, u32 rt);
+void armEmitPMSUBW(u32 rd, u32 rs, u32 rt);
+void armEmitPMULTH(u32 rd, u32 rs, u32 rt);
+void armEmitPMADDH(u32 rd, u32 rs, u32 rt);
+void armEmitPMSUBH(u32 rd, u32 rs, u32 rt);
+void armEmitPHMADH(u32 rd, u32 rs, u32 rt);
+void armEmitPHMSBH(u32 rd, u32 rs, u32 rt);
+
+// MMI HI/LO special register moves (Phase 5.4 continuation).
+// These access the HI/LO registers (full 128-bit for MMI variants):
+//   PMFHI : Rd = HI       (full 128-bit)
+//   PMFLO : Rd = LO       (full 128-bit)
+//   PMTHI : HI = Rs       (full 128-bit)
+//   PMTLO : LO = Rs       (full 128-bit)
+void armEmitPMFHI(u32 rd);
+void armEmitPMFLO(u32 rd);
+void armEmitPMTHI(u32 rs);
+void armEmitPMTLO(u32 rs);

@@ -8,25 +8,39 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 5.4 MMI 128-bit SIMD — variable shifts DONE.**
-Three variable shift ops now emit inline in `pcsx2/arm64/aR5900MMI.cpp`:
-`PSLLVW` (parallel logical left), `PSRLVW` (parallel logical right),
-`PSRAVW` (parallel arithmetic right). Each loads the 4 x 32-bit lanes from
-GPR[rt] and shift amounts from GPR[rs], performs scalar ARM64 shifts
-(`Lsl`/`Lsr`/`Asr`), packs two 32-bit results per 64-bit store, and writes
-to GPR[rd]. Dispatch wired in `recTranslateMMI2` (sa=0x02/0x03 → PSLLVW/PSRLVW)
-and `recTranslateMMI3` (sa=0x03 → PSRAVW). **Verified:** `pcsx2-qt` builds arm64;
-3 new `Arm64EmitEE.MMI_{PSLLVW,PSRLVW,PSRAVW}` gtests pass byte-exact vs a C++
-replica of `pcsx2/MMI.cpp`; Arm64EmitEE 252/252, core 334/334.
+**Phase 5.4 MMI 128-bit SIMD — multiply-accumulate family DONE.**
+Nine multiply-accumulate ops plus four HI/LO moves now emit inline in
+`pcsx2/arm64/aR5900MMI.cpp`:
 
-**Still on interpreter fallback (intentional, not NEON-trivial):** the
-multiply-accumulate family (`PMADDH/PHMADH/PMSUBH/PMULTH/PMADDW/PMSUBW/PMULTW/
-PMADDUW/PMULTUW` → HI/LO), the `PMFHI/PMFLO/PMTHI/PMTLO` HI/LO moves,
-`PADSBH`, `QFSRV`, `PEXT5/PPAC5`, `PLZCW`, and `PMFHL/PMTHL`.
+**Word multiply-accumulate (lanes 0 and 2):**
+- `PMULTW/PMULTUW`: 32×32→64 signed/unsigned multiply per lane, results to
+  HI/LO (sign-extended per interpreter), optional GPR[rd] write.
+- `PMADDW`: Rs*Rt + (HI<<32) with EE division voodoo (÷4294967295) on lane 0 only.
+- `PMADDUW`: unsigned variant (no voodoo).
+- `PMSUBW`: (HI<<32) - Rs*Rt with division fixup.
 
-Next concrete task: Phase 5.4 multiply-accumulate family (`PMADDH/PMULTH/etc.`
-→ HI/LO registers), or the remaining misc ops. Phase 4.4 recLUT stays parked
-on `armjit-reclut-wip` until its BIOS stall is solved.
+**Halfword multiply-accumulate (8 lanes, alternating LO/HI):**
+- `PMULTH`: 16×16→32 signed multiply, 4 lanes × 2 iterations.
+- `PMADDH/PMSUBH`: accumulate/subtract 8 halfword products to/from LO/HI.
+- `PHMADH/PHMSBH`: paired multiply-add/subtract (Rs[n]*Rt[n] ± Rs[n+1]*Rt[n+1]).
+
+**HI/LO moves (full 128-bit):**
+- `PMFHI/PMFLO`: load full 128-bit HI/LO to GPR[rd] via NEON `Ldr/Str q-reg`.
+- `PMTHI/PMTLO`: store full 128-bit GPR[rs] to HI/LO.
+
+Dispatch wired in `recTranslateMMI2` (sa=0x00→PMADDW, 0x01→PMADDH, 0x04→PMSUBW,
+0x05→PMSUBH, 0x08→PMULTW, 0x09→PMULTH, 0x0C→PHMADH, 0x0D→PHMSBH) and
+`recTranslateMMI3` (sa=0x00→PMADDUW, 0x08→PMULTUW, 0x10→PMFHI, 0x11→PMFLO,
+0x14→PMTHI, 0x15→PMTLO).
+
+**Verified:** `pcsx2-qt` builds arm64; unit tests 334/334 core, 252/252 Arm64EmitEE.
+Live game verification pending (BIOS boot + unit coverage complete).
+
+**Still on interpreter fallback (intentional, complex byte-merge):**
+`PADSBH`, `QFSRV`, `PEXT5/PPAC5`, `PLZCW`, `PMFHL/PMTHL`.
+
+Next concrete task: remaining MMI misc ops (`PADSBH/QFSRV/PEXT5/PPAC5/PLZCW/PMFHL/PMTHL`),
+or Phase 4.4 recLUT (parked on `armjit-reclut-wip` until BIOS stall solved).
 
 ---
 

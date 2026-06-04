@@ -349,8 +349,14 @@ namespace
 			std::memcpy(&v, &bytes[33 * 16 + 8], sizeof(v));
 			return v;
 		}
+		void setHI1(u64 v) { std::memcpy(&bytes[32 * 16 + 8], &v, sizeof(v)); }
+		void setLO1(u64 v) { std::memcpy(&bytes[33 * 16 + 8], &v, sizeof(v)); }
+		// Full 128-bit HI/LO access (for PMFHI/PMFLO/PMTHI/PMTLO).
+		void setHI128(const u8 v[16]) { std::memcpy(&bytes[32 * 16], v, 16); }
+		void getHI128(u8 out[16]) const { std::memcpy(out, &bytes[32 * 16], 16); }
+		void setLO128(const u8 v[16]) { std::memcpy(&bytes[33 * 16], v, 16); }
+		void getLO128(u8 out[16]) const { std::memcpy(out, &bytes[33 * 16], 16); }
 		void set128(u32 n, const u8 v[16]) { std::memcpy(&bytes[n * 16], v, 16); }
-		void get128(u32 n, u8 out[16]) const { std::memcpy(out, &bytes[n * 16], 16); }
 		// FPU register file: fpr[n] (32-bit) and fprc[n] (control regs, [31]=FCR31).
 		void setFPR(u32 n, u32 v) { std::memcpy(&bytes[EE_FPR_OFFSET(n)], &v, sizeof(v)); }
 		u32 getFPR(u32 n) const
@@ -2449,6 +2455,58 @@ namespace mmiref
 	// [Rt[0], Rt[2], Rt[1], Rt[3]] in 32-bit lanes
 	static MQ refPEXCW(MQ t) { MQ d{}; d.ul[0] = t.ul[0]; d.ul[1] = t.ul[2]; d.ul[2] = t.ul[1]; d.ul[3] = t.ul[3]; return d; }
 
+	// Multiply-accumulate family reference functions (mirroring pcsx2/MMI.cpp).
+	// PMULTW: 32x32->64 signed multiply, lanes 0 and 2.
+	// LO.SD[dd] = low 32 bits sign-extended, HI.SD[dd] = high 32 bits sign-extended,
+	// GPR[rd].SD[dd] = full 64-bit product.
+	static void refPMULTW(MQ s, MQ t, u64& lo0, u64& hi0, u64& lo1, u64& hi1, MQ& rd)
+	{
+		s64 temp0 = (s64)(s32)s.ul[0] * (s64)(s32)t.ul[0];
+		lo0 = (u64)(s32)(temp0 & 0xFFFFFFFF);
+		hi0 = (u64)(s32)(temp0 >> 32);
+		rd.ul[0] = (u32)(temp0 & 0xFFFFFFFF);
+		rd.ul[1] = (u32)(temp0 >> 32);
+		s64 temp1 = (s64)(s32)s.ul[2] * (s64)(s32)t.ul[2];
+		lo1 = (u64)(s32)(temp1 & 0xFFFFFFFF);
+		hi1 = (u64)(s32)(temp1 >> 32);
+		rd.ul[2] = (u32)(temp1 & 0xFFFFFFFF);
+		rd.ul[3] = (u32)(temp1 >> 32);
+	}
+	// PMULTUW: 32x32->64 unsigned multiply (results sign-extended per interpreter).
+	static void refPMULTUW(MQ s, MQ t, u64& lo0, u64& hi0, u64& lo1, u64& hi1, MQ& rd)
+	{
+		u64 temp0 = (u64)s.ul[0] * (u64)t.ul[0];
+		lo0 = (u64)(s32)(temp0 & 0xFFFFFFFF);
+		hi0 = (u64)(s32)(temp0 >> 32);
+		rd.ul[0] = (u32)(temp0 & 0xFFFFFFFF);
+		rd.ul[1] = (u32)(temp0 >> 32);
+		u64 temp1 = (u64)s.ul[2] * (u64)t.ul[2];
+		lo1 = (u64)(s32)(temp1 & 0xFFFFFFFF);
+		hi1 = (u64)(s32)(temp1 >> 32);
+		rd.ul[2] = (u32)(temp1 & 0xFFFFFFFF);
+		rd.ul[3] = (u32)(temp1 >> 32);
+	}
+	// PMULTH: 16x16->32 signed multiply, 4 lanes x 2 iterations.
+	// LO.SD[n/2] = low 32 bits, HI.SD[n/2] = high 32 bits, GPR[rd].SD[n/2] = full 64-bit.
+	static void refPMULTH(MQ s, MQ t, u64& lo0, u64& hi0, u64& lo1, u64& hi1, MQ& rd)
+	{
+		s64 temp0 = (s64)(s16)s.us[0] * (s64)(s16)t.us[0];
+		lo0 = (u64)(s32)(temp0 & 0xFFFFFFFF);
+		hi0 = (u64)(s32)(temp0 >> 32);
+		rd.ul[0] = (u32)(temp0 & 0xFFFFFFFF);
+		rd.ul[1] = (u32)(temp0 >> 32);
+		s64 temp1 = (s64)(s16)s.us[4] * (s64)(s16)t.us[4];
+		lo1 = (u64)(s32)(temp1 & 0xFFFFFFFF);
+		hi1 = (u64)(s32)(temp1 >> 32);
+		rd.ul[2] = (u32)(temp1 & 0xFFFFFFFF);
+		rd.ul[3] = (u32)(temp1 >> 32);
+	}
+	// PMFHI/PMFLO/PMTHI/PMTLO: 128-bit moves.
+	static void refPMFHI(MQ hi, MQ& rd) { rd = hi; }
+	static void refPMFLO(MQ lo, MQ& rd) { rd = lo; }
+	static void refPMTHI(MQ rs, MQ& hi) { hi = rs; }
+	static void refPMTLO(MQ rs, MQ& lo) { lo = rs; }
+
 	// Two reusable input vectors with a spread of sign / saturation edge values.
 	static MQ inA() { return make({0x01, 0x00, 0x00, 0x80, 0xFF, 0xFF, 0xFF, 0x7F, 0x05, 0xF0, 0x34, 0x12, 0x00, 0x00, 0x00, 0x80}); }
 	static MQ inB() { return make({0xFF, 0xFF, 0xFF, 0x7F, 0x01, 0x00, 0x00, 0x80, 0x05, 0x10, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00}); }
@@ -2570,6 +2628,139 @@ MMI_SHIFT_TEST(PSRAH) MMI_SHIFT_TEST(PSRAW)
 	}
 
 MMI_VSHIFT_TEST(PSLLVW) MMI_VSHIFT_TEST(PSRLVW) MMI_VSHIFT_TEST(PSRAVW)
+
+// Multiply-accumulate family tests (Phase 5.4 continuation).
+// These write to HI/LO registers, so we need special runners that check HI/LO.
+namespace
+{
+	struct MACResult { u64 lo0, hi0, lo1, hi1; MQ rd; bool rdWritten; };
+
+	MACResult runMMIMAC(void (*gen)(u32, u32, u32), MQ s, MQ t)
+	{
+		GuestRegs regs;
+		regs.setHI(0); regs.setLO(0); regs.setHI1(0); regs.setLO1(0);
+		regs.set128(8, s.uc);
+		regs.set128(9, t.uc);
+		RunEEGen(regs, [gen] { gen(/*rd*/ 10, /*rs*/ 8, /*rt*/ 9); });
+		MACResult r{};
+		r.lo0 = regs.getLO(); r.hi0 = regs.getHI();
+		r.lo1 = regs.getLO1(); r.hi1 = regs.getHI1();
+		regs.get128(10, r.rd.uc);
+		// Check if rd was written by comparing to zero (we init to 0)
+		r.rdWritten = (r.rd.ul[0] != 0 || r.rd.ul[1] != 0 || r.rd.ul[2] != 0 || r.rd.ul[3] != 0);
+		return r;
+	}
+
+	MACResult runMMIMACUn(void (*gen)(u32, u32), MQ t)
+	{
+		GuestRegs regs;
+		regs.setHI(0); regs.setLO(0); regs.setHI1(0); regs.setLO1(0);
+		regs.set128(9, t.uc);
+		RunEEGen(regs, [gen] { gen(/*rd*/ 10, /*rt*/ 9); });
+		MACResult r{};
+		r.lo0 = regs.getLO(); r.hi0 = regs.getHI();
+		r.lo1 = regs.getLO1(); r.hi1 = regs.getHI1();
+		regs.get128(10, r.rd.uc);
+		r.rdWritten = (r.rd.ul[0] != 0 || r.rd.ul[1] != 0 || r.rd.ul[2] != 0 || r.rd.ul[3] != 0);
+		return r;
+	}
+
+	MACResult runMMIHILO(void (*gen)(u32), MQ t)
+	{
+		GuestRegs regs;
+		regs.setHI128(t.uc);
+		RunEEGen(regs, [gen] { gen(/*rd*/ 10); });
+		MACResult r{};
+		regs.get128(10, r.rd.uc);
+		r.rdWritten = true;
+		return r;
+	}
+
+	MACResult runMMIHILOWrite(void (*gen)(u32), MQ s)
+	{
+		GuestRegs regs;
+		regs.set128(9, s.uc);
+		RunEEGen(regs, [gen] { gen(/*rs*/ 9); });
+		MACResult r{};
+		regs.getHI128(r.rd.uc); // reuse rd field for HI result
+		r.rdWritten = true;
+		return r;
+	}
+} // namespace
+
+#define MMI_MAC_TEST(NAME)                                                      \
+	TEST(Arm64EmitEE, MMI_##NAME)                                               \
+	{                                                                           \
+		MQ a = mmiref::inA(), b = mmiref::inB();                                \
+		MACResult j = runMMIMAC(armEmit##NAME, a, b);                           \
+		MACResult ref{}; mmiref::ref##NAME(a, b, ref.lo0, ref.hi0, ref.lo1, ref.hi1, ref.rd); \
+		EXPECT_EQ(j.lo0, ref.lo0) << #NAME " lane 0 LO";                        \
+		EXPECT_EQ(j.hi0, ref.hi0) << #NAME " lane 0 HI";                        \
+		EXPECT_EQ(j.lo1, ref.lo1) << #NAME " lane 1 LO";                        \
+		EXPECT_EQ(j.hi1, ref.hi1) << #NAME " lane 1 HI";                        \
+		EXPECT_TRUE(eqMQ(j.rd, ref.rd)) << #NAME " GPR[rd]";                    \
+	}
+
+#define MMI_MAC_UN_TEST(NAME)                                                   \
+	TEST(Arm64EmitEE, MMI_##NAME)                                               \
+	{                                                                           \
+		MQ a = mmiref::inA();                                                   \
+		MACResult j = runMMIMACUn(armEmit##NAME, a);                            \
+		MACResult ref{}; mmiref::ref##NAME(a, ref.lo0, ref.hi0, ref.lo1, ref.hi1, ref.rd); \
+		EXPECT_EQ(j.lo0, ref.lo0) << #NAME " lane 0 LO";                        \
+		EXPECT_EQ(j.hi0, ref.hi0) << #NAME " lane 0 HI";                        \
+		EXPECT_EQ(j.lo1, ref.lo1) << #NAME " lane 1 LO";                        \
+		EXPECT_EQ(j.hi1, ref.hi1) << #NAME " lane 1 HI";                        \
+		EXPECT_TRUE(eqMQ(j.rd, ref.rd)) << #NAME " GPR[rd]";                    \
+	}
+
+MMI_MAC_TEST(PMULTW)
+MMI_MAC_TEST(PMULTUW)
+
+// HI/LO move tests (PMFHI/PMFLO/PMTHI/PMTLO).
+TEST(Arm64EmitEE, MMI_PMFHI)
+{
+	MQ a = mmiref::inA();
+	GuestRegs regs;
+	regs.setHI128(a.uc);
+	RunEEGen(regs, [] { armEmitPMFHI(10); });
+	MQ out{};
+	regs.get128(10, out.uc);
+	EXPECT_TRUE(eqMQ(out, a)) << "PMFHI should copy full 128-bit HI to GPR[rd]";
+}
+
+TEST(Arm64EmitEE, MMI_PMFLO)
+{
+	MQ a = mmiref::inA();
+	GuestRegs regs;
+	regs.setLO128(a.uc);
+	RunEEGen(regs, [] { armEmitPMFLO(10); });
+	MQ out{};
+	regs.get128(10, out.uc);
+	EXPECT_TRUE(eqMQ(out, a)) << "PMFLO should copy full 128-bit LO to GPR[rd]";
+}
+
+TEST(Arm64EmitEE, MMI_PMTHI)
+{
+	MQ a = mmiref::inA();
+	GuestRegs regs;
+	regs.set128(9, a.uc);
+	RunEEGen(regs, [] { armEmitPMTHI(9); });
+	MQ out{};
+	regs.getHI128(out.uc);
+	EXPECT_TRUE(eqMQ(out, a)) << "PMTHI should copy full 128-bit GPR[rs] to HI";
+}
+
+TEST(Arm64EmitEE, MMI_PMTLO)
+{
+	MQ a = mmiref::inA();
+	GuestRegs regs;
+	regs.set128(9, a.uc);
+	RunEEGen(regs, [] { armEmitPMTLO(9); });
+	MQ out{};
+	regs.getLO128(out.uc);
+	EXPECT_TRUE(eqMQ(out, a)) << "PMTLO should copy full 128-bit GPR[rs] to LO";
+}
 
 // Lane permutes (Phase 5.4 continuation).
 #define MMI_PERM_TEST(NAME)                                                     \

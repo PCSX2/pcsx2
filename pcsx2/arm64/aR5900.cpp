@@ -220,9 +220,17 @@ static bool recTranslateMMI2(u32 sa, u32 rd, u32 rs, u32 rt)
 {
 	switch (sa)
 	{
+		case 0x00: armEmitPMADDW(rd, rs, rt); return true;
+		case 0x01: armEmitPMADDH(rd, rs, rt); return true;
 		case 0x02: armEmitPSLLVW(rd, rs, rt); return true;
 		case 0x03: armEmitPSRLVW(rd, rs, rt); return true;
+		case 0x04: armEmitPMSUBW(rd, rs, rt); return true;
+		case 0x05: armEmitPMSUBH(rd, rs, rt); return true;
+		case 0x08: armEmitPMULTW(rd, rs, rt); return true;
+		case 0x09: armEmitPMULTH(rd, rs, rt); return true;
 		case 0x0A: armEmitPINTH(rd, rs, rt); return true;
+		case 0x0C: armEmitPHMADH(rd, rs, rt); return true;
+		case 0x0D: armEmitPHMSBH(rd, rs, rt); return true;
 		case 0x0E: armEmitPCPYLD(rd, rs, rt); return true;
 		case 0x12: armEmitPAND(rd, rs, rt); return true;
 		case 0x13: armEmitPXOR(rd, rs, rt); return true;
@@ -230,7 +238,7 @@ static bool recTranslateMMI2(u32 sa, u32 rd, u32 rs, u32 rt)
 		case 0x17: armEmitPREVH(rd, rt); return true;
 		case 0x18: armEmitPEXEW(rd, rt); return true;
 		case 0x1F: armEmitPROT3W(rd, rt); return true;
-		default:   return false; // PMADD*/PMSUB*/PMULT* -> interpreter
+		default:   return false;
 	}
 }
 
@@ -238,15 +246,21 @@ static bool recTranslateMMI3(u32 sa, u32 rd, u32 rs, u32 rt)
 {
 	switch (sa)
 	{
+		case 0x00: armEmitPMADDUW(rd, rs, rt); return true;
 		case 0x03: armEmitPSRAVW(rd, rs, rt); return true;
+		case 0x08: armEmitPMULTUW(rd, rs, rt); return true;
 		case 0x0A: armEmitPINTEH(rd, rs, rt); return true;
 		case 0x0E: armEmitPCPYUD(rd, rs, rt); return true;
+		case 0x10: armEmitPMFHI(rd); return true;
+		case 0x11: armEmitPMFLO(rd); return true;
 		case 0x12: armEmitPOR(rd, rs, rt); return true;
 		case 0x13: armEmitPNOR(rd, rs, rt); return true;
+		case 0x14: armEmitPMTHI(rs); return true;
+		case 0x15: armEmitPMTLO(rs); return true;
 		case 0x1A: armEmitPEXCH(rd, rt); return true;
 		case 0x1B: armEmitPCPYH(rd, rt); return true;
 		case 0x1C: armEmitPEXCW(rd, rt); return true;
-		default:   return false; // PMADDUW/PMULTUW/PMTHI -> interpreter
+		default:   return false;
 	}
 }
 
