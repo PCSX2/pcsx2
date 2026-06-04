@@ -162,6 +162,15 @@ void armEmitRSQRT_S(u32 fd, u32 fs, u32 ft);
 void armEmitADDA_S(u32 fs, u32 ft);
 void armEmitSUBA_S(u32 fs, u32 ft);
 void armEmitMULA_S(u32 fs, u32 ft);
+//   MADD_S/MSUB_S  : fpr[fd] = clamp(fpuDouble(ACC) OP fpuDouble(clamp(fs)*clamp(ft)))
+//   MADDA_S/MSUBA_S: ACC     = clamp(ACC.f OP (clamp(fs)*clamp(ft)))  (raw ACC)
+//   MAX_S/MIN_S    : fpr[fd] = integer fp_max/fp_min(fpr[fs], fpr[ft]); clears O|U
+void armEmitMADD_S(u32 fd, u32 fs, u32 ft);
+void armEmitMSUB_S(u32 fd, u32 fs, u32 ft);
+void armEmitMADDA_S(u32 fs, u32 ft);
+void armEmitMSUBA_S(u32 fs, u32 ft);
+void armEmitMAX_S(u32 fd, u32 fs, u32 ft);
+void armEmitMIN_S(u32 fd, u32 fs, u32 ft);
 
 // 128-bit LQ/SQ: the effective address is forced to 16-byte alignment and the
 // whole 128-bit GPR is loaded/stored via the Quad vtlb helpers (NEON q access).

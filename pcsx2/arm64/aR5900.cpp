@@ -258,6 +258,12 @@ static bool recTranslateOp(u32 op)
 						case 0x18: armEmitADDA_S(rd, rt); return true;    // ADDA_S (-> ACC)
 						case 0x19: armEmitSUBA_S(rd, rt); return true;    // SUBA_S (-> ACC)
 						case 0x1A: armEmitMULA_S(rd, rt); return true;    // MULA_S (-> ACC)
+						case 0x1C: armEmitMADD_S(sa, rd, rt); return true;  // MADD_S
+						case 0x1D: armEmitMSUB_S(sa, rd, rt); return true;  // MSUB_S
+						case 0x1E: armEmitMADDA_S(rd, rt); return true;     // MADDA_S (-> ACC)
+						case 0x1F: armEmitMSUBA_S(rd, rt); return true;     // MSUBA_S (-> ACC)
+						case 0x28: armEmitMAX_S(sa, rd, rt); return true;   // MAX_S
+						case 0x29: armEmitMIN_S(sa, rd, rt); return true;   // MIN_S
 						// Bit-exact ops (Phase 5.2a).
 						case 0x05: armEmitABS_S(sa, rd); return true; // ABS_S (fd=sa, fs=rd)
 						case 0x06: armEmitMOV_S(sa, rd); return true; // MOV_S

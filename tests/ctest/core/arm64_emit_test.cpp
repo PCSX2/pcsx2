@@ -1825,6 +1825,43 @@ Result rsqrt(u32 fs, u32 ft, u32 fcr_in)
 		checkUnderflow(out, 0, fcr);
 	return {out, fcr};
 }
+// MADD/MSUB -> fd: re-clamps the accumulator and the (single-precision) product.
+Result madd(bool subtract, u32 acc, u32 fs, u32 ft, u32 fcr_in)
+{
+	const u32 prod = bits(fpuDouble(fs) * fpuDouble(ft));
+	const float a = fpuDouble(acc), p = fpuDouble(prod);
+	u32 out = bits(subtract ? a - p : a + p);
+	u32 fcr = fcr_in;
+	if (!checkOverflow(out, kO | kSO, fcr))
+		checkUnderflow(out, kU | kSU, fcr);
+	return {out, fcr};
+}
+// MADDA/MSUBA -> ACC: uses the raw stored accumulator float and unclamped product.
+Result maddacc(bool subtract, u32 acc, u32 fs, u32 ft, u32 fcr_in)
+{
+	float accf;
+	std::memcpy(&accf, &acc, sizeof(accf));
+	const float p = fpuDouble(fs) * fpuDouble(ft);
+	u32 out = bits(subtract ? accf - p : accf + p);
+	u32 fcr = fcr_in;
+	if (!checkOverflow(out, kO | kSO, fcr))
+		checkUnderflow(out, kU | kSU, fcr);
+	return {out, fcr};
+}
+u32 fp_max(u32 a, u32 b)
+{
+	const std::int32_t sa = static_cast<std::int32_t>(a), sb = static_cast<std::int32_t>(b);
+	if (sa < 0 && sb < 0)
+		return (sa < sb) ? a : b; // both negative -> min
+	return (sa > sb) ? a : b;     // -> max
+}
+u32 fp_min(u32 a, u32 b)
+{
+	const std::int32_t sa = static_cast<std::int32_t>(a), sb = static_cast<std::int32_t>(b);
+	if (sa < 0 && sb < 0)
+		return (sa > sb) ? a : b; // both negative -> max
+	return (sa < sb) ? a : b;     // -> min
+}
 } // namespace fpuref
 
 // fs op ft -> fpr[fd], with FCR31 flag side-effects, checked against the reference.
@@ -2012,6 +2049,115 @@ TEST(Arm64EmitEE, RSQRT_S_NegativeFtSetsInvalid)
 	const fpuref::Result expect = fpuref::rsqrt(0x40800000, 0xc0800000, 0);
 	EXPECT_EQ(regs.getFPR(8), expect.val);
 	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
+}
+
+TEST(Arm64EmitEE, MADD_S_AccPlusProduct)
+{
+	GuestRegs regs;
+	regs.setACC(0x40000000); // 2.0
+	regs.setFPR(3, 0x40400000); // 3.0
+	regs.setFPR(4, 0x40000000); // 2.0
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitMADD_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::madd(/*sub*/ false, 0x40000000, 0x40400000, 0x40000000, 0);
+	EXPECT_EQ(regs.getFPR(8), expect.val); // 2 + 3*2 = 8.0
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
+}
+
+TEST(Arm64EmitEE, MSUB_S_AccMinusProduct)
+{
+	GuestRegs regs;
+	regs.setACC(0x41200000); // 10.0
+	regs.setFPR(3, 0x40400000); // 3.0
+	regs.setFPR(4, 0x40000000); // 2.0
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitMSUB_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::madd(/*sub*/ true, 0x41200000, 0x40400000, 0x40000000, 0);
+	EXPECT_EQ(regs.getFPR(8), expect.val); // 10 - 3*2 = 4.0
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
+}
+
+TEST(Arm64EmitEE, MADD_S_OverflowClampsAndSetsFlags)
+{
+	GuestRegs regs;
+	regs.setACC(0x7f7fffff); // +fmax
+	regs.setFPR(3, 0x7f7fffff); // +fmax
+	regs.setFPR(4, 0x7f7fffff); // +fmax -> product clamps to +fmax, sum overflows
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitMADD_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::madd(/*sub*/ false, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0);
+	EXPECT_EQ(regs.getFPR(8), expect.val);
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
+}
+
+TEST(Arm64EmitEE, MADDA_S_WritesAccumulatorRaw)
+{
+	GuestRegs regs;
+	regs.setACC(0x3f800000); // 1.0 (used raw, not re-clamped)
+	regs.setFPR(3, 0x40400000); // 3.0
+	regs.setFPR(4, 0x40000000); // 2.0
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitMADDA_S(/*fs*/ 3, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::maddacc(/*sub*/ false, 0x3f800000, 0x40400000, 0x40000000, 0);
+	EXPECT_EQ(regs.getACC(), expect.val); // 1 + 3*2 = 7.0
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
+}
+
+TEST(Arm64EmitEE, MSUBA_S_WritesAccumulatorRaw)
+{
+	GuestRegs regs;
+	regs.setACC(0x41200000); // 10.0
+	regs.setFPR(3, 0x40400000); // 3.0
+	regs.setFPR(4, 0x40000000); // 2.0
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitMSUBA_S(/*fs*/ 3, /*ft*/ 4); });
+	const fpuref::Result expect = fpuref::maddacc(/*sub*/ true, 0x41200000, 0x40400000, 0x40000000, 0);
+	EXPECT_EQ(regs.getACC(), expect.val); // 10 - 3*2 = 4.0
+	EXPECT_EQ(regs.getFPRC(31), expect.fcr);
+}
+
+TEST(Arm64EmitEE, MAX_S_PositivePicksLarger)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x40400000); // 3.0
+	regs.setFPR(4, 0x40000000); // 2.0
+	regs.setFPRC(31, fpuref::kO | fpuref::kU);
+	RunEEGen(regs, [] { armEmitMAX_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); });
+	EXPECT_EQ(regs.getFPR(8), fpuref::fp_max(0x40400000, 0x40000000)); // 3.0
+	EXPECT_EQ(regs.getFPRC(31), 0u); // O|U cleared
+}
+
+TEST(Arm64EmitEE, MAX_S_BothNegativePicksCloserToZero)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0xc0400000); // -3.0
+	regs.setFPR(4, 0xc0000000); // -2.0
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitMAX_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); });
+	EXPECT_EQ(regs.getFPR(8), fpuref::fp_max(0xc0400000, 0xc0000000)); // -2.0
+	EXPECT_EQ(regs.getFPRC(31), 0u);
+}
+
+TEST(Arm64EmitEE, MIN_S_PositivePicksSmaller)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0x40400000); // 3.0
+	regs.setFPR(4, 0x40000000); // 2.0
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitMIN_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); });
+	EXPECT_EQ(regs.getFPR(8), fpuref::fp_min(0x40400000, 0x40000000)); // 2.0
+	EXPECT_EQ(regs.getFPRC(31), 0u);
+}
+
+TEST(Arm64EmitEE, MIN_S_BothNegativePicksFartherFromZero)
+{
+	GuestRegs regs;
+	regs.setFPR(3, 0xc0400000); // -3.0
+	regs.setFPR(4, 0xc0000000); // -2.0
+	regs.setFPRC(31, 0);
+	RunEEGen(regs, [] { armEmitMIN_S(/*fd*/ 8, /*fs*/ 3, /*ft*/ 4); });
+	EXPECT_EQ(regs.getFPR(8), fpuref::fp_min(0xc0400000, 0xc0000000)); // -3.0
+	EXPECT_EQ(regs.getFPRC(31), 0u);
 }
 
 #endif // __aarch64__

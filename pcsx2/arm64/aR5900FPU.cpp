@@ -176,16 +176,18 @@ void armEmitSWC1(u32 ft, u32 rs, s32 imm)
 // w9-w13 as integer scratch and s29-s31 (RSSCRATCH*) for the float operands.
 // ========================================================================
 
-// Load fpr/ACC at byteOffset, apply the EE fpuDouble() input clamp, leave the
-// resulting single-precision float in dstS.
-static void emitLoadFpuDouble(const a64::VRegister& dstS, u32 byteOffset)
+// Apply the EE fpuDouble() input clamp to the 32-bit float bits already in wraw,
+// leaving the clamped single-precision float in dstS. Uses w9-w12 as scratch
+// (wraw may alias w9). denormal/zero -> signed 0; inf/NaN -> signed fmax.
+static void emitClampFpuDoubleBits(const a64::VRegister& dstS, const a64::Register& wraw)
 {
 	const a64::Register w = a64::w9;     // raw bits / clamped result
 	const a64::Register wexp = a64::w10; // exponent field [30:23]
 	const a64::Register wsign = a64::w11;
 	const a64::Register winf = a64::w12;
 
-	armAsm->Ldr(w, a64::MemOperand(RESTATEPTR, byteOffset));
+	if (!w.Is(wraw))
+		armAsm->Mov(w, wraw);
 	armAsm->Ubfx(wexp, w, 23, 8);
 	armAsm->And(wsign, w, kSignBit);
 	// inf/NaN clamp candidate: sign | fmax
@@ -198,6 +200,14 @@ static void emitLoadFpuDouble(const a64::VRegister& dstS, u32 byteOffset)
 	armAsm->Cmp(wexp, 0xFF);
 	armAsm->Csel(w, winf, w, a64::eq);
 	armAsm->Fmov(dstS, w);
+}
+
+// Load fpr/ACC at byteOffset, apply the EE fpuDouble() input clamp, leave the
+// resulting single-precision float in dstS.
+static void emitLoadFpuDouble(const a64::VRegister& dstS, u32 byteOffset)
+{
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, byteOffset));
+	emitClampFpuDoubleBits(dstS, a64::w9);
 }
 
 // Apply checkOverflow + checkUnderflow to the float result in srcS, update the
@@ -395,3 +405,79 @@ void armEmitRSQRT_S(u32 fd, u32 fs, u32 ft)
 
 	armAsm->Bind(&done);
 }
+
+// ------------------------------------------------------------------------
+// MADD/MSUB (-> fpr[fd]) and MADDA/MSUBA (-> ACC). The interpreter has a subtle
+// asymmetry that we reproduce exactly:
+//   MADD_S : temp = clamp(fs)*clamp(ft); fd = fpuDouble(ACC) (+/-) fpuDouble(temp)
+//   MADDA_S: ACC.f (+/-)= clamp(fs)*clamp(ft)            (raw ACC, unclamped product)
+// i.e. the fd-form re-clamps both the accumulator and the product before the add,
+// while the ACC-form uses the raw stored ACC and the unclamped product. Both then
+// run checkOverflow/checkUnderflow with the O|SO / U|SU flag side-effects.
+static void emitFpuMulAcc(bool subtract, bool toAcc, u32 fd, u32 fs, u32 ft)
+{
+	// product = clamp(fs) * clamp(ft)  (single precision)
+	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));
+	emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));
+	armAsm->Fmul(RSSCRATCH, RSSCRATCH, RSSCRATCH2);
+
+	if (toAcc)
+	{
+		// MADDA/MSUBA: raw ACC (no clamp), unclamped product.
+		armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_ACC_OFFSET));
+		armAsm->Fmov(RSSCRATCH2, a64::w9);
+	}
+	else
+	{
+		// MADD/MSUB: re-clamp the product, then clamp the accumulator.
+		armAsm->Fmov(a64::w9, RSSCRATCH);
+		emitClampFpuDoubleBits(RSSCRATCH, a64::w9);
+		emitLoadFpuDouble(RSSCRATCH2, EE_ACC_OFFSET);
+	}
+
+	// result = ACC (+/-) product  -> RSSCRATCH2 is the accumulator, RSSCRATCH the addend
+	if (subtract)
+		armAsm->Fsub(RSSCRATCH, RSSCRATCH2, RSSCRATCH);
+	else
+		armAsm->Fadd(RSSCRATCH, RSSCRATCH2, RSSCRATCH);
+
+	emitStoreClampedResult(RSSCRATCH, toAcc ? EE_ACC_OFFSET : EE_FPR_OFFSET(fd), /*setFlags*/ true);
+}
+
+void armEmitMADD_S(u32 fd, u32 fs, u32 ft) { emitFpuMulAcc(/*sub*/ false, /*toAcc*/ false, fd, fs, ft); }
+void armEmitMSUB_S(u32 fd, u32 fs, u32 ft) { emitFpuMulAcc(/*sub*/ true, /*toAcc*/ false, fd, fs, ft); }
+void armEmitMADDA_S(u32 fs, u32 ft) { emitFpuMulAcc(/*sub*/ false, /*toAcc*/ true, 0, fs, ft); }
+void armEmitMSUBA_S(u32 fs, u32 ft) { emitFpuMulAcc(/*sub*/ true, /*toAcc*/ true, 0, fs, ft); }
+
+// ------------------------------------------------------------------------
+// MAX_S/MIN_S: integer-domain fp_max/fp_min on the raw bit patterns (no fpuDouble
+// clamp, no rounding), then clear the O|U cause flags. The interpreter:
+//   fp_max(a,b) = (s32a<0 && s32b<0) ? min<s32>(a,b) : max<s32>(a,b)
+//   fp_min(a,b) = (s32a<0 && s32b<0) ? max<s32>(a,b) : min<s32>(a,b)
+// "both negative" is detected by sign bit 31 of (a & b).
+static void emitFpuMinMax(bool isMax, u32 fd, u32 fs, u32 ft)
+{
+	const a64::Register wa = a64::w9;
+	const a64::Register wb = a64::w10;
+	const a64::Register wmax = a64::w11;
+	const a64::Register wmin = a64::w12;
+	const a64::Register wtmp = a64::w13;
+
+	armAsm->Ldr(wa, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fs)));
+	armAsm->Ldr(wb, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(ft)));
+	armAsm->Cmp(wa, wb); // signed
+	armAsm->Csel(wmax, wa, wb, a64::gt);
+	armAsm->Csel(wmin, wa, wb, a64::lt);
+	// both negative <=> bit 31 of (a & b) set -> Tst leaves NE in that case
+	armAsm->And(wtmp, wa, wb);
+	armAsm->Tst(wtmp, kSignBit);
+	if (isMax)
+		armAsm->Csel(wa, wmin, wmax, a64::ne); // both neg -> min, else max
+	else
+		armAsm->Csel(wa, wmax, wmin, a64::ne); // both neg -> max, else min
+	armAsm->Str(wa, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fd)));
+	emitClearFCR31Flags(FPUflagO | FPUflagU);
+}
+
+void armEmitMAX_S(u32 fd, u32 fs, u32 ft) { emitFpuMinMax(/*isMax*/ true, fd, fs, ft); }
+void armEmitMIN_S(u32 fd, u32 fs, u32 ft) { emitFpuMinMax(/*isMax*/ false, fd, fs, ft); }
