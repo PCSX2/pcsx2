@@ -45,6 +45,8 @@ public:
 	id<MTLTexture> GetTexture() { return m_texture; }
 	id<MTLTexture> GetROVTexture() { return m_rov_texture; }
 
+	GSVector4 GetMTLClearValue() const;
+
 #ifdef PCSX2_DEVBUILD
 	void SetDebugName(std::string_view name) override;
 #endif
