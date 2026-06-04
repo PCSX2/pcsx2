@@ -15,8 +15,13 @@
 #if defined(__aarch64__)
 
 #include "arm64/AsmHelpers.h"
+#include "arm64/aR5900.h"
 
 #include <gtest/gtest.h>
+
+#include <array>
+#include <cstdint>
+#include <cstring>
 
 #include <sys/mman.h>
 
@@ -116,6 +121,80 @@ TEST(Arm64Emit, LoadStoreThroughPointer)
 	u64 slot = 0;
 	fn(&slot, 41);
 	EXPECT_EQ(slot, 42u);
+}
+
+// --------------------------------------------------------------------------------------
+//  Phase 2.3: EE effective-address codegen (armEmitEffectiveAddr)
+// --------------------------------------------------------------------------------------
+// Validates the genuinely-new EE load/store address mode at runtime:
+//   addr = GPR[rs].UL[0] + sign_extend(imm)
+// reading the guest base register straight out of a cpuRegs-shaped buffer via
+// RESTATEPTR (x19). The vtlb call path the full generators add on top of this is
+// already proven (armEmitCall + the Phase 2.1 helpers), so this isolates the
+// part that's new in 2.3 and needs no live vtlb/VM to exercise.
+namespace
+{
+	// Emit `u32 f(void* gpr_base)` that returns armEmitEffectiveAddr(rs, imm),
+	// run it against a fake GPR file, and return the computed address.
+	u32 RunEffectiveAddr(u32 rs, s32 imm, const std::array<u64, 32>& gpr_lo)
+	{
+		// cpuRegs-shaped backing store: 32 GPRs * 16 bytes, low word at n*16.
+		alignas(16) std::array<u8, 32 * 16> regfile{};
+		for (u32 i = 0; i < 32; i++)
+			std::memcpy(&regfile[i * 16], &gpr_lo[i], sizeof(u32));
+
+		JitBuffer buf(4096);
+		EXPECT_NE(buf.ptr(), nullptr) << "MAP_JIT allocation failed";
+
+		armSetAsmPtr(buf.ptr(), buf.size(), nullptr);
+		u8* const code = armStartBlock();
+		// RESTATEPTR (x19) is callee-saved: preserve it, point it at the regfile.
+		armAsm->Str(RESTATEPTR, MemOperand(sp, -16, PreIndex));
+		armAsm->Mov(RESTATEPTR, x0);
+		armEmitEffectiveAddr(w0, rs, imm); // result -> w0 (return value)
+		armAsm->Ldr(RESTATEPTR, MemOperand(sp, 16, PostIndex));
+		armAsm->Ret();
+		armEndBlock();
+
+		using Fn = u32 (*)(void*);
+		return reinterpret_cast<Fn>(code)(regfile.data());
+	}
+} // namespace
+
+TEST(Arm64EmitEE, EffectiveAddrBasePlusImm)
+{
+	std::array<u64, 32> gpr{};
+	gpr[5] = 0x0010'0000; // $t... base
+	EXPECT_EQ(RunEffectiveAddr(5, 0x40, gpr), 0x0010'0040u);
+}
+
+TEST(Arm64EmitEE, EffectiveAddrZeroImm)
+{
+	std::array<u64, 32> gpr{};
+	gpr[7] = 0x1FC0'0000;
+	EXPECT_EQ(RunEffectiveAddr(7, 0, gpr), 0x1FC0'0000u);
+}
+
+TEST(Arm64EmitEE, EffectiveAddrNegativeImm)
+{
+	std::array<u64, 32> gpr{};
+	gpr[9] = 0x0000'1000;
+	// imm is the sign-extended 16-bit MIPS immediate; -0x10 -> 0xFFF0.
+	EXPECT_EQ(RunEffectiveAddr(9, -0x10, gpr), 0x0000'0FF0u);
+}
+
+TEST(Arm64EmitEE, EffectiveAddrR0IsImmOnly)
+{
+	std::array<u64, 32> gpr{};
+	gpr[0] = 0xDEAD'BEEF; // must be ignored: $zero is hardwired to 0
+	EXPECT_EQ(RunEffectiveAddr(0, 0x1234, gpr), 0x0000'1234u);
+}
+
+TEST(Arm64EmitEE, EffectiveAddrUsesLowWordOnly)
+{
+	std::array<u64, 32> gpr{};
+	gpr[3] = 0xFFFF'FFFF'8000'0000ull; // upper 32 bits must not leak in
+	EXPECT_EQ(RunEffectiveAddr(3, 0x10, gpr), 0x8000'0010u);
 }
 
 #endif // __aarch64__

@@ -16,11 +16,19 @@
 #include "aR5900.h"
 
 #include "Memory.h"
+#include "R5900.h"
 #include "vtlb.h"
 
 #include "common/Assertions.h"
 
+#include <cstddef>
+
 namespace a64 = vixl::aarch64;
+
+// The effective-address codegen assumes guest GPRs are laid out as 16-byte
+// GPR_reg slots starting at the base of cpuRegs (so GPR[n].UL[0] is at n*16).
+static_assert(sizeof(GPR_reg) == 16, "GPR_reg must be 128 bits for EE_GPR_OFFSET");
+static_assert(offsetof(cpuRegisters, GPR) == 0, "GPR must be the first member of cpuRegs");
 
 // ------------------------------------------------------------------------
 void armEmitVtlbRead(u32 bits, bool sign, const a64::Register& dst, const a64::Register& addr)
@@ -110,4 +118,60 @@ void armEmitVtlbWriteQuad(const a64::Register& addr, const a64::VRegister& data)
 		armAsm->Mov(RWARG1, addr.W());
 
 	armEmitCall(reinterpret_cast<const void*>(&vtlb_memWrite128));
+}
+
+// ========================================================================
+//  EE GPR load/store opcode generators (Phase 2.3)
+// ========================================================================
+
+// ------------------------------------------------------------------------
+void armEmitEffectiveAddr(const a64::Register& dst, u32 rs, s32 imm)
+{
+	// addr = GPR[rs].UL[0] + imm. GPR[0] is hardwired to zero, so for rs==0 the
+	// address is just the (sign-extended) immediate.
+	if (rs == 0)
+	{
+		armAsm->Mov(dst.W(), imm);
+		return;
+	}
+
+	armAsm->Ldr(dst.W(), a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	if (imm != 0)
+		armAsm->Add(dst.W(), dst.W(), imm); // MacroAssembler materializes any s16 imm
+}
+
+// ------------------------------------------------------------------------
+void armEmitLoadGpr(u32 bits, bool sign, u32 rt, u32 rs, s32 imm)
+{
+	// Effective address into the read helper's first argument register.
+	armEmitEffectiveAddr(RWARG1, rs, imm);
+
+	// Perform the load even when rt==0 (the access can have I/O side effects);
+	// the extended 64-bit result lands in RXRET. Use it as the scratch dst.
+	armEmitVtlbRead(bits, sign, RXRET, RWARG1);
+
+	if (rt == 0)
+		return;
+
+	// Write the full 64-bit (sign/zero-extended) result to GPR[rt].UD[0]. The
+	// upper doubleword (UD[1]) is left untouched, matching the interpreter — EE
+	// scalar loads only define the low 64 bits of the 128-bit register.
+	armAsm->Str(RXRET, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+}
+
+// ------------------------------------------------------------------------
+void armEmitStoreGpr(u32 bits, u32 rt, u32 rs, s32 imm)
+{
+	// Load the value to store first (GPR[rt], low `bits` bits) into the write
+	// helper's data argument. GPR[0] reads as zero straight from cpuRegs, so no
+	// special case is needed for rt==0.
+	if (bits == 64)
+		armAsm->Ldr(RXARG2, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	else
+		armAsm->Ldr(RWARG2, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+
+	// Effective address into the write helper's first argument register.
+	armEmitEffectiveAddr(RWARG1, rs, imm);
+
+	armEmitVtlbWrite(bits, RWARG1, (bits == 64) ? RXARG2 : RWARG2);
 }

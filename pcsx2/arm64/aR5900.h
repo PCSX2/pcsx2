@@ -52,3 +52,29 @@ void armEmitVtlbRead(u32 bits, bool sign, const vixl::aarch64::Register& dst, co
 void armEmitVtlbWrite(u32 bits, const vixl::aarch64::Register& addr, const vixl::aarch64::Register& data);
 void armEmitVtlbReadQuad(const vixl::aarch64::VRegister& dst, const vixl::aarch64::Register& addr);
 void armEmitVtlbWriteQuad(const vixl::aarch64::Register& addr, const vixl::aarch64::VRegister& data);
+
+// --------------------------------------------------------------------------------------
+//  EE GPR load/store opcode generators (Phase 2.3)
+// --------------------------------------------------------------------------------------
+// The first vertical slice that turns decoded MIPS load/store ops into ARM64 that
+// reads/writes guest memory. These take the simple, non-allocating path: every
+// guest GPR is read from / written back to cpuRegs in memory (via RESTATEPTR =
+// &cpuRegs) around the access — there is no register allocator yet (Phase 3). The
+// access itself goes through the slow-path armEmitVtlbRead/Write helpers above.
+//
+// Fields are passed explicitly (decoded from cpuRegs.code by the caller) so the
+// generators are independent of any opcode-table wiring and are unit-testable.
+//
+//   armEmitEffectiveAddr: dst.W() = GPR[rs].UL[0] + imm  (the EE address mode).
+//   armEmitLoadGpr:  GPR[rt] = sign/zero-extend(mem[addr]); skips write-back for rt==0.
+//   armEmitStoreGpr: mem[addr] = GPR[rt] (low `bits` bits).
+//
+// bits = 8/16/32/64; imm is the sign-extended 16-bit MIPS immediate.
+
+// Byte offset of guest GPR `n`'s low word within cpuRegs (GPR is the first member;
+// each GPR_reg is 128 bits wide).
+static constexpr u32 EE_GPR_OFFSET(u32 n) { return n * 16u; }
+
+void armEmitEffectiveAddr(const vixl::aarch64::Register& dst, u32 rs, s32 imm);
+void armEmitLoadGpr(u32 bits, bool sign, u32 rt, u32 rs, s32 imm);
+void armEmitStoreGpr(u32 bits, u32 rt, u32 rs, s32 imm);
