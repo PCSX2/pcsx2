@@ -51,5 +51,8 @@ namespace GLState
 	extern GLuint tex_unit[8]; // shader input texture
 
 	extern u32 UpdateDrawBuffers();
-	extern void Clear();
+	// Initilise GLState to initial api state.
+	extern void Init();
+	// Invalidate GLState, used when the api state was modified without updating this class.
+	extern void Invalidate();
 } // namespace GLState
