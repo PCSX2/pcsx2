@@ -1055,6 +1055,7 @@ set(pcsx2arm64Sources
 	arm64/Vif_UnpackNEON.cpp
 	arm64/RecStubs.cpp
 	arm64/aR5900.cpp
+	arm64/aR5900LoadStore.cpp
 	)
 
 set(pcsx2arm64Headers
