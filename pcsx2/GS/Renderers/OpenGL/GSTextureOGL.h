@@ -36,6 +36,22 @@ public:
 	__fi u32 GetIntShift() const { return m_int_shift; }
 	__fi u32 GetGLFormat() const { return m_gl_format; }
 
+	__fi GSVector4 GetGLClearValue()
+	{
+		if (IsDepthStencil() || IsDepthColor())
+		{
+			return GSVector4(static_cast<float>(GetClearValue()), 0.0f, 0.0f, 0.0f);
+		}
+		else if (IsDepthInteger())
+		{
+			return GSVector4::cast(GSVector4i(GetClearValue(), 0, 0, 0));
+		}
+		else
+		{
+			return GSVector4::unorm8(GetClearValue());
+		}
+	}
+
 	void* GetNativeHandle() const override;
 
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) override;
