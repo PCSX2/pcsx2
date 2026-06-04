@@ -8,14 +8,16 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 0 COMPLETE. Phase 1.1–1.3 COMPLETE** — EE rec skeleton (`aR5900.{h,cpp}`)
-defines `recCpu`, reserves the EE code cache, and inits the constant pool.
-Next concrete task: **Phase 1.4** — minimal block compile loop: in a new
-`recRecompile`-style fn, point `armSetAsmPtr(recPtr, recPtrEnd-recPtr, &s_const_pool)`,
-`armStartBlock()`, emit a couple of NOPs (later: read 1–2 MIPS ops), `armEndBlock()`,
-advance `recPtr`, reset cache when `recPtr >= recPtrEnd`. Then make `recExecute()`
-jump into emitted code and return (ref `x86/ix86-32/iR5900.cpp` `_DynGen_EnterRecompiledCode`
-+ `recRecompile`/`recExecuteBlock`).
+**Phase 0 COMPLETE. Phase 1.1–1.4 COMPLETE** — EE rec skeleton (`aR5900.{h,cpp}`)
+defines `recCpu`, reserves the EE code cache + constant pool, and now has a
+minimal block compile loop: `recCompileBlock()` emits a NOP/NOP/RET placeholder
+through the real `armSetAsmPtr`→`armStartBlock`→`armEndBlock` lifecycle and
+advances `recPtr`; `recExecute()` enters one such block and returns.
+Next concrete task: **Phase 1.5** — wire `recCpu` into `VMManager.cpp` so ARM64
+actually calls `recReserve`/`recResetEE`/`recShutdown` (extend the `_M_X86` guards
+at ~2671/2695/2720/2740). Keep `Cpu = &intCpu;` — do NOT select `&recCpu` yet;
+the interpreter stays ground truth until real codegen exists. Verify Reserve/Reset
+are invoked on VM startup (BIOS boot) without crashing.
 
 > When you finish a task, move this pointer to the next one and flip the box below.
 
@@ -40,7 +42,7 @@ understand the existing `pcsx2/arm64/` patterns well enough to copy them.
 - [x] 1.1 Created `pcsx2/arm64/aR5900.h` — pins persistent host regs: `RESTATEPTR`=x19 (`&cpuRegs`), `REFASTMEMBASE`=x20 (fastmem base), `REVTLBPTR`=x21 (vtlb base, Phase 2).
 - [x] 1.2 Created `pcsx2/arm64/aR5900.cpp` — defines `recCpu` with stub provider fns (recExecute = `pxFailRel`, rest no-op); added both files to `pcsx2arm64Sources`/`Headers`. Builds + links; binary still arm64; unittests green.
 - [x] 1.3 `recReserve()`/`recShutdown()`/`recResetEE()`: carve the SysMemory-reserved EE rec region (`GetEERec()`..`GetEERecEnd()`) into a code area + a 1 MB tail `ArmConstantPool`; `recPtr`/`recPtrEnd` cursor. Builds, links, arm64, unittests green.
-- [ ] 1.4 Minimal block compile loop: read 1–2 MIPS ops, emit NOP via VIXL, return; `recCpu.Execute()` jumps in and back.
+- [x] 1.4 Minimal block compile loop: `recCompileBlock()` emits NOP/NOP/RET via VIXL through the real `armSetAsmPtr`/`armStartBlock`/`armEndBlock` lifecycle on the EE code cache, advances `recPtr` (resets cache past `recPtrEnd`); `recExecute()` enters the block and returns. Builds, links, arm64, unittests green.
 - [ ] 1.5 Wire `recCpu` into `VMManager.cpp` (let ARM64 call Reserve/Reset/Shutdown). Keep `Cpu = &intCpu;` until the rec actually works.
 
 **Done when:** ARM64 build compiles + runs with the rec reserved/active, even if it

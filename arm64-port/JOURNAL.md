@@ -28,6 +28,50 @@
 
 ---
 
+## 2026-06-04 — Phase 1.4: minimal EE block compile loop
+
+**Goal:** Exercise the production emission lifecycle end-to-end against the real EE
+code cache — emit a block, enter it, return — before any real guest codegen.
+
+**What changed:**
+- `pcsx2/arm64/aR5900.cpp`:
+  - Added `recCompileBlock()`: resets the cache if `recPtr >= recPtrEnd`, then
+    `armSetAsmPtr(recPtr, recPtrEnd-recPtr, &s_const_pool)` → `armStartBlock()` →
+    emit `Nop/Nop/Ret` placeholder → `recPtr = armEndBlock()`; returns the entry ptr.
+  - Rewrote `recExecute()` (was `pxFailRel`): compiles one block via
+    `recCompileBlock()`, casts the entry to `void(*)()`, calls it, returns.
+- Commits: a269894be ARM64: Minimal EE block compile loop (Phase 1.4)
+
+**Decisions & rationale:**
+- **Followed the VIF dynarec lifecycle verbatim** (`Vif_Dynarec.cpp:487-496`):
+  `armSetAsmPtr` → `armStartBlock` (returns fn ptr) → emit → `armAsm->Ret()` →
+  `armEndBlock` (returns advanced write ptr). `armStartBlock`/`armEndBlock` already
+  do the Apple-Silicon-critical `BeginCodeWrite`/`EndCodeWrite` (JIT W^X toggle) +
+  `FlushInstructionCache`, so the block is immediately callable.
+- **Deliberately NOT the x86 dispatcher/LUT machinery.** x86's `recExecute` enters
+  a generated `EnterRecompiledCode` trampoline and `fastjmp`s back out, driving a
+  block-LUT dispatcher loop (`iR5900.cpp:374-496,715`). That (block map, linking,
+  `recEventTest`, exit via fastjmp) is Phase 4. Phase 1.4 runs exactly one empty
+  block and returns via a plain `RET` — the smallest honest proof of emit+enter.
+- **`recExecute` is dead code in normal operation right now** and that's intended:
+  `recCpu` is defined but interpreter stays the active `Cpu` provider until Phase
+  1.5 wires VMManager (and even then `Cpu = &intCpu` holds until real codegen). So
+  this path isn't hit on BIOS boot yet; it's validated by compilation + the fact
+  the emit lifecycle is identical to the proven VIF/scratch-harness path.
+
+**Blockers / open questions:**
+- Top-level `ctest --test-dir build` reports "No tests were found" — tests are
+  registered under `build/tests/ctest/`. Correct invocation:
+  `ctest --test-dir build/tests/ctest` (both `common_test` + `core_test` pass).
+  CLAUDE.md/CONVENTIONS say `ctest --test-dir build`; note the discrepancy.
+
+**Next step:** Phase 1.5 — wire `recCpu` into `VMManager.cpp` (extend the `_M_X86`
+guards at ~2671/2695/2720/2740 so ARM64 calls Reserve/Reset/Shutdown). Keep
+`Cpu = &intCpu;` — do NOT select `&recCpu` yet. Confirm Reserve/Reset run on VM
+startup without crashing.
+
+---
+
 ## 2026-06-04 — Phase 1.3: EE code-cache reservation + constant pool
 
 **Goal:** Give the EE rec a real code buffer and constant pool so Phase 1.4 can
