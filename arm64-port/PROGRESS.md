@@ -8,31 +8,27 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 5.4 MMI 128-bit SIMD — first batch DONE (NEON-mapped ops compiled natively).**
-The MMI SIMD ops that map cleanly onto ARM64 NEON now emit inline in
-`pcsx2/arm64/aR5900MMI.cpp` (one NEON instruction per op against scratch q-regs):
-parallel add/sub (wrapping + signed-sat `Sqadd/Sqsub` + unsigned-sat `Uqadd/Uqsub`)
-for W/H/B, the `PCGT*`/`PCEQ*` compare masks (`Cmgt`/`Cmeq`), `PMAX*/PMIN*`
-(`Smax/Smin`), `PABSW/PABSH` (`Sqabs`), `PAND/POR/PXOR/PNOR`, the `PEXTL*/PEXTU*`
-interleaves (`Zip1/Zip2`), `PPAC*` packs (`Uzp1`), and `PCPYLD/PCPYUD/PCPYH`.
-Wired the MMI0/1/2/3 sub-groups (sub-op in `sa`) into `recTranslateOp` case 0x1C.
-Little-endian lane order matches the interpreter's element indexing exactly.
-**Verified:** `pcsx2-qt` builds arm64; 47 new `Arm64EmitEE.MMI_*` gtests pass
-byte-exact vs a C++ replica of `pcsx2/MMI.cpp`; Arm64EmitEE 220/220, core 305/305.
-Commit `6b2ceb311`.
+**Phase 5.4 MMI 128-bit SIMD — parallel immediate shifts DONE.**
+The six parallel shift-by-immediate ops now emit inline in `pcsx2/arm64/aR5900MMI.cpp`:
+`PSLLH/PSLLW` (logical left), `PSRLH/PSRLW` (logical right), `PSRAH/PSRAW` (arithmetic
+right). Each loads GPR[rt] into a scratch q-reg, emits a single NEON shift
+(`Shl`/`Ushr`/`Sshr`), and stores the result to GPR[rd]. The shift amount `sa` is
+masked to the lane width (5 bits for W, 4 bits for H). Zero-shift is handled with a
+`Mov` copy (VIXL doesn't emit for imm=0). Dispatch wired in `recTranslateOp` case 0x1C
+by funct value (0x30/0x32/0x33/0x38/0x3A/0x3B). **Verified:** `pcsx2-qt` builds arm64;
+18 new `Arm64EmitEE.MMI_PS*L*` gtests pass (sa=0, sa=max, sa=masked) byte-exact vs a
+C++ replica of `pcsx2/MMI.cpp`; Arm64EmitEE 238/238, core 323/323.
 
 **Still on interpreter fallback (intentional, not NEON-trivial):** the
 multiply-accumulate family (`PMADDH/PHMADH/PMSUBH/PMULTH/PMADDW/PMSUBW/PMULTW/
-PMADDUW/PMULTUW` → HI/LO), the `PMFHI/PMFLO/PMTHI/PMTLO` HI/LO moves, the parallel
-shifts (`PSLLH/W`, `PSRLH/W`, `PSRAH/W`, `PSLLVW/PSRLVW/PSRAVW`), the lane permutes
-(`PINTH/PINTEH/PEXEH/PEXEW/PREVH/PROT3W/PEXCH/PEXCW`), `PADSBH`, `QFSRV`,
-`PEXT5/PPAC5`, `PLZCW`, and `PMFHL/PMTHL`.
+PMADDUW/PMULTUW` → HI/LO), the `PMFHI/PMFLO/PMTHI/PMTLO` HI/LO moves, the variable
+shifts (`PSLLVW/PSRLVW/PSRAVW`), the lane permutes (`PINTH/PINTEH/PEXEH/PEXEW/PREVH/
+PROT3W/PEXCH/PEXCW`), `PADSBH`, `QFSRV`, `PEXT5/PPAC5`, `PLZCW`, and `PMFHL/PMTHL`.
 
-Next concrete task: either (a) extend Phase 5.4 with the parallel shifts
-(`PSLLH/PSRLH/PSRAH/PSLLW/PSRLW/PSRAW` — immediate `sa` shifts, straightforward
-NEON `Shl/Ushr/Sshr`) and the simple permutes (`PINTH/PINTEH/PREVH/PEXEH/PEXEW`
-via `Zip/Trn/Rev`), or (b) move to a different EE gap. Phase 4.4 recLUT stays
-parked on `armjit-reclut-wip` until its BIOS stall is solved.
+Next concrete task: continue Phase 5.4 with the simple lane permutes
+(`PINTH/PINTEH/PREVH/PEXEH/PEXEW` via NEON `Zip`/`Trn`/`Rev`), or tackle the variable
+shifts (`PSLLVW/PSRLVW/PSRAVW` — shift amount from GPR[rs].UL[0], masked). Phase 4.4
+recLUT stays parked on `armjit-reclut-wip` until its BIOS stall is solved.
 
 ---
 
@@ -233,7 +229,9 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     `PADD*/PSUB*` (+ signed/unsigned saturating), `PCGT*/PCEQ*`, `PMAX*/PMIN*`,
     `PABSW/PABSH`, `PAND/POR/PXOR/PNOR`, `PEXTL*/PEXTU*`, `PPAC*`,
     `PCPYLD/PCPYUD/PCPYH`. 47 byte-exact gtests vs MMI.cpp.
-  - [ ] Parallel shifts (`PSLLH/W`, `PSRLH/W`, `PSRAH/W`, `PSLLVW/PSRLVW/PSRAVW`).
+  - [x] Parallel immediate shifts (`PSLLH/W`, `PSRLH/W`, `PSRAH/W`) — NEON
+    `Shl/Ushr/Sshr` with sa=0 fast-path (`Mov`). 18 gtests, all pass.
+  - [ ] Variable shifts (`PSLLVW/PSRLVW/PSRAVW` — amount from GPR[rs]).
   - [ ] Lane permutes (`PINTH/PINTEH/PEXEH/PEXEW/PREVH/PROT3W/PEXCH/PEXCW`).
   - [ ] Multiply-accumulate to HI/LO (`PMADD*/PMSUB*/PMULT*/PHMADH/PHMSBH` + the
     `PMFHI/PMFLO/PMTHI/PMTLO` moves) — stay on interpreter for now.

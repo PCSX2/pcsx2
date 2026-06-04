@@ -418,3 +418,15 @@ void armEmitPCPYUD(u32 rd, u32 rs, u32 rt);
 void armEmitPABSW(u32 rd, u32 rt);
 void armEmitPABSH(u32 rd, u32 rt);
 void armEmitPCPYH(u32 rd, u32 rt);
+
+// Parallel shifts by immediate (Phase 5.4 continuation). Each lane is shifted
+// independently by the same immediate amount `sa` (masked by the lane width):
+//   PSLLH/PSLLW — logical shift left (zero-fill out bits)
+//   PSRLH/PSRLW — logical shift right (zero-fill from left)
+//   PSRAH/PSRAW — arithmetic shift right (sign-extend from left)
+void armEmitPSLLH(u32 rd, u32 rt, u32 sa);
+void armEmitPSLLW(u32 rd, u32 rt, u32 sa);
+void armEmitPSRLH(u32 rd, u32 rt, u32 sa);
+void armEmitPSRLW(u32 rd, u32 rt, u32 sa);
+void armEmitPSRAH(u32 rd, u32 rt, u32 sa);
+void armEmitPSRAW(u32 rd, u32 rt, u32 sa);

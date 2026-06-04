@@ -187,3 +187,102 @@ void armEmitPCPYH(u32 rd, u32 rt)
 	armAsm->Ins(VD.V2D(), 0, VS.V2D(), 0); // low doubleword <- US[0]x4; high stays US[4]x4
 	storeQ(VD, rd);
 }
+
+// =============================================================================
+// Parallel shifts by immediate (Phase 5.4 continuation)
+// =============================================================================
+// Each lane is shifted independently by the same immediate amount `sa`.
+// ARM64 NEON provides single-instruction forms for all three shift types:
+//   Shl  — shift left (zero-extend out bits)
+//   Ushr — unsigned/logical shift right (zero-fill from the left)
+//   Sshr — signed/arithmetic shift right (sign-extend from the left)
+//
+// The guest GPRs are little-endian, so NEON lane 0 holds guest element 0 —
+// the lane indexing matches the interpreter's element indexing exactly.
+
+// --- PSLLH/PSLLW: parallel logical shift left by `sa` ------------------------
+void armEmitPSLLH(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+	loadQ(VT, rt);
+	u32 shift = sa & 0x0F;
+	if (shift == 0) {
+		armAsm->Mov(VD.V16B(), VT.V16B()); // no-op shift, just copy
+	} else {
+		armAsm->Shl(VD.V8H(), VT.V8H(), shift); // 16-bit lanes
+	}
+	storeQ(VD, rd);
+}
+
+void armEmitPSLLW(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+	loadQ(VT, rt);
+	u32 shift = sa & 0x1F;
+	if (shift == 0) {
+		armAsm->Mov(VD.V16B(), VT.V16B()); // no-op shift, just copy
+	} else {
+		armAsm->Shl(VD.V4S(), VT.V4S(), shift); // 32-bit lanes
+	}
+	storeQ(VD, rd);
+}
+
+// --- PSRLH/PSRLW: parallel logical (unsigned) shift right by `sa` ------------
+void armEmitPSRLH(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+	loadQ(VT, rt);
+	u32 shift = sa & 0x0F;
+	if (shift == 0) {
+		armAsm->Mov(VD.V16B(), VT.V16B()); // no-op shift, just copy
+	} else {
+		armAsm->Ushr(VD.V8H(), VT.V8H(), shift); // zero-fill from left
+	}
+	storeQ(VD, rd);
+}
+
+void armEmitPSRLW(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+	loadQ(VT, rt);
+	u32 shift = sa & 0x1F;
+	if (shift == 0) {
+		armAsm->Mov(VD.V16B(), VT.V16B()); // no-op shift, just copy
+	} else {
+		armAsm->Ushr(VD.V4S(), VT.V4S(), shift); // zero-fill from left
+	}
+	storeQ(VD, rd);
+}
+
+// --- PSRAH/PSRAW: parallel arithmetic (signed) shift right by `sa` -----------
+void armEmitPSRAH(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+	loadQ(VT, rt);
+	u32 shift = sa & 0x0F;
+	if (shift == 0) {
+		armAsm->Mov(VD.V16B(), VT.V16B()); // no-op shift, just copy
+	} else {
+		armAsm->Sshr(VD.V8H(), VT.V8H(), shift); // sign-extend from left
+	}
+	storeQ(VD, rd);
+}
+
+void armEmitPSRAW(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+	loadQ(VT, rt);
+	u32 shift = sa & 0x1F;
+	if (shift == 0) {
+		armAsm->Mov(VD.V16B(), VT.V16B()); // no-op shift, just copy
+	} else {
+		armAsm->Sshr(VD.V4S(), VT.V4S(), shift); // sign-extend from left
+	}
+	storeQ(VD, rd);
+}

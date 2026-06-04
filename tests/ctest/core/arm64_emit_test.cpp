@@ -2410,6 +2410,14 @@ namespace mmiref
 	static MQ refPABSH(MQ t) { MQ d{}; for (int n = 0; n < 8; n++) d.us[n] = t.us[n] == 0x8000 ? 0x7FFF : (t.ss[n] < 0 ? (u16)(-t.ss[n]) : (u16)t.ss[n]); return d; }
 	static MQ refPCPYH(MQ t) { MQ d{}; for (int n = 0; n < 4; n++) { d.us[n] = t.us[0]; d.us[n + 4] = t.us[4]; } return d; }
 
+	// Parallel shifts by immediate (sa masked by lane width).
+	static MQ refPSLLH(MQ t, u32 sa) { MQ d{}; for (int n = 0; n < 8; n++) d.us[n] = t.us[n] << (sa & 0x0F); return d; }
+	static MQ refPSLLW(MQ t, u32 sa) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = t.ul[n] << (sa & 0x1F); return d; }
+	static MQ refPSRLH(MQ t, u32 sa) { MQ d{}; for (int n = 0; n < 8; n++) d.us[n] = t.us[n] >> (sa & 0x0F); return d; }
+	static MQ refPSRLW(MQ t, u32 sa) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = t.ul[n] >> (sa & 0x1F); return d; }
+	static MQ refPSRAH(MQ t, u32 sa) { MQ d{}; for (int n = 0; n < 8; n++) d.us[n] = (u16)(t.ss[n] >> (sa & 0x0F)); return d; }
+	static MQ refPSRAW(MQ t, u32 sa) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = (u32)(t.sl[n] >> (sa & 0x1F)); return d; }
+
 	// Two reusable input vectors with a spread of sign / saturation edge values.
 	static MQ inA() { return make({0x01, 0x00, 0x00, 0x80, 0xFF, 0xFF, 0xFF, 0x7F, 0x05, 0xF0, 0x34, 0x12, 0x00, 0x00, 0x00, 0x80}); }
 	static MQ inB() { return make({0xFF, 0xFF, 0xFF, 0x7F, 0x01, 0x00, 0x00, 0x80, 0x05, 0x10, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00}); }
@@ -2435,6 +2443,16 @@ namespace
 		GuestRegs regs;
 		regs.set128(9, t.uc);
 		RunEEGen(regs, [gen] { gen(/*rd*/ 10, /*rt*/ 9); });
+		MQ out{};
+		regs.get128(10, out.uc);
+		return out;
+	}
+
+	MQ runMMIShift(void (*gen)(u32, u32, u32), MQ t, u32 sa)
+	{
+		GuestRegs regs;
+		regs.set128(9, t.uc);
+		RunEEGen(regs, [gen, sa] { gen(/*rd*/ 10, /*rt*/ 9, sa); });
 		MQ out{};
 		regs.get128(10, out.uc);
 		return out;
@@ -2470,6 +2488,26 @@ namespace
 		EXPECT_TRUE(eqMQ(runMMIUn(armEmit##NAME, b), mmiref::ref##NAME(b)));   \
 	}
 
+// Macro for shift ops that take an immediate `sa` parameter.
+#define MMI_SHIFT_TEST(NAME)                                                    \
+	TEST(Arm64EmitEE, MMI_##NAME##_sa0)                                         \
+	{                                                                          \
+		MQ a = mmiref::inA();                                                   \
+		EXPECT_TRUE(eqMQ(runMMIShift(armEmit##NAME, a, 0), mmiref::ref##NAME(a, 0))); \
+	}                                                                         \
+	TEST(Arm64EmitEE, MMI_##NAME##_saMax)                                       \
+	{                                                                          \
+		MQ a = mmiref::inA();                                                   \
+		constexpr u32 kMaxShift = (sizeof(a.ul[0]) == 2) ? 15 : 31;             \
+		EXPECT_TRUE(eqMQ(runMMIShift(armEmit##NAME, a, kMaxShift), mmiref::ref##NAME(a, kMaxShift))); \
+	}                                                                         \
+	TEST(Arm64EmitEE, MMI_##NAME##_saMasked)                                    \
+	{                                                                          \
+		MQ a = mmiref::inA();                                                   \
+		constexpr u32 kOvershift = (sizeof(a.ul[0]) == 2) ? 17 : 33;            \
+		EXPECT_TRUE(eqMQ(runMMIShift(armEmit##NAME, a, kOvershift), mmiref::ref##NAME(a, kOvershift))); \
+	}
+
 MMI_BIN_TEST(PADDW) MMI_BIN_TEST(PADDH) MMI_BIN_TEST(PADDB)
 MMI_BIN_TEST(PSUBW) MMI_BIN_TEST(PSUBH) MMI_BIN_TEST(PSUBB)
 MMI_BIN_TEST(PADDSW) MMI_BIN_TEST(PADDSH) MMI_BIN_TEST(PADDSB)
@@ -2485,6 +2523,11 @@ MMI_BIN_TEST(PEXTUW) MMI_BIN_TEST(PEXTUH) MMI_BIN_TEST(PEXTUB)
 MMI_BIN_TEST(PPACW) MMI_BIN_TEST(PPACH) MMI_BIN_TEST(PPACB)
 MMI_BIN_TEST(PCPYLD) MMI_BIN_TEST(PCPYUD)
 MMI_UN_TEST(PABSW) MMI_UN_TEST(PABSH) MMI_UN_TEST(PCPYH)
+
+// Parallel shifts by immediate (Phase 5.4 continuation).
+MMI_SHIFT_TEST(PSLLH) MMI_SHIFT_TEST(PSLLW)
+MMI_SHIFT_TEST(PSRLH) MMI_SHIFT_TEST(PSRLW)
+MMI_SHIFT_TEST(PSRAH) MMI_SHIFT_TEST(PSRAW)
 
 // rd == 0 must discard the write (matching the interpreter's `if (!_Rd_) return`).
 TEST(Arm64EmitEE, MMI_DiscardZeroDest)

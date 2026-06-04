@@ -28,6 +28,44 @@
 
 ---
 
+## 2026-06-04 — Phase 5.4 MMI: parallel immediate shifts complete
+
+**Goal:** Extend Phase 5.4 with the six parallel shift-by-immediate ops
+(`PSLLH/PSLLW`, `PSRLH/PSRLW`, `PSRAH/PSRAW`) so they stop single-stepping
+the interpreter.
+
+**What changed:**
+- New `pcsx2/arm64/aR5900MMI.cpp` generators (6 ops): `armEmitPSLLH/PSLLW`,
+  `armEmitPSRLH/PSRLW`, `armEmitPSRAH/PSRAW`. Each loads GPR[rt] into a scratch
+  q-reg, emits NEON `Shl/Ushr/Sshr`, stores to GPR[rd]. Zero-shift uses a `Mov`
+  copy (VIXL doesn't emit for imm=0). Dispatch wired in `aR5900.cpp:recTranslateOp`
+  case 0x1C by funct value (0x30/0x32/0x33/0x38/0x3A/0x3B).
+- Declarations in `pcsx2/arm64/aR5900.h`.
+- 18 new `Arm64EmitEE.MMI_PS*L*` gtests in `tests/ctest/core/arm64_emit_test.cpp`:
+  sa=0, sa=max, sa=masked for each op, comparing against a C++ replica of MMI.cpp.
+- Trackers: PROGRESS.md CURRENT FOCUS + Phase 5.4 checkboxes updated.
+- Commit: pending.
+
+**Decisions & rationale:**
+- Dispatch by funct, not through MMI0/1/2/3 sub-tables: the parallel shifts are
+  direct entries in `tbl_MMI` (R5900OpcodeTables.cpp), indexed by the funct field
+  (bits [5:0]), not by the sa-based sub-tables. This matches the interpreter's
+  dispatch path.
+- Zero-shift fast-path with `Mov`: VIXL's shift-with-immediate instructions don't
+  emit when the shift is 0 (treated as a no-op), but the destination register must
+  still be written. Using `Mov(VD, VT)` for sa=0 ensures the copy happens and keeps
+  the generated code efficient.
+- Same mem-to-mem pattern as the existing MMI SIMD ops: load into scratch q-reg,
+  single NEON op, store back. No register allocator needed.
+
+**Blockers / open questions:**
+- none. Unit coverage complete (18/18 tests pass, 323/323 core tests total).
+
+**Next step:** continue Phase 5.4 — either (a) the simple lane permutes
+(`PINTH/PINTEH/PREVH/PEXEH/PEXEW` via NEON `Zip`/`Trn`/`Rev`), or (b) the variable
+shifts (`PSLLVW/PSRLVW/PSRAVW` — shift amount from GPR[rs].UL[0] & 0x1F). Phase 4.4
+recLUT remains parked on `armjit-reclut-wip`.
+
 ## 2026-06-04 — Phase 5.4 MMI: first NEON-mapped SIMD batch
 
 **Goal:** On the booting Phase 4.3 baseline, start Phase 5.4 (MMI 128-bit int

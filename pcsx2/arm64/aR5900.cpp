@@ -319,6 +319,13 @@ static bool recTranslateOp(u32 op)
 				case 0x28: return recTranslateMMI1(sa, rd, rs, rt);
 				case 0x09: return recTranslateMMI2(sa, rd, rs, rt);
 				case 0x29: return recTranslateMMI3(sa, rd, rs, rt);
+				// Parallel shifts by immediate (Phase 5.4 continuation).
+				case 0x30: armEmitPSLLH(rd, rt, sa); return true;
+				case 0x32: armEmitPSRLH(rd, rt, sa); return true;
+				case 0x33: armEmitPSRAH(rd, rt, sa); return true;
+				case 0x38: armEmitPSLLW(rd, rt, sa); return true;
+				case 0x3A: armEmitPSRLW(rd, rt, sa); return true;
+				case 0x3B: armEmitPSRAW(rd, rt, sa); return true;
 				default:   return false;
 			}
 
