@@ -15,6 +15,8 @@
 
 #include "arm64/AsmHelpers.h"
 
+#include <cstddef>
+
 // --------------------------------------------------------------------------------------
 //  Persistent (callee-saved) host registers for hot EE state
 // --------------------------------------------------------------------------------------
@@ -74,6 +76,9 @@ void armEmitVtlbWriteQuad(const vixl::aarch64::Register& addr, const vixl::aarch
 // Byte offset of guest GPR `n`'s low word within cpuRegs (GPR is the first member;
 // each GPR_reg is 128 bits wide).
 static constexpr u32 EE_GPR_OFFSET(u32 n) { return n * 16u; }
+
+// Byte offset of cpuRegs.pc (the next-PC field the branch/jump generators write).
+static constexpr u32 EE_PC_OFFSET = static_cast<u32>(offsetof(cpuRegisters, pc));
 
 void armEmitEffectiveAddr(const vixl::aarch64::Register& dst, u32 rs, s32 imm);
 void armEmitLoadGpr(u32 bits, bool sign, u32 rt, u32 rs, s32 imm);
@@ -201,3 +206,49 @@ void armEmitMULT1(u32 rd, u32 rs, u32 rt);
 void armEmitMULTU1(u32 rd, u32 rs, u32 rt);
 void armEmitDIV1(u32 rs, u32 rt);
 void armEmitDIVU1(u32 rs, u32 rt);
+
+// --------------------------------------------------------------------------------------
+//  EE jump opcode generators (Phase 4.1)
+// --------------------------------------------------------------------------------------
+// These emit ONLY the control-flow effect — the next-PC write (cpuRegs.pc) and, for
+// the linking forms, the GPR[31]/GPR[rd] return-address write. The block compiler is
+// responsible for compiling the delay-slot instruction and for terminating the block
+// (RET back to the dispatcher loop, which re-reads cpuRegs.pc). Register-target jumps
+// (JR/JALR) read GPR[rs] *before* the delay slot is compiled, so the generator must be
+// invoked before the delay slot; the value lands in cpuRegs.pc immediately (the delay
+// slot never touches pc, so the early write is safe).
+//
+// All address arguments are absolute and precomputed by the caller relative to the
+// delay slot (= branchpc + 4):
+//   target : J/JAL  -> (instr_index << 2) | ((branchpc + 4) & 0xF0000000)
+//   linkpc : JAL/JALR return address = branchpc + 8 (zero-extended into GPR.UD[0]).
+//
+//   J    : cpuRegs.pc = target
+//   JAL  : GPR[31].UD[0] = linkpc; cpuRegs.pc = target
+//   JR   : cpuRegs.pc = GPR[rs].UL[0]
+//   JALR : cpuRegs.pc = GPR[rs].UL[0]; if (rd) GPR[rd].UD[0] = linkpc  (rs read first)
+void armEmitJ(u32 target);
+void armEmitJAL(u32 target, u32 linkpc);
+void armEmitJR(u32 rs);
+void armEmitJALR(u32 rd, u32 rs, u32 linkpc);
+
+// --------------------------------------------------------------------------------------
+//  EE conditional branch opcode generators (Phase 4.2)
+// --------------------------------------------------------------------------------------
+// Same contract as the jumps: emit only the next-PC selection (and, for the *AL forms,
+// the unconditional GPR[31] link). The condition is evaluated on the source GPR(s) read
+// here, then cpuRegs.pc is set to `target` (branch taken) or `fallthrough` (not taken):
+//   target      = (branchpc + 4) + (s16(imm) << 2)
+//   fallthrough = branchpc + 8   (the instruction after the delay slot)
+//
+// Comparisons match the interpreter: BEQ/BNE compare the full 64-bit GPR[rs]/GPR[rt];
+// the single-operand forms compare signed 64-bit GPR[rs] against zero. The *AL forms
+// write the link *before* reading rs (matching the interpreter's _SetLink ordering).
+void armEmitBEQ(u32 rs, u32 rt, u32 target, u32 fallthrough);
+void armEmitBNE(u32 rs, u32 rt, u32 target, u32 fallthrough);
+void armEmitBLTZ(u32 rs, u32 target, u32 fallthrough);
+void armEmitBGEZ(u32 rs, u32 target, u32 fallthrough);
+void armEmitBLEZ(u32 rs, u32 target, u32 fallthrough);
+void armEmitBGTZ(u32 rs, u32 target, u32 fallthrough);
+void armEmitBLTZAL(u32 rs, u32 target, u32 fallthrough, u32 linkpc);
+void armEmitBGEZAL(u32 rs, u32 target, u32 fallthrough, u32 linkpc);

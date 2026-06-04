@@ -1058,6 +1058,7 @@ set(pcsx2arm64Sources
 	arm64/aR5900LoadStore.cpp
 	arm64/aR5900Arith.cpp
 	arm64/aR5900MultDiv.cpp
+	arm64/aR5900Branch.cpp
 	)
 
 set(pcsx2arm64Headers

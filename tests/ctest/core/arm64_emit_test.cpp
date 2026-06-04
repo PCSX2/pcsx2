@@ -307,7 +307,10 @@ namespace
 	// GPR[rt] within it. HI/LO are at indices 32 and 33 (see EE_HI_OFFSET/EE_LO_OFFSET).
 	struct GuestRegs
 	{
-		alignas(16) std::array<u8, 34 * 16> bytes{}; // 32 GPRs + HI + LO
+		// Sized to reach cpuRegs.pc (the branch/jump generators write it via
+		// EE_PC_OFFSET). 32 GPRs + HI + LO live in the first 34*16 bytes; CP0/sa/
+		// IsDelaySlot sit between LO and pc and are untouched by these tests.
+		alignas(16) std::array<u8, EE_PC_OFFSET + 16> bytes{};
 
 		void set64(u32 n, u64 v) { std::memcpy(&bytes[n * 16], &v, sizeof(v)); }
 		u64 get64(u32 n) const
@@ -345,6 +348,13 @@ namespace
 		}
 		void set128(u32 n, const u8 v[16]) { std::memcpy(&bytes[n * 16], v, 16); }
 		void get128(u32 n, u8 out[16]) const { std::memcpy(out, &bytes[n * 16], 16); }
+		void setPc(u32 v) { std::memcpy(&bytes[EE_PC_OFFSET], &v, sizeof(v)); }
+		u32 getPc() const
+		{
+			u32 v;
+			std::memcpy(&v, &bytes[EE_PC_OFFSET], sizeof(v));
+			return v;
+		}
 		void* data() { return bytes.data(); }
 	};
 
@@ -1356,6 +1366,70 @@ TEST(Arm64EmitEE, DIVU1_Pipeline1)
 	RunEEGen(regs, [] { armEmitDIVU1(/*rs*/ 5, /*rt*/ 6); });
 	EXPECT_EQ(regs.getLO1(), 0xFFFF'FFFF'FFFF'FFFFull); // -1
 	EXPECT_EQ(regs.getHI1(), 100ull);
+}
+
+// ---------------------------------------------------------------------------
+// Jumps (Phase 4.1). The generators write only cpuRegs.pc (+ the link GPR);
+// the block compiler handles the delay slot separately.
+// ---------------------------------------------------------------------------
+
+TEST(Arm64EmitEE, J_SetsPc)
+{
+	GuestRegs regs;
+	regs.setPc(0x0010'0000);
+	RunEEGen(regs, [] { armEmitJ(0x0012'3456); });
+	EXPECT_EQ(regs.getPc(), 0x0012'3456u);
+}
+
+TEST(Arm64EmitEE, JAL_SetsPcAndLink)
+{
+	GuestRegs regs;
+	regs.setPc(0x0010'0000);
+	regs.set64(31, 0xDEAD'BEEF'DEAD'BEEFull);
+	RunEEGen(regs, [] { armEmitJAL(/*target*/ 0x0012'3456, /*linkpc*/ 0x0010'0008); });
+	EXPECT_EQ(regs.getPc(), 0x0012'3456u);
+	EXPECT_EQ(regs.get64(31), 0x0000'0000'0010'0008ull); // zero-extended return addr
+}
+
+TEST(Arm64EmitEE, JR_TargetFromRegLowWord)
+{
+	GuestRegs regs;
+	regs.setPc(0x0010'0000);
+	regs.set64(9, 0xFFFF'FFFF'0020'0000ull); // only the low word is the target
+	RunEEGen(regs, [] { armEmitJR(/*rs*/ 9); });
+	EXPECT_EQ(regs.getPc(), 0x0020'0000u);
+}
+
+TEST(Arm64EmitEE, JALR_TargetFromRegAndLink)
+{
+	GuestRegs regs;
+	regs.setPc(0x0010'0000);
+	regs.set64(9, 0x0020'0000);
+	regs.set64(8, 0xDEAD'BEEF'DEAD'BEEFull);
+	RunEEGen(regs, [] { armEmitJALR(/*rd*/ 8, /*rs*/ 9, /*linkpc*/ 0x0010'0008); });
+	EXPECT_EQ(regs.getPc(), 0x0020'0000u);
+	EXPECT_EQ(regs.get64(8), 0x0000'0000'0010'0008ull);
+}
+
+TEST(Arm64EmitEE, JALR_RdEqualsRsJumpsToOriginal)
+{
+	// rd == rs: the jump must target the original GPR[rs], not the link we write.
+	GuestRegs regs;
+	regs.setPc(0x0010'0000);
+	regs.set64(9, 0x0020'0000);
+	RunEEGen(regs, [] { armEmitJALR(/*rd*/ 9, /*rs*/ 9, /*linkpc*/ 0x0010'0008); });
+	EXPECT_EQ(regs.getPc(), 0x0020'0000u);          // jumped to the original value
+	EXPECT_EQ(regs.get64(9), 0x0000'0000'0010'0008ull); // and the reg now holds the link
+}
+
+TEST(Arm64EmitEE, JALR_DiscardLinkToZeroReg)
+{
+	GuestRegs regs;
+	regs.setPc(0x0010'0000);
+	regs.set64(9, 0x0020'0000);
+	RunEEGen(regs, [] { armEmitJALR(/*rd*/ 0, /*rs*/ 9, /*linkpc*/ 0x0010'0008); });
+	EXPECT_EQ(regs.getPc(), 0x0020'0000u);
+	EXPECT_EQ(regs.get64(0), 0ull); // $zero stays zero
 }
 
 #endif // __aarch64__
