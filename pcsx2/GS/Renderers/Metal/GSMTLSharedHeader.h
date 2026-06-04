@@ -161,6 +161,8 @@ enum GSMTLAttributes
 enum GSMTLFnConstants
 {
 	GSMTLConstantIndex_BILN,
+	GSMTLConstantIndex_INTEGER_IN,
+	GSMTLConstantIndex_INTEGER_OUT,
 	GSMTLConstantIndex_DEPTH_OUT,
 	GSMTLConstantIndex_CAS_SHARPEN_ONLY,
 	GSMTLConstantIndex_FRAMEBUFFER_FETCH,
