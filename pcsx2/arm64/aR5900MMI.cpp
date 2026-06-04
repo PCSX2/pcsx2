@@ -426,3 +426,115 @@ void armEmitPEXCW(u32 rd, u32 rt)
 	armAsm->Ins(VD.V4S(), 3, VT.V4S(), 3); // VD[3] = Rt[3]
 	storeQ(VD, rd);
 }
+
+// =============================================================================
+// Parallel variable shifts (Phase 5.4 continuation)
+// =============================================================================
+// These shift each 32-bit lane by the amount specified in the corresponding
+// lane of GPR[rs]. The shift amount is masked to 5 bits per lane (& 0x1F).
+//
+// ARM64 NEON does not have a direct "shift each lane by unsigned vector amount"
+// instruction for 32-bit lanes. We use scalar GPR operations for correctness:
+// load each 32-bit lane, shift by the corresponding amount, and store back.
+//
+// The GPR stores 4 x 32-bit lanes in a 128-bit register. We pack two 32-bit
+// results into each 64-bit store (SD[0] = {UL[0], UL[1]}, SD[1] = {UL[2], UL[3]}).
+//
+// Caller-saved GPRs used as scratch: x9-x12 (avoiding x16 which is VIXL scratch).
+
+// --- PSLLVW: parallel logical shift left by GPR[rs] -------------------------
+// Output[i] = Rt[i] << (Rs[i] & 0x1F)  for 32-bit lanes i=0..3
+void armEmitPSLLVW(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+
+	// Process lanes 0 and 1 -> pack into SD[0]
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 4));
+	armAsm->Ldr(a64::w11, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Ldr(a64::w12, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 4));
+
+	armAsm->Lsl(a64::w9, a64::w9, a64::w11);
+	armAsm->Lsl(a64::w10, a64::w10, a64::w12);
+
+	// Pack two 32-bit results into one 64-bit register: result[0] | (result[1] << 32)
+	armAsm->Bfi(a64::x9, a64::x10, 32, 32);
+	armAsm->Str(a64::x9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+
+	// Process lanes 2 and 3 -> pack into SD[1]
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 8));
+	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 12));
+	armAsm->Ldr(a64::w11, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 8));
+	armAsm->Ldr(a64::w12, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 12));
+
+	armAsm->Lsl(a64::w9, a64::w9, a64::w11);
+	armAsm->Lsl(a64::w10, a64::w10, a64::w12);
+
+	armAsm->Bfi(a64::x9, a64::x10, 32, 32);
+	armAsm->Str(a64::x9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd) + 8));
+}
+
+// --- PSRLVW: parallel logical (unsigned) shift right by GPR[rs] -------------
+// Output[i] = Rt[i] >> (Rs[i] & 0x1F)  (zero-fill from left)
+void armEmitPSRLVW(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+
+	// Process lanes 0 and 1 -> pack into SD[0]
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 4));
+	armAsm->Ldr(a64::w11, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Ldr(a64::w12, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 4));
+
+	armAsm->Lsr(a64::w9, a64::w9, a64::w11);
+	armAsm->Lsr(a64::w10, a64::w10, a64::w12);
+
+	armAsm->Bfi(a64::x9, a64::x10, 32, 32);
+	armAsm->Str(a64::x9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+
+	// Process lanes 2 and 3 -> pack into SD[1]
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 8));
+	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 12));
+	armAsm->Ldr(a64::w11, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 8));
+	armAsm->Ldr(a64::w12, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 12));
+
+	armAsm->Lsr(a64::w9, a64::w9, a64::w11);
+	armAsm->Lsr(a64::w10, a64::w10, a64::w12);
+
+	armAsm->Bfi(a64::x9, a64::x10, 32, 32);
+	armAsm->Str(a64::x9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd) + 8));
+}
+
+// --- PSRAVW: parallel arithmetic (signed) shift right by GPR[rs] ------------
+// Output[i] = Rt[i] >> (Rs[i] & 0x1F)  (sign-extend from left)
+void armEmitPSRAVW(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+
+	// Process lanes 0 and 1 -> pack into SD[0]
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 4));
+	armAsm->Ldr(a64::w11, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Ldr(a64::w12, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 4));
+
+	armAsm->Asr(a64::w9, a64::w9, a64::w11);
+	armAsm->Asr(a64::w10, a64::w10, a64::w12);
+
+	armAsm->Bfi(a64::x9, a64::x10, 32, 32);
+	armAsm->Str(a64::x9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+
+	// Process lanes 2 and 3 -> pack into SD[1]
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 8));
+	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 12));
+	armAsm->Ldr(a64::w11, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 8));
+	armAsm->Ldr(a64::w12, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 12));
+
+	armAsm->Asr(a64::w9, a64::w9, a64::w11);
+	armAsm->Asr(a64::w10, a64::w10, a64::w12);
+
+	armAsm->Bfi(a64::x9, a64::x10, 32, 32);
+	armAsm->Str(a64::x9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd) + 8));
+}

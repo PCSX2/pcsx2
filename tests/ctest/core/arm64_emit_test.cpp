@@ -2418,6 +2418,11 @@ namespace mmiref
 	static MQ refPSRAH(MQ t, u32 sa) { MQ d{}; for (int n = 0; n < 8; n++) d.us[n] = (u16)(t.ss[n] >> (sa & 0x0F)); return d; }
 	static MQ refPSRAW(MQ t, u32 sa) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = (u32)(t.sl[n] >> (sa & 0x1F)); return d; }
 
+	// Parallel variable shifts (amount from GPR[rs], 5-bit masked per lane).
+	static MQ refPSLLVW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = t.ul[n] << (s.ul[n] & 0x1F); return d; }
+	static MQ refPSRLVW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = t.ul[n] >> (s.ul[n] & 0x1F); return d; }
+	static MQ refPSRAVW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = (u32)(t.sl[n] >> (s.ul[n] & 0x1F)); return d; }
+
 	// Lane permutes (Phase 5.4 continuation).
 	// PINTH: interleave low half of Rt with high half of Rs (halfwords)
 	// [Rt[0], Rs[4], Rt[1], Rs[5], Rt[2], Rs[6], Rt[3], Rs[7]]
@@ -2554,6 +2559,17 @@ MMI_UN_TEST(PABSW) MMI_UN_TEST(PABSH) MMI_UN_TEST(PCPYH)
 MMI_SHIFT_TEST(PSLLH) MMI_SHIFT_TEST(PSLLW)
 MMI_SHIFT_TEST(PSRLH) MMI_SHIFT_TEST(PSRLW)
 MMI_SHIFT_TEST(PSRAH) MMI_SHIFT_TEST(PSRAW)
+
+// Parallel variable shifts (Phase 5.4 continuation).
+#define MMI_VSHIFT_TEST(NAME)                                                   \
+	TEST(Arm64EmitEE, MMI_##NAME)                                               \
+	{                                                                          \
+		MQ a = mmiref::inA(), b = mmiref::inB();                               \
+		EXPECT_TRUE(eqMQ(runMMIBin(armEmit##NAME, a, b), mmiref::ref##NAME(a, b))); \
+		EXPECT_TRUE(eqMQ(runMMIBin(armEmit##NAME, b, a), mmiref::ref##NAME(b, a))); \
+	}
+
+MMI_VSHIFT_TEST(PSLLVW) MMI_VSHIFT_TEST(PSRLVW) MMI_VSHIFT_TEST(PSRAVW)
 
 // Lane permutes (Phase 5.4 continuation).
 #define MMI_PERM_TEST(NAME)                                                     \

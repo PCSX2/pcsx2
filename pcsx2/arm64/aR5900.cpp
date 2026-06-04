@@ -220,6 +220,8 @@ static bool recTranslateMMI2(u32 sa, u32 rd, u32 rs, u32 rt)
 {
 	switch (sa)
 	{
+		case 0x02: armEmitPSLLVW(rd, rs, rt); return true;
+		case 0x03: armEmitPSRLVW(rd, rs, rt); return true;
 		case 0x0A: armEmitPINTH(rd, rs, rt); return true;
 		case 0x0E: armEmitPCPYLD(rd, rs, rt); return true;
 		case 0x12: armEmitPAND(rd, rs, rt); return true;
@@ -236,6 +238,7 @@ static bool recTranslateMMI3(u32 sa, u32 rd, u32 rs, u32 rt)
 {
 	switch (sa)
 	{
+		case 0x03: armEmitPSRAVW(rd, rs, rt); return true;
 		case 0x0A: armEmitPINTEH(rd, rs, rt); return true;
 		case 0x0E: armEmitPCPYUD(rd, rs, rt); return true;
 		case 0x12: armEmitPOR(rd, rs, rt); return true;

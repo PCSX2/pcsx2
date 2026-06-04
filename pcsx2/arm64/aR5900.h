@@ -451,3 +451,11 @@ void armEmitPREVH(u32 rd, u32 rt);
 void armEmitPROT3W(u32 rd, u32 rt);
 void armEmitPEXCH(u32 rd, u32 rt);
 void armEmitPEXCW(u32 rd, u32 rt);
+
+// Parallel variable shifts (Phase 5.4 continuation).
+//   PSLLVW : parallel logical shift left by GPR[rs] (per-lane amount, 5-bit masked)
+//   PSRLVW : parallel logical shift right by GPR[rs] (zero-fill)
+//   PSRAVW : parallel arithmetic shift right by GPR[rs] (sign-extend)
+void armEmitPSLLVW(u32 rd, u32 rs, u32 rt);
+void armEmitPSRLVW(u32 rd, u32 rs, u32 rt);
+void armEmitPSRAVW(u32 rd, u32 rs, u32 rt);

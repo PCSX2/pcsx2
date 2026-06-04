@@ -28,6 +28,49 @@
 
 ---
 
+## 2026-06-04 — Phase 5.4 MMI variable shifts complete (PSLLVW/PSRLVW/PSRAVW)
+
+**Goal:** Implement the three MMI variable shift ops (`PSLLVW/PSRLVW/PSRAVW`) where
+the shift amount comes from GPR[rs] (masked to 5 bits per lane), so they stop
+single-stepping the interpreter.
+
+**What changed:**
+- Extended `pcsx2/arm64/aR5900MMI.cpp` with 3 new generators:
+  - `armEmitPSLLVW`: parallel logical left shift (`Lsl` per lane)
+  - `armEmitPSRLVW`: parallel logical right shift (`Lsr` per lane)
+  - `armEmitPSRAVW`: parallel arithmetic right shift (`Asr` per lane)
+  ARM64 NEON lacks a direct "shift by unsigned vector amount" instruction for
+  32-bit lanes, so we use scalar GPR shifts and pack 2 lanes per 64-bit store.
+- Declarations added to `pcsx2/arm64/aR5900.h`.
+- Dispatch wired in `pcsx2/arm64/aR5900.cpp`:
+  - `recTranslateMMI2`: sa=0x02 → PSLLVW, sa=0x03 → PSRLVW
+  - `recTranslateMMI3`: sa=0x03 → PSRAVW
+- 3 new `Arm64EmitEE.MMI_{PSLLVW,PSRLVW,PSRAVW}` gtests in
+  `tests/ctest/core/arm64_emit_test.cpp`: reference functions mirror
+  `pcsx2/MMI.cpp` element indexing; both operand orders tested.
+- Trackers: PROGRESS.md CURRENT FOCUS + Phase 5.4 checkboxes updated.
+- Commits: pending.
+
+**Decisions & rationale:**
+- Scalar GPR shifts instead of NEON: ARM64 NEON's `Sshl`/`Ushl` instructions
+  expect shift amounts encoded as signed values (positive=left, negative=right)
+  in a format incompatible with direct use. Scalar `Lsl`/`Lsr`/`Asr` with
+  variable register amounts is simpler and correct.
+- Pack 2 lanes per 64-bit store using `Bfi` (bit field insert): the GPR stores
+  4 x 32-bit lanes in 128 bits as two 64-bit halves (SD[0]={UL[0],UL[1]},
+  SD[1]={UL[2],UL[3]}). After shifting two lanes, `Bfi dst, src, 32, 32` inserts
+  the second 32-bit result into the upper half of the first, then we store once.
+- Uses caller-saved GPRs x9-x12 as scratch (x16 is VIXL's internal scratch,
+  x19-x21 are persistent RESTATEPTR/REFASTMEMBASE/REVTLBPTR).
+
+**Blockers / open questions:**
+- none. Unit coverage complete (3/3 tests pass, 334/334 core tests total).
+
+**Next step:** continue Phase 5.4 — multiply-accumulate family
+(`PMADDH/PHMADH/PMSUBH/PMULTH/PMADDW/PMSUBW/PMULTW/PMADDUW/PMULTUW` → HI/LO),
+or the `PMFHI/PMFLO/PMTHI/PMTLO` HI/LO moves. Phase 4.4 recLUT remains parked
+on `armjit-reclut-wip`.
+
 ## 2026-06-04 — Phase 5.4 MMI: remaining lane permutes complete (PROT3W/PEXCH/PEXCW)
 
 **Goal:** Finish Phase 5.4 lane permutes by implementing the remaining three ops
