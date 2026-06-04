@@ -72,9 +72,45 @@ static void recStep()
 	// Debugger single-step. Recompilers fall back to the interpreter for this.
 }
 
+// --------------------------------------------------------------------------------------
+//  Minimal block compile loop (Phase 1.4)
+// --------------------------------------------------------------------------------------
+// Compile a single block at the rolling emit cursor and return its entry point.
+// This is the smallest possible exercise of the production emission lifecycle
+// (armSetAsmPtr -> armStartBlock -> emit -> armEndBlock) against the real EE code
+// cache + constant pool. The body is a placeholder: a couple of NOPs followed by a
+// RET back to the caller. Later phases replace the NOPs with the ARM64 translation
+// of 1-2 MIPS ops read from cpuRegs.pc, and the bare RET with a tail-jump into the
+// dispatcher (block LUT + linking + event tests land in Phase 4).
+static u8* recCompileBlock()
+{
+	// Whole-cache reset once we run past the code region into the constant-pool tail.
+	if (recPtr >= recPtrEnd)
+		recResetEE();
+
+	armSetAsmPtr(recPtr, recPtrEnd - recPtr, &s_const_pool);
+
+	u8* const entry = armStartBlock();
+
+	// Placeholder block body. TODO(Phase 2/3): translate guest ops here.
+	armAsm->Nop();
+	armAsm->Nop();
+	armAsm->Ret();
+
+	recPtr = armEndBlock();
+	return entry;
+}
+
 static void recExecute()
 {
-	pxFailRel("ARM64 EE recompiler is not implemented yet (skeleton only).");
+	// Phase 1.4 proof-of-life: compile one trivial block through the real emitter,
+	// enter it, and return. There is no execution loop / dispatcher yet, so this
+	// runs exactly one (empty) block. The interpreter remains the active Cpu
+	// provider (recCpu is not yet selected in VMManager — Phase 1.5), so this path
+	// is not hit in normal operation; it exists to validate emit + enter + return
+	// end-to-end on the EE code cache before real codegen lands.
+	u8* const entry = recCompileBlock();
+	reinterpret_cast<void (*)()>(entry)();
 }
 
 static void recSafeExitExecution()
