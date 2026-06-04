@@ -28,6 +28,59 @@
 
 ---
 
+## 2026-06-04 — Phase 1.5: wire recCpu into VMManager + first real BIOS-boot verification
+
+**Goal:** Let the ARM64 build actually call the EE rec's Reserve/Reset/Shutdown on
+VM lifecycle, without selecting it as the active Cpu provider, and confirm a real
+BIOS boot survives it.
+
+**What changed:**
+- `pcsx2/VMManager.cpp` — added `#else` (ARM64) branches to three `_M_X86` guards:
+  - `InitializeCPUProviders()` (~2677): `recCpu.Reserve();` before `vu1Thread.Open()`.
+  - `ShutdownCPUProviders()` (~2701): `recCpu.Shutdown();` before the MTVU wait.
+  - `ClearCPUExecutionCaches()` (~2740): `recCpu.Reset();` (the `Cpu->Reset()` above
+    only hits the interpreter on ARM64, so the rec needs an explicit reset).
+  - `UpdateCPUImplementations()` deliberately untouched: `Cpu = &intCpu;` stays.
+- Commits: af7ddc180 ARM64: Wire EE recCpu into VMManager (Phase 1.5)
+
+**Decisions & rationale:**
+- **Reserve/Reset/Shutdown only — NOT provider selection.** `recCpu` is now set up
+  and torn down on the real VM lifecycle (code cache carved, const pool init'd,
+  cursor reset), but `Cpu` still points at `intCpu`. The interpreter remains ground
+  truth; `recExecute` is never entered (would `pxFailRel` — it's still a stub). This
+  is the safe "rec is alive but inert" milestone before any guest codegen.
+- **`recCpu.Reset()` added explicitly in ClearCPUExecutionCaches**, mirroring how
+  x86 gets it for free via `Cpu->Reset()` when `Cpu == &recCpu`. Since we keep the
+  interpreter selected, the only way recResetEE runs each VM reset is a direct call.
+
+**First real runtime verification (new for this project):**
+- Booted the PS2 BIOS (`-bios`, no disc) and confirmed via `emulog.txt`:
+  `VM subsystems initialized in 163ms` (→ Reserve+Reset ran), ELF load, `Mode
+  Changed to DVD PAL`, `Pad: DS2 Config Finished` — the interpreter ran BIOS code
+  for ~24s with the EE rec reserved-but-unselected, **no crash / assert / pxFailRel**.
+
+**Blockers / open questions — IMPORTANT for all future phases:**
+- **Running the dev binary directly is broken by a Qt double-load**, NOT by our
+  code: the main binary links Qt by absolute `/pcsx2-deps/lib/libQt6*.dylib` install
+  names, while the bundled `PlugIns/platforms/libqcocoa.dylib` loads the
+  `@executable_path/../Frameworks/libQt6*` copies → two Qt sets → cocoa platform
+  plugin aborts (SIGABRT 134) at GUI init, before any VM code runs. There is no
+  macdeployqt/install_name_tool fixup target in CMake.
+- **Workaround that WORKS (used to verify this phase):** copy the .app, then
+  `install_name_tool -change /…/pcsx2-deps/lib/<lib> @executable_path/../Frameworks/<lib>`
+  for `libQt6Core.6 / libQt6Gui.6 / libQt6Widgets.6 / libkddockwidgets-qt6.3`, then
+  `codesign --force --deep --sign - <app>`, then run `<app>/Contents/MacOS/PCSX2`.
+  (Boot headless with `gtimeout 25 … -bios`; `timeout` isn't on macOS — use
+  `gtimeout` from coreutils.) Phases 2+ need real execution to validate, so this
+  run recipe is now essential. Consider scripting it or adding a proper deploy step.
+
+**Next step:** Phase 2.1 — implement `vtlb_DynBackpatchLoadStore` in
+`pcsx2/arm64/RecStubs.cpp` (currently `pxFailRel`). Slow path first (call the vtlb
+memory handler directly, no fastmem backpatch yet); reference
+`x86/ix86-32/recVTLB.cpp` for the trampoline/calling-convention design.
+
+---
+
 ## 2026-06-04 — Phase 1.4: minimal EE block compile loop
 
 **Goal:** Exercise the production emission lifecycle end-to-end against the real EE

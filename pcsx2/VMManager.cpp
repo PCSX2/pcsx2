@@ -2675,6 +2675,12 @@ void VMManager::InitializeCPUProviders()
 	CpuMicroVU0.Reserve();
 	CpuMicroVU1.Reserve();
 #else
+	// ARM64 (Phase 1.5): reserve the EE recompiler so its code cache + constant pool
+	// are set up. It is NOT yet selected as the active Cpu provider (see
+	// UpdateCPUImplementations — the interpreter stays ground truth until real EE
+	// codegen exists). The IOP/VU recompilers are not ported to ARM64 yet.
+	recCpu.Reserve();
+
 	// Despite not having any VU recompilers on ARM64, therefore no MTVU,
 	// we still need the thread alive. Otherwise the read and write positions
 	// of the ring buffer wont match, and various systems in the emulator end up deadlocked.
@@ -2699,6 +2705,9 @@ void VMManager::ShutdownCPUProviders()
 	psxRec.Shutdown();
 	recCpu.Shutdown();
 #else
+	// ARM64 (Phase 1.5): tear down the EE recompiler reserved above.
+	recCpu.Shutdown();
+
 	// See the comment in the InitializeCPUProviders for an explaination why we
 	// still need to manage the MTVU thread.
 	if (vu1Thread.IsOpen())
@@ -2741,6 +2750,11 @@ void VMManager::Internal::ClearCPUExecutionCaches()
 	// mVU's VU0 needs to be properly initialized for macro mode even if it's not used for micro mode!
 	if (CHECK_EEREC && !EmuConfig.Cpu.Recompiler.EnableVU0)
 		CpuMicroVU0.Reset();
+#else
+	// ARM64 (Phase 1.5): reset the EE rec's code cache/constant pool even though it
+	// isn't the active provider yet, so its emit cursor starts clean on each VM
+	// reset (Cpu->Reset() above only resets the interpreter on ARM64).
+	recCpu.Reset();
 #endif
 
 	CpuVU0->Reset();
