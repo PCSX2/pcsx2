@@ -8,6 +8,36 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 5.4 MMI 128-bit SIMD — first batch DONE (NEON-mapped ops compiled natively).**
+The MMI SIMD ops that map cleanly onto ARM64 NEON now emit inline in
+`pcsx2/arm64/aR5900MMI.cpp` (one NEON instruction per op against scratch q-regs):
+parallel add/sub (wrapping + signed-sat `Sqadd/Sqsub` + unsigned-sat `Uqadd/Uqsub`)
+for W/H/B, the `PCGT*`/`PCEQ*` compare masks (`Cmgt`/`Cmeq`), `PMAX*/PMIN*`
+(`Smax/Smin`), `PABSW/PABSH` (`Sqabs`), `PAND/POR/PXOR/PNOR`, the `PEXTL*/PEXTU*`
+interleaves (`Zip1/Zip2`), `PPAC*` packs (`Uzp1`), and `PCPYLD/PCPYUD/PCPYH`.
+Wired the MMI0/1/2/3 sub-groups (sub-op in `sa`) into `recTranslateOp` case 0x1C.
+Little-endian lane order matches the interpreter's element indexing exactly.
+**Verified:** `pcsx2-qt` builds arm64; 47 new `Arm64EmitEE.MMI_*` gtests pass
+byte-exact vs a C++ replica of `pcsx2/MMI.cpp`; Arm64EmitEE 220/220, core 305/305.
+Commit `6b2ceb311`.
+
+**Still on interpreter fallback (intentional, not NEON-trivial):** the
+multiply-accumulate family (`PMADDH/PHMADH/PMSUBH/PMULTH/PMADDW/PMSUBW/PMULTW/
+PMADDUW/PMULTUW` → HI/LO), the `PMFHI/PMFLO/PMTHI/PMTLO` HI/LO moves, the parallel
+shifts (`PSLLH/W`, `PSRLH/W`, `PSRAH/W`, `PSLLVW/PSRLVW/PSRAVW`), the lane permutes
+(`PINTH/PINTEH/PEXEH/PEXEW/PREVH/PROT3W/PEXCH/PEXCW`), `PADSBH`, `QFSRV`,
+`PEXT5/PPAC5`, `PLZCW`, and `PMFHL/PMTHL`.
+
+Next concrete task: either (a) extend Phase 5.4 with the parallel shifts
+(`PSLLH/PSRLH/PSRAH/PSLLW/PSRLW/PSRAW` — immediate `sa` shifts, straightforward
+NEON `Shl/Ushr/Sshr`) and the simple permutes (`PINTH/PINTEH/PREVH/PEXEH/PEXEW`
+via `Zip/Trn/Rev`), or (b) move to a different EE gap. Phase 4.4 recLUT stays
+parked on `armjit-reclut-wip` until its BIOS stall is solved.
+
+---
+
+### Earlier focus (kept for context)
+
 **Phase 4.4 (recLUT execution model) ATTEMPTED & PARKED — booting Phase 4.3 model restored.**
 The full x86-style rewrite (recLUT page table + emitted DispatcherReg/Event/JITCompile/
 Enter/Unmapped stubs + emitted cycle/event tail, x19 pinned once, `s_blocks` removed) was
@@ -198,7 +228,16 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     - [x] `C.F/C.EQ/C.LT/C.LE` compares, `BC1T/BC1F` branches, `CVT.S/CVT.W`.
     - [ ] Remaining on interpreter fallback: double W/L-format, likely `BC1FL/BC1TL`.
 - [ ] 5.3 COP2 (VU0 macro): interpreter fallback initially.
-- [ ] 5.4 MMI (128-bit int SIMD): map to NEON where possible (ref `x86/iMMI.cpp`).
+- [~] 5.4 MMI (128-bit int SIMD): map to NEON where possible (ref `x86/iMMI.cpp`).
+  - [x] First batch (`aR5900MMI.cpp`, commit `6b2ceb311`): NEON-mapped ops —
+    `PADD*/PSUB*` (+ signed/unsigned saturating), `PCGT*/PCEQ*`, `PMAX*/PMIN*`,
+    `PABSW/PABSH`, `PAND/POR/PXOR/PNOR`, `PEXTL*/PEXTU*`, `PPAC*`,
+    `PCPYLD/PCPYUD/PCPYH`. 47 byte-exact gtests vs MMI.cpp.
+  - [ ] Parallel shifts (`PSLLH/W`, `PSRLH/W`, `PSRAH/W`, `PSLLVW/PSRLVW/PSRAVW`).
+  - [ ] Lane permutes (`PINTH/PINTEH/PEXEH/PEXEW/PREVH/PROT3W/PEXCH/PEXCW`).
+  - [ ] Multiply-accumulate to HI/LO (`PMADD*/PMSUB*/PMULT*/PHMADH/PHMSBH` + the
+    `PMFHI/PMFLO/PMTHI/PMTLO` moves) — stay on interpreter for now.
+  - [ ] Misc (`PADSBH`, `QFSRV`, `PEXT5/PPAC5`, `PLZCW`, `PMFHL/PMTHL`).
 
 ---
 

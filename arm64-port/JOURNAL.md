@@ -28,6 +28,56 @@
 
 ---
 
+## 2026-06-04 — Phase 5.4 MMI: first NEON-mapped SIMD batch
+
+**Goal:** On the booting Phase 4.3 baseline, start Phase 5.4 (MMI 128-bit int
+SIMD → NEON). Compile the MMI ops that map cleanly to single NEON instructions so
+they stop single-stepping the interpreter.
+
+**What changed:**
+- New `pcsx2/arm64/aR5900MMI.cpp` (+ declarations in `aR5900.h`, registered in
+  `pcsx2/CMakeLists.txt`). 46 generators, each: `Ldr` GPR[rs]/GPR[rt] into scratch
+  q-regs (q30/q31), one NEON op into q29, `Str` to GPR[rd]; `rd==0` discards.
+  Mapping (all verified against pcsx2/MMI.cpp): `PADD*/PSUB*`→`Add/Sub`,
+  `PADDS*/PSUBS*`→`Sqadd/Sqsub`, `PADDU*/PSUBU*`→`Uqadd/Uqsub`, `PCGT*`→`Cmgt`,
+  `PCEQ*`→`Cmeq`, `PMAX*/PMIN*`→`Smax/Smin`, `PABSW/PABSH`→`Sqabs`,
+  `PAND/POR/PXOR`→`And/Orr/Eor`, `PNOR`→`Orr`+`Not`, `PEXTL*/PEXTU*`→`Zip1/Zip2`,
+  `PPAC*`→`Uzp1`, `PCPYLD`→`Zip1.2D`, `PCPYUD`→`Zip2.2D`, `PCPYH`→two `Dup`+`Ins`.
+- Dispatch: `recTranslateOp` case 0x1C now decodes the MMI0/1/2/3 sub-groups
+  (sub-op = `sa`, bits 10:6) via 4 helper tables and calls the generators.
+- 47 new `Arm64EmitEE.MMI_*` gtests: a C++ MQ-union replica of MMI.cpp is the
+  oracle; each op is checked byte-exact over two edge-case vectors (both operand
+  orders), plus an `rd==0` discard test.
+- Commit `6b2ceb311` (code+tests). This entry + PROGRESS in a follow-up doc commit.
+
+**Decisions & rationale:**
+- Operand order matters: the pack/interleave/PCPYLD ops feed `(rt, rs)` into the
+  NEON op because the interpreter takes Rt as the low/even source. PCPYUD keeps
+  `(rs, rt)` (Zip2.2D = {Rs.hi, Rt.hi}). Encoded as two macros (`MMI_3OP` /
+  `MMI_3OP_TS`) so the order is explicit and unit-checked both ways.
+- Guest GPRs are little-endian in cpuRegs, so a 128-bit NEON load puts guest lane
+  0 in NEON lane 0 — the interpreter's element indexing maps 1:1, no shuffles.
+- Scoped the test oracle's lane types to `int8_t/int16_t/...`: the file's
+  `using namespace vixl::aarch64;` defines register objects `s8`/`s16` that shadow
+  the pcsx2 aliases and made bare `(s16)` casts ambiguous.
+- Deferred the non-NEON-trivial MMI ops (multiply-accumulate to HI/LO, parallel
+  shifts, lane permutes, PADSBH/QFSRV/PEXT5/PPAC5/PLZCW/PMFHL/PMTHL) to keep this
+  commit atomic and behaviour-neutral; they remain interpreter fallback.
+
+**Blockers / open questions:**
+- none. Live game verification still pending (unit coverage is complete).
+
+**Verification:**
+- `cmake --build build --target pcsx2-qt -j18` ok, binary `arm64`.
+- `Arm64EmitEE.*` 220/220 (was 173, +47); full `core_test` 305/305 (was 258).
+
+**Next step:** continue Phase 5.4 — parallel shifts (`PSLLH/PSRLH/PSRAH/PSLLW/
+PSRLW/PSRAW`, immediate `sa` → NEON `Shl/Ushr/Sshr`) and the simple lane permutes
+(`PINTH/PINTEH/PREVH/PEXEH/PEXEW` via `Zip/Trn/Rev`). Phase 4.4 recLUT stays
+parked on `armjit-reclut-wip`.
+
+---
+
 ## 2026-06-04 — Phase 4.4 recLUT root-caused (x19) but BIOS-stall; reverted to Phase 4.3
 
 **Goal:** Resume the previous session's Phase 4.4 Commit A (recLUT execution-model
