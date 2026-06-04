@@ -26,6 +26,7 @@ private Q_SLOTS:
 	void onClearOsdFontPathClicked();
 	void onSelectAllClicked();
 	void onDeselectAllClicked();
+	void setAllCheckboxes(bool checked);
 
 private:
 	void loadOsdFontPathSetting();

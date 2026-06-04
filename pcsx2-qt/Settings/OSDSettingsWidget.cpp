@@ -77,7 +77,7 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 
 #ifndef _WIN32
 	// Currently DX12 only
-	m_ui.showDebugGPU->deleteLater();
+	m_ui.showDebugGPU->setVisible(false);
 #endif
 
 	connect(m_ui.showSettings, &QCheckBox::checkStateChanged, this, &OSDSettingsWidget::onOsdShowSettingsToggled);
@@ -255,33 +255,7 @@ void OSDSettingsWidget::onOsdShowSettingsToggled()
 	m_ui.showPatches->setEnabled(enabled);
 }
 
-void OSDSettingsWidget::onSelectAllClicked()
-{
-	const QList<QCheckBox*> checkboxes = {
-		m_ui.showSpeedPercentages,
-		m_ui.showFPS,
-		m_ui.showVPS,
-		m_ui.showResolution,
-		m_ui.showGSStats,
-		m_ui.showUsageCPU,
-		m_ui.showUsageGPU,
-		m_ui.showStatusIndicators,
-		m_ui.showFrameTimes,
-		m_ui.showHardwareInfo,
-		m_ui.showVersion,
-		m_ui.showSettings,
-		m_ui.showPatches,
-		m_ui.showInputs,
-		m_ui.showVideoCapture,
-		m_ui.showInputRec,
-		m_ui.showTextureReplacements,
-		m_ui.warnAboutUnsafeSettings};
-
-	for (QCheckBox* checkbox : checkboxes)
-		checkbox->setChecked(true);
-}
-
-void OSDSettingsWidget::onDeselectAllClicked()
+void OSDSettingsWidget::setAllCheckboxes(bool checked)
 {
 	const QList<QCheckBox*> checkboxes = {
 		m_ui.showSpeedPercentages,
@@ -300,13 +274,27 @@ void OSDSettingsWidget::onDeselectAllClicked()
 		m_ui.showTextureReplacements};
 
 	for (QCheckBox* checkbox : checkboxes)
-		checkbox->setChecked(false);
+		checkbox->setChecked(checked);
+
+#ifdef _WIN32
+	m_ui.showDebugGPU->setChecked(checked);
+#endif
 
 	// Keep these checked
 	m_ui.showStatusIndicators->setChecked(true);
 	m_ui.showVideoCapture->setChecked(true);
 	m_ui.showInputRec->setChecked(true);
 	m_ui.warnAboutUnsafeSettings->setChecked(true);
+}
+
+void OSDSettingsWidget::onSelectAllClicked()
+{
+	setAllCheckboxes(true);
+}
+
+void OSDSettingsWidget::onDeselectAllClicked()
+{
+	setAllCheckboxes(false);
 }
 
 #include "moc_OSDSettingsWidget.cpp"
