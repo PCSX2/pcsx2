@@ -28,6 +28,82 @@
 
 ---
 
+## 2026-06-04 — Phase 5.2b (part 1): FPU float ADD/SUB/MUL + ACC variants
+
+**Goal:** Start the genuine EE FPU float arithmetic — the ops needing the non-IEEE
+denormal-flush / inf-clamp / overflow-underflow behaviour — by landing the reusable
+clamp helpers and the simplest family that uses them (ADD/SUB/MUL + ACC variants),
+so they stop single-stepping the interpreter.
+
+**What changed:**
+- `pcsx2/arm64/aR5900FPU.cpp` — two reusable helpers + six generators:
+  - `emitLoadFpuDouble(dstS, byteOffset)` — the `fpuDouble()` input clamp: load the
+    32-bit fpr, `Ubfx` the exponent, `Csel` denormal/zero → sign-only and inf/NaN →
+    `sign | 0x7f7fffff`, then `Fmov` the bits into a single-precision S reg.
+  - `emitStoreClampedResult(srcS, dstByteOffset, setFlags)` — `Fmov` result to a GPR,
+    then `checkOverflow` (abs==+Inf → `sign|fmax`, set O|SO, skip underflow; else clear
+    O) + `checkUnderflow` (exp==0 && mantissa!=0 → `&=sign`, set U|SU; else clear U)
+    via VIXL labels, RMW on `fprc[31]`, store to fpr/ACC. `setFlags=false` (for the
+    later DIV/SQRT/RSQRT, which pass cFlagsToSet=0) clamps the value but touches no flags.
+  - `emitFpuBinary(op, dstOff, fs, ft)` clamps both inputs → `Fadd/Fsub/Fmul` (single
+    precision) → `emitStoreClampedResult(..., true)`. `armEmitADD_S/SUB_S/MUL_S` write
+    `fpr[fd]`; `armEmitADDA_S/SUBA_S/MULA_S` write `ACC`.
+- `pcsx2/arm64/aR5900.h` — `EE_ACC_OFFSET` + the six generator decls.
+- `pcsx2/arm64/aR5900.cpp` — `recTranslateOp` COP1_S (rs==0x10) funct switch now
+  dispatches 0x00 ADD_S / 0x01 SUB_S / 0x02 MUL_S / 0x18 ADDA_S / 0x19 SUBA_S /
+  0x1A MULA_S (operand map ft=rt, fs=rd, fd=sa).
+- `tests/ctest/core/arm64_emit_test.cpp` — `GuestRegs` gains `setACC/getACC`; a
+  `fpuref` C++ replica of FPU.cpp (fpuDouble + checkOverflow/Underflow); 11 new
+  `Arm64EmitEE.*` gtests (basic add/sub/mul, overflow→fmax+flags, input-inf clamp,
+  stale-O-flag clear, denormal underflow→0, ACC writes). All compared against the
+  replica, so robust to host FPCR flush-to-zero.
+- Commit: `eec66e358 ARM64: EE FPU float arithmetic ADD/SUB/MUL + ACC variants (Phase 5.2b)`
+
+**Decisions & rationale:**
+- **Mirror the interpreter (single precision), NOT iFPUd (double).** The prior plan
+  pointed at `iFPUd.cpp`'s double-precision path. But CONVENTIONS says the interpreter
+  is ground truth, and the interpreter *is the current fallback that already boots* —
+  matching it guarantees zero behavioural change as ops move from interp to JIT. The
+  interpreter computes `float OP float` after `fpuDouble`; host NEON `Fadd/Fsub/Fmul`
+  on the same operands is bit-identical (same IEEE single, round-to-nearest-even).
+  Choosing iFPUd instead would make the JIT *diverge* from the running interpreter in
+  edge cases — strictly worse for bring-up. (iFPUd's double path can be revisited later
+  if a game needs the extra PS2 fidelity, but then the interpreter should change too.)
+- **Keep results in a GPR through the clamp; single store at the end.** The interpreter
+  writes the float to `_FdValf_` then `checkOverflow/Underflow` RMW the same memory. The
+  only reader is that slot, so computing the clamp in a register and storing once gives
+  the identical final value with fewer memory ops.
+- **Free use of w9–w13 + s29–s31 as scratch.** Generators have no register allocator and
+  make no calls, so caller-saved GPRs outside VIXL's scratch list (x16/x17) are safe
+  fixed temps — no UseScratchRegisterScope juggling needed.
+- **Tests compare to a C++ replica, not hand-computed constants.** Because both the JIT
+  and the replica run on the host FPU, the comparison is correct regardless of the host
+  FPCR flush-to-zero bit (the denormal-underflow test passes → host preserves denormals
+  here, and the JIT matches the interpreter either way).
+
+**Blockers / open questions:**
+- none. Known scope: this is part 1 of 5.2b; DIV/SQRT/RSQRT, MADD/MSUB, MAX/MIN,
+  compares, BC1 branches, and CVT still fall to the interpreter.
+
+**Verification:**
+- `unittests` green; the 11 new FPU-arith gtests pass (confirmed by name via
+  `core_test --gtest_filter`). arm64 binary confirmed.
+- Headless BIOS boot (`-batch -bios`, rec active): emulog reaches `UpdateVSyncRate:
+  Mode Changed to DVD PAL.` + `Pad: DS2 Config Finished`, ran the full 39s, clean
+  `(VMManager) Pausing...` — same milestones as 5.2a, no regression. (Boot recipe note:
+  the main binary links Qt from the abs `pcsx2-deps/lib` path while the bundled cocoa
+  plugin links the in-bundle `Frameworks/` copy → duplicate-Qt crash; fix is to
+  `install_name_tool -change` the main binary's libQt6Core/Gui/Widgets + kddockwidgets
+  refs from `…/pcsx2-deps/lib/<n>` to `@executable_path/../Frameworks/<n>`, then
+  `codesign --force --deep`. PCSX2 logs to `~/Library/Application Support/PCSX2/logs/
+  emulog.txt`, not stdout.)
+
+**Next step:** Phase 5.2b continued — `DIV_S/SQRT_S/RSQRT_S` (add a `checkDivideByZero`
+emit helper; reuse `emitStoreClampedResult(..., setFlags=false)`), then MADD/MSUB(/A),
+MAX/MIN, the C.* compares + BC1 branches, then CVT.
+
+---
+
 ## 2026-06-04 — Phase 5.2a: FPU register transfer / move / load-store (exact ops)
 
 **Goal:** Start COP1 (FPU) codegen with the high-frequency, bit-exact subset — the

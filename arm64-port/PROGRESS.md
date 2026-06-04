@@ -8,24 +8,27 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 5.2a DONE — FPU register transfer / move / load-store now compiled natively.**
-The bit-exact COP1 ops (`MFC1/MTC1/CFC1/CTC1`, `MOV_S/ABS_S/NEG_S`, `LWC1/SWC1`) are
-emitted inline by `recTranslateOp` instead of single-stepping the interpreter. New
-`pcsx2/arm64/aR5900FPU.cpp` + offset helpers (`EE_FPU_BASE`/`EE_FPR_OFFSET`/
-`EE_FPRC_OFFSET`) in `aR5900.h` (fpuRegs is reachable at a fixed offset from
-RESTATEPTR since it shares `cpuRegistersPack` with cpuRegs). 12 new `Arm64EmitEE.*`
-gtests (extended `GuestRegs` to cover the FPU file). **Verified:** unittests green;
-arm64 binary; **headless BIOS boot** through `Mode Changed to DVD PAL` + `Pad: DS2
-Config Finished` with the rec active — no regression from the inlined FPU ops.
+**Phase 5.2b STARTED — FPU float ADD/SUB/MUL + ACC variants now compiled natively.**
+`ADD_S/SUB_S/MUL_S` and `ADDA_S/SUBA_S/MULA_S` are emitted inline, reproducing the EE
+FPU's non-IEEE behaviour: the `fpuDouble()` input clamp (`emitLoadFpuDouble`) +
+`checkOverflow`/`checkUnderflow` result clamp & FCR31 flag side-effects
+(`emitStoreClampedResult`), with the op itself host single-precision NEON. **Decision:
+mirror the interpreter (single precision, pcsx2/FPU.cpp), NOT iFPUd (double).** The
+interpreter is the project's ground truth *and* the current fallback, so matching it =
+zero behavioural drift; host `Fadd/Fsub/Fmul` is bit-identical to the interpreter's
+`float OP float` (same FPU). New `EE_ACC_OFFSET`; 11 new `Arm64EmitEE.*` gtests that
+check against a C++ replica of FPU.cpp (robust to host flush-to-zero). **Verified:**
+unittests green; arm64 binary; headless BIOS boot → `Mode Changed to DVD PAL` + `DS2
+Config Finished`, full 39s, clean pause — no regression.
 
-Next concrete task: **Phase 5.2b — FPU float arithmetic** (the hard part). ADD_S/
-SUB_S/MUL_S/DIV_S/SQRT_S/RSQRT_S, the ACC ops (ADDA/MADD/…), C.*.S compares, and
-BC1F/BC1T branches need the EE's non-IEEE behaviour: `fpuDouble()` (denormal→0,
-inf→fmax on *inputs*) + `checkOverflow`/`checkUnderflow` (result clamp to ±fmax / ±0)
-+ the FCR31 flag side-effects. These currently fall to the interpreter (correct but
-slow). Mirror the x86 accurate path (`iFPUd.cpp` DOUBLE namespace — computes in
-double precision to reproduce PS2 rounding). Alternatively jump to **Phase 4.4 block
-linking + recLUT** (perf) if FPU arithmetic accuracy proves too involved for one pass.
+Next concrete task: **Phase 5.2b continued — DIV_S/SQRT_S/RSQRT_S** (need
+`checkDivideByZero`: divisor exp==0 → set D|SD or I|SI, result = sign-xor | fmax; SQRT
+of negative sets I|SI on |x|; both pass cFlagsToSet=0 to over/underflow so reuse
+`emitStoreClampedResult(..., setFlags=false)`). Then **MADD/MSUB(/A)_S** (temp = fs*ft
+then ACC±temp), **MAX_S/MIN_S** (integer `fp_max`/`fp_min`, no clamp, clear O|U), the
+**C.F/C.EQ/C.LT/C.LE** compares (set/clear FCR31 C-bit via `fpuDouble` compare) and the
+**BC1F/BC1T(L)** branches, then **CVT.W/CVT.S**. Helpers `emitLoadFpuDouble` /
+`emitStoreClampedResult` are reusable for all of these.
 
 ---
 
@@ -141,9 +144,14 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 - [~] 5.2 COP1 (FPU):
   - [x] 5.2a Bit-exact transfer/move/load-store: `MFC1/MTC1/CFC1/CTC1`,
     `MOV_S/ABS_S/NEG_S`, `LWC1/SWC1` (`aR5900FPU.cpp`). No EE float quirks → exact.
-  - [ ] 5.2b Float arithmetic: `ADD/SUB/MUL/DIV/SQRT/RSQRT.S`, ACC ops, `C.*.S`,
-    `BC1T/BC1F(L)`, `CVT.S/CVT.W` — need EE non-IEEE rounding (`fpuDouble` +
-    over/underflow clamp + FCR31 flags). Ref `iFPUd.cpp`. Interpreter fallback for now.
+  - [~] 5.2b Float arithmetic — needs EE non-IEEE rounding (`fpuDouble` input clamp +
+    checkOverflow/checkUnderflow result clamp + FCR31 flags). Mirrors the **interpreter**
+    (single precision, FPU.cpp), not iFPUd. Shared helpers `emitLoadFpuDouble` /
+    `emitStoreClampedResult` in `aR5900FPU.cpp`.
+    - [x] `ADD_S/SUB_S/MUL_S` + ACC `ADDA_S/SUBA_S/MULA_S`.
+    - [ ] `DIV_S/SQRT_S/RSQRT_S` (+ `checkDivideByZero`; over/underflow with no flags).
+    - [ ] `MADD/MSUB(/A)_S`, `MAX_S/MIN_S`.
+    - [ ] `C.F/C.EQ/C.LT/C.LE` compares, `BC1T/BC1F(L)` branches, `CVT.S/CVT.W`.
 - [ ] 5.3 COP2 (VU0 macro): interpreter fallback initially.
 - [ ] 5.4 MMI (128-bit int SIMD): map to NEON where possible (ref `x86/iMMI.cpp`).
 
