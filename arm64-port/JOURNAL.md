@@ -28,6 +28,69 @@
 
 ---
 
+## 2026-06-04 — Phase 4.1 + 4.2: EE branch/jump codegen (generators)
+
+**Goal:** Land the EE control-flow *codegen* — the jump and conditional-branch
+generators — as self-contained, unit-tested primitives, ahead of the larger
+dispatcher/block-compiler work that will consume them (Phase 4.3).
+
+**What changed:**
+- New `pcsx2/arm64/aR5900Branch.cpp` + decls in `aR5900.h`:
+  - **Jumps (4.1):** `armEmitJ/JAL/JR/JALR`. Write `cpuRegs.pc` (J/JR from imm/reg)
+    and the return-address GPR for the linking forms. JR/JALR read GPR[rs] *now*
+    (before any delay slot), JALR reads rs before writing rd so `rd==rs` still
+    jumps to the original value.
+  - **Conditional branches (4.2):** `armEmitBEQ/BNE/BLTZ/BGEZ/BLEZ/BGTZ/BLTZAL/
+    BGEZAL`. `Cmp` then `Csel` to select `pc = cond ? target : fallthrough`. BEQ/BNE
+    compare full 64-bit `UD[0]`; single-operand forms are signed-vs-zero. *AL forms
+    write the GPR[31] link unconditionally and *before* reading rs.
+- `aR5900.h` — added `EE_PC_OFFSET = offsetof(cpuRegisters, pc)` (+ `<cstddef>`) and
+  the 12 generator declarations, each documenting the "emit only the control-flow
+  effect; delay slot + exit are the block compiler's job" contract.
+- `pcsx2/CMakeLists.txt` — added `arm64/aR5900Branch.cpp`.
+- `tests/ctest/core/arm64_emit_test.cpp` — `GuestRegs` enlarged to reach `pc`
+  (`EE_PC_OFFSET + 16`) + `setPc/getPc`; 16 new `Arm64EmitEE.*` gtests (6 jump,
+  10 branch) all green. Total core_test still passes.
+- Commits:
+  - `4c02b6c2d ARM64: EE jump opcode generators (Phase 4.1)`
+  - `cede13f12 ARM64: EE conditional branch opcode generators (Phase 4.2)`
+
+**Decisions & rationale:**
+- **Generators emit only the PC/link write — not the delay slot or block exit.**
+  This keeps them small, decode-agnostic, and unit-testable exactly like the Phase
+  3.x ALU generators, and matches the eventual block-compiler split (compile branch
+  generator → compile delay slot → RET). The delay-slot + dispatcher glue is the
+  genuinely architectural part and belongs to its own focused increment (4.3).
+- **Write `cpuRegs.pc` *before* the delay slot is safe and (for reg-targets)
+  required.** No EE delay-slot instruction writes `cpuRegs.pc`, so the early write
+  survives. For JR/JALR the jump target must be GPR[rs] as read before the delay
+  slot may clobber it — committing it to `pc` immediately captures the right value.
+- **Chose a simple "block writes cpuRegs.pc, RETs; C++ loop re-reads pc" dispatcher
+  model (Option B), not the x86 recLUT/fastjmp machinery.** The generators writing
+  `cpuRegs.pc` are exactly the primitive that model needs. The x86 2-level recLUT +
+  generated asm dispatchers + block linking is a later optimisation (4.4); a plain
+  C++ dispatcher loop is correctness-equivalent and far smaller for bring-up.
+- **`*AL` link timing matches the interpreter** (`_SetLink` *before* the compare —
+  Interpreter.cpp:360/393). Verified by a `rs==31` test: linking first makes the
+  `>=0` compare see the (positive) link value, so the branch is taken.
+- **Materialize target/fallthrough straight into x17/x16** (not held across an
+  immediate-emitting macro) so VIXL never needs x16 as a temp — avoids the x16
+  clobber hazard that bit the Phase 3.5 divide code.
+
+**Blockers / open questions:**
+- none. The generators are correct in isolation. They are **not yet executed in
+  normal operation** — the block compiler still emits a single-instruction stub and
+  the interpreter is still the active provider. First real exercise comes with 4.3.
+
+**Next step:** Phase 4.3 — the dispatcher + delay-slot block compiler (see PROGRESS
+▶ CURRENT FOCUS). Rewrite `recCompileBlock` into a multi-instruction loop (compile
+straight-line ops until a branch, then branch generator + delay slot + exit), add a
+C++ dispatcher loop with `cpuEventTest` in `recExecute`, add interpreter fallback
+for unhandled opcodes, then flip `Cpu = &recCpu` and validate on BIOS boot. This is
+the milestone where the rec first actually runs guest code.
+
+---
+
 ## 2026-06-04 — Phase 3.5 REWRITE: correctness fixes for EE mult/div
 
 **Goal:** The prior 3.5 attempt (below) was committed-to-WIP but wrong on several

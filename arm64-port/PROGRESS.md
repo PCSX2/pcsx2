@@ -8,14 +8,29 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 0–2 COMPLETE. Phase 3.1 DONE. Phase 3.2 DONE. Phase 3.3 DONE. Phase 3.4 DONE. Phase 3.5 DONE (rewritten + correct)**
-EE mult/div: `MULT/MULTU/DIV/DIVU` (SPECIAL 0x18–0x1B) + the MMI second-pipeline
-`MULT1/MULTU1/DIV1/DIVU1` (MMI group 0x1C, funct 0x18–0x1B → HI1/LO1). The R5900
-has **no** DMULT/DMULTU/DDIV/DDIVU (not EE ops) — removed. Verified 1:1 vs the
-interpreter. Builds clean (pcsx2-qt arm64), unittests green (188/188).
+**Phase 0–3.5 COMPLETE. Phase 4.1 + 4.2 codegen DONE (generators only).**
+EE branch/jump *codegen* lives in `pcsx2/arm64/aR5900Branch.cpp`:
+- 4.1 jumps: `J/JAL/JR/JALR` — write `cpuRegs.pc` (+ link GPR for JAL/JALR).
+- 4.2 conditional branches: `BEQ/BNE/BLTZ/BGEZ/BLEZ/BGTZ/BLTZAL/BGEZAL` — Cmp +
+  Csel select `pc = cond ? target : fallthrough`; *AL forms link unconditionally.
 
-Next concrete task: **Phase 3.6 — EE constant propagation** (optional optimization)
-or **Phase 4 — EE branches & jumps** (critical for runnable blocks).
+These emit **only the control-flow effect** (the next-PC / link write). They are
+verified 1:1 vs the interpreter by 16 new `Arm64EmitEE.*` gtests (jumps incl.
+rd==rs / $zero edge cases; branches incl. 64-bit BEQ and rs==31 link timing).
+Builds clean (pcsx2-qt arm64), unittests green. The generators are **not yet wired
+into the block compiler** — `recCompileBlock`/`recExecute` are still inert (Phase
+1.4 single-instr stub) and the interpreter is still the active Cpu provider.
+
+Next concrete task: **Phase 4.3 — the dispatcher + delay-slot block compiler**
+(the architectural core that makes the rec actually run). This is the big one:
+rewrite `recCompileBlock` into a multi-instruction loop with a compile-time PC that
+runs straight-line ops until a branch, then compiles the branch generator + its
+delay slot + block exit; add a C++ dispatcher loop in `recExecute` (read cpuRegs.pc
+→ compile/run block → cpuEventTest); add **interpreter fallback** for every opcode
+`recTranslateOp` returns false on (so it's safe to run); then flip `Cpu = &recCpu`
+and validate on BIOS boot. Deferred within Phase 4: "likely" branches
+(BEQL/BNEL/...) that nullify the delay slot, and block linking (4.4) / the recLUT
+optimization.
 
 > When you finish a task, move this pointer to the next one and flip the box below.
 
@@ -72,10 +87,17 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 
 ## Phase 4 — EE Branches & Jumps
 
-- [ ] 4.1 Jumps: `J/JAL/JR/JALR` + PC update + delay slots.
-- [ ] 4.2 Conditional branches: `BEQ/BNE/BLEZ/BGTZ/BLTZ/BGEZ/BLTZAL/BGEZAL` + likely variants.
-- [ ] 4.3 Delay-slot compilation (inline; conditional for "likely" branches).
-- [ ] 4.4 Block linking (direct branch to already-compiled targets).
+- [~] 4.1 Jumps: `J/JAL/JR/JALR` — **codegen done** (`aR5900Branch.cpp`, write
+  cpuRegs.pc + link). PC update is in the generator; **delay-slot compilation +
+  block exit are 4.3** (not yet wired into the block compiler).
+- [~] 4.2 Conditional branches: `BEQ/BNE/BLEZ/BGTZ/BLTZ/BGEZ/BLTZAL/BGEZAL` —
+  **codegen done** (Cmp + Csel pc-select). "Likely" variants (BEQL/BNEL/BLEZL/
+  BGTZL/BLTZL/BGEZL/BLTZALL/BGEZALL — delay-slot nullification) still TODO.
+- [ ] 4.3 **Dispatcher + delay-slot block compiler** (the runnable-rec core):
+  multi-instruction `recCompileBlock` loop w/ compile-time PC; compile branch +
+  delay slot + exit; C++ dispatcher loop in `recExecute` (pc→block→cpuEventTest);
+  interpreter fallback for unhandled opcodes; flip `Cpu = &recCpu`; BIOS-boot test.
+- [ ] 4.4 Block linking (direct branch to already-compiled targets) + recLUT.
 - [ ] 4.5 Block invalidation on TLB-mapping change.
 
 ---
