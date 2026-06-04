@@ -3172,6 +3172,9 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 		else
 			pxAssert(config.drawlist_bbox && static_cast<u32>(config.drawlist_bbox->size()) == draw_list_size);
 
+		if (!m_features.texture_barrier && config.tex_hazard != config.TEX_HAZARD_NONE)
+			FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, config.samplearea);
+
 		for (u32 n = 0, p = 0; n < draw_list_size; n++)
 		{
 			const u32 count = config.drawlist->at(n) * indices_per_prim;
@@ -3183,9 +3186,7 @@ void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config,
 			else
 			{
 				const GSVector4i bbox = config.drawlist_bbox->at(n).rintersect(config.drawarea);
-				const GSVector4i bbox_tex = config.drawlist_bbox_tex ?
-					config.drawlist_bbox_tex->at(n).rintersect(config.samplearea) : GSVector4i::zero();
-				FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, bbox, bbox_tex);
+				FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, bbox);
 			}
 
 			Draw(config, p, count);
