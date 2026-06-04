@@ -28,6 +28,66 @@
 
 ---
 
+## 2026-06-04 — Phase 3.1: EE immediate arithmetic generators
+
+**Goal:** Implement and unit-test the complete EE I-type immediate arithmetic
+opcode family, giving `recTranslateOp` enough codegen to handle basic integer
+ALU instructions.
+
+**What changed:**
+- New `pcsx2/arm64/aR5900Arith.cpp` — 10 immediate-opcode generators:
+  - `armEmitADDI`/`ADDIU` — 32-bit add + `Sxtw` (same for both; overflows ignored).
+  - `armEmitDADDI`/`DADDIU` — 64-bit add (same for both).
+  - `armEmitSLTI` — 64-bit signed `Cmp + Cset(lt)`.
+  - `armEmitSLTIU` — 64-bit unsigned `Cmp + Cset(lo)`.
+  - `armEmitANDI`/`ORI`/`XORI` — 64-bit logical with zero-extended 16-bit imm
+    (materialized via `RXVIXLSCRATCH`; includes imm==0 fast-path).
+  - `armEmitLUI` — sign-extended `imm << 16` via `Mov` + `Sxtw`.
+  - All skip the store for `rt == 0` ($zero discard).
+- `pcsx2/arm64/aR5900.h` — declarations for all 10 generators.
+- `pcsx2/arm64/aR5900.cpp` — `recTranslateOp` dispatches by primary opcode:
+  0x08 ADDI, 0x09 ADDIU, 0x0A SLTI, 0x0B SLTIU, 0x0C ANDI, 0x0D ORI,
+  0x0E XORI, 0x0F LUI, 0x18 DADDI, 0x19 DADDIU.
+- `tests/ctest/core/arm64_emit_test.cpp` — 15 new `Arm64EmitEE.*` gtests:
+  `ADDI_SignExtend32`, `ADDI_ZeroImmIdentity`, `ADDI_DiscardZero`,
+  `DADDI_64bitAdd`, `DADDI_NegativeImm`, `SLTI_SignedLessThan`,
+  `SLTIU_UnsignedLessThan`, `ANDI_ZeroExtended`, `ANDI_ZeroImm`,
+  `ORI_ZeroExtended`, `ORI_ZeroImmIdentity`, `XORI_ZeroExtended`,
+  `LUI_SignExtend`, `LUI_PositiveImm`, `LUI_ZeroImm`.
+  All 31 `Arm64EmitEE.*` tests pass (16 existing + 15 new).
+- `pcsx2/CMakeLists.txt` — added `arm64/aR5900Arith.cpp` to `pcsx2arm64Sources`.
+- Commits:
+  - `a4f4c8e80 ARM64: EE immediate arithmetic generators (Phase 3.1)`
+
+**Decisions & rationale:**
+- **Mem-to-mem pattern, same as load/store generators.** Load GPR[rs] from
+  `RESTATEPTR + offset`, compute in `RSCRATCHADDR` (x17, caller-saved scratch),
+  store back. No reg allocator yet. keps Phase 3.1 self-contained and directly
+  testable with the `RunEEGen` harness from Phase 2.4.
+- **ADDI ≡ ADDIU in the JIT.** The interpreter traps on 32-bit overflow for ADDI;
+  the x86 JIT also skips that check and just does `ADD` + `MOVSX`. Matching x86
+  keeps us compatible with games that don't rely on the (never-handled) overflow
+  trap.
+- **Logical-immediate materialization through `RXVIXLSCRATCH`.** The 16-bit
+  zero-extended immediates for ANDI/ORI/XORI are not guaranteed to be valid ARM64
+  logical immediates (the encoding is an 8/64-bit pattern with rotation). Using
+  `Mov(reg, imm)` lets VIXL handle any value, then `And/Orr/Eor` with two regs.
+  The imm==0/imm==0xFFFF fast-paths avoid a pointless instruction.
+- **LUI is `Mov(w, imm<<16)` then `Sxtw`, not `Mov(x, sign-extended32)`** —
+  VIXL's `Mov(x, s32)` might have different selection rules. Explicit `Mov` on W
+  then `Sxtw` exactly matches the `cpuRegs.code << 16` as 32-bit then sign-extend
+  semantics.
+
+**Blockers / open questions:**
+- none. Phase 3.1 complete.
+
+**Next step:** Phase 3.2 — EE register-register arithmetic ops
+(`ADD/ADDU/SUB/SUBU/SLT/SLTU/AND/OR/XOR/NOR/DADD/DADDU/DSUB/DSUBU`) in a new or
+extended `aR5900Arith.cpp`. Same mem-to-mem pattern but read two source GPRs
+instead of one + imm.
+
+---
+
 ## 2026-06-04 — Phase 2.4: full guest-memory round-trip validation
 
 **Goal:** Prove the scalar + quad load/store generators actually read/write the

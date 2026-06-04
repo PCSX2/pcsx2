@@ -8,37 +8,19 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 0 COMPLETE. Phase 1 COMPLETE. Phase 2.1 DONE. Phase 2.3 DONE. Phase 2.4 DONE**
-(full scalar + quad load/store family, runtime round-trip-proven). The EE rec skeleton (`aR5900.{h,cpp}`)
-defines `recCpu`, reserves the code cache + const pool, and is wired into
-`VMManager.cpp` (Reserve/Reset/Shutdown; `Cpu` stays `&intCpu`).
-`aR5900LoadStore.cpp` provides the slow-path memory primitives
-`armEmitVtlbRead/Write[Quad]` (Phase 2.1) and the EE GPR load/store generators
-`armEmitEffectiveAddr` / `armEmitLoadGpr` / `armEmitStoreGpr` /
-`armEmitLoadQuad` / `armEmitStoreQuad` (Phase 2.3): they read/write guest GPRs
-through `RESTATEPTR`, compute the EE address mode (`GPR[rs].UL[0] + imm`), and
-route memory access through the slow path. `recCompileBlock` decodes the
-instruction at `cpuRegs.pc` and `recTranslateOp` dispatches the whole aligned
-load/store family: `LB/LBU/LH/LHU/LW/LWU/LD`, `SB/SH/SW/SD`, `LQ/SQ` (16-byte
-aligned, full 128-bit NEON access). Unaligned variants
-(`LWL/LWR/LDL/LDR`, `SWL/SWR/SDL/SDR`) deferred — need byte-merge codegen.
+**Phase 0 COMPLETE. Phase 1 COMPLETE. Phase 2.1 DONE. Phase 2.3 DONE. Phase 2.4 DONE. Phase 3.1 DONE**
+(full immediate arithmetic family, 15 new gtests, all pass). `recTranslateOp` now
+dispatches the complete EE I-type arithmetic family: `ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/
+XORI/LUI/DADDI/DADDIU` via `aR5900Arith.cpp` on top of the Phase 2 load/store
+dispatch. The rec remains inert (`Cpu = &intCpu`); `recExecute` is never entered —
+Phase 4 (enter-trampoline + block LUT) is still needed before guest code can run.
 
-The full load/store family is now runtime round-trip-proven by 13 gtests
-(`Arm64EmitEE.*`): 7 address/align tests + 6 Phase 2.4 round-trips that store/load
-real bytes through the vtlb (`StoreThenLoadWord`, `LoadByteSignAndZeroExtend`,
-`StoreLoadDoubleword`, `LoadStoreWritesToZeroRegDiscarded`, `StoreThenLoadQuad`,
-`QuadAccessForcesAlignment`). The decode/dispatch path is still **inert**
-(interpreter stays the active provider; `recExecute` is never entered — Phase 4
-adds the enter-trampoline pinning `RESTATEPTR=&cpuRegs`, the block LUT, PC/cycle,
-and event tests).
-
-Next concrete task: **pick one of two** — (a) the deferred **unaligned load/store
-family** `LWL/LWR/LDL/LDR` + `SWL/SWR/SDL/SDR` (byte-offset mask/merge codegen,
-ref x86 `recLWL`/`recLWR` in `iR5900LoadStore.cpp`), or (b) **Phase 3 — EE integer
-arithmetic** (3.1 immediate ops first: `ADDI/ADDIU/SLTI/.../LUI`). Phase 3 is the
-higher-leverage path toward a runnable block, since the JIT can't execute anything
-until arithmetic + branches exist; the unaligned ops are a self-contained gap that
-can be filled anytime. Recommend (b) Phase 3.1 next.
+Next concrete task: **Phase 3.2 — EE register-register arithmetic ops**
+(`ADD/ADDU/SUB/SUBU/SLT/SLTU/AND/OR/XOR/NOR/DADD/DADDU/DSUB/DSUBU`). These follow
+the same mem-to-mem pattern as 3.1 (read both sources from cpuRegs, compute,
+write rd), just with two operands and a wider set. Recommend doing them next —
+they're the other half of the arithmetic floor a runnable block needs. After
+that: 3.3 shifts, then 3.4 moves, then branches (Phase 4).
 
 > When you finish a task, move this pointer to the next one and flip the box below.
 
@@ -84,7 +66,7 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 
 ## Phase 3 — EE Integer Arithmetic
 
-- [ ] 3.1 Immediate ops: `ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI/DADDI/DADDIU`.
+- [x] 3.1 Immediate ops: `ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI/DADDI/DADDIU`.
 - [ ] 3.2 Reg-reg ops: `ADD/ADDU/SUB/SUBU/SLT/SLTU/AND/OR/XOR/NOR/DADD/DADDU/DSUB/DSUBU`.
 - [ ] 3.3 Shifts: `SLL/SRL/SRA/SLLV/SRLV/SRAV/DSLL.../DSRA32`.
 - [ ] 3.4 Moves: `MOVZ/MOVN` (→ `CSEL`), `MFHI/MTHI/MFLO/MTLO`.
