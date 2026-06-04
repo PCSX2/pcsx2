@@ -156,6 +156,89 @@ enum : u32
 // Decodes the MIPS fields explicitly and hands them to the Phase 2.3 load/store
 // generators (which read/write guest GPRs through RESTATEPTR and route memory
 // access via the slow-path vtlb helpers).
+// MMI sub-group decoders (Phase 5.4). The MMI0/1/2/3 classes carry their real
+// opcode in the `sa` field (bits 10:6); each indexes a 32-entry table (see
+// R5900OpcodeTables.cpp tbl_MMI0..3). Only the NEON-mappable SIMD ops are handled
+// here — everything else (multiply-accumulate to HI/LO, permutes, PEXT5/PPAC5,
+// PADSBH, QFSRV, ...) returns false and falls back to the interpreter.
+static bool recTranslateMMI0(u32 sa, u32 rd, u32 rs, u32 rt)
+{
+	switch (sa)
+	{
+		case 0x00: armEmitPADDW(rd, rs, rt); return true;
+		case 0x01: armEmitPSUBW(rd, rs, rt); return true;
+		case 0x02: armEmitPCGTW(rd, rs, rt); return true;
+		case 0x03: armEmitPMAXW(rd, rs, rt); return true;
+		case 0x04: armEmitPADDH(rd, rs, rt); return true;
+		case 0x05: armEmitPSUBH(rd, rs, rt); return true;
+		case 0x06: armEmitPCGTH(rd, rs, rt); return true;
+		case 0x07: armEmitPMAXH(rd, rs, rt); return true;
+		case 0x08: armEmitPADDB(rd, rs, rt); return true;
+		case 0x09: armEmitPSUBB(rd, rs, rt); return true;
+		case 0x0A: armEmitPCGTB(rd, rs, rt); return true;
+		case 0x10: armEmitPADDSW(rd, rs, rt); return true;
+		case 0x11: armEmitPSUBSW(rd, rs, rt); return true;
+		case 0x12: armEmitPEXTLW(rd, rs, rt); return true;
+		case 0x13: armEmitPPACW(rd, rs, rt); return true;
+		case 0x14: armEmitPADDSH(rd, rs, rt); return true;
+		case 0x15: armEmitPSUBSH(rd, rs, rt); return true;
+		case 0x16: armEmitPEXTLH(rd, rs, rt); return true;
+		case 0x17: armEmitPPACH(rd, rs, rt); return true;
+		case 0x18: armEmitPADDSB(rd, rs, rt); return true;
+		case 0x19: armEmitPSUBSB(rd, rs, rt); return true;
+		case 0x1A: armEmitPEXTLB(rd, rs, rt); return true;
+		case 0x1B: armEmitPPACB(rd, rs, rt); return true;
+		default:   return false; // PEXT5/PPAC5
+	}
+}
+
+static bool recTranslateMMI1(u32 sa, u32 rd, u32 rs, u32 rt)
+{
+	switch (sa)
+	{
+		case 0x01: armEmitPABSW(rd, rt); return true;
+		case 0x02: armEmitPCEQW(rd, rs, rt); return true;
+		case 0x03: armEmitPMINW(rd, rs, rt); return true;
+		case 0x05: armEmitPABSH(rd, rt); return true;
+		case 0x06: armEmitPCEQH(rd, rs, rt); return true;
+		case 0x07: armEmitPMINH(rd, rs, rt); return true;
+		case 0x0A: armEmitPCEQB(rd, rs, rt); return true;
+		case 0x10: armEmitPADDUW(rd, rs, rt); return true;
+		case 0x11: armEmitPSUBUW(rd, rs, rt); return true;
+		case 0x12: armEmitPEXTUW(rd, rs, rt); return true;
+		case 0x14: armEmitPADDUH(rd, rs, rt); return true;
+		case 0x15: armEmitPSUBUH(rd, rs, rt); return true;
+		case 0x16: armEmitPEXTUH(rd, rs, rt); return true;
+		case 0x18: armEmitPADDUB(rd, rs, rt); return true;
+		case 0x19: armEmitPSUBUB(rd, rs, rt); return true;
+		case 0x1A: armEmitPEXTUB(rd, rs, rt); return true;
+		default:   return false; // PADSBH, QFSRV
+	}
+}
+
+static bool recTranslateMMI2(u32 sa, u32 rd, u32 rs, u32 rt)
+{
+	switch (sa)
+	{
+		case 0x0E: armEmitPCPYLD(rd, rs, rt); return true;
+		case 0x12: armEmitPAND(rd, rs, rt); return true;
+		case 0x13: armEmitPXOR(rd, rs, rt); return true;
+		default:   return false; // PMADD*/PMSUB*/PMULT*/permutes -> interpreter
+	}
+}
+
+static bool recTranslateMMI3(u32 sa, u32 rd, u32 rs, u32 rt)
+{
+	switch (sa)
+	{
+		case 0x0E: armEmitPCPYUD(rd, rs, rt); return true;
+		case 0x12: armEmitPOR(rd, rs, rt); return true;
+		case 0x13: armEmitPNOR(rd, rs, rt); return true;
+		case 0x1B: armEmitPCPYH(rd, rt); return true;
+		default:   return false; // PMADDUW/PMULTUW/PMTHI/permutes -> interpreter
+	}
+}
+
 static bool recTranslateOp(u32 op)
 {
 	const u32 opcode = op >> 26;
@@ -231,6 +314,11 @@ static bool recTranslateOp(u32 op)
 				case 0x19: armEmitMULTU1(rd, rs, rt); return true;
 				case 0x1A: armEmitDIV1(rs, rt); return true;
 				case 0x1B: armEmitDIVU1(rs, rt); return true;
+				// MMI0/1/2/3 SIMD sub-groups (Phase 5.4); sub-op in `sa`.
+				case 0x08: return recTranslateMMI0(sa, rd, rs, rt);
+				case 0x28: return recTranslateMMI1(sa, rd, rs, rt);
+				case 0x09: return recTranslateMMI2(sa, rd, rs, rt);
+				case 0x29: return recTranslateMMI3(sa, rd, rs, rt);
 				default:   return false;
 			}
 

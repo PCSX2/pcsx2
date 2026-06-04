@@ -352,3 +352,69 @@ void armEmitBGEZAL(u32 rs, u32 target, u32 fallthrough, u32 linkpc);
 // BC1T when C!=0. The likely forms (BC1FL/BC1TL) stay on interpreter fallback.
 void armEmitBC1F(u32 target, u32 fallthrough);
 void armEmitBC1T(u32 target, u32 fallthrough);
+
+// --------------------------------------------------------------------------------------
+//  MMI 128-bit SIMD opcode generators (Phase 5.4)
+// --------------------------------------------------------------------------------------
+// Packed integer ops over the full 128-bit GPRs, mapped to ARM64 NEON. Format is
+// OP rd, rs, rt (binary) or OP rd, rt (PABS*/PCPYH). $zero writes are discarded.
+// Semantics mirror pcsx2/MMI.cpp; see aR5900MMI.cpp for the per-op NEON mapping.
+//
+//   PADD*/PSUB*       : wrapping add/subtract of word/halfword/byte lanes
+//   PADDS*/PSUBS*     : signed-saturating add/subtract
+//   PADDU*/PSUBU*     : unsigned-saturating add/subtract
+//   PCGT*             : signed Rs > Rt -> all-ones lane mask
+//   PCEQ*             : Rs == Rt -> all-ones lane mask
+//   PMAX*/PMIN*       : signed lane max/min (word + halfword)
+//   PABSW/PABSH       : saturating absolute value of Rt
+//   PAND/POR/PXOR/PNOR: 128-bit bitwise logic
+//   PEXTL*/PEXTU*     : interleave low/high halves of Rt and Rs
+//   PPAC*             : pack even-indexed lanes of Rt then Rs
+//   PCPYLD/PCPYUD     : combine low/high doublewords of Rt and Rs
+//   PCPYH             : broadcast Rt.US[0]/US[4] into the low/high doublewords
+void armEmitPADDW(u32 rd, u32 rs, u32 rt);
+void armEmitPADDH(u32 rd, u32 rs, u32 rt);
+void armEmitPADDB(u32 rd, u32 rs, u32 rt);
+void armEmitPSUBW(u32 rd, u32 rs, u32 rt);
+void armEmitPSUBH(u32 rd, u32 rs, u32 rt);
+void armEmitPSUBB(u32 rd, u32 rs, u32 rt);
+void armEmitPADDSW(u32 rd, u32 rs, u32 rt);
+void armEmitPADDSH(u32 rd, u32 rs, u32 rt);
+void armEmitPADDSB(u32 rd, u32 rs, u32 rt);
+void armEmitPSUBSW(u32 rd, u32 rs, u32 rt);
+void armEmitPSUBSH(u32 rd, u32 rs, u32 rt);
+void armEmitPSUBSB(u32 rd, u32 rs, u32 rt);
+void armEmitPADDUW(u32 rd, u32 rs, u32 rt);
+void armEmitPADDUH(u32 rd, u32 rs, u32 rt);
+void armEmitPADDUB(u32 rd, u32 rs, u32 rt);
+void armEmitPSUBUW(u32 rd, u32 rs, u32 rt);
+void armEmitPSUBUH(u32 rd, u32 rs, u32 rt);
+void armEmitPSUBUB(u32 rd, u32 rs, u32 rt);
+void armEmitPCGTW(u32 rd, u32 rs, u32 rt);
+void armEmitPCGTH(u32 rd, u32 rs, u32 rt);
+void armEmitPCGTB(u32 rd, u32 rs, u32 rt);
+void armEmitPCEQW(u32 rd, u32 rs, u32 rt);
+void armEmitPCEQH(u32 rd, u32 rs, u32 rt);
+void armEmitPCEQB(u32 rd, u32 rs, u32 rt);
+void armEmitPMAXW(u32 rd, u32 rs, u32 rt);
+void armEmitPMAXH(u32 rd, u32 rs, u32 rt);
+void armEmitPMINW(u32 rd, u32 rs, u32 rt);
+void armEmitPMINH(u32 rd, u32 rs, u32 rt);
+void armEmitPAND(u32 rd, u32 rs, u32 rt);
+void armEmitPOR(u32 rd, u32 rs, u32 rt);
+void armEmitPXOR(u32 rd, u32 rs, u32 rt);
+void armEmitPNOR(u32 rd, u32 rs, u32 rt);
+void armEmitPEXTLW(u32 rd, u32 rs, u32 rt);
+void armEmitPEXTLH(u32 rd, u32 rs, u32 rt);
+void armEmitPEXTLB(u32 rd, u32 rs, u32 rt);
+void armEmitPEXTUW(u32 rd, u32 rs, u32 rt);
+void armEmitPEXTUH(u32 rd, u32 rs, u32 rt);
+void armEmitPEXTUB(u32 rd, u32 rs, u32 rt);
+void armEmitPPACW(u32 rd, u32 rs, u32 rt);
+void armEmitPPACH(u32 rd, u32 rs, u32 rt);
+void armEmitPPACB(u32 rd, u32 rs, u32 rt);
+void armEmitPCPYLD(u32 rd, u32 rs, u32 rt);
+void armEmitPCPYUD(u32 rd, u32 rs, u32 rt);
+void armEmitPABSW(u32 rd, u32 rt);
+void armEmitPABSH(u32 rd, u32 rt);
+void armEmitPCPYH(u32 rd, u32 rt);

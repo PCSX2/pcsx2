@@ -2320,4 +2320,181 @@ TEST(Arm64EmitEE, BC1T_FallsThroughWhenConditionClear)
 	EXPECT_EQ(regs.getPc(), 0x2000u);
 }
 
+// --------------------------------------------------------------------------------------
+//  Phase 5.4: MMI 128-bit SIMD generators
+// --------------------------------------------------------------------------------------
+// Each generator is checked against a scalar C++ replica of the interpreter
+// (pcsx2/MMI.cpp). We feed a couple of 128-bit input vectors per op — including
+// saturation / sign / equality edge cases — and assert byte-exact agreement.
+namespace mmiref
+{
+	// A 128-bit guest GPR viewed as packed lanes (host is little-endian arm64, so
+	// these alias the same byte order the JIT load/store sees).
+	// Use stdint types here: a `using namespace vixl::aarch64;` is in scope at file
+	// level and defines register objects named s8/s16/etc. that shadow the pcsx2
+	// integer aliases, so spell the lane types explicitly.
+	union MQ
+	{
+		uint8_t uc[16];
+		int8_t sc[16];
+		uint16_t us[8];
+		int16_t ss[8];
+		uint32_t ul[4];
+		int32_t sl[4];
+		uint64_t ud[2];
+	};
+
+	static MQ make(std::initializer_list<u8> bytes)
+	{
+		MQ q{};
+		u32 i = 0;
+		for (u8 b : bytes)
+			q.uc[i++] = b;
+		return q;
+	}
+
+	// Reference replicas (mirror MMI.cpp exactly).
+	static MQ refPADDW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = s.ul[n] + t.ul[n]; return d; }
+	static MQ refPADDH(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 8; n++) d.us[n] = u16(s.us[n] + t.us[n]); return d; }
+	static MQ refPADDB(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 16; n++) d.sc[n] = int8_t(s.sc[n] + t.sc[n]); return d; }
+	static MQ refPSUBW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = s.ul[n] - t.ul[n]; return d; }
+	static MQ refPSUBH(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 8; n++) d.us[n] = u16(s.us[n] - t.us[n]); return d; }
+	static MQ refPSUBB(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 16; n++) d.sc[n] = int8_t(s.sc[n] - t.sc[n]); return d; }
+
+	static u32 satSW(s64 v) { return v > 0x7FFFFFFF ? 0x7FFFFFFF : (v < (s32)0x80000000 ? 0x80000000u : (u32)(s32)v); }
+	static u16 satSH(s32 v) { return v > 0x7FFF ? 0x7FFF : (v < (s32)0xFFFF8000 ? 0x8000 : (u16)(int16_t)v); }
+	static u8 satSB(int16_t v) { return v > 0x7F ? 0x7F : (v < (int16_t)-128 ? 0x80 : (u8)(int8_t)v); }
+	static MQ refPADDSW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = satSW((s64)s.sl[n] + (s64)t.sl[n]); return d; }
+	static MQ refPADDSH(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 8; n++) d.us[n] = satSH((s32)s.ss[n] + (s32)t.ss[n]); return d; }
+	static MQ refPADDSB(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 16; n++) d.uc[n] = satSB((int16_t)s.sc[n] + (int16_t)t.sc[n]); return d; }
+	static MQ refPSUBSW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = satSW((s64)s.sl[n] - (s64)t.sl[n]); return d; }
+	static MQ refPSUBSH(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 8; n++) d.us[n] = satSH((s32)s.ss[n] - (s32)t.ss[n]); return d; }
+	static MQ refPSUBSB(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 16; n++) d.uc[n] = satSB((int16_t)s.sc[n] - (int16_t)t.sc[n]); return d; }
+
+	static MQ refPADDUW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) { s64 v = (s64)s.ul[n] + (s64)t.ul[n]; d.ul[n] = v > 0xFFFFFFFF ? 0xFFFFFFFFu : (u32)v; } return d; }
+	static MQ refPADDUH(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 8; n++) { s32 v = (s32)s.us[n] + (s32)t.us[n]; d.us[n] = v > 0xFFFF ? 0xFFFF : (u16)v; } return d; }
+	static MQ refPADDUB(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 16; n++) { u16 v = (u16)s.uc[n] + (u16)t.uc[n]; d.uc[n] = v > 0xFF ? 0xFF : (u8)v; } return d; }
+	static MQ refPSUBUW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) { s64 v = (s64)s.ul[n] - (s64)t.ul[n]; d.ul[n] = v <= 0 ? 0u : (u32)v; } return d; }
+	static MQ refPSUBUH(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 8; n++) { s32 v = (s32)s.us[n] - (s32)t.us[n]; d.us[n] = v <= 0 ? 0 : (u16)v; } return d; }
+	static MQ refPSUBUB(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 16; n++) { int16_t v = (int16_t)s.uc[n] - (int16_t)t.uc[n]; d.uc[n] = v <= 0 ? 0 : (u8)v; } return d; }
+
+	static MQ refPCGTW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = s.sl[n] > t.sl[n] ? 0xFFFFFFFFu : 0; return d; }
+	static MQ refPCGTH(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 8; n++) d.us[n] = s.ss[n] > t.ss[n] ? 0xFFFF : 0; return d; }
+	static MQ refPCGTB(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 16; n++) d.uc[n] = s.sc[n] > t.sc[n] ? 0xFF : 0; return d; }
+	static MQ refPCEQW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = s.ul[n] == t.ul[n] ? 0xFFFFFFFFu : 0; return d; }
+	static MQ refPCEQH(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 8; n++) d.us[n] = s.us[n] == t.us[n] ? 0xFFFF : 0; return d; }
+	static MQ refPCEQB(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 16; n++) d.uc[n] = s.uc[n] == t.uc[n] ? 0xFF : 0; return d; }
+	static MQ refPMAXW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = s.sl[n] > t.sl[n] ? s.ul[n] : t.ul[n]; return d; }
+	static MQ refPMAXH(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 8; n++) d.us[n] = s.ss[n] > t.ss[n] ? s.us[n] : t.us[n]; return d; }
+	static MQ refPMINW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = s.sl[n] < t.sl[n] ? s.ul[n] : t.ul[n]; return d; }
+	static MQ refPMINH(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 8; n++) d.us[n] = s.ss[n] < t.ss[n] ? s.us[n] : t.us[n]; return d; }
+
+	static MQ refPAND(MQ s, MQ t) { MQ d{}; d.ud[0] = s.ud[0] & t.ud[0]; d.ud[1] = s.ud[1] & t.ud[1]; return d; }
+	static MQ refPOR(MQ s, MQ t) { MQ d{}; d.ud[0] = s.ud[0] | t.ud[0]; d.ud[1] = s.ud[1] | t.ud[1]; return d; }
+	static MQ refPXOR(MQ s, MQ t) { MQ d{}; d.ud[0] = s.ud[0] ^ t.ud[0]; d.ud[1] = s.ud[1] ^ t.ud[1]; return d; }
+	static MQ refPNOR(MQ s, MQ t) { MQ d{}; d.ud[0] = ~(s.ud[0] | t.ud[0]); d.ud[1] = ~(s.ud[1] | t.ud[1]); return d; }
+
+	static MQ refPEXTLW(MQ s, MQ t) { MQ d{}; d.ul[0] = t.ul[0]; d.ul[1] = s.ul[0]; d.ul[2] = t.ul[1]; d.ul[3] = s.ul[1]; return d; }
+	static MQ refPEXTUW(MQ s, MQ t) { MQ d{}; d.ul[0] = t.ul[2]; d.ul[1] = s.ul[2]; d.ul[2] = t.ul[3]; d.ul[3] = s.ul[3]; return d; }
+	static MQ refPEXTLH(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) { d.us[2 * n] = t.us[n]; d.us[2 * n + 1] = s.us[n]; } return d; }
+	static MQ refPEXTUH(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) { d.us[2 * n] = t.us[n + 4]; d.us[2 * n + 1] = s.us[n + 4]; } return d; }
+	static MQ refPEXTLB(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 8; n++) { d.uc[2 * n] = t.uc[n]; d.uc[2 * n + 1] = s.uc[n]; } return d; }
+	static MQ refPEXTUB(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 8; n++) { d.uc[2 * n] = t.uc[n + 8]; d.uc[2 * n + 1] = s.uc[n + 8]; } return d; }
+	static MQ refPPACW(MQ s, MQ t) { MQ d{}; d.ul[0] = t.ul[0]; d.ul[1] = t.ul[2]; d.ul[2] = s.ul[0]; d.ul[3] = s.ul[2]; return d; }
+	static MQ refPPACH(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) { d.us[n] = t.us[2 * n]; d.us[n + 4] = s.us[2 * n]; } return d; }
+	static MQ refPPACB(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 8; n++) { d.uc[n] = t.uc[2 * n]; d.uc[n + 8] = s.uc[2 * n]; } return d; }
+	static MQ refPCPYLD(MQ s, MQ t) { MQ d{}; d.ud[0] = t.ud[0]; d.ud[1] = s.ud[0]; return d; }
+	static MQ refPCPYUD(MQ s, MQ t) { MQ d{}; d.ud[0] = s.ud[1]; d.ud[1] = t.ud[1]; return d; }
+
+	static MQ refPABSW(MQ t) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = t.ul[n] == 0x80000000 ? 0x7FFFFFFF : (t.sl[n] < 0 ? (u32)(-t.sl[n]) : (u32)t.sl[n]); return d; }
+	static MQ refPABSH(MQ t) { MQ d{}; for (int n = 0; n < 8; n++) d.us[n] = t.us[n] == 0x8000 ? 0x7FFF : (t.ss[n] < 0 ? (u16)(-t.ss[n]) : (u16)t.ss[n]); return d; }
+	static MQ refPCPYH(MQ t) { MQ d{}; for (int n = 0; n < 4; n++) { d.us[n] = t.us[0]; d.us[n + 4] = t.us[4]; } return d; }
+
+	// Two reusable input vectors with a spread of sign / saturation edge values.
+	static MQ inA() { return make({0x01, 0x00, 0x00, 0x80, 0xFF, 0xFF, 0xFF, 0x7F, 0x05, 0xF0, 0x34, 0x12, 0x00, 0x00, 0x00, 0x80}); }
+	static MQ inB() { return make({0xFF, 0xFF, 0xFF, 0x7F, 0x01, 0x00, 0x00, 0x80, 0x05, 0x10, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00}); }
+} // namespace mmiref
+
+namespace
+{
+	using mmiref::MQ;
+
+	MQ runMMIBin(void (*gen)(u32, u32, u32), MQ s, MQ t)
+	{
+		GuestRegs regs;
+		regs.set128(8, s.uc);
+		regs.set128(9, t.uc);
+		RunEEGen(regs, [gen] { gen(/*rd*/ 10, /*rs*/ 8, /*rt*/ 9); });
+		MQ out{};
+		regs.get128(10, out.uc);
+		return out;
+	}
+
+	MQ runMMIUn(void (*gen)(u32, u32), MQ t)
+	{
+		GuestRegs regs;
+		regs.set128(9, t.uc);
+		RunEEGen(regs, [gen] { gen(/*rd*/ 10, /*rt*/ 9); });
+		MQ out{};
+		regs.get128(10, out.uc);
+		return out;
+	}
+
+	::testing::AssertionResult eqMQ(const MQ& got, const MQ& want)
+	{
+		if (std::memcmp(got.uc, want.uc, 16) == 0)
+			return ::testing::AssertionSuccess();
+		auto hex = [](const MQ& q) {
+			char buf[64];
+			for (int i = 0; i < 16; i++)
+				std::snprintf(buf + i * 3, 4, "%02x ", q.uc[i]);
+			return std::string(buf);
+		};
+		return ::testing::AssertionFailure() << "\n  got:  " << hex(got) << "\n  want: " << hex(want);
+	}
+} // namespace
+
+#define MMI_BIN_TEST(NAME)                                                      \
+	TEST(Arm64EmitEE, MMI_##NAME)                                               \
+	{                                                                          \
+		MQ a = mmiref::inA(), b = mmiref::inB();                               \
+		EXPECT_TRUE(eqMQ(runMMIBin(armEmit##NAME, a, b), mmiref::ref##NAME(a, b))); \
+		EXPECT_TRUE(eqMQ(runMMIBin(armEmit##NAME, b, a), mmiref::ref##NAME(b, a))); \
+	}
+
+#define MMI_UN_TEST(NAME)                                                       \
+	TEST(Arm64EmitEE, MMI_##NAME)                                               \
+	{                                                                          \
+		MQ a = mmiref::inA(), b = mmiref::inB();                               \
+		EXPECT_TRUE(eqMQ(runMMIUn(armEmit##NAME, a), mmiref::ref##NAME(a)));   \
+		EXPECT_TRUE(eqMQ(runMMIUn(armEmit##NAME, b), mmiref::ref##NAME(b)));   \
+	}
+
+MMI_BIN_TEST(PADDW) MMI_BIN_TEST(PADDH) MMI_BIN_TEST(PADDB)
+MMI_BIN_TEST(PSUBW) MMI_BIN_TEST(PSUBH) MMI_BIN_TEST(PSUBB)
+MMI_BIN_TEST(PADDSW) MMI_BIN_TEST(PADDSH) MMI_BIN_TEST(PADDSB)
+MMI_BIN_TEST(PSUBSW) MMI_BIN_TEST(PSUBSH) MMI_BIN_TEST(PSUBSB)
+MMI_BIN_TEST(PADDUW) MMI_BIN_TEST(PADDUH) MMI_BIN_TEST(PADDUB)
+MMI_BIN_TEST(PSUBUW) MMI_BIN_TEST(PSUBUH) MMI_BIN_TEST(PSUBUB)
+MMI_BIN_TEST(PCGTW) MMI_BIN_TEST(PCGTH) MMI_BIN_TEST(PCGTB)
+MMI_BIN_TEST(PCEQW) MMI_BIN_TEST(PCEQH) MMI_BIN_TEST(PCEQB)
+MMI_BIN_TEST(PMAXW) MMI_BIN_TEST(PMAXH) MMI_BIN_TEST(PMINW) MMI_BIN_TEST(PMINH)
+MMI_BIN_TEST(PAND) MMI_BIN_TEST(POR) MMI_BIN_TEST(PXOR) MMI_BIN_TEST(PNOR)
+MMI_BIN_TEST(PEXTLW) MMI_BIN_TEST(PEXTLH) MMI_BIN_TEST(PEXTLB)
+MMI_BIN_TEST(PEXTUW) MMI_BIN_TEST(PEXTUH) MMI_BIN_TEST(PEXTUB)
+MMI_BIN_TEST(PPACW) MMI_BIN_TEST(PPACH) MMI_BIN_TEST(PPACB)
+MMI_BIN_TEST(PCPYLD) MMI_BIN_TEST(PCPYUD)
+MMI_UN_TEST(PABSW) MMI_UN_TEST(PABSH) MMI_UN_TEST(PCPYH)
+
+// rd == 0 must discard the write (matching the interpreter's `if (!_Rd_) return`).
+TEST(Arm64EmitEE, MMI_DiscardZeroDest)
+{
+	GuestRegs regs;
+	MQ a = mmiref::inA();
+	regs.set128(8, a.uc);
+	regs.set128(9, a.uc);
+	RunEEGen(regs, [] { armEmitPADDW(/*rd*/ 0, /*rs*/ 8, /*rt*/ 9); });
+	EXPECT_EQ(regs.get64(0), 0u); // $zero stays zero
+}
+
 #endif // __aarch64__
