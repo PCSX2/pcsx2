@@ -28,6 +28,68 @@
 
 ---
 
+## 2026-06-04 — Phase 2.3: EE GPR load/store generators + LW/SW decode
+
+**Goal:** First vertical slice of EE load/store codegen — turn decoded MIPS
+load/store fields into ARM64 that computes the EE address mode, accesses guest
+GPRs, and routes memory through the Phase 2.1 slow path; wire `LW`/`SW` into the
+block decode loop.
+
+**What changed:**
+- `pcsx2/arm64/aR5900LoadStore.cpp` + `aR5900.h` — new generators:
+  - `armEmitEffectiveAddr(dst, rs, imm)` → `dst.W() = GPR[rs].UL[0] + imm`
+    (loads the low word from `[RESTATEPTR + rs*16]`, adds the sign-extended imm;
+    `rs==0` → just `Mov dst, imm`). `EE_GPR_OFFSET(n) = n*16` with static_asserts
+    on `sizeof(GPR_reg)==16` and `offsetof(cpuRegisters,GPR)==0`.
+  - `armEmitLoadGpr(bits, sign, rt, rs, imm)` — addr→`RWARG1`, `armEmitVtlbRead`,
+    then `Str RXRET, [RESTATEPTR + rt*16]` (writes the full extended 64-bit result
+    to `GPR[rt].UD[0]`, upper dword untouched; skipped for `rt==0`, but the load
+    still runs for I/O side effects).
+  - `armEmitStoreGpr(bits, rt, rs, imm)` — load `GPR[rt]` low bits into `RWARG2/
+    RXARG2`, addr→`RWARG1`, `armEmitVtlbWrite`.
+- `pcsx2/arm64/aR5900.cpp` — `recCompileBlock` now `memRead32(cpuRegs.pc)` →
+  `cpuRegs.code` → `recTranslateOp`: decodes `opcode/rs/rt/imm`, dispatches
+  `LW`(0x23)→`armEmitLoadGpr(32,true,…)`, `SW`(0x2b)→`armEmitStoreGpr(32,…)`, else
+  NOP. Replaced the fixed NOP/NOP body.
+- `tests/ctest/core/arm64_emit_test.cpp` — 5 new gtests `Arm64EmitEE.*` exercising
+  `armEmitEffectiveAddr` at runtime (base+imm, zero imm, negative imm, `$zero`,
+  low-word-only). All pass.
+- Commits:
+  - `ARM64: Add EE GPR load/store generators + addr-calc test (Phase 2.3)`
+  - `ARM64: Single-instruction MIPS decode + LW/SW dispatch (Phase 2.3)`
+
+**Decisions & rationale:**
+- **Explicit (rs,rt,imm) params, not the `_Rs_`/`_Rt_` macros, on the generators.**
+  Keeps them decode-agnostic and unit-testable without a live `cpuRegs.code`; the
+  decode loop reads the macros' worth of fields and passes them in. Mirrors how the
+  x86 `recLoad/recStore` factor address vs. value, minus the register allocator.
+- **Loads write the full 64-bit extended result to `UD[0]` only.** Matches the EE
+  interpreter (`LW: GPR[rt].SD[0] = (s32)temp`) — scalar loads define just the low
+  doubleword of the 128-bit reg; the extend happens inside `armEmitVtlbRead`.
+- **Unit-test only the address-mode codegen.** That is the genuinely-new, vtlb-free
+  part of 2.3. The full `armEmitLoadGpr/StoreGpr` round-trip needs a live vtlb
+  (real RAM mapping), which a standalone gtest doesn't have — deferred to 2.4. The
+  vtlb call layer itself is already proven (Phase 2.1 helpers + `armEmitCall`).
+- **`recCompileBlock` decode is intentionally inert.** `recExecute` is still never
+  entered (interpreter is the active provider) and the block doesn't set up
+  `RESTATEPTR` / PC / cycles — that enter-trampoline + dispatcher is Phase 4. This
+  is groundwork validated by compile-clean + the generator unit tests, exactly the
+  cadence Phase 1.4 used for the original block loop.
+
+**Blockers / open questions:**
+- **Phase 2.4 (full memory round-trip) needs an execution context.** Two options:
+  (a) a lightweight vtlb-init test harness so a gtest can `armEmitLoadGpr/StoreGpr`
+  against real RAM, or (b) wait for the Phase 4 dispatcher to enter `recExecute`
+  for real. Decide when picking up 2.4. (a) is the smaller, ground-truth-friendly
+  step if vtlb can be initialized standalone — worth a look first.
+
+**Next step:** Finish the scalar load/store family in `recTranslateOp`
+(`LB/LBU/LH/LHU/LWU/LD`, `SB/SH/SD` — dispatch wiring over the existing `bits`/
+`sign` params), then `LQ/SQ` via the Quad helpers (+ `~0xF` align, 128-bit GPR
+access), then Phase 2.4 end-to-end validation.
+
+---
+
 ## 2026-06-04 — Phase 2.1: slow-path vtlb load/store codegen (+ re-scope)
 
 **Goal:** Stand up the EE rec's memory-access codegen — the gateway every

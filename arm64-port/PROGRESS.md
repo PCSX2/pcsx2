@@ -8,29 +8,30 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 0 COMPLETE. Phase 1 COMPLETE. Phase 2.1 DONE** (slow-path vtlb codegen).
-The EE rec skeleton (`aR5900.{h,cpp}`) defines `recCpu`, reserves the code cache +
-const pool, has a minimal block loop, and is wired into `VMManager.cpp`
-(Reserve/Reset/Shutdown; `Cpu` stays `&intCpu`). New `aR5900LoadStore.cpp` provides
-the slow-path memory generators `armEmitVtlbRead/Write[Quad]`, which emit calls to
-the C++ `vtlb_memRead/Write` helpers (same path the interpreter uses → correct by
-construction; no reg allocator / dispatchers needed yet).
+**Phase 0 COMPLETE. Phase 1 COMPLETE. Phase 2.1 DONE. Phase 2.3 STARTED**
+(LW/SW landed). The EE rec skeleton (`aR5900.{h,cpp}`) defines `recCpu`, reserves
+the code cache + const pool, and is wired into `VMManager.cpp` (Reserve/Reset/
+Shutdown; `Cpu` stays `&intCpu`). `aR5900LoadStore.cpp` provides the slow-path
+memory primitives `armEmitVtlbRead/Write[Quad]` (Phase 2.1) **and now** the EE GPR
+load/store generators `armEmitEffectiveAddr` / `armEmitLoadGpr` / `armEmitStoreGpr`
+(Phase 2.3): they read/write guest GPRs through `RESTATEPTR`, compute the EE
+address mode (`GPR[rs].UL[0] + imm`), and route memory access through the slow
+path. `recCompileBlock` decodes the instruction at `cpuRegs.pc` and dispatches
+`LW`/`SW` to those generators (other opcodes → NOP placeholder).
 
-**Re-scope note:** the old 2.1 pointed at `vtlb_DynBackpatchLoadStore`, but that
-function is reached *only* on a fastmem SIGSEGV fault (`CHECK_FASTMEM`), so under
-"slow path first / no fastmem" it is never exercised. The real "gateway to EE
-load/store codegen" is the slow-path generators — those are what got built. The
-backpatch + fastmem fast path is deferred to **Phase 2.2** (still a `pxFailRel`
-stub in `RecStubs.cpp`).
+The address-mode codegen is runtime-proven by 5 new gtests (`Arm64EmitEE.*`). The
+decode/dispatch path is still **inert** (interpreter stays the active provider;
+`recExecute` is never entered — Phase 4 adds the enter-trampoline pinning
+`RESTATEPTR=&cpuRegs`, the block LUT, PC/cycle, and event tests).
 
-Next concrete task: **Phase 2.3 groundwork** — give `recCompileBlock` a real
-single-instruction MIPS decode and guest-GPR access (load base reg from
-`[RESTATEPTR + GPR offset]`, add the sign-extended immediate, call
-`armEmitVtlbRead/Write`, write result back to `cpuRegs`). Land one load + one store
-opcode (e.g. `LW`/`SW`) and validate end-to-end (Phase 2.4). This is the first
-vertical slice that actually executes guest memory ops through the JIT; it pulls in
-the per-instruction decode loop (ref x86 `recRecompile` / `iR5900LoadStore.cpp`),
-done the simple non-allocating way (spill every GPR to `cpuRegs` around each op).
+Next concrete task: **finish the scalar load/store family** in `recTranslateOp` —
+`LB/LBU/LH/LHU/LWU/LD` and `SB/SH/SD` (the generators already take a `bits`/`sign`
+param, so this is mostly dispatch wiring: `LWU` = zero-extend, `LD/SD` = 64-bit),
+then the 128-bit `LQ/SQ` via `armEmitVtlbRead/WriteQuad` + the `~0xF` alignment
+mask + 128-bit GPR access (`Ldr/Str q`). After the family is complete, do **Phase
+2.4 end-to-end validation** — needs either a lightweight vtlb-init test harness
+(real RAM round-trip through the generators) or the Phase 4 dispatcher to enter
+`recExecute` for real. Ref x86 `iR5900LoadStore.cpp` / `recRecompile`.
 
 > When you finish a task, move this pointer to the next one and flip the box below.
 
@@ -67,8 +68,8 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 
 - [x] 2.1 Slow-path vtlb load/store codegen in `pcsx2/arm64/aR5900LoadStore.cpp`: `armEmitVtlbRead/Write` + `...Quad`, emitting calls to the C++ `vtlb_memRead/Write` helpers (interpreter-equivalent path). Builds, links, arm64, unittests green. *(Re-scoped from "implement `vtlb_DynBackpatchLoadStore`" — that is fastmem-only and is now Phase 2.2; see JOURNAL.)*
 - [ ] 2.2 **Fastmem fast path:** implement `vtlb_DynBackpatchLoadStore` in `pcsx2/arm64/RecStubs.cpp` (currently `pxFailRel`) + the direct `REFASTMEMBASE`-relative load/store emit + `vtlb_AddLoadStoreInfo`. Single-instruction backpatch (overwrite the faulting op with `B thunk`); thunk does the slow path then branches back. Ref `x86/ix86-32/recVTLB.cpp`.
-- [ ] 2.3 EE load/store opcode generators: `recLB/LH/LW/LD/LBU/LHU/LWU`, `recSB/SH/SW/SD`, `recLQ/SQ` — decode + guest-GPR access wired onto `armEmitVtlbRead/Write[Quad]`. Pulls in the per-instruction block decode loop.
-- [ ] 2.4 Test: compile a simple MIPS load/store block, verify correct memory access.
+- [~] 2.3 EE load/store opcode generators: decode + guest-GPR access wired onto `armEmitVtlbRead/Write[Quad]`. **DONE:** `armEmitEffectiveAddr`/`armEmitLoadGpr`/`armEmitStoreGpr` + `recCompileBlock` single-instruction decode dispatching `LW`/`SW`. **TODO:** rest of the family (`LB/LBU/LH/LHU/LWU/LD`, `SB/SH/SD`) = dispatch wiring; `LQ/SQ` = Quad helpers + `~0xF` align + 128-bit GPR access.
+- [ ] 2.4 Test: compile a simple MIPS load/store block, verify correct memory access. (Address-mode codegen already runtime-proven via `Arm64EmitEE.*`; full memory round-trip still pending — see CURRENT FOCUS.)
 
 **Done when:** EE memory ops go through the JIT fastmem path and read/write correctly.
 
