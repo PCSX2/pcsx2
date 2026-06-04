@@ -8,19 +8,18 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 0 COMPLETE. Phase 1 COMPLETE. Phase 2.1 DONE. Phase 2.3 DONE. Phase 2.4 DONE. Phase 3.1 DONE**
-(full immediate arithmetic family, 15 new gtests, all pass). `recTranslateOp` now
-dispatches the complete EE I-type arithmetic family: `ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/
-XORI/LUI/DADDI/DADDIU` via `aR5900Arith.cpp` on top of the Phase 2 load/store
-dispatch. The rec remains inert (`Cpu = &intCpu`); `recExecute` is never entered —
-Phase 4 (enter-trampoline + block LUT) is still needed before guest code can run.
+**Phase 0 COMPLETE. Phase 1 COMPLETE. Phase 2.1 DONE. Phase 2.3 DONE. Phase 2.4 DONE. Phase 3.1 DONE. Phase 3.2 DONE**
+(full register-register arithmetic family, 14 new gtests + 1 LUI regression, all pass).
+`recTranslateOp` now dispatches the complete EE R-type integer family (`SPECIAL`
+funct 0x20–0x2F: `ADD/ADDU/SUB/SUBU/AND/OR/XOR/NOR/SLT/SLTU/DADD/DADDU/DSUB/DSUBU`)
+on top of the I-type dispatch from 3.1. Also fixed a latent LUI bug that was passing
+only the low 5 bits of the immediate.
 
-Next concrete task: **Phase 3.2 — EE register-register arithmetic ops**
-(`ADD/ADDU/SUB/SUBU/SLT/SLTU/AND/OR/XOR/NOR/DADD/DADDU/DSUB/DSUBU`). These follow
-the same mem-to-mem pattern as 3.1 (read both sources from cpuRegs, compute,
-write rd), just with two operands and a wider set. Recommend doing them next —
-they're the other half of the arithmetic floor a runnable block needs. After
-that: 3.3 shifts, then 3.4 moves, then branches (Phase 4).
+Next concrete task: **Phase 3.3 — EE shift ops**
+(`SLL/SRL/SRA/SLLV/SRLV/SRAV/DSLLV/DSRLV/DSRAV/DSLL/DSRL/DSRA/DSLL32/DSRL32/DSRA32`).
+These are mixed R-type and variant-width; simpler than arithmetic (single source)
+but need careful attention to 32-bit vs 64-bit, variable vs immediate shift amounts,
+and the `sa` field extraction.
 
 > When you finish a task, move this pointer to the next one and flip the box below.
 
@@ -67,8 +66,8 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 ## Phase 3 — EE Integer Arithmetic
 
 - [x] 3.1 Immediate ops: `ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI/DADDI/DADDIU`.
-- [ ] 3.2 Reg-reg ops: `ADD/ADDU/SUB/SUBU/SLT/SLTU/AND/OR/XOR/NOR/DADD/DADDU/DSUB/DSUBU`.
-- [ ] 3.3 Shifts: `SLL/SRL/SRA/SLLV/SRLV/SRAV/DSLL.../DSRA32`.
+- [x] 3.2 Reg-reg ops: `ADD/ADDU/SUB/SUBU/SLT/SLTU/AND/OR/XOR/NOR/DADD/DADDU/DSUB/DSUBU`.
+- [ ] 3.3 Shifts: `SLL/SRL/SRA/SLLV/SRLV/SRAV/DSLLV/DSRLV/DSRAV/DSLL/DSRL/DSRA/DSLL32/DSRL32/DSRA32`.
 - [ ] 3.4 Moves: `MOVZ/MOVN` (→ `CSEL`), `MFHI/MTHI/MFLO/MTLO`.
 - [ ] 3.5 Mul/Div: `MULT/MULTU/DIV/DIVU/DMULT.../DDIVU` (→ `MUL/SMULH/UMULH/SDIV/UDIV`).
 - [ ] 3.6 Constant propagation (`EE_CONST_PROP`): track known-constant GPRs, emit immediate forms.

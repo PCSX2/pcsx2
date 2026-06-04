@@ -28,6 +28,69 @@
 
 ---
 
+## 2026-06-04 — Phase 3.2: EE register-register arithmetic generators
+
+**Goal:** Implement and unit-test the complete MIPS R-type integer arithmetic
+family, giving the rec the other half of the ALU floor a runnable block needs.
+
+**What changed:**
+- Extended `pcsx2/arm64/aR5900Arith.cpp` with 14 R-type generators:
+  - `armEmitADD`/`ADDU` — 32-bit add of GPR[rs]+GPR[rt], `Sxtw` sign-extend.
+  - `armEmitSUB`/`SUBU` — 32-bit sub, `rs==rt` zero fast-path, `Sxtw`.
+  - `armEmitDADD`/`DADDU` — 64-bit add (no sign-extend needed).
+  - `armEmitDSUB`/`DSUBU` — 64-bit sub, `rs==rt` zero fast-path.
+  - `armEmitAND`/`OR`/`XOR`/`NOR` — 64-bit logical; `rs==rt` fast paths
+    (AND/OR identity, XOR zero, NOR not).
+  - `armEmitSLT` — signed 64-bit `Cmp + Cset(lt)`.
+  - `armEmitSLTU` — unsigned 64-bit `Cmp + Cset(lo)`.
+  - All skip the store for `rd == 0` ($zero discard).
+- `pcsx2/arm64/aR5900.h` — declarations for all 14 R-type generators.
+- `pcsx2/arm64/aR5900.cpp` — `recTranslateOp` gains a `SPECIAL` (opcode 0x00)
+  inner switch on the funct field (`rd`, `rs`, `rt`, `funct` now all decoded).
+  Dispatches all 14 R-type ops plus keeps existing I-type + load/store.
+  Also fixed a latent LUI bug: was passing `(op>>16)&0x1f` (only `rt` / 5 bits)
+  instead of the full 16-bit `static_cast<u16>(op)`.
+- `tests/ctest/core/arm64_emit_test.cpp` — 15 new `Arm64EmitEE.*` gtests:
+  `ADD_SignExtend32Wrap`, `ADD_RSsameRT`, `ADD_DiscardZeroRd`, `ADDU_IsSameAsADD`,
+  `DADD_64bitAdd`, `DADD_RSsameRT`, `SUB_SignExtend32Wrap`, `SUB_RSsameRT`,
+  `SUBU_IsSameAsSUB`, `DSUB_64bitSub`, `DSUB_RSsameRT`, `AND_Standard`,
+  `AND_RSsameRT`, `OR_Standard`, `OR_RSsameRT`, `XOR_Standard`, `XOR_RSsameRT`,
+  `NOR_Standard`, `NOR_RSsameRT`, `SLT_SignedLess`, `SLT_SignedGreater`,
+  `SLTU_UnsignedLess`, `SLTU_UnsignedGreaterWithSignBit`, `LUI_Full16BitImm`.
+  Total `Arm64EmitEE.*` tests: 46; all pass (both `common_test` + `core_test`).
+- Commits:
+  - `46940afc9 ARM64: EE register-register arithmetic generators (Phase 3.2)`
+
+**Decisions & rationale:**
+- **Same mem-to-mem pattern as 3.1.** Load both sources from `[RESTATEPTR+off]`,
+  compute in `RSCRATCHADDR` (x17) with `RXVIXLSCRATCH` (x16) as the second operand,
+  store to `[RESTATEPTR+rd*16]`. No register allocator yet.
+- **`armEmitXOR` zero-fast-path for `rs==rt`.** The x86 JIT does the same
+  (`xXOR(EEREC_D, EEREC_D)`), relying on `rs==rt` being common for zeroing.
+- **`ADD` and `SUB` sign-extend 32-bit results to 64.** Matches the x86
+  `xMOVSX(xRegister64, xRegister32)` pattern; the EE defines the result of
+  32-bit ops as sign-extended into the 64-bit GPR (even ADDU/SUBU, which differ
+  only in that they don't trap on overflow).
+- **`rs==rt` fast paths save a load.** For ADD/DADD/AND/OR/XOR the value is
+  already in RSCRATCH; for SUB/DSUB we emit `Mov 0`; for NOR we `Orr` with
+  itself then `Mvn`. These are small codegen wins that mirror the x86 JIT's
+  special-case handling.
+- **LUI bug fix is a correctness fix, not a refactor.** The old code
+  `(op >> 16) & 0x1f` passed only the Rt field (bits 16-20), so e.g.
+  `LUI $t0, 0x8000` became `LUI $t0, 0` — all high-immediate loads were broken.
+  Caught when adding the `LUI_Full16BitImm` regression test.
+
+**Blockers / open questions:**
+- none. Phase 3.2 complete.
+
+**Next step:** Phase 3.3 — EE shift ops
+(`SLL/SRL/SRA/SLLV/SRLV/SRAV/DSLLV/DSRLV/DSRAV/DSLL/DSRL/DSRA/DSLL32/DSRL32/DSRA32`).
+Mixed R-type and variant-width, immediate (`sa` field) and variable shifts.
+These are simpler than arithmetic but need careful attention to 32- vs 64-bit,
+and variable-shift amount masking (MIPS shifts are masked to 5/6 bits).
+
+---
+
 ## 2026-06-04 — Phase 3.1: EE immediate arithmetic generators
 
 **Goal:** Implement and unit-test the complete EE I-type immediate arithmetic
