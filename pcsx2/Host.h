@@ -75,6 +75,9 @@ namespace Host
 	/// Copies the provided text to the host's clipboard, if present.
 	bool CopyTextToClipboard(const std::string_view text);
 
+	/// Returns the current text from the host's clipboard, if present.
+	std::string GetTextFromClipboard();
+
 	/// Requests settings reset. Can be called from any thread, will call back and apply on the CPU thread.
 	bool RequestResetSettings(bool folders, bool core, bool controllers, bool hotkeys, bool ui);
 

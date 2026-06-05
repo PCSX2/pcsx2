@@ -77,6 +77,7 @@ namespace QtHost
 	static void SaveSettings();
 	static void HookSignals();
 	static void RegisterTypes();
+	static void InitializeClipboard();
 	static bool RunSetupWizard();
 	std::optional<bool> DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data);
 } // namespace QtHost
@@ -96,6 +97,8 @@ static bool s_run_setup_wizard = false;
 static bool s_cleanup_after_update = false;
 static bool s_boot_and_debug = false;
 static std::atomic_int s_vm_locked_with_dialog = 0;
+static std::string s_clipboard_cache;
+static std::mutex s_clipboard_cache_mutex;
 
 //////////////////////////////////////////////////////////////////////////
 // CPU Thread
@@ -1676,6 +1679,12 @@ bool Host::CopyTextToClipboard(const std::string_view text)
 	return true;
 }
 
+std::string Host::GetTextFromClipboard()
+{
+	std::lock_guard<std::mutex> lock(s_clipboard_cache_mutex);
+	return s_clipboard_cache;
+}
+
 void Host::BeginTextInput()
 {
 	QInputMethod* method = qApp->inputMethod();
@@ -2361,6 +2370,26 @@ void QtHost::RegisterTypes()
 	qRegisterMetaType<Achievements::LoginRequestReason>();
 }
 
+void QtHost::InitializeClipboard()
+{
+	QClipboard* clipboard = QGuiApplication::clipboard();
+	if (clipboard)
+	{
+		{
+			std::lock_guard<std::mutex> lock(s_clipboard_cache_mutex);
+			s_clipboard_cache = clipboard->text().toStdString();
+		}
+		QObject::connect(clipboard, &QClipboard::dataChanged, []() {
+			QClipboard* cb = QGuiApplication::clipboard();
+			if (cb)
+			{
+				std::lock_guard<std::mutex> lock(s_clipboard_cache_mutex);
+				s_clipboard_cache = cb->text().toStdString();
+			}
+		});
+	}
+}
+
 bool QtHost::RunSetupWizard()
 {
 	SetupWizardDialog dialog;
@@ -2408,6 +2437,8 @@ int main(int argc, char* argv[])
 	QtHost::RegisterTypes();
 
 	PCSX2MainApplication app(argc, argv);
+
+	QtHost::InitializeClipboard();
 
 #ifndef _WIN32
 	if (!PerformEarlyHardwareChecks())
