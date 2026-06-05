@@ -28,6 +28,57 @@
 
 ---
 
+## 2026-06-05 — Phase 7 kickoff: study x86 microVU (task 7.1)
+
+**Goal:** Begin Phase 7 (VU recompilers / microVU) — the last big interpreter-bound component.
+User chose this over IOP const-prop/reg-alloc. This session = task 7.1: study the x86 microVU
+deeply enough to commit to an architecture and a buildable sub-task decomposition.
+
+**What changed:**
+- Docs only (no code yet — 7.1 is a study/planning task). Updated PROGRESS.md (new CURRENT FOCUS
+  + expanded Phase 7 checklist into buildable sub-tasks 7.2a…7.9), this JOURNAL entry, and a new
+  memory [[arm64-microvu-architecture]].
+
+**What I studied:** all of `pcsx2/x86/microVU*` (~10,600 lines, 18 files) + `VUmicro.h` +
+the VU provider wiring in `VMManager.cpp`. Read in full: `microVU.h`, `microVU_IR.h`,
+`microVU.cpp`, `microVU_Execute.inl`; surveyed the rest.
+
+**Key findings (the architecture):**
+- microVU is a **program-level** recompiler (not block-at-a-time like EE/IOP). `mVUsearchProg`
+  caches whole microprograms (4KB/16KB VU micro memory), detects program change via a **96-byte
+  `microRegInfo` pipeline-state compare**, recompiles blocks within a program keyed by that state,
+  and links blocks in host code (`microBlockManager` quick/full search).
+- **Entry contract:** `recMicroVU0/1::Execute` calls `mVU.startFunct` (gen'd by `mVUdispatcherAB`):
+  load VU FPCR, the PQ NEON reg (Q/P latency instances), mac/clip/status flag instances → jump to
+  block → on exit write flags back + `mVUcleanUp` (cycle accounting, cache-limit reset).
+  `mVUdispatcherCD` = XGKICK resume/exit.
+- **Arch split:** arch-neutral = structs + `microVU_Analyze.inl` (pipeline/flag-instance analysis)
+  + `microVU_Tables.inl`. Arch-specific (VIXL rewrite) = `microRegAlloc`, `Upper.inl`, `Lower.inl`
+  (the 2203-line beast), `Flags.inl`, `Branch.inl`, `Execute.inl`, `Misc/Clamp/Alloc.inl`,
+  `Macro.inl`.
+
+**Decisions & rationale:**
+- **Parallel clone in `pcsx2/arm64/`, never touch x86 microVU** (hard rule #1). microVU.h/IR.h
+  intertwine the arch-neutral structs with x86emitter types + the x86 `microRegAlloc` inline in the
+  same headers, so I can't cleanly `#include` them on ARM64 — cloning the structs into `aVU.h` is
+  the clean path. Cost: duplicating the arch-neutral analysis pass; benefit: zero x86 risk.
+- **microVU stays unselected until the rec works.** Unlike the IOP skeleton (which could single-step
+  the interpreter per-op), microVU's model is whole-program compilation — there's no cheap
+  "compile a block that steps the interpreter". So `CpuVU0/CpuVU1` stay pinned to `CpuIntVU0/1`
+  (VMManager) through 7.7, flipped only at 7.8. Mirrors EE Phases 1–4 before `Cpu = &recCpu`.
+- **Macro mode (7.9) is lowest priority** — the EE-side COP2/VU0-macro ops already run correctly via
+  the Phase 5.3 inline-interp fallback; native macro emission is pure polish.
+
+**Blockers / open questions:** none. The big unknown is sheer scale (Lower.inl + the flag pipeline
++ regalloc are intricate); the decomposition front-loads the skeleton/dispatcher so each later
+opcode batch is independently buildable+testable like the EE/IOP generators were.
+
+**Next step:** Task 7.2a — port the arch-neutral microVU structs into `pcsx2/arm64/aVU.h`
+(rename `x86ptr/x86start/x86end` → `codePtr/codeStart/codeEnd`, drop x86emitter), then 7.2b the
+NEON/ARM `microRegAlloc`, then 7.2c the `aVU.cpp` shell + CMake so it builds (not yet selected).
+
+---
+
 ## 2026-06-05 — Fix pause/shutdown hang (fastjmp_set returns_twice)
 
 **Goal:** Investigate a user-reported bug: pressing Pause or Shutdown didn't stop the VM —

@@ -8,6 +8,47 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 7 (VU recompilers / microVU) — STARTED. Task 7.1 (study x86 microVU) DONE.**
+
+The user picked Phase 7 (the last big interpreter-bound component) over IOP const-prop/reg-alloc.
+Spent this session studying the entire x86 microVU (`pcsx2/x86/microVU*` — ~10,600 lines across
+18 files) and the VU provider wiring. Key architectural findings (see [[arm64-microvu-architecture]]):
+
+- **microVU is a *program-level* recompiler**, not block-at-a-time like the EE/IOP recs.
+  `mVUsearchProg` caches whole microprograms (the VU's 4KB/16KB micro memory), detects program
+  changes by comparing a **96-byte `microRegInfo` pipeline-state key**, and recompiles *blocks*
+  within a program (`mVUblockFetch`/`mVUcompile`) keyed by that pipeline state. Blocks chain in
+  host code via a per-block search/link (`microBlockManager`).
+- **Entry contract** (`recMicroVU0/1::Execute` → `mVUdispatcherAB`): caller puts startPC+cycles in
+  arg regs; the dispatcher loads VU FPCR, the PQ (Q/P latency) NEON reg, mac/clip/status flag
+  instances, then jumps to the compiled block; on exit it writes flags back + runs `mVUcleanUp`
+  (cycle accounting, cache-limit reset). `mVUdispatcherCD` is the XGKICK resume/exit path.
+- **Arch-neutral** (port near-verbatim): the structs (`microRegInfo`/`microBlock`/`microOp`/
+  `microIR`/`microProgram*`/`microBlockManager`), the deep **pipeline-analysis pass**
+  (`microVU_Analyze.inl` — Q/P latency, the 4-instance Status/Mac/Clip flag pipeline, stalls,
+  hazards) and `microVU_Tables.inl` (opcode dispatch). These operate on `microOp`/`microIR`, no
+  emitter calls.
+- **Arch-specific** (full VIXL rewrite): `microRegAlloc` (xmm→NEON v0–v31, x86 GPR→ARM w-regs;
+  `microVU_IR.h` lines 226–1139), `microVU_Upper.inl` (FMAC float vector ISA), `microVU_Lower.inl`
+  (VI ALU / load-store / EFU DIV·SQRT·RSQRT / MOVE / RANDOM / branches), `microVU_Flags.inl`,
+  `microVU_Branch.inl`, `microVU_Execute.inl` (dispatcher), `microVU_Misc/Clamp/Alloc.inl`, and
+  `microVU_Macro.inl` (the EE-side COP2 ops — **already covered by the Phase 5.3 inline-interp
+  fallback**, so this is the lowest priority piece).
+- **Bring-up constraint:** unlike the IOP rec, microVU **cannot** be "wired but single-stepping" —
+  its whole model is program compilation, not per-op stepping. So the rec must be functional
+  enough to run a program before `CpuVU0/CpuVU1` get flipped off the interpreter in `VMManager.cpp`
+  (`UpdateCPUImplementations`, currently hard-pinned to `CpuIntVU0/1` on ARM64). This mirrors how
+  the EE rec built Phases 1–4 before `Cpu = &recCpu`. Strategy: **parallel clone** in
+  `pcsx2/arm64/` (do NOT touch the x86 microVU — hard rule #1); copy arch-neutral structs/analysis,
+  rewrite emit in VIXL.
+
+**Next:** Task 7.2a — port the arch-neutral data structures into `pcsx2/arm64/aVU.h`
+(rename `x86ptr/x86start/x86end` → `codePtr/codeStart/codeEnd`, drop the x86emitter include), then
+7.2b the NEON/ARM `microRegAlloc`, then 7.2c the `aVU.cpp` shell + CMake wiring so it BUILDS (not
+yet selected). See the expanded Phase 7 checklist below.
+
+---
+
 **Phase 6.3 IOP COP0/COP2 inline-interp — DONE (commit `9095d983b`). Phase 6.3 COMPLETE.**
 
 Straight-line IOP coprocessor ops now inline the interpreter handler
@@ -644,14 +685,54 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 
 ---
 
-## Phase 7 — VU Recompilers (microVU)  *(defer until EE+IOP solid)*
+## Phase 7 — VU Recompilers (microVU)
 
-- [ ] 7.1 Study `x86/microVU*.cpp/h` + `microVU_*.inl`.
-- [ ] 7.2 Create ARM64 `microVU*` cloning the (arch-agnostic) analysis pass.
-- [ ] 7.3 Reimplement VIXL emission for VU upper/lower instructions.
-- [ ] 7.4 Map VF regs → NEON `v0-v31`; VI regs → GPRs.
-- [ ] 7.5 Handle VU flag regs (`Status`, `MAC`, `Clip`).
-- [ ] 7.6 Test VU1-heavy 3D games.
+> Strategy: **parallel clone** in `pcsx2/arm64/` — never touch `pcsx2/x86/microVU*` (hard rule #1).
+> Copy the arch-neutral structs + analysis pass; rewrite all emission in VIXL. microVU stays
+> *unselected* (interpreter live) until 7.6 — it's a program-level rec, so it can't single-step
+> like the IOP skeleton could. VF→NEON `v0-v31`, VI→ARM `w`-regs, Q/P latency in one NEON reg.
+> The full buildable sub-task order:
+
+- [x] 7.1 Study `x86/microVU*.cpp/h` + `microVU_*.inl` — done (see CURRENT FOCUS +
+  [[arm64-microvu-architecture]]). Mapped arch-neutral vs arch-specific; understood program/block
+  model, the 96-byte `microRegInfo` state key, dispatcher entry contract, flag-instance pipeline.
+- [ ] 7.2 **Skeleton & infrastructure** (builds + links; NOT yet selected in VMManager):
+  - [ ] 7.2a `pcsx2/arm64/aVU.h` — port the arch-neutral structs (`microRegInfo`, `microBlock`,
+    `microJumpCache`, `microTempRegInfo`, `microVFreg/microVIreg`, `microConstInfo`,
+    `microUpperOp/microLowerOp`, `microFlagInst/Cycles`, `microOp`, `microIR`,
+    `microProgram(Manager/Quick/List)`, `microBlockManager`, `microVU`). Rename
+    `x86ptr/x86start/x86end` → `codePtr/codeStart/codeEnd`; drop `x86emitter.h`.
+  - [ ] 7.2b Port `microRegAlloc` (`microVU_IR.h` 226–1139) to ARM64 — NEON v-regs for VF, ARM
+    w-regs for VI. Mirror `allocReg`/`allocGPR`/`writeBackReg`/`clearNeeded`/`flushAll`/
+    `clearReg`/`clearGPR` with VIXL loads/stores. This is the allocator heart.
+  - [ ] 7.2c `pcsx2/arm64/aVU.cpp` — mirror `microVU.cpp` (mVUinit/reset/close/clear, program
+    cache mgmt, `recMicroVU0/1::*` methods). Register in `pcsx2/CMakeLists.txt`
+    (`pcsx2arm64Sources/Headers`). Builds + links.
+  - [ ] 7.2d Dispatcher — port `mVUdispatcherAB/CD` + `mVUexecute`/`mVUcleanUp` (AAPCS64 frame;
+    load VU FPCR, PQ NEON reg, mac/clip/status instances; jump to block; flag writeback +
+    cycle accounting on exit). Mirror `microVU_Execute.inl`.
+- [ ] 7.3 **Analysis pass** (arch-neutral, near-verbatim copy) — `microVU_Analyze.inl` +
+  `microVU_Tables.inl` + the pipeline/flag analysis helpers in `microVU_Compile.inl`. Operates on
+  `microOp`/`microIR`; no emitter calls, so this should port almost unchanged.
+- [ ] 7.4 **Compile driver** — port `microVU_Compile.inl` (`mVUcompile`/`mVUblockFetch`/block
+  search+link/`mVUsetupRange`). Interleaves 7.3 analysis with emit; ends blocks on E-bit/branch.
+- [ ] 7.5 **VIXL emission for the VU ISA:**
+  - [ ] 7.5a Upper (FMAC float vector → NEON): ADD/SUB/MUL/MADD/MSUB/MAX/MINI/FTOI/ITOF/CLIP/
+    ABS/OPMULA/OPMSUB/NOP + EE non-IEEE 4-lane clamp (reuse the Phase 5.2 FPU clamp insight).
+    `microVU_Upper.inl`.
+  - [ ] 7.5b Lower — VI integer ALU (IADD/ISUB/IADDI/IADDIU/IAND/IOR), load/store (LQ/SQ/ILW/ISW/
+    LQI/SQI/LQD/SQD/ILWR/ISWR), EFU (DIV/SQRT/RSQRT + WAITQ/WAITP), MOVE/MFIR/MTIR/MR32/MFP,
+    RANDOM (RINIT/RGET/RNEXT/RXOR), FSAND/FSEQ/FSSET/FMAND/FCxxx, ELENG/ESQRT/etc.
+    `microVU_Lower.inl` (the big one — 2203 lines x86).
+- [ ] 7.6 **Flags** — port `microVU_Flags.inl` (Status/Mac/Clip 4-instance flag pipeline,
+  sticky/non-sticky, FSSET, div flag → status).
+- [ ] 7.7 **Branches** — port `microVU_Branch.inl` (B/BAL/IBEQ/IBGEZ/IBGTZ/IBLEZ/IBLTZ/IBNE/JR/
+  JALR, plus the badBranch/evilBranch branch-in-delay-slot handling).
+- [ ] 7.8 **Wire selection + validate** — flip `CpuVU0/CpuVU1` to `CpuMicroVU0/1` on ARM64 in
+  `VMManager.cpp` (Init/Shutdown/Update/Clear); XGKICK→GIF path; MTVU thread. Test ladder:
+  BIOS → 2D → IOP-heavy → FFX (VU1-heavy 3D).
+- [ ] 7.9 **Macro mode** (lowest priority) — port `microVU_Macro.inl` so the EE rec emits COP2/VU0
+  macro ops natively instead of the Phase 5.3 inline-interp fallback. Optional perf polish.
 
 ---
 
