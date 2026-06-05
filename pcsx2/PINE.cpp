@@ -384,11 +384,22 @@ std::vector<u8>& PINEServer::MakeFailIPC(std::vector<u8>& ret_buffer, uint32_t s
 bool PINEServer::AcceptClient()
 {
 	s_msgsock = accept(s_sock, 0, 0);
-	if (s_msgsock >= 0)
+	if (s_msgsock < 0)
 	{
-		// Gross C-style cast, but SOCKET is a handle on Windows.
-		Console.WriteLn("PINE: New client with FD %d connected.", (int)s_msgsock);
-		return true;
+		// everything else is non recoverable in our scope
+		// we also mark as recoverable socket errors where it would block a
+		// non blocking socket, even though our socket is blocking, in case
+		// we ever have to implement a non blocking socket.
+#ifdef _WIN32
+		const int errno_w = WSAGetLastError();
+		if (!(errno_w == WSAECONNRESET || errno_w == WSAEINTR || errno_w == WSAEINPROGRESS || errno_w == WSAEMFILE || errno_w == WSAEWOULDBLOCK) && s_sock != INVALID_SOCKET)
+			Console.Error("PINE: accept() returned error %d", errno_w);
+#else
+		if (!(errno == ECONNABORTED || errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK) && s_sock >= 0)
+			Console.Error("PINE: accept() returned error %d", errno);
+#endif
+
+		return false;
 	}
 
 #ifdef __APPLE__
@@ -396,20 +407,9 @@ bool PINEServer::AcceptClient()
 	setsockopt(s_msgsock, SOL_SOCKET, SO_NOSIGPIPE, &nosigpipe, sizeof(nosigpipe));
 #endif
 
-	// everything else is non recoverable in our scope
-	// we also mark as recoverable socket errors where it would block a
-	// non blocking socket, even though our socket is blocking, in case
-	// we ever have to implement a non blocking socket.
-#ifdef _WIN32
-	const int errno_w = WSAGetLastError();
-	if (!(errno_w == WSAECONNRESET || errno_w == WSAEINTR || errno_w == WSAEINPROGRESS || errno_w == WSAEMFILE || errno_w == WSAEWOULDBLOCK) && s_sock != INVALID_SOCKET)
-		Console.Error("PINE: accept() returned error %d", errno_w);
-#else
-	if (!(errno == ECONNABORTED || errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK) && s_sock >= 0)
-		Console.Error("PINE: accept() returned error %d", errno);
-#endif
-
-	return false;
+	// Gross C-style cast, but SOCKET is a handle on Windows.
+	Console.WriteLn("PINE: New client with FD %d connected.", (int)s_msgsock);
+	return true;
 }
 
 void PINEServer::MainLoop()
