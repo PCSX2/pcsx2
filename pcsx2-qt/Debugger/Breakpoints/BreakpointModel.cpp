@@ -89,7 +89,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::CONDITION:
 					return bp->hasCond ? QString::fromStdString(bp->cond.expressionString) : "";
 				case BreakpointColumns::HITS:
-					return tr("--");
+					return QString::number(bp->totalHits);
 			}
 		}
 		else if (const auto* mc = std::get_if<MemCheck>(&bp_mc))
@@ -118,7 +118,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::CONDITION:
 					return mc->hasCond ? QString::fromStdString(mc->cond.expressionString) : "";
 				case BreakpointColumns::HITS:
-					return QString::number(mc->numHits);
+					return QString::number(mc->totalHits);
 			}
 		}
 	}
@@ -167,7 +167,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::CONDITION:
 					return bp->hasCond ? QString::fromStdString(bp->cond.expressionString) : "";
 				case BreakpointColumns::HITS:
-					return 0;
+					return bp->totalHits;
 			}
 		}
 		else if (const auto* mc = std::get_if<MemCheck>(&bp_mc))
@@ -189,7 +189,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::CONDITION:
 					return mc->hasCond ? QString::fromStdString(mc->cond.expressionString) : "";
 				case BreakpointColumns::HITS:
-					return mc->numHits;
+					return mc->totalHits;
 			}
 		}
 	}
@@ -215,7 +215,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::CONDITION:
 					return bp->hasCond ? QString::fromStdString(bp->cond.expressionString) : "";
 				case BreakpointColumns::HITS:
-					return 0;
+					return bp->totalHits;
 			}
 		}
 		else if (const auto* mc = std::get_if<MemCheck>(&bp_mc))
@@ -235,7 +235,7 @@ QVariant BreakpointModel::data(const QModelIndex& index, int role) const
 				case BreakpointColumns::CONDITION:
 					return mc->hasCond ? QString::fromStdString(mc->cond.expressionString) : "";
 				case BreakpointColumns::HITS:
-					return mc->numHits;
+					return mc->totalHits;
 				case BreakpointColumns::ENABLED:
 					return (mc->result & MEMCHECK_BREAK);
 			}
@@ -515,6 +515,8 @@ bool BreakpointModel::insertBreakpointRows(int row, int count, std::vector<Break
 			Host::RunOnCPUThread([cpu = m_cpu.getCpuType(), bp = *bp] {
 				CBreakPoints::AddBreakPoint(cpu, bp.addr, false, bp.enabled);
 				CBreakPoints::ChangeBreakPointDescription(cpu, bp.addr, bp.description);
+				CBreakPoints::ChangeBreakPointMaxHits(cpu, bp.addr, bp.maxHits);
+				CBreakPoints::ChangeBreakPointTotalHits(cpu, bp.addr, bp.totalHits);
 				if (bp.hasCond)
 				{
 					CBreakPoints::ChangeBreakPointAddCond(cpu, bp.addr, bp.cond);
@@ -526,6 +528,8 @@ bool BreakpointModel::insertBreakpointRows(int row, int count, std::vector<Break
 			Host::RunOnCPUThread([cpu = m_cpu.getCpuType(), mc = *mc] {
 				CBreakPoints::AddMemCheck(cpu, mc.start, mc.end, mc.memCond, mc.result);
 				CBreakPoints::ChangeMemCheckDescription(cpu, mc.start, mc.end, mc.description);
+				CBreakPoints::ChangeMemCheckMaxHits(cpu, mc.start, mc.end, mc.maxHits);
+				CBreakPoints::ChangeMemCheckTotalHits(cpu, mc.start, mc.end, mc.totalHits);
 				if (mc.hasCond)
 				{
 					CBreakPoints::ChangeMemCheckAddCond(cpu, mc.start, mc.end, mc.cond);

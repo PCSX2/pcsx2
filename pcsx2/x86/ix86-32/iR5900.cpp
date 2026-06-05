@@ -1541,7 +1541,8 @@ void dynarecCheckBreakpoint()
 		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_EE, pc);
 		if (cond == NULL || cond->Evaluate())
 		{
-			hit = true;
+			if(CBreakPoints::HandleBreakpointHit(BREAKPOINT_EE, pc))
+				hit = true;
 		}
 	}
 	//check breakpoint in delay slot
@@ -1549,7 +1550,8 @@ void dynarecCheckBreakpoint()
 	{
 		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_EE, pc + 4);
 		if (cond == NULL || cond->Evaluate())
-			hit = true;
+			if(CBreakPoints::HandleBreakpointHit(BREAKPOINT_EE, pc + 4))
+				hit = true;
 	}
 
 	if (!hit)
@@ -1585,6 +1587,9 @@ void dynarecMemcheck(size_t i)
 		else
 			DevCon.WriteLn("Hit load breakpoint @0x%x", cpuRegs.pc);
 	}
+
+	if (!CBreakPoints::HandleMemCheckHit(BREAKPOINT_EE, mc.start, mc.end))
+		return;
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_EE);
 	VMManager::SetPaused(true);

@@ -77,6 +77,9 @@ void intBreakpoint(bool memcheck)
 		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_EE, pc);
 		if (cond && !cond->Evaluate())
 			return;
+
+		if(!CBreakPoints::HandleBreakpointHit(BREAKPOINT_EE, pc))
+			return;
 	}
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_EE);

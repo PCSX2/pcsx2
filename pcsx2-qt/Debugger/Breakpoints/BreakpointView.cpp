@@ -5,6 +5,7 @@
 
 #include "QtUtils.h"
 #include "Debugger/DebuggerSettingsManager.h"
+#include "Debugger/DebuggerWindow.h"
 #include "BreakpointDialog.h"
 #include "BreakpointModel.h"
 
@@ -23,6 +24,8 @@ BreakpointView::BreakpointView(const DebuggerViewParameters& parameters)
 	m_ui.breakpointList->setModel(m_model);
 	m_ui.breakpointList->horizontalHeader()->setSectionsMovable(true);
 	this->resizeColumns();
+
+	connect(g_debugger_window, &DebuggerWindow::onVMActuallyPaused, m_model, &BreakpointModel::refreshData);
 }
 
 void BreakpointView::onDoubleClicked(const QModelIndex& index)
