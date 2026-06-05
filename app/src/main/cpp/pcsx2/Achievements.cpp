@@ -1836,10 +1836,14 @@ void Achievements::ClientLoginWithTokenCallback(int result, const char* error_me
 	if (result != RC_OK)
 	{
 		ReportFmtError("Login failed: {}", error_message);
-		Host::RemoveBaseSettingValue("Achievements", "Token");
-		Host::RemoveBaseSettingValue("Achievements", "LoginTimestamp");
-		Host::CommitBaseSettingChanges();
-		Host::OnAchievementsLoginRequested(LoginRequestReason::TokenInvalid);
+
+		if (result == RC_INVALID_CREDENTIALS || result == RC_EXPIRED_TOKEN)
+		{
+			Host::RemoveBaseSettingValue("Achievements", "Token");
+			Host::RemoveBaseSettingValue("Achievements", "LoginTimestamp");
+			Host::CommitBaseSettingChanges();
+			Host::OnAchievementsLoginRequested(LoginRequestReason::TokenInvalid);
+		}
 		return;
 	}
 
