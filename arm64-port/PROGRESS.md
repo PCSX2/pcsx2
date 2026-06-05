@@ -8,6 +8,32 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 5.1 COP0 inline-fallback — DONE (commit `ffe4f18d1`).**
+
+Applied the [[Phase 5.3 COP2]] inline-interpreter trick to COP0 (primary opcode `0x10`):
+straight-line COP0 ops now emit an inline `recEmitInterpInline` call instead of breaking
+the EE block + single-stepping. COP0 is not a per-op perf item (cf. `x86/iCOP0.cpp`), so
+the win is purely killing block fragmentation around TLB setup / interrupt-mask writes.
+
+**Inlined:** `MFC0`/`MTC0` (Rd ∉ {9 Count, 25 PERF}) + `TLBR/TLBWI/TLBWR/TLBP`.
+**Kept single-stepped (return false):**
+- `BC0F/BC0T/BC0FL/BC0TL` + `ERET` — write `cpuRegs.pc`;
+- `MFC0`/`MTC0` of Count(9)/PERF(25) — need a live `cpuRegs.cycle` (this rec flushes it
+  only at the block tail; `COP0.cpp` warns two `MFC0 Count` in one block before the cycle
+  update return increment 0 → games lock up);
+- `EI/DI/WAIT` — interrupt-enable timing the x86 rec deliberately branches after.
+`MTC0 Status/Config` are inlined safely (x86 rec doesn't branch after them; the resulting
+interrupt is taken at the block-tail event test). TLB writes call `MapTLB→recClear`, safe
+mid-block (targeted recLUT reset; the running block keeps its valid host code).
+
+**Verified:** 273/273 ARM64 emit tests green; BIOS boots (heavy COP0: TLB + Status writes),
+user-confirmed live.
+
+**Next:** IOP rec (Phase 6) for playable 2D — the biggest remaining leverage; IOP is still
+fully interpreter-single-stepped. EE now keeps COP0/COP2/MMI/FPU all in-block.
+
+---
+
 **Phase 5.3 COP2 / VU0-macro inline-fallback — DONE (commit `0108025c9`).**
 
 COP2 ops (primary opcode `0x12`) and the COP2 quad load/stores `LQC2`/`SQC2` used to
@@ -326,7 +352,11 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 
 ## Phase 5 — EE Coprocessors
 
-- [ ] 5.1 COP0: interpreter fallback (`recCall(Interp::...)`) initially.
+- [x] 5.1 COP0: **inline interpreter fallback** (commit `ffe4f18d1`). Straight-line COP0
+  ops (`MFC0`/`MTC0` for Rd∉{9,25}, `TLBR/TLBWI/TLBWR/TLBP`) emit inline `recEmitInterpInline`
+  instead of breaking the block. PC-writing (`BC0*`,`ERET`), cycle-sensitive (Count/PERF),
+  and interrupt-gating (`EI/DI/WAIT`) ops stay single-stepped. Native COP0 codegen not
+  needed (COP0 isn't a per-op perf item).
 - [x] 5.2 COP1 (FPU) — single-precision suite compiled natively:
   - [x] 5.2a Bit-exact transfer/move/load-store: `MFC1/MTC1/CFC1/CTC1`,
     `MOV_S/ABS_S/NEG_S`, `LWC1/SWC1` (`aR5900FPU.cpp`). No EE float quirks → exact.

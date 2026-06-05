@@ -28,6 +28,47 @@
 
 ---
 
+## 2026-06-05 — Phase 5.1 COP0 inline fallback (no block break)
+
+**Goal:** Apply the Phase 5.3 COP2 inline-interpreter trick to COP0, the other common
+`recTranslateOp`-returns-false family (TLB setup, interrupt-mask writes).
+
+**What changed:**
+- **`pcsx2/arm64/aR5900.cpp` `recTranslateOp`:** added `case 0x10` (COP0). Inlines
+  `MFC0`/`MTC0` (Rd ∉ {9,25}) and the C0 TLB ops `TLBR/TLBWI/TLBWR/TLBP` via
+  `recEmitInterpInline`; everything else returns false (single-step).
+- Commit `ffe4f18d1`.
+
+**Decisions & rationale:**
+- **COP0 has a hazard COP2 didn't: cpuRegs.cycle staleness.** This rec only flushes
+  `cpuRegs.cycle` at the block tail, but the Count register (Rd==9) and PERF counters
+  (Rd==25) are computed from it. `COP0.cpp` (line ~40) explicitly warns that two
+  `MFC0 Count` in one block before a cycle update return increment 0 → games lock up. So
+  Count/PERF MFC0/MTC0 stay single-stepped (the single-step path charges block cycles
+  first, then runs the op, so cycle is current). MFC0/MTC0 of any other CP0 reg is a plain
+  load/store and inlines fine.
+- **PC-writers stay single-stepped:** `BC0*` branches and `ERET` (C0 funct 0x18).
+- **Interrupt-gating stays single-stepped:** `EI/DI/WAIT`. The x86 rec deliberately
+  `recBranchCall`s EI (and delays DI by one instr) so a freshly-enabled interrupt is taken
+  right away; inlining mid-block would defer that arbitrarily, so leave them on the proven
+  path. `MTC0 Status/Config` ARE inlined — the x86 rec does *not* branch after them
+  (`WriteCP0Status` just does `cpuSetNextEventDelta(4)`), so the interrupt is taken at the
+  block-tail event test either way.
+- **TLB writes inline safely:** `TLBWI/TLBWR`→`MapTLB`→`Cpu->Clear`→targeted `recClear`,
+  which is safe mid-block (resets recLUT slots only; the running block keeps its valid host
+  code and recompiles cleared slots on the next dispatch — same property the recLUT boot
+  fix relied on).
+
+**Blockers / open questions:** none. No new emit gtests (interpreter call, not a generator).
+
+**Verified:** 273/273 ARM64 emit tests; `pcsx2-qt` builds arm64; BIOS boots with the COP0
+inline path live (BIOS hammers COP0 — TLB map + Status writes); user-confirmed working.
+
+**Next step:** IOP rec (Phase 6) for playable 2D — biggest remaining leverage; IOP is still
+fully interpreter-single-stepped.
+
+---
+
 ## 2026-06-05 — Phase 5.3 COP2/VU0-macro inline fallback (no block break)
 
 **Goal:** Stop COP2 (VU0 macro) ops from fragmenting EE blocks. They were the highest-
