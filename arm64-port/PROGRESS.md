@@ -8,6 +8,47 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 6.3 IOP native branches/jumps — DONE (commit `13daf73d0`).**
+
+IOP blocks now span control flow natively instead of single-stepping every branch through
+the interpreter — the real IOP speedup. Wired into the block compiler (`recRecompile`) in
+`pcsx2/arm64/aR3000A.cpp`:
+
+- **Generators (`recEmitIopBranch`):** J/JAL (immediate region target), JR/JALR (register
+  target read *before* the delay slot), BEQ/BNE/BLEZ/BGTZ, REGIMM BLTZ/BGEZ/BLTZAL/BGEZAL.
+  32-bit counterparts of the EE generators (`aR5900Branch.cpp`); emit only the control-flow
+  effect (psxRegs.pc write + GPR[31]/GPR[rd] link). Target/fallthrough/link mirror the
+  interpreter macros with `_PC_ == branchpc+4`.
+- **Block compiler:** on a handled branch, emit the branch effect, compile the delay slot
+  (`recEmitOp`), charge branch+delay = 2 cycles, end the block. The dispatcher re-reads
+  psxRegs.pc for the next block. Writing pc before the delay slot is safe (no IOP
+  delay-slot op writes pc) and required for JR/JALR.
+
+Correctness boundaries (match the x86 IOP rec):
+- doBranch's a0-override (target `0xbfc4a000`) + ClearIrxModules (`0x890`) are
+  interpreter-only quirks the x86 rec's psxSetBranchReg/Imm also skip → omitted.
+- psxJ's **IRX-import magic** preserved by bailing J-with-magic-delay-slot
+  (`delay >> 16 == 0x2400`) to the interpreter (runs `irxImportExec`).
+- A delay slot that is itself a branch is bailed to the interpreter (would nest doBranch).
+- Also fixed `recEmitInterpInline` to dispatch via the IOP `psxBSC` table (it wrongly used
+  the EE `R5900::GetInstruction` table) so non-native delay slots inline-interp correctly.
+
+**Still on interpreter fallback (return false):** SYSCALL/BREAK, COP0 (mfc0/mtc0/rfe),
+COP2/GTE. Likely branches don't exist on MIPS-I (R3000A), so the branch set is complete.
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 100% (2/2 suites; IOP has no gtest harness
+— logic mirrors the gtested EE branch generators); headless BIOS boot reaches
+`Mode Changed to DVD PAL` + `Pad: DS2 Config Finished` (IOP-heavy, branch-dense pad/SIO
+init) with native IOP branches live — no crash/abort/unmapped/Branch-to-0x0, clean log.
+
+**Next:** Live game IOP-perf measurement (FFX or a 2D title) to quantify the
+branches+load/store win now that IOP blocks span control flow. Then Phase 6.3 cont. — IOP
+**COP0** (mfc0/mtc0/rfe, likely inline-interp) and **COP2/GTE** (inline-interp, the
+EE-style trick), or move to Phase 7 (VU). Optional: native constant-prop / reg-alloc for
+the IOP (today every op round-trips psxRegs in memory).
+
+---
+
 **Phase 6.3 IOP native load/store — COMPLETE (aligned `f104adb25` + unaligned `3efc4c40c`).**
 
 The full R3000A load/store family now compiles natively in `recTranslateOp`
@@ -555,7 +596,9 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
   - [x] Load/store (via iopMemRead/Write8/16/32 slow path — no vtlb fastmem on IOP).
     Aligned LB/LBU/LH/LHU/LW + SB/SH/SW (`f104adb25`); unaligned LWL/LWR/SWL/SWR
     (`3efc4c40c`, runtime shift+mask, recompute-after-call, no spill).
-  - [ ] Branches/jumps (J/JAL/JR/JALR, BEQ/BNE/BLEZ/BGTZ + REGIMM).
+  - [x] Branches/jumps (J/JAL/JR/JALR, BEQ/BNE/BLEZ/BGTZ + REGIMM) — `13daf73d0`.
+    Native generators + delay-slot compile in the block compiler; J-with-IRX-magic and
+    branch-in-delay-slot bail to the interpreter. No likely branches on MIPS-I.
   - [ ] Coprocessor (COP0 mfc0/mtc0/rfe; COP2/GTE — likely interpreter inline).
 - [x] 6.4 Wire into `VMManager.cpp` (reserve/shutdown/reset + `psxCpu` selection on ARM64).
 

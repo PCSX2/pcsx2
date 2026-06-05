@@ -28,6 +28,59 @@
 
 ---
 
+## 2026-06-05 — Phase 6.3 IOP native branches/jumps
+
+**Goal:** Stop the IOP rec breaking the block at every control-flow op — emit native
+branch/jump generators + compile the delay slot so blocks span control flow. This is the
+real IOP speedup (until now every J/branch ended the native run and single-stepped).
+
+**What changed:**
+- **`pcsx2/arm64/aR3000A.cpp`:** added `recEmitIopBranch` (+ helpers `iopWritePcImm/Reg`,
+  `iopWriteLink`, `iopSelectPc`, `iopBranchZero`) for J/JAL/JR/JALR, BEQ/BNE/BLEZ/BGTZ,
+  REGIMM BLTZ/BGEZ/BLTZAL/BGEZAL; replaced the stub `recIsHandledBranch`; added `recEmitOp`;
+  rewrote the block compiler's branch case to emit branch + delay slot + 2 cycles. Fixed
+  `recEmitInterpInline` to use the IOP `psxBSC` dispatch table (was wrongly using the EE
+  `R5900::GetInstruction`).
+- Commit `13daf73d0`.
+
+**Decisions & rationale:**
+- **Mirror the EE branch model (aR5900Branch.cpp), narrowed to 32-bit.** Generators emit
+  only the pc/link writes; the block compiler compiles the delay slot after and RETs to the
+  C++ dispatcher loop, which re-reads psxRegs.pc. Writing pc before the delay slot is safe
+  (no IOP delay-slot op writes pc) and required for JR/JALR (target = GPR[rs] *before* the
+  delay slot). Target/fallthrough/link constants use `_PC_ == branchpc+4`, identical to the
+  interpreter macros (`_JumpTarget_`/`_BranchTarget_`/`_SetLink`).
+- **doBranch quirks omitted, matching the x86 rec.** `doBranch` does an a0-override at target
+  0xbfc4a000 and ClearIrxModules at 0x890, but the x86 IOP rec's `psxSetBranchReg`/
+  `psxSetBranchImm` do NOT replicate them — they're interpreter-only. So the native
+  generators skip them too (verified by reading iR3000A.cpp:1113-1146).
+- **IRX-import magic preserved by bailing J.** psxJ checks `delay >> 16 == 0x2400` and runs
+  `irxImportExec` (IOP module HLE). The x86 rec moves this to the delay-slot ADDIU(rt=0)
+  compile (`psxRecompileIrxImport`), which is a bigger port (HLE plumbing). For this slice I
+  bail J-with-magic-delay-slot to the interpreter (correct + identical to interp; rare —
+  only at import stubs). All other J + JAL/JR/JALR/branches compile natively.
+- **Branch-in-delay-slot bailed.** recEmitOp would inline-interp it via psxBSC → nested
+  doBranch (second delay slot + pc write). Illegal MIPS, but guarded.
+- **Cycle accounting:** branch + delay = 2 cycles (R3000A is 1 cycle/op), charged via the
+  existing block_cycles tail. Event test stays at block boundary (recExecuteBlock), same as
+  the EE rec and the prior all-interp IOP model; interp's per-branch iopEventTest timing
+  difference is the already-accepted dispatch model.
+
+**Blockers / open questions:** none. Live game IOP-perf delta not yet measured (next).
+No IOP gtest harness — logic mirrors the gtested EE branch generators; BIOS boot is the
+integration check.
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 100% (2/2 suites); headless `-batch -bios`
+boot reaches `Mode Changed to DVD PAL` + `Pad: DS2 Config Finished` (IOP-heavy, branch-dense
+pad/SIO init) with native IOP branches live — no crash/abort/unmapped access, no
+Branch-to-0x0, clean log (no rec warnings/errors).
+
+**Next step:** Live game IOP-perf measurement (FFX / a 2D title) to quantify the
+branches+load/store win, then Phase 6.3 cont. — IOP COP0 (mfc0/mtc0/rfe) + COP2/GTE
+inline-interp (EE-style), or move to Phase 7 (VU).
+
+---
+
 ## 2026-06-05 — Phase 6.3 IOP native unaligned load/store (LWL/LWR/SWL/SWR)
 
 **Goal:** Finish the IOP load/store family — native codegen for the unaligned ops
