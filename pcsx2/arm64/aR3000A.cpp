@@ -211,13 +211,436 @@ static void recEmitWritePc(u32 pc)
 	armAsm->Str(RWARG1, a64::MemOperand(RESTATEPTR, IOP_PC_OFFSET));
 }
 
-// Decode a single instruction into the open block. Returns true if a native generator
-// handled it. Bring-up: nothing is compiled natively yet, so always false → the block
-// compiler single-steps it through the interpreter. Native generators are wired in here
-// in later commits (integer → load/store → branches).
-static bool recTranslateOp(u32 /*op*/)
+// --------------------------------------------------------------------------------------
+//  Native integer generators (Phase 6.3)
+// --------------------------------------------------------------------------------------
+// 32-bit MIPS-I integer ops — a strict subset of the EE arith generators
+// (pcsx2/arm64/aR5900Arith.cpp + aR5900MultDiv.cpp), but with 32-bit GPRs (no
+// sign-extend-to-64) and 32-bit HI/LO. Semantics mirror R3000AOpcodeTables.cpp exactly.
+//
+// No register allocator yet: each source GPR is read from psxRegs (via RESTATEPTR =
+// &psxRegs), the result computed in a scratch W-reg, and stored straight back. GPR[0]
+// ($zero) writes are discarded, like the interpreter.
+//
+// Scratch discipline (see aR5900MultDiv.cpp): x17 (RSCRATCHADDR) is the only register
+// removed from VIXL's scratch list by armStartBlock, so it is the safe manual scratch;
+// x16 (RXVIXLSCRATCH) doubles as VIXL's macro temp, usable as a plain operand reg only
+// when no live value must survive a macro that materialises an immediate.
+static const a64::Register RSCRATCH = RSCRATCHADDR;
+static const a64::Register RSCRATCHW = RSCRATCHADDR.W();
+static const a64::Register RSCRATCH2W = RXVIXLSCRATCH.W();
+
+static __fi a64::MemOperand iopGpr(u32 n) { return a64::MemOperand(RESTATEPTR, IOP_GPR_OFFSET(n)); }
+static __fi a64::MemOperand iopHi() { return a64::MemOperand(RESTATEPTR, IOP_HI_OFFSET); }
+static __fi a64::MemOperand iopLo() { return a64::MemOperand(RESTATEPTR, IOP_LO_OFFSET); }
+
+// --- I-type immediate ops -------------------------------------------------------------
+
+// ADDI/ADDIU (0x08/0x09): Rt = Rs + (s16)imm. The interpreter never traps overflow, so
+// these are identical in the JIT.
+static void iopADDI(u32 rt, u32 rs, s32 imm)
 {
-	return false;
+	if (rt == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	if (imm != 0)
+		armAsm->Add(RSCRATCHW, RSCRATCHW, imm);
+	armAsm->Str(RSCRATCHW, iopGpr(rt));
+}
+
+// SLTI (0x0A): Rt = (s32)Rs < (s32)imm
+static void iopSLTI(u32 rt, u32 rs, s32 imm)
+{
+	if (rt == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Cmp(RSCRATCHW, imm);
+	armAsm->Cset(RSCRATCHW, a64::lt);
+	armAsm->Str(RSCRATCHW, iopGpr(rt));
+}
+
+// SLTIU (0x0B): Rt = (u32)Rs < (u32)(s32)imm. The signed-immediate cmp gives the right
+// unsigned result because cmp/cmn set carry identically for the wrapped operand.
+static void iopSLTIU(u32 rt, u32 rs, s32 imm)
+{
+	if (rt == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Cmp(RSCRATCHW, imm);
+	armAsm->Cset(RSCRATCHW, a64::lo);
+	armAsm->Str(RSCRATCHW, iopGpr(rt));
+}
+
+// ANDI/ORI/XORI (0x0C/0x0D/0x0E): Rt = Rs op (u16)imm (zero-extended). The 16-bit value
+// is not always a valid ARM64 logical immediate, so materialize it into x16 first.
+static void iopANDI(u32 rt, u32 rs, u32 immu)
+{
+	if (rt == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	if (immu == 0)
+	{
+		armAsm->Mov(RSCRATCHW, 0);
+	}
+	else
+	{
+		armAsm->Mov(RSCRATCH2W, immu);
+		armAsm->And(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	}
+	armAsm->Str(RSCRATCHW, iopGpr(rt));
+}
+
+static void iopORI(u32 rt, u32 rs, u32 immu)
+{
+	if (rt == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	if (immu != 0)
+	{
+		armAsm->Mov(RSCRATCH2W, immu);
+		armAsm->Orr(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	}
+	armAsm->Str(RSCRATCHW, iopGpr(rt));
+}
+
+static void iopXORI(u32 rt, u32 rs, u32 immu)
+{
+	if (rt == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	if (immu != 0)
+	{
+		armAsm->Mov(RSCRATCH2W, immu);
+		armAsm->Eor(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	}
+	armAsm->Str(RSCRATCHW, iopGpr(rt));
+}
+
+// LUI (0x0F): Rt = imm << 16
+static void iopLUI(u32 rt, u32 imm)
+{
+	if (rt == 0)
+		return;
+	armAsm->Mov(RSCRATCHW, imm << 16);
+	armAsm->Str(RSCRATCHW, iopGpr(rt));
+}
+
+// --- R-type reg-reg ALU ops -----------------------------------------------------------
+
+// ADD/ADDU (0x20/0x21): Rd = Rs + Rt (no overflow trap in the JIT).
+static void iopADD(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rt));
+	armAsm->Add(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+// SUB/SUBU (0x22/0x23): Rd = Rs - Rt.
+static void iopSUB(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rt));
+	armAsm->Sub(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+// AND (0x24).
+static void iopAND(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rt));
+	armAsm->And(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+// OR (0x25).
+static void iopOR(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rt));
+	armAsm->Orr(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+// XOR (0x26).
+static void iopXOR(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rt));
+	armAsm->Eor(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+// NOR (0x27): Rd = ~(Rs | Rt).
+static void iopNOR(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rt));
+	armAsm->Orr(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	armAsm->Mvn(RSCRATCHW, RSCRATCHW);
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+// SLT (0x2A): Rd = (s32)Rs < (s32)Rt.
+static void iopSLT(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rt));
+	armAsm->Cmp(RSCRATCHW, RSCRATCH2W);
+	armAsm->Cset(RSCRATCHW, a64::lt);
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+// SLTU (0x2B): Rd = (u32)Rs < (u32)Rt.
+static void iopSLTU(u32 rd, u32 rs, u32 rt)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rt));
+	armAsm->Cmp(RSCRATCHW, RSCRATCH2W);
+	armAsm->Cset(RSCRATCHW, a64::lo);
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+// --- Shifts ---------------------------------------------------------------------------
+// 32-bit: amount masked to 5 bits. ARM64 W-reg variable shifts use the low 5 bits of the
+// amount reg natively, matching MIPS.
+
+// SLL (0x00).
+static void iopSLL(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rt));
+	armAsm->Lsl(RSCRATCHW, RSCRATCHW, sa);
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+// SRL (0x02).
+static void iopSRL(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rt));
+	armAsm->Lsr(RSCRATCHW, RSCRATCHW, sa);
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+// SRA (0x03).
+static void iopSRA(u32 rd, u32 rt, u32 sa)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rt));
+	armAsm->Asr(RSCRATCHW, RSCRATCHW, sa);
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+// SLLV (0x04): Rd = Rt << (Rs & 31).
+static void iopSLLV(u32 rd, u32 rt, u32 rs)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rt));
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rs));
+	armAsm->Lsl(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+// SRLV (0x06): Rd = Rt >> (Rs & 31) (logical).
+static void iopSRLV(u32 rd, u32 rt, u32 rs)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rt));
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rs));
+	armAsm->Lsr(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+// SRAV (0x07): Rd = Rt >> (Rs & 31) (arithmetic).
+static void iopSRAV(u32 rd, u32 rt, u32 rs)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rt));
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rs));
+	armAsm->Asr(RSCRATCHW, RSCRATCHW, RSCRATCH2W);
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+// --- HI/LO moves ----------------------------------------------------------------------
+
+static void iopMFHI(u32 rd)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopHi());
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+static void iopMFLO(u32 rd)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCHW, iopLo());
+	armAsm->Str(RSCRATCHW, iopGpr(rd));
+}
+
+static void iopMTHI(u32 rs)
+{
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Str(RSCRATCHW, iopHi());
+}
+
+static void iopMTLO(u32 rs)
+{
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Str(RSCRATCHW, iopLo());
+}
+
+// --- Multiply / divide ----------------------------------------------------------------
+// HI:LO = Rs * Rt (32x32->64). Unlike the R5900, the R3000A MULT/MULTU do NOT write Rd.
+
+static void iopMult(bool sign, u32 rs, u32 rt)
+{
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rt));
+	if (sign)
+		armAsm->Smull(RSCRATCH, RSCRATCHW, RSCRATCH2W);
+	else
+		armAsm->Umull(RSCRATCH, RSCRATCHW, RSCRATCH2W);
+	armAsm->Str(RSCRATCHW, iopLo()); // LO = low 32 bits of the product
+	armAsm->Lsr(RSCRATCH, RSCRATCH, 32);
+	armAsm->Str(RSCRATCHW, iopHi()); // HI = high 32 bits
+}
+
+// DIV (0x1A): signed. LO = Rs/Rt, HI = Rs%Rt. ARM SDIV reproduces the x86 INT_MIN/-1
+// overflow quirk for free (quotient 0x80000000, remainder 0). Only ÷0 needs a fixup:
+//   ÷0: LO = (s32)Rs < 0 ? 1 : 0xFFFFFFFF, HI = Rs (already correct — SDIV ÷0 yields 0,
+//       so remainder = Rs - 0 = Rs).
+static void iopDIV(u32 rs, u32 rt)
+{
+	a64::Label done;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));  // dividend
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rt)); // divisor
+	armAsm->Sdiv(RSCRATCHW, RSCRATCHW, RSCRATCH2W);  // quotient
+	armAsm->Mul(RSCRATCH2W, RSCRATCHW, RSCRATCH2W);  // quotient * divisor
+	armAsm->Str(RSCRATCHW, iopLo());                 // LO = quotient
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Sub(RSCRATCH2W, RSCRATCHW, RSCRATCH2W);  // remainder
+	armAsm->Str(RSCRATCH2W, iopHi());                // HI = remainder
+
+	// ÷0 fixup for LO (HI is already == dividend, which is correct for ÷0).
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rt));
+	armAsm->Cmp(RSCRATCH2W, 0);
+	armAsm->B(a64::ne, &done);
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs)); // dividend
+	armAsm->Cmp(RSCRATCHW, 0);
+	armAsm->Mov(RSCRATCH2W, 1);
+	armAsm->Csneg(RSCRATCH2W, RSCRATCH2W, RSCRATCH2W, a64::lt); // (dividend<0) ? 1 : -1
+	armAsm->Str(RSCRATCH2W, iopLo());
+	armAsm->Bind(&done);
+}
+
+// DIVU (0x1B): unsigned. ÷0: LO = 0xFFFFFFFF, HI = Rs.
+static void iopDIVU(u32 rs, u32 rt)
+{
+	a64::Label done;
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rt));
+	armAsm->Udiv(RSCRATCHW, RSCRATCHW, RSCRATCH2W);  // quotient (÷0 -> 0)
+	armAsm->Mul(RSCRATCH2W, RSCRATCHW, RSCRATCH2W);
+	armAsm->Str(RSCRATCHW, iopLo());
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Sub(RSCRATCH2W, RSCRATCHW, RSCRATCH2W);
+	armAsm->Str(RSCRATCH2W, iopHi());
+
+	// ÷0 fixup for LO (HI already == dividend).
+	armAsm->Ldr(RSCRATCH2W, iopGpr(rt));
+	armAsm->Cmp(RSCRATCH2W, 0);
+	armAsm->B(a64::ne, &done);
+	armAsm->Mov(RSCRATCHW, 0xFFFFFFFFu);
+	armAsm->Str(RSCRATCHW, iopLo());
+	armAsm->Bind(&done);
+}
+
+// Decode a single instruction into the open block. Returns true if a native generator
+// handled it, false to fall back to single-stepping it through the interpreter. Control-
+// flow ops (J/JR/branches/SYSCALL), loads/stores and coprocessor ops return false for now
+// — they end the native run and are interpreted (the interpreter handles delay slots).
+static bool recTranslateOp(u32 op)
+{
+	const u32 opcode = op >> 26;
+	const u32 rs = (op >> 21) & 0x1f;
+	const u32 rt = (op >> 16) & 0x1f;
+	const u32 rd = (op >> 11) & 0x1f;
+	const u32 sa = (op >> 6) & 0x1f;
+	const u32 funct = op & 0x3f;
+	const s32 imm = static_cast<s16>(op);
+
+	switch (opcode)
+	{
+		// SPECIAL — R-type ops dispatched on funct.
+		case 0x00:
+			switch (funct)
+			{
+				case 0x00: iopSLL(rd, rt, sa); return true;
+				case 0x02: iopSRL(rd, rt, sa); return true;
+				case 0x03: iopSRA(rd, rt, sa); return true;
+				case 0x04: iopSLLV(rd, rt, rs); return true;
+				case 0x06: iopSRLV(rd, rt, rs); return true;
+				case 0x07: iopSRAV(rd, rt, rs); return true;
+				case 0x10: iopMFHI(rd); return true;
+				case 0x11: iopMTHI(rs); return true;
+				case 0x12: iopMFLO(rd); return true;
+				case 0x13: iopMTLO(rs); return true;
+				case 0x18: iopMult(true, rs, rt); return true;  // MULT
+				case 0x19: iopMult(false, rs, rt); return true; // MULTU
+				case 0x1A: iopDIV(rs, rt); return true;
+				case 0x1B: iopDIVU(rs, rt); return true;
+				case 0x20: iopADD(rd, rs, rt); return true;
+				case 0x21: iopADD(rd, rs, rt); return true; // ADDU
+				case 0x22: iopSUB(rd, rs, rt); return true;
+				case 0x23: iopSUB(rd, rs, rt); return true; // SUBU
+				case 0x24: iopAND(rd, rs, rt); return true;
+				case 0x25: iopOR(rd, rs, rt); return true;
+				case 0x26: iopXOR(rd, rs, rt); return true;
+				case 0x27: iopNOR(rd, rs, rt); return true;
+				case 0x2A: iopSLT(rd, rs, rt); return true;
+				case 0x2B: iopSLTU(rd, rs, rt); return true;
+				// JR/JALR (0x08/0x09), SYSCALL/BREAK (0x0C/0x0D), MTHI/etc handled above.
+				default: return false;
+			}
+
+		// I-type immediate ops.
+		case 0x08: iopADDI(rt, rs, imm); return true;
+		case 0x09: iopADDI(rt, rs, imm); return true; // ADDIU
+		case 0x0A: iopSLTI(rt, rs, imm); return true;
+		case 0x0B: iopSLTIU(rt, rs, imm); return true;
+		case 0x0C: iopANDI(rt, rs, static_cast<u16>(op)); return true;
+		case 0x0D: iopORI(rt, rs, static_cast<u16>(op)); return true;
+		case 0x0E: iopXORI(rt, rs, static_cast<u16>(op)); return true;
+		case 0x0F: iopLUI(rt, static_cast<u16>(op)); return true;
+
+		default: return false;
+	}
 }
 
 // Is `op` a control-flow op we have a native branch generator for? (None yet.)
