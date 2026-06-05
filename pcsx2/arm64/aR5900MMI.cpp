@@ -430,112 +430,75 @@ void armEmitPEXCW(u32 rd, u32 rt)
 // =============================================================================
 // Parallel variable shifts (Phase 5.4 continuation)
 // =============================================================================
-// These shift each 32-bit lane by the amount specified in the corresponding
-// lane of GPR[rs]. The shift amount is masked to 5 bits per lane (& 0x1F).
+// IMPORTANT: despite the "VW" name, the interpreter (MMI.cpp PSLLVW/PSRLVW/
+// PSRAVW) does NOT shift four independent 32-bit lanes. It shifts only lanes 0
+// and 2 of Rt (each by the matching lane of Rs, masked to 5 bits) and writes the
+// 32-bit result *sign-extended to a full 64-bit doubleword*:
 //
-// ARM64 NEON does not have a direct "shift each lane by unsigned vector amount"
-// instruction for 32-bit lanes. We use scalar GPR operations for correctness:
-// load each 32-bit lane, shift by the corresponding amount, and store back.
+//   Rd.SD[0] = (s64)(s32)(Rt.UL[0] <</>> (Rs.UL[0] & 0x1F));   // fills Rd.UD[0]
+//   Rd.SD[1] = (s64)(s32)(Rt.UL[2] <</>> (Rs.UL[2] & 0x1F));   // fills Rd.UD[1]
 //
-// The GPR stores 4 x 32-bit lanes in a 128-bit register. We pack two 32-bit
-// results into each 64-bit store (SD[0] = {UL[0], UL[1]}, SD[1] = {UL[2], UL[3]}).
+// So each doubleword's high word is the sign fill of its low word, NOT a shift of
+// Rt.UL[1]/Rt.UL[3]. We compute each lane in a w-register (the variable shift form
+// already masks the amount mod 32 == & 0x1F), Sxtw it to 64 bits, and store the
+// whole doubleword.
 //
-// Caller-saved GPRs used as scratch: x9-x12 (avoiding x16 which is VIXL scratch).
+// Caller-saved GPRs used as scratch: x9-x10 (avoiding x16 which is VIXL scratch).
 
 // --- PSLLVW: parallel logical shift left by GPR[rs] -------------------------
-// Output[i] = Rt[i] << (Rs[i] & 0x1F)  for 32-bit lanes i=0..3
 void armEmitPSLLVW(u32 rd, u32 rs, u32 rt)
 {
 	if (rd == 0)
 		return;
 
-	// Process lanes 0 and 1 -> pack into SD[0]
-	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
-	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 4));
-	armAsm->Ldr(a64::w11, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
-	armAsm->Ldr(a64::w12, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 4));
-
-	armAsm->Lsl(a64::w9, a64::w9, a64::w11);
-	armAsm->Lsl(a64::w10, a64::w10, a64::w12);
-
-	// Pack two 32-bit results into one 64-bit register: result[0] | (result[1] << 32)
-	armAsm->Bfi(a64::x9, a64::x10, 32, 32);
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));      // Rt.UL[0]
+	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));     // Rs.UL[0]
+	armAsm->Lsl(a64::w9, a64::w9, a64::w10);
+	armAsm->Sxtw(a64::x9, a64::w9);                                            // sign-extend to UD[0]
 	armAsm->Str(a64::x9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
 
-	// Process lanes 2 and 3 -> pack into SD[1]
-	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 8));
-	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 12));
-	armAsm->Ldr(a64::w11, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 8));
-	armAsm->Ldr(a64::w12, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 12));
-
-	armAsm->Lsl(a64::w9, a64::w9, a64::w11);
-	armAsm->Lsl(a64::w10, a64::w10, a64::w12);
-
-	armAsm->Bfi(a64::x9, a64::x10, 32, 32);
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 8));  // Rt.UL[2]
+	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 8)); // Rs.UL[2]
+	armAsm->Lsl(a64::w9, a64::w9, a64::w10);
+	armAsm->Sxtw(a64::x9, a64::w9);                                            // sign-extend to UD[1]
 	armAsm->Str(a64::x9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd) + 8));
 }
 
 // --- PSRLVW: parallel logical (unsigned) shift right by GPR[rs] -------------
-// Output[i] = Rt[i] >> (Rs[i] & 0x1F)  (zero-fill from left)
 void armEmitPSRLVW(u32 rd, u32 rs, u32 rt)
 {
 	if (rd == 0)
 		return;
 
-	// Process lanes 0 and 1 -> pack into SD[0]
-	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
-	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 4));
-	armAsm->Ldr(a64::w11, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
-	armAsm->Ldr(a64::w12, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 4));
-
-	armAsm->Lsr(a64::w9, a64::w9, a64::w11);
-	armAsm->Lsr(a64::w10, a64::w10, a64::w12);
-
-	armAsm->Bfi(a64::x9, a64::x10, 32, 32);
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));      // Rt.UL[0]
+	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));     // Rs.UL[0]
+	armAsm->Lsr(a64::w9, a64::w9, a64::w10);
+	armAsm->Sxtw(a64::x9, a64::w9);                                            // sign-extend to UD[0]
 	armAsm->Str(a64::x9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
 
-	// Process lanes 2 and 3 -> pack into SD[1]
-	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 8));
-	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 12));
-	armAsm->Ldr(a64::w11, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 8));
-	armAsm->Ldr(a64::w12, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 12));
-
-	armAsm->Lsr(a64::w9, a64::w9, a64::w11);
-	armAsm->Lsr(a64::w10, a64::w10, a64::w12);
-
-	armAsm->Bfi(a64::x9, a64::x10, 32, 32);
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 8));  // Rt.UL[2]
+	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 8)); // Rs.UL[2]
+	armAsm->Lsr(a64::w9, a64::w9, a64::w10);
+	armAsm->Sxtw(a64::x9, a64::w9);                                            // sign-extend to UD[1]
 	armAsm->Str(a64::x9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd) + 8));
 }
 
 // --- PSRAVW: parallel arithmetic (signed) shift right by GPR[rs] ------------
-// Output[i] = Rt[i] >> (Rs[i] & 0x1F)  (sign-extend from left)
 void armEmitPSRAVW(u32 rd, u32 rs, u32 rt)
 {
 	if (rd == 0)
 		return;
 
-	// Process lanes 0 and 1 -> pack into SD[0]
-	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
-	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 4));
-	armAsm->Ldr(a64::w11, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
-	armAsm->Ldr(a64::w12, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 4));
-
-	armAsm->Asr(a64::w9, a64::w9, a64::w11);
-	armAsm->Asr(a64::w10, a64::w10, a64::w12);
-
-	armAsm->Bfi(a64::x9, a64::x10, 32, 32);
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));      // Rt.SL[0]
+	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));     // Rs.UL[0]
+	armAsm->Asr(a64::w9, a64::w9, a64::w10);
+	armAsm->Sxtw(a64::x9, a64::w9);                                            // sign-extend to UD[0]
 	armAsm->Str(a64::x9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
 
-	// Process lanes 2 and 3 -> pack into SD[1]
-	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 8));
-	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 12));
-	armAsm->Ldr(a64::w11, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 8));
-	armAsm->Ldr(a64::w12, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 12));
-
-	armAsm->Asr(a64::w9, a64::w9, a64::w11);
-	armAsm->Asr(a64::w10, a64::w10, a64::w12);
-
-	armAsm->Bfi(a64::x9, a64::x10, 32, 32);
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt) + 8));  // Rt.SL[2]
+	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 8)); // Rs.UL[2]
+	armAsm->Asr(a64::w9, a64::w9, a64::w10);
+	armAsm->Sxtw(a64::x9, a64::w9);                                            // sign-extend to UD[1]
 	armAsm->Str(a64::x9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd) + 8));
 }
 
@@ -693,12 +656,16 @@ static void emitPMADDWLane(u32 rd, u32 rs, u32 rt, u32 srcOff, u32 loOff, u32 hi
 	if (voodoo)
 	{
 		// Condition: ((Rt&0x7FFFFFFF)==0 || ==0x7FFFFFFF) && Rs != Rt
+		// Both ==0 and ==0x7FFFFFFF are triggers, so a zero result must fall
+		// through to the Rs!=Rt check, not skip the add.
+		a64::Label voodoo_check_rs;
 		armAsm->And(a64::w12, a64::w10, 0x7FFFFFFF);
-		armAsm->Cbz(a64::w12, &voodoo_done);
+		armAsm->Cbz(a64::w12, &voodoo_check_rs);   // ==0 -> still a trigger
 		armAsm->Cmp(a64::w12, 0x7FFFFFFF);
-		armAsm->B(&voodoo_done, a64::ne);
+		armAsm->B(&voodoo_done, a64::ne);          // neither 0 nor 0x7FFFFFFF -> no voodoo
+		armAsm->Bind(&voodoo_check_rs);
 		armAsm->Cmp(a64::w9, a64::w10);
-		armAsm->B(&voodoo_done, a64::eq);
+		armAsm->B(&voodoo_done, a64::eq);          // Rs == Rt -> no voodoo
 		armAsm->Mov(a64::w12, 0x70000000);
 		armAsm->Add(a64::x11, a64::x11, a64::x12); // temp2 += 0x70000000
 		armAsm->Bind(&voodoo_done);

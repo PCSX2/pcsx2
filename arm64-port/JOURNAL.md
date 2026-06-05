@@ -28,6 +28,44 @@
 
 ---
 
+## 2026-06-05 — Phase 5.4 MMI second correctness pass: variable shifts + PMADDW voodoo
+
+**Goal:** Re-review `aR5900MMI.cpp` against `MMI.cpp` for any remaining divergences
+(the prior pass claimed "bit-exact", but the test oracles were only as good as
+their author's reading of the interpreter).
+
+**What changed:**
+- **Emit (`pcsx2/arm64/aR5900MMI.cpp`):**
+  - **PSLLVW/PSRLVW/PSRAVW were wrong.** They emitted four independent 32-bit lane
+    shifts. The interpreter only shifts lanes 0 and 2 and sign-extends each 32-bit
+    result to a full 64-bit doubleword (`Rd.SD[k] = (s64)(s32)(Rt.UL[2k] op (Rs.UL[2k]&0x1F))`).
+    Rewrote all three to two `Sxtw`'d doubleword stores. (Low word of each dword was
+    coincidentally right before; the high words were garbage shifts of Rt.UL[1]/[3].)
+  - **PMADDW division voodoo missed the `(Rt&0x7FFFFFFF)==0` trigger.** The `Cbz`
+    treated a zero result as "skip", but ==0 *and* ==0x7FFFFFFF both trigger the
+    `+0x70000000`. Added a `voodoo_check_rs` label so ==0 falls through to the Rs!=Rt
+    check instead of skipping.
+- **Tests (`tests/ctest/core/arm64_emit_test.cpp`):**
+  - Fixed the `refPSLLVW/PSRLVW/PSRAVW` oracles — they replicated the *buggy*
+    4-lane model, so the gtests were green against wrong code. Now mirror MMI.cpp.
+  - Added `MMI_PMADDW_VoodooZeroRt` (Rt.UL[0] ∈ {0, 0x80000000}, Rs≠Rt) — the shared
+    inA/inB inputs never make `Rt&0x7FFFFFFF==0`, so the ==0 path had zero coverage.
+
+**Decisions & rationale:**
+- Lesson reinforced: a passing gtest only proves the emitter matches its *oracle*.
+  When an oracle is hand-derived from the interpreter, re-derive it independently
+  before trusting "bit-exact". Both bugs hid behind self-consistent-but-wrong tests.
+
+**Blockers / open questions:** none.
+
+**Verified:** `unittests` 100% (Arm64EmitEE 270/270, +1 voodoo test); `pcsx2-qt`
+builds arm64. Live game verification still pending.
+
+**Next step:** Phase 4.4 recLUT (parked on `armjit-reclut-wip` until BIOS stall
+solved), or game compatibility testing.
+
+---
+
 ## 2026-06-05 — Phase 5.4 MMI correctness pass: decode rewrite + emit fixes + tests
 
 **Goal:** Review the 5 unpushed MMI commits + the uncommitted misc-ops batch for

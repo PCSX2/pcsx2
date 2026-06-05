@@ -2426,9 +2426,11 @@ namespace mmiref
 	static MQ refPSRAW(MQ t, u32 sa) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = (u32)(t.sl[n] >> (sa & 0x1F)); return d; }
 
 	// Parallel variable shifts (amount from GPR[rs], 5-bit masked per lane).
-	static MQ refPSLLVW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = t.ul[n] << (s.ul[n] & 0x1F); return d; }
-	static MQ refPSRLVW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = t.ul[n] >> (s.ul[n] & 0x1F); return d; }
-	static MQ refPSRAVW(MQ s, MQ t) { MQ d{}; for (int n = 0; n < 4; n++) d.ul[n] = (u32)(t.sl[n] >> (s.ul[n] & 0x1F)); return d; }
+	// PxxVW operate on lanes 0 and 2 only, sign-extending each 32-bit result to a
+	// full 64-bit doubleword (MMI.cpp: Rd.SD[k] = (s64)(s32)(Rt.UL[2k] op (Rs.UL[2k] & 0x1F))).
+	static MQ refPSLLVW(MQ s, MQ t) { MQ d{}; d.ud[0] = (uint64_t)(int64_t)(int32_t)(t.ul[0] << (s.ul[0] & 0x1F)); d.ud[1] = (uint64_t)(int64_t)(int32_t)(t.ul[2] << (s.ul[2] & 0x1F)); return d; }
+	static MQ refPSRLVW(MQ s, MQ t) { MQ d{}; d.ud[0] = (uint64_t)(int64_t)(int32_t)(t.ul[0] >> (s.ul[0] & 0x1F)); d.ud[1] = (uint64_t)(int64_t)(int32_t)(t.ul[2] >> (s.ul[2] & 0x1F)); return d; }
+	static MQ refPSRAVW(MQ s, MQ t) { MQ d{}; d.ud[0] = (uint64_t)(int64_t)(t.sl[0] >> (s.ul[0] & 0x1F)); d.ud[1] = (uint64_t)(int64_t)(t.sl[2] >> (s.ul[2] & 0x1F)); return d; }
 
 	// Lane permutes (Phase 5.4 continuation).
 	// PINTH: interleave low half of Rt with high half of Rs (halfwords)
@@ -2977,6 +2979,29 @@ MMI_MACACC_TEST(PMADDH)
 MMI_MACACC_TEST(PMSUBH)
 MMI_MACACC_TEST(PHMADH)
 MMI_MACACC_TEST(PHMSBH)
+
+// PMADDW lane-0 division voodoo: the (Rt & 0x7FFFFFFF) == 0 trigger (Rt == 0 or
+// Rt == 0x80000000, with Rs != Rt) must add 0x70000000 just like ==0x7FFFFFFF.
+// The shared inA/inB inputs never make Rt.UL[0] & 0x7FFFFFFF == 0, so cover it here.
+TEST(Arm64EmitEE, MMI_PMADDW_VoodooZeroRt)
+{
+	using mmiref::MQ;
+	auto check = [](uint32_t rtLane0) {
+		MQ s{}, t{}, loIn{}, hiIn{};
+		s.ul[0] = 0x12345678; t.ul[0] = rtLane0;    // lane 0: Rs != Rt, (Rt&0x7FFFFFFF)==0
+		s.ul[2] = 0x0000abcd; t.ul[2] = 0x00000003; // lane 1: ordinary
+		hiIn.ul[0] = 0x000000ff; hiIn.ul[2] = 0x00000011;
+		loIn.ul[0] = 0x00000007; loIn.ul[2] = 0x00000009;
+		AccResult j = runMMIMACAcc(armEmitPMADDW, s, t, loIn, hiIn);
+		MQ rlo{}, rhi{}, rrd{};
+		mmiref::refPMADDW(s, t, loIn, hiIn, rlo, rhi, rrd);
+		EXPECT_TRUE(eqMQ(j.lo, rlo)) << "PMADDW LO (Rt lane0 0x" << std::hex << rtLane0 << ")";
+		EXPECT_TRUE(eqMQ(j.hi, rhi)) << "PMADDW HI (Rt lane0 0x" << std::hex << rtLane0 << ")";
+		EXPECT_TRUE(eqMQ(j.rd, rrd)) << "PMADDW rd (Rt lane0 0x" << std::hex << rtLane0 << ")";
+	};
+	check(0x00000000);
+	check(0x80000000);
+}
 
 // Misc MMI ops.
 TEST(Arm64EmitEE, MMI_PLZCW)

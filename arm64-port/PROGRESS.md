@@ -30,8 +30,18 @@ untested, and the committed test file did not even compile):
 - **QFSRV** stays on the interpreter (its shift amount is the runtime SA register
   `cpuRegs.sa`, not an instruction immediate) — the only intentional MMI fallback.
 
-**Verified:** `pcsx2-qt` builds arm64; unittests 100% (Arm64EmitEE 269/269, core
-354/354). Live game verification still pending.
+**Second correctness pass (2026-06-05):** a re-review found two more bugs that the
+first pass's tests missed because the oracles were self-consistent with the buggy code:
+- **PSLLVW/PSRLVW/PSRAVW** emitted four independent 32-bit lane shifts. The interpreter
+  shifts only lanes 0 and 2 and sign-extends each 32-bit result to a full 64-bit
+  doubleword. Rewrote them; the `refPSxxVW` test oracles (which replicated the bug) were
+  corrected to mirror MMI.cpp.
+- **PMADDW division voodoo** skipped the `(Rt&0x7FFFFFFF)==0` trigger (only ==0x7FFFFFFF
+  was handled). Fixed; added `MMI_PMADDW_VoodooZeroRt` to cover the ==0 path that inA/inB
+  never reach.
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 100% (Arm64EmitEE 270/270). Live game
+verification still pending.
 
 ---
 
