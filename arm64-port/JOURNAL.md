@@ -28,6 +28,48 @@
 
 ---
 
+## 2026-06-05 — Phase 6.3 IOP native unaligned load/store (LWL/LWR/SWL/SWR)
+
+**Goal:** Finish the IOP load/store family — native codegen for the unaligned ops
+(LWL/LWR/SWL/SWR) that the aligned slice left on the interpreter, wired into
+`recTranslateOp`.
+
+**What changed:**
+- **`pcsx2/arm64/aR3000A.cpp`:** added `iopEmitLWL/iopEmitLWR/iopEmitSWL/iopEmitSWR` and
+  wired opcodes 0x22/0x26 (LWL/LWR) + 0x2A/0x2E (SWL/SWR). They read the aligned word at
+  EA&~3 (`iopMemRead32`), merge with GPR[rt] using a runtime byte shift `(EA&3)<<3` and the
+  per-offset masks, and (stores) `iopMemWrite32` it back. Byte-exact vs psxLWL/LWR/SWL/SWR.
+- Commit `3efc4c40c`.
+
+**Decisions & rationale:**
+- **Recompute-after-call instead of spilling.** All inputs (GPR[rs], GPR[rt], imm) live in
+  psxRegs and are reachable via the callee-saved RESTATEPTR=x19, and the load doesn't modify
+  GPR[rs], so after the `iopMemRead32` call I recompute the address and shift rather than
+  preserve them across the call. Only `mem` (the call result, in RWRET) has to flow forward.
+  No stack spill, no extra callee-saved reg.
+- **Stores do read-modify-write between two calls.** SWL/SWR call `iopMemRead32` then
+  `iopMemWrite32` with no intervening call, so RWRET/RWARG2-4/RSCRATCHW are all free to carry
+  the merged value; I compute the value into RWARG2 and recompute the aligned addr into
+  RWARG1 just before the write.
+- **rt==0 still reads** (LWL/LWR), matching the interpreter (I/O side effects); GPR[0] reads
+  zero so SWL/SWR need no rt==0 case.
+- **Variable shifts use lslv/lsrv** (VIXL `Lsl`/`Lsr` with a register operand). Masks
+  (0x00ffffff / 0xffffff00) are `Mov`'d then shifted by the runtime `shift` / `24-shift`.
+  Verified the offset-0 and offset-3 corners against the tables in R3000AOpcodeTables.cpp.
+
+**Blockers / open questions:** none. Still no IOP gtest harness — logic mirrors the gtested
+EE load/store generators; BIOS boot is the integration check.
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 100% (2/2 suites); headless `-batch -bios`
+boot reaches `Mode Changed to DVD PAL` + `Pad: DS2 Config Finished` with the full native IOP
+load/store family live — no crash/abort/unmapped access (emulog.txt).
+
+**Next step:** Phase 6.3 cont. — native IOP **branches/jumps** (J/JAL/JR/JALR,
+BEQ/BNE/BLEZ/BGTZ + REGIMM): port the EE `recEmitBranch` narrowed to 32-bit so blocks span
+control flow instead of single-stepping every branch (the real IOP speedup).
+
+---
+
 ## 2026-06-05 — Phase 6.3 IOP native aligned load/store generators
 
 **Goal:** Replace the IOP rec's interpreter single-step for aligned memory ops with native

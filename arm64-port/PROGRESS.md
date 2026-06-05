@@ -8,6 +8,40 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 6.3 IOP native load/store — COMPLETE (aligned `f104adb25` + unaligned `3efc4c40c`).**
+
+The full R3000A load/store family now compiles natively in `recTranslateOp`
+(`pcsx2/arm64/aR3000A.cpp`); none of it single-steps the interpreter anymore:
+
+- **Aligned (`f104adb25`):** LB/LBU/LH/LHU/LW + SB/SH/SW via `iopMemRead/Write8/16/32`.
+- **Unaligned (`3efc4c40c`):** LWL/LWR (read aligned word, merge into GPR[rt] with runtime
+  shift+mask) and SWL/SWR (read-modify-write the aligned word). Mirrors
+  `psxLWL/LWR/SWL/SWR`. Only the `iopMemRead32` result flows forward; address+shift are
+  recomputed from psxRegs after the call (GPR[rs] unchanged → identical), so nothing is
+  spilled. Working regs RWRET/RWARG2-4/RSCRATCHW are all scratch; x19/x16 hold no live
+  state across the calls.
+
+Loads perform the read even when rt==0 (I/O side effects), suppressing only the GPR write.
+The IOP ignores load-delay-slots (as does the x86 IOP rec), so writing GPR[rt] immediately
+and compiling the following op natively is correct.
+
+**Still on interpreter fallback (return false):** all control flow (J/JAL/JR/JALR, REGIMM +
+BEQ/BNE/BLEZ/BGTZ, SYSCALL/BREAK) and coprocessor ops (COP0/COP2-GTE).
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 100% (2/2 suites; IOP has no gtest harness
+yet — logic mirrors the gtested EE load/store generators); headless BIOS boot reaches
+`Mode Changed to DVD PAL` + `Pad: DS2 Config Finished` (IOP-heavy pad/SIO init) with the
+full native IOP load/store family live, no crash/abort/unmapped access.
+
+**Next:** Phase 6.3 cont. — native IOP **branches/jumps** (J/JAL/JR/JALR, BEQ/BNE/BLEZ/BGTZ
++ REGIMM BLTZ/BGEZ/BLTZAL/BGEZAL). This is the real IOP speedup: today every control-flow
+op ends the native run and single-steps, so blocks never span a branch. Port the EE branch
+generator (`recEmitBranch` in aR5900.cpp) narrowed to 32-bit — emit the branch + compile
+the delay slot + write psxRegs.pc + end the block. Live game IOP-perf measurement after
+branches land.
+
+---
+
 **Phase 6.3 IOP native aligned load/store generators — DONE (commit `f104adb25`).**
 
 Wired native ARM64 codegen for the R3000A aligned load/store subset into
@@ -518,9 +552,9 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
   - [x] Integer: ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI, ADD/ADDU/SUB/SUBU/AND/OR/
     XOR/NOR/SLT/SLTU, SLL/SRL/SRA/SLLV/SRLV/SRAV, MFHI/MTHI/MFLO/MTLO,
     MULT/MULTU/DIV/DIVU (commit `86448e99c`). 32-bit; mirrors the gtested EE generators.
-  - [~] Load/store (via iopMemRead/Write8/16/32 slow path — no vtlb fastmem on IOP).
-    Aligned LB/LBU/LH/LHU/LW + SB/SH/SW done (commit `f104adb25`); unaligned
-    LWL/LWR/SWL/SWR still interpreter-fallback (RMW across a mem call).
+  - [x] Load/store (via iopMemRead/Write8/16/32 slow path — no vtlb fastmem on IOP).
+    Aligned LB/LBU/LH/LHU/LW + SB/SH/SW (`f104adb25`); unaligned LWL/LWR/SWL/SWR
+    (`3efc4c40c`, runtime shift+mask, recompute-after-call, no spill).
   - [ ] Branches/jumps (J/JAL/JR/JALR, BEQ/BNE/BLEZ/BGTZ + REGIMM).
   - [ ] Coprocessor (COP0 mfc0/mtc0/rfe; COP2/GTE — likely interpreter inline).
 - [x] 6.4 Wire into `VMManager.cpp` (reserve/shutdown/reset + `psxCpu` selection on ARM64).
