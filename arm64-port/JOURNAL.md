@@ -43,7 +43,7 @@ program-cache / pipeline-state types to build on. Header-only infra; microVU sta
 - New `pcsx2/arm64/aVU.cpp` — minimal TU (the start of the 7.2c shell): includes the header,
   runs layout `static_assert`s. Exists so the header is actually compiled this session.
 - `pcsx2/CMakeLists.txt` — registered aVU.cpp/aVU.h in `pcsx2arm64Sources/Headers`.
-- Commit: `ecc527762` ARM64: microVU Phase 7.2a — arch-neutral structs (aVU.h)
+- Commit: `c3f398318` ARM64: microVU Phase 7.2a — arch-neutral structs (aVU.h)
 
 **Decisions & rationale:**
 - **Renames (per plan):** `x86ptr/x86start/x86end`→`codePtr/codeStart/codeEnd`,
