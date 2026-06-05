@@ -2759,6 +2759,7 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, GSTexture* rt_
 	}
 
 	const bool changed = (m_state.rtv != rtv || m_state.dsv != dsv || m_state.rt_uav != rt_uav || m_state.ds_uav != ds_uav);
+	const bool no_uavs = m_state.rt_uav == nullptr && rt_uav == nullptr && m_state.ds_uav == nullptr && ds_uav == nullptr;
 
 	if (changed)
 		g_perfmon.Put(GSPerfMon::RenderPasses, 1.0);
@@ -2806,15 +2807,20 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, GSTexture* rt_
 	if (changed)
 	{
 		// OM targets and UAVs share the same namespace in DX11, so we need to pack them into contiguous slots.
-		u32 num_rtvs = rt ? 1 : 0;
-		u32 num_uavs = 0;
-		ID3D11UnorderedAccessView* uavs[2];
-		if (rt_uav)
-			uavs[num_uavs++] = rt_uav;
-		if (ds_uav)
-			uavs[num_uavs++] = ds_uav;
-		ID3D11RenderTargetView* rtvs[] = { rtv };
-		m_ctx->OMSetRenderTargetsAndUnorderedAccessViews(num_rtvs, rtvs, dsv, num_rtvs, num_uavs, uavs, nullptr);
+		const u32 num_rtvs = rt ? 1 : 0;
+		ID3D11RenderTargetView* rtvs[] = {rtv};
+		if (no_uavs)
+			m_ctx->OMSetRenderTargets(num_rtvs, rtvs, dsv);
+		else
+		{
+			u32 num_uavs = 0;
+			ID3D11UnorderedAccessView* uavs[2];
+			if (rt_uav)
+				uavs[num_uavs++] = rt_uav;
+			if (ds_uav)
+				uavs[num_uavs++] = ds_uav;
+			m_ctx->OMSetRenderTargetsAndUnorderedAccessViews(num_rtvs, rtvs, dsv, num_rtvs, num_uavs, uavs, nullptr);
+		}
 	}
 
 	if (rt || ds || rt_uav_tex || ds_uav_tex)
