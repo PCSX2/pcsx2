@@ -42,7 +42,9 @@ MemCheck::MemCheck()
 	, memCond(MEMCHECK_READWRITE)
 	, result(MEMCHECK_BOTH)
 	, cpu(BREAKPOINT_EE)
-	, numHits(0)
+	, maxHits(0)
+	, hitsSinceEnabled(0)
+	, totalHits(0)
 	, lastPC(0)
 	, lastAddr(0)
 	, lastSize(0)
@@ -58,7 +60,7 @@ void MemCheck::Action(u32 addr, bool write, int size, u32 pc)
 	int mask = write ? MEMCHECK_WRITE : MEMCHECK_READ;
 	if (memCond & mask)
 	{
-		++numHits;
+		++totalHits;
 
 		Log(addr, write, size, pc);
 		if (result & MEMCHECK_BREAK)
@@ -223,6 +225,7 @@ void CBreakPoints::ChangeBreakPoint(BreakPointCpu cpu, u32 addr, bool status)
 	if (bp != INVALID_BREAKPOINT)
 	{
 		breakPoints_[bp].enabled = status;
+		breakPoints_[bp].hitsSinceEnabled = 0;
 		Update(cpu, addr);
 	}
 }
@@ -295,6 +298,62 @@ void CBreakPoints::ChangeBreakPointDescription(BreakPointCpu cpu, u32 addr, cons
 	}
 }
 
+void CBreakPoints::ChangeBreakPointMaxHits(BreakPointCpu cpu, u32 addr, u32 maxHits)
+{
+	const size_t bp = FindBreakpoint(cpu, addr, true, false);
+	if (bp != INVALID_BREAKPOINT)
+	{
+		breakPoints_[bp].maxHits = maxHits;
+		Update();
+	}
+}
+
+void CBreakPoints::ChangeBreakPointTotalHits(BreakPointCpu cpu, u32 addr, u32 totalHits)
+{
+	const size_t bp = FindBreakpoint(cpu, addr, true, false);
+	if (bp != INVALID_BREAKPOINT)
+	{
+		breakPoints_[bp].totalHits = totalHits;
+		Update();
+	}
+}
+
+bool CBreakPoints::HandleBreakpointHit(BreakPointCpu cpu, u32 addr)
+{
+	const size_t breakpointIndex = FindBreakpoint(cpu, addr, true, false);
+	if (breakpointIndex == INVALID_BREAKPOINT)
+		return false;
+
+	BreakPoint& breakpoint = breakPoints_[breakpointIndex];
+	breakpoint.hitsSinceEnabled++;
+	breakpoint.totalHits++;
+
+	if(breakpoint.maxHits > 0 && breakpoint.hitsSinceEnabled >= breakpoint.maxHits)
+	{
+		ChangeBreakPoint(cpu, addr, false);
+	}
+
+	return true;
+}
+
+bool CBreakPoints::HandleMemCheckHit(BreakPointCpu cpu, u32 start, u32 end)
+{
+	const size_t memCheckIndex = FindMemCheck(cpu, start, end);
+	if (memCheckIndex == INVALID_MEMCHECK)
+		return false;
+
+	MemCheck& memCheck = memChecks_[memCheckIndex];
+	memCheck.hitsSinceEnabled++;
+	memCheck.totalHits++;
+
+	if(memCheck.maxHits > 0 && memCheck.hitsSinceEnabled >= memCheck.maxHits)
+	{
+		ChangeMemCheck(cpu, start, end, memCheck.memCond, MemCheckResult(memCheck.result & ~MEMCHECK_BREAK));
+	}
+
+	return true;
+}
+
 void CBreakPoints::AddMemCheck(BreakPointCpu cpu, u32 start, u32 end, MemCheckCondition cond, MemCheckResult result)
 {
 	// This will ruin any pending memchecks.
@@ -341,6 +400,7 @@ void CBreakPoints::ChangeMemCheck(BreakPointCpu cpu, u32 start, u32 end, MemChec
 	{
 		memChecks_[mc].memCond = cond;
 		memChecks_[mc].result = result;
+		memChecks_[mc].hitsSinceEnabled = 0;
 		Update(cpu);
 	}
 }
@@ -372,6 +432,26 @@ void CBreakPoints::ChangeMemCheckDescription(BreakPointCpu cpu, u32 start, u32 e
 	if (mc != INVALID_MEMCHECK)
 	{
 		memChecks_[mc].description = description;
+		Update(cpu);
+	}
+}
+
+void CBreakPoints::ChangeMemCheckMaxHits(BreakPointCpu cpu, u32 start, u32 end, u32 maxHits)
+{
+	const size_t mc = FindMemCheck(cpu, start, end);
+	if (mc != INVALID_MEMCHECK)
+	{
+		memChecks_[mc].maxHits = maxHits;
+		Update(cpu);
+	}
+}
+
+void CBreakPoints::ChangeMemCheckTotalHits(BreakPointCpu cpu, u32 start, u32 end, u32 totalHits)
+{
+	const size_t mc = FindMemCheck(cpu, start, end);
+	if (mc != INVALID_MEMCHECK)
+	{
+		memChecks_[mc].totalHits = totalHits;
 		Update(cpu);
 	}
 }

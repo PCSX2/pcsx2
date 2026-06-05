@@ -1341,7 +1341,8 @@ static bool psxDynarecCheckBreakpoint()
 		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_IOP, pc);
 		if (cond == NULL || cond->Evaluate())
 		{
-			hit = true;
+			if(CBreakPoints::HandleBreakpointHit(BREAKPOINT_IOP, pc))
+				hit = true;
 		}
 	}
 	//check breakpoint in delay slot
@@ -1349,7 +1350,8 @@ static bool psxDynarecCheckBreakpoint()
 	{
 		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_IOP, pc + 4);
 		if (cond == NULL || cond->Evaluate())
-			hit = true;
+			if(CBreakPoints::HandleBreakpointHit(BREAKPOINT_IOP, pc + 4))
+				hit = true;
 	}
 
 	if (!hit)
