@@ -50,13 +50,24 @@ typedef void (*mVUrecCallXG)(void);
 // Program logging is compiled out by default (x86: microVU_Misc.h mVUlogProg).
 #define mVUdumpProg(...) if (0) {}
 
-// --- not-yet-ported codegen / compile layer (defined as stubs below) ---------
-// Dispatcher + helper-thunk generators (task 7.2d):
+// --- dispatcher + helper-thunk codegen (task 7.2d) ----------------------------
+// These emit into the already-open armAsm (mVUgenerateDispatchers opens it).
 static void mVUdispatcherAB(microVU& mVU);
 static void mVUdispatcherCD(microVU& mVU);
 static void mVUGenerateWaitMTVU(microVU& mVU);
 static void mVUGenerateCopyPipelineState(microVU& mVU);
 static void mVUGenerateCompareState(microVU& mVU);
+static void mVUgenerateDispatchers(microVU& mVU);
+
+// The C helper the waitMTVU thunk calls (x86: microVU_Misc.inl mVUwaitMTVU).
+static void mVUwaitMTVU();
+
+// The dispatcher (mVUdispatcherAB) calls these; defined later in this TU.
+static void* mVUexecuteVU0(u32 startPC, u32 cycles);
+static void* mVUexecuteVU1(u32 startPC, u32 cycles);
+static void  mVUcleanUpVU0();
+static void  mVUcleanUpVU1();
+
 // Block compiler entry points (later Phase 7 tasks):
 extern void* mVUblockFetch(microVU& mVU, u32 startPC, uptr pState);
 static void* mVUentryGet(microVU& mVU, microBlockManager* block, u32 startPC, uptr pState);
@@ -101,14 +112,10 @@ void mVUreset(microVU& mVU, bool resetReserve)
 		VU0.VI[REG_VPU_STAT].UL &= ~0x100;
 	}
 
-	// TODO(7.2d): point the VIXL emitter at mVU.cache (the x86 rec does
-	// xSetTextPtr(mVU.textPtr()) / xSetPtr(mVU.cache) here) and emit the
-	// dispatchers + helper thunks. These generators are stubs until 7.2d.
-	mVUdispatcherAB(mVU);
-	mVUdispatcherCD(mVU);
-	mVUGenerateWaitMTVU(mVU);
-	mVUGenerateCopyPipelineState(mVU);
-	mVUGenerateCompareState(mVU);
+	// Point the VIXL emitter at mVU.cache and emit the dispatchers + helper thunks
+	// at the start of the cache (x86: xSetPtr(mVU.cache) + the five generate calls).
+	// Also sets mVU.prog.codeStart / codePtr just past the emitted dispatchers.
+	mVUgenerateDispatchers(mVU);
 
 	mVU.regs().nextBlockCycles = 0;
 	memset(&mVU.prog.lpState, 0, sizeof(mVU.prog.lpState));
@@ -121,11 +128,8 @@ void mVUreset(microVU& mVU, bool resetReserve)
 	mVU.prog.total    =  0;
 	mVU.prog.curFrame =  0;
 
-	// Setup Dynarec Cache Limits for Each Program. The x86 rec sets codeStart to
-	// xGetAlignedCallTarget() (i.e. just past the dispatchers it emitted above);
-	// 7.2d will set it precisely once the dispatchers actually emit code.
-	mVU.prog.codeStart = mVU.cache;
-	mVU.prog.codePtr   = mVU.prog.codeStart;
+	// (codeStart / codePtr were set by mVUgenerateDispatchers, just past the
+	// emitted dispatchers — the x86 rec does this with xGetAlignedCallTarget().)
 
 	for (u32 i = 0; i < (mVU.progSize / 2); i++)
 	{
@@ -489,18 +493,342 @@ bool SaveStateBase::vuJITFreeze()
 }
 
 //------------------------------------------------------------------
-// Not-yet-ported codegen / compile layer (temporary stubs)
+// Dispatcher / helper-thunk code generation (task 7.2d)
 //------------------------------------------------------------------
-// These belong to task 7.2d (dispatcher generation) and the later block-compiler
-// port. microVU is unselected on ARM64 (VMManager pins CpuIntVU0/1), so none of
-// these run yet — the pxFailRel is a loud guard if that ever changes before they
-// are implemented. They exist so the cache-management code above links.
+// ARM64 port of microVU_Execute.inl 23-315. This pins the final ARM64 microVU
+// ABI. All five generators below emit into the armAsm opened by
+// mVUgenerateDispatchers (one MacroAssembler session for the whole dispatcher
+// block, finalised once). microVU is still unselected on ARM64 (VMManager pins
+// CpuIntVU0/1), so the emitted code is not executed yet — but it compiles for
+// real and pins the register/entry contract every later Phase-7 task builds on.
+//
+// Entry contract (mVUdispatcherAB = mVU.startFunct), called from C as
+//   ((void(*)(u32 startPC, u32 cycles))startFunct)(startPC, cycles):
+//   * startPC -> w0 (RWARG1), cycles -> w1 (RWARG2);
+//   * call mVUexecuteVU0/1(startPC, cycles); it returns the block entry in x0;
+//   * load the VU FPCR (if it differs from the EE's), set RVUSTATE = &vuRegs[i],
+//     load the PQ NEON reg + mac/clip flag instances + the 4 status-flag GPRs
+//     (gprF0-3 = w23-w26);
+//   * br x0 (into the compiled block); the block exits by jumping to
+//     mVU.exitFunct, which restores the EE FPCR and runs mVUcleanUpVU0/1.
 
-static void mVUdispatcherAB(microVU&)            { pxFailRel("ARM64 mVUdispatcherAB not ported (Phase 7.2d)"); }
-static void mVUdispatcherCD(microVU&)            { pxFailRel("ARM64 mVUdispatcherCD not ported (Phase 7.2d)"); }
-static void mVUGenerateWaitMTVU(microVU&)        { pxFailRel("ARM64 mVUGenerateWaitMTVU not ported (Phase 7.2d)"); }
-static void mVUGenerateCopyPipelineState(microVU&) { pxFailRel("ARM64 mVUGenerateCopyPipelineState not ported (Phase 7.2d)"); }
-static void mVUGenerateCompareState(microVU&)    { pxFailRel("ARM64 mVUGenerateCompareState not ported (Phase 7.2d)"); }
+// Whether the dispatcher needs to swap FPCR on entry/exit (x86: mvuNeedsFPCRUpdate).
+static bool mvuNeedsFPCRUpdate(microVU& mVU)
+{
+	// Always update on the VU1 (MTVU) thread.
+	if (mVU.index == 1 && THREAD_VU1)
+		return true;
+
+	// Otherwise only when the VU's FPCR differs from the EE's.
+	return EmuConfig.Cpu.FPUFPCR.bitmask !=
+		(mVU.index == 0 ? EmuConfig.Cpu.VU0FPCR.bitmask : EmuConfig.Cpu.VU1FPCR.bitmask);
+}
+
+// Emit: load the u64 FPCR bitmask at `bitmaskPtr` and write it to the host FPCR.
+// Uses x16/x17 scratch only (never the block-entry x0 the AB dispatcher holds).
+static void mVUemitSetHostFPCR(const void* bitmaskPtr)
+{
+	armMoveAddressToReg(RSCRATCHADDR, bitmaskPtr);          // x17 = &bitmask
+	armAsm->Ldr(RXVIXLSCRATCH, a64::MemOperand(RSCRATCHADDR)); // x16 = bitmask
+	armAsm->Msr(a64::FPCR, RXVIXLSCRATCH);
+}
+
+// Generates the code for entering/exiting recompiled blocks.
+static void mVUdispatcherAB(microVU& mVU)
+{
+	const bool isVU1 = (mVU.index == 1);
+	mVU.startFunct = armGetCurrentCodePointer();
+
+	// Save callee-saved GPRs (x19-x28, fp/lr) and the low halves of v8-v15.
+	armBeginStackFrame(true);
+
+	// Args (startPC, cycles) are already in w0/w1; mVUexecute returns entry in x0.
+	armEmitCall(reinterpret_cast<const void*>(isVU1 ? mVUexecuteVU1 : mVUexecuteVU0));
+
+	// Load VU's FPCR state.
+	if (mvuNeedsFPCRUpdate(mVU))
+		mVUemitSetHostFPCR(isVU1 ? &EmuConfig.Cpu.VU1FPCR.bitmask : &EmuConfig.Cpu.VU0FPCR.bitmask);
+
+	// All VF/VI/flag loads address off RVUSTATE = &vuRegs[index].
+	armMoveAddressToReg(RVUSTATE, &::vuRegs[mVU.index]);
+
+	// Build the PQ latency register (v24). Final lane layout matches the x86 rec:
+	//   VU0: [Q, pending_q, P, P]   VU1: [Q, pending_q, P, pending_p]
+	// (NEON V4S lane0 = lowest 32 bits = X, same order as xmm.) v25 is a free
+	// scratch (not in the VF pool v0-v23, not PQ, not VIXL scratch v31).
+	const a64::VRegister vtmp = a64::VRegister(25, 128);
+	armAsm->Ldr(mVU_xmmPQ.S(), a64::MemOperand(RVUSTATE, mVUoffVI(REG_Q)));      // lane0 = Q
+	armAsm->Ldr(vtmp.S(),      a64::MemOperand(RVUSTATE, offsetof(VURegs, pending_q)));
+	armAsm->Ins(mVU_xmmPQ.V4S(), 1, vtmp.V4S(), 0);                              // lane1 = pending_q
+	armAsm->Ldr(vtmp.S(),      a64::MemOperand(RVUSTATE, mVUoffVI(REG_P)));      // vtmp = P
+	armAsm->Ins(mVU_xmmPQ.V4S(), 2, vtmp.V4S(), 0);                             // lane2 = P
+	if (isVU1)
+	{
+		armAsm->Ldr(vtmp.S(), a64::MemOperand(RVUSTATE, offsetof(VURegs, pending_p)));
+		armAsm->Ins(mVU_xmmPQ.V4S(), 3, vtmp.V4S(), 0);                         // lane3 = pending_p
+	}
+	else
+	{
+		armAsm->Ins(mVU_xmmPQ.V4S(), 3, vtmp.V4S(), 0);                         // lane3 = P (vtmp still = P)
+	}
+
+	// Copy the mac/clip flag instances into the microVU's working storage.
+	armAsm->Ldr(vtmp.Q(), a64::MemOperand(RVUSTATE, offsetof(VURegs, micro_macflags)));
+	armMoveAddressToReg(RSCRATCHADDR, &mVU.macFlag[0]);
+	armAsm->Str(vtmp.Q(), a64::MemOperand(RSCRATCHADDR));
+	armAsm->Ldr(vtmp.Q(), a64::MemOperand(RVUSTATE, offsetof(VURegs, micro_clipflags)));
+	armMoveAddressToReg(RSCRATCHADDR, &mVU.clipFlag[0]);
+	armAsm->Str(vtmp.Q(), a64::MemOperand(RSCRATCHADDR));
+
+	// Load the 4 status-flag instances into gprF0-gprF3 (w23-w26).
+	for (int i = 0; i < 4; i++)
+		armAsm->Ldr(armWRegister(mVU_F0 + i), a64::MemOperand(RVUSTATE, offsetof(VURegs, micro_statusflags) + i * 4));
+
+	// Jump to the recompiled code block (entry still in x0).
+	armAsm->Br(RXRET);
+
+	// --- exit path: the block jumps here when done ---
+	mVU.exitFunct = armGetCurrentCodePointer();
+
+	// Restore the EE's FPCR state.
+	if (mvuNeedsFPCRUpdate(mVU))
+		mVUemitSetHostFPCR(&EmuConfig.Cpu.FPUFPCR.bitmask);
+
+	armEmitCall(reinterpret_cast<const void*>(isVU1 ? mVUcleanUpVU1 : mVUcleanUpVU0));
+
+	armEndStackFrame(true);
+	armAsm->Ret();
+}
+
+// Generates the code for resuming/exiting xgkick.
+static void mVUdispatcherCD(microVU& mVU)
+{
+	const bool isVU1 = (mVU.index == 1);
+	mVU.startFunctXG = armGetCurrentCodePointer();
+
+	armBeginStackFrame(true);
+
+	// Load VU's FPCR state.
+	if (mvuNeedsFPCRUpdate(mVU))
+		mVUemitSetHostFPCR(isVU1 ? &EmuConfig.Cpu.VU1FPCR.bitmask : &EmuConfig.Cpu.VU0FPCR.bitmask);
+
+	// mVUrestoreRegs(): reload the PQ reg from its XGKICK backup slot.
+	armMoveAddressToReg(RSCRATCHADDR, &mVU.vecBackup[mVU_xmmPQ.GetCode()][0]);
+	armAsm->Ldr(mVU_xmmPQ.Q(), a64::MemOperand(RSCRATCHADDR));
+
+	armMoveAddressToReg(RVUSTATE, &::vuRegs[mVU.index]);
+	for (int i = 0; i < 4; i++)
+		armAsm->Ldr(armWRegister(mVU_F0 + i), a64::MemOperand(RVUSTATE, offsetof(VURegs, micro_statusflags) + i * 4));
+
+	// Jump to the recompiled code position to resume xgkick.
+	armMoveAddressToReg(RSCRATCHADDR, &mVU.resumePtrXG);
+	armAsm->Ldr(RSCRATCHADDR, a64::MemOperand(RSCRATCHADDR));
+	armAsm->Br(RSCRATCHADDR);
+
+	// --- exit path ---
+	mVU.exitFunctXG = armGetCurrentCodePointer();
+
+	// Back up the status flags (the other regs were backed up on xgkick).
+	armMoveAddressToReg(RVUSTATE, &::vuRegs[mVU.index]);
+	for (int i = 0; i < 4; i++)
+		armAsm->Str(armWRegister(mVU_F0 + i), a64::MemOperand(RVUSTATE, offsetof(VURegs, micro_statusflags) + i * 4));
+
+	// Restore the EE's FPCR state.
+	if (mvuNeedsFPCRUpdate(mVU))
+		mVUemitSetHostFPCR(&EmuConfig.Cpu.FPUFPCR.bitmask);
+
+	armEndStackFrame(true);
+	armAsm->Ret();
+}
+
+// The C helper called by the waitMTVU thunk (x86: microVU_Misc.inl mVUwaitMTVU).
+static void mVUwaitMTVU()
+{
+	if (IsDevBuild)
+		DevCon.WriteLn("microVU: Waiting on VU1 thread to access VU1 regs!");
+	vu1Thread.WaitVU();
+}
+
+// A transparent helper-thunk: the register allocator does not know this call
+// happens, so it must preserve every caller-saved host reg that can hold live VU
+// state — the VF/PQ NEON pool (v0-v24) and the caller-saved GPRs that can hold VI
+// values (x0-x15). gprF0-3 (w23-w26) and callee-saved VI regs survive the inner C
+// call automatically. Only reached under MTVU (VU1 thread).
+static void mVUGenerateWaitMTVU(microVU& mVU)
+{
+	mVU.waitMTVU = armGetCurrentCodePointer();
+
+	constexpr int kGprSave = 16; // x0..x15
+	constexpr int kVecSave = 25; // v0..v24 (VF pool + PQ)
+	constexpr int gprBytes = kGprSave * 8;
+	constexpr int vecBytes = kVecSave * 16;
+	constexpr int frame = gprBytes + ((vecBytes + 15) & ~15); // 16-aligned
+
+	armAsm->Sub(a64::sp, a64::sp, frame);
+	for (int i = 0; i < kGprSave; i += 2)
+		armAsm->Stp(armXRegister(i), armXRegister(i + 1), a64::MemOperand(a64::sp, i * 8));
+	int voff = gprBytes;
+	for (int i = 0; i < kVecSave - 1; i += 2, voff += 32)
+		armAsm->Stp(armQRegister(i), armQRegister(i + 1), a64::MemOperand(a64::sp, voff));
+	armAsm->Str(armQRegister(kVecSave - 1), a64::MemOperand(a64::sp, voff));
+
+	armEmitCall(reinterpret_cast<const void*>(mVUwaitMTVU));
+
+	voff = gprBytes;
+	for (int i = 0; i < kVecSave - 1; i += 2, voff += 32)
+		armAsm->Ldp(armQRegister(i), armQRegister(i + 1), a64::MemOperand(a64::sp, voff));
+	armAsm->Ldr(armQRegister(kVecSave - 1), a64::MemOperand(a64::sp, voff));
+	for (int i = 0; i < kGprSave; i += 2)
+		armAsm->Ldp(armXRegister(i), armXRegister(i + 1), a64::MemOperand(a64::sp, i * 8));
+	armAsm->Add(a64::sp, a64::sp, frame);
+	armAsm->Ret();
+}
+
+// Copies the 96-byte pipeline state from [x0] (source pState, supplied by the
+// caller) into mVU.prog.lpState (x86: mVUGenerateCopyPipelineState).
+static void mVUGenerateCopyPipelineState(microVU& mVU)
+{
+	mVU.copyPLState = armGetCurrentCodePointer();
+
+	armMoveAddressToReg(RXARG2, &mVU.prog.lpState); // x1 = dest
+	for (int i = 0; i < 6; i++)
+	{
+		const a64::VRegister v = a64::VRegister(i, 128);
+		armAsm->Ldr(v.Q(), a64::MemOperand(RXARG1, i * 16));
+		armAsm->Str(v.Q(), a64::MemOperand(RXARG2, i * 16));
+	}
+	armAsm->Ret();
+}
+
+// Custom optimised block-search comparator: compares the two 96-byte
+// microRegInfo blocks at x0 (lhs) and x1 (rhs); returns w0 = 0 iff fully equal
+// (x86: mVUGenerateCompareState; the search treats 0 as a match).
+static void mVUGenerateCompareState(microVU& mVU)
+{
+	mVU.compareStateF = armGetCurrentCodePointer();
+
+	// 6 x 128-bit lanewise equality compares (0xffffffff per equal 32-bit lane),
+	// AND-reduced into v0.
+	auto cmp16 = [&](int off, int dst, int t0, int t1) {
+		const a64::VRegister a = a64::VRegister(t0, 128), b = a64::VRegister(t1, 128);
+		armAsm->Ldr(a.Q(), a64::MemOperand(RXARG1, off));
+		armAsm->Ldr(b.Q(), a64::MemOperand(RXARG2, off));
+		armAsm->Cmeq(a64::VRegister(dst, 128).V4S(), a.V4S(), b.V4S());
+	};
+	cmp16(0x00, 0, 0, 1);
+	cmp16(0x10, 2, 2, 3);
+	cmp16(0x20, 4, 4, 5);
+	cmp16(0x30, 6, 6, 7);
+	armAsm->And(a64::VRegister(0, 128).V16B(), a64::VRegister(0, 128).V16B(), a64::VRegister(2, 128).V16B());
+	armAsm->And(a64::VRegister(4, 128).V16B(), a64::VRegister(4, 128).V16B(), a64::VRegister(6, 128).V16B());
+	cmp16(0x40, 2, 2, 3);
+	cmp16(0x50, 6, 6, 7);
+	armAsm->And(a64::VRegister(2, 128).V16B(), a64::VRegister(2, 128).V16B(), a64::VRegister(6, 128).V16B());
+	armAsm->And(a64::VRegister(0, 128).V16B(), a64::VRegister(0, 128).V16B(), a64::VRegister(4, 128).V16B());
+	armAsm->And(a64::VRegister(0, 128).V16B(), a64::VRegister(0, 128).V16B(), a64::VRegister(2, 128).V16B());
+
+	// v0 is all-ones iff every byte matched. Reduce: min byte == 0xff iff equal.
+	armAsm->Uminv(a64::VRegister(1, 128).B(), a64::VRegister(0, 128).V16B());
+	armAsm->Umov(RWRET, a64::VRegister(1, 128).V16B(), 0);
+	armAsm->Eor(RWRET, RWRET, 0xff); // 0 iff equal
+	armAsm->Ret();
+}
+
+// Emit the dispatchers + helper thunks at the start of the VU's code cache, then
+// set codeStart/codePtr just past them (x86: xSetPtr(mVU.cache) + the five
+// generate calls + xGetAlignedCallTarget in mVUreset). No constant pool: the
+// dispatchers materialise addresses via adrp/mov and call C helpers via mov+blr.
+static void mVUgenerateDispatchers(microVU& mVU)
+{
+	u8* const cacheEnd = (mVU.index ? SysMemory::GetVU1RecEnd() : SysMemory::GetVU0RecEnd());
+	armSetAsmPtr(mVU.cache, static_cast<size_t>(cacheEnd - mVU.cache), nullptr);
+	armStartBlock();
+
+	mVUdispatcherAB(mVU);
+	mVUdispatcherCD(mVU);
+	mVUGenerateWaitMTVU(mVU);
+	mVUGenerateCopyPipelineState(mVU);
+	mVUGenerateCompareState(mVU);
+
+	u8* const end = armEndBlock();
+	mVU.prog.codeStart = mVU.prog.codePtr =
+		reinterpret_cast<u8*>((reinterpret_cast<uintptr_t>(end) + 15u) & ~uintptr_t(15));
+}
+
+//------------------------------------------------------------------
+// Execution / cleanup (microVU_Execute.inl 318-381)
+//------------------------------------------------------------------
+
+// Executes for the given number of cycles: finds (compiling if needed) the
+// microprogram for startPC and returns its host entry point.
+template <int vuIndex>
+static void* mVUexecute(u32 startPC, u32 cycles)
+{
+	microVU& mVU = (vuIndex ? microVU1 : microVU0);
+	const u32 vuLimit = vuIndex ? 0x3ff8 : 0xff8;
+	if (startPC > vuLimit + 7)
+		DevCon.Warning("microVU%x Warning: startPC = 0x%x, cycles = 0x%x", vuIndex, startPC, cycles);
+
+	mVU.cycles = cycles;
+	mVU.totalCycles = cycles;
+
+	// x86 repositions its single global emit cursor here (xSetTextPtr/xSetPtr to
+	// mVU.prog.x86ptr). On ARM64 the per-block emit session (armStartBlock/
+	// armEndBlock, with the icache flush that must precede execution) is owned by
+	// the block compiler (mVUblockFetch, a later Phase-7 task); mVUexecute only
+	// drives the program search.
+	return mVUsearchProg<vuIndex>(startPC & vuLimit, (uptr)&mVU.prog.lpState);
+}
+
+// Post-execution bookkeeping: cache-limit reset + cycle accounting.
+template <int vuIndex>
+static void mVUcleanUp()
+{
+	microVU& mVU = (vuIndex ? microVU1 : microVU0);
+
+	// The block compiler advanced mVU.prog.codePtr as it emitted; if it ran past
+	// the cache limit, reset the program cache (x86 checks xGetPtr() here).
+	if ((mVU.prog.codePtr < mVU.prog.codeStart) || (mVU.prog.codePtr >= mVU.prog.codeEnd))
+	{
+		Console.WriteLn(vuIndex ? Color_Orange : Color_Magenta, "microVU%d: Program cache limit reached.", mVU.index);
+		mVUreset(mVU, false);
+	}
+
+	mVU.cycles = mVU.totalCycles - std::max(0, mVU.cycles);
+	mVU.regs().cycle += mVU.cycles;
+
+	if (!vuIndex || !THREAD_VU1)
+	{
+		u32 cycles_passed = std::min(mVU.cycles, 3000) * EmuConfig.Speedhacks.EECycleSkip;
+		if (cycles_passed > 0)
+		{
+			s64 vu0_offset = VU0.cycle - cpuRegs.cycle;
+			cpuRegs.cycle += cycles_passed;
+
+			// VU0 needs to stay in sync with the CPU otherwise things get messy.
+			// So we need to adjust when VU1 skips cycles also.
+			if (!vuIndex)
+				VU0.cycle = cpuRegs.cycle + vu0_offset;
+			else
+				VU0.cycle += cycles_passed;
+		}
+	}
+	mVU.profiler.Print();
+}
+
+// Caller wrappers (x86: microVU_Execute.inl 378-381) — the dispatcher branches
+// to these by address.
+static void* mVUexecuteVU0(u32 startPC, u32 cycles) { return mVUexecute<0>(startPC, cycles); }
+static void* mVUexecuteVU1(u32 startPC, u32 cycles) { return mVUexecute<1>(startPC, cycles); }
+static void  mVUcleanUpVU0() { mVUcleanUp<0>(); }
+static void  mVUcleanUpVU1() { mVUcleanUp<1>(); }
+
+//------------------------------------------------------------------
+// Not-yet-ported block compiler (temporary stubs — later Phase 7 tasks)
+//------------------------------------------------------------------
+// microVU is unselected on ARM64 (VMManager pins CpuIntVU0/1), so these are
+// never reached; the pxFailRel is a loud guard if that ever changes before the
+// block compiler is ported. They exist so the cache-management code links.
 
 void* mVUblockFetch(microVU&, u32, uptr)
 {
