@@ -355,9 +355,13 @@ void GSState::ResetDrawBufferIdx()
 	m_vertex = &m_vertex_buffers[m_current_buffer_idx];
 
 	if (m_index->tail == 0)
+	{
 		m_backed_up_ctx = -1;
+		m_dirty_gs_regs = 0;
+	}
+	else
+		m_dirty_gs_regs = m_env_buffers[m_current_buffer_idx].m_dirty_regs;
 
-	m_dirty_gs_regs = 0;
 
 	//DevCon.Warning("New round of draws buffer %d vertex tail %d index tail %d TME %d TBP0 0x%x draw %d", m_current_buffer_idx, m_vertex->tail, m_index->tail, m_env.PRIM.TME, m_env.CTXT[m_env.PRIM.CTXT].TEX0.TBP0, s_n);
 }
@@ -443,7 +447,6 @@ void GSState::FlushBuffers(bool flush_base_only, bool use_flush_reason, GSFlushR
 	m_current_buffer_idx = current_idx;
 	m_index = &m_index_buffers[m_current_buffer_idx];
 	m_vertex = &m_vertex_buffers[m_current_buffer_idx];
-	m_dirty_gs_regs = 0;
 
 	const int ctx = m_env_buffers[m_current_buffer_idx].m_backed_up_ctx;
 	std::memcpy(&m_prev_env, &m_env_buffers[m_current_buffer_idx].m_env, 88);
