@@ -1069,6 +1069,7 @@ set(pcsx2arm64Headers
 	arm64/AsmHelpers.h
 	arm64/aR5900.h
 	arm64/aVU.h
+	arm64/aVU_IR.h
 )
 
 # These ones benefit a lot from LTO
