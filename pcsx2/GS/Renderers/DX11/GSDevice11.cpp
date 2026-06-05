@@ -3049,6 +3049,16 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	{
 		draw_ds = m_state.current_ds;
 	}
+	else if (!(draw_rt || draw_rt_rov) && draw_ds_rov && m_state.rt_uav && m_state.current_rt_uav && m_state.rt_uav == *static_cast<GSTexture11*>(m_state.current_rt_uav) &&
+		m_state.current_ds_uav == draw_ds_rov && config.tex != m_state.current_rt_uav)
+	{
+		draw_rt_rov = m_state.current_rt_uav;
+	}
+	else if (!(draw_ds || draw_ds_rov) && draw_rt_rov && m_state.ds_uav && m_state.current_ds_uav && m_state.ds_uav == *static_cast<GSTexture11*>(m_state.current_ds_uav) &&
+			 m_state.current_rt_uav == draw_rt_rov && config.tex != m_state.current_ds_uav)
+	{
+		draw_ds_rov = m_state.current_ds_uav;
+	}
 
 	const bool rt_feedbackloop_pass1 = config.IsFeedbackLoopRT(config.ps);
 	const bool rt_feedbackloop_pass2 = config.IsFeedbackLoopRT(config.alpha_second_pass.ps);
