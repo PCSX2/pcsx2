@@ -8,13 +8,14 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 4.4 recLUT block linking + dispatcher — RE-ATTEMPTED & BOOTS (on branch
-`armjit-reclut-v2`).**
+**Phase 4.4 recLUT block linking + dispatcher — DONE & MERGED to `armjit`.**
 
 The recLUT execution model (parked since 2026-06-04 on `armjit-reclut-wip`) was
 re-derived on top of the current `armjit` (MMI-complete) baseline and **now boots the
 BIOS** — reaches `Mode Changed to DVD PAL` + `Pad: DS2 Config Finished`, stays alive,
-no hang/crash (verified live 2026-06-05). Branch: `armjit-reclut-v2`, commit `37787a50b`.
+no hang/crash (verified live 2026-06-05). Commit `37787a50b`, fast-forward merged into
+`armjit` — recLUT is now the live EE dispatch model (the Phase 4.3 `s_blocks` loop is
+gone).
 
 The parked stall was exactly the **4.5-invalidation × 4.4-recLUT interaction** the user
 suspected. Two root causes, both fixed:
@@ -37,7 +38,8 @@ whose START slot is in the cleared range — a block straddling in from an earli
 is missed. Fine for BIOS; SMC-heavy games may need overlap-aware invalidation.
 
 **Verified:** unittests green (Arm64EmitEE 270/270, 273 total); BIOS boots live.
-**Next:** game-compat smoke test on `armjit-reclut-v2`; if clean, merge to `armjit`.
+**Next:** game-compat smoke test on `armjit` (now recLUT-backed); then Phase 5.1 COP0 /
+5.3 COP2-VU0 macro, or IOP rec (Phase 6) for playable 2D.
 Diagnostic tooling note: lldb attach needs a `get-task-allow` ad-hoc re-sign
 (`codesign --force --sign - --entitlements <get-task-allow> --deep PCSX2.app`); `sample
 <pid>` + `lldb -o 'breakpoint set -n malloc_error_break' -o run -o bt` found both bugs.
@@ -278,13 +280,12 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
   dispatcher loop in `recExecute` (pc→block→`_cpuEventTest_Shared`); per-opcode
   interpreter fallback via `intExecuteOneInst`; `Cpu = &recCpu` on ARM64.
 - [x] 4.4 Block linking + recLUT (replaces the bring-up `s_blocks` unordered_map +
-  recompile-on-miss). **RE-ATTEMPTED & BOOTS on branch `armjit-reclut-v2` (commit
-  `37787a50b`).** recLUT page table + emitted DispatcherReg/Event/JITCompile/Enter/
-  Unmapped stubs + inline cycle/event tail; blocks chain in host code. The parked
-  `armjit-reclut-wip` stall was the 4.5-invalidation × recLUT interaction: fixed with
-  targeted `recClear` (per-range slot reset, not whole-cache `recResetRaw`) + a 1 MB
-  cache-emit headroom (VIXL was realloc'ing the MAP_JIT buffer). See CURRENT FOCUS.
-  Not yet merged to `armjit` (pending game-compat smoke test).
+  recompile-on-miss). **DONE & MERGED to `armjit` (commit `37787a50b`).** recLUT page
+  table + emitted DispatcherReg/Event/JITCompile/Enter/Unmapped stubs + inline
+  cycle/event tail; blocks chain in host code. The parked `armjit-reclut-wip` stall was
+  the 4.5-invalidation × recLUT interaction: fixed with targeted `recClear` (per-range
+  slot reset, not whole-cache `recResetRaw`) + a 1 MB cache-emit headroom (VIXL was
+  realloc'ing the MAP_JIT buffer). See CURRENT FOCUS.
 - [~] 4.5 Block invalidation on TLB-mapping change. RAM-code page marking landed
   earlier (`recProtectCompiledRange` → `mmap_MarkCountedRamPage`). On `armjit-reclut-v2`
   the coarse whole-cache reset is replaced by **recLUT-backed targeted invalidation**:
