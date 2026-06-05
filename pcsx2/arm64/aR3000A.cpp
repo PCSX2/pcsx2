@@ -194,14 +194,18 @@ static void recResetIOP()
 //  Emit helpers
 // --------------------------------------------------------------------------------------
 
-// Emit psxRegs.code = op; then call the interpreter handler for `op`. (Currently unused
-// by the all-interpreter skeleton; kept for the inline-fallback path used once native
-// generators land — e.g. straight-line COP2/GTE ops.)
-[[maybe_unused]] static void recEmitInterpInline(u32 op)
+// Emit psxRegs.code = op; then call the IOP interpreter handler for `op` (psxBSC, the
+// R3000A primary-opcode dispatch table). Used for delay-slot ops we have no native
+// generator for. The handler reads its operands from psxRegs.code and does NOT advance
+// pc or charge a cycle (execI does that in the interpreter), so it is safe in a delay
+// slot. RESTATEPTR(x19) is callee-saved across the call. Must not be used for a branch
+// op (psxBSC for a branch would call doBranch → nested delay slot + pc write); the block
+// compiler bails such cases to the interpreter.
+static void recEmitInterpInline(u32 op)
 {
 	armAsm->Mov(RWARG1, op);
 	armAsm->Str(RWARG1, a64::MemOperand(RESTATEPTR, IOP_CODE_OFFSET));
-	armEmitCall(reinterpret_cast<const void*>(R5900::GetInstruction(op).interpret));
+	armEmitCall(reinterpret_cast<const void*>(psxBSC[op >> 26]));
 }
 
 // psxRegs.pc = imm (block fallthrough / resume target).
@@ -756,9 +760,151 @@ static void iopEmitSWR(u32 rt, u32 rs, s32 imm)
 	armEmitCall(reinterpret_cast<const void*>(&iopMemWrite32));
 }
 
+// --------------------------------------------------------------------------------------
+//  Branch / jump generators (Phase 6.3)
+// --------------------------------------------------------------------------------------
+// 32-bit counterparts of the EE branch generators (aR5900Branch.cpp). Each emits only the
+// control-flow effect — the psxRegs.pc write and, for the linking forms, the GPR[31]/GPR[rd]
+// return-address write. They do NOT compile the delay slot or end the block; the block
+// compiler compiles the delay slot after and RETs to the dispatcher loop, which re-reads
+// psxRegs.pc. Writing pc before the delay slot is safe (no IOP delay-slot op writes pc) and
+// required for JR/JALR (the target is GPR[rs] as it was *before* the delay slot).
+//
+// Target/fallthrough/link constants mirror the interpreter macros with _PC_ == branchpc+4:
+//   J/JAL  target = (instr_index << 2) | ((branchpc+4) & 0xF0000000)
+//   branch target = (branchpc+4) + (s16(imm) << 2)
+//   fallthrough / link = branchpc + 8
+// The R3000A doBranch a0-override (target 0xbfc4a000) and ClearIrxModules (target 0x890) are
+// interpreter-only quirks the x86 IOP rec also skips (psxSetBranchReg/Imm don't replicate
+// them), so the native generators omit them too. The psxJ IRX-import magic IS handled — by
+// bailing J-with-magic-delay-slot to the interpreter in the block compiler.
+
+static void iopWritePcReg(const a64::Register& src_w)
+{
+	armAsm->Str(src_w, a64::MemOperand(RESTATEPTR, IOP_PC_OFFSET));
+}
+
+static void iopWritePcImm(u32 pc)
+{
+	armAsm->Mov(RSCRATCHW, pc);
+	iopWritePcReg(RSCRATCHW);
+}
+
+// GPR[reg] = linkpc (32-bit).
+static void iopWriteLink(u32 reg, u32 linkpc)
+{
+	armAsm->Mov(RSCRATCHW, linkpc);
+	armAsm->Str(RSCRATCHW, iopGpr(reg));
+}
+
+// psxRegs.pc = cond ? target : fallthrough, given a preceding Cmp set the flags. Both
+// constants are Mov'd straight into their dest regs (x17 = fallthrough, x16 = target), so
+// neither Mov needs a VIXL temp and the Cmp flags survive into the Csel.
+static void iopSelectPc(u32 target, u32 fallthrough, a64::Condition cond)
+{
+	armAsm->Mov(RSCRATCHW, fallthrough);
+	armAsm->Mov(RSCRATCH2W, target);
+	armAsm->Csel(RSCRATCHW, RSCRATCH2W, RSCRATCHW, cond);
+	iopWritePcReg(RSCRATCHW);
+}
+
+// Compare signed 32-bit GPR[rs] against zero and select pc.
+static void iopBranchZero(u32 rs, u32 target, u32 fallthrough, a64::Condition cond)
+{
+	armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+	armAsm->Cmp(RSCRATCHW, 0);
+	iopSelectPc(target, fallthrough, cond);
+}
+
+// Emit the control-flow effect of the branch/jump at branchpc. Returns true if handled
+// (always, for the ops recIsHandledBranch accepts).
+static bool recEmitIopBranch(u32 op, u32 branchpc)
+{
+	const u32 opcode = op >> 26;
+	const u32 rs = (op >> 21) & 0x1f;
+	const u32 rt = (op >> 16) & 0x1f;
+	const u32 rd = (op >> 11) & 0x1f;
+	const u32 funct = op & 0x3f;
+
+	const u32 delaypc = branchpc + 4;
+	const u32 jtarget = ((op & 0x03ffffff) << 2) | (delaypc & 0xf0000000u);
+	const u32 btarget = delaypc + (static_cast<u32>(static_cast<s32>(static_cast<s16>(op))) << 2);
+	const u32 fallthrough = branchpc + 8;
+	const u32 linkpc = branchpc + 8;
+
+	switch (opcode)
+	{
+		case 0x02: iopWritePcImm(jtarget); return true;                       // J
+		case 0x03: iopWriteLink(31, linkpc); iopWritePcImm(jtarget); return true; // JAL
+
+		case 0x04: // BEQ
+			armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+			armAsm->Ldr(RSCRATCH2W, iopGpr(rt));
+			armAsm->Cmp(RSCRATCHW, RSCRATCH2W);
+			iopSelectPc(btarget, fallthrough, a64::eq);
+			return true;
+		case 0x05: // BNE
+			armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+			armAsm->Ldr(RSCRATCH2W, iopGpr(rt));
+			armAsm->Cmp(RSCRATCHW, RSCRATCH2W);
+			iopSelectPc(btarget, fallthrough, a64::ne);
+			return true;
+		case 0x06: iopBranchZero(rs, btarget, fallthrough, a64::le); return true; // BLEZ (Rs <= 0)
+		case 0x07: iopBranchZero(rs, btarget, fallthrough, a64::gt); return true; // BGTZ (Rs >  0)
+
+		case 0x00: // SPECIAL: JR / JALR (target = GPR[rs] read before the delay slot)
+			if (funct == 0x08) // JR
+			{
+				armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+				iopWritePcReg(RSCRATCHW);
+				return true;
+			}
+			if (funct == 0x09) // JALR
+			{
+				armAsm->Ldr(RSCRATCHW, iopGpr(rs));
+				iopWritePcReg(RSCRATCHW);
+				if (rd != 0)
+					iopWriteLink(rd, linkpc);
+				return true;
+			}
+			return false;
+
+		case 0x01: // REGIMM: BLTZ / BGEZ / BLTZAL / BGEZAL (rt selector)
+			switch (rt)
+			{
+				case 0x00: iopBranchZero(rs, btarget, fallthrough, a64::lt); return true; // BLTZ
+				case 0x01: iopBranchZero(rs, btarget, fallthrough, a64::ge); return true; // BGEZ
+				case 0x10: iopWriteLink(31, linkpc); iopBranchZero(rs, btarget, fallthrough, a64::lt); return true; // BLTZAL
+				case 0x11: iopWriteLink(31, linkpc); iopBranchZero(rs, btarget, fallthrough, a64::ge); return true; // BGEZAL
+				default: return false;
+			}
+
+		default: return false;
+	}
+}
+
+// Is `op` a control-flow op recEmitIopBranch can emit?
+static bool recIsHandledBranch(u32 op)
+{
+	const u32 opcode = op >> 26;
+	const u32 funct = op & 0x3f;
+	const u32 rt = (op >> 16) & 0x1f;
+	switch (opcode)
+	{
+		case 0x02: case 0x03: case 0x04: case 0x05: case 0x06: case 0x07:
+			return true;
+		case 0x00:
+			return funct == 0x08 || funct == 0x09;
+		case 0x01:
+			return rt == 0x00 || rt == 0x01 || rt == 0x10 || rt == 0x11;
+		default:
+			return false;
+	}
+}
+
 // Decode a single instruction into the open block. Returns true if a native generator
 // handled it, false to fall back to single-stepping it through the interpreter. Control-
-// flow ops (J/JR/branches/SYSCALL), loads/stores and coprocessor ops return false for now
+// flow ops are handled separately (recEmitIopBranch); coprocessor ops return false for now
 // — they end the native run and are interpreted (the interpreter handles delay slots).
 static bool recTranslateOp(u32 op)
 {
@@ -832,10 +978,13 @@ static bool recTranslateOp(u32 op)
 	}
 }
 
-// Is `op` a control-flow op we have a native branch generator for? (None yet.)
-static bool recIsHandledBranch(u32 /*op*/)
+// Compile one straight-line or delay-slot instruction: native generator if we have one,
+// otherwise an inline interpreter call. Must not be a branch (the caller guarantees this
+// for delay slots).
+static void recEmitOp(u32 op)
 {
-	return false;
+	if (!recTranslateOp(op))
+		recEmitInterpInline(op);
 }
 
 // --------------------------------------------------------------------------------------
@@ -874,7 +1023,34 @@ static void recRecompile(u32 startpc)
 
 		if (recIsHandledBranch(op))
 		{
-			// (No native branch generators yet — recIsHandledBranch is always false.)
+			const u32 delay_op = iopMemRead32(pc + 4);
+
+			// Bail to the interpreter when we can't safely compile the branch+delay pair:
+			//  - J (0x02) whose delay slot is the IRX-import magic `addiu $0,$0,index`
+			//    (delay_op >> 16 == 0x2400) — psxJ runs irxImportExec, which the native
+			//    generator does not replicate.
+			//  - a delay slot that is itself a branch/jump — inline-interping it would nest
+			//    doBranch (a second delay slot + pc write). Illegal MIPS, but guard anyway.
+			const bool magic_j = (op >> 26) == 0x02 && (delay_op >> 16) == 0x2400;
+			if (magic_j || recIsHandledBranch(delay_op))
+			{
+				if (compiled == 0)
+				{
+					armEmitCall(reinterpret_cast<const void*>(iopExecuteOneInst));
+					interp_step = true;
+				}
+				else
+				{
+					recEmitWritePc(pc); // next dispatch single-steps the branch
+				}
+				break;
+			}
+
+			// Emit the branch effect (writes psxRegs.pc + any link), then the delay slot.
+			// The block ends here; the dispatcher re-reads psxRegs.pc for the next block.
+			recEmitIopBranch(op, pc);
+			recEmitOp(delay_op);
+			block_cycles += 2; // branch + delay slot, 1 cycle each (R3000A is 1 cycle/op)
 			break;
 		}
 
