@@ -8,6 +8,42 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 6.3 IOP native aligned load/store generators — DONE (commit `f104adb25`).**
+
+Wired native ARM64 codegen for the R3000A aligned load/store subset into
+`recTranslateOp` (`pcsx2/arm64/aR3000A.cpp`), so these ops no longer single-step the
+interpreter:
+
+- **Loads:** LB/LBU/LH/LHU/LW. Effective address `GPR[rs]+(s16)imm` into RWARG1
+  (`iopEmitEffectiveAddr`), call `iopMemRead8/16/32`, then sign/zero-extend (Sxtb/Uxtb/
+  Sxth/Uxth; full 32-bit for LW) and store to GPR[rt]. The read is performed even when
+  rt==0 (I/O side effects); only the GPR write is suppressed — matches `psxLB..psxLW`.
+- **Stores:** SB/SH/SW. Value from GPR[rt] (GPR[0] reads zero) into RWARG2, address into
+  RWARG1, call `iopMemWrite8/16/32`.
+
+All go through the `iopMemRead/Write8/16/32` slow path (no vtlb fastmem on the IOP). The
+helper call clobbers caller-saved scratch (x16/x17) but RESTATEPTR=x19 is callee-saved and
+survives; each generator reads its inputs from psxRegs fresh, so no cross-call state lives
+in scratch. The IOP ignores load-delay-slots (as does the x86 IOP rec), so writing GPR[rt]
+immediately and compiling the following op natively is correct. This is the first native
+multi-op IOP block to make a C++ call mid-block — the prologue's 16-byte/16-aligned
+`stp x19,lr` frame keeps sp AAPCS64-aligned at the BL.
+
+**Still on interpreter fallback (return false):** unaligned **LWL/LWR/SWL/SWR** (need
+read-modify-write across a mem call → address/value spilling, next slice), all control
+flow (J/JAL/JR/JALR, REGIMM + BEQ/BNE/BLEZ/BGTZ, SYSCALL/BREAK), and coprocessor ops.
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 100% (2/2 suites; IOP has no gtest
+harness yet — logic mirrors the gtested EE load/store generators); headless BIOS boot
+reaches `Mode Changed to DVD PAL` + `Pad: DS2 Config Finished` (IOP-heavy pad/SIO init)
+with the native IOP load/store path live, no crash/abort/unmapped access.
+
+**Next:** Phase 6.3 cont. — unaligned **LWL/LWR/SWL/SWR**, then **branches/jumps**
+(J/JAL/JR/JALR, BEQ/BNE/BLEZ/BGTZ + REGIMM) so the rec stops breaking the block at every
+control-flow op — the real IOP speedup. Live game IOP-perf measurement after branches land.
+
+---
+
 **Phase 6.3 IOP native integer generators — DONE (commit `86448e99c`).**
 
 Wired native ARM64 codegen for the R3000A integer subset into `recTranslateOp`
@@ -482,7 +518,9 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
   - [x] Integer: ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI, ADD/ADDU/SUB/SUBU/AND/OR/
     XOR/NOR/SLT/SLTU, SLL/SRL/SRA/SLLV/SRLV/SRAV, MFHI/MTHI/MFLO/MTLO,
     MULT/MULTU/DIV/DIVU (commit `86448e99c`). 32-bit; mirrors the gtested EE generators.
-  - [ ] Load/store (via iopMemRead/Write8/16/32 slow path — no vtlb fastmem on IOP).
+  - [~] Load/store (via iopMemRead/Write8/16/32 slow path — no vtlb fastmem on IOP).
+    Aligned LB/LBU/LH/LHU/LW + SB/SH/SW done (commit `f104adb25`); unaligned
+    LWL/LWR/SWL/SWR still interpreter-fallback (RMW across a mem call).
   - [ ] Branches/jumps (J/JAL/JR/JALR, BEQ/BNE/BLEZ/BGTZ + REGIMM).
   - [ ] Coprocessor (COP0 mfc0/mtc0/rfe; COP2/GTE — likely interpreter inline).
 - [x] 6.4 Wire into `VMManager.cpp` (reserve/shutdown/reset + `psxCpu` selection on ARM64).

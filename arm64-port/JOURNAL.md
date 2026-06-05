@@ -28,6 +28,51 @@
 
 ---
 
+## 2026-06-05 — Phase 6.3 IOP native aligned load/store generators
+
+**Goal:** Replace the IOP rec's interpreter single-step for aligned memory ops with native
+ARM64 codegen (LB/LBU/LH/LHU/LW, SB/SH/SW) via the `iopMemRead/Write8/16/32` slow path,
+wired into `recTranslateOp`.
+
+**What changed:**
+- **`pcsx2/arm64/aR3000A.cpp`:** added `iopEmitEffectiveAddr` (GPR[rs]+(s16)imm → RWARG1,
+  mirrors `armEmitEffectiveAddr`), `iopEmitLoad(bits,sign,...)` and `iopEmitStore(bits,...)`,
+  and wired opcodes 0x20/0x21/0x23/0x24/0x25 (LB/LH/LW/LBU/LHU) + 0x28/0x29/0x2B (SB/SH/SW)
+  into `recTranslateOp`. Unaligned 0x22/0x26 (LWL/LWR) + 0x2A/0x2E (SWL/SWR) still return
+  false → interpreter single-step.
+- Commit `f104adb25`.
+
+**Decisions & rationale:**
+- **Slow-path C++ helpers only (no fastmem).** The IOP has no vtlb fastmem; the x86 IOP rec
+  also routes through `iopMemRead/Write`. Each generator computes the EA into RWARG1 (stores
+  also put GPR[rt] into RWARG2) and `armEmitCall`s the helper. Loads extend the RWRET result
+  (Sxtb/Uxtb/Sxth/Uxth; LW = full 32-bit) into GPR[rt].
+- **Read performed even when rt==0.** Matches `psxLB..psxLW`: the access can have I/O side
+  effects, so only the GPR write is suppressed, not the read.
+- **No cross-call scratch state.** The helper call clobbers caller-saved x16/x17, but
+  RESTATEPTR=x19 is callee-saved and survives, and every generator reads its inputs from
+  psxRegs fresh. This is the first native multi-op IOP block to call C++ mid-block; the
+  prologue's `stp x19,lr,[sp,#-16]!` keeps sp 16-aligned at the BL (AAPCS64), same as EE
+  blocks that call vtlb helpers.
+- **Load-delay-slots ignored** (as in the x86 IOP rec), so writing GPR[rt] immediately and
+  compiling the following op natively is correct.
+- **Unaligned LWL/LWR/SWL/SWR deferred.** They read mem, then read-modify-write GPR[rt]/mem
+  with a runtime byte shift+mask — needs spilling the EA/value across the `iopMemRead32`
+  call. Cleaner as its own atomic commit; left on the interpreter for now.
+
+**Blockers / open questions:** none. No IOP gtest harness yet — the load/store logic mirrors
+the gtested EE generators (`aR5900LoadStore.cpp`); BIOS boot is the integration check.
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 100% (2/2 suites); headless `-batch -bios`
+boot reaches `Mode Changed to DVD PAL` + `Pad: DS2 Config Finished` (IOP-heavy pad/SIO init)
+with native IOP load/store live — no crash/abort/unmapped access (emulog.txt).
+
+**Next step:** Phase 6.3 cont. — unaligned **LWL/LWR/SWL/SWR**, then **branches/jumps**
+(J/JAL/JR/JALR, BEQ/BNE/BLEZ/BGTZ + REGIMM) so the rec stops breaking the block at every
+control-flow op (the real IOP speedup).
+
+---
+
 ## 2026-06-05 — Phase 6.3 IOP native integer generators
 
 **Goal:** Replace the IOP rec's all-interpreter single-step skeleton with native ARM64
