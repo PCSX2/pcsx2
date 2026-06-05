@@ -24,7 +24,8 @@
 #include "common/FastJmp.h"
 #include "common/Pcsx2Defs.h"
 
-#include <unordered_map>
+#include <cstring>
+#include <vector>
 
 namespace a64 = vixl::aarch64;
 
@@ -52,23 +53,68 @@ static u8* recPtrEnd = nullptr; // end of the code region / start of the constan
 static ArmConstantPool s_const_pool;
 
 // --------------------------------------------------------------------------------------
-//  Block cache + dispatcher state (Phase 4.3)
+//  recLUT block-lookup table (Phase 4.4)
 // --------------------------------------------------------------------------------------
-// A compiled EE block: its host entry point and the (scaled) guest-cycle cost the
-// dispatcher charges to cpuRegs.cycle after running it. This is the bring-up cache —
-// a flat guest-PC -> block map, cleared wholesale on cache reset. The two-level
-// recLUT + hardlinking optimisation is Phase 4.4.
-struct EEBlock
+// Two-level guest-PC -> host-block lookup, ported from the x86 rec (iR5900.cpp +
+// BaseblockEx.h). The top-level page table recLUT[pc>>16] holds, per 64 KB guest
+// page, a base pointer pre-biased so that
+//
+//     slot   = (uptr*)(recLUT[pc >> 16] + pc * 2)
+//     fnptr  = *slot
+//
+// indexes one host code pointer per 4-byte guest word (sizeof(uptr)==8, so pc*2 ==
+// (pc/4)*8). The emitted DispatcherReg performs exactly this arithmetic and branches
+// to `fnptr`. Uncompiled words point at the JITCompile stub (compile-on-jump);
+// unmapped pages point every word at UnmappedRecLUTPage. The per-word slots live in
+// recLutReserve (one contiguous array covering RAM + the three BIOS ROM regions);
+// recLUT_SetPage maps each guest page (including its address mirrors) onto that
+// array, mirroring x86 so the same code can be reached through any of its mirror
+// addresses via a single shared block. hwLUT is intentionally omitted: invalidation
+// is whole-cache reset for bring-up (Phase 4.5), so no HWADDR folding is needed.
+alignas(16) static uptr recLUT[0x10000];
+
+// One host-pointer slot per guest word of RAM + ROM + ROM1 + ROM2, plus a single
+// shared 64 KB page worth of slots that every unmapped guest page aliases onto.
+static std::vector<uptr> recLutReserve;
+static std::vector<uptr> recLutUnmapped;
+static size_t recLutEntries = 0;
+static uptr* recRAM = nullptr;
+static uptr* recROM = nullptr;  // BIOS (0x1fc0..0x2000 in 64 KB pages)
+static uptr* recROM1 = nullptr; // DVD player
+static uptr* recROM2 = nullptr; // Chinese ROM extension
+
+// C++-side equivalent of the emitted lookup: address of the block slot for `pc`.
+static __fi uptr* recPtrToBlock(u32 pc)
 {
-	u8* entry;
-	u32 cycles;
-};
-static std::unordered_map<u32, EEBlock> s_blocks;
+	return reinterpret_cast<uptr*>(recLUT[pc >> 16] + pc * (sizeof(uptr) / 4));
+}
 
 // Hard cap on instructions per block, so straight-line code can't run the emit
 // cursor away before we get a chance to reset. (x86 uses page/branch boundaries;
 // this is a simpler bring-up bound.)
 static constexpr u32 MAX_BLOCK_INSTS = 256;
+
+// Safety headroom kept free at the end of the code region. The cache-full check fires
+// when recPtr crosses (recPtrEnd - this), guaranteeing the block currently being
+// emitted always fits without VIXL ever trying to grow (realloc) the MAP_JIT buffer —
+// which it cannot, and which aborts the process. A single block is at most
+// MAX_BLOCK_INSTS guest ops plus a delay slot and the dispatch tail; even the largest
+// host expansions stay well under 256 KB, so 1 MB is comfortably safe.
+static constexpr u32 RECOMPILE_HEADROOM = static_cast<u32>(_1mb);
+
+// Byte offsets (from RESTATEPTR = &cpuRegs) of the 64-bit cycle counters the emitted
+// block tail reads/writes for the inline event test.
+static constexpr u32 EE_CYCLE_OFFSET = static_cast<u32>(offsetof(cpuRegisters, cycle));
+static constexpr u32 EE_NEXTEVENTCYCLE_OFFSET = static_cast<u32>(offsetof(cpuRegisters, nextEventCycle));
+
+// Dynamically-generated dispatcher stubs (emitted into the head of the code cache by
+// recGenDispatchers on every reset; addresses are stable across a reset because the
+// stubs regenerate byte-identically at the same location — see recRecompile).
+static const void* DispatcherReg = nullptr;        // lookup cpuRegs.pc in recLUT, jump
+static const void* DispatcherEvent = nullptr;      // run event test, then fall to DispatcherReg
+static const void* JITCompile = nullptr;           // compile block at cpuRegs.pc, then dispatch
+static const void* EnterRecompiledCode = nullptr;  // C entry: pin RESTATEPTR, then dispatch
+static const void* UnmappedRecLUTPage = nullptr;   // jumped to on an unmapped guest PC
 
 // Execution / reset / exit plumbing, mirroring the x86 rec (iR5900.cpp).
 static bool eeRecExecuting = false;
@@ -77,6 +123,85 @@ static bool eeRecExitRequested = false;
 static fastjmp_buf s_jmp_buf;
 
 static void recResetRaw();
+static void recGenDispatchers();
+static void recRecompile(u32 startpc);
+static void recEventTest();
+
+// Associate one 64 KB guest page `pagebase+pageidx` with the slot array `mapbase`,
+// biased so recPtrToBlock(pc) lands at &mapbase[mappage<<14 + (pc&0xffff)/4]. Direct
+// port of x86 recLUT_SetPage (BaseblockEx.h) minus the hwLUT side-table.
+static void recLUT_SetPage(uptr* mapbase, uint pagebase, uint pageidx, uint mappage)
+{
+	const uint page = pagebase + pageidx;
+	pxAssert(page < 0x10000);
+	recLUT[page] = reinterpret_cast<uptr>(&mapbase[(static_cast<s32>(mappage) - static_cast<s32>(page)) << 14]);
+}
+
+// Allocate the per-word slot arrays and build the page table mapping every mapped
+// guest page (and its mirrors) onto them. Mirrors x86 recReserveRAM.
+static void recReserveLUT()
+{
+	recLutEntries = (Ps2MemSize::ExposedRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4;
+	recLutReserve.assign(recLutEntries, 0);
+	recLutUnmapped.assign(_64kb / 4, 0);
+
+	uptr* basepos = recLutReserve.data();
+	recRAM = basepos;
+	basepos += (Ps2MemSize::ExposedRam / 4);
+	recROM = basepos;
+	basepos += (Ps2MemSize::Rom / 4);
+	recROM1 = basepos;
+	basepos += (Ps2MemSize::Rom1 / 4);
+	recROM2 = basepos;
+	basepos += (Ps2MemSize::Rom2 / 4);
+
+	uptr* const unmapped = recLutUnmapped.data();
+	for (int i = 0; i < 0x10000; i++)
+		recLUT_SetPage(unmapped, i, 0, 0);
+
+	for (int i = 0x0000; i < static_cast<int>(Ps2MemSize::ExposedRam / 0x10000); i++)
+	{
+		recLUT_SetPage(recRAM, 0x0000, i, i);
+		recLUT_SetPage(recRAM, 0x2000, i, i);
+		recLUT_SetPage(recRAM, 0x3000, i, i);
+		recLUT_SetPage(recRAM, 0x8000, i, i);
+		recLUT_SetPage(recRAM, 0xa000, i, i);
+		recLUT_SetPage(recRAM, 0xb000, i, i);
+		recLUT_SetPage(recRAM, 0xc000, i, i);
+		recLUT_SetPage(recRAM, 0xd000, i, i);
+	}
+
+	for (int i = 0x1fc0; i < 0x2000; i++)
+	{
+		recLUT_SetPage(recROM, 0x0000, i, i - 0x1fc0);
+		recLUT_SetPage(recROM, 0x8000, i, i - 0x1fc0);
+		recLUT_SetPage(recROM, 0xa000, i, i - 0x1fc0);
+	}
+
+	for (int i = 0x1e00; i < 0x1e40; i++)
+	{
+		recLUT_SetPage(recROM1, 0x0000, i, i - 0x1e00);
+		recLUT_SetPage(recROM1, 0x8000, i, i - 0x1e00);
+		recLUT_SetPage(recROM1, 0xa000, i, i - 0x1e00);
+	}
+
+	for (int i = 0x1e40; i < 0x1e80; i++)
+	{
+		recLUT_SetPage(recROM2, 0x0000, i, i - 0x1e40);
+		recLUT_SetPage(recROM2, 0x8000, i, i - 0x1e40);
+		recLUT_SetPage(recROM2, 0xa000, i, i - 0x1e40);
+	}
+}
+
+// Point every block slot at JITCompile (mapped words) / UnmappedRecLUTPage (unmapped
+// pages) so the next jump to any guest PC compiles-on-demand or faults cleanly.
+static void recClearLUT()
+{
+	for (uptr& slot : recLutReserve)
+		slot = reinterpret_cast<uptr>(JITCompile);
+	for (uptr& slot : recLutUnmapped)
+		slot = reinterpret_cast<uptr>(UnmappedRecLUTPage);
+}
 
 static void recReserve()
 {
@@ -84,12 +209,19 @@ static void recReserve()
 	recPtrEnd = SysMemory::GetEERecEnd() - EE_CONSTPOOL_SIZE;
 
 	s_const_pool.Init(recPtrEnd, EE_CONSTPOOL_SIZE);
+
+	recReserveLUT();
 }
 
 static void recShutdown()
 {
 	s_const_pool.Destroy();
-	s_blocks.clear();
+
+	recLutReserve.clear();
+	recLutReserve.shrink_to_fit();
+	recLutUnmapped.clear();
+	recLutUnmapped.shrink_to_fit();
+	recRAM = recROM = recROM1 = recROM2 = nullptr;
 
 	recPtr = nullptr;
 	recPtrEnd = nullptr;
@@ -97,10 +229,14 @@ static void recShutdown()
 
 static void recResetRaw()
 {
-	// Rewind the emit cursor and drop the block cache + all cached trampolines/literals.
+	// Rewind the emit cursor, drop all cached trampolines/literals, regenerate the
+	// dispatcher stubs at the head of the cache, then reset every block slot. Order
+	// matters: recGenDispatchers fills the JITCompile / UnmappedRecLUTPage pointers
+	// that recClearLUT writes into the slots.
 	recPtr = SysMemory::GetEERec();
 	s_const_pool.Reset();
-	s_blocks.clear();
+	recGenDispatchers();
+	recClearLUT();
 
 	eeRecNeedsReset = false;
 }
@@ -600,40 +736,134 @@ static void recProtectCompiledRange(u32 startpc, u32 endpc)
 }
 
 // --------------------------------------------------------------------------------------
-//  Block compiler (Phase 4.3)
+//  Dispatcher stubs (Phase 4.4)
 // --------------------------------------------------------------------------------------
-// Compile a straight-line run starting at startpc into one host block:
-//   - straight-line ops we can codegen are emitted inline;
-//   - the run stops at the first control-flow op we have a generator for — that
-//     branch + its delay slot are compiled and the block ends (the branch generator
-//     wrote cpuRegs.pc);
-//   - if an op we cannot start a block with is hit first, returns nullptr so the
-//     dispatcher interprets it instead;
-//   - otherwise the block ends at the next un-compilable op (or the length cap),
-//     writing cpuRegs.pc to that address so the dispatcher resumes there.
-// On success fills *out_cycles with the scaled guest-cycle cost. The host block is
-// self-contained: prologue establishes RESTATEPTR(x19) via the enter trampoline (it
-// is set by the caller of the block), and the epilogue is just RET.
-static u8* recCompileBlock(u32 startpc, u32* out_cycles)
+// Entered when DispatcherReg looks up a guest PC whose 64 KB page has no recompiler
+// slot array (scratchpad / hardware registers / TLB-mapped code we don't cover yet).
+// Logs once and bails out of the rec via the exit fastjmp, mirroring x86 recError(0).
+static void recExitUnmapped()
 {
-	// Whole-cache reset once we run past the code region into the constant-pool tail.
-	if (recPtr >= recPtrEnd)
+	Console.Error("ARM64 EE rec: jump to unmapped recLUT page (PC=0x%08x)", cpuRegs.pc);
+	eeRecExitRequested = true;
+	fastjmp_jmp(&s_jmp_buf, 1);
+}
+
+// Emit the four dispatcher stubs into one contiguous block at the head of the code
+// cache. They reference each other by label (DispatcherEvent / JITCompile / Enter /
+// Unmapped all fall through to DispatcherReg) and are recorded as raw entry pointers.
+// Regenerated on every reset; because recLUT, recEventTest and recRecompile live at
+// fixed addresses, regeneration is byte-identical at the same location — which is why
+// recRecompile can reset the cache mid-compile and safely return into JITCompile.
+static void recGenDispatchers()
+{
+	armSetAsmPtr(recPtr, recPtrEnd - recPtr, &s_const_pool);
+	armStartBlock();
+
+	a64::Label dispatcher_reg;
+
+	// DispatcherReg: fnptr = *(uptr*)(recLUT[pc>>16] + pc*2); br fnptr.
+	//
+	// Re-pin RESTATEPTR (x19) = &cpuRegs on every dispatch. Although EnterRecompiledCode
+	// establishes it once, the C++ callees we re-enter through (recEventTest ->
+	// _cpuEventTest_Shared in particular, which services DMA/VIF and runs other ARM64 JIT)
+	// do NOT preserve x19 across the call — so by the time control returns to the
+	// dispatcher it can hold garbage. Reloading it here (the single point every block,
+	// event-test and compile path funnels back through) keeps it authoritative cheaply,
+	// instead of relying on every external callee honouring the reservation.
+	DispatcherReg = armGetCurrentCodePointer();
+	armAsm->Bind(&dispatcher_reg);
+	armMoveAddressToReg(RESTATEPTR, &cpuRegs);
+	armAsm->Ldr(RWARG1, a64::MemOperand(RESTATEPTR, EE_PC_OFFSET));    // x0 = pc (zero-extended)
+	armAsm->Lsr(RXARG2, RXARG1, 16);                                  // x1 = pc >> 16
+	armMoveAddressToReg(RXARG3, recLUT);                              // x2 = &recLUT[0]
+	armAsm->Ldr(RXARG3, a64::MemOperand(RXARG3, RXARG2, a64::LSL, 3)); // x2 = recLUT[page]
+	armAsm->Add(RXARG3, RXARG3, a64::Operand(RXARG1, a64::LSL, 1));    // x2 = base + pc*2
+	armAsm->Ldr(RXARG3, a64::MemOperand(RXARG3));                      // x2 = fnptr
+	armAsm->Br(RXARG3);
+
+	// DispatcherEvent: run the EE event test, then fall through to DispatcherReg (which
+	// re-pins RESTATEPTR, since recEventTest clobbers it).
+	DispatcherEvent = armGetCurrentCodePointer();
+	armEmitCall(reinterpret_cast<const void*>(recEventTest));
+	armAsm->B(&dispatcher_reg);
+
+	// JITCompile: compile the block at cpuRegs.pc (which sets its recLUT slot), then
+	// re-dispatch — the slot now points at the freshly compiled block.
+	JITCompile = armGetCurrentCodePointer();
+	armAsm->Ldr(RWARG1, a64::MemOperand(RESTATEPTR, EE_PC_OFFSET));
+	armEmitCall(reinterpret_cast<const void*>(recRecompile));
+	armAsm->B(&dispatcher_reg);
+
+	// EnterRecompiledCode: the C entry point. Pin RESTATEPTR (x19) = &cpuRegs once,
+	// then dispatch. We never return through here (exit is a fastjmp out of
+	// recEventTest), so callee-saved registers need no preserving — fastjmp restores
+	// recExecute's full context. Blocks therefore need no per-block prologue/epilogue.
+	EnterRecompiledCode = armGetCurrentCodePointer();
+	armMoveAddressToReg(RESTATEPTR, &cpuRegs);
+	armAsm->B(&dispatcher_reg);
+
+	// UnmappedRecLUTPage: target for every word of an unmapped guest page.
+	UnmappedRecLUTPage = armGetCurrentCodePointer();
+	armEmitCall(reinterpret_cast<const void*>(recExitUnmapped));
+	armAsm->B(&dispatcher_reg);
+
+	recPtr = armEndBlock();
+}
+
+// Emit a block's tail: charge the block's scaled guest cycles, then the inline event
+// test. Mirrors iR5900.cpp iBranchTest (dynamic-target form): if (s64)(cycle -
+// nextEventCycle) < 0 there is no event due, so jump straight back into the dispatcher
+// (DispatcherReg re-reads cpuRegs.pc and chains into the next block); otherwise fall
+// to DispatcherEvent to service events first. `add_cycles` is false for interpreter
+// single-step blocks, which charge their own cycles inside intExecuteOneInst.
+static void recEmitEventTestAndDispatch(u32 scaled_cycles, bool add_cycles)
+{
+	armAsm->Ldr(RXARG1, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET)); // x0 = cpuRegs.cycle (u64)
+	if (add_cycles)
+	{
+		armAsm->Add(RXARG1, RXARG1, scaled_cycles);
+		armAsm->Str(RXARG1, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET));
+	}
+	armAsm->Ldr(RXARG2, a64::MemOperand(RESTATEPTR, EE_NEXTEVENTCYCLE_OFFSET));
+	armAsm->Cmp(RXARG1, RXARG2);
+	armEmitCondBranch(a64::mi, DispatcherReg); // N set => (cycle - nextEvent) < 0 => continue
+	armEmitJmp(DispatcherEvent);
+}
+
+// --------------------------------------------------------------------------------------
+//  Block compiler (Phase 4.3 / 4.4)
+// --------------------------------------------------------------------------------------
+// Compile a straight-line run starting at startpc into one host block and install its
+// entry into the recLUT slot for startpc. Unlike the Phase 4.3 version this block has
+// NO prologue/epilogue and never RETs — RESTATEPTR is pinned once by EnterRecompiledCode
+// and the block ends by branching into the dispatcher (via recEmitEventTestAndDispatch).
+// The run:
+//   - emits straight-line ops we can codegen inline;
+//   - stops at the first control-flow op we have a generator for (branch + delay slot),
+//     the branch generator having written cpuRegs.pc;
+//   - if the *first* op is one we can't codegen, emits a one-shot block that single-steps
+//     it through the interpreter (intExecuteOneInst handles its own PC/delay/cycles);
+//   - otherwise ends at the next un-compilable op (or the length cap), writing cpuRegs.pc
+//     so the next dispatch resumes there.
+static void recRecompile(u32 startpc)
+{
+	// Reset the whole cache if the emit cursor has run within one block's worth of the
+	// constant-pool tail. Doing it here (before emitting) is safe: the dispatcher stubs
+	// regenerate byte-identically at the same addresses, so the JITCompile stub this
+	// call returns into is unchanged. Mirrors x86 recRecompile.
+	if (recPtr >= recPtrEnd - RECOMPILE_HEADROOM)
+		eeRecNeedsReset = true;
+	if (eeRecNeedsReset)
 		recResetRaw();
 
 	armSetAsmPtr(recPtr, recPtrEnd - recPtr, &s_const_pool);
 	u8* const entry = armStartBlock();
 
-	// Block prologue: preserve the caller's RESTATEPTR(x19) + LR (the body's vtlb /
-	// interpreter calls clobber LR), and point RESTATEPTR at the guest cpuRegs file.
-	// Matches the unit-test harness (RunEEGen). sp stays 16-byte aligned.
-	armAsm->Stp(RESTATEPTR, a64::x30, a64::MemOperand(a64::sp, -16, a64::PreIndex));
-	armMoveAddressToReg(RESTATEPTR, &cpuRegs);
-
 	u32 pc = startpc;
 	u32 endpc = startpc;
 	u32 raw_cycles = 0;
 	u32 compiled = 0;
-	bool ok = true;
+	bool interp_step = false;
 
 	for (;;)
 	{
@@ -642,7 +872,7 @@ static u8* recCompileBlock(u32 startpc, u32* out_cycles)
 
 		if (recIsHandledBranch(op))
 		{
-			// Terminate the block: branch generator + delay slot + exit.
+			// Terminate the block: branch generator + delay slot + dispatch tail.
 			raw_cycles += info.cycles;
 			recEmitBranch(op, pc); // writes cpuRegs.pc (taken/fallthrough/link)
 
@@ -668,56 +898,33 @@ static u8* recCompileBlock(u32 startpc, u32* out_cycles)
 			continue;
 		}
 
-		// Un-compilable, non-branch op (FPU/COP/MMI/syscall/likely-branch/...).
+		// Un-compilable op (likely branch / syscall / COP0 / MMI SIMD / ...).
 		if (compiled == 0)
 		{
-			// Nothing emitted yet — let the dispatcher interpret this single op.
-			ok = false;
+			// Block starts on it — emit a one-shot interpreter single-step block. It
+			// runs exactly one guest instruction (handling its own PC, delay slot and
+			// cycle accounting), then re-dispatches via the tail. No compiled cycles to
+			// charge (intExecuteOneInst does that itself).
+			armEmitCall(reinterpret_cast<const void*>(intExecuteOneInst));
+			endpc = pc + 4;
+			interp_step = true;
 			break;
 		}
 
-		// End the block here; the dispatcher will interpret this op next.
+		// End the block here; the next dispatch will single-step this op.
 		recEmitWritePc(pc);
 		break;
 	}
 
-	if (!ok)
-	{
-		// First op isn't compilable — discard this (never-executed) block without
-		// advancing recPtr, so the space is reused. Close the assembler cleanly; the
-		// dispatcher will interpret the op instead.
-		armAsm->Ldp(RESTATEPTR, a64::x30, a64::MemOperand(a64::sp, 16, a64::PostIndex));
-		armAsm->Ret();
-		armEndBlock();
-		return nullptr;
-	}
+	recEmitEventTestAndDispatch(interp_step ? 0 : recScaleBlockCycles(raw_cycles), !interp_step);
 
-	// Block epilogue: restore the caller's RESTATEPTR(x19) + LR, then return.
-	armAsm->Ldp(RESTATEPTR, a64::x30, a64::MemOperand(a64::sp, 16, a64::PostIndex));
-	armAsm->Ret();
 	recPtr = armEndBlock();
 
 	recProtectCompiledRange(startpc, endpc);
 
-	*out_cycles = recScaleBlockCycles(raw_cycles);
-	return entry;
-}
-
-// Look up (or compile) the block at `pc`. Returns nullptr if `pc` starts on an op
-// the rec can't compile (the caller should interpret one instruction instead).
-static const EEBlock* recGetBlock(u32 pc)
-{
-	const auto it = s_blocks.find(pc);
-	if (it != s_blocks.end())
-		return &it->second;
-
-	u32 cycles = 0;
-	u8* const entry = recCompileBlock(pc, &cycles);
-	if (!entry)
-		return nullptr;
-
-	const auto ins = s_blocks.emplace(pc, EEBlock{entry, cycles});
-	return &ins.first->second;
+	// Install the block so subsequent dispatches to startpc (and its address mirrors)
+	// branch straight into it instead of recompiling.
+	*recPtrToBlock(startpc) = reinterpret_cast<uptr>(entry);
 }
 
 static void recEventTest()
@@ -731,12 +938,13 @@ static void recEventTest()
 	}
 }
 
-// The dispatcher loop. Reads cpuRegs.pc, runs (compiling if needed) the block there
-// — or interprets one instruction when the block starts on an un-compilable op —
-// then charges cycles and runs the EE event test. Exits via fastjmp on request.
+// C entry point. Pins the exit fastjmp target, then jumps into the generated
+// EnterRecompiledCode stub, which establishes RESTATEPTR and runs blocks chained
+// entirely in host code (block -> DispatcherReg -> block ...). Control only returns
+// here via the fastjmp in recEventTest (state-check / exit request).
 static void recExecute()
 {
-	if (eeRecNeedsReset)
+	if (eeRecNeedsReset || !EnterRecompiledCode)
 		recResetRaw();
 
 	if (fastjmp_set(&s_jmp_buf) != 0)
@@ -746,27 +954,8 @@ static void recExecute()
 	}
 
 	eeRecExecuting = true;
-
-	for (;;)
-	{
-		const EEBlock* const block = recGetBlock(cpuRegs.pc);
-		if (block)
-		{
-			// The block establishes RESTATEPTR(x19) itself and returns via its saved
-			// LR, so it can be entered with a plain indirect call.
-			reinterpret_cast<void (*)()>(block->entry)();
-			cpuRegs.cycle += block->cycles;
-		}
-		else
-		{
-			// Block starts on an op we can't compile yet — interpret exactly one
-			// instruction (it handles its own delay slot / PC / cycles).
-			intExecuteOneInst();
-		}
-
-		if (static_cast<s32>(cpuRegs.cycle - cpuRegs.nextEventCycle) >= 0)
-			recEventTest();
-	}
+	reinterpret_cast<void (*)()>(reinterpret_cast<uintptr_t>(EnterRecompiledCode))();
+	// EnterRecompiledCode never returns; the only way out is the fastjmp above.
 }
 
 static void recSafeExitExecution()
@@ -784,15 +973,32 @@ static void recCancelInstruction()
 
 static void recClear(u32 addr, u32 size)
 {
-	// Bring-up: any code-cache clear (TLB remap, manual invalidation) drops the
-	// whole block cache. Targeted invalidation + the recLUT land in Phase 4.4/4.5.
-	if (eeRecExecuting)
+	// Targeted invalidation (Phase 4.5): reset only the recLUT slots covering
+	// [addr, addr+size) back to JITCompile, so the next dispatch to any of those guest
+	// words recompiles fresh. The orphaned host code for the discarded blocks is
+	// reclaimed at the next full cache reset (when recPtr wraps past recPtrEnd in
+	// recRecompile). This mirrors the x86 rec's per-range clear instead of the old
+	// bring-up whole-cache reset: recResetRaw rebuilds the dispatchers AND rewrites the
+	// entire multi-million-entry recLUT, and Cpu->Clear is called a page at a time
+	// (MapTLB issues one 0x400 clear per mapped TLB page during BIOS setup), so a
+	// whole-cache reset per call made boot effectively hang.
+	//
+	// Safe while executing: recClear is always invoked synchronously on the EE thread
+	// (a store page-fault or an interpreted TLBWI), so there is no concurrent block. An
+	// in-flight block whose slot we clear keeps running its still-valid host code to
+	// completion, then re-dispatches through DispatcherReg, which recompiles the slot.
+	if (!JITCompile)
+		return; // rec not yet generated — nothing compiled to invalidate.
+
+	const u32 end = addr + size;
+	for (u32 pc = addr & ~3u; pc < end; pc += 4)
 	{
-		eeRecNeedsReset = true;
-		recSafeExitExecution();
-		return;
+		uptr* const slot = recPtrToBlock(pc);
+		// Skip unmapped guest pages: their slots all alias one shared page pointing at
+		// UnmappedRecLUTPage; don't turn an unmapped word into a compile-on-jump word.
+		if (*slot != reinterpret_cast<uptr>(UnmappedRecLUTPage))
+			*slot = reinterpret_cast<uptr>(JITCompile);
 	}
-	recResetRaw();
 }
 
 R5900cpu recCpu = {
