@@ -581,6 +581,65 @@ static void iopDIVU(u32 rs, u32 rt)
 	armAsm->Bind(&done);
 }
 
+// --- Load / store ---------------------------------------------------------------------
+// IOP memory access goes through the iopMemRead/Write8/16/32 C++ helpers (no vtlb fastmem
+// on the IOP). Each generator computes the effective address GPR[rs] + (s16)imm into
+// RWARG1 and calls the helper; loads land the result in RWRET (w0). The helper call
+// clobbers all caller-saved regs (incl. x16/x17 scratch), but RESTATEPTR=x19 is callee-
+// saved and survives, and each generator reads its inputs from psxRegs fresh, so no
+// cross-call state is held in scratch.
+//
+// The IOP ignores load-delay-slots (as does the x86 IOP rec), so writing GPR[rt] right
+// after the load — and compiling the following op natively — is correct.
+
+// Effective address GPR[rs] + (s16)imm into dst.W (mirrors armEmitEffectiveAddr).
+static void iopEmitEffectiveAddr(const a64::Register& dst, u32 rs, s32 imm)
+{
+	if (rs == 0)
+	{
+		armAsm->Mov(dst.W(), imm);
+		return;
+	}
+	armAsm->Ldr(dst.W(), iopGpr(rs));
+	if (imm != 0)
+		armAsm->Add(dst.W(), dst.W(), imm); // MacroAssembler materializes any s16 imm
+}
+
+// LB/LBU/LH/LHU/LW. The read is performed even when rt==0 (the access can have I/O side
+// effects); only the GPR write is suppressed, matching psxLB..psxLW.
+static void iopEmitLoad(u32 bits, bool sign, u32 rt, u32 rs, s32 imm)
+{
+	iopEmitEffectiveAddr(RWARG1, rs, imm);
+
+	const void* fn = (bits == 8)  ? reinterpret_cast<const void*>(&iopMemRead8) :
+	                 (bits == 16) ? reinterpret_cast<const void*>(&iopMemRead16) :
+	                                reinterpret_cast<const void*>(&iopMemRead32);
+	armEmitCall(fn);
+
+	if (rt == 0)
+		return;
+
+	switch (bits)
+	{
+		case 8:  sign ? armAsm->Sxtb(RWRET, RWRET) : armAsm->Uxtb(RWRET, RWRET); break;
+		case 16: sign ? armAsm->Sxth(RWRET, RWRET) : armAsm->Uxth(RWRET, RWRET); break;
+		case 32: break; // full 32-bit result already in RWRET
+	}
+	armAsm->Str(RWRET, iopGpr(rt));
+}
+
+// SB/SH/SW. GPR[0] reads as zero straight from psxRegs, so rt==0 needs no special case.
+static void iopEmitStore(u32 bits, u32 rt, u32 rs, s32 imm)
+{
+	armAsm->Ldr(RWARG2, iopGpr(rt)); // value to store (low `bits` bits used by the helper)
+	iopEmitEffectiveAddr(RWARG1, rs, imm);
+
+	const void* fn = (bits == 8)  ? reinterpret_cast<const void*>(&iopMemWrite8) :
+	                 (bits == 16) ? reinterpret_cast<const void*>(&iopMemWrite16) :
+	                                reinterpret_cast<const void*>(&iopMemWrite32);
+	armEmitCall(fn);
+}
+
 // Decode a single instruction into the open block. Returns true if a native generator
 // handled it, false to fall back to single-stepping it through the interpreter. Control-
 // flow ops (J/JR/branches/SYSCALL), loads/stores and coprocessor ops return false for now
@@ -638,6 +697,18 @@ static bool recTranslateOp(u32 op)
 		case 0x0D: iopORI(rt, rs, static_cast<u16>(op)); return true;
 		case 0x0E: iopXORI(rt, rs, static_cast<u16>(op)); return true;
 		case 0x0F: iopLUI(rt, static_cast<u16>(op)); return true;
+
+		// Aligned loads (0x20..0x26) / stores (0x28..0x2E). The unaligned LWL/LWR (0x22/
+		// 0x26) and SWL/SWR (0x2A/0x2E) need read-modify-write across a mem call and stay
+		// on the interpreter fallback for now.
+		case 0x20: iopEmitLoad(8, true, rt, rs, imm); return true;   // LB
+		case 0x21: iopEmitLoad(16, true, rt, rs, imm); return true;  // LH
+		case 0x23: iopEmitLoad(32, false, rt, rs, imm); return true; // LW
+		case 0x24: iopEmitLoad(8, false, rt, rs, imm); return true;  // LBU
+		case 0x25: iopEmitLoad(16, false, rt, rs, imm); return true; // LHU
+		case 0x28: iopEmitStore(8, rt, rs, imm); return true;   // SB
+		case 0x29: iopEmitStore(16, rt, rs, imm); return true;  // SH
+		case 0x2B: iopEmitStore(32, rt, rs, imm); return true;  // SW
 
 		default: return false;
 	}
