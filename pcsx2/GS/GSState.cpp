@@ -360,7 +360,10 @@ void GSState::ResetDrawBufferIdx()
 		m_dirty_gs_regs = 0;
 	}
 	else
+	{
 		m_dirty_gs_regs = m_env_buffers[m_current_buffer_idx].m_dirty_regs;
+		temp_draw_rect = m_env_buffers[m_current_buffer_idx].draw_rect;
+	}
 
 
 	//DevCon.Warning("New round of draws buffer %d vertex tail %d index tail %d TME %d TBP0 0x%x draw %d", m_current_buffer_idx, m_vertex->tail, m_index->tail, m_env.PRIM.TME, m_env.CTXT[m_env.PRIM.CTXT].TEX0.TBP0, s_n);
@@ -6166,7 +6169,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 
 	// Update rectangle for the current draw. Needs exclusive endpoints.
 	const GSVector4i draw_rect = bbox.sra32<4>() + GSVector4i(0, 0, 1, 1);
-	if (m_vertex->tail != n)
+	if (m_index->tail != n)
 		temp_draw_rect = temp_draw_rect.runion(draw_rect);
 	else
 		temp_draw_rect = draw_rect;
