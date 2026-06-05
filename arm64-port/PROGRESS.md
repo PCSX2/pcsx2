@@ -8,6 +8,42 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 6.3 IOP COP0/COP2 inline-interp — DONE (commit `9095d983b`). Phase 6.3 COMPLETE.**
+
+Straight-line IOP coprocessor ops now inline the interpreter handler
+(`recEmitInterpInline`) and keep the block intact, instead of breaking the block +
+single-stepping. Mirrors the EE Phase 5.1/5.3 trick and the x86 IOP rec
+(`REC_GTE_FUNC` / `rpsxCP0` — flush + call handler, no block break). Wired into
+`recTranslateOp`:
+
+- **COP0 (0x10):** MFC0/CFC0/MTC0/CTC0/RFE. The IOP interpreter has **no** COP0 branches
+  (those `psxCP0` slots are `psxNULL`), so every COP0 op is straight-line / never writes pc.
+  **RFE** additionally emits an `iopTestIntc` call (matches x86 `rpsxRFE`) — `iopTestIntc`
+  only adjusts the next-event delta, never touches pc, so it's safe mid-block.
+- **COP2 (0x12):** GTE ops + MFC2/CFC2/MTC2/CTC2. No COP2 branches either.
+- **LWC2 (0x32) / SWC2 (0x3a):** GTE quad load/store.
+
+This also lets the common return-from-handler `jr $k0; rfe` (RFE as the JR delay slot)
+compile fully natively.
+
+**Phase 6.3 is now complete** — the IOP rec compiles its entire practical opcode set
+natively (integer ALU/shift/muldiv, all loads/stores, all branches/jumps, all coprocessor
+ops inline). Only SYSCALL/BREAK still return false (rare, correctly single-stepped — they
+raise an exception and rewrite pc, so single-step is the right model).
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 100% (2/2 suites); headless BIOS boot
+reaches `Mode Changed to DVD PAL` + `Pad: DS2 Config Finished` (COP0-heavy IOP
+interrupt/SIO init) with COP0/COP2 inline live — no crash/abort/unmapped, no
+Unimplemented-op warnings, clean log.
+
+**Next:** Live game IOP-perf measurement (FFX / a 2D title) to quantify the full Phase 6.3
+win now that the IOP rec spans control flow and keeps coprocessor ops in-block. Then either
+optimize the IOP (constant-prop / register allocation — today every op round-trips psxRegs
+in memory) or move to **Phase 7 (VU recompilers / microVU)**, the last big interpreter-bound
+component.
+
+---
+
 **Phase 6.3 IOP native branches/jumps — DONE (commit `13daf73d0`).**
 
 IOP blocks now span control flow natively instead of single-stepping every branch through
@@ -589,7 +625,7 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 - [x] 6.2 Implement `psxRec` interface (Reserve/Reset/ExecuteBlock/Clear/Shutdown) —
   C++ dispatcher loop + recLUT + per-block prologue/epilogue; all ops interpreter
   single-stepped (`iopExecuteOneInst`) for now. Correct, not yet fast.
-- [~] 6.3 Port integer / load-store / branch / coprocessor generators (simpler than EE).
+- [x] 6.3 Port integer / load-store / branch / coprocessor generators (simpler than EE).
   - [x] Integer: ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI, ADD/ADDU/SUB/SUBU/AND/OR/
     XOR/NOR/SLT/SLTU, SLL/SRL/SRA/SLLV/SRLV/SRAV, MFHI/MTHI/MFLO/MTLO,
     MULT/MULTU/DIV/DIVU (commit `86448e99c`). 32-bit; mirrors the gtested EE generators.
@@ -599,7 +635,9 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
   - [x] Branches/jumps (J/JAL/JR/JALR, BEQ/BNE/BLEZ/BGTZ + REGIMM) — `13daf73d0`.
     Native generators + delay-slot compile in the block compiler; J-with-IRX-magic and
     branch-in-delay-slot bail to the interpreter. No likely branches on MIPS-I.
-  - [ ] Coprocessor (COP0 mfc0/mtc0/rfe; COP2/GTE — likely interpreter inline).
+  - [x] Coprocessor (COP0 MFC0/CFC0/MTC0/CTC0/RFE; COP2/GTE + LWC2/SWC2) — `9095d983b`,
+    inline-interp (EE-style, keeps block intact). RFE also emits iopTestIntc. No COP0/COP2
+    branches on the IOP. **Phase 6.3 complete** (only SYSCALL/BREAK single-step).
 - [x] 6.4 Wire into `VMManager.cpp` (reserve/shutdown/reset + `psxCpu` selection on ARM64).
 
 **Milestone after Phase 6:** playable 2D games expected.

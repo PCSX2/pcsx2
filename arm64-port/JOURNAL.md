@@ -28,6 +28,53 @@
 
 ---
 
+## 2026-06-05 — Phase 6.3 IOP COP0/COP2 inline-interp (Phase 6.3 complete)
+
+**Goal:** Stop the IOP rec breaking the block on coprocessor ops — inline the interpreter
+handler (EE Phase 5.1/5.3 trick) for the straight-line COP0/COP2/GTE ops so blocks stay
+intact. This completes the IOP rec's native opcode coverage.
+
+**What changed:**
+- **`pcsx2/arm64/aR3000A.cpp`:** added recTranslateOp cases 0x10 (COP0), 0x12 (COP2),
+  0x32 (LWC2), 0x3a (SWC2) that call `recEmitInterpInline(op)` and return true. RFE
+  (COP0 rs==0x10) also emits `armEmitCall(iopTestIntc)`. Added `#include "IopDma.h"`.
+- Commit `9095d983b`.
+
+**Decisions & rationale:**
+- **The IOP has no COP0/COP2 branches.** Verified against the interpreter tables
+  (`psxCP0`/`psxCP2BSC` in R3000AOpcodeTables.cpp): every BC0/BC2 slot is `psxNULL`. So all
+  valid COP0/COP2 ops are straight-line and never write pc → safe to inline mid-block. This
+  is simpler than the EE case (which had to keep BC0*/BC2* on the single-step path).
+- **Mirror the x86 IOP rec exactly.** Its `REC_GTE_FUNC` and `rpsxCP0` table are literally
+  "set psxRegs.code, flush, call the interpreter handler" with no block break — identical to
+  `recEmitInterpInline`. So inline-interp is the reference behavior, not a shortcut.
+- **RFE → iopTestIntc.** The interpreter's `psxRFE` only restores CP0.Status (no intc test);
+  the x86 `rpsxRFE` adds `iopTestIntc` to promptly raise pending interrupts after the
+  interrupt-enable is restored. I match it. Checked `iopTestIntc` (R3000A.cpp:242): it only
+  sets the next branch/event delta — it does NOT vector to the exception handler or touch
+  pc — so calling it mid-block is safe. Bonus: the common `jr $k0; rfe` return-from-handler
+  (RFE in the JR delay slot) now compiles fully natively.
+- **psxCOP0/psxCOP2 self-dispatch.** `recEmitInterpInline` calls `psxBSC[op>>26]` =
+  psxCOP0/psxCOP2, which re-dispatch on rs/funct from psxRegs.code — so one case per primary
+  opcode covers the whole group (incl. psxNULL for invalid sub-ops, harmless, matches interp).
+- **Cycle:** each inlined op charges 1 cycle via the existing block_cycles tail, matching
+  execI (1 cycle/op).
+
+**Blockers / open questions:** none. **Phase 6.3 is complete** — the IOP rec now compiles
+its entire practical opcode set natively; only SYSCALL/BREAK return false (they raise an
+exception + rewrite pc, so single-step is the correct model). Live game perf delta not yet
+measured.
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 100% (2/2 suites); headless `-batch -bios`
+boot reaches `Mode Changed to DVD PAL` + `Pad: DS2 Config Finished` (COP0-heavy IOP
+interrupt/SIO init) with COP0/COP2 inline live — no crash/abort/unmapped, no Unimplemented-op
+warnings, clean log.
+
+**Next step:** Live game IOP-perf measurement (FFX / 2D title) to quantify the full Phase 6.3
+win, then IOP optimization (constant-prop / reg-alloc) or Phase 7 (VU / microVU).
+
+---
+
 ## 2026-06-05 — Phase 6.3 IOP native branches/jumps
 
 **Goal:** Stop the IOP rec breaking the block at every control-flow op — emit native
