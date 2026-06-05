@@ -640,6 +640,122 @@ static void iopEmitStore(u32 bits, u32 rt, u32 rs, s32 imm)
 	armEmitCall(fn);
 }
 
+// --- Unaligned load / store (LWL/LWR/SWL/SWR) -----------------------------------------
+// Read-modify-(write) with a runtime byte shift = (EA & 3) << 3 and runtime masks, mirroring
+// psxLWL/psxLWR/psxSWL/psxSWR exactly. The aligned word at (EA & ~3) is read with
+// iopMemRead32; stores then merge GPR[rt] with it and iopMemWrite32 it back.
+//
+// Only `mem` (the iopMemRead32 result, in RWRET) has to survive forward across the merge;
+// the address and shift are recomputed from psxRegs after the call (GPR[rs] is unchanged by
+// the access, so the recompute is identical). Working regs after the call: RWRET(w0),
+// RWARG2..4 (w1-w3) and RSCRATCHW(x17) — all caller-saved/scratch, no live x16/x19 state.
+// Between the SWL/SWR read and write calls no other call intervenes, so those regs are free.
+
+// LWL (0x22): Rt = (Rt & (0x00ffffff >> shift)) | (mem << (24 - shift)).
+static void iopEmitLWL(u32 rt, u32 rs, s32 imm)
+{
+	iopEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~3);
+	armEmitCall(reinterpret_cast<const void*>(&iopMemRead32)); // RWRET = mem
+	if (rt == 0)
+		return;
+
+	iopEmitEffectiveAddr(RWARG2, rs, imm);
+	armAsm->And(RWARG2, RWARG2, 3);
+	armAsm->Lsl(RWARG2, RWARG2, 3); // RWARG2 = shift
+
+	armAsm->Mov(RWARG3, 24);
+	armAsm->Sub(RWARG3, RWARG3, RWARG2);   // 24 - shift
+	armAsm->Lsl(RWRET, RWRET, RWARG3);     // mem << (24 - shift)
+
+	armAsm->Ldr(RWARG4, iopGpr(rt));
+	armAsm->Mov(RSCRATCHW, 0x00ffffffu);
+	armAsm->Lsr(RSCRATCHW, RSCRATCHW, RWARG2); // 0x00ffffff >> shift
+	armAsm->And(RWARG4, RWARG4, RSCRATCHW);
+	armAsm->Orr(RWARG4, RWARG4, RWRET);
+	armAsm->Str(RWARG4, iopGpr(rt));
+}
+
+// LWR (0x26): Rt = (Rt & (0xffffff00 << (24 - shift))) | (mem >> shift).
+static void iopEmitLWR(u32 rt, u32 rs, s32 imm)
+{
+	iopEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~3);
+	armEmitCall(reinterpret_cast<const void*>(&iopMemRead32)); // RWRET = mem
+	if (rt == 0)
+		return;
+
+	iopEmitEffectiveAddr(RWARG2, rs, imm);
+	armAsm->And(RWARG2, RWARG2, 3);
+	armAsm->Lsl(RWARG2, RWARG2, 3); // RWARG2 = shift
+
+	armAsm->Lsr(RWRET, RWRET, RWARG2);     // mem >> shift
+
+	armAsm->Mov(RWARG3, 24);
+	armAsm->Sub(RWARG3, RWARG3, RWARG2);   // 24 - shift
+	armAsm->Mov(RSCRATCHW, 0xffffff00u);
+	armAsm->Lsl(RSCRATCHW, RSCRATCHW, RWARG3); // 0xffffff00 << (24 - shift)
+
+	armAsm->Ldr(RWARG4, iopGpr(rt));
+	armAsm->And(RWARG4, RWARG4, RSCRATCHW);
+	armAsm->Orr(RWARG4, RWARG4, RWRET);
+	armAsm->Str(RWARG4, iopGpr(rt));
+}
+
+// SWL (0x2A): mem[EA&~3] = (Rt >> (24 - shift)) | (mem & (0xffffff00 << shift)).
+static void iopEmitSWL(u32 rt, u32 rs, s32 imm)
+{
+	iopEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~3);
+	armEmitCall(reinterpret_cast<const void*>(&iopMemRead32)); // RWRET = mem
+
+	iopEmitEffectiveAddr(RWARG2, rs, imm);
+	armAsm->And(RWARG2, RWARG2, 3);
+	armAsm->Lsl(RWARG2, RWARG2, 3); // RWARG2 = shift
+
+	armAsm->Mov(RWARG3, 0xffffff00u);
+	armAsm->Lsl(RWARG3, RWARG3, RWARG2);   // 0xffffff00 << shift
+	armAsm->And(RWRET, RWRET, RWARG3);     // mem & mask
+
+	armAsm->Mov(RWARG4, 24);
+	armAsm->Sub(RWARG4, RWARG4, RWARG2);   // 24 - shift
+	armAsm->Ldr(RSCRATCHW, iopGpr(rt));
+	armAsm->Lsr(RSCRATCHW, RSCRATCHW, RWARG4); // Rt >> (24 - shift)
+
+	armAsm->Orr(RWARG2, RSCRATCHW, RWRET); // value -> RWARG2
+
+	iopEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~3);
+	armEmitCall(reinterpret_cast<const void*>(&iopMemWrite32));
+}
+
+// SWR (0x2E): mem[EA&~3] = (Rt << shift) | (mem & (0x00ffffff >> (24 - shift))).
+static void iopEmitSWR(u32 rt, u32 rs, s32 imm)
+{
+	iopEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~3);
+	armEmitCall(reinterpret_cast<const void*>(&iopMemRead32)); // RWRET = mem
+
+	iopEmitEffectiveAddr(RWARG2, rs, imm);
+	armAsm->And(RWARG2, RWARG2, 3);
+	armAsm->Lsl(RWARG2, RWARG2, 3); // RWARG2 = shift
+
+	armAsm->Mov(RWARG4, 24);
+	armAsm->Sub(RWARG4, RWARG4, RWARG2);   // 24 - shift
+	armAsm->Mov(RWARG3, 0x00ffffffu);
+	armAsm->Lsr(RWARG3, RWARG3, RWARG4);   // 0x00ffffff >> (24 - shift)
+	armAsm->And(RWRET, RWRET, RWARG3);     // mem & mask
+
+	armAsm->Ldr(RSCRATCHW, iopGpr(rt));
+	armAsm->Lsl(RSCRATCHW, RSCRATCHW, RWARG2); // Rt << shift
+
+	armAsm->Orr(RWARG2, RSCRATCHW, RWRET); // value -> RWARG2
+
+	iopEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~3);
+	armEmitCall(reinterpret_cast<const void*>(&iopMemWrite32));
+}
+
 // Decode a single instruction into the open block. Returns true if a native generator
 // handled it, false to fall back to single-stepping it through the interpreter. Control-
 // flow ops (J/JR/branches/SYSCALL), loads/stores and coprocessor ops return false for now
@@ -698,17 +814,19 @@ static bool recTranslateOp(u32 op)
 		case 0x0E: iopXORI(rt, rs, static_cast<u16>(op)); return true;
 		case 0x0F: iopLUI(rt, static_cast<u16>(op)); return true;
 
-		// Aligned loads (0x20..0x26) / stores (0x28..0x2E). The unaligned LWL/LWR (0x22/
-		// 0x26) and SWL/SWR (0x2A/0x2E) need read-modify-write across a mem call and stay
-		// on the interpreter fallback for now.
+		// Loads (0x20..0x26) / stores (0x28..0x2E), aligned + unaligned.
 		case 0x20: iopEmitLoad(8, true, rt, rs, imm); return true;   // LB
 		case 0x21: iopEmitLoad(16, true, rt, rs, imm); return true;  // LH
+		case 0x22: iopEmitLWL(rt, rs, imm); return true;             // LWL
 		case 0x23: iopEmitLoad(32, false, rt, rs, imm); return true; // LW
 		case 0x24: iopEmitLoad(8, false, rt, rs, imm); return true;  // LBU
 		case 0x25: iopEmitLoad(16, false, rt, rs, imm); return true; // LHU
+		case 0x26: iopEmitLWR(rt, rs, imm); return true;             // LWR
 		case 0x28: iopEmitStore(8, rt, rs, imm); return true;   // SB
 		case 0x29: iopEmitStore(16, rt, rs, imm); return true;  // SH
+		case 0x2A: iopEmitSWL(rt, rs, imm); return true;        // SWL
 		case 0x2B: iopEmitStore(32, rt, rs, imm); return true;  // SW
+		case 0x2E: iopEmitSWR(rt, rs, imm); return true;        // SWR
 
 		default: return false;
 	}
