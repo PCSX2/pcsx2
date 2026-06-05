@@ -1295,6 +1295,19 @@ bool GSDeviceMTL::UpdateWindow()
 
 bool GSDeviceMTL::SupportsExclusiveFullscreen() const { return false; }
 
+static const char* GetROVString(const GSMTLDevice::Features& features)
+{
+	if (!features.rov)
+		return "Unsupported";
+	if (features.rov_requires_r32 && features.rov_requires_rt)
+		return "With R32 Reinterpret and RT Texture";
+	if (features.rov_requires_r32)
+		return "With R32 Reinterpret";
+	if (features.rov_requires_rt)
+		return "With RT Texture";
+	return "Supported";
+}
+
 std::string GSDeviceMTL::GetDriverInfo() const
 { @autoreleasepool {
 	std::string desc([[m_dev.dev description] UTF8String]);
@@ -1304,6 +1317,7 @@ std::string GSDeviceMTL::GetDriverInfo() const
 	desc += "\n    Memoryless Textures: " + std::string(m_dev.features.memoryless_textures ? "Supported" : "Unsupported");
 	desc += "\n    Primitive ID:        " + std::string(m_dev.features.primid              ? "Supported" : "Unsupported");
 	desc += "\n    Depth Feedback:      " + std::string(m_dev.features.depth_feedback      ? "Supported" : "Unsupported");
+	desc += "\n    ROV:                 " + std::string(GetROVString(m_dev.features));
 	desc += "\n    Shader Version:      " + std::string(to_string(m_dev.features.shader_version));
 	desc += "\n    Max Texture Size:    " + std::to_string(m_dev.features.max_texsize);
 	return desc;
