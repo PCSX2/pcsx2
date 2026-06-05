@@ -38,8 +38,11 @@ whose START slot is in the cleared range — a block straddling in from an earli
 is missed. Fine for BIOS; SMC-heavy games may need overlap-aware invalidation.
 
 **Verified:** unittests green (Arm64EmitEE 270/270, 273 total); BIOS boots live.
-**Next:** game-compat smoke test on `armjit` (now recLUT-backed); then Phase 5.1 COP0 /
-5.3 COP2-VU0 macro, or IOP rec (Phase 6) for playable 2D.
+**Game-compat smoke test PASSED (2026-06-05):** Final Fantasy X (3D, EE+VU heavy) boots
+into the game on the recLUT-backed `armjit`. **FPS 10 → 14 (+40%)** vs the Phase 4.3
+`s_blocks` dispatcher — the recLUT block-linking win is real on a live title (VU/IOP
+still interpreter-bound, so this is pure EE-dispatch headroom).
+**Next:** IOP rec (Phase 6) for playable 2D, or Phase 5.1 COP0 / 5.3 COP2-VU0 macro.
 Diagnostic tooling note: lldb attach needs a `get-task-allow` ad-hoc re-sign
 (`codesign --force --sign - --entitlements <get-task-allow> --deep PCSX2.app`); `sample
 <pid>` + `lldb -o 'breakpoint set -n malloc_error_break' -o run -o bt` found both bugs.

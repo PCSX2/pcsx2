@@ -28,6 +28,30 @@
 
 ---
 
+## 2026-06-05 — Phase 4.4 recLUT: game-compat smoke test PASSED (FFX, +40% FPS)
+
+**Goal:** Validate the recLUT merge (commit `b7e83bc0b` on `armjit`) on a real game.
+
+**What changed:**
+- No code change. User ran the current `armjit` build against **Final Fantasy X**
+  (3D, EE+VU-heavy) — it **boots into the game**, not just the BIOS.
+- **FPS 10 → 14 (+40%)** vs the prior Phase 4.3 `s_blocks` C++-dispatcher model.
+
+**Decisions & rationale:**
+- recLUT block-linking is validated on a live title, not just the BIOS smoke path.
+  The +40% is pure EE-dispatch headroom: VU and IOP are still on the interpreter, so
+  the win comes entirely from killing the per-block `unordered_map` lookup +
+  recompile-on-miss and chaining blocks in host code. Confirms Phase 4.4 was the right
+  highest-leverage EE follow-up.
+
+**Blockers / open questions:** none — recLUT is done & validated.
+
+**Next step:** start IOP rec (Phase 6) for playable 2D — biggest remaining leverage now
+that EE dispatch is fast and IOP is still single-stepped on the interpreter. (Alt: Phase
+5.1 COP0 / 5.3 COP2-VU0 macro.)
+
+---
+
 ## 2026-06-05 — Phase 4.4 recLUT RE-ATTEMPT: boots the BIOS (targeted recClear + cache headroom)
 
 **Goal:** Re-attempt "4.4 Block linking + recLUT" (parked on `armjit-reclut-wip`), and
