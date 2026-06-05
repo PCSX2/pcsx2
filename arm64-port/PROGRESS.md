@@ -8,6 +8,39 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 6.1/6.2 IOP rec skeleton — DONE (boots via interpreter single-step).**
+
+Created `pcsx2/arm64/aR3000A.{h,cpp}` and wired the `psxRec` provider on ARM64
+(VMManager reserve/shutdown/reset + `psxCpu = CHECK_IOPREC ? &psxRec : &psxInt`).
+
+Execution model (bring-up, mirrors the EE rec's Phase 4.3 baseline, NOT the emitted
+recLUT dispatcher): a **C++ dispatcher loop** `recExecuteBlock(eeCycles)` drives the IOP
+timeslice — looks up the host block for `psxRegs.pc` in a 2-level **recLUT** (compile on
+miss via `recRecompile`), calls it, then debits the consumed cycles against `iopCycleEE`
+(`iopAddEECycles`, PS2 ×8 / PS1 gcd carry) and runs `iopEventTest` when the event cycle
+is reached. Exactly mirrors `R3000AInterpreter.cpp intExecuteBlock` (incl. the HLE-BIOS
+`a0/b0/c0` entry under `HW_ICFG&8`). Each block has its **own prologue/epilogue**
+(`stp x19,lr` / pin `RESTATEPTR=&psxRegs` / `ldp` + `RET`) and ends by writing
+`psxRegs.pc`. **All ops currently single-step** through the interpreter
+(`iopExecuteOneInst`, added to R3000AInterpreter.cpp): `recTranslateOp` returns false for
+everything, so each block is a one-shot interp step — correct but not yet faster than the
+interpreter. Native generators (next) make blocks span many ops for the real speedup.
+
+recLUT: cloned from `aR5900.cpp`, IOP memory map (RAM mirrored at seg 0x0000/0x8000/0xa000
+masked to size; ROM/ROM1/ROM2). Slot value = block ptr / 0 (compile) / `IOP_UNMAPPED`
+sentinel. `recClearIOP(addr,size)` resets in-range mapped slots to 0 (targeted, mirrors
+the EE recClear / x86 recClearIOP).
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 100% (2/2 suites, 273 emit tests
+unaffected). Headless `-batch -bios` boot run completed without crash/abort. **Live
+boot/game confirmation still pending** (user to run).
+
+**Next:** Phase 6.3 native IOP integer generators (immediate/reg-reg/shift/move/mult-div)
+— 32-bit MIPS-I, a strict subset of the EE arith generators; wire into `recTranslateOp`.
+Then load/store (via `iopMemRead/Write8/16/32` slow path) and branches/jumps.
+
+---
+
 **Phase 5.1 COP0 inline-fallback — DONE (commit `ffe4f18d1`).**
 
 Applied the [[Phase 5.3 COP2]] inline-interpreter trick to COP0 (primary opcode `0x10`):
@@ -399,10 +432,12 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 
 ## Phase 6 — IOP Recompiler (R3000A)
 
-- [ ] 6.1 Create `pcsx2/arm64/aR3000A.{h,cpp}`.
-- [ ] 6.2 Implement `psxRec` interface (Reserve/Reset/ExecuteBlock/Clear/Shutdown).
+- [x] 6.1 Create `pcsx2/arm64/aR3000A.{h,cpp}`.
+- [x] 6.2 Implement `psxRec` interface (Reserve/Reset/ExecuteBlock/Clear/Shutdown) —
+  C++ dispatcher loop + recLUT + per-block prologue/epilogue; all ops interpreter
+  single-stepped (`iopExecuteOneInst`) for now. Correct, not yet fast.
 - [ ] 6.3 Port integer / load-store / branch / coprocessor generators (simpler than EE).
-- [ ] 6.4 Wire into `VMManager.cpp`.
+- [x] 6.4 Wire into `VMManager.cpp` (reserve/shutdown/reset + `psxCpu` selection on ARM64).
 
 **Milestone after Phase 6:** playable 2D games expected.
 

@@ -261,6 +261,18 @@ static void doBranch(s32 tar) {
 	iopEventTest();
 }
 
+// Interpret exactly one IOP instruction at psxRegs.pc, then return. This is the
+// ARM64 IOP recompiler's per-instruction fallback for opcodes it cannot yet compile.
+// It mirrors the interpreter's inner step: execI() reads the op, advances pc, charges
+// one cycle and dispatches; for a branch opcode the interpreter's doBranch runs the
+// delay slot, redirects pc and runs the IOP event test, exactly as in intExecuteBlock.
+// It must NOT end the IOP timeslice (that is driven by the rec's recExecuteBlock loop
+// via iopCycleEE).
+void iopExecuteOneInst()
+{
+	execI();
+}
+
 static void intReserve() {
 }
 

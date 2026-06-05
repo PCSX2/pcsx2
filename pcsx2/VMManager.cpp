@@ -2676,10 +2676,10 @@ void VMManager::InitializeCPUProviders()
 	CpuMicroVU1.Reserve();
 #else
 	// ARM64 (Phase 1.5): reserve the EE recompiler so its code cache + constant pool
-	// are set up. It is NOT yet selected as the active Cpu provider (see
-	// UpdateCPUImplementations — the interpreter stays ground truth until real EE
-	// codegen exists). The IOP/VU recompilers are not ported to ARM64 yet.
+	// are set up. (Phase 6) the IOP recompiler is now ported, so reserve it too. The VU
+	// recompilers are not ported to ARM64 yet.
 	recCpu.Reserve();
+	psxRec.Reserve();
 
 	// Despite not having any VU recompilers on ARM64, therefore no MTVU,
 	// we still need the thread alive. Otherwise the read and write positions
@@ -2705,7 +2705,8 @@ void VMManager::ShutdownCPUProviders()
 	psxRec.Shutdown();
 	recCpu.Shutdown();
 #else
-	// ARM64 (Phase 1.5): tear down the EE recompiler reserved above.
+	// ARM64 (Phase 1.5 / Phase 6): tear down the EE + IOP recompilers reserved above.
+	psxRec.Shutdown();
 	recCpu.Shutdown();
 
 	// See the comment in the InitializeCPUProviders for an explaination why we
@@ -2735,9 +2736,10 @@ void VMManager::UpdateCPUImplementations()
 #else
 	// ARM64 (Phase 4.3): the EE recompiler is now functional, so select it when the
 	// EE rec is enabled (it falls back to the interpreter per-opcode for anything it
-	// can't compile yet). IOP + VU remain interpreters until their ports land.
+	// can't compile yet). (Phase 6) the IOP recompiler is functional too — same
+	// per-opcode interpreter fallback model. VU remains interpreter until its port lands.
 	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
-	psxCpu = &psxInt;
+	psxCpu = CHECK_IOPREC ? &psxRec : &psxInt;
 
 	CpuVU0 = &CpuIntVU0;
 	CpuVU1 = &CpuIntVU1;
@@ -2754,10 +2756,12 @@ void VMManager::Internal::ClearCPUExecutionCaches()
 	if (CHECK_EEREC && !EmuConfig.Cpu.Recompiler.EnableVU0)
 		CpuMicroVU0.Reset();
 #else
-	// ARM64 (Phase 1.5): reset the EE rec's code cache/constant pool even though it
-	// isn't the active provider yet, so its emit cursor starts clean on each VM
-	// reset (Cpu->Reset() above only resets the interpreter on ARM64).
+	// ARM64 (Phase 1.5 / Phase 6): reset the EE + IOP rec code caches/constant pools
+	// even when not the active provider, so their emit cursors start clean on each VM
+	// reset (Cpu->Reset()/psxCpu->Reset() above only reset the interpreters when the
+	// recs aren't selected).
 	recCpu.Reset();
+	psxRec.Reset();
 #endif
 
 	CpuVU0->Reset();

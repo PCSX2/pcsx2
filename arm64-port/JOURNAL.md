@@ -28,6 +28,57 @@
 
 ---
 
+## 2026-06-05 — Phase 6.1/6.2 IOP (R3000A) recompiler skeleton
+
+**Goal:** Start Phase 6 — get an ARM64 IOP recompiler that boots, with all opcodes
+interpreter-single-stepped (plumbing first, native codegen later). IOP was the biggest
+remaining leverage (fully interpreter-bound until now).
+
+**What changed:**
+- **`pcsx2/arm64/aR3000A.h`** (new): RESTATEPTR(x19)=&psxRegs contract + psxRegs field
+  offsets + `iopExecuteOneInst` decl.
+- **`pcsx2/arm64/aR3000A.cpp`** (new): the `psxRec` provider. recLUT (2-level, cloned
+  from aR5900.cpp, IOP memory map), `recReserve/recShutdown/recResetIOP/recResetRaw`,
+  block compiler `recRecompile` (per-block prologue/epilogue, all-interp single-step for
+  now), C++ dispatcher loop `recExecuteBlock` (timeslice + event test), targeted
+  `recClearIOP`.
+- **`pcsx2/R3000AInterpreter.cpp`**: added `iopExecuteOneInst()` (wraps the file-local
+  `execI()`) — the rec's per-instruction interpreter fallback.
+- **`pcsx2/CMakeLists.txt`**: registered `arm64/aR3000A.cpp`.
+- **`pcsx2/VMManager.cpp`**: ARM64 branches now `psxRec.Reserve()/Shutdown()/Reset()` and
+  `psxCpu = CHECK_IOPREC ? &psxRec : &psxInt`.
+- Commit: (this commit).
+
+**Decisions & rationale:**
+- **C++ dispatcher loop, not the emitted recLUT dispatcher (yet).** The IOP's
+  `ExecuteBlock(eeCycles)→s32` timeslice + return-value contract maps cleanly onto a C++
+  `while (iopCycleEE > 0)` loop that mirrors `intExecuteBlock` line-for-line (HLE-BIOS
+  entry, `iopAddEECycles` PS2 ×8 / PS1 gcd-carry, event test). Lower risk than porting the
+  EE's fastjmp/emitted-dispatcher and easy to validate against the interpreter. This is
+  the EE's own Phase 4.3 baseline; host-code block chaining (recLUT-style) is a later
+  optimization once correctness is proven.
+- **Blocks carry their own prologue/epilogue** (`stp x19,lr` / pin RESTATEPTR / `ldp` +
+  RET) because they call helpers (interp/iopMem) that clobber LR, and x19 is callee-saved
+  vs the C++ loop. No fastjmp needed — blocks RET to the loop.
+- **All-interpreter single-step is intentional bring-up:** `recTranslateOp` returns false
+  for everything, so each block is one `iopExecuteOneInst` (which charges its own cycle).
+  Correct from day one; native generators only add speed. Mirrors how the EE rec started.
+- **recLUT slot encoding:** block ptr / 0 (needs compile) / `IOP_UNMAPPED`(=1) sentinel.
+  `recClearIOP` resets in-range mapped slots to 0 (targeted, like EE recClear).
+- IOP is 1 cycle/op (the interpreter just does `cycle++`), so block_cycles = instr count
+  — no per-opcode cycle table needed.
+
+**Blockers / open questions:** Live boot/game confirmation pending (user to run). Headless
+`-batch -bios` completed without crash but I couldn't confirm display progress from logs.
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 100% (2/2 suites). Headless boot ran w/o
+crash/abort.
+
+**Next step:** Phase 6.3 — native IOP integer generators (immediate/reg-reg/shift/move/
+mult-div), 32-bit, wired into `recTranslateOp`. Then load/store + branches.
+
+---
+
 ## 2026-06-05 — Phase 5.1 COP0 inline fallback (no block break)
 
 **Goal:** Apply the Phase 5.3 COP2 inline-interpreter trick to COP0, the other common
