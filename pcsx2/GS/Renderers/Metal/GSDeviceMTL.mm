@@ -419,6 +419,19 @@ static GSVector4 GetRTLoadInfo(GSTextureMTL* tex, MTLLoadAction* load_action)
 	return {};
 };
 
+void GSDeviceMTL::PrepareBeginRenderPass()
+{
+	m_encoders_in_current_cmdbuf++;
+
+	if (m_late_texture_upload_encoder)
+	{
+		[m_late_texture_upload_encoder endEncoding];
+		m_late_texture_upload_encoder = nullptr;
+	}
+
+	EndRenderPass();
+}
+
 void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadAction color_load,
 	GSTexture* depth, MTLLoadAction depth_load, GSTexture* stencil, MTLLoadAction stencil_load, bool rt1)
 {
@@ -453,14 +466,6 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 			[m_current_render.encoder setLabel:name];
 		}
 		return;
-	}
-
-	m_encoders_in_current_cmdbuf++;
-
-	if (m_late_texture_upload_encoder)
-	{
-		[m_late_texture_upload_encoder endEncoding];
-		m_late_texture_upload_encoder = nullptr;
 	}
 
 	int idx = 0;
@@ -502,7 +507,7 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 			color1.clearColor = MTLClearColorMake(depth_load == MTLLoadActionClear ? depth_clear.x : -1, 0, 0, 0);
 	}
 
-	EndRenderPass();
+	PrepareBeginRenderPass();
 	m_current_render.encoder = MRCRetain([GetRenderCmdBuf() renderCommandEncoderWithDescriptor:desc]);
 	m_current_render.name = (__bridge void*)name;
 	[m_current_render.encoder setLabel:name];
@@ -514,6 +519,61 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 	m_current_render.stencil_target = stencil;
 	m_current_render.has.rt1_depth |= rt1;
 	pxAssertRel(m_current_render.encoder, "Failed to create render encoder!");
+}
+
+void GSDeviceMTL::BeginFullROV(NSString* name, uint32_t width, uint32_t height)
+{
+	bool needs_new = !m_current_render.is_full_rov()
+	              || width  > m_current_render.full_rov_size.w
+	              || height > m_current_render.full_rov_size.h;
+
+	if (!needs_new)
+	{
+		if (m_current_render.name != (__bridge void*)name)
+		{
+			m_current_render.name = (__bridge void*)name;
+			[m_current_render.encoder setLabel:name];
+		}
+		return;
+	}
+
+	if (m_current_render.is_full_rov())
+	{
+		// Render was too small.  Don't let it shrink in one dimension while growing in the other.
+		width  = std::max(width,  m_current_render.full_rov_size.w);
+		height = std::max(height, m_current_render.full_rov_size.h);
+	}
+
+	m_current_render.full_rov_size.w = width;
+	m_current_render.full_rov_size.h = height;
+
+	MTLRenderPassDescriptor* desc = m_full_rov_render_pass_desc;
+	[desc setRenderTargetWidth:width];
+	[desc setRenderTargetHeight:height];
+
+	if (m_dev.features.rov_requires_rt && (width > m_rov_dummy_texture_size.w || height > m_rov_dummy_texture_size.h))
+	{
+		m_rov_dummy_texture_size.w = std::max(m_rov_dummy_texture_size.w, width);
+		m_rov_dummy_texture_size.h = std::max(m_rov_dummy_texture_size.h, height);
+		MTLTextureDescriptor* tdesc = [MTLTextureDescriptor
+			texture2DDescriptorWithPixelFormat:MTLPixelFormatR8Unorm
+			                             width:m_rov_dummy_texture_size.w
+			                            height:m_rov_dummy_texture_size.h
+			                         mipmapped:NO];
+		[tdesc setUsage:MTLTextureUsageRenderTarget];
+		[tdesc setStorageMode:MTLStorageModePrivate];
+		id<MTLTexture> tex = m_rov_dummy_texture = MRCTransfer([m_dev.dev newTextureWithDescriptor:tdesc]);
+		[tex setLabel:@"ROV Dummy Texture"];
+		[[[desc colorAttachments] objectAtIndexedSubscript:0] setTexture:tex];
+	}
+
+	PrepareBeginRenderPass();
+	m_current_render.encoder = MRCRetain([GetRenderCmdBuf() renderCommandEncoderWithDescriptor:desc]);
+	m_current_render.name = (__bridge void*)name;
+	[m_current_render.encoder setLabel:name];
+	if (!m_dev.features.unified_memory)
+		[m_current_render.encoder waitForFence:m_draw_sync_fence
+		                          beforeStages:MTLRenderStageVertex];
 }
 
 void GSDeviceMTL::FrameCompleted()
@@ -999,6 +1059,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_features.test_and_sample_depth = true;
 	m_features.depth_feedback = getDepthFeedback(m_dev, m_features.framebuffer_fetch);
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand;
+	m_features.rov = m_dev.features.rov && !m_dev.features.rov_requires_r32 && !m_features.framebuffer_fetch;
 	m_max_texture_size = m_dev.features.max_texsize;
 
 	// Init metal stuff
@@ -1061,6 +1122,17 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 			[color1 setLoadAction:m_features.framebuffer_fetch ? MTLLoadActionClear : MTLLoadActionLoad];
 		}
 		m_render_pass_desc[i] = desc;
+	}
+	if (m_features.rov)
+	{
+		m_full_rov_render_pass_desc = MRCTransfer([MTLRenderPassDescriptor new]);
+		[m_full_rov_render_pass_desc setDefaultRasterSampleCount:1];
+		if (m_dev.features.rov_requires_rt)
+		{
+			MTLRenderPassColorAttachmentDescriptor* color0 = [[m_full_rov_render_pass_desc colorAttachments] objectAtIndexedSubscript:0];
+			[color0 setLoadAction:MTLLoadActionDontCare];
+			[color0 setStoreAction:MTLStoreActionDontCare];
+		}
 	}
 
 	// Init samplers
@@ -1978,7 +2050,10 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantI(m_fn_constants, pssel.aa1,                   GSMTLConstantIndex_PS_AA1);
 		setFnConstantB(m_fn_constants, pssel.abe,                   GSMTLConstantIndex_PS_ABE);
 		setFnConstantI(m_fn_constants, pssel.sw_aniso,              GSMTLConstantIndex_PS_SW_ANISO);
-		auto newps = LoadShader(@"ps_main");
+		setFnConstantB(m_fn_constants, pssel.rov_color,             GSMTLConstantIndex_PS_ROV_COLOR);
+		setFnConstantI(m_fn_constants, pssel.rov_depth,             GSMTLConstantIndex_PS_ROV_DEPTH);
+		bool eft = pssel.HasColorROV() && !pssel.HasDepthROV() && !pssel.HasDepthOutput();
+		auto newps = LoadShader(eft ? @"ps_main_rov_eft" : @"ps_main");
 		ps = newps;
 		m_hw_ps.insert(std::make_pair(pssel, std::move(newps)));
 	}
@@ -2016,6 +2091,12 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 	{
 		MTLRenderPipelineColorAttachmentDescriptor* color1 = [[pdesc colorAttachments] objectAtIndexedSubscript:1];
 		[color1 setPixelFormat:MTLPixelFormatR32Float];
+	}
+	if (m_dev.features.rov_requires_rt && extras.rt == GSTexture::Format::Invalid && !extras.has_depth && !extras.has_stencil)
+	{
+		// Dummy texture
+		[color setPixelFormat:MTLPixelFormatR8Unorm];
+		[color setWriteMask:MTLColorWriteMaskNone];
 	}
 	NSString* pname = [NSString stringWithFormat:@"HW Render %x.%llx.%llx.%x", vssel_mtl.key, pssel.key_hi, pssel.key_lo, extras.fullkey];
 	auto pipeline = MakePipeline(pdesc, vs, ps, pname);
@@ -2108,6 +2189,7 @@ void GSDeviceMTL::MRESetScissor(const GSVector4i& scissor)
 
 void GSDeviceMTL::MREClearScissor()
 {
+	assert(!m_current_render.is_full_rov());
 	if (!m_current_render.has.scissor)
 		return;
 	m_current_render.has.scissor = false;
@@ -2233,6 +2315,15 @@ void GSDeviceMTL::MREInitHWDraw(GSHWDrawConfig& config, const Map& verts)
 	MRESetVertices(verts.gpu_buffer, verts.gpu_offset);
 	if (config.vs.UseVSExpandIndexBuffer())
 		MRESetVSIndices(verts.gpu_buffer, verts.gpu_offset + config.nverts * sizeof(*config.verts));
+}
+
+__fi void GSDeviceMTL::PrepareROVTexture(GSTexture** ptex)
+{
+	GSTextureMTL* tex = static_cast<GSTextureMTL*>(*ptex);
+	FlushClears(tex);
+	tex->m_last_read  = m_current_draw;
+	tex->m_last_write = m_current_draw;
+	*ptex = nullptr;
 }
 
 void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
@@ -2371,7 +2462,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Try to reduce render pass restarts
-	if (!config.ds && m_current_render.color_target == rt && stencil == m_current_render.stencil_target && m_current_render.depth_target != config.tex)
+	if (!config.ps.HasColorROV() && !config.ds && m_current_render.color_target == rt && stencil == m_current_render.stencil_target && m_current_render.depth_target != config.tex)
 		config.ds = m_current_render.depth_target;
 	if (!rt && config.ds == m_current_render.depth_target && m_current_render.color_target != config.tex)
 		rt = m_current_render.color_target;
@@ -2386,16 +2477,28 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	}
 
 	const bool feedback_depth = config.ps.IsFeedbackLoopDepth();
-	const bool rt1 = feedback_depth && !m_features.depth_feedback;
-	BeginRenderPass(@"RenderHW", rt, MTLLoadActionLoad, config.ds, MTLLoadActionLoad, stencil, MTLLoadActionLoad, rt1);
+	const bool rt1 = feedback_depth && !m_features.depth_feedback && !config.ps.HasDepthROV();
+	GSTexture* rt_bind = rt;
+	GSTexture* ds_bind = config.ds;
+	GSTexture* rt_size = rt_bind ? rt_bind : ds_bind;
+	if (config.ps.HasColorROV() && rt_bind) PrepareROVTexture(&rt_bind);
+	if (config.ps.HasDepthROV() && ds_bind) PrepareROVTexture(&ds_bind);
+	if (!rt_bind && !ds_bind && !stencil)
+		BeginFullROV(@"RenderHWROV", rt_size->GetWidth(), rt_size->GetHeight());
+	else
+		BeginRenderPass(@"RenderHW", rt_bind, MTLLoadActionLoad, ds_bind, MTLLoadActionLoad, stencil, MTLLoadActionLoad, rt1);
 	id<MTLRenderCommandEncoder> mtlenc = m_current_render.encoder;
 	FlushDebugEntries(mtlenc);
 	if (usesStencil(config.destination_alpha))
 		[mtlenc setStencilReferenceValue:1];
 	MREInitHWDraw(config, allocation);
-	if (config.require_one_barrier || config.require_full_barrier)
+	if (config.require_one_barrier || config.require_full_barrier || config.ps.HasColorROV())
 		MRESetTexture(rt, GSMTLTextureIndexRenderTarget);
-	if (feedback_depth)
+	if (config.ps.HasDepthROV())
+	{
+		MRESetTexture(config.ds, GSMTLTextureIndexDepthTarget);
+	}
+	else if (feedback_depth)
 	{
 		GSTexture* tex = !m_features.depth_feedback && !m_features.framebuffer_fetch ? m_ds_as_rt : config.ds;
 		MRESetTexture(tex, GSMTLTextureIndexDepthTarget);
