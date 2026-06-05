@@ -37,6 +37,10 @@ struct BreakPoint
 	BreakPointCond cond;
 	BreakPointCpu cpu;
 
+	u32 maxHits = 0;
+	u32 hitsSinceEnabled = 0;
+	u32 totalHits = 0;
+
 	std::string description;
 
 	bool operator==(const BreakPoint& other) const
@@ -82,7 +86,9 @@ struct MemCheck
 
 	std::string description;
 
-	u32 numHits;
+	u32 maxHits;
+	u32 hitsSinceEnabled;
+	u32 totalHits;
 
 	u32 lastPC;
 	u32 lastAddr;
@@ -124,6 +130,10 @@ public:
 	static void ChangeBreakPointRemoveCond(BreakPointCpu cpu, u32 addr);
 	static BreakPointCond* GetBreakPointCondition(BreakPointCpu cpu, u32 addr);
 	static void ChangeBreakPointDescription(BreakPointCpu cpu, u32 addr, const std::string& description);
+	static void ChangeBreakPointMaxHits(BreakPointCpu cpu, u32 addr, u32 maxHits);
+	static void ChangeBreakPointTotalHits(BreakPointCpu cpu, u32 addr, u32 totalHits);
+
+	static bool HandleBreakpointHit(BreakPointCpu cpu, u32 addr);
 
 	static void AddMemCheck(BreakPointCpu cpu, u32 start, u32 end, MemCheckCondition cond, MemCheckResult result);
 	static void RemoveMemCheck(BreakPointCpu cpu, u32 start, u32 end);
@@ -131,7 +141,12 @@ public:
 	static void ChangeMemCheckRemoveCond(BreakPointCpu cpu, u32 start, u32 end);
 	static void ChangeMemCheckAddCond(BreakPointCpu cpu, u32 start, u32 end, const BreakPointCond& cond);
 	static void ChangeMemCheckDescription(BreakPointCpu cpu, u32 start, u32 end, const std::string& description);
+	static void ChangeMemCheckMaxHits(BreakPointCpu cpu, u32 start, u32 end, u32 maxHits);
+	static void ChangeMemCheckTotalHits(BreakPointCpu cpu, u32 start, u32 end, u32 totalHits);
 	static void ClearAllMemChecks();
+
+	static bool HandleMemCheckHit(BreakPointCpu cpu, u32 start, u32 end);
+
 
 	static void SetSkipFirst(BreakPointCpu cpu, u32 pc);
 	static u32 CheckSkipFirst(BreakPointCpu cpu, u32 pc);
