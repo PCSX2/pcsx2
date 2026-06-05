@@ -1062,11 +1062,13 @@ set(pcsx2arm64Sources
 	arm64/aR5900Branch.cpp
 	arm64/aR5900FPU.cpp
 	arm64/aR5900MMI.cpp
+	arm64/aVU.cpp
 	)
 
 set(pcsx2arm64Headers
 	arm64/AsmHelpers.h
 	arm64/aR5900.h
+	arm64/aVU.h
 )
 
 # These ones benefit a lot from LTO

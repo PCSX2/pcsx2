@@ -28,6 +28,56 @@
 
 ---
 
+## 2026-06-05 — Phase 7.2a: port arch-neutral microVU structs to aVU.h
+
+**Goal:** Task 7.2a — clone the arch-neutral microVU data structures into a new
+`pcsx2/arm64/aVU.h` so later Phase 7 tasks (regalloc, dispatcher, opcode emit) have the IR /
+program-cache / pipeline-state types to build on. Header-only infra; microVU stays unselected.
+
+**What changed:**
+- New `pcsx2/arm64/aVU.h` — arch-neutral structs cloned from x86 `microVU_IR.h` + `microVU.h`:
+  `regCycleInfo`, `microRegInfo` (96-byte pipeline key), `microJumpCache`, `microBlock`,
+  `microTempRegInfo`, `microVFreg`/`microVIreg`, `microConstInfo`, `microUpperOp`/`microLowerOp`,
+  `microFlagInst`/`microFlagCycles`, `microOp`, `microIR`, `microBlockLink(Ref)`, `microRange`,
+  `microProgram(List/Quick)`, `microProgManager`, `microVU`, `microBlockManager`.
+- New `pcsx2/arm64/aVU.cpp` — minimal TU (the start of the 7.2c shell): includes the header,
+  runs layout `static_assert`s. Exists so the header is actually compiled this session.
+- `pcsx2/CMakeLists.txt` — registered aVU.cpp/aVU.h in `pcsx2arm64Sources/Headers`.
+- Commit: `ecc527762` ARM64: microVU Phase 7.2a — arch-neutral structs (aVU.h)
+
+**Decisions & rationale:**
+- **Renames (per plan):** `x86ptr/x86start/x86end`→`codePtr/codeStart/codeEnd`,
+  `x86ptrStart`→`codeStart`. ARM host-reg differences: `xmmBackup[16][4]`→`vecBackup[32][4]`
+  (NEON has 32 vector regs vs x86's 16 xmm), `xmmCTemp`→`vecCTemp`.
+- **`microRegAlloc` only forward-declared** — it's the arch-specific allocator (7.2b). `microVU`
+  holds it by `std::unique_ptr`, so the incomplete type is fine in the header; the `microVU0/1`
+  globals are `extern` here and will be *defined* in `aVU.cpp` at 7.2c where the allocator is
+  complete (x86 defines them in the header because microVU is one TU — we can't, aVU.cpp may be
+  one of several Phase-7 TUs).
+- **Shared `microVU_Profiler.h` instead of re-cloning** — that header is 100% arch-neutral (no
+  x86emitter, no x86 types; just the `microOpcode` enum + a compiled-out profiler), so aVU.h
+  `#include`s it directly. Single source of truth for the opcode enum the tables/analysis need.
+- **Inlined the macro use in `microBlockManager::search`** (`mVUsFlagHack` → the underlying
+  `mVU.prog.IRinfo.sFlagHack`; kept `doConstProp` as a local `constexpr`) so aVU.h doesn't have
+  to pull/define the x86 microVU_Misc macros — keeps the header
+  self-contained and free of macro pollution.
+- **Real compile check, not "should build":** rather than leave an untested header until 7.2c,
+  added the minimal aVU.cpp now. `sizeof(microRegInfo)==96`/`alignof==16` static_asserts pass on
+  ARM64 → the union+bitfield+`u128 full128[]` layout ported byte-for-byte. Needed
+  `common/AlignedMalloc.h` (for `_aligned_malloc/free` used by microBlockManager) which Common.h
+  doesn't transitively pull on this TU.
+
+**Blockers / open questions:** none. The CLAUDE.md test command `ctest --test-dir build` reports
+"No tests found"; the suites actually live under `build/tests/ctest/` — run ctest from there
+(2/2 pass). (Minor doc drift, not fixed this session.)
+
+**Next step:** Task 7.2b — port `microRegAlloc` (`microVU_IR.h` 226–1139) to ARM64 in
+`pcsx2/arm64/aVU_IR.h`: NEON v-regs for VF, ARM w-regs for VI; mirror `allocReg`/`allocGPR`/
+`writeBackReg`/`clearNeeded`/`flushAll`. Drop the x86 `regAllocCOP2`/`_allocVFtoXMMreg` path
+(EE-side macro mode = Phase 7.9). Then 7.2c fleshes out aVU.cpp + defines the globals.
+
+---
+
 ## 2026-06-05 — Phase 7 kickoff: study x86 microVU (task 7.1)
 
 **Goal:** Begin Phase 7 (VU recompilers / microVU) — the last big interpreter-bound component.
