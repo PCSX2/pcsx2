@@ -44,6 +44,7 @@ BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu, Breakpo
 		m_ui.chkEnable->setChecked(bp->enabled);
 		m_ui.txtAddress->setText(QtUtils::FilledQStringFromValue(bp->addr, 16));
 		m_ui.txtDescription->setText(QString::fromStdString(bp->description));
+		m_ui.spnMaxHitCount->setValue(static_cast<int>(bp->maxHits));
 
 		if (bp->hasCond)
 			m_ui.txtCondition->setText(QString::fromStdString(bp->cond.expressionString));
@@ -63,6 +64,7 @@ BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu, Breakpo
 
 		m_ui.chkEnable->setChecked(mc->result & MEMCHECK_BREAK);
 		m_ui.chkLog->setChecked(mc->result & MEMCHECK_LOG);
+		m_ui.spnMaxHitCount->setValue(static_cast<int>(mc->maxHits));
 
 		if (mc->hasCond)
 			m_ui.txtCondition->setText(QString::fromStdString(mc->cond.expressionString));
@@ -105,9 +107,13 @@ void BreakpointDialog::accept()
 			return;
 		}
 
+		// Reset totalHits if the address of the BP changes.
+		if (static_cast<u32>(address) != bp->addr)
+			bp->totalHits = 0;
+
 		bp->addr = address;
 		bp->description = m_ui.txtDescription->text().toStdString();
-
+		bp->maxHits = static_cast<u32>(m_ui.spnMaxHitCount->value());
 		bp->enabled = m_ui.chkEnable->isChecked();
 
 		if (!m_ui.txtCondition->text().isEmpty())
@@ -146,8 +152,13 @@ void BreakpointDialog::accept()
 			return;
 		}
 
+		// Reset totalHits if the address range of the MC changes.
+		if (static_cast<u32>(startAddress) != mc->start || static_cast<u32>(startAddress + size) != mc->end)
+			mc->totalHits = 0;
+
 		mc->start = startAddress;
 		mc->end = startAddress + size;
+		mc->maxHits = static_cast<u32>(m_ui.spnMaxHitCount->value());
 		mc->description = m_ui.txtDescription->text().toStdString();
 
 		if (!m_ui.txtCondition->text().isEmpty())

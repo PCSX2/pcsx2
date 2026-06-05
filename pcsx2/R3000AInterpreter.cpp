@@ -130,6 +130,9 @@ void psxBreakpoint(bool memcheck)
 		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_IOP, pc);
 		if (cond && !cond->Evaluate())
 			return;
+
+		if (!CBreakPoints::HandleBreakpointHit(BREAKPOINT_IOP, pc))
+			return;
 	}
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
