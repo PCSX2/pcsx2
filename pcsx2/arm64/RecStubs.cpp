@@ -13,18 +13,6 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
   pxFailRel("Not implemented.");
 }
 
-bool SaveStateBase::vuJITFreeze()
-{
-	if(IsSaving())
-		vu1Thread.WaitVU();
-
-	Console.Warning("recompiler state is stubbed in arm64!");
-
-	// HACK!!
-
-	// size of microRegInfo structure
-	std::array<u8,96> empty_data{};
-	Freeze(empty_data);
-	Freeze(empty_data);
-	return true;
-}
+// SaveStateBase::vuJITFreeze() now lives in arm64/aVU.cpp (Phase 7.2c), where it
+// freezes the real microVU0/1 pipeline state (mVU.prog.lpState) instead of the
+// 96-byte placeholder that used to be stubbed here.
