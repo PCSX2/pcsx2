@@ -8,6 +8,46 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 7 (VU recompilers / microVU) — task 7.2b (host register allocator → `aVU_IR.h`) DONE.**
+
+`pcsx2/arm64/aVU_IR.h` now holds the ARM64 port of the x86 `microRegAlloc` class
+(`microVU_IR.h` 226–1139): VF regs → NEON `v0`–`v23` (pool; slot i == host `v_i`), VI regs →
+ARM `w`-regs, and all VF/VI/ACC/I-reg memory access goes through base+offset addressing
+against `RVUSTATE = x19` (= `&vuRegs[index]`) instead of the x86 absolute-address `ptr[...]`.
+The COP2 / VU0-macro path (`regAllocCOP2`, `_allocVFtoXMMreg`/`_allocX86reg`, the
+`pxmmregs`/`x86regs` interaction, `updateCOP2AllocState`, `flushPartialForCOP2`,
+`clearRegCOP2`/`clearGPRCOP2`) is **dropped** — that's the EE-side macro-mode allocator
+(Phase 7.9); ARM64 macro ops currently use the Phase 5.3 inline-interp fallback. The rest of
+the allocator bookkeeping (`allocReg`/`allocGPR`/`writeBackReg`/`clearNeeded`/`flushAll`/
+`clearReg`/`clearGPR`/`unbindAnyVIAllocations`/`moveVIToGPR` + the query helpers) mirrors x86
+faithfully. NEON emit helpers `mVUloadReg`/`mVUsaveReg`/`mVUmergeRegs`/`loadIreg` ported with
+matching `xyzw` lane semantics (NEON V4S lane 0 = X, same as xmm); partial NEON stores compute
+the target address explicitly because ARM single-lane `St1` has no immediate offset.
+
+ARM-specific correctness call: **all VF pool regs are treated caller-saved.** AAPCS64
+preserves only the *low 64 bits* of `v8`–`v15` across a C call, but VF is 128-bit, so even
+those can't survive a call intact — `flushCallerSavedRegisters` writes back every cached VF
+reg before a call, matching x86 SysV (where no xmm is callee-saved).
+
+**Verified for real:** `aVU.cpp` instantiates the allocator (`mVUallocCompileCheck`) and
+odr-uses `allocReg`/`allocGPR`/`moveVIToGPR`/`flushAll`/`flushCallerSavedRegisters`/
+`TDwritebackAll`/etc. so the VIXL emission paths are actually compiled, not just parsed.
+`pcsx2-qt` builds arm64; unittests 2/2. microVU stays *unselected* — pure infrastructure.
+
+**Provisional (to confirm at 7.2d):** the host register map (which v-regs/w-regs are the
+pools, `RVUSTATE=x19`, `gprT1=w9`/`gprT2=w10`, `gprF0..3=w23..w26`, `mVU_xmmPQ=v24`,
+`RVUADDR=x17` transient) is a reasonable first cut; the dispatcher (7.2d) pins the final ABI.
+
+**Next:** Task 7.2c — flesh out `pcsx2/arm64/aVU.cpp` mirroring `microVU.cpp`
+(`mVUinit`/`mVUreset`/`mVUclose`/`mVUclear`, program-cache mgmt, the `recMicroVU0/1::*`
+provider methods) and **define** the `microVU0/1` globals (the allocator is now complete, so
+`microVU`'s `unique_ptr<microRegAlloc>` dtor can be instantiated). Then 7.2d the dispatcher
+(`mVUdispatcherAB/CD`).
+
+---
+
+### Earlier focus (kept for context)
+
 **Phase 7 (VU recompilers / microVU) — task 7.2a (arch-neutral structs → `aVU.h`) DONE.**
 
 `pcsx2/arm64/aVU.h` now holds the ported arch-neutral microVU data structures (cloned from
@@ -735,9 +775,12 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     `x86ptr/x86start/x86end` → `codePtr/codeStart/codeEnd`; dropped `x86emitter.h`.
     `microRegAlloc` forward-declared (7.2b). Verified via a minimal `aVU.cpp` TU: builds arm64,
     `sizeof(microRegInfo)==96` static_assert passes, unittests 2/2.
-  - [ ] 7.2b Port `microRegAlloc` (`microVU_IR.h` 226–1139) to ARM64 — NEON v-regs for VF, ARM
-    w-regs for VI. Mirror `allocReg`/`allocGPR`/`writeBackReg`/`clearNeeded`/`flushAll`/
-    `clearReg`/`clearGPR` with VIXL loads/stores. This is the allocator heart.
+  - [x] 7.2b Port `microRegAlloc` (`microVU_IR.h` 226–1139) to ARM64 in `pcsx2/arm64/aVU_IR.h`
+    — NEON `v0`–`v23` for VF, ARM `w`-regs for VI, base+offset addressing vs `RVUSTATE=x19`.
+    Mirrors `allocReg`/`allocGPR`/`writeBackReg`/`clearNeeded`/`flushAll`/`clearReg`/`clearGPR`
+    + the NEON emit helpers (`mVUloadReg`/`mVUsaveReg`/`mVUmergeRegs`/`loadIreg`). COP2/macro path
+    dropped (Phase 7.9). All VF pool regs treated caller-saved (AAPCS64 only keeps v8–v15 low 64).
+    Compile-exercised via `mVUallocCompileCheck` in aVU.cpp. Builds arm64; unittests 2/2.
   - [ ] 7.2c `pcsx2/arm64/aVU.cpp` — mirror `microVU.cpp` (mVUinit/reset/close/clear, program
     cache mgmt, `recMicroVU0/1::*` methods). Register in `pcsx2/CMakeLists.txt`
     (`pcsx2arm64Sources/Headers`). Builds + links.

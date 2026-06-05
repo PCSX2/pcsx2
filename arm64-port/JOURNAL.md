@@ -28,6 +28,57 @@
 
 ---
 
+## 2026-06-05 — Phase 7.2b: port microRegAlloc to aVU_IR.h
+
+**Goal:** Task 7.2b — clone the x86 microVU host register allocator (`microRegAlloc`,
+`microVU_IR.h` 226–1139) to ARM64 so the dispatcher (7.2d) and opcode emission (7.5) have a
+working allocator: VF→NEON v-regs, VI→ARM w-regs. Header-only infra; microVU stays unselected.
+
+**What changed:**
+- New `pcsx2/arm64/aVU_IR.h` — the ARM64 `microRegAlloc` + `microMapXMM`/`microMapGPR` structs
+  + the NEON emit helpers `mVUloadReg`/`mVUsaveReg`/`mVUmergeRegs`/`loadIreg` (ported from
+  `microVU_Misc.inl`) + the provisional ARM64 microVU register-map constants.
+- `pcsx2/arm64/aVU.cpp` — `#include "arm64/aVU_IR.h"` + `mVUallocCompileCheck()` (never called)
+  that odr-uses the allocator's emission methods so the VIXL codegen is actually compiled.
+- `pcsx2/CMakeLists.txt` — registered aVU_IR.h in `pcsx2arm64Headers`.
+- Commit: `80747acd0` ARM64: microVU Phase 7.2b — port microRegAlloc (aVU_IR.h)
+
+**Decisions & rationale:**
+- **Dropped the COP2/macro-mode path entirely** (`regAllocCOP2`, `_allocVFtoXMMreg`/
+  `_allocX86reg`, `pxmmregs`/`x86regs`, `updateCOP2AllocState`, `flushPartialForCOP2`,
+  `clearRegCOP2`/`clearGPRCOP2`). That's the EE-side VU0-macro allocator = Phase 7.9; ARM64
+  macro ops already run via the Phase 5.3 inline-interp fallback. Removing it makes the port a
+  faithful but much smaller mirror of the x86 "normal" (microVU-thread) allocator path and
+  removes all the x86-iCore-coupling that wouldn't translate.
+- **Addressing model:** x86 uses absolute-address `ptr[&getVF(n)]` (address baked into the
+  instruction). ARM64 can't, so every VF/VI/ACC/I access is base+offset against a designated
+  state pointer `RVUSTATE=x19` (= `&vuRegs[index]`), with byte offsets via `offsetof(VURegs,...)`.
+- **NEON lane semantics:** V4S lane 0 = lowest 32 bits = X, identical to xmm lane order, so the
+  `xyzw` mask (bit8=X..bit1=W) maps one-to-one. `mVUloadReg`/`mVUsaveReg`/`mVUmergeRegs` ported
+  to preserve the exact x86 lane behaviour incl. the `modXYZW` single-subvector-in-lane0 case.
+  Partial stores (Y/Z/W) compute the address into `RVUADDR=x17` first because ARM single-lane
+  `St1` only takes a base register, not an immediate offset (X/full use `Str` with offset).
+- **All VF pool regs treated caller-saved** (`vfIsCallerSaved` ≡ true): AAPCS64 preserves only
+  the *low 64 bits* of v8–v15 across a C call, but VF is 128-bit, so none survive a call intact.
+  `flushCallerSavedRegisters` writes back every cached VF reg before a call — same net behaviour
+  as x86 SysV (no xmm callee-saved there). GPR caller-saved test reuses `armIsCalleeSavedRegister`
+  (callee-saved = reg≥19).
+- **Compile-exercised, not "should build":** `mVUallocCompileCheck` constructs the allocator and
+  calls `allocReg`/`allocGPR`/`moveVIToGPR`/`flushAll`/`flushCallerSavedRegisters`/`TDwritebackAll`
+  so the emission member bodies are instantiated and any VIXL type error surfaces now.
+
+**Blockers / open questions:** The register map (pools, `RVUSTATE`, `gprT1/T2`, `gprF0..3`,
+`mVU_xmmPQ`, `RVUADDR`) is provisional — the dispatcher (7.2d) will pin the final ABI and may
+shuffle these. The NEON emit helpers' lane correctness is only validated by inspection (vs the
+x86 original); first real execution is after 7.2d/7.5.
+
+**Next step:** Task 7.2c — flesh out `pcsx2/arm64/aVU.cpp` mirroring `microVU.cpp`
+(`mVUinit`/`mVUreset`/`mVUclose`/`mVUclear`, program-cache mgmt, `recMicroVU0/1::*`) and define
+the `microVU0/1` globals (the allocator is complete now, so `microVU`'s `unique_ptr` dtor can be
+instantiated). Then 7.2d the dispatcher (`mVUdispatcherAB/CD`).
+
+---
+
 ## 2026-06-05 — Phase 7.2a: port arch-neutral microVU structs to aVU.h
 
 **Goal:** Task 7.2a — clone the arch-neutral microVU data structures into a new
