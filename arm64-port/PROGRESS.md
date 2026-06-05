@@ -8,6 +8,32 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 5.3 COP2 / VU0-macro inline-fallback — DONE (commit `0108025c9`).**
+
+COP2 ops (primary opcode `0x12`) and the COP2 quad load/stores `LQC2`/`SQC2` used to
+return false from `recTranslateOp`, so every one **broke the EE block** and got
+single-stepped through the dispatcher — expensive in VU0-macro-heavy geometry (FFX
+interleaves COP2 densely with EE code). They now **inline the interpreter handler**
+(`recEmitInterpInline`) and keep the block intact.
+
+Key insight that makes this safe: on ARM64 `CpuVU0 == &CpuIntVU0` (the **synchronous**
+VU0 interpreter), so — unlike the x86 rec — there is **no deferred microVU program to
+finish/sync** (`mVUFinishVU0`/`COP2_Interlock`) before touching VU0 state. Running the
+interpreter's COP2 op inline is therefore byte-for-byte identical to single-stepping it,
+just without the block-break + dispatcher round-trip. `BC2F/BC2T/BC2FL/BC2TL` (rs==0x08)
+write `cpuRegs.pc`, so they stay on the single-step path.
+
+This is the "interpreter fallback initially" form of Phase 5.3 (full native microVU
+emission is Phase 7). **Verified:** 273/273 ARM64 emit tests green; BIOS + FFX boot and
+run great (user-confirmed live).
+
+**Next:** IOP rec (Phase 6) for playable 2D — the biggest remaining leverage now that EE
+dispatch is fast and EE/COP2 stay in-block; IOP is still fully interpreter-single-stepped.
+Alt: native COP2 microVU emission (folded into Phase 7), or Phase 5.1 COP0 inline (same
+trick — most COP0 ops are straight-line and can inline instead of breaking the block).
+
+---
+
 **Phase 4.4 recLUT block linking + dispatcher — DONE & MERGED to `armjit`.**
 
 The recLUT execution model (parked since 2026-06-04 on `armjit-reclut-wip`) was
@@ -313,7 +339,11 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     - [x] `MADD/MSUB(/A)_S`, `MAX_S/MIN_S`.
     - [x] `C.F/C.EQ/C.LT/C.LE` compares, `BC1T/BC1F` branches, `CVT.S/CVT.W`.
     - [ ] Remaining on interpreter fallback: double W/L-format, likely `BC1FL/BC1TL`.
-- [ ] 5.3 COP2 (VU0 macro): interpreter fallback initially.
+- [x] 5.3 COP2 (VU0 macro): **inline interpreter fallback** (commit `0108025c9`). COP2
+  ops (`0x12`) + `LQC2`/`SQC2` emit an inline `recEmitInterpInline` call instead of
+  breaking the block; safe because ARM64 `CpuVU0` is the synchronous VU0 interpreter (no
+  microVU sync needed). `BC2*` branches stay single-stepped. Native microVU emission =
+  Phase 7.
 - [x] 5.4 MMI (128-bit int SIMD): map to NEON where possible (ref `x86/iMMI.cpp`).
   **COMPLETE** — every MMI op compiles natively except QFSRV (runtime SA register →
   interpreter). All decode indices match `tbl_MMI*`; full gtest coverage (269 Arm64EmitEE).

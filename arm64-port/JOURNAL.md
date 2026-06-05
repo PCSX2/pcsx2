@@ -28,6 +28,46 @@
 
 ---
 
+## 2026-06-05 — Phase 5.3 COP2/VU0-macro inline fallback (no block break)
+
+**Goal:** Stop COP2 (VU0 macro) ops from fragmenting EE blocks. They were the highest-
+frequency `recTranslateOp`-returns-false case in 3D geometry code.
+
+**What changed:**
+- **`pcsx2/arm64/aR5900.cpp` `recTranslateOp`:** added `case 0x12` (COP2) — for every
+  COP2 op except the `BC2*` branches (rs==0x08) it emits an inline interpreter call
+  (`recEmitInterpInline(op)`) and returns true, so the block continues instead of
+  breaking + single-stepping via the dispatcher. Also inlined `LQC2`/`SQC2` (primary
+  `0x36`/`0x3e`, new `OP_LQC2`/`OP_SQC2` constants). Forward-declared
+  `recEmitInterpInline` (defined later among the block-compile helpers).
+- Commit `0108025c9`.
+
+**Decisions & rationale:**
+- **Why inlining the interpreter is correct here (and not a hack):** the x86 rec wraps
+  every COP2 op in `mVUFinishVU0`/`COP2_Interlock` sync because x86 runs VU0 on the
+  *async microVU recompiler*. On ARM64 `CpuVU0 == &CpuIntVU0` (synchronous interpreter,
+  VMManager.cpp:2742), so VU0 state is always current — there is nothing to sync. Running
+  the interpreter's COP2 handler inline is byte-identical to the single-step path
+  (`intExecuteOneInst` runs the same `info.interpret` fn); the only difference is we skip
+  the block-break + dispatcher round-trip and let the block charge `info.cycles` in
+  aggregate. Same pattern already used for delay-slot ops (`recEmitInterpInline`).
+- **`BC2*` stay single-stepped** — they write `cpuRegs.pc` and aren't in `recEmitBranch`,
+  so returning false lets `recRecompile` end the block before them (unchanged, proven).
+- This is the Phase 5.3 "interpreter fallback initially" milestone; native microVU
+  emission for COP2 is deferred to Phase 7 (it's the same emitter as VU1).
+
+**Blockers / open questions:** none. No new emit gtests (the path is an interpreter call,
+not a generator) — existing 273/273 stay green.
+
+**Verified:** 273/273 ARM64 emit tests; `pcsx2-qt` builds arm64; BIOS headless boot clean;
+**FFX boots and runs great (user-confirmed live).**
+
+**Next step:** IOP rec (Phase 6) for playable 2D — biggest remaining leverage; IOP is
+still fully interpreter-single-stepped. (Alt: COP0 inline via the same trick; or native
+microVU = Phase 7.)
+
+---
+
 ## 2026-06-05 — Phase 4.4 recLUT: game-compat smoke test PASSED (FFX, +40% FPS)
 
 **Goal:** Validate the recLUT merge (commit `b7e83bc0b` on `armjit`) on a real game.
