@@ -206,6 +206,8 @@ Open it later from Settings → Open ARMSX2 directory.</string>
     <string name="settings_intc_spin_detection">INTC Spin Detection</string>
     <string name="settings_mvu_flag_hack">mVU Flag Hack</string>
     <string name="settings_instant_vu1">Instant VU1</string>
+    <string name="settings_enable_vu0">Enable VU0 Recompiler</string>
+    <string name="settings_enable_vu1">Enable VU1 Recompiler</string>
     <string name="settings_fast_cdvd">Fast CDVD</string>
     <string name="settings_performance_overlay">Performance Overlay</string>
     <string name="settings_osd_scale_default">On-Screen Display Scale: 100</string>

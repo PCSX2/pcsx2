@@ -1350,6 +1350,28 @@ public class SettingsActivity extends AppCompatActivity {
 			}
 		} catch (Throwable ignored) {}
 
+        // Enable VU0 Recompiler
+        MaterialSwitch swVu0 = findViewById(R.id.sw_enable_vu0);
+        if (swVu0 != null) {
+            try {
+                String vu0 = NativeApp.getSetting("EmuCore/CPU/Recompiler", "EnableVU0", "bool");
+                swVu0.setChecked(!"false".equalsIgnoreCase(vu0));
+            } catch (Exception ignored) {}
+            swVu0.setOnCheckedChangeListener((buttonView, isChecked) ->
+                    NativeApp.setSetting("EmuCore/CPU/Recompiler", "EnableVU0", "bool", isChecked ? "true" : "false"));
+        }
+
+        // Enable VU1 Recompiler
+        MaterialSwitch swVu1 = findViewById(R.id.sw_enable_vu1);
+        if (swVu1 != null) {
+            try {
+                String vu1 = NativeApp.getSetting("EmuCore/CPU/Recompiler", "EnableVU1", "bool");
+                swVu1.setChecked(!"false".equalsIgnoreCase(vu1));
+            } catch (Exception ignored) {}
+            swVu1.setOnCheckedChangeListener((buttonView, isChecked) ->
+                    NativeApp.setSetting("EmuCore/CPU/Recompiler", "EnableVU1", "bool", isChecked ? "true" : "false"));
+        }
+
         // Hardware Readbacks
         MaterialSwitch swHwRead = findViewById(R.id.sw_hw_readbacks);
         if (swHwRead != null) {

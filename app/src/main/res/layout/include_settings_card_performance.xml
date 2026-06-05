@@ -44,6 +44,22 @@
         </LinearLayout>
 
         <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/sw_enable_vu0"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/settings_enable_vu0"
+            app:useMaterialThemeColors="true" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/sw_enable_vu1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/settings_enable_vu1"
+            app:useMaterialThemeColors="true" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/sw_hw_readbacks"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
