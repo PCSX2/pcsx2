@@ -649,6 +649,20 @@ void GSDevice11::Destroy()
 	}
 	m_state.current_ds = nullptr;
 
+	if (m_state.rt_uav)
+	{
+		m_state.rt_uav->Release();
+		m_state.rt_uav = nullptr;
+	}
+	m_state.current_rt_uav = nullptr;
+
+	if (m_state.ds_uav)
+	{
+		m_state.ds_uav->Release();
+		m_state.ds_uav = nullptr;
+	}
+	m_state.current_ds_uav = nullptr;
+
 	m_shader_cache.Close();
 
 #ifdef REPORT_LEAKED_OBJECTS
