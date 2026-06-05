@@ -590,6 +590,48 @@ static bool recTranslateOp(u32 op)
 		case OP_LWC1: armEmitLWC1(rt, rs, imm); return true;
 		case OP_SWC1: armEmitSWC1(rt, rs, imm); return true;
 
+		// COP0 (Phase 5.1) — same inline-interpreter strategy as COP2: keep straight-line
+		// COP0 ops in the block instead of breaking it + single-stepping. COP0 is not a
+		// per-op perf item (see x86/iCOP0.cpp's note), so the win is purely avoiding block
+		// fragmentation. We must NOT inline anything that:
+		//   - writes cpuRegs.pc:       BC0 branches (rs==0x08), ERET (C0 funct 0x18);
+		//   - needs a live cpuRegs.cycle: MFC0/MTC0 of Count (Rd==9) or the PERF counters
+		//     (Rd==25). This rec only flushes cpuRegs.cycle at the block tail, so a
+		//     mid-block read would be stale — COP0.cpp warns that two MFC0 Count in one
+		//     block before the cycle update return increment 0 and games lock up;
+		//   - gates interrupts with timing the x86 rec specifically branches after: EI/DI,
+		//     WAIT.
+		// Those stay on the interpreter single-step path (return false). MTC0 Status/Config
+		// are fine to inline: the x86 rec doesn't force a branch after them either, so a
+		// resulting interrupt is recognised at the block-tail event test just the same;
+		// TLB writes call MapTLB→recClear, which is safe mid-block (targeted recLUT reset,
+		// the running block keeps its valid host code and recompiles cleared slots on the
+		// next dispatch).
+		case 0x10:
+			switch (rs)
+			{
+				case 0x00: // MFC0
+				case 0x04: // MTC0
+					if (rd == 9 || rd == 25)
+						return false; // Count / PERF need a live cpuRegs.cycle
+					recEmitInterpInline(op);
+					return true;
+				case 0x10: // C0 — inline the TLB ops only
+					switch (funct)
+					{
+						case 0x01: // TLBR
+						case 0x02: // TLBWI
+						case 0x06: // TLBWR
+						case 0x08: // TLBP
+							recEmitInterpInline(op);
+							return true;
+						default:
+							return false; // ERET (0x18) writes PC; EI/DI/WAIT gate interrupts
+					}
+				default:
+					return false; // BC0 branches (rs==0x08) + COP0_Unknown
+			}
+
 		// COP2 — VU0 macro mode (Phase 5.3). On ARM64 CpuVU0 is the synchronous VU0
 		// interpreter, so unlike the x86 rec there is no deferred microVU program to
 		// finish/sync (mVUFinishVU0) before touching VU0 state. That makes running the
