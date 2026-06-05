@@ -285,7 +285,12 @@ enum : u32
 	OP_SD = 0x3f,
 	OP_LWC1 = 0x31,
 	OP_SWC1 = 0x39,
+	OP_LQC2 = 0x36,
+	OP_SQC2 = 0x3e,
 };
+
+// Defined below (block-compile helpers) — used by recTranslateOp's COP2 inline path.
+static void recEmitInterpInline(u32 op);
 
 // Translate a single guest instruction (cpuRegs.code) into the open block. Returns
 // true if a real generator handled it, false if it fell through to a placeholder.
@@ -584,6 +589,26 @@ static bool recTranslateOp(u32 op)
 		// FPU load/store (Phase 5.2a) — 32-bit transfer between memory and FPR[rt].
 		case OP_LWC1: armEmitLWC1(rt, rs, imm); return true;
 		case OP_SWC1: armEmitSWC1(rt, rs, imm); return true;
+
+		// COP2 — VU0 macro mode (Phase 5.3). On ARM64 CpuVU0 is the synchronous VU0
+		// interpreter, so unlike the x86 rec there is no deferred microVU program to
+		// finish/sync (mVUFinishVU0) before touching VU0 state. That makes running the
+		// interpreter's COP2 handler *inline* identical to single-stepping it — but it
+		// keeps the EE block intact instead of forcing a block-break + dispatcher
+		// round-trip per op. VU0-macro geometry (e.g. FFX) interleaves many COP2 ops
+		// with EE code, so this is the win: no fragmentation. The BC2 branches
+		// (rs==0x08) write cpuRegs.pc, so they stay on the interpreter single-step path
+		// (handled by recRecompile ending the block before them).
+		case 0x12:
+			if (rs == 0x08)
+				return false; // BC2F/BC2T/BC2FL/BC2TL — single-step (writes PC)
+			recEmitInterpInline(op);
+			return true;
+
+		// COP2 quadword load/store (VF[rt] ↔ memory). Straight-line, no PC write —
+		// inline the interpreter handler like the COP2 macro ops above.
+		case OP_LQC2: recEmitInterpInline(op); return true;
+		case OP_SQC2: recEmitInterpInline(op); return true;
 
 		default: return false;
 	}
