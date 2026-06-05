@@ -21,6 +21,7 @@
 
 #include "Config.h"
 #include "IopBios.h"
+#include "IopDma.h"
 #include "IopHw.h"
 #include "IopMem.h"
 #include "Memory.h"
@@ -973,6 +974,24 @@ static bool recTranslateOp(u32 op)
 		case 0x2A: iopEmitSWL(rt, rs, imm); return true;        // SWL
 		case 0x2B: iopEmitStore(32, rt, rs, imm); return true;  // SW
 		case 0x2E: iopEmitSWR(rt, rs, imm); return true;        // SWR
+
+		// Coprocessor ops — all straight-line (the IOP interpreter has no COP0/COP2
+		// branches; those table slots are psxNULL). Inline the interpreter handler and keep
+		// the block intact instead of breaking + single-stepping, mirroring the EE Phase
+		// 5.1/5.3 trick and the x86 IOP rec (REC_GTE_FUNC / rpsxCP0 — flush + call handler,
+		// no block break). None write psxRegs.pc.
+		case 0x10: // COP0: MFC0/CFC0/MTC0/CTC0/RFE (psxCOP0 dispatches on rs)
+			recEmitInterpInline(op);
+			if (rs == 0x10) // RFE: raise any pending IOP interrupts (matches x86 rpsxRFE)
+				armEmitCall(reinterpret_cast<const void*>(&iopTestIntc));
+			return true;
+		case 0x12: // COP2: GTE ops + MFC2/CFC2/MTC2/CTC2 (psxCOP2 dispatches on funct)
+			recEmitInterpInline(op);
+			return true;
+		case 0x32: // LWC2 — GTE quad load
+		case 0x3A: // SWC2 — GTE quad store
+			recEmitInterpInline(op);
+			return true;
 
 		default: return false;
 	}
