@@ -8,6 +8,51 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 7 (VU recompilers / microVU) — task 7.2c (recompiler shell → `aVU.cpp`) DONE.**
+
+`pcsx2/arm64/aVU.cpp` now mirrors x86 `microVU.cpp`: it **defines the `microVU0`/
+`microVU1` and `CpuMicroVU0`/`CpuMicroVU1` globals** (possible now that `microRegAlloc`
+is a complete type in `aVU_IR.h`, so `microVU`'s `unique_ptr<microRegAlloc>` dtor
+instantiates) and ports the arch-neutral recompiler housekeeping:
+
+- Program/block-cache management: `mVUinit`/`mVUreset`/`mVUclose`/`mVUclear`,
+  `mVUcreateProg`/`mVUcacheProg`/`mVUcmpProg`/`mVUrangesHash`/`mVUprintUniqueRatio`, and
+  the templated `mVUsearchProg` (explicitly instantiated for VU0/VU1 so it stays compiled
+  until `mVUexecute` lands at 7.2d).
+- The `recMicroVU0/1` provider methods (Reserve/Shutdown/Reset/Execute/Clear/...).
+- `SaveStateBase::vuJITFreeze` now freezes the **real** `microVU0/1.prog.lpState` (96-byte
+  `microRegInfo` each) — removed the `RecStubs.cpp` placeholder that froze 96 empty bytes
+  twice (same layout → save-state compatible).
+
+Renames vs x86: `prog.x86ptr/x86start/x86end` → `codePtr/codeStart/codeEnd`. The x86-coupled
+`microVU_Misc.h` macros (`mV`/`mVUx`/`_mVUt`/`mVUrange`/`doWholeProgCompare`) are expanded
+inline, keeping the TU free of x86emitter coupling.
+
+**Deliberately stubbed (not this task):** the codegen/compile layer the housekeeping calls —
+`mVUdispatcherAB/CD` + `mVUGenerateWaitMTVU/CopyPipelineState/CompareState` (task 7.2d) and
+`mVUblockFetch`/`mVUentryGet` (later block-compiler port) — are forward-declared and
+`pxFailRel`-stubbed. microVU stays **unselected** on ARM64 (VMManager pins `CpuIntVU0/1`), so
+no stub is ever reached; they only exist so the management code links. `mVUreset`'s emitter
+setup (`xSetPtr(mVU.cache)` + `codeStart = xGetAlignedCallTarget()` on x86) is a placeholder
+(`codeStart = mVU.cache`) until 7.2d emits the dispatchers. Kept `mVUallocCompileCheck` so the
+allocator's VIXL emission paths stay instantiated.
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 2/2 (common + core). Pure infrastructure — no
+runtime behaviour change (providers are never `Reserve()`'d on ARM64 yet). Commit `532adca92`.
+
+**Next:** Task 7.2d — the dispatcher. Port `mVUdispatcherAB`/`mVUdispatcherCD` +
+`mVUGenerateWaitMTVU`/`mVUGenerateCopyPipelineState`/`mVUGenerateCompareState` (x86
+`microVU_Execute.inl` 23–315) to VIXL, plus `mVUexecute`/`mVUcleanUp`
+(`mVUexecuteVU0/1`/`mVUcleanUpVU0/1`). This pins the final ARM64 microVU ABI (entry
+contract: startPC+cycles in arg regs; load VU FPCR, the PQ NEON reg, mac/clip/status flag
+instances; jump to the compiled block; on exit write flags back + `mVUcleanUp`). Replace the
+7.2c stubs and wire the real emitter setup in `mVUreset` (`armSetAsmPtr(mVU.cache, ...)`,
+`codeStart`/`codePtr` set just past the emitted dispatchers).
+
+---
+
+### Earlier focus (kept for context)
+
 **Phase 7 (VU recompilers / microVU) — task 7.2b (host register allocator → `aVU_IR.h`) DONE.**
 
 `pcsx2/arm64/aVU_IR.h` now holds the ARM64 port of the x86 `microRegAlloc` class
@@ -781,9 +826,10 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     + the NEON emit helpers (`mVUloadReg`/`mVUsaveReg`/`mVUmergeRegs`/`loadIreg`). COP2/macro path
     dropped (Phase 7.9). All VF pool regs treated caller-saved (AAPCS64 only keeps v8–v15 low 64).
     Compile-exercised via `mVUallocCompileCheck` in aVU.cpp. Builds arm64; unittests 2/2.
-  - [ ] 7.2c `pcsx2/arm64/aVU.cpp` — mirror `microVU.cpp` (mVUinit/reset/close/clear, program
-    cache mgmt, `recMicroVU0/1::*` methods). Register in `pcsx2/CMakeLists.txt`
-    (`pcsx2arm64Sources/Headers`). Builds + links.
+  - [x] 7.2c `pcsx2/arm64/aVU.cpp` — mirror `microVU.cpp` (mVUinit/reset/close/clear, program
+    cache mgmt, `mVUsearchProg`, `recMicroVU0/1::*` methods) + define the `microVU0/1` /
+    `CpuMicroVU0/1` globals + real `vuJITFreeze`. Codegen/compile layer (dispatcher,
+    block-fetch) `pxFailRel`-stubbed for 7.2d/later. Builds arm64; unittests 2/2. (`532adca92`)
   - [ ] 7.2d Dispatcher — port `mVUdispatcherAB/CD` + `mVUexecute`/`mVUcleanUp` (AAPCS64 frame;
     load VU FPCR, PQ NEON reg, mac/clip/status instances; jump to block; flag writeback +
     cycle accounting on exit). Mirror `microVU_Execute.inl`.

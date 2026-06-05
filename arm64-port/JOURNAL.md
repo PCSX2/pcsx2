@@ -28,6 +28,62 @@
 
 ---
 
+## 2026-06-05 — Phase 7.2c: recompiler shell in aVU.cpp
+
+**Goal:** Task 7.2c — flesh out `pcsx2/arm64/aVU.cpp` mirroring x86 `microVU.cpp`: define the
+`microVU0/1` + `CpuMicroVU0/1` globals (now that the allocator is a complete type) and port the
+arch-neutral program/block-cache housekeeping + the `recMicroVU0/1` provider methods. Pure infra;
+microVU stays unselected.
+
+**What changed:**
+- `pcsx2/arm64/aVU.cpp` — replaced the 7.2a/7.2b minimal TU with the full shell:
+  - **Globals:** `alignas(16) microVU microVU0/1;` + `recMicroVU0/1 CpuMicroVU0/1;`. The
+    `microVU` dtor (destroying `unique_ptr<microRegAlloc>`) now instantiates because aVU_IR.h
+    makes `microRegAlloc` complete.
+  - **Cache mgmt:** `mVUinit`/`mVUreset`/`mVUclose`/`mVUclear`, `mVUdeleteProg`/`mVUcreateProg`/
+    `mVUcacheProg`/`mVUrangesHash`/`mVUprintUniqueRatio`/`mVUcmpProg`, and templated
+    `mVUsearchProg` (explicit `<0>`/`<1>` instantiations to keep it compiled until `mVUexecute`
+    at 7.2d).
+  - **Providers:** all `recMicroVU0/1::*` methods (Reserve/Shutdown/Reset/Step/SetStartPC/
+    Execute/Clear/ResumeXGkick).
+  - **`SaveStateBase::vuJITFreeze`** now freezes the real `microVU0/1.prog.lpState`.
+- `pcsx2/arm64/RecStubs.cpp` — removed its placeholder `vuJITFreeze` (froze 96 empty bytes
+  twice) now that aVU.cpp owns the real one; left a pointer comment. (Fixed the duplicate-symbol
+  link error this caused.)
+- Commit: `532adca92` ARM64: microVU Phase 7.2c — recompiler shell (aVU.cpp)
+
+**Decisions & rationale:**
+- **Expanded the x86 `microVU_Misc.h` macros inline** (`mV`/`mVUx`/`_mVUt`/`mVUrange`/
+  `doWholeProgCompare`) instead of pulling that header — it is x86emitter-coupled. Kept the TU
+  free of x86 dependencies, same approach as 7.2a's aVU.h. `doWholeProgCompare` cloned as a local
+  `static constexpr bool = false`; `mVUdumpProg` cloned as the default no-op macro.
+- **Renames carried through:** `prog.x86ptr/x86start/x86end` → `codePtr/codeStart/codeEnd` in
+  `mVUinit`/`mVUreset`/`mVUcreateProg` (matches aVU.h's `microProgManager`).
+- **Stubbed the codegen/compile layer, not faked it.** `mVUreset`/`mVUsearchProg` call into the
+  dispatcher generators (`mVUdispatcherAB/CD`, `mVUGenerateWaitMTVU/CopyPipelineState/
+  CompareState` — task 7.2d) and the block compiler (`mVUblockFetch`/`mVUentryGet` — later). All
+  forward-declared and `pxFailRel`-stubbed at the bottom of the file. Chose `pxFailRel` (loud)
+  over silent no-ops: microVU is unselected (VMManager pins `CpuIntVU0/1`) so the providers are
+  never `Reserve()`'d/`Reset()`'d/`Execute()`'d on ARM64 — nothing reaches a stub — but if that
+  wiring ever lands before the real codegen, it aborts instead of jumping to null `startFunct`.
+- **`mVUreset` emitter setup deferred.** x86 does `xSetPtr(mVU.cache)` then
+  `codeStart = xGetAlignedCallTarget()` (just past the emitted dispatchers). 7.2c can't emit
+  yet, so `codeStart = codePtr = mVU.cache` is a placeholder with a TODO; 7.2d wires
+  `armSetAsmPtr(mVU.cache, ...)` and sets codeStart past the real dispatchers.
+- **Kept `mVUallocCompileCheck`** — the cache-mgmt code never calls the allocator's *emission*
+  members (the block compiler/dispatcher do, not yet ported), so without the explicit odr-use
+  their VIXL bodies wouldn't instantiate and emission bugs would hide.
+
+**Blockers / open questions:** None. The shell is inert until 7.2d gives it a dispatcher; the
+emitter-setup placeholder in `mVUreset` is the one thing 7.2d must fix before any execution.
+
+**Next step:** Task 7.2d — port the dispatcher (`mVUdispatcherAB`/`mVUdispatcherCD` +
+`mVUGenerateWaitMTVU`/`mVUGenerateCopyPipelineState`/`mVUGenerateCompareState`, x86
+`microVU_Execute.inl` 23–315) and `mVUexecute`/`mVUcleanUp` to VIXL. Pins the final ARM64
+microVU ABI; replace the 7.2c stubs and wire `mVUreset`'s real `armSetAsmPtr` setup.
+
+---
+
 ## 2026-06-05 — Phase 7.2b: port microRegAlloc to aVU_IR.h
 
 **Goal:** Task 7.2b — clone the x86 microVU host register allocator (`microRegAlloc`,
