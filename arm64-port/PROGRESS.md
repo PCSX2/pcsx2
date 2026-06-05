@@ -8,6 +8,48 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 6.3 IOP native integer generators — DONE (commit `86448e99c`).**
+
+Wired native ARM64 codegen for the R3000A integer subset into `recTranslateOp`
+(`pcsx2/arm64/aR3000A.cpp`), so these ops no longer single-step the interpreter.
+32-bit MIPS-I — a strict subset of the gtested EE arith/multdiv generators, but
+32-bit GPRs (no sign-extend-to-64) and 32-bit HI/LO:
+
+- **I-type:** ADDI/ADDIU, SLTI, SLTIU, ANDI, ORI, XORI, LUI
+- **R-type ALU:** ADD/ADDU, SUB/SUBU, AND, OR, XOR, NOR, SLT, SLTU
+- **Shifts:** SLL, SRL, SRA, SLLV, SRLV, SRAV
+- **HI/LO moves:** MFHI, MTHI, MFLO, MTLO
+- **Mul/Div:** MULT, MULTU, DIV, DIVU. Note R3000A MULT/MULTU write **only** HI/LO
+  (no Rd write, unlike the R5900 3-operand form). ARM `SDIV` reproduces the x86
+  INT_MIN/−1 overflow quirk natively; only ÷0 needs a fixup (signed:
+  LO=(Rs<0)?1:−1, HI=Rs; unsigned: LO=−1, HI=Rs). Semantics mirror
+  `R3000AOpcodeTables.cpp` exactly.
+
+Scratch discipline matches the EE multdiv generators: x17 (RSCRATCHADDR) is the
+safe manual scratch (the only reg armStartBlock removes from VIXL's pool); x16
+(RXVIXLSCRATCH) is a plain operand reg, never holding a value across a macro that
+materialises an immediate.
+
+**Still single-stepped (return false → end native run, interpret):** control flow
+(J/JAL/JR/JALR, REGIMM + BEQ/BNE/BLEZ/BGTZ, SYSCALL/BREAK), loads/stores, and all
+coprocessor ops (COP0/COP2-GTE). Native blocks therefore never contain a branch or
+its delay slot — the interpreter handles branch+delay atomically, so the model is
+correct. The IOP ignores load-delay-slots (as does the x86 IOP rec), so compiling
+the post-load op natively is safe.
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 100% (355 core; Arm64EmitEE
+unaffected — IOP has no gtest harness yet, the logic mirrors the gtested EE
+generators); headless BIOS boot reaches `Mode Changed to DVD PAL` +
+`Pad: DS2 Config Finished` (IOP-heavy pad/SIO init) with the native IOP path live.
+
+**Next:** Phase 6.3 cont. — native IOP **load/store** generators (LB/LBU/LH/LHU/LW/
+LWL/LWR, SB/SH/SW/SWL/SWR via the `iopMemRead/Write8/16/32` slow path; no vtlb
+fastmem on IOP), then **branches/jumps** (J/JAL/JR/JALR, BEQ/BNE/BLEZ/BGTZ +
+REGIMM) so the rec stops breaking the block at every control-flow op — the real
+speedup. Live game IOP-perf measurement after branches land.
+
+---
+
 **Phase 6.1/6.2 IOP rec skeleton — DONE (boots via interpreter single-step).**
 
 Created `pcsx2/arm64/aR3000A.{h,cpp}` and wired the `psxRec` provider on ARM64
@@ -436,7 +478,13 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 - [x] 6.2 Implement `psxRec` interface (Reserve/Reset/ExecuteBlock/Clear/Shutdown) —
   C++ dispatcher loop + recLUT + per-block prologue/epilogue; all ops interpreter
   single-stepped (`iopExecuteOneInst`) for now. Correct, not yet fast.
-- [ ] 6.3 Port integer / load-store / branch / coprocessor generators (simpler than EE).
+- [~] 6.3 Port integer / load-store / branch / coprocessor generators (simpler than EE).
+  - [x] Integer: ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI, ADD/ADDU/SUB/SUBU/AND/OR/
+    XOR/NOR/SLT/SLTU, SLL/SRL/SRA/SLLV/SRLV/SRAV, MFHI/MTHI/MFLO/MTLO,
+    MULT/MULTU/DIV/DIVU (commit `86448e99c`). 32-bit; mirrors the gtested EE generators.
+  - [ ] Load/store (via iopMemRead/Write8/16/32 slow path — no vtlb fastmem on IOP).
+  - [ ] Branches/jumps (J/JAL/JR/JALR, BEQ/BNE/BLEZ/BGTZ + REGIMM).
+  - [ ] Coprocessor (COP0 mfc0/mtc0/rfe; COP2/GTE — likely interpreter inline).
 - [x] 6.4 Wire into `VMManager.cpp` (reserve/shutdown/reset + `psxCpu` selection on ARM64).
 
 **Milestone after Phase 6:** playable 2D games expected.

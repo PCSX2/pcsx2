@@ -28,6 +28,55 @@
 
 ---
 
+## 2026-06-05 — Phase 6.3 IOP native integer generators
+
+**Goal:** Replace the IOP rec's all-interpreter single-step skeleton with native ARM64
+codegen for the R3000A integer subset (the simplest, highest-frequency ops), wired into
+`recTranslateOp`.
+
+**What changed:**
+- **`pcsx2/arm64/aR3000A.cpp`:** added native generators + rewrote `recTranslateOp` to
+  dispatch them. Families: I-type (ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI), R-type ALU
+  (ADD/ADDU/SUB/SUBU/AND/OR/XOR/NOR/SLT/SLTU), shifts (SLL/SRL/SRA + V variants), HI/LO
+  moves (MFHI/MTHI/MFLO/MTLO), mul/div (MULT/MULTU/DIV/DIVU). Everything else still
+  returns false → ends the native run, interpreted one-at-a-time.
+- Commit `86448e99c`.
+
+**Decisions & rationale:**
+- **Mirror the gtested EE generators, narrowed to 32-bit.** The IOP ops are a strict
+  subset of `aR5900Arith.cpp` / `aR5900MultDiv.cpp` (already unit-tested), minus the
+  sign-extend-to-64 (IOP GPR/HI/LO are u32) and minus the 64-bit D* ops. So I reused the
+  exact proven structure (same scratch discipline: x17 manual scratch, x16 plain operand)
+  and just stored W-views. No new gtest harness for IOP this pass — the logic is
+  byte-identical to gtested EE code; BIOS boot is the integration check.
+- **R3000A MULT/MULTU write only HI/LO, no Rd.** Unlike the R5900 3-operand form
+  (`emitMult` writes Rd=LO). Confirmed against `psxMULT`/`psxMULTU` in
+  `R3000AOpcodeTables.cpp` — they only set GPR.n.lo/hi.
+- **DIV/DIVU: ARM SDIV/UDIV reproduce the quirks; only ÷0 fixed up.** SDIV gives
+  0x80000000 for INT_MIN/−1 with remainder 0 (matches the x86-overflow branch), and ÷0
+  returns 0 so the remainder = dividend = the required HI. Only LO needs the ÷0 fixup
+  (signed: (Rs<0)?1:−1 via `Csneg`; unsigned: −1). Same trick the EE `emitDivS/emitDivU`
+  use.
+- **Control flow / loads / coprocessor stay on the interpreter (return false).** Native
+  blocks never compile a branch or its delay slot, so the interpreter's `doBranch`
+  handles branch+delay atomically — the model stays correct. Load-delay-slots are ignored
+  on the IOP (as in the x86 IOP rec), so compiling the instruction after a load natively
+  is safe.
+
+**Blockers / open questions:** none. Live game IOP-perf delta not yet measured — the win
+is small until branches/jumps stop breaking the block (next slice), since right now every
+control-flow op still ends the native run and single-steps.
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 100% (355 core; Arm64EmitEE unaffected);
+headless BIOS boot reaches `Mode Changed to DVD PAL` + `Pad: DS2 Config Finished`
+(IOP-heavy pad/SIO init) with native IOP integer codegen live — no crash/abort.
+
+**Next step:** Phase 6.3 cont. — native IOP **load/store** generators (LB..SW + LWL/LWR/
+SWL/SWR via `iopMemRead/Write8/16/32`), then **branches/jumps** so the rec stops breaking
+the block at every control-flow op (the real IOP speedup).
+
+---
+
 ## 2026-06-05 — Phase 6.1/6.2 IOP (R3000A) recompiler skeleton
 
 **Goal:** Start Phase 6 — get an ARM64 IOP recompiler that boots, with all opcodes
