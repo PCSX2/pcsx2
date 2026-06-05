@@ -28,6 +28,48 @@
 
 ---
 
+## 2026-06-05 — Fix pause/shutdown hang (fastjmp_set returns_twice)
+
+**Goal:** Investigate a user-reported bug: pressing Pause or Shutdown didn't stop the VM —
+emulation "sped up" (ran unthrottled) and never stopped. Reset worked. Pre-existing (not
+this session's IOP work); root-caused and fixed.
+
+**What changed:**
+- **`common/FastJmp.h`:** mark `fastjmp_set` `__attribute__((returns_twice))` (GCC/Clang).
+  Commit `69a3bd77d`.
+
+**Root cause (found by tracing + disassembling `recExecute`):**
+- `recExecute()` calls `fastjmp_set()` (sets the exit longjmp target) then enters
+  `EnterRecompiledCode()` (the recLUT dispatcher, which only exits via `fastjmp_jmp` back to
+  that target). Because `fastjmp_set` was a plain `int` function, Clang didn't know control
+  can re-enter after it and **tail-call-optimized** the `EnterRecompiledCode()` call on
+  ARM64: it deallocated `recExecute`'s frame (`add sp,#0x30; br x0`) before branching in. But
+  `fastjmp_set` had captured SP pointing into that freed frame. The whole EE dispatcher +
+  event tests then ran on top of it, clobbering `recExecute`'s saved x30. On pause/shutdown,
+  `fastjmp_jmp` restored SP to the dead frame and `recExecute`'s epilogue reloaded a garbage
+  x30 → branched back into the dispatcher → infinite loop. VSyncStart skips the frame limiter
+  once `IsExecutionInterrupted()` is true, so the loop ran unthrottled ("sped up").
+- Why reset seemed to work / pause didn't: same exit path; the loop just manifests as a
+  never-ending unthrottled run for any non-Running state.
+
+**Fix:** `returns_twice` makes the compiler keep the caller's frame live across the call and
+NOT tail-call the following `EnterRecompiledCode()` — verified in the disassembly: the call
+is now `blr x8` (was `add sp,#0x30; br`). Pause + Shutdown both confirmed working live.
+
+**Debugging method (for next time):** added temporary `[EXITDBG]` Console.WriteLn traces
+across the exit path (VMManager::SetState, recSafeExitExecution, recEventTest, recExecute
+enter/return, VMManager::Execute, EmuThread loop) → the loop showed `recExecute` fastjmp-
+return running but never reaching `Execute() returned`. `nm` + `lldb disassemble` of
+`recExecute` then revealed the TCO. All trace lines reverted with `git restore`, keeping only
+the fix. See [[arm64-fastjmp-returns-twice]].
+
+**Blockers / open questions:** none.
+
+**Next step:** (unchanged) Live game IOP-perf measurement, then IOP opt (const-prop/reg-alloc)
+or Phase 7 (VU / microVU).
+
+---
+
 ## 2026-06-05 — Phase 6.3 IOP COP0/COP2 inline-interp (Phase 6.3 complete)
 
 **Goal:** Stop the IOP rec breaking the block on coprocessor ops — inline the interpreter
