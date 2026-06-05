@@ -8,6 +8,42 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 4.4 recLUT block linking + dispatcher — RE-ATTEMPTED & BOOTS (on branch
+`armjit-reclut-v2`).**
+
+The recLUT execution model (parked since 2026-06-04 on `armjit-reclut-wip`) was
+re-derived on top of the current `armjit` (MMI-complete) baseline and **now boots the
+BIOS** — reaches `Mode Changed to DVD PAL` + `Pad: DS2 Config Finished`, stays alive,
+no hang/crash (verified live 2026-06-05). Branch: `armjit-reclut-v2`, commit `37787a50b`.
+
+The parked stall was exactly the **4.5-invalidation × 4.4-recLUT interaction** the user
+suspected. Two root causes, both fixed:
+
+1. **Hang → targeted recClear.** `recClear`/every `Cpu->Clear` funnelled into
+   `recResetRaw`, which in the recLUT model rewrites the *entire* multi-million-entry
+   recLUT. `MapTLB` issues one `Cpu->Clear(addr<<12, 0x400)` per mapped TLB page during
+   BIOS setup, so a whole-cache reset per page made boot hang (sampled: 4271/4277
+   CPU-thread samples in `recResetRaw` under `MapTLB` under `intExecuteOneInst`).
+   `recClear` now resets only the recLUT slots covering `[addr, addr+size)` back to
+   `JITCompile` (skips unmapped pages); orphaned host code is reclaimed at the next full
+   reset. Mirrors the x86 per-range clear.
+2. **Crash → cache headroom.** `recRecompile` reset only at `recPtr >= recPtrEnd`, no
+   room for the block being emitted; once the cache filled, VIXL's `CodeBuffer` tried to
+   `realloc` the MAP_JIT region → SIGABRT (`pointer being freed was not allocated`). Now
+   resets at `recPtrEnd - RECOMPILE_HEADROOM` (1 MB).
+
+**Known limitation (Phase 4.5 follow-up):** targeted `recClear` only invalidates blocks
+whose START slot is in the cleared range — a block straddling in from an earlier address
+is missed. Fine for BIOS; SMC-heavy games may need overlap-aware invalidation.
+
+**Verified:** unittests green (Arm64EmitEE 270/270, 273 total); BIOS boots live.
+**Next:** game-compat smoke test on `armjit-reclut-v2`; if clean, merge to `armjit`.
+Diagnostic tooling note: lldb attach needs a `get-task-allow` ad-hoc re-sign
+(`codesign --force --sign - --entitlements <get-task-allow> --deep PCSX2.app`); `sample
+<pid>` + `lldb -o 'breakpoint set -n malloc_error_break' -o run -o bt` found both bugs.
+
+---
+
 **Phase 5.4 MMI 128-bit SIMD — COMPLETE + correctness pass done.**
 
 A full review of the unpushed MMI commits + the misc-ops batch found and fixed a
@@ -241,15 +277,20 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
   Multi-instruction `recCompileBlock`; branch generator + delay slot + exit; C++
   dispatcher loop in `recExecute` (pc→block→`_cpuEventTest_Shared`); per-opcode
   interpreter fallback via `intExecuteOneInst`; `Cpu = &recCpu` on ARM64.
-- [!] 4.4 Block linking + recLUT (replace the bring-up `s_blocks` unordered_map +
-  recompile-on-miss). **ATTEMPTED on branch `armjit-reclut-wip` (commit `7e3404cf4`),
-  PARKED — does not boot the BIOS (stalls in an EE wait loop; see CURRENT FOCUS).**
-  The x19-pinning crash it hit is root-caused & fixed there; the remaining stall is the
-  blocker. `armjit` stays on the Phase 4.3 `s_blocks` model meanwhile.
-- [~] 4.5 Block invalidation on TLB-mapping change. Bring-up RAM-code invalidation
-  landed: compiled ARM64 blocks mark their RAM pages so page-protection writes clear
-  the whole block cache. Still TODO: recLUT-backed targeted invalidation and TLB-aware
-  page identity instead of the current coarse `s_blocks` reset.
+- [x] 4.4 Block linking + recLUT (replaces the bring-up `s_blocks` unordered_map +
+  recompile-on-miss). **RE-ATTEMPTED & BOOTS on branch `armjit-reclut-v2` (commit
+  `37787a50b`).** recLUT page table + emitted DispatcherReg/Event/JITCompile/Enter/
+  Unmapped stubs + inline cycle/event tail; blocks chain in host code. The parked
+  `armjit-reclut-wip` stall was the 4.5-invalidation × recLUT interaction: fixed with
+  targeted `recClear` (per-range slot reset, not whole-cache `recResetRaw`) + a 1 MB
+  cache-emit headroom (VIXL was realloc'ing the MAP_JIT buffer). See CURRENT FOCUS.
+  Not yet merged to `armjit` (pending game-compat smoke test).
+- [~] 4.5 Block invalidation on TLB-mapping change. RAM-code page marking landed
+  earlier (`recProtectCompiledRange` → `mmap_MarkCountedRamPage`). On `armjit-reclut-v2`
+  the coarse whole-cache reset is replaced by **recLUT-backed targeted invalidation**:
+  `recClear(addr,size)` resets only the slots in range to `JITCompile`. Still TODO:
+  overlap-aware invalidation (a block straddling into the cleared range from an earlier
+  start slot is currently missed) and TLB-aware page identity.
 
 ---
 

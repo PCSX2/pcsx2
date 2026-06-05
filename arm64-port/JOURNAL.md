@@ -28,6 +28,56 @@
 
 ---
 
+## 2026-06-05 — Phase 4.4 recLUT RE-ATTEMPT: boots the BIOS (targeted recClear + cache headroom)
+
+**Goal:** Re-attempt "4.4 Block linking + recLUT" (parked on `armjit-reclut-wip`), and
+investigate the user's hypothesis that the Phase 4.5 invalidation work conflicts with it.
+
+**What changed:**
+- New branch `armjit-reclut-v2` off the current (booting, MMI-complete) `armjit`.
+  Cherry-picked the recLUT commit's `aR5900.cpp` changes (7e3404cf4, code only; the
+  hunks don't overlap the MMI decode fns, so it merged clean) — the dispatcher/execute
+  model is unchanged from the parked attempt. Then fixed the two boot blockers:
+- **`pcsx2/arm64/aR5900.cpp` `recClear` → targeted invalidation.** Was: defer + whole-
+  cache `recResetRaw`. Now: reset only the recLUT slots covering `[addr,addr+size)` to
+  `JITCompile` (guard: skip slots == `UnmappedRecLUTPage`; early-out if `!JITCompile`).
+- **`recRecompile` cache-full guard → headroom.** `recPtr >= recPtrEnd` →
+  `recPtr >= recPtrEnd - RECOMPILE_HEADROOM` (new 1 MB constant). Stops VIXL from
+  realloc-growing the MAP_JIT buffer mid-block.
+- Commit `37787a50b`. Trackers updated (PROGRESS 4.4 → [x] on the branch, 4.5 note).
+
+**Decisions & rationale:**
+- **The user was right: it was the 4.5 × 4.4 interaction.** Diagnosed by attaching to the
+  hung process. `sample <pid>` showed 4271/4277 CPU-thread samples in `recResetRaw` under
+  `MapTLB` under `intExecuteOneInst`: a BIOS TLB-write (interpreted) → `MapTLB` →
+  `Cpu->Clear(addr<<12, 0x400)` *per mapped page*, and in the recLUT model `recResetRaw`
+  rewrites the whole multi-million-entry recLUT every call. In the Phase 4.3 model the
+  same `recClear` was a cheap `s_blocks.clear()`, so it never showed. Targeted per-range
+  clear mirrors the x86 rec.
+- **Second bug surfaced once the hang was gone:** `malloc: pointer being freed was not
+  allocated` → `lldb -o 'b malloc_error_break' -o run -o bt` pointed at
+  `vixl::CodeBuffer::Grow → realloc` under `armEmitLUI`/`recRecompile`. The cache-full
+  check had no headroom for the in-flight block. The recLUT model recompiles far more
+  (targeted invalidation thrashes blocks) so it reaches the tail during boot, unlike 4.3.
+- **Why targeted recClear is safe mid-execution:** it runs synchronously on the EE thread
+  (store fault / interpreted TLBWI); no concurrent block. The in-flight block keeps
+  running its still-valid host code and re-dispatches through DispatcherReg, recompiling
+  any cleared slot. No need for the old defer + fastjmp-exit dance on a clear.
+
+**Blockers / open questions:**
+- Targeted recClear misses blocks that *straddle* into the cleared range from an earlier
+  start slot (only the start slot is keyed). Fine for BIOS; revisit for SMC-heavy games.
+- `armjit-reclut-wip` (old parked branch) is now superseded by `armjit-reclut-v2`.
+
+**Verified:** unittests green (Arm64EmitEE 270/270, 273 total); BIOS boots live to
+`Mode Changed to DVD PAL` + `Pad: DS2 Config Finished`, stays alive, CPU-thread profile
+healthy (`_cpuEventTest_Shared` idle-wait + `recRecompile` warmup, no reset thrash).
+
+**Next step:** game-compat smoke test on `armjit-reclut-v2`; if clean, merge Phase 4.4
+to `armjit`.
+
+---
+
 ## 2026-06-05 — Phase 5.4 MMI second correctness pass: variable shifts + PMADDW voodoo
 
 **Goal:** Re-review `aR5900MMI.cpp` against `MMI.cpp` for any remaining divergences
