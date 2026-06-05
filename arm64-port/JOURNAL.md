@@ -28,6 +28,65 @@
 
 ---
 
+## 2026-06-05 — Phase 7.2d: microVU dispatcher in aVU.cpp
+
+**Goal:** Task 7.2d — port the microVU dispatcher + helper thunks (x86
+`microVU_Execute.inl` 23–315) and `mVUexecute`/`mVUcleanUp` to VIXL, replacing the 7.2c
+`pxFailRel` stubs. Pin the final ARM64 microVU ABI; wire `mVUreset`'s real emitter setup.
+Pure infra; microVU stays unselected.
+
+**What changed:**
+- `pcsx2/arm64/aVU.cpp` — replaced the five dispatcher/thunk stubs + the `mVUreset` emitter
+  placeholder with real VIXL emission:
+  - **`mVUdispatcherAB`** / **`mVUdispatcherCD`** — entry/exit + xgkick resume/exit dispatchers.
+  - **`mVUGenerateWaitMTVU`** / **`CopyPipelineState`** / **`CompareState`** — the helper thunks.
+  - **`mVUexecute<v>`/`mVUcleanUp<v>`** + the `mVUexecuteVU0/1`/`mVUcleanUpVU0/1` wrappers, and
+    the local C helper `mVUwaitMTVU`.
+  - **`mVUgenerateDispatchers`** — `armSetAsmPtr(mVU.cache)` + one `armStartBlock`/`armEndBlock`
+    session wrapping all five generators; sets `codeStart`/`codePtr` past the dispatchers.
+    `mVUreset` now calls this (was 5 stub calls + a `codeStart = mVU.cache` placeholder).
+  - `mVUblockFetch`/`mVUentryGet` remain `pxFailRel` stubs (block compiler = 7.3/7.4).
+- Commit: `a0d93ed5c` ARM64: microVU Phase 7.2d — dispatcher (aVU.cpp)
+
+**Decisions & rationale:**
+- **AAPCS64 frame = `armBeginStackFrame(true)`** (saves x19–x28, fp/lr, d8–d15 low halves) — the
+  ARM equivalent of x86's `xScopedStackFrame(false, true)`. The frame spans entry → `br x0`
+  (into the block) → exit label → `ret`, so the block runs inside the dispatcher's frame.
+- **FPCR via `msr FPCR`**: on ARM64 `EmuConfig.Cpu.{VU0,VU1,FPU}FPCR.bitmask` is already a *u64
+  ARM FPCR value* (`common/FPControl.h`), not an x86 MXCSR — so the dispatcher just loads the
+  bitmask and `msr FPCR, xN`. Gated by the ported `mvuNeedsFPCRUpdate` (skip when VU==EE FPCR).
+- **PQ NEON reg built directly** instead of replaying the x86 SHUFPS/PSHUFD/MOVSS dance. NEON
+  V4S lane order == xmm, so I derived the x86 final layout (VU0 `[Q,pending_q,P,P]`, VU1
+  `[Q,pending_q,P,pending_p]`) and build it with `Ldr .S()` + `Ins .V4S()` — same result, far
+  less error-prone. Documented the layout so 7.5 (which reads Q/P from these lanes) can mirror
+  x86. PQ lives in `v24` (= `mVU_xmmPQ`), backed up to `vecBackup[24]` for xgkick.
+- **`compareStateF` returns `w0=0` iff equal** (the block search uses `== 0` as the match test):
+  6×128-bit `Cmeq` (0xffffffff per equal lane), AND-reduced, then `Uminv` min-byte (`0xff` iff
+  all equal) → `Umov` → `Eor …, 0xff`. Faithful to x86's `movmskps ^ 0xf == 0`.
+- **No constant pool for the dispatcher** (`armSetAsmPtr(…, nullptr)`): it only needs
+  `adrp/mov` addresses and `mov+blr` C calls (`armEmitCall` with null pool). The block compiler
+  (7.4/7.5) will set up the real pool when it emits program blocks past `codeStart`.
+- **`mVUexecute` does NOT open the emitter; `mVUcleanUp` does NOT close it.** x86 repositions a
+  single global cursor here (`xSetPtr(mVU.prog.x86ptr)` / `mVU.prog.x86ptr = x86Ptr`). On ARM the
+  per-block `armStartBlock`/`armEndBlock` — and crucially the **icache flush that must precede
+  executing freshly-emitted code** (x86 needs none) — belong to the block compiler. So I left a
+  TODO there; `mVUcleanUp`'s cache-limit check uses `mVU.prog.codePtr` (maintained by the block
+  compiler) instead of the x86 `xGetPtr()`.
+- **`mVUGenerateWaitMTVU` is conservative**: it's a transparent helper the reg-allocator can't
+  see, so it saves the full caller-saved VF/PQ pool (`v0-v24`) + VI GPRs (`x0-x15`). Heavier than
+  the x86 thunk but correct; only reached under MTVU. Will tighten if profiling matters.
+
+**Blockers / open questions:** None for the ABI. The dispatcher is unselected, so it is
+**compiled but not executed** — first real validation is at 7.8 (selection). The two things 7.4
+must get right before any execution: the per-block emit lifecycle (own `armStartBlock`/
+`armEndBlock`) and the **icache flush before branching into a freshly-emitted block**.
+
+**Next step:** Task 7.3 — port the arch-neutral analysis pass (`microVU_Analyze.inl` +
+`microVU_Tables.inl` + the pipeline/flag-analysis helpers in `microVU_Compile.inl`). No emitter
+calls, so it ports almost unchanged onto the `microOp`/`microIR` structs already in `aVU.h`.
+
+---
+
 ## 2026-06-05 — Phase 7.2c: recompiler shell in aVU.cpp
 
 **Goal:** Task 7.2c — flesh out `pcsx2/arm64/aVU.cpp` mirroring x86 `microVU.cpp`: define the
