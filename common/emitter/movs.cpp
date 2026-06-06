@@ -22,7 +22,7 @@
 namespace x86Emitter
 {
 
-	void _xMovRtoR(const xRegisterInt& to, const xRegisterInt& from)
+	void xImpl_Mov::operator()(const xRegisterInt& to, const xRegisterInt& from) const
 	{
 		pxAssert(to.GetOperandSize() == from.GetOperandSize());
 
@@ -30,12 +30,6 @@ namespace x86Emitter
 			return; // ignore redundant MOVs.
 
 		xOpWrite(from.GetPrefix16(), from.Is8BitOp() ? 0x88 : 0x89, from, to);
-	}
-
-	void xImpl_Mov::operator()(const xRegisterInt& to, const xRegisterInt& from) const
-	{
-		// FIXME WTF?
-		_xMovRtoR(to, from);
 	}
 
 	void xImpl_Mov::operator()(const xIndirectVoid& dest, const xRegisterInt& from) const
