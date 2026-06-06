@@ -9,16 +9,12 @@
 // mVUcreateProg/mVUcacheProg/mVUcmpProg/mVUsearchProg cache search) and the
 // recMicroVU0/1 provider methods.
 //
-// What is NOT here yet (deferred, see the stub block at the bottom):
-//   * the dispatcher + helper-thunk codegen (mVUdispatcherAB/CD,
-//     mVUGenerateWaitMTVU/CopyPipelineState/CompareState) — task 7.2d.
-//   * the block compiler entry points (mVUblockFetch/mVUentryGet) — later
-//     Phase 7 tasks (microVU_Compile port).
-// These are forward-declared and stubbed with pxFailRel so this TU links. The
-// microVU rec stays *unselected* on ARM64 (VMManager pins CpuIntVU0/1), so none
-// of those stubs are ever reached — they only exist so the management code above
-// compiles and the microVU0/1 globals (whose unique_ptr<microRegAlloc> dtor is
-// now instantiable, the allocator being complete in aVU_IR.h) can be defined.
+// The dispatcher + helper-thunk codegen (mVUdispatcherAB/CD, mVUGenerateWaitMTVU/
+// CopyPipelineState/CompareState — task 7.2d) lives further down, and the full
+// block compiler (mVUcompile + entry points mVUblockFetch/mVUentryGet/
+// mVUcompileJIT) is included from aVU_Compile.inl near the bottom. The microVU rec
+// still stays *unselected* on ARM64 (VMManager pins CpuIntVU0/1) until 7.8, so the
+// compiled block code is not executed yet — but it is fully emitted for real.
 
 #include "arm64/aVU.h"
 #include "arm64/aVU_IR.h"
@@ -30,6 +26,7 @@
 #include "SaveState.h"
 
 #include "common/AlignedMalloc.h"
+#include "common/Perf.h"
 
 #include <algorithm>
 #include <vector>
@@ -103,8 +100,7 @@ static void mVUcacheProg(microVU& mVU, microProgram& prog);
 
 // Opcode dispatch tables (Tables/Compile big-bang) — minimal mVUopU/mVUopL
 // (NOP + B/BAL wired, every other slot mVUunknown). Included BEFORE aVU_Flags.inl
-// because the flag read-scan (_mVUflagPass) calls mVUopU/mVUopL. mVUtablesCheck
-// below odr-uses the dispatchers so the bodies compile now.
+// because the flag read-scan (_mVUflagPass) calls mVUopU/mVUopL.
 #include "arm64/aVU_Tables.inl"
 
 // Status/Mac/Clip flag pipeline (task 7.5/7.6) — flag-instance analysis +
@@ -118,13 +114,6 @@ static void mVUcacheProg(microVU& mVU, microProgram& prog);
 // thunks. They make NO opcode-table calls, so they compile standalone ahead of
 // the Tables/Compile big-bang. mVUbranchCheck below odr-uses the emitters.
 #include "arm64/aVU_Branch.inl"
-
-// Emit-coupled compile-driver helpers (Tables/Compile big-bang) — the
-// per-instruction executors, D/T-bit & cycle-test early exits, register
-// preloader, and debug/bad-op emitters. The cross-referencing core (mVUcompile +
-// the branch drivers) lands in the next slice; mVUcompileEmitCheck below odr-uses
-// the static helpers here so their VIXL bodies compile now.
-#include "arm64/aVU_Compile.inl"
 
 //------------------------------------------------------------------
 // Pass-1 pipeline / cycle / range helpers (task 7.3 part 2)
@@ -1191,11 +1180,16 @@ static void* mVUexecute(u32 startPC, u32 cycles)
 	mVU.totalCycles = cycles;
 
 	// x86 repositions its single global emit cursor here (xSetTextPtr/xSetPtr to
-	// mVU.prog.x86ptr). On ARM64 the per-block emit session (armStartBlock/
-	// armEndBlock, with the icache flush that must precede execution) is owned by
-	// the block compiler (mVUblockFetch, a later Phase-7 task); mVUexecute only
-	// drives the program search.
-	return mVUsearchProg<vuIndex>(startPC & vuLimit, (uptr)&mVU.prog.lpState);
+	// mVU.prog.x86ptr). On ARM64 we open one MacroAssembler session at the program
+	// cursor for the whole search/compile (the recursive mVUcompile/normBranch calls
+	// append into it); armEndBlock finalises + flushes the icache so the freshly
+	// emitted code is safe to branch into when the dispatcher does `br x0`. If the
+	// program was already compiled nothing is emitted and codePtr is unchanged.
+	armSetAsmPtr(mVU.prog.codePtr, mVU.prog.codeEnd - mVU.prog.codePtr, nullptr);
+	armStartBlock();
+	void* const entry = mVUsearchProg<vuIndex>(startPC & vuLimit, (uptr)&mVU.prog.lpState);
+	mVU.prog.codePtr = armEndBlock();
+	return entry;
 }
 
 // Post-execution bookkeeping: cache-limit reset + cycle accounting.
@@ -1242,22 +1236,17 @@ static void  mVUcleanUpVU0() { mVUcleanUp<0>(); }
 static void  mVUcleanUpVU1() { mVUcleanUp<1>(); }
 
 //------------------------------------------------------------------
-// Not-yet-ported block compiler (temporary stubs — later Phase 7 tasks)
+// Block compiler (Tables/Compile big-bang)
 //------------------------------------------------------------------
-// microVU is unselected on ARM64 (VMManager pins CpuIntVU0/1), so these are
-// never reached; the pxFailRel is a loud guard if that ever changes before the
-// block compiler is ported. They exist so the cache-management code links.
-
-void* mVUblockFetch(microVU&, u32, uptr)
-{
-	pxFailRel("ARM64 mVUblockFetch not ported (Phase 7 block compiler)");
-	return nullptr;
-}
-static void* mVUentryGet(microVU&, microBlockManager*, u32, uptr)
-{
-	pxFailRel("ARM64 mVUentryGet not ported (Phase 7 block compiler)");
-	return nullptr;
-}
+// The full emit-coupled compile driver: the per-instruction executors + D/T-bit /
+// cycle-test early exits + register preloader + debug/bad-op emitters, then
+// mVUcompile itself and the block entry points (mVUentryGet/mVUblockFetch/
+// mVUcompileJIT). Included here — after the arch-neutral pass-1 helpers
+// (mVUsetupRange/mVUincCycles/...) and mVUsearchProg above, which it calls — so
+// every callee is already declared. The branch drivers it mutually recurses with
+// live in aVU_Branch.inl (included earlier, with forward decls of mVUcompile).
+// This replaces the former mVUblockFetch/mVUentryGet pxFailRel stubs.
+#include "arm64/aVU_Compile.inl"
 
 //------------------------------------------------------------------
 // Build-time validation
@@ -1413,41 +1402,9 @@ static_assert(alignof(microBlock) == 16, "microBlock must stay 16-byte aligned")
 	mVUaddrFix(mVU, a64::x9, a64::x10);
 }
 
-// Force the emit-coupled compile helpers (aVU_Compile.inl) to be compiled. They
-// emit VIXL but have no live caller until mVUcompile lands, so without this
-// odr-use their bodies (and any emission error) would never be instantiated.
-// Never called: it runs against a null mVU.prog.cur; it exists only to compile.
-[[maybe_unused]] static void mVUcompileEmitCheck()
-{
-	microVU& mVU = microVU0;
-	microFlagCycles mFC{};
-	mVUexecuteInstruction(mVU);
-	doUpperOp(mVU);
-	doLowerOp(mVU);
-	doSwapOp(mVU);
-	doIbit(mVU);
-	flushRegs(mVU);
-	handleBadOp(mVU, 0);
-	mVUdebugPrintBlocks(mVU, false);
-	mVUDoDBit(mVU, &mFC);
-	mVUDoTBit(mVU, &mFC);
-	mVUtestCycles(mVU, mFC);
-	microFlagCycles mFCb{};
-	mVUSaveFlags(mVU, mFC, mFCb);
-	mvuPreloadRegisters(mVU, 0);
-}
-
-// Force the opcode dispatch tables (aVU_Tables.inl) to be compiled. The minimal
-// mVUopU/mVUopL dispatchers + the NOP/B/BAL handlers have no live caller until the
-// flag read-scan + mVUcompile slices, so without this odr-use the static bodies
-// (and the table arrays) would be dropped. Never called: it would run pass-1
-// analysis against a null mVU.prog.cur; it exists only to compile.
-[[maybe_unused]] static void mVUtablesCheck()
-{
-	microVU& mVU = microVU0;
-	mVUopU(mVU, 0);
-	mVUopL(mVU, 0);
-}
+// (mVUcompileEmitCheck / mVUtablesCheck removed: the compile helpers + the
+// mVUopU/mVUopL dispatchers now have live callers via mVUcompile, so their bodies
+// codegen without an explicit odr-use.)
 
 // Force the flag pipeline (aVU_Flags.inl) to be compiled. The analysis functions
 // (findFlagInst/sortFlag/sortFullFlag/mVUstatusFlagOp/mVUsetFlags) have external

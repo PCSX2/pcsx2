@@ -371,3 +371,396 @@ static void mvuPreloadRegisters(microVU& mVU, u32 endCount)
 	iPC = orig_pc;
 	mVU.code = orig_code;
 }
+
+//------------------------------------------------------------------
+// Recompiler core (mVUcompile + block entry points)
+//------------------------------------------------------------------
+// NOTE: mVUcompile does NOT open its own armAsm session — the per-block emit
+// session (armSetAsmPtr/armStartBlock/armEndBlock + icache flush) is owned by the
+// outermost callers (mVUexecute / mVUcompileJIT), so the recursive mVUcompile /
+// normBranchCompile / condBranch calls all append into the one open stream, just
+// like x86's single global x86Ptr cursor. x86 `x86Ptr` -> armGetCurrentCodePointer().
+
+void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
+{
+	microFlagCycles mFC;
+	u8* thisPtr = armGetCurrentCodePointer();
+	const u32 endCount = (((microRegInfo*)pState)->blockType) ? 1 : (mVU.microMemSize / 8);
+
+	// First Pass
+	iPC = startPC / 4;
+	mVUsetupRange(mVU, startPC, 1); // Setup Program Bounds/Range
+	mVU.regAlloc->reset();          // Reset regAlloc
+	mVUinitFirstPass(mVU, pState, thisPtr);
+	mVUbranch = 0;
+	for (int branch = 0; mVUcount < endCount;)
+	{
+		incPC(1);
+		startLoop(mVU);
+		mVUincCycles(mVU, 1);
+		mVUopU(mVU, 0);
+		mVUcheckBadOp(mVU);
+		if (curI & _Ebit_)
+		{
+			eBitPass1(mVU, branch);
+			// VU0 end of program MAC results can be read by COP2, so best to make sure the last instance is valid
+			if (isVU0)
+				mVUregs.needExactMatch |= 7;
+		}
+
+		if ((curI & _Mbit_) && isVU0)
+		{
+			if (xPC > 0)
+			{
+				incPC(-2);
+				if (!(curI & _Mbit_)) // If the last instruction was also M-Bit we don't need to sync again
+				{
+					incPC(2);
+					mVUup.mBit = true;
+				}
+				else
+					incPC(2);
+			}
+			else
+				mVUup.mBit = true;
+		}
+
+		if (curI & _Ibit_)
+		{
+			mVUlow.isNOP = true;
+			mVUup.iBit = true;
+			if (EmuConfig.Gamefixes.IbitHack)
+			{
+				mVUsetupRange(mVU, xPC, false);
+				if (branch < 2)
+					mVUsetupRange(mVU, xPC + 4, true);
+			}
+		}
+		else
+		{
+			incPC(-1);
+			if (EmuConfig.Gamefixes.IbitHack)
+			{
+				// Ignore IADDI, IADDIU and ISUBU, ILW, ISW, LQ, SQ.
+				const u32 upper = (mVU.code >> 25);
+				if (upper == 0x1 || upper == 0x0 || upper == 0x4 || upper == 0x5 || upper == 0x8 || upper == 0x9 || (upper == 0x40 && (mVU.code & 0x3F) == 0x32))
+				{
+					incPC(1);
+					mVUsetupRange(mVU, xPC, false);
+					if (branch < 2)
+						mVUsetupRange(mVU, xPC + 2, true);
+					incPC(-1);
+				}
+			}
+			mVUopL(mVU, 0);
+			incPC(1);
+		}
+		if (curI & _Dbit_)
+		{
+			mVUup.dBit = true;
+		}
+		if (curI & _Tbit_)
+		{
+			mVUup.tBit = true;
+		}
+		mVUsetCycles(mVU);
+		// Update XGKick information
+		if (!mVUlow.isKick)
+		{
+			mVUregs.xgkickcycles += 1 + mVUstall;
+			if (mVUlow.isMemWrite)
+			{
+				mVUlow.kickcycles = mVUregs.xgkickcycles;
+				mVUregs.xgkickcycles = 0;
+			}
+		}
+		else
+		{
+			mVUregs.xgkickcycles = 1;
+			mVUlow.kickcycles = 0;
+		}
+
+		mVUinfo.readQ = mVU.q;
+		mVUinfo.writeQ = !mVU.q;
+		mVUinfo.readP = mVU.p && isVU1;
+		mVUinfo.writeP = !mVU.p && isVU1;
+		mVUcount++;
+
+		if (branch >= 2)
+		{
+			mVUinfo.isEOB = true;
+
+			if (branch == 3)
+			{
+				mVUinfo.isBdelay = true;
+			}
+
+			branchWarning(mVU);
+			if (mVUregs.xgkickcycles)
+			{
+				mVUlow.kickcycles = mVUregs.xgkickcycles;
+				mVUregs.xgkickcycles = 0;
+			}
+			break;
+		}
+		else if (branch == 1)
+		{
+			branch = 2;
+		}
+
+		if (mVUbranch)
+		{
+			mVUsetFlagInfo(mVU);
+			eBitWarning(mVU);
+			branch = 3;
+			mVUbranch = 0;
+		}
+
+		if (mVUup.mBit && !branch && !mVUup.eBit)
+		{
+			mVUregs.needExactMatch |= 7;
+			if (mVUregs.xgkickcycles)
+			{
+				mVUlow.kickcycles = mVUregs.xgkickcycles;
+				mVUregs.xgkickcycles = 0;
+			}
+			break;
+		}
+
+		if (mVUinfo.isEOB)
+		{
+			if (mVUregs.xgkickcycles)
+			{
+				mVUlow.kickcycles = mVUregs.xgkickcycles;
+				mVUregs.xgkickcycles = 0;
+			}
+			break;
+		}
+
+		incPC(1);
+	}
+
+	// Fix up vi15 const info for propagation through blocks
+	mVUregs.vi15 = (doConstProp && mVUconstReg[15].isValid) ? (u16)mVUconstReg[15].regValue : 0;
+	mVUregs.vi15v = (doConstProp && mVUconstReg[15].isValid) ? 1 : 0;
+	mVUsetFlags(mVU, mFC);           // Sets Up Flag instances
+	mVUoptimizePipeState(mVU);       // Optimize the End Pipeline State for nicer Block Linking
+	mVUdebugPrintBlocks(mVU, false); // Prints Start/End PC of blocks executed, for debugging...
+	mVUtestCycles(mVU, mFC);         // Update VU Cycles and Exit Early if Necessary
+
+	// Second Pass
+	iPC = mVUstartPC;
+	setCode();
+	mVUbranch = 0;
+	u32 x = 0;
+
+	mvuPreloadRegisters(mVU, endCount);
+
+	for (; x < endCount; x++)
+	{
+		if (mVUinfo.isEOB)
+		{
+			handleBadOp(mVU, x);
+			x = 0xffff;
+		} // handleBadOp currently just prints a warning
+		if (mVUup.mBit)
+		{
+			mvuMemOrImm32(&mVU.regs().flags, VUFLAG_MFLAGSET, gprT1);
+		}
+
+		if (isVU1 && mVUlow.kickcycles && CHECK_XGKICKHACK)
+		{
+			mVU_XGKICK_SYNC(mVU, false);
+		}
+
+		mVUexecuteInstruction(mVU);
+		if (!mVUinfo.isBdelay && !mVUlow.branch) // T/D Bit on branch is handled after the branch, branch delay slots are executed.
+		{
+			if (mVUup.tBit)
+			{
+				mVUDoTBit(mVU, &mFC);
+			}
+			else if (mVUup.dBit && doDBitHandling)
+			{
+				mVUDoDBit(mVU, &mFC);
+			}
+			else if (mVUup.mBit && !mVUup.eBit && !mVUinfo.isEOB)
+			{
+				// Need to make sure the flags are exact; also call setupBranch to sort flag instances
+				mVUsetupBranch(mVU, mFC);
+				// Make sure we save the current state so it can come back to it
+				u32* cpS = (u32*)&mVUregs;
+				u32* lpS = (u32*)&mVU.prog.lpState;
+				for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; i++, lpS++, cpS++)
+				{
+					mvuStrImm32(lpS, cpS[0], gprT1);
+				}
+				incPC(2);
+				mVUsetupRange(mVU, xPC, false);
+				if (EmuConfig.Gamefixes.VUSyncHack || EmuConfig.Gamefixes.FullVU0SyncHack)
+					mvuStrImm32(&mVU.regs().nextBlockCycles, 0, gprT1);
+				mVUendProgram(mVU, &mFC, 0);
+				normBranchCompile(mVU, xPC);
+				incPC(-2);
+				goto perf_and_return;
+			}
+		}
+
+		if (mVUinfo.doXGKICK)
+		{
+			mVU_XGKICK_DELAY(mVU);
+		}
+
+		if (isEvilBlock)
+		{
+			mVUsetupRange(mVU, xPC + 8, false);
+			normJumpCompile(mVU, mFC, true);
+			goto perf_and_return;
+		}
+		else if (!mVUinfo.isBdelay)
+		{
+			// Handle range wrapping
+			if ((xPC + 8) == mVU.microMemSize)
+			{
+				mVUsetupRange(mVU, xPC + 8, false);
+				mVUsetupRange(mVU, 0, 1);
+			}
+			incPC(1);
+		}
+		else
+		{
+			incPC(1);
+			mVUsetupRange(mVU, xPC, false);
+			mVUdebugPrintBlocks(mVU, true);
+			incPC(-4); // Go back to branch opcode
+
+			switch (mVUlow.branch)
+			{
+				case 1: // B/BAL
+				case 2:
+					normBranch(mVU, mFC);
+					goto perf_and_return;
+				case 9: // JR/JALR
+				case 10:
+					normJump(mVU, mFC);
+					goto perf_and_return;
+				case 3: // IBEQ
+					condBranch(mVU, mFC, a64::eq);
+					goto perf_and_return;
+				case 4: // IBGEZ
+					condBranch(mVU, mFC, a64::ge);
+					goto perf_and_return;
+				case 5: // IBGTZ
+					condBranch(mVU, mFC, a64::gt);
+					goto perf_and_return;
+				case 6: // IBLEQ
+					condBranch(mVU, mFC, a64::le);
+					goto perf_and_return;
+				case 7: // IBLTZ
+					condBranch(mVU, mFC, a64::lt);
+					goto perf_and_return;
+				case 8: // IBNEQ
+					condBranch(mVU, mFC, a64::ne);
+					goto perf_and_return;
+			}
+		}
+	}
+	if ((x == endCount) && (x != 1))
+	{
+		Console.Error("microVU%d: Possible infinite compiling loop!", mVU.index);
+	}
+
+	// E-bit End
+	mVUsetupRange(mVU, xPC, false);
+	mVUendProgram(mVU, &mFC, 1);
+
+perf_and_return:
+
+	if (mVU.regs().start_pc == startPC)
+	{
+		if (mVU.index)
+			Perf::vu1.RegisterPC(thisPtr, static_cast<u32>(armGetCurrentCodePointer() - thisPtr), startPC);
+		else
+			Perf::vu0.RegisterPC(thisPtr, static_cast<u32>(armGetCurrentCodePointer() - thisPtr), startPC);
+	}
+
+	return thisPtr;
+}
+
+// Returns the entry point of the block (compiles it if not found)
+static __fi void* mVUentryGet(microVU& mVU, microBlockManager* block, u32 startPC, uptr pState)
+{
+	microBlock* pBlock = block->search(mVU, (microRegInfo*)pState);
+	if (pBlock)
+		return pBlock->codeStart;
+	else
+		return mVUcompile(mVU, startPC, pState);
+}
+
+// Search for Existing Compiled Block (if found, return codePtr; else, compile)
+__fi void* mVUblockFetch(microVU& mVU, u32 startPC, uptr pState)
+{
+	pxAssert((startPC & 7) == 0);
+	pxAssert(startPC <= mVU.microMemSize - 8);
+	startPC &= mVU.microMemSize - 8;
+
+	blockCreate(startPC / 8);
+	return mVUentryGet(mVU, mVUblocks[startPC / 8], startPC, pState);
+}
+
+// mVUcompileJIT() - Called By JR/JALR during execution. Opens its own emit session
+// (it runs from inside a compiled block, where none is open) so the compiled target
+// is flushed before the caller branches into it.
+_mVUt void* mVUcompileJIT(u32 startPC, uptr ptr)
+{
+	microVU& mVU = mVUx;
+
+	armSetAsmPtr(mVU.prog.codePtr, mVU.prog.codeEnd - mVU.prog.codePtr, nullptr);
+	armStartBlock();
+	void* result;
+
+	if (doJumpAsSameProgram) // Treat jump as part of same microProgram
+	{
+		if (doJumpCaching) // When doJumpCaching, ptr is a microBlock pointer
+		{
+			microBlock* pBlock = (microBlock*)ptr;
+			microJumpCache& jc = pBlock->jumpCache[startPC / 8];
+			if (jc.prog && jc.prog == mVU.prog.quick[startPC / 8].prog)
+			{
+				mVU.prog.codePtr = armEndBlock();
+				return jc.codeStart;
+			}
+			void* v = mVUblockFetch(mVUx, startPC, (uptr)&pBlock->pStateEnd);
+			jc.prog = mVU.prog.quick[startPC / 8].prog;
+			jc.codeStart = v;
+			result = v;
+		}
+		else
+			result = mVUblockFetch(mVUx, startPC, ptr);
+	}
+	else
+	{
+		mVUx.regs().start_pc = startPC;
+		if (doJumpCaching) // When doJumpCaching, ptr is a microBlock pointer
+		{
+			microBlock* pBlock = (microBlock*)ptr;
+			microJumpCache& jc = pBlock->jumpCache[startPC / 8];
+			if (jc.prog && jc.prog == mVU.prog.quick[startPC / 8].prog)
+			{
+				mVU.prog.codePtr = armEndBlock();
+				return jc.codeStart;
+			}
+			void* v = mVUsearchProg<vuIndex>(startPC, (uptr)&pBlock->pStateEnd);
+			jc.prog = mVU.prog.quick[startPC / 8].prog;
+			jc.codeStart = v;
+			result = v;
+		}
+		else // When !doJumpCaching, pBlock param is really a microRegInfo pointer
+		{
+			result = mVUsearchProg<vuIndex>(startPC, ptr); // Find and set correct program
+		}
+	}
+
+	mVU.prog.codePtr = armEndBlock();
+	return result;
+}

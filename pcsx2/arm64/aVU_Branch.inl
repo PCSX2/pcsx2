@@ -344,3 +344,390 @@ void mVUsetupBranch(mV, microFlagCycles& mFC)
 		mVUshufflePS(mVU_xmmPQ, mVU_xmmPQ, shufflePQ);
 	mVU.p = 0, mVU.q = 0;
 }
+
+//------------------------------------------------------------------
+// Branch drivers (the cross-referencing core)
+//------------------------------------------------------------------
+// These emit the block-exit / block-linking code for every branch/jump type.
+// They mutually recurse with mVUcompile (defined later in aVU_Compile.inl), so it
+// is forward-declared here exactly like x86 microVU_Branch.inl. mVUcompileJIT (the
+// runtime JR/JALR thunk) is likewise forward-declared to take its address.
+extern void* mVUcompile(microVU& mVU, u32 startPC, uptr pState);
+extern void* mVUblockFetch(microVU& mVU, u32 startPC, uptr pState);
+template <int vuIndex> void* mVUcompileJIT(u32 startPC, uptr ptr);
+
+// Small file-local helpers for the absolute-addr ops the drivers need.
+static inline void mvuLdrh16(const a64::Register& wreg, const void* addr)
+{
+	armMoveAddressToReg(RSCRATCHADDR, addr);
+	armAsm->Ldrh(wreg.W(), a64::MemOperand(RSCRATCHADDR));
+}
+// xTEST(ptr32[addr], imm) + xForwardJump32(Jcc_Zero): load, test, branch-if-zero.
+static inline void mvuTestMemBranchZero(const void* addr, u32 imm, a64::Label& tgt, const a64::Register& tmp)
+{
+	mvuLdr32(tmp, addr);
+	armAsm->Tst(tmp.W(), imm);
+	armAsm->B(&tgt, a64::eq); // ZF set == (val & imm) == 0
+}
+
+void normBranchCompile(microVU& mVU, u32 branchPC)
+{
+	microBlock* pBlock;
+	blockCreate(branchPC / 8);
+	pBlock = mVUblocks[branchPC / 8]->search(mVU, (microRegInfo*)&mVUregs);
+	if (pBlock)
+		armEmitJmp(pBlock->codeStart);
+	else
+		mVUcompile(mVU, branchPC, (uptr)&mVUregs);
+}
+
+void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump)
+{
+	memcpy(&mVUpBlock->pStateEnd, &mVUregs, sizeof(microRegInfo));
+	mVUsetupBranch(mVU, mFC);
+	mVUbackupRegs(mVU);
+
+	if (!mVUpBlock->jumpCache) // Create the jump cache for this block
+	{
+		mVUpBlock->jumpCache = new microJumpCache[mProgSize / 2];
+	}
+
+	if (isEvilJump)
+	{
+		mvuLdr32(RWARG1, &mVU.evilBranch); // startPC (arg1)
+		mvuLdr32(gprT1, &mVU.evilevilBranch);
+		mvuStr32(&mVU.evilBranch, gprT1);
+	}
+	else
+		mvuLdr32(RWARG1, &mVU.branch);
+	if (doJumpCaching)
+		armMoveAddressToReg(RXARG2, mVUpBlock);
+	else
+		armMoveAddressToReg(RXARG2, &mVUpBlock->pStateEnd);
+
+	if (mVUup.eBit && isEvilJump) // E-bit EvilJump
+	{
+		// Xtreme G 3 does 2 conditional jumps, the first contains an E Bit on the first instruction
+		// So if it is taken, you need to end the program, else you get infinite loops.
+		mVUendProgram(mVU, &mFC, 2);
+		mvuStr32(&mVU.regs().VI[REG_TPC].UL, RWARG1);
+		if (mVU.index && THREAD_VU1)
+			armEmitCall(reinterpret_cast<const void*>(mVUEBit));
+		armEmitJmp(mVU.exitFunct);
+	}
+
+	if (!mVU.index)
+		armEmitCall(reinterpret_cast<const void*>(&mVUcompileJIT<0>)); // (u32 startPC, uptr pState)
+	else
+		armEmitCall(reinterpret_cast<const void*>(&mVUcompileJIT<1>));
+
+	mVUrestoreRegs(mVU);
+	armAsm->Br(RXRET); // Jump to rec-code address (returned in x0)
+}
+
+void normBranch(mV, microFlagCycles& mFC)
+{
+	// E-bit or T-Bit or D-Bit Branch
+	if (mVUup.dBit && doDBitHandling)
+	{
+		// Flush register cache early to avoid double flush on both paths
+		mVU.regAlloc->flushAll(false);
+
+		u32 tempPC = iPC;
+		a64::Label eJMP;
+		mvuTestMemBranchZero((mVU.index && THREAD_VU1) ? (const void*)&vu1Thread.vuFBRST : (const void*)&VU0.VI[REG_FBRST].UL,
+			(isVU1 ? 0x400 : 0x4), eJMP, gprT1);
+		if (!mVU.index || !THREAD_VU1)
+		{
+			mvuMemOrImm32(&VU0.VI[REG_VPU_STAT].UL, (isVU1 ? 0x200 : 0x2), gprT1);
+			mvuMemOrImm32(&mVU.regs().flags, VUFLAG_INTCINTERRUPT, gprT1);
+		}
+		iPC = branchAddr(mVU) / 4;
+		mVUDTendProgram(mVU, &mFC, 1);
+		armAsm->Bind(&eJMP);
+		iPC = tempPC;
+	}
+	if (mVUup.tBit)
+	{
+		// Flush register cache early to avoid double flush on both paths
+		mVU.regAlloc->flushAll(false);
+
+		u32 tempPC = iPC;
+		a64::Label eJMP;
+		mvuTestMemBranchZero((mVU.index && THREAD_VU1) ? (const void*)&vu1Thread.vuFBRST : (const void*)&VU0.VI[REG_FBRST].UL,
+			(isVU1 ? 0x800 : 0x8), eJMP, gprT1);
+		if (!mVU.index || !THREAD_VU1)
+		{
+			mvuMemOrImm32(&VU0.VI[REG_VPU_STAT].UL, (isVU1 ? 0x400 : 0x4), gprT1);
+			mvuMemOrImm32(&mVU.regs().flags, VUFLAG_INTCINTERRUPT, gprT1);
+		}
+		iPC = branchAddr(mVU) / 4;
+		mVUDTendProgram(mVU, &mFC, 1);
+		armAsm->Bind(&eJMP);
+		iPC = tempPC;
+	}
+	if (mVUup.mBit)
+	{
+		DevCon.Warning("M-Bit on normal branch, report if broken");
+		u32 tempPC = iPC;
+
+		memcpy(&mVUpBlock->pStateEnd, &mVUregs, sizeof(microRegInfo));
+		armMoveAddressToReg(RXARG1, &mVUpBlock->pStateEnd);
+		armEmitCall(mVU.copyPLState);
+
+		mVUsetupBranch(mVU, mFC);
+		mVUendProgram(mVU, &mFC, 3);
+		iPC = branchAddr(mVU) / 4;
+		mvuStrImm32(&mVU.regs().VI[REG_TPC].UL, xPC, gprT1);
+		if (mVU.index && THREAD_VU1)
+			armEmitCall(reinterpret_cast<const void*>(mVUEBit));
+		armEmitJmp(mVU.exitFunct);
+		iPC = tempPC;
+	}
+	if (mVUup.eBit)
+	{
+		if (mVUlow.badBranch)
+			DevCon.Warning("End on evil Unconditional branch! - Not implemented! - If game broken report to PCSX2 Team");
+
+		iPC = branchAddr(mVU) / 4;
+		mVUendProgram(mVU, &mFC, 1);
+		return;
+	}
+
+	// Normal Branch
+	mVUsetupBranch(mVU, mFC);
+	normBranchCompile(mVU, branchAddr(mVU));
+}
+
+void condBranch(mV, microFlagCycles& mFC, a64::Condition JMPcc)
+{
+	mVUsetupBranch(mVU, mFC);
+
+	if (mVUup.tBit)
+	{
+		DevCon.Warning("T-Bit on branch, please report if broken");
+		u32 tempPC = iPC;
+		a64::Label eJMP;
+		mvuTestMemBranchZero((mVU.index && THREAD_VU1) ? (const void*)&vu1Thread.vuFBRST : (const void*)&VU0.VI[REG_FBRST].UL,
+			(isVU1 ? 0x800 : 0x8), eJMP, gprT1);
+		if (!mVU.index || !THREAD_VU1)
+		{
+			mvuMemOrImm32(&VU0.VI[REG_VPU_STAT].UL, (isVU1 ? 0x400 : 0x4), gprT1);
+			mvuMemOrImm32(&mVU.regs().flags, VUFLAG_INTCINTERRUPT, gprT1);
+		}
+		mVUDTendProgram(mVU, &mFC, 2);
+		mvuLdrh16(gprT1, &mVU.branch);
+		armAsm->Cmp(gprT1.W(), 0);
+		a64::Label tJMP;
+		armAsm->B(&tJMP, a64::InvertCondition(JMPcc));
+			incPC(4); // Set PC to First instruction of Non-Taken Side
+			mvuStrImm32(&mVU.regs().VI[REG_TPC].UL, xPC, gprT1);
+			if (mVU.index && THREAD_VU1)
+				armEmitCall(reinterpret_cast<const void*>(mVUTBit));
+			armEmitJmp(mVU.exitFunct);
+		armAsm->Bind(&tJMP);
+		incPC(-4); // Go Back to Branch Opcode to get branchAddr
+		iPC = branchAddr(mVU) / 4;
+		mvuStrImm32(&mVU.regs().VI[REG_TPC].UL, xPC, gprT1);
+		if (mVU.index && THREAD_VU1)
+			armEmitCall(reinterpret_cast<const void*>(mVUTBit));
+		armEmitJmp(mVU.exitFunct);
+		armAsm->Bind(&eJMP);
+		iPC = tempPC;
+	}
+	if (mVUup.dBit && doDBitHandling)
+	{
+		u32 tempPC = iPC;
+		a64::Label eJMP;
+		mvuTestMemBranchZero((mVU.index && THREAD_VU1) ? (const void*)&vu1Thread.vuFBRST : (const void*)&VU0.VI[REG_FBRST].UL,
+			(isVU1 ? 0x400 : 0x4), eJMP, gprT1);
+		if (!mVU.index || !THREAD_VU1)
+		{
+			mvuMemOrImm32(&VU0.VI[REG_VPU_STAT].UL, (isVU1 ? 0x200 : 0x2), gprT1);
+			mvuMemOrImm32(&mVU.regs().flags, VUFLAG_INTCINTERRUPT, gprT1);
+		}
+		mVUDTendProgram(mVU, &mFC, 2);
+		mvuLdrh16(gprT1, &mVU.branch);
+		armAsm->Cmp(gprT1.W(), 0);
+		a64::Label dJMP;
+		armAsm->B(&dJMP, a64::InvertCondition(JMPcc));
+			incPC(4); // Set PC to First instruction of Non-Taken Side
+			mvuStrImm32(&mVU.regs().VI[REG_TPC].UL, xPC, gprT1);
+			armEmitJmp(mVU.exitFunct);
+		armAsm->Bind(&dJMP);
+		incPC(-4); // Go Back to Branch Opcode to get branchAddr
+		iPC = branchAddr(mVU) / 4;
+		mvuStrImm32(&mVU.regs().VI[REG_TPC].UL, xPC, gprT1);
+		armEmitJmp(mVU.exitFunct);
+		armAsm->Bind(&eJMP);
+		iPC = tempPC;
+	}
+	if (mVUup.mBit)
+	{
+		u32 tempPC = iPC;
+
+		memcpy(&mVUpBlock->pStateEnd, &mVUregs, sizeof(microRegInfo));
+		armMoveAddressToReg(RXARG1, &mVUpBlock->pStateEnd);
+		armEmitCall(mVU.copyPLState);
+
+		mVUendProgram(mVU, &mFC, 3);
+		mvuLdrh16(gprT1, &mVU.branch);
+		armAsm->Cmp(gprT1.W(), 0);
+		a64::Label dJMP;
+		armAsm->B(&dJMP, JMPcc);
+		incPC(4); // Set PC to First instruction of Non-Taken Side
+		mvuStrImm32(&mVU.regs().VI[REG_TPC].UL, xPC, gprT1);
+		if (mVU.index && THREAD_VU1)
+			armEmitCall(reinterpret_cast<const void*>(mVUEBit));
+		armEmitJmp(mVU.exitFunct);
+		armAsm->Bind(&dJMP);
+		incPC(-4); // Go Back to Branch Opcode to get branchAddr
+		iPC = branchAddr(mVU) / 4;
+		mvuStrImm32(&mVU.regs().VI[REG_TPC].UL, xPC, gprT1);
+		if (mVU.index && THREAD_VU1)
+			armEmitCall(reinterpret_cast<const void*>(mVUEBit));
+		armEmitJmp(mVU.exitFunct);
+		iPC = tempPC;
+	}
+	if (mVUup.eBit) // Conditional Branch With E-Bit Set
+	{
+		if (mVUlow.evilBranch)
+			DevCon.Warning("End on evil branch! - Not implemented! - If game broken report to PCSX2 Team");
+
+		mVUendProgram(mVU, &mFC, 2);
+		mvuLdrh16(gprT1, &mVU.branch);
+		armAsm->Cmp(gprT1.W(), 0);
+
+		incPC(3);
+		a64::Label eJMP;
+		armAsm->B(&eJMP, JMPcc);
+			incPC(1); // Set PC to First instruction of Non-Taken Side
+			mvuStrImm32(&mVU.regs().VI[REG_TPC].UL, xPC, gprT1);
+			if (mVU.index && THREAD_VU1)
+				armEmitCall(reinterpret_cast<const void*>(mVUEBit));
+			armEmitJmp(mVU.exitFunct);
+		armAsm->Bind(&eJMP);
+		incPC(-4); // Go Back to Branch Opcode to get branchAddr
+
+		iPC = branchAddr(mVU) / 4;
+		mvuStrImm32(&mVU.regs().VI[REG_TPC].UL, xPC, gprT1);
+		if (mVU.index && THREAD_VU1)
+			armEmitCall(reinterpret_cast<const void*>(mVUEBit));
+		armEmitJmp(mVU.exitFunct);
+		return;
+	}
+	else // Normal Conditional Branch
+	{
+		mvuLdrh16(gprT1, &mVU.branch);
+		armAsm->Cmp(gprT1.W(), 0);
+
+		incPC(3);
+		microBlock* bBlock;
+		incPC2(1); // Check if Branch Non-Taken Side has already been recompiled
+		blockCreate(iPC / 2);
+		bBlock = mVUblocks[iPC / 2]->search(mVU, (microRegInfo*)&mVUregs);
+		incPC2(-1);
+		if (bBlock) // Branch non-taken has already been compiled
+		{
+			armEmitCondBranch(a64::InvertCondition(JMPcc), bBlock->codeStart);
+			incPC(-3); // Go back to branch opcode (to get branch imm addr)
+			normBranchCompile(mVU, branchAddr(mVU));
+		}
+		else
+		{
+			a64::Label takenLabel;
+			armAsm->B(&takenLabel, JMPcc);
+			u32 bPC = iPC; // mVUcompile can modify iPC, mVUpBlock, and mVUregs so back them up
+
+			microRegInfo regBackup;
+			memcpy(&regBackup, &mVUregs, sizeof(microRegInfo));
+
+			incPC2(1); // Get PC for branch not-taken
+			mVUcompile(mVU, xPC, (uptr)&mVUregs);
+
+			iPC = bPC;
+			incPC(-3); // Go back to branch opcode (to get branch imm addr)
+			armAsm->Bind(&takenLabel);
+			u8* const beforeFetch = armGetCurrentCodePointer();
+			void* jumpAddr = mVUblockFetch(mVU, branchAddr(mVU), (uptr)&regBackup);
+			// If mVUblockFetch found an existing block (emitted nothing), bridge to
+			// it; if it compiled inline, the block starts right here (fall through).
+			if (jumpAddr != beforeFetch)
+				armEmitJmp(jumpAddr);
+		}
+	}
+}
+
+void normJump(mV, microFlagCycles& mFC)
+{
+	if (mVUup.mBit)
+	{
+		DevCon.Warning("M-Bit on Jump! Please report if broken");
+	}
+	if (mVUlow.constJump.isValid) // Jump Address is Constant
+	{
+		if (mVUup.eBit) // E-bit Jump
+		{
+			iPC = (mVUlow.constJump.regValue * 2) & (mVU.progMemMask);
+			mVUendProgram(mVU, &mFC, 1);
+			return;
+		}
+		int jumpAddr = (mVUlow.constJump.regValue * 8) & (mVU.microMemSize - 8);
+		mVUsetupBranch(mVU, mFC);
+		normBranchCompile(mVU, jumpAddr);
+		return;
+	}
+	if (mVUup.dBit && doDBitHandling)
+	{
+		// Flush register cache early to avoid double flush on both paths
+		mVU.regAlloc->flushAll(false);
+
+		a64::Label eJMP;
+		mvuTestMemBranchZero(THREAD_VU1 ? (const void*)&vu1Thread.vuFBRST : (const void*)&VU0.VI[REG_FBRST].UL,
+			(isVU1 ? 0x400 : 0x4), eJMP, gprT1);
+		if (!mVU.index || !THREAD_VU1)
+		{
+			mvuMemOrImm32(&VU0.VI[REG_VPU_STAT].UL, (isVU1 ? 0x200 : 0x2), gprT1);
+			mvuMemOrImm32(&mVU.regs().flags, VUFLAG_INTCINTERRUPT, gprT1);
+		}
+		mVUDTendProgram(mVU, &mFC, 2);
+		mvuLdr32(gprT1, &mVU.branch);
+		mvuStr32(&mVU.regs().VI[REG_TPC].UL, gprT1);
+		armEmitJmp(mVU.exitFunct);
+		armAsm->Bind(&eJMP);
+	}
+	if (mVUup.tBit)
+	{
+		// Flush register cache early to avoid double flush on both paths
+		mVU.regAlloc->flushAll(false);
+
+		a64::Label eJMP;
+		mvuTestMemBranchZero((mVU.index && THREAD_VU1) ? (const void*)&vu1Thread.vuFBRST : (const void*)&VU0.VI[REG_FBRST].UL,
+			(isVU1 ? 0x800 : 0x8), eJMP, gprT1);
+		if (!mVU.index || !THREAD_VU1)
+		{
+			mvuMemOrImm32(&VU0.VI[REG_VPU_STAT].UL, (isVU1 ? 0x400 : 0x4), gprT1);
+			mvuMemOrImm32(&mVU.regs().flags, VUFLAG_INTCINTERRUPT, gprT1);
+		}
+		mVUDTendProgram(mVU, &mFC, 2);
+		mvuLdr32(gprT1, &mVU.branch);
+		mvuStr32(&mVU.regs().VI[REG_TPC].UL, gprT1);
+		if (mVU.index && THREAD_VU1)
+			armEmitCall(reinterpret_cast<const void*>(mVUTBit));
+		armEmitJmp(mVU.exitFunct);
+		armAsm->Bind(&eJMP);
+	}
+	if (mVUup.eBit) // E-bit Jump
+	{
+		mVUendProgram(mVU, &mFC, 2);
+		mvuLdr32(gprT1, &mVU.branch);
+		mvuStr32(&mVU.regs().VI[REG_TPC].UL, gprT1);
+		if (mVU.index && THREAD_VU1)
+			armEmitCall(reinterpret_cast<const void*>(mVUEBit));
+		armEmitJmp(mVU.exitFunct);
+	}
+	else
+	{
+		normJumpCompile(mVU, mFC, false);
+	}
+}
