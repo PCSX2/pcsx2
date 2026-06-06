@@ -44,15 +44,16 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 {
 	m_ui.setupUi(this);
 
-	if (sioPadIsMultitapSlot(port))
+	const auto [pad_port, pad_slot] = sioConvertPadToPortAndSlot(port);
+	const bool mtap_enabled = m_dialog->getBoolValue("Pad", (pad_port == 0) ? "MultitapPort1" : "MultitapPort2", false);
+	if (mtap_enabled)
 	{
 		static constexpr const std::array<char, 4> s_mtap_slot_names = {{'A', 'B', 'C', 'D'}};
-		const auto [pad_port, pad_slot] = sioConvertPadToPortAndSlot(port);
 		m_ui.groupBox->setTitle(tr("Controller Port %1%2").arg(pad_port + 1).arg(s_mtap_slot_names[pad_slot]));
 	}
 	else
 	{
-		m_ui.groupBox->setTitle(tr("Controller Port %1").arg(port + 1));
+		m_ui.groupBox->setTitle(tr("Controller Port %1").arg(pad_port + 1));
 	}
 
 	populateControllerTypes();
@@ -307,15 +308,16 @@ ControllerMacroWidget::ControllerMacroWidget(ControllerBindingWidget* parent)
 {
 	m_ui.setupUi(this);
 	const u32 port = parent->getPortNumber();
-	if (sioPadIsMultitapSlot(port))
+	const auto [pad_port, pad_slot] = sioConvertPadToPortAndSlot(port);
+	const bool mtap_enabled = parent->getDialog()->getBoolValue("Pad", (pad_port == 0) ? "MultitapPort1" : "MultitapPort2", false);
+	if (mtap_enabled)
 	{
 		static constexpr const std::array<char, 4> s_mtap_slot_names = {{'A', 'B', 'C', 'D'}};
-		const auto [pad_port, pad_slot] = sioConvertPadToPortAndSlot(port);
 		setWindowTitle(tr("Controller Port %1%2 Macros").arg(pad_port + 1).arg(s_mtap_slot_names[pad_slot]));
 	}
 	else
 	{
-		setWindowTitle(tr("Controller Port %1 Macros").arg(port + 1u));
+		setWindowTitle(tr("Controller Port %1 Macros").arg(pad_port + 1));
 	}
 	createWidgets(parent);
 }
