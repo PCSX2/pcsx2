@@ -8,7 +8,38 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 7 (VU recompilers / microVU) — task 7.4/7.5 part 1 (Pass-2 flag + P/Q allocators) DONE.**
+**Phase 7 (VU recompilers / microVU) — emit backend: allocators + clamp + addr-fix DONE.**
+
+The standalone, buildable emit-helper slices are now in: the Pass-2 flag + P/Q allocators
+(`aVU_Alloc.inl`), the operand/result clamp helpers (`aVU_Clamp.inl`), and the VU address-transform
+`mVUaddrFix` (`aVU_Misc.inl`). The `mVU_Globals`/`mVUglob` emit-constant table is back in
+`aVU_Misc.h`. All odr-use-checked (`mVUallocFlagCheck`/`mVUclampCheck`/`mVUmiscCheck`); build arm64;
+unittests 2/2. Commits `f47f00c3e` (P/Q), `95e3011ca` (clamp), `c8c6f31ea` (addr-fix).
+
+**Clamp NEON notes:** range clamp → `Fminnm`/`Fmaxnm` (IEEE minNum/maxNum keep the number on NaN,
+matching x86 MINPS/MAXPS; `Fmin`/`Fmax` would propagate NaN — wrong); sign-preserving clamp →
+`Smin`/`Umin` on the float bit pattern (x86 PMINSD/PMINUD). SS clamps use `.S()` (lane0); upper lanes
+are scratch in the SS model so the NEON scalar-write zeroing is benign.
+
+**Next:** the **hard big-bang** — stand up Flags + Branch/program-exit + `mVUcompile` so a trivial
+block can link and round-trip. This is the first slice that *won't build incrementally* (the pieces
+reference each other), so bring them up together against a NOP/B-only `mVUopU`/`mVUopL`:
+1. **Flags** (`aVU_Flags.inl`): `mVUdivSet`/`mVUsetupFlags` emit (uses the flag allocators now in
+   place) + the `mVUsetFlags`/`mVUstatusFlagOp`/`findFlagInst`/`sortFlag` analysis. `_mVUflagPass`/
+   `mVUsetFlagInfo` call `mVUopU`/`mVUopL`, so they need the (stub) opcode tables.
+2. **Branch/program-exit** (`aVU_Branch.inl`): `mVUendProgram`/`mVUDTendProgram`/`normBranch`/
+   `normJump`/`condBranch`.
+3. **`mVUcompile`** (`aVU_Compile.inl` / extend `aVU.cpp`): own `armStartBlock`/`armEndBlock` per
+   block, replace the `mVUblockFetch`/`mVUentryGet` stubs, and **flush the icache before branching
+   into freshly-emitted code**. Plus `mVUexecuteInstruction`/`doUpperOp`/`doLowerOp`/`doIbit`,
+   `mVUtestCycles`, `mVUDoDBit`/`mVUDoTBit`, `mvuPreloadRegisters`.
+Keep microVU **unselected** until a NOP/B block round-trips; then begin the real opcode handlers
+(7.5a Upper, 7.5b Lower). Also still deferred: `mVUoptimizeConstantAddr` (consumer-defined return
+contract → 7.5b) and the custom SSE arithmetic helpers (`MIN_MAX_PS`/`ADD_SS`/`SSE_*` → 7.5a).
+
+---
+
+## (prior) task 7.4/7.5 part 1 detail — Pass-2 flag + P/Q allocators DONE.
 
 `pcsx2/arm64/aVU_Alloc.inl` is the **emit-backend allocator slice** — the allocator half of x86
 `microVU_Alloc.inl` ported to VIXL: `getFlagReg` + the Status/Mac/Clip flag normalize/denormalize
@@ -253,6 +284,12 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     NEON lane-broadcast `mVUunpack_xyzw` → `aVU_IR.h`. x86 `xPSHUF.D` splat → VIXL `Dup` (index ==
     case); `xINSERTPS`/`xMOVSS` into Q → `Ins` lane0. PQ pair in `mVU_xmmPQ` (v24), x86 layout.
     Compile-exercised via `mVUallocFlagCheck`. Builds arm64; unittests 2/2. (`f47f00c3e`)
+  - [x] Clamp helpers (`microVU_Clamp.inl` → `aVU_Clamp.inl`): `mVUclamp1`–`4` + the `mVU_Globals`/
+    `mVUglob` emit-constant table back into `aVU_Misc.h`. Range clamp → `Fminnm`/`Fmaxnm`; sign clamp
+    → `Smin`/`Umin`. Compile-exercised via `mVUclampCheck`. arm64; unittests 2/2. (`95e3011ca`)
+  - [x] Misc emit helper (`microVU_Misc.inl` → `aVU_Misc.inl`): `mVUaddrFix` VU address transform
+    (VU0/VU1 wrap + VU0→VU1 window remap + waitMTVU). Compile-exercised via `mVUmiscCheck`. arm64;
+    unittests 2/2. (`c8c6f31ea`) Deferred: `mVUoptimizeConstantAddr` (→ 7.5b), SSE arith (→ 7.5a).
   - [ ] Emit-coupled driver `mVUcompile` + `mVUexecuteInstruction`/`doUpperOp`/`doLowerOp`/`doSwapOp`/
     `doIbit`, `mVUtestCycles`, `mVUDoDBit`/`mVUDoTBit`, `mvuPreloadRegisters`, and the
     `mVUentryGet`/`mVUblockFetch` entry points (still `pxFailRel`). Big-bang: links only once the 7.5

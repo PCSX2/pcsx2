@@ -28,6 +28,54 @@
 
 ---
 
+## 2026-06-06 — Phase 7.5: clamp helpers + mVUaddrFix (Misc emit subset)
+
+**Goal:** Continue the emit backend with the next two standalone, buildable Misc slices — the
+operand/result clamp helpers and the VU address-transform `mVUaddrFix` — keeping the tight loop
+before the Flags/Branch/`mVUcompile` big-bang.
+
+**What changed:**
+- `pcsx2/arm64/aVU_Clamp.inl` — NEW. VIXL port of `microVU_Clamp.inl`: `mVUclamp1`–`4` + the
+  `sse4_min/maxvals` sign-overflow tables. Range clamp → `Fminnm`/`Fmaxnm`; sign clamp → `Smin`/`Umin`.
+- `pcsx2/arm64/aVU_Misc.h` — restored the `mVU_Globals`/`mVUglob` emit-constant table (dropped in 7.3
+  as "task 7.5"; now needed by clamp, and by 7.5 Upper/Lower for FTOI/ITOF/EFU constants).
+- `pcsx2/arm64/aVU_Misc.inl` — NEW. `mVUaddrFix` (VU0/VU1 wrap + VU0→VU1 register-window remap incl.
+  the THREAD_VU1 `waitMTVU` call + the *16 byte-offset shift).
+- `pcsx2/arm64/aVU.cpp` — `#include` both new .inls; `mVUclampCheck`/`mVUmiscCheck` odr-use them.
+- `pcsx2/CMakeLists.txt` — listed both new .inls.
+- Commits: `95e3011ca` (clamp), `c8c6f31ea` (addr-fix).
+
+**Decisions & rationale:**
+- **`Fminnm`/`Fmaxnm`, not `Fmin`/`Fmax`, for the range clamp.** x86 MINPS/MAXPS return the *number*
+  when one operand is NaN (so a NaN result collapses to +fmax — the documented microVU behaviour).
+  ARM `FMIN`/`FMAX` *propagate* NaN; `FMINNM`/`FMAXNM` (IEEE minNum/maxNum) keep the number, which is
+  the correct match. This is the key non-obvious NEON gotcha in the clamp port.
+- **Sign clamp = `Smin`/`Umin` on the V4S float bit pattern** (x86 PMINSD/PMINUD), via the per-mask
+  `sse4_min/maxvals[i]` tables (i=0 for SS/1000, i=1 for PS/1111). Constants loaded into the caller's
+  NEON scratch (`regT1`) with `armMoveAddressToReg`+`Ldr(.Q())` since NEON can't fold a 128-bit memory
+  operand like x86 did.
+- **SS clamp uses scalar `.S()` ops** — in the microVU SS model the live value sits in lane0 and the
+  upper lanes are scratch, so the NEON scalar-write upper-lane zeroing (vs x86 xMIN.SS preserving
+  them) is benign. Documented in the file header.
+- **`mVUaddrFix`: 32-bit masks via the `.W()` view** (W-writes zero [63:32], matching x86's 32-bit
+  AND), final add/shift on the 64-bit `.X()` view; far VU0→VU1 offset materialized through `tmpReg`
+  exactly as x86 does for the non-s32 case. `xTEST+JNZ8` → `Tst + B(ne)` + local labels.
+- **Deferred `mVUoptimizeConstantAddr`** — unlike the above it has *no* unambiguous standalone
+  contract: it returns a constant host address that its only consumer (the 7.5b Lower load/store
+  handlers) must consume, and that calling convention is theirs to define. Porting it now would be
+  speculative API design, so it waits for 7.5b. Same reasoning parks the SSE arith helpers for 7.5a.
+
+**Blockers / open questions:** None. Next is the first slice that genuinely *can't* build
+incrementally (Flags/Branch/`mVUcompile` cross-reference each other).
+
+**Next step:** the hard big-bang — bring up Flags (`aVU_Flags.inl`) + Branch/program-exit
+(`aVU_Branch.inl`: `mVUendProgram`/`normBranch`/`normJump`/`condBranch`) + `mVUcompile` together
+against a NOP/B-only `mVUopU`/`mVUopL`, so a trivial block links and round-trips (own `armStartBlock`/
+`armEndBlock` per block + the **icache flush before branching into freshly-emitted code**). Replace
+the `mVUblockFetch`/`mVUentryGet` stubs. Keep microVU unselected until it round-trips.
+
+---
+
 ## 2026-06-06 — Phase 7.4/7.5 (part 1b): P/Q reg allocators + mVUunpack_xyzw
 
 **Goal:** Land the deferred half of the Pass-2 allocators — the P/Q register allocators, unblocked now
