@@ -96,6 +96,11 @@ static void mVUcacheProg(microVU& mVU, microProgram& prog);
 // odr-uses them so the bodies compile ahead of the Upper/Lower opcode handlers.
 #include "arm64/aVU_Clamp.inl"
 
+// Misc emit helpers (task 7.5) — the VU address-transform helper mVUaddrFix.
+// Emit-coupled; mVUmiscCheck below odr-uses it so the body compiles ahead of the
+// Lower load/store handlers.
+#include "arm64/aVU_Misc.inl"
+
 //------------------------------------------------------------------
 // Pass-1 pipeline / cycle / range helpers (task 7.3 part 2)
 //------------------------------------------------------------------
@@ -1374,4 +1379,11 @@ static_assert(alignof(microBlock) == 16, "microBlock must stay 16-byte aligned")
 	mVUclamp2(mVU, reg, tmp, 0x8);
 	mVUclamp3(mVU, reg, tmp, 0xf);
 	mVUclamp4(mVU, reg, tmp, 0x8);
+}
+
+// Force the misc emit helpers (aVU_Misc.inl) to be compiled. Never called.
+[[maybe_unused]] static void mVUmiscCheck()
+{
+	microVU& mVU = microVU0;
+	mVUaddrFix(mVU, a64::x9, a64::x10);
 }
