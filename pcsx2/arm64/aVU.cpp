@@ -22,6 +22,7 @@
 
 #include "arm64/aVU.h"
 #include "arm64/aVU_IR.h"
+#include "arm64/aVU_Misc.h" // arch-neutral macro layer (task 7.3)
 
 #include "VUmicro.h"
 #include "Memory.h"
@@ -76,6 +77,12 @@ static void* mVUentryGet(microVU& mVU, microBlockManager* block, u32 startPC, up
 static void mVUdeleteProg(microVU& mVU, microProgram*& prog);
 static microProgram* mVUcreateProg(microVU& mVU, int startPC);
 static void mVUcacheProg(microVU& mVU, microProgram& prog);
+
+// Pass-1 analysis (task 7.3) — arch-neutral, operates on the IR, no emitter calls.
+// Currently compiled but not yet driven (the per-op pass1 handlers + tables are
+// task 7.5+); mVUanalyzeCompileCheck below odr-uses every entry point so the bodies
+// are type-checked and codegen'd now.
+#include "arm64/aVU_Analyze.inl"
 
 //------------------------------------------------------------------
 // Micro VU - Main Functions
@@ -536,7 +543,6 @@ static void mVUemitSetHostFPCR(const void* bitmaskPtr)
 // Generates the code for entering/exiting recompiled blocks.
 static void mVUdispatcherAB(microVU& mVU)
 {
-	const bool isVU1 = (mVU.index == 1);
 	mVU.startFunct = armGetCurrentCodePointer();
 
 	// Save callee-saved GPRs (x19-x28, fp/lr) and the low halves of v8-v15.
@@ -603,7 +609,6 @@ static void mVUdispatcherAB(microVU& mVU)
 // Generates the code for resuming/exiting xgkick.
 static void mVUdispatcherCD(microVU& mVU)
 {
-	const bool isVU1 = (mVU.index == 1);
 	mVU.startFunctXG = armGetCurrentCodePointer();
 
 	armBeginStackFrame(true);
@@ -876,4 +881,40 @@ static_assert(alignof(microBlock) == 16, "microBlock must stay 16-byte aligned")
 	(void)ra.hasRegVI(1);
 	(void)ra.getFreeXmmCount();
 	(void)ra.getFreeGPRCount();
+}
+
+// Force the pass-1 analysis bodies (aVU_Analyze.inl) to be compiled. They are not
+// reached by any live code yet (the per-op pass1 handlers that call them are task
+// 7.5+), so without an explicit odr-use these inline functions would be parsed but
+// their full instantiation/codegen — and any porting error — could go undetected.
+// Never called: it dereferences mVU.prog.cur (null here), it exists only to compile.
+[[maybe_unused]] static void mVUanalyzeCompileCheck()
+{
+	microVU& mVU = microVU0;
+	mVUanalyzeFMAC1(mVU, 1, 2, 3);
+	mVUanalyzeFMAC2(mVU, 1, 2);
+	mVUanalyzeFMAC3(mVU, 1, 2, 3);
+	mVUanalyzeFMAC4(mVU, 1, 2);
+	mVUanalyzeIALU1(mVU, 1, 2, 3);
+	mVUanalyzeIALU2(mVU, 1, 2);
+	mVUanalyzeIADDI(mVU, 1, 2, (s16)3);
+	mVUanalyzeMR32(mVU, 1, 2);
+	mVUanalyzeFDIV(mVU, 1, 0, 2, 1, 3);
+	mVUanalyzeEFU1(mVU, 1, 0, 3);
+	mVUanalyzeEFU2(mVU, 1, 3);
+	mVUanalyzeMFP(mVU, 1);
+	mVUanalyzeMOVE(mVU, 1, 2);
+	mVUanalyzeLQ(mVU, 1, 2, true);
+	mVUanalyzeSQ(mVU, 1, 2, true);
+	mVUanalyzeR1(mVU, 1, 0);
+	mVUanalyzeR2(mVU, 1, true);
+	mVUanalyzeSflag(mVU, 1);
+	mVUanalyzeFSSET(mVU);
+	mVUanalyzeMflag(mVU, 1, 2);
+	mVUanalyzeCflag(mVU, 1);
+	mVUanalyzeXGkick(mVU, 1, 2);
+	mVUanalyzeCondBranch1(mVU, 1);
+	mVUanalyzeCondBranch2(mVU, 1, 2);
+	mVUanalyzeNormBranch(mVU, 1, true);
+	mVUanalyzeJump(mVU, 1, 2, true);
 }
