@@ -28,6 +28,51 @@
 
 ---
 
+## 2026-06-06 — Phase 7.8: select microVU0/1 + fix two real-execution bugs (BIOS, 2D, FFX run)
+
+**Goal:** Flip the ARM64 VU provider from interpreter to microVU and validate up the test ladder
+(BIOS → 2D → VU1-heavy 3D), debugging whatever the first real execution surfaces.
+
+**What changed:**
+- `VMManager.cpp` (`dcbdec813`) — the four ARM64 `#else` branches mirror x86: reserve/shutdown
+  `CpuMicroVU0/1` (recMicroVU1 manages vu1Thread, so the manual `vu1Thread.Open()` workaround is
+  gone), select micro-vs-int per `EnableVU0/1`, reset CpuMicroVU0 for macro mode.
+- `Config.h` (`7fb86fcfa`) — **bug #1.** `REC_VU1`/`THREAD_VU1` now track `EmuConfig` (were hardcoded
+  `false`). The stub made `GetGSPacketSize` take its `!REC_VU1` path and OR EOP into bit31 of the
+  XGKICK size; `mVU_XGKICK_` used it raw → `size - diff` ≈ 2 GB → memcpy SIGSEGV on the first kick.
+- `aVU.h` (`b7ae2fa7b`) — **bug #2.** `compareState` is now a C++ `__builtin_memcmp` of the 96-byte
+  `microRegInfo` instead of calling the JIT-generated `compareStateF`.
+
+**Decisions & rationale:**
+- **Bug #2 is the important architectural lesson: never *execute* JIT during a compile session on
+  Apple Silicon.** microVU compiles a whole program inside one `BeginCodeWrite`/`EndCodeWrite`
+  (`pthread_jit_write_protect_np(0)` ⇒ MAP_JIT is writable-but-non-executable). The recursive block
+  search calls `compareState`, which executed `compareStateF` from that region → SIGBUS on the
+  instruction fetch. x86 is RWX so it never cared. The C++ compare is semantically identical
+  (compareStateF returns 0 iff the 96 bytes are equal) and is correct regardless of W^X state.
+  Watch for any *other* "execute a generated thunk mid-compile" patterns as more titles are tested.
+- **Re-test before deferring.** I first force-disabled `THREAD_VU1` on ARM64 (the original FFX crash
+  was on the MTVU thread). But bug #2's root cause was per-thread write-protect, so the C++ fix
+  repaired MTVU as well — I reverted the defer and kept full x86 parity. Verified FFX runs both
+  single-threaded and with MTVU force-enabled (FFX's GameDB turns vuThread on).
+- **Honesty fix:** an earlier commit message claimed "BIOS boots cleanly" before I'd actually checked
+  the exit code — it had crashed. Amended `00408f62c`→`dcbdec813` to "wiring" only; real validation
+  lives in the two fix commits.
+
+**Validation:** BIOS → OSDSYS (75s), Odin Sphere 2D → PAL game mode (90s), FFX 3D → 120s no crash
+(single + MTVU). unittests 2/2. All headless `-batch -fastboot`; confirms no-crash, not yet hands-on
+visual/perf.
+
+**Blockers / open questions:** Headless runs only prove "doesn't crash for N seconds" — visual
+correctness, long soak, and perf are unverified. More titles available locally to try: GTA:SA,
+Gran Turismo, Gradius V, Rayman 3.
+
+**Next step:** continue 7.8 deeper validation (visual + perf + more titles), then 7.9 macro mode /
+Phase 8 polish. Debugging recipe (lldb `-k` on-crash + get-task-allow re-sign; always
+`pcsx2-postprocess-bundle` before launch) is captured in [[arm64-debug-attach-macos]] and PROGRESS.
+
+---
+
 ## 2026-06-06 — Phase 7.5b: Lower opcode handlers (aVU_Lower.inl) — full microVU ISA compiles
 
 **Goal:** Port the rest of the microVU ISA — x86 `microVU_Lower.inl` (≈2200 lines) — to NEON/VIXL so

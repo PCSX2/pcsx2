@@ -8,9 +8,39 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 7 (VU recompilers / microVU) — 7.5b Lower IS DONE. The ENTIRE microVU ISA (Upper + Lower)
-now compiles into real NEON/VIXL handlers; `mVUopU`/`mVUopL` dispatch every opcode. microVU is still
-*unselected* (VMManager pins CpuIntVU0/1). Next: 7.8 — wire selection + validate.**
+**Phase 7 (VU recompilers / microVU) — 7.8 IS LIVE AND VALIDATED on real games. microVU0/1 is now
+the selected VU provider on ARM64 (`CpuVU0/1 = EnableVU0/1 ? CpuMicroVU0/1 : CpuIntVU0/1`). After
+wiring, two real-execution bugs were found and fixed; BIOS, a 2D game (Odin Sphere), and a VU1-heavy
+3D game (Final Fantasy X) all boot and run. Next: continue 7.8 — deeper soak/perf on more titles,
+then 7.9 (macro mode) / Phase 8 polish. builds arm64, unittests 2/2.**
+
+**7.8 wiring (`dcbdec813`, `VMManager.cpp`):** the four ARM64 `#else` branches mirror x86 —
+`InitializeCPUProviders` reserves `CpuMicroVU0/1` (recMicroVU1::Reserve opens vu1Thread, so the old
+explicit `vu1Thread.Open()` workaround is gone); `ShutdownCPUProviders` shuts them down (recMicroVU1
+waits/closes vu1Thread); `UpdateCPUImplementations` selects micro vs int per `EnableVU0/1`;
+`ClearCPUExecutionCaches` resets `CpuMicroVU0` for macro mode when EE rec is on but VU0 micro is off.
+
+**7.8 bug #1 — XGKICK packet-size crash (`7fb86fcfa`, `Config.h`):** ARM64 had `REC_VU1`/`THREAD_VU1`
+hardcoded `false` (the pre-port stub). With microVU1 selected, that made `Gif_Unit::GetGSPacketSize`
+take its `!REC_VU1` branch and OR the EOP flag into bit31 of the returned size (e.g. `0x800000d0`);
+`mVU_XGKICK_` used the raw value so `size - diff` underflowed to ~2 GB → `CopyGSPacketData` memcpy
+SIGSEGV on the *first* kick (BIOS logo). Fix: point `REC_VU1`/`THREAD_VU1` at `EmuConfig` like x86.
+
+**7.8 bug #2 — compareState executed JIT mid-compile under W^X (`b7ae2fa7b`, `aVU.h`):** microVU runs
+its whole recursive compile inside one `BeginCodeWrite`/`EndCodeWrite` session → on Apple Silicon
+`pthread_jit_write_protect_np(0)` leaves the MAP_JIT region **writable but non-executable** for the
+duration. The block search (`search()`→`compareState`) runs mid-compile and *executed* the
+JIT-generated `compareStateF` → SIGBUS on the instruction fetch (both arg pointers were mapped &
+aligned — the tell-tale exec-permission fault). Fix: `compareState` is now a plain C++
+`__builtin_memcmp` of the 96-byte `microRegInfo` (compareStateF was just a 0-iff-equal test). This
+also fixed the identical crash on the **MTVU thread** (write-protect is per-thread), so MTVU works
+too and `THREAD_VU1` stays at full x86 parity (gated on `Speedhacks.vuThread`).
+
+**Debugging method (worked well):** boot under `lldb -b -o run -k '<cmds-on-crash>'`, re-sign the
+bundle with a `get-task-allow` entitlement first. For bug #1, a temporary `mVU_XGKICK_` size/tag log
+revealed the bit31; for bug #2, `memory region`/`p *$x0` showed the operands were valid → it was an
+exec-perm fault, not a bad pointer. Always re-run `pcsx2-postprocess-bundle` after a `pcsx2-qt` build
+before launching (else the duplicate-Qt SIGABRT masquerades as a VM crash).
 
 7.5b (`ddd15c67a`, `aVU_Lower.inl` NEW ≈1500 lines) ported all of x86 `microVU_Lower.inl`:
 VI ALU (IADD/IADDI/IADDIU/IAND/IOR/ISUB/ISUBIU), load/store (LQ/LQD/LQI, SQ/SQD/SQI, ILW/ILWR,
@@ -328,9 +358,19 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
   badBranch/evilBranch (`condEvilBranch`/`normJumpPass2`). The no-op XGKICK stubs were replaced by
   the real GIF-transfer path (now in Lower). condBranch's branch-value compare sign-extends
   (`mvuLdrsh16`) to match x86's 16-bit signed `xCMP(ptr16…)` for the IBLTZ-family conditions.
-- [ ] 7.8 **Wire selection + validate** — flip `CpuVU0/CpuVU1` to `CpuMicroVU0/1` on ARM64 in
-  `VMManager.cpp` (Init/Shutdown/Update/Clear); XGKICK→GIF path; MTVU thread. Test ladder:
-  BIOS → 2D → IOP-heavy → FFX (VU1-heavy 3D).
+- [x] 7.8 **Wire selection + validate** — microVU0/1 selected on ARM64; two real-execution bugs
+  found and fixed; BIOS + 2D + VU1-heavy 3D all boot & run.
+  - [x] Selection wired (`dcbdec813`): all four ARM64 `#else` branches mirror x86; MTVU thread
+    managed via recMicroVU1::Reserve/Shutdown (no manual vu1Thread.Open workaround).
+  - [x] Bug #1 fixed (`7fb86fcfa`): `REC_VU1`/`THREAD_VU1` track `EmuConfig` (was hardcoded false) —
+    XGKICK packet-size bit31/EOP misread → ~2 GB memcpy crash on first kick.
+  - [x] Bug #2 fixed (`b7ae2fa7b`): `compareState` is C++ `memcmp`, not executed JIT — fixes the
+    W^X SIGBUS (executing non-executable MAP_JIT mid-compile) on both the CPU and MTVU threads.
+  - [x] **BIOS** boots clean to the PAL DVD 3D logo + OSDSYS menu; 75s stable.
+  - [x] **2D game** — Odin Sphere boots to PAL game mode (no crash, 90s).
+  - [x] **FFX (VU1-heavy 3D)** — boots & runs 120s, single-threaded *and* with MTVU force-enabled.
+  - [ ] Deeper validation: visual correctness, longer soak, more titles (GTA:SA, GT, Gradius, Rayman),
+    IOP-heavy/PS1 titles, perf profiling. Pending hands-on play (headless runs only confirm no-crash).
 - [ ] 7.9 **Macro mode** (lowest priority) — port `microVU_Macro.inl` so the EE rec emits COP2/VU0
   macro ops natively instead of the Phase 5.3 inline-interp fallback. Optional perf polish.
 
