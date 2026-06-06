@@ -49,10 +49,9 @@ void setBranchA(mP, int x, int _x_)
 }
 
 //------------------------------------------------------------------
-// Implemented opcode handlers
+// Implemented opcode handlers (mVU_NOP + the full Upper ISA live in aVU_Upper.inl,
+// included before this file; the Lower ISA is still NOP/B-only until task 7.5b)
 //------------------------------------------------------------------
-
-mVUop(mVU_NOP) { pass2 { mVU.profiler.EmitOp(opNOP); } pass3 { mVUlog("NOP"); } }
 
 mVUop(mVU_B)
 {
@@ -119,8 +118,11 @@ mVUop(mVUunknown)
 }
 
 //------------------------------------------------------------------
-// Sub-dispatch declarations (only the ones routed to a real handler today)
+// Sub-dispatch declarations
 //------------------------------------------------------------------
+mVUop(mVU_UPPER_FD_00);
+mVUop(mVU_UPPER_FD_01);
+mVUop(mVU_UPPER_FD_10);
 mVUop(mVU_UPPER_FD_11);
 
 //------------------------------------------------------------------
@@ -164,33 +166,66 @@ static const Fnptr_mVUrecInst mVULOWER_OPCODE[128] = {
 };
 
 static const Fnptr_mVUrecInst mVU_UPPER_OPCODE[64] = {
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , mVU_UPPER_FD_11,   // 0x3f -> FD_11 sub-table (NOP)
+	mVU_ADDx   , mVU_ADDy   , mVU_ADDz   , mVU_ADDw,
+	mVU_SUBx   , mVU_SUBy   , mVU_SUBz   , mVU_SUBw,
+	mVU_MADDx  , mVU_MADDy  , mVU_MADDz  , mVU_MADDw,
+	mVU_MSUBx  , mVU_MSUBy  , mVU_MSUBz  , mVU_MSUBw,
+	mVU_MAXx   , mVU_MAXy   , mVU_MAXz   , mVU_MAXw,
+	mVU_MINIx  , mVU_MINIy  , mVU_MINIz  , mVU_MINIw,
+	mVU_MULx   , mVU_MULy   , mVU_MULz   , mVU_MULw,
+	mVU_MULq   , mVU_MAXi   , mVU_MULi   , mVU_MINIi,
+	mVU_ADDq   , mVU_MADDq  , mVU_ADDi   , mVU_MADDi,
+	mVU_SUBq   , mVU_MSUBq  , mVU_SUBi   , mVU_MSUBi,
+	mVU_ADD    , mVU_MADD   , mVU_MUL    , mVU_MAX,
+	mVU_SUB    , mVU_MSUB   , mVU_OPMSUB , mVU_MINI,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+	mVU_UPPER_FD_00, mVU_UPPER_FD_01, mVU_UPPER_FD_10, mVU_UPPER_FD_11,
+};
+
+static const Fnptr_mVUrecInst mVU_UPPER_FD_00_TABLE[32] = {
+	mVU_ADDAx  , mVU_SUBAx  , mVU_MADDAx , mVU_MSUBAx,
+	mVU_ITOF0  , mVU_FTOI0  , mVU_MULAx  , mVU_MULAq,
+	mVU_ADDAq  , mVU_SUBAq  , mVU_ADDA   , mVU_SUBA,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+};
+
+static const Fnptr_mVUrecInst mVU_UPPER_FD_01_TABLE[32] = {
+	mVU_ADDAy  , mVU_SUBAy  , mVU_MADDAy , mVU_MSUBAy,
+	mVU_ITOF4  , mVU_FTOI4  , mVU_MULAy  , mVU_ABS,
+	mVU_MADDAq , mVU_MSUBAq , mVU_MADDA  , mVU_MSUBA,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+};
+
+static const Fnptr_mVUrecInst mVU_UPPER_FD_10_TABLE[32] = {
+	mVU_ADDAz  , mVU_SUBAz  , mVU_MADDAz , mVU_MSUBAz,
+	mVU_ITOF12 , mVU_FTOI12 , mVU_MULAz  , mVU_MULAi,
+	mVU_ADDAi  , mVU_SUBAi  , mVU_MULA   , mVU_OPMULA,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
 };
 
 static const Fnptr_mVUrecInst mVU_UPPER_FD_11_TABLE[32] = {
-	U         , U         , U         , U,
-	U         , U         , U         , U,
-	U         , U         , U         , mVU_NOP,   // index 11: NOP
-	U         , U         , U         , U,
-	U         , U         , U         , U,
-	U         , U         , U         , U,
-	U         , U         , U         , U,
-	U         , U         , U         , U,
+	mVU_ADDAw  , mVU_SUBAw  , mVU_MADDAw , mVU_MSUBAw,
+	mVU_ITOF15 , mVU_FTOI15 , mVU_MULAw  , mVU_CLIP,
+	mVU_MADDAi , mVU_MSUBAi , U          , mVU_NOP,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
+	U          , U          , U          , U,
 };
 
 #undef U
@@ -198,6 +233,9 @@ static const Fnptr_mVUrecInst mVU_UPPER_FD_11_TABLE[32] = {
 //------------------------------------------------------------------
 // Table dispatch functions
 //------------------------------------------------------------------
+mVUop(mVU_UPPER_FD_00) { mVU_UPPER_FD_00_TABLE[((mVU.code >> 6) & 0x1f)](mX); }
+mVUop(mVU_UPPER_FD_01) { mVU_UPPER_FD_01_TABLE[((mVU.code >> 6) & 0x1f)](mX); }
+mVUop(mVU_UPPER_FD_10) { mVU_UPPER_FD_10_TABLE[((mVU.code >> 6) & 0x1f)](mX); }
 mVUop(mVU_UPPER_FD_11) { mVU_UPPER_FD_11_TABLE[((mVU.code >> 6) & 0x1f)](mX); }
 mVUop(mVUopU)          { mVU_UPPER_OPCODE     [ (mVU.code & 0x3f) ](mX); } // Upper Opcode
 mVUop(mVUopL)          { mVULOWER_OPCODE      [ (mVU.code >>  25) ](mX); } // Lower Opcode

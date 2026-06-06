@@ -98,9 +98,15 @@ static void mVUcacheProg(microVU& mVU, microProgram& prog);
 // Lower load/store handlers.
 #include "arm64/aVU_Misc.inl"
 
-// Opcode dispatch tables (Tables/Compile big-bang) — minimal mVUopU/mVUopL
-// (NOP + B/BAL wired, every other slot mVUunknown). Included BEFORE aVU_Flags.inl
-// because the flag read-scan (_mVUflagPass) calls mVUopU/mVUopL.
+// Upper (FMAC float-vector) opcode handlers (task 7.5a) — the full Upper ISA
+// (ADD/SUB/MUL/MADD/MSUB + ACC, MAX/MINI, FTOI/ITOF, ABS, OPMULA/OPMSUB, CLIP,
+// NOP) + mVUupdateFlags. Included BEFORE aVU_Tables.inl, which wires these
+// handlers into mVU_UPPER_OPCODE / the FD_xx sub-tables.
+#include "arm64/aVU_Upper.inl"
+
+// Opcode dispatch tables (Tables/Compile big-bang) — mVUopU now dispatches the
+// full Upper ISA; mVUopL is still NOP/B/BAL-only until task 7.5b. Included BEFORE
+// aVU_Flags.inl because the flag read-scan (_mVUflagPass) calls mVUopU/mVUopL.
 #include "arm64/aVU_Tables.inl"
 
 // Status/Mac/Clip flag pipeline (task 7.5/7.6) — flag-instance analysis +
@@ -1400,23 +1406,6 @@ static_assert(alignof(microBlock) == 16, "microBlock must stay 16-byte aligned")
 {
 	microVU& mVU = microVU0;
 	mVUaddrFix(mVU, a64::x9, a64::x10);
-}
-
-// Force the custom SSE arithmetic helpers (aVU_Misc.inl, task 7.5a) to be compiled.
-// They become live once the Upper FMAC handlers (aVU_Upper.inl) reference the
-// SSE_PS/SSE_SS function-pointer arrays; until then this odr-uses them. Never called.
-[[maybe_unused]] static void mVUsseCheck()
-{
-	microVU& mVU = microVU0;
-	const a64::VRegister a = a64::VRegister(1, 128);
-	const a64::VRegister b = a64::VRegister(2, 128);
-	SSE_ADDPS(mVU, a, b);  SSE_ADDSS(mVU, a, b);
-	SSE_SUBPS(mVU, a, b);  SSE_SUBSS(mVU, a, b);
-	SSE_MULPS(mVU, a, b);  SSE_MULSS(mVU, a, b);
-	SSE_DIVPS(mVU, a, b);  SSE_DIVSS(mVU, a, b);
-	SSE_MAXPS(mVU, a, b);  SSE_MAXSS(mVU, a, b);
-	SSE_MINPS(mVU, a, b);  SSE_MINSS(mVU, a, b);
-	SSE_ADD2PS(mVU, a, b); SSE_ADD2SS(mVU, a, b);
 }
 
 // (mVUcompileEmitCheck / mVUtablesCheck removed: the compile helpers + the
