@@ -359,3 +359,149 @@ __fi void mVUsetupFlags(mV, microFlagCycles& mFC)
 		armAsm->Str(xmmT2.Q(), a64::MemOperand(RSCRATCHADDR));
 	}
 }
+
+//------------------------------------------------------------------
+// Flag read-scan (arch-neutral — calls mVUopU/mVUopL in pass4 flag mode)
+//------------------------------------------------------------------
+// Ported verbatim from microVU_Flags.inl. These scan the *next* block's first ~4
+// instructions to decide whether the current block must produce exact flag values.
+// They make no emitter calls; mVUopU(mVU,3)/mVUopL(mVU,3) run the pass4 analysis on
+// the opcode tables (aVU_Tables.inl), so they could only port once those existed.
+
+#define shortBranch() \
+	{ \
+		if ((branch == 3) || (branch == 4)) /*Branches*/ \
+		{ \
+			_mVUflagPass(mVU, aBranchAddr, sCount + found, found, v); \
+			if (branch == 3) /*Non-conditional Branch*/ \
+				break; \
+			branch = 0; \
+		} \
+		else if (branch == 5) /*JR/JARL*/ \
+		{ \
+			if (sCount + found < 4) \
+				mVUregs.needExactMatch |= 7; \
+			break; \
+		} \
+		else /*E-Bit End*/ \
+			break; \
+	}
+
+// Scan through instructions and check if flags are read (FSxxx, FMxxx, FCxxx opcodes)
+void _mVUflagPass(mV, u32 startPC, u32 sCount, u32 found, std::vector<u32>& v)
+{
+
+	for (u32 i = 0; i < v.size(); i++)
+	{
+		if (v[i] == startPC)
+			return; // Prevent infinite recursion
+	}
+	v.push_back(startPC);
+
+	int oldPC = iPC;
+	int oldBranch = mVUbranch;
+	int aBranchAddr = 0;
+	iPC = startPC / 4;
+	mVUbranch = 0;
+	for (int branch = 0; sCount < 4; sCount += found)
+	{
+		mVUregs.needExactMatch &= 7;
+		incPC(1);
+		mVUopU(mVU, 3);
+		found |= (mVUregs.needExactMatch & 8) >> 3;
+		mVUregs.needExactMatch &= 7;
+		if (curI & _Ebit_)
+		{
+			branch = 1;
+		}
+		if (curI & _Tbit_)
+		{
+			branch = 6;
+		}
+		if ((curI & _Dbit_) && doDBitHandling)
+		{
+			branch = 6;
+		}
+		if (!(curI & _Ibit_))
+		{
+			incPC(-1);
+			mVUopL(mVU, 3);
+			incPC(1);
+		}
+
+		if (branch >= 2)
+		{
+			shortBranch();
+		}
+		else if (branch == 1)
+		{
+			branch = 2;
+		}
+		if (mVUbranch)
+		{
+			branch = ((mVUbranch > 8) ? (5) : ((mVUbranch < 3) ? 3 : 4));
+			incPC(-1);
+			aBranchAddr = branchAddr(mVU);
+			incPC(1);
+			mVUbranch = 0;
+		}
+		incPC(1);
+		if ((mVUregs.needExactMatch & 7) == 7)
+			break;
+	}
+	iPC = oldPC;
+	mVUbranch = oldBranch;
+	mVUregs.needExactMatch &= 7;
+	setCode();
+}
+
+void mVUflagPass(mV, u32 startPC, u32 sCount = 0, u32 found = 0)
+{
+	std::vector<u32> v;
+	_mVUflagPass(mVU, startPC, sCount, found, v);
+}
+
+// Checks if the first ~4 instructions of a block will read flags
+void mVUsetFlagInfo(mV)
+{
+	if (noFlagOpts)
+	{
+		mVUregs.needExactMatch = 0x7;
+		mVUregs.flagInfo = 0x0;
+		return;
+	}
+	if (mVUbranch <= 2) // B/BAL
+	{
+		incPC(-1);
+		mVUflagPass(mVU, branchAddr(mVU));
+		incPC(1);
+
+		mVUregs.needExactMatch &= 0x7;
+	}
+	else if (mVUbranch <= 8) // Conditional Branch
+	{
+		incPC(-1); // Branch Taken
+		mVUflagPass(mVU, branchAddr(mVU));
+		int backupFlagInfo = mVUregs.needExactMatch;
+		mVUregs.needExactMatch = 0;
+
+		incPC(4); // Branch Not Taken
+		mVUflagPass(mVU, xPC);
+		incPC(-3);
+
+		mVUregs.needExactMatch |= backupFlagInfo;
+		mVUregs.needExactMatch &= 0x7;
+	}
+	else // JR/JALR
+	{
+		if (!doConstProp || !mVUlow.constJump.isValid)
+		{
+			mVUregs.needExactMatch |= 0x7;
+		}
+		else
+		{
+			mVUflagPass(mVU, (mVUlow.constJump.regValue * 8) & (mVU.microMemSize - 8));
+		}
+		mVUregs.needExactMatch &= 0x7;
+	}
+}
