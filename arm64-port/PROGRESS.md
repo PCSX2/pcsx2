@@ -8,6 +8,39 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 7 (VU recompilers / microVU) — task 7.3 part 2 (pass-1 pipeline/cycle/range helpers → `aVU.cpp`) DONE.**
+
+`pcsx2/arm64/aVU.cpp` now holds the ARM64 clone of the **arch-neutral** helpers from x86
+`microVU_Compile.inl`: `mVUsetupRange` (+`mVUcheckIsSame`), the warning/early-exit bookkeeping
+(`mVUcheckBadOp`/`branchWarning`/`eBitPass1`/`eBitWarning`), and the per-instruction cycle/pipeline
+accounting (`mVUincCycles`/`mVUsetCycles`/`mVUoptimizePipeState` + `optimizeReg`/`calcCycles`/
+`tCycles`/`incP`/`incQ`/`cmpVFregs`). All operate purely on the IR (`microOp`/`microIR`/
+`microRegInfo`) + the program cache and make **zero emitter calls**, so they ported near-verbatim
+onto the `aVU_Misc.h` macro layer. `mVUcompileHelpersCheck` (never called) odr-uses the non-inline
+ones so their bodies compile now; the inline (`__fi`/`__ri`) ones get inlined into it.
+
+**Deliberately NOT ported** (all emit-coupled → the 7.4 compile driver): `doUpperOp`/`doLowerOp`/
+`doSwapOp`/`doIbit`/`mVUexecuteInstruction`, `mVUtestCycles`, `mVUDoDBit`/`mVUDoTBit`,
+`mvuPreloadRegisters`, `handleBadOp`, `mVUdebugPrintBlocks`, the first-pass init `startLoop`/
+`mVUinitConstValues`/`mVUinitFirstPass` (tied to the block-emit lifecycle), and `mVUcompile` itself.
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 2/2 (common + core). Pure infrastructure; microVU
+stays **unselected** on ARM64 (VMManager pins `CpuIntVU0/1`). Commit `30ee0b64b`.
+
+**Next:** Task 7.4 — port the **emit-coupled compile driver** from `microVU_Compile.inl`
+(`mVUcompile` + `mVUexecuteInstruction`/`doUpperOp`/`doLowerOp`/`doSwapOp`/`doIbit`, first-pass init
+`mVUinitFirstPass`/`startLoop`/`mVUinitConstValues`, `mVUtestCycles`, the T/D-bit handlers, and the
+`mVUentryGet`/`mVUblockFetch` block-fetch entry points that replace the current `pxFailRel` stubs).
+This is the first task that emits real per-block VIXL code — its own `armStartBlock`/`armEndBlock`
+per block + the **icache flush before branching into freshly-emitted code** (the two things 7.2d
+flagged) — and it depends on the per-op `pass1`/`pass2` handlers + `microVU_Tables.inl` (7.5), so
+7.4 and 7.5 likely interleave: bring the driver up against a minimal op set (NOP/B) first, then fill
+in `mVUopU`/`mVUopL` + the opcode tables.
+
+---
+
+### Earlier focus (kept for context)
+
 **Phase 7 (VU recompilers / microVU) — task 7.3 part 1 (pass-1 analysis → `aVU_Analyze.inl`) DONE.**
 
 `pcsx2/arm64/aVU_Analyze.inl` is the **near-verbatim** ARM64 clone of x86
@@ -843,15 +876,17 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     now does the real emitter setup (`armSetAsmPtr(mVU.cache)` + one start/end block) and sets
     `codeStart`/`codePtr` past the dispatchers. Unselected ⇒ compiled but not executed yet.
     Builds arm64; unittests 2/2. (`a0d93ed5c`)
-- [~] 7.3 **Analysis pass** (arch-neutral, near-verbatim copy) — `microVU_Analyze.inl` +
-  `microVU_Tables.inl` + the pipeline/flag analysis helpers in `microVU_Compile.inl`. Operates on
-  `microOp`/`microIR`; no emitter calls, so this should port almost unchanged.
+- [x] 7.3 **Analysis pass** (arch-neutral, near-verbatim copy) — `microVU_Analyze.inl` +
+  the pipeline/flag analysis helpers in `microVU_Compile.inl`. Operates on `microOp`/`microIR`;
+  no emitter calls, so it ported almost unchanged. (`microVU_Tables.inl` moved to 7.5.)
   - [x] `microVU_Analyze.inl` → `pcsx2/arm64/aVU_Analyze.inl` (pass-1 analysis) + the arch-neutral
     macro layer `pcsx2/arm64/aVU_Misc.h`. Compile-exercised via `mVUanalyzeCompileCheck`. Builds
     arm64; unittests 2/2. (`863de3e77`)
-  - [ ] Pipeline/cycle/flag-analysis helpers from `microVU_Compile.inl` (`mVUsetupRange`/
-    `mVUincCycles`/`mVUsetCycles`/`mVUoptimizePipeState`/`eBitPass1`/`branchWarning`/
-    `mVUcheckBadOp`) — arch-neutral; come over with the 7.4 compile driver.
+  - [x] Pipeline/cycle/flag-analysis helpers from `microVU_Compile.inl` (`mVUsetupRange`/
+    `mVUincCycles`/`mVUsetCycles`/`mVUoptimizePipeState`/`eBitPass1`/`branchWarning`/`eBitWarning`/
+    `mVUcheckBadOp` + `optimizeReg`/`calcCycles`/`tCycles`/`incP`/`incQ`/`cmpVFregs`/`mVUcheckIsSame`)
+    → `pcsx2/arm64/aVU.cpp`. Arch-neutral; compile-exercised via `mVUcompileHelpersCheck`. Builds
+    arm64; unittests 2/2. (`30ee0b64b`)
   - [ ] `microVU_Tables.inl` — MOVED to 7.5 (the dispatch tables reference the per-op emit
     handlers, which don't exist until the VIXL emission task).
 - [ ] 7.4 **Compile driver** — port `microVU_Compile.inl` (`mVUcompile`/`mVUblockFetch`/block

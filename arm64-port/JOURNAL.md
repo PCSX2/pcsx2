@@ -28,6 +28,58 @@
 
 ---
 
+## 2026-06-06 — Phase 7.3 (part 2): pass-1 pipeline/cycle/range helpers in aVU.cpp
+
+**Goal:** Task 7.3 part 2 — port the arch-neutral pipeline/cycle/range-analysis helpers from x86
+`microVU_Compile.inl` into `aVU.cpp`, leaving the emit-coupled compile driver for 7.4. Pure infra;
+microVU stays unselected.
+
+**What changed:**
+- `pcsx2/arm64/aVU.cpp` — added a new "Pass-1 pipeline / cycle / range helpers" section (after the
+  `aVU_Analyze.inl` include) cloning the arch-neutral helpers from `microVU_Compile.inl`:
+  - `mVUcheckIsSame` (re-cache on guest-memory change) + `mVUsetupRange` (program PC-range setup).
+  - Warning/early-exit bookkeeping: `mVUcheckBadOp`, `branchWarning`, `eBitPass1`, `eBitWarning`.
+  - Cycle/pipeline accounting: `mVUincCycles`, `mVUsetCycles`, `mVUoptimizePipeState`, and the
+    small inline helpers `optimizeReg`/`calcCycles`/`tCycles`/`incP`/`incQ`/`cmpVFregs`.
+  - `mVUcompileHelpersCheck` (never called) odr-uses every new helper so the bodies compile now.
+- Commit: `30ee0b64b` ARM64: microVU Phase 7.3 part 2 — pass-1 pipeline/cycle/range helpers (aVU.cpp)
+
+**Decisions & rationale:**
+- **Ported near-verbatim** (only header comments added). Like the analysis pass these operate purely
+  on the IR (`microOp`/`microIR`/`microRegInfo`) + the program cache via the `aVU_Misc.h` macros and
+  make zero emitter calls — keeping them byte-identical to x86 means ground-truth semantics carry
+  over and future x86 fixes are trivial to mirror. All the struct fields they touch (`viBackUp`,
+  `xgkick`/`xgkickcycles`, `doDivFlag`/`doXGKICK`/`XGKICKPC`, `blockType`, `VFreg[]`, …) already
+  exist in the 7.2a-cloned structs, so no edits were needed.
+- **Placed in `aVU.cpp`, not a new `.inl`.** They're driven only by `mVUcompile` (same TU, task
+  7.4), and `mVUcheckIsSame`/`mVUsetupRange` already depend on the forward-declared `mVUcacheProg`
+  /`doWholeProgCompare` that live here. Grouped right after the analysis include so all pass-1
+  bookkeeping sits together.
+- **Drew the 7.3/7.4 line at "makes an emitter call".** Everything in `microVU_Compile.inl` that
+  calls VIXL or the regAlloc (`doUpperOp`/`doLowerOp`/`doSwapOp`/`doIbit`/`mVUexecuteInstruction`,
+  `mVUtestCycles`, `mVUDoDBit`/`mVUDoTBit`, `mvuPreloadRegisters`, `handleBadOp`,
+  `mVUdebugPrintBlocks`) stays out. Also deferred the first-pass init (`startLoop`/
+  `mVUinitConstValues`/`mVUinitFirstPass`) even though it's emitter-free: `mVUinitFirstPass` wires
+  `mVUblock.codeStart`/the block-manager `add`, i.e. it's part of the block-emit lifecycle the 7.4
+  driver owns, so it comes over with `mVUcompile` to keep that lifecycle in one commit.
+- **`mVUcompileHelpersCheck` mirrors `mVUanalyzeCompileCheck`/`mVUallocCompileCheck`.** The
+  non-inline helpers have external linkage (codegen'd regardless), but the file's convention is to
+  defensively odr-use uncalled infra so any porting error surfaces now; the inline `__fi`/`__ri`
+  ones get inlined into the check. It's never called (touches null `mVU.prog.cur`).
+
+**Blockers / open questions:** None. Still unselected ⇒ helpers are compiled (via the check) but not
+yet driven; first real exercise is when the 7.4 driver's `mVUcompile` calls them.
+
+**Next step:** Task 7.4 — port the emit-coupled compile driver from `microVU_Compile.inl`
+(`mVUcompile` + `mVUexecuteInstruction`/`doUpperOp`/`doLowerOp`/`doSwapOp`/`doIbit`, first-pass init
+`mVUinitFirstPass`/`startLoop`/`mVUinitConstValues`, `mVUtestCycles`, T/D-bit handlers, and
+`mVUentryGet`/`mVUblockFetch` replacing the `pxFailRel` stubs). First task to emit real per-block
+VIXL (own `armStartBlock`/`armEndBlock` + icache flush before branching into fresh code); interleave
+with 7.5 (per-op `mVUopU`/`mVUopL` handlers + `microVU_Tables.inl`) — bring up against a minimal
+NOP/B op set first.
+
+---
+
 ## 2026-06-06 — Phase 7.3 (part 1): pass-1 analysis in aVU_Analyze.inl
 
 **Goal:** Task 7.3 — port the arch-neutral pass-1 analysis (`microVU_Analyze.inl`) onto the
