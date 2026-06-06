@@ -21,11 +21,10 @@
 //
 // writeVIBackup (the VI allocator member) is already defined inline in aVU_IR.h.
 //
-// NOT ported here (deferred): the P/Q register allocators (getPreg/getQreg/
-// writeQreg) depend on mVUunpack_xyzw — the NEON lane-unpack from
-// microVU_Misc.inl — which comes over with the Misc emit port. They are used
-// only by the Upper/Lower opcode handlers (task 7.5), so deferring them keeps
-// this slice buildable.
+// The P/Q register allocators (getPreg/getQreg/writeQreg) live at the bottom of
+// this file. They use mVUunpack_xyzw — the NEON lane-broadcast from aVU_IR.h
+// (x86 microVU_Misc.inl) — and the PQ latency NEON reg mVU_xmmPQ (v24). They are
+// used only by the Upper/Lower opcode handlers (task 7.5).
 
 //------------------------------------------------------------------
 // Flag Allocators
@@ -134,4 +133,29 @@ __fi void mVUallocCFLAGb(mV, const a64::Register& reg, int fInstance)
 	else
 		armMoveAddressToReg(RSCRATCHADDR, &mVU.regs().VI[REG_CLIP_FLAG].UL); // macroVU
 	armAsm->Str(reg, a64::MemOperand(RSCRATCHADDR));
+}
+
+//------------------------------------------------------------------
+// P/Q Reg Allocators
+//------------------------------------------------------------------
+// The PQ-latency pair lives in one NEON reg (mVU_xmmPQ = v24, x86: xmmPQ) with
+// the x86 lane layout: Q in lanes 0/1 (instance 0/1), P in lanes 2/3 (instance
+// 0/1). Reads broadcast the live lane out via mVUunpack_xyzw; writeQreg inserts
+// lane0 of the source into the Q slot for the requested instance.
+
+__fi void getPreg(mV, const a64::VRegister& reg)
+{
+	mVUunpack_xyzw(reg, mVU_xmmPQ, (2 + mVUinfo.readP));
+}
+
+__fi void getQreg(const a64::VRegister& reg, int qInstance)
+{
+	mVUunpack_xyzw(reg, mVU_xmmPQ, qInstance);
+}
+
+__ri void writeQreg(const a64::VRegister& reg, int qInstance)
+{
+	// x86: qInstance ? xINSERTPS(xmmPQ, reg, NDX(0,1,0)) : xMOVSS(xmmPQ, reg).
+	// Both copy the source's lane0 into Q lane qInstance, leaving the rest of PQ.
+	armAsm->Ins(mVU_xmmPQ.V4S(), qInstance, reg.V4S(), 0);
 }

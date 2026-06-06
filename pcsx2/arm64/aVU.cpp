@@ -1349,4 +1349,9 @@ static_assert(alignof(microBlock) == 16, "microBlock must stay 16-byte aligned")
 	mVUallocMFLAGb(mVU, gprT1, 1);
 	mVUallocCFLAGa(mVU, gprT1, 1);
 	mVUallocCFLAGb(mVU, gprT1, 1);
+
+	const a64::VRegister t = a64::VRegister(0, 128);
+	getPreg(mVU, t);       // uses mVUinfo.readP (mVU in scope)
+	getQreg(t, 0);
+	writeQreg(t, 1);
 }

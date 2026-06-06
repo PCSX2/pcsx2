@@ -95,6 +95,15 @@ static inline bool mVU_isSS(int xyzw) // exactly one subvector selected
 	return (xyzw == 8) || (xyzw == 4) || (xyzw == 2) || (xyzw == 1);
 }
 
+// Broadcast a single lane of srcreg across all 4 lanes of dstreg (x86:
+// xPSHUF.D with a constant splat pattern — 0x00=XXXX, 0x55=YYYY, 0xaa=ZZZZ,
+// 0xff=WWWW). The unpack index 0..3 selects lane X/Y/Z/W directly, so NEON Dup
+// from that lane is a one-to-one translation.
+static inline void mVUunpack_xyzw(const a64::VRegister& dstreg, const a64::VRegister& srcreg, int xyzw)
+{
+	armAsm->Dup(dstreg.V4S(), srcreg.V4S(), xyzw & 3);
+}
+
 // Load VF/ACC reg bytes at `off` (from RVUSTATE) into `reg`. Single-subvector
 // masks load that one 32-bit lane into lane0 (zero-extending the rest, like
 // xMOVSSZX); anything else loads the full 128 bits.
