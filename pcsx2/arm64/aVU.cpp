@@ -84,6 +84,13 @@ static void mVUcacheProg(microVU& mVU, microProgram& prog);
 // are type-checked and codegen'd now.
 #include "arm64/aVU_Analyze.inl"
 
+// Pass-2 flag allocators (task 7.4/7.5) — the emit-coupled getFlagReg + the
+// Status/Mac/Clip flag normalize/denormalize helpers. These DO make VIXL calls
+// (the first emit-backend slice); mVUallocFlagCheck below odr-uses them so the
+// bodies are compiled now even though their drivers (mVUsetupFlags/Branch/Lower)
+// are later 7.5 slices.
+#include "arm64/aVU_Alloc.inl"
+
 //------------------------------------------------------------------
 // Pass-1 pipeline / cycle / range helpers (task 7.3 part 2)
 //------------------------------------------------------------------
@@ -1320,4 +1327,26 @@ static_assert(alignof(microBlock) == 16, "microBlock must stay 16-byte aligned")
 	startLoop(mVU);
 	mVUinitConstValues(mVU);
 	mVUinitFirstPass(mVU, (uptr)&mVU.prog.lpState, nullptr);
+}
+
+// Force the Pass-2 flag allocators (aVU_Alloc.inl) to be compiled. These are the
+// first emit-backend helpers that actually call VIXL; their drivers
+// (mVUsetupFlags/mVUdivSet, the Branch/Lower opcode handlers) are later 7.5
+// slices, so without an explicit odr-use their VIXL bodies — and any emission
+// error — would never be instantiated. Never called: it emits into no open
+// assembler, it exists only to type-check + codegen the bodies.
+[[maybe_unused]] static void mVUallocFlagCheck()
+{
+	microVU& mVU = microVU0;
+	(void)getFlagReg(0);
+	setBitSFLAG(gprT1, gprT2, 0x0f00, 0x0001);
+	setBitFSEQ(gprT1, 0x0f00);
+	mVUallocSFLAGa(gprT1, 1);
+	mVUallocSFLAGb(gprT1, 1);
+	mVUallocSFLAGc(gprT1, gprT2, 1);
+	mVUallocSFLAGd(&mVU.divFlag, gprT1, gprT2, getFlagReg(0));
+	mVUallocMFLAGa(mVU, gprT1, 1);
+	mVUallocMFLAGb(mVU, gprT1, 1);
+	mVUallocCFLAGa(mVU, gprT1, 1);
+	mVUallocCFLAGb(mVU, gprT1, 1);
 }

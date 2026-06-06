@@ -62,6 +62,16 @@ static constexpr int mVU_F0 = 23, mVU_F1 = 24, mVU_F2 = 25, mVU_F3 = 26;
 #define RVUSTATE a64::x19 // base ptr = &vuRegs[index]
 #define RVUADDR a64::x17  // transient address scratch
 
+// Named host registers for the emit layer (x86: microVU_Misc.h #defines gprT1..
+// /gprF0..). VIXL predefined W-register objects matching the index constants
+// above; getFlagReg() (aVU_Alloc.inl) indexes gprF0..gprF3.
+#define gprT1 a64::w9  // emit scratch temp
+#define gprT2 a64::w10 // emit scratch temp
+#define gprF0 a64::w23 // Status flag instance 0
+#define gprF1 a64::w24 // Status flag instance 1
+#define gprF2 a64::w25 // Status flag instance 2
+#define gprF3 a64::w26 // Status flag instance 3
+
 // PQ latency NEON register.
 static const a64::VRegister mVU_xmmPQ = a64::VRegister(24, 128);
 
