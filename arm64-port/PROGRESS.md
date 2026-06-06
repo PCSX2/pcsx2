@@ -39,11 +39,10 @@ entries only (`mVUexecute` wraps `mVUsearchProg`; `mVUcompileJIT` wraps its sear
 `mVUcompile`/`normBranchCompile`/`condBranch` calls append into that one open stream.
 
 **⚠ 7.8 validation watch-items (compiled but UNVERIFIED at runtime):**
-1. **Conditional-branch signed-16 compare.** x86 condBranch does `xCMP(ptr16[&mVU.branch], 0)` — a
-   *16-bit signed* compare. The ported `condBranch` (aVU_Branch.inl) uses `mvuLdrh16` (zero-extend
-   16→32) + `Cmp(.W, 0)`, so the signed conditions (IBLTZ/IBGEZ/IBGTZ/IBLEZ → ge/lt/gt/le) treat the
-   value as non-negative. IBEQ/IBNE (eq/ne) are unaffected. Likely needs `mvuLdrh16`→sign-extend
-   (Ldrsh) when bring-up exercises IBLTZ-family branches.
+1. ✅ FIXED (`condBranch` signed-16 compare). x86 condBranch does a *16-bit signed* `xCMP(ptr16
+   [&mVU.branch], 0)`; the helper now sign-extends (`mvuLdrh16`→`mvuLdrsh16`, `Ldrsh`) so the signed
+   conditions (IBLTZ/IBGEZ/IBGTZ/IBLEZ → lt/ge/gt/le) see a bit15-set VI value as negative. eq/ne
+   (IBEQ/IBNE) unaffected. Still UNVERIFIED at runtime, but now semantically correct.
 2. The whole Lower NEON math (EFU polynomials, MIN/MAX, DIV flag logic, CLIP) — first runtime test.
 
 ---
@@ -327,8 +326,8 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
   `normJumpCompile`/`normBranch`/`normJump`/`condBranch`. **Op handlers** (`ddd15c67a`, in
   `aVU_Lower.inl`): B/BAL + the conditional IBEQ/IBGEZ/IBGTZ/IBLEZ/IBLTZ/IBNE + JR/JALR +
   badBranch/evilBranch (`condEvilBranch`/`normJumpPass2`). The no-op XGKICK stubs were replaced by
-  the real GIF-transfer path (now in Lower). ⚠ condBranch's 16-bit *signed* compare is currently a
-  zero-extend — see CURRENT FOCUS watch-item #1 (only affects IBLTZ-family, validate at 7.8).
+  the real GIF-transfer path (now in Lower). condBranch's branch-value compare sign-extends
+  (`mvuLdrsh16`) to match x86's 16-bit signed `xCMP(ptr16…)` for the IBLTZ-family conditions.
 - [ ] 7.8 **Wire selection + validate** — flip `CpuVU0/CpuVU1` to `CpuMicroVU0/1` on ARM64 in
   `VMManager.cpp` (Init/Shutdown/Update/Clear); XGKICK→GIF path; MTVU thread. Test ladder:
   BIOS → 2D → IOP-heavy → FFX (VU1-heavy 3D).
