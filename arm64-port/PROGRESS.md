@@ -8,11 +8,22 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 7 (VU recompilers / microVU) — 7.8 IS LIVE AND VALIDATED on real games. microVU0/1 is now
-the selected VU provider on ARM64 (`CpuVU0/1 = EnableVU0/1 ? CpuMicroVU0/1 : CpuIntVU0/1`). After
-wiring, two real-execution bugs were found and fixed; BIOS, a 2D game (Odin Sphere), and a VU1-heavy
-3D game (Final Fantasy X) all boot and run. Next: continue 7.8 — deeper soak/perf on more titles,
-then 7.9 (macro mode) / Phase 8 polish. builds arm64, unittests 2/2.**
+**Phase 7 (VU recompilers / microVU) — 7.8 SELECTED; CRASHES FIXED; now a microVU1 CORRECTNESS
+regression under investigation. microVU0/1 is the selected VU provider on ARM64. Three crash bugs
+fixed (XGKICK packet-size, compareState W^X, MTVU via the same W^X fix) so BIOS/2D/FFX no longer
+crash. BUT rendering is wrong: 2D games (Odin Sphere, Rayman 3) boot to a BLACK SCREEN and FFX
+renders with artifacts. Attributed to microVU1 (game renders correctly with VU1 recompiler OFF /
+interpreter; VU0 micro is fine). Built an env-gated shadow differential (MVU_DIFF, `fb00e747b`) that
+runs the interpreter as the real VU1 and microVU1 as a shadow, comparing VF/VI/ACC/Q/Mem. Findings:
+microVU1 math produces huge-negative values that clamp to -FLT_MAX (0xff7fffff) where the interp has
+small/zero, and the Q register LAGS the interpreter by exactly one DIV (stale Q → wrong perspective
+divide → collapsed geometry). Root opcode not yet isolated (math is in dynamically-uploaded
+subroutines, so linear disasm can't reach it). Next: per-instruction localization (e.g. drive the
+diff at block granularity, or trap the specific MULq/DIV), then fix. builds arm64, unittests 2/2.**
+
+**How to run the differential:** `MVU_DIFF=1 PCSX2.app/Contents/MacOS/PCSX2 -batch -fastboot <iso>` —
+grep emulog for `MVU_DIFF @pc=...`. The game stays playable (interp drives); the log shows where
+microVU1 diverges. MVU_DIFF auto-forces MTVU off (LoadCoreSettings) so VU1 runs through the hook.
 
 **7.8 wiring (`dcbdec813`, `VMManager.cpp`):** the four ARM64 `#else` branches mirror x86 —
 `InitializeCPUProviders` reserves `CpuMicroVU0/1` (recMicroVU1::Reserve opens vu1Thread, so the old
@@ -366,11 +377,12 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     XGKICK packet-size bit31/EOP misread → ~2 GB memcpy crash on first kick.
   - [x] Bug #2 fixed (`b7ae2fa7b`): `compareState` is C++ `memcmp`, not executed JIT — fixes the
     W^X SIGBUS (executing non-executable MAP_JIT mid-compile) on both the CPU and MTVU threads.
-  - [x] **BIOS** boots clean to the PAL DVD 3D logo + OSDSYS menu; 75s stable.
-  - [x] **2D game** — Odin Sphere boots to PAL game mode (no crash, 90s).
-  - [x] **FFX (VU1-heavy 3D)** — boots & runs 120s, single-threaded *and* with MTVU force-enabled.
-  - [ ] Deeper validation: visual correctness, longer soak, more titles (GTA:SA, GT, Gradius, Rayman),
-    IOP-heavy/PS1 titles, perf profiling. Pending hands-on play (headless runs only confirm no-crash).
+  - [x] **No crashes** — BIOS, Odin Sphere (2D), Rayman 3 (2D), FFX (3D) all boot without crashing.
+  - [!] **Rendering is WRONG (microVU1 correctness)** — 2D games black-screen, FFX has artifacts.
+    Attributed to microVU1 (correct with VU1 rec off). Bug #3 fixes only got rid of the *crashes*.
+  - [~] Built `MVU_DIFF` shadow differential (`fb00e747b`) — localizes to VU1 math: -FLT_MAX overflow
+    clamps + Q-register lag-by-one-DIV. Root opcode not yet isolated.
+  - [ ] Isolate the diverging op (per-instruction diff), fix it, then re-validate the test ladder.
 - [ ] 7.9 **Macro mode** (lowest priority) — port `microVU_Macro.inl` so the EE rec emits COP2/VU0
   macro ops natively instead of the Phase 5.3 inline-interp fallback. Optional perf polish.
 

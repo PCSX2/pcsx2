@@ -28,6 +28,44 @@
 
 ---
 
+## 2026-06-06 — Phase 7.8: real-game testing — 3 crash fixes, then a microVU1 correctness regression
+
+> NOTE: supersedes the "BIOS/2D/FFX run" framing of the entry below — those games BOOT without
+> crashing but render WRONG (2D black, FFX artifacts). That's a microVU1 correctness bug, separate
+> from the crashes.
+
+**Goal:** Boot real games on microVU and debug the crashes/wrong output the user reported.
+
+**What changed:**
+- `Config.h` (`7fb86fcfa`) — bug #1: `REC_VU1`/`THREAD_VU1` track `EmuConfig` (XGKICK size bit31/EOP
+  → ~2 GB memcpy crash on first kick during BIOS boot).
+- `aVU.h` (`b7ae2fa7b`) — bug #2: `compareState` is C++ `memcmp`, not executed JIT. On Apple Silicon
+  the MAP_JIT region is non-executable during a compile session (`pthread_jit_write_protect(0)`), so
+  executing the generated `compareStateF` mid-compile (block search) SIGBUSed. Per-thread, so this
+  also fixed the identical crash on the MTVU thread → MTVU works, full x86 parity kept.
+- `aVU.cpp`/`aVU_Lower.inl`/`VMManager.cpp` (`fb00e747b`) — the `MVU_DIFF` shadow differential.
+
+**Decisions & rationale:**
+- **Lesson (in memory): never execute JIT mid-compile on Apple Silicon** — W^X makes the region
+  non-executable while writable. See [[arm64-no-execute-jit-mid-compile]].
+- **Crashes ≠ correctness.** After the 3 crash fixes, games boot but render wrong. User confirmed
+  microVU1 regression (correct with VU1 rec OFF; VU0 micro fine) → VU1-specific codegen bug.
+- **Built a shadow differential instead of guessing.** Interp drives the real VU1 (game stays
+  renderable), microVU1 shadows the same input; compare VF/VI/ACC/Q/Mem; log first diverging PC +
+  disasm. Findings: microVU1 overflows to -FLT_MAX where interp is small/zero, and Q lags interp by
+  one DIV (stale Q → bad perspective divide → collapsed geometry). DIV handler, getQreg/writeQreg,
+  and clamp constants all match x86 on inspection; root op not yet found (math is in dynamically-
+  uploaded subroutines, defeating linear disasm).
+
+**Blockers / open questions:** Program-level diff pinpoints the diverging *program*, not the opcode.
+Q-lag may be root or symptom.
+
+**Next step:** isolate the diverging opcode — drive the diff at block granularity, or instrument the
+Q pipeline (readQ/writeQ/incQ in the analysis pass), or compare after each EFU/DIV. Then fix and
+re-run the ladder.
+
+---
+
 ## 2026-06-06 — Phase 7.8: select microVU0/1 + fix two real-execution bugs (BIOS, 2D, FFX run)
 
 **Goal:** Flip the ARM64 VU provider from interpreter to microVU and validate up the test ladder
