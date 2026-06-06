@@ -24,7 +24,7 @@
 
 /** \mainpage D3D12 Memory Allocator
 
-<b>Version 3.1.0</b> (2026-02-23)
+<b>Version 3.2.0</b> (2026-06-05)
 
 Copyright (c) 2019-2026 Advanced Micro Devices, Inc. All rights reserved. \n
 License: MIT
@@ -889,10 +889,17 @@ enum POOL_FLAGS
     */
     POOL_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED = 0x2,
     /** Every allocation made in this pool will be created as a committed resource - will have its own memory block.
-    
+     
     There is also an equivalent flag for the entire allocator: D3D12MA::ALLOCATOR_FLAG_ALWAYS_COMMITTED.
     */
     POOL_FLAG_ALWAYS_COMMITTED = 0x4,
+    /** Disables tight resource alignment for all resources created from this pool.
+    
+    When tight alignment is supported and enabled for the allocator, resources created from custom pools
+    normally use it automatically. Specify this flag to restore pre-tight-alignment behavior for this pool:
+    tight alignment won't be requested and small buffers may again be preferred as committed resources.
+    */
+    POOL_FLAG_DONT_USE_TIGHT_ALIGNMENT = 0x8,
 
     // Bit mask to extract only `ALGORITHM` bits from entire set of flags.
     POOL_FLAG_ALGORITHM_MASK = POOL_FLAG_ALGORITHM_LINEAR
@@ -1114,7 +1121,8 @@ enum ALLOCATOR_FLAGS
     It can also be disabled for a single allocation by using #ALLOCATION_FLAG_STRATEGY_MIN_TIME.
 
     If the tight resource alignment feature is used by the library (which happens automatically whenever supported,
-    unless you use flag #ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT), then small buffers are not preferred as committed.
+    unless you use flag #ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT or
+    #POOL_FLAG_DONT_USE_TIGHT_ALIGNMENT on a custom pool), then small buffers are not preferred as committed.
     Long story short, you don't need to specify any of these flags.
     The library chooses the most optimal method automatically.
     */
@@ -2892,6 +2900,7 @@ as it is no longer needed.
 
 You can check if the tight alignment it is available in the current system by calling D3D12MA::Allocator::IsTightAlignmentSupported().
 You can tell the library to not use it by specifying D3D12MA::ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT.
+Custom pools can opt out independently by specifying D3D12MA::POOL_FLAG_DONT_USE_TIGHT_ALIGNMENT.
 Typically, you don't need to do any of those.
 
 The library automatically aligns all buffers to at least 256 B, even when the system supports smaller alignment.
