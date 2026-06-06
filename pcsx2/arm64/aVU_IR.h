@@ -75,6 +75,23 @@ static constexpr int mVU_F0 = 23, mVU_F1 = 24, mVU_F2 = 25, mVU_F3 = 26;
 // PQ latency NEON register.
 static const a64::VRegister mVU_xmmPQ = a64::VRegister(24, 128);
 
+// Emit-layer NEON temp registers (x86: microVU_Misc.h xmmT1=xmm0/xmmT2=xmm1, the
+// regAlloc temps). On ARM64 the VF allocation pool is v0-v23, so these instead map
+// to the shared NEON scratch (q30/q31). Every flag/branch/endProgram path that uses
+// them does so *after* a regAlloc flushAll(), so they never overlap a live VF reg.
+#define xmmT1 RQSCRATCH  // q30
+#define xmmT2 RQSCRATCH2 // q31
+
+// x86 xSHUF.PS(dst, src, imm) — arbitrary 4-lane (32-bit) permute: out lane i takes
+// src lane ((imm >> (2*i)) & 3). NEON has no immediate 4-lane shuffle, so copy src
+// into a scratch (q29) and Ins each selected lane. Safe when dst == src.
+static inline void mVUshufflePS(const a64::VRegister& dst, const a64::VRegister& src, u8 imm)
+{
+	armAsm->Mov(RQSCRATCH3.V16B(), src.V16B());
+	for (int i = 0; i < 4; i++)
+		armAsm->Ins(dst.V4S(), i, RQSCRATCH3.V4S(), (imm >> (2 * i)) & 3);
+}
+
 //------------------------------------------------------------------
 // Byte offsets into VURegs (addressed from RVUSTATE = &vuRegs[index])
 //------------------------------------------------------------------

@@ -1075,6 +1075,7 @@ set(pcsx2arm64Headers
 	arm64/aVU_Alloc.inl
 	arm64/aVU_Clamp.inl
 	arm64/aVU_Misc.inl
+	arm64/aVU_Flags.inl
 )
 
 # These ones benefit a lot from LTO

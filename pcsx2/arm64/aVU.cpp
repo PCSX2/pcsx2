@@ -101,6 +101,12 @@ static void mVUcacheProg(microVU& mVU, microProgram& prog);
 // Lower load/store handlers.
 #include "arm64/aVU_Misc.inl"
 
+// Status/Mac/Clip flag pipeline (task 7.5/7.6) — flag-instance analysis +
+// mVUdivSet/mVUsetupFlags emit. The opcode-table-dependent flag read-scan
+// (_mVUflagPass/mVUsetFlagInfo) is deferred to the Branch/Compile slice.
+// mVUflagCheck below odr-uses the emit helpers so their VIXL bodies compile now.
+#include "arm64/aVU_Flags.inl"
+
 //------------------------------------------------------------------
 // Pass-1 pipeline / cycle / range helpers (task 7.3 part 2)
 //------------------------------------------------------------------
@@ -1386,4 +1392,24 @@ static_assert(alignof(microBlock) == 16, "microBlock must stay 16-byte aligned")
 {
 	microVU& mVU = microVU0;
 	mVUaddrFix(mVU, a64::x9, a64::x10);
+}
+
+// Force the flag pipeline (aVU_Flags.inl) to be compiled. The analysis functions
+// (findFlagInst/sortFlag/sortFullFlag/mVUstatusFlagOp/mVUsetFlags) have external
+// linkage and codegen regardless, but the emit helpers (mVUdivSet/mVUsetupFlags)
+// are __fi and have no live caller until the Branch/Compile slice — without this
+// odr-use their VIXL bodies, and any emission error, would never be instantiated.
+// Never called: it touches mVU.prog.cur (null here), it exists only to compile.
+[[maybe_unused]] static void mVUflagCheck()
+{
+	microVU& mVU = microVU0;
+	microFlagCycles mFC{};
+	mVUdivSet(mVU);
+	mVUsetupFlags(mVU, mFC);
+	mVUsetFlags(mVU, mFC);
+	mVUstatusFlagOp(mVU);
+	(void)findFlagInst(mFC.xStatus, 0);
+	int bFlag[4];
+	(void)sortFlag(mFC.xStatus, bFlag, 0);
+	sortFullFlag(mFC.xStatus, bFlag);
 }
