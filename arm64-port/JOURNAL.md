@@ -28,6 +28,43 @@
 
 ---
 
+## 2026-06-06 — Phase 7.4/7.5 (part 1b): P/Q reg allocators + mVUunpack_xyzw
+
+**Goal:** Land the deferred half of the Pass-2 allocators — the P/Q register allocators, unblocked now
+that their one dependency (`mVUunpack_xyzw`) is a trivial NEON port. Keep the tight build/test loop.
+
+**What changed:**
+- `pcsx2/arm64/aVU_IR.h` — NEW `mVUunpack_xyzw(dst, src, xyzw)` next to the other NEON helpers:
+  x86 `xPSHUF.D` constant-splat (0x00/0x55/0xaa/0xff = XXXX/YYYY/ZZZZ/WWWW) → VIXL `Dup(.V4S(), lane)`.
+  The unpack index 0..3 *is* the lane, so it's a one-liner.
+- `pcsx2/arm64/aVU_Alloc.inl` — NEW P/Q allocator section: `getPreg` (broadcast P out of PQ lane
+  2+readP), `getQreg` (broadcast Q out of lane qInstance), `writeQreg` (`Ins` source lane0 into Q
+  lane qInstance — covers both the x86 `xINSERTPS NDX(0,1,0)` and `xMOVSS` cases). Updated the
+  header note (P/Q no longer "deferred").
+- `pcsx2/arm64/aVU.cpp` — `mVUallocFlagCheck` extended to odr-use `getPreg`/`getQreg`/`writeQreg`.
+- Commit: `f47f00c3e` ARM64: microVU Phase 7.4/7.5 (part 1b) — P/Q reg allocators + mVUunpack_xyzw
+
+**Decisions & rationale:**
+- **PQ lane layout kept identical to x86** (`mVU_xmmPQ` = v24): Q in lanes 0/1, P in lanes 2/3, so the
+  unpack indices (`2 + readP` for P, `qInstance` for Q) port verbatim. The dispatcher (7.2d) already
+  builds v24 with this layout, so reads/writes here stay consistent with it.
+- **`writeQreg` collapses to one `Ins`.** x86 special-cases qInstance 0 (`xMOVSS`, lane0) vs 1
+  (`xINSERTPS` → lane1); both are "copy src lane0 into Q lane qInstance, leave the rest", which is
+  exactly `Ins(mVU_xmmPQ.V4S(), qInstance, reg.V4S(), 0)` since qInstance ∈ {0,1}.
+- **Put `mVUunpack_xyzw` in `aVU_IR.h`, not a new `aVU_Misc.inl`** — it sits with the sibling NEON
+  helpers (`mVUloadReg`/`mVUsaveReg`/`mVUmergeRegs`) already cloned there in 7.2b, and `aVU_Alloc.inl`
+  (which needs it) is included after `aVU_IR.h`. No new TU/include churn.
+
+**Blockers / open questions:** None. The remaining Misc emit subset (`mVUaddrFix` + clamp helpers)
+is independent; the clamp port pulls in `mVUglob.maxvals/minvals` and the SSE4 sign-overflow path.
+
+**Next step:** continue the Misc emit subset — port `mVUaddrFix`/`mVUoptimizeConstantAddr` and the
+clamp helpers `mVUclamp1`–`4` (`microVU_Clamp.inl` → NEON min/max), then stand up Flags + Branch/
+program-exit against a NOP/B-only `mVUopU`/`mVUopL` so `mVUcompile` can link and emit a trivial block
+(own `armStartBlock`/`armEndBlock` + the icache flush before branching into freshly-emitted code).
+
+---
+
 ## 2026-06-06 — Phase 7.4/7.5 (part 1): Pass-2 flag allocators in aVU_Alloc.inl
 
 **Goal:** Start the emit backend with its smallest self-contained, buildable slice — the

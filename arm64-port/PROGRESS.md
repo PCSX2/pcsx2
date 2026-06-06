@@ -8,37 +8,33 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 7 (VU recompilers / microVU) — task 7.4/7.5 part 1 (Pass-2 flag allocators → `aVU_Alloc.inl`) DONE.**
+**Phase 7 (VU recompilers / microVU) — task 7.4/7.5 part 1 (Pass-2 flag + P/Q allocators) DONE.**
 
-`pcsx2/arm64/aVU_Alloc.inl` is the **first emit-backend slice** — the flag-allocator half of x86
+`pcsx2/arm64/aVU_Alloc.inl` is the **emit-backend allocator slice** — the allocator half of x86
 `microVU_Alloc.inl` ported to VIXL: `getFlagReg` + the Status/Mac/Clip flag normalize/denormalize
 emit helpers (`setBitSFLAG`/`setBitFSEQ`/`mVUallocSFLAGa`–`d`/`mVUallocMFLAGa`–`b`/
-`mVUallocCFLAGa`–`b`). It also establishes the **emit-layer register-name macros** in `aVU_IR.h`
-(`gprT1`=w9/`gprT2`=w10/`gprF0`–`gprF3`=w23–w26, matching the existing `mVU_T1/T2/F0..3` index
-constants). Translations: x86 GPRs (`x32`) → ARM64 w-regs; `xTEST + xForwardJZ8 + xOR` →
-`Tst + B(eq) + Orr` with a local label; absolute `ptr16/ptr32[&…]` loads/stores →
-`armMoveAddressToReg` + VIXL `Ldrh/Ldr/Str` (mac/clip flags addressed absolutely off the
-`mVU.macFlag`/`clipFlag` host arrays, like x86). VIXL's MacroAssembler materialises any
-non-encodable logical immediate into x16 scratch, so the x86 masks port verbatim. `mVUallocSFLAGd`
-drops its eax/ecx/edx defaults (that's the dropped macro path) and takes explicit regs.
-`mVUallocFlagCheck` (never called) odr-uses every helper so the VIXL bodies compile now.
-
-**Deferred** (not in this slice): the P/Q register allocators `getPreg`/`getQreg`/`writeQreg` —
-they depend on `mVUunpack_xyzw` (the NEON lane-unpack from `microVU_Misc.inl`, which comes over with
-the Misc emit port) and are only used by the Upper/Lower opcode handlers (7.5), so deferring keeps
-this slice buildable. `writeVIBackup` was already defined inline in `aVU_IR.h`.
+`mVUallocCFLAGa`–`b`), and now the **P/Q register allocators** `getPreg`/`getQreg`/`writeQreg`.
+The latter use the NEON lane-broadcast `mVUunpack_xyzw` (added to `aVU_IR.h`: x86 `xPSHUF.D`
+constant-splat → VIXL `Dup` from the selected lane, index == case) and the PQ-latency NEON reg
+`mVU_xmmPQ` (v24) with the x86 layout (Q lanes 0/1, P lanes 2/3); `writeQreg`'s `xINSERTPS`/`xMOVSS`
+→ `Ins` lane0. It also establishes the **emit-layer register-name macros** in `aVU_IR.h`
+(`gprT1`=w9/`gprT2`=w10/`gprF0`–`gprF3`=w23–w26). Flag-helper translations: x86 GPRs (`x32`) →
+w-regs; `xTEST + xForwardJZ8 + xOR` → `Tst + B(eq) + Orr`; absolute `ptr16/ptr32[&…]` →
+`armMoveAddressToReg` + `Ldrh/Ldr/Str`. `mVUallocFlagCheck` (never called) odr-uses every helper
+so the VIXL bodies compile now.
 
 **Verified:** `pcsx2-qt` builds arm64; unittests 2/2. Pure infrastructure; microVU stays
-**unselected** on ARM64 (VMManager pins `CpuIntVU0/1`). Commit `8d312b4ce`.
+**unselected** on ARM64 (VMManager pins `CpuIntVU0/1`). Commits `8d312b4ce` (flags), `f47f00c3e` (P/Q).
 
-**Next:** continue the emit backend. The Flags driver (`aVU_Flags.inl`: `mVUdivSet`/`mVUsetupFlags`
-emit + the `mVUsetFlags`/`mVUstatusFlagOp`/`findFlagInst`/`sortFlag` analysis) now has its
-`getFlagReg`/flag-alloc dependency; the only remaining blocker for the full Flags port is
-`_mVUflagPass`/`mVUsetFlagInfo`, which call `mVUopU`/`mVUopL` (the opcode tables, 7.5). Recommended
-order from here: port the Misc emit subset (`mVUunpack_xyzw` + the P/Q allocators + `mVUaddrFix`/
-clamp helpers), then stand up Flags + Branch/program-exit (`mVUendProgram`/`normBranch`) against a
-NOP/B-only `mVUopU`/`mVUopL` so `mVUcompile` can link and emit a trivial block (own `armStartBlock`/
-`armEndBlock` per block + the **icache flush before branching into freshly-emitted code**).
+**Next:** continue the Misc emit subset — `mVUaddrFix` (VU0/VU1 address transform + the THREAD_VU1
+`waitMTVU` fast-call) + `mVUoptimizeConstantAddr`, and the clamp helpers `mVUclamp1`–`4`
+(`microVU_Clamp.inl`: operand/result clamp via `mVUglob.maxvals/minvals` + the SSE4 sign-overflow
+`sse4_min/maxvals` path → NEON `Fmin/Fmax`/`Smin/Umin`). Then stand up Flags
+(`aVU_Flags.inl`: `mVUdivSet`/`mVUsetupFlags` emit + `mVUsetFlags`/`mVUstatusFlagOp`/`findFlagInst`/
+`sortFlag`; blocked only on `_mVUflagPass`/`mVUsetFlagInfo` → `mVUopU`/`mVUopL`, 7.5) + Branch/
+program-exit (`mVUendProgram`/`normBranch`) against a NOP/B-only `mVUopU`/`mVUopL` so `mVUcompile`
+can link and emit a trivial block (own `armStartBlock`/`armEndBlock` per block + the **icache flush
+before branching into freshly-emitted code**).
 
 ---
 
@@ -252,7 +248,11 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     Established the emit-layer reg-name macros (`gprT1`/`gprT2`/`gprF0`–`gprF3`) in `aVU_IR.h`.
     x86 GPRs→w-regs; `xTEST+JZ+xOR`→`Tst+B(eq)+Orr`; absolute `ptr16/ptr32`→`armMoveAddressToReg`+
     `Ldrh/Ldr/Str`. Compile-exercised via `mVUallocFlagCheck`. Builds arm64; unittests 2/2.
-    (`8d312b4ce`) Deferred: P/Q allocators (need `mVUunpack_xyzw`, Misc emit port).
+    (`8d312b4ce`)
+  - [x] Pass-2 P/Q allocators (part 1b) — `getPreg`/`getQreg`/`writeQreg` → `aVU_Alloc.inl` + the
+    NEON lane-broadcast `mVUunpack_xyzw` → `aVU_IR.h`. x86 `xPSHUF.D` splat → VIXL `Dup` (index ==
+    case); `xINSERTPS`/`xMOVSS` into Q → `Ins` lane0. PQ pair in `mVU_xmmPQ` (v24), x86 layout.
+    Compile-exercised via `mVUallocFlagCheck`. Builds arm64; unittests 2/2. (`f47f00c3e`)
   - [ ] Emit-coupled driver `mVUcompile` + `mVUexecuteInstruction`/`doUpperOp`/`doLowerOp`/`doSwapOp`/
     `doIbit`, `mVUtestCycles`, `mVUDoDBit`/`mVUDoTBit`, `mvuPreloadRegisters`, and the
     `mVUentryGet`/`mVUblockFetch` entry points (still `pxFailRel`). Big-bang: links only once the 7.5
