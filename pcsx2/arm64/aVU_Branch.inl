@@ -372,3 +372,21 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit)
 	}
 	memcpy(&mVUregs, &stateBackup, sizeof(mVUregs)); // Restore the state for the rest of the recompile
 }
+
+//------------------------------------------------------------------
+// Block-linking setup (flag instances + P/Q reset)
+//------------------------------------------------------------------
+// Recompiles code for proper flags and Q/P regs on block linkings. Table-
+// independent: only needs mVUsetupFlags (ported) + a PQ lane permute, so it comes
+// over now; its callers (normBranch/normJump/condBranch) arrive with the Compile
+// slice. x86 xPSHUF.D(xmmPQ, xmmPQ, shufflePQ) -> mVUshufflePS.
+void mVUsetupBranch(mV, microFlagCycles& mFC)
+{
+	mVU.regAlloc->flushAll(); // Flush Allocated Regs
+	mVUsetupFlags(mVU, mFC);  // Shuffle Flag Instances
+
+	// Shuffle P/Q regs since every block starts at instance #0
+	if (mVU.p || mVU.q)
+		mVUshufflePS(mVU_xmmPQ, mVU_xmmPQ, shufflePQ);
+	mVU.p = 0, mVU.q = 0;
+}

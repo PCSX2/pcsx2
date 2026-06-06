@@ -202,6 +202,9 @@ typedef Fntype_mVUrecInst* Fnptr_mVUrecInst;
 #define curI         ((u32*)mVU.regs().Micro)[iPC] //mVUcurProg.data[iPC]
 #define setCode()    { mVU.code = curI; }
 #define bSaveAddr    (((xPC + 16) & (mVU.microMemSize-8)) / 8)
+// P/Q-pair lane permute immediate (every block starts at P/Q instance #0). Same
+// PSHUFD lane-select semantics as x86 (microVU_Misc.h) — fed to mVUshufflePS.
+#define shufflePQ    (((mVU.p) ? 0xb0 : 0xe0) | ((mVU.q) ? 0x01 : 0x04))
 #define Rmem         &mVU.regs().VI[REG_R].UL
 #define aWrap(x, m)  ((x > m) ? 0 : x)
 #define clampE       CHECK_VU_EXTRA_OVERFLOW(mVU.index)

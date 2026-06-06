@@ -1431,4 +1431,5 @@ static_assert(alignof(microBlock) == 16, "microBlock must stay 16-byte aligned")
 	(void)getLastFlagInst(mVUregs, mFC.xStatus, 0, 0);
 	mVUendProgram(mVU, &mFC, 1);
 	mVUDTendProgram(mVU, &mFC, 1);
+	mVUsetupBranch(mVU, mFC);
 }
