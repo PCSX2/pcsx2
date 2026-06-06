@@ -72,11 +72,25 @@ Q-lag is a benign program-boundary artifact (DIV latency), not the bug. Strong r
 (`mVUlow.backupVI` / `mVU.VIbackup` / `memReadIs`/`memReadIt`) feeding the conditional branches —
 a wrong VI value there corrupts loop counts and vertex addresses → garbage geometry → black screen.
 
-**Next step:** per-instruction localization (the program-level diff isn't fine enough). Options:
-(a) instrument microVU to flush+dump VF/VI after each instruction vs the interpreter's single-step
-trace; (b) audit the VI regalloc writeback + the delay-slot VI backup against x86; (c) extend the
-diff to compare ALL VI[0..31] + the MAC/status/clip flag regs (FMAND reads MACflag) to see if a flag
-or a specific VI diverges first.
+**Per-instruction localizer (built, `ac3eede85`):** mVUcompile injects a flushAll + mvuTraceMicro(pc)
+after each instruction; on first divergence the interpreter is single-stepped and compared. It
+pointed at the DIV/WAITQ/Q region with ±FLT_MAX, but **forcing DIV down the normal path did NOT
+remove the divergence** — so divide-by-zero is NOT the source. The trustworthy program-level diff
+shows a **W-lane-correct / X/Y/Z-wrong** pattern (e.g. VF17: w=ffff8000 from MFIR.w is correct, xyz
+are stale). Stale lanes ⇒ microVU executed a *different set of instructions* ⇒ the **control-flow /
+loop-iteration divergence is the root** (the vi10/vi13 loop counters differ), not a compute opcode.
+Verified faithful to x86: DIV, testZero, MFIR (Fmov.S zeroes upper lanes = xMOVDZX), LQI, ILWR,
+clamp, regalloc pool size (xmmTotal=24, no PQ collision). CAVEAT: the per-instruction path has a
+likely Heisenbug around Q/PQ (flushAll + PQ backup/restore perturbs VF near DIV/WAITQ) — trust the
+program-level diff there.
+
+**Next step:** chase the control-flow divergence. The loop in these programs is driven by IBNE/IBLEZ
+on VI counters (vi10/vi13) and by FMAND on the MAC flag. Either (a) the **conditional branch** reads
+the wrong VI (delay-slot VI backup: `mVUlow.backupVI`/`mVU.VIbackup`/`memReadIs`/`memReadIt` +
+`condBranch`), or (b) the **MAC flag** feeding FMAND is wrong (status/mac/clip flag pipeline). First
+make the localizer trustworthy (skip the per-instruction flush for DIV/WAITQ, or verify traced ==
+non-traced micro output), then trace which VI/flag first diverges right before the branch that
+controls the loop.
 
 ---
 
