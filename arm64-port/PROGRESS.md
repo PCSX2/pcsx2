@@ -8,34 +8,43 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 7 (VU recompilers / microVU) — task 7.3 part 2 (pass-1 pipeline/cycle/range helpers → `aVU.cpp`) DONE.**
+**Phase 7 (VU recompilers / microVU) — task 7.4 part 1 (first-pass init helpers → `aVU.cpp`) DONE.**
 
-`pcsx2/arm64/aVU.cpp` now holds the ARM64 clone of the **arch-neutral** helpers from x86
-`microVU_Compile.inl`: `mVUsetupRange` (+`mVUcheckIsSame`), the warning/early-exit bookkeeping
-(`mVUcheckBadOp`/`branchWarning`/`eBitPass1`/`eBitWarning`), and the per-instruction cycle/pipeline
-accounting (`mVUincCycles`/`mVUsetCycles`/`mVUoptimizePipeState` + `optimizeReg`/`calcCycles`/
-`tCycles`/`incP`/`incQ`/`cmpVFregs`). All operate purely on the IR (`microOp`/`microIR`/
-`microRegInfo`) + the program cache and make **zero emitter calls**, so they ported near-verbatim
-onto the `aVU_Misc.h` macro layer. `mVUcompileHelpersCheck` (never called) odr-uses the non-inline
-ones so their bodies compile now; the inline (`__fi`/`__ri`) ones get inlined into it.
+`pcsx2/arm64/aVU.cpp` now holds the **emitter-free first-pass initialization** helpers from x86
+`microVU_Compile.inl`: `startLoop` (per-loop IR reset + M/D/T-bit dev logging), `mVUinitConstValues`
+(vi15 const propagation seed), and `mVUinitFirstPass` (block-start setup: pipeline-state load,
+block-manager `add`, needExactMatch/blockType/flag reset). These make **zero VIXL/regAlloc calls**
+(memset/memcpy + block-manager `add` only), so they ported verbatim modulo the 7.2a struct rename
+(`mVUblock.x86ptrStart` → `codeStart`). `mVUinitFirstPass` takes the start-of-block host code pointer
+(x86 `x86Ptr` → ARM64 `armGetCurrentCodePointer()`, passed by the emit driver later) and stashes it
+in `mVUblock.codeStart`. `mVUcompileHelpersCheck` (never called) odr-uses all three so their bodies
+compile now.
 
-**Deliberately NOT ported** (all emit-coupled → the 7.4 compile driver): `doUpperOp`/`doLowerOp`/
-`doSwapOp`/`doIbit`/`mVUexecuteInstruction`, `mVUtestCycles`, `mVUDoDBit`/`mVUDoTBit`,
-`mvuPreloadRegisters`, `handleBadOp`, `mVUdebugPrintBlocks`, the first-pass init `startLoop`/
-`mVUinitConstValues`/`mVUinitFirstPass` (tied to the block-emit lifecycle), and `mVUcompile` itself.
+**Rationale for porting these now** (they were deferred in 7.3 as "tied to the block-emit
+lifecycle"): they make no emitter calls, so bringing them as a standalone buildable slice respects
+the tight build/test loop better than waiting to land the entire emit backend with `mVUcompile` at
+once. The actual block-emit lifecycle they participate in (`armStartBlock`/`add`/`codeStart`) is
+exercised when the 7.4 driver lands.
+
+**Still NOT ported** (all emit-coupled → rest of 7.4 + the 7.5 emit backend): `mVUcompile` itself,
+`mVUexecuteInstruction`/`doUpperOp`/`doLowerOp`/`doSwapOp`/`doIbit`, `mVUtestCycles`,
+`mVUDoDBit`/`mVUDoTBit`, `mvuPreloadRegisters`, `handleBadOp`, `mVUdebugPrintBlocks`, and the
+`mVUentryGet`/`mVUblockFetch` block-fetch entry points (still `pxFailRel` stubs).
 
 **Verified:** `pcsx2-qt` builds arm64; unittests 2/2 (common + core). Pure infrastructure; microVU
-stays **unselected** on ARM64 (VMManager pins `CpuIntVU0/1`). Commit `30ee0b64b`.
+stays **unselected** on ARM64 (VMManager pins `CpuIntVU0/1`). Commit `9b01b4ca2`.
 
-**Next:** Task 7.4 — port the **emit-coupled compile driver** from `microVU_Compile.inl`
-(`mVUcompile` + `mVUexecuteInstruction`/`doUpperOp`/`doLowerOp`/`doSwapOp`/`doIbit`, first-pass init
-`mVUinitFirstPass`/`startLoop`/`mVUinitConstValues`, `mVUtestCycles`, the T/D-bit handlers, and the
-`mVUentryGet`/`mVUblockFetch` block-fetch entry points that replace the current `pxFailRel` stubs).
-This is the first task that emits real per-block VIXL code — its own `armStartBlock`/`armEndBlock`
-per block + the **icache flush before branching into freshly-emitted code** (the two things 7.2d
-flagged) — and it depends on the per-op `pass1`/`pass2` handlers + `microVU_Tables.inl` (7.5), so
-7.4 and 7.5 likely interleave: bring the driver up against a minimal op set (NOP/B) first, then fill
-in `mVUopU`/`mVUopL` + the opcode tables.
+**Next:** Task 7.4 part 2 — the **emit-coupled compile driver**. This is the big-bang slice:
+`mVUcompile` won't link until its whole emit backend exists, so it must come up together with (or
+just after) the 7.5 emit modules it calls — `mVUopU`/`mVUopL` + `microVU_Tables.inl` (Upper/Lower),
+the flag pipeline (`mVUsetFlags`/`mVUsetFlagInfo`/`mVUsetupBranch`/`mVUdivSet`/`copyPLState`), the
+program-exit + block-link emit (`mVUendProgram`/`mVUDTendProgram`/`normBranch`/`normJump`/`condBranch`
+/`normBranchCompile`/`normJumpCompile`), XGKICK (`mVU_XGKICK_SYNC`/`mVU_XGKICK_DELAY`), and
+`mVUbackupRegs`/`mVUrestoreRegs`/`mVUtestCycles`. Recommended order: stand up the Flags + Branch
+(program-exit/endProgram) emit first against a minimal `mVUopU`/`mVUopL` (NOP/B only) so `mVUcompile`
+can link and emit a trivial block; this is the first task to emit real per-block VIXL — own
+`armStartBlock`/`armEndBlock` per block + the **icache flush before branching into freshly-emitted
+code** (the two things 7.2d flagged) — then fill in the full opcode tables.
 
 ---
 
@@ -889,8 +898,15 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     arm64; unittests 2/2. (`30ee0b64b`)
   - [ ] `microVU_Tables.inl` — MOVED to 7.5 (the dispatch tables reference the per-op emit
     handlers, which don't exist until the VIXL emission task).
-- [ ] 7.4 **Compile driver** — port `microVU_Compile.inl` (`mVUcompile`/`mVUblockFetch`/block
+- [~] 7.4 **Compile driver** — port `microVU_Compile.inl` (`mVUcompile`/`mVUblockFetch`/block
   search+link/`mVUsetupRange`). Interleaves 7.3 analysis with emit; ends blocks on E-bit/branch.
+  - [x] First-pass init helpers (emitter-free): `startLoop`/`mVUinitConstValues`/`mVUinitFirstPass`
+    → `pcsx2/arm64/aVU.cpp`. memset/memcpy + block-manager `add` only (no VIXL); `x86ptrStart`→
+    `codeStart`. Compile-exercised via `mVUcompileHelpersCheck`. Builds arm64; unittests 2/2. (`9b01b4ca2`)
+  - [ ] Emit-coupled driver `mVUcompile` + `mVUexecuteInstruction`/`doUpperOp`/`doLowerOp`/`doSwapOp`/
+    `doIbit`, `mVUtestCycles`, `mVUDoDBit`/`mVUDoTBit`, `mvuPreloadRegisters`, and the
+    `mVUentryGet`/`mVUblockFetch` entry points (still `pxFailRel`). Big-bang: links only once the 7.5
+    emit backend (Upper/Lower + Flags + Branch/endProgram + XGKICK) exists — bring up vs. NOP/B first.
 - [ ] 7.5 **VIXL emission for the VU ISA:**
   - [ ] 7.5a Upper (FMAC float vector → NEON): ADD/SUB/MUL/MADD/MSUB/MAX/MINI/FTOI/ITOF/CLIP/
     ABS/OPMULA/OPMSUB/NOP + EE non-IEEE 4-lane clamp (reuse the Phase 5.2 FPU clamp insight).

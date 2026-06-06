@@ -28,6 +28,50 @@
 
 ---
 
+## 2026-06-06 — Phase 7.4 (part 1): first-pass init helpers in aVU.cpp
+
+**Goal:** Start task 7.4 (the compile driver) with its one cleanly-separable, emitter-free slice:
+the first-pass initialization helpers. Pure infra; microVU stays unselected.
+
+**What changed:**
+- `pcsx2/arm64/aVU.cpp` — new "First-pass initialization (emitter-free)" section after the cycle
+  helpers, cloning from x86 `microVU_Compile.inl`:
+  - `startLoop` — per-loop IR reset (`memset` mVUinfo/mVUregsTemp) + M/D/T-bit DevCon logging.
+  - `mVUinitConstValues` — seed the 16 VI const-prop slots, propagate vi15 across blocks.
+  - `mVUinitFirstPass(mVU, pState, thisPtr)` — block-start setup: load pipeline state into mVUregs +
+    lpState, stash the host code ptr in `mVUblock.codeStart`, `mVUblocks[...]->add` the block, reset
+    needExactMatch/blockType/viBackUp/flagInfo, set sFlagHack.
+  - `mVUcompileHelpersCheck` extended to odr-use all three.
+- Commit: `9b01b4ca2` ARM64: microVU Phase 7.4 (part 1) — first-pass init helpers (aVU.cpp)
+
+**Decisions & rationale:**
+- **Ported now despite the 7.3 note deferring them** ("tied to the block-emit lifecycle"). They make
+  zero emitter/regAlloc calls — `memset`/`memcpy` + block-manager `add` only — so they port verbatim
+  and build standalone. Bringing them as their own buildable, committed slice respects the tight
+  build/test loop far better than holding them until the entire emit backend lands with `mVUcompile`
+  in one mega-commit. The block-emit lifecycle they touch (`armStartBlock`→`codeStart`→`add`) is only
+  *exercised* once the driver lands, but the *code* is correct and type-checked now.
+- **Only adaptation: the 7.2a struct rename** `mVUblock.x86ptrStart` → `mVUblock.codeStart`. Every
+  other field/macro (`mVUstartPC`/`mVUbranch`/`mVUcount`/`mVUcycles`/`mVU.p`/`mVU.q`/`mVUconstReg`/
+  `mVUregs.vi15v`/`needExactMatch`/`mVUsFlagHack`/`CHECK_VU_FLAGHACK`) already exists in the cloned IR
+  + `aVU_Misc.h`, so the bodies are byte-identical to x86.
+- **`thisPtr` typed `u8*`, passed `nullptr` in the check.** In the real driver it becomes
+  `armGetCurrentCodePointer()` (x86 passed `x86Ptr`); the helper only stores it, no deref, so the
+  null in the never-called check is fine (mirrors the existing "touches null mVU.prog.cur" caveat).
+
+**Blockers / open questions:** None. The remaining 7.4 driver (`mVUcompile`) is a hard big-bang — it
+won't *link* until its whole emit backend (Upper/Lower opcode handlers, Flags, Branch/endProgram,
+XGKICK, backup/restore, mVUtestCycles) exists, so 7.4-part-2 and 7.5 must come up together.
+
+**Next step:** Task 7.4 part 2 / 7.5 — stand up the minimal emit backend so `mVUcompile` can link:
+Flags (`mVUsetFlags`/`mVUsetFlagInfo`/`mVUsetupBranch`/`copyPLState`) + Branch/program-exit
+(`mVUendProgram`/`mVUDTendProgram`/`normBranch`/`normJump`/`condBranch`) + a NOP/B-only `mVUopU`/
+`mVUopL`, then port `mVUcompile` itself (own `armStartBlock`/`armEndBlock` per block + **icache flush
+before branching into freshly-emitted code**) and replace the `mVUblockFetch`/`mVUentryGet` stubs.
+Keep microVU unselected until a trivial block round-trips.
+
+---
+
 ## 2026-06-06 — Phase 7.3 (part 2): pass-1 pipeline/cycle/range helpers in aVU.cpp
 
 **Goal:** Task 7.3 part 2 — port the arch-neutral pipeline/cycle/range-analysis helpers from x86
