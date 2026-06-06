@@ -8,22 +8,54 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 7 (VU recompilers / microVU) — 7.8 SELECTED; CRASHES FIXED; now a microVU1 CORRECTNESS
-regression under investigation. microVU0/1 is the selected VU provider on ARM64. Three crash bugs
-fixed (XGKICK packet-size, compareState W^X, MTVU via the same W^X fix) so BIOS/2D/FFX no longer
-crash. BUT rendering is wrong: 2D games (Odin Sphere, Rayman 3) boot to a BLACK SCREEN and FFX
-renders with artifacts. Attributed to microVU1 (game renders correctly with VU1 recompiler OFF /
-interpreter; VU0 micro is fine). Built an env-gated shadow differential (MVU_DIFF, `fb00e747b`) that
-runs the interpreter as the real VU1 and microVU1 as a shadow, comparing VF/VI/ACC/Q/Mem. Findings:
-microVU1 math produces huge-negative values that clamp to -FLT_MAX (0xff7fffff) where the interp has
-small/zero, and the Q register LAGS the interpreter by exactly one DIV (stale Q → wrong perspective
-divide → collapsed geometry). Root opcode not yet isolated (math is in dynamically-uploaded
-subroutines, so linear disasm can't reach it). Next: per-instruction localization (e.g. drive the
-diff at block granularity, or trap the specific MULq/DIV), then fix. builds arm64, unittests 2/2.**
+**Phase 7 (VU recompilers / microVU) — 7.8 SELECTED; CRASHES FIXED; microVU1 black-screen ROOT CAUSE
+NOW ISOLATED to the MAC FLAG. microVU0/1 is the selected VU provider on ARM64. The black screen on
+2D games (Rayman 3, Odin Sphere) + FFX artifacts trace to a single root: microVU1 reads a WRONG MAC
+FLAG, which feeds an `FMAND` → wrong VI → wrong conditional branch → wrong vertex-loop iteration count
+→ the loop reads PAST the valid vertices into garbage (-FLT_MAX padding) → the matrix-transform FMAC
+overflows to -FLT_MAX → malformed GIF packet → black screen (this is the 17,509× `Gif Unit - GS
+packet size exceeded VU memory size!` warning storm). This unifies all earlier symptoms (the
+"-FLT_MAX overflow", the "Q lags by one DIV", the loop-counter VI divergence) — they are downstream of
+the wrong MAC flag, NOT independent bugs.**
 
-**How to run the differential:** `MVU_DIFF=1 PCSX2.app/Contents/MacOS/PCSX2 -batch -fastboot <iso>` —
-grep emulog for `MVU_DIFF @pc=...`. The game stays playable (interp drives); the log shows where
-microVU1 diverges. MVU_DIFF auto-forces MTVU off (LoadCoreSettings) so VU1 runs through the hook.
+**The decisive evidence (Rayman 3, program @pc=00d8 / its transform loop):**
+- `LOCALIZE step 45 pc=0240 VI01 interp=00d0 mvu=0010` — at `FMAND vi01, MACflag, vi12` (vi12=0xd0),
+  control-flow + all VI matched through step 44, but `vi01 = MACflag & 0xd0` diverges → the MAC flag
+  itself is wrong (micro is missing sign bits 0x80/0x40, i.e. 2 lanes' sign flags).
+- `FMACDUMP @pc=01d8` (the `MADDw vf24` transform): for CLEAN vertices `Ft(vf20.w)=1.0` → result is
+  CORRECT; for the bad ones `Ft(vf20.w)=-FLT_MAX` (garbage vertex) → result -FLT_MAX. **The FMAC math
+  is correct given its inputs** — it's fed garbage vertices because the loop over-ran.
+- `DIVDUMP @pc=01f8` confirmed the DIV computes Q correctly for clean inputs (1.0/2.5=0.4); its bad
+  outputs are just `1.0 / (already-garbage vf24.w)`.
+
+**`mVUupdateFlags` (aVU_Upper.inl) is line-for-line faithful to x86** (sign gather via mVUmovemask ==
+MOVMSKPS; zero gather Fcmeq==CMPEQ.PS; AND_XYZW/SHIFT_XYZW/flip all match). So the wrong MAC flag is
+NOT the gather. **Prime remaining suspect: the MAC-flag INSTANCE pipeline** (`getFlagReg` /
+`mVUallocMFLAGa`/`mVUallocMFLAGb` in aVU_Alloc.inl + `mFLAG.read`/`write` instance assignment from
+findFlagInst/sortFlag/mVUsetupFlags in aVU_Flags.inl) — FMAND may be reading a stale/wrong mac
+instance (exactly analogous to the Q-lag pattern). Secondary suspect: an upstream FMAC value
+difference (e.g. NEON-vs-interp signed-zero) that the VF-off localizer currently masks.
+
+**NEXT STEP:** audit the MAC-flag instance pipeline against x86 (does the instance FMAND reads match
+the producing FMAC's write instance?). If clean, defeat the localizer's Q/PQ Heisenbug (it perturbs
+VF near DIV/WAITQ via the per-instruction flushAll+PQ backup/restore) so it can report the FIRST true
+VF/flag divergence — e.g. record Q+ACC+the producing FMAC's flag in the trace, or skip the per-instr
+flush only for DIV/WAITQ. Then fix and re-validate the test ladder. builds arm64, unittests 2/2.**
+
+**Debug tooling now in tree (all env-gated, zero overhead unless set):**
+- `MVU_DIFF=1` — shadow differential. Interp drives VU1 (game stays renderable), microVU1 shadows;
+  `mvuDiffReport` logs ALL diverging VF/VI/ACC/Q/Mem (not just first) as `MVU_DIFF @pc=...`. Also
+  enables compile-time `WB VFnn`/`ALLOC` logs (writeBackReg/allocReg for VF17/24) and the runtime
+  `DIVDUMP`/`FMACDUMP` (DIV & vf24-MADD operand/result dumps, first ~40-60).
+- `MVU_DIFF=1 MVU_LOC=1` — also injects the per-instruction localizer (flushAll+mvuTraceMicro after
+  each op); on first program divergence it single-steps the interp and reports the first instruction
+  where control-flow/VI (and, with `MVU_VF=1`, VF) diverge, with a full upper|lower disasm dump.
+- All of this lives behind `g_mvuDiffActive`/`getenv` in aVU.cpp / aVU_IR.h / aVU_Upper.inl /
+  aVU_Lower.inl / aVU_Compile.inl — REMOVE or keep as desired once the mac-flag fix lands.
+
+**How to run:** `MVU_DIFF=1 [MVU_LOC=1] PCSX2.app/Contents/MacOS/PCSX2 -batch -fastboot <iso>`; grep
+the emulog (`~/Library/Application Support/PCSX2/logs/emulog.txt`, NOT stdout) for `MVU_DIFF`/
+`LOCALIZE`/`DIVDUMP`/`FMACDUMP`. MVU_DIFF auto-forces MTVU off so VU1 runs through the hook.
 
 **7.8 wiring (`dcbdec813`, `VMManager.cpp`):** the four ARM64 `#else` branches mirror x86 —
 `InitializeCPUProviders` reserves `CpuMicroVU0/1` (recMicroVU1::Reserve opens vu1Thread, so the old
@@ -380,9 +412,14 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
   - [x] **No crashes** — BIOS, Odin Sphere (2D), Rayman 3 (2D), FFX (3D) all boot without crashing.
   - [!] **Rendering is WRONG (microVU1 correctness)** — 2D games black-screen, FFX has artifacts.
     Attributed to microVU1 (correct with VU1 rec off). Bug #3 fixes only got rid of the *crashes*.
-  - [~] Built `MVU_DIFF` shadow differential (`fb00e747b`) — localizes to VU1 math: -FLT_MAX overflow
-    clamps + Q-register lag-by-one-DIV. Root opcode not yet isolated.
-  - [ ] Isolate the diverging op (per-instruction diff), fix it, then re-validate the test ladder.
+  - [x] Built `MVU_DIFF` shadow differential + per-instruction localizer + DIV/FMAC/writeback dumps
+    (`fb00e747b` + this session's debug tooling, all env-gated).
+  - [x] **ROOT CAUSE ISOLATED: wrong MAC flag.** `FMAND` (pc=0240) reads a wrong MACflag → wrong VI →
+    wrong branch → wrong vertex-loop count → reads garbage vertices → FMAC overflow to -FLT_MAX →
+    malformed GIF packet → black screen + 17,509× "GS packet size exceeded" warnings. The FMAC math is
+    correct given inputs; `mVUupdateFlags` is faithful to x86. See CURRENT FOCUS for the evidence.
+  - [ ] Fix the MAC-flag pipeline (suspect: mac-flag INSTANCE management — getFlagReg/mVUallocMFLAGa/b
+    + mFLAG.read/write instance assignment), then re-validate the test ladder.
 - [ ] 7.9 **Macro mode** (lowest priority) — port `microVU_Macro.inl` so the EE rec emits COP2/VU0
   macro ops natively instead of the Phase 5.3 inline-interp fallback. Optional perf polish.
 

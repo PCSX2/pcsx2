@@ -28,6 +28,55 @@
 
 ---
 
+## 2026-06-07 — Phase 7.8: black-screen ROOT CAUSE isolated → wrong MAC flag
+
+**Goal:** Continue debugging why some games (Rayman 3, Odin Sphere) black-screen with microVU1.
+
+**What changed (debug tooling only — no semantic recompiler change yet):**
+- `aVU.cpp` — `mvuDiffReport` now logs ALL diverging VF/VI/ACC/Q/Mem (was: first only) + a MEM-diff
+  count; per-instruction localizer gated behind `MVU_LOC` (was always-on with MVU_DIFF); localizer VF
+  check gated behind `MVU_VF` (the Q/PQ Heisenbug perturbs VF near DIV/WAITQ, so VF-off lets it reach
+  the controlling branch); `mvuDumpAround` widened to the whole program and FIXED the disVU1MicroUF/LF
+  shared-static-buffer aliasing (both columns were showing the LOWER op → the UPPER FMACs were
+  invisible, which is why the loop looked "arithmetic-free"). Added `g_mvuDiffActive`, runtime
+  `DIVDUMP` (DIV num/den/result) and `FMACDUMP` (vf24-MADD ACC/operand/result) loggers.
+- `aVU_IR.h` — compile-time `WB VFnn` (writeBackReg) + `ALLOC` (allocReg) logging for VF17/24.
+- `aVU_Lower.inl` / `aVU_Upper.inl` — emit the DIVDUMP / FMACDUMP runtime dumps (env-gated).
+- `aVU_Compile.inl` — per-instruction localizer flush gated behind `MVU_LOC`.
+- All env-gated via `g_mvuDiffActive`/`getenv`; zero codegen/overhead in normal builds.
+
+**Decisions & rationale — THE ROOT CAUSE (one bug, all symptoms):**
+microVU1 reads a **wrong MAC flag**. Evidence chain on Rayman 3's transform loop (program @00d8):
+1. `LOCALIZE step 45 pc=0240 VI01 interp=00d0 mvu=0010` — at `FMAND vi01, MACflag, vi12` (vi12=0xd0),
+   control-flow + every VI matched through step 44; `vi01 = MACflag & 0xd0` diverges ⇒ the MAC flag is
+   wrong (micro missing the 0x80/0x40 sign bits, i.e. 2 lanes' sign flags).
+2. Wrong `vi01` → wrong `IBNE`/`IBLEZ` → wrong vertex-loop iteration count (the vi10/vi13 loop
+   counters that earlier looked like a "control-flow divergence").
+3. Over-running the loop reads PAST the valid vertices into garbage. `FMACDUMP @pc=01d8` proves the
+   `MADDw vf24` transform is CORRECT for clean vertices (`vf20.w=1.0`) and only produces -FLT_MAX when
+   fed a garbage vertex (`vf20.w=-FLT_MAX`). So the "-FLT_MAX overflow" is a *consequence*, not the bug.
+4. Garbage transformed verts → malformed GIF packets → `Gif Unit - GS packet size exceeded VU memory
+   size!` ×17,509 → black screen. (`DIVDUMP` likewise showed the DIV/Q is correct given its inputs;
+   the "Q lag" was downstream too.)
+- **`mVUupdateFlags` is line-for-line faithful to x86** (mVUmovemask==MOVMSKPS, Fcmeq==CMPEQ.PS,
+  AND_XYZW/SHIFT_XYZW/flip all match) — so the bug is NOT the flag gather. Prime suspect: the MAC-flag
+  INSTANCE pipeline (getFlagReg / mVUallocMFLAGa/b + mFLAG.read/write instance assignment) reading a
+  stale/wrong mac instance, analogous to the Q-latency pattern.
+- **Method that worked:** the program-level diff is trustworthy; the per-instruction localizer is NOT
+  near DIV/WAITQ (Q/PQ Heisenbug from its flushAll+PQ backup/restore) — disabling its VF check made it
+  reach the real branch. The disasm static-buffer bug had been hiding the UPPER FMACs the whole time.
+
+**Blockers / open questions:** Is the wrong MAC flag a wrong-instance read, or an upstream FMAC value
+diff (e.g. NEON-vs-interp signed-zero) masked by the VF-off localizer? Needs the instance-pipeline
+audit and/or a Heisenbug-free VF/flag localizer.
+
+**Next step:** audit the MAC-flag instance pipeline (aVU_Alloc.inl getFlagReg/mVUallocMFLAGa/b +
+aVU_Flags.inl findFlagInst/sortFlag/mVUsetupFlags + mFLAG.read/write) vs x86; if clean, make the
+localizer Heisenbug-free (record Q/ACC/producing-flag) to find the first true value divergence; fix;
+re-run the test ladder.
+
+---
+
 ## 2026-06-06 — Phase 7.8: real-game testing — 3 crash fixes, then a microVU1 correctness regression
 
 > NOTE: supersedes the "BIOS/2D/FFX run" framing of the entry below — those games BOOT without
