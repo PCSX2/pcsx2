@@ -2676,15 +2676,15 @@ void VMManager::InitializeCPUProviders()
 	CpuMicroVU1.Reserve();
 #else
 	// ARM64 (Phase 1.5): reserve the EE recompiler so its code cache + constant pool
-	// are set up. (Phase 6) the IOP recompiler is now ported, so reserve it too. The VU
-	// recompilers are not ported to ARM64 yet.
+	// are set up. (Phase 6) the IOP recompiler is now ported, so reserve it too.
+	// (Phase 7.8) the VU recompilers (microVU0/1) are now ported — reserve them as well.
+	// recMicroVU1::Reserve() opens vu1Thread for us (mirrors x86 microVU.cpp), so we no
+	// longer open it explicitly here.
 	recCpu.Reserve();
 	psxRec.Reserve();
 
-	// Despite not having any VU recompilers on ARM64, therefore no MTVU,
-	// we still need the thread alive. Otherwise the read and write positions
-	// of the ring buffer wont match, and various systems in the emulator end up deadlocked.
-	vu1Thread.Open();
+	CpuMicroVU0.Reserve();
+	CpuMicroVU1.Reserve();
 #endif
 
 	VifUnpackSSE_Init();
@@ -2705,14 +2705,13 @@ void VMManager::ShutdownCPUProviders()
 	psxRec.Shutdown();
 	recCpu.Shutdown();
 #else
-	// ARM64 (Phase 1.5 / Phase 6): tear down the EE + IOP recompilers reserved above.
+	// ARM64 (Phase 1.5 / Phase 6 / Phase 7.8): tear down the VU + IOP + EE recompilers
+	// reserved above. recMicroVU1::Shutdown() waits on / closes vu1Thread for us.
+	CpuMicroVU1.Shutdown();
+	CpuMicroVU0.Shutdown();
+
 	psxRec.Shutdown();
 	recCpu.Shutdown();
-
-	// See the comment in the InitializeCPUProviders for an explaination why we
-	// still need to manage the MTVU thread.
-	if (vu1Thread.IsOpen())
-		vu1Thread.WaitVU();
 #endif
 }
 
@@ -2737,12 +2736,13 @@ void VMManager::UpdateCPUImplementations()
 	// ARM64 (Phase 4.3): the EE recompiler is now functional, so select it when the
 	// EE rec is enabled (it falls back to the interpreter per-opcode for anything it
 	// can't compile yet). (Phase 6) the IOP recompiler is functional too — same
-	// per-opcode interpreter fallback model. VU remains interpreter until its port lands.
+	// per-opcode interpreter fallback model. (Phase 7.8) microVU0/1 are now ported, so
+	// select them when the VU recs are enabled (mirrors the x86 path).
 	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
 	psxCpu = CHECK_IOPREC ? &psxRec : &psxInt;
 
-	CpuVU0 = &CpuIntVU0;
-	CpuVU1 = &CpuIntVU1;
+	CpuVU0 = EmuConfig.Cpu.Recompiler.EnableVU0 ? static_cast<BaseVUmicroCPU*>(&CpuMicroVU0) : static_cast<BaseVUmicroCPU*>(&CpuIntVU0);
+	CpuVU1 = EmuConfig.Cpu.Recompiler.EnableVU1 ? static_cast<BaseVUmicroCPU*>(&CpuMicroVU1) : static_cast<BaseVUmicroCPU*>(&CpuIntVU1);
 #endif
 }
 
@@ -2762,6 +2762,11 @@ void VMManager::Internal::ClearCPUExecutionCaches()
 	// recs aren't selected).
 	recCpu.Reset();
 	psxRec.Reset();
+
+	// (Phase 7.8) mVU's VU0 needs to be properly initialized for macro mode even if it's
+	// not used for micro mode (mirrors the x86 branch above).
+	if (CHECK_EEREC && !EmuConfig.Cpu.Recompiler.EnableVU0)
+		CpuMicroVU0.Reset();
 #endif
 
 	CpuVU0->Reset();

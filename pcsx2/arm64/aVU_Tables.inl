@@ -17,90 +17,12 @@
 // but this .inl must be #included *before* aVU_Flags.inl's read-scan.
 
 //------------------------------------------------------------------
-// Branch-attribute setup (x86: microVU_Lower.inl setBranchA)
+// Implemented opcode handlers
 //------------------------------------------------------------------
-// Records the branch type (x) on the lower op + handles the "branch to next
-// instruction" NOP optimization. No emit — pure IR bookkeeping across all passes.
-// Ported here (rather than a future aVU_Lower.inl) because B/BAL need it now; it
-// moves out when 7.5b ports the full Lower ISA.
-void setBranchA(mP, int x, int _x_)
-{
-	bool isBranchDelaySlot = false;
-
-	incPC(-2);
-	if (mVUlow.branch)
-		isBranchDelaySlot = true;
-	incPC(2);
-
-	pass1
-	{
-		if (_Imm11_ == 1 && !_x_ && !isBranchDelaySlot)
-		{
-			DevCon.WriteLn(Color_Green, "microVU%d: Branch Optimization", mVU.index);
-			mVUlow.isNOP = true;
-			return;
-		}
-		mVUbranch     = x;
-		mVUlow.branch = x;
-	}
-	pass2 { if (_Imm11_ == 1 && !_x_ && !isBranchDelaySlot) { return; } mVUbranch = x; }
-	pass3 { mVUbranch = x; }
-	pass4 { if (_Imm11_ == 1 && !_x_ && !isBranchDelaySlot) { return; } mVUbranch = x; }
-}
-
-//------------------------------------------------------------------
-// Implemented opcode handlers (mVU_NOP + the full Upper ISA live in aVU_Upper.inl,
-// included before this file; the Lower ISA is still NOP/B-only until task 7.5b)
-//------------------------------------------------------------------
-
-mVUop(mVU_B)
-{
-	setBranchA(mX, 1, 0);
-	pass1 { mVUanalyzeNormBranch(mVU, 0, false); }
-	pass2
-	{
-		if (mVUlow.badBranch)  { mvuStrImm32(&mVU.badBranch, branchAddr(mVU), gprT1); }
-		if (mVUlow.evilBranch) { if (isEvilBlock) mvuStrImm32(&mVU.evilevilBranch, branchAddr(mVU), gprT1); else mvuStrImm32(&mVU.evilBranch, branchAddr(mVU), gprT1); }
-		mVU.profiler.EmitOp(opB);
-	}
-	pass3 { mVUlog("B [<a href=\"#addr%04x\">%04x</a>]", branchAddr(mVU), branchAddr(mVU)); }
-}
-
-mVUop(mVU_BAL)
-{
-	setBranchA(mX, 2, _It_);
-	pass1 { mVUanalyzeNormBranch(mVU, _It_, true); }
-	pass2
-	{
-		if (!mVUlow.evilBranch)
-		{
-			const a64::Register regT = mVU.regAlloc->allocGPR(-1, _It_, mVUlow.backupVI);
-			armAsm->Mov(regT, bSaveAddr);
-			mVU.regAlloc->clearNeeded(regT);
-		}
-		else
-		{
-			incPC(-2);
-			DevCon.Warning("Linking BAL from %s branch taken/not taken target! - If game broken report to PCSX2 Team", branchSTR[mVUlow.branch & 0xf]);
-			incPC(2);
-
-			const a64::Register regT = mVU.regAlloc->allocGPR(-1, _It_, mVUlow.backupVI);
-			if (isEvilBlock)
-				mvuLdr32(regT, &mVU.evilBranch);
-			else
-				mvuLdr32(regT, &mVU.badBranch);
-
-			armAsm->Add(regT.W(), regT.W(), 8);
-			armAsm->Lsr(regT.W(), regT.W(), 3);
-			mVU.regAlloc->clearNeeded(regT);
-		}
-
-		if (mVUlow.badBranch)  { mvuStrImm32(&mVU.badBranch, branchAddr(mVU), gprT1); }
-		if (mVUlow.evilBranch) { if (isEvilBlock) mvuStrImm32(&mVU.evilevilBranch, branchAddr(mVU), gprT1); else mvuStrImm32(&mVU.evilBranch, branchAddr(mVU), gprT1); }
-		mVU.profiler.EmitOp(opBAL);
-	}
-	pass3 { mVUlog("BAL vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Ft_, branchAddr(mVU), branchAddr(mVU)); }
-}
+// The full Upper ISA (+ mVU_NOP) lives in aVU_Upper.inl and the full Lower ISA
+// (incl. setBranchA, mVU_B/mVU_BAL, the FMAC-table sub-dispatch, and every
+// integer/load-store/EFU/flag/branch handler) lives in aVU_Lower.inl — both are
+// #included before this file. This file only owns the dispatch tables.
 
 mVUop(mVUunknown)
 {
@@ -124,13 +46,35 @@ mVUop(mVU_UPPER_FD_00);
 mVUop(mVU_UPPER_FD_01);
 mVUop(mVU_UPPER_FD_10);
 mVUop(mVU_UPPER_FD_11);
+mVUop(mVULowerOP);
+mVUop(mVULowerOP_T3_00);
+mVUop(mVULowerOP_T3_01);
+mVUop(mVULowerOP_T3_10);
+mVUop(mVULowerOP_T3_11);
 
 //------------------------------------------------------------------
-// Opcode tables — every unimplemented slot is mVUunknown (filled in 7.5)
+// Opcode tables — every unimplemented slot is mVUunknown
 //------------------------------------------------------------------
 #define U mVUunknown
 
 static const Fnptr_mVUrecInst mVULOWER_OPCODE[128] = {
+	mVU_LQ     , mVU_SQ     , mVUunknown , mVUunknown,
+	mVU_ILW    , mVU_ISW    , mVUunknown , mVUunknown,
+	mVU_IADDIU , mVU_ISUBIU , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVU_FCEQ   , mVU_FCSET  , mVU_FCAND  , mVU_FCOR,
+	mVU_FSEQ   , mVU_FSSET  , mVU_FSAND  , mVU_FSOR,
+	mVU_FMEQ   , mVUunknown , mVU_FMAND  , mVU_FMOR,
+	mVU_FCGET  , mVUunknown , mVUunknown , mVUunknown,
+	mVU_B      , mVU_BAL    , mVUunknown , mVUunknown,
+	mVU_JR     , mVU_JALR   , mVUunknown , mVUunknown,
+	mVU_IBEQ   , mVU_IBNE   , mVUunknown , mVUunknown,
+	mVU_IBLTZ  , mVU_IBGTZ  , mVU_IBLEZ  , mVU_IBGEZ,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVULowerOP , mVUunknown , mVUunknown , mVUunknown,
 	U     , U     , U     , U,
 	U     , U     , U     , U,
 	U     , U     , U     , U,
@@ -139,7 +83,6 @@ static const Fnptr_mVUrecInst mVULOWER_OPCODE[128] = {
 	U     , U     , U     , U,
 	U     , U     , U     , U,
 	U     , U     , U     , U,
-	mVU_B , mVU_BAL, U     , U,   // 0x20: B, BAL
 	U     , U     , U     , U,
 	U     , U     , U     , U,
 	U     , U     , U     , U,
@@ -147,22 +90,69 @@ static const Fnptr_mVUrecInst mVULOWER_OPCODE[128] = {
 	U     , U     , U     , U,
 	U     , U     , U     , U,
 	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
-	U     , U     , U     , U,
+};
+
+static const Fnptr_mVUrecInst mVULowerOP_T3_00_OPCODE[32] = {
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVU_MOVE   , mVU_LQI    , mVU_DIV    , mVU_MTIR,
+	mVU_RNEXT  , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVU_MFP    , mVU_XTOP   , mVU_XGKICK,
+	mVU_ESADD  , mVU_EATANxy, mVU_ESQRT  , mVU_ESIN,
+};
+
+static const Fnptr_mVUrecInst mVULowerOP_T3_01_OPCODE[32] = {
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVU_MR32   , mVU_SQI    , mVU_SQRT   , mVU_MFIR,
+	mVU_RGET   , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVU_XITOP  , mVUunknown,
+	mVU_ERSADD , mVU_EATANxz, mVU_ERSQRT , mVU_EATAN,
+};
+
+static const Fnptr_mVUrecInst mVULowerOP_T3_10_OPCODE[32] = {
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVU_LQD    , mVU_RSQRT  , mVU_ILWR,
+	mVU_RINIT  , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVU_ELENG  , mVU_ESUM   , mVU_ERCPR  , mVU_EEXP,
+};
+
+static const Fnptr_mVUrecInst mVULowerOP_T3_11_OPCODE[32] = {
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVU_SQD    , mVU_WAITQ  , mVU_ISWR,
+	mVU_RXOR   , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVU_ERLENG , mVUunknown , mVU_WAITP  , mVUunknown,
+};
+
+static const Fnptr_mVUrecInst mVULowerOP_OPCODE[64] = {
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVU_IADD   , mVU_ISUB   , mVU_IADDI  , mVUunknown,
+	mVU_IAND   , mVU_IOR    , mVUunknown , mVUunknown,
+	mVUunknown , mVUunknown , mVUunknown , mVUunknown,
+	mVULowerOP_T3_00, mVULowerOP_T3_01, mVULowerOP_T3_10, mVULowerOP_T3_11,
 };
 
 static const Fnptr_mVUrecInst mVU_UPPER_OPCODE[64] = {
@@ -237,5 +227,10 @@ mVUop(mVU_UPPER_FD_00) { mVU_UPPER_FD_00_TABLE[((mVU.code >> 6) & 0x1f)](mX); }
 mVUop(mVU_UPPER_FD_01) { mVU_UPPER_FD_01_TABLE[((mVU.code >> 6) & 0x1f)](mX); }
 mVUop(mVU_UPPER_FD_10) { mVU_UPPER_FD_10_TABLE[((mVU.code >> 6) & 0x1f)](mX); }
 mVUop(mVU_UPPER_FD_11) { mVU_UPPER_FD_11_TABLE[((mVU.code >> 6) & 0x1f)](mX); }
+mVUop(mVULowerOP)       { mVULowerOP_OPCODE       [ (mVU.code & 0x3f) ](mX); }
+mVUop(mVULowerOP_T3_00) { mVULowerOP_T3_00_OPCODE [((mVU.code >> 6) & 0x1f)](mX); }
+mVUop(mVULowerOP_T3_01) { mVULowerOP_T3_01_OPCODE [((mVU.code >> 6) & 0x1f)](mX); }
+mVUop(mVULowerOP_T3_10) { mVULowerOP_T3_10_OPCODE [((mVU.code >> 6) & 0x1f)](mX); }
+mVUop(mVULowerOP_T3_11) { mVULowerOP_T3_11_OPCODE [((mVU.code >> 6) & 0x1f)](mX); }
 mVUop(mVUopU)          { mVU_UPPER_OPCODE     [ (mVU.code & 0x3f) ](mX); } // Upper Opcode
 mVUop(mVUopL)          { mVULOWER_OPCODE      [ (mVU.code >>  25) ](mX); } // Lower Opcode

@@ -1487,13 +1487,12 @@ namespace EmuFolders
 
 // ------------ CPU / Recompiler Options ---------------
 
-#ifdef _M_X86 // TODO: Remove me once EE/VU/IOP recs are added.
+// (ARM64 Phase 7.8) microVU0/1 are now ported, so REC_VU1/THREAD_VU1 track the config
+// on both architectures — the old ARM64 hardcoded-false stub would make GetGSPacketSize
+// take its `!REC_VU1` path and return the XGKICK packet size with the bit31 EOP flag set,
+// which mVU_XGKICK_ then mis-reads as a multi-GB transfer (memcpy crash on the first kick).
 #define REC_VU1 (EmuConfig.Cpu.Recompiler.EnableVU1)
 #define THREAD_VU1 (REC_VU1 && EmuConfig.Speedhacks.vuThread)
-#else
-#define THREAD_VU1 false
-#define REC_VU1 false
-#endif
 #define INSTANT_VU1 (EmuConfig.Speedhacks.vu1Instant)
 #define CHECK_EEREC (EmuConfig.Cpu.Recompiler.EnableEE)
 #define CHECK_CACHE (EmuConfig.Cpu.Recompiler.EnableEECache)

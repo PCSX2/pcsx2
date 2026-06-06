@@ -41,13 +41,9 @@ extern void mVUincCycles(microVU& mVU, int x);
 // mvuStrSS/mvuLdrSS/mvuLdrQ/mvuStrQ/mvuMemAndImm32) moved to aVU_Misc.inl so the
 // Tables/Flags slices (included earlier) can share them.
 
-//------------------------------------------------------------------
-// XGKICK stubs (real GIF-kick path is task 7.5b)
-//------------------------------------------------------------------
-// microVU is unselected on ARM64 (VMManager pins CpuIntVU0/1), so these are never
-// executed yet; they exist only so mVUendProgram/mVUDTendProgram link and compile.
-static void mVU_XGKICK_DELAY(mV) { (void)mVU; /* TODO 7.5b: run pending XGKick */ }
-static void mVU_XGKICK_SYNC(mV, bool flush) { (void)mVU; (void)flush; /* TODO 7.5b */ }
+// The real XGKICK emit helpers (mVU_XGKICK_DELAY / mVU_XGKICK_SYNC) + the GIF
+// transfer C functions live in aVU_Lower.inl (task 7.5b), which is #included
+// before this file; the branch drivers below call them.
 
 //------------------------------------------------------------------
 // C thunks called from emitted code
@@ -357,10 +353,14 @@ extern void* mVUblockFetch(microVU& mVU, u32 startPC, uptr pState);
 template <int vuIndex> void* mVUcompileJIT(u32 startPC, uptr ptr);
 
 // Small file-local helpers for the absolute-addr ops the drivers need.
-static inline void mvuLdrh16(const a64::Register& wreg, const void* addr)
+// Sign-extending 16-bit load: every caller loads mVU.branch and compares it
+// against 0 with signed conditions (IBLTZ/IBGEZ/IBGTZ/IBLEZ → lt/ge/gt/le), so
+// it must mirror x86's 16-bit *signed* `xCMP(ptr16[&mVU.branch], 0)` — a VI value
+// with bit15 set is negative. (eq/ne for IBEQ/IBNE are unaffected by the extend.)
+static inline void mvuLdrsh16(const a64::Register& wreg, const void* addr)
 {
 	armMoveAddressToReg(RSCRATCHADDR, addr);
-	armAsm->Ldrh(wreg.W(), a64::MemOperand(RSCRATCHADDR));
+	armAsm->Ldrsh(wreg.W(), a64::MemOperand(RSCRATCHADDR));
 }
 // xTEST(ptr32[addr], imm) + xForwardJump32(Jcc_Zero): load, test, branch-if-zero.
 static inline void mvuTestMemBranchZero(const void* addr, u32 imm, a64::Label& tgt, const a64::Register& tmp)
@@ -516,7 +516,7 @@ void condBranch(mV, microFlagCycles& mFC, a64::Condition JMPcc)
 			mvuMemOrImm32(&mVU.regs().flags, VUFLAG_INTCINTERRUPT, gprT1);
 		}
 		mVUDTendProgram(mVU, &mFC, 2);
-		mvuLdrh16(gprT1, &mVU.branch);
+		mvuLdrsh16(gprT1, &mVU.branch);
 		armAsm->Cmp(gprT1.W(), 0);
 		a64::Label tJMP;
 		armAsm->B(&tJMP, a64::InvertCondition(JMPcc));
@@ -547,7 +547,7 @@ void condBranch(mV, microFlagCycles& mFC, a64::Condition JMPcc)
 			mvuMemOrImm32(&mVU.regs().flags, VUFLAG_INTCINTERRUPT, gprT1);
 		}
 		mVUDTendProgram(mVU, &mFC, 2);
-		mvuLdrh16(gprT1, &mVU.branch);
+		mvuLdrsh16(gprT1, &mVU.branch);
 		armAsm->Cmp(gprT1.W(), 0);
 		a64::Label dJMP;
 		armAsm->B(&dJMP, a64::InvertCondition(JMPcc));
@@ -571,7 +571,7 @@ void condBranch(mV, microFlagCycles& mFC, a64::Condition JMPcc)
 		armEmitCall(mVU.copyPLState);
 
 		mVUendProgram(mVU, &mFC, 3);
-		mvuLdrh16(gprT1, &mVU.branch);
+		mvuLdrsh16(gprT1, &mVU.branch);
 		armAsm->Cmp(gprT1.W(), 0);
 		a64::Label dJMP;
 		armAsm->B(&dJMP, JMPcc);
@@ -595,7 +595,7 @@ void condBranch(mV, microFlagCycles& mFC, a64::Condition JMPcc)
 			DevCon.Warning("End on evil branch! - Not implemented! - If game broken report to PCSX2 Team");
 
 		mVUendProgram(mVU, &mFC, 2);
-		mvuLdrh16(gprT1, &mVU.branch);
+		mvuLdrsh16(gprT1, &mVU.branch);
 		armAsm->Cmp(gprT1.W(), 0);
 
 		incPC(3);
@@ -618,7 +618,7 @@ void condBranch(mV, microFlagCycles& mFC, a64::Condition JMPcc)
 	}
 	else // Normal Conditional Branch
 	{
-		mvuLdrh16(gprT1, &mVU.branch);
+		mvuLdrsh16(gprT1, &mVU.branch);
 		armAsm->Cmp(gprT1.W(), 0);
 
 		incPC(3);

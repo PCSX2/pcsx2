@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <optional>
+
 // ARM64 microVU — misc emit helpers (Phase 7, task 7.5). VIXL port of the
 // emit-coupled tail of pcsx2/x86/microVU_Misc.inl.
 //
@@ -186,6 +188,32 @@ __fi void mVUaddrFix(mV, const a64::Register& gprReg, const a64::Register& tmpRe
 			}
 		armAsm->Bind(&jmpB);
 		armAsm->Lsl(gprReg, gprReg, 4); // * 16 -> byte offset (64-bit)
+	}
+}
+
+// If the VU address source register is the always-zero VI0, the effective VU
+// memory address is a compile-time constant — return the absolute host pointer
+// so the load/store handler can skip the runtime moveVIToGPR + mVUaddrFix dance.
+// x86 returned an xAddressVoid (a folded ptr operand); ARM64 has no implicit
+// memory operands, so the contract is "absolute host address, materialized by
+// the caller via armMoveAddressToReg". std::nullopt ⇒ must compute at runtime.
+__fi std::optional<const void*> mVUoptimizeConstantAddr(mV, u32 srcreg, s32 offset, s32 offsetSS_)
+{
+	// if we had const prop for VIs, we could do that here..
+	if (srcreg != 0)
+		return std::nullopt;
+
+	const s32 addr = 0 + offset;
+	if (isVU1)
+	{
+		return (const void*)(mVU.regs().Mem + ((addr & 0x3FFu) << 4) + offsetSS_);
+	}
+	else
+	{
+		if (addr & 0x400)
+			return std::nullopt;
+
+		return (const void*)(mVU.regs().Mem + ((addr & 0xFFu) << 4) + offsetSS_);
 	}
 }
 

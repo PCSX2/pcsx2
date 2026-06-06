@@ -8,45 +8,72 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 7 (VU recompilers / microVU) — 7.5a Upper IS DONE. The full Upper float-vector ISA now
-compiles (mVU_UPPER_OPCODE + FD_xx sub-tables route to real NEON handlers). microVU stays
-*unselected* (VMManager pins CpuIntVU0/1). Next: 7.5b Lower opcode handlers (`aVU_Lower.inl`).**
+**Phase 7 (VU recompilers / microVU) — 7.8 IS LIVE AND VALIDATED on real games. microVU0/1 is now
+the selected VU provider on ARM64 (`CpuVU0/1 = EnableVU0/1 ? CpuMicroVU0/1 : CpuIntVU0/1`). After
+wiring, two real-execution bugs were found and fixed; BIOS, a 2D game (Odin Sphere), and a VU1-heavy
+3D game (Final Fantasy X) all boot and run. Next: continue 7.8 — deeper soak/perf on more titles,
+then 7.9 (macro mode) / Phase 8 polish. builds arm64, unittests 2/2.**
 
-7.5a landed in two buildable slices:
-1. **Custom SSE arith helpers** (`aVU_Misc.inl`, `4875c456f`): `MIN_MAX_PS` (signed-magnitude
-   integer-compare path) / `MIN_MAX_SS` (double-pack trick, FMIN/FMAX on `.V2D()`) /
-   `ADD_SS_TriAceHack` + the `SSE_ADD/SUB/MUL/DIV/MAX/MIN(PS|SS)` + `ADD2(PS|SS)` wrappers via
-   `mVUclampedArith` (clampOp). Added `xEmptyReg` sentinel (`aVU_IR.h`, default `a64::VRegister`,
-   tested with `.IsNone()`), `shuffleSS` + the `mVUlog*` no-op macros (`aVU_Misc.h`).
-2. **Upper handlers** (`aVU_Upper.inl`, `1b6544305`): `mVUupdateFlags` + `mVU_FMACa/b/c/d` +
-   `setupFtReg`/`setupPass1`/`doSafeSub` + ABS/OPMULA/OPMSUB/FTOIx/ITOFx/CLIP/NOP + every
-   `mVUop` wrapper. Wired into `aVU_Tables.inl` (`mVU_UPPER_OPCODE` + FD_00/01/10/11).
+**7.8 wiring (`dcbdec813`, `VMManager.cpp`):** the four ARM64 `#else` branches mirror x86 —
+`InitializeCPUProviders` reserves `CpuMicroVU0/1` (recMicroVU1::Reserve opens vu1Thread, so the old
+explicit `vu1Thread.Open()` workaround is gone); `ShutdownCPUProviders` shuts them down (recMicroVU1
+waits/closes vu1Thread); `UpdateCPUImplementations` selects micro vs int per `EnableVU0/1`;
+`ClearCPUExecutionCaches` resets `CpuMicroVU0` for macro mode when EE rec is on but VU0 micro is off.
 
-**Key x86→NEON translations (reusable for 7.5b):**
-- `xMOVMSKPS(gpr,xmm)` → `mVUmovemask` (`Sshr` #31 → `And` {1,2,4,8} → `Addv` → `Fmov`).
-- `xCMPEQ.PS(zero,r)` (== 0) → `Fcmeq(r.V4S(), #0.0)`; `xPCMP.GTD/.EQD` → `Cmgt`/`Cmeq`.
-- `xPANDN(d,s)` (d=~d&s) → `Bic(d,s,d)`; `xPBLEND.W(d,s,0x55)` → `Bit(d,s,loHalfMask)`.
-- `xCVTTPS2DQ` → `Fcvtzs` — **NEON saturates positive overflow to 0x7fffffff natively**, so the
-  x86 PCMPGTD/PXOR sign-fixup is dropped; `xCVTDQ2PS` → `Scvtf`. (NaN: x86 gives 0x80000000, NEON
-  gives 0 — accepted divergence.)
-- CLIP's `PACKSSWB`+`PMOVMSKB`&0x3f → `V8H` weight-`And` {1,2,4,8,16,32,64,128} + `Addv` + `Umov`.
-- Absolute `ptr128[&const]` arith operands → `mvuLdrQ(RQSCRATCH, addr)` then the reg-reg NEON op.
-- `xMOVSS(d,s)` → `Ins(d.V4S(),0,s.V4S(),0)`; `xMOVAPS` → `Mov(.V16B())`; `xPSHUF.D`/`xSHUF.PS` →
-  `mVUshufflePS`. `mVUmergeRegs` arm64 has no default modXYZW — pass `false` explicitly.
+**7.8 bug #1 — XGKICK packet-size crash (`7fb86fcfa`, `Config.h`):** ARM64 had `REC_VU1`/`THREAD_VU1`
+hardcoded `false` (the pre-port stub). With microVU1 selected, that made `Gif_Unit::GetGSPacketSize`
+take its `!REC_VU1` branch and OR the EOP flag into bit31 of the returned size (e.g. `0x800000d0`);
+`mVU_XGKICK_` used the raw value so `size - diff` underflowed to ~2 GB → `CopyGSPacketData` memcpy
+SIGSEGV on the *first* kick (BIOS logo). Fix: point `REC_VU1`/`THREAD_VU1` at `EmuConfig` like x86.
+
+**7.8 bug #2 — compareState executed JIT mid-compile under W^X (`b7ae2fa7b`, `aVU.h`):** microVU runs
+its whole recursive compile inside one `BeginCodeWrite`/`EndCodeWrite` session → on Apple Silicon
+`pthread_jit_write_protect_np(0)` leaves the MAP_JIT region **writable but non-executable** for the
+duration. The block search (`search()`→`compareState`) runs mid-compile and *executed* the
+JIT-generated `compareStateF` → SIGBUS on the instruction fetch (both arg pointers were mapped &
+aligned — the tell-tale exec-permission fault). Fix: `compareState` is now a plain C++
+`__builtin_memcmp` of the 96-byte `microRegInfo` (compareStateF was just a 0-iff-equal test). This
+also fixed the identical crash on the **MTVU thread** (write-protect is per-thread), so MTVU works
+too and `THREAD_VU1` stays at full x86 parity (gated on `Speedhacks.vuThread`).
+
+**Debugging method (worked well):** boot under `lldb -b -o run -k '<cmds-on-crash>'`, re-sign the
+bundle with a `get-task-allow` entitlement first. For bug #1, a temporary `mVU_XGKICK_` size/tag log
+revealed the bit31; for bug #2, `memory region`/`p *$x0` showed the operands were valid → it was an
+exec-perm fault, not a bad pointer. Always re-run `pcsx2-postprocess-bundle` after a `pcsx2-qt` build
+before launching (else the duplicate-Qt SIGABRT masquerades as a VM crash).
+
+7.5b (`ddd15c67a`, `aVU_Lower.inl` NEW ≈1500 lines) ported all of x86 `microVU_Lower.inl`:
+VI ALU (IADD/IADDI/IADDIU/IAND/IOR/ISUB/ISUBIU), load/store (LQ/LQD/LQI, SQ/SQD/SQI, ILW/ILWR,
+ISW/ISWR), EFU (DIV/SQRT/RSQRT, EATAN*/EEXP/ELENG/ERCPR/ERLENG/ERSADD/ERSQRT/ESADD/ESIN/ESQRT/ESUM,
+WAITP/WAITQ), MFIR/MFP/MOVE/MR32/MTIR, RINIT/RGET/RNEXT/RXOR, FCxxx/FMxxx/FSxxx, XTOP/XITOP, the
+**real** XGKICK GIF path (`mVU_XGKICK_`/`_vuXGKICKTransfermVU` + `mVU_XGKICK_SYNC/DELAY`, replacing
+the aVU_Branch.inl no-op stubs), and the branch op handlers B/BAL/IBxx/JR/JALR (+ `setBranchA`,
+`condEvilBranch`, `normJumpPass2` — all moved out of aVU_Tables.inl into Lower). `mVUoptimizeConstantAddr`
+landed in `aVU_Misc.inl` returning an absolute host VU-mem pointer (std::nullopt ⇒ runtime compute).
+Tables: full `mVULOWER_OPCODE` + `mVULowerOP_OPCODE` + `T3_00/01/10/11` sub-tables + dispatchers.
+
+**7.5b-specific x86→NEON translations (in addition to 7.5a's set):**
+- `xMOVD`/`xMOVDZX` → `Fmov(W, S)` / `Fmov(S, W)`; `xMOVSS(d,s)` → `Ins(d.V4S(),0,s.V4S(),0)`.
+- `xMOVSSZX(xmm, ptr32[c])` → `Ldr(xmm.S(), [c])` (zeroes upper lanes); `xSQRT.SS` → `Fsqrt(.S)`.
+- `xMUL/xADD/xSUB.SS(r, ptr32[c])` → `mvuLdrSS(scratch, c)` + `F{mul,add,sub}(r.S(), …)`.
+- `xCMPEQ.SS(0,r)`+`xPTEST` → `Fcmeq(.S)` + `Fmov`→W + `Cmp` (testZero leaves eq==“reg!=0”).
+- SSE `xDP.PS(.,.,0x71)` (sum x²+y²+z²) → `Fmul` + zero-W lane (`Ins` from a zeroed reg) + two `Faddp`.
+- `xComplexAddress(tmp, base, idx)` → `armMoveAddressToReg(tmp, base)` + `Add(tmp, tmp, idx)`,
+  then `MemOperand(tmp, off)`. LQ/SQ get `mvuLoadRegBase`/`mvuSaveRegBase` (base-reg variants of
+  mVUloadReg/mVUsaveReg) because the VU data-mem pointer (`mVU.regs().Mem`) is NOT at a fixed offset
+  from RVUSTATE. `gprT1q`/`gprT2q` local macros = `a64::x9`/`a64::x10` (64-bit views for mVUaddrFix).
 
 **Per-block emit lifecycle (unchanged, the key ARM64 design):** x86's single global `x86Ptr` cursor
 → one `armSetAsmPtr`+`armStartBlock`/`armEndBlock`(+icache flush) session opened by the *outer*
 entries only (`mVUexecute` wraps `mVUsearchProg`; `mVUcompileJIT` wraps its search). Recursive
 `mVUcompile`/`normBranchCompile`/`condBranch` calls append into that one open stream.
 
-**Next — 7.5b Lower** (`aVU_Lower.inl`, x86 `microVU_Lower.inl` ≈2203 lines — the big one):
-VI integer ALU (IADD/ISUB/IADDI/IADDIU/IAND/IOR), load/store (LQ/SQ/ILW/ISW/LQI/SQI/LQD/SQD/
-ILWR/ISWR), EFU (DIV/SQRT/RSQRT + WAITQ/WAITP — reuses `SSE_DIVPS`/`DIVSS` already in `aVU_Misc.inl`),
-MOVE/MFIR/MTIR/MR32/MFP, RANDOM (RINIT/RGET/RNEXT/RXOR), FSAND/FSEQ/FSSET/FMAND/FCxxx, ELENG/ESQRT/
-etc. + the branch *op handlers* IBEQ/IBNE/IBLTZ/IBGTZ/IBLEZ/IBGEZ/JR/JALR (drivers already done) +
-`mVUoptimizeConstantAddr` (→ `aVU_Misc.inl`). Fill the `mVUunknown` slots in `mVULOWER_OPCODE` +
-the `mVULowerOP`/`T3_00/01/10/11` sub-tables (copy them from x86 `microVU_IR.h`'s table block).
-Once Lower lands, attempt a real round-trip behind a temporary selection flag, then 7.8.
+**⚠ 7.8 validation watch-items (compiled but UNVERIFIED at runtime):**
+1. ✅ FIXED (`condBranch` signed-16 compare). x86 condBranch does a *16-bit signed* `xCMP(ptr16
+   [&mVU.branch], 0)`; the helper now sign-extends (`mvuLdrh16`→`mvuLdrsh16`, `Ldrsh`) so the signed
+   conditions (IBLTZ/IBGEZ/IBGTZ/IBLEZ → lt/ge/gt/le) see a bit15-set VI value as negative. eq/ne
+   (IBEQ/IBNE) unaffected. Still UNVERIFIED at runtime, but now semantically correct.
+2. The whole Lower NEON math (EFU polynomials, MIN/MAX, DIV flag logic, CLIP) — first runtime test.
 
 ---
 
@@ -307,30 +334,43 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     `aVU_Compile.inl` + `aVU_Tables.inl` + flag read-scan + branch drivers — the Tables/Compile
     big-bang (`37b43dae6`/`360eea8d6`/`c0135eab3`/`04be7bfc0`). Per-block session owned by the outer
     entries (`mVUexecute`/`mVUcompileJIT`); icache flushed via `armEndBlock`. Builds; unittests 2/2.
-- [~] 7.5 **VIXL emission for the VU ISA:**
+- [x] 7.5 **VIXL emission for the VU ISA:** (both halves done — Upper 7.5a, Lower 7.5b)
   - [x] 7.5a Upper (FMAC float vector → NEON): DONE (`aVU_Upper.inl`, commits `4875c456f`
     SSE helpers / `1b6544305` handlers). Full Upper ISA — ADD/SUB/MUL/MADD/MSUB (+ACC, +i/q/
     x/y/z/w), MAX/MINI, FTOI/ITOF, ABS, OPMULA/OPMSUB, CLIP, NOP + `mVUupdateFlags`. The custom
     SSE arith primitives (MIN_MAX_PS/SS, ADD_SS_TriAceHack, SSE_ADD/SUB/MUL/DIV/MAX/MIN(PS|SS),
     ADD2) landed in `aVU_Misc.inl`. Tables wired (`mVU_UPPER_OPCODE` + FD_00/01/10/11).
-  - [ ] 7.5b Lower — VI integer ALU (IADD/ISUB/IADDI/IADDIU/IAND/IOR), load/store (LQ/SQ/ILW/ISW/
-    LQI/SQI/LQD/SQD/ILWR/ISWR), EFU (DIV/SQRT/RSQRT + WAITQ/WAITP), MOVE/MFIR/MTIR/MR32/MFP,
-    RANDOM (RINIT/RGET/RNEXT/RXOR), FSAND/FSEQ/FSSET/FMAND/FCxxx, ELENG/ESQRT/etc.
-    `microVU_Lower.inl` (the big one — 2203 lines x86).
+  - [x] 7.5b Lower (`aVU_Lower.inl`, `ddd15c67a`) — VI ALU (IADD/ISUB/IADDI/IADDIU/IAND/IOR/ISUBIU),
+    load/store (LQ/SQ/ILW/ISW/LQI/SQI/LQD/SQD/ILWR/ISWR), EFU (DIV/SQRT/RSQRT + EATAN*/EEXP/ELENG/
+    ERCPR/ERLENG/ERSADD/ERSQRT/ESADD/ESIN/ESQRT/ESUM + WAITQ/WAITP), MOVE/MFIR/MTIR/MR32/MFP, RANDOM
+    (RINIT/RGET/RNEXT/RXOR), FSAND/FSEQ/FSOR/FSSET/FMAND/FMEQ/FMOR/FCxxx, XTOP/XITOP, real XGKICK,
+    B/BAL/IBxx/JR/JALR (+ setBranchA/condEvilBranch/normJumpPass2). `mVUoptimizeConstantAddr`→
+    `aVU_Misc.inl`. Full LOWER/LowerOP/T3_xx tables wired. arm64; unittests 2/2. Stays unselected.
 - [x] 7.6 **Flags** — `microVU_Flags.inl` fully ported (`aVU_Flags.inl`). Analysis + emit
   (`ce947bbc0`): `findFlagInst`/`sortFlag`/`sortFullFlag`/`mVUstatusFlagOp`/`mVUsetFlags` +
   `mVUdivSet`/`mVUsetupFlags`. Read-scan (`360eea8d6`): `_mVUflagPass`/`mVUflagPass`/`mVUsetFlagInfo`
   + `shortBranch` (drive `mVUopU`/`mVUopL` pass4).
-- [~] 7.7 **Branches** — `microVU_Branch.inl` ported except the per-op handlers. **Program-exit
-  emitters** (`dabfe47e5`+`73616dccf`): `getLastFlagInst`/`mVUendProgram`/`mVUDTendProgram`/
-  `mVUsetupBranch` + E/T-bit & lpState C thunks + no-op XGKICK stubs. **Branch drivers DONE**
-  (`04be7bfc0`): `normBranchCompile`/`normJumpCompile`/`normBranch`/`normJump`/`condBranch`. `mVU_B`/
-  `mVU_BAL` op handlers done (in `aVU_Tables.inl`). Remaining: the conditional/jump op handlers
-  IBEQ/IBGEZ/IBGTZ/IBLEZ/IBLTZ/IBNE/JR/JALR (+ badBranch/evilBranch branch-in-delay-slot) — come
-  with 7.5b Lower (the drivers/condBranch that consume them are already in place).
-- [ ] 7.8 **Wire selection + validate** — flip `CpuVU0/CpuVU1` to `CpuMicroVU0/1` on ARM64 in
-  `VMManager.cpp` (Init/Shutdown/Update/Clear); XGKICK→GIF path; MTVU thread. Test ladder:
-  BIOS → 2D → IOP-heavy → FFX (VU1-heavy 3D).
+- [x] 7.7 **Branches** — `microVU_Branch.inl` fully ported. **Program-exit emitters**
+  (`dabfe47e5`+`73616dccf`): `getLastFlagInst`/`mVUendProgram`/`mVUDTendProgram`/`mVUsetupBranch`
+  + E/T-bit & lpState C thunks. **Branch drivers** (`04be7bfc0`): `normBranchCompile`/
+  `normJumpCompile`/`normBranch`/`normJump`/`condBranch`. **Op handlers** (`ddd15c67a`, in
+  `aVU_Lower.inl`): B/BAL + the conditional IBEQ/IBGEZ/IBGTZ/IBLEZ/IBLTZ/IBNE + JR/JALR +
+  badBranch/evilBranch (`condEvilBranch`/`normJumpPass2`). The no-op XGKICK stubs were replaced by
+  the real GIF-transfer path (now in Lower). condBranch's branch-value compare sign-extends
+  (`mvuLdrsh16`) to match x86's 16-bit signed `xCMP(ptr16…)` for the IBLTZ-family conditions.
+- [x] 7.8 **Wire selection + validate** — microVU0/1 selected on ARM64; two real-execution bugs
+  found and fixed; BIOS + 2D + VU1-heavy 3D all boot & run.
+  - [x] Selection wired (`dcbdec813`): all four ARM64 `#else` branches mirror x86; MTVU thread
+    managed via recMicroVU1::Reserve/Shutdown (no manual vu1Thread.Open workaround).
+  - [x] Bug #1 fixed (`7fb86fcfa`): `REC_VU1`/`THREAD_VU1` track `EmuConfig` (was hardcoded false) —
+    XGKICK packet-size bit31/EOP misread → ~2 GB memcpy crash on first kick.
+  - [x] Bug #2 fixed (`b7ae2fa7b`): `compareState` is C++ `memcmp`, not executed JIT — fixes the
+    W^X SIGBUS (executing non-executable MAP_JIT mid-compile) on both the CPU and MTVU threads.
+  - [x] **BIOS** boots clean to the PAL DVD 3D logo + OSDSYS menu; 75s stable.
+  - [x] **2D game** — Odin Sphere boots to PAL game mode (no crash, 90s).
+  - [x] **FFX (VU1-heavy 3D)** — boots & runs 120s, single-threaded *and* with MTVU force-enabled.
+  - [ ] Deeper validation: visual correctness, longer soak, more titles (GTA:SA, GT, Gradius, Rayman),
+    IOP-heavy/PS1 titles, perf profiling. Pending hands-on play (headless runs only confirm no-crash).
 - [ ] 7.9 **Macro mode** (lowest priority) — port `microVU_Macro.inl` so the EE rec emits COP2/VU0
   macro ops natively instead of the Phase 5.3 inline-interp fallback. Optional perf polish.
 
