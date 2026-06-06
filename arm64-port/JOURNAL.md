@@ -58,11 +58,25 @@
   uploaded subroutines, defeating linear disasm).
 
 **Blockers / open questions:** Program-level diff pinpoints the diverging *program*, not the opcode.
-Q-lag may be root or symptom.
 
-**Next step:** isolate the diverging opcode — drive the diff at block granularity, or instrument the
-Q pipeline (readQ/writeQ/incQ in the analysis pass), or compare after each EFU/DIV. Then fix and
-re-run the ladder.
+**Deeper narrowing (Rayman):** disassembled the diverging programs — they are **arithmetic-free**
+vertex gather/scatter programs: only LQ/LQI/SQ/SQI/ILW/ILWR, integer IADD/ISUB address math,
+conditional branches (IBNE/IBLEZ/...), FMAND, and a single DIV. **No MUL/ADD/MADD/MSUB/EFU/MFP.** So
+the wrong values are NOT FMAC overflow. The divergences are: (a) committed VU-memory (stored VF data)
+wrong, and (b) **VI registers diverge — incl. a loop counter (VI13: interp -4 vs mvu 0)**, i.e. the
+loop ran a different number of iterations ⇒ a **conditional branch / control flow went wrong**, or
+load/store addressing is wrong. Verified faithful-to-x86 by inspection: SUB, DIV, testZero, LQI,
+ILWR, mVUaddrFix, mvuLoad/SaveRegBase, mVUclamp1/2 + constants, the Q analysis (incQ/readQ/writeQ).
+Q-lag is a benign program-boundary artifact (DIV latency), not the bug. Strong remaining suspects
+(systemic, not per-op): the **VI register allocator writeback** and the **branch delay-slot VI-backup**
+(`mVUlow.backupVI` / `mVU.VIbackup` / `memReadIs`/`memReadIt`) feeding the conditional branches —
+a wrong VI value there corrupts loop counts and vertex addresses → garbage geometry → black screen.
+
+**Next step:** per-instruction localization (the program-level diff isn't fine enough). Options:
+(a) instrument microVU to flush+dump VF/VI after each instruction vs the interpreter's single-step
+trace; (b) audit the VI regalloc writeback + the delay-slot VI backup against x86; (c) extend the
+diff to compare ALL VI[0..31] + the MAC/status/clip flag regs (FMAND reads MACflag) to see if a flag
+or a specific VI diverges first.
 
 ---
 
