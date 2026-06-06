@@ -107,6 +107,12 @@ static void mVUcacheProg(microVU& mVU, microProgram& prog);
 // mVUflagCheck below odr-uses the emit helpers so their VIXL bodies compile now.
 #include "arm64/aVU_Flags.inl"
 
+// Branch / program-exit emission (task 7.7) — the two program-exit emitters
+// (mVUendProgram/mVUDTendProgram) + getLastFlagInst + the E/T-bit & lpState C
+// thunks. They make NO opcode-table calls, so they compile standalone ahead of
+// the Tables/Compile big-bang. mVUbranchCheck below odr-uses the emitters.
+#include "arm64/aVU_Branch.inl"
+
 //------------------------------------------------------------------
 // Pass-1 pipeline / cycle / range helpers (task 7.3 part 2)
 //------------------------------------------------------------------
@@ -1412,4 +1418,17 @@ static_assert(alignof(microBlock) == 16, "microBlock must stay 16-byte aligned")
 	int bFlag[4];
 	(void)sortFlag(mFC.xStatus, bFlag, 0);
 	sortFullFlag(mFC.xStatus, bFlag);
+}
+
+// Force the branch/program-exit emitters (aVU_Branch.inl) to be compiled. The two
+// mVUendProgram/mVUDTendProgram emitters are the only non-static, never-yet-called
+// emit functions in this slice; odr-use them so their VIXL bodies (and any
+// emission error) are instantiated now. Never called.
+[[maybe_unused]] static void mVUbranchCheck()
+{
+	microVU& mVU = microVU0;
+	microFlagCycles mFC{};
+	(void)getLastFlagInst(mVUregs, mFC.xStatus, 0, 0);
+	mVUendProgram(mVU, &mFC, 1);
+	mVUDTendProgram(mVU, &mFC, 1);
 }
