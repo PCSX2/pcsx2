@@ -25,6 +25,7 @@
 #include "Dmac.h"
 #include "SaveState.h"
 #include "Gif_Unit.h" // gifUnit + GIF_TRANS_XGKICK (XGKICK GIF transfer, aVU_Lower.inl)
+#include "DebugTools/Debug.h" // disVU1MicroUF/LF (MVU_DIFF disasm)
 
 #include "common/AlignedMalloc.h"
 #include "common/Perf.h"
@@ -48,6 +49,13 @@ typedef void (*mVUrecCallXG)(void);
 
 // Program logging is compiled out by default (x86: microVU_Misc.h mVUlogProg).
 #define mVUdumpProg(...) if (0) {}
+
+// --- DEBUG: microVU1-vs-interpreter shadow differential (env MVU_DIFF=1) -------
+// When set, recMicroVU1::Execute runs the *interpreter* as the real (known-good)
+// VU1 and microVU1 as a side-effect-suppressed shadow, comparing VF/VI/ACC/Mem
+// and logging the first diverging program's start PC. s_mvuShadowRun gates the
+// microVU XGKICK C entry points so the shadow run doesn't double-transfer to GS.
+static bool s_mvuShadowRun = false;
 
 // --- dispatcher + helper-thunk codegen (task 7.2d) ----------------------------
 // These emit into the already-open armAsm (mVUgenerateDispatchers opens it).
@@ -871,6 +879,74 @@ void recMicroVU1::Step()
 {
 }
 
+// --- DEBUG shadow differential (env MVU_DIFF=1) --------------------------------
+static const bool s_mvuDiff = (getenv("MVU_DIFF") != nullptr);
+
+namespace
+{
+	struct VU1Snap
+	{
+		VURegs regs;       // full register file + pipeline/branch/ebit/pending state
+		u8 mem[0x4000];    // VU1 data memory
+	};
+	void mvuSnap(VU1Snap& s)
+	{
+		s.regs = VU1;
+		std::memcpy(s.mem, VU1.Mem, sizeof(s.mem));
+	}
+	void mvuRestore(const VU1Snap& s)
+	{
+		u8* mem = VU1.Mem;
+		u8* micro = VU1.Micro;
+		VU1 = s.regs;
+		VU1.Mem = mem;
+		VU1.Micro = micro;
+		std::memcpy(VU1.Mem, s.mem, sizeof(s.mem));
+	}
+	// Returns true (and logs) on the first divergence. startPC is the program entry.
+	bool mvuDiffReport(u32 startPC, const VU1Snap& ref /*interp*/, const VU1Snap& got /*micro*/)
+	{
+		for (int r = 1; r < 32; r++)
+		{
+			if (std::memcmp(&ref.regs.VF[r], &got.regs.VF[r], 16) != 0)
+			{
+				Console.Error("MVU_DIFF @pc=%04x VF%02d int=%08x %08x %08x %08x mvu=%08x %08x %08x %08x",
+					startPC * 8, r, ref.regs.VF[r].UL[0], ref.regs.VF[r].UL[1], ref.regs.VF[r].UL[2], ref.regs.VF[r].UL[3],
+					got.regs.VF[r].UL[0], got.regs.VF[r].UL[1], got.regs.VF[r].UL[2], got.regs.VF[r].UL[3]);
+				return true;
+			}
+		}
+		for (int r = 1; r < 16; r++)
+		{
+			if ((u16)ref.regs.VI[r].UL != (u16)got.regs.VI[r].UL)
+			{
+				Console.Error("MVU_DIFF @pc=%04x VI%02d int=%04x mvu=%04x", startPC * 8, r, (u16)ref.regs.VI[r].UL, (u16)got.regs.VI[r].UL);
+				return true;
+			}
+		}
+		if (std::memcmp(&ref.regs.ACC, &got.regs.ACC, 16) != 0)
+		{
+			Console.Error("MVU_DIFF @pc=%04x ACC int=%08x %08x %08x %08x mvu=%08x %08x %08x %08x", startPC * 8,
+				ref.regs.ACC.UL[0], ref.regs.ACC.UL[1], ref.regs.ACC.UL[2], ref.regs.ACC.UL[3],
+				got.regs.ACC.UL[0], got.regs.ACC.UL[1], got.regs.ACC.UL[2], got.regs.ACC.UL[3]);
+			return true;
+		}
+		if (ref.regs.q.UL != got.regs.q.UL) { Console.Error("MVU_DIFF @pc=%04x Q int=%08x mvu=%08x", startPC * 8, ref.regs.q.UL, got.regs.q.UL); return true; }
+		for (int q = 0; q < 0x4000; q += 16)
+		{
+			if (std::memcmp(ref.mem + q, got.mem + q, 16) != 0)
+			{
+				const u32* ri = (const u32*)(ref.mem + q);
+				const u32* gi = (const u32*)(got.mem + q);
+				Console.Error("MVU_DIFF @pc=%04x MEM[%04x] int=%08x %08x %08x %08x mvu=%08x %08x %08x %08x",
+					startPC * 8, q, ri[0], ri[1], ri[2], ri[3], gi[0], gi[1], gi[2], gi[3]);
+				return true;
+			}
+		}
+		return false;
+	}
+}
+
 void recMicroVU1::Execute(u32 cycles)
 {
 	if (!THREAD_VU1)
@@ -878,6 +954,52 @@ void recMicroVU1::Execute(u32 cycles)
 		if (!(VU0.VI[REG_VPU_STAT].UL & 0x100))
 			return;
 	}
+
+	if (s_mvuDiff && !THREAD_VU1)
+	{
+		static int s_diffCount = 0;
+		const u32 startPC = VU1.VI[REG_TPC].UL;
+		VU1Snap in;
+		mvuSnap(in);
+
+		// REAL run = interpreter (known-good; correct side effects keep the game rendering).
+		CpuIntVU1.Execute(cycles);
+		VU1Snap io;
+		mvuSnap(io);
+
+		// SHADOW run = microVU1, side effects (XGKICK) suppressed.
+		mvuRestore(in);
+		VU0.VI[REG_VPU_STAT].UL |= 0x100; // interp cleared it at E-bit; re-arm for the shadow
+		s_mvuShadowRun = true;
+		VU1.VI[REG_TPC].UL <<= 3;
+		((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
+		VU1.VI[REG_TPC].UL >>= 3;
+		s_mvuShadowRun = false;
+		VU1Snap mo;
+		mvuSnap(mo);
+
+		if (s_diffCount < 40 && mvuDiffReport(startPC, io, mo))
+		{
+			s_diffCount++;
+			static bool s_dumped = false;
+			if (!s_dumped)
+			{
+				s_dumped = true;
+				Console.Error("==== VU1 micro disasm 0x000-0x1000 (first divergence @pc=%04x) ====", startPC * 8);
+				for (u32 b = 0; b < 0x1000; b += 8)
+				{
+					const u32 lo = *(u32*)&VU1.Micro[b];
+					const u32 up = *(u32*)&VU1.Micro[b + 4];
+					Console.Error("  %04x: %s | %s", b, disVU1MicroUF(up, b + 4), disVU1MicroLF(lo, b));
+				}
+			}
+		}
+
+		mvuRestore(io); // keep the interpreter (correct) result as the real one
+		VU0.VI[REG_VPU_STAT].UL &= ~0x100; // match interp's post-run state
+		return;
+	}
+
 	VU1.VI[REG_TPC].UL <<= 3;
 	((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
 	VU1.VI[REG_TPC].UL >>= 3;

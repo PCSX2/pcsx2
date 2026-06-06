@@ -1869,6 +1869,8 @@ mVUop(mVU_XITOP)
 
 void mVU_XGKICK_(u32 addr)
 {
+	if (s_mvuShadowRun) // DEBUG shadow run: don't transfer to GS (see MVU_DIFF)
+		return;
 	addr = (addr & 0x3ff) * 16;
 	u32 diff = 0x4000 - addr;
 	u32 size = gifUnit.GetGSPacketSize(GIF_PATH_1, vuRegs[1].Mem, addr, ~0u, true);
@@ -1886,6 +1888,8 @@ void mVU_XGKICK_(u32 addr)
 
 void _vuXGKICKTransfermVU(bool flush)
 {
+	if (s_mvuShadowRun) // DEBUG shadow run: don't transfer to GS (see MVU_DIFF)
+		return;
 	while (VU1.xgkickenable && (flush || VU1.xgkickcyclecount >= 2))
 	{
 		u32 transfersize = 0;
