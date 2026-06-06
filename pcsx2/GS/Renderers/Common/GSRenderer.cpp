@@ -700,8 +700,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 
 			EndPresentFrame();
 
-			if (GSConfig.OsdShowGPU || GSDumpReplayer::IsReplayingDump())
-				PerformanceMetrics::OnGPUPresent(g_gs_device->GetAndResetAccumulatedGPUTime());
+			PerformanceMetrics::OnGPUPresent(g_gs_device->GetAndResetAccumulatedGPUTime());
 		}
 
 		PerformanceMetrics::Update(registers_written, fb_sprite_frame, false);
