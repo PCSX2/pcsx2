@@ -359,7 +359,14 @@ struct microVU
 	}
 
 	__fi u32 compareState(microRegInfo* lhs, microRegInfo* rhs) const {
-		return reinterpret_cast<u32(*)(void*, void*)>(compareStateF)(lhs, rhs);
+		// NOTE: on Apple Silicon we must NOT execute the JIT-generated compareStateF here.
+		// microVU runs its whole recursive compile inside one BeginCodeWrite/EndCodeWrite
+		// (pthread_jit_write_protect) session, so the MAP_JIT region is writable-but-
+		// non-executable for the duration; the block search (search()->compareState) runs
+		// mid-compile, and executing compareStateF then SIGBUSes on the instruction fetch.
+		// A plain C++ compare is semantically identical (compareStateF is just a 96-byte
+		// equality test returning 0 iff equal — sizeof(microRegInfo) == 96).
+		return __builtin_memcmp(lhs, rhs, sizeof(microRegInfo)) ? 1u : 0u;
 	}
 };
 
