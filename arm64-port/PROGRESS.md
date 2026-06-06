@@ -8,35 +8,39 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 7 (VU recompilers / microVU) — emit backend: allocators + clamp + addr-fix + flag pipeline DONE.**
+**Phase 7 (VU recompilers / microVU) — emit backend: allocators + clamp + addr-fix + flag pipeline
++ program-exit emitters DONE. Mid-way through the big-bang.**
 
-The standalone, buildable emit-helper slices are now in: the Pass-2 flag + P/Q allocators
-(`aVU_Alloc.inl`), the operand/result clamp helpers (`aVU_Clamp.inl`), the VU address-transform
-`mVUaddrFix` (`aVU_Misc.inl`), and the **Status/Mac/Clip flag pipeline** (`aVU_Flags.inl`, commit
-`ce947bbc0`): flag-instance analysis (`findFlagInst`/`sortFlag`/`sortFullFlag`/`mVUstatusFlagOp`/
-`mVUsetFlags`) + the emit helpers `mVUdivSet` and `mVUsetupFlags`. The `mVU_Globals`/`mVUglob`
-emit-constant table is in `aVU_Misc.h`. All odr-use-checked (`mVUallocFlagCheck`/`mVUclampCheck`/
-`mVUmiscCheck`/`mVUflagCheck`); build arm64; unittests 2/2.
+Standalone, buildable emit-helper slices in: Pass-2 flag + P/Q allocators (`aVU_Alloc.inl`),
+clamp helpers (`aVU_Clamp.inl`), `mVUaddrFix` (`aVU_Misc.inl`), the **Status/Mac/Clip flag
+pipeline** (`aVU_Flags.inl`, `ce947bbc0`: `findFlagInst`/`sortFlag`/`sortFullFlag`/
+`mVUstatusFlagOp`/`mVUsetFlags` + `mVUdivSet`/`mVUsetupFlags`), and now the **program-exit
+emitters** (`aVU_Branch.inl`, `dabfe47e5`+`73616dccf`): `getLastFlagInst`, `mVUendProgram`,
+`mVUDTendProgram`, `mVUsetupBranch`, the E/T-bit & lpState C thunks (`mVUEBit`/`mVUTBit`/
+`mVU0/1clearlpStateJIT`), and no-op XGKICK stubs (`mVU_XGKICK_DELAY`/`mVU_XGKICK_SYNC`; real
+GIF-kick is 7.5b). The `mVU_Globals`/`mVUglob` table + `shufflePQ` are in `aVU_Misc.h`. All
+odr-use-checked (`mVUallocFlagCheck`/`mVUclampCheck`/`mVUmiscCheck`/`mVUflagCheck`/`mVUbranchCheck`);
+builds arm64; unittests 2/2.
 
-**Flag NEON notes:** `xmmT1`/`xmmT2` (x86 regAlloc temps xmm0/xmm1) → NEON scratch q30/q31 in
-`aVU_IR.h`; safe because every flag/branch/endProgram path uses them only after a regAlloc
-`flushAll()`. `xSHUF.PS(dst,src,imm)` (arbitrary 4-lane permute) has no NEON immediate form → the
-`mVUshufflePS` helper copies src→q29 and `Ins`-es each selected lane (1 Mov + 4 Ins).
-**Clamp NEON notes:** range clamp → `Fminnm`/`Fmaxnm` (IEEE minNum/maxNum keep the number on NaN,
-matching x86 MINPS/MAXPS; `Fmin`/`Fmax` would propagate NaN — wrong); sign-preserving clamp →
-`Smin`/`Umin` on the float bit pattern (x86 PMINSD/PMINUD).
+**Branch-exit NEON notes:** `xmmT1`/`xmmT2`→q30/q31 (used only post-`flushAll()`). x86
+`xPSHUF.D(xmmPQ,…)`→`mVUshufflePS(mVU_xmmPQ,…)`; `xMOVSS(ptr,xmmPQ)`→`Str(.S())`;
+`xMOVDZX(xmm,gpr)`→`Fmov(.S(),W)`; `xMOVDZX(xmm,mem)`→`Ldr(.S())`; `xSHUF.PS(.,.,0)`→`Dup` lane0;
+`xJMP(exitFunct)`→`armEmitJmp`; `xFastCall`→`armEmitCall`. Absolute `&mVU.regs()…`/`&VU0.VI[…]`
+via `armMoveAddressToReg` (file-local `mvuStr*`/`mvuLdr*` helpers in `aVU_Branch.inl`).
+**Clamp NEON notes:** range clamp → `Fminnm`/`Fmaxnm` (keep number on NaN, matching x86 MINPS/MAXPS);
+sign-preserving clamp → `Smin`/`Umin` on the float bit pattern (x86 PMINSD/PMINUD).
 
-**Next:** the **hard big-bang** (the pieces below cross-reference each other, so they come up
-together against a NOP/B-only `mVUopU`/`mVUopL`):
+**Next:** finish the **big-bang** (remaining pieces cross-reference each other, so bring up against
+a NOP/B-only `mVUopU`/`mVUopL`):
 1. **Opcode-table stubs** (`aVU_Tables.inl`): a minimal `mVUopU`/`mVUopL` (NOP + B/BAL only, rest →
-   `mVUunknown`) so the flag read-scan and `mVUcompile` link. Needed by both items below.
+   `mVUunknown`) so the flag read-scan and `mVUcompile` link. Needs minimal `mVU_NOP` (Upper),
+   `mVU_B`/`mVU_BAL` (Lower; `setBranchA` + `mVUanalyzeNormBranch` [ported] + pass2 branchAddr
+   stores) + `branchAddr` macro. Needed by both items below.
 2. **Flag read-scan** (append to `aVU_Flags.inl`): `_mVUflagPass`/`mVUflagPass`/`mVUsetFlagInfo` +
    the `shortBranch` macro — these call `mVUopU(mVU,3)`/`mVUopL(mVU,3)`.
-3. **Branch/program-exit** (`aVU_Branch.inl`): `getLastFlagInst`/`mVUendProgram`/`mVUDTendProgram`/
-   `mVUsetupBranch`/`normBranchCompile`/`normJumpCompile`/`normBranch`/`normJump`/`condBranch`.
-   Needs XGKICK stubs (`mVU_XGKICK_DELAY`/`mVU_XGKICK_SYNC` → no-op stubs for now; real XGKICK is
-   7.5b) and the C thunks `mVUEBit`/`mVUTBit`/`mVU0clearlpStateJIT`. x86 `xForwardJump32`/`xJcc32`/
-   `xFastCall`/`xLoadFarAddr` → VIXL labels / `armEmitCondBranch` / `armEmitCall` / `armMoveAddressToReg`.
+3. **Branch drivers** (extend `aVU_Branch.inl`): `normBranchCompile`/`normJumpCompile`/`normBranch`/
+   `normJump`/`condBranch`. x86 `xForwardJump32`/`xJcc32`→VIXL labels/`armEmitCondBranch`;
+   `xLoadFarAddr`→`armMoveAddressToReg`. (getLastFlagInst/endProgram/DTendProgram/setupBranch DONE.)
 4. **`mVUcompile`** (`aVU_Compile.inl` / extend `aVU.cpp`): own `armStartBlock`/`armEndBlock` per
    block, replace the `mVUblockFetch`/`mVUentryGet` stubs, and **flush the icache before branching
    into freshly-emitted code**. Plus `mVUexecuteInstruction`/`doUpperOp`/`doLowerOp`/`doIbit`,
@@ -315,8 +319,12 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
   `ce947bbc0`): `findFlagInst`/`sortFlag`/`sortFullFlag`/`mVUstatusFlagOp`/`mVUsetFlags` +
   `mVUdivSet`/`mVUsetupFlags`. Deferred: the read-scan `_mVUflagPass`/`mVUflagPass`/`mVUsetFlagInfo`
   (call `mVUopU`/`mVUopL`) → comes with the opcode-table stubs in the Branch/Compile big-bang.
-- [ ] 7.7 **Branches** — port `microVU_Branch.inl` (B/BAL/IBEQ/IBGEZ/IBGTZ/IBLEZ/IBLTZ/IBNE/JR/
-  JALR, plus the badBranch/evilBranch branch-in-delay-slot handling).
+- [~] 7.7 **Branches** — port `microVU_Branch.inl`. **Program-exit emitters DONE** (`aVU_Branch.inl`,
+  `dabfe47e5`+`73616dccf`): `getLastFlagInst`/`mVUendProgram`/`mVUDTendProgram`/`mVUsetupBranch` +
+  the E/T-bit & lpState C thunks + no-op XGKICK stubs. Deferred to the big-bang (need opcode tables +
+  mVUcompile): `normBranchCompile`/`normJumpCompile`/`normBranch`/`normJump`/`condBranch`, plus the
+  branch op handlers themselves (B/BAL/IBEQ/IBGEZ/IBGTZ/IBLEZ/IBLTZ/IBNE/JR/JALR + badBranch/
+  evilBranch branch-in-delay-slot handling).
 - [ ] 7.8 **Wire selection + validate** — flip `CpuVU0/CpuVU1` to `CpuMicroVU0/1` on ARM64 in
   `VMManager.cpp` (Init/Shutdown/Update/Clear); XGKICK→GIF path; MTVU thread. Test ladder:
   BIOS → 2D → IOP-heavy → FFX (VU1-heavy 3D).

@@ -28,6 +28,56 @@
 
 ---
 
+## 2026-06-06 — Phase 7.7: program-exit emitters (aVU_Branch.inl)
+
+**Goal:** Keep slicing the "hard big-bang" — land the parts of `microVU_Branch.inl` that are
+genuinely standalone (no opcode-table calls) so the tight build/test loop continues instead of
+bringing up Tables+read-scan+drivers+`mVUcompile` in one uncompilable lump.
+
+**What changed:**
+- `pcsx2/arm64/aVU_Branch.inl` — NEW. The two **program-exit emitters** `mVUendProgram` /
+  `mVUDTendProgram` (save P/Q + the 4 Status/Mac/Clip flag instances back to VURegs, then
+  `armEmitJmp(mVU.exitFunct)`), `getLastFlagInst` (pure analysis), the E/T-bit & lpState C thunks
+  (`mVUEBit`/`mVUTBit`/`mVU0clearlpStateJIT`/`mVU1clearlpStateJIT`), no-op XGKICK stubs
+  (`mVU_XGKICK_DELAY`/`mVU_XGKICK_SYNC`), and `mVUsetupBranch`. File-local `mvuStr32`/`mvuStrImm32`/
+  `mvuStrSS`/`mvuLdrSS`/`mvuLdrQ`/`mvuStrQ`/`mvuMemAndImm32` helpers wrap the absolute-address
+  memory accesses (armMoveAddressToReg + Ldr/Str).
+- `pcsx2/arm64/aVU_Misc.h` — restored `shufflePQ` (dropped in 7.3; needed by `mVUsetupBranch`).
+- `pcsx2/arm64/aVU.cpp` — `#include` the new .inl; `mVUbranchCheck` odr-uses the emitters.
+- `pcsx2/CMakeLists.txt` — listed `arm64/aVU_Branch.inl`.
+- Commits: `dabfe47e5` (program-exit emitters), `73616dccf` (mVUsetupBranch + shufflePQ).
+
+**Decisions & rationale:**
+- **Sliced Branch by table-dependence, not by file.** `microVU_Branch.inl` mixes pieces that need
+  the opcode tables + `mVUcompile` (`normBranch`/`normJump`/`condBranch`/`normBranchCompile`/
+  `normJumpCompile`) with pieces that don't (the program-exit emitters + `mVUsetupBranch`). The
+  latter only depend on already-ported helpers (flag allocators, `mVUdivSet`, `mVUsetupFlags`,
+  `mVUincCycles`, `mVU_xmmPQ`), so they compile + commit now; the drivers wait for the big-bang.
+- **`xMOVDZX` has two NEON forms.** From memory it's `Ldr(.S())` (32-bit load zeroes the upper V
+  lanes); from a GPR it's `Fmov(xmm.S(), Wn)` (W→S also zeroes the rest). The x86 flush path uses
+  both — `xMOVDZX(xmm, ptr32[…])` and `xMOVDZX(xmm, getFlagReg(fStatus))`.
+- **`xSHUF.PS(xmm,xmm,0)` → `Dup(.V4S(), .V4S(), 0)`**, not `mVUshufflePS` — broadcasting lane0 is
+  exactly NEON `Dup` from lane0 and avoids the 1-Mov+4-Ins of the general shuffle helper.
+- **`~0x100`/`~0x001` AND-to-memory immediates** (clear the VBS0/VBS1 busy bit) encode fine as ARM64
+  logical immediates (a single cleared bit = a rotated run of ones), so `mvuMemAndImm32` passes them
+  straight to `And` with no materialization.
+- **`extern void mVUincCycles(...)` forward decl** at the top of the .inl — same as x86
+  `microVU_Branch.inl`; the definition lives later in `aVU.cpp` than the include point.
+
+**Blockers / open questions:** None. The remaining big-bang core (Tables stubs + flag read-scan +
+branch drivers + `mVUcompile`) genuinely cross-references and comes up together next.
+
+**Next step:** the big-bang core — (1) `aVU_Tables.inl` minimal NOP/B-only `mVUopU`/`mVUopL` (needs
+`mVU_NOP`, `mVU_B`/`mVU_BAL` via `setBranchA` + the already-ported `mVUanalyzeNormBranch` + a
+`branchAddr` macro); (2) append `_mVUflagPass`/`mVUflagPass`/`mVUsetFlagInfo` + `shortBranch` to
+`aVU_Flags.inl`; (3) the Branch drivers `normBranchCompile`/`normJumpCompile`/`normBranch`/`normJump`/
+`condBranch` (x86 `xForwardJump32`/`xJcc32`→VIXL labels/`armEmitCondBranch`); (4) `mVUcompile` + the
+emit-coupled driver helpers (own `armStartBlock`/`armEndBlock` per block + **icache flush before
+branching into freshly-emitted code**), replacing the `mVUblockFetch`/`mVUentryGet` stubs, so a
+trivial NOP/B block links and round-trips. Keep microVU unselected until it does.
+
+---
+
 ## 2026-06-06 — Phase 7.5/7.6: flag pipeline (aVU_Flags.inl)
 
 **Goal:** Begin the hard big-bang by landing its one genuinely-standalone slice first — the
