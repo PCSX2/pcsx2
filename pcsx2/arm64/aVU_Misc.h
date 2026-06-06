@@ -230,6 +230,22 @@ typedef Fntype_mVUrecInst* Fnptr_mVUrecInst;
 // Program logging is compiled out (x86: microVU_Misc.h mVUlogProg path).
 #define mVUlog(...)      if (0) {}
 
+// Per-operand log helpers (x86: microVU_Misc.h). Each expands to a discarded
+// mVUlog(...) so the pass3 logging blocks in the opcode handlers compile to nothing.
+#define mVUlogFtFs() { mVUlog(".%s vf%02d, vf%02d", _XYZW_String, _Ft_, _Fs_); }
+#define mVUlogFd()   { mVUlog(".%s vf%02d, vf%02d", _XYZW_String, _Fd_, _Fs_); }
+#define mVUlogACC()  { mVUlog(".%s ACC, vf%02d", _XYZW_String, _Fs_); }
+#define mVUlogFt()   { mVUlog(", vf%02d", _Ft_); }
+#define mVUlogBC()   { mVUlog(", vf%02d%s", _Ft_, _BC_String); }
+#define mVUlogI()    { mVUlog(", I"); }
+#define mVUlogQ()    { mVUlog(", Q"); }
+#define mVUlogCLIP() { mVUlog("w.xyz vf%02d, vf%02dw", _Fs_, _Ft_); }
+
+// x86 PSHUFD immediate that moves a single-subvector (X/Y/Z/W) value into lane0
+// for SS arithmetic (x86: microVU_Misc.h shuffleSS). Consumed by mVUshufflePS,
+// which interprets it with the same per-lane (imm >> 2i) & 3 semantics.
+#define shuffleSS(x) ((x == 1) ? (0x27) : ((x == 2) ? (0xc6) : ((x == 4) ? (0xe1) : (0xe4))))
+
 //------------------------------------------------------------------
 // Optimization / Debug Options
 //------------------------------------------------------------------

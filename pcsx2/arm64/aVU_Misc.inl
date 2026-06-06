@@ -14,8 +14,7 @@
 // Deferred:
 //   * mVUoptimizeConstantAddr — its return-type contract (how a constant host
 //     address is handed to a load/store op) is defined by its only consumer, the
-//     Lower load/store handlers in task 7.5b;
-//   * the custom SSE arithmetic helpers (MIN_MAX_PS/ADD_SS/SSE_* — task 7.5a FMAC).
+//     Lower load/store handlers in task 7.5b.
 
 // Computes the destination PC (byte address) of a relative VU branch from the
 // current lower-op PC + the signed 11-bit immediate. x86: microVU_Misc.inl
@@ -189,3 +188,164 @@ __fi void mVUaddrFix(mV, const a64::Register& gprReg, const a64::Register& tmpRe
 		armAsm->Lsl(gprReg, gprReg, 4); // * 16 -> byte offset (64-bit)
 	}
 }
+
+//------------------------------------------------------------------
+// Micro VU - Custom SSE Instructions (x86: microVU_Misc.inl SSE_*)
+//------------------------------------------------------------------
+// VIXL port of the VU FMAC arithmetic primitives. The VU's MIN/MAX are NOT IEEE
+// min/max — they're a signed-magnitude *integer* compare on the float bit pattern,
+// so MIN_MAX_PS uses the integer-comparison path (the x86 `if (0)` double path is
+// dropped). MIN_MAX_SS keeps the double-precision trick (it has no integer form):
+// the two float lanes are packed into a finite normal double whose ordering matches
+// the float magnitude/sign ordering, so plain FMIN/FMAX on .V2D() is exact (the
+// constructed doubles are never NaN, so NEON's NaN-propagation is never hit).
+//
+// The add/sub/mul/div primitives go through mVUclampedArith: when the extra-overflow
+// gamefix (clampE) is on, operands are sign-clamped before and the result range-
+// clamped after. clampE is off by default, so it normally emits just the NEON op.
+
+alignas(16) static const u32 mVU_MIN_MAX_1[4] = {0xffffffff, 0x80000000, 0xffffffff, 0x80000000};
+alignas(16) static const u32 mVU_MIN_MAX_2[4] = {0x00000000, 0x40000000, 0x00000000, 0x40000000};
+alignas(16) static const u32 mVU_ADD_SS[4]    = {0x80000000, 0xffffffff, 0xffffffff, 0xffffffff};
+
+// Warning: Modifies t1 and t2
+static void MIN_MAX_PS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1in, const a64::VRegister& t2in, bool min)
+{
+	const bool t1b = t1in.IsNone();
+	const bool t2b = t2in.IsNone();
+	const a64::VRegister t1 = t1b ? mVU.regAlloc->allocReg() : t1in;
+	const a64::VRegister t2 = t2b ? mVU.regAlloc->allocReg() : t2in;
+
+	// integer comparison (signed-magnitude transform of the float bit pattern)
+	const a64::VRegister& c1 = min ? t2 : t1;
+	const a64::VRegister& c2 = min ? t1 : t2;
+
+	armAsm->Mov (t1.V16B(), to.V16B());
+	armAsm->Sshr(t1.V4S(), t1.V4S(), 31);
+	armAsm->Ushr(t1.V4S(), t1.V4S(), 1);
+	armAsm->Eor (t1.V16B(), t1.V16B(), to.V16B());
+
+	armAsm->Mov (t2.V16B(), from.V16B());
+	armAsm->Sshr(t2.V4S(), t2.V4S(), 31);
+	armAsm->Ushr(t2.V4S(), t2.V4S(), 1);
+	armAsm->Eor (t2.V16B(), t2.V16B(), from.V16B());
+
+	armAsm->Cmgt(c1.V4S(), c1.V4S(), c2.V4S());      // c1 = (c1 > c2) ? -1 : 0 (signed)
+	armAsm->And (to.V16B(), to.V16B(), c1.V16B());
+	armAsm->Bic (c1.V16B(), from.V16B(), c1.V16B()); // c1 = from & ~c1 (x86 PANDN)
+	armAsm->Orr (to.V16B(), to.V16B(), c1.V16B());
+
+	if (t1b) mVU.regAlloc->clearNeeded(t1);
+	if (t2b) mVU.regAlloc->clearNeeded(t2);
+}
+
+// Warning: Modifies to's upper 3 vectors, and t1
+static void MIN_MAX_SS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1in, bool min)
+{
+	const bool t1b = t1in.IsNone();
+	const a64::VRegister t1 = t1b ? mVU.regAlloc->allocReg() : t1in;
+
+	// to = { to0, to0, from0, from0 }  (x86 xSHUF.PS(to, from, 0))
+	armAsm->Ins(to.V4S(), 1, to.V4S(), 0);
+	armAsm->Ins(to.V4S(), 2, from.V4S(), 0);
+	armAsm->Ins(to.V4S(), 3, from.V4S(), 0);
+
+	mvuLdrQ(RQSCRATCH, mVU_MIN_MAX_1);
+	armAsm->And(to.V16B(), to.V16B(), RQSCRATCH.V16B());
+	mvuLdrQ(RQSCRATCH, mVU_MIN_MAX_2);
+	armAsm->Orr(to.V16B(), to.V16B(), RQSCRATCH.V16B());
+
+	mVUshufflePS(t1, to, 0xee); // t1 = { to2, to3, to2, to3 }
+	if (min) armAsm->Fmin(to.V2D(), to.V2D(), t1.V2D());
+	else     armAsm->Fmax(to.V2D(), to.V2D(), t1.V2D());
+
+	if (t1b) mVU.regAlloc->clearNeeded(t1);
+}
+
+// Turns out only this is needed to get TriAce games booting with mVU.
+// Modifies from's lower vector. (x86: ADD_SS_TriAceHack)
+static void ADD_SS_TriAceHack(mV, const a64::VRegister& to, const a64::VRegister& from)
+{
+	armAsm->Fmov(gprT1.W(), to.S());
+	armAsm->Fmov(gprT2.W(), from.S());
+	armAsm->Lsr (gprT1.W(), gprT1.W(), 23);
+	armAsm->Lsr (gprT2.W(), gprT2.W(), 23);
+	armAsm->And (gprT1.W(), gprT1.W(), 0xff);
+	armAsm->And (gprT2.W(), gprT2.W(), 0xff);
+	armAsm->Sub (gprT2.W(), gprT2.W(), gprT1.W()); // exponent difference
+
+	a64::Label case_neg_big, case_end1, case_end2;
+
+	armAsm->Cmp(gprT2.W(), -25);
+	armAsm->B(&case_neg_big, a64::le);
+	armAsm->Cmp(gprT2.W(), 25);
+	armAsm->B(&case_end1, a64::lt);
+
+	// case_pos_big:
+	mvuLdrQ(RQSCRATCH, mVU_ADD_SS);
+	armAsm->And(to.V16B(), to.V16B(), RQSCRATCH.V16B());
+	armAsm->B(&case_end2);
+
+	armAsm->Bind(&case_neg_big);
+	mvuLdrQ(RQSCRATCH, mVU_ADD_SS);
+	armAsm->And(from.V16B(), from.V16B(), RQSCRATCH.V16B());
+
+	armAsm->Bind(&case_end1);
+	armAsm->Bind(&case_end2);
+
+	armAsm->Fadd(to.S(), to.S(), from.S());
+}
+
+// to (op)= from, sign-clamping operands and range-clamping the result when the
+// extra-overflow gamefix is enabled (x86: clampOp macro). isPS selects 4-lane vs
+// single-scalar. t1 is the caller-provided clamp scratch (xEmptyReg ⇒ RQSCRATCH).
+enum mVUarithOp { mVU_ADD_OP, mVU_SUB_OP, mVU_MUL_OP, mVU_DIV_OP };
+
+static void mVUclampedArith(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1, int op, bool isPS)
+{
+	const a64::VRegister ct = t1.IsNone() ? RQSCRATCH : t1;
+	const int xyzw = isPS ? 0xf : 0x8;
+	mVUclamp3(mVU, to, ct, xyzw);
+	mVUclamp3(mVU, from, ct, xyzw);
+	if (isPS)
+	{
+		switch (op)
+		{
+			case mVU_ADD_OP: armAsm->Fadd(to.V4S(), to.V4S(), from.V4S()); break;
+			case mVU_SUB_OP: armAsm->Fsub(to.V4S(), to.V4S(), from.V4S()); break;
+			case mVU_MUL_OP: armAsm->Fmul(to.V4S(), to.V4S(), from.V4S()); break;
+			case mVU_DIV_OP: armAsm->Fdiv(to.V4S(), to.V4S(), from.V4S()); break;
+		}
+	}
+	else
+	{
+		switch (op)
+		{
+			case mVU_ADD_OP: armAsm->Fadd(to.S(), to.S(), from.S()); break;
+			case mVU_SUB_OP: armAsm->Fsub(to.S(), to.S(), from.S()); break;
+			case mVU_MUL_OP: armAsm->Fmul(to.S(), to.S(), from.S()); break;
+			case mVU_DIV_OP: armAsm->Fdiv(to.S(), to.S(), from.S()); break;
+		}
+	}
+	mVUclamp4(mVU, to, ct, xyzw);
+}
+
+static void SSE_MAXPS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1 = xEmptyReg, const a64::VRegister& t2 = xEmptyReg) { MIN_MAX_PS(mVU, to, from, t1, t2, false); }
+static void SSE_MINPS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1 = xEmptyReg, const a64::VRegister& t2 = xEmptyReg) { MIN_MAX_PS(mVU, to, from, t1, t2, true); }
+static void SSE_MAXSS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1 = xEmptyReg, const a64::VRegister& t2 = xEmptyReg) { MIN_MAX_SS(mVU, to, from, t1, false); }
+static void SSE_MINSS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1 = xEmptyReg, const a64::VRegister& t2 = xEmptyReg) { MIN_MAX_SS(mVU, to, from, t1, true); }
+static void SSE_ADD2SS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1 = xEmptyReg, const a64::VRegister& t2 = xEmptyReg)
+{
+	if (!CHECK_VUADDSUBHACK) mVUclampedArith(mVU, to, from, t1, mVU_ADD_OP, false);
+	else                     ADD_SS_TriAceHack(mVU, to, from);
+}
+// Does same as SSE_ADDPS since tri-ace games only need SS implementation of VUADDSUBHACK...
+static void SSE_ADD2PS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1 = xEmptyReg, const a64::VRegister& t2 = xEmptyReg) { mVUclampedArith(mVU, to, from, t1, mVU_ADD_OP, true); }
+static void SSE_ADDPS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1 = xEmptyReg, const a64::VRegister& t2 = xEmptyReg) { mVUclampedArith(mVU, to, from, t1, mVU_ADD_OP, true); }
+static void SSE_ADDSS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1 = xEmptyReg, const a64::VRegister& t2 = xEmptyReg) { mVUclampedArith(mVU, to, from, t1, mVU_ADD_OP, false); }
+static void SSE_SUBPS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1 = xEmptyReg, const a64::VRegister& t2 = xEmptyReg) { mVUclampedArith(mVU, to, from, t1, mVU_SUB_OP, true); }
+static void SSE_SUBSS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1 = xEmptyReg, const a64::VRegister& t2 = xEmptyReg) { mVUclampedArith(mVU, to, from, t1, mVU_SUB_OP, false); }
+static void SSE_MULPS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1 = xEmptyReg, const a64::VRegister& t2 = xEmptyReg) { mVUclampedArith(mVU, to, from, t1, mVU_MUL_OP, true); }
+static void SSE_MULSS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1 = xEmptyReg, const a64::VRegister& t2 = xEmptyReg) { mVUclampedArith(mVU, to, from, t1, mVU_MUL_OP, false); }
+static void SSE_DIVPS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1 = xEmptyReg, const a64::VRegister& t2 = xEmptyReg) { mVUclampedArith(mVU, to, from, t1, mVU_DIV_OP, true); }
+static void SSE_DIVSS(mV, const a64::VRegister& to, const a64::VRegister& from, const a64::VRegister& t1 = xEmptyReg, const a64::VRegister& t2 = xEmptyReg) { mVUclampedArith(mVU, to, from, t1, mVU_DIV_OP, false); }

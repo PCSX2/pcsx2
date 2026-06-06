@@ -1402,6 +1402,23 @@ static_assert(alignof(microBlock) == 16, "microBlock must stay 16-byte aligned")
 	mVUaddrFix(mVU, a64::x9, a64::x10);
 }
 
+// Force the custom SSE arithmetic helpers (aVU_Misc.inl, task 7.5a) to be compiled.
+// They become live once the Upper FMAC handlers (aVU_Upper.inl) reference the
+// SSE_PS/SSE_SS function-pointer arrays; until then this odr-uses them. Never called.
+[[maybe_unused]] static void mVUsseCheck()
+{
+	microVU& mVU = microVU0;
+	const a64::VRegister a = a64::VRegister(1, 128);
+	const a64::VRegister b = a64::VRegister(2, 128);
+	SSE_ADDPS(mVU, a, b);  SSE_ADDSS(mVU, a, b);
+	SSE_SUBPS(mVU, a, b);  SSE_SUBSS(mVU, a, b);
+	SSE_MULPS(mVU, a, b);  SSE_MULSS(mVU, a, b);
+	SSE_DIVPS(mVU, a, b);  SSE_DIVSS(mVU, a, b);
+	SSE_MAXPS(mVU, a, b);  SSE_MAXSS(mVU, a, b);
+	SSE_MINPS(mVU, a, b);  SSE_MINSS(mVU, a, b);
+	SSE_ADD2PS(mVU, a, b); SSE_ADD2SS(mVU, a, b);
+}
+
 // (mVUcompileEmitCheck / mVUtablesCheck removed: the compile helpers + the
 // mVUopU/mVUopL dispatchers now have live callers via mVUcompile, so their bodies
 // codegen without an explicit odr-use.)

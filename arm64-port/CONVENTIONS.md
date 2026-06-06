@@ -75,7 +75,7 @@ Guest→host mapping intent:
 ```bash
 cmake --build build --target pcsx2-qt -j18   # incremental
 # fix errors, repeat. Then:
-cmake --build build --target unittests -j18 && ctest --test-dir build
+cmake --build build --target unittests -j18 && ctest --test-dir build/tests/ctest
 ```
 
 ### macOS app bundle rule

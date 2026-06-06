@@ -77,7 +77,7 @@ open build/pcsx2-qt/PCSX2.app
 build/pcsx2-qt/PCSX2.app/Contents/MacOS/PCSX2
 
 # --- Unit tests ---
-cmake --build build --target unittests -j18 && ctest --test-dir build
+cmake --build build --target unittests -j18 && ctest --test-dir build/tests/ctest
 ```
 
 **macOS bundle rule (avoids the duplicate-Qt / "Could not load the Qt platform

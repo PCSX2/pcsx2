@@ -75,6 +75,11 @@ static constexpr int mVU_F0 = 23, mVU_F1 = 24, mVU_F2 = 25, mVU_F3 = 26;
 // PQ latency NEON register.
 static const a64::VRegister mVU_xmmPQ = a64::VRegister(24, 128);
 
+// Sentinel "no register" for optional NEON params (x86: xEmptyReg). VIXL's
+// default-constructed VRegister reports IsNone(); ported callers test reg.IsNone()
+// where the x86 original tested reg.IsEmpty().
+static const a64::VRegister xEmptyReg;
+
 // Emit-layer NEON temp registers (x86: microVU_Misc.h xmmT1=xmm0/xmmT2=xmm1, the
 // regAlloc temps). On ARM64 the VF allocation pool is v0-v23, so these instead map
 // to the shared NEON scratch (q30/q31). Every flag/branch/endProgram path that uses
