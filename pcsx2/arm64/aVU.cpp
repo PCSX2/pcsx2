@@ -24,6 +24,7 @@
 #include "Memory.h"
 #include "Dmac.h"
 #include "SaveState.h"
+#include "Gif_Unit.h" // gifUnit + GIF_TRANS_XGKICK (XGKICK GIF transfer, aVU_Lower.inl)
 
 #include "common/AlignedMalloc.h"
 #include "common/Perf.h"
@@ -104,9 +105,15 @@ static void mVUcacheProg(microVU& mVU, microProgram& prog);
 // handlers into mVU_UPPER_OPCODE / the FD_xx sub-tables.
 #include "arm64/aVU_Upper.inl"
 
-// Opcode dispatch tables (Tables/Compile big-bang) — mVUopU now dispatches the
-// full Upper ISA; mVUopL is still NOP/B/BAL-only until task 7.5b. Included BEFORE
-// aVU_Flags.inl because the flag read-scan (_mVUflagPass) calls mVUopU/mVUopL.
+// Lower (integer/load-store/EFU/flag/branch) opcode handlers (task 7.5b) — the
+// full Lower ISA (setBranchA, IADD…, LQ/SQ…, DIV/EFU…, FCxxx/FMxxx/FSxxx, RINIT…,
+// XGKICK, B/BAL/IBxx/JR/JALR) + the XGKICK GIF-transfer helpers. Included BEFORE
+// aVU_Tables.inl, which wires these into mVULOWER_OPCODE / the T3_xx sub-tables.
+#include "arm64/aVU_Lower.inl"
+
+// Opcode dispatch tables (Tables/Compile big-bang) — mVUopU dispatches the full
+// Upper ISA, mVUopL the full Lower ISA. Included BEFORE aVU_Flags.inl because the
+// flag read-scan (_mVUflagPass) calls mVUopU/mVUopL.
 #include "arm64/aVU_Tables.inl"
 
 // Status/Mac/Clip flag pipeline (task 7.5/7.6) — flag-instance analysis +

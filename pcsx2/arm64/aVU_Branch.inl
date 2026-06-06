@@ -41,13 +41,9 @@ extern void mVUincCycles(microVU& mVU, int x);
 // mvuStrSS/mvuLdrSS/mvuLdrQ/mvuStrQ/mvuMemAndImm32) moved to aVU_Misc.inl so the
 // Tables/Flags slices (included earlier) can share them.
 
-//------------------------------------------------------------------
-// XGKICK stubs (real GIF-kick path is task 7.5b)
-//------------------------------------------------------------------
-// microVU is unselected on ARM64 (VMManager pins CpuIntVU0/1), so these are never
-// executed yet; they exist only so mVUendProgram/mVUDTendProgram link and compile.
-static void mVU_XGKICK_DELAY(mV) { (void)mVU; /* TODO 7.5b: run pending XGKick */ }
-static void mVU_XGKICK_SYNC(mV, bool flush) { (void)mVU; (void)flush; /* TODO 7.5b */ }
+// The real XGKICK emit helpers (mVU_XGKICK_DELAY / mVU_XGKICK_SYNC) + the GIF
+// transfer C functions live in aVU_Lower.inl (task 7.5b), which is #included
+// before this file; the branch drivers below call them.
 
 //------------------------------------------------------------------
 // C thunks called from emitted code
