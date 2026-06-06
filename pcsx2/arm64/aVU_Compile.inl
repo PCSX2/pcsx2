@@ -580,7 +580,7 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 		// call (they aren't in the regalloc). Gated so normal builds emit nothing.
 		extern bool g_mvuTraceActive;
 		extern void mvuTraceMicro(u32 pc);
-		if (s_mvuDiff && isVU1)
+		if (s_mvuDiff && isVU1 && getenv("MVU_LOC"))
 		{
 			mVU.regAlloc->flushAll();
 			mVUbackupRegs(mVU, true, true);

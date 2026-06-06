@@ -177,6 +177,15 @@ mVUop(mVU_DIV)
 		const a64::VRegister Fs = mVU.regAlloc->allocReg(_Fs_, 0, (1 << (3 - _Fsf_)));
 		const a64::VRegister t1 = mVU.regAlloc->allocReg();
 
+		// DEBUG: capture runtime numerator/denominator
+		extern bool g_mvuDiffActive; extern volatile u32 g_divDbg[4]; extern void mvuDivDump(u32 wq, u32 rq, u32 pc);
+		if (g_mvuDiffActive && isVU1)
+		{
+			armMoveAddressToReg(RSCRATCHADDR, (void*)&g_divDbg[0]);
+			armAsm->Str(Fs.S(), a64::MemOperand(RSCRATCHADDR, 0)); // numerator
+			armAsm->Str(Ft.S(), a64::MemOperand(RSCRATCHADDR, 4)); // denominator
+		}
+
 		a64::Label cjmp, ajmp, bjmp, djmp;
 		testZero(Ft, t1, gprT1); // Test if Ft is zero
 		armAsm->B(&cjmp, a64::eq); // Skip if not zero
@@ -203,6 +212,19 @@ mVUop(mVU_DIV)
 		armAsm->Bind(&djmp);
 
 		writeQreg(Fs, mVUinfo.writeQ);
+
+		// DEBUG: capture runtime result + log
+		if (g_mvuDiffActive && isVU1)
+		{
+			armMoveAddressToReg(RSCRATCHADDR, (void*)&g_divDbg[2]);
+			armAsm->Str(Fs.S(), a64::MemOperand(RSCRATCHADDR)); // result
+			mVUbackupRegs(mVU, true, true);
+			armAsm->Mov(RWARG1.W(), mVUinfo.writeQ);
+			armAsm->Mov(RWARG2.W(), mVUinfo.readQ);
+			armAsm->Mov(RWARG3.W(), xPC);
+			armEmitCall(reinterpret_cast<const void*>(&mvuDivDump));
+			mVUrestoreRegs(mVU, true, true);
+		}
 
 		if (mVU.cop2)
 		{
