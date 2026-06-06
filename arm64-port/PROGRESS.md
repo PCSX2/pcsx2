@@ -8,6 +8,42 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 7 (VU recompilers / microVU) — task 7.4/7.5 part 1 (Pass-2 flag allocators → `aVU_Alloc.inl`) DONE.**
+
+`pcsx2/arm64/aVU_Alloc.inl` is the **first emit-backend slice** — the flag-allocator half of x86
+`microVU_Alloc.inl` ported to VIXL: `getFlagReg` + the Status/Mac/Clip flag normalize/denormalize
+emit helpers (`setBitSFLAG`/`setBitFSEQ`/`mVUallocSFLAGa`–`d`/`mVUallocMFLAGa`–`b`/
+`mVUallocCFLAGa`–`b`). It also establishes the **emit-layer register-name macros** in `aVU_IR.h`
+(`gprT1`=w9/`gprT2`=w10/`gprF0`–`gprF3`=w23–w26, matching the existing `mVU_T1/T2/F0..3` index
+constants). Translations: x86 GPRs (`x32`) → ARM64 w-regs; `xTEST + xForwardJZ8 + xOR` →
+`Tst + B(eq) + Orr` with a local label; absolute `ptr16/ptr32[&…]` loads/stores →
+`armMoveAddressToReg` + VIXL `Ldrh/Ldr/Str` (mac/clip flags addressed absolutely off the
+`mVU.macFlag`/`clipFlag` host arrays, like x86). VIXL's MacroAssembler materialises any
+non-encodable logical immediate into x16 scratch, so the x86 masks port verbatim. `mVUallocSFLAGd`
+drops its eax/ecx/edx defaults (that's the dropped macro path) and takes explicit regs.
+`mVUallocFlagCheck` (never called) odr-uses every helper so the VIXL bodies compile now.
+
+**Deferred** (not in this slice): the P/Q register allocators `getPreg`/`getQreg`/`writeQreg` —
+they depend on `mVUunpack_xyzw` (the NEON lane-unpack from `microVU_Misc.inl`, which comes over with
+the Misc emit port) and are only used by the Upper/Lower opcode handlers (7.5), so deferring keeps
+this slice buildable. `writeVIBackup` was already defined inline in `aVU_IR.h`.
+
+**Verified:** `pcsx2-qt` builds arm64; unittests 2/2. Pure infrastructure; microVU stays
+**unselected** on ARM64 (VMManager pins `CpuIntVU0/1`). Commit `8d312b4ce`.
+
+**Next:** continue the emit backend. The Flags driver (`aVU_Flags.inl`: `mVUdivSet`/`mVUsetupFlags`
+emit + the `mVUsetFlags`/`mVUstatusFlagOp`/`findFlagInst`/`sortFlag` analysis) now has its
+`getFlagReg`/flag-alloc dependency; the only remaining blocker for the full Flags port is
+`_mVUflagPass`/`mVUsetFlagInfo`, which call `mVUopU`/`mVUopL` (the opcode tables, 7.5). Recommended
+order from here: port the Misc emit subset (`mVUunpack_xyzw` + the P/Q allocators + `mVUaddrFix`/
+clamp helpers), then stand up Flags + Branch/program-exit (`mVUendProgram`/`normBranch`) against a
+NOP/B-only `mVUopU`/`mVUopL` so `mVUcompile` can link and emit a trivial block (own `armStartBlock`/
+`armEndBlock` per block + the **icache flush before branching into freshly-emitted code**).
+
+---
+
+### Earlier focus (kept for context)
+
 **Phase 7 (VU recompilers / microVU) — task 7.4 part 1 (first-pass init helpers → `aVU.cpp`) DONE.**
 
 `pcsx2/arm64/aVU.cpp` now holds the **emitter-free first-pass initialization** helpers from x86

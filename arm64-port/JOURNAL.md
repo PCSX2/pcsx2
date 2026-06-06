@@ -28,6 +28,53 @@
 
 ---
 
+## 2026-06-06 — Phase 7.4/7.5 (part 1): Pass-2 flag allocators in aVU_Alloc.inl
+
+**Goal:** Start the emit backend with its smallest self-contained, buildable slice — the
+flag-allocator half of x86 `microVU_Alloc.inl` (the first helpers that actually call VIXL). Respect
+the tight build/test loop instead of waiting for the whole `mVUcompile` big-bang.
+
+**What changed:**
+- `pcsx2/arm64/aVU_Alloc.inl` — NEW. VIXL port of the flag allocators: `getFlagReg`,
+  `setBitSFLAG`/`setBitFSEQ`, `mVUallocSFLAGa`–`d` (Status normalize/denormalize), `mVUallocMFLAGa`/
+  `b` (Mac, 16-bit), `mVUallocCFLAGa`/`b` (Clip, 32-bit).
+- `pcsx2/arm64/aVU_IR.h` — added the emit-layer register-name macros `gprT1`/`gprT2`/`gprF0`–`gprF3`
+  (`a64::w9`/`w10`/`w23`–`w26`), next to the existing `mVU_T1/T2/F0..3` index constants.
+- `pcsx2/arm64/aVU.cpp` — `#include "arm64/aVU_Alloc.inl"` + `mVUallocFlagCheck` (never called)
+  odr-using every helper so the VIXL bodies are instantiated/codegen'd now.
+- `pcsx2/CMakeLists.txt` — listed `arm64/aVU_Alloc.inl` for IDE visibility.
+- Commit: `8d312b4ce` ARM64: microVU Phase 7.4/7.5 (part 1) — Pass-2 flag allocators (aVU_Alloc.inl)
+
+**Decisions & rationale:**
+- **Chose the flag allocators as the first emit slice** because they're tiny, self-contained, and
+  the foundation Flags/Branch/Lower all build on — and unlike `mVUcompile` they compile standalone
+  via the established odr-use-check pattern. This keeps the "1–2 functions → build → commit" loop
+  alive even though the larger driver is a hard big-bang.
+- **x86→VIXL translations:** `x32` GPRs → ARM64 w-regs; `xTEST + xForwardJZ8 + xOR` (conditionally
+  set a bit) → `Tst + B(eq) + Orr` with a local `a64::Label`; absolute `ptr16/ptr32[&…]` →
+  `armMoveAddressToReg(RSCRATCHADDR, …)` + `Ldrh`(zero-extends, = `xMOVZX`)/`Ldr`/`Str`. The
+  mac/clip flag instances stay host-absolute off `mVU.macFlag`/`clipFlag`, exactly like x86.
+- **Non-encodable immediates port verbatim.** VIXL's MacroAssembler lowers any logical immediate it
+  can't encode (e.g. `0x0f00`, `0xffff0000`, `0x3cf0000`) through its internal scratch (x16 =
+  RXVIXLSCRATCH, reserved for exactly this), so `And/Orr/Tst` take the x86 masks unchanged.
+- **`mVUallocSFLAGd` drops its `eax/ecx/edx` defaults** — those defaults are only used by the
+  VU0-macro path (`microVU_Macro.inl`), which ARM64 drops (Phase 5.3 inline-interp fallback). It now
+  takes explicit `reg/tmp1/tmp2` regs; the only non-macro callers already pass them.
+- **Deferred the P/Q allocators** (`getPreg`/`getQreg`/`writeQreg`): they call `mVUunpack_xyzw` (NEON
+  lane-unpack, part of the `microVU_Misc.inl` emit port) and are only used by Upper/Lower (7.5).
+  `writeVIBackup` needed no porting — already inline in `aVU_IR.h`.
+
+**Blockers / open questions:** None. The remaining Flags port (`mVUsetupFlags`/`mVUdivSet` emit +
+the `_mVUflagPass`/`mVUsetFlagInfo` analysis) is unblocked on flag-allocs but `_mVUflagPass` still
+needs `mVUopU`/`mVUopL` (opcode tables, 7.5) before it links.
+
+**Next step:** continue the emit backend — port the `microVU_Misc.inl` emit subset (`mVUunpack_xyzw`
++ P/Q allocators + `mVUaddrFix`/clamp), then Flags + Branch/program-exit against a NOP/B-only
+`mVUopU`/`mVUopL` so `mVUcompile` can link and emit a trivial block (own `armStartBlock`/
+`armEndBlock` + the icache flush before branching into freshly-emitted code).
+
+---
+
 ## 2026-06-06 — Phase 7.4 (part 1): first-pass init helpers in aVU.cpp
 
 **Goal:** Start task 7.4 (the compile driver) with its one cleanly-separable, emitter-free slice:
