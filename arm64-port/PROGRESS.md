@@ -8,46 +8,45 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 7 (VU recompilers / microVU) — the Tables/Compile BIG-BANG IS DONE. microVU now
-compiles real blocks end-to-end; it stays *unselected* (VMManager pins CpuIntVU0/1) until the
-real opcode handlers land. Next: 7.5a Upper / 7.5b Lower opcode handlers.**
+**Phase 7 (VU recompilers / microVU) — 7.5a Upper IS DONE. The full Upper float-vector ISA now
+compiles (mVU_UPPER_OPCODE + FD_xx sub-tables route to real NEON handlers). microVU stays
+*unselected* (VMManager pins CpuIntVU0/1). Next: 7.5b Lower opcode handlers (`aVU_Lower.inl`).**
 
-The whole cross-referencing core landed in four buildable slices this session:
-1. **Opcode-table stubs** (`aVU_Tables.inl`, `37b43dae6`): minimal `mVUopU`/`mVUopL` — only `mVU_NOP`
-   (Upper FD_11[11]), `mVU_B`/`mVU_BAL` (Lower) wired; every other slot routes to `mVUunknown`.
-   `setBranchA` + `branchAddr` (moved to `aVU_Misc.inl`). 7.5a/7.5b just swap `mVUunknown` slots for
-   the real handlers (the FD_xx / LowerOP / T3_xx sub-tables get filled then).
-2. **Flag read-scan** (`aVU_Flags.inl`, `360eea8d6`): `_mVUflagPass`/`mVUflagPass`/`mVUsetFlagInfo`
-   + `shortBranch` — drive `mVUopU(mVU,3)`/`mVUopL(mVU,3)` pass4 analysis.
-3. **Emit-coupled compile helpers** (`aVU_Compile.inl`, `c0135eab3`): `doUpperOp`/`doLowerOp`/
-   `doSwapOp`/`doIbit`/`flushRegs`/`mVUexecuteInstruction`, `mVUDoDBit`/`mVUDoTBit`, `mVUtestCycles`,
-   `mvuPreloadRegisters`, `mVUSaveFlags`, `handleBadOp`, `mVUdebugPrintBlocks`. `mVUbackupRegs`/
-   `mVUrestoreRegs` → `aVU_Misc.inl`; added `mvuMemOrImm32`, `mVUdebugNow`.
-4. **Branch drivers + mVUcompile core** (`04be7bfc0`): `normBranchCompile`/`normJumpCompile`/
-   `normBranch`/`condBranch`/`normJump` (`aVU_Branch.inl`) + `mVUcompile`/`mVUentryGet`/`mVUblockFetch`/
-   `mVUcompileJIT` (`aVU_Compile.inl`, replacing the pxFailRel stubs).
+7.5a landed in two buildable slices:
+1. **Custom SSE arith helpers** (`aVU_Misc.inl`, `4875c456f`): `MIN_MAX_PS` (signed-magnitude
+   integer-compare path) / `MIN_MAX_SS` (double-pack trick, FMIN/FMAX on `.V2D()`) /
+   `ADD_SS_TriAceHack` + the `SSE_ADD/SUB/MUL/DIV/MAX/MIN(PS|SS)` + `ADD2(PS|SS)` wrappers via
+   `mVUclampedArith` (clampOp). Added `xEmptyReg` sentinel (`aVU_IR.h`, default `a64::VRegister`,
+   tested with `.IsNone()`), `shuffleSS` + the `mVUlog*` no-op macros (`aVU_Misc.h`).
+2. **Upper handlers** (`aVU_Upper.inl`, `1b6544305`): `mVUupdateFlags` + `mVU_FMACa/b/c/d` +
+   `setupFtReg`/`setupPass1`/`doSafeSub` + ABS/OPMULA/OPMSUB/FTOIx/ITOFx/CLIP/NOP + every
+   `mVUop` wrapper. Wired into `aVU_Tables.inl` (`mVU_UPPER_OPCODE` + FD_00/01/10/11).
 
-**Per-block emit lifecycle (the key ARM64 design):** x86's single global `x86Ptr` cursor → one
-`armSetAsmPtr`+`armStartBlock`/`armEndBlock`(+icache flush) session opened by the *outer* entries
-only (`mVUexecute` wraps `mVUsearchProg`; `mVUcompileJIT` wraps its search). The recursive
-`mVUcompile`/`normBranchCompile`/`condBranch` calls append into that one open stream. `armEndBlock`
-flushes the icache before the dispatcher's `br x0` runs the fresh code. `x86Ptr`→`armGetCurrentCodePointer`.
+**Key x86→NEON translations (reusable for 7.5b):**
+- `xMOVMSKPS(gpr,xmm)` → `mVUmovemask` (`Sshr` #31 → `And` {1,2,4,8} → `Addv` → `Fmov`).
+- `xCMPEQ.PS(zero,r)` (== 0) → `Fcmeq(r.V4S(), #0.0)`; `xPCMP.GTD/.EQD` → `Cmgt`/`Cmeq`.
+- `xPANDN(d,s)` (d=~d&s) → `Bic(d,s,d)`; `xPBLEND.W(d,s,0x55)` → `Bit(d,s,loHalfMask)`.
+- `xCVTTPS2DQ` → `Fcvtzs` — **NEON saturates positive overflow to 0x7fffffff natively**, so the
+  x86 PCMPGTD/PXOR sign-fixup is dropped; `xCVTDQ2PS` → `Scvtf`. (NaN: x86 gives 0x80000000, NEON
+  gives 0 — accepted divergence.)
+- CLIP's `PACKSSWB`+`PMOVMSKB`&0x3f → `V8H` weight-`And` {1,2,4,8,16,32,64,128} + `Addv` + `Umov`.
+- Absolute `ptr128[&const]` arith operands → `mvuLdrQ(RQSCRATCH, addr)` then the reg-reg NEON op.
+- `xMOVSS(d,s)` → `Ins(d.V4S(),0,s.V4S(),0)`; `xMOVAPS` → `Mov(.V16B())`; `xPSHUF.D`/`xSHUF.PS` →
+  `mVUshufflePS`. `mVUmergeRegs` arm64 has no default modXYZW — pass `false` explicitly.
 
-**Branch-driver NEON/control-flow notes:** `xForwardJump32`/`xJcc`→`a64::Label`+`B(cond)`/
-`armEmitCondBranch`; the patch-style `xJcc32` not-taken path → `B(&taken)` + `Bind` + a *conditional*
-`armEmitJmp` bridge (fall through when `mVUblockFetch` compiled the taken block inline, else jmp to
-the existing block); `xTEST`+`JZ`→`Ldr`+`Tst`+`B(eq)`; `xOR`-to-mem→`mvuMemOrImm32`; `xJMP(gprT1q)`→
-`Br(x0)` (`mVUcompileJIT` returns the rec entry in x0). `condBranch` takes an `a64::Condition`.
+**Per-block emit lifecycle (unchanged, the key ARM64 design):** x86's single global `x86Ptr` cursor
+→ one `armSetAsmPtr`+`armStartBlock`/`armEndBlock`(+icache flush) session opened by the *outer*
+entries only (`mVUexecute` wraps `mVUsearchProg`; `mVUcompileJIT` wraps its search). Recursive
+`mVUcompile`/`normBranchCompile`/`condBranch` calls append into that one open stream.
 
-**Next — 7.5a/7.5b real opcode handlers** (fill the `mVUunknown` table slots):
-- 7.5a Upper FMAC → NEON (`aVU_Upper.inl`): ADD/SUB/MUL/MADD/MSUB/MAX/MINI/FTOI/ITOF/CLIP/ABS/
-  OPMULA/OPMSUB/NOP + the 4-lane EE non-IEEE clamp (reuse `aVU_Clamp.inl`). Also still deferred:
-  the custom SSE arithmetic helpers (`MIN_MAX_PS`/`ADD_SS`/`SSE_*`).
-- 7.5b Lower (`aVU_Lower.inl`): VI ALU, LQ/SQ/ILW/ISW family, EFU DIV/SQRT/RSQRT, MOVE/MFIR/MTIR/
-  MR32/MFP, RANDOM, FSAND/FSEQ/FSSET/FMAND/FCxxx, ELENG/ESQRT/etc. + the branch *op handlers*
-  IBEQ/IBNE/IBLTZ/IBGTZ/IBLEZ/IBGEZ/JR/JALR (drivers already done) + `mVUoptimizeConstantAddr`.
-Once a slice of handlers exists, can attempt a real NOP/B round-trip behind a temporary selection
-flag, then 7.8 (flip `CpuVU0/1`→`CpuMicroVU0/1`).
+**Next — 7.5b Lower** (`aVU_Lower.inl`, x86 `microVU_Lower.inl` ≈2203 lines — the big one):
+VI integer ALU (IADD/ISUB/IADDI/IADDIU/IAND/IOR), load/store (LQ/SQ/ILW/ISW/LQI/SQI/LQD/SQD/
+ILWR/ISWR), EFU (DIV/SQRT/RSQRT + WAITQ/WAITP — reuses `SSE_DIVPS`/`DIVSS` already in `aVU_Misc.inl`),
+MOVE/MFIR/MTIR/MR32/MFP, RANDOM (RINIT/RGET/RNEXT/RXOR), FSAND/FSEQ/FSSET/FMAND/FCxxx, ELENG/ESQRT/
+etc. + the branch *op handlers* IBEQ/IBNE/IBLTZ/IBGTZ/IBLEZ/IBGEZ/JR/JALR (drivers already done) +
+`mVUoptimizeConstantAddr` (→ `aVU_Misc.inl`). Fill the `mVUunknown` slots in `mVULOWER_OPCODE` +
+the `mVULowerOP`/`T3_00/01/10/11` sub-tables (copy them from x86 `microVU_IR.h`'s table block).
+Once Lower lands, attempt a real round-trip behind a temporary selection flag, then 7.8.
 
 ---
 
@@ -308,10 +307,12 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     `aVU_Compile.inl` + `aVU_Tables.inl` + flag read-scan + branch drivers — the Tables/Compile
     big-bang (`37b43dae6`/`360eea8d6`/`c0135eab3`/`04be7bfc0`). Per-block session owned by the outer
     entries (`mVUexecute`/`mVUcompileJIT`); icache flushed via `armEndBlock`. Builds; unittests 2/2.
-- [ ] 7.5 **VIXL emission for the VU ISA:**
-  - [ ] 7.5a Upper (FMAC float vector → NEON): ADD/SUB/MUL/MADD/MSUB/MAX/MINI/FTOI/ITOF/CLIP/
-    ABS/OPMULA/OPMSUB/NOP + EE non-IEEE 4-lane clamp (reuse the Phase 5.2 FPU clamp insight).
-    `microVU_Upper.inl`.
+- [~] 7.5 **VIXL emission for the VU ISA:**
+  - [x] 7.5a Upper (FMAC float vector → NEON): DONE (`aVU_Upper.inl`, commits `4875c456f`
+    SSE helpers / `1b6544305` handlers). Full Upper ISA — ADD/SUB/MUL/MADD/MSUB (+ACC, +i/q/
+    x/y/z/w), MAX/MINI, FTOI/ITOF, ABS, OPMULA/OPMSUB, CLIP, NOP + `mVUupdateFlags`. The custom
+    SSE arith primitives (MIN_MAX_PS/SS, ADD_SS_TriAceHack, SSE_ADD/SUB/MUL/DIV/MAX/MIN(PS|SS),
+    ADD2) landed in `aVU_Misc.inl`. Tables wired (`mVU_UPPER_OPCODE` + FD_00/01/10/11).
   - [ ] 7.5b Lower — VI integer ALU (IADD/ISUB/IADDI/IADDIU/IAND/IOR), load/store (LQ/SQ/ILW/ISW/
     LQI/SQI/LQD/SQD/ILWR/ISWR), EFU (DIV/SQRT/RSQRT + WAITQ/WAITP), MOVE/MFIR/MTIR/MR32/MFP,
     RANDOM (RINIT/RGET/RNEXT/RXOR), FSAND/FSEQ/FSSET/FMAND/FCxxx, ELENG/ESQRT/etc.

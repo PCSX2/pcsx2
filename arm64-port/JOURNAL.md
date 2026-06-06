@@ -28,6 +28,53 @@
 
 ---
 
+## 2026-06-06 — Phase 7.5a: Upper FMAC opcode handlers (aVU_Upper.inl)
+
+**Goal:** Fill the `mVUunknown` Upper-table slots with the real float-vector ISA — port
+`microVU_Upper.inl` to NEON so microVU compiles every Upper op. Two buildable slices.
+
+**What changed:**
+- `aVU_Misc.inl` — appended the custom SSE arithmetic primitives (`4875c456f`): `MIN_MAX_PS`
+  (integer-compare path), `MIN_MAX_SS` (double-pack FMIN/FMAX), `ADD_SS_TriAceHack`, and the
+  `SSE_ADD/SUB/MUL/DIV/MAX/MIN(PS|SS)` + `ADD2(PS|SS)` wrappers via `mVUclampedArith`.
+- `aVU_IR.h` — `xEmptyReg` sentinel (default `a64::VRegister`, `.IsNone()`).
+- `aVU_Misc.h` — `shuffleSS` + the `mVUlog*` per-operand no-op log macros.
+- `aVU_Upper.inl` — NEW (`1b6544305`): `mVUupdateFlags` (+ the `mVUmovemask` helper),
+  `mVU_FMACa/b/c/d`, `setupFtReg`/`setupPass1`/`doSafeSub`/`mVU_printOP`, ABS/OPMULA/OPMSUB/
+  FTOIx/ITOFx/CLIP/NOP, and every `mVUop` wrapper (ADD…MINI…ITOF…).
+- `aVU_Tables.inl` — `mVU_UPPER_OPCODE` + the FD_00/01/10/11 sub-tables/dispatchers now route to
+  the real handlers; the temp `mVU_NOP` moved into `aVU_Upper.inl`. Lower stays NOP/B/BAL-only.
+- `aVU.cpp` — `#include aVU_Upper.inl` before `aVU_Tables.inl`; dropped `mVUsseCheck` (live now).
+- `pcsx2/CMakeLists.txt` — listed `arm64/aVU_Upper.inl`.
+- Commits: `4875c456f` (SSE helpers), `1b6544305` (Upper handlers).
+
+**Decisions & rationale:**
+- **CVTTPS2DQ → Fcvtzs, no sign-fixup.** x86 CVTTPS2DQ returns 0x80000000 for *all* out-of-range
+  inputs, so microVU does a PCMPGTD(I32MAXF)+PXOR dance to turn positive-overflow into 0x7fffffff.
+  NEON `Fcvtzs` already saturates pos→0x7fffffff / neg→0x80000000, so the fixup (and its `t1` temp)
+  is dropped entirely. Divergence: FTOI(NaN) is 0 on NEON vs 0x80000000 on x86 — accepted (rare).
+- **MIN/MAX split by width.** VU MIN/MAX is a signed-magnitude integer compare, not IEEE. PS uses
+  the integer path (`Sshr`/`Ushr`/`Eor` transform + `Cmgt`/`And`/`Bic`/`Orr`). SS has no integer
+  form, so it keeps the double-pack trick: the two floats become a finite normal double whose
+  ordering matches float magnitude/sign, so `Fmin`/`Fmax` on `.V2D()` is exact (never NaN).
+- **MOVMSKPS → `mVUmovemask`.** `Sshr #31` (sign→all-ones) `And` {1,2,4,8} `Addv`→S `Fmov`→W.
+  Used by both updateFlags sign/zero gathers and the overflow-hack path. Clobbers RQSCRATCH/2 only.
+- **CLIP without PACKSSWB/PMOVMSKB.** After the +/- compares are blended (`Bit` low-half from the
+  -compare, high-half from the +compare), reinterpret as `V8H`, `And` per-halfword weights
+  {1,2,4,8,16,32,64,128}, `Addv`→H, `Umov`→W, `& 0x3f` — reproduces the exact 6-bit clip-flag order.
+- **Non-encodable AND/OR immediates** (flipMask values, 0x820000, 0xffffff, …) are left to the VIXL
+  MacroAssembler, which materializes them via its internal scratch — same as the rest of the port.
+
+**Blockers / open questions:** None. Upper is fully compiled but UNTESTED at runtime (microVU stays
+unselected). Runtime validation of the FMAC/flag/CLIP NEON math waits for 7.5b + 7.8 bring-up.
+
+**Next step:** 7.5b Lower (`aVU_Lower.inl`) — port `microVU_Lower.inl`: VI ALU, LQ/SQ/ILW/ISW
+family, EFU DIV/SQRT/RSQRT (reuse the `SSE_DIVPS`/`DIVSS` already in `aVU_Misc.inl`), MOVE/MFIR/
+MTIR/MR32/MFP, RANDOM, FSAND/FSEQ/FSSET/FMAND/FCxxx, ELENG/ESQRT/etc., plus the IB*/JR/JALR branch
+op handlers (drivers already done). Fill `mVULOWER_OPCODE` + the LowerOP/T3_xx sub-tables.
+
+---
+
 ## 2026-06-06 — Phase 7 Tables/Compile BIG-BANG (microVU compiles real blocks)
 
 **Goal:** Land the whole cross-referencing core of the microVU recompiler — opcode tables, flag
