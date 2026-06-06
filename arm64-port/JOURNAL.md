@@ -28,6 +28,50 @@
 
 ---
 
+## 2026-06-06 — Phase 7.5/7.6: flag pipeline (aVU_Flags.inl)
+
+**Goal:** Begin the hard big-bang by landing its one genuinely-standalone slice first — the
+Status/Mac/Clip flag pipeline — keeping the tight build/test loop instead of bringing up all of
+Flags+Branch+`mVUcompile` in one uncompilable lump.
+
+**What changed:**
+- `pcsx2/arm64/aVU_Flags.inl` — NEW. Port of `microVU_Flags.inl` minus the opcode-table-dependent
+  read-scan: emitter-free analysis (`findFlagInst`/`sortFlag`/`sortFullFlag`/`mVUstatusFlagOp`/
+  `mVUsetFlags`) + the two VIXL emit helpers `mVUdivSet` (FDIV→Status merge) and `mVUsetupFlags`
+  (shuffle the 4 Status instances into gprF0-3 + permute the mac/clip flag arrays for block linking).
+- `pcsx2/arm64/aVU_IR.h` — added `xmmT1`/`xmmT2` (→ NEON scratch q30/q31) + the `mVUshufflePS`
+  lane-permute helper (x86 `xSHUF.PS` has no NEON immediate form).
+- `pcsx2/arm64/aVU.cpp` — `#include` the new .inl; `mVUflagCheck` odr-uses the emit helpers.
+- `pcsx2/CMakeLists.txt` — listed `arm64/aVU_Flags.inl`.
+- Commit: `ce947bbc0`.
+
+**Decisions & rationale:**
+- **Sliced the big-bang.** The journal/PROGRESS flagged Flags+Branch+`mVUcompile` as a slice that
+  "can't build incrementally". But that's only true of the cross-referencing *core*: the flag
+  *analysis* (pure) + `mVUdivSet`/`mVUsetupFlags` (emit, depend only on the already-ported flag
+  allocators + `mVUshufflePS`) compile standalone. Only `_mVUflagPass`/`mVUsetFlagInfo` truly need
+  `mVUopU`/`mVUopL`, so they were deferred into the table+Branch+Compile slice. Keeps hard-rule #3.
+- **`xmmT1`/`xmmT2` → q30/q31 (NEON scratch), not v0/v1.** x86 maps them to xmm0/xmm1 which double as
+  regAlloc temps; on ARM64 v0-v23 *is* the VF pool, so reusing them would alias live VF regs. Every
+  consumer (mVUsetupFlags/endProgram/branch) runs after a regAlloc `flushAll()`, so the shared
+  scratch q30/q31 is safe and avoids the aliasing trap.
+- **`mVUshufflePS` = copy + 4×`Ins`.** No NEON immediate 4-lane permute exists. Copy src→q29 once,
+  then `Ins(dst.V4S(), i, q29.V4S(), (imm>>2i)&3)` per output lane. Correct for `dst==src` (all
+  in-place uses) and for the lane-0 broadcast cases (`imm==0`) endProgram needs.
+
+**Blockers / open questions:** None. The remaining big-bang core (opcode-table stubs + flag
+read-scan + Branch/program-exit + `mVUcompile`) still comes up together.
+
+**Next step:** the table+Branch+Compile big-bang — (1) minimal NOP/B-only `mVUopU`/`mVUopL`
+(`aVU_Tables.inl`); (2) append `_mVUflagPass`/`mVUflagPass`/`mVUsetFlagInfo` to `aVU_Flags.inl`;
+(3) `aVU_Branch.inl` (`mVUendProgram`/`mVUDTendProgram`/`normBranch`/`normJump`/`condBranch` +
+`mVUsetupBranch`/`normBranchCompile`, with XGKICK + `mVUEBit`/`mVUTBit` stubs); (4) `mVUcompile` +
+the emit-coupled driver helpers (own `armStartBlock`/`armEndBlock` per block + the **icache flush
+before branching into freshly-emitted code**), replacing the `mVUblockFetch`/`mVUentryGet` stubs, so
+a trivial NOP/B block links and round-trips. Keep microVU unselected until it does.
+
+---
+
 ## 2026-06-06 — Phase 7.5: clamp helpers + mVUaddrFix (Misc emit subset)
 
 **Goal:** Continue the emit backend with the next two standalone, buildable Misc slices — the
