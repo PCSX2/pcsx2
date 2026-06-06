@@ -91,6 +91,11 @@ static void mVUcacheProg(microVU& mVU, microProgram& prog);
 // are later 7.5 slices.
 #include "arm64/aVU_Alloc.inl"
 
+// Operand/result clamp helpers (task 7.5) — VIXL min/max range + sign-overflow
+// clamps used by every VU FMAC arithmetic op. Emit-coupled; mVUclampCheck below
+// odr-uses them so the bodies compile ahead of the Upper/Lower opcode handlers.
+#include "arm64/aVU_Clamp.inl"
+
 //------------------------------------------------------------------
 // Pass-1 pipeline / cycle / range helpers (task 7.3 part 2)
 //------------------------------------------------------------------
@@ -1354,4 +1359,19 @@ static_assert(alignof(microBlock) == 16, "microBlock must stay 16-byte aligned")
 	getPreg(mVU, t);       // uses mVUinfo.readP (mVU in scope)
 	getQreg(t, 0);
 	writeQreg(t, 1);
+}
+
+// Force the clamp helpers (aVU_Clamp.inl) to be compiled. Same rationale as
+// mVUallocFlagCheck: they emit VIXL but their callers (the FMAC arithmetic
+// opcode handlers) are a later 7.5 slice, so without an explicit odr-use their
+// bodies — and any emission error — would never be instantiated. Never called.
+[[maybe_unused]] static void mVUclampCheck()
+{
+	microVU& mVU = microVU0;
+	const a64::VRegister reg = a64::VRegister(1, 128);
+	const a64::VRegister tmp = a64::VRegister(2, 128);
+	mVUclamp1(mVU, reg, tmp, 0xf);
+	mVUclamp2(mVU, reg, tmp, 0x8);
+	mVUclamp3(mVU, reg, tmp, 0xf);
+	mVUclamp4(mVU, reg, tmp, 0x8);
 }

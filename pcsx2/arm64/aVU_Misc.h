@@ -12,7 +12,6 @@
 //
 // Deliberately DROPPED vs the x86 header (all x86emitter-coupled):
 //   * `using namespace x86Emitter;` + the xmm/x32 typedefs;
-//   * the mVU_Globals emit-constant table (mVUglob) — emission concern (task 7.5);
 //   * the host-register name macros (xmmT1.., gprT1.., gprF0..) — the ARM64 register
 //     map lives in aVU_IR.h (NEON v0-v23 for VF, w-regs for VI, mVU_F0..3=w23-26);
 //   * the x86 shuffle-immediate helpers (shufflePQ/shuffleSS) — NEON does lane moves
@@ -45,6 +44,54 @@ static const char branchSTR[16][8] = {
 	"IBNE",  "JR",    "JALR",  "N/A",
 	"N/A",   "N/A",   "N/A",   "N/A"
 };
+
+//------------------------------------------------------------------
+// Emit-constant table (x86: microVU_Misc.h mVU_Globals / mVUglob)
+//------------------------------------------------------------------
+// Arch-neutral constant data consumed by the VIXL emit layer (clamp range
+// bounds, FTOI/ITOF scales, the polynomial coefficients for the EFU estimates).
+// Loaded into NEON regs via armMoveAddressToReg + Ldr(.Q()). `static constexpr`
+// gives each including TU its own copy, exactly like x86.
+
+struct mVU_Globals
+{
+#define __four(val) { val, val, val, val }
+	u32   absclip [4] = __four(0x7fffffff);
+	u32   signbit [4] = __four(0x80000000);
+	u32   minvals [4] = __four(0xff7fffff);
+	u32   maxvals [4] = __four(0x7f7fffff);
+	u32   exponent[4] = __four(0x7f800000);
+	u32   one     [4] = __four(0x3f800000);
+	u32   Pi4     [4] = __four(0x3f490fdb);
+	u32   T1      [4] = __four(0x3f7ffff5);
+	u32   T5      [4] = __four(0xbeaaa61c);
+	u32   T2      [4] = __four(0x3e4c40a6);
+	u32   T3      [4] = __four(0xbe0e6c63);
+	u32   T4      [4] = __four(0x3dc577df);
+	u32   T6      [4] = __four(0xbd6501c4);
+	u32   T7      [4] = __four(0x3cb31652);
+	u32   T8      [4] = __four(0xbb84d7e7);
+	u32   S2      [4] = __four(0xbe2aaaa4);
+	u32   S3      [4] = __four(0x3c08873e);
+	u32   S4      [4] = __four(0xb94fb21f);
+	u32   S5      [4] = __four(0x362e9c14);
+	u32   E1      [4] = __four(0x3e7fffa8);
+	u32   E2      [4] = __four(0x3d0007f4);
+	u32   E3      [4] = __four(0x3b29d3ff);
+	u32   E4      [4] = __four(0x3933e553);
+	u32   E5      [4] = __four(0x36b63510);
+	u32   E6      [4] = __four(0x353961ac);
+	u32   I32MAXF [4] = __four(0x4effffff);
+	float FTOI_4  [4] = __four(16.0);
+	float FTOI_12 [4] = __four(4096.0);
+	float FTOI_15 [4] = __four(32768.0);
+	float ITOF_4  [4] = __four(0.0625f);
+	float ITOF_12 [4] = __four(0.000244140625);
+	float ITOF_15 [4] = __four(0.000030517578125);
+#undef __four
+};
+
+alignas(32) static constexpr struct mVU_Globals mVUglob;
 
 //------------------------------------------------------------------
 // Instruction-field extractor macros (operate on mVU.code)
