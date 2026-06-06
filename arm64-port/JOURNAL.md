@@ -28,6 +28,58 @@
 
 ---
 
+## 2026-06-06 — Phase 7.5b: Lower opcode handlers (aVU_Lower.inl) — full microVU ISA compiles
+
+**Goal:** Port the rest of the microVU ISA — x86 `microVU_Lower.inl` (≈2200 lines) — to NEON/VIXL so
+every `mVUopL` slot routes to a real handler and the whole recompiler (Upper + Lower) compiles.
+
+**What changed:**
+- `aVU_Lower.inl` — NEW. The full Lower ISA: VI ALU (IADD/IADDI/IADDIU/IAND/IOR/ISUB/ISUBIU),
+  load/store (LQ/LQD/LQI, SQ/SQD/SQI, ILW/ILWR, ISW/ISWR), EFU (DIV/SQRT/RSQRT, EATAN*/EEXP/ELENG/
+  ERCPR/ERLENG/ERSADD/ERSQRT/ESADD/ESIN/ESQRT/ESUM, WAITP/WAITQ), MFIR/MFP/MOVE/MR32/MTIR,
+  RINIT/RGET/RNEXT/RXOR, FCxxx/FMxxx/FSxxx, XTOP/XITOP, the real XGKICK GIF path, and the branch op
+  handlers B/BAL/IBxx/JR/JALR (+ setBranchA/condEvilBranch/normJumpPass2). Local `gprT1q`/`gprT2q`
+  = x9/x10 for mVUaddrFix; base-register `mvuLoadRegBase`/`mvuSaveRegBase` for LQ/SQ.
+- `aVU_Misc.inl` — `mVUoptimizeConstantAddr` (returns an absolute host VU-mem pointer for the VI0
+  const-address fast path; `std::nullopt` ⇒ runtime compute). +`#include <optional>`.
+- `aVU_Tables.inl` — full `mVULOWER_OPCODE` + `mVULowerOP_OPCODE` + `T3_00/01/10/11` sub-tables +
+  their dispatch fns. `setBranchA` + `mVU_B`/`mVU_BAL` moved out of here into `aVU_Lower.inl`.
+- `aVU_Branch.inl` — dropped the no-op XGKICK stubs (real `mVU_XGKICK_DELAY/SYNC` now in Lower,
+  #included earlier).
+- `aVU.cpp` — `#include aVU_Lower.inl` before `aVU_Tables.inl`; +`Gif_Unit.h`. `CMakeLists.txt`
+  lists `arm64/aVU_Lower.inl`.
+- Commit: `ddd15c67a`.
+
+**Decisions & rationale:**
+- **One buildable commit (like the Tables big-bang), not a per-family split.** The LOWER/T3 tables
+  reference *every* Lower handler, and the handlers are `static` (unused-function errors if wired
+  later), so handlers + tables must land together. mVU_B/mVU_BAL + setBranchA moved from Tables into
+  Lower (Lower is #included first) to match x86's file layout now that the full ISA exists.
+- **SSE dot-product (`xDP.PS .,.,0x71`) → Fmul + zero-W + two Faddp.** NEON has no DPPS and `Addv`
+  is integer-only, so `mVU_sumXYZ` squares the vector, zeroes the W lane (Ins from a zeroed reg),
+  then pairwise-adds (`Faddp` V4S then scalar V2S) to get x²+y²+z² in lane0.
+- **testZero leaves a flag condition, not a vector mask.** x86 used `xCMPEQ.SS`+`xPTEST`+`JZ`; ARM64
+  splits compare/branch, so testZero does `Fcmeq(.S)` → `Fmov`→W → `Cmp(.W,0)` and the caller emits
+  an explicit `B(eq, …)` (eq == “reg != 0”), driving the DIV/RSQRT 0/0 & x/0 flag branches via labels.
+- **LQ/SQ need base-register load/save helpers.** `mVUloadReg`/`mVUsaveReg` (aVU_IR.h) are hard-wired
+  to RVUSTATE+offset, but VU *data* memory (`mVU.regs().Mem`) is a separate allocation, so I added
+  `mvuLoadRegBase`/`mvuSaveRegBase` (same lane/modXYZW semantics, arbitrary 64-bit base reg).
+- **mVUoptimizeConstantAddr returns `std::optional<const void*>`** (the deferred return-type contract):
+  an absolute host pointer the load/store materializes via `armMoveAddressToReg`. ISWR's x86 64-bit
+  far-displacement dance collapses to "materialize base, Add index, store at 0/4/8/12".
+
+**Blockers / open questions:** None blocking. Two runtime watch-items recorded in PROGRESS ▶ CURRENT
+FOCUS: (1) condBranch's 16-bit *signed* compare is currently zero-extending `mvuLdrh16` — only the
+IBLTZ-family signed conditions are affected; likely needs an Ldrsh at 7.8. (2) all Lower NEON math is
+UNTESTED (microVU still unselected). Builds arm64; unittests 2/2.
+
+**Next step:** 7.8 — flip `CpuVU0`/`CpuVU1` to `CpuMicroVU0/1` on ARM64 in `VMManager.cpp`
+(Init/Shutdown/Update/Clear), then run the test ladder (BIOS → 2D → IOP-heavy → FFX). Fix the
+condBranch signed-compare and whatever the first real round-trip surfaces (the single-session/icache
+lifecycle + condBranch inline/bridge are the highest-risk areas per the Tables big-bang entry).
+
+---
+
 ## 2026-06-06 — Phase 7.5a: Upper FMAC opcode handlers (aVU_Upper.inl)
 
 **Goal:** Fill the `mVUunknown` Upper-table slots with the real float-vector ISA — port
