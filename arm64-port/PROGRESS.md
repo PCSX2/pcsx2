@@ -939,6 +939,13 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
   - [x] First-pass init helpers (emitter-free): `startLoop`/`mVUinitConstValues`/`mVUinitFirstPass`
     → `pcsx2/arm64/aVU.cpp`. memset/memcpy + block-manager `add` only (no VIXL); `x86ptrStart`→
     `codeStart`. Compile-exercised via `mVUcompileHelpersCheck`. Builds arm64; unittests 2/2. (`9b01b4ca2`)
+  - [x] Pass-2 flag allocators (first emit-backend slice) — flag-allocator half of `microVU_Alloc.inl`
+    → `pcsx2/arm64/aVU_Alloc.inl`: `getFlagReg` + Status/Mac/Clip normalize/denormalize
+    (`setBitSFLAG`/`setBitFSEQ`/`mVUallocSFLAGa`–`d`/`mVUallocMFLAGa`–`b`/`mVUallocCFLAGa`–`b`).
+    Established the emit-layer reg-name macros (`gprT1`/`gprT2`/`gprF0`–`gprF3`) in `aVU_IR.h`.
+    x86 GPRs→w-regs; `xTEST+JZ+xOR`→`Tst+B(eq)+Orr`; absolute `ptr16/ptr32`→`armMoveAddressToReg`+
+    `Ldrh/Ldr/Str`. Compile-exercised via `mVUallocFlagCheck`. Builds arm64; unittests 2/2.
+    (`8d312b4ce`) Deferred: P/Q allocators (need `mVUunpack_xyzw`, Misc emit port).
   - [ ] Emit-coupled driver `mVUcompile` + `mVUexecuteInstruction`/`doUpperOp`/`doLowerOp`/`doSwapOp`/
     `doIbit`, `mVUtestCycles`, `mVUDoDBit`/`mVUDoTBit`, `mvuPreloadRegisters`, and the
     `mVUentryGet`/`mVUblockFetch` entry points (still `pxFailRel`). Big-bang: links only once the 7.5
