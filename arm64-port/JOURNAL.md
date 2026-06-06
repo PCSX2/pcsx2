@@ -28,6 +28,66 @@
 
 ---
 
+## 2026-06-06 — Phase 7 Tables/Compile BIG-BANG (microVU compiles real blocks)
+
+**Goal:** Land the whole cross-referencing core of the microVU recompiler — opcode tables, flag
+read-scan, branch drivers, and `mVUcompile` — so microVU compiles real blocks end-to-end (still
+unselected). Done as four buildable slices to keep the tight loop, not one uncompilable lump.
+
+**What changed:**
+- `aVU_Tables.inl` — NEW (`37b43dae6`). Minimal `mVUopU`/`mVUopL`: only `mVU_NOP` (Upper FD_11[11]),
+  `mVU_B`/`mVU_BAL` (Lower) wired; all other slots `mVUunknown`. `setBranchA` + the table arrays.
+  `branchAddr` + the `mvu{Str,Ldr}*` absolute-addr helpers moved into `aVU_Misc.inl` (shared); added
+  `mvuLdr32`. Include order now mirrors x86 (Tables before Flags).
+- `aVU_Flags.inl` — appended the read-scan `_mVUflagPass`/`mVUflagPass`/`mVUsetFlagInfo` + `shortBranch`
+  (`360eea8d6`). Verbatim port; drives `mVUopU(mVU,3)`/`mVUopL(mVU,3)`.
+- `aVU_Compile.inl` — NEW (`c0135eab3` helpers, `04be7bfc0` core). Emit half of `microVU_Compile.inl`:
+  the per-instruction executors, `mVUDoDBit`/`mVUDoTBit`, `mVUtestCycles`, `mvuPreloadRegisters`,
+  `handleBadOp`/`mVUdebugPrintBlocks`, then `mVUcompile` + `mVUentryGet`/`mVUblockFetch`/
+  `mVUcompileJIT` (replaced the pxFailRel stubs).
+- `aVU_Branch.inl` — appended the branch drivers `normBranchCompile`/`normJumpCompile`/`normBranch`/
+  `condBranch`/`normJump` (`04be7bfc0`).
+- `aVU_Misc.inl` — `mVUbackupRegs`/`mVUrestoreRegs` (x86 home) + `mvuMemOrImm32`. `aVU_Misc.h` —
+  `mVUdebugNow`. `aVU.cpp` — wrapped `mVUexecute`'s search in the emit session; `+common/Perf.h`;
+  dropped the now-redundant `mVUtablesCheck`/`mVUcompileEmitCheck` odr-uses.
+- Commits: `37b43dae6` (tables), `360eea8d6` (read-scan), `c0135eab3` (compile helpers),
+  `04be7bfc0` (branch drivers + mVUcompile core).
+
+**Decisions & rationale:**
+- **The big-bang split four ways.** Only `mVUcompile`↔`normBranch`/`condBranch` truly cross-reference.
+  Tables (with NOP/B/BAL + `mVUunknown` filler), the read-scan, and the non-recursive emit helpers
+  each compile standalone with an odr-use check, so three of the four landed before the linking core —
+  preserving hard-rule #3 (tight build/test loop). The final commit dropped the odr-use checks once
+  real callers existed.
+- **Per-block emit session owned by the OUTER entries, not per-block.** x86 uses one global `x86Ptr`
+  cursor that the recursive compile appends to. On ARM64 VIXL needs an explicit
+  `armSetAsmPtr`+`armStartBlock`/`armEndBlock` session. Opening it per logical block would break the
+  recursion (normBranchCompile→mVUcompile appends mid-stream). So the session is opened *only* by
+  `mVUexecute` (around `mVUsearchProg`) and `mVUcompileJIT` (around its search); every inner
+  `mVUcompile`/`mVUblockFetch`/`condBranch` just appends. `armEndBlock` flushes the icache before the
+  dispatcher's `br x0` executes the fresh code. This is the key structural deviation from x86 and the
+  thing most likely to need attention at 7.8 bring-up.
+- **`xJcc32` patch-style → conditional `armEmitJmp` bridge.** x86 condBranch's not-taken path emits a
+  patchable `Jcc32`, compiles the not-taken side, then patches the jump to the (possibly inline-emitted)
+  taken block. VIXL has no easy raw-instruction patch, so: `B(&takenLabel, cond)`, compile not-taken,
+  `Bind(takenLabel)`, then `mVUblockFetch` the taken target; if it compiled inline (entry ==
+  pre-fetch cursor) we fall straight through, else `armEmitJmp(entry)` bridges to the existing block.
+- **`mVUcompileJIT` returns the rec entry in x0** (AAPCS64 return reg); the JR/JALR thunk does
+  `Br(x0)` (x86 `xJMP(gprT1q)` where gprT1q==rax). `mVUrestoreRegs` (!fromMemory) only clobbers
+  x16/x17, so x0 survives to the `Br`.
+
+**Blockers / open questions:** Nothing blocking. microVU is fully compiled but UNTESTED at runtime
+(stays unselected). The two highest-risk areas to validate at 7.8: (1) the single-session/icache
+lifecycle above; (2) the condBranch inline/bridge logic. Both only exercise once real opcode handlers
+let a block actually do work.
+
+**Next step:** 7.5a Upper FMAC handlers (`aVU_Upper.inl`) — fill the `mVUunknown` slots in
+`mVU_UPPER_OPCODE`/`mVU_UPPER_FD_xx_TABLE` with ADD/SUB/MUL/MADD/MSUB/MAX/MINI/FTOI/ITOF/CLIP/ABS/
+OPMULA/OPMSUB + the 4-lane EE non-IEEE clamp (reuse `aVU_Clamp.inl`); then 7.5b Lower
+(`aVU_Lower.inl`) incl. the IB*/JR/JALR branch op handlers the already-ported drivers consume.
+
+---
+
 ## 2026-06-06 — Phase 7.7: program-exit emitters (aVU_Branch.inl)
 
 **Goal:** Keep slicing the "hard big-bang" — land the parts of `microVU_Branch.inl` that are
