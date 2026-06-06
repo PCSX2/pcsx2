@@ -259,6 +259,10 @@ static constexpr bool doJumpAsSameProgram = false;
 // D-Bit handling in micro programs (debug only; released games use the T-Bit).
 static constexpr bool doDBitHandling = false;
 
+// Block Start/End PC tracing (debug only; x86: microVU.h mVUdebugNow). Compile-time
+// false so mVUdebugPrintBlocks' trace-call emission dead-strips.
+static constexpr bool mVUdebugNow = false;
+
 //------------------------------------------------------------------
 // Speed Hacks
 //------------------------------------------------------------------

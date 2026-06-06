@@ -85,6 +85,73 @@ static inline void mvuMemAndImm32(const void* addr, u32 imm, const a64::Register
 	armAsm->Str(tmp.W(), a64::MemOperand(RSCRATCHADDR));
 }
 
+static inline void mvuMemOrImm32(const void* addr, u32 imm, const a64::Register& tmp)
+{
+	armMoveAddressToReg(RSCRATCHADDR, addr);
+	armAsm->Ldr(tmp.W(), a64::MemOperand(RSCRATCHADDR));
+	armAsm->Orr(tmp.W(), tmp.W(), imm);
+	armAsm->Str(tmp.W(), a64::MemOperand(RSCRATCHADDR));
+}
+
+//------------------------------------------------------------------
+// Volatile-register backup / restore around opaque C calls
+//------------------------------------------------------------------
+// x86: microVU_Misc.inl mVUbackupRegs/mVUrestoreRegs.
+//   * !toMemory (the common case, e.g. normJumpCompile): flush the reg cache and
+//     stash only the PQ NEON reg in mVU.vecBackup — the dispatcher's XGKICK resume
+//     path (mVUdispatcherCD) reloads it from there.
+//   * toMemory (debug-only: handleBadOp / mVUdebugPrintBlocks / DumpVUState): the
+//     regAlloc isn't told about the call, so push every caller-saved host reg that
+//     can hold live VU state to the stack and pop it after. We save the full fixed
+//     caller-saved set (GPR x0-x15, NEON v0-v24 = VF pool + PQ) rather than the x86
+//     "onlyNeeded" subset — over-saving is correct and these paths are rare. The
+//     frame layout here MUST match mVUrestoreRegs.
+static constexpr int kBakGprSave = 16; // x0..x15
+static constexpr int kBakVecSave = 25; // v0..v24 (VF pool + PQ)
+static constexpr int kBakGprBytes = kBakGprSave * 8;
+static constexpr int kBakFrame = kBakGprBytes + ((kBakVecSave * 16 + 15) & ~15);
+
+__fi void mVUbackupRegs(microVU& mVU, bool toMemory = false, bool onlyNeeded = false)
+{
+	(void)onlyNeeded;
+	if (toMemory)
+	{
+		armAsm->Sub(a64::sp, a64::sp, kBakFrame);
+		for (int i = 0; i < kBakGprSave; i += 2)
+			armAsm->Stp(armXRegister(i), armXRegister(i + 1), a64::MemOperand(a64::sp, i * 8));
+		int voff = kBakGprBytes;
+		for (int i = 0; i < kBakVecSave - 1; i += 2, voff += 32)
+			armAsm->Stp(armQRegister(i), armQRegister(i + 1), a64::MemOperand(a64::sp, voff));
+		armAsm->Str(armQRegister(kBakVecSave - 1), a64::MemOperand(a64::sp, voff));
+	}
+	else
+	{
+		mVU.regAlloc->flushAll(); // Flush Regalloc
+		armMoveAddressToReg(RSCRATCHADDR, &mVU.vecBackup[mVU_xmmPQ.GetCode()][0]);
+		armAsm->Str(mVU_xmmPQ.Q(), a64::MemOperand(RSCRATCHADDR));
+	}
+}
+
+__fi void mVUrestoreRegs(microVU& mVU, bool fromMemory = false, bool onlyNeeded = false)
+{
+	(void)onlyNeeded;
+	if (fromMemory)
+	{
+		int voff = kBakGprBytes;
+		for (int i = 0; i < kBakVecSave - 1; i += 2, voff += 32)
+			armAsm->Ldp(armQRegister(i), armQRegister(i + 1), a64::MemOperand(a64::sp, voff));
+		armAsm->Ldr(armQRegister(kBakVecSave - 1), a64::MemOperand(a64::sp, voff));
+		for (int i = 0; i < kBakGprSave; i += 2)
+			armAsm->Ldp(armXRegister(i), armXRegister(i + 1), a64::MemOperand(a64::sp, i * 8));
+		armAsm->Add(a64::sp, a64::sp, kBakFrame);
+	}
+	else
+	{
+		armMoveAddressToReg(RSCRATCHADDR, &mVU.vecBackup[mVU_xmmPQ.GetCode()][0]);
+		armAsm->Ldr(mVU_xmmPQ.Q(), a64::MemOperand(RSCRATCHADDR));
+	}
+}
+
 // Transforms the VU address (a quadword index) in gprReg into a byte offset into
 // VU memory, applying the VU0/VU1 wrap and the VU0->VU1 register-window remap.
 // x86: mVUaddrFix. Modifies gprReg in place (and tmpReg on the far-offset path).

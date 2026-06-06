@@ -1078,6 +1078,7 @@ set(pcsx2arm64Headers
 	arm64/aVU_Tables.inl
 	arm64/aVU_Flags.inl
 	arm64/aVU_Branch.inl
+	arm64/aVU_Compile.inl
 )
 
 # These ones benefit a lot from LTO

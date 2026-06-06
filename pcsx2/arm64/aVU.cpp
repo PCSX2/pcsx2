@@ -119,6 +119,13 @@ static void mVUcacheProg(microVU& mVU, microProgram& prog);
 // the Tables/Compile big-bang. mVUbranchCheck below odr-uses the emitters.
 #include "arm64/aVU_Branch.inl"
 
+// Emit-coupled compile-driver helpers (Tables/Compile big-bang) — the
+// per-instruction executors, D/T-bit & cycle-test early exits, register
+// preloader, and debug/bad-op emitters. The cross-referencing core (mVUcompile +
+// the branch drivers) lands in the next slice; mVUcompileEmitCheck below odr-uses
+// the static helpers here so their VIXL bodies compile now.
+#include "arm64/aVU_Compile.inl"
+
 //------------------------------------------------------------------
 // Pass-1 pipeline / cycle / range helpers (task 7.3 part 2)
 //------------------------------------------------------------------
@@ -1404,6 +1411,30 @@ static_assert(alignof(microBlock) == 16, "microBlock must stay 16-byte aligned")
 {
 	microVU& mVU = microVU0;
 	mVUaddrFix(mVU, a64::x9, a64::x10);
+}
+
+// Force the emit-coupled compile helpers (aVU_Compile.inl) to be compiled. They
+// emit VIXL but have no live caller until mVUcompile lands, so without this
+// odr-use their bodies (and any emission error) would never be instantiated.
+// Never called: it runs against a null mVU.prog.cur; it exists only to compile.
+[[maybe_unused]] static void mVUcompileEmitCheck()
+{
+	microVU& mVU = microVU0;
+	microFlagCycles mFC{};
+	mVUexecuteInstruction(mVU);
+	doUpperOp(mVU);
+	doLowerOp(mVU);
+	doSwapOp(mVU);
+	doIbit(mVU);
+	flushRegs(mVU);
+	handleBadOp(mVU, 0);
+	mVUdebugPrintBlocks(mVU, false);
+	mVUDoDBit(mVU, &mFC);
+	mVUDoTBit(mVU, &mFC);
+	mVUtestCycles(mVU, mFC);
+	microFlagCycles mFCb{};
+	mVUSaveFlags(mVU, mFC, mFCb);
+	mvuPreloadRegisters(mVU, 0);
 }
 
 // Force the opcode dispatch tables (aVU_Tables.inl) to be compiled. The minimal
