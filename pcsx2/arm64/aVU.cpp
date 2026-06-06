@@ -393,6 +393,69 @@ void mVUsetCycles(mV)
 }
 
 //------------------------------------------------------------------
+// First-pass initialization (emitter-free)
+//------------------------------------------------------------------
+// These set up the IR state at the start of mVUcompile's first pass. They make
+// no emitter calls (memset/memcpy + block-manager add only), so they port
+// verbatim from microVU_Compile.inl onto the cloned IR. mVUinitFirstPass takes
+// the start-of-block host code pointer (x86 `x86Ptr` -> ARM64
+// armGetCurrentCodePointer()) and stashes it in mVUblock.codeStart (renamed from
+// x86ptrStart per the 7.2a struct rename). The emit-coupled compile driver that
+// drives these (mVUcompile + pass-2) is the rest of task 7.4.
+
+// This gets run at the start of every loop of mVU's first pass
+__fi void startLoop(mV)
+{
+	if (curI & _Mbit_ && isVU0)
+		DevCon.WriteLn(Color_Green, "microVU%d: M-bit set! PC = %x", getIndex, xPC);
+	if (curI & _Dbit_)
+		DevCon.WriteLn(Color_Green, "microVU%d: D-bit set! PC = %x", getIndex, xPC);
+	if (curI & _Tbit_)
+		DevCon.WriteLn(Color_Green, "microVU%d: T-bit set! PC = %x", getIndex, xPC);
+	std::memset(&mVUinfo, 0, sizeof(mVUinfo));
+	std::memset(&mVUregsTemp, 0, sizeof(mVUregsTemp));
+}
+
+// Initialize VI Constants (vi15 propagates through blocks)
+__fi void mVUinitConstValues(microVU& mVU)
+{
+	for (int i = 0; i < 16; i++)
+	{
+		mVUconstReg[i].isValid  = 0;
+		mVUconstReg[i].regValue = 0;
+	}
+	mVUconstReg[15].isValid = mVUregs.vi15v;
+	mVUconstReg[15].regValue = mVUregs.vi15v ? mVUregs.vi15 : 0;
+}
+
+// Initialize Variables
+__fi void mVUinitFirstPass(microVU& mVU, uptr pState, u8* thisPtr)
+{
+	mVUstartPC = iPC; // Block Start PC
+	mVUbranch  = 0;   // Branch Type
+	mVUcount   = 0;   // Number of instructions ran
+	mVUcycles  = 0;   // Skips "M" phase, and starts counting cycles at "T" stage
+	mVU.p      = 0;   // All blocks start at p index #0
+	mVU.q      = 0;   // All blocks start at q index #0
+	if ((uptr)&mVUregs != pState) // Loads up Pipeline State Info
+	{
+		memcpy((u8*)&mVUregs, (u8*)pState, sizeof(microRegInfo));
+	}
+	if (((uptr)&mVU.prog.lpState != pState))
+	{
+		memcpy((u8*)&mVU.prog.lpState, (u8*)pState, sizeof(microRegInfo));
+	}
+	mVUblock.codeStart = thisPtr;
+	mVUpBlock = mVUblocks[mVUstartPC / 2]->add(mVU, &mVUblock); // Add this block to block manager
+	mVUregs.needExactMatch = (mVUpBlock->pState.blockType) ? 7 : 0; // ToDo: Fix 1-Op block flag linking (MGS2:Demo/Sly Cooper)
+	mVUregs.blockType = 0;
+	mVUregs.viBackUp  = 0;
+	mVUregs.flagInfo  = 0;
+	mVUsFlagHack = CHECK_VU_FLAGHACK;
+	mVUinitConstValues(mVU);
+}
+
+//------------------------------------------------------------------
 // Micro VU - Main Functions
 //------------------------------------------------------------------
 
@@ -1254,4 +1317,7 @@ static_assert(alignof(microBlock) == 16, "microBlock must stay 16-byte aligned")
 	(void)tCycles(0, 0);
 	incP(mVU);
 	incQ(mVU);
+	startLoop(mVU);
+	mVUinitConstValues(mVU);
+	mVUinitFirstPass(mVU, (uptr)&mVU.prog.lpState, nullptr);
 }
