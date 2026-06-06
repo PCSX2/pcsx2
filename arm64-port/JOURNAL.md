@@ -28,6 +28,55 @@
 
 ---
 
+## 2026-06-06 — Phase 7.3 (part 1): pass-1 analysis in aVU_Analyze.inl
+
+**Goal:** Task 7.3 — port the arch-neutral pass-1 analysis (`microVU_Analyze.inl`) onto the
+already-cloned IR structs, plus the macro layer it needs. Pure infra; microVU stays unselected.
+
+**What changed:**
+- `pcsx2/arm64/aVU_Analyze.inl` — **near-verbatim** clone of x86 `microVU_Analyze.inl`. No code
+  changes beyond the header comment: the pass is fully arch-neutral (operates on
+  `microOp`/`microIR`/`microVFreg`/`microVIreg` + the `microRegInfo` key, zero emitter calls).
+- `pcsx2/arm64/aVU_Misc.h` (new) — arch-neutral subset of x86 `microVU_Misc.h`: instruction-field
+  extractors, IR-state accessors (`mVUregs`/`iPC`/`incPC`/`mVUup`/`mVUlow`/`sFLAG`/…), `branchSTR`,
+  the recompiler-pass signature macros (`mV`/`mP`/`pass1`/`mVUop`/`Fnptr_mVUrecInst`), and the
+  optimization-option constexprs. Dropped all x86emitter-coupled bits (xmm typedefs, `mVUglob`,
+  host register names, shuffle-imm helpers).
+- `pcsx2/arm64/aVU.cpp` — `#include`s both; adds `mVUanalyzeCompileCheck` (never called)
+  odr-using every analyzer; removed the two redundant `const bool isVU1` dispatcher locals (now
+  the `isVU1` macro). `pcsx2/CMakeLists.txt` — listed the two new files.
+- Commit: `863de3e77` ARM64: microVU Phase 7.3 — pass-1 analysis (aVU_Analyze.inl + aVU_Misc.h)
+
+**Decisions & rationale:**
+- **`aVU_Analyze.inl` ported with no edits.** The analysis pass is the cleanest arch-neutral
+  piece in microVU — it builds the pipeline-state key + per-op read/write/flag info that pass-2
+  emission later consumes. Keeping it byte-identical to x86 (modulo the header comment) means the
+  ground-truth semantics carry over verbatim and future x86 fixes are trivial to mirror.
+- **Macro layer split into its own header (`aVU_Misc.h`)** rather than expanded inline in
+  `aVU.cpp` (as 7.2c did for the handful of `microVU_Misc.h` macros it needed). The analysis pass
+  needs ~50 macros, and the 7.4 compile driver + 7.5 emit handlers will need the same set, so a
+  shared header avoids re-expanding them three times. Only the arch-neutral macros are included;
+  the x86 register/emit macros are deliberately absent (ARM map is in `aVU_IR.h`).
+- **`isVU1`/`isVU0` as macros collided with 7.2d dispatcher locals** of the same name. The macro
+  (`mVU.index != 0`) is identical to the locals (`mVU.index == 1`), so I just deleted the locals.
+- **Scope trim, documented in PROGRESS:** the 7.3 bullet also named `microVU_Tables.inl` and the
+  Compile.inl pipeline helpers. The **tables** reference 256+ per-op emit handlers that don't
+  exist yet → moved to **7.5** (they can't compile standalone). The **Compile.inl pipeline/cycle/
+  flag helpers** are arch-neutral but interleaved with the emit-coupled compile driver in that
+  file, so they come over with the **7.4** driver port. This keeps the commit a clean,
+  buildable, analysis-only slice.
+
+**Blockers / open questions:** None. Still unselected ⇒ analysis is compiled (via the check
+function) but not yet driven; first real exercise is when the 7.4 driver calls `mVUopL/mVUopU`
+pass1 → these analyzers.
+
+**Next step:** Task 7.3 part 2 / 7.4 — port the arch-neutral pipeline/cycle/flag-analysis helpers
+from `microVU_Compile.inl` (`mVUsetupRange`/`mVUincCycles`/`mVUsetCycles`/`mVUoptimizePipeState` +
+`eBitPass1`/`branchWarning`/`mVUcheckBadOp`) into `aVU.cpp`, deferring the emit-coupled compile
+driver + opcode tables to the 7.5 VIXL emit handlers.
+
+---
+
 ## 2026-06-05 — Phase 7.2d: microVU dispatcher in aVU.cpp
 
 **Goal:** Task 7.2d — port the microVU dispatcher + helper thunks (x86

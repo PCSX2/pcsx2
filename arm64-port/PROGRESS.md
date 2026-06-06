@@ -8,49 +8,51 @@
 
 ## ▶ CURRENT FOCUS
 
-**Phase 7 (VU recompilers / microVU) — task 7.2d (dispatcher → `aVU.cpp`) DONE.**
+**Phase 7 (VU recompilers / microVU) — task 7.3 part 1 (pass-1 analysis → `aVU_Analyze.inl`) DONE.**
 
-`pcsx2/arm64/aVU.cpp` now emits the microVU dispatcher + helper thunks in VIXL (ARM64 port of
-x86 `microVU_Execute.inl` 23–315), replacing the 7.2c `pxFailRel` stubs. **This pins the final
-ARM64 microVU ABI** that every later Phase-7 task builds on:
+`pcsx2/arm64/aVU_Analyze.inl` is the **near-verbatim** ARM64 clone of x86
+`microVU_Analyze.inl` (the pass-1 analysis: VF/VI read/write hazard tracking, stall
+computation, FMAC/IALU/FDIV/EFU/MOVE/LQ-SQ/R-reg/flag/XGKICK/branch analyzers, the
+branch-VI-delay + branch-in-delay-slot logic). It is **fully arch-neutral** — it touches only
+the IR (`microOp`/`microIR`/`microVFreg`/`microVIreg`) and the 96-byte `microRegInfo`
+pipeline-state key, makes **zero emitter calls**, and so ported unchanged.
 
-- **`mVUdispatcherAB`** (`startFunct`/`exitFunct`) — entry contract: `startPC`/`cycles` in
-  `w0`/`w1`; `armBeginStackFrame(true)`; call `mVUexecuteVU0/1` (block entry returned in `x0`);
-  load VU FPCR via `msr FPCR` (only when it differs from the EE's — `mvuNeedsFPCRUpdate`); set
-  `RVUSTATE=&vuRegs[i]`; **build the PQ NEON reg `v24`** with the x86 lane layout (VU0
-  `[Q,pending_q,P,P]`, VU1 `[Q,pending_q,P,pending_p]`; NEON V4S lane0 == xmm lane0); copy
-  mac/clip flags into `mVU.macFlag`/`clipFlag`; load the 4 status-flag GPRs (`gprF0-3=w23-w26`);
-  `br x0`. Exit (block jumps here): restore EE FPCR, `mVUcleanUpVU0/1`, `armEndStackFrame`, `ret`.
-- **`mVUdispatcherCD`** (`startFunctXG`/`exitFunctXG`) — xgkick resume/exit: reload PQ from
-  `vecBackup[24]` + status flags, jump to `resumePtrXG`; exit backs up the status flags.
-- **`mVUGenerateWaitMTVU`** — transparent thunk: saves caller-saved VF/PQ (`v0-v24`) + VI GPRs
-  (`x0-x15`) around `mVUwaitMTVU` (MTVU/VU1-thread only).
-- **`mVUGenerateCopyPipelineState`** — 96-byte copy `[x0]` → `mVU.prog.lpState`.
-- **`mVUGenerateCompareState`** — 6×128-bit `Cmeq` + AND-reduce + `Uminv`/`Umov`; returns
-  `w0=0` iff equal (the block search treats 0 as a match).
-- **`mVUexecute`/`mVUcleanUp`** (+ `mVUexecuteVU0/1`/`mVUcleanUpVU0/1`) — program search +
-  cache-limit reset + cycle accounting.
-- **`mVUreset`** now does the real emitter setup: `mVUgenerateDispatchers` points `armSetAsmPtr`
-  at `mVU.cache`, emits all five generators in one `armStartBlock`/`armEndBlock` session, and
-  sets `codeStart`/`codePtr` just past the dispatchers (x86: `xGetAlignedCallTarget()`).
+The macros it needs come from the new **`pcsx2/arm64/aVU_Misc.h`** — the arch-neutral subset of
+x86 `microVU_Misc.h`: instruction-field extractors (`_Ft_`/`_Fs_`/`_X`/`_bc_x`/`_Imm5_`/…),
+the IR-state accessors (`mVUregs`/`mVUregsTemp`/`iPC`/`incPC`/`mVUup`/`mVUlow`/`sFLAG`/`mFLAG`/
+`cFLAG`/`mVUconstReg`/`xPC`/`curI`/`setCode`/`bSaveAddr`/…), `branchSTR`, the recompiler-pass
+signature macros (`mV`/`mP`/`mX`/`pass1`/`mVUop`/`Fnptr_mVUrecInst`), and the optimization-option
+constexprs (`doBranchInDelaySlot`/`doSFlagInsts`/`doRegAlloc`/…). **Dropped** (all
+x86emitter-coupled): the `xmm`/`x32` typedefs, the `mVUglob` emit-constant table, the host
+register-name macros (`xmmT1..`/`gprT1..`/`gprF0..` — the ARM64 map lives in `aVU_IR.h`), and
+the x86 shuffle-immediate helpers (`shufflePQ`/`shuffleSS`). `doConstProp` stays in `aVU.h` and
+`doWholeProgCompare` in `aVU.cpp` (not duplicated).
 
-**Deliberately still stubbed:** `mVUblockFetch`/`mVUentryGet` (the block compiler — tasks
-7.3/7.4) stay `pxFailRel`-stubbed. The per-block emit session + the icache flush that must
-precede executing freshly-emitted code is the block compiler's job (x86 has no such flush; its
-single global cursor model doesn't translate 1:1). microVU stays **unselected** on ARM64
-(VMManager pins `CpuIntVU0/1`), so the dispatcher is **compiled for real but not executed yet**
-— no runtime test is possible until selection (7.8).
+`aVU.cpp` `#include`s both and adds `mVUanalyzeCompileCheck` (never called) odr-using every
+analyzer entry point, so the bodies are type-checked + codegen'd now even though the per-op
+`pass1` handlers that *drive* them are task 7.5+. Removed the two redundant `const bool isVU1`
+dispatcher locals (the new `isVU1` macro is the same `mVU.index` test).
 
-**Verified:** `pcsx2-qt` builds arm64; unittests 2/2 (common + core). Pure infrastructure.
-Commit `a0d93ed5c`.
+**Verified:** `pcsx2-qt` builds arm64; unittests 2/2 (common + core). Pure infrastructure;
+microVU stays **unselected** on ARM64 (VMManager pins `CpuIntVU0/1`). Commit `863de3e77`.
 
-**Next:** Task 7.3 — the **analysis pass** (arch-neutral, near-verbatim copy):
-`microVU_Analyze.inl` + `microVU_Tables.inl` + the pipeline/flag-analysis helpers in
-`microVU_Compile.inl`. These operate on `microOp`/`microIR` with no emitter calls, so they
-should port almost unchanged into the ARM64 tree (new `pcsx2/arm64/aVU_Analyze.*` /
-`aVU_Tables.*` or folded into `aVU.cpp`). Then 7.4 the compile driver (`mVUcompile`/
-`mVUblockFetch`) which interleaves 7.3 analysis with the 7.5 VIXL emission and owns the
-per-block `armStartBlock`/`armEndBlock` + icache flush.
+**Deliberately deferred from the 7.3 bullet:**
+- **`microVU_Tables.inl`** → moves to **7.5**. The opcode dispatch tables are 256+ function
+  pointers to the per-op emit handlers (`mVU_ADDx`/`mVU_LQ`/…) that don't exist yet, so the
+  tables can't compile standalone — they land with the handlers.
+- **The pipeline/cycle/flag-analysis helpers in `microVU_Compile.inl`** (`mVUsetupRange`,
+  `mVUincCycles`, `mVUsetCycles`, `mVUoptimizePipeState`, `eBitPass1`, `branchWarning`,
+  `mVUcheckBadOp`, `optimizeReg`/`calcCycles`/`tCycles`) — these *are* arch-neutral and are the
+  natural next slice, but in `microVU_Compile.inl` they sit interleaved with the emit-coupled
+  compile driver (`doUpperOp`/`doSwapOp`/`mVUexecuteInstruction` call the emitter + the tables),
+  so they come over with the 7.4 compile-driver port rather than the analysis-only `.inl`.
+
+**Next:** Task 7.3 part 2 / 7.4 — port the arch-neutral pipeline/cycle/flag-analysis helpers from
+`microVU_Compile.inl` (`mVUsetupRange`/`mVUincCycles`/`mVUsetCycles`/`mVUoptimizePipeState` +
+`eBitPass1`/`branchWarning`/`mVUcheckBadOp`) into `aVU.cpp`, leaving the emit-coupled compile
+driver (`doUpperOp`/`doLowerOp`/`doSwapOp`/`mVUexecuteInstruction`/`mVUcompile`/`mVUblockFetch`)
+and the opcode tables for when the 7.5 VIXL emit handlers exist. These helpers also make no
+emitter calls, so they compile against the existing IR + macro layer.
 
 ---
 
@@ -841,9 +843,17 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     now does the real emitter setup (`armSetAsmPtr(mVU.cache)` + one start/end block) and sets
     `codeStart`/`codePtr` past the dispatchers. Unselected ⇒ compiled but not executed yet.
     Builds arm64; unittests 2/2. (`a0d93ed5c`)
-- [ ] 7.3 **Analysis pass** (arch-neutral, near-verbatim copy) — `microVU_Analyze.inl` +
+- [~] 7.3 **Analysis pass** (arch-neutral, near-verbatim copy) — `microVU_Analyze.inl` +
   `microVU_Tables.inl` + the pipeline/flag analysis helpers in `microVU_Compile.inl`. Operates on
   `microOp`/`microIR`; no emitter calls, so this should port almost unchanged.
+  - [x] `microVU_Analyze.inl` → `pcsx2/arm64/aVU_Analyze.inl` (pass-1 analysis) + the arch-neutral
+    macro layer `pcsx2/arm64/aVU_Misc.h`. Compile-exercised via `mVUanalyzeCompileCheck`. Builds
+    arm64; unittests 2/2. (`863de3e77`)
+  - [ ] Pipeline/cycle/flag-analysis helpers from `microVU_Compile.inl` (`mVUsetupRange`/
+    `mVUincCycles`/`mVUsetCycles`/`mVUoptimizePipeState`/`eBitPass1`/`branchWarning`/
+    `mVUcheckBadOp`) — arch-neutral; come over with the 7.4 compile driver.
+  - [ ] `microVU_Tables.inl` — MOVED to 7.5 (the dispatch tables reference the per-op emit
+    handlers, which don't exist until the VIXL emission task).
 - [ ] 7.4 **Compile driver** — port `microVU_Compile.inl` (`mVUcompile`/`mVUblockFetch`/block
   search+link/`mVUsetupRange`). Interleaves 7.3 analysis with emit; ends blocks on E-bit/branch.
 - [ ] 7.5 **VIXL emission for the VU ISA:**
