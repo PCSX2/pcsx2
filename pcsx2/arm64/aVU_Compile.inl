@@ -574,6 +574,21 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 		}
 
 		mVUexecuteInstruction(mVU);
+
+		// DEBUG (MVU_DIFF): trace per-instruction VF/VI by flushing the regalloc and
+		// calling mvuTraceMicro(xPC). backupRegs preserves the PQ/flag regs across the
+		// call (they aren't in the regalloc). Gated so normal builds emit nothing.
+		extern bool g_mvuTraceActive;
+		extern void mvuTraceMicro(u32 pc);
+		if (s_mvuDiff && isVU1)
+		{
+			mVU.regAlloc->flushAll();
+			mVUbackupRegs(mVU, true, true);
+			armAsm->Mov(RWARG1.W(), xPC);
+			armEmitCall(reinterpret_cast<const void*>(&mvuTraceMicro));
+			mVUrestoreRegs(mVU, true, true);
+		}
+
 		if (!mVUinfo.isBdelay && !mVUlow.branch) // T/D Bit on branch is handled after the branch, branch delay slots are executed.
 		{
 			if (mVUup.tBit)

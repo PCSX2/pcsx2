@@ -26,6 +26,7 @@
 #include "SaveState.h"
 #include "Gif_Unit.h" // gifUnit + GIF_TRANS_XGKICK (XGKICK GIF transfer, aVU_Lower.inl)
 #include "DebugTools/Debug.h" // disVU1MicroUF/LF (MVU_DIFF disasm)
+#include "common/FPControl.h" // FPControlRegisterBackup (MVU_DIFF interp single-step)
 
 #include "common/AlignedMalloc.h"
 #include "common/Perf.h"
@@ -947,6 +948,87 @@ namespace
 	}
 }
 
+// --- DEBUG per-instruction localizer (MVU_DIFF) --------------------------------
+// microVU records (pc, VF, VI) after each instruction via the mvuTraceMicro call
+// injected by mVUcompile (gated on s_mvuDiff && isVU1); the interpreter is then
+// single-stepped over the same input and compared, naming the first instruction
+// where state (or control flow) diverges.
+bool g_mvuTraceActive = false;
+struct MvuTraceEnt
+{
+	u32 pc;
+	u32 vf[32][4];
+	u32 vi[16];
+};
+static std::vector<MvuTraceEnt> g_mvuTrace;
+
+void mvuTraceMicro(u32 pc) // called from JIT (after a regAlloc flush + backupRegs)
+{
+	if (!g_mvuTraceActive || g_mvuTrace.size() >= 20000)
+		return;
+	MvuTraceEnt e;
+	e.pc = pc;
+	std::memcpy(e.vf, VU1.VF, sizeof(e.vf));
+	for (int i = 0; i < 16; i++)
+		e.vi[i] = (u16)VU1.VI[i].UL;
+	g_mvuTrace.push_back(e);
+}
+
+static void mvuDumpAround(u32 pc)
+{
+	const u32 lo = (pc >= 0x40) ? (pc - 0x40) : 0;
+	for (u32 b = lo; b < lo + 0x90 && b < 0x4000; b += 8)
+	{
+		const u32 l = *(u32*)&VU1.Micro[b];
+		const u32 u = *(u32*)&VU1.Micro[b + 4];
+		Console.Error("  %s%04x: %s | %s", (b == pc) ? "->" : "  ", b, disVU1MicroUF(u, b + 4), disVU1MicroLF(l, b));
+	}
+}
+
+// Single-step the interpreter over the same input and compare to g_mvuTrace.
+static void mvuLocalizeCompare(u32 cycles)
+{
+	const FPControlRegisterBackup fpcr_backup(EmuConfig.Cpu.VU1FPCR);
+	VU1.VI[REG_TPC].UL <<= 3;
+	const u64 startcyc = VU1.cycle;
+	size_t k = 0;
+	while ((VU1.cycle - startcyc) < cycles && (VU0.VI[REG_VPU_STAT].UL & 0x100) && k < g_mvuTrace.size())
+	{
+		const u32 ipc = VU1.VI[REG_TPC].UL & VU1_PROGMASK;
+		CpuIntVU1.Step();
+		const MvuTraceEnt& m = g_mvuTrace[k];
+		if (m.pc != ipc)
+		{
+			Console.Error("LOCALIZE step %zu: CONTROL-FLOW diverge — interp next=%04x, mvu next=%04x", k, ipc, m.pc);
+			mvuDumpAround(ipc);
+			return;
+		}
+		for (int r = 1; r < 32; r++)
+		{
+			if (std::memcmp(m.vf[r], &VU1.VF[r], 16) != 0)
+			{
+				Console.Error("LOCALIZE step %zu pc=%04x VF%02d interp=%08x %08x %08x %08x mvu=%08x %08x %08x %08x",
+					k, ipc, r, VU1.VF[r].UL[0], VU1.VF[r].UL[1], VU1.VF[r].UL[2], VU1.VF[r].UL[3],
+					m.vf[r][0], m.vf[r][1], m.vf[r][2], m.vf[r][3]);
+				mvuDumpAround(ipc);
+				return;
+			}
+		}
+		for (int r = 1; r < 16; r++)
+		{
+			if ((u16)VU1.VI[r].UL != (u16)m.vi[r])
+			{
+				Console.Error("LOCALIZE step %zu pc=%04x VI%02d interp=%04x mvu=%04x", k, ipc, r, (u16)VU1.VI[r].UL, (u16)m.vi[r]);
+				mvuDumpAround(ipc);
+				return;
+			}
+		}
+		k++;
+	}
+	VU1.VI[REG_TPC].UL >>= 3;
+	Console.Error("LOCALIZE: no per-instruction divergence over %zu steps (mvu trace %zu entries)", k, g_mvuTrace.size());
+}
+
 void recMicroVU1::Execute(u32 cycles)
 {
 	if (!THREAD_VU1)
@@ -957,7 +1039,6 @@ void recMicroVU1::Execute(u32 cycles)
 
 	if (s_mvuDiff && !THREAD_VU1)
 	{
-		static int s_diffCount = 0;
 		const u32 startPC = VU1.VI[REG_TPC].UL;
 		VU1Snap in;
 		mvuSnap(in);
@@ -978,21 +1059,28 @@ void recMicroVU1::Execute(u32 cycles)
 		VU1Snap mo;
 		mvuSnap(mo);
 
-		if (s_diffCount < 40 && mvuDiffReport(startPC, io, mo))
+		static bool s_localizeDone = false;
+		if (!s_localizeDone && mvuDiffReport(startPC, io, mo))
 		{
-			s_diffCount++;
-			static bool s_dumped = false;
-			if (!s_dumped)
-			{
-				s_dumped = true;
-				Console.Error("==== VU1 micro disasm 0x000-0x1000 (first divergence @pc=%04x) ====", startPC * 8);
-				for (u32 b = 0; b < 0x1000; b += 8)
-				{
-					const u32 lo = *(u32*)&VU1.Micro[b];
-					const u32 up = *(u32*)&VU1.Micro[b + 4];
-					Console.Error("  %04x: %s | %s", b, disVU1MicroUF(up, b + 4), disVU1MicroLF(lo, b));
-				}
-			}
+			s_localizeDone = true;
+			Console.Error("==== MVU_DIFF localizing first diverging program @pc=%04x ====", startPC * 8);
+
+			// 1) micro trace (self-recorded via the injected mvuTraceMicro calls)
+			g_mvuTrace.clear();
+			mvuRestore(in);
+			VU0.VI[REG_VPU_STAT].UL |= 0x100;
+			g_mvuTraceActive = true;
+			s_mvuShadowRun = true;
+			VU1.VI[REG_TPC].UL <<= 3;
+			((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
+			VU1.VI[REG_TPC].UL >>= 3;
+			s_mvuShadowRun = false;
+			g_mvuTraceActive = false;
+
+			// 2) interp single-step over the same input, compare
+			mvuRestore(in);
+			VU0.VI[REG_VPU_STAT].UL |= 0x100;
+			mvuLocalizeCompare(cycles);
 		}
 
 		mvuRestore(io); // keep the interpreter (correct) result as the real one
