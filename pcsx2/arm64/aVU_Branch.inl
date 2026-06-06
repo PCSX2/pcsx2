@@ -37,55 +37,9 @@
 // needs a forward declaration here — same as x86 microVU_Branch.inl.
 extern void mVUincCycles(microVU& mVU, int x);
 
-//------------------------------------------------------------------
-// Small absolute-address memory-access helpers (file-local)
-//------------------------------------------------------------------
-// armMoveAddressToReg clobbers RSCRATCH (x16/x17); the value regs passed in are
-// always w9/w10 (gprT1/gprT2) or the flag GPRs, never x16/x17.
-
-static inline void mvuStr32(const void* addr, const a64::Register& wreg)
-{
-	armMoveAddressToReg(RSCRATCHADDR, addr);
-	armAsm->Str(wreg, a64::MemOperand(RSCRATCHADDR));
-}
-
-static inline void mvuStrImm32(const void* addr, u32 imm, const a64::Register& tmp)
-{
-	armAsm->Mov(tmp, imm);
-	mvuStr32(addr, tmp);
-}
-
-static inline void mvuStrSS(const void* addr, const a64::VRegister& vreg)
-{
-	armMoveAddressToReg(RSCRATCHADDR, addr);
-	armAsm->Str(vreg.S(), a64::MemOperand(RSCRATCHADDR));
-}
-
-static inline void mvuLdrSS(const a64::VRegister& vreg, const void* addr)
-{
-	armMoveAddressToReg(RSCRATCHADDR, addr);
-	armAsm->Ldr(vreg.S(), a64::MemOperand(RSCRATCHADDR));
-}
-
-static inline void mvuLdrQ(const a64::VRegister& vreg, const void* addr)
-{
-	armMoveAddressToReg(RSCRATCHADDR, addr);
-	armAsm->Ldr(vreg.Q(), a64::MemOperand(RSCRATCHADDR));
-}
-
-static inline void mvuStrQ(const void* addr, const a64::VRegister& vreg)
-{
-	armMoveAddressToReg(RSCRATCHADDR, addr);
-	armAsm->Str(vreg.Q(), a64::MemOperand(RSCRATCHADDR));
-}
-
-static inline void mvuMemAndImm32(const void* addr, u32 imm, const a64::Register& tmp)
-{
-	armMoveAddressToReg(RSCRATCHADDR, addr);
-	armAsm->Ldr(tmp, a64::MemOperand(RSCRATCHADDR));
-	armAsm->And(tmp, tmp, imm);
-	armAsm->Str(tmp, a64::MemOperand(RSCRATCHADDR));
-}
+// The small absolute-address memory-access helpers (mvuStr32/mvuLdr32/mvuStrImm32/
+// mvuStrSS/mvuLdrSS/mvuLdrQ/mvuStrQ/mvuMemAndImm32) moved to aVU_Misc.inl so the
+// Tables/Flags slices (included earlier) can share them.
 
 //------------------------------------------------------------------
 // XGKICK stubs (real GIF-kick path is task 7.5b)

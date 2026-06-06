@@ -101,6 +101,12 @@ static void mVUcacheProg(microVU& mVU, microProgram& prog);
 // Lower load/store handlers.
 #include "arm64/aVU_Misc.inl"
 
+// Opcode dispatch tables (Tables/Compile big-bang) — minimal mVUopU/mVUopL
+// (NOP + B/BAL wired, every other slot mVUunknown). Included BEFORE aVU_Flags.inl
+// because the flag read-scan (_mVUflagPass) calls mVUopU/mVUopL. mVUtablesCheck
+// below odr-uses the dispatchers so the bodies compile now.
+#include "arm64/aVU_Tables.inl"
+
 // Status/Mac/Clip flag pipeline (task 7.5/7.6) — flag-instance analysis +
 // mVUdivSet/mVUsetupFlags emit. The opcode-table-dependent flag read-scan
 // (_mVUflagPass/mVUsetFlagInfo) is deferred to the Branch/Compile slice.
@@ -1398,6 +1404,18 @@ static_assert(alignof(microBlock) == 16, "microBlock must stay 16-byte aligned")
 {
 	microVU& mVU = microVU0;
 	mVUaddrFix(mVU, a64::x9, a64::x10);
+}
+
+// Force the opcode dispatch tables (aVU_Tables.inl) to be compiled. The minimal
+// mVUopU/mVUopL dispatchers + the NOP/B/BAL handlers have no live caller until the
+// flag read-scan + mVUcompile slices, so without this odr-use the static bodies
+// (and the table arrays) would be dropped. Never called: it would run pass-1
+// analysis against a null mVU.prog.cur; it exists only to compile.
+[[maybe_unused]] static void mVUtablesCheck()
+{
+	microVU& mVU = microVU0;
+	mVUopU(mVU, 0);
+	mVUopL(mVU, 0);
 }
 
 // Force the flag pipeline (aVU_Flags.inl) to be compiled. The analysis functions
