@@ -14,7 +14,7 @@ jobs:
     uses: ./.github/workflows/macos_build.yml
     with:
       jobName: "MacOS arm64 Build"
-      artifactPrefixName: "PCSX2-macos-Qt-arm64"
+      artifactPrefixName: "ARMSX2-macos-Qt-arm64"
       # Notarization needs the APPLE_* repo secrets; it is skipped automatically
       # when they are absent (see the `env.SIGN_KEY` guard in macos_build.yml).
       sign_and_notarize: true
