@@ -278,7 +278,7 @@ static s32 intExecuteBlock( u64 deadline )
 
 	while (psxRegs.cycle < psxRegs.iopDeadline)
 	{
-		if ((psxHu32(HW_ICFG) & 8) && ((psxRegs.pc & 0x1fffffffU) == 0xa0 || (psxRegs.pc & 0x1fffffffU) == 0xb0 || (psxRegs.pc & 0x1fffffffU) == 0xc0))
+		if (psxPs1Mode() && ((psxRegs.pc & 0x1fffffffU) == 0xa0 || (psxRegs.pc & 0x1fffffffU) == 0xb0 || (psxRegs.pc & 0x1fffffffU) == 0xc0))
 			psxBiosCall();
 
 		branch2 = 0;
