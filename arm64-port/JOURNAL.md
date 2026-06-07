@@ -56,13 +56,42 @@
   **sp rose ~0x110+ between the microVU0 dispatcher prologue (didn't fault) and the waitMTVU thunk
   (faulted).** Exact corruption point not found statically — needs an empirical sp-trace.
 
-**Likely-quick confirm/workaround:** the crash path only exists under **MTVU** (`THREAD_VU1`) when
-VU0 touches the VU1 window. Disabling MTVU (Speedhacks → MTVU off) should avoid it and likely make
-Rayman playable — also confirms the trigger.
+**Workaround CONFIRMED by user:** disabling MTVU (Speedhacks → MTVU off) makes Rayman 3 playable.
+This nails the trigger: the crash path only exists under MTVU when VU0 touches the VU1 window.
 
-**Next step:** (a) confirm via MTVU-off; (b) sp-trace: break at `mVUwaitMTVU`, read sp on entry vs
-after `step-out`; at the crash read per-frame sp (`frame select 3; reg read sp`) to find where sp is
-set above the stack base; then fix the EE→COP2→microVU0 entry sp handling.
+**Further debugging this session (3 more lldb replays, MTVU on) — REVISED diagnosis:**
+- The crash sp points **exactly at a PROT_NONE guard page**: `sp=0x1702c8000`, `memory region $sp` =
+  `[0x1702c8000-0x1702cc000) ---`, rw- stack region *below* at `[0x1700c0000-0x1702c8000)`. So sp is
+  at the stack **TOP / initial sp** (the guard sits ABOVE the rw- region; sp went UP to the top — not
+  a normal downward overflow). Across runs sp is always at/just-below this top (ASLR shifts the
+  absolute value; one run sp=0x170353e50 with top≈0x170354000).
+- Clean breakpoint at `mVUexecuteVU0` (microVU0 entry, called from `LQC2`) showed its live sp ==
+  the crash sp (same run, `0x170353e50`). ⇒ **the lldb JIT-frame unwinds are UNRELIABLE** — they
+  produced bogus ~20KB sp jumps and bogus caller chains (one run "via recEventTest/
+  _cpuEventTest_Shared"). **Trust only the live sp register**, which says sp is at the stack top.
+- The thunk's *save* (stp) does not fault but its *restore* (ldp) does, at identical [sp,#off] —
+  which forces "sp rose ~one 0x210 frame across `mVUwaitMTVU → vu1Thread.WaitVU()`". Could NOT
+  confirm statically: every stack helper is balanced (armBegin/EndStackFrame 192/192,
+  mVUbackup/restoreRegs 0x210, the thunk, armEmitCall), `mVUexecute`/`mVUwaitMTVU` are trivial, and
+  there is NO `mov sp` anywhere in pcsx2/arm64/*. So the static model and the live-sp facts don't
+  fully reconcile — need a direct sp probe.
+- Earlier "sp rose 0x110 / above the base" framing was based on the bad JIT unwinds; supersede it
+  with "live sp is at the stack top/guard."
+
+**Tooling note (save to habit):** lldb cannot unwind through our JIT frames (no unwind info), so
+per-frame `frame select N; reg read sp` and multi-level backtraces past a JIT frame are garbage.
+Only `register read sp/pc` (frame 0, live) and breakpoints on real C functions are trustworthy.
+
+**The clamp/black-screen debug dumps from the earlier entry were reverted; tree is just the clamp
+fix (`ad3edfc94`) + docs (`62961b43a`). A waitMTVU sp-probe was drafted then reverted (untested) —
+its exact code is saved in [[arm64-microvu0-mtvu-stack-crash]] ready to paste.**
+
+**NEXT STEP (resume here):** paste the `mVUwaitMTVU` sp probe (logs real sp + `pthread_get_stackaddr_np`
+bounds + sp delta across `WaitVU()`; code in [[arm64-microvu0-mtvu-stack-crash]]), `#include <pthread.h>`,
+build Release + postprocess + get-task-allow resign, repro Rayman with **MTVU ON**, grep emulog for
+`WAITMTVU`. That disambiguates: (a) WaitVU imbalances sp, (b) the CPU-thread stack is tiny and
+microVU0 nested in the EE rec genuinely overflows, or (c) sp points into a non-stack region. Then fix.
+(Build/run recipe + always `pcsx2-postprocess-bundle`+resign in CLAUDE.md / [[arm64-debug-attach-macos]].)
 
 ---
 

@@ -26,10 +26,20 @@ shutdown, animation no longer stuck. `MVU_DIFF` shadow-diff: 12 diverging regs �
 per-instruction divergences. Reproduces with NO ISO via `-bios -nogui`. Builds arm64; unittests 2/2.
 Fix commit: see JOURNAL. See [[arm64-microvu1-clamp-scratch-bug]].
 
-**NEXT STEP:** hands-on visual + soak test of the actual games that black-screened (Rayman 3, Odin
-Sphere) and FFX (artifacts) under pure microVU1, then continue 7.8 deeper validation / 7.9 macro mode.
+**Game validation (2026-06-07, user hands-on):** FFX → menu ✅. Rayman 3 → past the black screen,
+plays the intro FMV → menu, **then crashes** with a SEPARATE bug → microVU0 + MTVU stack-guard SIGBUS
+(see below). **Confirmed: disabling MTVU (Speedhacks → MTVU off) makes Rayman playable.**
 
-**(historical, now resolved) — the MAC-FLAG framing below was the symptom, not the cause:**
+**▶ NEXT STEP (resume here) — fix the microVU0 + MTVU stack crash.** A VU0 microprogram accessing the
+VU1 register window under MTVU SIGBUSes in the `mVUGenerateWaitMTVU` thunk's register restore; the
+live sp is at the CPU-thread stack **top / guard page** (`memory region $sp` = PROT_NONE). Cause not
+yet pinned — lldb can't unwind JIT frames (only live sp is trustworthy), and the static model (all
+stack helpers balanced, no `mov sp`) doesn't reconcile with "sp at the top." **Decisive next
+experiment is ready:** paste the `mVUwaitMTVU` sp probe (logs real sp + pthread stack bounds + sp
+delta across `WaitVU()`) — exact code + full diagnosis in memory [[arm64-microvu0-mtvu-stack-crash]]
+and JOURNAL. Workaround for users meanwhile: MTVU off. After that: 7.9 macro mode / Phase 8 polish.
+
+**(historical, resolved 2026-06-07) — the MAC-FLAG framing below was the symptom, not the cause:**
 
 **Phase 7 (VU recompilers / microVU) — 7.8 SELECTED; CRASHES FIXED; microVU1 black-screen ROOT CAUSE
 NOW ISOLATED to the MAC FLAG. microVU0/1 is the selected VU provider on ARM64. The black screen on
