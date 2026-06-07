@@ -517,6 +517,7 @@ bool BreakpointModel::insertBreakpointRows(int row, int count, std::vector<Break
 				CBreakPoints::ChangeBreakPointDescription(cpu, bp.addr, bp.description);
 				CBreakPoints::ChangeBreakPointMaxHits(cpu, bp.addr, bp.maxHits);
 				CBreakPoints::ChangeBreakPointTotalHits(cpu, bp.addr, bp.totalHits);
+				CBreakPoints::ChangeBreakPointInstrumentation(cpu, bp.addr, bp.instrumentationEnabled, bp.logFormat, bp.continueOnHit);
 				if (bp.hasCond)
 				{
 					CBreakPoints::ChangeBreakPointAddCond(cpu, bp.addr, bp.cond);
@@ -530,6 +531,7 @@ bool BreakpointModel::insertBreakpointRows(int row, int count, std::vector<Break
 				CBreakPoints::ChangeMemCheckDescription(cpu, mc.start, mc.end, mc.description);
 				CBreakPoints::ChangeMemCheckMaxHits(cpu, mc.start, mc.end, mc.maxHits);
 				CBreakPoints::ChangeMemCheckTotalHits(cpu, mc.start, mc.end, mc.totalHits);
+				CBreakPoints::ChangeMemCheckInstrumentation(cpu, mc.start, mc.end, mc.instrumentationEnabled, mc.logFormat, mc.continueOnHit);
 				if (mc.hasCond)
 				{
 					CBreakPoints::ChangeMemCheckAddCond(cpu, mc.start, mc.end, mc.cond);
