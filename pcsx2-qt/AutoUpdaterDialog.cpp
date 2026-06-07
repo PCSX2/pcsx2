@@ -97,6 +97,12 @@ AutoUpdaterDialog::~AutoUpdaterDialog() = default;
 
 bool AutoUpdaterDialog::isSupported()
 {
+	// ARMSX2: the auto-updater is temporarily disabled — there is no ARMSX2
+	// update channel yet. Remove this early return to restore the original
+	// platform-detection logic below.
+	return false;
+
+#if 0
 	// Logic to detect whether we can use the auto updater.
 	// We use tagged commit, because this gets set on nightly builds.
 	if (!BuildVersion::GitTaggedCommit)
@@ -116,6 +122,7 @@ bool AutoUpdaterDialog::isSupported()
 	return true;
 #else
 	return false;
+#endif
 #endif
 }
 

@@ -169,10 +169,17 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(AutoUpdaterDialog::getCurrentVersion()).arg(AutoUpdaterDialog::getCurrentVersionDate()));
 		connect(m_ui.checkForUpdates, &QPushButton::clicked, this, []() { g_main_window->checkForUpdates(true, true); });
 	}
-	else
+	else if (dialog()->isPerGameSettings())
 	{
 		m_ui.verticalLayout->removeWidget(m_ui.automaticUpdaterGroup);
 		m_ui.automaticUpdaterGroup->hide();
+	}
+	else
+	{
+		// ARMSX2: auto-updater temporarily disabled — keep the section visible but
+		// force the checkbox off and the whole group non-interactive.
+		m_ui.autoUpdateEnabled->setChecked(false);
+		m_ui.automaticUpdaterGroup->setEnabled(false);
 	}
 
 	if (dialog()->isPerGameSettings())
