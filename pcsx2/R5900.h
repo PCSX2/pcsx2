@@ -402,6 +402,8 @@ extern void cpuClearInt(uint n);
 extern void GoemonPreloadTlb();
 extern void GoemonUnloadTlb(u32 key);
 
+extern u64 EEToIOPCycles(u64 cycles);
+extern u64 IOPToEECycles(u64 cycles);
 extern void cpuSetNextEvent( u64 startCycle, s32 delta );
 extern void cpuSetNextEventDelta( s32 delta );
 extern int  cpuTestCycle( u64 startCycle, s32 delta );

@@ -4,6 +4,7 @@
 #include "Common.h"
 
 #include "common/StringUtil.h"
+#include "IopHw.h"
 #include "ps2/BiosTools.h"
 #include "R5900.h"
 #include "R3000A.h"
@@ -28,6 +29,8 @@
 #include "R5900OpcodeTables.h"
 
 #include "fmt/format.h"
+
+#include <numeric>
 
 using namespace R5900;	// for R5900 disasm tools
 
@@ -351,6 +354,42 @@ static bool cpuIntsEnabled(int Interrupt)
 		!cpuRegs.CP0.n.Status.b.EXL && (cpuRegs.CP0.n.Status.b.ERL == 0);
 }
 
+u64 EEToIOPCycles(u64 cycles)
+{
+	if (psxPs1Mode() == 0) [[likely]]
+	{
+		return cycles >> 3;
+	}
+	else
+	{
+		// EE  clock = 294912000
+		// PS1 clock = 33868800
+		static constexpr int gcd = std::gcd(294912000, 33868800);
+		static constexpr int den = 294912000 / gcd;
+		static constexpr int num = 33868800 / gcd;
+
+		return cycles * num / den;
+	}
+}
+
+u64 IOPToEECycles(u64 cycles)
+{
+	if (psxPs1Mode() == 0) [[likely]]
+	{
+		return cycles << 3;
+	}
+	else
+	{
+		// EE  clock = 294912000
+		// PS1 clock = 33868800
+		static constexpr int gcd = std::gcd(294912000, 33868800);
+		static constexpr int num = 294912000 / gcd;
+		static constexpr int den = 33868800 / gcd;
+
+		return cycles * num / den;
+	}
+}
+
 // Shared portion of the branch test, called from both the Interpreter
 // and the recompiler.  (moved here to help alleviate redundant code)
 __fi void _cpuEventTest_Shared()
@@ -378,15 +417,14 @@ __fi void _cpuEventTest_Shared()
 
 	// It's also important to sync up the IOP before updating the timers, since gates will depend on starting/stopping in the right place!
 
-	const float multiplier = static_cast<float>(PS2CLK) / static_cast<float>(PSXCLK);
-	s64 iop_delta = cpuRegs.cycle - (psxRegs.cycle * multiplier);
+	s64 iop_delta = cpuRegs.cycle - IOPToEECycles(psxRegs.cycle);
 
 	if (iop_delta > 0)
 		iopEventAction = true;
 
 	if (iopEventAction)
 	{
-		psxCpu->ExecuteBlock(cpuRegs.cycle / multiplier);
+		psxCpu->ExecuteBlock(EEToIOPCycles(cpuRegs.cycle));
 
 		iopEventAction = false;
 	}
@@ -427,9 +465,9 @@ __fi void _cpuEventTest_Shared()
 	CpuVU1->ExecuteBlock();
 
 	// ---- Schedule Next Event Test --------------
-	const s64 nextIopEventDeta = ((psxRegs.iopNextEventCycle - psxRegs.cycle) * multiplier);
+	const s64 nextIopEventDelta = IOPToEECycles(psxRegs.iopNextEventCycle - psxRegs.cycle);
 	// 8 or more cycles behind and there's an event scheduled
-	if (iop_delta >= nextIopEventDeta)
+	if (iop_delta >= nextIopEventDelta)
 	{
 		// EE's running way ahead of the IOP still, so we should branch quickly to give the
 		// IOP extra timeslices in short order.
@@ -439,7 +477,7 @@ __fi void _cpuEventTest_Shared()
 	else
 	{
 		// Otherwise IOP is caught up/not doing anything so we can wait for the next event.
-		cpuSetNextEventDelta(((psxRegs.iopNextEventCycle - psxRegs.cycle) * multiplier));
+		cpuSetNextEventDelta(nextIopEventDelta);
 	}
 
 	// Apply vsync and other counter nextCycles

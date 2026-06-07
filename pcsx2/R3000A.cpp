@@ -134,8 +134,7 @@ __fi void PSX_INT( IopEventId n, s32 ecycle )
 	psxRegs.eCycle[n] = ecycle;
 
 	psxSetNextBranchDelta(ecycle);
-	const float mutiplier = static_cast<float>(PS2CLK) / static_cast<float>(PSXCLK);
-	const s32 iopDelta = (psxRegs.iopNextEventCycle - psxRegs.cycle) * mutiplier;
+	const s32 iopDelta = IOPToEECycles(psxRegs.iopNextEventCycle - psxRegs.cycle);
 
 	if (psxRegs.inIop == false)
 	{
