@@ -285,7 +285,7 @@
   </widget>
   <widget class="QGroupBox" name="grpInstrumentation">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="geometry">
     <rect>
@@ -318,12 +318,12 @@
     <item row="0" column="1">
      <widget class="QLineEdit" name="txtLogFormat">
       <property name="toolTip">
-       <string>Logged to the console when the breakpoint is hit. Wrap an expression in braces to substitute its value, e.g. &quot;ra={ra} val={[4,sp]}&quot;. Use &quot;{{&quot; and &quot;}}&quot; for literal braces.</string>
+       <string>Logged to the console when the breakpoint is hit. Wrap an expression in braces to substitute its value, e.g. "ra={ra} val={[sp,4]}". Use "{{" and "}}" for literal braces.</string>
       </property>
      </widget>
     </item>
     <item row="1" column="0" colspan="2">
-     <widget class="QCheckBox" name="chkLogContinue">
+     <widget class="QCheckBox" name="chkContinueOnHit">
       <property name="toolTip">
        <string>Log the message and resume execution instead of pausing.</string>
       </property>
@@ -434,7 +434,7 @@
   <tabstop>txtSize</tabstop>
   <tabstop>txtCondition</tabstop>
   <tabstop>txtLogFormat</tabstop>
-  <tabstop>chkLogContinue</tabstop>
+  <tabstop>chkContinueOnHit</tabstop>
  </tabstops>
  <resources/>
  <connections>

@@ -40,4 +40,6 @@ private:
 	Ui::BreakpointView m_ui;
 
 	BreakpointModel* m_model;
+	int m_selectedRowOnRefresh = -1;
+	int m_selectedColOnRefresh = -1;
 };
