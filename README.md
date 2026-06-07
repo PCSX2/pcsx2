@@ -21,12 +21,12 @@ The upstream PCSX2 project ships an ARM64 *interpreter* build for macOS, but its
 **Current status:**
 - ✅ EE (Emotion Engine) recompiler — integer, float, MMI, COP0/COP1/COP2, branches, load/store
 - ✅ IOP (I/O Processor / R3000A) recompiler — full integer, load/store, branches, coprocessors
-- 🔄 VU (Vector Unit) recompiler — microVU skeleton + Upper FMAC vector ISA complete; Lower ISA and runtime validation in progress
+- ✅ VU (Vector Unit) recompiler — microVU skeleton + Upper FMAC vector ISA complete; Lower ISA and runtime complete
 - 🔄 vtlb fast memory — slow path works; fastmem backpatch still TODO
 - ✅ Native ARM64 binary builds and boots the PS2 BIOS
 - ✅ 2D games are already playable
 - ✅ PS1 games (IOP mode) run at full speed — e.g. *Gran Turismo 2* is fully playable
-- 🔄 Basic 3D games run with occasional stuttering (VU Lower + integration work remaining)
+- ✅ 3D games run (if crash try disabling MTVU)
 
 Native Apple Silicon builds will be provided as automated releases soon. For now you must build manually (see **Building on Apple Silicon** below).
 
@@ -102,7 +102,7 @@ See `arm64-port/CONVENTIONS.md` for the full build/test/debug loop used by the p
 | 4 | ✅ Done | EE branches, jumps, delay slots, recLUT + block linking |
 | 5 | ✅ Done | EE coprocessors (COP0 inline, COP1 FPU, COP2 macro fallback, MMI SIMD) |
 | 6 | ✅ Done | IOP recompiler (R3000A: integer, load/store, branches, COP0/COP2) |
-| 7 | 🔄 In Progress | VU recompiler (microVU) — Upper ISA done, Lower ISA + integration in progress |
+| 7 | ✅ Done | VU recompiler (microVU) — Upper ISA done, Lower ISA done |
 | 8 | 📋 Planned | Integration, testing, profiling, polish, release builds |
 
 Detailed progress lives in `arm64-port/PROGRESS.md`.
