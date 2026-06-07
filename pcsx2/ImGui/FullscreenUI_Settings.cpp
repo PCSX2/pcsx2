@@ -4873,6 +4873,13 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 		FSUI_NSTR("Chop/Zero (Default)"),
 	};
 
+	static constexpr const char* ee_div_rounding_mode_settings[] = {
+		FSUI_NSTR("Nearest (Default)"),
+		FSUI_NSTR("Negative"),
+		FSUI_NSTR("Positive"),
+		FSUI_NSTR("Chop/Zero"),
+	};
+
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 
 	const bool show_advanced_settings = ShouldShowAdvancedSettings(bsi);
@@ -4932,7 +4939,7 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_DIVIDE, "Division Rounding Mode"),
 			FSUI_CSTR("Determines how the results of floating-point division is rounded. Some games need specific settings."),
 			"EmuCore/CPU", "FPUDiv.Roundmode", static_cast<int>(FPRoundMode::Nearest),
-			ee_rounding_mode_settings, std::size(ee_rounding_mode_settings), true);
+			ee_div_rounding_mode_settings, std::size(ee_div_rounding_mode_settings), true);
 		DrawClampingModeSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_TURN_DOWN, "Clamping Mode"),
 			FSUI_CSTR("Determines how out-of-range floating point numbers are handled. Some games need specific settings."), -1);
 
