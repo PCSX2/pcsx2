@@ -28,6 +28,53 @@
 
 ---
 
+## 2026-06-07 (later) — Phase 7.8: black-screen ROOT CAUSE FOUND **AND FIXED** → clamp scratch reg
+
+**Goal:** Pin numeric-FMAC-diff vs flag-instance for the "wrong MAC flag", using BIOS as the repro
+(user pointed out the divergence happens during BIOS boot — no ISO needed; the BIOS cube animation
+got stuck in an endless loop without crashing, the classic wrong-branch symptom).
+
+**What changed:**
+- `pcsx2/arm64/aVU_Clamp.inl` — **THE FIX.** `mVUclamp1`/`mVUclamp2` now fall back to `RQSCRATCH`
+  when their `regT1` arg `IsNone()` (callers in `mVU_FMACa`'s per-operand `cFt`/`cFs` clamps pass
+  `xEmptyReg`). Mirrors what `mVUclampedArith` already did.
+- (debug-only, added then reverted same session) temporary MACSET/QREAD/FSREAD/MULRES JIT dumps in
+  `aVU_Upper.inl` + a per-step interp macflag-history dump in `aVU.cpp`'s localizer. Reverted after
+  the bug was found — final diff is *only* the clamp fix.
+
+**Decisions & rationale — the actual root cause (NOT the MAC flag):**
+The MAC flag was a **downstream symptom**. Trail (BIOS program @pc=00d8, the transform loop):
+1. Localizer: first divergence `FMAND@0240` reads wrong MAC flag (vi01 0xd0 vs 0x10) — 2 sign bits
+   missing. The flag is set by `SUB.xyw`; micro's per-FMAC MACSET dump showed the SUB **result** was
+   already -FLT_MAX where interp had a normal finite value, so the flag gather was faithful — the
+   value was wrong.
+2. Walked back: `MULq vf24` (`vf24=5120 * Q=0.4`, both confirmed correct via FSREAD/QREAD dumps)
+   produced **-FLT_MAX** in all lanes. MULRES dump (right after `SSE_PS[MUL]`) showed BOTH `Fs` and
+   `Ft` = -FLT_MAX; `Fmul` only writes `Fs`, so `Ft` (0.4) was corrupted *before* the multiply.
+3. FSREAD (Ft right before `SSE_PS`) = -FLT_MAX while QREAD (Ft right after `getQreg`) = 0.4 →
+   corruption is the line-315 operand clamp `mVUclamp2(mVU, Ft, xEmptyReg, …)`.
+4. `mVUclamp1/2` load ±fmax into `regT1` (a NEON scratch) — but `regT1 = xEmptyReg`. The bogus
+   register aliased the value reg; the `Ldr maxvals; Ldr minvals; Umin` sequence left the operand =
+   `minvals` = `0xff7fffff` = -FLT_MAX. x86 never hit this (it folds ±fmax as a memory operand and
+   needs no scratch). Only fires when the VU overflow/sign-overflow clamp is active (BIOS, some
+   games) → why most titles "mostly worked".
+
+**Method:** env-gated JIT dumps were decisive — each narrowed by one instruction (FMAND→SUB→MULq→
+operand→clamp). The pre-existing `MVU_DIFF` shadow-diff + localizer framework (prior session) did the
+program- and instruction-level localization; the new per-value dumps pinned the exact corrupted reg.
+
+**Validation:** pure microVU1 BIOS boot (no MVU_DIFF): "GS packet size exceeded" 13903→1, clean
+shutdown, no stuck loop. Shadow-diff: 12 diverging regs → 1 (benign DIV-latency Q at program exit);
+localizer: 0 per-instruction divergences. arm64 builds; unittests 2/2.
+
+**Blockers / open questions:** Headless can't confirm pixels. The remaining single shadow-diff `Q`
+divergence is the long-known benign DIV-latency program-boundary artifact.
+
+**Next step:** hands-on visual + soak test of Rayman 3 / Odin Sphere (were black) and FFX (artifacts)
+under pure microVU1; then 7.8 deeper validation / 7.9 macro mode. See [[arm64-microvu1-clamp-scratch-bug]].
+
+---
+
 ## 2026-06-07 — Phase 7.8: black-screen ROOT CAUSE isolated → wrong MAC flag
 
 **Goal:** Continue debugging why some games (Rayman 3, Odin Sphere) black-screen with microVU1.

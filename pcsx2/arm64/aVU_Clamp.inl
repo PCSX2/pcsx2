@@ -38,10 +38,15 @@ alignas(16) static const u32 sse4_maxvals[2][4] = {
 };
 
 // Result clamping. NaN sign is not preserved (collapses to +fmax).
-static void mVUclamp1(mV, const a64::VRegister& reg, const a64::VRegister& regT1, int xyzw, bool bClampE = false)
+static void mVUclamp1(mV, const a64::VRegister& reg, const a64::VRegister& regT1in, int xyzw, bool bClampE = false)
 {
 	if (((!clampE && CHECK_VU_OVERFLOW(mVU.index)) || (clampE && bClampE)) && mVU.regAlloc->checkVFClamp(reg.GetCode()))
 	{
+		// The constant must be loaded into a real NEON scratch. Unlike x86 (which
+		// folds ±fmax as a memory operand), ARM64 needs a register. Callers may pass
+		// xEmptyReg, so fall back to the reserved scratch (RQSCRATCH) — using a bogus
+		// register here aliased the value reg and collapsed it to -FLT_MAX.
+		const a64::VRegister regT1 = regT1in.IsNone() ? RQSCRATCH : regT1in;
 		const bool ss = (xyzw == 1) || (xyzw == 2) || (xyzw == 4) || (xyzw == 8);
 
 		armMoveAddressToReg(RSCRATCHADDR, mVUglob.maxvals);
@@ -61,10 +66,12 @@ static void mVUclamp1(mV, const a64::VRegister& reg, const a64::VRegister& regT1
 }
 
 // Operand clamping (sign-preserving when sign-overflow clamp is enabled).
-static void mVUclamp2(mV, const a64::VRegister& reg, const a64::VRegister& regT1, int xyzw, bool bClampE = false)
+static void mVUclamp2(mV, const a64::VRegister& reg, const a64::VRegister& regT1in, int xyzw, bool bClampE = false)
 {
 	if (((!clampE && CHECK_VU_SIGN_OVERFLOW(mVU.index)) || (clampE && bClampE && CHECK_VU_SIGN_OVERFLOW(mVU.index))) && mVU.regAlloc->checkVFClamp(reg.GetCode()))
 	{
+		// See mVUclamp1: a real scratch is required for the constant load.
+		const a64::VRegister regT1 = regT1in.IsNone() ? RQSCRATCH : regT1in;
 		const int i = ((xyzw == 1) || (xyzw == 2) || (xyzw == 4) || (xyzw == 8)) ? 0 : 1;
 
 		armMoveAddressToReg(RSCRATCHADDR, &sse4_maxvals[i][0]);
@@ -77,7 +84,7 @@ static void mVUclamp2(mV, const a64::VRegister& reg, const a64::VRegister& regT1
 		return;
 	}
 	else
-		mVUclamp1(mVU, reg, regT1, xyzw, bClampE);
+		mVUclamp1(mVU, reg, regT1in, xyzw, bClampE);
 }
 
 // Operand clamp on every SSE-equivalent arithmetic instruction (add/sub/mul/div).

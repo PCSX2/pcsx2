@@ -8,6 +8,29 @@
 
 ## ▶ CURRENT FOCUS
 
+**Phase 7 (VU recompilers / microVU) — 7.8 microVU1 black-screen ROOT CAUSE FOUND **AND FIXED**
+(2026-06-07). The bug was NOT the MAC flag — that was a downstream symptom. Root cause: `mVUclamp1`/
+`mVUclamp2` (`aVU_Clamp.inl`) were called with `regT1 = xEmptyReg` (the per-operand `cFt`/`cFs` clamps
+in `mVU_FMACa`). ARM64 needs a real NEON scratch to load the ±fmax clamp constants (x86 folds them as
+a memory operand and needs none); the bogus `xEmptyReg` scratch aliased the value register, so the
+clamp's `Ldr maxvals; Ldr minvals; Umin` sequence left the operand = `0xff7fffff` = -FLT_MAX. That
+poisoned `MULq vf24` (5120*0.4 → -FLT_MAX), flipping the FMAC sign → wrong MAC flag → wrong `FMAND` →
+wrong `IBNE`/`IBLEZ` → wrong vertex-loop count → garbage geometry / 17k× "GS packet size exceeded" →
+black screen / stuck BIOS animation. **Fix:** both clamp helpers now fall back to `RQSCRATCH` when
+`regT1.IsNone()` (mirrors what `mVUclampedArith` already did). Only triggers when the VU overflow/sign-
+overflow clamp is active (PS2 BIOS, some games), which is why most titles "mostly worked".
+
+**Verified:** PS2 BIOS boot, pure microVU1 (no MVU_DIFF): "GS packet size exceeded" 13903→1, clean
+shutdown, animation no longer stuck. `MVU_DIFF` shadow-diff: 12 diverging regs → 1 (the known-benign
+`Q int=3ecccccc mvu=0` DIV-latency artifact at the program-exit snapshot); localizer finds zero
+per-instruction divergences. Reproduces with NO ISO via `-bios -nogui`. Builds arm64; unittests 2/2.
+Fix commit: see JOURNAL. See [[arm64-microvu1-clamp-scratch-bug]].
+
+**NEXT STEP:** hands-on visual + soak test of the actual games that black-screened (Rayman 3, Odin
+Sphere) and FFX (artifacts) under pure microVU1, then continue 7.8 deeper validation / 7.9 macro mode.
+
+**(historical, now resolved) — the MAC-FLAG framing below was the symptom, not the cause:**
+
 **Phase 7 (VU recompilers / microVU) — 7.8 SELECTED; CRASHES FIXED; microVU1 black-screen ROOT CAUSE
 NOW ISOLATED to the MAC FLAG. microVU0/1 is the selected VU provider on ARM64. The black screen on
 2D games (Rayman 3, Odin Sphere) + FFX artifacts trace to a single root: microVU1 reads a WRONG MAC
@@ -429,8 +452,11 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
     wrong branch → wrong vertex-loop count → reads garbage vertices → FMAC overflow to -FLT_MAX →
     malformed GIF packet → black screen + 17,509× "GS packet size exceeded" warnings. The FMAC math is
     correct given inputs; `mVUupdateFlags` is faithful to x86. See CURRENT FOCUS for the evidence.
-  - [ ] Fix the MAC-flag pipeline (suspect: mac-flag INSTANCE management — getFlagReg/mVUallocMFLAGa/b
-    + mFLAG.read/write instance assignment), then re-validate the test ladder.
+  - [x] **FIXED (2026-06-07): not the MAC flag.** `mVUclamp1`/`mVUclamp2` used `xEmptyReg` as the
+    constant-load scratch → aliased the value reg → operands collapsed to -FLT_MAX → poisoned MULq →
+    wrong FMAC sign → wrong MAC flag (the visible symptom) → wrong branch → black screen. Fix: clamp
+    helpers fall back to `RQSCRATCH` when `regT1.IsNone()`. BIOS verified (warnings 13903→1).
+    [[arm64-microvu1-clamp-scratch-bug]] Still TODO: hands-on visual/soak on the failing games.
 - [ ] 7.9 **Macro mode** (lowest priority) — port `microVU_Macro.inl` so the EE rec emits COP2/VU0
   macro ops natively instead of the Phase 5.3 inline-interp fallback. Optional perf polish.
 
