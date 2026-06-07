@@ -68,7 +68,12 @@ Please note that a BIOS dump from a legitimately-owned PS2 console is required t
 Prerequisites: Xcode command-line tools, CMake, Qt6, and the PCSX2 dependency bundle.
 
 ```bash
-# 1. Configure (one-time)
+# 1. Dependencies can be built using
+bash .github/workflows/scripts/macos/build-dependencies-universal.sh "path/to/pcsx2-deps"
+```
+
+```bash
+# 2. Configure (one-time)
 cmake -DCMAKE_PREFIX_PATH="/path/to/pcsx2-deps" \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_OSX_ARCHITECTURES="arm64" \
@@ -78,14 +83,14 @@ cmake -DCMAKE_PREFIX_PATH="/path/to/pcsx2-deps" \
       -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
       -B build .
 
-# 2. Build
+# 3. Build
 cmake --build build --target pcsx2-qt -j$(sysctl -n hw.ncpu)
 
-# 3. Post-process macOS bundle (required!)
+# 4. Post-process macOS bundle (required!)
 cmake --build build --target pcsx2-postprocess-bundle
 codesign --force --deep --sign - build/pcsx2-qt/PCSX2.app
 
-# 4. Run
+# 5. Run
 open build/pcsx2-qt/PCSX2.app
 ```
 
