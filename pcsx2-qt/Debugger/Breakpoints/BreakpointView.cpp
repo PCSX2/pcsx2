@@ -26,6 +26,36 @@ BreakpointView::BreakpointView(const DebuggerViewParameters& parameters)
 	this->resizeColumns();
 
 	connect(g_debugger_window, &DebuggerWindow::onVMActuallyPaused, m_model, &BreakpointModel::refreshData);
+
+	connect(m_model, &QAbstractTableModel::modelAboutToBeReset, this, [this]() {
+		const QItemSelectionModel* sel = m_ui.breakpointList->selectionModel();
+		if (sel->hasSelection())
+		{
+			m_selectedRowOnRefresh = sel->selectedIndexes().first().row();
+			m_selectedColOnRefresh = sel->selectedIndexes().first().column();
+		}
+		else
+		{
+			m_selectedRowOnRefresh = -1;
+			m_selectedColOnRefresh = -1;
+		}
+	});
+	connect(m_model, &QAbstractTableModel::modelReset, this, [this]() {
+		if (m_selectedRowOnRefresh >= 0 && m_selectedRowOnRefresh < m_model->rowCount())
+		{
+			const QModelIndex idx = m_model->index(m_selectedRowOnRefresh, m_selectedColOnRefresh);
+			m_ui.breakpointList->selectionModel()->setCurrentIndex(idx, QItemSelectionModel::ClearAndSelect);
+		}
+	});
+
+	// Continue-on-hit breakpoints update their hit counts without ever pausing the VM,
+	// so onVMActuallyPaused never fires. Refresh periodically off the debugger's
+	// refresh timer so the UI can update regularly.
+	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
+		if (!QtHost::IsVMPaused())
+			m_model->refreshData();
+		return true;
+	});
 }
 
 void BreakpointView::onDoubleClicked(const QModelIndex& index)
