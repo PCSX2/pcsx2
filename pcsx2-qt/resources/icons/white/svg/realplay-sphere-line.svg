@@ -1,0 +1,12 @@
+<svg viewBox="0 0 150 150">
+<style type="text/css">
+	.st0{fill:none;stroke:#FFFFFF;stroke-width:12;stroke-miterlimit:42.67;}
+	.st1{fill:#FFFFFF;stroke:#FFFFFF;stroke-width:7;stroke-miterlimit:42.67;}
+</style>
+<g id="Kam_-_ball">
+	<circle class="st0" cx="75" cy="75" r="55.7"/>
+	<circle class="st1" cx="82.1" cy="44.4" r="8.4"/>
+	<circle class="st1" cx="79.2" cy="77.8" r="8.3"/>
+	<path class="st1" d="M52.7,52.7c4.6,0,8.4,3.7,8.4,8.4s-3.7,8.3-8.3,8.3s-8.3-3.7-8.3-8.3S48.1,52.7,52.7,52.7z"/>
+</g>
+</svg>

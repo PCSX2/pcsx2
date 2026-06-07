@@ -1,6 +1,0 @@
-[submodule "extras/Save-Tower_Adaptive"]
-	path = extras/Save-Tower_Adaptive
-	url = https://github.com/Vivimagic/Save-Tower_Adaptive.git
-[submodule "app/src/main/cpp/3rdparty/libadrenotools"]
-	path = app/src/main/cpp/3rdparty/libadrenotools
-	url = https://github.com/bylaws/libadrenotools

@@ -1,0 +1,136 @@
+// SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
+
+#pragma once
+
+#include "common/Pcsx2Defs.h"
+
+#include <span>
+#include <string>
+#include <vector>
+
+struct ImFont;
+
+union InputBindingKey;
+enum class GenericInputBinding : u8;
+enum class InputLayout : u8;
+
+namespace ImGuiManager
+{
+	struct FontInfo
+	{
+		std::span<const u8> data;
+		std::span<const u32> exclude_ranges;
+		const char* face_name;
+		bool is_emoji_font;
+	};
+
+	/// Sets a list of fonts to use.
+	void SetFonts(std::vector<FontInfo> info);
+
+	/// Initializes ImGui, creates fonts, etc.
+	bool Initialize();
+
+	/// Initializes fullscreen UI.
+	bool InitializeFullscreenUI();
+
+	/// Frees all ImGui resources.
+	void Shutdown(bool clear_state);
+
+	/// Returns the size of the display window. Can be safely called from any thread.
+	float GetWindowWidth();
+	float GetWindowHeight();
+
+	/// Updates internal state when the window is size.
+	void WindowResized();
+
+	/// Updates scaling of the on-screen elements.
+	void RequestScaleUpdate();
+
+	/// Rebuilds the ImGui font atlas using current settings.
+	void ReloadFonts();
+
+	/// Call at the beginning of the frame to set up ImGui state.
+	void NewFrame();
+
+	/// Call when skipping rendering a frame, to update internal state.
+	void SkipFrame();
+
+	/// Renders any on-screen display elements.
+	void RenderOSD();
+
+	/// Returns the scale of all on-screen elements.
+	float GetGlobalScale();
+
+	/// Returns the standard font for external drawing.
+	ImFont* GetStandardFont();
+
+	/// Returns the fixed-width font for external drawing.
+	ImFont* GetFixedFont();
+
+	/// Returns the On-screen Display font for external drawing.
+	ImFont* GetOSDFont();
+
+	// Returns the standard font size for external drawing.
+	float GetFontSizeStandard();
+
+	// Returns the medium font size for external drawing, matching the size used by ImGuiFullscreen.
+	float GetFontSizeMedium();
+
+	// Returns the large font size for external drawing, matching the size used by ImGuiFullscreen.
+	float GetFontSizeLarge();
+
+	/// Returns true if imgui wants to intercept text input.
+	bool WantsTextInput();
+
+	/// Returns true if imgui wants to intercept mouse input.
+	bool WantsMouseInput();
+
+	/// Called on the UI or CPU thread in response to a key press. String is UTF-8.
+	void AddTextInput(std::string str);
+
+	/// Called on the UI or CPU thread in response to mouse movement.
+	void UpdateMousePosition(float x, float y);
+
+	/// Called on the CPU thread in response to a mouse button press.
+	/// Returns true if ImGui intercepted the event, and regular handlers should not execute.
+	bool ProcessPointerButtonEvent(InputBindingKey key, float value);
+
+	/// Called on the CPU thread in response to a mouse wheel movement.
+	/// Returns true if ImGui intercepted the event, and regular handlers should not execute.
+	bool ProcessPointerAxisEvent(InputBindingKey key, float value);
+
+	/// Called on the CPU thread in response to a key press.
+	/// Returns true if ImGui intercepted the event, and regular handlers should not execute.
+	bool ProcessHostKeyEvent(InputBindingKey key, float value);
+
+	/// Called on the CPU thread when any input event fires. Allows imgui to take over controller navigation.
+	bool ProcessGenericInputEvent(GenericInputBinding key, InputLayout layout, float value);
+
+	/// Called to swap North/West gamepad buttons within ImGui
+	void SwapGamepadNorthWest(bool value);
+
+	/// Checks if the North/West gamepad buttons are swapped within ImGui
+	bool IsGamepadNorthWestSwapped();
+
+	/// Sets an image and scale for a software cursor. Software cursors can be used for things like crosshairs.
+	void SetSoftwareCursor(u32 index, std::string image_path, float image_scale, u32 multiply_color = 0xFFFFFF);
+	bool HasSoftwareCursor(u32 index);
+	void ClearSoftwareCursor(u32 index);
+
+	/// Sets the position of a software cursor, used when we have relative coordinates such as controllers.
+	void SetSoftwareCursorPosition(u32 index, float pos_x, float pos_y);
+
+	/// Strips icon characters from a string.
+	std::string StripIconCharacters(std::string_view str);
+} // namespace ImGuiManager
+
+namespace Host
+{
+	/// Called by ImGuiManager when the cursor enters a text field. The host may choose to open an on-screen
+	/// keyboard for devices without a physical keyboard.
+	void BeginTextInput();
+
+	/// Called by ImGuiManager when the cursor leaves a text field.
+	void EndTextInput();
+} // namespace Host

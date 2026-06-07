@@ -1,3 +1,0 @@
-../fonts/gsub_context2_simple_f1.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions;U+0000,U+0014,U+0015,U+0016,U+0000;[0|60|61|62|0]
-../fonts/gsub_context2_simple_f1.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions;U+0000,U+0014,U+0000,U+0014,U+0015,U+0000;[0|20|0|20|21|0]
-../fonts/gsub_context2_simple_f2.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions;U+0000,U+0014,U+0014,U+0014,U+0014,U+0014,U+0000;[0|20|60|20|20|20|0]

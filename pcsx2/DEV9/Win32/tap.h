@@ -1,0 +1,29 @@
+// SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
+
+#pragma once
+#include <vector>
+#include <string>
+#include "..\net.h"
+
+class TAPAdapter : public NetAdapter
+{
+	HANDLE htap;
+	OVERLAPPED read, write;
+	HANDLE cancel;
+	bool isActive = false;
+
+public:
+	TAPAdapter();
+	virtual bool blocks();
+	virtual bool isInitialised();
+	//gets a packet.rv :true success
+	virtual bool recv(NetPacket* pkt);
+	//sends the packet and deletes it when done (if successful).rv :true success
+	virtual bool send(NetPacket* pkt);
+	virtual void reloadSettings();
+	virtual void close();
+	virtual ~TAPAdapter();
+	static std::vector<AdapterEntry> GetAdapters();
+	static AdapterOptions GetAdapterOptions();
+};

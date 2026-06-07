@@ -1,1 +1,0 @@
-../fonts/gsub3_1_multiple_f1.otf;--features="-test[1],test[2],test[3]=2,-test[4],-test[5],test[6],test[7]=2,-test[8]" --single-par --no-clusters --no-glyph-names --no-positions;U+0011,U+0012,U+0012,U+0012,U+0012,U+0013,U+0013,U+0013,U+0013,U+0011;[17|18|20|21|18|19|22|23|19|17]

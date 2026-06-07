@@ -1,0 +1,181 @@
+// SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
+
+#include "CoverDownloadDialog.h"
+#include "QtUtils.h"
+
+#include "pcsx2/GameList.h"
+#include "pcsx2/Host.h"
+
+#include "common/Assertions.h"
+#include "common/SettingsInterface.h"
+
+CoverDownloadDialog::CoverDownloadDialog(QWidget* parent /*= nullptr*/)
+	: QDialog(parent)
+{
+	m_ui.setupUi(this);
+	QtUtils::SetScalableIcon(m_ui.coverIcon, QIcon::fromTheme(QStringLiteral("artboard-2-line")), QSize(32, 32));
+	updateEnabled();
+
+	connect(m_ui.start, &QPushButton::clicked, this, &CoverDownloadDialog::onStartClicked);
+	connect(m_ui.close, &QPushButton::clicked, this, &CoverDownloadDialog::onCloseClicked);
+	connect(m_ui.urls, &QTextEdit::textChanged, this, &CoverDownloadDialog::updateEnabled);
+
+	loadCoverURLs();
+}
+
+CoverDownloadDialog::~CoverDownloadDialog()
+{
+	pxAssert(!m_thread);
+
+	saveCoverURLs();
+}
+
+void CoverDownloadDialog::closeEvent(QCloseEvent* ev)
+{
+	cancelThread();
+}
+
+void CoverDownloadDialog::onDownloadStatus(const QString& text)
+{
+	m_ui.status->setText(text);
+}
+
+void CoverDownloadDialog::onDownloadProgress(int value, int range)
+{
+	// Limit to once every five seconds, otherwise it's way too flickery.
+	// Ideally in the future we'd have some way to invalidate only a single cover.
+	if (m_last_refresh_time.GetTimeSeconds() >= 5.0f)
+	{
+		emit coverRefreshRequested();
+		m_last_refresh_time.Reset();
+	}
+
+	if (range != m_ui.progress->maximum())
+		m_ui.progress->setMaximum(range);
+	m_ui.progress->setValue(value);
+}
+
+void CoverDownloadDialog::onDownloadComplete()
+{
+	emit coverRefreshRequested();
+
+	if (m_thread)
+	{
+		m_thread->join();
+		m_thread.reset();
+	}
+
+	updateEnabled();
+
+	m_ui.status->setText(tr("Download complete."));
+}
+
+void CoverDownloadDialog::onStartClicked()
+{
+	if (m_thread)
+		cancelThread();
+	else
+		startThread();
+}
+
+void CoverDownloadDialog::onCloseClicked()
+{
+	if (m_thread)
+		cancelThread();
+
+	done(0);
+}
+
+void CoverDownloadDialog::updateEnabled()
+{
+	const bool running = static_cast<bool>(m_thread);
+	m_ui.start->setText(running ? tr("Stop") : tr("Start"));
+	m_ui.start->setEnabled(running || !m_ui.urls->toPlainText().isEmpty());
+	m_ui.close->setEnabled(!running);
+	m_ui.urls->setEnabled(!running);
+}
+
+void CoverDownloadDialog::startThread()
+{
+	m_thread = std::make_unique<CoverDownloadThread>(this, m_ui.urls->toPlainText(), !m_ui.useTitleFileNames->isChecked());
+	m_last_refresh_time.Reset();
+	connect(m_thread.get(), &CoverDownloadThread::statusUpdated, this, &CoverDownloadDialog::onDownloadStatus);
+	connect(m_thread.get(), &CoverDownloadThread::progressUpdated, this, &CoverDownloadDialog::onDownloadProgress);
+	connect(m_thread.get(), &CoverDownloadThread::threadFinished, this, &CoverDownloadDialog::onDownloadComplete);
+	m_thread->start();
+	updateEnabled();
+}
+
+void CoverDownloadDialog::cancelThread()
+{
+	if (!m_thread)
+		return;
+
+	m_thread->requestInterruption();
+	m_thread->join();
+	m_thread.reset();
+}
+
+void CoverDownloadDialog::loadCoverURLs()
+{
+	auto lock = Host::GetSecretsSettingsLock();
+	SettingsInterface* secrets = Host::Internal::GetSecretsSettingsLayer();
+
+	QString text;
+
+	int count = secrets->GetIntValue("UI/CoverURLs", "Count", 0);
+	for (int i = 0; i < count; i++)
+	{
+		std::string key = std::to_string(i);
+
+		std::string url;
+		if (!secrets->GetStringValue("UI/CoverURLs", key.c_str(), &url))
+			break;
+
+		text += QString::fromStdString(url);
+		text += '\n';
+	}
+
+	m_ui.urls->setPlainText(text);
+}
+
+void CoverDownloadDialog::saveCoverURLs()
+{
+	auto lock = Host::GetSecretsSettingsLock();
+	SettingsInterface* secrets = Host::Internal::GetSecretsSettingsLayer();
+
+	secrets->RemoveSection("UI/CoverURLs");
+
+	QStringList urls = m_ui.urls->toPlainText().trimmed().split('\n');
+	if (urls.count() == 1 && urls[0].isEmpty())
+		urls = QStringList();
+
+	secrets->SetIntValue("UI/CoverURLs", "Count", static_cast<int>(urls.count()));
+
+	for (qsizetype i = 0; i < urls.count(); i++)
+	{
+		std::string key = std::to_string(i);
+		std::string url = urls[i].toStdString();
+		secrets->SetStringValue("UI/CoverURLs", key.c_str(), url.c_str());
+	}
+
+	secrets->Save();
+}
+
+CoverDownloadDialog::CoverDownloadThread::CoverDownloadThread(QWidget* parent, const QString& urls, bool use_serials)
+	: QtAsyncProgressThread(parent)
+	, m_use_serials(use_serials)
+{
+	for (const QString& str : urls.split(QChar('\n')))
+		m_urls.push_back(str.toStdString());
+}
+
+CoverDownloadDialog::CoverDownloadThread::~CoverDownloadThread() = default;
+
+void CoverDownloadDialog::CoverDownloadThread::runAsync()
+{
+	GameList::DownloadCovers(m_urls, m_use_serials, this);
+}
+
+#include "moc_CoverDownloadDialog.cpp"

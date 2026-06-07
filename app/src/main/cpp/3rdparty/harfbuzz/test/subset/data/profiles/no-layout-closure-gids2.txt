@@ -1,3 +1,0 @@
---no-layout-closure
---gids=74,87,88,443,448
---layout-features+=dlig

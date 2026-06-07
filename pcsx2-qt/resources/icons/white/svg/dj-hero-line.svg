@@ -1,0 +1,23 @@
+<svg viewBox="0 0 150 150">
+<style type="text/css">
+	.st0{fill:none;stroke:#FFF;stroke-width:12;stroke-miterlimit:10;}
+	.st1{fill:#FFF;}
+	.st2{fill:none;stroke:#FFF;stroke-width:12;stroke-linecap:round;stroke-linejoin:bevel;}
+</style>
+<g id="By_Maxihplay">
+	<path id="corpo" class="st0" d="M122.7,16.1c8.9,0,16.2,7.1,16.2,15.9v86c0,8.8-7.2,15.9-16.2,15.9H27.3c-8.9,0-16.2-7.1-16.2-15.9
+		V32c0-8.8,7.2-15.9,16.2-15.9L122.7,16.1L122.7,16.1z"/>
+	<g id="botoes">
+		<ellipse id="b" class="st1" cx="48.2" cy="115.4" rx="6.6" ry="6.5"/>
+		<ellipse id="a" class="st1" cx="31.2" cy="115.4" rx="6.6" ry="6.5"/>
+	</g>
+	<g>
+		<polyline class="st2" points="116.7,40.1 116.7,99.5 100.7,113.7 		"/>
+		<ellipse class="st1" cx="116.7" cy="43.2" rx="11.4" ry="11.2"/>
+	</g>
+	<g id="disco">
+		<path class="st1" d="M63.4,78.6c-6,0-10.9-4.9-10.9-10.8s4.9-10.8,10.9-10.8s10.9,4.9,10.9,10.8S69.4,78.6,63.4,78.6z"/>
+		<ellipse class="st0" cx="63.4" cy="67.8" rx="32.2" ry="31.7"/>
+	</g>
+</g>
+</svg>

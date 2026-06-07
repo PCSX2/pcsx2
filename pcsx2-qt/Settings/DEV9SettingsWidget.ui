@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DEV9SettingsWidget</class>
+ <widget class="QWidget" name="DEV9SettingsWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>700</width>
+    <height>700</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Ethernet</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="2" column="1" colspan="2">
+       <widget class="QComboBox" name="ethDev"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="ethDevLabel">
+        <property name="text">
+         <string>Ethernet Device:</string>
+        </property>
+        <property name="buddy">
+         <cstring>ethDev</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="ethDevTypeLabel">
+        <property name="text">
+         <string>Ethernet Device Type:</string>
+        </property>
+        <property name="buddy">
+         <cstring>ethDevType</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="3">
+       <widget class="QTabWidget" name="ethTabWidget">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <property name="documentMode">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="tab">
+         <attribute name="title">
+          <string>Intercept DHCP</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="4" column="2">
+           <widget class="QComboBox" name="ethDNS1Mode"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QCheckBox" name="ethInterceptDHCP">
+            <property name="text">
+             <string comment="InterceptDHCP">Enabled</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="ethNetMask">
+            <property name="inputMask">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="ethNetMaskLabel">
+            <property name="text">
+             <string>Subnet Mask:</string>
+            </property>
+            <property name="buddy">
+             <cstring>ethNetMask</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="ethGatewayAddrLabel">
+            <property name="text">
+             <string>Gateway Address:</string>
+            </property>
+            <property name="buddy">
+             <cstring>ethGatewayAddr</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QCheckBox" name="ethGatewayAuto">
+            <property name="text">
+             <string>Auto</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="ethInterceptDHCPLabel">
+            <property name="text">
+             <string>Intercept DHCP:</string>
+            </property>
+            <property name="buddy">
+             <cstring>ethInterceptDHCP</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="ethPS2Addr">
+            <property name="inputMask">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QCheckBox" name="ethNetMaskAuto">
+            <property name="text">
+             <string>Auto</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="ethPS2AddrLabel">
+            <property name="text">
+             <string>PS2 Address:</string>
+            </property>
+            <property name="buddy">
+             <cstring>ethPS2Addr</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="ethGatewayAddr">
+            <property name="inputMask">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="ethDNS1AddrLabel">
+            <property name="text">
+             <string>DNS1 Address:</string>
+            </property>
+            <property name="buddy">
+             <cstring>ethDNS1Addr</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="ethDNS1Addr">
+            <property name="inputMask">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="ethDNS2AddrLabel">
+            <property name="text">
+             <string>DNS2 Address:</string>
+            </property>
+            <property name="buddy">
+             <cstring>ethDNS2Addr</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="ethDNS2Addr">
+            <property name="inputMask">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QComboBox" name="ethDNS2Mode"/>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_2">
+         <attribute name="title">
+          <string>Internal DNS</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_4">
+          <item row="1" column="1">
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="QPushButton" name="ethHostAdd">
+              <property name="text">
+               <string>Add</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="ethHostDel">
+              <property name="text">
+               <string>Delete</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="ethHostExport">
+              <property name="text">
+               <string>Export</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="ethHostImport">
+              <property name="text">
+               <string>Import</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="ethHostPerGame">
+              <property name="text">
+               <string>Per game</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>0</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item row="0" column="0" colspan="2">
+           <widget class="QLabel" name="label_11">
+            <property name="text">
+             <string>Internal DNS can be selected using the DNS1/2 dropdowns, or by setting them to 192.0.2.1</string>
+            </property>
+            <property name="buddy">
+             <cstring>ethHosts</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QTableView" name="ethHosts">
+            <property name="selectionMode">
+             <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+            </property>
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
+            <attribute name="horizontalHeaderHighlightSections">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+      <item row="1" column="1" colspan="2">
+       <widget class="QComboBox" name="ethDevType"/>
+      </item>
+      <item row="0" column="0" colspan="3">
+       <widget class="QCheckBox" name="ethEnabled">
+        <property name="text">
+         <string comment="InternalDNSTable">Enabled</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Hard Disk Drive</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="1" column="2">
+       <widget class="QPushButton" name="hddBrowseFile">
+        <property name="text">
+         <string>Browse</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="hddFile"/>
+      </item>
+      <item row="0" column="0" colspan="3">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QCheckBox" name="hddEnabled">
+          <property name="text">
+           <string comment="HDD">Enabled</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="hddLBA48">
+          <property name="text">
+           <string>Enable 48-Bit LBA</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="hddSizeMinLabel">
+          <property name="text">
+           <string>40</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSlider" name="hddSizeSlider">
+          <property name="minimum">
+           <number>40</number>
+          </property>
+          <property name="maximum">
+           <number>120</number>
+          </property>
+          <property name="singleStep">
+           <number>1</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::TickPosition::TicksBelow</enum>
+          </property>
+          <property name="tickInterval">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="hddSizeMaxLabel">
+          <property name="text">
+           <string>120</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="hddSizeSpinBox">
+          <property name="minimum">
+           <number>40</number>
+          </property>
+          <property name="maximum">
+           <number>120</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="hddFileLabel">
+        <property name="text">
+         <string>HDD File:</string>
+        </property>
+        <property name="buddy">
+         <cstring>hddFile</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="hddSizeLabel">
+        <property name="text">
+         <string>HDD Size (GiB):</string>
+        </property>
+        <property name="buddy">
+         <cstring>hddSizeSlider</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QPushButton" name="hddCreate">
+        <property name="text">
+         <string>Create Image</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>ethEnabled</tabstop>
+  <tabstop>ethDevType</tabstop>
+  <tabstop>ethDev</tabstop>
+  <tabstop>ethTabWidget</tabstop>
+  <tabstop>ethInterceptDHCP</tabstop>
+  <tabstop>ethPS2Addr</tabstop>
+  <tabstop>ethNetMask</tabstop>
+  <tabstop>ethNetMaskAuto</tabstop>
+  <tabstop>ethGatewayAddr</tabstop>
+  <tabstop>ethGatewayAuto</tabstop>
+  <tabstop>ethDNS1Addr</tabstop>
+  <tabstop>ethDNS1Mode</tabstop>
+  <tabstop>ethDNS2Addr</tabstop>
+  <tabstop>ethDNS2Mode</tabstop>
+  <tabstop>ethHostAdd</tabstop>
+  <tabstop>ethHostDel</tabstop>
+  <tabstop>ethHostExport</tabstop>
+  <tabstop>ethHostImport</tabstop>
+  <tabstop>ethHostPerGame</tabstop>
+  <tabstop>ethHosts</tabstop>
+  <tabstop>hddEnabled</tabstop>
+  <tabstop>hddLBA48</tabstop>
+  <tabstop>hddFile</tabstop>
+  <tabstop>hddBrowseFile</tabstop>
+  <tabstop>hddSizeSlider</tabstop>
+  <tabstop>hddSizeSpinBox</tabstop>
+  <tabstop>hddCreate</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,9 +1,0 @@
-FONTS:
-Ubuntu-Regular.ttf
-
-PROFILES:
-glyph-names.txt
-
-SUBSETS:
-U+0x0,U+0x8,U+0x9,U+0x1d,U+0x20,U+0xb7
-*

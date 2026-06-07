@@ -1,2 +1,0 @@
-../fonts/gpos_context2_multiple_subrules_f1.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0000,U+0014,U+0015,U+0016,U+0000,U+0014,U+0015,U+0000;[0|20@1520,0|21@3000,0|22@4500,0|0@6000,0|20@7500,0|21@9020,0|0@10500,0]
-../fonts/gpos_context2_multiple_subrules_f2.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0000,U+0014,U+0015,U+0016,U+0000,U+0014,U+0015,U+0000;[0|20@1500,0|21@3020,0|22@4500,0|0@6000,0|20@7500,0|21@9020,0|0@10500,0]

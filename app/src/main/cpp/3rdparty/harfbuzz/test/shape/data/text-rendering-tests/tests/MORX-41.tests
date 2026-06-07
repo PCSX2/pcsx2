@@ -1,4 +1,0 @@
-../fonts/TestMORXFourtyone.ttf;--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft;U+0061,U+0063;[a_c]
-../fonts/TestMORXFourtyone.ttf;--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft;U+0062,U+0063;[b_c]
-../fonts/TestMORXFourtyone.ttf;;U+0063,U+0063;*
-../fonts/TestMORXFourtyone.ttf;;U+0061,U+0062,U+0063,U+0063;*

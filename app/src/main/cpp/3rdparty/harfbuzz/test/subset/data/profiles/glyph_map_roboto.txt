@@ -1,2 +1,0 @@
---gid-map=37:1,39:2,69:3,74:4,77:5
---layout-features+=c2sc

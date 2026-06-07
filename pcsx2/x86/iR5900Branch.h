@@ -1,0 +1,34 @@
+// SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
+
+#pragma once
+
+/*********************************************************
+* Shift arithmetic with constant shift                   *
+* Format:  OP rd, rt, sa                                 *
+*********************************************************/
+
+namespace R5900 {
+namespace Dynarec {
+namespace OpcodeImpl {
+
+	void recBEQ();
+	void recBEQL();
+	void recBNE();
+	void recBNEL();
+	void recBLTZ();
+	void recBLTZL();
+	void recBLTZAL();
+	void recBLTZALL();
+	void recBGTZ();
+	void recBGTZL();
+	void recBLEZ();
+	void recBLEZL();
+	void recBGEZ();
+	void recBGEZL();
+	void recBGEZAL();
+	void recBGEZALL();
+
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900

@@ -1,0 +1,36 @@
+<svg viewBox="0 0 150 150">
+  <defs>
+    <style>
+      .cls-2 {
+        stroke-miterlimit: 10;
+      }
+      .cls-2, .cls-3 {
+        fill: none;
+        stroke: #fff;
+        stroke-linecap: round;
+        stroke-width: 12px;
+      }
+      .cls-3 {
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+  <g id="paletas">
+    <g id="B">
+      <line class="cls-2" x1="129.96" y1="105.62" x2="105.25" y2="105.62"/>
+      <line class="cls-2" x1="130.32" y1="75" x2="105.61" y2="75"/>
+      <line class="cls-2" x1="129.6" y1="44.38" x2="104.88" y2="44.38"/>
+    </g>
+    <g id="A">
+      <line class="cls-2" x1="20.04" y1="44.38" x2="44.75" y2="44.38"/>
+      <line class="cls-2" x1="19.68" y1="75" x2="44.39" y2="75"/>
+      <line class="cls-2" x1="20.4" y1="105.62" x2="45.12" y2="105.62"/>
+    </g>
+  </g>
+  <g id="By_Kam" data-name="By Kam">
+    <path id="chip" class="cls-3" d="m52,20.94h46c2.8,0,5.07,2.19,5.07,4.88v98.36c0,2.7-2.27,4.88-5.07,4.88h-46c-2.8,0-5.07-2.19-5.07-4.88V25.82c0-2.7,2.27-4.88,5.07-4.88Z"/>
+    <g id="ball">
+      <path d="m66.46,45.81c-3.48,0-6.31-2.81-6.31-6.26s2.83-6.26,6.31-6.26,6.31,2.81,6.31,6.26-2.83,6.26-6.31,6.26Z" fill="#fff"/>
+    </g>
+  </g>
+</svg>

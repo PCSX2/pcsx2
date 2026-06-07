@@ -1,0 +1,589 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GameSummaryWidget</class>
+ <widget class="QWidget" name="GameSummaryWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>700</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <layout class="QFormLayout" name="detailsFormLayout">
+   <property name="fieldGrowthPolicy">
+    <enum>QFormLayout::FieldGrowthPolicy::ExpandingFieldsGrow</enum>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_title">
+     <property name="text">
+      <string>Title:</string>
+     </property>
+     <property name="buddy">
+      <cstring>title</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <layout class="QHBoxLayout" name="titleLayout">
+     <item>
+      <widget class="QLineEdit" name="title">
+       <property name="placeholderText">
+        <string>Clear the line to restore the original title...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="restoreTitle">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Restore</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_titleSort">
+     <property name="text">
+      <string extracomment="Name for use in sorting (e.g. &quot;XXX, The&quot; for a game called &quot;The XXX&quot;)">Sorting Title:</string>
+     </property>
+     <property name="buddy">
+      <cstring>titleSort</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="titleSort">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_titleEN">
+     <property name="text">
+      <string>English Title:</string>
+     </property>
+     <property name="buddy">
+      <cstring>titleEN</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="titleEN">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_path">
+     <property name="text">
+      <string>Path:</string>
+     </property>
+     <property name="buddy">
+      <cstring>path</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QLineEdit" name="path">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_serial">
+     <property name="text">
+      <string>Serial:</string>
+     </property>
+     <property name="buddy">
+      <cstring>serial</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <layout class="QHBoxLayout" name="serialLayout">
+     <item>
+      <widget class="QLineEdit" name="serial">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="checkWiki">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Check Wiki</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_crc">
+     <property name="text">
+      <string>CRC:</string>
+     </property>
+     <property name="buddy">
+      <cstring>crc</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QLineEdit" name="crc">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_type">
+     <property name="text">
+      <string>Type:</string>
+     </property>
+     <property name="buddy">
+      <cstring>type</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QComboBox" name="type">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="editable">
+      <bool>true</bool>
+     </property>
+     <item>
+      <property name="text">
+       <string>PS2 Disc</string>
+      </property>
+      <property name="icon">
+       <iconset theme="disc-2-line"/>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>PS1 Disc</string>
+      </property>
+      <property name="icon">
+       <iconset theme="disc-2-line"/>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ELF (PS2 Executable)</string>
+      </property>
+      <property name="icon">
+       <iconset theme="file-settings-line"/>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLabel" name="label_region">
+     <property name="text">
+      <string>Region:</string>
+     </property>
+     <property name="buddy">
+      <cstring>region</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <layout class="QHBoxLayout" name="regionLayout">
+     <item>
+      <widget class="QComboBox" name="region">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">NTSC-B (Brazil)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">NTSC-C (China)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">NTSC-HK (Hong Kong)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">NTSC-J (Japan)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">NTSC-K (Korea)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">NTSC-T (Taiwan)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">NTSC-U (US)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Other</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-A (Australia)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-AF (South Africa)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-AU (Austria)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-BE (Belgium)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-E (Europe/Australia)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-F (France)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-FI (Finland)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-G (Germany)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-GR (Greece)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-I (Italy)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-IN (India)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-M (Europe/Australia)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-NL (Netherlands)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-NO (Norway)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-P (Portugal)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-PL (Poland)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-R (Russia)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-S (Spain)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-SC (Scandinavia)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-SW (Sweden)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-SWI (Switzerland)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string extracomment="Leave the code as-is, translate the country's name.">PAL-UK (United Kingdom)</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="restoreRegion">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Restore</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="8" column="0">
+    <widget class="QLabel" name="label_compat">
+     <property name="text">
+      <string>Compatibility:</string>
+     </property>
+     <property name="buddy">
+      <cstring>compatibility</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QLineEdit" name="compatibility">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="label_profile">
+     <property name="text">
+      <string>Input Profile:</string>
+     </property>
+     <property name="buddy">
+      <cstring>inputProfile</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <widget class="QComboBox" name="inputProfile">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <item>
+      <property name="text">
+       <string extracomment="Refers to the shared settings profile.">Shared</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="10" column="0">
+    <widget class="QLabel" name="label_discPath">
+     <property name="text">
+      <string>Disc Path:</string>
+     </property>
+     <property name="buddy">
+      <cstring>discPath</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="1">
+    <layout class="QHBoxLayout" name="discLayout">
+     <item>
+      <widget class="QLineEdit" name="discPath"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="discPathBrowse">
+       <property name="text">
+        <string>Browse...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="discPathClear">
+       <property name="text">
+        <string>Clear</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="11" column="0" colspan="2">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="12" column="0" colspan="2">
+    <layout class="QVBoxLayout" name="verifyLayout">
+     <item>
+      <widget class="QTableWidget" name="tracks">
+       <property name="editTriggers">
+        <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+       </property>
+       <property name="cornerButtonEnabled">
+        <bool>false</bool>
+       </property>
+       <attribute name="verticalHeaderVisible">
+        <bool>false</bool>
+       </attribute>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="verifyButtonLayout">
+       <item>
+        <spacer name="verifyButtonSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="verify">
+         <property name="text">
+          <string>Verify</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="2" column="2">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0" rowspan="3">
+        <widget class="QPlainTextEdit" name="verifyResult">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>60</height>
+          </size>
+         </property>
+         <property name="visible">
+          <bool>false</bool>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QPushButton" name="searchHash">
+         <property name="visible">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Search on Redump.org...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>title</tabstop>
+  <tabstop>restoreTitle</tabstop>
+  <tabstop>titleSort</tabstop>
+  <tabstop>titleEN</tabstop>
+  <tabstop>path</tabstop>
+  <tabstop>serial</tabstop>
+  <tabstop>checkWiki</tabstop>
+  <tabstop>crc</tabstop>
+  <tabstop>type</tabstop>
+  <tabstop>region</tabstop>
+  <tabstop>restoreRegion</tabstop>
+  <tabstop>compatibility</tabstop>
+  <tabstop>inputProfile</tabstop>
+  <tabstop>discPath</tabstop>
+  <tabstop>discPathBrowse</tabstop>
+  <tabstop>discPathClear</tabstop>
+  <tabstop>tracks</tabstop>
+  <tabstop>verify</tabstop>
+ </tabstops>
+ <resources>
+  <include location="../resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

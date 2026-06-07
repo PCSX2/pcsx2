@@ -1,9 +1,0 @@
-#!/usr/bin/env python3
-
-from hb_test_tools import *
-import sys, os
-
-if len (sys.argv) < 2:
-	sys.exit ("usage: %s FILES..." % sys.argv[0])
-
-ZipDiffer.diff_files (FileHelpers.open_file_or_stdin (f) for f in sys.argv[1:])

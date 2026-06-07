@@ -1,39 +1,124 @@
-# Build system and IDE files
-build/
-.gradle
-.vscode/
-.idea/
-.project
-.settings/
-local.properties
-node_modules/
-bun.lockb
-package-lock.json
+.*.swp
+.*.swn
+.*.swo
 
-# OS junk & editor/files
+*.suo
+*.ncb
+*.sdf
+*.opensdf
+*.user
+*.log
+*.dsp
+*.dsw
+*.bsc
+*.aps
+*.exe
+*.wav
+
+*.trace
+*.dump
+
+*.asm
+
+*.VC.db
+*.VC.VC.opendb
+
+_ReSharper.*
+pcsx2.snapshot_*
+svnrev.h
+
+/build*
+/obj-*
+*.obj
+
 .DS_Store
-app/.DS_Store
-app/src/.DS_Store
-app/src/main/.DS_Store
+Thumbs.db
 
-# Android/NDK/intermediate output
-app/.cxx/
-app/src/main/jniLibs/
-app/src/main/cpp/bin
+Debug.txt
+install_log.txt
+bad_shader_*
+crash-*.txt
 
-# Sensitive or key material
-armsx2_release.jks
-armsx2_keystore.properties
-app/src/main/assets/discord_creds.env
+Debug
+Release
+Devel
 
-# Temporary/log/output files
-log.txt
+oprofile_data/
 
-# Third-party (vendored) native or generated sources
-app/src/main/cpp/3rdparty/rcheevos/.build
-app/src/main/cpp/3rdparty/discord_social_sdk/cdiscord.h
-app/src/main/cpp/3rdparty/discord_social_sdk/discordpp.h
+# Recording Specific Ignores (pcsx2-rr)
+*.p2s
+*.p2m2
+*.p2m2_backup
+*.p2m2_SaveState.p2s
 
-# External libs
-app/libs/discord_partner_sdk.aar
-macos
+# Visual Studio upgrades
+/Backup*
+/UpgradeLog*.htm
+/.vscode*
+
+# Jetbrains Rider
+/.idea*
+
+# KDevelop 4 Workspace Configuration Files
+*.kdev4
+/.kdev4*
+
+# Resources and docs in /bin are tracked
+/bin/**/*.dll
+/bin/**/*.dmp
+/bin/**/*.exp
+/bin/**/*.ilk
+/bin/**/*.lib
+/bin/**/*.pdb
+/bin/pcsx2*
+/bin/qt.conf
+/bin/bios
+/bin/cache
+/bin/cheats
+/bin/patches
+/bin/covers
+/bin/dumps
+/bin/gamesettings
+/bin/help
+/bin/inis
+/bin/inis/debuggersettings
+/bin/logs
+/bin/memcards
+/bin/plugins
+/bin/snaps
+/bin/sstates
+/bin/textures
+/bin/translations
+/bin/inputprofiles
+/bin/videos
+/bin/portable.ini
+/bin/portable.txt
+
+# Resources and docs copied from /bin
+/bin-arm64
+
+# Manually added by user.
+/bin/resources/patches.zip
+
+# Resources that are runtime downloaded.
+/bin/resources/fonts/NotoSansJP-Regular.ttf
+/bin/resources/fonts/NotoSansKR-Regular.ttf
+/bin/resources/fonts/NotoSansSC-Regular.ttf
+/bin/resources/fonts/NotoSansTC-Regular.ttf
+
+/deps-build
+/deps
+/deps-arm64
+/gammaray-build
+/gammaray
+/ipch
+
+!/3rdparty/libjpeg/change.log
+/tools/bin
+.vs
+
+/out/build/x64-Debug (default)
+CMakeSettings.json
+/ci-artifacts/
+/out/
+/.cache/

@@ -1,0 +1,65 @@
+// SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
+
+#pragma once
+
+#include "common/Console.h"
+
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QPlainTextEdit>
+
+class LogWindow : public QMainWindow
+{
+	Q_OBJECT
+
+public:
+	LogWindow(bool attach_to_main);
+	~LogWindow();
+
+	static void updateSettings();
+	static void destroy();
+
+	__fi bool isAttachedToMainWindow() const { return m_attached_to_main_window; }
+	void reattachToMainWindow();
+
+	void updateWindowTitle();
+
+private:
+	void createUi();
+
+	static void logCallback(LOGLEVEL level, ConsoleColors color, std::string_view message);
+
+protected:
+	void closeEvent(QCloseEvent* event);
+
+private Q_SLOTS:
+	void onClearTriggered();
+	void onSaveTriggered();
+	void appendMessage(quint32 level, quint32 color, const QString& message);
+	void onInputEntered();
+
+private:
+	static constexpr int DEFAULT_WIDTH = 750;
+	static constexpr int DEFAULT_HEIGHT = 400;
+
+	void saveSize();
+	void restoreSize();
+
+	QPlainTextEdit* m_text;
+	QLineEdit* m_line_input;
+	QMenu* m_level_menu;
+	QWidget* m_input_widget;
+	QHBoxLayout* m_input_hbox;
+	QCheckBox* m_local_echo_checkbox;
+	QCheckBox* m_newline_on_enter_checkbox;
+
+	bool m_local_echo = false;
+	bool m_newline_on_enter = true;
+	bool m_attached_to_main_window = true;
+	bool m_destroying = false;
+};
+
+extern LogWindow* g_log_window;

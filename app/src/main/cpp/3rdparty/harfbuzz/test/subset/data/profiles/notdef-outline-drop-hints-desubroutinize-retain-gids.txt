@@ -1,4 +1,0 @@
---notdef-outline
---no-hinting
---desubroutinize
---retain-gids

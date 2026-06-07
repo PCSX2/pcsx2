@@ -1,0 +1,14 @@
+<svg viewBox="0 0 512 512">
+  <rect
+    style="stroke:#000000;stroke-width:50;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+    width="12"
+    height="322"
+    x="256"
+    y="95"/>
+  <rect
+    style="stroke:#000000;stroke-width:50;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+    width="322"
+    height="12"
+    x="95"
+    y="256"/>
+</svg>

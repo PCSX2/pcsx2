@@ -1,4 +1,0 @@
-../fonts/TestMORXThirtynine.ttf;--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft;U+0041,U+0042;[A|B@639,0]
-../fonts/TestMORXThirtynine.ttf;--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft;U+0042,U+0041;[B.alt|A.alt@1000,0]
-../fonts/TestMORXThirtynine.ttf;--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft;U+05D0,U+05D1;[uni05D1.alt|uni05D0.alt@1000,0]
-../fonts/TestMORXThirtynine.ttf;--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft;U+05D1,U+05D0;[uni05D0|uni05D1@606,0]

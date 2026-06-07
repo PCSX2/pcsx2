@@ -1,3 +1,0 @@
-../fonts/lookupflag_ignore_ligatures_f1.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions;U+0011,U+0012,U+001A,U+001B,U+0013,U+001B,U+0014,U+0015;[17|23|26|27|27|21]
-../fonts/lookupflag_ignore_ligatures_f1.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions;U+0011,U+0012,U+001A,U+0018,U+0013,U+001B,U+0014,U+0015;[17|18|26|24|19|27|20|21]
-../fonts/lookupflag_ignore_ligatures_f1.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions;U+0011,U+0012,U+001A,U+002A,U+0013,U+001B,U+0014,U+0015;[17|18|26|42|19|27|20|21]

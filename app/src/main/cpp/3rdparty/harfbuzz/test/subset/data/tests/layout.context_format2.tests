@@ -1,9 +1,0 @@
-FONTS:
-NotoSansNewa-Regular.ttf
-
-PROFILES:
-layout-test.txt
-layout-test-retain-gids.txt
-
-SUBSETS:
-*

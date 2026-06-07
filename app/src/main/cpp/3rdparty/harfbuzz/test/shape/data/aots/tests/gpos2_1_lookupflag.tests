@@ -1,2 +1,0 @@
-../fonts/gpos2_1_lookupflag_f1.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0011,U+0013,U+0014,U+0011,U+0013,U+0012,U+0014,U+0011;[17|19@1300,0|20@3000,-100|17@4500,0|19@5800,0|18@7500,0|20@9000,-100|17@10500,0]
-../fonts/gpos2_1_lookupflag_f2.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0011,U+0013,U+0014,U+0011,U+0013,U+0012,U+0014,U+0011;[17|19@1500,0|20@2800,-100|17@4300,0|19@5800,0|18@7100,0|20@8600,-100|17@10100,0]

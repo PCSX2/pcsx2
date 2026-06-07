@@ -1,6 +1,0 @@
-../fonts/cmap4_font1.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions --font-funcs=ot;U+0000,U+0001,U+0010,U+0011,U+0012,U+001E,U+001F,U+00C7,U+00C8,U+00CD,U+00D2,U+00D3,U+FFFF;[0|0|0|40|41|53|0|0|256|261|266|0|0]
-../fonts/cmap4_font2.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions --font-funcs=ot;U+0000,U+0001,U+0010,U+0011,U+0012,U+001E,U+001F,U+00C7,U+00C8,U+00CD,U+00D2,U+00D3,U+FFFF;[0|0|0|0|0|0|0|0|0|0|0|0|0]
-../fonts/cmap4_font3.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions --font-funcs=ot;U+0000,U+0001,U+0010,U+0011,U+0012,U+001E,U+001F,U+00C7,U+00C8,U+00CD,U+00D2,U+00D3,U+FFFF;[0|0|0|0|0|0|0|0|0|0|0|0|65534]
-../fonts/cmap4_font4.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions --font-funcs=ot;U+0000,U+AFC7,U+AFC8,U+AFC9,U+B02B,U+B02C,U+B02D;[0|0|44500|44501|44599|44600|0]
-#../fonts/cmap4_font4.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions --font-funcs=ot;U+0000,U+FDE7,U+FDE8,U+FDE9,U+FE0B,U+FE0C,U+FE0D,U+FE4C,U+FE4D;[0|0|65500|65501|65535|0]
-../fonts/cmap4_font4.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions --font-funcs=ot;U+0000,U+0063,U+0064,U+01F3,U+01F4,U+01F5,U+03E8,U+03E9;[0|0|65136|65535|0|1|500|0]

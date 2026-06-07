@@ -1,3 +1,0 @@
---notdef-outline
---no-hinting
---desubroutinize

@@ -1,87 +1,127 @@
-<div align="center">
+# PCSX2 — Native ARM64 JIT Fork
 
-![ARMSX2](app_icons/icon.png)
+> 🍎 **This fork is dedicated to bringing native ARM64 JIT recompilers to PCSX2 so that Apple Silicon Macs (and other ARM64 platforms) can run PS2 games at playable speed without Rosetta 2.**
+>
+> It tracks upstream PCSX2 closely and adds a complete ARM64 recompiler backend.
 
-# ARMSX2
+![Windows Build Status](https://img.shields.io/github/actions/workflow/status/PCSX2/pcsx2/windows_build_matrix.yml?label=%F0%9F%96%A5%EF%B8%8F%20Windows%20Builds)
+![Linux Build Status](https://img.shields.io/github/actions/workflow/status/PCSX2/pcsx2/linux_build_matrix.yml?label=%F0%9F%90%A7%20Linux%20Builds)
+![MacOS Build Status](https://img.shields.io/github/actions/workflow/status/PCSX2/pcsx2/macos_build_matrix.yml?label=%F0%9F%8D%8E%20MacOS%20Builds)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/1f7c0d75fec74d6daa6adb084e5b4f71)](https://app.codacy.com/gh/PCSX2/pcsx2/dashboard?utm_source=github.com&utm_medium=referral&utm_content=PCSX2/pcsx2&utm_campaign=Badge_Grade)
+[![Discord Server](https://img.shields.io/discord/309643527816609793?color=%235CA8FA&label=PCSX2%20Discord&logo=discord&logoColor=white)](https://discord.com/invite/TCz3t9k)
 
-[![License](https://img.shields.io/github/license/ARMSX2/ARMSX2)](https://www.gnu.org/licenses/gpl-3.0.html)
-[![Discord](https://img.shields.io/discord/914421153827794975?logo=discord&logoColor=white&label=ARMSX2%20Discord&color=5865F2)](https://discord.gg/6yyawTtCnX)
-(https://patreon.com/ARMSX2)
-[![Nightly Build](https://github.com/ARMSX2/ARMSX2/actions/workflows/android_nightly_build.yml/badge.svg)](https://github.com/ARMSX2/ARMSX2/actions/workflows/android_nightly_build.yml)
+PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a combination of MIPS CPU [Interpreters](<https://en.wikipedia.org/wiki/Interpreter_(computing)>), [Recompilers](https://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](https://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.
 
-</div>
+## 🍎 About This Fork
 
-ARMSX2 is a free and open-source PlayStation 2 (PS2) emulator for ARM devices based on PCSX2 and PCSX2_ARM64. Its purpose is to emulate the PS2's hardware for ARM devices, using a recompiler that operates as x86 -> arm64, not native arm64, this is subject to change as development continues. ARMSX2 allows you to play PS2 games on your mobile android phone, as well as on iOS, Linux, and Windows devices.
+[![Project Demo](https://img.youtube.com/vi/6Vm1rQ5AR3Y/maxresdefault.jpg)](https://www.youtube.com/watch?v=6Vm1rQ5AR3Y)
+
+The upstream PCSX2 project ships an ARM64 *interpreter* build for macOS, but its high-performance **JIT recompilers** (EE, IOP, VU0, VU1, and vtlb fast memory) are x86-64 only. On Apple Silicon that means either running under Rosetta 2 (emulated x86-64, slower and deprecated by Apple) or falling back to the interpreter core (orders of magnitude too slow for most games).
+
+**This fork exists to close that gap.** It is a line-for-line ARM64 port of the existing, battle-tested x86-64 JIT recompilers. The recompiler *architecture*, *block model*, *analysis passes*, and *JIT logic* are intentionally kept identical to upstream — what changes is the backend emitter: x86-64 assembly (x86emitter) is translated to ARM64 assembly via [VIXL](https://github.com/Linaro/vixl).
+
+**Current status:**
+- ✅ EE (Emotion Engine) recompiler — integer, float, MMI, COP0/COP1/COP2, branches, load/store
+- ✅ IOP (I/O Processor / R3000A) recompiler — full integer, load/store, branches, coprocessors
+- ✅ VU (Vector Unit) recompiler — microVU skeleton + Upper FMAC vector ISA complete; Lower ISA and runtime complete
+- 🔄 vtlb fast memory — slow path works; fastmem backpatch still TODO
+- ✅ Native ARM64 binary builds and boots the PS2 BIOS
+- ✅ 2D games are already playable
+- ✅ PS1 games (IOP mode) run at full speed — e.g. *Gran Turismo 2* is fully playable
+- ✅ 3D games run (if crash try disabling MTVU)
+
+Native Apple Silicon builds will be provided as automated releases soon. For now you must build manually (see **Building on Apple Silicon** below).
+
+### Why LLMs / AI Were Used
+
+A word on methodology, because this comes up a lot.
+
+The x86-64 JIT code in upstream PCSX2 is **already proven correct** — it has run thousands of PS2 titles for years. The challenge in this port is not emulator design or JIT theory; it is **mechanical translation** of a large, well-understood x86-64 assembly codebase into equivalent ARM64 assembly (via VIXL) while preserving the exact same register-allocation contracts, block lifecycle, and recompiler semantics.
+
+Large language models (LLMs) were used as an **accelerant for this translation work** — pattern-matching x86 JIT boilerplate to ARM64 equivalents, scaffolding emit routines, and keeping the porting velocity high. The JIT *logic* (block compiler, dispatcher, analysis passes, flag pipelines, clamping rules, Tri-Ace hacks, etc.) is taken directly from the upstream x86 implementation and validated against it. **Nothing was hallucinated from scratch.**
+
+In other words: the hard engineering was done by the PCSX2 team over two decades. The hard *typing* — translating ~50k lines of x86 emitter code into ARM64 — is what AI helped compress.
 
 ## Project Details
 
-ARMSX2 began after years of there being no open source PS2 emulator for ARM systems, and so developer [@MoonPower](https://github.com/momo-AUX1) with the support of [@jpolo1224](https://github.com/jpolo1224) decided to try their hand at porting a new PS2 emulator for Android, forking from the repository PCSX2_ARM64 by developer Pontos. Moon has and will continue doing his best to fill in the gaps and make this into a complete emulator, with the goal to have version parity with PCSX2. This project is not officially associated with PCSX2, and we are not associated with any other forks made from the original repository. This is our own attempt at continuing PS2 emulation on Android, iOS, and MacOS. The emulator currently operates as x86 -> arm64, not native arm64, so the performance may not be as good as AetherSX2 currently, however things are subject to change as development goes on.
+PCSX2 has been in development for more than 20 years. Past versions could only run a few public domain game demos, but newer versions can run most games at full speed, including popular titles such as Final Fantasy X and Devil May Cry 3. Visit the [PCSX2 compatibility list](https://pcsx2.net/compat/) to check the latest compatibility status of games (with more than 2500 titles tested).
+
+Installers and binaries for both stable and nightly builds are available from [our website](https://pcsx2.net/downloads/).
 
 ## System Requirements
 
-ARMSX2 supports any ARM capable device, including Android, iOS, Linux, and Windows platforms (eventually, should work as well). Please note that performance will also depend on your devices hardware capabilities, we have done our best to optimize for low end devices and will continue to do so.
+PCSX2 supports Windows, Linux, and Mac platforms. Our [setup documentation page](https://pcsx2.net/docs/setup/requirements) contains additional details on software and hardware requirements.
 
-Please note that a BIOS dump from a legitimately-owned PS2 console is required to use the emulator.
+Please note that a BIOS dump from a legitimately-owned PS2 console is required to use the emulator. For more information, visit [this page](https://pcsx2.net/docs/setup/bios/).
 
-## Website
+### Apple Silicon (macOS)
 
-→ <https://armsx2.net/>
+| Requirement | Notes |
+|---|---|
+| macOS 12+ | Monterey or later |
+| Apple Silicon (M1/M2/M3/M4) | Native ARM64 JIT; Rosetta 2 not required |
+| 8 GB RAM minimum | 16 GB recommended for heavier titles |
+| BIOS | Same requirement as x86-64 builds |
 
-Any other website is not affiliated with ARMSX2. 
+## Building on Apple Silicon
 
-## Translation 
+> Pre-built releases are coming soon. Until then, build from source.
 
-[Help translate ARMSX2](https://crowdin.com/project/armsx2-translations/invite?h=940eaf6355b31b5fdb1771183c694ca32710218)
+Prerequisites: Xcode command-line tools, CMake, Qt6, and the PCSX2 dependency bundle.
 
-## Download
+```bash
+# 1. Dependencies can be built using
+bash .github/workflows/scripts/macos/build-dependencies-universal.sh "path/to/pcsx2-deps"
+```
 
-ARMSX2 is available on the Google Play Store once released. 
+```bash
+# 2. Configure (one-time)
+cmake -DCMAKE_PREFIX_PATH="/path/to/pcsx2-deps" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_OSX_ARCHITECTURES="arm64" \
+      -DDISABLE_ADVANCE_SIMD=ON \
+      -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
+      -DUSE_LINKED_FFMPEG=ON \
+      -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
+      -B build .
 
-[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="80"/>](https://play.google.com/store/apps/details?id=come.nanodata.armsx2)
+# 3. Build
+cmake --build build --target pcsx2-qt -j$(sysctl -n hw.ncpu)
 
-## Affiliation
+# 4. Post-process macOS bundle (required!)
+cmake --build build --target pcsx2-postprocess-bundle
+codesign --force --deep --sign - build/pcsx2-qt/PCSX2.app
 
-We are NOT affiliated with ARM Holding LTD in any way shape or form. We chose the name ARMSX2 since it runs on ARM devices, and seek no commercial incentive from the emulator. The most we accept is voluntary donations. Thank you. 
+# 5. Run
+open build/pcsx2-qt/PCSX2.app
+```
 
-## Additional Credits
-
-[PCSX2](https://github.com/PCSX2/pcsx2) - ARMSX2 would not be possible without the legendary work from the PCSX2 team and their patience and understanding regarding this project!
-
-[PCSX2_ARM64](https://github.com/pontos2024/PCSX2_ARM64) - ARMSX2 originally started off as a fork of developer Pontos work. 
-
-Thank you to [@Vivimagic](https://github.com/Vivimagic) for creating and working on the logo! 
-
-Thank you to developers [@tanosshi](https://github.com/tanosshi) [@jpolo1224](https://github.com/jpolo1224) [@MoonPower](https://github.com/momo-AUX1) for working on the ARMSX2 website!
+See `arm64-port/CONVENTIONS.md` for the full build/test/debug loop used by the port team.
 
 ## Roadmap
 
-Here's a roadmap of the things you can expect from ARMSX2 in the future:
+| Phase | Status | Description |
+|---|---|---|
+| 0 | ✅ Done | Build, tooling, VIXL scratch harness |
+| 1 | ✅ Done | EE recompiler skeleton (dispatcher, block compiler, constant pool) |
+| 2 | 🔄 Partial | vtlb fast memory — slow path done, fastmem backpatch TODO |
+| 3 | ✅ Done | EE integer arithmetic (ALU, shifts, mul/div, MMI) |
+| 4 | ✅ Done | EE branches, jumps, delay slots, recLUT + block linking |
+| 5 | ✅ Done | EE coprocessors (COP0 inline, COP1 FPU, COP2 macro fallback, MMI SIMD) |
+| 6 | ✅ Done | IOP recompiler (R3000A: integer, load/store, branches, COP0/COP2) |
+| 7 | ✅ Done | VU recompiler (microVU) — Upper ISA done, Lower ISA done |
+| 8 | 📋 Planned | Integration, testing, profiling, polish, release builds |
 
-| Task | Priority |
-| --- | --- |
-| Fix Eclipse GPUs | High |
-| Fix Mali Crashes | Highest |
-| Nintendo Switch support | Medium |
-| Update to latest core | High |
-| Update design to Material expressive | Low |
-| Migrate to Kotlin | Medium | 
+Detailed progress lives in `arm64-port/PROGRESS.md`.
 
+## Contributing / Building
 
-## Why are there .js and .jsx files?
+PCSX2 supports translation into other languages using [Crowdin](https://crowdin.com/project/pcsx2-emulator).
 
-Originally as a curious idea the react native screens were just an experiment i decided to keep they are extremely barebones and will either be finalized in a seperate branch (armsx2-rn) or removed altogether They do not affect performance as they are hidden by default and not executed. Any PR to them is welcome!
+See the [Contribution Guide](https://pcsx2.net/docs/contributing/) for more info on how to contribute.
 
-### To start developing with ARMSX2 RN do the following:
+For ARM64-specific development, see `arm64-port/CONVENTIONS.md` — it covers the register map, VIXL patterns, testing with `Arm64EmitEE.*` gtests, and session workflow.
 
-1. First install the deps:
-```sh
-(npm/pnpm/bun) install
-```
+## License
 
-
-2. Compile ARMSX2 With the react native core:
-```sh
-./gradlew assembleDebug -PenableRN=true
-```
-
-And now you will have a new button appear on the top right of the game selector screen click it and start developing with hot reload and see your changes without recompiling (note: compiling RN switches the emucore from static to shared).
+Same as upstream PCSX2. See the upstream repository for full licensing details.

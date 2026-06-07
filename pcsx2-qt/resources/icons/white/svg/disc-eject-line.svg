@@ -1,0 +1,17 @@
+<svg viewBox="0 0 512 512">
+  <circle
+    style="fill:none;stroke:#fff;stroke-width:43.8472;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+    cx="254.69832"
+    cy="256"
+    r="211.72192" />
+  <path
+    style="fill:#fff;fill-opacity:1;stroke:#fff;stroke-width:31.4605;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+    d="M 149.50667,162.58227 202.75334,70.356346 256,-21.869583 l 53.24666,92.225926 53.24667,92.225927 -106.49333,0 z"
+    transform="matrix(0.77253244,0,0,0.62860054,56.930019,153.80068)"/>
+  <rect
+    style="fill:#fff;fill-opacity:1;stroke:#fff;stroke-width:17.5612;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+    width="169.33095"
+    height="28.414787"
+    x="170.03285"
+    y="315.31885" />
+</svg>

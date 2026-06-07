@@ -1,3 +1,0 @@
-[Test]
-Type=session
-Exec=@installedtestsdir@/@exe@ @installed_arguments@

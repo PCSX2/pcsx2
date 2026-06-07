@@ -1,9 +1,0 @@
-FONTS:
-Roboto-Regular.ttf
-
-PROFILES:
-glyph_map_roboto.txt
-glyph_map_roboto_retain_gids.txt
-
-SUBSETS:
-ACafi

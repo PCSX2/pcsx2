@@ -1,2 +1,0 @@
-../fonts/gpos_context3_boundary_f1.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0000,U+0014,U+0014,U+0014,U+0014,U+0014,U+0000;[0|20@1500,0|20@3000,0|20@4500,0|20@6000,0|20@7500,0|0@9000,0]
-../fonts/gpos_context3_boundary_f2.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0000,U+0014,U+0014,U+0014,U+0014,U+0014,U+0000;[0|20@1520,0|20@3020,0|20@4520,0|20@6020,0|20@7520,0|0@9000,0]

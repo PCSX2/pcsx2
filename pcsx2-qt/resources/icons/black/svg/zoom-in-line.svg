@@ -1,0 +1,13 @@
+<svg viewBox="0 0 512 512">
+  <circle
+    style="fill:none;stroke:#000000;stroke-width:48.991;stroke-linecap:round;stroke-dasharray:none"
+    cx="256"
+    cy="256.1091"
+    r="231.50449" />
+  <path
+    style="fill:none;stroke:#000000;stroke-width:50;stroke-linecap:round;stroke-dasharray:none"
+    d="m 256,132.18075 v 247.8567"/>
+  <path
+    style="fill:none;stroke:#000000;stroke-width:50;stroke-linecap:round;stroke-dasharray:none"
+    d="M 137.09627,256.1091 H 374.90373"/>
+</svg>

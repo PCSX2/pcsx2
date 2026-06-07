@@ -1,2 +1,0 @@
-../fonts/gpos4_lookupflag_f1.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0011,U+0012,U+0011,U+0013,U+0011;[17|18@1500,0|17@3000,0|19@4500,0|17@4500,0]
-../fonts/gpos4_lookupflag_f2.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0011,U+0012,U+0013,U+0011;[17|18@1500,0|19@3000,0|17@3000,0]

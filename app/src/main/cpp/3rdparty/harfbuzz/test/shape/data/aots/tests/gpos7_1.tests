@@ -1,2 +1,0 @@
-../fonts/gpos7_1_font1.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0011,U+0012,U+0013,U+0014,U+0015;[17|18@1600,0|19@3200,0|20@4800,0|21@6000,0]
-../fonts/gpos7_1_font1.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0011,U+0012,U+0011,U+0012,U+0013,U+0011;[17|18@1500,0|17@3000,0|18@4500,0|19@6000,0|17@7500,0]

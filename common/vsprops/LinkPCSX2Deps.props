@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Dependency linking and DLL copying -->
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalLibraryDirectories>$(DepsLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);freetype.lib;jpeg.lib;libpng16.lib;libwebp.lib;lz4.lib;SDL3.lib;z.lib;zstd.lib;plutovg.lib;plutosvg.lib;ryml.lib</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration.Contains(Debug))">%(AdditionalDependencies);kddockwidgets-qt6d.lib;</AdditionalDependencies>
+      <AdditionalDependencies Condition="!$(Configuration.Contains(Debug))">%(AdditionalDependencies);kddockwidgets-qt6.lib;</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <DepsDLLs Include="$(DepsBinDir)freetype.dll" />
+    <DepsDLLs Include="$(DepsBinDir)harfbuzz.dll" />
+    <DepsDLLs Include="$(DepsBinDir)jpeg62.dll" />
+    <DepsDLLs Include="$(DepsBinDir)libpng16.dll" />
+    <DepsDLLs Include="$(DepsBinDir)libsharpyuv.dll" />
+    <DepsDLLs Include="$(DepsBinDir)libwebp.dll" />
+    <DepsDLLs Include="$(DepsBinDir)libwebpdemux.dll" />
+    <DepsDLLs Include="$(DepsBinDir)libwebpmux.dll" />
+    <DepsDLLs Include="$(DepsBinDir)lz4.dll" />
+    <DepsDLLs Include="$(DepsBinDir)SDL3.dll" />
+    <DepsDLLs Include="$(DepsBinDir)shaderc_shared.dll" />
+    <DepsDLLs Include="$(DepsBinDir)z.dll" />
+    <DepsDLLs Include="$(DepsBinDir)zstd.dll" />
+    <DepsDLLs Condition="$(Configuration.Contains(Debug))" Include="$(DepsBinDir)kddockwidgets-qt6d.dll" />
+    <DepsDLLs Condition="!$(Configuration.Contains(Debug))" Include="$(DepsBinDir)kddockwidgets-qt6.dll" />
+    <DepsDLLs Include="$(DepsBinDir)plutovg.dll" />
+    <DepsDLLs Include="$(DepsBinDir)plutosvg.dll" />
+    <DepsDLLs Include="$(DepsBinDir)ryml.dll" />
+    <DepsDLLs Condition="Exists('$(DepsBinDir)avcodec-62.dll')" Include="$(DepsBinDir)avcodec-62.dll" />
+    <DepsDLLs Condition="Exists('$(DepsBinDir)avformat-62.dll')" Include="$(DepsBinDir)avformat-62.dll" />
+    <DepsDLLs Condition="Exists('$(DepsBinDir)avutil-60.dll')" Include="$(DepsBinDir)avutil-60.dll" />
+    <DepsDLLs Condition="Exists('$(DepsBinDir)avutil-60.dll')" Include="$(DepsBinDir)avutil-60.dll" />
+    <DepsDLLs Condition="Exists('$(DepsBinDir)swresample-6.dll')" Include="$(DepsBinDir)swresample-6.dll" />
+    <DepsDLLs Condition="Exists('$(DepsBinDir)swscale-9.dll')" Include="$(DepsBinDir)swscale-9.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <AgilityDLLs Condition="Exists('$(DepsBinDir)D3D12\D3D12Core.dll')" Include="$(DepsBinDir)D3D12\D3D12Core.dll" />
+    <AgilityDLLs Condition="Exists('$(DepsBinDir)D3D12\d3d12SDKLayers.dll')" Include="$(DepsBinDir)D3D12\d3d12SDKLayers.dll" />
+  </ItemGroup>
+  <Target Name="DepsListPDBs"
+    AfterTargets="Build">
+    <ItemGroup>
+      <DepsPDBs Include="@(DepsDLLs -> '%(RelativeDir)%(Filename).pdb')" Condition="Exists('%(RelativeDir)%(Filename).pdb')" />
+    </ItemGroup>
+  </Target>
+  <Target Name="DepsCopyDLLs"
+    AfterTargets="Build"
+    Inputs="@(DepsDLLs)"
+    Outputs="@(DepsDLLs -> '$(OutDir)%(RecursiveDir)%(Filename)%(Extension)')">
+    <Message Text="Copying Dependency DLLs" Importance="High" />
+    <Copy
+      SourceFiles="@(DepsDLLs)"
+      DestinationFolder="$(OutDir)"
+      SkipUnchangedFiles="true"
+    />
+  </Target>
+  <Target Name="DepsCopyPDB"
+    AfterTargets="Build"
+    Inputs="@(DepsPDBs)"
+    Outputs="@(DepsPDBs -> '$(OutDir)%(RecursiveDir)%(Filename)%(Extension)')">
+    <Message Text="Copying Dependency PDBs" Importance="High" />
+    <Copy
+      SourceFiles="@(DepsPDBs)"
+      DestinationFolder="$(OutDir)"
+      SkipUnchangedFiles="true"
+    />
+  </Target>
+  <Target Name="DepsCopyAgilityDLLs"
+    AfterTargets="Build"
+    Inputs="@(AgilityDLLs)"
+    Outputs="@(AgilityDLLs -> '$(OutDir)D3D12\%(RecursiveDir)%(Filename)%(Extension)')">
+    <Message Text="Copying Agility SDK DLLs" Importance="High" />
+    <Copy
+      SourceFiles="@(AgilityDLLs)"
+      DestinationFolder="$(OutDir)D3D12"
+      SkipUnchangedFiles="true"
+    />
+  </Target>
+</Project>

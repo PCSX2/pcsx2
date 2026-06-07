@@ -1,4 +1,0 @@
-../fonts/gpos1_1_simple_f1.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0011,U+0012,U+0013,U+0014,U+0015;[17|18@1300,0|19@3000,0|20@4300,0|21@6000,0]
-../fonts/gpos1_1_simple_f2.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0011,U+0012,U+0013,U+0014,U+0015;[17|18@1500,-200|19@3000,0|20@4500,-200|21@6000,0]
-../fonts/gpos1_1_simple_f3.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0011,U+0012,U+0013,U+0014,U+0015;[17|18@1500,0|19@2800,0|20@4300,0|21@5600,0]
-#../fonts/gpos1_1_simple_f4.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0011,U+0012,U+0013,U+0014,U+0015;[17|18@1500,0|19@3000,-200|20@4500,-200|21@6000,-400]

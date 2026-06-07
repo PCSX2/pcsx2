@@ -1,0 +1,423 @@
+{
+  "$id": "PCSX2 GameDB",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PCSX2 GameDB",
+  "description": "JSON Schema for PCSX2's GameDB",
+  "type": "object",
+  "patternProperties": {
+    "^[A-Z\\d]+-[A-Z\\d]+$": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the game, an arbitrary string"
+        },
+        "name-sort": {
+          "type": "string",
+          "description": "The name of the game for use in sorting, an arbitrary string"
+        },
+        "name-en": {
+          "type": "string",
+          "description": "The name of the game in ASCII, an arbitrary string"
+        },
+        "region": {
+          "type": "string",
+          "description": "The region code for the game, for example NTSC-U",
+          "pattern": "^(?:NTSC-(?:B|C|E|HK|J|K|M|T|U).*|PAL-?(?:A|B|E|F|G|I|M|N|P|R|S|U)?.*|Other)$"
+        },
+        "compat": {
+          "type": "integer",
+          "description": "A number indicating the compatibility of the game. 0 (Nothing) to 6 (Perfect)",
+          "minimum": 0,
+          "maximum": 6
+        },
+        "roundModes": {
+          "type": "object",
+          "description": "Specify the rounding modes for the EE or VU. 0 (Nearest), 1 (Negative Infinity), 2 (Positive Infinity), 3 (Chop (Zero))",
+          "properties": {
+            "eeRoundMode": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "eeDivRoundMode": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "vuRoundMode": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "vu0RoundMode": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "vu1RoundMode": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            }
+          },
+          "additionalProperties": false
+        },
+        "clampModes": {
+          "type": "object",
+          "description": "Specify the clamp modes for the EE or VU.",
+          "properties": {
+            "eeClampMode": {
+              "type": "integer",
+              "description": "0 (Disables), 1 (Normally), 2 (Extra+Preserve Sign), 3 (Full Clamping)",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "vuClampMode": {
+              "type": "integer",
+              "description": "0 (Disables), 1 (Normally), 2 (Extra), 3 (Extra+Preserve Sign)",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "vu0ClampMode": {
+              "type": "integer",
+              "description": "0 (Disables), 1 (Normally), 2 (Extra), 3 (Extra+Preserve Sign)",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "vu1ClampMode": {
+              "type": "integer",
+              "description": "0 (Disables), 1 (Normally), 2 (Extra), 3 (Extra+Preserve Sign)",
+              "minimum": 0,
+              "maximum": 3
+            }
+          },
+          "additionalProperties": false
+        },
+        "gameFixes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "BlitInternalFPSHack",
+              "DMABusyHack",
+              "EETimingHack",
+              "FpuMulHack",
+              "GIFFIFOHack",
+              "GoemonTlbHack",
+              "IbitHack",
+              "InstantDMAHack",
+              "OPHFlagHack",
+              "SkipMPEGHack",
+              "SoftwareRendererFMVHack",
+              "VIF1StallHack",
+              "VIFFIFOHack",
+              "VuAddSubHack",
+              "VUOverflowHack",
+              "FullVU0SyncHack",
+              "VUSyncHack",
+              "XGKickHack"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "gsHWFixes": {
+          "type": "object",
+          "properties": {
+            "autoFlush": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "conservativeFramebuffer": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "cpuFramebufferConversion": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "readTCOnClose": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "disableDepthSupport": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "preloadFrameData": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "disablePartialInvalidation": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "partialTargetInvalidation": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "textureInsideRT": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "limit24BitDepth": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "alignSprite": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "mergeSprite": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "forceEvenSpritePosition": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "bilinearUpscale": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "nativePaletteDraw": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "estimateTextureRegion": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+			"drawBuffering": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "PCRTCOffsets": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "PCRTCOverscan": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "mipmap": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "accurateAlphaTest": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "trilinearFiltering": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "skipDrawStart": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "skipDrawEnd": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "halfPixelOffset": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "nativeScaling": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            },
+            "roundSprite": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "texturePreloading": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "deinterlace": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9
+            },
+            "cpuSpriteRenderBW": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            },
+            "cpuSpriteRenderLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "cpuCLUTRender": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2
+            },
+            "gpuTargetCLUT": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "gpuPaletteConversion": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "minimumBlendingLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "maximumBlendingLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "recommendedBlendingLevel": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "getSkipCount": {
+              "type": "string"
+            },
+            "beforeDraw": {
+              "type": "string"
+            },
+            "moveHandler": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "memcardFilters": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z\\d]+-?[A-Z\\d]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "speedHacks": {
+          "type": "object",
+          "properties": {
+            "mvuFlag": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "instantVU1": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "mtvu": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "eeCycleRate": {
+              "type": "integer",
+              "minimum": -3,
+              "maximum": 3
+            }
+          },
+          "additionalProperties": false
+        },
+        "patches": {
+          "type": "object",
+          "patternProperties": {
+            "^default|[A-Z0-9]{8}$": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string"
+                }
+              },
+              "required": ["content"],
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "dynaPatches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "pattern": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "offset": {
+                      "type": "integer"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": ["offset", "value"]
+                },
+                "minItems": 1
+              },
+              "replacement": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "offset": {
+                      "type": "integer"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": ["offset", "value"]
+                },
+                "minItems": 1
+              }
+            },
+            "required": ["pattern", "replacement"]
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["name", "region"],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

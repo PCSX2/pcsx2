@@ -1,4 +1,0 @@
--r requirements-fonttools.in
-meson==1.2.0
-gcovr==5.0
-ninja

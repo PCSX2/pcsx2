@@ -1,0 +1,4734 @@
+// SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
+
+#include "GS/GS.h"
+#include "GS/GSGL.h"
+#include "GS/GSPerfMon.h"
+#include "GS/GSUtil.h"
+#include "GS/Renderers/DX11/D3D.h"
+#include "GS/Renderers/DX12/GSDevice12.h"
+#include "GS/Renderers/DX12/D3D12Builders.h"
+#include "GS/Renderers/DX12/D3D12ShaderCache.h"
+#include "Host.h"
+#include "ShaderCacheVersion.h"
+
+#include "common/Console.h"
+#include "common/BitUtils.h"
+#include "common/Error.h"
+#include "common/HostSys.h"
+#include "common/SmallString.h"
+#include "common/StringUtil.h"
+#include "common/FileSystem.h"
+#include "common/Path.h"
+
+#include "D3D12MemAlloc.h"
+#include "imgui.h"
+
+#include <sstream>
+#include <limits>
+
+#ifdef ENABLE_OGL_DEBUG
+#define USE_PIX
+#include "WinPixEventRuntime/pix3.h"
+
+static u32 s_debug_scope_depth = 0;
+#endif
+
+static bool IsDATEModePrimIDInit(u32 flag)
+{
+	return flag == 1 || flag == 2;
+}
+
+static constexpr std::array<D3D12_PRIMITIVE_TOPOLOGY, 3> s_primitive_topology_mapping = {
+	{D3D_PRIMITIVE_TOPOLOGY_POINTLIST, D3D_PRIMITIVE_TOPOLOGY_LINELIST, D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST}};
+
+static constexpr std::array<float, 4> s_present_clear_color = {};
+
+static D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE GetLoadOpForTexture(GSTexture12* tex)
+{
+	if (!tex)
+		return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS;
+
+	// clang-format off
+	switch (tex->GetState())
+	{
+	case GSTexture12::State::Cleared:       tex->SetState(GSTexture::State::Dirty); return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR;
+	case GSTexture12::State::Invalidated:   tex->SetState(GSTexture::State::Dirty); return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD;
+	case GSTexture12::State::Dirty:         return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
+	default:                                return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
+	}
+	// clang-format on
+}
+
+GSDevice12::ShaderMacro::ShaderMacro()
+{
+	mlist.emplace_back("DX12", "1");
+}
+
+void GSDevice12::ShaderMacro::AddMacro(const char* n, int d)
+{
+	AddMacro(n, std::to_string(d));
+}
+
+void GSDevice12::ShaderMacro::AddMacro(const char* n, std::string d)
+{
+	mlist.emplace_back(n, std::move(d));
+}
+
+D3D_SHADER_MACRO* GSDevice12::ShaderMacro::GetPtr(void)
+{
+	mout.clear();
+
+	for (auto& i : mlist)
+		mout.emplace_back(i.name.c_str(), i.def.c_str());
+
+	mout.emplace_back(nullptr, nullptr);
+	return (D3D_SHADER_MACRO*)mout.data();
+}
+
+GSDevice12::GSDevice12() = default;
+
+GSDevice12::~GSDevice12() = default;
+
+GSDevice12::ComPtr<ID3DBlob> GSDevice12::SerializeRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc)
+{
+	ComPtr<ID3DBlob> blob;
+	ComPtr<ID3DBlob> error_blob;
+	const HRESULT hr = D3D12SerializeRootSignature(desc, D3D_ROOT_SIGNATURE_VERSION_1, blob.put(), error_blob.put());
+	if (FAILED(hr))
+	{
+		Console.Error("D3D12SerializeRootSignature() failed: %08X", hr);
+		if (error_blob)
+			Console.Error("%s", error_blob->GetBufferPointer());
+
+		return {};
+	}
+
+	return blob;
+}
+
+GSDevice12::ComPtr<ID3D12RootSignature> GSDevice12::CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc)
+{
+	ComPtr<ID3DBlob> blob = SerializeRootSignature(desc);
+	if (!blob)
+		return {};
+
+	ComPtr<ID3D12RootSignature> rs;
+	const HRESULT hr =
+		m_device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(rs.put()));
+	if (FAILED(hr))
+	{
+		Console.Error("D3D12: CreateRootSignature() failed: %08X", hr);
+		return {};
+	}
+
+	return rs;
+}
+
+bool GSDevice12::SupportsTextureFormat(DXGI_FORMAT format)
+{
+	constexpr u32 required = D3D12_FORMAT_SUPPORT1_TEXTURE2D | D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE;
+
+	D3D12_FEATURE_DATA_FORMAT_SUPPORT support = {format};
+	return SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &support, sizeof(support))) &&
+	       (support.Support1 & required) == required;
+}
+
+bool GSDevice12::SupportsProgrammableSamplePositions()
+{
+	D3D12_FEATURE_DATA_D3D12_OPTIONS2 options = {};
+	if (SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS2, &options, sizeof(options))))
+		return options.ProgrammableSamplePositionsTier != D3D12_PROGRAMMABLE_SAMPLE_POSITIONS_TIER_NOT_SUPPORTED;
+
+	return false;
+}
+
+u32 GSDevice12::GetAdapterVendorID() const
+{
+	if (!m_adapter)
+		return 0;
+
+	DXGI_ADAPTER_DESC desc;
+	if (FAILED(m_adapter->GetDesc(&desc)))
+		return 0;
+
+	return desc.VendorId;
+}
+
+uint SDKVersion(const std::string& path)
+{
+	// The Agility SDK version is embeded as the minor file version.
+	// This is only true for the redist files, not the OS files.
+	// Alternativly, D3D12Core also exports its D3D12SDKVersion.
+	std::wstring wpath = FileSystem::GetWin32Path(path);
+
+	const DWORD size = GetFileVersionInfoSizeW(wpath.c_str(), nullptr);
+	if (size == 0)
+		return 0;
+
+	BOOL ret;
+
+	std::vector<char> info_data(size);
+	ret = GetFileVersionInfoW(wpath.c_str(), 0, size, info_data.data());
+	if (!ret)
+		return 0;
+
+	uint len;
+	VS_FIXEDFILEINFO* file_ver;
+	ret = VerQueryValueW(info_data.data(), L"\\", reinterpret_cast<void**>(&file_ver), &len);
+	if (!ret)
+		return 0;
+
+	return file_ver->dwFileVersionMS & 0xFFFF;
+}
+
+void GSDevice12::LoadAgilitySDK()
+{
+	static bool agility_loaded = false;
+	if (agility_loaded)
+		return;
+
+	// On older versions of Windows 10 (example 2019 LTSC) D3D12GetInterface may fail because it doesn't exist,
+	// in such case we can check if D3D12GetInterface exists first.
+	const HMODULE d3d12 = GetModuleHandleW(L"d3d12.dll");
+	if (!d3d12)
+		return;
+
+	using PFN_D3D12GetInterface = HRESULT(WINAPI*)(REFCLSID rclsid, REFIID riid, void** ppv);
+	auto pD3D12GetInterface = reinterpret_cast<PFN_D3D12GetInterface>(GetProcAddress(d3d12, "D3D12GetInterface"));
+	if (!pD3D12GetInterface)
+	{
+		Console.Error("D3D12: Agility SDK configuration is not available");
+		return;
+	}
+
+	// See https://microsoft.github.io/DirectX-Specs/d3d/IndependentDevices.html
+	ComPtr<ID3D12SDKConfiguration1> sdk_configuration;
+	HRESULT hr;
+	hr = pD3D12GetInterface(CLSID_D3D12SDKConfiguration, IID_PPV_ARGS(sdk_configuration.put()));
+	if (FAILED(hr))
+	{
+		Console.Error("D3D12: Agility SDK configuration is not available");
+		return;
+	}
+
+	std::string sdk_path = Path::Combine(Path::GetDirectory(FileSystem::GetProgramPath()), "\\D3D12\\");
+	std::string core_path = Path::Combine(sdk_path, "D3D12Core.dll");
+	if (!FileSystem::FileExists(core_path.c_str()))
+		return;
+
+	const uint agility_version = SDKVersion(core_path);
+	if (agility_version == 0)
+		return;
+
+	ComPtr<ID3D12DeviceFactory> device_factory;
+	// CreateDeviceFactory seems to use a utf8 string for the path.
+	// If the system has a newer SDK, then the system SDK seems to be returned instead.
+	hr = sdk_configuration->CreateDeviceFactory(agility_version,
+		StringUtil::WideStringToUTF8String(FileSystem::GetWin32Path(sdk_path)).c_str(), IID_PPV_ARGS(device_factory.put()));
+	if (FAILED(hr))
+	{
+		Console.ErrorFmt("D3D12: Unable to load provided Agility SDK {:08X}", hr);
+		return;
+	}
+
+	// Windows 10 (and older drivers on 11) will apply to the global state in ID3D12DeviceFactory::CreateDevice().
+	// To get consistant behaviour across all systems, always apply the global state.
+	// This also allows us to use the normal D3D12*() methods with the loaded agility SDK.
+	hr = device_factory->ApplyToGlobalState();
+	if (FAILED(hr))
+	{
+		Console.ErrorFmt("D3D12: Unable to apply provided Agility SDK {:08X}", hr);
+		return;
+	}
+
+	agility_loaded = true;
+}
+
+bool GSDevice12::CreateDevice(u32& vendor_id)
+{
+	bool enable_debug_layer = GSConfig.UseDebugDevice;
+
+	m_dxgi_factory = D3D::CreateFactory(GSConfig.UseDebugDevice);
+	if (!m_dxgi_factory)
+		return false;
+
+	m_adapter = D3D::GetAdapterByName(m_dxgi_factory.get(), GSConfig.Adapter);
+	vendor_id = GetAdapterVendorID();
+
+	HRESULT hr;
+
+	// Load the Agility SDK
+	LoadAgilitySDK();
+
+	// Enabling the debug layer will fail if the Graphics Tools feature is not installed.
+	if (enable_debug_layer)
+	{
+		ComPtr<ID3D12Debug1> debug12;
+		hr = D3D12GetDebugInterface(IID_PPV_ARGS(debug12.put()));
+		if (SUCCEEDED(hr))
+		{
+			debug12->EnableDebugLayer();
+			debug12->SetEnableGPUBasedValidation(true);
+		}
+		else
+		{
+			Console.Error("D3D12: Debug layer requested but not available.");
+			enable_debug_layer = false;
+		}
+	}
+
+	// Create the actual device.
+	// Intel Haswell DX12 support is specific:
+	// Newerest drivers have dx12 support disabled so the last driver to support dx12 is 15.40.42.5063.
+	// Shader cache must be also disabled, and make sure Debug Device option is disabled as well.
+	// Let's enable it on dev/debug for testing purposes so we don't have to change this all the time.
+	// TODO: Find out the status of Broadwell.
+#ifdef PCSX2_DEVBUILD
+	hr = D3D12CreateDevice(m_adapter.get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
+#else
+	const bool isIntel = (vendor_id == 0x163C || vendor_id == 0x8086 || vendor_id == 0x8087);
+	hr = D3D12CreateDevice(m_adapter.get(), isIntel ? D3D_FEATURE_LEVEL_12_0 : D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
+#endif
+
+	if (FAILED(hr))
+	{
+		Console.Error("D3D12: Failed to create device: %08X", hr);
+		return false;
+	}
+
+	if (!m_adapter)
+	{
+		const LUID luid(m_device->GetAdapterLuid());
+		if (FAILED(m_dxgi_factory->EnumAdapterByLuid(luid, IID_PPV_ARGS(m_adapter.put()))))
+			Console.Error("D3D12: Failed to get lookup adapter by device LUID");
+	}
+
+	ComPtr<ID3D12DeviceConfiguration> config = m_device.try_query<ID3D12DeviceConfiguration>();
+	int sdkVersion = 0;
+	if (config)
+	{
+		sdkVersion = config->GetDesc().SDKVersion;
+		Console.WriteLnFmt("D3D12: Agility version: {}", sdkVersion);
+	}
+
+	if (enable_debug_layer)
+	{
+		ComPtr<ID3D12InfoQueue> info_queue = m_device.try_query<ID3D12InfoQueue>();
+		if (info_queue)
+		{
+			if (IsDebuggerPresent())
+			{
+				info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+				info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
+			}
+
+			D3D12_INFO_QUEUE_FILTER filter = {};
+			std::array<D3D12_MESSAGE_ID, 7> id_list{
+				D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,
+				D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE,
+				D3D12_MESSAGE_ID_CREATEGRAPHICSPIPELINESTATE_RENDERTARGETVIEW_NOT_SET,
+				D3D12_MESSAGE_ID_CREATEINPUTLAYOUT_TYPE_MISMATCH,
+				D3D12_MESSAGE_ID_DRAW_EMPTY_SCISSOR_RECTANGLE,
+				// The current OS version of D3D12 (616) has a validation bug.
+				// This is fixed with Agility 1.618.4 (RTV) and 1.619.0 (UAV).
+				// For now, disable these warnings until the OS updates.
+				D3D12_MESSAGE_ID_INCOMPATIBLE_BARRIER_LAYOUT,
+				D3D12_MESSAGE_ID_GPU_BASED_VALIDATION_INCOMPATIBLE_TEXTURE_LAYOUT,
+			};
+			filter.DenyList.NumIDs = static_cast<UINT>(sdkVersion < 619 ? id_list.size() : id_list.size() - 2);
+			filter.DenyList.pIDList = id_list.data();
+			info_queue->PushStorageFilter(&filter);
+		}
+	}
+
+	const D3D12_COMMAND_QUEUE_DESC queue_desc = {
+		D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE};
+	hr = m_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&m_command_queue));
+	if (FAILED(hr))
+	{
+		Console.Error("D3D12: Failed to create command queue: %08X", hr);
+		return false;
+	}
+
+	D3D12MA::ALLOCATOR_DESC allocatorDesc = {};
+	allocatorDesc.pDevice = m_device.get();
+	allocatorDesc.pAdapter = m_adapter.get();
+	allocatorDesc.Flags =
+		D3D12MA::ALLOCATOR_FLAG_SINGLETHREADED |
+		D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED /* | D3D12MA::ALLOCATOR_FLAG_ALWAYS_COMMITTED*/;
+
+	hr = D3D12MA::CreateAllocator(&allocatorDesc, m_allocator.put());
+	if (FAILED(hr))
+	{
+		Console.Error("D3D12: CreateAllocator() failed with HRESULT %08X", hr);
+		return false;
+	}
+
+	hr = m_device->CreateFence(m_completed_fence_value, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
+	if (FAILED(hr))
+	{
+		Console.Error("D3D12: Failed to create fence: %08X", hr);
+		return false;
+	}
+
+	m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+	if (m_fence_event == NULL)
+	{
+		Console.Error("D3D12: Failed to create fence event: %08X", GetLastError());
+		return false;
+	}
+
+	return true;
+}
+
+bool GSDevice12::CreateDescriptorHeaps()
+{
+	static constexpr size_t MAX_SRVS = 32768;
+	static constexpr size_t MAX_RTVS = 16384;
+	static constexpr size_t MAX_DSVS = 16384;
+	static constexpr size_t MAX_CPU_SAMPLERS = 1024;
+
+	if (!m_descriptor_heap_manager.Create(m_device.get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MAX_SRVS, false) ||
+		!m_rtv_heap_manager.Create(m_device.get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, MAX_RTVS, false) ||
+		!m_dsv_heap_manager.Create(m_device.get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, MAX_DSVS, false) ||
+		!m_sampler_heap_manager.Create(m_device.get(), D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, MAX_CPU_SAMPLERS, false))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool GSDevice12::CreateCommandLists()
+{
+	static constexpr size_t MAX_GPU_SRVS = 32768;
+	static constexpr size_t MAX_GPU_SAMPLERS = 2048;
+
+	for (u32 i = 0; i < NUM_COMMAND_LISTS; i++)
+	{
+		CommandListResources& res = m_command_lists[i];
+		HRESULT hr;
+
+		for (u32 i = 0; i < 2; i++)
+		{
+			hr = m_device->CreateCommandAllocator(
+				D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(res.command_allocators[i].put()));
+			pxAssertRel(SUCCEEDED(hr), "Create command allocator");
+			if (FAILED(hr))
+				return false;
+
+			if (m_enhanced_barriers)
+			{
+				hr = m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, res.command_allocators[i].get(),
+					nullptr, IID_PPV_ARGS(res.command_lists[i].list7.put()));
+				res.command_lists[i].list4 = res.command_lists[i].list7;
+			}
+			else
+			{
+				hr = m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, res.command_allocators[i].get(),
+					nullptr, IID_PPV_ARGS(res.command_lists[i].list4.put()));
+			}
+			if (FAILED(hr))
+			{
+				Console.Error("D3D12: Failed to create command list: %08X", hr);
+				return false;
+			}
+
+			// Close the command lists, since the first thing we do is reset them.
+			hr = res.command_lists[i].list4->Close();
+			pxAssertRel(SUCCEEDED(hr), "Closing new command list failed");
+			if (FAILED(hr))
+				return false;
+		}
+
+		if (!res.descriptor_allocator.Create(m_device.get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MAX_GPU_SRVS))
+		{
+			Console.Error("D3D12: Failed to create per frame descriptor allocator");
+			return false;
+		}
+
+		if (!res.sampler_allocator.Create(m_device.get(), MAX_GPU_SAMPLERS))
+		{
+			Console.Error("D3D12: Failed to create per frame sampler allocator");
+			return false;
+		}
+	}
+
+	MoveToNextCommandList();
+	return true;
+}
+
+void GSDevice12::MoveToNextCommandList()
+{
+	const int next_command_list = (m_current_command_list + 1) % NUM_COMMAND_LISTS;
+
+	// We may have to wait if this command list hasn't finished on the GPU.
+	CommandListResources& res = m_command_lists[next_command_list];
+	WaitForFence(res.ready_fence_value, false);
+
+	m_current_command_list = next_command_list;
+	m_current_fence_value++;
+	res.ready_fence_value = m_current_fence_value;
+	res.init_command_list_used = false;
+
+	// Begin command list.
+	res.command_allocators[1]->Reset();
+	res.command_lists[1].list4->Reset(res.command_allocators[1].get(), nullptr);
+	res.descriptor_allocator.Reset();
+	if (res.sampler_allocator.ShouldReset())
+		res.sampler_allocator.Reset();
+
+	if (res.has_timestamp_query)
+	{
+		// readback timestamp from the last time this cmdlist was used.
+		// we don't need to worry about disjoint in dx12, the frequency is reliable within a single cmdlist.
+		const u32 offset = (m_current_command_list * (sizeof(u64) * NUM_TIMESTAMP_QUERIES_PER_CMDLIST));
+		const D3D12_RANGE read_range = {offset, offset + (sizeof(u64) * NUM_TIMESTAMP_QUERIES_PER_CMDLIST)};
+		void* map;
+		HRESULT hr = m_timestamp_query_buffer->Map(0, &read_range, &map);
+		if (SUCCEEDED(hr))
+		{
+			u64 timestamps[2];
+			std::memcpy(timestamps, static_cast<const u8*>(map) + offset, sizeof(timestamps));
+			m_accumulated_gpu_time +=
+				static_cast<float>(static_cast<double>(timestamps[1] - timestamps[0]) / m_timestamp_frequency);
+
+			const D3D12_RANGE write_range = {};
+			m_timestamp_query_buffer->Unmap(0, &write_range);
+		}
+		else
+		{
+			Console.Warning("D3D12: Map() for timestamp query failed: %08X", hr);
+		}
+	}
+
+	res.has_timestamp_query = m_gpu_timing_enabled;
+	if (m_gpu_timing_enabled)
+	{
+		res.command_lists[1].list4->EndQuery(m_timestamp_query_heap.get(), D3D12_QUERY_TYPE_TIMESTAMP,
+			m_current_command_list * NUM_TIMESTAMP_QUERIES_PER_CMDLIST);
+	}
+
+	ID3D12DescriptorHeap* heaps[2] = {
+		res.descriptor_allocator.GetDescriptorHeap(), res.sampler_allocator.GetDescriptorHeap()};
+	res.command_lists[1].list4->SetDescriptorHeaps(std::size(heaps), heaps);
+
+	m_allocator->SetCurrentFrameIndex(static_cast<UINT>(m_current_fence_value));
+}
+
+const D3D12CommandList& GSDevice12::GetInitCommandList()
+{
+	CommandListResources& res = m_command_lists[m_current_command_list];
+	if (!res.init_command_list_used)
+	{
+		[[maybe_unused]] HRESULT hr = res.command_allocators[0]->Reset();
+		pxAssertMsg(SUCCEEDED(hr), "Reset init command allocator failed");
+
+		res.command_lists[0].list4->Reset(res.command_allocators[0].get(), nullptr);
+		pxAssertMsg(SUCCEEDED(hr), "Reset init command list failed");
+		res.init_command_list_used = true;
+	}
+
+	return res.command_lists[0];
+}
+
+bool GSDevice12::ExecuteCommandList(WaitType wait_for_completion)
+{
+	CommandListResources& res = m_command_lists[m_current_command_list];
+	HRESULT hr;
+
+	// Flush stream buffers to GPU memory
+	m_vertex_stream_buffer.FlushMemory();
+	m_index_stream_buffer.FlushMemory();
+	m_expand_index_stream_buffer.FlushMemory();
+	m_vertex_constant_buffer.FlushMemory();
+	m_pixel_constant_buffer.FlushMemory();
+
+	if (res.has_timestamp_query)
+	{
+		// write the timestamp back at the end of the cmdlist
+		res.command_lists[1].list4->EndQuery(m_timestamp_query_heap.get(), D3D12_QUERY_TYPE_TIMESTAMP,
+			(m_current_command_list * NUM_TIMESTAMP_QUERIES_PER_CMDLIST) + 1);
+		res.command_lists[1].list4->ResolveQueryData(m_timestamp_query_heap.get(), D3D12_QUERY_TYPE_TIMESTAMP,
+			m_current_command_list * NUM_TIMESTAMP_QUERIES_PER_CMDLIST, NUM_TIMESTAMP_QUERIES_PER_CMDLIST,
+			m_timestamp_query_buffer.get(), m_current_command_list * (sizeof(u64) * NUM_TIMESTAMP_QUERIES_PER_CMDLIST));
+	}
+
+	if (res.init_command_list_used)
+	{
+		hr = res.command_lists[0].list4->Close();
+		if (FAILED(hr))
+		{
+			Console.Error("D3D12: Closing init command list failed with HRESULT %08X", hr);
+			return false;
+		}
+	}
+
+	// Close and queue command list.
+	hr = res.command_lists[1].list4->Close();
+	if (FAILED(hr))
+	{
+		Console.Error("D3D12: Closing main command list failed with HRESULT %08X", hr);
+		return false;
+	}
+
+	if (res.init_command_list_used)
+	{
+		// Call as seperate ExecuteCommandLists to ensure constant buffer copies are completed.
+		// This ends up being faster then using barriers on each buffer.
+		std::array<ID3D12CommandList*, 1> execute_lists{res.command_lists[0].list4.get()};
+		m_command_queue->ExecuteCommandLists(static_cast<UINT>(execute_lists.size()), execute_lists.data());
+		execute_lists[0] = res.command_lists[1].list4.get();
+		m_command_queue->ExecuteCommandLists(static_cast<UINT>(execute_lists.size()), execute_lists.data());
+	}
+	else
+	{
+		const std::array<ID3D12CommandList*, 1> execute_lists{res.command_lists[1].list4.get()};
+		m_command_queue->ExecuteCommandLists(static_cast<UINT>(execute_lists.size()), execute_lists.data());
+	}
+
+	// Update fence when GPU has completed.
+	hr = m_command_queue->Signal(m_fence.get(), res.ready_fence_value);
+	pxAssertRel(SUCCEEDED(hr), "Signal fence");
+
+	MoveToNextCommandList();
+	if (wait_for_completion != WaitType::None)
+		WaitForFence(res.ready_fence_value, wait_for_completion == WaitType::Spin);
+
+	// Push constants need to be refreshed each command list.
+	m_dirty_flags |= DIRTY_FLAG_VS_PUSH_CONSTANTS;
+
+	return true;
+}
+
+void GSDevice12::InvalidateSamplerGroups()
+{
+	for (CommandListResources& res : m_command_lists)
+		res.sampler_allocator.InvalidateCache();
+}
+
+void GSDevice12::DeferObjectDestruction(ID3D12DeviceChild* resource)
+{
+	if (!resource)
+		return;
+
+	resource->AddRef();
+	m_command_lists[m_current_command_list].pending_resources.emplace_back(nullptr, resource);
+}
+
+void GSDevice12::DeferResourceDestruction(D3D12MA::Allocation* allocation, ID3D12Resource* resource)
+{
+	if (!resource)
+		return;
+
+	if (allocation)
+		allocation->AddRef();
+
+	resource->AddRef();
+	m_command_lists[m_current_command_list].pending_resources.emplace_back(allocation, resource);
+}
+
+void GSDevice12::DeferDescriptorDestruction(D3D12DescriptorHeapManager& manager, u32 index)
+{
+	m_command_lists[m_current_command_list].pending_descriptors.emplace_back(manager, index);
+}
+
+void GSDevice12::DeferDescriptorDestruction(D3D12DescriptorHeapManager& manager, D3D12DescriptorHandle* handle)
+{
+	if (handle->index == D3D12DescriptorHandle::INVALID_INDEX)
+		return;
+
+	m_command_lists[m_current_command_list].pending_descriptors.emplace_back(manager, handle->index);
+	handle->Clear();
+}
+
+void GSDevice12::DestroyPendingResources(CommandListResources& cmdlist)
+{
+	for (const auto& dd : cmdlist.pending_descriptors)
+		dd.first.Free(dd.second);
+	cmdlist.pending_descriptors.clear();
+
+	for (const auto& it : cmdlist.pending_resources)
+	{
+		it.second->Release();
+		if (it.first)
+			it.first->Release();
+	}
+	cmdlist.pending_resources.clear();
+}
+
+void GSDevice12::WaitForFence(u64 fence, bool spin)
+{
+	if (m_completed_fence_value >= fence)
+		return;
+
+	if (spin)
+	{
+		u64 value;
+		while ((value = m_fence->GetCompletedValue()) < fence)
+			ShortSpin();
+		m_completed_fence_value = value;
+	}
+	else
+	{
+		// Try non-blocking check.
+		m_completed_fence_value = m_fence->GetCompletedValue();
+		if (m_completed_fence_value < fence)
+		{
+			// Fall back to event.
+			HRESULT hr = m_fence->SetEventOnCompletion(fence, m_fence_event);
+			pxAssertRel(SUCCEEDED(hr), "Set fence event on completion");
+			WaitForSingleObject(m_fence_event, INFINITE);
+			m_completed_fence_value = m_fence->GetCompletedValue();
+		}
+	}
+
+	// Release resources for as many command lists which have completed.
+	u32 index = (m_current_command_list + 1) % NUM_COMMAND_LISTS;
+	for (u32 i = 0; i < NUM_COMMAND_LISTS; i++)
+	{
+		CommandListResources& res = m_command_lists[index];
+		if (m_completed_fence_value < res.ready_fence_value)
+			break;
+
+		DestroyPendingResources(res);
+		index = (index + 1) % NUM_COMMAND_LISTS;
+	}
+}
+
+void GSDevice12::WaitForGPUIdle()
+{
+	u32 index = (m_current_command_list + 1) % NUM_COMMAND_LISTS;
+	for (u32 i = 0; i < (NUM_COMMAND_LISTS - 1); i++)
+	{
+		WaitForFence(m_command_lists[index].ready_fence_value, false);
+		index = (index + 1) % NUM_COMMAND_LISTS;
+	}
+}
+
+bool GSDevice12::CreateTimestampQuery()
+{
+	constexpr u32 QUERY_COUNT = NUM_TIMESTAMP_QUERIES_PER_CMDLIST * NUM_COMMAND_LISTS;
+	constexpr u32 BUFFER_SIZE = sizeof(u64) * QUERY_COUNT;
+
+	const D3D12_QUERY_HEAP_DESC desc = {D3D12_QUERY_HEAP_TYPE_TIMESTAMP, QUERY_COUNT};
+	HRESULT hr = m_device->CreateQueryHeap(&desc, IID_PPV_ARGS(m_timestamp_query_heap.put()));
+	if (FAILED(hr))
+	{
+		Console.Error("D3D12: CreateQueryHeap() for timestamp failed with %08X", hr);
+		return false;
+	}
+
+	const D3D12MA::ALLOCATION_DESC allocation_desc = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_READBACK};
+	const D3D12_RESOURCE_DESCU resource_desc = {{D3D12_RESOURCE_DIMENSION_BUFFER, 0, BUFFER_SIZE, 1, 1, 1,
+		DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE}};
+	if (m_enhanced_barriers)
+		hr = m_allocator->CreateResource3(&allocation_desc, &resource_desc.desc1, D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr,
+			0, nullptr, m_timestamp_query_allocation.put(), IID_PPV_ARGS(m_timestamp_query_buffer.put()));
+	else
+		hr = m_allocator->CreateResource(&allocation_desc, &resource_desc.desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+			m_timestamp_query_allocation.put(), IID_PPV_ARGS(m_timestamp_query_buffer.put()));
+	if (FAILED(hr))
+	{
+		Console.Error("D3D12: CreateResource() for timestamp failed with %08X", hr);
+		return false;
+	}
+
+	u64 frequency;
+	hr = m_command_queue->GetTimestampFrequency(&frequency);
+	if (FAILED(hr))
+	{
+		Console.Error("D3D12: GetTimestampFrequency() failed: %08X", hr);
+		return false;
+	}
+
+	m_timestamp_frequency = static_cast<double>(frequency) / 1000.0;
+	return true;
+}
+
+float GSDevice12::GetAndResetAccumulatedGPUTime()
+{
+	const float time = m_accumulated_gpu_time;
+	m_accumulated_gpu_time = 0.0f;
+	return time;
+}
+
+bool GSDevice12::SetGPUTimingEnabled(bool enabled)
+{
+	m_gpu_timing_enabled = enabled;
+	return true;
+}
+
+bool GSDevice12::AllocatePreinitializedGPUBuffer(u32 size, ID3D12Resource** gpu_buffer,
+	D3D12MA::Allocation** gpu_allocation, const std::function<void(void*)>& fill_callback)
+{
+	// Try to place the fixed index buffer in GPU local memory.
+	// Use the staging buffer to copy into it.
+	const D3D12_RESOURCE_DESCU rd = {{D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1, DXGI_FORMAT_UNKNOWN, {1, 0},
+		D3D12_TEXTURE_LAYOUT_ROW_MAJOR, D3D12_RESOURCE_FLAG_NONE}};
+
+	const D3D12MA::ALLOCATION_DESC cpu_ad = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD};
+
+	ComPtr<ID3D12Resource> cpu_buffer;
+	ComPtr<D3D12MA::Allocation> cpu_allocation;
+	HRESULT hr;
+	if (m_enhanced_barriers)
+		hr = m_allocator->CreateResource3(
+			&cpu_ad, &rd.desc1, D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, 0, nullptr, cpu_allocation.put(), IID_PPV_ARGS(cpu_buffer.put()));
+	else
+		hr = m_allocator->CreateResource(
+			&cpu_ad, &rd.desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, cpu_allocation.put(), IID_PPV_ARGS(cpu_buffer.put()));
+	pxAssertMsg(SUCCEEDED(hr), "Allocate CPU buffer");
+	if (FAILED(hr))
+		return false;
+
+	static constexpr const D3D12_RANGE read_range = {};
+	const D3D12_RANGE write_range = {0, size};
+	void* mapped;
+	hr = cpu_buffer->Map(0, &read_range, &mapped);
+	pxAssertMsg(SUCCEEDED(hr), "Map CPU buffer");
+	if (FAILED(hr))
+		return false;
+	fill_callback(mapped);
+	cpu_buffer->Unmap(0, &write_range);
+
+	const D3D12MA::ALLOCATION_DESC gpu_ad = {D3D12MA::ALLOCATION_FLAG_COMMITTED, D3D12_HEAP_TYPE_DEFAULT};
+	if (m_enhanced_barriers)
+		hr = m_allocator->CreateResource3(
+			&gpu_ad, &rd.desc1, D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, 0, nullptr, gpu_allocation, IID_PPV_ARGS(gpu_buffer));
+	else
+		hr = m_allocator->CreateResource(
+			&gpu_ad, &rd.desc, D3D12_RESOURCE_STATE_COMMON, nullptr, gpu_allocation, IID_PPV_ARGS(gpu_buffer));
+	pxAssertMsg(SUCCEEDED(hr), "Allocate GPU buffer");
+	if (FAILED(hr))
+		return false;
+
+	GetInitCommandList().list4->CopyBufferRegion(*gpu_buffer, 0, cpu_buffer.get(), 0, size);
+
+	if (m_enhanced_barriers)
+	{
+		const D3D12_BUFFER_BARRIER barrier = {D3D12_BARRIER_SYNC_COPY, D3D12_BARRIER_SYNC_INDEX_INPUT,
+			D3D12_BARRIER_ACCESS_COPY_DEST, D3D12_BARRIER_ACCESS_INDEX_BUFFER, *gpu_buffer, 0, size};
+		const D3D12_BARRIER_GROUP group = {.Type = D3D12_BARRIER_TYPE_BUFFER, .NumBarriers = 1, .pBufferBarriers = &barrier};
+		GetInitCommandList().list7->Barrier(1, &group);
+	}
+	else
+	{
+		D3D12_RESOURCE_BARRIER rb = {D3D12_RESOURCE_BARRIER_TYPE_TRANSITION, D3D12_RESOURCE_BARRIER_FLAG_NONE};
+		rb.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		rb.Transition.pResource = *gpu_buffer;
+		rb.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST; // COMMON -> COPY_DEST at first use.
+		rb.Transition.StateAfter = D3D12_RESOURCE_STATE_INDEX_BUFFER;
+		GetInitCommandList().list4->ResourceBarrier(1, &rb);
+	}
+
+	DeferResourceDestruction(cpu_allocation.get(), cpu_buffer.get());
+	return true;
+}
+
+RenderAPI GSDevice12::GetRenderAPI() const
+{
+	return RenderAPI::D3D12;
+}
+
+bool GSDevice12::HasSurface() const
+{
+	return static_cast<bool>(m_swap_chain);
+}
+
+bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
+{
+	if (!GSDevice::Create(vsync_mode, allow_present_throttle))
+		return false;
+
+	u32 vendor_id = 0;
+	if (!CreateDevice(vendor_id))
+		return false;
+
+	if (!CheckFeatures(vendor_id))
+	{
+		Console.Error("D3D12: Your GPU does not support the required D3D12 features.");
+		return false;
+	}
+
+	m_name = D3D::GetAdapterName(m_adapter.get());
+
+	if (!CreateDescriptorHeaps() || !CreateCommandLists() || !CreateTimestampQuery())
+		return false;
+
+	if (!AcquireWindow(true) || (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain()))
+		return false;
+
+	if (!CreateNullTexture())
+	{
+		Host::ReportErrorAsync("GS", "Failed to create dummy texture");
+		return false;
+	}
+
+	{
+		std::optional<std::string> shader = ReadShaderSource("shaders/dx11/tfx.fx");
+		if (!shader.has_value())
+		{
+			Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/tfx.fx.");
+			return false;
+		}
+
+		m_tfx_source = std::move(*shader);
+	}
+
+	if (!m_shader_cache.Open(D3D::ShaderModel::SM51, GSConfig.UseDebugDevice))
+		Console.Warning("D3D12: Shader cache failed to open.");
+
+	if (!CreateRootSignatures())
+	{
+		Host::ReportErrorAsync("GS", "Failed to create pipeline layouts");
+		return false;
+	}
+
+	if (!CreateBuffers())
+		return false;
+
+	if (!CompileConvertPipelines() || !CompilePresentPipelines() || !CompileInterlacePipelines() ||
+		!CompileMergePipelines() || !CompilePostProcessingPipelines())
+	{
+		Host::ReportErrorAsync("GS", "Failed to compile utility pipelines");
+		return false;
+	}
+
+	if (!CompileCASPipelines())
+		return false;
+
+	if (!CompileImGuiPipeline())
+		return false;
+
+	InitializeState();
+	InitializeSamplers();
+	// Reference stencil isn't tied to pipeline, so we can set it once and leave it.
+	SetStencilRef(1);
+	return true;
+}
+
+void GSDevice12::Destroy()
+{
+	GSDevice::Destroy();
+
+	if (GetCommandList().list4)
+	{
+		EndRenderPass();
+		ExecuteCommandList(true);
+	}
+
+	DestroySwapChain();
+	DestroyResources();
+}
+
+void GSDevice12::SetVSyncMode(GSVSyncMode mode, bool allow_present_throttle)
+{
+	m_allow_present_throttle = allow_present_throttle;
+
+	// Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
+	if (mode == GSVSyncMode::Mailbox && m_is_exclusive_fullscreen)
+	{
+		WARNING_LOG("D3D12: Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+		mode = GSVSyncMode::FIFO;
+	}
+
+	if (m_vsync_mode == mode)
+		return;
+
+	const u32 old_buffer_count = GetSwapChainBufferCount();
+	m_vsync_mode = mode;
+	if (!m_swap_chain)
+		return;
+
+	if (GetSwapChainBufferCount() != old_buffer_count)
+	{
+		ExecuteCommandList(true);
+		DestroySwapChain();
+		if (!CreateSwapChain())
+			pxFailRel("Failed to recreate swap chain after vsync change.");
+	}
+}
+
+u32 GSDevice12::GetSwapChainBufferCount() const
+{
+	// With vsync off, we only need two buffers. Same for blocking vsync.
+	// With triple buffering, we need three.
+	return (m_vsync_mode == GSVSyncMode::Mailbox) ? 3 : 2;
+}
+
+bool GSDevice12::CreateSwapChain()
+{
+	constexpr DXGI_FORMAT swap_chain_format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+	if (m_window_info.type != WindowInfo::Type::Win32)
+		return false;
+
+	const HWND window_hwnd = reinterpret_cast<HWND>(m_window_info.window_handle);
+	RECT client_rc{};
+	GetClientRect(window_hwnd, &client_rc);
+
+	DXGI_MODE_DESC fullscreen_mode;
+	wil::com_ptr_nothrow<IDXGIOutput> fullscreen_output;
+	if (Host::IsFullscreen())
+	{
+		u32 fullscreen_width, fullscreen_height;
+		float fullscreen_refresh_rate;
+		m_is_exclusive_fullscreen =
+			GetRequestedExclusiveFullscreenMode(&fullscreen_width, &fullscreen_height, &fullscreen_refresh_rate) &&
+			D3D::GetRequestedExclusiveFullscreenModeDesc(m_dxgi_factory.get(), window_hwnd, fullscreen_width,
+				fullscreen_height, fullscreen_refresh_rate, swap_chain_format, &fullscreen_mode,
+				fullscreen_output.put());
+
+		// Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
+		if (m_vsync_mode == GSVSyncMode::Mailbox && m_is_exclusive_fullscreen)
+		{
+			WARNING_LOG("D3D12: Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+			m_vsync_mode = GSVSyncMode::FIFO;
+		}
+	}
+	else
+	{
+		m_is_exclusive_fullscreen = false;
+	}
+
+	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
+	swap_chain_desc.Width = static_cast<u32>(client_rc.right - client_rc.left);
+	swap_chain_desc.Height = static_cast<u32>(client_rc.bottom - client_rc.top);
+	swap_chain_desc.Format = swap_chain_format;
+	swap_chain_desc.SampleDesc.Count = 1;
+	swap_chain_desc.BufferCount = GetSwapChainBufferCount();
+	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+
+	m_using_allow_tearing = (m_allow_tearing_supported && !m_is_exclusive_fullscreen);
+	if (m_using_allow_tearing)
+		swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+
+	HRESULT hr = S_OK;
+
+	if (m_is_exclusive_fullscreen)
+	{
+		DXGI_SWAP_CHAIN_DESC1 fs_sd_desc = swap_chain_desc;
+		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fs_desc = {};
+
+		fs_sd_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+		fs_sd_desc.Width = fullscreen_mode.Width;
+		fs_sd_desc.Height = fullscreen_mode.Height;
+		fs_desc.RefreshRate = fullscreen_mode.RefreshRate;
+		fs_desc.ScanlineOrdering = fullscreen_mode.ScanlineOrdering;
+		fs_desc.Scaling = fullscreen_mode.Scaling;
+		fs_desc.Windowed = FALSE;
+
+		Console.WriteLn("D3D12: Creating a %dx%d exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
+		hr = m_dxgi_factory->CreateSwapChainForHwnd(m_command_queue.get(), window_hwnd, &fs_sd_desc,
+			&fs_desc, fullscreen_output.get(), m_swap_chain.put());
+		if (FAILED(hr))
+		{
+			Console.Warning("D3D12: Failed to create fullscreen swap chain, trying windowed.");
+			m_is_exclusive_fullscreen = false;
+			m_using_allow_tearing = m_allow_tearing_supported;
+		}
+	}
+
+	if (!m_is_exclusive_fullscreen)
+	{
+		Console.WriteLn("D3D12: Creating a %dx%d windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height);
+		hr = m_dxgi_factory->CreateSwapChainForHwnd(
+			m_command_queue.get(), window_hwnd, &swap_chain_desc, nullptr, nullptr, m_swap_chain.put());
+
+		if (FAILED(hr))
+			Console.Warning("D3D12: Failed to create windowed swap chain.");
+	}
+
+	// MWA needs to be called on the correct factory.
+	wil::com_ptr_nothrow<IDXGIFactory> swap_chain_factory;
+	hr = m_swap_chain->GetParent(IID_PPV_ARGS(swap_chain_factory.put()));
+	if (SUCCEEDED(hr))
+	{
+		hr = swap_chain_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
+		if (FAILED(hr))
+			Console.ErrorFmt("D3D12: MakeWindowAssociation() to disable ALT+ENTER failed: {}", Error::CreateHResult(hr).GetDescription());
+	}
+	else
+	{
+		Console.ErrorFmt("D3D12: GetParent() on swap chain to get factory failed: {}", Error::CreateHResult(hr).GetDescription());
+	}
+
+	if (!CreateSwapChainRTV())
+	{
+		DestroySwapChain();
+		return false;
+	}
+
+	// Render a frame as soon as possible to clear out whatever was previously being displayed.
+	EndRenderPass();
+	GSTexture12* swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer].get();
+	const D3D12CommandList& cmdlist = GetCommandList();
+	m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
+	swap_chain_buf->TransitionToState(cmdlist, GSTexture12::ResourceState::RenderTarget);
+	cmdlist.list4->ClearRenderTargetView(swap_chain_buf->GetWriteDescriptor(), s_present_clear_color.data(), 0, nullptr);
+	swap_chain_buf->TransitionToState(cmdlist, GSTexture12::ResourceState::Present);
+	ExecuteCommandList(false);
+	m_swap_chain->Present(0, m_using_allow_tearing ? DXGI_PRESENT_ALLOW_TEARING : 0);
+	return true;
+}
+
+bool GSDevice12::CreateSwapChainRTV()
+{
+	DXGI_SWAP_CHAIN_DESC swap_chain_desc;
+	HRESULT hr = m_swap_chain->GetDesc(&swap_chain_desc);
+	if (FAILED(hr))
+		return false;
+
+	for (u32 i = 0; i < swap_chain_desc.BufferCount; i++)
+	{
+		ComPtr<ID3D12Resource> backbuffer;
+		hr = m_swap_chain->GetBuffer(i, IID_PPV_ARGS(backbuffer.put()));
+		if (FAILED(hr))
+		{
+			Console.Error("D3D12: GetBuffer for RTV failed: 0x%08X", hr);
+			m_swap_chain_buffers.clear();
+			return false;
+		}
+
+		std::unique_ptr<GSTexture12> tex = GSTexture12::Adopt(std::move(backbuffer), GSTexture::Type::RenderTarget,
+			GSTexture::Format::Color, swap_chain_desc.BufferDesc.Width, swap_chain_desc.BufferDesc.Height, 1,
+			swap_chain_desc.BufferDesc.Format, DXGI_FORMAT_UNKNOWN, swap_chain_desc.BufferDesc.Format,
+			DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, GSTexture12::ResourceState::Present);
+		if (!tex)
+		{
+			m_swap_chain_buffers.clear();
+			return false;
+		}
+
+		m_swap_chain_buffers.push_back(std::move(tex));
+	}
+
+	m_window_info.surface_width = swap_chain_desc.BufferDesc.Width;
+	m_window_info.surface_height = swap_chain_desc.BufferDesc.Height;
+	DevCon.WriteLn("D3D12: Swap chain buffer size: %ux%u", m_window_info.surface_width, m_window_info.surface_height);
+
+	if (m_window_info.type == WindowInfo::Type::Win32)
+	{
+		BOOL fullscreen = FALSE;
+		DXGI_SWAP_CHAIN_DESC desc;
+		if (SUCCEEDED(m_swap_chain->GetFullscreenState(&fullscreen, nullptr)) && fullscreen &&
+			SUCCEEDED(m_swap_chain->GetDesc(&desc)))
+		{
+			m_window_info.surface_refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
+			                                     static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
+		}
+	}
+
+	m_current_swap_chain_buffer = 0;
+	return true;
+}
+
+void GSDevice12::DestroySwapChainRTVs()
+{
+	for (std::unique_ptr<GSTexture12>& buffer : m_swap_chain_buffers)
+		buffer->Destroy(false);
+	m_swap_chain_buffers.clear();
+	m_current_swap_chain_buffer = 0;
+}
+
+void GSDevice12::DestroySwapChain()
+{
+	if (!m_swap_chain)
+		return;
+
+	DestroySwapChainRTVs();
+
+	// switch out of fullscreen before destroying
+	BOOL is_fullscreen;
+	if (SUCCEEDED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) && is_fullscreen)
+		m_swap_chain->SetFullscreenState(FALSE, nullptr);
+
+	m_swap_chain.reset();
+	m_is_exclusive_fullscreen = false;
+}
+
+bool GSDevice12::UpdateWindow()
+{
+	ExecuteCommandList(true);
+	DestroySwapChain();
+
+	if (!AcquireWindow(false))
+		return false;
+
+	if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain())
+	{
+		Console.WriteLn("D3D12: Failed to create swap chain on updated window");
+		return false;
+	}
+
+	return true;
+}
+
+void GSDevice12::DestroySurface()
+{
+	ExecuteCommandList(true);
+	DestroySwapChain();
+}
+
+std::string GSDevice12::GetDriverInfo() const
+{
+	std::string ret = "Unknown Feature Level";
+
+	static constexpr std::array<std::tuple<D3D_FEATURE_LEVEL, const char*>, 2> feature_level_names = {{
+		{D3D_FEATURE_LEVEL_11_0, "D3D_FEATURE_LEVEL_11_0"},
+		{D3D_FEATURE_LEVEL_11_1, "D3D_FEATURE_LEVEL_11_1"},
+	}};
+
+	for (size_t i = 0; i < std::size(feature_level_names); i++)
+	{
+		if (m_feature_level == std::get<0>(feature_level_names[i]))
+		{
+			ret = std::get<1>(feature_level_names[i]);
+			break;
+		}
+	}
+
+	ret += "\n";
+
+	DXGI_ADAPTER_DESC desc;
+	if (m_adapter && SUCCEEDED(m_adapter->GetDesc(&desc)))
+	{
+		ret += StringUtil::StdStringFromFormat("VID: 0x%04X PID: 0x%04X\n", desc.VendorId, desc.DeviceId);
+		ret += StringUtil::WideStringToUTF8String(desc.Description);
+		ret += "\n";
+
+		const std::string driver_version(D3D::GetDriverVersionFromLUID(desc.AdapterLuid));
+		if (!driver_version.empty())
+		{
+			ret += "Driver Version: ";
+			ret += driver_version;
+		}
+	}
+
+	return ret;
+}
+
+void GSDevice12::ResizeWindow(u32 new_window_width, u32 new_window_height, float new_window_scale)
+{
+	if (!m_swap_chain)
+		return;
+
+	m_window_info.surface_scale = new_window_scale;
+
+	if (m_window_info.surface_width == new_window_width && m_window_info.surface_height == new_window_height)
+		return;
+
+	ExecuteCommandList(true);
+
+	DestroySwapChainRTVs();
+
+	HRESULT hr = m_swap_chain->ResizeBuffers(
+		0, 0, 0, DXGI_FORMAT_UNKNOWN, m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
+	if (FAILED(hr))
+		Console.Error("D3D12: ResizeBuffers() failed: 0x%08X", hr);
+
+	if (!CreateSwapChainRTV())
+		pxFailRel("Failed to recreate swap chain RTV after resize");
+}
+
+bool GSDevice12::SupportsExclusiveFullscreen() const
+{
+	return true;
+}
+
+GSDevice::PresentResult GSDevice12::BeginPresent(bool frame_skip)
+{
+	EndRenderPass();
+
+	if (m_device_lost)
+		return PresentResult::DeviceLost;
+
+	if (frame_skip || !m_swap_chain)
+	{
+		if (!m_swap_chain)
+		{
+			ExecuteCommandList(WaitType::None);
+			InvalidateCachedState();
+		}
+		return PresentResult::FrameSkipped;
+	}
+
+	// Check if we lost exclusive fullscreen. If so, notify the host, so it can switch to windowed mode.
+	// This might get called repeatedly if it takes a while to switch back, that's the host's problem.
+	BOOL is_fullscreen;
+	if (m_is_exclusive_fullscreen &&
+		(FAILED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) || !is_fullscreen))
+	{
+		Host::RunOnCPUThread([]() { Host::SetFullscreen(false); });
+		return PresentResult::FrameSkipped;
+	}
+
+	GSTexture12* swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer].get();
+
+	const D3D12CommandList& cmdlist = GetCommandList();
+	swap_chain_buf->TransitionToState(cmdlist, GSTexture12::ResourceState::RenderTarget);
+	cmdlist.list4->ClearRenderTargetView(swap_chain_buf->GetWriteDescriptor(), s_present_clear_color.data(), 0, nullptr);
+	cmdlist.list4->OMSetRenderTargets(1, &swap_chain_buf->GetWriteDescriptor().cpu_handle, FALSE, nullptr);
+	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
+
+	const D3D12_VIEWPORT vp{0.0f, 0.0f, static_cast<float>(m_window_info.surface_width),
+		static_cast<float>(m_window_info.surface_height), 0.0f, 1.0f};
+	const D3D12_RECT scissor{
+		0, 0, static_cast<LONG>(m_window_info.surface_width), static_cast<LONG>(m_window_info.surface_height)};
+	cmdlist.list4->RSSetViewports(1, &vp);
+	cmdlist.list4->RSSetScissorRects(1, &scissor);
+	return PresentResult::OK;
+}
+
+void GSDevice12::EndPresent()
+{
+	RenderImGui();
+
+	GSTexture12* swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer].get();
+	m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
+
+	swap_chain_buf->TransitionToState(GSTexture12::ResourceState::Present);
+	if (!ExecuteCommandList(WaitType::None))
+	{
+		m_device_lost = true;
+		InvalidateCachedState();
+		return;
+	}
+
+	const UINT sync_interval = static_cast<UINT>(m_vsync_mode == GSVSyncMode::FIFO);
+	const UINT flags = (m_vsync_mode == GSVSyncMode::Disabled && m_using_allow_tearing) ? DXGI_PRESENT_ALLOW_TEARING : 0;
+	m_swap_chain->Present(sync_interval, flags);
+
+	InvalidateCachedState();
+}
+
+#ifdef ENABLE_OGL_DEBUG
+static UINT Palette(float phase, const std::array<float, 3>& a, const std::array<float, 3>& b,
+	const std::array<float, 3>& c, const std::array<float, 3>& d)
+{
+	std::array<float, 3> result;
+	result[0] = a[0] + b[0] * std::cos(6.28318f * (c[0] * phase + d[0]));
+	result[1] = a[1] + b[1] * std::cos(6.28318f * (c[1] * phase + d[1]));
+	result[2] = a[2] + b[2] * std::cos(6.28318f * (c[2] * phase + d[2]));
+	return PIX_COLOR(static_cast<BYTE>(result[0] * 255.0f),
+		static_cast<BYTE>(result[1] * 255.0f),
+		static_cast<BYTE>(result[2] * 255.0f));
+}
+#endif
+
+void GSDevice12::PushDebugGroup(const char* fmt, ...)
+{
+#ifdef ENABLE_OGL_DEBUG
+	if (!GSConfig.UseDebugDevice)
+		return;
+
+	std::va_list ap;
+	va_start(ap, fmt);
+	const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
+	va_end(ap);
+
+	const UINT color = Palette(
+		++s_debug_scope_depth, {0.5f, 0.5f, 0.5f}, {0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 0.5f}, {0.8f, 0.90f, 0.30f});
+
+	PIXBeginEvent(GetCommandList().list4.get(), color, "%s", buf.c_str());
+#endif
+}
+
+void GSDevice12::PopDebugGroup()
+{
+#ifdef ENABLE_OGL_DEBUG
+	if (!GSConfig.UseDebugDevice)
+		return;
+
+	s_debug_scope_depth = (s_debug_scope_depth == 0) ? 0 : (s_debug_scope_depth - 1u);
+
+	PIXEndEvent(GetCommandList().list4.get());
+#endif
+}
+
+void GSDevice12::InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...)
+{
+#ifdef ENABLE_OGL_DEBUG
+	if (!GSConfig.UseDebugDevice)
+		return;
+
+	std::va_list ap;
+	va_start(ap, fmt);
+	const std::string buf(StringUtil::StdStringFromFormatV(fmt, ap));
+	va_end(ap);
+
+	if (buf.empty())
+		return;
+
+	static constexpr float colors[][3] = {
+		{0.1f, 0.1f, 0.0f}, // Cache
+		{0.1f, 0.1f, 0.0f}, // Reg
+		{0.5f, 0.0f, 0.5f}, // Debug
+		{0.0f, 0.5f, 0.5f}, // Message
+		{0.0f, 0.2f, 0.0f} // Performance
+	};
+
+	const float* fcolor = colors[static_cast<int>(category)];
+	const UINT color = PIX_COLOR(static_cast<BYTE>(fcolor[0] * 255.0f),
+		static_cast<BYTE>(fcolor[1] * 255.0f),
+		static_cast<BYTE>(fcolor[2] * 255.0f));
+
+	PIXSetMarker(GetCommandList().list4.get(), color, "%s", buf.c_str());
+#endif
+}
+
+bool GSDevice12::CheckFeatures(const u32& vendor_id)
+{
+	//const bool isAMD = (vendor_id == 0x1002 || vendor_id == 0x1022);
+
+	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
+	m_features.multidraw_fb_copy = false;
+	m_features.broken_point_sampler = false;
+	m_features.primitive_id = true;
+	m_features.prefer_new_textures = true;
+	m_features.provoking_vertex_last = false;
+	m_features.point_expand = false;
+	m_features.line_expand = false;
+	m_features.framebuffer_fetch = false;
+	m_features.stencil_buffer = true;
+	m_features.cas_sharpening = true;
+	m_features.test_and_sample_depth = true;
+	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
+	m_features.depth_feedback = false;
+	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
+
+	m_features.dxt_textures = SupportsTextureFormat(DXGI_FORMAT_BC1_UNORM) &&
+	                          SupportsTextureFormat(DXGI_FORMAT_BC2_UNORM) &&
+	                          SupportsTextureFormat(DXGI_FORMAT_BC3_UNORM);
+	m_features.bptc_textures = SupportsTextureFormat(DXGI_FORMAT_BC7_UNORM);
+
+	m_max_texture_size = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+
+	m_programmable_sample_positions = SupportsProgrammableSamplePositions();
+	Console.WriteLnFmt("D3D12: Programmable Sample Position: {}", m_programmable_sample_positions ? "Supported" : "Not Supported");
+
+	BOOL allow_tearing_supported = false;
+	HRESULT hr = m_dxgi_factory->CheckFeatureSupport(
+		DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported, sizeof(allow_tearing_supported));
+	m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
+
+	D3D12_FEATURE_DATA_ARCHITECTURE1 device_architecture1 = {};
+	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE1, &device_architecture1, sizeof(device_architecture1));
+	m_uma = SUCCEEDED(hr) && device_architecture1.UMA;
+	Console.WriteLnFmt("D3D12: {}", m_uma ? (device_architecture1.CacheCoherentUMA ? "Cache Coherent Unified Memory Architecture" : "Unified Memory Architecture") : "Non-Unified Memory Architecture");
+
+	D3D12_FEATURE_DATA_D3D12_OPTIONS3 device_options3 = {};
+	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &device_options3, sizeof(device_options3));
+	m_typed_casting_supported = SUCCEEDED(hr) && device_options3.CastingFullyTypedFormatSupported;
+	Console.WriteLnFmt("D3D12: Casting Fully Typed Formats: {}", m_typed_casting_supported ? "Supported" : "Not Supported");
+
+	D3D12_FEATURE_DATA_D3D12_OPTIONS12 device_options12 = {};
+	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS12, &device_options12, sizeof(device_options12));
+	if (SUCCEEDED(hr))
+	{
+		Console.WriteLnFmt("D3D12: Enhanced Barriers: {}", device_options12.EnhancedBarriersSupported ? "Supported" : "Not Supported");
+		m_enhanced_barriers = device_options12.EnhancedBarriersSupported;
+	}
+	else
+	{
+		Console.WriteLnFmt("D3D12: Failed to check for Enhanced Barriers: 0x{:08x}", static_cast<unsigned long>(hr));
+		m_enhanced_barriers = false;
+	}
+
+	D3D12_FEATURE_DATA_D3D12_OPTIONS options{};
+	m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS));
+	m_features.rov = options.ROVsSupported;
+
+	return true;
+}
+
+void GSDevice12::DrawPrimitive()
+{
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+	GetCommandList().list4->DrawInstanced(m_vertex.count, 1, m_vertex.start, 0);
+}
+
+void GSDevice12::DrawIndexedPrimitive()
+{
+	DrawIndexedPrimitive(0, m_index.count);
+}
+
+void GSDevice12::DrawIndexedPrimitive(int offset, int count)
+{
+	pxAssert(offset + count <= (int)m_index.count);
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+	GetCommandList().list4->DrawIndexedInstanced(count, 1, m_index.start + offset, m_vertex.start, 0);
+}
+
+void GSDevice12::DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_indexing, int vs_indexing_expansion)
+{
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
+	if (vs_indexing)
+	{
+		SetVSPushConstants(m_vertex.start, m_index.start + offset);
+		GetCommandList().list4->DrawInstanced(count * vs_indexing_expansion, 1, 0, 0);
+	}
+	else
+	{
+		SetVSPushConstants(m_vertex.start);
+		GetCommandList().list4->DrawIndexedInstanced(count, 1, m_index.start + offset, 0, 0);
+	}
+}
+
+void GSDevice12::Draw(const GSHWDrawConfig& config, int offset, int count)
+{
+	if (config.vs.expand != GSHWDrawConfig::VSExpand::None)
+	{
+		const bool vs_indexing = config.vs.UseVSExpandIndexBuffer();
+		const u32 vs_indexing_expansion = GetExpansionFactor(config.vs.expand);
+		DrawIndexedPrimitiveVSExpand(offset, count, vs_indexing, vs_indexing_expansion);
+	}
+	else
+	{
+		DrawIndexedPrimitive(offset, count);
+	}
+}
+
+void GSDevice12::Draw(const GSHWDrawConfig& config)
+{
+	Draw(config, 0, m_index.count);
+}
+
+void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
+	DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format, DXGI_FORMAT* uav_format) const
+{
+	static constexpr std::array<std::array<DXGI_FORMAT, 5>, static_cast<int>(GSTexture::Format::Last) + 1>
+		s_format_mapping = {{
+			{DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN}, // Invalid
+			{DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_R8G8B8A8_UNORM,
+				DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R8G8B8A8_UNORM}, // Color
+			{DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_R10G10B10A2_UNORM,
+				DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R10G10B10A2_UNORM}, // ColorHQ
+			{DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT,
+				DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R16G16B16A16_FLOAT}, // ColorHDR
+			{DXGI_FORMAT_R16G16B16A16_UNORM, DXGI_FORMAT_R16G16B16A16_UNORM, DXGI_FORMAT_R16G16B16A16_UNORM,
+				DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R16G16B16A16_UNORM}, // ColorClip
+			{DXGI_FORMAT_D32_FLOAT_S8X24_UINT, DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS, DXGI_FORMAT_UNKNOWN,
+				DXGI_FORMAT_D32_FLOAT_S8X24_UINT, DXGI_FORMAT_R32_FLOAT}, // DepthStencil
+			{DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R32_FLOAT}, // DepthColor
+			{DXGI_FORMAT_A8_UNORM, DXGI_FORMAT_A8_UNORM, DXGI_FORMAT_A8_UNORM, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_A8_UNORM}, // UNorm8
+			{DXGI_FORMAT_R16_UINT, DXGI_FORMAT_R16_UINT, DXGI_FORMAT_R16_UINT, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R16_UINT}, // UInt16
+			{DXGI_FORMAT_R32_UINT, DXGI_FORMAT_R32_UINT, DXGI_FORMAT_R32_UINT, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R32_UINT}, // UInt32
+			{DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R32_FLOAT}, // Int32
+			{DXGI_FORMAT_BC1_UNORM, DXGI_FORMAT_BC1_UNORM, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN}, // BC1
+			{DXGI_FORMAT_BC2_UNORM, DXGI_FORMAT_BC2_UNORM, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN}, // BC2
+			{DXGI_FORMAT_BC3_UNORM, DXGI_FORMAT_BC3_UNORM, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN}, // BC3
+			{DXGI_FORMAT_BC7_UNORM, DXGI_FORMAT_BC7_UNORM, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN}, // BC7
+		}};
+
+	const auto& mapping = s_format_mapping[static_cast<int>(format)];
+	if (d3d_format)
+		*d3d_format = (format == GSTexture::Format::DepthStencil && !m_typed_casting_supported) ? DXGI_FORMAT_R32G8X24_TYPELESS : mapping[0];
+	if (srv_format)
+		*srv_format = mapping[1];
+	if (rtv_format)
+		*rtv_format = mapping[2];
+	if (dsv_format)
+		*dsv_format = mapping[3];
+	if (uav_format)
+		*uav_format = mapping[4];
+}
+
+GSTexture* GSDevice12::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
+{
+	DXGI_FORMAT dxgi_format, srv_format, rtv_format, dsv_format, uav_format;
+	LookupNativeFormat(format, &dxgi_format, &srv_format, &rtv_format, &dsv_format, &uav_format);
+
+	if (type != GSTexture::Type::RWTexture && type != GSTexture::Type::RenderTarget)
+		uav_format = DXGI_FORMAT_UNKNOWN; // We don't need the UAV descriptor.
+
+	std::unique_ptr<GSTexture12> tex(GSTexture12::Create(type, format, width, height, levels,
+		dxgi_format, srv_format, rtv_format, dsv_format, uav_format));
+	if (!tex)
+	{
+		// We're probably out of vram, try flushing the command buffer to release pending textures.
+		PurgePool();
+		ExecuteCommandListAndRestartRenderPass(true, "Couldn't allocate texture.");
+		tex = GSTexture12::Create(type, format, width, height, levels, dxgi_format, srv_format,
+			rtv_format, dsv_format, uav_format);
+	}
+
+	return tex.release();
+}
+
+std::unique_ptr<GSDownloadTexture> GSDevice12::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
+{
+	return GSDownloadTexture12::Create(width, height, format);
+}
+
+void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
+{
+	// Empty rect, abort copy.
+	if (r.rempty())
+	{
+		GL_INS("D3D12: CopyRect rect empty.");
+		return;
+	}
+
+	GSTexture12* const sTex12 = static_cast<GSTexture12*>(sTex);
+	GSTexture12* const dTex12 = static_cast<GSTexture12*>(dTex);
+	const GSVector4i src_rect(0, 0, sTex12->GetWidth(), sTex12->GetHeight());
+	const GSVector4i dst_rect(0, 0, dTex12->GetWidth(), dTex12->GetHeight());
+	const bool src_dst_rect_match = src_rect.eq(dst_rect);
+
+	// Sizes must match for full depth copies when no partial copies are supported.
+	if (sTex12->IsDepthStencil() && !src_dst_rect_match && !m_programmable_sample_positions)
+	{
+		GL_INS("D3D12: CopyRect rect mismatch for full depth copy.");
+		return;
+	}
+
+	const bool full_draw_copy = (sTex->IsDepthStencil() && !m_programmable_sample_positions) || dst_rect.eq(r);
+
+	// Source is cleared, if destination is a render target, we can carry the clear forward.
+	if (sTex12->GetState() == GSTexture::State::Cleared)
+	{
+		if (dTex12->IsRenderTargetOrDepthStencil())
+		{
+			if (ProcessClearsBeforeCopy(sTex, dTex, full_draw_copy))
+				return;
+
+			// Do an attachment clear.
+			EndRenderPass();
+
+			dTex12->SetState(GSTexture::State::Dirty);
+
+			if (dTex12->GetType() != GSTexture::Type::DepthStencil)
+			{
+				dTex12->TransitionToState(GSTexture12::ResourceState::RenderTarget);
+				GetCommandList().list4->ClearRenderTargetView(
+					dTex12->GetWriteDescriptor(), sTex12->GetClearForFormat().v, 0, nullptr);
+			}
+			else
+			{
+				dTex12->TransitionToState(GSTexture12::ResourceState::DepthWriteStencil);
+				GetCommandList().list4->ClearDepthStencilView(
+					dTex12->GetWriteDescriptor(), D3D12_CLEAR_FLAG_DEPTH, sTex12->GetClearDepth(), 0, 0, nullptr);
+			}
+
+			return;
+		}
+
+		// commit the clear to the source first, then do normal copy
+		sTex12->CommitClear();
+	}
+
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+	// if the destination has been cleared, and we're not overwriting the whole thing, commit the clear first
+	// (the area outside of where we're copying to)
+	if (dTex12->GetState() == GSTexture::State::Cleared && !full_draw_copy)
+		dTex12->CommitClear();
+
+	EndRenderPass();
+
+	sTex12->TransitionToState(GSTexture12::ResourceState::CopySrc);
+	sTex12->SetUseFenceCounter(GetCurrentFenceValue());
+	if (m_tfx_textures[0] && sTex12->GetSRVDescriptor() == m_tfx_textures[0])
+		PSSetShaderResource(0, nullptr, false);
+
+	dTex12->TransitionToState(GSTexture12::ResourceState::CopyDst);
+	dTex12->SetUseFenceCounter(GetCurrentFenceValue());
+
+	D3D12_TEXTURE_COPY_LOCATION srcloc;
+	srcloc.pResource = sTex12->GetResource();
+	srcloc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+	srcloc.SubresourceIndex = 0;
+
+	D3D12_TEXTURE_COPY_LOCATION dstloc;
+	dstloc.pResource = dTex12->GetResource();
+	dstloc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+	dstloc.SubresourceIndex = 0;
+
+	// DX12 requires ProgrammableSamplePositions tier 1 to support partial depth copies, otherwise fallback to full depth copies.
+	const bool full_rt_copy = src_dst_rect_match && ((sTex12->IsDepthStencil() && !m_programmable_sample_positions) || (destX == 0 && destY == 0 && r.eq(src_rect)));
+	if (full_rt_copy)
+	{
+		GetCommandList().list4->CopyResource(dTex12->GetResource(), sTex12->GetResource());
+	}
+	else
+	{
+		const D3D12_BOX srcbox{static_cast<UINT>(r.left), static_cast<UINT>(r.top), 0u, static_cast<UINT>(r.right),
+			static_cast<UINT>(r.bottom), 1u};
+		GetCommandList().list4->CopyTextureRegion(&dstloc, destX, destY, 0, &srcloc, &srcbox);
+	}
+
+	dTex12->SetState(GSTexture::State::Dirty);
+}
+
+void GSDevice12::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
+	ShaderConvertSelector shader, Filter filter)
+{
+	pxAssert(dTex);
+	filter = shader.SupportsBilinear() ? Nearest : filter; // Don't allow HW bilinear if SW bilinear is needed.
+	const bool allow_discard = (shader.Mask() == 0xf);
+	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
+		GetConvertPipeline(shader), filter, allow_discard);
+}
+
+void GSDevice12::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, const GSVector4& dRect,
+	PresentShader shader, Filter filter)
+{
+	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, nullptr, dRect,
+		m_present[static_cast<u32>(shader)].get(), filter, true);
+}
+
+void GSDevice12::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
+	PresentShader shader, float shaderTime, Filter filter)
+{
+	DisplayConstantBuffer cb;
+	cb.SetSource(sRect, sTex->GetSize());
+	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GSVector2i(GetWindowWidth(), GetWindowHeight()));
+	cb.SetTime(shaderTime);
+	SetUtilityRootSignature();
+	SetUtilityPushConstants(&cb, sizeof(cb));
+
+	DoStretchRect(static_cast<GSTexture12*>(sTex), sRect, static_cast<GSTexture12*>(dTex), dRect,
+		m_present[static_cast<int>(shader)].get(), filter, true);
+}
+
+void GSDevice12::UpdateCLUTTexture(
+	GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, GSTexture* dTex, u32 dOffset, u32 dSize)
+{
+	// match merge cb
+	struct alignas(16) Uniforms
+	{
+		float scale;
+		float pad1[3];
+		u32 offsetX, offsetY, dOffset;
+		u32 pad2;
+	};
+	const Uniforms cb = {sScale, {}, offsetX, offsetY, dOffset, 0};
+	SetUtilityRootSignature();
+	SetUtilityPushConstants(&cb, sizeof(cb));
+
+	const GSVector4 dRect(0, 0, dSize, 1);
+	const ShaderConvert shader = (dSize == 16) ? ShaderConvert::CLUT_4 : ShaderConvert::CLUT_8;
+	DoStretchRect(static_cast<GSTexture12*>(sTex), GSVector4::zero(), static_cast<GSTexture12*>(dTex), dRect,
+		GetConvertPipeline(shader), Nearest, true);
+}
+
+void GSDevice12::ConvertToIndexedTexture(
+	GSTexture* sTex, float sScale, u32 offsetX, u32 offsetY, u32 SBW, u32 SPSM, GSTexture* dTex, u32 DBW, u32 DPSM)
+{
+	// match merge cb
+	struct alignas(16) Uniforms
+	{
+		float scale;
+		float pad1[3];
+		u32 SBW, DBW, SPSM;
+		u32 pad2;
+	};
+
+	const Uniforms cb = {sScale, {}, SBW, DBW, SPSM, 0};
+	SetUtilityRootSignature();
+	SetUtilityPushConstants(&cb, sizeof(cb));
+
+	const GSVector4 dRect(0, 0, dTex->GetWidth(), dTex->GetHeight());
+	const ShaderConvert shader = ((SPSM & 0xE) == 0) ? ShaderConvert::RGBA_TO_8I : ShaderConvert::RGB5A1_TO_8I;
+	DoStretchRect(static_cast<GSTexture12*>(sTex), GSVector4::zero(), static_cast<GSTexture12*>(dTex), dRect,
+		GetConvertPipeline(shader), Nearest, true);
+}
+
+void GSDevice12::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect)
+{
+	struct alignas(16) Uniforms
+	{
+		float weight;
+		float step_multiplier;
+		float pad0[2];
+		GSVector2i clamp_min;
+		int downsample_factor;
+		int pad1;
+	};
+
+	const Uniforms cb = {
+		static_cast<float>(downsample_factor * downsample_factor), (GSConfig.UserHacks_NativeScaling > GSNativeScaling::Aggressive) ? 2.0f : 1.0f, {}, clamp_min, static_cast<int>(downsample_factor), 0};
+	SetUtilityRootSignature();
+	SetUtilityPushConstants(&cb, sizeof(cb));
+
+	//const GSVector4 dRect = GSVector4(dTex->GetRect());
+	const ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
+	DoStretchRect(static_cast<GSTexture12*>(sTex), GSVector4::zero(), static_cast<GSTexture12*>(dTex), dRect,
+		GetConvertPipeline(shader), Nearest, true);
+}
+
+void GSDevice12::DrawMultiStretchRects(
+	const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvertSelector shader)
+{
+	GSTexture* last_tex = rects[0].src;
+	Filter last_filter = rects[0].filter;
+	u8 last_wmask = rects[0].wmask.wrgba;
+
+	u32 first = 0;
+	u32 count = 1;
+
+	// Make sure all textures are in shader read only layout, so we don't need to break
+	// the render pass to transition.
+	for (u32 i = 0; i < num_rects; i++)
+	{
+		GSTexture12* const stex = static_cast<GSTexture12*>(rects[i].src);
+		stex->CommitClear();
+		if (stex->GetResourceState() != GSTexture12::ResourceState::PixelShaderResource)
+		{
+			EndRenderPass();
+			stex->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+		}
+	}
+
+	for (u32 i = 1; i < num_rects; i++)
+	{
+		if (rects[i].src == last_tex && rects[i].filter == last_filter && rects[i].wmask.wrgba == last_wmask)
+		{
+			count++;
+			continue;
+		}
+
+		DoMultiStretchRects(rects + first, count, static_cast<GSTexture12*>(dTex), shader);
+		last_tex = rects[i].src;
+		last_filter = rects[i].filter;
+		last_wmask = rects[i].wmask.wrgba;
+		first += count;
+		count = 1;
+	}
+
+	DoMultiStretchRects(rects + first, count, static_cast<GSTexture12*>(dTex), shader);
+}
+
+void GSDevice12::DoMultiStretchRects(
+	const MultiStretchRect* rects, u32 num_rects, GSTexture12* dTex, ShaderConvertSelector shader)
+{
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+	// Set up vertices first.
+	const u32 vertex_reserve_size = num_rects * 4 * sizeof(GSVertexPT1);
+	const u32 index_reserve_size = num_rects * 6 * sizeof(u16);
+	if (!m_vertex_stream_buffer.ReserveMemory(vertex_reserve_size, sizeof(GSVertexPT1)) ||
+		!m_index_stream_buffer.ReserveMemory(index_reserve_size, sizeof(u16)))
+	{
+		ExecuteCommandListAndRestartRenderPass(false, "Uploading bytes to vertex buffer");
+		if (!m_vertex_stream_buffer.ReserveMemory(vertex_reserve_size, sizeof(GSVertexPT1)) ||
+			!m_index_stream_buffer.ReserveMemory(index_reserve_size, sizeof(u16)))
+		{
+			pxFailRel("Failed to reserve space for vertices");
+		}
+	}
+
+	// Pain in the arse because the primitive topology for the pipelines is all triangle strips.
+	// Don't use primitive restart here, it ends up slower on some drivers.
+	const GSVector2 ds(static_cast<float>(dTex->GetWidth()), static_cast<float>(dTex->GetHeight()));
+	GSVertexPT1* verts = reinterpret_cast<GSVertexPT1*>(m_vertex_stream_buffer.GetCurrentHostPointer());
+	u16* idx = reinterpret_cast<u16*>(m_index_stream_buffer.GetCurrentHostPointer());
+	u32 icount = 0;
+	u32 vcount = 0;
+	for (u32 i = 0; i < num_rects; i++)
+	{
+		const GSVector4& sRect = rects[i].src_rect;
+		const GSVector4& dRect = rects[i].dst_rect;
+
+		const float inv_x = 2.0f / ds.x;
+		const float inv_y = 2.0f / ds.y;
+
+		const float left = dRect.x * inv_x - 1.0f;
+		const float right = dRect.z * inv_x - 1.0f;
+		const float top = 1.0f - dRect.y * inv_y;
+		const float bottom = 1.0f - dRect.w * inv_y;
+
+		const u32 vstart = vcount;
+		verts[vcount++] = {GSVector4(left, top, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)};
+		verts[vcount++] = {GSVector4(right, top, 0.5f, 1.0f), GSVector2(sRect.z, sRect.y)};
+		verts[vcount++] = {GSVector4(left, bottom, 0.5f, 1.0f), GSVector2(sRect.x, sRect.w)};
+		verts[vcount++] = {GSVector4(right, bottom, 0.5f, 1.0f), GSVector2(sRect.z, sRect.w)};
+
+		if (i > 0)
+			idx[icount++] = vstart;
+
+		idx[icount++] = vstart;
+		idx[icount++] = vstart + 1;
+		idx[icount++] = vstart + 2;
+		idx[icount++] = vstart + 3;
+		idx[icount++] = vstart + 3;
+	};
+
+	m_vertex.start = m_vertex_stream_buffer.GetCurrentOffset() / sizeof(GSVertexPT1);
+	m_vertex.count = vcount;
+	m_index.start = m_index_stream_buffer.GetCurrentOffset() / sizeof(u16);
+	m_index.count = icount;
+	m_vertex_stream_buffer.CommitMemory(vcount * sizeof(GSVertexPT1));
+	m_index_stream_buffer.CommitMemory(icount * sizeof(u16));
+	SetVertexBuffer(m_vertex_stream_buffer.GetGPUPointer(), m_vertex_stream_buffer.GetSize(), sizeof(GSVertexPT1));
+	SetIndexBuffer(m_index_stream_buffer.GetGPUPointer(), m_index_stream_buffer.GetSize(), DXGI_FORMAT_R16_UINT);
+
+	// Even though we're batching, a cmdbuffer submit could've messed this up.
+	const GSVector4i rc(dTex->GetRect());
+	OMSetRenderTargets(dTex->IsRenderTarget() ? dTex : nullptr, nullptr, dTex->IsDepthStencil() ? dTex : nullptr, rc);
+	if (!InRenderPass())
+		BeginRenderPassForStretchRect(dTex, rc, rc, false);
+	SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	SetUtilityTexture(rects[0].src, rects[0].filter == Biln ? m_linear_sampler_cpu : m_point_sampler_cpu);
+
+	SetPipeline(GetConvertPipeline(shader.SetMask(rects[0].wmask.wrgba)));
+
+	if (ApplyUtilityState())
+		DrawIndexedPrimitive();
+}
+
+void GSDevice12::BeginRenderPassForStretchRect(
+	GSTexture12* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc, bool allow_discard)
+{
+	const D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE load_op = (allow_discard && dst_rc.eq(dtex_rc)) ?
+	                                                            D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD :
+	                                                            GetLoadOpForTexture(dTex);
+	dTex->SetState(GSTexture::State::Dirty);
+
+	if (dTex->GetType() != GSTexture::Type::DepthStencil)
+	{
+		BeginRenderPass(load_op, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+			dTex->GetClearForFormat());
+	}
+	else
+	{
+		BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
+			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, load_op, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+			GSVector4::zero(), dTex->GetClearDepth());
+	}
+}
+
+void GSDevice12::DoStretchRect(GSTexture12* sTex, const GSVector4& sRect, GSTexture12* dTex, const GSVector4& dRect,
+	const ID3D12PipelineState* pipeline, Filter filter, bool allow_discard)
+{
+	if (sTex->GetResourceState() != GSTexture12::ResourceState::PixelShaderResource)
+	{
+		// can't transition in a render pass
+		EndRenderPass();
+		sTex->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+	}
+
+	SetUtilityRootSignature();
+	SetUtilityTexture(sTex, filter == Biln ? m_linear_sampler_cpu : m_point_sampler_cpu);
+	SetPipeline(pipeline);
+
+	const bool is_present = (!dTex);
+	const bool depth = (dTex && dTex->GetType() == GSTexture::Type::DepthStencil);
+	const GSVector2i size(is_present ? GSVector2i(GetWindowWidth(), GetWindowHeight()) : dTex->GetSize());
+	const GSVector4i dtex_rc(0, 0, size.x, size.y);
+	const GSVector4i dst_rc(GSVector4i(dRect).rintersect(dtex_rc));
+
+	// switch rts (which might not end the render pass), so check the bounds
+	if (!is_present)
+	{
+		OMSetRenderTargets(depth ? nullptr : dTex, nullptr, depth ? dTex : nullptr, dst_rc);
+	}
+	else
+	{
+		// this is for presenting, we don't want to screw with the viewport/scissor set by display
+		m_dirty_flags &= ~(DIRTY_FLAG_RENDER_TARGET | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR);
+	}
+
+	const bool drawing_to_current_rt = (is_present || InRenderPass());
+	if (!drawing_to_current_rt)
+		BeginRenderPassForStretchRect(dTex, dtex_rc, dst_rc, allow_discard);
+
+	DrawStretchRect(sRect, dRect, size);
+}
+
+void GSDevice12::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds)
+{
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+	// ia
+	const float inv_x = 2.0f / ds.x;
+	const float inv_y = 2.0f / ds.y;
+
+	const float left = dRect.x * inv_x - 1.0f;
+	const float right = dRect.z * inv_x - 1.0f;
+	const float top = 1.0f - dRect.y * inv_y;
+	const float bottom = 1.0f - dRect.w * inv_y;
+
+	const GSVertexPT1 vertices[] = {
+		{GSVector4(left, top, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)},
+		{GSVector4(right, top, 0.5f, 1.0f), GSVector2(sRect.z, sRect.y)},
+		{GSVector4(left, bottom, 0.5f, 1.0f), GSVector2(sRect.x, sRect.w)},
+		{GSVector4(right, bottom, 0.5f, 1.0f), GSVector2(sRect.z, sRect.w)},
+	};
+	IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
+	SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+	if (ApplyUtilityState())
+		DrawPrimitive();
+}
+
+void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect,
+	const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter)
+{
+	GL_PUSH("DoMerge");
+
+	const GSVector4 full_r(0.0f, 0.0f, 1.0f, 1.0f);
+	const bool feedback_write_2 = PMODE.EN2 && sTex[2] != nullptr && EXTBUF.FBIN == 1;
+	const bool feedback_write_1 = PMODE.EN1 && sTex[2] != nullptr && EXTBUF.FBIN == 0;
+	const bool feedback_write_2_but_blend_bg = feedback_write_2 && PMODE.SLBG == 1;
+	const D3D12DescriptorHandle& sampler = filter == Biln ? m_linear_sampler_cpu : m_point_sampler_cpu;
+	// Merge the 2 source textures (sTex[0],sTex[1]). Final results go to dTex. Feedback write will go to sTex[2].
+	// If either 2nd output is disabled or SLBG is 1, a background color will be used.
+	// Note: background color is also used when outside of the unit rectangle area
+	EndRenderPass();
+
+	// transition everything before starting the new render pass
+	const bool has_input_0 =
+		(sTex[0] && (sTex[0]->GetState() == GSTexture::State::Dirty ||
+						(sTex[0]->GetState() == GSTexture::State::Cleared || sTex[0]->GetClearColor() != 0)));
+	const bool has_input_1 = (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg) && sTex[1] &&
+	                         (sTex[1]->GetState() == GSTexture::State::Dirty ||
+	                             (sTex[1]->GetState() == GSTexture::State::Cleared || sTex[1]->GetClearColor() != 0));
+	if (has_input_0)
+	{
+		static_cast<GSTexture12*>(sTex[0])->CommitClear();
+		static_cast<GSTexture12*>(sTex[0])->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+	}
+	if (has_input_1)
+	{
+		static_cast<GSTexture12*>(sTex[1])->CommitClear();
+		static_cast<GSTexture12*>(sTex[1])->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+	}
+	static_cast<GSTexture12*>(dTex)->TransitionToState(GSTexture12::ResourceState::RenderTarget);
+
+	// Upload constant to select YUV algo, but skip constant buffer update if we don't need it
+	if (feedback_write_2 || feedback_write_1 || sTex[0])
+	{
+		SetUtilityRootSignature();
+		const MergeConstantBuffer uniforms = {GSVector4::unorm8(c), EXTBUF.EMODA, EXTBUF.EMODC};
+		SetUtilityPushConstants(&uniforms, sizeof(uniforms));
+	}
+
+	const GSVector2i dsize(dTex->GetSize());
+	const GSVector4i darea(0, 0, dsize.x, dsize.y);
+	bool dcleared = false;
+	if (has_input_1 && (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg))
+	{
+		// 2nd output is enabled and selected. Copy it to destination so we can blend it with 1st output
+		// Note: value outside of dRect must contains the background color (c)
+		OMSetRenderTargets(dTex, nullptr, nullptr, darea);
+		SetUtilityTexture(sTex[1], sampler);
+		BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR,
+			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
+			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
+			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, GSVector4::unorm8(c));
+		SetUtilityRootSignature();
+		SetPipeline(GetConvertPipeline(ShaderConvert::COPY));
+		DrawStretchRect(sRect[1], PMODE.SLBG ? dRect[2] : dRect[1], dsize);
+		dTex->SetState(GSTexture::State::Dirty);
+		dcleared = true;
+	}
+
+	// Upload constant to select YUV algo
+	const GSVector2i fbsize(sTex[2] ? sTex[2]->GetSize() : GSVector2i(0, 0));
+	const GSVector4i fbarea(0, 0, fbsize.x, fbsize.y);
+	if (feedback_write_2) // FIXME I'm not sure dRect[1] is always correct
+	{
+		EndRenderPass();
+		OMSetRenderTargets(sTex[2], nullptr, nullptr, fbarea);
+		if (dcleared)
+			SetUtilityTexture(dTex, sampler);
+
+		// sTex[2] can be sTex[0], in which case it might be cleared (e.g. Xenosaga).
+		BeginRenderPassForStretchRect(static_cast<GSTexture12*>(sTex[2]), fbarea, GSVector4i(dRect[2]));
+		if (dcleared)
+		{
+			SetUtilityRootSignature();
+			SetPipeline(GetConvertPipeline(ShaderConvert::YUV));
+			DrawStretchRect(full_r, dRect[2], fbsize);
+		}
+		EndRenderPass();
+
+		if (sTex[0] == sTex[2])
+		{
+			// need a barrier here because of the render pass
+			static_cast<GSTexture12*>(sTex[2])->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+		}
+	}
+
+	// Restore background color to process the normal merge
+	if (feedback_write_2_but_blend_bg || !dcleared)
+	{
+		EndRenderPass();
+		OMSetRenderTargets(dTex, nullptr, nullptr, darea);
+		BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+			GSVector4::unorm8(c));
+		dTex->SetState(GSTexture::State::Dirty);
+	}
+	else if (!InRenderPass())
+	{
+		OMSetRenderTargets(dTex, nullptr, nullptr, darea);
+		BeginRenderPass(
+			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE);
+	}
+
+	if (has_input_0)
+	{
+		// 1st output is enabled. It must be blended
+		SetUtilityRootSignature();
+		SetUtilityTexture(sTex[0], sampler);
+		SetPipeline(m_merge[PMODE.MMOD].get());
+		DrawStretchRect(sRect[0], dRect[0], dTex->GetSize());
+	}
+
+	if (feedback_write_1) // FIXME I'm not sure dRect[0] is always correct
+	{
+		EndRenderPass();
+		SetUtilityRootSignature();
+		SetPipeline(GetConvertPipeline(ShaderConvert::YUV));
+		SetUtilityTexture(dTex, sampler);
+		OMSetRenderTargets(sTex[2], nullptr, nullptr, fbarea);
+		BeginRenderPass(
+			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE);
+		DrawStretchRect(full_r, dRect[2], dsize);
+	}
+
+	EndRenderPass();
+
+	// this texture is going to get used as an input, so make sure we don't read undefined data
+	static_cast<GSTexture12*>(dTex)->CommitClear();
+	static_cast<GSTexture12*>(dTex)->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+}
+
+void GSDevice12::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
+	ShaderInterlace shader, Filter filter, const InterlaceConstantBuffer& cb)
+{
+	static_cast<GSTexture12*>(dTex)->TransitionToState(GSTexture12::ResourceState::RenderTarget);
+
+	const GSVector4i rc = GSVector4i(dRect);
+	const GSVector4i dtex_rc = dTex->GetRect();
+	const GSVector4i clamped_rc = rc.rintersect(dtex_rc);
+	EndRenderPass();
+	OMSetRenderTargets(dTex, nullptr, nullptr, clamped_rc);
+	SetUtilityRootSignature();
+	SetUtilityTexture(sTex, filter == Biln ? m_linear_sampler_cpu : m_point_sampler_cpu);
+	BeginRenderPassForStretchRect(static_cast<GSTexture12*>(dTex), dTex->GetRect(), clamped_rc, false);
+	SetPipeline(m_interlace[static_cast<int>(shader)].get());
+	SetUtilityPushConstants(&cb, sizeof(cb));
+	DrawStretchRect(sRect, dRect, dTex->GetSize());
+	EndRenderPass();
+
+	// this texture is going to get used as an input, so make sure we don't read undefined data
+	static_cast<GSTexture12*>(dTex)->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+}
+
+void GSDevice12::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4])
+{
+	const GSVector4 sRect = GSVector4(0.0f, 0.0f, 1.0f, 1.0f);
+	const GSVector4i dRect = dTex->GetRect();
+	EndRenderPass();
+	OMSetRenderTargets(dTex, nullptr, nullptr, dRect);
+	SetUtilityRootSignature();
+	SetUtilityTexture(sTex, m_point_sampler_cpu);
+	BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
+	dTex->SetState(GSTexture::State::Dirty);
+	SetPipeline(m_shadeboost_pipeline.get());
+	SetUtilityPushConstants(params, sizeof(float) * 4);
+	DrawStretchRect(sRect, GSVector4(dRect), dTex->GetSize());
+	EndRenderPass();
+
+	static_cast<GSTexture12*>(dTex)->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+}
+
+void GSDevice12::DoFXAA(GSTexture* sTex, GSTexture* dTex)
+{
+	const GSVector4 sRect = GSVector4(0.0f, 0.0f, 1.0f, 1.0f);
+	const GSVector4i dRect = dTex->GetRect();
+	EndRenderPass();
+	OMSetRenderTargets(dTex, nullptr, nullptr, dRect);
+	SetUtilityRootSignature();
+	SetUtilityTexture(sTex, m_linear_sampler_cpu);
+	BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
+	dTex->SetState(GSTexture::State::Dirty);
+	SetPipeline(m_fxaa_pipeline.get());
+	DrawStretchRect(sRect, GSVector4(dRect), dTex->GetSize());
+	EndRenderPass();
+
+	static_cast<GSTexture12*>(dTex)->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+}
+
+bool GSDevice12::CompileCASPipelines()
+{
+	D3D12::RootSignatureBuilder rsb;
+	rsb.Add32BitConstants(0, NUM_CAS_CONSTANTS, D3D12_SHADER_VISIBILITY_ALL);
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+	m_cas_root_signature = rsb.Create(false);
+	if (!m_cas_root_signature)
+		return false;
+
+	std::optional<std::string> cas_source = ReadShaderSource("shaders/dx11/cas.hlsl");
+	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
+		return false;
+
+	static constexpr D3D_SHADER_MACRO sharpen_only_macros[] = {{"CAS_SHARPEN_ONLY", "1"}, {nullptr, nullptr}};
+
+	const ComPtr<ID3DBlob> cs_upscale(m_shader_cache.GetComputeShader(cas_source.value(), nullptr, "main"));
+	const ComPtr<ID3DBlob> cs_sharpen(m_shader_cache.GetComputeShader(cas_source.value(), sharpen_only_macros, "main"));
+	if (!cs_upscale || !cs_sharpen)
+		return false;
+
+	D3D12::ComputePipelineBuilder cpb;
+	cpb.SetRootSignature(m_cas_root_signature.get());
+	cpb.SetShader(cs_upscale->GetBufferPointer(), cs_upscale->GetBufferSize());
+	m_cas_upscale_pipeline = cpb.Create(m_device.get(), m_shader_cache, false);
+	cpb.SetShader(cs_sharpen->GetBufferPointer(), cs_sharpen->GetBufferSize());
+	m_cas_sharpen_pipeline = cpb.Create(m_device.get(), m_shader_cache, false);
+	if (!m_cas_upscale_pipeline || !m_cas_sharpen_pipeline)
+	{
+		Console.Error("D3D12: Failed to create CAS pipelines");
+		return false;
+	}
+
+	return true;
+}
+
+bool GSDevice12::CompileImGuiPipeline()
+{
+	const std::optional<std::string> hlsl = ReadShaderSource("shaders/dx11/imgui.fx");
+	if (!hlsl.has_value())
+	{
+		Console.Error("D3D12: Failed to read imgui.fx");
+		return false;
+	}
+
+	const ComPtr<ID3DBlob> vs = m_shader_cache.GetVertexShader(hlsl.value(), nullptr, "vs_main");
+	const ComPtr<ID3DBlob> ps = m_shader_cache.GetPixelShader(hlsl.value(), nullptr, "ps_main");
+	if (!vs || !ps)
+	{
+		Console.Error("D3D12: Failed to compile ImGui shaders");
+		return false;
+	}
+
+	D3D12::GraphicsPipelineBuilder gpb;
+	gpb.SetRootSignature(m_utility_root_signature.get());
+	gpb.AddVertexAttribute("POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(ImDrawVert, pos));
+	gpb.AddVertexAttribute("TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(ImDrawVert, uv));
+	gpb.AddVertexAttribute("COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(ImDrawVert, col));
+	gpb.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+	gpb.SetVertexShader(vs.get());
+	gpb.SetPixelShader(ps.get());
+	gpb.SetNoCullRasterizationState();
+	gpb.SetNoDepthTestState();
+	gpb.SetBlendState(0, true, D3D12_BLEND_SRC_ALPHA, D3D12_BLEND_INV_SRC_ALPHA, D3D12_BLEND_OP_ADD, D3D12_BLEND_ONE,
+		D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD);
+	gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+	m_imgui_pipeline = gpb.Create(m_device.get(), m_shader_cache, false);
+	if (!m_imgui_pipeline)
+	{
+		Console.Error("D3D12: Failed to compile ImGui pipeline");
+		return false;
+	}
+
+	D3D12::SetObjectName(m_imgui_pipeline.get(), "ImGui pipeline");
+	return true;
+}
+
+void GSDevice12::RenderImGui()
+{
+	ImGui::Render();
+	const ImDrawData* draw_data = ImGui::GetDrawData();
+	if (draw_data->CmdListsCount == 0)
+		return;
+
+	UpdateImGuiTextures();
+
+	const float L = 0.0f;
+	const float R = static_cast<float>(m_window_info.surface_width);
+	const float T = 0.0f;
+	const float B = static_cast<float>(m_window_info.surface_height);
+
+	// clang-format off
+	const GSVector4 ortho_projection[4] =
+	{
+		{ 2.0f/(R-L),   0.0f,           0.0f,       0.0f },
+		{ 0.0f,         2.0f/(T-B),     0.0f,       0.0f },
+		{ 0.0f,         0.0f,           0.5f,       0.0f },
+		{ (R+L)/(L-R),  (T+B)/(B-T),    0.5f,       1.0f },
+	};
+	// clang-format on
+
+	SetUtilityRootSignature();
+	SetUtilityPushConstants(ortho_projection, sizeof(ortho_projection));
+	SetPipeline(m_imgui_pipeline.get());
+	SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	if (m_utility_sampler_cpu != m_linear_sampler_cpu)
+	{
+		m_utility_sampler_cpu = m_linear_sampler_cpu;
+		m_dirty_flags |= DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE;
+
+		// just skip if we run out.. we can't resume the present render pass :/
+		if (!GetSamplerAllocator().LookupSingle(&m_utility_sampler_gpu, m_linear_sampler_cpu))
+		{
+			Console.Warning("D3D12: Skipping ImGui draw because of no descriptors");
+			return;
+		}
+	}
+
+	// this is for presenting, we don't want to screw with the viewport/scissor set by display
+	m_dirty_flags &= ~(DIRTY_FLAG_RENDER_TARGET | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR);
+
+	for (int n = 0; n < draw_data->CmdListsCount; n++)
+	{
+		const ImDrawList* cmd_list = draw_data->CmdLists[n];
+
+		u32 vertex_offset;
+		{
+			const u32 size = sizeof(ImDrawVert) * static_cast<u32>(cmd_list->VtxBuffer.Size);
+			if (!m_vertex_stream_buffer.ReserveMemory(size, sizeof(ImDrawVert)))
+			{
+				Console.Warning("D3D12: Skipping ImGui draw because of no vertex buffer space");
+				return;
+			}
+
+			vertex_offset = m_vertex_stream_buffer.GetCurrentOffset() / sizeof(ImDrawVert);
+			std::memcpy(m_vertex_stream_buffer.GetCurrentHostPointer(), cmd_list->VtxBuffer.Data, size);
+			m_vertex_stream_buffer.CommitMemory(size);
+		}
+
+		SetVertexBuffer(m_vertex_stream_buffer.GetGPUPointer(), m_vertex_stream_buffer.GetSize(), sizeof(ImDrawVert));
+
+		static_assert(sizeof(ImDrawIdx) == sizeof(u16));
+		IASetIndexBuffer(cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size);
+
+		for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
+		{
+			const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
+			pxAssert(!pcmd->UserCallback);
+
+			const GSVector4 clip = GSVector4::load<false>(&pcmd->ClipRect);
+			if ((clip.zwzw() <= clip.xyxy()).mask() != 0)
+				continue;
+
+			SetScissor(GSVector4i(clip));
+
+			GSTexture12* tex = reinterpret_cast<GSTexture12*>(pcmd->GetTexID());
+			D3D12DescriptorHandle handle = m_null_texture->GetSRVDescriptor();
+			if (tex)
+			{
+				tex->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+				handle = tex->GetSRVDescriptor();
+			}
+
+			if (m_utility_texture_cpu != handle)
+			{
+				m_utility_texture_cpu = handle;
+				m_dirty_flags |= DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE;
+
+				if (!GetTextureGroupDescriptors(&m_utility_texture_gpu, &handle, 1))
+				{
+					Console.Warning("D3D12: Skipping ImGui draw because of no descriptors");
+					return;
+				}
+			}
+
+			if (ApplyUtilityState())
+			{
+				GetCommandList().list4->DrawIndexedInstanced(
+					pcmd->ElemCount, 1, m_index.start + pcmd->IdxOffset, vertex_offset + pcmd->VtxOffset, 0);
+			}
+		}
+
+		g_perfmon.Put(GSPerfMon::DrawCalls, cmd_list->CmdBuffer.Size);
+	}
+}
+
+bool GSDevice12::DoCAS(
+	GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)
+{
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+	EndRenderPass();
+
+	GSTexture12* const sTex12 = static_cast<GSTexture12*>(sTex);
+	GSTexture12* const dTex12 = static_cast<GSTexture12*>(dTex);
+	D3D12DescriptorHandle sTexDH, dTexDH;
+	if (!GetTextureGroupDescriptors(&sTexDH, &sTex12->GetSRVDescriptor(), 1) ||
+		!GetTextureGroupDescriptors(&dTexDH, &dTex12->GetUAVDescriptor(), 1))
+	{
+		ExecuteCommandList(false, "Ran out of descriptors for CAS");
+		if (!GetTextureGroupDescriptors(&sTexDH, &sTex12->GetSRVDescriptor(), 1) ||
+			!GetTextureGroupDescriptors(&dTexDH, &dTex12->GetUAVDescriptor(), 1))
+		{
+			Console.Error("D3D12: Failed to allocate CAS descriptors.");
+			return false;
+		}
+	}
+
+	const D3D12CommandList& cmdlist = GetCommandList();
+	const GSTexture12::ResourceState old_state = sTex12->GetResourceState();
+	sTex12->TransitionToState(cmdlist, GSTexture12::ResourceState::ComputeShaderResource);
+	dTex12->TransitionToState(cmdlist, GSTexture12::ResourceState::CASShaderUAV);
+
+	cmdlist.list4->SetComputeRootSignature(m_cas_root_signature.get());
+	cmdlist.list4->SetComputeRoot32BitConstants(
+		CAS_ROOT_SIGNATURE_PARAM_PUSH_CONSTANTS, NUM_CAS_CONSTANTS, constants.data(), 0);
+	cmdlist.list4->SetComputeRootDescriptorTable(CAS_ROOT_SIGNATURE_PARAM_SRC_TEXTURE, sTexDH);
+	cmdlist.list4->SetComputeRootDescriptorTable(CAS_ROOT_SIGNATURE_PARAM_DST_TEXTURE, dTexDH);
+	cmdlist.list4->SetPipelineState(sharpen_only ? m_cas_sharpen_pipeline.get() : m_cas_upscale_pipeline.get());
+	m_dirty_flags |= DIRTY_FLAG_PIPELINE;
+
+	static const int threadGroupWorkRegionDim = 16;
+	const int dispatchX = (dTex->GetWidth() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
+	const int dispatchY = (dTex->GetHeight() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
+	cmdlist.list4->Dispatch(dispatchX, dispatchY, 1);
+
+	sTex12->TransitionToState(cmdlist, old_state);
+	return true;
+}
+
+void GSDevice12::IASetVertexBuffer(const void* vertex, size_t stride, size_t count)
+{
+	const u32 size = static_cast<u32>(stride) * static_cast<u32>(count);
+	if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
+	{
+		ExecuteCommandListAndRestartRenderPass(false, "Uploading to vertex buffer");
+		if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride)))
+			pxFailRel("Failed to reserve space for vertices");
+	}
+
+	m_vertex.start = m_vertex_stream_buffer.GetCurrentOffset() / stride;
+	m_vertex.count = count;
+	SetVertexBuffer(m_vertex_stream_buffer.GetGPUPointer(), m_vertex_stream_buffer.GetSize(), stride);
+
+	GSVector4i::storent(m_vertex_stream_buffer.GetCurrentHostPointer(), vertex, count * stride);
+	m_vertex_stream_buffer.CommitMemory(size);
+}
+
+void GSDevice12::UploadIndices(D3D12StreamBuffer& buffer, const void* index, size_t count)
+{
+	const u32 size = sizeof(u16) * static_cast<u32>(count);
+	if (!buffer.ReserveMemory(size, sizeof(u16)))
+	{
+		ExecuteCommandListAndRestartRenderPass(false, "Uploading bytes to index buffer");
+		if (!buffer.ReserveMemory(size, sizeof(u16)))
+			pxFailRel("Failed to reserve space for indices");
+	}
+
+	m_index.start = buffer.GetCurrentOffset() / sizeof(u16);
+	m_index.count = count;
+
+	std::memcpy(buffer.GetCurrentHostPointer(), index, size);
+	buffer.CommitMemory(size);
+}
+
+void GSDevice12::IASetIndexBuffer(const void* index, size_t count)
+{
+	UploadIndices(m_index_stream_buffer, index, count);
+	SetIndexBuffer(m_index_stream_buffer.GetGPUPointer(), m_index_stream_buffer.GetSize(), DXGI_FORMAT_R16_UINT);
+}
+
+void GSDevice12::VSSetIndexBuffer(const void* index, size_t count)
+{
+	UploadIndices(m_expand_index_stream_buffer, index, count);
+}
+
+void GSDevice12::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, const GSVector4i& scissor,
+	bool depth_read, const GSVector2i& viewport_size)
+{
+	GSTexture12* d12Rt = static_cast<GSTexture12*>(rt);
+	GSTexture12* d12DsRt = static_cast<GSTexture12*>(ds_as_rt);
+	GSTexture12* d12Ds = static_cast<GSTexture12*>(ds);
+
+	// Check if framebuffer changed
+	if (m_current_render_target != d12Rt || m_current_depth_render_target != d12DsRt ||
+		m_current_depth_target != d12Ds || m_current_depth_read_only != depth_read)
+	{
+		EndRenderPass();
+	}
+	else if (InRenderPass())
+	{
+		// Framebuffer unchanged, but check for clears. Have to restart render pass, unlike Vulkan.
+		// We'll take care of issuing the actual clear there, because we have to start one anyway.
+		for (GSTexture12* tex : std::array{ d12Rt, d12DsRt, d12Ds })
+		{
+			if (tex && tex->GetState() != GSTexture::State::Dirty)
+			{
+				if (tex->GetState() == GSTexture::State::Cleared)
+					EndRenderPass();
+				else
+					tex->SetState(GSTexture::State::Dirty);
+			}
+		}
+	}
+
+	m_current_render_target = d12Rt;
+	m_current_depth_render_target = d12DsRt;
+	m_current_depth_target = d12Ds;
+	m_current_depth_read_only = depth_read;
+
+	if (!InRenderPass())
+	{
+		if (d12Rt)
+			d12Rt->TransitionToState(GSTexture12::ResourceState::RenderTarget);
+		if (d12DsRt)
+			d12DsRt->TransitionToState(GSTexture12::ResourceState::RenderTarget);
+		if (d12Ds)
+			d12Ds->TransitionToState(depth_read ? GSTexture12::ResourceState::DepthReadStencil : GSTexture12::ResourceState::DepthWriteStencil);
+	}
+
+	// This is used to set/initialize the framebuffer for tfx rendering.
+	const GSVector2i size = d12Rt ? d12Rt->GetSize() :
+		(d12DsRt ? d12DsRt->GetSize() : (d12Ds ? d12Ds->GetSize() : viewport_size));
+	const D3D12_VIEWPORT vp{0.0f, 0.0f, static_cast<float>(size.x), static_cast<float>(size.y), 0.0f, 1.0f};
+
+	SetViewport(vp);
+	SetScissor(scissor);
+}
+
+bool GSDevice12::GetSampler(D3D12DescriptorHandle* cpu_handle, GSHWDrawConfig::SamplerSelector ss)
+{
+	const auto it = m_samplers.find(ss.key);
+	if (it != m_samplers.end())
+	{
+		*cpu_handle = it->second;
+		return true;
+	}
+
+	static constexpr std::array<D3D12_FILTER, 8> filters = {{
+		D3D12_FILTER_MIN_MAG_MIP_POINT, // 000 / min=point,mag=point,mip=point
+		D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT, // 001 / min=linear,mag=point,mip=point
+		D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT, // 010 / min=point,mag=linear,mip=point
+		D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT, // 011 / min=linear,mag=linear,mip=point
+		D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR, // 100 / min=point,mag=point,mip=linear
+		D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR, // 101 / min=linear,mag=point,mip=linear
+		D3D12_FILTER_MIN_POINT_MAG_MIP_LINEAR, // 110 / min=point,mag=linear,mip=linear
+		D3D12_FILTER_MIN_MAG_MIP_LINEAR, // 111 / min=linear,mag=linear,mip=linear
+	}};
+
+	const u8 index = (static_cast<u8>(ss.IsMipFilterLinear()) << 2) |
+	                 (static_cast<u8>(ss.IsMagFilterLinear()) << 1) |
+	                 static_cast<u8>(ss.IsMinFilterLinear());
+
+	const D3D12_SAMPLER_DESC sd = {
+		filters[index], // Filter
+		ss.tau ? D3D12_TEXTURE_ADDRESS_MODE_WRAP : D3D12_TEXTURE_ADDRESS_MODE_CLAMP, // Address u
+		ss.tav ? D3D12_TEXTURE_ADDRESS_MODE_WRAP : D3D12_TEXTURE_ADDRESS_MODE_CLAMP, // Address v
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP, // Address w
+		0.0f, // Lod bias
+		1, // Anisotropy
+		D3D12_COMPARISON_FUNC_NEVER, // comparison function
+		{}, // Border colour
+		0.0f, // Min lod
+		(ss.lodclamp || !ss.UseMipmapFiltering()) ? 0.25f : FLT_MAX, // Max lod
+	};
+
+	if (!GetSamplerHeapManager().Allocate(cpu_handle))
+		return false;
+
+	m_device.get()->CreateSampler(&sd, *cpu_handle);
+	m_samplers.emplace(ss.key, *cpu_handle);
+	return true;
+}
+
+void GSDevice12::ClearSamplerCache()
+{
+	ExecuteCommandList(false);
+	for (const auto& it : m_samplers)
+		m_sampler_heap_manager.Free(it.second.index);
+	m_samplers.clear();
+	InvalidateSamplerGroups();
+	InitializeSamplers();
+
+	m_utility_sampler_gpu = m_point_sampler_cpu;
+	m_tfx_samplers_handle_gpu.Clear();
+	m_dirty_flags |= DIRTY_FLAG_TFX_SAMPLERS;
+}
+
+bool GSDevice12::GetTextureGroupDescriptors(
+	D3D12DescriptorHandle* gpu_handle, const D3D12DescriptorHandle* cpu_handles, u32 count)
+{
+	if (!GetDescriptorAllocator().Allocate(count, gpu_handle))
+		return false;
+
+	if (count == 1)
+	{
+		m_device.get()->CopyDescriptorsSimple(
+			1, *gpu_handle, cpu_handles[0], D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		return true;
+	}
+
+	D3D12_CPU_DESCRIPTOR_HANDLE dst_handle = *gpu_handle;
+	D3D12_CPU_DESCRIPTOR_HANDLE src_handles[NUM_TOTAL_TFX_TEXTURES];
+	UINT src_sizes[NUM_TOTAL_TFX_TEXTURES];
+	pxAssert(count <= NUM_TOTAL_TFX_TEXTURES);
+	for (u32 i = 0; i < count; i++)
+	{
+		src_handles[i] = cpu_handles[i];
+		src_sizes[i] = 1;
+	}
+	m_device.get()->CopyDescriptors(
+		1, &dst_handle, &count, count, src_handles, src_sizes, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	return true;
+}
+
+static void AddUtilityVertexAttributes(D3D12::GraphicsPipelineBuilder& gpb)
+{
+	gpb.AddVertexAttribute("POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0);
+	gpb.AddVertexAttribute("TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 16);
+	gpb.AddVertexAttribute("COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 28);
+	gpb.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+}
+
+GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityVertexShader(const std::string& source, const char* entry_point)
+{
+	ShaderMacro sm_model;
+	sm_model.AddMacro("VERTEX_SHADER", "1");
+	return m_shader_cache.GetVertexShader(source, sm_model.GetPtr(), entry_point);
+}
+
+GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityPixelShader(const std::string& source, const char* entry_point)
+{
+	ShaderMacro sm_model;
+	return m_shader_cache.GetPixelShader(source, sm_model.GetPtr(), entry_point);
+}
+
+bool GSDevice12::CreateNullTexture()
+{
+	m_null_texture =
+		GSTexture12::Create(GSTexture::Type::RenderTarget, GSTexture::Format::Color, 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+			DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R8G8B8A8_UNORM);
+	if (!m_null_texture)
+		return false;
+
+	m_null_texture->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+	D3D12::SetObjectName(m_null_texture->GetResource(), "Null texture");
+	return true;
+}
+
+bool GSDevice12::CreateBuffers()
+{
+	if (!m_vertex_stream_buffer.Create(VERTEX_BUFFER_SIZE, false))
+	{
+		Host::ReportErrorAsync("GS", "Failed to allocate vertex buffer");
+		return false;
+	}
+
+	if (!m_index_stream_buffer.Create(INDEX_BUFFER_SIZE, false))
+	{
+		Host::ReportErrorAsync("GS", "Failed to allocate index buffer");
+		return false;
+	}
+
+	if (!m_expand_index_stream_buffer.Create(m_features.aa1 ? INDEX_BUFFER_SIZE : 4, false))
+	{
+		Host::ReportErrorAsync("GS", "Failed to allocate expansion index buffer (VS resource)");
+		return false;
+	}
+
+	if (!m_vertex_constant_buffer.Create(VERTEX_UNIFORM_BUFFER_SIZE, !m_uma))
+	{
+		Host::ReportErrorAsync("GS", "Failed to allocate vertex uniform buffer");
+		return false;
+	}
+
+	if (!m_pixel_constant_buffer.Create(FRAGMENT_UNIFORM_BUFFER_SIZE, !m_uma))
+	{
+		Host::ReportErrorAsync("GS", "Failed to allocate fragment uniform buffer");
+		return false;
+	}
+
+	if (!m_texture_stream_buffer.Create(TEXTURE_UPLOAD_BUFFER_SIZE))
+	{
+		Host::ReportErrorAsync("GS", "Failed to allocate texture stream buffer");
+		return false;
+	}
+
+	if (!AllocatePreinitializedGPUBuffer(EXPAND_BUFFER_SIZE, &m_expand_index_buffer,
+			&m_expand_index_buffer_allocation, &GSDevice::GenerateExpansionIndexBuffer))
+	{
+		Host::ReportErrorAsync("GS", "Failed to allocate expansion index buffer");
+		return false;
+	}
+
+	return true;
+}
+
+bool GSDevice12::CreateRootSignatures()
+{
+	D3D12::RootSignatureBuilder rsb;
+
+	//////////////////////////////////////////////////////////////////////////
+	// Convert Pipeline Layout
+	//////////////////////////////////////////////////////////////////////////
+	rsb.SetInputAssemblerFlag();
+	rsb.Add32BitConstants(0, CONVERT_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, NUM_UTILITY_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, NUM_UTILITY_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
+	if (!(m_utility_root_signature = rsb.Create()))
+		return false;
+	D3D12::SetObjectName(m_utility_root_signature.get(), "Convert root signature");
+
+	//////////////////////////////////////////////////////////////////////////
+	// Draw/TFX Pipeline Layout
+	//////////////////////////////////////////////////////////////////////////
+	rsb.SetInputAssemblerFlag();
+	rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
+	rsb.AddCBVParameter(1, D3D12_SHADER_VISIBILITY_PIXEL);
+	rsb.AddSRVParameter(0, D3D12_SHADER_VISIBILITY_VERTEX);
+	rsb.AddSRVParameter(5, D3D12_SHADER_VISIBILITY_VERTEX);
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_PIXEL); // Source (t0) / Palette (t2)
+	rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, NUM_TFX_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
+	// RT (t2) / PrimID (t3) / Depth (t4) / RT UAV (u0) / Depth UAV (u1)
+	D3D12_DESCRIPTOR_RANGE_TYPE rt_types[2] = { D3D12_DESCRIPTOR_RANGE_TYPE_SRV, D3D12_DESCRIPTOR_RANGE_TYPE_UAV };
+	u32 rt_start_regs[2] = { 2, 0 };
+	u32 rt_num_regs[2] = { 3, 2 };
+	rsb.AddDescriptorTableMultiRange(2, rt_types, rt_start_regs, rt_num_regs, D3D12_SHADER_VISIBILITY_PIXEL);
+	rsb.Add32BitConstants(2, sizeof(m_vs_pc_cache) / sizeof(u32), D3D12_SHADER_VISIBILITY_VERTEX);
+	if (!(m_tfx_root_signature = rsb.Create()))
+		return false;
+	D3D12::SetObjectName(m_tfx_root_signature.get(), "TFX root signature");
+	return true;
+}
+
+bool GSDevice12::CompileConvertPipelines()
+{
+	std::optional<std::string> source = ReadShaderSource("shaders/dx11/convert.fx");
+	if (!source)
+	{
+		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/convert.fx.");
+		return false;
+	}
+
+	m_convert_vs = GetUtilityVertexShader(*source, "vs_main");
+	if (!m_convert_vs)
+		return false;
+
+	D3D12::GraphicsPipelineBuilder gpb;
+	gpb.SetRootSignature(m_utility_root_signature.get());
+	AddUtilityVertexAttributes(gpb);
+	gpb.SetNoCullRasterizationState();
+	gpb.SetNoBlendingState();
+	gpb.SetVertexShader(m_convert_vs.get());
+
+	const auto WrapEntryPointMacro = [](const std::string& s) { return fmt::format("__{}__", s); };
+
+	m_convert.resize(ShaderConvertSelector::NUM_TOTAL_SHADERS);
+	for (u32 i = 0; i < ShaderConvertSelector::NUM_TOTAL_SHADERS; i++)
+	{
+		const ShaderConvertSelector shader = ShaderConvertSelector::Get(i);
+
+		GSTexture::Format format = shader.OutputFormat();
+		DXGI_FORMAT dxgi_format;
+		LookupNativeFormat(format, nullptr, nullptr, &dxgi_format, nullptr, nullptr);
+
+		if (shader.DATMConvertShader() || shader.DepthOutput())
+		{
+			gpb.ClearRenderTargets();
+			gpb.SetDepthStencilFormat(DXGI_FORMAT_D32_FLOAT_S8X24_UINT);
+		}
+		else
+		{
+			gpb.SetRenderTarget(0, dxgi_format);
+			gpb.SetDepthStencilFormat(DXGI_FORMAT_UNKNOWN);
+		}
+
+		if (shader.DATMConvertShader())
+		{
+			const D3D12_DEPTH_STENCILOP_DESC sos = {
+				D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_REPLACE, D3D12_COMPARISON_FUNC_ALWAYS};
+			gpb.SetStencilState(true, 1, 1, sos, sos);
+			gpb.SetDepthState(false, false, D3D12_COMPARISON_FUNC_ALWAYS);
+		}
+		else
+		{
+			gpb.SetDepthState(shader.DepthOutput(), shader.DepthOutput(), D3D12_COMPARISON_FUNC_ALWAYS);
+			gpb.SetNoStencilState();
+		}
+
+		gpb.SetColorWriteMask(0, shader.Mask());
+
+		const char* entry_point = shader.EntryPoint();
+		std::string entry_point_macro = WrapEntryPointMacro(entry_point);
+
+		ShaderMacro sm;
+		sm.AddMacro("PIXEL_SHADER", 1);
+		sm.AddMacro("HAS_BILN", static_cast<int>(shader.Biln()));
+		sm.AddMacro("HAS_STENCIL_OUTPUT", static_cast<int>(shader.StencilOutput()));
+		sm.AddMacro("HAS_INTEGER_OUTPUT", static_cast<int>(shader.IntegerOutputBpp() != 0));
+		sm.AddMacro("HAS_DEPTH_OUTPUT", static_cast<int>(shader.DepthOutput()));
+		sm.AddMacro("HAS_FLOAT32_INPUT", static_cast<int>(shader.Float32Input()));
+		sm.AddMacro("HAS_FLOAT32_OUTPUT", static_cast<int>(shader.Float32Output()));
+		sm.AddMacro(entry_point_macro.c_str(), 1);
+
+		ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(*source, sm.GetPtr(), shader.EntryPoint()));
+		if (!ps)
+			return false;
+
+		gpb.SetPixelShader(ps.get());
+
+		ComPtr<ID3D12PipelineState> pipe = gpb.Create(m_device.get(), m_shader_cache, false);
+					
+		if (!pipe)
+			return false;
+
+		D3D12::SetObjectName(pipe.get(),
+			TinyString::from_format("Convert pipeline ({}, mask={:x}, depth={}, biln={})",
+				shader.Name(), shader.Mask(), static_cast<int>(shader.DepthOutput()),
+				static_cast<int>(shader.Biln())));
+
+		m_convert[i] = pipe;
+
+		if (shader.Shader() == ShaderConvert::COLCLIP_INIT || shader.Shader() == ShaderConvert::COLCLIP_RESOLVE)
+		{
+			const bool is_setup = shader.Shader() == ShaderConvert::COLCLIP_INIT;
+			std::array<ComPtr<ID3D12PipelineState>, 2>& arr = is_setup ? m_colclip_setup_pipelines : m_colclip_finish_pipelines;
+			for (u32 ds = 0; ds < 2; ds++)
+			{
+				pxAssert(!arr[ds]);
+
+				gpb.SetRenderTarget(0, is_setup ? DXGI_FORMAT_R16G16B16A16_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM);
+				gpb.SetDepthStencilFormat(ds ? DXGI_FORMAT_D32_FLOAT_S8X24_UINT : DXGI_FORMAT_UNKNOWN);
+				arr[ds] = gpb.Create(m_device.get(), m_shader_cache, false);
+				if (!arr[ds])
+					return false;
+
+				D3D12::SetObjectName(arr[ds].get(), TinyString::from_format("ColorClip {}/copy pipeline (ds={})", is_setup ? "setup" : "finish", ds));
+			}
+		}
+	}
+
+	for (u32 datm = 0; datm < 4; datm++)
+	{
+		const std::string entry_point(StringUtil::StdStringFromFormat("ps_primid_image_init_%d", datm));
+
+		const std::string entry_point_macro = WrapEntryPointMacro(entry_point);
+
+		ShaderMacro sm;
+		sm.AddMacro("PIXEL_SHADER", "1");
+		sm.AddMacro(entry_point_macro.c_str(), "1");
+
+		ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(*source, sm.GetPtr(), entry_point.c_str()));
+		if (!ps)
+			return false;
+
+		gpb.SetRootSignature(m_utility_root_signature.get());
+		gpb.SetRenderTarget(0, DXGI_FORMAT_R32_FLOAT);
+		gpb.SetPixelShader(ps.get());
+		gpb.SetNoDepthTestState();
+		gpb.SetNoStencilState();
+		gpb.SetBlendState(0, false, D3D12_BLEND_ONE, D3D12_BLEND_ONE, D3D12_BLEND_OP_ADD, D3D12_BLEND_ZERO,
+			D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, D3D12_COLOR_WRITE_ENABLE_RED);
+
+		for (u32 ds = 0; ds < 2; ds++)
+		{
+			gpb.SetDepthStencilFormat(ds ? DXGI_FORMAT_D32_FLOAT_S8X24_UINT : DXGI_FORMAT_UNKNOWN);
+			m_primid_image_setup_pipelines[ds][datm] = gpb.Create(m_device.get(), m_shader_cache, false);
+			if (!m_primid_image_setup_pipelines[ds][datm])
+				return false;
+
+			D3D12::SetObjectName(m_primid_image_setup_pipelines[ds][datm].get(),
+				TinyString::from_format("DATE image clear pipeline (ds={}, datm={})", ds, (datm == 1 || datm == 3)));
+		}
+	}
+
+	return true;
+}
+
+bool GSDevice12::CompilePresentPipelines()
+{
+	const std::optional<std::string> shader = ReadShaderSource("shaders/dx11/present.fx");
+	if (!shader)
+	{
+		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/present.fx.");
+		return false;
+	}
+
+	ComPtr<ID3DBlob> vs = GetUtilityVertexShader(*shader, "vs_main");
+	if (!vs)
+		return false;
+
+	D3D12::GraphicsPipelineBuilder gpb;
+	gpb.SetRootSignature(m_utility_root_signature.get());
+	AddUtilityVertexAttributes(gpb);
+	gpb.SetNoCullRasterizationState();
+	gpb.SetNoBlendingState();
+	gpb.SetVertexShader(vs.get());
+	gpb.SetDepthState(false, false, D3D12_COMPARISON_FUNC_ALWAYS);
+	gpb.SetNoStencilState();
+	gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+	for (PresentShader i = PresentShader::COPY; i < PresentShader::Count; i = static_cast<PresentShader>(static_cast<int>(i) + 1))
+	{
+		const int index = static_cast<int>(i);
+
+		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, ShaderEntryPoint(i)));
+		if (!ps)
+			return false;
+
+		gpb.SetPixelShader(ps.get());
+
+		m_present[index] = gpb.Create(m_device.get(), m_shader_cache, false);
+		if (!m_present[index])
+			return false;
+
+		D3D12::SetObjectName(m_present[index].get(), TinyString::from_format("Present pipeline {}", static_cast<int>(i)));
+	}
+
+	return true;
+}
+
+bool GSDevice12::CompileInterlacePipelines()
+{
+	const std::optional<std::string> source = ReadShaderSource("shaders/dx11/interlace.fx");
+	if (!source)
+	{
+		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/interlace.fx.");
+		return false;
+	}
+
+	D3D12::GraphicsPipelineBuilder gpb;
+	AddUtilityVertexAttributes(gpb);
+	gpb.SetRootSignature(m_utility_root_signature.get());
+	gpb.SetNoCullRasterizationState();
+	gpb.SetNoDepthTestState();
+	gpb.SetNoBlendingState();
+	gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+	gpb.SetVertexShader(m_convert_vs.get());
+
+	for (int i = 0; i < static_cast<int>(m_interlace.size()); i++)
+	{
+		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*source, StringUtil::StdStringFromFormat("ps_main%d", i).c_str()));
+		if (!ps)
+			return false;
+
+		gpb.SetPixelShader(ps.get());
+
+		m_interlace[i] = gpb.Create(m_device.get(), m_shader_cache, false);
+		if (!m_interlace[i])
+			return false;
+
+		D3D12::SetObjectName(m_interlace[i].get(), TinyString::from_format("Interlace pipeline {}", static_cast<int>(i)));
+	}
+
+	return true;
+}
+
+bool GSDevice12::CompileMergePipelines()
+{
+	const std::optional<std::string> shader = ReadShaderSource("shaders/dx11/merge.fx");
+	if (!shader)
+	{
+		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/merge.fx.");
+		return false;
+	}
+
+	D3D12::GraphicsPipelineBuilder gpb;
+	AddUtilityVertexAttributes(gpb);
+	gpb.SetRootSignature(m_utility_root_signature.get());
+	gpb.SetNoCullRasterizationState();
+	gpb.SetNoDepthTestState();
+	gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+	gpb.SetVertexShader(m_convert_vs.get());
+
+	for (int i = 0; i < static_cast<int>(m_merge.size()); i++)
+	{
+		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, StringUtil::StdStringFromFormat("ps_main%d", i).c_str()));
+		if (!ps)
+			return false;
+
+		gpb.SetPixelShader(ps.get());
+		gpb.SetBlendState(0, true, D3D12_BLEND_SRC_ALPHA, D3D12_BLEND_INV_SRC_ALPHA, D3D12_BLEND_OP_ADD,
+			D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD);
+
+		m_merge[i] = gpb.Create(m_device.get(), m_shader_cache, false);
+		if (!m_merge[i])
+			return false;
+
+		D3D12::SetObjectName(m_merge[i].get(), TinyString::from_format("Merge pipeline {}", i));
+	}
+
+	return true;
+}
+
+bool GSDevice12::CompilePostProcessingPipelines()
+{
+	D3D12::GraphicsPipelineBuilder gpb;
+	AddUtilityVertexAttributes(gpb);
+	gpb.SetRootSignature(m_utility_root_signature.get());
+	gpb.SetNoCullRasterizationState();
+	gpb.SetNoDepthTestState();
+	gpb.SetNoBlendingState();
+	gpb.SetRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM);
+	gpb.SetVertexShader(m_convert_vs.get());
+
+	{
+		const std::optional<std::string> shader = ReadShaderSource("shaders/common/fxaa.fx");
+		if (!shader)
+		{
+			Host::ReportErrorAsync("GS", "Failed to read shaders/common/fxaa.fx.");
+			return false;
+		}
+
+		ShaderMacro sm;
+		sm.AddMacro("FXAA_HLSL", "1");
+		ComPtr<ID3DBlob> ps = m_shader_cache.GetPixelShader(*shader, sm.GetPtr());
+		if (!ps)
+			return false;
+
+		gpb.SetPixelShader(ps.get());
+
+		m_fxaa_pipeline = gpb.Create(m_device.get(), m_shader_cache, false);
+		if (!m_fxaa_pipeline)
+			return false;
+
+		D3D12::SetObjectName(m_fxaa_pipeline.get(), "FXAA pipeline");
+	}
+
+	{
+		const std::optional<std::string> shader = ReadShaderSource("shaders/dx11/shadeboost.fx");
+		if (!shader)
+		{
+			Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/shadeboost.fx.");
+			return false;
+		}
+
+		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, "ps_main"));
+		if (!ps)
+			return false;
+
+		gpb.SetPixelShader(ps.get());
+
+		m_shadeboost_pipeline = gpb.Create(m_device.get(), m_shader_cache, false);
+		if (!m_shadeboost_pipeline)
+			return false;
+
+		D3D12::SetObjectName(m_shadeboost_pipeline.get(), "Shadeboost pipeline");
+	}
+
+	return true;
+}
+
+void GSDevice12::DestroyResources()
+{
+	m_convert_vs.reset();
+
+	m_cas_sharpen_pipeline.reset();
+	m_cas_upscale_pipeline.reset();
+	m_cas_root_signature.reset();
+
+	m_tfx_pipelines.clear();
+	m_tfx_pixel_shaders.clear();
+	m_tfx_vertex_shaders.clear();
+	m_interlace = {};
+	m_merge = {};
+	m_present = {};
+	m_convert.clear();
+	m_colclip_setup_pipelines = {};
+	m_colclip_finish_pipelines = {};
+	m_primid_image_setup_pipelines = {};
+	m_fxaa_pipeline.reset();
+	m_shadeboost_pipeline.reset();
+	m_imgui_pipeline.reset();
+
+	for (const auto& it : m_samplers)
+	{
+		if (it.second)
+			m_sampler_heap_manager.Free(it.second.index);
+	}
+	m_samplers.clear();
+	InvalidateSamplerGroups();
+
+	m_expand_index_buffer.reset();
+	m_expand_index_buffer_allocation.reset();
+	m_texture_stream_buffer.Destroy(false);
+	m_pixel_constant_buffer.Destroy(false);
+	m_vertex_constant_buffer.Destroy(false);
+	m_index_stream_buffer.Destroy(false);
+	m_vertex_stream_buffer.Destroy(false);
+	m_expand_index_stream_buffer.Destroy(false);
+
+	m_utility_root_signature.reset();
+	m_tfx_root_signature.reset();
+
+	if (m_null_texture)
+	{
+		m_null_texture->Destroy(false);
+		m_null_texture.reset();
+	}
+
+	m_shader_cache.Close();
+
+	m_timestamp_query_buffer.reset();
+	m_timestamp_query_allocation.reset();
+	m_sampler_heap_manager.Destroy();
+	m_dsv_heap_manager.Destroy();
+	m_rtv_heap_manager.Destroy();
+	m_descriptor_heap_manager.Destroy();
+	m_command_lists = {};
+	m_current_command_list = 0;
+	m_completed_fence_value = 0;
+	m_current_fence_value = 0;
+	if (m_fence_event)
+	{
+		CloseHandle(m_fence_event);
+		m_fence_event = {};
+	}
+
+	m_allocator.reset();
+	m_command_queue.reset();
+	m_device.reset();
+}
+
+const ID3DBlob* GSDevice12::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
+{
+	auto it = m_tfx_vertex_shaders.find(sel.key);
+	if (it != m_tfx_vertex_shaders.end())
+		return it->second.get();
+
+	ShaderMacro sm;
+	sm.AddMacro("VERTEX_SHADER", 1);
+	sm.AddMacro("VS_TME", sel.tme);
+	sm.AddMacro("VS_FST", sel.fst);
+	sm.AddMacro("VS_IIP", sel.iip);
+	sm.AddMacro("VS_EXPAND", static_cast<int>(sel.expand));
+
+	const char* entry_point = (sel.expand != GSHWDrawConfig::VSExpand::None) ? "vs_main_expand" : "vs_main";
+	ComPtr<ID3DBlob> vs(m_shader_cache.GetVertexShader(m_tfx_source, sm.GetPtr(), entry_point));
+	it = m_tfx_vertex_shaders.emplace(sel.key, std::move(vs)).first;
+	return it->second.get();
+}
+
+const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& sel)
+{
+	auto it = m_tfx_pixel_shaders.find(sel);
+	if (it != m_tfx_pixel_shaders.end())
+		return it->second.get();
+
+	ShaderMacro sm;
+	sm.AddMacro("PIXEL_SHADER", 1);
+	sm.AddMacro("PS_HAS_CONSERVATIVE_DEPTH", 1);
+	sm.AddMacro("PS_FST", sel.fst);
+	sm.AddMacro("PS_WMS", sel.wms);
+	sm.AddMacro("PS_WMT", sel.wmt);
+	sm.AddMacro("PS_ADJS", sel.adjs);
+	sm.AddMacro("PS_ADJT", sel.adjt);
+	sm.AddMacro("PS_AEM_FMT", sel.aem_fmt);
+	sm.AddMacro("PS_AEM", sel.aem);
+	sm.AddMacro("PS_TFX", sel.tfx);
+	sm.AddMacro("PS_TCC", sel.tcc);
+	sm.AddMacro("PS_DATE", sel.date);
+	sm.AddMacro("PS_ATST", static_cast<u32>(sel.atst));
+	sm.AddMacro("PS_AFAIL", static_cast<u32>(sel.afail));
+	sm.AddMacro("PS_FOG", sel.fog);
+	sm.AddMacro("PS_IIP", sel.iip);
+	sm.AddMacro("PS_BLEND_HW", sel.blend_hw);
+	sm.AddMacro("PS_A_MASKED", sel.a_masked);
+	sm.AddMacro("PS_FBA", sel.fba);
+	sm.AddMacro("PS_FBMASK", sel.fbmask);
+	sm.AddMacro("PS_LTF", sel.ltf);
+	sm.AddMacro("PS_TCOFFSETHACK", sel.tcoffsethack);
+	sm.AddMacro("PS_POINT_SAMPLER", sel.point_sampler);
+	sm.AddMacro("PS_REGION_RECT", sel.region_rect);
+	sm.AddMacro("PS_SHUFFLE", sel.shuffle);
+	sm.AddMacro("PS_SHUFFLE_SAME", sel.shuffle_same);
+	sm.AddMacro("PS_PROCESS_BA", sel.process_ba);
+	sm.AddMacro("PS_PROCESS_RG", sel.process_rg);
+	sm.AddMacro("PS_SHUFFLE_ACROSS", sel.shuffle_across);
+	sm.AddMacro("PS_READ16_SRC", sel.real16src);
+	sm.AddMacro("PS_WRITE_RG", sel.write_rg);
+	sm.AddMacro("PS_CHANNEL_FETCH", sel.channel);
+	sm.AddMacro("PS_TALES_OF_ABYSS_HLE", sel.tales_of_abyss_hle);
+	sm.AddMacro("PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);
+	sm.AddMacro("PS_DST_FMT", sel.dst_fmt);
+	sm.AddMacro("PS_DEPTH_FMT", sel.depth_fmt);
+	sm.AddMacro("PS_PAL_FMT", sel.pal_fmt);
+	sm.AddMacro("PS_COLCLIP_HW", sel.colclip_hw);
+	sm.AddMacro("PS_RTA_CORRECTION", sel.rta_correction);
+	sm.AddMacro("PS_RTA_SRC_CORRECTION", sel.rta_source_correction);
+	sm.AddMacro("PS_COLCLIP", sel.colclip);
+	sm.AddMacro("PS_BLEND_A", sel.blend_a);
+	sm.AddMacro("PS_BLEND_B", sel.blend_b);
+	sm.AddMacro("PS_BLEND_C", sel.blend_c);
+	sm.AddMacro("PS_BLEND_D", sel.blend_d);
+	sm.AddMacro("PS_BLEND_MIX", sel.blend_mix);
+	sm.AddMacro("PS_ROUND_INV", sel.round_inv);
+	sm.AddMacro("PS_FIXED_ONE_A", sel.fixed_one_a);
+	sm.AddMacro("PS_PABE", sel.pabe);
+	sm.AddMacro("PS_DITHER", sel.dither);
+	sm.AddMacro("PS_DITHER_ADJUST", sel.dither_adjust);
+	sm.AddMacro("PS_ZCLAMP", sel.zclamp);
+	sm.AddMacro("PS_ZFLOOR", sel.zfloor);
+	sm.AddMacro("PS_SCANMSK", sel.scanmsk);
+	sm.AddMacro("PS_AUTOMATIC_LOD", sel.automatic_lod);
+	sm.AddMacro("PS_MANUAL_LOD", sel.manual_lod);
+	sm.AddMacro("PS_TEX_IS_FB", sel.tex_is_fb);
+	sm.AddMacro("PS_NO_COLOR", sel.no_color);
+	sm.AddMacro("PS_NO_COLOR1", sel.no_color1);
+	sm.AddMacro("PS_ZTST", sel.ztst);
+	sm.AddMacro("PS_AA1", static_cast<u32>(sel.aa1));
+	sm.AddMacro("PS_ABE", sel.abe);
+	sm.AddMacro("PS_ANISOTROPIC_FILTERING", sel.sw_aniso);
+	sm.AddMacro("PS_ROV_COLOR", sel.rov_color);
+	sm.AddMacro("PS_ROV_DEPTH", static_cast<u32>(sel.rov_depth));
+
+	ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(m_tfx_source, sm.GetPtr(), "ps_main"));
+	it = m_tfx_pixel_shaders.emplace(sel, std::move(ps)).first;
+	return it->second.get();
+}
+
+GSDevice12::ComPtr<ID3D12PipelineState> GSDevice12::CreateTFXPipeline(const PipelineSelector& p)
+{
+	static constexpr std::array<D3D12_PRIMITIVE_TOPOLOGY_TYPE, 3> topology_lookup = {{
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT, // Point
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE, // Line
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, // Triangle
+	}};
+
+	GSHWDrawConfig::BlendState pbs{p.bs};
+	GSHWDrawConfig::PSSelector pps{p.ps};
+	if (!p.bs.IsEffective(p.cms))
+	{
+		// disable blending when colours are masked
+		pbs = {};
+		pps.no_color1 = true;
+	}
+
+	const ID3DBlob* vs = GetTFXVertexShader(p.vs);
+	const ID3DBlob* ps = GetTFXPixelShader(pps);
+	if (!vs || !ps)
+		return nullptr;
+
+	// Common state
+	D3D12::GraphicsPipelineBuilder gpb;
+	gpb.SetRootSignature(m_tfx_root_signature.get());
+	gpb.SetPrimitiveTopologyType(topology_lookup[p.topology]);
+	gpb.SetRasterizationState(D3D12_FILL_MODE_SOLID, D3D12_CULL_MODE_NONE, false);
+
+	u32 num_rts = 0;
+	if (p.rt)
+	{
+		const GSTexture::Format format = IsDATEModePrimIDInit(p.ps.date) ?
+			GSTexture::Format::PrimID :
+			(p.ps.colclip_hw ? GSTexture::Format::ColorClip : GSTexture::Format::Color);
+
+		DXGI_FORMAT native_format;
+		LookupNativeFormat(format, nullptr, nullptr, &native_format, nullptr, nullptr);
+		gpb.SetRenderTarget(num_rts++, native_format);
+	}
+	if (p.ds_as_rt)
+	{
+		gpb.SetRenderTarget(num_rts++, DXGI_FORMAT_R32_FLOAT);
+	}
+	if (p.ds)
+		gpb.SetDepthStencilFormat(DXGI_FORMAT_D32_FLOAT_S8X24_UINT);
+
+	// Shaders
+	gpb.SetVertexShader(vs);
+	gpb.SetPixelShader(ps);
+
+	// IA
+	if (p.vs.expand == GSHWDrawConfig::VSExpand::None)
+	{
+		gpb.AddVertexAttribute("TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0);
+		gpb.AddVertexAttribute("COLOR", 0, DXGI_FORMAT_R8G8B8A8_UINT, 0, 8);
+		gpb.AddVertexAttribute("TEXCOORD", 1, DXGI_FORMAT_R32_FLOAT, 0, 12);
+		gpb.AddVertexAttribute("POSITION", 0, DXGI_FORMAT_R16G16_UINT, 0, 16);
+		gpb.AddVertexAttribute("POSITION", 1, DXGI_FORMAT_R32_UINT, 0, 20);
+		gpb.AddVertexAttribute("TEXCOORD", 2, DXGI_FORMAT_R16G16_UINT, 0, 24);
+		gpb.AddVertexAttribute("COLOR", 1, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 28);
+	}
+
+	// DepthStencil
+	if (p.ds)
+	{
+		static const D3D12_COMPARISON_FUNC ztst[] = {D3D12_COMPARISON_FUNC_NEVER, D3D12_COMPARISON_FUNC_ALWAYS,
+			D3D12_COMPARISON_FUNC_GREATER_EQUAL, D3D12_COMPARISON_FUNC_GREATER};
+		gpb.SetDepthState((p.dss.ztst != ZTST_ALWAYS || p.dss.zwe), p.dss.zwe, ztst[p.dss.ztst]);
+		if (p.dss.date)
+		{
+			const D3D12_DEPTH_STENCILOP_DESC sos{D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP,
+				p.dss.date_one ? D3D12_STENCIL_OP_ZERO : D3D12_STENCIL_OP_KEEP, D3D12_COMPARISON_FUNC_EQUAL};
+			gpb.SetStencilState(true, 1, 1, sos, sos);
+		}
+	}
+	else
+	{
+		gpb.SetNoDepthTestState();
+	}
+
+	// Blending
+	if (IsDATEModePrimIDInit(p.ps.date))
+	{
+		// image DATE prepass
+		gpb.SetBlendState(0, true, D3D12_BLEND_ONE, D3D12_BLEND_ONE, D3D12_BLEND_OP_MIN, D3D12_BLEND_ONE,
+			D3D12_BLEND_ONE, D3D12_BLEND_OP_ADD, D3D12_COLOR_WRITE_ENABLE_RED);
+	}
+	else if (pbs.enable)
+	{
+		// clang-format off
+		static constexpr std::array<D3D12_BLEND, 16> d3d_blend_factors = { {
+			D3D12_BLEND_SRC_COLOR, D3D12_BLEND_INV_SRC_COLOR, D3D12_BLEND_DEST_COLOR, D3D12_BLEND_INV_DEST_COLOR,
+			D3D12_BLEND_SRC1_COLOR, D3D12_BLEND_INV_SRC1_COLOR, D3D12_BLEND_SRC_ALPHA, D3D12_BLEND_INV_SRC_ALPHA,
+			D3D12_BLEND_DEST_ALPHA, D3D12_BLEND_INV_DEST_ALPHA, D3D12_BLEND_SRC1_ALPHA, D3D12_BLEND_INV_SRC1_ALPHA,
+			D3D12_BLEND_BLEND_FACTOR, D3D12_BLEND_INV_BLEND_FACTOR, D3D12_BLEND_ONE, D3D12_BLEND_ZERO
+		} };
+		static constexpr std::array<D3D12_BLEND_OP, 3> d3d_blend_ops = { {
+			D3D12_BLEND_OP_ADD, D3D12_BLEND_OP_SUBTRACT, D3D12_BLEND_OP_REV_SUBTRACT
+		} };
+		// clang-format on
+
+		gpb.SetBlendState(0, true, d3d_blend_factors[pbs.src_factor], d3d_blend_factors[pbs.dst_factor],
+			d3d_blend_ops[pbs.op], d3d_blend_factors[pbs.src_factor_alpha], d3d_blend_factors[pbs.dst_factor_alpha],
+			D3D12_BLEND_OP_ADD, p.cms.wrgba);
+	}
+	else
+	{
+		gpb.SetBlendState(0, false, D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, D3D12_BLEND_ONE,
+			D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, p.cms.wrgba);
+	}
+
+	if (p.ds_as_rt)
+	{
+		gpb.SetBlendState(num_rts - 1, false, D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, D3D12_BLEND_ONE,
+			D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD);
+	}
+
+	ComPtr<ID3D12PipelineState> pipeline(gpb.Create(m_device.get(), m_shader_cache));
+	if (pipeline)
+	{
+		D3D12::SetObjectName(
+			pipeline.get(), TinyString::from_format("TFX Pipeline {:08X}/{:016X}_{:016X}", p.vs.key, p.ps.key_hi, p.ps.key_lo));
+	}
+
+	return pipeline;
+}
+
+const ID3D12PipelineState* GSDevice12::GetTFXPipeline(const PipelineSelector& p)
+{
+	auto it = m_tfx_pipelines.find(p);
+	if (it != m_tfx_pipelines.end())
+		return it->second.get();
+
+	ComPtr<ID3D12PipelineState> pipeline(CreateTFXPipeline(p));
+	it = m_tfx_pipelines.emplace(p, std::move(pipeline)).first;
+	return it->second.get();
+}
+
+bool GSDevice12::BindDrawPipeline(const PipelineSelector& p)
+{
+	const ID3D12PipelineState* pipeline = GetTFXPipeline(p);
+	if (!pipeline)
+		return false;
+
+	SetPipeline(pipeline);
+
+	return ApplyTFXState();
+}
+
+void GSDevice12::InitializeState()
+{
+	for (u32 i = 0; i < TEXTURE_RT_UAV; i++)
+		m_tfx_textures[i] = m_null_texture->GetSRVDescriptor();
+	for (u32 i = TEXTURE_RT_UAV; i < NUM_TOTAL_TFX_TEXTURES; i++)
+		m_tfx_textures[i] = m_null_texture->GetUAVDescriptor();
+	m_tfx_sampler_sel = GSHWDrawConfig::SamplerSelector::Point().key;
+
+	InvalidateCachedState();
+}
+
+void GSDevice12::InitializeSamplers()
+{
+	bool result = GetSampler(&m_point_sampler_cpu, GSHWDrawConfig::SamplerSelector::Point());
+	result = result && GetSampler(&m_linear_sampler_cpu, GSHWDrawConfig::SamplerSelector::Linear());
+	result = result && GetSampler(&m_tfx_sampler, m_tfx_sampler_sel);
+
+	if (!result)
+		pxFailRel("Failed to initialize samplers");
+}
+
+GSDevice12::WaitType GSDevice12::GetWaitType(bool wait, bool spin)
+{
+	if (!wait)
+		return WaitType::None;
+	if (spin)
+		return WaitType::Spin;
+	else
+		return WaitType::Sleep;
+}
+
+void GSDevice12::ExecuteCommandList(bool wait_for_completion)
+{
+	EndRenderPass();
+	ExecuteCommandList(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
+	InvalidateCachedState();
+}
+
+void GSDevice12::ExecuteCommandList(bool wait_for_completion, const char* reason, ...)
+{
+	std::va_list ap;
+	va_start(ap, reason);
+	const std::string reason_str(StringUtil::StdStringFromFormatV(reason, ap));
+	va_end(ap);
+
+	Console.Warning("D3D12: Executing command buffer due to '%s'", reason_str.c_str());
+	ExecuteCommandList(wait_for_completion);
+}
+
+void GSDevice12::ExecuteCommandListAndRestartRenderPass(bool wait_for_completion, const char* reason)
+{
+	Console.Warning("D3D12: Executing command buffer due to '%s'", reason);
+
+	const bool was_in_render_pass = InRenderPass();
+	EndRenderPass();
+	ExecuteCommandList(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
+	InvalidateCachedState();
+
+	if (was_in_render_pass)
+	{
+		// rebind everything except RT, because the RP does that for us
+		ApplyBaseState(m_dirty_flags & ~DIRTY_FLAG_RENDER_TARGET, GetCommandList().list4.get());
+		m_dirty_flags &= ~DIRTY_BASE_STATE;
+
+		// restart render pass
+		BeginRenderPass(m_current_render_target ? D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE :
+												  D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
+			m_current_render_target ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE :
+									  D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+			m_current_depth_target ? D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE :
+									 D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
+			m_current_depth_target ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE :
+									 D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
+	}
+}
+
+void GSDevice12::ExecuteCommandListForReadback()
+{
+	ExecuteCommandList(true);
+}
+
+void GSDevice12::InvalidateCachedState()
+{
+	m_dirty_flags |= DIRTY_BASE_STATE | DIRTY_ROOT_PARAMS | DIRTY_TFX_STATE | DIRTY_UTILITY_STATE | DIRTY_CONSTANT_BUFFER_STATE;
+	m_current_root_signature = RootSignature::Undefined;
+	m_utility_texture_cpu.Clear();
+	m_utility_texture_gpu.Clear();
+	m_utility_sampler_cpu.Clear();
+	m_utility_sampler_gpu.Clear();
+	m_tfx_textures_handle_gpu.Clear();
+	m_tfx_samplers_handle_gpu.Clear();
+	m_tfx_rt_textures_handle_gpu.Clear();
+}
+
+void GSDevice12::SetVertexBuffer(D3D12_GPU_VIRTUAL_ADDRESS buffer, size_t size, size_t stride)
+{
+	if (m_vertex_buffer.BufferLocation == buffer && m_vertex_buffer.SizeInBytes == size &&
+		m_vertex_buffer.StrideInBytes == stride)
+		return;
+
+	m_vertex_buffer.BufferLocation = buffer;
+	m_vertex_buffer.SizeInBytes = size;
+	m_vertex_buffer.StrideInBytes = stride;
+	m_dirty_flags |= DIRTY_FLAG_VERTEX_BUFFER;
+}
+
+void GSDevice12::SetIndexBuffer(D3D12_GPU_VIRTUAL_ADDRESS buffer, size_t size, DXGI_FORMAT type)
+{
+	if (m_index_buffer.BufferLocation == buffer && m_index_buffer.SizeInBytes == size && m_index_buffer.Format == type)
+		return;
+
+	m_index_buffer.BufferLocation = buffer;
+	m_index_buffer.SizeInBytes = size;
+	m_index_buffer.Format = type;
+	m_dirty_flags |= DIRTY_FLAG_INDEX_BUFFER;
+}
+
+void GSDevice12::SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY topology)
+{
+	if (m_primitive_topology == topology)
+		return;
+
+	m_primitive_topology = topology;
+	m_dirty_flags |= DIRTY_FLAG_PRIMITIVE_TOPOLOGY;
+}
+
+void GSDevice12::SetBlendConstants(u8 color)
+{
+	if (m_blend_constant_color == color)
+		return;
+
+	m_blend_constant_color = color;
+	m_dirty_flags |= DIRTY_FLAG_BLEND_CONSTANTS;
+}
+
+void GSDevice12::SetStencilRef(u8 ref)
+{
+	if (m_stencil_ref == ref)
+		return;
+
+	m_stencil_ref = ref;
+	m_dirty_flags |= DIRTY_FLAG_STENCIL_REF;
+}
+
+void GSDevice12::PSSetShaderResource(int i, GSTexture* sr, bool check_state, ResourceType type)
+{
+	pxAssert(i < NUM_TFX_TEXTURES + NUM_TFX_RT_TEXTURES + NUM_TFX_UAV_TEXTURES);
+
+	D3D12DescriptorHandle handle;
+	if (sr)
+	{
+		const GSTexture12::ResourceState state = GetResourceState(type);
+
+		GSTexture12* dtex = static_cast<GSTexture12*>(sr);
+		if (check_state)
+		{
+			if (dtex->GetResourceState() != state && InRenderPass())
+			{
+				GL_INS("Ending render pass due to resource transition");
+				EndRenderPass();
+			}
+
+			dtex->CommitClear();
+			dtex->TransitionToState(state);
+		}
+		dtex->SetUseFenceCounter(GetCurrentFenceValue());
+
+		handle = GetResourceDescriptor(dtex, type);
+	}
+	else
+	{
+		handle = m_null_texture->GetSRVDescriptor();
+	}
+
+	if (m_tfx_textures[i] == handle)
+		return;
+
+	m_tfx_textures[i] = handle;
+	m_dirty_flags |= (i < NUM_TFX_TEXTURES) ? DIRTY_FLAG_TFX_TEXTURES : DIRTY_FLAG_TFX_RT_TEXTURES;
+}
+
+void GSDevice12::PSSetSampler(GSHWDrawConfig::SamplerSelector sel)
+{
+	if (m_tfx_sampler_sel == sel.key)
+		return;
+
+	GetSampler(&m_tfx_sampler, sel);
+	m_tfx_sampler_sel = sel.key;
+	m_dirty_flags |= DIRTY_FLAG_TFX_SAMPLERS;
+}
+
+void GSDevice12::PSSetUnorderedAccess(GSTexture* rt, GSTexture* ds, bool write_rt, bool write_ds)
+{
+	GSTexture12* d12Rt = static_cast<GSTexture12*>(rt);
+	GSTexture12* d12Ds = static_cast<GSTexture12*>(ds);
+	GSTexture12* oldD12Rt = m_tfx_textures_uav[0] != m_null_texture.get() ? m_tfx_textures_uav[0] : nullptr;
+	GSTexture12* oldD12Ds = m_tfx_textures_uav[1] != m_null_texture.get() ? m_tfx_textures_uav[1] : nullptr;
+
+	if (!(d12Rt || d12Ds || oldD12Rt || oldD12Ds))
+		return;
+
+	pxAssert(!(d12Rt || d12Ds) || m_features.rov);
+
+	if (d12Rt)
+	{
+		PSSetShaderResource(TEXTURE_RT_UAV, d12Rt, true, ResourceType::UAV);
+
+		// Unbind conflicting RT texture
+		PSSetShaderResource(TEXTURE_RT, nullptr, false);
+
+		// Unbind conflicting source texture
+		if (m_tfx_textures[TEXTURE_TEXTURE] == d12Rt->GetSRVDescriptor() ||
+			m_tfx_textures[TEXTURE_TEXTURE] == d12Rt->GetFBLDescriptor())
+		{
+			PSSetShaderResource(TEXTURE_TEXTURE, nullptr, false);
+		}
+
+		if (write_rt)
+		{
+			d12Rt->SetState(GSTexture::State::Dirty);
+		}
+	}
+	else
+	{
+		// Unbind to avoid conflicts with OM targets.
+		PSSetShaderResource(TEXTURE_RT_UAV, nullptr, false);
+	}
+
+	if (d12Ds)
+	{
+		PSSetShaderResource(TEXTURE_DEPTH_UAV, d12Ds, true, ResourceType::UAV);
+
+		// Unbind conflicting depth texture
+		PSSetShaderResource(TEXTURE_DEPTH, nullptr, false);
+
+		// Unbind conflicting source texture
+		if (m_tfx_textures[TEXTURE_TEXTURE] == d12Ds->GetSRVDescriptor())
+		{
+			PSSetShaderResource(TEXTURE_TEXTURE, nullptr, false);
+		}
+
+		if (write_ds)
+		{
+			d12Ds->SetState(GSTexture::State::Dirty);
+		}
+	}
+	else
+	{
+		// Unbind to avoid conflicts with OM targets.
+		PSSetShaderResource(TEXTURE_DEPTH_UAV, nullptr, false);
+	}
+}
+
+void GSDevice12::SetUtilityRootSignature()
+{
+	if (m_current_root_signature == RootSignature::Utility)
+		return;
+
+	m_current_root_signature = RootSignature::Utility;
+	m_dirty_flags |= DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE | DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE | DIRTY_FLAG_PIPELINE;
+	GetCommandList().list4->SetGraphicsRootSignature(m_utility_root_signature.get());
+}
+
+void GSDevice12::SetUtilityTexture(GSTexture* dtex, const D3D12DescriptorHandle& sampler)
+{
+	D3D12DescriptorHandle handle;
+	if (dtex)
+	{
+		GSTexture12* d12tex = static_cast<GSTexture12*>(dtex);
+		d12tex->CommitClear();
+		d12tex->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+		d12tex->SetUseFenceCounter(GetCurrentFenceValue());
+		handle = d12tex->GetSRVDescriptor();
+	}
+	else
+	{
+		handle = m_null_texture->GetSRVDescriptor();
+	}
+
+	if (m_utility_texture_cpu != handle)
+	{
+		m_utility_texture_cpu = handle;
+		m_dirty_flags |= DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE;
+
+		if (!GetTextureGroupDescriptors(&m_utility_texture_gpu, &handle, 1))
+		{
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of utility texture descriptors");
+			SetUtilityTexture(dtex, sampler);
+			return;
+		}
+	}
+
+	if (m_utility_sampler_cpu != sampler)
+	{
+		m_utility_sampler_cpu = sampler;
+		m_dirty_flags |= DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE;
+
+		if (!GetSamplerAllocator().LookupSingle(&m_utility_sampler_gpu, sampler))
+		{
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of utility sampler descriptors");
+			SetUtilityTexture(dtex, sampler);
+			return;
+		}
+	}
+}
+
+void GSDevice12::SetUtilityPushConstants(const void* data, u32 size)
+{
+	GetCommandList().list4->SetGraphicsRoot32BitConstants(
+		UTILITY_ROOT_SIGNATURE_PARAM_PUSH_CONSTANTS, (size + 3) / sizeof(u32), data, 0);
+}
+
+void GSDevice12::UnbindTexture(GSTexture12* tex)
+{
+	// Source / palette
+	for (u32 i = 0; i <= TEXTURE_PALETTE; i++)
+	{
+		if (m_tfx_textures[i] == tex->GetSRVDescriptor() || m_tfx_textures[i] == tex->GetFBLDescriptor())
+		{
+			m_tfx_textures[i] = m_null_texture->GetSRVDescriptor();
+			m_dirty_flags |= DIRTY_FLAG_TFX_TEXTURES;
+		}
+	}
+
+	// RT / primid / depth
+	for (u32 i = TEXTURE_RT; i <= TEXTURE_DEPTH; i++)
+	{
+		if (m_tfx_textures[i] == tex->GetSRVDescriptor() || m_tfx_textures[i] == tex->GetFBLDescriptor())
+		{
+			m_tfx_textures[i] = m_null_texture->GetSRVDescriptor();
+			m_dirty_flags |= DIRTY_FLAG_TFX_RT_TEXTURES;
+		}
+	}
+
+	// RT UAV / depth UAV
+	for (u32 i = TEXTURE_RT_UAV; i <= TEXTURE_DEPTH_UAV; i++)
+	{
+		if (m_tfx_textures_uav[i - TEXTURE_RT_UAV] == tex)
+		{
+			m_tfx_textures_uav[i - TEXTURE_RT_UAV] = nullptr;
+			m_tfx_textures[i] = m_null_texture->GetUAVDescriptor();
+			m_dirty_flags |= DIRTY_FLAG_TFX_RT_TEXTURES;
+		}
+	}
+
+	if (m_current_render_target == tex)
+	{
+		EndRenderPass();
+		m_current_render_target = nullptr;
+	}
+	if (m_current_depth_render_target == tex)
+	{
+		EndRenderPass();
+		m_current_render_target = nullptr;
+	}
+	if (m_current_depth_target == tex)
+	{
+		EndRenderPass();
+		m_current_depth_target = nullptr;
+		m_current_depth_read_only = false;
+	}
+}
+
+void GSDevice12::RenderTextureMipmap(
+	GSTexture12* texture, u32 dst_level, u32 dst_width, u32 dst_height, u32 src_level, u32 src_width, u32 src_height)
+{
+	EndRenderPass();
+
+	// we need a temporary SRV and RTV for each mip level
+	// Safe to use the init buffer after exec, because everything will be done with the texture.
+	D3D12DescriptorHandle rtv_handle;
+	while (!GetRTVHeapManager().Allocate(&rtv_handle))
+		ExecuteCommandList(false);
+
+	D3D12DescriptorHandle srv_handle;
+	while (!GetDescriptorHeapManager().Allocate(&srv_handle))
+		ExecuteCommandList(false);
+
+	// Setup views. This will be a partial view for the SRV.
+	D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = {texture->GetDXGIFormat(), D3D12_RTV_DIMENSION_TEXTURE2D};
+	rtv_desc.Texture2D = {dst_level, 0u};
+	m_device.get()->CreateRenderTargetView(texture->GetResource(), &rtv_desc, rtv_handle);
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {
+		texture->GetDXGIFormat(), D3D12_SRV_DIMENSION_TEXTURE2D, D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING};
+	srv_desc.Texture2D = {src_level, 1u, 0u, 0.0f};
+	m_device.get()->CreateShaderResourceView(texture->GetResource(), &srv_desc, srv_handle);
+
+	// We need to set the descriptors up manually, because we're not going through GSTexture.
+	if (!GetTextureGroupDescriptors(&m_utility_texture_gpu, &srv_handle, 1))
+		ExecuteCommandList(false);
+	if (m_utility_sampler_cpu != m_linear_sampler_cpu)
+	{
+		m_dirty_flags |= DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE;
+		if (!GetSamplerAllocator().LookupSingle(&m_utility_sampler_gpu, m_linear_sampler_cpu))
+			ExecuteCommandList(false);
+	}
+
+	// *now* we don't have to worry about running out of anything.
+	const D3D12CommandList& cmdlist = GetCommandList();
+	if (texture->GetResourceState() != GSTexture12::ResourceState::PixelShaderResource)
+		texture->TransitionSubresourceToState(
+			cmdlist, src_level, texture->GetResourceState(), GSTexture12::ResourceState::PixelShaderResource);
+	if (texture->GetResourceState() != GSTexture12::ResourceState::RenderTarget)
+		texture->TransitionSubresourceToState(
+			cmdlist, dst_level, texture->GetResourceState(), GSTexture12::ResourceState::RenderTarget);
+
+	// We set the state directly here.
+	constexpr u32 MODIFIED_STATE = DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR | DIRTY_FLAG_RENDER_TARGET;
+	m_dirty_flags &= ~MODIFIED_STATE;
+
+	// Using a render pass is probably a bit overkill.
+	const D3D12_DISCARD_REGION discard_region = {0u, nullptr, dst_level, 1u};
+	cmdlist.list4->DiscardResource(texture->GetResource(), &discard_region);
+	cmdlist.list4->OMSetRenderTargets(1, &rtv_handle.cpu_handle, FALSE, nullptr);
+
+	const D3D12_VIEWPORT vp = {0.0f, 0.0f, static_cast<float>(dst_width), static_cast<float>(dst_height), 0.0f, 1.0f};
+	cmdlist.list4->RSSetViewports(1, &vp);
+
+	const D3D12_RECT scissor = {0, 0, static_cast<LONG>(dst_width), static_cast<LONG>(dst_height)};
+	cmdlist.list4->RSSetScissorRects(1, &scissor);
+
+	SetUtilityRootSignature();
+	SetPipeline(GetConvertPipeline(ShaderConvert::COPY));
+	DrawStretchRect(GSVector4(0.0f, 0.0f, 1.0f, 1.0f),
+		GSVector4(0.0f, 0.0f, static_cast<float>(dst_width), static_cast<float>(dst_height)),
+		GSVector2i(dst_width, dst_height));
+
+	if (texture->GetResourceState() != GSTexture12::ResourceState::PixelShaderResource)
+		texture->TransitionSubresourceToState(
+			cmdlist, src_level, GSTexture12::ResourceState::PixelShaderResource, texture->GetResourceState());
+	if (texture->GetResourceState() != GSTexture12::ResourceState::RenderTarget)
+		texture->TransitionSubresourceToState(
+			cmdlist, dst_level, GSTexture12::ResourceState::RenderTarget, texture->GetResourceState());
+
+	// Must destroy after current cmdlist.
+	DeferDescriptorDestruction(m_descriptor_heap_manager, &srv_handle);
+	DeferDescriptorDestruction(m_rtv_heap_manager, &rtv_handle);
+
+	// Restore for next normal draw.
+	m_dirty_flags |= MODIFIED_STATE;
+}
+
+bool GSDevice12::InRenderPass()
+{
+	return m_in_render_pass;
+}
+
+void GSDevice12::BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE color_begin,
+	D3D12_RENDER_PASS_ENDING_ACCESS_TYPE color_end, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE depth_begin,
+	D3D12_RENDER_PASS_ENDING_ACCESS_TYPE depth_end, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE stencil_begin,
+	D3D12_RENDER_PASS_ENDING_ACCESS_TYPE stencil_end, GSVector4 clear_color, float clear_depth, u8 clear_stencil)
+{
+	if (m_in_render_pass)
+		EndRenderPass();
+
+	// we're setting the RT here.
+	m_dirty_flags &= ~DIRTY_FLAG_RENDER_TARGET;
+	m_in_render_pass = true;
+
+	if (stencil_end == D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD)
+		GL_INS("D3D12: BeginRenderPass() end stencil is DISCARDED.");
+
+	std::array<D3D12_RENDER_PASS_RENDER_TARGET_DESC, 2> rt = {};
+	u32 num_rts = 0;
+	if (m_current_render_target)
+	{
+		rt[num_rts].cpuDescriptor = m_current_render_target->GetWriteDescriptor();
+		rt[num_rts].EndingAccess.Type = color_end;
+		rt[num_rts].BeginningAccess.Type = color_begin;
+		if (color_begin == D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR)
+		{
+			LookupNativeFormat(m_current_render_target->GetFormat(), nullptr,
+				&rt[num_rts].BeginningAccess.Clear.ClearValue.Format, nullptr, nullptr, nullptr);
+			GSVector4::store<false>(rt[num_rts].BeginningAccess.Clear.ClearValue.Color, clear_color);
+		}
+		num_rts++;
+	}
+
+	if (m_current_depth_render_target)
+	{
+		rt[num_rts].cpuDescriptor = m_current_depth_render_target->GetWriteDescriptor();
+		rt[num_rts].EndingAccess.Type = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
+		rt[num_rts].BeginningAccess.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
+		num_rts++;
+	}
+
+	D3D12_RENDER_PASS_DEPTH_STENCIL_DESC ds = {};
+	if (m_current_depth_target)
+	{
+		ds.cpuDescriptor = m_current_depth_read_only ? m_current_depth_target->GetReadDepthViewDescriptor() : m_current_depth_target->GetWriteDescriptor();
+		ds.DepthEndingAccess.Type = depth_end;
+		ds.DepthBeginningAccess.Type = depth_begin;
+		if (depth_begin == D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR)
+		{
+			LookupNativeFormat(m_current_depth_target->GetFormat(), nullptr, nullptr, nullptr,
+				&ds.DepthBeginningAccess.Clear.ClearValue.Format, nullptr);
+			ds.DepthBeginningAccess.Clear.ClearValue.DepthStencil.Depth = clear_depth;
+		}
+		ds.StencilEndingAccess.Type = stencil_end;
+		ds.StencilBeginningAccess.Type = stencil_begin;
+		if (stencil_begin == D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR)
+		{
+			LookupNativeFormat(m_current_depth_target->GetFormat(), nullptr, nullptr, nullptr,
+				&ds.StencilBeginningAccess.Clear.ClearValue.Format, nullptr);
+			ds.StencilBeginningAccess.Clear.ClearValue.DepthStencil.Stencil = clear_stencil;
+		}
+	}
+
+	GetCommandList().list4->BeginRenderPass(num_rts, rt.data(), m_current_depth_target ? &ds : nullptr,
+		(m_current_depth_target && m_current_depth_read_only) ? (D3D12_RENDER_PASS_FLAG_BIND_READ_ONLY_DEPTH) : D3D12_RENDER_PASS_FLAG_NONE);
+}
+
+void GSDevice12::EndRenderPass()
+{
+	if (!m_in_render_pass)
+		return;
+
+	m_in_render_pass = false;
+
+	// to render again, we need to reset OM
+	m_dirty_flags |= DIRTY_FLAG_RENDER_TARGET;
+
+	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
+
+	GetCommandList().list4->EndRenderPass();
+}
+
+void GSDevice12::SetViewport(const D3D12_VIEWPORT& viewport)
+{
+	if (std::memcmp(&viewport, &m_viewport, sizeof(m_viewport)) == 0)
+		return;
+
+	std::memcpy(&m_viewport, &viewport, sizeof(m_viewport));
+	m_dirty_flags |= DIRTY_FLAG_VIEWPORT;
+}
+
+void GSDevice12::SetScissor(const GSVector4i& scissor)
+{
+	if (m_scissor.eq(scissor))
+		return;
+
+	m_scissor = scissor;
+	m_dirty_flags |= DIRTY_FLAG_SCISSOR;
+}
+
+void GSDevice12::SetPipeline(const ID3D12PipelineState* pipeline)
+{
+	if (m_current_pipeline == pipeline)
+		return;
+
+	m_current_pipeline = pipeline;
+	m_dirty_flags |= DIRTY_FLAG_PIPELINE;
+}
+
+__ri void GSDevice12::ApplyBaseState(u32 flags, ID3D12GraphicsCommandList* cmdlist)
+{
+	if (flags & DIRTY_FLAG_VERTEX_BUFFER)
+		cmdlist->IASetVertexBuffers(0, 1, &m_vertex_buffer);
+
+	if (flags & DIRTY_FLAG_INDEX_BUFFER)
+		cmdlist->IASetIndexBuffer(&m_index_buffer);
+
+	if (flags & DIRTY_FLAG_PRIMITIVE_TOPOLOGY)
+		cmdlist->IASetPrimitiveTopology(m_primitive_topology);
+
+	if ((flags & DIRTY_FLAG_PIPELINE) && m_current_pipeline)
+		cmdlist->SetPipelineState(const_cast<ID3D12PipelineState*>(m_current_pipeline));
+
+	if (flags & DIRTY_FLAG_VIEWPORT)
+		cmdlist->RSSetViewports(1, &m_viewport);
+
+	if (flags & DIRTY_FLAG_SCISSOR)
+	{
+		const D3D12_RECT rc{m_scissor.x, m_scissor.y, m_scissor.z, m_scissor.w};
+		cmdlist->RSSetScissorRects(1, &rc);
+	}
+
+	if (flags & DIRTY_FLAG_BLEND_CONSTANTS)
+	{
+		const GSVector4 col(static_cast<float>(m_blend_constant_color) / 128.0f);
+		cmdlist->OMSetBlendFactor(col.v);
+	}
+
+	if (flags & DIRTY_FLAG_STENCIL_REF)
+		cmdlist->OMSetStencilRef(m_stencil_ref);
+
+	if (flags & DIRTY_FLAG_RENDER_TARGET)
+	{
+		std::array<D3D12_CPU_DESCRIPTOR_HANDLE, 2> rt;
+		u32 num_rts = 0;
+		if (m_current_render_target)
+			rt[num_rts++] = m_current_render_target->GetWriteDescriptor().cpu_handle;
+		if (m_current_depth_render_target)
+			rt[num_rts++] = m_current_depth_render_target->GetWriteDescriptor().cpu_handle;
+		if (num_rts)
+		{
+			cmdlist->OMSetRenderTargets(num_rts, rt.data(), FALSE,
+				m_current_depth_target ?
+				(m_current_depth_read_only ? &m_current_depth_target->GetReadDepthViewDescriptor().cpu_handle : &m_current_depth_target->GetWriteDescriptor().cpu_handle) :
+				nullptr);
+		}
+		else if (m_current_depth_target)
+		{
+			cmdlist->OMSetRenderTargets(0, nullptr, FALSE, m_current_depth_read_only ? &m_current_depth_target->GetReadDepthViewDescriptor().cpu_handle : &m_current_depth_target->GetWriteDescriptor().cpu_handle);
+		}
+		else
+		{
+			cmdlist->OMSetRenderTargets(0, nullptr, FALSE, nullptr);
+		}
+	}
+}
+
+bool GSDevice12::ApplyTFXState(bool already_execed)
+{
+	if (m_current_root_signature == RootSignature::TFX && m_dirty_flags == 0)
+		return true;
+
+	u32 flags = m_dirty_flags;
+	m_dirty_flags &= ~(DIRTY_TFX_STATE | DIRTY_CONSTANT_BUFFER_STATE);
+
+	// do cbuffer first, because it's the most likely to cause an exec
+	if (flags & DIRTY_FLAG_VS_CONSTANT_BUFFER)
+	{
+		if (!m_vertex_constant_buffer.ReserveMemory(
+				sizeof(m_vs_cb_cache), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT))
+		{
+			if (already_execed)
+			{
+				Console.Error("D3D12: Failed to reserve vertex uniform space");
+				return false;
+			}
+
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of vertex uniform space");
+			return ApplyTFXState(true);
+		}
+
+		std::memcpy(m_vertex_constant_buffer.GetCurrentHostPointer(), &m_vs_cb_cache, sizeof(m_vs_cb_cache));
+		m_tfx_constant_buffers[0] = m_vertex_constant_buffer.GetCurrentGPUPointer();
+		m_vertex_constant_buffer.CommitMemory(sizeof(m_vs_cb_cache));
+		flags |= DIRTY_FLAG_VS_CONSTANT_BUFFER_BINDING;
+	}
+
+	if (flags & DIRTY_FLAG_PS_CONSTANT_BUFFER)
+	{
+		if (!m_pixel_constant_buffer.ReserveMemory(
+				sizeof(m_ps_cb_cache), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT))
+		{
+			if (already_execed)
+			{
+				Console.Error("D3D12: Failed to reserve pixel uniform space");
+				return false;
+			}
+
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of pixel uniform space");
+			return ApplyTFXState(true);
+		}
+
+		std::memcpy(m_pixel_constant_buffer.GetCurrentHostPointer(), &m_ps_cb_cache, sizeof(m_ps_cb_cache));
+		m_tfx_constant_buffers[1] = m_pixel_constant_buffer.GetCurrentGPUPointer();
+		m_pixel_constant_buffer.CommitMemory(sizeof(m_ps_cb_cache));
+		flags |= DIRTY_FLAG_PS_CONSTANT_BUFFER_BINDING;
+	}
+
+	if (flags & DIRTY_FLAG_TFX_SAMPLERS)
+	{
+		if (!GetSamplerAllocator().LookupSingle(&m_tfx_samplers_handle_gpu, m_tfx_sampler))
+		{
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of sampler groups");
+			return ApplyTFXState(true);
+		}
+
+		flags |= DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE;
+	}
+
+	if (flags & DIRTY_FLAG_TFX_TEXTURES)
+	{
+		if (!GetTextureGroupDescriptors(&m_tfx_textures_handle_gpu, m_tfx_textures.data(), 2))
+		{
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of TFX texture descriptor groups");
+			return ApplyTFXState(true);
+		}
+
+		flags |= DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE;
+	}
+
+	if (flags & DIRTY_FLAG_TFX_RT_TEXTURES)
+	{
+		if (!GetTextureGroupDescriptors(&m_tfx_rt_textures_handle_gpu, m_tfx_textures.data() + 2, NUM_TFX_RT_TEXTURES + NUM_TFX_UAV_TEXTURES))
+		{
+			ExecuteCommandListAndRestartRenderPass(false, "Ran out of TFX RT descriptor descriptor groups");
+			return ApplyTFXState(true);
+		}
+
+		flags |= DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2;
+	}
+
+	ID3D12GraphicsCommandList* cmdlist = GetCommandList().list4.get();
+
+	if (m_current_root_signature != RootSignature::TFX)
+	{
+		m_current_root_signature = RootSignature::TFX;
+		flags |= DIRTY_ROOT_PARAMS | DIRTY_FLAG_PIPELINE;
+		cmdlist->SetGraphicsRootSignature(m_tfx_root_signature.get());
+	}
+
+	if (flags & DIRTY_FLAG_VS_CONSTANT_BUFFER_BINDING)
+		cmdlist->SetGraphicsRootConstantBufferView(TFX_ROOT_SIGNATURE_PARAM_VS_CBV, m_tfx_constant_buffers[0]);
+	if (flags & DIRTY_FLAG_PS_CONSTANT_BUFFER_BINDING)
+		cmdlist->SetGraphicsRootConstantBufferView(TFX_ROOT_SIGNATURE_PARAM_PS_CBV, m_tfx_constant_buffers[1]);
+	if (m_features.vs_expand && (flags & DIRTY_FLAG_VS_PUSH_CONSTANTS))
+		SetVSPushConstants(m_vs_pc_cache.base_vertex, m_vs_pc_cache.base_index, true);
+	if (flags & DIRTY_FLAG_VS_VERTEX_BUFFER_BINDING)
+	{
+		cmdlist->SetGraphicsRootShaderResourceView(TFX_ROOT_SIGNATURE_PARAM_VS_VB_SRV,
+			m_vertex_stream_buffer.GetGPUPointer());
+	}
+	if (flags & DIRTY_FLAG_VS_INDEX_BUFFER_BINDING)
+	{
+		cmdlist->SetGraphicsRootShaderResourceView(TFX_ROOT_SIGNATURE_PARAM_VS_IB_SRV,
+			m_expand_index_stream_buffer.GetGPUPointer());
+	}
+	if (flags & DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE)
+		cmdlist->SetGraphicsRootDescriptorTable(TFX_ROOT_SIGNATURE_PARAM_PS_TEXTURES, m_tfx_textures_handle_gpu);
+	if (flags & DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE)
+		cmdlist->SetGraphicsRootDescriptorTable(TFX_ROOT_SIGNATURE_PARAM_PS_SAMPLERS, m_tfx_samplers_handle_gpu);
+	if (flags & DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE_2)
+		cmdlist->SetGraphicsRootDescriptorTable(TFX_ROOT_SIGNATURE_PARAM_PS_RT_TEXTURES, m_tfx_rt_textures_handle_gpu);
+
+	ApplyBaseState(flags, cmdlist);
+	return true;
+}
+
+bool GSDevice12::ApplyUtilityState(bool already_execed)
+{
+	if (m_current_root_signature == RootSignature::Utility && m_dirty_flags == 0)
+		return true;
+
+	u32 flags = m_dirty_flags;
+	m_dirty_flags &= ~DIRTY_UTILITY_STATE;
+
+	ID3D12GraphicsCommandList* cmdlist = GetCommandList().list4.get();
+
+	if (m_current_root_signature != RootSignature::Utility)
+	{
+		m_current_root_signature = RootSignature::Utility;
+		flags |= DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE | DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE | DIRTY_FLAG_PIPELINE;
+		cmdlist->SetGraphicsRootSignature(m_utility_root_signature.get());
+	}
+
+	if (flags & DIRTY_FLAG_TEXTURES_DESCRIPTOR_TABLE)
+		cmdlist->SetGraphicsRootDescriptorTable(UTILITY_ROOT_SIGNATURE_PARAM_PS_TEXTURES, m_utility_texture_gpu);
+	if (flags & DIRTY_FLAG_SAMPLERS_DESCRIPTOR_TABLE)
+		cmdlist->SetGraphicsRootDescriptorTable(UTILITY_ROOT_SIGNATURE_PARAM_PS_SAMPLERS, m_utility_sampler_gpu);
+
+	ApplyBaseState(flags, cmdlist);
+	return true;
+}
+
+void GSDevice12::SetVSConstantBuffer(const GSHWDrawConfig::VSConstantBuffer& cb)
+{
+	if (m_vs_cb_cache.Update(cb))
+		m_dirty_flags |= DIRTY_FLAG_VS_CONSTANT_BUFFER;
+}
+
+void GSDevice12::SetPSConstantBuffer(const GSHWDrawConfig::PSConstantBuffer& cb)
+{
+	if (m_ps_cb_cache.Update(cb))
+		m_dirty_flags |= DIRTY_FLAG_PS_CONSTANT_BUFFER;
+}
+
+void GSDevice12::SetVSPushConstants(u32 base_vertex, u32 base_index, bool force_update)
+{
+	GSHWDrawConfig::VSPushConstants pc;
+	pc.base_vertex = base_vertex;
+	pc.base_index = base_index;
+	if (m_vs_pc_cache.Update(pc) || force_update)
+	{
+		GetCommandList().list4->SetGraphicsRoot32BitConstants(
+			TFX_ROOT_SIGNATURE_PARAM_VS_PUSH_CONSTANTS, sizeof(m_vs_pc_cache) / sizeof(u32),
+			&m_vs_pc_cache, 0);
+	}
+}
+
+void GSDevice12::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox)
+{
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+	GL_PUSH("SetupDATE {%d,%d} %dx%d", bbox.left, bbox.top, bbox.width(), bbox.height());
+
+	const GSVector2i size(ds->GetSize());
+	const GSVector4 src = GSVector4(bbox) / GSVector4(size).xyxy();
+	const GSVector4 dst = src * 2.0f - 1.0f;
+	const GSVertexPT1 vertices[] = {
+		{GSVector4(dst.x, -dst.y, 0.5f, 1.0f), GSVector2(src.x, src.y)},
+		{GSVector4(dst.z, -dst.y, 0.5f, 1.0f), GSVector2(src.z, src.y)},
+		{GSVector4(dst.x, -dst.w, 0.5f, 1.0f), GSVector2(src.x, src.w)},
+		{GSVector4(dst.z, -dst.w, 0.5f, 1.0f), GSVector2(src.z, src.w)},
+	};
+
+	// sfex3 (after the capcom logo), vf4 (first menu fading in), ffxii shadows, rumble roses shadows, persona4 shadows
+	EndRenderPass();
+	SetUtilityTexture(rt, m_point_sampler_cpu);
+	OMSetRenderTargets(nullptr, nullptr, ds, bbox);
+	IASetVertexBuffer(vertices, sizeof(vertices[0]), 4);
+	SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	SetPipeline(GetConvertPipeline(SetDATMShader(datm)));
+	// Reference stencil value set on Create()
+	BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+		GSVector4::zero(), 0.0f, 0);
+	if (ApplyUtilityState())
+		DrawPrimitive();
+
+	EndRenderPass();
+}
+
+GSTexture12* GSDevice12::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, PipelineSelector& pipe)
+{
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+
+	// How this is done:
+	// - can't put a barrier for the image in the middle of the normal render pass, so that's out
+	// - so, instead of just filling the int texture with INT_MAX, we sample the RT and use -1 for failing values
+	// - then, instead of sampling the RT with DATE=1/2, we just do a min() without it, the -1 gets preserved
+	// - then, the DATE=3 draw is done as normal
+	GL_INS("Setup DATE Primitive ID Image for {%d,%d}-{%d,%d}", config.drawarea.left, config.drawarea.top,
+		config.drawarea.right, config.drawarea.bottom);
+
+	const GSVector2i rtsize(config.rt->GetSize());
+	GSTexture12* image =
+		static_cast<GSTexture12*>(CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::PrimID, false));
+	if (!image)
+		return nullptr;
+
+	EndRenderPass();
+
+	// setup the fill quad to prefill with existing alpha values
+	SetUtilityTexture(config.rt, m_point_sampler_cpu);
+	OMSetRenderTargets(image, nullptr, config.ds, config.drawarea);
+
+	// if the depth target has been cleared, we need to preserve that clear
+	BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+		config.ds ? GetLoadOpForTexture(static_cast<GSTexture12*>(config.ds)) :
+					D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
+		config.ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+		GSVector4::zero(), config.ds ? config.ds->GetClearDepth() : 0.0f);
+
+	// draw the quad to prefill the image
+	const GSVector4 src = GSVector4(config.drawarea) / GSVector4(rtsize).xyxy();
+	const GSVector4 dst = src * 2.0f - 1.0f;
+	const GSVertexPT1 vertices[] = {
+		{GSVector4(dst.x, -dst.y, 0.5f, 1.0f), GSVector2(src.x, src.y)},
+		{GSVector4(dst.z, -dst.y, 0.5f, 1.0f), GSVector2(src.z, src.y)},
+		{GSVector4(dst.x, -dst.w, 0.5f, 1.0f), GSVector2(src.x, src.w)},
+		{GSVector4(dst.z, -dst.w, 0.5f, 1.0f), GSVector2(src.z, src.w)},
+	};
+	SetUtilityRootSignature();
+	SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	SetPipeline(m_primid_image_setup_pipelines[pipe.ds][static_cast<u8>(config.datm)].get());
+	IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
+	if (ApplyUtilityState())
+		DrawPrimitive();
+
+	// image is now filled with either -1 or INT_MAX, so now we can do the prepass
+	SetPrimitiveTopology(s_primitive_topology_mapping[static_cast<u8>(config.topology)]);
+	UploadHWDrawVerticesAndIndices(config);
+
+	// cut down the configuration for the prepass, we don't need blending or any feedback loop
+	PipelineSelector init_pipe(m_pipeline_selector);
+	init_pipe.dss.zwe = false;
+	init_pipe.cms.wrgba = 0;
+	init_pipe.bs = {};
+	init_pipe.rt = true;
+	init_pipe.ps.blend_a = init_pipe.ps.blend_b = init_pipe.ps.blend_c = init_pipe.ps.blend_d = false;
+	init_pipe.ps.no_color = false;
+	init_pipe.ps.no_color1 = true;
+	if (BindDrawPipeline(init_pipe))
+		Draw(config);
+
+	// image is initialized/prepass is done, so finish up and get ready to do the "real" draw
+	EndRenderPass();
+
+	// .. by setting it to DATE=3
+	pipe.ps.date = 3;
+	config.alpha_second_pass.ps.date = 3;
+
+	// and bind the image to the primitive sampler
+	image->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+	PSSetShaderResource(3, image, false);
+	return image;
+}
+
+void GSDevice12::FeedbackBarrier(const GSTexture12* texture)
+{
+	if (m_enhanced_barriers)
+	{
+		// Enhanced barriers allows for single resource feedback.
+		const D3D12_BARRIER_SYNC sync = D3D12_BARRIER_SYNC_RENDER_TARGET | D3D12_BARRIER_SYNC_PIXEL_SHADING;
+		const D3D12_BARRIER_ACCESS access = D3D12_BARRIER_ACCESS_RENDER_TARGET | D3D12_BARRIER_ACCESS_SHADER_RESOURCE;
+		const D3D12_TEXTURE_BARRIER barrier = {sync, sync, access, access, D3D12_BARRIER_LAYOUT_COMMON, D3D12_BARRIER_LAYOUT_COMMON,
+			texture->GetResource(), {D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, 0, 0, 0, 0, 0}, D3D12_TEXTURE_BARRIER_FLAG_NONE};
+		const D3D12_BARRIER_GROUP group = {.Type = D3D12_BARRIER_TYPE_TEXTURE, .NumBarriers = 1, .pTextureBarriers = &barrier};
+		GetCommandList().list7->Barrier(1, &group);
+	}
+	else
+	{
+		// The DX12 spec notes "You may not read from, or consume, a write that occurred within the same render pass".
+		// The only exception being the implicit reads for render target blending or depth testing.
+		// Thus, in addition to a barrier, we need to end the render pass.
+		EndRenderPass();
+		// Specify null for the after resource as both resources are used after the barrier.
+		// While this may also be true before the barrier, we only write using the main resource.
+		D3D12_RESOURCE_BARRIER barrier = {D3D12_RESOURCE_BARRIER_TYPE_ALIASING, D3D12_RESOURCE_BARRIER_FLAG_NONE};
+		barrier.Aliasing = {texture->GetResource(), nullptr};
+		GetCommandList().list4->ResourceBarrier(1, &barrier);
+	}
+}
+
+void GSDevice12::RenderHW(GSHWDrawConfig& config)
+{
+	GSTexture12* colclip_rt = static_cast<GSTexture12*>(g_gs_device->GetColorClipTexture());
+	GSTexture12* draw_rt = config.ps.HasColorROV() ? nullptr : static_cast<GSTexture12*>(config.rt);
+	GSTexture12* draw_ds = config.ps.HasDepthROV() ? nullptr : static_cast<GSTexture12*>(config.ds);
+	GSTexture12* draw_rt_rov = config.ps.HasColorROV() ? static_cast<GSTexture12*>(config.rt) : nullptr;
+	GSTexture12* draw_ds_rov = config.ps.HasDepthROV() ? static_cast<GSTexture12*>(config.ds) : nullptr;
+	GSTexture12* draw_rt_clone = nullptr;
+
+	const bool feedback = draw_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.texture_barrier) || (config.tex && config.tex == config.rt));
+
+	// Align the render area to 128x128, hopefully avoiding render pass restarts for small render area changes (e.g. Ratchet and Clank).
+	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
+
+	PipelineSelector& pipe = m_pipeline_selector;
+
+	// figure out the pipeline
+	UpdateHWPipelineSelector(config);
+
+	// now blit the colclip texture back to the original target
+	if (colclip_rt)
+	{
+		if (config.colclip_mode == GSHWDrawConfig::ColClipMode::EarlyResolve)
+		{
+			GL_PUSH("Blit ColorClip back to RT");
+
+			EndRenderPass();
+			colclip_rt->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+
+			draw_rt = static_cast<GSTexture12*>(config.rt);
+			OMSetRenderTargets(draw_rt, nullptr, draw_ds, config.colclip_update_area);
+
+			// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
+			BeginRenderPass(GetLoadOpForTexture(draw_rt), D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+				GetLoadOpForTexture(draw_ds),
+				draw_ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+				D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+				draw_rt->GetClearForFormat(), 0.0f, 0);
+
+			const GSVector4 sRect(GSVector4(config.colclip_update_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
+			SetPipeline(m_colclip_finish_pipelines[pipe.ds].get());
+			SetUtilityTexture(colclip_rt, m_point_sampler_cpu);
+			DrawStretchRect(sRect, GSVector4(config.colclip_update_area), rtsize);
+
+			Recycle(colclip_rt);
+			g_gs_device->SetColorClipTexture(nullptr);
+
+			colclip_rt = nullptr;
+			draw_rt = config.ps.HasColorROV() ? nullptr : static_cast<GSTexture12*>(config.rt);
+		}
+		else
+		{
+			draw_rt = colclip_rt;
+			pipe.ps.colclip_hw = 1;
+		}
+	}
+
+	// Destination Alpha Setup
+	const bool need_barrier = config.require_one_barrier || (config.require_full_barrier && m_features.texture_barrier);
+	switch (config.destination_alpha)
+	{
+		case GSHWDrawConfig::DestinationAlphaMode::Off: // No setup
+		case GSHWDrawConfig::DestinationAlphaMode::Full: // No setup
+		case GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking: // Setup is done below
+			break;
+		case GSHWDrawConfig::DestinationAlphaMode::StencilOne: // setup is done below
+		{
+			// we only need to do the setup here if we don't have barriers, in which case do full DATE.
+			if (!need_barrier)
+			{
+				SetupDATE(draw_rt, config.ds, config.datm, config.drawarea);
+				config.destination_alpha = GSHWDrawConfig::DestinationAlphaMode::Stencil;
+			}
+		}
+		break;
+
+		case GSHWDrawConfig::DestinationAlphaMode::Stencil:
+			SetupDATE(draw_rt, config.ds, config.datm, config.drawarea);
+			break;
+	}
+
+	// stream buffer in first, in case we need to exec
+	SetVSConstantBuffer(config.cb_vs);
+	SetPSConstantBuffer(config.cb_ps);
+
+	// bind textures before checking the render pass, in case we need to transition them
+	if (config.tex)
+	{
+		PSSetShaderResource(0, config.tex, config.tex != config.rt && config.tex != config.ds);
+		PSSetSampler(config.sampler);
+	}
+	if (config.pal)
+		PSSetShaderResource(1, config.pal, true);
+
+	if (config.blend.constant_enable)
+		SetBlendConstants(config.blend.constant);
+
+	// Primitive ID tracking DATE setup.
+	GSTexture12* date_image = nullptr;
+	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
+	{
+		GSTexture* backup_rt = config.rt;
+		config.rt = draw_rt;
+		date_image = SetupPrimitiveTrackingDATE(config, pipe);
+		config.rt = backup_rt;
+		if (!date_image)
+		{
+			Console.Warning("D3D12: Failed to allocate DATE image, aborting draw.");
+			return;
+		}
+	}
+
+	// Switch to colclip target for colclip hw rendering
+	if (pipe.ps.colclip_hw)
+	{
+		if (!colclip_rt)
+		{
+			config.colclip_update_area = config.drawarea;
+
+			EndRenderPass();
+
+			colclip_rt = static_cast<GSTexture12*>(CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::ColorClip, false));
+			if (!colclip_rt)
+			{
+				Console.Warning("D3D12: Failed to allocate ColorClip render target, aborting draw.");
+
+				if (date_image)
+					Recycle(date_image);
+
+				return;
+			}
+
+			g_gs_device->SetColorClipTexture(static_cast<GSTexture*>(colclip_rt));
+
+			// propagate clear value through if the colclip render is the first
+			if (draw_rt->GetState() == GSTexture::State::Cleared)
+			{
+				colclip_rt->SetState(GSTexture::State::Cleared);
+				colclip_rt->SetClearColor(draw_rt->GetClearColor());
+			}
+			else if (draw_rt->GetState() == GSTexture::State::Dirty)
+			{
+				GL_PUSH_("ColorClip Render Target Setup");
+				draw_rt->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+			}
+
+			// we're not drawing to the RT, so we can use it as a source
+			if (config.require_one_barrier && !m_features.texture_barrier)
+				PSSetShaderResource(2, draw_rt, true);
+		}
+
+		draw_rt = colclip_rt;
+	}
+
+	// Clear texture binding when it's bound to RT or DS.
+	if (!config.tex && ((draw_rt && static_cast<GSTexture12*>(draw_rt)->GetSRVDescriptor() == m_tfx_textures[0]) ||
+		(draw_ds && static_cast<GSTexture12*>(draw_ds)->GetSRVDescriptor() == m_tfx_textures[0])))
+		PSSetShaderResource(0, nullptr, false);
+
+	if (InRenderPass() && (m_current_render_target == draw_rt || m_current_depth_target == draw_ds))
+	{
+		// avoid restarting the render pass just to switch from rt+depth to rt and vice versa
+		// keep the depth even if doing colclip hw draws, because the next draw will probably re-enable depth
+		if (!(draw_rt || draw_rt_rov) && m_current_render_target && config.tex != m_current_render_target &&
+			draw_ds && m_current_render_target->GetSize() == draw_ds->GetSize())
+		{
+			draw_rt = m_current_render_target;
+			m_pipeline_selector.rt = true;
+		}
+	}
+	else if (!(draw_ds || draw_ds_rov) && m_current_depth_target && config.tex != m_current_depth_target &&
+		draw_rt && m_current_depth_target->GetSize() == draw_rt->GetSize())
+	{
+		draw_ds = m_current_depth_target;
+		m_pipeline_selector.ds = true;
+	}
+
+	GSTexture12* draw_ds_as_rt = static_cast<GSTexture12*>(m_ds_as_rt);
+
+	const bool feedback_rt = draw_rt && (((config.require_one_barrier || (config.require_full_barrier && m_features.texture_barrier)) && (config.IsFeedbackLoopRT(config.ps) ||
+		config.IsFeedbackLoopRT(config.alpha_second_pass.ps))));
+	const bool feedback_depth = draw_ds_as_rt != nullptr;
+
+	if (feedback_rt && !m_features.texture_barrier)
+	{
+		// Requires a copy of the RT.
+		draw_rt_clone = static_cast<GSTexture12*>(CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true));
+		if (draw_rt_clone)
+		{
+			GL_PUSH("D3D12: Copy RT to temp texture {%d,%d %dx%d}",
+				config.drawarea.left, config.drawarea.top,
+				config.drawarea.width(), config.drawarea.height());
+			EndRenderPass();
+			if (config.tex_hazard)
+			{
+				const GSVector4i union_rect = config.drawarea.runion(config.samplearea);
+				const u32 size_union = union_rect.width() * union_rect.height();
+				const u32 size_indiv = config.drawarea.width() * config.drawarea.height() +
+				                       config.samplearea.width() * config.samplearea.height();
+
+				// Do an individual copy if the union is larger than the sum of individual areas.
+				if (size_union > size_indiv)
+				{
+					const GSVector4i snapped_drawarea = ProcessCopyArea(GSVector4i(0, 0, rtsize.x, rtsize.y), config.drawarea);
+					const GSVector4i snapped_samplearea = ProcessCopyArea(GSVector4i(0, 0, rtsize.x, rtsize.y), config.samplearea);
+					CopyRect(draw_rt, draw_rt_clone, snapped_drawarea, snapped_drawarea.left, snapped_drawarea.top);
+					CopyRect(draw_rt, draw_rt_clone, snapped_samplearea, snapped_samplearea.left, snapped_samplearea.top);
+				}
+				else
+				{
+					CopyRect(draw_rt, draw_rt_clone, union_rect, union_rect.left, union_rect.top);
+				}
+			}
+			else
+			{
+				CopyRect(draw_rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+			}
+
+			if (config.require_one_barrier)
+				PSSetShaderResource(2, draw_rt_clone, true);
+			if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_RT)
+				PSSetShaderResource(0, draw_rt_clone, true);
+		}
+		else
+			Console.Warning("D3D12: Failed to allocate temp texture for RT copy.");
+	}
+
+	PSSetUnorderedAccess(draw_rt_rov, draw_ds_rov, config.ps.HasColorOutput(), config.ps.HasDepthROVWrite());
+
+	// For depth testing and sampling, use a read only dsv, otherwise use a write dsv
+	OMSetRenderTargets(draw_rt, draw_ds_as_rt, draw_ds, config.scissor,
+		config.tex && (config.tex == draw_ds || config.ps.IsFeedbackLoopDepth()) && !config.depth.zwe && !config.ps.HasDepthROV(),
+		config.rt ? config.rt->GetSize() : config.ds->GetSize());
+
+	// DX12 equivalent of vkCmdClearAttachments for StencilOne
+	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne)
+	{
+		EndRenderPass();
+		// Make sure the DSV is in writeable state
+		draw_ds->TransitionToState(GSTexture12::ResourceState::DepthWriteStencil);
+
+		const D3D12_RECT rect = {config.drawarea.left, config.drawarea.top, config.drawarea.left + config.drawarea.width(), config.drawarea.top + config.drawarea.height()};
+		GetCommandList().list4->ClearDepthStencilView(draw_ds->GetWriteDescriptor(), D3D12_CLEAR_FLAG_STENCIL, 0.0f, 1, 1, &rect);
+	}
+
+	// Begin render pass if new target or out of the area.
+	if (!InRenderPass())
+	{
+		GSVector4 clear_color = draw_rt ? draw_rt->GetClearForFormat() : GSVector4::zero();
+		if (pipe.ps.colclip_hw)
+		{
+			// Denormalize clear color for hw colclip.
+			clear_color *= GSVector4::cxpr(255.0f / 65535.0f, 255.0f / 65535.0f, 255.0f / 65535.0f, 1.0f);
+		}
+
+		const bool stencil_DATE = config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
+		                          config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne;
+
+		BeginRenderPass(GetLoadOpForTexture(draw_rt),
+			draw_rt ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+			GetLoadOpForTexture(draw_ds),
+			draw_ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+			draw_ds ? (stencil_DATE ? D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE :
+									  D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD) :
+					  D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
+			draw_ds ? ((stencil_DATE && need_barrier) ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE :
+														D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD) :
+					  D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+			clear_color, draw_ds ? draw_ds->GetClearDepth() : 0.0f, 1);
+	}
+
+	// rt -> colclip hw blit if enabled
+	if (colclip_rt && (config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly || config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertAndResolve) && config.rt->GetState() == GSTexture::State::Dirty)
+	{
+		OMSetRenderTargets(draw_rt, nullptr, draw_ds, GSVector4i::loadh(rtsize));
+		SetUtilityTexture(static_cast<GSTexture12*>(config.rt), m_point_sampler_cpu);
+		SetPipeline(m_colclip_setup_pipelines[pipe.ds].get());
+
+		const GSVector4 drawareaf = GSVector4((config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly) ? GSVector4i::loadh(rtsize) : config.drawarea);
+		const GSVector4 sRect(drawareaf / GSVector4(rtsize.x, rtsize.y).xyxy());
+		DrawStretchRect(sRect, GSVector4(drawareaf), rtsize);
+
+		GL_POP();
+
+		// Restore original scissor, not sure if needed since the render pass has already been started. But to be safe.
+		OMSetRenderTargets(draw_rt, nullptr, draw_ds, config.scissor);
+	}
+
+	// VB/IB upload, if we did DATE setup and it's not colclip hw this has already been done
+	SetPrimitiveTopology(s_primitive_topology_mapping[static_cast<u8>(config.topology)]);
+	if (!date_image || colclip_rt)
+		UploadHWDrawVerticesAndIndices(config);
+
+	// now we can do the actual draw
+	SendHWDraw(pipe, config, draw_rt, draw_ds_as_rt, draw_rt_rov, draw_ds_rov,
+		feedback_rt, feedback_depth, config.require_one_barrier, config.require_full_barrier);
+
+	// blend second pass
+	if (config.blend_multi_pass.enable)
+	{
+		if (config.blend_multi_pass.blend.constant_enable)
+			SetBlendConstants(config.blend_multi_pass.blend.constant);
+
+		pipe.bs = config.blend_multi_pass.blend;
+		pipe.ps.no_color1 = config.blend_multi_pass.no_color1;
+		pipe.ps.blend_hw = config.blend_multi_pass.blend_hw;
+		pipe.ps.dither = config.blend_multi_pass.dither;
+		if (BindDrawPipeline(pipe))
+			Draw(config);
+	}
+
+	// and the alpha pass
+	if (config.alpha_second_pass.enable)
+	{
+		// cbuffer will definitely be dirty if aref changes, no need to check it
+		if (config.cb_ps.FogColor_AREF.a != config.alpha_second_pass.ps_aref)
+		{
+			config.cb_ps.FogColor_AREF.a = config.alpha_second_pass.ps_aref;
+			SetPSConstantBuffer(config.cb_ps);
+		}
+
+		pipe.ps = config.alpha_second_pass.ps;
+		pipe.cms = config.alpha_second_pass.colormask;
+		pipe.dss = config.alpha_second_pass.depth;
+		pipe.bs = config.blend;
+		SendHWDraw(pipe, config, draw_rt, draw_ds_as_rt, draw_rt_rov, draw_ds_rov,
+			feedback_rt, feedback_depth, config.alpha_second_pass.require_one_barrier,
+			config.alpha_second_pass.require_full_barrier);
+	}
+
+	if (date_image)
+		Recycle(date_image);
+
+	if (draw_rt_clone)
+		Recycle(draw_rt_clone);
+
+	// now blit the colclip texture back to the original target
+	if (colclip_rt)
+	{
+		config.colclip_update_area = config.colclip_update_area.runion(config.drawarea);
+
+		if ((config.colclip_mode == GSHWDrawConfig::ColClipMode::ResolveOnly || config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertAndResolve))
+		{
+			GL_PUSH("Blit ColorClip back to RT");
+
+			EndRenderPass();
+			colclip_rt->TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+
+			draw_rt = static_cast<GSTexture12*>(config.rt);
+			OMSetRenderTargets(draw_rt, nullptr, draw_ds, config.colclip_update_area);
+
+			// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
+			BeginRenderPass(GetLoadOpForTexture(draw_rt), D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
+				GetLoadOpForTexture(draw_ds),
+				draw_ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+				D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+				draw_rt->GetClearForFormat(), 0.0f, 0);
+
+			const GSVector4 sRect(GSVector4(config.colclip_update_area) / GSVector4(rtsize.x, rtsize.y).xyxy());
+			SetPipeline(m_colclip_finish_pipelines[pipe.ds].get());
+			SetUtilityTexture(colclip_rt, m_point_sampler_cpu);
+			DrawStretchRect(sRect, GSVector4(config.colclip_update_area), rtsize);
+
+			Recycle(colclip_rt);
+			g_gs_device->SetColorClipTexture(nullptr);
+		}
+	}
+}
+
+void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt,
+	GSTexture12* draw_ds, GSTexture12* draw_rt_rov, GSTexture12* draw_ds_rov,
+	const bool feedback_rt, const bool feedback_depth,
+	const bool one_barrier, const bool full_barrier)
+{
+	// Should not be mixing ROVs with barriers.
+	pxAssert(!(draw_rt_rov || draw_ds_rov) || !(one_barrier || full_barrier));
+	
+	const int n_barriers = static_cast<int>(feedback_rt) + static_cast<int>(feedback_depth);
+
+	if (!m_features.texture_barrier) [[unlikely]]
+	{
+		if (BindDrawPipeline(pipe))
+			Draw(config);
+		return;
+	}
+
+	if (feedback_rt || feedback_depth)
+	{
+#ifdef PCSX2_DEVBUILD
+		if ((one_barrier || full_barrier) && !(config.IsFeedbackLoopRT(config.ps) || config.IsFeedbackLoopDepth(config.ps))) [[unlikely]]
+			Console.Warning("D3D12: Possible unnecessary barrier detected.");
+#endif
+		if ((one_barrier || full_barrier) && feedback_rt)
+			PSSetShaderResource(2, draw_rt, false, ResourceType::FBL);
+		if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_RT)
+			PSSetShaderResource(0, draw_rt, false, ResourceType::FBL);
+		if ((one_barrier || full_barrier) && feedback_depth)
+			PSSetShaderResource(4, draw_ds, false, ResourceType::FBL);
+		
+		if (full_barrier)
+		{
+			pxAssert(config.drawlist && !config.drawlist->empty());
+			const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
+			const u32 indices_per_prim = config.indices_per_prim;
+
+			GL_PUSH("Split the draw");
+			g_perfmon.Put(GSPerfMon::Barriers, n_barriers * draw_list_size);
+
+			for (u32 n = 0, p = 0; n < draw_list_size; n++)
+			{
+				const u32 count = config.drawlist->at(n) * indices_per_prim;
+
+				if (feedback_rt)
+					FeedbackBarrier(draw_rt);
+				if (feedback_depth)
+					FeedbackBarrier(draw_ds);
+
+				if (BindDrawPipeline(pipe))
+					Draw(config, p, count);
+				p += count;
+			}
+
+			return;
+		}
+
+		if (one_barrier)
+		{
+			g_perfmon.Put(GSPerfMon::Barriers, n_barriers);
+
+			if (feedback_rt)
+				FeedbackBarrier(draw_rt);
+			if (feedback_depth)
+				FeedbackBarrier(draw_ds);
+		}
+	}
+
+	if (BindDrawPipeline(pipe))
+		Draw(config);
+
+	if (config.ps.HasColorROV() || config.ps.HasDepthROV())
+		g_perfmon.Put(GSPerfMon::DrawCallsROV, 1);
+}
+
+void GSDevice12::UpdateHWPipelineSelector(GSHWDrawConfig& config)
+{
+	m_pipeline_selector.vs.key = config.vs.key;
+	m_pipeline_selector.ps.key_hi = config.ps.key_hi;
+	m_pipeline_selector.ps.key_lo = config.ps.key_lo;
+	m_pipeline_selector.dss.key = config.ps.HasDepthROV() ? GSHWDrawConfig::DepthStencilSelector::NoDepth().key : config.depth.key;
+	m_pipeline_selector.bs.key = config.ps.HasColorROV() ? GSHWDrawConfig::BlendState().key : config.blend.key;
+	m_pipeline_selector.bs.constant = 0; // don't dupe states with different alpha values
+	m_pipeline_selector.cms.key = config.ps.HasColorROV() ? GSHWDrawConfig::ColorMaskSelector().key : config.colormask.key;
+	m_pipeline_selector.topology = static_cast<u32>(config.topology);
+	m_pipeline_selector.rt = config.rt != nullptr && !config.ps.HasColorROV();
+	m_pipeline_selector.ds = config.ds != nullptr && !config.ps.HasDepthROV();
+	m_pipeline_selector.ds_as_rt = m_ds_as_rt != nullptr && !config.ps.HasDepthROV();
+}
+
+void GSDevice12::UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config)
+{
+	IASetVertexBuffer(config.verts, sizeof(GSVertex), config.nverts);
+	
+	if (config.vs.UseFixedExpandIndexBuffer())
+	{
+		m_index.start = 0;
+		m_index.count = config.nindices;
+		SetIndexBuffer(m_expand_index_buffer->GetGPUVirtualAddress(), EXPAND_BUFFER_SIZE, DXGI_FORMAT_R16_UINT);
+	}
+	else if (config.vs.UseVSExpandIndexBuffer())
+	{
+		VSSetIndexBuffer(config.indices, config.nindices);
+	}
+	else
+	{
+		IASetIndexBuffer(config.indices, config.nindices);
+	}
+}

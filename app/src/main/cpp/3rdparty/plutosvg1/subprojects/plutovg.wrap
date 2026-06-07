@@ -1,7 +1,0 @@
-[wrap-git]
-url = https://github.com/sammycage/plutovg.git
-revision = head
-depth = 1
-
-[provide]
-plutovg = plutovg_dep

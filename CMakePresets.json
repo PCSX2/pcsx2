@@ -1,0 +1,60 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 19,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "clang-base",
+            "displayName": "Base",
+            "description": "Base preset for Clang. Only for inheriting from.",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_EXE_LINKER_FLAGS_INIT": "-fuse-ld=lld",
+                "CMAKE_MODULE_LINKER_FLAGS_INIT": "-fuse-ld=lld",
+                "CMAKE_SHARED_LINKER_FLAGS_INIT": "-fuse-ld=lld",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++"
+            }
+        },
+        {
+            "name": "ninja-multi",
+            "displayName": "Ninja Multi Config",
+            "description": "Generate multiple ninja build files.",
+            "inherits": "clang-base",
+            "generator": "Ninja Multi-Config"
+        },
+        {
+            "name": "clang-debug",
+            "displayName": "Clang Debug",
+            "description": "Debug build using ninja and clang.",
+            "inherits": "clang-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "clang-devel",
+            "displayName": "Clang Devel",
+            "description": "Developer build using ninja & clang.",
+            "inherits": "clang-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Devel"
+            }
+        },
+        {
+            "name": "clang-release",
+            "displayName": "Clang Release",
+            "description": "Release lto build using ninja & clang.",
+            "inherits": "clang-base",
+            "cacheVariables": {
+                "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "ON",
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ]
+}

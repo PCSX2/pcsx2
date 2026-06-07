@@ -1,4 +1,0 @@
-../fonts/gsub_chaining3_boundary_f1.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions;U+0000,U+0014,U+0015,U+0016,U+0017,U+0000;[0|20|21|22|23|0]
-../fonts/gsub_chaining3_boundary_f2.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions;U+0000,U+0014,U+0015,U+0016,U+0017,U+0000;[0|20|61|22|23|0]
-../fonts/gsub_chaining3_boundary_f3.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions;U+0000,U+0014,U+0015,U+0016,U+0017,U+0000;[0|20|61|22|23|0]
-../fonts/gsub_chaining3_boundary_f4.otf;--features="test" --single-par --no-clusters --no-glyph-names --no-positions;U+0000,U+0014,U+0015,U+0016,U+0017,U+0000;[0|20|21|62|23|0]

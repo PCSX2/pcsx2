@@ -1,3 +1,0 @@
---no-hinting
---desubroutinize
---retain-gids

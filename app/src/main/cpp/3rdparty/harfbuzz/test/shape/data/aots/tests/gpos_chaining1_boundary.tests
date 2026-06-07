@@ -1,4 +1,0 @@
-../fonts/gpos_chaining1_boundary_f1.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0000,U+0014,U+0015,U+0016,U+0017,U+0000;[0|20@1500,0|21@3000,0|22@4500,0|23@6000,0|0@7500,0]
-../fonts/gpos_chaining1_boundary_f2.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0000,U+0014,U+0015,U+0016,U+0017,U+0000;[0|20@1500,0|21@3020,0|22@4500,0|23@6000,0|0@7500,0]
-../fonts/gpos_chaining1_boundary_f3.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0000,U+0014,U+0015,U+0016,U+0017,U+0000;[0|20@1500,0|21@3020,0|22@4500,0|23@6000,0|0@7500,0]
-../fonts/gpos_chaining1_boundary_f4.otf;--features="test" --single-par --no-clusters --no-glyph-names --ned;U+0000,U+0014,U+0015,U+0016,U+0017,U+0000;[0|20@1500,0|21@3000,0|22@4520,0|23@6000,0|0@7500,0]

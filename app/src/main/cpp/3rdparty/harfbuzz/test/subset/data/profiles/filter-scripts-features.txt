@@ -1,2 +1,0 @@
---layout-scripts=grek,cyrl
---layout-features=numr,onum

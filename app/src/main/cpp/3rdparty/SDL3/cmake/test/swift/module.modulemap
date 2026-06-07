@@ -1,4 +1,0 @@
-module SDL3 [extern_c] {
-    header "shim.h"
-    export *
-}
