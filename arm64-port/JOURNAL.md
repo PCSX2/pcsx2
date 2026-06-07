@@ -28,6 +28,52 @@
 
 ---
 
+## 2026-06-07 (FMV branch) — FMV lag = EE recompile storm; ported x86 manual/checksum SMC tier
+
+**Branch:** `dev/fmv` (off master+docs). **Goal:** make FMV playback fast (all games' FMVs were
+extremely laggy while 3D ran smooth).
+
+**Method — profiled, didn't guess.** User ran Rayman 3's laggy intro FMV; `sample <pid> 8` on the
+**CPU Thread** (EE). The decode math was NEGLIGIBLE — `IPUWorker`/`IDCT_Block`/`yuv2rgb` ≈ 3 samples
+each (yuv2rgb already has a NEON path; IDCT auto-vectorizes). The EE thread was dominated by
+**`recRecompile` ≈ 1379/6208 (22%)** + `mmap_MarkCountedRamPage` (page mprotect) ≈ 476. I.e. the EE
+recompiler was thrashing: constantly clearing + recompiling + re-protecting blocks. FMV exposes this
+because the IPU runs **synchronously on the EE thread**, so FMV is a pure EE-thread throughput test,
+whereas 3D offloads to VU/MTVU/GS.
+
+**Root cause:** the ARM64 EE rec only had x86's **tier-1** SMC protection (write-protect the code
+page; a write faults → `mmap_ClearCpuBlock` clears all blocks on the page + sets ProtMode_Manual →
+recompile → `recProtectCompiledRange` forces it straight back to read-only → ping-pong **forever**).
+The shared `mmap_ClearCpuBlock` even asserts the page isn't already Manual — it EXPECTS the rec to
+honor Manual mode, which the port didn't. **Amplified 4× on Apple Silicon**: host page = 16 KB
+(`__pagesize=0x4000`) vs 4 KB on x86, so video frames the IPU/EE stream into RAM share a page with
+code far more often. See [[arm64-fmv-smc-recompile-storm]].
+
+**Fix (all in `pcsx2/arm64/aR5900.cpp`):** ported x86 `memory_protect_recompiled_code`'s full
+three-tier scheme:
+- `manual_page[]`/`manual_counter[]` (indexed by host RAM page, `>>__pageshift`), reset in `recResetRaw`.
+- `recEmitManualProtection(startpc,endpc,body_entry)` replaces `recProtectCompiledRange`. Write/None →
+  mark counted (as before). **Manual → emit a checksum prologue** (compare each compiled guest word vs
+  its compile-time value; `b.ne DispatchBlockDiscard`) that becomes the block entry and branches into
+  the body — **no mprotect**, so pure data writes no longer fault/invalidate. Counted heuristic adds
+  `size_words` to a 16-bit `manual_page` accumulator; on carry → `DispatchPageReset` (retry
+  write-protection), giving up to Manual-permanent after `manual_counter > 3`.
+- New `DispatchBlockDiscard`/`DispatchPageReset` dispatcher stubs (call `dyna_block_discard`/
+  `dyna_page_reset`, then re-dispatch); args x0=startpc, x1=size(bytes) loaded by the prologue.
+- **Body-first layout:** prologue is emitted AFTER the body within the same `armStartBlock` session and
+  recorded as the entry (avoids needing a pre-pass to know block size). Interp single-step blocks skip
+  the checksum (they re-read guest mem each run) but still respect Manual (never re-protect it).
+- **Page-boundary stop** in `recRecompile`'s loop so every block stays in one host page — required for
+  the per-page mode to govern the whole block, and fixes a latent multi-page SMC-miss bug (a write to a
+  block's tail page cleared the wrong slot).
+
+**Result:** user confirms FMV is fixed ("it works"). Builds arm64 clean; unittests 2/2.
+
+**Next step:** (optional) re-profile to quantify the `recRecompile` drop; then resume the Phase 7.8
+microVU0+MTVU stack crash on the main line ([[arm64-microvu0-mtvu-stack-crash]]).
+
+---
+
 ## 2026-06-07 (later still) — Phase 7.8: clamp fix verified on games; new Rayman VU0+MTVU crash
 
 **Goal:** Validate the clamp fix on the real games that were broken.

@@ -478,7 +478,15 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 - [ ] 8.2 Real `SaveStateBase::vuJITFreeze()` (replace the empty-byte hack in `RecStubs.cpp`).
 - [ ] 8.3 Full unit-test suite green on ARM64.
 - [ ] 8.4 Game-compat matrix: 2D first, then 3D.
-- [ ] 8.5 Profile + optimize hot paths.
+- [~] 8.5 Profile + optimize hot paths.
+  - [x] **FMV lag fixed** (`dev/fmv`). Profiled Rayman 3's FMV: not MPEG math (IPU/IDCT/yuv2rgb
+    negligible) but an EE **recompile storm** — `recRecompile` was 22% of the EE thread. The ARM64 EE
+    rec only had x86's tier-1 SMC protection (write-protect → fault → clear → recompile → reprotect,
+    ping-ponging forever), amplified 4× by Apple Silicon's 16 KB host pages where IPU/EE-streamed video
+    frames share pages with code. Ported x86's full Write/**Manual-checksum**/counted-give-up scheme to
+    `aR5900.cpp` (`recEmitManualProtection` + `DispatchBlockDiscard`/`DispatchPageReset` stubs +
+    `manual_page`/`manual_counter`) and a single-host-page block invariant. User-confirmed fixed.
+    See JOURNAL + [[arm64-fmv-smc-recompile-storm]].
 - [ ] 8.6 Re-enable LTO for ARM64 if stable.
 - [ ] 8.7 macOS specifics (entitlements, Metal shader compile, MoltenVK).
 
