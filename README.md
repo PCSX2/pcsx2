@@ -14,6 +14,8 @@ PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to 
 
 ## 🍎 About This Fork
 
+[![Project Demo](https://img.youtube.com/vi/6Vm1rQ5AR3Y/maxresdefault.jpg)](https://www.youtube.com/watch?v=6Vm1rQ5AR3Y)
+
 The upstream PCSX2 project ships an ARM64 *interpreter* build for macOS, but its high-performance **JIT recompilers** (EE, IOP, VU0, VU1, and vtlb fast memory) are x86-64 only. On Apple Silicon that means either running under Rosetta 2 (emulated x86-64, slower and deprecated by Apple) or falling back to the interpreter core (orders of magnitude too slow for most games).
 
 **This fork exists to close that gap.** It is a line-for-line ARM64 port of the existing, battle-tested x86-64 JIT recompilers. The recompiler *architecture*, *block model*, *analysis passes*, and *JIT logic* are intentionally kept identical to upstream — what changes is the backend emitter: x86-64 assembly (x86emitter) is translated to ARM64 assembly via [VIXL](https://github.com/Linaro/vixl).
