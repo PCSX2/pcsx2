@@ -2,11 +2,11 @@ name: 🍎 MacOS Builds
 
 on:
   push:
-    branches-ignore:
-      - "l10n_master"
+    branches:
+      - "macOS"
   pull_request:
     branches:
-      - master
+      - macOS
 
 jobs:
   build_macos_qt_arm:
