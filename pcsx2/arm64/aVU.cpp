@@ -25,6 +25,8 @@
 #include "Dmac.h"
 #include "SaveState.h"
 #include "Gif_Unit.h" // gifUnit + GIF_TRANS_XGKICK (XGKICK GIF transfer, aVU_Lower.inl)
+#include "DebugTools/Debug.h" // disVU1MicroUF/LF (MVU_DIFF disasm)
+#include "common/FPControl.h" // FPControlRegisterBackup (MVU_DIFF interp single-step)
 
 #include "common/AlignedMalloc.h"
 #include "common/Perf.h"
@@ -48,6 +50,13 @@ typedef void (*mVUrecCallXG)(void);
 
 // Program logging is compiled out by default (x86: microVU_Misc.h mVUlogProg).
 #define mVUdumpProg(...) if (0) {}
+
+// --- DEBUG: microVU1-vs-interpreter shadow differential (env MVU_DIFF=1) -------
+// When set, recMicroVU1::Execute runs the *interpreter* as the real (known-good)
+// VU1 and microVU1 as a side-effect-suppressed shadow, comparing VF/VI/ACC/Mem
+// and logging the first diverging program's start PC. s_mvuShadowRun gates the
+// microVU XGKICK C entry points so the shadow run doesn't double-transfer to GS.
+static bool s_mvuShadowRun = false;
 
 // --- dispatcher + helper-thunk codegen (task 7.2d) ----------------------------
 // These emit into the already-open armAsm (mVUgenerateDispatchers opens it).
@@ -871,6 +880,193 @@ void recMicroVU1::Step()
 {
 }
 
+// --- DEBUG shadow differential (env MVU_DIFF=1) --------------------------------
+static const bool s_mvuDiff = (getenv("MVU_DIFF") != nullptr);
+bool g_mvuDiffActive = (getenv("MVU_DIFF") != nullptr); // gates writeBackReg VF17/24 logging
+volatile u32 g_fmacDbg[3][4]; // [0]=ACC [1]=Ft [2]=result
+void mvuFmacDump(u32 fd, u32 pc)
+{
+	static int n = 0;
+	if (n++ > 40) return;
+	Console.Error("FMACDUMP @pc=%04x vf%02d ACC=%08x %08x %08x %08x Ft=%08x %08x %08x %08x res=%08x %08x %08x %08x",
+		pc, fd,
+		g_fmacDbg[0][0], g_fmacDbg[0][1], g_fmacDbg[0][2], g_fmacDbg[0][3],
+		g_fmacDbg[1][0], g_fmacDbg[1][1], g_fmacDbg[1][2], g_fmacDbg[1][3],
+		g_fmacDbg[2][0], g_fmacDbg[2][1], g_fmacDbg[2][2], g_fmacDbg[2][3]);
+}
+volatile u32 g_divDbg[4]; // [0]=num [1]=den [2]=result
+void mvuDivDump(u32 wq, u32 rq, u32 pc)
+{
+	static int n = 0;
+	if (n++ > 60) return;
+	const float num = *(const float*)&g_divDbg[0];
+	const float den = *(const float*)&g_divDbg[1];
+	const float res = *(const float*)&g_divDbg[2];
+	Console.Error("DIVDUMP @pc=%04x num=%g(%08x) den=%g(%08x) res=%g(%08x) wQ=%u rQ=%u",
+		pc, num, g_divDbg[0], den, g_divDbg[1], res, g_divDbg[2], wq, rq);
+}
+
+namespace
+{
+	struct VU1Snap
+	{
+		VURegs regs;       // full register file + pipeline/branch/ebit/pending state
+		u8 mem[0x4000];    // VU1 data memory
+	};
+	void mvuSnap(VU1Snap& s)
+	{
+		s.regs = VU1;
+		std::memcpy(s.mem, VU1.Mem, sizeof(s.mem));
+	}
+	void mvuRestore(const VU1Snap& s)
+	{
+		u8* mem = VU1.Mem;
+		u8* micro = VU1.Micro;
+		VU1 = s.regs;
+		VU1.Mem = mem;
+		VU1.Micro = micro;
+		std::memcpy(VU1.Mem, s.mem, sizeof(s.mem));
+	}
+	// Returns true (and logs) if anything diverged. Reports ALL diverging regs/mem
+	// (not just the first) so the pattern is visible. startPC is the program entry.
+	bool mvuDiffReport(u32 startPC, const VU1Snap& ref /*interp*/, const VU1Snap& got /*micro*/)
+	{
+		bool any = false;
+		for (int r = 1; r < 32; r++)
+		{
+			if (std::memcmp(&ref.regs.VF[r], &got.regs.VF[r], 16) != 0)
+			{
+				Console.Error("MVU_DIFF @pc=%04x VF%02d int=%08x %08x %08x %08x mvu=%08x %08x %08x %08x",
+					startPC * 8, r, ref.regs.VF[r].UL[0], ref.regs.VF[r].UL[1], ref.regs.VF[r].UL[2], ref.regs.VF[r].UL[3],
+					got.regs.VF[r].UL[0], got.regs.VF[r].UL[1], got.regs.VF[r].UL[2], got.regs.VF[r].UL[3]);
+				any = true;
+			}
+		}
+		for (int r = 1; r < 16; r++)
+		{
+			if ((u16)ref.regs.VI[r].UL != (u16)got.regs.VI[r].UL)
+			{
+				Console.Error("MVU_DIFF @pc=%04x VI%02d int=%04x mvu=%04x", startPC * 8, r, (u16)ref.regs.VI[r].UL, (u16)got.regs.VI[r].UL);
+				any = true;
+			}
+		}
+		if (std::memcmp(&ref.regs.ACC, &got.regs.ACC, 16) != 0)
+		{
+			Console.Error("MVU_DIFF @pc=%04x ACC int=%08x %08x %08x %08x mvu=%08x %08x %08x %08x", startPC * 8,
+				ref.regs.ACC.UL[0], ref.regs.ACC.UL[1], ref.regs.ACC.UL[2], ref.regs.ACC.UL[3],
+				got.regs.ACC.UL[0], got.regs.ACC.UL[1], got.regs.ACC.UL[2], got.regs.ACC.UL[3]);
+			any = true;
+		}
+		if (ref.regs.q.UL != got.regs.q.UL) { Console.Error("MVU_DIFF @pc=%04x Q int=%08x mvu=%08x", startPC * 8, ref.regs.q.UL, got.regs.q.UL); any = true; }
+		int memdiffs = 0;
+		for (int q = 0; q < 0x4000; q += 16)
+		{
+			if (std::memcmp(ref.mem + q, got.mem + q, 16) != 0)
+			{
+				if (memdiffs < 8)
+				{
+					const u32* ri = (const u32*)(ref.mem + q);
+					const u32* gi = (const u32*)(got.mem + q);
+					Console.Error("MVU_DIFF @pc=%04x MEM[%04x] int=%08x %08x %08x %08x mvu=%08x %08x %08x %08x",
+						startPC * 8, q, ri[0], ri[1], ri[2], ri[3], gi[0], gi[1], gi[2], gi[3]);
+				}
+				memdiffs++;
+				any = true;
+			}
+		}
+		if (memdiffs)
+			Console.Error("MVU_DIFF @pc=%04x total MEM diffs=%d", startPC * 8, memdiffs);
+		return any;
+	}
+}
+
+// --- DEBUG per-instruction localizer (MVU_DIFF) --------------------------------
+// microVU records (pc, VF, VI) after each instruction via the mvuTraceMicro call
+// injected by mVUcompile (gated on s_mvuDiff && isVU1); the interpreter is then
+// single-stepped over the same input and compared, naming the first instruction
+// where state (or control flow) diverges.
+bool g_mvuTraceActive = false;
+struct MvuTraceEnt
+{
+	u32 pc;
+	u32 vf[32][4];
+	u32 vi[16];
+};
+static std::vector<MvuTraceEnt> g_mvuTrace;
+
+void mvuTraceMicro(u32 pc) // called from JIT (after a regAlloc flush + backupRegs)
+{
+	if (!g_mvuTraceActive || g_mvuTrace.size() >= 20000)
+		return;
+	MvuTraceEnt e;
+	e.pc = pc;
+	std::memcpy(e.vf, VU1.VF, sizeof(e.vf));
+	for (int i = 0; i < 16; i++)
+		e.vi[i] = (u16)VU1.VI[i].UL;
+	g_mvuTrace.push_back(e);
+}
+
+static void mvuDumpAround(u32 pc)
+{
+	const u32 lo = 0;
+	for (u32 b = lo; b < 0x800 && b < 0x4000; b += 8)
+	{
+		const u32 l = *(u32*)&VU1.Micro[b];
+		const u32 u = *(u32*)&VU1.Micro[b + 4];
+		// NOTE: disVU1MicroUF/LF share one static buffer, so copy the upper string
+		// before calling the lower one (else both columns show the lower op).
+		std::string up = disVU1MicroUF(u, b + 4);
+		Console.Error("  %s%04x: %-28s | %s", (b == pc) ? "->" : "  ", b, up.c_str(), disVU1MicroLF(l, b));
+	}
+}
+
+// Single-step the interpreter over the same input and compare to g_mvuTrace.
+static void mvuLocalizeCompare(u32 cycles)
+{
+	const FPControlRegisterBackup fpcr_backup(EmuConfig.Cpu.VU1FPCR);
+	VU1.VI[REG_TPC].UL <<= 3;
+	const u64 startcyc = VU1.cycle;
+	size_t k = 0;
+	while ((VU1.cycle - startcyc) < cycles && (VU0.VI[REG_VPU_STAT].UL & 0x100) && k < g_mvuTrace.size())
+	{
+		const u32 ipc = VU1.VI[REG_TPC].UL & VU1_PROGMASK;
+		CpuIntVU1.Step();
+		const MvuTraceEnt& m = g_mvuTrace[k];
+		if (m.pc != ipc)
+		{
+			Console.Error("LOCALIZE step %zu: CONTROL-FLOW diverge — interp next=%04x, mvu next=%04x", k, ipc, m.pc);
+			mvuDumpAround(ipc);
+			return;
+		}
+		// VF comparison is perturbed by the Q/PQ Heisenbug near DIV/WAITQ; skip it
+		// by default so the localizer reaches the controlling branch / VI divergence
+		// (set MVU_VF=1 to re-enable VF checks).
+		if (getenv("MVU_VF")) for (int r = 1; r < 32; r++)
+		{
+			if (std::memcmp(m.vf[r], &VU1.VF[r], 16) != 0)
+			{
+				Console.Error("LOCALIZE step %zu pc=%04x VF%02d interp=%08x %08x %08x %08x mvu=%08x %08x %08x %08x",
+					k, ipc, r, VU1.VF[r].UL[0], VU1.VF[r].UL[1], VU1.VF[r].UL[2], VU1.VF[r].UL[3],
+					m.vf[r][0], m.vf[r][1], m.vf[r][2], m.vf[r][3]);
+				mvuDumpAround(ipc);
+				return;
+			}
+		}
+		for (int r = 1; r < 16; r++)
+		{
+			if ((u16)VU1.VI[r].UL != (u16)m.vi[r])
+			{
+				Console.Error("LOCALIZE step %zu pc=%04x VI%02d interp=%04x mvu=%04x", k, ipc, r, (u16)VU1.VI[r].UL, (u16)m.vi[r]);
+				mvuDumpAround(ipc);
+				return;
+			}
+		}
+		k++;
+	}
+	VU1.VI[REG_TPC].UL >>= 3;
+	Console.Error("LOCALIZE: no per-instruction divergence over %zu steps (mvu trace %zu entries)", k, g_mvuTrace.size());
+}
+
 void recMicroVU1::Execute(u32 cycles)
 {
 	if (!THREAD_VU1)
@@ -878,6 +1074,58 @@ void recMicroVU1::Execute(u32 cycles)
 		if (!(VU0.VI[REG_VPU_STAT].UL & 0x100))
 			return;
 	}
+
+	if (s_mvuDiff && !THREAD_VU1)
+	{
+		const u32 startPC = VU1.VI[REG_TPC].UL;
+		VU1Snap in;
+		mvuSnap(in);
+
+		// REAL run = interpreter (known-good; correct side effects keep the game rendering).
+		CpuIntVU1.Execute(cycles);
+		VU1Snap io;
+		mvuSnap(io);
+
+		// SHADOW run = microVU1, side effects (XGKICK) suppressed.
+		mvuRestore(in);
+		VU0.VI[REG_VPU_STAT].UL |= 0x100; // interp cleared it at E-bit; re-arm for the shadow
+		s_mvuShadowRun = true;
+		VU1.VI[REG_TPC].UL <<= 3;
+		((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
+		VU1.VI[REG_TPC].UL >>= 3;
+		s_mvuShadowRun = false;
+		VU1Snap mo;
+		mvuSnap(mo);
+
+		static bool s_localizeDone = false;
+		if (!s_localizeDone && mvuDiffReport(startPC, io, mo))
+		{
+			s_localizeDone = true;
+			Console.Error("==== MVU_DIFF localizing first diverging program @pc=%04x ====", startPC * 8);
+
+			// 1) micro trace (self-recorded via the injected mvuTraceMicro calls)
+			g_mvuTrace.clear();
+			mvuRestore(in);
+			VU0.VI[REG_VPU_STAT].UL |= 0x100;
+			g_mvuTraceActive = true;
+			s_mvuShadowRun = true;
+			VU1.VI[REG_TPC].UL <<= 3;
+			((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
+			VU1.VI[REG_TPC].UL >>= 3;
+			s_mvuShadowRun = false;
+			g_mvuTraceActive = false;
+
+			// 2) interp single-step over the same input, compare
+			mvuRestore(in);
+			VU0.VI[REG_VPU_STAT].UL |= 0x100;
+			mvuLocalizeCompare(cycles);
+		}
+
+		mvuRestore(io); // keep the interpreter (correct) result as the real one
+		VU0.VI[REG_VPU_STAT].UL &= ~0x100; // match interp's post-run state
+		return;
+	}
+
 	VU1.VI[REG_TPC].UL <<= 3;
 	((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
 	VU1.VI[REG_TPC].UL >>= 3;

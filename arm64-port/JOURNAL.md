@@ -28,6 +28,180 @@
 
 ---
 
+## 2026-06-07 (later) — Phase 7.8: black-screen ROOT CAUSE FOUND **AND FIXED** → clamp scratch reg
+
+**Goal:** Pin numeric-FMAC-diff vs flag-instance for the "wrong MAC flag", using BIOS as the repro
+(user pointed out the divergence happens during BIOS boot — no ISO needed; the BIOS cube animation
+got stuck in an endless loop without crashing, the classic wrong-branch symptom).
+
+**What changed:**
+- `pcsx2/arm64/aVU_Clamp.inl` — **THE FIX.** `mVUclamp1`/`mVUclamp2` now fall back to `RQSCRATCH`
+  when their `regT1` arg `IsNone()` (callers in `mVU_FMACa`'s per-operand `cFt`/`cFs` clamps pass
+  `xEmptyReg`). Mirrors what `mVUclampedArith` already did.
+- (debug-only, added then reverted same session) temporary MACSET/QREAD/FSREAD/MULRES JIT dumps in
+  `aVU_Upper.inl` + a per-step interp macflag-history dump in `aVU.cpp`'s localizer. Reverted after
+  the bug was found — final diff is *only* the clamp fix.
+
+**Decisions & rationale — the actual root cause (NOT the MAC flag):**
+The MAC flag was a **downstream symptom**. Trail (BIOS program @pc=00d8, the transform loop):
+1. Localizer: first divergence `FMAND@0240` reads wrong MAC flag (vi01 0xd0 vs 0x10) — 2 sign bits
+   missing. The flag is set by `SUB.xyw`; micro's per-FMAC MACSET dump showed the SUB **result** was
+   already -FLT_MAX where interp had a normal finite value, so the flag gather was faithful — the
+   value was wrong.
+2. Walked back: `MULq vf24` (`vf24=5120 * Q=0.4`, both confirmed correct via FSREAD/QREAD dumps)
+   produced **-FLT_MAX** in all lanes. MULRES dump (right after `SSE_PS[MUL]`) showed BOTH `Fs` and
+   `Ft` = -FLT_MAX; `Fmul` only writes `Fs`, so `Ft` (0.4) was corrupted *before* the multiply.
+3. FSREAD (Ft right before `SSE_PS`) = -FLT_MAX while QREAD (Ft right after `getQreg`) = 0.4 →
+   corruption is the line-315 operand clamp `mVUclamp2(mVU, Ft, xEmptyReg, …)`.
+4. `mVUclamp1/2` load ±fmax into `regT1` (a NEON scratch) — but `regT1 = xEmptyReg`. The bogus
+   register aliased the value reg; the `Ldr maxvals; Ldr minvals; Umin` sequence left the operand =
+   `minvals` = `0xff7fffff` = -FLT_MAX. x86 never hit this (it folds ±fmax as a memory operand and
+   needs no scratch). Only fires when the VU overflow/sign-overflow clamp is active (BIOS, some
+   games) → why most titles "mostly worked".
+
+**Method:** env-gated JIT dumps were decisive — each narrowed by one instruction (FMAND→SUB→MULq→
+operand→clamp). The pre-existing `MVU_DIFF` shadow-diff + localizer framework (prior session) did the
+program- and instruction-level localization; the new per-value dumps pinned the exact corrupted reg.
+
+**Validation:** pure microVU1 BIOS boot (no MVU_DIFF): "GS packet size exceeded" 13903→1, clean
+shutdown, no stuck loop. Shadow-diff: 12 diverging regs → 1 (benign DIV-latency Q at program exit);
+localizer: 0 per-instruction divergences. arm64 builds; unittests 2/2.
+
+**Blockers / open questions:** Headless can't confirm pixels. The remaining single shadow-diff `Q`
+divergence is the long-known benign DIV-latency program-boundary artifact.
+
+**Next step:** hands-on visual + soak test of Rayman 3 / Odin Sphere (were black) and FFX (artifacts)
+under pure microVU1; then 7.8 deeper validation / 7.9 macro mode. See [[arm64-microvu1-clamp-scratch-bug]].
+
+---
+
+## 2026-06-07 — Phase 7.8: black-screen ROOT CAUSE isolated → wrong MAC flag
+
+**Goal:** Continue debugging why some games (Rayman 3, Odin Sphere) black-screen with microVU1.
+
+**What changed (debug tooling only — no semantic recompiler change yet):**
+- `aVU.cpp` — `mvuDiffReport` now logs ALL diverging VF/VI/ACC/Q/Mem (was: first only) + a MEM-diff
+  count; per-instruction localizer gated behind `MVU_LOC` (was always-on with MVU_DIFF); localizer VF
+  check gated behind `MVU_VF` (the Q/PQ Heisenbug perturbs VF near DIV/WAITQ, so VF-off lets it reach
+  the controlling branch); `mvuDumpAround` widened to the whole program and FIXED the disVU1MicroUF/LF
+  shared-static-buffer aliasing (both columns were showing the LOWER op → the UPPER FMACs were
+  invisible, which is why the loop looked "arithmetic-free"). Added `g_mvuDiffActive`, runtime
+  `DIVDUMP` (DIV num/den/result) and `FMACDUMP` (vf24-MADD ACC/operand/result) loggers.
+- `aVU_IR.h` — compile-time `WB VFnn` (writeBackReg) + `ALLOC` (allocReg) logging for VF17/24.
+- `aVU_Lower.inl` / `aVU_Upper.inl` — emit the DIVDUMP / FMACDUMP runtime dumps (env-gated).
+- `aVU_Compile.inl` — per-instruction localizer flush gated behind `MVU_LOC`.
+- All env-gated via `g_mvuDiffActive`/`getenv`; zero codegen/overhead in normal builds.
+
+**Decisions & rationale — THE ROOT CAUSE (one bug, all symptoms):**
+microVU1 reads a **wrong MAC flag**. Evidence chain on Rayman 3's transform loop (program @00d8):
+1. `LOCALIZE step 45 pc=0240 VI01 interp=00d0 mvu=0010` — at `FMAND vi01, MACflag, vi12` (vi12=0xd0),
+   control-flow + every VI matched through step 44; `vi01 = MACflag & 0xd0` diverges ⇒ the MAC flag is
+   wrong (micro missing the 0x80/0x40 sign bits, i.e. 2 lanes' sign flags).
+2. Wrong `vi01` → wrong `IBNE`/`IBLEZ` → wrong vertex-loop iteration count (the vi10/vi13 loop
+   counters that earlier looked like a "control-flow divergence").
+3. Over-running the loop reads PAST the valid vertices into garbage. `FMACDUMP @pc=01d8` proves the
+   `MADDw vf24` transform is CORRECT for clean vertices (`vf20.w=1.0`) and only produces -FLT_MAX when
+   fed a garbage vertex (`vf20.w=-FLT_MAX`). So the "-FLT_MAX overflow" is a *consequence*, not the bug.
+4. Garbage transformed verts → malformed GIF packets → `Gif Unit - GS packet size exceeded VU memory
+   size!` ×17,509 → black screen. (`DIVDUMP` likewise showed the DIV/Q is correct given its inputs;
+   the "Q lag" was downstream too.)
+- **`mVUupdateFlags` is line-for-line faithful to x86** (mVUmovemask==MOVMSKPS, Fcmeq==CMPEQ.PS,
+  AND_XYZW/SHIFT_XYZW/flip all match) — so the bug is NOT the flag gather. Prime suspect: the MAC-flag
+  INSTANCE pipeline (getFlagReg / mVUallocMFLAGa/b + mFLAG.read/write instance assignment) reading a
+  stale/wrong mac instance, analogous to the Q-latency pattern.
+- **Method that worked:** the program-level diff is trustworthy; the per-instruction localizer is NOT
+  near DIV/WAITQ (Q/PQ Heisenbug from its flushAll+PQ backup/restore) — disabling its VF check made it
+  reach the real branch. The disasm static-buffer bug had been hiding the UPPER FMACs the whole time.
+
+**Follow-up audit (same session): the ENTIRE flag path is faithful to x86 — bug is deeper.** Verified
+line-for-line equivalent: `mVU_FMAND`, `mVUupdateFlags`, the SSE arith primitives (`SSE_SUBPS` =
+`to-from`, correct operand order — ruled out a reversed SUB), `mVUshufflePS` (== SHUFPS for the
+self-shuffle sortFlag uses to reorder mac/clip instances), `mVUanalyzeMflag`, `mVUallocMFLAGa/b`,
+`getFlagReg`, AND_XYZW/SHIFT_XYZW, the dispatcher mac/clip/status+PQ init, and the **FPCR** (on ARM64
+`FPControlRegister.bitmask` is a native u64 FPCR value, FZ=bit24; `mVUemitSetHostFPCR`'s Msr matches
+the interp's `FPControlRegisterBackup` — flush-to-zero/rounding are NOT the divergence). So with
+identical inputs producing a different MAC flag, an **FMAC must produce a numerically different result
+than the C++ interpreter on some inputs** (flipping sign/zero flag bits), OR there's a mac-flag-
+instance edge case for partial-lane `.xyw` ops (unwritten lanes inherit an earlier instance). The
+VF-off localizer can't see the FMAC value diff: its per-instruction flushAll+PQ backup/restore
+perturbs VF near DIV/WAITQ and, once it corrupts VU1.VF in memory, cascades.
+
+**Blockers / open questions:** Need a Heisenbug-free per-instruction comparison of the flag-setting
+FMAC RESULT + MAC flag (micro vs interp) to decide numeric-FMAC-diff vs flag-instance bug.
+
+**Next step:** (a) make the localizer record the mac flag + Q + ACC and stop perturbing PQ (snapshot
+VU1.VF without flushAll, or skip the flush only on DIV/WAITQ/MULq steps), or (b) add a direct mac-flag
+compare to mvuDiffReport (micro mVU.macFlag[]/micro_macflags vs interp VU1.VI[REG_MAC_FLAG]). Pin
+numeric-vs-instance, fix, re-run the test ladder.
+
+---
+
+## 2026-06-06 — Phase 7.8: real-game testing — 3 crash fixes, then a microVU1 correctness regression
+
+> NOTE: supersedes the "BIOS/2D/FFX run" framing of the entry below — those games BOOT without
+> crashing but render WRONG (2D black, FFX artifacts). That's a microVU1 correctness bug, separate
+> from the crashes.
+
+**Goal:** Boot real games on microVU and debug the crashes/wrong output the user reported.
+
+**What changed:**
+- `Config.h` (`7fb86fcfa`) — bug #1: `REC_VU1`/`THREAD_VU1` track `EmuConfig` (XGKICK size bit31/EOP
+  → ~2 GB memcpy crash on first kick during BIOS boot).
+- `aVU.h` (`b7ae2fa7b`) — bug #2: `compareState` is C++ `memcmp`, not executed JIT. On Apple Silicon
+  the MAP_JIT region is non-executable during a compile session (`pthread_jit_write_protect(0)`), so
+  executing the generated `compareStateF` mid-compile (block search) SIGBUSed. Per-thread, so this
+  also fixed the identical crash on the MTVU thread → MTVU works, full x86 parity kept.
+- `aVU.cpp`/`aVU_Lower.inl`/`VMManager.cpp` (`fb00e747b`) — the `MVU_DIFF` shadow differential.
+
+**Decisions & rationale:**
+- **Lesson (in memory): never execute JIT mid-compile on Apple Silicon** — W^X makes the region
+  non-executable while writable. See [[arm64-no-execute-jit-mid-compile]].
+- **Crashes ≠ correctness.** After the 3 crash fixes, games boot but render wrong. User confirmed
+  microVU1 regression (correct with VU1 rec OFF; VU0 micro fine) → VU1-specific codegen bug.
+- **Built a shadow differential instead of guessing.** Interp drives the real VU1 (game stays
+  renderable), microVU1 shadows the same input; compare VF/VI/ACC/Q/Mem; log first diverging PC +
+  disasm. Findings: microVU1 overflows to -FLT_MAX where interp is small/zero, and Q lags interp by
+  one DIV (stale Q → bad perspective divide → collapsed geometry). DIV handler, getQreg/writeQreg,
+  and clamp constants all match x86 on inspection; root op not yet found (math is in dynamically-
+  uploaded subroutines, defeating linear disasm).
+
+**Blockers / open questions:** Program-level diff pinpoints the diverging *program*, not the opcode.
+
+**Deeper narrowing (Rayman):** disassembled the diverging programs — they are **arithmetic-free**
+vertex gather/scatter programs: only LQ/LQI/SQ/SQI/ILW/ILWR, integer IADD/ISUB address math,
+conditional branches (IBNE/IBLEZ/...), FMAND, and a single DIV. **No MUL/ADD/MADD/MSUB/EFU/MFP.** So
+the wrong values are NOT FMAC overflow. The divergences are: (a) committed VU-memory (stored VF data)
+wrong, and (b) **VI registers diverge — incl. a loop counter (VI13: interp -4 vs mvu 0)**, i.e. the
+loop ran a different number of iterations ⇒ a **conditional branch / control flow went wrong**, or
+load/store addressing is wrong. Verified faithful-to-x86 by inspection: SUB, DIV, testZero, LQI,
+ILWR, mVUaddrFix, mvuLoad/SaveRegBase, mVUclamp1/2 + constants, the Q analysis (incQ/readQ/writeQ).
+Q-lag is a benign program-boundary artifact (DIV latency), not the bug. Strong remaining suspects
+(systemic, not per-op): the **VI register allocator writeback** and the **branch delay-slot VI-backup**
+(`mVUlow.backupVI` / `mVU.VIbackup` / `memReadIs`/`memReadIt`) feeding the conditional branches —
+a wrong VI value there corrupts loop counts and vertex addresses → garbage geometry → black screen.
+
+**Per-instruction localizer (built, `ac3eede85`):** mVUcompile injects a flushAll + mvuTraceMicro(pc)
+after each instruction; on first divergence the interpreter is single-stepped and compared. It
+pointed at the DIV/WAITQ/Q region with ±FLT_MAX, but **forcing DIV down the normal path did NOT
+remove the divergence** — so divide-by-zero is NOT the source. The trustworthy program-level diff
+shows a **W-lane-correct / X/Y/Z-wrong** pattern (e.g. VF17: w=ffff8000 from MFIR.w is correct, xyz
+are stale). Stale lanes ⇒ microVU executed a *different set of instructions* ⇒ the **control-flow /
+loop-iteration divergence is the root** (the vi10/vi13 loop counters differ), not a compute opcode.
+Verified faithful to x86: DIV, testZero, MFIR (Fmov.S zeroes upper lanes = xMOVDZX), LQI, ILWR,
+clamp, regalloc pool size (xmmTotal=24, no PQ collision). CAVEAT: the per-instruction path has a
+likely Heisenbug around Q/PQ (flushAll + PQ backup/restore perturbs VF near DIV/WAITQ) — trust the
+program-level diff there.
+
+**Next step:** chase the control-flow divergence. The loop in these programs is driven by IBNE/IBLEZ
+on VI counters (vi10/vi13) and by FMAND on the MAC flag. Either (a) the **conditional branch** reads
+the wrong VI (delay-slot VI backup: `mVUlow.backupVI`/`mVU.VIbackup`/`memReadIs`/`memReadIt` +
+`condBranch`), or (b) the **MAC flag** feeding FMAND is wrong (status/mac/clip flag pipeline). First
+make the localizer trustworthy (skip the per-instruction flush for DIV/WAITQ, or verify traced ==
+non-traced micro output), then trace which VI/flag first diverges right before the branch that
+controls the loop.
+
+---
+
 ## 2026-06-06 — Phase 7.8: select microVU0/1 + fix two real-execution bugs (BIOS, 2D, FFX run)
 
 **Goal:** Flip the ARM64 VU provider from interpreter to microVU and validate up the test ladder

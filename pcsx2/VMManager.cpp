@@ -664,6 +664,12 @@ void VMManager::LoadCoreSettings(SettingsInterface& si)
 	// Force MTVU off when playing back GS dumps, it doesn't get used.
 	if (GSDumpReplayer::IsReplayingDump())
 		EmuConfig.Speedhacks.vuThread = false;
+
+	// DEBUG (ARM64): the microVU1-vs-interpreter shadow differential needs VU1 to run
+	// synchronously on the CPU thread, so force MTVU off when MVU_DIFF is set.
+	static const bool s_mvu_diff_env = (std::getenv("MVU_DIFF") != nullptr);
+	if (s_mvu_diff_env)
+		EmuConfig.Speedhacks.vuThread = false;
 }
 
 void VMManager::LoadInputBindings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
