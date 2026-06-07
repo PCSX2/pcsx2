@@ -307,6 +307,7 @@ ControllerMacroWidget::ControllerMacroWidget(ControllerBindingWidget* parent)
 	: QWidget(parent)
 {
 	m_ui.setupUi(this);
+
 	const u32 port = parent->getPortNumber();
 	const auto [pad_port, pad_slot] = sioConvertPadToPortAndSlot(port);
 	const bool mtap_enabled = parent->getDialog()->getBoolValue("Pad", (pad_port == 0) ? "MultitapPort1" : "MultitapPort2", false);
@@ -319,6 +320,7 @@ ControllerMacroWidget::ControllerMacroWidget(ControllerBindingWidget* parent)
 	{
 		setWindowTitle(tr("Controller Port %1 Macros").arg(pad_port + 1));
 	}
+
 	createWidgets(parent);
 }
 
