@@ -28,6 +28,44 @@
 
 ---
 
+## 2026-06-07 (later still) — Phase 7.8: clamp fix verified on games; new Rayman VU0+MTVU crash
+
+**Goal:** Validate the clamp fix on the real games that were broken.
+
+**Result of clamp fix (commit `ad3edfc94`):**
+- **FFX:** now boots to the menu (was crashing). ✅
+- **Rayman 3:** no longer black — intro FMV plays (laggy/unaccelerated) → reaches the menu → then
+  **crashes shortly after** with a NEW bug (below). Big progress from the black screen.
+
+**New crash (Rayman 3, after menu) — microVU0 + MTVU stack SIGBUS (NOT yet fixed):**
+- Caught under lldb (get-task-allow re-sign + `lldb -b -o run -k '<crash cmds>'`).
+- SIGBUS on the **CPU thread**, in JIT code, chain `EmuThread::run → EE block → LQC2() (EE COP2
+  load, inline-interp) → microVU0`. First real VU0 *microprogram* execution (log:
+  `microVU0: Cached Prog [000] PC=0000` immediately before). LQC2 syncs VU0; since 7.8 selected
+  microVU0 (not the interpreter), that runs the microVU0 dispatcher.
+- Faulting instr: `ldp q18,q19,[sp,#0x1a0]` in the **mVUGenerateWaitMTVU thunk's restore** (x16 =
+  `mVUwaitMTVU`). Reached from `mVUaddrFix` (aVU_Misc.inl:177): a VU0 instruction accessing the
+  **VU1 register window** under MTVU (`THREAD_VU1`) calls `mVUwaitMTVU`.
+- Stack region `[0x1700c0000-0x1702c8000) rw-`, base `0x1702c8000`, guard `[..c8000-..cc000) ---`.
+  At the crash `sp=0x1702c7e50`, so the thunk frame top `sp+0x210=0x1702c8060` is **0x60 above the
+  base → into the guard page** → SIGBUS.
+- **Diagnosis:** the thunk frame (0x210) is fine; **sp is already ~at/above the stack base when
+  microVU0 runs here.** EE blocks run at recExecute's sp with NO prologue (aR5900.cpp:866); every
+  stack helper (armBegin/EndStackFrame 192/192, mVUbackup/restoreRegs 0x210/0x210, the thunk,
+  armEmitCall) is balanced and `mVUexecute`/`mVUwaitMTVU` are trivial — yet the arithmetic forces:
+  **sp rose ~0x110+ between the microVU0 dispatcher prologue (didn't fault) and the waitMTVU thunk
+  (faulted).** Exact corruption point not found statically — needs an empirical sp-trace.
+
+**Likely-quick confirm/workaround:** the crash path only exists under **MTVU** (`THREAD_VU1`) when
+VU0 touches the VU1 window. Disabling MTVU (Speedhacks → MTVU off) should avoid it and likely make
+Rayman playable — also confirms the trigger.
+
+**Next step:** (a) confirm via MTVU-off; (b) sp-trace: break at `mVUwaitMTVU`, read sp on entry vs
+after `step-out`; at the crash read per-frame sp (`frame select 3; reg read sp`) to find where sp is
+set above the stack base; then fix the EE→COP2→microVU0 entry sp handling.
+
+---
+
 ## 2026-06-07 (later) — Phase 7.8: black-screen ROOT CAUSE FOUND **AND FIXED** → clamp scratch reg
 
 **Goal:** Pin numeric-FMAC-diff vs flag-instance for the "wrong MAC flag", using BIOS as the repro
