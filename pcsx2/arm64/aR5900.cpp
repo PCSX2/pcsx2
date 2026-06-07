@@ -115,6 +115,16 @@ static const void* DispatcherEvent = nullptr;      // run event test, then fall 
 static const void* JITCompile = nullptr;           // compile block at cpuRegs.pc, then dispatch
 static const void* EnterRecompiledCode = nullptr;  // C entry: pin RESTATEPTR, then dispatch
 static const void* UnmappedRecLUTPage = nullptr;   // jumped to on an unmapped guest PC
+static const void* DispatchBlockDiscard = nullptr; // manual block failed its checksum -> clear + recompile
+static const void* DispatchPageReset = nullptr;    // counted manual block -> retry write-protection
+
+// Self-modifying-code (SMC) manual protection, mirroring x86 iR5900.cpp. Both arrays are
+// indexed by host RAM page (the protection granularity, __pageshift — 16 KB on Apple
+// Silicon, 4 KB on x86), so they stay consistent with the vtlb's m_PageProtectInfo. See
+// recEmitManualProtection for how these drive the three-tier Write/Manual/uncounted scheme
+// that stops the recompile storm on pages that mix code and data (the FMV/IPU case).
+alignas(16) static u16 manual_page[Ps2MemSize::TotalRam >> __pageshift];
+alignas(16) static u8 manual_counter[Ps2MemSize::TotalRam >> __pageshift];
 
 // Execution / reset / exit plumbing, mirroring the x86 rec (iR5900.cpp).
 static bool eeRecExecuting = false;
@@ -126,6 +136,9 @@ static void recResetRaw();
 static void recGenDispatchers();
 static void recRecompile(u32 startpc);
 static void recEventTest();
+static void recClear(u32 addr, u32 size);
+static void dyna_block_discard(u32 start, u32 sz);
+static void dyna_page_reset(u32 start, u32 sz);
 
 // Associate one 64 KB guest page `pagebase+pageidx` with the slot array `mapbase`,
 // biased so recPtrToBlock(pc) lands at &mapbase[mappage<<14 + (pc&0xffff)/4]. Direct
@@ -237,6 +250,11 @@ static void recResetRaw()
 	s_const_pool.Reset();
 	recGenDispatchers();
 	recClearLUT();
+
+	// Drop all SMC manual-protection state — every block is being thrown away, so the
+	// per-page counters/weights must start fresh (mirrors x86 lpReset in recResetRaw).
+	std::memset(manual_page, 0, sizeof(manual_page));
+	std::memset(manual_counter, 0, sizeof(manual_counter));
 
 	eeRecNeedsReset = false;
 }
@@ -790,16 +808,91 @@ static u32 recScaleBlockCycles(u32 raw)
 	return (scale_cycles < 1) ? 1 : scale_cycles;
 }
 
-// Mark every RAM page covered by a compiled block as recompiled code, so writes
-// to loaded ELF/game code fault through the existing vtlb page-protection path
-// and call Cpu->Clear(). ROM pages return ProtMode_NotRequired and are ignored.
-static void recProtectCompiledRange(u32 startpc, u32 endpc)
+// Install a freshly-compiled block's self-modifying-code protection and return the pointer
+// to record in its recLUT slot. Direct port of x86 memory_protect_recompiled_code
+// (iR5900.cpp), adapted to this port's body-first layout: the caller has already emitted
+// the block body + dispatch tail (entry `body_entry`); for a manually-protected page we
+// emit a checksum prologue AFTER the body and make THAT the block entry (it verifies the
+// guest code and branches into the body).
+//
+// The whole point: on Apple Silicon the host page is 16 KB (4 KB on x86), so a single data
+// write — e.g. an FMV frame the IPU/EE streams into RAM — can sit on the same page as
+// compiled code and fault it. Tier 1 (Write) re-protects read-only and recompiles on every
+// such write, which thrashes. Once a page has faulted it becomes Manual: we stop
+// re-protecting it and instead self-check the code bytes on each block entry, so pure data
+// writes no longer fault or invalidate. Blocks are kept within a single host page (see the
+// page-boundary stop in recRecompile) so one page's mode governs the whole block.
+//
+// Assumes `body_entry` is the start of a real compiled block (not an interpreter
+// single-step block — those re-read guest memory every run and need no protection).
+static u8* recEmitManualProtection(u32 startpc, u32 endpc, u8* body_entry)
 {
-	for (u32 pc = startpc & ~0xfffu; pc < endpc; pc += __pagesize)
+	const u32 size_bytes = endpc - startpc;
+	const u32 size_words = size_bytes >> 2;
+
+	// The kernel/EENULL thread-context pages alias one physical page across many virtual
+	// mappings; always treat them as manual (matches x86).
+	const bool contains_thread_stack = ((startpc >> 12) == 0x81) || ((startpc >> 12) == 0x80001);
+	const vtlb_ProtectionMode mode = contains_thread_stack ? ProtMode_Manual : mmap_GetRamPageInfo(startpc);
+
+	// Index into manual_page/counter by host RAM page, matching the vtlb's m_PageProtectInfo.
+	const u32 rampage = static_cast<u32>(
+		(reinterpret_cast<uptr>(PSM(startpc)) - reinterpret_cast<uptr>(eeMem->Main)) >> __pageshift);
+
+	switch (mode)
 	{
-		if (mmap_GetRamPageInfo(pc) != ProtMode_NotRequired)
-			mmap_MarkCountedRamPage(pc);
+		case ProtMode_NotRequired:
+			// ROM / unbacked — never written, nothing to protect.
+			return body_entry;
+
+		case ProtMode_None:
+		case ProtMode_Write:
+			// Cheap tier: write-protect the page so a future write faults and clears us.
+			mmap_MarkCountedRamPage(startpc);
+			manual_page[rampage] = 0;
+			return body_entry;
+
+		case ProtMode_Manual:
+		default:
+			break;
 	}
+
+	// Manual tier: emit the runtime self-check prologue. It becomes the block's entry.
+	u8* const prologue = armGetCurrentCodePointer();
+
+	// Args for the discard / page-reset helpers, kept live across the checks below
+	// (the checks only touch x9/w10/w11).
+	armAsm->Mov(RWARG1, startpc);     // x0 = startpc (guest vaddr)
+	armAsm->Mov(RWARG2, size_bytes);  // x1 = block size in bytes
+
+	// Compare every compiled guest word against the value captured at compile time. A
+	// mismatch means the code itself changed (real SMC / module reload) -> discard.
+	const u8* const base = static_cast<const u8*>(PSM(startpc));
+	armMoveAddressToReg(a64::x9, base);
+	for (u32 i = 0; i < size_words; i++)
+	{
+		const u32 captured = *reinterpret_cast<const u32*>(base + i * 4);
+		armAsm->Ldr(a64::w10, a64::MemOperand(a64::x9, i * 4));
+		armAsm->Mov(a64::w11, captured);
+		armAsm->Cmp(a64::w10, a64::w11);
+		armEmitCondBranch(a64::ne, DispatchBlockDiscard);
+	}
+
+	// Counted heuristic: a Manual block that runs a lot periodically retries cheap
+	// write-protection (in case the write that demoted the page was a one-off). After the
+	// page has been retried enough times (manual_counter > 3) it stays Manual permanently.
+	if (!contains_thread_stack && manual_counter[rampage] <= 3)
+	{
+		armMoveAddressToReg(a64::x9, &manual_page[rampage]);
+		armAsm->Ldrh(a64::w10, a64::MemOperand(a64::x9));
+		armAsm->Add(a64::w10, a64::w10, size_words);
+		armAsm->Strh(a64::w10, a64::MemOperand(a64::x9)); // truncates to 16 bits, like x86 xADD ptr16
+		armAsm->Tst(a64::w10, 0x10000);                   // carry out of the 16-bit accumulator
+		armEmitCondBranch(a64::ne, DispatchPageReset);
+	}
+
+	armEmitJmp(body_entry);
+	return prologue;
 }
 
 // --------------------------------------------------------------------------------------
@@ -874,6 +967,18 @@ static void recGenDispatchers()
 	armEmitCall(reinterpret_cast<const void*>(recExitUnmapped));
 	armAsm->B(&dispatcher_reg);
 
+	// DispatchBlockDiscard / DispatchPageReset: the tails of a manually-protected block's
+	// entry checksum (see recEmitManualProtection). The checksum prologue has already loaded
+	// x0 = startpc and x1 = block size (bytes) and branches here on failure; we run the C
+	// helper, then re-dispatch (the slot now points back at JITCompile, so it recompiles).
+	DispatchBlockDiscard = armGetCurrentCodePointer();
+	armEmitCall(reinterpret_cast<const void*>(dyna_block_discard));
+	armAsm->B(&dispatcher_reg);
+
+	DispatchPageReset = armGetCurrentCodePointer();
+	armEmitCall(reinterpret_cast<const void*>(dyna_page_reset));
+	armAsm->B(&dispatcher_reg);
+
 	recPtr = armEndBlock();
 }
 
@@ -934,6 +1039,16 @@ static void recRecompile(u32 startpc)
 
 	for (;;)
 	{
+		// Keep every block within a single host RAM page so its SMC protection mode (see
+		// recEmitManualProtection) governs the whole block, and so a page-fault clear of
+		// the block's page always hits the block's start slot. (A branch's delay slot may
+		// still spill one word into the next page — an accepted corner, as on x86.)
+		if (pc != startpc && (pc & ~__pagemask) != (startpc & ~__pagemask))
+		{
+			recEmitWritePc(pc);
+			break;
+		}
+
 		const u32 op = memRead32(pc);
 		const R5900::OPCODE& info = R5900::GetInstruction(op);
 
@@ -985,13 +1100,29 @@ static void recRecompile(u32 startpc)
 
 	recEmitEventTestAndDispatch(interp_step ? 0 : recScaleBlockCycles(raw_cycles), !interp_step);
 
-	recPtr = armEndBlock();
+	// Apply SMC protection (must emit any checksum prologue into this block's stream before
+	// armEndBlock flushes it). `block_entry` is what subsequent dispatches jump to.
+	u8* block_entry = entry;
+	if (interp_step)
+	{
+		// Single-step interp blocks re-read guest memory each run -> no checksum needed.
+		// Still keep the page's protection state consistent: mark a fresh page counted, but
+		// never re-protect a page that's already Manual (that would revive the write-fault
+		// thrash the Manual tier exists to avoid).
+		const vtlb_ProtectionMode mode = mmap_GetRamPageInfo(startpc);
+		if (mode == ProtMode_None || mode == ProtMode_Write)
+			mmap_MarkCountedRamPage(startpc);
+	}
+	else
+	{
+		block_entry = recEmitManualProtection(startpc, endpc, entry);
+	}
 
-	recProtectCompiledRange(startpc, endpc);
+	recPtr = armEndBlock();
 
 	// Install the block so subsequent dispatches to startpc (and its address mirrors)
 	// branch straight into it instead of recompiling.
-	*recPtrToBlock(startpc) = reinterpret_cast<uptr>(entry);
+	*recPtrToBlock(startpc) = reinterpret_cast<uptr>(block_entry);
 }
 
 static void recEventTest()
@@ -1066,6 +1197,26 @@ static void recClear(u32 addr, u32 size)
 		if (*slot != reinterpret_cast<uptr>(UnmappedRecLUTPage))
 			*slot = reinterpret_cast<uptr>(JITCompile);
 	}
+}
+
+// Called (via the DispatchBlockDiscard stub) when a manually-protected block fails its
+// entry checksum: the guest code really changed, so throw the block away and recompile.
+// `start` is the guest startpc, `sz` the block size in bytes. Mirrors x86 dyna_block_discard.
+static void dyna_block_discard(u32 start, u32 sz)
+{
+	recClear(start, sz);
+}
+
+// Called (via the DispatchPageReset stub) when a counted manual block has run enough times
+// to be worth retrying cheap write-protection: clear the whole page's blocks, bump the
+// per-page retry counter, and re-arm vtlb write protection. Mirrors x86 dyna_page_reset.
+static void dyna_page_reset(u32 start, u32 sz)
+{
+	recClear(start & ~__pagemask, __pagesize);
+	const u32 rampage = static_cast<u32>(
+		(reinterpret_cast<uptr>(PSM(start)) - reinterpret_cast<uptr>(eeMem->Main)) >> __pageshift);
+	manual_counter[rampage]++;
+	mmap_MarkCountedRamPage(start);
 }
 
 R5900cpu recCpu = {

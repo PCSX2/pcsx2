@@ -28,6 +28,119 @@
 
 ---
 
+## 2026-06-07 (FMV branch) — FMV lag = EE recompile storm; ported x86 manual/checksum SMC tier
+
+**Branch:** `dev/fmv` (off master+docs). **Goal:** make FMV playback fast (all games' FMVs were
+extremely laggy while 3D ran smooth).
+
+**Method — profiled, didn't guess.** User ran Rayman 3's laggy intro FMV; `sample <pid> 8` on the
+**CPU Thread** (EE). The decode math was NEGLIGIBLE — `IPUWorker`/`IDCT_Block`/`yuv2rgb` ≈ 3 samples
+each (yuv2rgb already has a NEON path; IDCT auto-vectorizes). The EE thread was dominated by
+**`recRecompile` ≈ 1379/6208 (22%)** + `mmap_MarkCountedRamPage` (page mprotect) ≈ 476. I.e. the EE
+recompiler was thrashing: constantly clearing + recompiling + re-protecting blocks. FMV exposes this
+because the IPU runs **synchronously on the EE thread**, so FMV is a pure EE-thread throughput test,
+whereas 3D offloads to VU/MTVU/GS.
+
+**Root cause:** the ARM64 EE rec only had x86's **tier-1** SMC protection (write-protect the code
+page; a write faults → `mmap_ClearCpuBlock` clears all blocks on the page + sets ProtMode_Manual →
+recompile → `recProtectCompiledRange` forces it straight back to read-only → ping-pong **forever**).
+The shared `mmap_ClearCpuBlock` even asserts the page isn't already Manual — it EXPECTS the rec to
+honor Manual mode, which the port didn't. **Amplified 4× on Apple Silicon**: host page = 16 KB
+(`__pagesize=0x4000`) vs 4 KB on x86, so video frames the IPU/EE stream into RAM share a page with
+code far more often. See [[arm64-fmv-smc-recompile-storm]].
+
+**Fix (all in `pcsx2/arm64/aR5900.cpp`):** ported x86 `memory_protect_recompiled_code`'s full
+three-tier scheme:
+- `manual_page[]`/`manual_counter[]` (indexed by host RAM page, `>>__pageshift`), reset in `recResetRaw`.
+- `recEmitManualProtection(startpc,endpc,body_entry)` replaces `recProtectCompiledRange`. Write/None →
+  mark counted (as before). **Manual → emit a checksum prologue** (compare each compiled guest word vs
+  its compile-time value; `b.ne DispatchBlockDiscard`) that becomes the block entry and branches into
+  the body — **no mprotect**, so pure data writes no longer fault/invalidate. Counted heuristic adds
+  `size_words` to a 16-bit `manual_page` accumulator; on carry → `DispatchPageReset` (retry
+  write-protection), giving up to Manual-permanent after `manual_counter > 3`.
+- New `DispatchBlockDiscard`/`DispatchPageReset` dispatcher stubs (call `dyna_block_discard`/
+  `dyna_page_reset`, then re-dispatch); args x0=startpc, x1=size(bytes) loaded by the prologue.
+- **Body-first layout:** prologue is emitted AFTER the body within the same `armStartBlock` session and
+  recorded as the entry (avoids needing a pre-pass to know block size). Interp single-step blocks skip
+  the checksum (they re-read guest mem each run) but still respect Manual (never re-protect it).
+- **Page-boundary stop** in `recRecompile`'s loop so every block stays in one host page — required for
+  the per-page mode to govern the whole block, and fixes a latent multi-page SMC-miss bug (a write to a
+  block's tail page cleared the wrong slot).
+
+**Result:** user confirms FMV is fixed ("it works"). Builds arm64 clean; unittests 2/2.
+
+**Next step:** (optional) re-profile to quantify the `recRecompile` drop; then resume the Phase 7.8
+microVU0+MTVU stack crash on the main line ([[arm64-microvu0-mtvu-stack-crash]]).
+
+---
+
+## 2026-06-07 (later still) — Phase 7.8: clamp fix verified on games; new Rayman VU0+MTVU crash
+
+**Goal:** Validate the clamp fix on the real games that were broken.
+
+**Result of clamp fix (commit `ad3edfc94`):**
+- **FFX:** now boots to the menu (was crashing). ✅
+- **Rayman 3:** no longer black — intro FMV plays (laggy/unaccelerated) → reaches the menu → then
+  **crashes shortly after** with a NEW bug (below). Big progress from the black screen.
+
+**New crash (Rayman 3, after menu) — microVU0 + MTVU stack SIGBUS (NOT yet fixed):**
+- Caught under lldb (get-task-allow re-sign + `lldb -b -o run -k '<crash cmds>'`).
+- SIGBUS on the **CPU thread**, in JIT code, chain `EmuThread::run → EE block → LQC2() (EE COP2
+  load, inline-interp) → microVU0`. First real VU0 *microprogram* execution (log:
+  `microVU0: Cached Prog [000] PC=0000` immediately before). LQC2 syncs VU0; since 7.8 selected
+  microVU0 (not the interpreter), that runs the microVU0 dispatcher.
+- Faulting instr: `ldp q18,q19,[sp,#0x1a0]` in the **mVUGenerateWaitMTVU thunk's restore** (x16 =
+  `mVUwaitMTVU`). Reached from `mVUaddrFix` (aVU_Misc.inl:177): a VU0 instruction accessing the
+  **VU1 register window** under MTVU (`THREAD_VU1`) calls `mVUwaitMTVU`.
+- Stack region `[0x1700c0000-0x1702c8000) rw-`, base `0x1702c8000`, guard `[..c8000-..cc000) ---`.
+  At the crash `sp=0x1702c7e50`, so the thunk frame top `sp+0x210=0x1702c8060` is **0x60 above the
+  base → into the guard page** → SIGBUS.
+- **Diagnosis:** the thunk frame (0x210) is fine; **sp is already ~at/above the stack base when
+  microVU0 runs here.** EE blocks run at recExecute's sp with NO prologue (aR5900.cpp:866); every
+  stack helper (armBegin/EndStackFrame 192/192, mVUbackup/restoreRegs 0x210/0x210, the thunk,
+  armEmitCall) is balanced and `mVUexecute`/`mVUwaitMTVU` are trivial — yet the arithmetic forces:
+  **sp rose ~0x110+ between the microVU0 dispatcher prologue (didn't fault) and the waitMTVU thunk
+  (faulted).** Exact corruption point not found statically — needs an empirical sp-trace.
+
+**Workaround CONFIRMED by user:** disabling MTVU (Speedhacks → MTVU off) makes Rayman 3 playable.
+This nails the trigger: the crash path only exists under MTVU when VU0 touches the VU1 window.
+
+**Further debugging this session (3 more lldb replays, MTVU on) — REVISED diagnosis:**
+- The crash sp points **exactly at a PROT_NONE guard page**: `sp=0x1702c8000`, `memory region $sp` =
+  `[0x1702c8000-0x1702cc000) ---`, rw- stack region *below* at `[0x1700c0000-0x1702c8000)`. So sp is
+  at the stack **TOP / initial sp** (the guard sits ABOVE the rw- region; sp went UP to the top — not
+  a normal downward overflow). Across runs sp is always at/just-below this top (ASLR shifts the
+  absolute value; one run sp=0x170353e50 with top≈0x170354000).
+- Clean breakpoint at `mVUexecuteVU0` (microVU0 entry, called from `LQC2`) showed its live sp ==
+  the crash sp (same run, `0x170353e50`). ⇒ **the lldb JIT-frame unwinds are UNRELIABLE** — they
+  produced bogus ~20KB sp jumps and bogus caller chains (one run "via recEventTest/
+  _cpuEventTest_Shared"). **Trust only the live sp register**, which says sp is at the stack top.
+- The thunk's *save* (stp) does not fault but its *restore* (ldp) does, at identical [sp,#off] —
+  which forces "sp rose ~one 0x210 frame across `mVUwaitMTVU → vu1Thread.WaitVU()`". Could NOT
+  confirm statically: every stack helper is balanced (armBegin/EndStackFrame 192/192,
+  mVUbackup/restoreRegs 0x210, the thunk, armEmitCall), `mVUexecute`/`mVUwaitMTVU` are trivial, and
+  there is NO `mov sp` anywhere in pcsx2/arm64/*. So the static model and the live-sp facts don't
+  fully reconcile — need a direct sp probe.
+- Earlier "sp rose 0x110 / above the base" framing was based on the bad JIT unwinds; supersede it
+  with "live sp is at the stack top/guard."
+
+**Tooling note (save to habit):** lldb cannot unwind through our JIT frames (no unwind info), so
+per-frame `frame select N; reg read sp` and multi-level backtraces past a JIT frame are garbage.
+Only `register read sp/pc` (frame 0, live) and breakpoints on real C functions are trustworthy.
+
+**The clamp/black-screen debug dumps from the earlier entry were reverted; tree is just the clamp
+fix (`ad3edfc94`) + docs (`62961b43a`). A waitMTVU sp-probe was drafted then reverted (untested) —
+its exact code is saved in [[arm64-microvu0-mtvu-stack-crash]] ready to paste.**
+
+**NEXT STEP (resume here):** paste the `mVUwaitMTVU` sp probe (logs real sp + `pthread_get_stackaddr_np`
+bounds + sp delta across `WaitVU()`; code in [[arm64-microvu0-mtvu-stack-crash]]), `#include <pthread.h>`,
+build Release + postprocess + get-task-allow resign, repro Rayman with **MTVU ON**, grep emulog for
+`WAITMTVU`. That disambiguates: (a) WaitVU imbalances sp, (b) the CPU-thread stack is tiny and
+microVU0 nested in the EE rec genuinely overflows, or (c) sp points into a non-stack region. Then fix.
+(Build/run recipe + always `pcsx2-postprocess-bundle`+resign in CLAUDE.md / [[arm64-debug-attach-macos]].)
+
+---
+
 ## 2026-06-07 (later) — Phase 7.8: black-screen ROOT CAUSE FOUND **AND FIXED** → clamp scratch reg
 
 **Goal:** Pin numeric-FMAC-diff vs flag-instance for the "wrong MAC flag", using BIOS as the repro

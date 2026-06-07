@@ -26,10 +26,20 @@ shutdown, animation no longer stuck. `MVU_DIFF` shadow-diff: 12 diverging regs �
 per-instruction divergences. Reproduces with NO ISO via `-bios -nogui`. Builds arm64; unittests 2/2.
 Fix commit: see JOURNAL. See [[arm64-microvu1-clamp-scratch-bug]].
 
-**NEXT STEP:** hands-on visual + soak test of the actual games that black-screened (Rayman 3, Odin
-Sphere) and FFX (artifacts) under pure microVU1, then continue 7.8 deeper validation / 7.9 macro mode.
+**Game validation (2026-06-07, user hands-on):** FFX → menu ✅. Rayman 3 → past the black screen,
+plays the intro FMV → menu, **then crashes** with a SEPARATE bug → microVU0 + MTVU stack-guard SIGBUS
+(see below). **Confirmed: disabling MTVU (Speedhacks → MTVU off) makes Rayman playable.**
 
-**(historical, now resolved) — the MAC-FLAG framing below was the symptom, not the cause:**
+**▶ NEXT STEP (resume here) — fix the microVU0 + MTVU stack crash.** A VU0 microprogram accessing the
+VU1 register window under MTVU SIGBUSes in the `mVUGenerateWaitMTVU` thunk's register restore; the
+live sp is at the CPU-thread stack **top / guard page** (`memory region $sp` = PROT_NONE). Cause not
+yet pinned — lldb can't unwind JIT frames (only live sp is trustworthy), and the static model (all
+stack helpers balanced, no `mov sp`) doesn't reconcile with "sp at the top." **Decisive next
+experiment is ready:** paste the `mVUwaitMTVU` sp probe (logs real sp + pthread stack bounds + sp
+delta across `WaitVU()`) — exact code + full diagnosis in memory [[arm64-microvu0-mtvu-stack-crash]]
+and JOURNAL. Workaround for users meanwhile: MTVU off. After that: 7.9 macro mode / Phase 8 polish.
+
+**(historical, resolved 2026-06-07) — the MAC-FLAG framing below was the symptom, not the cause:**
 
 **Phase 7 (VU recompilers / microVU) — 7.8 SELECTED; CRASHES FIXED; microVU1 black-screen ROOT CAUSE
 NOW ISOLATED to the MAC FLAG. microVU0/1 is the selected VU provider on ARM64. The black screen on
@@ -468,7 +478,15 @@ still defers all real work to the interpreter. ✅ **DONE** (BIOS boot verified)
 - [ ] 8.2 Real `SaveStateBase::vuJITFreeze()` (replace the empty-byte hack in `RecStubs.cpp`).
 - [ ] 8.3 Full unit-test suite green on ARM64.
 - [ ] 8.4 Game-compat matrix: 2D first, then 3D.
-- [ ] 8.5 Profile + optimize hot paths.
+- [~] 8.5 Profile + optimize hot paths.
+  - [x] **FMV lag fixed** (`dev/fmv`). Profiled Rayman 3's FMV: not MPEG math (IPU/IDCT/yuv2rgb
+    negligible) but an EE **recompile storm** — `recRecompile` was 22% of the EE thread. The ARM64 EE
+    rec only had x86's tier-1 SMC protection (write-protect → fault → clear → recompile → reprotect,
+    ping-ponging forever), amplified 4× by Apple Silicon's 16 KB host pages where IPU/EE-streamed video
+    frames share pages with code. Ported x86's full Write/**Manual-checksum**/counted-give-up scheme to
+    `aR5900.cpp` (`recEmitManualProtection` + `DispatchBlockDiscard`/`DispatchPageReset` stubs +
+    `manual_page`/`manual_counter`) and a single-host-page block invariant. User-confirmed fixed.
+    See JOURNAL + [[arm64-fmv-smc-recompile-storm]].
 - [ ] 8.6 Re-enable LTO for ARM64 if stable.
 - [ ] 8.7 macOS specifics (entitlements, Metal shader compile, MoltenVK).
 
