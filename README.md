@@ -14,6 +14,8 @@ PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to 
 
 ## 🍎 About This Fork
 
+[![Project Demo](https://img.youtube.com/vi/6Vm1rQ5AR3Y/maxresdefault.jpg)](https://www.youtube.com/watch?v=6Vm1rQ5AR3Y)
+
 The upstream PCSX2 project ships an ARM64 *interpreter* build for macOS, but its high-performance **JIT recompilers** (EE, IOP, VU0, VU1, and vtlb fast memory) are x86-64 only. On Apple Silicon that means either running under Rosetta 2 (emulated x86-64, slower and deprecated by Apple) or falling back to the interpreter core (orders of magnitude too slow for most games).
 
 **This fork exists to close that gap.** It is a line-for-line ARM64 port of the existing, battle-tested x86-64 JIT recompilers. The recompiler *architecture*, *block model*, *analysis passes*, and *JIT logic* are intentionally kept identical to upstream — what changes is the backend emitter: x86-64 assembly (x86emitter) is translated to ARM64 assembly via [VIXL](https://github.com/Linaro/vixl).
@@ -21,12 +23,12 @@ The upstream PCSX2 project ships an ARM64 *interpreter* build for macOS, but its
 **Current status:**
 - ✅ EE (Emotion Engine) recompiler — integer, float, MMI, COP0/COP1/COP2, branches, load/store
 - ✅ IOP (I/O Processor / R3000A) recompiler — full integer, load/store, branches, coprocessors
-- 🔄 VU (Vector Unit) recompiler — microVU skeleton + Upper FMAC vector ISA complete; Lower ISA and runtime validation in progress
+- ✅ VU (Vector Unit) recompiler — microVU skeleton + Upper FMAC vector ISA complete; Lower ISA and runtime complete
 - 🔄 vtlb fast memory — slow path works; fastmem backpatch still TODO
 - ✅ Native ARM64 binary builds and boots the PS2 BIOS
 - ✅ 2D games are already playable
 - ✅ PS1 games (IOP mode) run at full speed — e.g. *Gran Turismo 2* is fully playable
-- 🔄 Basic 3D games run with occasional stuttering (VU Lower + integration work remaining)
+- ✅ 3D games run (if crash try disabling MTVU)
 
 Native Apple Silicon builds will be provided as automated releases soon. For now you must build manually (see **Building on Apple Silicon** below).
 
@@ -68,7 +70,12 @@ Please note that a BIOS dump from a legitimately-owned PS2 console is required t
 Prerequisites: Xcode command-line tools, CMake, Qt6, and the PCSX2 dependency bundle.
 
 ```bash
-# 1. Configure (one-time)
+# 1. Dependencies can be built using
+bash .github/workflows/scripts/macos/build-dependencies-universal.sh "path/to/pcsx2-deps"
+```
+
+```bash
+# 2. Configure (one-time)
 cmake -DCMAKE_PREFIX_PATH="/path/to/pcsx2-deps" \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_OSX_ARCHITECTURES="arm64" \
@@ -78,14 +85,14 @@ cmake -DCMAKE_PREFIX_PATH="/path/to/pcsx2-deps" \
       -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
       -B build .
 
-# 2. Build
+# 3. Build
 cmake --build build --target pcsx2-qt -j$(sysctl -n hw.ncpu)
 
-# 3. Post-process macOS bundle (required!)
+# 4. Post-process macOS bundle (required!)
 cmake --build build --target pcsx2-postprocess-bundle
 codesign --force --deep --sign - build/pcsx2-qt/PCSX2.app
 
-# 4. Run
+# 5. Run
 open build/pcsx2-qt/PCSX2.app
 ```
 
@@ -102,7 +109,7 @@ See `arm64-port/CONVENTIONS.md` for the full build/test/debug loop used by the p
 | 4 | ✅ Done | EE branches, jumps, delay slots, recLUT + block linking |
 | 5 | ✅ Done | EE coprocessors (COP0 inline, COP1 FPU, COP2 macro fallback, MMI SIMD) |
 | 6 | ✅ Done | IOP recompiler (R3000A: integer, load/store, branches, COP0/COP2) |
-| 7 | 🔄 In Progress | VU recompiler (microVU) — Upper ISA done, Lower ISA + integration in progress |
+| 7 | ✅ Done | VU recompiler (microVU) — Upper ISA done, Lower ISA done |
 | 8 | 📋 Planned | Integration, testing, profiling, polish, release builds |
 
 Detailed progress lives in `arm64-port/PROGRESS.md`.
