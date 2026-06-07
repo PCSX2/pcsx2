@@ -46,6 +46,10 @@ BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu, Breakpo
 		m_ui.txtDescription->setText(QString::fromStdString(bp->description));
 		m_ui.spnMaxHitCount->setValue(static_cast<int>(bp->maxHits));
 
+		m_ui.grpInstrumentation->setChecked(bp->instrumentationEnabled);
+		m_ui.txtLogFormat->setText(QString::fromStdString(bp->logFormat));
+		m_ui.chkContinueOnHit->setChecked(bp->continueOnHit);
+
 		if (bp->hasCond)
 			m_ui.txtCondition->setText(QString::fromStdString(bp->cond.expressionString));
 	}
@@ -65,6 +69,10 @@ BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu, Breakpo
 		m_ui.chkEnable->setChecked(mc->result & MEMCHECK_BREAK);
 		m_ui.chkLog->setChecked(mc->result & MEMCHECK_LOG);
 		m_ui.spnMaxHitCount->setValue(static_cast<int>(mc->maxHits));
+
+		m_ui.grpInstrumentation->setChecked(mc->instrumentationEnabled);
+		m_ui.txtLogFormat->setText(QString::fromStdString(mc->logFormat));
+		m_ui.chkContinueOnHit->setChecked(mc->continueOnHit);
 
 		if (mc->hasCond)
 			m_ui.txtCondition->setText(QString::fromStdString(mc->cond.expressionString));
@@ -116,6 +124,17 @@ void BreakpointDialog::accept()
 		bp->maxHits = static_cast<u32>(m_ui.spnMaxHitCount->value());
 		bp->enabled = m_ui.chkEnable->isChecked();
 
+		const bool instrumentationEnabled = m_ui.grpInstrumentation->isChecked();
+		const std::string logFormat = m_ui.txtLogFormat->text().toStdString();
+		if (instrumentationEnabled && !logFormat.empty() && !ValidateInstrumentationLogFormat(*m_cpu, logFormat, error))
+		{
+			AsyncDialogs::warning(g_debugger_window, tr("Invalid Log Format"), QString::fromStdString(error));
+			return;
+		}
+		bp->instrumentationEnabled = instrumentationEnabled;
+		bp->logFormat = logFormat;
+		bp->continueOnHit = m_ui.chkContinueOnHit->isChecked();
+
 		if (!m_ui.txtCondition->text().isEmpty())
 		{
 			bp->hasCond = true;
@@ -160,6 +179,17 @@ void BreakpointDialog::accept()
 		mc->end = startAddress + size;
 		mc->maxHits = static_cast<u32>(m_ui.spnMaxHitCount->value());
 		mc->description = m_ui.txtDescription->text().toStdString();
+
+		const bool instrumentationEnabled = m_ui.grpInstrumentation->isChecked();
+		const std::string logFormat = m_ui.txtLogFormat->text().toStdString();
+		if (instrumentationEnabled && !logFormat.empty() && !ValidateInstrumentationLogFormat(*m_cpu, logFormat, error))
+		{
+			AsyncDialogs::warning(g_debugger_window, tr("Invalid Log Format"), QString::fromStdString(error));
+			return;
+		}
+		mc->instrumentationEnabled = instrumentationEnabled;
+		mc->logFormat = logFormat;
+		mc->continueOnHit = m_ui.chkContinueOnHit->isChecked();
 
 		if (!m_ui.txtCondition->text().isEmpty())
 		{
