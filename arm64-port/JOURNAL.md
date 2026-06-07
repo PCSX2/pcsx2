@@ -66,14 +66,26 @@ microVU1 reads a **wrong MAC flag**. Evidence chain on Rayman 3's transform loop
   near DIV/WAITQ (Q/PQ Heisenbug from its flushAll+PQ backup/restore) — disabling its VF check made it
   reach the real branch. The disasm static-buffer bug had been hiding the UPPER FMACs the whole time.
 
-**Blockers / open questions:** Is the wrong MAC flag a wrong-instance read, or an upstream FMAC value
-diff (e.g. NEON-vs-interp signed-zero) masked by the VF-off localizer? Needs the instance-pipeline
-audit and/or a Heisenbug-free VF/flag localizer.
+**Follow-up audit (same session): the ENTIRE flag path is faithful to x86 — bug is deeper.** Verified
+line-for-line equivalent: `mVU_FMAND`, `mVUupdateFlags`, the SSE arith primitives (`SSE_SUBPS` =
+`to-from`, correct operand order — ruled out a reversed SUB), `mVUshufflePS` (== SHUFPS for the
+self-shuffle sortFlag uses to reorder mac/clip instances), `mVUanalyzeMflag`, `mVUallocMFLAGa/b`,
+`getFlagReg`, AND_XYZW/SHIFT_XYZW, the dispatcher mac/clip/status+PQ init, and the **FPCR** (on ARM64
+`FPControlRegister.bitmask` is a native u64 FPCR value, FZ=bit24; `mVUemitSetHostFPCR`'s Msr matches
+the interp's `FPControlRegisterBackup` — flush-to-zero/rounding are NOT the divergence). So with
+identical inputs producing a different MAC flag, an **FMAC must produce a numerically different result
+than the C++ interpreter on some inputs** (flipping sign/zero flag bits), OR there's a mac-flag-
+instance edge case for partial-lane `.xyw` ops (unwritten lanes inherit an earlier instance). The
+VF-off localizer can't see the FMAC value diff: its per-instruction flushAll+PQ backup/restore
+perturbs VF near DIV/WAITQ and, once it corrupts VU1.VF in memory, cascades.
 
-**Next step:** audit the MAC-flag instance pipeline (aVU_Alloc.inl getFlagReg/mVUallocMFLAGa/b +
-aVU_Flags.inl findFlagInst/sortFlag/mVUsetupFlags + mFLAG.read/write) vs x86; if clean, make the
-localizer Heisenbug-free (record Q/ACC/producing-flag) to find the first true value divergence; fix;
-re-run the test ladder.
+**Blockers / open questions:** Need a Heisenbug-free per-instruction comparison of the flag-setting
+FMAC RESULT + MAC flag (micro vs interp) to decide numeric-FMAC-diff vs flag-instance bug.
+
+**Next step:** (a) make the localizer record the mac flag + Q + ACC and stop perturbing PQ (snapshot
+VU1.VF without flushAll, or skip the flush only on DIV/WAITQ/MULq steps), or (b) add a direct mac-flag
+compare to mvuDiffReport (micro mVU.macFlag[]/micro_macflags vs interp VU1.VI[REG_MAC_FLAG]). Pin
+numeric-vs-instance, fix, re-run the test ladder.
 
 ---
 

@@ -28,19 +28,30 @@ the wrong MAC flag, NOT independent bugs.**
 - `DIVDUMP @pc=01f8` confirmed the DIV computes Q correctly for clean inputs (1.0/2.5=0.4); its bad
   outputs are just `1.0 / (already-garbage vf24.w)`.
 
-**`mVUupdateFlags` (aVU_Upper.inl) is line-for-line faithful to x86** (sign gather via mVUmovemask ==
-MOVMSKPS; zero gather Fcmeq==CMPEQ.PS; AND_XYZW/SHIFT_XYZW/flip all match). So the wrong MAC flag is
-NOT the gather. **Prime remaining suspect: the MAC-flag INSTANCE pipeline** (`getFlagReg` /
-`mVUallocMFLAGa`/`mVUallocMFLAGb` in aVU_Alloc.inl + `mFLAG.read`/`write` instance assignment from
-findFlagInst/sortFlag/mVUsetupFlags in aVU_Flags.inl) — FMAND may be reading a stale/wrong mac
-instance (exactly analogous to the Q-lag pattern). Secondary suspect: an upstream FMAC value
-difference (e.g. NEON-vs-interp signed-zero) that the VF-off localizer currently masks.
+**The ENTIRE flag/FMAC/Q/dispatcher path is now verified line-for-line faithful to x86** (this
+session): `mVU_FMAND`, `mVUupdateFlags` (mVUmovemask==MOVMSKPS, Fcmeq==CMPEQ.PS, AND_XYZW/SHIFT_XYZW/
+flip), the SSE arith primitives (`SSE_SUBPS` = `to-from` = correct operand order, ADD/MUL/DIV),
+`mVUshufflePS` (== SHUFPS for the self-shuffle used by sortFlag's mac/clip instance reorder),
+`mVUanalyzeMflag` (identical), `mVUallocMFLAGa/b` + `getFlagReg` (mac/clip memory-backed, status in
+gprF0-3), the dispatcher's mac/clip/status + PQ init, and the **FPCR** (`mVUemitSetHostFPCR` writes
+`VU1FPCR.bitmask` which on ARM64 is already a native u64 FPCR value — FZ=bit24 — same as the interp's
+`FPControlRegisterBackup`; so flush-to-zero/rounding match, NOT the divergence).
 
-**NEXT STEP:** audit the MAC-flag instance pipeline against x86 (does the instance FMAND reads match
-the producing FMAC's write instance?). If clean, defeat the localizer's Q/PQ Heisenbug (it perturbs
-VF near DIV/WAITQ via the per-instruction flushAll+PQ backup/restore) so it can report the FIRST true
-VF/flag divergence — e.g. record Q+ACC+the producing FMAC's flag in the trace, or skip the per-instr
-flush only for DIV/WAITQ. Then fix and re-validate the test ladder. builds arm64, unittests 2/2.**
+**So with identical inputs (control-flow+VI matched through step 44) producing a different MAC flag at
+step 45, an FMAC must produce a numerically different RESULT than the C++ interpreter on certain
+inputs, flipping the sign/zero flag bits** — OR there is a MAC-flag-instance edge case (which
+instance is live for a partial-lane `.xyw` op whose unwritten lanes inherit an earlier instance).
+The VF-off localizer can't see the FMAC value divergence (its per-instruction flushAll+PQ
+backup/restore perturbs VF near DIV/WAITQ — a Heisenbug that cascades once it corrupts VU1.VF in
+memory).
+
+**NEXT STEP:** get a Heisenbug-free per-instruction comparison of the flag-setting FMAC RESULT (and
+the resulting MAC flag) between the micro shadow and the interpreter — either (a) make the localizer
+trace record the mac flag + Q + ACC and not perturb PQ (e.g. snapshot VU1.VF without flushAll, or skip
+the flush only on DIV/WAITQ/MULq steps), or (b) add a direct mac-flag compare to mvuDiffReport (micro
+`mVU.macFlag[]`/`micro_macflags` vs interp's `VU1.VI[REG_MAC_FLAG]`). That pins whether it's a numeric
+FMAC diff (chase the specific op/value, likely a NEON-vs-C++ corner like signed-zero/NaN/denormal) or
+a flag-instance bug. Then fix and re-validate the test ladder. builds arm64, unittests 2/2.**
 
 **Debug tooling now in tree (all env-gated, zero overhead unless set):**
 - `MVU_DIFF=1` — shadow differential. Interp drives VU1 (game stays renderable), microVU1 shadows;
