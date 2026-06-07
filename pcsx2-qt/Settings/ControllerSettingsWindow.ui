@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>PCSX2 Controller Settings</string>
+   <string>ARMSX2 Controller Settings</string>
   </property>
   <property name="windowIcon">
    <iconset>

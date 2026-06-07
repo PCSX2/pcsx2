@@ -423,7 +423,7 @@ void ShortcutCreationDialog::CreateShortcut(const std::string name, const std::s
 		}
 		else
 		{
-			icon_name = "PCSX2";
+			icon_name = "ARMSX2";
 			std::string icon_path_dest = fmt::format("{}/{}.png", icon_dest, icon_name).c_str();
 			if (FileSystem::EnsureDirectoryExists(icon_dest.c_str(), true))
 				if (!FileSystem::FileExists(icon_path_dest.c_str()))

@@ -1291,7 +1291,7 @@ bool QtHost::InitializeConfig()
 
 	if (!EmuFolders::SetResourcesDirectory())
 	{
-		QMessageBox::critical(nullptr, QStringLiteral("PCSX2"),
+		QMessageBox::critical(nullptr, QStringLiteral("ARMSX2"),
 			QStringLiteral("Resources directory is missing, your installation is incomplete."));
 		return false;
 	}
@@ -1300,7 +1300,7 @@ bool QtHost::InitializeConfig()
 	{
 		// no point translating, config isn't loaded
 		QMessageBox::critical(
-			nullptr, QStringLiteral("PCSX2"),
+			nullptr, QStringLiteral("ARMSX2"),
 			QStringLiteral("Failed to create data directory at path\n\n%1\n\n"
 						   "The error was: %2\n"
 						   "Please ensure this directory is writable. You can also try portable mode "
@@ -1324,7 +1324,7 @@ bool QtHost::InitializeConfig()
 	{
 		// If the config file doesn't exist, assume this is a new install and don't prompt to overwrite.
 		if (FileSystem::FileExists(s_base_settings_interface->GetFileName().c_str()) &&
-			QMessageBox::question(nullptr, QStringLiteral("PCSX2"),
+			QMessageBox::question(nullptr, QStringLiteral("ARMSX2"),
 				QStringLiteral("Settings failed to load, or are the incorrect version. Clicking Yes will reset all settings to defaults. "
 							   "Do you want to continue?")) != QMessageBox::Yes)
 		{
@@ -1340,7 +1340,7 @@ bool QtHost::InitializeConfig()
 		if (!s_base_settings_interface->Save(&error))
 		{
 			QMessageBox::critical(
-				nullptr, QStringLiteral("PCSX2"),
+				nullptr, QStringLiteral("ARMSX2"),
 				QStringLiteral(
 					"Failed to save configuration to\n\n%1\n\nThe error was: %2\n\nPlease ensure this directory is writable. You "
 					"can also try portable mode by creating portable.txt in the same directory you installed PCSX2 into.")
@@ -1366,7 +1366,7 @@ bool QtHost::InitializeConfig()
 		if (!s_base_settings_interface->Save(&error))
 		{
 			QMessageBox::critical(
-				nullptr, QStringLiteral("PCSX2"),
+				nullptr, QStringLiteral("ARMSX2"),
 				QStringLiteral(
 					"Failed to save secrets to\n\n%1\n\nThe error was: %2\n\nPlease ensure this directory is writable. You "
 					"can also try portable mode by creating portable.txt in the same directory you installed PCSX2 into.")
@@ -1495,7 +1495,7 @@ bool Host::RequestResetSettings(bool folders, bool core, bool controllers, bool 
 
 QString QtHost::GetAppNameAndVersion()
 {
-	return QString("PCSX2 %1").arg(BuildVersion::GitRev);
+	return QString("ARMSX2 %1").arg(BuildVersion::GitRev);
 }
 
 QString QtHost::GetAppConfigSuffix()

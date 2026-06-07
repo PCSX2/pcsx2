@@ -161,7 +161,7 @@ jobs:
 
       - name: Prepare Build Artifacts
         run: |
-          mv build/pcsx2*/PCSX2.app PCSX2.app
+          mv build/pcsx2*/ARMSX2.app ARMSX2.app
 
       - name: Pull the Signing Keys and Notarization Credentials
         if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}
@@ -173,7 +173,7 @@ jobs:
         if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}
         uses: indygreg/apple-code-sign-action@44d0985b7f4363198e80b6fea63ac3e9dd3e9957
         with:
-          input_path: 'PCSX2.app'
+          input_path: 'ARMSX2.app'
           p12_file: cert.p12
           p12_password: "${{ secrets.APPLE_SIGN_P12_PASS }}"
           sign_args: |
@@ -195,7 +195,7 @@ jobs:
       # bundle launches on the build machine (matches the README manual build).
       - name: Ad-hoc Sign the Application
         if: ${{ !(inputs.sign_and_notarize == true && env.SIGN_KEY) }}
-        run: codesign --force --deep --sign - PCSX2.app
+        run: codesign --force --deep --sign - ARMSX2.app
 
       - name: Zip Build Artifacts
         run: |
@@ -203,9 +203,9 @@ jobs:
           if [ -z "$TAG" ]; then
             APPNAME="${{ steps.artifact-metadata.outputs.artifact-name }}"
           else
-            APPNAME="PCSX2-$TAG"
+            APPNAME="ARMSX2-$TAG"
           fi
-          mv PCSX2.app "$APPNAME.app"
+          mv ARMSX2.app "$APPNAME.app"
           tar --options xz:compression-level=9 -cvJf "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.xz" "$APPNAME.app"
           mkdir ci-artifacts
           cp "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.xz" ci-artifacts/macOS-arm64.tar.xz

@@ -369,7 +369,7 @@
         <item row="2" column="1">
          <widget class="QCheckBox" name="showVersion">
           <property name="text">
-           <string>Show PCSX2 Version</string>
+           <string>Show ARMSX2 Version</string>
           </property>
          </widget>
         </item>

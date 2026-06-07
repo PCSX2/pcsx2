@@ -90,10 +90,10 @@ cmake --build build --target pcsx2-qt -j$(sysctl -n hw.ncpu)
 
 # 4. Post-process macOS bundle (required!)
 cmake --build build --target pcsx2-postprocess-bundle
-codesign --force --deep --sign - build/pcsx2-qt/PCSX2.app
+codesign --force --deep --sign - build/pcsx2-qt/ARMSX2.app
 
 # 5. Run
-open build/pcsx2-qt/PCSX2.app
+open build/pcsx2-qt/ARMSX2.app
 ```
 
 See `arm64-port/CONVENTIONS.md` for the full build/test/debug loop used by the port team.

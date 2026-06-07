@@ -82,12 +82,11 @@ No support will be provided, continue at your own risk.
 endif()
 
 if(ARCH_ARM64)
-	message(WARNING "
-*************** UNSUPPORTED CONFIGURATION ***************
-Apple Silicon support in PCSX2 is INCOMPLETE. There are
-currently no EE/VU/IOP recompilers, and games will run
-VERY slow. There is no date for completion yet, you
-should set -DCMAKE_OSX_ARCHITECTURES=x86_64 for now,
-unless you want to work on the recompilers.
-*********************************************************")
+	message(STATUS "
+*************** ARMSX2 — APPLE SILICON ***************
+Initial Apple Silicon (ARM64) support in ARMSX2.
+This build adds the EE/VU/IOP recompilers that were
+previously missing on Apple Silicon. It is an early
+release — expect rough edges. Contributions welcome.
+*****************************************************")
 endif()

@@ -14,7 +14,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>PCSX2</string>
+   <string>ARMSX2</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -574,7 +574,7 @@
      <normaloff>:/icons/AppIcon64.png</normaloff>:/icons/AppIcon64.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;About PCSX2...</string>
+    <string>&amp;About ARMSX2...</string>
    </property>
   </action>
   <action name="actionToolbarChangeDisc">
