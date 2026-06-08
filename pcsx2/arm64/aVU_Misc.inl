@@ -348,13 +348,22 @@ static void mVUclampedArith(mV, const a64::VRegister& to, const a64::VRegister& 
 	}
 	else
 	{
+		// AArch64 scalar FP ops write the result to Sd and ZERO the upper bits
+		// [127:32] of the V register — unlike x86 ADDSS/MULSS, which preserve the
+		// upper 3 lanes. The microVU single-scalar (_XYZW_SS) model shuffles the
+		// target lane into lane0, operates, then shuffles back, and DEPENDS on the
+		// other lanes surviving (e.g. mVU_FMACb's MADDAw.z accumulates into ACC.z
+		// while ACC.x/.y must be preserved). Writing `to.S()` in place would wipe
+		// them. Compute into a scratch and insert only lane0 of `to`.
+		const a64::VRegister sres = RQSCRATCH;
 		switch (op)
 		{
-			case mVU_ADD_OP: armAsm->Fadd(to.S(), to.S(), from.S()); break;
-			case mVU_SUB_OP: armAsm->Fsub(to.S(), to.S(), from.S()); break;
-			case mVU_MUL_OP: armAsm->Fmul(to.S(), to.S(), from.S()); break;
-			case mVU_DIV_OP: armAsm->Fdiv(to.S(), to.S(), from.S()); break;
+			case mVU_ADD_OP: armAsm->Fadd(sres.S(), to.S(), from.S()); break;
+			case mVU_SUB_OP: armAsm->Fsub(sres.S(), to.S(), from.S()); break;
+			case mVU_MUL_OP: armAsm->Fmul(sres.S(), to.S(), from.S()); break;
+			case mVU_DIV_OP: armAsm->Fdiv(sres.S(), to.S(), from.S()); break;
 		}
+		armAsm->Ins(to.V4S(), 0, sres.V4S(), 0);
 	}
 	mVUclamp4(mVU, to, ct, xyzw);
 }
