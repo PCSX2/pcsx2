@@ -9,7 +9,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 enum MacPaths {
-    static let appDisplayName = "ARMSX2-MacOS 2.0"
+    static let appDisplayName = "ARMSX2-MacOS 2.1"
     static let dataDirectoryName = "ARMSX2-MacOS 2.0"
     static let legacyDataDirectoryName = "iPSX2"
 
@@ -1109,6 +1109,8 @@ final class BIOSLibrary: ObservableObject {
 
 @MainActor
 final class MacSettingsStore: ObservableObject {
+    private static let gameDBDefaultsVersion = 1
+
     @Published var ini: INIFile
     @Published var secrets: INIFile
     @Published var coverTemplate: String
@@ -1193,6 +1195,7 @@ final class MacSettingsStore: ObservableObject {
         let secrets = INIFile(url: MacPaths.secretsFile)
         self.ini = ini
         self.secrets = secrets
+        Self.ensureGameDBDefaults(in: ini)
         coverTemplate = UserDefaults.standard.string(forKey: "ARMSX2MacCoverTemplate")
             ?? "https://raw.githubusercontent.com/xlenore/ps2-covers/main/covers/default/${serial}.jpg"
         fastBoot = ini.bool("GameISO", "FastBoot", default: true)
@@ -1280,6 +1283,15 @@ final class MacSettingsStore: ObservableObject {
 
     func saveCoverTemplate() {
         UserDefaults.standard.set(coverTemplate, forKey: "ARMSX2MacCoverTemplate")
+    }
+
+    private static func ensureGameDBDefaults(in ini: INIFile) {
+        let appliedVersion = ini.int("ARMSX2Mac/UI", "GameDBDefaultsVersion", default: 0)
+        guard appliedVersion < gameDBDefaultsVersion else { return }
+
+        ini.set("EmuCore", "EnableGameFixes", true)
+        ini.set("EmuCore/GS", "UserHacks", false)
+        ini.set("ARMSX2Mac/UI", "GameDBDefaultsVersion", gameDBDefaultsVersion)
     }
 
     func openTextureFolder() {

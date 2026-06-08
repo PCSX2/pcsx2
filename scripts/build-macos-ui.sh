@@ -5,7 +5,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PACKAGE_DIR="$ROOT_DIR/macos/ARMSX2Mac"
 BUILD_DIR="${BUILD_DIR:-$ROOT_DIR/build-macos-ui}"
 CONFIGURATION="${CONFIGURATION:-release}"
-APP_NAME="${APP_NAME:-ARMSX2-MacOS 2.0}"
+APP_NAME="${APP_NAME:-ARMSX2-MacOS 2.1}"
+APP_VERSION="${APP_VERSION:-2.1}"
 BUNDLE_ID="${BUNDLE_ID:-com.armsx2.macos.ui}"
 SWIFTPM_BUILD_DIR="${SWIFTPM_BUILD_DIR:-$BUILD_DIR/swiftpm}"
 IOS_ICON_SOURCE="${IOS_ICON_SOURCE:-$ROOT_DIR/../ARMSX2-iOS-pcsx2-2.7-core/app/src/main/assets/Assets.xcassets/AppIcon.appiconset/icon-1024.png}"
@@ -17,8 +18,12 @@ sign_macho_files() {
 	local root="$1"
 
 	while IFS= read -r -d '' item; do
+		if [[ "$item" == *".app/Contents/MacOS/"* ]]; then
+			continue
+		fi
 		if file "$item" | grep -q "Mach-O"; then
-			codesign --force --sign "$SIGN_IDENTITY" "$item"
+			codesign --remove-signature "$item" >/dev/null 2>&1 || true
+			codesign --force --sign "$SIGN_IDENTITY" --timestamp=none "$item"
 		fi
 	done < <(find "$root" -type f -print0)
 }
@@ -40,7 +45,7 @@ MACOS="$CONTENTS/MacOS"
 RESOURCES="$CONTENTS/Resources"
 HELPERS="$CONTENTS/Helpers"
 
-for legacy_name in "ARMSX2 macOS" "ARMSX2Mac"; do
+for legacy_name in "ARMSX2 macOS" "ARMSX2Mac" "ARMSX2-MacOS 2.0"; do
 	if [[ "$legacy_name" != "$APP_NAME" ]]; then
 		rm -rf "$BUILD_DIR/$legacy_name.app"
 	fi
@@ -128,7 +133,7 @@ cat > "$CONTENTS/Info.plist" <<PLIST
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
-  <string>2.0</string>
+  <string>$APP_VERSION</string>
   <key>CFBundleVersion</key>
   <string>1</string>
   <key>LSMinimumSystemVersion</key>
@@ -143,12 +148,12 @@ if [[ "$SKIP_CODESIGN" != "1" ]]; then
 	if [[ -d "$HELPERS" ]]; then
 		sign_macho_files "$HELPERS"
 		while IFS= read -r -d '' helper_app; do
-			codesign --force --sign "$SIGN_IDENTITY" "$helper_app"
+			codesign --force --deep --sign "$SIGN_IDENTITY" --timestamp=none "$helper_app"
 		done < <(find "$HELPERS" -type d -name "*.app" -print0)
 	fi
 
-	codesign --force --sign "$SIGN_IDENTITY" "$MACOS/ARMSX2Mac"
-	codesign --force --sign "$SIGN_IDENTITY" "$APP_DIR"
+	codesign --force --sign "$SIGN_IDENTITY" --timestamp=none "$MACOS/ARMSX2Mac"
+	codesign --force --deep --sign "$SIGN_IDENTITY" --timestamp=none "$APP_DIR"
 	codesign --verify --deep --strict --verbose=2 "$APP_DIR"
 fi
 
