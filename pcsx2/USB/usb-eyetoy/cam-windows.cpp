@@ -13,6 +13,7 @@
 #include "USB/USB.h"
 
 #include <jpeglib.h>
+#include <wil/com.h>
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -57,16 +58,15 @@ namespace usb_eyetoy
 		{
 			std::vector<std::pair<std::string, std::string>> devList;
 
-			ICreateDevEnum* pCreateDevEnum = nullptr;
-			HRESULT hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pCreateDevEnum));
-			if (FAILED(hr))
+			wil::com_ptr_nothrow<ICreateDevEnum> pCreateDevEnum = wil::CoCreateInstanceNoThrow<ICreateDevEnum>(CLSID_SystemDeviceEnum);
+			if (!pCreateDevEnum)
 			{
 				Console.Warning("Camera: Error Creating Device Enumerator");
 				return devList;
 			}
 
 			wil::com_ptr_nothrow<IEnumMoniker> pEnum;
-			hr = pCreateDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, 0);
+			HRESULT hr = pCreateDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, 0);
 			if (hr != S_OK)
 			{
 				Console.Warning("Camera: You have no video capture hardware");
@@ -96,8 +96,6 @@ namespace usb_eyetoy
 					devList.emplace_back(u8name, u8name);
 				}
 			}
-
-			CoUninitialize();
 
 			return devList;
 		}
@@ -136,9 +134,8 @@ namespace usb_eyetoy
 			}
 
 			// enumerate all video capture devices
-			ICreateDevEnum* pCreateDevEnum = nullptr;
-			hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pCreateDevEnum));
-			if (FAILED(hr))
+			wil::com_ptr_nothrow<ICreateDevEnum> pCreateDevEnum = wil::CoCreateInstanceNoThrow<ICreateDevEnum>(CLSID_SystemDeviceEnum);
+			if (!pCreateDevEnum)
 			{
 				Console.Warning("Camera: Error Creating Device Enumerator");
 				return -1;

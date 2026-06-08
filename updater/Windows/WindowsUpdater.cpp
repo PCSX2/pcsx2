@@ -6,7 +6,6 @@
 
 #include "common/FileSystem.h"
 #include "common/Console.h"
-#include "common/ScopedGuard.h"
 #include "common/StringUtil.h"
 #include "common/ProgressCallback.h"
 #include "common/RedtapeWilCom.h"
@@ -18,6 +17,7 @@
 #include <thread>
 
 #include <wil/resource.h>
+#include <wil/result.h>
 #include <wil/win32_helpers.h>
 
 #pragma comment(lib, "synchronization.lib")
@@ -76,7 +76,7 @@ private:
 	wil::com_ptr_nothrow<ITaskbarList3> m_taskbar_list;
 
 	int m_last_progress_percent = -1;
-	bool m_com_initialized = false;
+	wil::unique_couninitialize_call m_com_initialized{false};
 
 	static inline const UINT s_uTBBC = RegisterWindowMessageW(L"TaskbarButtonCreated");
 	static constexpr UINT WMAPP_SETTASKBARPROGRESS = WM_USER+0;
@@ -192,7 +192,7 @@ bool Win32ProgressCallback::Create()
 		class_registered = true;
 	}
 
-	m_com_initialized = SUCCEEDED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED));
+	m_com_initialized = wil::CoInitializeEx_failfast(COINIT_APARTMENTTHREADED);
 
 	m_window_hwnd =
 		CreateWindowExW(WS_EX_CLIENTEDGE, CLASS_NAME, L"Win32ProgressCallback", WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX, CW_USEDEFAULT,
@@ -222,8 +222,7 @@ void Win32ProgressCallback::Destroy()
 		m_progress_hwnd = {};
 	}
 
-	if (m_com_initialized)
-		CoUninitialize();
+	m_com_initialized.reset();
 }
 
 void Win32ProgressCallback::PumpMessages()
@@ -420,11 +419,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 {
 	Win32ProgressCallback progress;
 
-	const bool com_initialized = SUCCEEDED(CoInitializeEx(nullptr, COINIT_MULTITHREADED));
-	const ScopedGuard com_guard = [com_initialized]() {
-		if (com_initialized)
-			CoUninitialize();
-	};
+	wil::unique_couninitialize_call uninit = wil::CoInitializeEx_failfast(COINIT_MULTITHREADED);
 
 	int argc = 0;
 	wil::unique_hlocal_ptr<LPWSTR[]> argv(CommandLineToArgvW(GetCommandLineW(), &argc));
