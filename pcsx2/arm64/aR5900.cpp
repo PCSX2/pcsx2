@@ -19,14 +19,26 @@
 #include "R5900.h"
 #include "R5900OpcodeTables.h"
 #include "VMManager.h"
+#include "vtlb.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"
 #include "common/FastJmp.h"
 #include "common/Pcsx2Defs.h"
 
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+#include "common/Darwin/DarwinMisc.h"
+#include <TargetConditionals.h>
+#endif
+
+#include <algorithm>
+#include <cstdio>
 #include <cstring>
 #include <vector>
+
+#ifndef ARMSX2_ENABLE_EE_HOTPATH_DIAGNOSTICS
+#define ARMSX2_ENABLE_EE_HOTPATH_DIAGNOSTICS 0
+#endif
 
 namespace a64 = vixl::aarch64;
 
@@ -90,6 +102,28 @@ static __fi uptr* recPtrToBlock(u32 pc)
 	return reinterpret_cast<uptr*>(recLUT[pc >> 16] + pc * (sizeof(uptr) / 4));
 }
 
+static __fi u32 recHWAddr(u32 pc)
+{
+	// Match the x86 recompiler's HWADDR() comparisons for RAM/BIOS mirrors. Fast
+	// Boot EELOAD and ELF-entry checks are stored as physical addresses.
+	const u32 ram_offset = pc & (Ps2MemSize::ExposedRam - 1);
+	const u32 ram_base = pc - ram_offset;
+	switch (ram_base)
+	{
+		case 0x00000000u:
+		case 0x20000000u:
+		case 0x30000000u:
+		case 0x80000000u:
+		case 0xa0000000u:
+		case 0xb0000000u:
+		case 0xc0000000u:
+		case 0xd0000000u:
+			return ram_offset;
+		default:
+			return pc;
+	}
+}
+
 // Hard cap on instructions per block, so straight-line code can't run the emit
 // cursor away before we get a chance to reset. (x86 uses page/branch boundaries;
 // this is a simpler bring-up bound.)
@@ -107,6 +141,8 @@ static constexpr u32 RECOMPILE_HEADROOM = static_cast<u32>(_1mb);
 // block tail reads/writes for the inline event test.
 static constexpr u32 EE_CYCLE_OFFSET = static_cast<u32>(offsetof(cpuRegisters, cycle));
 static constexpr u32 EE_NEXTEVENTCYCLE_OFFSET = static_cast<u32>(offsetof(cpuRegisters, nextEventCycle));
+static constexpr u32 EE_HI_SCALAR_OFFSET = 32u * 16u;
+static constexpr u32 EE_LO_SCALAR_OFFSET = 33u * 16u;
 
 // Dynamically-generated dispatcher stubs (emitted into the head of the code cache by
 // recGenDispatchers on every reset; addresses are stable across a reset because the
@@ -140,6 +176,38 @@ static void recEventTest();
 static void recClear(u32 addr, u32 size);
 static void dyna_block_discard(u32 start, u32 sz);
 static void dyna_page_reset(u32 start, u32 sz);
+
+static void recDumpCodeBytes(const char* label, const void* rx_ptr, size_t len)
+{
+#if ARMSX2_ENABLE_EE_HOTPATH_DIAGNOSTICS
+	const size_t dump_len = std::min<size_t>(len, 32);
+	char rx_hex[65] = {};
+	char rw_hex[65] = {};
+	const u8* const rx = static_cast<const u8*>(rx_ptr);
+
+	for (size_t i = 0; i < dump_len; i++)
+		std::snprintf(&rx_hex[i * 2], sizeof(rx_hex) - (i * 2), "%02x", rx[i]);
+
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+	const ptrdiff_t rw_offset = DarwinMisc::g_code_rw_offset;
+	const u8* const rw = rw_offset != 0 ? (rx + rw_offset) : rx;
+	for (size_t i = 0; i < dump_len; i++)
+		std::snprintf(&rw_hex[i * 2], sizeof(rw_hex) - (i * 2), "%02x", rw[i]);
+
+	std::fprintf(stderr,
+		"@@EE_REC_BYTES@@ label=%s rx=%p rw=%p len=%zu cmp=%d rx=%s rw=%s\n",
+		label, rx, rw, dump_len, std::memcmp(rx, rw, dump_len), rx_hex, rw_hex);
+#else
+	std::fprintf(stderr, "@@EE_REC_BYTES@@ label=%s rx=%p len=%zu rx=%s\n",
+		label, rx, dump_len, rx_hex);
+#endif
+	std::fflush(stderr);
+#else
+	(void)label;
+	(void)rx_ptr;
+	(void)len;
+#endif
+}
 
 // Associate one 64 KB guest page `pagebase+pageidx` with the slot array `mapbase`,
 // biased so recPtrToBlock(pc) lands at &mapbase[mappage<<14 + (pc&0xffff)/4]. Direct
@@ -250,6 +318,26 @@ static void recResetRaw()
 	recPtr = SysMemory::GetEERec();
 	s_const_pool.Reset();
 	recGenDispatchers();
+#if ARMSX2_ENABLE_EE_HOTPATH_DIAGNOSTICS
+	static int s_reset_dump_count = 0;
+	if (s_reset_dump_count++ < 2)
+	{
+		std::fprintf(stderr,
+			"@@EE_REC_RESET@@ base=%p end=%p recPtr=%p dispatch=%p event=%p compile=%p enter=%p unmapped=%p rw_offset=%td\n",
+			SysMemory::GetEERec(), SysMemory::GetEERecEnd(), recPtr, DispatcherReg, DispatcherEvent,
+			JITCompile, EnterRecompiledCode, UnmappedRecLUTPage,
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+			DarwinMisc::g_code_rw_offset
+#else
+			static_cast<ptrdiff_t>(0)
+#endif
+		);
+		std::fflush(stderr);
+		recDumpCodeBytes("dispatcher", DispatcherReg, 32);
+		recDumpCodeBytes("jitcompile", JITCompile, 32);
+		recDumpCodeBytes("enter", EnterRecompiledCode, 32);
+	}
+#endif
 	recClearLUT();
 
 	// Drop all SMC manual-protection state — every block is being thrown away, so the
@@ -310,6 +398,1112 @@ enum : u32
 
 // Defined below (block-compile helpers) — used by recTranslateOp's COP2 inline path.
 static void recEmitInterpInline(u32 op);
+static bool recTranslateOp(u32 op);
+
+struct RecGprConstState
+{
+	bool known[32] = {};
+	u64 value[32] = {};
+
+	RecGprConstState()
+	{
+		known[0] = true;
+		value[0] = 0;
+	}
+};
+
+static void recConstKillAll(RecGprConstState& state)
+{
+	state = RecGprConstState();
+}
+
+static void recConstSetUnknown(RecGprConstState& state, u32 reg)
+{
+	if (reg == 0)
+		return;
+
+	state.known[reg] = false;
+	state.value[reg] = 0;
+}
+
+static void recConstSetKnown(RecGprConstState& state, u32 reg, u64 value)
+{
+	if (reg == 0)
+		return;
+
+	state.known[reg] = true;
+	state.value[reg] = value;
+}
+
+static void recEmitStoreGprConst(u32 reg, u64 value)
+{
+	if (reg == 0)
+		return;
+
+	armAsm->Mov(RSCRATCHADDR, value);
+	armAsm->Str(RSCRATCHADDR, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(reg)));
+}
+
+static void recConstEmitKnown(RecGprConstState& state, u32 reg, u64 value)
+{
+	recEmitStoreGprConst(reg, value);
+	recConstSetKnown(state, reg, value);
+}
+
+static __fi u64 recSignExtend32(u32 value)
+{
+	return static_cast<u64>(static_cast<s64>(static_cast<s32>(value)));
+}
+
+static bool recTryTranslateConstOp(u32 op, RecGprConstState& state)
+{
+	const u32 opcode = op >> 26;
+	const u32 rs = (op >> 21) & 0x1f;
+	const u32 rt = (op >> 16) & 0x1f;
+	const u32 rd = (op >> 11) & 0x1f;
+	const u32 sa = (op >> 6) & 0x1f;
+	const u32 funct = op & 0x3f;
+	const s32 imm = static_cast<s16>(op);
+	const u32 imm_u = static_cast<u16>(op);
+
+	auto src_known = [&](u32 reg) -> bool {
+		return state.known[reg];
+	};
+	auto src = [&](u32 reg) -> u64 {
+		return state.value[reg];
+	};
+
+	switch (opcode)
+	{
+		case 0x08: // ADDI
+		case 0x09: // ADDIU
+			if (!src_known(rs))
+				return false;
+			recConstEmitKnown(state, rt, recSignExtend32(static_cast<u32>(src(rs)) + static_cast<u32>(imm)));
+			return true;
+
+		case 0x18: // DADDI
+		case 0x19: // DADDIU
+			if (!src_known(rs))
+				return false;
+			recConstEmitKnown(state, rt, src(rs) + static_cast<u64>(static_cast<s64>(imm)));
+			return true;
+
+		case 0x0A: // SLTI
+			if (!src_known(rs))
+				return false;
+			recConstEmitKnown(state, rt, (static_cast<s64>(src(rs)) < static_cast<s64>(imm)) ? 1 : 0);
+			return true;
+
+		case 0x0B: // SLTIU
+			if (!src_known(rs))
+				return false;
+			recConstEmitKnown(state, rt, (src(rs) < static_cast<u64>(static_cast<s64>(imm))) ? 1 : 0);
+			return true;
+
+		case 0x0C: // ANDI
+			if (!src_known(rs))
+				return false;
+			recConstEmitKnown(state, rt, src(rs) & imm_u);
+			return true;
+
+		case 0x0D: // ORI
+			if (!src_known(rs))
+				return false;
+			recConstEmitKnown(state, rt, src(rs) | imm_u);
+			return true;
+
+		case 0x0E: // XORI
+			if (!src_known(rs))
+				return false;
+			recConstEmitKnown(state, rt, src(rs) ^ imm_u);
+			return true;
+
+		case 0x0F: // LUI
+			recConstEmitKnown(state, rt, recSignExtend32(static_cast<u32>(imm_u) << 16));
+			return true;
+
+		case 0x00:
+			switch (funct)
+			{
+				case 0x00: // SLL
+					if (!src_known(rt)) return false;
+					recConstEmitKnown(state, rd, recSignExtend32(static_cast<u32>(src(rt)) << sa));
+					return true;
+				case 0x02: // SRL
+					if (!src_known(rt)) return false;
+					recConstEmitKnown(state, rd, recSignExtend32(static_cast<u32>(src(rt)) >> sa));
+					return true;
+				case 0x03: // SRA
+					if (!src_known(rt)) return false;
+					recConstEmitKnown(state, rd, recSignExtend32(static_cast<u32>(static_cast<s32>(static_cast<u32>(src(rt))) >> sa)));
+					return true;
+				case 0x04: // SLLV
+					if (!src_known(rt) || !src_known(rs)) return false;
+					recConstEmitKnown(state, rd, recSignExtend32(static_cast<u32>(src(rt)) << (src(rs) & 0x1f)));
+					return true;
+				case 0x06: // SRLV
+					if (!src_known(rt) || !src_known(rs)) return false;
+					recConstEmitKnown(state, rd, recSignExtend32(static_cast<u32>(src(rt)) >> (src(rs) & 0x1f)));
+					return true;
+				case 0x07: // SRAV
+					if (!src_known(rt) || !src_known(rs)) return false;
+					recConstEmitKnown(state, rd, recSignExtend32(static_cast<u32>(static_cast<s32>(static_cast<u32>(src(rt))) >> (src(rs) & 0x1f))));
+					return true;
+				case 0x14: // DSLLV
+					if (!src_known(rt) || !src_known(rs)) return false;
+					recConstEmitKnown(state, rd, src(rt) << (src(rs) & 0x3f));
+					return true;
+				case 0x16: // DSRLV
+					if (!src_known(rt) || !src_known(rs)) return false;
+					recConstEmitKnown(state, rd, src(rt) >> (src(rs) & 0x3f));
+					return true;
+				case 0x17: // DSRAV
+					if (!src_known(rt) || !src_known(rs)) return false;
+					recConstEmitKnown(state, rd, static_cast<u64>(static_cast<s64>(src(rt)) >> (src(rs) & 0x3f)));
+					return true;
+				case 0x38: // DSLL
+					if (!src_known(rt)) return false;
+					recConstEmitKnown(state, rd, src(rt) << sa);
+					return true;
+				case 0x3A: // DSRL
+					if (!src_known(rt)) return false;
+					recConstEmitKnown(state, rd, src(rt) >> sa);
+					return true;
+				case 0x3B: // DSRA
+					if (!src_known(rt)) return false;
+					recConstEmitKnown(state, rd, static_cast<u64>(static_cast<s64>(src(rt)) >> sa));
+					return true;
+				case 0x3C: // DSLL32
+					if (!src_known(rt)) return false;
+					recConstEmitKnown(state, rd, src(rt) << (sa + 32));
+					return true;
+				case 0x3E: // DSRL32
+					if (!src_known(rt)) return false;
+					recConstEmitKnown(state, rd, src(rt) >> (sa + 32));
+					return true;
+				case 0x3F: // DSRA32
+					if (!src_known(rt)) return false;
+					recConstEmitKnown(state, rd, static_cast<u64>(static_cast<s64>(src(rt)) >> (sa + 32)));
+					return true;
+
+				case 0x20: // ADD
+				case 0x21: // ADDU
+					if (!src_known(rs) || !src_known(rt)) return false;
+					recConstEmitKnown(state, rd, recSignExtend32(static_cast<u32>(src(rs)) + static_cast<u32>(src(rt))));
+					return true;
+				case 0x22: // SUB
+				case 0x23: // SUBU
+					if (!src_known(rs) || !src_known(rt)) return false;
+					recConstEmitKnown(state, rd, recSignExtend32(static_cast<u32>(src(rs)) - static_cast<u32>(src(rt))));
+					return true;
+				case 0x24: // AND
+					if (!src_known(rs) || !src_known(rt)) return false;
+					recConstEmitKnown(state, rd, src(rs) & src(rt));
+					return true;
+				case 0x25: // OR
+					if (!src_known(rs) || !src_known(rt)) return false;
+					recConstEmitKnown(state, rd, src(rs) | src(rt));
+					return true;
+				case 0x26: // XOR
+					if (!src_known(rs) || !src_known(rt)) return false;
+					recConstEmitKnown(state, rd, src(rs) ^ src(rt));
+					return true;
+				case 0x27: // NOR
+					if (!src_known(rs) || !src_known(rt)) return false;
+					recConstEmitKnown(state, rd, ~(src(rs) | src(rt)));
+					return true;
+				case 0x2A: // SLT
+					if (!src_known(rs) || !src_known(rt)) return false;
+					recConstEmitKnown(state, rd, (static_cast<s64>(src(rs)) < static_cast<s64>(src(rt))) ? 1 : 0);
+					return true;
+				case 0x2B: // SLTU
+					if (!src_known(rs) || !src_known(rt)) return false;
+					recConstEmitKnown(state, rd, (src(rs) < src(rt)) ? 1 : 0);
+					return true;
+				case 0x2C: // DADD
+				case 0x2D: // DADDU
+					if (!src_known(rs) || !src_known(rt)) return false;
+					recConstEmitKnown(state, rd, src(rs) + src(rt));
+					return true;
+				case 0x2E: // DSUB
+				case 0x2F: // DSUBU
+					if (!src_known(rs) || !src_known(rt)) return false;
+					recConstEmitKnown(state, rd, src(rs) - src(rt));
+					return true;
+				case 0x0A: // MOVZ
+					if (!src_known(rt)) return false;
+					if (src(rt) != 0)
+						return true;
+					if (!src_known(rs)) return false;
+					recConstEmitKnown(state, rd, src(rs));
+					return true;
+				case 0x0B: // MOVN
+					if (!src_known(rt)) return false;
+					if (src(rt) == 0)
+						return true;
+					if (!src_known(rs)) return false;
+					recConstEmitKnown(state, rd, src(rs));
+					return true;
+				default:
+					return false;
+			}
+
+		default:
+			return false;
+	}
+}
+
+static void recConstApplyNativeEffects(u32 op, RecGprConstState& state)
+{
+	const u32 opcode = op >> 26;
+	const u32 rs = (op >> 21) & 0x1f;
+	const u32 rt = (op >> 16) & 0x1f;
+	const u32 rd = (op >> 11) & 0x1f;
+	const u32 funct = op & 0x3f;
+
+	switch (opcode)
+	{
+		case 0x00:
+			switch (funct)
+			{
+				case 0x11: // MTHI
+				case 0x13: // MTLO
+				case 0x18: // MULT
+				case 0x19: // MULTU
+				case 0x1A: // DIV
+				case 0x1B: // DIVU
+					if (funct == 0x18 || funct == 0x19)
+						recConstSetUnknown(state, rd);
+					return;
+				default:
+					recConstSetUnknown(state, rd);
+					return;
+			}
+
+		case 0x08: case 0x09: case 0x0A: case 0x0B:
+		case 0x0C: case 0x0D: case 0x0E: case 0x0F:
+		case 0x18: case 0x19:
+			recConstSetUnknown(state, rt);
+			return;
+
+		case OP_LQ: case OP_LB: case OP_LH: case OP_LW:
+		case OP_LBU: case OP_LHU: case OP_LWU: case OP_LD:
+			recConstSetUnknown(state, rt);
+			return;
+
+		case 0x11: // COP1: MFC1/CFC1 write rt, other native FPU ops do not touch GPRs.
+			if (rs == 0x00 || rs == 0x02)
+				recConstSetUnknown(state, rt);
+			return;
+
+		case 0x10: // COP0 inline interpreter may touch CPU state.
+		case 0x12: // COP2 inline interpreter may move VU data through GPRs.
+		case OP_LQC2:
+		case OP_SQC2:
+			recConstKillAll(state);
+			return;
+
+		case 0x1C:
+			recConstSetUnknown(state, rd);
+			return;
+
+		default:
+			return;
+	}
+}
+
+static bool recTranslateOpWithConst(u32 op, RecGprConstState& state)
+{
+	if (recTryTranslateConstOp(op, state))
+		return true;
+
+	if (!recTranslateOp(op))
+	{
+		recConstKillAll(state);
+		return false;
+	}
+
+	recConstApplyNativeEffects(op, state);
+	return true;
+}
+
+static bool recConstApplyCachedEffects(u32 op, RecGprConstState& state)
+{
+	const u32 opcode = op >> 26;
+	const u32 rs = (op >> 21) & 0x1f;
+	const u32 rt = (op >> 16) & 0x1f;
+	const u32 rd = (op >> 11) & 0x1f;
+	const u32 sa = (op >> 6) & 0x1f;
+	const u32 funct = op & 0x3f;
+	const s32 imm = static_cast<s16>(op);
+	const u32 imm_u = static_cast<u16>(op);
+
+	auto known = [&](u32 reg) -> bool {
+		return state.known[reg];
+	};
+	auto value = [&](u32 reg) -> u64 {
+		return state.value[reg];
+	};
+	auto set_known_or_unknown = [&](u32 reg, bool is_known, u64 val = 0) {
+		if (is_known)
+			recConstSetKnown(state, reg, val);
+		else
+			recConstSetUnknown(state, reg);
+	};
+
+	switch (opcode)
+	{
+		case 0x08: // ADDI
+		case 0x09: // ADDIU
+			set_known_or_unknown(rt, known(rs), recSignExtend32(static_cast<u32>(value(rs)) + static_cast<u32>(imm)));
+			return true;
+
+		case 0x18: // DADDI
+		case 0x19: // DADDIU
+			set_known_or_unknown(rt, known(rs), value(rs) + static_cast<u64>(static_cast<s64>(imm)));
+			return true;
+
+		case 0x0A: // SLTI
+			set_known_or_unknown(rt, known(rs), (static_cast<s64>(value(rs)) < static_cast<s64>(imm)) ? 1 : 0);
+			return true;
+
+		case 0x0B: // SLTIU
+			set_known_or_unknown(rt, known(rs), (value(rs) < static_cast<u64>(static_cast<s64>(imm))) ? 1 : 0);
+			return true;
+
+		case 0x0C: // ANDI
+			set_known_or_unknown(rt, known(rs), value(rs) & imm_u);
+			return true;
+
+		case 0x0D: // ORI
+			set_known_or_unknown(rt, known(rs), value(rs) | imm_u);
+			return true;
+
+		case 0x0E: // XORI
+			set_known_or_unknown(rt, known(rs), value(rs) ^ imm_u);
+			return true;
+
+		case 0x0F: // LUI
+			recConstSetKnown(state, rt, recSignExtend32(static_cast<u32>(imm_u) << 16));
+			return true;
+
+		case 0x00:
+			switch (funct)
+			{
+				case 0x00: // SLL
+					set_known_or_unknown(rd, known(rt), recSignExtend32(static_cast<u32>(value(rt)) << sa));
+					return true;
+				case 0x02: // SRL
+					set_known_or_unknown(rd, known(rt), recSignExtend32(static_cast<u32>(value(rt)) >> sa));
+					return true;
+				case 0x03: // SRA
+					set_known_or_unknown(rd, known(rt), recSignExtend32(static_cast<u32>(static_cast<s32>(static_cast<u32>(value(rt))) >> sa)));
+					return true;
+				case 0x04: // SLLV
+					set_known_or_unknown(rd, known(rt) && known(rs), recSignExtend32(static_cast<u32>(value(rt)) << (value(rs) & 0x1f)));
+					return true;
+				case 0x06: // SRLV
+					set_known_or_unknown(rd, known(rt) && known(rs), recSignExtend32(static_cast<u32>(value(rt)) >> (value(rs) & 0x1f)));
+					return true;
+				case 0x07: // SRAV
+					set_known_or_unknown(rd, known(rt) && known(rs), recSignExtend32(static_cast<u32>(static_cast<s32>(static_cast<u32>(value(rt))) >> (value(rs) & 0x1f))));
+					return true;
+				case 0x14: // DSLLV
+					set_known_or_unknown(rd, known(rt) && known(rs), value(rt) << (value(rs) & 0x3f));
+					return true;
+				case 0x16: // DSRLV
+					set_known_or_unknown(rd, known(rt) && known(rs), value(rt) >> (value(rs) & 0x3f));
+					return true;
+				case 0x17: // DSRAV
+					set_known_or_unknown(rd, known(rt) && known(rs), static_cast<u64>(static_cast<s64>(value(rt)) >> (value(rs) & 0x3f)));
+					return true;
+				case 0x38: // DSLL
+					set_known_or_unknown(rd, known(rt), value(rt) << sa);
+					return true;
+				case 0x3A: // DSRL
+					set_known_or_unknown(rd, known(rt), value(rt) >> sa);
+					return true;
+				case 0x3B: // DSRA
+					set_known_or_unknown(rd, known(rt), static_cast<u64>(static_cast<s64>(value(rt)) >> sa));
+					return true;
+				case 0x3C: // DSLL32
+					set_known_or_unknown(rd, known(rt), value(rt) << (sa + 32));
+					return true;
+				case 0x3E: // DSRL32
+					set_known_or_unknown(rd, known(rt), value(rt) >> (sa + 32));
+					return true;
+				case 0x3F: // DSRA32
+					set_known_or_unknown(rd, known(rt), static_cast<u64>(static_cast<s64>(value(rt)) >> (sa + 32)));
+					return true;
+				case 0x20: // ADD
+				case 0x21: // ADDU
+					set_known_or_unknown(rd, known(rs) && known(rt), recSignExtend32(static_cast<u32>(value(rs)) + static_cast<u32>(value(rt))));
+					return true;
+				case 0x22: // SUB
+				case 0x23: // SUBU
+					set_known_or_unknown(rd, known(rs) && known(rt), recSignExtend32(static_cast<u32>(value(rs)) - static_cast<u32>(value(rt))));
+					return true;
+				case 0x2C: // DADD
+				case 0x2D: // DADDU
+					set_known_or_unknown(rd, known(rs) && known(rt), value(rs) + value(rt));
+					return true;
+				case 0x2E: // DSUB
+				case 0x2F: // DSUBU
+					set_known_or_unknown(rd, known(rs) && known(rt), value(rs) - value(rt));
+					return true;
+				case 0x24: // AND
+					set_known_or_unknown(rd, known(rs) && known(rt), value(rs) & value(rt));
+					return true;
+				case 0x25: // OR
+					set_known_or_unknown(rd, known(rs) && known(rt), value(rs) | value(rt));
+					return true;
+				case 0x26: // XOR
+					set_known_or_unknown(rd, known(rs) && known(rt), value(rs) ^ value(rt));
+					return true;
+				case 0x27: // NOR
+					set_known_or_unknown(rd, known(rs) && known(rt), ~(value(rs) | value(rt)));
+					return true;
+				case 0x2A: // SLT
+					set_known_or_unknown(rd, known(rs) && known(rt), (static_cast<s64>(value(rs)) < static_cast<s64>(value(rt))) ? 1 : 0);
+					return true;
+				case 0x2B: // SLTU
+					set_known_or_unknown(rd, known(rs) && known(rt), (value(rs) < value(rt)) ? 1 : 0);
+					return true;
+				case 0x0A: // MOVZ
+					if (rd == 0 || rs == rd)
+						return true;
+					if (!known(rt))
+						recConstSetUnknown(state, rd);
+					else if (value(rt) == 0)
+						set_known_or_unknown(rd, known(rs), value(rs));
+					return true;
+				case 0x0B: // MOVN
+					if (rd == 0 || rs == rd)
+						return true;
+					if (!known(rt))
+						recConstSetUnknown(state, rd);
+					else if (value(rt) != 0)
+						set_known_or_unknown(rd, known(rs), value(rs));
+					return true;
+				case 0x10: // MFHI
+				case 0x12: // MFLO
+					recConstSetUnknown(state, rd);
+					return true;
+				default:
+					return false;
+			}
+
+		default:
+			return false;
+	}
+}
+
+struct RecGprCacheEntry
+{
+	bool valid = false;
+	bool dirty = false;
+	u32 guest = 0;
+	u32 age = 0;
+};
+
+struct RecGprCacheState
+{
+	RecGprCacheEntry entries[7];
+	u32 age = 1;
+};
+
+static constexpr int REC_GPR_CACHE_REGS[7] = {22, 23, 24, 25, 26, 27, 28};
+
+static const a64::Register& recCacheReg(size_t index)
+{
+	return armXRegister(REC_GPR_CACHE_REGS[index]);
+}
+
+static const a64::Register& recCacheWReg(size_t index)
+{
+	return armWRegister(REC_GPR_CACHE_REGS[index]);
+}
+
+static void recCacheEmitFlushEntry(const RecGprCacheEntry& entry, size_t index)
+{
+	if (!entry.valid || !entry.dirty)
+		return;
+
+	armAsm->Str(recCacheReg(index), a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(entry.guest)));
+}
+
+static int recCacheFind(const RecGprCacheState& cache, u32 guest)
+{
+	for (size_t i = 0; i < std::size(cache.entries); i++)
+	{
+		if (cache.entries[i].valid && cache.entries[i].guest == guest)
+			return static_cast<int>(i);
+	}
+
+	return -1;
+}
+
+static void recCacheFlushEntry(RecGprCacheState& cache, size_t index)
+{
+	RecGprCacheEntry& entry = cache.entries[index];
+	if (!entry.valid || !entry.dirty)
+		return;
+
+	recCacheEmitFlushEntry(entry, index);
+	entry.dirty = false;
+}
+
+static void recCacheFlushAll(RecGprCacheState& cache)
+{
+	for (size_t i = 0; i < std::size(cache.entries); i++)
+		recCacheFlushEntry(cache, i);
+}
+
+static void recCacheEmitFlushAll(const RecGprCacheState& cache)
+{
+	for (size_t i = 0; i < std::size(cache.entries); i++)
+		recCacheEmitFlushEntry(cache.entries[i], i);
+}
+
+static void recCacheKillAll(RecGprCacheState& cache)
+{
+	cache = RecGprCacheState();
+}
+
+static size_t recCacheAllocate(RecGprCacheState& cache, u32 guest, u32 pin_a = 0xff, u32 pin_b = 0xff)
+{
+	int found = recCacheFind(cache, guest);
+	if (found >= 0)
+	{
+		cache.entries[found].age = cache.age++;
+		return static_cast<size_t>(found);
+	}
+
+	size_t victim = std::size(cache.entries);
+	u32 oldest = UINT32_MAX;
+	for (size_t i = 0; i < std::size(cache.entries); i++)
+	{
+		const RecGprCacheEntry& entry = cache.entries[i];
+		if (!entry.valid)
+		{
+			victim = i;
+			break;
+		}
+		if (entry.guest == pin_a || entry.guest == pin_b)
+			continue;
+		if (entry.age < oldest)
+		{
+			oldest = entry.age;
+			victim = i;
+		}
+	}
+
+	if (victim == std::size(cache.entries))
+	{
+		// All cache registers are pinned by this instruction. This should be rare, but
+		// flushing keeps the fallback path simple and correct.
+		recCacheFlushAll(cache);
+		recCacheKillAll(cache);
+		victim = 0;
+	}
+	else
+	{
+		recCacheFlushEntry(cache, victim);
+	}
+
+	RecGprCacheEntry& entry = cache.entries[victim];
+	entry.valid = true;
+	entry.dirty = false;
+	entry.guest = guest;
+	entry.age = cache.age++;
+	return victim;
+}
+
+static const a64::Register& recCacheLoad(RecGprCacheState& cache, u32 guest)
+{
+	if (guest == 0)
+		return a64::xzr;
+
+	int found = recCacheFind(cache, guest);
+	const bool already_cached = (found >= 0);
+	const size_t index = already_cached ? static_cast<size_t>(found) : recCacheAllocate(cache, guest);
+	RecGprCacheEntry& entry = cache.entries[index];
+	entry.age = cache.age++;
+	if (!already_cached)
+		armAsm->Ldr(recCacheReg(index), a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(guest)));
+
+	return recCacheReg(index);
+}
+
+static const a64::Register& recCacheDest(RecGprCacheState& cache, u32 guest, u32 pin_a = 0xff, u32 pin_b = 0xff)
+{
+	if (guest == 0)
+		return a64::xzr;
+
+	const size_t index = recCacheAllocate(cache, guest, pin_a, pin_b);
+	cache.entries[index].dirty = true;
+	return recCacheReg(index);
+}
+
+static void recEmitCachedEffectiveAddr(RecGprCacheState& cache, u32 rs, s32 imm, const a64::Register& addr)
+{
+	if (rs == 0)
+	{
+		armAsm->Mov(addr.W(), imm);
+		return;
+	}
+
+	const a64::Register& src = recCacheLoad(cache, rs);
+	if (!addr.W().Is(src.W()))
+		armAsm->Mov(addr.W(), src.W());
+	if (imm != 0)
+		armAsm->Add(addr.W(), addr.W(), imm);
+}
+
+static void recEmitVmapHostPointer(const a64::Register& host, const a64::Register& addr, a64::Label* slow_path)
+{
+	static_assert(sizeof(vtlb_private::VTLBVirtual) == sizeof(uptr), "VTLBVirtual is expected to be a raw pointer-sized entry");
+
+	armAsm->Lsr(a64::w11, addr.W(), vtlb_private::VTLB_PAGE_BITS);
+	armAsm->Ldr(host, a64::MemOperand(REVTLBPTR, a64::x11, a64::LSL, 3));
+	armAsm->Add(host, host, addr.X());
+	armAsm->Tbnz(host, sizeof(uptr) * 8 - 1, slow_path);
+}
+
+static void recEmitCachedDirectLoad(u32 bits, bool sign, const a64::Register& dst, const a64::Register& host)
+{
+	switch (bits)
+	{
+		case 8:
+			sign ? armAsm->Ldrsb(dst.X(), a64::MemOperand(host)) : armAsm->Ldrb(dst.W(), a64::MemOperand(host));
+			break;
+		case 16:
+			sign ? armAsm->Ldrsh(dst.X(), a64::MemOperand(host)) : armAsm->Ldrh(dst.W(), a64::MemOperand(host));
+			break;
+		case 32:
+			sign ? armAsm->Ldrsw(dst.X(), a64::MemOperand(host)) : armAsm->Ldr(dst.W(), a64::MemOperand(host));
+			break;
+		case 64:
+			armAsm->Ldr(dst.X(), a64::MemOperand(host));
+			break;
+		jNO_DEFAULT
+	}
+}
+
+static void recEmitCachedDirectStore(u32 bits, const a64::Register& src, const a64::Register& host)
+{
+	switch (bits)
+	{
+		case 8:
+			armAsm->Strb(src.W(), a64::MemOperand(host));
+			break;
+		case 16:
+			armAsm->Strh(src.W(), a64::MemOperand(host));
+			break;
+		case 32:
+			armAsm->Str(src.W(), a64::MemOperand(host));
+			break;
+		case 64:
+			armAsm->Str(src.X(), a64::MemOperand(host));
+			break;
+		jNO_DEFAULT
+	}
+}
+
+static bool recTryTranslateCachedLoad(u32 bits, bool sign, u32 rt, u32 rs, s32 imm, RecGprCacheState& cache)
+{
+	static const a64::Register RADDR = a64::x9;
+	static const a64::Register RHOST = a64::x10;
+	static const a64::Register RTEMP = a64::x11;
+
+	recEmitCachedEffectiveAddr(cache, rs, imm, RADDR);
+	const RecGprCacheState pre_load_cache = cache;
+
+	const a64::Register& dst = (rt == 0) ? RTEMP : recCacheDest(cache, rt, rs);
+
+	a64::Label slow_path;
+	a64::Label done;
+	recEmitVmapHostPointer(RHOST, RADDR, &slow_path);
+	recEmitCachedDirectLoad(bits, sign, dst, RHOST);
+	armAsm->B(&done);
+
+	armAsm->Bind(&slow_path);
+	recCacheEmitFlushAll(pre_load_cache);
+	armEmitVtlbRead(bits, sign, RXRET, RADDR);
+	if (rt != 0 && !dst.Is(RXRET))
+		armAsm->Mov(dst, RXRET);
+
+	armAsm->Bind(&done);
+	return true;
+}
+
+static bool recTryTranslateCachedStore(u32 bits, u32 rt, u32 rs, s32 imm, RecGprCacheState& cache)
+{
+	static const a64::Register RADDR = a64::x9;
+	static const a64::Register RHOST = a64::x10;
+
+	recEmitCachedEffectiveAddr(cache, rs, imm, RADDR);
+	const a64::Register& src = recCacheLoad(cache, rt);
+	const RecGprCacheState pre_store_cache = cache;
+
+	a64::Label slow_path;
+	a64::Label done;
+	recEmitVmapHostPointer(RHOST, RADDR, &slow_path);
+	recEmitCachedDirectStore(bits, src, RHOST);
+	armAsm->B(&done);
+
+	armAsm->Bind(&slow_path);
+	recCacheEmitFlushAll(pre_store_cache);
+	armEmitVtlbWrite(bits, RADDR, src);
+
+	armAsm->Bind(&done);
+	return true;
+}
+
+static bool recTryTranslateCachedOp(u32 op, RecGprCacheState& cache)
+{
+	const u32 opcode = op >> 26;
+	const u32 rs = (op >> 21) & 0x1f;
+	const u32 rt = (op >> 16) & 0x1f;
+	const u32 rd = (op >> 11) & 0x1f;
+	const u32 sa = (op >> 6) & 0x1f;
+	const u32 funct = op & 0x3f;
+	const s32 imm = static_cast<s16>(op);
+	const u32 imm_u = static_cast<u16>(op);
+
+	auto move_x = [](const a64::Register& dst, const a64::Register& src) {
+		if (!dst.Is(src))
+			armAsm->Mov(dst, src);
+	};
+	auto move_w = [](const a64::Register& dst, const a64::Register& src) {
+		if (!dst.Is(src))
+			armAsm->Mov(dst, src);
+	};
+
+	switch (opcode)
+	{
+		case 0x08: // ADDI
+		case 0x09: // ADDIU
+		{
+			if (rt == 0)
+				return true;
+			const a64::Register& src = recCacheLoad(cache, rs);
+			const a64::Register& dst = recCacheDest(cache, rt, rs);
+			move_w(dst.W(), src.W());
+			if (imm != 0)
+				armAsm->Add(dst.W(), dst.W(), imm);
+			armAsm->Sxtw(dst, dst.W());
+			return true;
+		}
+
+		case 0x18: // DADDI
+		case 0x19: // DADDIU
+		{
+			if (rt == 0)
+				return true;
+			const a64::Register& src = recCacheLoad(cache, rs);
+			const a64::Register& dst = recCacheDest(cache, rt, rs);
+			move_x(dst, src);
+			if (imm != 0)
+				armAsm->Add(dst, dst, imm);
+			return true;
+		}
+
+		case 0x0A: // SLTI
+		case 0x0B: // SLTIU
+		{
+			if (rt == 0)
+				return true;
+			const a64::Register& src = recCacheLoad(cache, rs);
+			const a64::Register& dst = recCacheDest(cache, rt, rs);
+			armAsm->Cmp(src, imm);
+			armAsm->Cset(dst, opcode == 0x0A ? a64::lt : a64::lo);
+			return true;
+		}
+
+		case 0x0C: // ANDI
+		case 0x0D: // ORI
+		case 0x0E: // XORI
+		{
+			if (rt == 0)
+				return true;
+			const a64::Register& src = recCacheLoad(cache, rs);
+			const a64::Register& dst = recCacheDest(cache, rt, rs);
+			if (opcode == 0x0C)
+			{
+				if (imm_u == 0)
+					armAsm->Mov(dst, 0);
+				else
+				{
+					armAsm->Mov(RXVIXLSCRATCH, imm_u);
+					armAsm->And(dst, src, RXVIXLSCRATCH);
+				}
+			}
+			else if (opcode == 0x0D)
+			{
+				move_x(dst, src);
+				if (imm_u != 0)
+				{
+					armAsm->Mov(RXVIXLSCRATCH, imm_u);
+					armAsm->Orr(dst, dst, RXVIXLSCRATCH);
+				}
+			}
+			else
+			{
+				move_x(dst, src);
+				if (imm_u != 0)
+				{
+					armAsm->Mov(RXVIXLSCRATCH, imm_u);
+					armAsm->Eor(dst, dst, RXVIXLSCRATCH);
+				}
+			}
+			return true;
+		}
+
+		case 0x0F: // LUI
+		{
+			if (rt == 0)
+				return true;
+			const s32 val = static_cast<s32>(static_cast<u32>(imm_u) << 16);
+			const a64::Register& dst = recCacheDest(cache, rt);
+			if (val == 0)
+				armAsm->Mov(dst, 0);
+			else
+			{
+				armAsm->Mov(dst.W(), val);
+				armAsm->Sxtw(dst, dst.W());
+			}
+				return true;
+			}
+
+		case OP_LB:  return recTryTranslateCachedLoad(8,  true,  rt, rs, imm, cache);
+		case OP_LBU: return recTryTranslateCachedLoad(8,  false, rt, rs, imm, cache);
+		case OP_LH:  return recTryTranslateCachedLoad(16, true,  rt, rs, imm, cache);
+		case OP_LHU: return recTryTranslateCachedLoad(16, false, rt, rs, imm, cache);
+		case OP_LW:  return recTryTranslateCachedLoad(32, true,  rt, rs, imm, cache);
+		case OP_LWU: return recTryTranslateCachedLoad(32, false, rt, rs, imm, cache);
+		case OP_LD:  return recTryTranslateCachedLoad(64, false, rt, rs, imm, cache);
+
+		case OP_SB: return recTryTranslateCachedStore(8,  rt, rs, imm, cache);
+		case OP_SH: return recTryTranslateCachedStore(16, rt, rs, imm, cache);
+		case OP_SW: return recTryTranslateCachedStore(32, rt, rs, imm, cache);
+		case OP_SD: return recTryTranslateCachedStore(64, rt, rs, imm, cache);
+
+		case 0x00:
+			break;
+
+		default:
+			return false;
+	}
+
+	switch (funct)
+	{
+		case 0x0A: // MOVZ
+		case 0x0B: // MOVN
+		{
+			if (rd == 0 || rs == rd)
+				return true;
+
+			const a64::Register& cond = recCacheLoad(cache, rt);
+			armAsm->Cmp(cond, 0);
+			const a64::Register& old_dst = recCacheLoad(cache, rd);
+			const a64::Register& src = recCacheLoad(cache, rs);
+			const a64::Register& dst = recCacheDest(cache, rd, rs, rt);
+			armAsm->Csel(dst, src, old_dst, funct == 0x0A ? a64::eq : a64::ne);
+			return true;
+		}
+
+		case 0x10: // MFHI
+		case 0x12: // MFLO
+		{
+			if (rd == 0)
+				return true;
+
+			const a64::Register& dst = recCacheDest(cache, rd);
+			armAsm->Ldr(dst, a64::MemOperand(RESTATEPTR, funct == 0x10 ? EE_HI_SCALAR_OFFSET : EE_LO_SCALAR_OFFSET));
+			return true;
+		}
+
+		case 0x00: // SLL
+		case 0x02: // SRL
+		case 0x03: // SRA
+		{
+			if (rd == 0)
+				return true;
+			const a64::Register& src = recCacheLoad(cache, rt);
+			const a64::Register& dst = recCacheDest(cache, rd, rt);
+			if (funct == 0x00)
+				armAsm->Lsl(dst.W(), src.W(), sa);
+			else if (funct == 0x02)
+				armAsm->Lsr(dst.W(), src.W(), sa);
+			else
+				armAsm->Asr(dst.W(), src.W(), sa);
+			armAsm->Sxtw(dst, dst.W());
+			return true;
+		}
+
+		case 0x04: // SLLV
+		case 0x06: // SRLV
+		case 0x07: // SRAV
+		{
+			if (rd == 0)
+				return true;
+			const a64::Register& src = recCacheLoad(cache, rt);
+			const a64::Register& sh = recCacheLoad(cache, rs);
+			const a64::Register& dst = recCacheDest(cache, rd, rt, rs);
+			if (funct == 0x04)
+				armAsm->Lsl(dst.W(), src.W(), sh.W());
+			else if (funct == 0x06)
+				armAsm->Lsr(dst.W(), src.W(), sh.W());
+			else
+				armAsm->Asr(dst.W(), src.W(), sh.W());
+			armAsm->Sxtw(dst, dst.W());
+			return true;
+		}
+
+		case 0x14: // DSLLV
+		case 0x16: // DSRLV
+		case 0x17: // DSRAV
+		{
+			if (rd == 0)
+				return true;
+			const a64::Register& src = recCacheLoad(cache, rt);
+			const a64::Register& sh = recCacheLoad(cache, rs);
+			const a64::Register& dst = recCacheDest(cache, rd, rt, rs);
+			if (funct == 0x14)
+				armAsm->Lsl(dst, src, sh);
+			else if (funct == 0x16)
+				armAsm->Lsr(dst, src, sh);
+			else
+				armAsm->Asr(dst, src, sh);
+			return true;
+		}
+
+		case 0x38: // DSLL
+		case 0x3A: // DSRL
+		case 0x3B: // DSRA
+		case 0x3C: // DSLL32
+		case 0x3E: // DSRL32
+		case 0x3F: // DSRA32
+		{
+			if (rd == 0)
+				return true;
+			const u32 shift = sa + ((funct == 0x3C || funct == 0x3E || funct == 0x3F) ? 32 : 0);
+			const a64::Register& src = recCacheLoad(cache, rt);
+			const a64::Register& dst = recCacheDest(cache, rd, rt);
+			if (funct == 0x38 || funct == 0x3C)
+				armAsm->Lsl(dst, src, shift);
+			else if (funct == 0x3A || funct == 0x3E)
+				armAsm->Lsr(dst, src, shift);
+			else
+				armAsm->Asr(dst, src, shift);
+			return true;
+		}
+
+		case 0x20: // ADD
+		case 0x21: // ADDU
+		case 0x22: // SUB
+		case 0x23: // SUBU
+		{
+			if (rd == 0)
+				return true;
+			const a64::Register& lhs = recCacheLoad(cache, rs);
+			const a64::Register& rhs = recCacheLoad(cache, rt);
+			const a64::Register& dst = recCacheDest(cache, rd, rs, rt);
+			if (funct == 0x20 || funct == 0x21)
+				armAsm->Add(dst.W(), lhs.W(), rhs.W());
+			else
+				armAsm->Sub(dst.W(), lhs.W(), rhs.W());
+			armAsm->Sxtw(dst, dst.W());
+			return true;
+		}
+
+		case 0x2C: // DADD
+		case 0x2D: // DADDU
+		case 0x2E: // DSUB
+		case 0x2F: // DSUBU
+		{
+			if (rd == 0)
+				return true;
+			const a64::Register& lhs = recCacheLoad(cache, rs);
+			const a64::Register& rhs = recCacheLoad(cache, rt);
+			const a64::Register& dst = recCacheDest(cache, rd, rs, rt);
+			if (funct == 0x2C || funct == 0x2D)
+				armAsm->Add(dst, lhs, rhs);
+			else
+				armAsm->Sub(dst, lhs, rhs);
+			return true;
+		}
+
+		case 0x24: // AND
+		case 0x25: // OR
+		case 0x26: // XOR
+		case 0x27: // NOR
+		{
+			if (rd == 0)
+				return true;
+			const a64::Register& lhs = recCacheLoad(cache, rs);
+			const a64::Register& rhs = recCacheLoad(cache, rt);
+			const a64::Register& dst = recCacheDest(cache, rd, rs, rt);
+			if (funct == 0x24)
+				armAsm->And(dst, lhs, rhs);
+			else if (funct == 0x25)
+				armAsm->Orr(dst, lhs, rhs);
+			else if (funct == 0x26)
+				armAsm->Eor(dst, lhs, rhs);
+			else
+			{
+				armAsm->Orr(dst, lhs, rhs);
+				armAsm->Mvn(dst, dst);
+			}
+			return true;
+		}
+
+		case 0x2A: // SLT
+		case 0x2B: // SLTU
+		{
+			if (rd == 0)
+				return true;
+			const a64::Register& lhs = recCacheLoad(cache, rs);
+			const a64::Register& rhs = recCacheLoad(cache, rt);
+			const a64::Register& dst = recCacheDest(cache, rd, rs, rt);
+			armAsm->Cmp(lhs, rhs);
+			armAsm->Cset(dst, funct == 0x2A ? a64::lt : a64::lo);
+			return true;
+		}
+
+		default:
+			return false;
+	}
+}
+
+static bool recTranslateOpOptimized(u32 op, RecGprConstState& const_state, RecGprCacheState& cache)
+{
+	if (recTryTranslateCachedOp(op, cache))
+	{
+		if (!recConstApplyCachedEffects(op, const_state))
+			recConstApplyNativeEffects(op, const_state);
+		return true;
+	}
+
+	recCacheFlushAll(cache);
+	recCacheKillAll(cache);
+
+	if (recTryTranslateConstOp(op, const_state))
+	{
+		return true;
+	}
+
+	if (!recTranslateOp(op))
+	{
+		recConstKillAll(const_state);
+		return false;
+	}
+
+	recConstApplyNativeEffects(op, const_state);
+	return true;
+}
 
 // Translate a single guest instruction (cpuRegs.code) into the open block. Returns
 // true if a real generator handled it, false if it fell through to a placeholder.
@@ -737,6 +1931,119 @@ static bool recEmitBranch(u32 op, u32 branchpc)
 	}
 }
 
+static void recConstApplyBranchLink(u32 op, u32 branchpc, RecGprConstState& state)
+{
+	const u32 opcode = op >> 26;
+	const u32 rd = (op >> 11) & 0x1f;
+	const u32 rt = (op >> 16) & 0x1f;
+	const u32 funct = op & 0x3f;
+	const u32 linkpc = branchpc + 8;
+
+	if (opcode == 0x03) // JAL
+		recConstSetKnown(state, 31, linkpc);
+	else if (opcode == 0x00 && funct == 0x09) // JALR
+		recConstSetKnown(state, rd, linkpc);
+	else if (opcode == 0x01 && (rt == 0x10 || rt == 0x11)) // BLTZAL / BGEZAL
+		recConstSetKnown(state, 31, linkpc);
+}
+
+static bool recConstGetBranchSource(const RecGprConstState& state, u32 reg, bool link_before_read, u32 linkpc, u64* value)
+{
+	if (link_before_read && reg == 31)
+	{
+		*value = linkpc;
+		return true;
+	}
+
+	if (!state.known[reg])
+		return false;
+
+	*value = state.value[reg];
+	return true;
+}
+
+// Return a compile-time known next PC for branches whose condition is unconditional or
+// collapses through tracked constants. The branch generator still emits the normal PC
+// write; this is only used by the block tail to skip the generic dispatcher lookup.
+static bool recGetKnownBranchTarget(u32 op, u32 branchpc, const RecGprConstState& state, u32* target)
+{
+	const u32 opcode = op >> 26;
+	const u32 rs = (op >> 21) & 0x1f;
+	const u32 rt = (op >> 16) & 0x1f;
+
+	const u32 delaypc = branchpc + 4;
+	const u32 jtarget = ((op & 0x03ffffff) << 2) | (delaypc & 0xf0000000u);
+	const u32 btarget = delaypc + (static_cast<u32>(static_cast<s32>(static_cast<s16>(op))) << 2);
+	const u32 fallthrough = branchpc + 8;
+	const u32 linkpc = branchpc + 8;
+	u64 lhs = 0;
+	u64 rhs = 0;
+
+	switch (opcode)
+	{
+		case 0x02: // J
+		case 0x03: // JAL
+			*target = jtarget;
+			return true;
+
+		case 0x04: // BEQ
+			if (recConstGetBranchSource(state, rs, false, linkpc, &lhs) &&
+				recConstGetBranchSource(state, rt, false, linkpc, &rhs))
+			{
+				*target = (lhs == rhs) ? btarget : fallthrough;
+				return true;
+			}
+			return false;
+
+		case 0x05: // BNE
+			if (recConstGetBranchSource(state, rs, false, linkpc, &lhs) &&
+				recConstGetBranchSource(state, rt, false, linkpc, &rhs))
+			{
+				*target = (lhs != rhs) ? btarget : fallthrough;
+				return true;
+			}
+			return false;
+
+		case 0x06: // BLEZ
+			if (recConstGetBranchSource(state, rs, false, linkpc, &lhs))
+			{
+				*target = (static_cast<s64>(lhs) <= 0) ? btarget : fallthrough;
+				return true;
+			}
+			return false;
+
+		case 0x07: // BGTZ
+			if (recConstGetBranchSource(state, rs, false, linkpc, &lhs))
+			{
+				*target = (static_cast<s64>(lhs) > 0) ? btarget : fallthrough;
+				return true;
+			}
+			return false;
+
+		case 0x01: // REGIMM
+			switch (rt)
+			{
+				case 0x00: // BLTZ
+				case 0x10: // BLTZAL
+					if (!recConstGetBranchSource(state, rs, rt == 0x10, linkpc, &lhs))
+						return false;
+					*target = (static_cast<s64>(lhs) < 0) ? btarget : fallthrough;
+					return true;
+				case 0x01: // BGEZ
+				case 0x11: // BGEZAL
+					if (!recConstGetBranchSource(state, rs, rt == 0x11, linkpc, &lhs))
+						return false;
+					*target = (static_cast<s64>(lhs) >= 0) ? btarget : fallthrough;
+					return true;
+				default:
+					return false;
+			}
+
+		default:
+			return false;
+	}
+}
+
 // Is this opcode a control-flow op we have a generator for? (Used to detect the
 // block-terminating branch; everything else is either straight-line codegen or an
 // interpreter fallback.)
@@ -772,11 +2079,11 @@ static void recEmitInterpInline(u32 op)
 	armEmitCall(reinterpret_cast<const void*>(R5900::GetInstruction(op).interpret));
 }
 
-// Compile one straight-line or delay-slot instruction: real generator if we have
-// one, otherwise an inline interpreter call.
-static void recEmitOp(u32 op)
+// Compile one straight-line or delay-slot instruction: const-folded/native generator
+// if we have one, otherwise an inline interpreter call.
+static void recEmitOp(u32 op, RecGprConstState& const_state, RecGprCacheState& cache_state)
 {
-	if (!recTranslateOp(op))
+	if (!recTranslateOpOptimized(op, const_state, cache_state))
 		recEmitInterpInline(op);
 }
 
@@ -785,6 +2092,13 @@ static void recEmitWritePc(u32 pc)
 {
 	armAsm->Mov(RSCRATCHADDR.W(), pc);
 	armAsm->Str(RSCRATCHADDR.W(), a64::MemOperand(RESTATEPTR, EE_PC_OFFSET));
+}
+
+static void recEmitDispatchToKnownPc(u32 pc)
+{
+	armMoveAddressToReg(RXARG3, recPtrToBlock(pc));
+	armAsm->Ldr(RXARG3, a64::MemOperand(RXARG3));
+	armAsm->Br(RXARG3);
 }
 
 // EE cycle scaling — mirrors iR5900.cpp scaleblockcycles_calculation() so block
@@ -934,6 +2248,7 @@ static void recGenDispatchers()
 	DispatcherReg = armGetCurrentCodePointer();
 	armAsm->Bind(&dispatcher_reg);
 	armMoveAddressToReg(RESTATEPTR, &cpuRegs);
+	armLoadPtr(REVTLBPTR, &vtlb_private::vtlbdata.vmap);
 	armAsm->Ldr(RWARG1, a64::MemOperand(RESTATEPTR, EE_PC_OFFSET));    // x0 = pc (zero-extended)
 	armAsm->Lsr(RXARG2, RXARG1, 16);                                  // x1 = pc >> 16
 	armMoveAddressToReg(RXARG3, recLUT);                              // x2 = &recLUT[0]
@@ -961,6 +2276,7 @@ static void recGenDispatchers()
 	// recExecute's full context. Blocks therefore need no per-block prologue/epilogue.
 	EnterRecompiledCode = armGetCurrentCodePointer();
 	armMoveAddressToReg(RESTATEPTR, &cpuRegs);
+	armLoadPtr(REVTLBPTR, &vtlb_private::vtlbdata.vmap);
 	armAsm->B(&dispatcher_reg);
 
 	// UnmappedRecLUTPage: target for every word of an unmapped guest page.
@@ -981,6 +2297,18 @@ static void recGenDispatchers()
 	armAsm->B(&dispatcher_reg);
 
 	recPtr = armEndBlock();
+
+#if ARMSX2_ENABLE_EE_HOTPATH_DIAGNOSTICS
+	static int s_dispatcher_log_count = 0;
+	if (s_dispatcher_log_count++ < 2)
+	{
+		std::fprintf(stderr,
+			"@@EE_REC_DISPATCHERS@@ base=%p recPtr=%p dispatch=%p event=%p compile=%p enter=%p unmapped=%p discard=%p page_reset=%p\n",
+			SysMemory::GetEERec(), recPtr, DispatcherReg, DispatcherEvent, JITCompile,
+			EnterRecompiledCode, UnmappedRecLUTPage, DispatchBlockDiscard, DispatchPageReset);
+		std::fflush(stderr);
+	}
+#endif
 }
 
 // Emit a block's tail: charge the block's scaled guest cycles, then the inline event
@@ -989,7 +2317,7 @@ static void recGenDispatchers()
 // (DispatcherReg re-reads cpuRegs.pc and chains into the next block); otherwise fall
 // to DispatcherEvent to service events first. `add_cycles` is false for interpreter
 // single-step blocks, which charge their own cycles inside intExecuteOneInst.
-static void recEmitEventTestAndDispatch(u32 scaled_cycles, bool add_cycles)
+static void recEmitEventTestAndDispatch(u32 scaled_cycles, bool add_cycles, bool known_dispatch_pc, u32 dispatch_pc)
 {
 	armAsm->Ldr(RXARG1, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET)); // x0 = cpuRegs.cycle (u64)
 	if (add_cycles)
@@ -999,6 +2327,14 @@ static void recEmitEventTestAndDispatch(u32 scaled_cycles, bool add_cycles)
 	}
 	armAsm->Ldr(RXARG2, a64::MemOperand(RESTATEPTR, EE_NEXTEVENTCYCLE_OFFSET));
 	armAsm->Cmp(RXARG1, RXARG2);
+
+	if (known_dispatch_pc)
+	{
+		armEmitCondBranch(a64::pl, DispatcherEvent); // event due => service before continuing
+		recEmitDispatchToKnownPc(dispatch_pc);
+		return;
+	}
+
 	armEmitCondBranch(a64::mi, DispatcherReg); // N set => (cycle - nextEvent) < 0 => continue
 	armEmitJmp(DispatcherEvent);
 }
@@ -1020,23 +2356,115 @@ static void recEmitEventTestAndDispatch(u32 scaled_cycles, bool add_cycles)
 //     so the next dispatch resumes there.
 static void recRecompile(u32 startpc)
 {
+#if ARMSX2_ENABLE_EE_HOTPATH_DIAGNOSTICS
+	static int s_recompile_log_count = 0;
+	int recompile_log_index = -1;
+#endif
+	const u32 hw_startpc = recHWAddr(startpc);
+#if ARMSX2_ENABLE_EE_HOTPATH_DIAGNOSTICS
+	if (s_recompile_log_count < 16)
+	{
+		recompile_log_index = s_recompile_log_count++;
+		const u32 op = memRead32(startpc);
+		uptr* const slot = recPtrToBlock(startpc);
+		std::fprintf(stderr,
+			"@@EE_REC_RECOMPILE_BEGIN@@ idx=%d pc=0x%08x op=0x%08x recPtr=%p recEnd=%p slot=%p slot_before=%p cycle=%lld next=%lld\n",
+			recompile_log_index, startpc, op, recPtr, recPtrEnd, slot,
+			reinterpret_cast<void*>(*slot), static_cast<long long>(cpuRegs.cycle),
+			static_cast<long long>(cpuRegs.nextEventCycle));
+		std::fflush(stderr);
+	}
+#endif
+
 	// Reset the whole cache if the emit cursor has run within one block's worth of the
 	// constant-pool tail. Doing it here (before emitting) is safe: the dispatcher stubs
 	// regenerate byte-identically at the same addresses, so the JITCompile stub this
 	// call returns into is unchanged. Mirrors x86 recRecompile.
 	if (recPtr >= recPtrEnd - RECOMPILE_HEADROOM)
 		eeRecNeedsReset = true;
+
+	if (hw_startpc == VMManager::Internal::GetCurrentELFEntryPoint())
+	{
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+		std::fprintf(stderr,
+			"@@IOS_ELF_ENTRY_COMPILE@@ pc=0x%08x hw=0x%08x entry=0x%08x fastboot_in_progress=%d booted=%d\n",
+			startpc, hw_startpc, VMManager::Internal::GetCurrentELFEntryPoint(),
+			VMManager::Internal::IsFastBootInProgress() ? 1 : 0,
+			VMManager::Internal::HasBootedELF() ? 1 : 0);
+		std::fflush(stderr);
+#endif
+		VMManager::Internal::EntryPointCompilingOnCPUThread();
+	}
+
 	if (eeRecNeedsReset)
 		recResetRaw();
 
 	armSetAsmPtr(recPtr, recPtrEnd - recPtr, &s_const_pool);
 	u8* const entry = armStartBlock();
 
+	if (hw_startpc == EELOAD_START)
+	{
+		const u32 mainjump = memRead32(EELOAD_START + 0x9c);
+		if (mainjump >> 26 == 3) // JAL
+			g_eeloadMain = ((EELOAD_START + 0xa0) & 0xf0000000U) | ((mainjump << 2) & 0x0fffffffu);
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+		std::fprintf(stderr,
+			"@@IOS_FASTBOOT_HOOK@@ stage=eeload_start pc=0x%08x hw=0x%08x main=0x%08x fastboot_in_progress=%d\n",
+			startpc, hw_startpc, g_eeloadMain, VMManager::Internal::IsFastBootInProgress() ? 1 : 0);
+		std::fflush(stderr);
+#endif
+	}
+
+	if (g_eeloadMain && hw_startpc == recHWAddr(g_eeloadMain))
+	{
+		armEmitCall(reinterpret_cast<const void*>(eeloadHook));
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+		std::fprintf(stderr,
+			"@@IOS_FASTBOOT_HOOK@@ stage=eeload_main pc=0x%08x hw=0x%08x main=0x%08x fastboot_in_progress=%d\n",
+			startpc, hw_startpc, g_eeloadMain, VMManager::Internal::IsFastBootInProgress() ? 1 : 0);
+		std::fflush(stderr);
+#endif
+		if (VMManager::Internal::IsFastBootInProgress())
+		{
+			const u32 typeAexecjump = memRead32(EELOAD_START + 0x470);
+			const u32 typeBexecjump = memRead32(EELOAD_START + 0x5b0);
+			const u32 typeCexecjump = memRead32(EELOAD_START + 0x618);
+			const u32 typeDexecjump = memRead32(EELOAD_START + 0x600);
+			if ((typeBexecjump >> 26 == 3) || (typeCexecjump >> 26 == 3) || (typeDexecjump >> 26 == 3))
+				g_eeloadExec = EELOAD_START + 0x2b8;
+			else if (typeAexecjump >> 26 == 3)
+				g_eeloadExec = EELOAD_START + 0x170;
+			else
+				Console.WriteLn("recRecompile: Could not enable launch arguments for fast boot mode; unidentified BIOS version! Please report this to the PCSX2 developers.");
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+			std::fprintf(stderr,
+				"@@IOS_FASTBOOT_HOOK@@ stage=eeload_exec_detect pc=0x%08x exec=0x%08x typeA=0x%08x typeB=0x%08x typeC=0x%08x typeD=0x%08x\n",
+				startpc, g_eeloadExec, typeAexecjump, typeBexecjump, typeCexecjump, typeDexecjump);
+			std::fflush(stderr);
+#endif
+		}
+	}
+
+	if (g_eeloadExec && hw_startpc == recHWAddr(g_eeloadExec))
+	{
+		armEmitCall(reinterpret_cast<const void*>(eeloadHook2));
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+		std::fprintf(stderr,
+			"@@IOS_FASTBOOT_HOOK@@ stage=eeload_exec pc=0x%08x hw=0x%08x exec=0x%08x fastboot_in_progress=%d\n",
+			startpc, hw_startpc, g_eeloadExec, VMManager::Internal::IsFastBootInProgress() ? 1 : 0);
+		std::fflush(stderr);
+#endif
+	}
+
 	u32 pc = startpc;
 	u32 endpc = startpc;
 	u32 raw_cycles = 0;
 	u32 compiled = 0;
 	bool interp_step = false;
+	bool known_dispatch_pc = false;
+	u32 dispatch_pc = 0;
+	RecGprConstState const_state;
+	RecGprCacheState cache_state;
 
 	for (;;)
 	{
@@ -1047,6 +2475,8 @@ static void recRecompile(u32 startpc)
 		if (pc != startpc && (pc & ~__pagemask) != (startpc & ~__pagemask))
 		{
 			recEmitWritePc(pc);
+			known_dispatch_pc = true;
+			dispatch_pc = pc;
 			break;
 		}
 
@@ -1057,18 +2487,22 @@ static void recRecompile(u32 startpc)
 		{
 			// Terminate the block: branch generator + delay slot + dispatch tail.
 			raw_cycles += info.cycles;
+			known_dispatch_pc = recGetKnownBranchTarget(op, pc, const_state, &dispatch_pc);
+			recCacheFlushAll(cache_state);
+			recCacheKillAll(cache_state);
 			recEmitBranch(op, pc); // writes cpuRegs.pc (taken/fallthrough/link)
+			recConstApplyBranchLink(op, pc, const_state);
 
 			const u32 delay_op = memRead32(pc + 4);
 			raw_cycles += R5900::GetInstruction(delay_op).cycles;
-			recEmitOp(delay_op); // delay slot — must not write cpuRegs.pc
+			recEmitOp(delay_op, const_state, cache_state); // delay slot — must not write cpuRegs.pc
 			endpc = pc + 8;
 			break;
 		}
 
 		// Straight-line op we can codegen? (Generators decode from `op` directly;
 		// they never read cpuRegs.code, so nothing to set here at compile time.)
-		if (recTranslateOp(op))
+		if (recTranslateOpOptimized(op, const_state, cache_state))
 		{
 			raw_cycles += info.cycles;
 			pc += 4;
@@ -1076,6 +2510,8 @@ static void recRecompile(u32 startpc)
 			if (++compiled >= MAX_BLOCK_INSTS)
 			{
 				recEmitWritePc(pc); // resume at the next instruction
+				known_dispatch_pc = true;
+				dispatch_pc = pc;
 				break;
 			}
 			continue;
@@ -1096,10 +2532,16 @@ static void recRecompile(u32 startpc)
 
 		// End the block here; the next dispatch will single-step this op.
 		recEmitWritePc(pc);
+		known_dispatch_pc = true;
+		dispatch_pc = pc;
 		break;
 	}
 
-	recEmitEventTestAndDispatch(interp_step ? 0 : recScaleBlockCycles(raw_cycles), !interp_step);
+	recCacheFlushAll(cache_state);
+	recCacheKillAll(cache_state);
+
+	recEmitEventTestAndDispatch(interp_step ? 0 : recScaleBlockCycles(raw_cycles), !interp_step,
+		!interp_step && known_dispatch_pc, dispatch_pc);
 
 	// Apply SMC protection (must emit any checksum prologue into this block's stream before
 	// armEndBlock flushes it). `block_entry` is what subsequent dispatches jump to.
@@ -1124,10 +2566,34 @@ static void recRecompile(u32 startpc)
 	// Install the block so subsequent dispatches to startpc (and its address mirrors)
 	// branch straight into it instead of recompiling.
 	*recPtrToBlock(startpc) = reinterpret_cast<uptr>(block_entry);
+#if ARMSX2_ENABLE_EE_HOTPATH_DIAGNOSTICS
+	if (recompile_log_index >= 0)
+	{
+		std::fprintf(stderr,
+			"@@EE_REC_RECOMPILE_END@@ idx=%d pc=0x%08x endpc=0x%08x entry=%p block_entry=%p recPtr=%p compiled=%u interp=%d raw_cycles=%u slot_after=%p\n",
+			recompile_log_index, startpc, endpc, entry, block_entry, recPtr, compiled,
+			interp_step ? 1 : 0, raw_cycles, reinterpret_cast<void*>(*recPtrToBlock(startpc)));
+		std::fflush(stderr);
+		recDumpCodeBytes("block", block_entry, 32);
+	}
+#endif
 }
 
 static void recEventTest()
 {
+#if ARMSX2_ENABLE_EE_HOTPATH_DIAGNOSTICS
+	static int s_event_log_count = 0;
+	if (s_event_log_count < 16)
+	{
+		std::fprintf(stderr,
+			"@@EE_REC_EVENT@@ idx=%d pc=0x%08x cycle=%lld next=%lld state=%d exit_requested=%d\n",
+			s_event_log_count++, cpuRegs.pc, static_cast<long long>(cpuRegs.cycle),
+			static_cast<long long>(cpuRegs.nextEventCycle), static_cast<int>(VMManager::GetState()),
+			eeRecExitRequested ? 1 : 0);
+			std::fflush(stderr);
+	}
+#endif
+
 	_cpuEventTest_Shared();
 
 	if (eeRecExitRequested)
@@ -1146,15 +2612,50 @@ static void recExecute()
 	if (eeRecNeedsReset || !EnterRecompiledCode)
 		recResetRaw();
 
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+	DarwinMisc::LegacyEnsureExecutable();
+#endif
+
 	if (fastjmp_set(&s_jmp_buf) != 0)
 	{
 		eeRecExecuting = false;
+#if ARMSX2_ENABLE_EE_HOTPATH_DIAGNOSTICS
+		std::fprintf(stderr, "@@EE_REC_EXEC_EXIT@@ pc=0x%08x cycle=%lld next=%lld state=%d\n",
+			cpuRegs.pc, static_cast<long long>(cpuRegs.cycle),
+			static_cast<long long>(cpuRegs.nextEventCycle), static_cast<int>(VMManager::GetState()));
+		std::fflush(stderr);
+#endif
 		return;
 	}
+
+#if ARMSX2_ENABLE_EE_HOTPATH_DIAGNOSTICS
+	static int s_exec_log_count = 0;
+	if (s_exec_log_count++ < 4)
+	{
+		std::fprintf(stderr,
+			"@@EE_REC_EXEC_ENTER@@ pc=0x%08x enter=%p dispatch=%p compile=%p recPtr=%p recEnd=%p jitBase=0x%llx jitEnd=0x%llx rw_offset=%td state=%d cycle=%lld next=%lld\n",
+			cpuRegs.pc, EnterRecompiledCode, DispatcherReg, JITCompile, recPtr, recPtrEnd,
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+			static_cast<unsigned long long>(DarwinMisc::GetJitBase()),
+			static_cast<unsigned long long>(DarwinMisc::GetJitEnd()),
+			DarwinMisc::g_code_rw_offset,
+#else
+			0ull, 0ull, static_cast<ptrdiff_t>(0),
+#endif
+			static_cast<int>(VMManager::GetState()), static_cast<long long>(cpuRegs.cycle),
+			static_cast<long long>(cpuRegs.nextEventCycle));
+		std::fflush(stderr);
+		recDumpCodeBytes("exec_enter", EnterRecompiledCode, 32);
+	}
+#endif
 
 	eeRecExecuting = true;
 	reinterpret_cast<void (*)()>(reinterpret_cast<uintptr_t>(EnterRecompiledCode))();
 	// EnterRecompiledCode never returns; the only way out is the fastjmp above.
+#if ARMSX2_ENABLE_EE_HOTPATH_DIAGNOSTICS
+	std::fprintf(stderr, "@@EE_REC_EXEC_RETURN_UNEXPECTED@@ pc=0x%08x\n", cpuRegs.pc);
+	std::fflush(stderr);
+#endif
 }
 
 static void recSafeExitExecution()
