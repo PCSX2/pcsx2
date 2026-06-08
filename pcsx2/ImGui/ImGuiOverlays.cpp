@@ -385,12 +385,12 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 #if defined(__APPLE__) && !TARGET_OS_IPHONE
 				if (BuildVersion::GitTagHi != 0 || BuildVersion::GitTagMid != 0 || BuildVersion::GitTagLo != 0)
 				{
-					s_speed_line.append_format("{}ARMSX2-MacOS 2.0 | Core: {}.{}.{}",
+					s_speed_line.append_format("{}ARMSX2-MacOS 2.1 | Core: {}.{}.{}",
 						s_speed_line.empty() ? "" : " | ", BuildVersion::GitTagHi, BuildVersion::GitTagMid, BuildVersion::GitTagLo);
 				}
 				else
 				{
-					s_speed_line.append_format("{}ARMSX2-MacOS 2.0 | Core: {}",
+					s_speed_line.append_format("{}ARMSX2-MacOS 2.1 | Core: {}",
 						s_speed_line.empty() ? "" : " | ", BuildVersion::GitRev);
 				}
 #else
