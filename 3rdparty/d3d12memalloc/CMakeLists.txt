@@ -3,5 +3,7 @@ add_library(D3D12MemAlloc
 	src/D3D12MemAlloc.cpp
 )
 
+target_link_libraries(D3D12MemAlloc PRIVATE Microsoft::DirectX-Headers)
+
 target_include_directories(D3D12MemAlloc PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 disable_compiler_warnings_for_target(D3D12MemAlloc)

@@ -22,6 +22,9 @@ find_package(Freetype 2.10 REQUIRED) # 2.10 is the first with COLRv0 support, wh
 find_package(plutovg 1.1.0 REQUIRED)
 find_package(plutosvg 0.0.7 REQUIRED)
 find_package(ryml REQUIRED)
+if (WIN32)
+	find_package(DirectX-Headers 1.618.1 REQUIRED)
+endif()
 
 if(USE_VULKAN)
 	find_package(Shaderc REQUIRED)

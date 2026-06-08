@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <DepsRootDir Condition="'$(Platform)'=='x64'">$(SolutionDir)deps\</DepsRootDir>
+    <DepsRootDir Condition="'$(Platform)'=='ARM64'">$(SolutionDir)deps-arm64\</DepsRootDir>
+    <DepsBinDir>$(DepsRootDir)bin\</DepsBinDir>
+    <DepsLibDir>$(DepsRootDir)lib\</DepsLibDir>
+    <DepsIncludeDir>$(DepsRootDir)include\</DepsIncludeDir>
+  </PropertyGroup>
+</Project>
