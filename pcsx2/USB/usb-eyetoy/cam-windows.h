@@ -84,15 +84,15 @@ namespace usb_eyetoy
 
 		private:
 			wil::unique_couninitialize_call dshowCoInitialize{false};
-			ICaptureGraphBuilder2* pGraphBuilder;
-			IFilterGraph2* pGraph;
-			IMediaControl* pControl;
+			wil::com_ptr_nothrow<ICaptureGraphBuilder2> pGraphBuilder;
+			wil::com_ptr_nothrow<IFilterGraph2> pGraph;
+			wil::com_ptr_nothrow<IMediaControl> pControl;
 
-			IBaseFilter* sourcefilter;
-			IAMStreamConfig* pSourceConfig;
-			IBaseFilter* samplegrabberfilter;
-			ISampleGrabber* samplegrabber;
-			IBaseFilter* nullrenderer;
+			wil::com_ptr_nothrow<IBaseFilter> sourcefilter;
+			wil::com_ptr_nothrow<IAMStreamConfig> pSourceConfig;
+			wil::com_ptr_nothrow<IBaseFilter> samplegrabberfilter;
+			wil::com_ptr_nothrow<ISampleGrabber> samplegrabber;
+			wil::com_ptr_nothrow<IBaseFilter> nullrenderer;
 
 			class CallbackHandler : public ISampleGrabberCB
 			{
