@@ -590,6 +590,12 @@ u32 QtUtils::KeyEventToCode(const QKeyEvent* ev)
 			modifiers &= ~Qt::KeypadModifier;
 		}
 	}
+
+	// Undo Qt's swapping of Control and Command on macOS.
+	if (key == Qt::Key_Control)
+		key = Qt::Key_Meta;
+	else if (key == Qt::Key_Meta)
+		key = Qt::Key_Control;
 #endif
 
 	return static_cast<u32>(key) | (static_cast<u32>(modifiers) & static_cast<u32>(Qt::KeypadModifier));

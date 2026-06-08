@@ -45,6 +45,11 @@
         </item>
         <item>
          <property name="text">
+          <string>Accurate Force Full (Can Reduce Readbacks)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>Disable Readbacks (Synchronize GS Thread)</string>
          </property>
         </item>

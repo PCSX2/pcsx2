@@ -2862,6 +2862,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	};
 	static constexpr const char* s_hw_download[] = {
 		FSUI_NSTR("Accurate (Recommended)"),
+		FSUI_NSTR("Accurate Force Full (Can Reduce Readbacks)"),
 		FSUI_NSTR("Disable Readbacks (Synchronize GS Thread)"),
 		FSUI_NSTR("Unsynchronized (Non-Deterministic)"),
 		FSUI_NSTR("Disabled (Ignore Transfers)"),

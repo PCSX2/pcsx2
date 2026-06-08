@@ -65,6 +65,11 @@ bool Host::CopyTextToClipboard(const std::string_view text)
 	return false;
 }
 
+std::string Host::GetTextFromClipboard()
+{
+	return std::string();
+}
+
 void Host::BeginTextInput()
 {
 }
@@ -243,14 +248,6 @@ void Host::OnAchievementsRefreshed()
 }
 
 void Host::OnAchievementsHardcoreModeChanged(bool enabled)
-{
-}
-
-void Host::OnCoverDownloaderOpenRequested()
-{
-}
-
-void Host::OnCreateMemoryCardOpenRequested()
 {
 }
 
