@@ -349,6 +349,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionViewStatusBar, &QAction::toggled, this, &MainWindow::onViewStatusBarActionToggled);
 	connect(m_ui.actionViewGameList, &QAction::triggered, this, &MainWindow::onViewGameListActionTriggered);
 	connect(m_ui.actionViewGameGrid, &QAction::triggered, this, &MainWindow::onViewGameGridActionTriggered);
+	connect(m_ui.actionViewFullscreenGUI, &QAction::triggered, this, &MainWindow::onViewFullscreenGUIActionTriggered);
 	connect(m_ui.actionViewSystemDisplay, &QAction::triggered, this, &MainWindow::onViewSystemDisplayTriggered);
 	connect(m_ui.actionViewGameProperties, &QAction::triggered, this, &MainWindow::onViewGamePropertiesActionTriggered);
 	connect(m_ui.actionGitHubRepository, &QAction::triggered, this, &MainWindow::onGitHubRepositoryActionTriggered);
@@ -934,7 +935,10 @@ void MainWindow::restoreStateFromConfig()
 		{
 			const bool fullscreen = Host::GetBaseBoolSettingValue("UI", "MainWindowFullscreen");
 			if (fullscreen)
+			{
+				m_ui.actionViewFullscreenGUI->setChecked(true);
 				showFullScreen();
+			}
 		}
 	}
 }
@@ -1766,6 +1770,11 @@ void MainWindow::onViewLockToolbarActionToggled(bool checked)
 	Host::SetBaseBoolSettingValue("UI", "LockToolbar", checked);
 	Host::CommitBaseSettingChanges();
 	m_ui.toolBar->setMovable(!checked);
+}
+
+void MainWindow::onViewFullscreenGUIActionTriggered(bool checked) {
+	Host::SetBaseBoolSettingValue("UI", "MainWindowFullscreen", checked);
+	checked ? showFullScreen() : showNormal();
 }
 
 void MainWindow::onViewStatusBarActionToggled(bool checked)

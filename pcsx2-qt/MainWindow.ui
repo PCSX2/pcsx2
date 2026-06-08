@@ -166,6 +166,7 @@
     <addaction name="actionViewLockToolbar"/>
     <addaction name="actionViewStatusBar"/>
     <addaction name="actionViewStatusBarVerbose"/>
+    <addaction name="actionViewFullscreenGUI"/>
     <addaction name="separator"/>
     <addaction name="actionViewGameList"/>
     <addaction name="actionViewGameGrid"/>
@@ -1073,6 +1074,17 @@
    </property>
    <property name="text">
     <string>Edit &amp;Patches...</string>
+   </property>
+  </action>
+  <action name="actionViewFullscreenGUI">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Fullscreen (GUI)</string>
+   </property>
+   <property name="toolTip">
+    <string>Make the PCSX2 GUI Fullscreen</string>
    </property>
   </action>
  </widget>
