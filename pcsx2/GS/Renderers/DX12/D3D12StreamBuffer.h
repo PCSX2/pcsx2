@@ -8,7 +8,7 @@
 #include "common/RedtapeWilCom.h"
 #include "common/Assertions.h"
 
-#include <d3d12.h>
+#include <directx/d3d12.h>
 #include <deque>
 #include <utility>
 

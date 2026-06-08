@@ -1442,6 +1442,7 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 	m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS));
 	m_features.rov = options.ROVsSupported;
 
+	Console.WriteLnFmt("D3D12: Tight Alignment: {}", m_allocator->IsTightAlignmentSupported() ? "Supported" : "Not Supported");
 	return true;
 }
 

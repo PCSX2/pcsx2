@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="DepsDir.props" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros">
     <SSEString />
     <SSEString Condition="$(Configuration.Contains(AVX2))">-avx2</SSEString>
@@ -15,11 +18,6 @@
   <PropertyGroup>
     <OutDir>$(SolutionDir)build\lib-$(PlatformName)-$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\obj-$(ProjectName)-$(PlatformName)-$(Configuration)\</IntDir>
-    <DepsRootDir Condition="'$(Platform)'=='x64'">$(SolutionDir)deps\</DepsRootDir>
-    <DepsRootDir Condition="'$(Platform)'=='ARM64'">$(SolutionDir)deps-arm64\</DepsRootDir>
-    <DepsBinDir>$(DepsRootDir)bin\</DepsBinDir>
-    <DepsLibDir>$(DepsRootDir)lib\</DepsLibDir>
-    <DepsIncludeDir>$(DepsRootDir)include\</DepsIncludeDir>
   </PropertyGroup>
   <PropertyGroup>
     <LinkIncremental>false</LinkIncremental>
