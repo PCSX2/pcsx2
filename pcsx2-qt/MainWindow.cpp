@@ -476,10 +476,10 @@ void MainWindow::createRendererSwitchMenu()
 #elif defined(__APPLE__)
 		GSRendererType::Metal,
 #endif
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_OPENGL) && !defined(__APPLE__)
 		GSRendererType::OGL,
 #endif
-#ifdef ENABLE_VULKAN
+#if defined(ENABLE_VULKAN) && !defined(__APPLE__)
 		GSRendererType::VK,
 #endif
 		GSRendererType::SW,

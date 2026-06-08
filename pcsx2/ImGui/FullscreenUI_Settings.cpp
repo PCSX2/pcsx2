@@ -2709,10 +2709,10 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		FSUI_NSTR("Direct3D 11 (Legacy)"),
 		FSUI_NSTR("Direct3D 12"),
 #endif
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_OPENGL) && !defined(__APPLE__)
 		FSUI_NSTR("OpenGL"),
 #endif
-#ifdef ENABLE_VULKAN
+#if defined(ENABLE_VULKAN) && !defined(__APPLE__)
 		FSUI_NSTR("Vulkan"),
 #endif
 #ifdef __APPLE__
@@ -2727,10 +2727,10 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		"3", //GSRendererType::DX11,
 		"15", //GSRendererType::DX12,
 #endif
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_OPENGL) && !defined(__APPLE__)
 		"12", //GSRendererType::OGL,
 #endif
-#ifdef ENABLE_VULKAN
+#if defined(ENABLE_VULKAN) && !defined(__APPLE__)
 		"14", //GSRendererType::VK,
 #endif
 #ifdef __APPLE__
@@ -3307,10 +3307,12 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 				"EmuCore/GS", "HWDownloadMode", static_cast<int>(GSHardwareDownloadMode::Enabled), s_hw_download, std::size(s_hw_download),
 				true);
 		}
+#if !defined(__APPLE__)
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_EXPAND, "Allow Exclusive Fullscreen"),
 			FSUI_CSTR("Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout."), "EmuCore/GS",
 			"ExclusiveFullscreenControl", -1, s_generic_options, std::size(s_generic_options), true, -1,
 			(renderer == GSRendererType::Auto || renderer == GSRendererType::VK));
+#endif
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SHIELD_HALVED, "Override Texture Barriers"),
 			FSUI_CSTR("Forces texture barrier functionality to the specified value."), "EmuCore/GS", "OverrideTextureBarriers", -1,
 			s_generic_options, std::size(s_generic_options), true, -1);
@@ -3322,9 +3324,11 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			"EmuCore/GS", "DisableShaderCache", false);
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BAN, "Disable Vertex Shader Expand"), FSUI_CSTR("Falls back to the CPU for expanding sprites/lines."),
 			"EmuCore/GS", "DisableVertexShaderExpand", false);
+#if !defined(__APPLE__)
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ROAD_BARRIER, "ROV Barriers Vulkan"),
 			FSUI_CSTR("Forces extra barriers when using ROV with Vulkan to fix graphical issues present in some games and hardware configurations."),
 			"EmuCore/GS", "HWROVBarriersVK", false);
+#endif
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Texture Preloading"),
 			FSUI_CSTR(
 				"Uploads full textures to the GPU on use, rather than only the utilized regions. Can improve performance in some games."),

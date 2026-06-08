@@ -27,11 +27,11 @@ static constexpr RendererInfo s_renderer_info[] = {
 	//: Graphics backend/engine type. Leave as-is.
 	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 12"), GSRendererType::DX12},
 #endif
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_OPENGL) && !defined(__APPLE__)
 	//: Graphics backend/engine type. Leave as-is.
 	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "OpenGL"), GSRendererType::OGL},
 #endif
-#ifdef ENABLE_VULKAN
+#if defined(ENABLE_VULKAN) && !defined(__APPLE__)
 	//: Graphics backend/engine type. Leave as-is.
 	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Vulkan"), GSRendererType::VK},
 #endif
