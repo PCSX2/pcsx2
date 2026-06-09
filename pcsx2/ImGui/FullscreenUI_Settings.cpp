@@ -5665,6 +5665,7 @@ TRANSLATE_NOOP("FullscreenUI", "Full (Hash Cache)");
 TRANSLATE_NOOP("FullscreenUI", "Force Disabled");
 TRANSLATE_NOOP("FullscreenUI", "Force Enabled");
 TRANSLATE_NOOP("FullscreenUI", "Accurate (Recommended)");
+TRANSLATE_NOOP("FullscreenUI", "Accurate Force Full (Can Reduce Readbacks)");
 TRANSLATE_NOOP("FullscreenUI", "Disable Readbacks (Synchronize GS Thread)");
 TRANSLATE_NOOP("FullscreenUI", "Unsynchronized (Non-Deterministic)");
 TRANSLATE_NOOP("FullscreenUI", "Disabled (Ignore Transfers)");
