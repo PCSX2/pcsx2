@@ -23,7 +23,7 @@ sign_macho_files() {
 		fi
 		if file "$item" | grep -q "Mach-O"; then
 			codesign --remove-signature "$item" >/dev/null 2>&1 || true
-			codesign --force --sign "$SIGN_IDENTITY" --timestamp=none "$item"
+			codesign --force --sign "$SIGN_IDENTITY" "$item"
 		fi
 	done < <(find "$root" -type f -print0)
 }
@@ -148,12 +148,12 @@ if [[ "$SKIP_CODESIGN" != "1" ]]; then
 	if [[ -d "$HELPERS" ]]; then
 		sign_macho_files "$HELPERS"
 		while IFS= read -r -d '' helper_app; do
-			codesign --force --deep --sign "$SIGN_IDENTITY" --timestamp=none "$helper_app"
+			codesign --force --deep --sign "$SIGN_IDENTITY" "$helper_app"
 		done < <(find "$HELPERS" -type d -name "*.app" -print0)
 	fi
 
-	codesign --force --sign "$SIGN_IDENTITY" --timestamp=none "$MACOS/ARMSX2Mac"
-	codesign --force --deep --sign "$SIGN_IDENTITY" --timestamp=none "$APP_DIR"
+	codesign --force --sign "$SIGN_IDENTITY" "$MACOS/ARMSX2Mac"
+	codesign --force --deep --sign "$SIGN_IDENTITY" "$APP_DIR"
 	codesign --verify --deep --strict --verbose=2 "$APP_DIR"
 fi
 
