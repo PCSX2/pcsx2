@@ -157,4 +157,21 @@ jobs:
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}
           path: ci-artifacts
+  report-error:
+    runs-on: ubuntu-latest
+    needs: build_linux
+    if: always() && needs.build_linux.result == 'failure' && inputs.publish == true
 
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Push Discord Webhook
+        env:
+          OWNER: PCSX2
+          REPO: pcsx2
+          DISCORD_BUILD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          cd ./.github/workflows/scripts/releases/announce-release
+          npm ci
+          FLATHUB_FAILURE=1 node index.js

@@ -38,38 +38,53 @@ const octokit = new Octokit({
   }
 });
 
-if (process.env.TAG_VAL === undefined || process.env.TAG_VAL === "") {
-  console.log(`Not announcing - TAG_VAL not defined`);
-  process.exit(1);
+let embed;
+
+if (process.env.FLATHUB_FAILURE === undefined)
+{
+  if (process.env.TAG_VAL === undefined || process.env.TAG_VAL === "") {
+    console.log(`Not announcing - TAG_VAL not defined`);
+    process.exit(1);
+  }
+
+  const { data: releaseInfo } = await octokit.rest.repos.getReleaseByTag({
+    owner: owner,
+    repo: repo,
+    tag: process.env.TAG_VAL,
+  });
+
+  if (releaseInfo === undefined) {
+    console.log(`Not announcing - could not locate release with tag ${process.env.TAG_VAL}`);
+    process.exit(1);
+  }
+
+  if (!releaseInfo.prerelease) {
+    console.log("Not announcing - release was not a pre-release (aka a Nightly)");
+    process.exit(0);
+  }
+
+  // Publish Webhook
+  embed = new MessageEmbed()
+    .setColor('#FF8000')
+    .setTitle('New PCSX2 Nightly Build Available!')
+    .setDescription("To download the latest or previous builds, [visit the official downloads page](https://pcsx2.net/downloads/).")
+    .addFields(
+      { name: 'Version', value: releaseInfo.tag_name, inline: true },
+      { name: 'Installation Steps', value: '[See Here](https://pcsx2.net/docs/category/setup)', inline: true },
+      { name: 'Included Changes', value: releaseInfo.body, inline: false }
+    );
+  console.log(embed);
 }
+else
+{
+  // Flathub upload failure
 
-const { data: releaseInfo } = await octokit.rest.repos.getReleaseByTag({
-  owner: owner,
-  repo: repo,
-  tag: process.env.TAG_VAL,
-});
-
-if (releaseInfo === undefined) {
-  console.log(`Not announcing - could not locate release with tag ${process.env.TAG_VAL}`);
-  process.exit(1);
+  embed = new MessageEmbed()
+    .setColor('#FF0000')
+    .setTitle('PCSX2 Failed to Build/Upload to FlatHub')
+    .setDescription("Please check the latest Flathub build job to determine the root cause.")
+  console.log(embed);
 }
-
-if (!releaseInfo.prerelease) {
-  console.log("Not announcing - release was not a pre-release (aka a Nightly)");
-  process.exit(0);
-}
-
-// Publish Webhook
-const embed = new MessageEmbed()
-  .setColor('#FF8000')
-  .setTitle('New PCSX2 Nightly Build Available!')
-  .setDescription("To download the latest or previous builds, [visit the official downloads page](https://pcsx2.net/downloads/).")
-  .addFields(
-    { name: 'Version', value: releaseInfo.tag_name, inline: true },
-    { name: 'Installation Steps', value: '[See Here](https://pcsx2.net/docs/category/setup)', inline: true },
-    { name: 'Included Changes', value: releaseInfo.body, inline: false }
-  );
-console.log(embed);
 
 // Get all webhooks, simple comma-sep string
 const webhookUrls = process.env.DISCORD_BUILD_WEBHOOK.split(",");
