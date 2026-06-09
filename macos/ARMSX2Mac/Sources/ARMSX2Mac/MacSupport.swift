@@ -125,7 +125,11 @@ enum MacPaths {
 
     private static func uniqueURLs(_ urls: [URL]) -> [URL] {
         var seen = Set<String>()
-        return urls.filter { seen.insert($0.standardizedFileURL.path).inserted }
+        return urls.filter { seen.insert(canonicalPath($0).lowercased()).inserted }
+    }
+
+    static func canonicalPath(_ url: URL) -> String {
+        url.resolvingSymlinksInPath().standardizedFileURL.path
     }
 }
 
@@ -286,8 +290,9 @@ final class GameLibrary: ObservableObject {
     }
 
     func refresh(autoDownloadCovers: Bool = true) {
-        let roots = [MacPaths.directory("iso"), MacPaths.dataRoot] + externalGameFolders()
+        let roots = uniqueURLs([MacPaths.directory("iso"), MacPaths.dataRoot] + externalGameFolders())
         var seen = Set<String>()
+        var seenGames = Set<String>()
         var scanned: [GameEntry] = []
 
         for root in roots {
@@ -299,16 +304,22 @@ final class GameLibrary: ObservableObject {
 
             for url in files {
                 guard gameExtensions.contains(url.pathExtension.lowercased()) else { continue }
-                guard seen.insert(url.standardizedFileURL.path.lowercased()).inserted else { continue }
+                let canonicalPath = Self.canonicalGamePath(url)
+                guard seen.insert(canonicalPath.lowercased()).inserted else { continue }
 
                 let values = try? url.resourceValues(forKeys: [.fileSizeKey])
                 let size = UInt64(values?.fileSize ?? 0)
-                let source = root == MacPaths.directory("iso") || root == MacPaths.dataRoot ? "Library" : root.lastPathComponent
+                let rootPath = MacPaths.canonicalPath(root)
+                let source = rootPath == MacPaths.canonicalPath(MacPaths.directory("iso")) || rootPath == MacPaths.canonicalPath(MacPaths.dataRoot)
+                    ? "Library"
+                    : root.lastPathComponent
                 let fileTitle = url.deletingPathExtension().lastPathComponent
                 let serial = Self.detectSerial(in: url)
                     ?? metadata.serial(forTitle: fileTitle)
+                let gameIdentity = Self.gameIdentity(for: url, serial: serial, size: size)
+                guard seenGames.insert(gameIdentity).inserted else { continue }
                 scanned.append(GameEntry(
-                    id: url.standardizedFileURL.path,
+                    id: canonicalPath,
                     name: url.lastPathComponent,
                     url: url,
                     size: size,
@@ -357,8 +368,9 @@ final class GameLibrary: ObservableObject {
 
     func addExternalFolder(_ url: URL) {
         var folders = UserDefaults.standard.stringArray(forKey: "ARMSX2MacExternalGameFolders") ?? []
-        let path = url.standardizedFileURL.path
-        if !folders.contains(path) {
+        folders = uniqueStrings(folders)
+        let path = MacPaths.canonicalPath(url)
+        if !folders.map({ $0.lowercased() }).contains(path.lowercased()) {
             folders.append(path)
             UserDefaults.standard.set(folders, forKey: "ARMSX2MacExternalGameFolders")
         }
@@ -367,13 +379,14 @@ final class GameLibrary: ObservableObject {
 
     func removeExternalFolder(_ path: String) {
         var folders = UserDefaults.standard.stringArray(forKey: "ARMSX2MacExternalGameFolders") ?? []
-        folders.removeAll { $0 == path }
+        let canonical = MacPaths.canonicalPath(URL(fileURLWithPath: path, isDirectory: true)).lowercased()
+        folders.removeAll { MacPaths.canonicalPath(URL(fileURLWithPath: $0, isDirectory: true)).lowercased() == canonical }
         UserDefaults.standard.set(folders, forKey: "ARMSX2MacExternalGameFolders")
         refresh()
     }
 
     func externalGameFolders() -> [URL] {
-        (UserDefaults.standard.stringArray(forKey: "ARMSX2MacExternalGameFolders") ?? [])
+        uniqueStrings(UserDefaults.standard.stringArray(forKey: "ARMSX2MacExternalGameFolders") ?? [])
             .map { URL(fileURLWithPath: $0, isDirectory: true) }
     }
 
@@ -606,6 +619,26 @@ final class GameLibrary: ObservableObject {
     private func uniqueStrings(_ values: [String]) -> [String] {
         var seen = Set<String>()
         return values.filter { !$0.isEmpty && seen.insert($0).inserted }
+    }
+
+    private func uniqueURLs(_ urls: [URL]) -> [URL] {
+        var seen = Set<String>()
+        return urls.filter { seen.insert(MacPaths.canonicalPath($0).lowercased()).inserted }
+    }
+
+    private static func canonicalGamePath(_ url: URL) -> String {
+        MacPaths.canonicalPath(url)
+    }
+
+    private static func gameIdentity(for url: URL, serial: String?, size: UInt64) -> String {
+        if let serial {
+            return "serial:\(normalizedSerialForCover(serial)):\(size)"
+        }
+
+        let title = GameEntry.cleanedTitle(from: url.deletingPathExtension().lastPathComponent)
+            .lowercased()
+            .replacingOccurrences(of: #"[^a-z0-9]+"#, with: "", options: .regularExpression)
+        return "file:\(title):\(size)"
     }
 
     private static func isValidCoverFile(_ url: URL) -> Bool {
@@ -1110,6 +1143,7 @@ final class BIOSLibrary: ObservableObject {
 @MainActor
 final class MacSettingsStore: ObservableObject {
     private static let gameDBDefaultsVersion = 1
+    private static let backendBootstrapVersion = 1
 
     @Published var ini: INIFile
     @Published var secrets: INIFile
@@ -1195,6 +1229,7 @@ final class MacSettingsStore: ObservableObject {
         let secrets = INIFile(url: MacPaths.secretsFile)
         self.ini = ini
         self.secrets = secrets
+        Self.ensureBackendBootstrap(in: ini)
         Self.ensureGameDBDefaults(in: ini)
         coverTemplate = UserDefaults.standard.string(forKey: "ARMSX2MacCoverTemplate")
             ?? "https://raw.githubusercontent.com/xlenore/ps2-covers/main/covers/default/${serial}.jpg"
@@ -1292,6 +1327,27 @@ final class MacSettingsStore: ObservableObject {
         ini.set("EmuCore", "EnableGameFixes", true)
         ini.set("EmuCore/GS", "UserHacks", false)
         ini.set("ARMSX2Mac/UI", "GameDBDefaultsVersion", gameDBDefaultsVersion)
+    }
+
+    private static func ensureBackendBootstrap(in ini: INIFile) {
+        let appliedVersion = ini.int("ARMSX2Mac/UI", "BackendBootstrapVersion", default: 0)
+        guard appliedVersion < backendBootstrapVersion else { return }
+
+        ini.set("UI", "SetupWizardIncomplete", false)
+        ini.set("Folders", "Bios", "bios")
+        ini.set("Folders", "Covers", "covers")
+        ini.set("Folders", "GameSettings", "gamesettings")
+        ini.set("Folders", "Textures", "textures")
+        ini.set("Folders", "MemoryCards", "memcards")
+        ini.set("Folders", "Savestates", "savestates")
+
+        var recursivePaths = ini.stringList("GameList", "RecursivePaths")
+        let libraryPath = MacPaths.directory("iso").path
+        if !recursivePaths.map({ $0.lowercased() }).contains(libraryPath.lowercased()) {
+            recursivePaths.append(libraryPath)
+        }
+        ini.setList("GameList", "RecursivePaths", recursivePaths)
+        ini.set("ARMSX2Mac/UI", "BackendBootstrapVersion", backendBootstrapVersion)
     }
 
     func openTextureFolder() {
