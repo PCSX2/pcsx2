@@ -980,7 +980,7 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 		if (GSConfig.UserHacks_EstimateTextureRegion)
 			APPEND("ETR ");
 		if (GSConfig.UserHacks_DrawBuffering)
-			APPEND("DRWB");
+			APPEND("DRWB ");
 		if (GSConfig.HWSpinGPUForReadbacks)
 			APPEND("RBSG ");
 		if (GSConfig.HWSpinCPUForReadbacks)
