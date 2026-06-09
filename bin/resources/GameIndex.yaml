@@ -1972,6 +1972,8 @@ SCAJ-20110:
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
+    cpuSpriteRenderBW: 1 # Fixes water and other sprite errors.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SCAJ-20111:
   name: "Crash Bandicoot 5"
   region: "NTSC-Unk"
@@ -14434,6 +14436,8 @@ SLED-53977:
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
+    cpuSpriteRenderBW: 1 # Fixes water and other sprite errors.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLED-53980:
   name: "Urban Chaos - Riot Response [Demo]"
   region: "PAL-E"
@@ -25387,6 +25391,8 @@ SLES-53974:
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
+    cpuSpriteRenderBW: 1 # Fixes water and other sprite errors.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLES-53976:
   name: "Evolution GT"
   region: "PAL-M5"
@@ -39710,6 +39716,8 @@ SLPM-62490:
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
+    cpuSpriteRenderBW: 1 # Fixes water and other sprite errors.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-62491:
   name: "ロックマン パワーバトルファイターズ"
   name-sort: "ろっくまん ぱわーばとるふぁいたーず"
@@ -46536,6 +46544,8 @@ SLPM-65888:
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
     PCRTCOverscan: 1 # Fixes offscreen image.
+    cpuSpriteRenderBW: 1 # Fixes water and other sprite errors.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-65889:
   name: "家族計画～心の絆～"
   name-sort: "かぞくけいかく こころのきずな"
@@ -50313,6 +50323,8 @@ SLPM-66481:
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
+    cpuSpriteRenderBW: 1 # Fixes water and other sprite errors.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-66482:
   name: "ときめきメモリアル Girl's Side 2nd Kiss [リピート生産版]"
   name-sort: "ときめきめもりある がーるずさいど 2nd Kiss [りぴーとせいさんばん]"
@@ -70978,6 +70990,8 @@ SLUS-21207:
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
+    cpuSpriteRenderBW: 1 # Fixes water and other sprite errors.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21208:
   name: "Tony Hawk's American Wasteland"
   region: "NTSC-U"
@@ -76157,6 +76171,8 @@ SLUS-29157:
     halfPixelOffset: 2 # Sharpens world in far distances, aligns some bloom better.
     roundSprite: 1 # Fixes font artifacts.
     nativeScaling: 2 # Fixes background DOF blur in battles.
+    cpuSpriteRenderBW: 1 # Fixes water and other sprite errors.
+    cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-29159:
   name: "One Piece - Grand Battle [Demo]"
   region: "NTSC-U"
