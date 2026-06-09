@@ -10,6 +10,7 @@ APP_VERSION="${APP_VERSION:-2.1}"
 BUNDLE_ID="${BUNDLE_ID:-com.armsx2.macos.ui}"
 SWIFTPM_BUILD_DIR="${SWIFTPM_BUILD_DIR:-$BUILD_DIR/swiftpm}"
 IOS_ICON_SOURCE="${IOS_ICON_SOURCE:-$ROOT_DIR/../ARMSX2-iOS-pcsx2-2.7-core/app/src/main/assets/Assets.xcassets/AppIcon.appiconset/icon-1024.png}"
+MACOS_ICON_SOURCE="${MACOS_ICON_SOURCE:-$ROOT_DIR/pcsx2/Resources/ARMSX2.icns}"
 REQUIRE_BACKEND="${REQUIRE_BACKEND:-0}"
 SIGN_IDENTITY="${SIGN_IDENTITY:--}"
 SKIP_CODESIGN="${SKIP_CODESIGN:-0}"
@@ -69,6 +70,8 @@ if [[ -f "$IOS_ICON_SOURCE" ]]; then
 	sips -z 512 512 "$IOS_ICON_SOURCE" --out "$ICONSET/icon_512x512.png" >/dev/null
 	cp "$IOS_ICON_SOURCE" "$ICONSET/icon_512x512@2x.png"
 	iconutil -c icns "$ICONSET" -o "$RESOURCES/ARMSX2Mac.icns"
+elif [[ -f "$MACOS_ICON_SOURCE" ]]; then
+	cp "$MACOS_ICON_SOURCE" "$RESOURCES/ARMSX2Mac.icns"
 fi
 
 for resource in RedumpDatabase.yaml GameIndex.yaml; do
