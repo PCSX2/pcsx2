@@ -25,6 +25,10 @@ on:
         required: false
         type: boolean
         default: false
+      bundleMacOSUI:
+        required: false
+        type: boolean
+        default: false
       sign_and_notarize:
         required: false
         type: boolean
@@ -162,6 +166,16 @@ jobs:
       - name: Prepare Build Artifacts
         run: |
           mv build/pcsx2*/ARMSX2.app ARMSX2.app
+
+      - name: Build ARMSX2 macOS UI Bundle
+        if: ${{ inputs.bundleMacOSUI == true || inputs.bundleMacOSUI == 'true' }}
+        run: |
+          BACKEND_APP_SOURCE="$PWD/ARMSX2.app" \
+          REQUIRE_BACKEND=1 \
+          SKIP_CODESIGN=1 \
+          ./scripts/build-macos-ui.sh
+          rm -rf ARMSX2.app
+          mv "build-macos-ui/ARMSX2-MacOS 2.1.app" ARMSX2.app
 
       - name: Pull the Signing Keys and Notarization Credentials
         if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}

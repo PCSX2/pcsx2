@@ -15,6 +15,7 @@ jobs:
     with:
       jobName: "MacOS arm64 Build"
       artifactPrefixName: "ARMSX2-macos-Qt-arm64"
+      bundleMacOSUI: true
       # Notarization needs the APPLE_* repo secrets; it is skipped automatically
       # when they are absent (see the `env.SIGN_KEY` guard in macos_build.yml).
       sign_and_notarize: true
