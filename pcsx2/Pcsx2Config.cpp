@@ -755,7 +755,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	HWAccurateAlphaTest = false;
 	HWAA1 = false;
 	UseDebugBlend = false;
-	HWROV = true;
+	HWROV = false;
 	HWROVLogging = false;
 	HWROVBarriersVK = false;
 

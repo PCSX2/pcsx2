@@ -113,9 +113,9 @@
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QCheckBox" name="rov">
+         <widget class="QCheckBox" name="rovBarriersVK">
           <property name="text">
-           <string>Rasterizer Ordered View</string>
+           <string>ROV Barriers Vulkan</string>
           </property>
          </widget>
         </item>
@@ -130,13 +130,6 @@
          <widget class="QCheckBox" name="extendedUpscales">
           <property name="text">
            <string>Extended Upscaling Multipliers</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QCheckBox" name="rovBarriersVK">
-          <property name="text">
-           <string>ROV Barriers Vulkan</string>
           </property>
          </widget>
         </item>
