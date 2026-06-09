@@ -61,7 +61,7 @@ if [[ ! -d "$BACKEND_APP" ]]; then
 fi
 
 sign_macho_files "$BACKEND_APP/Contents"
-codesign --force --sign "$SIGN_IDENTITY" "$BACKEND_APP"
+codesign --force --deep --sign "$SIGN_IDENTITY" "$BACKEND_APP"
 codesign --verify --deep --strict --verbose=2 "$BACKEND_APP"
 
 BACKEND_APP_SOURCE="$BACKEND_APP" REQUIRE_BACKEND=1 "$ROOT_DIR/scripts/build-macos-ui.sh"
