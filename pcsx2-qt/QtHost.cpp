@@ -994,19 +994,19 @@ void EmuThread::updatePerformanceMetrics(bool force)
 			if (THREAD_VU1)
 			{
 				gs_stat = tr("Slot: %1 | %2 | EE: %3% | VU: %4% | GS: %5%")
-								.arg(slot)
-								.arg(gs_stat_str.c_str())
-								.arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
-								.arg(PerformanceMetrics::GetVUThreadUsage(), 0, 'f', 0)
-								.arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
+				              .arg(slot)
+				              .arg(gs_stat_str.c_str())
+				              .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
+				              .arg(PerformanceMetrics::GetVUThreadUsage(), 0, 'f', 0)
+				              .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
 			}
 			else
 			{
 				gs_stat = tr("Slot: %1 | %2 | EE: %3% | GS: %4%")
-								.arg(slot)
-								.arg(gs_stat_str.c_str())
-								.arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
-								.arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
+				              .arg(slot)
+				              .arg(gs_stat_str.c_str())
+				              .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
+				              .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
 			}
 		}
 
@@ -1108,16 +1108,13 @@ void EmuThread::updatePerformanceMetrics(bool force)
 
 		if (limiter_mode != m_last_limiter_mode || force)
 		{
-			QMetaObject::invokeMethod(g_main_window, [limiter_mode]() {
-				g_main_window->getStatusSpeedWidget()->setIcon(QIcon::fromTheme(
-					limiter_mode == LimiterModeType::Turbo			?	QStringLiteral("fast-forward-line")	:
-					limiter_mode == LimiterModeType::Slomo			?	QStringLiteral("slow-mo")			:
-					limiter_mode == LimiterModeType::Unlimited		?	QStringLiteral("speed-line")		:
-																		QStringLiteral("dashboard-line")));
-			}, Qt::QueuedConnection);
+			QMetaObject::invokeMethod(g_main_window, [limiter_mode]() { g_main_window->getStatusSpeedWidget()->setIcon(QIcon::fromTheme(
+																			limiter_mode == LimiterModeType::Turbo     ? QStringLiteral("fast-forward-line") :
+																			limiter_mode == LimiterModeType::Slomo     ? QStringLiteral("slow-mo") :
+																			limiter_mode == LimiterModeType::Unlimited ? QStringLiteral("speed-line") :
+																														 QStringLiteral("dashboard-line"))); }, Qt::QueuedConnection);
 			m_last_limiter_mode = limiter_mode;
 		}
-
 	}
 }
 

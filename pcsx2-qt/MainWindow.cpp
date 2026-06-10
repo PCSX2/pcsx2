@@ -316,7 +316,7 @@ void MainWindow::setupStatusBarWidgets()
 		SettingsInterface* game_layer = Host::Internal::GetGameSettingsLayer();
 		m_status_volume_per_game_action->setEnabled(game_layer != nullptr && QtHost::IsVMValid());
 		m_status_volume_per_game_action->setChecked(game_layer &&
-			(game_layer->ContainsValue("SPU2/Output", "StandardVolume") || game_layer->ContainsValue("SPU2/Output", "OutputMuted")));
+													(game_layer->ContainsValue("SPU2/Output", "StandardVolume") || game_layer->ContainsValue("SPU2/Output", "OutputMuted")));
 	});
 
 	connect(m_status_volume_per_game_action, &QAction::triggered, this, [this](bool checked) {
