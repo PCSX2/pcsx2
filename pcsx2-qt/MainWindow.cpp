@@ -3235,6 +3235,11 @@ void MainWindow::doSettings(const char* category /* = nullptr */)
 	if (!dlg->isVisible())
 	{
 		dlg->show();
+		if (dlg->screen() != screen())
+		{
+			const QRect screenGeo = screen()->availableGeometry();
+			dlg->move(screenGeo.center() - QPoint(dlg->frameGeometry().width() / 2, dlg->frameGeometry().height() / 2));
+		}
 	}
 	else
 	{
