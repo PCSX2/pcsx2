@@ -626,7 +626,8 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	// This extension allow FS depth to range from -1 to 1. So
 	// gl_position.z could range from [0, 1]
 	// Change depth convention
-	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+	if (GLAD_GL_ARB_clip_control)
+		glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
 	// ****************************************************************
 	// HW renderer shader
@@ -778,15 +779,14 @@ bool GSDeviceOGL::CheckFeatures()
 
 	if (!GLAD_GL_VERSION_4_3 && !GLAD_GL_ARB_copy_image && !GLAD_GL_EXT_copy_image && !GLAD_GL_NV_copy_image)
 	{
-		Host::ReportFormattedErrorAsync(
-			"GS", "GL_ARB_copy_image is not supported, copies will be slower.");
+		Host::AddOSDMessage(
+			"GL_ARB_copy_image is not supported, copies will be slower.", Host::OSD_ERROR_DURATION);
 	}
 
 	if (!GLAD_GL_VERSION_4_5 && !GLAD_GL_ARB_clip_control)
 	{
-		Host::ReportFormattedErrorAsync(
-			"GS", "GL_ARB_clip_control is not supported, this is required for the OpenGL renderer.");
-		return false;
+		Host::AddOSDMessage(
+			"GL_ARB_clip_control is not supported, depth will be less accurate.", Host::OSD_ERROR_DURATION);
 	}
 
 	if (!GLAD_GL_ARB_viewport_array)
@@ -1497,6 +1497,11 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
 	{
 		header += "#define DEPTH_FEEDBACK_SUPPORT 2\n"; // Depth as RT
 	}
+
+	if (GLAD_GL_ARB_clip_control)
+		header += "#define HAS_CLIP_CONTROL 1\n";
+	else
+		header += "#define HAS_CLIP_CONTROL 0\n";
 
 	// Allow to puts several shader in 1 files
 	switch (type)
@@ -3024,12 +3029,6 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	{
 		constexpr GLint clear_color = 1;
 		glClearBufferiv(GL_STENCIL, 0, &clear_color);
-	}
-	else if (draw_ds && !(config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
-			config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne))
-	{
-		const GLenum attachments[] = {GL_STENCIL_ATTACHMENT};
-		glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, std::size(attachments), attachments);
 	}
 
 	SendHWDraw(config, rt_feedbackloop_pass1 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass1 ? draw_ds_clone : nullptr, draw_ds,
