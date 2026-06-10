@@ -172,7 +172,7 @@ jobs:
         run: |
           BACKEND_APP_SOURCE="$PWD/ARMSX2.app" \
           REQUIRE_BACKEND=1 \
-          SKIP_CODESIGN=1 \
+          SIGN_IDENTITY=- \
           ./scripts/build-macos-ui.sh
           rm -rf ARMSX2.app
           mv "build-macos-ui/ARMSX2-MacOS 2.1.app" ARMSX2.app
@@ -183,17 +183,38 @@ jobs:
           echo "${{ secrets.APPLE_SIGN_P12_B64 }}" | base64 -d > cert.p12
           echo "${{ secrets.APPLE_APPSTORECONNECT_CFG }}" | base64 -d > key.json
 
+      - name: Configure Signing Entitlements
+        if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}
+        run: |
+          cat > rcodesign.toml <<'TOML'
+          [default.sign]
+          code_signature_flags = ["runtime"]
+          entitlements_xml_file = "pcsx2/Resources/PCSX2.entitlements"
+
+          [default.sign.path."Contents/MacOS/ARMSX2Mac"]
+          code_signature_flags = ["runtime"]
+          entitlements_xml_file = "pcsx2/Resources/PCSX2.entitlements"
+
+          [default.sign.path."Contents/Helpers/ARMSX2.app"]
+          code_signature_flags = ["runtime"]
+          entitlements_xml_file = "pcsx2/Resources/PCSX2.entitlements"
+
+          [default.sign.path."Contents/Helpers/ARMSX2.app/Contents/MacOS/ARMSX2"]
+          code_signature_flags = ["runtime"]
+          entitlements_xml_file = "pcsx2/Resources/PCSX2.entitlements"
+          TOML
+          cat rcodesign.toml
+
       - name: Sign the Application (Apple notarization)
         if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}
         uses: indygreg/apple-code-sign-action@44d0985b7f4363198e80b6fea63ac3e9dd3e9957
         with:
           input_path: 'ARMSX2.app'
+          config_file: rcodesign.toml
           p12_file: cert.p12
           p12_password: "${{ secrets.APPLE_SIGN_P12_PASS }}"
           sign_args: |
             --for-notarization
-            --code-signature-flags=runtime
-            --entitlements-xml-file=pcsx2/Resources/PCSX2.entitlements
           notarize: true
           # max_wait_seconds is only present on my fork located at F0bes/apple-code-sign-action@demo4
           # If we are timing out we should switch to the newest upstream (if I get it upstreamed)
@@ -210,6 +231,33 @@ jobs:
       - name: Ad-hoc Sign the Application
         if: ${{ !(inputs.sign_and_notarize == true && env.SIGN_KEY) }}
         run: codesign --force --deep --entitlements pcsx2/Resources/PCSX2.entitlements --sign - ARMSX2.app
+
+      - name: Verify JIT Entitlements
+        run: |
+          verify_entitlement() {
+            local bundle="$1"
+            local key="$2"
+            local tmp
+            tmp="$(mktemp)"
+            if ! codesign --display --entitlements :- "$bundle" > "$tmp" 2>/tmp/codesign-entitlements.err; then
+              cat /tmp/codesign-entitlements.err >&2
+              rm -f "$tmp"
+              exit 1
+            fi
+            if ! /usr/libexec/PlistBuddy -c "Print :$key" "$tmp" | grep -q '^true$'; then
+              echo "error: $bundle is missing entitlement $key" >&2
+              cat "$tmp" >&2
+              rm -f "$tmp"
+              exit 1
+            fi
+            rm -f "$tmp"
+          }
+
+          verify_entitlement "ARMSX2.app" "com.apple.security.cs.allow-jit"
+          verify_entitlement "ARMSX2.app" "com.apple.security.cs.allow-unsigned-executable-memory"
+          verify_entitlement "ARMSX2.app/Contents/Helpers/ARMSX2.app" "com.apple.security.cs.allow-jit"
+          verify_entitlement "ARMSX2.app/Contents/Helpers/ARMSX2.app" "com.apple.security.cs.allow-unsigned-executable-memory"
+          codesign --verify --deep --strict --verbose=2 ARMSX2.app
 
       - name: Zip Build Artifacts
         run: |
