@@ -446,11 +446,12 @@ void GameListWidget::setCustomBackground()
 	m_background_opacity = Host::GetBaseFloatSettingValue("UI", "GameListBackgroundOpacity", 100.0f);
 
 	// Selected Custom background is valid, connect the signals and start animation in gamelist
-	connect(m_background_movie, &QMovie::frameChanged, this, &GameListWidget::processBackgroundFrames, Qt::UniqueConnection);
+	connect(m_background_movie, &QMovie::frameChanged, this, &GameListWidget::processBackgroundFrames);
 	m_ui.stack->setAutoFillBackground(false);
 
 	m_table_view->viewport()->setAutoFillBackground(false);
 	m_list_view->viewport()->setAutoFillBackground(false);
+	m_background_movie->start();
 	updateCustomBackgroundState(true);
 	m_table_view->setAlternatingRowColors(false);
 	processBackgroundFrames();
@@ -797,6 +798,7 @@ void GameListWidget::showEvent(QShowEvent* event)
 {
 	QWidget::showEvent(event);
 	updateCustomBackgroundState();
+	processBackgroundFrames();
 }
 
 void GameListWidget::hideEvent(QHideEvent* event)
@@ -833,11 +835,8 @@ bool GameListWidget::eventFilter(QObject* watched, QEvent* event)
 		if (!m_background_pixmap.isNull())
 		{
 			QPainter painter(m_ui.stack);
-			const auto* paint_event = static_cast<QPaintEvent*>(event);
-			painter.save();
-			painter.setClipRect(paint_event->rect());
-			painter.drawTiledPixmap(m_ui.stack->rect(), m_background_pixmap);
-			painter.restore();
+			painter.setClipRect(static_cast<QPaintEvent*>(event)->rect());
+			painter.drawPixmap(0, 0, m_background_pixmap);
 			return true;
 		}
 	}
