@@ -183,39 +183,17 @@ jobs:
           echo "${{ secrets.APPLE_SIGN_P12_B64 }}" | base64 -d > cert.p12
           echo "${{ secrets.APPLE_APPSTORECONNECT_CFG }}" | base64 -d > key.json
 
-      - name: Configure Signing Entitlements
-        if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}
-        run: |
-          cat > rcodesign.toml <<'TOML'
-          [default.sign]
-          code_signature_flags = ["runtime"]
-          entitlements_xml_file = "pcsx2/Resources/PCSX2.entitlements"
-
-          [default.sign.path."Contents/MacOS/ARMSX2Mac"]
-          code_signature_flags = ["runtime"]
-          entitlements_xml_file = "pcsx2/Resources/PCSX2.entitlements"
-
-          [default.sign.path."Contents/Helpers/ARMSX2.app"]
-          code_signature_flags = ["runtime"]
-          entitlements_xml_file = "pcsx2/Resources/PCSX2.entitlements"
-
-          [default.sign.path."Contents/Helpers/ARMSX2.app/Contents/MacOS/ARMSX2"]
-          code_signature_flags = ["runtime"]
-          entitlements_xml_file = "pcsx2/Resources/PCSX2.entitlements"
-          TOML
-          cat rcodesign.toml
-
       - name: Sign the Application (Apple notarization)
         if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}
         uses: indygreg/apple-code-sign-action@44d0985b7f4363198e80b6fea63ac3e9dd3e9957
         with:
           input_path: 'ARMSX2.app'
-          config_file: rcodesign.toml
-          rcodesign_version: '0.29.0'
           p12_file: cert.p12
           p12_password: "${{ secrets.APPLE_SIGN_P12_PASS }}"
           sign_args: |
             --for-notarization
+            --code-signature-flags=runtime
+            --entitlements-xml-file=pcsx2/Resources/PCSX2.entitlements
           notarize: true
           # max_wait_seconds is only present on my fork located at F0bes/apple-code-sign-action@demo4
           # If we are timing out we should switch to the newest upstream (if I get it upstreamed)
