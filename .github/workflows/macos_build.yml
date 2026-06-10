@@ -211,6 +211,7 @@ jobs:
         with:
           input_path: 'ARMSX2.app'
           config_file: rcodesign.toml
+          rcodesign_version: '0.29.0'
           p12_file: cert.p12
           p12_password: "${{ secrets.APPLE_SIGN_P12_PASS }}"
           sign_args: |
