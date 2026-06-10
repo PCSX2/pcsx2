@@ -22,7 +22,10 @@
 #include <QtCore/QSortFilterProxyModel>
 #include <QtCore/QDir>
 #include <QtCore/QString>
+#include <QtGui/QColor>
+#include <QtGui/QImage>
 #include <QtGui/QPainter>
+#include <QtGui/QPalette>
 #include <QtGui/QPixmap>
 #include <QtGui/QPixmapCache>
 #include <QtGui/QWheelEvent>
@@ -391,6 +394,9 @@ void GameListWidget::setCustomBackground()
 		m_table_view->viewport()->setAutoFillBackground(true);
 		m_list_view->viewport()->setAutoFillBackground(true);
 
+		m_ui.stack->setPalette(QPalette());
+		m_background_text_color = QColor();
+
 		m_ui.stack->update();
 		m_table_view->setAlternatingRowColors(true);
 		return;
@@ -447,6 +453,8 @@ void GameListWidget::processBackgroundFrames()
 			return;
 
 		QPixmap pm = m_background_movie->currentPixmap();
+		updateBackgroundTextColor(pm);
+
 		const qreal dpr = devicePixelRatioF();
 
 		QtUtils::resizeAndScalePixmap(&pm, widget_width, widget_height, dpr, m_background_scaling, m_background_opacity);
@@ -454,6 +462,28 @@ void GameListWidget::processBackgroundFrames()
 		m_background_pixmap = std::move(pm);
 		m_ui.stack->update();
 	}
+}
+
+void GameListWidget::updateBackgroundTextColor(const QPixmap& frame)
+{
+	if (frame.isNull())
+		return;
+
+	const QImage sampled = frame.scaled(32, 32, Qt::IgnoreAspectRatio, Qt::FastTransformation).toImage();
+	const QColor average = sampled.scaled(1, 1, Qt::IgnoreAspectRatio, Qt::SmoothTransformation).pixelColor(0, 0);
+	const QColor base = qApp->palette().color(QPalette::Base);
+	const qreal coverage = average.alphaF() * std::clamp(m_background_opacity / 100.0f, 0.0f, 1.0f);
+	const qreal brightness = qGray(average.rgb()) * coverage + qGray(base.rgb()) * (1.0 - coverage);
+	const QColor text_color = (brightness > 127.5) ? Qt::black : Qt::white;
+
+	if (m_background_text_color == text_color)
+		return;
+	m_background_text_color = text_color;
+
+	QPalette palette;
+	palette.setColor(QPalette::Text, text_color);
+	palette.setColor(QPalette::WindowText, text_color);
+	m_ui.stack->setPalette(palette);
 }
 
 bool GameListWidget::isShowingGameList() const
@@ -499,6 +529,7 @@ void GameListWidget::cancelRefresh()
 void GameListWidget::reloadThemeSpecificImages()
 {
 	m_model->reloadThemeSpecificImages();
+	processBackgroundFrames();
 }
 
 void GameListWidget::onRefreshProgress(const QString& status, int current, int total)
