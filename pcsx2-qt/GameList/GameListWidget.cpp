@@ -194,6 +194,29 @@ namespace
 
 				painter->drawPixmap(rect.topLeft() + icon_top_left, highlighted_icon);
 			}
+			// Recolor the icon based on the custom background color
+			else if (index.column() == GameListModel::Column_Type)
+			{
+				// Fetch pixmap from cache or construct a new one.
+				const QColor color = option.palette.color(QPalette::Text);
+				const QString key = QString::fromStdString(fmt::format("type-{:016X}-{:08X}", icon.cacheKey(), color.rgba()));
+
+				QPixmap tinted_icon;
+				if (!QPixmapCache::find(key, &tinted_icon))
+				{
+					QImage img = icon.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
+					QPainter tinted_painter(&img);
+					tinted_painter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
+					tinted_painter.fillRect(0, 0, img.width(), img.height(), color);
+					tinted_painter.end();
+
+					tinted_icon = QPixmap(QPixmap::fromImage(img));
+					QPixmapCache::insert(key, tinted_icon);
+				}
+
+				painter->drawPixmap(rect.topLeft() + icon_top_left, tinted_icon);
+			}
 			else
 			{
 				painter->drawPixmap(rect.topLeft() + icon_top_left, icon);
