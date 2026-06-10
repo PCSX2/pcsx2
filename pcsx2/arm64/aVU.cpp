@@ -1639,9 +1639,15 @@ static void mVUGenerateWaitMTVU(microVU& mVU)
 	constexpr int kVecSave = 25; // v0..v24 (VF pool + PQ)
 	constexpr int gprBytes = kGprSave * 8;
 	constexpr int vecBytes = kVecSave * 16;
-	constexpr int frame = gprBytes + ((vecBytes + 15) & ~15); // 16-aligned
+	constexpr int frame = gprBytes + ((vecBytes + 15) & ~15); // 16-aligned, 0x210
+	// 16 extra bytes at [sp+frame] to save/restore lr (x30) around the C call.
+	// blr clobbers x30 with the instruction after the call site; without this save,
+	// ret returns to the restore sequence itself instead of the VU block that called
+	// the thunk, creating a loop that advances sp by frame each iteration until it
+	// reaches the thread stack guard (~41 iterations) and SIGBUSes.
+	constexpr int frameTotal = frame + 16;
 
-	armAsm->Sub(a64::sp, a64::sp, frame);
+	armAsm->Sub(a64::sp, a64::sp, frameTotal);
 	for (int i = 0; i < kGprSave; i += 2)
 		armAsm->Stp(armXRegister(i), armXRegister(i + 1), a64::MemOperand(a64::sp, i * 8));
 	int voff = gprBytes;
@@ -1649,7 +1655,9 @@ static void mVUGenerateWaitMTVU(microVU& mVU)
 		armAsm->Stp(armQRegister(i), armQRegister(i + 1), a64::MemOperand(a64::sp, voff));
 	armAsm->Str(armQRegister(kVecSave - 1), a64::MemOperand(a64::sp, voff));
 
+	armAsm->Str(a64::x30, a64::MemOperand(a64::sp, frame));
 	armEmitCall(reinterpret_cast<const void*>(mVUwaitMTVU));
+	armAsm->Ldr(a64::x30, a64::MemOperand(a64::sp, frame));
 
 	voff = gprBytes;
 	for (int i = 0; i < kVecSave - 1; i += 2, voff += 32)
@@ -1657,7 +1665,7 @@ static void mVUGenerateWaitMTVU(microVU& mVU)
 	armAsm->Ldr(armQRegister(kVecSave - 1), a64::MemOperand(a64::sp, voff));
 	for (int i = 0; i < kGprSave; i += 2)
 		armAsm->Ldp(armXRegister(i), armXRegister(i + 1), a64::MemOperand(a64::sp, i * 8));
-	armAsm->Add(a64::sp, a64::sp, frame);
+	armAsm->Add(a64::sp, a64::sp, frameTotal);
 	armAsm->Ret();
 }
 
