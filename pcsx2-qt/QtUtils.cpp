@@ -156,7 +156,7 @@ namespace QtUtils
 
 		if (pm->width() == dpr_expected_width &&
 			pm->height() == dpr_expected_height &&
-			pm->devicePixelRatio() == dpr &&
+			qFuzzyCompare(pm->devicePixelRatio(), dpr) &&
 			opacity == 100.0f)
 		{
 			switch (scaling_mode)
@@ -249,7 +249,6 @@ namespace QtUtils
 					QPixmap tileSource = pm->scaled(tileWidth, tileHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 					tileSource.setDevicePixelRatio(dpr);
 					QBrush tileBrush(tileSource);
-					tileBrush.setTextureImage(tileSource.toImage());
 					painter.fillRect(painterRect, tileBrush);
 				}
 				break;
