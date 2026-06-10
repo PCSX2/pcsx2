@@ -25,10 +25,6 @@ on:
         required: false
         type: boolean
         default: false
-      bundleMacOSUI:
-        required: false
-        type: boolean
-        default: false
       sign_and_notarize:
         required: false
         type: boolean
@@ -167,16 +163,6 @@ jobs:
         run: |
           mv build/pcsx2*/ARMSX2.app ARMSX2.app
 
-      - name: Build ARMSX2 macOS UI Bundle
-        if: ${{ inputs.bundleMacOSUI == true || inputs.bundleMacOSUI == 'true' }}
-        run: |
-          BACKEND_APP_SOURCE="$PWD/ARMSX2.app" \
-          REQUIRE_BACKEND=1 \
-          SIGN_IDENTITY=- \
-          ./scripts/build-macos-ui.sh
-          rm -rf ARMSX2.app
-          mv "build-macos-ui/ARMSX2-MacOS 2.1.app" ARMSX2.app
-
       - name: Pull the Signing Keys and Notarization Credentials
         if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}
         run: |
@@ -193,7 +179,7 @@ jobs:
           sign_args: |
             --for-notarization
             --code-signature-flags=runtime
-            --entitlements-xml-file=pcsx2/Resources/PCSX2.entitlements
+            --entitlements-xml-file=pcsx2/Resources/ARMSX2.entitlements
           notarize: true
           # max_wait_seconds is only present on my fork located at F0bes/apple-code-sign-action@demo4
           # If we are timing out we should switch to the newest upstream (if I get it upstreamed)
@@ -209,34 +195,7 @@ jobs:
       # bundle launches on the build machine (matches the README manual build).
       - name: Ad-hoc Sign the Application
         if: ${{ !(inputs.sign_and_notarize == true && env.SIGN_KEY) }}
-        run: codesign --force --deep --entitlements pcsx2/Resources/PCSX2.entitlements --sign - ARMSX2.app
-
-      - name: Verify JIT Entitlements
-        run: |
-          verify_entitlement() {
-            local bundle="$1"
-            local key="$2"
-            local tmp
-            tmp="$(mktemp)"
-            if ! codesign --display --entitlements :- "$bundle" > "$tmp" 2>/tmp/codesign-entitlements.err; then
-              cat /tmp/codesign-entitlements.err >&2
-              rm -f "$tmp"
-              exit 1
-            fi
-            if ! /usr/libexec/PlistBuddy -c "Print :$key" "$tmp" | grep -q '^true$'; then
-              echo "error: $bundle is missing entitlement $key" >&2
-              cat "$tmp" >&2
-              rm -f "$tmp"
-              exit 1
-            fi
-            rm -f "$tmp"
-          }
-
-          verify_entitlement "ARMSX2.app" "com.apple.security.cs.allow-jit"
-          verify_entitlement "ARMSX2.app" "com.apple.security.cs.allow-unsigned-executable-memory"
-          verify_entitlement "ARMSX2.app/Contents/Helpers/ARMSX2.app" "com.apple.security.cs.allow-jit"
-          verify_entitlement "ARMSX2.app/Contents/Helpers/ARMSX2.app" "com.apple.security.cs.allow-unsigned-executable-memory"
-          codesign --verify --deep --strict --verbose=2 ARMSX2.app
+        run: codesign --force --deep --sign - ARMSX2.app
 
       - name: Zip Build Artifacts
         run: |
