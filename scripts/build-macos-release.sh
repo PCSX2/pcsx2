@@ -8,6 +8,7 @@ BACKEND_BUILD_DIR="${BACKEND_BUILD_DIR:-$ROOT_DIR/build-release}"
 BUILD_FFMPEG="${BUILD_FFMPEG:-0}"
 USE_LINKED_FFMPEG="${USE_LINKED_FFMPEG:-OFF}"
 SIGN_IDENTITY="${SIGN_IDENTITY:--}"
+ENTITLEMENTS_FILE="${ENTITLEMENTS_FILE:-$ROOT_DIR/pcsx2/Resources/PCSX2.entitlements}"
 NPROCS="$(sysctl -n hw.ncpu)"
 
 sign_macho_files() {
@@ -61,7 +62,11 @@ if [[ ! -d "$BACKEND_APP" ]]; then
 fi
 
 sign_macho_files "$BACKEND_APP/Contents"
-codesign --force --deep --sign "$SIGN_IDENTITY" "$BACKEND_APP"
+if [[ -f "$ENTITLEMENTS_FILE" ]]; then
+	codesign --force --deep --entitlements "$ENTITLEMENTS_FILE" --sign "$SIGN_IDENTITY" "$BACKEND_APP"
+else
+	codesign --force --deep --sign "$SIGN_IDENTITY" "$BACKEND_APP"
+fi
 codesign --verify --deep --strict --verbose=2 "$BACKEND_APP"
 
 BACKEND_APP_SOURCE="$BACKEND_APP" REQUIRE_BACKEND=1 "$ROOT_DIR/scripts/build-macos-ui.sh"

@@ -11,6 +11,7 @@ BUNDLE_ID="${BUNDLE_ID:-com.armsx2.macos.ui}"
 SWIFTPM_BUILD_DIR="${SWIFTPM_BUILD_DIR:-$BUILD_DIR/swiftpm}"
 IOS_ICON_SOURCE="${IOS_ICON_SOURCE:-$ROOT_DIR/../ARMSX2-iOS-pcsx2-2.7-core/app/src/main/assets/Assets.xcassets/AppIcon.appiconset/icon-1024.png}"
 MACOS_ICON_SOURCE="${MACOS_ICON_SOURCE:-$ROOT_DIR/pcsx2/Resources/ARMSX2.icns}"
+ENTITLEMENTS_FILE="${ENTITLEMENTS_FILE:-$ROOT_DIR/pcsx2/Resources/PCSX2.entitlements}"
 REQUIRE_BACKEND="${REQUIRE_BACKEND:-0}"
 SIGN_IDENTITY="${SIGN_IDENTITY:--}"
 SKIP_CODESIGN="${SKIP_CODESIGN:-0}"
@@ -151,12 +152,21 @@ if [[ "$SKIP_CODESIGN" != "1" ]]; then
 	if [[ -d "$HELPERS" ]]; then
 		sign_macho_files "$HELPERS"
 		while IFS= read -r -d '' helper_app; do
-			codesign --force --deep --sign "$SIGN_IDENTITY" "$helper_app"
+			if [[ -f "$ENTITLEMENTS_FILE" ]]; then
+				codesign --force --deep --entitlements "$ENTITLEMENTS_FILE" --sign "$SIGN_IDENTITY" "$helper_app"
+			else
+				codesign --force --deep --sign "$SIGN_IDENTITY" "$helper_app"
+			fi
 		done < <(find "$HELPERS" -type d -name "*.app" -print0)
 	fi
 
-	codesign --force --sign "$SIGN_IDENTITY" "$MACOS/ARMSX2Mac"
-	codesign --force --deep --sign "$SIGN_IDENTITY" "$APP_DIR"
+	if [[ -f "$ENTITLEMENTS_FILE" ]]; then
+		codesign --force --entitlements "$ENTITLEMENTS_FILE" --sign "$SIGN_IDENTITY" "$MACOS/ARMSX2Mac"
+		codesign --force --deep --entitlements "$ENTITLEMENTS_FILE" --sign "$SIGN_IDENTITY" "$APP_DIR"
+	else
+		codesign --force --sign "$SIGN_IDENTITY" "$MACOS/ARMSX2Mac"
+		codesign --force --deep --sign "$SIGN_IDENTITY" "$APP_DIR"
+	fi
 	codesign --verify --deep --strict --verbose=2 "$APP_DIR"
 fi
 

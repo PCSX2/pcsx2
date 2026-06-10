@@ -209,7 +209,7 @@ jobs:
       # bundle launches on the build machine (matches the README manual build).
       - name: Ad-hoc Sign the Application
         if: ${{ !(inputs.sign_and_notarize == true && env.SIGN_KEY) }}
-        run: codesign --force --deep --sign - ARMSX2.app
+        run: codesign --force --deep --entitlements pcsx2/Resources/PCSX2.entitlements --sign - ARMSX2.app
 
       - name: Zip Build Artifacts
         run: |
