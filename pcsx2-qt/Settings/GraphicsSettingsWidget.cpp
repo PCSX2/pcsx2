@@ -1056,6 +1056,9 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	if (m_advanced.rov)
 		m_advanced.rov->setDisabled(!is_hardware || is_ogl);
 
+	if (m_advanced.rovBarriersVK)
+		m_advanced.rovBarriersVK->setDisabled(!is_hardware || !is_vk);
+
 	// populate adapters
 	std::vector<GSAdapterInfo> adapters = GSGetAdapterInfo(type);
 	const GSAdapterInfo* current_adapter_info = nullptr;
