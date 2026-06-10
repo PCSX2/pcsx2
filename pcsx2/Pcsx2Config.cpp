@@ -2240,14 +2240,14 @@ bool EmuFolders::SetDataDirectory(Error* error)
 				}
 			}
 #elif defined(__APPLE__)
-			static constexpr char MAC_DATA_DIR[] = "Library/Application Support/ARMSX2-MacOS 2.0";
+			static constexpr char MAC_DATA_DIR[] = "Library/Application Support/ARMSX2";
 			const char* home_dir = getenv("HOME");
 			if (home_dir)
 				DataRoot = Path::RealPath(Path::Combine(home_dir, MAC_DATA_DIR));
 #endif
 			}
 			else // Otherwise use the custom path provided by the user
-				DataRoot = Path::RealPath(EmuConfig.CustomDataPath);
+				DataRoot = Path::RealPath(Path::Combine(EmuConfig.CustomDataPath, "ARMSX2"));
 		}
 
 	// Couldn't determine the data directory, or using portable mode? fallback to portable.
