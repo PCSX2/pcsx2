@@ -47,7 +47,11 @@ static void _vu1Exec(VURegs* VU)
 		if (VU0.VI[REG_FBRST].UL & 0x400)
 		{
 			VU0.VI[REG_VPU_STAT].UL |= 0x200;
-			hwIntcIrq(INTC_VU1);
+#ifdef ARCH_ARM64
+			extern bool g_mvuShadowRun; // MVU_DIFF shadow: don't raise a real INTC
+			if (!g_mvuShadowRun)
+#endif
+				hwIntcIrq(INTC_VU1);
 			VU->ebit = 1;
 		}
 	}
@@ -56,7 +60,11 @@ static void _vu1Exec(VURegs* VU)
 		if (VU0.VI[REG_FBRST].UL & 0x800)
 		{
 			VU0.VI[REG_VPU_STAT].UL |= 0x400;
-			hwIntcIrq(INTC_VU1);
+#ifdef ARCH_ARM64
+			extern bool g_mvuShadowRun; // MVU_DIFF shadow: don't raise a real INTC
+			if (!g_mvuShadowRun)
+#endif
+				hwIntcIrq(INTC_VU1);
 			VU->ebit = 1;
 		}
 	}

@@ -553,12 +553,6 @@ public:
 
 		if ((mapX.VFreg > 0) && mapX.xyzw) // Reg was modified and not Temp or vf0
 		{
-			extern bool g_mvuDiffActive;
-			if (g_mvuDiffActive && index == 1 && (mapX.VFreg == 17 || mapX.VFreg == 24))
-			{
-				microVU& mVU = microVU1;
-				DevCon.Error("WB VF%02d xyzw=%x v%d @pc=%04x", mapX.VFreg, mapX.xyzw, reg.GetCode(), (mVU.prog.IRinfo.curPC / 2) * 8);
-			}
 			if (mapX.VFreg == 33)
 				armAsm->Str(reg.S(), a64::MemOperand(RVUSTATE, mVUoffI));
 			else if (mapX.VFreg == 32)
@@ -661,15 +655,6 @@ public:
 	const a64::VRegister allocReg(int vfLoadReg = -1, int vfWriteReg = -1, int xyzw = 0, bool cloneWrite = true)
 	{
 		counter++;
-		{
-			extern bool g_mvuDiffActive;
-			if (g_mvuDiffActive && index == 1 &&
-				(vfLoadReg == 17 || vfLoadReg == 24 || vfWriteReg == 17 || vfWriteReg == 24))
-			{
-				microVU& mVU = microVU1;
-				Console.WriteLn("ALLOC load=%d write=%d xyzw=%x clone=%d @pc=%04x", vfLoadReg, vfWriteReg, xyzw, (int)cloneWrite, (mVU.prog.IRinfo.curPC / 2) * 8);
-			}
-		}
 		if (vfLoadReg >= 0) // Search For Cached Regs
 		{
 			for (int i = 0; i < xmmTotal; i++)

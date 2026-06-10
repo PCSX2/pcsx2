@@ -26,6 +26,7 @@
 #include "Dmac.h"
 #include "SaveState.h"
 #include "Gif_Unit.h" // gifUnit + GIF_TRANS_XGKICK (XGKICK GIF transfer, aVU_Lower.inl)
+#include "Vif.h"      // vif1Regs.stat.VEW (MVU_DIFF shadow global save/restore)
 #include "DebugTools/Debug.h" // disVU1MicroUF/LF (MVU_DIFF disasm)
 #include "common/FPControl.h" // FPControlRegisterBackup (MVU_DIFF interp single-step)
 
@@ -34,6 +35,11 @@
 
 #include <algorithm>
 #include <vector>
+#include <string>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
+#include <cctype>
 
 // microVU rec contexts (x86 defines these in microVU.h; on ARM64 they live here,
 // where microRegAlloc is a complete type so microVU's unique_ptr dtor compiles).
@@ -53,11 +59,14 @@ typedef void (*mVUrecCallXG)(void);
 #define mVUdumpProg(...) if (0) {}
 
 // --- DEBUG: microVU1-vs-interpreter shadow differential (env MVU_DIFF=1) -------
-// When set, recMicroVU1::Execute runs the *interpreter* as the real (known-good)
-// VU1 and microVU1 as a side-effect-suppressed shadow, comparing VF/VI/ACC/Mem
-// and logging the first diverging program's start PC. s_mvuShadowRun gates the
-// microVU XGKICK C entry points so the shadow run doesn't double-transfer to GS.
-static bool s_mvuShadowRun = false;
+// When set, recMicroVU1::Execute runs microVU1 as the REAL (committed) VU1 — so the
+// game behaves exactly as without the harness — and runs the *interpreter* as a
+// side-effect-suppressed shadow over the same input, comparing VF/VI/ACC/Mem to find
+// the first diverging program. g_mvuShadowRun gates side-effecting paths during the
+// shadow run: the microVU XGKICK C entry points (aVU_Lower.inl), the interpreter's
+// XGKICK GS transfer (_vuXGKICKTransfer, VUops.cpp), and the interp's D/T-bit INTC
+// interrupt (VU1microInterp.cpp) — all guarded with ARCH_ARM64 so x86 is untouched.
+bool g_mvuShadowRun = false;
 
 // --- dispatcher + helper-thunk codegen (task 7.2d) ----------------------------
 // These emit into the already-open armAsm (mVUgenerateDispatchers opens it).
@@ -881,30 +890,190 @@ void recMicroVU1::Step()
 {
 }
 
-// --- DEBUG shadow differential (env MVU_DIFF=1) --------------------------------
+// ============================================================================
+//  microVU1 ⇆ interpreter shadow differential  —  agentic debug harness
+// ----------------------------------------------------------------------------
+//  Enable with MVU_DIFF=1. microVU1 runs as the REAL (committed) VU1, so the game
+//  behaves exactly as without the harness; the *interpreter* is re-run as a
+//  side-effect-suppressed shadow over the same input (ground truth), and the two
+//  are compared per program. Results go to a dedicated file as stable, greppable
+//  `MVUDIFF key=value` records, so an agent reads the file instead of scraping
+//  emulog.txt.
+//
+//  Env knobs (parsed once at startup):
+//    MVU_DIFF=1           enable the harness
+//    MVU_DIFF_OUT=<path>  output file (default "mvudiff.log" in CWD)
+//    MVU_DIFF_PC=<hex>    only diff the program whose entry byte-PC == this
+//    MVU_DIFF_REG=<list>  comma watch-list: vfNN,viNN,acc,q,mac,status,clip
+//                         (default = everything)
+//    MVU_DIFF_SKIP=<n>    skip the first <n> diverging programs before the
+//                         per-instruction localizer fires (default 0)
+//    MVU_DIFF_MAX=<n>     cap whole-program report lines (default 200; 0 = unlimited)
+//    MVU_DIFF_ULP=<n>     FP gap (in ULPs) treated as benign rounding (default 4;
+//                         0 = require bit-exact FP)
+//    MVU_LOC=1            run the per-instruction localizer on first divergence
+//                         (must be set at startup — it gates the trace hooks)
+//    MVU_VF=1             include VF regs in the per-step localizer compare
+//    MVU_DIFF_QRAW=1      report the benign DIV-latency Q artifact as a real
+//                         divergence (default: tagged BENIGN, not counted)
+//
+//  What counts as a REAL divergence (sets result=DIVERGE / fires the localizer):
+//    - a computed integer reg VI01-15 (drives branches & addressing), or
+//    - VF/ACC/MEM differing by more than MVU_DIFF_ULP ULPs / sign / NaN, or
+//    - a control-flow (next-PC) mismatch.
+//  Benign-and-suppressed under watch-all: lazy non-materialized flags VI16/17/18,
+//  <=ULP FP rounding, and the DIV-latency Q artifact. Explicitly naming a reg in
+//  MVU_DIFF_REG shows AND counts all of its diffs (incl. benign).
+// ============================================================================
 static const bool s_mvuDiff = (getenv("MVU_DIFF") != nullptr);
-bool g_mvuDiffActive = (getenv("MVU_DIFF") != nullptr); // gates writeBackReg VF17/24 logging
-volatile u32 g_fmacDbg[3][4]; // [0]=ACC [1]=Ft [2]=result
-void mvuFmacDump(u32 fd, u32 pc)
+
+// --- output sink: one tagged line per record, to MVU_DIFF_OUT (default file) -
+static FILE* mvuDiffFile()
 {
-	static int n = 0;
-	if (n++ > 40) return;
-	Console.Error("FMACDUMP @pc=%04x vf%02d ACC=%08x %08x %08x %08x Ft=%08x %08x %08x %08x res=%08x %08x %08x %08x",
-		pc, fd,
-		g_fmacDbg[0][0], g_fmacDbg[0][1], g_fmacDbg[0][2], g_fmacDbg[0][3],
-		g_fmacDbg[1][0], g_fmacDbg[1][1], g_fmacDbg[1][2], g_fmacDbg[1][3],
-		g_fmacDbg[2][0], g_fmacDbg[2][1], g_fmacDbg[2][2], g_fmacDbg[2][3]);
+	static FILE* fp = nullptr;
+	static bool opened = false;
+	if (!opened)
+	{
+		opened = true;
+		const char* path = getenv("MVU_DIFF_OUT");
+		if (!path || !*path)
+			path = "mvudiff.log";
+		fp = std::fopen(path, "w");
+		if (fp)
+			Console.WriteLn("MVU_DIFF: writing diff log to %s", path);
+		else
+			Console.Error("MVU_DIFF: cannot open %s — logging to console", path);
+	}
+	return fp;
 }
-volatile u32 g_divDbg[4]; // [0]=num [1]=den [2]=result
-void mvuDivDump(u32 wq, u32 rq, u32 pc)
+
+static void mvuLog(const char* fmt, ...)
 {
-	static int n = 0;
-	if (n++ > 60) return;
-	const float num = *(const float*)&g_divDbg[0];
-	const float den = *(const float*)&g_divDbg[1];
-	const float res = *(const float*)&g_divDbg[2];
-	Console.Error("DIVDUMP @pc=%04x num=%g(%08x) den=%g(%08x) res=%g(%08x) wQ=%u rQ=%u",
-		pc, num, g_divDbg[0], den, g_divDbg[1], res, g_divDbg[2], wq, rq);
+	char buf[1024];
+	va_list ap;
+	va_start(ap, fmt);
+	std::vsnprintf(buf, sizeof(buf), fmt, ap);
+	va_end(ap);
+	if (FILE* fp = mvuDiffFile())
+	{
+		std::fputs(buf, fp);
+		std::fputc('\n', fp);
+		std::fflush(fp); // crash/abort-safe: never lose the last record
+	}
+	else
+		Console.Error("%s", buf);
+}
+
+// Whole-program report-line budget (a watch-all run is otherwise unbounded).
+static int s_mvuLineBudget = 0;
+
+// --- env-driven run configuration --------------------------------------------
+namespace
+{
+	struct MvuDiffCfg
+	{
+		u32  pcFilter = 0xFFFFFFFFu; // byte-PC to focus on; FFFFFFFF = all programs
+		int  skipN    = 0;
+		int  maxLines = 200;         // 0 = unlimited
+		bool qRaw     = false;
+		bool vf       = false;       // MVU_VF: compare VF per step (noisy near DIV)
+		bool watchAll = true;
+		int  ulp      = 4;           // FP diffs within this many ULPs are benign rounding
+		                             // (0 = require bit-exact). BIOS accumulates <=3 ULP
+		                             // over chained FMACs; real bugs are far larger or hit
+		                             // control flow (caught via VI01-15, ULP-independent).
+		bool vfW[32]  = {};
+		bool viW[19]  = {};          // 0..18; 16=status 17=mac 18=clip
+		bool accW = false, qW = false;
+
+		MvuDiffCfg()
+		{
+			if (const char* p = getenv("MVU_DIFF_PC"))   pcFilter = (u32)std::strtoul(p, nullptr, 16);
+			if (const char* p = getenv("MVU_DIFF_SKIP"))  skipN    = std::atoi(p);
+			if (const char* p = getenv("MVU_DIFF_MAX"))   maxLines = std::atoi(p);
+			if (const char* p = getenv("MVU_DIFF_ULP"))   ulp      = std::atoi(p);
+			qRaw = getenv("MVU_DIFF_QRAW") != nullptr;
+			vf   = getenv("MVU_VF") != nullptr;
+			if (const char* list = getenv("MVU_DIFF_REG"))
+				parseWatch(list);
+		}
+		void parseWatch(const char* list)
+		{
+			watchAll = false;
+			const std::string s(list);
+			size_t i = 0;
+			while (i <= s.size())
+			{
+				size_t j = s.find(',', i);
+				if (j == std::string::npos) j = s.size();
+				std::string t = s.substr(i, j - i);
+				i = j + 1;
+				for (char& c : t) c = (char)std::tolower((unsigned char)c);
+				if      (t == "acc")    accW = true;
+				else if (t == "q")      qW = true;
+				else if (t == "mac")    viW[17] = true;
+				else if (t == "status") viW[16] = true;
+				else if (t == "clip")   viW[18] = true;
+				else if (t.rfind("vf", 0) == 0) { int r = std::atoi(t.c_str() + 2); if (r >= 0 && r < 32) vfW[r] = true; }
+				else if (t.rfind("vi", 0) == 0) { int r = std::atoi(t.c_str() + 2); if (r >= 0 && r < 19) viW[r] = true; }
+			}
+		}
+		bool wantVF(int r)  const { return watchAll || vfW[r]; }
+		bool wantVI(int r)  const { return watchAll || viW[r]; }
+		bool wantACC()      const { return watchAll || accW; }
+		bool wantQ()        const { return watchAll || qW; }
+		// Explicit watch = "I care about this reg, show & count everything (incl.
+		// benign)". watchAll = "show me only REAL divergences." This keeps a no-filter
+		// run fast and quiet: benign FP/flag noise is suppressed entirely.
+		bool explicitVF(int r) const { return vfW[r]; }
+		bool explicitVI(int r) const { return viW[r]; }
+		bool explicitACC()     const { return accW; }
+	};
+	const MvuDiffCfg g_cfg;
+
+	// VI register masks: clip is 24-bit; status/mac/integer regs are 16-bit.
+	u32 mvuVIMask(int r) { return (r == 18) ? 0x00FFFFFFu : 0x0000FFFFu; }
+	const char* mvuVIName(int r) { return (r == 16) ? "(status)" : (r == 17) ? "(mac)" : (r == 18) ? "(clip)" : ""; }
+	// VU flags (status/mac/clip) are lazily materialized by microVU — the live bits
+	// only land in VI[16..18] where a program actually reads them, so mid-program
+	// they legitimately differ from the interpreter. Treated as benign unless the
+	// flag is explicitly watched; the reliable bug signal is a divergent *computed*
+	// register (VI01-15) that a wrong flag would feed into.
+	bool mvuVIisFlag(int r) { return r >= 16 && r <= 18; }
+
+	// True if every differing lane is within `ulp` ULPs, same sign, both finite.
+	// microVU's host fmul+fadd is not bit-exact to the interpreter's FMAC; the gap
+	// is a consistent 1-LSB and never escapes into control flow (x86 has it too).
+	// Sign flips, NaN/Inf, or larger gaps are REAL. ulp<=0 disables the tolerance.
+	bool mvuFpWithinUlp(const u32* a, const u32* b, int lanes, int ulp)
+	{
+		if (ulp <= 0)
+			return false;
+		for (int i = 0; i < lanes; i++)
+		{
+			if (a[i] == b[i]) continue;
+			if ((a[i] ^ b[i]) & 0x80000000u) return false;          // sign flip / zero-cross
+			if (((a[i] >> 23) & 0xFF) == 0xFF) return false;        // a is NaN/Inf
+			if (((b[i] >> 23) & 0xFF) == 0xFF) return false;        // b is NaN/Inf
+			const s64 d = (s64)a[i] - (s64)b[i];                    // IEEE754 same-sign is monotonic in int
+			if (d > ulp || d < -ulp) return false;
+		}
+		return true;
+	}
+}
+
+// Emit one whole-program report line, respecting the budget.
+static void mvuReportLine(const char* fmt, ...)
+{
+	if (g_cfg.maxLines != 0 && s_mvuLineBudget >= g_cfg.maxLines)
+		return;
+	char buf[1024];
+	va_list ap;
+	va_start(ap, fmt);
+	std::vsnprintf(buf, sizeof(buf), fmt, ap);
+	va_end(ap);
+	mvuLog("%s", buf);
+	s_mvuLineBudget++;
 }
 
 namespace
@@ -928,70 +1097,124 @@ namespace
 		VU1.Micro = micro;
 		std::memcpy(VU1.Mem, s.mem, sizeof(s.mem));
 	}
-	// Returns true (and logs) if anything diverged. Reports ALL diverging regs/mem
-	// (not just the first) so the pattern is visible. startPC is the program entry.
+	// Non-VU1 globals the interp shadow run can disturb but the VU1Snap doesn't cover.
+	// Saved after the (committed) microVU run and restored after the shadow so the
+	// committed state is exactly microVU's — the harness becomes transparent.
+	struct MvuGlobals { u32 vpustat; bool vew; u64 cyc; };
+	void mvuSaveGlobals(MvuGlobals& g)
+	{
+		g.vpustat = VU0.VI[REG_VPU_STAT].UL;
+		g.vew     = vif1Regs.stat.VEW;
+		g.cyc     = cpuRegs.cycle;
+	}
+	void mvuRestoreGlobals(const MvuGlobals& g)
+	{
+		VU0.VI[REG_VPU_STAT].UL = g.vpustat;
+		vif1Regs.stat.VEW       = g.vew;
+		cpuRegs.cycle           = g.cyc;
+	}
+	// Logs every diverging reg/mem (subject to the watch-list + line budget) and
+	// returns true if anything *non-benign* diverged. startPC is the program entry
+	// in 8-byte units; bpc is the byte-PC the rest of the tooling prints.
 	bool mvuDiffReport(u32 startPC, const VU1Snap& ref /*interp*/, const VU1Snap& got /*micro*/)
 	{
-		bool any = false;
+		const u32 bpc = startPC * 8;
+		bool any = false; // set only by REAL (non-benign) divergences
+		// VF — a >ULP gap (or sign/NaN) is real; a <=ULP gap is microVU's inherent
+		// fmul+fadd rounding. Benign diffs are suppressed unless the reg is watched.
 		for (int r = 1; r < 32; r++)
 		{
-			if (std::memcmp(&ref.regs.VF[r], &got.regs.VF[r], 16) != 0)
-			{
-				Console.Error("MVU_DIFF @pc=%04x VF%02d int=%08x %08x %08x %08x mvu=%08x %08x %08x %08x",
-					startPC * 8, r, ref.regs.VF[r].UL[0], ref.regs.VF[r].UL[1], ref.regs.VF[r].UL[2], ref.regs.VF[r].UL[3],
-					got.regs.VF[r].UL[0], got.regs.VF[r].UL[1], got.regs.VF[r].UL[2], got.regs.VF[r].UL[3]);
-				any = true;
-			}
+			if (!g_cfg.wantVF(r) || std::memcmp(&ref.regs.VF[r], &got.regs.VF[r], 16) == 0)
+				continue;
+			const bool benign = mvuFpWithinUlp(ref.regs.VF[r].UL, got.regs.VF[r].UL, 4, g_cfg.ulp);
+			if (benign && !g_cfg.explicitVF(r))
+				continue;
+			mvuReportLine("MVUDIFF prog_pc=%04x reg=VF%02d int=%08x,%08x,%08x,%08x mvu=%08x,%08x,%08x,%08x%s",
+				bpc, r, ref.regs.VF[r].UL[0], ref.regs.VF[r].UL[1], ref.regs.VF[r].UL[2], ref.regs.VF[r].UL[3],
+				got.regs.VF[r].UL[0], got.regs.VF[r].UL[1], got.regs.VF[r].UL[2], got.regs.VF[r].UL[3],
+				benign ? " BENIGN=fp-ulp" : "");
+			any |= !benign;
 		}
-		for (int r = 1; r < 16; r++)
+		// VI — computed regs (1-15) are the controlling signal (branches/addresses),
+		// always real. Flags (16/17/18) are lazily materialized by microVU: benign
+		// unless explicitly watched.
+		for (int r = 1; r < 19; r++)
 		{
-			if ((u16)ref.regs.VI[r].UL != (u16)got.regs.VI[r].UL)
-			{
-				Console.Error("MVU_DIFF @pc=%04x VI%02d int=%04x mvu=%04x", startPC * 8, r, (u16)ref.regs.VI[r].UL, (u16)got.regs.VI[r].UL);
-				any = true;
-			}
-		}
-		if (std::memcmp(&ref.regs.ACC, &got.regs.ACC, 16) != 0)
-		{
-			Console.Error("MVU_DIFF @pc=%04x ACC int=%08x %08x %08x %08x mvu=%08x %08x %08x %08x", startPC * 8,
-				ref.regs.ACC.UL[0], ref.regs.ACC.UL[1], ref.regs.ACC.UL[2], ref.regs.ACC.UL[3],
-				got.regs.ACC.UL[0], got.regs.ACC.UL[1], got.regs.ACC.UL[2], got.regs.ACC.UL[3]);
+			if (!g_cfg.wantVI(r))
+				continue;
+			const u32 m = mvuVIMask(r);
+			const u32 a = ref.regs.VI[r].UL & m, b = got.regs.VI[r].UL & m;
+			if (a == b)
+				continue;
+			const bool benign = mvuVIisFlag(r) && !g_cfg.explicitVI(r);
+			if (benign)
+				continue; // lazy-flag noise: suppress entirely under watch-all
+			mvuReportLine("MVUDIFF prog_pc=%04x reg=VI%02d%s int=%06x mvu=%06x%s", bpc, r, mvuVIName(r), a, b,
+				mvuVIisFlag(r) ? " (lazy-flag)" : "");
 			any = true;
 		}
-		if (ref.regs.q.UL != got.regs.q.UL) { Console.Error("MVU_DIFF @pc=%04x Q int=%08x mvu=%08x", startPC * 8, ref.regs.q.UL, got.regs.q.UL); any = true; }
-		int memdiffs = 0;
-		for (int q = 0; q < 0x4000; q += 16)
+		// ACC — same FP rounding story as VF.
+		if (g_cfg.wantACC() && std::memcmp(&ref.regs.ACC, &got.regs.ACC, 16) != 0)
 		{
-			if (std::memcmp(ref.mem + q, got.mem + q, 16) != 0)
+			const bool benign = mvuFpWithinUlp(ref.regs.ACC.UL, got.regs.ACC.UL, 4, g_cfg.ulp);
+			if (!benign || g_cfg.explicitACC())
 			{
-				if (memdiffs < 8)
-				{
-					const u32* ri = (const u32*)(ref.mem + q);
-					const u32* gi = (const u32*)(got.mem + q);
-					Console.Error("MVU_DIFF @pc=%04x MEM[%04x] int=%08x %08x %08x %08x mvu=%08x %08x %08x %08x",
-						startPC * 8, q, ri[0], ri[1], ri[2], ri[3], gi[0], gi[1], gi[2], gi[3]);
-				}
-				memdiffs++;
+				mvuReportLine("MVUDIFF prog_pc=%04x reg=ACC int=%08x,%08x,%08x,%08x mvu=%08x,%08x,%08x,%08x%s", bpc,
+					ref.regs.ACC.UL[0], ref.regs.ACC.UL[1], ref.regs.ACC.UL[2], ref.regs.ACC.UL[3],
+					got.regs.ACC.UL[0], got.regs.ACC.UL[1], got.regs.ACC.UL[2], got.regs.ACC.UL[3],
+					benign ? " BENIGN=fp-ulp" : "");
+			}
+			any |= !benign;
+		}
+		// Q — perturbed by DIV/WAITQ latency; benign unless MVU_DIFF_QRAW.
+		if (g_cfg.wantQ() && ref.regs.q.UL != got.regs.q.UL)
+		{
+			if (g_cfg.qRaw)
+			{
+				mvuReportLine("MVUDIFF prog_pc=%04x reg=Q int=%08x mvu=%08x", bpc, ref.regs.q.UL, got.regs.q.UL);
 				any = true;
 			}
+			// else: suppressed (known benign latency Heisenbug)
+		}
+		// MEM — FP store results; same ULP classification, per 16-byte quadword.
+		int memdiffs = 0, realmem = 0;
+		for (int q = 0; q < 0x4000; q += 16)
+		{
+			if (std::memcmp(ref.mem + q, got.mem + q, 16) == 0)
+				continue;
+			const u32* ri = (const u32*)(ref.mem + q);
+			const u32* gi = (const u32*)(got.mem + q);
+			const bool benign = mvuFpWithinUlp(ri, gi, 4, g_cfg.ulp);
+			if (benign)
+				continue; // suppress 1-ULP store noise
+			if (realmem < 8)
+				mvuReportLine("MVUDIFF prog_pc=%04x reg=MEM[%04x] int=%08x,%08x,%08x,%08x mvu=%08x,%08x,%08x,%08x",
+					bpc, q, ri[0], ri[1], ri[2], ri[3], gi[0], gi[1], gi[2], gi[3]);
+			realmem++;
+			memdiffs++;
+			any = true;
 		}
 		if (memdiffs)
-			Console.Error("MVU_DIFF @pc=%04x total MEM diffs=%d", startPC * 8, memdiffs);
+			mvuReportLine("MVUDIFF prog_pc=%04x mem_diffs=%d", bpc, memdiffs);
+		if (any)
+			mvuReportLine("MVUDIFF prog_pc=%04x result=DIVERGE", bpc);
 		return any;
 	}
 }
 
-// --- DEBUG per-instruction localizer (MVU_DIFF) --------------------------------
-// microVU records (pc, VF, VI) after each instruction via the mvuTraceMicro call
-// injected by mVUcompile (gated on s_mvuDiff && isVU1); the interpreter is then
-// single-stepped over the same input and compared, naming the first instruction
-// where state (or control flow) diverges.
+// --- per-instruction localizer (MVU_DIFF + MVU_LOC) ----------------------------
+// microVU records (pc, VF, VI incl flags, ACC, Q) after each instruction via the
+// mvuTraceMicro call injected by mVUcompile (gated on s_mvuDiff && isVU1 &&
+// MVU_LOC); the interpreter is then single-stepped over the same input and
+// compared, naming the first instruction where state or control flow diverges.
 bool g_mvuTraceActive = false;
 struct MvuTraceEnt
 {
 	u32 pc;
 	u32 vf[32][4];
-	u32 vi[16];
+	u32 vi[19]; // 0..18; 16=status 17=mac 18=clip
+	u32 acc[4];
+	u32 q;
 };
 static std::vector<MvuTraceEnt> g_mvuTrace;
 
@@ -1002,27 +1225,56 @@ void mvuTraceMicro(u32 pc) // called from JIT (after a regAlloc flush + backupRe
 	MvuTraceEnt e;
 	e.pc = pc;
 	std::memcpy(e.vf, VU1.VF, sizeof(e.vf));
-	for (int i = 0; i < 16; i++)
-		e.vi[i] = (u16)VU1.VI[i].UL;
+	for (int i = 0; i < 19; i++)
+		e.vi[i] = VU1.VI[i].UL;
+	std::memcpy(e.acc, &VU1.ACC, sizeof(e.acc));
+	e.q = VU1.q.UL;
 	g_mvuTrace.push_back(e);
 }
 
-static void mvuDumpAround(u32 pc)
+static void mvuDumpAround(u32 pc) // dump program disasm to the diff log, mark pc
 {
-	const u32 lo = 0;
-	for (u32 b = lo; b < 0x800 && b < 0x4000; b += 8)
+	for (u32 b = 0; b < 0x800 && b < 0x4000; b += 8)
 	{
 		const u32 l = *(u32*)&VU1.Micro[b];
 		const u32 u = *(u32*)&VU1.Micro[b + 4];
 		// NOTE: disVU1MicroUF/LF share one static buffer, so copy the upper string
 		// before calling the lower one (else both columns show the lower op).
 		std::string up = disVU1MicroUF(u, b + 4);
-		Console.Error("  %s%04x: %-28s | %s", (b == pc) ? "->" : "  ", b, up.c_str(), disVU1MicroLF(l, b));
+		mvuLog("  %s%04x: %-28s | %s", (b == pc) ? "->" : "  ", b, up.c_str(), disVU1MicroLF(l, b));
 	}
 }
 
+// Emit the FIRST-DIVERGENCE summary: the diverging op (disassembled), the
+// specific reg, a short window of preceding ops from the trace, then full disasm.
+static void mvuLocalizeHit(u32 startPC, size_t k, u32 ipc, const char* detail)
+{
+	const u32 l = *(u32*)&VU1.Micro[ipc];
+	const u32 u = *(u32*)&VU1.Micro[ipc + 4];
+	std::string up = disVU1MicroUF(u, ipc + 4);
+	std::string lo = disVU1MicroLF(l, ipc);
+	mvuLog("MVUDIFF ==== FIRST DIVERGENCE ====");
+	mvuLog("MVUDIFF prog_pc=%04x step=%zu guest_pc=%04x %s", startPC * 8, k, ipc, detail);
+	mvuLog("MVUDIFF op upper=\"%s\" lower=\"%s\"", up.c_str(), lo.c_str());
+	if (k < g_mvuTrace.size()) // diagnostic: ACC interp-vs-mvu at the diverging step
+		mvuLog("MVUDIFF   @hit ACC interp=%08x,%08x,%08x,%08x mvu=%08x,%08x,%08x,%08x",
+			VU1.ACC.UL[0], VU1.ACC.UL[1], VU1.ACC.UL[2], VU1.ACC.UL[3],
+			g_mvuTrace[k].acc[0], g_mvuTrace[k].acc[1], g_mvuTrace[k].acc[2], g_mvuTrace[k].acc[3]);
+	mvuLog("MVUDIFF window (preceding ops):");
+	for (size_t s = (k > 8 ? k - 8 : 0); s < k; s++)
+	{
+		const u32 wp = g_mvuTrace[s].pc;
+		const u32 wl = *(u32*)&VU1.Micro[wp];
+		const u32 wu = *(u32*)&VU1.Micro[wp + 4];
+		std::string wup = disVU1MicroUF(wu, wp + 4);
+		mvuLog("MVUDIFF   step=%zu %04x: %-28s | %s", s, wp, wup.c_str(), disVU1MicroLF(wl, wp));
+	}
+	mvuLog("MVUDIFF ==== program disasm (-> = diverging op) ====");
+	mvuDumpAround(ipc);
+}
+
 // Single-step the interpreter over the same input and compare to g_mvuTrace.
-static void mvuLocalizeCompare(u32 cycles)
+static void mvuLocalizeCompare(u32 startPC, u32 cycles)
 {
 	const FPControlRegisterBackup fpcr_backup(EmuConfig.Cpu.VU1FPCR);
 	VU1.VI[REG_TPC].UL <<= 3;
@@ -1035,37 +1287,73 @@ static void mvuLocalizeCompare(u32 cycles)
 		const MvuTraceEnt& m = g_mvuTrace[k];
 		if (m.pc != ipc)
 		{
-			Console.Error("LOCALIZE step %zu: CONTROL-FLOW diverge — interp next=%04x, mvu next=%04x", k, ipc, m.pc);
-			mvuDumpAround(ipc);
+			char d[96];
+			std::snprintf(d, sizeof(d), "kind=CONTROL-FLOW interp_next=%04x mvu_next=%04x", ipc, m.pc);
+			mvuLocalizeHit(startPC, k, ipc, d);
+			VU1.VI[REG_TPC].UL >>= 3;
 			return;
 		}
-		// VF comparison is perturbed by the Q/PQ Heisenbug near DIV/WAITQ; skip it
-		// by default so the localizer reaches the controlling branch / VI divergence
-		// (set MVU_VF=1 to re-enable VF checks).
-		if (getenv("MVU_VF")) for (int r = 1; r < 32; r++)
+		// VI: computed regs (1-15) are the controlling signal (branches/addresses).
+		// Flags (16/17/18) are lazily materialized — skip unless explicitly watched.
+		for (int r = 1; r < 19; r++)
 		{
-			if (std::memcmp(m.vf[r], &VU1.VF[r], 16) != 0)
+			if (!g_cfg.wantVI(r))
+				continue;
+			if (mvuVIisFlag(r) && !g_cfg.explicitVI(r))
+				continue; // lazy-flag noise
+			const u32 mask = mvuVIMask(r);
+			const u32 a = VU1.VI[r].UL & mask, b = m.vi[r] & mask;
+			if (a != b)
 			{
-				Console.Error("LOCALIZE step %zu pc=%04x VF%02d interp=%08x %08x %08x %08x mvu=%08x %08x %08x %08x",
-					k, ipc, r, VU1.VF[r].UL[0], VU1.VF[r].UL[1], VU1.VF[r].UL[2], VU1.VF[r].UL[3],
-					m.vf[r][0], m.vf[r][1], m.vf[r][2], m.vf[r][3]);
-				mvuDumpAround(ipc);
+				char d[96];
+				std::snprintf(d, sizeof(d), "kind=VI%02d%s interp=%06x mvu=%06x", r, mvuVIName(r), a, b);
+				mvuLocalizeHit(startPC, k, ipc, d);
+				VU1.VI[REG_TPC].UL >>= 3;
 				return;
 			}
 		}
-		for (int r = 1; r < 16; r++)
+		// ACC — surfaces a poisoned FMAC result directly (>ULP only).
+		if (g_cfg.wantACC() && std::memcmp(m.acc, &VU1.ACC, 16) != 0 &&
+			!(mvuFpWithinUlp(VU1.ACC.UL, m.acc, 4, g_cfg.ulp) && !g_cfg.explicitACC()))
 		{
-			if ((u16)VU1.VI[r].UL != (u16)m.vi[r])
-			{
-				Console.Error("LOCALIZE step %zu pc=%04x VI%02d interp=%04x mvu=%04x", k, ipc, r, (u16)VU1.VI[r].UL, (u16)m.vi[r]);
-				mvuDumpAround(ipc);
-				return;
-			}
+			char d[160];
+			std::snprintf(d, sizeof(d), "kind=ACC interp=%08x,%08x,%08x,%08x mvu=%08x,%08x,%08x,%08x",
+				VU1.ACC.UL[0], VU1.ACC.UL[1], VU1.ACC.UL[2], VU1.ACC.UL[3],
+				m.acc[0], m.acc[1], m.acc[2], m.acc[3]);
+			mvuLocalizeHit(startPC, k, ipc, d);
+			VU1.VI[REG_TPC].UL >>= 3;
+			return;
+		}
+		// Q is perturbed by DIV/WAITQ latency (benign Heisenbug); opt-in via QRAW.
+		if (g_cfg.wantQ() && g_cfg.qRaw && VU1.q.UL != m.q)
+		{
+			char d[64];
+			std::snprintf(d, sizeof(d), "kind=Q interp=%08x mvu=%08x", VU1.q.UL, m.q);
+			mvuLocalizeHit(startPC, k, ipc, d);
+			VU1.VI[REG_TPC].UL >>= 3;
+			return;
+		}
+		// VF is noisy near DIV; opt-in via MVU_VF. >ULP only (unless explicitly watched).
+		if (g_cfg.vf) for (int r = 1; r < 32; r++)
+		{
+			if (!g_cfg.wantVF(r))
+				continue;
+			if (std::memcmp(m.vf[r], &VU1.VF[r], 16) == 0)
+				continue;
+			if (mvuFpWithinUlp(VU1.VF[r].UL, m.vf[r], 4, g_cfg.ulp) && !g_cfg.explicitVF(r))
+				continue; // 1-ULP rounding noise
+			char d[160];
+			std::snprintf(d, sizeof(d), "kind=VF%02d interp=%08x,%08x,%08x,%08x mvu=%08x,%08x,%08x,%08x",
+				r, VU1.VF[r].UL[0], VU1.VF[r].UL[1], VU1.VF[r].UL[2], VU1.VF[r].UL[3],
+				m.vf[r][0], m.vf[r][1], m.vf[r][2], m.vf[r][3]);
+			mvuLocalizeHit(startPC, k, ipc, d);
+			VU1.VI[REG_TPC].UL >>= 3;
+			return;
 		}
 		k++;
 	}
 	VU1.VI[REG_TPC].UL >>= 3;
-	Console.Error("LOCALIZE: no per-instruction divergence over %zu steps (mvu trace %zu entries)", k, g_mvuTrace.size());
+	mvuLog("MVUDIFF localize: no per-instruction divergence over %zu steps (trace %zu entries)", k, g_mvuTrace.size());
 }
 
 void recMicroVU1::Execute(u32 cycles)
@@ -1079,51 +1367,71 @@ void recMicroVU1::Execute(u32 cycles)
 	if (s_mvuDiff && !THREAD_VU1)
 	{
 		const u32 startPC = VU1.VI[REG_TPC].UL;
+		const bool targeted = (g_cfg.pcFilter == 0xFFFFFFFFu) || (startPC * 8 == g_cfg.pcFilter);
+
 		VU1Snap in;
-		mvuSnap(in);
+		if (targeted)
+			mvuSnap(in); // pre-run input, needed to re-run the interpreter as a shadow
 
-		// REAL run = interpreter (known-good; correct side effects keep the game rendering).
-		CpuIntVU1.Execute(cycles);
-		VU1Snap io;
-		mvuSnap(io);
-
-		// SHADOW run = microVU1, side effects (XGKICK) suppressed.
-		mvuRestore(in);
-		VU0.VI[REG_VPU_STAT].UL |= 0x100; // interp cleared it at E-bit; re-arm for the shadow
-		s_mvuShadowRun = true;
+		// REAL run = microVU1 (committed) — byte-for-byte the non-diff path below, so
+		// the game runs exactly as without the harness (no perturbation, no stall).
 		VU1.VI[REG_TPC].UL <<= 3;
 		((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
 		VU1.VI[REG_TPC].UL >>= 3;
-		s_mvuShadowRun = false;
-		VU1Snap mo;
-		mvuSnap(mo);
-
-		static bool s_localizeDone = false;
-		if (!s_localizeDone && mvuDiffReport(startPC, io, mo))
+		if (microVU1.regs().flags & 0x4)
 		{
-			s_localizeDone = true;
-			Console.Error("==== MVU_DIFF localizing first diverging program @pc=%04x ====", startPC * 8);
-
-			// 1) micro trace (self-recorded via the injected mvuTraceMicro calls)
-			g_mvuTrace.clear();
-			mvuRestore(in);
-			VU0.VI[REG_VPU_STAT].UL |= 0x100;
-			g_mvuTraceActive = true;
-			s_mvuShadowRun = true;
-			VU1.VI[REG_TPC].UL <<= 3;
-			((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
-			VU1.VI[REG_TPC].UL >>= 3;
-			s_mvuShadowRun = false;
-			g_mvuTraceActive = false;
-
-			// 2) interp single-step over the same input, compare
-			mvuRestore(in);
-			VU0.VI[REG_VPU_STAT].UL |= 0x100;
-			mvuLocalizeCompare(cycles);
+			microVU1.regs().flags &= ~0x4;
+			hwIntcIrq(7);
 		}
 
-		mvuRestore(io); // keep the interpreter (correct) result as the real one
-		VU0.VI[REG_VPU_STAT].UL &= ~0x100; // match interp's post-run state
+		if (targeted)
+		{
+			VU1Snap mo;
+			mvuSnap(mo);              // microVU's committed result (the one we keep)
+			MvuGlobals g;
+			mvuSaveGlobals(g);        // microVU's committed global side-effect state
+
+			// SHADOW run = interpreter (ground truth), side effects suppressed:
+			// XGKICK GS transfer and D/T-bit INTC are gated by g_mvuShadowRun.
+			mvuRestore(in);
+			VU0.VI[REG_VPU_STAT].UL |= 0x100; // re-arm so the interp loop runs the program
+			g_mvuShadowRun = true;
+			CpuIntVU1.Execute(cycles);
+			g_mvuShadowRun = false;
+			VU1Snap io;
+			mvuSnap(io);
+
+			static int s_divSeen = 0;
+			static bool s_localizeDone = false;
+			if (mvuDiffReport(startPC, io, mo) && getenv("MVU_LOC") && !s_localizeDone && (s_divSeen++ >= g_cfg.skipN))
+			{
+				s_localizeDone = true;
+				mvuLog("MVUDIFF ==== localizing diverging program prog_pc=%04x ====", startPC * 8);
+
+				// 1) record the micro per-instruction trace (microVU as shadow).
+				g_mvuTrace.clear();
+				mvuRestore(in);
+				VU0.VI[REG_VPU_STAT].UL |= 0x100;
+				g_mvuTraceActive = true;
+				g_mvuShadowRun = true;
+				VU1.VI[REG_TPC].UL <<= 3;
+				((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
+				VU1.VI[REG_TPC].UL >>= 3;
+				g_mvuShadowRun = false;
+				g_mvuTraceActive = false;
+
+				// 2) single-step the interpreter over the same input and compare.
+				mvuRestore(in);
+				VU0.VI[REG_VPU_STAT].UL |= 0x100;
+				g_mvuShadowRun = true;
+				mvuLocalizeCompare(startPC, cycles);
+				g_mvuShadowRun = false;
+			}
+
+			// Commit microVU's result + globals — the harness is now transparent.
+			mvuRestore(mo);
+			mvuRestoreGlobals(g);
+		}
 		return;
 	}
 

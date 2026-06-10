@@ -385,33 +385,11 @@ static void mVU_FMACc(microVU& mVU, int recPass, int opCase, microOpcode opEnum,
 		if (clampType & cFs)  mVUclamp2(mVU, Fs,  xEmptyReg, _X_Y_Z_W);
 		if (clampType & cACC) mVUclamp2(mVU, ACC, xEmptyReg, _X_Y_Z_W);
 
-		// DEBUG: capture the operand (Ft) of the vf24-writing MADD
-		extern bool g_mvuDiffActive; extern volatile u32 g_fmacDbg[3][4]; extern void mvuFmacDump(u32 fd, u32 pc);
-		const bool dbgF = (g_mvuDiffActive && isVU1 && _Fd_ == 24);
-		if (dbgF)
-		{
-			armMoveAddressToReg(RSCRATCHADDR, (void*)&g_fmacDbg[0][0]);
-			armAsm->Str(ACC.Q(), a64::MemOperand(RSCRATCHADDR));
-			armMoveAddressToReg(RSCRATCHADDR, (void*)&g_fmacDbg[1][0]);
-			armAsm->Str(Ft.Q(), a64::MemOperand(RSCRATCHADDR));
-		}
-
 		if (_XYZW_SS) { SSE_SS[2](mVU, Fs, Ft, xEmptyReg, xEmptyReg); SSE_SS[0](mVU, Fs, ACC, tempFt, xEmptyReg); }
 		else          { SSE_PS[2](mVU, Fs, Ft, xEmptyReg, xEmptyReg); SSE_PS[0](mVU, Fs, ACC, tempFt, xEmptyReg); }
 
 		if (_XYZW_SS2)
 			mVUshufflePS(ACC, ACC, shuffleSS(_X_Y_Z_W));
-
-		if (dbgF)
-		{
-			armMoveAddressToReg(RSCRATCHADDR, (void*)&g_fmacDbg[2][0]);
-			armAsm->Str(Fs.Q(), a64::MemOperand(RSCRATCHADDR)); // result
-			mVUbackupRegs(mVU, true, true);
-			armAsm->Mov(RWARG1.W(), _Fd_);
-			armAsm->Mov(RWARG2.W(), xPC);
-			armEmitCall(reinterpret_cast<const void*>(&mvuFmacDump));
-			mVUrestoreRegs(mVU, true, true);
-		}
 
 		mVUupdateFlags(mVU, Fs, tempFt);
 
