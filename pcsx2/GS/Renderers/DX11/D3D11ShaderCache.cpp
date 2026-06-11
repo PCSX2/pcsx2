@@ -272,12 +272,12 @@ D3D11ShaderCache::CacheIndexKey D3D11ShaderCache::GetCacheKey(
 
 wil::com_ptr_nothrow<ID3DBlob> D3D11ShaderCache::GetShaderBlob(D3D::ShaderType type,
 	const std::string_view shader_code, const D3D_SHADER_MACRO* macros /* = nullptr */,
-	const char* entry_point /* = "main" */)
+	const char* entry_point /* = "main" */, const std::unordered_map<std::string, std::string>& includes /* = {} */)
 {
 	const auto key = GetCacheKey(type, shader_code, macros, entry_point);
 	auto iter = m_index.find(key);
 	if (iter == m_index.end())
-		return CompileAndAddShaderBlob(key, shader_code, macros, entry_point);
+		return CompileAndAddShaderBlob(key, shader_code, macros, entry_point, includes);
 
 	wil::com_ptr_nothrow<ID3DBlob> blob;
 	HRESULT hr = D3DCreateBlob(iter->second.blob_size, blob.put());
@@ -293,9 +293,9 @@ wil::com_ptr_nothrow<ID3DBlob> D3D11ShaderCache::GetShaderBlob(D3D::ShaderType t
 
 wil::com_ptr_nothrow<ID3D11VertexShader> D3D11ShaderCache::GetVertexShader(ID3D11Device* device,
 	const std::string_view shader_code, const D3D_SHADER_MACRO* macros /* = nullptr */,
-	const char* entry_point /* = "main" */)
+	const char* entry_point /* = "main" */, const std::unordered_map<std::string, std::string>& includes /* = {} */)
 {
-	wil::com_ptr_nothrow<ID3DBlob> blob = GetShaderBlob(D3D::ShaderType::Vertex, shader_code, macros, entry_point);
+	wil::com_ptr_nothrow<ID3DBlob> blob = GetShaderBlob(D3D::ShaderType::Vertex, shader_code, macros, entry_point, includes);
 	if (!blob)
 		return {};
 
@@ -320,9 +320,9 @@ wil::com_ptr_nothrow<ID3D11VertexShader> D3D11ShaderCache::GetVertexShader(ID3D1
 bool D3D11ShaderCache::GetVertexShaderAndInputLayout(ID3D11Device* device, ID3D11VertexShader** vs,
 	ID3D11InputLayout** il, const D3D11_INPUT_ELEMENT_DESC* layout, size_t layout_size,
 	const std::string_view shader_code, const D3D_SHADER_MACRO* macros /* = nullptr */,
-	const char* entry_point /* = "main" */)
+	const char* entry_point /* = "main" */, const std::unordered_map<std::string, std::string>& includes /* = {} */)
 {
-	wil::com_ptr_nothrow<ID3DBlob> blob = GetShaderBlob(D3D::ShaderType::Vertex, shader_code, macros, entry_point);
+	wil::com_ptr_nothrow<ID3DBlob> blob = GetShaderBlob(D3D::ShaderType::Vertex, shader_code, macros, entry_point, includes);
 	if (!blob)
 		return false;
 
@@ -353,9 +353,9 @@ bool D3D11ShaderCache::GetVertexShaderAndInputLayout(ID3D11Device* device, ID3D1
 
 wil::com_ptr_nothrow<ID3D11PixelShader> D3D11ShaderCache::GetPixelShader(ID3D11Device* device,
 	const std::string_view shader_code, const D3D_SHADER_MACRO* macros /* = nullptr */,
-	const char* entry_point /* = "main" */)
+	const char* entry_point /* = "main" */, const std::unordered_map<std::string, std::string>& includes /* = {} */)
 {
-	wil::com_ptr_nothrow<ID3DBlob> blob = GetShaderBlob(D3D::ShaderType::Pixel, shader_code, macros, entry_point);
+	wil::com_ptr_nothrow<ID3DBlob> blob = GetShaderBlob(D3D::ShaderType::Pixel, shader_code, macros, entry_point, includes);
 	if (!blob)
 		return {};
 
@@ -379,9 +379,9 @@ wil::com_ptr_nothrow<ID3D11PixelShader> D3D11ShaderCache::GetPixelShader(ID3D11D
 
 wil::com_ptr_nothrow<ID3D11ComputeShader> D3D11ShaderCache::GetComputeShader(ID3D11Device* device,
 	const std::string_view shader_code, const D3D_SHADER_MACRO* macros /* = nullptr */,
-	const char* entry_point /* = "main" */)
+	const char* entry_point /* = "main" */, const std::unordered_map<std::string, std::string>& includes /* = {} */)
 {
-	wil::com_ptr_nothrow<ID3DBlob> blob = GetShaderBlob(D3D::ShaderType::Compute, shader_code, macros, entry_point);
+	wil::com_ptr_nothrow<ID3DBlob> blob = GetShaderBlob(D3D::ShaderType::Compute, shader_code, macros, entry_point, includes);
 	if (!blob)
 		return {};
 
@@ -404,10 +404,11 @@ wil::com_ptr_nothrow<ID3D11ComputeShader> D3D11ShaderCache::GetComputeShader(ID3
 }
 
 wil::com_ptr_nothrow<ID3DBlob> D3D11ShaderCache::CompileAndAddShaderBlob(const CacheIndexKey& key,
-	const std::string_view shader_code, const D3D_SHADER_MACRO* macros, const char* entry_point)
+	const std::string_view shader_code, const D3D_SHADER_MACRO* macros, const char* entry_point,
+	const std::unordered_map<std::string, std::string>& includes)
 {
 	wil::com_ptr_nothrow<ID3DBlob> blob =
-		D3D::CompileShader(key.shader_type, m_shader_model, m_debug, shader_code, macros, entry_point);
+		D3D::CompileShader(key.shader_type, m_shader_model, m_debug, shader_code, macros, entry_point, includes);
 	if (!blob)
 		return {};
 

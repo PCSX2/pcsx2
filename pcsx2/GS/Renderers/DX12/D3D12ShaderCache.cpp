@@ -393,12 +393,12 @@ D3D12ShaderCache::CacheIndexKey D3D12ShaderCache::GetPipelineCacheKey(const D3D1
 }
 
 D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::GetShaderBlob(EntryType type, std::string_view shader_code,
-	const D3D_SHADER_MACRO* macros /* = nullptr */, const char* entry_point /* = "main" */)
+	const D3D_SHADER_MACRO* macros /* = nullptr */, const char* entry_point /* = "main" */, const std::unordered_map<std::string, std::string>& includes /*= {} */)
 {
 	const auto key = GetShaderCacheKey(type, shader_code, macros, entry_point);
 	auto iter = m_shader_index.find(key);
 	if (iter == m_shader_index.end())
-		return CompileAndAddShaderBlob(key, shader_code, macros, entry_point);
+		return CompileAndAddShaderBlob(key, shader_code, macros, entry_point, includes);
 
 	ComPtr<ID3DBlob> blob;
 	HRESULT hr = D3DCreateBlob(iter->second.blob_size, blob.put());
@@ -481,7 +481,7 @@ D3D12ShaderCache::ComPtr<ID3D12PipelineState> D3D12ShaderCache::GetPipelineState
 }
 
 D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::CompileAndAddShaderBlob(
-	const CacheIndexKey& key, std::string_view shader_code, const D3D_SHADER_MACRO* macros, const char* entry_point)
+	const CacheIndexKey& key, std::string_view shader_code, const D3D_SHADER_MACRO* macros, const char* entry_point, const std::unordered_map<std::string, std::string>& includes)
 {
 	ComPtr<ID3DBlob> blob;
 
@@ -489,15 +489,15 @@ D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::CompileAndAddShaderBlob(
 	{
 		case EntryType::VertexShader:
 			blob =
-				D3D::CompileShader(D3D::ShaderType::Vertex, m_shader_model, m_debug, shader_code, macros, entry_point);
+				D3D::CompileShader(D3D::ShaderType::Vertex, m_shader_model, m_debug, shader_code, macros, entry_point, includes);
 			break;
 		case EntryType::PixelShader:
 			blob =
-				D3D::CompileShader(D3D::ShaderType::Pixel, m_shader_model, m_debug, shader_code, macros, entry_point);
+				D3D::CompileShader(D3D::ShaderType::Pixel, m_shader_model, m_debug, shader_code, macros, entry_point, includes);
 			break;
 		case EntryType::ComputeShader:
 			blob =
-				D3D::CompileShader(D3D::ShaderType::Compute, m_shader_model, m_debug, shader_code, macros, entry_point);
+				D3D::CompileShader(D3D::ShaderType::Compute, m_shader_model, m_debug, shader_code, macros, entry_point, includes);
 			break;
 		default:
 			break;
