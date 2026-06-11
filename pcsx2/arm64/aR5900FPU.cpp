@@ -18,6 +18,7 @@
 
 #include "aR5900.h"
 
+#include "Config.h"
 #include "R5900.h"
 
 #include "common/Assertions.h"
@@ -268,6 +269,252 @@ static void emitStoreClampedResult(const a64::VRegister& srcS, u32 dstByteOffset
 	armAsm->Str(w, a64::MemOperand(RESTATEPTR, dstByteOffset));
 }
 
+// ========================================================================
+// Full clamp mode (eeClampMode 3 / fpuFullMode) — faithful port of the x86
+// DOUBLE path (pcsx2/x86/iFPUd.cpp).
+//
+// The PS2 FPU has NO inf/NaN: a single with exponent 0xFF is just a very large
+// *finite* number. The default (single-precision) path mirrors the interpreter,
+// which clamps those to ±fmax via fpuDouble() *before* every op — fine for most
+// games, but it throws away magnitude. Full mode instead promotes operands to
+// IEEE double WITHOUT that clamp (emitToDouble), so over-range intermediates
+// survive the computation as real numbers, then converts the result back with
+// proper overflow/underflow thresholds (emitToPS2FPUFull). Games whose GameIndex
+// sets eeClampMode=3 (e.g. NFS Carbon) depend on this.
+// ========================================================================
+
+// emitToDoubleFromBits: PS2 single bits already in `wbits` -> IEEE double in dstD,
+// with NO fmax clamp. exp != 0xFF converts exactly (incl. denormals/zero). exp ==
+// 0xFF is reconstructed as the equivalent large finite double: sign<<63 | 1151<<52
+// | mant<<29 (mirrors x86 ToDouble's lower-exp / convert / raise-exp dance).
+// Clobbers wbits (and its X alias) plus the scratch X reg `xtmp`. dstD must not be
+// d29/d31; callers pass RDSCRATCH/RDSCRATCH2.
+static void emitToDoubleFromBits(const a64::VRegister& dstD, const a64::Register& wbits,
+	const a64::Register& xtmp)
+{
+	const a64::Register xbits = wbits.X();
+
+	a64::Label special, done;
+
+	armAsm->Ubfx(xtmp.W(), wbits, 23, 8);
+	armAsm->Cmp(xtmp.W(), 0xFF);
+	armAsm->B(&special, a64::eq);
+
+	// Normal / denormal / zero: single -> double is exact.
+	armAsm->Fmov(dstD.S(), wbits);
+	armAsm->Fcvt(dstD, dstD.S());
+	armAsm->B(&done);
+
+	armAsm->Bind(&special);
+	armAsm->Ubfx(xtmp, xbits, 0, 23); // mantissa
+	armAsm->Lsl(xtmp, xtmp, 29);
+	armAsm->And(xbits, xbits, 0x80000000); // sign bit (bit31)
+	armAsm->Lsl(xbits, xbits, 32);         // -> bit63
+	armAsm->Orr(xbits, xbits, xtmp);
+	armAsm->Mov(xtmp, 0x47F0000000000000); // 1151 << 52
+	armAsm->Orr(xbits, xbits, xtmp);
+	armAsm->Fmov(dstD, xbits);
+
+	armAsm->Bind(&done);
+}
+
+// emitToDouble: load PS2 single at byteOffset and convert (no clamp). Uses w9/x9
+// and x11 as scratch.
+static void emitToDouble(const a64::VRegister& dstD, u32 byteOffset)
+{
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, byteOffset));
+	emitToDoubleFromBits(dstD, a64::w9, a64::x11);
+}
+
+// emitFpuAddSub: x86 FPU_ADD_SUB (iFPUd.cpp) ported in-place on the two raw single
+// bit-patterns wA/wB. The EE FPU lacks IEEE guard bits, so before an add/sub the
+// low mantissa bits of the *smaller* operand (the one shifted right during
+// alignment) are masked off according to the exponent difference. Runs on the raw
+// bits BEFORE emitToDoubleFromBits (an exp-0xFF operand isn't IEEE-inf here, it's a
+// real number). Scratch: w11-w14.
+static void emitFpuAddSub(const a64::Register& wA, const a64::Register& wB)
+{
+	const a64::Register wdiff = a64::w11;
+	const a64::Register wmask = a64::w12;
+	const a64::Register wexpA = a64::w13;
+	const a64::Register wexpB = a64::w14;
+
+	a64::Label bigPos, posDiff, bigNeg, done;
+
+	armAsm->Ubfx(wexpA, wA, 23, 8);
+	armAsm->Ubfx(wexpB, wB, 23, 8);
+	armAsm->Sub(wdiff, wexpA, wexpB); // signed exponent difference
+
+	armAsm->Cmp(wdiff, 25);
+	armAsm->B(&bigPos, a64::ge); // expA >> expB: flush B to its sign
+	armAsm->Cmp(wdiff, 0);
+	armAsm->B(&posDiff, a64::gt); // 1..24: mask low bits of B
+	armAsm->B(&done, a64::eq);    // equal exponents: nothing to mask
+	armAsm->Cmp(wdiff, -25);
+	armAsm->B(&bigNeg, a64::le); // expB >> expA: flush A to its sign
+
+	// diff in -24..-1: mask low (|diff|-1) bits of A.
+	armAsm->Neg(wdiff, wdiff);
+	armAsm->Sub(wdiff, wdiff, 1);
+	armAsm->Mov(wmask, 0xffffffff);
+	armAsm->Lsl(wmask, wmask, wdiff);
+	armAsm->And(wA, wA, wmask);
+	armAsm->B(&done);
+
+	armAsm->Bind(&bigPos);
+	armAsm->And(wB, wB, kSignBit);
+	armAsm->B(&done);
+
+	armAsm->Bind(&posDiff);
+	armAsm->Sub(wdiff, wdiff, 1);
+	armAsm->Mov(wmask, 0xffffffff);
+	armAsm->Lsl(wmask, wmask, wdiff);
+	armAsm->And(wB, wB, wmask);
+	armAsm->B(&done);
+
+	armAsm->Bind(&bigNeg);
+	armAsm->And(wA, wA, kSignBit);
+
+	armAsm->Bind(&done);
+}
+
+// emitToPS2FPUFullCore: IEEE double result in srcD -> PS2 single bits left in w9,
+// with the EE overflow/underflow behaviour (x86 ToPS2FPU_Full). When setFlags,
+// FCR31 is updated and stored: O|U cleared up front, then O|SO on true overflow /
+// U|SU on underflow. When also `acc` (the op writes ACC: ADDA/SUBA/MULA and the
+// MADDA/MSUBA accumulate), fpuRegs.ACCflag bit0 is cleared up front and set on
+// overflow — recMaddsub tests it to propagate an overflowed ACC. `addsub` selects
+// the EE ADD/SUB underflow behaviour: the normalized mantissa bits are kept with
+// exp=0 instead of being flushed (MUL/DIV-style ops flush to signed zero).
+// srcD must be RDSCRATCH (d30); d29/d31 are used as scratch. Integer scratch: w9-w14.
+static void emitToPS2FPUFullCore(const a64::VRegister& srcD, bool setFlags, bool acc, bool addsub)
+{
+	const a64::Register w = a64::w9;       // result single bits
+	const a64::Register wtmp = a64::w10;
+	const a64::Register wsign = a64::w11;  // aliases x11
+	const a64::Register xbits = a64::x12;
+	const a64::Register wflags = a64::w13;
+	const a64::Register xc = a64::x14;
+	const a64::VRegister absD = RDSCRATCH3; // d29
+	const a64::VRegister dC = RDSCRATCH2;   // d31
+
+	// Match x86 ToPS2FPU_Full: clear both O and U cause bits (and the ACC overflow
+	// flag for ACC-writing ops) up front, then only set them on the relevant paths.
+	if (setFlags)
+	{
+		armAsm->Ldr(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+		armAsm->And(wflags, wflags, ~(FPUflagO | FPUflagU));
+		if (acc)
+		{
+			armAsm->Ldr(wtmp, a64::MemOperand(RESTATEPTR, EE_ACCFLAG_OFFSET));
+			armAsm->And(wtmp, wtmp, ~1);
+			armAsm->Str(wtmp, a64::MemOperand(RESTATEPTR, EE_ACCFLAG_OFFSET));
+		}
+	}
+
+	armAsm->Fabs(absD, srcD);
+
+	a64::Label toComplex, toOverflow, toUnderflow, uflush, done;
+
+	// |x| >= 2^128 (single exp 0xFF territory) -> complex / overflow handling.
+	armAsm->Mov(xc, 0x47F0000000000000); // 2^128
+	armAsm->Fmov(dC, xc);
+	armAsm->Fcmp(absD, dC);
+	armAsm->B(&toComplex, a64::ge);
+
+	// |x| < 2^-126 (smallest normal single) -> underflow / flush.
+	armAsm->Mov(xc, 0x3810000000000000); // 2^-126
+	armAsm->Fmov(dC, xc);
+	armAsm->Fcmp(absD, dC);
+	armAsm->B(&toUnderflow, a64::lt);
+
+	// Normal range: plain double -> single. (O/U already cleared up front.)
+	armAsm->Fcvt(srcD.S(), srcD);
+	armAsm->Fmov(w, srcD.S());
+	armAsm->B(&done);
+
+	armAsm->Bind(&toComplex);
+	// 2^128 <= |x| < 2^129 : representable as a PS2 exp-0xFF single (not overflow).
+	armAsm->Mov(xc, 0x4800000000000000); // 2^129
+	armAsm->Fmov(dC, xc);
+	armAsm->Fcmp(absD, dC);
+	armAsm->B(&toOverflow, a64::ge);
+	armAsm->Fmov(xbits, srcD);
+	armAsm->Mov(xc, 0x0010000000000000); // lower double exp by one
+	armAsm->Sub(xbits, xbits, xc);
+	armAsm->Fmov(dC, xbits);
+	armAsm->Fcvt(dC.S(), dC);            // -> single, exp 0xFE
+	armAsm->Fmov(w, dC.S());
+	armAsm->Add(w, w, 0x00800000);       // raise single exp -> 0xFF (O/U already cleared)
+	armAsm->B(&done);
+
+	armAsm->Bind(&toOverflow);
+	// True overflow: result = sign | 0x7FFFFFFF — the PS2 maximum (exp 0xFF, full
+	// mantissa; x86 SetMaxValue / s_const.pos), NOT the IEEE fmax 0x7F7FFFFF.
+	armAsm->Fmov(xbits, srcD);
+	armAsm->Lsr(a64::x11, xbits, 32);
+	armAsm->And(wsign, wsign, kSignBit);
+	armAsm->Mov(w, 0x7FFFFFFF);
+	armAsm->Orr(w, w, wsign);
+	if (setFlags)
+	{
+		armAsm->Orr(wflags, wflags, FPUflagO | FPUflagSO);
+		if (acc)
+		{
+			armAsm->Ldr(wtmp, a64::MemOperand(RESTATEPTR, EE_ACCFLAG_OFFSET));
+			armAsm->Orr(wtmp, wtmp, 1);
+			armAsm->Str(wtmp, a64::MemOperand(RESTATEPTR, EE_ACCFLAG_OFFSET));
+		}
+	}
+	armAsm->B(&done);
+
+	armAsm->Bind(&toUnderflow);
+	// x86 tests the *double* against zero (the converted single could flush under
+	// the host FZ bit and hide the underflow): exact zero -> plain convert, no
+	// flags. Nonzero -> U|SU; ADD/SUB keep the normalized mantissa bits with exp=0
+	// (the EE doesn't flush the mantissa on add/sub), other ops flush to signed 0.
+	if (setFlags)
+	{
+		armAsm->Fcmp(srcD, 0.0);
+		armAsm->B(&uflush, a64::eq);
+		armAsm->Orr(wflags, wflags, FPUflagU | FPUflagSU);
+		if (addsub)
+		{
+			armAsm->Fmov(xbits, srcD);
+			armAsm->Ubfx(a64::x9, xbits, 29, 23); // double mantissa[51:29] -> single mantissa, exp=0
+			armAsm->Lsr(xbits, xbits, 63);        // sign bit
+			armAsm->Orr(a64::x9, a64::x9, a64::Operand(xbits, a64::LSL, 31));
+			armAsm->B(&done);
+		}
+	}
+	armAsm->Bind(&uflush);
+	armAsm->Fcvt(srcD.S(), srcD);
+	armAsm->Fmov(w, srcD.S());
+	armAsm->And(w, w, kSignBit); // flush to signed zero
+
+	armAsm->Bind(&done);
+	if (setFlags)
+		armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+}
+
+// emitToPS2FPUFull: core + store of the result single to the fpr/ACC slot.
+static void emitToPS2FPUFull(const a64::VRegister& srcD, u32 dstByteOffset, bool setFlags,
+	bool acc, bool addsub)
+{
+	emitToPS2FPUFullCore(srcD, setFlags, acc, addsub);
+	armAsm->Str(a64::w9, a64::MemOperand(RESTATEPTR, dstByteOffset));
+}
+
+// Write a compile-time FPCR bitmask to the host FPCR (the x86 analogue is
+// xLDMXCSR). The EE FPCR config is fixed for the lifetime of compiled blocks
+// (recs are reset when CPU config changes), so embedding the constant is safe.
+// Clobbers x16 (vixl scratch), like aVU's FPCR swap.
+static void emitSetHostFPCR(u64 bitmask)
+{
+	armAsm->Mov(RXVIXLSCRATCH, bitmask);
+	armAsm->Msr(a64::FPCR, RXVIXLSCRATCH);
+}
+
 enum class FpuBinOp
 {
 	Add,
@@ -276,10 +523,42 @@ enum class FpuBinOp
 };
 
 // Shared body for the ADD/SUB/MUL (-> fpr[fd]) and ADDA/SUBA/MULA (-> ACC) family.
+// When fpuFullMode: promote both operands to IEEE double before the arithmetic, then
+// convert back. This prevents intermediate overflow that single-precision can hit on
+// games like NFS Carbon (eeClampMode=3 in GameIndex).
 static void emitFpuBinary(FpuBinOp op, u32 dstByteOffset, u32 fs, u32 ft)
 {
-	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));
-	emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));
+	if (EmuConfig.Cpu.Recompiler.fpuFullMode)
+	{
+		if (op == FpuBinOp::Mul)
+		{
+			emitToDouble(RDSCRATCH, EE_FPR_OFFSET(fs));   // d30 = ToDouble(fs), no clamp
+			emitToDouble(RDSCRATCH2, EE_FPR_OFFSET(ft));  // d31 = ToDouble(ft), no clamp
+			armAsm->Fmul(RDSCRATCH, RDSCRATCH, RDSCRATCH2);
+		}
+		else
+		{
+			// ADD/SUB: apply the EE guard-bit mantissa masking (x86 FPU_ADD_SUB) on
+			// the raw single operands first, then promote and add/sub in double.
+			armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fs)));
+			armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(ft)));
+			emitFpuAddSub(a64::w9, a64::w10);
+			emitToDoubleFromBits(RDSCRATCH, a64::w9, a64::x11);
+			emitToDoubleFromBits(RDSCRATCH2, a64::w10, a64::x12);
+			if (op == FpuBinOp::Add)
+				armAsm->Fadd(RDSCRATCH, RDSCRATCH, RDSCRATCH2);
+			else
+				armAsm->Fsub(RDSCRATCH, RDSCRATCH, RDSCRATCH2);
+		}
+		// ADDA/SUBA/MULA write ACC and must track the ACC overflow flag; ADD/SUB get
+		// the EE's underflow mantissa-preserve behaviour (x86 recFPUOp/FPU_MUL).
+		emitToPS2FPUFull(RDSCRATCH, dstByteOffset, /*setFlags*/ true,
+			/*acc*/ dstByteOffset == EE_ACC_OFFSET, /*addsub*/ op != FpuBinOp::Mul);
+		return;
+	}
+
+	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));   // s30 = fpuDouble(fs)
+	emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));  // s31 = fpuDouble(ft)
 	switch (op)
 	{
 		case FpuBinOp::Add: armAsm->Fadd(RSSCRATCH, RSSCRATCH, RSSCRATCH2); break;
@@ -298,6 +577,60 @@ void armEmitMULA_S(u32 fs, u32 ft) { emitFpuBinary(FpuBinOp::Mul, EE_ACC_OFFSET,
 
 void armEmitDIV_S(u32 fd, u32 fs, u32 ft)
 {
+	if (EmuConfig.Cpu.Recompiler.fpuFullMode)
+	{
+		// Faithful port of x86 recDIV_S_xmm/recDIVhelper1 (iFPUd.cpp). The whole op
+		// (including the double conversions) runs under the dedicated DIV round mode
+		// (FPUDivFPCR, default nearest), and I|D are cleared every DIV.
+		const bool swapRound = EmuConfig.Cpu.FPUFPCR.bitmask != EmuConfig.Cpu.FPUDivFPCR.bitmask;
+		if (swapRound)
+			emitSetHostFPCR(EmuConfig.Cpu.FPUDivFPCR.bitmask);
+
+		const a64::Register ws = a64::w9;
+		const a64::Register wt = a64::w10;
+		const a64::Register wtmp = a64::w11;
+		const a64::Register wflags = a64::w13;
+
+		a64::Label normal, fsZero, byZeroDone, end;
+
+		armAsm->Ldr(ws, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fs)));
+		armAsm->Ldr(wt, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(ft)));
+		armAsm->Ldr(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+		armAsm->And(wflags, wflags, ~(FPUflagI | FPUflagD));
+
+		// Divisor zero/denormal (the x86 compare runs under DAZ, so exp==0 == zero).
+		armAsm->And(wtmp, wt, kExpMask);
+		armAsm->Cbnz(wtmp, &normal);
+
+		// 0/0 -> I|SI, x/0 -> D|SD; result = sign(fs^ft) | 0x7FFFFFFF
+		// (x86: regd ^= regt, then SetMaxValue ORs in 0x7FFFFFFF).
+		armAsm->And(wtmp, ws, kExpMask);
+		armAsm->Cbz(wtmp, &fsZero);
+		armAsm->Orr(wflags, wflags, FPUflagD | FPUflagSD);
+		armAsm->B(&byZeroDone);
+		armAsm->Bind(&fsZero);
+		armAsm->Orr(wflags, wflags, FPUflagI | FPUflagSI);
+		armAsm->Bind(&byZeroDone);
+		armAsm->Eor(wtmp, ws, wt);
+		armAsm->And(wtmp, wtmp, kSignBit);
+		armAsm->Orr(wtmp, wtmp, 0x7FFFFFFF);
+		armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+		armAsm->Str(wtmp, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fd)));
+		armAsm->B(&end);
+
+		armAsm->Bind(&normal);
+		armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+		emitToDoubleFromBits(RDSCRATCH, ws, a64::x11);
+		emitToDoubleFromBits(RDSCRATCH2, wt, a64::x11);
+		armAsm->Fdiv(RDSCRATCH, RDSCRATCH, RDSCRATCH2);
+		emitToPS2FPUFull(RDSCRATCH, EE_FPR_OFFSET(fd), /*setFlags*/ false, false, false);
+
+		armAsm->Bind(&end);
+		if (swapRound)
+			emitSetHostFPCR(EmuConfig.Cpu.FPUFPCR.bitmask);
+		return;
+	}
+
 	const a64::Register wdivisor = a64::w9;
 	const a64::Register wdividend = a64::w10;
 	const a64::Register wtmp = a64::w11;
@@ -340,6 +673,43 @@ void armEmitDIV_S(u32 fd, u32 fs, u32 ft)
 
 void armEmitSQRT_S(u32 fd, u32 ft)
 {
+	if (EmuConfig.Cpu.Recompiler.fpuFullMode)
+	{
+		// Faithful port of x86 recSQRT_S_xmm (iFPUd.cpp): runs under round-to-nearest;
+		// clears I|D; a negative input (including -0) sets I|SI and is made positive.
+		// No zero/denormal shortcut — sqrt of a denormal goes through the double path
+		// and underflows back to +0 in emitToPS2FPUFull.
+		const bool swapRound = EmuConfig.Cpu.FPUFPCR.GetRoundMode() != FPRoundMode::Nearest;
+		if (swapRound)
+		{
+			FPControlRegister nearest = EmuConfig.Cpu.FPUFPCR;
+			nearest.SetRoundMode(FPRoundMode::Nearest);
+			emitSetHostFPCR(nearest.bitmask);
+		}
+
+		const a64::Register wraw = a64::w9;
+		const a64::Register wflags = a64::w13;
+
+		a64::Label positive;
+
+		armAsm->Ldr(wraw, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(ft)));
+		armAsm->Ldr(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+		armAsm->And(wflags, wflags, ~(FPUflagI | FPUflagD));
+		armAsm->Tbz(wraw, 31, &positive);
+		armAsm->Orr(wflags, wflags, FPUflagI | FPUflagSI);
+		armAsm->And(wraw, wraw, ~kSignBit); // make positive
+		armAsm->Bind(&positive);
+		armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+
+		emitToDoubleFromBits(RDSCRATCH, wraw, a64::x11);
+		armAsm->Fsqrt(RDSCRATCH, RDSCRATCH);
+		emitToPS2FPUFull(RDSCRATCH, EE_FPR_OFFSET(fd), /*setFlags*/ false, false, false);
+
+		if (swapRound)
+			emitSetHostFPCR(EmuConfig.Cpu.FPUFPCR.bitmask);
+		return;
+	}
+
 	const a64::Register wraw = a64::w9;
 	const a64::Register wtmp = a64::w10;
 	const a64::Register wflags = a64::w13;
@@ -373,6 +743,68 @@ void armEmitSQRT_S(u32 fd, u32 ft)
 
 void armEmitRSQRT_S(u32 fd, u32 fs, u32 ft)
 {
+	if (EmuConfig.Cpu.Recompiler.fpuFullMode)
+	{
+		// Faithful port of x86 recRSQRT_S_xmm/recRSQRThelper1 (iFPUd.cpp): runs under
+		// round-to-nearest; clears I|D; negative ft (incl. -0) sets I|SI and is made
+		// positive; ft==0 (or denormal, DAZ semantics) sets I|SI on 0/0 else D|SD and
+		// the result is sign(fs) | 0x7FFFFFFF (SetMaxValue on the untouched fs).
+		const bool swapRound = EmuConfig.Cpu.FPUFPCR.GetRoundMode() != FPRoundMode::Nearest;
+		if (swapRound)
+		{
+			FPControlRegister nearest = EmuConfig.Cpu.FPUFPCR;
+			nearest.SetRoundMode(FPRoundMode::Nearest);
+			emitSetHostFPCR(nearest.bitmask);
+		}
+
+		const a64::Register ws = a64::w9;
+		const a64::Register wt = a64::w10;
+		const a64::Register wtmp = a64::w11;
+		const a64::Register wflags = a64::w13;
+
+		a64::Label tPositive, tNonzero, fsZero, zeroDone, end;
+
+		armAsm->Ldr(ws, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fs)));
+		armAsm->Ldr(wt, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(ft)));
+		armAsm->Ldr(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+		armAsm->And(wflags, wflags, ~(FPUflagI | FPUflagD));
+
+		armAsm->Tbz(wt, 31, &tPositive);
+		armAsm->Orr(wflags, wflags, FPUflagI | FPUflagSI);
+		armAsm->And(wt, wt, ~kSignBit); // make positive
+		armAsm->Bind(&tPositive);
+
+		armAsm->And(wtmp, wt, kExpMask);
+		armAsm->Cbnz(wtmp, &tNonzero);
+
+		// ft == 0: 0/0 -> I|SI, x/0 -> D|SD; result = sign(fs) | 0x7FFFFFFF.
+		armAsm->And(wtmp, ws, kExpMask);
+		armAsm->Cbz(wtmp, &fsZero);
+		armAsm->Orr(wflags, wflags, FPUflagD | FPUflagSD);
+		armAsm->B(&zeroDone);
+		armAsm->Bind(&fsZero);
+		armAsm->Orr(wflags, wflags, FPUflagI | FPUflagSI);
+		armAsm->Bind(&zeroDone);
+		armAsm->And(wtmp, ws, kSignBit);
+		armAsm->Orr(wtmp, wtmp, 0x7FFFFFFF);
+		armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+		armAsm->Str(wtmp, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fd)));
+		armAsm->B(&end);
+
+		armAsm->Bind(&tNonzero);
+		armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+		emitToDoubleFromBits(RDSCRATCH2, wt, a64::x11); // d31 = ft
+		emitToDoubleFromBits(RDSCRATCH, ws, a64::x11);  // d30 = fs
+		armAsm->Fsqrt(RDSCRATCH2, RDSCRATCH2);
+		armAsm->Fdiv(RDSCRATCH, RDSCRATCH, RDSCRATCH2);
+		emitToPS2FPUFull(RDSCRATCH, EE_FPR_OFFSET(fd), /*setFlags*/ false, false, false);
+
+		armAsm->Bind(&end);
+		if (swapRound)
+			emitSetHostFPCR(EmuConfig.Cpu.FPUFPCR.bitmask);
+		return;
+	}
+
 	const a64::Register wraw = a64::w9;
 	const a64::Register wtmp = a64::w10;
 	const a64::Register wflags = a64::w13;
@@ -418,7 +850,69 @@ void armEmitRSQRT_S(u32 fd, u32 fs, u32 ft)
 // run checkOverflow/checkUnderflow with the O|SO / U|SU flag side-effects.
 static void emitFpuMulAcc(bool subtract, bool toAcc, u32 fd, u32 fs, u32 ft)
 {
-	// product = clamp(fs) * clamp(ft)  (single precision)
+	if (EmuConfig.Cpu.Recompiler.fpuFullMode)
+	{
+		// Faithful port of x86 recMaddsub (iFPUd.cpp). The product is computed in
+		// double and rounded back to a PS2 single FIRST (setting the O/U flags), then
+		// the accumulate runs with overflow propagation: a product overflow forces
+		// ±MAX (sign-flipped for MSUB) and skips the add entirely; a previously
+		// overflowed ACC (fpuRegs.ACCflag, set by the ACC-writing ops) forces the
+		// clamped ACC. Only then is the add/sub done in double and re-rounded.
+		const a64::Register wprod = a64::w9; // the core's result register
+		const a64::Register wacc = a64::w10;
+		const a64::Register wtmp = a64::w11;
+
+		// FPU_MUL: product = ToPS2FPU(ToDouble(fs) * ToDouble(ft)) -> w9, flags set.
+		emitToDouble(RDSCRATCH, EE_FPR_OFFSET(fs));
+		emitToDouble(RDSCRATCH2, EE_FPR_OFFSET(ft));
+		armAsm->Fmul(RDSCRATCH, RDSCRATCH, RDSCRATCH2);
+		emitToPS2FPUFullCore(RDSCRATCH, /*setFlags*/ true, /*acc*/ false, /*addsub*/ false);
+
+		armAsm->Ldr(wacc, a64::MemOperand(RESTATEPTR, EE_ACC_OFFSET));
+		emitFpuAddSub(wacc, wprod); // EE guard-bit masking on (ACC, product)
+
+		a64::Label mulOvf, ovfCommon, end;
+
+		armAsm->Ldr(wtmp, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+		armAsm->Tst(wtmp, FPUflagO);
+		armAsm->B(&mulOvf, a64::ne); // the product overflowed
+		emitToDoubleFromBits(RDSCRATCH, wprod, a64::x11); // d30 = product
+		armAsm->Ldr(wtmp, a64::MemOperand(RESTATEPTR, EE_ACCFLAG_OFFSET));
+		armAsm->Tbnz(wtmp, 0, &ovfCommon); // ACC overflowed earlier -> clamped ACC
+		emitToDoubleFromBits(RDSCRATCH2, wacc, a64::x11); // d31 = ACC
+		if (subtract)
+			armAsm->Fsub(RDSCRATCH, RDSCRATCH2, RDSCRATCH); // ACC - product
+		else
+			armAsm->Fadd(RDSCRATCH, RDSCRATCH2, RDSCRATCH); // ACC + product
+		emitToPS2FPUFull(RDSCRATCH, toAcc ? EE_ACC_OFFSET : EE_FPR_OFFSET(fd),
+			/*setFlags*/ true, /*acc*/ toAcc, /*addsub*/ true);
+		armAsm->B(&end);
+
+		armAsm->Bind(&mulOvf);
+		if (subtract)
+			armAsm->Eor(wprod, wprod, kSignBit); // MSUB propagates -product
+		armAsm->Mov(wacc, wprod);
+		armAsm->Bind(&ovfCommon);
+		// Result = sign | 0x7FFFFFFF (x86 SetMaxValue); O|SO set, U cleared, and the
+		// ACC-writing forms mark the ACC as overflowed.
+		armAsm->And(wprod, wacc, kSignBit);
+		armAsm->Orr(wprod, wprod, 0x7FFFFFFF);
+		armAsm->Ldr(wtmp, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+		armAsm->And(wtmp, wtmp, ~(FPUflagO | FPUflagU));
+		armAsm->Orr(wtmp, wtmp, FPUflagO | FPUflagSO);
+		armAsm->Str(wtmp, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+		if (toAcc)
+		{
+			armAsm->Ldr(wtmp, a64::MemOperand(RESTATEPTR, EE_ACCFLAG_OFFSET));
+			armAsm->Orr(wtmp, wtmp, 1);
+			armAsm->Str(wtmp, a64::MemOperand(RESTATEPTR, EE_ACCFLAG_OFFSET));
+		}
+		armAsm->Str(wprod, a64::MemOperand(RESTATEPTR, toAcc ? EE_ACC_OFFSET : EE_FPR_OFFSET(fd)));
+		armAsm->Bind(&end);
+		return;
+	}
+
+	// product = clamp(fs) * clamp(ft)
 	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));
 	emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));
 	armAsm->Fmul(RSSCRATCH, RSSCRATCH, RSSCRATCH2);
@@ -437,7 +931,6 @@ static void emitFpuMulAcc(bool subtract, bool toAcc, u32 fd, u32 fs, u32 ft)
 		emitLoadFpuDouble(RSSCRATCH2, EE_ACC_OFFSET);
 	}
 
-	// result = ACC (+/-) product  -> RSSCRATCH2 is the accumulator, RSSCRATCH the addend
 	if (subtract)
 		armAsm->Fsub(RSSCRATCH, RSSCRATCH2, RSSCRATCH);
 	else
@@ -495,9 +988,18 @@ static void emitFpuCompare(a64::Condition cond, u32 fs, u32 ft)
 	const a64::Register wset = a64::w14;
 	const a64::Register wclr = a64::w15;
 
-	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));
-	emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));
-	armAsm->Fcmp(RSSCRATCH, RSSCRATCH2);
+	if (EmuConfig.Cpu.Recompiler.fpuFullMode)
+	{
+		emitToDouble(RDSCRATCH, EE_FPR_OFFSET(fs));   // no fmax clamp
+		emitToDouble(RDSCRATCH2, EE_FPR_OFFSET(ft));
+		armAsm->Fcmp(RDSCRATCH, RDSCRATCH2);
+	}
+	else
+	{
+		emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));
+		emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));
+		armAsm->Fcmp(RSSCRATCH, RSSCRATCH2);
+	}
 	armAsm->Ldr(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
 	armAsm->Orr(wset, wflags, FPUflagC);
 	armAsm->And(wclr, wflags, ~FPUflagC);

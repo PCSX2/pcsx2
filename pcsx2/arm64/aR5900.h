@@ -109,6 +109,9 @@ static constexpr u32 EE_FPRC_OFFSET(u32 n)
 // Byte offset of the FPU accumulator (ACC) — the destination of the ADDA/SUBA/MULA/
 // MADDA/MSUBA ACC ops.
 static constexpr u32 EE_ACC_OFFSET = EE_FPU_BASE + static_cast<u32>(offsetof(fpuRegisters, ACC));
+// Byte offset of fpuRegs.ACCflag — the recompiler-internal "ACC overflowed" bit that
+// full clamp mode's MADD/MSUB overflow propagation tests (x86 iFPUd recMaddsub).
+static constexpr u32 EE_ACCFLAG_OFFSET = EE_FPU_BASE + static_cast<u32>(offsetof(fpuRegisters, ACCflag));
 
 // --------------------------------------------------------------------------------------
 //  FPU (COP1) exact-semantics opcode generators (Phase 5.2a)
