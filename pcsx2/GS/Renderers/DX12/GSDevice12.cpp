@@ -974,7 +974,7 @@ bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		m_tfx_source = std::move(*shader);
 	}
 
-	if (!m_shader_cache.Open(D3D::ShaderModel::SM51, GSConfig.UseDebugDevice))
+	if (!m_shader_cache.Open(static_cast<D3D::ShaderModel>(m_shader_model), GSConfig.UseDebugDevice))
 		Console.Warning("D3D12: Shader cache failed to open.");
 
 	if (!CreateRootSignatures())
@@ -1519,6 +1519,11 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 	HRESULT hr = m_dxgi_factory->CheckFeatureSupport(
 		DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported, sizeof(allow_tearing_supported));
 	m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
+
+	D3D12_FEATURE_DATA_SHADER_MODEL device_shader_support = {D3D_SHADER_MODEL_6_5};
+	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &device_shader_support, sizeof(device_shader_support));
+	m_shader_model = SUCCEEDED(hr) ? device_shader_support.HighestShaderModel : D3D_SHADER_MODEL_5_1;
+	Console.WriteLnFmt("D3D12: Shader Model: {}.{}", (m_shader_model & 0xF0) >> 4, (m_shader_model & 0xF));
 
 	D3D12_FEATURE_DATA_ARCHITECTURE1 device_architecture1 = {};
 	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE1, &device_architecture1, sizeof(device_architecture1));
