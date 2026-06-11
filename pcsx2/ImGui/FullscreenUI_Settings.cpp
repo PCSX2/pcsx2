@@ -2263,21 +2263,21 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_SNOOZE, "Inhibit Screensaver"),
 		FSUI_CSTR("Prevents the screen saver from activating and the host from sleeping while emulation is running."), "EmuCore",
 		"InhibitScreensaver", true);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PAUSE, "Pause On Start"), FSUI_CSTR("Pauses the emulator when a game is started."), "UI",
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PAUSE, "Pause on Start"), FSUI_CSTR("Pauses the emulator when a game is started."), "UI",
 		"StartPaused", false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EYE, "Pause On Focus Loss"),
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EYE, "Pause on Focus Loss"),
 		FSUI_CSTR("Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back."),
 		"UI", "PauseOnFocusLoss", false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GAMEPAD, "Pause On Controller Disconnection"),
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GAMEPAD, "Pause on Controller Disconnection"),
 		FSUI_CSTR("Pauses the emulator when a controller with bindings is disconnected."), "UI", "PauseOnControllerDisconnection", false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_RECTANGLE_LIST, "Pause On Menu"),
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_RECTANGLE_LIST, "Pause on Menu"),
 		FSUI_CSTR("Pauses the emulator when you open the quick menu, and unpauses when you close it."), "UI", "PauseOnMenu", true);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FLOPPY_DISK, "Prompt On State Load/Save Failure"),
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FLOPPY_DISK, "Prompt on State Load/Save Failure"),
 		FSUI_CSTR("Display a modal dialog when a save state load/save operation fails."), "UI", "PromptOnStateLoadSaveFailure", true);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_POWER_OFF, "Confirm Shutdown"),
 		FSUI_CSTR("Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed."),
 		"UI", "ConfirmShutdown", true);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FLOPPY_DISK, "Save State On Shutdown"),
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FLOPPY_DISK, "Save State on Shutdown"),
 		FSUI_CSTR("Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left "
 				  "off next time."),
 		"EmuCore", "SaveStateOnShutdown", false);
@@ -2421,7 +2421,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COMPUTER_MOUSE, "Double-Click Toggles Fullscreen"),
 		FSUI_CSTR("Switches between full screen and windowed when the window is double-clicked."), "UI", "DoubleClickTogglesFullscreen",
 		true);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_POINTER, "Hide Cursor In Fullscreen"),
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_POINTER, "Hide Cursor in Fullscreen Mode"),
 		FSUI_CSTR("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."), "UI", "HideMouseCursor", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TABLET_SCREEN_BUTTON, "Start Big Picture UI"),
 		FSUI_CSTR("Automatically starts Big Picture Mode instead of the regular Qt interface when PCSX2 launches."), "UI", "StartBigPictureMode", false);
@@ -5769,13 +5769,13 @@ TRANSLATE_NOOP("FullscreenUI", "Clear Background Image");
 TRANSLATE_NOOP("FullscreenUI", "Background Opacity");
 TRANSLATE_NOOP("FullscreenUI", "Background Mode");
 TRANSLATE_NOOP("FullscreenUI", "Inhibit Screensaver");
-TRANSLATE_NOOP("FullscreenUI", "Pause On Start");
-TRANSLATE_NOOP("FullscreenUI", "Pause On Focus Loss");
-TRANSLATE_NOOP("FullscreenUI", "Pause On Controller Disconnection");
-TRANSLATE_NOOP("FullscreenUI", "Pause On Menu");
-TRANSLATE_NOOP("FullscreenUI", "Prompt On State Load/Save Failure");
+TRANSLATE_NOOP("FullscreenUI", "Pause on Start");
+TRANSLATE_NOOP("FullscreenUI", "Pause on Focus Loss");
+TRANSLATE_NOOP("FullscreenUI", "Pause on Controller Disconnection");
+TRANSLATE_NOOP("FullscreenUI", "Pause on Menu");
+TRANSLATE_NOOP("FullscreenUI", "Prompt on State Load/Save Failure");
 TRANSLATE_NOOP("FullscreenUI", "Confirm Shutdown");
-TRANSLATE_NOOP("FullscreenUI", "Save State On Shutdown");
+TRANSLATE_NOOP("FullscreenUI", "Save State on Shutdown");
 TRANSLATE_NOOP("FullscreenUI", "Create Save State Backups");
 TRANSLATE_NOOP("FullscreenUI", "Controller Glyph Style");
 TRANSLATE_NOOP("FullscreenUI", "Swap OK/Cancel in Big Picture Mode");
@@ -5783,7 +5783,7 @@ TRANSLATE_NOOP("FullscreenUI", "Use Legacy Nintendo Layout in Big Picture Mode")
 TRANSLATE_NOOP("FullscreenUI", "Enable Discord Presence");
 TRANSLATE_NOOP("FullscreenUI", "Start Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Double-Click Toggles Fullscreen");
-TRANSLATE_NOOP("FullscreenUI", "Hide Cursor In Fullscreen");
+TRANSLATE_NOOP("FullscreenUI", "Hide Cursor in Fullscreen Mode");
 TRANSLATE_NOOP("FullscreenUI", "Start Big Picture UI");
 TRANSLATE_NOOP("FullscreenUI", "Reset Settings");
 TRANSLATE_NOOP("FullscreenUI", "Change Search Directory");
