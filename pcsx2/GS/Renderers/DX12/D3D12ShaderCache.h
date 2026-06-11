@@ -39,22 +39,22 @@ public:
 	void Close();
 
 	__fi ComPtr<ID3DBlob> GetVertexShader(
-		std::string_view shader_code, const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main", const std::unordered_map<std::string, std::string>& includes = {})
+		const std::string_view shader_code, const char* shader_name, const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main", const std::unordered_map<std::string, std::string>& includes = {})
 	{
-		return GetShaderBlob(EntryType::VertexShader, shader_code, macros, entry_point, includes);
+		return GetShaderBlob(EntryType::VertexShader, shader_code, shader_name, macros, entry_point, includes);
 	}
 	__fi ComPtr<ID3DBlob> GetPixelShader(
-		std::string_view shader_code, const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main", const std::unordered_map<std::string, std::string>& includes = {})
+		const std::string_view shader_code, const char* shader_name, const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main", const std::unordered_map<std::string, std::string>& includes = {})
 	{
-		return GetShaderBlob(EntryType::PixelShader, shader_code, macros, entry_point, includes);
+		return GetShaderBlob(EntryType::PixelShader, shader_code, shader_name, macros, entry_point, includes);
 	}
 	__fi ComPtr<ID3DBlob> GetComputeShader(
-		std::string_view shader_code, const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main")
+		const std::string_view shader_code, const char* shader_name, const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main")
 	{
-		return GetShaderBlob(EntryType::ComputeShader, shader_code, macros, entry_point);
+		return GetShaderBlob(EntryType::ComputeShader, shader_code, shader_name, macros, entry_point);
 	}
 
-	ComPtr<ID3DBlob> GetShaderBlob(EntryType type, std::string_view shader_code,
+	ComPtr<ID3DBlob> GetShaderBlob(EntryType type, const std::string_view shader_code, const char* shader_name,
 		const D3D_SHADER_MACRO* macros = nullptr, const char* entry_point = "main", const std::unordered_map<std::string, std::string>& includes = {});
 
 	ComPtr<ID3D12PipelineState> GetPipelineState(ID3D12Device* device, const D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc);
@@ -107,7 +107,7 @@ private:
 		std::FILE*& blob_file, CacheIndex& index);
 	void InvalidatePipelineCache();
 
-	ComPtr<ID3DBlob> CompileAndAddShaderBlob(const CacheIndexKey& key, std::string_view shader_code,
+	ComPtr<ID3DBlob> CompileAndAddShaderBlob(const CacheIndexKey& key, const std::string_view shader_code, const char* shader_name,
 		const D3D_SHADER_MACRO* macros, const char* entry_point, const std::unordered_map<std::string, std::string>& includes = {});
 	ComPtr<ID3D12PipelineState> CompileAndAddPipeline(
 		ID3D12Device* device, const CacheIndexKey& key, const D3D12_GRAPHICS_PIPELINE_STATE_DESC& gpdesc);

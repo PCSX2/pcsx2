@@ -232,7 +232,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	ShaderMacro sm_vs;
 	sm_vs.AddMacro("VERTEX_SHADER", 1);
 	if (!m_shader_cache.GetVertexShaderAndInputLayout(m_dev.get(), m_convert.vs.put(), m_convert.il.put(),
-			il_convert, std::size(il_convert), *convert_hlsl, sm_vs.GetPtr(), "vs_main"))
+			il_convert, std::size(il_convert), *convert_hlsl, "convert.fx", sm_vs.GetPtr(), "vs_main"))
 	{
 		return false;
 	}
@@ -257,7 +257,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		sm_ps.AddMacro("HAS_FLOAT32_OUTPUT", static_cast<int>(shader.Float32Output()));
 		sm_ps.AddMacro(entry_point_macro.c_str(), 1);
 
-		m_convert.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *convert_hlsl, sm_ps.GetPtr(), entry_point);
+		m_convert.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *convert_hlsl, "convert.fx", sm_ps.GetPtr(), entry_point);
 		if (!m_convert.ps[i])
 			return false;
 	}
@@ -266,14 +266,14 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	if (!shader.has_value())
 		return false;
 	if (!m_shader_cache.GetVertexShaderAndInputLayout(m_dev.get(), m_present.vs.put(), m_present.il.put(),
-			il_convert, std::size(il_convert), *shader, nullptr, "vs_main"))
+			il_convert, std::size(il_convert), *shader, "present.fx", nullptr, "vs_main"))
 	{
 		return false;
 	}
 
 	for (size_t i = 0; i < std::size(m_present.ps); i++)
 	{
-		m_present.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, nullptr, ShaderEntryPoint(static_cast<PresentShader>(i)));
+		m_present.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, "present.fx", nullptr, ShaderEntryPoint(static_cast<PresentShader>(i)));
 		if (!m_present.ps[i])
 			return false;
 	}
@@ -321,7 +321,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	for (size_t i = 0; i < std::size(m_merge.ps); i++)
 	{
 		const std::string entry_point(StringUtil::StdStringFromFormat("ps_main%zu", i));
-		m_merge.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, nullptr, entry_point.c_str());
+		m_merge.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, "merge.fx", nullptr, entry_point.c_str());
 		if (!m_merge.ps[i])
 			return false;
 	}
@@ -355,7 +355,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	for (size_t i = 0; i < std::size(m_interlace.ps); i++)
 	{
 		const std::string entry_point(StringUtil::StdStringFromFormat("ps_main%zu", i));
-		m_interlace.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, nullptr, entry_point.c_str());
+		m_interlace.ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *shader, "interlace.fx", nullptr, entry_point.c_str());
 		if (!m_interlace.ps[i])
 			return false;
 	}
@@ -372,7 +372,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	shader = ReadShaderSource("shaders/dx11/shadeboost.fx");
 	if (!shader.has_value())
 		return false;
-	m_shadeboost.ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, nullptr, "ps_main");
+	m_shadeboost.ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, "shadeboost.fx", nullptr, "ps_main");
 	if (!m_shadeboost.ps)
 		return false;
 
@@ -583,7 +583,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		ShaderMacro sm_ps;
 		sm_ps.AddMacro("PIXEL_SHADER", 1);
 		sm_ps.AddMacro(entry_point_macro.c_str(), 1);
-		m_date.primid_init_ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *convert_hlsl, sm_ps.GetPtr(), entry_point.c_str());
+		m_date.primid_init_ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *convert_hlsl, "convert.fx", sm_ps.GetPtr(), entry_point.c_str());
 		if (!m_date.primid_init_ps[i])
 			return false;
 	}
@@ -1938,7 +1938,7 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 
 		ShaderMacro sm;
 		sm.AddMacro("FXAA_HLSL", "1");
-		m_fxaa_ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, sm.GetPtr(), "main");
+		m_fxaa_ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, "fxaa.fx", sm.GetPtr(), "main");
 		if (!m_fxaa_ps)
 			return;
 	}
@@ -1987,11 +1987,11 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 		if (sel.expand == GSHWDrawConfig::VSExpand::None)
 		{
 			m_shader_cache.GetVertexShaderAndInputLayout(m_dev.get(), vs.vs.put(), vs.il.put(), layout,
-				std::size(layout), m_tfx_source, sm.GetPtr(), "vs_main");
+				std::size(layout), m_tfx_source, "tfx.fx", sm.GetPtr(), "vs_main");
 		}
 		else
 		{
-			vs.vs = m_shader_cache.GetVertexShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "vs_main_expand");
+			vs.vs = m_shader_cache.GetVertexShader(m_dev.get(), m_tfx_source, "tfx.fx", sm.GetPtr(), "vs_main_expand");
 		}
 
 		i = m_vs.try_emplace(sel.key, std::move(vs)).first;
@@ -2082,7 +2082,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_ROV_COLOR", sel.rov_color);
 		sm.AddMacro("PS_ROV_DEPTH", static_cast<u32>(sel.rov_depth));
 
-		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, "tfx.fx", sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel, std::move(ps)).first;
 	}
 
@@ -2259,8 +2259,8 @@ bool GSDevice11::CreateCASShaders()
 		{"CAS_SHARPEN_ONLY", "1"},
 		{nullptr, nullptr}};
 
-	m_cas.cs_sharpen = m_shader_cache.GetComputeShader(m_dev.get(), cas_source.value(), sharpen_only_macros, "main");
-	m_cas.cs_upscale = m_shader_cache.GetComputeShader(m_dev.get(), cas_source.value(), nullptr, "main");
+	m_cas.cs_sharpen = m_shader_cache.GetComputeShader(m_dev.get(), cas_source.value(), "cas.hlsl", sharpen_only_macros, "main");
+	m_cas.cs_upscale = m_shader_cache.GetComputeShader(m_dev.get(), cas_source.value(), "cas.hlsl", nullptr, "main");
 	if (!m_cas.cs_sharpen || !m_cas.cs_upscale)
 	{
 		Console.Error("D3D11: Failed to create CAS compute shaders.");
@@ -2318,8 +2318,8 @@ bool GSDevice11::CreateImGuiResources()
 	// clang-format on
 
 	if (!m_shader_cache.GetVertexShaderAndInputLayout(m_dev.get(), m_imgui.vs.put(), m_imgui.il.put(), layout,
-			std::size(layout), hlsl.value(), nullptr, "vs_main") ||
-		!(m_imgui.ps = m_shader_cache.GetPixelShader(m_dev.get(), hlsl.value(), nullptr, "ps_main")))
+			std::size(layout), hlsl.value(), "imgui.fx", nullptr, "vs_main") ||
+		!(m_imgui.ps = m_shader_cache.GetPixelShader(m_dev.get(), hlsl.value(), "imgui.fx", nullptr, "ps_main")))
 	{
 		Console.Error("D3D11: Failed to compile ImGui shaders");
 		return false;
