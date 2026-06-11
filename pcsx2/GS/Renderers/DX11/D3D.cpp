@@ -492,9 +492,159 @@ const char* D3D::ShaderModelToCacheString(D3D::ShaderModel shader_model)
 	}
 }
 
+// Not COM
+struct FxcResourceIncludeHandler final : ID3DInclude
+{
+private:
+	std::unordered_map<std::string, std::string> includes;
+	std::map<const char*, std::string> file_dir;
+	std::vector<std::unique_ptr<const char[]>> opened_files;
+
+public:
+	explicit FxcResourceIncludeHandler(const std::unordered_map<std::string, std::string>& includes)
+	{
+		this->includes = includes;
+	}
+	virtual ~FxcResourceIncludeHandler() = default;
+
+	virtual HRESULT Open(D3D_INCLUDE_TYPE, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes) override
+	{
+		if (ppData == nullptr || pBytes == nullptr)
+			return E_POINTER;
+
+		const std::string filename = Path::Canonicalize(pFileName);
+
+		std::unordered_map<std::string, std::string>::const_iterator iter;
+		if (pParentData != nullptr)
+		{
+			// Search same directory as file.
+			const std::string path = Path::Canonicalize(Path::Combine(file_dir[reinterpret_cast<const char*>(pParentData)], filename));
+
+			iter = includes.find(path);
+			if (iter == includes.end())
+			{
+				// Search root directory.
+				iter = includes.find(filename);
+			}
+		}
+		else
+			iter = includes.find(filename);
+
+		if (iter != includes.end())
+		{
+			std::unique_ptr<char[]> source_data = std::make_unique_for_overwrite<char[]>(iter->second.length());
+			std::memcpy(source_data.get(), iter->second.c_str(), iter->second.length());
+			*ppData = source_data.get();
+			*pBytes = iter->second.length();
+
+			file_dir.emplace(source_data.get(), Path::GetDirectory(iter->first));
+			opened_files.push_back(std::move(source_data));
+			return S_OK;
+		}
+
+		*ppData = nullptr;
+		*pBytes = 0;
+		return E_FAIL;
+	}
+
+	virtual HRESULT Close(LPCVOID pData) override
+	{
+		for (std::vector<std::unique_ptr<const char[]>>::iterator it = opened_files.begin(); it != opened_files.end();)
+		{
+			if (pData == it->get())
+			{
+				file_dir.erase(it->get());
+				opened_files.erase(it);
+				return S_OK;
+			}
+		}
+
+		return E_FAIL;
+	}
+};
+
+// COM
+struct DxcResourceIncludeHandler final : IDxcIncludeHandler
+{
+private:
+	std::unordered_map<std::string, std::string> includes;
+	wil::com_ptr_nothrow<IDxcUtils> utils;
+	u32 ref_count;
+
+public:
+	explicit DxcResourceIncludeHandler(const std::unordered_map<std::string, std::string>& includes)
+	{
+		this->includes = includes;
+		const HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(utils.put()));
+		if (FAILED(hr))
+			utils = nullptr;
+		ref_count = 1;
+	}
+	virtual ~DxcResourceIncludeHandler() = default;
+
+	virtual HRESULT QueryInterface(REFIID riid, void** ppvObject) override
+	{
+		if (ppvObject == nullptr)
+			return E_POINTER;
+
+		if (riid == IID_IUnknown || riid == __uuidof(IDxcIncludeHandler))
+		{
+			*ppvObject = this;
+			AddRef();
+			return S_OK;
+		}
+		else
+		{
+			*ppvObject = nullptr;
+			return E_NOINTERFACE;
+		}
+	}
+
+	virtual ULONG AddRef() override
+	{
+		ref_count++;
+		return ref_count;
+	}
+
+	virtual ULONG Release() override
+	{
+		const u32 ret = ref_count--;
+		if (ref_count == 0)
+			delete this;
+		return ret;
+	}
+
+	virtual HRESULT LoadSource(LPCWSTR pFilename, IDxcBlob** ppIncludeSource) override
+	{
+		if (ppIncludeSource == nullptr)
+			return E_POINTER;
+
+		if (utils != nullptr)
+		{
+			std::string filename = StringUtil::WideStringToUTF8String(pFilename);
+			Path::Canonicalize(&filename);
+
+			const auto iter = includes.find(filename);
+			if (iter != includes.end())
+			{
+				IDxcBlobEncoding* source_blob;
+				const HRESULT hr = utils->CreateBlob(iter->second.c_str(), iter->second.length(), CP_UTF8, &source_blob);
+				if (SUCCEEDED(hr))
+				{
+					*ppIncludeSource = source_blob;
+					return S_OK;
+				}
+			}
+		}
+
+		*ppIncludeSource = nullptr;
+		return E_FAIL;
+	}
+};
+
 wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShaderDXBC(D3D::ShaderType type, D3D::ShaderModel shader_model, bool debug,
 	const std::string_view code, const D3D_SHADER_MACRO* macros /* = nullptr */,
-	const char* entry_point /* = "main" */)
+	const char* entry_point /* = "main" */, const std::unordered_map<std::string, std::string>& includes /*= {} */)
 {
 	const GSShaderCompileIndicator::CompileTimer compile_timer;
 
@@ -534,9 +684,14 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShaderDXBC(D3D::ShaderType type, D3D:
 	static constexpr UINT flags_non_debug = D3DCOMPILE_OPTIMIZATION_LEVEL3;
 	static constexpr UINT flags_debug = D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_DEBUG | D3DCOMPILE_DEBUG_NAME_FOR_SOURCE;
 
+	// Untested
+	std::unique_ptr<ID3DInclude> pInclude{nullptr};
+	if (!includes.empty())
+		pInclude = std::make_unique<FxcResourceIncludeHandler>(includes);
+
 	wil::com_ptr_nothrow<ID3DBlob> blob;
 	wil::com_ptr_nothrow<ID3DBlob> error_blob;
-	const HRESULT hr = D3DCompile(code.data(), code.size(), "0", macros, nullptr, entry_point, target,
+	const HRESULT hr = D3DCompile(code.data(), code.size(), "0", macros, pInclude.get(), entry_point, target,
 		debug ? flags_debug : flags_non_debug, 0, blob.put(), error_blob.put());
 
 	std::string error_string;
@@ -577,7 +732,7 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShaderDXBC(D3D::ShaderType type, D3D:
 
 wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShaderDXIL(D3D::ShaderType type, D3D::ShaderModel shader_model, bool debug,
 	const std::string_view code, const D3D_SHADER_MACRO* macros /* = nullptr */,
-	const char* entry_point /* = "main" */)
+	const char* entry_point /* = "main" */, const std::unordered_map<std::string, std::string>& includes /*= {} */)
 {
 	const GSShaderCompileIndicator::CompileTimer compile_timer;
 
@@ -639,13 +794,17 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShaderDXIL(D3D::ShaderType type, D3D:
 		}
 	}
 
+	wil::com_ptr_nothrow<IDxcIncludeHandler> pInclude;
+	if (!includes.empty())
+		*pInclude.put() = new DxcResourceIncludeHandler(includes);
+
 	// Compile Shader.
 	wil::com_ptr_nothrow<IDxcCompiler3> pCompiler;
 	DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(pCompiler.put()));
 
 	const DxcBuffer source{code.data(), code.length(), DXC_CP_UTF8};
 	wil::com_ptr_nothrow<IDxcResult> pResults;
-	HRESULT hr = pCompiler->Compile(&source, args.data(), args.size(), nullptr, IID_PPV_ARGS(pResults.put()));
+	HRESULT hr = pCompiler->Compile(&source, args.data(), args.size(), pInclude.get(), IID_PPV_ARGS(pResults.put()));
 
 	if (FAILED(hr))
 	{
@@ -692,10 +851,10 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShaderDXIL(D3D::ShaderType type, D3D:
 
 wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D::ShaderModel shader_model, bool debug,
 	const std::string_view code, const D3D_SHADER_MACRO* macros /* = nullptr */,
-	const char* entry_point /* = "main" */)
+	const char* entry_point /* = "main" */, const std::unordered_map<std::string, std::string>& includes /*= {} */)
 {
 	if (static_cast<int>(shader_model) < 0x65)
-		return CompileShaderDXBC(type, shader_model, debug, code, macros, entry_point);
+		return CompileShaderDXBC(type, shader_model, debug, code, macros, entry_point, includes);
 	else
-		return CompileShaderDXIL(type, shader_model, debug, code, macros, entry_point);
+		return CompileShaderDXIL(type, shader_model, debug, code, macros, entry_point, includes);
 }
