@@ -954,6 +954,30 @@ static void recCacheFlushEntry(RecGprCacheState& cache, size_t index)
 	entry.dirty = false;
 }
 
+// Drop a guest register from the cache without writing it back. Only correct when
+// the instruction fully redefines the guest register in memory (e.g. LQ).
+static void recCacheDiscardGuest(RecGprCacheState& cache, u32 guest)
+{
+	if (guest == 0)
+		return;
+
+	const int found = recCacheFind(cache, guest);
+	if (found >= 0)
+		cache.entries[static_cast<size_t>(found)] = RecGprCacheEntry();
+}
+
+// Write a single guest register back to cpuRegs if it is cached dirty. The entry
+// stays valid (clean), so later ops can keep using the cached copy.
+static void recCacheFlushGuest(RecGprCacheState& cache, u32 guest)
+{
+	if (guest == 0)
+		return;
+
+	const int found = recCacheFind(cache, guest);
+	if (found >= 0)
+		recCacheFlushEntry(cache, static_cast<size_t>(found));
+}
+
 static void recCacheFlushAll(RecGprCacheState& cache)
 {
 	for (size_t i = 0; i < std::size(cache.entries); i++)
@@ -1161,6 +1185,76 @@ static bool recTryTranslateCachedStore(u32 bits, u32 rt, u32 rs, s32 imm, RecGpr
 	return true;
 }
 
+static bool recTryTranslateCachedLoadQuad(u32 rt, u32 rs, s32 imm, RecGprCacheState& cache)
+{
+	static const a64::Register RADDR = a64::x9;
+	static const a64::Register RHOST = a64::x10;
+
+	// Effective address, forced 16-byte aligned (the EE silently aligns 128-bit
+	// accesses; matches the x86 recLQ `xAND(arg1regd, ~0x0F)` and armEmitLoadQuad).
+	recEmitCachedEffectiveAddr(cache, rs, imm, RADDR);
+	armAsm->And(RADDR.W(), RADDR.W(), ~0x0F);
+
+	// Snapshot taken before the rt discard below on purpose: if the slow-path read
+	// hits a TLB miss the handler longjmps out of the block, so at the call site
+	// every guest register — including rt's old dirty low half — must already be
+	// flushed to cpuRegs.
+	const RecGprCacheState pre_load_cache = cache;
+
+	// LQ overwrites the full 128-bit destination, but the scalar GPR cache only
+	// tracks the low 64 bits. Discard any cached low half so a stale dirty entry
+	// can't be flushed over the freshly loaded quad later. Done after the address
+	// computation so rt==rs still uses the pre-load value above.
+	recCacheDiscardGuest(cache, rt);
+
+	a64::Label slow_path;
+	a64::Label done;
+	recEmitVmapHostPointer(RHOST, RADDR, &slow_path);
+	armAsm->Ldr(RQSCRATCH, a64::MemOperand(RHOST));
+	if (rt != 0)
+		armAsm->Str(RQSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->B(&done);
+
+	armAsm->Bind(&slow_path);
+	recCacheEmitFlushAll(pre_load_cache);
+	// Perform the read even when rt==0 (the access can have I/O side effects).
+	armEmitVtlbReadQuad(RQSCRATCH, RADDR);
+	if (rt != 0)
+		armAsm->Str(RQSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+
+	armAsm->Bind(&done);
+	return true;
+}
+
+static bool recTryTranslateCachedStoreQuad(u32 rt, u32 rs, s32 imm, RecGprCacheState& cache)
+{
+	static const a64::Register RADDR = a64::x9;
+	static const a64::Register RHOST = a64::x10;
+
+	recEmitCachedEffectiveAddr(cache, rs, imm, RADDR);
+	armAsm->And(RADDR.W(), RADDR.W(), ~0x0F);
+
+	// SQ reads the whole 128-bit GPR from cpuRegs. If prior cached scalar ops
+	// dirtied the low half of rt, write it back first so the vector load sees a
+	// coherent register (rt==0 reads the always-zero GPR[0] slot, no special case).
+	recCacheFlushGuest(cache, rt);
+	armAsm->Ldr(RQSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	const RecGprCacheState pre_store_cache = cache;
+
+	a64::Label slow_path;
+	a64::Label done;
+	recEmitVmapHostPointer(RHOST, RADDR, &slow_path);
+	armAsm->Str(RQSCRATCH, a64::MemOperand(RHOST));
+	armAsm->B(&done);
+
+	armAsm->Bind(&slow_path);
+	recCacheEmitFlushAll(pre_store_cache);
+	armEmitVtlbWriteQuad(RADDR, RQSCRATCH);
+
+	armAsm->Bind(&done);
+	return true;
+}
+
 static bool recTryTranslateCachedOp(u32 op, RecGprCacheState& cache)
 {
 	const u32 opcode = op >> 26;
@@ -1284,11 +1378,13 @@ static bool recTryTranslateCachedOp(u32 op, RecGprCacheState& cache)
 		case OP_LW:  return recTryTranslateCachedLoad(32, true,  rt, rs, imm, cache);
 		case OP_LWU: return recTryTranslateCachedLoad(32, false, rt, rs, imm, cache);
 		case OP_LD:  return recTryTranslateCachedLoad(64, false, rt, rs, imm, cache);
+		case OP_LQ:  return recTryTranslateCachedLoadQuad(rt, rs, imm, cache);
 
 		case OP_SB: return recTryTranslateCachedStore(8,  rt, rs, imm, cache);
 		case OP_SH: return recTryTranslateCachedStore(16, rt, rs, imm, cache);
 		case OP_SW: return recTryTranslateCachedStore(32, rt, rs, imm, cache);
 		case OP_SD: return recTryTranslateCachedStore(64, rt, rs, imm, cache);
+		case OP_SQ: return recTryTranslateCachedStoreQuad(rt, rs, imm, cache);
 
 		case 0x00:
 			break;
