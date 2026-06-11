@@ -33,6 +33,7 @@
     <DepsDLLs Include="$(DepsBinDir)avutil-*.dll" />
     <DepsDLLs Include="$(DepsBinDir)swresample-*.dll" />
     <DepsDLLs Include="$(DepsBinDir)swscale-*.dll" />
+    <DepsDLLs Include="$(DepsBinDir)dxcompiler.dll" />
   </ItemGroup>
   <ItemGroup>
     <AgilityDLLs Condition="Exists('$(DepsBinDir)D3D12\D3D12Core.dll')" Include="$(DepsBinDir)D3D12\D3D12Core.dll" />
