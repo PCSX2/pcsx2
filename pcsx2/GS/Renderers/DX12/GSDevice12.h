@@ -455,8 +455,8 @@ private:
 	ComPtr<ID3D12PipelineState> CreateTFXPipeline(const PipelineSelector& p);
 	const ID3D12PipelineState* GetTFXPipeline(const PipelineSelector& p);
 
-	ComPtr<ID3DBlob> GetUtilityVertexShader(const std::string& source, const char* entry_point);
-	ComPtr<ID3DBlob> GetUtilityPixelShader(const std::string& source, const char* entry_point);
+	ComPtr<ID3DBlob> GetUtilityVertexShader(const std::string& source, const char* name, const char* entry_point);
+	ComPtr<ID3DBlob> GetUtilityPixelShader(const std::string& source, const char* name, const char* entry_point);
 
 	void FeedbackBarrier(const GSTexture12* texture);
 

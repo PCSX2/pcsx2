@@ -2185,8 +2185,8 @@ bool GSDevice12::CompileCASPipelines()
 
 	static constexpr D3D_SHADER_MACRO sharpen_only_macros[] = {{"CAS_SHARPEN_ONLY", "1"}, {nullptr, nullptr}};
 
-	const ComPtr<ID3DBlob> cs_upscale(m_shader_cache.GetComputeShader(cas_source.value(), nullptr, "main"));
-	const ComPtr<ID3DBlob> cs_sharpen(m_shader_cache.GetComputeShader(cas_source.value(), sharpen_only_macros, "main"));
+	const ComPtr<ID3DBlob> cs_upscale(m_shader_cache.GetComputeShader(cas_source.value(), "cas.hlsl", nullptr, "main"));
+	const ComPtr<ID3DBlob> cs_sharpen(m_shader_cache.GetComputeShader(cas_source.value(), "cas.hlsl", sharpen_only_macros, "main"));
 	if (!cs_upscale || !cs_sharpen)
 		return false;
 
@@ -2214,8 +2214,8 @@ bool GSDevice12::CompileImGuiPipeline()
 		return false;
 	}
 
-	const ComPtr<ID3DBlob> vs = m_shader_cache.GetVertexShader(hlsl.value(), nullptr, "vs_main");
-	const ComPtr<ID3DBlob> ps = m_shader_cache.GetPixelShader(hlsl.value(), nullptr, "ps_main");
+	const ComPtr<ID3DBlob> vs = m_shader_cache.GetVertexShader(hlsl.value(), "imgui.fx", nullptr, "vs_main");
+	const ComPtr<ID3DBlob> ps = m_shader_cache.GetPixelShader(hlsl.value(), "imgui.fx", nullptr, "ps_main");
 	if (!vs || !ps)
 	{
 		Console.Error("D3D12: Failed to compile ImGui shaders");
@@ -2594,17 +2594,17 @@ static void AddUtilityVertexAttributes(D3D12::GraphicsPipelineBuilder& gpb)
 	gpb.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 }
 
-GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityVertexShader(const std::string& source, const char* entry_point)
+GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityVertexShader(const std::string& source, const char* name, const char* entry_point)
 {
 	ShaderMacro sm_model;
 	sm_model.AddMacro("VERTEX_SHADER", "1");
-	return m_shader_cache.GetVertexShader(source, sm_model.GetPtr(), entry_point);
+	return m_shader_cache.GetVertexShader(source, name, sm_model.GetPtr(), entry_point);
 }
 
-GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityPixelShader(const std::string& source, const char* entry_point)
+GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityPixelShader(const std::string& source, const char* name, const char* entry_point)
 {
 	ShaderMacro sm_model;
-	return m_shader_cache.GetPixelShader(source, sm_model.GetPtr(), entry_point);
+	return m_shader_cache.GetPixelShader(source, name, sm_model.GetPtr(), entry_point);
 }
 
 bool GSDevice12::CreateNullTexture()
@@ -2714,7 +2714,7 @@ bool GSDevice12::CompileConvertPipelines()
 		return false;
 	}
 
-	m_convert_vs = GetUtilityVertexShader(*source, "vs_main");
+	m_convert_vs = GetUtilityVertexShader(*source, "convert.fx", "vs_main");
 	if (!m_convert_vs)
 		return false;
 
@@ -2775,7 +2775,7 @@ bool GSDevice12::CompileConvertPipelines()
 		sm.AddMacro("HAS_FLOAT32_OUTPUT", static_cast<int>(shader.Float32Output()));
 		sm.AddMacro(entry_point_macro.c_str(), 1);
 
-		ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(*source, sm.GetPtr(), shader.EntryPoint()));
+		ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(*source, "convert.fx", sm.GetPtr(), shader.EntryPoint()));
 		if (!ps)
 			return false;
 
@@ -2822,7 +2822,7 @@ bool GSDevice12::CompileConvertPipelines()
 		sm.AddMacro("PIXEL_SHADER", "1");
 		sm.AddMacro(entry_point_macro.c_str(), "1");
 
-		ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(*source, sm.GetPtr(), entry_point.c_str()));
+		ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(*source, "convert.fx", sm.GetPtr(), entry_point.c_str()));
 		if (!ps)
 			return false;
 
@@ -2858,7 +2858,7 @@ bool GSDevice12::CompilePresentPipelines()
 		return false;
 	}
 
-	ComPtr<ID3DBlob> vs = GetUtilityVertexShader(*shader, "vs_main");
+	ComPtr<ID3DBlob> vs = GetUtilityVertexShader(*shader, "present.fx", "vs_main");
 	if (!vs)
 		return false;
 
@@ -2876,7 +2876,7 @@ bool GSDevice12::CompilePresentPipelines()
 	{
 		const int index = static_cast<int>(i);
 
-		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, ShaderEntryPoint(i)));
+		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, "present.fx", ShaderEntryPoint(i)));
 		if (!ps)
 			return false;
 
@@ -2912,7 +2912,7 @@ bool GSDevice12::CompileInterlacePipelines()
 
 	for (int i = 0; i < static_cast<int>(m_interlace.size()); i++)
 	{
-		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*source, StringUtil::StdStringFromFormat("ps_main%d", i).c_str()));
+		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*source, "interlace.fx", StringUtil::StdStringFromFormat("ps_main%d", i).c_str()));
 		if (!ps)
 			return false;
 
@@ -2947,7 +2947,7 @@ bool GSDevice12::CompileMergePipelines()
 
 	for (int i = 0; i < static_cast<int>(m_merge.size()); i++)
 	{
-		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, StringUtil::StdStringFromFormat("ps_main%d", i).c_str()));
+		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, "interlace.fx", StringUtil::StdStringFromFormat("ps_main%d", i).c_str()));
 		if (!ps)
 			return false;
 
@@ -2986,7 +2986,7 @@ bool GSDevice12::CompilePostProcessingPipelines()
 
 		ShaderMacro sm;
 		sm.AddMacro("FXAA_HLSL", "1");
-		ComPtr<ID3DBlob> ps = m_shader_cache.GetPixelShader(*shader, sm.GetPtr());
+		ComPtr<ID3DBlob> ps = m_shader_cache.GetPixelShader(*shader, "fxaa.fx", sm.GetPtr());
 		if (!ps)
 			return false;
 
@@ -3007,7 +3007,7 @@ bool GSDevice12::CompilePostProcessingPipelines()
 			return false;
 		}
 
-		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, "ps_main"));
+		ComPtr<ID3DBlob> ps(GetUtilityPixelShader(*shader, "shadeboost.fx", "ps_main"));
 		if (!ps)
 			return false;
 
@@ -3108,7 +3108,7 @@ const ID3DBlob* GSDevice12::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 	sm.AddMacro("VS_EXPAND", static_cast<int>(sel.expand));
 
 	const char* entry_point = (sel.expand != GSHWDrawConfig::VSExpand::None) ? "vs_main_expand" : "vs_main";
-	ComPtr<ID3DBlob> vs(m_shader_cache.GetVertexShader(m_tfx_source, sm.GetPtr(), entry_point));
+	ComPtr<ID3DBlob> vs(m_shader_cache.GetVertexShader(m_tfx_source, "tfx.fx", sm.GetPtr(), entry_point));
 	it = m_tfx_vertex_shaders.emplace(sel.key, std::move(vs)).first;
 	return it->second.get();
 }
@@ -3186,7 +3186,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_ROV_COLOR", sel.rov_color);
 	sm.AddMacro("PS_ROV_DEPTH", static_cast<u32>(sel.rov_depth));
 
-	ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(m_tfx_source, sm.GetPtr(), "ps_main"));
+	ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(m_tfx_source, "tfx.fx", sm.GetPtr(), "ps_main"));
 	it = m_tfx_pixel_shaders.emplace(sel, std::move(ps)).first;
 	return it->second.get();
 }
