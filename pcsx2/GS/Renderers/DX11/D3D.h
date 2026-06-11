@@ -60,7 +60,8 @@ namespace D3D
 	{
 		Vertex,
 		Pixel,
-		Compute
+		Compute,
+		Libary,
 	};
 
 	enum class ShaderModel
@@ -89,4 +90,7 @@ namespace D3D
 	wil::com_ptr_nothrow<ID3DBlob> CompileShaderDXIL(ShaderType type, ShaderModel shader_model, bool debug,
 		const std::string_view code, const char* name, const D3D_SHADER_MACRO* macros = nullptr,
 		const char* entry_point = "main", const std::unordered_map<std::string, std::string>& includes = {});
+
+	wil::com_ptr_nothrow<ID3DBlob> LinkShaderDXIL(ShaderType type, ShaderModel shader_model, bool debug,
+		const std::vector<wil::com_ptr_nothrow<ID3DBlob>>& modules, const char* entry_point = "main");
 }; // namespace D3D

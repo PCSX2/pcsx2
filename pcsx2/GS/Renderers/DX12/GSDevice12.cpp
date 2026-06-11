@@ -877,6 +877,55 @@ bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		m_tfx_source = std::move(*shader);
 	}
 
+	{
+		std::optional<std::string> shader;
+
+#define SHADER_FILE(file) \
+	shader = ReadShaderSource("shaders/dx11/" file); \
+	if (!shader.has_value()) \
+	{ \
+		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/" file); \
+		return false; \
+	} \
+	if (m_shader_linking) \
+		m_tfx_lib_source.push_back(std::make_pair(std::move(*shader), file)); \
+	else \
+		m_tfx_includes.emplace(file, std::move(*shader));
+
+		SHADER_FILE("tfx_ps_main.hlsl");
+		SHADER_FILE("tfx_ps_atst.hlsl");
+		SHADER_FILE("tfx_ps_blend.hlsl");
+		SHADER_FILE("tfx_ps_color.hlsl");
+		SHADER_FILE("tfx_ps_fetch.hlsl");
+		SHADER_FILE("tfx_ps_fog.hlsl");
+		SHADER_FILE("tfx_ps_misc.hlsl");
+		SHADER_FILE("tfx_ps_rt.hlsl");
+		SHADER_FILE("tfx_ps_rta_correction.hlsl");
+		SHADER_FILE("tfx_ps_sample.hlsl");
+		SHADER_FILE("tfx_ps_sample_af.hlsl");
+		SHADER_FILE("tfx_ps_tfx.hlsl");
+
+#undef SHADER_FILE
+	}
+
+	{
+		std::optional<std::string> shader;
+
+#define SHADER_FILE(include) \
+	shader = ReadShaderSource("shaders/dx11/" include); \
+	if (!shader.has_value()) \
+	{ \
+		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/" include); \
+		return false; \
+	} \
+	m_tfx_includes.emplace(include, std::move(*shader));
+
+		SHADER_FILE("tfx_defines.hlsl");
+		SHADER_FILE("tfx_ps_resources.hlsl");
+
+#undef SHADER_FILE
+	}
+
 	if (!m_shader_cache.Open(static_cast<D3D::ShaderModel>(m_shader_model), GSConfig.UseDebugDevice))
 		Console.Warning("D3D12: Shader cache failed to open.");
 
@@ -1419,6 +1468,7 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &device_shader_support, sizeof(device_shader_support));
 	m_shader_model = SUCCEEDED(hr) ? device_shader_support.HighestShaderModel : D3D_SHADER_MODEL_5_1;
 	Console.WriteLnFmt("D3D12: Shader Model: {}.{}", (m_shader_model & 0xF0) >> 4, (m_shader_model & 0xF));
+	m_shader_linking = (m_shader_model >= D3D_SHADER_MODEL_6_5) && !GSConfig.DisableShaderCache;
 
 	D3D12_FEATURE_DATA_ARCHITECTURE1 device_architecture1 = {};
 	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE1, &device_architecture1, sizeof(device_architecture1));
@@ -3108,7 +3158,7 @@ const ID3DBlob* GSDevice12::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 	sm.AddMacro("VS_EXPAND", static_cast<int>(sel.expand));
 
 	const char* entry_point = (sel.expand != GSHWDrawConfig::VSExpand::None) ? "vs_main_expand" : "vs_main";
-	ComPtr<ID3DBlob> vs(m_shader_cache.GetVertexShader(m_tfx_source, "tfx.fx", sm.GetPtr(), entry_point));
+	ComPtr<ID3DBlob> vs(m_shader_cache.GetVertexShader(m_tfx_source, "tfx.fx", sm.GetPtr(), entry_point, m_tfx_includes));
 	it = m_tfx_vertex_shaders.emplace(sel.key, std::move(vs)).first;
 	return it->second.get();
 }
@@ -3186,7 +3236,12 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_ROV_COLOR", sel.rov_color);
 	sm.AddMacro("PS_ROV_DEPTH", static_cast<u32>(sel.rov_depth));
 
-	ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(m_tfx_source, "tfx.fx", sm.GetPtr(), "ps_main"));
+	ComPtr<ID3DBlob> ps;
+	if (m_shader_linking)
+		ps = m_shader_cache.GetPixelShader(m_tfx_lib_source, sm.GetPtr(), "ps_main", m_tfx_includes);
+	else
+		ps = m_shader_cache.GetPixelShader(m_tfx_source, "tfx.fx", sm.GetPtr(), "ps_main", m_tfx_includes);
+
 	it = m_tfx_pixel_shaders.emplace(sel, std::move(ps)).first;
 	return it->second.get();
 }

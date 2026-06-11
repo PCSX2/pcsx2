@@ -26,6 +26,7 @@
 #include <fstream>
 
 #include "fmt/format.h"
+#include "fmt/xchar.h"
 
 static u32 s_next_bad_shader_id = 1;
 
@@ -647,6 +648,7 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShaderDXBC(D3D::ShaderType type, D3D:
 	const char* entry_point /* = "main" */, const std::unordered_map<std::string, std::string>& includes /*= {} */)
 {
 	const GSShaderCompileIndicator::CompileTimer compile_timer;
+	pxAssert(type != D3D::ShaderType::Libary);
 
 	const char* target;
 	switch (shader_model)
@@ -734,7 +736,8 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShaderDXIL(D3D::ShaderType type, D3D:
 	const std::string_view code, const char* name, const D3D_SHADER_MACRO* macros /* = nullptr */,
 	const char* entry_point /* = "main" */, const std::unordered_map<std::string, std::string>& includes /*= {} */)
 {
-	const GSShaderCompileIndicator::CompileTimer compile_timer;
+	// Note: Libraries are only supported in SM 6_3+, be can be linked down to SM6_0
+	const GSShaderCompileIndicator::CompileTimer compile_timer(type == D3D::ShaderType::Libary);
 
 	const wchar_t* target;
 	switch (shader_model)
@@ -749,7 +752,7 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShaderDXIL(D3D::ShaderType type, D3D:
 		case ShaderModel::SM65:
 		default:
 		{
-			static constexpr std::array<const wchar_t*, 4> targets = {{L"vs_6_5", L"ps_6_5", L"cs_6_5"}};
+			static constexpr std::array<const wchar_t*, 5> targets = {{L"vs_6_5", L"ps_6_5", L"cs_6_5", L"lib_6_5"}};
 			target = targets[static_cast<int>(type)];
 		}
 		break;
@@ -861,4 +864,90 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D::Sha
 		return CompileShaderDXBC(type, shader_model, debug, code, name, macros, entry_point, includes);
 	else
 		return CompileShaderDXIL(type, shader_model, debug, code, name, macros, entry_point, includes);
+}
+
+wil::com_ptr_nothrow<ID3DBlob> D3D::LinkShaderDXIL(ShaderType type, ShaderModel shader_model, bool debug,
+	const std::vector<wil::com_ptr_nothrow<ID3DBlob>>& modules, const char* entry_point /* = "main" */)
+{
+	const GSShaderCompileIndicator::CompileTimer compile_timer;
+	pxAssert(type != D3D::ShaderType::Libary);
+
+	const wchar_t* target;
+	switch (shader_model)
+	{
+		case ShaderModel::SM60:
+		case ShaderModel::SM61:
+		case ShaderModel::SM62:
+		case ShaderModel::SM63:
+		case ShaderModel::SM64:
+			pxAssert(false);
+			break;
+		case ShaderModel::SM65:
+		default:
+		{
+			static constexpr std::array<const wchar_t*, 5> targets = {{L"vs_6_5", L"ps_6_5", L"cs_6_5"}};
+			target = targets[static_cast<int>(type)];
+		}
+		break;
+	}
+
+	wil::com_ptr_nothrow<IDxcLinker> pLinker;
+	DxcCreateInstance(CLSID_DxcLinker, IID_PPV_ARGS(pLinker.put()));
+
+	wil::com_ptr_nothrow<IDxcUtils> pUtils;
+	DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(pUtils.put()));
+
+	std::vector<std::wstring> names;
+
+	names.reserve(modules.size());
+	for (int i = 0; i < modules.size(); i++)
+	{
+		// ID3DBlob and IDxcBlob have the same GUID, but C++ considers them different types.
+		wil::com_ptr_nothrow<IDxcBlob> pDxcBlob;
+		modules[i]->QueryInterface(IID_PPV_ARGS(pDxcBlob.put()));
+
+		std::wstring name = fmt::format(L"lib{}", i);
+
+		pLinker->RegisterLibrary(name.c_str(), pDxcBlob.get());
+		names.push_back(std::move(name));
+	}
+
+	std::vector<const wchar_t*> name_cstr;
+	name_cstr.reserve(modules.size());
+	for (int i = 0; i < modules.size(); i++)
+		name_cstr.push_back(names[i].c_str());
+
+	wil::com_ptr_nothrow<IDxcOperationResult> pResults;
+	HRESULT hr = pLinker->Link(StringUtil::UTF8StringToWideString(entry_point).c_str(), target, name_cstr.data(), name_cstr.size(), nullptr, 0, pResults.put());
+
+	if (FAILED(hr))
+	{
+		Console.WriteLn("Link Failed");
+		return {};
+	}
+
+	wil::com_ptr_nothrow<IDxcBlobEncoding> error_string;
+	pResults->GetErrorBuffer(error_string.put());
+	wil::com_ptr_nothrow<IDxcBlobUtf8> error_utf8;
+	pUtils->GetBlobAsUtf8(error_string.get(), error_utf8.put());
+
+	pResults->GetStatus(&hr);
+	if (FAILED(hr))
+	{
+		std::string target_utf8 = StringUtil::WideStringToUTF8String(target);
+		Console.WriteLn("Failed to link '%s':\n%s", target_utf8.c_str(), error_utf8->GetStringPointer());
+		return {};
+	}
+
+	if (error_utf8->GetStringLength() != 0)
+		Console.Warning("'%s' linked with warnings:\n%s", StringUtil::WideStringToUTF8String(target).c_str(), error_utf8->GetStringPointer());
+
+	wil::com_ptr_nothrow<IDxcBlob> dxcBlob = nullptr;
+	pResults->GetResult(dxcBlob.put());
+
+	// ID3DBlob and IDxcBlob have the same GUID, but C++ considers them different types.
+	wil::com_ptr_nothrow<ID3DBlob> blob = nullptr;
+	dxcBlob->QueryInterface(IID_PPV_ARGS(blob.put()));
+
+	return blob;
 }

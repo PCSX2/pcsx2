@@ -98,6 +98,7 @@ set SHADERC_SPIRVTOOLS=6337eb62cadd7d124ac6789bf39c0f71148f0a73
 
 set AGILITYSDK=1.619.2
 set DXHEADERS=1.619.1
+rem Bump ShaderCacheVersion when updating DXC, otherwise shader linking will break.
 set DXC=1.9.2602.24
 
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 3529cc37297a5a7aae4486843b9fd41c30df1d79a770f85e240b537dcc327ca5 || goto error
