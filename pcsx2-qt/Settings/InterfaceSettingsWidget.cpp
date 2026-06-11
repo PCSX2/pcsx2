@@ -192,29 +192,29 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		m_ui.confirmShutdown, tr("Confirm Shutdown"), tr("Checked"),
 		tr("Determines whether a prompt will be displayed to confirm shutting down the virtual machine "
 		   "when the hotkey is pressed."));
-	dialog()->registerWidgetHelp(m_ui.pauseOnStart, tr("Pause On Start"), tr("Unchecked"),
+	dialog()->registerWidgetHelp(m_ui.pauseOnStart, tr("Pause on Start"), tr("Unchecked"),
 		tr("Pauses the emulator when a game is started."));
-	dialog()->registerWidgetHelp(m_ui.pauseOnFocusLoss, tr("Pause On Focus Loss"), tr("Unchecked"),
+	dialog()->registerWidgetHelp(m_ui.pauseOnFocusLoss, tr("Pause on Focus Loss"), tr("Unchecked"),
 		tr("Pauses the emulator when you minimize the window or switch to another application, "
 		   "and unpauses when you switch back."));
-	dialog()->registerWidgetHelp(m_ui.pauseOnControllerDisconnection, tr("Pause On Controller Disconnection"),
+	dialog()->registerWidgetHelp(m_ui.pauseOnControllerDisconnection, tr("Pause on Controller Disconnection"),
 		tr("Unchecked"), tr("Pauses the emulator when a controller with bindings is disconnected."));
-	dialog()->registerWidgetHelp(m_ui.promptOnStateLoadSaveFailure, tr("Prompt On State Load/Save Failure"),
+	dialog()->registerWidgetHelp(m_ui.promptOnStateLoadSaveFailure, tr("Prompt on State Load/Save Failure"),
 		tr("Checked"), tr("Displays a modal dialog when a save state load/save operation fails."));
 	dialog()->registerWidgetHelp(m_ui.preferEnglishGameList, tr("Prefer English Game Titles"), tr("Unchecked"),
 		tr("For games with both a title in the game's native language and one in English, prefer the English title. Affects how game titles are displayed on the game list, window title and Discord Presence"));
 	dialog()->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"), tr("Unchecked"),
 		tr("Automatically switches to fullscreen mode when a game is started."));
-	dialog()->registerWidgetHelp(m_ui.hideMouseCursor, tr("Hide Cursor In Fullscreen"), tr("Unchecked"),
+	dialog()->registerWidgetHelp(m_ui.hideMouseCursor, tr("Hide Cursor in Fullscreen Mode"), tr("Unchecked"),
 		tr("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."));
 	dialog()->registerWidgetHelp(m_ui.savestateSelector, tr("Use Save State Selector"), tr("Checked"),
 		tr("Show a save state selector UI when switching slots instead of showing a notification bubble."));
 	dialog()->registerWidgetHelp(
-		m_ui.renderToSeparateWindow, tr("Render To Separate Window"), tr("Unchecked"),
+		m_ui.renderToSeparateWindow, tr("Render to Separate Window"), tr("Unchecked"),
 		tr("Renders the game to a separate window, instead of the main window. If unchecked, the game will display over the game list."));
 	dialog()->registerWidgetHelp(
 		m_ui.hideMainWindow, tr("Hide Main Window When Running"), tr("Unchecked"),
-		tr("Hides the main window (with the game list) when a game is running. Requires Render To Separate Window to be enabled."));
+		tr("Hides the main window (with the game list) when a game is running. Requires Render to Separate Window to be enabled."));
 	dialog()->registerWidgetHelp(
 		m_ui.discordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
 		tr("Shows the game you are currently playing as part of your profile in Discord."));
@@ -228,7 +228,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		m_ui.disableWindowResizing, tr("Disable Window Resizing"), tr("Unchecked"),
 		tr("Prevents the main window from being resized."));
 	dialog()->registerWidgetHelp(
-		m_ui.startFullscreenUI, tr("Start In Big Picture Mode"), tr("Unchecked"),
+		m_ui.startFullscreenUI, tr("Start in Big Picture Mode"), tr("Unchecked"),
 		tr("Automatically starts Big Picture Mode instead of the regular Qt interface when PCSX2 launches."));
 	dialog()->registerWidgetHelp(
 		m_ui.backgroundBrowse, tr("Game List Background"), tr("None"),
