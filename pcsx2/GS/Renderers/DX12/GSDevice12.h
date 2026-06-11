@@ -382,6 +382,7 @@ private:
 	bool m_using_allow_tearing = false;
 	bool m_is_exclusive_fullscreen = false;
 	D3D_SHADER_MODEL m_shader_model = D3D_SHADER_MODEL_5_1;
+	bool m_shader_linking = false;
 	bool m_uma = false;
 	bool m_typed_casting_supported = false;
 	bool m_enhanced_barriers = false;
@@ -441,6 +442,8 @@ private:
 	D3D12ShaderCache m_shader_cache;
 	ComPtr<ID3DBlob> m_convert_vs;
 	std::string m_tfx_source;
+	std::vector<std::pair<std::string, const char*>> m_tfx_lib_source;
+	std::unordered_map<std::string, std::string> m_tfx_includes;
 
 	void LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_format, DXGI_FORMAT* srv_format,
 		DXGI_FORMAT* rtv_format, DXGI_FORMAT* dsv_format, DXGI_FORMAT* uav_format) const;

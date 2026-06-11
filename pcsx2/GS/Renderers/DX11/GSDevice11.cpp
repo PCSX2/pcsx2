@@ -217,6 +217,35 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		return false;
 	m_tfx_source = std::move(*shader);
 
+	{
+#define SHADER_FILE(include) \
+	shader = ReadShaderSource("shaders/dx11/" include); \
+	if (!shader.has_value()) \
+	{ \
+		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/" include); \
+		return false; \
+	} \
+	m_tfx_includes.emplace(include, std::move(*shader));
+
+		SHADER_FILE("tfx_defines.hlsl");
+		SHADER_FILE("tfx_ps_resources.hlsl");
+
+		SHADER_FILE("tfx_ps_main.hlsl");
+		SHADER_FILE("tfx_ps_atst.hlsl");
+		SHADER_FILE("tfx_ps_blend.hlsl");
+		SHADER_FILE("tfx_ps_color.hlsl");
+		SHADER_FILE("tfx_ps_fetch.hlsl");
+		SHADER_FILE("tfx_ps_fog.hlsl");
+		SHADER_FILE("tfx_ps_misc.hlsl");
+		SHADER_FILE("tfx_ps_rt.hlsl");
+		SHADER_FILE("tfx_ps_rta_correction.hlsl");
+		SHADER_FILE("tfx_ps_sample.hlsl");
+		SHADER_FILE("tfx_ps_sample_af.hlsl");
+		SHADER_FILE("tfx_ps_tfx.hlsl");
+
+#undef SHADER_FILE
+	}
+
 	// convert
 
 	D3D11_INPUT_ELEMENT_DESC il_convert[] =
@@ -1987,11 +2016,11 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 		if (sel.expand == GSHWDrawConfig::VSExpand::None)
 		{
 			m_shader_cache.GetVertexShaderAndInputLayout(m_dev.get(), vs.vs.put(), vs.il.put(), layout,
-				std::size(layout), m_tfx_source, "tfx.fx", sm.GetPtr(), "vs_main");
+				std::size(layout), m_tfx_source, "tfx.fx", sm.GetPtr(), "vs_main", m_tfx_includes);
 		}
 		else
 		{
-			vs.vs = m_shader_cache.GetVertexShader(m_dev.get(), m_tfx_source, "tfx.fx", sm.GetPtr(), "vs_main_expand");
+			vs.vs = m_shader_cache.GetVertexShader(m_dev.get(), m_tfx_source, "tfx.fx", sm.GetPtr(), "vs_main_expand", m_tfx_includes);
 		}
 
 		i = m_vs.try_emplace(sel.key, std::move(vs)).first;
@@ -2082,7 +2111,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_ROV_COLOR", sel.rov_color);
 		sm.AddMacro("PS_ROV_DEPTH", static_cast<u32>(sel.rov_depth));
 
-		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, "tfx.fx", sm.GetPtr(), "ps_main");
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, "tfx.fx", sm.GetPtr(), "ps_main", m_tfx_includes);
 		i = m_ps.try_emplace(sel, std::move(ps)).first;
 	}
 
