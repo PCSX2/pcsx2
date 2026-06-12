@@ -173,10 +173,12 @@ private:
 		ID3D11BlendState* bs;
 		u8 bf;
 		ID3D11RenderTargetView* rtv;
+		ID3D11RenderTargetView* dsv_as_rtv;
 		ID3D11DepthStencilView* dsv;
 		ID3D11UnorderedAccessView* rt_uav;
 		ID3D11UnorderedAccessView* ds_uav;
 		GSTexture* current_rt;
+		GSTexture* current_ds_as_rt;
 		GSTexture* current_ds;
 		GSTexture* current_rt_uav;
 		GSTexture* current_ds_uav;
@@ -383,7 +385,7 @@ public:
 
 	void OMSetDepthStencilState(ID3D11DepthStencilState* dss, u8 sref);
 	void OMSetBlendState(ID3D11BlendState* bs, u8 bf);
-	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, GSTexture* rt_uav = nullptr, GSTexture* ds_uav = nullptr,
+	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, GSTexture* rt_uav = nullptr, GSTexture* ds_uav = nullptr,
 		const GSVector4i* scissor = nullptr, ID3D11DepthStencilView* read_only_dsv = nullptr);
 	void SetViewport(const GSVector2i& viewport);
 	void SetScissor(const GSVector4i& scissor);
