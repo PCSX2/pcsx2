@@ -1879,7 +1879,7 @@ Pcsx2Config::AchievementsOptions::AchievementsOptions()
 {
 	bitset = 0;
 	Enabled = false;
-	HardcoreMode = false;
+	HardcoreMode = true;
 	EncoreMode = false;
 	SpectatorMode = false;
 	UnofficialTestMode = false;
