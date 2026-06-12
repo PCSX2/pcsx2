@@ -155,6 +155,7 @@ namespace GSTextureReplacements
 	static const std::string* FindReplacementTextureFilename(const TextureName& name);
 	static std::string GetGameTextureDirectory();
 	static std::string GetDumpFilename(const TextureName& name, u32 level);
+	static void ReloadDumpedTextureList();
 	template <GSTexture::Format format>
 	std::pair<u8, u8> GetBCAlphaMinMax(ReplacementTexture& rtex);
 	static void SetReplacementTextureAlphaMinMax(ReplacementTexture& rtex);
@@ -437,6 +438,35 @@ std::string GSTextureReplacements::GetDumpFilename(const TextureName& name, u32 
 	return ret;
 }
 
+void GSTextureReplacements::ReloadDumpedTextureList()
+{
+	std::unique_lock<std::mutex> lock(s_dumped_textures_mutex);
+	s_dumped_textures.clear();
+
+	if (s_current_serial.empty())
+		return;
+
+	const std::string dump_dir(Path::Combine(GetGameTextureDirectory(), TEXTURE_DUMP_SUBDIRECTORY_NAME));
+
+	FileSystem::FindResultsArray files;
+	if (!FileSystem::FindFiles(dump_dir.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RECURSIVE, &files))
+		return;
+
+	std::string filename;
+	for (FILESYSTEM_FIND_DATA& fd : files)
+	{
+		filename = Path::GetFileName(fd.FileName);
+		if (!GetLoader(filename))
+			continue;
+
+		std::optional<TextureName> name = ParseReplacementName(filename);
+		if (!name.has_value())
+			continue;
+
+		s_dumped_textures.insert(name.value());
+	}
+}
+
 void GSTextureReplacements::Initialize()
 {
 	s_current_serial = VMManager::GetDiscSerial();
@@ -445,6 +475,8 @@ void GSTextureReplacements::Initialize()
 		StartWorkerThread();
 
 	ReloadReplacementMap();
+	if (GSConfig.DumpReplaceableTextures)
+		ReloadDumpedTextureList();
 }
 
 void GSTextureReplacements::GameChanged()
@@ -455,7 +487,10 @@ void GSTextureReplacements::GameChanged()
 
 	s_current_serial = std::move(new_serial);
 	ReloadReplacementMap();
-	ClearDumpedTextureList();
+	if (GSConfig.DumpReplaceableTextures)
+		ReloadDumpedTextureList();
+	else
+		ClearDumpedTextureList();
 }
 
 /// If the given file exists in the given directory, but with a different case than the original file, write its path to `*output` and return true.
@@ -586,7 +621,9 @@ void GSTextureReplacements::UpdateConfig(Pcsx2Config::GSOptions& old_config)
 	else if (!GSConfig.LoadTextureReplacements && old_config.LoadTextureReplacements)
 		ClearReplacementTextures();
 
-	if (!GSConfig.DumpReplaceableTextures && old_config.DumpReplaceableTextures)
+	if (GSConfig.DumpReplaceableTextures && !old_config.DumpReplaceableTextures)
+		ReloadDumpedTextureList();
+	else if (!GSConfig.DumpReplaceableTextures && old_config.DumpReplaceableTextures)
 		ClearDumpedTextureList();
 
 	if (GSConfig.LoadTextureReplacements && GSConfig.PrecacheTextureReplacements && !old_config.PrecacheTextureReplacements)
