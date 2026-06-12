@@ -11,8 +11,9 @@
 // That makes these helpers correct by construction (interpreter is ground truth)
 // and avoids needing the register allocator / indirect dispatchers yet.
 //
-// The fast path (direct access through REFASTMEMBASE with SIGSEGV backpatching
-// via vtlb_DynBackpatchLoadStore) is Phase 2.2 — see arm64/RecStubs.cpp.
+// The fastmem path (direct access through a pinned 4GB base with SIGSEGV
+// backpatching via vtlb_DynBackpatchLoadStore) was never wired up; the vtlb
+// vmap path through REVTLBPTR is the fast path (see aR5900.h).
 
 #include "aR5900.h"
 
@@ -211,4 +212,211 @@ void armEmitStoreQuad(u32 rt, u32 rs, s32 imm)
 	armAsm->And(RWARG1, RWARG1, ~0x0F);
 
 	armEmitVtlbWriteQuad(RWARG1, RQSCRATCH);
+}
+
+// ========================================================================
+//  Unaligned load/store (LWL/LWR/SWL/SWR, LDL/LDR/SDL/SDR)
+// ========================================================================
+// Bit-exact ports of the interpreter's mask/shift tables (R5900OpcodeImpl.cpp),
+// computed at runtime from the low address bits instead of via lookup tables:
+//
+//   shift_bits = (addr & 3) << 3            (word forms;  0/8/16/24)
+//   shift_bits = (addr & 7) << 3            (doubleword;  0..56)
+//
+//   LWL_MASK[s] = 0x00ffffff >> shift_bits
+//   LWR_MASK[s] = ~(0xffffffff >> shift_bits)
+//   SWL_MASK[s] = low32(0xffffffffull << (shift_bits + 8))   (X-shift: s=3 -> 0)
+//   SWR_MASK[s] = ~(0xffffffff << shift_bits)
+//   LDL_MASK[s] = 0x00ffffffffffffff >> shift_bits
+//   LDR_MASK[s] = ~(0xffffffffffffffff >> shift_bits)
+//   SDL_MASK[s] = 0xffffffffffffff00 << shift_bits           (s=7 shifts to 0)
+//   SDR_MASK[s] = ~(0xffffffffffffffff << shift_bits)
+//
+// The vtlb call clobbers all caller-saved registers, so the effective address is
+// recomputed afterwards from GPR[rs] in memory — safe because nothing in the read
+// (or in this op before the final write) modifies GPR memory. Scratch: w9-w15.
+
+// addr -> w9 (recomputed post-call), shift_bits -> w10.
+static void emitUnalignedShift(u32 rs, s32 imm, u32 addr_mask)
+{
+	armEmitEffectiveAddr(a64::w9, rs, imm);
+	armAsm->And(a64::w10, a64::w9, addr_mask);
+	armAsm->Lsl(a64::w10, a64::w10, 3);
+}
+
+void armEmitLWL(u32 rt, u32 rs, s32 imm)
+{
+	// mem = memRead32(addr & ~3)  (the access happens even for rt==0).
+	armEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~0x03);
+	armEmitVtlbRead(32, /*sign*/ false, RXRET, RWARG1);
+	if (rt == 0)
+		return;
+
+	emitUnalignedShift(rs, imm, 3);
+	// rt = (s32)((rt & (0x00ffffff >> sh)) | (mem << (24 - sh)))
+	armAsm->Mov(a64::w11, 0x00ffffff);
+	armAsm->Lsr(a64::w11, a64::w11, a64::w10);
+	armAsm->Mov(a64::w12, 24);
+	armAsm->Sub(a64::w12, a64::w12, a64::w10);
+	armAsm->Lsl(a64::w13, RWRET, a64::w12);
+	armAsm->Ldr(a64::w14, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->And(a64::w14, a64::w14, a64::w11);
+	armAsm->Orr(a64::w14, a64::w14, a64::w13);
+	armAsm->Sxtw(a64::x14, a64::w14); // SD[0] = (s32)merged
+	armAsm->Str(a64::x14, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+}
+
+void armEmitLWR(u32 rt, u32 rs, s32 imm)
+{
+	armEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~0x03);
+	armEmitVtlbRead(32, /*sign*/ false, RXRET, RWARG1);
+	if (rt == 0)
+		return;
+
+	emitUnalignedShift(rs, imm, 3);
+	// merged = (rt & ~(0xffffffff >> sh)) | (mem >> sh)
+	armAsm->Lsr(a64::w13, RWRET, a64::w10);
+	armAsm->Mvn(a64::w11, a64::wzr); // 0xffffffff
+	armAsm->Lsr(a64::w11, a64::w11, a64::w10);
+	armAsm->Mvn(a64::w11, a64::w11);
+	armAsm->Ldr(a64::x14, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->And(a64::w15, a64::w14, a64::w11);
+	armAsm->Orr(a64::w15, a64::w15, a64::w13);
+
+	// shift==0 loads the whole word and sign-extends into SD[0]; any other shift
+	// writes only UL[0] and preserves the upper half of UD[0] (interpreter LWR).
+	a64::Label partial, done;
+	armAsm->Cbnz(a64::w10, &partial);
+	armAsm->Sxtw(a64::x15, a64::w15);
+	armAsm->Str(a64::x15, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->B(&done);
+	armAsm->Bind(&partial);
+	armAsm->Bfi(a64::x14, a64::x15, 0, 32); // UD[0][31:0] = merged, [63:32] kept
+	armAsm->Str(a64::x14, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Bind(&done);
+}
+
+void armEmitSWL(u32 rt, u32 rs, s32 imm)
+{
+	// mem = memRead32(addr & ~3)
+	armEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~0x03);
+	armEmitVtlbRead(32, /*sign*/ false, RXRET, RWARG1);
+
+	emitUnalignedShift(rs, imm, 3);
+	// value = (rt >> (24 - sh)) | (mem & low32(0xffffffffull << (sh + 8)))
+	armAsm->Ldr(a64::w13, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Mov(a64::w12, 24);
+	armAsm->Sub(a64::w12, a64::w12, a64::w10);
+	armAsm->Lsr(a64::w13, a64::w13, a64::w12);
+	armAsm->Mvn(a64::w11, a64::wzr);            // x11 = 0x00000000ffffffff
+	armAsm->Add(a64::w12, a64::w10, 8);
+	armAsm->Lsl(a64::x11, a64::x11, a64::x12);  // X shift: sh=24 -> mask bits leave low32
+	armAsm->And(a64::w11, a64::w11, RWRET);
+	armAsm->Orr(a64::w13, a64::w13, a64::w11);
+
+	armAsm->And(RWARG1, a64::w9, ~0x03);
+	armEmitVtlbWrite(32, RWARG1, a64::w13);
+}
+
+void armEmitSWR(u32 rt, u32 rs, s32 imm)
+{
+	armEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~0x03);
+	armEmitVtlbRead(32, /*sign*/ false, RXRET, RWARG1);
+
+	emitUnalignedShift(rs, imm, 3);
+	// value = (rt << sh) | (mem & ~(0xffffffff << sh))
+	armAsm->Ldr(a64::w13, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Lsl(a64::w13, a64::w13, a64::w10);
+	armAsm->Mvn(a64::w11, a64::wzr);
+	armAsm->Lsl(a64::w11, a64::w11, a64::w10);
+	armAsm->Bic(a64::w11, RWRET, a64::w11); // mem & ~(0xffffffff << sh)
+	armAsm->Orr(a64::w13, a64::w13, a64::w11);
+
+	armAsm->And(RWARG1, a64::w9, ~0x03);
+	armEmitVtlbWrite(32, RWARG1, a64::w13);
+}
+
+void armEmitLDL(u32 rt, u32 rs, s32 imm)
+{
+	armEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~0x07);
+	armEmitVtlbRead(64, /*sign*/ false, RXRET, RWARG1);
+	if (rt == 0)
+		return;
+
+	emitUnalignedShift(rs, imm, 7);
+	// rt = (rt & (0x00ffffffffffffff >> sh)) | (mem << (56 - sh))
+	armAsm->Mov(a64::x11, 0x00ffffffffffffffULL);
+	armAsm->Lsr(a64::x11, a64::x11, a64::x10);
+	armAsm->Mov(a64::w12, 56);
+	armAsm->Sub(a64::w12, a64::w12, a64::w10);
+	armAsm->Lsl(a64::x13, RXRET, a64::x12);
+	armAsm->Ldr(a64::x14, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->And(a64::x14, a64::x14, a64::x11);
+	armAsm->Orr(a64::x14, a64::x14, a64::x13);
+	armAsm->Str(a64::x14, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+}
+
+void armEmitLDR(u32 rt, u32 rs, s32 imm)
+{
+	armEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~0x07);
+	armEmitVtlbRead(64, /*sign*/ false, RXRET, RWARG1);
+	if (rt == 0)
+		return;
+
+	emitUnalignedShift(rs, imm, 7);
+	// rt = (rt & ~(0xffffffffffffffff >> sh)) | (mem >> sh)
+	armAsm->Lsr(a64::x13, RXRET, a64::x10);
+	armAsm->Mvn(a64::x11, a64::xzr);
+	armAsm->Lsr(a64::x11, a64::x11, a64::x10);
+	armAsm->Mvn(a64::x11, a64::x11);
+	armAsm->Ldr(a64::x14, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->And(a64::x14, a64::x14, a64::x11);
+	armAsm->Orr(a64::x14, a64::x14, a64::x13);
+	armAsm->Str(a64::x14, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+}
+
+void armEmitSDL(u32 rt, u32 rs, s32 imm)
+{
+	armEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~0x07);
+	armEmitVtlbRead(64, /*sign*/ false, RXRET, RWARG1);
+
+	emitUnalignedShift(rs, imm, 7);
+	// value = (rt >> (56 - sh)) | (mem & (0xffffffffffffff00 << sh))
+	armAsm->Ldr(a64::x13, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Mov(a64::w12, 56);
+	armAsm->Sub(a64::w12, a64::w12, a64::w10);
+	armAsm->Lsr(a64::x13, a64::x13, a64::x12);
+	armAsm->Mov(a64::x11, 0xffffffffffffff00ULL);
+	armAsm->Lsl(a64::x11, a64::x11, a64::x10); // sh=56 -> all mask bits shift out -> 0
+	armAsm->And(a64::x11, a64::x11, RXRET);
+	armAsm->Orr(a64::x13, a64::x13, a64::x11);
+
+	armAsm->And(RWARG1, a64::w9, ~0x07);
+	armEmitVtlbWrite(64, RWARG1, a64::x13);
+}
+
+void armEmitSDR(u32 rt, u32 rs, s32 imm)
+{
+	armEmitEffectiveAddr(RWARG1, rs, imm);
+	armAsm->And(RWARG1, RWARG1, ~0x07);
+	armEmitVtlbRead(64, /*sign*/ false, RXRET, RWARG1);
+
+	emitUnalignedShift(rs, imm, 7);
+	// value = (rt << sh) | (mem & ~(0xffffffffffffffff << sh))
+	armAsm->Ldr(a64::x13, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	armAsm->Lsl(a64::x13, a64::x13, a64::x10);
+	armAsm->Mvn(a64::x11, a64::xzr);
+	armAsm->Lsl(a64::x11, a64::x11, a64::x10);
+	armAsm->Bic(a64::x11, RXRET, a64::x11);
+	armAsm->Orr(a64::x13, a64::x13, a64::x11);
+
+	armAsm->And(RWARG1, a64::w9, ~0x07);
+	armEmitVtlbWrite(64, RWARG1, a64::x13);
 }

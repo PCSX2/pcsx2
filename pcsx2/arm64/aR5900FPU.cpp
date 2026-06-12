@@ -533,8 +533,28 @@ static void emitFpuBinary(FpuBinOp op, u32 dstByteOffset, u32 fs, u32 ft)
 		if (op == FpuBinOp::Mul)
 		{
 			emitToDouble(RDSCRATCH, EE_FPR_OFFSET(fs));   // d30 = ToDouble(fs), no clamp
-			emitToDouble(RDSCRATCH2, EE_FPR_OFFSET(ft));  // d31 = ToDouble(ft), no clamp
-			armAsm->Fmul(RDSCRATCH, RDSCRATCH, RDSCRATCH2);
+			if (fs == ft)
+			{
+				// fs*fs (squares are common): one load+convert feeds both operands.
+				armAsm->Fmul(RDSCRATCH, RDSCRATCH, RDSCRATCH);
+			}
+			else
+			{
+				emitToDouble(RDSCRATCH2, EE_FPR_OFFSET(ft)); // d31 = ToDouble(ft), no clamp
+				armAsm->Fmul(RDSCRATCH, RDSCRATCH, RDSCRATCH2);
+			}
+		}
+		else if (fs == ft)
+		{
+			// Equal operands: the guard-bit masking (emitFpuAddSub) is an exact no-op
+			// (exponent difference 0 takes its untouched early-out), and both
+			// conversions yield the same double — convert once and reuse it.
+			armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fs)));
+			emitToDoubleFromBits(RDSCRATCH, a64::w9, a64::x11);
+			if (op == FpuBinOp::Add)
+				armAsm->Fadd(RDSCRATCH, RDSCRATCH, RDSCRATCH);
+			else
+				armAsm->Fsub(RDSCRATCH, RDSCRATCH, RDSCRATCH);
 		}
 		else
 		{
@@ -557,13 +577,15 @@ static void emitFpuBinary(FpuBinOp op, u32 dstByteOffset, u32 fs, u32 ft)
 		return;
 	}
 
-	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));   // s30 = fpuDouble(fs)
-	emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));  // s31 = fpuDouble(ft)
+	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs)); // s30 = fpuDouble(fs)
+	if (fs != ft)
+		emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft)); // s31 = fpuDouble(ft)
+	const a64::VRegister& rhs = (fs == ft) ? RSSCRATCH : RSSCRATCH2;
 	switch (op)
 	{
-		case FpuBinOp::Add: armAsm->Fadd(RSSCRATCH, RSSCRATCH, RSSCRATCH2); break;
-		case FpuBinOp::Sub: armAsm->Fsub(RSSCRATCH, RSSCRATCH, RSSCRATCH2); break;
-		case FpuBinOp::Mul: armAsm->Fmul(RSSCRATCH, RSSCRATCH, RSSCRATCH2); break;
+		case FpuBinOp::Add: armAsm->Fadd(RSSCRATCH, RSSCRATCH, rhs); break;
+		case FpuBinOp::Sub: armAsm->Fsub(RSSCRATCH, RSSCRATCH, rhs); break;
+		case FpuBinOp::Mul: armAsm->Fmul(RSSCRATCH, RSSCRATCH, rhs); break;
 	}
 	emitStoreClampedResult(RSSCRATCH, dstByteOffset, /*setFlags*/ true);
 }
@@ -864,8 +886,13 @@ static void emitFpuMulAcc(bool subtract, bool toAcc, u32 fd, u32 fs, u32 ft)
 
 		// FPU_MUL: product = ToPS2FPU(ToDouble(fs) * ToDouble(ft)) -> w9, flags set.
 		emitToDouble(RDSCRATCH, EE_FPR_OFFSET(fs));
-		emitToDouble(RDSCRATCH2, EE_FPR_OFFSET(ft));
-		armAsm->Fmul(RDSCRATCH, RDSCRATCH, RDSCRATCH2);
+		if (fs == ft)
+			armAsm->Fmul(RDSCRATCH, RDSCRATCH, RDSCRATCH); // fs*fs: reuse the conversion
+		else
+		{
+			emitToDouble(RDSCRATCH2, EE_FPR_OFFSET(ft));
+			armAsm->Fmul(RDSCRATCH, RDSCRATCH, RDSCRATCH2);
+		}
 		emitToPS2FPUFullCore(RDSCRATCH, /*setFlags*/ true, /*acc*/ false, /*addsub*/ false);
 
 		armAsm->Ldr(wacc, a64::MemOperand(RESTATEPTR, EE_ACC_OFFSET));
@@ -914,8 +941,13 @@ static void emitFpuMulAcc(bool subtract, bool toAcc, u32 fd, u32 fs, u32 ft)
 
 	// product = clamp(fs) * clamp(ft)
 	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));
-	emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));
-	armAsm->Fmul(RSSCRATCH, RSSCRATCH, RSSCRATCH2);
+	if (fs == ft)
+		armAsm->Fmul(RSSCRATCH, RSSCRATCH, RSSCRATCH); // fs*fs: reuse the clamped load
+	else
+	{
+		emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));
+		armAsm->Fmul(RSSCRATCH, RSSCRATCH, RSSCRATCH2);
+	}
 
 	if (toAcc)
 	{
