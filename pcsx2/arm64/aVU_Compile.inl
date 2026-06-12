@@ -731,6 +731,17 @@ _mVUt void* mVUcompileJIT(u32 startPC, uptr ptr)
 {
 	microVU& mVU = mVUx;
 
+	if (!doJumpAsSameProgram)
+		mVU.regs().start_pc = startPC;
+
+	if (doJumpCaching)
+	{
+		microBlock* pBlock = (microBlock*)ptr;
+		microJumpCache& jc = pBlock->jumpCache[startPC / 8];
+		if (jc.prog && jc.prog == mVU.prog.quick[startPC / 8].prog)
+			return jc.codeStart;
+	}
+
 	armSetAsmPtr(mVU.prog.codePtr, mVU.prog.codeEnd - mVU.prog.codePtr, nullptr);
 	armStartBlock();
 	void* result;
@@ -741,11 +752,6 @@ _mVUt void* mVUcompileJIT(u32 startPC, uptr ptr)
 		{
 			microBlock* pBlock = (microBlock*)ptr;
 			microJumpCache& jc = pBlock->jumpCache[startPC / 8];
-			if (jc.prog && jc.prog == mVU.prog.quick[startPC / 8].prog)
-			{
-				mVU.prog.codePtr = armEndBlock();
-				return jc.codeStart;
-			}
 			void* v = mVUblockFetch(mVUx, startPC, (uptr)&pBlock->pStateEnd);
 			jc.prog = mVU.prog.quick[startPC / 8].prog;
 			jc.codeStart = v;
@@ -756,16 +762,10 @@ _mVUt void* mVUcompileJIT(u32 startPC, uptr ptr)
 	}
 	else
 	{
-		mVUx.regs().start_pc = startPC;
 		if (doJumpCaching) // When doJumpCaching, ptr is a microBlock pointer
 		{
 			microBlock* pBlock = (microBlock*)ptr;
 			microJumpCache& jc = pBlock->jumpCache[startPC / 8];
-			if (jc.prog && jc.prog == mVU.prog.quick[startPC / 8].prog)
-			{
-				mVU.prog.codePtr = armEndBlock();
-				return jc.codeStart;
-			}
 			void* v = mVUsearchProg<vuIndex>(startPC, (uptr)&pBlock->pStateEnd);
 			jc.prog = mVU.prog.quick[startPC / 8].prog;
 			jc.codeStart = v;
