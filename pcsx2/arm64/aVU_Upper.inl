@@ -517,16 +517,27 @@ static void mVU_FTOIx(mP, const float* addr, microOpcode opEnum)
 		if (!_Ft_)
 			return;
 		const a64::VRegister Fs = mVU.regAlloc->allocReg(_Fs_, _Ft_, _X_Y_Z_W, !((_Fs_ == _Ft_) && (_X_Y_Z_W == 0xf)));
+		const a64::VRegister t1 = mVU.regAlloc->allocReg();
 
-		// NEON Fcvtzs saturates positive overflow to 0x7fffffff and negative to
-		// 0x80000000 natively, so the x86 PCMPGTD/PXOR sign-fixup is unneeded.
+		// NEON Fcvtzs saturates finite/inf overflow correctly (pos -> 0x7fffffff,
+		// neg -> 0x80000000), but converts NaN to 0. The PS2 has no NaNs: an
+		// exponent-255 pattern is a valid huge number and FTOI must saturate it by
+		// sign, which is what x86 gets from cvttps2dq (0x80000000) + the PCMPGTD/
+		// PXOR fixup (-> 0x7fffffff when the input sign is positive). Build the
+		// sign-saturated value and insert it on the unordered (NaN) lanes.
 		if (addr)
 		{
 			mvuLdrQ(RQSCRATCH, addr);
 			armAsm->Fmul(Fs.V4S(), Fs.V4S(), RQSCRATCH.V4S());
 		}
+		armAsm->Fcmeq(t1.V4S(), Fs.V4S(), Fs.V4S());           // ~0 on non-NaN lanes
+		armAsm->Sshr(RQSCRATCH.V4S(), Fs.V4S(), 31);           // ~0 on negative lanes
+		armAsm->Mvni(RQSCRATCH2.V4S(), 0x80, a64::LSL, 24);    // 0x7fffffff
+		armAsm->Eor(RQSCRATCH.V16B(), RQSCRATCH.V16B(), RQSCRATCH2.V16B()); // pos -> 0x7fffffff, neg -> 0x80000000
 		armAsm->Fcvtzs(Fs.V4S(), Fs.V4S());
+		armAsm->Bif(Fs.V16B(), RQSCRATCH.V16B(), t1.V16B());   // NaN lanes <- sign-saturated
 
+		mVU.regAlloc->clearNeeded(t1);
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.profiler.EmitOp(opEnum);
 	}

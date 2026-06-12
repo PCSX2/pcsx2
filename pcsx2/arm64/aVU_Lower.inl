@@ -232,8 +232,11 @@ mVUop(mVU_SQRT)
 
 		if (CHECK_VU_OVERFLOW(mVU.index)) // Clamp infinities (only need positive clamp since Ft is positive)
 		{
+			// Fminnm, not Fmin: x86 MIN.SS returns the second operand (fmax) when Ft
+			// is a NaN pattern (a valid huge number on the PS2); Fmin would propagate
+			// the NaN into Fsqrt and poison Q.
 			mvuLdrSS(RQSCRATCH, mVUglob.maxvals);
-			armAsm->Fmin(Ft.S(), Ft.S(), RQSCRATCH.S());
+			armAsm->Fminnm(Ft.S(), Ft.S(), RQSCRATCH.S());
 		}
 		armAsm->Fsqrt(Ft.S(), Ft.S());
 		writeQreg(Ft, mVUinfo.writeQ);
