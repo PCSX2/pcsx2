@@ -3059,23 +3059,19 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	// Avoid changing framebuffer just to switch from rt+depth to rt and vice versa.
 	// Make sure no tex is bound as both rtv and srv at the same time.
 	// All conflicts should've been taken care of by PSUnbindConflictingSRVs.
-	if (!(draw_rt || draw_rt_rov) && draw_ds && m_state.rtv && m_state.current_rt && m_state.rtv == *static_cast<GSTexture11*>(m_state.current_rt) &&
-		m_state.current_ds == draw_ds && config.tex != m_state.current_rt && m_state.current_rt->GetSize() == draw_ds->GetSize())
+	if (!(draw_rt || draw_rt_rov) && draw_ds && m_state.current_rt && config.tex != m_state.current_rt && m_state.current_rt->GetSize() == draw_ds->GetSize())
 	{
 		draw_rt = m_state.current_rt;
 	}
-	else if (!(draw_ds || draw_ds_rov) && draw_rt && m_state.dsv && m_state.current_ds && m_state.dsv == *static_cast<GSTexture11*>(m_state.current_ds) &&
-		m_state.current_rt == draw_rt && config.tex != m_state.current_ds && m_state.current_ds->GetSize() == draw_rt->GetSize())
+	else if (!(draw_ds || draw_ds_rov) && draw_rt && m_state.current_ds && config.tex != m_state.current_ds && m_state.current_ds->GetSize() == draw_rt->GetSize())
 	{
 		draw_ds = m_state.current_ds;
 	}
-	else if (!(draw_rt || draw_rt_rov) && draw_ds_rov && m_state.rt_uav && m_state.current_rt_uav && m_state.rt_uav == *static_cast<GSTexture11*>(m_state.current_rt_uav) &&
-		m_state.current_ds_uav == draw_ds_rov && config.tex != m_state.current_rt_uav)
+	else if (!(draw_rt || draw_rt_rov) && draw_ds_rov && m_state.current_rt_uav && config.tex != m_state.current_rt_uav)
 	{
 		draw_rt_rov = m_state.current_rt_uav;
 	}
-	else if (!(draw_ds || draw_ds_rov) && draw_rt_rov && m_state.ds_uav && m_state.current_ds_uav && m_state.ds_uav == *static_cast<GSTexture11*>(m_state.current_ds_uav) &&
-			 m_state.current_rt_uav == draw_rt_rov && config.tex != m_state.current_ds_uav)
+	else if (!(draw_ds || draw_ds_rov) && draw_rt_rov && m_state.current_ds_uav && config.tex != m_state.current_ds_uav)
 	{
 		draw_ds_rov = m_state.current_ds_uav;
 	}
@@ -3230,15 +3226,16 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 		pxAssert(config.drawlist && !config.drawlist->empty());
 		pxAssert(config.drawlist_bbox && static_cast<u32>(config.drawlist_bbox->size()) == draw_list_size);
 
+		if (config.tex_hazard != config.TEX_HAZARD_NONE)
+			FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, config.samplearea);
+
 		for (u32 n = 0, p = 0; n < draw_list_size; n++)
 		{
 			const u32 count = config.drawlist->at(n) * indices_per_prim;
 
 			const GSVector4i bbox = config.drawlist_bbox->at(n).rintersect(config.drawarea);
-			const GSVector4i bbox_tex = config.drawlist_bbox_tex ?
-				config.drawlist_bbox_tex->at(n).rintersect(config.samplearea) : GSVector4i::zero();
 
-			FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, bbox, bbox_tex);
+			FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, bbox);
 
 			Draw(config, p, count);
 

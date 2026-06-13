@@ -433,10 +433,16 @@ void EmuThread::run()
 void EmuThread::destroyVM()
 {
 	m_last_speed = 0.0f;
+	m_last_gpu_usage = 0.0f;
 	m_last_game_fps = 0.0f;
 	m_last_video_fps = 0.0f;
 	m_last_internal_width = 0;
 	m_last_internal_height = 0;
+	m_last_upscale = 0.0f;
+	m_last_volume = 0;
+	m_last_muted = false;
+	m_last_renderer = GSRendererType::Auto;
+	m_last_limiter_mode = LimiterModeType::Nominal;
 	m_was_paused_by_focus_loss = false;
 	VMManager::Shutdown(m_save_state_on_shutdown);
 	m_save_state_on_shutdown = false;
@@ -970,8 +976,15 @@ void EmuThread::updatePerformanceMetrics(bool force)
 	if (!g_main_window)
 		return;
 
+	const s32 slot = SaveStateSelectorUI::GetCurrentSlot();
+	u32 volume = 0;
+	bool muted = false;
+
 	if (VMManager::HasValidVM())
 	{
+		volume = SPU2::GetOutputVolume();
+		muted = SPU2::IsOutputMuted();
+
 		QString gs_stat;
 		if (m_verbose_status)
 		{
@@ -980,9 +993,8 @@ void EmuThread::updatePerformanceMetrics(bool force)
 
 			if (THREAD_VU1)
 			{
-				gs_stat = tr("Slot: %1 | Volume: %2% | %3 | EE: %4% | VU: %5% | GS: %6%")
-				              .arg(SaveStateSelectorUI::GetCurrentSlot())
-				              .arg(SPU2::GetOutputVolume())
+				gs_stat = tr("Slot: %1 | %2 | EE: %3% | VU: %4% | GS: %5%")
+				              .arg(slot)
 				              .arg(gs_stat_str.c_str())
 				              .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
 				              .arg(PerformanceMetrics::GetVUThreadUsage(), 0, 'f', 0)
@@ -990,48 +1002,81 @@ void EmuThread::updatePerformanceMetrics(bool force)
 			}
 			else
 			{
-				gs_stat = tr("Slot: %1 | Volume: %2% | %3 | EE: %4% | GS: %5%")
-				              .arg(SaveStateSelectorUI::GetCurrentSlot())
-				              .arg(SPU2::GetOutputVolume())
+				gs_stat = tr("Slot: %1 | %2 | EE: %3% | GS: %4%")
+				              .arg(slot)
 				              .arg(gs_stat_str.c_str())
 				              .arg(PerformanceMetrics::GetCPUThreadUsage(), 0, 'f', 0)
 				              .arg(PerformanceMetrics::GetGSThreadUsage(), 0, 'f', 0);
 			}
 		}
 
-		QMetaObject::invokeMethod(g_main_window->getStatusVerboseWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, gs_stat));
+		QMetaObject::invokeMethod(g_main_window, "setStatusVerboseText", Qt::QueuedConnection, Q_ARG(const QString&, gs_stat));
 	}
 
 	const GSRendererType renderer = GSGetCurrentRenderer(); // Reading from GS thread, therefore racey, but it's just visual.
+	const float upscale = EmuConfig.GS.UpscaleMultiplier;
 	const float speed = std::round(PerformanceMetrics::GetSpeed());
+	const LimiterModeType limiter_mode = VMManager::GetLimiterMode();
+	const float gpu_usage = std::round(PerformanceMetrics::GetGPUUsage());
 	const float gfps = std::round(PerformanceMetrics::GetInternalFPS());
 	const float vfps = std::round(PerformanceMetrics::GetFPS());
 	int iwidth, iheight;
 	GSgetInternalResolution(&iwidth, &iheight);
 
-	if (iwidth != m_last_internal_width || iheight != m_last_internal_height || speed != m_last_speed || gfps != m_last_game_fps ||
-		vfps != m_last_video_fps || renderer != m_last_renderer || force)
+	if (iwidth != m_last_internal_width || iheight != m_last_internal_height || upscale != m_last_upscale ||
+		speed != m_last_speed || gpu_usage != m_last_gpu_usage || gfps != m_last_game_fps || vfps != m_last_video_fps || renderer != m_last_renderer ||
+		volume != m_last_volume || muted != m_last_muted || force)
 	{
+
+		if (volume != m_last_volume || muted != m_last_muted || force)
+		{
+			QString vol_text = tr("Volume: %1%").arg(volume);
+			if (muted)
+				vol_text = tr("Volume: Muted");
+			QMetaObject::invokeMethod(g_main_window, "setStatusVolumeText", Qt::QueuedConnection,
+				Q_ARG(const QString&, vol_text), Q_ARG(int, static_cast<int>(volume)), Q_ARG(bool, muted));
+			m_last_volume = volume;
+			m_last_muted = muted;
+		}
+
 		if (renderer != m_last_renderer || force)
 		{
-			QMetaObject::invokeMethod(g_main_window->getStatusRendererWidget(), "setText", Qt::QueuedConnection,
-				Q_ARG(const QString&, QString::fromUtf8(Pcsx2Config::GSOptions::GetRendererName(renderer))));
+			QString renderer_name = QString::fromUtf8(Pcsx2Config::GSOptions::GetRendererName(renderer));
+			if (EmuConfig.GS.Renderer == GSRendererType::Auto && renderer != GSRendererType::Auto)
+				renderer_name = tr("Auto (%1)").arg(renderer_name);
+
+			QMetaObject::invokeMethod(g_main_window, "setStatusRendererText", Qt::QueuedConnection,
+				Q_ARG(const QString&, renderer_name));
 			m_last_renderer = renderer;
 		}
 
-		if (iwidth != m_last_internal_width || iheight != m_last_internal_height || force)
+		if (iwidth != m_last_internal_width || iheight != m_last_internal_height || upscale != m_last_upscale || force)
 		{
 			QString text;
 			if (iwidth == 0 || iheight == 0)
 				text = tr("No Image");
 			else
-				text = tr("%1x%2").arg(iwidth).arg(iheight);
+				text = tr("%1x%2 (%3x)").arg(iwidth).arg(iheight).arg(upscale, 0, 'g', 3);
 
 			QMetaObject::invokeMethod(
-				g_main_window->getStatusResolutionWidget(), "setText", Qt::QueuedConnection, Q_ARG(const QString&, text));
+				g_main_window, "setStatusResolutionText", Qt::QueuedConnection, Q_ARG(const QString&, text));
 
 			m_last_internal_width = iwidth;
 			m_last_internal_height = iheight;
+			m_last_upscale = upscale;
+		}
+
+		if (gpu_usage != m_last_gpu_usage || force)
+		{
+			QString text;
+			if (gpu_usage == 0)
+				text = tr("GPU: N/A");
+			else
+				text = tr("GPU: %1%").arg(gpu_usage, 0, 'f', 0);
+
+			QMetaObject::invokeMethod(g_main_window, "setStatusGPUText", Qt::QueuedConnection,
+				Q_ARG(const QString&, text));
+			m_last_gpu_usage = gpu_usage;
 		}
 
 		if (gfps != m_last_game_fps || force)
@@ -1042,23 +1087,33 @@ void EmuThread::updatePerformanceMetrics(bool force)
 			else
 				text = tr("FPS: %1").arg(gfps, 0, 'f', 0);
 
-			QMetaObject::invokeMethod(g_main_window->getStatusFPSWidget(), "setText", Qt::QueuedConnection,
+			QMetaObject::invokeMethod(g_main_window, "setStatusFPSText", Qt::QueuedConnection,
 				Q_ARG(const QString&, text));
 			m_last_game_fps = gfps;
 		}
 
 		if (vfps != m_last_video_fps || force)
 		{
-			QMetaObject::invokeMethod(g_main_window->getStatusVPSWidget(), "setText", Qt::QueuedConnection,
-				Q_ARG(const QString&, tr("VPS: %1 ").arg(vfps, 0, 'f', 0)));
+			QMetaObject::invokeMethod(g_main_window, "setStatusVPSText", Qt::QueuedConnection,
+				Q_ARG(const QString&, vfps == 0 ? tr("VPS: N/A") : tr("VPS: %1").arg(vfps, 0, 'f', 0)));
 			m_last_video_fps = vfps;
+		}
 
-			if (speed != m_last_speed || force)
-			{
-				QMetaObject::invokeMethod(g_main_window->getStatusSpeedWidget(), "setText", Qt::QueuedConnection,
-					Q_ARG(const QString&, tr("Speed: %1% ").arg(speed, 0, 'f', 0)));
-				m_last_speed = speed;
-			}
+		if (speed != m_last_speed || force)
+		{
+			QMetaObject::invokeMethod(g_main_window, "setStatusSpeedText", Qt::QueuedConnection,
+				Q_ARG(const QString&, tr("Speed: %1%").arg(speed, 0, 'f', 0)));
+			m_last_speed = speed;
+		}
+
+		if (limiter_mode != m_last_limiter_mode || force)
+		{
+			QMetaObject::invokeMethod(g_main_window, [limiter_mode]() { g_main_window->getStatusSpeedWidget()->setIcon(QIcon::fromTheme(
+																			limiter_mode == LimiterModeType::Turbo     ? QStringLiteral("fast-forward-line") :
+																			limiter_mode == LimiterModeType::Slomo     ? QStringLiteral("slow-mo") :
+																			limiter_mode == LimiterModeType::Unlimited ? QStringLiteral("speed-line") :
+																														 QStringLiteral("dashboard-line"))); }, Qt::QueuedConnection);
+			m_last_limiter_mode = limiter_mode;
 		}
 	}
 }

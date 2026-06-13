@@ -67,6 +67,9 @@ namespace Achievements
 	/// Called when the system changes game, or is booting.
 	void GameChanged(u32 disc_crc, u32 crc);
 
+	/// Play achievement related sounds effects
+	void PlayAchievementSound(bool is_specific_sound_enabled, const std::string& custom_sound_name, const std::string& default_sound_name);
+
 	/// Re-enables hardcode mode if it is enabled in the settings.
 	bool ResetHardcoreMode(bool is_booting);
 

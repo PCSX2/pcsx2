@@ -1489,7 +1489,19 @@ bool SDLInputSource::HandleGamepadAxisEvent(const SDL_GamepadAxisEvent* ev)
 		return false;
 
 	const InputBindingKey key(MakeGenericControllerAxisKey(InputSourceType::SDL, it->player_id, ev->axis));
-	InputManager::InvokeEvents(key, NormalizeS16(ev->value));
+	const float value = NormalizeS16(ev->value);
+
+	if (ev->axis < std::size(s_sdl_generic_binding_axis_mapping))
+	{
+		InputManager::InvokeEvents(key, value, GenericInputBinding::Unknown,
+			s_sdl_generic_binding_axis_mapping[ev->axis][0],
+			s_sdl_generic_binding_axis_mapping[ev->axis][1]);
+	}
+	else
+	{
+		InputManager::InvokeEvents(key, value);
+	}
+
 	return true;
 }
 
@@ -1501,8 +1513,8 @@ bool SDLInputSource::HandleGamepadButtonEvent(const SDL_GamepadButtonEvent* ev)
 
 	const InputBindingKey key(MakeGenericControllerButtonKey(InputSourceType::SDL, it->player_id, ev->button));
 	const GenericInputBinding generic_key = (ev->button < std::size(s_sdl_generic_binding_button_mapping)) ?
-												s_sdl_generic_binding_button_mapping[ev->button] :
-												GenericInputBinding::Unknown;
+	                                            s_sdl_generic_binding_button_mapping[ev->button] :
+	                                            GenericInputBinding::Unknown;
 	InputManager::InvokeEvents(key, static_cast<float>(ev->down), generic_key);
 	return true;
 }
@@ -1765,6 +1777,6 @@ bool SDLInputSource::IsControllerSixaxis(const ControllerData& cd)
 	// This differing layout also isn't mapped correctly in SDL, I think due to how L2/R2 are exposed.
 	// Also see SetHints regarding reading the pressure sense from DsHidMini's SDF mode.
 	return type == SDL_GAMEPAD_TYPE_PS3 &&
-		   SDL_GetNumJoystickAxes(cd.joystick) == 16 &&
-		   SDL_GetNumJoystickButtons(cd.joystick) == 11;
+	       SDL_GetNumJoystickAxes(cd.joystick) == 16 &&
+	       SDL_GetNumJoystickButtons(cd.joystick) == 11;
 }

@@ -161,7 +161,8 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool
 		return false;
 	}
 
-	GSConfig.OsdShowGPU = GSConfig.OsdShowGPU && g_gs_device->SetGPUTimingEnabled(true);
+	if (!g_gs_device->SetGPUTimingEnabled(true))
+		GSConfig.OsdShowGPU = false;
 
 	Console.WriteLn(Color_StrongGreen, "%s Graphics Driver Info:", GSDevice::RenderAPIToString(new_api));
 	Console.WriteLn(g_gs_device->GetDriverInfo());
@@ -878,9 +879,9 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		g_gs_renderer->PurgeTextureCache(true, false, true);
 	}
 
-	if (GSConfig.OsdShowGPU != old_config.OsdShowGPU)
+	if (GSConfig.OsdShowGPU && !old_config.OsdShowGPU)
 	{
-		if (!g_gs_device->SetGPUTimingEnabled(GSConfig.OsdShowGPU))
+		if (!g_gs_device->SetGPUTimingEnabled(true))
 			GSConfig.OsdShowGPU = false;
 	}
 }

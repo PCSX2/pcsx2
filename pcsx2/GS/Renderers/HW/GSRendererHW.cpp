@@ -1358,10 +1358,10 @@ GSVector4i GSRendererHW::ComputeBoundingBoxRT(const GSVector2i& rtsize, float rt
 	return GSVector4i(box * GSVector4(rtscale)).rintersect(GSVector4i(0, 0, rtsize.x, rtsize.y));
 }
 
-GSVector4i GSRendererHW::ComputeBoundingBoxTex(const GSVector2i& texsize, const GSVector4i& region, float texscale)
+GSVector4i GSRendererHW::ComputeBoundingBoxTex(const GSVector2i& texsize, const GSVector4i& coverage, const GSVector4i& region, float texscale)
 {
 	const GSVector4 offset = GSVector4(region.xyxy()) + GSVector4(-1.0f, -1.0f, 1.0f, 1.0f); // Region offset + round value
-	const GSVector4 box = m_vt.m_min.t.upld(m_vt.m_max.t) + offset;
+	const GSVector4 box = GSVector4(coverage) + offset;
 	return GSVector4i(box * GSVector4(texscale)).rintersect(GSVector4i(0, 0, texsize.x, texsize.y));
 }
 
@@ -6206,16 +6206,6 @@ void GSRendererHW::DetermineBarriers(GSTextureCache::Target* rt, GSTextureCache:
 		ComputeDrawlistGetSize(rt->m_scale);
 		m_conf.drawlist = &m_drawlist;
 		m_conf.drawlist_bbox = &m_drawlist_bbox;
-
-		if (m_conf.tex_hazard != GSHWDrawConfig::TEX_HAZARD_NONE)
-		{
-			GetPrimitiveOverlapDrawlistTextureBBox(tex->GetScale());
-			m_conf.drawlist_bbox_tex = &m_drawlist_bbox_tex;
-		}
-		else
-		{
-			m_conf.drawlist_bbox_tex = nullptr;
-		}
 	}
 }
 
@@ -9462,7 +9452,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	const GSVector4i tex_region = tex ? tex->GetRegionRect() : GSVector4i::zero();
 	m_conf.samplearea = m_channel_shuffle ? scissor :
-		GSVector4i::loadh(texsize).rintersect(ComputeBoundingBoxTex(texsize, tex_region, texscale));
+		GSVector4i::loadh(texsize).rintersect(ComputeBoundingBoxTex(texsize, tmm.coverage, tex_region, texscale));
 
 	m_conf.scissor = (date_options.enabled && !date_options.barrier) ? m_conf.drawarea : scissor;
 

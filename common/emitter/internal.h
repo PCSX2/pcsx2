@@ -30,8 +30,6 @@ namespace x86Emitter
 	extern void EmitRex(SIMDInstructionInfo info, const xRegisterBase& reg1, const xRegisterBase& reg2);
 	extern void EmitRex(SIMDInstructionInfo info, const xRegisterBase& reg1, const xIndirectVoid& sib);
 
-	extern void _xMovRtoR(const xRegisterInt& to, const xRegisterInt& from);
-
 	template <typename T>
 	inline void xWrite(T val)
 	{
