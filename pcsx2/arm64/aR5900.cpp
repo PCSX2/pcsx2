@@ -2973,6 +2973,15 @@ static void recRecompile(u32 startpc)
 	u32 pc = startpc;
 	u32 endpc = startpc;
 	u32 raw_cycles = 0;
+	// EE memory-speed multiplier: when the COP0 Config.DIE (i-cache enable) bit is clear, every
+	// EE instruction costs double cycles. Read at compile time, matching the x86 rec's per-op
+	// accounting in recompileNextInstruction (iR5900.cpp). Without it cpuRegs.cycle advances at
+	// half rate whenever DIE is clear, so the EE runs ahead of the GS/VU/IOP/VBlank schedule.
+	const u32 ee_cycle_mult = 2 - ((cpuRegs.CP0.n.Config >> 18) & 0x1);
+	// Per-op cycle cost incl. the x86 rec's NOP special-case (a real NOP is treated as ~9 cycles).
+	const auto eeOpCycles = [ee_cycle_mult](u32 opc) -> u32 {
+		return (opc == 0 ? 9u : static_cast<u32>(R5900::GetInstruction(opc).cycles)) * ee_cycle_mult;
+	};
 	u32 compiled = 0;
 	bool interp_step = false;
 	bool known_dispatch_pc = false;
@@ -2999,12 +3008,11 @@ static void recRecompile(u32 startpc)
 		}
 
 		const u32 op = memRead32(pc);
-		const R5900::OPCODE& info = R5900::GetInstruction(op);
 
 		if (recIsHandledBranch(op))
 		{
 			// Terminate the block: branch generator + delay slot + dispatch tail.
-			raw_cycles += info.cycles;
+			raw_cycles += eeOpCycles(op);
 			known_dispatch_pc = recGetKnownBranchTarget(op, pc, const_state, &dispatch_pc);
 			recCacheFlushAll(cache_state);
 			recCacheKillAll(cache_state);
@@ -3012,7 +3020,7 @@ static void recRecompile(u32 startpc)
 			recConstApplyBranchLink(op, pc, const_state);
 
 			const u32 delay_op = memRead32(pc + 4);
-			raw_cycles += R5900::GetInstruction(delay_op).cycles;
+			raw_cycles += eeOpCycles(delay_op);
 			recEmitOp(delay_op, const_state, cache_state); // delay slot — must not write cpuRegs.pc
 			endpc = pc + 8;
 
@@ -3045,7 +3053,7 @@ static void recRecompile(u32 startpc)
 			// test + PC select, then jump over the delay-slot code when not taken.
 			// The cache/const state diverges across the two paths, so it is flushed
 			// and discarded inside the taken path before the skip label.
-			raw_cycles += info.cycles;
+			raw_cycles += eeOpCycles(op);
 
 			const u32 btarget = (pc + 4) + (static_cast<u32>(static_cast<s32>(static_cast<s16>(op))) << 2);
 			const u32 fallthrough = pc + 8;
@@ -3058,7 +3066,7 @@ static void recRecompile(u32 startpc)
 			armAsm->B(&skip_delay, a64::InvertCondition(taken));
 
 			const u32 delay_op = memRead32(pc + 4);
-			raw_cycles += R5900::GetInstruction(delay_op).cycles;
+			raw_cycles += eeOpCycles(delay_op);
 			recEmitOp(delay_op, const_state, cache_state);
 			recCacheFlushAll(cache_state);
 			recCacheKillAll(cache_state);
@@ -3075,7 +3083,7 @@ static void recRecompile(u32 startpc)
 		const bool needs_cycle_flush = recOpNeedsCycleFlush(op);
 		if (needs_cycle_flush)
 		{
-			raw_cycles += info.cycles;
+			raw_cycles += eeOpCycles(op);
 			recEmitFlushCycles(raw_cycles);
 			raw_cycles = 0;
 		}
@@ -3091,7 +3099,7 @@ static void recRecompile(u32 startpc)
 				waitloop_possible = false;
 
 			if (!needs_cycle_flush)
-				raw_cycles += info.cycles;
+				raw_cycles += eeOpCycles(op);
 			pc += 4;
 			endpc = pc;
 			if (++compiled >= MAX_BLOCK_INSTS)
