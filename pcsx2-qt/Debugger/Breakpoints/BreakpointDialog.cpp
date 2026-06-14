@@ -46,7 +46,7 @@ BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu, Breakpo
 		m_ui.txtDescription->setText(QString::fromStdString(bp->description));
 		m_ui.spnMaxHitCount->setValue(static_cast<int>(bp->maxHits));
 
-		m_ui.grpInstrumentation->setChecked(bp->instrumentationEnabled);
+		m_ui.grpLogWhenHit->setChecked(bp->instrumentationEnabled);
 		m_ui.txtLogFormat->setText(QString::fromStdString(bp->logFormat));
 		m_ui.chkContinueOnHit->setChecked(bp->continueOnHit);
 
@@ -67,10 +67,9 @@ BreakpointDialog::BreakpointDialog(QWidget* parent, DebugInterface* cpu, Breakpo
 		m_ui.chkChange->setChecked(mc->memCond & MEMCHECK_WRITE_ONCHANGE);
 
 		m_ui.chkEnable->setChecked(mc->result & MEMCHECK_BREAK);
-		m_ui.chkLog->setChecked(mc->result & MEMCHECK_LOG);
 		m_ui.spnMaxHitCount->setValue(static_cast<int>(mc->maxHits));
 
-		m_ui.grpInstrumentation->setChecked(mc->instrumentationEnabled);
+		m_ui.grpLogWhenHit->setChecked(mc->instrumentationEnabled);
 		m_ui.txtLogFormat->setText(QString::fromStdString(mc->logFormat));
 		m_ui.chkContinueOnHit->setChecked(mc->continueOnHit);
 
@@ -89,7 +88,6 @@ void BreakpointDialog::onRdoButtonToggled()
 
 	m_ui.grpMemory->setEnabled(!isExecute);
 
-	m_ui.chkLog->setEnabled(!isExecute);
 }
 
 void BreakpointDialog::accept()
@@ -124,7 +122,7 @@ void BreakpointDialog::accept()
 		bp->maxHits = static_cast<u32>(m_ui.spnMaxHitCount->value());
 		bp->enabled = m_ui.chkEnable->isChecked();
 
-		const bool instrumentationEnabled = m_ui.grpInstrumentation->isChecked();
+		const bool instrumentationEnabled = m_ui.grpLogWhenHit->isChecked();
 		const std::string logFormat = m_ui.txtLogFormat->text().toStdString();
 		if (instrumentationEnabled && !logFormat.empty() && !ValidateInstrumentationLogFormat(*m_cpu, logFormat, error))
 		{
@@ -180,7 +178,7 @@ void BreakpointDialog::accept()
 		mc->maxHits = static_cast<u32>(m_ui.spnMaxHitCount->value());
 		mc->description = m_ui.txtDescription->text().toStdString();
 
-		const bool instrumentationEnabled = m_ui.grpInstrumentation->isChecked();
+		const bool instrumentationEnabled = m_ui.grpLogWhenHit->isChecked();
 		const std::string logFormat = m_ui.txtLogFormat->text().toStdString();
 		if (instrumentationEnabled && !logFormat.empty() && !ValidateInstrumentationLogFormat(*m_cpu, logFormat, error))
 		{
@@ -225,8 +223,6 @@ void BreakpointDialog::accept()
 		int result = 0;
 		if (m_ui.chkEnable->isChecked())
 			result |= MEMCHECK_BREAK;
-		if (m_ui.chkLog->isChecked())
-			result |= MEMCHECK_LOG;
 
 		mc->result = static_cast<MemCheckResult>(result);
 	}

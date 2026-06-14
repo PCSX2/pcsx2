@@ -50,10 +50,17 @@ BreakpointView::BreakpointView(const DebuggerViewParameters& parameters)
 
 	// Continue-on-hit breakpoints update their hit counts without ever pausing the VM,
 	// so onVMActuallyPaused never fires. Refresh periodically off the debugger's
-	// refresh timer so the UI can update regularly.
+	// refresh timer so the UI can update regularly. We don't refresh if the VM is paused
+	// or if a child of the breakpoint list is being edited.
 	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
-		if (!QtHost::IsVMPaused())
+		// If focus is on a child of the breakpoint list and not the list itself,
+		// we assume an inline editor is active and we should not refresh.
+		bool isEditing = m_ui.breakpointList->isAncestorOf(QApplication::focusWidget()) 
+			&& QApplication::focusWidget() != m_ui.breakpointList;
+
+		if (!QtHost::IsVMPaused() && !isEditing)
 			m_model->refreshData();
+
 		return true;
 	});
 }

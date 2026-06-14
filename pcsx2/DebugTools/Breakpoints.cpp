@@ -6,7 +6,10 @@
 #include "MIPSAnalyst.h"
 #include <cstdio>
 #include "R5900.h"
+#include "R5900OpcodeTables.h"
 #include "R3000A.h"
+#include "Memory.h"
+#include "IopMem.h"
 #include "common/Console.h"
 
 std::vector<BreakPoint> CBreakPoints::breakPoints_;
@@ -157,6 +160,26 @@ static void LogInstrumentation(BreakPointCpu cpu, const std::string& logFormat)
 													: static_cast<DebugInterface&>(r5900Debug);
 	const ConsoleColors color = (cpu == BREAKPOINT_IOP) ? Color_Yellow : Color_Cyan;
 	Console.WriteLn(color, "%s", EvaluateInstrumentationLogFormat(debug, logFormat).c_str());
+}
+
+std::string GetMemCheckDefaultLogFormat(BreakPointCpu cpu)
+{
+	const u32 pc = (cpu == BREAKPOINT_IOP) ? psxRegs.pc : cpuRegs.pc;
+
+	// We need to handle the branch delay slot!!! When the memory access happens in a branch
+	// delay slot, PC points at the branch but the actual load/store is one instruction later.
+	// To handle that, we can check the return of isMemCheckNeeded and handle pc appropriately.
+	const int needed = (cpu == BREAKPOINT_IOP) ? psxIsMemcheckNeeded(pc) : isMemcheckNeeded(pc);
+	const bool inDelaySlot = (needed == 2);
+	const u32 accessPc = inDelaySlot ? pc + 4 : pc;
+	const u32 op = (cpu == BREAKPOINT_IOP) ? iopMemRead32(accessPc) : memRead32(accessPc);
+
+	// The R5900 opcode table is used for both CPUs... confusing, I know!
+	const char* const pcExpr = inDelaySlot ? "{pc + 4}" : "{pc}";
+	const std::string defaultLogFormat = (R5900::GetInstruction(op).flags & IS_STORE)
+		? std::string("Hit write breakpoint @ ") + pcExpr
+		: std::string("Hit read breakpoint @ ") + pcExpr;
+	return defaultLogFormat;
 }
 
 MemCheck::MemCheck()
@@ -471,7 +494,9 @@ bool CBreakPoints::HandleBreakpointHit(BreakPointCpu cpu, u32 addr)
 	breakpoint.totalHits++;
 
 	const bool instrumentationEnabled = breakpoint.instrumentationEnabled;
-	const std::string logFormat = breakpoint.logFormat;
+	const std::string logFormat = breakpoint.logFormat.empty()
+		? "Hit execute breakpoint @ {pc}"
+		: breakpoint.logFormat;
 	const bool continueOnHit = breakpoint.continueOnHit;
 
 	if (instrumentationEnabled)
@@ -499,7 +524,9 @@ bool CBreakPoints::HandleMemCheckHit(BreakPointCpu cpu, u32 start, u32 end)
 	memCheck.totalHits++;
 
 	const bool instrumentationEnabled = memCheck.instrumentationEnabled;
-	const std::string logFormat = memCheck.logFormat;
+	const std::string logFormat = memCheck.logFormat.empty()
+		? GetMemCheckDefaultLogFormat(cpu)
+		: memCheck.logFormat;
 	const bool continueOnHit = memCheck.continueOnHit;
 
 	if (instrumentationEnabled)
