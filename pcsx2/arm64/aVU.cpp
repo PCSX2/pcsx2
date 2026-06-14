@@ -534,7 +534,8 @@ void mVUinit(microVU& mVU, uint vuIndex)
 	mVU.progSize     = (mVU.index ? 0x4000 : 0x1000) / 4;
 	mVU.progMemMask  =  mVU.progSize-1;
 	mVU.cache        = vuIndex ? SysMemory::GetVU1Rec() : SysMemory::GetVU0Rec();
-	mVU.prog.codeEnd = (vuIndex ? SysMemory::GetVU1RecEnd() : SysMemory::GetVU0RecEnd()) - (mVUcacheSafeZone * _1mb);
+	mVU.prog.codeReserveEnd = (vuIndex ? SysMemory::GetVU1RecEnd() : SysMemory::GetVU0RecEnd());
+	mVU.prog.codeEnd = mVU.prog.codeReserveEnd - (mVUcacheSafeZone * _1mb);
 
 	mVU.regAlloc.reset(new microRegAlloc(mVU.index));
 }
@@ -1794,7 +1795,7 @@ static void* mVUexecute(u32 startPC, u32 cycles)
 	// branch into when the dispatcher does `br x0`. If the search still turns out to be
 	// a hit, nothing is emitted and codePtr is unchanged (the fast path above usually
 	// catches that case before paying for the session).
-	armSetAsmPtr(mVU.prog.codePtr, mVU.prog.codeEnd - mVU.prog.codePtr, nullptr);
+	armSetAsmPtr(mVU.prog.codePtr, mVU.prog.codeReserveEnd - mVU.prog.codePtr, nullptr);
 	armStartBlock();
 	void* const entry = mVUsearchProg<vuIndex>(spc, (uptr)&mVU.prog.lpState);
 	mVU.prog.codePtr = armEndBlock();

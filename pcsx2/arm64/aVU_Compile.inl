@@ -742,7 +742,7 @@ _mVUt void* mVUcompileJIT(u32 startPC, uptr ptr)
 			return jc.codeStart;
 	}
 
-	armSetAsmPtr(mVU.prog.codePtr, mVU.prog.codeEnd - mVU.prog.codePtr, nullptr);
+	armSetAsmPtr(mVU.prog.codePtr, mVU.prog.codeReserveEnd - mVU.prog.codePtr, nullptr);
 	armStartBlock();
 	void* result;
 
