@@ -2660,6 +2660,29 @@ static u32 recScaleBlockCycles(u32 raw)
 	return (scale_cycles < 1) ? 1 : scale_cycles;
 }
 
+// True for ops that run the interpreter inline AND need a live, current cpuRegs.cycle —
+// COP2 / VU0-macro ops (opcode 0x12, excluding the BC2 branches which already single-step).
+// The VU sync inside the COP2 handler reads cpuRegs.cycle, so the block's accumulated cycles
+// must be committed first; x86 does this via `cpuRegs.cycle += scaleblockcycles_clear()` before
+// every COP2 op (microVU_Macro.inl). Without it the VU kicks at a stale EE time and geometry
+// is submitted a beat early/late (e.g. Crash Twinsanity object pop-in / overlap).
+static bool recOpNeedsCycleFlush(u32 op)
+{
+	return (op >> 26) == 0x12 && ((op >> 21) & 0x1f) != 0x08;
+}
+
+// Emit: cpuRegs.cycle += recScaleBlockCycles(raw). Commits the block's cycles accumulated so
+// far (mid-block) so a following inline op observes a current EE cycle. The caller resets its
+// accumulator afterwards so the block tail does not double-count them.
+static void recEmitFlushCycles(u32 raw)
+{
+	if (raw == 0)
+		return;
+	armAsm->Ldr(RSCRATCHADDR, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET));
+	armAsm->Add(RSCRATCHADDR, RSCRATCHADDR, recScaleBlockCycles(raw));
+	armAsm->Str(RSCRATCHADDR, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET));
+}
+
 // Install a freshly-compiled block's self-modifying-code protection and return the pointer
 // to record in its recLUT slot. Direct port of x86 memory_protect_recompiled_code
 // (iR5900.cpp), adapted to this port's body-first layout: the caller has already emitted
@@ -3046,6 +3069,17 @@ static void recRecompile(u32 startpc)
 			break;
 		}
 
+		// COP2 / VU0-macro ops run the interpreter inline and read cpuRegs.cycle for VU sync,
+		// so commit the block's accumulated cycles (incl. this op's, matching x86 order) before
+		// the op executes, then reset the accumulator so the tail does not re-charge them.
+		const bool needs_cycle_flush = recOpNeedsCycleFlush(op);
+		if (needs_cycle_flush)
+		{
+			raw_cycles += info.cycles;
+			recEmitFlushCycles(raw_cycles);
+			raw_cycles = 0;
+		}
+
 		// Straight-line op we can codegen? (Generators decode from `op` directly;
 		// they never read cpuRegs.code, so nothing to set here at compile time.)
 		if (recTranslateOpOptimized(op, const_state, cache_state))
@@ -3056,7 +3090,8 @@ static void recRecompile(u32 startpc)
 			else
 				waitloop_possible = false;
 
-			raw_cycles += info.cycles;
+			if (!needs_cycle_flush)
+				raw_cycles += info.cycles;
 			pc += 4;
 			endpc = pc;
 			if (++compiled >= MAX_BLOCK_INSTS)
