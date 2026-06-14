@@ -283,7 +283,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QGroupBox" name="grpInstrumentation">
+  <widget class="QGroupBox" name="grpLogWhenHit">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -296,7 +296,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>Instrumentation</string>
+    <string>Log When Hit</string>
    </property>
    <property name="checkable">
     <bool>true</bool>
@@ -347,19 +347,6 @@
     <string/>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QCheckBox" name="chkLog">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="text">
-       <string>Log</string>
-      </property>
-      <property name="checked">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
     <item>
      <widget class="QCheckBox" name="chkEnable">
       <property name="text">
@@ -425,7 +412,6 @@
   <tabstop>rdoExecute</tabstop>
   <tabstop>txtAddress</tabstop>
   <tabstop>txtDescription</tabstop>
-  <tabstop>chkLog</tabstop>
   <tabstop>chkEnable</tabstop>
   <tabstop>spnMaxHitCount</tabstop>
   <tabstop>chkRead</tabstop>
@@ -433,6 +419,7 @@
   <tabstop>chkChange</tabstop>
   <tabstop>txtSize</tabstop>
   <tabstop>txtCondition</tabstop>
+  <tabstop>grpLogWhenHit</tabstop>
   <tabstop>txtLogFormat</tabstop>
   <tabstop>chkContinueOnHit</tabstop>
  </tabstops>
