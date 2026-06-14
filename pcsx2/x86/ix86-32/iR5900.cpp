@@ -1580,14 +1580,6 @@ void dynarecMemcheck(size_t i)
 			return;
 	}
 
-	if (mc.result & MEMCHECK_LOG)
-	{
-		if (opcode.flags & IS_STORE)
-			DevCon.WriteLn("Hit store breakpoint @0x%x", cpuRegs.pc);
-		else
-			DevCon.WriteLn("Hit load breakpoint @0x%x", cpuRegs.pc);
-	}
-
 	if (!CBreakPoints::HandleMemCheckHit(BREAKPOINT_EE, mc.start, mc.end))
 		return;
 

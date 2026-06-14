@@ -1383,13 +1383,8 @@ static bool psxDynarecMemcheck(size_t i)
 			return false;
 	}
 
-	if (mc.result & MEMCHECK_LOG)
-	{
-		if (opcode.flags & IS_STORE)
-			DevCon.WriteLn("Hit R3000 store breakpoint @0x%x", pc);
-		else
-			DevCon.WriteLn("Hit R3000 load breakpoint @0x%x", pc);
-	}
+	if (!CBreakPoints::HandleMemCheckHit(BREAKPOINT_IOP, mc.start, mc.end))
+		return false;
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
 	VMManager::SetPaused(true);
