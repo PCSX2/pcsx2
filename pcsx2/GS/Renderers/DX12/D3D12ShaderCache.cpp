@@ -17,6 +17,8 @@
 
 #include <d3dcompiler.h>
 
+//#define DEBUG_LIBS 1
+
 #pragma pack(push, 1)
 struct CacheIndexEntry
 {
@@ -189,6 +191,10 @@ bool D3D12ShaderCache::CreateNew(
 bool D3D12ShaderCache::ReadExisting(const std::string& index_filename, const std::string& blob_filename,
 	std::FILE*& index_file, std::FILE*& blob_file, CacheIndex& index)
 {
+#if DEBUG_LIBS
+	return false;
+#endif
+
 	index_file = FileSystem::OpenCFile(index_filename.c_str(), "r+b");
 	if (!index_file)
 	{
@@ -562,6 +568,26 @@ D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::CompileAndAddShaderBlob(
 {
 	ComPtr<ID3DBlob> blob;
 
+#if DEBUG_LIBS
+	{
+		std::vector<std::string> macro_list;
+
+		if (macros)
+		{
+			const D3D_SHADER_MACRO* c_macro = macros;
+
+			while (c_macro->Name != nullptr)
+			{
+				macro_list.push_back(fmt::format("{} = {}", c_macro->Name, c_macro->Definition));
+				c_macro++;
+			}
+		}
+
+		Console.WriteLnFmt("Compiling {} with macros:\n\t{}", shader_name,
+			macro_list.empty() ? "None" : StringUtil::JoinString(macro_list.begin(), macro_list.end(), "\n\t"));
+	}
+#endif
+
 	switch (key.type)
 	{
 		case EntryType::VertexShader:
@@ -683,6 +709,21 @@ D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::CompileAndAddShaderBlob(
 	const CacheIndexKey& key, const std::vector<std::pair<std::string, const char*>>& shader, const D3D_SHADER_MACRO* macros, const char* entry_point, const std::unordered_map<std::string, std::string>& includes)
 {
 	pxAssert(key.type != EntryType::LibraryShader);
+
+#if DEBUG_LIBS
+	{
+		std::vector<std::string> macro_list;
+		const D3D_SHADER_MACRO* c_macro = macros;
+		while (c_macro->Name != nullptr)
+		{
+			macro_list.push_back(fmt::format("{} = {}", c_macro->Name, c_macro->Definition));
+			c_macro++;
+		}
+
+		Console.WriteLnFmt("Compiling linked shader with macros:\n\t{}",
+			macro_list.empty() ? "None" : StringUtil::JoinString(macro_list.begin(), macro_list.end(), "\n\t"));
+	}
+#endif
 
 	std::vector<ComPtr<ID3DBlob>> compiled_blobs;
 	compiled_blobs.reserve(shader.size());
