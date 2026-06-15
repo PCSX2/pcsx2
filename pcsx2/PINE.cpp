@@ -4,11 +4,11 @@
 #include "BuildVersion.h"
 #include "Common.h"
 #include "Host.h"
-#include "Memory.h"
 #include "Elfheader.h"
 #include "SaveState.h"
 #include "PINE.h"
 #include "VMManager.h"
+#include "vtlb.h"
 #include "common/Error.h"
 #include "common/Threading.h"
 
@@ -538,7 +538,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 1, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
-				const u8 res = memRead8(a);
+				const u8 res = vtlb_ramRead<mem8_t>(a);
 				ToResultVector(ret_buffer, res, ret_cnt);
 				ret_cnt += 1;
 				buf_cnt += 4;
@@ -551,7 +551,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 2, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
-				const u16 res = memRead16(a);
+				const u16 res = vtlb_ramRead<mem16_t>(a);
 				ToResultVector(ret_buffer, res, ret_cnt);
 				ret_cnt += 2;
 				buf_cnt += 4;
@@ -564,7 +564,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 4, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
-				const u32 res = memRead32(a);
+				const u32 res = vtlb_ramRead<mem32_t>(a);
 				ToResultVector(ret_buffer, res, ret_cnt);
 				ret_cnt += 4;
 				buf_cnt += 4;
@@ -577,7 +577,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				if (!SafetyChecks(buf_cnt, 4, ret_cnt, 8, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
-				const u64 res = memRead64(a);
+				const u64 res = vtlb_ramRead<mem64_t>(a);
 				ToResultVector(ret_buffer, res, ret_cnt);
 				ret_cnt += 8;
 				buf_cnt += 4;
@@ -590,7 +590,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				if (!SafetyChecks(buf_cnt, 1 + 4, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
-				memWrite8(a, FromSpan<u8>(buf, buf_cnt + 4));
+				vtlb_ramWrite<mem8_t>(a, FromSpan<u8>(buf, buf_cnt + 4));
 				buf_cnt += 5;
 				break;
 			}
@@ -601,7 +601,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				if (!SafetyChecks(buf_cnt, 2 + 4, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
-				memWrite16(a, FromSpan<u16>(buf, buf_cnt + 4));
+				vtlb_ramWrite<mem16_t>(a, FromSpan<u16>(buf, buf_cnt + 4));
 				buf_cnt += 6;
 				break;
 			}
@@ -612,7 +612,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				if (!SafetyChecks(buf_cnt, 4 + 4, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
-				memWrite32(a, FromSpan<u32>(buf, buf_cnt + 4));
+				vtlb_ramWrite<mem32_t>(a, FromSpan<u32>(buf, buf_cnt + 4));
 				buf_cnt += 8;
 				break;
 			}
@@ -623,7 +623,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				if (!SafetyChecks(buf_cnt, 8 + 4, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
 				const u32 a = FromSpan<u32>(buf, buf_cnt);
-				memWrite64(a, FromSpan<u64>(buf, buf_cnt + 4));
+				vtlb_ramWrite<mem64_t>(a, FromSpan<u64>(buf, buf_cnt + 4));
 				buf_cnt += 12;
 				break;
 			}
