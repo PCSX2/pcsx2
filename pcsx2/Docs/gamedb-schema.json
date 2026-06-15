@@ -229,6 +229,11 @@
               "minimum": 0,
               "maximum": 1
             },
+            "recommendedAccurateAlphaTest": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
             "trilinearFiltering": {
               "type": "integer",
               "minimum": 0,
