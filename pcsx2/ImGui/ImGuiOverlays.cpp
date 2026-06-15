@@ -439,7 +439,19 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				DRAW_LINE(osd_font, font_size, s_hardware_info_cpu_line.c_str(), white_color);
 
 				// GPU
-				s_hardware_info_gpu_line.format("GPU: {}{}", g_gs_device->GetName(), GSConfig.UseDebugDevice ? " (Debug)" : "");
+				const char* gpu_suffix = "";
+				if (GSConfig.UseDebugDevice && GSConfig.HWROV)
+					gpu_suffix = " (Debug & ROV)";
+				else if (GSConfig.UseDebugDevice)
+					gpu_suffix = " (Debug)";
+				else if (GSConfig.HWROV)
+					gpu_suffix = " (ROV)";
+
+				s_hardware_info_gpu_line.format(
+					"GPU: {}{}",
+					g_gs_device->GetName(),
+					gpu_suffix);
+
 				DRAW_LINE(osd_font, font_size, s_hardware_info_gpu_line.c_str(), white_color);
 			}
 
