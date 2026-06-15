@@ -3043,6 +3043,13 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			"EmuCore/GS", "HWAA1", false);
 		DrawToggleSetting(
 			bsi, FSUI_ICONSTR(ICON_FA_BULLSEYE, "Mipmapping"), FSUI_CSTR("Enables emulation of the GS's texture mipmapping."), "EmuCore/GS", "hw_mipmap", true);
+		if (is_hardware && effective_renderer != GSRendererType::OGL)
+		{
+			DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Rasterizer Ordered View"),
+				FSUI_CSTR("Enables Rasterizer Ordered View (ROV), which allows feedback loops to be executed with fewer draw calls. Can improve performance in feedback heavy games "
+					  "with higher accuracy settings."),
+				"EmuCore/GS", "HWROV", false);
+		}
 	}
 	else
 	{
@@ -3295,13 +3302,6 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	if (show_advanced_settings)
 	{
 		MenuHeading(FSUI_CSTR("Advanced"));
-		if (is_hardware && effective_renderer != GSRendererType::OGL)
-		{
-			DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Rasterizer Ordered View"),
-				FSUI_CSTR("Enables Rasterizer Ordered View (ROV), which allows feedback loops to be executed with fewer draw calls. Can improve performance in feedback heavy games "
-					  "with higher accuracy settings."),
-				"EmuCore/GS", "HWROV", true);
-		}
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FORWARD, "Skip Presenting Duplicate Frames"),
 			FSUI_CSTR("Skips displaying frames that don't change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing "
 					  "worse."),
