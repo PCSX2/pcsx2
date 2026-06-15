@@ -419,6 +419,8 @@ void GameListWidget::setCustomBackground()
 
 		m_ui.stack->setPalette(QPalette());
 		m_background_text_color = QColor();
+		m_empty_widget->setPalette(QPalette());
+		m_empty_widget->setAutoFillBackground(false);
 
 		m_ui.stack->update();
 		m_table_view->setAlternatingRowColors(true);
@@ -503,10 +505,20 @@ void GameListWidget::updateBackgroundTextColor(const QPixmap& frame)
 		return;
 	m_background_text_color = text_color;
 
+	QColor highlight_color = qApp->palette().color(QPalette::Highlight);
+	highlight_color.setAlpha(128);
+	const QColor empty_backdrop_color = (text_color == Qt::black) ? QColor(255, 255, 255, 128) : QColor(0, 0, 0, 128);
+
 	QPalette palette;
 	palette.setColor(QPalette::Text, text_color);
 	palette.setColor(QPalette::WindowText, text_color);
+	palette.setColor(QPalette::Highlight, highlight_color);
 	m_ui.stack->setPalette(palette);
+
+	QPalette empty_palette;
+	empty_palette.setColor(QPalette::Window, empty_backdrop_color);
+	m_empty_widget->setPalette(empty_palette);
+	m_empty_widget->setAutoFillBackground(true);
 }
 
 bool GameListWidget::isShowingGameList() const
