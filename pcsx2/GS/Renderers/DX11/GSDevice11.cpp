@@ -724,6 +724,7 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	Console.WriteLnFmt("D3D11: Conservative Depth: {}", m_conservative_depth ? "Supported" : "Not Supported");
 	Console.WriteLnFmt("D3D11: Depth Testing and Sampling: {}", m_features.test_and_sample_depth ? "Supported" : "Not Supported");
 	Console.WriteLnFmt("D3D11: RGBA16 UNORM Hardware Blending: {}", m_rgba16_unorm_hw_blend ? "Supported" : "Not Supported");
+	Console.WriteLnFmt("D3D11: Rasterizer Ordered Views: {}", m_features.rov ? "Supported" : "Not Supported");
 }
 
 bool GSDevice11::HasSurface() const
