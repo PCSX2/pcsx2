@@ -81,6 +81,7 @@ namespace GameDatabaseSchema
 		MinimumBlendingLevel,
 		MaximumBlendingLevel,
 		RecommendedBlendingLevel,
+		RecommendedAccurateAlphaTest,
 		GetSkipCount,
 		BeforeDraw,
 		MoveHandler,

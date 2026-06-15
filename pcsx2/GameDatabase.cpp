@@ -394,6 +394,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"minimumBlendingLevel",
 	"maximumBlendingLevel",
 	"recommendedBlendingLevel",
+	"recommendedAccurateAlphaTest",
 	"getSkipCount",
 	"beforeDraw",
 	"moveHandler",
@@ -931,6 +932,27 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 				else
 				{
 					Host::RemoveKeyedOSDMessage("HWBlendingWarning");
+				}
+			}
+			break;
+
+			case GSHWFixId::RecommendedAccurateAlphaTest:
+			{
+				if (!is_sw_renderer && value >= 0 && value <= 1 &&
+					static_cast<int>(config.HWAccurateAlphaTest) < value)
+				{
+					Host::AddKeyedOSDMessage("HWAlphaTestWarning",
+						fmt::format(TRANSLATE_FS("GameDatabase",
+										"{0} Accurate Alpha Test is currently disabled.\n"
+										"This game recommends enabling Accurate Alpha Test.\n"
+										"You can enable it in Game Properties to improve graphical\n"
+										"accuracy, but this may increase system requirements."),
+							ICON_FA_PAINTBRUSH),
+						Host::OSD_WARNING_DURATION);
+				}
+				else
+				{
+					Host::RemoveKeyedOSDMessage("HWAlphaTestWarning");
 				}
 			}
 			break;
