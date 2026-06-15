@@ -7165,7 +7165,7 @@ URL 是: %1</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="10155"/>
       <source>Anisotropic Filtering</source>
-      <translation>各异向性过滤</translation>
+      <translation>各向异性过滤</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="10156"/>
@@ -16052,7 +16052,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="531"/>
       <source>Anisotropic Filtering</source>
-      <translation>各意向性过滤</translation>
+      <translation>各向异性过滤</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="532"/>

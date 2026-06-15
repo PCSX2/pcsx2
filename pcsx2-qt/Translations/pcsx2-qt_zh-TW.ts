@@ -7166,7 +7166,7 @@ The URL was: %1</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="10223"/>
       <source>Anisotropic Filtering</source>
-      <translation>各意向性過濾</translation>
+      <translation>各向異性過濾</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="10224"/>
@@ -14199,7 +14199,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
       <location filename="../Settings/GraphicsHardwareRenderingSettingsTab.ui" line="72"/>
       <source>Anisotropic Filtering:</source>
-      <translation type="unfinished">Anisotropic Filtering:</translation>
+      <translation>各向異性過濾:</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsHardwareRenderingSettingsTab.ui" line="85"/>
@@ -16070,7 +16070,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="533"/>
       <source>Anisotropic Filtering</source>
-      <translation>各意向性過濾</translation>
+      <translation>各向異性過濾</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="534"/>
