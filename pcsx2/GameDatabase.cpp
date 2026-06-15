@@ -395,6 +395,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"maximumBlendingLevel",
 	"recommendedBlendingLevel",
 	"recommendedAccurateAlphaTest",
+	"recommendedHWAA1",
 	"getSkipCount",
 	"beforeDraw",
 	"moveHandler",
@@ -953,6 +954,27 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 				else
 				{
 					Host::RemoveKeyedOSDMessage("HWAlphaTestWarning");
+				}
+			}
+			break;
+
+			case GSHWFixId::RecommendedHWAA1:
+			{
+				if (!is_sw_renderer && value >= 0 && value <= 1 &&
+					static_cast<int>(config.HWAA1) < value)
+				{
+					Host::AddKeyedOSDMessage("HWAA1Warning",
+						fmt::format(TRANSLATE_FS("GameDatabase",
+										"{0} AA1 is currently disabled.\n"
+										"This game recommends enabling AA1.\n"
+										"You can enable it in Game Properties to improve graphical\n"
+										"accuracy, but this may increase system requirements."),
+							ICON_FA_PAINTBRUSH),
+						Host::OSD_WARNING_DURATION);
+				}
+				else
+				{
+					Host::RemoveKeyedOSDMessage("HWAA1Warning");
 				}
 			}
 			break;
