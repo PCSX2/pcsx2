@@ -12054,6 +12054,8 @@ SCUS-97345:
 SCUS-97347:
   name: "MLB 2006"
   region: "NTSC-U"
+  gsHWFixes:
+    mipmap: 0 # Currently causes texture corruption.
 SCUS-97348:
   name: "NBA '06"
   region: "NTSC-U"
@@ -12507,6 +12509,8 @@ SCUS-97457:
 SCUS-97460:
   name: "MLB 2006 [Demo]"
   region: "NTSC-U"
+  gsHWFixes:
+    mipmap: 0 # Currently causes texture corruption.
 SCUS-97462:
   name: "Rise of the Kasai [Demo]"
   region: "NTSC-U"
@@ -21309,6 +21313,8 @@ SLES-52676:
 SLES-52678:
   name: "Viewtiful Joe"
   region: "PAL-M5"
+  roundModes:
+    eeRoundMode: 0 # Fixes animations during some cutscenes.
   gsHWFixes:
     halfPixelOffset: 5 # Fixes post processing alignment.
     nativeScaling: 2 # Aligns post processing.
@@ -32393,6 +32399,8 @@ SLKA-25220:
   name: "뷰티플 죠 - 새로운 희망" # Undumped on ReDump as of 2025-08-28
   name-en: "Viewtiful Joe - A New Hope"
   region: "NTSC-K"
+  roundModes:
+    eeRoundMode: 0 # Fixes animations during some cutscenes.
   gsHWFixes:
     halfPixelOffset: 5 # Fixes post processing alignment.
     nativeScaling: 2 # Aligns post processing.
@@ -33665,6 +33673,8 @@ SLKA-25452:
   name: "뷰티플 죠 새로운 희망 [PlayStation 2 BigHit Series]"
   name-en: "Viewtiful Joe - A New Hope [PlayStation 2 BigHit Series]"
   region: "NTSC-K"
+  roundModes:
+    eeRoundMode: 0 # Fixes animations during some cutscenes.
   gsHWFixes:
     halfPixelOffset: 5 # Fixes post processing alignment.
     nativeScaling: 2 # Aligns post processing.
@@ -34458,6 +34468,8 @@ SLPM-55096:
   name-en: "ThunderForce VI"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes graphical corruptions at stage 5.
 SLPM-55097:
   name: "NBA LIVE 09"
   name-sort: "NBA らいぶ09"
@@ -45432,6 +45444,8 @@ SLPM-65699:
   name-en: "Viewtiful Joe - Aratanaru Kibo"
   region: "NTSC-J"
   compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes animations during some cutscenes.
   gsHWFixes:
     halfPixelOffset: 5 # Fixes post processing alignment.
     nativeScaling: 2 # Aligns post processing.
@@ -69385,6 +69399,8 @@ SLUS-20951:
   name: "Viewtiful Joe"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes animations during some cutscenes.
   gsHWFixes:
     halfPixelOffset: 5 # Fixes post processing alignment.
     nativeScaling: 2 # Aligns post processing.
