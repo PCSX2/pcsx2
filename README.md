@@ -26,11 +26,11 @@ The upstream PCSX2 project ships an ARM64 *interpreter* build for macOS, but its
 - ✅ PS1 games (IOP mode) run at full speed — e.g. *Gran Turismo 2* is fully playable
 - ✅ 3D games run (if crash try disabling MTVU)
 
-Native Apple Silicon builds will be provided as automated releases soon. For now you must build manually (see **Building on Apple Silicon** below).
+**Native Apple Silicon** builds are provided.
 
 ### Why LLMs / AI Were Used
 
-A word on methodology, because this comes up a lot.
+A word on methodology:
 
 The x86-64 JIT code in upstream ARMSX2 is **already proven correct** — it has run thousands of PS2 titles for years. The challenge in this port is not emulator design or JIT theory; it is **mechanical translation** of a large, well-understood x86-64 assembly codebase into equivalent ARM64 assembly (via VIXL) while preserving the exact same register-allocation contracts, block lifecycle, and recompiler semantics.
 
@@ -91,19 +91,3 @@ codesign --force --deep --sign - build/pcsx2-qt/ARMSX2.app
 # 5. Run
 open build/pcsx2-qt/ARMSX2.app
 ```
-
-See `arm64-port/CONVENTIONS.md` for the full build/test/debug loop used by the port team.
-
-## Roadmap
-
-| Phase | Status | Description |
-|---|---|---|
-| 0 | ✅ Done | Build, tooling, VIXL scratch harness |
-| 1 | ✅ Done | EE recompiler skeleton (dispatcher, block compiler, constant pool) |
-| 2 | ✅ Done | vtlb fast memory |
-| 3 | ✅ Done | EE integer arithmetic (ALU, shifts, mul/div, MMI) |
-| 4 | ✅ Done | EE branches, jumps, delay slots, recLUT + block linking |
-| 5 | ✅ Done | EE coprocessors (COP0 inline, COP1 FPU, COP2 macro fallback, MMI SIMD) |
-| 6 | ✅ Done | IOP recompiler (R3000A: integer, load/store, branches, COP0/COP2) |
-| 7 | ✅ Done | VU recompiler (microVU) — Upper ISA done, Lower ISA done |
-| 8 | 📋 Planned | Integration, testing, profiling, polish, release builds |
