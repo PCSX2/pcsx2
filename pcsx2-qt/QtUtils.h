@@ -17,9 +17,11 @@
 #include <QtGui/QScreen>
 #include <functional>
 #include <initializer_list>
+#include <string>
 #include <string_view>
 #include <type_traits>
 #include <optional>
+#include <vector>
 
 #include "common/Console.h"
 
@@ -209,4 +211,14 @@ namespace QtUtils
 	/// Gets a flag icon for a given language code
 	/// Returns an empty QIcon if no flag is available for the language
 	QIcon GetFlagIconForLanguage(const QString& language_code);
+
+	/// Creates a desktop or launcher (Start Menu / applications) shortcut for a game.
+	/// Shows error dialogs parented to `parent` when something goes wrong.
+	void CreateShortcut(QWidget* parent, const std::string& name, const std::string& game_path,
+		std::vector<std::string> passed_cli_args, const std::string& custom_args,
+		const std::string& icon_path, bool is_desktop);
+
+	/// Escapes the given string for use as a shortcut command line argument.
+	/// Returns whether the escaping operation was lossless.
+	bool EscapeShortcutCommandLine(std::string* arg);
 } // namespace QtUtils
