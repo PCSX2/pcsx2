@@ -452,20 +452,15 @@ void GameListWidget::setCustomBackground()
 	m_table_view->viewport()->setAutoFillBackground(false);
 	m_list_view->viewport()->setAutoFillBackground(false);
 	m_background_movie->start();
-	updateCustomBackgroundState(true);
+	updateCustomBackgroundState();
 	m_table_view->setAlternatingRowColors(false);
 	processBackgroundFrames();
 }
 
-void GameListWidget::updateCustomBackgroundState(const bool force_start)
+void GameListWidget::updateCustomBackgroundState()
 {
 	if (m_background_movie && m_background_movie->isValid())
-	{
-		if ((isVisible() && (isActiveWindow() || force_start)) && qGuiApp->applicationState() == Qt::ApplicationActive)
-			m_background_movie->setPaused(false);
-		else
-			m_background_movie->setPaused(true);
-	}
+		m_background_movie->setPaused(!(isVisible() && qGuiApp->applicationState() == Qt::ApplicationActive));
 }
 
 void GameListWidget::processBackgroundFrames()

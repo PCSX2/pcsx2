@@ -54,7 +54,7 @@ public:
 	void cancelRefresh();
 	void reloadThemeSpecificImages();
 	void setCustomBackground();
-	void updateCustomBackgroundState(const bool force_start = false);
+	void updateCustomBackgroundState();
 	void processBackgroundFrames();
 	void updateBackgroundTextColor(const QPixmap& frame);
 
