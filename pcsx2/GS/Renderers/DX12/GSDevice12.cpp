@@ -4529,22 +4529,19 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		(draw_ds && static_cast<GSTexture12*>(draw_ds)->GetSRVDescriptor() == m_tfx_textures[0])))
 		PSSetShaderResource(TEXTURE_TEXTURE, nullptr, false);
 
-	if (InRenderPass() && (m_current_render_target == draw_rt || m_current_depth_target == draw_ds))
+	// Avoid restarting the render pass just to switch from rt+depth to rt and vice versa.
+	// Keep the depth even if doing colclip hw draws, because the next draw will probably re-enable depth.
+	if (InRenderPass() && !(draw_rt || draw_rt_rov) && draw_ds && m_current_render_target && config.tex != m_current_render_target && 
+		m_current_render_target->GetSize() == draw_ds->GetSize())
 	{
-		// avoid restarting the render pass just to switch from rt+depth to rt and vice versa
-		// keep the depth even if doing colclip hw draws, because the next draw will probably re-enable depth
-		if (!(draw_rt || draw_rt_rov) && m_current_render_target && config.tex != m_current_render_target &&
-			draw_ds && m_current_render_target->GetSize() == draw_ds->GetSize())
-		{
-			draw_rt = m_current_render_target;
-			m_pipeline_selector.rt = true;
-		}
-		else if (!(draw_ds || draw_ds_rov) && m_current_depth_target && config.tex != m_current_depth_target &&
-			draw_rt && m_current_depth_target->GetSize() == draw_rt->GetSize())
-		{
-			draw_ds = m_current_depth_target;
-			m_pipeline_selector.ds = true;
-		}
+		draw_rt = m_current_render_target;
+		m_pipeline_selector.rt = true;
+	}
+	else if (InRenderPass() && !(draw_ds || draw_ds_rov) && draw_rt && m_current_depth_target && config.tex != m_current_depth_target &&
+		m_current_depth_target->GetSize() == draw_rt->GetSize())
+	{
+		draw_ds = m_current_depth_target;
+		m_pipeline_selector.ds = true;
 	}
 
 	GSTexture12* draw_ds_as_rt = static_cast<GSTexture12*>(m_ds_as_rt);
