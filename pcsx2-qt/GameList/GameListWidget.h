@@ -133,4 +133,7 @@ private:
 	QColor m_background_text_color;
 	QtUtils::ScalingMode m_background_scaling = QtUtils::ScalingMode::Fit;
 	float m_background_opacity = 100.0f;
+	int m_background_last_frame = -1;
+	QSize m_background_last_size;
+	qreal m_background_last_dpr = 0.0;
 };

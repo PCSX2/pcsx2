@@ -407,7 +407,13 @@ void GameListWidget::setCustomBackground()
 			delete m_background_movie;
 			m_background_movie = nullptr;
 		}
+		// Cache all frames for small images so loops don't keep re-decoding
+		else if (const s64 file_size = FileSystem::GetPathFileSize(path.c_str()); file_size > 0 && file_size < 64 * 1024 * 1024)
+			m_background_movie->setCacheMode(QMovie::CacheAll);
 	}
+
+	// Invalidate frame cache so the next animated frame triggers full reprocessing
+	m_background_last_size = QSize();
 
 	// If there is no valid background then reset fallback to default UI state
 	if (!m_background_movie)
@@ -465,24 +471,28 @@ void GameListWidget::updateCustomBackgroundState()
 
 void GameListWidget::processBackgroundFrames()
 {
-	if (m_background_movie && m_background_movie->isValid() && isVisible())
-	{
-		const int widget_width = m_ui.stack->width();
-		const int widget_height = m_ui.stack->height();
+	if (!m_background_movie || !m_background_movie->isValid() || !isVisible())
+		return;
 
-		if (widget_width <= 0 || widget_height <= 0)
-			return;
+	const QSize widget_size(m_ui.stack->width(), m_ui.stack->height());
+	if (widget_size.isEmpty())
+		return;
 
-		QPixmap pm = m_background_movie->currentPixmap();
-		updateBackgroundTextColor(pm);
+	const int frame_number = m_background_movie->currentFrameNumber();
+	const qreal dpr = devicePixelRatioF();
 
-		const qreal dpr = devicePixelRatioF();
+	if (frame_number == m_background_last_frame && widget_size == m_background_last_size && qFuzzyCompare(dpr, m_background_last_dpr))
+		return;
 
-		QtUtils::resizeAndScalePixmap(&pm, widget_width, widget_height, dpr, m_background_scaling, m_background_opacity);
+	QPixmap pm = m_background_movie->currentPixmap();
+	updateBackgroundTextColor(pm);
+	QtUtils::resizeAndScalePixmap(&pm, widget_size.width(), widget_size.height(), dpr, m_background_scaling, m_background_opacity);
 
-		m_background_pixmap = std::move(pm);
-		m_ui.stack->update();
-	}
+	m_background_pixmap = std::move(pm);
+	m_background_last_frame = frame_number;
+	m_background_last_size = widget_size;
+	m_background_last_dpr = dpr;
+	m_ui.stack->update();
 }
 
 void GameListWidget::updateBackgroundTextColor(const QPixmap& frame)
@@ -560,6 +570,7 @@ void GameListWidget::cancelRefresh()
 void GameListWidget::reloadThemeSpecificImages()
 {
 	m_model->reloadThemeSpecificImages();
+	m_background_last_size = QSize();
 	processBackgroundFrames();
 }
 
