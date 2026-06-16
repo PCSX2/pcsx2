@@ -59670,6 +59670,7 @@ SLPS-25362:
   name-en: "Tetsujin 28-gō"
   region: "NTSC-J"
   gsHWFixes:
+    mipmap: 0 # Currently causes texture corruption.
     autoFlush: 2 # Fixes Depth of Field effect.
     halfPixelOffset: 4 # Aligns Depth of Field.
 SLPS-25363:
