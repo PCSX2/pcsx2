@@ -337,6 +337,7 @@ enum : u32
 
 // Defined below (block-compile helpers) — used by recTranslateOp's COP2 inline path.
 static void recEmitInterpInline(u32 op);
+static void recEmitVU0FinishForCOP2();
 static bool recTranslateOp(u32 op);
 
 struct RecGprConstState
@@ -2192,13 +2193,18 @@ static bool recTranslateOp(u32 op)
 		case 0x12:
 			if (rs == 0x08)
 				return false; // BC2F/BC2T/BC2FL/BC2TL — single-step (writes PC)
+			if (rs >= 0x10 || !(cpuRegs.code & 1)) // macro arith, or a non-interlocked transfer
+				recEmitVU0FinishForCOP2();
 			recEmitInterpInline(op);
 			return true;
 
-		// COP2 quadword load/store (VF[rt] ↔ memory). Straight-line, no PC write —
-		// inline the interpreter handler like the COP2 macro ops above.
-		case OP_LQC2: recEmitInterpInline(op); return true;
-		case OP_SQC2: recEmitInterpInline(op); return true;
+		// COP2 quadword load/store (VF[rt] ↔ memory). Straight-line, no PC write — inline
+		// the interpreter handler like the COP2 macro ops above. These have no interlock
+		// bit (bit 0 is immediate data), and the handler only vu0Sync()s, so always force
+		// the finish: SQC2 reads a VF (needs the program done first); LQC2 for symmetry,
+		// matching x86 recLQC2/recSQC2 which sync/finish via the same analysis.
+		case OP_LQC2: recEmitVU0FinishForCOP2(); recEmitInterpInline(op); return true;
+		case OP_SQC2: recEmitVU0FinishForCOP2(); recEmitInterpInline(op); return true;
 
 		default: return false;
 	}
@@ -2606,6 +2612,22 @@ static void recEmitInterpInline(u32 op)
 	armAsm->Mov(RSCRATCHADDR.W(), op);
 	armAsm->Str(RSCRATCHADDR.W(), a64::MemOperand(RESTATEPTR, EE_CODE_OFFSET));
 	armEmitCall(reinterpret_cast<const void*>(R5900::GetInstruction(op).interpret));
+}
+
+// VU0 micro/macro finish for COP2 ops — emit x86's mVUFinishVU0 (microVU_Macro.inl,
+// see its "flickering polygons" comment): with the VU0 recompiler enabled, a microVU0
+// program started by VCALLMS runs DEFERRED (recMicroVU0::Execute is called lazily at the
+// next sync point), so reading VU0 state mid-flight gives a half-computed result. This
+// is the FINISH (run to E-bit) path; the caller gates WHEN to emit it (see case 0x12 /
+// LQC2 / SQC2) so we don't override the inline handler's interlocked-write M-bit wait.
+// _vu0FinishMicro guards on VPU_STAT&1, so it's a cheap no-op when no micro program is
+// pending (e.g. FFX, which is macro-only). Emitted AFTER the block's cycle flush and the
+// GPR-cache flush (recRecompile / recTranslateOpOptimized), so it sees a current
+// cpuRegs.cycle and the interpreter COP2 handler that follows sees committed GPRs.
+extern void _vu0FinishMicro(); // VU0.cpp (decl in VUmicro.h, not included here)
+static void recEmitVU0FinishForCOP2()
+{
+	armEmitCall(reinterpret_cast<const void*>(&_vu0FinishMicro));
 }
 
 // Compile one straight-line or delay-slot instruction: const-folded/native generator
