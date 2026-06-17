@@ -5900,10 +5900,12 @@ void GSRendererHW::EmulateDATESelectMethod(DATEOptions& date_options, GSTextureC
 
 	const GSDevice::FeatureSupport& features = g_gs_device->Features();
 
+	// Date one can run with complex alpha test if there's no overlap.
 	const bool complex_alpha_test = m_cached_ctx.TEST.ATE &&
 	                                m_cached_ctx.TEST.ATST != ATST_ALWAYS &&
 	                                m_cached_ctx.TEST.ATST != ATST_NEVER &&
-	                                m_cached_ctx.TEST.AFAIL != AFAIL_KEEP;
+	                                m_cached_ctx.TEST.AFAIL != AFAIL_KEEP &&
+	                                m_prim_overlap != PRIM_OVERLAP_NO;
 	if (m_cached_ctx.TEST.DATM)
 	{
 		blend_alpha_min = std::max(blend_alpha_min, 128);
@@ -5946,9 +5948,15 @@ void GSRendererHW::EmulateDATESelectMethod(DATEOptions& date_options, GSTextureC
 		m_conf.require_full_barrier = true;
 		date_options.barrier = true;
 	}
+	else if (m_conf.colormask.wa && complex_alpha_test && features.feedback_loops())
+	{
+		GL_PERF("DATE: Accurate with complex alpha test.");
+		m_conf.require_full_barrier = true;
+		date_options.barrier = true;
+	}
 	// When Blending is disabled and Edge Anti Aliasing is enabled,
 	// the output alpha is Coverage (which we force to 128) so DATE will fail/pass guaranteed on second pass.
-	else if (m_conf.colormask.wa && (m_context->FBA.FBA || IsCoverageAlphaFixedOne()) && features.stencil_buffer)
+	else if (m_conf.colormask.wa && !complex_alpha_test && (m_context->FBA.FBA || IsCoverageAlphaFixedOne()) && features.stencil_buffer)
 	{
 		GL_PERF("DATE: Fast with FBA, all pixels will be >= 128");
 		date_options.stencil_one = !m_cached_ctx.TEST.DATM;
