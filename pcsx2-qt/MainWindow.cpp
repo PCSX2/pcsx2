@@ -221,11 +221,13 @@ void MainWindow::setupAdditionalUi()
 	}
 
 	const bool show_game_grid = Host::GetBaseBoolSettingValue("UI", "GameListGridView", false);
-	updateGameGridActions(show_game_grid);
+	const bool show_grid_cover_titles = Host::GetBaseBoolSettingValue("UI", "ShowGridCoverTitles", false);
+	updateGameGridActions(show_game_grid, show_grid_cover_titles);
 
 	m_game_list_widget = new GameListWidget(getContentParent());
 	m_game_list_widget->initialize();
 	m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
+	m_ui.actionGridViewShowFullTitles->setChecked(m_game_list_widget->getShowGridFullCoverTitles());
 	m_ui.mainContainer->addWidget(m_game_list_widget);
 
 	updateEmulationActions(false, false, false);
@@ -543,6 +545,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
 	connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
 	connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
+	connect(m_ui.actionGridViewShowFullTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowFullCoverTitles);
 	connect(m_ui.actionGridViewZoomIn, &QAction::triggered, m_game_list_widget, [this]() {
 		if (isShowingGameList())
 			m_game_list_widget->gridZoomIn();
@@ -554,8 +557,10 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, m_game_list_widget, &GameListWidget::refreshGridCovers);
 	connect(m_game_list_widget, &GameListWidget::layoutChange, this, [this]() {
 		QSignalBlocker sb(m_ui.actionGridViewShowTitles);
+		QSignalBlocker sb2(m_ui.actionGridViewShowFullTitles);
 		m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
-		updateGameGridActions(m_game_list_widget->isShowingGameGrid());
+		m_ui.actionGridViewShowFullTitles->setChecked(m_game_list_widget->getShowGridFullCoverTitles());
+		updateGameGridActions(m_game_list_widget->isShowingGameGrid(), m_game_list_widget->getShowGridCoverTitles());
 	});
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionViewStatusBarVerbose, "UI", "VerboseStatusBar", false);
@@ -3667,9 +3672,10 @@ void MainWindow::updateGameDependentActions()
 	m_ui.actionReloadPatches->setEnabled(s_vm_valid);
 }
 
-void MainWindow::updateGameGridActions(const bool show_game_grid)
+void MainWindow::updateGameGridActions(const bool show_game_grid, const bool show_grid_cover_titles)
 {
 	m_ui.actionGridViewShowTitles->setEnabled(show_game_grid);
+	m_ui.actionGridViewShowFullTitles->setEnabled(show_game_grid && show_grid_cover_titles);
 	m_ui.actionGridViewZoomIn->setEnabled(show_game_grid);
 	m_ui.actionGridViewZoomOut->setEnabled(show_game_grid);
 	m_ui.actionGridViewRefreshCovers->setEnabled(show_game_grid);
