@@ -59,6 +59,7 @@ public:
 	bool isShowingGameList() const;
 	bool isShowingGameGrid() const;
 	bool getShowGridCoverTitles() const;
+	bool getShowGridFullCoverTitles() const;
 
 	std::optional<GameList::Entry> getSelectedEntry() const;
 
@@ -93,6 +94,7 @@ public Q_SLOTS:
 	void showGameList();
 	void showGameGrid();
 	void setShowCoverTitles(bool enabled);
+	void setShowFullCoverTitles(bool enabled);
 	void gridZoomIn();
 	void gridZoomOut();
 	void gridIntScale(int int_scale);
