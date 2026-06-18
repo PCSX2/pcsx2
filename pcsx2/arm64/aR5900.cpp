@@ -13,6 +13,7 @@
 // provider until this is functional.
 
 #include "arm64/aR5900.h"
+#include "arm64/aR5900Analysis.h"
 
 #include "Config.h"
 #include "Memory.h"
@@ -2904,6 +2905,57 @@ static void recEmitEventTestAndDispatch(u32 scaled_cycles, bool add_cycles, bool
 }
 
 // --------------------------------------------------------------------------------------
+//  EEINST inst-cache (Phase 7.9 M0.2 — macro-mode analysis substrate)
+// --------------------------------------------------------------------------------------
+// Per-block instruction-info array, mirroring the x86 rec's s_pInstCache. The M1 COP2
+// analysis passes write the EEINST_COP2_* bits here per instruction, and the macro-mode
+// emit (M2/M3) reads them off g_pCurInstInfo. Indexed by (pc - startpc) >> 2.
+//
+// Unlike x86 (whose blocks run unbounded until a branch, so it mallocs+grows the cache),
+// ARM64 blocks are capped to MAX_BLOCK_INSTS guest ops and one host page, so a fixed
+// array suffices: + a branch delay slot + the x86-style end sentinel.
+static constexpr u32 EE_INST_CACHE_SIZE = MAX_BLOCK_INSTS + 4;
+static EEINST s_instCache[EE_INST_CACHE_SIZE];
+static u32 s_eeEndBlock = 0; // first pc past the current block (x86 s_nEndBlock equiv.)
+
+// Forward pre-scan of the block range, mirroring the x86 rec's s_nEndBlock walk
+// (ix86-32/iR5900.cpp:2292) but matching THIS rec's actual block boundaries so the
+// EEINST indices line up with what the emit loop below compiles. It over-approximates
+// safely: it ends only at a control-flow op (branch/jump + delay slot), a host-page
+// boundary, or the instruction cap — exactly the emit loop's terminators *except* the
+// "un-compilable op ends the block early" case, which only makes the real block shorter.
+// So the scanned range is always >= the emitted range, keeping every g_pCurInstInfo
+// index in bounds. (No compile is attempted here — it is pure opcode inspection.)
+static u32 recScanBlockEnd(u32 startpc)
+{
+	u32 pc = startpc;
+	u32 count = 0;
+	for (;;)
+	{
+		// Host-page boundary — same single-page-per-block rule as the emit loop.
+		if (pc != startpc && (pc & ~__pagemask) != (startpc & ~__pagemask))
+			break;
+
+		if (count >= MAX_BLOCK_INSTS)
+			break;
+
+		const u32 op = memRead32(pc);
+		count++;
+
+		// Branch / branch-likely: the block ends after the delay slot (pc += 8), exactly
+		// as the emit loop terminates. (A J/JAL/JR/JALR/Bcc or a likely Bccl.)
+		if (recIsHandledBranch(op) || recIsLikelyBranch(op))
+		{
+			pc += 8;
+			break;
+		}
+
+		pc += 4;
+	}
+	return pc;
+}
+
+// --------------------------------------------------------------------------------------
 //  Block compiler (Phase 4.3 / 4.4)
 // --------------------------------------------------------------------------------------
 // Compile a straight-line run starting at startpc into one host block and install its
@@ -2993,6 +3045,18 @@ static void recRecompile(u32 startpc)
 	RecGprConstState const_state;
 	RecGprCacheState cache_state;
 
+	// Build the per-block EEINST inst-cache (Phase 7.9 M0.2). Pre-scan the block range
+	// and clear one EEINST slot per instruction so the M1 COP2 analysis passes have a
+	// place to write and the emit loop can expose a g_pCurInstInfo per op. No emit/
+	// behavior change yet — the flags computed here are not consumed until M3.
+	s_eeEndBlock = recScanBlockEnd(startpc);
+	{
+		u32 ninst = (s_eeEndBlock - startpc) >> 2;
+		if (ninst >= EE_INST_CACHE_SIZE)
+			ninst = EE_INST_CACHE_SIZE - 1; // can't happen (range is capped) — defensive
+		std::memset(s_instCache, 0, sizeof(EEINST) * (ninst + 1)); // +1: end sentinel
+	}
+
 	for (;;)
 	{
 		// Keep every block within a single host RAM page so its SMC protection mode (see
@@ -3008,6 +3072,16 @@ static void recRecompile(u32 startpc)
 		}
 
 		const u32 op = memRead32(pc);
+
+		// Point g_pCurInstInfo at this instruction's EEINST slot (M0.2). The pre-scan
+		// guarantees the index is in bounds (its range >= the emitted range); clamp
+		// defensively all the same. Consumed by the macro-mode COP2 emit from M3 on.
+		{
+			u32 idx = (pc - startpc) >> 2;
+			if (idx >= EE_INST_CACHE_SIZE)
+				idx = EE_INST_CACHE_SIZE - 1;
+			g_pCurInstInfo = &s_instCache[idx];
+		}
 
 		if (recIsHandledBranch(op))
 		{

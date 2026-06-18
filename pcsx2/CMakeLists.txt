@@ -1056,6 +1056,7 @@ set(pcsx2arm64Sources
 	arm64/RecStubs.cpp
 	arm64/aR3000A.cpp
 	arm64/aR5900.cpp
+	arm64/aR5900Analysis.cpp
 	arm64/aR5900LoadStore.cpp
 	arm64/aR5900Arith.cpp
 	arm64/aR5900MultDiv.cpp
@@ -1068,6 +1069,7 @@ set(pcsx2arm64Sources
 set(pcsx2arm64Headers
 	arm64/AsmHelpers.h
 	arm64/aR5900.h
+	arm64/aR5900Analysis.h
 	arm64/aVU.h
 	arm64/aVU_IR.h
 	arm64/aVU_Misc.h
