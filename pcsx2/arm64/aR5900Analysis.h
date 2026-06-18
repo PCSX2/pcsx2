@@ -61,3 +61,77 @@ extern EEINST* g_pCurInstInfo;
 // Returns which VU0 flags opcode 'code' modifies:
 //   1: status   2: MAC   4: clip
 int cop2flags(u32 code);
+
+// --------------------------------------------------------------------------------------
+//  COP2 macro-mode analysis passes (faithful port of pcsx2/x86/iR5900Analysis.cpp)
+// --------------------------------------------------------------------------------------
+// These passes emit NO code — they are pure analysis over the per-block EEINST
+// inst-cache, setting the EEINST_COP2_* bits that the macro-mode emit (M2/M3) reads.
+// Ported 1:1 from the x86 rec (Phase 7.9 M1).
+//
+// ⚠ Indexing convention differs from x86 by design. x86 maps instruction at `pc` to
+// inst_cache[(pc-start)>>2 + 1] — it calls these passes with `s_pInstCache + 1` and
+// reserves slot 0 as the backward-liveness "previous" boundary. ARM64 has no liveness
+// backprop pass (deferred — see MACRO_MODE_PLAN.md §2), so it uses a *no-offset* map:
+// instruction at `pc` ↔ inst_cache[(pc-start)>>2]. recRecompile calls Run() with the
+// base `s_instCache` (no +1), matching the per-op `g_pCurInstInfo` it hands the emit
+// loop. The SPECIAL2 look-ahead in COP2MicroFinishPass therefore re-bases to
+// &inst_cache[(apc+4-start)>>2] instead of x86's `inst_cache + 1`.
+namespace R5900
+{
+	class AnalysisPass
+	{
+	public:
+		AnalysisPass();
+		virtual ~AnalysisPass();
+
+		/// Runs the actual pass.
+		virtual void Run(u32 start, u32 end, EEINST* inst_cache);
+
+	protected:
+		/// Takes a functor of bool(pc, EEINST*), returning false if iteration should stop.
+		template <class F>
+		void ForEachInstruction(u32 start, u32 end, EEINST* inst_cache, const F& func);
+
+		/// Dumps the block to the console, calling the functor void(pc, EEINST*, std::string&) for each instruction.
+		template <class F>
+		void DumpAnnotatedBlock(u32 start, u32 end, EEINST* inst_cache, const F& func);
+	};
+
+	class COP2FlagHackPass final : public AnalysisPass
+	{
+	public:
+		COP2FlagHackPass();
+		~COP2FlagHackPass();
+
+		void Run(u32 start, u32 end, EEINST* inst_cache) override;
+
+	private:
+		void DumpAnnotatedBlock(u32 start, u32 end, EEINST* inst_cache);
+
+		void CommitStatusFlag();
+		void CommitMACFlag();
+		void CommitClipFlag();
+		void CommitAllFlags();
+
+		bool m_status_denormalized = false;
+		EEINST* m_last_status_write = nullptr;
+		EEINST* m_last_mac_write = nullptr;
+		EEINST* m_last_clip_write = nullptr;
+
+		u32 m_cfc2_pc = 0;
+	};
+
+	class COP2MicroFinishPass final : public AnalysisPass
+	{
+	public:
+		COP2MicroFinishPass();
+		~COP2MicroFinishPass();
+
+		void Run(u32 start, u32 end, EEINST* inst_cache) override;
+	};
+} // namespace R5900
+
+// M1.3 — env-gated (EE_COP2_DUMP=1) annotated dump of a block's computed COP2 flags.
+// Pure diagnostic; no-op unless the env var is set. (No behavior change.)
+void eeDumpCOP2AnnotatedBlock(u32 start, u32 end, EEINST* inst_cache);

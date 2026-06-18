@@ -3057,6 +3057,34 @@ static void recRecompile(u32 startpc)
 		std::memset(s_instCache, 0, sizeof(EEINST) * (ninst + 1)); // +1: end sentinel
 	}
 
+	// Phase 7.9 M1 — COP2 macro-mode analysis passes. Only worth running when the block
+	// actually contains COP2 / LQC2 / SQC2 ops (mirrors the x86 rec's has_cop2_instructions
+	// gate). The passes write the EEINST_COP2_* bits into s_instCache using the no-offset
+	// convention (base = s_instCache, instruction at pc -> s_instCache[(pc-startpc)>>2]),
+	// matching the per-op g_pCurInstInfo the emit loop hands out below. The flags are
+	// computed-ready but NOT consumed yet (consumption starts in M3) — no behavior change.
+	// Call order matches x86 (MicroFinish then, under vuFlagHack, FlagHack).
+	{
+		bool has_cop2 = false;
+		for (u32 i = startpc; i < s_eeEndBlock; i += 4)
+		{
+			const u32 op26 = memRead32(i) >> 26;
+			if (op26 == 022 || op26 == 066 || op26 == 076) // COP2 / LQC2 / SQC2
+			{
+				has_cop2 = true;
+				break;
+			}
+		}
+		if (has_cop2)
+		{
+			R5900::COP2MicroFinishPass().Run(startpc, s_eeEndBlock, s_instCache);
+			if (EmuConfig.Speedhacks.vuFlagHack)
+				R5900::COP2FlagHackPass().Run(startpc, s_eeEndBlock, s_instCache);
+
+			eeDumpCOP2AnnotatedBlock(startpc, s_eeEndBlock, s_instCache); // M1.3 (env-gated)
+		}
+	}
+
 	for (;;)
 	{
 		// Keep every block within a single host RAM page so its SMC protection mode (see
