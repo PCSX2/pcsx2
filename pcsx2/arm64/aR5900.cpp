@@ -20,6 +20,8 @@
 #include "R5900.h"
 #include "R5900OpcodeTables.h"
 #include "VMManager.h"
+#include "VU.h"
+#include "VUmicro.h"
 #include "vtlb.h"
 
 #include "common/Assertions.h"
@@ -2684,6 +2686,146 @@ static void recEmitFlushCycles(u32 raw)
 	armAsm->Str(RSCRATCHADDR, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET));
 }
 
+// --------------------------------------------------------------------------------------
+//  Macro mode (Phase 7.9 / M2) — EE↔VU0 sync / interlock emit helpers
+// --------------------------------------------------------------------------------------
+// Faithful VIXL ports of microVU_Macro.inl's mVUFinishVU0 / mVUSyncVU0 / COP2_Interlock.
+// These emit the *precise, analysis-driven* VU0 catch-up that x86 macro mode does, to
+// replace the current blanket inline-interp self-sync (Phase 5.3). They are not wired
+// into the COP2 path yet — M3 consumes the M1 EEINST_COP2_* flags through them — so they
+// are [[maybe_unused]] for now (no behavior change this phase).
+//
+// Translation notes vs x86:
+//   - No EE register allocator on ARM64, so the x86 iFlushCall(FLUSH_FOR_POSSIBLE_MICRO_EXEC)
+//     / _freeX86reg(eax) calls have no equivalent — we are memory-backed and use the
+//     caller-saved scratch GPRs directly (M3's transfer ops likewise spill to cpuRegs).
+//   - x86's `rax` (block-cycle accumulator -> VU0 catch-up delta) maps to RXVIXLSCRATCH (x16),
+//     which is dead before the ExecuteBlockJIT args are loaded into x0/x1.
+//   - x86 scaleblockcycles_clear() is reproduced with recScaleBlockCycles(raw): the caller
+//     passes the block's accumulated raw cycles and resets its own accumulator afterwards
+//     (exactly as the recOpNeedsCycleFlush / recEmitFlushCycles path already does).
+//   - xLoadFarAddr(arg1reg, CpuVU0) bakes the (stable, post-init) CpuVU0 object pointer as an
+//     immediate; armMoveAddressToReg(RXARG1, CpuVU0) does the same. s_nBlockInterlocked is a
+//     compile-time bool baked into arg2 just like x86.
+
+extern void _vu0WaitMicro();
+
+// Per-block "this block contains an interlocked (cpuRegs.code & 1) COP2 op" flag — x86's
+// s_nBlockInterlocked. Set by COP2_Interlock, baked into the ExecuteBlockJIT `interlocked`
+// arg, reset per block in recRecompile.
+static bool s_nBlockInterlocked = false;
+
+// mVUFinishVU0: if VU0 is running a micro program (VPU_STAT&1), finish it (run to E-bit).
+[[maybe_unused]] static void mVUFinishVU0()
+{
+	armMoveAddressToReg(RSCRATCHADDR, &VU0.VI[REG_VPU_STAT].UL);
+	armAsm->Ldr(RWARG3, a64::MemOperand(RSCRATCHADDR));
+	a64::Label skipvuidle;
+	armAsm->Tbz(RWARG3, 0, &skipvuidle); // VPU_STAT&1 == 0 -> nothing running
+	armEmitCall(reinterpret_cast<const void*>(_vu0FinishMicro));
+	armAsm->Bind(&skipvuidle);
+}
+
+// mVUSyncVU0: commit the block's cycles, then if VU0 is running and has fallen >=4 cycles
+// behind the EE, run one VU0 block to catch it up (lazy sync, not a full finish).
+[[maybe_unused]] static void mVUSyncVU0(u32 raw)
+{
+	const a64::Register rax = RXVIXLSCRATCH; // x16 (dead before the call args are set up)
+
+	// scaleblockcycles_clear(): cpuRegs.cycle += scaled raw; keep the new value in rax.
+	armAsm->Ldr(rax, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET));
+	if (raw != 0)
+	{
+		armAsm->Add(rax, rax, recScaleBlockCycles(raw));
+		armAsm->Str(rax, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET));
+	}
+
+	armMoveAddressToReg(RSCRATCHADDR, &VU0.VI[REG_VPU_STAT].UL);
+	armAsm->Ldr(RWARG3, a64::MemOperand(RSCRATCHADDR));
+	a64::Label skipvuidle;
+	armAsm->Tbz(RWARG3, 0, &skipvuidle);
+
+	// rax -= VU0.cycle  (and, under the VU-sync gamefixes, -= VU0.nextBlockCycles)
+	armMoveAddressToReg(RSCRATCHADDR, &VU0.cycle);
+	armAsm->Ldr(RXARG3, a64::MemOperand(RSCRATCHADDR));
+	armAsm->Sub(rax, rax, RXARG3);
+	if (EmuConfig.Gamefixes.VUSyncHack || EmuConfig.Gamefixes.FullVU0SyncHack)
+	{
+		armMoveAddressToReg(RSCRATCHADDR, &VU0.nextBlockCycles);
+		armAsm->Ldr(RXARG3, a64::MemOperand(RSCRATCHADDR));
+		armAsm->Sub(rax, rax, RXARG3);
+	}
+
+	a64::Label skip;
+	armAsm->Cmp(rax, 4);
+	armAsm->B(&skip, a64::lt); // < 4 cycles behind: don't bother running a block
+	armMoveAddressToReg(RXARG1, CpuVU0);
+	armAsm->Mov(RWARG2, s_nBlockInterlocked ? 1 : 0);
+	armEmitCall(reinterpret_cast<const void*>(&BaseVUmicroCPU::ExecuteBlockJIT));
+	armAsm->Bind(&skip);
+	armAsm->Bind(&skipvuidle);
+}
+
+// COP2_Interlock: the cpuRegs.code & 1 interlocked path. For an interlocked op that the
+// M1 MicroFinish pass flagged as needing sync (EEINST_COP2_SYNC_VU0), commit cycles and
+// either run-to-catch-up + _vu0WaitMicro (M-bit sync) or _vu0FinishMicro.
+[[maybe_unused]] static void COP2_Interlock(bool mBitSync, u32 raw)
+{
+	if (!(cpuRegs.code & 1))
+		return;
+
+	s_nBlockInterlocked = true;
+
+	// We can safely skip the sync when nothing between CFC2/CTC2/COP2 ops can kick VU0.
+	if (!(g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0))
+		return;
+
+	const a64::Register rax = RXVIXLSCRATCH; // x16
+
+	armAsm->Ldr(rax, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET));
+	if (raw != 0)
+	{
+		armAsm->Add(rax, rax, recScaleBlockCycles(raw));
+		armAsm->Str(rax, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET));
+	}
+
+	armMoveAddressToReg(RSCRATCHADDR, &VU0.VI[REG_VPU_STAT].UL);
+	armAsm->Ldr(RWARG3, a64::MemOperand(RSCRATCHADDR));
+	a64::Label skipvuidle;
+	armAsm->Tbz(RWARG3, 0, &skipvuidle);
+
+	if (mBitSync)
+	{
+		armMoveAddressToReg(RSCRATCHADDR, &VU0.cycle);
+		armAsm->Ldr(RXARG3, a64::MemOperand(RSCRATCHADDR));
+		armAsm->Sub(rax, rax, RXARG3);
+
+		// Ratchet (and maybe others) flicker polygons under lazy COP2 sync unless the
+		// micro resumption isn't deferred an extra EE block — hence the extra subtract.
+		if (EmuConfig.Gamefixes.VUSyncHack || EmuConfig.Gamefixes.FullVU0SyncHack)
+		{
+			armMoveAddressToReg(RSCRATCHADDR, &VU0.nextBlockCycles);
+			armAsm->Ldr(RXARG3, a64::MemOperand(RSCRATCHADDR));
+			armAsm->Sub(rax, rax, RXARG3);
+		}
+
+		a64::Label skip;
+		armAsm->Cmp(rax, 4);
+		armAsm->B(&skip, a64::lt);
+		armMoveAddressToReg(RXARG1, CpuVU0);
+		armAsm->Mov(RWARG2, s_nBlockInterlocked ? 1 : 0);
+		armEmitCall(reinterpret_cast<const void*>(&BaseVUmicroCPU::ExecuteBlockJIT));
+		armAsm->Bind(&skip);
+
+		armEmitCall(reinterpret_cast<const void*>(_vu0WaitMicro));
+	}
+	else
+	{
+		armEmitCall(reinterpret_cast<const void*>(_vu0FinishMicro));
+	}
+	armAsm->Bind(&skipvuidle);
+}
+
 // Install a freshly-compiled block's self-modifying-code protection and return the pointer
 // to record in its recLUT slot. Direct port of x86 memory_protect_recompiled_code
 // (iR5900.cpp), adapted to this port's body-first layout: the caller has already emitted
@@ -3044,6 +3186,10 @@ static void recRecompile(u32 startpc)
 	bool waitloop_possible = true;
 	RecGprConstState const_state;
 	RecGprCacheState cache_state;
+
+	// Macro mode (M2): reset the per-block "contains an interlocked COP2 op" flag. Set by
+	// COP2_Interlock during emit, baked into the VU0 ExecuteBlockJIT `interlocked` arg.
+	s_nBlockInterlocked = false;
 
 	// Build the per-block EEINST inst-cache (Phase 7.9 M0.2). Pre-scan the block range
 	// and clear one EEINST slot per instruction so the M1 COP2 analysis passes have a
