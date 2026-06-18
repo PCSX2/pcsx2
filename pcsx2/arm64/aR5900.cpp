@@ -345,6 +345,9 @@ static bool recTranslateOp(u32 op);
 // Macro-mode native COP2 transfer ops (defined after the M2 sync helpers) — used by
 // recTranslateOp's COP2 dispatch.
 static void recCFC2();
+static void recCTC2();
+static void recQMFC2();
+static void recQMTC2();
 
 struct RecGprConstState
 {
@@ -2198,14 +2201,26 @@ static bool recTranslateOp(u32 op)
 		case 0x12:
 			switch (rs)
 			{
+				case 0x01: // QMFC2 (M3.3) — native, memory-backed
+					cpuRegs.code = op;
+					recQMFC2();
+					return true;
 				case 0x02: // CFC2 (M3.1) — native, memory-backed
 					cpuRegs.code = op;
 					recCFC2();
 					return true;
+				case 0x05: // QMTC2 (M3.3) — native, memory-backed
+					cpuRegs.code = op;
+					recQMTC2();
+					return true;
+				case 0x06: // CTC2 (M3.2) — native, memory-backed
+					cpuRegs.code = op;
+					recCTC2();
+					return true;
 				case 0x08:
 					return false; // BC2F/BC2T/BC2FL/BC2TL — single-step (writes PC)
 				default:
-					recEmitInterpInline(op); // QMFC2/QMTC2/CTC2 + SPECIAL ALU (until M3.2+/M5)
+					recEmitInterpInline(op); // SPECIAL ALU macro ops (until M5)
 					return true;
 			}
 
@@ -2913,6 +2928,191 @@ static void recCFC2()
 	}
 
 	armAsm->Str(val, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+}
+
+// recCTC2: GPR[rt] -> VU0 control reg (VI[rd]), with the interlock(mBitSync=1)/lazy-sync
+// prologue and the per-register write semantics from microVU_Macro.inl:recCTC2 (NOT the
+// interpreter CTC2 — macro mode's REG_STATUS path also broadcasts the denormalized sticky
+// status flag into VU0.micro_statusflags, which microVU0 reads). Memory-backed: the x86
+// register-allocator (eax/_eeMoveGPRtoR/_allocVFtoXMMreg) becomes direct GPR<->VI loads/
+// stores. _Rd_ is a compile-time constant, so only one switch arm is ever emitted.
+static void recCTC2()
+{
+	COP2_Interlock(true, 0);
+
+	if (!_Rd_)
+		return;
+
+	if (!(cpuRegs.code & 1))
+	{
+		if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
+			mVUSyncVU0(0);
+		else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
+			mVUFinishVU0();
+	}
+
+	const u32 rt = _Rt_;
+	const u32 rd = _Rd_;
+
+	switch (rd)
+	{
+		case REG_MAC_FLAG:
+		case REG_TPC:
+		case REG_VPU_STAT:
+			break; // read-only regs
+
+		case REG_R:
+			// VI[R] = (GPR[rt] & 0x7FFFFF) | 0x3F800000
+			armAsm->Ldr(RWARG1, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+			armAsm->And(RWARG1, RWARG1, 0x7FFFFF);
+			armAsm->Orr(RWARG1, RWARG1, 0x3F800000);
+			armMoveAddressToReg(RSCRATCHADDR, &VU0.VI[REG_R].UL);
+			armAsm->Str(RWARG1, a64::MemOperand(RSCRATCHADDR));
+			break;
+
+		case REG_STATUS_FLAG:
+		{
+			// VI[STATUS] = (VI[STATUS] & 0x3F) | (rt ? (GPR[rt] & 0xFC0) : 0)
+			armMoveAddressToReg(RSCRATCHADDR, &VU0.VI[REG_STATUS_FLAG].UL);
+			armAsm->Ldr(RWARG2, a64::MemOperand(RSCRATCHADDR));
+			armAsm->And(RWARG2, RWARG2, 0x3F);
+			if (rt)
+			{
+				armAsm->Ldr(RWARG1, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+				armAsm->And(RWARG1, RWARG1, 0xFC0);
+				armAsm->Orr(RWARG2, RWARG2, RWARG1);
+			}
+			armAsm->Str(RWARG2, a64::MemOperand(RSCRATCHADDR));
+
+			// Update microVU's sticky status flags: denormalize VI[STATUS] and broadcast it
+			// across all 4 lanes of VU0.micro_statusflags. Inline port of mVUallocSFLAGd
+			// (aVU_Alloc.inl) — pure bit-math, no microVU reg-alloc — into reg=w0,tmp1=w1,tmp2=w2.
+			armMoveAddressToReg(RSCRATCHADDR, &VU0.VI[REG_STATUS_FLAG].UL);
+			armAsm->Ldr(RWARG3, a64::MemOperand(RSCRATCHADDR)); // tmp2 = *memAddr
+			armAsm->Mov(RWARG1, RWARG3);                        // reg
+			armAsm->Lsr(RWARG1, RWARG1, 3);
+			armAsm->And(RWARG1, RWARG1, 0x18);
+			armAsm->Mov(RWARG2, RWARG3);                        // tmp1
+			armAsm->Lsl(RWARG2, RWARG2, 11);
+			armAsm->And(RWARG2, RWARG2, 0x1800);
+			armAsm->Orr(RWARG1, RWARG1, RWARG2);
+			armAsm->Lsl(RWARG3, RWARG3, 14);
+			armAsm->And(RWARG3, RWARG3, 0x3cf0000);
+			armAsm->Orr(RWARG1, RWARG1, RWARG3);
+
+			armMoveAddressToReg(RSCRATCHADDR, &VU0.micro_statusflags[0]);
+			armAsm->Dup(RQSCRATCH.V4S(), RWARG1);
+			armAsm->Str(RQSCRATCH, a64::MemOperand(RSCRATCHADDR));
+			break;
+		}
+
+		case REG_CMSAR1: // Execute VU1 Micro SubRoutine
+			armAsm->Mov(RWARG1, 1);
+			armEmitCall(reinterpret_cast<const void*>(vu1Finish));
+			armAsm->Ldr(RWARG1, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+			armEmitCall(reinterpret_cast<const void*>(vu1ExecMicro));
+			break;
+
+		case REG_FBRST:
+		{
+			if (!rt)
+			{
+				armMoveAddressToReg(RSCRATCHADDR, &VU0.VI[REG_FBRST].UL);
+				armAsm->Str(a64::wzr, a64::MemOperand(RSCRATCHADDR));
+				return;
+			}
+
+			// TEST_FBRST_RESET: GPR[rt] is stable in memory across the reset calls, so reload it
+			// each time instead of pinning a callee-saved reg (x86 allocs MODE_CALLEESAVED).
+			a64::Label skip0;
+			armAsm->Ldr(RWVIXLSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+			armAsm->Tst(RWVIXLSCRATCH, 0x002); // VU0 Reset
+			armAsm->B(&skip0, a64::eq);
+			armEmitCall(reinterpret_cast<const void*>(vu0ResetRegs));
+			armAsm->Bind(&skip0);
+
+			a64::Label skip1;
+			armAsm->Ldr(RWVIXLSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+			armAsm->Tst(RWVIXLSCRATCH, 0x200); // VU1 Reset
+			armAsm->B(&skip1, a64::eq);
+			armEmitCall(reinterpret_cast<const void*>(vu1ResetRegs));
+			armAsm->Bind(&skip1);
+
+			armAsm->Ldr(RWARG1, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+			armAsm->And(RWARG1, RWARG1, 0x0C0C);
+			armMoveAddressToReg(RSCRATCHADDR, &VU0.VI[REG_FBRST].UL);
+			armAsm->Str(RWARG1, a64::MemOperand(RSCRATCHADDR));
+			break;
+		}
+
+		case 0:
+			break; // ignore writes to vi00
+
+		default:
+			// VI 1..15 are 16-bit (write US[0]); VI >= REG_STATUS_FLAG (incl. REG_I, whose
+			// x86 FPR mirror at VF#33 == &VU0.VI[REG_I].F collapses to this memory store with
+			// no VF cache) take the full 32-bit write.
+			armMoveAddressToReg(RSCRATCHADDR, &VU0.VI[rd].UL);
+			if (rd < REG_STATUS_FLAG)
+			{
+				armAsm->Ldrh(RWARG1, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+				armAsm->Strh(RWARG1, a64::MemOperand(RSCRATCHADDR));
+			}
+			else
+			{
+				armAsm->Ldr(RWARG1, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+				armAsm->Str(RWARG1, a64::MemOperand(RSCRATCHADDR));
+			}
+			break;
+	}
+}
+
+// recQMFC2: VF[rd] (128-bit) -> GPR[rt] (128-bit). Interlock(false)/lazy-sync prologue, then a
+// straight quad copy via RQSCRATCH. x86's vf00 cache special-case is moot memory-backed (no VF
+// cache); reading VF[0] from memory is the real vf00.
+static void recQMFC2()
+{
+	COP2_Interlock(false, 0);
+
+	if (!_Rt_)
+		return;
+
+	if (!(cpuRegs.code & 1))
+	{
+		if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
+			mVUSyncVU0(0);
+		else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
+			mVUFinishVU0();
+	}
+
+	armMoveAddressToReg(RSCRATCHADDR, &VU0.VF[_Rd_]);
+	armAsm->Ldr(RQSCRATCH, a64::MemOperand(RSCRATCHADDR));
+	armAsm->Str(RQSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(_Rt_)));
+}
+
+// recQMTC2: GPR[rt] (128-bit) -> VF[rd] (128-bit). Interlock(true)/lazy-sync prologue; vf00 is
+// not writable (early-out), and rt==0 zeroes the destination.
+static void recQMTC2()
+{
+	COP2_Interlock(true, 0);
+
+	if (!_Rd_)
+		return; // can't write vf00
+
+	if (!(cpuRegs.code & 1))
+	{
+		if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
+			mVUSyncVU0(0);
+		else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
+			mVUFinishVU0();
+	}
+
+	armMoveAddressToReg(RSCRATCHADDR, &VU0.VF[_Rd_]);
+	if (_Rt_)
+		armAsm->Ldr(RQSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(_Rt_)));
+	else
+		armAsm->Movi(RQSCRATCH.V4S(), 0);
+	armAsm->Str(RQSCRATCH, a64::MemOperand(RSCRATCHADDR));
 }
 
 // Install a freshly-compiled block's self-modifying-code protection and return the pointer
