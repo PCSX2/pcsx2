@@ -330,6 +330,15 @@ static void recVDIV()   { setupMacroOp(0x112); mVU_DIV  (microVU0, 1); endMacroO
 static void recVSQRT()  { setupMacroOp(0x112); mVU_SQRT (microVU0, 1); endMacroOp(0x112); }
 static void recVRSQRT() { setupMacroOp(0x112); mVU_RSQRT(microVU0, 1); endMacroOp(0x112); }
 
+// WAITQ / NOP (M5.3 commit 3) — empty bodies, exactly like x86 recVWAITQ()/recVNOP() {}.
+// They emit no VU codegen (no setup/endMacroOp), but still route through this decode so
+// recVUMacroIsMode0 returns true: the EE rec then emits the FINISH prologue around them,
+// mirroring x86 where they reach recCOP2_SPEC2 only via the recCOP2_SPEC1 FINISH wrapper.
+// Macro-mode COP2 is synchronous (one-shot ops), so WAITQ has nothing to wait for —
+// there is never a pending Q here; the FINISH prologue handles any VU0-micro sync.
+static void recVWAITQ() {}
+static void recVNOP()   {}
+
 //------------------------------------------------------------------
 // Dispatch — the native subset of x86's recCOP2SPECIAL1t / recCOP2SPECIAL2t.
 //------------------------------------------------------------------
@@ -408,6 +417,8 @@ static void (*cop2Mode0Emitter(u32 op))()
 			case 0x38: return recVDIV;    // DIV
 			case 0x39: return recVSQRT;   // SQRT
 			case 0x3a: return recVRSQRT;  // RSQRT
+			case 0x3b: return recVWAITQ;  // WAITQ (empty, M5.3 commit 3)
+			case 0x2f: return recVNOP;    // NOP   (empty, M5.3 commit 3)
 			default: return nullptr;
 		}
 	}
