@@ -370,6 +370,32 @@ static void recVNOP()   {}
 // allocGPR, so it is GPR-pool-safe on its own — but it lands here with the rest of M5.4.
 static void recVCLIP() { setupMacroOp(0x108); mVU_CLIP(microVU0, 1); endMacroOp(0x108); }
 
+// Analysis-pass generator (mode & 0x04 set, e.g. 0x104): a faithful port of x86
+// REC_COP2_mVU0's `if (_mode & 4)` branch (microVU_Macro.inl 127-133) — run pass-0
+// (analyze) first, then pass-1 (emit) only if the op is not a NOP. The NOP-skip matters
+// for the VI integer ALU ops that write VI[0] (mVUanalyzeIALU* set lOp.isNOP when the
+// dest is vi00); allocGPR already turns a viWriteReg==0 into a discard temp, but skipping
+// the emit entirely also matches x86 exactly (no dead code, and lOp.backupVI is whatever
+// the analysis decides, not the memset default). info[0] is the macro-op slot (curPC == 0,
+// memset in setupMacroOp). pass-1-only ops (0x100/0x108) keep the plain one-liner form.
+#define REC_COP2_MACRO_ANALYZE(f, modeval)                                \
+	static void recV##f()                                                 \
+	{                                                                     \
+		setupMacroOp(modeval);                                            \
+		mVU_##f(microVU0, 0);                                             \
+		if (!microVU0.prog.IRinfo.info[0].lOp.isNOP)                      \
+			mVU_##f(microVU0, 1);                                         \
+		endMacroOp(modeval);                                              \
+	}
+
+// VI integer ALU (mode 0x104; SPECIAL1 funct IADD 0x30 / ISUB 0x31 / IADDI 0x32 /
+// IAND 0x34 / IOR 0x35). All carry the 0x04 analysis bit.
+REC_COP2_MACRO_ANALYZE(IADD,  0x104)
+REC_COP2_MACRO_ANALYZE(IADDI, 0x104)
+REC_COP2_MACRO_ANALYZE(ISUB,  0x104)
+REC_COP2_MACRO_ANALYZE(IAND,  0x104)
+REC_COP2_MACRO_ANALYZE(IOR,   0x104)
+
 //------------------------------------------------------------------
 // Dispatch — the native subset of x86's recCOP2SPECIAL1t / recCOP2SPECIAL2t.
 //------------------------------------------------------------------
@@ -456,8 +482,9 @@ static void (*cop2Mode0Emitter(u32 op))()
 	}
 	// SPECIAL1 ops (x86: recCOP2SPECIAL1t, dispatched by funct = op & 0x3f). The
 	// flag-free MAX*/MINI* family is Mode-0 (M5.1); the ADD/SUB/MUL/MADD/MSUB/OPMSUB
-	// families are flag ops (mode 0x110, M5.2); the *q forms are mode 0x111 (M5.3).
-	// The VI/integer ops and CALLMS stay on inline-interp until M5.4-M5.5.
+	// families are flag ops (mode 0x110, M5.2); the *q forms are mode 0x111 (M5.3);
+	// the VI integer ALU (IADD/ISUB/IADDI/IAND/IOR) is mode 0x104 (M5.4). CALLMS/CALLMSR
+	// stay on inline-interp until M5.5.
 	switch (funct)
 	{
 		// ADD family (mode 0x110, M5.2 commit 1)
@@ -515,6 +542,12 @@ static void (*cop2Mode0Emitter(u32 op))()
 		case 0x1f: return recVMINIi; // MINIi
 		case 0x2b: return recVMAX;   // MAX
 		case 0x2f: return recVMINI;  // MINI
+		// VI integer ALU (mode 0x104, M5.4)
+		case 0x30: return recVIADD;  // IADD
+		case 0x31: return recVISUB;  // ISUB
+		case 0x32: return recVIADDI; // IADDI
+		case 0x34: return recVIAND;  // IAND
+		case 0x35: return recVIOR;   // IOR
 		default: return nullptr;
 	}
 }
