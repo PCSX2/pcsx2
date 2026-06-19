@@ -2648,8 +2648,23 @@ static void recEmitInterpInline(u32 op)
 
 // Compile one straight-line or delay-slot instruction: const-folded/native generator
 // if we have one, otherwise an inline interpreter call.
+// Block cycles accumulated up to and including the current COP2/LQC2/SQC2 op, stashed by the
+// emit loop (recRecompile) for the op's handler to hand to the M2 sync helpers. The faithful
+// analog of x86's s_nBlockCycles fed to scaleblockcycles_clear(): the helpers commit it to
+// cpuRegs.cycle only on a real SYNC (mVUSyncVU0 / the COP2_Interlock SYNC branch), and the emit
+// loop clears the accumulator only then. FINISH-only / no-sync ops leave the cycles in the
+// accumulator so they ride forward and survive _vu0FinishMicro's cpuRegs.cycle = VU0.cycle
+// collapse (a pre-commit, as the old unconditional pre-flush did, would be lost there).
+static u32 s_cop2RawCycles = 0;
+
 static void recEmitOp(u32 op, RecGprConstState& const_state, RecGprCacheState& cache_state)
 {
+	// Used only for branch delay slots, which the main emit loop's COP2 cycle stash does not
+	// reach. A COP2/LQC2/SQC2 op here would otherwise read a stale s_cop2RawCycles; zero it so
+	// its sync helper commits nothing (the block ends right after the delay slot, so the block
+	// tail commits the accumulated cycles for accounting). The VU catch-up still reads the
+	// current cpuRegs.cycle. Harmless for non-COP2 ops (they ignore it).
+	s_cop2RawCycles = 0;
 	if (!recTranslateOpOptimized(op, const_state, cache_state))
 		recEmitInterpInline(op);
 }
@@ -2704,26 +2719,19 @@ static u32 recScaleBlockCycles(u32 raw)
 // must be committed first; x86 does this via `cpuRegs.cycle += scaleblockcycles_clear()` before
 // every COP2 op (microVU_Macro.inl). Without it the VU kicks at a stale EE time and geometry
 // is submitted a beat early/late (e.g. Crash Twinsanity object pop-in / overlap).
+// True for COP2 / VU0-macro ops (opcode 0x12, excluding the BC2 branches) and the COP2 quad
+// load/stores (LQC2/SQC2). Their macro-mode handlers may emit a VU0 catch-up sync that reads
+// cpuRegs.cycle, so the emit loop stashes the block's accumulated cycles (s_cop2RawCycles) for
+// the handler to pass into the M2 sync helpers. The helpers commit those cycles to cpuRegs.cycle
+// exactly where x86 does — inside mVUSyncVU0 / the COP2_Interlock SYNC branch — and ONLY when the
+// op actually syncs VU0. (The cycles must NOT be committed before a FINISH: _vu0FinishMicro
+// overwrites cpuRegs.cycle with VU0.cycle (VU0.cpp), so a pre-commit would be lost; x86 keeps
+// the uncommitted cycles in s_nBlockCycles so they ride past the finish.) See recRecompile.
 static bool recOpNeedsCycleFlush(u32 op)
 {
-	// COP2 macro ops (0x12, excluding the BC2 branches) and the COP2 quad load/stores
-	// (LQC2/SQC2) read cpuRegs.cycle for the VU0 catch-up sync, so the block's cycles
-	// must be committed before they emit (lets the M2 helpers run with raw=0).
 	if ((op >> 26) == 0x12)
 		return ((op >> 21) & 0x1f) != 0x08;
 	return (op >> 26) == OP_LQC2 || (op >> 26) == OP_SQC2;
-}
-
-// Emit: cpuRegs.cycle += recScaleBlockCycles(raw). Commits the block's cycles accumulated so
-// far (mid-block) so a following inline op observes a current EE cycle. The caller resets its
-// accumulator afterwards so the block tail does not double-count them.
-static void recEmitFlushCycles(u32 raw)
-{
-	if (raw == 0)
-		return;
-	armAsm->Ldr(RSCRATCHADDR, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET));
-	armAsm->Add(RSCRATCHADDR, RSCRATCHADDR, recScaleBlockCycles(raw));
-	armAsm->Str(RSCRATCHADDR, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET));
 }
 
 // --------------------------------------------------------------------------------------
@@ -2742,8 +2750,9 @@ static void recEmitFlushCycles(u32 raw)
 //   - x86's `rax` (block-cycle accumulator -> VU0 catch-up delta) maps to RXVIXLSCRATCH (x16),
 //     which is dead before the ExecuteBlockJIT args are loaded into x0/x1.
 //   - x86 scaleblockcycles_clear() is reproduced with recScaleBlockCycles(raw): the caller
-//     passes the block's accumulated raw cycles and resets its own accumulator afterwards
-//     (exactly as the recOpNeedsCycleFlush / recEmitFlushCycles path already does).
+//     passes the block's accumulated raw cycles (s_cop2RawCycles), the helper commits them to
+//     cpuRegs.cycle here (its `if (raw != 0)` branch), and the emit loop clears its accumulator
+//     iff this op syncs — see recOpNeedsCycleFlush / s_cop2RawCycles.
 //   - xLoadFarAddr(arg1reg, CpuVU0) bakes the (stable, post-init) CpuVU0 object pointer as an
 //     immediate; armMoveAddressToReg(RXARG1, CpuVU0) does the same. s_nBlockInterlocked is a
 //     compile-time bool baked into arg2 just like x86.
@@ -2878,20 +2887,21 @@ static void COP2_Interlock(bool mBitSync, u32 raw)
 // the *host-side* cpuRegs.code via the _Rt_/_Rd_ macros (and cpuRegs.code & 1 for interlock),
 // so the recTranslateOp dispatch must `cpuRegs.code = op` before calling.
 //
-// Cycle accounting: the emit loop pre-commits the block's accumulated cycles before every
-// COP2 op (recOpNeedsCycleFlush -> recEmitFlushCycles, then resets the accumulator). So by
-// the time these run, cpuRegs.cycle is already current and the M2 sync helpers are called
-// with raw=0 (their `if (raw != 0)` guard then skips the redundant commit but still reads the
-// up-to-date cpuRegs.cycle for the VU0 catch-up delta). This matches x86's lazy sync result:
-// the only place cpuRegs.cycle is consumed inside a compiled block is the VU sync itself, so
-// committing the cycles a touch earlier than x86 (which defers for FINISH-only ops) leaves the
-// observed cycle at every sync point identical-or-more-current and the block-end value equal.
+// Cycle accounting (faithful to x86): the emit loop does NOT pre-commit cpuRegs.cycle. Instead
+// it stashes the block's accumulated raw cycles in s_cop2RawCycles and these handlers pass it to
+// the M2 sync helpers, which commit it to cpuRegs.cycle (recScaleBlockCycles, x86's
+// scaleblockcycles_clear) only on a real SYNC — inside mVUSyncVU0 / the COP2_Interlock SYNC
+// branch — and the emit loop clears its accumulator only then. mVUFinishVU0 (and any op that
+// doesn't SYNC) commits nothing, so the accumulated cycles ride forward to the next sync / block
+// tail. This is essential: _vu0FinishMicro overwrites cpuRegs.cycle with VU0.cycle (VU0.cpp), so
+// pre-committing before a finish (as an earlier unconditional pre-flush did) silently lost those
+// cycles; x86 keeps them uncommitted in s_nBlockCycles for exactly this reason.
 
 // recCFC2: VU0 control reg (VI[rd]) -> GPR[rt], with the interlock / lazy-sync prologue and
 // the per-register sign/zero-extend the interpreter uses (CFC2 in VU0.cpp).
 static void recCFC2()
 {
-	COP2_Interlock(false, 0);
+	COP2_Interlock(false, s_cop2RawCycles);
 
 	if (!_Rt_)
 		return;
@@ -2899,7 +2909,7 @@ static void recCFC2()
 	if (!(cpuRegs.code & 1))
 	{
 		if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
-			mVUSyncVU0(0);
+			mVUSyncVU0(s_cop2RawCycles);
 		else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
 			mVUFinishVU0();
 	}
@@ -2952,7 +2962,7 @@ static void recCFC2()
 // stores. _Rd_ is a compile-time constant, so only one switch arm is ever emitted.
 static void recCTC2()
 {
-	COP2_Interlock(true, 0);
+	COP2_Interlock(true, s_cop2RawCycles);
 
 	if (!_Rd_)
 		return;
@@ -2960,7 +2970,7 @@ static void recCTC2()
 	if (!(cpuRegs.code & 1))
 	{
 		if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
-			mVUSyncVU0(0);
+			mVUSyncVU0(s_cop2RawCycles);
 		else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
 			mVUFinishVU0();
 	}
@@ -3086,7 +3096,7 @@ static void recCTC2()
 // cache); reading VF[0] from memory is the real vf00.
 static void recQMFC2()
 {
-	COP2_Interlock(false, 0);
+	COP2_Interlock(false, s_cop2RawCycles);
 
 	if (!_Rt_)
 		return;
@@ -3094,7 +3104,7 @@ static void recQMFC2()
 	if (!(cpuRegs.code & 1))
 	{
 		if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
-			mVUSyncVU0(0);
+			mVUSyncVU0(s_cop2RawCycles);
 		else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
 			mVUFinishVU0();
 	}
@@ -3108,7 +3118,7 @@ static void recQMFC2()
 // not writable (early-out), and rt==0 zeroes the destination.
 static void recQMTC2()
 {
-	COP2_Interlock(true, 0);
+	COP2_Interlock(true, s_cop2RawCycles);
 
 	if (!_Rd_)
 		return; // can't write vf00
@@ -3116,7 +3126,7 @@ static void recQMTC2()
 	if (!(cpuRegs.code & 1))
 	{
 		if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
-			mVUSyncVU0(0);
+			mVUSyncVU0(s_cop2RawCycles);
 		else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
 			mVUFinishVU0();
 	}
@@ -3138,7 +3148,7 @@ static void recQMTC2()
 static void recLQC2()
 {
 	if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
-		mVUSyncVU0(0);
+		mVUSyncVU0(s_cop2RawCycles);
 	else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
 		mVUFinishVU0();
 
@@ -3164,7 +3174,7 @@ static void recLQC2()
 static void recSQC2()
 {
 	if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
-		mVUSyncVU0(0);
+		mVUSyncVU0(s_cop2RawCycles);
 	else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
 		mVUFinishVU0();
 
@@ -3679,15 +3689,21 @@ static void recRecompile(u32 startpc)
 			break;
 		}
 
-		// COP2 / VU0-macro ops run the interpreter inline and read cpuRegs.cycle for VU sync,
-		// so commit the block's accumulated cycles (incl. this op's, matching x86 order) before
-		// the op executes, then reset the accumulator so the tail does not re-charge them.
+		// COP2 / VU0-macro ops: the cycle commit happens INSIDE the macro-mode sync helpers,
+		// exactly where x86 does it (mVUSyncVU0 / the COP2_Interlock SYNC branch) and only for
+		// ops that actually SYNC VU0. Stash the block's accumulated cycles (incl. this op's,
+		// matching x86 order) for the handler to pass to the helper; clear the accumulator only
+		// when a commit is emitted — iff the op syncs (EEINST_COP2_SYNC_VU0), which is the union
+		// of both helpers' compile-time commit gate. FINISH-only / no-sync ops leave the cycles
+		// in the accumulator so they ride forward (x86 keeps them in s_nBlockCycles), surviving
+		// the _vu0FinishMicro cpuRegs.cycle = VU0.cycle collapse a pre-commit would have lost.
 		const bool needs_cycle_flush = recOpNeedsCycleFlush(op);
 		if (needs_cycle_flush)
 		{
 			raw_cycles += eeOpCycles(op);
-			recEmitFlushCycles(raw_cycles);
-			raw_cycles = 0;
+			s_cop2RawCycles = raw_cycles;
+			if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
+				raw_cycles = 0;
 		}
 
 		// Straight-line op we can codegen? (Generators decode from `op` directly;
