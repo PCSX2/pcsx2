@@ -269,6 +269,10 @@ static void recVMSUBAz() { setupMacroOp(0x110); mVU_MSUBAz(microVU0, 1); endMacr
 static void recVMSUBAw() { setupMacroOp(0x110); mVU_MSUBAw(microVU0, 1); endMacroOp(0x110); }
 static void recVMSUBAi() { setupMacroOp(0x110); mVU_MSUBAi(microVU0, 1); endMacroOp(0x110); }
 
+// Outer-product ops (M5.2 commit 6) — OPMULA (SPECIAL2), OPMSUB (SPECIAL1)
+static void recVOPMULA() { setupMacroOp(0x110); mVU_OPMULA(microVU0, 1); endMacroOp(0x110); }
+static void recVOPMSUB() { setupMacroOp(0x110); mVU_OPMSUB(microVU0, 1); endMacroOp(0x110); }
+
 //------------------------------------------------------------------
 // Dispatch — the native subset of x86's recCOP2SPECIAL1t / recCOP2SPECIAL2t.
 //------------------------------------------------------------------
@@ -323,6 +327,7 @@ static void (*cop2Mode0Emitter(u32 op))()
 			case 0x0f: return recVMSUBAw; // MSUBAw
 			case 0x27: return recVMSUBAi; // MSUBAi
 			case 0x2d: return recVMSUBA;  // MSUBA
+			case 0x2e: return recVOPMULA; // OPMULA (mode 0x110, M5.2 commit 6)
 			// ITOF/FTOI/ABS/MOVE/MR32 (Mode-0, M5.1)
 			case 0x10: return recVITOF0;  // ITOF0
 			case 0x11: return recVITOF4;  // ITOF4
@@ -379,6 +384,7 @@ static void (*cop2Mode0Emitter(u32 op))()
 		case 0x0f: return recVMSUBw; // MSUBw
 		case 0x27: return recVMSUBi; // MSUBi
 		case 0x2d: return recVMSUB;  // MSUB
+		case 0x2e: return recVOPMSUB; // OPMSUB (mode 0x110, M5.2 commit 6)
 		// MAX/MINI family (Mode-0, M5.1)
 		case 0x10: return recVMAXx;  // MAXx
 		case 0x11: return recVMAXy;  // MAXy
