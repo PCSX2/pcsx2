@@ -348,6 +348,8 @@ static void recCFC2();
 static void recCTC2();
 static void recQMFC2();
 static void recQMTC2();
+static void recLQC2();
+static void recSQC2();
 
 struct RecGprConstState
 {
@@ -2224,10 +2226,17 @@ static bool recTranslateOp(u32 op)
 					return true;
 			}
 
-		// COP2 quadword load/store (VF[rt] ↔ memory). Straight-line, no PC write —
-		// inline the interpreter handler like the COP2 macro ops above.
-		case OP_LQC2: recEmitInterpInline(op); return true;
-		case OP_SQC2: recEmitInterpInline(op); return true;
+		// COP2 quadword load/store (VF[rt] ↔ memory). Native (M3.4): the analysis-driven
+		// SYNC/FINISH dispatch + the vtlb quad path, targeting VU0.VF[rt]. No COP2_Interlock
+		// (faithful to microVU_Macro.inl). cpuRegs.code set for the _Rt_/_Rs_/_Imm_ macros.
+		case OP_LQC2:
+			cpuRegs.code = op;
+			recLQC2();
+			return true;
+		case OP_SQC2:
+			cpuRegs.code = op;
+			recSQC2();
+			return true;
 
 		default: return false;
 	}
@@ -2697,7 +2706,12 @@ static u32 recScaleBlockCycles(u32 raw)
 // is submitted a beat early/late (e.g. Crash Twinsanity object pop-in / overlap).
 static bool recOpNeedsCycleFlush(u32 op)
 {
-	return (op >> 26) == 0x12 && ((op >> 21) & 0x1f) != 0x08;
+	// COP2 macro ops (0x12, excluding the BC2 branches) and the COP2 quad load/stores
+	// (LQC2/SQC2) read cpuRegs.cycle for the VU0 catch-up sync, so the block's cycles
+	// must be committed before they emit (lets the M2 helpers run with raw=0).
+	if ((op >> 26) == 0x12)
+		return ((op >> 21) & 0x1f) != 0x08;
+	return (op >> 26) == OP_LQC2 || (op >> 26) == OP_SQC2;
 }
 
 // Emit: cpuRegs.cycle += recScaleBlockCycles(raw). Commits the block's cycles accumulated so
@@ -3113,6 +3127,57 @@ static void recQMTC2()
 	else
 		armAsm->Movi(RQSCRATCH.V4S(), 0);
 	armAsm->Str(RQSCRATCH, a64::MemOperand(RSCRATCHADDR));
+}
+
+// recLQC2: memory[GPR[rs] + imm] (128-bit, 16-byte aligned) -> VF[rt]. Unlike the COP2
+// transfer ops above there is NO COP2_Interlock (faithful to microVU_Macro.inl:recLQC2,
+// which only does the analysis-driven SYNC/FINISH dispatch); the quad load reuses the
+// non-cached vtlb quad path (armEmitVtlbReadQuad), the same slow path armEmitLoadQuad uses.
+// Memory-backed: the EE GPR cache is flushed before recTranslateOp and killed after, so the
+// effective address reads GPR[rs] straight from cpuRegs. LQC2 to vf00 (!_Rt_) discards.
+static void recLQC2()
+{
+	if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
+		mVUSyncVU0(0);
+	else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
+		mVUFinishVU0();
+
+	// Effective address into the read helper's first argument register, 16-byte aligned
+	// (the EE silently aligns 128-bit accesses; matches x86 recLQC2's xAND(arg1regd, ~0xF)).
+	armEmitEffectiveAddr(RWARG1, _Rs_, _Imm_);
+	armAsm->And(RWARG1, RWARG1, ~0x0F);
+
+	// Perform the read even when discarding (vf00) — the access can have I/O side effects.
+	// The call inside ReadQuad clobbers v0-v7/v16-v31, so the Mov to RQSCRATCH is after it.
+	armEmitVtlbReadQuad(RQSCRATCH, RWARG1);
+
+	if (!_Rt_)
+		return; // loading to vf00 -> toss away
+
+	armMoveAddressToReg(RSCRATCHADDR, &VU0.VF[_Rt_]);
+	armAsm->Str(RQSCRATCH, a64::MemOperand(RSCRATCHADDR));
+}
+
+// recSQC2: VF[rt] (128-bit) -> memory[GPR[rs] + imm] (16-byte aligned). No COP2_Interlock
+// (faithful to microVU_Macro.inl:recSQC2 — SYNC/FINISH dispatch only). vf00 stores VU0.VF[0]
+// (memory-backed: no microVU VF cache to special-case). Reuses the non-cached vtlb quad path.
+static void recSQC2()
+{
+	if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
+		mVUSyncVU0(0);
+	else if (g_pCurInstInfo->info & EEINST_COP2_FINISH_VU0)
+		mVUFinishVU0();
+
+	// Load VF[rt] (vf00 reads VU0.VF[0]) into the quad scratch before computing the address;
+	// WriteQuad moves it to q0 before its call, so it only needs to live until then.
+	armMoveAddressToReg(RSCRATCHADDR, &VU0.VF[_Rt_]);
+	armAsm->Ldr(RQSCRATCH, a64::MemOperand(RSCRATCHADDR));
+
+	// Effective address into the write helper's first argument register, 16-byte aligned.
+	armEmitEffectiveAddr(RWARG1, _Rs_, _Imm_);
+	armAsm->And(RWARG1, RWARG1, ~0x0F);
+
+	armEmitVtlbWriteQuad(RWARG1, RQSCRATCH);
 }
 
 // Install a freshly-compiled block's self-modifying-code protection and return the pointer
