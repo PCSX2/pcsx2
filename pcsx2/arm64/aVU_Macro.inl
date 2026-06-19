@@ -227,6 +227,20 @@ static void recVSUBAz() { setupMacroOp(0x110); mVU_SUBAz(microVU0, 1); endMacroO
 static void recVSUBAw() { setupMacroOp(0x110); mVU_SUBAw(microVU0, 1); endMacroOp(0x110); }
 static void recVSUBAi() { setupMacroOp(0x110); mVU_SUBAi(microVU0, 1); endMacroOp(0x110); }
 
+// MUL family (M5.2 commit 3)
+static void recVMUL()   { setupMacroOp(0x110); mVU_MUL  (microVU0, 1); endMacroOp(0x110); }
+static void recVMULx()  { setupMacroOp(0x110); mVU_MULx (microVU0, 1); endMacroOp(0x110); }
+static void recVMULy()  { setupMacroOp(0x110); mVU_MULy (microVU0, 1); endMacroOp(0x110); }
+static void recVMULz()  { setupMacroOp(0x110); mVU_MULz (microVU0, 1); endMacroOp(0x110); }
+static void recVMULw()  { setupMacroOp(0x110); mVU_MULw (microVU0, 1); endMacroOp(0x110); }
+static void recVMULi()  { setupMacroOp(0x110); mVU_MULi (microVU0, 1); endMacroOp(0x110); }
+static void recVMULA()  { setupMacroOp(0x110); mVU_MULA (microVU0, 1); endMacroOp(0x110); }
+static void recVMULAx() { setupMacroOp(0x110); mVU_MULAx(microVU0, 1); endMacroOp(0x110); }
+static void recVMULAy() { setupMacroOp(0x110); mVU_MULAy(microVU0, 1); endMacroOp(0x110); }
+static void recVMULAz() { setupMacroOp(0x110); mVU_MULAz(microVU0, 1); endMacroOp(0x110); }
+static void recVMULAw() { setupMacroOp(0x110); mVU_MULAw(microVU0, 1); endMacroOp(0x110); }
+static void recVMULAi() { setupMacroOp(0x110); mVU_MULAi(microVU0, 1); endMacroOp(0x110); }
+
 //------------------------------------------------------------------
 // Dispatch — the native subset of x86's recCOP2SPECIAL1t / recCOP2SPECIAL2t.
 //------------------------------------------------------------------
@@ -260,6 +274,13 @@ static void (*cop2Mode0Emitter(u32 op))()
 			case 0x07: return recVSUBAw;  // SUBAw
 			case 0x26: return recVSUBAi;  // SUBAi
 			case 0x2c: return recVSUBA;   // SUBA
+			// MULA family (mode 0x110, M5.2 commit 3)
+			case 0x18: return recVMULAx;  // MULAx
+			case 0x19: return recVMULAy;  // MULAy
+			case 0x1a: return recVMULAz;  // MULAz
+			case 0x1b: return recVMULAw;  // MULAw
+			case 0x1e: return recVMULAi;  // MULAi
+			case 0x2a: return recVMULA;   // MULA
 			// ITOF/FTOI/ABS/MOVE/MR32 (Mode-0, M5.1)
 			case 0x10: return recVITOF0;  // ITOF0
 			case 0x11: return recVITOF4;  // ITOF4
@@ -295,6 +316,13 @@ static void (*cop2Mode0Emitter(u32 op))()
 		case 0x07: return recVSUBw;  // SUBw
 		case 0x26: return recVSUBi;  // SUBi
 		case 0x2c: return recVSUB;   // SUB
+		// MUL family (mode 0x110, M5.2 commit 3)
+		case 0x18: return recVMULx;  // MULx
+		case 0x19: return recVMULy;  // MULy
+		case 0x1a: return recVMULz;  // MULz
+		case 0x1b: return recVMULw;  // MULw
+		case 0x1e: return recVMULi;  // MULi
+		case 0x2a: return recVMUL;   // MUL
 		// MAX/MINI family (Mode-0, M5.1)
 		case 0x10: return recVMAXx;  // MAXx
 		case 0x11: return recVMAXy;  // MAXy
