@@ -97,6 +97,15 @@ static void endMacroOp(int mode)
 
 static void recVABS() { setupMacroOp(0x0); mVU_ABS(microVU0, 1); endMacroOp(0x0); }
 
+static void recVITOF0()  { setupMacroOp(0x0); mVU_ITOF0 (microVU0, 1); endMacroOp(0x0); }
+static void recVITOF4()  { setupMacroOp(0x0); mVU_ITOF4 (microVU0, 1); endMacroOp(0x0); }
+static void recVITOF12() { setupMacroOp(0x0); mVU_ITOF12(microVU0, 1); endMacroOp(0x0); }
+static void recVITOF15() { setupMacroOp(0x0); mVU_ITOF15(microVU0, 1); endMacroOp(0x0); }
+static void recVFTOI0()  { setupMacroOp(0x0); mVU_FTOI0 (microVU0, 1); endMacroOp(0x0); }
+static void recVFTOI4()  { setupMacroOp(0x0); mVU_FTOI4 (microVU0, 1); endMacroOp(0x0); }
+static void recVFTOI12() { setupMacroOp(0x0); mVU_FTOI12(microVU0, 1); endMacroOp(0x0); }
+static void recVFTOI15() { setupMacroOp(0x0); mVU_FTOI15(microVU0, 1); endMacroOp(0x0); }
+
 //------------------------------------------------------------------
 // Dispatch — the Mode-0 subset of x86's recCOP2SPECIAL1t / recCOP2SPECIAL2t.
 //------------------------------------------------------------------
@@ -112,7 +121,15 @@ static void (*cop2Mode0Emitter(u32 op))()
 	{
 		switch ((op & 3) | ((op >> 4) & 0x7c))
 		{
-			case 0x1d: return recVABS; // ABS
+			case 0x10: return recVITOF0;  // ITOF0
+			case 0x11: return recVITOF4;  // ITOF4
+			case 0x12: return recVITOF12; // ITOF12
+			case 0x13: return recVITOF15; // ITOF15
+			case 0x14: return recVFTOI0;  // FTOI0
+			case 0x15: return recVFTOI4;  // FTOI4
+			case 0x16: return recVFTOI12; // FTOI12
+			case 0x17: return recVFTOI15; // FTOI15
+			case 0x1d: return recVABS;    // ABS
 			default: return nullptr;
 		}
 	}
