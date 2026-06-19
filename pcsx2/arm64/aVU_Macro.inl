@@ -119,6 +119,9 @@ static void recVMINIw() { setupMacroOp(0x0); mVU_MINIw(microVU0, 1); endMacroOp(
 static void recVMINIi() { setupMacroOp(0x0); mVU_MINIi(microVU0, 1); endMacroOp(0x0); }
 static void recVMINI()  { setupMacroOp(0x0); mVU_MINI (microVU0, 1); endMacroOp(0x0); }
 
+static void recVMOVE() { setupMacroOp(0x0); mVU_MOVE(microVU0, 1); endMacroOp(0x0); }
+static void recVMR32() { setupMacroOp(0x0); mVU_MR32(microVU0, 1); endMacroOp(0x0); }
+
 //------------------------------------------------------------------
 // Dispatch — the Mode-0 subset of x86's recCOP2SPECIAL1t / recCOP2SPECIAL2t.
 //------------------------------------------------------------------
@@ -143,6 +146,8 @@ static void (*cop2Mode0Emitter(u32 op))()
 			case 0x16: return recVFTOI12; // FTOI12
 			case 0x17: return recVFTOI15; // FTOI15
 			case 0x1d: return recVABS;    // ABS
+			case 0x30: return recVMOVE;   // MOVE
+			case 0x31: return recVMR32;   // MR32
 			default: return nullptr;
 		}
 	}
