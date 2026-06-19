@@ -409,6 +409,12 @@ static void recVISWR() { setupMacroOp(0x100); mVU_ISWR(microVU0, 1); endMacroOp(
 static void recVSQI()  { setupMacroOp(0x100); mVU_SQI (microVU0, 1); endMacroOp(0x100); }
 static void recVSQD()  { setupMacroOp(0x100); mVU_SQD (microVU0, 1); endMacroOp(0x100); }
 
+// VF<->VI moves (SPECIAL2; MFIR 0x3d, MTIR 0x3c — both mode 0x104). MFIR (VF<-VI) skips
+// when the VF dest is vf00; MTIR (VI<-VF) skips when the VI dest is vi00 — both via the
+// 0x04 analysis two-pass.
+REC_COP2_MACRO_ANALYZE(MFIR, 0x104)
+REC_COP2_MACRO_ANALYZE(MTIR, 0x104)
+
 //------------------------------------------------------------------
 // Dispatch — the native subset of x86's recCOP2SPECIAL1t / recCOP2SPECIAL2t.
 //------------------------------------------------------------------
@@ -490,6 +496,8 @@ static void (*cop2Mode0Emitter(u32 op))()
 			case 0x35: return recVSQI;    // SQI
 			case 0x36: return recVLQD;    // LQD
 			case 0x37: return recVSQD;    // SQD
+			case 0x3c: return recVMTIR;   // MTIR (mode 0x104, M5.4)
+			case 0x3d: return recVMFIR;   // MFIR (mode 0x104, M5.4)
 			case 0x3e: return recVILWR;   // ILWR
 			case 0x3f: return recVISWR;   // ISWR
 			// DIV/SQRT/RSQRT (mode 0x112, M5.3 commit 2)
