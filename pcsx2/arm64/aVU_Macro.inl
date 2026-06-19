@@ -415,6 +415,20 @@ static void recVSQD()  { setupMacroOp(0x100); mVU_SQD (microVU0, 1); endMacroOp(
 REC_COP2_MACRO_ANALYZE(MFIR, 0x104)
 REC_COP2_MACRO_ANALYZE(MTIR, 0x104)
 
+// RNG (SPECIAL2; RNEXT 0x40 / RGET 0x41 / RINIT 0x42 / RXOR 0x43). RGET/RNEXT read the
+// R register into a VF dest (mode 0x104, 0x04 analysis): RGET NOP-skips when the VF dest
+// is vf00; RNEXT only sets noWriteVF in that case (the R-advance still runs — its analysis
+// passes canBeNOP=false), so the two-pass always emits it. RINIT/RXOR seed/xor the R
+// register from a VF source (mode 0x100, pass-1-only, never NOP). All address the R
+// register absolutely (Rmem) so they are x19-independent; RNEXT allocGPRs a temp (covered
+// by the GPR-pool exclusion), the others use only fixed scratch + NEON.
+REC_COP2_MACRO_ANALYZE(RGET,  0x104)
+REC_COP2_MACRO_ANALYZE(RNEXT, 0x104)
+static void recVRINIT() { setupMacroOp(0x100); mVU_RINIT(microVU0, 1); endMacroOp(0x100); }
+static void recVRXOR()  { setupMacroOp(0x100); mVU_RXOR (microVU0, 1); endMacroOp(0x100); }
+
+#undef REC_COP2_MACRO_ANALYZE
+
 //------------------------------------------------------------------
 // Dispatch — the native subset of x86's recCOP2SPECIAL1t / recCOP2SPECIAL2t.
 //------------------------------------------------------------------
@@ -506,6 +520,11 @@ static void (*cop2Mode0Emitter(u32 op))()
 			case 0x3a: return recVRSQRT;  // RSQRT
 			case 0x3b: return recVWAITQ;  // WAITQ (empty, M5.3 commit 3)
 			case 0x2f: return recVNOP;    // NOP   (empty, M5.3 commit 3)
+			// RNG (M5.4; RGET/RNEXT mode 0x104, RINIT/RXOR mode 0x100)
+			case 0x40: return recVRNEXT;  // RNEXT
+			case 0x41: return recVRGET;   // RGET
+			case 0x42: return recVRINIT;  // RINIT
+			case 0x43: return recVRXOR;   // RXOR
 			default: return nullptr;
 		}
 	}
