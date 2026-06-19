@@ -69,11 +69,15 @@ static void setupMacroOp(int mode)
 	// thread-mode allocator operate on VU0 state from inside the EE rec.
 	armMoveAddressToReg(RVUSTATE, &::vuRegs[0]);
 
-	// Set up reg allocation (x86: regAlloc->reset(true); the ARM64 reset() has no
-	// cop2 variant — the COP2 alloc path was dropped, see aVU_IR.h).
+	// Enter COP2/macro mode BEFORE reset() so the allocator's reset() sees cop2 == 1
+	// and excludes the EE rec's pinned GPRs (x20/x21/x22) from the VI GPR pool — see
+	// microRegAlloc::reset() in aVU_IR.h. (x86 calls regAlloc->reset(true) for this;
+	// the ARM64 reset() reads mVU.cop2 instead of taking a flag.)
+	microVU0.cop2 = 1;
+
+	// Set up reg allocation (x86: regAlloc->reset(true)).
 	microVU0.regAlloc->reset();
 
-	microVU0.cop2 = 1;
 	microVU0.prog.IRinfo.curPC = 0;
 	microVU0.code = cpuRegs.code;
 	std::memset(&microVU0.prog.IRinfo.info[0], 0, sizeof(microVU0.prog.IRinfo.info[0]));

@@ -393,6 +393,25 @@ public:
 			clearGPR(i);
 
 		counter = 0;
+
+		// Macro (COP2) mode VI GPR pool gate (M5.4). When microVU0 emits a macro op
+		// memory-backed from inside the EE recompiler (mVU.cop2 != 0), allocGPR must
+		// not hand out the EE rec's own pinned host registers or it clobbers live EE
+		// state for the rest of the block. The EE rec pins x19 (RESTATEPTR — already
+		// excluded as index 19 in the ctor), x21 (REVTLBPTR = vtlb vmap base, loaded
+		// once at block entry and NEVER reloaded), and x20/x22/x23-x28 (the guest-GPR
+		// cache, REC_GPR_CACHE_REGS in aR5900.cpp). Of the cache regs, x23-x26 already
+		// coincide with mVU_F0-F3 (excluded in the ctor) and x27/x28 are outside the
+		// w0-w26 tracked range, so only x20/x21/x22 (indices 20/21/22) need a runtime
+		// gate. In the standalone VU rec (cop2 == 0) all three stay usable — this is a
+		// true no-op there. Only VU0 ever runs macro mode (microVU1.cop2 is always 0).
+		// setupMacroOp sets cop2 = 1 BEFORE calling reset(); endMacroOp sets it back to
+		// 0 before its reset(), so the pool is reconfigured correctly at each bracket.
+		microVU& mVU = index ? microVU1 : microVU0;
+		const bool macroMode = (mVU.cop2 != 0);
+		gprMap[20].usable = !macroMode;
+		gprMap[21].usable = !macroMode;
+		gprMap[22].usable = !macroMode;
 	}
 
 	int getXmmCount()
