@@ -32,16 +32,20 @@
 //     VF/VI access is correct.
 //
 // M5.1 ported the **Mode-0** ops (mode == 0x0: no flags, no Q, no analysis pass —
-// pure allocReg -> op -> clearNeeded). M5.2 adds the **flag** ops (mode == 0x110:
+// pure allocReg -> op -> clearNeeded). M5.2 added the **flag** ops (mode == 0x110:
 // the ADD/SUB/MUL/MADD/MSUB/OPMULA/OPMSUB families + their ACC forms) — these set
-// the status/MAC flags, so setupMacroOp/endMacroOp gain the mode&0x10 branches that
+// the status/MAC flags, so setupMacroOp/endMacroOp gained the mode&0x10 branches that
 // denormalize the status flag into gprF0 before the op (mVUallocSFLAGd) and
 // normalize it back to memory after (mVUallocSFLAGc), gated by the M1
 // EEINST_COP2_{,DE,}NORMALIZE/STATUS/MAC flags exactly as x86 setupMacroOp/
-// endMacroOp do. 0x110 has NO Q bit (0x01/0x02) and NO CLIP bit (0x08) — those
-// (and the *q forms, mode 0x111) are added when M5.3 lands. The flag ops are still
-// NEON + flag-reg only (no allocGPR), so the unsafe VI GPR pool stays untouched
-// until M5.4 (the VI ALU ops).
+// endMacroOp do. M5.3 adds the **Q** ops: the *q ALU forms (mode 0x111 = 0x110|0x01,
+// flags + Q read: ADDq/MULq/MADDq/SUBq/MSUBq + ACC) and DIV/SQRT/RSQRT (mode 0x112 =
+// 0x110|0x02, flags + Q write — the divide also folds its D/I flags into gprF0) plus
+// the empty WAITQ/NOP. setupMacroOp/endMacroOp gain the mode&0x01 (load VI[REG_Q] into
+// the Q lane of mVU_xmmPQ=v24) and mode&0x02 (store it back) branches — faithful to x86
+// setupMacroOp 38-40 / endMacroOp 79-82. The CLIP bit (0x08) is still unused (M5.4). All
+// of these are NEON + flag-reg + PQ only (no allocGPR), so the unsafe VI GPR pool stays
+// untouched until M5.4 (the VI ALU ops).
 
 // Host-register safety (Mode-0):
 //   * GPRs: Mode-0 ops are float/NEON only — they never call regAlloc->allocGPR,
@@ -74,8 +78,19 @@ static void setupMacroOp(int mode)
 	microVU0.code = cpuRegs.code;
 	std::memset(&microVU0.prog.IRinfo.info[0], 0, sizeof(microVU0.prog.IRinfo.info[0]));
 
-	// mode & 0x01 (Q read) and mode & 0x08 (CLIP) are zero for both Mode-0 and the
-	// M5.2 flag ops (0x110) — those branches are added in M5.3. The mode & 0x10
+	// M5.3 Q read (x86 setupMacroOp 38-40). The *q ALU forms (0x111) read Q from
+	// memory before running; DIV/SQRT/RSQRT (0x112) only write Q, so they skip this.
+	// x86's `if (mode & 0x03) _freeXMMreg(xmmPQ.Id)` (line 28-29) has no ARM64 analogue:
+	// mVU_xmmPQ (v24) lives OUTSIDE the allocator's VF pool (v0-v23), so it is never
+	// allocated and there is nothing to free. mvuLdrSS = Ldr(v24.S(), ..) loads VI[REG_Q]
+	// into Q lane 0 and zero-extends the upper 96 bits (AArch64 32-bit load into S clears
+	// [127:32]) — bit-identical to x86 xMOVSSZX(xmmPQ, mem). The *q emitters read Q via
+	// getQreg(.., mVUinfo.readQ); readQ == 0 here (info memset above), so lane 0 is correct.
+	if (mode & 0x01) // Q-Reg will be Read
+		mvuLdrSS(mVU_xmmPQ, &::vuRegs[0].VI[REG_Q].UL);
+
+	// mode & 0x08 (CLIP) is zero for Mode-0, the M5.2 flag ops (0x110), and the M5.3 Q
+	// ops (0x111/0x112) — that branch is added in M5.4. The mode & 0x10
 	// status/MAC branch below is the M5.2 work: a faithful port of x86 setupMacroOp
 	// lines 47-74. Each branch is gated on CHECK_VU_FLAGHACK exactly as x86 does —
 	// when the flag hack is off, the flags are always updated (the !FLAGHACK
@@ -112,12 +127,20 @@ static void setupMacroOp(int mode)
 		}
 	}
 
-	pxAssert(mode == 0x0 || mode == 0x110);
+	pxAssert(mode == 0x0 || mode == 0x110 || mode == 0x111 || mode == 0x112);
 }
 
 static void endMacroOp(int mode)
 {
-	// mode & 0x02 (Q-writeback) is zero for Mode-0 and the M5.2 flag ops (added M5.3).
+	// M5.3 Q writeback (x86 endMacroOp 79-82) — emitted FIRST, before flushAll and the
+	// flag normalize, matching x86 order. The *q forms (0x111) only read Q so they skip
+	// this; DIV/SQRT/RSQRT (0x112) write the divide result into Q lane 0 (writeQreg with
+	// writeQ == 0) and store it back here. mvuStrSS = Str(v24.S(), ..) stores Q lane 0 —
+	// bit-identical to x86 xMOVSS(mem, xmmPQ). Absolute-addressed (RSCRATCHADDR), so it is
+	// order-independent of x19; v24 is outside the VF pool, so flushAll below won't touch it.
+	if (mode & 0x02) // Q-Reg was Written To
+		mvuStrSS(&::vuRegs[0].VI[REG_Q].UL, mVU_xmmPQ);
+
 	// flushAll() is the memory-backed equivalent of x86's flushPartialForCOP2():
 	// write every cached VF/VI back to vuRegs[0] (the next op reads from memory)
 	// and clear the allocator state. Emitted while x19 still == &vuRegs[0]. (The flag
@@ -156,7 +179,7 @@ static void endMacroOp(int mode)
 	// EE rec's RESTATEPTR are the same physical register (x19); this TU only knows it
 	// as RVUSTATE (aR5900.h isn't included here), so point x19 back at &cpuRegs.
 	armMoveAddressToReg(RVUSTATE, &cpuRegs);
-	pxAssert(mode == 0x0 || mode == 0x110);
+	pxAssert(mode == 0x0 || mode == 0x110 || mode == 0x111 || mode == 0x112);
 }
 
 //------------------------------------------------------------------
@@ -274,12 +297,33 @@ static void recVOPMULA() { setupMacroOp(0x110); mVU_OPMULA(microVU0, 1); endMacr
 static void recVOPMSUB() { setupMacroOp(0x110); mVU_OPMSUB(microVU0, 1); endMacroOp(0x110); }
 
 //------------------------------------------------------------------
+// Q-op generators (mode 0x111 = 0x110|0x01 — flags + Q read; M5.3). Same shape as the
+// flag generators, but mode 0x111 also drives the setup Q-load (the *q emitters read Q
+// from lane 0 of mVU_xmmPQ). x86: REC_COP2_mVU0(f, .., 0x111). No 0x04 (analysis) bit,
+// so only pass2 of the mVU emitter runs.
+//------------------------------------------------------------------
+
+// *q ALU forms (M5.3 commit 1) — SPECIAL1 *q
+static void recVADDq()  { setupMacroOp(0x111); mVU_ADDq (microVU0, 1); endMacroOp(0x111); }
+static void recVSUBq()  { setupMacroOp(0x111); mVU_SUBq (microVU0, 1); endMacroOp(0x111); }
+static void recVMULq()  { setupMacroOp(0x111); mVU_MULq (microVU0, 1); endMacroOp(0x111); }
+static void recVMADDq() { setupMacroOp(0x111); mVU_MADDq(microVU0, 1); endMacroOp(0x111); }
+static void recVMSUBq() { setupMacroOp(0x111); mVU_MSUBq(microVU0, 1); endMacroOp(0x111); }
+// *q ACC forms (M5.3 commit 1) — SPECIAL2 *q
+static void recVADDAq()  { setupMacroOp(0x111); mVU_ADDAq (microVU0, 1); endMacroOp(0x111); }
+static void recVSUBAq()  { setupMacroOp(0x111); mVU_SUBAq (microVU0, 1); endMacroOp(0x111); }
+static void recVMULAq()  { setupMacroOp(0x111); mVU_MULAq (microVU0, 1); endMacroOp(0x111); }
+static void recVMADDAq() { setupMacroOp(0x111); mVU_MADDAq(microVU0, 1); endMacroOp(0x111); }
+static void recVMSUBAq() { setupMacroOp(0x111); mVU_MSUBAq(microVU0, 1); endMacroOp(0x111); }
+
+//------------------------------------------------------------------
 // Dispatch — the native subset of x86's recCOP2SPECIAL1t / recCOP2SPECIAL2t.
 //------------------------------------------------------------------
 
 // Decode a COP2 SPECIAL op to its native macro-ALU emitter, or nullptr if it is not
-// a ported op (Mode-0 from M5.1, or the mode-0x110 flag families from M5.2). Each
-// generator bakes its own mode, so this decode only needs to return the fn pointer.
+// a ported op (Mode-0 from M5.1, the mode-0x110 flag families from M5.2, or the mode
+// 0x111/0x112 Q ops from M5.3). Each generator bakes its own mode, so this decode only
+// needs to return the fn pointer.
 // The predicate (recVUMacroIsMode0) and the emit entry (recVUMacroEmitMode0) both go
 // through this one decode so the EE rec's classify and the actual emit can never
 // drift (a mismatch would FINISH-then-drop the op). The "Mode0" names are retained
@@ -328,6 +372,12 @@ static void (*cop2Mode0Emitter(u32 op))()
 			case 0x27: return recVMSUBAi; // MSUBAi
 			case 0x2d: return recVMSUBA;  // MSUBA
 			case 0x2e: return recVOPMULA; // OPMULA (mode 0x110, M5.2 commit 6)
+			// *q ACC forms (mode 0x111, M5.3 commit 1)
+			case 0x1c: return recVMULAq;  // MULAq
+			case 0x20: return recVADDAq;  // ADDAq
+			case 0x21: return recVMADDAq; // MADDAq
+			case 0x24: return recVSUBAq;  // SUBAq
+			case 0x25: return recVMSUBAq; // MSUBAq
 			// ITOF/FTOI/ABS/MOVE/MR32 (Mode-0, M5.1)
 			case 0x10: return recVITOF0;  // ITOF0
 			case 0x11: return recVITOF4;  // ITOF4
@@ -345,8 +395,8 @@ static void (*cop2Mode0Emitter(u32 op))()
 	}
 	// SPECIAL1 ops (x86: recCOP2SPECIAL1t, dispatched by funct = op & 0x3f). The
 	// flag-free MAX*/MINI* family is Mode-0 (M5.1); the ADD/SUB/MUL/MADD/MSUB/OPMSUB
-	// families are flag ops (mode 0x110, M5.2). The *q forms (0x111), the VI/integer
-	// ops, and CALLMS stay on inline-interp until M5.3-M5.5.
+	// families are flag ops (mode 0x110, M5.2); the *q forms are mode 0x111 (M5.3).
+	// The VI/integer ops and CALLMS stay on inline-interp until M5.4-M5.5.
 	switch (funct)
 	{
 		// ADD family (mode 0x110, M5.2 commit 1)
@@ -385,6 +435,12 @@ static void (*cop2Mode0Emitter(u32 op))()
 		case 0x27: return recVMSUBi; // MSUBi
 		case 0x2d: return recVMSUB;  // MSUB
 		case 0x2e: return recVOPMSUB; // OPMSUB (mode 0x110, M5.2 commit 6)
+		// *q ALU forms (mode 0x111, M5.3 commit 1)
+		case 0x1c: return recVMULq;  // MULq
+		case 0x20: return recVADDq;  // ADDq
+		case 0x21: return recVMADDq; // MADDq
+		case 0x24: return recVSUBq;  // SUBq
+		case 0x25: return recVMSUBq; // MSUBq
 		// MAX/MINI family (Mode-0, M5.1)
 		case 0x10: return recVMAXx;  // MAXx
 		case 0x11: return recVMAXy;  // MAXy
@@ -402,9 +458,9 @@ static void (*cop2Mode0Emitter(u32 op))()
 	}
 }
 
-// True if `op` is a natively-ported COP2 SPECIAL macro-ALU op (Mode-0 M5.1 or the
-// 0x110 flag families M5.2). The EE rec gates the FINISH prologue + native emit on
-// this, falling back to inline-interp otherwise.
+// True if `op` is a natively-ported COP2 SPECIAL macro-ALU op (Mode-0 M5.1, the 0x110
+// flag families M5.2, or the 0x111/0x112 Q ops M5.3). The EE rec gates the FINISH
+// prologue + native emit on this, falling back to inline-interp otherwise.
 bool recVUMacroIsMode0(u32 op)
 {
 	return cop2Mode0Emitter(op) != nullptr;
