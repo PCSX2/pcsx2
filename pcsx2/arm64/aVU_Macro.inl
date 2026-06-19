@@ -241,6 +241,20 @@ static void recVMULAz() { setupMacroOp(0x110); mVU_MULAz(microVU0, 1); endMacroO
 static void recVMULAw() { setupMacroOp(0x110); mVU_MULAw(microVU0, 1); endMacroOp(0x110); }
 static void recVMULAi() { setupMacroOp(0x110); mVU_MULAi(microVU0, 1); endMacroOp(0x110); }
 
+// MADD family (M5.2 commit 4)
+static void recVMADD()   { setupMacroOp(0x110); mVU_MADD  (microVU0, 1); endMacroOp(0x110); }
+static void recVMADDx()  { setupMacroOp(0x110); mVU_MADDx (microVU0, 1); endMacroOp(0x110); }
+static void recVMADDy()  { setupMacroOp(0x110); mVU_MADDy (microVU0, 1); endMacroOp(0x110); }
+static void recVMADDz()  { setupMacroOp(0x110); mVU_MADDz (microVU0, 1); endMacroOp(0x110); }
+static void recVMADDw()  { setupMacroOp(0x110); mVU_MADDw (microVU0, 1); endMacroOp(0x110); }
+static void recVMADDi()  { setupMacroOp(0x110); mVU_MADDi (microVU0, 1); endMacroOp(0x110); }
+static void recVMADDA()  { setupMacroOp(0x110); mVU_MADDA (microVU0, 1); endMacroOp(0x110); }
+static void recVMADDAx() { setupMacroOp(0x110); mVU_MADDAx(microVU0, 1); endMacroOp(0x110); }
+static void recVMADDAy() { setupMacroOp(0x110); mVU_MADDAy(microVU0, 1); endMacroOp(0x110); }
+static void recVMADDAz() { setupMacroOp(0x110); mVU_MADDAz(microVU0, 1); endMacroOp(0x110); }
+static void recVMADDAw() { setupMacroOp(0x110); mVU_MADDAw(microVU0, 1); endMacroOp(0x110); }
+static void recVMADDAi() { setupMacroOp(0x110); mVU_MADDAi(microVU0, 1); endMacroOp(0x110); }
+
 //------------------------------------------------------------------
 // Dispatch — the native subset of x86's recCOP2SPECIAL1t / recCOP2SPECIAL2t.
 //------------------------------------------------------------------
@@ -281,6 +295,13 @@ static void (*cop2Mode0Emitter(u32 op))()
 			case 0x1b: return recVMULAw;  // MULAw
 			case 0x1e: return recVMULAi;  // MULAi
 			case 0x2a: return recVMULA;   // MULA
+			// MADDA family (mode 0x110, M5.2 commit 4)
+			case 0x08: return recVMADDAx; // MADDAx
+			case 0x09: return recVMADDAy; // MADDAy
+			case 0x0a: return recVMADDAz; // MADDAz
+			case 0x0b: return recVMADDAw; // MADDAw
+			case 0x23: return recVMADDAi; // MADDAi
+			case 0x29: return recVMADDA;  // MADDA
 			// ITOF/FTOI/ABS/MOVE/MR32 (Mode-0, M5.1)
 			case 0x10: return recVITOF0;  // ITOF0
 			case 0x11: return recVITOF4;  // ITOF4
@@ -323,6 +344,13 @@ static void (*cop2Mode0Emitter(u32 op))()
 		case 0x1b: return recVMULw;  // MULw
 		case 0x1e: return recVMULi;  // MULi
 		case 0x2a: return recVMUL;   // MUL
+		// MADD family (mode 0x110, M5.2 commit 4)
+		case 0x08: return recVMADDx; // MADDx
+		case 0x09: return recVMADDy; // MADDy
+		case 0x0a: return recVMADDz; // MADDz
+		case 0x0b: return recVMADDw; // MADDw
+		case 0x23: return recVMADDi; // MADDi
+		case 0x29: return recVMADD;  // MADD
 		// MAX/MINI family (Mode-0, M5.1)
 		case 0x10: return recVMAXx;  // MAXx
 		case 0x11: return recVMAXy;  // MAXy
