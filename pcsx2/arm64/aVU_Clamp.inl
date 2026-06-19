@@ -50,17 +50,27 @@ static void mVUclamp1(mV, const a64::VRegister& reg, const a64::VRegister& regT1
 		const a64::VRegister regT1 = regT1in.IsNone() ? RQSCRATCH : regT1in;
 		const bool ss = (xyzw == 1) || (xyzw == 2) || (xyzw == 4) || (xyzw == 8);
 
+		// AArch64 scalar FP (Fminnm/Fmaxnm on .S()) writes Sd and ZEROES Vd[127:32]. For a
+		// plain SS op the upper lanes are scratch, but the macro/ACC SS accumulate path
+		// (mVU_FMACb/c) shuffles the active lane into lane0, so the upper lanes hold LIVE
+		// data — the other ACC lanes — which must survive. Doing the scalar clamp in place
+		// wiped them (SC2 matrix MADDA under VU0 clamp mode 2 zeroed ACC.x → wrong EE-side
+		// rotation). Clamp lane0 in a scratch and merge it back, preserving the upper lanes
+		// (matches the mVUclampedArith SS fix and x86 xMIN.SS, which preserves them).
 		armMoveAddressToReg(RSCRATCHADDR, mVUglob.maxvals);
 		armAsm->Ldr(regT1.Q(), a64::MemOperand(RSCRATCHADDR));
 		if (ss)
-			armAsm->Fminnm(reg.S(), reg.S(), regT1.S());
+			armAsm->Fminnm(RQSCRATCH2.S(), reg.S(), regT1.S());
 		else
 			armAsm->Fminnm(reg.V4S(), reg.V4S(), regT1.V4S());
 
 		armMoveAddressToReg(RSCRATCHADDR, mVUglob.minvals);
 		armAsm->Ldr(regT1.Q(), a64::MemOperand(RSCRATCHADDR));
 		if (ss)
-			armAsm->Fmaxnm(reg.S(), reg.S(), regT1.S());
+		{
+			armAsm->Fmaxnm(RQSCRATCH2.S(), RQSCRATCH2.S(), regT1.S());
+			armAsm->Ins(reg.V4S(), 0, RQSCRATCH2.V4S(), 0); // merge lane0; reg's upper lanes survive
+		}
 		else
 			armAsm->Fmaxnm(reg.V4S(), reg.V4S(), regT1.V4S());
 	}
