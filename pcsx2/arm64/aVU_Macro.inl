@@ -93,8 +93,18 @@ static void setupMacroOp(int mode)
 	if (mode & 0x01) // Q-Reg will be Read
 		mvuLdrSS(mVU_xmmPQ, &::vuRegs[0].VI[REG_Q].UL);
 
-	// mode & 0x08 (CLIP) is zero for Mode-0, the M5.2 flag ops (0x110), and the M5.3 Q
-	// ops (0x111/0x112) — that branch is added in M5.4. The mode & 0x10
+	// M5.4 CLIP (x86 setupMacroOp 42-46). Tell the emitter to write the clip flag: with
+	// write/lastWrite == 0xff (>= 4) mVUallocCFLAGa/b take the memory-backed "macroVU"
+	// path (VI[REG_CLIP_FLAG] in vuRegs[0]), so CLIP round-trips its flag through memory
+	// — no flag-instance register needed (unlike the status flag's gprF0). Gated on
+	// CHECK_VU_FLAGHACK + the M1 EEINST_COP2_CLIP_FLAG exactly as x86.
+	if (mode & 0x08 && (!CHECK_VU_FLAGHACK || (g_pCurInstInfo->info & EEINST_COP2_CLIP_FLAG))) // Clip Instruction
+	{
+		microVU0.prog.IRinfo.info[0].cFlag.write     = 0xff;
+		microVU0.prog.IRinfo.info[0].cFlag.lastWrite = 0xff;
+	}
+
+	// The mode & 0x10
 	// status/MAC branch below is the M5.2 work: a faithful port of x86 setupMacroOp
 	// lines 47-74. Each branch is gated on CHECK_VU_FLAGHACK exactly as x86 does —
 	// when the flag hack is off, the flags are always updated (the !FLAGHACK
@@ -131,7 +141,8 @@ static void setupMacroOp(int mode)
 		}
 	}
 
-	pxAssert(mode == 0x0 || mode == 0x110 || mode == 0x111 || mode == 0x112);
+	pxAssert(mode == 0x0 || mode == 0x100 || mode == 0x104 || mode == 0x108 ||
+	         mode == 0x110 || mode == 0x111 || mode == 0x112);
 }
 
 static void endMacroOp(int mode)
@@ -183,7 +194,8 @@ static void endMacroOp(int mode)
 	// EE rec's RESTATEPTR are the same physical register (x19); this TU only knows it
 	// as RVUSTATE (aR5900.h isn't included here), so point x19 back at &cpuRegs.
 	armMoveAddressToReg(RVUSTATE, &cpuRegs);
-	pxAssert(mode == 0x0 || mode == 0x110 || mode == 0x111 || mode == 0x112);
+	pxAssert(mode == 0x0 || mode == 0x100 || mode == 0x104 || mode == 0x108 ||
+	         mode == 0x110 || mode == 0x111 || mode == 0x112);
 }
 
 //------------------------------------------------------------------
@@ -344,6 +356,21 @@ static void recVWAITQ() {}
 static void recVNOP()   {}
 
 //------------------------------------------------------------------
+// VI ALU / load-store / RNG / CLIP generators (M5.4). These are the first macro ops
+// that call regAlloc->allocGPR, so they depend on the cop2-conditional VI GPR pool
+// exclusion (microRegAlloc::reset, committed first in M5.4). Mode bits per x86
+// microVU_Macro.inl 269-288: the 0x04 bit ("requires analysis pass") makes the op run
+// pass-0 (analysis) first, then pass-1 only if it isn't a NOP (x86 REC_COP2_mVU0 macro
+// lines 127-133). 0x104 ops carry 0x04; the 0x100/0x108 ops do not (pass-1 only).
+//------------------------------------------------------------------
+
+// CLIP (mode 0x108 = 0x100|0x08; SPECIAL2 idx2 0x1f). No 0x04 bit → pass-1 only. The
+// setup CLIP branch armed cFlag.write/lastWrite = 0xff so mVU_CLIP round-trips the clip
+// flag through VI[REG_CLIP_FLAG] in memory. CLIP uses gprT1/gprT2 (fixed scratch), not
+// allocGPR, so it is GPR-pool-safe on its own — but it lands here with the rest of M5.4.
+static void recVCLIP() { setupMacroOp(0x108); mVU_CLIP(microVU0, 1); endMacroOp(0x108); }
+
+//------------------------------------------------------------------
 // Dispatch — the native subset of x86's recCOP2SPECIAL1t / recCOP2SPECIAL2t.
 //------------------------------------------------------------------
 
@@ -415,6 +442,7 @@ static void (*cop2Mode0Emitter(u32 op))()
 			case 0x16: return recVFTOI12; // FTOI12
 			case 0x17: return recVFTOI15; // FTOI15
 			case 0x1d: return recVABS;    // ABS
+			case 0x1f: return recVCLIP;   // CLIP (mode 0x108, M5.4)
 			case 0x30: return recVMOVE;   // MOVE
 			case 0x31: return recVMR32;   // MR32
 			// DIV/SQRT/RSQRT (mode 0x112, M5.3 commit 2)
