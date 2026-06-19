@@ -213,6 +213,20 @@ static void recVADDAz() { setupMacroOp(0x110); mVU_ADDAz(microVU0, 1); endMacroO
 static void recVADDAw() { setupMacroOp(0x110); mVU_ADDAw(microVU0, 1); endMacroOp(0x110); }
 static void recVADDAi() { setupMacroOp(0x110); mVU_ADDAi(microVU0, 1); endMacroOp(0x110); }
 
+// SUB family (M5.2 commit 2)
+static void recVSUB()   { setupMacroOp(0x110); mVU_SUB  (microVU0, 1); endMacroOp(0x110); }
+static void recVSUBx()  { setupMacroOp(0x110); mVU_SUBx (microVU0, 1); endMacroOp(0x110); }
+static void recVSUBy()  { setupMacroOp(0x110); mVU_SUBy (microVU0, 1); endMacroOp(0x110); }
+static void recVSUBz()  { setupMacroOp(0x110); mVU_SUBz (microVU0, 1); endMacroOp(0x110); }
+static void recVSUBw()  { setupMacroOp(0x110); mVU_SUBw (microVU0, 1); endMacroOp(0x110); }
+static void recVSUBi()  { setupMacroOp(0x110); mVU_SUBi (microVU0, 1); endMacroOp(0x110); }
+static void recVSUBA()  { setupMacroOp(0x110); mVU_SUBA (microVU0, 1); endMacroOp(0x110); }
+static void recVSUBAx() { setupMacroOp(0x110); mVU_SUBAx(microVU0, 1); endMacroOp(0x110); }
+static void recVSUBAy() { setupMacroOp(0x110); mVU_SUBAy(microVU0, 1); endMacroOp(0x110); }
+static void recVSUBAz() { setupMacroOp(0x110); mVU_SUBAz(microVU0, 1); endMacroOp(0x110); }
+static void recVSUBAw() { setupMacroOp(0x110); mVU_SUBAw(microVU0, 1); endMacroOp(0x110); }
+static void recVSUBAi() { setupMacroOp(0x110); mVU_SUBAi(microVU0, 1); endMacroOp(0x110); }
+
 //------------------------------------------------------------------
 // Dispatch — the native subset of x86's recCOP2SPECIAL1t / recCOP2SPECIAL2t.
 //------------------------------------------------------------------
@@ -239,6 +253,13 @@ static void (*cop2Mode0Emitter(u32 op))()
 			case 0x03: return recVADDAw;  // ADDAw
 			case 0x22: return recVADDAi;  // ADDAi
 			case 0x28: return recVADDA;   // ADDA
+			// SUBA family (mode 0x110, M5.2 commit 2)
+			case 0x04: return recVSUBAx;  // SUBAx
+			case 0x05: return recVSUBAy;  // SUBAy
+			case 0x06: return recVSUBAz;  // SUBAz
+			case 0x07: return recVSUBAw;  // SUBAw
+			case 0x26: return recVSUBAi;  // SUBAi
+			case 0x2c: return recVSUBA;   // SUBA
 			// ITOF/FTOI/ABS/MOVE/MR32 (Mode-0, M5.1)
 			case 0x10: return recVITOF0;  // ITOF0
 			case 0x11: return recVITOF4;  // ITOF4
@@ -267,6 +288,13 @@ static void (*cop2Mode0Emitter(u32 op))()
 		case 0x03: return recVADDw;  // ADDw
 		case 0x22: return recVADDi;  // ADDi
 		case 0x28: return recVADD;   // ADD
+		// SUB family (mode 0x110, M5.2 commit 2)
+		case 0x04: return recVSUBx;  // SUBx
+		case 0x05: return recVSUBy;  // SUBy
+		case 0x06: return recVSUBz;  // SUBz
+		case 0x07: return recVSUBw;  // SUBw
+		case 0x26: return recVSUBi;  // SUBi
+		case 0x2c: return recVSUB;   // SUB
 		// MAX/MINI family (Mode-0, M5.1)
 		case 0x10: return recVMAXx;  // MAXx
 		case 0x11: return recVMAXy;  // MAXy
