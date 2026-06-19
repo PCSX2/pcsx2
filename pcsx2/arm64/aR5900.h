@@ -375,6 +375,12 @@ void armEmitBGEZAL(u32 rs, u32 target, u32 fallthrough, u32 linkpc);
 void armEmitBC1F(u32 target, u32 fallthrough);
 void armEmitBC1T(u32 target, u32 fallthrough);
 
+// COP2 VU0-macro condition branches (test VU0.VI[REG_VPU_STAT].UL & 0x100, the VBS0
+// bit). BC2F branches when the bit is CLEAR, BC2T when SET. No VU sync/cycle commit
+// (faithful to x86 microVU_Macro.inl recBC2F/T — a plain bit-test branch).
+void armEmitBC2F(u32 target, u32 fallthrough);
+void armEmitBC2T(u32 target, u32 fallthrough);
+
 // --------------------------------------------------------------------------------------
 //  Branch-likely forms (BEQL/BNEL/BLEZL/BGTZL, BLTZL/BGEZL, BC1FL/BC1TL)
 // --------------------------------------------------------------------------------------

@@ -2198,8 +2198,10 @@ static bool recTranslateOp(u32 op)
 		// Transfer ops ported natively as M3 lands them; the rest still inline the interpreter
 		// (which self-syncs via _vu0FinishMicro) until M5 ports the ALU. The host-side
 		// cpuRegs.code is set before the native handlers because their _Rt_/_Rd_ macros and
-		// COP2_Interlock read it at emit time. The BC2 branches (rs==0x08) write cpuRegs.pc,
-		// so they stay on the single-step path (recRecompile ends the block before them).
+		// COP2_Interlock read it at emit time. The BC2 branches (rs==0x08) write cpuRegs.pc
+		// and are emitted natively by recRecompile (recIsHandledBranch/recIsLikelyBranch +
+		// recEmitBranch/armEmitBranchLikelyTest, Phase M4), which ends the block at them — so
+		// they never reach here as a straight-line op (the case below is a defensive fallback).
 		case 0x12:
 			switch (rs)
 			{
@@ -2220,7 +2222,8 @@ static bool recTranslateOp(u32 op)
 					recCTC2();
 					return true;
 				case 0x08:
-					return false; // BC2F/BC2T/BC2FL/BC2TL — single-step (writes PC)
+					return false; // BC2F/BC2T/BC2FL/BC2TL — handled natively as a block-terminating
+					              // branch in recRecompile (M4); never reached here in practice.
 				default:
 					recEmitInterpInline(op); // SPECIAL ALU macro ops (until M5)
 					return true;
@@ -2299,6 +2302,14 @@ static bool recEmitBranch(u32 op, u32 branchpc)
 				if (rt == 0x01) { armEmitBC1T(btarget, fallthrough); return true; }  // BC1T
 			}
 			return false; // BC1FL/BC1TL (likely) + non-branch COP1 ops
+
+		case 0x12: // COP2: BC2 branches live under rs==0x08 (BC); rt selects tf/likely.
+			if (rs == 0x08)
+			{
+				if (rt == 0x00) { armEmitBC2F(btarget, fallthrough); return true; }  // BC2F
+				if (rt == 0x01) { armEmitBC2T(btarget, fallthrough); return true; }  // BC2T
+			}
+			return false; // BC2FL/BC2TL (likely) + COP2 transfer/macro ops (straight-line)
 
 		default: return false;
 	}
@@ -2436,6 +2447,8 @@ static bool recIsHandledBranch(u32 op)
 			return rt == 0x00 || rt == 0x01 || rt == 0x10 || rt == 0x11;
 		case 0x11: // COP1: only BC1F/BC1T (rs==BC, rt 0/1); all other COP1 ops are straight-line.
 			return rs == 0x08 && (rt == 0x00 || rt == 0x01);
+		case 0x12: // COP2: only BC2F/BC2T (rs==BC, rt 0/1); all other COP2 ops are straight-line/macro.
+			return rs == 0x08 && (rt == 0x00 || rt == 0x01);
 		default:
 			return false;
 	}
@@ -2460,6 +2473,8 @@ static bool recIsLikelyBranch(u32 op)
 		case 0x01: // REGIMM: BLTZL / BGEZL
 			return rt == 0x02 || rt == 0x03;
 		case 0x11: // COP1: BC1FL / BC1TL
+			return rs == 0x08 && (rt == 0x02 || rt == 0x03);
+		case 0x12: // COP2: BC2FL / BC2TL
 			return rs == 0x08 && (rt == 0x02 || rt == 0x03);
 		default:
 			return false;
