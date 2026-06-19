@@ -130,6 +130,12 @@ static void mVUcacheProg(microVU& mVU, microProgram& prog);
 // aVU_Tables.inl, which wires these into mVULOWER_OPCODE / the T3_xx sub-tables.
 #include "arm64/aVU_Lower.inl"
 
+// Macro mode native COP2 ALU emission (Phase 7.9 / M5) — setupMacroOp/endMacroOp +
+// the REC_COP2_mVU0 dispatch (recVUMacroEmitMode0) reusing the Upper/Lower single-op
+// emitters above. Included after them (their mVU_* handlers are static to this TU);
+// the EE rec (aR5900.cpp) calls recVUMacroEmitMode0() across the TU boundary.
+#include "arm64/aVU_Macro.inl"
+
 // Opcode dispatch tables (Tables/Compile big-bang) — mVUopU dispatches the full
 // Upper ISA, mVUopL the full Lower ISA. Included BEFORE aVU_Flags.inl because the
 // flag read-scan (_mVUflagPass) calls mVUopU/mVUopL.

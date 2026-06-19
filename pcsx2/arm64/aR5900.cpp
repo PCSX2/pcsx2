@@ -351,6 +351,15 @@ static void recQMTC2();
 static void recLQC2();
 static void recSQC2();
 
+// Macro-mode native COP2 SPECIAL ALU emission (Phase 7.9 / M5). Defined in the aVU
+// translation unit (aVU_Macro.inl) so they can reach the static microVU0 single-op
+// emitters. recVUMacroIsMode0 classifies; recVUMacroEmitMode0 emits (true if a Mode-0
+// op was emitted). The EE rec owns the sync prologue + cycle accounting (the case 0x12
+// default below gates the FINISH + native emit on recVUMacroIsMode0, mVUFinishVU0).
+bool recVUMacroIsMode0(u32 op);
+bool recVUMacroEmitMode0(u32 op);
+static void mVUFinishVU0();
+
 struct RecGprConstState
 {
 	bool known[32] = {};
@@ -2225,7 +2234,24 @@ static bool recTranslateOp(u32 op)
 					return false; // BC2F/BC2T/BC2FL/BC2TL — handled natively as a block-terminating
 					              // branch in recRecompile (M4); never reached here in practice.
 				default:
-					recEmitInterpInline(op); // SPECIAL ALU macro ops (until M5)
+					// SPECIAL ALU macro ops. Mode-0 ops (no flags/Q) emit natively via the
+					// microVU0 single-op emitters (M5.1). Faithful to x86 recCOP2_SPEC1: emit
+					// the FINISH prologue — mVUFinishVU0 on EEINST_COP2_{SYNC,FINISH}_VU0, a
+					// full finish (ALU ops never lazy-SYNC and never interlock) — then the
+					// native op. mVUFinishVU0 commits no cycles (so Mode-0 ops are excluded
+					// from recOpNeedsCycleFlush and their cycles ride forward). Ops not yet
+					// ported stay on the blanket-syncing inline-interp path.
+					cpuRegs.code = op; // _Fs_/_Ft_/_X_Y_Z_W read microVU0.code = cpuRegs.code
+					if (recVUMacroIsMode0(op))
+					{
+						if (g_pCurInstInfo->info & (EEINST_COP2_SYNC_VU0 | EEINST_COP2_FINISH_VU0))
+							mVUFinishVU0();
+						recVUMacroEmitMode0(op);
+					}
+					else
+					{
+						recEmitInterpInline(op); // not-yet-ported ALU ops (blanket self-sync)
+					}
 					return true;
 			}
 
@@ -2745,7 +2771,15 @@ static u32 recScaleBlockCycles(u32 raw)
 static bool recOpNeedsCycleFlush(u32 op)
 {
 	if ((op >> 26) == 0x12)
-		return ((op >> 21) & 0x1f) != 0x08;
+	{
+		if (((op >> 21) & 0x1f) == 0x08)
+			return false; // BC2 branch — no sync / cycle commit (M4)
+		// Native Mode-0 ALU ops (M5.1) only ever FINISH (mVUFinishVU0 commits nothing),
+		// so their cycles must accumulate and ride forward to the next real sync / block
+		// tail — not be stashed-and-cleared on EEINST_COP2_SYNC_VU0. Treat them like a
+		// normal op. Transfer ops + still-inline-interp ALU ops keep the stash+clear path.
+		return !recVUMacroIsMode0(op);
+	}
 	return (op >> 26) == OP_LQC2 || (op >> 26) == OP_SQC2;
 }
 
