@@ -396,6 +396,19 @@ REC_COP2_MACRO_ANALYZE(ISUB,  0x104)
 REC_COP2_MACRO_ANALYZE(IAND,  0x104)
 REC_COP2_MACRO_ANALYZE(IOR,   0x104)
 
+// VI load/store (SPECIAL2; ILWR 0x3e / ISWR 0x3f / LQI 0x34 / LQD 0x36 / SQI 0x35 /
+// SQD 0x37). These touch VU0 micro memory (vuRegs[0].Mem, addressed by the emitters via
+// the absolute mVU.regs().Mem pointer) and VI/VF (addressed via x19 = &vuRegs[0]) — both
+// correct because setupMacroOp points x19 at vuRegs[0], exactly as the standalone microVU0
+// rec does. The loads (ILWR/LQI/LQD = mode 0x104) carry the 0x04 analysis bit (NOP-skip
+// when writing vi00); the stores (ISWR/SQI/SQD = mode 0x100) are pass-1-only and never NOP.
+REC_COP2_MACRO_ANALYZE(ILWR, 0x104)
+REC_COP2_MACRO_ANALYZE(LQI,  0x104)
+REC_COP2_MACRO_ANALYZE(LQD,  0x104)
+static void recVISWR() { setupMacroOp(0x100); mVU_ISWR(microVU0, 1); endMacroOp(0x100); }
+static void recVSQI()  { setupMacroOp(0x100); mVU_SQI (microVU0, 1); endMacroOp(0x100); }
+static void recVSQD()  { setupMacroOp(0x100); mVU_SQD (microVU0, 1); endMacroOp(0x100); }
+
 //------------------------------------------------------------------
 // Dispatch — the native subset of x86's recCOP2SPECIAL1t / recCOP2SPECIAL2t.
 //------------------------------------------------------------------
@@ -471,6 +484,14 @@ static void (*cop2Mode0Emitter(u32 op))()
 			case 0x1f: return recVCLIP;   // CLIP (mode 0x108, M5.4)
 			case 0x30: return recVMOVE;   // MOVE
 			case 0x31: return recVMR32;   // MR32
+			// VI load/store (M5.4; LQI/SQI/LQD/SQD mode 0x104/0x100/0x104/0x100,
+			// ILWR 0x104, ISWR 0x100)
+			case 0x34: return recVLQI;    // LQI
+			case 0x35: return recVSQI;    // SQI
+			case 0x36: return recVLQD;    // LQD
+			case 0x37: return recVSQD;    // SQD
+			case 0x3e: return recVILWR;   // ILWR
+			case 0x3f: return recVISWR;   // ISWR
 			// DIV/SQRT/RSQRT (mode 0x112, M5.3 commit 2)
 			case 0x38: return recVDIV;    // DIV
 			case 0x39: return recVSQRT;   // SQRT
