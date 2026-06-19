@@ -2234,13 +2234,22 @@ static bool recTranslateOp(u32 op)
 					return false; // BC2F/BC2T/BC2FL/BC2TL — handled natively as a block-terminating
 					              // branch in recRecompile (M4); never reached here in practice.
 				default:
-					// SPECIAL ALU macro ops. Mode-0 ops (no flags/Q) emit natively via the
-					// microVU0 single-op emitters (M5.1). Faithful to x86 recCOP2_SPEC1: emit
-					// the FINISH prologue — mVUFinishVU0 on EEINST_COP2_{SYNC,FINISH}_VU0, a
-					// full finish (ALU ops never lazy-SYNC and never interlock) — then the
-					// native op. mVUFinishVU0 commits no cycles (so Mode-0 ops are excluded
-					// from recOpNeedsCycleFlush and their cycles ride forward). Ops not yet
-					// ported stay on the blanket-syncing inline-interp path.
+					// SPECIAL1/SPECIAL2 macro ops. All the VU ALU/transfer families emit natively
+					// via the microVU0 single-op emitters (M5.1-M5.4). Faithful to x86 recCOP2_SPEC1:
+					// emit the FINISH prologue — mVUFinishVU0 on EEINST_COP2_{SYNC,FINISH}_VU0, a
+					// full finish (ALU ops never lazy-SYNC and never interlock) — then the native
+					// op. mVUFinishVU0 commits no cycles (so the macro ops are excluded from
+					// recOpNeedsCycleFlush and their cycles ride forward).
+					//
+					// The else branch is reached only by CALLMS/CALLMSR (M5.5), which stay on the
+					// interpreter by design — x86 emits them via INTERPRETATE_COP2_FUNC, not a
+					// native macro. The inline-interp path is faithful: the interpreter
+					// (vu0ExecMicro) self-finishes any running VU0 and launches the microprogram,
+					// reading VU state from the memory the macro emitters keep committed — at least
+					// as strong as x86's iFlushCall(FLUSH_FREE_XMM | FLUSH_FREE_VU0). The matching
+					// cycle commit (x86's scaleblockcycles_clear before recCall) is emitted in
+					// recRecompile via recCop2IsCallms/recEmitCommitBlockCycles. (An unknown/illegal
+					// COP2 SPECIAL op would also land here and harmlessly run the interpreter.)
 					cpuRegs.code = op; // _Fs_/_Ft_/_X_Y_Z_W read microVU0.code = cpuRegs.code
 					if (recVUMacroIsMode0(op))
 					{
@@ -2250,7 +2259,7 @@ static bool recTranslateOp(u32 op)
 					}
 					else
 					{
-						recEmitInterpInline(op); // not-yet-ported ALU ops (blanket self-sync)
+						recEmitInterpInline(op); // CALLMS/CALLMSR (interp by design, M5.5)
 					}
 					return true;
 			}
@@ -2754,6 +2763,22 @@ static u32 recScaleBlockCycles(u32 raw)
 	return (scale_cycles < 1) ? 1 : scale_cycles;
 }
 
+// Commit the block's accumulated (scaled) cycles to cpuRegs.cycle, mirroring x86's
+// scaleblockcycles_clear() add. Used by the CALLMS/CALLMSR path: x86's INTERPRETATE_COP2_FUNC
+// does `cpuRegs.cycle += scaleblockcycles_clear()` immediately before calling the interpreter,
+// so the VU0 microprogram it launches (vu0ExecMicro sets VU0.cycle = cpuRegs.cycle) starts at
+// the correct EE time. This is the same commit emitted inside mVUSyncVU0, minus the VU0
+// catch-up — a LAUNCH (unlike a FINISH) does not collapse cpuRegs.cycle, so the cycles must be
+// committed here rather than ridden forward. RXVIXLSCRATCH (x16) is dead between ops.
+static void recEmitCommitBlockCycles(u32 raw)
+{
+	if (raw == 0)
+		return;
+	armAsm->Ldr(RXVIXLSCRATCH, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET));
+	armAsm->Add(RXVIXLSCRATCH, RXVIXLSCRATCH, recScaleBlockCycles(raw));
+	armAsm->Str(RXVIXLSCRATCH, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET));
+}
+
 // True for ops that run the interpreter inline AND need a live, current cpuRegs.cycle —
 // COP2 / VU0-macro ops (opcode 0x12, excluding the BC2 branches which already single-step).
 // The VU sync inside the COP2 handler reads cpuRegs.cycle, so the block's accumulated cycles
@@ -2781,6 +2806,20 @@ static bool recOpNeedsCycleFlush(u32 op)
 		return !recVUMacroIsMode0(op);
 	}
 	return (op >> 26) == OP_LQC2 || (op >> 26) == OP_SQC2;
+}
+
+// CALLMS (COP2 SPECIAL1 funct 0x38) / CALLMSR (0x39) — x86's only INTERPRETATE_COP2_FUNC ops
+// (microVU_Macro.inl:295-296). M5.5 keeps them on the inline interpreter (faithful: the interp
+// path self-finishes VU0 and launches the microprogram via vu0ExecMicro), but unlike the native
+// FINISH macro ops they must commit the block cycles before the launch — see recRecompile. The
+// rs>=0x10 guard restricts to CO/SPECIAL1 ops (excludes the transfer ops, whose low 6 bits are
+// rd/sa, not a funct); funct 0x38/0x39 is always SPECIAL1 (SPECIAL2 is funct 0x3c-0x3f).
+static bool recCop2IsCallms(u32 op)
+{
+	if ((op >> 26) != 0x12 || ((op >> 21) & 0x1f) < 0x10)
+		return false;
+	const u32 funct = op & 0x3f;
+	return funct == 0x38 || funct == 0x39;
 }
 
 // --------------------------------------------------------------------------------------
@@ -3751,7 +3790,21 @@ static void recRecompile(u32 startpc)
 		{
 			raw_cycles += eeOpCycles(op);
 			s_cop2RawCycles = raw_cycles;
-			if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
+			if (recCop2IsCallms(op))
+			{
+				// CALLMS/CALLMSR are x86's only INTERPRETATE_COP2_FUNC ops: they commit the
+				// scaled block cycles to cpuRegs.cycle and clear the accumulator
+				// (scaleblockcycles_clear) BEFORE the inline interpreter runs vu0ExecMicro,
+				// which sets VU0.cycle = cpuRegs.cycle — so the launched VU0 microprogram sees
+				// the committed EE time. The native FINISH macro ops correctly ride cycles
+				// forward (mVUFinishVU0 commits nothing; _vu0FinishMicro collapses cpuRegs.cycle),
+				// but a LAUNCH does not collapse it, so for these two ops the cycles must be
+				// committed here. Emitted before recTranslateOpOptimized's cache flush + interp
+				// call below, mirroring x86's order (commit, then recCall(V##f)).
+				recEmitCommitBlockCycles(s_cop2RawCycles);
+				raw_cycles = 0;
+			}
+			else if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
 				raw_cycles = 0;
 		}
 

@@ -532,7 +532,10 @@ static void (*cop2Mode0Emitter(u32 op))()
 	// flag-free MAX*/MINI* family is Mode-0 (M5.1); the ADD/SUB/MUL/MADD/MSUB/OPMSUB
 	// families are flag ops (mode 0x110, M5.2); the *q forms are mode 0x111 (M5.3);
 	// the VI integer ALU (IADD/ISUB/IADDI/IAND/IOR) is mode 0x104 (M5.4). CALLMS/CALLMSR
-	// stay on inline-interp until M5.5.
+	// (funct 0x38/0x39) are deliberately NOT here (M5.5): x86 emits them via
+	// INTERPRETATE_COP2_FUNC, not a native macro, so they fall through to nullptr and the
+	// EE rec runs them on the inline interpreter (with a matching cycle commit). See
+	// recCop2IsCallms in aR5900.cpp.
 	switch (funct)
 	{
 		// ADD family (mode 0x110, M5.2 commit 1)
