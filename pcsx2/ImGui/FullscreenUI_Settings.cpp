@@ -3043,6 +3043,13 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			"EmuCore/GS", "HWAA1", false);
 		DrawToggleSetting(
 			bsi, FSUI_ICONSTR(ICON_FA_BULLSEYE, "Mipmapping"), FSUI_CSTR("Enables emulation of the GS's texture mipmapping."), "EmuCore/GS", "hw_mipmap", true);
+		if (is_hardware && effective_renderer != GSRendererType::OGL)
+		{
+			DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Rasterizer Ordered View"),
+				FSUI_CSTR("Enables Rasterizer Ordered View (ROV), which allows feedback loops to be executed with fewer draw calls. Can improve performance in feedback heavy games "
+					  "with higher accuracy settings."),
+				"EmuCore/GS", "HWROV", false);
+		}
 	}
 	else
 	{
@@ -3295,13 +3302,6 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	if (show_advanced_settings)
 	{
 		MenuHeading(FSUI_CSTR("Advanced"));
-		if (is_hardware && effective_renderer != GSRendererType::OGL)
-		{
-			DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Rasterizer Ordered View"),
-				FSUI_CSTR("Enables Rasterizer Ordered View (ROV), which allows feedback loops to be executed with fewer draw calls. Can improve performance in feedback heavy games "
-					  "with higher accuracy settings."),
-				"EmuCore/GS", "HWROV", true);
-		}
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FORWARD, "Skip Presenting Duplicate Frames"),
 			FSUI_CSTR("Skips displaying frames that don't change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing "
 					  "worse."),
@@ -5728,6 +5728,8 @@ TRANSLATE_NOOP("FullscreenUI", "Game compatibility copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Game path copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "None");
 TRANSLATE_NOOP("FullscreenUI", "Automatic");
+TRANSLATE_NOOP("FullscreenUI", "Both slots must have a card selected to swap.");
+TRANSLATE_NOOP("FullscreenUI", "Swapped Slot 1 and Slot 2 memory cards.");
 TRANSLATE_NOOP("FullscreenUI", "Browse...");
 TRANSLATE_NOOP("FullscreenUI", "Create New...");
 TRANSLATE_NOOP("FullscreenUI", "Enter custom HDD size in gigabytes (40–2000):");
@@ -5744,6 +5746,15 @@ TRANSLATE_NOOP("FullscreenUI", "Folder");
 TRANSLATE_NOOP("FullscreenUI", "Yes - Enable NTFS compression");
 TRANSLATE_NOOP("FullscreenUI", "No - Disable NTFS compression");
 TRANSLATE_NOOP("FullscreenUI", "Failed to create the Memory Card, the log may contain more information.");
+TRANSLATE_NOOP("FullscreenUI", "Enable Achievements");
+TRANSLATE_NOOP("FullscreenUI", "Achievement tracking is not currently enabled. Your login will have no effect until after tracking is enabled.\n\nDo you want to enable tracking now?");
+TRANSLATE_NOOP("FullscreenUI", "Enable Hardcore Mode");
+TRANSLATE_NOOP("FullscreenUI", "Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and participate in game-specific leaderboards.\n\nHowever, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.\n\nDo you want to enable hardcore mode?");
+TRANSLATE_NOOP("FullscreenUI", "Reset System");
+TRANSLATE_NOOP("FullscreenUI", "Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?");
+TRANSLATE_NOOP("FullscreenUI", "No file selected.");
+TRANSLATE_NOOP("FullscreenUI", "Sound reset to default.");
+TRANSLATE_NOOP("FullscreenUI", "Sound is already using default.");
 TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to restore the default controller configuration?\n\nAll shared bindings and configuration will be lost, but your input profiles will remain.\n\nYou cannot undo this action.");
 TRANSLATE_NOOP("FullscreenUI", "Controller settings reset to default.");
 TRANSLATE_NOOP("FullscreenUI", "No input profiles available.");
@@ -5805,6 +5816,7 @@ TRANSLATE_NOOP("FullscreenUI", "Changes the BIOS image used to start future sess
 TRANSLATE_NOOP("FullscreenUI", "BIOS Selection");
 TRANSLATE_NOOP("FullscreenUI", "Fast Boot Options");
 TRANSLATE_NOOP("FullscreenUI", "Skips the intro screen, and bypasses region checks.");
+TRANSLATE_NOOP("FullscreenUI", "Removes emulation speed throttle until the game starts to reduce startup time.");
 TRANSLATE_NOOP("FullscreenUI", "Speed Control");
 TRANSLATE_NOOP("FullscreenUI", "Sets the speed when running without fast forwarding.");
 TRANSLATE_NOOP("FullscreenUI", "Sets the speed when using the fast forward hotkey.");
@@ -5830,6 +5842,7 @@ TRANSLATE_NOOP("FullscreenUI", "Display");
 TRANSLATE_NOOP("FullscreenUI", "Selects the aspect ratio to display the game content at.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the aspect ratio for display when a FMV is detected as playing.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the algorithm used to convert the PS2's interlaced output to progressive for display.");
+TRANSLATE_NOOP("FullscreenUI", "Disables interlacing offset which may reduce blurring in some situations.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the resolution at which screenshots will be saved.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the format which will be used to save screenshots.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the quality at which screenshots will be compressed.");
@@ -5853,6 +5866,7 @@ TRANSLATE_NOOP("FullscreenUI", "Selects the type of dithering applies when the g
 TRANSLATE_NOOP("FullscreenUI", "Determines the level of accuracy when emulating blend modes not supported by the host graphics API.");
 TRANSLATE_NOOP("FullscreenUI", "Enables emulation of the GS's edge anti-aliasing (AA1).");
 TRANSLATE_NOOP("FullscreenUI", "Enables emulation of the GS's texture mipmapping.");
+TRANSLATE_NOOP("FullscreenUI", "Enables Rasterizer Ordered View (ROV), which allows feedback loops to be executed with fewer draw calls. Can improve performance in feedback heavy games with higher accuracy settings.");
 TRANSLATE_NOOP("FullscreenUI", "Number of threads to use in addition to the main GS thread for rasterization.");
 TRANSLATE_NOOP("FullscreenUI", "Force a primitive flush when a framebuffer is also an input texture.");
 TRANSLATE_NOOP("FullscreenUI", "Hardware Fixes");
@@ -5872,6 +5886,7 @@ TRANSLATE_NOOP("FullscreenUI", "Allows the texture cache to reuse as an input te
 TRANSLATE_NOOP("FullscreenUI", "Flushes all targets in the texture cache back to local memory when shutting down.");
 TRANSLATE_NOOP("FullscreenUI", "Attempts to reduce the texture size when games do not set it themselves (e.g. Snowblind games).");
 TRANSLATE_NOOP("FullscreenUI", "When enabled GPU converts colormap-textures, otherwise the CPU will. It is a trade-off between GPU and CPU.");
+TRANSLATE_NOOP("FullscreenUI", "Attempts to reduce draw calls in games which do heavy context switching for blending purposes.");
 TRANSLATE_NOOP("FullscreenUI", "Upscaling Fixes");
 TRANSLATE_NOOP("FullscreenUI", "Adjusts vertices relative to upscaling.");
 TRANSLATE_NOOP("FullscreenUI", "Attempt to do rescaling at native resolution.");
@@ -5903,7 +5918,6 @@ TRANSLATE_NOOP("FullscreenUI", "Adjusts gamma. 50 is normal.");
 TRANSLATE_NOOP("FullscreenUI", "Adjusts saturation. 50 is normal.");
 TRANSLATE_NOOP("FullscreenUI", "Applies a shader which replicates the visual effects of different styles of television set.");
 TRANSLATE_NOOP("FullscreenUI", "Advanced");
-TRANSLATE_NOOP("FullscreenUI", "Enables Rasterizer Ordered View (ROV), which allows feedback loops to be executed with fewer draw calls. Can improve performance in feedback heavy games with higher accuracy settings.");
 TRANSLATE_NOOP("FullscreenUI", "Skips displaying frames that don't change in 25/30fps games. Can improve speed, but increase input lag/make frame pacing worse.");
 TRANSLATE_NOOP("FullscreenUI", "Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.");
 TRANSLATE_NOOP("FullscreenUI", "Displays additional, very high upscaling multipliers dependent on GPU and driver capability.");
@@ -5960,6 +5974,7 @@ TRANSLATE_NOOP("FullscreenUI", "When enabled, the minimum supported output laten
 TRANSLATE_NOOP("FullscreenUI", "Settings and Operations");
 TRANSLATE_NOOP("FullscreenUI", "Creates a new memory card file or folder.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates a larger memory card by filtering saves only to the current game.");
+TRANSLATE_NOOP("FullscreenUI", "Swaps the selected memory cards in Slot 1 and Slot 2.");
 TRANSLATE_NOOP("FullscreenUI", "If not set, this card will be considered unplugged.");
 TRANSLATE_NOOP("FullscreenUI", "The selected memory card image will be used for this slot.");
 TRANSLATE_NOOP("FullscreenUI", "Removes the current card from the slot.");
@@ -5982,6 +5997,34 @@ TRANSLATE_NOOP("FullscreenUI", "Internal HDD");
 TRANSLATE_NOOP("FullscreenUI", "Enables the internal Hard Disk Drive for expanded storage.");
 TRANSLATE_NOOP("FullscreenUI", "Changes the HDD image used for PS2 internal storage.");
 TRANSLATE_NOOP("FullscreenUI", "HDD Image Selection");
+TRANSLATE_NOOP("FullscreenUI", "RetroAchievements");
+TRANSLATE_NOOP("FullscreenUI", "Please enter your user name and password for retroachievements.org below.\n\nYour password will not be saved in PCSX2, an access token will be generated and used instead.");
+TRANSLATE_NOOP("FullscreenUI", "Username");
+TRANSLATE_NOOP("FullscreenUI", "Password");
+TRANSLATE_NOOP("FullscreenUI", "Logging in...");
+TRANSLATE_NOOP("FullscreenUI", "Dismiss");
+TRANSLATE_NOOP("FullscreenUI", "Login");
+TRANSLATE_NOOP("FullscreenUI", "Cancel");
+TRANSLATE_NOOP("FullscreenUI", "Settings");
+TRANSLATE_NOOP("FullscreenUI", "When enabled and logged in, PCSX2 will scan for achievements on startup.");
+TRANSLATE_NOOP("FullscreenUI", "\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.");
+TRANSLATE_NOOP("FullscreenUI", "Displays popup messages on events such as achievement unlocks and leaderboard submissions.");
+TRANSLATE_NOOP("FullscreenUI", "Displays popup messages when starting, submitting, or failing a leaderboard challenge.");
+TRANSLATE_NOOP("FullscreenUI", "Plays sound effects for events such as achievement unlocks and leaderboard submissions.");
+TRANSLATE_NOOP("FullscreenUI", "Shows icons in the screen when a challenge/primed achievement is active.");
+TRANSLATE_NOOP("FullscreenUI", "Shows icons in the screen when leaderboard tracking is active.");
+TRANSLATE_NOOP("FullscreenUI", "Determines where achievement/leaderboard overlays are positioned on the screen.");
+TRANSLATE_NOOP("FullscreenUI", "Determines where achievement/leaderboard notification popups are positioned on the screen.");
+TRANSLATE_NOOP("FullscreenUI", "Determines the display duration for achievement unlock popups.");
+TRANSLATE_NOOP("FullscreenUI", "Determines the display duration for leaderboard popups.");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, each session will behave as if no achievements have been unlocked.");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server.");
+TRANSLATE_NOOP("FullscreenUI", "When enabled, PCSX2 will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.");
+TRANSLATE_NOOP("FullscreenUI", "Sound Effects");
+TRANSLATE_NOOP("FullscreenUI", "Account");
+TRANSLATE_NOOP("FullscreenUI", "Logs out of RetroAchievements.");
+TRANSLATE_NOOP("FullscreenUI", "Logs in to RetroAchievements.");
+TRANSLATE_NOOP("FullscreenUI", "Current Game");
 TRANSLATE_NOOP("FullscreenUI", "Configuration");
 TRANSLATE_NOOP("FullscreenUI", "Replaces these settings with a previously saved input profile.");
 TRANSLATE_NOOP("FullscreenUI", "Stores the current settings to an input profile.");
@@ -6003,6 +6046,9 @@ TRANSLATE_NOOP("FullscreenUI", "Determines the pressure required to activate the
 TRANSLATE_NOOP("FullscreenUI", "Toggle every %d frames");
 TRANSLATE_NOOP("FullscreenUI", "Clears all bindings for this USB controller.");
 TRANSLATE_NOOP("FullscreenUI", "Data Save Locations");
+TRANSLATE_NOOP("FullscreenUI", "Organization");
+TRANSLATE_NOOP("FullscreenUI", "Saves snapshots to per-game subfolders instead of a shared folder.");
+TRANSLATE_NOOP("FullscreenUI", "Saves video recordings to per-game subfolders instead of a shared folder.");
 TRANSLATE_NOOP("FullscreenUI", "Changing these options may cause games to become non-functional. Modify at your own risk, the PCSX2 team will not provide support for configurations with these settings changed.");
 TRANSLATE_NOOP("FullscreenUI", "Logging");
 TRANSLATE_NOOP("FullscreenUI", "Writes log messages to the system console (console window/standard output).");
@@ -6021,6 +6067,8 @@ TRANSLATE_NOOP("FullscreenUI", "Enables simulation of the EE's cache. Slow.");
 TRANSLATE_NOOP("FullscreenUI", "Huge speedup for some games, with almost no compatibility side effects.");
 TRANSLATE_NOOP("FullscreenUI", "Moderate speedup for some games, with no known side effects.");
 TRANSLATE_NOOP("FullscreenUI", "Uses backpatching to avoid register flushing on every memory access.");
+TRANSLATE_NOOP("FullscreenUI", "Pauses the virtual machine when a TLB miss occurs, instead of ignoring it and continuing.");
+TRANSLATE_NOOP("FullscreenUI", "Exposes additional memory to the virtual machine, expanding the EE and IOP memory to 128MB and 8MB respectively.");
 TRANSLATE_NOOP("FullscreenUI", "Vector Units");
 TRANSLATE_NOOP("FullscreenUI", "New Vector Unit recompiler with much improved compatibility. Recommended.");
 TRANSLATE_NOOP("FullscreenUI", "Good speedup and high compatibility, may cause graphical errors.");
@@ -6033,7 +6081,9 @@ TRANSLATE_NOOP("FullscreenUI", "Sets the compression level for savestate.");
 TRANSLATE_NOOP("FullscreenUI", "Graphics");
 TRANSLATE_NOOP("FullscreenUI", "Enables API-level validation of graphics commands.");
 TRANSLATE_NOOP("FullscreenUI", "Forces SW blending and disables several optimizations.");
-TRANSLATE_NOOP("FullscreenUI", "Settings");
+TRANSLATE_NOOP("FullscreenUI", "PINE Settings");
+TRANSLATE_NOOP("FullscreenUI", "Enables the PINE Inter-Process Communication system, allowing external programs to interact with the emulator.");
+TRANSLATE_NOOP("FullscreenUI", "The network port slot used for PINE IPC connections.");
 TRANSLATE_NOOP("FullscreenUI", "No cheats are available for this game.");
 TRANSLATE_NOOP("FullscreenUI", "Cheat Codes");
 TRANSLATE_NOOP("FullscreenUI", "No patches are available for this game.");
@@ -6076,6 +6126,9 @@ TRANSLATE_NOOP("FullscreenUI", "HDD image '{}' already exists. Do you want to ov
 TRANSLATE_NOOP("FullscreenUI", "Failed to create the Memory Card, because the name '{}' contains one or more invalid characters.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to create the Memory Card, because another card with the name '{}' already exists.");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card '{}' created.");
+TRANSLATE_NOOP("FullscreenUI", "Successfully logged in as {}.");
+TRANSLATE_NOOP("FullscreenUI", "Login failed.\nError: {}\n\nPlease check your username and password, and try again.");
+TRANSLATE_NOOP("FullscreenUI", "Failed to preview sound:\n{}");
 TRANSLATE_NOOP("FullscreenUI", "Failed to load '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' loaded.");
 TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' saved.");
@@ -6306,6 +6359,8 @@ TRANSLATE_NOOP("FullscreenUI", "Internal");
 TRANSLATE_NOOP("FullscreenUI", "Negative");
 TRANSLATE_NOOP("FullscreenUI", "Positive");
 TRANSLATE_NOOP("FullscreenUI", "Chop/Zero (Default)");
+TRANSLATE_NOOP("FullscreenUI", "Nearest (Default)");
+TRANSLATE_NOOP("FullscreenUI", "Chop/Zero");
 TRANSLATE_NOOP("FullscreenUI", "Deflate");
 TRANSLATE_NOOP("FullscreenUI", "Zstandard");
 TRANSLATE_NOOP("FullscreenUI", "Low (Fast)");
@@ -6360,6 +6415,7 @@ TRANSLATE_NOOP("FullscreenUI", "Start Big Picture UI");
 TRANSLATE_NOOP("FullscreenUI", "Reset Settings");
 TRANSLATE_NOOP("FullscreenUI", "Change Search Directory");
 TRANSLATE_NOOP("FullscreenUI", "Fast Boot");
+TRANSLATE_NOOP("FullscreenUI", "Fast Forward Boot");
 TRANSLATE_NOOP("FullscreenUI", "Normal Speed");
 TRANSLATE_NOOP("FullscreenUI", "Fast Forward Speed");
 TRANSLATE_NOOP("FullscreenUI", "Slow Motion Speed");
@@ -6379,6 +6435,7 @@ TRANSLATE_NOOP("FullscreenUI", "Use Host VSync Timing");
 TRANSLATE_NOOP("FullscreenUI", "Aspect Ratio");
 TRANSLATE_NOOP("FullscreenUI", "FMV Aspect Ratio Override");
 TRANSLATE_NOOP("FullscreenUI", "Deinterlacing");
+TRANSLATE_NOOP("FullscreenUI", "Disable Interlace Offset");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Size");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Format");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Quality");
@@ -6399,6 +6456,7 @@ TRANSLATE_NOOP("FullscreenUI", "Dithering");
 TRANSLATE_NOOP("FullscreenUI", "Blending Accuracy");
 TRANSLATE_NOOP("FullscreenUI", "Edge AA (AA1)");
 TRANSLATE_NOOP("FullscreenUI", "Mipmapping");
+TRANSLATE_NOOP("FullscreenUI", "Rasterizer Ordered View");
 TRANSLATE_NOOP("FullscreenUI", "Software Rendering Threads");
 TRANSLATE_NOOP("FullscreenUI", "Auto Flush (Software)");
 TRANSLATE_NOOP("FullscreenUI", "Manual Hardware Fixes");
@@ -6419,6 +6477,7 @@ TRANSLATE_NOOP("FullscreenUI", "Texture Inside RT");
 TRANSLATE_NOOP("FullscreenUI", "Read Targets When Closing");
 TRANSLATE_NOOP("FullscreenUI", "Estimate Texture Region");
 TRANSLATE_NOOP("FullscreenUI", "GPU Palette Conversion");
+TRANSLATE_NOOP("FullscreenUI", "Draw Buffering");
 TRANSLATE_NOOP("FullscreenUI", "Half Pixel Offset");
 TRANSLATE_NOOP("FullscreenUI", "Native Scaling");
 TRANSLATE_NOOP("FullscreenUI", "Round Sprite");
@@ -6445,7 +6504,6 @@ TRANSLATE_NOOP("FullscreenUI", "Shade Boost Contrast");
 TRANSLATE_NOOP("FullscreenUI", "Shade Boost Gamma");
 TRANSLATE_NOOP("FullscreenUI", "Shade Boost Saturation");
 TRANSLATE_NOOP("FullscreenUI", "TV Shaders");
-TRANSLATE_NOOP("FullscreenUI", "Rasterizer Ordered View");
 TRANSLATE_NOOP("FullscreenUI", "Skip Presenting Duplicate Frames");
 TRANSLATE_NOOP("FullscreenUI", "Disable Mailbox Presentation");
 TRANSLATE_NOOP("FullscreenUI", "Extended Upscaling Multipliers");
@@ -6498,6 +6556,7 @@ TRANSLATE_NOOP("FullscreenUI", "Minimal Output Latency");
 TRANSLATE_NOOP("FullscreenUI", "Create Memory Card");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Directory");
 TRANSLATE_NOOP("FullscreenUI", "Folder Memory Card Filter");
+TRANSLATE_NOOP("FullscreenUI", "Swap Memory Cards");
 TRANSLATE_NOOP("FullscreenUI", "Enable Network Adapter");
 TRANSLATE_NOOP("FullscreenUI", "Ethernet Device Type");
 TRANSLATE_NOOP("FullscreenUI", "Ethernet Device");
@@ -6519,6 +6578,35 @@ TRANSLATE_NOOP("FullscreenUI", "Create");
 TRANSLATE_NOOP("FullscreenUI", "File Already Exists");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Type");
 TRANSLATE_NOOP("FullscreenUI", "Use NTFS Compression?");
+TRANSLATE_NOOP("FullscreenUI", "RAIntegration is being used instead of the built-in achievements implementation.");
+TRANSLATE_NOOP("FullscreenUI", "Hardcore Mode");
+TRANSLATE_NOOP("FullscreenUI", "Achievement Notifications");
+TRANSLATE_NOOP("FullscreenUI", "Leaderboard Notifications");
+TRANSLATE_NOOP("FullscreenUI", "Enable In-Game Overlays");
+TRANSLATE_NOOP("FullscreenUI", "Enable In-Game Leaderboard Overlays");
+TRANSLATE_NOOP("FullscreenUI", "Overlay Position");
+TRANSLATE_NOOP("FullscreenUI", "Notification Position");
+TRANSLATE_NOOP("FullscreenUI", "Unlock Notification Duration");
+TRANSLATE_NOOP("FullscreenUI", "Leaderboard Notification Duration");
+TRANSLATE_NOOP("FullscreenUI", "Encore Mode");
+TRANSLATE_NOOP("FullscreenUI", "Spectator Mode");
+TRANSLATE_NOOP("FullscreenUI", "Test Unofficial Achievements");
+TRANSLATE_NOOP("FullscreenUI", "Select File");
+TRANSLATE_NOOP("FullscreenUI", "Preview");
+TRANSLATE_NOOP("FullscreenUI", "Reset to Default");
+TRANSLATE_NOOP("FullscreenUI", "Notification Sound");
+TRANSLATE_NOOP("FullscreenUI", "Select Notification Sound");
+TRANSLATE_NOOP("FullscreenUI", "Unlock Sound");
+TRANSLATE_NOOP("FullscreenUI", "Select Unlock Sound");
+TRANSLATE_NOOP("FullscreenUI", "Leaderboard Submit Sound");
+TRANSLATE_NOOP("FullscreenUI", "Select Leaderboard Submit Sound");
+TRANSLATE_NOOP("FullscreenUI", "Username: {}");
+TRANSLATE_NOOP("FullscreenUI", "Login token generated on {}");
+TRANSLATE_NOOP("FullscreenUI", "Logout");
+TRANSLATE_NOOP("FullscreenUI", "Not Logged In");
+TRANSLATE_NOOP("FullscreenUI", "Game: {0} ({1})");
+TRANSLATE_NOOP("FullscreenUI", "Rich presence inactive or unsupported.");
+TRANSLATE_NOOP("FullscreenUI", "Game not loaded or no RetroAchievements available.");
 TRANSLATE_NOOP("FullscreenUI", "Reset Controller Settings");
 TRANSLATE_NOOP("FullscreenUI", "Load Profile");
 TRANSLATE_NOOP("FullscreenUI", "Save Profile");
@@ -6558,6 +6646,8 @@ TRANSLATE_NOOP("FullscreenUI", "Cheats Directory");
 TRANSLATE_NOOP("FullscreenUI", "Patches Directory");
 TRANSLATE_NOOP("FullscreenUI", "Texture Replacements Directory");
 TRANSLATE_NOOP("FullscreenUI", "Video Dumping Directory");
+TRANSLATE_NOOP("FullscreenUI", "Save Snapshots in Game-Specific Folders");
+TRANSLATE_NOOP("FullscreenUI", "Save Video Recordings in Game-Specific Folders");
 TRANSLATE_NOOP("FullscreenUI", "Show Advanced Settings");
 TRANSLATE_NOOP("FullscreenUI", "System Console");
 TRANSLATE_NOOP("FullscreenUI", "File Logging");
@@ -6574,6 +6664,8 @@ TRANSLATE_NOOP("FullscreenUI", "Enable EE Cache");
 TRANSLATE_NOOP("FullscreenUI", "Enable INTC Spin Detection");
 TRANSLATE_NOOP("FullscreenUI", "Enable Wait Loop Detection");
 TRANSLATE_NOOP("FullscreenUI", "Enable Fast Memory Access");
+TRANSLATE_NOOP("FullscreenUI", "Pause On TLB Miss");
+TRANSLATE_NOOP("FullscreenUI", "Enable Extended RAM (Dev Console)");
 TRANSLATE_NOOP("FullscreenUI", "VU0 Rounding Mode");
 TRANSLATE_NOOP("FullscreenUI", "VU0 Clamping Mode");
 TRANSLATE_NOOP("FullscreenUI", "VU1 Rounding Mode");
@@ -6587,6 +6679,8 @@ TRANSLATE_NOOP("FullscreenUI", "Compression Method");
 TRANSLATE_NOOP("FullscreenUI", "Compression Level");
 TRANSLATE_NOOP("FullscreenUI", "Use Debug Device");
 TRANSLATE_NOOP("FullscreenUI", "Use Debug Blend");
+TRANSLATE_NOOP("FullscreenUI", "Enable PINE");
+TRANSLATE_NOOP("FullscreenUI", "PINE Slot");
 TRANSLATE_NOOP("FullscreenUI", "FPU Multiply Hack");
 TRANSLATE_NOOP("FullscreenUI", "Use Software Renderer For FMVs");
 TRANSLATE_NOOP("FullscreenUI", "Skip MPEG Hack");
