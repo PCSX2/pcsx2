@@ -106,6 +106,19 @@ static void recVFTOI4()  { setupMacroOp(0x0); mVU_FTOI4 (microVU0, 1); endMacroO
 static void recVFTOI12() { setupMacroOp(0x0); mVU_FTOI12(microVU0, 1); endMacroOp(0x0); }
 static void recVFTOI15() { setupMacroOp(0x0); mVU_FTOI15(microVU0, 1); endMacroOp(0x0); }
 
+static void recVMAXx()  { setupMacroOp(0x0); mVU_MAXx (microVU0, 1); endMacroOp(0x0); }
+static void recVMAXy()  { setupMacroOp(0x0); mVU_MAXy (microVU0, 1); endMacroOp(0x0); }
+static void recVMAXz()  { setupMacroOp(0x0); mVU_MAXz (microVU0, 1); endMacroOp(0x0); }
+static void recVMAXw()  { setupMacroOp(0x0); mVU_MAXw (microVU0, 1); endMacroOp(0x0); }
+static void recVMAXi()  { setupMacroOp(0x0); mVU_MAXi (microVU0, 1); endMacroOp(0x0); }
+static void recVMAX()   { setupMacroOp(0x0); mVU_MAX  (microVU0, 1); endMacroOp(0x0); }
+static void recVMINIx() { setupMacroOp(0x0); mVU_MINIx(microVU0, 1); endMacroOp(0x0); }
+static void recVMINIy() { setupMacroOp(0x0); mVU_MINIy(microVU0, 1); endMacroOp(0x0); }
+static void recVMINIz() { setupMacroOp(0x0); mVU_MINIz(microVU0, 1); endMacroOp(0x0); }
+static void recVMINIw() { setupMacroOp(0x0); mVU_MINIw(microVU0, 1); endMacroOp(0x0); }
+static void recVMINIi() { setupMacroOp(0x0); mVU_MINIi(microVU0, 1); endMacroOp(0x0); }
+static void recVMINI()  { setupMacroOp(0x0); mVU_MINI (microVU0, 1); endMacroOp(0x0); }
+
 //------------------------------------------------------------------
 // Dispatch — the Mode-0 subset of x86's recCOP2SPECIAL1t / recCOP2SPECIAL2t.
 //------------------------------------------------------------------
@@ -133,8 +146,26 @@ static void (*cop2Mode0Emitter(u32 op))()
 			default: return nullptr;
 		}
 	}
-	// SPECIAL1 Mode-0 ops (MAX*/MINI*) are wired in the M5.1 MAX/MINI commit.
-	return nullptr;
+	// SPECIAL1 Mode-0 ops (x86: recCOP2SPECIAL1t, dispatched by funct = op & 0x3f).
+	// Only the flag-free MAX*/MINI* family is Mode-0; ADD/SUB/MUL/MADD/MSUB (0x110),
+	// the *q forms (0x111), and the integer/CALLMS ops stay on inline-interp until
+	// M5.2-M5.5.
+	switch (funct)
+	{
+		case 0x10: return recVMAXx;  // MAXx
+		case 0x11: return recVMAXy;  // MAXy
+		case 0x12: return recVMAXz;  // MAXz
+		case 0x13: return recVMAXw;  // MAXw
+		case 0x14: return recVMINIx; // MINIx
+		case 0x15: return recVMINIy; // MINIy
+		case 0x16: return recVMINIz; // MINIz
+		case 0x17: return recVMINIw; // MINIw
+		case 0x1d: return recVMAXi;  // MAXi
+		case 0x1f: return recVMINIi; // MINIi
+		case 0x2b: return recVMAX;   // MAX
+		case 0x2f: return recVMINI;  // MINI
+		default: return nullptr;
+	}
 }
 
 // True if `op` is a ported Mode-0 COP2 SPECIAL op (the EE rec gates the FINISH
