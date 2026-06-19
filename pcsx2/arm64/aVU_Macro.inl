@@ -317,6 +317,20 @@ static void recVMADDAq() { setupMacroOp(0x111); mVU_MADDAq(microVU0, 1); endMacr
 static void recVMSUBAq() { setupMacroOp(0x111); mVU_MSUBAq(microVU0, 1); endMacroOp(0x111); }
 
 //------------------------------------------------------------------
+// EFU divide ops (mode 0x112 = 0x110|0x02 — flags + Q write; M5.3 commit 2). DIV/SQRT/
+// RSQRT compute Q = Fs/Ft etc. and (under mVU.cop2) fold their D/I divide flags into
+// gprF0 — so the mode&0x10 status round-trip (M5.2 machinery) carries the divide flags,
+// and the mode&0x02 endMacroOp branch stores the Q result. The emitters write the result
+// into Q lane 0 (writeQreg with writeQ == 0); they do NOT read Q (0x112 has no 0x01 bit),
+// matching x86. x86: REC_COP2_mVU0(f, .., 0x112). (mVUanalyzeFDIV runs in pass1; only
+// pass2 is emitted here, same as the other families.)
+//------------------------------------------------------------------
+
+static void recVDIV()   { setupMacroOp(0x112); mVU_DIV  (microVU0, 1); endMacroOp(0x112); }
+static void recVSQRT()  { setupMacroOp(0x112); mVU_SQRT (microVU0, 1); endMacroOp(0x112); }
+static void recVRSQRT() { setupMacroOp(0x112); mVU_RSQRT(microVU0, 1); endMacroOp(0x112); }
+
+//------------------------------------------------------------------
 // Dispatch — the native subset of x86's recCOP2SPECIAL1t / recCOP2SPECIAL2t.
 //------------------------------------------------------------------
 
@@ -390,6 +404,10 @@ static void (*cop2Mode0Emitter(u32 op))()
 			case 0x1d: return recVABS;    // ABS
 			case 0x30: return recVMOVE;   // MOVE
 			case 0x31: return recVMR32;   // MR32
+			// DIV/SQRT/RSQRT (mode 0x112, M5.3 commit 2)
+			case 0x38: return recVDIV;    // DIV
+			case 0x39: return recVSQRT;   // SQRT
+			case 0x3a: return recVRSQRT;  // RSQRT
 			default: return nullptr;
 		}
 	}
