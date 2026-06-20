@@ -324,7 +324,8 @@ void main()
 	// Use bottom minus top for delta regardless of which vertex we are expanding.
 	vec2 line_delta = is_bottom ? (vtx.p.xy - other.p.xy) : (other.p.xy - vtx.p.xy);
 	vec2 line_vector = normalize(line_delta / VertexScale);
-if VS_EXPAND == VS_EXPAND_LINE_AA1
+	vec2 line_expand = vec2(line_vector.y, -line_vector.x);
+#if VS_EXPAND == VS_EXPAND_LINE_AA1
 	line_expand *= 2.0f * LineAA1Width;
 #endif
 	vec2 line_width = (line_expand * PointSize) / 2;
