@@ -215,6 +215,10 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		tr("Checked"), tr("Displays a modal dialog when a save state load/save operation fails."));
 	dialog()->registerWidgetHelp(m_ui.preferEnglishGameList, tr("Prefer English Game Titles"), tr("Unchecked"),
 		tr("For games with both a title in the game's native language and one in English, prefer the English title. Affects how game titles are displayed on the game list, window title and Discord Presence"));
+	dialog()->registerWidgetHelp(
+		m_ui.displayMonitor, tr("Display Monitor"), tr("Current Monitor"),
+		tr("Selects which monitor the PCSX2 game window will be displayed on when launching."
+		   "<br><b>On Linux Wayland, this setting only takes effect when Start Fullscreen is enabled.</b>"));
 	dialog()->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"), tr("Unchecked"),
 		tr("Automatically switches to fullscreen mode when a game is started."));
 	dialog()->registerWidgetHelp(m_ui.hideMouseCursor, tr("Hide Cursor In Fullscreen"), tr("Unchecked"),
