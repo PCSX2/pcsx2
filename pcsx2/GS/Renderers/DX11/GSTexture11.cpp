@@ -12,13 +12,13 @@
 #include "fmt/format.h"
 
 GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, const D3D11_TEXTURE2D_DESC& desc,
-	GSTexture::Type type, GSTexture::Format format)
+	Usage usage, Format format)
 	: m_texture(std::move(texture))
 	, m_desc(desc)
 {
 	m_size.x = static_cast<int>(desc.Width);
 	m_size.y = static_cast<int>(desc.Height);
-	m_type = type;
+	m_usage = usage;
 	m_format = format;
 	m_mipmap_levels = static_cast<int>(desc.MipLevels);
 }

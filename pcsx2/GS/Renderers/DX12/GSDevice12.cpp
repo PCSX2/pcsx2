@@ -1093,7 +1093,7 @@ bool GSDevice12::CreateSwapChainRTV()
 			return false;
 		}
 
-		std::unique_ptr<GSTexture12> tex = GSTexture12::Adopt(std::move(backbuffer), GSTexture::Type::RenderTarget,
+		std::unique_ptr<GSTexture12> tex = GSTexture12::Adopt(std::move(backbuffer), GSTexture::RenderTarget,
 			GSTexture::Format::Color, swap_chain_desc.BufferDesc.Width, swap_chain_desc.BufferDesc.Height, 1,
 			swap_chain_desc.BufferDesc.Format, DXGI_FORMAT_UNKNOWN, swap_chain_desc.BufferDesc.Format,
 			DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_UNKNOWN, GSTexture12::ResourceState::Present);
@@ -1539,22 +1539,22 @@ void GSDevice12::LookupNativeFormat(GSTexture::Format format, DXGI_FORMAT* d3d_f
 		*uav_format = mapping[4];
 }
 
-GSTexture* GSDevice12::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
+GSTexture* GSDevice12::CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format)
 {
 	DXGI_FORMAT dxgi_format, srv_format, rtv_format, dsv_format, uav_format;
 	LookupNativeFormat(format, &dxgi_format, &srv_format, &rtv_format, &dsv_format, &uav_format);
 
-	if (type != GSTexture::Type::RWTexture && type != GSTexture::Type::RenderTarget)
+	if (!GSTexture::IsShaderWrite(usage))
 		uav_format = DXGI_FORMAT_UNKNOWN; // We don't need the UAV descriptor.
 
-	std::unique_ptr<GSTexture12> tex(GSTexture12::Create(type, format, width, height, levels,
+	std::unique_ptr<GSTexture12> tex(GSTexture12::Create(usage, format, width, height, levels,
 		dxgi_format, srv_format, rtv_format, dsv_format, uav_format));
 	if (!tex)
 	{
 		// We're probably out of vram, try flushing the command buffer to release pending textures.
 		PurgePool();
 		ExecuteCommandListAndRestartRenderPass(true, "Couldn't allocate texture.");
-		tex = GSTexture12::Create(type, format, width, height, levels, dxgi_format, srv_format,
+		tex = GSTexture12::Create(usage, format, width, height, levels, dxgi_format, srv_format,
 			rtv_format, dsv_format, uav_format);
 	}
 
@@ -1603,7 +1603,7 @@ void GSDevice12::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 
 			dTex12->SetState(GSTexture::State::Dirty);
 
-			if (dTex12->GetType() != GSTexture::Type::DepthStencil)
+			if (!dTex12->IsDepthStencil())
 			{
 				dTex12->TransitionToState(GSTexture12::ResourceState::RenderTarget);
 				GetCommandList().list4->ClearRenderTargetView(
@@ -1891,7 +1891,7 @@ void GSDevice12::BeginRenderPassForStretchRect(
 	                                                            GetLoadOpForTexture(dTex);
 	dTex->SetState(GSTexture::State::Dirty);
 
-	if (dTex->GetType() != GSTexture::Type::DepthStencil)
+	if (!dTex->IsDepthStencil())
 	{
 		BeginRenderPass(load_op, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE,
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
@@ -1922,7 +1922,7 @@ void GSDevice12::DoStretchRect(GSTexture12* sTex, const GSVector4& sRect, GSText
 	SetPipeline(pipeline);
 
 	const bool is_present = (!dTex);
-	const bool depth = (dTex && dTex->GetType() == GSTexture::Type::DepthStencil);
+	const bool depth = (dTex && dTex->IsDepthStencil());
 	const GSVector2i size(is_present ? GSVector2i(GetWindowWidth(), GetWindowHeight()) : dTex->GetSize());
 	const GSVector4i dtex_rc(0, 0, size.x, size.y);
 	const GSVector4i dst_rc(GSVector4i(dRect).rintersect(dtex_rc));
@@ -2606,7 +2606,7 @@ GSDevice12::ComPtr<ID3DBlob> GSDevice12::GetUtilityPixelShader(const std::string
 bool GSDevice12::CreateNullTexture()
 {
 	m_null_texture =
-		GSTexture12::Create(GSTexture::Type::RenderTarget, GSTexture::Format::Color, 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
+		GSTexture12::Create(GSTexture::ShaderWriteTarget, GSTexture::Format::Color, 1, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM,
 			DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_UNKNOWN, DXGI_FORMAT_R8G8B8A8_UNORM);
 	if (!m_null_texture)
 		return false;
@@ -4373,7 +4373,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 
 			EndRenderPass();
 
-			colclip_rt = static_cast<GSTexture12*>(CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::ColorClip, false));
+			colclip_rt = static_cast<GSTexture12*>(CreateFeedbackTarget(rtsize.x, rtsize.y, GSTexture::Format::ColorClip, false));
 			if (!colclip_rt)
 			{
 				Console.Warning("D3D12: Failed to allocate ColorClip render target, aborting draw.");

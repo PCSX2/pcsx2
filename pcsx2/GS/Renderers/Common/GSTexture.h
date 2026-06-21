@@ -3,10 +3,22 @@
 
 #pragma once
 
+#include "common/EnumOps.h"
 #include "GS/GSVector.h"
 
 #include <string>
 #include <string_view>
+
+enum class TextureUsage : u8
+{
+	Texture      = 0,
+	DepthStencil = 1,
+	RenderTarget = 2,
+	Feedback     = 4,
+	ShaderWrite  = 8,
+};
+
+MARK_ENUM_AS_FLAGS(TextureUsage);
 
 class GSTexture
 {
@@ -17,14 +29,21 @@ public:
 		int pitch;
 	};
 
-	enum class Type : u8
-	{
-		Invalid = 0,
-		RenderTarget = 1,
-		DepthStencil,
-		Texture,   // Generic texture (usually is color textures loaded by the game)
-		RWTexture, // UAV
-	};
+	using Usage = TextureUsage;
+
+	// Flags that shouldn't be used alone
+	static constexpr Usage ShaderWrite = Usage::ShaderWrite;
+	static constexpr Usage Feedback = Usage::Feedback;
+	static constexpr Usage FeedbackOrShaderWrite = Usage::Feedback | Usage::ShaderWrite;
+
+	// All valid combinations
+	static constexpr Usage Texture = Usage::Texture;
+	static constexpr Usage RenderTarget = Usage::RenderTarget;
+	static constexpr Usage DepthStencil = Usage::DepthStencil;
+	static constexpr Usage FeedbackTarget = Usage::RenderTarget | Usage::Feedback;
+	static constexpr Usage FeedbackDepth = Usage::DepthStencil | Usage::Feedback;
+	static constexpr Usage ShaderWriteTarget = Usage::RenderTarget | Usage::Feedback | Usage::ShaderWrite;
+	static constexpr Usage ShaderWriteTexture = Usage::Texture | Usage::ShaderWrite;
 
 	enum class Format : u8
 	{
@@ -34,7 +53,7 @@ public:
 		ColorHDR,     ///< High dynamic range (RGBA16F) color texture
 		ColorClip,    ///< Color texture with more bits for colclip (wrap) emulation, given that blending requires 9bpc (RGBA16Unorm)
 		DepthStencil, ///< Depth stencil texture
-		DepthColor,      ///< For treating depth texture as RT
+		DepthColor,   ///< For treating depth texture as RT
 		UNorm8,       ///< A8UNorm texture for paletted textures and the OSD font
 		UInt16,       ///< UInt16 texture for reading back 16-bit depth
 		UInt32,       ///< UInt32 texture for reading back 24 and 32-bit depth
@@ -45,6 +64,8 @@ public:
 		BC7,          ///< BC7, aka BPTC compressed texture for replacements
 		Last = BC7,
 	};
+
+	static bool ValidateUsageAndFormat(Usage usage, Format format);
 
 	enum class State : u8
 	{
@@ -62,7 +83,7 @@ public:
 protected:
 	GSVector2i m_size{};
 	int m_mipmap_levels = 0;
-	Type m_type = Type::Invalid;
+	Usage m_usage = Usage::Texture;
 	Format m_format = Format::Invalid;
 	State m_state = State::Dirty;
 
@@ -107,7 +128,7 @@ public:
 	__fi int GetMipmapLevels() const { return m_mipmap_levels; }
 	__fi bool IsMipmap() const { return m_mipmap_levels > 1; }
 
-	__fi Type GetType() const { return m_type; }
+	__fi Usage GetUsage() const { return m_usage; }
 	__fi Format GetFormat() const { return m_format; }
 	__fi bool IsCompressedFormat() const { return IsCompressedFormat(m_format); }
 
@@ -118,6 +139,8 @@ public:
 	static u32 CalcUploadPitch(Format format, u32 width);
 	static u32 CalcUploadRowLengthFromPitch(Format format, u32 pitch);
 	static u32 CalcUploadSize(Format format, u32 height, u32 pitch);
+	static bool IsFeedbackFormat(Format format);
+	static bool IsShaderWriteFormat(Format format);
 
 	u32 GetCompressedBytesPerBlock() const;
 	u32 GetCompressedBlockSize() const;
@@ -125,29 +148,79 @@ public:
 	u32 CalcUploadRowLengthFromPitch(u32 pitch) const;
 	u32 CalcUploadSize(u32 height, u32 pitch) const;
 
+	static __fi bool IsRenderTarget(Usage usage)
+	{
+		return (usage & RenderTarget);
+	}
+	static __fi bool IsDepthStencil(Usage usage)
+	{
+		return (usage & DepthStencil);
+	}
+	static __fi bool IsRenderTargetOrDepthStencil(Usage usage)
+	{
+		return IsRenderTarget(usage) || IsDepthStencil(usage);
+	}
+	static __fi bool IsDepthColor(Usage usage, Format format)
+	{
+		return IsRenderTarget(usage) && (format == Format::DepthColor);
+	}
+	static __fi bool IsTexture(Usage usage)
+	{
+		return usage == Texture;
+	}
+	static __fi bool IsDepthLike(Usage usage, Format format)
+	{
+		return IsDepthStencil(usage) || IsDepthColor(usage, format);
+	}
+	static __fi bool IsFeedback(Usage usage)
+	{
+		return (usage & Feedback);
+	}
+	static __fi bool IsShaderWrite(Usage usage)
+	{
+		return (usage & ShaderWrite);
+	}
+	static __fi bool IsFeedbackOrShaderWrite(Usage usage)
+	{
+		return IsFeedback(usage) || IsShaderWrite(usage);
+	}
+
+
 	__fi bool IsRenderTargetOrDepthStencil() const
 	{
-		return (m_type >= Type::RenderTarget && m_type <= Type::DepthStencil);
+		return IsRenderTargetOrDepthStencil(m_usage);
 	}
 	__fi bool IsRenderTarget() const
 	{
-		return (m_type == Type::RenderTarget);
+		return IsRenderTarget(m_usage);
 	}
 	__fi bool IsDepthStencil() const
 	{
-		return (m_type == Type::DepthStencil);
+		return IsDepthStencil(m_usage);
 	}
 	__fi bool IsDepthColor() const
 	{
-		return (m_type == Type::RenderTarget && m_format == Format::DepthColor);
+		return IsDepthColor(m_usage, m_format);
 	}
 	__fi bool IsTexture() const
 	{
-		return (m_type == Type::Texture);
+		return IsTexture(m_usage);
 	}
 	__fi bool IsDepthLike() const
 	{
-		return IsDepthStencil() || IsDepthColor();
+		return IsDepthLike(m_usage, m_format);
+	}
+	__fi bool IsFeedback() const
+	{
+		return IsFeedback(m_usage);
+	}
+	__fi bool IsShaderWrite() const
+	{
+		return IsShaderWrite(m_usage);
+	}
+	__fi bool IsFeedbackOrShaderWrite() const
+	{
+		return IsFeedbackOrShaderWrite(m_usage);
 	}
 
 	__fi State GetState() const { return m_state; }

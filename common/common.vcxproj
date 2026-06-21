@@ -163,6 +163,7 @@
     <ClInclude Include="WindowInfo.h" />
     <ClInclude Include="YAML.h" />
     <ClInclude Include="Threading.h" />
+    <ClInclude Include="EnumOps.h" />
     <ClInclude Include="emitter\implement\avx.h" />
     <ClInclude Include="emitter\implement\bmi.h" />
     <ClInclude Include="emitter\instructions.h" />

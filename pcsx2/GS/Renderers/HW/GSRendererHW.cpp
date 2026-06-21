@@ -7853,7 +7853,7 @@ void GSRendererHW::ConvertDepthFormatROV(GSTextureCache::Target* ds)
 	if (m_conf.ps.HasDepthROV() && !ds_tex_old->IsDepthColor())
 	{
 		depth_to_color = true;
-		ds_tex_new = g_gs_device->CreateDepthColor(ds_tex_old->GetSize(), false, true);
+		ds_tex_new = g_gs_device->CreateShaderWriteTarget(ds_tex_old->GetSize(), GSTexture::Format::DepthColor, false, true);
 	}
 	else if (!m_conf.ps.HasDepthROV() && ds_tex_old->IsDepthColor())
 	{
@@ -10517,7 +10517,7 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 
 		if (temp_tex)
 		{
-			if (GSTexture* rt = g_gs_device->CreateRenderTarget(tw, new_height, GSTexture::Format::Color))
+			if (GSTexture* rt = g_gs_device->CreateFeedbackTarget(tw, new_height, GSTexture::Format::Color))
 			{
 				// sRect is the top of texture
 				// Need to half pixel offset the dest tex coordinates as draw pixels are top left instead of centre for texel reads.
