@@ -1,0 +1,412 @@
+// SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
+
+// ARM64 EE FPU (COP1) — "Full" / DOUBLE-precision codegen.
+//
+// This is the arm64 port of pcsx2/x86/iFPUd.cpp: the PS2-accurate FPU that
+// widens each single to IEEE double, performs the op in double, then narrows
+// back to a PS2 single with the hardware's overflow/underflow/clamp semantics.
+// It is selected only when CHECK_FPU_FULL (EmuConfig.Cpu.Recompiler.fpuFullMode,
+// the GameDB `eeClampMode:3` path — FFX, Max Payne, Dark Cloud 2, Klonoa 2 …).
+// Default config runs the single-precision fast path in iFPU-arm64.cpp.
+//
+// The algorithm is translated from the x86 semantics; the codegen follows the
+// iFPU-arm64.cpp idioms (scalar Fcvt, GPR bit-twiddle via Fmov, the
+// armLoadEERegPtr fprc[31]/ACCflag accessors). The shared interpreter
+// (FPU.cpp fpuDouble) has no double path, so this codegen has no interpreter
+// counterpart.
+
+#include "arm64/iR5900-arm64.h"
+
+#include <cfloat>
+
+namespace a64 = vixl::aarch64;
+
+namespace R5900 {
+namespace Dynarec {
+namespace OpcodeImpl {
+namespace COP1 {
+namespace DOUBLE {
+
+#define _Ft_ _Rt_
+#define _Fs_ _Rd_
+#define _Fd_ _Sa_
+
+#define FPUflagO  0x00008000
+#define FPUflagU  0x00004000
+#define FPUflagSO 0x00000010
+#define FPUflagSU 0x00000008
+
+// ---- PS2 single -> IEEE double --------------------------------------------
+//
+// A PS2 single with exponent field 0xff is a *normal* large number (1.m * 2^128),
+// but IEEE reads exp 0xff as Inf/NaN — so a plain cvtss2sd would corrupt it.
+// For those (and only those) lower the exponent by one in the single domain,
+// widen exactly, then raise the exponent by one in the double domain. Mirrors
+// x86 ToDouble (xPSUB.D one_exp / xCVTSS2SD / xPADD.Q dbl_one_exp).
+//
+// Operates in place on temp NEON reg `idx`: reads the S lane, writes the D lane.
+static void ToDouble(int idx)
+{
+	const a64::VRegister s = armSRegister(idx);
+	const a64::VRegister d = armDRegister(idx);
+
+	a64::Label simple, done;
+	armAsm->Fmov(RWSCRATCH, s);
+	armAsm->And(RWARG1, RWSCRATCH, 0x7f800000);
+	armAsm->Cmp(RWARG1, 0x7f800000);
+	armAsm->B(&simple, a64::ne);
+
+	// Complex: exp field == 0xff (Inf/NaN to IEEE, finite to PS2).
+	armAsm->Sub(RWSCRATCH, RWSCRATCH, 0x00800000);   // lower exponent by one (single)
+	armAsm->Fmov(s, RWSCRATCH);
+	armAsm->Fcvt(d, s);                              // cvtss2sd (now finite)
+	armAsm->Fmov(RXSCRATCH, d);
+	armAsm->Mov(RXARG1, static_cast<u64>(1) << 52);  // dbl_one_exp
+	armAsm->Add(RXSCRATCH, RXSCRATCH, RXARG1);       // raise exponent by one (double)
+	armAsm->Fmov(d, RXSCRATCH);
+	armAsm->B(&done);
+
+	armAsm->Bind(&simple);
+	armAsm->Fcvt(d, s);
+
+	armAsm->Bind(&done);
+}
+
+// ---- IEEE double -> PS2 single (full overflow/underflow/flag handling) -----
+//
+// Port of x86 ToPS2FPU_Full. `idx` holds the double result (D lane); `absidx`
+// is a scratch NEON reg. On return the PS2 single is in `idx`'s S lane.
+// Comparisons are done on the integer bit pattern of |x| — valid because every
+// operand here is a finite double, so unsigned-integer order == magnitude order
+// (sidesteps NaN/unordered, which never reach this point for ADD/SUB/MUL).
+static void ToPS2FPU_Full(int idx, bool flags, int /*absidx*/, bool acc, bool addsub)
+{
+	const a64::VRegister s = armSRegister(idx);
+	const a64::VRegister d = armDRegister(idx);
+
+	if (flags)
+	{
+		armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+		armAsm->Bic(RWSCRATCH, RWSCRATCH, FPUflagO | FPUflagU);
+		armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+		if (acc)
+		{
+			armLoadEERegPtr(RWSCRATCH, &fpuRegs.ACCflag);
+			armAsm->Bic(RWSCRATCH, RWSCRATCH, 1);
+			armStoreEERegPtr(RWSCRATCH, &fpuRegs.ACCflag);
+		}
+	}
+
+	// abs = |reg| (integer, low 63 bits)
+	armAsm->Fmov(RXSCRATCH, d);
+	armAsm->And(RXARG1, RXSCRATCH, 0x7fffffffffffffffULL);
+
+	a64::Label toComplex, toUnderflow, toOverflow, end;
+
+	armAsm->Mov(RXARG2, static_cast<u64>(1151) << 52);   // dbl_cvt_overflow (2^128)
+	armAsm->Cmp(RXARG1, RXARG2);
+	armAsm->B(&toComplex, a64::hs);
+
+	armAsm->Mov(RXARG2, static_cast<u64>(897) << 52);    // dbl_underflow (2^-126)
+	armAsm->Cmp(RXARG1, RXARG2);
+	armAsm->B(&toUnderflow, a64::lo);
+
+	// In-range: plain narrow.
+	armAsm->Fcvt(s, d);
+	armAsm->B(&end);
+
+	armAsm->Bind(&toComplex);
+	armAsm->Mov(RXARG2, static_cast<u64>(1152) << 52);   // dbl_ps2_overflow (2^129)
+	armAsm->Cmp(RXARG1, RXARG2);
+	armAsm->B(&toOverflow, a64::hs);
+
+	// Large but PS2-representable (exp-0xff range): lower double exp, narrow,
+	// raise single exp — the inverse of ToDouble's complex path.
+	armAsm->Mov(RXARG2, static_cast<u64>(1) << 52);
+	armAsm->Sub(RXSCRATCH, RXSCRATCH, RXARG2);
+	armAsm->Fmov(d, RXSCRATCH);
+	armAsm->Fcvt(s, d);
+	armAsm->Fmov(RWSCRATCH, s);
+	armAsm->Add(RWSCRATCH, RWSCRATCH, 0x00800000);
+	armAsm->Fmov(s, RWSCRATCH);
+	armAsm->B(&end);
+
+	armAsm->Bind(&toOverflow);
+	// Beyond PS2 range: narrow then clamp to +/-max (keep sign, set all other bits).
+	armAsm->Fcvt(s, d);
+	armAsm->Fmov(RWSCRATCH, s);
+	armAsm->Orr(RWSCRATCH, RWSCRATCH, 0x7fffffff);
+	armAsm->Fmov(s, RWSCRATCH);
+	if (flags)
+	{
+		armLoadEERegPtr(RWARG1, &fpuRegs.fprc[31]);
+		armAsm->Orr(RWARG1, RWARG1, FPUflagO | FPUflagSO);
+		armStoreEERegPtr(RWARG1, &fpuRegs.fprc[31]);
+		if (acc)
+		{
+			armLoadEERegPtr(RWARG1, &fpuRegs.ACCflag);
+			armAsm->Orr(RWARG1, RWARG1, 1);
+			armStoreEERegPtr(RWARG1, &fpuRegs.ACCflag);
+		}
+	}
+	armAsm->B(&end);
+
+	armAsm->Bind(&toUnderflow);
+	a64::Label uDone;
+	if (flags)
+	{
+		// Set U|SU unless the result is exactly +/-0.
+		armAsm->Fmov(RXSCRATCH, d);
+		armAsm->And(RXARG1, RXSCRATCH, 0x7fffffffffffffffULL);
+		a64::Label isZero;
+		armAsm->Cbz(RXARG1, &isZero);
+		armLoadEERegPtr(RWARG2, &fpuRegs.fprc[31]);
+		armAsm->Orr(RWARG2, RWARG2, FPUflagU | FPUflagSU);
+		armStoreEERegPtr(RWARG2, &fpuRegs.fprc[31]);
+		if (addsub)
+		{
+			// ADD/SUB leave the (post-normalization) mantissa bits in place;
+			// reconstruct a PS2 denormal single: bits[22:0] = dbl_mant[51:29],
+			// bit31 = sign, exp = 0. (x86 PSLL.Q 12 / PSRL.Q 41 / sign<<31 / POR.)
+			armAsm->Fmov(RXSCRATCH, d);
+			armAsm->Lsl(RXARG1, RXSCRATCH, 12);
+			armAsm->Lsr(RXARG1, RXARG1, 41);
+			armAsm->Lsr(RXARG2, RXSCRATCH, 63);
+			armAsm->Lsl(RXARG2, RXARG2, 31);
+			armAsm->Orr(RWSCRATCH, RWARG1, RWARG2);
+			armAsm->Fmov(s, RWSCRATCH);
+			armAsm->B(&uDone);
+		}
+		armAsm->Bind(&isZero);
+	}
+	// Flush to +/-0 (keep sign).
+	armAsm->Fcvt(s, d);
+	armAsm->Fmov(RWSCRATCH, s);
+	armAsm->And(RWSCRATCH, RWSCRATCH, 0x80000000);
+	armAsm->Fmov(s, RWSCRATCH);
+
+	armAsm->Bind(&uDone);
+	armAsm->Bind(&end);
+}
+
+// ---- PS2 add/sub guard-bit emulation --------------------------------------
+//
+// The EE FPU has no guard bits to the right of the mantissa; subtraction (and
+// add of mixed signs) can shift the mantissa left and expose what would have
+// been guard bits. This masks the low mantissa bits of the smaller operand by
+// the exponent difference so they read as zero. Port of x86 FPU_ADD_SUB; both
+// operands (single, in temp NEON regs `idxd`/`idxt`) are mutated in place.
+static void FPU_ADD_SUB(int idxd, int idxt)
+{
+	const a64::VRegister sd = armSRegister(idxd);
+	const a64::VRegister st = armSRegister(idxt);
+
+	armAsm->Fmov(RWARG1, sd);  // d bits
+	armAsm->Fmov(RWARG2, st);  // t bits
+	armAsm->Ubfx(RWARG3, RWARG1, 23, 8);    // expd
+	armAsm->Ubfx(RWSCRATCH, RWARG2, 23, 8); // expt
+	armAsm->Sub(RWARG3, RWARG3, RWSCRATCH); // diff = expd - expt (signed)
+
+	a64::Label caseD25, casePos, caseEq, caseDn25, done;
+	armAsm->Cmp(RWARG3, 25);
+	armAsm->B(&caseD25, a64::ge);
+	armAsm->Cmp(RWARG3, 0);
+	armAsm->B(&casePos, a64::gt);
+	armAsm->B(&caseEq, a64::eq);
+	armAsm->Cmn(RWARG3, 25);                 // cmp diff, -25
+	armAsm->B(&caseDn25, a64::le);
+
+	// diff in -24..-1 (expd < expt): mask tempd's low (-diff-1) bits.
+	armAsm->Neg(RWSCRATCH, RWARG3);
+	armAsm->Sub(RWSCRATCH, RWSCRATCH, 1);
+	armAsm->Mov(RWARG4, 0xffffffff);
+	armAsm->Lsl(RWARG4, RWARG4, RWSCRATCH);
+	armAsm->And(RWARG1, RWARG1, RWARG4);
+	armAsm->Fmov(sd, RWARG1);
+	armAsm->B(&done);
+
+	armAsm->Bind(&caseD25);
+	// diff >= 25 (expt much smaller): tempt keeps only its sign.
+	armAsm->And(RWARG2, RWARG2, 0x80000000);
+	armAsm->Fmov(st, RWARG2);
+	armAsm->B(&done);
+
+	armAsm->Bind(&casePos);
+	// diff in 1..24 (expt smaller): mask tempt's low (diff-1) bits.
+	armAsm->Sub(RWSCRATCH, RWARG3, 1);
+	armAsm->Mov(RWARG4, 0xffffffff);
+	armAsm->Lsl(RWARG4, RWARG4, RWSCRATCH);
+	armAsm->And(RWARG2, RWARG2, RWARG4);
+	armAsm->Fmov(st, RWARG2);
+	armAsm->B(&done);
+
+	armAsm->Bind(&caseDn25);
+	// diff <= -25 (expd much smaller): tempd keeps only its sign.
+	armAsm->And(RWARG1, RWARG1, 0x80000000);
+	armAsm->Fmov(sd, RWARG1);
+
+	armAsm->Bind(&caseEq);  // diff == 0: nothing
+	armAsm->Bind(&done);
+}
+
+// ---- Op cores --------------------------------------------------------------
+
+// Copy an allocator-resident FP source (EEREC_S/EEREC_T) into a fresh temp so
+// ToDouble can mutate it without corrupting the guest fpr slot.
+static int copySrc(int eerec)
+{
+	const int idx = _allocTempNEONreg();
+	armAsm->Fmov(armSRegister(idx), armSRegister(eerec));
+	return idx;
+}
+
+// ADD/SUB/ADDA/SUBA: FPU_ADD_SUB guard mask -> widen -> op in double -> narrow.
+static void recFPUOp(int info, int eeRecDst, int op /*0=add,1=sub*/, bool acc)
+{
+	const int sreg = copySrc(EEREC_S);
+	const int treg = copySrc(EEREC_T);
+
+	FPU_ADD_SUB(sreg, treg);
+	ToDouble(sreg);
+	ToDouble(treg);
+
+	if (op == 0)
+		armAsm->Fadd(armDRegister(sreg), armDRegister(sreg), armDRegister(treg));
+	else
+		armAsm->Fsub(armDRegister(sreg), armDRegister(sreg), armDRegister(treg));
+
+	ToPS2FPU_Full(sreg, true, treg, acc, true);
+	armAsm->Fmov(armSRegister(eeRecDst), armSRegister(sreg));
+
+	_freeNEONreg(sreg);
+	_freeNEONreg(treg);
+}
+
+// MUL/MULA: widen -> multiply in double -> narrow. (FPUMULHACK — the Tales of
+// Destiny gamefix — is intentionally not folded in here; default off.)
+static void recMULop(int info, int eeRecDst, bool acc)
+{
+	const int sreg = copySrc(EEREC_S);
+	const int treg = copySrc(EEREC_T);
+
+	ToDouble(sreg);
+	ToDouble(treg);
+	armAsm->Fmul(armDRegister(sreg), armDRegister(sreg), armDRegister(treg));
+
+	ToPS2FPU_Full(sreg, true, treg, acc, false);
+	armAsm->Fmov(armSRegister(eeRecDst), armSRegister(sreg));
+
+	_freeNEONreg(sreg);
+	_freeNEONreg(treg);
+}
+
+// MADD/MSUB/MADDA/MSUBA: (Fd or ACC) = ACC +/- Fs*Ft, with two PS2-accurate
+// roundings (the multiply, then the accumulate) and overflow propagation from
+// BOTH the product and the prior ACC. Port of x86 recMaddsub.
+//
+// The control flow mirrors x86: do the full-mode multiply (which may raise O),
+// guard-mask ACC against the product, then branch on whether the product
+// overflowed (FPUflagO) or the incoming ACC was already saturated (ACCflag&1).
+// If either did, the accumulate is dominated by a 2^128-class term and the
+// result is just +/-max with the dominant sign — skip the double add entirely.
+// Only when both are finite is the accumulation performed in double.
+static void recMaddsub(int info, int eeRecDst, int op /*0=add,1=sub*/, bool acc)
+{
+	const int sreg = copySrc(EEREC_S);
+	const int treg = copySrc(EEREC_T);
+
+	// --- multiply stage: sreg = ToPS2FPU(ToDouble(s) * ToDouble(t)). Sets O on
+	//     product overflow; acc=false so it never touches ACCflag here. ---
+	ToDouble(sreg);
+	ToDouble(treg);
+	armAsm->Fmul(armDRegister(sreg), armDRegister(sreg), armDRegister(treg));
+	ToPS2FPU_Full(sreg, true, treg, false, false);
+
+	// --- reload ACC (allocator-resident) into treg, then guard-mask it against
+	//     the single-precision product. ---
+	armAsm->Fmov(armSRegister(treg), armSRegister(EEREC_ACC));
+	FPU_ADD_SUB(treg, sreg);
+
+	a64::Label mulovf, accovf, operation, skipall;
+
+	// product overflowed? -> mulovf
+	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	armAsm->Tst(RWSCRATCH, FPUflagO);
+	armAsm->B(&mulovf, a64::ne);
+	ToDouble(sreg);
+
+	// prior ACC saturated? -> accovf
+	armLoadEERegPtr(RWSCRATCH, &fpuRegs.ACCflag);
+	armAsm->Tst(RWSCRATCH, 1);
+	armAsm->B(&accovf, a64::ne);
+	ToDouble(treg);
+	armAsm->B(&operation);
+
+	armAsm->Bind(&mulovf);
+	// Product is a saturated single; for SUB negate its sign, then it becomes
+	// the (single) accumulate result. Falls through into accovf.
+	if (op == 1)
+	{
+		armAsm->Fmov(RWSCRATCH, armSRegister(sreg));
+		armAsm->Eor(RWSCRATCH, RWSCRATCH, 0x80000000);
+		armAsm->Fmov(armSRegister(sreg), RWSCRATCH);
+	}
+	armAsm->Fmov(armSRegister(treg), armSRegister(sreg));
+
+	armAsm->Bind(&accovf);
+	// SetMaxValue(treg): keep sign, set all lower bits -> +/-PS2 max.
+	armAsm->Fmov(RWSCRATCH, armSRegister(treg));
+	armAsm->Orr(RWSCRATCH, RWSCRATCH, 0x7fffffff);
+	armAsm->Fmov(armSRegister(treg), RWSCRATCH);
+	// Clear O|U then raise O|SO (and ACCflag for the *A variants).
+	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	armAsm->Bic(RWSCRATCH, RWSCRATCH, FPUflagO | FPUflagU);
+	armAsm->Orr(RWSCRATCH, RWSCRATCH, FPUflagO | FPUflagSO);
+	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	if (acc)
+	{
+		armLoadEERegPtr(RWSCRATCH, &fpuRegs.ACCflag);
+		armAsm->Orr(RWSCRATCH, RWSCRATCH, 1);
+		armStoreEERegPtr(RWSCRATCH, &fpuRegs.ACCflag);
+	}
+	armAsm->B(&skipall);
+
+	armAsm->Bind(&operation);
+	// Both finite: accumulate in double, narrow with flags.
+	if (op == 1)
+		armAsm->Fsub(armDRegister(treg), armDRegister(treg), armDRegister(sreg));
+	else
+		armAsm->Fadd(armDRegister(treg), armDRegister(treg), armDRegister(sreg));
+	ToPS2FPU_Full(treg, true, sreg, acc, true);
+
+	armAsm->Bind(&skipall);
+	armAsm->Fmov(armSRegister(eeRecDst), armSRegister(treg));
+
+	_freeNEONreg(sreg);
+	_freeNEONreg(treg);
+}
+
+// ---- Per-opcode DOUBLE emitters (called by the CHECK_FPU_FULL branch in
+//      iFPU-arm64.cpp via eeFPURecompileCode) -------------------------------
+
+void recADD_S_xmm(int info)  { recFPUOp(info, EEREC_D,   0, false); }
+void recSUB_S_xmm(int info)  { recFPUOp(info, EEREC_D,   1, false); }
+void recADDA_S_xmm(int info) { recFPUOp(info, EEREC_ACC, 0, true);  }
+void recSUBA_S_xmm(int info) { recFPUOp(info, EEREC_ACC, 1, true);  }
+void recMUL_S_xmm(int info)  { recMULop(info, EEREC_D,   false); }
+void recMULA_S_xmm(int info) { recMULop(info, EEREC_ACC, true);  }
+void recMADD_S_xmm(int info)  { recMaddsub(info, EEREC_D,   0, false); }
+void recMSUB_S_xmm(int info)  { recMaddsub(info, EEREC_D,   1, false); }
+void recMADDA_S_xmm(int info) { recMaddsub(info, EEREC_ACC, 0, true);  }
+void recMSUBA_S_xmm(int info) { recMaddsub(info, EEREC_ACC, 1, true);  }
+
+#undef _Ft_
+#undef _Fs_
+#undef _Fd_
+
+} // namespace DOUBLE
+} // namespace COP1
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900

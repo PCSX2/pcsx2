@@ -1,7 +1,11 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#ifdef ARCH_ARM64
+#include "arm64/iR5900Analysis.h"
+#else
 #include "iR5900Analysis.h"
+#endif
 #include "Memory.h"
 #include "DebugTools/Debug.h"
 
