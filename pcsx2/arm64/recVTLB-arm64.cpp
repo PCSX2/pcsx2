@@ -825,9 +825,14 @@ static void recUnalignedWord(bool is_lwl)
 	if (_Imm_ != 0)
 		armAsm->Add(a64::w9, a64::w9, _Imm_);
 
-	// shift8 lives in a callee-saved temp so it survives vtlb's slow-path
-	// C call (fastmem backpatch thunk OR softmem slow path).
+	// shift8 and the loaded word both live in callee-saved temps. shift8 must
+	// survive vtlb's slow-path C call (fastmem backpatch thunk OR softmem slow
+	// path); the loaded word must survive the Rt alloc below — under register
+	// pressure _allocArm64GPR can spill a guest reg or land Rt in x0, clobbering
+	// w0 between the read and the merge. Same hazard fixed in
+	// recUnalignedLoadDouble; single-op tests miss it (it needs the pressure).
 	const int shift8 = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
+	const int memTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
 
 	armAsm->And(armWRegister(shift8), a64::w9, 3);
 	armAsm->Lsl(armWRegister(shift8), armWRegister(shift8), 3);
@@ -841,9 +846,12 @@ static void recUnalignedWord(bool is_lwl)
 
 	if (!_Rt_)
 	{
+		_freeArm64GPR(memTemp);
 		_freeArm64GPR(shift8);
 		return;
 	}
+
+	armAsm->Mov(armWRegister(memTemp), a64::w0);                       // park loaded (x0 unsafe across Rt alloc)
 
 	const int rt = _allocArm64GPR(ARM64TYPE_GPR, _Rt_, MODE_READ | MODE_WRITE);
 
@@ -857,10 +865,10 @@ static void recUnalignedWord(bool is_lwl)
 		// shifted_loaded = loaded << (24 - shift8); reuse RWSCRATCH as shift amount.
 		armAsm->Mov(RWSCRATCH, 24);
 		armAsm->Sub(RWSCRATCH, RWSCRATCH, armWRegister(shift8));
-		armAsm->Lsl(a64::w0, a64::w0, RWSCRATCH);
+		armAsm->Lsl(armWRegister(memTemp), armWRegister(memTemp), RWSCRATCH);
 
 		// Merge and sign-extend the 32-bit result into the 64-bit guest reg.
-		armAsm->Orr(armWRegister(rt), armWRegister(rt), a64::w0);
+		armAsm->Orr(armWRegister(rt), armWRegister(rt), armWRegister(memTemp));
 		armAsm->Sxtw(armXRegister(rt), armWRegister(rt));
 	}
 	else
@@ -875,20 +883,21 @@ static void recUnalignedWord(bool is_lwl)
 		armAsm->Lsl(RSCRATCHADDR.W(), RSCRATCHADDR.W(), RWSCRATCH);
 		armAsm->And(RWSCRATCH, armWRegister(rt), RSCRATCHADDR.W());
 
-		armAsm->Lsr(a64::w0, a64::w0, armWRegister(shift8));
-		armAsm->Orr(a64::w0, a64::w0, RWSCRATCH);
+		armAsm->Lsr(armWRegister(memTemp), armWRegister(memTemp), armWRegister(shift8));
+		armAsm->Orr(armWRegister(memTemp), armWRegister(memTemp), RWSCRATCH);
 
 		// Per interp: when shift8 != 0, only Rt[31:0] changes; upper 32 preserved.
-		armAsm->Bfi(armXRegister(rt), a64::x0, 0, 32);
+		armAsm->Bfi(armXRegister(rt), armXRegister(memTemp), 0, 32);
 		armAsm->B(&done);
 
 		// shift8 == 0 (aligned): straight sign-extend, full 64-bit overwrite.
 		armAsm->Bind(&nomask);
-		armAsm->Sxtw(armXRegister(rt), a64::w0);
+		armAsm->Sxtw(armXRegister(rt), armWRegister(memTemp));
 
 		armAsm->Bind(&done);
 	}
 
+	_freeArm64GPR(memTemp);
 	_freeArm64GPR(shift8);
 }
 

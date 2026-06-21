@@ -577,3 +577,59 @@ TEST(EeRecLoadStore, MultiRegUnalignedDwordCopyBlock)
 		}
 	}
 }
+
+// Word twin of the dword pressure test above: an unaligned 32-byte memcpy built
+// from LWL/LWR (load) + SWL/SWR (store), eight words in flight at once so the Rt
+// allocation for each LWL/LWR spills a guest reg under pressure. recUnalignedWord
+// left the loaded word in w0 across that alloc; the spill (or Rt landing in x0)
+// clobbered it, so the loaded bytes came out wrong — only ever visible under
+// pressure (single-op LWL/LWR above stay clean). This is the FlatOut 2 boot hang:
+// the property-table parser reads packed name pointers via LWL/LWR and got
+// garbage. Mirror of the Black LDL/LDR fix in recUnalignedLoadDouble.
+TEST(EeRecLoadStore, MultiRegUnalignedWordCopyBlock)
+{
+	constexpr u32 kSrc = kScratch;
+	constexpr u32 kDst = kScratch + 256;
+	for (u32 sa = 0; sa < 4; ++sa)
+	{
+		for (u32 da = 0; da < 4; ++da)
+		{
+			SCOPED_TRACE(testing::Message() << "src_align=" << sa << " dst_align=" << da);
+			EeRecTestHarness h;
+			const u32 src = kSrc + sa;
+			const u32 dst = kDst + da;
+			// 32 distinct source bytes so any mis-shift/clobber is visible.
+			for (u32 i = 0; i < 32; ++i)
+				h.WriteU8(src + i, static_cast<u8>(0x10 + i));
+			for (u32 i = 0; i < 40; ++i)
+				h.WriteU8(kDst + i, 0xA5); // sentinel; bytes outside [0,32) must survive
+			h.SetGpr64(reg::v1, src);
+			h.SetGpr64(reg::a0, dst);
+			h.TrackMemWindow(kDst, 40);
+			// Eight unaligned words loaded into eight regs (all live across each
+			// other's LWL/LWR Rt alloc), then stored back — the register pressure
+			// that exposes the w0 clobber.
+			h.LoadProgram({
+				LWL(reg::v0, 3,  reg::v1), LWR(reg::v0, 0,  reg::v1),
+				LWL(reg::a2, 7,  reg::v1), LWR(reg::a2, 4,  reg::v1),
+				LWL(reg::a3, 11, reg::v1), LWR(reg::a3, 8,  reg::v1),
+				LWL(reg::t0, 15, reg::v1), LWR(reg::t0, 12, reg::v1),
+				LWL(reg::t1, 19, reg::v1), LWR(reg::t1, 16, reg::v1),
+				LWL(reg::t2, 23, reg::v1), LWR(reg::t2, 20, reg::v1),
+				LWL(reg::t3, 27, reg::v1), LWR(reg::t3, 24, reg::v1),
+				LWL(reg::t4, 31, reg::v1), LWR(reg::t4, 28, reg::v1),
+				SWL(reg::v0, 3,  reg::a0), SWR(reg::v0, 0,  reg::a0),
+				SWL(reg::a2, 7,  reg::a0), SWR(reg::a2, 4,  reg::a0),
+				SWL(reg::a3, 11, reg::a0), SWR(reg::a3, 8,  reg::a0),
+				SWL(reg::t0, 15, reg::a0), SWR(reg::t0, 12, reg::a0),
+				SWL(reg::t1, 19, reg::a0), SWR(reg::t1, 16, reg::a0),
+				SWL(reg::t2, 23, reg::a0), SWR(reg::t2, 20, reg::a0),
+				SWL(reg::t3, 27, reg::a0), SWR(reg::t3, 24, reg::a0),
+				SWL(reg::t4, 31, reg::a0), SWR(reg::t4, 28, reg::a0),
+			});
+			h.Run(); // auto-diffs JIT vs interp (GPRs + tracked dest memory)
+			for (u32 i = 0; i < 32; ++i)
+				EXPECT_EQ(h.ReadU8(dst + i), static_cast<u8>(0x10 + i)) << "copied byte " << i;
+		}
+	}
+}
