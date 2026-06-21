@@ -177,91 +177,6 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/USBBindingWidget_GunCon2.ui
 	Settings/USBBindingWidget_RyojouhenCon.ui
 	Settings/USBBindingWidget_ShinkansenCon.ui
-	Debugger/AnalysisOptionsDialog.cpp
-	Debugger/AnalysisOptionsDialog.h
-	Debugger/AnalysisOptionsDialog.ui
-	Debugger/DebuggerSettingsManager.cpp
-	Debugger/DebuggerSettingsManager.h
-	Debugger/DebuggerEvents.h
-	Debugger/DebuggerView.cpp
-	Debugger/DebuggerView.h
-	Debugger/DebuggerWindow.cpp
-	Debugger/DebuggerWindow.h
-	Debugger/DebuggerWindow.ui
-	Debugger/DisassemblyView.cpp
-	Debugger/DisassemblyView.h
-	Debugger/DisassemblyView.ui
-	Debugger/JsonValueWrapper.h
-	Debugger/ModuleModel.cpp
-	Debugger/ModuleModel.h
-	Debugger/ModuleView.cpp
-	Debugger/ModuleView.h
-	Debugger/RegisterView.cpp
-	Debugger/RegisterView.h
-	Debugger/RegisterView.ui
-	Debugger/StackModel.cpp
-	Debugger/StackModel.h
-	Debugger/StackView.cpp
-	Debugger/StackView.h
-	Debugger/ThreadModel.cpp
-	Debugger/ThreadModel.h
-	Debugger/ThreadView.cpp
-	Debugger/ThreadView.h
-	Debugger/Breakpoints/BreakpointDialog.cpp
-	Debugger/Breakpoints/BreakpointDialog.h
-	Debugger/Breakpoints/BreakpointDialog.ui
-	Debugger/Breakpoints/BreakpointModel.cpp
-	Debugger/Breakpoints/BreakpointModel.h
-	Debugger/Breakpoints/BreakpointView.cpp
-	Debugger/Breakpoints/BreakpointView.h
-	Debugger/Breakpoints/BreakpointView.ui
-	Debugger/Docking/DockLayout.cpp
-	Debugger/Docking/DockLayout.h
-	Debugger/Docking/DockManager.cpp
-	Debugger/Docking/DockManager.h
-	Debugger/Docking/DockMenuBar.cpp
-	Debugger/Docking/DockMenuBar.h
-	Debugger/Docking/DockTables.cpp
-	Debugger/Docking/DockTables.h
-	Debugger/Docking/DockUtils.cpp
-	Debugger/Docking/DockUtils.h
-	Debugger/Docking/DockViews.cpp
-	Debugger/Docking/DockViews.h
-	Debugger/Docking/DropIndicators.cpp
-	Debugger/Docking/DropIndicators.h
-	Debugger/Docking/LayoutEditorDialog.cpp
-	Debugger/Docking/LayoutEditorDialog.h
-	Debugger/Docking/LayoutEditorDialog.ui
-	Debugger/Docking/NoLayoutsWidget.cpp
-	Debugger/Docking/NoLayoutsWidget.h
-	Debugger/Docking/NoLayoutsWidget.ui
-	Debugger/Memory/MemorySearchView.cpp
-	Debugger/Memory/MemorySearchView.h
-	Debugger/Memory/MemorySearchView.ui
-	Debugger/Memory/MemoryView.cpp
-	Debugger/Memory/MemoryView.h
-	Debugger/Memory/MemoryView.ui
-	Debugger/Memory/SavedAddressesModel.cpp
-	Debugger/Memory/SavedAddressesModel.h
-	Debugger/Memory/SavedAddressesView.cpp
-	Debugger/Memory/SavedAddressesView.h
-	Debugger/Memory/SavedAddressesView.ui
-	Debugger/SymbolTree/NewSymbolDialogs.cpp
-	Debugger/SymbolTree/NewSymbolDialogs.h
-	Debugger/SymbolTree/NewSymbolDialog.ui
-	Debugger/SymbolTree/SymbolTreeLocation.cpp
-	Debugger/SymbolTree/SymbolTreeLocation.h
-	Debugger/SymbolTree/SymbolTreeModel.cpp
-	Debugger/SymbolTree/SymbolTreeModel.h
-	Debugger/SymbolTree/SymbolTreeNode.cpp
-	Debugger/SymbolTree/SymbolTreeNode.h
-	Debugger/SymbolTree/SymbolTreeDelegates.cpp
-	Debugger/SymbolTree/SymbolTreeDelegates.h
-	Debugger/SymbolTree/SymbolTreeViews.cpp
-	Debugger/SymbolTree/SymbolTreeViews.h
-	Debugger/SymbolTree/SymbolTreeView.ui
-	Debugger/SymbolTree/TypeString.cpp
-	Debugger/SymbolTree/TypeString.h
 	Tools/InputRecording/NewInputRecordingDlg.cpp
 	Tools/InputRecording/NewInputRecordingDlg.h
 	Tools/InputRecording/NewInputRecordingDlg.ui
@@ -277,6 +192,100 @@ if (NOT APPLE)
         ShortcutCreationDialog.h
         ShortcutCreationDialog.ui
     )
+endif()
+
+# The debugger UI (and its KDDockWidgets dependency) is optional. Default off on
+# ARM64 handheld targets; see ENABLE_QT_DEBUGGER in cmake/BuildParameters.cmake.
+if(ENABLE_QT_DEBUGGER)
+	target_compile_definitions(pcsx2-qt PRIVATE ENABLE_QT_DEBUGGER)
+	target_link_libraries(pcsx2-qt PRIVATE KDAB::kddockwidgets)
+	target_sources(pcsx2-qt PRIVATE
+		Debugger/AnalysisOptionsDialog.cpp
+		Debugger/AnalysisOptionsDialog.h
+		Debugger/AnalysisOptionsDialog.ui
+		Debugger/DebuggerSettingsManager.cpp
+		Debugger/DebuggerSettingsManager.h
+		Debugger/DebuggerEvents.h
+		Debugger/DebuggerView.cpp
+		Debugger/DebuggerView.h
+		Debugger/DebuggerWindow.cpp
+		Debugger/DebuggerWindow.h
+		Debugger/DebuggerWindow.ui
+		Debugger/DisassemblyView.cpp
+		Debugger/DisassemblyView.h
+		Debugger/DisassemblyView.ui
+		Debugger/JsonValueWrapper.h
+		Debugger/ModuleModel.cpp
+		Debugger/ModuleModel.h
+		Debugger/ModuleView.cpp
+		Debugger/ModuleView.h
+		Debugger/RegisterView.cpp
+		Debugger/RegisterView.h
+		Debugger/RegisterView.ui
+		Debugger/StackModel.cpp
+		Debugger/StackModel.h
+		Debugger/StackView.cpp
+		Debugger/StackView.h
+		Debugger/ThreadModel.cpp
+		Debugger/ThreadModel.h
+		Debugger/ThreadView.cpp
+		Debugger/ThreadView.h
+		Debugger/Breakpoints/BreakpointDialog.cpp
+		Debugger/Breakpoints/BreakpointDialog.h
+		Debugger/Breakpoints/BreakpointDialog.ui
+		Debugger/Breakpoints/BreakpointModel.cpp
+		Debugger/Breakpoints/BreakpointModel.h
+		Debugger/Breakpoints/BreakpointView.cpp
+		Debugger/Breakpoints/BreakpointView.h
+		Debugger/Breakpoints/BreakpointView.ui
+		Debugger/Docking/DockLayout.cpp
+		Debugger/Docking/DockLayout.h
+		Debugger/Docking/DockManager.cpp
+		Debugger/Docking/DockManager.h
+		Debugger/Docking/DockMenuBar.cpp
+		Debugger/Docking/DockMenuBar.h
+		Debugger/Docking/DockTables.cpp
+		Debugger/Docking/DockTables.h
+		Debugger/Docking/DockUtils.cpp
+		Debugger/Docking/DockUtils.h
+		Debugger/Docking/DockViews.cpp
+		Debugger/Docking/DockViews.h
+		Debugger/Docking/DropIndicators.cpp
+		Debugger/Docking/DropIndicators.h
+		Debugger/Docking/LayoutEditorDialog.cpp
+		Debugger/Docking/LayoutEditorDialog.h
+		Debugger/Docking/LayoutEditorDialog.ui
+		Debugger/Docking/NoLayoutsWidget.cpp
+		Debugger/Docking/NoLayoutsWidget.h
+		Debugger/Docking/NoLayoutsWidget.ui
+		Debugger/Memory/MemorySearchView.cpp
+		Debugger/Memory/MemorySearchView.h
+		Debugger/Memory/MemorySearchView.ui
+		Debugger/Memory/MemoryView.cpp
+		Debugger/Memory/MemoryView.h
+		Debugger/Memory/MemoryView.ui
+		Debugger/Memory/SavedAddressesModel.cpp
+		Debugger/Memory/SavedAddressesModel.h
+		Debugger/Memory/SavedAddressesView.cpp
+		Debugger/Memory/SavedAddressesView.h
+		Debugger/Memory/SavedAddressesView.ui
+		Debugger/SymbolTree/NewSymbolDialogs.cpp
+		Debugger/SymbolTree/NewSymbolDialogs.h
+		Debugger/SymbolTree/NewSymbolDialog.ui
+		Debugger/SymbolTree/SymbolTreeLocation.cpp
+		Debugger/SymbolTree/SymbolTreeLocation.h
+		Debugger/SymbolTree/SymbolTreeModel.cpp
+		Debugger/SymbolTree/SymbolTreeModel.h
+		Debugger/SymbolTree/SymbolTreeNode.cpp
+		Debugger/SymbolTree/SymbolTreeNode.h
+		Debugger/SymbolTree/SymbolTreeDelegates.cpp
+		Debugger/SymbolTree/SymbolTreeDelegates.h
+		Debugger/SymbolTree/SymbolTreeViews.cpp
+		Debugger/SymbolTree/SymbolTreeViews.h
+		Debugger/SymbolTree/SymbolTreeView.ui
+		Debugger/SymbolTree/TypeString.cpp
+		Debugger/SymbolTree/TypeString.h
+	)
 endif()
 
 file(GLOB TS_FILES ${CMAKE_CURRENT_SOURCE_DIR}/Translations/pcsx2-qt_*-*.ts)
@@ -297,7 +306,6 @@ target_link_libraries(pcsx2-qt PRIVATE
 	Qt6::Core
 	Qt6::Gui
 	Qt6::Widgets
-	KDAB::kddockwidgets
 )
 
 if(NOT WIN32 AND NOT APPLE)

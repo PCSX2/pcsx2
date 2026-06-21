@@ -152,6 +152,16 @@ else()
 	message(FATAL_ERROR "Unsupported architecture: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
 endif()
 
+# The Qt debugger UI depends on KDDockWidgets. Handheld/ARM64 targets don't ship
+# the debugger, so default it off there to drop the dependency; on elsewhere to
+# match upstream. Only meaningful when ENABLE_QT_UI is on.
+if(ARCH_ARM64)
+	set(_ENABLE_QT_DEBUGGER_DEFAULT OFF)
+else()
+	set(_ENABLE_QT_DEBUGGER_DEFAULT ON)
+endif()
+option(ENABLE_QT_DEBUGGER "Build the Qt debugger UI (requires KDDockWidgets)." ${_ENABLE_QT_DEBUGGER_DEFAULT})
+
 # Require C++20.
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

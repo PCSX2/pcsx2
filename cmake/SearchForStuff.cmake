@@ -121,7 +121,9 @@ if(ENABLE_QT_UI)
 	endif()
 
 	# The docking system for the debugger.
-	find_package(KDDockWidgets-qt6 2.3.0 REQUIRED)
+	if(ENABLE_QT_DEBUGGER)
+		find_package(KDDockWidgets-qt6 2.3.0 REQUIRED)
+	endif()
 endif()
 
 if(WIN32)
