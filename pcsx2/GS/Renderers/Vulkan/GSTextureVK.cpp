@@ -11,7 +11,7 @@
 #include "common/Console.h"
 #include "common/BitUtils.h"
 
-VkFramebuffer GSTextureVK::CreateNullFramebuffer()
+VkFramebuffer GSTextureVK::CreateNullFramebuffer(u32 w, u32 h)
 {
 	const VkRenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(
 		VK_FORMAT_UNDEFINED,
@@ -23,7 +23,7 @@ VkFramebuffer GSTextureVK::CreateNullFramebuffer()
 		return VK_NULL_HANDLE;
 	
 	Vulkan::FramebufferBuilder fbb;
-	fbb.SetSize(16384, 16384, 1);
+	fbb.SetSize(w, h, 1);
 	fbb.SetRenderPass(rp);
 
 	return fbb.Create(GSDeviceVK::GetInstance()->GetDevice());
