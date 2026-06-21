@@ -6241,7 +6241,7 @@ void GSRendererHW::EmulateDither()
 	if (m_conf.ps.dither || m_conf.blend_multi_pass.dither)
 	{
 		const GIFRegDIMX& DIMX = m_draw_env->DIMX;
-		GL_DBG("DITHERING mode %d (%d)", (GSConfig.Dithering == 3) ? "Force 32bit" : ((GSConfig.Dithering == 0) ? "Disabled" : "Enabled"), GSConfig.Dithering);
+		GL_DBG("DITHERING mode %s (%d)", (GSConfig.Dithering == 3) ? "Force 32bit" : ((GSConfig.Dithering == 0) ? "Disabled" : "Enabled"), GSConfig.Dithering);
 
 		if (m_conf.ps.dither || GSConfig.Dithering == 3)
 			m_conf.ps.dither = GSConfig.Dithering;
@@ -7601,7 +7601,7 @@ void GSRendererHW::DetermineROVUsage(GSTextureCache::Target* rt, GSTextureCache:
 	const bool multipass_depth = (full_barrier && m_conf.ps.IsFeedbackLoopDepth()) || two_pass_alpha;
 
 	// If already ROV, just continue the usage.
-	const bool color_is_rov = rt && rt->m_texture->IsUnorderedAccess();
+	const bool color_is_rov = rt && rt->m_texture->IsShaderWriteMode();
 	const bool depth_is_rov = ds && ds->m_texture->IsDepthColor();
 
 	bool use_rov_color = (color_write && multipass_color) || color_is_rov;
@@ -7688,7 +7688,7 @@ void GSRendererHW::ConfigureROV(bool color_rov, bool depth_rov)
 			{
 				m_conf.cb_ps.FbMask |= fbmask;
 			}
-			GL_INS("ROV: FbMask={ R=%x, G=%x, B=%x, A=%x }",
+			GL_INS("ROV: FbMask={R=%x, G=%x, B=%x, A=%x}",
 				m_conf.cb_ps.FbMask.r, m_conf.cb_ps.FbMask.g, m_conf.cb_ps.FbMask.b, m_conf.cb_ps.FbMask.a);
 		}
 		else
@@ -7807,89 +7807,92 @@ void GSRendererHW::ConfigureROV(bool color_rov, bool depth_rov)
 	}
 }
 
-void GSRendererHW::SetUnorderedAccessFlag(GSTextureCache::Target* rt)
+void GSRendererHW::ConvertTextureTypeROVSingle(GSTextureCache::Target* tgt, bool shader_write)
 {
-	// Set flag for ROV activation heuristic. Only used by DX11.
-	// Only needed for RT, as we use a different method for depth.
-	if (rt)
-	{
-		if (m_conf.ps.HasColorROV())
-			rt->m_texture->SetUnorderedAccess();
-		else
-			rt->m_texture->ClearUnorderedAccess();
-	}
-}
+	const bool depth = (tgt->m_type == GSTextureCache::DepthStencil);
 
-static void CopyDepthTextureROV(GSTexture* src, GSTexture* dst)
-{
-	switch (src->GetState())
+	GSTexture* old_tex = depth ? m_conf.ds : m_conf.rt;
+
+	GSTexture::Usage usage = shader_write ? GSTexture::ShaderWriteTarget : GSTexture::FeedbackTarget;
+	GSTexture* new_tex = depth ?
+		(shader_write ?
+			g_gs_device->FetchSurface(usage, old_tex->GetSize(), 1, GSTexture::Format::DepthColor, false, false) :
+			g_gs_device->CreateDepthStencil(old_tex->GetSize(), false, true)) :
+		g_gs_device->FetchSurface(usage, old_tex->GetSize(), 1, GSTexture::Format::Color, false, false);
+
+	switch (old_tex->GetState())
 	{
 		case GSTexture::State::Cleared:
-			g_gs_device->ClearDepth(dst, src->GetClearDepth());
+			if (depth)
+				g_gs_device->ClearDepth(new_tex, old_tex->GetClearDepth());
+			else
+				g_gs_device->ClearRenderTarget(new_tex, old_tex->GetClearColor());
 			break;
 		case GSTexture::State::Invalidated:
-			g_gs_device->InvalidateRenderTarget(dst);
+			g_gs_device->InvalidateRenderTarget(new_tex);
 			break;
 		case GSTexture::State::Dirty:
-			g_gs_device->StretchRectAuto(src, dst, Nearest);
+			g_gs_device->StretchRectAuto(old_tex, new_tex, Nearest);
+
+			// Count stats as part of both standard and ROV.
+			g_perfmon.Put(GSPerfMon::TextureCopiesROV, 1.0);
+			g_perfmon.Put(GSPerfMon::DrawCallsROV, 1.0);
+			break;
+		default:
+			pxAssert(false);
 			break;
 	}
 
-	// These stats are counted both as part of ROV and non-ROV stats.
-	g_perfmon.Put(GSPerfMon::DepthCopiesROV, 1.0);
-	g_perfmon.Put(GSPerfMon::DrawCallsROV, 1.0);
-};
-
-void GSRendererHW::ConvertDepthFormatROV(GSTextureCache::Target* ds)
-{
-	if (!ds)
-		return;
-
-	GSTexture* ds_tex_old = m_conf.ds;
-	GSTexture* ds_tex_new = nullptr;
-
-	// Convert depth to depth color or vice versa if needed.
-	bool depth_to_color;
-	if (m_conf.ps.HasDepthROV() && !ds_tex_old->IsDepthColor())
-	{
-		depth_to_color = true;
-		ds_tex_new = g_gs_device->CreateShaderWriteTarget(ds_tex_old->GetSize(), GSTexture::Format::DepthColor, false, true);
-	}
-	else if (!m_conf.ps.HasDepthROV() && ds_tex_old->IsDepthColor())
-	{
-		depth_to_color = false;
-		ds_tex_new = g_gs_device->CreateDepthStencil(ds->m_texture->GetSize(), false, true);
-	}
-	else
-	{
-		return;
-	}
-
-	GL_PUSH("HW: Convert %s for ROV.", depth_to_color ? "DepthStencil -> DepthColor" : "DepthColor -> DepthStencil");
-
-	CopyDepthTextureROV(ds_tex_old, ds_tex_new);
-
 #if PCSX2_DEVBUILD
-	ds_tex_new->SetDebugName(ds->m_texture->GetDebugName());
+	new_tex->SetDebugName(tgt->m_texture->GetDebugName());
 #endif
 
-	// Fix up the texture cache.
-	if (ds->m_texture == ds_tex_old)
+	if (tgt->m_texture == old_tex)
 	{
-		GL_CACHE("HW: Replaced texture for DS @ 0x%04x", ds->m_TEX0.TBP0);
-		ds->m_texture = ds_tex_new;
+		GL_CACHE("HW: Replaced texture for %s @ 0x%04x", depth ? "DS" : "RT", tgt->m_TEX0.TBP0);
+		tgt->m_texture = new_tex;
 	}
 	else
 	{
 		// Must be the temporary Z.
-		pxAssert(g_texture_cache->GetTemporaryZ() == ds_tex_old);
+		pxAssert(depth && g_texture_cache->GetTemporaryZ() == old_tex);
 		GL_CACHE("HW: Replaced texture for temporary Z @ 0x%04x", g_texture_cache->GetTemporaryZInfo().ZBP);
-		g_texture_cache->SetTemporaryZ(ds_tex_new);
+		g_texture_cache->SetTemporaryZ(new_tex);
 	}
 
-	g_gs_device->Recycle(ds_tex_old);
+	// Fixup the backend config.
+	if (depth)
+		m_conf.ds = new_tex;
+	else
+		m_conf.rt = new_tex;
 
-	m_conf.ds = ds_tex_new;
+	g_gs_device->Recycle(old_tex);
+}
+
+void GSRendererHW::ConvertTextureTypeROV(GSTextureCache::Target* rt, GSTextureCache::Target* ds)
+{
+	// Convert depth to the proper type/format.
+	if (ds)
+	{
+		if (m_conf.ps.HasDepthROV() && !ds->m_texture->IsShaderWrite())
+		{
+			GL_PUSH("HW: Convert DepthStencil -> DepthColor for ROV.");
+			ConvertTextureTypeROVSingle(ds, true);
+		}
+		else if (!m_conf.ps.HasDepthROV() && !ds->m_texture->IsDepthStencil())
+		{
+			GL_PUSH("HW: Convert DepthColor -> DepthStencil for non-ROV.");
+			ConvertTextureTypeROVSingle(ds, false);
+		}
+	}
+
+	// Convert color to the proper type. This only adds the shader read/write flag and doesn't remove it,
+	// since adding the read/write flag doesn't lose any pipeline capabilities.
+	if (rt && m_conf.ps.HasColorROV() && !rt->m_texture->IsShaderWrite())
+	{
+		GL_PUSH("HW: Convert RenderTarget -> RenderTarget (shader write) for ROV.");
+		ConvertTextureTypeROVSingle(rt, true);
+	}
 }
 
 __ri static constexpr bool IsRedundantClamp(u8 clamp, u32 clamp_min, u32 clamp_max, u32 tsize)
@@ -9455,8 +9458,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	// Call before computing the full drawlist in case ROV is used and we don't need it.
 	DetermineROVUsage(rt, ds);
-	ConvertDepthFormatROV(ds);
-	SetUnorderedAccessFlag(rt);
+	ConvertTextureTypeROV(rt, ds);
 
 	// Barriers must be determined before indices are modified via HandleProvokingVertexFirst/SetupIA.
 	// This also computes the drawlist if needed.

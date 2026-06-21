@@ -729,7 +729,7 @@ void GSgetStats(SmallStringBase& info)
 				(int)std::ceil(pm.Get(GSPerfMon::RenderPasses)),
 				(int)std::ceil(pm.Get(GSPerfMon::Readbacks)),
 				(int)std::ceil(pm.Get(GSPerfMon::TextureCopies)),
-				(int)std::ceil(pm.Get(GSPerfMon::DepthCopiesROV)),
+				(int)std::ceil(pm.Get(GSPerfMon::TextureCopiesROV)),
 				(int)std::ceil(pm.Get(GSPerfMon::TextureUploads)));
 		}
 	}
