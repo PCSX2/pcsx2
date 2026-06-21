@@ -7801,9 +7801,9 @@ void GSRendererHW::ConvertTextureTypeROVSingle(GSTextureCache::Target* tgt, bool
 	GSTexture::Usage usage = shader_write ? GSTexture::ShaderWriteTarget : GSTexture::FeedbackTarget;
 	GSTexture* new_tex = depth ?
 		(shader_write ?
-			g_gs_device->FetchSurface(usage, old_tex->GetSize(), 1, GSTexture::Format::DepthColor, false, false) :
+			g_gs_device->FetchSurface(usage, old_tex->GetSize(), 1, GSTexture::Format::DepthColor, false, true) :
 			g_gs_device->CreateDepthStencil(old_tex->GetSize(), false, true)) :
-		g_gs_device->FetchSurface(usage, old_tex->GetSize(), 1, GSTexture::Format::Color, false, false);
+		g_gs_device->FetchSurface(usage, old_tex->GetSize(), 1, GSTexture::Format::Color, false, true);
 
 	switch (old_tex->GetState())
 	{
