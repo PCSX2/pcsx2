@@ -2119,7 +2119,7 @@ bool GSDeviceVK::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		return false;
 	}
 
-	if ((m_null_framebuffer = GSTextureVK::CreateNullFramebuffer()) == VK_NULL_HANDLE)
+	if ((m_null_framebuffer = GSTextureVK::CreateNullFramebuffer(m_max_framebuffer_width, m_max_framebuffer_height)) == VK_NULL_HANDLE)
 	{
 		Host::ReportErrorAsync("GS", "Failed to create dummy framebuffer");
 		return false;
@@ -2774,6 +2774,8 @@ bool GSDeviceVK::CheckFeatures()
 	}
 
 	m_max_texture_size = m_device_properties.limits.maxImageDimension2D;
+	m_max_framebuffer_width = m_device_properties.limits.maxFramebufferWidth;
+	m_max_framebuffer_height = m_device_properties.limits.maxFramebufferHeight;
 
 	m_features.rov = m_optional_extensions.vk_ext_fragment_shader_interlock &&
 	                 m_device_features.fragmentStoresAndAtomics &&
