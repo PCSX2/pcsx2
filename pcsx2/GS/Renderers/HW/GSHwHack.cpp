@@ -1135,9 +1135,9 @@ bool GSHwHack::OI_SonicUnleashed(GSRendererHW& r, GSTexture* rt, GSTexture* ds, 
 		rt_again->m_valid.y /= 2;
 		rt_again->m_valid.w /= 2;
 		rt_again->m_TEX0.PSM = PSMCT32;
-		GSTexture* tex = g_gs_device->CreateRenderTarget(
-			rt_again->m_unscaled_size.x * rt_again->m_scale, rt_again->m_unscaled_size.y * rt_again->m_scale,
-			GSTexture::Format::Color, false);
+		GSTexture* tex = g_gs_device->CreateCompatible(rt_again->m_texture,
+			static_cast<int>(rt_again->m_unscaled_size.x * rt_again->m_scale),
+			static_cast<int>(rt_again->m_unscaled_size.y * rt_again->m_scale), false);
 
 		if (!tex)
 			return false;
