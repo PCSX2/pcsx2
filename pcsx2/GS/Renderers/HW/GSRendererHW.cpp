@@ -7510,33 +7510,33 @@ __fi void GSRendererHW::GetForcedROVUsage(bool& rov_color, bool& rov_depth)
 	if (rov_color == rov_depth)
 		return;
 
-	// If depth and color have feedback and one uses ROV, the other must also.
-	// We currently don't have a way of using barriers in one and ROV in the other.
-	if ((m_conf.ps.IsFeedbackLoopRT() && rov_depth) || (m_conf.ps.IsFeedbackLoopDepth() && rov_color))
+	// Force color ROV if depth ROV is used.
+	if (rov_depth)
+	{
+		GL_INS("ROV: Depth ROV forces color ROV");
+		rov_color = true;
+		return;
+	}
+
+	// If we have a depth feedback loop and color uses ROV, depth must also.
+	// We currently don't have a way of using barriers in depth and ROV in color.
+	if (m_conf.ps.IsFeedbackLoopDepth() && rov_color)
 	{
 		GL_INS("ROV: Feedback compatibility forces color and depth ROV");
-		rov_color = true;
 		rov_depth = true;
+		return;
 	}
 
 	// If we use color ROV with discard or the pixel shader writes to depth,
 	// we cannot use early depth stencil, so must use depth ROV with feedback.
-	// Same applies in reverse for depth ROV forcing color ROV with feedback.
-	const bool color_write = (m_conf.colormask.wrgba != 0);
-	const bool depth_test = m_cached_ctx.DepthRead();
 	
 	// Separate flag for DATE since they are many methods and the interaction with ROV is not clear.
 	const bool date = m_cached_ctx.TEST.DATE;
 
-	if (m_conf.ds && rov_color && (m_conf.ps.HasShaderDiscard() || m_conf.ps.HasDepthOutput() || date))
+	if (rov_color && (m_conf.ps.HasShaderDiscard() || m_conf.ps.HasDepthOutput() || date))
 	{
 		GL_INS("ROV: Color ROV with shader discard/depth write forces depth ROV");
 		rov_depth = true;
-	}
-	else if (m_conf.rt && color_write && rov_depth && (m_conf.ps.HasShaderDiscard() || depth_test || date))
-	{
-		GL_INS("ROV: Depth ROV with shader discard forces color ROV");
-		rov_color = true;
 	}
 }
 
@@ -7570,45 +7570,29 @@ void GSRendererHW::DetermineROVUsage(GSTextureCache::Target* rt, GSTextureCache:
 	const bool color_write = rt && m_conf.colormask.wrgba != 0;
 	const bool depth_write = ds && m_cached_ctx.DepthWrite();
 
-	const u32 colormask = GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & m_conf.colormask.wrgba;
-	const bool colormask_needs_rt = colormask != 0xF;
-
-	const u32 ate = m_cached_ctx.TEST.ATE;
-	const u32 atst = m_cached_ctx.TEST.ATST;
-	const u32 afail = m_cached_ctx.TEST.AFAIL;
-
-	const bool afail_needs_rt = ate && ((afail == AFAIL_ZB_ONLY) || (afail == AFAIL_RGB_ONLY));
-	const bool afail_needs_depth = ate && ((afail == AFAIL_FB_ONLY) || (afail == AFAIL_RGB_ONLY));
-
-	const bool blend = m_conf.IsBlending();
-	const bool blend_needs_rt = blend &&
-		(m_optimized_blend.A == ALPHA_ABD_CD || m_optimized_blend.B == ALPHA_ABD_CD ||
-			m_optimized_blend.C == ALPHA_C_AD || m_optimized_blend.D == ALPHA_ABD_CD);
-
-	const bool two_pass_alpha = GSHWDrawConfig::HasAlphaTestSecondPass(m_conf.alpha_test);
-
-	const bool date = m_conf.destination_alpha != GSHWDrawConfig::DestinationAlphaMode::Off;
-
-	const bool ztst = m_cached_ctx.DepthRead();
-
-	const bool full_barrier = m_conf.require_full_barrier;
+	bool full_barrier = m_conf.require_full_barrier;
 
 	// Heuristically determine what ROVs would be needed to eliminate passes based on the current config.
-	const bool multipass_color = (full_barrier && m_conf.ps.IsFeedbackLoopRT()) ||
-	                             two_pass_alpha ||
-	                             m_conf.blend_multi_pass.enable;
+	bool barriers_color = m_conf.require_full_barrier && m_conf.ps.IsFeedbackLoopRT();
+	bool barriers_depth = m_conf.require_full_barrier && m_conf.ps.IsFeedbackLoopDepth();
 
-	const bool multipass_depth = (full_barrier && m_conf.ps.IsFeedbackLoopDepth()) || two_pass_alpha;
+	if (m_conf.alpha_second_pass.enable)
+	{
+		full_barrier |= m_conf.alpha_second_pass.require_full_barrier;
+		barriers_color |= m_conf.alpha_second_pass.require_full_barrier && m_conf.alpha_second_pass.ps.IsFeedbackLoopRT();
+		barriers_depth |= m_conf.alpha_second_pass.require_full_barrier && m_conf.alpha_second_pass.ps.IsFeedbackLoopDepth();
+	}
 
 	// If already ROV, just continue the usage.
 	const bool color_is_rov = rt && rt->m_texture->IsShaderWriteMode();
-	const bool depth_is_rov = ds && ds->m_texture->IsDepthColor();
+	const bool depth_is_rov = ds && ds->m_texture->IsShaderWrite();
 
-	bool use_rov_color = (color_write && multipass_color) || color_is_rov;
-	bool use_rov_depth = (depth_write && multipass_depth) || depth_is_rov;
+	bool use_rov_color = (color_write && barriers_color) || color_is_rov;
+	bool use_rov_depth = (depth_write && barriers_depth) || depth_is_rov;
 
 	// In certain cases, ROV in color or depth will force ROV in the other for correctness.
-	GetForcedROVUsage(use_rov_color, use_rov_depth);
+	if (rt && ds)
+		GetForcedROVUsage(use_rov_color, use_rov_depth);
 
 	// Get the number of barriers that would be used with the current config.
 	u32 barriers = 1; 
@@ -7620,13 +7604,14 @@ void GSRendererHW::DetermineROVUsage(GSTextureCache::Target* rt, GSTextureCache:
 		}
 		else
 		{
+#if PCSX2_DEVBUILD
+			barriers = INT_MAX; // Compute the full drawlist for logging purposes.
+#else
 			barriers = 2; // Tells drawlist computation to stop after reaching 2.
+#endif
 			GetPrimitiveOverlapDrawlist(false, false, 1.0f, &barriers);
 		}
 	}
-	
-	const u32 multiplier = m_conf.alpha_second_pass.enable ? 2 : 1; // Alpha second pass doubles the barriers.
-	barriers *= multiplier;
 
 	// Heuristic: only activate ROV if we save at least one draw call by doing so.
 	const bool activate = (use_rov_color != color_is_rov || use_rov_depth != depth_is_rov) && barriers >= 2;
