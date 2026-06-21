@@ -49,7 +49,7 @@
 #include "svnrev.h"
 
 // Down here because X11 has a lot of defines that can conflict
-#if defined(__linux__)
+#if defined(__linux__) && defined(X11_API)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <sys/select.h>
@@ -106,8 +106,10 @@ static u64 s_total_draws_rov = 0;
 static u64 s_total_barriers_rov = 0;
 static u32 s_total_frames = 0;
 static u32 s_total_drawn_frames = 0;
+static std::vector<std::string> s_extended_stats_snapshot;
 
 static bool s_perf_enable = false;
+static bool s_force_vsync = false;
 static float s_perf_updates = 0.0f;
 static float s_perf_sum_fps = 0.0f;
 static float s_perf_sum_internal_fps = 0.0f;
@@ -511,6 +513,14 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "  -logfile <filename>: Writes emu log to filename.\n");
 	std::fprintf(stderr, "  -noshadercache: Disables the shader cache (useful for parallel runs).\n");
 	std::fprintf(stderr, "  -perf: Enable frame timing performance stats.\n");
+	std::fprintf(stderr, "  -vsync: Force vsync on (FIFO present mode). Workaround for libmali Wayland WSI which "
+						 "advertises MAILBOX support but errors VK_ERROR_INITIALIZATION_FAILED on swapchain create.\n");
+	std::fprintf(stderr, "  -no-fb-fetch: Disable Vulkan framebuffer fetch (VK_EXT_rasterization_order_attachment_access). "
+						 "Use to A/B against drivers that mishandle subpass self-dependencies (e.g. libmali).\n");
+	std::fprintf(stderr, "  -no-vs-expand: Disable vertex-shader point/line/sprite expansion (storage-buffer path). "
+						 "Falls back to hardware/geometry expansion.\n");
+	std::fprintf(stderr, "  -no-tex-barriers: Force OverrideTextureBarriers=0. Disables the texture-barrier render-pass pattern "
+						 "and the framebuffer-fetch / depth-feedback paths that build on it.\n");
 	std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
 						 "    parameters make up the filename. Use when the filename contains\n"
 						 "    spaces or starts with a dash.\n");
@@ -803,6 +813,30 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 				s_perf_enable = true;
 				continue;
 			}
+			else if (CHECK_ARG("-vsync"))
+			{
+				Console.WriteLn("Forcing vsync on (FIFO present mode). Use on libmali Wayland where MAILBOX errors VK_ERROR_INITIALIZATION_FAILED.");
+				s_force_vsync = true;
+				continue;
+			}
+			else if (CHECK_ARG("-no-fb-fetch"))
+			{
+				Console.WriteLn("Disabling framebuffer fetch (VK_EXT_rasterization_order_attachment_access)");
+				s_settings_interface.SetBoolValue("EmuCore/GS", "DisableFramebufferFetch", true);
+				continue;
+			}
+			else if (CHECK_ARG("-no-vs-expand"))
+			{
+				Console.WriteLn("Disabling vertex-shader point/line/sprite expansion");
+				s_settings_interface.SetBoolValue("EmuCore/GS", "DisableVertexShaderExpand", true);
+				continue;
+			}
+			else if (CHECK_ARG("-no-tex-barriers"))
+			{
+				Console.WriteLn("Forcing texture barriers off (OverrideTextureBarriers=0)");
+				s_settings_interface.SetIntValue("EmuCore/GS", "OverrideTextureBarriers", 0);
+				continue;
+			}
 			else if (CHECK_ARG("-debugdevice"))
 			{
 				Console.WriteLn("Enable debug device");
@@ -871,8 +905,12 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 void GSRunner::SettingsOverride()
 {
 	// complete as quickly as possible
-	s_settings_interface.SetBoolValue("EmuCore/GS", "FrameLimitEnable", false);
-	s_settings_interface.SetIntValue("EmuCore/GS", "VsyncEnable", false);
+	s_settings_interface.SetBoolValue("EmuCore/GS", "FrameLimitEnable", s_force_vsync);
+	s_settings_interface.SetIntValue("EmuCore/GS", "VsyncEnable", s_force_vsync);
+	// -vsync needs DisableMailboxPresentation too: GetEffectiveVSyncMode() returns
+	// Mailbox when VsyncEnable=true unless this is set.
+	if (s_force_vsync)
+		s_settings_interface.SetBoolValue("EmuCore/GS", "DisableMailboxPresentation", true);
 
 	// Force screenshot quality settings to something more performant, overriding any defaults good for users.
 	s_settings_interface.SetIntValue("EmuCore/GS", "ScreenshotFormat", static_cast<int>(GSScreenshotFormat::PNG));
@@ -932,6 +970,8 @@ void GSRunner::DumpStats()
 		Console.WriteLn(fmt::format("@HWSTAT@ Average GS Thread Time: {:.3f} ms", s_perf_sum_gs_thread_time / s_perf_updates));
 		Console.WriteLn(fmt::format("@HWSTAT@ Average GPU Time: {:.3f} ms", s_perf_sum_gpu_time / s_perf_updates));
 	}
+	for (const std::string& line : s_extended_stats_snapshot)
+		Console.WriteLn(fmt::format("@HWSTAT@ {}", line));
 	Console.WriteLn("============================================");
 }
 
@@ -955,6 +995,9 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 			// run until end
 			GSDumpReplayer::SetLoopCount(s_loop_count);
 			VMManager::SetState(VMState::Running);
+			// gsrunner is diagnostic-by-design; always collect extended stats so DumpStats has data.
+			if (g_gs_device)
+				g_gs_device->EnableExtendedStats(true);
 			if (s_perf_enable)
 			{
 				VMManager::SetLimiterMode(LimiterModeType::Unlimited);
@@ -962,6 +1005,9 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 			}
 			while (VMManager::GetState() == VMState::Running)
 				VMManager::Execute();
+			// Snapshot backend-specific stats before the GS device is destroyed.
+			if (g_gs_device)
+				s_extended_stats_snapshot = g_gs_device->GetExtendedStats();
 			VMManager::Shutdown(false);
 			GSRunner::DumpStats();
 			ret->store(EXIT_SUCCESS);
@@ -972,10 +1018,21 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 	GSRunner::StopPlatformMessagePump();
 }
 
+// Set by the SIGINT/SIGTERM handlers (async-signal-safe: just an atomic store)
+// and consumed on the CPU thread in PumpMessagesOnCPUThread(), which issues the
+// actual VMManager::SetState(Stopping). Calling SetState() from signal context
+// is not async-signal-safe — it can assert/log, take mutexes, and WaitGS/WaitVU.
+static std::atomic<bool> s_signal_stop_requested{false};
+
 int main(int argc, char* argv[])
 {
 	CrashHandler::Install();
 	GSRunner::InitializeConsole();
+
+	// Clean SIGINT/SIGTERM → VM stop, so DumpStats() still fires on ^C or SIGTERM during -loop 0.
+	// Defer the actual stop to the CPU thread (see s_signal_stop_requested).
+	std::signal(SIGINT, [](int) { s_signal_stop_requested.store(true); });
+	std::signal(SIGTERM, [](int) { s_signal_stop_requested.store(true); });
 
 	if (!GSRunner::InitializeConfig())
 	{
@@ -1008,6 +1065,11 @@ int main(int argc, char* argv[])
 
 void Host::PumpMessagesOnCPUThread()
 {
+	// Honor a pending ^C / SIGTERM here, on the CPU thread, where SetState() is
+	// safe to call. exchange() makes the transition fire exactly once.
+	if (s_signal_stop_requested.exchange(false))
+		VMManager::SetState(VMState::Stopping);
+
 	// update GS thread copy of frame number
 	MTGS::RunOnGSThread([frame_number = GSDumpReplayer::GetFrameNumber()]() { s_dump_frame_number = frame_number; });
 	MTGS::RunOnGSThread([loop_number = GSDumpReplayer::GetLoopCount()]() { s_loop_number = loop_number; });
@@ -1036,7 +1098,7 @@ std::string Host::TranslatePluralToString(const char* context, const char* msg, 
 		if (pos == std::string::npos)
 			break;
 
-		ret.replace(pos, pos + 2, count_str.view());
+		ret.replace(pos, 2, count_str.view());
 	}
 
 	return ret;
@@ -1215,7 +1277,206 @@ void GSRunner::StopPlatformMessagePump()
 	CocoaTools::StopMainThreadEventLoop();
 }
 
-#elif defined(__linux__)
+#elif defined(__linux__) && defined(WAYLAND_API)
+// Wayland frontend for gsrunner. Used on handheld targets where the GPU's
+// libmali variant is built for Wayland WSI (vkCreateWaylandSurfaceKHR) and
+// VK_KHR_display is half-implemented (returns present_supported=false on the
+// sole queue family). Runs as a normal Wayland client alongside the running
+// compositor — no need to stop sway/weston.
+
+#include <wayland-client.h>
+#include "xdg-shell-client-protocol.h"
+#include <cstring>
+#include <poll.h>
+
+static wl_display* s_display = nullptr;
+static wl_registry* s_registry = nullptr;
+static wl_compositor* s_compositor = nullptr;
+static xdg_wm_base* s_wm_base = nullptr;
+static wl_surface* s_surface = nullptr;
+static xdg_surface* s_xdg_surface = nullptr;
+static xdg_toplevel* s_xdg_toplevel = nullptr;
+static WindowInfo s_wi;
+static std::atomic<bool> s_shutdown_requested{false};
+static bool s_initial_configure_received = false;
+
+static void wl_wm_base_ping(void*, xdg_wm_base* wm_base, uint32_t serial)
+{
+	xdg_wm_base_pong(wm_base, serial);
+}
+static const xdg_wm_base_listener s_wm_base_listener = {wl_wm_base_ping};
+
+static void wl_xdg_surface_configure(void*, xdg_surface* xs, uint32_t serial)
+{
+	xdg_surface_ack_configure(xs, serial);
+	s_initial_configure_received = true;
+}
+static const xdg_surface_listener s_xdg_surface_listener = {wl_xdg_surface_configure};
+
+static void wl_xdg_toplevel_configure(void*, xdg_toplevel*, int32_t width, int32_t height, wl_array*)
+{
+	if (width > 0 && height > 0)
+	{
+		s_wi.surface_width = static_cast<u32>(width);
+		s_wi.surface_height = static_cast<u32>(height);
+	}
+}
+static void wl_xdg_toplevel_close(void*, xdg_toplevel*)
+{
+	s_shutdown_requested.store(true);
+}
+// Stubs for the newer xdg_toplevel_listener slots. These struct members exist
+// only when the wayland-scanner-generated header was built against a new enough
+// xdg-shell (configure_bounds: protocol v4 / wayland-protocols >= 1.20;
+// wm_capabilities: v5 / >= 1.26). Guard both the stubs and their initializer
+// slots on the matching SINCE_VERSION macros so the aggregate initializer always
+// matches the generated struct's member count — without the guards this is a hard
+// "too many initializers" build break on older protocol headers.
+#ifdef XDG_TOPLEVEL_CONFIGURE_BOUNDS_SINCE_VERSION
+static void wl_xdg_toplevel_configure_bounds(void*, xdg_toplevel*, int32_t, int32_t) {}
+#endif
+#ifdef XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION
+static void wl_xdg_toplevel_wm_capabilities(void*, xdg_toplevel*, wl_array*) {}
+#endif
+static const xdg_toplevel_listener s_xdg_toplevel_listener = {
+	wl_xdg_toplevel_configure,
+	wl_xdg_toplevel_close,
+#ifdef XDG_TOPLEVEL_CONFIGURE_BOUNDS_SINCE_VERSION
+	wl_xdg_toplevel_configure_bounds,
+#endif
+#ifdef XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION
+	wl_xdg_toplevel_wm_capabilities,
+#endif
+};
+
+static void wl_registry_global(void*, wl_registry* registry, uint32_t name, const char* interface, uint32_t version)
+{
+	if (std::strcmp(interface, wl_compositor_interface.name) == 0)
+	{
+		s_compositor = static_cast<wl_compositor*>(
+			wl_registry_bind(registry, name, &wl_compositor_interface, std::min<uint32_t>(version, 4u)));
+	}
+	else if (std::strcmp(interface, xdg_wm_base_interface.name) == 0)
+	{
+		s_wm_base = static_cast<xdg_wm_base*>(
+			wl_registry_bind(registry, name, &xdg_wm_base_interface, std::min<uint32_t>(version, 4u)));
+		xdg_wm_base_add_listener(s_wm_base, &s_wm_base_listener, nullptr);
+	}
+}
+static void wl_registry_global_remove(void*, wl_registry*, uint32_t) {}
+static const wl_registry_listener s_registry_listener = {wl_registry_global, wl_registry_global_remove};
+
+bool GSRunner::CreatePlatformWindow()
+{
+	pxAssertRel(!s_display && !s_surface, "Tried to create window when there already was one!");
+
+	s_display = wl_display_connect(nullptr);
+	if (!s_display)
+	{
+		Console.Error("wl_display_connect failed (check $WAYLAND_DISPLAY)");
+		return false;
+	}
+
+	s_registry = wl_display_get_registry(s_display);
+	wl_registry_add_listener(s_registry, &s_registry_listener, nullptr);
+	wl_display_roundtrip(s_display);
+
+	if (!s_compositor || !s_wm_base)
+	{
+		Console.Error("Wayland compositor missing wl_compositor or xdg_wm_base");
+		DestroyPlatformWindow();
+		return false;
+	}
+
+	s_surface = wl_compositor_create_surface(s_compositor);
+	s_xdg_surface = xdg_wm_base_get_xdg_surface(s_wm_base, s_surface);
+	xdg_surface_add_listener(s_xdg_surface, &s_xdg_surface_listener, nullptr);
+	s_xdg_toplevel = xdg_surface_get_toplevel(s_xdg_surface);
+	xdg_toplevel_add_listener(s_xdg_toplevel, &s_xdg_toplevel_listener, nullptr);
+	xdg_toplevel_set_title(s_xdg_toplevel, "PCSX2 GS Runner");
+	xdg_toplevel_set_app_id(s_xdg_toplevel, "net.pcsx2.gsrunner");
+
+	wl_surface_commit(s_surface);
+	// Round-trip until the compositor acks our initial configure, so the
+	// Vulkan WSI sees a properly-sized surface from the first swapchain.
+	while (!s_initial_configure_received)
+	{
+		if (wl_display_dispatch(s_display) < 0)
+		{
+			Console.Error("wl_display_dispatch failed during initial configure");
+			DestroyPlatformWindow();
+			return false;
+		}
+	}
+
+	s_wi.type = WindowInfo::Type::Wayland;
+	s_wi.display_connection = s_display;
+	s_wi.window_handle = s_surface;
+	if (s_wi.surface_width == 0)
+		s_wi.surface_width = WINDOW_WIDTH;
+	if (s_wi.surface_height == 0)
+		s_wi.surface_height = WINDOW_HEIGHT;
+	s_wi.surface_scale = 1.0f;
+	return true;
+}
+
+void GSRunner::DestroyPlatformWindow()
+{
+	if (s_xdg_toplevel) { xdg_toplevel_destroy(s_xdg_toplevel); s_xdg_toplevel = nullptr; }
+	if (s_xdg_surface)  { xdg_surface_destroy(s_xdg_surface);   s_xdg_surface = nullptr; }
+	if (s_surface)      { wl_surface_destroy(s_surface);        s_surface = nullptr; }
+	if (s_wm_base)      { xdg_wm_base_destroy(s_wm_base);       s_wm_base = nullptr; }
+	if (s_compositor)   { wl_compositor_destroy(s_compositor);  s_compositor = nullptr; }
+	if (s_registry)     { wl_registry_destroy(s_registry);      s_registry = nullptr; }
+	if (s_display)      { wl_display_disconnect(s_display);     s_display = nullptr; }
+}
+
+std::optional<WindowInfo> GSRunner::GetPlatformWindowInfo()
+{
+	WindowInfo wi;
+	if (s_display && s_surface)
+		wi = s_wi;
+	else
+		wi.type = WindowInfo::Type::Surfaceless;
+	return wi;
+}
+
+void GSRunner::PumpPlatformMessages(bool forever)
+{
+	if (!s_display)
+		return;
+
+	if (!forever)
+	{
+		wl_display_flush(s_display);
+		wl_display_dispatch_pending(s_display);
+		return;
+	}
+
+	const int fd = wl_display_get_fd(s_display);
+	while (!s_shutdown_requested.load())
+	{
+		wl_display_flush(s_display);
+		pollfd pfd = {fd, POLLIN, 0};
+		const int p = poll(&pfd, 1, 16); // cap so we keep checking shutdown
+		if (p > 0 && (pfd.revents & POLLIN))
+		{
+			if (wl_display_dispatch(s_display) < 0)
+				break;
+		}
+		else
+		{
+			wl_display_dispatch_pending(s_display);
+		}
+	}
+}
+
+void GSRunner::StopPlatformMessagePump()
+{
+	s_shutdown_requested.store(true);
+}
+
+#elif defined(__linux__) && defined(X11_API)
 static Display* s_display = nullptr;
 static Window s_window = None;
 static WindowInfo s_wi;
@@ -1329,4 +1590,52 @@ void GSRunner::StopPlatformMessagePump()
 {
 	s_shutdown_requested.store(true);
 }
-#endif // _WIN32 / __APPLE__
+
+#elif defined(__linux__)
+// No X11/Wayland on this build (handheld kmsdrm target). Vulkan VK_KHR_display
+// owns the screen; VulkanDirect is reported with the requested resolution and
+// the GS device's display backend enumerates the monitor itself. Mirrors
+// pcsx2-sdl/Main.cpp::BuildWindowInfo.
+static std::atomic<bool> s_shutdown_requested{false};
+
+bool GSRunner::CreatePlatformWindow()
+{
+	return true;
+}
+
+void GSRunner::DestroyPlatformWindow()
+{
+}
+
+std::optional<WindowInfo> GSRunner::GetPlatformWindowInfo()
+{
+	WindowInfo wi;
+	if (s_use_window.value_or(true))
+	{
+		wi.type = WindowInfo::Type::VulkanDirect;
+		wi.surface_width = WINDOW_WIDTH;
+		wi.surface_height = WINDOW_HEIGHT;
+		wi.surface_scale = 1.0f;
+	}
+	else
+	{
+		wi.type = WindowInfo::Type::Surfaceless;
+	}
+	return wi;
+}
+
+void GSRunner::PumpPlatformMessages(bool forever)
+{
+	if (!forever)
+		return;
+
+	while (!s_shutdown_requested.load())
+		std::this_thread::sleep_for(std::chrono::milliseconds(16));
+}
+
+void GSRunner::StopPlatformMessagePump()
+{
+	s_shutdown_requested.store(true);
+}
+
+#endif // _WIN32 / __APPLE__ / __linux__

@@ -70,6 +70,34 @@ else()
 	add_subdirectory(pcsx2-gsrunner EXCLUDE_FROM_ALL)
 endif()
 
+# eerunner — headless EE (R5900) JIT-vs-interpreter divergence localizer.
+# Built on demand (`--target pcsx2-eerunner`); EXCLUDE_FROM_ALL otherwise.
+if(ENABLE_EERUNNER)
+	add_subdirectory(pcsx2-eerunner)
+else()
+	add_subdirectory(pcsx2-eerunner EXCLUDE_FROM_ALL)
+endif()
+
+# vurunner — headless VU microprogram replayer for codegen iteration. Needs
+# the recompiler test hooks since it shares the harness's plumbing.
+if(ENABLE_VURUNNER)
+	if(NOT ENABLE_RECOMPILER_TEST_HOOKS)
+		message(FATAL_ERROR "ENABLE_VURUNNER requires ENABLE_RECOMPILER_TEST_HOOKS=ON.")
+	endif()
+	add_subdirectory(pcsx2-vurunner)
+else()
+	add_subdirectory(pcsx2-vurunner EXCLUDE_FROM_ALL)
+endif()
+
+# SDL3 / kmsdrm frontend (handheld target)
+if(UNIX AND NOT APPLE)
+	if(ENABLE_SDL_FRONTEND)
+		add_subdirectory(pcsx2-sdl)
+	else()
+		add_subdirectory(pcsx2-sdl EXCLUDE_FROM_ALL)
+	endif()
+endif()
+
 #-------------------------------------------------------------------------------
 if(NOT IS_SUPPORTED_COMPILER)
 	message(WARNING "

@@ -3617,6 +3617,19 @@ void VMManager::SetHardwareDependentDefaultSettings(SettingsInterface& si)
 	const int extra_threads = (core_count > 3) ? 3 : 2;
 	Console.WriteLn(fmt::format("  Setting Extra Software Rendering Threads to {}.", extra_threads));
 	si.SetIntValue("EmuCore/GS", "extrathreads", extra_threads);
+
+	// Enable thread pinning by default on heterogeneous CPUs (big.LITTLE).
+	// Without it, the kernel may migrate the EE / VU / GS threads to E-cores
+	// mid-frame — even one such migration is enough to miss the 60fps deadline
+	// on Apple Silicon under Asahi and Intel Alder Lake-class hybrid systems.
+	// SetEmuThreadAffinities already sorts processors by frequency, so pinning
+	// to indices 0..2 lands on the fastest cores.
+	if (cpuinfo_get_clusters_count() > 1 && core_count >= 3)
+	{
+		Console.WriteLn(fmt::format("  Heterogeneous CPU detected ({} clusters); enabling thread pinning.",
+			cpuinfo_get_clusters_count()));
+		si.SetBoolValue("EmuCore", "EnableThreadPinning", true);
+	}
 }
 
 #elif defined(__APPLE__)
