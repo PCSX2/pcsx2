@@ -9,6 +9,10 @@
 #include <array>
 #include <cstdio>
 
+#if defined(__aarch64__)
+#include <arm_neon.h>
+#endif
+
 // --------------------------------------------------------------------------------------
 //  SPU2 Register Table LUT
 // --------------------------------------------------------------------------------------
@@ -83,7 +87,18 @@ static __forceinline s32 clamp_mix(s32 x)
 
 static __forceinline StereoOut32 clamp_mix(StereoOut32 sample)
 {
+#if defined(__aarch64__)
+	// vmin/vmax on s32x2 — one cycle each on A53 vs scalar cmp+csel pair × 2.
+	const int32x2_t v   = vld1_s32(&sample.Left);
+	const int32x2_t lo  = vdup_n_s32(-0x8000);
+	const int32x2_t hi  = vdup_n_s32(0x7fff);
+	const int32x2_t out = vmin_s32(vmax_s32(v, lo), hi);
+	StereoOut32 r;
+	vst1_s32(&r.Left, out);
+	return r;
+#else
 	return StereoOut32(clamp_mix(sample.Left), clamp_mix(sample.Right));
+#endif
 }
 
 struct V_VolumeLR
