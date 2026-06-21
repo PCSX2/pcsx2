@@ -21,13 +21,13 @@ static constexpr u32 TEXTURE_UPLOAD_ALIGNMENT = 64;
 // We need 32 here for AVX2, so 64 is also fine.
 static constexpr u32 TEXTURE_UPLOAD_PITCH_ALIGNMENT = 64;
 
-GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format format)
+GSTextureOGL::GSTextureOGL(Usage usage, int width, int height, int levels, Format format)
 {
 	// OpenGL didn't like dimensions of size 0
 	m_size.x = std::max(1, width);
 	m_size.y = std::max(1, height);
+	m_usage = usage;
 	m_format = format;
-	m_type = type;
 	m_texture_id = 0;
 	m_mipmap_levels = 1;
 
@@ -144,7 +144,7 @@ GSTextureOGL::GSTextureOGL(Type type, int width, int height, int levels, Format 
 	}
 
 	// Only 32 bits input texture will be supported for mipmap
-	if (m_type == Type::Texture)
+	if (IsTexture())
 		m_mipmap_levels = levels;
 
 	// Create a gl object (texture isn't allocated here)
@@ -181,7 +181,7 @@ void* GSTextureOGL::GetNativeHandle() const
 
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
-	pxAssert(m_type != Type::DepthStencil);
+	pxAssert(!IsDepthStencil());
 
 	if (layer >= m_mipmap_levels)
 		return true;
@@ -263,7 +263,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 	const u32 pitch = Common::AlignUpPow2(r.width() << m_int_shift, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
 	m.pitch = pitch;
 
-	if (m_type == Type::Texture || m_type == Type::RenderTarget)
+	if (IsTexture() || IsRenderTarget())
 	{
 		const u32 upload_size = CalcUploadSize(r.height(), pitch);
 		GLStreamBuffer* sb = GSDeviceOGL::GetInstance()->GetTextureUploadBuffer();
@@ -292,7 +292,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 
 void GSTextureOGL::Unmap()
 {
-	if (m_type == Type::Texture || m_type == Type::RenderTarget)
+	if (IsTexture() || IsRenderTarget())
 	{
 		GSDeviceOGL::GetInstance()->CommitClear(this, true);
 
