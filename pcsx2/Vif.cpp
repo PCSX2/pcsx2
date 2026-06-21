@@ -240,7 +240,7 @@ __fi void vif1STAT(u32 value)
 	VIF_LOG("VIF1_STAT write32 0x%8.8x", value);
 
 	/* Only FDR bit is writable, so mask the rest */
-	if ((vif1Regs.stat.FDR) ^ ((tVIF_STAT&)value).FDR)
+	if ((vif1Regs.stat.FDR) ^ tVIF_STAT(value).FDR)
 	{
 		bool isStalled = false;
 		// different so can't be stalled

@@ -291,8 +291,12 @@ void VifUnpackNEON_Base::xUPK_V4_5() const
 	armAsm->Lsr(workGprW, workGprW, 8); // A
 	armAsm->Lsl(workGprW, workGprW, 7); // A.0000000
 	armAsm->Ins(destReg.V4S(), 3, workGprW); // A|B|G|R
-	armAsm->Shl(destReg.V4S(), destReg.V4S(), 24); // can optimize to
-	armAsm->Ushr(destReg.V4S(), destReg.V4S(), 24); // single AND...
+	// Zero the upper 24 bits of each lane (lanes carry per-channel
+	// Lsr/Lsl residue from the unpack chain above). Shl+Ushr is 2
+	// NEON insns; an AND with a pre-built mask is the same count
+	// (Movi #0xFF + And) so no win — keep the shift form.
+	armAsm->Shl(destReg.V4S(), destReg.V4S(), 24);
+	armAsm->Ushr(destReg.V4S(), destReg.V4S(), 24);
 }
 
 void VifUnpackNEON_Base::xUnpack(int upknum) const
