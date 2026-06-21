@@ -5589,7 +5589,9 @@ void GSRendererHW::EmulateZbuffer(const GSTextureCache::Target* ds)
 
 	// Even when Z is read-only, Z floor must be enabled with ZTST_GREATER since otherwise there
 	// can be false passing if the incoming Z is not floored when the buffer value is floored.
-	m_conf.ps.zfloor = !flat_z &&
+	// On tilers (Mali), the device can opt out: declaring gl_FragDepth disables early-ZS for
+	// the entire pipeline. zclamp (large_z) is independent and stays correct.
+	m_conf.ps.zfloor = !flat_z && !g_gs_device->Features().no_ps2_z_quantization &&
 		(m_cached_ctx.DepthWrite() || (m_cached_ctx.DepthRead() && m_cached_ctx.TEST.ZTST == ZTST_GREATER));
 
 	if (m_cached_ctx.DepthWrite() && large_z)
@@ -6527,7 +6529,7 @@ __ri u32 GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool t
 		const GSLocalMemory::psm_t& t_psm = GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM];
 		const GSLocalMemory::psm_t& f_psm = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM];
 		GSVector4i block_offset = GSVector4i(min_uv.x / t_psm.bs.x, min_uv.y / t_psm.bs.y).xyxy();
-		GSVector4i m_r_block_offset = GSVector4i((m_r.x & (f_psm.pgs.x - 1)) / f_psm.bs.x, (m_r.y & (f_psm.pgs.y - 1)) / f_psm.bs.y);
+		[[maybe_unused]] GSVector4i m_r_block_offset = GSVector4i((m_r.x & (f_psm.pgs.x - 1)) / f_psm.bs.x, (m_r.y & (f_psm.pgs.y - 1)) / f_psm.bs.y);
 
 		// Adjust it back to the page boundary
 		min_uv.x -= block_offset.x * t_psm.bs.x;

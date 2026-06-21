@@ -23,6 +23,29 @@ public:
 
 	~VKSwapChain();
 
+	// Diagnostic counters for present/acquire timing, accumulated across all swapchains.
+	// Surfaces WSI-layer stalls (e.g. slow present/acquire on tiler-class drivers).
+	struct PresentStats
+	{
+		u64 acquire_count;
+		double acquire_total_ms;
+		double acquire_max_ms;
+		u64 present_count;
+		double present_total_ms;
+		double present_max_ms;
+		u64 suboptimal_count;
+		u64 out_of_date_count;
+	};
+	static PresentStats GetPresentStats();
+	static void ResetPresentStats();
+	// Controls whether NoteAcquire/NotePresent record anything. Default off so
+	// the normal present path pays only one atomic-load + branch per call;
+	// diagnostic tools flip this on at startup.
+	static void SetPresentStatsEnabled(bool enabled);
+	static bool IsPresentStatsEnabled();
+	static void NoteAcquire(double ms, VkResult res);
+	static void NotePresent(double ms, VkResult res);
+
 	// Creates a vulkan-renderable surface for the specified window handle.
 	static VkSurfaceKHR CreateVulkanSurface(VkInstance instance, VkPhysicalDevice physical_device, WindowInfo* wi);
 
@@ -46,6 +69,7 @@ public:
 	__fi u32 GetCurrentImageIndex() const { return m_current_image; }
 	__fi const u32* GetCurrentImageIndexPtr() const { return &m_current_image; }
 	__fi u32 GetImageCount() const { return static_cast<u32>(m_images.size()); }
+	__fi VkPresentModeKHR GetPresentMode() const { return m_present_mode; }
 	__fi const GSTextureVK* GetCurrentTexture() const { return m_images[m_current_image].get(); }
 	__fi GSTextureVK* GetCurrentTexture() { return m_images[m_current_image].get(); }
 	__fi VkSemaphore GetImageAvailableSemaphore() const

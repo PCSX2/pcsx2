@@ -14,6 +14,8 @@
 #include "GS/GSExtra.h"
 #include <array>
 #include <span>
+#include <string>
+#include <vector>
 
 enum class Filter
 {
@@ -1387,6 +1389,7 @@ public:
 		bool stencil_buffer       : 1; ///< Supports stencil buffer, and can use for DATE.
 		bool cas_sharpening       : 1; ///< Supports sufficient functionality for contrast adaptive sharpening.
 		bool test_and_sample_depth: 1; ///< Supports concurrently binding the depth-stencil buffer for sampling and depth testing.
+		bool no_ps2_z_quantization: 1; ///< Skip PS2 32-bit-fixed Z floor (saves SPIR-V DepthReplacing → re-enables early-ZS on tilers).
 		bool depth_feedback       : 1; ///< Depth feedback loops can be done with DS directly (otherwise need to copy to separate RT).  Implies `feedback_loops`.
 		bool aa1                  : 1; ///< Supports the GS AA1 feature.
 		bool rov                  : 1; ///< Supports rasterizer ordered views for both depth and color.
@@ -1551,6 +1554,16 @@ public:
 	__fi s32 GetWindowWidth() const { return static_cast<s32>(m_window_info.surface_width); }
 	__fi s32 GetWindowHeight() const { return static_cast<s32>(m_window_info.surface_height); }
 	__fi GSVector2i GetWindowSize() const { return GSVector2i(static_cast<s32>(m_window_info.surface_width), static_cast<s32>(m_window_info.surface_height)); }
+	// Logical window dimensions for layout: same as GetWindowSize for
+	// Rot0/Rot180, swapped for Rot90/Rot270 so callers compute the present
+	// rect against a portrait box that the rotation transform then maps onto
+	// the landscape swapchain. Use this in callers that produce coordinates
+	// later consumed by the rotation-aware Vulkan present path (game draw_rect,
+	// ImGui DisplaySize). Other callers (GS Resize, viewport setup) want the
+	// raw physical dims and should keep using GetWindowWidth/Height.
+	GSVector2i GetPresentationSize() const;
+	__fi s32 GetPresentationWidth() const { return GetPresentationSize().x; }
+	__fi s32 GetPresentationHeight() const { return GetPresentationSize().y; }
 	__fi float GetWindowScale() const { return m_window_info.surface_scale; }
 	__fi GSVSyncMode GetVSyncMode() const { return m_vsync_mode; }
 	__fi bool IsPresentThrottleAllowed() const { return m_allow_present_throttle; }
@@ -1605,6 +1618,15 @@ public:
 
 	/// Returns the amount of GPU time utilized since the last time this method was called.
 	virtual float GetAndResetAccumulatedGPUTime() = 0;
+
+	/// Enables backend-specific diagnostic counters (e.g. Vulkan acquire/present timing).
+	/// Off by default to surface WSI-layer timing in diagnostic tools without paying
+	/// the cost on the normal present hot path.
+	virtual void EnableExtendedStats(bool enabled) {}
+
+	/// Returns backend-specific diagnostic lines (swapchain config, present/acquire timing, etc).
+	/// Each line is a fully-formatted string, ready to print as-is. Default: empty.
+	virtual std::vector<std::string> GetExtendedStats() const { return {}; }
 
 	/// Returns true if not enough time has passed for present to not block.
 	bool ShouldSkipPresentingFrame();

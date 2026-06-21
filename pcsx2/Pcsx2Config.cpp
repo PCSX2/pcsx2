@@ -658,6 +658,13 @@ const char* Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames[(size_t)FMVAspectR
 	"10:7",
 	nullptr};
 
+const char* Pcsx2Config::GSOptions::DisplayRotationNames[(size_t)DisplayRotation::MaxCount + 1] = {
+	"0",
+	"90",
+	"180",
+	"270",
+	nullptr};
+
 const char* Pcsx2Config::GSOptions::BlendingLevelNames[] = {
 	"Minimum",
 	"Basic",
@@ -727,6 +734,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	UseBlitSwapChain = false;
 	DisableShaderCache = false;
 	DisableFramebufferFetch = false;
+	DisablePS2DepthQuantization = false;
 	DisableVertexShaderExpand = false;
 	SkipDuplicateFrames = true;
 	OsdMessagesPos = OsdOverlayPos::TopLeft;
@@ -806,6 +814,7 @@ bool Pcsx2Config::GSOptions::operator==(const GSOptions& right) const
 
 		OpEqu(AspectRatio) &&
 		OpEqu(FMVAspectRatioSwitch) &&
+		OpEqu(Rotation) &&
 
 		OptionsAreEqual(right));
 }
@@ -916,6 +925,7 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		   OpEqu(UseBlitSwapChain) &&
 		   OpEqu(DisableShaderCache) &&
 		   OpEqu(DisableFramebufferFetch) &&
+		   OpEqu(DisablePS2DepthQuantization) &&
 		   OpEqu(DisableVertexShaderExpand) &&
 		   OpEqu(OverrideTextureBarriers) &&
 		   OpEqu(DepthFeedbackMode) &&
@@ -942,6 +952,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 
 	SettingsWrapEnumEx(AspectRatio, "AspectRatio", AspectRatioNames);
 	SettingsWrapEnumEx(FMVAspectRatioSwitch, "FMVAspectRatioSwitch", FMVAspectRatioSwitchNames);
+	SettingsWrapEnumEx(Rotation, "DisplayRotation", DisplayRotationNames);
 	SettingsWrapIntEnumEx(ScreenshotSize, "ScreenshotSize");
 	SettingsWrapIntEnumEx(ScreenshotFormat, "ScreenshotFormat");
 	SettingsWrapEntry(ScreenshotQuality);
@@ -964,6 +975,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(UseBlitSwapChain);
 	SettingsWrapBitBool(DisableShaderCache);
 	SettingsWrapBitBool(DisableFramebufferFetch);
+	SettingsWrapBitBool(DisablePS2DepthQuantization);
 	SettingsWrapBitBool(DisableVertexShaderExpand);
 	SettingsWrapBitBool(SkipDuplicateFrames);
 	SettingsWrapBitBool(OsdShowSpeed);

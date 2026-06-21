@@ -43,6 +43,7 @@ public:
 		bool vk_ext_line_rasterization : 1;
 		bool vk_swapchain_maintenance1 : 1;
 		bool vk_swapchain_maintenance1_is_khr : 1;
+		bool vk_khr_push_descriptor : 1;
 		bool vk_khr_driver_properties : 1;
 		bool vk_khr_shader_non_semantic_info : 1;
 		bool vk_ext_attachment_feedback_loop_layout : 1;
@@ -82,6 +83,9 @@ public:
 	/// Returns true if running on an AMD GPU.
 	__fi bool IsDeviceAMD() const { return (m_device_properties.vendorID == 0x1002); }
 
+	/// Returns true if running on an ARM GPU (Mali).
+	__fi bool IsDeviceARM() const { return (m_device_properties.vendorID == 0x13B5); }
+
 	// Creates a simple render pass.
 	VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format,
 		VkAttachmentLoadOp color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
@@ -103,6 +107,10 @@ public:
 
 	/// Allocates a descriptor set from the pool reserved for the current frame.
 	VkDescriptorSet AllocatePersistentDescriptorSet(VkDescriptorSetLayout set_layout);
+
+	/// Allocates a descriptor set from the current frame's per-frame pool (push descriptor fallback).
+	/// Returns VK_NULL_HANDLE on pool exhaustion after flushing the command buffer.
+	VkDescriptorSet AllocateDescriptorSetFromFramePool(VkDescriptorSetLayout set_layout);
 
 	/// Frees a descriptor set allocated from the global pool.
 	void FreePersistentDescriptorSet(VkDescriptorSet set);
@@ -214,6 +222,7 @@ private:
 		// [0] - Init (upload) command buffer, [1] - draw command buffer
 		VkCommandPool command_pool = VK_NULL_HANDLE;
 		std::array<VkCommandBuffer, 2> command_buffers{VK_NULL_HANDLE, VK_NULL_HANDLE};
+		VkDescriptorPool descriptor_pool = VK_NULL_HANDLE; // Per-frame pool, used when push descriptors are unavailable
 		VkFence fence = VK_NULL_HANDLE;
 		u64 fence_counter = 0;
 		s32 spin_id = -1;
@@ -292,6 +301,7 @@ private:
 	VkPhysicalDeviceProperties m_device_properties = {};
 	VkPhysicalDeviceDriverPropertiesKHR m_device_driver_properties = {};
 	OptionalExtensions m_optional_extensions = {};
+	bool m_colorclip_fallback_to_hdr = false;
 
 public:
 	enum FeedbackLoopFlag : u8
@@ -561,6 +571,9 @@ public:
 
 	bool SetGPUTimingEnabled(bool enabled) override;
 	float GetAndResetAccumulatedGPUTime() override;
+
+	void EnableExtendedStats(bool enabled) override;
+	std::vector<std::string> GetExtendedStats() const override;
 
 	void PushDebugGroup(const char* fmt, ...) override;
 	void PopDebugGroup() override;

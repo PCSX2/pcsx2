@@ -21,6 +21,7 @@
 #include "common/HostSys.h"
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
+#include "common/Timer.h"
 
 #include "imgui.h"
 
@@ -36,7 +37,12 @@ enum : u32
 	MAX_COMBINED_IMAGE_SAMPLER_DESCRIPTORS_PER_FRAME = 2 * MAX_DRAW_CALLS_PER_FRAME,
 	MAX_SAMPLED_IMAGE_DESCRIPTORS_PER_FRAME =
 		MAX_DRAW_CALLS_PER_FRAME, // assume at least half our draws aren't going to be shuffle/blending
-	MAX_STORAGE_IMAGE_DESCRIPTORS_PER_FRAME = 4, // Currently used by CAS only
+	// CAS uses one storage image per frame, but the TFX texture set also carries the
+	// two ROV storage-image bindings (TFX_TEXTURE_RT_ROV / _DEPTH_ROV), and every
+	// vkAllocateDescriptorSets of that layout reserves both whether written or not.
+	// On the ROV-without-push-descriptor path that is two per TFX draw, so
+	// size to match the draw budget rather than the old CAS-only value of 4.
+	MAX_STORAGE_IMAGE_DESCRIPTORS_PER_FRAME = 2 * MAX_DRAW_CALLS_PER_FRAME,
 	MAX_INPUT_ATTACHMENT_IMAGE_DESCRIPTORS_PER_FRAME = MAX_DRAW_CALLS_PER_FRAME,
 	MAX_DESCRIPTOR_SETS_PER_FRAME = MAX_DRAW_CALLS_PER_FRAME * 2,
 
@@ -80,7 +86,6 @@ static std::mutex s_instance_mutex;
 
 // Device extensions that are required for PCSX2.
 static constexpr const char* s_required_device_extensions[] = {
-	VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME,
 };
 
 GSDeviceVK::GSDeviceVK()
@@ -198,6 +203,16 @@ bool GSDeviceVK::SelectInstanceExtensions(ExtensionList* extension_list, const W
 	if (wi.type == WindowInfo::Type::MacOS && !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true))
 		return false;
 #endif
+
+	// VK_KHR_display direct-to-monitor surface (kmsdrm handhelds).
+	// VK_KHR_get_display_properties2 is optional but lets us read HDR / extended
+	// display info on ICDs that support it.
+	if (wi.type == WindowInfo::Type::VulkanDirect)
+	{
+		if (!SupportsExtension(VK_KHR_DISPLAY_EXTENSION_NAME, true))
+			return false;
+		SupportsExtension(VK_KHR_GET_DISPLAY_PROPERTIES_2_EXTENSION_NAME, false);
+	}
 
 	// VK_EXT_debug_utils
 	if (enable_debug_utils && !SupportsExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false))
@@ -407,6 +422,7 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 			return false;
 	}
 
+	m_optional_extensions.vk_khr_push_descriptor = SupportsExtension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_provoking_vertex = SupportsExtension(VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_memory_budget = SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_calibrated_timestamps =
@@ -771,18 +787,24 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 
 	VkPhysicalDevicePushDescriptorPropertiesKHR push_descriptor_properties = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR};
-	Vulkan::AddPointerToChain(&properties2, &push_descriptor_properties);
+	if (m_optional_extensions.vk_khr_push_descriptor)
+		Vulkan::AddPointerToChain(&properties2, &push_descriptor_properties);
 
 	// query
 	vkGetPhysicalDeviceProperties2(m_physical_device, &properties2);
 
 	// confirm we actually support it
-	if (push_descriptor_properties.maxPushDescriptors < NUM_TFX_TEXTURES)
+	if (m_optional_extensions.vk_khr_push_descriptor)
 	{
-		Console.Error("VK: maxPushDescriptors (%u) is below required (%u)", push_descriptor_properties.maxPushDescriptors,
-			NUM_TFX_TEXTURES);
-		return false;
+		if (push_descriptor_properties.maxPushDescriptors < NUM_TFX_TEXTURES)
+		{
+			Console.Warning("VK: maxPushDescriptors (%u) is below required (%u), disabling push descriptors",
+				push_descriptor_properties.maxPushDescriptors, NUM_TFX_TEXTURES);
+			m_optional_extensions.vk_khr_push_descriptor = false;
+		}
 	}
+	if (!m_optional_extensions.vk_khr_push_descriptor)
+		Console.Warning("VK: VK_KHR_push_descriptor is not available, using per-frame descriptor pools instead.");
 
 	if (m_optional_extensions.vk_ext_line_rasterization && !line_rasterization_feature.bresenhamLines)
 	{
@@ -957,6 +979,30 @@ bool GSDeviceVK::CreateCommandBuffers()
 			return false;
 		}
 		Vulkan::SetObjectName(m_device, resources.fence, "Frame Fence %u", frame_index);
+
+		// Create per-frame descriptor pool when push descriptors are not available.
+		if (!m_optional_extensions.vk_khr_push_descriptor)
+		{
+			// Pool sizes cover TFX textures, utility, and CAS descriptor sets per frame.
+			static constexpr const VkDescriptorPoolSize frame_pool_sizes[] = {
+				{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_COMBINED_IMAGE_SAMPLER_DESCRIPTORS_PER_FRAME},
+				{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, MAX_SAMPLED_IMAGE_DESCRIPTORS_PER_FRAME},
+				{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_STORAGE_IMAGE_DESCRIPTORS_PER_FRAME},
+				{VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, MAX_INPUT_ATTACHMENT_IMAGE_DESCRIPTORS_PER_FRAME},
+			};
+
+			VkDescriptorPoolCreateInfo dp_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO, nullptr, 0,
+				MAX_DESCRIPTOR_SETS_PER_FRAME, static_cast<u32>(std::size(frame_pool_sizes)), frame_pool_sizes};
+
+			res = vkCreateDescriptorPool(m_device, &dp_info, nullptr, &resources.descriptor_pool);
+			if (res != VK_SUCCESS)
+			{
+				LOG_VULKAN_ERROR(res, "vkCreateDescriptorPool (per-frame) failed: ");
+				return false;
+			}
+			Vulkan::SetObjectName(m_device, resources.descriptor_pool, "Frame Descriptor Pool %u", frame_index);
+		}
+
 		++frame_index;
 	}
 
@@ -1085,6 +1131,28 @@ void GSDeviceVK::FreePersistentDescriptorSet(VkDescriptorSet set)
 	vkFreeDescriptorSets(m_device, m_global_descriptor_pool, 1, &set);
 }
 
+VkDescriptorSet GSDeviceVK::AllocateDescriptorSetFromFramePool(VkDescriptorSetLayout set_layout)
+{
+	VkDescriptorPool pool = m_frame_resources[m_current_frame].descriptor_pool;
+	pxAssert(pool != VK_NULL_HANDLE);
+
+	VkDescriptorSetAllocateInfo allocate_info = {
+		VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO, nullptr, pool, 1, &set_layout};
+
+	VkDescriptorSet descriptor_set;
+	VkResult res = vkAllocateDescriptorSets(m_device, &allocate_info, &descriptor_set);
+	if (res == VK_SUCCESS)
+		return descriptor_set;
+
+	// Pool exhausted. Recovery (flush the command buffer to reset the frame pool,
+	// then restart the render pass and re-apply state) must be driven by the caller:
+	// callers capture their command buffer and emit binding state before calling us,
+	// so flushing here would leave them writing to a submitted command buffer with no
+	// active render pass. Signal exhaustion with a null set and let the caller flush,
+	// restart, and re-enter (mirroring the uniform-buffer overflow paths).
+	return VK_NULL_HANDLE;
+}
+
 void GSDeviceVK::WaitForFenceCounter(u64 fence_counter)
 {
 	if (m_completed_fence_counter >= fence_counter)
@@ -1120,6 +1188,55 @@ bool GSDeviceVK::SetGPUTimingEnabled(bool enabled)
 {
 	m_gpu_timing_enabled = enabled && m_gpu_timing_supported;
 	return (enabled == m_gpu_timing_enabled);
+}
+
+void GSDeviceVK::EnableExtendedStats(bool enabled)
+{
+	VKSwapChain::SetPresentStatsEnabled(enabled);
+}
+
+std::vector<std::string> GSDeviceVK::GetExtendedStats() const
+{
+	std::vector<std::string> lines;
+	if (m_swap_chain)
+	{
+		const WindowInfo& wi = m_swap_chain->GetWindowInfo();
+		const char* wsi_name = "?";
+		switch (wi.type)
+		{
+			case WindowInfo::Type::Surfaceless: wsi_name = "Surfaceless"; break;
+			case WindowInfo::Type::Win32:       wsi_name = "Win32"; break;
+			case WindowInfo::Type::X11:         wsi_name = "X11"; break;
+			case WindowInfo::Type::Wayland:     wsi_name = "Wayland"; break;
+			case WindowInfo::Type::MacOS:       wsi_name = "MacOS"; break;
+			case WindowInfo::Type::VulkanDirect: wsi_name = "VulkanDirect"; break;
+		}
+		const char* present_name = "?";
+		switch (m_swap_chain->GetPresentMode())
+		{
+			case VK_PRESENT_MODE_IMMEDIATE_KHR:    present_name = "IMMEDIATE"; break;
+			case VK_PRESENT_MODE_MAILBOX_KHR:      present_name = "MAILBOX"; break;
+			case VK_PRESENT_MODE_FIFO_KHR:         present_name = "FIFO"; break;
+			case VK_PRESENT_MODE_FIFO_RELAXED_KHR: present_name = "FIFO_RELAXED"; break;
+			default: break;
+		}
+		lines.push_back(fmt::format(
+			"Swapchain: {}x{} (scale {:.2f}) fmt={} present={} images={} wsi={}",
+			m_swap_chain->GetWidth(), m_swap_chain->GetHeight(), wi.surface_scale,
+			static_cast<unsigned>(m_swap_chain->GetTextureFormat()),
+			present_name, m_swap_chain->GetImageCount(), wsi_name));
+	}
+
+	const VKSwapChain::PresentStats ps = VKSwapChain::GetPresentStats();
+	const double acquire_avg_ms = ps.acquire_count ? (ps.acquire_total_ms / ps.acquire_count) : 0.0;
+	const double present_avg_ms = ps.present_count ? (ps.present_total_ms / ps.present_count) : 0.0;
+	lines.push_back(fmt::format(
+		"vkAcquireNextImage: avg {:.3f} ms, max {:.3f} ms, n={}", acquire_avg_ms, ps.acquire_max_ms, ps.acquire_count));
+	lines.push_back(fmt::format(
+		"vkQueuePresent:     avg {:.3f} ms, max {:.3f} ms, n={}", present_avg_ms, ps.present_max_ms, ps.present_count));
+	lines.push_back(fmt::format(
+		"Suboptimal: {}, OutOfDate: {}", ps.suboptimal_count, ps.out_of_date_count));
+	return lines;
 }
 
 void GSDeviceVK::ScanForCommandBufferCompletion()
@@ -1297,7 +1414,15 @@ void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 
 		present_swap_chain->ResetImageAcquireResult();
 
+		const bool stats = VKSwapChain::IsPresentStatsEnabled();
+		const Common::Timer::Value t_present_start = stats ? Common::Timer::GetCurrentValue() : 0;
 		res = vkQueuePresentKHR(m_present_queue, &present_info);
+		if (stats)
+		{
+			const double present_elapsed_ms =
+				Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue() - t_present_start);
+			VKSwapChain::NotePresent(present_elapsed_ms, res);
+		}
 		if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
 		{
 			// VK_ERROR_OUT_OF_DATE_KHR is not fatal, just means we need to recreate our swap chain.
@@ -1388,6 +1513,14 @@ void GSDeviceVK::ActivateCommandBuffer(u32 index)
 	res = vkResetCommandPool(m_device, resources.command_pool, 0);
 	if (res != VK_SUCCESS)
 		LOG_VULKAN_ERROR(res, "vkResetCommandPool failed: ");
+
+	// Reset per-frame descriptor pool when push descriptors are not available.
+	if (resources.descriptor_pool != VK_NULL_HANDLE)
+	{
+		res = vkResetDescriptorPool(m_device, resources.descriptor_pool, 0);
+		if (res != VK_SUCCESS)
+			LOG_VULKAN_ERROR(res, "vkResetDescriptorPool failed: ");
+	}
 
 	// Enable commands to be recorded to the two buffers again.
 	VkCommandBufferBeginInfo begin_info = {
@@ -2717,6 +2850,11 @@ bool GSDeviceVK::CheckFeatures()
 	// Use D32F depth instead of D32S8 when we have framebuffer fetch.
 	m_features.stencil_buffer &= !m_features.framebuffer_fetch;
 
+	// On tiler GPUs, declaring gl_FragDepth (for PS2 32-bit Z quantization) emits
+	// SPIR-V ExecutionMode DepthReplacing, which disables early-ZS for the entire
+	// pipeline. Default-on for ARM GPUs; opt-out via INI for Z-precision-sensitive titles.
+	m_features.no_ps2_z_quantization = GSConfig.DisablePS2DepthQuantization || IsDeviceARM();
+
 	// whether we can do point/line expand depends on the range of the device
 	const float f_upscale = static_cast<float>(GSConfig.UpscaleMultiplier);
 	m_features.point_expand = (m_device_features.largePoints && limits.pointSizeRange[0] <= f_upscale &&
@@ -2727,9 +2865,10 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.depth_feedback = m_features.feedback_loops();
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
 
-	DevCon.WriteLn("Optional features:%s%s%s%s%s", m_features.primitive_id ? " primitive_id" : "",
+	DevCon.WriteLn("Optional features:%s%s%s%s%s%s", m_features.primitive_id ? " primitive_id" : "",
 		m_features.texture_barrier ? " texture_barrier" : "", m_features.framebuffer_fetch ? " framebuffer_fetch" : "",
-		m_features.provoking_vertex_last ? " provoking_vertex_last" : "", m_features.vs_expand ? " vs_expand" : "");
+		m_features.provoking_vertex_last ? " provoking_vertex_last" : "", m_features.vs_expand ? " vs_expand" : "",
+		m_features.no_ps2_z_quantization ? " no_ps2_z_quantization" : "");
 
 	DevCon.WriteLn("Using %s for point expansion and %s for line expansion.",
 		m_features.point_expand ? "hardware" : "vertex expanding",
@@ -2748,6 +2887,16 @@ bool GSDeviceVK::CheckFeatures()
 		vkGetPhysicalDeviceFormatProperties(m_physical_device, vkfmt, &props);
 		if ((props.optimalTilingFeatures & bits) != bits)
 		{
+			// ColorClip (R16G16B16A16_UNORM) may not be supported as a render target on some GPUs
+			// (e.g. Broadcom V3D). Fall back to ColorHDR (R16G16B16A16_SFLOAT) which provides
+			// equivalent precision for color clamping emulation.
+			if (static_cast<GSTexture::Format>(fmt) == GSTexture::Format::ColorClip)
+			{
+				Console.Warning("VK: ColorClip format (R16G16B16A16_UNORM) not supported as render target, falling back to ColorHDR (R16G16B16A16_SFLOAT).");
+				m_colorclip_fallback_to_hdr = true;
+				continue;
+			}
+
 			Host::ReportFormattedErrorAsync("VK: Renderer Unavailable",
 				"Required format %u is missing bits, you may need to update your driver. (vk:%u, has:0x%x, needs:0x%x)",
 				fmt, static_cast<unsigned>(vkfmt), props.optimalTilingFeatures, bits);
@@ -2847,6 +2996,9 @@ VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format) const
 		VK_FORMAT_BC3_UNORM_BLOCK, // BC3
 		VK_FORMAT_BC7_UNORM_BLOCK, // BC7
 	}};
+
+	if (format == GSTexture::Format::ColorClip && m_colorclip_fallback_to_hdr)
+		return VK_FORMAT_R16G16B16A16_SFLOAT;
 
 	return (format != GSTexture::Format::DepthStencil || m_features.stencil_buffer) ?
 		s_format_mapping[static_cast<int>(format)] :
@@ -2971,7 +3123,7 @@ void GSDeviceVK::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 {
 	DisplayConstantBuffer cb;
 	cb.SetSource(sRect, sTex->GetSize());
-	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GSVector2i(GetWindowWidth(), GetWindowHeight()));
+	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GetPresentationSize());
 	cb.SetTime(shaderTime);
 	SetUtilityPushConstants(&cb, sizeof(cb));
 
@@ -3155,7 +3307,7 @@ void GSDeviceVK::DoStretchRect(GSTextureVK* sTex, const GSVector4& sRect, GSText
 
 	const bool is_present = (!dTex);
 	const bool depth = (dTex && dTex->GetType() == GSTexture::Type::DepthStencil);
-	const GSVector2i size(is_present ? GSVector2i(GetWindowWidth(), GetWindowHeight()) : dTex->GetSize());
+	const GSVector2i size(is_present ? GetPresentationSize() : dTex->GetSize());
 	const GSVector4i dtex_rc(0, 0, size.x, size.y);
 	const GSVector4i dst_rc(GSVector4i(dRect).rintersect(dtex_rc));
 
@@ -3178,6 +3330,43 @@ void GSDeviceVK::DoStretchRect(GSTextureVK* sTex, const GSVector4& sRect, GSText
 	DrawStretchRect(sRect, dRect, size);
 }
 
+// Rotate a logical-NDC point (x, y) into physical-NDC by GSConfig.Rotation.
+// Used by the present pass to map a quad laid out for a logically-rotated
+// window onto the unrotated swapchain viewport.
+//   Rot0:   (x,  y)
+//   Rot90:  (y, -x)   (image rotates 90° CW on the panel)
+//   Rot180: (-x,-y)
+//   Rot270: (-y, x)   (image rotates 90° CCW on the panel)
+static void RotateNDCForPresent(float& x, float& y)
+{
+	switch (GSConfig.Rotation)
+	{
+		case DisplayRotation::Rot90:
+		{
+			const float nx = y;
+			const float ny = -x;
+			x = nx;
+			y = ny;
+			break;
+		}
+		case DisplayRotation::Rot180:
+			x = -x;
+			y = -y;
+			break;
+		case DisplayRotation::Rot270:
+		{
+			const float nx = -y;
+			const float ny = x;
+			x = nx;
+			y = ny;
+			break;
+		}
+		case DisplayRotation::Rot0:
+		default:
+			break;
+	}
+}
+
 void GSDeviceVK::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds)
 {
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
@@ -3186,18 +3375,43 @@ void GSDeviceVK::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect,
 	const float inv_x = 2.0f / ds.x;
 	const float inv_y = 2.0f / ds.y;
 
-	const float left = dRect.x * inv_x - 1.0f;
-	const float right = dRect.z * inv_x - 1.0f;
-	const float top = 1.0f - dRect.y * inv_y;
-	const float bottom = 1.0f - dRect.w * inv_y;
+	float left = dRect.x * inv_x - 1.0f;
+	float right = dRect.z * inv_x - 1.0f;
+	float top = 1.0f - dRect.y * inv_y;
+	float bottom = 1.0f - dRect.w * inv_y;
 
-	const GSVertexPT1 vertices[] = {
-		{GSVector4(left, top, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)},
-		{GSVector4(right, top, 0.5f, 1.0f), GSVector2(sRect.z, sRect.y)},
-		{GSVector4(left, bottom, 0.5f, 1.0f), GSVector2(sRect.x, sRect.w)},
-		{GSVector4(right, bottom, 0.5f, 1.0f), GSVector2(sRect.z, sRect.w)},
-	};
-	IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
+	// Present pass: map logical-NDC (computed against the rotated window) onto
+	// the unrotated physical swapchain viewport. Non-present passes pass the
+	// real dst-texture size in `ds` and must not rotate.
+	if (m_is_presenting && GSConfig.Rotation != DisplayRotation::Rot0)
+	{
+		float tlx = left, tly = top;
+		float trx = right, try_ = top;
+		float blx = left, bly = bottom;
+		float brx = right, bry = bottom;
+		RotateNDCForPresent(tlx, tly);
+		RotateNDCForPresent(trx, try_);
+		RotateNDCForPresent(blx, bly);
+		RotateNDCForPresent(brx, bry);
+
+		const GSVertexPT1 vertices[] = {
+			{GSVector4(tlx, tly, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)},
+			{GSVector4(trx, try_, 0.5f, 1.0f), GSVector2(sRect.z, sRect.y)},
+			{GSVector4(blx, bly, 0.5f, 1.0f), GSVector2(sRect.x, sRect.w)},
+			{GSVector4(brx, bry, 0.5f, 1.0f), GSVector2(sRect.z, sRect.w)},
+		};
+		IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
+	}
+	else
+	{
+		const GSVertexPT1 vertices[] = {
+			{GSVector4(left, top, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)},
+			{GSVector4(right, top, 0.5f, 1.0f), GSVector2(sRect.z, sRect.y)},
+			{GSVector4(left, bottom, 0.5f, 1.0f), GSVector2(sRect.x, sRect.w)},
+			{GSVector4(right, bottom, 0.5f, 1.0f), GSVector2(sRect.z, sRect.w)},
+		};
+		IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
+	}
 
 	if (ApplyUtilityState())
 		DrawPrimitive();
@@ -3902,7 +4116,8 @@ bool GSDeviceVK::CreatePipelineLayouts()
 	// Convert Pipeline Layout
 	//////////////////////////////////////////////////////////////////////////
 
-	dslb.SetPushFlag();
+	if (m_optional_extensions.vk_khr_push_descriptor)
+		dslb.SetPushFlag();
 	dslb.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, NUM_UTILITY_SAMPLERS, VK_SHADER_STAGE_FRAGMENT_BIT);
 	if ((m_utility_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
@@ -3931,7 +4146,8 @@ bool GSDeviceVK::CreatePipelineLayouts()
 		return false;
 	Vulkan::SetObjectName(dev, m_tfx_ubo_ds_layout, "TFX UBO descriptor layout");
 
-	dslb.SetPushFlag();
+	if (m_optional_extensions.vk_khr_push_descriptor)
+		dslb.SetPushFlag();
 	dslb.AddBinding(TFX_TEXTURE_TEXTURE, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_PALETTE, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_RT,
@@ -4460,7 +4676,8 @@ bool GSDeviceVK::CompileCASPipelines()
 	Vulkan::DescriptorSetLayoutBuilder dslb;
 	Vulkan::PipelineLayoutBuilder plb;
 
-	dslb.SetPushFlag();
+	if (m_optional_extensions.vk_khr_push_descriptor)
+		dslb.SetPushFlag();
 	dslb.AddBinding(0, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
 	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT);
 	if ((m_cas_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
@@ -4562,11 +4779,15 @@ void GSDeviceVK::RenderImGui()
 
 	UpdateImGuiTextures();
 
-	const GSVector4 uniforms(
-		2.0f / static_cast<float>(m_window_info.surface_width),
-		2.0f / static_cast<float>(m_window_info.surface_height),
-		-1.0f,
-		-1.0f);
+	// ImGui's vertex Position and ClipRect both come in *logical* pixel coords
+	// (against io.DisplaySize, which we set to the rotated presentation size).
+	// uScale/uTranslate map pixel coords directly to NDC. Rotation transforms
+	// logical pixels into the physical pixel space of the swapchain viewport,
+	// so uScale must always be in physical units (not logical) for both the
+	// rotated and unrotated paths.
+	const float phys_w = static_cast<float>(m_window_info.surface_width);
+	const float phys_h = static_cast<float>(m_window_info.surface_height);
+	const GSVector4 uniforms(2.0f / phys_w, 2.0f / phys_h, -1.0f, -1.0f);
 
 	SetUtilityPushConstants(&uniforms, sizeof(uniforms));
 	SetPipeline(m_imgui_pipeline);
@@ -4579,6 +4800,40 @@ void GSDeviceVK::RenderImGui()
 
 	// this is for presenting, we don't want to screw with the viewport/scissor set by display
 	m_dirty_flags &= ~(DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR);
+
+	// Logical/physical coords differ for Rot90/Rot270; the rotation transform
+	// maps a logical pixel (lx, ly) on a (lw, lh) logical surface to a
+	// physical pixel on the (phys_w, phys_h) swapchain. Rotation is around
+	// the geometric centre of each surface.
+	const bool rotate = (GSConfig.Rotation != DisplayRotation::Rot0);
+	const GSVector2i pres = GetPresentationSize();
+	const float lw = static_cast<float>(pres.x);
+	const float lh = static_cast<float>(pres.y);
+	const auto rotate_pixel = [&](float lx, float ly, float& px, float& py) {
+		const float lcx = lx - lw * 0.5f;
+		const float lcy = ly - lh * 0.5f;
+		float pcx = lcx;
+		float pcy = lcy;
+		switch (GSConfig.Rotation)
+		{
+			case DisplayRotation::Rot90:
+				pcx = lcy;
+				pcy = -lcx;
+				break;
+			case DisplayRotation::Rot180:
+				pcx = -lcx;
+				pcy = -lcy;
+				break;
+			case DisplayRotation::Rot270:
+				pcx = -lcy;
+				pcy = lcx;
+				break;
+			default:
+				break;
+		}
+		px = pcx + phys_w * 0.5f;
+		py = pcy + phys_h * 0.5f;
+	};
 
 	for (int n = 0; n < draw_data->CmdListsCount; n++)
 	{
@@ -4594,7 +4849,22 @@ void GSDeviceVK::RenderImGui()
 			}
 
 			vertex_offset = m_vertex_stream_buffer.GetCurrentOffset() / sizeof(ImDrawVert);
-			std::memcpy(m_vertex_stream_buffer.GetCurrentHostPointer(), cmd_list->VtxBuffer.Data, size);
+			if (!rotate)
+			{
+				std::memcpy(m_vertex_stream_buffer.GetCurrentHostPointer(),
+					cmd_list->VtxBuffer.Data, size);
+			}
+			else
+			{
+				ImDrawVert* dst = reinterpret_cast<ImDrawVert*>(
+					m_vertex_stream_buffer.GetCurrentHostPointer());
+				const ImDrawVert* src = cmd_list->VtxBuffer.Data;
+				for (int i = 0; i < cmd_list->VtxBuffer.Size; i++)
+				{
+					dst[i] = src[i];
+					rotate_pixel(src[i].pos.x, src[i].pos.y, dst[i].pos.x, dst[i].pos.y);
+				}
+			}
 			m_vertex_stream_buffer.CommitMemory(size);
 		}
 
@@ -4606,9 +4876,27 @@ void GSDeviceVK::RenderImGui()
 			const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
 			pxAssert(!pcmd->UserCallback);
 
-			const GSVector4 clip = GSVector4::load<false>(&pcmd->ClipRect);
+			GSVector4 clip = GSVector4::load<false>(&pcmd->ClipRect);
 			if ((clip.zwzw() <= clip.xyxy()).mask() != 0)
 				continue;
+
+			if (rotate)
+			{
+				// Rotate the four corners of the logical clip rect into
+				// physical space, then take their axis-aligned bounding box.
+				// (90/270 rotations preserve axis-alignment.)
+				float x0 = clip.x, y0 = clip.y, x1 = clip.z, y1 = clip.w;
+				float c0x, c0y, c1x, c1y, c2x, c2y, c3x, c3y;
+				rotate_pixel(x0, y0, c0x, c0y);
+				rotate_pixel(x1, y0, c1x, c1y);
+				rotate_pixel(x0, y1, c2x, c2y);
+				rotate_pixel(x1, y1, c3x, c3y);
+				const float xmin = std::min(std::min(c0x, c1x), std::min(c2x, c3x));
+				const float xmax = std::max(std::max(c0x, c1x), std::max(c2x, c3x));
+				const float ymin = std::min(std::min(c0y, c1y), std::min(c2y, c3y));
+				const float ymax = std::max(std::max(c0y, c1y), std::max(c2y, c3y));
+				clip = GSVector4(xmin, ymin, xmax, ymax);
+			}
 
 			SetScissor(GSVector4i(clip).max_i32(GSVector4i::zero()));
 
@@ -4666,9 +4954,22 @@ bool GSDeviceVK::DoCAS(
 
 	// only happening once a frame, so the update isn't a huge deal.
 	Vulkan::DescriptorSetUpdateBuilder dsub;
-	dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, 0, sTexVK->GetView(), sTexVK->GetVkLayout());
-	dsub.AddStorageImageDescriptorWrite(VK_NULL_HANDLE, 1, dTexVK->GetView(), dTexVK->GetVkLayout());
-	dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_COMPUTE, m_cas_pipeline_layout, 0, false);
+	if (m_optional_extensions.vk_khr_push_descriptor)
+	{
+		dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, 0, sTexVK->GetView(), sTexVK->GetVkLayout());
+		dsub.AddStorageImageDescriptorWrite(VK_NULL_HANDLE, 1, dTexVK->GetView(), dTexVK->GetVkLayout());
+		dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_COMPUTE, m_cas_pipeline_layout, 0, false);
+	}
+	else
+	{
+		VkDescriptorSet ds = AllocateDescriptorSetFromFramePool(m_cas_ds_layout);
+		if (ds == VK_NULL_HANDLE) [[unlikely]]
+			return false; // single alloc per frame after EndRenderPass — exhaustion implausible; skip the sharpen pass
+		dsub.AddImageDescriptorWrite(ds, 0, sTexVK->GetView(), sTexVK->GetVkLayout());
+		dsub.AddStorageImageDescriptorWrite(ds, 1, dTexVK->GetView(), dTexVK->GetVkLayout());
+		dsub.Update(m_device);
+		vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_COMPUTE, m_cas_pipeline_layout, 0, 1, &ds, 0, nullptr);
+	}
 
 	// the actual meat and potatoes! only four commands.
 	static const int threadGroupWorkRegionDim = 16;
@@ -4803,6 +5104,8 @@ void GSDeviceVK::DestroyResources()
 			vkFreeCommandBuffers(m_device, resources.command_pool, static_cast<u32>(resources.command_buffers.size()),
 				resources.command_buffers.data());
 		}
+		if (resources.descriptor_pool != VK_NULL_HANDLE)
+			vkDestroyDescriptorPool(m_device, resources.descriptor_pool, nullptr);
 		if (resources.command_pool != VK_NULL_HANDLE)
 			vkDestroyCommandPool(m_device, resources.command_pool, nullptr);
 	}
@@ -5664,15 +5967,35 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 
 	if (flags & DIRTY_FLAG_TFX_TEXTURES)
 	{
+		VkDescriptorSet ds = VK_NULL_HANDLE;
+		// Without push descriptors, we must write all bindings to a fresh descriptor set.
+		if (!m_optional_extensions.vk_khr_push_descriptor)
+		{
+			ds = AllocateDescriptorSetFromFramePool(m_tfx_texture_ds_layout);
+			if (ds == VK_NULL_HANDLE) [[unlikely]]
+			{
+				if (already_execed)
+				{
+					Console.Error("VK: Failed to allocate TFX texture descriptor set");
+					return false;
+				}
+
+				// Frame descriptor pool exhausted — flush to reset it, then restart
+				// the render pass and re-apply all state on the fresh command buffer.
+				ExecuteCommandBufferAndRestartRenderPass(false, "Out of TFX texture descriptors");
+				return ApplyTFXState(true);
+			}
+		}
+
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_TEX)
 		{
-			dsub.AddCombinedImageSamplerDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_TEXTURE,
+			dsub.AddCombinedImageSamplerDescriptorWrite(ds, TFX_TEXTURE_TEXTURE,
 				m_tfx_textures[TFX_TEXTURE_TEXTURE]->GetView(), m_tfx_sampler,
 				m_tfx_textures[TFX_TEXTURE_TEXTURE]->GetVkLayout());
 		}
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_PALETTE)
 		{
-			dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_PALETTE,
+			dsub.AddImageDescriptorWrite(ds, TFX_TEXTURE_PALETTE,
 				m_tfx_textures[TFX_TEXTURE_PALETTE]->GetView(), m_tfx_textures[TFX_TEXTURE_PALETTE]->GetVkLayout());
 		}
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_RT)
@@ -5680,17 +6003,17 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			if (m_features.texture_barrier && !UseFeedbackLoopLayout())
 			{
 				dsub.AddInputAttachmentDescriptorWrite(
-					VK_NULL_HANDLE, TFX_TEXTURE_RT, m_tfx_textures[TFX_TEXTURE_RT]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
+					ds, TFX_TEXTURE_RT, m_tfx_textures[TFX_TEXTURE_RT]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
 			}
 			else
 			{
-				dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_RT, m_tfx_textures[TFX_TEXTURE_RT]->GetView(),
+				dsub.AddImageDescriptorWrite(ds, TFX_TEXTURE_RT, m_tfx_textures[TFX_TEXTURE_RT]->GetView(),
 					m_tfx_textures[TFX_TEXTURE_RT]->GetVkLayout());
 			}
 		}
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_PRIMID)
 		{
-			dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_PRIMID,
+			dsub.AddImageDescriptorWrite(ds, TFX_TEXTURE_PRIMID,
 				m_tfx_textures[TFX_TEXTURE_PRIMID]->GetView(), m_tfx_textures[TFX_TEXTURE_PRIMID]->GetVkLayout());
 		}
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_DEPTH)
@@ -5698,26 +6021,35 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			if (m_features.texture_barrier && !UseFeedbackLoopLayout())
 			{
 				dsub.AddInputAttachmentDescriptorWrite(
-					VK_NULL_HANDLE, TFX_TEXTURE_DEPTH, m_tfx_textures[TFX_TEXTURE_DEPTH]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
+					ds, TFX_TEXTURE_DEPTH, m_tfx_textures[TFX_TEXTURE_DEPTH]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
 			}
 			else
 			{
-				dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_DEPTH, m_tfx_textures[TFX_TEXTURE_DEPTH]->GetView(),
+				dsub.AddImageDescriptorWrite(ds, TFX_TEXTURE_DEPTH, m_tfx_textures[TFX_TEXTURE_DEPTH]->GetView(),
 					m_tfx_textures[TFX_TEXTURE_DEPTH]->GetVkLayout());
 			}
 		}
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_RT_ROV)
 		{
-			dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_RT_ROV, m_tfx_textures[TFX_TEXTURE_RT_ROV]->GetView(),
+			dsub.AddImageDescriptorWrite(ds, TFX_TEXTURE_RT_ROV, m_tfx_textures[TFX_TEXTURE_RT_ROV]->GetView(),
 				m_tfx_textures[TFX_TEXTURE_RT_ROV]->GetVkLayout(), true);
 		}
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_DEPTH_ROV)
 		{
-			dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_DEPTH_ROV, m_tfx_textures[TFX_TEXTURE_DEPTH_ROV]->GetView(),
+			dsub.AddImageDescriptorWrite(ds, TFX_TEXTURE_DEPTH_ROV, m_tfx_textures[TFX_TEXTURE_DEPTH_ROV]->GetView(),
 				m_tfx_textures[TFX_TEXTURE_DEPTH_ROV]->GetVkLayout(), true);
 		}
 
-		dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_tfx_pipeline_layout, TFX_DESCRIPTOR_SET_TEXTURES);
+		if (m_optional_extensions.vk_khr_push_descriptor)
+		{
+			dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_tfx_pipeline_layout, TFX_DESCRIPTOR_SET_TEXTURES);
+		}
+		else
+		{
+			dsub.Update(m_device);
+			vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_tfx_pipeline_layout,
+				TFX_DESCRIPTOR_SET_TEXTURES, 1, &ds, 0, nullptr);
+		}
 	}
 
 	ApplyBaseState(flags, cmdbuf);
@@ -5738,9 +6070,33 @@ bool GSDeviceVK::ApplyUtilityState(bool already_execed)
 		m_current_pipeline_layout = PipelineLayout::Utility;
 
 		Vulkan::DescriptorSetUpdateBuilder dsub;
-		dsub.AddCombinedImageSamplerDescriptorWrite(
-			VK_NULL_HANDLE, 0, m_utility_texture->GetView(), m_utility_sampler, m_utility_texture->GetVkLayout());
-		dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_utility_pipeline_layout, 0, false);
+		if (m_optional_extensions.vk_khr_push_descriptor)
+		{
+			dsub.AddCombinedImageSamplerDescriptorWrite(
+				VK_NULL_HANDLE, 0, m_utility_texture->GetView(), m_utility_sampler, m_utility_texture->GetVkLayout());
+			dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_utility_pipeline_layout, 0, false);
+		}
+		else
+		{
+			VkDescriptorSet ds = AllocateDescriptorSetFromFramePool(m_utility_ds_layout);
+			if (ds == VK_NULL_HANDLE) [[unlikely]]
+			{
+				if (already_execed)
+				{
+					Console.Error("VK: Failed to allocate utility descriptor set");
+					return false;
+				}
+
+				// Frame descriptor pool exhausted — flush to reset it, then restart
+				// the render pass and re-apply all state on the fresh command buffer.
+				ExecuteCommandBufferAndRestartRenderPass(false, "Out of utility descriptors");
+				return ApplyUtilityState(true);
+			}
+			dsub.AddCombinedImageSamplerDescriptorWrite(
+				ds, 0, m_utility_texture->GetView(), m_utility_sampler, m_utility_texture->GetVkLayout());
+			dsub.Update(m_device);
+			vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_utility_pipeline_layout, 0, 1, &ds, 0, nullptr);
+		}
 	}
 
 

@@ -246,6 +246,15 @@ GSDevice::~GSDevice()
 	pxAssert(m_pool[0].empty() && m_pool[1].empty() && !m_merge && !m_weavebob && !m_blend && !m_mad && !m_target_tmp && !m_cas);
 }
 
+GSVector2i GSDevice::GetPresentationSize() const
+{
+	const s32 w = GetWindowWidth();
+	const s32 h = GetWindowHeight();
+	return (GSConfig.Rotation == DisplayRotation::Rot90 || GSConfig.Rotation == DisplayRotation::Rot270)
+			   ? GSVector2i(h, w)
+			   : GSVector2i(w, h);
+}
+
 const char* GSDevice::RenderAPIToString(RenderAPI api)
 {
 	switch (api)

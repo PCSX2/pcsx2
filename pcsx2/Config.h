@@ -241,6 +241,19 @@ enum class FMVAspectRatioSwitchType : u8
 	MaxCount
 };
 
+// Display rotation applied at present time. Useful for handhelds whose panel
+// is mounted in one orientation but the user wants the game in another.
+// Rotation is applied to the *final* swapchain blit only; internal GS
+// coordinates and aspect-ratio math run in the unrotated frame.
+enum class DisplayRotation : u8
+{
+	Rot0,
+	Rot90,
+	Rot180,
+	Rot270,
+	MaxCount
+};
+
 enum class MemoryCardType
 {
 	Empty,
@@ -709,6 +722,7 @@ struct Pcsx2Config
 	{
 		static const char* AspectRatioNames[];
 		static const char* FMVAspectRatioSwitchNames[];
+		static const char* DisplayRotationNames[];
 		static const char* BlendingLevelNames[];
 		static const char* CaptureContainers[];
 
@@ -771,6 +785,7 @@ struct Pcsx2Config
 					UseBlitSwapChain : 1,
 					DisableShaderCache : 1,
 					DisableFramebufferFetch : 1,
+					DisablePS2DepthQuantization : 1,
 					DisableVertexShaderExpand : 1,
 					SkipDuplicateFrames : 1,
 					OsdShowSpeed : 1,
@@ -855,6 +870,7 @@ struct Pcsx2Config
 
 		AspectRatioType AspectRatio = DEFAULT_ASPECT_RATIO;
 		FMVAspectRatioSwitchType FMVAspectRatioSwitch = DEFAULT_FMV_ASPECT_RATIO;
+		DisplayRotation Rotation = DisplayRotation::Rot0;
 		GSInterlaceMode InterlaceMode = DEFAULT_INTERLACE_MODE;
 		GSPostBilinearMode LinearPresent = DEFAULT_BILINEAR_FILTERING_MODE;
 

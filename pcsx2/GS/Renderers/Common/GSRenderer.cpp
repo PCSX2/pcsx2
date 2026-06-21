@@ -661,7 +661,8 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		{
 			src_rect = CalculateDrawSrcRect(current, m_real_size);
 			src_uv = GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy();
-			draw_rect = CalculateDrawDstRect(g_gs_device->GetWindowWidth(), g_gs_device->GetWindowHeight(),
+			const GSVector2i pres_size = g_gs_device->GetPresentationSize();
+			draw_rect = CalculateDrawDstRect(pres_size.x, pres_size.y,
 				src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
 				GetVideoMode() == GSVideoMode::SDTV_480P);
 			s_last_draw_rect = draw_rect;
@@ -962,7 +963,8 @@ void GSRenderer::PresentCurrentFrame()
 		{
 			const GSVector4i src_rect(CalculateDrawSrcRect(current, m_real_size));
 			const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
-			const GSVector4 draw_rect(CalculateDrawDstRect(g_gs_device->GetWindowWidth(), g_gs_device->GetWindowHeight(),
+			const GSVector2i pres_size = g_gs_device->GetPresentationSize();
+			const GSVector4 draw_rect(CalculateDrawDstRect(pres_size.x, pres_size.y,
 				src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
 				GetVideoMode() == GSVideoMode::SDTV_480P));
 			s_last_draw_rect = draw_rect;
