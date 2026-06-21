@@ -1051,13 +1051,42 @@ set(pcsx2x86Headers
 # ARM64
 set(pcsx2arm64Sources
 	arm64/AsmHelpers.cpp
+	arm64/iCore-arm64.cpp
+	arm64/iR3000A-arm64.cpp
+	arm64/iR3000Atables-arm64.cpp
+	arm64/iR5900-arm64.cpp
+	arm64/iR5900Templates-arm64.cpp
+	x86/BaseblockEx.cpp  # arch-neutral baseblock manager, shared with the x86 build
+	arm64/iR5900Arit-arm64.cpp
+	arm64/iR5900AritImm-arm64.cpp
+	arm64/iR5900Branch-arm64.cpp
+	arm64/iR5900Jump-arm64.cpp
+	arm64/iR5900LoadStore-arm64.cpp
+	arm64/recVTLB-arm64.cpp
+	arm64/iR5900Move-arm64.cpp
+	arm64/iR5900MultDiv-arm64.cpp
+	arm64/iR5900Shift-arm64.cpp
+	arm64/iR5900Misc-arm64.cpp
+	arm64/iCOP2-arm64.cpp
+	arm64/iCOP0-arm64.cpp
+	arm64/iFPU-arm64.cpp
+	arm64/iFPUd-arm64.cpp
+	arm64/iMMI-arm64.cpp
 	arm64/Vif_Dynarec.cpp
 	arm64/Vif_UnpackNEON.cpp
 	arm64/RecStubs.cpp
+	arm64/microVU-arm64.cpp
+	x86/iR5900Analysis.cpp  # arch-neutral EE instruction-liveness analysis, shared with the x86 build
 	)
 
 set(pcsx2arm64Headers
 	arm64/AsmHelpers.h
+	arm64/iCore-arm64.h
+	arm64/iR3000A-arm64.h
+	arm64/iR5900-arm64.h
+	arm64/iR5900Analysis.h
+	arm64/microVU-arm64.h
+	arm64/microVU_Misc-arm64.h
 )
 
 # These ones benefit a lot from LTO
@@ -1215,6 +1244,19 @@ target_include_directories(PCSX2_FLAGS INTERFACE
 )
 
 set_source_files_properties(PrecompiledHeader.cpp PROPERTIES HEADER_FILE_ONLY TRUE)
+
+# VUops.cpp (VU interp) and FPU.cpp (EE COP1 interp) must produce bit-exact
+# results matching PS2 hardware (which has no FMA). The project-wide
+# -ffp-contract=fast is fine on x86 (no FMA emitted without -mfma) but on aarch64
+# it lets the compiler contract `acc + fs * ft` to `fmadd` (single-rounded),
+# breaking bit-exactness vs the recompilers (separate fmul + fadd). In VUops.cpp
+# this would produce 1-ULP MADDA divergences. FPU.cpp has the identical hazard in
+# MADDA_S/MSUBA_S (`_FAValf_ += fs*ft` / `-= fs*ft` are single-expression
+# accumulates that fuse on aarch64 while the EE FPU rec emits two roundings) — a
+# +1-ULP float drift vs the rec.
+if(NOT MSVC)
+	set_source_files_properties(VUops.cpp FPU.cpp PROPERTIES COMPILE_OPTIONS "-ffp-contract=off")
+endif()
 if(COMMAND target_precompile_headers)
 	message("Using precompiled headers.")
 	target_precompile_headers(PCSX2_FLAGS INTERFACE PrecompiledHeader.h)
