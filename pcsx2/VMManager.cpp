@@ -47,6 +47,7 @@
 #include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/FPControl.h"
+#include "common/Perf.h"
 #include "common/ScopedGuard.h"
 #include "common/SettingsWrapper.h"
 #include "common/SmallString.h"
@@ -559,6 +560,11 @@ void VMManager::Internal::LoadStartupSettings()
 	EmuFolders::LoadConfig(*bsi);
 	EmuFolders::EnsureFoldersExist();
 
+	// Redirect perf jitdump (Linux ProfileWithPerfJitDump builds) out of /tmp
+	// into the cache dir; the dump can be hundreds of MB and tmpfs /tmp on
+	// embedded targets fills up. No-op on non-jitdump builds.
+	Perf::SetJitDumpDir(EmuFolders::Cache);
+
 	// We need to create the console window early, otherwise it appears behind the main window.
 	UpdateLoggingSettings(*bsi);
 
@@ -617,6 +623,10 @@ void VMManager::LoadSettings()
 	InputManager::ReloadSources(*si, lock);
 	LoadInputBindings(*si, lock);
 	UpdateLoggingSettings(*si);
+
+	// Apply runtime perf-dump gate from Profiler config (no-op on
+	// non-USE_PERF_JITDUMP builds).
+	Perf::SetJitDumpEnabled(EmuConfig.Profiler.EnablePerfDump);
 
 	if (HasValidOrInitializingVM())
 	{

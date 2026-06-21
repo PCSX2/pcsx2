@@ -261,6 +261,7 @@ public:
 	}
 
 	__fi SmallStackString(const SmallStackString& copy)
+		: SmallStringBase()
 	{
 		init();
 		assign(copy);

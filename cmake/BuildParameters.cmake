@@ -7,10 +7,18 @@ include(GNUInstallDirs)
 # Misc option
 #-------------------------------------------------------------------------------
 option(ENABLE_TESTS "Enables building the unit tests" ON)
+option(ENABLE_RECOMPILER_TEST_HOOKS
+	"Compile harness hooks (recEeExecuteBlock, recEeIsBlockLinked, etc.) into the EE recompiler. Required by tests/ctest/core/recompilers; release builds should turn this off."
+	${ENABLE_TESTS})
 option(ENABLE_QT_UI "Enables building the PCSX2 Qt interface." ON)
 option(ENABLE_GSRUNNER "Enables building the GSRunner by default.  It can still be built with `make pcsx2-gsrunner` otherwise." OFF)
+option(ENABLE_VURUNNER "Enables building pcsx2-vurunner (headless VU microprogram replayer for codegen iteration). Requires ENABLE_RECOMPILER_TEST_HOOKS=ON." OFF)
+option(ENABLE_EERUNNER "Enables building pcsx2-eerunner (headless EE JIT-vs-interpreter divergence localizer) by default.  It can still be built with `make pcsx2-eerunner` otherwise." OFF)
+option(ENABLE_SDL_FRONTEND "Enables building the SDL3 / kmsdrm frontend (pcsx2-sdl) by default.  It can still be built with `make pcsx2-sdl` otherwise." OFF)
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
+option(USE_PERF_JITDUMP "Emit Linux perf jitdump (jit-<pid>.dump) for recompiled JIT blocks; use with perf record/inject." OFF)
+option(USE_PERF_MAP "Emit simple /tmp/perf-<pid>.map symbol table for recompiled JIT blocks." OFF)
 option(PACKAGE_MODE "Use this option to ease packaging of PCSX2 (developer/distribution option)")
 option(BUNDLE_EMOJI_FONT "Bundles Noto Color Emoji for systems whose system emoji font isn't usable by freetype" ON)
 option(POSITION_INDEPENDENT_CODE "Generate position-independent code. It is recommended that you leave this on." ON)
@@ -118,7 +126,10 @@ elseif("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64" OR "${CMAKE_HOST_SYSTEM
 		# Min spec is an M1
 		add_compile_options("-march=armv8.4-a" "-mcpu=apple-m1")
 	else()
-		# Require atomic rmw instructions
+		# Require atomic rmw instructions (LSE, ARMv8.1+). This is the upstream
+		# default and targets the broad arm64 ecosystem. In-order ARMv8.0 cores
+		# without LSE (e.g. Cortex-A53 handhelds) must override -march to armv8-a
+		# in their own toolchain/preset — LSE atomics fault on them.
 		add_compile_options("-march=armv8.1-a")
 	endif()
 
@@ -164,6 +175,14 @@ else()
 	add_compile_options(
 		"$<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>"
 	)
+	# GCC/Clang warn on every __fi (always_inline) function definition that lacks
+	# an explicit `inline` keyword. PCSX2 deliberately defines __fi without
+	# `inline` so that .cpp-defined __fi functions still emit a strong external
+	# symbol; adding `inline` to the macro globally breaks linkage for those. The
+	# attribute itself works correctly either way, so suppress the noise.
+	# Unconditional (not the GNU-only DEFAULT_WARNINGS entry below) because the
+	# primary toolchain here is Clang, which the GCC-gated list does not cover.
+	add_compile_options(-Wno-attributes)
 endif()
 
 set(CONFIG_REL_NO_DEB $<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>>)
@@ -222,6 +241,22 @@ if(USE_VTUNE)
 	list(APPEND PCSX2_DEFS ENABLE_VTUNE)
 endif()
 
+if(USE_PERF_JITDUMP AND USE_PERF_MAP)
+	message(FATAL_ERROR "USE_PERF_JITDUMP and USE_PERF_MAP are mutually exclusive; pick one.")
+endif()
+if(USE_PERF_JITDUMP)
+	if(NOT UNIX OR APPLE)
+		message(FATAL_ERROR "USE_PERF_JITDUMP is Linux-only.")
+	endif()
+	list(APPEND PCSX2_DEFS ENABLE_PERF_JITDUMP)
+endif()
+if(USE_PERF_MAP)
+	if(NOT UNIX OR APPLE)
+		message(FATAL_ERROR "USE_PERF_MAP is Linux-only.")
+	endif()
+	list(APPEND PCSX2_DEFS ENABLE_PERF_MAP)
+endif()
+
 if(USE_OPENGL)
 	list(APPEND PCSX2_DEFS ENABLE_OPENGL)
 endif()
@@ -236,6 +271,10 @@ endif()
 
 if(WAYLAND_API)
 	list(APPEND PCSX2_DEFS WAYLAND_API)
+endif()
+
+if(ENABLE_SDL_FRONTEND)
+	list(APPEND PCSX2_DEFS ENABLE_SDL_FRONTEND)
 endif()
 
 # -Wno-attributes: "always_inline function might not be inlinable" <= real spam (thousand of warnings!!!)

@@ -24,6 +24,7 @@ target_sources(common PRIVATE
 	MD5Digest.cpp
 	PrecompiledHeader.cpp
 	Perf.cpp
+	PmuCounters.cpp
 	ProgressCallback.cpp
 	ReadbackSpinManager.cpp
 	Semaphore.cpp
@@ -64,6 +65,7 @@ target_sources(common PRIVATE
 	MD5Digest.h
 	MRCHelpers.h
 	Path.h
+	PmuCounters.h
 	PrecompiledHeader.h
 	ProgressCallback.h
 	ReadbackSpinManager.h
@@ -168,10 +170,14 @@ else()
 	)
 	target_link_libraries(common PRIVATE
 		${DBUS_LINK_LIBRARIES}
-		X11::X11
-		X11::Xrandr
-		X11::Xi
 	)
+	if(X11_API)
+		target_link_libraries(common PRIVATE
+			X11::X11
+			X11::Xrandr
+			X11::Xi
+		)
+	endif()
 	if(USE_BACKTRACE)
 		target_compile_definitions(common PRIVATE "HAS_LIBBACKTRACE=1")
 		target_link_libraries(common PRIVATE libbacktrace::libbacktrace)

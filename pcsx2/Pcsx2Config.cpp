@@ -415,6 +415,9 @@ void Pcsx2Config::SpeedhackOptions::LoadSave(SettingsWrapper& wrap)
 Pcsx2Config::ProfilerOptions::ProfilerOptions()
 	: bitset(0xfffffffe)
 {
+	// Default OFF: perf jitdump is opt-in to avoid GB-scale dumps every play
+	// session on USE_PERF_JITDUMP builds.
+	EnablePerfDump = false;
 }
 
 void Pcsx2Config::ProfilerOptions::LoadSave(SettingsWrapper& wrap)
@@ -426,6 +429,7 @@ void Pcsx2Config::ProfilerOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(RecBlocks_IOP);
 	SettingsWrapBitBool(RecBlocks_VU0);
 	SettingsWrapBitBool(RecBlocks_VU1);
+	SettingsWrapBitBool(EnablePerfDump);
 }
 
 bool Pcsx2Config::ProfilerOptions::operator!=(const ProfilerOptions& right) const

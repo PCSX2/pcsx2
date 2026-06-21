@@ -11,6 +11,7 @@
 #endif
 
 #include <array>
+#include <cstdlib>
 #include <cstring>
 
 #ifdef __linux__
@@ -20,11 +21,18 @@
 #include <elf.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <sys/syscall.h>
 #endif
 
-//#define ProfileWithPerf
-//#define ProfileWithPerfJitDump
+// Set by CMake options USE_PERF_MAP / USE_PERF_JITDUMP (see cmake/BuildParameters.cmake).
+// Or define manually below for ad-hoc builds.
+#if defined(ENABLE_PERF_MAP) && !defined(ProfileWithPerf)
+#define ProfileWithPerf
+#endif
+#if defined(ENABLE_PERF_JITDUMP) && !defined(ProfileWithPerfJitDump)
+#define ProfileWithPerfJitDump
+#endif
 
 #if defined(ENABLE_VTUNE) && defined(_WIN32)
 #pragma comment(lib, "jitprofiling.lib")
@@ -116,9 +124,22 @@ namespace Perf
 	static bool s_jitdump_file_opened = false;
 	static std::mutex s_jitdump_mutex;
 	static u32 s_jitdump_record_id;
+	// Default to /tmp for ad-hoc launches; pcsx2 startup overrides this with
+	// EmuFolders::Cache so the dump (which can be hundreds of MB) doesn't fill
+	// up small /tmp mounts on memory-constrained systems.
+	static std::string s_jitdump_dir = "/tmp";
+	// Default OFF — VMManager flips this from EmuConfig.Profiler.EnablePerfDump.
+	// USE_PERF_JITDUMP build with the flag disabled does no file I/O at all.
+	static std::atomic<bool> s_jitdump_enabled{false};
 
 	static void RegisterMethod(const void* ptr, size_t size, const char* symbol)
 	{
+		// Gate every JIT registration on the runtime flag — when off we
+		// neither open the dump file nor write any records, so a USE_PERF_JITDUMP
+		// build with EnablePerfDump=false costs nothing per dispatch.
+		if (!s_jitdump_enabled.load(std::memory_order_relaxed))
+			return;
+
 		const u32 namelen = std::strlen(symbol) + 1;
 
 		std::unique_lock lock(s_jitdump_mutex);
@@ -126,8 +147,16 @@ namespace Perf
 		{
 			if (!s_jitdump_file_opened)
 			{
-				char file[256];
-				snprintf(file, std::size(file), "jit-%d.dump", getpid());
+				// Write the JIT dump (and the synthesized jitted-<pid>-*.so
+				// files that perf inject -j later places alongside it) into
+				// a per-pid subdir under s_jitdump_dir (default /tmp; pcsx2
+				// overrides to EmuFolders::Cache). Per-pid dir keeps multiple
+				// concurrent runs separated and avoids polluting cwd.
+				char dir[512];
+				snprintf(dir, std::size(dir), "%s/pcsx2-perf-%d", s_jitdump_dir.c_str(), getpid());
+				mkdir(dir, 0700); // ignore EEXIST
+				char file[576];
+				snprintf(file, std::size(file), "%s/jit-%d.dump", dir, getpid());
 				s_jitdump_file = fopen(file, "w+b");
 				s_jitdump_file_opened = true;
 				if (!s_jitdump_file)
@@ -212,4 +241,26 @@ namespace Perf
 	void Group::RegisterPC(const void* ptr, size_t size, u32 pc) {}
 	void Group::RegisterKey(const void* ptr, size_t size, const char* prefix, u64 key) {}
 #endif
+
+	void SetJitDumpDir(std::string dir)
+	{
+#if defined(__linux__) && defined(ProfileWithPerfJitDump)
+		std::unique_lock lock(s_jitdump_mutex);
+		// Caller must invoke before the first JIT block compiles; once the
+		// file is opened we don't redirect mid-run.
+		if (!s_jitdump_file_opened && !dir.empty())
+			s_jitdump_dir = std::move(dir);
+#else
+		(void)dir;
+#endif
+	}
+
+	void SetJitDumpEnabled(bool enabled)
+	{
+#if defined(__linux__) && defined(ProfileWithPerfJitDump)
+		s_jitdump_enabled.store(enabled, std::memory_order_relaxed);
+#else
+		(void)enabled;
+#endif
+	}
 } // namespace Perf

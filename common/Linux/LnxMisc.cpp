@@ -19,8 +19,10 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#if defined(X11_API)
 #include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
+#endif
 
 #include <cstdlib>
 #include <cstring>
@@ -224,6 +226,7 @@ bool Common::InhibitScreensaver(bool inhibit)
 	return SetScreensaverInhibitDBus(inhibit, "PCSX2", "PCSX2 VM is running.");
 }
 
+#if defined(X11_API)
 void Common::SetMousePosition(int x, int y)
 {
 	Display* display = XOpenDisplay(nullptr);
@@ -328,6 +331,7 @@ void Common::DetachMousePositionCb()
 		mouseThread.join();
 	}
 }
+#endif // X11_API
 
 bool Common::PlaySoundAsync(const char* path)
 {

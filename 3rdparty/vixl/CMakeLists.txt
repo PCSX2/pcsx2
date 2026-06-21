@@ -61,6 +61,13 @@ target_compile_definitions(vixl PUBLIC
 
 target_compile_definitions(vixl PRIVATE VIXL_CODE_BUFFER_MALLOC)
 
+# vixl's constants-aarch64.h does bitwise ops between distinct enum types, which
+# is deprecated in C++20. The deprecation propagates to every TU that includes
+# vixl headers, so suppress it on the public interface as well as the library.
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+	target_compile_options(vixl PUBLIC -Wno-deprecated-enum-enum-conversion)
+endif()
+
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	message("Enabling vixl debug assertions")
 	target_compile_definitions(vixl PUBLIC VIXL_DEBUG)

@@ -11,6 +11,9 @@
 #define _NETBSD_SOURCE /* timersub() */
 #endif
 #define _XOPEN_SOURCE 500
+#if defined(__linux__)
+#define _GNU_SOURCE
+#endif
 #include "cubeb-internal.h"
 #include "cubeb/cubeb.h"
 #include "cubeb_tracing.h"
@@ -587,6 +590,9 @@ alsa_run_thread(void * context)
   int r;
 
   CUBEB_REGISTER_THREAD("cubeb rendering thread");
+#if defined(__linux__)
+  pthread_setname_np(pthread_self(), "Audio");
+#endif
 
   do {
     r = alsa_run(ctx);

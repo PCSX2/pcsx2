@@ -612,7 +612,8 @@ struct Pcsx2Config
 			RecBlocks_EE : 1, // Enables per-block profiling for the EE recompiler [unimplemented]
 			RecBlocks_IOP : 1, // Enables per-block profiling for the IOP recompiler [unimplemented]
 			RecBlocks_VU0 : 1, // Enables per-block profiling for the VU0 recompiler [unimplemented]
-			RecBlocks_VU1 : 1; // Enables per-block profiling for the VU1 recompiler [unimplemented]
+			RecBlocks_VU1 : 1, // Enables per-block profiling for the VU1 recompiler [unimplemented]
+			EnablePerfDump : 1; // Linux: write JIT blocks to perf jitdump (USE_PERF_JITDUMP build only).
 		BITFIELD_END
 
 		// Default is Disabled, with all recs enabled underneath.
