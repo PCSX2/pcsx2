@@ -366,3 +366,19 @@ endif()
 
 fixup_file_properties(pcsx2-qt)
 setup_main_executable(pcsx2-qt)
+
+# Opt-in non-PIE link for cross-run VU program cache validation.
+# A PIE build is loaded at an ASLR-randomized image base, so a cached
+# program's recorded image base mismatches on every cold boot and
+# hydration degrades to recompile — correct, but no cross-boot reuse.
+# PCSX2_QT_NO_PIE=ON links it ET_EXEC (fixed link address even with
+# ASLR), making every libpcsx2 symbol run-invariant. Off by default so
+# the normal build is untouched — configure a separate build dir with
+# -DPCSX2_QT_NO_PIE=ON for the cache double-boot test. Linux-only; macOS
+# has no non-PIE executables. libpcsx2's -fPIC objects link into an
+# ET_EXEC fine.
+option(PCSX2_QT_NO_PIE "Link pcsx2-qt non-PIE (VU program cache cross-boot validation)" OFF)
+if(PCSX2_QT_NO_PIE AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	set_target_properties(pcsx2-qt PROPERTIES POSITION_INDEPENDENT_CODE OFF)
+	target_link_options(pcsx2-qt PRIVATE -no-pie)
+endif()

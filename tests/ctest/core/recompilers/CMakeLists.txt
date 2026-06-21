@@ -75,6 +75,10 @@ add_pcsx2_test(recompiler_tests
 	ee_vu1_vif_dispatch_tests.cpp
 	vu_capture_format_tests.cpp
 	vu_replay_tests.cpp
+	mvu_observed_entries_tests.cpp
+	mvu_abi_digest_tests.cpp
+	mvu_persist_roundtrip_tests.cpp
+	mvu_progcache_disk_tests.cpp
 )
 
 target_include_directories(recompiler_tests PRIVATE
@@ -88,3 +92,25 @@ target_link_libraries(recompiler_tests PUBLIC
 	common
 )
 
+# mVUProgCache VERSION-handshake / stale-cache eviction / INDEX-format
+# tests. Drives mVUProgCache::Init through a temp EmuFolders::Cache and
+# asserts that poisoned on-disk VERSION fields (magic / formatVersion /
+# compilerAbiVersion / optionsSentinel) all rename the cache aside
+# before the new run accepts INDEX entries, and that the variable-length
+# INDEX serializer round-trips / drops truncated tails / skips
+# tombstones. The disk scaffolding is the foundation of the
+# persisted-JIT program cache.
+add_pcsx2_test(mvu_progcache_versioning_tests
+	${CMAKE_CURRENT_SOURCE_DIR}/../StubHost.cpp
+	mvu_progcache_versioning_tests.cpp
+)
+target_include_directories(mvu_progcache_versioning_tests PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR}/..
+	${CMAKE_CURRENT_SOURCE_DIR}/../../../../pcsx2
+)
+target_link_libraries(mvu_progcache_versioning_tests PUBLIC
+	PCSX2_FLAGS
+	PCSX2
+	common
+)

@@ -1098,6 +1098,10 @@ set(pcsx2arm64Headers
 	arm64/iR5900-arm64.h
 	arm64/iR5900Analysis.h
 	arm64/microVU-arm64.h
+	arm64/microVU_Persist-arm64.h
+	arm64/microVU_Persist-arm64.inl
+	arm64/microVU_ProgCache-arm64.h
+	arm64/microVU_ProgCache-arm64.inl
 	arm64/microVU_Misc-arm64.h
 )
 

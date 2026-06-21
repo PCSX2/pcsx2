@@ -657,6 +657,12 @@ struct Pcsx2Config
 			EnableFastmem : 1;
 		bool
 			PauseOnTLBMiss : 1;
+
+		// Cache compiled VU micro-programs to disk and reload them across
+		// sessions to cut recompilation stutter on later runs. arm64-only;
+		// no-op on x86.
+		bool
+			EnableVUProgramCache : 1;
 		BITFIELD_END
 
 		RecompilerOptions();
