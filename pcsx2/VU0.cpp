@@ -27,6 +27,29 @@
 
 using namespace R5900;
 
+// ---- pcsx2-eerunner --vu0diff per-COP2-read capture hooks (DIAGNOSTIC) ----------
+// Null in production (zero overhead). pcsx2-eerunner installs a sink so that, with
+// the EE pinned to interp in both passes, every EE-interpreter COP2 *read* (QMFC2
+// reads VF[fs], CFC2 reads VI[fs]) of a freshly-run VU0 program is recorded in
+// execution order. Diffing the VU0-jit pass vs the VU0-interp pass read-streams
+// pins the FIRST VU0 program output the micro JIT computes differently from the
+// interpreter — a live, in-context VU0-jit-vs-interp value diff the offline
+// capture-replay harness can't produce (no real EE<->VU0 interleave). op:
+// 0=QMFC2(VF), 1=CFC2(VI). NOTE: single-arch jit-vs-interp; valid for an
+// arithmetic value bug, but a pipeline/flag/cycle-instance divergence here is
+// usually shared-with-x86 noise —
+// confirm arch-specificity with an arm64-jit-vs-x86-jit diff before trusting it.
+#ifdef PCSX2_RECOMPILER_TESTS
+typedef void (*Cop2ReadHook)(u32 ee_pc, u32 op, u32 fs, const u32* lanes);
+Cop2ReadHook g_cop2ReadHook = nullptr;
+
+// Companion: VU0 pipeline/flag state at the read (TPC=last micro PC, Q=DIV result,
+// MAC/STATUS/CLIP flags). Lets the harness tell whether a divergent VF read is driven
+// by a wrong Q (broadcast-scalar pipeline) or a flag-instance handoff.
+typedef void (*Cop2StateHook)(u32 tpc, u32 q, u32 mac, u32 status, u32 clip);
+Cop2StateHook g_cop2StateHook = nullptr;
+#endif
+
 void COP2_BC2() { Int_COP2BC2PrintTable[_Rt_]();}
 void COP2_SPECIAL() { _vu0FinishMicro(); Int_COP2SPECIAL1PrintTable[_Funct_]();}
 
@@ -120,6 +143,15 @@ void QMFC2() {
 		_vu0FinishMicro();
 	}
 
+#ifdef PCSX2_RECOMPILER_TESTS
+	if (g_cop2ReadHook && g_cop2StateHook) // diagnostic hooks (recompiler test harness); null in production
+	{
+		g_cop2ReadHook(cpuRegs.pc, 0, _Fs_, VU0.VF[_Fs_].UL);
+		g_cop2StateHook(VU0.VI[REG_TPC].UL, VU0.VI[REG_Q].UL, VU0.VI[REG_MAC_FLAG].UL,
+			VU0.VI[REG_STATUS_FLAG].UL, VU0.VI[REG_CLIP_FLAG].UL);
+	}
+#endif
+
 	if (_Rt_ == 0) return;
 	cpuRegs.GPR.r[_Rt_].UD[0] = VU0.VF[_Fs_].UD[0];
 	cpuRegs.GPR.r[_Rt_].UD[1] = VU0.VF[_Fs_].UD[1];
@@ -143,6 +175,15 @@ void CFC2() {
 	if (cpuRegs.code & 1) {
 		_vu0FinishMicro();
 	}
+
+#ifdef PCSX2_RECOMPILER_TESTS
+	if (g_cop2ReadHook && g_cop2StateHook) // diagnostic hooks (recompiler test harness); null in production
+	{
+		g_cop2ReadHook(cpuRegs.pc, 1, _Fs_, &VU0.VI[_Fs_].UL);
+		g_cop2StateHook(VU0.VI[REG_TPC].UL, VU0.VI[REG_Q].UL, VU0.VI[REG_MAC_FLAG].UL,
+			VU0.VI[REG_STATUS_FLAG].UL, VU0.VI[REG_CLIP_FLAG].UL);
+	}
+#endif
 
 	if (_Rt_ == 0) return;
 
@@ -200,6 +241,7 @@ void CTC2() {
 			break;
 		case REG_CLIP_FLAG:
 			VU0.clipflag = cpuRegs.GPR.r[_Rt_].UL[0];
+			[[fallthrough]];
 		default:
 			VU0.VI[_Fs_].UL = cpuRegs.GPR.r[_Rt_].UL[0];
 			break;

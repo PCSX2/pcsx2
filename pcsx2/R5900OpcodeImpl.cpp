@@ -13,6 +13,12 @@
 #include "DebugTools/Breakpoints.h"
 #include "Host.h"
 #include "VMManager.h"
+#include "ee_divtrace.h"
+
+// Defined in Interpreter.cpp — charges raw block cycles for a skipped syscall
+// handler (FlushCache/iFlushCache skip mirror). Global scope so the namespaced
+// SYSCALL() below resolves it via `::`.
+extern void intChargeSkippedHandlerCycles(u32);
 
 #include "fmt/format.h"
 
@@ -914,8 +920,32 @@ void SYSCALL()
 	else
 		call = cpuRegs.GPR.n.v1.UC[0];
 
-	BIOS_LOG("Bios call: %s (%x)", R5900::bios[call], call);
+#ifdef PCSX2_RECOMPILER_TESTS
+	// Mirror the JIT's recSYSCALL FlushCache/iFlushCache skip so
+	// the golden interp timeline stays bit-identical to the JIT across this
+	// ABI-benign divergence. A bare return (no pc-=4, no cpuException) makes the
+	// syscall a nop and execution continues at the next instruction — exactly
+	// what the JIT skip does. We also charge the same 5650 raw block cycles the
+	// JIT does (s_nBlockCycles += 5650), so cycle-derived hardware (EE timers)
+	// doesn't drift between the two timelines and surface as a phantom MMIO-read
+	// divergence.
+	//
+	// Invariant the bare return relies on: pc already points at the *next*
+	// instruction. This holds for every interpreter entry into SYSCALL() —
+	// execI() advances cpuRegs.pc by 4 before dispatching the handler, and
+	// branch-delay-slot instructions are dispatched through execI() too, so
+	// there is no path that reaches here with pc still on the syscall.
+	// Doubly inert in production: compiled out unless PCSX2_RECOMPILER_TESTS,
+	// and gated on a default-false bool only pcsx2-eerunner ever sets.
+	// See ee_divtrace.h / iR5900Misc-arm64.cpp recSYSCALL.
+	if (ee_divtrace::g_skip_flushcache_syscall && (call == 0x64 || call == 0x68))
+	{
+		::intChargeSkippedHandlerCycles(5650);
+		return;
+	}
+#endif
 
+	BIOS_LOG("Bios call: %s (%x)", R5900::bios[call], call);
 
 	switch (static_cast<Syscall>(call))
 	{

@@ -13,6 +13,10 @@ target_compile_features(PCSX2_FLAGS INTERFACE cxx_std_17)
 target_compile_definitions(PCSX2_FLAGS INTERFACE "${PCSX2_DEFS}")
 target_compile_options(PCSX2_FLAGS INTERFACE "${PCSX2_WARNINGS}")
 
+if(ENABLE_RECOMPILER_TEST_HOOKS)
+	target_compile_definitions(PCSX2_FLAGS INTERFACE PCSX2_RECOMPILER_TESTS)
+endif()
+
 # Check that people use the good file
 if(NOT TOP_CMAKE_WAS_SOURCED)
 	message(FATAL_ERROR "
@@ -133,7 +137,11 @@ set(pcsx2Sources
 	VU0microInterp.cpp
 	VU1micro.cpp
 	VU1microInterp.cpp
+	VU1Trace.cpp
 	VUflags.cpp
+	vu_capture.cpp
+	microVU_Divtrace.cpp
+	ee_divtrace.cpp
 	VUmicroMem.cpp
 	VUops.cpp
 )
@@ -195,10 +203,14 @@ set(pcsx2Headers
 	SupportURLs.h
 	StateWrapper.h
 	Vif_Dma.h
+	vu_capture.h
+	microVU_Divtrace.h
+	ee_divtrace.h
 	Vif.h
 	Vif_Unpack.h
 	VMManager.h
 	vtlb.h
+	VU1Trace.h
 	VUflags.h
 	VUmicro.h
 	VUops.h)

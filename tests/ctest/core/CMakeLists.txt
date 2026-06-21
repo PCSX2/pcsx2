@@ -4,6 +4,13 @@ add_pcsx2_test(core_test
 	StubHost.cpp
 )
 
+# The recompiler differential-test harness drives the arm64 JIT through
+# arm64-only entry points (recEeExecuteBlock, recEeIsBlockLinked) and the
+# arm64 microVU persist API, so it only builds on ARCH_ARM64.
+if(ARCH_ARM64)
+	add_subdirectory(recompilers)
+endif()
+
 set(multi_isa_sources
 	GS/swizzle_test_main.cpp
 )
