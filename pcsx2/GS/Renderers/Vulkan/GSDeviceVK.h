@@ -430,6 +430,7 @@ private:
 	VkPipeline m_colclip_finish_pipelines[2][2] = {}; // [depth][feedback_loop]
 	VkRenderPass m_primid_image_setup_render_passes[2][2] = {}; // [depth][clear]
 	VkPipeline m_primid_image_setup_pipelines[2][4] = {}; // [depth][datm]
+	VkPipeline m_rov_copy_pipelines[3][3] = {}; // [color][depth]
 	VkPipeline m_fxaa_pipeline = {};
 	VkPipeline m_shadeboost_pipeline = {};
 
@@ -586,6 +587,8 @@ public:
 	void DrawMultiStretchRects(
 		const MultiStretchRect* rects, u32 num_rects, GSTexture* dTex, ShaderConvertSelector shader) override;
 	void DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, GSTextureVK* dTex, ShaderConvertSelector shader);
+	void SetupOneshotROV(const GSHWDrawConfig& config, GSTextureVK* rt, GSTextureVK* ds,
+		const std::vector<GSVector4i>& rects, const GSVector2i& size);
 
 	void BeginRenderPassForStretchRect(
 		GSTextureVK* dTex, const GSVector4i& dtex_rc, const GSVector4i& dst_rc, bool allow_discard = true);
@@ -627,6 +630,7 @@ public:
 	VkImageMemoryBarrier GetColorBufferFeedbackBarrier(GSTextureVK* rt) const;
 	VkImageMemoryBarrier GetDepthStencilBufferFeedbackBarrier(GSTextureVK* ds) const;
 	VkDependencyFlags GetFeedbackBarrierDependencyFlags() const;
+	void FeedbackBarrier(GSTextureVK* rt, GSTextureVK* ds);
 	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds,
 		bool one_barrier, bool full_barrier);
 
@@ -669,6 +673,7 @@ public:
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, u32 clear_color);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, float depth, u8 stencil);
+	void BeginTFXRenderPass(const GSHWDrawConfig& config, GSTextureVK* rt, GSTextureVK* ds, const GSVector2i& rtsize);
 	void EndRenderPass();
 
 	void SetViewport(const VkViewport& viewport);
@@ -759,6 +764,8 @@ private:
 	VkPipeline m_current_pipeline = VK_NULL_HANDLE;
 
 	std::unique_ptr<GSTextureVK> m_null_texture;
+	std::unique_ptr<GSTextureVK> m_rov_rt;
+	std::unique_ptr<GSTextureVK> m_rov_ds;
 	VkFramebuffer m_null_framebuffer;
 
 	// current pipeline selector - we save this in the struct to avoid re-zeroing it every draw

@@ -3346,6 +3346,12 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			"EmuCore/GS", "FrameRateNTSC", 59.94f, 10.0f, 300.0f, "%.2f Hz");
 		DrawFloatRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "PAL Frame Rate"), FSUI_CSTR("Determines what frame rate PAL games run at."),
 			"EmuCore/GS", "FrameRatePAL", 50.0f, 10.0f, 300.0f, "%.2f Hz");
+		DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "ROV Continuous Barrier Threshold"),
+			FSUI_CSTR("Determines the minimum barriers per frame to activate continuous ROV mode."),
+				"EmuCore/GS", "HWROVContinuousBarriers", 5000, 0, 999999999, 1, FSUI_CSTR("%d"));
+		DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "ROV Oneshot Barrier Threshold"),
+			FSUI_CSTR("Determines the minimum barriers in a draw to activate oneshot ROV mode."),
+				"EmuCore/GS", "HWROVOneshotBarriers", 50, 0, 999999999, 1, FSUI_CSTR("%d"));
 	}
 
 	EndMenuButtons();

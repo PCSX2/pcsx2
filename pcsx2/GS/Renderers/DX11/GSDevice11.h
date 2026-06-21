@@ -134,7 +134,9 @@ private:
 	wil::com_ptr_nothrow<ID3D11ShaderResourceView> m_expand_vb_srv;
 	wil::com_ptr_nothrow<ID3D11ShaderResourceView> m_expand_ib_vs_srv;
 
-	GSTexture* m_null_texture;
+	GSTexture11* m_null_texture = nullptr;
+	GSTexture11* m_rov_rt = nullptr;
+	GSTexture11* m_rov_ds = nullptr;
 
 	D3D_FEATURE_LEVEL m_feature_level = D3D_FEATURE_LEVEL_10_0;
 	u32 m_vb_pos = 0; // bytes
@@ -256,6 +258,13 @@ private:
 
 	struct
 	{
+		wil::com_ptr_nothrow<ID3D11DepthStencilState> dss;
+		wil::com_ptr_nothrow<ID3D11BlendState> bs;
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps[2][2];
+	} m_rov_copy;
+
+	struct
+	{
 		wil::com_ptr_nothrow<ID3D11Buffer> cb;
 		wil::com_ptr_nothrow<ID3D11ComputeShader> cs_upscale;
 		wil::com_ptr_nothrow<ID3D11ComputeShader> cs_sharpen;
@@ -356,6 +365,9 @@ public:
 	void DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rects, const GSVector2& ds);
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox);
+
+	void SetupOneshotROV(const GSHWDrawConfig& config, GSTexture* rt, GSTexture* ds,
+		const std::vector<GSVector4i>& rects, const GSVector2i& size);
 
 	void* IAMapVertexBuffer(u32 stride, u32 count);
 	void IAUnmapVertexBuffer(u32 stride, u32 count);
