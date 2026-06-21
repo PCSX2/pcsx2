@@ -854,7 +854,7 @@ namespace R3000A
 				v0 = file->read(buf.get(), count);
 
 				[[likely]]
-				if (v0 >= 0 && iopMemSafeWriteBytes(data, buf.get(), v0))
+				if (static_cast<s32>(v0) >= 0 && iopMemSafeWriteBytes(data, buf.get(), v0))
 				{
 					psxCpu->Clear(data, (v0 + 3) / 4);
 				}
