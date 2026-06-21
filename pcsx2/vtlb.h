@@ -121,7 +121,10 @@ namespace vtlb_private
 	static const uint VTLB_PAGE_MASK = 4095;
 	static const uint VTLB_PAGE_SIZE = 4096;
 
-	static const uint VTLB_PMAP_SZ		= _1mb * 512;
+	// Physical map covers 1GB to include RAM mirrors at 0x20000000 (uncached)
+	// and 0x30000000 (uncached & accelerated) used by BIOS InitRDRAM.
+	// 1GB is sufficient for all known PS2 mappings.
+	static const uint VTLB_PMAP_SZ		= _1mb * 1024;
 	static const uint VTLB_PMAP_ITEMS	= VTLB_PMAP_SZ / VTLB_PAGE_SIZE;
 	static const uint VTLB_VMAP_ITEMS	= _4gb / VTLB_PAGE_SIZE;
 
@@ -189,7 +192,7 @@ namespace vtlb_private
 		// third indexer -- 128 possible handlers!
 		void* RWFT[5][2][VTLB_HANDLER_ITEMS];
 
-		VTLBPhysical pmap[VTLB_PMAP_ITEMS]; //512KB // PS2 physical to x86 physical
+		VTLBPhysical pmap[VTLB_PMAP_ITEMS]; //2MB (VTLB_PMAP_ITEMS * sizeof(VTLBPhysical)) // PS2 physical to host physical
 
 		VTLBVirtual* vmap;                //4MB (allocated by vtlb_init) // PS2 virtual to x86 physical
 

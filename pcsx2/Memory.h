@@ -98,6 +98,12 @@ namespace HostMemoryMap
 
 namespace SysMemory
 {
+	/// Reserve the host memory map (and, on arm64, the constant-VA arena) early,
+	/// before other allocations could squat on the fixed base. Idempotent — a
+	/// later Allocate() reuses the same reservation. Used by headless runners and
+	/// SDL frontends that need the deterministic arena claimed before any
+	/// heap/mmap could squat on the fixed base.
+	void ReserveMemory();
 	bool Allocate();
 	void Reset();
 	void Release();

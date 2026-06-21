@@ -166,8 +166,17 @@ __ri void cpuException(u32 code, u32 bd)
 
 void cpuTlbMiss(u32 addr, u32 bd, u32 excode)
 {
-	// Avoid too much spamming on the interpreter
-	if (Cpu != &intCpu || IsDebugBuild) {
+	// Avoid too much spamming. On x86 the recompiler uses CancelInstruction and
+	// seldom reaches here, so logging the rec path is cheap; on arm64 every rec
+	// TLB miss is funneled through this function (see s_recTlbMissOccurred below),
+	// so logging the rec path would spam Release on every miss. Gate the arm64
+	// rec path on debug builds, matching the original "don't spam on interp" intent.
+#ifdef __aarch64__
+	const bool log_tlb_miss = IsDebugBuild;
+#else
+	const bool log_tlb_miss = (Cpu != &intCpu) || IsDebugBuild;
+#endif
+	if (log_tlb_miss) {
 		Console.Error("cpuTlbMiss pc:%x, cycl:%llx, addr: %x, status=%x, code=%x",
 				cpuRegs.pc, cpuRegs.cycle, addr, cpuRegs.CP0.n.Status.val, excode);
 	}
@@ -177,8 +186,30 @@ void cpuTlbMiss(u32 addr, u32 bd, u32 excode)
 	cpuRegs.CP0.n.Context |= (addr >> 9) & 0x007FFFF0;
 	cpuRegs.CP0.n.EntryHi = (addr & 0xFFFFE000) | (cpuRegs.CP0.n.EntryHi & 0x1FFF);
 
-	cpuRegs.pc -= 4;
+	// The interpreter advances cpuRegs.pc past the current instruction
+	// before executing it, so pc -= 4 gets back to the faulting instruction.
+	// The recompiler's FLUSH_PC writes the current instruction's PC
+	// (not advanced), so we must NOT subtract 4 in that case.
+	const bool isRec = (Cpu != &intCpu);
+	if (!isRec)
+		cpuRegs.pc -= 4;
+
 	cpuException(excode, bd);
+
+	// For the ARM64 recompiler: set a flag so the JIT block can detect the
+	// exception after the interpreter call returns and dispatch to the
+	// exception vector. We don't use CancelInstruction (longjmp) because
+	// that disrupts cycle counting and timing. The x86 recompiler uses
+	// CancelInstruction instead.
+#ifdef __aarch64__
+	if (isRec)
+	{
+		// Defined in the arm64 EE recompiler TU; the dispatcher reads it after
+		// this call to route the block to the exception vector.
+		extern u32 s_recTlbMissOccurred;
+		s_recTlbMissOccurred = 1;
+	}
+#endif
 }
 
 void cpuTlbMissR(u32 addr, u32 bd) {
@@ -394,7 +425,6 @@ __fi void _cpuEventTest_Shared()
 		//	Console.WriteLn( " IOP ahead by: %d cycles", -EEsCycle );
 
 		EEsCycle = psxCpu->ExecuteBlock(EEsCycle);
-
 		iopEventAction = false;
 	}
 
@@ -435,7 +465,10 @@ __fi void _cpuEventTest_Shared()
 
 	// ---- Schedule Next Event Test --------------
 	const float mutiplier = static_cast<float>(PS2CLK) / static_cast<float>(PSXCLK);
-	const int nextIopEventDeta = ((psxRegs.iopNextEventCycle - psxRegs.cycle) * mutiplier);
+	// See R3000A.cpp:PSX_INT for the host-divergence rationale: cast the u32
+	// cycle delta to s32 *before* the float multiply.
+	const s32 iopCyclesUntilEvent = static_cast<s32>(psxRegs.iopNextEventCycle - psxRegs.cycle);
+	const int nextIopEventDeta = static_cast<s32>(iopCyclesUntilEvent * mutiplier);
 	// 8 or more cycles behind and there's an event scheduled
 	if (EEsCycle >= nextIopEventDeta)
 	{
@@ -448,7 +481,7 @@ __fi void _cpuEventTest_Shared()
 	else
 	{
 		// Otherwise IOP is caught up/not doing anything so we can wait for the next event.
-		cpuSetNextEventDelta(((psxRegs.iopNextEventCycle - psxRegs.cycle) * mutiplier) - EEsCycle);
+		cpuSetNextEventDelta(nextIopEventDeta - EEsCycle);
 	}
 
 	// Apply vsync and other counter nextCycles

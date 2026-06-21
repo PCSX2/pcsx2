@@ -59,6 +59,9 @@ const vixl::aarch64::VRegister& armQRegister(int n)
 }
 
 
+// Opt-in only (matches origin/master): uncomment to compile vixl's
+// PrintDisassembler/Decoder for armDisassembleAndDumpCode. Off by default so
+// the disassembler TUs and statics don't ship in normal builds.
 //#define INCLUDE_DISASSEMBLER
 
 #ifdef INCLUDE_DISASSEMBLER
@@ -71,6 +74,7 @@ thread_local a64::MacroAssembler* armAsm;
 thread_local u8* armAsmPtr;
 thread_local size_t armAsmCapacity;
 thread_local ArmConstantPool* armConstantPool;
+thread_local ArmAddressRecorder* armAddressRecorder;
 
 #ifdef INCLUDE_DISASSEMBLER
 static std::mutex armDisasmMutex;
@@ -136,12 +140,15 @@ void armDisassembleAndDumpCode(const void* ptr, size_t size)
 	std::unique_lock lock(armDisasmMutex);
 	if (!armDisasm)
 	{
-		armDisasm = std::make_unique<a64::PrintDisassembler>(stderr);
+		std::FILE* logFile = Log::GetFileLogHandle();
+		armDisasm = std::make_unique<a64::PrintDisassembler>(logFile ? logFile : stderr);
 		armDisasmDecoder = std::make_unique<a64::Decoder>();
 		armDisasmDecoder->AppendVisitor(armDisasm.get());
 	}
 
-	armDisasmDecoder->Decode(static_cast<const vixl::aarch64::Instruction*>(ptr), static_cast<const vixl::aarch64::Instruction*>(ptr) + size);
+	const auto* start = reinterpret_cast<const vixl::aarch64::Instruction*>(ptr);
+	const auto* end = reinterpret_cast<const vixl::aarch64::Instruction*>(static_cast<const u8*>(ptr) + size);
+	armDisasmDecoder->Decode(start, end);
 #else
 	Console.Error("Not compiled with INCLUDE_DISASSEMBLER");
 #endif
@@ -162,13 +169,21 @@ void armEmitJmp(const void* ptr, bool force_inline)
 
 	if (use_blr)
 	{
+		if (armAddressRecorder)
+			armAddressRecorder->OnAbsoluteTarget(ptr);
 		armAsm->Mov(RXVIXLSCRATCH, reinterpret_cast<uintptr_t>(ptr));
 		armAsm->Br(RXVIXLSCRATCH);
 	}
 	else
 	{
-		a64::SingleEmissionCheckScope guard(armAsm);
-		armAsm->b(displacement);
+		{
+			a64::SingleEmissionCheckScope guard(armAsm);
+			armAsm->b(displacement);
+		}
+		// Record after emission: the scope entry may flush a pending vixl
+		// literal pool, so the insn address is only known once it's out.
+		if (armAddressRecorder)
+			armAddressRecorder->OnDirectBranch(armGetCurrentCodePointer() - 4, ptr, false);
 	}
 }
 
@@ -187,13 +202,19 @@ void armEmitCall(const void* ptr, bool force_inline)
 
 	if (use_blr)
 	{
+		if (armAddressRecorder)
+			armAddressRecorder->OnAbsoluteTarget(ptr);
 		armAsm->Mov(RXVIXLSCRATCH, reinterpret_cast<uintptr_t>(ptr));
 		armAsm->Blr(RXVIXLSCRATCH);
 	}
 	else
 	{
-		a64::SingleEmissionCheckScope guard(armAsm);
-		armAsm->bl(displacement);
+		{
+			a64::SingleEmissionCheckScope guard(armAsm);
+			armAsm->bl(displacement);
+		}
+		if (armAddressRecorder)
+			armAddressRecorder->OnDirectBranch(armGetCurrentCodePointer() - 4, ptr, true);
 	}
 }
 
@@ -226,6 +247,23 @@ void armEmitCondBranch(a64::Condition cond, const void* ptr)
 		static_cast<s64>(reinterpret_cast<intptr_t>(ptr) - reinterpret_cast<intptr_t>(armGetCurrentCodePointer()));
 	//pxAssert(Common::IsAligned(jump_distance, 4));
 
+	// A recorder patching this branch on relocation needs the imm26 reach of a
+	// plain B — B.cond's ±1MB imm19 may not survive the move. Force the long
+	// form for targets the recorder marks relocatable and record the B.
+	if (armAddressRecorder && armAddressRecorder->WantsLongCondBranch(ptr))
+	{
+		a64::MacroEmissionCheckScope guard(armAsm);
+		a64::Label branch_not_taken;
+		armAsm->b(&branch_not_taken, a64::InvertCondition(cond));
+
+		const s64 new_jump_distance =
+			static_cast<s64>(reinterpret_cast<intptr_t>(ptr) - reinterpret_cast<intptr_t>(armGetCurrentCodePointer()));
+		armAsm->b(new_jump_distance >> 2);
+		armAddressRecorder->OnDirectBranch(armGetCurrentCodePointer() - 4, ptr, false);
+		armAsm->bind(&branch_not_taken);
+		return;
+	}
+
 	if (a64::Instruction::IsValidImmPCOffset(a64::CondBranchType, jump_distance >> 2))
 	{
 		a64::SingleEmissionCheckScope guard(armAsm);
@@ -249,6 +287,23 @@ void armMoveAddressToReg(const vixl::aarch64::Register& reg, const void* addr)
 	// psxAsm->Mov(reg, static_cast<u64>(reinterpret_cast<uintptr_t>(addr)));
 	pxAssert(reg.IsX());
 
+	if (armAddressRecorder &&
+		armAddressRecorder->ClassifyMove(addr) == ArmAddressRecorder::MoveForm::CanonicalAbs)
+	{
+		// Fixed-width 16-byte form: every operand bit lives in a movz/movk
+		// imm16 field a relocation patcher can rewrite in place.
+		const u64 v = reinterpret_cast<uintptr_t>(addr);
+		{
+			vixl::ExactAssemblyScope guard(armAsm, 16);
+			armAsm->movz(reg, v & 0xFFFF, 0);
+			armAsm->movk(reg, (v >> 16) & 0xFFFF, 16);
+			armAsm->movk(reg, (v >> 32) & 0xFFFF, 32);
+			armAsm->movk(reg, (v >> 48) & 0xFFFF, 48);
+		}
+		armAddressRecorder->OnCanonicalAbsMove(armGetCurrentCodePointer() - 16, addr);
+		return;
+	}
+
 	const void* current_code_ptr_page = reinterpret_cast<const void*>(
 		reinterpret_cast<uintptr_t>(armGetCurrentCodePointer()) & ~static_cast<uintptr_t>(0xFFF));
 	const void* ptr_page =
@@ -261,6 +316,8 @@ void armMoveAddressToReg(const vixl::aarch64::Register& reg, const void* addr)
 			a64::SingleEmissionCheckScope guard(armAsm);
 			armAsm->adrp(reg, page_displacement);
 		}
+		if (armAddressRecorder)
+			armAddressRecorder->OnAdrp(armGetCurrentCodePointer() - 4, addr);
 		armAsm->Add(reg, reg, page_offset);
 	}
 	else if (vixl::IsInt21(page_displacement) && a64::Assembler::IsImmLogical(page_offset, 64))
@@ -269,10 +326,14 @@ void armMoveAddressToReg(const vixl::aarch64::Register& reg, const void* addr)
 			a64::SingleEmissionCheckScope guard(armAsm);
 			armAsm->adrp(reg, page_displacement);
 		}
+		if (armAddressRecorder)
+			armAddressRecorder->OnAdrp(armGetCurrentCodePointer() - 4, addr);
 		armAsm->Orr(reg, reg, page_offset);
 	}
 	else
 	{
+		if (armAddressRecorder)
+			armAddressRecorder->OnAbsoluteTarget(addr);
 		armAsm->Mov(reg, reinterpret_cast<uintptr_t>(addr));
 	}
 }

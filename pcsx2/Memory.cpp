@@ -95,7 +95,22 @@ bool SysMemory::AllocateMemoryMap()
 		return false;
 	}
 
-	if (!(s_memory_mapping_area = SharedMemoryMappingArea::Create(HostMemoryMap::MainSize + HostMemoryMap::CodeSize, true)))
+	// Constant-VA arena for the on-disk VU program cache: on arm64 the
+	// whole data+code reservation must sit at the same VA every run so cached
+	// JIT code (which lives in the code half, at BasePointer() + MainSize)
+	// reloads without repatching its baked addresses. 4GB clears the ASLR brk
+	// window (non-PIE image at 0x400000 + brk randomization < 2GB) and sits far
+	// below the mmap_base / PIE-load regions, so the slot-0 candidate succeeds
+	// deterministically; Create() walks 256MB-stride fallback slots and finally
+	// kernel placement (program-cache misses, never corruption). Other arches
+	// pass 0 and take kernel-chosen placement.
+#if defined(__aarch64__) || defined(_M_ARM64)
+	constexpr uptr kArenaBase = 0x100000000ull; // 4GB
+#else
+	constexpr uptr kArenaBase = 0;
+#endif
+
+	if (!(s_memory_mapping_area = SharedMemoryMappingArea::Create(HostMemoryMap::MainSize + HostMemoryMap::CodeSize, true, kArenaBase)))
 	{
 		Host::ReportErrorAsync("Error", "Failed to map main memory.");
 		ReleaseMemoryMap();
@@ -172,11 +187,19 @@ void SysMemory::ReleaseMemoryMap()
 	}
 }
 
+void SysMemory::ReserveMemory()
+{
+	// Claim the host memory map (and the arm64 constant-VA arena) up front, so
+	// the fixed-base placement isn't lost to an intervening heap/mmap. Idempotent.
+	if (!s_data_memory_file_handle)
+		AllocateMemoryMap();
+}
+
 bool SysMemory::Allocate()
 {
 	DevCon.WriteLn(Color_StrongBlue, "Allocating host memory for virtual systems...");
 
-	if (!AllocateMemoryMap())
+	if (!s_data_memory_file_handle && !AllocateMemoryMap())
 		return false;
 
 	memAllocate();
@@ -410,6 +433,16 @@ void memMapPhy()
 
 	// High memory, uninstalled on the configuration we emulate
 	vtlb_MapHandler(null_handler, Ps2MemSize::ExposedRam, 0x10000000 - Ps2MemSize::ExposedRam);
+
+	// Physical RAM mirrors used by BIOS InitRDRAM for RDRAM device configuration.
+	// On real PS2 hardware:
+	//   0x20000000-0x21FFFFFF = uncached mirror of main RAM
+	//   0x30000000-0x31FFFFFF = uncached & accelerated mirror of main RAM
+	// These mirrors must be present in the physical map; without them, BIOS writes
+	// to RDRAM device registers hit UnmappedPhyHandler (bus error).
+	// Requires VTLB_PMAP_SZ >= 1GB to cover these addresses.
+	vtlb_MapBlock(eeMem->Main, 0x20000000, Ps2MemSize::ExposedRam);
+	vtlb_MapBlock(eeMem->Main, 0x30000000, Ps2MemSize::ExposedRam);
 
 	// Various ROMs (all read-only)
 	vtlb_MapBlock(eeMem->ROM,	0x1fc00000, Ps2MemSize::Rom);

@@ -139,7 +139,12 @@ namespace PageFaultHandler
 class SharedMemoryMappingArea
 {
 public:
-	static std::unique_ptr<SharedMemoryMappingArea> Create(size_t size, bool jit = false);
+	// fixed_base_hint: when non-zero, the area is placed at that VA (256MB-stride
+	// fallback slots, then kernel placement) so the reserved region — and any JIT
+	// code mapped inside it — lands at the same address every run, which a caller
+	// can rely on for address-stable code caching. Zero = kernel-chosen placement
+	// (the default).
+	static std::unique_ptr<SharedMemoryMappingArea> Create(size_t size, bool jit = false, uptr fixed_base_hint = 0);
 
 	~SharedMemoryMappingArea();
 
