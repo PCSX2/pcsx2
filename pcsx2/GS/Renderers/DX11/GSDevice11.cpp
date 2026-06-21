@@ -48,6 +48,15 @@ static bool IsTextureFormatHWBlendable(ID3D11Device* dev, DXGI_FORMAT format)
 	return (support & D3D11_FORMAT_SUPPORT_RENDER_TARGET) && (support & D3D11_FORMAT_SUPPORT_BLENDABLE);
 }
 
+static bool IsTextureFormatUAVCapable(ID3D11Device* dev, DXGI_FORMAT format)
+{
+	UINT support;
+	if (FAILED(dev->CheckFormatSupport(format, &support)))
+		return false;
+
+	return (support & D3D11_FORMAT_SUPPORT_TYPED_UNORDERED_ACCESS_VIEW) != 0;
+}
+
 GSDevice11::GSDevice11()
 {
 	memset(&m_state, 0, sizeof(m_state));
@@ -594,7 +603,8 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	}
 
 	// 1x1 dummy texture.
-	m_null_texture = CreateSurface(GSTexture::ShaderWriteTarget, 1, 1, 1, GSTexture::Format::Color);
+	const GSTexture::Usage null_usage = m_features.rov ? GSTexture::ShaderWriteTarget : GSTexture::Feedback;
+	m_null_texture = CreateSurface(null_usage, 1, 1, 1, GSTexture::Format::Color);
 	if (!m_null_texture)
 		return false;
 
@@ -717,6 +727,11 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	D3D11_FEATURE_DATA_D3D11_OPTIONS2 options2{};
 	m_dev->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS2, &options2, sizeof(options2));
 	m_features.rov = m_uav_texture && options2.ROVsSupported;
+	for (u32 fmt = static_cast<u32>(GSTexture::Format::Color); fmt <= static_cast<u32>(GSTexture::Format::PrimID); fmt++)
+	{
+		if (GSTexture::IsShaderWriteFormat(static_cast<GSTexture::Format>(fmt)))
+			m_features.rov &= IsTextureFormatUAVCapable(m_dev.get(), GSTexture11::GetDXGIFormat(static_cast<GSTexture::Format>(fmt)));
+	}
 
 	// Let the user know if said features are available.
 	Console.WriteLnFmt("D3D11: DXTn Texture Compression: {}", m_features.dxt_textures ? "Supported" : "Not Supported");

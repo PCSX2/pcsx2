@@ -256,8 +256,8 @@ private:
 	void GetForcedROVUsage(bool& color_cov, bool& depth_rov); // Whether having color or depth with the current config forces the other.
 	void DetermineROVUsage(GSTextureCache::Target* rt, GSTextureCache::Target* ds); // Heuristics to determine whether to enable/disable ROV
 	void ConfigureROV(bool color_rov, bool depth_rov); // Actual config for ROV
-	void SetUnorderedAccessFlag(GSTextureCache::Target* rt); // Set flag for DX11 ROV heuristic to work.
-	void ConvertDepthFormatROV(GSTextureCache::Target* ds); // Convert between depth and depth color if needed.
+	void ConvertTextureTypeROV(GSTextureCache::Target* rt, GSTextureCache::Target* ds); // Convert to RW capable textures if needed.
+	void ConvertTextureTypeROVSingle(GSTextureCache::Target* tgt, bool shader_write); // Helper to do the above.
 
 	void SetTCOffset();
 	bool NextDrawColClip() const;

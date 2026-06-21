@@ -40,7 +40,7 @@ public:
 	static constexpr Usage Texture = Usage::Texture;
 	static constexpr Usage RenderTarget = Usage::RenderTarget;
 	static constexpr Usage DepthStencil = Usage::DepthStencil;
-	static constexpr Usage FeedbackTarget = Usage::RenderTarget | Usage::Feedback | Usage::ShaderWrite;
+	static constexpr Usage FeedbackTarget = Usage::RenderTarget | Usage::Feedback;
 	static constexpr Usage FeedbackDepth = Usage::DepthStencil | Usage::Feedback;
 	static constexpr Usage ShaderWriteTarget = Usage::RenderTarget | Usage::Feedback | Usage::ShaderWrite;
 	static constexpr Usage ShaderWriteTexture = Usage::Texture | Usage::ShaderWrite;
@@ -93,10 +93,6 @@ protected:
 
 	bool m_needs_mipmaps_generated = true;
 	ClearValue m_clear_value = {};
-
-	// For GL/DX11 since they don't track layouts.
-	// Used heuristically to decide whether to use ROV for a draw.
-	bool m_unordered_access = false;
 
 #ifdef PCSX2_DEVBUILD
 	std::string m_debug_name;
@@ -223,6 +219,12 @@ public:
 		return IsFeedbackOrShaderWrite(m_usage);
 	}
 
+	virtual bool IsShaderWriteMode() const
+	{
+		// Backends that track state explicitly can specialize this to use the actual state.
+		return IsShaderWrite();
+	}
+
 	__fi State GetState() const { return m_state; }
 	__fi void SetState(State state) { m_state = state; }
 
@@ -253,12 +255,6 @@ public:
 
 	// Typical size of a RGBA texture
 	u32 GetMemUsage() const { return m_size.x * m_size.y * (m_format == Format::UNorm8 ? 1 : 4); }
-
-	// The unordered access flag is sticky, so once it's set we keep using ROV for the target
-	// until it's recycled/destroyed. Only used for DX11/GL, which don't track actual resource layout/state.
-	virtual bool IsUnorderedAccess() const { return m_unordered_access; }
-	void SetUnorderedAccess() { m_unordered_access = true; }
-	void ClearUnorderedAccess() { m_unordered_access = false; }
 
 	// Helper routines for formats/types
 	static bool IsCompressedFormat(Format format) { return (format >= Format::BC1 && format <= Format::BC7); }

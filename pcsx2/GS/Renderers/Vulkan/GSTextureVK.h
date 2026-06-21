@@ -42,7 +42,7 @@ public:
 	__fi VkImage GetImage() const { return m_image; }
 	__fi VkImageView GetView() const { return m_view; }
 	__fi Layout GetLayout() const { return m_layout; }
-	virtual bool IsUnorderedAccess() const override { return GetLayout() == Layout::ReadWriteImage; }
+	bool IsShaderWriteMode() const override { return GetLayout() == Layout::ReadWriteImage; }
 
 	__fi VkFormat GetVkFormat() const { return m_vk_format; }
 
