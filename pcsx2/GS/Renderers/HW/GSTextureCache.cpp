@@ -7164,7 +7164,7 @@ GSTextureCache::Target* GSTextureCache::Target::Create(GIFRegTEX0 TEX0, int w, i
 
 	const int scaled_w = static_cast<int>(std::ceil(static_cast<float>(w) * scale));
 	const int scaled_h = static_cast<int>(std::ceil(static_cast<float>(h) * scale));
-	GSTexture::Usage  usage  = type == RenderTarget ? GSTexture::ShaderWriteTarget : GSTexture::DepthStencil;
+	GSTexture::Usage  usage  = type == RenderTarget ? GSTexture::FeedbackTarget : GSTexture::DepthStencil;
 	GSTexture::Format format = type == RenderTarget ? GSTexture::Format::Color : GSTexture::Format::DepthStencil;
 	if (type == RenderTarget || g_gs_device->Features().depth_feedback)
 		usage |= TextureUsage::Feedback;

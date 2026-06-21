@@ -908,11 +908,6 @@ bool GSDeviceOGL::CheckFeatures()
 	}
 	
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
-
-	if (GSConfig.HWROV)
-	{
-		Console.Warning("GL: ROV is not implemented for GL and will be disabled.");
-	}
 	
 	return true;
 }
