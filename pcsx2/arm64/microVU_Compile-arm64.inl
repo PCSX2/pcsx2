@@ -543,7 +543,7 @@ static void mvuPreloadRegisters(microVU& mVU, u32 endCount)
 	mVU.code = orig_code;
 }
 
-__ri void doUpperOp(mV) { mVUopU(mVU, 1); }
+__ri void doUpperOp(mV) { mVUopU(mVU, 1); mVUdivSet(mVU); }
 __ri void doLowerOp(mV) { incPC(-1); mVUopL(mVU, 1); incPC(1); }
 __ri void flushRegs(mV) { if (!doRegAlloc) mVU.regAlloc->flushAll(); }
 

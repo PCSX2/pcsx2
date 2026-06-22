@@ -10,11 +10,20 @@
 // exercised — both the architectural REG_STATUS_FLAG and the magic q
 // payload values 0x7F7FFFFF / 0xFF7FFFFF the VU emits on /0 with sign.
 //
-// Known JIT divergence: on short standalone programs the divFlag → STATUS
-// propagation in the FDIV unit's pipeline isn't drained at end-of-program,
-// so STATUS bits 0x10/0x20 land in interp but not in JIT. Tests that probe
-// this opt out of REG_STATUS_FLAG via IgnoreViInDiff and route their
-// architectural status asserts through the interp side.
+// FDIV flag → STATUS transfer (micro mode): the I (invalid, 0x10) and D
+// (divide-by-zero, 0x20) bits are produced by VDIV/VSQRT/VRSQRT into
+// mVU.divFlag, then folded into the architectural STATUS flag by mVUdivSet()
+// on the instruction 7 cycles downstream (the FDIV flag latency). For a long
+// time arm64 micro-mode dropped this entirely — doUpperOp() never called
+// mVUdivSet(), so the bits reached STATUS only in COP2 macro mode. That
+// surfaced as Soul Calibur 3 character-model jitter and was misfiled as a
+// "short standalone program" / test-side limitation (the older tests below
+// opt REG_STATUS_FLAG out of the diff and assert via the interp side). The
+// fix wires mVUdivSet() into doUpperOp(), matching x86; the
+// *InJitStatus regression tests assert the bit on the JIT side directly and
+// are RED without it. A genuinely-too-short program (FDIV that E-bits within
+// the 7-cycle latency) still can't observe the flag — that's shared with x86,
+// not an arm64 bug — so pad past the latency when asserting the JIT side.
 
 #include "harness/VuTestHarness.h"
 
@@ -126,6 +135,95 @@ TEST(Vu0Qpipe, VdivZeroOverZeroSetsBit10InvalidOp)
 	h.Run();
 	EXPECT_EQ(h.GetViJit(REG_Q), kQPlusInfMagic);
 	EXPECT_NE(h.GetViInterp(REG_STATUS_FLAG) & 0x10, 0u);
+}
+
+// -------- FDIV flags reach the JIT STATUS flag (micro-mode regression) --------
+//
+// These assert the I/D bits on the JIT side directly (the older tests above
+// route through interp because the JIT used to drop them). They pad past the
+// 7-cycle FDIV flag latency so mVUdivSet() — now called from doUpperOp() — has
+// a downstream instruction to fold mVU.divFlag into STATUS. RED before the
+// doUpperOp()→mVUdivSet() fix; the Soul Calibur 3 VU0-micro jitter regression.
+
+// Eight NOP pairs (inlined per call site) span the 7-cycle FDIV flag latency.
+
+TEST(Vu0Qpipe, VdivByZeroSetsDBitInJitStatus)
+{
+	// 1.0 / 0.0 → D (divide-by-zero, 0x20) must reach the JIT STATUS flag.
+	VuTestHarness h(0);
+	h.IgnoreViInDiff(REG_STATUS_FLAG); // sticky/Z/S corners differ on tiny progs; assert the D bit directly
+	h.SetVf(1, 1.0f, 0, 0, 0);
+	h.SetVf(2, 0, 0, 0, 0.0f);
+	h.LoadProgram({
+		LowerOnly(VDIV_L(vf::vf1, 0, vf::vf2, 3)),
+		NopPair(), NopPair(), NopPair(), NopPair(),
+		NopPair(), NopPair(), NopPair(), NopPair(),
+		WaitQPair(),
+		EBitNopPair(),
+	});
+	h.Run();
+	EXPECT_NE(h.GetViJit(REG_STATUS_FLAG) & 0x20u, 0u)
+		<< "JIT dropped the FDIV divide-by-zero (D) flag — mVUdivSet missing from doUpperOp?";
+	EXPECT_NE(h.GetViInterp(REG_STATUS_FLAG) & 0x20u, 0u); // oracle
+}
+
+TEST(Vu0Qpipe, VdivZeroOverZeroSetsIBitInJitStatus)
+{
+	// 0.0 / 0.0 → I (invalid-op, 0x10) must reach the JIT STATUS flag.
+	// This is the exact shape behind the Soul Calibur 3 VU0-micro jitter.
+	VuTestHarness h(0);
+	h.IgnoreViInDiff(REG_STATUS_FLAG);
+	h.SetVf(1, 0.0f, 0, 0, 0);
+	h.SetVf(2, 0, 0, 0, 0.0f);
+	h.LoadProgram({
+		LowerOnly(VDIV_L(vf::vf1, 0, vf::vf2, 3)),
+		NopPair(), NopPair(), NopPair(), NopPair(),
+		NopPair(), NopPair(), NopPair(), NopPair(),
+		WaitQPair(),
+		EBitNopPair(),
+	});
+	h.Run();
+	EXPECT_NE(h.GetViJit(REG_STATUS_FLAG) & 0x10u, 0u)
+		<< "JIT dropped the FDIV invalid-op (I) flag (0/0)";
+	EXPECT_NE(h.GetViInterp(REG_STATUS_FLAG) & 0x10u, 0u);
+}
+
+TEST(Vu0Qpipe, VsqrtNegativeSetsIBitInJitStatus)
+{
+	// sqrt(-25) → I (invalid-op, 0x10) must reach the JIT STATUS flag.
+	VuTestHarness h(0);
+	h.IgnoreViInDiff(REG_STATUS_FLAG);
+	h.SetVf(1, 0, 0, -25.0f, 0);
+	h.LoadProgram({
+		LowerOnly(VSQRT_L(vf::vf1, 2)),
+		NopPair(), NopPair(), NopPair(), NopPair(),
+		NopPair(), NopPair(), NopPair(), NopPair(),
+		WaitQPair(),
+		EBitNopPair(),
+	});
+	h.Run();
+	EXPECT_NE(h.GetViJit(REG_STATUS_FLAG) & 0x10u, 0u)
+		<< "JIT dropped the VSQRT invalid-op (I) flag (negative operand)";
+	EXPECT_NE(h.GetViInterp(REG_STATUS_FLAG) & 0x10u, 0u);
+}
+
+TEST(Vu0Qpipe, VdivByZeroSetsDBitInJitStatusOnVu1)
+{
+	// Same transfer on VU1's micro path.
+	VuTestHarness h(1);
+	h.IgnoreViInDiff(REG_STATUS_FLAG);
+	h.SetVf(1, 1.0f, 0, 0, 0);
+	h.SetVf(2, 0, 0, 0, 0.0f);
+	h.LoadProgram({
+		LowerOnly(VDIV_L(vf::vf1, 0, vf::vf2, 3)),
+		NopPair(), NopPair(), NopPair(), NopPair(),
+		NopPair(), NopPair(), NopPair(), NopPair(),
+		WaitQPair(),
+		EBitNopPair(),
+	});
+	h.Run();
+	EXPECT_NE(h.GetViJit(REG_STATUS_FLAG) & 0x20u, 0u)
+		<< "VU1 JIT dropped the FDIV divide-by-zero (D) flag";
 }
 
 // -------- VSQRT --------
