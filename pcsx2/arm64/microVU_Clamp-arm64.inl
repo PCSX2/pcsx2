@@ -20,12 +20,25 @@ void mVUclamp1(microVU& mVU, const a64::VRegister& reg, const a64::VRegister& re
 		{
 			case 1: case 2: case 4: case 8:
 			{
+				// Clamp ONLY lane 0 to [minFloat, maxFloat], PRESERVING lanes 1-3.
+				// A 32-bit scalar NEON FP op zeroes the dest V-reg's upper lanes,
+				// unlike x86 MIN.SS/MAX.SS which leave them intact. Single-scalar
+				// FMAC ops rotate the live lane to lane 0 (shuffleSSto0), clamp +
+				// operate on lane 0, then rotate the siblings back (shuffleSSfrom0)
+				// — so the siblings parked in lanes 1-3 MUST survive the clamp.
+				// Zeroing them clobbered carried state (e.g. the ACC accumulator
+				// across single-component MADD chains), which is SoulCalibur III's
+				// vuClampMode:2 SPS / trembling geometry. Compute the clamped
+				// scalar in RQSCRATCH3 and INS it back into lane 0 only, mirroring
+				// the x86 mVUclamp1 SS path.
 				armAsm->Ldr(a64::VRegister(RQSCRATCH3.GetCode(), 32), mVUglobMem(&mVUglob.maxvals[0]));
-				armAsm->Fminnm(a64::VRegister(reg.GetCode(), 32), a64::VRegister(reg.GetCode(), 32),
+				armAsm->Fminnm(a64::VRegister(RQSCRATCH3.GetCode(), 32), a64::VRegister(reg.GetCode(), 32),
 				               a64::VRegister(RQSCRATCH3.GetCode(), 32));
+				armAsm->Ins(reg.V4S(), 0, RQSCRATCH3.V4S(), 0);
 				armAsm->Ldr(a64::VRegister(RQSCRATCH3.GetCode(), 32), mVUglobMem(&mVUglob.minvals[0]));
-				armAsm->Fmaxnm(a64::VRegister(reg.GetCode(), 32), a64::VRegister(reg.GetCode(), 32),
+				armAsm->Fmaxnm(a64::VRegister(RQSCRATCH3.GetCode(), 32), a64::VRegister(reg.GetCode(), 32),
 				               a64::VRegister(RQSCRATCH3.GetCode(), 32));
+				armAsm->Ins(reg.V4S(), 0, RQSCRATCH3.V4S(), 0);
 				break;
 			}
 			default:
