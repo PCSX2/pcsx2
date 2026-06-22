@@ -1592,7 +1592,8 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	iFlushCall(FLUSH_EVERYTHING | FLUSH_PC);
 
 	// compute accessed address
-	_eeMoveGPRtoR(ecx, (op >> 21) & 0x1F);
+	// Do not cache reg, we'll call outside jit here
+	_eeMoveGPRtoR(ecx, (op >> 21) & 0x1F, false);
 	if (static_cast<s16>(op) != 0)
 		xADD(ecx, static_cast<s16>(op));
 	if (bits == 128)
