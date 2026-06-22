@@ -204,7 +204,9 @@ VuReplayResult ReplayCapture(const vu_capture::CaptureRecord& rec,
 	PrimeFromCapture(rec);
 	const VuSnapshot pre = VuSnapshot::Capture(idx, windows);
 	path1_buf.clear();
+	const u64 jit_cycle_before = Regs(idx).cycle;
 	RunJitFromSeeded(idx, cycles);
+	out.jit_cycles = Regs(idx).cycle - jit_cycle_before;
 	out.jit_snapshot = VuSnapshot::Capture(idx, windows);
 	out.path1_packets_jit = path1_buf;
 	// Authoritative running bit lives in vuRegs[0] for both VUs (see header).
@@ -224,7 +226,9 @@ VuReplayResult ReplayCapture(const vu_capture::CaptureRecord& rec,
 	JitCpu(idx)->SetStartPC(rec.start_pc);
 
 	path1_buf.clear();
+	const u64 interp_cycle_before = Regs(idx).cycle;
 	RunInterpFromSeeded(idx, cycles);
+	out.interp_cycles = Regs(idx).cycle - interp_cycle_before;
 	out.interp_snapshot = VuSnapshot::Capture(idx, windows);
 	out.path1_packets_interp = path1_buf;
 	out.interp_ebit = (vuRegs[0].VI[REG_VPU_STAT].UL & RunningBit(idx)) == 0;

@@ -13,7 +13,9 @@
 #include "R5900.h"
 #include "VMManager.h"
 #include "VUmicro.h"
+#if defined(_M_ARM64) || defined(__aarch64__)
 #include "arm64/microVU_Persist-arm64.h"
+#endif
 #include "common/FPControl.h"
 
 #include "cpuinfo.h"
@@ -110,7 +112,9 @@ bool RecompilerTestEnvironment::Initialize()
 	// it from EmuConfig — the persist/abi/disk tests set recording (and the
 	// on-disk cache) explicitly. Must precede the Reserve calls below, since
 	// CpuMicroVU0.Reserve runs mVUinit (which calls SyncRecordingFromConfig).
+#if defined(_M_ARM64) || defined(__aarch64__)
 	mVUPersist::SetTestManualRecording(true);
+#endif
 
 	// microVU JITs. mVUinit allocates the per-VU regAlloc + sets cache
 	// pointers; the corresponding Reset call below emits dispatchers.

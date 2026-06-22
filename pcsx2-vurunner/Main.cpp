@@ -26,8 +26,10 @@
 #include "VUmicro.h"
 #include "Gif_Unit.h"
 #include "microVU_Divtrace.h"
+#if defined(_M_ARM64) || defined(__aarch64__)
 #include "arm64/microVU_Persist-arm64.h"
 #include "arm64/microVU_ProgCache-arm64.h"
+#endif
 
 #include "DebugTools/Debug.h"
 #include "common/FPControl.h"
@@ -55,12 +57,15 @@ struct Options
 	bool bench = false;
 	bool dump_asm = false;
 	bool dump_microcode = false;
+	bool dump_jit_state = false;      // cross-arch JIT post-state digest
+	bool dump_jit_state_raw = false;  // + full per-field raw dump
 	bool divtrace = false;
 	bool bench_no_reprime = false;
 	bool print_bases = false;
 	bool no_progcache = false;  // determinism gate: force program cache + recording off
 	u32 dump_count = 64;
 	u32 cycle_override = 0;  // 0 = use captured budget
+	int vu_clamp_mode = -1;  // -1 = leave EmuConfig default (mode 1); 0..3 = force VU clamp mode
 	std::string cache_dir;   // empty = persisted-JIT program cache off
 	std::vector<std::string> files;
 };
@@ -143,6 +148,15 @@ bool ParseArgs(int argc, char** argv, Options& opts)
 		{
 			opts.dump_microcode = true;
 		}
+		else if (a == "--dump-jit-state")
+		{
+			opts.dump_jit_state = true;
+		}
+		else if (a == "--dump-jit-state-raw")
+		{
+			opts.dump_jit_state = true;
+			opts.dump_jit_state_raw = true;
+		}
 		else if (a == "--divtrace")
 		{
 			opts.divtrace = true;
@@ -218,6 +232,21 @@ bool ParseArgs(int argc, char** argv, Options& opts)
 			}
 			opts.iters = static_cast<u32>(n);
 		}
+		else if (a == "--vu-clamp-mode")
+		{
+			if (i + 1 >= argc)
+			{
+				std::fprintf(stderr, "vurunner: --vu-clamp-mode requires an argument (0..3)\n");
+				return false;
+			}
+			const long n = std::strtol(argv[++i], nullptr, 10);
+			if (n < 0 || n > 3)
+			{
+				std::fprintf(stderr, "vurunner: --vu-clamp-mode must be in [0, 3]\n");
+				return false;
+			}
+			opts.vu_clamp_mode = static_cast<int>(n);
+		}
 		else
 		{
 			std::fprintf(stderr, "vurunner: unknown option '%s'\n", a.c_str());
@@ -230,7 +259,8 @@ bool ParseArgs(int argc, char** argv, Options& opts)
 		return false;
 	}
 	if (!opts.diff && !opts.bench && !opts.dump_asm
-		&& !opts.dump_microcode && !opts.divtrace && !opts.print_bases)
+		&& !opts.dump_microcode && !opts.divtrace && !opts.print_bases
+		&& !opts.dump_jit_state)
 		opts.diff = true;
 	return true;
 }
@@ -353,6 +383,128 @@ void PrintPathDiff(const std::vector<u8>& jit, const std::vector<u8>& interp)
 	}
 }
 
+// ---- Cross-arch JIT post-state dump --------------------------------------
+//
+// Runs the JIT (only) against each capture and emits a stable digest of its
+// architectural post-state (VF / VI / ACC / [VU1 xgkick] / VU data memory),
+// plus consumed cycles and E-bit termination. The point is a cross-ARCH
+// JIT-vs-JIT comparison: replay the SAME capture corpus with the SAME cycle
+// budget on arm64 and x86. Both microVU backends share a byte-identical cycle
+// model (mVUincCycles/mVUtestCycles), so they execute the same guest-insn
+// count and stop at the same point — making their post-states directly
+// comparable even for budget-truncated (looping) programs. `diff` the two
+// outputs: any differing line is a capture where the two codegen backends
+// produce a different architectural result for identical input (an
+// arch-specific codegen bug). Identical output across the whole corpus rules
+// the per-capture VU program replay OUT as the divergence source, pointing at
+// carried pipeline state / dispatcher / COP2-sync integration that
+// vu_capture doesn't capture.
+
+bool IsFullWidthVi(int i)
+{
+	return i == REG_R || i == REG_I || i == REG_Q || i == REG_P
+	    || i == REG_STATUS_FLAG || i == REG_MAC_FLAG || i == REG_CLIP_FLAG
+	    || i == REG_TPC || i == REG_FBRST || i == REG_VPU_STAT;
+}
+
+void HashArchSurface(const recompiler_tests::VuSnapshot& s, u64& reg_hash, u64& mem_hash)
+{
+	auto mix = [](u64 h, u32 v) {
+		for (int b = 0; b < 4; ++b)
+		{
+			h ^= (v >> (b * 8)) & 0xFFu;
+			h *= 0x100000001b3ull;  // FNV-1a 64 prime
+		}
+		return h;
+	};
+	const VURegs& g = s.regs;
+	u64 r = 0xcbf29ce484222325ull;
+	for (int i = 0; i < 32; ++i)
+	{
+		r = mix(r, g.VF[i].i.x); r = mix(r, g.VF[i].i.y);
+		r = mix(r, g.VF[i].i.z); r = mix(r, g.VF[i].i.w);
+	}
+	for (int i = 0; i < 32; ++i)
+		r = mix(r, g.VI[i].UL & (IsFullWidthVi(i) ? 0xFFFFFFFFu : 0xFFFFu));
+	r = mix(r, g.ACC.i.x); r = mix(r, g.ACC.i.y);
+	r = mix(r, g.ACC.i.z); r = mix(r, g.ACC.i.w);
+	if (s.index == 1)
+	{
+		r = mix(r, g.xgkickaddr); r = mix(r, g.xgkickdiff);
+		r = mix(r, g.xgkicksizeremaining); r = mix(r, g.xgkickcyclecount);
+		r = mix(r, g.xgkickenable); r = mix(r, g.xgkickendpacket);
+	}
+	reg_hash = r;
+	u64 m = 0xcbf29ce484222325ull;
+	for (const auto& w : s.mem_windows)
+	{
+		m = mix(m, w.addr);
+		for (u8 b : w.bytes) { m ^= b; m *= 0x100000001b3ull; }
+	}
+	mem_hash = m;
+}
+
+void DumpArchRaw(const recompiler_tests::VuSnapshot& s)
+{
+	const VURegs& g = s.regs;
+	for (int i = 0; i < 32; ++i)
+		std::printf("  VF%02d %08x %08x %08x %08x\n", i,
+			g.VF[i].i.x, g.VF[i].i.y, g.VF[i].i.z, g.VF[i].i.w);
+	std::printf("  ACC  %08x %08x %08x %08x\n", g.ACC.i.x, g.ACC.i.y, g.ACC.i.z, g.ACC.i.w);
+	for (int i = 0; i < 32; ++i)
+		std::printf("  VI%02d %08x\n", i, g.VI[i].UL & (IsFullWidthVi(i) ? 0xFFFFFFFFu : 0xFFFFu));
+	if (s.index == 1)
+		std::printf("  XGK addr=%08x diff=%08x size=%08x cyc=%08x en=%08x endp=%08x\n",
+			g.xgkickaddr, g.xgkickdiff, g.xgkicksizeremaining, g.xgkickcyclecount,
+			g.xgkickenable, g.xgkickendpacket);
+	for (size_t wi = 0; wi < s.mem_windows.size(); ++wi)
+	{
+		const auto& w = s.mem_windows[wi];
+		for (size_t off = 0; off < w.bytes.size(); off += 16)
+		{
+			std::printf("  M%zu@%04zx", wi, off);
+			for (size_t k = 0; k < 16 && off + k < w.bytes.size(); ++k)
+				std::printf(" %02x", w.bytes[off + k]);
+			std::printf("\n");
+		}
+	}
+}
+
+int RunDumpJitState(const std::vector<vu_capture::CaptureRecord>& records,
+	const std::vector<std::string>& names,
+	u32 cycle_override,
+	bool raw)
+{
+	for (size_t fi = 0; fi < records.size(); ++fi)
+	{
+		const auto& rec = records[fi];
+		const auto r = recompiler_tests::ReplayCapture(rec,
+			recompiler_tests::VuDiffMode::PipelinePermissive, cycle_override);
+		// Basename only, so cross-machine path prefixes don't pollute the diff.
+		std::string base = names[fi];
+		const auto slash = base.find_last_of('/');
+		if (slash != std::string::npos)
+			base = base.substr(slash + 1);
+		if (!r.ok)
+		{
+			std::printf("%s replay-failed\n", base.c_str());
+			continue;
+		}
+		u64 rh = 0, mh = 0;
+		HashArchSurface(r.jit_snapshot, rh, mh);
+		std::printf("%s vu%u pc=%08x ebit=%d jitcyc=%llu reghash=%016llx memhash=%016llx\n",
+			base.c_str(), rec.vu_index, rec.start_pc, r.jit_ebit ? 1 : 0,
+			(unsigned long long)r.jit_cycles,
+			(unsigned long long)rh, (unsigned long long)mh);
+		if (raw)
+		{
+			std::printf("--- %s raw ---\n", base.c_str());
+			DumpArchRaw(r.jit_snapshot);
+		}
+	}
+	return 0;
+}
+
 int RunDiff(const std::vector<vu_capture::CaptureRecord>& records,
 	const std::vector<std::string>& names,
 	u32 iters,
@@ -360,6 +512,7 @@ int RunDiff(const std::vector<vu_capture::CaptureRecord>& records,
 {
 	int diverged_files = 0;
 	int path_diverged_files = 0;
+	int cycle_diverged_files = 0;
 	for (size_t fi = 0; fi < records.size(); ++fi)
 	{
 		const auto& rec = records[fi];
@@ -368,6 +521,8 @@ int RunDiff(const std::vector<vu_capture::CaptureRecord>& records,
 		bool any_diverged = false;
 		bool path_diverged = false;
 		const char* term = "unknown";
+		u64 jit_cycles = 0, interp_cycles = 0;
+		bool both_ebit = false;
 		for (u32 i = 0; i < iters; ++i)
 		{
 			const auto r = recompiler_tests::ReplayCapture(rec,
@@ -381,7 +536,12 @@ int RunDiff(const std::vector<vu_capture::CaptureRecord>& records,
 			// Termination signal (interp = oracle): ebit = program ran to its
 			// E-bit; budget = truncated by cycle budget (loop noise, not a bug).
 			if (i == 0)
+			{
 				term = r.interp_ebit ? "ebit" : "budget";
+				jit_cycles = r.jit_cycles;
+				interp_cycles = r.interp_cycles;
+				both_ebit = r.jit_ebit && r.interp_ebit;
+			}
 			const bool path_diff = (r.path1_packets_jit != r.path1_packets_interp);
 			if (r.diverged || path_diff)
 			{
@@ -397,6 +557,22 @@ int RunDiff(const std::vector<vu_capture::CaptureRecord>& records,
 			}
 		}
 		std::printf("  term=%s\n", term);
+		// Consumed-cycle comparison (JIT vs interp). This is the quantity the
+		// register/memory diff is blind to and that the mVU dispatcher reports
+		// back to the EE as VU0 runtime (drives EE<->VU0 timing / animation
+		// phase). Only meaningful when both engines ran the whole program
+		// (both_ebit) — a budget-truncated program legitimately overshoots to a
+		// block boundary under JIT vs stops mid-op under interp.
+		if (jit_cycles != interp_cycles)
+		{
+			const bool flag = both_ebit;
+			std::printf("  cycles jit=%llu interp=%llu (delta=%lld)%s\n",
+				(unsigned long long)jit_cycles, (unsigned long long)interp_cycles,
+				(long long)jit_cycles - (long long)interp_cycles,
+				flag ? "  <<< CYCLE DIVERGENCE (both E-bit)" : "  (budget-truncated, expected)");
+			if (flag)
+				++cycle_diverged_files;
+		}
 		if (!any_diverged)
 			std::printf("  ok (%u iters)\n", iters);
 		else
@@ -409,7 +585,10 @@ int RunDiff(const std::vector<vu_capture::CaptureRecord>& records,
 	if (diverged_files)
 		std::printf("[diff] %d of %zu captures diverged (%d with PATH1 byte diff)\n",
 			diverged_files, records.size(), path_diverged_files);
-	return diverged_files == 0 ? 0 : 2;
+	if (cycle_diverged_files)
+		std::printf("[diff] %d of %zu captures had a CYCLE divergence with both engines at E-bit\n",
+			cycle_diverged_files, records.size());
+	return (diverged_files == 0 && cycle_diverged_files == 0) ? 0 : 2;
 }
 
 int RunBench(const std::vector<vu_capture::CaptureRecord>& records,
@@ -1009,6 +1188,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
+#if defined(_M_ARM64) || defined(__aarch64__)
 	if (opts.no_progcache)
 		mVUPersist::SetProcessDisable(true);
 
@@ -1033,11 +1213,32 @@ int main(int argc, char** argv)
 			mVUPersist::SetRecordingEnabled(true);
 		}
 	}
+#endif
 
 	if (!recompiler_tests::RecompilerTestEnvironment::Initialize())
 	{
 		std::fprintf(stderr, "vurunner: RecompilerTestEnvironment::Initialize failed\n");
 		return 3;
+	}
+
+	// Force a VU clamp mode (mirrors GameDatabase.cpp vuClampMode mapping). The
+	// harness otherwise leaves EmuConfig at default mode 1 (vu0Overflow only) —
+	// which never exercises the extra-overflow per-op operand clamp (mVUclamp3)
+	// that real games request via gamedb (e.g. SoulCalibur III vuClampMode:2).
+	// Blocks recompile per-capture (PrimeFromCapture resets the cache), so this
+	// takes effect on the next replay. -1 = leave default.
+	if (opts.vu_clamp_mode >= 0)
+	{
+		const int m = opts.vu_clamp_mode;
+		EmuConfig.Cpu.Recompiler.vu0Overflow = (m >= 1);
+		EmuConfig.Cpu.Recompiler.vu1Overflow = (m >= 1);
+		EmuConfig.Cpu.Recompiler.vu0ExtraOverflow = (m >= 2);
+		EmuConfig.Cpu.Recompiler.vu1ExtraOverflow = (m >= 2);
+		EmuConfig.Cpu.Recompiler.vu0SignOverflow = (m >= 3);
+		EmuConfig.Cpu.Recompiler.vu1SignOverflow = (m >= 3);
+		std::fprintf(stderr, "vurunner: forced VU clamp mode = %d "
+			"(overflow=%d extra=%d sign=%d)\n",
+			m, (m >= 1), (m >= 2), (m >= 3));
 	}
 
 	if (opts.print_bases)
@@ -1071,6 +1272,8 @@ int main(int argc, char** argv)
 	int exit_code = 0;
 	if (opts.dump_microcode)
 		exit_code |= RunDumpMicrocode(records, names, opts.dump_count);
+	if (opts.dump_jit_state)
+		exit_code |= RunDumpJitState(records, names, opts.cycle_override, opts.dump_jit_state_raw);
 	if (opts.diff)
 		exit_code |= RunDiff(records, names, opts.iters, opts.cycle_override);
 	if (opts.bench)
@@ -1080,6 +1283,7 @@ int main(int argc, char** argv)
 	if (opts.divtrace)
 		exit_code |= RunDivTrace(records, names, opts.cycle_override);
 
+#if defined(_M_ARM64) || defined(__aarch64__)
 	if (!opts.cache_dir.empty())
 	{
 		// Flush still-live programs to disk so their saves show in the
@@ -1109,6 +1313,7 @@ int main(int argc, char** argv)
 				(unsigned long long)mVUPersist::GetBlockCompileCount(vu));
 		}
 	}
+#endif
 
 	recompiler_tests::RecompilerTestEnvironment::Shutdown();
 	return exit_code;

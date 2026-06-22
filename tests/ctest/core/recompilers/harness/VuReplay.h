@@ -50,6 +50,19 @@ struct VuReplayResult
 	// the divergence (it's loop/budget noise, not a mis-emitted op).
 	bool jit_ebit = false;
 	bool interp_ebit = false;
+
+	// Cycles consumed by each engine for this program+entry-state+budget.
+	// PrimeFromCapture zeroes vu.cycle before each pass, so this is the delta
+	// the engine added to VURegs::cycle. The mVU dispatcher reports this back
+	// to the EE as how long VU0 ran (VU0.cpp _vu0run: cpuRegs.cycle += delta),
+	// so a JIT-vs-interp mismatch drives EE<->VU0 timing drift even when the
+	// architectural post-state is bit-identical — the one quantity the
+	// register/memory diff is structurally blind to. Compare apples-to-apples
+	// only when BOTH jit_ebit && interp_ebit (whole program ran in both); a
+	// budget-truncated program legitimately overshoots to a block boundary
+	// under JIT while interp stops mid-op at the exact budget.
+	u64 jit_cycles = 0;
+	u64 interp_cycles = 0;
 };
 
 // Drives the JIT and interpreter against one captured program. Restores the
