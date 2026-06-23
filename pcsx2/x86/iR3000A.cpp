@@ -99,6 +99,62 @@ static void iopRecError(int err);
 
 #ifdef DUMP_BLOCKS
 static ZydisFormatterFunc s_old_print_address;
+static ZydisFormatterFunc s_old_print_disp;
+
+static int Address2Symbol(u64 address, char* buf)
+{
+	u32 len = 0;
+
+#define A(x) ((u64)(x))
+
+	if (address >= A(iopMem->Main) && address < A(iopMem->P))
+	{
+		len = sprintf(buf, "iopMem+0x%08X", static_cast<u32>(address - A(iopMem->Main)));
+	}
+	else if (address >= A(&psxRegs.GPR) && address < A(&psxRegs.CP0))
+	{
+		len = sprintf(buf, "psxRegs.GPR.%s", R3000A::disRNameGPR[static_cast<u32>(address - A(&psxRegs)) / 4u]);
+	}
+	else if (address == A(&psxRegs.pc))
+	{
+		len = sprintf(buf, "psxRegs.pc");
+	}
+	else if (address == A(&psxRegs.cycle))
+	{
+		len = sprintf(buf, "psxRegs.cycle");
+	}
+	else if (address == A(&psxRegs.iopNextEventCycle))
+	{
+		len = sprintf(buf, "psxRegs.iopNextEventCycle");
+	}
+
+#undef A
+
+	return len;
+}
+
+static ZyanStatus ZydisFormatterPrintDisplacement(const ZydisFormatter* formatter,
+	ZydisFormatterBuffer* buffer, ZydisFormatterContext* context)
+{
+	char buf[128];
+	u32 len = 0;
+	u64 address = (u64)R3000A_TEXTPTR + context->operand->mem.disp.value;
+
+	// hardcoded RTEXTPTR
+	if (context->operand->mem.base == ZYDIS_REGISTER_RBX) {
+		len = Address2Symbol(address, buf);
+	}
+
+	if (len > 0)
+	{
+		ZYAN_CHECK(ZydisFormatterBufferAppend(buffer, ZYDIS_TOKEN_SYMBOL));
+		ZyanString* string;
+		ZYAN_CHECK(ZydisFormatterBufferGetString(buffer, &string));
+		return ZyanStringAppendFormat(string, "-%s+&%s", "R3000A_TEXTPTR", buf);
+	}
+
+	return s_old_print_disp(formatter, buffer, context);
+}
 
 static ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* formatter,
 	ZydisFormatterBuffer* buffer, ZydisFormatterContext* context)
@@ -110,30 +166,7 @@ static ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* forma
 	char buf[128];
 	u32 len = 0;
 
-#define A(x) ((u64)(x))
-
-	if (address >= A(iopMem->Main) && address < A(iopMem->P))
-	{
-		len = snprintf(buf, sizeof(buf), "iopMem+0x%08X", static_cast<u32>(address - A(iopMem->Main)));
-	}
-	else if (address >= A(&psxRegs.GPR) && address < A(&psxRegs.CP0))
-	{
-		len = snprintf(buf, sizeof(buf), "psxRegs.GPR.%s", R3000A::disRNameGPR[static_cast<u32>(address - A(&psxRegs)) / 4u]);
-	}
-	else if (address == A(&psxRegs.pc))
-	{
-		len = snprintf(buf, sizeof(buf), "psxRegs.pc");
-	}
-	else if (address == A(&psxRegs.cycle))
-	{
-		len = snprintf(buf, sizeof(buf), "psxRegs.cycle");
-	}
-	else if (address == A(&psxRegs.iopNextEventCycle))
-	{
-		len = snprintf(buf, sizeof(buf), "psxRegs.iopNextEventCycle");
-	}
-
-#undef A
+	len = Address2Symbol(address, buf);
 
 	if (len > 0)
 	{
@@ -918,8 +951,6 @@ static void recReserve()
 		pxFailRel("Failed to allocate R3000 InstCache array.");
 }
 
-#define R3000A_TEXTPTR (&psxRegs.GPR.r[33])
-
 void recResetIOP()
 {
 	DevCon.WriteLn("iR3000A Recompiler reset.");
@@ -1473,6 +1504,8 @@ void psxRecompileNextInstruction(bool delayslot, bool swapped_delayslot)
 			ZydisFormatterInit(&disas_formatter, ZYDIS_FORMATTER_STYLE_INTEL);
 			s_old_print_address = (ZydisFormatterFunc)&ZydisFormatterPrintAddressAbsolute;
 			ZydisFormatterSetHook(&disas_formatter, ZYDIS_FORMATTER_FUNC_PRINT_ADDRESS_ABS, (const void**)&s_old_print_address);
+			s_old_print_disp = (ZydisFormatterFunc)&ZydisFormatterPrintDisplacement;
+			ZydisFormatterSetHook(&disas_formatter, ZYDIS_FORMATTER_FUNC_PRINT_DISP, (const void**)&s_old_print_disp);
 		}
 	}
 #endif
