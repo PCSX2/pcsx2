@@ -281,6 +281,7 @@ private:
 	void restoreDisplayWindowGeometryFromConfig(QScreen* target_screen = nullptr);
 	void createDisplayWidget(bool fullscreen, bool render_to_main);
 	void destroyDisplayWidget(bool show_game_list);
+	QScreen* getTargetScreenForWindow();
 	void updateDisplayWidgetCursor();
 
 	SettingsWindow* getSettingsWindow();
