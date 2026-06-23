@@ -16,6 +16,8 @@ static const int psxInstCycles_Peephole_Store = 0;
 static const int psxInstCycles_Store = 0;
 static const int psxInstCycles_Load = 0;
 
+#define R3000A_TEXTPTR (&psxRegs.GPR.r[33])
+
 // to be consistent with EE
 #define PSX_HI XMMGPR_HI
 #define PSX_LO XMMGPR_LO
