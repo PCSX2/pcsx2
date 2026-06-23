@@ -347,6 +347,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionViewToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarActionToggled);
 	connect(m_ui.actionViewLockToolbar, &QAction::toggled, this, &MainWindow::onViewLockToolbarActionToggled);
 	connect(m_ui.actionViewStatusBar, &QAction::toggled, this, &MainWindow::onViewStatusBarActionToggled);
+	connect(m_ui.actionViewMainWindowFullscreen, &QAction::toggled, this, &MainWindow::onViewMainWindowFullscreenActionToggled);
 	connect(m_ui.actionViewGameList, &QAction::triggered, this, &MainWindow::onViewGameListActionTriggered);
 	connect(m_ui.actionViewGameGrid, &QAction::triggered, this, &MainWindow::onViewGameGridActionTriggered);
 	connect(m_ui.actionViewSystemDisplay, &QAction::triggered, this, &MainWindow::onViewSystemDisplayTriggered);
@@ -935,6 +936,8 @@ void MainWindow::restoreStateFromConfig()
 		if (Host::ContainsBaseSettingValue("UI", "MainWindowFullscreen"))
 		{
 			const bool fullscreen = Host::GetBaseBoolSettingValue("UI", "MainWindowFullscreen");
+			QSignalBlocker sb(m_ui.actionViewMainWindowFullscreen);
+			m_ui.actionViewMainWindowFullscreen->setChecked(fullscreen);
 			if (fullscreen)
 				showFullScreen();
 		}
@@ -1775,6 +1778,16 @@ void MainWindow::onViewStatusBarActionToggled(bool checked)
 	Host::SetBaseBoolSettingValue("UI", "ShowStatusBar", checked);
 	Host::CommitBaseSettingChanges();
 	m_ui.statusBar->setVisible(checked);
+}
+
+void MainWindow::onViewMainWindowFullscreenActionToggled(bool checked)
+{
+	Host::SetBaseBoolSettingValue("UI", "MainWindowFullscreen", checked);
+	Host::CommitBaseSettingChanges();
+	if (checked)
+		showFullScreen();
+	else
+		showNormal();
 }
 
 void MainWindow::onViewGameListActionTriggered()
