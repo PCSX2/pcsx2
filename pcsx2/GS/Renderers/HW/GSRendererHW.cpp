@@ -5442,6 +5442,25 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 					GL_INS("HW: AA1 line expand.");
 					m_conf.vs.expand = GSHWDrawConfig::VSExpand::LineAA1;
 					m_conf.cb_vs.point_size = GSVector2(16.0f * sx, 16.0f * sy);
+
+					if (target_scale == 1.0f)
+					{
+						m_conf.cb_vs.line_aa1_width = 1.0f; // 1 native pixel on each side.
+						m_conf.cb_ps.LineCovScale = 1.0f; // Linear falloff on both sides.
+					}
+					else
+					{
+						// Reduce the amount of blur with upscaling.
+						constexpr float half_native_px = 0.5f;
+						const float upscaled_px = 1.0f / target_scale;
+
+						// Half a native pixel + 1 upscaled pixel on both sides.
+						m_conf.cb_vs.line_aa1_width = half_native_px + upscaled_px;
+
+						// Opaque in middle and linear falloff on last 2 upscaled pixels on each side.
+						m_conf.cb_ps.LineCovScale = (half_native_px + upscaled_px) / (2 * upscaled_px); 
+					}
+
 					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
 					m_conf.indices_per_prim = 6;
 					ExpandLineIndices();
@@ -5583,7 +5602,7 @@ void GSRendererHW::EmulateZbuffer(const GSTextureCache::Target* ds)
 	// No interpolation for flat Z so we can make some optimizations.
 	const bool flat_z = m_vt.m_eq.z || m_vt.m_primclass == GS_POINT_CLASS || m_vt.m_primclass == GS_SPRITE_CLASS;
 
-	m_conf.cb_vs.max_depth = GSVector2i(0xFFFFFFFF);
+	m_conf.cb_vs.max_depth = 0xFFFFFFFF;
 	m_conf.cb_ps.TA_MaxDepth_Af.z = 0.0f;
 	m_conf.ps.zclamp = false;
 
@@ -5597,7 +5616,7 @@ void GSRendererHW::EmulateZbuffer(const GSTextureCache::Target* ds)
 		if (flat_z)
 		{
 			// Clamp in vertex shader.
-			m_conf.cb_vs.max_depth = GSVector2i(max_z);
+			m_conf.cb_vs.max_depth = max_z;
 		}
 		else
 		{

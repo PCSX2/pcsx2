@@ -1027,7 +1027,8 @@ struct alignas(16) GSHWDrawConfig
 		GSVector2 texture_scale;
 		GSVector2 texture_offset;
 		GSVector2 point_size;
-		GSVector2i max_depth;
+		u32 max_depth;
+		float line_aa1_width;
 		__fi VSConstantBuffer()
 		{
 			memset(static_cast<void*>(this), 0, sizeof(*this));
@@ -1117,6 +1118,10 @@ struct alignas(16) GSHWDrawConfig
 		GSVector4 DitherMatrix[4];
 
 		GSVector4 ScaleFactor;
+		float LineCovScale;
+		float _pad0;
+		float _pad1;
+		float _pad2;
 
 		__fi PSConstantBuffer()
 		{

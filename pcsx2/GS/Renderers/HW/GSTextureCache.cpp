@@ -1757,7 +1757,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 						}
 						else
 						{
-							const bool outside_target = !t->Overlaps(bp, bw, psm, r);
+							const bool outside_target = !t->OverlapsValid(bp, bw, psm, r);
 
 							if (!possible_shuffle && outside_target)
 							{
@@ -7836,7 +7836,7 @@ GSTextureCache::Target::~Target()
 
 bool GSTextureCache::Target::OverlapsValid(u32 bp, u32 bw, u32 psm, const GSVector4i& rect) const
 {
-	const u32 valid_start_block = GSLocalMemory::m_psm[m_TEX0.PSM].info.bn(m_valid.x, m_valid.y, m_TEX0.TBP0, m_TEX0.TBW);
+	const u32 valid_start_block = GSLocalMemory::GetStartBlockAddress(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM, m_valid);
 	return OverlapsHelper(valid_start_block, UnwrappedEndBlock(), bp, bw, psm, rect);
 }
 

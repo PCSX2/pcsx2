@@ -93,6 +93,13 @@ layout(std140, binding = 0) uniform cb21
 
 	float ScaledScaleFactor;
 	float RcpScaleFactor;
+	float _pad0_cb1;
+	float _pad1_cb1;
+
+	float LineCovScale;
+	float _pad2_cb1;
+	float _pad3_cb1;
+	float _pad4_cb1;
 };
 
 in SHADER
@@ -1250,7 +1257,12 @@ void ps_main()
 	vec4 C = ps_color();
 
 #if PS_AA1
-	float cov = clamp(1.0f - abs(PSin.inv_cov), 0.0f, 1.0f);
+	#if PS_AA1 == PS_AA1_LINE
+		// Blur only outer part of the line by scaling coverage.
+		float cov = clamp(LineCovScale * (1.0f - abs(PSin.inv_cov)), 0.0f, 1.0f);
+	#else
+		float cov = clamp(1.0f - abs(PSin.inv_cov), 0.0f, 1.0f);
+	#endif
 	#if PS_ABE
 		if (floor(C.a) == 128.0f) // The coverage is only used if the fragment alpha is 128.
 			C.a = 128.0f * cov;
