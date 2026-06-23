@@ -2826,6 +2826,26 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 	return wi;
 }
 
+QScreen* MainWindow::getTargetScreenForWindow() {
+	const int monitor = Host::GetBaseIntSettingValue("UI", "DisplayMonitor", -1);
+
+	if (monitor == -1)
+		return screen();
+	if (monitor == -2)
+		return QGuiApplication::primaryScreen();
+
+	QList<QScreen*> screens = QGuiApplication::screens();
+	std::sort(screens.begin(), screens.end(), [](QScreen* a, QScreen* b) {
+		const QRect ga = a->geometry();
+		const QRect gb = b->geometry();
+		return ga.x() != gb.x() ? ga.x() < gb.x() : ga.y() < gb.y();
+	});
+
+	if (monitor >= screens.size())
+		return nullptr;
+	return screens[monitor];
+}
+
 void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 {
 	// If we're rendering to main and were hidden (e.g. coming back from fullscreen),
@@ -2838,15 +2858,8 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 
 	m_display_surface = new DisplaySurface();
 
-	const int monitor_index = Host::GetBaseIntSettingValue("UI", "DisplayMonitor", 0);
-	const QList<QScreen*> screens = QGuiApplication::screens();
-	QScreen* target_screen;
-	if (monitor_index == 1)
-		target_screen = QGuiApplication::primaryScreen();
-	//Separator from UI takes up index 2
-	else if (monitor_index >= 3 && (monitor_index - 3) < screens.size())
-		target_screen = screens[monitor_index - 3];
-	else
+	QScreen* target_screen = getTargetScreenForWindow();
+	if (!target_screen)
 		target_screen = screen();
 
 	if (fullscreen || !render_to_main)
@@ -3036,15 +3049,7 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
 		m_ui.mainContainer->removeWidget(m_display_container);
 		if (!m_pre_game_main_window_geometry.isEmpty())
 		{
-			const int monitor_index = Host::GetBaseIntSettingValue("UI", "DisplayMonitor", 0);
-			const QList<QScreen*> screens = QGuiApplication::screens();
-			QScreen* target_screen;
-			if (monitor_index == 1)
-				target_screen = QGuiApplication::primaryScreen();
-			else if (monitor_index >= 3 && (monitor_index - 3) < screens.size())
-				target_screen = screens[monitor_index - 3];
-			else
-				target_screen = nullptr;
+			QScreen* target_screen = getTargetScreenForWindow();
 			if (target_screen && screen() == target_screen)
 				m_target_screen_main_window_geometry = saveGeometry();
 			else
