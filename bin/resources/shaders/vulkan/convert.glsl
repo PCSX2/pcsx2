@@ -650,7 +650,6 @@ void main()
 #endif
 
 #if defined(PS_ROV_COPY_COLOR) || defined(PS_ROV_COPY_DEPTH)
-	layout(pixel_interlock_ordered) in;
 	#if PS_ROV_COPY_COLOR
 		layout(set = 1, binding = 2) uniform texture2D RtSampler;
 		layout(set = 1, binding = 5, rgba8) uniform restrict coherent image2D RtImageRov;
@@ -668,16 +667,12 @@ void main()
 			vec4 d = texelFetch(DepthSampler, ivec2(gl_FragCoord.xy), 0);
 		#endif
 		
-		beginInvocationInterlockARB();
-		
 		#if PS_ROV_COPY_COLOR
 			imageStore(RtImageRov, ivec2(gl_FragCoord.xy), c);
 		#endif
 		#if PS_ROV_COPY_DEPTH
 			imageStore(DepthImageRov, ivec2(gl_FragCoord.xy), d);
 		#endif
-
-		endInvocationInterlockARB();
 	}
 #endif
 

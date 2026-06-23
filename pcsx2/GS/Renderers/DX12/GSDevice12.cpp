@@ -2008,18 +2008,29 @@ void GSDevice12::SetupOneshotROV(const GSHWDrawConfig& config, GSTexture12* rt, 
 	if (ds_copy)
 		PSSetShaderResource(TEXTURE_DEPTH, ds, false, ResourceType::SRV);
 
+	// Check if the barrier is already handled with a transition.
+	bool rt_needs_barrier = rt_copy && (rt->GetResourceState() == GSTexture12::ResourceState::RenderTarget);
+
 	// RTs / render pass
 	OMSetRenderTargets(rt, nullptr, ds, size_rect, ds_copy, size);
 	if (!InRenderPass())
 		BeginTFXRenderPass(config, rt, ds, false);
 
 	// RT barrier. DS barrier is handled with transition to read-only depth.
-	if (rt_copy)
+	if (rt_needs_barrier)
 		FeedbackBarrier(rt);
 
 	// Draw
 	if (ApplyTFXState())
 		DrawIndexedPrimitive();
+
+	EndRenderPass();
+
+	// UAV barriers
+	if (rt_copy)
+		m_rov_rt->TransitionSubresourceToState(GetCommandList(), 0, m_rov_rt->GetResourceState(), m_rov_rt->GetResourceState());
+	if (ds_copy)
+		m_rov_ds->TransitionSubresourceToState(GetCommandList(), 0, m_rov_ds->GetResourceState(), m_rov_ds->GetResourceState());
 }
 
 void GSDevice12::BeginRenderPassForStretchRect(

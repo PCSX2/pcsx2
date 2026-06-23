@@ -3137,7 +3137,7 @@ void GSDeviceVK::SetupOneshotROV(const GSHWDrawConfig& config, GSTextureVK* rt, 
 		m_rov_ds->SetDebugName(fmt::format("DS for oneshot ROV {}x{}", size.x, size.y));
 #endif
 	}
-	
+
 	// Avoid copies if the original is cleared.
 	if (rt_copy && rt->GetState() == GSTexture::State::Cleared)
 	{
@@ -3206,6 +3206,10 @@ void GSDeviceVK::SetupOneshotROV(const GSHWDrawConfig& config, GSTextureVK* rt, 
 	// Pipeline
 	SetPipeline(m_rov_copy_pipelines[rt ? (rt_copy ? 2 : 1) : 0][ds ? (ds_copy ? 2 : 1) : 0]);
 
+	// Check if the barrier is already handled with a transition.
+	bool rt_needs_barrier = rt_copy && (rt->GetLayout() == GSTextureVK::Layout::FeedbackLoop);
+	bool ds_needs_barrier = ds_copy && (ds->GetLayout() == GSTextureVK::Layout::FeedbackLoop);
+
 	// Shader resources
 	PSSetROVs(m_rov_rt.get(), m_rov_ds.get(), rt_copy, ds_copy);
 	if (rt_copy)
@@ -3222,11 +3226,19 @@ void GSDeviceVK::SetupOneshotROV(const GSHWDrawConfig& config, GSTextureVK* rt, 
 		BeginTFXRenderPass(config, rt, ds, size);
 
 	// Barriers
-	FeedbackBarrier(rt_copy ? rt : nullptr, ds_copy ? ds : nullptr);
+	FeedbackBarrier(rt_needs_barrier ? rt : nullptr, ds_needs_barrier ? ds : nullptr);
 
 	// Draw
 	if (ApplyTFXState())
 		DrawIndexedPrimitive();
+
+	EndRenderPass();
+
+	// UAV barriers
+	if (rt_copy)
+		m_rov_rt->TransitionSubresourcesToLayout(GetCurrentCommandBuffer(), 0, 1, m_rov_rt->GetLayout(), m_rov_rt->GetLayout());
+	if (ds_copy)
+		m_rov_ds->TransitionSubresourcesToLayout(GetCurrentCommandBuffer(), 0, 1, m_rov_ds->GetLayout(), m_rov_ds->GetLayout());
 }
 
 void GSDeviceVK::BeginRenderPassForStretchRect(

@@ -1876,7 +1876,7 @@ void GSDevice11::SetupOneshotROV(const GSHWDrawConfig& config, GSTexture* rt, GS
 	// OM
 	OMSetDepthStencilState(m_rov_copy.dss.get(), 0);
 	OMSetBlendState(m_rov_copy.bs.get(), 0);
-	OMSetRenderTargets(nullptr, nullptr, m_rov_rt, m_rov_ds, &size_rect);
+	OMSetRenderTargets(nullptr, nullptr, nullptr, m_rov_rt, m_rov_ds, &size_rect);
 
 	// VS
 	VSSetShader(m_convert.vs.get(), nullptr);

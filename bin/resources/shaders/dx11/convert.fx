@@ -696,11 +696,11 @@ float ps_primid_image_init_3(PS_INPUT input) : SV_Target
 #if defined(PS_ROV_COPY_COLOR) || defined(PS_ROV_COPY_DEPTH)
 	#if PS_ROV_COPY_COLOR
 		Texture2D<float4> RtTexture : register(t2);
-		RasterizerOrderedTexture2D<unorm float4> RtTextureRov : register(u0);
+		RWTexture2D<unorm float4> RtTextureRov : register(u0);
 	#endif
 	#if PS_ROV_COPY_DEPTH
 		Texture2D<float> DepthTexture : register(t4);
-		RasterizerOrderedTexture2D<float> DepthTextureRov : register(u1);
+		RWTexture2D<float> DepthTextureRov : register(u1);
 	#endif
 	void ps_rov_copy(PS_INPUT input)
 	{
