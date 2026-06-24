@@ -71,6 +71,7 @@ NATIVE_RULES = [
                                    r"VU0StartFunc|VU1StartFunc|vu0SyncRunAhead|"
                                    r"vu1SyncRunAhead|recMicroVU|BaseVUmicroCPU|"
                                    r"mVUexecute|mVUreset|mVUcleanUp|microVU.*[Dd]ispatch|"
+                                   r"mVUEBit|mVU_XGKICK|mVUcomputeProgramHash|mVU.?clearlpState|"
                                    r"vu0ExecMicro|vu1ExecMicro|vuExecMicro")),
     # VIF (unpack dynarec front-end + native transfer/interrupt). Jitted VIF_ blocks
     # land in the VIF bucket via JIT_PREFIX; these are the native halves.
@@ -83,7 +84,7 @@ NATIVE_RULES = [
                                    r"GSClut|GSGet|GSLookup|GSVector|GSBlock|GSClip|::GS|"
                                    r"GS[A-Z][a-z]|Gif_Unit|Gif_|GIFTag|GIFPath|GIFPackedReg")),
     ("SPU2/audio",      re.compile(r"[Ss][Pp][Uu]2|SndOut|[Ss]oundtouch|cubeb|TimeStretch|"
-                                   r"ReverbDo|V_Volume|V_Core|VolumeSlide|V_ADSR|ADSR")),
+                                   r"ReverbDo|V_Volume|V_Core|VolumeSlide|V_ADSR|ADSR|WaveDump")),
     ("vtlb/mem",        re.compile(r"vtlb|[Mm]em[RW]rite|[Mm]em[Rr]ead|GetMemPtr|iopMem|"
                                    r"eeMem|recMemory|RecMemcheck|GoemonUnloadTlb")),
     ("EE/IOP-glue",     re.compile(r"cpuEventTest|iopEventTest|CPU_INT|recClear|"
@@ -92,6 +93,9 @@ NATIVE_RULES = [
                                    r"hwDmac|cpuException|psxException|eeloadHook|_cpuTest|"
                                    r"psxRcnt|psxCounter|rcntUpdate|EEcnt|hwRead|hwWrite|"
                                    r"dmaExec|dmacWrite|dmacRead|dmaGetAddr|eeHw|DMAVerbose|"
+                                   r"DMACh|_rcntSet|rcntSet|recEventTest|recReset|"
+                                   r"R5900::Interpreter|OpcodeImpl::COP0|OpcodeImpl::SYSCALL|"
+                                   r"OpcodeImpl::ERET|OpcodeImpl::MTC0|"
                                    r"_dmaGIF|_dmaVIF|sif[01]|EEsif")),
     ("dispatcher/glue", re.compile(r"Dispatcher|recExecute|recRecompile|iopRecRecompile|"
                                    r"JITCompile|recompileNextInstruction|recCall|dyna_|"
@@ -112,7 +116,7 @@ NATIVE_RULES = [
 ALL_BUCKETS = ["EE-JIT", "VU0-JIT", "VU1-JIT", "IOP-JIT", "VIF",
                "VU-glue", "GS", "IPU/video", "SPU2/audio", "vtlb/mem", "EE/IOP-glue",
                "dispatcher/glue", "memops", "sync/mtgs/mtvu", "startup/io",
-               "JIT-other", "GPU-driver", "kernel/other", "unattributed"]
+               "JIT-other", "GPU-driver", "libc/uncat", "kernel/other", "unattributed"]
 
 # A leading percent column, e.g. "    41.23%". `perf report -g none` emits one
 # Overhead column; if a Children column sneaks in there are two — we take the LAST
@@ -139,6 +143,12 @@ def classify(dso, symbol, is_kernel):
         return "GPU-driver"
     if is_kernel or dso == "[kernel.kallsyms]":
         return "kernel/other"
+    # Unsymbolized C-runtime: ROCKNIX/handheld libc & loader ship stripped, so hot libc
+    # routines (memcpy/string/malloc internals) show as raw `0x...` offsets. They're real
+    # CPU cost but un-attributable by name — give them an honest visible bucket instead of
+    # sinking into unattributed (which we reserve for genuinely unidentified rows).
+    if symbol.startswith("0x") and re.search(r"libc[.-]|ld-linux|libm\.so|libpthread", dso):
+        return "libc/uncat"
     for name, rx in NATIVE_RULES:
         if rx.search(symbol):
             return name
