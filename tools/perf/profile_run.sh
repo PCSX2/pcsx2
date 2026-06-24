@@ -130,10 +130,14 @@ for REND in $RENDERER; do
     # worker threads (CPU/MTVU/GS) and still records comm/tid per sample, so the
     # by-comm axis survives. --call-graph omitted (this perf rejects =no; flat is what
     # we want anyway). Verified working on m2max-asahi 2026-06-24.
+    # $PIN (from the device env) optionally prefixes the binary to pin it to a
+    # CPU set — on the SD865 big.LITTLE this is `taskset -c 4-7` so the whole
+    # emulator runs on the A77 prime/gold cores (the perf-relevant target), not
+    # the A55 silver cores. Empty on the M2 (single P-cluster, no pinning needed).
     EERUNNER_SYNCMTGS=0 EERUNNER_MTVU=1 EERUNNER_EE=jit \
       perf record -e "$CYCLES_EVENT" -F "$FREQ" -k mono \
         -o "$RUNDIR/perf.data" -- \
-        "$EBIN" --liverun --renderer "$REND" --frames "$FRAMES" \
+        ${PIN:-} "$EBIN" --liverun --renderer "$REND" --frames "$FRAMES" \
                 --savestate "$SAVESTATE" --iso "$ISO" --perf-jitdump \
         >"$RUNDIR/stdout.txt" 2>&1 || true
     t1="$(ts)"
