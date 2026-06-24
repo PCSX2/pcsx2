@@ -375,6 +375,48 @@
     <None Include="..\bin\resources\shaders\vulkan\tfx.glsl">
       <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
     </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx_defines.hlsl">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx_ps_atst.hlsl">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx_ps_blend.hlsl">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx_ps_color.hlsl">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx_ps_fetch.hlsl">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx_ps_fog.hlsl">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx_ps_main.hlsl">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx_ps_resources.hlsl">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx_ps_rt.hlsl">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx_ps_sample.hlsl">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx_ps_sample_af.hlsl">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx_ps_someotherstuff.hlsl">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx_ps_tfx.hlsl">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx_ps_rta_correction.hlsl">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
     <None Include="..\bin\resources\shaders\vulkan\present.glsl">
       <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
     </None>

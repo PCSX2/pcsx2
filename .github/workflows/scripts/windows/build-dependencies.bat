@@ -98,6 +98,8 @@ set SHADERC_SPIRVTOOLS=6337eb62cadd7d124ac6789bf39c0f71148f0a73
 
 set AGILITYSDK=1.619.2
 set DXHEADERS=1.619.1
+rem Bump ShaderCacheVersion when updating DXC, otherwise shader linking will break.
+set DXC=1.9.2602.24
 
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 3529cc37297a5a7aae4486843b9fd41c30df1d79a770f85e240b537dcc327ca5 || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 37fba768f2780580dfae535ad6654cb9dc0bf2272e71b9b9781988de9ed0dac0 || goto error
@@ -131,6 +133,7 @@ call :downloadfile "plutovg-%PLUTOVG%.zip" "https://github.com/sammycage/plutovg
 call :downloadfile "plutosvg-%PLUTOSVG%.zip" "https://github.com/sammycage/plutosvg/archive/v%PLUTOSVG%.zip" 82dee2c57ad712bdd6d6d81d3e76249d89caa4b5a4214353660fd5adff12201a || goto error
 call :downloadfile "agility-sdk-%AGILITYSDK%.nupkg" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/%AGILITYSDK%" eb92d90bb23b2ec23410c41d791e41dbdbec942ab946924d1fdcb31eac6f0735 || goto error
 call :downloadfile "DirectX-Headers-%DXHEADERS%.zip" "https://github.com/microsoft/DirectX-Headers/archive/v%DXHEADERS%.zip" 9eb8b102a90a42e4ea72a825f7d249d55ec90d164f030966c9b7784b93374927 || goto error
+call :downloadfile "DirectXShaderCompiler-%DXC%.zip" "https://github.com/microsoft/DirectXShaderCompiler/archive/v%DXC%.zip" 54797369a304422f7b98bf0ab1e5824a63190912a99976502f14f6b9b63828b4 || goto error
 call :downloadfile "rapidyaml-%RAPIDYAML%-src.zip" "https://github.com/biojppm/rapidyaml/releases/download/v%RAPIDYAML%/rapidyaml-%RAPIDYAML%-src.zip" 96276f55b9fa7837ac8f3f72fd52965879cbb5d5d2e6af548c69a177fb078304 || goto error
 
 call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/google/shaderc/archive/refs/tags/v%SHADERC%.zip" f9401cc5cb36c276cd1e072b6595dbd728148e8dba389e50f7339e2d388dbc08 || goto error
@@ -517,6 +520,17 @@ cd "DirectX-Headers-%DXHEADERS%" || goto error
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DDXHEADERS_BUILD_TEST=OFF -DDXHEADERS_BUILD_GOOGLE_TEST=OFF -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
+cd .. || goto error
+
+echo "Building DirectXShaderCompiler..."
+rmdir /S /Q "DirectXShaderCompiler-%DXC%"
+%SEVENZIP% x "DirectXShaderCompiler-%DXC%.zip" || goto error
+cd "DirectXShaderCompiler-%DXC%" || goto error
+rem cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DLLVM_ENABLE_EH=ON -DLLVM_DEFAULT_TARGET_TRIPLE="dxil-ms-dx" -DLLVM_TARGETS_TO_BUILD=None -DCLANG_CL=OFF -DLLVM_INCLUDE_TESTS=OFF -DHLSL_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_EXAMPLES=OFF -DCLANG_BUILD_EXAMPLES=OFF -DLLVM_INCLUDE_DOCS=OFF -DCLANG_ENABLE_ARCMT=OFF -DCLANG_ENABLE_STATIC_ANALYZER=OFF -DLIBCLANG_BUILD_STATIC=ON -DLLVM_ENABLE_TERMINFO=OFF -DLLVM_OPTIMIZED_TABLEGEN=OFF -B build -G Ninja || goto error
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -C .\cmake\caches\PredefinedParams.cmake -DHLSL_DISABLE_SOURCE_GENERATION=ON -DLLVM_INCLUDE_TESTS=OFF -DHLSL_INCLUDE_TESTS=OFF -DENABLE_SPIRV_CODEGEN=OFF -DSPIRV_BUILD_TESTS=OFF -DHLSL_BUILD_DXILCONV=OFF -DLLVM_BUILD_TOOLS=OFF -B build -G Ninja || goto error
+cmake --build build --target dxcompiler --parallel || goto error
+rem Instead of installing all of LLVM, just copy the files needed.
+copy "build\bin\dxcompiler.dll" "%INSTALLDIR%\bin\dxcompiler.dll" || goto error
 cd .. || goto error
 
 echo Building shaderc...
