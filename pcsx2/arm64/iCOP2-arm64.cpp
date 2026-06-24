@@ -525,6 +525,7 @@ void endMacroOp_arm64(int mode)
 // Sync is skipped in the common case where VU0 micro isn't executing.
 
 extern void vu0Sync();
+extern void vu0SyncRunAhead();
 extern void _vu0FinishMicro();
 extern void _vu0WaitMicro();
 
@@ -536,6 +537,12 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 	// Handle interlock (bit 0 set): COP2_Interlock pattern
 	if (interlock)
 	{
+		// An interlocked COP2 op anywhere in the block means VU0 timing must be
+		// exact: forbid the non-interlock run-ahead for the rest of the block so
+		// a later sync can't overshoot the cycle this interlock waits on. Mirrors
+		// upstream's block-level s_nBlockInterlocked (set in COP2_Interlock).
+		s_nBlockInterlocked = true;
+
 		// Interlock requires sync — check if analysis says VU0 could be running
 		if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
 		{
@@ -594,7 +601,10 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 	armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
 
 	if (needsSync)
-		armEmitCall((void*)vu0Sync);
+		// Non-interlocked catch-up: run a 16-cycle minimum to amortize the mVU
+		// dispatch envelope over small blocks (6dc5087cb). If the block also
+		// contains an interlocked op, fall back to the exact sync.
+		armEmitCall((void*)(s_nBlockInterlocked ? vu0Sync : vu0SyncRunAhead));
 	else
 		armEmitCall((void*)_vu0FinishMicro);
 

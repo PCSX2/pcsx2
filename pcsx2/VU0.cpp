@@ -64,7 +64,7 @@ void COP2_Unknown()
 
 //****************************************************************************
 
-__fi void _vu0run(bool breakOnMbit, bool addCycles, bool sync_only) {
+__fi void _vu0run(bool breakOnMbit, bool addCycles, bool sync_only, bool runAhead) {
 
 	if (!(VU0.VI[REG_VPU_STAT].UL & 1)) return;
 
@@ -87,6 +87,18 @@ __fi void _vu0run(bool breakOnMbit, bool addCycles, bool sync_only) {
 
 		if (runCycles < 0)
 			return;
+
+		// Run-ahead (non-interlocked COP2 sync only): dispatching a tiny VU0
+		// catch-up (e.g. 3 cycles) pays the full mVU dispatch envelope to run
+		// almost nothing. When the sync isn't interlocked it's fine to overshoot
+		// the EE by a few cycles — the next sync sees a negative delta and
+		// no-ops until the EE catches back up, so several round-trips collapse
+		// into one. Mirrors upstream CalculateMinRunCycles(delta, /*accurate*/
+		// false) (commit 6dc5087cb "VU: Run sync ahead on small blocks"); the
+		// arm64 COP2 path syncs via vu0Sync rather than ExecuteBlockJIT, so the
+		// floor lives here instead.
+		if (runAhead && runCycles < 16)
+			runCycles = 16;
 	}
 
 	do { // Run VU until it finishes or M-Bit
@@ -105,10 +117,11 @@ __fi void _vu0run(bool breakOnMbit, bool addCycles, bool sync_only) {
 	}
 }
 
-void _vu0WaitMicro()   { _vu0run(1, 1, 0); } // Runs VU0 Micro Until E-bit or M-Bit End
-void _vu0FinishMicro() { _vu0run(0, 1, 0); } // Runs VU0 Micro Until E-Bit End
-void vu0Finish()	   { _vu0run(0, 0, 0); } // Runs VU0 Micro Until E-Bit End (doesn't stall EE)
-void vu0Sync()		   { _vu0run(0, 0, 1); } // Runs VU0 until it catches up
+void _vu0WaitMicro()   { _vu0run(1, 1, 0, 0); } // Runs VU0 Micro Until E-bit or M-Bit End
+void _vu0FinishMicro() { _vu0run(0, 1, 0, 0); } // Runs VU0 Micro Until E-Bit End
+void vu0Finish()	   { _vu0run(0, 0, 0, 0); } // Runs VU0 Micro Until E-Bit End (doesn't stall EE)
+void vu0Sync()		   { _vu0run(0, 0, 1, 0); } // Runs VU0 until it catches up (exact)
+void vu0SyncRunAhead() { _vu0run(0, 0, 1, 1); } // Catches up, but runs a 16-cycle minimum (non-interlocked)
 
 namespace R5900 {
 namespace Interpreter{
