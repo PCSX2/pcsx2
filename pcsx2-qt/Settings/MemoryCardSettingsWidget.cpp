@@ -291,7 +291,13 @@ void MemoryCardSettingsWidget::listContextMenuRequested(const QPoint& pos)
 		menu.addSeparator();
 
 		connect(menu.addAction(tr("Rename")), &QAction::triggered, this, &MemoryCardSettingsWidget::renameCard);
-		connect(menu.addAction(tr("Convert")), &QAction::triggered, this, &MemoryCardSettingsWidget::convertCard);
+
+		const std::optional<AvailableMcdInfo> cardInfo(FileMcd_GetCardInfo(selectedCard.toStdString()));
+		const bool isPS1 = (cardInfo.has_value() && cardInfo.value().file_type == MemoryCardFileType::PS1);
+		QAction* const convertAction = menu.addAction(tr("Convert"));
+		convertAction->setEnabled(!isPS1);
+		connect(convertAction, &QAction::triggered, this, &MemoryCardSettingsWidget::convertCard);
+
 		connect(menu.addAction(tr("Delete")), &QAction::triggered, this, &MemoryCardSettingsWidget::deleteCard);
 		menu.addSeparator();
 	}
