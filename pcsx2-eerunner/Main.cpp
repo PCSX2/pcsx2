@@ -43,6 +43,7 @@
 #include "common/FileSystem.h"
 #include "common/MemorySettingsInterface.h"
 #include "common/Path.h"
+#include "common/Perf.h"
 #include "common/ProgressCallback.h"
 #include "common/StringUtil.h"
 
@@ -100,6 +101,7 @@ static bool s_no_console = false;
 static bool s_contmem_vu0_interp = false; // --vu0-interp modifier for --contmem
 static GSRendererType s_renderer = GSRendererType::Null; // --renderer (Null default; vk for Intel/headless)
 static std::string s_memdump_prefix; // --memdump <prefix>: write <prefix>.{interp,jit}.bin at the last frame
+static bool s_perf_jitdump = false; // --perf-jitdump: emit Linux perf jitdump for `perf inject --jit` (profiling)
 
 bool EERunner::InitializeConfig()
 {
@@ -497,6 +499,9 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "  --savestate <file>: Savestate to load after Initialize (required).\n");
 	std::fprintf(stderr, "  --frames N: Number of frames to run (default 300).\n");
 	std::fprintf(stderr, "  --iso <file>: Game ISO/disc to mount (required so the savestate has its disc).\n");
+	std::fprintf(stderr, "  --perf-jitdump: Emit a Linux perf jitdump (under EmuFolders::Cache) so `perf inject --jit`\n");
+	std::fprintf(stderr, "               resolves EE_/VU0_/VU1_/IOP_/VIF_ JIT block symbols. Profiling only; with --liverun it\n");
+	std::fprintf(stderr, "               also honors an explicit --renderer null. Requires a USE_PERF_JITDUMP build.\n");
 	std::fprintf(stderr, "  -help: Displays this information and exits.\n");
 	std::fprintf(stderr, "  -version: Displays version information and exits.\n");
 	std::fprintf(stderr, "\n");
@@ -568,6 +573,15 @@ bool EERunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 			else if (CHECK_ARG("--liverun"))
 			{
 				s_mode = RunMode::LiveRun;
+				continue;
+			}
+			else if (CHECK_ARG("--perf-jitdump"))
+			{
+				// Emit a Linux perf jitdump so `perf inject --jit` can resolve EE_/VU1_/...
+				// JIT block symbols. Profiling only; honors explicit --renderer null (the
+				// liverun null->VK force below is skipped when this is set). Requires a
+				// USE_PERF_JITDUMP build (no-op otherwise).
+				s_perf_jitdump = true;
 				continue;
 			}
 			else if (CHECK_ARG("--disasm"))
@@ -700,7 +714,11 @@ void EERunner::SettingsOverride()
 	// like Null) and MTVU. Null GS is meaningless for it, so force VK if unset.
 	const bool live = (s_mode == RunMode::LiveRun);
 	GSRendererType rend = s_renderer;
-	if (live && rend == GSRendererType::Null)
+	// Liverun normally needs a real GS (Null drops GIF/PATH3), so Null is forced to VK.
+	// When profiling (--perf-jitdump), honor an explicit --renderer null so the
+	// "scalar EE/IOP minus GS-feeding" diagnostic baseline is reachable. vk stays the
+	// representative whole-system profile; null is the secondary diagnostic.
+	if (live && rend == GSRendererType::Null && !s_perf_jitdump)
 		rend = GSRendererType::VK;
 	s_settings_interface.SetIntValue("EmuCore/GS", "Renderer", static_cast<int>(rend));
 
@@ -777,6 +795,11 @@ void EERunner::SettingsOverride()
 	// Pcsx2Config::SPU2Options::LoadSave under [SPU2/Output]: Backend / SyncMode.
 	s_settings_interface.SetStringValue("SPU2/Output", "Backend", "Null");
 	s_settings_interface.SetStringValue("SPU2/Output", "SyncMode", "Disabled");
+
+	// Profiling: drive the perf jitdump enable through the normal config path so
+	// ApplySettings/LoadSettings (which re-applies Perf::SetJitDumpEnabled from this
+	// bool) keeps it on for the whole run instead of resetting it to the default.
+	s_settings_interface.SetBoolValue("EmuCore/Profiler", "EnablePerfDump", s_perf_jitdump);
 
 	// No frameskip.
 	s_settings_interface.SetBoolValue("EmuCore/GS", "FrameSkipEnable", false);
@@ -2889,6 +2912,17 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 
 	if (VMManager::Internal::CPUThreadInitialize())
 	{
+		// Profiling: set the jitdump output dir before any JIT block compiles (the
+		// first compile happens during the first FrameAdvance, well after this). Dir =
+		// EmuFolders::Cache so the 100s-of-MB dump avoids /tmp/tmpfs, matching the
+		// production rationale in common/Perf.cpp. The ENABLE flag is driven through the
+		// normal settings path instead (EmuCore/Profiler EnablePerfDump, set in the
+		// harness config) — ApplySettings() below calls LoadSettings() which re-applies
+		// Perf::SetJitDumpEnabled(EnablePerfDump), so a manual enable here would just get
+		// reset to the config default (false). No-op on non-jitdump builds.
+		if (s_perf_jitdump)
+			Perf::SetJitDumpDir(EmuFolders::Cache);
+
 		// apply new settings (e.g. pick up renderer change)
 		VMManager::ApplySettings();
 

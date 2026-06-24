@@ -33,6 +33,7 @@
 
 #include "DebugTools/Debug.h"
 #include "common/FPControl.h"
+#include "common/Perf.h"
 #include "common/PmuCounters.h"
 
 #include <algorithm>
@@ -63,6 +64,7 @@ struct Options
 	bool bench_no_reprime = false;
 	bool print_bases = false;
 	bool no_progcache = false;  // determinism gate: force program cache + recording off
+	bool perf_jitdump = false;  // emit Linux perf jitdump for `perf inject --jit` (profiling)
 	u32 dump_count = 64;
 	u32 cycle_override = 0;  // 0 = use captured budget
 	int vu_clamp_mode = -1;  // -1 = leave EmuConfig default (mode 1); 0..3 = force VU clamp mode
@@ -172,6 +174,10 @@ bool ParseArgs(int argc, char** argv, Options& opts)
 		else if (a == "--no-progcache")
 		{
 			opts.no_progcache = true;
+		}
+		else if (a == "--perf-jitdump")
+		{
+			opts.perf_jitdump = true;
 		}
 		else if (a == "--cache-dir")
 		{
@@ -1187,6 +1193,14 @@ int main(int argc, char** argv)
 		PrintUsage(argv[0]);
 		return 1;
 	}
+
+	// Profiling (--perf-jitdump): enable the perf jitdump writer as early as possible
+	// — before ANY VU block compiles — so `perf inject --jit` resolves VU0_/VU1_
+	// symbols. Dir defaults to /tmp (EmuFolders::Cache isn't populated this early in
+	// the harness; fine for the tiny per-program dumps vurunner emits). No-op on
+	// non-USE_PERF_JITDUMP builds.
+	if (opts.perf_jitdump)
+		Perf::SetJitDumpEnabled(true);
 
 #if defined(_M_ARM64) || defined(__aarch64__)
 	if (opts.no_progcache)
