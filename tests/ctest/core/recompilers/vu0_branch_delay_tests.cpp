@@ -225,6 +225,51 @@ TEST(Vu0BranchDelay, VibeqNotTakenWhenUnequal)
 	EXPECT_EQ(h.GetViJit(vi::vi5), h.GetViInterp(vi::vi5));
 }
 
+// Regression: mVU VI-backup on the UNCACHED clone-write path. When a branch
+// delay-slot integer op writes the branch's condition VI via a clone-write
+// (load from a DIFFERENT, uncached VI), the backup must save the WRITE
+// target's pre-write value — not the load source. The arm64 allocGPR uncached
+// path only handled write-only allocs (viLoadReg < 0); for a clone-write it
+// backed up the load source instead, so the branch evaluated against the wrong
+// VI. Upstream fix 265afcec7 ("Fix incorrect VI being backed up when
+// uncached") — fixes a Gitaroo Man hang.
+//
+// Clone-write VI backup in a branch delay slot: the IBEQ's condition reg vi1 is
+// clone-written by its delay slot (IAND vi1, vi3, vi4), so the branch must
+// compare vi1's PRE-delay-slot value (42). The backup must save vi1's old value
+// (42) -> branch taken; a backup of the clone SOURCE vi3 (99) would make
+// IBEQ(99,42) not taken. This exercises the *cached* allocGPR clone-write
+// backup path (vi1 is cached by the branch's own read of it), which has always
+// been correct.
+//
+// NOTE: the *uncached* clone-write backup bug (upstream 265afcec7, "Fix
+// incorrect VI being backed up when uncached" — a Gitaroo Man hang, fixed in
+// microVU_IR-arm64.h allocGPR) needs BOTH the clone source and the write target
+// VI to be uncached at the clone-write while the branch still consumes the
+// backup. That is a register-pressure coincidence not reproducible in a minimal
+// VU program (the branch's read keeps the target cached), so it has no
+// deterministic unit repro; this test guards the adjacent cached path.
+TEST(Vu0BranchDelay, VibeqCloneWriteViBackupInDelaySlot)
+{
+	VuTestHarness h(0);
+	h.SetVi(vi::vi1, 42);     // condition reg, PRE-delay-slot value — equals vi2
+	h.SetVi(vi::vi2, 42);
+	h.SetVi(vi::vi3, 99);     // clone-write source (uncached); != 42
+	h.SetVi(vi::vi4, 0xFFFF); // IAND mask
+	h.LoadProgram({
+		LowerOnly(VIBEQ_L(vi::vi1, vi::vi2, +2)),       // pair 0: taken iff backup(vi1)==vi2 → pair 3
+		LowerOnly(VIAND_L(vi::vi1, vi::vi3, vi::vi4)),  // pair 1: delay slot clone-write vi1 (backup)
+		LowerOnly(VIADDIU_L(vi::vi6, vi::vi1, 0)),      // pair 2: skipped iff taken; reads vi1 (=used)
+		LoadViImm(vi::vi7, 0x333),                      // pair 3: target
+		EBitNopPair(),
+	});
+	h.Run();
+	// Correct: branch taken (vi1_old 42 == vi2 42) → pair 2 skipped → vi6 stays 0.
+	EXPECT_EQ(h.GetViJit(vi::vi6), 0u);
+	EXPECT_EQ(h.GetViJit(vi::vi6), h.GetViInterp(vi::vi6));
+	EXPECT_EQ(h.GetViJit(vi::vi7), 0x333u);
+}
+
 TEST(Vu0BranchDelay, VibneTakenWhenUnequal)
 {
 	VuTestHarness h(0);

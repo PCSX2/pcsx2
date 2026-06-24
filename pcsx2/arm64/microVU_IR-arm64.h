@@ -550,6 +550,24 @@ public:
 		gprMap[idx].count = counter;
 		gprMap[idx].isNeeded = true;
 
+		// Back up viWriteReg's pre-write value BEFORE loading the clone source
+		// into idx (matches x86 allocGPR order). The freshly-allocated idx does
+		// not yet hold viWriteReg's old value, and the viLoadReg load below would
+		// overwrite it — so write-only (viLoadReg < 0) and clone-write (viLoadReg
+		// != viWriteReg) allocs must back up viWriteReg from memory here, then
+		// re-load idx with the clone source. The same-reg RMW case is handled
+		// after the load, where idx already holds viWriteReg's pre-write value.
+		// Upstream 265afcec7 ("Fix incorrect VI being backed up when uncached",
+		// fixes a Gitaroo Man hang) — the clone-write case previously backed up
+		// viLoadReg's value instead of viWriteReg's.
+		if (backup && viWriteReg > 0 && viLoadReg != viWriteReg)
+		{
+			armAsm->Ldrh(armWRegister(idx),
+				mVUstateMem(offsetof(VURegs, VI) + viWriteReg * sizeof(REG_VI)));
+			writeVIBackup(armWRegister(idx));
+			backup = false;
+		}
+
 		if (viLoadReg >= 0 && viLoadReg != 0)
 		{
 			// Load VI from memory (16-bit zero-extended)
@@ -566,23 +584,10 @@ public:
 		gprMap[idx].VIreg = (viWriteReg >= 0) ? viWriteReg : ((viLoadReg >= 0) ? viLoadReg : -1);
 		gprMap[idx].dirty = (viWriteReg >= 0);
 
+		// Same-reg RMW (viLoadReg == viWriteReg): idx holds the loaded pre-write
+		// value, so back it up directly.
 		if (backup)
-		{
-			// viWriteReg wasn't already in any GPR slot (so unbindAny didn't
-			// back it up). For write-only allocations (viLoadReg < 0, e.g.
-			// MTIR), the freshly-allocated `idx` register is uninitialised at
-			// this point — backing it up would store garbage to mVU.VIbackup
-			// and the following IBxxx branch would read garbage.
-			//
-			// Load viWriteReg's CURRENT (pre-write) value from VI memory first,
-			// then back it up. Mirrors x86 allocGPR.
-			if (viLoadReg < 0 && viWriteReg > 0)
-			{
-				armAsm->Ldrh(armWRegister(idx),
-					mVUstateMem(offsetof(VURegs, VI) + viWriteReg * sizeof(REG_VI)));
-			}
 			writeVIBackup(armWRegister(idx));
-		}
 
 		return armWRegister(idx);
 	}
