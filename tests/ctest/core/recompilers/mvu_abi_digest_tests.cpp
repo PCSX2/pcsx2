@@ -166,4 +166,63 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 		<< explain("indirectJump", actual.indirectJump, pin->digests.indirectJump);
 }
 
+// A program's emitted shape must depend ONLY on the program — never on what
+// compiled before it. mVUcompile passes endCount = whole-micro-memory size to
+// mvuPreloadRegisters; the preload walks until it runs out of free registers,
+// not until the block ends. mVUreset does NOT clear mVU.prog.IRinfo.info[], so
+// an E-bit-terminated block whose preload over-runs its own end reads stale
+// VF/VI usage left by a PRIOR compile and preloads registers the program never
+// touches. The runtime result is identical (an unused reg load), but the
+// emitted bytes drift with compile history — which corrupts the persisted-JIT
+// ABI digest's "same emitter ⇒ same shape" contract. The mvuPreloadRegisters
+// isEOB break is the fix; this is its deterministic regression guard (the main
+// pin test only catches it under --gtest_shuffle, which CI may not run).
+TEST(MvuAbiDigest, EmittedShapeIndependentOfPriorCompile)
+{
+	ASSERT_TRUE(RecompilerTestEnvironment::IsReady());
+	mVUPersist::SetRecordingEnabled(true);
+
+	// The probe: a short pure-FMAC, E-bit-terminated block (no branch — so the
+	// only thing that can bound its preload is the isEOB break).
+	const auto probe = {
+		UpperOnly(VADD_U(mask::xyzw, vf::vf3, vf::vf1, vf::vf2)),
+		UpperOnly(bits::E | VMUL_U(mask::xyzw, vf::vf4, vf::vf3, vf::vf2)),
+	};
+
+	// Two "polluter" programs, longer than the probe, that leave DIFFERENT VI
+	// read-usage in IRinfo.info[] at indices PAST the probe's own end. The probe
+	// (2 ops + E-bit delay) clears info[0..~3]; the leading NOPs push the
+	// VI-reading VIADDs out to indices >= 4 so they survive the probe's analysis.
+	// VIADD reads two source VIs. If the probe's preload over-runs its block end,
+	// it picks up these (differing) VIs and the two digests diverge.
+	const auto polluteViLow = {
+		NopPair(), NopPair(), NopPair(), NopPair(),
+		LowerOnly(VIADD_L(vi::vi3, vi::vi5, vi::vi6)),
+		LowerOnly(VIADD_L(vi::vi3, vi::vi5, vi::vi6)),
+		LowerOnly(VIADD_L(vi::vi3, vi::vi5, vi::vi6)),
+		UpperOnly(bits::E | VADD_U(mask::xyzw, vf::vf3, vf::vf1, vf::vf2)),
+	};
+	const auto polluteViHigh = {
+		NopPair(), NopPair(), NopPair(), NopPair(),
+		LowerOnly(VIADD_L(vi::vi3, vi::vi9, vi::vi10)),
+		LowerOnly(VIADD_L(vi::vi3, vi::vi9, vi::vi10)),
+		LowerOnly(VIADD_L(vi::vi3, vi::vi9, vi::vi10)),
+		UpperOnly(bits::E | VADD_U(mask::xyzw, vf::vf3, vf::vf1, vf::vf2)),
+	};
+
+	(void)CompileAndDigest(polluteViLow);
+	const u64 afterLow = CompileAndDigest(probe);
+	(void)CompileAndDigest(polluteViHigh);
+	const u64 afterHigh = CompileAndDigest(probe);
+
+	mVUPersist::SetRecordingEnabled(false);
+
+	ASSERT_NE(afterLow, 0u);
+	EXPECT_EQ(afterLow, afterHigh)
+		<< "Probe digest changed with the preceding compile (0x" << std::hex
+		<< afterLow << " after VIADD vi5,vi6 vs 0x" << afterHigh
+		<< " after VIADD vi9,vi10) — mvuPreloadRegisters over-ran the block end "
+		   "into stale IRinfo.info[]. Emitted shape must be history-independent.";
+}
+
 } // namespace recompiler_tests

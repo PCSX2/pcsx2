@@ -537,6 +537,23 @@ static void mvuPreloadRegisters(microVU& mVU, u32 endCount)
 
 		if (info->lOp.branch)
 			break;
+
+		// Stop at the block's true end. endCount is the whole micro-memory size
+		// (microMemSize/8), not the block length — the analysis loop above only
+		// clears + populates IRinfo.info[] for the block's own instructions and
+		// breaks at isEOB. Without the matching isEOB break here, an E-bit-
+		// terminated block (no lOp.branch) walks the preload past its own end
+		// into info[] entries left over from a PRIOR compile, preloading VF/VI
+		// the program never touches. Harmless at runtime (an unused reg load),
+		// but it makes the emitted shape depend on compile history — non-
+		// deterministic codegen that the persisted-JIT ABI digest must not see.
+		// In a cold cache those stale entries read zero (reg 0 → skipped), so
+		// this only suppresses the spurious warm-state preloads; the cold shape
+		// (what the digest pins) is unchanged. Diverges from x86, which has the
+		// same latent over-read but no on-disk cache that needs deterministic
+		// emit. Mirrors the flagInfo "clear each compile" fix in mVUinitFirstPass.
+		if (info->isEOB)
+			break;
 	}
 
 	iPC = orig_pc;
