@@ -1964,9 +1964,10 @@ mVUop(mVU_XGKICK)
 			armAsm->Ldr(a64::w9, a64::MemOperand(a64::x8));
 			armAsm->Sub(gprT2.W(), gprT2.W(), a64::w9);
 			armMoveAddressToReg(a64::x8, &VU1.cycle);
-			// VU1.cycle is u32 — narrow load, otherwise we splice 4 bytes of
-			// neighbouring VU1 state into the carry path of the 64-bit add.
-			armAsm->Ldr(a64::w9, a64::MemOperand(a64::x8));
+			// VU1.cycle is u64 (upstream f0723a6ec widened it). Read the full
+			// value to match x86's ptr64. The xgkicklastcycle store below is
+			// 32-bit (matching x86 ptr32), so only the low 32 bits are retained.
+			armAsm->Ldr(a64::x9, a64::MemOperand(a64::x8));
 			armAsm->Add(gprT2q, gprT2q, a64::x9);
 			armMoveAddressToReg(a64::x8, &VU1.xgkicklastcycle);
 			armAsm->Str(gprT2.W(), a64::MemOperand(a64::x8));
