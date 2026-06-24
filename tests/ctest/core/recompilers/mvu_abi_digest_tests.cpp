@@ -40,6 +40,7 @@
 
 #include "VU.h"
 #include "VUmicro.h"
+#include "Config.h"
 #include "arm64/microVU_Persist-arm64.h"
 #include "arm64/microVU_ProgCache-arm64.h"
 
@@ -92,6 +93,15 @@ constexpr AbiPin kPins[] = {
 
 u64 CompileAndDigest(std::initializer_list<vu::VuOp> pairs)
 {
+	// The ABI digest pins the emitted shape that lands in the on-disk cache in
+	// PRODUCTION, where vuFlagHack defaults on (and the options sentinel keeps
+	// flaghack-on/off caches separate). The recompiler test environment now pins
+	// vuFlagHack off for JIT-vs-interp determinism, so force it back on here —
+	// otherwise the pins would track the non-production flaghack-off shape and
+	// drift with the harness default rather than with real emitter changes.
+	const bool savedFlagHack = EmuConfig.Speedhacks.vuFlagHack;
+	EmuConfig.Speedhacks.vuFlagHack = true;
+
 	VuTestHarness h(0);
 	h.SetVf(1, 1.5f, -2.25f, 3.0f, 0.0625f);
 	h.SetVf(2, 4.0f, 0.5f, -1.0f, 8.0f);
@@ -102,6 +112,8 @@ u64 CompileAndDigest(std::initializer_list<vu::VuOp> pairs)
 	u64 digest = 0;
 	EXPECT_TRUE(mVUPersist::TestComputeEmitDigest(0, digest));
 	RecompilerTestEnvironment::ResetVuBlockCache(0);
+
+	EmuConfig.Speedhacks.vuFlagHack = savedFlagHack;
 	return digest;
 }
 

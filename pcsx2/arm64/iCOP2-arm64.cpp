@@ -295,6 +295,20 @@ static void cop2EmitIntegerMin(int fsReg)
 // thread-local slot that only ever has one instance.
 static u32 s_cop2DenormStatusFlag;
 
+// Status-flag liveness for the hand-rolled COP2 macro path (bc3729c93). With
+// vuFlagHack on, the denormalize (setup) and normalize (teardown) are emitted
+// only when the status output is actually consumed by a later CFC2; with the
+// hack off, or when analysis info is missing, they're always emitted. setup and
+// teardown MUST call this with the same instruction in flight so they skip in
+// lockstep — a denormalize without its matching normalize (or vice versa)
+// corrupts VU0.VI[REG_STATUS_FLAG].
+static bool cop2StatusFlagLive()
+{
+	// CHECK_VU_FLAGHACK (microVU_Misc-arm64.h) expands to this; inlined here to
+	// avoid pulling a microVU header into the COP2 codegen TU.
+	return !EmuConfig.Speedhacks.vuFlagHack || !g_pCurInstInfo || (g_pCurInstInfo->info & EEINST_COP2_STATUS_FLAG);
+}
+
 // Emit code to denormalize status flag from VU0.VI[REG_STATUS_FLAG]
 // into s_cop2DenormStatusFlag (mVUallocSFLAGd).
 // Denormalized = ((norm >> 3) & 0x18) | ((norm << 11) & 0x1800) | ((norm << 14) & 0x3cf0000)
@@ -468,8 +482,20 @@ void setupMacroOp_arm64(int mode)
 
 	if (mode & 0x10) // Status/MAC flags will be updated
 	{
-		// Always denormalize the status flag; no liveness-based skip is applied.
-		cop2EmitDenormalizeStatusFlag();
+		// Denormalize VU0's status flag into s_cop2DenormStatusFlag, but skip it
+		// when the status output is dead. With vuFlagHack (on by default) the
+		// shared COP2FlagHackPass tags every status write that reaches a CFC2
+		// with EEINST_COP2_STATUS_FLAG — sticky reach included, since the tag is
+		// applied to all writes before the next CFC2 (apc < m_cfc2_pc). A write
+		// that reaches no CFC2 is dead, so the ~11-instruction denormalize plus
+		// the matching normalize in endMacroOp are pure dead emitted code.
+		// Mirrors upstream bc3729c93 and the EEINST_COP2_STATUS_FLAG gate already
+		// used by mVUmacroSetupCOP2State for the mVU-reuse path. arm64 re-seeds
+		// s_cop2DenormStatusFlag from VU0.VI[REG_STATUS_FLAG] every op (no x86
+		// gprF0 persistence across ops), so EEINST_COP2_DENORMALIZE_STATUS_FLAG —
+		// the x86 "first denormalizer" marker — is intentionally not in the gate.
+		if (cop2StatusFlagLive())
+			cop2EmitDenormalizeStatusFlag();
 	}
 
 	if (mode & 0x01) // Q register will be read — load into RQSCRATCH3
@@ -494,13 +520,18 @@ void endMacroOp_arm64(int mode)
 
 	if (mode & 0x10) // Status/MAC flags were updated
 	{
-		// Always normalize status flag back to VU0.VI[REG_STATUS_FLAG].
-		// Each COP2 macro instruction is self-contained, so the normalized
-		// flag must be written every time. The vuFlagHack optimization
-		// (skipping normalization when no one reads the flag) requires
-		// correct denormalized flag persistence across instructions,
-		// which is not yet supported.
-		cop2EmitNormalizeStatusFlag();
+		// Normalize the status flag back to VU0.VI[REG_STATUS_FLAG], under the
+		// same liveness gate as the setup denormalize (they must skip together —
+		// see cop2StatusFlagLive). When status is dead the whole denormalize ->
+		// update -> normalize chain is elided: the body's cop2EmitFlagUpdate
+		// still scribbles s_cop2DenormStatusFlag, but that value is dead (never
+		// normalized out) and the next live op re-seeds the scratch from
+		// VU0.VI[REG_STATUS_FLAG], so nothing leaks. This is the dead-status
+		// subset of bc3729c93; it needs no cross-op denormalized persistence
+		// (which arm64 doesn't implement) because the live path still normalizes
+		// to the architectural register every time.
+		if (cop2StatusFlagLive())
+			cop2EmitNormalizeStatusFlag();
 	}
 
 	// microVU0 state teardown — flushPartialForCOP2 + cop2=0 + regAlloc reset.

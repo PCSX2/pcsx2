@@ -164,10 +164,15 @@ bool RecompilerTestEnvironment::Initialize()
 	// Pin VU-related EmuConfig flags off for determinism. THREAD_VU1 forks
 	// VU1 dispatch into a separate thread (parallel-universe code paths);
 	// vu1Instant short-circuits VU1 cycle accounting; XgKickHack alters
-	// XGKICK cycle accumulation per-game. None of these belong in a unit
-	// test where determinism is the contract.
+	// XGKICK cycle accumulation per-game. vuFlagHack (on by default!) lets the
+	// JIT skip COP2 status-flag updates the interpreter still performs, so the
+	// JIT-vs-interp diff would see legitimately-dead flag divergences. None of
+	// these belong in a unit test where determinism is the contract — tests
+	// that exercise the flaghack path opt in by setting it true locally and
+	// reading only live values (RunJitNoDiff).
 	EmuConfig.Speedhacks.vuThread = false;
 	EmuConfig.Speedhacks.vu1Instant = false;
+	EmuConfig.Speedhacks.vuFlagHack = false;
 	EmuConfig.Gamefixes.XgKickHack = false;
 
 	// 9. Parking lot for test programs' `jr ra` sentinel + EE exception

@@ -21,6 +21,7 @@
 #include "harness/EeRecTestHarness.h"
 
 #include "VU.h"
+#include "Config.h"
 
 #include <gtest/gtest.h>
 
@@ -1208,6 +1209,68 @@ TEST(EeVu0Cop2Macro, Bc2tlNotTakenSquashesDelaySlot)
 	h.Run();
 	h.ExpectGpr64(reg::v0, 1ull);             // not taken
 	h.ExpectGpr64(reg::t0, 7ull);             // delay slot squashed
+}
+
+// =========================================================================
+//  vuFlagHack status-liveness skip (bc3729c93)
+//
+//  setupMacroOp_arm64/endMacroOp_arm64 skip the status-flag denormalize/
+//  normalize when vuFlagHack is on AND the COP2FlagHackPass marks the op's
+//  status output dead (no CFC2 consumes it). The recompiler test environment
+//  pins vuFlagHack OFF for JIT-vs-interp determinism (a dead-flag skip would
+//  otherwise diverge from the always-accurate interpreter), so these two
+//  tests opt back into the production default to cover the gate directly.
+// =========================================================================
+
+namespace {
+struct ScopedFlagHack
+{
+	bool saved;
+	explicit ScopedFlagHack(bool on) : saved(EmuConfig.Speedhacks.vuFlagHack) { EmuConfig.Speedhacks.vuFlagHack = on; }
+	~ScopedFlagHack() { EmuConfig.Speedhacks.vuFlagHack = saved; }
+};
+} // namespace
+
+TEST(EeVu0Cop2MacroFlagHack, StatusLiveAcrossCfc2NotSkipped)
+{
+	// VADD result (-4, 0, 4, 5): lane x sets the sign bit, lane y the zero bit.
+	// The following CFC2 reads VI[REG_STATUS_FLAG], so COP2FlagHackPass marks the
+	// VADD EEINST_COP2_STATUS_FLAG -> cop2StatusFlagLive() keeps the normalize and
+	// the JIT-emitted status must match the interpreter.
+	EeRecTestHarness h;
+	ScopedFlagHack flagHack(true);
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, -5.0f, 0.0f, 3.0f, 4.0f);
+	h.SeedVu0Vf(2,  1.0f, 0.0f, 1.0f, 1.0f);
+	h.LoadProgram({
+		VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2),
+		CFC2(reg::t0, REG_STATUS_FLAG),
+	});
+	h.Run(); // auto-diffs JIT vs interp, including the CFC2-read status in t0
+	EXPECT_EQ(h.GetGpr64Jit(reg::t0), h.GetGpr64Interp(reg::t0));
+	EXPECT_NE(h.GetGpr64Jit(reg::t0), 0u); // status was actually populated
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'x'), -4.0f);
+}
+
+TEST(EeVu0Cop2MacroFlagHack, StatusDeadStandaloneSkipsButKeepsResult)
+{
+	// No CFC2 reads the status, so EEINST_COP2_STATUS_FLAG stays clear and the
+	// denormalize/normalize dance is skipped. The arithmetic must be unaffected.
+	// Status is dead, so the interpreter (which always updates it) legitimately
+	// diverges — run the JIT in isolation and assert only the live result.
+	EeRecTestHarness h;
+	ScopedFlagHack flagHack(true);
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, -5.0f, 0.0f, 3.0f, 4.0f);
+	h.SeedVu0Vf(2,  1.0f, 0.0f, 1.0f, 1.0f);
+	h.LoadProgram({VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2)});
+	h.RunJitNoDiff();
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'x'), -4.0f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'y'),  0.0f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'z'),  4.0f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'w'),  5.0f);
 }
 
 } // namespace recompiler_tests

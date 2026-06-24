@@ -394,9 +394,19 @@ void EeRecTestHarness::RunJitNoDiff(RunMode mode)
 	recEeExecuteBlock(kCycleBudget, kParkingPc);
 	FPControlRegister::SetCurrent(saved_fpcr);
 	jit_snapshot_ = EeSnapshot::Capture(mem_windows_);
+	if (capture_vu0_)
+		vu0_jit_snapshot_ = VuSnapshot::Capture(0, {});
+	if (capture_vu1_)
+		vu1_jit_snapshot_ = VuSnapshot::Capture(1, {});
 	// Mirror the JIT post-state into the interp snapshot so accessors that read
 	// either side return the JIT value (there is no interp double-mode oracle).
+	// The VU snapshots must be mirrored too — otherwise GetVu0Vf*/GetVu1Vf*
+	// read a stale snapshot left by a prior Run()-based test (order-dependent).
 	interp_snapshot_ = jit_snapshot_;
+	if (capture_vu0_)
+		vu0_interp_snapshot_ = vu0_jit_snapshot_;
+	if (capture_vu1_)
+		vu1_interp_snapshot_ = vu1_jit_snapshot_;
 	has_run_ = true;
 }
 
