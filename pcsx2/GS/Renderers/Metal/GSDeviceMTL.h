@@ -101,7 +101,7 @@ struct PipelineSelectorMTL
 	}
 };
 
-static_assert(sizeof(PipelineSelectorMTL) == 28);
+static_assert(sizeof(PipelineSelectorMTL) == 32);
 
 template <>
 struct std::hash<PipelineSelectorMTL>

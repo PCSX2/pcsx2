@@ -16,8 +16,12 @@ VkFramebuffer GSTextureVK::CreateNullFramebuffer()
 	const VkRenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(
 		VK_FORMAT_UNDEFINED,
 		VK_FORMAT_UNDEFINED,
-		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-		VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, false, false);
+		VK_FORMAT_UNDEFINED,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		false, false, false);
 
 	if (!rp)
 		return VK_NULL_HANDLE;
@@ -216,16 +220,19 @@ void GSTextureVK::Destroy(bool defer)
 
 	if (m_type == Type::RenderTarget || m_type == Type::DepthStencil)
 	{
-		for (const auto& [other_tex, fb, feedback_color, feedback_depth] : m_framebuffers)
+		for (const auto& [other_tex0, other_tex1, fb, feedback_color, feedback_depth_as_color, feedback_depth] : m_framebuffers)
 		{
-			if (other_tex)
+			for (GSTextureVK* other : std::array{ other_tex0, other_tex1 })
 			{
-				for (auto other_it = other_tex->m_framebuffers.begin(); other_it != other_tex->m_framebuffers.end(); ++other_it)
+				if (other)
 				{
-					if (std::get<0>(*other_it) == this)
+					for (auto other_it = other->m_framebuffers.begin(); other_it != other->m_framebuffers.end(); ++other_it)
 					{
-						other_tex->m_framebuffers.erase(other_it);
-						break;
+						if (std::get<0>(*other_it) == this || std::get<1>(*other_it) == this)
+						{
+							other->m_framebuffers.erase(other_it);
+							break;
+						}
 					}
 				}
 			}
@@ -567,14 +574,13 @@ void GSTextureVK::CommitClear(VkCommandBuffer cmdbuf)
 
 	if (IsDepthStencil())
 	{
-		const VkClearDepthStencilValue cv = {m_clear_value.depth};
+		const VkClearDepthStencilValue cv = GetVkClearValue().depthStencil;
 		const VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 1u, 0u, 1u};
 		vkCmdClearDepthStencilImage(cmdbuf, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &cv, 1, &srr);
 	}
 	else if (IsRenderTarget())
 	{
-		alignas(16) VkClearColorValue cv;
-		GSVector4::store<true>(cv.float32, GetClearForFormat());
+		alignas(16) VkClearColorValue cv = GetVkClearValue().color;
 		const VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u};
 		vkCmdClearColorImage(cmdbuf, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &cv, 1, &srr);
 	}
@@ -584,6 +590,35 @@ void GSTextureVK::CommitClear(VkCommandBuffer cmdbuf)
 	}
 
 	SetState(GSTexture::State::Dirty);
+}
+
+VkClearValue GSTextureVK::GetVkClearValue() const
+{
+	VkClearValue cv{};
+	if (IsDepthStencil())
+	{
+		if (IsDepthColor())
+		{
+			cv.color.float32[0] = GetClearDepth();
+		}
+		else
+		{
+			cv.depthStencil.depth = GetClearDepth();
+			cv.depthStencil.stencil = 1;
+		}
+	}
+	else if (IsRenderTarget())
+	{
+		if (IsDepthInteger())
+		{
+			cv.color.uint32[0] = GetClearValue();
+		}
+		else
+		{
+			GSVector4::store<true>(cv.color.float32, GSVector4::unorm8(GetClearValue()));
+		}
+	}
+	return cv;
 }
 
 void GSTextureVK::OverrideImageLayout(Layout new_layout)
@@ -808,30 +843,48 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 
 VkFramebuffer GSTextureVK::GetFramebuffer(bool feedback_loop)
 {
-	return GetLinkedFramebuffer(nullptr, feedback_loop, false);
+	return GetLinkedFramebuffer(nullptr, nullptr, feedback_loop, false, false);
 }
 
-VkFramebuffer GSTextureVK::GetLinkedFramebuffer(GSTextureVK* depth_texture, bool feedback_loop_color, bool feedback_loop_depth)
+VkFramebuffer GSTextureVK::GetLinkedFramebuffer(GSTextureVK* depth_as_color_texture, GSTextureVK* depth_texture,
+	bool feedback_loop_color, bool feedback_loop_depth_as_color, bool feedback_loop_depth)
 {
 	pxAssertRel(m_type != Type::Texture, "Texture is a render target");
 
-	for (const auto& [other_tex, fb, other_feedback_loop_color, other_feedback_loop_depth] : m_framebuffers)
+	for (const auto& [other_tex0, other_tex1, fb,
+		other_feedback_loop_color, other_feedback_loop_depth_as_color, other_feedback_loop_depth] : m_framebuffers)
 	{
-		if (other_tex == depth_texture && other_feedback_loop_color == feedback_loop_color && other_feedback_loop_depth == feedback_loop_depth)
+		if (other_tex0 == depth_as_color_texture &&
+			other_tex1 == depth_texture &&
+			other_feedback_loop_color == feedback_loop_color &&
+			other_feedback_loop_depth_as_color == feedback_loop_depth_as_color &&
+			other_feedback_loop_depth == feedback_loop_depth)
+		{
 			return fb;
+		}
 	}
 
-	const VkRenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(
-		(m_type != GSTexture::Type::DepthStencil) ? m_vk_format : VK_FORMAT_UNDEFINED,
-		(m_type != GSTexture::Type::DepthStencil) ? (depth_texture ? depth_texture->m_vk_format : VK_FORMAT_UNDEFINED) :
-													m_vk_format,
-		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_LOAD,
-		VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, feedback_loop_color, feedback_loop_depth);
+	const VkFormat format_color = (IsRenderTarget() && !IsDepthInteger()) ? m_vk_format : VK_FORMAT_UNDEFINED;
+	const VkFormat format_depth_as_color = IsDepthInteger() ?
+		m_vk_format :
+		(depth_as_color_texture ? depth_as_color_texture->m_vk_format : VK_FORMAT_UNDEFINED);
+	const VkFormat format_depth = IsDepthStencil() ?
+		m_vk_format :
+		(depth_texture ? depth_texture->m_vk_format : VK_FORMAT_UNDEFINED);
+
+	const VkRenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(format_color, format_depth_as_color, format_depth,
+		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
+		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
+		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		feedback_loop_color, feedback_loop_depth_as_color, feedback_loop_depth);
 	if (!rp)
 		return VK_NULL_HANDLE;
 
 	Vulkan::FramebufferBuilder fbb;
 	fbb.AddAttachment(m_view);
+	if (depth_as_color_texture)
+		fbb.AddAttachment(depth_as_color_texture->m_view);
 	if (depth_texture)
 		fbb.AddAttachment(depth_texture->m_view);
 	fbb.SetSize(m_size.x, m_size.y, 1);
@@ -841,9 +894,14 @@ VkFramebuffer GSTextureVK::GetLinkedFramebuffer(GSTextureVK* depth_texture, bool
 	if (!fb)
 		return VK_NULL_HANDLE;
 
-	m_framebuffers.emplace_back(depth_texture, fb, feedback_loop_color, feedback_loop_depth);
+	m_framebuffers.emplace_back(depth_as_color_texture, depth_texture, fb, feedback_loop_color,
+		feedback_loop_depth_as_color, feedback_loop_depth);
+	if (depth_as_color_texture)
+		depth_as_color_texture->m_framebuffers.emplace_back(this, depth_texture, fb, feedback_loop_color,
+			feedback_loop_depth_as_color, feedback_loop_depth);
 	if (depth_texture)
-		depth_texture->m_framebuffers.emplace_back(this, fb, feedback_loop_color, feedback_loop_depth);
+		depth_texture->m_framebuffers.emplace_back(this, depth_as_color_texture, fb, feedback_loop_color,
+			feedback_loop_depth_as_color, feedback_loop_depth);
 	return fb;
 }
 
@@ -896,7 +954,7 @@ void GSDownloadTextureVK::CopyFromTexture(
 {
 	GSTextureVK* const vkTex = static_cast<GSTextureVK*>(stex);
 
-	pxAssert(vkTex->GetFormat() == m_format);
+	pxAssert(GSTexture::AreFormatsEquivalent(vkTex->GetFormat(), m_format));
 	pxAssert(drc.width() == src.width() && drc.height() == src.height());
 	pxAssert(src.z <= vkTex->GetWidth() && src.w <= vkTex->GetHeight());
 	pxAssert(static_cast<u32>(drc.z) <= m_width && static_cast<u32>(drc.w) <= m_height);

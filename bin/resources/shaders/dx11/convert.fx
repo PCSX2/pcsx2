@@ -47,23 +47,28 @@ static const float3x3 rgb2yuv =
 	{-0.419, -0.081, 0.500}
 };
 
-Texture2D Texture;
 SamplerState TextureSampler;
 
 #if HAS_FLOAT32_INPUT
-
+Texture2D Texture;
 float sample_c(float2 uv)
 {
 	return Texture.Sample(TextureSampler, uv).r;
 }
-
+#elif HAS_INTEGER_INPUT
+Texture2D<uint> Texture;
+uint sample_c(float2 uv)
+{
+	uint w, h;
+	Texture.GetDimensions(w, h);
+	return Texture.Load(int3(w * uv.x, h * uv.y, 0));
+}
 #else
-
+Texture2D Texture;
 float4 sample_c(float2 uv)
 {
 	return Texture.Sample(TextureSampler, uv);
 }
-
 #endif
 
 struct PS_INPUT
@@ -72,6 +77,22 @@ struct PS_INPUT
 	float2 t : TEXCOORD0;
 	float4 c : COLOR;
 };
+
+#if HAS_INTEGER_INPUT
+	#define DEPTH_INPUT_TYPE uint
+	#define DEPTH_INPUT_SCALE 1
+#else
+	#define DEPTH_INPUT_TYPE float
+	#define DEPTH_INPUT_SCALE exp2(32.0f)
+#endif
+
+#if HAS_INTEGER_OUTPUT
+	#define DEPTH_OUTPUT_TYPE uint
+	#define DEPTH_OUTPUT_SCALE 1
+#else
+	#define DEPTH_OUTPUT_TYPE float
+	#define DEPTH_OUTPUT_SCALE exp2(-32.0f)
+#endif
 
 #if HAS_INTEGER_OUTPUT
 	#define OUTPUT_TYPE uint
@@ -104,9 +125,9 @@ uint rgb5a1_to_uint(float4 c)
 	return (i.r >> 3) | (i.g << 2) | (i.b << 7) | (i.a << 8);
 }
 
-uint depth_to_uint(float d)
+uint depth_to_uint(DEPTH_INPUT_TYPE d)
 {
-	return uint(d * exp2(32.0f));
+	return uint(d * DEPTH_INPUT_SCALE);
 }
 
 float4 uint_to_rgba8(uint i)
@@ -119,52 +140,52 @@ float4 uint_to_rgb5a1(uint i)
 	return float4(uint4(i << 3, i >> 2, i >> 7, i >> 8) & uint4(0xF8u, 0xF8u, 0xF8u, 0x80u)) / 255.0f;
 }
 
-float uint_to_depth32(uint i)
+DEPTH_OUTPUT_TYPE uint_to_depth32(uint i)
 {
-	return float(i) * exp2(-32.0f);
+	return DEPTH_OUTPUT_TYPE(i) * DEPTH_OUTPUT_SCALE;
 }
 
-float uint_to_depth24(uint i)
+DEPTH_OUTPUT_TYPE uint_to_depth24(uint i)
 {
-	return float(i & 0xFFFFFFu) * exp2(-32.0f);
+	return DEPTH_OUTPUT_TYPE(i & 0xFFFFFFu) * DEPTH_OUTPUT_SCALE;
 }
 
-float uint_to_depth16(uint i)
+DEPTH_OUTPUT_TYPE uint_to_depth16(uint i)
 {
-	return float(i & 0xFFFFu) * exp2(-32.0f);
+	return DEPTH_OUTPUT_TYPE(i & 0xFFFFu) * DEPTH_OUTPUT_SCALE;
 }
 
-float rgba8_to_depth32(float4 val)
+DEPTH_OUTPUT_TYPE rgba8_to_depth32(float4 val)
 {
 	return uint_to_depth32(rgba8_to_uint(val));
 }
 
-float rgba8_to_depth24(float4 val)
+DEPTH_OUTPUT_TYPE rgba8_to_depth24(float4 val)
 {
 	return uint_to_depth24(rgba8_to_uint(val));
 }
 
-float rgba8_to_depth16(float4 val)
+DEPTH_OUTPUT_TYPE rgba8_to_depth16(float4 val)
 {
 	return uint_to_depth16(rgba8_to_uint(val));
 }
 
-float rgb5a1_to_depth16(float4 val)
+DEPTH_OUTPUT_TYPE rgb5a1_to_depth16(float4 val)
 {
 	return uint_to_depth16(rgb5a1_to_uint(val));
 }
 
-float4 depth32_to_rgba8(float d)
+float4 depth32_to_rgba8(DEPTH_INPUT_TYPE d)
 {
 	return uint_to_rgba8(depth_to_uint(d));
 }
 
-float4 depth16_to_rgb5a1(float d)
+float4 depth16_to_rgb5a1(DEPTH_INPUT_TYPE d)
 {
 	return uint_to_rgb5a1(depth_to_uint(d));
 }
 
-float depth32_to_depth24(float d)
+DEPTH_OUTPUT_TYPE depth32_to_depth24(DEPTH_INPUT_TYPE d)
 {
 	return uint_to_depth24(depth_to_uint(d));
 }
@@ -179,7 +200,7 @@ OUTPUT_TYPE ps_copy(PS_INPUT input) : OUTPUT_SV
 #if defined(__ps_depth_copy__)
 OUTPUT_TYPE ps_depth_copy(PS_INPUT input) : OUTPUT_SV
 {
-	return sample_c(input.t);
+	return uint_to_depth32(depth_to_uint(sample_c(input.t)));
 }
 #endif
 
@@ -323,6 +344,20 @@ OUTPUT_TYPE ps_convert_depth32_depth24(PS_INPUT input) : OUTPUT_SV
 }
 #endif
 
+#if HAS_INTEGER_OUTPUT
+uint lerp_depth(uint a, uint b, float c)
+{
+  uint absdiff = a > b ? a - b : b - a;
+  uint adjust = min(uint(round(float(absdiff) * c)), absdiff);
+  return a > b ? a - adjust : a + adjust;
+}
+#else
+float lerp_depth(float a, float b, float c)
+{
+  return lerp(a, b, c);
+}
+#endif
+
 #define SAMPLE_RGBA_DEPTH_BILN(CONVERT_FN) \
 	uint width, height; \
 	Texture.GetDimensions(width, height); \
@@ -334,7 +369,7 @@ OUTPUT_TYPE ps_convert_depth32_depth24(PS_INPUT input) : OUTPUT_SV
 	float depthTR = CONVERT_FN(Texture.Load(int3(coords.zy, 0))); \
 	float depthBL = CONVERT_FN(Texture.Load(int3(coords.xw, 0))); \
 	float depthBR = CONVERT_FN(Texture.Load(int3(coords.zw, 0))); \
-	return lerp(lerp(depthTL, depthTR, mix_vals.x), lerp(depthBL, depthBR, mix_vals.x), mix_vals.y);
+	return lerp_depth(lerp_depth(depthTL, depthTR, mix_vals.x), lerp_depth(depthBL, depthBR, mix_vals.x), mix_vals.y);
 
 #if defined(__ps_convert_rgba8_depth32__)
 OUTPUT_TYPE ps_convert_rgba8_depth32(PS_INPUT input) : OUTPUT_SV

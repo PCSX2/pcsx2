@@ -34,17 +34,22 @@ public:
 		struct
 		{
 			GSHWDrawConfig::ColorMaskSelector colormask;
-			u8 pad[3];
+			u8 ds_as_rt;
+			u8 ds_as_rt_slot;
+			u8 pad[1];
 			GSHWDrawConfig::BlendState blend;
 		};
 		u64 key;
 
 		constexpr OMBlendSelector() : key(0) {}
-		constexpr OMBlendSelector(GSHWDrawConfig::ColorMaskSelector colormask_, GSHWDrawConfig::BlendState blend_)
+		constexpr OMBlendSelector(GSHWDrawConfig::ColorMaskSelector colormask_, GSHWDrawConfig::BlendState blend_,
+			bool ds_as_rt_ = false, u8 ds_as_rt_slot_ = 0)
 		{
 			key = 0;
 			colormask = colormask_;
 			blend = blend_;
+			ds_as_rt = ds_as_rt_;
+			ds_as_rt_slot = ds_as_rt_slot_;
 		}
 	};
 	static_assert(sizeof(OMBlendSelector) == sizeof(u64));
@@ -96,6 +101,8 @@ private:
 	};
 
 	void SetFeatures(IDXGIAdapter1* adapter);
+
+	bool UseVSExpandIndexBuffer() const { return m_features.aa1 || m_features.depth_integer; }
 
 	u32 GetSwapChainBufferCount() const;
 	bool CreateSwapChain();
@@ -173,10 +180,12 @@ private:
 		ID3D11BlendState* bs;
 		u8 bf;
 		ID3D11RenderTargetView* rtv;
+		ID3D11RenderTargetView* dsrtv;
 		ID3D11DepthStencilView* dsv;
 		ID3D11UnorderedAccessView* rt_uav;
 		ID3D11UnorderedAccessView* ds_uav;
 		GSTexture* current_rt;
+		GSTexture* current_ds_as_rt;
 		GSTexture* current_ds;
 		GSTexture* current_rt_uav;
 		GSTexture* current_ds_uav;
@@ -378,12 +387,12 @@ public:
 	void PSSetShaderResource(int i, GSTexture* sr);
 	void PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb);
 	void PSUpdateShaderState(const bool sr_update, const bool ss_update);
-	void PSUnbindConflictingSRVs(GSTexture* tex1 = nullptr, GSTexture* tex2 = nullptr);
+	void PSUnbindConflictingSRVs(GSTexture* tex1 = nullptr, GSTexture* tex2 = nullptr, GSTexture* tex3 = nullptr);
 	void PSSetSamplerState(ID3D11SamplerState* ss0);
 
 	void OMSetDepthStencilState(ID3D11DepthStencilState* dss, u8 sref);
 	void OMSetBlendState(ID3D11BlendState* bs, u8 bf);
-	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, GSTexture* rt_uav = nullptr, GSTexture* ds_uav = nullptr,
+	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, GSTexture* rt_uav = nullptr, GSTexture* ds_uav = nullptr,
 		const GSVector4i* scissor = nullptr, ID3D11DepthStencilView* read_only_dsv = nullptr);
 	void SetViewport(const GSVector2i& viewport);
 	void SetScissor(const GSVector4i& scissor);
@@ -397,12 +406,18 @@ public:
 	void RenderHW(GSHWDrawConfig& config) override;
 
 	void FeedbackCopyAndBind(const GSHWDrawConfig& config,
-		GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone, const GSVector4i& copyarea);
+		GSTexture* rt, GSTexture* rt_clone,
+		GSTexture* ds_as_rt, GSTexture* ds_as_rt_clone,
+		GSTexture* ds, GSTexture* ds_clone, const GSVector4i& copyarea);
 	void FeedbackCopyAndBind(const GSHWDrawConfig& config,
-		GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone,
+		GSTexture* rt, GSTexture* rt_clone,
+		GSTexture* ds_as_rt, GSTexture* ds_as_rt_clone,
+		GSTexture* ds, GSTexture* ds_clone,
 		const GSVector4i& copyarea, const GSVector4i& samplearea);
 	void SendHWDraw(const GSHWDrawConfig& config,
-		GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
+		GSTexture* draw_rt_clone, GSTexture* draw_rt,
+		GSTexture* draw_ds_as_rt_clone, GSTexture* draw_ds_as_rt,
+		GSTexture* draw_ds_clone, GSTexture* draw_ds,
 		const bool one_barrier, const bool full_barrier, GSVector2i rtsize);
 	void SetRenderHWShaderResources(const GSHWDrawConfig& config, GSTexture* primid_texture);
 

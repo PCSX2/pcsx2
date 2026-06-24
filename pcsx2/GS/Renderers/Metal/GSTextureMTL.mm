@@ -128,6 +128,30 @@ void GSTextureMTL::GenerateMipmap()
 	}
 }}
 
+GSVector4 GSTextureMTL::GetMTLClearValue() const
+{
+	if (IsDepthStencil())
+	{
+		return GSVector4(GetClearDepth(), 0.0f, 0.0f, 0.0f);
+	}
+	else if (IsRenderTarget())
+	{
+		if (IsDepthInteger())
+		{
+			return GSVector4(static_cast<float>(GetClearValue()), 0.0f, 0.0f, 0.0f);
+		}
+		else
+		{
+			return GSVector4::unorm8(GetClearValue());
+		}
+	}
+	else
+	{
+		pxAssert(false);
+		return GSVector4::zero();
+	}
+}
+
 #ifdef PCSX2_DEVBUILD
 
 void GSTextureMTL::SetDebugName(std::string_view name)
@@ -176,7 +200,7 @@ void GSDownloadTextureMTL::CopyFromTexture(
 { @autoreleasepool {
 	GSTextureMTL* const mtlTex = static_cast<GSTextureMTL*>(stex);
 
-	pxAssert(mtlTex->GetFormat() == m_format);
+	pxAssert(GSTexture::AreFormatsEquivalent(mtlTex->GetFormat(), m_format));
 	pxAssert(drc.width() == src.width() && drc.height() == src.height());
 	pxAssert(src.z <= mtlTex->GetWidth() && src.w <= mtlTex->GetHeight());
 	pxAssert(static_cast<u32>(drc.z) <= m_width && static_cast<u32>(drc.w) <= m_height);

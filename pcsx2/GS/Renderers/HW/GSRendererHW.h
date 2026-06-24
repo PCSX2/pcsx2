@@ -246,12 +246,16 @@ private:
 	bool EmulateDATEEarlyFail(DATEOptions& date, GSTextureCache::Target* rt);
 	void EmulateDATESelectMethod(DATEOptions& date, GSTextureCache::Target* rt, int& blend_alpha_min, int& blend_alpha_max);
 	void EmulateDATEGetConfig(DATEOptions& date, bool scale_rt_alpha, GSDevice::RecycledTexture& temp_ds);
+	void HandleTemporaryDSForDATE(GSDevice::RecycledTexture& temp_ds, DATEOptions& date);
+
+	bool UsingMultipleRenderTargets();
+	void EmulateDepthInteger();
 
 	void EmulateDither();
 
 	void DetermineVSConfig(GSTextureCache::Target* rt, float rtscale, const GSVector2i& rtsize,
 		const GSVector2i& unscaled_size, float& vs_scale_x, float& vs_scale_y);
-	void DetermineBarriers(GSTextureCache::Target* rt, GSTextureCache::Source* tex);
+	void DetermineBarriers(GSTextureCache::Target* rt, GSTextureCache::Target* ds, GSTextureCache::Source* tex);
 
 	void GetForcedROVUsage(bool& color_cov, bool& depth_rov); // Whether having color or depth with the current config forces the other.
 	void DetermineROVUsage(GSTextureCache::Target* rt, GSTextureCache::Target* ds); // Heuristics to determine whether to enable/disable ROV
@@ -345,6 +349,9 @@ private:
 	std::vector<GSVertexSW> m_sw_vertex_buffer;
 	std::unique_ptr<GSTextureCacheSW::Texture> m_sw_texture[7 + 1];
 	std::unique_ptr<GSVirtualAlignedClass<32>> m_sw_rasterizer;
+
+	// DS as RT
+	bool m_temp_ds_as_rt = false;
 
 public:
 	GSRendererHW();

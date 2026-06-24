@@ -38,7 +38,7 @@ const char* ShaderEntryPoint(ShaderConvert value)
 		case ShaderConvert::RTA_CORRECTION:         return "ps_rta_correction";
 		case ShaderConvert::RTA_DECORRECTION:       return "ps_rta_decorrection";
 		case ShaderConvert::TRANSPARENCY_FILTER:    return "ps_filter_transparency";
-		case ShaderConvert::DEPTH32_TO_16_BITS:     return "ps_convert_depth32_32bits";
+		case ShaderConvert::DEPTH16_TO_16_BITS:     return "ps_convert_depth32_32bits";
 		case ShaderConvert::DEPTH32_TO_32_BITS:     return "ps_convert_depth32_32bits";
 		case ShaderConvert::DEPTH32_TO_RGBA8:       return "ps_convert_depth32_rgba8";
 		case ShaderConvert::DEPTH32_TO_RGB8:        return "ps_convert_depth32_rgba8";
@@ -99,7 +99,7 @@ const char* ShaderConvertName(ShaderConvert shader)
 		ENTRY(RTA_CORRECTION);
 		ENTRY(RTA_DECORRECTION);
 		ENTRY(TRANSPARENCY_FILTER);
-		ENTRY(DEPTH32_TO_16_BITS);
+		ENTRY(DEPTH16_TO_16_BITS);
 		ENTRY(DEPTH32_TO_32_BITS);
 		ENTRY(DEPTH32_TO_RGBA8);
 		ENTRY(DEPTH32_TO_RGB8);
@@ -435,14 +435,10 @@ void GSDevice::ThrottlePresentation()
 	Threading::SleepUntil(m_last_frame_displayed_time);
 }
 
-void GSDevice::ClearRenderTarget(GSTexture* t, u32 c)
+void GSDevice::ClearRenderTarget(GSTexture* t, u32 value)
 {
-	t->SetClearColor(c);
-}
-
-void GSDevice::ClearDepth(GSTexture* t, float d)
-{
-	t->SetClearDepth(d);
+	pxAssert(t->IsRenderTargetOrDepthStencil());
+	t->SetClearValue(value);
 }
 
 bool GSDevice::ProcessClearsBeforeCopy(GSTexture* sTex, GSTexture* dTex, const bool full_copy)
@@ -452,10 +448,7 @@ bool GSDevice::ProcessClearsBeforeCopy(GSTexture* sTex, GSTexture* dTex, const b
 	// Pass it forward if we're clearing the whole thing.
 	if (full_copy)
 	{
-		if (dTex->IsDepthStencil())
-			dTex->SetClearDepth(sTex->GetClearDepth());
-		else
-			dTex->SetClearColor(sTex->GetClearColor());
+		dTex->SetClearValue(sTex->GetClearValue());
 
 		dTex->SetState(GSTexture::State::Cleared);
 
@@ -465,16 +458,8 @@ bool GSDevice::ProcessClearsBeforeCopy(GSTexture* sTex, GSTexture* dTex, const b
 	// Destination is cleared, if it's the same colour and rect, we can just avoid this entirely.
 	if (dTex->GetState() == GSTexture::State::Cleared)
 	{
-		if (dTex->IsDepthStencil())
-		{
-			if (dTex->GetClearDepth() == sTex->GetClearDepth())
-				return true;
-		}
-		else
-		{
-			if (dTex->GetClearColor() == sTex->GetClearColor())
-				return true;
-		}
+		if (dTex->GetClearValue() == sTex->GetClearValue())
+			return true;
 	}
 
 	return false;
@@ -663,24 +648,17 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int width, int height, i
 
 	switch (type)
 	{
-	case GSTexture::Type::RenderTarget:
-		{
-			if (clear)
-				ClearRenderTarget(t, 0);
-			else
-				InvalidateRenderTarget(t);
-		}
-		break;
-	case GSTexture::Type::DepthStencil:
-		{
-			if (clear)
-				ClearDepth(t, 0.0f);
-			else
-				InvalidateRenderTarget(t);
-		}
-		break;
-	default:
-		break;
+		case GSTexture::Type::RenderTarget:
+		case GSTexture::Type::DepthStencil:
+			{
+				if (clear)
+					ClearRenderTarget(t, 0);
+				else
+					InvalidateRenderTarget(t);
+			}
+			break;
+		default:
+			break;
 	}
 
 	return t;
@@ -794,6 +772,18 @@ GSTexture* GSDevice::CreateDepthColor(const GSVector2i& size, bool clear, bool p
 		clear, !prefer_reuse);
 }
 
+GSTexture* GSDevice::CreateDepthInteger(int w, int h, bool clear, bool prefer_reuse)
+{
+	return FetchSurface(GSTexture::Type::RenderTarget, w, h, 1, GSTexture::Format::DepthInteger,
+		clear, !prefer_reuse);
+}
+
+GSTexture* GSDevice::CreateDepthInteger(const GSVector2i& size, bool clear, bool prefer_reuse)
+{
+	return FetchSurface(GSTexture::Type::RenderTarget, size.x, size.y, 1, GSTexture::Format::DepthInteger,
+		clear, !prefer_reuse);
+}
+
 GSTexture* GSDevice::CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse /* = false */)
 {
 	pxAssert(mipmap_levels != 0 && (mipmap_levels < 0 || mipmap_levels <= GetMipmapLevelsForSize(w, h)));
@@ -824,9 +814,11 @@ GSTexture* GSDevice::CreateCompatible(GSTexture* tex, int w, int h, bool clear, 
 void GSDevice::DoStretchRectWithAssertions(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex,
 	const GSVector4& dRect, ShaderConvertSelector shader, Filter filter)
 {
-	pxAssert((dTex && dTex->IsDepthLike()) == shader.Float32Output());
+	pxAssert((dTex && dTex->IsFloat32Like()) == shader.Float32Output());
+	pxAssert((dTex && dTex->IsIntegerFormat()) == shader.IntegerOutput());
+	pxAssert((sTex && sTex->IsIntegerFormat()) == shader.IntegerInput());
 	pxAssert(!(filter == Biln && shader.SupportsBilinear())); // Don't allow HW bilinear if SW bilinear is required.
-	GL_INS("StretchRect(%s) {%d,%d} %dx%d -> {%d,%d) %dx%d", ShaderConvertName(shader.Shader()),
+	GL_INS("StretchRect(%s) {%d,%d} %dx%d -> {%d,%d) %dx%d", shader.Name(),
 		int(sRect.left), int(sRect.top),
 		int(sRect.right - sRect.left), int(sRect.bottom - sRect.top), int(dRect.left), int(dRect.top),
 		int(dRect.right - dRect.left), int(dRect.bottom - dRect.top));
@@ -1257,12 +1249,15 @@ static const char* GetVSExpandName(GSHWDrawConfig::VSExpand vsexpand)
 {
 	switch (vsexpand)
 	{
-		case GSHWDrawConfig::VSExpand::None:        return "None";
-		case GSHWDrawConfig::VSExpand::Point:       return "Point";
-		case GSHWDrawConfig::VSExpand::Line:        return "Line";
-		case GSHWDrawConfig::VSExpand::Sprite:      return "Sprite";
-		case GSHWDrawConfig::VSExpand::LineAA1:     return "LineAA1";
-		case GSHWDrawConfig::VSExpand::TriangleAA1: return "TriangleAA1";
+		case GSHWDrawConfig::VSExpand::None:             return "None";
+		case GSHWDrawConfig::VSExpand::Point:            return "Point";
+		case GSHWDrawConfig::VSExpand::Line:             return "Line";
+		case GSHWDrawConfig::VSExpand::Sprite:           return "Sprite";
+		case GSHWDrawConfig::VSExpand::LineAA1:          return "LineAA1";
+		case GSHWDrawConfig::VSExpand::TriangleAA1:      return "TriangleAA1";
+		case GSHWDrawConfig::VSExpand::PointZInteger:    return "PointZInteger";
+		case GSHWDrawConfig::VSExpand::LineZInteger:     return "LineZInteger";
+		case GSHWDrawConfig::VSExpand::TriangleZInteger: return "TriangleZInteger";
 	}
 	return "Unknown";
 }
@@ -1800,24 +1795,32 @@ void GSHWDrawConfig::DumpConfig(const std::string& path, const GSHWDrawConfig& c
 	}
 }
 
-static constexpr u32 NUM_REMAP_INPUTS = static_cast<u32>(ShaderConvert::Count) * 4;
+static constexpr u32 NUM_REMAP_INPUTS = static_cast<u32>(ShaderConvert::Count) * 16;
 
 static constexpr ShaderConvertSelector GetRemappedShader(u32 idx)
 {
-	ShaderConvert convert = static_cast<ShaderConvert>(idx >> 2);
-	bool depth_out = (idx >> 0) & 1;
-	Filter filter = static_cast<Filter>((idx >> 1) & 1);
-	return ShaderConvertSelector(convert, 0xf, depth_out, filter);
+	ShaderConvert convert = static_cast<ShaderConvert>(idx >> 4);
+	bool integer_in = (idx >> 0) & 1;
+	bool integer_out = (idx >> 1) & 1;
+	bool depth_out = (idx >> 2) & 1;
+	Filter filter = BilnIf((idx >> 3) & 1);
+	return ShaderConvertSelector(convert, 0xf, integer_in, integer_out, depth_out, filter);
 }
 
 static constexpr bool RemapIndexIsValid(u32 idx)
 {
-	ShaderConvert convert = static_cast<ShaderConvert>(idx >> 2);
-	bool depth_out = (idx >> 0) & 1;
-	Filter filter = static_cast<Filter>((idx >> 1) & 1);
+	ShaderConvert convert = static_cast<ShaderConvert>(idx >> 4);
+	bool integer_in = (idx >> 0) & 1;
+	bool integer_out = (idx >> 1) & 1;
+	bool depth_out = (idx >> 2) & 1;
+	Filter filter = BilnIf((idx >> 3) & 1);
 	if (HasVariableWriteMask(convert) && !depth_out && filter == Nearest)
 		return false; // Handled as variable write mask
-	if (depth_out && !HasFloat32Output(convert))
+	if (integer_in && !HasDepthLikeInput(convert))
+		return false;
+	if (integer_out && !HasDepthLikeOutput(convert))
+		return false;
+	if (depth_out && !HasDepthLikeOutput(convert))
 		return false;
 	if (filter == Biln && !SupportsBilinear(convert))
 		return false;

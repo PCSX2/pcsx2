@@ -413,7 +413,7 @@ static GSVector4 GetRTLoadInfo(GSTextureMTL* tex, MTLLoadAction* load_action)
 		else if (tex->GetState() == GSTexture::State::Cleared && *load_action != MTLLoadActionDontCare)
 		{
 			*load_action = MTLLoadActionClear;
-			return tex->GetClearForFormat();
+			return tex->GetMTLClearValue();
 		}
 	}
 	return {};
@@ -529,6 +529,7 @@ static constexpr MTLPixelFormat ConvertPixelFormat(GSTexture::Format format)
 	{
 		case GSTexture::Format::DepthColor:   return MTLPixelFormatR32Float;
 		case GSTexture::Format::PrimID:       return MTLPixelFormatR32Float;
+		case GSTexture::Format::DepthInteger: return MTLPixelFormatR32Uint;
 		case GSTexture::Format::UInt32:       return MTLPixelFormatR32Uint;
 		case GSTexture::Format::UInt16:       return MTLPixelFormatR16Uint;
 		case GSTexture::Format::UNorm8:       return MTLPixelFormatA8Unorm;
@@ -582,17 +583,7 @@ GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Type type, int width, int heigh
 	if (tex)
 	{
 		GSTextureMTL* t = new GSTextureMTL(this, tex, type, format);
-		switch (type)
-		{
-			case GSTexture::Type::RenderTarget:
-				ClearRenderTarget(t, 0);
-				break;
-			case GSTexture::Type::DepthStencil:
-				ClearDepth(t, 0.0f);
-				break;
-			default:
-				break;
-		}
+		ClearRenderTarget(t, 0);
 		return t;
 	}
 	else
@@ -1210,8 +1201,9 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 			name = [name stringByAppendingString:[NSString stringWithFormat:@" Mask=%x", shader.Mask()]];
 		if (shader.Biln())
 			name = [name stringByAppendingString:@" Biln"];
-		if (shader.Float32Output())
-			name = [name stringByAppendingString:shader.DepthOutput() ? @" → Depth" : @" → Float"];
+		name = [name stringByAppendingString:[NSString stringWithUTF8String:shader.InputFormat()]];
+		name = [name stringByAppendingString:@" → "];
+		name = [name stringByAppendingString:[NSString stringWithUTF8String:GSTexture::GetFormatName(shader.OutputFormat())]];
 
 		const u32 scmask = shader.Mask();
 		MTLColorWriteMask mask = MTLColorWriteMaskNone;
@@ -1220,8 +1212,10 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		if (scmask & 4) mask |= MTLColorWriteMaskBlue;
 		if (scmask & 8) mask |= MTLColorWriteMaskAlpha;
 		pdesc.colorAttachments[0].writeMask = mask;
-		setFnConstantB(m_fn_constants, shader.Biln(),        GSMTLConstantIndex_BILN);
-		setFnConstantB(m_fn_constants, shader.DepthOutput(), GSMTLConstantIndex_DEPTH_OUT);
+		setFnConstantB(m_fn_constants, shader.Biln(),          GSMTLConstantIndex_BILN);
+		setFnConstantB(m_fn_constants, shader.IntegerInput(),  GSMTLConstantIndex_INTEGER_IN);
+		setFnConstantB(m_fn_constants, shader.IntegerOutput(), GSMTLConstantIndex_INTEGER_OUT);
+		setFnConstantB(m_fn_constants, shader.DepthOutput(),   GSMTLConstantIndex_DEPTH_OUT);
 		m_convert_pipeline[shader.Index()] = MakePipeline(pdesc, vs_convert, LoadShader(shader_name), name);
 	}
 	pdesc.colorAttachments[0].writeMask = MTLColorWriteMaskAll;
@@ -2005,7 +1999,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		MTLRenderPipelineColorAttachmentDescriptor* color1 = [[pdesc colorAttachments] objectAtIndexedSubscript:1];
 		[color1 setPixelFormat:MTLPixelFormatR32Float];
 	}
-	NSString* pname = [NSString stringWithFormat:@"HW Render %x.%x.%llx.%llx", vssel_mtl.key, pssel.key_hi, pssel.key_lo, extras.fullkey];
+	NSString* pname = [NSString stringWithFormat:@"HW Render %x.%llx.%llx.%x", vssel_mtl.key, pssel.key_hi, pssel.key_lo, extras.fullkey];
 	auto pipeline = MakePipeline(pdesc, vs, ps, pname);
 
 	[m_current_render.encoder setRenderPipelineState:pipeline];
@@ -2306,7 +2300,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 				case GSTexture::State::Cleared:
 				{
 					BeginRenderPass(@"ColorClip Clear", colclip_rt, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
-					GSVector4 color = GSVector4::rgba32(config.rt->GetClearColor()) / GSVector4::cxpr(65535, 65535, 65535, 255);
+					GSVector4 color = GSVector4::rgba32(config.rt->GetClearValue()) / GSVector4::cxpr(65535, 65535, 65535, 255);
 					[m_current_render.encoder setFragmentBytes:&color length:sizeof(color) atIndex:GSMTLBufferIndexUniforms];
 					RenderCopy(nullptr, m_colclip_clear_pipeline, copy_rect);
 					break;

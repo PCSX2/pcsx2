@@ -40,6 +40,12 @@
 #define PS_AA1_TRIANGLE_SW_Z 3
 #endif
 
+#ifndef PS_Z_INTEGER_NONE
+#define PS_Z_INTEGER_NONE 0
+#define PS_Z_INTEGER_READ_WRITE 1
+#define PS_Z_INTEGER_READ_ONLY 2
+#endif
+
 // TEX_COORD_DEBUG output the uv coordinate as color. It is useful
 // to detect bad sampling due to upscaling
 //#define TEX_COORD_DEBUG
@@ -58,11 +64,25 @@
 #define NEEDS_DEPTH_FOR_AFAIL (PS_AFAIL == AFAIL_FB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY_SW_Z)
 #define NEEDS_DEPTH_FOR_ZTST (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
 #define NEEDS_DEPTH_FOR_AA1 (PS_AA1 == PS_AA1_TRIANGLE_SW_Z)
+#define NEEDS_DEPTH_FOR_ZINT (PS_Z_INTEGER != PS_Z_INTEGER_NONE)
+#define ZWRITE_FOR_ZINT (PS_Z_INTEGER == PS_Z_INTEGER_READ_WRITE)
 
 #define NEEDS_RT (NEEDS_RT_EARLY || NEEDS_RT_FOR_AFAIL || (!PS_PRIMID_INIT && (PS_FBMASK || SW_BLEND_NEEDS_RT || SW_AD_TO_HW)))
 #define NEEDS_TEX (PS_TFX != 4)
-#define SW_DEPTH (NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST || NEEDS_DEPTH_FOR_AA1)
-#define ZWRITE (SW_DEPTH || PS_ZCLAMP || PS_ZFLOOR)
+#define SW_DEPTH (NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST || NEEDS_DEPTH_FOR_AA1 || NEEDS_DEPTH_FOR_ZINT)
+#define ZWRITE (PS_ZCLAMP || PS_ZFLOOR || NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST || NEEDS_DEPTH_FOR_AA1 || ZWRITE_FOR_ZINT)
+
+#if PS_Z_INTEGER
+	#define DEPTH_TYPE uint
+	#define DEPTH_VEC4 uvec4
+	#define DEPTH_TEXTURE utexture2D
+	#define DEPTH_SAMPLER usampler2D
+#else
+	#define DEPTH_TYPE float
+	#define DEPTH_VEC4 vec4
+	#define DEPTH_TEXTURE texture2D
+	#define DEPTH_SAMPLER sampler2D
+#endif
 
 layout(std140, binding = 0) uniform cb21
 {
@@ -72,7 +92,7 @@ layout(std140, binding = 0) uniform cb21
 	vec4 WH;
 
 	vec2 TA;
-	float MaxDepthPS;
+	DEPTH_TYPE MaxDepthPS;
 	float Af;
 
 	uvec4 FbMask;
@@ -115,6 +135,10 @@ in SHADER
 
 	float inv_cov; // We use the inverse to make it simpler to interpolate.
 	flat uint interior; // 1 for triangle interior; 0 for edge;
+
+	#if PS_Z_INTEGER
+		flat uint z_base;
+	#endif
 } PSin;
 
 #define TARGET_0_QUALIFIER out
@@ -146,14 +170,24 @@ in SHADER
 // Use FB fetch for the feedback if it's available.
 #if SW_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2)
 	#if HAS_FRAMEBUFFER_FETCH
-		layout(location = 1) inout float o_col1;
+		layout(location = 1) inout DEPTH_TYPE o_col1;
 	#else
-		layout(location = 1) out float o_col1;
+		#if PS_Z_INTEGER
+			#if ZWRITE_FOR_ZINT
+				layout(location = 1) out DEPTH_TYPE o_col1;
+			#endif
+		#else
+			layout(location = 1) out DEPTH_TYPE o_col1;
+		#endif
 	#endif
 #endif
 
 #if NEEDS_TEX
-layout(binding = 0) uniform sampler2D TextureSampler;
+	#if PS_TEX_INTEGER
+		layout(binding = 0) uniform usampler2D TextureSampler;
+	#else
+		layout(binding = 0) uniform sampler2D TextureSampler;
+	#endif
 layout(binding = 1) uniform sampler2D PaletteSampler;
 #endif
 
@@ -168,8 +202,9 @@ layout(binding = 3) uniform sampler2D img_prim_min;
 // Depth feedback mode 1 binds depth buffer directly as a texture.
 // Depth feedback mode 2 (depth as color) can use FB fetch for the feedback,
 // in which case we don't need to explicitly bind depth as a texture.
-#if (DEPTH_FEEDBACK_SUPPORT == 1 || (DEPTH_FEEDBACK_SUPPORT == 2 && !HAS_FRAMEBUFFER_FETCH)) && SW_DEPTH
-layout(binding = 4) uniform sampler2D DepthSampler;
+// Depth integer without FB fetch must also bind the texture explicitly.
+#if (DEPTH_FEEDBACK_SUPPORT == 1 || (DEPTH_FEEDBACK_SUPPORT == 2 && !HAS_FRAMEBUFFER_FETCH) || (PS_Z_INTEGER && !HAS_FRAMEBUFFER_FETCH)) && SW_DEPTH
+layout(binding = 4) uniform DEPTH_SAMPLER DepthSampler;
 #endif
 
 #if ZWRITE && PS_HAS_CONSERVATIVE_DEPTH && !SW_DEPTH
@@ -187,10 +222,10 @@ vec4 sample_from_rt()
 #endif
 }
 
-float sample_from_depth()
+DEPTH_TYPE sample_from_depth()
 {
 #if !SW_DEPTH
-	return 0.0f;
+	return DEPTH_TYPE(0);
 #elif HAS_FRAMEBUFFER_FETCH && (DEPTH_FEEDBACK_SUPPORT == 2)
 	return o_col1;
 #else
@@ -1192,18 +1227,30 @@ float As = As_rgba.a;
 
 void ps_main()
 {
+#if PS_Z_INTEGER
+	// Add base plus interpolated offset.
+	uint input_z = PSin.z_base + uint(exp2(32.0f) * gl_FragCoord.z);
+#else
 	float input_z = gl_FragCoord.z;
+#endif
 
+#if !PS_Z_INTEGER && PS_ZFLOOR
 	// Must floor before depth testing.
-#if PS_ZFLOOR
 	input_z = floor(input_z * exp2(32.0f)) * exp2(-32.0f);
 #endif
 
+#if SW_DEPTH
+	DEPTH_TYPE curr_z = sample_from_depth();
+	#if PS_Z_INTEGER
+		input_z |= (curr_z & ~MaxDepthPS); // Add unused upper bits
+	#endif
+#endif
+
 #if PS_ZTST == ZTST_GEQUAL
-	if (input_z < sample_from_depth())
+	if (input_z < curr_z)
 		discard;
 #elif PS_ZTST == ZTST_GREATER
-	if (input_z <= sample_from_depth())
+	if (input_z <= curr_z)
 		discard;
 #endif
 
@@ -1384,7 +1431,7 @@ void ps_main()
 	// Alpha test with feedback
 	#if PS_AFAIL == AFAIL_FB_ONLY
 		if (!atst_pass)
-			input_z = sample_from_depth();
+			input_z = curr_z;
 	#elif PS_AFAIL == AFAIL_ZB_ONLY
 		if (!atst_pass)
 			C = sample_from_rt();
@@ -1393,7 +1440,7 @@ void ps_main()
 		{
 			C.a = sample_from_rt().a;
 		#if PS_AFAIL == AFAIL_RGB_ONLY_SW_Z
-			input_z = sample_from_depth();
+			input_z = curr_z;
 		#endif
 		}
 	#endif
@@ -1412,20 +1459,28 @@ void ps_main()
 #endif
 
 #if PS_AA1 == PS_AA1_TRIANGLE_SW_Z
-	if (!bool(PSin.interior))
-		input_z = sample_from_depth(); // No depth update for triangle edges.
+	input_z = bool(PSin.interior) ? input_z : curr_z; // No depth update for triangle edges.
+#endif
+
+#if PS_ZCLAMP && PS_Z_INTEGER
+	input_z |= (curr_z & ~MaxDepthPS); // Mask based on depth format
 #endif
 
 // Writing back depth
 #if ZWRITE
-	#if SW_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2)
+	#if PS_Z_INTEGER
+		#if ZWRITE_FOR_ZINT
+			o_col1 = input_z;
+		#endif
+	#else
+		gl_FragDepth = input_z;
+	#endif
+	#if SW_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2) && !PS_Z_INTEGER
 		// Depth as color write. For depth as color feedback we write to both
 		// color copy and real depth to avoid having to copy back to real depth.
 		// Warning: do not write o_col1 until the end since the value might
 		// be needed for FB fetch in sample_from_depth().
 		o_col1 = input_z;
 	#endif
-	// Standard depth write.
-	gl_FragDepth = input_z;
 #endif
 }

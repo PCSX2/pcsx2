@@ -56,6 +56,12 @@
 #define PS_ROV_DEPTH_READ_ONLY 2
 #endif
 
+#ifndef PS_Z_INTEGER_NONE
+#define PS_Z_INTEGER_NONE 0
+#define PS_Z_INTEGER_READ_WRITE 1
+#define PS_Z_INTEGER_READ_ONLY 2
+#endif
+
 #ifndef PS_FST
 #define PS_IIP 0
 #define PS_FST 0
@@ -119,6 +125,9 @@
 #define PS_ABE 0
 #define PS_ROV_COLOR 0
 #define PS_ROV_DEPTH 0
+#define PS_Z_RT_SLOT 0
+#define PS_Z_INTEGER 0
+#define PS_TEX_INTEGER 0
 #endif
 
 #ifndef VS_EXPAND_NONE
@@ -128,6 +137,9 @@
 #define VS_EXPAND_SPRITE 3
 #define VS_EXPAND_LINE_AA1 4
 #define VS_EXPAND_TRIANGLE_AA1 5
+#define VS_EXPAND_POINT_Z_INTEGER 6
+#define VS_EXPAND_LINE_Z_INTEGER 7
+#define VS_EXPAND_TRIANGLE_Z_INTEGER 8
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
@@ -137,14 +149,29 @@
 #define NEEDS_DEPTH_FOR_AFAIL (PS_AFAIL == AFAIL_FB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY_SW_Z)
 #define NEEDS_DEPTH_FOR_ZTST (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
 #define NEEDS_DEPTH_FOR_AA1 (PS_AA1 == PS_AA1_TRIANGLE_SW_Z)
-#define SW_DEPTH (NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST || NEEDS_DEPTH_FOR_AA1)
-#define ZWRITE (PS_ZFLOOR || PS_ZCLAMP || SW_DEPTH)
+#define NEEDS_DEPTH_FOR_ZINT (PS_Z_INTEGER != PS_Z_INTEGER_NONE)
+#define ZWRITE_FOR_ZINT (PS_Z_INTEGER == PS_Z_INTEGER_READ_WRITE)
+
+#define SW_DEPTH (NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST || NEEDS_DEPTH_FOR_AA1 || NEEDS_DEPTH_FOR_ZINT)
+#define ZWRITE (PS_ZFLOOR || PS_ZCLAMP || AFAIL_NEEDS_DEPTH || ZTST_NEEDS_DEPTH || AA1_NEEDS_DEPTH || ZWRITE_FOR_ZINT)
 
 #define PS_RETURN_COLOR_ROV (!PS_NO_COLOR && PS_ROV_COLOR)
 #define PS_RETURN_COLOR (!PS_NO_COLOR && !PS_ROV_COLOR)
 #define PS_RETURN_DEPTH_ROV (PS_ROV_DEPTH == PS_ROV_DEPTH_READ_WRITE)
 #define PS_RETURN_DEPTH (ZWRITE && !PS_ROV_DEPTH)
 #define PS_ROV_EARLYDEPTHSTENCIL (PS_ROV_COLOR && !PS_ROV_DEPTH && !ZWRITE)
+
+#if PS_Z_INTEGER
+	#define DEPTH_TYPE uint
+#else
+	#define DEPTH_TYPE float
+#endif
+
+#if PS_Z_RT_SLOT
+	#define Z_RT_SLOT SV_Target1
+#else
+	#define Z_RT_SLOT SV_Target0
+#endif
 
 struct VS_INPUT
 {
@@ -171,6 +198,10 @@ struct VS_OUTPUT
 
 	float inv_cov : COLOR1; // We use the inverse to make it simpler to interpolate.
 	nointerpolation uint interior : COLOR2; // 1 for triangle interior; 0 for edge;
+
+#if VS_Z_INTEGER
+	nointerpolation uint z_base : COLOR3;
+#endif
 };
 
 struct PS_INPUT
@@ -178,6 +209,7 @@ struct PS_INPUT
 	noperspective centroid float4 p : SV_Position;
 	float4 t : TEXCOORD0;
 	float4 ti : TEXCOORD2;
+
 #if VS_IIP != 0 || GS_IIP != 0 || PS_IIP != 0
 	float4 c : COLOR0;
 #else
@@ -185,6 +217,11 @@ struct PS_INPUT
 #endif
 	float inv_cov : COLOR1; // We use the inverse to make it simpler to interpolate.
 	nointerpolation uint interior : COLOR2; // 1 for triangle interior; 0 for edge;
+
+#if PS_Z_INTEGER
+	nointerpolation uint z_base : COLOR3;
+#endif
+
 #if (PS_DATE >= 1 && PS_DATE <= 3) || GS_FORWARD_PRIMID
 	uint primid : SV_PrimitiveID;
 #endif
@@ -194,41 +231,37 @@ struct PS_INPUT
 
 struct PS_OUTPUT_REAL
 {
-#define NUM_RTS 0
-
 #if PS_RETURN_COLOR
 	#if PS_DATE == 1 || PS_DATE == 2
 		float c : SV_Target;
 	#else
-		
 		float4 c0 : SV_Target0;
-
-		#undef NUM_RTS
-		#define NUM_RTS 1
-		
 		#if !PS_NO_COLOR1
 			float4 c1 : SV_Target1;
 		#endif
 	#endif
 #endif
-
 #if PS_RETURN_DEPTH
-	// In DX12 we do depth feedback loops with a color copy.
-	#if SW_DEPTH && PS_NO_COLOR1 && DX12
-		#if NUM_RTS > 0
-			float depth_color : SV_Target1;
+	#if PS_Z_INTEGER
+		#if ZWRITE_FOR_ZINT
+			uint depth : Z_RT_SLOT;
+		#endif
+	#else
+		// In DX12 we do depth feedback loops with a color copy.
+		#if PS_DEPTH_FEEDBACK && PS_NO_COLOR1 && DX12
+			#if PS_Z_RT_SLOT
+				float depth_color : SV_Target1;
+			#else
+				float depth_color : SV_Target0;
+			#endif
+		#endif
+		#if PS_HAS_CONSERVATIVE_DEPTH && !PS_DEPTH_FEEDBACK
+			float depth : SV_DepthLessEqual;
 		#else
-			float depth_color : SV_Target0;
+			float depth : SV_Depth;
 		#endif
 	#endif
-	#if PS_HAS_CONSERVATIVE_DEPTH && !SW_DEPTH
-		float depth : SV_DepthLessEqual;
-	#else
-		float depth : SV_Depth;
-	#endif
 #endif
-
-#undef NUM_RTS
 };
 
 struct PS_OUTPUT
@@ -245,14 +278,18 @@ struct PS_OUTPUT
 #endif
 };
 
+#if PS_TEX_INTEGER
+Texture2D<uint> Texture : register(t0);
+#else
 Texture2D<float4> Texture : register(t0);
+#endif
 Texture2D<float4> Palette : register(t1);
 #if !PS_ROV_COLOR
 Texture2D<float4> RtTexture : register(t2);
 #endif
 Texture2D<float> PrimMinTexture : register(t3);
 #if !PS_ROV_DEPTH
-Texture2D<float> DepthTexture : register(t4);
+Texture2D<DEPTH_TYPE> DepthTexture : register(t4);
 #endif
 SamplerState TextureSampler : register(s0);
 
@@ -262,8 +299,8 @@ static float4 rov_rt_value;
 #endif
 
 #if PS_ROV_DEPTH
-RasterizerOrderedTexture2D<float> DepthTextureRov : register(u1);
-static float rov_depth_value;
+RasterizerOrderedTexture2D<DEPTH_TYPE> DepthTextureRov : register(u1);
+static DEPTH_TYPE rov_depth_value;
 #endif
 
 #ifdef DX12
@@ -276,7 +313,7 @@ cbuffer cb1
 	float AREF;
 	float4 WH;
 	float2 TA;
-	float MaxDepthPS;
+	DEPTH_TYPE MaxDepthPS;
 	float Af;
 	uint4 FbMask;
 	float4 HalfTexel;
@@ -307,7 +344,7 @@ float4 RtLoad(int2 xy)
 #endif
 }
 
-float DepthLoad(int2 xy)
+DEPTH_TYPE DepthLoad(int2 xy)
 {
 #if PS_ROV_DEPTH
 	return rov_depth_value;
@@ -323,7 +360,7 @@ void RtWrite(int2 xy, float4 c)
 #endif
 }
 
-void DepthWrite(int2 xy, float d)
+void DepthWrite(int2 xy, DEPTH_TYPE d)
 {
 #if PS_ROV_DEPTH
 	DepthTextureRov[xy] = d;
@@ -494,6 +531,9 @@ float4 sample_c(float2 uv, float uv_w, int2 xy)
 {
 #if PS_TEX_IS_FB == 1
 	return RtLoad(xy);
+#elif PS_TEX_INTEGER == 1
+	// integer texture only applies to depth
+	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 #elif PS_REGION_RECT == 1
 	return Texture.Load(int3(int2(uv), 0));
 #else
@@ -687,18 +727,25 @@ float4x4 sample_4p(uint4 u)
 
 uint fetch_raw_depth(int2 xy)
 {
+#if PS_TEX_INTEGER
+	return Texture.Load(int3(xy, 0));
+#else
 #if PS_TEX_IS_FB == 1
 	float4 col = RtLoad(xy);
 #else
 	float4 col = Texture.Load(int3(xy, 0));
 #endif
 	return (uint)(col.r * exp2(32.0f));
+#endif
 }
 
 float4 fetch_raw_color(int2 xy)
 {
 #if PS_TEX_IS_FB == 1
 	return RtLoad(xy);
+#elif PS_TEX_INTEGER
+	// integer texture only applies to depth
+	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 #else
 	return Texture.Load(int3(xy, 0));
 #endif
@@ -708,6 +755,9 @@ float4 fetch_c(int2 uv)
 {
 #if PS_TEX_IS_FB == 1
 	return RtLoad(uv);
+#elif PS_TEX_INTEGER
+	// integer texture only applies to depth
+	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 #else
 	return Texture.Load(int3(uv, 0));
 #endif
@@ -770,7 +820,7 @@ float4 sample_depth(float2 st, float2 pos)
 		uint depth = fetch_raw_depth(pos);
 
 		// Convert msb based on the palette
-		t = Palette.Load(int3((depth >> 8u) & 0xFFu, 0, 0)) * 255.0f;
+		t = Palette.Load(uint3((depth >> 8u) & 0xFFu, 0, 0)) * 255.0f;
 	}
 	else if (PS_URBAN_CHAOS_HLE == 1)
 	{
@@ -795,8 +845,12 @@ float4 sample_depth(float2 st, float2 pos)
 	{
 		// Based on ps_convert_depth32_rgba8 of convert
 
-		// Convert a FLOAT32 depth texture into a RGBA color texture
+		// Convert a FLOAT32 or UINT32 depth texture into a RGBA color texture
+#if PS_TEX_INTEGER
+		uint d = fetch_raw_depth(uv);
+#else
 		uint d = uint(fetch_c(uv).r * exp2(32.0f));
+#endif
 		t = float4(uint4((d & 0xFFu), ((d >> 8) & 0xFFu), ((d >> 16) & 0xFFu), (d >> 24)));
 	}
 	else if (PS_DEPTH_FMT == 2)
@@ -804,7 +858,11 @@ float4 sample_depth(float2 st, float2 pos)
 		// Based on ps_convert_depth16_rgb5a1 of convert
 
 		// Convert a FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
+#if PS_TEX_INTEGER
+		uint d = fetch_raw_depth(uv);
+#else
 		uint d = uint(fetch_c(uv).r * exp2(32.0f));
+#endif
 		t = float4(uint4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) * float4(8.0f, 8.0f, 8.0f, 128.0f);
 	}
 	else if (PS_DEPTH_FMT == 3)
@@ -1326,6 +1384,8 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 [earlydepthstencil]
 #endif
 
+// Use ROV discard macro for since we cannot do
+// conditional discard based on value read from ROV.
 #if PS_ROV_COLOR || PS_ROV_DEPTH
 #define DISCARD rov_discard = true
 #else
@@ -1338,11 +1398,6 @@ PS_OUTPUT_REAL ps_main(PS_INPUT input)
 void ps_main(PS_INPUT input)
 #endif
 {
-	// Must floor before depth testing.
-#if PS_ZFLOOR
-	input.p.z = floor(input.p.z * exp2(32.0f)) * exp2(-32.0f);
-#endif
-
 #if PS_ROV_COLOR
 	rov_rt_value = RtTextureRov[input.p.xy];
 #endif
@@ -1355,13 +1410,30 @@ void ps_main(PS_INPUT input)
 	bool rov_discard = false;
 #endif
 
-	// Use ROV discard macro for since we cannot do
-	// conditional discard based on value read from ROV.
+#if PS_Z_INTEGER
+	// Add base plus interpolated offset.
+	uint input_z = input.z_base + uint(exp2(32.0f) * input.p.z);
+#else
+	float input_z = input.p.z;
+#endif
+
+#if !PS_Z_INTEGER && PS_ZFLOOR
+	// Must floor before depth testing.
+	input_z = floor(input_z * exp2(32.0f)) * exp2(-32.0f);
+#endif
+
+#if SW_DEPTH
+	DEPTH_TYPE curr_z = DepthLoad(input.p.xy);
+	#if PS_Z_INTEGER
+		input_z |= (curr_z & ~MaxDepthPS); // Add unused upper bits
+	#endif
+#endif
+
 #if PS_ZTST == ZTST_GEQUAL
-	if (input.p.z < DepthLoad(input.p.xy))
+	if (input_z < curr_z)
 		DISCARD;
 #elif PS_ZTST == ZTST_GREATER
-	if (input.p.z <= DepthLoad(input.p.xy))
+	if (input_z <= curr_z)
 		DISCARD;
 #endif
 
@@ -1558,7 +1630,7 @@ if (bad)
 	// Alpha test with feedback
 #if PS_AFAIL == AFAIL_FB_ONLY
 	if (!atst_pass)
-		input.p.z = DepthLoad(input.p.xy);
+		input_z = curr_z;
 #elif PS_AFAIL == AFAIL_ZB_ONLY
 	if (!atst_pass)
 		output.c0 = RtLoad(input.p.xy);
@@ -1566,21 +1638,25 @@ if (bad)
 	if (!atst_pass)
 	{
 		output.c0.a = RtLoad(input.p.xy).a;
-	#if PS_AFAIL == AFAIL_RGB_ONLY_SW_Z
-		input.p.z = DepthLoad(input.p.xy); 
-	#endif
+		#if PS_AFAIL == AFAIL_RGB_ONLY_SW_Z
+			input_z = curr_z;
+		#endif
 	}
 #endif
 
 #endif // PS_DATE != 1/2
 
 #if PS_ZCLAMP
-	input.p.z = min(input.p.z, MaxDepthPS);
+	input_z = min(input_z, MaxDepthPS);
 #endif
 
 #if PS_AA1 == PS_AA1_TRIANGLE_SW_Z
-	if (!bool(input.interior))
-		input.p.z = DepthLoad(input.p.xy); // No depth update for triangle edges.
+	// No depth update for triangle edges.
+	input_z = bool(input.interior) ? input_z : curr_z;
+#endif
+
+#if PS_ZCLAMP && PS_Z_INTEGER
+	input_z |= (curr_z & ~MaxDepthPS); // Mask based on depth format
 #endif
 
 #if (PS_RETURN_COLOR || PS_RETURN_DEPTH)
@@ -1588,8 +1664,8 @@ if (bad)
 	PS_OUTPUT_REAL output_real;
 #endif
 
-	// Color write back
 #if PS_RETURN_COLOR
+	// Standard color write
 	#if PS_DATE == 1 || PS_DATE == 2
 		output_real.c = output.c;
 	#else
@@ -1604,18 +1680,25 @@ if (bad)
 	RtWrite(input.p.xy, output.c0);
 #endif
 
-	// Depth write back
 #if PS_RETURN_DEPTH
-	output_real.depth = input.p.z;
-	#if SW_DEPTH && PS_NO_COLOR1 && DX12
-		// Output color clone for feedback.
-		output_real.depth_color = input.p.z;
+	// Non-ROV depth write
+	#if PS_Z_INTEGER
+		#if ZWRITE_FOR_ZINT
+			output_real.depth = input_z;
+		#endif
+	#else
+		output_real.depth = input_z;
+		#if SW_DEPTH && PS_NO_COLOR1 && DX12
+			// Output color clone for feedback.
+			output_real.depth_color = input_z;
+		#endif
 	#endif
 #elif PS_RETURN_DEPTH_ROV
+	// ROV depth write
 	#if SW_DEPTH
-		input.p.z = rov_discard ? DepthLoad(input.p.xy) : input.p.z;
+		input_z = rov_discard ? curr_z : input_z;
 	#endif
-	DepthWrite(input.p.xy, input.p.z);
+	DepthWrite(input.p.xy, input_z);
 #endif
 
 #if (PS_RETURN_COLOR || PS_RETURN_DEPTH)
@@ -1675,7 +1758,7 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	output.p.xy = output.p.xy * float2(VertexScale.x, -VertexScale.y) - float2(VertexOffset.x, -VertexOffset.y);
 	output.p.z *= exp2(-32.0f);		// integer->float depth
 
-	if(VS_TME)
+	if (VS_TME)
 	{
 		float2 uv = input.uv - TextureOffset;
 		float2 st = input.st - TextureOffset;
@@ -1710,6 +1793,11 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	// Silence compiler warnings; should be optimized out when not needed.
 	output.inv_cov = 0.0f;
 	output.interior = 0;
+	
+	#if VS_Z_INTEGER
+		output.z_base = input.z;
+		output.p.z = 0.0f; // Flat Z by default
+	#endif
 
 	return output;
 }
@@ -1750,6 +1838,7 @@ VS_INPUT load_vertex(uint index)
 	vert.z = raw.Z;
 	vert.uv = uint2(raw.UV & 0xFFFFu, raw.UV >> 16);
 	vert.f = float4(float(raw.FOG & 0xFFu), float((raw.FOG >> 8) & 0xFFu), float((raw.FOG >> 16) & 0xFFu), float(raw.FOG >> 24)) / 255.0f;
+
 	return vert;
 }
 
@@ -1898,6 +1987,12 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 	vtx.inv_cov = is_right ? 1.0f : -1.0f;
 #endif
 
+#if VS_Z_INTEGER
+	uint z_base = min(vtx.z_base, other.z_base);
+	vtx.p.z = exp2(-32.0f) * float(vtx.z_base - z_base);
+	vtx.z_base = z_base;
+#endif
+
 	// Lines will be run as (0 1 2) (1 2 3)
 	// This means that both triangles will have a point based off the top line point as their first point
 	// So we don't have to do anything for !IIP
@@ -1949,6 +2044,17 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 		vtx = vs_main(load_vertex(load_index(3 * prim_id + prim_offset)));
 		vtx.inv_cov = 0.0f; // Full coverage
 		vtx.interior = 1;
+
+		#if VS_Z_INTEGER
+			uint i1 = (prim_offset >= 2) ? prim_offset - 2 : prim_offset + 1;
+			uint i2 = (prim_offset >= 1) ? prim_offset - 1 : prim_offset + 2;
+			VS_OUTPUT other = vs_main(load_vertex(load_index(3 * prim_id + i1)));
+			VS_OUTPUT opposite = vs_main(load_vertex(load_index(3 * prim_id + i2)));
+
+			uint z_base = min(vtx.z_base, min(other.z_base, opposite.z_base));
+			vtx.p.z = exp2(-32.0f) * float(vtx.z_base - z_base);
+			vtx.z_base = z_base;
+		#endif
 	}
 	else if (edge)
 	{
@@ -2026,10 +2132,48 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 			// Get the provoking vertex color (first vertex in DX)
 			vtx.c = i0 == 0 ? vtx.c : (i1 == 0 ? other.c : opposite.c);
 		#endif
+
+		#if VS_Z_INTEGER
+			uint z_base = min(vtx.z_base, min(other.z_base, opposite.z_base));
+			vtx.p.z = exp2(-32.0f) * float(vtx.z_base - z_base);
+			vtx.z_base = z_base;
+		#endif
 	}
 
 	return vtx;
 
+#elif VS_Z_INTEGER && (VS_EXPAND == VS_EXPAND_TRIANGLE_Z_INTEGER)
+
+	uint vid_base = 3 * (vid / 3);
+	uint i0 = vid - vid_base;
+	uint i1 = (i0 >= 2) ? i0 - 2 : i0 + 1;
+	uint i2 = (i0 >= 1) ? i0 - 1 : i0 + 2;
+	
+	VS_OUTPUT vtx = vs_main(load_vertex(load_index(vid_base + i0)));
+	VS_OUTPUT other = vs_main(load_vertex(load_index(vid_base + i1)));
+	VS_OUTPUT opposite = vs_main(load_vertex(load_index(vid_base + i2)));
+
+	uint z_base = min(vtx.z_base, min(other.z_base, opposite.z_base));
+	vtx.p.z = exp2(-32.0f) * float(vtx.z_base - z_base);
+	vtx.z_base = z_base;
+
+	return vtx;
+
+#elif VS_Z_INTEGER && (VS_EXPAND == VS_EXPAND_LINE_Z_INTEGER)
+
+	VS_OUTPUT vtx = vs_main(load_vertex(load_index(vid)));
+	VS_OUTPUT other = vs_main(load_vertex(load_index(vid ^ 1)));
+
+	uint z_base = min(vtx.z_base, other.z_base);
+	vtx.p.z = exp2(-32.0f) * float(vtx.z_base - z_base);
+	vtx.z_base = z_base;
+
+	return vtx;
+
+#elif VS_Z_INTEGER && (VS_EXPAND == VS_EXPAND_POINT_Z_INTEGER)
+
+	return vs_main(load_vertex(vid));
+	
 #endif
 }
 

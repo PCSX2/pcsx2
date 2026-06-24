@@ -43,6 +43,8 @@ public:
 	void GenerateMipmap() override;
 	id<MTLTexture> GetTexture() { return m_texture; }
 
+	GSVector4 GetMTLClearValue() const;
+
 #ifdef PCSX2_DEVBUILD
 	void SetDebugName(std::string_view name) override;
 #endif
