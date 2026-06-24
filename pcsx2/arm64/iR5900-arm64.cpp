@@ -1336,8 +1336,11 @@ static void recResetRaw()
 		recLUT_SetPage(recLUT, hwLUT, recROM, 0xa000, i, i - 0x1fc0);
 	}
 
-	// Map ROM1
-	for (int i = 0x1e00; i < 0x1e04; i++)
+	// Map ROM1 (full 4 MB / 64 pages). EROM lives inside ROM1 at a variable
+	// offset, so games using EROM above page 0x1e04 must dispatch to mapped JIT
+	// pages. recROM1 is already reserved for Rom1/4 entries above; matches x86
+	// iR5900.cpp:573 and the arm64 IOP twin. Upstream fix 8fbb1e556.
+	for (int i = 0x1e00; i < 0x1e40; i++)
 	{
 		recLUT_SetPage(recLUT, hwLUT, recROM1, 0x0000, i, i - 0x1e00);
 		recLUT_SetPage(recLUT, hwLUT, recROM1, 0x8000, i, i - 0x1e00);
