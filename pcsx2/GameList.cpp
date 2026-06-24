@@ -790,6 +790,7 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
 	if (custom_title)
 	{
 		entry.title = std::move(custom_title.value());
+		entry.title_en.clear();
 	}
 	const auto custom_region = custom_attributes_ini.GetOptionalIntValue(EncodeIniKey(entry.path).c_str(), "Region");
 	if (custom_region)
