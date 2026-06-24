@@ -2846,6 +2846,22 @@ QScreen* MainWindow::getTargetScreenForWindow() {
 	return screens[monitor];
 }
 
+static QRect centeredGeometry(const QRect& frameGeo, const QRect& geo, const QScreen* screen)
+{
+	const QRect screenGeo = screen->availableGeometry();
+	const QPoint frameOffset = geo.topLeft() - frameGeo.topLeft();
+	const QSize frameBorder(frameGeo.width() - geo.width(), frameGeo.height() - geo.height());
+
+	// Shrink frame to fit within screen, then center it
+	const int newFrameW = qMin(frameGeo.width(), screenGeo.width());
+	const int newFrameH = qMin(frameGeo.height(), screenGeo.height());
+
+	const int frameX = qBound(screenGeo.left(), screenGeo.x() + (screenGeo.width() - newFrameW) / 2, screenGeo.x() + screenGeo.width() - newFrameW);
+	const int frameY = qBound(screenGeo.top(), screenGeo.y() + (screenGeo.height() - newFrameH) / 2, screenGeo.y() + screenGeo.height() - newFrameH);
+
+	return QRect(frameX + frameOffset.x(), frameY + frameOffset.y(), newFrameW - frameBorder.width(), newFrameH - frameBorder.height());
+}
+
 void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 {
 	// If we're rendering to main and were hidden (e.g. coming back from fullscreen),
@@ -2909,18 +2925,18 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 	else if (!render_to_main)
 	{
 #ifdef DISPLAY_SURFACE_WINDOW
+		m_display_surface->showNormal();
 		if (m_is_temporarily_windowed && g_emu_thread->shouldRenderToMain())
 			m_display_surface->setGeometry(geometry());
 		else
 			restoreDisplayWindowGeometryFromConfig(target_screen);
-		m_display_surface->showNormal();
 #else
 		m_display_container->setScreen(target_screen);
+		m_display_container->showNormal();
 		if (m_is_temporarily_windowed && g_emu_thread->shouldRenderToMain())
 			m_display_container->setGeometry(geometry());
 		else
 			restoreDisplayWindowGeometryFromConfig(target_screen);
-		m_display_container->showNormal();
 #endif
 	}
 	else
@@ -2935,9 +2951,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 			if (m_target_screen_main_window_geometry.isEmpty() ||
 				!target_screen->availableGeometry().contains(geometry().center()))
 			{
-				const QRect screenGeo = target_screen->availableGeometry();
-				move(screenGeo.x() + (screenGeo.width() - width()) / 2,
-					screenGeo.y() + (screenGeo.height() - height()) / 2);
+				setGeometry(centeredGeometry(frameGeometry(), geometry(), target_screen));
 			}
 		}
 		pxAssertRel(m_ui.mainContainer->count() == 1, "Has no display widget");
@@ -3194,25 +3208,15 @@ void MainWindow::restoreDisplayWindowGeometryFromConfig(QScreen* target_screen)
 #endif
 	}
 
-	// if a target screen is specified and the window is not on it, center on it
+	// if a target screen is specified and the window is not on it, center and resize to fit
 	if (target_screen)
 	{
 #ifdef DISPLAY_SURFACE_WINDOW
 		if (!target_screen->availableGeometry().contains(m_display_surface->geometry()))
-		{
-			const QRect screenGeo = target_screen->availableGeometry();
-			const QPoint center(screenGeo.x() + (screenGeo.width() - m_display_surface->width()) / 2,
-				screenGeo.y() + (screenGeo.height() - m_display_surface->height()) / 2);
-			m_display_surface->setGeometry(QRect(center, m_display_surface->size()));
-		}
+			m_display_surface->setGeometry(centeredGeometry(m_display_surface->frameGeometry(), m_display_surface->geometry(), target_screen));
 #else
 		if (!target_screen->availableGeometry().contains(m_display_container->geometry()))
-		{
-			const QRect screenGeo = target_screen->availableGeometry();
-			const QPoint center(screenGeo.x() + (screenGeo.width() - m_display_container->width()) / 2,
-				screenGeo.y() + (screenGeo.height() - m_display_container->height()) / 2);
-			m_display_container->setGeometry(QRect(center, m_display_container->size()));
-		}
+			m_display_container->setGeometry(centeredGeometry(m_display_container->frameGeometry(), m_display_container->geometry(), target_screen));
 #endif
 	}
 }
