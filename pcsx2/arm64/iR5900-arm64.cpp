@@ -19,6 +19,7 @@
 #include "R5900OpcodeTables.h"
 #include "Common.h"
 #include "VMManager.h"
+#include "Patch.h"
 #include "Config.h"
 #include "vtlb.h"
 #include "Dmac.h"
@@ -960,6 +961,13 @@ void LoadBranchState()
 
 void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 {
+	// Apply GameDB DynamicPatch pattern-matches during recompilation, matching
+	// x86 recompileNextInstruction. Without this, per-instruction dynamic
+	// patches from the game database never take effect under the arm64 EE rec.
+	// Upstream 7ee62b822.
+	if (EmuConfig.EnablePatches)
+		Patch::ApplyDynamicPatches(pc);
+
 	const u32 old_code = cpuRegs.code;
 	EEINST* old_inst_info = g_pCurInstInfo;
 
