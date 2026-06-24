@@ -34,6 +34,8 @@
 #include <QtWidgets/QStyledItemDelegate>
 #include <QShortcut>
 
+#include <algorithm>
+
 static const char* SUPPORTED_FORMATS_STRING = QT_TRANSLATE_NOOP(GameListWidget,
 	".bin/.iso (ISO Disc Images)\n"
 	".mdf (Media Descriptor File)\n"
@@ -232,10 +234,22 @@ void GameListWidget::initialize()
 		}
 	}
 
+	std::array<GameList::Region, static_cast<size_t>(GameList::Region::Count)> filter_regions;
 	for (u32 region = 0; region < static_cast<u32>(GameList::Region::Count); region++)
+		filter_regions[region] = static_cast<GameList::Region>(region);
+
+	std::sort(filter_regions.begin(), filter_regions.end(), [](GameList::Region lhs, GameList::Region rhs) {
+		if (lhs == GameList::Region::Other || rhs == GameList::Region::Other)
+			return rhs == GameList::Region::Other && lhs != GameList::Region::Other;
+
+		return QtHost::LocaleSensitiveCompare(QString::fromUtf8(GameList::RegionToString(lhs, true)),
+			QString::fromUtf8(GameList::RegionToString(rhs, true))) < 0;
+	});
+
+	for (const GameList::Region region : filter_regions)
 	{
-		m_ui.filterRegion->addItem(GameListModel::getIconForRegion(static_cast<GameList::Region>(region)),
-			GameList::RegionToString(static_cast<GameList::Region>(region), true));
+		m_ui.filterRegion->addItem(GameListModel::getIconForRegion(region),
+			GameList::RegionToString(region, true), static_cast<u32>(region));
 	}
 
 	connect(m_ui.viewGameList, &QPushButton::clicked, this, &GameListWidget::showGameList);
@@ -246,7 +260,8 @@ void GameListWidget::initialize()
 		m_sort_model->setFilterType((index == 0) ? GameList::EntryType::Count : static_cast<GameList::EntryType>(index - 1));
 	});
 	connect(m_ui.filterRegion, &QComboBox::currentIndexChanged, this, [this](int index) {
-		m_sort_model->setFilterRegion((index == 0) ? GameList::Region::Count : static_cast<GameList::Region>(index - 1));
+		const QVariant region_data = m_ui.filterRegion->itemData(index);
+		m_sort_model->setFilterRegion(region_data.isValid() ? static_cast<GameList::Region>(region_data.toUInt()) : GameList::Region::Count);
 	});
 	connect(m_ui.searchText, &QLineEdit::textChanged, this, [this](const QString& text) {
 		m_sort_model->setFilterName(text);
