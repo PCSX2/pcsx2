@@ -96,6 +96,9 @@ private:
 
 	void createCard();
 
+	void saveCardListSortState();
+	void loadCardListSortState();
+
 	QString getSelectedCard() const;
 	bool isSelectedCardFormatted() const;
 	void updateCardActions();
