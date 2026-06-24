@@ -99,8 +99,8 @@ constant AA1   PS_AA1   = static_cast<AA1>(PS_AA1_RAW);
 	#define FBFETCH_SUPPORT 0
 #endif
 
-constant bool PS_PRIM_CHECKING_INIT = PS_DATE == 1 || PS_DATE == 2;
-constant bool PS_PRIM_CHECKING_READ = PS_DATE == 3;
+constant bool PS_PRIM_CHECKING_INIT = PS_DATE == 1 || PS_DATE == 2 || PS_AA1 == AA1::TRIANGLE_PRIMID_INIT;
+constant bool PS_PRIM_CHECKING_READ = PS_DATE == 3 || PS_AA1 == AA1::TRIANGLE_PRIMID;
 #if PRIMID_SUPPORT
 constant bool NEEDS_PRIMID = PS_PRIM_CHECKING_INIT || PS_PRIM_CHECKING_READ;
 #endif
@@ -125,11 +125,12 @@ constant bool PS_ZOUTPUT = PS_ZCLAMP || PS_ZFLOOR || SW_DEPTH;
 constant bool PS_ZOUTPUT_LESS = PS_ZOUTPUT && !SW_DEPTH;
 constant bool PS_ZOUTPUT_ANY  = PS_ZOUTPUT && SW_DEPTH;
 constant bool PS_ZOUTPUT_COLOR = PS_ZOUTPUT_ANY && !DEPTH_FEEDBACK;
-constant bool VS_NEEDS_INDEX_BUFFER = VS_EXPAND_TYPE == VSExpand::TriangleAA1;
-constant bool VS_COVERAGE = VS_EXPAND_TYPE == VSExpand::LineAA1 || VS_EXPAND_TYPE == VSExpand::TriangleAA1;
-constant bool VS_INTERIOR = VS_EXPAND_TYPE == VSExpand::TriangleAA1;
+constant bool VS_TRIANGLE_AA1 = VS_EXPAND_TYPE >= VSExpand::TriangleAA1 && VS_EXPAND_TYPE <= VSExpand::TriangleAA1Edge;
+constant bool VS_NEEDS_INDEX_BUFFER = VS_TRIANGLE_AA1;
+constant bool VS_COVERAGE = VS_EXPAND_TYPE == VSExpand::LineAA1 || VS_TRIANGLE_AA1;
+constant bool VS_INTERIOR = VS_TRIANGLE_AA1;
 constant bool PS_COVERAGE = PS_AA1 != AA1::NONE;
-constant bool PS_INTERIOR = PS_AA1 == AA1::TRIANGLE_SW_Z;
+constant bool PS_INTERIOR = PS_AA1 >= AA1::TRIANGLE && PS_AA1 <= AA1::TRIANGLE_PRIMID_INIT;
 
 struct MainVSIn
 {
@@ -374,6 +375,7 @@ vertex MainVSOut vs_main_expand(
 {
 	switch (VS_EXPAND_TYPE)
 	{
+		case VSExpand::Count:
 		case VSExpand::None:
 			return vs_main_run(load_vertex(vertices[vid]), cb);
 		case VSExpand::Point:
@@ -446,6 +448,8 @@ vertex MainVSOut vs_main_expand(
 			return out;
 		}
 		case VSExpand::TriangleAA1:
+		case VSExpand::TriangleAA1Interior:
+		case VSExpand::TriangleAA1Edge:
 		{
 			// Triangles with AA1 are expanded as follows:
 			// - Vertices 0-2: Interior of triangle (1 triangle).
@@ -455,26 +459,51 @@ vertex MainVSOut vs_main_expand(
 			// - Vertices 21-26: First corner cap (2 triangles).
 			// - Vertices 27-32: Second corner cap (2 triangles).
 			// - Vertices 33-38: Third corner cap (2 triangles).
+			// With Interior or Edge the corresponding vertices are omitted.
 
-			uint prim_id = vid / 39;
-			uint prim_offset = vid - 39 * prim_id; // range: 0-38
-			bool interior = prim_offset < 3;
-			bool edge = 3 <= prim_offset && prim_offset < 21;
+			uint prim_id, prim_offset_interior, prim_offset_edges, prim_offset_caps;
+			switch (VS_EXPAND_TYPE)
+			{
+				default:
+				case VSExpand::TriangleAA1:
+					prim_id = vid / 39;
+					prim_offset_interior = vid - 39 * prim_id; // used range: 0-2
+					prim_offset_edges = prim_offset_interior - 3; // used range: 0-17
+					prim_offset_caps = prim_offset_edges - 18; // used range: 0-17
+					break;
+				case VSExpand::TriangleAA1Interior:
+					prim_id = vid / 3;
+					prim_offset_interior = vid - 3 * prim_id; // used range: 0-2
+					prim_offset_edges = -1; // unused
+					prim_offset_caps = -1; // unused
+					break;
+				case VSExpand::TriangleAA1Edge:
+					prim_id = vid / 36;
+					prim_offset_interior = -1; // unused
+					prim_offset_edges = vid - 36 * prim_id; // used range: 0-17
+					prim_offset_caps = prim_offset_edges - 18; // used range: 0-17
+					break;
+			}
 
-			MainVSOut out;
+			bool interior = 0 <= prim_offset_interior && prim_offset_interior < 3;
+			bool edge = 0 <= prim_offset_edges && prim_offset_edges < 18;
+
+			// Vertex indices for this edge. We need all 3 for determining exterior/interior.
+			uint i0 = interior ? prim_offset_interior : (edge ? prim_offset_edges / 6 : prim_offset_caps / 6);
+			uint i1 = (i0 >= 2) ? i0 - 2 : i0 + 1;
+			uint i2 = (i0 >= 1) ? i0 - 1 : i0 + 2;
+			MainVSOut out      = vs_main_run(load_vertex(vertices[indices[3 * prim_id + i0]]), cb);
+			MainVSOut other    = vs_main_run(load_vertex(vertices[indices[3 * prim_id + i1]]), cb);
+			MainVSOut opposite = vs_main_run(load_vertex(vertices[indices[3 * prim_id + i2]]), cb);
+			
 			if (interior)
 			{
-				out = vs_main_run(load_vertex(vertices[indices[3 * prim_id + prim_offset]]), cb);
+				out = vs_main_run(load_vertex(vertices[indices[3 * prim_id + prim_offset_interior]]), cb);
 				out.inv_cov = 0.f;
 				out.interior = 1;
 			}
 			else if (edge)
 			{
-				// Vertex indices for this edge. We need all 3 for determining exterior/interior.
-				uint prim_offset_edges = prim_offset - 3; // range: 0-17
-				uint i0 = prim_offset_edges / 6;
-				uint i1 = (i0 >= 2) ? i0 - 2 : i0 + 1;
-				uint i2 = (i0 >= 1) ? i0 - 1 : i0 + 2;
 				uint edge_offset = prim_offset_edges - 6 * i0; // range: 0-5
 
 				// Note: order of top/bottom, inside/outside is arbitrary,
@@ -500,11 +529,10 @@ vertex MainVSOut vs_main_expand(
 			else // Corner cap
 			{
 				// Vertex indices for this cap. We need all 3 for determining exterior/interior.
-				uint prim_offset_cap = prim_offset - 21; // range: 0-8
-				uint i0 = prim_offset_cap / 6;
+				uint i0 = prim_offset_caps / 6;
 				uint i1 = (i0 >= 2) ? i0 - 2 : i0 + 1;
 				uint i2 = (i0 >= 1) ? i0 - 1 : i0 + 2;
-				uint cap_offset = prim_offset_cap - 6 * i0; // range: 0-5
+				uint cap_offset = prim_offset_caps - 6 * i0; // range: 0-5
 
 				bool is_near_corner = cap_offset == 0 || cap_offset == 3;
 				bool is_far_corner = cap_offset == 2 || cap_offset == 5;
@@ -1487,13 +1515,25 @@ struct PSMain
 				discard_fragment();
 		}
 
-		if (PS_DATE == 3)
+		if (PS_DATE == 3 || PS_AA1 == AA1::TRIANGLE_PRIMID)
 		{
-			float stencil_ceil = prim_id_tex.read(uint2(in.p.xy)).r;
-			// Note prim_id == stencil_ceil will be the primitive that will update
-			// the bad alpha value so we must keep it.
-			if (float(prim_id) > stencil_ceil)
-				discard_fragment();
+			float primid_limit = prim_id_tex.read(uint2(in.p.xy)).r;
+
+			if (PS_DATE == 3)
+			{
+				// Note prim_id == primid_limit will be the primitive that will update
+				// the bad alpha value so we must keep it.
+				if (float(prim_id) > primid_limit)
+					discard_fragment();
+			}
+
+			if (PS_AA1 == AA1::TRIANGLE_PRIMID)
+			{
+				// Discard if this edge is under a previous triangle interior.
+				// Edge should never overlap with its own interior so < and <= should be the same here.
+				if (float(prim_id) <= primid_limit)
+					discard_fragment();
+			}
 		}
 
 		float4 C = ps_color();
@@ -1550,6 +1590,14 @@ struct PSMain
 		{
 			// DATM == 1, Pixel with alpha equal to 0 will failed (0-127)
 			out.c0 = C.a < 127.5f ? float(prim_id) : FLT_MAX;
+			return out;
+		}
+
+		// Get the last primitive whose interior overlaps the pixel.
+		if (PS_AA1 == AA1::TRIANGLE_PRIMID_INIT)
+		{
+			// Multiply by 12 because there are 12x as many edge triangles as interior triangles.
+			out.c0 = float(12 * prim_id);
 			return out;
 		}
 

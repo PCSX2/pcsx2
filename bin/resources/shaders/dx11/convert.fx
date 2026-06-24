@@ -693,4 +693,11 @@ float ps_primid_image_init_3(PS_INPUT input) : SV_Target
 }
 #endif
 
+#if defined(__ps_primid_image_init_4__)
+float ps_primid_image_init_4(PS_INPUT input) : SV_Target
+{
+	return float(-1); // AA1 primid
+}
+#endif
+
 #endif // PIXEL_SHADER

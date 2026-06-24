@@ -18,10 +18,10 @@ void vs_main()
 	PSin_p = vec4(POSITION, 0.5f, 1.0f);
 	PSin_t = TEXCOORD0;
 	PSin_c = COLOR;
-	gl_Position = vec4(POSITION, 0.5f, 1.0f); // NOTE I don't know if it is possible to merge POSITION_OUT and gl_Position
+	gl_Position = vec4(POSITION, 0.5f, 1.0f);
 }
 
-#endif
+#endif // VERTEX_SHADER
 
 #ifdef FRAGMENT_SHADER
 
@@ -611,7 +611,9 @@ void ps_yuv()
 }
 #endif
 
-#if defined(ps_primid_image_init_0) || defined(ps_primid_image_init_1) || defined(ps_primid_image_init_2) || defined(ps_primid_image_init_3)
+#if defined(ps_primid_image_init_0) || defined(ps_primid_image_init_1) || \
+	defined(ps_primid_image_init_2) || defined(ps_primid_image_init_3) || \
+	defined(ps_primid_image_init_4)
 
 void main()
 {
@@ -633,7 +635,10 @@ void main()
 		if(sample_c().a < (254.5f / 255.0f)) // >= 0x80 pass
 			o_col0 = vec4(-1);
 	#endif
+	#ifdef ps_primid_image_init_4
+		o_col0 = vec4(-1); // AA1 primid
+	#endif
 }
 #endif
 
-#endif
+#endif // FRAGMENT_SHADER

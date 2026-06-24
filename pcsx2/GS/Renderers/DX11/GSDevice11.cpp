@@ -696,7 +696,7 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	m_features.cas_sharpening = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 	m_features.test_and_sample_depth = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 	m_features.depth_feedback = m_features.feedback_loops();
-	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
+	m_features.aa1 = GSConfig.HWAA1 != GSHWAA1Level::Off && m_features.vs_expand && m_features.feedback_loops();
 
 	m_max_texture_size = (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
 	                         D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION :
@@ -1257,12 +1257,13 @@ void GSDevice11::DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_ind
 	}
 }
 
-void GSDevice11::Draw(const GSHWDrawConfig& config, int offset, int count)
+void GSDevice11::Draw(const GSHWDrawConfig& config, const GSHWDrawConfig::DrawPass pass, int offset, int count)
 {
-	if (config.vs.expand != GSHWDrawConfig::VSExpand::None)
+	const VSSelector& vs = config.GetVS(pass);
+	if (vs.expand != GSHWDrawConfig::VSExpand::None)
 	{
-		const bool vs_indexing = config.vs.UseVSExpandIndexBuffer();
-		const u32 vs_indexing_expansion = GetExpansionFactor(config.vs.expand);
+		const bool vs_indexing = vs.UseVSExpandIndexBuffer();
+		const u32 vs_indexing_expansion = GetExpansionFactor(vs.expand);
 		DrawIndexedPrimitiveVSExpand(offset, count, vs_indexing, vs_indexing_expansion);
 	}
 	else
@@ -1271,9 +1272,9 @@ void GSDevice11::Draw(const GSHWDrawConfig& config, int offset, int count)
 	}
 }
 
-void GSDevice11::Draw(const GSHWDrawConfig& config)
+void GSDevice11::Draw(const GSHWDrawConfig& config, const GSHWDrawConfig::DrawPass pass)
 {
-	Draw(config, 0, m_index.count);
+	Draw(config, pass, 0, m_index.count);
 }
 
 void GSDevice11::CommitClear(GSTexture* t)
@@ -1455,9 +1456,10 @@ void GSDevice11::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTextur
 
 void GSDevice11::DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs, Filter filter)
 {
-	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+	g_perfmon.Put(GSPerfMon::TextureCopies, sTex ? 1 : 0); // only count as a copy if there's a source
 
-	CommitClear(sTex);
+	if (sTex)
+		CommitClear(sTex);
 
 	const bool draw_in_depth = dTex && dTex->IsDepthStencil();
 
@@ -1871,7 +1873,7 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 		i = m_vs.try_emplace(sel.key, std::move(vs)).first;
 	}
 
-	if (m_vs_cb_cache.Update(*cb))
+	if (cb && m_vs_cb_cache.Update(*cb))
 	{
 		m_ctx->UpdateSubresource(m_vs_cb.get(), 0, NULL, cb, 0, 0);
 	}
@@ -2964,21 +2966,33 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		draw_rt = colclip_rt ? colclip_rt : draw_rt;
 	}
 
-	// Destination Alpha Setup
+	// Destination Alpha / AA1 primid Setup
 	const bool need_barrier = config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy);
-	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
+	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking ||
+		config.aa1_mode == GSHWDrawConfig::AA1Mode::ThreePassPrimid)
 	{
 		primid_texture = CreateRenderTarget(rtsize.x, rtsize.y, GSTexture::Format::PrimID, false);
 		if (!primid_texture)
 		{
-			Console.Warning("D3D11: Failed to allocate DATE image, aborting draw.");
+			Console.Warning("D3D11: Failed to allocate primid image, aborting draw.");
 			return;
 		}
 
-		DoStretchRect(colclip_rt ? colclip_rt : config.rt, GSVector4(config.drawarea) / GSVector4(rtsize).xyxy(),
-			primid_texture, GSVector4(config.drawarea), m_date.primid_init_ps[static_cast<u8>(config.datm)].get(), nullptr, Nearest);
+		if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
+		{
+			DoStretchRect(colclip_rt ? colclip_rt : config.rt, GSVector4(config.drawarea) / GSVector4(rtsize).xyxy(),
+				primid_texture, GSVector4(config.drawarea), m_date.primid_init_ps[static_cast<u8>(config.datm)].get(), nullptr, Nearest);
+		}
+		else
+		{
+			// AA1
+			DoStretchRect(nullptr, GSVector4(config.drawarea) / GSVector4(rtsize).xyxy(),
+				primid_texture, GSVector4(config.drawarea), m_date.primid_init_ps[4].get(), nullptr, Nearest);
+		}
 	}
-	else if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
+	
+	// Destination Alpha stencil setup
+	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
 			 (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && !need_barrier))
 		SetupDATE(colclip_rt ? colclip_rt : config.rt, config.ds, config.datm, config.drawarea);
 
@@ -3042,17 +3056,30 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	if (primid_texture)
 	{
+		const bool date = (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking);
+		const bool aa1 = (config.aa1_mode == GSHWDrawConfig::AA1Mode::ThreePassPrimid);
+		pxAssert(date != aa1); // exactly one must be true
+
 		OMDepthStencilSelector dss = config.depth;
 		dss.zwe = 0;
+		const u8 blend_op = date ? 3 /* MIN */ : 0 /* ADD */;
 		const OMBlendSelector blend(GSHWDrawConfig::ColorMaskSelector(1),
-			GSHWDrawConfig::BlendState(true, CONST_ONE, CONST_ONE, 3 /* MIN */, CONST_ONE, CONST_ZERO, false, 0));
+			GSHWDrawConfig::BlendState(true, CONST_ONE, CONST_ONE, blend_op, CONST_ONE, CONST_ZERO, false, 0));
 		SetupOM(dss, blend, 0);
 		OMSetRenderTargets(primid_texture, config.ds, nullptr, nullptr, &config.scissor, read_only_dsv);
 		SetRenderHWShaderResources(config, nullptr);
-		Draw(config);
+		Draw(config, GSHWDrawConfig::DrawPass::PrimID);
 
-		config.ps.date = 3;
-		config.alpha_second_pass.ps.date = 3;
+		if (date)
+		{
+			config.ps.date = 3;
+			config.alpha_second_pass.ps.date = 3;
+			config.aa1_multi_pass.ps.date = 3;
+		}
+		else
+		{
+			config.ps.aa1 = GSHWDrawConfig::PS_AA1::TRIANGLE;
+		}
 		SetupPS(config.ps, nullptr, config.sampler);
 	}
 
@@ -3078,8 +3105,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	const bool rt_feedbackloop_pass1 = config.IsFeedbackLoopRT(config.ps);
 	const bool rt_feedbackloop_pass2 = config.IsFeedbackLoopRT(config.alpha_second_pass.ps);
+	const bool rt_feedbackloop_pass3 = config.IsFeedbackLoopRT(config.aa1_multi_pass.ps);
 	if (draw_rt && !draw_rt_rov && (((config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
-		(rt_feedbackloop_pass1 || rt_feedbackloop_pass2))))
+		(rt_feedbackloop_pass1 || rt_feedbackloop_pass2 || rt_feedbackloop_pass3))))
 	{
 		// Requires a copy of the RT.
 		draw_rt_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_rt->GetFormat(), true);
@@ -3090,8 +3118,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	const bool ds_feedbackloop_pass1 = config.IsFeedbackLoopDepth(config.ps);
 	const bool ds_feedbackloop_pass2 = config.IsFeedbackLoopDepth(config.alpha_second_pass.ps);
+	const bool ds_feedbackloop_pass3 = config.IsFeedbackLoopDepth(config.aa1_multi_pass.ps);
 	if (draw_ds && !draw_ds_rov && m_features.depth_feedback && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
-		(ds_feedbackloop_pass1 || ds_feedbackloop_pass2))
+		(ds_feedbackloop_pass1 || ds_feedbackloop_pass2 || ds_feedbackloop_pass3))
 	{
 		// Requires a copy of the DS.
 		draw_ds_clone = CreateTexture(rtsize.x, rtsize.y, 1, draw_ds->GetFormat(), true);
@@ -3108,8 +3137,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && need_barrier)
 		m_ctx->ClearDepthStencilView(*static_cast<GSTexture11*>(draw_ds), D3D11_CLEAR_STENCIL, 0.0f, 1);
 
-	SendHWDraw(config, rt_feedbackloop_pass1 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass1 ? draw_ds_clone : nullptr, draw_ds,
-		config.require_one_barrier, config.require_full_barrier, rtsize);
+	SendHWDraw(config, GSHWDrawConfig::DrawPass::Main, rt_feedbackloop_pass1 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass1 ? draw_ds_clone : nullptr, draw_ds, rtsize);
 
 	if (config.blend_multi_pass.enable)
 	{
@@ -3118,7 +3146,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		config.ps.dither = config.blend_multi_pass.dither;
 		SetupPS(config.ps, &config.cb_ps, config.sampler);
 		SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend_multi_pass.blend), config.blend_multi_pass.blend.constant);
-		Draw(config);
+		Draw(config, GSHWDrawConfig::DrawPass::Blend);
 	}
 
 	if (config.alpha_second_pass.enable)
@@ -3134,10 +3162,29 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			SetupPS(config.alpha_second_pass.ps, nullptr, config.sampler);
 		}
 
-		const bool one_barrier = config.alpha_second_pass.require_one_barrier && m_features.multidraw_fb_copy;
 		SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
-		SendHWDraw(config, rt_feedbackloop_pass2 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass2 ? draw_ds_clone : nullptr, draw_ds,
-			one_barrier, config.alpha_second_pass.require_full_barrier, rtsize);
+		SendHWDraw(config, GSHWDrawConfig::DrawPass::AlphaSecond, rt_feedbackloop_pass2 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass2 ? draw_ds_clone : nullptr, draw_ds, rtsize);
+	}
+
+	if (config.aa1_multi_pass.enable)
+	{
+		SetupVS(config.aa1_multi_pass.vs, nullptr);
+
+		if (config.cb_ps.FogColor_AREF.a != config.aa1_multi_pass.ps_aref)
+		{
+			config.cb_ps.FogColor_AREF.a = config.aa1_multi_pass.ps_aref;
+			SetupPS(config.aa1_multi_pass.ps, &config.cb_ps, config.sampler);
+		}
+		else
+		{
+			// ps cbuffer hasn't changed, so don't bother checking
+			SetupPS(config.aa1_multi_pass.ps, nullptr, config.sampler);
+		}
+
+		SetupOM(config.aa1_multi_pass.depth, OMBlendSelector(config.aa1_multi_pass.colormask, config.aa1_multi_pass.blend),
+			config.aa1_multi_pass.blend.constant);
+		SendHWDraw(config, GSHWDrawConfig::DrawPass::AA1Second, rt_feedbackloop_pass3 ? draw_rt_clone : nullptr, draw_rt,
+			ds_feedbackloop_pass3 ? draw_ds_clone : nullptr, draw_ds, rtsize);
 	}
 
 	if (colclip_rt)
@@ -3207,12 +3254,14 @@ void GSDevice11::FeedbackCopyAndBind(const GSHWDrawConfig& config,
 		// No RT hazards so just need the draw area (or full area for DS).
 		FeedbackCopyAndBind(config, rt, rt_clone, ds, ds_clone, ProcessCopyArea(rtsize, config.drawarea));
 	}
-};
+}
 
-void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
-	GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
-	const bool one_barrier, const bool full_barrier, GSVector2i rtsize)
+void GSDevice11::SendHWDraw(const GSHWDrawConfig& config, GSHWDrawConfig::DrawPass pass,
+	GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds, GSVector2i rtsize)
 {
+	const bool full_barrier = config.GetFullBarrier(pass);
+	const bool one_barrier = config.GetOneBarrier(pass);
+
 #ifdef PCSX2_DEVBUILD
 	if ((one_barrier || full_barrier) && !(config.IsFeedbackLoopRT(config.ps) || config.IsFeedbackLoopDepth(config.ps))) [[unlikely]]
 		Console.Warning("D3D11: Possible unnecessary copy detected.");
@@ -3237,7 +3286,7 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 
 			FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, bbox);
 
-			Draw(config, p, count);
+			Draw(config, pass, p, count);
 
 			p += count;
 		}
@@ -3250,7 +3299,7 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 		FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, config.drawarea, config.samplearea);
 	}
 
-	Draw(config);
+	Draw(config, pass);
 
 	if (config.ps.HasColorROV() || config.ps.HasDepthROV())
 		g_perfmon.Put(GSPerfMon::DrawCallsROV, 1);

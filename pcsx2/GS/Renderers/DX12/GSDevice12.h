@@ -390,7 +390,7 @@ private:
 	std::array<ComPtr<ID3D12PipelineState>, NUM_INTERLACE_SHADERS> m_interlace{};
 	std::array<ComPtr<ID3D12PipelineState>, 2> m_colclip_setup_pipelines{}; // [depth]
 	std::array<ComPtr<ID3D12PipelineState>, 2> m_colclip_finish_pipelines{}; // [depth]
-	std::array<std::array<ComPtr<ID3D12PipelineState>, 4>, 2> m_primid_image_setup_pipelines{}; // [depth][datm]
+	std::array<std::array<ComPtr<ID3D12PipelineState>, 5>, 2> m_primid_image_setup_pipelines{}; // [depth][datm]
 	ComPtr<ID3D12PipelineState> m_fxaa_pipeline;
 	ComPtr<ID3D12PipelineState> m_shadeboost_pipeline;
 	ComPtr<ID3D12PipelineState> m_imgui_pipeline;
@@ -519,8 +519,8 @@ public:
 	void DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_indexing, int vs_indexing_expansion);
 
 	// Main GS primitive draws.
-	void Draw(const GSHWDrawConfig& config);
-	void Draw(const GSHWDrawConfig& config, int offset, int count);
+	void Draw(const GSHWDrawConfig& config, GSHWDrawConfig::DrawPass pass);
+	void Draw(const GSHWDrawConfig& config, GSHWDrawConfig::DrawPass pass, int offset, int count);
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
@@ -545,7 +545,7 @@ public:
 	void DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds);
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox);
-	GSTexture12* SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, PipelineSelector& pipe);
+	GSTexture12* SetupPrimitiveTracking(GSHWDrawConfig& config);
 
 	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count);
 	void IASetIndexBuffer(const void* index, size_t count);
@@ -564,9 +564,8 @@ public:
 	bool BindDrawPipeline(const PipelineSelector& p);
 
 	void RenderHW(GSHWDrawConfig& config) override;
-	void SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt,
-		GSTexture12* draw_ds, GSTexture12* draw_rt_rov, GSTexture12* draw_ds_rov,
-		const bool feedback_rt, const bool feedback_depth, const bool one_barrier, const bool full_barrier);
+	void SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSHWDrawConfig::DrawPass pass, GSTexture12* draw_rt,
+		GSTexture12* draw_ds, GSTexture12* draw_rt_rov, GSTexture12* draw_ds_rov, bool feedback_rt, const bool feedback_depth);
 
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config);
 	void UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config);

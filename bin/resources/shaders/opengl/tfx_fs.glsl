@@ -38,6 +38,8 @@
 #define PS_AA1_LINE 1
 #define PS_AA1_TRIANGLE 2
 #define PS_AA1_TRIANGLE_SW_Z 3
+#define PS_AA1_TRIANGLE_PRIMID 4
+#define PS_AA1_TRIANGLE_PRIMID_INIT 5
 #endif
 
 // TEX_COORD_DEBUG output the uv coordinate as color. It is useful
@@ -161,7 +163,7 @@ layout(binding = 1) uniform sampler2D PaletteSampler;
 layout(binding = 2) uniform sampler2D RtSampler; // note 2 already use by the image below
 #endif
 
-#if PS_DATE == 3
+#if PS_DATE == 3 || (PS_AA1 == PS_AA1_TRIANGLE_PRIMID)
 layout(binding = 3) uniform sampler2D img_prim_min;
 #endif
 
@@ -1242,17 +1244,28 @@ void ps_main()
 		discard;
 	}
 
-#endif
+#endif // PS_DATE >= 5
+
+#if PS_DATE == 3 || PS_AA1 == PS_AA1_TRIANGLE_PRIMID
+	int primid_limit = int(texelFetch(img_prim_min, ivec2(gl_FragCoord.xy), 0).r);
 
 #if PS_DATE == 3
-	int stencil_ceil = int(texelFetch(img_prim_min, ivec2(gl_FragCoord.xy), 0).r);
-	// Note gl_PrimitiveID == stencil_ceil will be the primitive that will update
+	// Note gl_PrimitiveID == primid_limit will be the primitive that will update
 	// the bad alpha value so we must keep it.
-
-	if (gl_PrimitiveID > stencil_ceil) {
+	if (gl_PrimitiveID > primid_limit) {
 		discard;
 	}
 #endif
+
+#if PS_AA1 == PS_AA1_TRIANGLE_PRIMID
+	// Discard if this edge is under a previous triangle interior.
+	// Edge should never overlap with its own interior so < and <= should be the same here.
+	if (gl_PrimitiveID <= primid_limit) {
+		discard;
+	}
+#endif
+
+#endif // primid DATE/AA1 discard
 
 	vec4 C = ps_color();
 
@@ -1311,6 +1324,10 @@ void ps_main()
 	// DATM == 1
 	// Pixel with alpha equal to 0 will failed (0-127)
 	o_col0 = (C.a < 127.5f) ? vec4(gl_PrimitiveID) : vec4(0x7FFFFFFF);
+	return;
+#elif PS_AA1 == PS_AA1_TRIANGLE_PRIMID_INIT
+	// Multiply by 12 because there are 12x as many edge triangles as interior triangles.
+	o_col0 = vec4(12 * gl_PrimitiveID);
 	return;
 #endif
 

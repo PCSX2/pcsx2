@@ -427,7 +427,7 @@ private:
 	VkPipeline m_colclip_setup_pipelines[2][2] = {}; // [depth][feedback_loop]
 	VkPipeline m_colclip_finish_pipelines[2][2] = {}; // [depth][feedback_loop]
 	VkRenderPass m_primid_image_setup_render_passes[2][2] = {}; // [depth][clear]
-	VkPipeline m_primid_image_setup_pipelines[2][4] = {}; // [depth][datm]
+	VkPipeline m_primid_image_setup_pipelines[2][5] = {}; // [depth][datm]
 	VkPipeline m_fxaa_pipeline = {};
 	VkPipeline m_shadeboost_pipeline = {};
 
@@ -573,8 +573,8 @@ public:
 	void DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_indexing, int vs_indexing_expansion);
 
 	// Main GS primitive draws.
-	void Draw(const GSHWDrawConfig& config);
-	void Draw(const GSHWDrawConfig& config, int offset, int count);
+	void Draw(const GSHWDrawConfig& config, GSHWDrawConfig::DrawPass pass);
+	void Draw(const GSHWDrawConfig& config, GSHWDrawConfig::DrawPass pass, int offset, int count);
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
@@ -602,7 +602,7 @@ public:
 	void FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32 downsample_factor, const GSVector2i& clamp_min, const GSVector4& dRect) override;
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox);
-	GSTextureVK* SetupPrimitiveTrackingDATE(GSHWDrawConfig& config);
+	GSTextureVK* SetupPrimitiveTracking(GSHWDrawConfig& config);
 
 	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count, size_t align_multiplier = 1);
 	void IASetIndexBuffer(const void* index, size_t count);
@@ -626,8 +626,7 @@ public:
 	VkImageMemoryBarrier GetColorBufferFeedbackBarrier(GSTextureVK* rt) const;
 	VkImageMemoryBarrier GetDepthStencilBufferFeedbackBarrier(GSTextureVK* ds) const;
 	VkDependencyFlags GetFeedbackBarrierDependencyFlags() const;
-	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds,
-		bool one_barrier, bool full_barrier);
+	void SendHWDraw(const GSHWDrawConfig& config, GSHWDrawConfig::DrawPass pass, GSTextureVK* draw_rt, GSTextureVK* draw_ds);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Vulkan State
