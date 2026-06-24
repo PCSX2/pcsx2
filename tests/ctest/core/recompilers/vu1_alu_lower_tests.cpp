@@ -472,4 +472,76 @@ TEST(Vu1AluLower, VlqYLoadsOnlyYLane)
 	EXPECT_EQ(h.GetVfBitsJit(20, 'w'), 0x44u);
 }
 
+// =========================================================================
+//  vi00 constant-address loadstore fold (upstream 6018936dc)
+// =========================================================================
+//
+// When the base VI is vi00 (always reads 0) the loadstore address is a
+// compile-time constant, so microVU folds it (mVUoptimizeConstantAddr) into a
+// Mem-pointer load + one immediate add instead of the runtime
+// moveVI + imm-add + mask/shift + base-add chain. These cover all four folded
+// ops (LQ/SQ/ILW/ISW) at a NON-ZERO quad offset, exercising the VU1 0x3FF mask
+// and the byte-offset add. h.Run() auto-diffs the folded JIT against the
+// interpreter; the explicit checks pin the resolved address + value.
+
+TEST(Vu1AluLower, LqVi00NonZeroOffsetFoldsToConstAddr)
+{
+	VuTestHarness h(1);
+	h.WriteMemU128(5 * 16, 0x11111111u, 0x22222222u, 0x33333333u, 0x44444444u);
+	h.SetVfBits(10, 0, 0, 0, 0);
+	h.LoadProgram({
+		LowerOnly(VLQ_L(mask::xyzw, vf::vf10, vi::vi0, 5)),
+		EBitNopPair(),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetVfBitsJit(10, 'x'), 0x11111111u);
+	EXPECT_EQ(h.GetVfBitsJit(10, 'y'), 0x22222222u);
+	EXPECT_EQ(h.GetVfBitsJit(10, 'z'), 0x33333333u);
+	EXPECT_EQ(h.GetVfBitsJit(10, 'w'), 0x44444444u);
+}
+
+TEST(Vu1AluLower, SqVi00NonZeroOffsetFoldsToConstAddr)
+{
+	VuTestHarness h(1);
+	h.WriteMemU128(7 * 16, 0, 0, 0, 0);
+	h.SetVfBits(11, 0xAAAAAAAAu, 0xBBBBBBBBu, 0xCCCCCCCCu, 0xDDDDDDDDu);
+	h.LoadProgram({
+		LowerOnly(VSQ_L(mask::xyzw, vf::vf11, vi::vi0, 7)),
+		EBitNopPair(),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetMemU32Jit(7 * 16 + 0), 0xAAAAAAAAu);
+	EXPECT_EQ(h.GetMemU32Jit(7 * 16 + 4), 0xBBBBBBBBu);
+	EXPECT_EQ(h.GetMemU32Jit(7 * 16 + 8), 0xCCCCCCCCu);
+	EXPECT_EQ(h.GetMemU32Jit(7 * 16 + 12), 0xDDDDDDDDu);
+}
+
+TEST(Vu1AluLower, IlwVi00OffsetLaneFoldsToConstAddr)
+{
+	VuTestHarness h(1);
+	// mem[3].z = 0x1234; ILW.z reads the z lane (offsetSS=8) into vi5.
+	h.WriteMemU128(3 * 16, 0, 0, 0x1234u, 0);
+	h.SetVi(5, 0);
+	h.LoadProgram({
+		LowerOnly(VILW_L(mask::z, vi::vi5, vi::vi0, 3)),
+		EBitNopPair(),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetViJit(5) & 0xFFFFu, 0x1234u);
+}
+
+TEST(Vu1AluLower, IswVi00OffsetFoldsToConstAddr)
+{
+	VuTestHarness h(1);
+	h.WriteMemU128(9 * 16, 0, 0, 0, 0);
+	h.SetVi(6, 0x5678);
+	h.LoadProgram({
+		LowerOnly(VISW_L(mask::xyzw, vi::vi6, vi::vi0, 9)),
+		EBitNopPair(),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetMemU32Jit(9 * 16 + 0), 0x5678u);
+	EXPECT_EQ(h.GetMemU32Jit(9 * 16 + 12), 0x5678u);
+}
+
 } // namespace recompiler_tests

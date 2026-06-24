@@ -83,7 +83,11 @@ struct AbiPin
 
 // === THE PIN TABLE === (see header comment for the update protocol)
 constexpr AbiPin kPins[] = {
-	{3, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8}},
+	// abi 4: vi00 const-addr loadstore fold (6018936dc). The probes below use no
+	// LQ/SQ/ILW/ISW, so the folded ops leave their emitted shape unchanged — the
+	// digests are bit-identical to abi 3; the bump is to evict on-disk caches
+	// recorded with the pre-fold loadstore shape.
+	{4, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8}},
 };
 
 u64 CompileAndDigest(std::initializer_list<vu::VuOp> pairs)

@@ -354,3 +354,36 @@ __fi void mVUaddrFix(mV, const a64::Register& gprReg)
 		armAsm->Lsl(gprReg.X(), gprReg.X(), 4);
 	}
 }
+
+// Constant-address fold for loadstores whose base VI is vi00 (always 0). With a
+// constant base the whole address is known at compile time, so the runtime
+// moveVIToGPR + imm-add + mVUaddrFix (mask/shift) + base-add chain collapses to
+// a single Mem-pointer load plus (at most) one immediate add. On a return of
+// true gprOutQ holds &VU.Mem[const], ready for the load/store; on false the
+// caller emits the normal runtime path. Mirrors x86 mVUoptimizeConstantAddr
+// (microVU_Misc.inl). The VU0 cross-VU-register window (addr & 0x400) and the
+// IbitHack runtime-reconstruct path are deliberately left to mVUaddrFix.
+// Ported 2026-06-23 from upstream 6018936dc (postdates the leak/4248; correct
+// and ABI-neutral, so adopted per the "newer-upstream-pattern" rule).
+__fi bool mVUoptimizeConstantAddr(mV, u32 srcreg, s32 offset, s32 offsetSS_, const a64::Register& gprOutQ)
+{
+	if (srcreg != 0 || EmuConfig.Gamefixes.IbitHack)
+		return false;
+
+	s32 byteAddr;
+	if (isVU1)
+	{
+		byteAddr = ((offset & 0x3ff) << 4) + offsetSS_;
+	}
+	else
+	{
+		if (offset & 0x400)
+			return false; // cross-VU-register access — runtime path handles it
+		byteAddr = ((offset & 0xff) << 4) + offsetSS_;
+	}
+
+	armAsm->Ldr(gprOutQ, mVUstateMem(offsetof(VURegs, Mem)));
+	if (byteAddr != 0)
+		armAsm->Add(gprOutQ, gprOutQ, byteAddr);
+	return true;
+}

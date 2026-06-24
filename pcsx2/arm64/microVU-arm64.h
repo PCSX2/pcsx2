@@ -42,7 +42,7 @@
 //       invalidates atomically when the helper ABI shape changes.
 //   3 — dropped helperTableLayoutHash from the options sentinel
 //       (sentinel layout shrank; every contentHash changes).
-static constexpr u32 kMvuCompilerAbiVersion = 3;
+static constexpr u32 kMvuCompilerAbiVersion = 4;
 
 // Hash/equality functors for XXH128_hash_t — let std::unordered_map<XXH128_hash_t, …>
 // work without a wrapping struct. low64 already carries the well-mixed half of

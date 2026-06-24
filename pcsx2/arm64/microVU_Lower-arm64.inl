@@ -1339,35 +1339,38 @@ mVUop(mVU_ILW)
 	pass2
 	{
 		// Compute address: (VI[Is] + Imm11) wrapped, then byte offset
-		mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
-		if (!EmuConfig.Gamefixes.IbitHack)
+		if (!mVUoptimizeConstantAddr(mVU, _Is_, _Imm11_, offsetSS, gprT1q))
 		{
-			if (_Imm11_ != 0)
+			mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
+			if (!EmuConfig.Gamefixes.IbitHack)
 			{
-				s32 imm = _Imm11_;
-				if (imm >= 0)
-					armAsm->Add(gprT1.W(), gprT1.W(), (u32)imm);
-				else
-					armAsm->Sub(gprT1.W(), gprT1.W(), (u32)(-imm));
+				if (_Imm11_ != 0)
+				{
+					s32 imm = _Imm11_;
+					if (imm >= 0)
+						armAsm->Add(gprT1.W(), gprT1.W(), (u32)imm);
+					else
+						armAsm->Sub(gprT1.W(), gprT1.W(), (u32)(-imm));
+				}
 			}
-		}
-		else
-		{
-			// IbitHack: reconstruct signed Imm11 from the live opcode word at
-			// runtime via sbfx+bfxil.
-			armLoadPtr(RWSCRATCH, &curI);
-			armAsm->Sbfx(gprT2.W(), RWSCRATCH, 10, 1);
-			armAsm->Bfxil(gprT2.W(), RWSCRATCH, 0, 10);
-			armAsm->Add(gprT1.W(), gprT1.W(), gprT2.W());
-		}
-		mVUaddrFix(mVU, gprT1);
+			else
+			{
+				// IbitHack: reconstruct signed Imm11 from the live opcode word at
+				// runtime via sbfx+bfxil.
+				armLoadPtr(RWSCRATCH, &curI);
+				armAsm->Sbfx(gprT2.W(), RWSCRATCH, 10, 1);
+				armAsm->Bfxil(gprT2.W(), RWSCRATCH, 0, 10);
+				armAsm->Add(gprT1.W(), gprT1.W(), gprT2.W());
+			}
+			mVUaddrFix(mVU, gprT1);
 
-		// Add lane offset for the selected component
-		armAsm->Add(gprT1.W(), gprT1.W(), offsetSS);
+			// Add lane offset for the selected component
+			armAsm->Add(gprT1.W(), gprT1.W(), offsetSS);
 
-		// Add VU memory base
-		armAsm->Ldr(gprT2q, mVUstateMem(offsetof(VURegs, Mem)));
-		armAsm->Add(gprT1q, gprT2q, gprT1q.X());
+			// Add VU memory base
+			armAsm->Ldr(gprT2q, mVUstateMem(offsetof(VURegs, Mem)));
+			armAsm->Add(gprT1q, gprT2q, gprT1q.X());
+		}
 
 		// Load 16-bit value from memory
 		const a64::Register& regT = mVU.regAlloc->allocGPR(-1, _It_, mVUlow.backupVI);
@@ -1427,30 +1430,33 @@ mVUop(mVU_ISW)
 	pass2
 	{
 		// Compute address
-		mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
-		if (!EmuConfig.Gamefixes.IbitHack)
+		if (!mVUoptimizeConstantAddr(mVU, _Is_, _Imm11_, 0, gprT1q))
 		{
-			if (_Imm11_ != 0)
+			mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
+			if (!EmuConfig.Gamefixes.IbitHack)
 			{
-				s32 imm = _Imm11_;
-				if (imm >= 0)
-					armAsm->Add(gprT1.W(), gprT1.W(), (u32)imm);
-				else
-					armAsm->Sub(gprT1.W(), gprT1.W(), (u32)(-imm));
+				if (_Imm11_ != 0)
+				{
+					s32 imm = _Imm11_;
+					if (imm >= 0)
+						armAsm->Add(gprT1.W(), gprT1.W(), (u32)imm);
+					else
+						armAsm->Sub(gprT1.W(), gprT1.W(), (u32)(-imm));
+				}
 			}
-		}
-		else
-		{
-			// IbitHack: reconstruct signed Imm11 from the live opcode word at runtime.
-			armLoadPtr(RWSCRATCH, &curI);
-			armAsm->Sbfx(gprT2.W(), RWSCRATCH, 10, 1);
-			armAsm->Bfxil(gprT2.W(), RWSCRATCH, 0, 10);
-			armAsm->Add(gprT1.W(), gprT1.W(), gprT2.W());
-		}
-		mVUaddrFix(mVU, gprT1);
+			else
+			{
+				// IbitHack: reconstruct signed Imm11 from the live opcode word at runtime.
+				armLoadPtr(RWSCRATCH, &curI);
+				armAsm->Sbfx(gprT2.W(), RWSCRATCH, 10, 1);
+				armAsm->Bfxil(gprT2.W(), RWSCRATCH, 0, 10);
+				armAsm->Add(gprT1.W(), gprT1.W(), gprT2.W());
+			}
+			mVUaddrFix(mVU, gprT1);
 
-		armAsm->Ldr(gprT2q, mVUstateMem(offsetof(VURegs, Mem)));
-		armAsm->Add(gprT1q, gprT2q, gprT1q.X());
+			armAsm->Ldr(gprT2q, mVUstateMem(offsetof(VURegs, Mem)));
+			armAsm->Add(gprT1q, gprT2q, gprT1q.X());
+		}
 
 		// Load VI[It] value (zero-extended to 32-bit) and store to selected lanes
 		const a64::Register& regT = mVU.regAlloc->allocGPR(_It_, -1, false, true);
@@ -1508,29 +1514,32 @@ mVUop(mVU_LQ)
 	pass2
 	{
 		// Compute address: (VI[Is] + Imm11) wrapped
-		mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
-		if (!EmuConfig.Gamefixes.IbitHack)
+		if (!mVUoptimizeConstantAddr(mVU, _Is_, _Imm11_, 0, gprT1q))
 		{
-			if (_Imm11_ != 0)
+			mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
+			if (!EmuConfig.Gamefixes.IbitHack)
 			{
-				s32 imm = _Imm11_;
-				if (imm >= 0)
-					armAsm->Add(gprT1.W(), gprT1.W(), (u32)imm);
-				else
-					armAsm->Sub(gprT1.W(), gprT1.W(), (u32)(-imm));
+				if (_Imm11_ != 0)
+				{
+					s32 imm = _Imm11_;
+					if (imm >= 0)
+						armAsm->Add(gprT1.W(), gprT1.W(), (u32)imm);
+					else
+						armAsm->Sub(gprT1.W(), gprT1.W(), (u32)(-imm));
+				}
 			}
+			else
+			{
+				// IbitHack: reconstruct signed Imm11 from the live opcode word at runtime.
+				armLoadPtr(RWSCRATCH, &curI);
+				armAsm->Sbfx(gprT2.W(), RWSCRATCH, 10, 1);
+				armAsm->Bfxil(gprT2.W(), RWSCRATCH, 0, 10);
+				armAsm->Add(gprT1.W(), gprT1.W(), gprT2.W());
+			}
+			mVUaddrFix(mVU, gprT1);
+			armAsm->Ldr(gprT2q, mVUstateMem(offsetof(VURegs, Mem)));
+			armAsm->Add(gprT1q, gprT2q, gprT1q.X());
 		}
-		else
-		{
-			// IbitHack: reconstruct signed Imm11 from the live opcode word at runtime.
-			armLoadPtr(RWSCRATCH, &curI);
-			armAsm->Sbfx(gprT2.W(), RWSCRATCH, 10, 1);
-			armAsm->Bfxil(gprT2.W(), RWSCRATCH, 0, 10);
-			armAsm->Add(gprT1.W(), gprT1.W(), gprT2.W());
-		}
-		mVUaddrFix(mVU, gprT1);
-		armAsm->Ldr(gprT2q, mVUstateMem(offsetof(VURegs, Mem)));
-		armAsm->Add(gprT1q, gprT2q, gprT1q.X());
 
 		const a64::VRegister& Ft = mVU.regAlloc->allocReg(-1, _Ft_, _X_Y_Z_W);
 		mVUloadMem(Ft, gprT1q, _X_Y_Z_W);
@@ -1617,29 +1626,32 @@ mVUop(mVU_SQ)
 	pass2
 	{
 		// Compute address from VI[It] + Imm11
-		mVU.regAlloc->moveVIToGPR(gprT1, _It_);
-		if (!EmuConfig.Gamefixes.IbitHack)
+		if (!mVUoptimizeConstantAddr(mVU, _It_, _Imm11_, 0, gprT1q))
 		{
-			if (_Imm11_ != 0)
+			mVU.regAlloc->moveVIToGPR(gprT1, _It_);
+			if (!EmuConfig.Gamefixes.IbitHack)
 			{
-				s32 imm = _Imm11_;
-				if (imm >= 0)
-					armAsm->Add(gprT1.W(), gprT1.W(), (u32)imm);
-				else
-					armAsm->Sub(gprT1.W(), gprT1.W(), (u32)(-imm));
+				if (_Imm11_ != 0)
+				{
+					s32 imm = _Imm11_;
+					if (imm >= 0)
+						armAsm->Add(gprT1.W(), gprT1.W(), (u32)imm);
+					else
+						armAsm->Sub(gprT1.W(), gprT1.W(), (u32)(-imm));
+				}
 			}
+			else
+			{
+				// IbitHack: reconstruct signed Imm11 from the live opcode word at runtime.
+				armLoadPtr(RWSCRATCH, &curI);
+				armAsm->Sbfx(gprT2.W(), RWSCRATCH, 10, 1);
+				armAsm->Bfxil(gprT2.W(), RWSCRATCH, 0, 10);
+				armAsm->Add(gprT1.W(), gprT1.W(), gprT2.W());
+			}
+			mVUaddrFix(mVU, gprT1);
+			armAsm->Ldr(gprT2q, mVUstateMem(offsetof(VURegs, Mem)));
+			armAsm->Add(gprT1q, gprT2q, gprT1q.X());
 		}
-		else
-		{
-			// IbitHack: reconstruct signed Imm11 from the live opcode word at runtime.
-			armLoadPtr(RWSCRATCH, &curI);
-			armAsm->Sbfx(gprT2.W(), RWSCRATCH, 10, 1);
-			armAsm->Bfxil(gprT2.W(), RWSCRATCH, 0, 10);
-			armAsm->Add(gprT1.W(), gprT1.W(), gprT2.W());
-		}
-		mVUaddrFix(mVU, gprT1);
-		armAsm->Ldr(gprT2q, mVUstateMem(offsetof(VURegs, Mem)));
-		armAsm->Add(gprT1q, gprT2q, gprT1q.X());
 
 		const a64::VRegister& Fs = mVU.regAlloc->allocReg(_Fs_, -1, _X_Y_Z_W);
 		if (_X_Y_Z_W == 0xf)
