@@ -65,9 +65,11 @@ namespace GameList
 	static bool GetGameListEntryFromCache(const std::string& path, GameList::Entry* entry);
 	static void ScanDirectory(const char* path, bool recursive, bool only_cache, const std::vector<std::string>& excluded_paths,
 		const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini, ProgressCallback* progress);
-	static bool AddFileFromCache(const std::string& path, std::time_t timestamp, const PlayedTimeMap& played_time_map);
+	static bool AddFileFromCache(const std::string& path, std::time_t timestamp, const PlayedTimeMap& played_time_map,
+		const INISettingsInterface& custom_attributes_ini);
 	static bool ScanFile(std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock,
 		const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini);
+	static void ApplyCustomAttributes(GameList::Entry* entry, const INISettingsInterface& custom_attributes_ini);
 
 	static void LoadCache();
 	static bool LoadEntriesFromCache(std::FILE* stream);
@@ -716,7 +718,7 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 		}
 
 		std::unique_lock lock(s_mutex);
-		if (GetEntryForPath(ffd.FileName.c_str()) || AddFileFromCache(ffd.FileName, ffd.ModificationTime, played_time_map) || only_cache)
+		if (GetEntryForPath(ffd.FileName.c_str()) || AddFileFromCache(ffd.FileName, ffd.ModificationTime, played_time_map, custom_attributes_ini) || only_cache)
 		{
 			continue;
 		}
@@ -731,7 +733,23 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 	progress->PopState();
 }
 
-bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, const PlayedTimeMap& played_time_map)
+void GameList::ApplyCustomAttributes(GameList::Entry* entry, const INISettingsInterface& custom_attributes_ini)
+{
+	auto custom_title = custom_attributes_ini.GetOptionalStringValue(EncodeIniKey(entry->path).c_str(), "Title");
+	if (custom_title)
+		entry->title = std::move(custom_title.value());
+
+	const auto custom_region = custom_attributes_ini.GetOptionalIntValue(EncodeIniKey(entry->path).c_str(), "Region");
+	if (custom_region)
+	{
+		const int custom_region_value = custom_region.value();
+		if (custom_region_value >= 0 && custom_region_value < static_cast<int>(Region::Count))
+			entry->region = static_cast<Region>(custom_region_value);
+	}
+}
+
+bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, const PlayedTimeMap& played_time_map,
+	const INISettingsInterface& custom_attributes_ini)
 {
 	Entry entry;
 	if (!GetGameListEntryFromCache(path, &entry) || entry.last_modified_time != timestamp)
@@ -747,6 +765,8 @@ bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, 
 		entry.last_played_time = iter->second.last_played_time;
 		entry.total_played_time = iter->second.total_played_time;
 	}
+
+	ApplyCustomAttributes(&entry, custom_attributes_ini);
 
 	s_entries.push_back(std::move(entry));
 	return true;
@@ -786,20 +806,7 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
 		entry.total_played_time = iter->second.total_played_time;
 	}
 
-	auto custom_title = custom_attributes_ini.GetOptionalStringValue(EncodeIniKey(entry.path).c_str(), "Title");
-	if (custom_title)
-	{
-		entry.title = std::move(custom_title.value());
-	}
-	const auto custom_region = custom_attributes_ini.GetOptionalIntValue(EncodeIniKey(entry.path).c_str(), "Region");
-	if (custom_region)
-	{
-		const int custom_region_value = custom_region.value();
-		if (custom_region_value >= 0 && custom_region_value < static_cast<int>(Region::Count))
-		{
-			entry.region = static_cast<Region>(custom_region_value);
-		}
-	}
+	ApplyCustomAttributes(&entry, custom_attributes_ini);
 
 	lock.lock();
 
