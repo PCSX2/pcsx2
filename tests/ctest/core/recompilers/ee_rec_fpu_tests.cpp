@@ -290,6 +290,29 @@ TEST(EeRecFpu, NegSFlipsSignBit)
 	h.ExpectFpr(2, FloatBits(-3.5f));
 }
 
+// NEG.S must preserve the sign when clamping a poisoned (raw Inf/NaN bits)
+// operand. NEG_S of a +NaN produces a -NaN intermediate (Fneg = sign flip),
+// which the result clamp must fold to -FLT_MAX (sign preserved), not +FLT_MAX.
+// The arm64 rec used fpuClampResult (Fminnm/Fmaxnm), which folds every NaN to
+// +fMax (sign lost); the fix uses fpuClampCompareOperand (Smin/Umin, sign-
+// preserving), mirroring x86's switch from ClampValues to fpuFloat3 (upstream
+// 4ffbe0bbf).
+//
+// JIT-only: the single-precision interp NEG_S (FPU.cpp:334) just XORs the sign
+// bit with no clamp at all (-> raw -NaN), so neither the pre- nor post-fix rec
+// matches it. Assert GetFprBitsJit() directly via RunJitNoDiff().
+TEST(EeRecFpu, NegSPreservesSignOnPoisonedNan)
+{
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFprBits(1, 0x7FC00000u); // +NaN raw bits (poisoned fpr)
+	h.LoadProgram({
+		ee::NEG_S(2, 1),
+	});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetFprBitsJit(2), 0xFF7FFFFFu); // -FLT_MAX (sign preserved)
+}
+
 TEST(EeRecFpu, AbsSClearsSignBit)
 {
 	EeRecTestHarness h;

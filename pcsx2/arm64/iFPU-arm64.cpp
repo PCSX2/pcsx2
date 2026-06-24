@@ -453,7 +453,10 @@ void recABS_S()
 static void recNEG_S_xmm(int info)
 {
 	armAsm->Fneg(armSRegister(EEREC_D), armSRegister(EEREC_S));
-	fpuClampResult(armSRegister(EEREC_D));
+	// Sign-preserving clamp: NEG.S of a poisoned +NaN/-Inf must keep the sign
+	// (-> -fMax), but fpuClampResult (Fminnm/Fmaxnm) folds every NaN to +fMax.
+	// Mirrors x86's switch from ClampValues to fpuFloat3 (upstream 4ffbe0bbf).
+	fpuClampCompareOperand(armSRegister(EEREC_D));
 }
 
 void recNEG_S()
