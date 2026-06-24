@@ -457,15 +457,51 @@ void EeRecTestHarness::ExpectAcc(u32 bits) const
 void EeRecTestHarness::EnableVu0Capture()
 {
 	capture_vu0_ = true;
+
+	// Give every VU0-capturing test a clean architectural baseline.
+	//
+	// vuRegs[0] is a global: whatever flags/ACC/VF a previous test left behind
+	// survive into this test's pre-snapshot, which Run() then feeds to BOTH the
+	// JIT and interp passes. Most state leaks harmlessly (it lands equally on
+	// both sides). The MAC/STATUS flags do not: masked FMACs (e.g. OPMULA/OPMSUB
+	// only touch xyz) PRESERVE the untouched lane's MAC bit in the interp
+	// (VUflags.cpp VU_MAC_UPDATE keys off the per-op shift; VU_STAT_UPDATE then
+	// folds macflag&0x000F into STATUS), whereas the JIT recomputes the full
+	// flag word. With a stale non-zero w-lane MAC bit incoming, the two diverge
+	// — surfacing as order-dependent failures in EeVu0Cop2Macro.Vopm* under
+	// --gtest_shuffle. Zero the register/flag file here so test order can't leak.
+	//
+	// Only architectural register + flag state is cleared. Infra the VU0 engine
+	// needs (Mem/Micro pointers, idx, cycle) and the control registers at
+	// VI[24..31] (TPC/CMSAR0/FBRST/VPU_STAT/CMSAR1) are left intact; tests that
+	// care seed them explicitly after this call.
+	VURegs& vu = vuRegs[0];
+	for (int i = 1; i < 32; i++)
+		vu.VF[i].UD[0] = vu.VF[i].UD[1] = 0;
+	for (int i = 1; i <= REG_P; i++) // VI[1..15] integer + VI[16..23] flags/R/I/Q/P
+		vu.VI[i].UL = 0;
+	vu.ACC.UD[0] = vu.ACC.UD[1] = 0;
+	vu.q.UL = 0;
+	vu.p.UL = 0;
+	vu.macflag = 0;
+	vu.statusflag = 0;
+	vu.clipflag = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		vu.micro_macflags[i] = 0;
+		vu.micro_statusflags[i] = 0;
+		vu.micro_clipflags[i] = 0;
+	}
+
 	// Mirror the VuTestHarness's first-touch invariant: VF[0] must read as
 	// (0,0,0,1.0). _vu0Exec asserts on drift via DbgCon.Error. The interp
 	// run will trigger that assertion on whatever stale state the previous
 	// test left behind unless this is reset here.
-	vuRegs[0].VF[0].f.x = 0.0f;
-	vuRegs[0].VF[0].f.y = 0.0f;
-	vuRegs[0].VF[0].f.z = 0.0f;
-	vuRegs[0].VF[0].f.w = 1.0f;
-	vuRegs[0].VI[0].UL = 0;
+	vu.VF[0].f.x = 0.0f;
+	vu.VF[0].f.y = 0.0f;
+	vu.VF[0].f.z = 0.0f;
+	vu.VF[0].f.w = 1.0f;
+	vu.VI[0].UL = 0;
 }
 
 void EeRecTestHarness::SeedVu0Vf(u32 reg_idx, float x, float y, float z, float w)
