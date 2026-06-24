@@ -326,17 +326,17 @@ void MemoryCardSettingsWidget::swapCards()
 {
 	const std::string card1Key = getSlotFilenameKey(0);
 	const std::string card2Key = getSlotFilenameKey(1);
-	std::optional<std::string> card1Name = dialog()->getStringValue(CONFIG_SECTION, card1Key.c_str(), std::nullopt);
-	std::optional<std::string> card2Name = dialog()->getStringValue(CONFIG_SECTION, card2Key.c_str(), std::nullopt);
-	if (!card1Name.has_value() || card1Name->empty() || !card2Name.has_value() || card2Name->empty())
+	const std::string card1Name = dialog()->getEffectiveStringValue(CONFIG_SECTION, card1Key.c_str(), FileMcd_GetDefaultName(0).c_str());
+	const std::string card2Name = dialog()->getEffectiveStringValue(CONFIG_SECTION, card2Key.c_str(), FileMcd_GetDefaultName(1).c_str());
+	if (card1Name.empty() || card2Name.empty())
 	{
 		QMessageBox::critical(
 			QtUtils::GetRootWidget(this), tr("Error"), tr("Both slots must have a card selected to swap."));
 		return;
 	}
 
-	dialog()->setStringSettingValue(CONFIG_SECTION, card1Key.c_str(), card2Name->c_str());
-	dialog()->setStringSettingValue(CONFIG_SECTION, card2Key.c_str(), card1Name->c_str());
+	dialog()->setStringSettingValue(CONFIG_SECTION, card1Key.c_str(), card2Name.c_str());
+	dialog()->setStringSettingValue(CONFIG_SECTION, card2Key.c_str(), card1Name.c_str());
 	refresh();
 }
 
