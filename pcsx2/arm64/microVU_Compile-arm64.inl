@@ -1178,6 +1178,12 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 	mVUendProgram(mVU, &mFC, 1);
 
 perf_and_return:
+	// Register the program-entry compile only, not every continuation block
+	// compiled at a mid-program PC (start_pc stays the program entry for
+	// branch-target sub-blocks; it's only re-pointed on the dispatch/indirect-
+	// jump path). Mirrors x86 microVU_Compile.inl (a5ed24ca8) — one clean
+	// jitdump symbol per VU program rather than a symbol per linked sub-block.
+	if (mVU.regs().start_pc == startPC)
 	{
 		u8* endPtr = armGetCurrentCodePointer();
 		if (mVU.index)
