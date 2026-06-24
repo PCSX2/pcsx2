@@ -750,9 +750,19 @@ void recCOP2_CTC2()
 		armAsm->Dup(RQSCRATCH.V4S(), RWSCRATCH);
 		armAsm->Str(RQSCRATCH, armVU0Mem(&VU0.micro_statusflags));
 	}
+	else if (fs < REG_STATUS_FLAG)
+	{
+		// Integer VIs (1-15) are physically 16-bit; the micro JIT reads/writes
+		// them as 16-bit, so a 32-bit store would leave stale upper bits that a
+		// later CFC2 (.UL) reads back. Store only the low 16 bits, matching x86
+		// recCTC2 (upstream a7af3cd48). NOTE: this is a deliberate, hardware-
+		// correct JIT-vs-interp divergence — the shared interp CTC2 stores the
+		// full 32 bits.
+		armAsm->Strh(RWSCRATCH, armVU0Mem(&VU0.VI[fs]));
+	}
 	else
 	{
-		// Default: write 32-bit value to VI register
+		// Control VIs (>= REG_STATUS_FLAG) reaching the default: full 32-bit.
 		armAsm->Str(RWSCRATCH, armVU0Mem(&VU0.VI[fs]));
 	}
 }

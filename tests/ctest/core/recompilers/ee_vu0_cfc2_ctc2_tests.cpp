@@ -158,6 +158,30 @@ TEST(EeVu0Ctc2, WritesPlainViLow16Bits)
 	EXPECT_EQ(h.GetVu0ViJit(1), h.GetVu0ViInterp(1));
 }
 
+// CTC2 to a plain integer VI (1-15) must store only the low 16 bits — those
+// registers are physically 16-bit and the micro JIT reads/writes them 16-bit,
+// so a 32-bit store leaves stale upper bits that a later CFC2 (.UL) reads back.
+// CTC2(0xDEADBEEF -> VI1) then CFC2(VI1) must yield 0xBEEF, not 0xDEADBEEF.
+//
+// HARDWARE-CORRECT JIT-vs-interp divergence (adopted from upstream a7af3cd48):
+// the shared interpreter CTC2 stores the full 32 bits, so its CFC2 reads back
+// the sign-extended 0xDEADBEEF. The VU only has 16-bit integer VIs, so the JIT
+// (and real PS2) are right; assert the JIT post-state directly via RunJitNoDiff.
+TEST(EeVu0Ctc2, WritesPlainViTruncatesUpperBitsAcrossCfc2)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vi(1, 0);            // clear VI[1] upper bits (deterministic across tests)
+	h.SetGpr64(r_t0, 0xDEADBEEFu);
+	h.LoadProgram({
+		CTC2(r_t0, 1), // VU0.VI[1] = 0xDEADBEEF -> must keep only 0xBEEF
+		CFC2(r_t1, 1), // read VI[1].UL back (bit 31 clear -> zero-extended)
+	});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetGpr64Jit(r_t1), 0xBEEFu);
+}
+
 TEST(EeVu0Ctc2, WritesRegStatusFlagMasksStickyFieldAndDenormalizesToMicroStatusflags)
 {
 	// CTC2 to REG_STATUS_FLAG is microVU-aware: only the 0xFC0 "sticky" field
