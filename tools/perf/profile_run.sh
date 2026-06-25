@@ -12,9 +12,17 @@
 #   gsrunner  — GS-only deterministic @HWSTAT@ frame-time + thread-% cross-check
 #               (no perf/bucketing; gsrunner replays GIF packets, runs no EE/VU JIT).
 #
-# Methodology (CLAUDE.md): wallclock is the throughput truth, FPS is noisy; >=2 runs,
-# report the median. Bucket *shares* are more stable than absolute cycles across the
-# MTVU-nondeterministic liverun, so we median per-bucket share across runs.
+# Methodology (CLAUDE.md): this rig measures bucket *SHARES* (attribution: where does
+# time go), which are stable across the MTVU-nondeterministic liverun, so we median
+# per-bucket share across runs. The wallclock printed below is a coarse progress
+# indicator ONLY.
+#
+# ⚠️ DO NOT use this script's wallclock to A/B two codegen variants. perf-record
+# sampling perturbs the async EE<->MTVU<->MTGS sync in a BINARY-DEPENDENT way and
+# manufactures phantom wallclock deltas (a +11% "regression" that was pure artifact —
+# see memory feedback_sd865_codegen_ab_use_instructions_not_wallclock). For comparing
+# two binaries that differ only in emitted code, use ./codegen_ab.sh (deterministic
+# `perf stat -e instructions,cycles`), NOT this.
 #
 # Usage:
 #   tools/perf/profile_run.sh --device m2max-asahi --scene uya-gameplay --renderer both --runs 3
@@ -182,7 +190,7 @@ out = os.path.join(sdir, "summary.md")
 with open(out, "w") as o:
     o.write(f"# {label} — {scene} (renderer={rend})\n\n")
     o.write(f"- device: **{device}**  · runs: {runs}  · frames: {frames}  · perf -F {freq} -e {event}\n")
-    o.write(f"- median wallclock (incl. startup+savestate-load): **{med_wc:.3f} s**\n")
+    o.write(f"- median wallclock (incl. startup+savestate-load): **{med_wc:.3f} s** — coarse only; NOT valid for codegen A/B (use codegen_ab.sh)\n")
     o.write(f"- ⚠️ audio OUTPUT excluded (eerunner forces SPU2 Backend=Null); the SPU2 DSP core still runs and is counted.\n")
     o.write(f"- renderer note: `vk` = whole-system (on M2 the GPU-driver/kernel buckets are the host Asahi stack, NOT an SD865 proxy); `null` = CPU-emulation shape with the GS thread dropped (closest to the SD865-relevant CPU cost, but GIF/PATH3 under-consumed so VU1/XGKICK are distorted).\n\n")
     o.write("| bucket | median self% |\n|---|---|\n")

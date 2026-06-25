@@ -10,7 +10,8 @@ first, then SD865.
 | File | Role |
 |---|---|
 | `bucket_perf.py` | parse a `perf report --stdio` dump → subsystem ranking (EE-JIT/VU0/VU1/IOP/VIF-JIT + GS/SPU2/vtlb/dispatcher/sync/kernel) + thread-comm axis; `--json` for aggregation. Pure stdlib. |
-| `profile_run.sh` | one-command wrapper: precondition gate → `perf record`/`inject --jit`/`report` → bucket → median wallclock + median shares → `summary.md`. Device-parameterized. |
+| `profile_run.sh` | one-command wrapper: precondition gate → `perf record`/`inject --jit`/`report` → bucket → median wallclock + median shares → `summary.md`. Device-parameterized. Answers *where does time go* (attribution). |
+| `codegen_ab.sh` | deterministic A/B of **two** eerunner binaries differing only in emitted code: `perf stat -e instructions,cycles` median over N runs → Δinsns/Δcycles/IPC → `summary.md`. Answers *did this codegen change help* (comparison). |
 | `devices/<label>.env` | per-device `BIN_DIR`/`FREQ_DEFAULT`/`CYCLES_EVENT` (`m2max-asahi.env` shipped). |
 | `scenes/<id>.env` | per-scene `ISO`/`SAVESTATE`/`FRAMES`/`RENDERERS`/`LABEL` (4 scenes; you fill ISO+savestate). |
 
@@ -36,6 +37,30 @@ tools/perf/profile_run.sh --device m2max-asahi --scene uya-gameplay --renderer b
 # GS-only cross-check
 tools/perf/profile_run.sh --device m2max-asahi --driver gsrunner --gs-dump test-dumps/<dump>.gs
 ```
+
+## Codegen A/B (comparing two binaries) — use `codegen_ab.sh`, NOT wallclock
+
+`profile_run.sh`'s wallclock is **invalid** for comparing two binaries: perf-record
+sampling perturbs the async EE↔MTVU↔MTGS sync in a *binary-dependent* way and
+manufactures phantom wallclock deltas (a reproducible, thermal-controlled **+11%
+"regression"** that was pure artifact — memory
+`feedback_sd865_codegen_ab_use_instructions_not_wallclock`). No-perf wallclock is too
+noisy (±15% session drift) to resolve a <10% codegen effect. The **deterministic**
+metric is retired instructions via `perf stat` (reproducible to <0.1%):
+
+```bash
+# build base + new eerunner, stage both on the device, then:
+tools/perf/codegen_ab.sh --device sd865 --scene sotc-01 \
+    --base pcsx2-eerunner-base --new pcsx2-eerunner-new --runs 3
+# → ~/pcsx2-profiles/sd865/codegen-ab/sotc-01/summary.md  (Δinsns, Δcycles, IPC)
+```
+
+Reading the result: **|Δinsns| > |Δcycles|** ⇒ the change is *pure code density* and
+the OoO A77 absorbed it via IPC (≈neutral — the EE-density-is-neutral lesson). A
+change that moves cycles ≈ as much as instructions is a *real compute* delta. Default
+`--renderer null` (most deterministic); use `vk` only if the change touches
+GS-feeding codegen (GIF/PATH3/XGKICK). The script enforces the quoted-path / 1e8
+instruction sanity floor so a word-split fast-fail can't masquerade as a measurement.
 
 ## Go/no-go checklist
 
