@@ -552,7 +552,7 @@
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>Search on Redump.org...</string>
+          <string>Search on Redump.info...</string>
          </property>
         </widget>
        </item>
