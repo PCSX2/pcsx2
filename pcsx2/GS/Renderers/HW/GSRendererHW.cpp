@@ -1353,14 +1353,14 @@ GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Sou
 
 GSVector4i GSRendererHW::ComputeBoundingBoxRT(const GSVector2i& rtsize, float rtscale)
 {
-	const GSVector4 offset = GSVector4(-1.0f, 1.0f); // Round value
+	const GSVector4 offset = IsCoverageAlphaSupported() ? GSVector4(-2.0f, 2.0f) : GSVector4(-1.0f, 1.0f); // Round value
 	const GSVector4 box = m_vt.m_min.p.upld(m_vt.m_max.p) + offset.xxyy();
 	return GSVector4i(box * GSVector4(rtscale)).rintersect(GSVector4i(0, 0, rtsize.x, rtsize.y));
 }
 
 GSVector4i GSRendererHW::ComputeBoundingBoxTex(const GSVector2i& texsize, const GSVector4i& coverage, const GSVector4i& region, float texscale)
 {
-	const GSVector4 offset = GSVector4(region.xyxy()) + GSVector4(-1.0f, -1.0f, 1.0f, 1.0f); // Region offset + round value
+	const GSVector4 offset = GSVector4(region.xyxy()) + (IsCoverageAlphaSupported() ? GSVector4(-2.0f, -2.0f, 2.0f, 2.0f) : GSVector4(-1.0f, -1.0f, 1.0f, 1.0f)); // Region offset + round value
 	const GSVector4 box = GSVector4(coverage) + offset;
 	return GSVector4i(box * GSVector4(texscale)).rintersect(GSVector4i(0, 0, texsize.x, texsize.y));
 }
