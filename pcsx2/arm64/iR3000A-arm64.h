@@ -150,6 +150,9 @@ bool psxTrySwapDelaySlot(u32 rs, u32 rt, u32 rd);
 void psxRecompileCodeConst0(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, R3000AFNPTR_INFO consttcode, R3000AFNPTR_INFO noconstcode, int xmminfo);
 // rt = rs op imm16
 void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode, int xmminfo);
+// IOP v1.0 IRX-import HLE backdoor (0x2400xxxx marker). Emits the HLE call +
+// re-dispatch; defined in iR3000A-arm64.cpp where iopDispatcherReg is visible.
+void psxRecompileIrxImport();
 // rd = rt op sa
 void psxRecompileCodeConst2(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode, int xmminfo);
 // [lo,hi] = rt op rs

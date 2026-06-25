@@ -85,7 +85,14 @@ extern void gteGPF();   extern void gteGPL();   extern void gteNCCT();
 #define PSX_IMM_OP(name, constExpr, codeGen) \
 	static void rpsx##name() \
 	{ \
-		if (!_Rt_) return; \
+		if (!_Rt_) \
+		{ \
+			/* IRX module-import HLE trampoline marker: ADDIU $0,$0,idx encodes as */ \
+			/* opcode 0x2400xxxx — the only I-type imm op whose top half is 0x2400. */ \
+			if ((psxRegs.code >> 16) == 0x2400) \
+				psxRecompileIrxImport(); \
+			return; \
+		} \
 		if (PSX_IS_CONST1(_Rs_)) \
 		{ \
 			const u32 result = (constExpr); \

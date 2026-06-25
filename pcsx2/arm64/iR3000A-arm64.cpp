@@ -430,6 +430,38 @@ void psxRecompileCodeConst0(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 	_clearNeededArm64GPRregs();
 }
 
+// IOP v1.0 IRX-import HLE backdoor — mirrors x86 psxRecompileIrxImport
+// (pcsx2/x86/iR3000A.cpp). The IOP loader leaves module-import trampolines as
+// an `ADDIU $0,$0,<index>` whose opcode top half is 0x2400. If the libname at
+// the import table for this PC resolves a registered HLE handler, call it
+// directly. A non-zero return means the handler advanced psxRegs.pc, so we must
+// re-dispatch there instead of tearing the recompiled stint down (commit
+// 89c7eb3a2). Restores HostFS (ioman/iomanx) redirection + IOP module symbol
+// recovery under the JIT (DT-01). The devbuild-only trace/irxImportDebug path
+// is intentionally omitted (diagnostic logging, no guest-visible effect).
+void psxRecompileIrxImport()
+{
+	const u32 import_table = irxImportTableAddr(psxpc - 4);
+	if (!import_table)
+		return;
+
+	const std::string libname = iopMemReadString(import_table + 12, 8);
+	const irxHLE hle = irxImportHLE(libname, static_cast<u16>(psxRegs.code & 0xffff));
+	if (!hle)
+		return;
+
+	armAsm->Mov(RWSCRATCH, psxRegs.code);
+	armAsm->Str(RWSCRATCH, armPsxRegMem(&psxRegs.code));
+	armAsm->Mov(RWSCRATCH, psxpc);
+	armAsm->Str(RWSCRATCH, armPsxRegMem(&psxRegs.pc));
+
+	_psxFlushCall(FLUSH_NODESTROY);
+	armEmitCall(reinterpret_cast<const void*>(hle));
+
+	// HLE handled it (returned non-zero) → it set psxRegs.pc; re-dispatch.
+	armEmitCbnz(a64::w0, iopDispatcherReg);
+}
+
 // rt = rs op imm16
 // Matches x86 pattern: const check before _addNeeded, PSX_DEL_CONST before noconstcode
 void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode, int xmminfo)
