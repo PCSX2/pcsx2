@@ -52,6 +52,7 @@ add_pcsx2_test(recompiler_tests
 	ee_rec_muldiv_tests.cpp
 	ee_rec_multiblock_tests.cpp
 	ee_rec_shift_tests.cpp
+	ee_rec_skipmpeg_tests.cpp
 	ee_rec_smc_tests.cpp
 	ee_rec_timeout_loop_tests.cpp
 	ee_rec_traps_tests.cpp

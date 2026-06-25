@@ -1744,6 +1744,60 @@ bool recEeIsBlockLinked(u32 src_pc, u32 dst_pc)
 // Detects and skips timeout loops like:
 //   addiu v0,v0,-1 / nop*N / bne v0,zero,loop / nop
 // Instead of spinning, advances the cycle counter and decrements the register.
+// Port of x86 skipMPEG_By_Pattern (pcsx2/x86/ix86-32/iR5900.cpp). The IOP FMV
+// path's sceMpegIsEnd compiles to the 3-instruction leaf
+//     lw  reg, 0x40(a0) ; jr ra ; lw v0, 0(reg)
+// When CHECK_SKIPMPEGHACK is on, recognize that signature at a block boundary
+// and replace the whole block with "v0 = 1; pc = ra" — telling the game the
+// video already finished so the (often unplayable/looping) FMV is skipped.
+// Several games hard-depend on this to boot — Katamari (our benchmark) among
+// them. Emits a complete self-contained block (like recSkipTimeoutLoop) and
+// makes the caller skip normal codegen by returning true. Restores Skip-MPEG
+// host hook B4 on arm64 (DT-03); was a silent no-op before this.
+static bool skipMPEG_By_Pattern(u32 sPC)
+{
+	if (!CHECK_SKIPMPEGHACK)
+		return false;
+
+	// sceMpegIsEnd: lw reg, 0x40(a0); jr ra; lw v0, 0(reg)
+	if ((s_nEndBlock == sPC + 12) && (memRead32(sPC + 4) == 0x03e00008))
+	{
+		const u32 code = memRead32(sPC);
+		const u32 p1 = 0x8c800040;
+		const u32 p2 = 0x8c020000 | (code & 0x1f0000) << 5;
+		if ((code & 0xffe0ffff) != p1)
+			return false;
+		if (memRead32(sPC + 8) != p2)
+			return false;
+
+		// v0 = 1 (low) / 0 (high); pc = ra.
+		armAsm->Mov(RWSCRATCH, 1);
+		armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.GPR.n.v0.UL[0]));
+		armAsm->Str(a64::wzr, armCpuRegMem(&cpuRegs.GPR.n.v0.UL[1]));
+		armLoadEERegPtr(a64::w0, &cpuRegs.GPR.n.ra.UL[0]);
+		armAsm->Str(a64::w0, armCpuRegMem(&cpuRegs.pc));
+
+		// x86 iBranchTest() tail (newpc == 0xffffffff path): commit the block's
+		// cycles into RECCYCLE, then route to DispatcherEvent if an event is due
+		// (cycle >= nextEventCycle), else DispatcherReg to run the block at pc=ra.
+		// s_nBlockCycles is still 0 here (no instruction emitted yet) — matches
+		// x86, where iBranchTest's scaleblockcycles() also sees a zero count.
+		const u32 cycles = scaleblockcycles_clear();
+		if (cycles != 0)
+			armAsm->Add(RECCYCLE, RECCYCLE, cycles);
+		armAsm->Ldr(a64::x3, armCpuRegMem(&cpuRegs.nextEventCycle));
+		armAsm->Cmp(RECCYCLE, a64::x3);
+		armEmitCondBranch(a64::ge, DispatcherEvent);
+		armEmitJmp(DispatcherReg);
+
+		g_branch = 1;
+		pc = s_nEndBlock;
+		Console.WriteLn(Color_StrongGreen, "sceMpegIsEnd pattern found! Recompiling skip video fix...");
+		return true;
+	}
+	return false;
+}
+
 // Port of x86 recSkipTimeoutLoop().
 static bool recSkipTimeoutLoop(s32 reg, bool is_timeout_loop)
 {
@@ -2126,7 +2180,10 @@ StartRecomp:
 	// Timer-poll loops (mfc0 Count / subu / sltu / bne) are NOT skipped because
 	// they need to wait for a specific elapsed time — the correct fix is native codegen.
 	// Require timeout_reg >= 0 (actually found an addiu) to avoid matching all-nop blocks
-	const bool doRecompilation = !recSkipTimeoutLoop(timeout_reg, is_timeout_loop && timeout_reg >= 0 && timeout_has_bne);
+	// Skip-MPEG speedhack fires first (short-circuits the timeout-loop check, as
+	// in x86); both emit a complete self-contained block + set g_branch/pc.
+	const bool doRecompilation = !skipMPEG_By_Pattern(startpc) &&
+		!recSkipTimeoutLoop(timeout_reg, is_timeout_loop && timeout_reg >= 0 && timeout_has_bne);
 
 	// Code generation (forward pass)
 	if (doRecompilation)
