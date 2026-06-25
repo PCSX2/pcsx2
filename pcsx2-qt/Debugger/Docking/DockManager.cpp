@@ -875,6 +875,24 @@ std::optional<BreakPointCpu> DockManager::cpu()
 	return m_layouts.at(m_current_layout).cpu();
 }
 
+DebuggerView* DockManager::focusedViewForNavigation()
+{
+	if (!m_focused_view_for_navigation)
+		return nullptr;
+
+	return m_focused_view_for_navigation;
+}
+
+void DockManager::onFocusedDockWidgetChanged(KDDockWidgets::QtWidgets::DockWidget* widget)
+{
+	DebuggerView* view = qobject_cast<DebuggerView*>(widget->widget());
+	if (view && view->supportsNavigation() && view != m_focused_view_for_navigation)
+	{
+		m_focused_view_for_navigation = view;
+		emit focusedViewForNavigationChanged();
+	}
+}
+
 KDDockWidgets::Core::DockWidget* DockManager::dockWidgetFactory(const QString& name)
 {
 	if (!g_debugger_window)

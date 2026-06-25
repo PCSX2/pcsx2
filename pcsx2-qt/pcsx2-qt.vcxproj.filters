@@ -529,6 +529,9 @@
     <QtMoc Include="Debugger\ModuleView.h">
       <Filter>Debugger</Filter>
     </QtMoc>
+    <QtMoc Include="Debugger\NavigationHistoryStack.h">
+      <Filter>Debugger</Filter>
+    </QtMoc>
     <QtMoc Include="Debugger\ModuleModel.h">
       <Filter>Debugger</Filter>
     </QtMoc>

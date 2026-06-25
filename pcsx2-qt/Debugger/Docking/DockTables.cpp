@@ -82,6 +82,7 @@ const std::vector<DockTables::DefaultDockLayout> DockTables::DEFAULT_DOCK_LAYOUT
 			{"MemorySearchView", DefaultDockGroup::TOP_LEFT},
 		},
 		.toolbars = {
+			"toolBarNavigation",
 			"toolBarDebug",
 			"toolBarFile",
 		},
@@ -113,6 +114,7 @@ const std::vector<DockTables::DefaultDockLayout> DockTables::DEFAULT_DOCK_LAYOUT
 			{"MemorySearchView", DefaultDockGroup::TOP_LEFT},
 		},
 		.toolbars = {
+			"toolBarNavigation",
 			"toolBarDebug",
 			"toolBarFile",
 		},
