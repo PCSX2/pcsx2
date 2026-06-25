@@ -153,6 +153,12 @@ public:
 
 	void updateStyleSheet();
 
+	virtual bool supportsNavigation();
+	virtual bool canNavigateBack();
+	virtual bool canNavigateForward();
+	virtual void navigateBack();
+	virtual void navigateForward();
+
 	static void goToInDisassembler(u32 address, bool switch_to_tab);
 	static void goToInMemoryView(u32 address, bool switch_to_tab);
 

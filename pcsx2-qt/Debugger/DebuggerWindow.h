@@ -40,7 +40,9 @@ public:
 
 	void updateFromSettings();
 
-public slots:
+	void updateNavigationButtons();
+
+private slots:
 	void onVMStarting();
 	void onVMPaused();
 	void onVMResumed();

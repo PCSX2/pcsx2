@@ -98,6 +98,14 @@ public:
 
 	std::optional<BreakPointCpu> cpu();
 
+	/// Returns the last focused view that supports back/forward navigation.
+	DebuggerView* focusedViewForNavigation();
+
+	void onFocusedDockWidgetChanged(KDDockWidgets::QtWidgets::DockWidget* widget);
+
+Q_SIGNALS:
+	void focusedViewForNavigationChanged();
+
 private:
 	static KDDockWidgets::Core::DockWidget* dockWidgetFactory(const QString& name);
 	static bool dragAboutToStart(KDDockWidgets::Core::Draggable* draggable);
@@ -108,4 +116,6 @@ private:
 	DockMenuBar* m_menu_bar = nullptr;
 
 	bool m_layout_locked = true;
+
+	QPointer<DebuggerView> m_focused_view_for_navigation;
 };

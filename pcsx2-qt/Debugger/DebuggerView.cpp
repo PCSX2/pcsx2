@@ -206,6 +206,29 @@ void DebuggerView::updateStyleSheet()
 	setStyleSheet(stylesheet);
 }
 
+bool DebuggerView::supportsNavigation()
+{
+	return false;
+}
+
+bool DebuggerView::canNavigateBack()
+{
+	return false;
+}
+
+bool DebuggerView::canNavigateForward()
+{
+	return false;
+}
+
+void DebuggerView::navigateBack()
+{
+}
+
+void DebuggerView::navigateForward()
+{
+}
+
 void DebuggerView::goToInDisassembler(u32 address, bool switch_to_tab)
 {
 	DebuggerEvents::GoToAddress event;

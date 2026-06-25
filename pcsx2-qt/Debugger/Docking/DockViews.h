@@ -63,6 +63,7 @@ public:
 
 protected:
 	void openStateChanged(bool open);
+	void focusStateChanged(bool focused);
 };
 
 class DockTitleBar : public KDDockWidgets::QtWidgets::TitleBar
