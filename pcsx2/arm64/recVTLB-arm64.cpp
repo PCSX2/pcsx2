@@ -1127,6 +1127,62 @@ static void recUnalignedLoadDouble(bool is_ldl)
 // degenerate alignment (SDL s==7 / SDR s==0) stores Rt whole and skips the read.
 static void recUnalignedStoreDouble(bool is_sdl)
 {
+	// --- SDL/SDR pair fusion -------------------------------------------------
+	// Consume: this op is the trailing half of a pair already emitted as a single
+	// 64-bit store by its predecessor — emit nothing.
+	if (g_eeUnalignedFused)
+	{
+		g_eeUnalignedFused = false;
+		return;
+	}
+
+	// Lead: the game emits an unaligned 64-bit store as an SDL/SDR pair on the
+	// same Rt/Rs whose offsets differ by 7 (the textbook MIPS idiom: SDL at D+7,
+	// SDR at D) — together exactly mem64(Rs + D) = Rt, which ARM64 stores in one
+	// (unaligned) STR x. Either order occurs (PS2 is little-endian; SDR-first is
+	// the common MIPSEL idiom). pc has been advanced past THIS op, so it is the
+	// partner's guest address. Gated off faulting PCs (pc here, pc+4 = the
+	// partner) so the proven single-op backpatch path is taken whenever either
+	// previously faulted. Mirrors the LDL/LDR load fusion above.
+	if (!g_recompilingDelaySlot && CHECK_FASTMEM && pc < recCurrentBlockEndPC() &&
+		!vtlb_IsFaultingPC(pc) && !vtlb_IsFaultingPC(pc + 4))
+	{
+		const u32 partner = memRead32(pc);
+		const u32 partnerOp = partner >> 26;
+		const u32 partnerRt = (partner >> 16) & 0x1f;
+		const u32 partnerRs = (partner >> 21) & 0x1f;
+		const s32 partnerImm = static_cast<s16>(partner & 0xffff);
+		const u32 wantOp = is_sdl ? 0x2du : 0x2cu; // SDL(0x2C) pairs with SDR(0x2D)
+		const s32 sdlImm = is_sdl ? _Imm_ : partnerImm;
+		const s32 sdrImm = is_sdl ? partnerImm : _Imm_;
+		if (partnerOp == wantOp && partnerRt == static_cast<u32>(_Rt_) &&
+			partnerRs == static_cast<u32>(_Rs_) && (sdlImm - sdrImm) == 7)
+		{
+			// One unaligned 64-bit fastmem store of Rt at Rs + sdrImm. The address
+			// is parked in a callee-saved temp because _eeMoveGPRtoR(Rt) clobbers w9;
+			// Rt goes through valTemp into x0 (the fastmem write value reg), exactly
+			// like the non-fused store's whole-Rt (special) path. _eeMoveGPRtoR
+			// handles Rt==0 (store $zero).
+			_eeMoveGPRtoR(a64::w9, _Rs_);
+			iFlushCall(FLUSH_CONSTANT_REGS);
+			if (sdrImm != 0)
+				armAsm->Add(a64::w9, a64::w9, sdrImm);
+			const int addrTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
+			const int valTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
+			armAsm->Mov(armWRegister(addrTemp), a64::w9);     // park addr
+			_eeMoveGPRtoR(armXRegister(valTemp), _Rt_);        // Rt (64-bit)
+			armAsm->Mov(a64::x0, armXRegister(valTemp));        // value -> x0
+			armAsm->Mov(a64::w9, armWRegister(addrTemp));       // addr -> w9
+			vtlbFastmemWrite(9, 0, 64);
+			_freeArm64GPR(valTemp);
+			_freeArm64GPR(addrTemp);
+			g_eeUnalignedFused = true;
+			g_eeUnalignedFuseCount++;
+			return;
+		}
+	}
+	// --- end fusion ----------------------------------------------------------
+
 	const bool useFastmem = CHECK_FASTMEM && !vtlb_IsFaultingPC(pc);
 
 	_eeMoveGPRtoR(a64::w9, _Rs_);

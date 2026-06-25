@@ -517,6 +517,100 @@ TEST(EeRecLoadStore, LdlLdrNoFusionWhenOffsetNotSeven)
 }
 
 // ===========================================================================
+//  SDL/SDR pair fusion (recVTLB-arm64.cpp recUnalignedStoreDouble).
+//
+//  The store mirror of the LDL/LDR fusion: a same-Rt/Rs SDL+SDR pair whose
+//  offsets differ by 7 is exactly one unaligned 64-bit store of Rt at the lower
+//  (SDR) address — the textbook MIPS idiom (SDL at D+7, SDR at D) — which ARM64
+//  does in a single STR x. The leading half emits the fused store and sets
+//  g_eeUnalignedFused; the trailing half consumes it and emits nothing. Either
+//  lead order occurs (PS2 is little-endian; SDR-first is the common idiom).
+//  Run()'s JIT-vs-interp auto-diff over the tracked store window is the
+//  correctness oracle; g_eeUnalignedFuseCount proves the fused path fired.
+// ===========================================================================
+
+TEST(EeRecLoadStore, SdlSdrFusionSdrFirst)
+{
+	// Same data/result as SdrSdlPairUnalignedDwordStore: store a1's 8 bytes at
+	// byte address kScratch+1 in one fused unaligned 64-bit store.
+	EeRecTestHarness h;
+	h.WriteU64(kScratch + 0, 0xAAAAAAAAAAAAAAAAull);
+	h.WriteU64(kScratch + 8, 0xBBBBBBBBBBBBBBBBull);
+	h.SetGpr64(reg::a0, kScratch);
+	h.SetGpr64(reg::a1, 0x123456789ABCDEF0ull);
+	h.TrackMemWindow(kScratch, 16);
+	vtlb_ClearLoadStoreInfo();
+	const u32 before = g_eeUnalignedFuseCount;
+	h.LoadProgram({
+		ee::SDR(reg::a1, 1, reg::a0),
+		ee::SDL(reg::a1, 8, reg::a0),
+	});
+	h.Run();
+	EXPECT_EQ(h.ReadU64(kScratch + 0), 0x3456789ABCDEF0AAull);
+	EXPECT_EQ(h.ReadU64(kScratch + 8), 0xBBBBBBBBBBBBBB12ull);
+	EXPECT_GT(g_eeUnalignedFuseCount, before) << "SDR+SDL pair should have fused";
+}
+
+TEST(EeRecLoadStore, SdlSdrFusionSdlFirst)
+{
+	// Same data/result, SDL-first — must fuse identically.
+	EeRecTestHarness h;
+	h.WriteU64(kScratch + 0, 0xAAAAAAAAAAAAAAAAull);
+	h.WriteU64(kScratch + 8, 0xBBBBBBBBBBBBBBBBull);
+	h.SetGpr64(reg::a0, kScratch);
+	h.SetGpr64(reg::a1, 0x123456789ABCDEF0ull);
+	h.TrackMemWindow(kScratch, 16);
+	vtlb_ClearLoadStoreInfo();
+	const u32 before = g_eeUnalignedFuseCount;
+	h.LoadProgram({
+		ee::SDL(reg::a1, 8, reg::a0),
+		ee::SDR(reg::a1, 1, reg::a0),
+	});
+	h.Run();
+	EXPECT_EQ(h.ReadU64(kScratch + 0), 0x3456789ABCDEF0AAull);
+	EXPECT_EQ(h.ReadU64(kScratch + 8), 0xBBBBBBBBBBBBBB12ull);
+	EXPECT_GT(g_eeUnalignedFuseCount, before) << "SDL+SDR pair should have fused";
+}
+
+TEST(EeRecLoadStore, SdlSdrNoFusionWhenRtMismatch)
+{
+	// Different Rt on the two halves: not a pair, must NOT fuse. Run()'s auto-diff
+	// over the tracked window covers the (independent partial-store) result.
+	EeRecTestHarness h;
+	h.WriteU64(kScratch + 0, 0xAAAAAAAAAAAAAAAAull);
+	h.WriteU64(kScratch + 8, 0xBBBBBBBBBBBBBBBBull);
+	h.SetGpr64(reg::a0, kScratch);
+	h.SetGpr64(reg::a1, 0x123456789ABCDEF0ull);
+	h.SetGpr64(reg::a2, 0x0FEDCBA987654321ull);
+	h.TrackMemWindow(kScratch, 16);
+	const u32 before = g_eeUnalignedFuseCount;
+	h.LoadProgram({
+		ee::SDR(reg::a1, 1, reg::a0),
+		ee::SDL(reg::a2, 8, reg::a0),
+	});
+	h.Run();
+	EXPECT_EQ(g_eeUnalignedFuseCount, before) << "Rt mismatch must not fuse";
+}
+
+TEST(EeRecLoadStore, SdlSdrNoFusionWhenOffsetNotSeven)
+{
+	// Offsets differ by 8, not 7 — not a contiguous pair, must NOT fuse.
+	EeRecTestHarness h;
+	h.WriteU64(kScratch + 0, 0xAAAAAAAAAAAAAAAAull);
+	h.WriteU64(kScratch + 8, 0xBBBBBBBBBBBBBBBBull);
+	h.SetGpr64(reg::a0, kScratch);
+	h.SetGpr64(reg::a1, 0x123456789ABCDEF0ull);
+	h.TrackMemWindow(kScratch, 16);
+	const u32 before = g_eeUnalignedFuseCount;
+	h.LoadProgram({
+		ee::SDR(reg::a1, 1, reg::a0),
+		ee::SDL(reg::a1, 9, reg::a0),
+	});
+	h.Run();
+	EXPECT_EQ(g_eeUnalignedFuseCount, before) << "offset delta != 7 must not fuse";
+}
+
+// ===========================================================================
 //  Exhaustive alignment sweeps.
 //
 //  The inline RMW codegen has a distinct shift/mask path per alignment plus a
