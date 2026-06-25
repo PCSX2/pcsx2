@@ -422,6 +422,101 @@ TEST(EeRecLoadStore, LdlLdrPreservesLiveRegistersAcrossInterpCall)
 }
 
 // ===========================================================================
+//  LDL/LDR pair fusion (iR5900-arm64.cpp g_eeUnalignedFused).
+//
+//  A same-Rt/Rs LDL+LDR pair whose offsets differ by 7 is exactly one unaligned
+//  64-bit load at the lower (LDR) address, which ARM64 does in a single LDR x.
+//  The leading half emits the fused load and sets g_eeUnalignedFused; the
+//  trailing half consumes it and emits nothing. Either lead order occurs (PS2 is
+//  little-endian — LDR-first is the common MIPSEL idiom). Run()'s JIT-vs-interp
+//  auto-diff is the correctness oracle; g_eeUnalignedFuseCount proves the fused
+//  path actually fired (so these are red on un-fused code, green once it lands).
+// ===========================================================================
+
+extern u32 g_eeUnalignedFuseCount;
+// Fusion is gated off when kProgramPc is in the fastmem faulting set. That set is
+// process-global and accumulates across suites (an earlier test that faulted at
+// kProgramPc would suppress fusion here), so the positive tests clear it to make
+// the fired-count assertion reflect this block's own intent. (Correctness is
+// order-independent — the unfused fallback is also exact — so the negative tests
+// need no clear.)
+extern void vtlb_ClearLoadStoreInfo();
+
+TEST(EeRecLoadStore, LdlLdrFusionLdrFirst)
+{
+	// Bytes [1..8] = 0x8877665544332211 (see LdrLdlPairUnalignedDwordLoad).
+	EeRecTestHarness h;
+	h.WriteU64(kScratch + 0, 0x77665544332211CCull);
+	h.WriteU64(kScratch + 8, 0x00000000FFEEDD88ull);
+	h.SetGpr64(reg::a0, kScratch);
+	h.SetGpr64(reg::v0, 0xDEADBEEFCAFEBABEull);
+	vtlb_ClearLoadStoreInfo();
+	const u32 before = g_eeUnalignedFuseCount;
+	h.LoadProgram({
+		ee::LDR(reg::v0, 1, reg::a0),
+		ee::LDL(reg::v0, 8, reg::a0),
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 0x8877665544332211ull);
+	EXPECT_GT(g_eeUnalignedFuseCount, before) << "LDR+LDL pair should have fused";
+}
+
+TEST(EeRecLoadStore, LdlLdrFusionLdlFirst)
+{
+	// Same data/result, LDL-first (the GCC idiom) — must fuse identically.
+	EeRecTestHarness h;
+	h.WriteU64(kScratch + 0, 0x77665544332211CCull);
+	h.WriteU64(kScratch + 8, 0x00000000FFEEDD88ull);
+	h.SetGpr64(reg::a0, kScratch);
+	h.SetGpr64(reg::v0, 0xDEADBEEFCAFEBABEull);
+	vtlb_ClearLoadStoreInfo();
+	const u32 before = g_eeUnalignedFuseCount;
+	h.LoadProgram({
+		ee::LDL(reg::v0, 8, reg::a0),
+		ee::LDR(reg::v0, 1, reg::a0),
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 0x8877665544332211ull);
+	EXPECT_GT(g_eeUnalignedFuseCount, before) << "LDL+LDR pair should have fused";
+}
+
+TEST(EeRecLoadStore, LdlLdrNoFusionWhenRtMismatch)
+{
+	// Different Rt on the two halves: not a pair, must NOT fuse. Run()'s auto-diff
+	// covers the (independent partial-load) values; we pin the fuse-count gate.
+	EeRecTestHarness h;
+	h.WriteU64(kScratch + 0, 0x77665544332211CCull);
+	h.WriteU64(kScratch + 8, 0x00000000FFEEDD88ull);
+	h.SetGpr64(reg::a0, kScratch);
+	h.SetGpr64(reg::v0, 0xDEADBEEFCAFEBABEull);
+	h.SetGpr64(reg::v1, 0x1111111111111111ull);
+	const u32 before = g_eeUnalignedFuseCount;
+	h.LoadProgram({
+		ee::LDR(reg::v0, 1, reg::a0),
+		ee::LDL(reg::v1, 8, reg::a0),
+	});
+	h.Run();
+	EXPECT_EQ(g_eeUnalignedFuseCount, before) << "Rt mismatch must not fuse";
+}
+
+TEST(EeRecLoadStore, LdlLdrNoFusionWhenOffsetNotSeven)
+{
+	// Offsets differ by 8, not 7 — not a contiguous pair, must NOT fuse.
+	EeRecTestHarness h;
+	h.WriteU64(kScratch + 0, 0x77665544332211CCull);
+	h.WriteU64(kScratch + 8, 0x00000000FFEEDD88ull);
+	h.SetGpr64(reg::a0, kScratch);
+	h.SetGpr64(reg::v0, 0xDEADBEEFCAFEBABEull);
+	const u32 before = g_eeUnalignedFuseCount;
+	h.LoadProgram({
+		ee::LDR(reg::v0, 1, reg::a0),
+		ee::LDL(reg::v0, 9, reg::a0),
+	});
+	h.Run();
+	EXPECT_EQ(g_eeUnalignedFuseCount, before) << "offset delta != 7 must not fuse";
+}
+
+// ===========================================================================
 //  Exhaustive alignment sweeps.
 //
 //  The inline RMW codegen has a distinct shift/mask path per alignment plus a

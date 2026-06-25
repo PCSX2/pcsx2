@@ -988,6 +988,65 @@ static void recUnalignedLoadDouble(bool is_ldl)
 	if (!_Rt_)
 		return;
 
+	// --- LDL/LDR pair fusion -------------------------------------------------
+	// Consume: this op is the trailing half of a pair already emitted as a single
+	// 64-bit load by its predecessor — emit nothing.
+	if (g_eeUnalignedFused)
+	{
+		g_eeUnalignedFused = false;
+		return;
+	}
+
+	// Lead: an unaligned 64-bit load is emitted by the game as an LDL/LDR pair on
+	// the same Rt/Rs whose offsets differ by 7 — together exactly mem64(Rs + lower
+	// offset), which ARM64 loads in one (unaligned) LDR x. Either order occurs
+	// (PS2 is little-endian; LDR-first is the common MIPSEL idiom). pc has been
+	// advanced past THIS op, so it is the partner's guest address: memRead32(pc)
+	// peeks it, pc is this load's fastmem-backpatch key, and pc < block-end
+	// confirms the partner is in-block (so the flag is consumed this block). Gated
+	// off faulting PCs (pc here, pc+4 = the partner) so the proven single-op
+	// backpatch path is taken whenever either previously faulted.
+	if (!g_recompilingDelaySlot && CHECK_FASTMEM && pc < recCurrentBlockEndPC() &&
+		!vtlb_IsFaultingPC(pc) && !vtlb_IsFaultingPC(pc + 4))
+	{
+		const u32 partner = memRead32(pc);
+		const u32 partnerOp = partner >> 26;
+		const u32 partnerRt = (partner >> 16) & 0x1f;
+		const u32 partnerRs = (partner >> 21) & 0x1f;
+		const s32 partnerImm = static_cast<s16>(partner & 0xffff);
+		const u32 wantOp = is_ldl ? 0x1bu : 0x1au; // LDL(0x1A) pairs with LDR(0x1B)
+		const s32 ldlImm = is_ldl ? _Imm_ : partnerImm;
+		const s32 ldrImm = is_ldl ? partnerImm : _Imm_;
+		if (partnerOp == wantOp && partnerRt == static_cast<u32>(_Rt_) &&
+			partnerRs == static_cast<u32>(_Rs_) && (ldlImm - ldrImm) == 7)
+		{
+			// One unaligned 64-bit fastmem load at Rs + ldrImm into Rt. mem is
+			// parked in a callee-saved temp before the Rt alloc (the alloc can
+			// spill via / land Rt in x0, clobbering the loaded value — the Black
+			// LDL/LDR boot-hang bug). Rt uses MODE_READ|MODE_WRITE (not WRITE-only):
+			// although the fused load fully overwrites Rt, WRITE-only on a GPR dest
+			// fails to reconcile a prior dual-residence (NEON) copy under register
+			// pressure, so a later reader (here the SDL/SDR store half of a memcpy)
+			// reads the stale copy — observed as alternating-pair zeros in the
+			// MultiRegUnalignedDwordCopyBlock test. READ|WRITE forces a coherent
+			// residence; the redundant old-value load is free vs the bug.
+			_eeMoveGPRtoR(a64::w9, _Rs_);
+			iFlushCall(FLUSH_CONSTANT_REGS);
+			if (ldrImm != 0)
+				armAsm->Add(a64::w9, a64::w9, ldrImm);
+			const int memTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
+			vtlbFastmemRead(9, 0, 64, false);                 // mem -> x0
+			armAsm->Mov(armXRegister(memTemp), a64::x0);       // park (x0 unsafe across Rt alloc)
+			const int rt = _allocArm64GPR(ARM64TYPE_GPR, _Rt_, MODE_READ | MODE_WRITE);
+			armAsm->Mov(armXRegister(rt), armXRegister(memTemp));
+			_freeArm64GPR(memTemp);
+			g_eeUnalignedFused = true;
+			g_eeUnalignedFuseCount++;
+			return;
+		}
+	}
+	// --- end fusion ----------------------------------------------------------
+
 	const bool useFastmem = CHECK_FASTMEM && !vtlb_IsFaultingPC(pc);
 
 	_eeMoveGPRtoR(a64::w9, _Rs_);

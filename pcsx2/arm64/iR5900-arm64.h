@@ -150,6 +150,21 @@ extern bool s_nBlockInterlocked; // Current block has VU0 interlocking
 
 extern bool g_recompilingDelaySlot;
 
+// LDL/LDR (and later SDL/SDR) pair fusion. An unaligned 64-bit access is emitted
+// by the game as an LDL/LDR pair on the same Rt/Rs whose offsets differ by 7;
+// together they are exactly one (un)aligned 64-bit access at the lower address,
+// which ARM64 performs in a single op. The leading half emits that fused op and
+// sets g_eeUnalignedFused; the trailing half consumes the flag and emits nothing.
+// Cleared at block start (the gate guarantees the partner is consumed in-block,
+// so the flag never legitimately survives a block; the clear only sweeps residue
+// from an aborted compile). g_eeUnalignedFuseCount tallies fusions (tests/diag).
+extern bool g_eeUnalignedFused;
+extern u32 g_eeUnalignedFuseCount;
+
+// Exclusive end PC of the block currently being recompiled. Used by the LDL/LDR
+// fusion to confirm the peeked partner instruction is in the same block.
+u32 recCurrentBlockEndPC();
+
 // Used for generating backpatch thunks for fastmem
 u8* recBeginThunk();
 u8* recEndThunk();

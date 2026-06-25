@@ -54,6 +54,12 @@ bool g_recompilingDelaySlot = false;
 bool g_cpuFlushedPC = false;
 bool g_cpuFlushedCode = false;
 
+// LDL/LDR pair fusion state (see iR5900-arm64.h). g_eeUnalignedFused is set by the
+// leading half of a fused unaligned 64-bit load and consumed by the trailing half;
+// g_eeUnalignedFuseCount is a diagnostic/test tally.
+bool g_eeUnalignedFused = false;
+u32 g_eeUnalignedFuseCount = 0;
+
 // Constant propagation — defined here, declared extern in iR5900-arm64.h
 
 static uptr recLUT[0x10000];
@@ -77,6 +83,9 @@ static BASEBLOCKEX* s_pCurBlockEx = nullptr;
 static u32 s_nEndBlock = 0;
 static u32 s_branchTo;
 static bool s_nBlockFF;
+
+// Exposed for the LDL/LDR fusion in recVTLB-arm64.cpp (same-block partner check).
+u32 recCurrentBlockEndPC() { return s_nEndBlock; }
 
 static DynamicHeapArray<BASEBLOCK, 4096> recLutReserve_RAM;
 static DynamicHeapArray<BASEBLOCK, 4096> recLutUnmapped;
@@ -2123,6 +2132,9 @@ StartRecomp:
 	if (doRecompilation)
 	{
 		g_pCurInstInfo = s_pInstCache;
+		// Sweep any LDL/LDR fusion residue from an aborted prior compile (the
+		// per-pair gate otherwise guarantees same-block consume).
+		g_eeUnalignedFused = false;
 		while (!g_branch && pc < s_nEndBlock)
 			recompileNextInstruction(false, false);
 	}
