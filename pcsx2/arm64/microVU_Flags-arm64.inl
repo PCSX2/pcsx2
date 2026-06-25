@@ -62,6 +62,34 @@ static void mVUupdateFlags(mV, const a64::VRegister& reg,
 	armAsm->And(gprT2, gprT2, AND_XYZW);
 	armAsm->Orr(mReg.W(), mReg.W(), gprT2);
 
+	//--------- Overflow flags (VUOverflowHack gamefix only) ---------
+	// Port of x86 microVU_Upper.inl CHECK_VUOVERFLOWHACK block. We can't
+	// distinguish a genuine FLT_MAX result from a saturated overflow without
+	// soft-float, so this stays a per-game gamefix (Superman Returns). Detect any
+	// lane that reached the saturation boundary (|result| >= FLT_MAX, which also
+	// catches Inf/NaN — matching x86's CMPNLT.PS, since for sign-stripped IEEE
+	// floats the integer ordering equals the float ordering and Inf/NaN sit above
+	// FLT_MAX). Sets STATUS O+S (0x820000) and, when emitting the MAC flag, ORs
+	// the per-lane overflow bits in at the O nibble (<<12).
+	if (sFLAG.doFlag && CHECK_VUOVERFLOWHACK)
+	{
+		armAsm->Fabs(regT1.V4S(), reg.V4S());                     // strip sign
+		armAsm->Ldr(RQSCRATCH3, mVUglobMem(&mVUglob.maxvals[0])); // FLT_MAX per lane
+		armAsm->Cmge(regT1.V4S(), regT1.V4S(), RQSCRATCH3.V4S()); // all-1s where |x| >= FLT_MAX
+		armEmitPackLaneBits(gprT2, regT1, RQSCRATCH3, macPath);
+		armAsm->And(gprT2, gprT2, AND_XYZW);
+
+		a64::Label noOverflow;
+		armAsm->Cbz(gprT2, &noOverflow);
+		armAsm->Orr(sReg.W(), sReg.W(), 0x820000);
+		if (mFLAG.doFlag)
+		{
+			armAsm->Lsl(gprT2, gprT2, 12); // into the MAC O nibble
+			armAsm->Orr(mReg.W(), mReg.W(), gprT2);
+		}
+		armAsm->Bind(&noOverflow);
+	}
+
 	//--------- Write back flags ---------
 
 	if (mFLAG.doFlag)

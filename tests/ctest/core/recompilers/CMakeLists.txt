@@ -67,6 +67,7 @@ add_pcsx2_test(recompiler_tests
 	vu0_clamp_modes_tests.cpp
 	vu_ftoi_saturation_tests.cpp
 	vu_madda_acc_lane_tests.cpp
+	vu_overflow_hack_tests.cpp
 	ee_vu0_cfc2_ctc2_tests.cpp
 	ee_vu0_qmfc2_qmtc2_tests.cpp
 	ee_vu0_cop2_macro_tests.cpp
