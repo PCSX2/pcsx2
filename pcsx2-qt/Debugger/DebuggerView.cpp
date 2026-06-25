@@ -268,7 +268,7 @@ std::vector<QAction*> DebuggerView::createEventActionsImplementation(
 		if (lhs->displayNameWithoutSuffix() == rhs->displayNameWithoutSuffix())
 			return lhs->displayNameSuffixNumber() < rhs->displayNameSuffixNumber();
 
-		return lhs->displayNameWithoutSuffix() < rhs->displayNameWithoutSuffix();
+		return QtHost::LocaleSensitiveCompare(lhs->displayNameWithoutSuffix(), rhs->displayNameWithoutSuffix()) < 0;
 	});
 
 	QMenu* submenu = nullptr;
