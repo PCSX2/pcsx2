@@ -1388,9 +1388,15 @@ _mVUt __fi void* mVUlookupProg(u32 startPC, uptr pState)
 	mVU.prog.isSame = -1;
 	mVU.prog.cur = quick.prog;
 	quick.block = block;
-	// Fast-path also resolves to a program; record the dispatched
-	// entry (idempotent on duplicates).
-	quick.prog->observed.record(startPC);
+	// Fast-path also resolves to a program; record the dispatched entry
+	// (idempotent on duplicates). observed.pcs is consumed ONLY by the
+	// on-disk program-cache persistence path, which is inactive unless
+	// recording is enabled — so skip the per-dispatch linear scan on the
+	// hot path when recording is off (the default). IsRecordingEnabled()
+	// inlines to a TU-local bool read here. If recording flips on later,
+	// createProg's slow-path seed keeps observed valid going forward.
+	if (mVUPersist::IsRecordingEnabled())
+		quick.prog->observed.record(startPC);
 	return pBlock->hostEntry;
 }
 
