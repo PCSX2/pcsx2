@@ -53,6 +53,12 @@ bool s_nBlockInterlocked;
 bool g_recompilingDelaySlot = false;
 bool g_cpuFlushedPC = false;
 bool g_cpuFlushedCode = false;
+// Mirrors x86 iR5900.cpp:64. Set only by the (currently #if 0'd) FLUSH_CAUSE
+// path in iFlushCall and reset after every recompiled instruction, so in
+// practice it is always false and the two BD-bit clears it guards never emit at
+// runtime — exactly matching x86. Kept so the delay-slot handling is a
+// line-for-line mirror of x86 and re-syncs cleanly if upstream re-enables it.
+bool g_maySignalException = false;
 
 // LDL/LDR pair fusion state (see iR5900-arm64.h). g_eeUnalignedFused is set by the
 // leading half of a fused unaligned 64-bit load and consumed by the trailing half;
@@ -602,6 +608,31 @@ void iFlushCall(int flushtype)
 		armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.code));
 		g_cpuFlushedCode = true;
 	}
+
+#if 0
+	// Disabled in x86 too (iR5900.cpp:1235-1242). Left here #if 0'd so the
+	// FLUSH_CAUSE / g_maySignalException mechanism stays a faithful mirror of
+	// x86 and re-enables in lockstep if upstream ever does.
+	if ((flushtype == FLUSH_CAUSE) && !g_maySignalException)
+	{
+		if (g_recompilingDelaySlot)
+		{
+			armAsm->Ldr(RWSCRATCH, armCpuRegMem(&cpuRegs.CP0.n.Cause));
+			armAsm->Orr(RWSCRATCH, RWSCRATCH, 1u << 31); // BD
+			armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.CP0.n.Cause));
+		}
+		g_maySignalException = true;
+	}
+#endif
+}
+
+// Emit cpuRegs.CP0.n.Cause &= ~(1 << 31) — clears the branch-delay (BD) bit.
+// Mirrors x86's inline `xAND(ptr32[&cpuRegs.CP0.n.Cause], ~(1 << 31))`.
+static void armClearCauseBD()
+{
+	armAsm->Ldr(RWSCRATCH, armCpuRegMem(&cpuRegs.CP0.n.Cause));
+	armAsm->And(RWSCRATCH, RWSCRATCH, ~(1u << 31));
+	armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.CP0.n.Cause));
 }
 
 // Flag set by cpuTlbMiss to signal that a TLB exception occurred during
@@ -996,6 +1027,78 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 
 	g_pCurInstInfo++;
 
+	// Branch/jump in a delay slot. Verbatim port of the x86 check_branch_delay
+	// block (iR5900.cpp:1742-1803, "new code by FlatOut"). When the delay slot is
+	// itself a branch, the inner branch is squashed — emit NOTHING (not even an
+	// interpreter call) and return before cycle counting, so cpuRegs.cycle and pc
+	// match x86 exactly. This matches x86's behavior, not the interpreter's: the
+	// EE interpreter (_doBranch_shared) fully EXECUTES the inner branch, so this
+	// path deliberately diverges from interp on this undefined-behavior corner
+	// (ps2autotests: HW returns 2, both JIT and interp imperfect). Opcode set is
+	// the exact x86 switch (jr/jalr; bltz/bgez(al)(l) family; j/jal/b{eq,ne,lez,
+	// gtz}(l)). The downstream isBranchInDelaySlot fallback is now unreachable for
+	// these but kept as defense-in-depth.
+	if (delayslot)
+	{
+		bool check_branch_delay = false;
+		switch (_Opcode_)
+		{
+			case 0:
+				switch (_Funct_)
+				{
+					case 8:  // jr
+					case 9:  // jalr
+						check_branch_delay = true;
+						break;
+				}
+				break;
+
+			case 1:
+				switch (_Rt_)
+				{
+					case 0:
+					case 1:
+					case 2:
+					case 3:
+					case 0x10:
+					case 0x11:
+					case 0x12:
+					case 0x13:
+						check_branch_delay = true;
+						break;
+				}
+				break;
+
+			case 2:
+			case 3:
+			case 4:
+			case 5:
+			case 6:
+			case 7:
+			case 0x14:
+			case 0x15:
+			case 0x16:
+			case 0x17:
+				check_branch_delay = true;
+				break;
+		}
+
+		if (check_branch_delay)
+		{
+			DevCon.Warning("Branch %x in delay slot!", cpuRegs.code);
+			_clearNeededArm64GPRregs();
+			_clearNeededNEONregs();
+			pc += 4;
+			g_cpuFlushedPC = false;
+			g_cpuFlushedCode = false;
+			if (g_maySignalException)
+				armClearCauseBD();
+
+			g_recompilingDelaySlot = false;
+			return;
+		}
+	}
+
 	// NOP gets cycle counted but no codegen (matching x86 behavior)
 	if (cpuRegs.code == 0)
 	{
@@ -1069,8 +1172,12 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 		pc += 4;
 		g_cpuFlushedPC = false;
 		g_cpuFlushedCode = false;
+		if (g_maySignalException) // mirrors x86 iR5900.cpp:1830 (dormant: always false)
+			armClearCauseBD();
 		g_recompilingDelaySlot = false;
 	}
+
+	g_maySignalException = false; // mirrors x86 iR5900.cpp:1835
 
 	// When called from TrySwapDelaySlot (swapped_delay_slot=true), restore
 	// cpuRegs.code so that the caller's _Rs_/_Rt_/_Rd_ macros still work.
