@@ -57,6 +57,7 @@ add_pcsx2_test(recompiler_tests
 	ee_rec_smc_tests.cpp
 	ee_rec_timeout_loop_tests.cpp
 	ee_rec_traps_tests.cpp
+	vtlb_get_guest_address_tests.cpp
 	vu0_harness_validation_tests.cpp
 	vu0_alu_upper_tests.cpp
 	vu0_alu_lower_tests.cpp
