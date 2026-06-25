@@ -2085,6 +2085,32 @@ static void recRecompile(const u32 startpc)
 	if (g_eeloadExec && HWADDR(startpc) == HWADDR(g_eeloadExec))
 		armEmitCall((void*)eeloadHook2);
 
+	// Goemon TLB-cache preload/unload intercept (mirrors x86 iR5900.cpp:2241-2255,
+	// dropped-host-hook item B5). PCSX2 precalculates all TLB mappings, but Goemon
+	// dynamically remaps; these boot-region PC hooks keep the precalculated cache
+	// in sync. The branch-target V2P half is already handled (SetBranchReg / recJ*
+	// when GoemonTlbHack is set). pc == startpc here, and the addresses are useg so
+	// HWADDR would be a no-op on them — use the raw pc to mirror x86 literally.
+	if (EmuConfig.Gamefixes.GoemonTlbHack)
+	{
+		if (pc == 0x33ad48 || pc == 0x35060c)
+		{
+			// 0x33ad48 / 0x35060c are the return address of the function (0x356250)
+			// that populates the TLB cache.
+			armEmitCall((void*)GoemonPreloadTlb);
+		}
+		else if (pc == 0x3563b8)
+		{
+			// Game unmaps some virtual addresses; a constant address hardcoded into a
+			// compiled block would go stale, so force a full rec reset.
+			eeRecNeedsReset = true;
+			// 0x3563b8 is the start of the function that invalidates a TLB-cache entry;
+			// a0 holds the key. Guest state is memory-resident at the prologue.
+			armAsm->Ldr(RWARG1, armCpuRegMem(&cpuRegs.GPR.n.a0.UL[0]));
+			armEmitCall((void*)GoemonUnloadTlb);
+		}
+	}
+
 	// Scan for block boundary
 	i = startpc;
 	s_nEndBlock = 0xffffffff;
