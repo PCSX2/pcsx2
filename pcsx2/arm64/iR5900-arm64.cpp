@@ -1073,6 +1073,14 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 	}
 }
 
+// Verbatim port of the x86 EE TrySwapDelaySlot decode/safety table
+// (pcsx2/x86/ix86-32/iR5900.cpp:901). This is a pure instruction-decode +
+// hazard check with NO codegen — it only decides whether the instruction in
+// the branch's delay slot can be safely hoisted ahead of the branch (so its
+// result is available when the branch evaluates its condition). Keep this in
+// lockstep with the x86 table (comments and all, including the dead `case 64`
+// quirk) so it can be diffed line-for-line on future re-syncs; behavioral
+// divergence from x86 here is a bug, not an arm64 optimization.
 bool TrySwapDelaySlot(u32 rs, u32 rt, u32 rd, bool allow_loadstore)
 {
 	if (g_recompilingDelaySlot)
@@ -1085,6 +1093,238 @@ bool TrySwapDelaySlot(u32 rs, u32 rt, u32 rd, bool allow_loadstore)
 		return true;
 	}
 
+	const u32 opcode_rs = ((opcode_encoded >> 21) & 0x1F);
+	const u32 opcode_rt = ((opcode_encoded >> 16) & 0x1F);
+	const u32 opcode_rd = ((opcode_encoded >> 11) & 0x1F);
+
+	switch (opcode_encoded >> 26)
+	{
+		case 8: // ADDI
+		case 9: // ADDIU
+		case 10: // SLTI
+		case 11: // SLTIU
+		case 12: // ANDIU
+		case 13: // ORI
+		case 14: // XORI
+		case 24: // DADDI
+		case 25: // DADDIU
+		{
+			if ((rs != 0 && rs == opcode_rt) || (rt != 0 && rt == opcode_rt) || (rd != 0 && (rd == opcode_rs || rd == opcode_rt)))
+				goto is_unsafe;
+		}
+		break;
+
+		case 26: // LDL
+		case 27: // LDR
+		case 30: // LQ
+		case 31: // SQ
+		case 32: // LB
+		case 33: // LH
+		case 34: // LWL
+		case 35: // LW
+		case 36: // LBU
+		case 37: // LHU
+		case 38: // LWR
+		case 39: // LWU
+		case 40: // SB
+		case 41: // SH
+		case 42: // SWL
+		case 43: // SW
+		case 44: // SDL
+		case 45: // SDR
+		case 46: // SWR
+		case 55: // LD
+		case 63: // SD
+		{
+			// We can't allow loadstore swaps for BC0x/BC2x, since they could affect the condition.
+			if (!allow_loadstore || (rs != 0 && rs == opcode_rt) || (rt != 0 && rt == opcode_rt) || (rd != 0 && (rd == opcode_rs || rd == opcode_rt)))
+				goto is_unsafe;
+		}
+		break;
+
+		case 15: // LUI
+		{
+			if ((rs != 0 && rs == opcode_rt) || (rt != 0 && rt == opcode_rt) || (rd != 0 && rd == opcode_rt))
+				goto is_unsafe;
+		}
+		break;
+
+		case 49: // LWC1
+		case 57: // SWC1
+		case 54: // LQC2
+		case 62: // SQC2
+			break;
+
+		case 0: // SPECIAL
+		{
+			switch (opcode_encoded & 0x3F)
+			{
+				case 0: // SLL
+				case 2: // SRL
+				case 3: // SRA
+				case 4: // SLLV
+				case 6: // SRLV
+				case 7: // SRAV
+				case 10: // MOVZ
+				case 11: // MOVN
+				case 20: // DSLLV
+				case 22: // DSRLV
+				case 23: // DSRAV
+				case 24: // MULT
+				case 25: // MULTU
+				case 32: // ADD
+				case 33: // ADDU
+				case 34: // SUB
+				case 35: // SUBU
+				case 36: // AND
+				case 37: // OR
+				case 38: // XOR
+				case 39: // NOR
+				case 42: // SLT
+				case 43: // SLTU
+				case 44: // DADD
+				case 45: // DADDU
+				case 46: // DSUB
+				case 47: // DSUBU
+				case 56: // DSLL
+				case 58: // DSRL
+				case 59: // DSRA
+				case 60: // DSLL32
+				case 62: // DSRL31
+				case 64: // DSRA32
+				{
+					if ((rs != 0 && rs == opcode_rd) || (rt != 0 && rt == opcode_rd) || (rd != 0 && (rd == opcode_rs || rd == opcode_rt)))
+						goto is_unsafe;
+				}
+				break;
+
+				case 15: // SYNC
+				case 26: // DIV
+				case 27: // DIVU
+					break;
+
+				default:
+					goto is_unsafe;
+			}
+		}
+		break;
+
+		case 16: // COP0
+		{
+			switch ((opcode_encoded >> 21) & 0x1F)
+			{
+				case 0: // MFC0
+				case 2: // CFC0
+				{
+					if ((rs != 0 && rs == opcode_rt) || (rt != 0 && rt == opcode_rt) || (rd != 0 && rd == opcode_rt))
+						goto is_unsafe;
+				}
+				break;
+
+				case 4: // MTC0
+				case 6: // CTC0
+					break;
+
+				case 16: // TLB (technically would be safe, but we don't use it anyway)
+				default:
+					goto is_unsafe;
+			}
+			break;
+		}
+		break;
+
+		case 17: // COP1
+		{
+			switch ((opcode_encoded >> 21) & 0x1F)
+			{
+				case 0: // MFC1
+				case 2: // CFC1
+				{
+					if ((rs != 0 && rs == opcode_rt) || (rt != 0 && rt == opcode_rt) || (rd != 0 && rd == opcode_rt))
+						goto is_unsafe;
+				}
+				break;
+
+				case 4: // MTC1
+				case 6: // CTC1
+				case 16: // S
+				{
+					const u32 funct = (opcode_encoded & 0x3F);
+					if (funct == 50 || funct == 52 || funct == 54) // C.EQ, C.LT, C.LE
+					{
+						// affects flags that we're comparing
+						goto is_unsafe;
+					}
+				}
+					[[fallthrough]];
+
+				case 20: // W
+				{
+				}
+				break;
+
+				default:
+					goto is_unsafe;
+			}
+		}
+		break;
+
+		case 18: // COP2
+		{
+			switch ((opcode_encoded >> 21) & 0x1F)
+			{
+				case 8: // BC2XX
+					goto is_unsafe;
+
+				case 1: // QMFC2
+				case 2: // CFC2
+				{
+					if ((rs != 0 && rs == opcode_rt) || (rt != 0 && rt == opcode_rt) || (rd != 0 && rd == opcode_rt))
+						goto is_unsafe;
+				}
+				break;
+
+				default:
+					break;
+			}
+		}
+		break;
+
+		case 28: // MMI
+		{
+			switch (opcode_encoded & 0x3F)
+			{
+				case 8: // MMI0
+				case 9: // MMI1
+				case 10: // MMI2
+				case 40: // MMI3
+				case 41: // MMI3
+				case 52: // PSLLH
+				case 54: // PSRLH
+				case 55: // LSRAH
+				case 60: // PSLLW
+				case 62: // PSRLW
+				case 63: // PSRAW
+				{
+					if ((rs != 0 && rs == opcode_rd) || (rt != 0 && rt == opcode_rd) || (rd != 0 && rd == opcode_rd))
+						goto is_unsafe;
+				}
+				break;
+
+				default:
+					goto is_unsafe;
+			}
+		}
+		break;
+
+		default:
+			goto is_unsafe;
+	}
+
+	recompileNextInstruction(true, true);
+	return true;
+
+is_unsafe:
 	return false;
 }
 

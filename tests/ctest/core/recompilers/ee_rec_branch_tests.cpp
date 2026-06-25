@@ -530,3 +530,89 @@ TEST(EeRecBranch, BackwardBneLoopMultipleIterations)
 	EXPECT_EQ(h.GetGpr64Interp(reg::v0), 5ull);
 	EXPECT_EQ(h.GetGpr64Interp(reg::t0), 42ull);
 }
+
+// ----- TrySwapDelaySlot: non-NOP delay-slot hoisting --------------------
+//
+// TrySwapDelaySlot lets the recompiler emit a branch's delay-slot
+// instruction *ahead* of the branch-condition evaluation when the slot
+// can't affect the condition (it doesn't write a register the branch
+// reads). That collapses the not-taken-side delay-slot re-emit into a
+// single copy. Before the full table port, only a NOP delay slot swapped;
+// these guard the newly-activated non-NOP path. Run() diffs JIT vs interp,
+// so any reordering miscompile fails here automatically; ExpectGpr64 then
+// pins the architectural result.
+
+TEST(EeRecBranch, BeqSwapsSafeNonNopDelaySlotWhenTaken)
+{
+	// Delay slot writes t0, which the BEQ does not read → safe to swap.
+	// a0 == a1 → taken; the delay slot must still have run.
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a0, 42);
+	h.SetGpr64(reg::a1, 42);
+	h.LoadProgramNoTerm({
+		BEQ(reg::a0, reg::a1, kTakenOffset),
+		ADDIU(reg::t0, reg::zero, 99),        // swappable delay slot
+		ADDIU(reg::v0, reg::zero, 1), J(kPark), NOP, NOP,
+		ADDIU(reg::v0, reg::zero, 2), J(kPark), NOP,
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 2ull);             // taken
+	h.ExpectGpr64(reg::t0, 99ull);            // delay slot ran
+}
+
+TEST(EeRecBranch, BeqSwapsSafeNonNopDelaySlotWhenNotTaken)
+{
+	// Same safe delay slot, but a0 != a1 → not taken. A non-likely branch
+	// always runs its delay slot, so t0 must still be written.
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a0, 42);
+	h.SetGpr64(reg::a1, 43);
+	h.LoadProgramNoTerm({
+		BEQ(reg::a0, reg::a1, kTakenOffset),
+		ADDIU(reg::t0, reg::zero, 99),        // swappable delay slot
+		ADDIU(reg::v0, reg::zero, 1), J(kPark), NOP, NOP,
+		ADDIU(reg::v0, reg::zero, 2), J(kPark), NOP,
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 1ull);             // not taken
+	h.ExpectGpr64(reg::t0, 99ull);            // delay slot ran anyway
+}
+
+TEST(EeRecBranch, BeqDeclinesSwapWhenDelaySlotWritesCompareReg)
+{
+	// Delay slot writes a1, which the BEQ reads → MUST NOT swap. MIPS
+	// semantics evaluate the branch on the OLD a1, then run the delay slot.
+	// a0 == old a1 (5 == 5) → taken. A wrongful swap would set a1 = 6
+	// before the compare, making 5 != 6 → not taken, so this test fails
+	// loudly (v0 == 1 and/or a JIT-vs-interp divergence) on a broken
+	// safety check.
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a0, 5);
+	h.SetGpr64(reg::a1, 5);
+	h.LoadProgramNoTerm({
+		BEQ(reg::a0, reg::a1, kTakenOffset),
+		ADDIU(reg::a1, reg::a1, 1),           // hazard: writes compare reg
+		ADDIU(reg::v0, reg::zero, 1), J(kPark), NOP, NOP,
+		ADDIU(reg::v0, reg::zero, 2), J(kPark), NOP,
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 2ull);             // taken on the OLD a1
+	h.ExpectGpr64(reg::a1, 6ull);             // delay slot incremented a1
+}
+
+TEST(EeRecBranch, BltzSwapsSafeNonNopDelaySlot)
+{
+	// Single-register branch (reads rs only, rt/rd = 0). Delay slot writes
+	// t0 (unrelated) → safe to swap. a0 < 0 → taken.
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a0, static_cast<u64>(-1));
+	h.LoadProgramNoTerm({
+		BLTZ(reg::a0, kTakenOffset),
+		ADDIU(reg::t0, reg::zero, 77),        // swappable delay slot
+		ADDIU(reg::v0, reg::zero, 1), J(kPark), NOP, NOP,
+		ADDIU(reg::v0, reg::zero, 2), J(kPark), NOP,
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 2ull);             // taken
+	h.ExpectGpr64(reg::t0, 77ull);            // delay slot ran
+}
