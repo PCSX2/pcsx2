@@ -339,15 +339,28 @@ void DockManager::createToolsMenu(QMenu* menu)
 	if (m_current_layout == DockLayout::INVALID_INDEX || !g_debugger_window)
 		return;
 
-	for (QToolBar* widget : g_debugger_window->findChildren<QToolBar*>())
+	std::vector<QToolBar*> toolbars;
+	for (QToolBar* toolbar : g_debugger_window->findChildren<QToolBar*>())
+		toolbars.emplace_back(toolbar);
+
+	std::sort(toolbars.begin(), toolbars.end(), [](QToolBar* lhs, QToolBar* rhs) {
+		return QtHost::LocaleSensitiveCompare(lhs->windowTitle(), rhs->windowTitle()) < 0;
+	});
+
+	for (QToolBar* toolbar : toolbars)
 	{
-		QAction* action = menu->addAction(widget->windowTitle());
-		action->setText(widget->windowTitle());
+		QAction* action = menu->addAction(toolbar->windowTitle());
+		action->setText(toolbar->windowTitle());
 		action->setCheckable(true);
-		action->setChecked(widget->isVisible());
-		connect(action, &QAction::triggered, this, [widget]() {
-			widget->setVisible(!widget->isVisible());
+		action->setChecked(toolbar->isVisible());
+
+		connect(action, &QAction::triggered, this, [toolbar = QPointer<QToolBar>(toolbar)]() {
+			if (!toolbar)
+				return;
+
+			toolbar->setVisible(!toolbar->isVisible());
 		});
+
 		menu->addAction(action);
 	}
 }
@@ -383,7 +396,7 @@ void DockManager::createWindowsMenu(QMenu* menu)
 			if (lhs->displayNameWithoutSuffix() == rhs->displayNameWithoutSuffix())
 				return lhs->displayNameSuffixNumber() < rhs->displayNameSuffixNumber();
 
-			return lhs->displayNameWithoutSuffix() < rhs->displayNameWithoutSuffix();
+			return QtHost::LocaleSensitiveCompare(lhs->displayNameWithoutSuffix(), rhs->displayNameWithoutSuffix()) < 0;
 		});
 
 	for (DebuggerView* widget : add_another_widgets)
@@ -472,7 +485,7 @@ void DockManager::createWindowsMenu(QMenu* menu)
 			if (lhs.display_name == rhs.display_name)
 				return lhs.suffix_number < rhs.suffix_number;
 
-			return lhs.display_name < rhs.display_name;
+			return QtHost::LocaleSensitiveCompare(lhs.display_name, rhs.display_name) < 0;
 		});
 
 	for (const DebuggerViewToggle& toggle : toggles)
