@@ -43556,6 +43556,9 @@ SLPM-65374:
   gsHWFixes:
     recommendedBlendingLevel: 5 # Alleviates color banding also the cockpit and missile shadows are darker if enabled.
     autoFlush: 2 # Corrects post-processing effect on jet exhausts.
+  memcardFilters:
+    - SLPM-65177 # Energy Airforce (previous title)
+    - SLPM-65374 # aimStrike
 SLPM-65375:
   name: "真・三國無双3 & 真・三國無双3 猛将伝 [ディスク 1] [プレミアムパック]"
   name-sort: "しんさんごくむそう3 & しんさんごくむそう3 もうしょうでん [でぃすく 1] [ぷれみあむぱっく]"
@@ -52012,6 +52015,10 @@ SLPM-66748:
   gameFixes:
     - DMABusyHack
     - SoftwareRendererFMVHack # Vertical lines in FMV.
+  gsHWFixes:
+    roundSprite: 1 # Fixes misalignment of textures in the Pause Menu.
+    cpuSpriteRenderBW: 10 # Fixes bulletin board textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
 SLPM-66749:
   name: "ウィザードリィ エクス2 ～無限の学徒～ [ワンダープライス]"
   name-sort: "うぃざーどりぃ えくす2 むげんのがくと [わんだーぷらいす]"
@@ -53414,6 +53421,12 @@ SLPM-66994:
   gameFixes:
     - DMABusyHack
     - SoftwareRendererFMVHack # Vertical lines in FMV.
+  gsHWFixes:
+    roundSprite: 1 # Fixes misalignment of textures in the Pause Menu.
+    cpuSpriteRenderBW: 10 # Fixes bulletin board textures.
+    cpuSpriteRenderLevel: 1 # Needed for above.
+  memcardFilters:
+    - SLPM-66748 # Original Version
 SLPM-66995:
   name: "beatmania Ⅱ DX 14 - Gold"
   name-sort: "びーとまにあ 2 DX 14 - Gold"
