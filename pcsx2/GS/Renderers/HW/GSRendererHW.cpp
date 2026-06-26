@@ -7798,60 +7798,61 @@ void GSRendererHW::ConvertTextureTypeROVSingle(GSTextureCache::Target* tgt, bool
 
 	GSTexture* old_tex = depth ? m_conf.ds : m_conf.rt;
 
-	GSTexture::Usage usage = shader_write ? GSTexture::ShaderWriteTarget : GSTexture::FeedbackTarget;
-	GSTexture* new_tex = depth ?
+	const GSTexture::Usage usage = shader_write ? GSTexture::ShaderWriteTarget : GSTexture::FeedbackTarget;
+	if (GSTexture* new_tex = depth ?
 		(shader_write ?
 			g_gs_device->FetchSurface(usage, old_tex->GetSize(), 1, GSTexture::Format::DepthColor, false, true) :
 			g_gs_device->CreateDepthStencil(old_tex->GetSize(), false, true)) :
-		g_gs_device->FetchSurface(usage, old_tex->GetSize(), 1, GSTexture::Format::Color, false, true);
-
-	switch (old_tex->GetState())
+			g_gs_device->FetchSurface(usage, old_tex->GetSize(), 1, GSTexture::Format::Color, false, true))
 	{
-		case GSTexture::State::Cleared:
-			if (depth)
-				g_gs_device->ClearDepth(new_tex, old_tex->GetClearDepth());
-			else
-				g_gs_device->ClearRenderTarget(new_tex, old_tex->GetClearColor());
-			break;
-		case GSTexture::State::Invalidated:
-			g_gs_device->InvalidateRenderTarget(new_tex);
-			break;
-		case GSTexture::State::Dirty:
-			g_gs_device->StretchRectAuto(old_tex, new_tex, Nearest);
+		switch (old_tex->GetState())
+		{
+			case GSTexture::State::Cleared:
+				if (depth)
+					g_gs_device->ClearDepth(new_tex, old_tex->GetClearDepth());
+				else
+					g_gs_device->ClearRenderTarget(new_tex, old_tex->GetClearColor());
+				break;
+			case GSTexture::State::Invalidated:
+				g_gs_device->InvalidateRenderTarget(new_tex);
+				break;
+			case GSTexture::State::Dirty:
+				g_gs_device->StretchRectAuto(old_tex, new_tex, Nearest);
 
-			// Count stats as part of both standard and ROV.
-			g_perfmon.Put(GSPerfMon::TextureCopiesROV, 1.0);
-			g_perfmon.Put(GSPerfMon::DrawCallsROV, 1.0);
-			break;
-		default:
-			pxAssert(false);
-			break;
-	}
+				// Count stats as part of both standard and ROV.
+				g_perfmon.Put(GSPerfMon::TextureCopiesROV, 1.0);
+				g_perfmon.Put(GSPerfMon::DrawCallsROV, 1.0);
+				break;
+			default:
+				pxAssert(false);
+				break;
+		}
 
 #if PCSX2_DEVBUILD
-	new_tex->SetDebugName(tgt->m_texture->GetDebugName());
+		new_tex->SetDebugName(tgt->m_texture->GetDebugName());
 #endif
 
-	if (tgt->m_texture == old_tex)
-	{
-		GL_CACHE("HW: Replaced texture for %s @ 0x%04x", depth ? "DS" : "RT", tgt->m_TEX0.TBP0);
-		tgt->m_texture = new_tex;
-	}
-	else
-	{
-		// Must be the temporary Z.
-		pxAssert(depth && g_texture_cache->GetTemporaryZ() == old_tex);
-		GL_CACHE("HW: Replaced texture for temporary Z @ 0x%04x", g_texture_cache->GetTemporaryZInfo().ZBP);
-		g_texture_cache->SetTemporaryZ(new_tex);
-	}
+		if (tgt->m_texture == old_tex)
+		{
+			GL_CACHE("HW: Replaced texture for %s @ 0x%04x", depth ? "DS" : "RT", tgt->m_TEX0.TBP0);
+			tgt->m_texture = new_tex;
+		}
+		else
+		{
+			// Must be the temporary Z.
+			pxAssert(depth && g_texture_cache->GetTemporaryZ() == old_tex);
+			GL_CACHE("HW: Replaced texture for temporary Z @ 0x%04x", g_texture_cache->GetTemporaryZInfo().ZBP);
+			g_texture_cache->SetTemporaryZ(new_tex);
+		}
 
-	// Fixup the backend config.
-	if (depth)
-		m_conf.ds = new_tex;
-	else
-		m_conf.rt = new_tex;
+		// Fixup the backend config.
+		if (depth)
+			m_conf.ds = new_tex;
+		else
+			m_conf.rt = new_tex;
 
-	g_gs_device->Recycle(old_tex);
+		g_gs_device->Recycle(old_tex);
+	}
 }
 
 void GSRendererHW::ConvertTextureTypeROV(GSTextureCache::Target* rt, GSTextureCache::Target* ds)
@@ -10500,9 +10501,7 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		r_texture.w -= offset;
 		const int new_height = std::max(r_texture.w, th);
 
-		GSTexture* temp_tex = g_gs_device->CreateTexture(tw, new_height, 1, tex->m_texture->GetFormat(), true);
-
-		if (temp_tex)
+		if (GSTexture* temp_tex = g_gs_device->CreateTexture(tw, new_height, 1, tex->m_texture->GetFormat(), true))
 		{
 			if (GSTexture* rt = g_gs_device->CreateFeedbackTarget(tw, new_height, GSTexture::Format::Color))
 			{
