@@ -3626,7 +3626,7 @@ void GSDevice12::PSSetShaderResource(int i, GSTexture* sr, bool check_state, Res
 	}
 	else
 	{
-		handle = m_null_texture->GetSRVDescriptor();
+		handle = GetResourceDescriptor(m_null_texture.get(), type);
 	}
 
 	if (m_tfx_textures[i] == handle)
@@ -3675,7 +3675,7 @@ void GSDevice12::PSSetROVs(GSTexture* rt, GSTexture* ds, bool write_rt, bool wri
 	else
 	{
 		// Unbind to avoid conflicts with OM targets.
-		PSSetShaderResource(TEXTURE_RT_UAV, nullptr, false);
+		PSSetShaderResource(TEXTURE_RT_UAV, nullptr, false, ResourceType::UAV);
 	}
 
 	if (d12Ds)
@@ -3699,7 +3699,7 @@ void GSDevice12::PSSetROVs(GSTexture* rt, GSTexture* ds, bool write_rt, bool wri
 	else
 	{
 		// Unbind to avoid conflicts with OM targets.
-		PSSetShaderResource(TEXTURE_DEPTH_UAV, nullptr, false);
+		PSSetShaderResource(TEXTURE_DEPTH_UAV, nullptr, false, ResourceType::UAV);
 	}
 }
 
@@ -3777,7 +3777,8 @@ void GSDevice12::UnbindTexture(GSTexture12* tex)
 	// RT / primid / depth
 	for (u32 i = TEXTURE_RT; i <= TEXTURE_DEPTH; i++)
 	{
-		if (m_tfx_textures[i] == tex->GetSRVDescriptor() || m_tfx_textures[i] == tex->GetFBLDescriptor())
+		if (m_tfx_textures[i] == tex->GetSRVDescriptor() || m_tfx_textures[i] == tex->GetFBLDescriptor() ||
+			m_tfx_textures[i] == tex->GetUAVDescriptor())
 		{
 			m_tfx_textures[i] = m_null_texture->GetSRVDescriptor();
 			m_dirty_flags |= DIRTY_FLAG_TFX_RT_TEXTURES;
