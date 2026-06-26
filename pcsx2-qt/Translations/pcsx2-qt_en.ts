@@ -6417,42 +6417,42 @@ Do you want to overwrite?</source>
 <context>
     <name>FileOperations</name>
     <message>
-        <location filename="../QtUtils.cpp" line="281"/>
+        <location filename="../QtUtils.cpp" line="280"/>
         <source>Failed to show file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="282"/>
+        <location filename="../QtUtils.cpp" line="281"/>
         <source>Failed to show file in file explorer.
 
 The file was: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="290"/>
+        <location filename="../QtUtils.cpp" line="289"/>
         <source>Show in Explorer</source>
         <extracomment>Windows action to show a file in Windows Explorer</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="293"/>
+        <location filename="../QtUtils.cpp" line="292"/>
         <source>Show in Finder</source>
         <extracomment>macOS action to show a file in Finder</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="296"/>
+        <location filename="../QtUtils.cpp" line="295"/>
         <source>Open Containing Directory</source>
         <extracomment>Linux/*NIX: Opens the system file manager to the directory containing a selected file</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="304"/>
+        <location filename="../QtUtils.cpp" line="303"/>
         <source>Failed to open URL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="305"/>
+        <location filename="../QtUtils.cpp" line="304"/>
         <source>Failed to open URL.
 
 The URL was: %1</source>
@@ -13481,7 +13481,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListWidget.cpp" line="605"/>
+        <location filename="../GameList/GameListWidget.cpp" line="678"/>
         <source>Reset All Columns</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20097,14 +20097,119 @@ Savestates should not be used in place of in-game saves.</source>
     </message>
 </context>
 <context>
+    <name>MemoryCardListItem</name>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="121"/>
+        <source>Swap Memory Cards</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="133"/>
+        <source>Slot %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="141"/>
+        <source>Reset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="141"/>
+        <source>Eject Memory Card</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="180"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="303"/>
+        <source>Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="180"/>
+        <source>This Memory Card cannot be recognized or is not a valid file type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="240"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="250"/>
+        <source>Delete Memory Card</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="241"/>
+        <source>Are you sure you wish to delete the Memory Card &apos;%1&apos;?
+
+This action cannot be reversed, and you will lose any saves on the card.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="251"/>
+        <source>Failed to delete the Memory Card. The log may have more information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="265"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="272"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="279"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="286"/>
+        <source>Rename Memory Card</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="265"/>
+        <source>New Card Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="272"/>
+        <source>New name is invalid, it must end with .ps2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="280"/>
+        <source>New name is invalid, a card with this name already exists.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="287"/>
+        <source>Failed to rename Memory Card. The log may contain more information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="303"/>
+        <source>Cannot convert an unformatted memory card.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="322"/>
+        <source>Use for Slot %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="327"/>
+        <source>Rename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="328"/>
+        <source>Convert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="329"/>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MemoryCardListWidget</name>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="450"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="507"/>
         <source>Yes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="450"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="507"/>
         <source>No</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20138,7 +20243,6 @@ Savestates should not be used in place of in-game saves.</source>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="90"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="107"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20169,149 +20273,67 @@ Savestates should not be used in place of in-game saves.</source>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="148"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="299"/>
         <source>Create</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="155"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="293"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="162"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="294"/>
         <source>Convert</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="169"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="295"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="87"/>
-        <source>Swap Memory Cards</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="107"/>
-        <source>Eject Memory Card</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="146"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="269"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="334"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="368"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="206"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="216"/>
-        <source>Delete Memory Card</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="231"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="238"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="245"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="252"/>
-        <source>Rename Memory Card</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="231"/>
-        <source>New Card Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="238"/>
-        <source>New name is invalid, it must end with .ps2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="246"/>
-        <source>New name is invalid, a card with this name already exists.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="99"/>
-        <source>Slot %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="146"/>
-        <source>This Memory Card cannot be recognized or is not a valid file type.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="207"/>
-        <source>Are you sure you wish to delete the Memory Card &apos;%1&apos;?
-
-This action cannot be reversed, and you will lose any saves on the card.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="217"/>
-        <source>Failed to delete the Memory Card. The log may have more information.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="253"/>
-        <source>Failed to rename Memory Card. The log may contain more information.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="269"/>
-        <source>Cannot convert an unformatted memory card.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="288"/>
-        <source>Use for Slot %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="334"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="368"/>
         <source>Both slots must have a card selected to swap.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="350"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="402"/>
         <source>PS2 (8MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="353"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="405"/>
         <source>PS2 (16MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="356"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="408"/>
         <source>PS2 (32MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="359"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="411"/>
         <source>PS2 (64MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="362"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="414"/>
         <source>PS1 (128KB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="366"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="375"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="418"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="427"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="371"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="423"/>
         <source>PS2 (Folder)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20319,12 +20341,12 @@ This action cannot be reversed, and you will lose any saves on the card.</source
 <context>
     <name>MemoryCardSlotWidget</name>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="507"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="568"/>
         <source>%1 [%2]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="513"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="574"/>
         <source>%1 [Missing]</source>
         <extracomment>Ignore Crowdin&apos;s warning for [Missing], the text should be translated.</extracomment>
         <translation type="unfinished"></translation>
