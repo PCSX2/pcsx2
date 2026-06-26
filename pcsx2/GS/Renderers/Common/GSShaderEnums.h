@@ -17,6 +17,7 @@ enum class VSExpand : uint8_t
 	Sprite      = 3,
 	LineAA1     = 4,
 	TriangleAA1 = 5,
+	Triangle    = 6,
 };
 
 enum class PS_ATST : uint32_t
@@ -84,5 +85,6 @@ static constexpr CONSTANT int ROUND_UV_DENOMINATOR = 32;
 static constexpr CONSTANT float ROUND_UV_THRESHOLD = (16.0f / float(2 * ROUND_UV_DENOMINATOR)); // 16.0f = 1 texel.
 static constexpr CONSTANT int ROUND_UV_UP = 1;
 static constexpr CONSTANT int ROUND_UV_DOWN = 2;
+static constexpr CONSTANT int ROUND_UV_PER_PIXEL = 4;
 static constexpr CONSTANT int ROUND_UV_SWAP = 8;
 #undef CONSTANT

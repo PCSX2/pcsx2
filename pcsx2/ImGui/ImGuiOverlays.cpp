@@ -934,7 +934,7 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 		if (GSConfig.HWROVBarriersVK)
 			APPEND("RBVK ");
 
-		if (GSConfig.AccurateUVRounding)
+		if (GSConfig.AccurateUVRounding == GSAccurateUVRoundingMode::On)
 			APPEND("ACCUV ");
 
 		// deliberately test global and print local here for auto values

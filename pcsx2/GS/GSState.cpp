@@ -4205,6 +4205,58 @@ __forceinline bool AreTrianglesQuadNonAA(const GSVertex* RESTRICT vin, const u16
 	return false;
 }
 
+__forceinline static bool IsTriangleRightTolerance(
+	GSVector4 v0, GSVector4 v1, GSVector4 v2, float tol0, float tol1, TriangleOrdering* out_triangle)
+{
+	const GSVector4 tolv(tol0, tol0, tol1, tol1);
+
+	GSVector4 close01 = (v0 - v1).abs() <= tolv;
+	GSVector4 close02 = (v0 - v2).abs() <= tolv;
+	GSVector4 close12 = (v1 - v2).abs() <= tolv;
+
+	close01 = close01 & close01.zwxy();
+	close02 = close02 & close02.zwxy();
+	close12 = close12 & close12.zwxy();
+
+	GSVector4 vcmp0 = close01.blend32<0xC>(close02);
+	GSVector4 vcmp1 = close12.blend32<0xC>(GSVector4::zero());
+
+	int cmp0 = vcmp0.mask();
+	int cmp1 = vcmp1.mask() & 0x3;
+	if (!cmp0)
+		return false; // Not a right triangle.
+	u8 trianglecmp = triangle_comparison_lut[cmp0];
+	int required_cmp1 = TriangleFinalCmp(trianglecmp);
+	if (cmp1 != required_cmp1)
+		return false;
+	*out_triangle = TriangleFinalOrder(trianglecmp);
+	return true;
+}
+
+// Determines whether the triangle are right and form a quad.
+// Position should be in XY and texture coords in YW.
+bool AreTrianglesQuadTolerance(
+	const GSVector4* RESTRICT t0, const GSVector4* RESTRICT t1, float tol0, float tol1, bool swapuv,
+	TriangleOrdering* RESTRICT out_triangle0, TriangleOrdering* RESTRICT out_triangle1)
+{
+	const auto MaybeSwap = [&](const GSVector4& v) {
+		return swapuv ? v.xywz() : v;
+	};
+
+	if (!IsTriangleRightTolerance(MaybeSwap(t0[0]), MaybeSwap(t0[1]), MaybeSwap(t0[2]), tol0, tol1, out_triangle0) ||
+		!IsTriangleRightTolerance(MaybeSwap(t1[0]), MaybeSwap(t1[1]), MaybeSwap(t1[2]), tol0, tol1, out_triangle1))
+	{
+		return false;
+	}
+
+	// The two triangles are now laid out in one of these four orderings:
+	// b   c | c  b | a     |     a
+	// a     |    a | b   c | c   b
+	// To form a quad we must have a0 == c1 and a1 == c0
+	return (t0[out_triangle0->a] == (t1[out_triangle1->c])).alltrue() &&
+	       (t0[out_triangle0->c] == (t1[out_triangle1->a])).alltrue();
+}
+
 template<bool shuffle_check>
 bool GSState::TrianglesAreQuadsImpl()
 {
@@ -4930,9 +4982,15 @@ bool GSState::SpriteDrawWithoutGaps()
 // Emulate UV rounding error when UVs fall exactly on texel boundaries (i.e. UVs being rounded down instead of up,
 // likely due to internal precision of GS). This is only implemented for sprites and axis-aligned triangles forming quads.
 // Return true if we determined that accurate rounding can be done.
-template<u32 primclass, bool fst>
-bool GSState::GetVertexUVRoundingInfoImpl()
+template<u32 primclass, bool tme, bool fst>
+bool GSState::GetVertexUVRoundingInfoImpl(const bool upscaling, bool* pixel_centers_aligned)
 {
+	if (GSConfig.AccurateUVRounding == GSAccurateUVRoundingMode::Off &&
+		(!GSIsHardwareRenderer() || GSConfig.SpriteAlign == GSSpriteAlignMode::Off))
+	{
+		return false;
+	}
+
 	// The following rules are suggested by hardware tests and applies to cases where UVs should fall exactly on a texel boundary
 	// at pixel centers:
 	// - The top-most and/or left-most pixels never have rounding error.
@@ -4953,8 +5011,8 @@ bool GSState::GetVertexUVRoundingInfoImpl()
 	// We pre-divide Q so must ensure it's not used for mipmap.
 	const bool q_is_one = m_vt.m_eq.q && m_vt.m_min.t.w == 1.0f;
 	const bool need_q_for_mipmap = !fst && IsMipMapActive() && m_context->TEX1.LCM == 0 && !q_is_one;
-	
-	if (!(GSConfig.AccurateUVRounding && PRIM->TME && !need_q_for_mipmap))
+
+	if (tme && need_q_for_mipmap)
 		return false;
 
 	// Don't do rounding with AA1, it's likely unnecessary and the edge pixels may break things.
@@ -4970,7 +5028,7 @@ bool GSState::GetVertexUVRoundingInfoImpl()
 	const int th = 1 << m_context->TEX0.TH;
 	const bool linear = m_vt.IsRealLinear();
 
-	std::vector<u32> tri_quad_corners; // Corners of right-angle corners for triangles forming quads.
+	std::vector<TriangleOrdering> tri_ordering; // Ordering or vertices of right triangles.
 	std::vector<bool> tri_swap_uv; // Whether triangle swaps UV (i.e. U follows Y, V follows X).
 
 	// Only apply this to draws where all triangles form axis-aligned quads (both for XY and UV).
@@ -4990,11 +5048,11 @@ bool GSState::GetVertexUVRoundingInfoImpl()
 			TriangleOrdering tri0, tri1;
 
 			// Check if vertex XYs and UVs form an axis-aligned quad.
-			if (AreTrianglesQuad<1, fst, 0>(vtx, idx0, idx1, &tri0, &tri1))
+			if (AreTrianglesQuad<tme, fst, 0>(vtx, idx0, idx1, &tri0, &tri1))
 			{
 				tri_swap_uv.push_back(false);
 			}
-			else if (AreTrianglesQuad<1, fst, 1>(vtx, idx0, idx1, &tri0, &tri1))
+			else if (AreTrianglesQuad<tme, fst, 1>(vtx, idx0, idx1, &tri0, &tri1))
 			{
 				tri_swap_uv.push_back(true);
 			}
@@ -5004,7 +5062,7 @@ bool GSState::GetVertexUVRoundingInfoImpl()
 			}
 
 			// For ST make sure that Q is flat.
-			if constexpr (!fst)
+			if constexpr (tme && !fst)
 			{
 				if (vtx[index[i + 0]].RGBAQ.Q != vtx[index[i + 1]].RGBAQ.Q ||
 					vtx[index[i + 0]].RGBAQ.Q != vtx[index[i + 2]].RGBAQ.Q ||
@@ -5016,9 +5074,8 @@ bool GSState::GetVertexUVRoundingInfoImpl()
 				}
 			}
 
-			// Save the right angle corners.
-			tri_quad_corners.push_back(i + 0 + tri0.b);
-			tri_quad_corners.push_back(i + 3 + tri1.b);
+			tri_ordering.push_back(tri0);
+			tri_ordering.push_back(tri1);
 		}
 	}
 
@@ -5032,15 +5089,21 @@ bool GSState::GetVertexUVRoundingInfoImpl()
 	GSVertex* RESTRICT vtx = m_vertex->buff;
 	const u32 count = m_index->tail;
 
+	if (pixel_centers_aligned)
+		*pixel_centers_aligned = true;
+
 	for (u32 i = 0; i < count; i += n)
 	{
+		TriangleOrdering tri0, tri1;
 		GSVertex v0, v1; // Corners of the quad.
 		bool swap_uv;
 
 		if constexpr (primclass == GS_TRIANGLE_CLASS)
 		{
-			v0 = vtx[tri_quad_corners[2 * (i / n) + 0]];
-			v1 = vtx[tri_quad_corners[2 * (i / n) + 1]];
+			tri0 = tri_ordering[2 * (i / n) + 0];
+			tri1 = tri_ordering[2 * (i / n) + 1];
+			v0 = vtx[i + 0 + tri0.b];
+			v1 = vtx[i + 3 + tri1.b];
 			swap_uv = tri_swap_uv[i / n];
 		}
 		else
@@ -5049,200 +5112,276 @@ bool GSState::GetVertexUVRoundingInfoImpl()
 			v1 = vtx[i + 1];
 			swap_uv = false;
 
-			if constexpr (primclass == GS_SPRITE_CLASS && !fst)
+			if constexpr (tme && !fst)
 				v0.RGBAQ.Q = v1.RGBAQ.Q; // Use Q of second vertex for sprites.
 		}
 
-		const int X0 = static_cast<int>(v0.XYZ.X) - xyof.x;
-		const int Y0 = static_cast<int>(v0.XYZ.Y) - xyof.y;
-		const int X1 = static_cast<int>(v1.XYZ.X) - xyof.x;
-		const int Y1 = static_cast<int>(v1.XYZ.Y) - xyof.y;
-
-		const auto GetUV = [&](const GSVertex& v) {
-			const GSVector4 uv = GetTexCoords(v) * 16.0f; // subtexel coords
-			return swap_uv ? uv.yxwz() : uv;
-		};
-
-		const GSVector4 uv = GetUV(v0).xyzw(GetUV(v1));
-
-		const int U0 = static_cast<int>(uv.x);
-		const int V0 = static_cast<int>(uv.y);
-		const int U1 = static_cast<int>(uv.z);
-		const int V1 = static_cast<int>(uv.w);
-
-		// Only valid if exactly subtexel aligned.
-		const bool valid_U0 = static_cast<float>(U0) == uv.x;
-		const bool valid_V0 = static_cast<float>(V0) == uv.y;
-		const bool valid_U1 = static_cast<float>(U1) == uv.z;
-		const bool valid_V1 = static_cast<float>(V1) == uv.w;
-
-		const int dX = X1 - X0;
-		const int dY = Y1 - Y0;
-		const int dU = U1 - U0;
-		const int dV = V1 - V0;
-		const int abs_dX = std::abs(dX);
-		const int abs_dY = std::abs(dY);
-		const int abs_dU = std::abs(dU);
-		const int abs_dV = std::abs(dV);
-
-		const auto IsPow2 = [](int i) { return (i & (i - 1)) == 0; };
-
-		const bool pow2_dX = IsPow2(abs_dX);
-		const bool pow2_dY = IsPow2(abs_dY);
-
-		// Check if the first/last pixel center correspond to half texel boundaries.
-		const auto EndpointsAligned = [](int pos0, int pos1, int tex0, int tex1, int scale) {
-			const int pos0_round = (pos0 + 0xF) & ~0xF;
-			const int pos1_round = pos1 & ~0xF;
-			const int tex0_round = tex0 + (pos0_round - pos0) * scale;
-			const int tex1_round = tex1 + (pos1_round - pos1) * scale;
-			return ((tex0_round | tex1_round) & 7) == 0;
-		};
-
-		// First condition: dU/dX is an integer and pixel centers correspond to texel boundaries.
-		const bool scaled_aligned_U = ((dU % dX) == 0) && EndpointsAligned(X0, X1, U0, U1, dU / dX);
-		const bool scaled_aligned_V = ((dV % dY) == 0) && EndpointsAligned(Y0, Y1, V0, V1, dV / dY);
-
-		// Second condition: denominator of dU/dX in lowest is not too large and all end points are half-aligned.
-		bool aligned_denom_XU = false;
-		bool aligned_denom_YV = false;
+		if constexpr (tme)
 		{
-			const int dX_lowest = abs_dX / std::gcd(std::max(abs_dX, 1), std::max(abs_dU, 1));
-			const int dY_lowest = abs_dY / std::gcd(std::max(abs_dY, 1), std::max(abs_dV, 1));
-			const bool XU_half_aligned = ((X0 | X1 | U0 | U1) & 7) == 0;
-			const bool YV_half_aligned = ((Y0 | Y1 | V0 | V1) & 7) == 0;
-		
-			aligned_denom_XU = XU_half_aligned && (dX_lowest < ROUND_UV_DENOMINATOR);
-			aligned_denom_YV = YV_half_aligned && (dY_lowest < ROUND_UV_DENOMINATOR);
-		}
+			const int X0 = static_cast<int>(v0.XYZ.X) - xyof.x;
+			const int Y0 = static_cast<int>(v0.XYZ.Y) - xyof.y;
+			const int X1 = static_cast<int>(v1.XYZ.X) - xyof.x;
+			const int Y1 = static_cast<int>(v1.XYZ.Y) - xyof.y;
 
-		// Third condition: game appears to be intentionally biasing coordinates up or down.
-		// Only applies to nearest sampling.
-		bool bias_U_up = false;
-		bool bias_U_down = false;
-		bool bias_V_up = false;
-		bool bias_V_down = false;
-		if (!linear)
-		{
-			const bool anchor_XU0 = ((X0 | U0) & 0xF) == 0;
-			const bool anchor_YV0 = ((Y0 | V0) & 0xF) == 0;
-			const bool anchor_XU1 = ((X1 | U1) & 0xF) == 0;
-			const bool anchor_YV1 = ((Y1 | V1) & 0xF) == 0;
-			const bool bias_dU_up = (abs_dU > abs_dX) && (abs_dU <= abs_dX + 0x10);
-			const bool bias_dU_down = (abs_dU < abs_dX) && (abs_dU >= abs_dX - 0x10);
-			const bool bias_dV_up = (abs_dV > abs_dY) && (abs_dV <= abs_dY + 0x10);
-			const bool bias_dV_down = (abs_dV < abs_dY) && (abs_dV >= abs_dY - 0x10);
+			const auto GetUV = [&](const GSVertex& v) {
+				const GSVector4 uv = GetTexCoords(v) * 16.0f; // subtexel coords
+				return swap_uv ? uv.yxwz() : uv;
+			};
 
-			// The sign of dU and dV, and the anchor point of where the coordinates are aligned
-			// flips whether the nudge becomes an upward or downward bias. The logic could
-			// probably be simplified with 'xor' but this seems clearer.
-			bias_U_up =
-				(anchor_XU0 && dU > 0 && bias_dU_up) || (anchor_XU0 && dU < 0 && bias_dU_down) ||
-				(anchor_XU1 && dU > 0 && bias_dU_down) || (anchor_XU1 && dU < 0 && bias_dU_up);
-			bias_U_down =
-				(anchor_XU0 && dU > 0 && bias_dU_down) || (anchor_XU0 && dU < 0 && bias_dU_up) ||
-				(anchor_XU1 && dU > 0 && bias_dU_up) || (anchor_XU1 && dU < 0 && bias_dU_down);
-			bias_V_up =
-				(anchor_YV0 && dV > 0 && bias_dV_up) || (anchor_YV0 && dV < 0 && bias_dV_down) ||
-				(anchor_YV1 && dV > 0 && bias_dV_down) || (anchor_YV1 && dV < 0 && bias_dV_up);
-			bias_V_down =
-				(anchor_YV0 && dV > 0 && bias_dV_down) || (anchor_YV0 && dV < 0 && bias_dV_up) ||
-				(anchor_YV1 && dV > 0 && bias_dV_up) || (anchor_YV1 && dV < 0 && bias_dV_down);
-		}
+			const GSVector4 uv = GetUV(v0).xyzw(GetUV(v1));
 
-		// Determine whether we do rounding on U and/or V.
-		const bool allow_round_U = (valid_U0 && valid_U1) && (scaled_aligned_U || aligned_denom_XU || bias_U_up || bias_U_down);
-		const bool allow_round_V = (valid_V0 && valid_V1) && (scaled_aligned_V || aligned_denom_YV || bias_V_up || bias_V_down);
+			const int U0 = static_cast<int>(uv.x);
+			const int V0 = static_cast<int>(uv.y);
+			const int U1 = static_cast<int>(uv.z);
+			const int V1 = static_cast<int>(uv.w);
 
-		// Get rounding info for each vertex.
-		for (u32 j = 0; j < n; j++)
-		{
-			u32 round_U = 0; // Round flag for U.
-			u32 round_V = 0; // Round flag for V.
-			int sX = -1; // Stepping origin X (no error at these X).
-			int sY = -1; // Stepping origin Y (no error at these Y).
+			// Only valid if exactly subtexel aligned.
+			const bool valid_U0 = static_cast<float>(U0) == uv.x;
+			const bool valid_V0 = static_cast<float>(V0) == uv.y;
+			const bool valid_U1 = static_cast<float>(U1) == uv.z;
+			const bool valid_V1 = static_cast<float>(V1) == uv.w;
 
-			if constexpr (primclass == GS_TRIANGLE_CLASS)
+			const int dX = X1 - X0;
+			const int dY = Y1 - Y0;
+			const int dU = U1 - U0;
+			const int dV = V1 - V0;
+			const int abs_dX = std::abs(dX);
+			const int abs_dY = std::abs(dY);
+			const int abs_dU = std::abs(dU);
+			const int abs_dV = std::abs(dV);
+
+			const auto IsPow2 = [](int i) { return (i & (i - 1)) == 0; };
+
+			const bool pow2_dX = IsPow2(abs_dX);
+			const bool pow2_dY = IsPow2(abs_dY);
+
+			// Check if the first/last pixel center correspond to half texel boundaries.
+			const auto EndpointsAligned = []<bool centers_aligned>(int pos0, int pos1, int tex0, int tex1, int scale) {
+				const int pos0_round = (pos0 + 0xF) & ~0xF;
+				const int pos1_round = pos1 & ~0xF;
+				const int tex0_round = tex0 + (pos0_round - pos0) * scale;
+				const int tex1_round = tex1 + (pos1_round - pos1) * scale;
+				return centers_aligned ?
+					((tex0_round | tex1_round) & 0xF) == 8 : // Pixel centers correspond to texel centers.
+					((tex0_round | tex1_round) & 7) == 0; // Pixel centers correspond to texel centers or boundaries.
+			};
+
+			const auto EndpointsAlignedHalf = [EndpointsAligned](int pos0, int pos1, int tex0, int tex1, int scale) {
+				return EndpointsAligned.template operator()<false>(pos0, pos1, tex0, tex1, scale);
+			};
+
+			const auto EndpointsAlignedCentered = [EndpointsAligned](int pos0, int pos1, int tex0, int tex1, int scale) {
+				return EndpointsAligned.template operator()<true>(pos0, pos1, tex0, tex1, scale);
+			};
+
+			// First condition: dU/dX is an integer and pixel centers correspond to texel boundaries.
+			const bool scaled_aligned_U = ((dU % dX) == 0) && EndpointsAlignedHalf(X0, X1, U0, U1, dU / dX);
+			const bool scaled_aligned_V = ((dV % dY) == 0) && EndpointsAlignedHalf(Y0, Y1, V0, V1, dV / dY);
+
+			// Save this for determining the pixel centering flag later.
+			const bool scaled_aligned_U_centered = scaled_aligned_U && EndpointsAlignedCentered(X0, X1, U0, U1, dU / dX);
+			const bool scaled_aligned_V_centered = scaled_aligned_V && EndpointsAlignedCentered(Y0, Y1, V0, V1, dV / dY);
+
+			// Maximum denominator to round. Only allow integer scaling with upscaling.
+			const int max_denominator = upscaling ? 1 : ROUND_UV_DENOMINATOR;
+
+			// Second condition: denominator of dU/dX in lowest is not too large and all end points are half-aligned.
+			bool aligned_denom_XU = false;
+			bool aligned_denom_YV = false;
 			{
-				// Hypothesis: The GS steps along the left edge when rasterizing triangles. For bottom-right
-				// triangles, the left edge goes from bottom to top, so it flips the direction of V stepping.
-				const int corner_X = (j < 3) ? X0 : X1;
-				const int corner_Y = (j < 3) ? Y0 : Y1;
-				const int max_X = std::max(X0, X1);
-				const int max_Y = std::max(Y0, Y1);
-				const bool bottom_right_triangle = (corner_X == max_X) && (corner_Y == max_Y);
-
-				// Determine whether stepping direction of U, V is negative.
-				const bool negU = (dX < 0) != (dU < 0);
-				const bool negV = ((dY < 0) != (dV < 0)) != bottom_right_triangle;
-
-				// For triangles, both dX and dY must be powers of 2 for no error.
-				round_U = (negU || (pow2_dX && pow2_dY) || (dU == 0)) ? ROUND_UV_UP : ROUND_UV_DOWN;
-				round_V = (negV || (pow2_dX && pow2_dY) || (dV == 0)) ? ROUND_UV_UP : ROUND_UV_DOWN;
-
-				// Hypothesis: triangles step along the left edge and left-to-right on scanlines,
-				// so there's no error at the first vertex of the left edge.
-				sX = std::min(X0, X1);
-				sY = bottom_right_triangle ? std::max(Y0, Y1) : std::min(Y0, Y1);
-			}
-			else
-			{
-				// For sprites, treat each axis independently.
-				round_U = ((dU < 0) || pow2_dX || (dU == 0)) ? ROUND_UV_UP : ROUND_UV_DOWN;
-				round_V = ((dV < 0) || pow2_dY || (dV == 0)) ? ROUND_UV_UP : ROUND_UV_DOWN;
-
-				// Hypothesis: The GS steps in the direction specified by vertices when rasterizing
-				// sprites so there's no error at the X or Y of the first vertex.
-				sX = X0;
-				sY = Y0;
-			}
-
-			// Explicit biasing overrides rounding error heuristics.
-			round_U = bias_U_up ? ROUND_UV_UP : bias_U_down ? ROUND_UV_DOWN : round_U;
-			round_V = bias_V_up ? ROUND_UV_UP : bias_V_down ? ROUND_UV_DOWN : round_V;
-
-			if (swap_uv)
-			{
-				round_U |= ROUND_UV_SWAP;
-				round_V |= ROUND_UV_SWAP;
-			}
-
-			if (!allow_round_U)
-				round_U &= ~(ROUND_UV_UP | ROUND_UV_DOWN);
-			if (!allow_round_V)
-				round_V &= ~(ROUND_UV_UP | ROUND_UV_DOWN);
-
-			// Rounding settings (4 bits each for U, V).
-			const u32 round_settings = round_U | (round_V << 4);
+				const int dX_lowest = abs_dX / std::gcd(std::max(abs_dX, 1), std::max(abs_dU, 1));
+				const int dY_lowest = abs_dY / std::gcd(std::max(abs_dY, 1), std::max(abs_dV, 1));
+				const bool XU_half_aligned = ((X0 | X1 | U0 | U1) & 7) == 0;
+				const bool YV_half_aligned = ((Y0 | Y1 | V0 | V1) & 7) == 0;
 			
-			// Save pre-divided UV in ST.
-			vtx[i + j].ST.U64 = GetUV(vtx[i + j]).U64[0];
+				aligned_denom_XU = XU_half_aligned && (dX_lowest < max_denominator);
+				aligned_denom_YV = YV_half_aligned && (dY_lowest < max_denominator);
+			}
 
-			// Save top-left integer coords in 24 bits.
-			const u32 prim_topleft = ((sX >> 4) & 0xFFF) | (((sY >> 4) & 0xFFF) << 12);
+			// Third condition: game appears to be intentionally biasing coordinates up or down.
+			// Only applies to nearest sampling.
+			bool bias_U_up = false;
+			bool bias_U_down = false;
+			bool bias_V_up = false;
+			bool bias_V_down = false;
+			if (!linear)
+			{
+				const bool anchor_XU0 = ((X0 | U0) & 0xF) == 0;
+				const bool anchor_YV0 = ((Y0 | V0) & 0xF) == 0;
+				const bool anchor_XU1 = ((X1 | U1) & 0xF) == 0;
+				const bool anchor_YV1 = ((Y1 | V1) & 0xF) == 0;
+				const bool bias_dU_up = (abs_dU > abs_dX) && (abs_dU <= abs_dX + 0x10);
+				const bool bias_dU_down = (abs_dU < abs_dX) && (abs_dU >= abs_dX - 0x10);
+				const bool bias_dV_up = (abs_dV > abs_dY) && (abs_dV <= abs_dY + 0x10);
+				const bool bias_dV_down = (abs_dV < abs_dY) && (abs_dV >= abs_dY - 0x10);
 
-			// Save rounding info in unused Q.
-			vtx[i + j].RGBAQ.U32[1] = prim_topleft | (round_settings << 24);
+				// The sign of dU and dV, and the anchor point of where the coordinates are aligned
+				// flips whether the nudge becomes an upward or downward bias. The logic could
+				// probably be simplified with 'xor' but this seems clearer.
+				bias_U_up =
+					(anchor_XU0 && dU > 0 && bias_dU_up) || (anchor_XU0 && dU < 0 && bias_dU_down) ||
+					(anchor_XU1 && dU > 0 && bias_dU_down) || (anchor_XU1 && dU < 0 && bias_dU_up);
+				bias_U_down =
+					(anchor_XU0 && dU > 0 && bias_dU_down) || (anchor_XU0 && dU < 0 && bias_dU_up) ||
+					(anchor_XU1 && dU > 0 && bias_dU_up) || (anchor_XU1 && dU < 0 && bias_dU_down);
+				bias_V_up =
+					(anchor_YV0 && dV > 0 && bias_dV_up) || (anchor_YV0 && dV < 0 && bias_dV_down) ||
+					(anchor_YV1 && dV > 0 && bias_dV_down) || (anchor_YV1 && dV < 0 && bias_dV_up);
+				bias_V_down =
+					(anchor_YV0 && dV > 0 && bias_dV_down) || (anchor_YV0 && dV < 0 && bias_dV_up) ||
+					(anchor_YV1 && dV > 0 && bias_dV_up) || (anchor_YV1 && dV < 0 && bias_dV_down);
+			}
+
+			// Determine whether we do rounding on U and/or V.
+			const bool allow_round_U = (valid_U0 && valid_U1) && (scaled_aligned_U || aligned_denom_XU || bias_U_up || bias_U_down);
+			const bool allow_round_V = (valid_V0 && valid_V1) && (scaled_aligned_V || aligned_denom_YV || bias_V_up || bias_V_down);
+
+			// Get rounding info for each vertex.
+			for (u32 j = 0; j < n; j++)
+			{
+				u32 round_U = 0; // Round flag for U.
+				u32 round_V = 0; // Round flag for V.
+				int sX = -1; // Stepping origin X (no error at these X).
+				int sY = -1; // Stepping origin Y (no error at these Y).
+
+				if constexpr (primclass == GS_TRIANGLE_CLASS)
+				{
+					// Hypothesis: The GS steps along the left edge when rasterizing triangles. For bottom-right
+					// triangles, the left edge goes from bottom to top, so it flips the direction of V stepping.
+					const int corner_X = (j < 3) ? X0 : X1;
+					const int corner_Y = (j < 3) ? Y0 : Y1;
+					const int max_X = std::max(X0, X1);
+					const int max_Y = std::max(Y0, Y1);
+					const bool bottom_right_triangle = (corner_X == max_X) && (corner_Y == max_Y);
+
+					// Determine whether stepping direction of U, V is negative.
+					const bool negU = (dX < 0) != (dU < 0);
+					const bool negV = ((dY < 0) != (dV < 0)) != bottom_right_triangle;
+
+					// For triangles, both dX and dY must be powers of 2 for no error.
+					round_U = (negU || (pow2_dX && pow2_dY) || (dU == 0)) ? ROUND_UV_UP : ROUND_UV_DOWN;
+					round_V = (negV || (pow2_dX && pow2_dY) || (dV == 0)) ? ROUND_UV_UP : ROUND_UV_DOWN;
+
+					// Hypothesis: triangles step along the left edge and left-to-right on scanlines,
+					// so there's no error at the first vertex of the left edge.
+					sX = std::min(X0, X1);
+					sY = bottom_right_triangle ? std::max(Y0, Y1) : std::min(Y0, Y1);
+				}
+				else
+				{
+					// For sprites, treat each axis independently.
+					round_U = ((dU < 0) || pow2_dX || (dU == 0)) ? ROUND_UV_UP : ROUND_UV_DOWN;
+					round_V = ((dV < 0) || pow2_dY || (dV == 0)) ? ROUND_UV_UP : ROUND_UV_DOWN;
+
+					// Hypothesis: The GS steps in the direction specified by vertices when rasterizing
+					// sprites so there's no error at the X or Y of the first vertex.
+					sX = X0;
+					sY = Y0;
+				}
+
+				// Explicit biasing overrides rounding error heuristics.
+				round_U = bias_U_up ? ROUND_UV_UP : bias_U_down ? ROUND_UV_DOWN : round_U;
+				round_V = bias_V_up ? ROUND_UV_UP : bias_V_down ? ROUND_UV_DOWN : round_V;
+
+				// Determine whether this quad had pixel to texel centers perfectly aligned.
+				// This helps determine whether we can disable bilinear.
+				if (pixel_centers_aligned)
+				{
+					(*pixel_centers_aligned) &= (round_U == ROUND_UV_UP) && scaled_aligned_U_centered;
+					(*pixel_centers_aligned) &= (round_V == ROUND_UV_UP) && scaled_aligned_V_centered;
+				}
+
+				if (swap_uv)
+				{
+					round_U |= ROUND_UV_SWAP;
+					round_V |= ROUND_UV_SWAP;
+				}
+
+				// FIXME: Is the per-pixel flag redundant?
+				// if (!allow_round_U)
+				// 	round_U &= ~(ROUND_UV_UP | ROUND_UV_DOWN);
+				// if (!allow_round_V)
+				// 	round_V &= ~(ROUND_UV_UP | ROUND_UV_DOWN);
+
+				if (GSIsHardwareRenderer())
+				{
+					// Decide if we will allow per-pixel rounding adjustments.
+					round_U |= (allow_round_U ? ROUND_UV_PER_PIXEL : 0);
+					round_V |= (allow_round_V ? ROUND_UV_PER_PIXEL : 0);
+				}
+				else
+				{
+					// SW renderer is all or nothing, either do per pixel or not at all.
+					round_U = allow_round_U ? round_U : 0;
+					round_V = allow_round_V ? round_V : 0;
+				}
+
+				// Rounding settings (4 bits each for each U, V).
+				const u32 round_settings = round_U | (round_V << 4);
+
+				// Save pre-divided UV in ST.
+				vtx[i + j].ST.U64 = GetUV(vtx[i + j]).U64[0];
+
+				// Save top-left integer coords in 24 bits.
+				const u32 prim_topleft = ((sX >> 4) & 0xFFF) | (((sY >> 4) & 0xFFF) << 12);
+
+				// Save rounding info in unused Q.
+				vtx[i + j].RGBAQ.U32[1] = prim_topleft | (round_settings << 24);
+			}
+		}
+
+		if (GSIsHardwareRenderer() && primclass == GS_TRIANGLE_CLASS)
+		{
+			// Reorder the vertices so that the right angle comes first and the horizontal edge
+			// comes before the vertical edge.
+			GSVertex v[6] = {
+				vtx[i + 0 + tri0.b],
+				vtx[i + 0 + tri0.c],
+				vtx[i + 0 + tri0.a],
+				vtx[i + 3 + tri1.b],
+				vtx[i + 3 + tri1.c],
+				vtx[i + 3 + tri1.a],
+			};
+			vtx[i + 0] = v[0];
+			vtx[i + 1] = v[1];
+			vtx[i + 2] = v[2];
+			vtx[i + 3] = v[3];
+			vtx[i + 4] = v[4];
+			vtx[i + 5] = v[5];
 		}
 	}
 
 	return true;
 }
 
-bool GSState::GetVertexUVRoundingInfo()
+bool GSState::GetVertexUVRoundingInfo(const bool tex, const bool upscaling, bool* pixel_centers_aligned)
 {
 	switch (m_vt.m_primclass)
 	{
 		case GS_TRIANGLE_CLASS:
-			if (PRIM->FST)
-				return GetVertexUVRoundingInfoImpl<GS_TRIANGLE_CLASS, true>();
+			if (tex)
+			{
+				if (PRIM->FST)
+					return GetVertexUVRoundingInfoImpl<GS_TRIANGLE_CLASS, true, true>(upscaling, pixel_centers_aligned);
+				else
+					return GetVertexUVRoundingInfoImpl<GS_TRIANGLE_CLASS, true, false>(upscaling, pixel_centers_aligned);
+			}
 			else
-				return GetVertexUVRoundingInfoImpl<GS_TRIANGLE_CLASS, false>();
+			{
+				return GetVertexUVRoundingInfoImpl<GS_TRIANGLE_CLASS, false, false>(upscaling, pixel_centers_aligned);
+			}
 		case GS_SPRITE_CLASS:
-			if (PRIM->FST)
-				return GetVertexUVRoundingInfoImpl<GS_SPRITE_CLASS, true>();
+			if (tex)
+			{
+				if (PRIM->FST)
+					return GetVertexUVRoundingInfoImpl<GS_SPRITE_CLASS, true, true>(upscaling, pixel_centers_aligned);
+				else
+					return GetVertexUVRoundingInfoImpl<GS_SPRITE_CLASS, true, false>(upscaling, pixel_centers_aligned);
+			}
 			else
-				return GetVertexUVRoundingInfoImpl<GS_SPRITE_CLASS, false>();
+			{
+				return GetVertexUVRoundingInfoImpl<GS_SPRITE_CLASS, false, false>(upscaling, pixel_centers_aligned);
+			}
 		default:
 			return false;
 	}

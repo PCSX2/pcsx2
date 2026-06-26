@@ -758,7 +758,8 @@ Pcsx2Config::GSOptions::GSOptions()
 	HWROV = false;
 	HWROVLogging = false;
 	HWROVBarriersVK = false;
-	AccurateUVRounding = false;
+	AccurateUVRounding = GSAccurateUVRoundingMode::On;
+	SpriteAlign = GSSpriteAlignMode::AlignClamp;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -862,6 +863,8 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(UserHacks_BilinearHack) &&
 		OpEqu(OverrideTextureBarriers) &&
 		OpEqu(DepthFeedbackMode) &&
+		OpEqu(SpriteAlign) &&
+		OpEqu(AccurateUVRounding) &&
 
 		OpEqu(CAS_Sharpness) &&
 		OpEqu(ShadeBoost_Brightness) &&
@@ -1050,7 +1053,6 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(HWROV);
 	SettingsWrapBitBool(HWROVLogging);
 	SettingsWrapBitBool(HWROVBarriersVK);
-	SettingsWrapBitBoolEx(AccurateUVRounding, "AccurateUVRounding");
 	SettingsWrapIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
 	SettingsWrapIntEnumEx(TextureFiltering, "filter");
 	SettingsWrapIntEnumEx(TexturePreloading, "texture_preloading");
@@ -1067,6 +1069,8 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitfieldEx(SkipDrawEnd, "UserHacks_SkipDraw_End");
 	SkipDrawEnd = std::max(SkipDrawStart, SkipDrawEnd);
 
+	SettingsWrapIntEnumEx(AccurateUVRounding, "AccurateUVRounding");
+	SettingsWrapIntEnumEx(SpriteAlign, "SpriteAlign");
 	SettingsWrapIntEnumEx(UserHacks_HalfPixelOffset, "UserHacks_HalfPixelOffset");
 	SettingsWrapBitfieldEx(UserHacks_RoundSprite, "UserHacks_round_sprite_offset");
 	SettingsWrapIntEnumEx(UserHacks_NativeScaling, "UserHacks_native_scaling");
