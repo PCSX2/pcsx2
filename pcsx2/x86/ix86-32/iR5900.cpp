@@ -123,110 +123,114 @@ static void pauseAAA()
 static ZydisFormatterFunc s_old_print_address;
 static ZydisFormatterFunc s_old_print_disp;
 
-static int Address2Symbol(u64 address, char* buf)
+static bool Address2Symbol(u64 address, SmallString &buf)
 {
-	u32 len = 0;
 
 #define A(x) ((u64)(x))
 
 	if (address >= A(eeMem->Main) && address < A(eeMem->Scratch))
 	{
-		len = sprintf(buf, "eeMem+0x%08X", static_cast<u32>(address - A(eeMem->Main)));
+		buf.append_format("eeMem+0x{:08X}", static_cast<u32>(address - A(eeMem->Main)));
 	}
 	else if (address >= A(eeMem->Scratch) && address < A(eeMem->ROM))
 	{
-		len = sprintf(buf, "eeScratchpad+0x%08X", static_cast<u32>(address - A(eeMem->Scratch)));
+
+		buf.append_format("eeScratchpad+0x{:08X}", static_cast<u32>(address - A(eeMem->Scratch)));
 	}
 	else if (address >= A(&cpuRegs.GPR) && address < A(&cpuRegs.HI))
 	{
 		const u32 offset = static_cast<u32>(address - A(&cpuRegs)) % 16u;
 		if (offset != 0)
-			len = sprintf(buf, "cpuRegs.GPR.%s+%u", GPR_REG[static_cast<u32>(address - A(&cpuRegs)) / 16u], offset);
+			buf.append_format("cpuRegs.GPR.{}+{}", GPR_REG[static_cast<u32>(address - A(&cpuRegs)) / 16u], offset);
 		else
-			len = sprintf(buf, "cpuRegs.GPR.%s", GPR_REG[static_cast<u32>(address - A(&cpuRegs)) / 16u]);
+			buf.append_format("cpuRegs.GPR.{}", GPR_REG[static_cast<u32>(address - A(&cpuRegs)) / 16u]);
 	}
 	else if (address >= A(&cpuRegs.HI) && address < A(&cpuRegs.CP0))
 	{
 		const u32 offset = static_cast<u32>(address - A(&cpuRegs.HI)) % 16u;
 		if (offset != 0)
-			len = sprintf(buf, "cpuRegs.%s+%u", (address >= A(&cpuRegs.LO) ? "LO" : "HI"), offset);
+			buf.append_format("cpuRegs.{}+{}", (address >= A(&cpuRegs.LO) ? "LO" : "HI"), offset);
 		else
-			len = sprintf(buf, "cpuRegs.%s", (address >= A(&cpuRegs.LO) ? "LO" : "HI"));
+			buf.append_format("cpuRegs.{}", (address >= A(&cpuRegs.LO) ? "LO" : "HI"));
 	}
 	else if (address == A(&cpuRegs.pc))
 	{
-		len = sprintf(buf, "cpuRegs.pc");
+		buf.append_format("cpuRegs.pc");
 	}
 	else if (address == A(&cpuRegs.cycle))
 	{
-		len = sprintf(buf, "cpuRegs.cycle");
+		buf.append_format("cpuRegs.cycle");
 	}
 	else if (address == A(&cpuRegs.nextEventCycle))
 	{
-		len = sprintf(buf, "cpuRegs.nextEventCycle");
+		buf.append_format("cpuRegs.nextEventCycle");
 	}
 	else if (address >= A(fpuRegs.fpr) && address < A(fpuRegs.fprc))
 	{
-		len = sprintf(buf, "fpuRegs.f%02u", static_cast<u32>(address - A(fpuRegs.fpr)) / 4u);
+		buf.append_format("fpuRegs.f{:02}", static_cast<u32>(address - A(fpuRegs.fpr)) / 4u);
 	}
 	else if (address >= A(&VU0.VF[0]) && address < A(&VU0.VI[0]))
 	{
 		const u32 offset = static_cast<u32>(address - A(&VU0.VF[0])) % 16u;
 		if (offset != 0)
-			len = sprintf(buf, "VU0.VF[%02u]+%u", static_cast<u32>(address - A(&VU0.VF[0])) / 16u, offset);
+			buf.append_format("VU0.VF[{:02}]+{}", static_cast<u32>(address - A(&VU0.VF[0])) / 16u, offset);
 		else
-			len = sprintf(buf, "VU0.VF[%02u]", static_cast<u32>(address - A(&VU0.VF[0])) / 16u);
+			buf.append_format("VU0.VF[{:02}]", static_cast<u32>(address - A(&VU0.VF[0])) / 16u);
 	}
 	else if (address >= A(&VU0.VI[0]) && address < A(&VU0.ACC))
 	{
 		const u32 offset = static_cast<u32>(address - A(&VU0.VI[0])) % 16u;
 		const u32 vi = static_cast<u32>(address - A(&VU0.VI[0])) / 16u;
 		if (offset != 0)
-			len = sprintf(buf, "VU0.%s+%u", COP2_REG_CTL[vi], offset);
+			buf.append_format("VU0.{}+{}", COP2_REG_CTL[vi], offset);
 		else
-			len = sprintf(buf, "VU0.%s", COP2_REG_CTL[vi]);
+			buf.append_format("VU0.{}", COP2_REG_CTL[vi]);
 	}
 	else if (address >= A(&VU0.ACC) && address < A(&VU0.q))
 	{
 		const u32 offset = static_cast<u32>(address - A(&VU0.ACC));
 		if (offset != 0)
-			len = sprintf(buf, "VU0.ACC+%u", offset);
+			buf.append_format("VU0.ACC+{}", offset);
 		else
-			len = sprintf(buf, "VU0.ACC");
+			buf.append("VU0.ACC");
 	}
 	else if (address >= A(&VU0.q) && address < A(&VU0.idx))
 	{
 		const u32 offset = static_cast<u32>(address - A(&VU0.q)) % 16u;
 		const char* reg = (address >= A(&VU0.p)) ? "p" : "q";
 		if (offset != 0)
-			len = sprintf(buf, "VU0.%s+%u", reg, offset);
+			buf.append_format("VU0.{}+{}", reg, offset);
 		else
-			len = sprintf(buf, "VU0.%s", reg);
+			buf.append_format("VU0.{}", reg);
+	}
+	else
+	{
+		return false;
 	}
 
 #undef A
 
-	return len;
+	return true;
 }
 
 static ZyanStatus ZydisFormatterPrintDisplacement(const ZydisFormatter* formatter,
 	ZydisFormatterBuffer* buffer, ZydisFormatterContext* context)
 {
-	char buf[128];
-	u32 len = 0;
 	u64 address = (u64)R5900_TEXTPTR + context->operand->mem.disp.value;
+	bool did_print = false;
+	SmallString buf;
 
 	// hardcoded RTEXTPTR
 	if (context->operand->mem.base == ZYDIS_REGISTER_RBX) {
-		len = Address2Symbol(address, buf);
+		did_print = Address2Symbol(address, buf);
 	}
 
-	if (len > 0)
+	if (did_print)
 	{
 		ZYAN_CHECK(ZydisFormatterBufferAppend(buffer, ZYDIS_TOKEN_SYMBOL));
 		ZyanString* string;
 		ZYAN_CHECK(ZydisFormatterBufferGetString(buffer, &string));
-		return ZyanStringAppendFormat(string, "-%s+&%s", "R5900_TEXTPTR", buf);
+		return ZyanStringAppendFormat(string, "-%s+&%s", "R5900_TEXTPTR", buf.c_str());
 	}
 
 	return s_old_print_disp(formatter, buffer, context);
@@ -239,17 +243,17 @@ static ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* forma
 	ZYAN_CHECK(ZydisCalcAbsoluteAddress(context->instruction, context->operand,
 		context->runtime_address, &address));
 
-	char buf[128];
-	u32 len = 0;
+	bool did_print = false;
+	SmallString buf;
 
-	len = Address2Symbol(address, buf);
+	did_print = Address2Symbol(address, buf);
 
-	if (len > 0)
+	if (did_print)
 	{
 		ZYAN_CHECK(ZydisFormatterBufferAppend(buffer, ZYDIS_TOKEN_SYMBOL));
 		ZyanString* string;
 		ZYAN_CHECK(ZydisFormatterBufferGetString(buffer, &string));
-		return ZyanStringAppendFormat(string, "&%s", buf);
+		return ZyanStringAppendFormat(string, "&%s", buf.c_str());
 	}
 
 	return s_old_print_address(formatter, buffer, context);
