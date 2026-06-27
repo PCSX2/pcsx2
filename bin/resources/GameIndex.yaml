@@ -22086,10 +22086,10 @@ SLES-52939:
   name: "Airborne Troops - Countdown to D-Day"
   region: "PAL-M4"
 SLES-52940:
-  name: "S.L.A.I. Steel Lancer Arena International"
+  name: "S.L.A.I. - Steel Lancer Arena International"
   region: "PAL-M3"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes double image and aligns glow effects.
+    halfPixelOffset: 5 # Fixes double image and aligns glow effects.
 SLES-52941:
   name: "Gungrave - Overdose"
   region: "PAL-M3"
@@ -45986,12 +45986,12 @@ SLPM-65790:
     nativeScaling: 4 # Fixes post lighting.
     getSkipCount: "GSC_MetalGearSolid3" # Fixes depth of field blur.
 SLPM-65791:
-  name: "S.L.A.I -STEEL LANCER ARENA INTERNATIONAL-"
+  name: "S.L.A.I. -STEEL LANCER ARENA INTERNATIONAL-"
   name-sort: "すれい -すてぃーる らんさー ありーな いんたーなしょなる-"
   name-en: "S.L.A.I. - Steel Lancer Arena International"
   region: "NTSC-J"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes double image and aligns glow effects.
+    halfPixelOffset: 5 # Fixes double image and aligns glow effects.
 SLPM-65793:
   name: "SSX3 [EA BEST HITS]"
   name-sort: "SSX3 [EA BEST HITS]"
@@ -69528,11 +69528,11 @@ SLUS-20968:
   name: "Karaoke Revolution Volume 2"
   region: "NTSC-U"
 SLUS-20969:
-  name: "S.L.A.I. - Steel Lancer Arena International - Phantom Crash"
+  name: "S.L.A.I. - Steel Lancer Arena International"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes double image and aligns glow effects.
+    halfPixelOffset: 5 # Fixes double image and aligns glow effects.
 SLUS-20970:
   name: "Rumble Roses"
   region: "NTSC-U"
@@ -76059,7 +76059,7 @@ SLUS-29132:
   name: "S.L.A.I. - Steel Lancer Arena International - Phantom Crash [Public Beta Vol.1.0]"
   region: "NTSC-U"
   gsHWFixes:
-    halfPixelOffset: 4 # Fixes double image and aligns glow effects.
+    halfPixelOffset: 5 # Fixes double image and aligns glow effects.
 SLUS-29133:
   name: "Namco Transmission Demo Disc Vol.2"
   region: "NTSC-U"
@@ -76860,6 +76860,8 @@ TLES-52781:
 TLES-52940:
   name: "S.L.A.I. - Steel Lancer Arena International Beta Trial Code"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes double image and aligns glow effects.
 TLES-53544:
   name: "Pro Evolution Soccer 5 Beta Trial Code"
   region: "PAL-E"
