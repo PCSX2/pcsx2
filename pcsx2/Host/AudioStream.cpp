@@ -819,13 +819,3 @@ void AudioStreamParameters::LoadSave(SettingsWrapper& wrap, const char* section)
 		expand_high_cutoff = std::min<u8>(expand_high_cutoff, 100);
 	}
 }
-
-bool AudioStreamParameters::operator!=(const AudioStreamParameters& rhs) const
-{
-	return (std::memcmp(this, &rhs, sizeof(*this)) != 0);
-}
-
-bool AudioStreamParameters::operator==(const AudioStreamParameters& rhs) const
-{
-	return (std::memcmp(this, &rhs, sizeof(*this)) == 0);
-}

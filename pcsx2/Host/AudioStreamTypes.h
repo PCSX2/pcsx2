@@ -5,6 +5,8 @@
 
 #include "common/Pcsx2Defs.h"
 
+#include <compare>
+
 class SettingsWrapper;
 
 enum class AudioBackend : u8
@@ -75,6 +77,5 @@ struct AudioStreamParameters
 
 	void LoadSave(SettingsWrapper& wrap, const char* section);
 
-	bool operator==(const AudioStreamParameters& rhs) const;
-	bool operator!=(const AudioStreamParameters& rhs) const;
+	friend auto operator<=>(const AudioStreamParameters& lhs, const AudioStreamParameters& rhs) = default;
 };
