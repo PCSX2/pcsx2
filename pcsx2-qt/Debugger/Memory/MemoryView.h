@@ -50,15 +50,15 @@ private:
 	QWidget* parent;
 	MemoryViewType displayType = MemoryViewType::BYTE;
 	bool littleEndian = true;
-	u32 rowCount;
-	u32 rowVisible;
-	s32 rowHeight;
+	u32 rowCount = 0;
+	u32 rowVisible = 0;
+	s32 rowHeight = 0;
 
 	// Stuff used for selection handling
 	// This gets set every paint and depends on the window size / current display mode (1byte,2byte,etc)
-	s32 valuexAxis; // Where the hexadecimal view begins
-	s32 textXAxis; // Where the text view begins
-	s32 row1YAxis; // Where the first row starts
+	s32 valuexAxis = 0; // Where the hexadecimal view begins
+	s32 textXAxis = 0; // Where the text view begins
+	s32 row1YAxis = 0; // Where the first row starts
 	s32 segmentXAxis[16]; // Where the segments begin
 	bool selectedText = false; // Whether the user has clicked on text or hex
 
@@ -89,9 +89,9 @@ public:
 	{
 	}
 
-	u32 startAddress;
-	u32 selectedAddress;
-	s32 selectedIndex;
+	u32 startAddress = 0;
+	u32 selectedAddress = 0;
+	s32 selectedIndex = 0;
 
 	void UpdateStartAddress(u32 start);
 	void UpdateSelectedAddress(u32 selected, bool page = false);
