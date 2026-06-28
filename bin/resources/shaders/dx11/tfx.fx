@@ -214,7 +214,7 @@ struct PS_OUTPUT_REAL
 
 #if PS_RETURN_DEPTH
 	// In DX12 we do depth feedback loops with a color copy.
-	#if SW_DEPTH && PS_NO_COLOR1 && DX12
+	#if SW_DEPTH && PS_NO_COLOR1 && PS_DEPTH_FEEDBACK_SUPPORT == 2
 		#if NUM_RTS > 0
 			float depth_color : SV_Target1;
 		#else
@@ -1607,7 +1607,7 @@ if (bad)
 	// Depth write back
 #if PS_RETURN_DEPTH
 	output_real.depth = input.p.z;
-	#if SW_DEPTH && PS_NO_COLOR1 && DX12
+	#if SW_DEPTH && PS_NO_COLOR1 && PS_DEPTH_FEEDBACK_SUPPORT == 2
 		// Output color clone for feedback.
 		output_real.depth_color = input.p.z;
 	#endif

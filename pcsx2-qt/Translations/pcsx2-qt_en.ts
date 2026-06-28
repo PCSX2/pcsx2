@@ -6417,42 +6417,42 @@ Do you want to overwrite?</source>
 <context>
     <name>FileOperations</name>
     <message>
-        <location filename="../QtUtils.cpp" line="281"/>
+        <location filename="../QtUtils.cpp" line="280"/>
         <source>Failed to show file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="282"/>
+        <location filename="../QtUtils.cpp" line="281"/>
         <source>Failed to show file in file explorer.
 
 The file was: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="290"/>
+        <location filename="../QtUtils.cpp" line="289"/>
         <source>Show in Explorer</source>
         <extracomment>Windows action to show a file in Windows Explorer</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="293"/>
+        <location filename="../QtUtils.cpp" line="292"/>
         <source>Show in Finder</source>
         <extracomment>macOS action to show a file in Finder</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="296"/>
+        <location filename="../QtUtils.cpp" line="295"/>
         <source>Open Containing Directory</source>
         <extracomment>Linux/*NIX: Opens the system file manager to the directory containing a selected file</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="304"/>
+        <location filename="../QtUtils.cpp" line="303"/>
         <source>Failed to open URL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="305"/>
+        <location filename="../QtUtils.cpp" line="304"/>
         <source>Failed to open URL.
 
 The URL was: %1</source>
@@ -12681,37 +12681,37 @@ Please see our official documentation for more information.</source>
 <context>
     <name>GameDatabase</name>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="912"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="914"/>
         <source>Minimum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="913"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="915"/>
         <source>Basic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="914"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="916"/>
         <source>Medium</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="915"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="917"/>
         <source>High</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="916"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="918"/>
         <source>Full</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="917"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="919"/>
         <source>Maximum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="921"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="923"/>
         <source>{0} Current Blending Accuracy is {1}.
 Recommended Blending Accuracy for this game is {2}.
 You can adjust the blending level in Game Properties to improve
@@ -12719,39 +12719,55 @@ graphical quality, but this will increase system requirements.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="964"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="946"/>
+        <source>{0} Accurate Alpha Test is currently disabled.
+This game recommends enabling Accurate Alpha Test.
+You can enable it in Game Properties to improve graphical
+accuracy, but this may increase system requirements.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="967"/>
+        <source>{0} AA1 is currently disabled.
+This game recommends enabling AA1.
+You can enable it in Game Properties to improve graphical
+accuracy, but this may increase system requirements.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="1008"/>
         <source>Manual GS hardware renderer fixes are enabled, automatic fixes were not applied:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="1205"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="1249"/>
         <source>No tracks provided.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="1214"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="1258"/>
         <source>Hash {} is not in database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="1223"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="1267"/>
         <source>Data track number does not match data track in database.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="1240"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="1284"/>
         <source>Track {0} with hash {1} is not found in database.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="1251"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="1295"/>
         <source>Track {0} with hash {1} is for a different game ({2}).
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameDatabase.cpp" line="1262"/>
+        <location filename="../../pcsx2/GameDatabase.cpp" line="1306"/>
         <source>Track {0} with hash {1} does not match database track.
 </source>
         <translation type="unfinished"></translation>
@@ -13481,7 +13497,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameList/GameListWidget.cpp" line="605"/>
+        <location filename="../GameList/GameListWidget.cpp" line="678"/>
         <source>Reset All Columns</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13866,7 +13882,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../Settings/GameSummaryWidget.ui" line="555"/>
-        <source>Search on Redump.org...</source>
+        <source>Search on Redump.info...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -17310,7 +17326,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1766"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1778"/>
         <source>Save slot {0} selected ({1}).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17400,108 +17416,108 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
 <context>
     <name>ImGuiOverlays</name>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="809"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="821"/>
         <source>Compiled {0} shader in {1}ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="811"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="823"/>
         <source>Compiled {0} shaders in {1}ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1197"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1209"/>
         <source>{} Recording Input</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1201"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1213"/>
         <source>{} Replaying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1337"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1349"/>
         <source>{} Paused</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1366"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1378"/>
         <source>Saved {0} days ago at {1:%H:%M} on {1:%a} {1:%Y/%m/%d}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1368"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1380"/>
         <source>Saved in the future at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1370"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1382"/>
         <source>Saved {0} hours, {1} minutes ago at {2:%H:%M}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1371"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1383"/>
         <source>Saved {0} minutes ago at {1:%H:%M}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1372"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1384"/>
         <source>Saved {} seconds ago</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1373"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1385"/>
         <source>Saved just now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1402"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1414"/>
         <source>Save state selector is unavailable without a valid game serial.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1487"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1499"/>
         <source>Empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1492"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1504"/>
         <source>Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1494"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1506"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1496"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1508"/>
         <source>Select Previous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1498"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1510"/>
         <source>Select Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1500"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1512"/>
         <source>Close Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1553"/>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1575"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1565"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1587"/>
         <source>Save Slot {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1576"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1588"/>
         <source>No save present in this slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1763"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1775"/>
         <source>no save yet</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20097,14 +20113,119 @@ Savestates should not be used in place of in-game saves.</source>
     </message>
 </context>
 <context>
+    <name>MemoryCardListItem</name>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="121"/>
+        <source>Swap Memory Cards</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="133"/>
+        <source>Slot %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="141"/>
+        <source>Reset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="141"/>
+        <source>Eject Memory Card</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="180"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="303"/>
+        <source>Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="180"/>
+        <source>This Memory Card cannot be recognized or is not a valid file type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="240"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="250"/>
+        <source>Delete Memory Card</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="241"/>
+        <source>Are you sure you wish to delete the Memory Card &apos;%1&apos;?
+
+This action cannot be reversed, and you will lose any saves on the card.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="251"/>
+        <source>Failed to delete the Memory Card. The log may have more information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="265"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="272"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="279"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="286"/>
+        <source>Rename Memory Card</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="265"/>
+        <source>New Card Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="272"/>
+        <source>New name is invalid, it must end with .ps2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="280"/>
+        <source>New name is invalid, a card with this name already exists.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="287"/>
+        <source>Failed to rename Memory Card. The log may contain more information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="303"/>
+        <source>Cannot convert an unformatted memory card.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="322"/>
+        <source>Use for Slot %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="327"/>
+        <source>Rename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="328"/>
+        <source>Convert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="329"/>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MemoryCardListWidget</name>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="450"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="507"/>
         <source>Yes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="450"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="507"/>
         <source>No</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20138,7 +20259,6 @@ Savestates should not be used in place of in-game saves.</source>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="90"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="107"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20169,149 +20289,67 @@ Savestates should not be used in place of in-game saves.</source>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="148"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="299"/>
         <source>Create</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="155"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="293"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="162"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="294"/>
         <source>Convert</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="169"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="295"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="87"/>
-        <source>Swap Memory Cards</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="107"/>
-        <source>Eject Memory Card</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="146"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="269"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="334"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="368"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="206"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="216"/>
-        <source>Delete Memory Card</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="231"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="238"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="245"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="252"/>
-        <source>Rename Memory Card</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="231"/>
-        <source>New Card Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="238"/>
-        <source>New name is invalid, it must end with .ps2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="246"/>
-        <source>New name is invalid, a card with this name already exists.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="99"/>
-        <source>Slot %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="146"/>
-        <source>This Memory Card cannot be recognized or is not a valid file type.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="207"/>
-        <source>Are you sure you wish to delete the Memory Card &apos;%1&apos;?
-
-This action cannot be reversed, and you will lose any saves on the card.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="217"/>
-        <source>Failed to delete the Memory Card. The log may have more information.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="253"/>
-        <source>Failed to rename Memory Card. The log may contain more information.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="269"/>
-        <source>Cannot convert an unformatted memory card.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="288"/>
-        <source>Use for Slot %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="334"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="368"/>
         <source>Both slots must have a card selected to swap.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="350"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="402"/>
         <source>PS2 (8MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="353"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="405"/>
         <source>PS2 (16MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="356"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="408"/>
         <source>PS2 (32MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="359"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="411"/>
         <source>PS2 (64MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="362"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="414"/>
         <source>PS1 (128KB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="366"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="375"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="418"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="427"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="371"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="423"/>
         <source>PS2 (Folder)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20319,12 +20357,12 @@ This action cannot be reversed, and you will lose any saves on the card.</source
 <context>
     <name>MemoryCardSlotWidget</name>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="507"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="568"/>
         <source>%1 [%2]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="513"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="574"/>
         <source>%1 [Missing]</source>
         <extracomment>Ignore Crowdin&apos;s warning for [Missing], the text should be translated.</extracomment>
         <translation type="unfinished"></translation>

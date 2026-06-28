@@ -183,6 +183,8 @@ The clamp modes are also numerically based.
 * recommendedBlendingLevel    [`0` or `1` or `2` or `3` or `4` or `5`]      {Minimum, Basic, Medium, High, Full(Slow), Maximum (Very Slow)}    Default: Automatic (No value, looks up GameDB)
 * readTCOnClose               [`0` or `1`]          {Off, On}                               Default: Off (`0`) // Tab 3 Hardware Fixes (4th checkbox on right row 2)
 * limit24BitDepth             [`0` or `1`or `2`]    {Disabled, Prioritise Upper Bits, Prioritise Lower Bits}                                Default: Off (`0`)
+* recommendedAccurateAlphaTest             [`0` or `1`]    {Disabled, Advise to use AAT}                                Default: Off (`0`)
+* recommendedHWAA1             [`0` or `1`]    {Disabled, Advise to use AA1}                                Default: Off (`0`)
 
 ### GS Hardware Upscaling Fixes
 

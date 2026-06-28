@@ -9,6 +9,7 @@
 
 #include "pcsx2/GameList.h"
 
+#include <QtGui/QColor>
 #include <QtGui/QMovie>
 #include <QtGui/QPixmap>
 #include <QtWidgets/QListView>
@@ -53,8 +54,9 @@ public:
 	void cancelRefresh();
 	void reloadThemeSpecificImages();
 	void setCustomBackground();
-	void updateCustomBackgroundState(const bool force_start = false);
+	void updateCustomBackgroundState();
 	void processBackgroundFrames();
+	void updateBackgroundTextColor(const QPixmap& frame);
 
 	bool isShowingGameList() const;
 	bool isShowingGameGrid() const;
@@ -128,6 +130,10 @@ private:
 
 	QMovie* m_background_movie = nullptr;
 	QPixmap m_background_pixmap;
+	QColor m_background_text_color;
 	QtUtils::ScalingMode m_background_scaling = QtUtils::ScalingMode::Fit;
 	float m_background_opacity = 100.0f;
+	int m_background_last_frame = -1;
+	QSize m_background_last_size;
+	qreal m_background_last_dpr = 0.0;
 };
