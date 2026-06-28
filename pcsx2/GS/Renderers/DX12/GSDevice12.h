@@ -152,6 +152,9 @@ public:
 	/// Test for support for the specified texture format.
 	bool SupportsTextureFormat(DXGI_FORMAT format);
 
+	/// Test for UAV support for the specified texture format.
+	bool IsTextureFormatUAVCapable(DXGI_FORMAT format);
+
 	// Partial depth copies require ProgrammableSamplePositions tier 1.
 	bool SupportsProgrammableSamplePositions();
 
@@ -391,6 +394,7 @@ private:
 	std::array<ComPtr<ID3D12PipelineState>, 2> m_colclip_setup_pipelines{}; // [depth]
 	std::array<ComPtr<ID3D12PipelineState>, 2> m_colclip_finish_pipelines{}; // [depth]
 	std::array<std::array<ComPtr<ID3D12PipelineState>, 4>, 2> m_primid_image_setup_pipelines{}; // [depth][datm]
+	std::array<std::array<ComPtr<ID3D12PipelineState>, 3>, 3> m_rov_copy_pipelines{}; // [color][depth]
 	ComPtr<ID3D12PipelineState> m_fxaa_pipeline;
 	ComPtr<ID3D12PipelineState> m_shadeboost_pipeline;
 	ComPtr<ID3D12PipelineState> m_imgui_pipeline;
@@ -431,8 +435,7 @@ private:
 	void DestroySwapChainRTVs();
 	void DestroySwapChain();
 
-	GSTexture* CreateSurface(
-		GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) override;
+	GSTexture* CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format) override;
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE,
 		const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter) final;
@@ -547,13 +550,16 @@ public:
 	void SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox);
 	GSTexture12* SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, PipelineSelector& pipe);
 
+	void SetupOneshotROV(const GSHWDrawConfig& config, GSTexture12* rt, GSTexture12* ds,
+		const std::vector<GSVector4i>& rects, const GSVector2i& size);
+
 	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count);
 	void IASetIndexBuffer(const void* index, size_t count);
 	void VSSetIndexBuffer(const void* index, size_t count);
 
 	void PSSetShaderResource(int i, GSTexture* sr, bool check_state, ResourceType type = ResourceType::SRV);
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
-	void PSSetUnorderedAccess(GSTexture* rt, GSTexture* ds, bool write_rt, bool write_ds);
+	void PSSetROVs(GSTexture* rt, GSTexture* ds, bool write_rt, bool write_ds);
 
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, GSTexture* ds_as_rt, const GSVector4i& scissor,
 		bool depth_read = false, const GSVector2i& viewport_size = {});
@@ -613,6 +619,7 @@ public:
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE stencil_begin = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_ENDING_ACCESS_TYPE stencil_end = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 		GSVector4 clear_color = GSVector4::zero(), float clear_depth = 0.0f, u8 clear_stencil = 0);
+	void BeginTFXRenderPass(const GSHWDrawConfig& config, GSTexture12* rt, GSTexture12* ds, bool need_barrier);
 	void EndRenderPass();
 
 	void SetViewport(const D3D12_VIEWPORT& viewport);
@@ -711,6 +718,8 @@ private:
 	const ID3D12PipelineState* m_current_pipeline = nullptr;
 
 	std::unique_ptr<GSTexture12> m_null_texture;
+	std::unique_ptr<GSTexture12> m_rov_rt;
+	std::unique_ptr<GSTexture12> m_rov_ds;
 
 	// current pipeline selector - we save this in the struct to avoid re-zeroing it every draw
 	PipelineSelector m_pipeline_selector = {};

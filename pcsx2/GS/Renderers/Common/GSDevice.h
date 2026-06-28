@@ -791,6 +791,8 @@ struct alignas(16) GSHWDrawConfig
 				// ROVs
 				u32 rov_color : 1;
 				PS_ROV_DEPTH rov_depth : 2;
+				u32 rov_oneshot_color : 1;
+				PS_ROV_DEPTH rov_oneshot_depth : 2;
 			};
 
 			struct
@@ -899,6 +901,21 @@ struct alignas(16) GSHWDrawConfig
 		__fi bool HasDepthROVWrite() const
 		{
 			return rov_depth == PS_ROV_DEPTH::READ_WRITE;
+		}
+
+		__fi bool HasOneshotColorROV() const
+		{
+			return rov_oneshot_color;
+		}
+
+		__fi bool HasOneshotDepthROV() const
+		{
+			return rov_oneshot_depth == PS_ROV_DEPTH::READ_ONLY || rov_oneshot_depth == PS_ROV_DEPTH::READ_WRITE;
+		}
+
+		__fi bool HasOneshotROV() const
+		{
+			return HasOneshotColorROV() || HasOneshotDepthROV();
 		}
 	};
 	static_assert(sizeof(PSSelector) == 16, "PSSelector is 12 bytes");
@@ -1242,6 +1259,7 @@ struct alignas(16) GSHWDrawConfig
 	u32 indices_per_prim;  ///< Number of indices that make up one primitive
 	const std::vector<size_t>* drawlist;          ///< For reducing barriers on sprites
 	const std::vector<GSVector4i>* drawlist_bbox; ///< For RT copy when barriers not available.
+	const std::vector<GSVector4i>* draw_coarse_rasterize;
 	GSVector4i scissor; ///< Scissor rect
 	GSVector4i drawarea; ///< Area in the framebuffer which will be modified.
 	GSVector4i samplearea; ///< Area in the texture which will be sampled.
@@ -1482,8 +1500,7 @@ protected:
 
 	bool AcquireWindow(bool recreate_window);
 
-	virtual GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) = 0;
-	GSTexture* FetchSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_unused_texture);
+	virtual GSTexture* CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format) = 0;
 
 	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter) = 0;
 	virtual void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, Filter filter, const InterlaceConstantBuffer& cb) = 0;
@@ -1493,7 +1510,7 @@ protected:
 	/// Resolves CAS shader includes for the specified source.
 	static bool GetCASShaderSource(std::string* source);
 
-	/// Applies CAS and writes to the destination texture, which should be a RWTexture.
+	/// Applies CAS and writes to the destination texture, which should be a shader writeable texture.
 	virtual bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) = 0;
 
 	/// Perform texture operations for ImGui
@@ -1626,13 +1643,17 @@ public:
 	virtual void PopDebugGroup() = 0;
 	virtual void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) = 0;
 
+	GSTexture* FetchSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_reuse);
+	GSTexture* FetchSurface(GSTexture::Usage usage, const GSVector2i& size, int levels, GSTexture::Format format, bool clear, bool prefer_reuse);
 	GSTexture* CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
-	GSTexture* CreateDepthStencil(int w, int h, bool clear = true, bool prefer_reuse = true);
-	GSTexture* CreateDepthColor(int w, int h, bool clear = true, bool prefer_reuse = true);
-	GSTexture* CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse = false);
 	GSTexture* CreateRenderTarget(const GSVector2i& size, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreateFeedbackTarget(int w, int h, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreateFeedbackTarget(const GSVector2i& size, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreateShaderWriteTarget(int w, int h, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreateShaderWriteTarget(const GSVector2i& size, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreateDepthStencil(int w, int h, bool clear = true, bool prefer_reuse = true);
 	GSTexture* CreateDepthStencil(const GSVector2i& size, bool clear = true, bool prefer_reuse = true);
-	GSTexture* CreateDepthColor(const GSVector2i& size, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse = false);
 	GSTexture* CreateTexture(const GSVector2i& size, int mipmap_levels, GSTexture::Format format, bool prefer_reuse = false);
 	GSTexture* CreateCompatible(GSTexture* tex, bool clear = true, bool prefer_reuse = true);
 	GSTexture* CreateCompatible(GSTexture* tex, const GSVector2i& size, bool clear = true, bool prefer_reuse = true);

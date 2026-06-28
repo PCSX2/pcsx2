@@ -241,6 +241,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.spinCPUDuringReadbacks, "EmuCore/GS", "HWSpinCPUForReadbacks", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.spinGPUDuringReadbacks, "EmuCore/GS", "HWSpinGPUForReadbacks", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.rovBarriersVK, "EmuCore/GS", "HWROVBarriersVK", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.rovContinuousBarriers, "EmuCore/GS", "HWROVContinuousbarriers", 5000);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.rovOneshotBarriers, "EmuCore/GS", "HWROVOneshotBarriers", 50);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.texturePreloading, "EmuCore/GS", "texture_preloading", static_cast<int>(TexturePreloadingLevel::Off));
 
 	setTabVisible(m_advanced_tab, QtHost::ShouldShowAdvancedSettings());
@@ -788,6 +790,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 		dialog()->registerWidgetHelp(m_advanced.palFrameRate, tr("PAL Frame Rate"), tr("50.00 Hz"),
 			tr("Determines what frame rate PAL games run at."));
+
+		dialog()->registerWidgetHelp(m_advanced.rovContinuousBarriers, tr("ROV Continuous Barriers"), tr("5000"),
+			tr("Determines the minimum barriers per frame to activate continuous ROV mode."));
+
+		dialog()->registerWidgetHelp(m_advanced.rovOneshotBarriers, tr("ROV Oneshot Barriers"), tr("50"),
+			tr("Determines the minimum barriers in a draw to activate oneshot ROV mode."));
 	}
 }
 

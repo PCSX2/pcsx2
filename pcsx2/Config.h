@@ -743,6 +743,9 @@ struct Pcsx2Config
 		static constexpr int DEFAULT_SHADEBOOST_GAMMA = 50;
 		static constexpr int DEFAULT_SHADEBOOST_SATURATION = 50;
 
+		static constexpr u32 DEFAULT_ROV_CONTINUOUS_BARRIERS = 5000;
+		static constexpr u32 DEFAULT_ROV_ONESHOT_BARRIERS = 50;
+
 		union
 		{
 			u64 bitsets[2];
@@ -894,6 +897,8 @@ struct Pcsx2Config
 		TriFiltering TriFilter = DEFAULT_TRILINEAR_FILTERING_MODE;
 		s8 OverrideTextureBarriers = -1;
 		GSDepthFeedbackMode DepthFeedbackMode = GSDepthFeedbackMode::Auto;
+		u32 HWROVContinuousBarriers = DEFAULT_ROV_CONTINUOUS_BARRIERS;
+		u32 HWROVOneshotBarriers = DEFAULT_ROV_ONESHOT_BARRIERS;
 
 		u8 CAS_Sharpness = 50;
 		u8 ShadeBoost_Brightness = DEFAULT_SHADEBOOST_BRIGHTNESS;

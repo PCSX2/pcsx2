@@ -121,6 +121,8 @@ void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
 		}
 
 		g_texture_cache->IncAge();
+
+		NextFrameBarriers();
 	}
 	else
 	{
@@ -6241,7 +6243,7 @@ void GSRendererHW::EmulateDither()
 	if (m_conf.ps.dither || m_conf.blend_multi_pass.dither)
 	{
 		const GIFRegDIMX& DIMX = m_draw_env->DIMX;
-		GL_DBG("DITHERING mode %d (%d)", (GSConfig.Dithering == 3) ? "Force 32bit" : ((GSConfig.Dithering == 0) ? "Disabled" : "Enabled"), GSConfig.Dithering);
+		GL_DBG("DITHERING mode %s (%d)", (GSConfig.Dithering == 3) ? "Force 32bit" : ((GSConfig.Dithering == 0) ? "Disabled" : "Enabled"), GSConfig.Dithering);
 
 		if (m_conf.ps.dither || GSConfig.Dithering == 3)
 			m_conf.ps.dither = GSConfig.Dithering;
@@ -7510,33 +7512,33 @@ __fi void GSRendererHW::GetForcedROVUsage(bool& rov_color, bool& rov_depth)
 	if (rov_color == rov_depth)
 		return;
 
-	// If depth and color have feedback and one uses ROV, the other must also.
-	// We currently don't have a way of using barriers in one and ROV in the other.
-	if ((m_conf.ps.IsFeedbackLoopRT() && rov_depth) || (m_conf.ps.IsFeedbackLoopDepth() && rov_color))
+	// Force color ROV if depth ROV is used.
+	if (rov_depth)
+	{
+		GL_INS("ROV: Depth ROV forces color ROV");
+		rov_color = true;
+		return;
+	}
+
+	// If we have a depth feedback loop and color uses ROV, depth must also.
+	// We currently don't have a way of using barriers in depth and ROV in color.
+	if (m_conf.ps.IsFeedbackLoopDepth() && rov_color)
 	{
 		GL_INS("ROV: Feedback compatibility forces color and depth ROV");
-		rov_color = true;
 		rov_depth = true;
+		return;
 	}
 
 	// If we use color ROV with discard or the pixel shader writes to depth,
 	// we cannot use early depth stencil, so must use depth ROV with feedback.
-	// Same applies in reverse for depth ROV forcing color ROV with feedback.
-	const bool color_write = (m_conf.colormask.wrgba != 0);
-	const bool depth_test = m_cached_ctx.DepthRead();
 	
 	// Separate flag for DATE since they are many methods and the interaction with ROV is not clear.
 	const bool date = m_cached_ctx.TEST.DATE;
 
-	if (m_conf.ds && rov_color && (m_conf.ps.HasShaderDiscard() || m_conf.ps.HasDepthOutput() || date))
+	if (rov_color && (m_conf.ps.HasShaderDiscard() || m_conf.ps.HasDepthOutput() || date))
 	{
 		GL_INS("ROV: Color ROV with shader discard/depth write forces depth ROV");
 		rov_depth = true;
-	}
-	else if (m_conf.rt && color_write && rov_depth && (m_conf.ps.HasShaderDiscard() || depth_test || date))
-	{
-		GL_INS("ROV: Depth ROV with shader discard forces color ROV");
-		rov_color = true;
 	}
 }
 
@@ -7544,16 +7546,12 @@ void GSRendererHW::DetermineROVUsage(GSTextureCache::Target* rt, GSTextureCache:
 {
 	const GSDevice::FeatureSupport& features = g_gs_device->Features();
 
-	if (!(GSConfig.HWROV && features.rov))
+	if (!(GSConfig.HWROV && features.rov && !features.framebuffer_fetch))
 		return;
+
+	PutBarriers(static_cast<u32>(m_drawlist.size())); // Record barriers for ROV heuristic.
 
 	GL_PUSH("HW: ROV Setup");
-
-	if (features.framebuffer_fetch)
-	{
-		GL_INS("ROV: Disabled because have FB-fetch");
-		return;
-	}
 
 	if (rt && rt->m_texture == m_conf.tex && !m_conf.ps.tex_is_fb)
 	{
@@ -7570,105 +7568,97 @@ void GSRendererHW::DetermineROVUsage(GSTextureCache::Target* rt, GSTextureCache:
 	const bool color_write = rt && m_conf.colormask.wrgba != 0;
 	const bool depth_write = ds && m_cached_ctx.DepthWrite();
 
-	const u32 colormask = GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & m_conf.colormask.wrgba;
-	const bool colormask_needs_rt = colormask != 0xF;
+	bool full_barrier = m_conf.require_full_barrier;
 
-	const u32 ate = m_cached_ctx.TEST.ATE;
-	const u32 atst = m_cached_ctx.TEST.ATST;
-	const u32 afail = m_cached_ctx.TEST.AFAIL;
+	bool feedback_color = m_conf.require_full_barrier && m_conf.ps.IsFeedbackLoopRT();
+	bool feedback_depth = m_conf.require_full_barrier && m_conf.ps.IsFeedbackLoopDepth();
 
-	const bool afail_needs_rt = ate && ((afail == AFAIL_ZB_ONLY) || (afail == AFAIL_RGB_ONLY));
-	const bool afail_needs_depth = ate && ((afail == AFAIL_FB_ONLY) || (afail == AFAIL_RGB_ONLY));
-
-	const bool blend = m_conf.IsBlending();
-	const bool blend_needs_rt = blend &&
-		(m_optimized_blend.A == ALPHA_ABD_CD || m_optimized_blend.B == ALPHA_ABD_CD ||
-			m_optimized_blend.C == ALPHA_C_AD || m_optimized_blend.D == ALPHA_ABD_CD);
-
-	const bool two_pass_alpha = GSHWDrawConfig::HasAlphaTestSecondPass(m_conf.alpha_test);
-
-	const bool date = m_conf.destination_alpha != GSHWDrawConfig::DestinationAlphaMode::Off;
-
-	const bool ztst = m_cached_ctx.DepthRead();
-
-	const bool full_barrier = m_conf.require_full_barrier;
-
-	// Heuristically determine what ROVs would be needed to eliminate passes based on the current config.
-	const bool multipass_color = (full_barrier && m_conf.ps.IsFeedbackLoopRT()) ||
-	                             two_pass_alpha ||
-	                             m_conf.blend_multi_pass.enable;
-
-	const bool multipass_depth = (full_barrier && m_conf.ps.IsFeedbackLoopDepth()) || two_pass_alpha;
-
-	// If already ROV, just continue the usage.
-	const bool color_is_rov = rt && rt->m_texture->IsUnorderedAccess();
-	const bool depth_is_rov = ds && ds->m_texture->IsDepthColor();
-
-	bool use_rov_color = (color_write && multipass_color) || color_is_rov;
-	bool use_rov_depth = (depth_write && multipass_depth) || depth_is_rov;
-
-	// In certain cases, ROV in color or depth will force ROV in the other for correctness.
-	GetForcedROVUsage(use_rov_color, use_rov_depth);
-
-	// Get the number of barriers that would be used with the current config.
-	u32 barriers = 1; 
-	if (full_barrier)
+	if (m_conf.alpha_second_pass.enable)
 	{
-		if (m_drawlist.size() > 0)
+		full_barrier |= m_conf.alpha_second_pass.require_full_barrier;
+		feedback_color |= m_conf.alpha_second_pass.require_full_barrier && m_conf.alpha_second_pass.ps.IsFeedbackLoopRT();
+		feedback_depth |= m_conf.alpha_second_pass.require_full_barrier && m_conf.alpha_second_pass.ps.IsFeedbackLoopDepth();
+	}
+
+	const u32 barriers = full_barrier ? m_drawlist.size() : 0;
+
+	// Activate continuous ROV mode.
+	if (GetAvgFrameBarriers() >= GSConfig.HWROVContinuousBarriers)
+	{
+		const bool color_is_rov = rt && rt->m_texture->IsShaderWriteMode();
+		const bool depth_is_rov = ds && ds->m_texture->IsShaderWrite();
+
+		bool use_rov_color = (color_write && feedback_color) || color_is_rov;
+		bool use_rov_depth = (depth_write && feedback_depth) || depth_is_rov;
+
+		// In certain cases, ROV in color or depth will force ROV in the other for correctness.
+		if (rt && ds)
+			GetForcedROVUsage(use_rov_color, use_rov_depth);
+
+		// Heuristic: only activate ROV if we save at least one draw call by doing so.
+		const bool activate = (use_rov_color != color_is_rov || use_rov_depth != depth_is_rov) && barriers >= 2;
+
+		if (color_is_rov || depth_is_rov || activate)
 		{
-			barriers = static_cast<u32>(m_drawlist.size()); // Already computed
-		}
-		else
-		{
-			barriers = 2; // Tells drawlist computation to stop after reaching 2.
-			GetPrimitiveOverlapDrawlist(false, false, 1.0f, &barriers);
+			if (activate)
+			{
+				GL_ROV("ROV activated: Draw=%05lld | C=%016p | D=%016p | Bar=%d | C=[%d=>%d] | D=[%d=>%d].",
+					s_n, rt ? rt->m_texture : nullptr, ds ? ds->m_texture : nullptr, barriers,
+					color_is_rov, use_rov_color, depth_is_rov, use_rov_depth);
+			}
+			else
+			{
+				GL_ROV("ROV continued: Draw=%05lld | C=%016p | D=%016p | Bar=%d | C=%d | D=%d.",
+					s_n, rt ? rt->m_texture : nullptr, ds ? ds->m_texture : nullptr, barriers,
+					color_is_rov, depth_is_rov);
+			}
+
+			GL_INS("ROV: Color ROV %s / depth ROV %s",
+				use_rov_color ? "enabled" : "disabled", use_rov_depth ? "enabled" : "disabled");
+
+			ConfigureROV(use_rov_color, use_rov_depth, false);
+			return;
 		}
 	}
-	
-	const u32 multiplier = m_conf.alpha_second_pass.enable ? 2 : 1; // Alpha second pass doubles the barriers.
-	barriers *= multiplier;
 
-	// Heuristic: only activate ROV if we save at least one draw call by doing so.
-	const bool activate = (use_rov_color != color_is_rov || use_rov_depth != depth_is_rov) && barriers >= 2;
-
-	if (!color_is_rov && !depth_is_rov && !activate)
+	// Activate oneshot ROV mode.
+	if (barriers >= GSConfig.HWROVOneshotBarriers)
 	{
-		// Not enough barriers or no feedback to activate, and ROV is not already active.
-		GL_ROV("No ROV usage: Draw=%05lld | C=%016p | D=%016p | BAR=%d.",
-			s_n, rt ? rt->m_texture : nullptr, ds ? ds->m_texture : nullptr, barriers);
+		GL_ROV("ROV oneshot: Draw=%05lld | Bar=[%d>=%d]", s_n, barriers, GSConfig.HWROVOneshotBarriers);
+		bool use_rov_color = color_write && feedback_color;
+		bool use_rov_depth = depth_write && feedback_depth;
+
+		// In certain cases, ROV in color or depth will force ROV in the other for correctness.
+		if (rt && ds)
+			GetForcedROVUsage(use_rov_color, use_rov_depth);
+
+		ConfigureROV(use_rov_color, use_rov_depth, true);
 		return;
 	}
-	
-	if (activate)
-	{
-		GL_ROV("ROV activated: Draw=%05lld | C=%016p | D=%016p | BAR=%d | C=[%d=>%d] | D=[%d=>%d].",
-			s_n, rt ? rt->m_texture : nullptr, ds ? ds->m_texture : nullptr, barriers,
-			color_is_rov, use_rov_color, depth_is_rov, use_rov_depth);
-	}
-	else
-	{
-		GL_ROV("ROV continued: Draw=%05lld | C=%016p | D=%016p | BAR=%d | C=%d | D=%d.",
-			s_n, rt ? rt->m_texture : nullptr, ds ? ds->m_texture : nullptr, barriers,
-			color_is_rov, depth_is_rov);
-	}
 
-	GL_INS("ROV: Color ROV %s / depth ROV %s",
-		use_rov_color ? "enabled" : "disabled", use_rov_depth ? "enabled" : "disabled");
-
-	// Do the actual pipeline config.
-	ConfigureROV(use_rov_color, use_rov_depth);
+	// Not enough barriers or no feedback to activate, and ROV is not already active.
+	GL_ROV("No ROV usage: Draw=%05lld | C=%016p | D=%016p | Bar=%d.",
+		s_n, rt ? rt->m_texture : nullptr, ds ? ds->m_texture : nullptr, barriers);
 }
 
-void GSRendererHW::ConfigureROV(bool color_rov, bool depth_rov)
+void GSRendererHW::ConfigureROV(bool color_rov, bool depth_rov, bool oneshot)
 {
 	// Do the actual config for depth.
 	if (depth_rov)
 	{
-		m_conf.depth = GSHWDrawConfig::DepthStencilSelector::NoDepth(); // Disable real depth.
 		const bool depth_write = m_cached_ctx.DepthWrite();
 		GL_INS("ROV: Using %s depth ROV", depth_write ? "read/write" : "read-only");
+		if (oneshot)
+		{
+			// Don't disable real depth; we write to it simultaneously with ROV depth.
+			m_conf.ps.rov_oneshot_depth = depth_write ? GSHWDrawConfig::PS_ROV_DEPTH::READ_WRITE : GSHWDrawConfig::PS_ROV_DEPTH::READ_ONLY;
+		}
+		else
+		{
+			m_conf.depth = GSHWDrawConfig::DepthStencilSelector::NoDepth(); // Disable real depth.
+			m_conf.ps.rov_depth = depth_write ? GSHWDrawConfig::PS_ROV_DEPTH::READ_WRITE : GSHWDrawConfig::PS_ROV_DEPTH::READ_ONLY;
+		}
 		ConfigureDepthFeedback(true);
-		m_conf.ps.rov_depth = depth_write ? GSHWDrawConfig::PS_ROV_DEPTH::READ_WRITE : GSHWDrawConfig::PS_ROV_DEPTH::READ_ONLY;
 	}
 
 	// Do the actual config for color.
@@ -7688,7 +7678,7 @@ void GSRendererHW::ConfigureROV(bool color_rov, bool depth_rov)
 			{
 				m_conf.cb_ps.FbMask |= fbmask;
 			}
-			GL_INS("ROV: FbMask={ R=%x, G=%x, B=%x, A=%x }",
+			GL_INS("ROV: FbMask={R=%x, G=%x, B=%x, A=%x}",
 				m_conf.cb_ps.FbMask.r, m_conf.cb_ps.FbMask.g, m_conf.cb_ps.FbMask.b, m_conf.cb_ps.FbMask.a);
 		}
 		else
@@ -7796,7 +7786,10 @@ void GSRendererHW::ConfigureROV(bool color_rov, bool depth_rov)
 			}
 		}
 
-		m_conf.ps.rov_color = true;
+		if (oneshot)
+			m_conf.ps.rov_oneshot_color = true;
+		else
+			m_conf.ps.rov_color = true;
 	}
 
 	// Remove regular barriers.
@@ -7807,89 +7800,143 @@ void GSRendererHW::ConfigureROV(bool color_rov, bool depth_rov)
 	}
 }
 
-void GSRendererHW::SetUnorderedAccessFlag(GSTextureCache::Target* rt)
+void GSRendererHW::ConvertTextureTypeROVSingle(GSTextureCache::Target* tgt, bool shader_write)
 {
-	// Set flag for ROV activation heuristic. Only used by DX11.
-	// Only needed for RT, as we use a different method for depth.
-	if (rt)
-	{
-		if (m_conf.ps.HasColorROV())
-			rt->m_texture->SetUnorderedAccess();
-		else
-			rt->m_texture->ClearUnorderedAccess();
-	}
-}
+	const bool depth = (tgt->m_type == GSTextureCache::DepthStencil);
 
-static void CopyDepthTextureROV(GSTexture* src, GSTexture* dst)
-{
-	switch (src->GetState())
+	GSTexture* old_tex = depth ? m_conf.ds : m_conf.rt;
+
+	GSTexture::Usage usage = shader_write ? GSTexture::ShaderWriteTarget : GSTexture::FeedbackTarget;
+	GSTexture* new_tex = depth ?
+		(shader_write ?
+			g_gs_device->FetchSurface(usage, old_tex->GetSize(), 1, GSTexture::Format::DepthColor, false, true) :
+			g_gs_device->CreateDepthStencil(old_tex->GetSize(), false, true)) :
+		g_gs_device->FetchSurface(usage, old_tex->GetSize(), 1, GSTexture::Format::Color, false, true);
+
+	switch (old_tex->GetState())
 	{
 		case GSTexture::State::Cleared:
-			g_gs_device->ClearDepth(dst, src->GetClearDepth());
+			if (depth)
+				g_gs_device->ClearDepth(new_tex, old_tex->GetClearDepth());
+			else
+				g_gs_device->ClearRenderTarget(new_tex, old_tex->GetClearColor());
 			break;
 		case GSTexture::State::Invalidated:
-			g_gs_device->InvalidateRenderTarget(dst);
+			g_gs_device->InvalidateRenderTarget(new_tex);
 			break;
 		case GSTexture::State::Dirty:
-			g_gs_device->StretchRectAuto(src, dst, Nearest);
+			g_gs_device->StretchRectAuto(old_tex, new_tex, Nearest);
+
+			// Count stats as part of both standard and ROV.
+			g_perfmon.Put(GSPerfMon::TextureCopiesROV, 1.0);
+			g_perfmon.Put(GSPerfMon::DrawCallsROV, 1.0);
+			break;
+		default:
+			pxAssert(false);
 			break;
 	}
 
-	// These stats are counted both as part of ROV and non-ROV stats.
-	g_perfmon.Put(GSPerfMon::DepthCopiesROV, 1.0);
-	g_perfmon.Put(GSPerfMon::DrawCallsROV, 1.0);
-};
-
-void GSRendererHW::ConvertDepthFormatROV(GSTextureCache::Target* ds)
-{
-	if (!ds)
-		return;
-
-	GSTexture* ds_tex_old = m_conf.ds;
-	GSTexture* ds_tex_new = nullptr;
-
-	// Convert depth to depth color or vice versa if needed.
-	bool depth_to_color;
-	if (m_conf.ps.HasDepthROV() && !ds_tex_old->IsDepthColor())
-	{
-		depth_to_color = true;
-		ds_tex_new = g_gs_device->CreateDepthColor(ds_tex_old->GetSize(), false, true);
-	}
-	else if (!m_conf.ps.HasDepthROV() && ds_tex_old->IsDepthColor())
-	{
-		depth_to_color = false;
-		ds_tex_new = g_gs_device->CreateDepthStencil(ds->m_texture->GetSize(), false, true);
-	}
-	else
-	{
-		return;
-	}
-
-	GL_PUSH("HW: Convert %s for ROV.", depth_to_color ? "DepthStencil -> DepthColor" : "DepthColor -> DepthStencil");
-
-	CopyDepthTextureROV(ds_tex_old, ds_tex_new);
-
 #if PCSX2_DEVBUILD
-	ds_tex_new->SetDebugName(ds->m_texture->GetDebugName());
+	new_tex->SetDebugName(tgt->m_texture->GetDebugName());
 #endif
 
-	// Fix up the texture cache.
-	if (ds->m_texture == ds_tex_old)
+	if (tgt->m_texture == old_tex)
 	{
-		GL_CACHE("HW: Replaced texture for DS @ 0x%04x", ds->m_TEX0.TBP0);
-		ds->m_texture = ds_tex_new;
+		GL_CACHE("HW: Replaced texture for %s @ 0x%04x", depth ? "DS" : "RT", tgt->m_TEX0.TBP0);
+		tgt->m_texture = new_tex;
 	}
 	else
 	{
 		// Must be the temporary Z.
-		pxAssert(g_texture_cache->GetTemporaryZ() == ds_tex_old);
+		pxAssert(depth && g_texture_cache->GetTemporaryZ() == old_tex);
 		GL_CACHE("HW: Replaced texture for temporary Z @ 0x%04x", g_texture_cache->GetTemporaryZInfo().ZBP);
-		g_texture_cache->SetTemporaryZ(ds_tex_new);
+		g_texture_cache->SetTemporaryZ(new_tex);
 	}
 
-	g_gs_device->Recycle(ds_tex_old);
+	// Fixup the backend config.
+	if (depth)
+		m_conf.ds = new_tex;
+	else
+		m_conf.rt = new_tex;
 
-	m_conf.ds = ds_tex_new;
+	g_gs_device->Recycle(old_tex);
+}
+
+void GSRendererHW::ConvertTextureTypeROV(GSTextureCache::Target* rt, GSTextureCache::Target* ds)
+{
+	// Convert depth to the proper type/format.
+	if (ds)
+	{
+		if (m_conf.ps.HasDepthROV() && !ds->m_texture->IsShaderWrite())
+		{
+			GL_PUSH("HW: Convert DepthStencil -> DepthColor for ROV.");
+			ConvertTextureTypeROVSingle(ds, true);
+		}
+		else if (!m_conf.ps.HasDepthROV() && !ds->m_texture->IsDepthStencil())
+		{
+			GL_PUSH("HW: Convert DepthColor -> DepthStencil for non-ROV.");
+			ConvertTextureTypeROVSingle(ds, false);
+		}
+	}
+
+	// Convert color to the proper type. This only adds the shader read/write flag and doesn't remove it,
+	// since adding the read/write flag doesn't lose any pipeline capabilities.
+	if (rt && m_conf.ps.HasColorROV() && !rt->m_texture->IsShaderWrite())
+	{
+		GL_PUSH("HW: Convert RenderTarget -> RenderTarget (shader write) for ROV.");
+		ConvertTextureTypeROVSingle(rt, true);
+	}
+}
+
+void GSRendererHW::CoarseRasterizeDraw(const GSVector4i& drawarea, const float scale, const int expand, const u32 num_tiles)
+{
+	const GSVertex* RESTRICT vertex = m_vertex->buff;
+	const u16* RESTRICT index = m_index->buff;
+
+	if (m_vt.m_primclass == GS_SPRITE_CLASS)
+	{
+		std::vector<GSVector4i> bboxes;
+
+		for (u32 i = 0; i < m_index->tail; i += 2)
+		{
+			const GSVector4 p0 = GetXYWindow(vertex[index[i + 0]]) * scale;
+			const GSVector4 p1 = GetXYWindow(vertex[index[i + 1]]) * scale;
+			const GSVector4 bbox = p0.min(p1).floor().xyzw(p0.max(p1).ceil());
+			bboxes.push_back(GSVector4i(bbox));
+		}
+
+		GSUtil::CoarseRasterizeRects(m_conf.drawarea, bboxes.data(), static_cast<u32>(bboxes.size()),
+			num_tiles, static_cast<int>(std::ceil(expand * scale)), m_draw_coarse_rasterize);
+	}
+	else if (m_vt.m_primclass == GS_TRIANGLE_CLASS)
+	{
+		std::vector<GSVector4> pos;
+
+		for (u32 i = 0; i < m_index->tail; i++)
+			pos.push_back(GetXYWindow(vertex[index[i]]) * scale);
+
+		GSUtil::CoarseRasterizeTriangles(m_conf.drawarea, pos.data(), static_cast<u32>(pos.size()),
+			num_tiles, static_cast<int>(std::ceil(expand * scale)), m_draw_coarse_rasterize);
+	}
+	else
+	{
+		GL_INS("HW: Warning: Unsupported primclass for coarse rasterize; using full draw area.");
+		m_draw_coarse_rasterize.push_back(drawarea);
+	}
+
+	m_conf.draw_coarse_rasterize = &m_draw_coarse_rasterize;
+
+#if PCSX2_DEVBUILD
+	const float full_area = static_cast<float>(drawarea.width() * drawarea.height());
+	float tiled_area = 0.0f;
+	for (const GSVector4i& tile : m_draw_coarse_rasterize)
+		tiled_area += static_cast<float>(tile.width() * tile.height());
+	GL_INS("HW: Coarse rasterized %u prims into %u tiles (%.2f%% pixels saved)", m_index->tail,
+		static_cast<u32>(m_draw_coarse_rasterize.size()), 100.0f * (1.0f - tiled_area / full_area));
+#else
+	GL_INS("HW: Coarse rasterized %u prims into %u tiles", m_index->tail,
+		static_cast<u32>(m_draw_coarse_rasterize.size()));
+#endif
 }
 
 __ri static constexpr bool IsRedundantClamp(u8 clamp, u32 clamp_min, u32 clamp_max, u32 tsize)
@@ -9453,14 +9500,13 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		m_conf.ps.rta_correction = rt->m_rt_alpha_scale;
 	}
 
-	// Call before computing the full drawlist in case ROV is used and we don't need it.
-	DetermineROVUsage(rt, ds);
-	ConvertDepthFormatROV(ds);
-	SetUnorderedAccessFlag(rt);
-
 	// Barriers must be determined before indices are modified via HandleProvokingVertexFirst/SetupIA.
 	// This also computes the drawlist if needed.
 	DetermineBarriers(rt, tex);
+
+	// Call after computing the drawlist so we know the barrier count.
+	DetermineROVUsage(rt, ds);
+	ConvertTextureTypeROV(rt, ds);
 
 	// Perform second pass setup here once barriers are determined.
 	EmulateAlphaTestSecondPass();
@@ -9483,11 +9529,18 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	m_conf.scissor = (date_options.enabled && !date_options.barrier) ? m_conf.drawarea : scissor;
 
+	if (m_conf.ps.HasOneshotROV())
+	{
+		CoarseRasterizeDraw(m_conf.drawarea, (rt ? rt : ds)->GetScale(),
+			(IsCoverageAlphaSupported() && !no_rt) ? 1 : 0);
+	}
+
 	HandleProvokingVertexFirst();
 
 	SetupIA(rtscale, vs_scale_x, vs_scale_y, m_channel_shuffle_width != 0, no_rt);
 
-	if (m_conf.ds && m_conf.ps.IsFeedbackLoopDepth() && !g_gs_device->Features().depth_feedback && !m_conf.ps.HasDepthROV())
+	if (m_conf.ds && m_conf.ps.IsFeedbackLoopDepth() && !g_gs_device->Features().depth_feedback &&
+		!m_conf.ps.HasDepthROV() && !m_conf.ps.HasOneshotROV())
 	{
 		GL_PUSH("HW: Creating temporary R32 RT for depth feedback");
 
@@ -10517,7 +10570,7 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 
 		if (temp_tex)
 		{
-			if (GSTexture* rt = g_gs_device->CreateRenderTarget(tw, new_height, GSTexture::Format::Color))
+			if (GSTexture* rt = g_gs_device->CreateFeedbackTarget(tw, new_height, GSTexture::Format::Color))
 			{
 				// sRect is the top of texture
 				// Need to half pixel offset the dest tex coordinates as draw pixels are top left instead of centre for texel reads.

@@ -263,6 +263,55 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="rovOptions">
+     <property name="title">
+      <string>ROV Options</string>
+     </property>
+     <layout class="QGridLayout" name="rovOptionsFormLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="rovContinuousBarriersLabel">
+        <property name="text">
+         <string>Continuous Barrier Threshold:</string>
+        </property>
+        <property name="buddy">
+         <cstring>rovContinuousBarriers</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="rovContinuousBarriers">
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>999999999</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="rovOneshotBarriersLabel">
+        <property name="text">
+         <string>Oneshot Barrier Threshold:</string>
+        </property>
+        <property name="buddy">
+         <cstring>rovOneshotBarriers</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="rovOneshotBarriers">
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>999999999</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="debuggingOptions">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -374,6 +423,8 @@
   <tabstop>rovBarriersVK</tabstop>
   <tabstop>ntscFrameRate</tabstop>
   <tabstop>palFrameRate</tabstop>
+  <tabstop>rovContinuousBarriers</tabstop>
+  <tabstop>rovOneshotBarriers</tabstop>
   <tabstop>overrideTextureBarriers</tabstop>
   <tabstop>useDebugDevice</tabstop>
   <tabstop>disableFramebufferFetch</tabstop>

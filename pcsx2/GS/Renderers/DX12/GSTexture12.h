@@ -39,10 +39,10 @@ public:
 
 	~GSTexture12() override;
 
-	static std::unique_ptr<GSTexture12> Create(Type type, Format format, int width, int height, int levels,
+	static std::unique_ptr<GSTexture12> Create(Usage usage, Format format, int width, int height, int levels,
 		DXGI_FORMAT dxgi_format, DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format, DXGI_FORMAT dsv_format,
 		DXGI_FORMAT uav_format);
-	static std::unique_ptr<GSTexture12> Adopt(wil::com_ptr_nothrow<ID3D12Resource> resource, Type type, Format format,
+	static std::unique_ptr<GSTexture12> Adopt(wil::com_ptr_nothrow<ID3D12Resource> resource, Usage usage, Format format,
 		int width, int height, int levels, DXGI_FORMAT dxgi_format, DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format,
 		DXGI_FORMAT dsv_format, DXGI_FORMAT uav_format, ResourceState resource_state);
 
@@ -56,7 +56,7 @@ public:
 	__fi ID3D12Resource* GetResource() const { return m_resource.get(); }
 	__fi ID3D12Resource* GetFBLResource() const { return m_resource_fbl.get(); }
 
-	virtual bool IsUnorderedAccess() const override { return GetResourceState() == ResourceState::PixelShaderUAV; }
+	bool IsShaderWriteMode() const override { return GetResourceState() == ResourceState::PixelShaderUAV; }
 
 	void* GetNativeHandle() const override;
 
@@ -90,7 +90,7 @@ private:
 		DSV
 	};
 
-	GSTexture12(Type type, Format format, int width, int height, int levels, DXGI_FORMAT dxgi_format,
+	GSTexture12(Usage usage, Format format, int width, int height, int levels, DXGI_FORMAT dxgi_format,
 		wil::com_ptr_nothrow<ID3D12Resource> resource, wil::com_ptr_nothrow<ID3D12Resource> resource_fbl,
 		wil::com_ptr_nothrow<D3D12MA::Allocation> allocation, const D3D12DescriptorHandle& srv_descriptor,
 		const D3D12DescriptorHandle& write_descriptor, const D3D12DescriptorHandle& ro_dsv_descriptor,

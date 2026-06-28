@@ -48,6 +48,15 @@ static bool IsTextureFormatHWBlendable(ID3D11Device* dev, DXGI_FORMAT format)
 	return (support & D3D11_FORMAT_SUPPORT_RENDER_TARGET) && (support & D3D11_FORMAT_SUPPORT_BLENDABLE);
 }
 
+static bool IsTextureFormatUAVCapable(ID3D11Device* dev, DXGI_FORMAT format)
+{
+	UINT support;
+	if (FAILED(dev->CheckFormatSupport(format, &support)))
+		return false;
+
+	return (support & D3D11_FORMAT_SUPPORT_TYPED_UNORDERED_ACCESS_VIEW) != 0;
+}
+
 GSDevice11::GSDevice11()
 {
 	memset(&m_state, 0, sizeof(m_state));
@@ -556,6 +565,8 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	dsd.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
 
 	m_dev->CreateDepthStencilState(&dsd, m_date.dss.put());
+	if (m_features.rov)
+		m_dev->CreateDepthStencilState(&dsd, m_rov_copy.dss.put());
 
 	// blend
 
@@ -565,6 +576,8 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		memset(&blend, 0, sizeof(blend));
 
 		m_dev->CreateBlendState(&blend, m_date.bs.put());
+		if (m_features.rov)
+			m_dev->CreateBlendState(&blend, m_rov_copy.bs.put());
 	}
 
 	for (size_t i = 0; i < std::size(m_date.primid_init_ps); i++)
@@ -577,6 +590,27 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		m_date.primid_init_ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *convert_hlsl, sm_ps.GetPtr(), entry_point.c_str());
 		if (!m_date.primid_init_ps[i])
 			return false;
+	}
+
+	if (m_features.rov)
+	{
+		for (u32 rt = 0; rt < 2; rt++)
+		{
+			for (u32 ds = 0; ds < 2; ds++)
+			{
+				if (!rt && !ds)
+					continue;
+
+				ShaderMacro sm_ps;
+				sm_ps.AddMacro("PIXEL_SHADER", 1);
+				sm_ps.AddMacro("PS_ROV_COPY_COLOR", fmt::format("{}", rt));
+				sm_ps.AddMacro("PS_ROV_COPY_DEPTH", fmt::format("{}", ds));
+
+				m_rov_copy.ps[rt][ds] = m_shader_cache.GetPixelShader(m_dev.get(), *convert_hlsl, sm_ps.GetPtr(), "ps_rov_copy");
+				if (!m_rov_copy.ps[rt][ds])
+					return false;
+			}
+		}
 	}
 
 	if (m_features.cas_sharpening && !CreateCASShaders())
@@ -594,7 +628,8 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	}
 
 	// 1x1 dummy texture.
-	m_null_texture = CreateSurface(GSTexture::Type::RenderTarget, 1, 1, 1, GSTexture::Format::Color);
+	const GSTexture::Usage null_usage = m_features.rov ? GSTexture::ShaderWriteTarget : GSTexture::Feedback;
+	m_null_texture = static_cast<GSTexture11*>(CreateSurface(null_usage, 1, 1, 1, GSTexture::Format::Color));
 	if (!m_null_texture)
 		return false;
 
@@ -604,7 +639,9 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 void GSDevice11::Destroy()
 {
 	delete m_null_texture;
-	
+	delete m_rov_rt;
+	delete m_rov_ds;
+
 	GSDevice::Destroy();
 	DestroySwapChain();
 	DestroyTimestampQueries();
@@ -717,6 +754,11 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	D3D11_FEATURE_DATA_D3D11_OPTIONS2 options2{};
 	m_dev->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS2, &options2, sizeof(options2));
 	m_features.rov = m_uav_texture && options2.ROVsSupported;
+	for (u32 fmt = static_cast<u32>(GSTexture::Format::Color); fmt <= static_cast<u32>(GSTexture::Format::PrimID); fmt++)
+	{
+		if (GSTexture::IsShaderWriteFormat(static_cast<GSTexture::Format>(fmt)))
+			m_features.rov &= IsTextureFormatUAVCapable(m_dev.get(), GSTexture11::GetDXGIFormat(static_cast<GSTexture::Format>(fmt)));
+	}
 
 	// Let the user know if said features are available.
 	Console.WriteLnFmt("D3D11: DXTn Texture Compression: {}", m_features.dxt_textures ? "Supported" : "Not Supported");
@@ -1342,8 +1384,10 @@ void GSDevice11::InsertDebugMessage(DebugMessageCategory category, const char* f
 	m_annotation->SetMarker(StringUtil::UTF8StringToWideString(str).c_str());
 }
 
-GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
+GSTexture* GSDevice11::CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format)
 {
+	pxAssert(GSTexture::ValidateUsageAndFormat(usage, format));
+
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.Width = width;
 	desc.Height = height;
@@ -1354,26 +1398,27 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 	desc.SampleDesc.Quality = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 
-	switch (type)
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+	if (GSTexture::IsTexture(usage))
 	{
-		case GSTexture::Type::RenderTarget:
-			desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-			if (m_uav_texture)
-				desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
-			break;
-		case GSTexture::Type::DepthStencil:
-			desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-			break;
-		case GSTexture::Type::Texture:
-			desc.BindFlags = (levels > 1 && !GSTexture::IsCompressedFormat(format)) ? (D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE) : D3D11_BIND_SHADER_RESOURCE;
-			desc.MiscFlags = (levels > 1 && !GSTexture::IsCompressedFormat(format)) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
-			break;
-		case GSTexture::Type::RWTexture:
-			pxAssert(m_uav_texture);
-			desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
-			break;
-		default:
-			break;
+		desc.BindFlags |= (levels > 1 && !GSTexture::IsCompressedFormat(format)) ? D3D11_BIND_RENDER_TARGET : 0;
+		desc.MiscFlags |= (levels > 1 && !GSTexture::IsCompressedFormat(format)) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
+	}
+
+	if (GSTexture::IsRenderTarget(usage))
+	{
+		desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+	}
+
+	if (GSTexture::IsDepthStencil(usage))
+	{
+		desc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
+	}
+
+	if (GSTexture::IsShaderWrite(usage))
+	{
+		desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 	}
 
 	wil::com_ptr_nothrow<ID3D11Texture2D> texture;
@@ -1384,7 +1429,7 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 		return nullptr;
 	}
 
-	return new GSTexture11(std::move(texture), desc, type, format);
+	return new GSTexture11(std::move(texture), desc, usage, format);
 }
 
 std::unique_ptr<GSDownloadTexture> GSDevice11::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
@@ -1745,6 +1790,107 @@ void GSDevice11::DoMultiStretchRects(const MultiStretchRect* rects, u32 num_rect
 	DrawIndexedPrimitive();
 }
 
+void GSDevice11::SetupOneshotROV(const GSHWDrawConfig& config, GSTexture* rt, GSTexture* ds,
+	const std::vector<GSVector4i>& rects, const GSVector2i& size)
+{
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+	g_perfmon.Put(GSPerfMon::TextureCopiesROV, 1);
+	g_perfmon.Put(GSPerfMon::DrawCallsROV, 1);
+
+	bool rt_copy = config.ps.HasOneshotColorROV();
+	bool ds_copy = config.ps.HasOneshotDepthROV();
+
+	// Create ROV textures
+	if ((!m_rov_rt || m_rov_rt->GetSize() != size))
+	{
+		if (m_rov_rt)
+			Recycle(m_rov_rt);
+		m_rov_rt = static_cast<GSTexture11*>(CreateShaderWriteTarget(size, GSTexture::Format::Color, false));
+#if PCSX2_DEVBUILD
+		m_rov_rt->SetDebugName(fmt::format("RT for oneshot ROV {}x{}", size.x, size.y));
+#endif
+	}
+	if ((!m_rov_ds || m_rov_ds->GetSize() != size))
+	{
+		if (m_rov_ds)
+			Recycle(m_rov_ds);
+		m_rov_ds = static_cast<GSTexture11*>(CreateShaderWriteTarget(size, GSTexture::Format::DepthColor, false));
+#if PCSX2_DEVBUILD
+		m_rov_ds->SetDebugName(fmt::format("DS for oneshot ROV {}x{}", size.x, size.y));
+#endif
+	}
+
+	// Avoid copies if the original is cleared.
+	if (rt_copy && rt->GetState() == GSTexture::State::Cleared)
+	{
+		m_rov_rt->SetClearColor(rt->GetClearColor());
+		CommitClear(m_rov_rt);
+		rt_copy = false;
+	}
+	if (ds_copy && ds->GetState() == GSTexture::State::Cleared)
+	{
+		m_rov_ds->SetClearDepth(ds->GetClearDepth());
+		CommitClear(m_rov_ds);
+		ds_copy = false;
+	}
+
+	if (!(rt_copy || ds_copy))
+		return; // Copy handled with clear.
+
+	// Vertices
+	const u32 num_rects = static_cast<u32>(rects.size());
+	const GSVector4i size_rect(GSVector4i::loadh(size));
+	const u32 vertex_reserve_size = num_rects * 4;
+	const u32 index_reserve_size = num_rects * 6;
+	GSVertexPT1* verts = static_cast<GSVertexPT1*>(IAMapVertexBuffer(sizeof(GSVertexPT1), vertex_reserve_size));
+	u16* idx = IAMapIndexBuffer(index_reserve_size);
+	u32 icount = 0;
+	u32 vcount = 0;
+	for (u32 i = 0; i < num_rects; i++)
+	{
+		const GSVector4 dst = (GSVector4(rects[i]) / GSVector4(size_rect).zwzw()) * 2.0f - 1.0f;
+
+		const u32 vstart = vcount;
+		verts[vcount++] = {GSVector4(dst.x, -dst.y, 0.5f, 1.0f), {}};
+		verts[vcount++] = {GSVector4(dst.z, -dst.y, 0.5f, 1.0f), {}};
+		verts[vcount++] = {GSVector4(dst.x, -dst.w, 0.5f, 1.0f), {}};
+		verts[vcount++] = {GSVector4(dst.z, -dst.w, 0.5f, 1.0f), {}};
+
+		if (i > 0)
+			idx[icount++] = vstart;
+
+		idx[icount++] = vstart;
+		idx[icount++] = vstart + 1;
+		idx[icount++] = vstart + 2;
+		idx[icount++] = vstart + 3;
+		idx[icount++] = vstart + 3;
+	};
+
+	// IA
+	IAUnmapVertexBuffer(sizeof(GSVertexPT1), vcount);
+	IAUnmapIndexBuffer(icount);
+	IASetIndexBuffer(m_ib.get());
+	IASetInputLayout(m_convert.il.get());
+	IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+	// OM
+	OMSetDepthStencilState(m_rov_copy.dss.get(), 0);
+	OMSetBlendState(m_rov_copy.bs.get(), 0);
+	OMSetRenderTargets(nullptr, nullptr, nullptr, m_rov_rt, m_rov_ds, &size_rect);
+
+	// VS
+	VSSetShader(m_convert.vs.get(), nullptr);
+
+	// PS
+	if (rt_copy)
+		PSSetShaderResource(TEXTURE_RT, rt);
+	if (ds_copy)
+		PSSetShaderResource(TEXTURE_DEPTH, ds);
+	PSSetShader(m_rov_copy.ps[rt_copy ? 1 : 0][ds_copy ? 1 : 0].get(), m_state.ps_cb);
+
+	DrawIndexedPrimitive();
+}
+
 void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter)
 {
 	const GSVector4 full_r(0.0f, 0.0f, 1.0f, 1.0f);
@@ -1963,6 +2109,8 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_ANISOTROPIC_FILTERING", sel.sw_aniso);
 		sm.AddMacro("PS_ROV_COLOR", sel.rov_color);
 		sm.AddMacro("PS_ROV_DEPTH", static_cast<u32>(sel.rov_depth));
+		sm.AddMacro("PS_ROV_ONESHOT_COLOR", sel.rov_oneshot_color);
+		sm.AddMacro("PS_ROV_ONESHOT_DEPTH", static_cast<u32>(sel.rov_oneshot_depth));
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel, std::move(ps)).first;
@@ -2973,7 +3121,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		{
 			config.colclip_update_area = config.drawarea;
 
-			colclip_rt = CreateRenderTarget(rtsize.x, rtsize.y, m_rgba16_unorm_hw_blend ? GSTexture::Format::ColorClip : GSTexture::Format::ColorHDR, false);
+			colclip_rt = CreateFeedbackTarget(rtsize.x, rtsize.y, m_rgba16_unorm_hw_blend ? GSTexture::Format::ColorClip : GSTexture::Format::ColorHDR, false);
 			if (!colclip_rt)
 			{
 				Console.Warning("D3D11: Failed to allocate ColorClip render target, aborting draw.");
@@ -3007,6 +3155,14 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	else if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
 			 (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && !need_barrier))
 		SetupDATE(colclip_rt ? colclip_rt : config.rt, config.ds, config.datm, config.drawarea);
+
+	if (config.ps.HasOneshotROV())
+	{
+		SetupOneshotROV(config, draw_rt, draw_ds, *config.draw_coarse_rasterize, rtsize);
+		// In DX11, we need to use a dummy RT for the first OM slot.
+		if (!draw_rt)
+			draw_rt = draw_rt_clone = CreateRenderTarget(draw_ds->GetSize(), GSTexture::Format::Color, false, true);
+	}
 
 	if (config.vs.expand != GSHWDrawConfig::VSExpand::None)
 	{
@@ -3126,7 +3282,10 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			Console.Warning("D3D11: Failed to allocate temp texture for DS copy.");
 	}
 
-	OMSetRenderTargets(draw_rt, draw_ds_as_rt, draw_ds, draw_rt_rov, draw_ds_rov, &config.scissor, read_only_dsv);
+	if (config.ps.HasOneshotROV())
+		OMSetRenderTargets(draw_rt, draw_ds_as_rt, draw_ds, m_rov_rt, m_rov_ds, &config.scissor, read_only_dsv);
+	else
+		OMSetRenderTargets(draw_rt, draw_ds_as_rt, draw_ds, draw_rt_rov, draw_ds_rov, &config.scissor, read_only_dsv);
 	SetRenderHWShaderResources(config, primid_texture);
 	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
 
@@ -3278,7 +3437,7 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 
 	Draw(config);
 
-	if (config.ps.HasColorROV() || config.ps.HasDepthROV())
+	if (config.ps.HasColorROV() || config.ps.HasDepthROV() || config.ps.HasOneshotROV())
 		g_perfmon.Put(GSPerfMon::DrawCallsROV, 1);
 }
 
