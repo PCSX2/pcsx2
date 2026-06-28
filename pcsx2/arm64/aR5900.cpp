@@ -138,6 +138,11 @@ static constexpr u32 EE_NEXTEVENTCYCLE_OFFSET = static_cast<u32>(offsetof(cpuReg
 static constexpr u32 EE_HI_SCALAR_OFFSET = 32u * 16u;
 static constexpr u32 EE_LO_SCALAR_OFFSET = 33u * 16u;
 
+// Byte offset of cpuRegs.CP0.n.Status (the COP0 interrupt/mode status word the DI
+// generator clears Status.EIE in — see recEmitCop0DI).
+static constexpr u32 EE_COP0_STATUS_OFFSET =
+	static_cast<u32>(offsetof(cpuRegisters, CP0) + offsetof(CP0regs, n.Status));
+
 // Dynamically-generated dispatcher stubs (emitted into the head of the code cache by
 // recGenDispatchers on every reset; addresses are stable across a reset because the
 // stubs regenerate byte-identically at the same location — see recRecompile).
@@ -2170,7 +2175,12 @@ static bool recTranslateOp(u32 op)
 		//     block before the cycle update return increment 0 and games lock up;
 		//   - gates interrupts with timing the x86 rec specifically branches after: EI/DI,
 		//     WAIT.
-		// Those stay on the interpreter single-step path (return false). MTC0 Status/Config
+		// Those stay on the interpreter single-step path (return false) here. NOTE: a
+		// straight-line DI is intercepted earlier, in recRecompile's emit loop, and emitted
+		// natively with the x86 recDI one-instruction delay (recIsCop0DI + recEmitCop0DI);
+		// it only reaches this default→false path when it sits in a branch delay slot, where
+		// x86 likewise skips the delay (g_recompilingDelaySlot) and the inline-interp DI here
+		// just applies the Status update. MTC0 Status/Config
 		// are fine to inline: the x86 rec doesn't force a branch after them either, so a
 		// resulting interrupt is recognised at the block-tail event test just the same;
 		// TLB writes call MapTLB→recClear, which is safe mid-block (targeted recLUT reset,
@@ -2516,6 +2526,51 @@ static bool recIsLikelyBranch(u32 op)
 	}
 }
 
+// COP0 DI (disable interrupts): COP0, CO (rs==0x10), funct 0x39.
+static bool recIsCop0DI(u32 op)
+{
+	return (op >> 26) == 0x10 && ((op >> 21) & 0x1f) == 0x10 && (op & 0x3f) == 0x39;
+}
+
+// Can `op` be safely emitted inline as DI's one-instruction-delayed slot? The x86
+// recDI compiles whatever follows DI before applying the interrupt-disable; on this
+// rec the delayed op is emitted straight-line via recEmitOp (native, else inline
+// interpreter), so it must be an op that is correct to splice mid-block in program
+// order. That excludes control-flow / PC-writing / interrupt-gating / exception-
+// raising / cycle-sensitive ops, for which we instead end the block at DI and let it
+// single-step (DI then applies immediately — an accepted corner; a benign straight-
+// line op is what virtually always follows a DI). Branches are caught by the
+// recIsHandledBranch / recIsLikelyBranch checks the caller already does.
+static bool recCop0DelayOpUnsafe(u32 op)
+{
+	const u32 opcode = op >> 26;
+	const u32 funct = op & 0x3f;
+	const u32 rs = (op >> 21) & 0x1f;
+	const u32 rt = (op >> 16) & 0x1f;
+	const u32 rd = (op >> 11) & 0x1f;
+	switch (opcode)
+	{
+		case 0x00: // SPECIAL: SYSCALL / BREAK / traps (JR/JALR already caught as branches)
+			return funct == 0x0C || funct == 0x0D || (funct >= 0x30 && funct <= 0x37);
+		case 0x01: // REGIMM traps: TGEI/TGEIU/TLTI/TLTIU/TEQI/TNEI (rt 0x08-0x0F)
+			return rt >= 0x08 && rt <= 0x0F;
+		case 0x10: // COP0: BC0 (rs 0x08); CO ERET/EI/DI/WAIT; cycle-sensitive Count/PERF
+			if (rs == 0x08)
+				return true;
+			if (rs == 0x10) // CO
+				return funct == 0x18 || funct == 0x38 || funct == 0x39 || funct == 0x20;
+			if ((rs == 0x00 || rs == 0x04) && (rd == 9 || rd == 25))
+				return true;
+			return false;
+		case 0x12: // COP2 / VU0 macro — keep off the inline delay path
+		case 0x36: // LQC2 — VU0-syncing
+		case 0x3E: // SQC2 — VU0-syncing
+			return true;
+		default:
+			return false;
+	}
+}
+
 // --------------------------------------------------------------------------------------
 //  Wait-loop (idle-loop) detection
 // --------------------------------------------------------------------------------------
@@ -2694,6 +2749,36 @@ static void recEmitInterpInline(u32 op)
 	armAsm->Mov(RSCRATCHADDR.W(), op);
 	armAsm->Str(RSCRATCHADDR.W(), a64::MemOperand(RESTATEPTR, EE_CODE_OFFSET));
 	armEmitCall(reinterpret_cast<const void*>(R5900::GetInstruction(op).interpret));
+}
+
+// COP0 DI — clear Status.EIE (disable interrupts) under the same condition as
+// Interpreter::COP0::DI and the x86 recDI (iCOP0.cpp): only when the CPU is in a
+// privileged context, i.e. (Status & (EXL|ERL|EDI)) != 0  ||  Status.KSU == 0.
+// This emits just the "DI takes effect" status update; the one-instruction delay
+// the x86 rec applies (recompileNextInstruction before this) is reproduced by the
+// caller in recRecompile, which emits the following guest instruction first.
+//
+// Emitted with only encodable logical immediates so VIXL never needs a scratch
+// register, and the status word is held in RSCRATCHADDR.W() (x17, removed from the
+// VIXL scratch pool in armStartBlock) — so it cannot be clobbered by an implicit
+// VIXL temp. Touches only cpuRegs.CP0.n.Status (no guest GPRs), so it is safe to
+// splice into the middle of a block after the delayed instruction.
+static void recEmitCop0DI()
+{
+	const a64::Register status = RSCRATCHADDR.W();
+	armAsm->Ldr(status, a64::MemOperand(RESTATEPTR, EE_COP0_STATUS_OFFSET));
+
+	a64::Label do_clear, done;
+	armAsm->Tst(status, 0x6);      // EXL | ERL set -> privileged, clear EIE
+	armAsm->B(&do_clear, a64::ne);
+	armAsm->Tst(status, 0x20000);  // EDI set -> clear EIE
+	armAsm->B(&do_clear, a64::ne);
+	armAsm->Tst(status, 0x18);     // KSU: non-zero == user/supervisor -> leave EIE
+	armAsm->B(&done, a64::ne);
+	armAsm->Bind(&do_clear);
+	armAsm->Bic(status, status, 0x10000); // EIE
+	armAsm->Str(status, a64::MemOperand(RESTATEPTR, EE_COP0_STATUS_OFFSET));
+	armAsm->Bind(&done);
 }
 
 // Compile one straight-line or delay-slot instruction: const-folded/native generator
@@ -3707,6 +3792,56 @@ static void recRecompile(u32 startpc)
 			if (idx >= EE_INST_CACHE_SIZE)
 				idx = EE_INST_CACHE_SIZE - 1;
 			g_pCurInstInfo = &s_instCache[idx];
+		}
+
+		// COP0 DI — the interrupt-disable must take effect one instruction LATE, exactly as
+		// the x86 recDI (iCOP0.cpp): emit the *following* guest instruction first, then the
+		// Status.EIE clear. Without this delay several games disable IRQs one op too early
+		// and hang at boot (Jak X, Namco 50th Anniversary, SpongeBob the Movie / Battle for
+		// Bikini Bottom, The Incredibles (+ Rise of the Underminer), Soukou Kihei Armodyne,
+		// Garfield: Saving Arlene, Tales of Fandom Vol. 2). The delayed op is emitted
+		// straight-line in program order (recEmitOp), then recEmitCop0DI; the pair advances
+		// pc by 8. A DI in a branch delay slot never reaches here (delay slots go through
+		// recEmitOp, where DI inline-interprets immediately — matching x86's
+		// g_recompilingDelaySlot path). If the following op can't be safely spliced inline
+		// (control-flow / PC-writing / exception / cycle-sensitive), fall through to end the
+		// block at DI and single-step it (rare; DI then applies immediately).
+		if (recIsCop0DI(op))
+		{
+			const u32 next_op = memRead32(pc + 4);
+			if (!recIsHandledBranch(next_op) && !recIsLikelyBranch(next_op) &&
+				!recCop0DelayOpUnsafe(next_op))
+			{
+				raw_cycles += eeOpCycles(op);
+
+				// Compile the delayed instruction (point g_pCurInstInfo at its slot for any
+				// analysis-driven emit), then apply DI after it has executed.
+				{
+					u32 nidx = ((pc + 4) - startpc) >> 2;
+					if (nidx >= EE_INST_CACHE_SIZE)
+						nidx = EE_INST_CACHE_SIZE - 1;
+					g_pCurInstInfo = &s_instCache[nidx];
+				}
+				recEmitOp(next_op, const_state, cache_state);
+				recEmitCop0DI();
+				raw_cycles += eeOpCycles(next_op);
+
+				// A block containing a DI is not a poll loop.
+				waitloop_possible = false;
+				pc += 8;
+				endpc = pc;
+				compiled += 2;
+				if (compiled >= MAX_BLOCK_INSTS)
+				{
+					recEmitWritePc(pc);
+					known_dispatch_pc = true;
+					dispatch_pc = pc;
+					break;
+				}
+				continue;
+			}
+			// else: fall through — recTranslateOpOptimized(DI) returns false below, so the
+			// block ends here / single-steps DI (no cycles charged for DI on this path).
 		}
 
 		if (recIsHandledBranch(op))
