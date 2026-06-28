@@ -2554,6 +2554,27 @@ static bool recIsCop0DI(u32 op)
 	return (op >> 26) == 0x10 && ((op >> 21) & 0x1f) == 0x10 && (op & 0x3f) == 0x39;
 }
 
+// MIPS trap ops: SPECIAL T{GE,GEU,LT,LTU,EQ,NE} (funct 0x30-0x34,0x36) and REGIMM
+// T{GE,GEU,LT,LTU,EQ,NE}I (rt 0x08-0x0C,0x0E). Emitted natively (block-conditional)
+// in recRecompile — see recEmitTrapCompareIfTrap.
+static bool recIsTrap(u32 op)
+{
+	const u32 opcode = op >> 26;
+	if (opcode == 0x00)
+	{
+		const u32 funct = op & 0x3f;
+		return funct == 0x30 || funct == 0x31 || funct == 0x32 ||
+		       funct == 0x33 || funct == 0x34 || funct == 0x36;
+	}
+	if (opcode == 0x01)
+	{
+		const u32 rt = (op >> 16) & 0x1f;
+		return rt == 0x08 || rt == 0x09 || rt == 0x0A ||
+		       rt == 0x0B || rt == 0x0C || rt == 0x0E;
+	}
+	return false;
+}
+
 // Can `op` be safely emitted inline as DI's one-instruction-delayed slot? The x86
 // recDI compiles whatever follows DI before applying the interrupt-disable; on this
 // rec the delayed op is emitted straight-line via recEmitOp (native, else inline
@@ -2884,6 +2905,86 @@ static void recEmitCommitBlockCycles(u32 raw)
 	armAsm->Ldr(RXVIXLSCRATCH, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET));
 	armAsm->Add(RXVIXLSCRATCH, RXVIXLSCRATCH, recScaleBlockCycles(raw));
 	armAsm->Str(RXVIXLSCRATCH, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET));
+}
+
+// --------------------------------------------------------------------------------------
+//  MIPS trap opcodes — native codegen (block-conditional). The interpreter trap funcs
+//  (R5900OpcodeImpl.cpp) compute "if (cond) trap()", and trap() does cpuRegs.pc -= 4 then
+//  cpuException(0x34) which redirects pc to the exception vector. The recompiler can't
+//  continue straight-line through a taken trap, so this mirrors x86's recBranchCall
+//  treatment (block-terminating) — but only on the rare TAKEN path: we emit a native
+//  64-bit compare and branch OVER the raise block when the trap is NOT taken (the common
+//  case stays in-block, no dispatch). On the taken path we run the interpreter op (which
+//  raises), commit the block's cycles, and tail into DispatcherEvent to service events and
+//  re-dispatch from the new pc. The caller has already flushed+killed the GPR cache (so
+//  memory is authoritative for both the compare and the interpreter), exactly like a
+//  branch. RSCRATCHADDR(x17)=lhs, RXVIXLSCRATCH(x16)=rhs — dead scratch between ops; both
+//  are consumed by the Cmp before the raise block (which reuses x17) runs.
+//
+//  The skip condition passed in is the INVERSE of the interpreter's trap-if test:
+//   TGE/TGEI rs>=rt  -> skip lt   TGEU/TGEIU rs>=rt(u) -> skip lo
+//   TLT/TLTI rs<rt   -> skip ge   TLTU/TLTIU rs<rt(u)  -> skip hs
+//   TEQ/TEQI rs==rt  -> skip ne   TNE/TNEI   rs!=rt    -> skip eq
+static void recEmitTrapRegCompare(u32 rs, u32 rt, a64::Condition skip_cond, a64::Label* skip)
+{
+	armAsm->Ldr(RSCRATCHADDR, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs))); // GPR[rs].UD[0]
+	if (rt == 0)
+		armAsm->Cmp(RSCRATCHADDR, 0);
+	else
+	{
+		armAsm->Ldr(RXVIXLSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt))); // GPR[rt].UD[0]
+		armAsm->Cmp(RSCRATCHADDR, RXVIXLSCRATCH);
+	}
+	armAsm->B(skip, skip_cond);
+}
+
+static void recEmitTrapImmCompare(u32 rs, s32 imm, a64::Condition skip_cond, a64::Label* skip)
+{
+	armAsm->Ldr(RSCRATCHADDR, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs))); // GPR[rs].UD[0]
+	// _Imm_ is the sign-extended 16-bit immediate. The signed forms compare against the
+	// s64 value; the unsigned forms (TGEIU/TLTIU) compare (u64)_Imm_, which is the same
+	// bit pattern — only the branch condition differs.
+	armAsm->Mov(RXVIXLSCRATCH, static_cast<u64>(static_cast<s64>(imm)));
+	armAsm->Cmp(RSCRATCHADDR, RXVIXLSCRATCH);
+	armAsm->B(skip, skip_cond);
+}
+
+// Emits the trap-condition compare + "branch over the raise block when NOT taken" for a
+// trap op; returns false (emitting nothing) for a non-trap op. Decode mirrors recIsTrap.
+static bool recEmitTrapCompareIfTrap(u32 op, a64::Label* skip)
+{
+	const u32 opcode = op >> 26;
+	const u32 funct = op & 0x3f;
+	const u32 rs = (op >> 21) & 0x1f;
+	const u32 rt = (op >> 16) & 0x1f;
+	const s32 imm = static_cast<s16>(op);
+	if (opcode == 0x00) // SPECIAL register-form traps
+	{
+		switch (funct)
+		{
+			case 0x30: recEmitTrapRegCompare(rs, rt, a64::lt, skip); return true; // TGE
+			case 0x31: recEmitTrapRegCompare(rs, rt, a64::lo, skip); return true; // TGEU
+			case 0x32: recEmitTrapRegCompare(rs, rt, a64::ge, skip); return true; // TLT
+			case 0x33: recEmitTrapRegCompare(rs, rt, a64::hs, skip); return true; // TLTU
+			case 0x34: recEmitTrapRegCompare(rs, rt, a64::ne, skip); return true; // TEQ
+			case 0x36: recEmitTrapRegCompare(rs, rt, a64::eq, skip); return true; // TNE
+			default:   return false;
+		}
+	}
+	if (opcode == 0x01) // REGIMM immediate-form traps
+	{
+		switch (rt)
+		{
+			case 0x08: recEmitTrapImmCompare(rs, imm, a64::lt, skip); return true; // TGEI
+			case 0x09: recEmitTrapImmCompare(rs, imm, a64::lo, skip); return true; // TGEIU
+			case 0x0A: recEmitTrapImmCompare(rs, imm, a64::ge, skip); return true; // TLTI
+			case 0x0B: recEmitTrapImmCompare(rs, imm, a64::hs, skip); return true; // TLTIU
+			case 0x0C: recEmitTrapImmCompare(rs, imm, a64::ne, skip); return true; // TEQI
+			case 0x0E: recEmitTrapImmCompare(rs, imm, a64::eq, skip); return true; // TNEI
+			default:   return false;
+		}
+	}
+	return false;
 }
 
 // True for ops that run the interpreter inline AND need a live, current cpuRegs.cycle —
@@ -3864,6 +3965,44 @@ static void recRecompile(u32 startpc)
 			}
 			// else: fall through — recTranslateOpOptimized(DI) returns false below, so the
 			// block ends here / single-steps DI (no cycles charged for DI on this path).
+		}
+
+		// MIPS trap ops (TGE/TLT/TEQ/TNE + immediate forms). Native, block-conditional:
+		// emit a compare and, when the trap is NOT taken (the overwhelmingly common case),
+		// branch over the raise block and STAY in-block — no block-terminate, no dispatch
+		// round-trip (the regression that made these single-step every execution). On the
+		// rare taken path we run the interpreter op (which raises via cpuException, setting
+		// cpuRegs.pc to the exception vector), commit the block's cycles, and tail into the
+		// dispatcher — mirroring x86's recBranchCall, but only for the taken path. We must
+		// make memory authoritative first (the compare reads guest GPRs; the taken path's
+		// interpreter reads cpuRegs), so flush + kill the GPR/const cache exactly as a
+		// block-terminating branch does.
+		if (recIsTrap(op))
+		{
+			raw_cycles += eeOpCycles(op);
+			recCacheFlushAll(cache_state);
+			recCacheKillAll(cache_state);
+			recConstKillAll(const_state);
+
+			a64::Label skip;
+			recEmitTrapCompareIfTrap(op, &skip);     // compare + B(skip) when NOT taken
+			recEmitWritePc(pc + 4);                  // trap() does pc-=4 -> EPC = trap pc
+			recEmitInterpInline(op);                 // trap taken: raise -> cpuRegs.pc = vector
+			recEmitCommitBlockCycles(raw_cycles);    // commit cycles incl. the trap
+			armEmitJmp(DispatcherEvent);             // event test + re-dispatch from cpuRegs.pc
+			armAsm->Bind(&skip);                     // NOT taken: fall through, stay in-block
+
+			waitloop_possible = false;               // a block with a trap is not a poll loop
+			pc += 4;
+			endpc = pc;
+			if (++compiled >= MAX_BLOCK_INSTS)
+			{
+				recEmitWritePc(pc);
+				known_dispatch_pc = true;
+				dispatch_pc = pc;
+				break;
+			}
+			continue;
 		}
 
 		if (recIsHandledBranch(op))
