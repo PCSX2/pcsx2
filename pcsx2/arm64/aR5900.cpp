@@ -167,6 +167,12 @@ static bool eeRecExecuting = false;
 static bool eeRecNeedsReset = false;
 static bool eeRecExitRequested = false;
 static fastjmp_buf s_jmp_buf;
+// Landing pad for Cpu->CancelInstruction() raised from an interpreter single-step
+// (intExecuteOneInst) — a vtlb TLB miss (vtlb.cpp), an address error, or a met MIPS
+// trap. Distinct from s_jmp_buf (which EXITS recExecute): this one re-dispatches so EE
+// execution continues from the exception vector cpuException already set. Mirrors the
+// interpreter's intJmpBuf / intCancelInstruction (Interpreter.cpp).
+static fastjmp_buf s_cancel_jmp_buf;
 
 static void recResetRaw();
 static void recGenDispatchers();
@@ -2038,6 +2044,12 @@ static bool recTranslateOp(u32 op)
 				case 0x19: armEmitMULTU(rd, rs, rt); return true;
 				case 0x1A: armEmitDIV(rs, rt); return true;
 				case 0x1B: armEmitDIVU(rs, rt); return true;
+				// SYNC (funct 0x0F): pipeline/memory barrier whose interpreter body is
+				// EMPTY in this emulator (no EE pipeline/cache timing modelled — see
+				// R5900OpcodeImpl SYNC()). Emit nothing instead of block-terminating and
+				// single-stepping it; the emit loop still charges its cycles. By far the
+				// dominant EE single-step op in real games (The Getaway: ~59% of them).
+				case 0x0F: return true;
 				default:   return false;
 			}
 
@@ -2163,6 +2175,16 @@ static bool recTranslateOp(u32 op)
 		// FPU load/store (Phase 5.2a) — 32-bit transfer between memory and FPR[rt].
 		case OP_LWC1: armEmitLWC1(rt, rs, imm); return true;
 		case OP_SWC1: armEmitSWC1(rt, rs, imm); return true;
+
+		// CACHE (0x2F): EE data-cache hint/maintenance. It does real work in the
+		// interpreter (Cache.cpp CACHE(): line invalidate/writeback, writes CP0.TagLo)
+		// so it can't be a no-op — but it only reads rs, writes no GPR, never touches
+		// cpuRegs.pc, raises no exception, and does NOT trigger code invalidation
+		// (Cpu->Clear). So inline-interpret it in-block exactly like the COP0 ops below
+		// instead of block-terminating + single-stepping. recTranslateOp runs after
+		// recCacheFlushAll (recTranslateOpOptimized), so cpuRegs holds the current rs.
+		// 2nd-most-dominant EE single-step op (The Getaway: ~39% of them).
+		case 0x2F: recEmitInterpInline(op); return true;
 
 		// COP0 (Phase 5.1) — same inline-interpreter strategy as COP2: keep straight-line
 		// COP0 ops in the block instead of breaking it + single-stepping. COP0 is not a
@@ -4044,9 +4066,23 @@ static void recExecute()
 		return;
 	}
 
+	// Cancel-instruction landing pad. A single-stepped interp op (intExecuteOneInst)
+	// that calls Cpu->CancelInstruction() (a vtlb TLB miss, an address error, or a met
+	// MIPS trap) lands here via recCancelInstruction()'s fastjmp — NOT the s_jmp_buf
+	// exit. cpuException has already rewritten cpuRegs.pc to the exception vector; we
+	// just unwind the aborted interp call, charge a small fixed cycle (the faulting op
+	// never reached intUpdateCPUCycles, so this guarantees forward progress and lets a
+	// due event fire), run the event test, then fall through to re-enter the recompiled
+	// code from the new pc. recEventTest honours a pending exit (fastjmp to s_jmp_buf).
+	if (fastjmp_set(&s_cancel_jmp_buf) != 0)
+	{
+		cpuRegs.cycle += 8;
+		recEventTest();
+	}
+
 	eeRecExecuting = true;
 	reinterpret_cast<void (*)()>(reinterpret_cast<uintptr_t>(EnterRecompiledCode))();
-	// EnterRecompiledCode never returns; the only way out is the fastjmp above.
+	// EnterRecompiledCode never returns; the only way out is one of the fastjmps above.
 }
 
 static void recSafeExitExecution()
@@ -4059,7 +4095,16 @@ static void recSafeExitExecution()
 
 static void recCancelInstruction()
 {
-	pxFailRel("recCancelInstruction() called, this should never happen!");
+	// Raised when an interpreter single-step op (intExecuteOneInst) aborts the in-flight
+	// guest instruction: a vtlb TLB miss (vtlb.cpp), an address error (R5900OpcodeImpl
+	// RaiseAddressError), or a met MIPS trap whose handler faults. cpuException has
+	// already rewritten cpuRegs.pc to the exception vector. We must NOT exit recExecute
+	// (that stops the EE) — only unwind the aborted interp call and re-dispatch from the
+	// new pc. Mirrors the interpreter's intCancelInstruction (both longjmp back into the
+	// execution loop). Previously a hard pxFailRel: it "never happens" on x86 because the
+	// x86 rec compiles everything and never single-steps a cancelling op, but this rec
+	// does, so a met trap / TLB miss aborted the whole emulator (The Getaway boot crash).
+	fastjmp_jmp(&s_cancel_jmp_buf, 1);
 }
 
 static void recClear(u32 addr, u32 size)
