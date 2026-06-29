@@ -120,7 +120,7 @@ public:
 	bool WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	void Write(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	//void Read(const GIFRegTEX0& TEX0);
-	void Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA);
+	void Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegTEXCLUT& TEXCLUT);
 	void GetAlphaMinMax32(int& amin, int& amax);
 
 	u32 operator[](size_t i) const { return m_buff32[i]; }
