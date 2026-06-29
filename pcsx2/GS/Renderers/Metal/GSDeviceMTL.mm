@@ -400,6 +400,15 @@ void GSDeviceMTL::EndRenderPass()
 		memset(&m_current_render, 0, offsetof(MainRenderEncoder, depth_sel));
 		m_current_render.depth_sel = DepthStencilSelector::NoDepth();
 	}
+	// The late-upload blit encoder also lives on the render command buffer; any code
+	// that ends the render pass and then opens a new encoder on that buffer (e.g.
+	// CopyRect's blit encoder during OI_BlitFMV) must leave it closed, or Metal aborts
+	// with "A command encoder is already encoding to this command buffer".
+	if (m_late_texture_upload_encoder)
+	{
+		[m_late_texture_upload_encoder endEncoding];
+		m_late_texture_upload_encoder = nil;
+	}
 }
 
 static GSVector4 GetRTLoadInfo(GSTextureMTL* tex, MTLLoadAction* load_action)
@@ -457,11 +466,7 @@ void GSDeviceMTL::BeginRenderPass(NSString* name, GSTexture* color, MTLLoadActio
 
 	m_encoders_in_current_cmdbuf++;
 
-	if (m_late_texture_upload_encoder)
-	{
-		[m_late_texture_upload_encoder endEncoding];
-		m_late_texture_upload_encoder = nullptr;
-	}
+	// Note: any open late-upload encoder is closed by EndRenderPass() below.
 
 	int idx = 0;
 	if (mc) idx |= 1;
