@@ -7533,7 +7533,11 @@ __fi void GSRendererHW::GetForcedROVUsage(bool& rov_color, bool& rov_depth)
 	// Separate flag for DATE since they are many methods and the interaction with ROV is not clear.
 	const bool date = m_cached_ctx.TEST.DATE;
 
-	if (rov_color && (m_conf.ps.HasShaderDiscard() || m_conf.ps.HasDepthOutput() || date))
+	// Alpha test might require depth feedback once we configure ROV.
+	const bool atst_needs_depth = m_cached_ctx.TEST.ATE &&
+		(m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY || m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY);
+
+	if (rov_color && (m_conf.ps.HasShaderDiscard() || m_conf.ps.HasDepthOutput() || date || atst_needs_depth))
 	{
 		GL_INS("ROV: Color ROV with shader discard/depth write forces depth ROV");
 		rov_depth = true;
