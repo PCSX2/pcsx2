@@ -2043,7 +2043,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 
 		sm.AddMacro("PIXEL_SHADER", 1);
 		sm.AddMacro("PS_HAS_CONSERVATIVE_DEPTH", m_conservative_depth);
-		sm.AddMacro("PS_DEPTH_FEEDBACK_SUPPORT", m_features.depth_feedback ? 1 : 2);
+		sm.AddMacro("PS_DEPTH_FEEDBACK_SUPPORT", m_read_only_ds_as_rt ? 0 : (m_features.depth_feedback ? 1 : 2));
 		sm.AddMacro("PS_FST", sel.fst);
 		sm.AddMacro("PS_WMS", sel.wms);
 		sm.AddMacro("PS_WMT", sel.wmt);
@@ -3193,6 +3193,20 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			read_only_dsv = static_cast<GSTexture11*>(config.ds)->ReadOnlyDepthStencilView();
 	}
 
+	const bool rt_feedbackloop_pass1 = config.IsFeedbackLoopRT(config.ps);
+	const bool rt_feedbackloop_pass2 = config.IsFeedbackLoopRT(config.alpha_second_pass.ps);
+	const bool ds_feedbackloop_pass1 = config.IsFeedbackLoopDepth(config.ps);
+	const bool ds_feedbackloop_pass2 = config.IsFeedbackLoopDepth(config.alpha_second_pass.ps);
+
+	// It is possible to skip one barrier copy when using draw_ds_as_rt if only one pass needs a barrier, we already have a copy and draw_ds_as_rt doesn't need updating.
+	// Aka we can make depth read only and not written as we don't care what the result is in this case.
+	// m_read_only_ds_as_rt check must be done before SetupPS.
+	m_read_only_ds_as_rt = draw_ds_as_rt &&
+	                              // Pass 1 needs barrier only.
+	                              ((ds_feedbackloop_pass1 && config.require_one_barrier && !ds_feedbackloop_pass2 && !config.alpha_second_pass.require_one_barrier) ||
+									  // Pass 2 needs barrier only.
+									  (!ds_feedbackloop_pass1 && !config.require_one_barrier && ds_feedbackloop_pass2 && config.alpha_second_pass.require_one_barrier));
+
 	SetupVS(config.vs, &config.cb_vs);
 	SetupPS(config.ps, &config.cb_ps, config.sampler);
 
@@ -3232,8 +3246,6 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		draw_ds_rov = m_state.current_ds_uav;
 	}
 
-	const bool rt_feedbackloop_pass1 = config.IsFeedbackLoopRT(config.ps);
-	const bool rt_feedbackloop_pass2 = config.IsFeedbackLoopRT(config.alpha_second_pass.ps);
 	if (draw_rt && !draw_rt_rov && (((config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
 		(rt_feedbackloop_pass1 || rt_feedbackloop_pass2))))
 	{
@@ -3244,9 +3256,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			Console.Warning("D3D11: Failed to allocate temp texture for RT copy.");
 	}
 
-	const bool ds_feedbackloop_pass1 = config.IsFeedbackLoopDepth(config.ps);
-	const bool ds_feedbackloop_pass2 = config.IsFeedbackLoopDepth(config.alpha_second_pass.ps);
-	if (draw_ds && !draw_ds_rov && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
+	if (draw_ds && !draw_ds_rov && !m_read_only_ds_as_rt && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
 		(ds_feedbackloop_pass1 || ds_feedbackloop_pass2))
 	{
 		// Requires a copy of the DS.
@@ -3256,7 +3266,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			Console.Warning("D3D11: Failed to allocate temp texture for DS copy.");
 	}
 
-	OMSetRenderTargets(draw_rt, draw_ds_as_rt, draw_ds, draw_rt_rov, draw_ds_rov, &config.scissor, read_only_dsv);
+	OMSetRenderTargets(draw_rt, m_read_only_ds_as_rt ? nullptr : draw_ds_as_rt, draw_ds, draw_rt_rov, draw_ds_rov, &config.scissor, read_only_dsv);
 	SetRenderHWShaderResources(config, primid_texture);
 	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
 
@@ -3264,8 +3274,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && need_barrier)
 		m_ctx->ClearDepthStencilView(*static_cast<GSTexture11*>(draw_ds), D3D11_CLEAR_STENCIL, 0.0f, 1);
 
-	SendHWDraw(config, rt_feedbackloop_pass1 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass1 ? draw_ds_clone : nullptr, draw_ds_as_rt ? draw_ds_as_rt : draw_ds,
-		config.require_one_barrier, config.require_full_barrier, rtsize);
+	SendHWDraw(config, rt_feedbackloop_pass1 ? draw_rt_clone : nullptr, draw_rt,
+		m_read_only_ds_as_rt ? draw_ds_as_rt : (ds_feedbackloop_pass1 ? draw_ds_clone : nullptr), draw_ds_as_rt ? draw_ds_as_rt : draw_ds,
+		config.require_one_barrier, config.require_full_barrier, m_read_only_ds_as_rt, rtsize);
 
 	if (config.blend_multi_pass.enable)
 	{
@@ -3292,8 +3303,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 		const bool one_barrier = config.alpha_second_pass.require_one_barrier && m_features.multidraw_fb_copy;
 		SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
-		SendHWDraw(config, rt_feedbackloop_pass2 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass2 ? draw_ds_clone : nullptr, draw_ds_as_rt ? draw_ds_as_rt : draw_ds,
-			one_barrier, config.alpha_second_pass.require_full_barrier, rtsize);
+		SendHWDraw(config, rt_feedbackloop_pass2 ? draw_rt_clone : nullptr, draw_rt,
+			m_read_only_ds_as_rt ? draw_ds_as_rt : (ds_feedbackloop_pass2 ? draw_ds_clone : nullptr), draw_ds_as_rt ? draw_ds_as_rt : draw_ds,
+			one_barrier, config.alpha_second_pass.require_full_barrier, m_read_only_ds_as_rt, rtsize);
 	}
 
 	if (colclip_rt)
@@ -3314,27 +3326,29 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 }
 
 void GSDevice11::FeedbackCopyAndBind(const GSHWDrawConfig& config,
-	GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone, const GSVector4i& copyarea)
+	GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone, const bool read_only_ds_as_rt, const GSVector4i& copyarea)
 {
 	if (rt_clone)
 	{
 		CopyRect(rt, rt_clone, copyarea, copyarea.left, copyarea.top);
-		PSSetShaderResource(2, rt_clone);
+		PSSetShaderResource(TEXTURE_RT, rt_clone);
 		if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_RT)
-			PSSetShaderResource(0, rt_clone);
+			PSSetShaderResource(TEXTURE_TEXTURE, rt_clone);
 	}
 	if (ds_clone)
 	{
-		CopyRect(ds, ds_clone, copyarea, copyarea.left, copyarea.top);
-		PSSetShaderResource(4, ds_clone);
+		if (!read_only_ds_as_rt)
+			CopyRect(ds, ds_clone, copyarea, copyarea.left, copyarea.top);
+
+		PSSetShaderResource(TEXTURE_DEPTH, ds_clone);
 		if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_DEPTH)
-			PSSetShaderResource(0, ds_clone);
+			PSSetShaderResource(TEXTURE_TEXTURE, ds_clone);
 	}
 }
 
 // Choose the best copy area based on the hazards and whether we need RT and/or DS copies.
 void GSDevice11::FeedbackCopyAndBind(const GSHWDrawConfig& config,
-	GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone,
+	GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone, const bool read_only_ds_as_rt,
 	const GSVector4i& copyarea, const GSVector4i& samplearea)
 {
 	const GSVector4i rtsize = (rt ? rt : ds)->GetRect();
@@ -3350,24 +3364,24 @@ void GSDevice11::FeedbackCopyAndBind(const GSHWDrawConfig& config,
 		// Do an individual copy if the union is larger than the sum of individual areas.
 		if (size_union > size_indiv)
 		{
-			FeedbackCopyAndBind(config, rt, rt_clone, ds, ds_clone, ProcessCopyArea(rtsize, config.drawarea));
-			FeedbackCopyAndBind(config, rt, rt_clone, ds, ds_clone, ProcessCopyArea(rtsize, config.samplearea));
+			FeedbackCopyAndBind(config, rt, rt_clone, ds, ds_clone, read_only_ds_as_rt, ProcessCopyArea(rtsize, config.drawarea));
+			FeedbackCopyAndBind(config, rt, rt_clone, ds, ds_clone, read_only_ds_as_rt, ProcessCopyArea(rtsize, config.samplearea));
 		}
 		else
 		{
-			FeedbackCopyAndBind(config, rt, rt_clone, ds, ds_clone, ProcessCopyArea(rtsize, union_rect));
+			FeedbackCopyAndBind(config, rt, rt_clone, ds, ds_clone, read_only_ds_as_rt, ProcessCopyArea(rtsize, union_rect));
 		}
 	}
 	else
 	{
 		// No RT hazards so just need the draw area (or full area for DS).
-		FeedbackCopyAndBind(config, rt, rt_clone, ds, ds_clone, ProcessCopyArea(rtsize, config.drawarea));
+		FeedbackCopyAndBind(config, rt, rt_clone, ds, ds_clone, read_only_ds_as_rt, ProcessCopyArea(rtsize, config.drawarea));
 	}
 };
 
 void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 	GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
-	const bool one_barrier, const bool full_barrier, GSVector2i rtsize)
+	const bool one_barrier, const bool full_barrier, const bool read_only_ds_as_rt, GSVector2i rtsize)
 {
 #ifdef PCSX2_DEVBUILD
 	if ((one_barrier || full_barrier) && !(config.IsFeedbackLoopRT(config.ps) || config.IsFeedbackLoopDepth(config.ps))) [[unlikely]]
@@ -3381,9 +3395,10 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 
 		pxAssert(config.drawlist && !config.drawlist->empty());
 		pxAssert(config.drawlist_bbox && static_cast<u32>(config.drawlist_bbox->size()) == draw_list_size);
+		pxAssert(!read_only_ds_as_rt);
 
 		if (config.tex_hazard != config.TEX_HAZARD_NONE)
-			FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, config.samplearea);
+			FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, false, config.samplearea);
 
 		for (u32 n = 0, p = 0; n < draw_list_size; n++)
 		{
@@ -3391,7 +3406,7 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 
 			const GSVector4i bbox = config.drawlist_bbox->at(n).rintersect(config.drawarea);
 
-			FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, bbox);
+			FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, false, bbox);
 
 			Draw(config, p, count);
 
@@ -3403,7 +3418,7 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 
 	if (one_barrier)
 	{
-		FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, config.drawarea, config.samplearea);
+		FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, read_only_ds_as_rt, config.drawarea, config.samplearea);
 	}
 
 	Draw(config);
