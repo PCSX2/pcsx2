@@ -412,6 +412,12 @@ enum class GSCASMode : u8
 	SharpenAndResize,
 };
 
+enum class GSUpscaler : u8
+{
+	Off,           ///< Plain bilinear present-time stretch (default).
+	MetalFXSpatial, ///< Apple MetalFX spatial upscaler (Metal backend, macOS 13+).
+};
+
 enum class GSHWAutoFlushLevel : u8
 {
 	Disabled,
@@ -721,6 +727,7 @@ struct Pcsx2Config
 		static constexpr GSPostBilinearMode DEFAULT_BILINEAR_FILTERING_MODE = GSPostBilinearMode::BilinearSmooth;
 		static constexpr FMVAspectRatioSwitchType DEFAULT_FMV_ASPECT_RATIO = FMVAspectRatioSwitchType::Off;
 		static constexpr GSCASMode DEFAULT_CAS_MODE = GSCASMode::Disabled;
+		static constexpr GSUpscaler DEFAULT_UPSCALER = GSUpscaler::Off;
 
 		static constexpr float DEFAULT_UPSCALE_MULTIPLIER = 1.0f;
 		static constexpr AccBlendLevel DEFAULT_BLENDING_ACCURACY = AccBlendLevel::Basic;
@@ -870,6 +877,7 @@ struct Pcsx2Config
 		GSDumpCompressionMethod GSDumpCompression = GSDumpCompressionMethod::Zstandard;
 		GSHardwareDownloadMode HWDownloadMode = GSHardwareDownloadMode::Enabled;
 		GSCASMode CASMode = DEFAULT_CAS_MODE;
+		GSUpscaler Upscaler = DEFAULT_UPSCALER;
 		u8 Dithering = 2;
 		u8 MaxAnisotropy = 0;
 		u8 TVShader = 0;

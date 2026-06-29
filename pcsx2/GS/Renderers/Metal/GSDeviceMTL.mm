@@ -709,6 +709,64 @@ bool GSDeviceMTL::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, con
 	return true;
 }}
 
+bool GSDeviceMTL::EnsureMetalFXSpatial(GSTexture* sTex, GSTexture* dTex)
+{ @autoreleasepool {
+	id<MTLTexture> src = static_cast<GSTextureMTL*>(sTex)->GetTexture();
+	id<MTLTexture> dst = static_cast<GSTextureMTL*>(dTex)->GetTexture();
+	const int in_w = sTex->GetWidth(), in_h = sTex->GetHeight();
+	const int out_w = dTex->GetWidth(), out_h = dTex->GetHeight();
+	const MTLPixelFormat in_fmt = [src pixelFormat];
+	const MTLPixelFormat out_fmt = [dst pixelFormat];
+
+	// Reuse the cached scaler if the size/format key is unchanged (creation is expensive).
+	if (m_mfx_spatial && m_mfx_in_w == in_w && m_mfx_in_h == in_h &&
+	    m_mfx_out_w == out_w && m_mfx_out_h == out_h &&
+	    m_mfx_in_fmt == in_fmt && m_mfx_out_fmt == out_fmt)
+	{
+		return true;
+	}
+
+	MTLFXSpatialScalerDescriptor* desc = [[MTLFXSpatialScalerDescriptor alloc] init];
+	desc.inputWidth = in_w;
+	desc.inputHeight = in_h;
+	desc.outputWidth = out_w;
+	desc.outputHeight = out_h;
+	desc.colorTextureFormat = in_fmt;
+	desc.outputTextureFormat = out_fmt;
+	// GS display output is already tonemapped/sRGB-ish, so treat it as perceptual.
+	desc.colorProcessingMode = MTLFXSpatialScalerColorProcessingModePerceptual;
+
+	m_mfx_spatial = MRCTransfer([desc newSpatialScalerWithDevice:m_dev.dev]);
+	[desc release];
+	if (!m_mfx_spatial)
+	{
+		Console.Error("MetalFX: Failed to create spatial scaler.");
+		return false;
+	}
+
+	m_mfx_in_w = in_w; m_mfx_in_h = in_h;
+	m_mfx_out_w = out_w; m_mfx_out_h = out_h;
+	m_mfx_in_fmt = in_fmt; m_mfx_out_fmt = out_fmt;
+	return true;
+}}
+
+bool GSDeviceMTL::DoMetalFXSpatial(GSTexture* sTex, GSTexture* dTex)
+{ @autoreleasepool {
+	if (@available(macOS 13.0, *))
+	{
+		if (!EnsureMetalFXSpatial(sTex, dTex))
+			return false;
+
+		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+		EndRenderPass(); // MetalFX manages its own encoder; must not be inside one.
+		[m_mfx_spatial setColorTexture:static_cast<GSTextureMTL*>(sTex)->GetTexture()];
+		[m_mfx_spatial setOutputTexture:static_cast<GSTextureMTL*>(dTex)->GetTexture()];
+		[m_mfx_spatial encodeToCommandBuffer:GetRenderCmdBuf()];
+		return true;
+	}
+	return false;
+}}
+
 MRCOwned<id<MTLFunction>> GSDeviceMTL::LoadShader(NSString* name)
 {
 	NSError* err = nil;
@@ -1008,6 +1066,8 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_features.test_and_sample_depth = true;
 	m_features.depth_feedback = getDepthFeedback(m_dev, m_features.framebuffer_fetch);
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand;
+	if (@available(macOS 13.0, *))
+		m_features.metalfx_spatial = [MTLFXSpatialScalerDescriptor supportsDevice:m_dev.dev];
 	m_max_texture_size = m_dev.features.max_texsize;
 
 	// Init metal stuff

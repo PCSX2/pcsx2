@@ -1287,6 +1287,9 @@ if (APPLE)
 		${AVFOUNDATION_LIBRARY}
 		${COREMEDIA_LIBRARY}
 	)
+	# MetalFX (spatial upscaler) is macOS 13.0+. Weak-link it so the binary still
+	# loads on older systems; every use is guarded with @available(macOS 13, *).
+	target_link_options(PCSX2_FLAGS INTERFACE "SHELL:-weak_framework MetalFX")
 endif()
 
 set_property(GLOBAL PROPERTY PCSX2_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})

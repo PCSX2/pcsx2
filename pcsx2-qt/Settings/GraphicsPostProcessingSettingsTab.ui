@@ -21,6 +21,30 @@
      </property>
      <layout class="QFormLayout" name="formLayout_2">
       <item row="0" column="0">
+       <widget class="QLabel" name="metalfxModeLabel">
+        <property name="text">
+         <string extracomment="MetalFX is Apple's upscaling technology; leave the name &quot;MetalFX&quot; as-is.">MetalFX Upscaling:</string>
+        </property>
+        <property name="buddy">
+         <cstring>metalfxMode</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="metalfxMode">
+        <item>
+         <property name="text">
+          <string>Off (Default)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>MetalFX Spatial</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
        <widget class="QLabel" name="casModeLabel">
         <property name="text">
          <string extracomment="You might find an official translation for this on AMD's website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx">Contrast Adaptive Sharpening:</string>
@@ -30,13 +54,13 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="1" column="1">
        <layout class="QHBoxLayout" name="casLayout" stretch="1,0">
         <item>
          <widget class="QComboBox" name="casMode">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-            <horstretch>0</horstretch>
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>1</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
@@ -86,7 +110,7 @@
         </item>
        </layout>
       </item>
-      <item row="1" column="0" colspan="2">
+      <item row="2" column="0" colspan="2">
        <widget class="QCheckBox" name="fxaa">
         <property name="text">
          <string>FXAA</string>
@@ -266,6 +290,7 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>metalfxMode</tabstop>
   <tabstop>casMode</tabstop>
   <tabstop>casSharpness</tabstop>
   <tabstop>fxaa</tabstop>
