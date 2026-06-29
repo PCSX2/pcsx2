@@ -192,7 +192,7 @@ struct PS_INPUT
 
 #ifdef PIXEL_SHADER
 
-struct PS_OUTPUT_REAL
+struct PS_OUTPUT
 {
 #define NUM_RTS 0
 
@@ -229,20 +229,6 @@ struct PS_OUTPUT_REAL
 #endif
 
 #undef NUM_RTS
-};
-
-struct PS_OUTPUT
-{
-#if !PS_NO_COLOR
-	#if PS_DATE == 1 || PS_DATE == 2
-		float c;
-	#else
-		float4 c0;
-		#if !PS_NO_COLOR1
-			float4 c1;
-		#endif
-	#endif
-#endif
 };
 
 Texture2D<float4> Texture : register(t0);
@@ -1326,13 +1312,17 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 #endif
 
 #if PS_ROV_COLOR || PS_ROV_DEPTH
-#define DISCARD rov_discard = true
+	#define DISCARD { rov_discard_color = true; rov_discard_depth = true; }
+	#define DISCARD_COLOR rov_discard_color = true
+	#define DISCARD_DEPTH rov_discard_depth = true
 #else
-#define DISCARD discard
+	#define DISCARD discard
+	#define DISCARD_COLOR o_col0 = RtLoad(input.p.xy)
+	#define DISCARD_DEPTH input.p.z = DepthLoad(input.p.xy)
 #endif
 
 #if (PS_RETURN_COLOR || PS_RETURN_DEPTH)
-PS_OUTPUT_REAL ps_main(PS_INPUT input)
+PS_OUTPUT ps_main(PS_INPUT input)
 #else
 void ps_main(PS_INPUT input)
 #endif
@@ -1351,7 +1341,8 @@ void ps_main(PS_INPUT input)
 #endif
 
 #if PS_ROV_COLOR || PS_ROV_DEPTH
-	bool rov_discard = false;
+	bool rov_discard_color = false;
+	bool rov_discard_depth = false;
 #endif
 
 	// Use ROV discard macro for since we cannot do
@@ -1458,19 +1449,29 @@ if (bad)
 		discard;
 #endif
 
-	PS_OUTPUT output;
+	// Output values
+#if !PS_NO_COLOR
+	#if PS_DATE == 1 || PS_DATE == 2
+		float o_col0;
+	#else
+		float4 o_col0;
+		#if !PS_NO_COLOR1
+			float4 o_col1;
+		#endif
+	#endif
+#endif
 
 	// Get first primitive that will write a failling alpha value
 #if PS_DATE == 1
 	// DATM == 0
 	// Pixel with alpha equal to 1 will failed (128-255)
-	output.c = (C.a > 127.5f) ? float(input.primid) : float(0x7FFFFFFF);
+	o_col0 = (C.a > 127.5f) ? float(input.primid) : float(0x7FFFFFFF);
 
 #elif PS_DATE == 2
 
 	// DATM == 1
 	// Pixel with alpha equal to 0 will failed (0-127)
-	output.c = (C.a < 127.5f) ? float(input.primid) : float(0x7FFFFFFF);
+	o_col0 = (C.a < 127.5f) ? float(input.primid) : float(0x7FFFFFFF);
 
 #else
 	// Not primid DATE setup
@@ -1547,26 +1548,26 @@ if (bad)
 
 	// Output color scaling
 #if !PS_NO_COLOR
-	output.c0.a = PS_RTA_CORRECTION ? C.a / 128.0f : C.a / 255.0f;
-	output.c0.rgb = PS_COLCLIP_HW ? float3(C.rgb / 65535.0f) : C.rgb / 255.0f;
+	o_col0.a = PS_RTA_CORRECTION ? C.a / 128.0f : C.a / 255.0f;
+	o_col0.rgb = PS_COLCLIP_HW ? float3(C.rgb / 65535.0f) : C.rgb / 255.0f;
 #if !PS_NO_COLOR1
-	output.c1 = alpha_blend;
+	o_col1 = alpha_blend;
 #endif
 #endif // !PS_NO_COLOR
 
 	// Alpha test with feedback
 #if PS_AFAIL == AFAIL_FB_ONLY
 	if (!atst_pass)
-		input.p.z = DepthLoad(input.p.xy);
+		DISCARD_DEPTH;
 #elif PS_AFAIL == AFAIL_ZB_ONLY
 	if (!atst_pass)
-		output.c0 = RtLoad(input.p.xy);
+		DISCARD_COLOR;
 #elif PS_AFAIL == AFAIL_RGB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY_SW_Z
 	if (!atst_pass)
 	{
-		output.c0.a = RtLoad(input.p.xy).a;
+		o_col0.a = RtLoad(input.p.xy).a; // discard alpha
 	#if PS_AFAIL == AFAIL_RGB_ONLY_SW_Z
-		input.p.z = DepthLoad(input.p.xy); 
+		DISCARD_DEPTH;
 	#endif
 	}
 #endif
@@ -1579,46 +1580,39 @@ if (bad)
 
 #if PS_AA1 == PS_AA1_TRIANGLE_SW_Z
 	if (!bool(input.interior))
-		input.p.z = DepthLoad(input.p.xy); // No depth update for triangle edges.
+		DISCARD_DEPTH; // No depth update for triangle edges.
 #endif
 
 #if (PS_RETURN_COLOR || PS_RETURN_DEPTH)
-	// Output struct with the actual system values output semantics.
-	PS_OUTPUT_REAL output_real;
+	PS_OUTPUT output;
 #endif
 
 	// Color write back
 #if PS_RETURN_COLOR
-	#if PS_DATE == 1 || PS_DATE == 2
-		output_real.c = output.c;
-	#else
-		output_real.c0 = output.c0;
-		#if !PS_NO_COLOR1
-			output_real.c1 = output.c1;
-		#endif
+	output.c0 = o_col0;
+	#if !PS_NO_COLOR1
+		output.c1 = o_col1;
 	#endif
 #elif PS_RETURN_COLOR_ROV
-	output.c0 = (rov_discard | (FbMask == 0xFFu)) ? RtLoad(input.p.xy) : output.c0;
-
-	RtWrite(input.p.xy, output.c0);
+	o_col0 = (FbMask == 0xFFu) ? RtLoad(input.p.xy) : o_col0; // channel masking
+	if (!rov_discard_color)
+		RtWrite(input.p.xy, o_col0);
 #endif
 
 	// Depth write back
 #if PS_RETURN_DEPTH
-	output_real.depth = input.p.z;
+	output.depth = input.p.z;
 	#if SW_DEPTH && PS_NO_COLOR1 && PS_DEPTH_FEEDBACK_SUPPORT == 2
 		// Output color clone for feedback.
-		output_real.depth_color = input.p.z;
+		output.depth_color = input.p.z;
 	#endif
 #elif PS_RETURN_DEPTH_ROV
-	#if SW_DEPTH
-		input.p.z = rov_discard ? DepthLoad(input.p.xy) : input.p.z;
-	#endif
-	DepthWrite(input.p.xy, input.p.z);
+	if (!rov_discard_depth)
+		DepthWrite(input.p.xy, input.p.z);
 #endif
 
 #if (PS_RETURN_COLOR || PS_RETURN_DEPTH)
-	return output_real;
+	return output;
 #endif
 }
 
