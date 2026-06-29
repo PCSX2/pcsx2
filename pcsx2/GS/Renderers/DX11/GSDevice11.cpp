@@ -3362,6 +3362,53 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 		Console.Warning("D3D11: Possible unnecessary copy detected.");
 #endif
 
+	if (config.autoflush)
+	{
+		const u32 indices_per_prim = config.indices_per_prim;
+		const u32 autoflush_list_size = static_cast<u32>(config.autoflush_list->size());
+
+		GL_PUSH("Split the draw (autoflush)");
+
+		const GSVector4i tex_rect = config.tex->GetRect();
+
+		// a: autoflush drawlist position
+		// n: barrier drawlist position
+		// p: number of indices drawn
+		for (u32 a = 0, n = 0, p = 0; a < autoflush_list_size; a++)
+		{
+			const GSVector4i bbox = config.autoflush_bbox->at(a).rintersect(tex_rect);
+
+			if (!bbox.rempty())
+			{
+				CopyRect(config.rt, config.tex, bbox, bbox.x, bbox.y);
+
+				PSSetShaderResource(0, config.tex);
+				OMSetRenderTargets(config.rt, config.ds, nullptr, nullptr, &config.scissor);
+			}
+
+			int prims = static_cast<int>(config.autoflush_list->at(a));
+
+			while (prims > 0)
+			{
+				const u32 count = config.drawlist->at(n) * indices_per_prim;
+
+				if (draw_rt_clone || draw_ds_clone)
+				{
+					const GSVector4i original_bbox = config.drawlist_bbox->at(n).rintersect(config.drawarea);
+					FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, bbox);
+				}
+
+				Draw(config, p, count);
+
+				prims -= config.drawlist->at(n);
+				p += count;
+				n++;
+			}
+		}
+
+		return;
+	}
+
 	if (full_barrier)
 	{
 		const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
