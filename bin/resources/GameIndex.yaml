@@ -52017,8 +52017,6 @@ SLPM-66748:
     - SoftwareRendererFMVHack # Vertical lines in FMV.
   gsHWFixes:
     roundSprite: 1 # Fixes misalignment of textures in the Pause Menu.
-    cpuSpriteRenderBW: 10 # Fixes bulletin board textures.
-    cpuSpriteRenderLevel: 1 # Needed for above.
 SLPM-66749:
   name: "ウィザードリィ エクス2 ～無限の学徒～ [ワンダープライス]"
   name-sort: "うぃざーどりぃ えくす2 むげんのがくと [わんだーぷらいす]"
@@ -53423,8 +53421,6 @@ SLPM-66994:
     - SoftwareRendererFMVHack # Vertical lines in FMV.
   gsHWFixes:
     roundSprite: 1 # Fixes misalignment of textures in the Pause Menu.
-    cpuSpriteRenderBW: 10 # Fixes bulletin board textures.
-    cpuSpriteRenderLevel: 1 # Needed for above.
   memcardFilters:
     - SLPM-66748 # Original Version
 SLPM-66995:
