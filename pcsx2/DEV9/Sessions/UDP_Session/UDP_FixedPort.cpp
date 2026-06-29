@@ -84,6 +84,10 @@ namespace Sessions
 
 		if (!success)
 		{
+			// Don't close listening ports on socket errors.
+			if (isListening)
+				return std::nullopt;
+
 			// See Reset() for why we copy the vector.
 			std::vector<UDP_BaseSession*> connectionsCopy;
 			{
@@ -119,6 +123,11 @@ namespace Sessions
 						return ret;
 				}
 			}
+			// For pre-bound listening ports, accept packets from any source
+			// even without a matching child session (e.g. ps2link commands).
+			if (isListening)
+				return ret;
+
 			Console.Error("DEV9: UDP: Unexpected packet, dropping");
 		}
 		return std::nullopt;
@@ -170,7 +179,9 @@ namespace Sessions
 		if (index != connections.end())
 		{
 			connections.erase(index);
-			if (connections.size() == 0)
+			// Don't close listening ports when all children disconnect —
+			// they must stay open to accept new inbound connections.
+			if (connections.size() == 0 && !isListening)
 			{
 				open.store(false);
 				RaiseEventConnectionClosed();
