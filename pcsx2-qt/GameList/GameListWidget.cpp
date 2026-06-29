@@ -34,6 +34,7 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
+#include <QtWidgets/QScroller>
 #include <QtWidgets/QStyledItemDelegate>
 #include <QShortcut>
 
@@ -298,6 +299,9 @@ void GameListWidget::initialize()
 	m_table_view->horizontalHeader()->setSectionsMovable(true);
 	m_table_view->verticalHeader()->hide();
 	m_table_view->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
+#ifndef Q_OS_MACOS
+	QScroller::grabGesture(m_table_view->viewport(), QScroller::TouchGesture);
+#endif
 
 	// Custom painter to center-align DisplayRoles (icons)
 	m_table_view->setItemDelegateForColumn(0, new GameListIconStyleDelegate(this));
@@ -352,6 +356,9 @@ void GameListWidget::initialize()
 	m_list_view->verticalScrollBar()->setSingleStep(15);
 	m_list_view->setWordWrap(show_full_cover_titles);
 	onCoverScaleChanged();
+#ifndef Q_OS_MACOS
+	QScroller::grabGesture(m_list_view->viewport(), QScroller::TouchGesture);
+#endif
 
 	connect(m_list_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
 		&GameListWidget::onSelectionModelCurrentChanged);
