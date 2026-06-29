@@ -16,7 +16,7 @@ on:
       patchesUrl:
         required: false
         type: string
-        default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
+        default: https://github.com/isztldav/pcsx2_patches/releases/download/latest
       fetchTags:
         required: false
         type: boolean
