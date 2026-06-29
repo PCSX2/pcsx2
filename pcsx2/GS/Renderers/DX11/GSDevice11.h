@@ -416,13 +416,13 @@ public:
 	void RenderHW(GSHWDrawConfig& config) override;
 
 	void FeedbackCopyAndBind(const GSHWDrawConfig& config,
-		GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone, const GSVector4i& copyarea);
+		GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone, const bool skip_ds_barrier, const GSVector4i& copyarea);
 	void FeedbackCopyAndBind(const GSHWDrawConfig& config,
-		GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone,
+		GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone, const bool skip_ds_barrier,
 		const GSVector4i& copyarea, const GSVector4i& samplearea);
 	void SendHWDraw(const GSHWDrawConfig& config,
 		GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
-		const bool one_barrier, const bool full_barrier, GSVector2i rtsize);
+		const bool one_barrier, const bool full_barrier, const bool skip_ds_barrier, GSVector2i rtsize);
 	void SetRenderHWShaderResources(const GSHWDrawConfig& config, GSTexture* primid_texture);
 
 	void ClearSamplerCache() override;
