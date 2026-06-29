@@ -26,7 +26,7 @@ class GSTextureMTL : public GSTexture
 public:
 	u64 m_last_read = 0;  ///< Last time this texture was read by a draw
 	u64 m_last_write = 0; ///< Last time this texture was written by a draw
-	GSTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLTexture>> texture, Type type, Format format);
+	GSTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLTexture>> texture, Usage usage, Format format);
 	~GSTextureMTL();
 
 	/// For making fake backbuffers

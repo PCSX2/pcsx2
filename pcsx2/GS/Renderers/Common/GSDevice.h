@@ -29,6 +29,12 @@ static inline constexpr Filter BilnIf(bool biln)
 	return biln ? Biln : Nearest;
 }
 
+struct GPUPipelineStatistics
+{
+	u64 vs_invocations;
+	u64 ps_invocations;
+};
+
 enum class ShaderConvert
 {
 	COPY = 0,
@@ -1482,8 +1488,7 @@ protected:
 
 	bool AcquireWindow(bool recreate_window);
 
-	virtual GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) = 0;
-	GSTexture* FetchSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_unused_texture);
+	virtual GSTexture* CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format) = 0;
 
 	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter) = 0;
 	virtual void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, Filter filter, const InterlaceConstantBuffer& cb) = 0;
@@ -1493,7 +1498,7 @@ protected:
 	/// Resolves CAS shader includes for the specified source.
 	static bool GetCASShaderSource(std::string* source);
 
-	/// Applies CAS and writes to the destination texture, which should be a RWTexture.
+	/// Applies CAS and writes to the destination texture, which should be a shader writeable texture.
 	virtual bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) = 0;
 
 	/// Perform texture operations for ImGui
@@ -1611,6 +1616,12 @@ public:
 	/// Returns the amount of GPU time utilized since the last time this method was called.
 	virtual float GetAndResetAccumulatedGPUTime() = 0;
 
+	/// Enables/disables GPU pipeline statistics.
+	virtual bool SetGPUPipelineStatisticsEnabled(bool enabled) = 0;
+
+	/// Get the pipeline statistics for the last frame.
+	virtual GPUPipelineStatistics GetAndResetAccumulatedGPUPipelineStatistics() = 0;
+
 	/// Returns true if not enough time has passed for present to not block.
 	bool ShouldSkipPresentingFrame();
 
@@ -1626,13 +1637,17 @@ public:
 	virtual void PopDebugGroup() = 0;
 	virtual void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) = 0;
 
+	GSTexture* FetchSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_reuse);
+	GSTexture* FetchSurface(GSTexture::Usage usage, const GSVector2i& size, int levels, GSTexture::Format format, bool clear, bool prefer_reuse);
 	GSTexture* CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
-	GSTexture* CreateDepthStencil(int w, int h, bool clear = true, bool prefer_reuse = true);
-	GSTexture* CreateDepthColor(int w, int h, bool clear = true, bool prefer_reuse = true);
-	GSTexture* CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse = false);
 	GSTexture* CreateRenderTarget(const GSVector2i& size, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreateFeedbackTarget(int w, int h, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreateFeedbackTarget(const GSVector2i& size, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreateShaderWriteTarget(int w, int h, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreateShaderWriteTarget(const GSVector2i& size, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreateDepthStencil(int w, int h, bool clear = true, bool prefer_reuse = true);
 	GSTexture* CreateDepthStencil(const GSVector2i& size, bool clear = true, bool prefer_reuse = true);
-	GSTexture* CreateDepthColor(const GSVector2i& size, bool clear = true, bool prefer_reuse = true);
+	GSTexture* CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse = false);
 	GSTexture* CreateTexture(const GSVector2i& size, int mipmap_levels, GSTexture::Format format, bool prefer_reuse = false);
 	GSTexture* CreateCompatible(GSTexture* tex, bool clear = true, bool prefer_reuse = true);
 	GSTexture* CreateCompatible(GSTexture* tex, const GSVector2i& size, bool clear = true, bool prefer_reuse = true);

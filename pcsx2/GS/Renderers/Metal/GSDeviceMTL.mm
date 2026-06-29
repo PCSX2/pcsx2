@@ -550,8 +550,10 @@ static constexpr MTLPixelFormat ConvertPixelFormat(GSTexture::Format format)
 	}
 }
 
-GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
+GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format)
 { @autoreleasepool {
+	pxAssert(GSTexture::ValidateUsageAndFormat(usage, format));
+
 	MTLPixelFormat fmt = ConvertPixelFormat(format);
 	pxAssertRel(format != GSTexture::Format::Invalid, "Can't create surface of this format!");
 
@@ -565,38 +567,38 @@ GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Type type, int width, int heigh
 		[desc setMipmapLevelCount:levels];
 
 	[desc setStorageMode:MTLStorageModePrivate];
-	switch (type)
+
+	MTLTextureUsage mtl_usage = MTLTextureUsageShaderRead;
+
+	if (GSTexture::IsRenderTarget(usage))
 	{
-		case GSTexture::Type::Texture:
-			[desc setUsage:MTLTextureUsageShaderRead];
-			break;
-		case GSTexture::Type::RenderTarget:
-			if (m_dev.features.slow_color_compression)
-				[desc setUsage:MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget | MTLTextureUsagePixelFormatView]; // Force color compression off by including PixelFormatView
-			else
-				[desc setUsage:MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget];
-			break;
-		case GSTexture::Type::RWTexture:
-			[desc setUsage:MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite];
-			break;
-		default:
-			[desc setUsage:MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget];
+		mtl_usage |= MTLTextureUsageRenderTarget;
 	}
+
+	if ((usage & GSTexture::FeedbackTarget) == GSTexture::FeedbackTarget)
+	{
+		if (m_dev.features.slow_color_compression)
+			mtl_usage |= MTLTextureUsagePixelFormatView; // Force color compression off by including PixelFormatView
+	}
+
+	if (GSTexture::IsShaderWrite(usage))
+	{
+		mtl_usage |= MTLTextureUsageShaderWrite;
+	}
+
+	[desc setUsage:mtl_usage];
 
 	MRCOwned<id<MTLTexture>> tex = MRCTransfer([m_dev.dev newTextureWithDescriptor:desc]);
 	if (tex)
 	{
-		GSTextureMTL* t = new GSTextureMTL(this, tex, type, format);
-		switch (type)
+		GSTextureMTL* t = new GSTextureMTL(this, tex, usage, format);
+		if (GSTexture::IsRenderTarget(usage))
 		{
-			case GSTexture::Type::RenderTarget:
-				ClearRenderTarget(t, 0);
-				break;
-			case GSTexture::Type::DepthStencil:
-				ClearDepth(t, 0.0f);
-				break;
-			default:
-				break;
+			ClearRenderTarget(t, 0);
+		}
+		else if (GSTexture::IsDepthStencil(usage))
+		{
+			ClearDepth(t, 0.0f);
 		}
 		return t;
 	}
@@ -2010,7 +2012,7 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		MTLRenderPipelineColorAttachmentDescriptor* color1 = [[pdesc colorAttachments] objectAtIndexedSubscript:1];
 		[color1 setPixelFormat:MTLPixelFormatR32Float];
 	}
-	NSString* pname = [NSString stringWithFormat:@"HW Render %x.%x.%llx.%llx", vssel_mtl.key, pssel.key_hi, pssel.key_lo, extras.fullkey];
+	NSString* pname = [NSString stringWithFormat:@"HW Render %x.%llx.%llx.%x", vssel_mtl.key, pssel.key_hi, pssel.key_lo, extras.fullkey];
 	auto pipeline = MakePipeline(pdesc, vs, ps, pname);
 
 	[m_current_render.encoder setRenderPipelineState:pipeline];
@@ -2295,7 +2297,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 			config.colclip_update_area = config.drawarea;
 			
 			GSVector2i size = config.rt->GetSize();
-			rt = colclip_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::ColorClip, false);
+			rt = colclip_rt = CreateFeedbackTarget(size.x, size.y, GSTexture::Format::ColorClip, false);
 			
 			g_gs_device->SetColorClipTexture(colclip_rt);
 			

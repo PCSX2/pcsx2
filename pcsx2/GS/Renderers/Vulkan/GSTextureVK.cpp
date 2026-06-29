@@ -11,7 +11,7 @@
 #include "common/Console.h"
 #include "common/BitUtils.h"
 
-VkFramebuffer GSTextureVK::CreateNullFramebuffer()
+VkFramebuffer GSTextureVK::CreateNullFramebuffer(u32 w, u32 h)
 {
 	const VkRenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(
 		VK_FORMAT_UNDEFINED,
@@ -23,7 +23,7 @@ VkFramebuffer GSTextureVK::CreateNullFramebuffer()
 		return VK_NULL_HANDLE;
 	
 	Vulkan::FramebufferBuilder fbb;
-	fbb.SetSize(16384, 16384, 1);
+	fbb.SetSize(w, h, 1);
 	fbb.SetRenderPass(rp);
 
 	return fbb.Create(GSDeviceVK::GetInstance()->GetDevice());
@@ -61,7 +61,7 @@ static VkAccessFlagBits GetFeedbackLoopInputAccessBits()
 	                                                            VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
 }
 
-GSTextureVK::GSTextureVK(Type type, Format format, int width, int height, int levels, VkImage image,
+GSTextureVK::GSTextureVK(Usage usage, Format format, int width, int height, int levels, VkImage image,
 	VmaAllocation allocation, VkImageView view, VkFormat vk_format)
 	: GSTexture()
 	, m_image(image)
@@ -69,7 +69,7 @@ GSTextureVK::GSTextureVK(Type type, Format format, int width, int height, int le
 	, m_view(view)
 	, m_vk_format(vk_format)
 {
-	m_type = type;
+	m_usage = usage;
 	m_format = format;
 	m_size.x = width;
 	m_size.y = height;
@@ -81,8 +81,10 @@ GSTextureVK::~GSTextureVK()
 	Destroy(true);
 }
 
-std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int width, int height, int levels)
+std::unique_ptr<GSTextureVK> GSTextureVK::Create(Usage usage, Format format, int width, int height, int levels)
 {
+	pxAssert(ValidateUsageAndFormat(usage, format));
+
 	const VkFormat vk_format = GSDeviceVK::GetInstance()->LookupNativeFormat(format);
 
 	VkImageCreateInfo ici = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO, nullptr, 0, VK_IMAGE_TYPE_2D, vk_format,
@@ -98,59 +100,42 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 		VK_IMAGE_VIEW_TYPE_2D, vk_format, s_identity_swizzle,
 		{VK_IMAGE_ASPECT_COLOR_BIT, 0, static_cast<u32>(levels), 0, 1}};
 
-	switch (type)
+	ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+
+	if (format == Format::UNorm8)
 	{
-		case Type::Texture:
-		{
-			ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+		// for r8 textures, swizzle it across all 4 components. the shaders depend on it being in alpha.. why?
+		static constexpr const VkComponentMapping r8_swizzle = {
+			VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_R };
+		vci.components = r8_swizzle;
+	}
 
-			if (format == Format::UNorm8)
-			{
-				// for r8 textures, swizzle it across all 4 components. the shaders depend on it being in alpha.. why?
-				static constexpr const VkComponentMapping r8_swizzle = {
-					VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_R};
-				vci.components = r8_swizzle;
-			}
-		}
-		break;
+	if (IsRenderTarget(usage))
+	{
+		pxAssert(levels == 1);
+		ici.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	}
 
-		case Type::RenderTarget:
-		{
-			pxAssert(levels == 1);
-			ici.usage =
-				VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT |
-				(GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT
-				                                                    : VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
-		}
-		break;
+	if (IsFeedback(usage))
+	{
+		ici.usage |= GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ?
+			VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT :
+			VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+	}
 
-		case Type::DepthStencil:
-		{
-			pxAssert(levels == 1);
-			ici.usage =
-				VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
-				(GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT
-				                                                    : VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
-			vci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-		}
-		break;
+	if (IsDepthStencil(usage))
+	{
+		ici.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		vci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	}
 
-		case Type::RWTexture:
-		{
-			pxAssert(levels == 1);
-			ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT |
-			            VK_IMAGE_USAGE_SAMPLED_BIT;
-		}
-		break;
-
-		default:
-			return {};
+	if (IsShaderWrite(usage))
+	{
+		ici.usage |= VK_IMAGE_USAGE_STORAGE_BIT;
 	}
 
 	// Use dedicated allocations for typical RT size
-	if ((type == Type::RenderTarget || type == Type::DepthStencil) && width >= 512 && height >= 448)
+	if (IsRenderTargetOrDepthStencil(usage) && width >= 512 && height >= 448)
 		aci.flags |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
 	VkImage image = VK_NULL_HANDLE;
@@ -184,17 +169,18 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 	}
 
 	return std::unique_ptr<GSTextureVK>(
-		new GSTextureVK(type, format, width, height, levels, image, allocation, view, vk_format));
+		new GSTextureVK(usage, format, width, height, levels, image, allocation, view, vk_format));
 }
 
 std::unique_ptr<GSTextureVK> GSTextureVK::Adopt(
-	VkImage image, Type type, Format format, int width, int height, int levels, VkFormat vk_format)
+	VkImage image, Usage usage, Format format, int width, int height, int levels, VkFormat vk_format)
 {
 	// Only need to create the image view, this is mainly for swap chains.
 	const VkImageViewCreateInfo view_info = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, nullptr, 0, image,
 		VK_IMAGE_VIEW_TYPE_2D, vk_format, s_identity_swizzle,
-		{(type == Type::DepthStencil) ? static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_DEPTH_BIT) :
-										static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_COLOR_BIT),
+		{IsDepthStencil(usage) ?
+				static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_DEPTH_BIT) :
+				static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_COLOR_BIT),
 			0u, static_cast<u32>(levels), 0u, 1u}};
 
 	// Memory is managed by the owner of the image.
@@ -207,14 +193,14 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Adopt(
 	}
 
 	return std::unique_ptr<GSTextureVK>(
-		new GSTextureVK(type, format, width, height, levels, image, VK_NULL_HANDLE, view, vk_format));
+		new GSTextureVK(usage, format, width, height, levels, image, VK_NULL_HANDLE, view, vk_format));
 }
 
 void GSTextureVK::Destroy(bool defer)
 {
 	GSDeviceVK::GetInstance()->UnbindTexture(this);
 
-	if (m_type == Type::RenderTarget || m_type == Type::DepthStencil)
+	if (IsRenderTargetOrDepthStencil())
 	{
 		for (const auto& [other_tex, fb, feedback_color, feedback_depth] : m_framebuffers)
 		{
@@ -275,7 +261,7 @@ void* GSTextureVK::GetNativeHandle() const
 
 VkCommandBuffer GSTextureVK::GetCommandBufferForUpdate()
 {
-	if (m_type != Type::Texture || m_use_fence_counter == GSDeviceVK::GetInstance()->GetCurrentFenceCounter())
+	if (!IsTexture() || m_use_fence_counter == GSDeviceVK::GetInstance()->GetCurrentFenceCounter())
 	{
 		// Console.WriteLn("Texture update within frame, can't use do beforehand");
 		GSDeviceVK::GetInstance()->EndRenderPass();
@@ -404,7 +390,7 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 		TransitionToLayout(cmdbuf, Layout::TransferDst);
 
 	// if we're an rt and have been cleared, and the full rect isn't being uploaded, do the clear
-	if (m_type == Type::RenderTarget)
+	if (IsRenderTarget())
 	{
 		if (!r.eq(GSVector4i(0, 0, m_size.x, m_size.y)))
 			CommitClear(cmdbuf);
@@ -416,7 +402,7 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 		CalcUploadRowLengthFromPitch(upload_pitch), buffer, buffer_offset);
 	TransitionToLayout(cmdbuf, Layout::ShaderReadOnly);
 
-	if (m_type == Type::Texture)
+	if (IsTexture())
 		m_needs_mipmaps_generated |= (layer == 0);
 
 	return true;
@@ -486,7 +472,7 @@ void GSTextureVK::Unmap()
 		TransitionToLayout(cmdbuf, Layout::TransferDst);
 
 	// if we're an rt and have been cleared, and the full rect isn't being uploaded, do the clear
-	if (m_type == Type::RenderTarget)
+	if (IsRenderTarget())
 	{
 		if (!m_map_area.eq(GSVector4i(0, 0, m_size.x, m_size.y)))
 			CommitClear(cmdbuf);
@@ -499,7 +485,7 @@ void GSTextureVK::Unmap()
 		buffer_offset);
 	TransitionToLayout(cmdbuf, Layout::ShaderReadOnly);
 
-	if (m_type == Type::Texture)
+	if (IsTexture())
 		m_needs_mipmaps_generated |= (m_map_level == 0);
 }
 
@@ -813,7 +799,7 @@ VkFramebuffer GSTextureVK::GetFramebuffer(bool feedback_loop)
 
 VkFramebuffer GSTextureVK::GetLinkedFramebuffer(GSTextureVK* depth_texture, bool feedback_loop_color, bool feedback_loop_depth)
 {
-	pxAssertRel(m_type != Type::Texture, "Texture is a render target");
+	pxAssertRel(!IsTexture(), "Texture is a render target");
 
 	for (const auto& [other_tex, fb, other_feedback_loop_color, other_feedback_loop_depth] : m_framebuffers)
 	{
@@ -822,9 +808,8 @@ VkFramebuffer GSTextureVK::GetLinkedFramebuffer(GSTextureVK* depth_texture, bool
 	}
 
 	const VkRenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(
-		(m_type != GSTexture::Type::DepthStencil) ? m_vk_format : VK_FORMAT_UNDEFINED,
-		(m_type != GSTexture::Type::DepthStencil) ? (depth_texture ? depth_texture->m_vk_format : VK_FORMAT_UNDEFINED) :
-													m_vk_format,
+		!IsDepthStencil() ? m_vk_format : VK_FORMAT_UNDEFINED,
+		!IsDepthStencil() ? (depth_texture ? depth_texture->m_vk_format : VK_FORMAT_UNDEFINED) : m_vk_format,
 		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_LOAD,
 		VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, feedback_loop_color, feedback_loop_depth);
 	if (!rp)

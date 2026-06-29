@@ -255,7 +255,7 @@ private:
 	void updateEmulationActions(bool starting, bool running, bool stopping);
 	void updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen);
 	void updateGameDependentActions();
-	void updateGameGridActions(const bool show_game_grid);
+	void updateGameGridActions(const bool show_game_grid, const bool show_grid_cover_titles);
 	void updateStatusBarWidgetVisibility();
 	void updateAdvancedSettingsVisibility();
 	void updateWindowTitle();

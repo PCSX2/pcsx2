@@ -16,6 +16,30 @@ GSTexture::GSTexture() = default;
 
 GSTexture::~GSTexture() = default;
 
+bool GSTexture::ValidateUsageAndFormat(Usage usage, Format format)
+{
+	if (IsDepthStencil(usage) && (usage & (Usage::ShaderWrite | Usage::RenderTarget)))
+		return false; // DS is not compatible with Write or RT
+	if (IsFeedback(usage) && !(usage & (Usage::DepthStencil | Usage::RenderTarget)))
+		return false; // Feedback requires RT or DS
+	if (usage == (Usage::ShaderWrite | Usage::RenderTarget))
+		return false; // We always include Feedback for RT+Write
+	if (format == Format::UNorm8 && !IsTexture(usage)) // Unorm8 only used for sampling
+		return false;
+	if (IsFeedback(usage) && !IsFeedbackFormat(format)) // Only some formats used with feedback
+		return false;
+	if (IsShaderWrite(usage) && !IsShaderWriteFormat(format)) // Only some formats used with shader write
+		return false;
+	if (IsDepthStencil(usage) && (format != Format::DepthStencil)) // Only use DepthStencil format with DepthStencil usage
+		return false;
+	if (!g_gs_device->Features().depth_feedback)
+	{
+		if (IsDepthStencil(usage) && IsFeedback(usage))
+			return false;
+	}
+	return true;
+}
+
 bool GSTexture::Save(const std::string& fn)
 {
 	// Depth textures need special treatment - we have a stencil component.
@@ -172,6 +196,17 @@ u32 GSTexture::CalcUploadSize(Format format, u32 height, u32 pitch)
 {
 	const u32 block_size = GetCompressedBlockSize(format);
 	return pitch * ((static_cast<u32>(height) + (block_size - 1)) / block_size);
+}
+
+bool GSTexture::IsFeedbackFormat(Format format)
+{
+	return format == Format::Color || format == Format::ColorClip ||
+		format == Format::DepthColor || format == Format::DepthStencil;
+}
+
+bool GSTexture::IsShaderWriteFormat(Format format)
+{
+	return format == Format::Color || format == Format::DepthColor;
 }
 
 void GSTexture::GenerateMipmapsIfNeeded()

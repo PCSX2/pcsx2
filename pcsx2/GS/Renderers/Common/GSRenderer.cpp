@@ -700,7 +700,9 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 
 			EndPresentFrame();
 
-			PerformanceMetrics::OnGPUPresent(g_gs_device->GetAndResetAccumulatedGPUTime());
+			const float gpu_time = g_gs_device->GetAndResetAccumulatedGPUTime();
+			GPUPipelineStatistics gpu_stats = g_gs_device->GetAndResetAccumulatedGPUPipelineStatistics();
+			PerformanceMetrics::OnGPUPresent(gpu_time, gpu_stats.vs_invocations, gpu_stats.ps_invocations);
 		}
 
 		PerformanceMetrics::Update(registers_written, fb_sprite_frame, false);

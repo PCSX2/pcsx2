@@ -43,7 +43,7 @@ public:
 	static QIcon getIconForType(GameList::EntryType type);
 	static QIcon getIconForRegion(GameList::Region region);
 
-	GameListModel(float cover_scale, bool show_cover_titles, qreal dpr, QObject* parent = nullptr);
+	GameListModel(float cover_scale, bool show_cover_titles, bool show_full_cover_titles, qreal dpr, QObject* parent = nullptr);
 	~GameListModel();
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -62,6 +62,9 @@ public:
 
 	bool getShowCoverTitles() const { return m_show_titles_for_covers; }
 	void setShowCoverTitles(bool enabled) { m_show_titles_for_covers = enabled; }
+
+	bool getShowFullCoverTitles() const { return m_show_full_titles_for_covers; }
+	void setShowFullCoverTitles(bool enabled) { m_show_full_titles_for_covers = enabled; }
 
 	float getCoverScale() const { return m_cover_scale; }
 	void setCoverScale(float scale);
@@ -89,6 +92,7 @@ private:
 	float m_cover_scale = 0.0f;
 	std::atomic<u32> m_cover_scale_counter{0};
 	bool m_show_titles_for_covers = false;
+	bool m_show_full_titles_for_covers = false;
 	bool m_prefer_english_titles = false;
 
 	std::array<QString, Column_Count> m_column_display_names;

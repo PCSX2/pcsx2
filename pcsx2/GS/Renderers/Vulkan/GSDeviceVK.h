@@ -209,6 +209,14 @@ private:
 	void CalibrateSpinTimestamp();
 	u64 GetCPUTimestamp();
 
+	// For pipeline statistics
+	enum class QueryState
+	{
+		None,
+		Querying,
+		Ready,
+	};
+
 	struct FrameResources
 	{
 		// [0] - Init (upload) command buffer, [1] - draw command buffer
@@ -221,6 +229,7 @@ private:
 		bool init_buffer_used = false;
 		bool needs_fence_wait = false;
 		bool timestamp_written = false;
+		QueryState pipeline_statistics_query = QueryState::None;
 
 		std::vector<std::function<void()>> cleanup_resources;
 	};
@@ -277,6 +286,11 @@ private:
 	bool m_wants_new_timestamp_calibration = false;
 	VkTimeDomainEXT m_calibrated_timestamp_type = VK_TIME_DOMAIN_DEVICE_EXT;
 
+	VkQueryPool m_pipeline_statistics_query_pool = VK_NULL_HANDLE;
+	GPUPipelineStatistics m_accumulated_gpu_pipeline_statistics{};
+	bool m_gpu_pipeline_statistics_enabled = false;
+	bool m_gpu_pipeline_statistics_supported = false;
+
 	std::array<FrameResources, NUM_COMMAND_BUFFERS> m_frame_resources;
 	u64 m_next_fence_counter = 1;
 	u64 m_completed_fence_counter = 0;
@@ -293,6 +307,8 @@ private:
 	VkPhysicalDeviceDriverPropertiesKHR m_device_driver_properties = {};
 	OptionalExtensions m_optional_extensions = {};
 
+	u32 m_max_framebuffer_width = 0;
+	u32 m_max_framebuffer_height = 0;
 public:
 	enum FeedbackLoopFlag : u8
 	{
@@ -468,8 +484,7 @@ private:
 
 	std::string m_tfx_source;
 
-	GSTexture* CreateSurface(
-		GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) override;
+	GSTexture* CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format) override;
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE,
 		const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter) final;
@@ -562,6 +577,9 @@ public:
 	bool SetGPUTimingEnabled(bool enabled) override;
 	float GetAndResetAccumulatedGPUTime() override;
 
+	bool SetGPUPipelineStatisticsEnabled(bool enabled) override;
+	GPUPipelineStatistics GetAndResetAccumulatedGPUPipelineStatistics() override;
+
 	void PushDebugGroup(const char* fmt, ...) override;
 	void PopDebugGroup() override;
 	void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) override;
@@ -608,7 +626,7 @@ public:
 	void IASetIndexBuffer(const void* index, size_t count);
 	void VSSetIndexBuffer(const void* index, size_t count);
 
-	void PSSetUnorderedAccess(GSTexture* rt, GSTexture* ds, bool write_rt, bool write_ds);
+	void PSSetROVs(GSTexture* rt, GSTexture* ds, bool write_rt, bool write_ds);
 	void PSSetShaderResource(int i, GSTexture* sr, bool check_state, ResourceType type = ResourceType::SRV);
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
 

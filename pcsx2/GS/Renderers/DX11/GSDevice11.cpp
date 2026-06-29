@@ -48,6 +48,15 @@ static bool IsTextureFormatHWBlendable(ID3D11Device* dev, DXGI_FORMAT format)
 	return (support & D3D11_FORMAT_SUPPORT_RENDER_TARGET) && (support & D3D11_FORMAT_SUPPORT_BLENDABLE);
 }
 
+static bool IsTextureFormatUAVCapable(ID3D11Device* dev, DXGI_FORMAT format)
+{
+	UINT support;
+	if (FAILED(dev->CheckFormatSupport(format, &support)))
+		return false;
+
+	return (support & D3D11_FORMAT_SUPPORT_TYPED_UNORDERED_ACCESS_VIEW) != 0;
+}
+
 GSDevice11::GSDevice11()
 {
 	memset(&m_state, 0, sizeof(m_state));
@@ -594,7 +603,8 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	}
 
 	// 1x1 dummy texture.
-	m_null_texture = CreateSurface(GSTexture::Type::RenderTarget, 1, 1, 1, GSTexture::Format::Color);
+	const GSTexture::Usage null_usage = m_features.rov ? GSTexture::ShaderWriteTarget : GSTexture::Feedback;
+	m_null_texture = CreateSurface(null_usage, 1, 1, 1, GSTexture::Format::Color);
 	if (!m_null_texture)
 		return false;
 
@@ -608,6 +618,7 @@ void GSDevice11::Destroy()
 	GSDevice::Destroy();
 	DestroySwapChain();
 	DestroyTimestampQueries();
+	DestroyPipelineStatisticsQueries();
 
 	m_convert = {};
 	m_present = {};
@@ -717,6 +728,11 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	D3D11_FEATURE_DATA_D3D11_OPTIONS2 options2{};
 	m_dev->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS2, &options2, sizeof(options2));
 	m_features.rov = m_uav_texture && options2.ROVsSupported;
+	for (u32 fmt = static_cast<u32>(GSTexture::Format::Color); fmt <= static_cast<u32>(GSTexture::Format::PrimID); fmt++)
+	{
+		if (GSTexture::IsShaderWriteFormat(static_cast<GSTexture::Format>(fmt)))
+			m_features.rov &= IsTextureFormatUAVCapable(m_dev.get(), GSTexture11::GetDXGIFormat(static_cast<GSTexture::Format>(fmt)));
+	}
 
 	// Let the user know if said features are available.
 	Console.WriteLnFmt("D3D11: DXTn Texture Compression: {}", m_features.dxt_textures ? "Supported" : "Not Supported");
@@ -1067,6 +1083,10 @@ GSDevice::PresentResult GSDevice11::BeginPresent(bool frame_skip)
 	if (m_vsync_mode == GSVSyncMode::FIFO && m_gpu_timing_enabled)
 		PopTimestampQuery();
 
+	// Get the pipeline statistics for this frame before postprocessing.
+	if (m_gpu_pipeline_statistics_enabled)
+		PopPipelineStatisticsQuery();
+
 	m_ctx->ClearRenderTargetView(m_swap_chain_rtv.get(), s_present_clear_color.data());
 	m_ctx->OMSetRenderTargets(1, m_swap_chain_rtv.addressof(), nullptr);
 	if (m_state.rtv)
@@ -1098,6 +1118,9 @@ void GSDevice11::EndPresent()
 	if (m_vsync_mode != GSVSyncMode::FIFO && m_gpu_timing_enabled)
 		PopTimestampQuery();
 
+	if (m_gpu_pipeline_statistics_enabled)
+		PopPipelineStatisticsQuery();
+
 	// clear out the swap chain view, it might get resized..
 	OMSetRenderTargets(nullptr, nullptr, nullptr);
 
@@ -1107,6 +1130,9 @@ void GSDevice11::EndPresent()
 
 	if (m_gpu_timing_enabled)
 		KickTimestampQuery();
+
+	if (m_gpu_pipeline_statistics_enabled)
+		KickPipelineStatisticsQuery();
 }
 
 bool GSDevice11::CreateTimestampQueries()
@@ -1227,6 +1253,95 @@ float GSDevice11::GetAndResetAccumulatedGPUTime()
 	return value;
 }
 
+bool GSDevice11::CreatePipelineStatisticsQueries()
+{
+	for (u32 i = 0; i < NUM_PIPELINE_STATISTICS_QUERIES; i++)
+	{
+		const CD3D11_QUERY_DESC qdesc(D3D11_QUERY_PIPELINE_STATISTICS);
+		const HRESULT hr = m_dev->CreateQuery(&qdesc, m_pipeline_statistics_queries[i].put());
+		if (FAILED(hr))
+		{
+			m_pipeline_statistics_queries = {};
+			return false;
+		}
+	}
+
+	KickPipelineStatisticsQuery();
+	return true;
+}
+
+void GSDevice11::KickPipelineStatisticsQuery()
+{
+	if (m_pipeline_statistics_query_started || !m_pipeline_statistics_queries[0] ||
+		m_waiting_pipeline_statistics_queries == NUM_PIPELINE_STATISTICS_QUERIES)
+		return;
+
+	m_ctx->Begin(m_pipeline_statistics_queries[m_write_pipeline_statistics_query].get());
+	m_pipeline_statistics_query_started = true;
+}
+
+void GSDevice11::DestroyPipelineStatisticsQueries()
+{
+	if (!m_pipeline_statistics_queries[0])
+		return;
+
+	if (m_pipeline_statistics_query_started)
+		m_ctx->End(m_pipeline_statistics_queries[m_write_timestamp_query].get());
+
+	m_timestamp_queries = {};
+	m_read_timestamp_query = 0;
+	m_write_timestamp_query = 0;
+	m_waiting_timestamp_queries = 0;
+	m_timestamp_query_started = 0;
+}
+
+void GSDevice11::PopPipelineStatisticsQuery()
+{
+	while (m_waiting_pipeline_statistics_queries > 0)
+	{
+		D3D11_QUERY_DATA_PIPELINE_STATISTICS stats{};
+		const HRESULT stats_hr = m_ctx->GetData(
+			m_pipeline_statistics_queries[m_read_pipeline_statistics_query].get(), &stats, sizeof(stats), 0);
+		if (stats_hr != S_OK)
+			break;
+
+		m_accumulated_gpu_pipeline_statistics.vs_invocations += stats.VSInvocations;
+		m_accumulated_gpu_pipeline_statistics.ps_invocations += stats.PSInvocations;
+		m_read_pipeline_statistics_query = (m_read_pipeline_statistics_query + 1) % NUM_PIPELINE_STATISTICS_QUERIES;
+		m_waiting_pipeline_statistics_queries--;
+	}
+
+	if (m_pipeline_statistics_query_started)
+	{
+		m_ctx->End(m_pipeline_statistics_queries[m_write_pipeline_statistics_query].get());
+		m_write_pipeline_statistics_query = (m_write_pipeline_statistics_query + 1) % NUM_PIPELINE_STATISTICS_QUERIES;
+		m_pipeline_statistics_query_started = false;
+		m_waiting_pipeline_statistics_queries++;
+	}
+}
+
+GPUPipelineStatistics GSDevice11::GetAndResetAccumulatedGPUPipelineStatistics()
+{
+	GPUPipelineStatistics stats = m_accumulated_gpu_pipeline_statistics;
+	m_accumulated_gpu_pipeline_statistics = {};
+	return stats;
+}
+
+bool GSDevice11::SetGPUPipelineStatisticsEnabled(bool enabled)
+{
+	m_gpu_pipeline_statistics_enabled = enabled;
+	
+	if (m_gpu_pipeline_statistics_enabled)
+	{
+		return CreatePipelineStatisticsQueries();
+	}
+	else
+	{
+		DestroyPipelineStatisticsQueries();
+		return true;
+	}
+}
+
 void GSDevice11::DrawPrimitive()
 {
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
@@ -1342,8 +1457,10 @@ void GSDevice11::InsertDebugMessage(DebugMessageCategory category, const char* f
 	m_annotation->SetMarker(StringUtil::UTF8StringToWideString(str).c_str());
 }
 
-GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format)
+GSTexture* GSDevice11::CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format)
 {
+	pxAssert(GSTexture::ValidateUsageAndFormat(usage, format));
+
 	D3D11_TEXTURE2D_DESC desc = {};
 	desc.Width = width;
 	desc.Height = height;
@@ -1354,26 +1471,27 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 	desc.SampleDesc.Quality = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 
-	switch (type)
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+	if (GSTexture::IsTexture(usage))
 	{
-		case GSTexture::Type::RenderTarget:
-			desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-			if (m_uav_texture)
-				desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
-			break;
-		case GSTexture::Type::DepthStencil:
-			desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-			break;
-		case GSTexture::Type::Texture:
-			desc.BindFlags = (levels > 1 && !GSTexture::IsCompressedFormat(format)) ? (D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE) : D3D11_BIND_SHADER_RESOURCE;
-			desc.MiscFlags = (levels > 1 && !GSTexture::IsCompressedFormat(format)) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
-			break;
-		case GSTexture::Type::RWTexture:
-			pxAssert(m_uav_texture);
-			desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
-			break;
-		default:
-			break;
+		desc.BindFlags |= (levels > 1 && !GSTexture::IsCompressedFormat(format)) ? D3D11_BIND_RENDER_TARGET : 0;
+		desc.MiscFlags |= (levels > 1 && !GSTexture::IsCompressedFormat(format)) ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
+	}
+
+	if (GSTexture::IsRenderTarget(usage))
+	{
+		desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+	}
+
+	if (GSTexture::IsDepthStencil(usage))
+	{
+		desc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
+	}
+
+	if (GSTexture::IsShaderWrite(usage))
+	{
+		desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
 	}
 
 	wil::com_ptr_nothrow<ID3D11Texture2D> texture;
@@ -1384,7 +1502,7 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int width, int height
 		return nullptr;
 	}
 
-	return new GSTexture11(std::move(texture), desc, type, format);
+	return new GSTexture11(std::move(texture), desc, usage, format);
 }
 
 std::unique_ptr<GSDownloadTexture> GSDevice11::CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format)
@@ -2973,7 +3091,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		{
 			config.colclip_update_area = config.drawarea;
 
-			colclip_rt = CreateRenderTarget(rtsize.x, rtsize.y, m_rgba16_unorm_hw_blend ? GSTexture::Format::ColorClip : GSTexture::Format::ColorHDR, false);
+			colclip_rt = CreateFeedbackTarget(rtsize.x, rtsize.y, m_rgba16_unorm_hw_blend ? GSTexture::Format::ColorClip : GSTexture::Format::ColorHDR, false);
 			if (!colclip_rt)
 			{
 				Console.Warning("D3D11: Failed to allocate ColorClip render target, aborting draw.");
