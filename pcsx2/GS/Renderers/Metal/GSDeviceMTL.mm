@@ -565,10 +565,8 @@ GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Usage usage, int width, int hei
 
 	MTLTextureUsage mtl_usage = MTLTextureUsageShaderRead;
 
-	if (GSTexture::IsRenderTarget(usage))
-	{
+	if (GSTexture::IsRenderTargetOrDepthStencil(usage))
 		mtl_usage |= MTLTextureUsageRenderTarget;
-	}
 
 	if ((usage & GSTexture::FeedbackTarget) == GSTexture::FeedbackTarget)
 	{
@@ -577,9 +575,7 @@ GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Usage usage, int width, int hei
 	}
 
 	if (GSTexture::IsShaderWrite(usage))
-	{
 		mtl_usage |= MTLTextureUsageShaderWrite;
-	}
 
 	[desc setUsage:mtl_usage];
 
