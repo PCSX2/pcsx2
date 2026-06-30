@@ -13,9 +13,10 @@
 // Uploads/downloads need 32-byte alignment for AVX2.
 static constexpr u32 PITCH_ALIGNMENT = 32;
 
-GSTextureMTL::GSTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLTexture>> texture, Usage usage, Format format)
+GSTextureMTL::GSTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLTexture>> texture, MRCOwned<id<MTLTexture>> rov_texture, Usage usage, Format format)
 	: m_dev(dev)
 	, m_texture(std::move(texture))
+	, m_rov_texture(std::move(rov_texture))
 {
 	m_usage = usage;
 	m_format = format;
@@ -141,6 +142,8 @@ void GSTextureMTL::SetDebugName(std::string_view name)
 			length:static_cast<NSUInteger>(name.length())
 			encoding:NSUTF8StringEncoding];
 		[m_texture setLabel:label];
+		if (m_rov_texture)
+			[m_rov_texture setLabel:[label stringByAppendingString:@".ROV"]];
 	}
 
 	m_debug_name = std::move(name);

@@ -451,6 +451,7 @@ public:
 	void MRESetDSS(id<MTLDepthStencilState> dss);
 	void MRESetSampler(SamplerSelector sel);
 	void MRESetTexture(GSTexture* tex, int pos);
+	void MRESetTexture(id<MTLTexture> tex, int pos);
 	void MRESetVertices(id<MTLBuffer> buffer, size_t offset);
 	void MRESetVSIndices(id<MTLBuffer> buffer, size_t offset);
 	void MRESetScissor(const GSVector4i& scissor);
