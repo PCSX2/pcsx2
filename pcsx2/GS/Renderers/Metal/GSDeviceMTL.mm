@@ -2044,14 +2044,12 @@ static void textureBarrier(id<MTLRenderCommandEncoder> enc)
 
 void GSDeviceMTL::MRESetTexture(GSTexture* tex, int pos)
 {
-	if (tex == m_current_render.tex[pos])
+	if (!tex || tex == m_current_render.tex[pos])
 		return;
 	m_current_render.tex[pos] = tex;
-	if (GSTextureMTL* mtex = static_cast<GSTextureMTL*>(tex))
-	{
-		[m_current_render.encoder setFragmentTexture:mtex->GetTexture() atIndex:pos];
-		mtex->m_last_read = m_current_draw;
-	}
+	GSTextureMTL* mtex = static_cast<GSTextureMTL*>(tex);
+	[m_current_render.encoder setFragmentTexture:mtex->GetTexture() atIndex:pos];
+	mtex->m_last_read = m_current_draw;
 }
 
 void GSDeviceMTL::MRESetVertices(id<MTLBuffer> buffer, size_t offset)
