@@ -13,6 +13,7 @@ constant uint SHUFFLE_READWRITE = 3;
 
 constant bool HAS_FBFETCH           [[function_constant(GSMTLConstantIndex_FRAMEBUFFER_FETCH)]];
 constant bool DEPTH_FEEDBACK        [[function_constant(GSMTLConstantIndex_DEPTH_FEEDBACK)]];
+constant bool ROV_NEEDS_R32         [[function_constant(GSMTLConstantIndex_ROV_NEEDS_R32)]];
 constant bool FST                   [[function_constant(GSMTLConstantIndex_FST)]];
 constant bool IIP                   [[function_constant(GSMTLConstantIndex_IIP)]];
 constant bool VS_POINT_SIZE         [[function_constant(GSMTLConstantIndex_VS_POINT_SIZE)]];
@@ -1708,7 +1709,8 @@ constant float ds_fbf = 0;
 #endif
 constant bool NEEDS_DS_TEX   = SW_DEPTH && !DEPTH_FEEDBACK && !NEEDS_DS_FBF && PS_ROV_DEPTH == ROV_DEPTH::NONE;
 constant bool NEEDS_DS_DEPTH = (SW_DEPTH && DEPTH_FEEDBACK || NEEDS_DS_FBF) && PS_ROV_DEPTH == ROV_DEPTH::NONE;
-constant bool NEEDS_RT_ROV = PS_ROV_COLOR;
+constant bool NEEDS_RT_ROV = PS_ROV_COLOR && !ROV_NEEDS_R32;
+constant bool NEEDS_RT_U32 = PS_ROV_COLOR &&  ROV_NEEDS_R32;
 constant bool NEEDS_DS_ROV = PS_ROV_DEPTH != ROV_DEPTH::NONE;
 
 fragment MainPSOut ps_main(
@@ -1730,6 +1732,7 @@ fragment MainPSOut ps_main(
 	texture2d<float> ds_tex    [[texture(GSMTLTextureIndexDepthTarget),  function_constant(NEEDS_DS_TEX)]],
 	depth2d<float>   ds_depth  [[texture(GSMTLTextureIndexDepthTarget),  function_constant(NEEDS_DS_DEPTH)]],
 	texture2d<float, access::read_write> rt_rov [[texture(GSMTLTextureIndexRenderTarget), raster_order_group(0), function_constant(NEEDS_RT_ROV)]],
+	texture2d<uint,  access::read_write> rt_u32 [[texture(GSMTLTextureIndexRenderTarget), raster_order_group(0), function_constant(NEEDS_RT_U32)]],
 	texture2d<float, access::read_write> ds_rov [[texture(GSMTLTextureIndexDepthTarget),  raster_order_group(1), function_constant(NEEDS_DS_ROV)]])
 {
 	PSMain main(in, cb);
@@ -1765,7 +1768,10 @@ fragment MainPSOut ps_main(
 	{
 		if (PS_ROV_COLOR)
 		{
-			main.current_color = rt_rov.read(coord);
+			if (ROV_NEEDS_R32)
+				main.current_color = unpack_unorm4x8_to_float(rt_u32.read(coord).x);
+			else
+				main.current_color = rt_rov.read(coord);
 		}
 		else
 		{
@@ -1788,7 +1794,10 @@ fragment MainPSOut ps_main(
 	{
 		if (!PS_FBMASK)
 			out.c0 = select(out.c0, main.current_color, cb.fbmask == 0xff);
-		rt_rov.write(out.c0, coord);
+		if (ROV_NEEDS_R32)
+			rt_u32.write(pack_float_to_unorm4x8(out.c0), coord);
+		else
+			rt_rov.write(out.c0, coord);
 	}
 	return out;
 }
@@ -1802,7 +1811,8 @@ fragment void ps_main_rov_eft(
 	texture2d<float> tex     [[texture(GSMTLTextureIndexTex),     function_constant(PS_TEX_IS_COLOR)]],
 	depth2d<float>   depth   [[texture(GSMTLTextureIndexTex),     function_constant(PS_TEX_IS_DEPTH)]],
 	texture2d<float> palette [[texture(GSMTLTextureIndexPalette), function_constant(PS_HAS_PALETTE)]],
-	texture2d<float, access::read_write> rt_rov [[texture(GSMTLTextureIndexRenderTarget), raster_order_group(0)]])
+	texture2d<float, access::read_write> rt_rov [[texture(GSMTLTextureIndexRenderTarget), raster_order_group(0), function_constant(NEEDS_RT_ROV)]],
+	texture2d<uint,  access::read_write> rt_u32 [[texture(GSMTLTextureIndexRenderTarget), raster_order_group(0), function_constant(NEEDS_RT_U32)]])
 {
 	PSMain main(in, cb);
 	main.tex_sampler = s;
@@ -1814,13 +1824,19 @@ fragment void ps_main_rov_eft(
 		main.palette = palette;
 
 	uint2 coord = uint2(in.p.xy);
-	main.current_color = rt_rov.read(coord);
+	if (ROV_NEEDS_R32)
+		main.current_color = unpack_unorm4x8_to_float(rt_u32.read(coord).x);
+	else
+		main.current_color = rt_rov.read(coord);
 	MainPSOut out = main.ps_main();
 	if (!main.color_discarded)
 	{
 		if (!PS_FBMASK)
 			out.c0 = select(out.c0, main.current_color, cb.fbmask == 0xff);
-		rt_rov.write(out.c0, coord);
+		if (ROV_NEEDS_R32)
+			rt_u32.write(pack_float_to_unorm4x8(out.c0), coord);
+		else
+			rt_rov.write(out.c0, coord);
 	}
 }
 

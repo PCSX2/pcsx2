@@ -624,6 +624,7 @@ GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Usage usage, int width, int hei
 	[desc setStorageMode:MTLStorageModePrivate];
 
 	MTLTextureUsage mtl_usage = MTLTextureUsageShaderRead;
+	bool needs_rov_tex = false;
 
 	if (GSTexture::IsRenderTargetOrDepthStencil(usage))
 		mtl_usage |= MTLTextureUsageRenderTarget;
@@ -634,6 +635,13 @@ GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Usage usage, int width, int hei
 			mtl_usage |= MTLTextureUsagePixelFormatView; // Force color compression off by including PixelFormatView
 	}
 
+	if (usage == GSTexture::ShaderWriteTarget && format == GSTexture::Format::Color && m_dev.features.rov_requires_r32)
+	{
+		// Need to make an R32 view of the texture for ROV
+		mtl_usage |= MTLTextureUsagePixelFormatView;
+		needs_rov_tex = true;
+	}
+
 	if (GSTexture::IsShaderWrite(usage))
 		mtl_usage |= MTLTextureUsageShaderWrite;
 
@@ -642,7 +650,8 @@ GSTexture* GSDeviceMTL::CreateSurface(GSTexture::Usage usage, int width, int hei
 	MRCOwned<id<MTLTexture>> tex = MRCTransfer([m_dev.dev newTextureWithDescriptor:desc]);
 	if (tex)
 	{
-		GSTextureMTL* t = new GSTextureMTL(this, tex, usage, format);
+		MRCOwned<id<MTLTexture>> rov_tex = needs_rov_tex ? MRCTransfer([tex newTextureViewWithPixelFormat:MTLPixelFormatR32Uint]) : nil;
+		GSTextureMTL* t = new GSTextureMTL(this, tex, rov_tex, usage, format);
 		if (GSTexture::IsRenderTarget(usage))
 		{
 			ClearRenderTarget(t, 0);
@@ -1059,13 +1068,14 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_features.test_and_sample_depth = true;
 	m_features.depth_feedback = getDepthFeedback(m_dev, m_features.framebuffer_fetch);
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand;
-	m_features.rov = m_dev.features.rov && !m_dev.features.rov_requires_r32 && !m_features.framebuffer_fetch;
+	m_features.rov = m_dev.features.rov && !m_features.framebuffer_fetch;
 	m_max_texture_size = m_dev.features.max_texsize;
 
 	// Init metal stuff
 	m_fn_constants = MRCTransfer([MTLFunctionConstantValues new]);
-	setFnConstantB(m_fn_constants, m_features.framebuffer_fetch, GSMTLConstantIndex_FRAMEBUFFER_FETCH);
-	setFnConstantB(m_fn_constants, m_features.depth_feedback,    GSMTLConstantIndex_DEPTH_FEEDBACK);
+	setFnConstantB(m_fn_constants, m_features.framebuffer_fetch,    GSMTLConstantIndex_FRAMEBUFFER_FETCH);
+	setFnConstantB(m_fn_constants, m_features.depth_feedback,       GSMTLConstantIndex_DEPTH_FEEDBACK);
+	setFnConstantB(m_fn_constants, m_dev.features.rov_requires_r32, GSMTLConstantIndex_ROV_NEEDS_R32);
 
 	m_draw_sync_fence = MRCTransfer([m_dev.dev newFence]);
 	[m_draw_sync_fence setLabel:@"Draw Sync Fence"];
@@ -2147,6 +2157,15 @@ void GSDeviceMTL::MRESetTexture(GSTexture* tex, int pos)
 	mtex->m_last_read = m_current_draw;
 }
 
+void GSDeviceMTL::MRESetTexture(id<MTLTexture> tex, int pos)
+{
+	GSTexture* gstex = reinterpret_cast<GSTexture*>(tex); // No one actually dereferences this
+	if (!tex || gstex == m_current_render.tex[pos])
+		return;
+	m_current_render.tex[pos] = gstex;
+	[m_current_render.encoder setFragmentTexture:tex atIndex:pos];
+}
+
 void GSDeviceMTL::MRESetVertices(id<MTLBuffer> buffer, size_t offset)
 {
 	if (m_current_render.vertex_buffer != buffer)
@@ -2492,7 +2511,9 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	if (usesStencil(config.destination_alpha))
 		[mtlenc setStencilReferenceValue:1];
 	MREInitHWDraw(config, allocation);
-	if (config.require_one_barrier || config.require_full_barrier || config.ps.HasColorROV())
+	if (config.ps.HasColorROV() && m_dev.features.rov_requires_r32)
+		MRESetTexture(reinterpret_cast<GSTextureMTL*>(rt)->GetROVTexture(), GSMTLTextureIndexRenderTarget);
+	else if (config.require_one_barrier || config.require_full_barrier || config.ps.HasColorROV())
 		MRESetTexture(rt, GSMTLTextureIndexRenderTarget);
 	if (config.ps.HasDepthROV())
 	{
