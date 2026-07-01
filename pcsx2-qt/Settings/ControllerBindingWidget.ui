@@ -32,7 +32,11 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QComboBox" name="controllerType"/>
+         <widget class="QComboBox" name="controllerType">
+          <property name="sizeAdjustPolicy">
+           <enum>QComboBox::AdjustToContents</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QToolButton" name="bindings">
