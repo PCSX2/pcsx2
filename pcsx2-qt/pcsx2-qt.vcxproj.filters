@@ -34,6 +34,9 @@
     <Filter Include="Debugger\Memory">
       <UniqueIdentifier>{63790c94-0680-417d-926c-a8b74118f80f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Debugger\DebugCommands">
+      <UniqueIdentifier>{a0dff05b-ac6d-4ebe-bbf3-784fbf26c88b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\pcsx2\windows\PCSX2.rc" />
@@ -282,6 +285,22 @@
     <ClCompile Include="Debugger\ModuleModel.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="LogWindow.cpp" />
+    <ClCompile Include="Debugger\DebugCommands\DebugCommandStack.cpp">
+      <Filter>Debugger\DebugCommands</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\DebugCommands\DeleteFunctionCommand.cpp">
+      <Filter>Debugger\DebugCommands</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\DebugCommands\RenameFunctionCommand.cpp">
+      <Filter>Debugger\DebugCommands</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\DebugCommands\AddFunctionCommand.cpp">
+      <Filter>Debugger\DebugCommands</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\DebugCommands\CommandContext.cpp">
+      <Filter>Debugger\DebugCommands</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\pcsx2\windows\PCSX2.manifest">
@@ -302,11 +321,26 @@
     <ClInclude Include="Settings\MemoryCardConvertWorker.h">
       <Filter>Settings</Filter>
     </ClInclude>
-    <ClInclude Include="Settings\OsdFontPickerDialog.h">
-      <Filter>Settings</Filter>
-    </ClInclude>
     <ClInclude Include="Debugger\DebuggerSettingsManager.h">
       <Filter>Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\DebugCommands\DebugCommandStack.h">
+      <Filter>Debugger\DebugCommands</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\DebugCommands\DeleteFunctionCommand.h">
+      <Filter>Debugger\DebugCommands</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\DebugCommands\RenameFunctionCommand.h">
+      <Filter>Debugger\DebugCommands</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\DebugCommands\AddFunctionCommand.h">
+      <Filter>Debugger\DebugCommands</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\DebugCommands\IDebugCommand.h">
+      <Filter>Debugger\DebugCommands</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\DebugCommands\CommandContext.h">
+      <Filter>Debugger\DebugCommands</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -532,6 +566,7 @@
     <QtMoc Include="Debugger\ModuleModel.h">
       <Filter>Debugger</Filter>
     </QtMoc>
+    <QtMoc Include="Settings\OsdFontPickerDialog.h" />
   </ItemGroup>
   <ItemGroup>
     <QtResource Include="resources\resources.qrc">

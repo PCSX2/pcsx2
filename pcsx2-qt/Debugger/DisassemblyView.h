@@ -9,6 +9,9 @@
 
 #include "pcsx2/DebugTools/DisassemblyManager.h"
 
+#include "Debugger/DebugCommands/IDebugCommand.h"
+#include "Debugger/DebugCommands/DebugCommandStack.h"
+
 #include <QtWidgets/QMenu>
 #include <QtGui/QPainter>
 
@@ -96,4 +99,6 @@ private:
 	void setInstructions(u32 start, u32 end, u32 value);
 	bool AddressCanRestore(u32 start, u32 end);
 	bool FunctionCanRestore(u32 address);
+
+	DebugCommandStack m_commandStack;
 };
