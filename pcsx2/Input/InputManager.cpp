@@ -1207,18 +1207,16 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 					}
 				}
 
-				if (prev_full_state != new_full_state && binding->num_keys >= min_num_keys)
+				if (IsAxisHandler(binding->handler) && (new_full_state || prev_full_state))
 				{
-					if (IsAxisHandler(binding->handler))
-					{
-						if (value_to_pass >= 0.0f && (!skip_button_handlers || value_to_pass == 0.0f))
-							std::get<InputAxisEventHandler>(binding->handler)(key, value_to_pass);
-					}
-					else
-					{
-						const s32 pressed = skip_button_handlers ? -1 : static_cast<s32>(value_to_pass > 0.0f);
-						std::get<InputButtonEventHandler>(binding->handler)(pressed);
-					}
+					const float axis_value = new_full_state ? value_to_pass : 0.0f;
+					if (axis_value >= 0.0f && (!skip_button_handlers || axis_value == 0.0f))
+						std::get<InputAxisEventHandler>(binding->handler)(key, axis_value);
+				}
+				else if (prev_full_state != new_full_state)
+				{
+					const s32 pressed = skip_button_handlers ? -1 : static_cast<s32>(value_to_pass > 0.0f);
+					std::get<InputButtonEventHandler>(binding->handler)(pressed);
 				}
 			}
 
