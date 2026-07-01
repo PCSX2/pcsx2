@@ -1186,8 +1186,7 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 						for (auto it = range.first; it != range.second; ++it)
 						{
 							InputBinding* other_binding = it->second.get();
-							if (other_binding == binding || IsAxisHandler(other_binding->handler) ||
-								other_binding->num_keys >= binding->num_keys)
+							if (other_binding == binding || other_binding->num_keys >= binding->num_keys)
 							{
 								continue;
 							}
@@ -1195,8 +1194,12 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 							// We only need to cancel the binding if it was fully active before. Which in the above
 							// case of Shift+F1 / F1, it will be.
 							if (other_binding->current_mask == other_binding->full_mask)
-								std::get<InputButtonEventHandler>(other_binding->handler)(-1);
-
+							{
+								if (IsAxisHandler(other_binding->handler))
+									std::get<InputAxisEventHandler>(other_binding->handler)(key, 0.0f);
+								else
+									std::get<InputButtonEventHandler>(other_binding->handler)(-1);
+							}
 							// Zero out the current bits so that we don't release this binding, if the other part
 							// of the chord releases first.
 							other_binding->current_mask = 0;
