@@ -3035,10 +3035,10 @@ void VMManager::CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config)
 {
 	bool changed = false;
 
-	for (size_t i = 0; i < std::size(EmuConfig.Mcd); i++)
+	for (size_t i = 0; i < Pcsx2Config::MemoryCardOptions::NUM_SLOTS; i++)
 	{
-		if (EmuConfig.Mcd[i].Enabled != old_config.Mcd[i].Enabled ||
-			EmuConfig.Mcd[i].Filename != old_config.Mcd[i].Filename)
+		if (EmuConfig.MemoryCard.Slots[i].Enabled != old_config.MemoryCard.Slots[i].Enabled ||
+			EmuConfig.MemoryCard.Slots[i].Filename != old_config.MemoryCard.Slots[i].Filename)
 		{
 			changed = true;
 			break;
@@ -3056,8 +3056,8 @@ void VMManager::CheckForMemoryCardConfigChanges(const Pcsx2Config& old_config)
 		for (u32 slot = 0; slot < 4; slot++)
 		{
 			const uint index = FileMcd_ConvertToSlot(port, slot);
-			if (EmuConfig.Mcd[index].Enabled != old_config.Mcd[index].Enabled ||
-				EmuConfig.Mcd[index].Filename != old_config.Mcd[index].Filename)
+			if (EmuConfig.MemoryCard.Slots[index].Enabled != EmuConfig.MemoryCard.Slots[index].Enabled ||
+				EmuConfig.MemoryCard.Slots[index].Filename != EmuConfig.MemoryCard.Slots[index].Filename)
 			{
 				Console.WriteLn("Ejecting memory card %u (port %u slot %u) due to source change", index, port, slot);
 				AutoEject::Set(port, slot);
