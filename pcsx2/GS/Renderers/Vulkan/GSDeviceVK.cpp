@@ -2817,9 +2817,23 @@ bool GSDeviceVK::CheckFeatures()
 	//const bool isAMD = (vendorID == 0x1002 || vendorID == 0x1022);
 	//const bool isNVIDIA = (vendorID == 0x10DE);
 
+	const bool is_adreno = IsDeviceAdreno();
+
 	m_features.framebuffer_fetch =
 		m_optional_extensions.vk_ext_rasterization_order_attachment_access && !GSConfig.DisableFramebufferFetch;
 	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
+	// Qualcomm Adreno (turnip/freedreno) only reads the render target correctly through the coherent
+	// rasterization-order subpassLoad input-attachment path. The feedback-loop-layout sampler drops
+	// content (objects vanish) and the RT-copy fallback miscolours 16-bit fbmask draws, so force the
+	// subpassLoad path on regardless of INI: enable framebuffer fetch (requires the rasterization-order
+	// extension) and texture barriers, and disable the feedback-loop layout so the RT is bound as an
+	// input attachment. See GSTextureVK::Create for the matching image usage.
+	if (is_adreno)
+	{
+		m_optional_extensions.vk_ext_attachment_feedback_loop_layout = false;
+		m_features.framebuffer_fetch = m_optional_extensions.vk_ext_rasterization_order_attachment_access;
+		m_features.texture_barrier = true;
+	}
 	m_features.multidraw_fb_copy = false;
 	m_features.broken_point_sampler = false;
 
@@ -2845,10 +2859,18 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.framebuffer_fetch &= m_features.texture_barrier;
 
 	// Buggy drivers with broken barriers probably have no chance using GENERAL layout for depth either...
-	m_features.test_and_sample_depth = true;
+	// Adreno/turnip: sampling the live depth buffer while it is also the depth attachment (tex == ds)
+	// hangs the tiler. Force it off so tex == ds takes a depth copy instead of an in-pass self-read.
+	m_features.test_and_sample_depth = !is_adreno;
 
 	// Use D32F depth instead of D32S8 when we have framebuffer fetch.
 	m_features.stencil_buffer &= !m_features.framebuffer_fetch;
+
+	// Adreno/turnip hangs the GPU (A6xx hangcheck) on any stencil-bearing D32S8 depth buffer. Force
+	// stencil off so depth is created as plain D32_SFLOAT and no stencil attachment or stencil DATE
+	// pre-pass is emitted; DATE falls back to the stencil-free paths (PrimID tracking, then Full, then Off).
+	if (is_adreno)
+		m_features.stencil_buffer = false;
 
 	// On tiler GPUs, declaring gl_FragDepth (for PS2 32-bit Z quantization) emits
 	// SPIR-V ExecutionMode DepthReplacing, which disables early-ZS for the entire
@@ -2918,7 +2940,9 @@ bool GSDeviceVK::CheckFeatures()
 	m_max_texture_size = m_device_properties.limits.maxImageDimension2D;
 
 	m_features.rov = m_optional_extensions.vk_ext_fragment_shader_interlock &&
-	                 m_device_features.fragmentStoresAndAtomics;
+	                 m_device_features.fragmentStoresAndAtomics &&
+	                 // Adreno/turnip hangs the GPU on pixel_interlock_ordered draws (A6xx hangcheck).
+	                 !is_adreno;
 
 	return true;
 }
@@ -3849,8 +3873,13 @@ void GSDeviceVK::OMSetRenderTargets(
 			{
 				// NVIDIA drivers appear to return random garbage when sampling the RT via a feedback loop, if the load op for
 				// the render pass is CLEAR. Using vkCmdClearAttachments() doesn't work, so we have to clear the image instead.
-				if (vkRt->GetState() == GSTexture::State::Cleared && IsDeviceNVIDIA())
+				// Adreno/turnip has the same garbage-on-CLEAR feedback read.
+				if (vkRt->GetState() == GSTexture::State::Cleared && (IsDeviceNVIDIA() || IsDeviceAdreno()))
 					vkRt->CommitClear();
+				// Adreno/turnip: a feedback-read RT with a DONT_CARE load op (Invalidated state) reads undefined
+				// tile memory. Mark it Dirty so the load op becomes LOAD and the read sees real content.
+				else if (vkRt->GetState() == GSTexture::State::Invalidated && IsDeviceAdreno())
+					vkRt->SetState(GSTexture::State::Dirty);
 
 				if (vkRt->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
 				{
@@ -3874,7 +3903,8 @@ void GSDeviceVK::OMSetRenderTargets(
 				// NVIDIA drivers appear to return random garbage when sampling the RT via a feedback loop, if the load op for
 				// the render pass is CLEAR. Using vkCmdClearAttachments() doesn't work, so we have to clear the image instead.
 				// Note: DS feedback loop was added later - we will assume that the same issue is relevant.
-				if (vkDs->GetState() == GSTexture::State::Cleared && IsDeviceNVIDIA())
+				// Adreno/turnip has the same garbage-on-CLEAR feedback read.
+				if (vkDs->GetState() == GSTexture::State::Cleared && (IsDeviceNVIDIA() || IsDeviceAdreno()))
 					vkDs->CommitClear();
 
 				if (vkDs->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
@@ -4368,6 +4398,13 @@ bool GSDeviceVK::CompileConvertPipelines()
 					gpb.SetRenderPass(GetTFXRenderPass(true, ds != 0, is_setup, false, fbl != 0, false,
 						VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 						0);
+					// The feedback-loop (fbl) render pass carries the RASTERIZATION_ORDER_ATTACHMENT subpass flag
+					// when framebuffer fetch is available; the pipeline bound in it must declare the matching
+					// color-blend rasterization-order flag or the coherent self-read is undefined. Set (overwrite,
+					// not OR, so fbl=0 stays unflagged).
+					gpb.SetBlendFlags((fbl != 0 && m_features.framebuffer_fetch)
+							? VK_PIPELINE_COLOR_BLEND_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_BIT_EXT
+							: 0);
 					arr[ds][fbl] = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true), false);
 					if (!arr[ds][fbl])
 						return false;
@@ -4376,6 +4413,9 @@ bool GSDeviceVK::CompileConvertPipelines()
 						is_setup ? "setup" : "finish", i, ds, fbl);
 				}
 			}
+			// gpb is reused for subsequent convert shaders; clear the rasterization-order flag we set above so it
+			// does not leak onto non-feedback convert pipelines (invalid on a non-RASTER_ORDER render pass).
+			gpb.SetBlendFlags(0);
 		}
 	}
 
@@ -6549,8 +6589,15 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	// Begin render pass if new target or out of the area.
 	if (!InRenderPass())
 	{
-		const VkAttachmentLoadOp rt_op = GetLoadOpForTexture(draw_rt);
-		const VkAttachmentLoadOp ds_op = GetLoadOpForTexture(draw_ds);
+		VkAttachmentLoadOp rt_op = GetLoadOpForTexture(draw_rt);
+		VkAttachmentLoadOp ds_op = GetLoadOpForTexture(draw_ds);
+		// A feedback-loop draw reads the attachment via subpassLoad; a DONT_CARE load op leaves it
+		// uninitialized, so the coherent read returns undefined (tile) memory. Force LOAD so the read
+		// sees real content - you cannot coherently read what you did not load.
+		if (pipe.IsRTFeedbackLoop() && rt_op == VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+			rt_op = VK_ATTACHMENT_LOAD_OP_LOAD;
+		if (pipe.IsDepthFeedbackLoop() && ds_op == VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+			ds_op = VK_ATTACHMENT_LOAD_OP_LOAD;
 		const VkRenderPass rp = GetTFXRenderPass(pipe.rt, pipe.ds, pipe.ps.colclip_hw,
 			config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil, pipe.IsRTFeedbackLoop(),
 			pipe.IsTestingAndSamplingDepth(), rt_op, ds_op);
@@ -6588,7 +6635,9 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne)
+	// Guard on stencil_buffer: devices without a stencil attachment (e.g. Adreno, forced D32F) have no
+	// stencil aspect to clear.
+	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && m_features.stencil_buffer)
 	{
 		const VkClearAttachment ca = {VK_IMAGE_ASPECT_STENCIL_BIT, 0u, {.depthStencil = {0.0f, 1u}}};
 		const VkClearRect rc = {{{config.drawarea.left, config.drawarea.top},
@@ -6740,6 +6789,15 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelect
 		if (config.IsFeedbackLoopDepth(config.ps))
 			pipe.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteDepth;
 	}
+	// With framebuffer fetch, an RT-reading shader (IsFeedbackLoopRT: tex_is_fb / fbmask / date >= 5 /
+	// sw_blend) reads the render target via subpassLoad, which requires it bound as an input attachment -
+	// i.e. an RT feedback loop. DetermineBarriers clears the barrier flags for framebuffer fetch (the read
+	// is coherent), so the barrier-gated block above skips these draws and the input attachment is never
+	// bound. Wire the RT feedback loop here so IsRTFeedbackLoop() drives the input-attachment binding,
+	// feedback render pass and rasterization-order blend flag. Only the subpassLoad path needs this; the
+	// feedback-loop-layout path samples a texture and is handled elsewhere.
+	if (m_features.framebuffer_fetch && !UseFeedbackLoopLayout() && config.IsFeedbackLoopRT(config.ps))
+		pipe.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteRT;
 	if (pipe.ds && !(pipe.feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteDepth))
 	{
 		pipe.feedback_loop_flags |= (config.tex && config.tex == config.ds) ? FeedbackLoopFlag_ReadDepth : FeedbackLoopFlag_None;
