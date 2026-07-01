@@ -1159,16 +1159,7 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 			// handle inverting, needed for some wheels.
 			value_to_pass = binding->keys[i].invert ? (1.0f - value_to_pass) : value_to_pass;
 
-			// axes are fired regardless of a state change, unless they're zero
-			// (but going from not-zero to zero will still fire, because of the full state)
-			// for buttons, we can use the state of the last chord key, because it'll be 1 on press,
-			// and 0 on release (when the full state changes).
-			if (IsAxisHandler(binding->handler))
-			{
-				if (value_to_pass >= 0.0f && (!skip_button_handlers || value_to_pass == 0.0f))
-					std::get<InputAxisEventHandler>(binding->handler)(key, value_to_pass);
-			}
-			else if (binding->num_keys >= min_num_keys)
+			if (binding->num_keys >= min_num_keys)
 			{
 				// update state based on whether the whole chord was activated
 				const u8 new_mask = (new_state ? (binding->current_mask | bit) : (binding->current_mask & ~bit));
@@ -1215,8 +1206,16 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 
 				if (prev_full_state != new_full_state && binding->num_keys >= min_num_keys)
 				{
-					const s32 pressed = skip_button_handlers ? -1 : static_cast<s32>(value_to_pass > 0.0f);
-					std::get<InputButtonEventHandler>(binding->handler)(pressed);
+					if (IsAxisHandler(binding->handler))
+					{
+						if (value_to_pass >= 0.0f && (!skip_button_handlers || value_to_pass == 0.0f))
+							std::get<InputAxisEventHandler>(binding->handler)(key, value_to_pass);
+					}
+					else
+					{
+						const s32 pressed = skip_button_handlers ? -1 : static_cast<s32>(value_to_pass > 0.0f);
+						std::get<InputButtonEventHandler>(binding->handler)(pressed);
+					}
 				}
 			}
 
