@@ -31,6 +31,7 @@ private Q_SLOTS:
 
 private:
 	void populateLanguages();
+	void populateMonitors();
 
 	Ui::InterfaceSettingsWidget m_ui;
 
