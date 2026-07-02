@@ -451,7 +451,7 @@ static void recBranchLink(bool ltz)
 	_deleteEEreg(31, 0);
 	// Store return address directly to memory
 	armAsm->Mov(RXSCRATCH, (u64)(pc + 4));
-	armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.GPR.n.ra.UD[0]));
+	armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.n.ra.UD[0]);
 
 	if (GPR_IS_CONST1(_Rs_))
 	{
@@ -492,7 +492,7 @@ static void recBranchLinkLikely(bool ltz)
 
 	_deleteEEreg(31, 0);
 	armAsm->Mov(RXSCRATCH, (u64)(pc + 4));
-	armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.GPR.n.ra.UD[0]));
+	armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.n.ra.UD[0]);
 
 	if (GPR_IS_CONST1(_Rs_))
 	{

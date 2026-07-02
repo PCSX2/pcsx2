@@ -53,7 +53,7 @@ void recJAL()
 	else
 	{
 		armAsm->Mov(RXSCRATCH, (u64)(pc + 4));
-		armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.GPR.r[31].UD[0]));
+		armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[31].UD[0]);
 	}
 
 	recompileNextInstruction(true, false);

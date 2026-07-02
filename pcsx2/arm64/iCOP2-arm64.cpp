@@ -710,7 +710,7 @@ void recCOP2_QMFC2()
 
 	// 128-bit copy: VU0.VF[fs] → cpuRegs.GPR.r[rt]
 	armAsm->Ldr(RQSCRATCH, armVU0Mem(&VU0.VF[_Rd_]));
-		armAsm->Str(RQSCRATCH, armCpuRegMem(&cpuRegs.GPR.r[_Rt_]));
+	armStoreEEGPRQuad(RQSCRATCH, _Rt_);
 }
 
 // QMTC2: VU0.VF[fs] = cpuRegs.GPR[rt] (128-bit copy, EE GPR → VF)
@@ -748,16 +748,16 @@ void recCOP2_CFC2()
 		// REG_R: mask to 23 bits, write only UL[0]
 		armAsm->Ldr(RWSCRATCH, armVU0Mem(&VU0.VI[REG_R]));
 		armAsm->And(RWSCRATCH, RWSCRATCH, 0x7FFFFF);
-				armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.GPR.r[_Rt_].UL[0]));
+		armStoreEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[0]);
 	}
 	else
 	{
 		// General VI: load 32-bit, sign-extend to UL[0]+UL[1]
 		armAsm->Ldr(RWSCRATCH, armVU0Mem(&VU0.VI[_Rd_]));
-				armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.GPR.r[_Rt_].UL[0]));
+		armStoreEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[0]);
 		// Sign-extend: UL[1] = (UL[0] & 0x80000000) ? 0xFFFFFFFF : 0
 		armAsm->Asr(RWSCRATCH, RWSCRATCH, 31);
-				armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.GPR.r[_Rt_].UL[1]));
+		armStoreEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[1]);
 	}
 }
 

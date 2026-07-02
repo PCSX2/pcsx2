@@ -62,7 +62,8 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 // x19:     RFASTMEMBASE — NOT allocatable (reserved for fastmem base)
 // x20:     RSTATE — NOT allocatable (reserved for cpuRegs pointer)
 // x21:     RPSXSTATE — NOT allocatable (reserved for psxRegs pointer in IOP JIT)
-// x22-x23: callee-saved (allocatable)
+// x22:     REEPIN_SP — NOT allocatable (pinned mirror of GPR.r[29].UD[0], $sp)
+// x23:     REEPIN_RA — NOT allocatable (pinned mirror of GPR.r[31].UD[0], $ra)
 // x24:     RVU0 — NOT allocatable (reserved for &VU0 pointer in EE COP2 JIT)
 // x25:     RECCYCLE — NOT allocatable (pinned cycle delta: cycle - nextEventCycle)
 // x26-x28: callee-saved (allocatable)
@@ -77,6 +78,7 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 //   bit 19      — x19 : RFASTMEMBASE
 //   bit 20      — x20 : RSTATE (cpuRegs base pointer)
 //   bit 21      — x21 : RPSXSTATE (psxRegs base; shared alloc table with EE)
+//   bits 22-23  — x22/x23 : REEPIN_SP/REEPIN_RA (pinned $sp/$ra mirrors)
 //   bit 24      — x24 : RVU0 (pinned &VU0 for iCOP2)
 //   bit 25      — x25 : RECCYCLE (pinned cycle delta)
 //   bits 29-30  — x29/x30 : FP, LR — never allocatable
@@ -87,6 +89,7 @@ static constexpr uint32_t ALLOCATABLE_MASK = ~((1u << 8)
 	| (1u << 9) | (1u << 10)
 	| (7u << 16)
 	| (1u << 19) | (1u << 20) | (1u << 21)
+	| (3u << 22)
 	| (1u << 24) | (1u << 25)
 	| (3u << 29));
 
@@ -437,7 +440,7 @@ void _flushConstReg(int reg)
 	if (GPR_IS_CONST1(reg) && !(g_cpuFlushedConstReg & (1 << reg)))
 	{
 		armAsm->Mov(RXSCRATCH, static_cast<s64>(g_cpuConstRegs[reg].SD[0]));
-		armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.GPR.r[reg].UD[0]));
+		armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[reg].UD[0]);
 		g_cpuFlushedConstReg |= (1 << reg);
 		if (reg == 0)
 			DevCon.Warning("Flushing r0!");
@@ -452,7 +455,7 @@ void _flushConstRegs(bool delete_const)
 			continue;
 
 		armAsm->Mov(RXSCRATCH, static_cast<u64>(g_cpuConstRegs[i].UD[0]));
-		armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.GPR.r[i].UD[0]));
+		armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[i].UD[0]);
 		g_cpuFlushedConstReg |= 1u << i;
 	}
 
@@ -922,7 +925,7 @@ void _writebackNEONreg(int neonreg)
 			else if (reg == NEONGPR_HI)
 				armStorePtr(armQRegister(neonreg), &cpuRegs.HI.UQ);
 			else
-				armStorePtr(armQRegister(neonreg), &cpuRegs.GPR.r[reg].UQ);
+				armStoreEEGPRQuad(armQRegister(neonreg), reg);
 		}
 		break;
 

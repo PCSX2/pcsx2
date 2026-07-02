@@ -33,30 +33,46 @@ REC_FUNC(DSRLV);
 REC_FUNC(DSRAV);
 #else
 
-// Memory load/store helpers — always use cpuRegs memory
-static void memLoadS32()
+// Memory load/store helpers. Loads return the register holding the operand:
+// the write-through pin mirror when the guest reg is pinned ($sp/$ra — no
+// load emitted), the scratch otherwise. Callers must treat the returned
+// register as READ-ONLY and put results in scratch (or pass them straight
+// to the store helper).
+static a64::Register memLoadS32()
 {
+	if (const a64::Register* pin = armEEPinForGPR(_Rs_))
+		return pin->W();
 	armLoadEERegPtr(RWARG1, &cpuRegs.GPR.r[_Rs_].UL[0]);
+	return RWARG1;
 }
 
-static void memLoadS64()
+static a64::Register memLoadS64()
 {
+	if (const a64::Register* pin = armEEPinForGPR(_Rs_))
+		return *pin;
 	armLoadEERegPtr(RXARG1, &cpuRegs.GPR.r[_Rs_].UD[0]);
+	return RXARG1;
 }
 
-static void memLoadT32()
+static a64::Register memLoadT32()
 {
+	if (const a64::Register* pin = armEEPinForGPR(_Rt_))
+		return pin->W();
 	armLoadEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[0]);
+	return RWSCRATCH;
 }
 
-static void memLoadT64()
+static a64::Register memLoadT64()
 {
+	if (const a64::Register* pin = armEEPinForGPR(_Rt_))
+		return *pin;
 	armLoadEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rt_].UD[0]);
+	return RXSCRATCH;
 }
 
-static void memStoreD()
+static void memStoreD(const a64::Register& src)
 {
-	armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	armStoreEERegPtr(src, &cpuRegs.GPR.r[_Rd_].UD[0]);
 }
 
 /*********************************************************
@@ -72,11 +88,17 @@ static void recSLL_const()
 
 static void recSLL_(int info)
 {
-	memLoadT32();
+	const a64::Register rt = memLoadT32();
 	if (_Sa_ != 0)
-		armAsm->Lsl(RWSCRATCH, RWSCRATCH, _Sa_);
-	armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-	memStoreD();
+	{
+		armAsm->Lsl(RWSCRATCH, rt, _Sa_);
+		armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
+	}
+	else
+	{
+		armAsm->Sxtw(RXSCRATCH, rt);
+	}
+	memStoreD(RXSCRATCH);
 }
 
 EERECOMPILE_CODEX_MEM(eeRecompileCodeRC2_MEM, SLL, XMMINFO_WRITED | XMMINFO_READT);
@@ -89,11 +111,17 @@ static void recSRL_const()
 
 static void recSRL_(int info)
 {
-	memLoadT32();
+	const a64::Register rt = memLoadT32();
 	if (_Sa_ != 0)
-		armAsm->Lsr(RWSCRATCH, RWSCRATCH, _Sa_);
-	armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-	memStoreD();
+	{
+		armAsm->Lsr(RWSCRATCH, rt, _Sa_);
+		armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
+	}
+	else
+	{
+		armAsm->Sxtw(RXSCRATCH, rt);
+	}
+	memStoreD(RXSCRATCH);
 }
 
 EERECOMPILE_CODEX_MEM(eeRecompileCodeRC2_MEM, SRL, XMMINFO_WRITED | XMMINFO_READT);
@@ -106,11 +134,17 @@ static void recSRA_const()
 
 static void recSRA_(int info)
 {
-	memLoadT32();
+	const a64::Register rt = memLoadT32();
 	if (_Sa_ != 0)
-		armAsm->Asr(RWSCRATCH, RWSCRATCH, _Sa_);
-	armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-	memStoreD();
+	{
+		armAsm->Asr(RWSCRATCH, rt, _Sa_);
+		armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
+	}
+	else
+	{
+		armAsm->Sxtw(RXSCRATCH, rt);
+	}
+	memStoreD(RXSCRATCH);
 }
 
 EERECOMPILE_CODEX_MEM(eeRecompileCodeRC2_MEM, SRA, XMMINFO_WRITED | XMMINFO_READT);
@@ -123,10 +157,16 @@ static void recDSLL_const()
 
 static void recDSLL_(int info)
 {
-	memLoadT64();
+	const a64::Register rt = memLoadT64();
 	if (_Sa_ != 0)
-		armAsm->Lsl(RXSCRATCH, RXSCRATCH, _Sa_);
-	memStoreD();
+	{
+		armAsm->Lsl(RXSCRATCH, rt, _Sa_);
+		memStoreD(RXSCRATCH);
+	}
+	else
+	{
+		memStoreD(rt);
+	}
 }
 
 EERECOMPILE_CODEX_MEM(eeRecompileCodeRC2_MEM, DSLL, XMMINFO_WRITED | XMMINFO_READT | XMMINFO_64BITOP);
@@ -139,10 +179,16 @@ static void recDSRL_const()
 
 static void recDSRL_(int info)
 {
-	memLoadT64();
+	const a64::Register rt = memLoadT64();
 	if (_Sa_ != 0)
-		armAsm->Lsr(RXSCRATCH, RXSCRATCH, _Sa_);
-	memStoreD();
+	{
+		armAsm->Lsr(RXSCRATCH, rt, _Sa_);
+		memStoreD(RXSCRATCH);
+	}
+	else
+	{
+		memStoreD(rt);
+	}
 }
 
 EERECOMPILE_CODEX_MEM(eeRecompileCodeRC2_MEM, DSRL, XMMINFO_WRITED | XMMINFO_READT | XMMINFO_64BITOP);
@@ -155,10 +201,16 @@ static void recDSRA_const()
 
 static void recDSRA_(int info)
 {
-	memLoadT64();
+	const a64::Register rt = memLoadT64();
 	if (_Sa_ != 0)
-		armAsm->Asr(RXSCRATCH, RXSCRATCH, _Sa_);
-	memStoreD();
+	{
+		armAsm->Asr(RXSCRATCH, rt, _Sa_);
+		memStoreD(RXSCRATCH);
+	}
+	else
+	{
+		memStoreD(rt);
+	}
 }
 
 EERECOMPILE_CODEX_MEM(eeRecompileCodeRC2_MEM, DSRA, XMMINFO_WRITED | XMMINFO_READT | XMMINFO_64BITOP);
@@ -171,9 +223,9 @@ static void recDSLL32_const()
 
 static void recDSLL32_(int info)
 {
-	memLoadT64();
-	armAsm->Lsl(RXSCRATCH, RXSCRATCH, _Sa_ + 32);
-	memStoreD();
+	const a64::Register rt = memLoadT64();
+	armAsm->Lsl(RXSCRATCH, rt, _Sa_ + 32);
+	memStoreD(RXSCRATCH);
 }
 
 EERECOMPILE_CODEX_MEM(eeRecompileCodeRC2_MEM, DSLL32, XMMINFO_WRITED | XMMINFO_READT | XMMINFO_64BITOP);
@@ -186,9 +238,9 @@ static void recDSRL32_const()
 
 static void recDSRL32_(int info)
 {
-	memLoadT64();
-	armAsm->Lsr(RXSCRATCH, RXSCRATCH, _Sa_ + 32);
-	memStoreD();
+	const a64::Register rt = memLoadT64();
+	armAsm->Lsr(RXSCRATCH, rt, _Sa_ + 32);
+	memStoreD(RXSCRATCH);
 }
 
 EERECOMPILE_CODEX_MEM(eeRecompileCodeRC2_MEM, DSRL32, XMMINFO_WRITED | XMMINFO_READT | XMMINFO_64BITOP);
@@ -201,9 +253,9 @@ static void recDSRA32_const()
 
 static void recDSRA32_(int info)
 {
-	memLoadT64();
-	armAsm->Asr(RXSCRATCH, RXSCRATCH, _Sa_ + 32);
-	memStoreD();
+	const a64::Register rt = memLoadT64();
+	armAsm->Asr(RXSCRATCH, rt, _Sa_ + 32);
+	memStoreD(RXSCRATCH);
 }
 
 EERECOMPILE_CODEX_MEM(eeRecompileCodeRC2_MEM, DSRA32, XMMINFO_WRITED | XMMINFO_READT | XMMINFO_64BITOP);
@@ -221,30 +273,36 @@ static void recSLLV_const()
 
 static void recSLLV_consts(int info)
 {
-	memLoadT32();
+	const a64::Register rt = memLoadT32();
 	u32 sa = g_cpuConstRegs[_Rs_].UL[0] & 0x1f;
 	if (sa != 0)
-		armAsm->Lsl(RWSCRATCH, RWSCRATCH, sa);
-	armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-	memStoreD();
+	{
+		armAsm->Lsl(RWSCRATCH, rt, sa);
+		armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
+	}
+	else
+	{
+		armAsm->Sxtw(RXSCRATCH, rt);
+	}
+	memStoreD(RXSCRATCH);
 }
 
 static void recSLLV_constt(int info)
 {
-	memLoadS32();
+	const a64::Register rs = memLoadS32();
 	armAsm->Mov(RWSCRATCH, g_cpuConstRegs[_Rt_].UL[0]);
-	armAsm->Lsl(RWSCRATCH, RWSCRATCH, RWARG1);
+	armAsm->Lsl(RWSCRATCH, RWSCRATCH, rs);
 	armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-	memStoreD();
+	memStoreD(RXSCRATCH);
 }
 
 static void recSLLV_(int info)
 {
-	memLoadS32();
-	memLoadT32();
-	armAsm->Lsl(RWSCRATCH, RWSCRATCH, RWARG1);
+	const a64::Register rs = memLoadS32();
+	const a64::Register rt = memLoadT32();
+	armAsm->Lsl(RWSCRATCH, rt, rs);
 	armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-	memStoreD();
+	memStoreD(RXSCRATCH);
 }
 
 EERECOMPILE_CODERC0_MEM(SLLV, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
@@ -257,30 +315,36 @@ static void recSRLV_const()
 
 static void recSRLV_consts(int info)
 {
-	memLoadT32();
+	const a64::Register rt = memLoadT32();
 	u32 sa = g_cpuConstRegs[_Rs_].UL[0] & 0x1f;
 	if (sa != 0)
-		armAsm->Lsr(RWSCRATCH, RWSCRATCH, sa);
-	armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-	memStoreD();
+	{
+		armAsm->Lsr(RWSCRATCH, rt, sa);
+		armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
+	}
+	else
+	{
+		armAsm->Sxtw(RXSCRATCH, rt);
+	}
+	memStoreD(RXSCRATCH);
 }
 
 static void recSRLV_constt(int info)
 {
-	memLoadS32();
+	const a64::Register rs = memLoadS32();
 	armAsm->Mov(RWSCRATCH, g_cpuConstRegs[_Rt_].UL[0]);
-	armAsm->Lsr(RWSCRATCH, RWSCRATCH, RWARG1);
+	armAsm->Lsr(RWSCRATCH, RWSCRATCH, rs);
 	armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-	memStoreD();
+	memStoreD(RXSCRATCH);
 }
 
 static void recSRLV_(int info)
 {
-	memLoadS32();
-	memLoadT32();
-	armAsm->Lsr(RWSCRATCH, RWSCRATCH, RWARG1);
+	const a64::Register rs = memLoadS32();
+	const a64::Register rt = memLoadT32();
+	armAsm->Lsr(RWSCRATCH, rt, rs);
 	armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-	memStoreD();
+	memStoreD(RXSCRATCH);
 }
 
 EERECOMPILE_CODERC0_MEM(SRLV, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
@@ -293,30 +357,36 @@ static void recSRAV_const()
 
 static void recSRAV_consts(int info)
 {
-	memLoadT32();
+	const a64::Register rt = memLoadT32();
 	u32 sa = g_cpuConstRegs[_Rs_].UL[0] & 0x1f;
 	if (sa != 0)
-		armAsm->Asr(RWSCRATCH, RWSCRATCH, sa);
-	armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-	memStoreD();
+	{
+		armAsm->Asr(RWSCRATCH, rt, sa);
+		armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
+	}
+	else
+	{
+		armAsm->Sxtw(RXSCRATCH, rt);
+	}
+	memStoreD(RXSCRATCH);
 }
 
 static void recSRAV_constt(int info)
 {
-	memLoadS32();
+	const a64::Register rs = memLoadS32();
 	armAsm->Mov(RWSCRATCH, g_cpuConstRegs[_Rt_].SL[0]);
-	armAsm->Asr(RWSCRATCH, RWSCRATCH, RWARG1);
+	armAsm->Asr(RWSCRATCH, RWSCRATCH, rs);
 	armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-	memStoreD();
+	memStoreD(RXSCRATCH);
 }
 
 static void recSRAV_(int info)
 {
-	memLoadS32();
-	memLoadT32();
-	armAsm->Asr(RWSCRATCH, RWSCRATCH, RWARG1);
+	const a64::Register rs = memLoadS32();
+	const a64::Register rt = memLoadT32();
+	armAsm->Asr(RWSCRATCH, rt, rs);
 	armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-	memStoreD();
+	memStoreD(RXSCRATCH);
 }
 
 EERECOMPILE_CODERC0_MEM(SRAV, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
@@ -329,27 +399,33 @@ static void recDSLLV_const()
 
 static void recDSLLV_consts(int info)
 {
-	memLoadT64();
+	const a64::Register rt = memLoadT64();
 	u32 sa = g_cpuConstRegs[_Rs_].UL[0] & 0x3f;
 	if (sa != 0)
-		armAsm->Lsl(RXSCRATCH, RXSCRATCH, sa);
-	memStoreD();
+	{
+		armAsm->Lsl(RXSCRATCH, rt, sa);
+		memStoreD(RXSCRATCH);
+	}
+	else
+	{
+		memStoreD(rt);
+	}
 }
 
 static void recDSLLV_constt(int info)
 {
-	memLoadS64();
+	const a64::Register rs = memLoadS64();
 	armAsm->Mov(RXSCRATCH, g_cpuConstRegs[_Rt_].UD[0]);
-	armAsm->Lsl(RXSCRATCH, RXSCRATCH, RXARG1);
-	memStoreD();
+	armAsm->Lsl(RXSCRATCH, RXSCRATCH, rs);
+	memStoreD(RXSCRATCH);
 }
 
 static void recDSLLV_(int info)
 {
-	memLoadS64();
-	memLoadT64();
-	armAsm->Lsl(RXSCRATCH, RXSCRATCH, RXARG1);
-	memStoreD();
+	const a64::Register rs = memLoadS64();
+	const a64::Register rt = memLoadT64();
+	armAsm->Lsl(RXSCRATCH, rt, rs);
+	memStoreD(RXSCRATCH);
 }
 
 EERECOMPILE_CODERC0_MEM(DSLLV, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT | XMMINFO_64BITOP);
@@ -362,27 +438,33 @@ static void recDSRLV_const()
 
 static void recDSRLV_consts(int info)
 {
-	memLoadT64();
+	const a64::Register rt = memLoadT64();
 	u32 sa = g_cpuConstRegs[_Rs_].UL[0] & 0x3f;
 	if (sa != 0)
-		armAsm->Lsr(RXSCRATCH, RXSCRATCH, sa);
-	memStoreD();
+	{
+		armAsm->Lsr(RXSCRATCH, rt, sa);
+		memStoreD(RXSCRATCH);
+	}
+	else
+	{
+		memStoreD(rt);
+	}
 }
 
 static void recDSRLV_constt(int info)
 {
-	memLoadS64();
+	const a64::Register rs = memLoadS64();
 	armAsm->Mov(RXSCRATCH, g_cpuConstRegs[_Rt_].UD[0]);
-	armAsm->Lsr(RXSCRATCH, RXSCRATCH, RXARG1);
-	memStoreD();
+	armAsm->Lsr(RXSCRATCH, RXSCRATCH, rs);
+	memStoreD(RXSCRATCH);
 }
 
 static void recDSRLV_(int info)
 {
-	memLoadS64();
-	memLoadT64();
-	armAsm->Lsr(RXSCRATCH, RXSCRATCH, RXARG1);
-	memStoreD();
+	const a64::Register rs = memLoadS64();
+	const a64::Register rt = memLoadT64();
+	armAsm->Lsr(RXSCRATCH, rt, rs);
+	memStoreD(RXSCRATCH);
 }
 
 EERECOMPILE_CODERC0_MEM(DSRLV, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT | XMMINFO_64BITOP);
@@ -395,27 +477,33 @@ static void recDSRAV_const()
 
 static void recDSRAV_consts(int info)
 {
-	memLoadT64();
+	const a64::Register rt = memLoadT64();
 	u32 sa = g_cpuConstRegs[_Rs_].UL[0] & 0x3f;
 	if (sa != 0)
-		armAsm->Asr(RXSCRATCH, RXSCRATCH, sa);
-	memStoreD();
+	{
+		armAsm->Asr(RXSCRATCH, rt, sa);
+		memStoreD(RXSCRATCH);
+	}
+	else
+	{
+		memStoreD(rt);
+	}
 }
 
 static void recDSRAV_constt(int info)
 {
-	memLoadS64();
+	const a64::Register rs = memLoadS64();
 	armAsm->Mov(RXSCRATCH, g_cpuConstRegs[_Rt_].SD[0]);
-	armAsm->Asr(RXSCRATCH, RXSCRATCH, RXARG1);
-	memStoreD();
+	armAsm->Asr(RXSCRATCH, RXSCRATCH, rs);
+	memStoreD(RXSCRATCH);
 }
 
 static void recDSRAV_(int info)
 {
-	memLoadS64();
-	memLoadT64();
-	armAsm->Asr(RXSCRATCH, RXSCRATCH, RXARG1);
-	memStoreD();
+	const a64::Register rs = memLoadS64();
+	const a64::Register rt = memLoadT64();
+	armAsm->Asr(RXSCRATCH, rt, rs);
+	memStoreD(RXSCRATCH);
 }
 
 EERECOMPILE_CODERC0_MEM(DSRAV, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT | XMMINFO_64BITOP);

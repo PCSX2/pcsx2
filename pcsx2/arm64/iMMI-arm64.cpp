@@ -64,7 +64,7 @@ static void mmiLoadReg(const a64::VRegister& qreg, int gpr)
 static void mmiStoreReg(int gpr, const a64::VRegister& qreg)
 {
 	pxAssert(gpr != 0);
-		armAsm->Str(qreg, armCpuRegMem(&cpuRegs.GPR.r[gpr].UQ));
+	armStoreEEGPRQuad(qreg, gpr);
 }
 
 // Standard 3-operand MMI: rd = rs OP rt (128-bit).
@@ -1269,7 +1269,7 @@ void recQFSRV()
 		armMoveAddressToReg(RSCRATCHADDR, &cpuRegs.GPR.r[_Rt_]);
 		armAsm->Add(RSCRATCHADDR, RSCRATCHADDR, RXSCRATCH);
 		armAsm->Ldr(RQSCRATCH, a64::MemOperand(RSCRATCHADDR));
-		armAsm->Str(RQSCRATCH, armCpuRegMem(&cpuRegs.GPR.r[_Rd_]));
+		armStoreEEGPRQuad(RQSCRATCH, _Rd_);
 		return;
 	}
 
@@ -1291,7 +1291,7 @@ void recQFSRV()
 	armAsm->Ldr(RQSCRATCH, a64::MemOperand(RSCRATCHADDR));
 
 	// Store result to Rd
-		armAsm->Str(RQSCRATCH, armCpuRegMem(&cpuRegs.GPR.r[_Rd_]));
+	armStoreEEGPRQuad(RQSCRATCH, _Rd_);
 }
 
 // ============================================================================

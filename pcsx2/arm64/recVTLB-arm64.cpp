@@ -705,7 +705,7 @@ void recLQ()
 	{
 		_deleteEEreg(_Rt_, 0);
 		GPR_DEL_CONST(_Rt_);
-				armAsm->Str(a64::q0, armCpuRegMem(&cpuRegs.GPR.r[_Rt_].UD[0]));
+		armStoreEEGPRQuad(a64::q0, _Rt_);
 	}
 }
 

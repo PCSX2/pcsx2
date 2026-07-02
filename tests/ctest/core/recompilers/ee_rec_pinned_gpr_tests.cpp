@@ -1,0 +1,129 @@
+// SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
+
+// Write-through pinned read-cache coverage ($sp → x22, $ra → x23; see
+// REEPIN_* in arm64/iR5900-arm64.h). The pins mirror GPR.r[29/31].UD[0]
+// while memory stays canonical, so a broken write-through path does NOT
+// corrupt memory — it strands the mirror. These tests make that observable
+// by writing a pinned reg through each write path and then READING IT BACK
+// inside the same block: a stale mirror feeds the read-back a wrong value
+// and the JIT-vs-interp diff goes red.
+//
+// The harness parks the machine via a trailing JR $ra (SeedEntryState sets
+// $ra = kParkingPc), so every block that scribbles $ra saves it to a temp
+// first and restores it last — the save/restore pair itself exercises
+// pinned reads and writes.
+
+#include "harness/EeRecTestHarness.h"
+
+#include <gtest/gtest.h>
+
+using namespace recompiler_tests;
+using namespace mips;
+using namespace mips::ee;
+
+namespace {
+constexpr u32 kScratch = RecompilerTestEnvironment::kScratchAddr;
+}
+
+// Pinned $sp/$ra as scalar sources: imm-ALU, 3-op ALU, shift, set-on-lt.
+TEST(EeRecPinnedGpr, ScalarReadsOfPinnedRegs)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::sp, 0x0000000001F00010ull);
+	h.SetGpr64(reg::t5, 0xFFFFFFFF80001234ull);
+	h.LoadProgram({
+		OR(reg::t6, reg::ra, reg::zero), // save parking $ra (pinned read)
+		OR(reg::ra, reg::t5, reg::zero), // write pinned $ra
+		ADDIU(reg::t0, reg::sp, -16),
+		DADDU(reg::t1, reg::sp, reg::ra),
+		SLTI(reg::t2, reg::ra, 0),
+		DSLL(reg::t3, reg::ra, 4),
+		OR(reg::t4, reg::sp, reg::ra),
+		OR(reg::ra, reg::t6, reg::zero), // restore parking $ra
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t0), 0x0000000001F00000ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t1), 0xFFFFFFFF81F01244ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t2), 1ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0xFFFFFFF800012340ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t4), 0xFFFFFFFF81F01234ull);
+}
+
+// Scalar write-through: writes to $sp/$ra go through the memStore helpers'
+// armStoreEERegPtr, which must refresh the mirror the read-backs consume.
+TEST(EeRecPinnedGpr, ScalarWriteThroughThenReadBack)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::t0, 0x0000000000010000ull);
+	h.SetGpr64(reg::t1, 0x0000000000000230ull);
+	h.LoadProgram({
+		OR(reg::t6, reg::ra, reg::zero),  // save parking $ra
+		DADDU(reg::sp, reg::t0, reg::t1), // write pinned $sp
+		ADDIU(reg::t2, reg::sp, 8),       // read $sp back via the pin
+		DADDU(reg::ra, reg::t2, reg::t0), // write pinned $ra
+		DADDU(reg::t3, reg::ra, reg::t1), // read $ra back via the pin
+		ADDIU(reg::sp, reg::sp, -32),     // pinned RMW: read + write $sp
+		OR(reg::t4, reg::sp, reg::zero),  // read the RMW result back
+		OR(reg::ra, reg::t6, reg::zero),  // restore parking $ra
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t2), 0x0000000000010238ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0x0000000000020468ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t4), 0x0000000000010210ull);
+}
+
+// 128-bit write-through: PADDW allocates $sp as a NEON dest; the scalar
+// read-back forces the NEON→memory writeback (armStoreEEGPRQuad), whose
+// lane-0 UMOV must refresh the mirror.
+TEST(EeRecPinnedGpr, MmiQuadWriteThroughThenReadBack)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::t0, 0x1111111122222222ull);
+	h.SetGpr64(reg::t1, 0x0000000300000004ull);
+	h.LoadProgram({
+		PADDW(reg::sp, reg::t0, reg::t1),   // 128-bit write of pinned $sp
+		DADDU(reg::t2, reg::sp, reg::zero), // scalar read-back via the pin
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t2), 0x1111111422222226ull);
+}
+
+// vtlb-load write-through: LW/LD land in the guest reg via
+// recStoreLoadResult's armStoreEERegPtr; the read-back consumes the mirror.
+// (LD $ra, off($sp) is the ubiquitous epilogue stack-restore idiom.)
+TEST(EeRecPinnedGpr, LoadIntoPinnedThenReadBack)
+{
+	EeRecTestHarness h;
+	h.WriteU64(kScratch, 0xFFFFFFFF80332211ull);
+	h.WriteU32(kScratch + 8, 0x00445566u);
+	h.SetGpr64(reg::sp, kScratch);
+	h.LoadProgram({
+		OR(reg::t6, reg::ra, reg::zero), // save parking $ra
+		LD(reg::ra, 0, reg::sp),         // pinned base, pinned dest
+		DADDU(reg::t0, reg::ra, reg::zero),
+		LW(reg::sp, 8, reg::sp),         // pinned base and dest, 32-bit
+		DADDU(reg::t1, reg::sp, reg::zero),
+		OR(reg::ra, reg::t6, reg::zero), // restore parking $ra
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t0), 0xFFFFFFFF80332211ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t1), 0x0000000000445566ull);
+}
+
+// 32-bit-half write-through (Bfi path): CFC2 writes UL[0] and UL[1] of the
+// pinned reg separately; the read-back consumes the mirror.
+TEST(EeRecPinnedGpr, HalfWordWriteThroughViaCfc2)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.SeedVu0Vi(1, 0x8123);
+	h.LoadProgram({
+		OR(reg::t6, reg::ra, reg::zero),    // save parking $ra
+		CFC2(reg::ra, 1),                   // UL[0]+UL[1] stores into pinned $ra
+		DADDU(reg::t0, reg::ra, reg::zero), // read $ra back via the pin
+		OR(reg::ra, reg::t6, reg::zero),    // restore parking $ra
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t0), 0x0000000000008123ull);
+}

@@ -422,6 +422,9 @@ static const void* _DynGen_JITCompile()
 	armEmitCall((void*)recRecompile);
 
 	armReloadCycleDelta();
+	// Compile-time hooks (EntryPointCompilingOnCPUThread → game starting /
+	// ELF load) can write guest GPRs — refresh the pin mirrors.
+	armReloadEEGPRPins();
 
 	armEmitJmp(DispatcherReg);
 
@@ -438,6 +441,9 @@ static const void* _DynGen_DispatcherEvent()
 	armFlushCycleDelta();
 	armEmitCall((void*)recEventTest);
 	armReloadCycleDelta();
+	// Event processing can rewrite every guest GPR (savestate load on the EE
+	// thread, debugger pokes at a pause point) — refresh the pin mirrors.
+	armReloadEEGPRPins();
 	return retval; // falls through to DispatcherReg
 }
 
@@ -479,6 +485,10 @@ static const void* _DynGen_EnterRecompiledCode()
 	// the entire duration of JIT execution, with flush+reload around C
 	// calls that touch cycle/nextEventCycle.
 	armReloadCycleDelta();
+
+	// Load the $sp/$ra write-through pin mirrors (see REEPIN_* doc in
+	// iR5900-arm64.h).
+	armReloadEEGPRPins();
 
 	// Load &VU0 into RVU0. Same idea as RSTATE: VU0 is a static reference
 	// (constant address), so iCOP2 codegen can reach every VURegs field via
@@ -674,6 +684,9 @@ void recCall(void (*func)())
 	// rescheduled nextEventCycle.
 	armReloadCycleDelta();
 
+	// The interpreter writes guest GPRs in memory — refresh the pin mirrors.
+	armReloadEEGPRPins();
+
 	// After interpreter calls, dispatch a pending TLB-miss exception.
 	recEmitInterpTlbMissCheck();
 }
@@ -696,6 +709,7 @@ void recBranchCall(void (*func)())
 	g_branch = 2;
 
 	armReloadCycleDelta();
+	armReloadEEGPRPins();
 }
 
 // s_nBlockCycles is 3-bit fixed point. Divide by 8 when done!
@@ -1887,8 +1901,8 @@ static bool skipMPEG_By_Pattern(u32 sPC)
 
 		// v0 = 1 (low) / 0 (high); pc = ra.
 		armAsm->Mov(RWSCRATCH, 1);
-		armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.GPR.n.v0.UL[0]));
-		armAsm->Str(a64::wzr, armCpuRegMem(&cpuRegs.GPR.n.v0.UL[1]));
+		armStoreEERegPtr(RWSCRATCH, &cpuRegs.GPR.n.v0.UL[0]);
+		armStoreEERegPtr(a64::wzr, &cpuRegs.GPR.n.v0.UL[1]);
 		armLoadEERegPtr(a64::w0, &cpuRegs.GPR.n.ra.UL[0]);
 		armAsm->Str(a64::w0, armCpuRegMem(&cpuRegs.pc));
 
@@ -1950,12 +1964,11 @@ static bool recSkipTimeoutLoop(s32 reg, bool is_timeout_loop)
 	// event check uses RECCYCLE directly).
 	armAsm->Mov(RECCYCLE, a64::x5);
 
-	// reg -= iterations consumed
+	// reg -= iterations consumed; sign-extend into the 64-bit guest reg
+	// (the full UD[0] store covers the UL[0] half).
 	armAsm->Sub(a64::w4, a64::w4, a64::w6);
-	armAsm->Str(a64::w4, armCpuRegMem(&cpuRegs.GPR.r[reg].UL[0]));
-	// Also sign-extend to upper 32 bits (EE GPRs are 64-bit for lower half)
 	armAsm->Sxtw(a64::x4, a64::w4);
-	armAsm->Str(a64::x4, armCpuRegMem(&cpuRegs.GPR.r[reg].UD[0]));
+	armStoreEERegPtr(a64::x4, &cpuRegs.GPR.r[reg].UD[0]);
 
 	// if reg != 0, event interrupted the loop — go to dispatcher
 	armEmitCbnz(a64::w4, DispatcherEvent);
@@ -2076,6 +2089,7 @@ static void recRecompile(const u32 startpc)
 		armFlushCycleDelta();
 		armEmitCall((void*)eeloadHook);
 		armReloadCycleDelta();
+		armReloadEEGPRPins(); // ELF load / arg injection writes guest GPRs
 		if (VMManager::Internal::IsFastBootInProgress())
 		{
 			// Four known EELOAD versions, identified by the location of the 'jal' to
@@ -2100,6 +2114,7 @@ static void recRecompile(const u32 startpc)
 		armFlushCycleDelta();
 		armEmitCall((void*)eeloadHook2);
 		armReloadCycleDelta();
+		armReloadEEGPRPins(); // eeloadHook2 injects launch arguments into GPRs
 	}
 
 	// Goemon TLB-cache preload/unload intercept (mirrors x86 iR5900.cpp:2241-2255,
