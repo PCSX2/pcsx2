@@ -69,7 +69,7 @@ mem32_t _hwRead32(u32 mem)
 			if (mem == INTC_STAT)
 			{
 				// Disable INTC hack when in PS1 mode as it seems to break games.
-				if (intcstathack && !(psxHu32(HW_ICFG) & (1 << 3))) IntCHackCheck();
+				if (intcstathack && !psxPs1Mode()) IntCHackCheck();
 				return psHu32(INTC_STAT);
 			}
 
