@@ -1266,6 +1266,13 @@ void recQFSRV()
 	if (_Rt_ != 0 && _Rs_ == _Rt_ + 1)
 	{
 		armLoadEERegPtr(RWSCRATCH, &cpuRegs.sa);
+		// Clamp sa to 0..15 before indexing host memory: MTSA is a full
+		// 32-bit copy (matching the interp), so cpuRegs.sa can hold >= 16 —
+		// unmasked that walks this 128-bit load out of the two registers'
+		// 32 bytes (guest-controlled host OOB read). x86 gets the same
+		// effective clamp by masking in recMTSA; we mask at consumption so
+		// the MFSA round-trip stays interp-faithful. (AX-03)
+		armAsm->And(RWSCRATCH, RWSCRATCH, 0xf);
 		armMoveAddressToReg(RSCRATCHADDR, &cpuRegs.GPR.r[_Rt_]);
 		armAsm->Add(RSCRATCHADDR, RSCRATCHADDR, RXSCRATCH);
 		armAsm->Ldr(RQSCRATCH, a64::MemOperand(RSCRATCHADDR));
@@ -1282,8 +1289,10 @@ void recQFSRV()
 	armMoveAddressToReg(RSCRATCHADDR, &s_qfsrvTemp[16]);
 	armAsm->Str(RQSCRATCH, a64::MemOperand(RSCRATCHADDR));
 
-	// Load sa (byte offset)
+	// Load sa (byte offset), clamped to 0..15 — see the fast path above; an
+	// unmasked sa >= 16 reads past the 32-byte temp buffer. (AX-03)
 	armLoadEERegPtr(RWSCRATCH, &cpuRegs.sa);
+	armAsm->And(RWSCRATCH, RWSCRATCH, 0xf);
 
 	// Unaligned 128-bit load from temp + sa
 	armMoveAddressToReg(RSCRATCHADDR, &s_qfsrvTemp[0]);

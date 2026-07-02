@@ -311,6 +311,63 @@ TEST(EeRecMmi, QfsrvAdjacentRtZeroUsesTempBuffer)
 }
 
 // ===========================================================================
+//  QFSRV with an oversized sa (AX-03). MTSA is architecturally a full 32-bit
+//  copy (3c381989e, matching the interp), so cpuRegs.sa can legitimately hold
+//  >= 16 when QFSRV consumes it. recQFSRV indexes host memory with sa (fast
+//  path off &GPR.r[Rt], slow path off the 32-byte temp buffer), so an
+//  unmasked sa walks the 128-bit load out of bounds — a guest-controlled
+//  host OOB read. The rec must clamp sa & 0xf at consumption (equivalent to
+//  x86, which masks in recMTSA). The interp's own sa>=16 behavior is
+//  shift-by->=64 UB (host-dependent mod-64), so these are JIT-only
+//  assertions against the sa&0xf funnel result; MTSA itself stays a full
+//  copy (MFSA round-trip below runs the normal auto-diff).
+// ===========================================================================
+
+TEST(EeRecMmi, QfsrvOversizedSaClampedOnFastPath)
+{
+	EeRecTestHarness h;
+	h.SetMmiPair(reg::a0, 0x1122334455667788ull, 0x99AABBCCDDEEFF00ull); // Rt
+	h.SetMmiPair(reg::a1, 0xAABBCCDD11223344ull, 0x5566778899AABBCCull); // Rs = Rt+1
+	h.SetGpr64(reg::a3, 0x13); // MTSA full copy: sa = 19; QFSRV must use 19 & 0xf = 3
+	h.LoadProgram({ee::MTSA(reg::a3), ee::QFSRV(reg::v0, reg::a1, reg::a0)});
+	h.RunJitNoDiff();
+	// Funnel {Rs:Rt} >> 3 bytes. Unclamped, the fast path reads
+	// &GPR.r[a0] + 19 — bytes of a2 (host OOB relative to the two sources).
+	EXPECT_EQ(h.JitSnapshot().regs.GPR.r[reg::v0].UD[0], 0xEEFF001122334455ull);
+	EXPECT_EQ(h.JitSnapshot().regs.GPR.r[reg::v0].UD[1], 0x22334499AABBCCDDull);
+}
+
+TEST(EeRecMmi, QfsrvOversizedSaClampedOnTempBufferPath)
+{
+	EeRecTestHarness h;
+	h.SetMmiPair(reg::a0, 0x1122334455667788ull, 0x99AABBCCDDEEFF00ull); // Rt
+	h.SetMmiPair(reg::a2, 0xAABBCCDD11223344ull, 0x5566778899AABBCCull); // Rs != Rt+1
+	h.SetGpr64(reg::a3, 0x17); // sa = 23; QFSRV must use 23 & 0xf = 7
+	h.LoadProgram({ee::MTSA(reg::a3), ee::QFSRV(reg::v0, reg::a2, reg::a0)});
+	h.RunJitNoDiff();
+	// Funnel by 7 bytes (same values as QfsrvNonAdjacentSource). Unclamped,
+	// the load at temp+23 runs 7 bytes past the 32-byte buffer.
+	EXPECT_EQ(h.JitSnapshot().regs.GPR.r[reg::v0].UD[0], 0xAABBCCDDEEFF0011ull);
+	EXPECT_EQ(h.JitSnapshot().regs.GPR.r[reg::v0].UD[1], 0xBBCCDD1122334499ull);
+}
+
+TEST(EeRecMmi, QfsrvMtsaInRangeSaAutoDiffsAndMfsaRoundTrips)
+{
+	// In-range MTSA-fed QFSRV must stay byte-identical to the interp (the
+	// clamp is a no-op for sa < 16), and MFSA must read back the FULL value
+	// MTSA stored — the clamp lives at QFSRV's consumption, never in SA.
+	EeRecTestHarness h;
+	h.SetMmiPair(reg::a0, 0x1122334455667788ull, 0x99AABBCCDDEEFF00ull); // Rt
+	h.SetMmiPair(reg::a1, 0xAABBCCDD11223344ull, 0x5566778899AABBCCull); // Rs
+	h.SetGpr64(reg::a3, 0x4);
+	h.LoadProgram({ee::MTSA(reg::a3), ee::QFSRV(reg::v0, reg::a1, reg::a0),
+		ee::MFSA(reg::v1)});
+	h.Run();
+	h.ExpectMmiPair(reg::v0, 0xDDEEFF0011223344ull, 0x1122334499AABBCCull);
+	h.ExpectGpr64(reg::v1, 0x4);
+}
+
+// ===========================================================================
 //  Parallel shift immediate — PSLLH / PSRLH / PSRAH (8 × u16) +
 //                             PSLLW / PSRLW / PSRAW (4 × u32)
 //
