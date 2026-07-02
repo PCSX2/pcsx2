@@ -161,6 +161,36 @@ TEST(Vu0ClampModes, SignOverflowOffLargeNegativeResultClampsViaBaseOverflow)
 }
 
 // =========================================================================
+//  Sign-overflow + single-lane broadcast — exercises mVUclamp2's SS row
+//  (AX-02): the sign-preserving operand clamp selects the 2-row bounds
+//  table (row 0 clamps only lane 0, sentinel no-ops in lanes 1-3, mirroring
+//  x86 sse4_min/maxvals). MULx carries the cFs operand clamp, so a -NaN in
+//  Fs.x must be sign-clamped to -MAX_FLOAT before the multiply — exactly
+//  what the interp's vuDouble does on read, so both engines agree. The
+//  sibling NaNs in Fs.y/z/w ride in the clamped copy's lanes 1-3 and die at
+//  the masked writeback either way; the test pins the emit path (offsets,
+//  lane-0 bound) rather than discriminating the row select.
+// =========================================================================
+
+TEST(Vu0ClampModes, SignOverflowSingleLaneBroadcastClampsOperandLane0)
+{
+	ClampGuard cg;
+	cg.Set(true, false, /*sign*/true, false);
+
+	VuTestHarness h(0);
+	// Fs = vf2: -NaN in x (the operand lane), NaN garbage in y/z/w.
+	h.SetVfBits(vf::vf2, 0xFFFFFFFFu, 0x7FFFFFFFu, 0xFF800000u, 0x7F800000u);
+	h.SetVfBits(vf::vf3, 0x3F800000u, 0, 0, 0); // vf3.x = 1.0 (broadcast lane)
+	h.LoadProgram({
+		UpperOnly(VMULx_U(mask::x, vf::vf1, vf::vf2, vf::vf3)),
+		EBitNopPair(),
+	});
+	RunAndExpectAllLanesAgree(h, vf::vf1);
+	// Sign-preserved: -NaN operand clamps to -MAX_FLOAT, * 1.0 = -MAX_FLOAT.
+	EXPECT_EQ(h.GetVfBitsJit(vf::vf1, 'x'), 0xFF7FFFFFu);
+}
+
+// =========================================================================
 //  Extra-overflow knob — clamps inside MUL/MADD intermediate steps. Use a
 //  VMADD (vf1 = ACC + fs*ft) whose product overflows, so the knob clamps the
 //  intermediate to MAX_FLOAT before the accumulator add.

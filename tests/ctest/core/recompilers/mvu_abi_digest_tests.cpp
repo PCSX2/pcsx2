@@ -89,6 +89,12 @@ constexpr AbiPin kPins[] = {
 	// digests are bit-identical to abi 3; the bump is to evict on-disk caches
 	// recorded with the pre-fold loadstore shape.
 	{4, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8}},
+	// abi 5: mVUclamp2 2-row sign-clamp bounds (AX-02). The probes run under
+	// the default clamp config, where the sign-overflow path never emits —
+	// digests are bit-identical to abi 4; the bump evicts on-disk caches
+	// recorded with the old all-lane sign-clamp shape (the options sentinel
+	// can't distinguish those: same config, different emitter).
+	{5, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8}},
 };
 
 u64 CompileAndDigest(std::initializer_list<vu::VuOp> pairs)

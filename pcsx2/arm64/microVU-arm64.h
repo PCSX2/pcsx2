@@ -42,7 +42,10 @@
 //       invalidates atomically when the helper ABI shape changes.
 //   3 — dropped helperTableLayoutHash from the options sentinel
 //       (sentinel layout shrank; every contentHash changes).
-static constexpr u32 kMvuCompilerAbiVersion = 4;
+//   5 — mVUclamp2 sign-preserving clamp selects a 2-row bounds table
+//       (single-lane clamps only lane 0, x86 parity); sign-mode
+//       emissions change shape (AX-02).
+static constexpr u32 kMvuCompilerAbiVersion = 5;
 
 // Hash/equality functors for XXH128_hash_t — let std::unordered_map<XXH128_hash_t, …>
 // work without a wrapping struct. low64 already carries the well-mixed half of

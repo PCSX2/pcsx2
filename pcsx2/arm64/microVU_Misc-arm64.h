@@ -48,6 +48,17 @@ struct mVU_Globals
 	float ITOF_4  [4] = __four(0.0625f);
 	float ITOF_12 [4] = __four(0.000244140625);
 	float ITOF_15 [4] = __four(0.000030517578125);
+	// Sign-preserving operand clamp bounds for mVUclamp2 (SMIN/UMIN on the
+	// integer representation), mirroring x86's sse4_maxvals/sse4_minvals
+	// (x86/microVU_Clamp.inl): row 0 = single-lane (SS) — real bound in lane
+	// 0, sentinel no-op bounds (INT_MAX for SMIN, UINT_MAX for UMIN) in
+	// lanes 1-3 so anything parked there survives; row 1 = all-lane (PS).
+	// Appended at the end of the struct so existing [x25, #imm] offsets in
+	// emitted code keep their values.
+	u32 signMaxvals[2][4] = {{0x7f7fffff, 0x7fffffff, 0x7fffffff, 0x7fffffff},
+	                         {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff}};
+	u32 signMinvals[2][4] = {{0xff7fffff, 0xffffffff, 0xffffffff, 0xffffffff},
+	                         {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff}};
 #undef __four
 };
 
