@@ -1253,6 +1253,22 @@ static void iopRecRecompile(const u32 startpc)
 	if (startpc == 0xbfc4a000)
 		psxRegs.GPR.n.a0 = Ps2MemSize::ExposedIopRam >> 20;
 
+	// PS1 mode can drive the IOP into garbage paths (e.g. JR through a
+	// register that ended up 0). Real hardware raises an Address Error on
+	// the instruction fetch at PC=0 and the BIOS handler at 0x80000080
+	// takes over; mirror that instead of hard-asserting (Devel/Debug keep
+	// pxAssert live, turning this into an abort). psxException moves
+	// psxRegs.pc to the vector; returning without compiling lets the
+	// JITCompile stub's dispatcher re-read pc and continue there. AdEL =
+	// ExcCode 4 => code 0x10 in psxException's Cause<<2 convention.
+	// Mirrors ARMSX2 3c8332bfe. (AX-11)
+	if (startpc == 0)
+	{
+		Console.Warning("IOP: fetch from PC=0 — raising AdEL instead of compiling");
+		psxException(0x10, 0);
+		return;
+	}
+
 	pxAssert(startpc);
 
 	// Reset code buffer if full
