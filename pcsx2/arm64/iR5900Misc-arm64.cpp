@@ -310,9 +310,9 @@ static void recVCallmsImpl(void (*func)())
 	if (cycles != 0)
 		armAsm->Add(RECCYCLE, RECCYCLE, cycles);
 
-	armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armFlushCycleDelta();
 	armEmitCall((void*)func);
-	armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armReloadCycleDelta();
 }
 
 static void recVCALLMS()  { recVCallmsImpl(VCALLMS); }

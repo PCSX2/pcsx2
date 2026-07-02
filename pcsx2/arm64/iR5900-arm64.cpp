@@ -412,16 +412,16 @@ static const void* _DynGen_JITCompile()
 {
 	u8* retval = armGetCurrentCodePointer();
 
-	// Flush pinned cycle counter before the C call, then reload after —
-	// recRecompile itself doesn't modify cpuRegs.cycle, but other paths
-	// (e.g. block discard) might, and the convention is "every C-call
-	// boundary syncs RECCYCLE both ways".
-	armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	// Flush pinned cycle delta (as the absolute counter) before the C call,
+	// then re-derive after — recRecompile itself doesn't modify
+	// cpuRegs.cycle, but other paths (e.g. block discard) might, and the
+	// convention is "every C-call boundary syncs RECCYCLE both ways".
+	armFlushCycleDelta();
 
 	armAsm->Ldr(RWARG1, armCpuRegMem(&cpuRegs.pc));
 	armEmitCall((void*)recRecompile);
 
-	armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armReloadCycleDelta();
 
 	armEmitJmp(DispatcherReg);
 
@@ -431,12 +431,13 @@ static const void* _DynGen_JITCompile()
 static const void* _DynGen_DispatcherEvent()
 {
 	u8* retval = armGetCurrentCodePointer();
-	// Flush pinned cycle for recEventTest (it reads cpuRegs.cycle for
-	// counter / interrupt scheduling), then reload — the event test may
-	// modify cpuRegs.cycle (e.g. fast-forwarding to nextEventCycle).
-	armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	// Flush pinned cycle delta for recEventTest (it reads cpuRegs.cycle for
+	// counter / interrupt scheduling), then re-derive — the event test both
+	// modifies cpuRegs.cycle (e.g. fast-forwarding to nextEventCycle) and
+	// reschedules nextEventCycle itself.
+	armFlushCycleDelta();
 	armEmitCall((void*)recEventTest);
-	armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armReloadCycleDelta();
 	return retval; // falls through to DispatcherReg
 }
 
@@ -473,10 +474,11 @@ static const void* _DynGen_EnterRecompiledCode()
 	// full address each time.
 	armMoveAddressToReg(RSTATE, &cpuRegs);
 
-	// Load pinned cycle counter into RECCYCLE. The convention is that
-	// RECCYCLE holds cpuRegs.cycle for the entire duration of JIT
-	// execution, with flush+reload around C calls.
-	armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	// Load pinned cycle delta into RECCYCLE (cycle - nextEventCycle; see
+	// iR5900-arm64.h). The convention is that RECCYCLE holds the delta for
+	// the entire duration of JIT execution, with flush+reload around C
+	// calls that touch cycle/nextEventCycle.
+	armReloadCycleDelta();
 
 	// Load &VU0 into RVU0. Same idea as RSTATE: VU0 is a static reference
 	// (constant address), so iCOP2 codegen can reach every VURegs field via
@@ -662,14 +664,15 @@ void recCall(void (*func)())
 {
 	iFlushCall(FLUSH_INTERPRETER);
 
-	// Flush RECCYCLE → cpuRegs.cycle so the interpreter sees the live cycle
+	// Flush the delta → cpuRegs.cycle so the interpreter sees the live cycle
 	// value (some opcodes — COP0 Count, TLB miss, branch helpers — read it).
-	armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armFlushCycleDelta();
 
 	armEmitCall((void*)func);
 
-	// Reload RECCYCLE in case the interpreter modified cpuRegs.cycle.
-	armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	// Re-derive the delta in case the interpreter modified cpuRegs.cycle or
+	// rescheduled nextEventCycle.
+	armReloadCycleDelta();
 
 	// After interpreter calls, dispatch a pending TLB-miss exception.
 	recEmitInterpTlbMissCheck();
@@ -679,20 +682,20 @@ void recBranchCall(void (*func)())
 {
 	iFlushCall(FLUSH_INTERPRETER);
 
-	// Apply accumulated block cycles to RECCYCLE, then flush to memory
+	// Apply accumulated block cycles to the delta, then flush to memory
 	// before the C call — the interpreter's intEventTest reads
-	// cpuRegs.cycle. Reload after, so the g_branch=2 exit code that
+	// cpuRegs.cycle. Re-derive after, so the g_branch=2 exit code that
 	// follows can keep using RECCYCLE.
 	u32 cycles = scaleblockcycles_clear();
 	if (cycles > 0)
 		armAsm->Add(RECCYCLE, RECCYCLE, cycles);
 
-	armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armFlushCycleDelta();
 
 	armEmitCall((void*)func);
 	g_branch = 2;
 
-	armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armReloadCycleDelta();
 }
 
 // s_nBlockCycles is 3-bit fixed point. Divide by 8 when done!
@@ -865,6 +868,23 @@ void _eeMoveGPRtoR(const a64::Register& to, int fromgpr, bool allow_preload)
 //  Branch handling
 // =====================================================================================================
 
+// Block-tail cycle update + event check under the delta representation:
+// fold the pending block cycles into RECCYCLE with a flag-setting add, then
+// branch to DispatcherEvent when the delta is non-negative (an event is
+// due). Replaces the old per-exit `ldr nextEventCycle; cmp; b.ge` — no
+// memory access on the hot linked path. The adds can't overflow s64: the
+// delta stays within the event-scheduling horizon (≤ a frame) and block
+// cycles are 16-bit scaled.
+static void emitCycleUpdateAndEventCheck()
+{
+	const u32 cycles = scaleblockcycles_clear();
+	if (cycles != 0)
+		armAsm->Adds(RECCYCLE, RECCYCLE, cycles);
+	else
+		armAsm->Cmp(RECCYCLE, 0);
+	armEmitCondBranch(a64::ge, DispatcherEvent);
+}
+
 void SetBranchReg()
 {
 	g_branch = 1;
@@ -897,16 +917,9 @@ void SetBranchReg()
 	armAsm->Tst(a64::w0, 3);
 	armAsm->B(&unaligned, a64::ne);
 
-	// Update pinned cycle counter (RECCYCLE = cpuRegs.cycle).
-	u32 cycles = scaleblockcycles_clear();
-	if (cycles != 0)
-		armAsm->Add(RECCYCLE, RECCYCLE, cycles);
-
-	// Check events (RECCYCLE >= nextEventCycle → DispatcherEvent flushes
-	// RECCYCLE itself before calling recEventTest).
-	armAsm->Ldr(a64::x3, armCpuRegMem(&cpuRegs.nextEventCycle));
-	armAsm->Cmp(RECCYCLE, a64::x3);
-	armEmitCondBranch(a64::ge, DispatcherEvent);
+	// Update the pinned cycle delta and check events (delta >= 0 →
+	// DispatcherEvent converts RECCYCLE itself before calling recEventTest).
+	emitCycleUpdateAndEventCheck();
 
 	armEmitJmp(DispatcherReg);
 
@@ -925,30 +938,25 @@ void SetBranchImm(u32 imm)
 
 	iFlushCall(FLUSH_EVERYTHING);
 
-	// Update pinned cycle counter.
-	u32 cycles = scaleblockcycles_clear();
-	if (cycles != 0)
-		armAsm->Add(RECCYCLE, RECCYCLE, cycles);
-
 	// WaitLoop speedhack: when the block scanner detected this block as a
-	// pure-nop spin branching back to itself (s_nBlockFF), fast-forward
-	// RECCYCLE to max(RECCYCLE, nextEventCycle) and jump straight to
-	// DispatcherEvent. Saves the dozens of iterations the loop would
-	// otherwise burn waiting for an event to fire. Matches the x86 path in
-	// iR5900.cpp:iBranchTest under EmuConfig.Speedhacks.WaitLoop.
+	// pure-nop spin branching back to itself (s_nBlockFF), fast-forward the
+	// delta to max(delta, 0) — i.e. cycle to max(cycle, nextEventCycle) —
+	// and jump straight to DispatcherEvent. Saves the dozens of iterations
+	// the loop would otherwise burn waiting for an event to fire. Matches
+	// the x86 path in iR5900.cpp:iBranchTest under Speedhacks.WaitLoop.
 	if (EmuConfig.Speedhacks.WaitLoop && s_nBlockFF && imm == s_branchTo)
 	{
-		armAsm->Ldr(a64::x3, armCpuRegMem(&cpuRegs.nextEventCycle));
-		armAsm->Cmp(RECCYCLE, a64::x3);
-		armAsm->Csel(RECCYCLE, RECCYCLE, a64::x3, a64::hi);
+		const u32 cycles = scaleblockcycles_clear();
+		if (cycles != 0)
+			armAsm->Add(RECCYCLE, RECCYCLE, cycles);
+		armAsm->Cmp(RECCYCLE, 0);
+		armAsm->Csel(RECCYCLE, RECCYCLE, a64::xzr, a64::gt);
 		armEmitJmp(DispatcherEvent);
 		return;
 	}
 
-	// Check events.
-	armAsm->Ldr(a64::x3, armCpuRegMem(&cpuRegs.nextEventCycle));
-	armAsm->Cmp(RECCYCLE, a64::x3);
-	armEmitCondBranch(a64::ge, DispatcherEvent);
+	// Update the pinned cycle delta and check events.
+	emitCycleUpdateAndEventCheck();
 
 	// Block linking: emit a single B as the patch site. Initially routed
 	// through JITCompile via recBlocks.Link(); once the target block is
@@ -1885,16 +1893,11 @@ static bool skipMPEG_By_Pattern(u32 sPC)
 		armAsm->Str(a64::w0, armCpuRegMem(&cpuRegs.pc));
 
 		// x86 iBranchTest() tail (newpc == 0xffffffff path): commit the block's
-		// cycles into RECCYCLE, then route to DispatcherEvent if an event is due
-		// (cycle >= nextEventCycle), else DispatcherReg to run the block at pc=ra.
+		// cycles into the delta, then route to DispatcherEvent if an event is
+		// due (delta >= 0), else DispatcherReg to run the block at pc=ra.
 		// s_nBlockCycles is still 0 here (no instruction emitted yet) — matches
 		// x86, where iBranchTest's scaleblockcycles() also sees a zero count.
-		const u32 cycles = scaleblockcycles_clear();
-		if (cycles != 0)
-			armAsm->Add(RECCYCLE, RECCYCLE, cycles);
-		armAsm->Ldr(a64::x3, armCpuRegMem(&cpuRegs.nextEventCycle));
-		armAsm->Cmp(RECCYCLE, a64::x3);
-		armEmitCondBranch(a64::ge, DispatcherEvent);
+		emitCycleUpdateAndEventCheck();
 		armEmitJmp(DispatcherReg);
 
 		g_branch = 1;
@@ -1915,33 +1918,36 @@ static bool recSkipTimeoutLoop(s32 reg, bool is_timeout_loop)
 		s_pCurBlockEx->startpc, s_nEndBlock, reg);
 
 	// Logic: skip the loop by advancing cycles based on the register value.
-	// new_cycles = min(reg * 8 + cycle, nextEventCycle)
-	// new_reg = reg - (new_cycles - cycle) / 8
+	// In delta terms (delta = cycle - nextEventCycle; subtract nextEventCycle
+	// from every absolute quantity in the x86 original):
+	// new_delta = min(reg * 8 + delta, 0)
+	// new_reg = reg - (new_delta - delta) / 8
 	// if new_reg > 0, jump to dispatcher (an event interrupted the loop)
 	// else loop finished, continue at s_nEndBlock
 
-	// if (cycle >= nextEventCycle) goto DispatcherEvent (u64 comparison)
-	armAsm->Ldr(a64::x3, armCpuRegMem(&cpuRegs.nextEventCycle));
-	armAsm->Cmp(RECCYCLE, a64::x3);
-	armEmitCondBranch(a64::hs, DispatcherEvent);
+	// if (delta >= 0) goto DispatcherEvent
+	armAsm->Cmp(RECCYCLE, 0);
+	armEmitCondBranch(a64::ge, DispatcherEvent);
 
 	// w4 = reg value (the decrementing counter)
 	armAsm->Ldr(a64::w4, armCpuRegMem(&cpuRegs.GPR.r[reg].UL[0]));
 
-	// x5 = reg * 8 + cycle (estimated end cycle, u64)
+	// x5 = reg * 8 + delta (estimated end delta, s64)
 	armAsm->Add(a64::x5, RECCYCLE, a64::Operand(a64::x4, a64::LSL, 3));
 
-	// x5 = min(x5, nextEventCycle)
-	armAsm->Cmp(a64::x5, a64::x3);
-	armAsm->Csel(a64::x5, a64::x3, a64::x5, a64::hi); // if x5 > nextEvent, use nextEvent
+	// x5 = min(x5, 0) — can't run past the next event
+	armAsm->Cmp(a64::x5, 0);
+	armAsm->Csel(a64::x5, a64::xzr, a64::x5, a64::gt); // if x5 > 0, clamp to 0
 
-	// w6 = (new_cycles - old_cycle) >> 3 = iterations consumed (uses old RECCYCLE).
+	// w6 = (new_delta - old_delta) >> 3 = iterations consumed (deltas share
+	// the same nextEventCycle base, so their difference equals the absolute
+	// cycle difference).
 	armAsm->Sub(a64::w6, a64::w5, RECCYCLE.W());
 	armAsm->Lsr(a64::w6, a64::w6, 3);
 
-	// Commit the new cycle value into RECCYCLE (no memory store — DispatcherEvent
-	// will flush it if we exit there; otherwise the next block-tail event check
-	// uses RECCYCLE directly).
+	// Commit the new delta into RECCYCLE (no memory store — DispatcherEvent
+	// converts and flushes it if we exit there; otherwise the next block-tail
+	// event check uses RECCYCLE directly).
 	armAsm->Mov(RECCYCLE, a64::x5);
 
 	// reg -= iterations consumed
@@ -2034,12 +2040,13 @@ static void recRecompile(const u32 startpc)
 	// prologue all guest state is memory-resident (the allocator was just
 	// re-initialized to memory), so the hook's FingerprintCpu() reads correct
 	// cpuRegs. We pass startpc as an immediate because cpuRegs.pc is not updated
-	// on a static-linked entry, and flush RECCYCLE -> cpuRegs.cycle so the hook
-	// sees the live cycle. RECCYCLE (x25) is callee-saved across the C call, so
-	// no reload is needed.
+	// on a static-linked entry, and flush the cycle delta -> cpuRegs.cycle so
+	// the hook sees the live cycle. The hook is read-only (no cycle/event
+	// mutation) and RECCYCLE (x25) is callee-saved across the C call, so no
+	// reload is needed.
 	if (ee_divtrace::g_emit_block_hook)
 	{
-		armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+		armFlushCycleDelta();
 		armAsm->Mov(RWARG1, startpc);
 		armEmitCall((void*)ee_divtrace_jit_block_hook);
 	}
@@ -2063,7 +2070,12 @@ static void recRecompile(const u32 startpc)
 
 	if (g_eeloadMain && HWADDR(startpc) == HWADDR(g_eeloadMain))
 	{
+		// eeloadHook can do arbitrary VM work (ELF load, patch/achievement
+		// init) that may reschedule nextEventCycle — keep the cycle delta
+		// coherent across it. Boot-only path, cost is irrelevant.
+		armFlushCycleDelta();
 		armEmitCall((void*)eeloadHook);
+		armReloadCycleDelta();
 		if (VMManager::Internal::IsFastBootInProgress())
 		{
 			// Four known EELOAD versions, identified by the location of the 'jal' to
@@ -2083,7 +2095,12 @@ static void recRecompile(const u32 startpc)
 	}
 
 	if (g_eeloadExec && HWADDR(startpc) == HWADDR(g_eeloadExec))
+	{
+		// Same coherence rationale as the eeloadHook call above.
+		armFlushCycleDelta();
 		armEmitCall((void*)eeloadHook2);
+		armReloadCycleDelta();
+	}
 
 	// Goemon TLB-cache preload/unload intercept (mirrors x86 iR5900.cpp:2241-2255,
 	// dropped-host-hook item B5). PCSX2 precalculates all TLB mappings, but Goemon
@@ -2348,17 +2365,12 @@ StartRecomp:
 	if (g_branch == 2)
 	{
 		// Branch taken — flush and dispatch. recBranchCall already accumulated
-		// any pre-call cycles into RECCYCLE and reloaded it after the C call,
-		// so any further scaleblockcycles_clear() result is the post-call delta.
+		// any pre-call cycles into RECCYCLE and re-derived it after the C
+		// call, so any further scaleblockcycles_clear() result is the
+		// post-call remainder.
 		iFlushCall(FLUSH_EVERYTHING);
 
-		u32 cycles = scaleblockcycles_clear();
-		if (cycles != 0)
-			armAsm->Add(RECCYCLE, RECCYCLE, cycles);
-
-		armAsm->Ldr(a64::x3, armCpuRegMem(&cpuRegs.nextEventCycle));
-		armAsm->Cmp(RECCYCLE, a64::x3);
-		armEmitCondBranch(a64::ge, DispatcherEvent);
+		emitCycleUpdateAndEventCheck();
 
 		armEmitJmp(DispatcherReg);
 	}

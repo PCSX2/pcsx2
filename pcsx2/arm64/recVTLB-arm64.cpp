@@ -105,7 +105,7 @@ static void vtlbSoftmemRead(int addr_wreg, u32 bits, bool sign)
 	// reads invoke IntCHackCheck which mutates cpuRegs.cycle. Without
 	// this the JIT's pinned x25 stays stale and block-end cycle compare
 	// never trips on tight INTC polls.
-	armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armFlushCycleDelta();
 	switch (bits)
 	{
 		case 8:  armEmitCall((void*)vtlb_memRead<mem8_t>);  break;
@@ -113,7 +113,7 @@ static void vtlbSoftmemRead(int addr_wreg, u32 bits, bool sign)
 		case 32: armEmitCall((void*)vtlb_memRead<mem32_t>); break;
 		case 64: armEmitCall((void*)vtlb_memRead<mem64_t>); break;
 	}
-	armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armReloadCycleDelta();
 	// Sign-extend if needed (vtlb_memRead returns zero-extended)
 	if (sign && bits == 8)
 		armAsm->Sxtb(a64::x0, a64::w0);
@@ -174,7 +174,7 @@ static void vtlbSoftmemWrite(int addr_wreg, int value_reg, u32 bits)
 	// Spill/reload RECCYCLE: write-side handlers are symmetric to reads —
 	// any cycle-mutating handler reachable from MMIO must keep the JIT's
 	// pinned x25 coherent. See vtlbSoftmemRead for full rationale.
-	armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armFlushCycleDelta();
 	switch (bits)
 	{
 		case 8:  armEmitCall((void*)vtlb_memWrite<mem8_t>);  break;
@@ -182,7 +182,7 @@ static void vtlbSoftmemWrite(int addr_wreg, int value_reg, u32 bits)
 		case 32: armEmitCall((void*)vtlb_memWrite<mem32_t>); break;
 		case 64: armEmitCall((void*)vtlb_memWrite<mem64_t>); break;
 	}
-	armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armReloadCycleDelta();
 
 	armAsm->Bind(&done);
 }
@@ -410,9 +410,9 @@ static bool recLoadConstPaddrMMIOShortcut(u32 bits, bool sign)
 	// MMIO shortcut targets the same handler set as vtlbSoftmemRead's slow
 	// path, including page-0F INTC_STAT → IntCHackCheck which mutates
 	// cpuRegs.cycle. See vtlbSoftmemRead for full rationale.
-	armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armFlushCycleDelta();
 	armEmitCall(vmv.assumeHandlerGetRaw(szidx, false));
-	armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armReloadCycleDelta();
 
 	// Extend handler return value into x0 for the 64-bit cpuRegs.GPR store.
 	// AAPCS64 leaves the upper bits of x0 unspecified for sub-word returns.
@@ -560,9 +560,9 @@ static bool recStoreConstPaddrMMIOShortcut(u32 bits)
 		armLoadEERegPtr(a64::x1, &cpuRegs.GPR.r[_Rt_].UD[0]);
 
 	// RECCYCLE coherence — same rationale as recLoadConstPaddrMMIOShortcut.
-	armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armFlushCycleDelta();
 	armEmitCall(vmv.assumeHandlerGetRaw(szidx, true));
-	armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armReloadCycleDelta();
 
 	return true;
 }
@@ -648,9 +648,9 @@ static void vtlbSoftmemRead128(int addr_wreg)
 	armAsm->Bind(&slow_path);
 	armAsm->Mov(a64::w0, a64::w9);
 	// See vtlbSoftmemRead for the RECCYCLE coherence rationale.
-	armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armFlushCycleDelta();
 	armEmitCall((void*)vtlb_memRead128);
-	armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armReloadCycleDelta();
 
 	armAsm->Bind(&done);
 }
@@ -680,9 +680,9 @@ static void vtlbSoftmemWrite128(int addr_wreg)
 	armAsm->Bind(&slow_path);
 	armAsm->Mov(a64::w0, a64::w9);
 	// See vtlbSoftmemRead for the RECCYCLE coherence rationale.
-	armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armFlushCycleDelta();
 	armEmitCall((void*)vtlb_memWrite128);
-	armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armReloadCycleDelta();
 
 	armAsm->Bind(&done);
 }

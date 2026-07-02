@@ -139,12 +139,12 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 		// the handler sees a stale cycle value, which can mis-schedule
 		// events and cause cascading mid-block timing bugs. Matches the
 		// pattern at recVTLB-arm64.cpp:112+120.
-		armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+		armFlushCycleDelta();
 		if (is_load)
 			armEmitCall((void*)vtlb_memRead128);
 		else
 			armEmitCall((void*)vtlb_memWrite128);
-		armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+		armReloadCycleDelta();
 
 		armAsm->Bind(&done);
 	}
@@ -195,7 +195,7 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 		armAsm->Bind(&slow_path);
 		armAsm->Mov(a64::w0, a64::w9);
 		// Spill/reload RECCYCLE — see 128-bit slow_path above for rationale.
-		armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+		armFlushCycleDelta();
 		switch (size_in_bits)
 		{
 			case 8:  armEmitCall((void*)vtlb_memRead<mem8_t>);  break;
@@ -204,7 +204,7 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 			case 64: armEmitCall((void*)vtlb_memRead<mem64_t>); break;
 			default: break;
 		}
-		armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+		armReloadCycleDelta();
 		// Extend the handler return into x0 for the 64-bit cpuRegs.GPR store.
 		// AAPCS64 leaves the upper bits of x0 unspecified for sub-word returns,
 		// so UNSIGNED sub-64-bit loads must Uxtw too — otherwise the garbage
@@ -286,7 +286,7 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 			armAsm->Mov(a64::x1, a64::x10);
 
 		// Spill/reload RECCYCLE — see 128-bit slow_path above for rationale.
-		armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+		armFlushCycleDelta();
 		switch (size_in_bits)
 		{
 			case 8:  armEmitCall((void*)vtlb_memWrite<mem8_t>);  break;
@@ -295,7 +295,7 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 			case 64: armEmitCall((void*)vtlb_memWrite<mem64_t>); break;
 			default: pxFailRel("Unsupported store size in backpatch"); break;
 		}
-		armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+		armReloadCycleDelta();
 
 		armAsm->Bind(&done);
 	}

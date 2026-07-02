@@ -582,7 +582,7 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 			// call) while still evicting caller-saved GPR + all NEON.
 			iFlushCall(FLUSH_FREE_XMM | FLUSH_FREE_VU0);
 
-			// Apply block cycles to RECCYCLE (the pinned cpuRegs.cycle).
+			// Apply block cycles to RECCYCLE (the pinned cycle delta).
 			u32 cycles = scaleblockcycles_clear();
 			if (cycles != 0)
 				armAsm->Add(RECCYCLE, RECCYCLE, cycles);
@@ -592,16 +592,17 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 			armAsm->Ldr(RWSCRATCH, armVU0Mem(&VU0.VI[REG_VPU_STAT]));
 			armAsm->Tbz(RWSCRATCH, 0, &skipSync);
 
-			// Flush RECCYCLE before vu0Sync — it reads cpuRegs.cycle to
-			// determine how many VU0 micro cycles to run. Reload after,
-			// since vu0Sync may advance cpuRegs.cycle.
-			armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+			// Flush the absolute cycle before vu0Sync — it reads
+			// cpuRegs.cycle to determine how many VU0 micro cycles to run.
+			// Re-derive after, since vu0Sync may advance cpuRegs.cycle and
+			// reschedule nextEventCycle.
+			armFlushCycleDelta();
 
 			armEmitCall((void*)vu0Sync);
 			if (finishFunc)
 				armEmitCall((void*)finishFunc);
 
-			armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+			armReloadCycleDelta();
 
 			armAsm->Bind(&skipSync);
 		}
@@ -628,8 +629,8 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 	armAsm->Ldr(RWSCRATCH, armVU0Mem(&VU0.VI[REG_VPU_STAT]));
 	armAsm->Tbz(RWSCRATCH, 0, &skipSync);
 
-	// Flush + reload around the C call (see comment above).
-	armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	// Flush + re-derive the cycle delta around the C call (see comment above).
+	armFlushCycleDelta();
 
 	if (needsSync)
 		// Non-interlocked catch-up: run a 16-cycle minimum to amortize the mVU
@@ -639,7 +640,7 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 	else
 		armEmitCall((void*)_vu0FinishMicro);
 
-	armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armReloadCycleDelta();
 
 	armAsm->Bind(&skipSync);
 }

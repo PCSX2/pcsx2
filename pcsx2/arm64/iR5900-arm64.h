@@ -37,10 +37,21 @@
 // Survives armEmitCall (callee-saved per AAPCS) and the mVU dispatcher's
 // outer Stp/Ldp pair, so cross-EE/mVU dispatches preserve it.
 #define RVU0 vixl::aarch64::x24
-// x25: Pinned cpuRegs.cycle (callee-saved). Always valid while in JIT;
-// flushed to memory only around C calls (DispatcherEvent, JITCompile,
-// recBranchCall). Block-to-block control flow keeps it live, so linked
-// branches don't reload the cycle counter from memory each iteration.
+// x25: Pinned EE cycle DELTA (callee-saved):
+//   RECCYCLE = (s64)(cpuRegs.cycle - cpuRegs.nextEventCycle)
+// Negative ⇒ the next event is still in the future. Block cycle accounting
+// adds into the delta exactly as it used to add into the absolute counter,
+// so every block-tail event check is a flag-setting add (or a bare Cmp
+// against zero) + B.ge — no nextEventCycle load and no 64-bit compare per
+// exit. cpuRegs.cycle in MEMORY stays ABSOLUTE and canonical for all C
+// code; armFlushCycleDelta/armReloadCycleDelta convert at the JIT↔C seams.
+// nextEventCycle is only written by C code (cpuSetNextEventDelta & co.),
+// which can only run inside those seams, so a fresh reload after every
+// cycle/event-touching call keeps the delta exact. (The one exception is
+// recSafeExitExecution's cross-thread `nextEventCycle = 0` exit poke: the
+// in-register delta doesn't see it, so the exit lands at the previously
+// scheduled event — worst case ~one hblank later — instead of the very
+// next block tail. recEventTest still observes eeRecExitRequested.)
 #define RECCYCLE vixl::aarch64::x25
 
 // Build a MemOperand addressing a cpuRegs field via RSTATE.
@@ -54,6 +65,28 @@ static __fi vixl::aarch64::MemOperand armCpuRegMem(const void* field)
 {
 	const ptrdiff_t off = reinterpret_cast<const u8*>(field) - reinterpret_cast<const u8*>(&cpuRegs);
 	return vixl::aarch64::MemOperand(RSTATE, static_cast<int64_t>(off));
+}
+
+// Publish the ABSOLUTE cycle to cpuRegs.cycle before a C call that reads it:
+// abs = delta + nextEventCycle. RECCYCLE itself is preserved (still the
+// delta); `scratch` is clobbered. Pair with armReloadCycleDelta after any
+// call that can advance cpuRegs.cycle or reschedule nextEventCycle.
+static __fi void armFlushCycleDelta(const vixl::aarch64::Register& scratch = RXSCRATCH)
+{
+	armAsm->Ldr(scratch, armCpuRegMem(&cpuRegs.nextEventCycle));
+	armAsm->Add(scratch, RECCYCLE, scratch);
+	armAsm->Str(scratch, armCpuRegMem(&cpuRegs.cycle));
+}
+
+// Re-derive the delta from (possibly modified) cpuRegs.cycle/nextEventCycle
+// after a C call. Both fields are re-read, so any rescheduling the callee
+// did (cpuSetNextEventDelta, IntCHackCheck cycle bumps, vu0 catch-up, ...)
+// is captured exactly. `scratch` is clobbered.
+static __fi void armReloadCycleDelta(const vixl::aarch64::Register& scratch = RXSCRATCH)
+{
+	armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armAsm->Ldr(scratch, armCpuRegMem(&cpuRegs.nextEventCycle));
+	armAsm->Sub(RECCYCLE, RECCYCLE, scratch);
 }
 
 // Pinned-base load/store helpers: when the target is anywhere inside

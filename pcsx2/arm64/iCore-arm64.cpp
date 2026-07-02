@@ -64,7 +64,7 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 // x21:     RPSXSTATE — NOT allocatable (reserved for psxRegs pointer in IOP JIT)
 // x22-x23: callee-saved (allocatable)
 // x24:     RVU0 — NOT allocatable (reserved for &VU0 pointer in EE COP2 JIT)
-// x25:     RECCYCLE — NOT allocatable (reserved for cpuRegs.cycle)
+// x25:     RECCYCLE — NOT allocatable (pinned cycle delta: cycle - nextEventCycle)
 // x26-x28: callee-saved (allocatable)
 // x29:     frame pointer — NOT allocatable
 // x30:     link register — NOT allocatable
@@ -78,7 +78,7 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 //   bit 20      — x20 : RSTATE (cpuRegs base pointer)
 //   bit 21      — x21 : RPSXSTATE (psxRegs base; shared alloc table with EE)
 //   bit 24      — x24 : RVU0 (pinned &VU0 for iCOP2)
-//   bit 25      — x25 : RECCYCLE (pinned cpuRegs.cycle)
+//   bit 25      — x25 : RECCYCLE (pinned cycle delta)
 //   bits 29-30  — x29/x30 : FP, LR — never allocatable
 // Inner allocator loop runs 31× per cache miss and was nine sequential
 // `if (armreg == N) return false` branches per probe; collapse to one

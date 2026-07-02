@@ -174,23 +174,38 @@ REC_FUNC(MFC0);
 REC_FUNC(MTC0);
 #else
 
-// Apply pending block cycles to RECCYCLE and flush to cpuRegs.cycle so the
-// interpreter helper (which reads cpuRegs.cycle directly) sees the right
-// value. The helper is called inline mid-block (not via DispatcherEvent),
-// so the caller must follow up with emitReloadCycle() once it returns to
-// keep RECCYCLE in sync with anything the helper wrote.
+// Apply pending block cycles to the RECCYCLE delta and flush the ABSOLUTE
+// cycle to cpuRegs.cycle so the interpreter helper (which reads
+// cpuRegs.cycle directly) sees the right value. The helper is called inline
+// mid-block (not via DispatcherEvent), so the caller must follow up with
+// emitReloadCycle() once it returns to keep RECCYCLE in sync with anything
+// the helper wrote (MTC0 Status/Compare reschedule nextEventCycle too).
 static void emitFlushBlockCycles()
 {
 	u32 cycles = scaleblockcycles_clear();
 	if (cycles != 0)
 		armAsm->Add(RECCYCLE, RECCYCLE, cycles);
 
-	armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armFlushCycleDelta();
+}
+
+// Same as emitFlushBlockCycles, but additionally leaves the absolute cycle
+// value in `absOut` for inline Count arithmetic (RECCYCLE itself stays the
+// delta and no longer holds the absolute value).
+static void emitFlushBlockCyclesAbs(const a64::Register& absOut)
+{
+	u32 cycles = scaleblockcycles_clear();
+	if (cycles != 0)
+		armAsm->Add(RECCYCLE, RECCYCLE, cycles);
+
+	armAsm->Ldr(absOut, armCpuRegMem(&cpuRegs.nextEventCycle));
+	armAsm->Add(absOut, RECCYCLE, absOut);
+	armAsm->Str(absOut, armCpuRegMem(&cpuRegs.cycle));
 }
 
 static void emitReloadCycle()
 {
-	armAsm->Ldr(RECCYCLE, armCpuRegMem(&cpuRegs.cycle));
+	armReloadCycleDelta();
 }
 
 // MFC0: rt = sign_extend(COP0[rd])
@@ -206,19 +221,24 @@ void recMFC0()
 	{
 		case 9: // Count — inline cycle update; no iFlushCall/interp call
 		{       // (matches interp COP0.cpp:564-575).
-			// Bring cpuRegs.cycle / RECCYCLE current first (Count reads it).
-			emitFlushBlockCycles(); // RECCYCLE (x25) == updated cycle, also in memory
+			// Bring cpuRegs.cycle current and get the ABSOLUTE cycle in x9
+			// (Count arithmetic needs the absolute value; RECCYCLE is the
+			// delta). x9/x10 are the non-allocatable load/store scratches —
+			// there is no iFlushCall on this path, so allocatable
+			// caller-saved regs (x0-x7) may hold cached guest values here
+			// (e.g. a preceding load's dest) and must not be clobbered.
+			emitFlushBlockCyclesAbs(a64::x9); // x9 = absolute cycle, also in memory
 			// incr = cycle - lastCOP0Cycle; if (incr == 0) incr++; (interp :566-568)
 			armAsm->Ldr(RXSCRATCH, armCpuRegMem(&cpuRegs.lastCOP0Cycle));
-			armAsm->Sub(RXSCRATCH, RECCYCLE, RXSCRATCH);
+			armAsm->Sub(RXSCRATCH, a64::x9, RXSCRATCH);
 			armAsm->Cmp(RXSCRATCH, 0);
 			armAsm->Csinc(RXSCRATCH, RXSCRATCH, a64::xzr, a64::ne); // 0 -> 1
 			// CP0.n.Count += incr (32-bit register; low 32 of incr)
-			armAsm->Ldr(RWARG1, armCpuRegMem(&cpuRegs.CP0.r[9]));
-			armAsm->Add(RWARG1, RWARG1, RWSCRATCH);
-			armAsm->Str(RWARG1, armCpuRegMem(&cpuRegs.CP0.r[9]));
+			armAsm->Ldr(a64::w10, armCpuRegMem(&cpuRegs.CP0.r[9]));
+			armAsm->Add(a64::w10, a64::w10, RWSCRATCH);
+			armAsm->Str(a64::w10, armCpuRegMem(&cpuRegs.CP0.r[9]));
 			// lastCOP0Cycle = cycle (interp :569)
-			armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.lastCOP0Cycle));
+			armAsm->Str(a64::x9, armCpuRegMem(&cpuRegs.lastCOP0Cycle));
 			if (!_Rt_)
 				return;
 			// rt = sign_extend(CP0.r[9]) (interp :571-577)
@@ -245,10 +265,12 @@ void recMFC0()
 			GPR_DEL_CONST(_Rt_);
 			armLoadEERegPtr(RWSCRATCH, &cpuRegs.CP0.r[_Rd_]);
 			// 0xf0c79c1f is not a valid AArch64 logical immediate, so materialize it
-			// in a scratch register. Use RWARG1 (caller-saved, dead here), not the
-			// reserved address scratch x17 (RSCRATCHADDR), which armLoad*Ptr clobbers.
-			armAsm->Mov(RWARG1, 0xf0c79c1fu);
-			armAsm->And(RWSCRATCH, RWSCRATCH, RWARG1);
+			// in a scratch register. Use the non-allocatable w10, not the reserved
+			// address scratch x17 (RSCRATCHADDR, clobbered by armLoad*Ptr) and not
+			// an allocatable caller-saved reg like w0 — with no iFlushCall on this
+			// path a cached guest value (e.g. a preceding load's dest) may live there.
+			armAsm->Mov(a64::w10, 0xf0c79c1fu);
+			armAsm->And(RWSCRATCH, RWSCRATCH, a64::w10);
 			armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
 			armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rt_].UD[0]);
 			return;
@@ -271,9 +293,11 @@ void recMTC0()
 	{
 		case 9: // Count — inline; no iFlushCall/interp call
 		{       // (matches interp COP0.cpp:583-585): lastCOP0Cycle = cycle;
-			// CP0.r[9] = rt[31:0]. Bring cycle current first.
-			emitFlushBlockCycles(); // RECCYCLE (x25) == updated cycle, also in memory
-			armAsm->Str(RECCYCLE, armCpuRegMem(&cpuRegs.lastCOP0Cycle));
+			// CP0.r[9] = rt[31:0]. Bring cycle current first; the absolute
+			// value (x9, non-allocatable scratch — see recMFC0 case 9) is
+			// what lastCOP0Cycle stores.
+			emitFlushBlockCyclesAbs(a64::x9); // x9 = absolute cycle, also in memory
+			armAsm->Str(a64::x9, armCpuRegMem(&cpuRegs.lastCOP0Cycle));
 			if (GPR_IS_CONST1(_Rt_))
 			{
 				armAsm->Mov(RWSCRATCH, g_cpuConstRegs[_Rt_].UL[0]);
