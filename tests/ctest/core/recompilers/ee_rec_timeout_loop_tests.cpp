@@ -226,3 +226,65 @@ TEST(EeRecTimeoutLoop, CounterComparedAgainstNonzeroRegIsNotSkipped)
 	h.ExpectGpr64(reg::t4, 2ull);
 	h.ExpectGpr64(reg::a2, 2ull);
 }
+
+// ===========================================================================
+// Wait-loop (s_nBlockFF) DETECTOR coverage (AX-07). The detector was widened
+// from "all-NOP self-loop only" to the x86 hazard tracker (ix86-32/
+// iR5900.cpp:2438-2515): a self-loop qualifies as long as it never writes a
+// register it already read (constant/loaded registers excepted) and touches
+// no machine state beyond registers — the shape of real hardware-poll idle
+// loops. The verdict itself isn't observable through architectural state
+// (both engines are cycle-budget bounded), so these tests read it via the
+// g_eeRecLastBlockFF hook after a JIT-only compile+run.
+// ===========================================================================
+
+extern bool g_eeRecLastBlockFF;
+
+// Classic hardware-poll idle loop: lw STATUS; andi; beq back. The old
+// NOP-only detector rejected this (red before the AX-07 port).
+TEST(EeRecWaitLoopDetect, PollLoadTestBranchIsWaitLoop)
+{
+	constexpr u32 kData = RecompilerTestEnvironment::kScratchAddr;
+
+	EeRecTestHarness h;
+	h.SetGpr64(reg::s0, kData);
+	h.WriteU32(kData, 0);              // polled value never changes
+	h.LoadProgramNoTerm({
+		LW(reg::t0, 0, reg::s0),       // +0x00 TOP: poll
+		ANDI(reg::t1, reg::t0, 1),     // +0x04 test
+		BEQ(reg::t1, reg::zero, -3),   // +0x08 -> TOP while bit clear
+		NOP,                           // +0x0C delay slot
+		J(kPark),                      // +0x10 exit (if bit ever set)
+		NOP,                           // +0x14
+	});
+	h.RunJitNoDiff();                  // spins to the cycle budget; bounded
+	EXPECT_TRUE(g_eeRecLastBlockFF)
+		<< "load/test/branch poll self-loop must be detected as a wait loop";
+}
+
+// A self-loop that WRITES a register it already read (a genuine compute
+// loop) must never be classified as a wait loop — the hazard rule.
+TEST(EeRecWaitLoopDetect, SelfLoopWithReadThenWriteHazardIsNot)
+{
+	EeRecTestHarness h;
+	h.LoadProgramNoTerm({
+		ADDIU(reg::t0, reg::t0, 1),    // +0x00 TOP: t0 read then written
+		BEQ(reg::zero, reg::zero, -2), // +0x04 -> TOP always
+		NOP,                           // +0x08 delay slot
+	});
+	h.RunJitNoDiff();
+	EXPECT_FALSE(g_eeRecLastBlockFF)
+		<< "counter self-loop (write-after-read) must NOT be a wait loop";
+}
+
+// The old detector's only accepted shape keeps working.
+TEST(EeRecWaitLoopDetect, AllNopSelfLoopStillDetected)
+{
+	EeRecTestHarness h;
+	h.LoadProgramNoTerm({
+		BEQ(reg::zero, reg::zero, -1), // +0x00 TOP -> TOP
+		NOP,                           // +0x04 delay slot
+	});
+	h.RunJitNoDiff();
+	EXPECT_TRUE(g_eeRecLastBlockFF);
+}

@@ -119,6 +119,9 @@ static u32 g_eeHarnessParkPc = 0;
 static s32 g_eeHarnessCycleBudget = 0;
 static u64 g_eeHarnessCycleStart = 0;
 static constexpr s32 kExecuteBlockSafetyCap = 1 << 20;
+// Wait-loop detection verdict for the most recently analysed block —
+// non-static: read by the AX-07 detector tests via extern.
+bool g_eeRecLastBlockFF = false;
 #endif
 
 // Self-modifying code detection
@@ -2352,14 +2355,88 @@ StartRecomp:
 	// Self-modifying code detection: generate inline memory checks for manual blocks.
 	memory_protect_recompiled_code(startpc, (s_nEndBlock - startpc) >> 2);
 
-	// Infinite loop detection
+	// Infinite (wait) loop detection — verbatim port of the x86 hazard
+	// tracker (ix86-32/iR5900.cpp:2438-2515), replacing the old all-NOP-only
+	// scan (AX-07). The idea: as long as a self-loop doesn't write a register
+	// it has already read (registers initialised from constants or memory
+	// loads excepted) and uses no instruction that alters machine state
+	// beyond registers, every iteration does the same thing — so it can be
+	// fast-forwarded to the next event. This admits the shape of real
+	// hardware-poll idle loops (lw STATUS; andi/test; beq back), which the
+	// NOP-only scan never matched. The last-pair skip (i == s_nEndBlock - 8)
+	// excludes the backward branch + its delay slot.
 	s_nBlockFF = false;
 	if (s_branchTo == startpc)
 	{
 		s_nBlockFF = true;
+
+		u32 reads = 0, loads = 1;
+
 		for (i = startpc; i < s_nEndBlock; i += 4)
 		{
-			if (i != s_nEndBlock - 8 && memRead32(i) != 0)
+			if (i == s_nEndBlock - 8)
+				continue;
+			cpuRegs.code = memRead32(i);
+			// nop
+			if (cpuRegs.code == 0)
+				continue;
+			// cache, sync
+			else if (_Opcode_ == 057 || (_Opcode_ == 0 && _Funct_ == 017))
+				continue;
+			// imm arithmetic
+			else if ((_Opcode_ & 070) == 010 || (_Opcode_ & 076) == 030)
+			{
+				if (loads & 1 << _Rs_)
+				{
+					loads |= 1 << _Rt_;
+					continue;
+				}
+				else
+					reads |= 1 << _Rs_;
+				if (reads & 1 << _Rt_)
+				{
+					s_nBlockFF = false;
+					break;
+				}
+			}
+			// common register arithmetic instructions
+			else if (_Opcode_ == 0 && (_Funct_ & 060) == 040 && (_Funct_ & 076) != 050)
+			{
+				if (loads & 1 << _Rs_ && loads & 1 << _Rt_)
+				{
+					loads |= 1 << _Rd_;
+					continue;
+				}
+				else
+					reads |= 1 << _Rs_ | 1 << _Rt_;
+				if (reads & 1 << _Rd_)
+				{
+					s_nBlockFF = false;
+					break;
+				}
+			}
+			// loads
+			else if ((_Opcode_ & 070) == 040 || (_Opcode_ & 076) == 032 || _Opcode_ == 067)
+			{
+				if (loads & 1 << _Rs_)
+				{
+					loads |= 1 << _Rt_;
+					continue;
+				}
+				else
+					reads |= 1 << _Rs_;
+				if (reads & 1 << _Rt_)
+				{
+					s_nBlockFF = false;
+					break;
+				}
+			}
+			// mfc*, cfc*
+			else if ((_Opcode_ & 074) == 020 && _Rs_ < 4)
+			{
+				loads |= 1 << _Rt_;
+			}
+			else
 			{
 				s_nBlockFF = false;
 				break;
@@ -2378,6 +2455,14 @@ StartRecomp:
 		// matches the forward early-exit branch without checking the branch target.
 		is_timeout_loop = false;
 	}
+
+#ifdef PCSX2_RECOMPILER_TESTS
+	// Test-harness introspection: the wait-loop detection verdict for the
+	// block most recently analysed. The FF fast-forward itself is not
+	// observable from the harness (both engines are cycle-budget bounded),
+	// so the detector (AX-07) is pinned at this seam.
+	g_eeRecLastBlockFF = s_nBlockFF;
+#endif
 
 	// Instruction analysis (backward pass)
 	{
