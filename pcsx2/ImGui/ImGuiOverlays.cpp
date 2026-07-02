@@ -958,6 +958,9 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 		if (GSConfig.HWROVBarriersVK)
 			APPEND("RBVK ");
 
+		if (GSConfig.AccurateUVRounding)
+			APPEND("ACCUV ");
+
 		// deliberately test global and print local here for auto values
 		if (EmuConfig.GS.TextureFiltering != BiFiltering::PS2)
 			APPEND("BF={} ", static_cast<unsigned>(GSConfig.TextureFiltering));
