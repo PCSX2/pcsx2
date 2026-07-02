@@ -176,3 +176,61 @@ TEST(EeRecJump, JalrLinkUpperBitsZero)
 		static_cast<u64>(kProgramPc + 8),
 		0xAA55AA55AA55AA55ull);
 }
+
+// ===========================================================================
+//  Delay-slot hoisting (TrySwapDelaySlot) on register jumps — the swap must
+//  fire only when the slot can't observe the difference. The JIT-vs-interp
+//  diff is the oracle; the swap conditions below are static, so each test
+//  deterministically takes the intended path.
+// ===========================================================================
+
+TEST(EeRecJump, JrSwappableDelaySlotHoisted)
+{
+	// Slot writes v0 (unrelated to rs=t0) → TrySwapDelaySlot hoists it ahead
+	// of the jump. Target and slot result must both be correct.
+	EeRecTestHarness h;
+	h.SetGpr64(reg::t0, kPark);
+	h.SetGpr64(reg::t1, 0x0000000000000700ull);
+	h.LoadProgramNoTerm({
+		JR(reg::t0),
+		ADDIU(reg::v0, reg::t1, 0x42),  // swappable delay slot
+		ADDIU(reg::v0, reg::zero, 99),  // skipped
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 0x742ull);
+}
+
+TEST(EeRecJump, JalrSwappableDelaySlotHoisted)
+{
+	// Slot touches neither rs=t0 nor rd=v1 → hoisted. Link, target, and slot
+	// result must all be correct.
+	EeRecTestHarness h;
+	h.SetGpr64(reg::t0, kPark);
+	h.SetGpr64(reg::t1, 0x0000000000000100ull);
+	h.LoadProgramNoTerm({
+		JALR(reg::v1, reg::t0),
+		ADDIU(reg::v0, reg::t1, 0x23),  // swappable delay slot
+		ADDIU(reg::v0, reg::zero, 99),  // skipped
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 0x123ull);
+	h.ExpectGpr64(reg::v1, static_cast<u64>(kProgramPc + 8));
+}
+
+TEST(EeRecJump, JalrDelaySlotReadingLinkSeesNewValue)
+{
+	// On hardware the link register is written BEFORE the delay slot runs, so
+	// a slot reading rd must see pc+8 — TrySwapDelaySlot's rd argument
+	// excludes this slot from hoisting (a hoisted slot would read the stale
+	// value). v0 = v1 + 4 = (kProgramPc + 8) + 4.
+	EeRecTestHarness h;
+	h.SetGpr64(reg::t0, kPark);
+	h.SetGpr64(reg::v1, 0x0000000000001111ull); // stale value the slot must NOT see
+	h.LoadProgramNoTerm({
+		JALR(reg::v1, reg::t0),
+		ADDIU(reg::v0, reg::v1, 4),     // reads the link — must not be hoisted
+		ADDIU(reg::v0, reg::zero, 99),  // skipped
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, static_cast<u64>(kProgramPc + 8 + 4));
+}
