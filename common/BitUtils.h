@@ -28,6 +28,9 @@ static inline int _BitScanReverse(unsigned long* const Index, const unsigned lon
 
 namespace Common
 {
+	static constexpr s32 normalizeAmounts[] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8, 16, 16, 16, 16, 16, 16, 16, 16, 24, 24, 24, 24, 24, 24, 24};
+
 	template <typename T>
 	static constexpr __fi bool IsAligned(T value, unsigned int alignment)
 	{
@@ -69,6 +72,16 @@ namespace Common
 	{
 		static_assert(std::has_single_bit(__pagesize), "Page size is a power of 2");
 		return Common::AlignUpPow2(size, __pagesize);
+	}
+
+	__fi static s32 BitScanReverse(u32 b)
+	{
+		if (b == 0)
+			return -1;
+
+		unsigned long index;
+		::_BitScanReverse(&index, b);
+		return static_cast<s32>(index);
 	}
 
 	__fi static u32 CountLeadingSignBits(s32 n)
