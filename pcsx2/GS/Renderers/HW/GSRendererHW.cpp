@@ -5331,16 +5331,16 @@ bool GSRendererHW::VerifyIndices()
 	return true;
 }
 
-// Fix the colors in vertices in case the API only supports "provoking first vertex"
-// (i.e., when using flat shading the color comes from the first vertex, unlike PS2
-// which is "provoking last vertex").
-void GSRendererHW::HandleProvokingVertexFirst()
+void GSRendererHW::HandleFlatShadedVertices()
 {
-	                                                     // Early exit conditions:
-	if (g_gs_device->Features().provoking_vertex_last || // device supports provoking last vertex
-	    m_conf.vs.iip ||                                 // we are doing Gouraud shading
-	    m_vt.m_primclass == GS_POINT_CLASS ||            // drawing points (one vertex per primitive; color is unambiguous)
-	    m_vt.m_primclass == GS_SPRITE_CLASS)             // drawing sprites (handled by the sprites -> triangles expand shader)
+	// These cases might need fixing.
+	bool maybe_fix_vertices = !m_conf.vs.iip &&
+		(!g_gs_device->Features().provoking_vertex_last || IsCoverageAlphaSupported());
+
+	// These cases definitely don't need fixing.
+	bool dont_fix_vertices = m_vt.m_primclass == GS_POINT_CLASS || m_vt.m_primclass == GS_SPRITE_CLASS;
+
+	if (!maybe_fix_vertices || dont_fix_vertices)
 		return;
 
 	const int n = GSUtil::GetClassVertexCount(m_vt.m_primclass);
@@ -5369,11 +5369,11 @@ void GSRendererHW::HandleProvokingVertexFirst()
 	std::swap(m_vertex->buff, m_vertex->buff_copy);
 	m_vertex->head = m_vertex->next = m_vertex->tail = m_index->tail;
 
-	// Put correct color in the first vertex
+	// Make all vertices the same color to simplify handling in expand shaders.
 	for (u32 i = 0; i < m_index->tail; i += n)
 	{
-		m_vertex->buff[i].RGBAQ.U32[0] = m_vertex->buff[i + n - 1].RGBAQ.U32[0];
-		m_vertex->buff[i + n - 1].RGBAQ.U32[0] = 0xff; // Make last vertex red for debugging if used improperly
+		for (u32 j = 0; j < n - 1; j++)
+			m_vertex->buff[j].RGBAQ.U32[0] = m_vertex->buff[i + n - 1].RGBAQ.U32[0];
 	}
 }
 
@@ -9445,7 +9445,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	DetermineROVUsage(rt, ds);
 	ConvertTextureTypeROV(rt, ds);
 
-	// Barriers must be determined before indices are modified via HandleProvokingVertexFirst/SetupIA.
+	// Barriers must be determined before indices are modified via HandleFlatShadedVertices/SetupIA.
 	// This also computes the drawlist if needed.
 	DetermineBarriers(rt, tex);
 
@@ -9470,7 +9470,7 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 
 	m_conf.scissor = (date_options.enabled && !date_options.barrier) ? m_conf.drawarea : scissor;
 
-	HandleProvokingVertexFirst();
+	HandleFlatShadedVertices();
 
 	SetupIA(rtscale, vs_scale_x, vs_scale_y, m_channel_shuffle_width != 0, no_rt);
 
