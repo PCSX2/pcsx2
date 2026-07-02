@@ -1306,9 +1306,9 @@ static void iopRecRecompile(const u32 startpc)
 	if ((psxHu32(HW_ICFG) & 8) && (HWADDR(startpc) == 0xa0 || HWADDR(startpc) == 0xb0 || HWADDR(startpc) == 0xc0))
 	{
 		armEmitCall((void*)psxBiosCall);
-		// If psxBiosCall returns non-zero, skip to dispatcher
-		armAsm->Tst(RWRET, RWRET);
-		armEmitCondBranch(a64::ne, iopDispatcherReg);
+		// If psxBiosCall returns non-zero, skip to dispatcher. CBNZ folds
+		// the Tst + B.ne pair (AX-12, after ARMSX2 1c1d0b880).
+		armEmitCbnz(RWRET, iopDispatcherReg);
 	}
 
 	// Scan for block boundary

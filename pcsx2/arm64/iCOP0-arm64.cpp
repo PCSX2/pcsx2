@@ -25,17 +25,21 @@ namespace COP0 {
 // BC0 uses the same SaveBranchState/recompileNextInstruction/SetBranchImm
 // branch-emission pattern as recBC1F/recBC1T on this target.
 
-// Emit the DMAC condition test, leaving the result in the flags (CMP vs 0x3ff).
+// Emit the DMAC condition test, leaving the result in the flags.
 // 32-bit loads are fine: the result is masked to the low 10 bits, matching x86.
+// De Morgan (AX-12, after ARMSX2 ac56c2523):
+//   ((STAT | ~PCR) & 0x3ff) == 0x3ff  ⇔  (PCR & ~STAT & 0x3ff) == 0
+// so one BIC + TST replaces MVN/ORR/AND/CMP, and a single materialized base
+// covers both registers (DMAC_STAT 0xE010 / DMAC_PCR 0xE020, 16 B apart in
+// eeHw). Flag sense unchanged: EQ ⇔ condition true.
 static void _setupBranchTestBC0()
 {
 	_eeFlushAllDirty();
-	armLoadPtr(RWARG1, &psHu32(DMAC_PCR));
-	armAsm->Mvn(RWARG1, RWARG1);                  // ~PCR
-	armLoadPtr(RWSCRATCH, &psHu32(DMAC_STAT));
-	armAsm->Orr(RWARG1, RWARG1, RWSCRATCH);       // STAT | ~PCR
-	armAsm->And(RWARG1, RWARG1, 0x3ff);
-	armAsm->Cmp(RWARG1, 0x3ff);                   // EQ ⇔ condition true
+	armMoveAddressToReg(RSCRATCHADDR, &psHu32(DMAC_STAT));
+	armAsm->Ldr(RWSCRATCH, a64::MemOperand(RSCRATCHADDR));  // STAT
+	armAsm->Ldr(RWARG1, a64::MemOperand(RSCRATCHADDR, 16)); // PCR
+	armAsm->Bic(RWARG1, RWARG1, RWSCRATCH);                 // PCR & ~STAT
+	armAsm->Tst(RWARG1, 0x3ff);                             // EQ ⇔ condition true
 }
 
 static a64::Label* s_pBC0Label = nullptr;
