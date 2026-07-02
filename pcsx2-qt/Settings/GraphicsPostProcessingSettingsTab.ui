@@ -109,6 +109,13 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="shadeBoostFMVs">
+        <property name="text">
+         <string>Shade Boost FMVs</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="1">
        <layout class="QGridLayout" name="gridLayout" columnstretch="0,1,0,1">
         <item row="0" column="0">

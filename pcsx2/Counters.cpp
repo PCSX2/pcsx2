@@ -431,6 +431,11 @@ extern bool EnableFMV;
 
 static bool s_last_fmv_state = false;
 
+bool IsFMVPlaying()
+{
+    return s_last_fmv_state;
+}
+
 static __fi void DoFMVSwitch()
 {
 	bool new_fmv_state = s_last_fmv_state;

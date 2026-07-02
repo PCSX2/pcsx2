@@ -127,6 +127,8 @@ extern bool rcntCanCount(int i);
 extern void rcntSyncCounter(int i);
 extern void rcntUpdate();
 
+extern bool IsFMVPlaying();
+
 extern void rcntInit();
 extern u32	rcntRcount(int index);
 template< uint page > extern bool rcntWrite32( u32 mem, mem32_t& value );
