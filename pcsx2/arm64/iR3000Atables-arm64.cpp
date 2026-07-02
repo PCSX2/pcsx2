@@ -480,84 +480,82 @@ static void rpsxSRAV()
 ////////////////////////////////////////////////////////////////////
 // Multiply/Divide — write to HI:LO
 
-// Sources for MULT/MULTU/DIV/DIVU are loaded directly from psxRegs.GPR
-// (not via _psxMoveGPRtoR / _allocArm64GPR) on purpose. The hi-half of the
-// product / quotient is written into w0/x0, which collides with the host
-// register the allocator would otherwise pick for $Rs or $Rt. Going through
-// the allocator leaves a stale "$Rt lives in w0" mapping that downstream
-// instructions then trust — e.g. the GCC divide-by-zero check
-// `bne $Rt, $zero, +2 / break 7` reads w0 (now the quotient, often 0) and
-// fires BREAK even though $Rt was nonzero. Mirrors the x86 IOP rec, which
-// also bypasses the allocator with `xMOV(eax, ptr32[&psxRegs.GPR.r[_Rs_]])`.
+// MULT/MULTU/DIV/DIVU compute entirely in non-allocatable scratch
+// (w8=RWSCRATCH, w9, w10): _psxMoveGPRtoR fetches each operand from wherever
+// it currently lives (const, allocated host reg, or memory) without
+// disturbing the register cache, and HI/LO are memory-only on this backend,
+// so no flush is needed and cached guest registers stay live across the op.
+// The results must NOT land in allocator-pool registers (x0-x7): an earlier
+// version wrote the product/quotient to w0-w3, which silently corrupted any
+// live "$Rt lives in w0" mapping — e.g. the GCC divide-by-zero check
+// `bne $Rt, $zero, +2 / break 7` then read the quotient (often 0) and fired
+// BREAK even though $Rt was nonzero. (The x86 rec FLUSH_EVERYTHINGs here
+// because its MUL/DIV results land in fixed pool regs edx:eax; ours don't,
+// so the flush would be pure waste.)
 
 static void rpsxMULT()
 {
-	_psxFlushCall(FLUSH_EVERYTHING);
-	armLoadPsxRegPtr(a64::w1, &psxRegs.GPR.r[_Rs_]);
-	armLoadPsxRegPtr(a64::w2, &psxRegs.GPR.r[_Rt_]);
-	armAsm->Smull(a64::x0, a64::w1, a64::w2);
+	_psxMoveGPRtoR(a64::w9, _Rs_);
+	_psxMoveGPRtoR(a64::w10, _Rt_);
+	armAsm->Smull(a64::x8, a64::w9, a64::w10);
 	// IOP HI:LO are 32-bit registers
-	armAsm->Str(a64::w0, armPsxRegMem(&psxRegs.GPR.n.lo));
-	armAsm->Lsr(a64::x0, a64::x0, 32);
-	armAsm->Str(a64::w0, armPsxRegMem(&psxRegs.GPR.n.hi));
+	armAsm->Str(a64::w8, armPsxRegMem(&psxRegs.GPR.n.lo));
+	armAsm->Lsr(a64::x8, a64::x8, 32);
+	armAsm->Str(a64::w8, armPsxRegMem(&psxRegs.GPR.n.hi));
 	g_iopCyclePenalty = psxInstCycles_Mult;
 }
 
 static void rpsxMULTU()
 {
-	_psxFlushCall(FLUSH_EVERYTHING);
-	armLoadPsxRegPtr(a64::w1, &psxRegs.GPR.r[_Rs_]);
-	armLoadPsxRegPtr(a64::w2, &psxRegs.GPR.r[_Rt_]);
-	armAsm->Umull(a64::x0, a64::w1, a64::w2);
-	armAsm->Str(a64::w0, armPsxRegMem(&psxRegs.GPR.n.lo));
-	armAsm->Lsr(a64::x0, a64::x0, 32);
-	armAsm->Str(a64::w0, armPsxRegMem(&psxRegs.GPR.n.hi));
+	_psxMoveGPRtoR(a64::w9, _Rs_);
+	_psxMoveGPRtoR(a64::w10, _Rt_);
+	armAsm->Umull(a64::x8, a64::w9, a64::w10);
+	armAsm->Str(a64::w8, armPsxRegMem(&psxRegs.GPR.n.lo));
+	armAsm->Lsr(a64::x8, a64::x8, 32);
+	armAsm->Str(a64::w8, armPsxRegMem(&psxRegs.GPR.n.hi));
 	g_iopCyclePenalty = psxInstCycles_Mult;
 }
 
 static void rpsxDIV()
 {
-	_psxFlushCall(FLUSH_EVERYTHING);
-	armLoadPsxRegPtr(a64::w1, &psxRegs.GPR.r[_Rs_]);
-	armLoadPsxRegPtr(a64::w2, &psxRegs.GPR.r[_Rt_]);
+	_psxMoveGPRtoR(a64::w9, _Rs_);
+	_psxMoveGPRtoR(a64::w10, _Rt_);
 	a64::Label zero_case, done;
-	armAsm->Cbz(a64::w2, &zero_case);
+	armAsm->Cbz(a64::w10, &zero_case);
 	// Normal path: SDIV is defined on aarch64 for the (INT_MIN / -1) overflow
 	// case (returns INT_MIN, remainder 0) which matches psxDIV()'s explicit
 	// overflow branch in R3000AOpcodeTables.cpp:69, so only the divide-by-zero
-	// case needs fixing here.
-	armAsm->Sdiv(a64::w0, a64::w1, a64::w2);
-	armAsm->Msub(a64::w3, a64::w0, a64::w2, a64::w1);
+	// case needs fixing here. Remainder overwrites w9 (Rs is dead after Msub).
+	armAsm->Sdiv(a64::w8, a64::w9, a64::w10);
+	armAsm->Msub(a64::w9, a64::w8, a64::w10, a64::w9);
 	armAsm->B(&done);
 	armAsm->Bind(&zero_case);
-	// LO = sign(Rs) ? 1 : 0xFFFFFFFF;  HI = Rs.  Matches psxDIV(_rRt_==0).
-	armAsm->Mov(a64::w0, -1);
-	armAsm->Cmp(a64::w1, 0);
-	armAsm->Cneg(a64::w0, a64::w0, a64::mi);
-	armAsm->Mov(a64::w3, a64::w1);
+	// LO = sign(Rs) ? 1 : 0xFFFFFFFF;  HI = Rs (already in w9).
+	// Matches psxDIV(_rRt_==0).
+	armAsm->Mov(a64::w8, -1);
+	armAsm->Cmp(a64::w9, 0);
+	armAsm->Cneg(a64::w8, a64::w8, a64::mi);
 	armAsm->Bind(&done);
-	armAsm->Str(a64::w0, armPsxRegMem(&psxRegs.GPR.n.lo));
-	armAsm->Str(a64::w3, armPsxRegMem(&psxRegs.GPR.n.hi));
+	armAsm->Str(a64::w8, armPsxRegMem(&psxRegs.GPR.n.lo));
+	armAsm->Str(a64::w9, armPsxRegMem(&psxRegs.GPR.n.hi));
 	g_iopCyclePenalty = psxInstCycles_Div;
 }
 
 static void rpsxDIVU()
 {
-	_psxFlushCall(FLUSH_EVERYTHING);
-	armLoadPsxRegPtr(a64::w1, &psxRegs.GPR.r[_Rs_]);
-	armLoadPsxRegPtr(a64::w2, &psxRegs.GPR.r[_Rt_]);
+	_psxMoveGPRtoR(a64::w9, _Rs_);
+	_psxMoveGPRtoR(a64::w10, _Rt_);
 	a64::Label zero_case, done;
-	armAsm->Cbz(a64::w2, &zero_case);
-	armAsm->Udiv(a64::w0, a64::w1, a64::w2);
-	armAsm->Msub(a64::w3, a64::w0, a64::w2, a64::w1);
+	armAsm->Cbz(a64::w10, &zero_case);
+	armAsm->Udiv(a64::w8, a64::w9, a64::w10);
+	armAsm->Msub(a64::w9, a64::w8, a64::w10, a64::w9);
 	armAsm->B(&done);
 	armAsm->Bind(&zero_case);
-	// LO = 0xFFFFFFFF; HI = Rs. Matches psxDIVU(_rRt_==0).
-	armAsm->Mov(a64::w0, -1);
-	armAsm->Mov(a64::w3, a64::w1);
+	// LO = 0xFFFFFFFF; HI = Rs (already in w9). Matches psxDIVU(_rRt_==0).
+	armAsm->Mov(a64::w8, -1);
 	armAsm->Bind(&done);
-	armAsm->Str(a64::w0, armPsxRegMem(&psxRegs.GPR.n.lo));
-	armAsm->Str(a64::w3, armPsxRegMem(&psxRegs.GPR.n.hi));
+	armAsm->Str(a64::w8, armPsxRegMem(&psxRegs.GPR.n.lo));
+	armAsm->Str(a64::w9, armPsxRegMem(&psxRegs.GPR.n.hi));
 	g_iopCyclePenalty = psxInstCycles_Div;
 }
 

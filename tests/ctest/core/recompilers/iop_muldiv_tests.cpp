@@ -185,3 +185,76 @@ TEST(IopMulDiv, MthiMtloMfhiMflo)
 	EXPECT_EQ(h.GetGprInterp(reg::v0), 0x12345678u);
 	EXPECT_EQ(h.GetGprInterp(reg::v1), 0xABCDEF01u);
 }
+
+// ---------------- Register-cache survival across MULT/DIV ----------------
+//
+// The arm64 handlers compute MULT/MULTU/DIV/DIVU entirely in non-allocatable
+// scratch (w8/w9/w10) with operands fetched via _psxMoveGPRtoR, so guest
+// registers cached in allocator pool regs must survive the op unflushed and
+// uncorrupted. These blocks mix dirty cached registers (written earlier in
+// the block through the allocator) with a MULT/DIV between the write and the
+// read-back; the harness JIT-vs-interp auto-diff catches both staleness
+// (operand read from memory while the fresh value sat in a host reg) and
+// pool-register clobber (product/quotient landing in a mapped host reg).
+
+TEST(IopMulDiv, MultPreservesCachedRegsAcrossOp)
+{
+	JitTestHarness h;
+	h.SetGpr(reg::a0, 7);
+	h.SetGpr(reg::a1, 11);
+	h.LoadProgram({
+		ADDU(reg::t0, reg::a0, reg::zero),  // t0 = 7, dirty in a pool reg
+		ADDU(reg::t1, reg::a1, reg::zero),  // t1 = 11, dirty in a pool reg
+		MULT(reg::a0, reg::a1),
+		MFLO(reg::v1),
+		ADDU(reg::v0, reg::t0, reg::t1),    // cached values must survive
+		ADDU(reg::v0, reg::v0, reg::v1),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGprInterp(reg::v1), 77u);
+	EXPECT_EQ(h.GetGprInterp(reg::v0), 7u + 11u + 77u);
+}
+
+TEST(IopMulDiv, MultReadsDirtyCachedOperands)
+{
+	// The MULT operands themselves are written through the allocator earlier
+	// in the same block (non-const: derived from seeded GPRs), so at the
+	// MULT the freshest value lives in a host register, not memory.
+	JitTestHarness h;
+	h.SetGpr(reg::a0, 0x10000);
+	h.SetGpr(reg::a1, 0x10000);
+	h.LoadProgram({
+		ADDU(reg::t0, reg::a0, reg::zero),
+		ADDU(reg::t1, reg::a1, reg::zero),
+		MULT(reg::t0, reg::t1),
+		MFHI(reg::v0),
+		MFLO(reg::v1),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGprInterp(reg::v0), 1u);
+	EXPECT_EQ(h.GetGprInterp(reg::v1), 0u);
+}
+
+TEST(IopMulDiv, DivPreservesCachedRegsIncludingZeroCase)
+{
+	JitTestHarness h;
+	h.SetGpr(reg::a0, 100);
+	h.SetGpr(reg::a1, 7);
+	h.SetGpr(reg::a2, 0);
+	h.LoadProgram({
+		ADDU(reg::t0, reg::a0, reg::zero),  // t0 = 100, dirty cached
+		DIV(reg::t0, reg::a1),              // 100/7 → LO=14 HI=2
+		MFLO(reg::v0),
+		MFHI(reg::v1),
+		DIV(reg::t0, reg::a2),              // ÷0 → LO=-1 (Rs>0), HI=Rs
+		MFLO(reg::t2),
+		MFHI(reg::t3),
+		ADDU(reg::t1, reg::t0, reg::v0),    // t0 must still be 100
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGprInterp(reg::v0), 14u);
+	EXPECT_EQ(h.GetGprInterp(reg::v1), 2u);
+	EXPECT_EQ(h.GetGprInterp(reg::t2), 0xFFFFFFFFu);
+	EXPECT_EQ(h.GetGprInterp(reg::t3), 100u);
+	EXPECT_EQ(h.GetGprInterp(reg::t1), 114u);
+}

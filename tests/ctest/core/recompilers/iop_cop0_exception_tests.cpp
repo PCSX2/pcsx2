@@ -106,3 +106,56 @@ TEST(IopCop0Exception, TwoBackToBackRfesStackAgain)
 	EXPECT_EQ(h.InterpSnapshot().regs.CP0.r[12], 0x0000003Fu);
 	EXPECT_EQ(h.JitSnapshot().regs.CP0.r[12], 0x0000003Fu);
 }
+
+// ---------------- SYSCALL / BREAK full dispatch ----------------
+//
+// Unlike interrupt exceptions (suppressed event scheduler — see file
+// header), SYSCALL and BREAK are synchronous: the opcode itself calls
+// psxException, which pushes the Status stack, latches Cause/EPC, and
+// unconditionally vectors to 0x80000080 (BEV=0). A `jr ra` stub planted at
+// the vector returns to the parking lot, giving a well-defined post-state.
+// The JIT-vs-interp auto-diff guards the whole dispatch path — including
+// that the recompiler's post-psxException re-dispatch takes the exception
+// vector rather than falling through into the rest of the block.
+
+namespace
+{
+	void InstallIopSyscallVectorStub(JitTestHarness& h)
+	{
+		h.LoadProgramAt(0x80000080u, {JR(reg::ra), NOP});
+	}
+} // namespace
+
+TEST(IopCop0Exception, SyscallVectorsAndSkipsRestOfBlock)
+{
+	JitTestHarness h;
+	InstallIopSyscallVectorStub(h);
+	h.LoadProgram({
+		SYSCALL_(),
+		ADDIU(reg::v0, reg::zero, 99), // must NOT execute
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGprInterp(reg::v0), 0u);
+	// ExcCode=8 → Cause & 0x7C = 0x20; EPC = the SYSCALL itself.
+	EXPECT_EQ(h.InterpSnapshot().regs.CP0.n.Cause & 0x7Cu, 0x20u);
+	EXPECT_EQ(h.JitSnapshot().regs.CP0.n.Cause & 0x7Cu, 0x20u);
+	EXPECT_EQ(h.InterpSnapshot().regs.CP0.n.EPC, RecompilerTestEnvironment::kProgramPc);
+	EXPECT_EQ(h.JitSnapshot().regs.CP0.n.EPC, RecompilerTestEnvironment::kProgramPc);
+}
+
+TEST(IopCop0Exception, BreakVectorsAndSkipsRestOfBlock)
+{
+	JitTestHarness h;
+	InstallIopSyscallVectorStub(h);
+	h.LoadProgram({
+		BREAK,
+		ADDIU(reg::v0, reg::zero, 99), // must NOT execute
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGprInterp(reg::v0), 0u);
+	// ExcCode=9 → Cause & 0x7C = 0x24.
+	EXPECT_EQ(h.InterpSnapshot().regs.CP0.n.Cause & 0x7Cu, 0x24u);
+	EXPECT_EQ(h.JitSnapshot().regs.CP0.n.Cause & 0x7Cu, 0x24u);
+	EXPECT_EQ(h.InterpSnapshot().regs.CP0.n.EPC, RecompilerTestEnvironment::kProgramPc);
+	EXPECT_EQ(h.JitSnapshot().regs.CP0.n.EPC, RecompilerTestEnvironment::kProgramPc);
+}

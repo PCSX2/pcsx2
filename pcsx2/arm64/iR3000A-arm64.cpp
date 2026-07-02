@@ -957,13 +957,11 @@ void rpsxSYSCALL()
 	armAsm->Mov(RWARG2, psxbranch == 1 ? 1 : 0);
 	armEmitCall((void*)psxException);
 
-	// Check if PC changed
-	armAsm->Ldr(RWSCRATCH, armPsxRegMem(&psxRegs.pc));
-	armAsm->Cmp(RWSCRATCH, psxpc - 4);
-	a64::Label noChange;
-	armAsm->B(&noChange, a64::eq);
-
-	// PC changed — update cycles and re-dispatch
+	// psxException unconditionally rewrites pc to the exception vector
+	// (R3000A.cpp: BEV ? 0xbfc00180 : 0x80000080), so always update cycles
+	// and re-dispatch. (x86 carries a "did pc change?" fall-through check
+	// here; it can only trigger for a SYSCALL sitting AT the vector, and
+	// falling through into the block tail would be wrong even then.)
 	armAsm->Ldr(a64::x0, armPsxRegMem(&psxRegs.cycle));
 	if (psxScaleBlockCycles() < 4096)
 		armAsm->Add(a64::x0, a64::x0, psxScaleBlockCycles());
@@ -975,8 +973,6 @@ void rpsxSYSCALL()
 	armAsm->Str(a64::x0, armPsxRegMem(&psxRegs.cycle));
 	iPsxAddEECycles(psxScaleBlockCycles());
 	armEmitJmp(iopDispatcherReg);
-
-	armAsm->Bind(&noChange);
 }
 
 void rpsxBREAK()
@@ -993,11 +989,7 @@ void rpsxBREAK()
 	armAsm->Mov(RWARG2, psxbranch == 1 ? 1 : 0);
 	armEmitCall((void*)psxException);
 
-	armAsm->Ldr(RWSCRATCH, armPsxRegMem(&psxRegs.pc));
-	armAsm->Cmp(RWSCRATCH, psxpc - 4);
-	a64::Label noChange;
-	armAsm->B(&noChange, a64::eq);
-
+	// See rpsxSYSCALL — pc always changed, dispatch unconditionally.
 	armAsm->Ldr(a64::x0, armPsxRegMem(&psxRegs.cycle));
 	if (psxScaleBlockCycles() < 4096)
 		armAsm->Add(a64::x0, a64::x0, psxScaleBlockCycles());
@@ -1009,8 +1001,6 @@ void rpsxBREAK()
 	armAsm->Str(a64::x0, armPsxRegMem(&psxRegs.cycle));
 	iPsxAddEECycles(psxScaleBlockCycles());
 	armEmitJmp(iopDispatcherReg);
-
-	armAsm->Bind(&noChange);
 }
 
 // =====================================================================================================
