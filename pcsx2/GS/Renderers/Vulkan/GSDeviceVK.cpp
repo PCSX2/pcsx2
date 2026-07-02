@@ -808,6 +808,15 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 				push_descriptor_properties.maxPushDescriptors, NUM_TFX_TEXTURES);
 			m_optional_extensions.vk_khr_push_descriptor = false;
 		}
+		else if (m_device_properties.vendorID == 0x13B5) // ARM Mali
+		{
+			// Mali advertises VK_KHR_push_descriptor but null-derefs inside
+			// vkCmdPushDescriptorSetKHR on the first textured draw (ARMSX2
+			// Mali bringup, 413e4840a + 09109bb93). The per-frame descriptor
+			// pool fallback is fully wired — take it. (AX-08)
+			Console.Warning("VK: disabling push descriptors on Mali (driver crash in vkCmdPushDescriptorSetKHR)");
+			m_optional_extensions.vk_khr_push_descriptor = false;
+		}
 	}
 	if (!m_optional_extensions.vk_khr_push_descriptor)
 		Console.Warning("VK: VK_KHR_push_descriptor is not available, using per-frame descriptor pools instead.");
