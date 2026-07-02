@@ -284,6 +284,8 @@ constexpr u32 PINTH (u32 rd, u32 rs, u32 rt) { return MMI2(rs, rt, rd, 0x0A); }
 
 // MMI2 parallel-mul / mul-acc subops (h-word lanes) — sub-op indices from
 // R5900OpcodeTables.cpp tbl_MMI2.
+constexpr u32 PMADDW (u32 rd, u32 rs, u32 rt) { return MMI2(rs, rt, rd, 0x00); }
+constexpr u32 PMSUBW (u32 rd, u32 rs, u32 rt) { return MMI2(rs, rt, rd, 0x04); }
 constexpr u32 PMADDH (u32 rd, u32 rs, u32 rt) { return MMI2(rs, rt, rd, 0x10); }
 constexpr u32 PMSUBH (u32 rd, u32 rs, u32 rt) { return MMI2(rs, rt, rd, 0x14); }
 constexpr u32 PMULTH (u32 rd, u32 rs, u32 rt) { return MMI2(rs, rt, rd, 0x1C); }

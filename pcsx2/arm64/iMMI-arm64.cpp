@@ -898,23 +898,117 @@ void recPSRAVW()
 // MMI2_RECOMPILE native code paths in pcsx2/x86/iMMI.cpp live behind a never-
 // defined macro):
 //
-//   PMADDW / PMSUBW — interp models the PS2-hardware multiplication errata
-//     (`temp2 / 0xFFFFFFFF` + the conditional `+ 0x70000000` voodoo on boundary
-//     Rt values).  Any non-errata fast path — NEON, SSE, or scalar — diverges
-//     from interp on essentially every input.  Upstream keeps interp
-//     authoritative; the same applies here.
-//
 //   PDIVW / PDIVBW / PDIVUW — AArch64 NEON has no integer divide, and x86's
 //     commented-out "native" path is itself `recCall(Interp::PDIV*)` after a
 //     targeted `_deleteEEreg(_Rd_, 0)`.  There is no codegen to port.
 //
 // PMADDUW gets a native impl below — its interp is plain u64 arithmetic (no
 // errata), so a NEON port matches interp bit-for-bit.
-REC_FUNC(PMADDW);
-REC_FUNC(PMSUBW);
+//
+// PMADDW / PMSUBW get a native SCALAR impl (AX-16): the old "any fast path
+// diverges" claim was wrong — the errata division is by the CONSTANT
+// 0xFFFFFFFF, so a 64-bit SDIV against positive 0x00000000FFFFFFFF is
+// exactly the interp's C `temp2 / 4294967295` (s64 truncation toward zero;
+// the divisor is positive so the INT64_MIN/-1 overflow case can't arise),
+// and the lane-0 "division voodoo" is two logical-immediate tests. Proven
+// emittable by ARMSX2's mac backend emitPMADDWLane (Tyler Bochard, GPLv3).
 REC_FUNC(PDIVW);
 REC_FUNC(PDIVBW);
 REC_FUNC(PDIVUW);
+
+// One PMADDW/PMSUBW lane pair (dd = dest half, ss = source SL index), matching
+// MMI.cpp _PMADDW/_PMSUBW field-for-field:
+//   temp  = (s64)Rs.SL[ss] * Rt.SL[ss]
+//   acc   = temp + (HI.SL[ss] << 32)        (PMADDW; +0x70000000 lane-0 voodoo)
+//         = (HI.SL[ss] << 32) - temp        (PMSUBW; never voodoo)
+//   HI.SD[dd] = (s32)(acc / 0xFFFFFFFF)     (trunc toward zero — NOT >>32)
+//   LO.SD[dd] = (s64)LO.SL[ss] ± (s64)(s32)low32(temp)
+//       (the interp's `(s32)+(s32)` overflows are compiled as a 64-bit add of
+//        the sign-extended halves; x86 shares the exact interp path via
+//        REC_FUNC, so that UB-resolution is the cross-arch reference — pinned
+//        by EeRecMmi.PmaddwLoWrapAddAndRsAliasesRt)
+//   Rd.UD[dd] = LO.UL[dd*2] | HI.UL[dd*2] << 32
+//
+// Scratches w8/w9/w10/x17 are all outside the allocatable GPR pool, and
+// armCpuRegMem is a pure [RSTATE, #imm] MemOperand (no address scratch), so
+// x17 is safe as a value register here. Lane 1 reads SL[2]/UL[2] fields that
+// lane 0's SD[0]/UD[0] stores never touch, so sequential per-lane commit
+// matches the interp's ordering under every Rd/Rs/Rt aliasing.
+static void recPMADDWLane(int dd, int ss, bool isSub)
+{
+	armAsm->Ldr(a64::w8, armCpuRegMem(&cpuRegs.GPR.r[_Rs_].SL[ss]));
+	armAsm->Ldr(a64::w9, armCpuRegMem(&cpuRegs.GPR.r[_Rt_].SL[ss]));
+
+	if (!isSub && ss == 0)
+	{
+		// x17 = voodoo addend: 0x70000000 iff ((rt & 0x7FFFFFFF) is 0 or
+		// 0x7FFFFFFF) && rs != rt, else 0.
+		armAsm->And(a64::w10, a64::w9, 0x7FFFFFFF);
+		armAsm->Eor(a64::w17, a64::w10, 0x7FFFFFFF);
+		// 64-bit product of two nonzero u32 can't be zero, so x10 == 0 iff
+		// either factor was 0 iff (rt & 0x7FFFFFFF) hit a boundary value.
+		armAsm->Umull(a64::x10, a64::w10, a64::w17);
+		armAsm->Cmp(a64::w8, a64::w9);
+		// If rs != rt: flags = (x10 == 0). Else: nzcv = 0 so eq fails.
+		armAsm->Ccmp(a64::x10, 0, vixl::aarch64::NoFlag, a64::ne);
+		armAsm->Mov(a64::w17, 0x70000000);
+		armAsm->Csel(a64::x17, a64::x17, a64::xzr, a64::eq);
+	}
+
+	armAsm->Smull(a64::x10, a64::w8, a64::w9); // temp
+	armAsm->Ldr(a64::w8, armCpuRegMem(&cpuRegs.HI.SL[ss]));
+	if (!isSub)
+	{
+		armAsm->Add(a64::x8, a64::x10, a64::Operand(a64::x8, a64::LSL, 32));
+		if (ss == 0)
+			armAsm->Add(a64::x8, a64::x8, a64::x17);
+	}
+	else
+	{
+		armAsm->Lsl(a64::x8, a64::x8, 32);
+		armAsm->Sub(a64::x8, a64::x8, a64::x10);
+	}
+
+	armAsm->Mov(a64::x17, 0xFFFFFFFFull);
+	armAsm->Sdiv(a64::x17, a64::x8, a64::x17);
+	armAsm->Sxtw(a64::x17, a64::w17); // HI.SD[dd] = (s32)quotient
+	armAsm->Str(a64::x17, armCpuRegMem(&cpuRegs.HI.SD[dd]));
+
+	armAsm->Ldrsw(a64::x9, armCpuRegMem(&cpuRegs.LO.SL[ss]));
+	if (!isSub)
+		armAsm->Add(a64::x9, a64::x9, a64::Operand(a64::w10, a64::SXTW));
+	else
+		armAsm->Sub(a64::x9, a64::x9, a64::Operand(a64::w10, a64::SXTW));
+	armAsm->Str(a64::x9, armCpuRegMem(&cpuRegs.LO.SD[dd]));
+
+	if (_Rd_)
+	{
+		// Rd.UD[dd] = the two low words just stored: LO in x9[31:0], HI
+		// inserted from x17[31:0].
+		armAsm->Bfi(a64::x9, a64::x17, 32, 32);
+		armAsm->Str(a64::x9, armCpuRegMem(&cpuRegs.GPR.r[_Rd_].UD[dd]));
+	}
+}
+
+void recPMADDW()
+{
+	mmiFlushReg(_Rs_);
+	mmiFlushReg(_Rt_);
+	if (_Rd_)
+		mmiInvalidateDest(_Rd_);
+	recPMADDWLane(0, 0, false);
+	recPMADDWLane(1, 2, false);
+}
+
+void recPMSUBW()
+{
+	mmiFlushReg(_Rs_);
+	mmiFlushReg(_Rt_);
+	if (_Rd_)
+		mmiInvalidateDest(_Rd_);
+	recPMADDWLane(0, 0, true);
+	recPMADDWLane(1, 2, true);
+}
 
 // PMULTW: 2-lane signed 32x32->64 multiply on even-indexed source words.
 //   prod[0] = (s64)Rs.SL[0] * (s64)Rt.SL[0]

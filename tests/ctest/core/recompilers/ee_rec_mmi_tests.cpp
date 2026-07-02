@@ -819,3 +819,196 @@ TEST(EeRecMmi, PmadduwCarriesAcrossWord32Boundary)
 	// tempu[1] = 0x00_0000000A + 5*7 = 0x2D = 0x00000000_0000002D
 	h.ExpectMmiPair(reg::v0, 0x000000AC00000001ull, 0x000000000000002Dull);
 }
+
+// ===========================================================================
+//  PMADDW / PMSUBW — 2-lane signed 32x32 multiply-accumulate through HI/LO
+//  with the PS2 multiplication errata (AX-16).
+//
+//  Per lane pair (dd, ss) ∈ {(0,0), (1,2)}:
+//    temp  = (s64)Rs.SL[ss] * Rt.SL[ss]
+//    acc   = temp + (HI.SL[ss] << 32)            (PMADDW)
+//          = (HI.SL[ss] << 32) - temp            (PMSUBW)
+//    lane-0 "division voodoo" (PMADDW only):
+//      if ss==0 && ((Rt.SL[0] & 0x7FFFFFFF) ∈ {0, 0x7FFFFFFF}) && Rs.SL[0] != Rt.SL[0]:
+//        acc += 0x70000000
+//    HI.SD[dd] = (s32)(acc / 0xFFFFFFFF)         (s64 divide, trunc toward 0 —
+//                                                 NOT a >>32; off-by-one errata)
+//    LO.SD[dd] = (s64)LO.SL[ss] ± (s64)(s32)low32(temp)  (64-bit add of the
+//                sign-extended halves — the interp's s32+s32 overflow UB
+//                as the shipping compiler resolves it; x86 matches via REC_FUNC)
+//    Rd.UD[dd] = LO.UL[dd*2] | HI.UL[dd*2] << 32
+//
+//  The vectors below sit on quotient boundaries so each errata component
+//  discriminates: a >>32 impl, a missing/extra voodoo, or a wrong lane gate
+//  each flips at least one expectation. h.Run() additionally auto-diffs the
+//  JIT against the interpreter on all state.
+// ===========================================================================
+
+TEST(EeRecMmi, PmaddwVoodooBoundaryAppliesOnLane0Only)
+{
+	// Both lanes get identical inputs: rs=2, rt=0x7FFFFFFF (a voodoo-boundary
+	// Rt with rs != rt), HI=0. temp = 0xFFFFFFFE in both lanes.
+	//   lane 0 (voodoo):    acc = 0xFFFFFFFE + 0x70000000 = 0x1_6FFF_FFFE → q = 1
+	//   lane 1 (no voodoo): acc = 0xFFFFFFFE                              → q = 0
+	// The q difference between the lanes IS the lane gate.
+	EeRecTestHarness h;
+	h.SetMmiPair(reg::a0, 2, 2);
+	h.SetMmiPair(reg::a1, 0x7FFFFFFFull, 0x7FFFFFFFull);
+	h.SetHiPair(0, 0);
+	h.SetLoPair(100, 7);
+	h.LoadProgram({
+		ee::PMADDW(reg::v0, reg::a0, reg::a1),
+		ee::PMFHI(reg::v1),
+		ee::PMFLO(reg::a2),
+	});
+	h.Run();
+	// LO.SD = { (s32)0xFFFFFFFE + 100, (s32)0xFFFFFFFE + 7 } = { 98, 5 }
+	h.ExpectGpr128(reg::a2, 98, 5);
+	h.ExpectGpr128(reg::v1, 1, 0);
+	h.ExpectGpr128(reg::v0, 0x0000000100000062ull, 5);
+}
+
+TEST(EeRecMmi, PmaddwDivisionErrataTruncatesTowardZeroBothSigns)
+{
+	// temp = 65537 * 65535 = 0xFFFFFFFF in both lanes (no voodoo: Rt=65535
+	// is not a boundary value).
+	//   lane 0: HI.SL[0] = -1 → acc = -1          → q = 0  (a >>32 gives -1)
+	//   lane 1: HI.SL[2] = +1 → acc = 0x1FFFFFFFF → q = 2  (a >>32 gives  1)
+	EeRecTestHarness h;
+	h.SetMmiPair(reg::a0, 65537, 65537);
+	h.SetMmiPair(reg::a1, 65535, 65535);
+	h.SetHiPair(0x00000000FFFFFFFFull, 1);
+	h.SetLoPair(10, 0);
+	h.LoadProgram({
+		ee::PMADDW(reg::v0, reg::a0, reg::a1),
+		ee::PMFHI(reg::v1),
+		ee::PMFLO(reg::a2),
+	});
+	h.Run();
+	// LO.SD = { -1 + 10, -1 + 0 } = { 9, 0xFFFFFFFFFFFFFFFF }
+	h.ExpectGpr128(reg::a2, 9, 0xFFFFFFFFFFFFFFFFull);
+	h.ExpectGpr128(reg::v1, 0, 2);
+	h.ExpectGpr128(reg::v0, 9, 0x00000002FFFFFFFFull);
+}
+
+TEST(EeRecMmi, PmaddwVoodooSuppressedWhenOperandValuesEqual)
+{
+	// rs and rt are DIFFERENT registers holding EQUAL values (0), so even
+	// though Rt.SL[0] & 0x7FFFFFFF == 0 is a boundary, the rs != rt value
+	// test suppresses the voodoo. HI.SL[0] = 0x90000001 (s32 -0x6FFFFFFF)
+	// puts acc = -0x6FFFFFFF_00000000 exactly where a spurious +0x70000000
+	// changes the quotient:
+	//   suppressed: q = -0x6FFFFFFF → HI.SD[0] low word 0x90000001
+	//   spurious:   q = -0x6FFFFFFE → low word 0x90000002 (test goes red)
+	EeRecTestHarness h;
+	h.SetMmiPair(reg::a0, 0, 0);
+	h.SetMmiPair(reg::a1, 0, 0);
+	h.SetHiPair(0x0000000090000001ull, 0);
+	h.SetLoPair(0, 0);
+	h.LoadProgram({
+		ee::PMADDW(reg::v0, reg::a0, reg::a1),
+		ee::PMFHI(reg::v1),
+		ee::PMFLO(reg::a2),
+	});
+	h.Run();
+	h.ExpectGpr128(reg::a2, 0, 0);
+	h.ExpectGpr128(reg::v1, 0xFFFFFFFF90000001ull, 0);
+	h.ExpectGpr128(reg::v0, 0x9000000100000000ull, 0);
+}
+
+TEST(EeRecMmi, PmaddwLoWrapAddAndRsAliasesRt)
+{
+	// rs == rt (same register): voodoo suppressed by the equality test no
+	// matter what. Lane 0: temp = 1*1 = 1; LO.SL[0] = 0x7FFFFFFF → the LO
+	// add OVERFLOWS s32. The interp's `(s32)lo32(temp) + LO.SL[ss]` is
+	// signed-overflow UB that the shipping compiler resolves as a 64-bit
+	// add of the sign-extended halves, so LO.SD[0] = +0x80000000 (NOT the
+	// wrapped sext32(0x80000000)). x86 hits the identical interp path
+	// (PMADDW is REC_FUNC there too), so this is the cross-arch reference
+	// behavior the JIT must reproduce.
+	EeRecTestHarness h;
+	h.SetMmiPair(reg::a0, 1, 3);
+	h.SetHiPair(0, 0);
+	h.SetLoPair(0x000000007FFFFFFFull, 1);
+	h.LoadProgram({
+		ee::PMADDW(reg::v0, reg::a0, reg::a0),
+		ee::PMFHI(reg::v1),
+		ee::PMFLO(reg::a2),
+	});
+	h.Run();
+	// lane 0: LO.SD[0] = (s64)0x7FFFFFFF + 1 = +0x80000000, q = 0
+	// lane 1: temp = 9 → LO.SD[1] = 1 + 9 = 10, q = 0
+	h.ExpectGpr128(reg::a2, 0x0000000080000000ull, 10);
+	h.ExpectGpr128(reg::v1, 0, 0);
+	h.ExpectGpr128(reg::v0, 0x0000000080000000ull, 10);
+}
+
+TEST(EeRecMmi, PmaddwRdZeroWritesHiLoOnly)
+{
+	EeRecTestHarness h;
+	h.SetMmiPair(reg::a0, 2, 0);
+	h.SetMmiPair(reg::a1, 0x7FFFFFFFull, 0);
+	h.SetHiPair(0, 0);
+	h.SetLoPair(0, 0);
+	h.LoadProgram({
+		ee::PMADDW(reg::zero, reg::a0, reg::a1),
+		ee::PMFHI(reg::v1),
+		ee::PMFLO(reg::a2),
+	});
+	h.Run();
+	// Same lane-0 voodoo math as PmaddwVoodooBoundaryAppliesOnLane0Only.
+	h.ExpectGpr128(reg::v1, 1, 0);
+	h.ExpectGpr128(reg::a2, 0xFFFFFFFFFFFFFFFEull, 0);
+	EXPECT_EQ(h.GetGpr64Interp(reg::zero), 0ull);
+}
+
+TEST(EeRecMmi, PmsubwSubtractsAndNeverAppliesVoodoo)
+{
+	// Lane 0 uses a voodoo-boundary Rt (0x7FFFFFFF, rs != rt) with
+	// HI.SL[0] = 0x90000001 placed so a spurious voodoo addend would move
+	// the quotient: correct q = -0x70000000 (low word 0x90000000);
+	// with voodoo it would be -0x6FFFFFFF. PMSUBW must not apply it.
+	//   lane 0: temp = 2*0x7FFFFFFF = 0xFFFFFFFE
+	//           acc  = -0x6FFFFFFF_00000000 - 0xFFFFFFFE → q = -0x70000000
+	//           LO.SD[0] = 5 - (s32)0xFFFFFFFE = 5 - (-2) = 7
+	//   lane 1: temp = 0xFFFFFFFF; acc = 0x1_00000000 - 0xFFFFFFFF = 1 → q = 0
+	//           LO.SD[1] = 5 - (-1) = 6
+	EeRecTestHarness h;
+	h.SetMmiPair(reg::a0, 2, 65537);
+	h.SetMmiPair(reg::a1, 0x7FFFFFFFull, 65535);
+	h.SetHiPair(0x0000000090000001ull, 1);
+	h.SetLoPair(5, 5);
+	h.LoadProgram({
+		ee::PMSUBW(reg::v0, reg::a0, reg::a1),
+		ee::PMFHI(reg::v1),
+		ee::PMFLO(reg::a2),
+	});
+	h.Run();
+	h.ExpectGpr128(reg::a2, 7, 6);
+	h.ExpectGpr128(reg::v1, 0xFFFFFFFF90000000ull, 0);
+	h.ExpectGpr128(reg::v0, 0x9000000000000007ull, 6);
+}
+
+TEST(EeRecMmi, PmaddwRdAliasesRsPerLaneCommitOrder)
+{
+	// Rd == Rs: lane 0 commits Rd.UD[0] before lane 1 reads Rs.SL[2] — but
+	// SL[2] lives in UD[1], so the interp (and the JIT) must see the
+	// ORIGINAL upper-half operand. A whole-register-early or
+	// whole-register-late Rd write would corrupt lane 1's rs read.
+	EeRecTestHarness h;
+	h.SetMmiPair(reg::a0, 3, 7);       // rs lane values 3 / 7
+	h.SetMmiPair(reg::a1, 5, 11);      // rt lane values 5 / 11
+	h.SetHiPair(0, 0);
+	h.SetLoPair(0, 0);
+	h.LoadProgram({
+		ee::PMADDW(reg::a0, reg::a0, reg::a1),
+		ee::PMFHI(reg::v1),
+		ee::PMFLO(reg::a2),
+	});
+	h.Run();
+	// lane 0: temp = 15 → LO.SD[0] = 15, q = 0 → a0.UD[0] = 15
+	// lane 1: temp = 7*11 = 77 → LO.SD[1] = 77, q = 0 → a0.UD[1] = 77
+	h.ExpectGpr128(reg::a2, 15, 77);
+	h.ExpectGpr128(reg::v1, 0, 0);
+	h.ExpectGpr128(reg::a0, 15, 77);
+}
