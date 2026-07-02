@@ -3050,6 +3050,17 @@ std::unique_ptr<GSDownloadTexture> GSDeviceVK::CreateDownloadTexture(u32 width, 
 	return GSDownloadTextureVK::Create(width, height, format);
 }
 
+void GSDeviceVK::HintReadbackSource(GSTexture* tex)
+{
+	// MRU ring of 2 (see the member comment): per-frame readback patterns re-read the
+	// same one or two targets, and the next draw into one of them predicts a readback.
+	if (m_recent_readback_sources[0] == tex || m_recent_readback_sources[1] == tex)
+		return;
+
+	m_recent_readback_sources[1] = m_recent_readback_sources[0];
+	m_recent_readback_sources[0] = tex;
+}
+
 void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY)
 {
 	// Empty rect, abort copy.
@@ -6305,9 +6316,26 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	// every submit, so this adds ~(RPs-per-frame / threshold) extra submits.
 	constexpr u32 kick_threshold = 8;
 	constexpr u32 readback_window = 128; // ~a few frames' worth of render passes
-	if (m_render_passes_since_submit >= kick_threshold &&
+	// A draw into a recent readback source is (almost certainly) producing the data for
+	// the next readback, which follows immediately — kick regardless of the threshold so
+	// the backlog drains during this pass's recording and the readback waits only on the
+	// pass itself plus the copy (see m_recent_readback_sources).
+	const bool produces_readback_data =
+		config.rt && (config.rt == m_recent_readback_sources[0] || config.rt == m_recent_readback_sources[1]);
+	if ((m_render_passes_since_submit >= kick_threshold ||
+			(produces_readback_data && m_render_passes_since_submit > 0)) &&
 		m_render_passes_since_readback <= readback_window && !InRenderPass())
-		ExecuteCommandBuffer(WaitType::None);
+	{
+		// The kick must never block: submitting cycles to the next command buffer, and
+		// ActivateCommandBuffer fence-waits if that buffer's previous submission is still
+		// executing — a hidden GPU-sync worse than the backlog the kick drains. Only kick
+		// when the next buffer is verifiably complete; otherwise keep recording and retry
+		// at the next draw (the counter keeps the gate open).
+		ScanForCommandBufferCompletion();
+		const u32 next_buffer = (m_current_frame + 1) % NUM_COMMAND_BUFFERS;
+		if (m_frame_resources[next_buffer].fence_counter <= m_completed_fence_counter)
+			ExecuteCommandBuffer(WaitType::None);
+	}
 
 	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
 	GSTextureVK* draw_rt = config.ps.HasColorROV() ? nullptr : static_cast<GSTextureVK*>(config.rt);
