@@ -13,7 +13,11 @@
 
 #include "harness/JitTestHarness.h"
 
+#include "IopHw.h" // psxHu32(HW_ICFG) — PS1-mode cycle-ratio tests
+
 #include <gtest/gtest.h>
+
+#include <vector>
 
 using namespace recompiler_tests;
 using namespace mips;
@@ -210,4 +214,76 @@ TEST(IopMultiBlock, JalrThenReturn)
 	}, /*append_jr_ra_term=*/false);
 	h.Run();
 	EXPECT_EQ(h.GetGprInterp(reg::v0), 325u);
+}
+
+// ===========================================================================
+// PS1-mode (HW_ICFG bit 3) IOP->EE cycle-ratio conversion (AX-09).
+//
+// iPsxAddEECycles must switch from the flat x8 PS2 ratio to the exact
+// 1280/147 gcd-ratio with a carried remainder when PS1 backwards-compat
+// mode is active — matching x86 iR3000A.cpp and the interpreter's
+// iopBranchTest. The harness diff deliberately ignores the cycle
+// bookkeeping fields, so the assertion reads the JIT snapshot directly:
+// iopCycleEECarry is written ONLY by the ratio path, and for a fresh small
+// block carry = blockcycles*1280 mod 147, which is nonzero for any block
+// under 147 cycles. The stale-parking-block caveat doesn't matter: the
+// carry left by the LAST fresh (PS1-compiled) block survives even if the
+// parking loop was compiled earlier in PS2 mode.
+// ===========================================================================
+
+namespace {
+// RAII: set/restore HW_ICFG (the compile-time gate; Run() recompiles the
+// program block every time, so flipping it between runs is honored).
+struct ScopedPs1Mode
+{
+	u32 prev;
+	explicit ScopedPs1Mode(bool on) : prev(psxHu32(HW_ICFG))
+	{
+		if (on)
+			psxHu32(HW_ICFG) = prev | (1u << 3);
+		else
+			psxHu32(HW_ICFG) = prev & ~(1u << 3);
+	}
+	~ScopedPs1Mode() { psxHu32(HW_ICFG) = prev; }
+};
+} // namespace
+
+TEST(IopPs1CycleRatio, Ps1ModeUsesRatioWithCarry)
+{
+	ScopedPs1Mode ps1(true);
+
+	JitTestHarness h;
+	psxRegs.iopCycleEECarry = 0;
+	// ~33 IOP cycles: the block's EE-cycle quotient (33*1280/147 ~= 287)
+	// exceeds the harness budget (200), so execution exits right after THIS
+	// block — the parking wait-loop never runs and can't churn the carry.
+	std::vector<u32> prog(30, NOP);
+	prog.push_back(ADDIU(reg::v0, reg::zero, 5));
+	h.LoadProgramAt(kProgramPc, prog.data(), prog.size(), /*append_jr_ra_term=*/true);
+	h.Run();
+	EXPECT_EQ(h.GetGprJit(reg::v0), 5u);
+	// carry = blockcycles * 1280 mod 147, and gcd(1280 mod 147, 147) = 1, so
+	// the remainder is nonzero for ANY block shorter than 147 cycles.
+	EXPECT_NE(h.JitSnapshot().regs.iopCycleEECarry, 0u)
+		<< "PS1 mode must route through the 1280/147 ratio path, which "
+		   "leaves a nonzero division remainder in iopCycleEECarry";
+	// And the ratio path must agree with the interpreter's identical math
+	// (same single block, same cycle count on both engines).
+	EXPECT_EQ(h.JitSnapshot().regs.iopCycleEECarry,
+		h.InterpSnapshot().regs.iopCycleEECarry);
+}
+
+TEST(IopPs1CycleRatio, Ps2ModeNeverTouchesCarry)
+{
+	ScopedPs1Mode ps1(false);
+
+	JitTestHarness h;
+	psxRegs.iopCycleEECarry = 0;
+	std::vector<u32> prog(30, NOP);
+	prog.push_back(ADDIU(reg::v0, reg::zero, 5));
+	h.LoadProgramAt(kProgramPc, prog.data(), prog.size(), /*append_jr_ra_term=*/true);
+	h.Run();
+	EXPECT_EQ(h.GetGprJit(reg::v0), 5u);
+	EXPECT_EQ(h.JitSnapshot().regs.iopCycleEECarry, 0u)
+		<< "the flat x8 PS2 path must not write iopCycleEECarry";
 }

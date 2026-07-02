@@ -647,27 +647,57 @@ static __fi u32 psxScaleBlockCycles()
 	return s_psxBlockCycles;
 }
 
+// Contract: leaves the new iopCycleEE value in RWSCRATCH (callers test it
+// against 0 for the timeslice exit) and must not clobber x2 (the caller's
+// freshly-stored psxRegs.cycle, still live for the event check).
 static void iPsxAddEECycles(u32 blockCycles)
 {
-	// Subtract cycles * 8 from iopCycleEE
-	armAsm->Ldr(RWSCRATCH, armPsxRegMem(&psxRegs.iopCycleEE));
-
-	if (blockCycles != 0xFFFFFFFF)
+	if (!(psxHu32(HW_ICFG) & (1 << 3))) [[likely]]
 	{
-		if (blockCycles * 8 < 4096)
-			armAsm->Sub(RWSCRATCH, RWSCRATCH, blockCycles * 8);
+		// PS2 mode: flat 1:8 IOP:EE ratio. Subtract cycles * 8 from iopCycleEE.
+		armAsm->Ldr(RWSCRATCH, armPsxRegMem(&psxRegs.iopCycleEE));
+
+		if (blockCycles != 0xFFFFFFFF)
+		{
+			if (blockCycles * 8 < 4096)
+				armAsm->Sub(RWSCRATCH, RWSCRATCH, blockCycles * 8);
+			else
+			{
+				armAsm->Mov(a64::w1, blockCycles * 8);
+				armAsm->Sub(RWSCRATCH, RWSCRATCH, a64::w1);
+			}
+		}
 		else
 		{
-			armAsm->Mov(a64::w1, blockCycles * 8);
-			armAsm->Sub(RWSCRATCH, RWSCRATCH, a64::w1);
+			// blockCycles in w0 (from wait loop optimization)
+			armAsm->Sub(RWSCRATCH, RWSCRATCH, a64::w0);
 		}
-	}
-	else
-	{
-		// blockCycles in w0 (from wait loop optimization)
-		armAsm->Sub(RWSCRATCH, RWSCRATCH, a64::w0);
+
+		armAsm->Str(RWSCRATCH, armPsxRegMem(&psxRegs.iopCycleEE));
+		return;
 	}
 
+	// PS1 backwards-compat mode (HW_ICFG bit 3, set by the SBUS handshake on
+	// PS1-disc boot): exact-ratio conversion with a carried remainder, matching
+	// x86 iR3000A.cpp iPsxAddEECycles and the interpreter's iopBranchTest.
+	// Compile-time check is safe: entering PS1 mode goes through psxReset,
+	// which flushes the IOP rec. (AX-09)
+	// F = gcd(PS2CLK, PSXCLK) = 230400
+	const u32 cnum = 1280;  // PS2CLK / F
+	const u32 cdenom = 147; // PSXCLK / F
+
+	if (blockCycles != 0xFFFFFFFF)
+		armAsm->Mov(a64::w0, blockCycles * cnum);
+	// else: w0 holds the runtime cycle count from the wait-loop path. x86
+	// does NOT scale that path by cnum — quirk kept for bit-parity.
+	armAsm->Ldr(RWSCRATCH, armPsxRegMem(&psxRegs.iopCycleEECarry));
+	armAsm->Add(a64::w0, a64::w0, RWSCRATCH);
+	armAsm->Mov(a64::w1, cdenom);
+	armAsm->Udiv(a64::w3, a64::w0, a64::w1);            // w3 = (in+carry) / cdenom
+	armAsm->Msub(a64::w1, a64::w3, a64::w1, a64::w0);   // w1 = remainder
+	armAsm->Str(a64::w1, armPsxRegMem(&psxRegs.iopCycleEECarry));
+	armAsm->Ldr(RWSCRATCH, armPsxRegMem(&psxRegs.iopCycleEE));
+	armAsm->Sub(RWSCRATCH, RWSCRATCH, a64::w3);
 	armAsm->Str(RWSCRATCH, armPsxRegMem(&psxRegs.iopCycleEE));
 }
 
