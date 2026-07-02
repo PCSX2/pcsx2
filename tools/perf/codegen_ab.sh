@@ -116,11 +116,16 @@ run_binary() {
         >/dev/null 2> "$stat" || true
     # perf stat writes counts to stderr. Anchor on the EVENT token ($2), so the
     # "insn per cycle" comment on the instructions line can't be misread as cycles.
+    # On multi-PMU boxes (Apple M2: apple_avalanche_pmu/instructions/u +
+    # apple_blizzard_pmu/instructions/u) the generic event expands to one line per
+    # PMU; take the FIRST numeric match — perf lists the P-core PMU first, and the
+    # pinned emulator threads make the E-core count sub-1% noise. On sd865 the
+    # event is a bare "instructions"/"cycles" token, matched the same way.
     local parsed ins cyc
     parsed="$(awk '
       { v=$1; gsub(/,/,"",v) }
-      $2 ~ /^instructions/ && v ~ /^[0-9]+$/ { ins=v }
-      $2 ~ /^cycles/        && v ~ /^[0-9]+$/ { cyc=v }
+      $2 ~ /(^|\/)instructions([:\/]|$)/ && v ~ /^[0-9]+$/ && ins=="" { ins=v }
+      $2 ~ /(^|\/)cycles([:\/]|$)/        && v ~ /^[0-9]+$/ && cyc=="" { cyc=v }
       END { printf "%s %s", (ins==""?0:ins), (cyc==""?0:cyc) }
     ' "$stat")"
     ins="${parsed% *}"; cyc="${parsed#* }"
