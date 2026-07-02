@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1000</width>
-    <height>750</height>
+    <width>1322</width>
+    <height>974</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,8 +23,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1000</width>
-     <height>21</height>
+     <width>1322</width>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -58,6 +58,9 @@
     </property>
     <addaction name="actionOnTop"/>
     <addaction name="separator"/>
+    <addaction name="actionNavigateBack"/>
+    <addaction name="actionNavigateForward"/>
+    <addaction name="separator"/>
     <addaction name="actionIncreaseFontSize"/>
     <addaction name="actionDecreaseFontSize"/>
     <addaction name="actionResetFontSize"/>
@@ -82,12 +85,25 @@
    <addaction name="menuWindows"/>
    <addaction name="menuLayouts"/>
   </widget>
+  <widget class="QToolBar" name="toolBarNavigation">
+   <property name="windowTitle">
+    <string>Navigation</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionNavigateBack"/>
+   <addaction name="actionNavigateForward"/>
+  </widget>
   <widget class="QToolBar" name="toolBarDebug">
    <property name="windowTitle">
     <string>Debug</string>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonTextBesideIcon</enum>
+    <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -105,7 +121,7 @@
     <string>File</string>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonTextBesideIcon</enum>
+    <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -122,7 +138,7 @@
     <string>System</string>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonTextBesideIcon</enum>
+    <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -138,7 +154,7 @@
     <string>View</string>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonTextBesideIcon</enum>
+    <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -237,7 +253,7 @@
     <string>Shut Down</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionReset">
@@ -248,7 +264,7 @@
     <string>Reset</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionClose">
@@ -259,7 +275,7 @@
     <string>Close</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionIncreaseFontSize">
@@ -270,7 +286,7 @@
     <string>Increase Font Size</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionDecreaseFontSize">
@@ -284,7 +300,7 @@
     <string>Ctrl+-</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionResetFontSize">
@@ -295,7 +311,7 @@
     <string>Reset Font Size</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionSettings">
@@ -306,7 +322,7 @@
     <string>Settings</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionGameSettings">
@@ -317,7 +333,7 @@
     <string>Game Settings</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionToolsDummy">
@@ -328,6 +344,37 @@
   <action name="actionWindowsDummy">
    <property name="text">
     <string/>
+   </property>
+  </action>
+  <action name="actionNavigateBack">
+   <property name="icon">
+    <iconset theme="arrow-left-line"/>
+   </property>
+   <property name="text">
+    <string>Navigate Back</string>
+   </property>
+   <property name="toolTip">
+    <string>Navigate Back</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Left</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionNavigateForward">
+   <property name="icon">
+    <iconset theme="arrow-right-line"/>
+   </property>
+   <property name="text">
+    <string>Navigate Forward</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Right</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
  </widget>

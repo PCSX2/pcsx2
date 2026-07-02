@@ -6,6 +6,7 @@
 #include "ui_MemoryView.h"
 
 #include "Debugger/DebuggerView.h"
+#include "Debugger/NavigationHistoryStack.h"
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
@@ -93,7 +94,9 @@ public:
 	u32 selectedAddress = 0;
 	s32 selectedIndex = 0;
 
-	void UpdateStartAddress(u32 start);
+	NavigationHistoryStack<u32> navigation_history;
+
+	void UpdateStartAddress(u32 start, NavigationHistoryOperation history_operation);
 	void UpdateSelectedAddress(u32 selected, bool page = false);
 	void DrawTable(QPainter& painter, const QPalette& palette, s32 height, DebugInterface& cpu);
 	void SelectAt(QPoint pos);
@@ -135,6 +138,12 @@ public:
 
 	void toJson(JsonValueWrapper& json) override;
 	bool fromJson(const JsonValueWrapper& json) override;
+
+	bool supportsNavigation() override;
+	bool canNavigateBack() override;
+	bool canNavigateForward() override;
+	void navigateBack() override;
+	void navigateForward() override;
 
 protected:
 	void paintEvent(QPaintEvent* event) override;

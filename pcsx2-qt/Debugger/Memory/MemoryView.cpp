@@ -19,9 +19,11 @@ using namespace QtUtils;
 /*
 	MemoryViewTable
 */
-void MemoryViewTable::UpdateStartAddress(u32 start)
+void MemoryViewTable::UpdateStartAddress(u32 start, NavigationHistoryOperation history_operation)
 {
 	startAddress = start & ~0xF;
+	navigation_history.push(startAddress, history_operation);
+	parent->update();
 }
 
 void MemoryViewTable::UpdateSelectedAddress(u32 selected, bool page)
@@ -41,6 +43,13 @@ void MemoryViewTable::UpdateSelectedAddress(u32 selected, bool page)
 		else
 			startAddress += 0x10;
 	}
+	else
+	{
+		return;
+	}
+
+	navigation_history.pushWithDelay(startAddress);
+	parent->update();
 }
 
 void MemoryViewTable::DrawTable(QPainter& painter, const QPalette& palette, s32 height, DebugInterface& cpu)
@@ -684,7 +693,7 @@ MemoryView::MemoryView(const DebuggerViewParameters& parameters)
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(this, &MemoryView::customContextMenuRequested, this, &MemoryView::openContextMenu);
 
-	m_table.UpdateStartAddress(0x100000);
+	m_table.UpdateStartAddress(0x100000, NavigationHistoryOperation::INSTANT_PUSH);
 
 	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
 		update();
@@ -723,7 +732,10 @@ bool MemoryView::fromJson(const JsonValueWrapper& json)
 
 	auto start_address = json.value().FindMember("startAddress");
 	if (start_address != json.value().MemberEnd() && start_address->value.IsUint())
-		m_table.UpdateStartAddress(start_address->value.GetUint());
+	{
+		m_table.navigation_history.clear();
+		m_table.UpdateStartAddress(start_address->value.GetUint(), NavigationHistoryOperation::INSTANT_PUSH);
+	}
 
 	auto view_type = json.value().FindMember("viewType");
 	if (view_type != json.value().MemberEnd() && view_type->value.IsInt())
@@ -745,6 +757,40 @@ bool MemoryView::fromJson(const JsonValueWrapper& json)
 
 	return true;
 }
+
+bool MemoryView::supportsNavigation()
+{
+	return true;
+}
+
+bool MemoryView::canNavigateBack()
+{
+	return m_table.navigation_history.canGoBack();
+}
+
+bool MemoryView::canNavigateForward()
+{
+	return m_table.navigation_history.canGoForward();
+}
+
+void MemoryView::navigateBack()
+{
+	std::optional<u32> address = m_table.navigation_history.back();
+	if (!address.has_value())
+		return;
+
+	m_table.UpdateStartAddress(*address, NavigationHistoryOperation::NO_PUSH);
+}
+
+void MemoryView::navigateForward()
+{
+	std::optional<u32> address = m_table.navigation_history.forward();
+	if (!address.has_value())
+		return;
+
+	m_table.UpdateStartAddress(*address, NavigationHistoryOperation::NO_PUSH);
+}
+
 
 void MemoryView::paintEvent(QPaintEvent* event)
 {
@@ -928,17 +974,20 @@ void MemoryView::wheelEvent(QWheelEvent* event)
 {
 	if (event->angleDelta().y() < 0)
 	{
-		m_table.UpdateStartAddress(m_table.startAddress + 0x10);
+		m_table.UpdateStartAddress(m_table.startAddress + 0x10, NavigationHistoryOperation::DELAYED_PUSH);
 	}
 	else if (event->angleDelta().y() > 0)
 	{
-		m_table.UpdateStartAddress(m_table.startAddress - 0x10);
+		m_table.UpdateStartAddress(m_table.startAddress - 0x10, NavigationHistoryOperation::DELAYED_PUSH);
 	}
-	update();
 }
 
 void MemoryView::keyPressEvent(QKeyEvent* event)
 {
+	// Alt is used for the global navigation shortcuts.
+	if (event->modifiers() & Qt::AltModifier)
+		return;
+
 	if (!m_table.KeyPress(event->key(), event->text().size() ? event->text()[0] : '\0', cpu()))
 	{
 		switch (event->key())
@@ -960,9 +1009,8 @@ void MemoryView::keyPressEvent(QKeyEvent* event)
 
 void MemoryView::gotoAddress(u32 address)
 {
-	m_table.UpdateStartAddress(address & ~0xF);
+	m_table.UpdateStartAddress(address & ~0xF, NavigationHistoryOperation::INSTANT_PUSH);
 	m_table.selectedAddress = address;
-	update();
 	setFocus();
 }
 

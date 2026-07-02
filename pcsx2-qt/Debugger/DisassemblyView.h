@@ -5,7 +5,8 @@
 
 #include "ui_DisassemblyView.h"
 
-#include "DebuggerView.h"
+#include "Debugger/DebuggerView.h"
+#include "Debugger/NavigationHistoryStack.h"
 
 #include "pcsx2/DebugTools/DisassemblyManager.h"
 
@@ -25,6 +26,12 @@ public:
 
 	// Required for the breakpoint list (ugh wtf)
 	QString GetLineDisasm(u32 address);
+
+	bool supportsNavigation() override;
+	bool canNavigateBack() override;
+	bool canNavigateForward() override;
+	void navigateBack() override;
+	void navigateForward() override;
 
 protected:
 	void paintEvent(QPaintEvent* event) override;
@@ -68,7 +75,7 @@ public slots:
 private:
 	Ui::DisassemblyView m_ui;
 
-	u32 m_visibleStart = 0x100000; // The address of the first instruction shown.
+	u32 m_visibleStart = STARTING_ADDRESS; // The address of the first instruction shown.
 	u32 m_visibleRows;
 	u32 m_selectedAddressStart = 0;
 	u32 m_selectedAddressEnd = 0;
@@ -80,6 +87,8 @@ private:
 	bool m_showInstructionBytes = true;
 	bool m_goToProgramCounterOnPause = true;
 	DisassemblyManager m_disassemblyManager;
+
+	NavigationHistoryStack<u32> m_navigation_history{STARTING_ADDRESS};
 
 	QString GetDisassemblyTitleLine();
 	QColor GetDisassemblyTitleLineColor();
@@ -96,4 +105,6 @@ private:
 	void setInstructions(u32 start, u32 end, u32 value);
 	bool AddressCanRestore(u32 start, u32 end);
 	bool FunctionCanRestore(u32 address);
+
+	static constexpr u32 STARTING_ADDRESS = 0x100000;
 };
