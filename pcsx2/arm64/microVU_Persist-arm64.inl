@@ -300,8 +300,12 @@ namespace mVUPersist
 
 		bool InSlab(const void* addr) const
 		{
+			// Slab extends to the PHYSICAL rec-region end, mVUcacheSafeZone
+			// past the x86end reset threshold — compile sessions may
+			// legitimately overshoot x86end into the safe zone, and chunks
+			// recorded there still reference intra-slab targets.
 			const u8* a = static_cast<const u8*>(addr);
-			return a >= mvu->cache && a < mvu->prog.x86end;
+			return a >= mvu->cache && a < mvu->prog.x86end + (mVUcacheSafeZone * _1mb);
 		}
 
 		bool InChunk(const void* addr) const
@@ -896,8 +900,13 @@ namespace mVUPersist
 		}
 
 		// Capacity: refuse rather than trip the mid-hydration cache-full reset.
-		const size_t cache_free = static_cast<size_t>(mVU.prog.x86end - mVU.prog.x86ptr);
-		if (total_code + (mVUcacheSafeZone * _1mb) > cache_free)
+		// Signed math: x86ptr may legitimately sit PAST x86end when an earlier
+		// session in this execution overshot into the safe zone — an unsigned
+		// subtraction would wrap huge and let the hydration through instead of
+		// refusing it.
+		const ptrdiff_t cache_free = mVU.prog.x86end - mVU.prog.x86ptr;
+		if (cache_free < 0 ||
+			total_code + (mVUcacheSafeZone * _1mb) > static_cast<size_t>(cache_free))
 		{
 			s_stats[vu].hydrationRejects++;
 			return nullptr;

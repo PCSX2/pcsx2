@@ -412,8 +412,13 @@ _vifT __fi nVifBlock* dVifCompile(nVifBlock& block, bool isFill)
 		dVifReset(idx);
 	}
 
-	// Compile the block now
-	armSetAsmPtr(v.recWritePtr, v.recEndPtr - v.recWritePtr, nullptr);
+	// Compile the block now. Capacity includes the 256 KB slack past
+	// recEndPtr (dVifReset carved it out of the physical region size): the
+	// bounds check above only guarantees the routine STARTS below recEndPtr;
+	// the slack exists so it can finish past it. Binding capacity at
+	// recEndPtr would make vixl abort on an unmanaged-buffer Grow instead —
+	// same bug as the mVU cache (SM8650 OutRun 2006, 2026-07-02).
+	armSetAsmPtr(v.recWritePtr, v.recEndPtr - v.recWritePtr + _256kb, nullptr);
 
 	block.startPtr = (uptr)armStartBlock();
 	block.length = dVifComputeLength(block.cl, block.wl, block.num, isFill);

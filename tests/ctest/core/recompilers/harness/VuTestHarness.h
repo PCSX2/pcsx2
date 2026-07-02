@@ -70,7 +70,10 @@ public:
 	// offsets `pc, pc+8, ...` starting at `kProgramPc = 0`. The final
 	// user-supplied pair must have the E-bit set; a follow-up NOP pair
 	// is appended automatically as the architectural E-bit delay slot.
+	// The vector overload exists for programs built at runtime (e.g. the
+	// cache-exhaustion test's generated chains).
 	void LoadProgram(std::initializer_list<vu::VuOp> pairs);
+	void LoadProgram(std::vector<vu::VuOp> pairs);
 
 	// ---- Execute ----
 	// Runs the program through the interpreter and through the JIT,

@@ -943,8 +943,18 @@ void mVUreset(microVU& mVU, bool resetReserve)
 		VU0.VI[REG_VPU_STAT].UL &= ~0x100;
 	}
 
-	// Set up the code cache for vixl emission
-	const size_t cacheCapacity = static_cast<size_t>(mVU.prog.x86end - mVU.cache);
+	// Set up the code cache for vixl emission. Capacity deliberately runs
+	// mVUcacheSafeZone past prog.x86end, i.e. to the PHYSICAL end of the rec
+	// region: x86end is only the mVUcleanUp reset threshold, and the safe
+	// zone beyond it exists so an in-flight compile session can overshoot
+	// the threshold and still emit — the bounds check runs at dispatcher
+	// exit, after the session (matching x86, where the raw emitter does
+	// exactly this). Binding capacity at x86end instead makes vixl abort
+	// (CodeBuffer::Grow on an unmanaged buffer) the moment the cache fills,
+	// turning every cache exhaustion into a SIGABRT with the reset path
+	// unreachable (SM8650 OutRun 2006 core dumps, 2026-07-02).
+	const size_t cacheCapacity =
+		static_cast<size_t>(mVU.prog.x86end - mVU.cache) + (mVUcacheSafeZone * _1mb);
 	armSetAsmPtr(mVU.cache, cacheCapacity, nullptr);
 
 	mVUdispatcherAB(mVU);
@@ -971,10 +981,15 @@ void mVUreset(microVU& mVU, bool resetReserve)
 
 	// Build the persistent MacroAssembler over the post-dispatcher region
 	// of the code cache. From here on, mVUopenCodeCache binds armAsm to
-	// this MA instead of allocating a fresh one per dispatch.
+	// this MA instead of allocating a fresh one per dispatch. Capacity runs
+	// to the physical rec-region end, mVUcacheSafeZone past the x86end reset
+	// threshold, for the same reason as cacheCapacity above — a session that
+	// overshoots x86end must complete so mVUcleanUp can reset afterward.
+	// mVUopenCodeCache's armAsmCapacity mirrors this value.
 	{
 		namespace a64 = vixl::aarch64;
-		const size_t blockCacheCapacity = static_cast<size_t>(mVU.prog.x86end - mVU.prog.x86start);
+		const size_t blockCacheCapacity =
+			static_cast<size_t>(mVU.prog.x86end - mVU.prog.x86start) + (mVUcacheSafeZone * _1mb);
 		mVU.jitAsm = std::make_unique<a64::MacroAssembler>(
 			static_cast<vixl::byte*>(mVU.prog.x86start), blockCacheCapacity);
 		mVU.jitAsm->GetScratchVRegisterList()->Remove(31);
@@ -1441,7 +1456,13 @@ _mVUt void* mVUexecute(u32 startPC, u32 cycles)
 	{
 		DevCon.Error("microVU%d: mVUexecute got NULL block! startPC=0x%04x", vuIndex, startPC);
 	}
-	else if ((u8*)result < mVU.prog.x86start || (u8*)result >= mVU.prog.x86end)
+	// Upper bound is the PHYSICAL end of the rec region (x86end + safe
+	// zone), not the x86end reset threshold: a compile session is allowed
+	// to overshoot x86end into the safe zone, and blocks landing there must
+	// still execute this once — mVUcleanUp resets the cache at this
+	// execution's dispatcher exit.
+	else if ((u8*)result < mVU.prog.x86start ||
+			 (u8*)result >= mVU.prog.x86end + (mVUcacheSafeZone * _1mb))
 	{
 		DevCon.Error("microVU%d: Block pointer %p OUTSIDE code cache [%p-%p]! startPC=0x%04x",
 			vuIndex, result, mVU.prog.x86start, mVU.prog.x86end, startPC);
@@ -1530,6 +1551,31 @@ namespace vu_capture_internal
 		const microVU& mVU = (vu_index == 0) ? microVU0 : microVU1;
 		*out_start = mVU.prog.x86start;
 		*out_end = mVU.prog.x86ptr;
+	}
+}
+
+// Geometry hooks for the cache-exhaustion regression test
+// (mvu_cache_exhaustion_tests.cpp). Same cross-TU pattern as
+// vu_capture_internal above.
+namespace mvu_test_hooks
+{
+	// Shrinks prog.x86end — mVUcleanUp's reset threshold — to sit
+	// `bytes_after_start` past prog.x86start, so a test can exhaust the code
+	// cache with dozens of programs instead of 64 MB worth. The patched value
+	// survives mVUreset (only mVUinit derives x86end from SysMemory). Callers
+	// must reset the VU block cache after BOTH hooks so the vixl buffer
+	// capacity derived from x86end is rebound.
+	void ShrinkCacheForTest(int vu_index, size_t bytes_after_start)
+	{
+		microVU& mVU = vu_index ? microVU1 : microVU0;
+		mVU.prog.x86end = mVU.prog.x86start + bytes_after_start;
+	}
+
+	// Restores the production geometry (mirrors mVUinit).
+	void RestoreCacheGeometry(int vu_index)
+	{
+		microVU& mVU = vu_index ? microVU1 : microVU0;
+		mVU.prog.x86end = (vu_index ? SysMemory::GetVU1RecEnd() : SysMemory::GetVU0RecEnd()) - (mVUcacheSafeZone * _1mb);
 	}
 }
 #endif

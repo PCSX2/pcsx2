@@ -82,6 +82,7 @@ add_pcsx2_test(recompiler_tests
 	vu_capture_format_tests.cpp
 	vu_replay_tests.cpp
 	mvu_observed_entries_tests.cpp
+	mvu_cache_exhaustion_tests.cpp
 	mvu_abi_digest_tests.cpp
 	mvu_persist_roundtrip_tests.cpp
 	mvu_progcache_disk_tests.cpp

@@ -400,7 +400,10 @@ static void mVUopenCodeCache(microVU& mVU)
 	// dispatcher's Br x0 in the literal pool / alignment nops below the
 	// real block.
 	armAsmPtr = mVU.prog.x86start;
-	armAsmCapacity = static_cast<size_t>(mVU.prog.x86end - mVU.prog.x86start);
+	// Mirrors the persistent MA's construction in mVUreset: capacity runs to
+	// the physical rec-region end (mVUcacheSafeZone past the x86end reset
+	// threshold) so overshooting sessions can finish emitting.
+	armAsmCapacity = static_cast<size_t>(mVU.prog.x86end - mVU.prog.x86start) + (mVUcacheSafeZone * _1mb);
 	armConstantPool = nullptr;
 	armAsm = mVU.jitAsm.get();
 

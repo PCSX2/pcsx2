@@ -351,11 +351,20 @@ struct microProgManager
 	u32                curFrame;
 	u8*                x86ptr;   // Code cache write cursor (name kept for compat)
 	u8*                x86start; // Start of rec-cache
-	u8*                x86end;   // Limit of rec-cache
+	u8*                x86end;   // Reset threshold — mVUcacheSafeZone MB below the physical rec-region end
 	microRegInfo       lpState;
 };
 
-static const uint mVUcacheSafeZone = 3; // Safe-Zone (megabytes)
+// Safe-Zone (megabytes): the gap between prog.x86end (mVUcleanUp's
+// "Program cache limit reached" reset threshold) and the physical end of
+// the rec region. Emission is only bounds-checked at dispatcher exit, so
+// the zone must absorb the worst-case burst between two checks — the
+// initial compile session plus every mid-execution JR/JALR mVUcompileJIT
+// session. x86 reserves 3 MB for its raw emitter; arm64 emission is fatter
+// (fixed-width instructions, literal pools, veneers), so reserve more.
+// Unlike x86, the vixl buffer physically ends at the region end, giving a
+// hard backstop if a pathological burst exceeds even this.
+static const uint mVUcacheSafeZone = 8;
 
 //------------------------------------------------------------------
 // Profiler (shared, platform-independent)
@@ -419,7 +428,7 @@ struct microVU
 	microProfiler                  profiler;
 	std::unique_ptr<microRegAlloc> regAlloc;
 	// Persistent vixl MacroAssembler for the per-VU code cache. Constructed
-	// once per mVUreset over [prog.x86ptr, prog.x86end); cursor advances
+	// once per mVUreset over [prog.x86start, physical rec end); cursor advances
 	// across all subsequent block compiles. Avoids per-dispatch MacroAssembler
 	// construction/teardown, which is measurable on in-order cores.
 	std::unique_ptr<vixl::aarch64::MacroAssembler> jitAsm;

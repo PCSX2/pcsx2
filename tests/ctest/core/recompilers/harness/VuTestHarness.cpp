@@ -169,7 +169,12 @@ void VuTestHarness::MergeTrackedWindow(u32 addr, size_t bytes)
 
 void VuTestHarness::LoadProgram(std::initializer_list<vu::VuOp> pairs)
 {
-	program_pairs_.assign(pairs.begin(), pairs.end());
+	LoadProgram(std::vector<vu::VuOp>(pairs.begin(), pairs.end()));
+}
+
+void VuTestHarness::LoadProgram(std::vector<vu::VuOp> pairs)
+{
+	program_pairs_ = std::move(pairs);
 	ASSERT_FALSE(program_pairs_.empty())
 		<< "VuTestHarness::LoadProgram requires at least one instruction pair";
 	ASSERT_TRUE((program_pairs_.back().upper & vu::bits::E) != 0)
