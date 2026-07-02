@@ -23,12 +23,18 @@
 #include <cstdlib>
 #include <cstring>
 #include <condition_variable>
+#include <filesystem>
 #include <fstream>
 #include <mutex>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <utility>
 #include <vector>
+
+#ifdef __linux__
+#include <unistd.h>
+#endif
 
 #ifdef _WIN32
 #include "common/RedtapeWindows.h"
@@ -2920,6 +2926,42 @@ static int RunLiveRun()
 		GSgetStats(gs_stats);
 		Console.WriteLn(fmt::format("@GSSTAT@ per-frame: {}", gs_stats.view()));
 	}
+
+#ifdef __linux__
+	// Per-thread CPU seconds (utime+stime) while the VM threads are still alive.
+	// Wallclock A/B on the SD865 is too noisy for sub-ms/frame codegen deltas; the
+	// per-thread number isolates e.g. GS-thread cost from GPU/sync/scheduler jitter.
+	// comm can contain spaces ("CPU Thread") — parse /proc stat around the ')'.
+	{
+		const long tck = sysconf(_SC_CLK_TCK);
+		for (const auto& entry : std::filesystem::directory_iterator("/proc/self/task"))
+		{
+			std::ifstream stat_file(entry.path() / "stat");
+			std::string line;
+			if (!std::getline(stat_file, line))
+				continue;
+			const size_t rp = line.rfind(')');
+			if (rp == std::string::npos)
+				continue;
+			const std::string comm = line.substr(line.find('(') + 1, rp - line.find('(') - 1);
+			std::istringstream rest(line.substr(rp + 2));
+			std::string field;
+			u64 utime = 0, stime = 0;
+			for (int i = 1; rest >> field; i++) // field 1 here = stat field 3 (state)
+			{
+				if (i == 12)
+					utime = std::strtoull(field.c_str(), nullptr, 10);
+				else if (i == 13)
+				{
+					stime = std::strtoull(field.c_str(), nullptr, 10);
+					break;
+				}
+			}
+			Console.WriteLn(fmt::format("@THREADCPU@ {}: {:.2f} s", comm,
+				static_cast<double>(utime + stime) / static_cast<double>(tck)));
+		}
+	}
+#endif
 
 	Console.WriteLn(fmt::format(
 		"LIVERUN: completed {} frames with NO wedge — this config did not reproduce the hang.",
