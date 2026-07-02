@@ -63,6 +63,7 @@ struct InputBinding
 	u8 num_keys = 0;
 	u8 full_mask = 0;
 	u8 current_mask = 0;
+	bool cancelled = false;
 };
 
 struct PadVibrationBinding
@@ -1167,56 +1168,60 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 				const bool new_full_state = (new_mask == binding->full_mask);
 				binding->current_mask = new_mask;
 
-				// Workaround for multi-key bindings that share the same keys.
-				if (binding->num_keys > 1 && new_full_state && prev_full_state != new_full_state && range.first != range.second)
+				if (binding->cancelled && new_mask == 0)
+					binding->cancelled = false;
+
+				if (!binding->cancelled)
 				{
-					// Because the binding map isn't ordered, we could iterate in the order of Shift+F1 and then
-					// F1, which would mean that F1 wouldn't get cancelled and still activate. So, to handle this
-					// case, we skip activating any future bindings with a fewer number of keys.
-					min_num_keys = std::max<u32>(min_num_keys, binding->num_keys);
-
-					// Basically, if we bind say, F1 and Shift+F1, and press shift and then F1, we'll fire bindings
-					// for both F1 and Shift+F1, when we really only want to fire the binding for Shift+F1. So,
-					// when we activate a multi-key chord (key press), we go through the binding map for all the
-					// other keys in the chord, and cancel them if they have a shorter chord. If they're longer,
-					// they could still activate and take precedence over us, so we leave them alone.
-					for (u32 i = 0; i < binding->num_keys; i++)
+					// Workaround for multi-key bindings that share the same keys.
+					if (binding->num_keys > 1 && new_full_state && prev_full_state != new_full_state && range.first != range.second)
 					{
-						const auto range = s_binding_map.equal_range(binding->keys[i].MaskDirection());
-						for (auto it = range.first; it != range.second; ++it)
-						{
-							InputBinding* other_binding = it->second.get();
-							if (other_binding == binding || other_binding->num_keys >= binding->num_keys)
-							{
-								continue;
-							}
+						// Because the binding map isn't ordered, we could iterate in the order of Shift+F1 and then
+						// F1, which would mean that F1 wouldn't get cancelled and still activate. So, to handle this
+						// case, we skip activating any future bindings with a fewer number of keys.
+						min_num_keys = std::max<u32>(min_num_keys, binding->num_keys);
 
-							// We only need to cancel the binding if it was fully active before. Which in the above
-							// case of Shift+F1 / F1, it will be.
-							if (other_binding->current_mask == other_binding->full_mask)
+						// Basically, if we bind say, F1 and Shift+F1, and press shift and then F1, we'll fire bindings
+						// for both F1 and Shift+F1, when we really only want to fire the binding for Shift+F1. So,
+						// when we activate a multi-key chord (key press), we go through the binding map for all the
+						// other keys in the chord, and cancel them if they have a shorter chord. If they're longer,
+						// they could still activate and take precedence over us, so we leave them alone.
+						for (u32 i = 0; i < binding->num_keys; i++)
+						{
+							const auto range = s_binding_map.equal_range(binding->keys[i].MaskDirection());
+							for (auto it = range.first; it != range.second; ++it)
 							{
-								if (IsAxisHandler(other_binding->handler))
-									std::get<InputAxisEventHandler>(other_binding->handler)(key, 0.0f);
-								else
-									std::get<InputButtonEventHandler>(other_binding->handler)(-1);
+								InputBinding* other_binding = it->second.get();
+								if (other_binding == binding || other_binding->num_keys >= binding->num_keys || other_binding->cancelled)
+								{
+									continue;
+								}
+
+								// We only need to cancel the binding if it was fully active before. Which in the above
+								// case of Shift+F1 / F1, it will be.
+								if (other_binding->current_mask == other_binding->full_mask)
+								{
+									if (IsAxisHandler(other_binding->handler))
+										std::get<InputAxisEventHandler>(other_binding->handler)(key, 0.0f);
+									else
+										std::get<InputButtonEventHandler>(other_binding->handler)(-1);
+								}
+								other_binding->cancelled = true;
 							}
-							// Zero out the current bits so that we don't release this binding, if the other part
-							// of the chord releases first.
-							other_binding->current_mask = 0;
 						}
 					}
-				}
 
-				if (IsAxisHandler(binding->handler) && (new_full_state || prev_full_state))
-				{
-					const float axis_value = new_full_state ? value_to_pass : 0.0f;
-					if (axis_value >= 0.0f && (!skip_button_handlers || axis_value == 0.0f))
-						std::get<InputAxisEventHandler>(binding->handler)(key, axis_value);
-				}
-				else if (prev_full_state != new_full_state)
-				{
-					const s32 pressed = skip_button_handlers ? -1 : static_cast<s32>(value_to_pass > 0.0f);
-					std::get<InputButtonEventHandler>(binding->handler)(pressed);
+					if (IsAxisHandler(binding->handler) && (new_full_state || prev_full_state))
+					{
+						const float axis_value = new_full_state ? value_to_pass : 0.0f;
+						if (axis_value >= 0.0f && (!skip_button_handlers || axis_value == 0.0f))
+							std::get<InputAxisEventHandler>(binding->handler)(key, axis_value);
+					}
+					else if (prev_full_state != new_full_state)
+					{
+						const s32 pressed = skip_button_handlers ? -1 : static_cast<s32>(value_to_pass > 0.0f);
+						std::get<InputButtonEventHandler>(binding->handler)(pressed);
+					}
 				}
 			}
 
