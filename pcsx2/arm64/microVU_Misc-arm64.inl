@@ -207,7 +207,13 @@ static void mVUsaveRegAtX8(const a64::VRegister& reg, int xyzw, bool modXYZW)
 
 // Merge selected components from src into dest.
 // xyzw bitmask: 8=X, 4=Y, 2=Z, 1=W.
-// On ARM64, use INS (single lane) or full MOV, or BIT/BIF for multi-lane blends.
+// Single shared definition for microVU AND the VIF unpack dynarec
+// (declared in microVU-arm64.h and Vif_UnpackNEON.h), mirroring x86's
+// one helper in microVU_Misc.inl.
+//
+// modXYZW semantics (match x86): for single-lane masks the value is in
+// lane 0 of src (SS-path shuffle convention); multi-lane masks always
+// merge natural lanes.
 void mVUmergeRegs(const a64::VRegister& dest, const a64::VRegister& src, int xyzw, bool modXYZW)
 {
 	xyzw &= 0xf;
@@ -216,9 +222,7 @@ void mVUmergeRegs(const a64::VRegister& dest, const a64::VRegister& src, int xyz
 
 	if (xyzw == 0xF)
 	{
-		// Full copy
-		if (dest.GetCode() != src.GetCode())
-			armAsm->Mov(dest.V16B(), src.V16B());
+		armAsm->Mov(dest.V16B(), src.V16B());
 		return;
 	}
 
@@ -231,35 +235,30 @@ void mVUmergeRegs(const a64::VRegister& dest, const a64::VRegister& src, int xyz
 			case 0x4: armAsm->Ins(dest.V4S(), 1, src.V4S(), 0); return; // Y
 			case 0x2: armAsm->Ins(dest.V4S(), 2, src.V4S(), 0); return; // Z
 			case 0x1: armAsm->Ins(dest.V4S(), 3, src.V4S(), 0); return; // W
-			default: break; // Fall through to general case
+			default: break; // Multi-lane: natural-lane merge below
 		}
 	}
 
-	// Single-lane cases (non-modXYZW — value already in correct lane)
-	switch (xyzw)
+	// Natural-lane merge. Reverse the mask into lane order (bit i = lane i)
+	// so an X/Y or Z/W pair can move as one 64-bit lane insert.
+	int lanes = ((xyzw & 1) << 3) | ((xyzw & 2) << 1) | ((xyzw & 4) >> 1) | ((xyzw & 8) >> 3);
+
+	if ((lanes & 3) == 3) // XY
 	{
-		case 0x8: // X only
-			armAsm->Ins(dest.V4S(), 0, src.V4S(), 0);
-			return;
-		case 0x4: // Y only
-			armAsm->Ins(dest.V4S(), 1, src.V4S(), 1);
-			return;
-		case 0x2: // Z only
-			armAsm->Ins(dest.V4S(), 2, src.V4S(), 2);
-			return;
-		case 0x1: // W only
-			armAsm->Ins(dest.V4S(), 3, src.V4S(), 3);
-			return;
-		default:
-			break;
+		armAsm->Mov(dest.V2D(), 0, src.V2D(), 0);
+		lanes &= ~3;
+	}
+	else if ((lanes & 12) == 12) // ZW
+	{
+		armAsm->Mov(dest.V2D(), 1, src.V2D(), 1);
+		lanes &= ~12;
 	}
 
-	// Multi-lane blend: use individual lane inserts.
-	// Each INS is 1 cycle on most ARM64 cores, so 2-3 inserts is fine.
-	if (xyzw & 0x8) armAsm->Ins(dest.V4S(), 0, src.V4S(), 0);
-	if (xyzw & 0x4) armAsm->Ins(dest.V4S(), 1, src.V4S(), 1);
-	if (xyzw & 0x2) armAsm->Ins(dest.V4S(), 2, src.V4S(), 2);
-	if (xyzw & 0x1) armAsm->Ins(dest.V4S(), 3, src.V4S(), 3);
+	for (u32 i = 0; i < 4; i++)
+	{
+		if (lanes & (1u << i))
+			armAsm->Ins(dest.V4S(), i, src.V4S(), i);
+	}
 }
 
 //------------------------------------------------------------------

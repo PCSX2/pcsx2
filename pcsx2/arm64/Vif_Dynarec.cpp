@@ -11,77 +11,6 @@
 
 namespace a64 = vixl::aarch64;
 
-static void mVUmergeRegs(const vixl::aarch64::VRegister& dest, const vixl::aarch64::VRegister& src, int xyzw, bool modXYZW = false, bool canModifySrc = false)
-{
-	xyzw &= 0xf;
-	if ((dest.GetCode() != src.GetCode()) && (xyzw != 0))
-	{
-		if (xyzw == 0x8)
-			armAsm->Mov(dest.V4S(), 0, src.V4S(), 0);
-		else if (xyzw == 0xf)
-			armAsm->Mov(dest.Q(), src.Q());
-		else
-		{
-			if (modXYZW)
-			{
-				if (xyzw == 1)
-				{
-					armAsm->Ins(dest.V4S(), 3, src.V4S(), 0);
-					return;
-				}
-				else if (xyzw == 2)
-				{
-					armAsm->Ins(dest.V4S(), 2, src.V4S(), 0);
-					return;
-				}
-				else if (xyzw == 4)
-				{
-					armAsm->Ins(dest.V4S(), 1, src.V4S(), 0);
-					return;
-				}
-			}
-
-			if (xyzw == 0)
-				return;
-			if (xyzw == 15)
-			{
-				armAsm->Mov(dest, src);
-				return;
-			}
-			if (xyzw == 14 && canModifySrc)
-			{
-				// xyz - we can get rid of the mov if we swap the RA around
-				armAsm->Mov(src.V4S(), 3, dest.V4S(), 3);
-				armAsm->Mov(dest.V16B(), src.V16B());
-				return;
-			}
-
-			// reverse
-			xyzw = ((xyzw & 1) << 3) | ((xyzw & 2) << 1) | ((xyzw & 4) >> 1) | ((xyzw & 8) >> 3);
-
-			if ((xyzw & 3) == 3)
-			{
-				// xy
-				armAsm->Mov(dest.V2D(), 0, src.V2D(), 0);
-				xyzw &= ~3;
-			}
-			else if ((xyzw & 12) == 12)
-			{
-				// zw
-				armAsm->Mov(dest.V2D(), 1, src.V2D(), 1);
-				xyzw &= ~12;
-			}
-
-			// xyzw
-			for (u32 i = 0; i < 4; i++)
-			{
-				if (xyzw & (1u << i))
-					armAsm->Mov(dest.V4S(), i, src.V4S(), i);
-			}
-		}
-	}
-}
-
 static void maskedVecWrite(const a64::VRegister& reg, const a64::MemOperand& addr, int xyzw)
 {
 	switch (xyzw)
@@ -270,14 +199,14 @@ void VifUnpackNEON_Dynarec::doMaskWrite(const vixl::aarch64::VRegister& regX) co
 			armAsm->Movi(xmmTemp.V4S(), 0);
 			if (doMode == 3)
 			{
-				mVUmergeRegs(xmmRow, regX, m5, false, false);
+				mVUmergeRegs(xmmRow, regX, m5);
 			}
 			else
 			{
-				mVUmergeRegs(xmmTemp, xmmRow, m5, false, false);
+				mVUmergeRegs(xmmTemp, xmmRow, m5);
 				armAsm->Add(regX.V4S(), regX.V4S(), xmmTemp.V4S());
 				if (doMode == 2)
-					mVUmergeRegs(xmmRow, regX, m5, false, false);
+					mVUmergeRegs(xmmRow, regX, m5);
 			}
 		}
 		else
