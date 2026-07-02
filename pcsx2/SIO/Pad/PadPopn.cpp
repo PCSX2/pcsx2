@@ -371,7 +371,7 @@ const Pad::ControllerInfo& PadPopn::GetInfo() const
 
 void PadPopn::Set(u32 index, float value)
 {
-	if (index > Inputs::LENGTH)
+	if (index >= Inputs::LENGTH)
 	{
 		return;
 	}
