@@ -100,6 +100,15 @@ void armAlignAsmPtr()
 	armAsmPtr = new_ptr;
 }
 
+// Placement-new the per-block MacroAssembler into a thread_local buffer
+// instead of heap new/delete per JIT block: one fewer alloc/free pair on
+// every block compile, and it sidesteps Android scudo tag/header corruption
+// seen on this exact pattern (ARMSX2, Tyler Bochard, 1c1d0b880). The
+// pxAssert(!armAsm) single-active-per-thread invariant (armAsm itself is
+// thread_local — MTVU compiles VU1 on its own thread) makes the single
+// buffer safe. (AX-10)
+alignas(vixl::aarch64::MacroAssembler) static thread_local u8 s_armAsmStorage[sizeof(vixl::aarch64::MacroAssembler)];
+
 u8* armStartBlock()
 {
 	armAlignAsmPtr();
@@ -107,7 +116,7 @@ u8* armStartBlock()
 	HostSys::BeginCodeWrite();
 
 	pxAssert(!armAsm);
-	armAsm = new vixl::aarch64::MacroAssembler(static_cast<vixl::byte*>(armAsmPtr), armAsmCapacity);
+	armAsm = new (s_armAsmStorage) vixl::aarch64::MacroAssembler(static_cast<vixl::byte*>(armAsmPtr), armAsmCapacity);
 	armAsm->GetScratchVRegisterList()->Remove(31);
 	armAsm->GetScratchRegisterList()->Remove(RSCRATCHADDR.GetCode());
 	return armAsmPtr;
@@ -122,7 +131,7 @@ u8* armEndBlock()
 	const u32 size = static_cast<u32>(armAsm->GetSizeOfCodeGenerated());
 	pxAssert(size < armAsmCapacity);
 
-	delete armAsm;
+	armAsm->~MacroAssembler();
 	armAsm = nullptr;
 
 	HostSys::EndCodeWrite();
