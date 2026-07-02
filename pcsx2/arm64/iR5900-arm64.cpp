@@ -670,9 +670,23 @@ void recEmitInterpTlbMissCheck()
 	armAsm->Bind(&noException);
 }
 
+// Interp-called ops assume the interpreter's post-fetch convention:
+// cpuRegs.pc = op + 4 at handler entry (trap()/SYSCALL/BREAK subtract 4 to
+// find the faulting op). Non-delay-slot compiles advance `pc` before the
+// body, so FLUSH_PC already matches; delay slots advance only afterwards —
+// compensate here or a raising delay-slot op computes EPC one slot low
+// under the cpuRegs.branch bracket. (AX-05)
+static u32 interpCallFlushPcBias()
+{
+	return g_recompilingDelaySlot ? 4 : 0;
+}
+
 void recCall(void (*func)())
 {
+	const u32 saved_pc = pc;
+	pc += interpCallFlushPcBias();
 	iFlushCall(FLUSH_INTERPRETER);
+	pc = saved_pc;
 
 	// Flush the delta → cpuRegs.cycle so the interpreter sees the live cycle
 	// value (some opcodes — COP0 Count, TLB miss, branch helpers — read it).
@@ -693,7 +707,10 @@ void recCall(void (*func)())
 
 void recBranchCall(void (*func)())
 {
+	const u32 saved_pc = pc;
+	pc += interpCallFlushPcBias(); // see recCall (AX-05)
 	iFlushCall(FLUSH_INTERPRETER);
+	pc = saved_pc;
 
 	// Apply accumulated block cycles to the delta, then flush to memory
 	// before the C call — the interpreter's intEventTest reads
@@ -1121,6 +1138,24 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 		}
 	}
 
+	// Bracket every non-NOP delay-slot body with cpuRegs.branch = 1 / 0,
+	// mirroring the interpreter's _doBranch_shared. Every exception raiser
+	// (trap/SYSCALL/BREAK/overflow helpers, and the aarch64 vtlb TLB-miss
+	// path) passes cpuRegs.branch as the bd argument to cpuException — with
+	// no store the rec always raised BD=0 with a delay-slot resume address,
+	// and the kernel would ERET straight to the delay slot, losing the
+	// branch. The epilogue below also uses the flag to detect that an
+	// exception fired (cpuException zeroes it) and divert to the dispatcher
+	// — without that, the enclosing branch's static dispatch overwrites the
+	// exception vector and the branch target executes as if nothing
+	// happened. (AX-05)
+	const bool dsExceptionBracket = delayslot && (cpuRegs.code != 0);
+	if (dsExceptionBracket)
+	{
+		armAsm->Mov(RWSCRATCH, 1);
+		armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.branch));
+	}
+
 	// NOP gets cycle counted but no codegen (matching x86 behavior)
 	if (cpuRegs.code == 0)
 	{
@@ -1191,6 +1226,22 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 
 	if (delayslot)
 	{
+		if (dsExceptionBracket)
+		{
+			// cpuException zeroes cpuRegs.branch; still-1 means the delay
+			// slot completed without raising. On an exception, divert to the
+			// dispatcher on the vector PC before the enclosing branch's
+			// static dispatch can clobber it (same contract as
+			// recEmitInterpTlbMissCheck; cycle undercount on this exceptional
+			// path is accepted the same way). (AX-05)
+			a64::Label noException;
+			armAsm->Ldr(RWSCRATCH, armCpuRegMem(&cpuRegs.branch));
+			armAsm->Cbnz(RWSCRATCH, &noException);
+			armEmitJmp(DispatcherReg);
+			armAsm->Bind(&noException);
+			armAsm->Str(a64::wzr, armCpuRegMem(&cpuRegs.branch));
+		}
+
 		pc += 4;
 		g_cpuFlushedPC = false;
 		g_cpuFlushedCode = false;

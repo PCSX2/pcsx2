@@ -123,6 +123,41 @@ TEST(EeRecTraps, TeqTakenRaisesException)
 	EXPECT_EQ(h.GetCp0Interp(13) & 0xFFu, kCauseTrapExCode);
 }
 
+// ---------------- Trap in a branch delay slot: CAUSE.BD + EPC (AX-05) ----
+//
+// A trap raised while executing a branch delay slot must set CAUSE.BD and
+// EPC = the BRANCH's address (the kernel re-executes the branch on ERET).
+// The interp gets this from _doBranch_shared setting cpuRegs.branch = 1
+// around the delay slot; the rec must emit the same bracket around delay-
+// slot bodies or every exception helper (trap/syscall/overflow/TLB-miss)
+// reads a stale 0 and produces BD=0 with a delay-slot resume address.
+
+TEST(EeRecTraps, TeqTakenInDelaySlotSetsCauseBdAndBranchEpc)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a0, 42);
+	h.SetGpr64(reg::a1, 42);
+	h.LoadProgram({
+		BEQ(reg::zero, reg::zero, 2),    // +0x0: taken branch to +0xC
+		ee::TEQ(reg::a0, reg::a1),       // +0x4: delay slot — trap fires
+		ADDIU(reg::v0, reg::zero, 99),   // +0x8: skipped by the branch
+		ADDIU(reg::v1, reg::zero, 77),   // +0xC: branch target — trap preempts it
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 0ull);
+	h.ExpectGpr64(reg::v1, 0ull);
+	// Interp oracle first.
+	EXPECT_EQ(h.GetCp0Interp(13) & 0xFFu, kCauseTrapExCode);
+	EXPECT_NE(h.GetCp0Interp(13) & 0x80000000u, 0u) << "interp CAUSE.BD";
+	EXPECT_EQ(h.GetCp0Interp(14), RecompilerTestEnvironment::kProgramPc)
+		<< "interp EPC = branch address";
+	// JIT must match it.
+	EXPECT_EQ(h.GetCp0Jit(13) & 0xFFu, kCauseTrapExCode);
+	EXPECT_NE(h.GetCp0Jit(13) & 0x80000000u, 0u) << "JIT CAUSE.BD";
+	EXPECT_EQ(h.GetCp0Jit(14), RecompilerTestEnvironment::kProgramPc)
+		<< "JIT EPC must be the branch, not the delay slot";
+}
+
 // ---------------- SYSCALL / BREAK (always taken) ----------------
 
 TEST(EeRecTraps, SyscallAlwaysTaken)
