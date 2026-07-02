@@ -104,6 +104,37 @@ static void cop2StoreACC(const a64::VRegister& qreg)
 // only the lanes selected by `xyzw`. The variants without an explicit `xyzw`
 // read it from the instruction (_XYZW_cop2); VOPMSUB / VOPMULA force xyzw=0xE
 // since PS2 hardware always writes XYZ regardless of the encoded dest field.
+// Map a single-bit dest mask to its vector lane / VF.UL index:
+// bit3=x→lane0, bit2=y→lane1, bit1=z→lane2, bit0=w→lane3.
+static __fi int cop2SingleLaneFromMask(int xyzw)
+{
+	switch (xyzw)
+	{
+		case 0x8: return 0; // x
+		case 0x4: return 1; // y
+		case 0x2: return 2; // z
+		case 0x1: return 3; // w
+		default:  return -1;
+	}
+}
+
+// Store one 32-bit lane of `result` into base[lane]. Lane 0 is a plain Str
+// of the S view (imm-offset addressing works). Lanes 1-3 use ST1 {Vt.S}[i],
+// which — like LD1R (see armLd1rVU0) — silently drops an immediate offset
+// outside Debug builds, so the address is materialized with a single ADD
+// (VURegs fields are within imm12 of RVU0).
+static void cop2StoreSingleLane(const a64::VRegister& result, const void* base, int lane)
+{
+	if (lane == 0)
+	{
+		armAsm->Str(result.S(), armVU0Mem(base));
+		return;
+	}
+	const ptrdiff_t off = reinterpret_cast<const u8*>(base) - reinterpret_cast<const u8*>(&VU0) + lane * 4;
+	armAsm->Add(RSCRATCHADDR, RVU0, off);
+	armAsm->St1(result.V4S(), lane, a64::MemOperand(RSCRATCHADDR));
+}
+
 static void cop2ApplyDestMaskExplicit(int fdReg, int xyzw)
 {
 	if (xyzw == 0xF)
@@ -118,6 +149,16 @@ static void cop2ApplyDestMaskExplicit(int fdReg, int xyzw)
 
 	if (fdReg == 0)
 		return;
+
+	// Single-lane fast path: one 32-bit lane store (1-2 insns) instead of
+	// the ~6-insn load-VF + mask-load + BSL + store merge below. Single-lane
+	// dest masks are common in macro COP2 code.
+	const int lane = cop2SingleLaneFromMask(xyzw);
+	if (lane >= 0)
+	{
+		cop2StoreSingleLane(RQSCRATCH, &VU0.VF[fdReg], lane);
+		return;
+	}
 
 	cop2LoadVF(RQSCRATCH3, fdReg);
 
@@ -143,6 +184,15 @@ static void cop2ApplyDestMaskACCExplicit(const a64::VRegister& result, int xyzw)
 
 	if (xyzw == 0)
 		return;
+
+	// Single-lane fast path — mirrors cop2ApplyDestMaskExplicit; stores
+	// straight from `result`, so the Mov-to-RQSCRATCH below is skipped too.
+	const int lane = cop2SingleLaneFromMask(xyzw);
+	if (lane >= 0)
+	{
+		cop2StoreSingleLane(result, &VU0.ACC, lane);
+		return;
+	}
 
 	if (result.GetCode() != RQSCRATCH.GetCode())
 		armAsm->Mov(RQSCRATCH.V16B(), result.V16B());

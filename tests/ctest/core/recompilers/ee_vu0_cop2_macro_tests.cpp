@@ -1405,6 +1405,89 @@ TEST(EeVu0Cop2PendingMicroSync, VclipDrainsPendingMicroBeforeReadingOperands)
 	EXPECT_EQ(h.GetVu0VfBitsJit(1, 'x'), h.GetVu0VfBitsInterp(1, 'x'));
 }
 
+// =========================================================================
+//  Single-lane dest-mask sweep (fast-path coverage)
+// =========================================================================
+//
+// cop2ApplyDestMaskExplicit / cop2ApplyDestMaskACCExplicit special-case
+// popcount(xyzw)==1: a single 32-bit lane store (Str s-reg for lane 0,
+// Add+St1 for lanes 1-3) instead of the load+mask+BSL+store merge. These
+// sweeps pin the lane mapping (mask bit3=x→lane0 ... bit0=w→lane3) and the
+// untouched-lane preservation for every single-lane mask, for both the VF
+// and ACC variants. A wrong lane map or a clobbered neighbor lane goes red.
+
+TEST(EeVu0Cop2Macro, SingleLaneDestMaskSweepVadd)
+{
+	struct { u32 mask; char lane; float expect; } cases[] = {
+		{0x8, 'x', 11.0f}, // 1+10
+		{0x4, 'y', 22.0f}, // 2+20
+		{0x2, 'z', 33.0f}, // 3+30
+		{0x1, 'w', 44.0f}, // 4+40
+	};
+	for (const auto& c : cases)
+	{
+		SCOPED_TRACE(testing::Message() << "mask=0x" << std::hex << c.mask << " lane=" << c.lane);
+		EeRecTestHarness h;
+		h.EnableVu0Capture();
+		h.EnableCop1();
+		h.SeedVu0Vf(1, 1.0f, 2.0f, 3.0f, 4.0f);
+		h.SeedVu0Vf(2, 10.0f, 20.0f, 30.0f, 40.0f);
+		h.SeedVu0Vf(3, 99.0f, 98.0f, 97.0f, 96.0f); // per-lane sentinels
+		h.LoadProgram({VADD_C2(c.mask, /*fd*/3, /*fs*/1, /*ft*/2)});
+		h.Run();
+		const float sentinels[4] = {99.0f, 98.0f, 97.0f, 96.0f};
+		const char lanes[4] = {'x', 'y', 'z', 'w'};
+		for (int i = 0; i < 4; i++)
+		{
+			if (lanes[i] == c.lane)
+				EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, lanes[i]), c.expect);
+			else
+				EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, lanes[i]), sentinels[i]);
+			EXPECT_EQ(h.GetVu0VfBitsJit(3, lanes[i]), h.GetVu0VfBitsInterp(3, lanes[i]));
+		}
+	}
+}
+
+TEST(EeVu0Cop2Macro, SingleLaneDestMaskSweepAccVmulax)
+{
+	// VMULAx: ACC.masked_lane = fs.lane * ft.x (broadcast). ft.x = 10.
+	struct { u32 mask; char lane; float expect; } cases[] = {
+		{0x8, 'x', 10.0f},  // 1*10
+		{0x4, 'y', 20.0f},  // 2*10
+		{0x2, 'z', 30.0f},  // 3*10
+		{0x1, 'w', 40.0f},  // 4*10
+	};
+	for (const auto& c : cases)
+	{
+		SCOPED_TRACE(testing::Message() << "mask=0x" << std::hex << c.mask << " lane=" << c.lane);
+		EeRecTestHarness h;
+		h.EnableVu0Capture();
+		h.EnableCop1();
+		h.SeedVu0Vf(1, 1.0f, 2.0f, 3.0f, 4.0f);
+		h.SeedVu0Vf(2, 10.0f, 0.0f, 0.0f, 0.0f);
+		h.SeedVu0AccBits(0x42C60000u, 0x42C40000u, 0x42C20000u, 0x42C00000u); // 99,98,97,96
+		h.LoadProgram({VMULAx_C2(c.mask, /*fs*/1, /*ft*/2)});
+		h.Run();
+		const u32 sentinels[4] = {0x42C60000u, 0x42C40000u, 0x42C20000u, 0x42C00000u};
+		const char lanes[4] = {'x', 'y', 'z', 'w'};
+		for (int i = 0; i < 4; i++)
+		{
+			if (lanes[i] == c.lane)
+			{
+				const u32 bits = h.GetVu0AccBitsJit(lanes[i]);
+				float got;
+				std::memcpy(&got, &bits, sizeof(got));
+				EXPECT_FLOAT_EQ(got, c.expect);
+			}
+			else
+			{
+				EXPECT_EQ(h.GetVu0AccBitsJit(lanes[i]), sentinels[i]);
+			}
+			EXPECT_EQ(h.GetVu0AccBitsJit(lanes[i]), h.GetVu0AccBitsInterp(lanes[i]));
+		}
+	}
+}
+
 // VNOP/VWAITQ are architectural no-ops, but they still consume the
 // EEINST_COP2_FINISH_VU0 mark: if the analysis puts the mark on them and
 // they drop it, the following COP2 ops in the block run UNSYNCED (the pass
