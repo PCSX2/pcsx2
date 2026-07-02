@@ -791,6 +791,22 @@ void EERunner::SettingsOverride()
 	if (const char* e = std::getenv("EERUNNER_DIVCHOP"))
 		s_settings_interface.SetIntValue("EmuCore/CPU", "FPUDiv.Roundmode", e[0] != '0' ? 3 : 0);
 
+	// EERUNNER_HWDL=<0..4> forces EmuCore/GS HWDownloadMode (0=Enabled 1=EnabledForceFull
+	// 2=NoReadbacks 3=Unsynchronized 4=Disabled). Diagnostic for GPU-readback pipeline
+	// serialization (OutRun 2006 SD865: fps ≈ 1/(GS_cpu + GPU) because GSDownloadTexture::
+	// Flush() drains the GPU whenever the game reads back RT data mid-frame).
+	// Unsynchronized keeps all CPU-side copy work but skips the fence wait — isolates the
+	// stall; NoReadbacks/Disabled also skip the copies. 1-4 are NOT render-accurate; A/B only.
+	if (const char* e = std::getenv("EERUNNER_HWDL"))
+		s_settings_interface.SetIntValue("EmuCore/GS", "HWDownloadMode", atoi(e));
+
+	// EERUNNER_SPINCPU=1 sets EmuCore/GS HWSpinCPUForReadbacks: fence waits at GPU
+	// readbacks spin instead of sleeping, cutting the scheduler wake latency that
+	// dominates each synchronous readback round-trip once the pipeline overlap fix
+	// (mid-frame command buffer kick) has the GPU already caught up.
+	if (const char* e = std::getenv("EERUNNER_SPINCPU"))
+		s_settings_interface.SetBoolValue("EmuCore/GS", "HWSpinCPUForReadbacks", e[0] != '0');
+
 	// No audio output, and no time-stretch sync (wall-clock-driven). Keys live in
 	// Pcsx2Config::SPU2Options::LoadSave under [SPU2/Output]: Backend / SyncMode.
 	s_settings_interface.SetStringValue("SPU2/Output", "Backend", "Null");
@@ -2895,6 +2911,16 @@ static int RunLiveRun()
 
 	s_liverun_done.store(true, std::memory_order_relaxed);
 	watchdog.join();
+
+	// Per-frame GS stats (averaged over g_perfmon's last 32-frame window): draws, render
+	// passes, readbacks (RB), texture copies/uploads. Read cross-thread while the VM is
+	// still up — racy u64 reads, cosmetic-only. @GSSTAT@ so scripts can grep it.
+	{
+		SmallString gs_stats;
+		GSgetStats(gs_stats);
+		Console.WriteLn(fmt::format("@GSSTAT@ per-frame: {}", gs_stats.view()));
+	}
+
 	Console.WriteLn(fmt::format(
 		"LIVERUN: completed {} frames with NO wedge — this config did not reproduce the hang.",
 		s_frames));
