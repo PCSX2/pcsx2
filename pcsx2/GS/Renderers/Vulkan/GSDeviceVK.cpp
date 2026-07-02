@@ -1294,6 +1294,8 @@ void GSDeviceVK::WaitForCommandBufferCompletion(u32 index)
 
 void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 {
+	m_render_passes_since_submit = 0;
+
 	FrameResources& resources = m_frame_resources[m_current_frame];
 
 	// End the current command buffer.
@@ -5551,6 +5553,7 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartPresent(bool wait_for_completion,
 
 void GSDeviceVK::ExecuteCommandBufferForReadback()
 {
+	m_render_passes_since_readback = 0;
 	ExecuteCommandBuffer(true);
 	if (m_spinning_supported && GSConfig.HWSpinGPUForReadbacks)
 	{
@@ -5857,6 +5860,9 @@ void GSDeviceVK::EndRenderPass()
 
 	m_current_render_pass = VK_NULL_HANDLE;
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
+	m_render_passes_since_submit++;
+	if (m_render_passes_since_readback != ~0u)
+		m_render_passes_since_readback++;
 
 	vkCmdEndRenderPass(GetCurrentCommandBuffer());
 }
@@ -6288,6 +6294,21 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 
 void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 {
+	// Mid-frame kick (see m_render_passes_since_submit in the header): while a
+	// readback-prone frame is recording, submit accumulated work at a render-pass
+	// boundary so the GPU executes concurrently with GS-thread recording instead of
+	// only starting when the readback fence-waits on it. Draw entry is the safe spot:
+	// nothing is staged yet, and every binding below re-applies via dirty flags.
+	// Gated to outside-a-render-pass (no forced tile flush on tilers) and to frames
+	// near an actual readback (games that never read back see zero change).
+	// Threshold is insensitive 4..16 (measured OutRun 2006/SD865); count resets on
+	// every submit, so this adds ~(RPs-per-frame / threshold) extra submits.
+	constexpr u32 kick_threshold = 8;
+	constexpr u32 readback_window = 128; // ~a few frames' worth of render passes
+	if (m_render_passes_since_submit >= kick_threshold &&
+		m_render_passes_since_readback <= readback_window && !InRenderPass())
+		ExecuteCommandBuffer(WaitType::None);
+
 	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
 	GSTextureVK* draw_rt = config.ps.HasColorROV() ? nullptr : static_cast<GSTextureVK*>(config.rt);
 	GSTextureVK* draw_ds = config.ps.HasDepthROV() ? nullptr : static_cast<GSTextureVK*>(config.ds);

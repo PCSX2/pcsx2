@@ -753,6 +753,15 @@ private:
 	VkRenderPass m_current_render_pass = VK_NULL_HANDLE;
 	GSVector4i m_current_render_pass_area = GSVector4i::zero();
 
+	// Mid-frame submission for readback-prone frames: when a game synchronously reads
+	// GS memory back (local->host TRXDIR), the readback fence-waits on everything
+	// recorded before it. Submitting accumulated work at render-pass boundaries lets
+	// the GPU execute concurrently with GS-thread recording, so that wait finds the
+	// work already complete (OutRun 2006 SD865: 3 sun-occlusion readbacks/frame cost
+	// ~8ms/frame stalled without this). Counters in render passes; ~0u = never.
+	u32 m_render_passes_since_submit = 0;
+	u32 m_render_passes_since_readback = ~0u;
+
 	GSVector4i m_scissor = GSVector4i::zero();
 	VkViewport m_viewport = {0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
 	float m_current_line_width = 1.0f;
