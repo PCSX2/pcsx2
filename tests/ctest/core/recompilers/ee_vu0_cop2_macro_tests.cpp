@@ -1534,4 +1534,39 @@ TEST(EeVu0Cop2PendingMicroSync, VwaitqConsumesFinishMarkAndDrainsPendingMicro)
 	EXPECT_EQ(h.GetVu0VfBitsJit(3, 'x'), h.GetVu0VfBitsInterp(3, 'x'));
 }
 
+
+// =========================================================================
+//  COP2 macro U/O status bits — documenting tripwire (AX-13 / June A3).
+//
+//  cop2EmitFlagUpdate / cop2EmitNormalizeStatusFlag compute only Z/S; the
+//  emitter carries an explicit warning not to widen the 0xFC0 preserve /
+//  0x3 result masks without first teaching the flag update U/O. The
+//  interpreter computes the full set, so the JIT diverges on overflow
+//  status today (latent: no known title reads U/O through CFC2 after a
+//  macro FMAC). This DISABLED_ test encodes the desired behavior; enable
+//  it the day the emitter learns U/O (see ARMSX2's shared-mVU writeback
+//  for a reference implementation, and verified-diff-2026-07-02.md).
+//
+//  Status flag bits: Z=0 S=1 U=2 O=3, sticky copies at +6.
+// =========================================================================
+
+TEST(EeVu0Cop2Macro, DISABLED_VaddOverflowSetsStatusUO)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	// Big + big overflows on every lane -> O (bit 3) + sticky O (bit 9).
+	h.SeedVu0Vf(1, 3e38f, 3e38f, 3e38f, 3e38f);
+	h.SeedVu0Vf(2, 3e38f, 3e38f, 3e38f, 3e38f);
+	h.SeedVu0Vi(REG_STATUS_FLAG, 0);
+	h.LoadProgram({VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2)});
+	h.Run();
+	// Interp oracle: overflow bits set.
+	EXPECT_NE(h.GetVu0ViInterp(REG_STATUS_FLAG) & (1u << 3), 0u) << "interp O";
+	// The tripwire: the JIT must agree once U/O are implemented.
+	EXPECT_EQ(h.GetVu0ViJit(REG_STATUS_FLAG) & 0x30Fu,
+		h.GetVu0ViInterp(REG_STATUS_FLAG) & 0x30Fu)
+		<< "COP2 macro flag update must produce U/O like the interpreter";
+}
+
 } // namespace recompiler_tests
