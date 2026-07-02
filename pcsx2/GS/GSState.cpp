@@ -5740,12 +5740,20 @@ __forceinline void GSState::HandleAutoFlush()
 	}
 }
 
-bool GSState::CheckOverlapVerts(u32 n)
+// Called once per vertex kick, so the common case (no recent buffer switch, or draw
+// buffering off) must stay inline — an out-of-line call here costs caller-saved spills
+// in every GIF vertex handler loop on top of the call itself.
+__fi bool GSState::CheckOverlapVerts(u32 n)
 {
-	if (!GSConfig.UserHacks_DrawBuffering)
+	if (!m_recent_buffer_switch || !GSConfig.UserHacks_DrawBuffering)
 		return false;
 
-	if (m_recent_buffer_switch && ((m_vertex->tail + 1) - m_vertex->head) == n)
+	return CheckOverlapVertsSlow(n);
+}
+
+__noinline bool GSState::CheckOverlapVertsSlow(u32 n)
+{
+	if (((m_vertex->tail + 1) - m_vertex->head) == n)
 	{
 		m_recent_buffer_switch = false;
 
@@ -5884,7 +5892,10 @@ __forceinline void GSState::VertexKick(u32 skip)
 	u32 next = m_vertex->next;
 	u32 xy_tail = m_vertex->xy_tail;
 
-	if (GSIsHardwareRenderer() && GSLocalMemory::m_psm[m_context->ZBUF.PSM].bpp == 32)
+	// Config test first: this runs per vertex kick, and with the hack disabled (the
+	// default) the reorder skips the GSIsHardwareRenderer() call and psm-table walk.
+	if (GSConfig.UserHacks_Limit24BitDepth != GSLimit24BitDepth::Disabled &&
+		GSIsHardwareRenderer() && GSLocalMemory::m_psm[m_context->ZBUF.PSM].bpp == 32)
 	{
 		if (GSConfig.UserHacks_Limit24BitDepth == GSLimit24BitDepth::PrioritizeUpper)
 			m_v.XYZ.Z = ((m_v.XYZ.Z >> 8) & ~0xFF) | (m_v.XYZ.Z & 0xFF);

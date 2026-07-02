@@ -189,6 +189,7 @@ protected:
 	bool EarlyDetectShuffle(u32 prim);
 	void CheckCLUTValidity(u32 prim);
 	bool CheckOverlapVerts(u32 n);
+	bool CheckOverlapVertsSlow(u32 n);
 
 	template <u32 prim, bool auto_flush> void VertexKick(u32 skip);
 
