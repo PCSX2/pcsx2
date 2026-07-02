@@ -76,6 +76,7 @@ static __fi u32 HWADDR(u32 mem) { return hwLUT[mem >> 16] + mem; }
 static BASEBLOCK* recRAM = nullptr;
 static BASEBLOCK* recROM = nullptr;
 static BASEBLOCK* recROM1 = nullptr;
+static BASEBLOCK* recROM2 = nullptr;
 static Arm64BaseBlocks recBlocks;
 static u8* recPtr = nullptr;
 static u8* recPtrEnd = nullptr;
@@ -1689,7 +1690,7 @@ static void memory_protect_recompiled_code(u32 startpc, u32 size)
 
 static void recReserveRAM()
 {
-	recLutEntries = (Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1) / 4;
+	recLutEntries = (Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4;
 
 	if (recLutReserve_RAM.size() != recLutEntries)
 		recLutReserve_RAM.resize(recLutEntries);
@@ -1703,6 +1704,8 @@ static void recReserveRAM()
 	curpos += (Ps2MemSize::Rom / 4);
 	recROM1 = curpos;
 	curpos += (Ps2MemSize::Rom1 / 4);
+	recROM2 = curpos;
+	curpos += (Ps2MemSize::Rom2 / 4);
 
 	if (recRAMCopy.size() != Ps2MemSize::MainRam)
 		recRAMCopy.resize(Ps2MemSize::MainRam);
@@ -1741,7 +1744,7 @@ static void recResetRaw()
 	Console.WriteLn(Color_Green, "EE ARM64: Dispatcher generated at %p (%zu bytes)", dispStart, (size_t)(dispEnd - dispStart));
 
 	iopClearRecLUT(recLutReserve_RAM.data(),
-		Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1);
+		Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2);
 
 	BASEBLOCK* unmapped = recLutUnmapped.data();
 
@@ -1782,6 +1785,17 @@ static void recResetRaw()
 		recLUT_SetPage(recLUT, hwLUT, recROM1, 0x0000, i, i - 0x1e00);
 		recLUT_SetPage(recLUT, hwLUT, recROM1, 0x8000, i, i - 0x1e00);
 		recLUT_SetPage(recLUT, hwLUT, recROM1, 0xa000, i, i - 0x1e00);
+	}
+
+	// Map ROM2 (EROM2, Chinese BIOS extension, phys 0x1e400000-0x1e800000,
+	// full 4 MB / 64 pages). x86 EE (iR5900.cpp:580-584), x86 IOP, and our
+	// own arm64 IOP all map it; without it EE fetches from EROM2 dispatch to
+	// UnmappedRecLUTPage and pause the VM. (AX-06)
+	for (int i = 0x1e40; i < 0x1e80; i++)
+	{
+		recLUT_SetPage(recLUT, hwLUT, recROM2, 0x0000, i, i - 0x1e40);
+		recLUT_SetPage(recLUT, hwLUT, recROM2, 0x8000, i, i - 0x1e40);
+		recLUT_SetPage(recLUT, hwLUT, recROM2, 0xa000, i, i - 0x1e40);
 	}
 
 	if (s_pInstCache)
@@ -1914,6 +1928,17 @@ s32 recEeExecuteBlock(s32 cycles, u32 park_pc)
 bool recEeIsBlockLinked(u32 src_pc, u32 dst_pc)
 {
 	return recBlocks.IsLinked(src_pc, dst_pc);
+}
+
+// Test-harness recLUT coverage introspection: does this guest PC dispatch to
+// a real (compile-on-first-hit) LUT page rather than UnmappedRecLUTPage?
+// The harness can't execute code from ROM regions (it's hardwired to EE
+// RAM), so region-mapping fixes like the ROM2 one (AX-06) are pinned by
+// asserting page coverage directly.
+bool recEeIsPcMapped(u32 pc_query)
+{
+	const BASEBLOCK* b = GETBLOCK(pc_query);
+	return b && (b->GetFnptr() != (uptr)UnmappedRecLUTPage);
 }
 #endif
 

@@ -87,3 +87,39 @@ TEST(EeRecHarnessValidation, DiffJitVsInterpIsTautologicalUnderDelegatingHarness
 	EXPECT_EQ(h.GetGpr64Interp(reg::v1), h.GetGpr64Jit(reg::v1));
 	EXPECT_EQ(h.GetGpr64Interp(reg::a2), h.GetGpr64Jit(reg::a2));
 }
+
+// ---------------------------------------------------------------------------
+// EE recLUT region coverage (AX-06). The harness can't execute code from ROM
+// regions (programs are hardwired into EE RAM), so region-mapping fixes are
+// pinned by querying page coverage directly via the recEeIsPcMapped test
+// hook: a mapped page dispatches to a compile-on-first-hit block, an
+// unmapped one to UnmappedRecLUTPage (which errors + pauses the VM).
+// ---------------------------------------------------------------------------
+
+extern bool recEeIsPcMapped(u32 pc);
+
+TEST(EeRecHarnessValidation, RecLutMapsRom2AndMirrors)
+{
+	// Force a full rec reset so the LUT is populated.
+	EeRecTestHarness h;
+	h.LoadProgram({ADDU(reg::v0, reg::a0, reg::a1)});
+	h.Run();
+
+	// Sanity: RAM program page is mapped.
+	EXPECT_TRUE(recEeIsPcMapped(RecompilerTestEnvironment::kProgramPc));
+
+	// BIOS ROM + ROM1 (regression guards for the existing loops).
+	EXPECT_TRUE(recEeIsPcMapped(0x1fc00000u)); // ROM
+	EXPECT_TRUE(recEeIsPcMapped(0x1e000000u)); // ROM1 first page
+	EXPECT_TRUE(recEeIsPcMapped(0x1e3f0000u)); // ROM1 last page
+
+	// ROM2 (EROM2, Chinese BIOS extension): full 0x1e40-0x1e80 across all
+	// three mirror windows, exactly like x86 EE iR5900.cpp:580-584.
+	EXPECT_TRUE(recEeIsPcMapped(0x1e400000u)); // first page, physical
+	EXPECT_TRUE(recEeIsPcMapped(0x1e7f0000u)); // last page, physical
+	EXPECT_TRUE(recEeIsPcMapped(0x9e400000u)); // kseg0 mirror
+	EXPECT_TRUE(recEeIsPcMapped(0xbe7f0000u)); // kseg1 mirror
+
+	// Guard: the page just past ROM2 stays unmapped.
+	EXPECT_FALSE(recEeIsPcMapped(0x1e800000u));
+}
