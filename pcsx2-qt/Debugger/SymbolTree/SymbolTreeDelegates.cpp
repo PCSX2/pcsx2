@@ -7,6 +7,8 @@
 #include "Debugger/SymbolTree/SymbolTreeModel.h"
 #include "Debugger/SymbolTree/TypeString.h"
 
+#include "common/StringUtil.h"
+
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDoubleSpinBox>
@@ -44,12 +46,28 @@ QWidget* SymbolTreeValueDelegate::createEditor(QWidget* parent, const QStyleOpti
 		const ccc::ast::Node& physical_type = *logical_type->physical_type(database).first;
 		QVariant value = node->readValueAsVariant(physical_type, m_cpu, database);
 
-		const ccc::ast::Node& type = *logical_type->physical_type(database).first;
-		switch (type.descriptor)
+		switch (physical_type.descriptor)
 		{
+			case ccc::ast::ARRAY:
+			{
+				const ccc::ast::Array& array = physical_type.as<ccc::ast::Array>();
+				const ccc::ast::Node& element_type = *array.element_type->physical_type(database).first;;
+
+				if (array.element_count > 0 &&
+					element_type.name == "char" &&
+					node->location.type == SymbolTreeLocation::MEMORY &&
+					!value.isNull())
+				{
+					QLineEdit* editor = new QLineEdit(parent);
+					editor->setText(value.toString());
+					result = editor;
+				}
+
+				break;
+			}
 			case ccc::ast::BUILTIN:
 			{
-				const ccc::ast::BuiltIn& builtin = type.as<ccc::ast::BuiltIn>();
+				const ccc::ast::BuiltIn& builtin = physical_type.as<ccc::ast::BuiltIn>();
 
 				switch (builtin.bclass)
 				{
@@ -111,7 +129,7 @@ QWidget* SymbolTreeValueDelegate::createEditor(QWidget* parent, const QStyleOpti
 			}
 			case ccc::ast::ENUM:
 			{
-				const ccc::ast::Enum& enumeration = type.as<ccc::ast::Enum>();
+				const ccc::ast::Enum& enumeration = physical_type.as<ccc::ast::Enum>();
 
 				QComboBox* combo_box = new QComboBox(parent);
 				bool named = false;
@@ -186,12 +204,30 @@ void SymbolTreeValueDelegate::setModelData(QWidget* editor, QAbstractItemModel* 
 		if (!logical_type)
 			return;
 
-		const ccc::ast::Node& type = *logical_type->physical_type(database).first;
-		switch (type.descriptor)
+		const ccc::ast::Node& physical_type = *logical_type->physical_type(database).first;
+
+		switch (physical_type.descriptor)
 		{
+			case ccc::ast::ARRAY:
+			{
+				const ccc::ast::Array& array = physical_type.as<ccc::ast::Array>();
+				const ccc::ast::Node& element_type = *array.element_type->physical_type(database).first;
+
+				QLineEdit* line_edit = qobject_cast<QLineEdit*>(editor);
+
+				if (array.element_count > 0 &&
+					element_type.name == "char" &&
+					node->location.type == SymbolTreeLocation::MEMORY &&
+					line_edit)
+				{
+					value = line_edit->text();
+				}
+
+				break;
+			}
 			case ccc::ast::BUILTIN:
 			{
-				const ccc::ast::BuiltIn& builtin = type.as<ccc::ast::BuiltIn>();
+				const ccc::ast::BuiltIn& builtin = physical_type.as<ccc::ast::BuiltIn>();
 
 				switch (builtin.bclass)
 				{

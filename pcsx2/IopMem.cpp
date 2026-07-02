@@ -607,12 +607,12 @@ bool IOPMemoryInterface::Write128(u32 address, u128 value)
 	return false;
 }
 
-bool IOPMemoryInterface::WriteBytes(u32 address, void* src, u32 size)
+bool IOPMemoryInterface::WriteBytes(u32 address, const void* src, u32 size)
 {
 	return iopMemSafeWriteBytes(address, src, size);
 }
 
-bool IOPMemoryInterface::CompareBytes(u32 address, void* src, u32 size)
+bool IOPMemoryInterface::CompareBytes(u32 address, const void* src, u32 size)
 {
 	return iopMemSafeCmpBytes(address, src, size) == 0;
 }
