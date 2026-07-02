@@ -1273,4 +1273,182 @@ TEST(EeVu0Cop2MacroFlagHack, StatusDeadStandaloneSkipsButKeepsResult)
 	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'w'),  5.0f);
 }
 
+// =========================================================================
+//  Pending-VU0-micro drain on DIV-unit / no-op COP2 macro ops
+// =========================================================================
+//
+// x86 syncs EVERY COP2-CO special op at the dispatch wrapper: recCOP2_SPEC1
+// (microVU_Macro.inl) emits an analysis-gated mVUFinishVU0() before the
+// table call. The arm64 port moved that sync per-op (setupMacroOp_arm64, or
+// a direct cop2EmitConditionalSync at the top of the hand-rolled bodies) —
+// and six hand-rolled ops missed it: VDIV, VSQRT, VRSQRT, VCLIP, VNOP,
+// VWAITQ. COP2MicroFinishPass marks the FIRST COP2-CO op after a
+// VCALLMS/VU0-store with EEINST_COP2_FINISH_VU0 and then clears its pending
+// state — so an op that doesn't consume the mark doesn't merely delay the
+// drain, it DROPS it for the rest of the block.
+//
+// Recipe: VCALLMS kicks a microprogram longer than the 16-cycle kickstart
+// window (CalculateMinRunCycles floor; the harness CpuVU0 is the
+// interpreter, which honors the bound), so the micro is still mid-flight
+// when the next COP2 op executes. The micro's LAST act (idempotent — Run()
+// replays it in both passes) writes a VF operand of the op under test; the
+// op must drain the micro BEFORE reading its operands. Interp oracle:
+// COP2_SPECIAL in VU0.cpp calls _vu0FinishMicro() unconditionally. Q
+// results are captured into a VF inside the same block via VADDq so the
+// assertions are immune to any later drain.
+
+namespace {
+
+// Micro at PC 0: 32 NOP pairs (outlasts the 16-cycle kickstart), then
+// vf_dst = vf_src + vf_src, then E-bit. Idempotent across re-runs because
+// vf_src is never written.
+void SeedPendingMicroDoubling(EeRecTestHarness& h, u32 vf_dst, u32 vf_src)
+{
+	u32 off = 0;
+	for (int i = 0; i < 32; i++, off += 8)
+		h.SeedVu0Microprogram(off, {NopPair()});
+	h.SeedVu0Microprogram(off, {
+		VuOp{0, vu::VADD_U(vu::mask::xyzw, vf_dst, vf_src, vf_src)},
+		EBitNopPair(),
+		NopPair(), // explicit E-bit delay pair — keep micro mem deterministic
+	});
+}
+
+} // namespace
+
+TEST(EeVu0Cop2PendingMicroSync, VdivDrainsPendingMicroBeforeReadingOperands)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vi(REG_VPU_STAT, 0); // control regs survive EnableVu0Capture — start clean
+	h.SeedVu0Vf(1,  2.0f,  2.0f,  2.0f,  2.0f);
+	h.SeedVu0Vf(2, 32.0f, 32.0f, 32.0f, 32.0f); // stale divisor; micro rewrites it to 4.0
+	SeedPendingMicroDoubling(h, /*vf_dst*/2, /*vf_src*/1);
+	h.LoadProgram({
+		VCALLMS(0),
+		VDIV_C2(/*fsf*/0, /*ftf*/0, /*fs*/1, /*ft*/2), // Q = vf1.x / vf2.x
+		VADDq_C2(mask_x, /*fd*/3, /*fs*/0),            // vf3.x = vf0.x + Q = Q
+	});
+	h.Run();
+	// The drain must land vf2 = 4.0 BEFORE VDIV reads it: Q = 2/4 = 0.5.
+	// Unsynced JIT reads the stale 32.0 → Q = 0.0625.
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(2, 'x'), 4.0f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'x'), 0.5f);
+	EXPECT_EQ(h.GetVu0VfBitsJit(2, 'x'), h.GetVu0VfBitsInterp(2, 'x'));
+	EXPECT_EQ(h.GetVu0VfBitsJit(3, 'x'), h.GetVu0VfBitsInterp(3, 'x'));
+}
+
+TEST(EeVu0Cop2PendingMicroSync, VsqrtDrainsPendingMicroBeforeReadingOperands)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vi(REG_VPU_STAT, 0);
+	h.SeedVu0Vf(1,  2.0f,  2.0f,  2.0f,  2.0f);
+	h.SeedVu0Vf(2, 32.0f, 32.0f, 32.0f, 32.0f); // micro rewrites to 4.0
+	SeedPendingMicroDoubling(h, /*vf_dst*/2, /*vf_src*/1);
+	h.LoadProgram({
+		VCALLMS(0),
+		VSQRT_C2(/*ftf*/0, /*ft*/2),        // Q = sqrt(|vf2.x|)
+		VADDq_C2(mask_x, /*fd*/3, /*fs*/0), // vf3.x = Q
+	});
+	h.Run();
+	// Drained: Q = sqrt(4) = 2. Unsynced: sqrt(32) ≈ 5.657.
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'x'), 2.0f);
+	EXPECT_EQ(h.GetVu0VfBitsJit(2, 'x'), h.GetVu0VfBitsInterp(2, 'x'));
+	EXPECT_EQ(h.GetVu0VfBitsJit(3, 'x'), h.GetVu0VfBitsInterp(3, 'x'));
+}
+
+TEST(EeVu0Cop2PendingMicroSync, VrsqrtDrainsPendingMicroBeforeReadingOperands)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vi(REG_VPU_STAT, 0);
+	h.SeedVu0Vf(1,  2.0f,  2.0f,  2.0f,  2.0f);
+	h.SeedVu0Vf(2, 32.0f, 32.0f, 32.0f, 32.0f); // micro rewrites to 4.0
+	SeedPendingMicroDoubling(h, /*vf_dst*/2, /*vf_src*/1);
+	h.LoadProgram({
+		VCALLMS(0),
+		VRSQRT_C2(/*fsf*/0, /*ftf*/0, /*fs*/1, /*ft*/2), // Q = vf1.x / sqrt(|vf2.x|)
+		VADDq_C2(mask_x, /*fd*/3, /*fs*/0),              // vf3.x = Q
+	});
+	h.Run();
+	// Drained: Q = 2/sqrt(4) = 1. Unsynced: 2/sqrt(32) ≈ 0.354.
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'x'), 1.0f);
+	EXPECT_EQ(h.GetVu0VfBitsJit(2, 'x'), h.GetVu0VfBitsInterp(2, 'x'));
+	EXPECT_EQ(h.GetVu0VfBitsJit(3, 'x'), h.GetVu0VfBitsInterp(3, 'x'));
+}
+
+TEST(EeVu0Cop2PendingMicroSync, VclipDrainsPendingMicroBeforeReadingOperands)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vi(REG_VPU_STAT, 0);
+	// Micro rewrites vf1 (VCLIP's fs) from below-bound to above-bound:
+	// stale vf1 = 0.1 (no clip bits) → drained vf1 = 2*0.75 = 1.5 > |1.0|.
+	h.SeedVu0Vf(1, 0.1f, 0.1f, 0.1f, 0.0f);
+	h.SeedVu0Vf(3, 0.75f, 0.75f, 0.75f, 0.0f);
+	h.SeedVu0VfBits(2, 0u, 0u, 0u, 0x3F800000u /*1.0 w bound*/);
+	vuRegs[0].clipflag = 0u; // internal running clip (<<6'd by VCLIP)
+	SeedPendingMicroDoubling(h, /*vf_dst*/1, /*vf_src*/3);
+	h.LoadProgram({
+		VCALLMS(0),
+		VCLIP_C2(/*ft*/2, /*fs*/1),
+	});
+	h.Run();
+	// Drained: +x,+y,+z set → 0b010101 = 0x15. Unsynced: 0x00.
+	EXPECT_EQ(h.GetVu0ViJit(REG_CLIP_FLAG), 0x15u);
+	EXPECT_EQ(h.GetVu0ViJit(REG_CLIP_FLAG), h.GetVu0ViInterp(REG_CLIP_FLAG));
+	EXPECT_EQ(h.GetVu0VfBitsJit(1, 'x'), h.GetVu0VfBitsInterp(1, 'x'));
+}
+
+// VNOP/VWAITQ are architectural no-ops, but they still consume the
+// EEINST_COP2_FINISH_VU0 mark: if the analysis puts the mark on them and
+// they drop it, the following COP2 ops in the block run UNSYNCED (the pass
+// cleared its pending state when it placed the mark).
+
+TEST(EeVu0Cop2PendingMicroSync, VnopConsumesFinishMarkAndDrainsPendingMicro)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vi(REG_VPU_STAT, 0);
+	h.SeedVu0Vf(1,  2.0f,  2.0f,  2.0f,  2.0f);
+	h.SeedVu0Vf(2, 32.0f, 32.0f, 32.0f, 32.0f); // micro rewrites to 4.0
+	SeedPendingMicroDoubling(h, /*vf_dst*/2, /*vf_src*/1);
+	h.LoadProgram({
+		VCALLMS(0),
+		VNOP_C2(),                                 // carries the FINISH mark
+		VADD_C2(mask_x, /*fd*/3, /*fs*/2, /*ft*/0), // vf3.x = vf2.x + 0 (unmarked)
+	});
+	h.Run();
+	// Drained at VNOP: vf3.x = 4.0. Mark dropped: vf3.x = stale 32.0.
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'x'), 4.0f);
+	EXPECT_EQ(h.GetVu0VfBitsJit(2, 'x'), h.GetVu0VfBitsInterp(2, 'x'));
+	EXPECT_EQ(h.GetVu0VfBitsJit(3, 'x'), h.GetVu0VfBitsInterp(3, 'x'));
+}
+
+TEST(EeVu0Cop2PendingMicroSync, VwaitqConsumesFinishMarkAndDrainsPendingMicro)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vi(REG_VPU_STAT, 0);
+	h.SeedVu0Vf(1,  2.0f,  2.0f,  2.0f,  2.0f);
+	h.SeedVu0Vf(2, 32.0f, 32.0f, 32.0f, 32.0f); // micro rewrites to 4.0
+	SeedPendingMicroDoubling(h, /*vf_dst*/2, /*vf_src*/1);
+	h.LoadProgram({
+		VCALLMS(0),
+		VWAITQ_C2(),                               // carries the FINISH mark
+		VADD_C2(mask_x, /*fd*/3, /*fs*/2, /*ft*/0), // vf3.x = vf2.x + 0 (unmarked)
+	});
+	h.Run();
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'x'), 4.0f);
+	EXPECT_EQ(h.GetVu0VfBitsJit(2, 'x'), h.GetVu0VfBitsInterp(2, 'x'));
+	EXPECT_EQ(h.GetVu0VfBitsJit(3, 'x'), h.GetVu0VfBitsInterp(3, 'x'));
+}
+
 } // namespace recompiler_tests

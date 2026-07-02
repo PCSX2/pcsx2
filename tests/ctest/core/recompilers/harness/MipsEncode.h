@@ -568,6 +568,27 @@ constexpr u32 VRGET_C2 (u32 mask_xyzw, u32 ft)         { return COP2_SPEC2(mask_
 constexpr u32 VRINIT_C2(u32 fsf,                u32 fs){ return COP2_SPEC2(fsf & 0x3,     0, fs, 0x10, 0x3E); }
 constexpr u32 VRXOR_C2 (u32 fsf,                u32 fs){ return COP2_SPEC2(fsf & 0x3,     0, fs, 0x10, 0x3F); }
 
+// DIV-unit + pipeline ops (sa group = 0x0E). The broadcast-lane selectors
+// occupy the dest-mask slot: fsf at bits[22:21], ftf at bits[24:23].
+// VDIV   : Q = VF[fs].lane(fsf) / VF[ft].lane(ftf).
+// VSQRT  : Q = sqrt(|VF[ft].lane(ftf)|).
+// VRSQRT : Q = VF[fs].lane(fsf) / sqrt(|VF[ft].lane(ftf)|).
+// VWAITQ : wait for the DIV unit (no-op in synchronous macro mode).
+constexpr u32 VDIV_C2  (u32 fsf, u32 ftf, u32 fs, u32 ft) { return COP2_SPEC2(((ftf & 0x3) << 2) | (fsf & 0x3), ft, fs, 0x0E, 0x3C); }
+constexpr u32 VSQRT_C2 (u32 ftf,          u32 ft)         { return COP2_SPEC2((ftf & 0x3) << 2,                 ft,  0, 0x0E, 0x3D); }
+constexpr u32 VRSQRT_C2(u32 fsf, u32 ftf, u32 fs, u32 ft) { return COP2_SPEC2(((ftf & 0x3) << 2) | (fsf & 0x3), ft, fs, 0x0E, 0x3E); }
+constexpr u32 VWAITQ_C2()                                 { return COP2_SPEC2(0, 0, 0, 0x0E, 0x3F); }
+
+// VNOP — SPEC2 group, sa=0x0B, funct=0x3F. Architectural no-op, but still a
+// COP2-CO op: the COP2MicroFinishPass can mark it EEINST_COP2_FINISH_VU0, in
+// which case it must drain a pending VU0 micro (x86 syncs it via the
+// recCOP2_SPEC1 dispatch wrapper).
+constexpr u32 VNOP_C2()                                   { return COP2_SPEC2(0, 0, 0, 0x0B, 0x3F); }
+
+// VADDq — SPECIAL1 funct 0x20: VF[fd].mask = VF[fs] + Q (broadcast). Handy as
+// a Q-register witness: VADDq(mask_x, fd, /*fs*/0) captures Q into VF[fd].x.
+constexpr u32 VADDq_C2(u32 mask_xyzw, u32 fd, u32 fs)     { return COP2_FMAC(mask_xyzw, fd, fs, 0, 0x20); }
+
 } // namespace ee
 
 } // namespace mips

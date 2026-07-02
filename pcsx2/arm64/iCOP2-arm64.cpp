@@ -915,14 +915,19 @@ void recCOP2_VMR32()
 	cop2ApplyDestMask(_Ft_cop2);
 }
 
-// VNOP: no operation
+// VNOP: no operation. Still consumes the analysis sync mark: x86 syncs every
+// COP2-CO special op in the recCOP2_SPEC1 dispatch wrapper, and the
+// COP2MicroFinishPass clears its pending state when it places the mark — an
+// op that drops it leaves the rest of the block unsynced.
 void recCOP2_VNOP()
 {
+	cop2EmitConditionalSync(false, _vu0FinishMicro);
 }
 
-// VWAITQ: wait for Q register (no-op in macro mode)
+// VWAITQ: wait for Q register (no-op in macro mode; sync mark as VNOP)
 void recCOP2_VWAITQ()
 {
+	cop2EmitConditionalSync(false, _vu0FinishMicro);
 }
 
 // VABS: VF[ft] = abs(VF[fs]) (masked)
@@ -1672,6 +1677,8 @@ static void cop2EmitSyncFDiv()
 // VDIV: Q = VF[fs].fsf / VF[ft].ftf
 void recCOP2_VDIV()
 {
+	cop2EmitConditionalSync(false, _vu0FinishMicro);
+
 	const int fsf = _Fsf_cop2;
 	const int ftf = _Ftf_cop2;
 
@@ -1731,6 +1738,8 @@ void recCOP2_VDIV()
 // VSQRT: Q = sqrt(|VF[ft].ftf|)
 void recCOP2_VSQRT()
 {
+	cop2EmitConditionalSync(false, _vu0FinishMicro);
+
 	const int ftf = _Ftf_cop2;
 
 	// Clear D/I flags
@@ -1768,6 +1777,8 @@ void recCOP2_VSQRT()
 // VRSQRT: Q = VF[fs].fsf / sqrt(|VF[ft].ftf|)
 void recCOP2_VRSQRT()
 {
+	cop2EmitConditionalSync(false, _vu0FinishMicro);
+
 	const int fsf = _Fsf_cop2;
 	const int ftf = _Ftf_cop2;
 
@@ -1867,6 +1878,8 @@ void recCOP2_VRSQRT()
 
 void recCOP2_VCLIP()
 {
+	cop2EmitConditionalSync(false, _vu0FinishMicro);
+
 	// Load ft.w as integer, compute |ft.w| with denormal handling
 	// If denormal (exponent == 0), use 0x007fffff instead
 	armAsm->Ldr(RWSCRATCH, armVU0Mem(&VU0.VF[_Ft_cop2].UL[3])); // w lane
