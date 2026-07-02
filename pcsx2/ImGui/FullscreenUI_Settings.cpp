@@ -1778,6 +1778,7 @@ void FullscreenUI::DrawSettingsWindow()
 			ICON_PF_MICROCHIP,
 			ICON_PF_GEARS_OPTIONS_SETTINGS,
 			ICON_PF_PICTURE,
+			ICON_FA_WAND_MAGIC_SPARKLES,
 			ICON_FA_GAUGE,
 			ICON_PF_SOUND,
 			ICON_PF_MEMORY_CARD,
@@ -1794,6 +1795,7 @@ void FullscreenUI::DrawSettingsWindow()
 			ICON_FA_BANDAGE,
 			ICON_PF_INFINITY,
 			ICON_PF_PICTURE,
+			ICON_FA_WAND_MAGIC_SPARKLES,
 			ICON_FA_GAUGE,
 			ICON_PF_SOUND,
 			ICON_PF_MEMORY_CARD,
@@ -1804,6 +1806,7 @@ void FullscreenUI::DrawSettingsWindow()
 			SettingsPage::BIOS,
 			SettingsPage::Emulation,
 			SettingsPage::Graphics,
+			SettingsPage::PostProcessing,
 			SettingsPage::OSD,
 			SettingsPage::Audio,
 			SettingsPage::MemoryCard,
@@ -1820,6 +1823,7 @@ void FullscreenUI::DrawSettingsWindow()
 			SettingsPage::Patches,
 			SettingsPage::Cheats,
 			SettingsPage::Graphics,
+			SettingsPage::PostProcessing,
 			SettingsPage::OSD,
 			SettingsPage::Audio,
 			SettingsPage::MemoryCard,
@@ -1831,6 +1835,7 @@ void FullscreenUI::DrawSettingsWindow()
 			FSUI_NSTR("BIOS Settings"),
 			FSUI_NSTR("Emulation Settings"),
 			FSUI_NSTR("Graphics Settings"),
+			FSUI_NSTR("Post Processing Settings"),
 			FSUI_NSTR("On-Screen Display Settings"),
 			FSUI_NSTR("Audio Settings"),
 			FSUI_NSTR("Memory Card Settings"),
@@ -1936,6 +1941,12 @@ void FullscreenUI::DrawSettingsWindow()
 
 		auto lock = Host::GetSettingsLock();
 
+		if (s_settings_page != SettingsPage::PostProcessing)
+		{
+			s_post_processing_subview = PostProcessingSubview::Main;
+			s_librashader_editing_param_index.reset();
+		}
+
 		switch (s_settings_page)
 		{
 			case SettingsPage::Summary:
@@ -1956,6 +1967,10 @@ void FullscreenUI::DrawSettingsWindow()
 
 			case SettingsPage::Graphics:
 				DrawGraphicsSettingsPage(bsi, show_advanced_settings);
+				break;
+
+			case SettingsPage::PostProcessing:
+				DrawPostProcessingSettingsPage();
 				break;
 
 			case SettingsPage::OSD:
@@ -3047,7 +3062,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		{
 			DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Rasterizer Ordered View"),
 				FSUI_CSTR("Enables Rasterizer Ordered View (ROV), which allows feedback loops to be executed with fewer draw calls. Can improve performance in feedback heavy games "
-					  "with higher accuracy settings."),
+						  "with higher accuracy settings."),
 				"EmuCore/GS", "HWROV", false);
 		}
 	}
@@ -3247,52 +3262,6 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			"DumpTexturesWithFMVActive", false, dumping_active);
 	}
 
-	MenuHeading(FSUI_CSTR("Post-Processing"));
-	{
-		static constexpr const char* s_cas_options[] = {
-			FSUI_NSTR("None (Default)"),
-			FSUI_NSTR("Sharpen Only (Internal Resolution)"),
-			FSUI_NSTR("Sharpen and Resize (Display Resolution)"),
-		};
-		const bool cas_active = (GetEffectiveIntSetting(bsi, "EmuCore/GS", "CASMode", 0) != static_cast<int>(GSCASMode::Disabled));
-
-		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EYE, "FXAA"), FSUI_CSTR("Enables FXAA post-processing shader."), "EmuCore/GS", "fxaa", false);
-		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SUN, "Contrast Adaptive Sharpening"), FSUI_CSTR("Enables FidelityFX Contrast Adaptive Sharpening."),
-			"EmuCore/GS", "CASMode", static_cast<int>(GSCASMode::Disabled), s_cas_options, std::size(s_cas_options), true);
-		DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_PENCIL, "CAS Sharpness"),
-			FSUI_CSTR("Determines the intensity the sharpening effect in CAS post-processing."), "EmuCore/GS", "CASSharpness", 50, 0, 100,
-			1, FSUI_CSTR("%d%%"), cas_active);
-	}
-
-	MenuHeading(FSUI_CSTR("Filters"));
-	{
-		const bool shadeboost_active = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "ShadeBoost", false);
-
-		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEM, "Shade Boost"), FSUI_CSTR("Enables brightness/contrast/gamma/saturation adjustment."), "EmuCore/GS",
-			"ShadeBoost", false);
-		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_SUN, "Shade Boost Brightness"), FSUI_CSTR("Adjusts brightness. 50 is normal."), "EmuCore/GS",
-			"ShadeBoost_Brightness", 50, 1, 100, "%d", shadeboost_active);
-		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Shade Boost Contrast"), FSUI_CSTR("Adjusts contrast. 50 is normal."), "EmuCore/GS",
-			"ShadeBoost_Contrast", 50, 1, 100, "%d", shadeboost_active);
-		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_DROPLET_SLASH, "Shade Boost Gamma"), FSUI_CSTR("Adjusts gamma. 50 is normal."), "EmuCore/GS",
-			"ShadeBoost_Gamma", 50, 1, 100, "%d", shadeboost_active);
-		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_DROPLET, "Shade Boost Saturation"), FSUI_CSTR("Adjusts saturation. 50 is normal."), "EmuCore/GS",
-			"ShadeBoost_Saturation", 50, 1, 100, "%d", shadeboost_active);
-
-		static constexpr const char* s_tv_shaders[] = {
-			FSUI_NSTR("None (Default)"),
-			FSUI_NSTR("Scanline Filter"),
-			FSUI_NSTR("Diagonal Filter"),
-			FSUI_NSTR("Triangular Filter"),
-			FSUI_NSTR("Wave Filter"),
-			FSUI_NSTR("Lottes CRT"),
-			FSUI_NSTR("4xRGSS"),
-			FSUI_NSTR("NxAGSS"),
-		};
-		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "TV Shaders"), FSUI_CSTR("Applies a shader which replicates the visual effects of different styles of television set."), "EmuCore/GS", "TVShader", 0,
-			s_tv_shaders, std::size(s_tv_shaders), true);
-	}
-
 	static constexpr const char* s_gsdump_compression[] = {
 		FSUI_NSTR("Uncompressed"),
 		FSUI_NSTR("LZMA (xz)"),
@@ -3348,6 +3317,655 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			"EmuCore/GS", "FrameRatePAL", 50.0f, 10.0f, 300.0f, "%.2f Hz");
 	}
 
+	EndMenuButtons();
+}
+
+namespace
+{
+	struct LibrashaderLoadState
+	{
+		std::mutex mutex;
+		u64 request_id = 0;
+		std::string preset_path;
+		LibrashaderPresetLoad result;
+		bool complete = false;
+	};
+
+	LibrashaderLoadState s_librashader_async_load;
+	Threading::Thread s_librashader_load_thread;
+
+	std::string GetEffectiveLibrashaderPresetPath(SettingsInterface* bsi)
+	{
+		const bool game_settings = FullscreenUI::IsEditingGameSettings(bsi);
+		const std::optional<SmallString> preset_value(bsi->GetOptionalSmallStringValue(
+			"EmuCore/GS", "LibrashaderPreset", game_settings ? std::nullopt : std::optional<const char*>("")));
+		if (preset_value.has_value())
+			return Path::ToNativePath(StringUtil::StripWhitespace(preset_value->c_str()));
+
+		return Path::ToNativePath(StringUtil::StripWhitespace(Host::Internal::GetBaseSettingsLayer()->GetStringValue("EmuCore/GS", "LibrashaderPreset", "")));
+	}
+
+	std::string GetLibrashaderParamPopupId(const LibrashaderParam& param, size_t param_index)
+	{
+		return fmt::format("{}##LibrashaderParam{}", param.GetLabel(), param_index);
+	}
+
+	const char* GetLibrashaderLoadErrorString(LibrashaderLoadError error)
+	{
+		switch (error)
+		{
+			case LibrashaderLoadError::PresetFailed:
+				return FSUI_CSTR("Could not load the shader preset. Check that the path is valid and points to a .slangp file.");
+			case LibrashaderLoadError::ParamsFailed:
+				return FSUI_CSTR("Could not read shader parameters from this preset.");
+			default:
+				return nullptr;
+		}
+	}
+
+	LibrashaderParamsContext GetLibrashaderParamsContext(SettingsInterface* bsi)
+	{
+		if (!FullscreenUI::IsEditingGameSettings(bsi) || !FullscreenUI::s_game_settings_entry)
+			return {};
+
+		const GameList::Entry& entry = *FullscreenUI::s_game_settings_entry;
+		return LibrashaderParamsContext{
+			(entry.type != GameList::EntryType::ELF) ? entry.serial : std::string(),
+			entry.crc,
+			true};
+	}
+
+	void ClearLibrashaderState()
+	{
+		++FullscreenUI::s_librashader_load_request_id;
+		FullscreenUI::s_librashader_load_pending = false;
+		FullscreenUI::s_librashader_load_success = false;
+		FullscreenUI::s_librashader_load_error = LibrashaderLoadError::None;
+		FullscreenUI::s_librashader_loaded_preset.clear();
+		FullscreenUI::s_librashader_pending_preset.clear();
+		FullscreenUI::s_librashader_pass_names.clear();
+		FullscreenUI::s_librashader_param_search.clear();
+		FullscreenUI::s_librashader_editing_param_index.reset();
+#ifdef ENABLE_LIBRASHADER
+		FullscreenUI::s_librashader_params.clear();
+#endif
+		FullscreenUI::s_librashader_page_index = 0;
+	}
+} // namespace
+
+void FullscreenUI::CommitLibrashaderParams(SettingsInterface* bsi, const std::string& preset_path)
+{
+#ifdef ENABLE_LIBRASHADER
+	if (preset_path.empty())
+		return;
+
+	if (!SaveLibrashaderParams(preset_path, s_librashader_params, GetLibrashaderParamsContext(bsi)))
+	{
+		ShowToast(std::string(), FSUI_STR("Failed to save shader parameters."));
+		return;
+	}
+
+	if (IsEditingGameSettings(bsi))
+		Host::RunOnCPUThread([]() { VMManager::ReloadGameSettings(); });
+	else
+		Host::RunOnCPUThread([]() { VMManager::ApplySettings(); });
+#else
+	(void)bsi;
+	(void)preset_path;
+#endif
+}
+
+void FullscreenUI::StartLibrashaderLoad(SettingsInterface* bsi, const std::string& preset_path)
+{
+#ifdef ENABLE_LIBRASHADER
+	const u64 request_id = ++s_librashader_load_request_id;
+	s_librashader_load_pending = true;
+	s_librashader_load_success = false;
+	s_librashader_load_error = LibrashaderLoadError::None;
+	s_librashader_pending_preset = preset_path;
+	const LibrashaderParamsContext context = GetLibrashaderParamsContext(bsi);
+
+	if (s_librashader_load_thread.Joinable())
+		s_librashader_load_thread.Detach();
+
+	s_librashader_load_thread.Start([request_id, preset_path, context]() {
+		LibrashaderPresetLoad result = LoadLibrashaderPreset(preset_path, context);
+		std::lock_guard<std::mutex> lock(s_librashader_async_load.mutex);
+		if (request_id != s_librashader_load_request_id)
+			return;
+
+		s_librashader_async_load.request_id = request_id;
+		s_librashader_async_load.preset_path = preset_path;
+		s_librashader_async_load.result = std::move(result);
+		s_librashader_async_load.complete = true;
+	});
+#else
+	(void)bsi;
+	(void)preset_path;
+	s_librashader_pass_names = GetSlangpPassNames(preset_path);
+	s_librashader_loaded_preset = preset_path;
+	s_librashader_load_pending = false;
+#endif
+}
+
+void FullscreenUI::PollLibrashaderLoad()
+{
+#ifdef ENABLE_LIBRASHADER
+	LibrashaderPresetLoad result;
+	std::string preset_path;
+	u64 request_id = 0;
+	bool complete = false;
+
+	{
+		std::lock_guard<std::mutex> lock(s_librashader_async_load.mutex);
+		if (!s_librashader_async_load.complete)
+			return;
+
+		complete = true;
+		request_id = s_librashader_async_load.request_id;
+		preset_path = std::move(s_librashader_async_load.preset_path);
+		result = std::move(s_librashader_async_load.result);
+		s_librashader_async_load.complete = false;
+	}
+
+	if (!complete || request_id != s_librashader_load_request_id)
+		return;
+	if (preset_path != s_librashader_pending_preset)
+		return;
+
+	s_librashader_load_pending = false;
+	s_librashader_loaded_preset = preset_path;
+	s_librashader_pass_names = std::move(result.pass_names);
+	s_librashader_page_index = 0;
+
+	if (!result.success)
+	{
+		s_librashader_load_success = false;
+		s_librashader_load_error = result.error;
+		s_librashader_params.clear();
+		return;
+	}
+
+	s_librashader_load_success = true;
+	s_librashader_load_error = LibrashaderLoadError::None;
+	s_librashader_params = std::move(result.parameters);
+#endif
+}
+
+void FullscreenUI::DrawLibrashaderFloatParam(size_t param_index, const LibrashaderParam& param, bool enabled)
+{
+#ifdef ENABLE_LIBRASHADER
+	ImGui::PushID(static_cast<int>(param_index));
+	const std::string label = param.GetLabel();
+	const std::string value_text = param.FormatValue(param.value);
+
+	const bool pressed = MenuButtonWithValue(label.c_str(), nullptr, value_text.c_str(), enabled);
+	ImGui::PopID();
+
+	if (pressed)
+	{
+		s_librashader_editing_param_index = param_index;
+		const std::string popup_id = GetLibrashaderParamPopupId(param, param_index);
+		ImGui::OpenPopup(popup_id.c_str());
+	}
+#else
+	(void)param_index;
+	(void)param;
+	(void)enabled;
+#endif
+}
+
+void FullscreenUI::DrawLibrashaderFloatParamPopup(SettingsInterface* bsi, const std::string& preset_path, bool enabled)
+{
+#ifdef ENABLE_LIBRASHADER
+	if (!s_librashader_editing_param_index.has_value())
+		return;
+
+	const size_t param_index = s_librashader_editing_param_index.value();
+	if (param_index >= s_librashader_params.size())
+	{
+		s_librashader_editing_param_index.reset();
+		return;
+	}
+
+	static size_t popup_param_index = std::numeric_limits<size_t>::max();
+	static float dlg_value = 0.0f;
+
+	LibrashaderParam& param = s_librashader_params[param_index];
+	if (popup_param_index != param_index)
+	{
+		popup_param_index = param_index;
+		dlg_value = param.value;
+	}
+
+	const std::string popup_id = GetLibrashaderParamPopupId(param, param_index);
+
+	ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
+	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(ImGuiFullscreen::LAYOUT_WINDOW_ROUNDING));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+		LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING, ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
+
+	bool is_open = true;
+	if (ImGui::BeginPopupModal(popup_id.c_str(), &is_open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar))
+	{
+		BeginMenuButtons();
+
+		const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
+		ImGui::SetNextItemWidth(end);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(ImGuiFullscreen::LAYOUT_FRAME_ROUNDING));
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, LayoutScale(8.0f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25f, 0.25f, 0.25f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImVec4(0.45f, 0.65f, 0.95f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.55f, 0.75f, 1.0f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+		if (ImGui::SliderFloat("##value", &dlg_value, param.minimum, param.maximum, param.SliderFormat(),
+				ImGuiSliderFlags_NoInput) &&
+			enabled)
+		{
+			dlg_value = param.SnapValue(dlg_value);
+		}
+
+		ImGui::PopStyleColor(7);
+		ImGui::PopStyleVar(3);
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+
+		if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), enabled, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font, ImVec2(0.5f, 0.0f)))
+		{
+			const float snapped_value = param.SnapValue(dlg_value);
+			if (snapped_value != param.value)
+			{
+				param.value = snapped_value;
+				CommitLibrashaderParams(bsi, preset_path);
+			}
+
+			popup_param_index = std::numeric_limits<size_t>::max();
+			s_librashader_editing_param_index.reset();
+			ImGui::CloseCurrentPopup();
+		}
+
+		EndMenuButtons();
+		ImGui::EndPopup();
+	}
+	else if (!is_open)
+	{
+		popup_param_index = std::numeric_limits<size_t>::max();
+		s_librashader_editing_param_index.reset();
+	}
+
+	ImGui::PopStyleVar(4);
+	ImGui::PopFont();
+#else
+	(void)bsi;
+	(void)preset_path;
+	(void)enabled;
+#endif
+}
+
+void FullscreenUI::DrawLibrashaderParamsPage(SettingsInterface* bsi)
+{
+#ifdef ENABLE_LIBRASHADER
+	PollLibrashaderLoad();
+
+	const std::string preset_path = GetEffectiveLibrashaderPresetPath(bsi);
+	const bool enabled = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "LibrashaderEnabled", false) && !preset_path.empty();
+
+	BeginMenuButtons();
+
+	if (MenuButton(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back"), FSUI_CSTR("Return to Post-Processing settings.")))
+	{
+		s_librashader_editing_param_index.reset();
+		s_post_processing_subview = PostProcessingSubview::Main;
+	}
+
+	const std::string preset_filename = std::string(Path::GetFileName(preset_path));
+	ActiveButton(preset_filename.c_str(), false, false);
+
+	if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_MAGNIFYING_GLASS, "Parameter Search"),
+			FSUI_CSTR("Filters adjustable parameters by name or description."),
+			s_librashader_param_search.empty() ? FSUI_CSTR("None") : s_librashader_param_search.c_str(), enabled))
+	{
+		OpenInputStringDialog(FSUI_ICONSTR(ICON_FA_MAGNIFYING_GLASS, "Parameter Search"), FSUI_CSTR("Enter text to filter parameters by name or description."), std::string(), FSUI_ICONSTR(ICON_FA_CHECK, "OK"), [](std::string text) {
+				if (s_librashader_param_search != text)
+				{
+					s_librashader_param_search = std::move(text);
+					s_librashader_page_index = 0;
+				} }, s_librashader_param_search);
+	}
+
+	if (!s_librashader_param_search.empty())
+	{
+		if (MenuButton(FSUI_ICONSTR(ICON_FA_XMARK, "Clear Search"),
+				FSUI_CSTR("Removes the current parameter filter and shows all parameters."), enabled))
+		{
+			s_librashader_param_search.clear();
+			s_librashader_page_index = 0;
+		}
+	}
+
+	if (MenuButton(FSUI_ICONSTR(ICON_FA_ROTATE_LEFT, "Restore Defaults"),
+			IsEditingGameSettings(bsi) ?
+				FSUI_CSTR("Resets shader parameters to the preset defaults. Only values that differ from the global saved settings are stored as per-game overrides.") :
+				FSUI_CSTR("Resets all shader parameters for the current preset to their default values."),
+			enabled && s_librashader_load_success && !s_librashader_params.empty()))
+	{
+		if (!ResetLibrashaderParams(preset_path, s_librashader_params, GetLibrashaderParamsContext(bsi)))
+		{
+			ShowToast(std::string(), FSUI_STR("Failed to restore shader parameters."));
+		}
+		else
+		{
+			s_librashader_page_index = 0;
+			if (IsEditingGameSettings(bsi))
+				Host::RunOnCPUThread([]() { VMManager::ReloadGameSettings(); });
+			else
+				Host::RunOnCPUThread([]() { VMManager::ApplySettings(); });
+		}
+	}
+
+	if (IsEditingGameSettings(bsi))
+	{
+		const LibrashaderParamsContext context = GetLibrashaderParamsContext(bsi);
+		const bool has_per_game_overrides =
+			enabled && s_librashader_load_success && HasLibrashaderGameOverrides(preset_path, context);
+		if (MenuButton(FSUI_ICONSTR(ICON_FA_GLOBE, "Use Global Parameters"),
+				FSUI_CSTR("Removes per-game shader parameter overrides for the current preset and uses the global saved values instead."),
+				has_per_game_overrides))
+		{
+			if (ClearLibrashaderGameOverrides(preset_path, context))
+			{
+				s_librashader_page_index = 0;
+				StartLibrashaderLoad(bsi, preset_path);
+				if (VMManager::HasValidVM())
+					Host::RunOnCPUThread([]() { VMManager::ReloadGameSettings(); });
+			}
+		}
+	}
+
+	if (s_librashader_params.empty())
+	{
+		ActiveButton(FSUI_CSTR("This preset does not expose any adjustable parameters."), false, false);
+	}
+	else
+	{
+		const LibrashaderVisiblePage visible =
+			GetVisibleLibrashaderPage(s_librashader_params, s_librashader_param_search, s_librashader_page_index);
+		s_librashader_page_index = visible.page.page_index;
+
+		if (visible.indices.empty())
+		{
+			ActiveButton(FSUI_CSTR("No parameters match the current search."), false, false);
+		}
+		else
+		{
+			const LibrashaderPage& page = visible.page;
+
+			const SmallString page_label = SmallString::from_format(FSUI_FSTR("Page {}/{} ({} parameters)"),
+				static_cast<int>(page.page_index + 1), static_cast<int>(page.total_pages), static_cast<int>(page.total_params));
+			ActiveButton(page_label.c_str(), false, false);
+
+			const bool can_go_back = enabled && page.page_index > 0;
+			const bool can_go_forward = enabled && (page.page_index + 1) < page.total_pages;
+			if (can_go_back)
+			{
+				if (MenuButton(FSUI_ICONSTR(ICON_PF_BACKWARD, "Previous Page"), FSUI_CSTR("Show the previous page of parameters."), true))
+				{
+					s_librashader_editing_param_index.reset();
+					s_librashader_page_index--;
+				}
+			}
+			if (can_go_forward)
+			{
+				if (MenuButton(FSUI_ICONSTR(ICON_FA_CHEVRON_RIGHT, "Next Page"), FSUI_CSTR("Show the next page of parameters."), true))
+				{
+					s_librashader_editing_param_index.reset();
+					s_librashader_page_index++;
+				}
+			}
+
+			MenuHeading(FSUI_CSTR("Parameters"));
+			for (size_t visible_index = page.start; visible_index < page.end; ++visible_index)
+			{
+				const size_t index = visible.indices[visible_index];
+				LibrashaderParam& param = s_librashader_params[index];
+				switch (param.GetControl())
+				{
+					case LibrashaderParam::Control::Spacer:
+						continue;
+					case LibrashaderParam::Control::Label:
+						MenuHeading(param.GetLabel().c_str());
+						break;
+					case LibrashaderParam::Control::Bool:
+					{
+						bool state = param.GetBoolValue();
+						if (ToggleButton(param.GetLabel().c_str(), nullptr, &state, enabled))
+						{
+							param.SetBoolValue(state);
+							CommitLibrashaderParams(bsi, preset_path);
+						}
+					}
+					break;
+					case LibrashaderParam::Control::Float:
+						DrawLibrashaderFloatParam(index, param, enabled);
+						break;
+				}
+			}
+		}
+	}
+
+	EndMenuButtons();
+
+	DrawLibrashaderFloatParamPopup(bsi, preset_path, enabled);
+#else
+	(void)bsi;
+	BeginMenuButtons();
+	if (MenuButton(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back"), FSUI_CSTR("Return to Post-Processing settings.")))
+		s_post_processing_subview = PostProcessingSubview::Main;
+	ActiveButton(FSUI_CSTR("Shader preset parameters are not available because this build was compiled without librashader."), false, false);
+	EndMenuButtons();
+#endif
+}
+
+void FullscreenUI::DrawPostProcessingMainSettings(SettingsInterface* bsi)
+{
+	const bool librashader_active = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "LibrashaderEnabled", false);
+	const std::string preset_path = GetEffectiveLibrashaderPresetPath(bsi);
+	const bool has_preset = !preset_path.empty();
+	const bool preset_exists = has_preset && FileSystem::FileExists(preset_path.c_str());
+
+#ifdef ENABLE_LIBRASHADER
+	PollLibrashaderLoad();
+
+	if (!librashader_active || !has_preset)
+	{
+		if (!s_librashader_loaded_preset.empty())
+			ClearLibrashaderState();
+	}
+	else if (preset_path != s_librashader_pending_preset && !s_librashader_load_pending)
+	{
+		StartLibrashaderLoad(bsi, preset_path);
+	}
+	else if (!preset_exists && !s_librashader_loaded_preset.empty())
+	{
+		ClearLibrashaderState();
+		s_librashader_pass_names = GetSlangpPassNames(preset_path);
+	}
+#endif
+
+	MenuHeading(FSUI_CSTR("Post-Processing"));
+	{
+		static constexpr const char* s_cas_options[] = {
+			FSUI_NSTR("None (Default)"),
+			FSUI_NSTR("Sharpen Only (Internal Resolution)"),
+			FSUI_NSTR("Sharpen and Resize (Display Resolution)"),
+		};
+		const bool cas_active = (GetEffectiveIntSetting(bsi, "EmuCore/GS", "CASMode", 0) != static_cast<int>(GSCASMode::Disabled));
+
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EYE, "FXAA"), FSUI_CSTR("Enables FXAA post-processing shader."), "EmuCore/GS", "fxaa", false);
+		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SUN, "Contrast Adaptive Sharpening"), FSUI_CSTR("Enables FidelityFX Contrast Adaptive Sharpening."),
+			"EmuCore/GS", "CASMode", static_cast<int>(GSCASMode::Disabled), s_cas_options, std::size(s_cas_options), true);
+		DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_PENCIL, "CAS Sharpness"),
+			FSUI_CSTR("Determines the intensity the sharpening effect in CAS post-processing."), "EmuCore/GS", "CASSharpness", 50, 0, 100,
+			1, FSUI_CSTR("%d%%"), cas_active);
+	}
+
+	MenuHeading(FSUI_CSTR("Filters"));
+	{
+		const bool shadeboost_active = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "ShadeBoost", false);
+
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEM, "Shade Boost"), FSUI_CSTR("Enables brightness/contrast/gamma/saturation adjustment."), "EmuCore/GS",
+			"ShadeBoost", false);
+		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_SUN, "Shade Boost Brightness"), FSUI_CSTR("Adjusts brightness. 50 is normal."), "EmuCore/GS",
+			"ShadeBoost_Brightness", 50, 1, 100, "%d", shadeboost_active);
+		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Shade Boost Contrast"), FSUI_CSTR("Adjusts contrast. 50 is normal."), "EmuCore/GS",
+			"ShadeBoost_Contrast", 50, 1, 100, "%d", shadeboost_active);
+		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_DROPLET_SLASH, "Shade Boost Gamma"), FSUI_CSTR("Adjusts gamma. 50 is normal."), "EmuCore/GS",
+			"ShadeBoost_Gamma", 50, 1, 100, "%d", shadeboost_active);
+		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_DROPLET, "Shade Boost Saturation"), FSUI_CSTR("Adjusts saturation. 50 is normal."), "EmuCore/GS",
+			"ShadeBoost_Saturation", 50, 1, 100, "%d", shadeboost_active);
+
+		static constexpr const char* s_tv_shaders[] = {
+			FSUI_NSTR("None (Default)"),
+			FSUI_NSTR("Scanline Filter"),
+			FSUI_NSTR("Diagonal Filter"),
+			FSUI_NSTR("Triangular Filter"),
+			FSUI_NSTR("Wave Filter"),
+			FSUI_NSTR("Lottes CRT"),
+			FSUI_NSTR("4xRGSS"),
+			FSUI_NSTR("NxAGSS"),
+		};
+		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "TV Shaders"), FSUI_CSTR("Applies a shader which replicates the visual effects of different styles of television set."), "EmuCore/GS", "TVShader", 0,
+			s_tv_shaders, std::size(s_tv_shaders), true);
+	}
+
+	MenuHeading(FSUI_CSTR("Shader Preset (librashader)"));
+	{
+#ifdef ENABLE_LIBRASHADER
+		const bool librashader_enabled = true;
+#else
+		const bool librashader_enabled = false;
+#endif
+
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WAND_MAGIC_SPARKLES, "Shader Preset (librashader)"),
+			librashader_enabled ?
+				FSUI_CSTR("Enables a shader preset chain using librashader. Some presets may impact performance.") :
+				FSUI_CSTR("librashader support is not compiled into this build."),
+			"EmuCore/GS", "LibrashaderEnabled", false, librashader_enabled);
+
+		const bool game_settings = IsEditingGameSettings(bsi);
+		const std::optional<SmallString> preset_value(bsi->GetOptionalSmallStringValue(
+			"EmuCore/GS", "LibrashaderPreset", game_settings ? std::nullopt : std::optional<const char*>("")));
+		const char* preset_summary = (preset_value.has_value() && !preset_value->empty()) ?
+		                                 preset_value->c_str() :
+		                                 FSUI_CSTR("None");
+
+		if (MenuButton(FSUI_ICONSTR(ICON_FA_FILE, "Shader Preset File"), preset_summary, librashader_active && librashader_enabled))
+		{
+			auto callback = [game_settings = IsEditingGameSettings(bsi)](const std::string& path) {
+				auto lock = Host::GetSettingsLock();
+				SettingsInterface* ebsi = GetEditingSettingsInterface(game_settings);
+
+				if (!path.empty())
+					ebsi->SetStringValue("EmuCore/GS", "LibrashaderPreset", path.c_str());
+				else
+					ebsi->DeleteValue("EmuCore/GS", "LibrashaderPreset");
+
+				ClearLibrashaderState();
+				SetSettingsChanged(ebsi);
+				CloseFileSelector();
+			};
+
+			std::string initial_path;
+			if (preset_value.has_value() && !preset_value->empty())
+				initial_path = Path::GetDirectory(preset_value.value());
+
+			OpenFileSelector(FSUI_CSTR("Select Shader Preset"), false, std::move(callback), {"*.slangp"}, std::move(initial_path));
+		}
+
+		if (preset_value.has_value() && !preset_value->empty())
+		{
+			if (MenuButton(FSUI_ICONSTR(ICON_FA_XMARK, "Clear Shader Preset"), FSUI_CSTR("Remove the selected shader preset."), librashader_active && librashader_enabled))
+			{
+				bsi->DeleteValue("EmuCore/GS", "LibrashaderPreset");
+				ClearLibrashaderState();
+				SetSettingsChanged(bsi);
+			}
+		}
+
+		if (librashader_active && has_preset)
+		{
+			if (!preset_exists)
+			{
+				ActiveButton(FSUI_CSTR("The selected preset file does not exist."), false, false);
+			}
+#ifdef ENABLE_LIBRASHADER
+			else if (s_librashader_load_pending)
+			{
+				ActiveButton(FSUI_CSTR("Loading shader parameters..."), false, false);
+			}
+			else if (!s_librashader_load_success)
+			{
+				if (const char* error_text = GetLibrashaderLoadErrorString(s_librashader_load_error))
+					ActiveButton(error_text, false, false);
+				else if (s_librashader_loaded_preset.empty())
+					ActiveButton(FSUI_CSTR("Select a .slangp preset to view runtime parameters."), false, false);
+			}
+
+			if (preset_exists && s_librashader_load_success && !s_librashader_pass_names.empty())
+			{
+				MenuHeading(FSUI_CSTR("Passes"));
+				for (const std::string& pass_name : s_librashader_pass_names)
+					ActiveButton(pass_name.c_str(), false, false);
+			}
+
+			if (preset_exists)
+			{
+				const bool can_edit_params =
+					s_librashader_load_success && !s_librashader_load_pending && s_librashader_loaded_preset == preset_path;
+				if (MenuButton(FSUI_ICONSTR(ICON_FA_SLIDERS, "Shader Parameters"),
+						FSUI_CSTR("Adjust runtime shader parameters for the selected preset."), can_edit_params))
+				{
+					s_post_processing_subview = PostProcessingSubview::LibrashaderParams;
+				}
+			}
+#else
+			else
+			{
+				MenuHeading(FSUI_CSTR("Passes"));
+				const std::vector<std::string> pass_names = GetSlangpPassNames(preset_path);
+				for (const std::string& pass_name : pass_names)
+					ActiveButton(pass_name.c_str(), false, false);
+
+				ActiveButton(FSUI_CSTR("librashader support is not compiled into this build."), false, false);
+			}
+#endif
+		}
+	}
+}
+
+void FullscreenUI::DrawPostProcessingSettingsPage()
+{
+	SettingsInterface* bsi = GetEditingSettingsInterface();
+
+	if (s_post_processing_subview == PostProcessingSubview::LibrashaderParams)
+	{
+		DrawLibrashaderParamsPage(bsi);
+		return;
+	}
+
+	BeginMenuButtons();
+	DrawPostProcessingMainSettings(bsi);
 	EndMenuButtons();
 }
 

@@ -121,13 +121,15 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/GraphicsHardwareFixesSettingsTab.ui
 	Settings/GraphicsHardwareRenderingSettingsTab.ui
 	Settings/GraphicsMediaCaptureSettingsTab.ui
-	Settings/GraphicsPostProcessingSettingsTab.ui
 	Settings/GraphicsSettingsHeader.ui
 	Settings/GraphicsSettingsWidget.cpp
 	Settings/GraphicsSettingsWidget.h
 	Settings/GraphicsSoftwareRenderingSettingsTab.ui
 	Settings/GraphicsTextureReplacementSettingsTab.ui
 	Settings/GraphicsUpscalingFixesSettingsTab.ui
+	Settings/PostProcessingSettingsWidget.cpp
+	Settings/PostProcessingSettingsWidget.h
+	Settings/PostProcessingSettingsWidget.ui
 	Settings/HotkeySettingsWidget.cpp
 	Settings/HotkeySettingsWidget.h
 	Settings/InputBindingDialog.cpp

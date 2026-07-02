@@ -1,0 +1,33 @@
+{
+  "name": "librashader",
+  "buildsystem": "simple",
+  "build-options": {
+    "append-path": "/usr/lib/sdk/rust-stable/bin",
+    "strip": true
+  },
+  "build-commands": [
+    "cargo run -p librashader-build-script -- --profile optimized --stable -- --no-default-features --features runtime-opengl,runtime-vulkan",
+    "install -d ${FLATPAK_DEST}/include/librashader ${FLATPAK_DEST}/lib",
+    "install -m 0644 include/librashader.h ${FLATPAK_DEST}/include/librashader/librashader.h",
+    "install -m 0644 include/librashader_ld.h ${FLATPAK_DEST}/include/librashader/librashader_ld.h",
+    "SO=$(find target/optimized \\( -name 'librashader.so' -o -name 'liblibrashader.so' \\) -print -quit); [ -z \"$SO\" ] && { echo 'librashader shared library not found'; exit 1; }; install -m 0755 \"$SO\" ${FLATPAK_DEST}/lib/liblibrashader.so"
+  ],
+  "sources": [
+    {
+      "type": "git",
+      "url": "https://github.com/SnowflakePowered/librashader.git",
+      "tag": "librashader-v0.11.3",
+      "commit": "cde6ad63b034dba0621b6a69d3654a79fe34a058"
+    },
+    {
+      "type": "inline",
+      "contents": "[source.crates-io]\nreplace-with = \"vendored-sources\"\n\n[source.vendored-sources]\ndirectory = \"cargo/vendor\"",
+      "dest": ".cargo",
+      "dest-filename": "config.toml"
+    },
+    "librashader-cargo-sources.json"
+  ],
+  "cleanup": [
+    "/include"
+  ]
+}

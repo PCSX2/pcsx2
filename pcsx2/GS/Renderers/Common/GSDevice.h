@@ -13,6 +13,7 @@
 #include "GS/GSAlignedClass.h"
 #include "GS/GSExtra.h"
 #include <array>
+#include <future>
 #include <span>
 
 enum class Filter
@@ -1380,6 +1381,27 @@ public:
 		Performance
 	};
 
+#ifdef ENABLE_LIBRASHADER
+	enum class LibrashaderCompileState : u8
+	{
+		Idle,
+		Compiling,
+		Ready,
+		Failed
+	};
+
+	struct LibrashaderCompileStatus
+	{
+		LibrashaderCompileState state = LibrashaderCompileState::Idle;
+		std::string preset_name;
+		std::string error_message;
+		u64 request_id = 0;
+		u64 started_ticks = 0;
+		u32 params_applied = 0;
+		u32 params_total = 0;
+	};
+#endif
+
 	// clang-format off
 	struct FeatureSupport
 	{
@@ -1486,6 +1508,28 @@ protected:
 	GSTexture* m_colclip_rt = nullptr; ///< Temp hw colclip texture
 	GSTexture* m_ds_as_rt = nullptr; ///< Depth as color
 
+#ifdef ENABLE_LIBRASHADER
+	// The libra_*_filter_chain is in each backend, since librashader.h has to be
+	// included with a runtime #define that can't happen here.
+	struct LibrashaderPresetLoadResult
+	{
+		bool success = false;
+		std::string error_message;
+		u64 request_id = 0;
+		std::string preset_path;
+	};
+
+	u32 m_librashader_frame_count = 0;
+	std::string m_librashader_loaded_preset;
+	std::vector<std::pair<std::string, float>> m_librashader_applied_params;
+	LibrashaderCompileStatus m_librashader_compile_status;
+	std::future<LibrashaderPresetLoadResult> m_librashader_pending_preset;
+	u64 m_librashader_request_id = 0;
+	bool m_librashader_restart_pending = false;
+	std::string m_librashader_queued_preset;
+	bool m_librashader_queued_reset = false;
+#endif
+
 	bool AcquireWindow(bool recreate_window);
 
 	virtual GSTexture* CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format) = 0;
@@ -1500,6 +1544,13 @@ protected:
 
 	/// Applies CAS and writes to the destination texture, which should be a shader writeable texture.
 	virtual bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) = 0;
+
+#ifdef ENABLE_LIBRASHADER
+	virtual bool CreateLibrashaderFilterChain(const std::string& preset_path) { return false; }
+	virtual void DestroyLibrashaderFilterChain() {}
+	virtual bool DoLibrashader(GSTexture* sTex, GSTexture* dTex) { return false; }
+	virtual void ApplyLibrashaderChainParams(const std::vector<std::pair<std::string, float>>& params) {}
+#endif
 
 	/// Perform texture operations for ImGui
 	void UpdateImGuiTextures();
@@ -1703,6 +1754,10 @@ public:
 	void FXAA();
 	void ShadeBoost();
 	void Resize(int width, int height);
+#ifdef ENABLE_LIBRASHADER
+	void Librashader();
+	LibrashaderCompileStatus GetLibrashaderCompileStatus() const { return m_librashader_compile_status; }
+#endif
 
 	void CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, const GSVector4& draw_rect, bool sharpen_only);
 

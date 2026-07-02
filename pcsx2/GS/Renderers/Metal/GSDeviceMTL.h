@@ -386,6 +386,15 @@ public:
 
 	bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) override;
 
+#ifdef ENABLE_LIBRASHADER
+	void* m_librashader_chain = nullptr;
+
+	bool CreateLibrashaderFilterChain(const std::string& preset_path) override;
+	void DestroyLibrashaderFilterChain() override;
+	bool DoLibrashader(GSTexture* sTex, GSTexture* dTex) override;
+	void ApplyLibrashaderChainParams(const std::vector<std::pair<std::string, float>>& params) override;
+#endif
+
 	MRCOwned<id<MTLFunction>> LoadShader(NSString* name);
 	MRCOwned<id<MTLRenderPipelineState>> MakePipeline(MTLRenderPipelineDescriptor* desc, id<MTLFunction> vertex, id<MTLFunction> fragment, NSString* name);
 	MRCOwned<id<MTLComputePipelineState>> MakeComputePipeline(id<MTLFunction> compute, NSString* name);
