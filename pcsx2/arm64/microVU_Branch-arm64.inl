@@ -645,6 +645,12 @@ void condBranch(mV, microFlagCycles& mFC, a64::Condition cond)
 		armAsm->Ldrsh(a64::w9, a64::MemOperand(a64::x8));
 		armAsm->Cmp(a64::w9, 0);
 
+		// DELIBERATE divergence from x86 (which wraps JMPcc in xInvertCond
+		// here): the direct condition is the semantically correct one — taken
+		// branch resumes at the branch target, matching the interpreter and
+		// x86's own game-validated E-bit site. x86's T/D invert is an
+		// unvalidated leftover of the 2015 crossed-label fix (2f20e6da6).
+		// Pinned by Vu0SpecialBits.TBitOnConditionalBranch* (AX-01).
 		a64::Label tJMP;
 		armAsm->B(&tJMP, cond);
 			// Not taken: set TPC to PC after the delay slot
@@ -696,6 +702,7 @@ void condBranch(mV, microFlagCycles& mFC, a64::Condition cond)
 		armAsm->Ldrsh(a64::w9, a64::MemOperand(a64::x8));
 		armAsm->Cmp(a64::w9, 0);
 
+		// Direct cond on purpose — see the T-bit stub above (AX-01).
 		a64::Label dJMP;
 		armAsm->B(&dJMP, cond);
 			incPC(4);

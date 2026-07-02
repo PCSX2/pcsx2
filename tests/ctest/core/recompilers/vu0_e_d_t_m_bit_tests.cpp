@@ -208,6 +208,85 @@ TEST(Vu0SpecialBits, TBitOnUnconditionalBranchRaisesVu0Intc)
 }
 
 // =========================================================================
+//  T-bit on a CONDITIONAL branch — TPC polarity (AX-01)
+//
+//  condBranch's T-bit exit stub picks REG_TPC based on the branch condition:
+//  the resume PC must be the branch TARGET when the branch is taken and the
+//  fall-through side when it is not. The interpreter is the semantic oracle:
+//  _vu0Exec latches ebit=1 on the T-bit pair (terminating on that same pair,
+//  delay slot NOT executed), and InterpVU0::Execute's epilogue then applies
+//  `if (VU0.branch) TPC = branchpc` — so condition TRUE => TPC = target.
+//
+//  Polarity provenance (why these tests pin the DIRECT condition): x86's
+//  T/D-bit stubs wrap JMPcc in xInvertCond (microVU_Branch.inl:430/:461),
+//  which under the file's own JMPcc calibration (E-bit :507, evil-branch
+//  helper, normal-branch :535 — all game-validated as "JMPcc TRUE == taken")
+//  assigns TPC = fall-through to a TAKEN branch. That invert dates to 2015
+//  (2f20e6da6), whose real fix was crossed tJMP/eJMP labels; its message
+//  admits no T-bit game validated it. The DT Racer-validated 2020 fix
+//  (0448b4902) made the *E-bit* site direct. Our arm64 condBranch uses the
+//  direct condition, matching the interpreter — do NOT "fix" it to match
+//  x86's inverted T/D sites.
+// =========================================================================
+
+TEST(Vu0SpecialBits, TBitOnConditionalBranchTakenTpcIsBranchTarget)
+{
+	VuTestHarness h(0);
+	vuRegs[0].VI[REG_FBRST].UL = 0x8u; // T-stop for VU0 (FBRST bit 3)
+	h.SetVi(vi::vi1, 0); // IBEQ vi1, vi0 => 0 == 0 => branch TAKEN
+	h.LoadProgram({
+		TBit(LowerOnly(VIBEQ_L(vi::vi1, vi::vi0, +2))), // pair 0: branch to pair 3
+		LoadViImm(vi::vi2, 0x222), // pair 1: delay slot
+		LoadViImm(vi::vi3, 0x333), // pair 2: fall-through side
+		LoadViImm(vi::vi4, 0x444), // pair 3: branch target
+		EBitNopPair(),             // pair 4: terminator (T-bit stops first)
+	});
+
+	// One-sided runs: the T-bit stop makes JIT and interp legitimately diverge
+	// on delay-slot execution (JIT compiles branch+delay-slot as a unit, the
+	// interp's ebit=1 stops before the delay slot), so a full-state diff can't
+	// be used. TPC is asserted per-engine instead.
+	h.RunInterpOnly();
+	EXPECT_EQ(h.GetViInterp(REG_TPC), 3u)
+		<< "interpreter oracle: taken branch + T-bit stop must resume at the "
+		   "branch target";
+	EXPECT_EQ((vuRegs[0].VI[REG_VPU_STAT].UL & 0x4u), 0x4u); // T-latch fired
+
+	h.RunJitPreserveBlockCache();
+	EXPECT_EQ(h.GetViJit(REG_TPC), 3u)
+		<< "condBranch T-bit stub: taken branch must set TPC to the branch "
+		   "target (direct cond, matching the interpreter — NOT x86's "
+		   "xInvertCond T/D-bit polarity)";
+}
+
+TEST(Vu0SpecialBits, TBitOnConditionalBranchNotTakenTpcIsFallthrough)
+{
+	VuTestHarness h(0);
+	vuRegs[0].VI[REG_FBRST].UL = 0x8u; // T-stop for VU0
+	h.SetVi(vi::vi1, 1); // IBEQ vi1, vi0 => 1 != 0 => branch NOT taken
+	h.LoadProgram({
+		TBit(LowerOnly(VIBEQ_L(vi::vi1, vi::vi0, +2))), // pair 0: branch to pair 3
+		LoadViImm(vi::vi2, 0x222), // pair 1: delay slot
+		LoadViImm(vi::vi3, 0x333), // pair 2: fall-through side
+		LoadViImm(vi::vi4, 0x444), // pair 3: branch target
+		EBitNopPair(),             // pair 4: terminator (T-bit stops first)
+	});
+
+	h.RunInterpOnly();
+	// Interp model: ebit=1 fires on the branch pair itself, so the delay slot
+	// never executes and TPC rests at it (pair 1). The JIT ran the delay slot,
+	// so its resume point is pair 2 — a legitimate structural divergence.
+	EXPECT_EQ(h.GetViInterp(REG_TPC), 1u);
+
+	h.RunJitPreserveBlockCache();
+	EXPECT_EQ(h.GetViJit(REG_TPC), 2u)
+		<< "condBranch T-bit stub: NOT-taken branch must set TPC to the "
+		   "fall-through side, never the branch target";
+	// The JIT's delay slot did execute before the stub.
+	EXPECT_EQ(h.GetViJit(vi::vi2), 0x222u);
+}
+
+// =========================================================================
 //  M-bit — VU0-only, sets VUFLAG_MFLAGSET
 // =========================================================================
 
