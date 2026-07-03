@@ -1563,20 +1563,10 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		const float image_width = 60.0f;
 		const float image_height = 90.0f;
 		const std::string_view path_string(Path::GetFileName(s_current_disc_path));
-		const ImVec2 title_size(
-			g_large_font.first->CalcTextSizeA(g_large_font.second, std::numeric_limits<float>::max(), -1.0f, s_current_game_title.c_str()));
-		const ImVec2 path_size(path_string.empty() ?
-								   ImVec2(0.0f, 0.0f) :
-								   g_medium_font.first->CalcTextSizeA(g_medium_font.second, std::numeric_limits<float>::max(), -1.0f,
-									   path_string.data(), path_string.data() + path_string.length()));
-		const ImVec2 subtitle_size(g_medium_font.first->CalcTextSizeA(
-			g_medium_font.second, std::numeric_limits<float>::max(), -1.0f, s_current_game_subtitle.c_str()));
 
-		ImVec2 title_pos(display_size.x - LayoutScale(10.0f + image_width + 20.0f) - title_size.x,
-			display_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT) - LayoutScale(10.0f + image_height));
-		ImVec2 path_pos(display_size.x - LayoutScale(10.0f + image_width + 20.0f) - path_size.x,
-			title_pos.y + g_large_font.second + LayoutScale(4.0f));
-		ImVec2 subtitle_pos(display_size.x - LayoutScale(10.0f + image_width + 20.0f) - subtitle_size.x,
+		ImVec2 title_pos(LayoutScale(10.0f + image_width + 20.0f), LayoutScale(10.0f));
+		ImVec2 path_pos(LayoutScale(10.0f + image_width + 20.0f), title_pos.y + g_large_font.second + LayoutScale(4.0f));
+		ImVec2 subtitle_pos(LayoutScale(10.0f + image_width + 20.0f),
 			(path_string.empty() ? title_pos.y + g_large_font.second : path_pos.y + g_medium_font.second) + LayoutScale(4.0f));
 
 		float rp_height = 0.0f;
@@ -1593,12 +1583,8 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 				// Add a small extra gap if any Rich Presence is displayed
 				rp_height = rp_size.y - g_medium_font.second + LayoutScale(2.0f);
 
-				const ImVec2 rp_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - rp_size.x,
-					subtitle_pos.y + g_medium_font.second + LayoutScale(4.0f) - rp_height);
-
-				title_pos.y -= rp_height;
-				path_pos.y -= rp_height;
-				subtitle_pos.y -= rp_height;
+				const ImVec2 rp_pos(LayoutScale(10.0f + image_width + 20.0f),
+					subtitle_pos.y + g_medium_font.second + LayoutScale(4.0f));
 
 				DrawShadowedText(dl, g_medium_font, rp_pos, text_color, rp.data(), rp.data() + rp.length(), wrap_width);
 			}
@@ -1611,8 +1597,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		}
 		DrawShadowedText(dl, g_medium_font, subtitle_pos, text_color, s_current_game_subtitle.c_str());
 
-		const ImVec2 image_min(display_size.x - LayoutScale(10.0f + image_width),
-			display_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT) - LayoutScale(10.0f + image_height) - rp_height);
+		const ImVec2 image_min(LayoutScale(10.0f), LayoutScale(10.0f));
 		const ImVec2 image_max(image_min.x + LayoutScale(image_width), image_min.y + LayoutScale(image_height) + rp_height);
 		{
 			auto lock = GameList::GetLock();
