@@ -915,7 +915,7 @@ namespace mVUPersist
 		pxAssert(!armAsm); // caller must not have an open emission episode
 		mVUopenCodeCache(mVU);
 
-		microProgram* prog = mVUcreateProg(mVU, static_cast<int>(hdr.progStartPC / 8));
+		microProgram* prog = mVUcreateProg(mVU, static_cast<int>(hdr.progStartPC / 8), live_hash);
 
 		// Restore compiled ranges + the range-compare image (mVUcmpProg under
 		// !doWholeProgCompare diffs prog.data inside these windows; the live

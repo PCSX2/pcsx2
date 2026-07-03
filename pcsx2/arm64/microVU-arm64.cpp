@@ -1132,7 +1132,7 @@ __ri void mVUdeleteProg(microVU& mVU, microProgram*& prog)
 	safe_aligned_free(prog);
 }
 
-__ri microProgram* mVUcreateProg(microVU& mVU, int startPC)
+__ri microProgram* mVUcreateProg(microVU& mVU, int startPC, const XXH128_hash_t& contentHash)
 {
 #ifdef mVUcacheTrace
 	++g_mVUCacheTrace[mVU.index & 1].programs_created;
@@ -1152,12 +1152,15 @@ __ri microProgram* mVUcreateProg(microVU& mVU, int startPC)
 	if(doWholeProgCompare)
 		mVUcacheProg(mVU, *prog);
 
-	// Anchor the program's content identity from live microMem and register it
-	// in the per-VU contentMap. Done here (not in mVUcacheProg) so the hash is
-	// set even under !doWholeProgCompare where mVUcacheProg fires only later
-	// from mVUsetupRange. The hash stays stable for the program's lifetime —
+	// Anchor the program's content identity and register it in the per-VU
+	// contentMap. Callers pass the hash they already computed from live
+	// microMem this dispatch (no micro-mem write can intervene — same
+	// thread), so the 16 KB image isn't hashed a second time on a full miss.
+	// Done here (not in mVUcacheProg) so the hash is set even under
+	// !doWholeProgCompare where mVUcacheProg fires only later from
+	// mVUsetupRange. The hash stays stable for the program's lifetime —
 	// subsequent re-caches don't shift the contentMap key.
-	prog->contentHash      = mVUcomputeProgramHash(mVU);
+	prog->contentHash      = contentHash;
 	prog->contentHashValid = true;
 	mVUcontentMapInsert(mVU, prog);
 
@@ -1252,36 +1255,11 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState)
 
 	if (!quick.prog)
 	{
-		// Cross-PC content-hash fast path. Hash the live microMem once;
-		// a contentMap hit reuses the existing microProgram across all
-		// startPCs that produce the same image, without paying the per-PC
-		// deque walk. Trusts the 128-bit xxh3 hash as the identity (no
-		// memcmp confirm — collision odds are astronomical and the on-disk
-		// cache uses the same key).
-		const XXH128_hash_t liveHash = mVUcomputeProgramHash(mVU);
-		auto cmIt = mVU.mvuContentMap.find(liveHash);
-		if (cmIt != mVU.mvuContentMap.end())
-		{
-			microProgram* shared = cmIt->second;
-			mVUdequePushUnique(list, shared);
-			mVU.prog.cleared = 0;
-			mVU.prog.isSame  = 1;
-			mVU.prog.cur     = shared;
-			quick.prog       = shared;
-			quick.block      = shared->block[startPC / 8];
-			// Record the dispatched entry on the resolved program.
-			// Idempotent on duplicates; bumps `observed.version` only
-			// when this PC is new for the program.
-			shared->observed.record(startPC);
-			if (quick.block == nullptr)
-			{
-				// First time this startPC is compiled for the shared program
-				// — drop through to mVUblockFetch to build the block.
-				void* entryPoint = mVUblockFetch(mVU, startPC, pState);
-				return entryPoint;
-			}
-			return mVUentryGet(mVU, quick.block, startPC, pState);
-		}
+		// Per-PC deque walk first. mVUcmpProg's range compare is the same
+		// program identity upstream x86 (and AetherSX2) dispatch on, and the
+		// MRU reordering below keeps the working set at the front — so games
+		// that cycle a small set of programs at one PC resolve in a couple of
+		// early-exit memcmps and never pay the whole-microMem hash below.
 
 #ifdef mVUcacheTrace
 		u64 walkIters = 0;
@@ -1318,11 +1296,40 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState)
 #ifdef mVUcacheTrace
 		mVUCacheTraceObserveWalk(mVU.index, walkIters, /*matched=*/false, /*matchPos=*/0);
 #endif
-		// Full in-process miss (contentMap + per-PC deque) — this PC needs a
+		// Deque miss — only now pay the whole-microMem hash. It keys the
+		// cross-PC contentMap (identical microMem dispatched from a different
+		// startPC shares one compiled program instead of recompiling) and the
+		// on-disk program cache. Trusts the 128-bit xxh3 hash as the identity
+		// (no memcmp confirm — collision odds are astronomical and the
+		// on-disk cache uses the same key).
+		const XXH128_hash_t liveHash = mVUcomputeProgramHash(mVU);
+		auto cmIt = mVU.mvuContentMap.find(liveHash);
+		if (cmIt != mVU.mvuContentMap.end())
+		{
+			microProgram* shared = cmIt->second;
+			mVUdequePushUnique(list, shared);
+			mVU.prog.cleared = 0;
+			mVU.prog.isSame  = 1;
+			mVU.prog.cur     = shared;
+			quick.prog       = shared;
+			quick.block      = shared->block[startPC / 8];
+			// Record the dispatched entry on the resolved program.
+			// Idempotent on duplicates; bumps `observed.version` only
+			// when this PC is new for the program.
+			shared->observed.record(startPC);
+			if (quick.block == nullptr)
+			{
+				// First time this startPC is compiled for the shared program
+				// — drop through to mVUblockFetch to build the block.
+				void* entryPoint = mVUblockFetch(mVU, startPC, pState);
+				return entryPoint;
+			}
+			return mVUentryGet(mVU, quick.block, startPC, pState);
+		}
+
+		// Full in-process miss (per-PC deque + contentMap) — this PC needs a
 		// program. Try hydrating the block graph from the on-disk cache
-		// before compiling from scratch. Placed after the deque walk so a
-		// range-equal program already in memory wins over creating a
-		// duplicate from disk.
+		// before compiling from scratch.
 		mVUProgCache::ObserveDispatchHash(mVU, liveHash, startPC);
 		if (microProgram* hydrated = mVUProgCache::TryLoadProgram(mVU, liveHash))
 		{
@@ -1349,7 +1356,7 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState)
 
 		mVU.prog.cleared = 0;
 		mVU.prog.isSame  = 1;
-		mVU.prog.cur     = mVUcreateProg(mVU, mVU.regs().start_pc/8);
+		mVU.prog.cur     = mVUcreateProg(mVU, mVU.regs().start_pc/8, liveHash);
 		// createProg seeded `observed` with its own startPC; record
 		// the dispatcher's `startPC` too (idempotent if they match,
 		// which is the common case).
