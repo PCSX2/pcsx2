@@ -134,7 +134,18 @@ void Threading::WorkSema::Kill()
 
 void Threading::WorkSema::Reset()
 {
-	m_state = STATE_RUNNING_0;
+	// Preserve a pending empty-waiter across Reset: a raw store would erase
+	// STATE_FLAG_WAITING_EMPTY without posting m_empty_sema, stranding a
+	// WaitForEmpty() caller forever. Observed in the field as a shutdown
+	// deadlock: MTGS's close/reopen cycle (ThreadEntryPoint calls Reset after
+	// GSclose) raced VMManager::Shutdown's WaitGS -> WaitForEmpty — the
+	// waiter's flag was clobbered, the GS thread then went to sleep without
+	// posting, and the caller waited on m_empty_sema forever. Every other
+	// flag-clearing path posts (Kill, WaitForWork's sleep transition,
+	// CheckForWork); Reset must hand off too.
+	const s32 old = m_state.exchange(STATE_RUNNING_0, std::memory_order_acq_rel);
+	if (old & STATE_FLAG_WAITING_EMPTY)
+		m_empty_sema.Post();
 }
 
 #if !defined(__APPLE__) // macOS implementations are in DarwinThreads
