@@ -37,7 +37,7 @@ BUILDDIR=$2
 DEPSDIR=$3
 NAME=$4
 
-BINARY=pcsx2-qt
+BINARY=yaps2-qt
 APPDIRNAME=PCSX2.AppDir
 STRIP=strip
 
@@ -111,7 +111,7 @@ EXTRA_PLATFORM_PLUGINS="libqwayland.so" \
 DEPLOY_PLATFORM_THEMES="1" \
 QMAKE="$DEPSDIR/bin/qmake" \
 NO_STRIP="1" \
-$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt" ${EXTRA_LIBS_ARGS[@]} \
+$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/yaps2-qt" ${EXTRA_LIBS_ARGS[@]} \
 --desktop-file="net.pcsx2.PCSX2.desktop" --icon-file="PCSX2.png"
 
 echo "Copying resources into AppDir..."

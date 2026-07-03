@@ -14,7 +14,7 @@
       "autodownload": true
     }
   },
-  "command": "pcsx2-qt",
+  "command": "yaps2-qt",
   "finish-args": [
     "--device=all",
     "--share=network",

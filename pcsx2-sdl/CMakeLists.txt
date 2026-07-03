@@ -1,5 +1,9 @@
 add_executable(pcsx2-sdl)
 
+# yaps2 fork: emit the handheld frontend binary as "yaps2-sdl" instead of
+# "pcsx2-sdl". Target name stays pcsx2-sdl; only the produced file changes.
+set_target_properties(pcsx2-sdl PROPERTIES OUTPUT_NAME "yaps2-sdl")
+
 if (PACKAGE_MODE)
 	install(TARGETS pcsx2-sdl DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()

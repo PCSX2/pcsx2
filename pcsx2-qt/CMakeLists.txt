@@ -367,6 +367,11 @@ endif()
 fixup_file_properties(pcsx2-qt)
 setup_main_executable(pcsx2-qt)
 
+# yaps2 fork: emit the application binary as "yaps2-qt" instead of "pcsx2-qt".
+# The CMake target stays named pcsx2-qt so the build graph, install() rules and
+# ctest references are untouched; only the produced file name changes.
+set_target_properties(pcsx2-qt PROPERTIES OUTPUT_NAME "yaps2-qt")
+
 # Opt-in non-PIE link for cross-run VU program cache validation.
 # A PIE build is loaded at an ASLR-randomized image base, so a cached
 # program's recorded image base mismatches on every cold boot and
