@@ -321,8 +321,11 @@ void mVUbuildOptionsSentinel(microVU& mVU)
 		// recording-OFF sentinel is bit-identical to the pre-recording one.
 		u8  progCacheRecording;
 		// Reserved tail so adding a future option byte doesn't shift downstream
-		// fields. Any expansion that consumes these bytes is a codegen-shape
-		// change → bump kMvuCompilerAbiVersion in the same commit.
+		// fields. Reclaim bytes with 0 == "feature off / old behavior" so the
+		// off-state sentinel stays bit-identical (no wholesale eviction for
+		// users who never enable the feature); a reclaimed byte whose zero
+		// state is NOT emission-identical needs a kMvuCompilerAbiVersion bump
+		// in the same commit.
 		u8  reserved[11];
 	};
 	static_assert(sizeof(Snapshot) == 64, "options sentinel layout drifted — bump kMvuCompilerAbiVersion");

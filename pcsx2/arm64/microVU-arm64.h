@@ -45,7 +45,11 @@
 //   5 — mVUclamp2 sign-preserving clamp selects a 2-row bounds table
 //       (single-lane clamps only lane 0, x86 parity); sign-mode
 //       emissions change shape (AX-02).
-static constexpr u32 kMvuCompilerAbiVersion = 5;
+//   6 — lane-indexed FMUL broadcast fold made unconditional (AX-14):
+//       broadcast-multiply emission changed shape (scratch Dup + 4-lane
+//       FMUL -> by-element FMUL on the raw source reg); the experiment's
+//       sentinel byte was retired in the same change.
+static constexpr u32 kMvuCompilerAbiVersion = 6;
 
 // Hash/equality functors for XXH128_hash_t — let std::unordered_map<XXH128_hash_t, …>
 // work without a wrapping struct. low64 already carries the well-mixed half of

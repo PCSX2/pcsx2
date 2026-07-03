@@ -74,6 +74,10 @@ struct DigestSet
 	u64 straightLine;
 	u64 branchBothArms;
 	u64 indirectJump;
+	// Broadcast-FMAC transform chain — pins the lane-indexed FMUL fold shape
+	// (AX-14, unconditional since ABI v6). 0 in a pin row means "probe did
+	// not exist for that ABI"; the assert skips zero pins.
+	u64 broadcastChain;
 };
 
 struct AbiPin
@@ -88,13 +92,20 @@ constexpr AbiPin kPins[] = {
 	// LQ/SQ/ILW/ISW, so the folded ops leave their emitted shape unchanged — the
 	// digests are bit-identical to abi 3; the bump is to evict on-disk caches
 	// recorded with the pre-fold loadstore shape.
-	{4, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8}},
+	{4, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8, 0}},
 	// abi 5: mVUclamp2 2-row sign-clamp bounds (AX-02). The probes run under
 	// the default clamp config, where the sign-overflow path never emits —
 	// digests are bit-identical to abi 4; the bump evicts on-disk caches
 	// recorded with the old all-lane sign-clamp shape (the options sentinel
 	// can't distinguish those: same config, different emitter).
-	{5, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8}},
+	{5, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8, 0}},
+	// abi 6: lane-indexed FMUL broadcast fold unconditional (AX-14). The three
+	// original probes contain no broadcast ops, so their digests are
+	// bit-identical to abi 5; the bump evicts caches recorded with the old
+	// Dup-materialized broadcast shape, and the new broadcastChain probe pins
+	// the folded emission from here on (harvested from the first,
+	// deliberately red, run).
+	{6, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8, 0x44bd2acfb23dff74}},
 };
 
 u64 CompileAndDigest(std::initializer_list<vu::VuOp> pairs)
@@ -150,12 +161,19 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 		NopPair(),
 		UpperOnly(bits::E | VADD_U(mask::xyzw, vf::vf3, vf::vf1, vf::vf2)),
 	});
+	actual.broadcastChain = CompileAndDigest({
+		UpperOnly(VMULAx_U(mask::xyzw, vf::vf3, vf::vf2)),
+		UpperOnly(VMADDAy_U(mask::xyzw, vf::vf4, vf::vf2)),
+		UpperOnly(VMSUBAz_U(mask::xyzw, vf::vf5, vf::vf2)),
+		UpperOnly(bits::E | VMADDw_U(mask::xyzw, vf::vf7, vf::vf6, vf::vf2)),
+	});
 
 	mVUPersist::SetRecordingEnabled(false);
 
 	ASSERT_NE(actual.straightLine, 0u);
 	ASSERT_NE(actual.branchBothArms, 0u);
 	ASSERT_NE(actual.indirectJump, 0u);
+	ASSERT_NE(actual.broadcastChain, 0u);
 
 	const u32 abi = mVUProgCache::GetCompilerAbiVersion();
 	const AbiPin* pin = nullptr;
@@ -169,7 +187,8 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 		<< "row to kPins with the values printed below.\n"
 		<< "  actual: {0x" << std::hex << actual.straightLine
 		<< ", 0x" << actual.branchBothArms
-		<< ", 0x" << actual.indirectJump << "}";
+		<< ", 0x" << actual.indirectJump
+		<< ", 0x" << actual.broadcastChain << "}";
 
 	const auto explain = [&](const char* which, u64 got, u64 want) {
 		char buf[256];
@@ -186,6 +205,11 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 		<< explain("branchBothArms", actual.branchBothArms, pin->digests.branchBothArms);
 	EXPECT_EQ(actual.indirectJump, pin->digests.indirectJump)
 		<< explain("indirectJump", actual.indirectJump, pin->digests.indirectJump);
+	if (pin->digests.broadcastChain != 0) // probe added at abi 6; older rows unpinned
+	{
+		EXPECT_EQ(actual.broadcastChain, pin->digests.broadcastChain)
+			<< explain("broadcastChain", actual.broadcastChain, pin->digests.broadcastChain);
+	}
 }
 
 // A program's emitted shape must depend ONLY on the program — never on what

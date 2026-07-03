@@ -435,6 +435,23 @@ constexpr u32 VMSUBA_U (u32 mask_xyzw, u32 fs, u32 ft) { return UpperFD(mask_xyz
 constexpr u32 VMULA_U  (u32 mask_xyzw, u32 fs, u32 ft) { return UpperFD(mask_xyzw, ft, fs, 0x0A, 2); }
 constexpr u32 VOPMULA_U(u32 fs, u32 ft)                { return UpperFD(mask::xyz, ft, fs, 0x0B, 2); }
 
+// Broadcast ACC-target FMACs (ACC ← op(FS, FT.bc)). bc selects the FD table
+// (fd_table_sel: 0=x 1=y 2=z 3=w); sub-op index within every table per
+// VUops.cpp:3705-3747: [0]=ADDAbc [1]=SUBAbc [2]=MADDAbc [3]=MSUBAbc
+// [6]=MULAbc.
+constexpr u32 VMULAx_U (u32 mask_xyzw, u32 fs, u32 ft) { return UpperFD(mask_xyzw, ft, fs, 0x06, 0); }
+constexpr u32 VMULAy_U (u32 mask_xyzw, u32 fs, u32 ft) { return UpperFD(mask_xyzw, ft, fs, 0x06, 1); }
+constexpr u32 VMULAz_U (u32 mask_xyzw, u32 fs, u32 ft) { return UpperFD(mask_xyzw, ft, fs, 0x06, 2); }
+constexpr u32 VMULAw_U (u32 mask_xyzw, u32 fs, u32 ft) { return UpperFD(mask_xyzw, ft, fs, 0x06, 3); }
+constexpr u32 VMADDAx_U(u32 mask_xyzw, u32 fs, u32 ft) { return UpperFD(mask_xyzw, ft, fs, 0x02, 0); }
+constexpr u32 VMADDAy_U(u32 mask_xyzw, u32 fs, u32 ft) { return UpperFD(mask_xyzw, ft, fs, 0x02, 1); }
+constexpr u32 VMADDAz_U(u32 mask_xyzw, u32 fs, u32 ft) { return UpperFD(mask_xyzw, ft, fs, 0x02, 2); }
+constexpr u32 VMADDAw_U(u32 mask_xyzw, u32 fs, u32 ft) { return UpperFD(mask_xyzw, ft, fs, 0x02, 3); }
+constexpr u32 VMSUBAx_U(u32 mask_xyzw, u32 fs, u32 ft) { return UpperFD(mask_xyzw, ft, fs, 0x03, 0); }
+constexpr u32 VMSUBAy_U(u32 mask_xyzw, u32 fs, u32 ft) { return UpperFD(mask_xyzw, ft, fs, 0x03, 1); }
+constexpr u32 VMSUBAz_U(u32 mask_xyzw, u32 fs, u32 ft) { return UpperFD(mask_xyzw, ft, fs, 0x03, 2); }
+constexpr u32 VMSUBAw_U(u32 mask_xyzw, u32 fs, u32 ft) { return UpperFD(mask_xyzw, ft, fs, 0x03, 3); }
+
 // Fixed-point conversion families — VFTOI{0,4,12,15} truncate fs * 2^N → s32;
 // VITOF{0,4,12,15} convert s32 → fs / 2^N. All masked per dest lane.
 constexpr u32 VITOF0_U  (u32 mask_xyzw, u32 ft, u32 fs) { return UpperFD(mask_xyzw, ft, fs, 0x04, 0); }
