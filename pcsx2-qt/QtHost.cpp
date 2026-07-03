@@ -1146,7 +1146,7 @@ void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
 void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
 {
 	const QString message =
-		qApp->translate("QtHost", "RA: Logged in as %1 (%2 pts, softcore: %3 pts). %4 unread messages.")
+		qApp->translate("QtHost", "RA: Logged in as %1 (%2 pts, Casual: %3 pts). %4 unread messages.")
 			.arg(QString::fromUtf8(username))
 			.arg(points)
 			.arg(sc_points)
