@@ -18190,8 +18190,6 @@ SLES-51434:
   region: "PAL-M5"
   clampModes:
     vuClampMode: 2 # Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes blackscreen when FMV.
   gsHWFixes:
     minimumBlendingLevel: 4 # Fixes brightness menu transparancy effects and text.
     deinterlace: 9 # Fixes incorrect field order in FMVs.
@@ -31710,8 +31708,6 @@ SLKA-25065:
   region: "NTSC-K"
   clampModes:
     vuClampMode: 2 # Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes blackscreen when FMV.
   gsHWFixes:
     minimumBlendingLevel: 4 # Fixes brightness menu transparancy effects and text.
     deinterlace: 9 # Fixes incorrect field order in FMVs.
@@ -42987,8 +42983,6 @@ SLPM-65257:
   compat: 5
   clampModes:
     vuClampMode: 2 # Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes blackscreen when FMV.
   gsHWFixes:
     minimumBlendingLevel: 4 # Fixes brightness menu transparancy effects and text.
     deinterlace: 9 # Fixes incorrect field order in FMVs.
@@ -45068,8 +45062,6 @@ SLPM-65622:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes blackscreen when FMV.
   gsHWFixes:
     minimumBlendingLevel: 4 # Fixes brightness menu transparancy effects and text.
     deinterlace: 9 # Fixes incorrect field order in FMVs.
@@ -47407,8 +47399,6 @@ SLPM-66018:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2 # Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes blackscreen when FMV.
   gsHWFixes:
     minimumBlendingLevel: 4 # Fixes brightness menu transparancy effects and text.
     deinterlace: 9 # Fixes incorrect field order in FMVs.
@@ -67663,8 +67653,6 @@ SLUS-20622:
   compat: 5
   clampModes:
     vuClampMode: 2 # Fixes some lighting/shadow artefacts (most light sources like the Flashlight are unaffected).
-  gameFixes:
-    - SoftwareRendererFMVHack # Fixes blackscreen when FMV.
   gsHWFixes:
     minimumBlendingLevel: 4 # Fixes brightness menu transparancy effects and text.
     deinterlace: 9 # Fixes incorrect field order in FMVs.
