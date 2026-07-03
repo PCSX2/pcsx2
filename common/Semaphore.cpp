@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "common/Threading.h"
+
+#include <chrono>
+#include <thread>
 #include "common/Assertions.h"
 #include "common/HostSys.h"
 
@@ -103,7 +106,29 @@ bool Threading::WorkSema::WaitForEmpty()
 			break;
 	}
 	pxAssertMsg(!(value & STATE_FLAG_WAITING_EMPTY), "Multiple threads attempted to wait for empty (not currently supported)");
-	m_empty_sema.Wait();
+	// Defensive: bounded waits with a state recheck rather than one unbounded
+	// Wait(). If the empty-post is ever lost (a second lost-wake instance was
+	// observed in the field on MTVU's semaEvent even after the Reset() handoff
+	// fix, with the worker asleep and the queue drained), the waiter recovers
+	// within ~1ms instead of deadlocking shutdown. Exit conditions:
+	//  - TryWait succeeds: the normal handoff worked.
+	//  - state < 0: the worker is asleep/spinning, i.e. the queue IS empty —
+	//    exactly the condition being waited for. The worker posts before its
+	//    sleep-CAS-then-post sequence completes, so give any in-flight post a
+	//    moment, then drain stale counts so a future WaitForEmpty cannot
+	//    consume one and return early.
+	while (!m_empty_sema.TryWait())
+	{
+		const s32 cur = m_state.load(std::memory_order_acquire);
+		if (cur < 0)
+		{
+			std::this_thread::sleep_for(std::chrono::microseconds(100));
+			while (m_empty_sema.TryWait())
+				;
+			return !IsDead(cur);
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+	}
 	return !IsDead(m_state.load(std::memory_order_relaxed));
 }
 
@@ -121,7 +146,29 @@ bool Threading::WorkSema::WaitForEmptyWithSpin()
 		value = m_state.load(std::memory_order_acquire);
 	}
 	pxAssertMsg(!(value & STATE_FLAG_WAITING_EMPTY), "Multiple threads attempted to wait for empty (not currently supported)");
-	m_empty_sema.Wait();
+	// Defensive: bounded waits with a state recheck rather than one unbounded
+	// Wait(). If the empty-post is ever lost (a second lost-wake instance was
+	// observed in the field on MTVU's semaEvent even after the Reset() handoff
+	// fix, with the worker asleep and the queue drained), the waiter recovers
+	// within ~1ms instead of deadlocking shutdown. Exit conditions:
+	//  - TryWait succeeds: the normal handoff worked.
+	//  - state < 0: the worker is asleep/spinning, i.e. the queue IS empty —
+	//    exactly the condition being waited for. The worker posts before its
+	//    sleep-CAS-then-post sequence completes, so give any in-flight post a
+	//    moment, then drain stale counts so a future WaitForEmpty cannot
+	//    consume one and return early.
+	while (!m_empty_sema.TryWait())
+	{
+		const s32 cur = m_state.load(std::memory_order_acquire);
+		if (cur < 0)
+		{
+			std::this_thread::sleep_for(std::chrono::microseconds(100));
+			while (m_empty_sema.TryWait())
+				;
+			return !IsDead(cur);
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+	}
 	return !IsDead(m_state.load(std::memory_order_relaxed));
 }
 
