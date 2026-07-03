@@ -2228,24 +2228,24 @@ bool EmuFolders::SetDataDirectory(Error* error)
 		if (EmuConfig.CustomDataPath.empty())
 		{
 #if defined(_WIN32)
-			// On Windows, use My Documents\PCSX2 to match old installs.
+			// On Windows, use My Documents\YAPS2.
 			PWSTR documents_directory;
 			if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
 			{
 				if (std::wcslen(documents_directory) > 0)
-					DataRoot = Path::Combine(StringUtil::WideStringToUTF8String(documents_directory), "PCSX2");
+					DataRoot = Path::Combine(StringUtil::WideStringToUTF8String(documents_directory), "YAPS2");
 				CoTaskMemFree(documents_directory);
 			}
 #elif defined(__linux__) || defined(__FreeBSD__)
-			// Use $XDG_CONFIG_HOME/PCSX2 if it exists.
+			// Use $XDG_CONFIG_HOME/YAPS2 if it exists.
 			const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
 			if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
 			{
-				DataRoot = Path::RealPath(Path::Combine(xdg_config_home, "PCSX2"));
+				DataRoot = Path::RealPath(Path::Combine(xdg_config_home, "YAPS2"));
 			}
 			else
 			{
-				// Use ~/PCSX2 for non-XDG, and ~/.config/PCSX2 for XDG.
+				// Use ~/YAPS2 for non-XDG, and ~/.config/YAPS2 for XDG.
 				const char* home_dir = getenv("HOME");
 				if (home_dir)
 				{
@@ -2254,18 +2254,18 @@ bool EmuFolders::SetDataDirectory(Error* error)
 					if (!FileSystem::DirectoryExists(config_dir.c_str()))
 						FileSystem::CreateDirectoryPath(config_dir.c_str(), false);
 
-					DataRoot = Path::RealPath(Path::Combine(config_dir, "PCSX2"));
+					DataRoot = Path::RealPath(Path::Combine(config_dir, "YAPS2"));
 				}
 			}
 #elif defined(__APPLE__)
-			static constexpr char MAC_DATA_DIR[] = "Library/Application Support/PCSX2";
+			static constexpr char MAC_DATA_DIR[] = "Library/Application Support/YAPS2";
 			const char* home_dir = getenv("HOME");
 			if (home_dir)
 				DataRoot = Path::RealPath(Path::Combine(home_dir, MAC_DATA_DIR));
 #endif
 			}
 			else // Otherwise use the custom path provided by the user
-				DataRoot = Path::RealPath(Path::Combine(EmuConfig.CustomDataPath, "PCSX2"));
+				DataRoot = Path::RealPath(Path::Combine(EmuConfig.CustomDataPath, "YAPS2"));
 		}
 
 	// Couldn't determine the data directory, or using portable mode? fallback to portable.
@@ -2278,7 +2278,7 @@ bool EmuFolders::SetDataDirectory(Error* error)
 		if (getenv("APPIMAGE"))
 		{
 			std::string_view appimage_path = Path::GetDirectory(getenv("APPIMAGE"));
-			DataRoot = Path::RealPath(Path::Combine(appimage_path, "PCSX2"));
+			DataRoot = Path::RealPath(Path::Combine(appimage_path, "YAPS2"));
 		}
 		else
 			DataRoot = Path::Combine(AppRoot, GetPortableModePath());
