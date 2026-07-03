@@ -393,6 +393,39 @@ void Patch::EnumeratePnachFiles(const std::string_view serial, u32 crc, bool che
 	if (cheats || unlabeled_patch_found || !OpenPatchesZip())
 		return;
 
+	// Enumerate all bundled patches matching the game serial when requested by the UI.
+	if (for_ui && !serial.empty())
+	{
+		const std::string prefix = fmt::format("{}_", serial);
+		const zip_int64_t num_entries = zip_get_num_entries(s_patches_zip, 0);
+		for (zip_int64_t i = 0; i < num_entries; i++)
+		{
+			const zip_uint64_t index = static_cast<zip_uint64_t>(i);
+			const char* entry_name = zip_get_name(s_patches_zip, index, 0);
+			if (!entry_name)
+				continue;
+
+			const std::string_view name(entry_name);
+			if (!StringUtil::StartsWithNoCase(name, prefix) || !StringUtil::EndsWithNoCase(name, ".pnach"))
+				continue;
+
+			auto file = zip_fopen_index_managed(s_patches_zip, index, 0);
+			if (!file)
+				continue;
+
+			std::optional<std::string> pnach_data = ReadFileInZipToString(file.get());
+			if (pnach_data.has_value())
+				f(std::string(name), std::move(pnach_data.value()));
+		}
+
+		// Also include the legacy CRC-only filename for the selected CRC.
+		std::string zip_filename = GetPnachTemplate(serial, crc, false, false, false);
+		std::optional<std::string> pnach_data = ReadFileInZipToString(s_patches_zip, zip_filename.c_str());
+		if (pnach_data.has_value())
+			f(std::move(zip_filename), std::move(pnach_data.value()));
+		return;
+	}
+
 	// Prefer filename with serial.
 	std::string zip_filename = GetPnachTemplate(serial, crc, true, false, false);
 	std::optional<std::string> pnach_data(ReadFileInZipToString(s_patches_zip, zip_filename.c_str()));
