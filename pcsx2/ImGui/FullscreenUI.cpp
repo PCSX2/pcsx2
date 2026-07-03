@@ -1298,9 +1298,11 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
 #else
 			localtime_r(&utc_time_t, &tm_local);
 #endif
-			heading_str.format(FSUI_FSTR("{:%H:%M}"), tm_local);
+			char buf[256];
+			std::strftime(buf, sizeof(buf), "%X", &tm_local);
+			heading_str.assign(buf);
 
-			const ImVec2 time_size = heading_font.first->CalcTextSizeA(heading_font.second, FLT_MAX, 0.0f, "00:00");
+			const ImVec2 time_size = heading_font.first->CalcTextSizeA(heading_font.second, FLT_MAX, 0.0f, heading_str.c_str());
 			time_pos = ImVec2(heading_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING) - time_size.x,
 				LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING));
 			ImGuiFullscreen::AddTextWithShadow(
