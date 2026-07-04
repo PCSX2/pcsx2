@@ -874,7 +874,7 @@ namespace QtUtils
 			"Version=1.0\n"
 			"Type=Application\n"
 			"Terminal=false\n"
-			"StartupWMClass=PCSX2\n"
+			"StartupWMClass=pcsx2-qt\n"
 			"Exec=" +
 			final_args + "\n" +
 			"Name=" +
