@@ -366,7 +366,7 @@ CPUINFO_INTERNAL struct cpuinfo_arm_chipset cpuinfo_arm_android_decode_chipset_f
 CPUINFO_INTERNAL struct cpuinfo_arm_chipset cpuinfo_arm_android_decode_chipset_from_ro_hardware_chipname(
 	const char ro_hardware_chipname[restrict static CPUINFO_BUILD_PROP_VALUE_MAX]);
 CPUINFO_INTERNAL struct cpuinfo_arm_chipset cpuinfo_arm_android_decode_chipset_from_ro_soc_model(
-	const char ro_soc_model[restrict static CPUINFO_BUILD_PROP_VALUE_MAX]);
+	const char soc_model[restrict static CPUINFO_BUILD_PROP_VALUE_MAX]);
 #else
 CPUINFO_INTERNAL struct cpuinfo_arm_chipset cpuinfo_arm_linux_decode_chipset_from_proc_cpuinfo_revision(
 	const char proc_cpuinfo_revision[restrict static CPUINFO_REVISION_VALUE_MAX]);
