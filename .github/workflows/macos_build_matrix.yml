@@ -1,0 +1,23 @@
+name: 🍎 macOS Build (aarch64, experimental)
+
+# yaps2 fork: EXPERIMENTAL native Apple Silicon build. See macos_build.yml for
+# why this is buildable (arm64 JIT already has the macOS W^X plumbing) and why
+# it is unproven (never booted on real macOS). Off the main mission — kept as a
+# spike so we can see whether it compiles.
+
+on:
+  push:
+    branches-ignore:
+      - "l10n_master"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_macos_qt:
+    name: "Apple Silicon"
+    uses: ./.github/workflows/macos_build.yml
+    with:
+      jobName: "macOS arm64 Build (experimental)"
+      artifactPrefixName: "yaps2-macos-arm64"
+    secrets: inherit

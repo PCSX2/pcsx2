@@ -1,0 +1,176 @@
+name: macOS Build Steps (arm64)
+
+# yaps2 fork: EXPERIMENTAL native Apple Silicon build.
+#
+# Our ARM64 recompiler already carries the macOS W^X JIT plumbing that native
+# codegen on Apple Silicon requires: HostSys::BeginCodeWrite/EndCodeWrite ->
+# pthread_jit_write_protect_np (common/Darwin/DarwinMisc.cpp), bracketed at
+# armStartBlock/armEndBlock (EE/IOP) and the mVU code-cache open/close, plus the
+# com.apple.security.cs.allow-jit entitlement (pcsx2/Resources/PCSX2.entitlements).
+# So a native arm64 .app is *buildable* here.
+#
+# It has NOT been booted on real macOS — our M-series dev target is Asahi Linux,
+# where the W^X toggle is a no-op. Treat this artifact as "does it compile",
+# NOT "does it run". This is off the fork's main mission (ARM Linux handhelds);
+# kept as a spike.
+
+on:
+  workflow_call:
+    inputs:
+      jobName:
+        required: true
+        type: string
+      artifactPrefixName:
+        required: true
+        type: string
+      patchesUrl:
+        required: false
+        type: string
+        default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
+      fetchTags:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build_macos:
+    name: ${{ inputs.jobName }}
+    runs-on: macos-15 # Apple Silicon (arm64) image; Metal toolchain bundled.
+    timeout-minutes: 120
+    env:
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_COMPRESS: true
+      CCACHE_COMPRESSLEVEL: 9
+      CCACHE_MAXSIZE: 200M
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      # actions/checkout elides tags; fetch them for release naming.
+      - name: Fetch Tags
+        if: ${{ inputs.fetchTags }}
+        run: git fetch --tags --no-recurse-submodules
+
+      # No-op on macos-15 (Xcode 16 ships the Metal compiler); self-corrects on
+      # images where Apple split the Metal toolchain into a downloadable component.
+      - name: Install Metal Toolchain
+        run: |
+          for i in {1..5}; do
+            if xcrun metal -v >/dev/null 2>&1; then break; fi
+            xcodebuild -downloadComponent MetalToolchain
+          done
+
+      - name: Prepare Artifact Metadata
+        id: artifact-metadata
+        shell: bash
+        env:
+          PREFIX: ${{ inputs.artifactPrefixName }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: ./.github/workflows/scripts/common/name-artifacts.sh
+
+      - name: Install Packages
+        env:
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+          HOMEBREW_NO_ANALYTICS: 1
+        run: |
+          if ! brew install ccache zstd; then
+            brew update
+            brew install ccache zstd
+          fi
+
+      - name: Cache Dependencies
+        id: cache-deps
+        uses: actions/cache@v5
+        with:
+          path: ~/deps
+          key: macos-arm64 deps ${{ hashFiles('.github/workflows/scripts/macos/*', '.github/workflows/scripts/common/*.patch') }}
+
+      # BUILD_FFMPEG=0: like the Linux arm64 builds, we don't bundle ffmpeg —
+      # PCSX2 dlopens the system copy at runtime (capture is optional). Keeps the
+      # dep set lean and avoids the heaviest cross-build.
+      - name: Build Dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: BUILD_FFMPEG=0 .github/workflows/scripts/macos/build-dependencies.sh "$HOME/deps"
+
+      - name: Download patches
+        run: |
+          cd bin/resources
+          curl -L --retry 3 -o patches.zip "${{ inputs.patchesUrl }}/patches.zip"
+
+      - name: Prepare ccache timestamp
+        id: ccache_cache_timestamp
+        run: echo "timestamp=$(date -u "+%Y-%m-%d-%H;%M;%S")" >> $GITHUB_OUTPUT
+
+      - name: Cache ccache cache
+        uses: actions/cache@v5
+        with:
+          path: .ccache
+          key: macos-arm64 ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: macos-arm64 ccache
+
+      - name: Generate CMake Files
+        run: |
+          cmake -DCMAKE_PREFIX_PATH="$HOME/deps" \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_OSX_ARCHITECTURES=arm64 \
+                -DDISABLE_ADVANCE_SIMD=ON \
+                -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
+                -DUSE_LINKED_FFMPEG=OFF \
+                -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+                -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+                -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
+                -B build .
+
+      - name: Build PCSX2
+        working-directory: build
+        run: |
+          ccache -p
+          ccache -z
+          make -j$(getconf _NPROCESSORS_ONLN) # macOS doesn't use make install
+          make -j$(getconf _NPROCESSORS_ONLN) pcsx2-gsrunner
+          ccache -s
+
+      - name: Package .app (ad-hoc signed)
+        id: package
+        run: |
+          set -euo pipefail
+          APP=$(find build -maxdepth 3 -name '*.app' -print -quit)
+          if [ -z "$APP" ]; then
+            echo "::error::No .app bundle was produced by the build."
+            exit 1
+          fi
+          echo "Found app bundle: $APP"
+
+          NAME="${{ steps.artifact-metadata.outputs.artifact-name }}"
+
+          # Ad-hoc sign WITHOUT hardened runtime so MAP_JIT works (Apple Silicon
+          # requires every binary be at least ad-hoc signed to launch). This is
+          # NOT notarized — testers open it via right-click > Open. Non-fatal:
+          # the build signal is what matters for this spike.
+          codesign --force --deep --sign - "$APP" \
+            || echo "::warning::ad-hoc codesign failed; artifact still uploaded"
+
+          STAGE="$NAME"
+          rm -rf "$STAGE"
+          mkdir "$STAGE"
+          cp -a "$APP" "$STAGE/"
+
+          # macOS /usr/bin/tar (bsdtar) zstd support is spotty; pipe through the
+          # brew zstd CLI so we match the .tar.zst convention the Linux jobs use.
+          tar -cf "$NAME.tar" "$STAGE"
+          zstd -f -T0 -19 -o "$NAME.tar.zst" "$NAME.tar"
+          rm -f "$NAME.tar"
+
+          mkdir -p ci-artifacts
+          cp "$NAME.tar.zst" ci-artifacts/
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.artifact-metadata.outputs.artifact-name }}
+          path: "*.tar.zst"

@@ -8,6 +8,7 @@ name: 🌙 Nightly Release
 #   * yaps2-linux-arm64-qt-…​.AppImage   (desktop / dev + Rocknix / Batocera)
 #   * yaps2-linux-arm64-qt-…​.tar.zst    (same Qt build, portable no-FUSE tarball)
 #   * yaps2-linux-arm64-sdl-…​.tar.zst   (bare-kmsdrm handhelds)
+#   * yaps2-macos-arm64-…​.tar.zst       (EXPERIMENTAL native Apple Silicon .app)
 
 on:
   schedule:
@@ -41,12 +42,30 @@ jobs:
       fetchTags: true
     secrets: inherit
 
-  publish_nightly:
+  build_macos:
     if: github.repository == 'yaps2/yaps2'
+    name: "macOS arm64 (experimental)"
+    uses: ./.github/workflows/macos_build.yml
+    with:
+      jobName: "macOS arm64 Build (experimental)"
+      artifactPrefixName: "yaps2-macos-arm64"
+      fetchTags: true
+    secrets: inherit
+
+  publish_nightly:
+    # Wait for the experimental macOS job too (so its artifact is ready if it
+    # succeeded) but only REQUIRE the Linux builds — a macOS failure must never
+    # block the handheld release. !cancelled() lets us run after build_macos fails.
+    if: >-
+      ${{ !cancelled()
+      && github.repository == 'yaps2/yaps2'
+      && needs.build_qt.result == 'success'
+      && needs.build_sdl.result == 'success' }}
     name: "Publish Nightly"
     needs:
       - build_qt
       - build_sdl
+      - build_macos
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -87,4 +106,5 @@ jobs:
           **Assets**
           - \`*-qt-*.AppImage\` — Qt AppImage for desktop / dev and Wayland handhelds (Rocknix / Batocera). Needs FUSE.
           - \`*-qt-*.tar.zst\` — the same Qt build as a portable tarball (no FUSE; run \`./AppRun\`).
-          - \`*-sdl-*.tar.zst\` — SDL3 build for bare-kmsdrm handhelds (VK_KHR_display direct-display). Extract next to a compatible base system; run \`./yaps2-sdl\`."
+          - \`*-sdl-*.tar.zst\` — SDL3 build for bare-kmsdrm handhelds (VK_KHR_display direct-display). Extract next to a compatible base system; run \`./yaps2-sdl\`.
+          - \`*-macos-arm64-*.tar.zst\` — **EXPERIMENTAL** native Apple Silicon \`.app\` (ad-hoc signed, not notarized; right-click > Open). Unproven — may not run. Absent on days the macOS build failed."
