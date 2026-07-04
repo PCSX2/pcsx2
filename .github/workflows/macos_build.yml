@@ -46,7 +46,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # actions/checkout elides tags; fetch them for release naming.
       - name: Fetch Tags
@@ -85,7 +85,7 @@ jobs:
 
       - name: Cache Dependencies
         id: cache-deps
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/deps
           key: macos-arm64 deps ${{ hashFiles('.github/workflows/scripts/macos/*', '.github/workflows/scripts/common/*.patch') }}
@@ -107,7 +107,7 @@ jobs:
         run: echo "timestamp=$(date -u "+%Y-%m-%d-%H;%M;%S")" >> $GITHUB_OUTPUT
 
       - name: Cache ccache cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .ccache
           key: macos-arm64 ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
