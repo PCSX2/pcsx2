@@ -68,6 +68,7 @@
 #endif
 
 #define PINE_EMULATOR_NAME "pcsx2"
+#define PINE_GENERIC_EMULATOR_NAME "pine_ps2"
 
 #ifdef _WIN32
 
@@ -102,6 +103,10 @@ namespace PINEServer
 #else
 	// absolute path of the socket. Stored in XDG_RUNTIME_DIR, if unset /tmp
 	static std::string s_socket_name;
+	// The absolute path of a symlink pointing to the socket. We provide both so
+	// that clients can choose whether they want to connect to any PS2 emulator
+	// or just PCSX2 specifically.
+	static std::string s_generic_socket_name;
 	static int s_sock = -1;
 	// the message socket used in thread's accept().
 	static int s_msgsock = -1;
@@ -294,24 +299,26 @@ bool PINEServer::Initialize(int slot)
 	}
 
 #else
-	char* runtime_dir = nullptr;
+	const char* runtime_dir = nullptr;
 #ifdef __APPLE__
 	runtime_dir = std::getenv("TMPDIR");
 #else
 	runtime_dir = std::getenv("XDG_RUNTIME_DIR");
 #endif
+
 	// fallback in case macOS or other OSes don't implement the XDG base
 	// spec
-	if (runtime_dir == nullptr)
-		s_socket_name = "/tmp/" PINE_EMULATOR_NAME ".sock";
-	else
-	{
-		s_socket_name = runtime_dir;
-		s_socket_name += "/" PINE_EMULATOR_NAME ".sock";
-	}
+	if (!runtime_dir)
+		runtime_dir = "/tmp";
+
+	s_socket_name = fmt::format("{}/{}.sock", runtime_dir, PINE_EMULATOR_NAME);
+	s_generic_socket_name = fmt::format("{}/{}.sock", runtime_dir, PINE_GENERIC_EMULATOR_NAME);
 
 	if (slot != PINE_DEFAULT_SLOT)
+	{
 		s_socket_name += "." + std::to_string(slot);
+		s_generic_socket_name += "." + std::to_string(slot);
+	}
 
 	struct sockaddr_un server;
 
@@ -328,9 +335,18 @@ bool PINEServer::Initialize(int slot)
 	// we unlink the socket so that when releasing this thread the socket gets
 	// freed even if we didn't close correctly the loop
 	unlink(s_socket_name.c_str());
+	unlink(s_generic_socket_name.c_str());
+
 	if (bind(s_sock, (struct sockaddr*)&server, sizeof(struct sockaddr_un)))
 	{
 		Console.WriteLn(Color_Red, "PINE: Error while binding to socket! Shutting down...");
+		Deinitialize();
+		return false;
+	}
+
+	if (symlink(s_socket_name.c_str(), s_generic_socket_name.c_str()) != 0)
+	{
+		Console.WriteLn(Color_Red, "PINE: Error while creating symlink for socket! Shutting down...");
 		Deinitialize();
 		return false;
 	}
@@ -485,6 +501,12 @@ void PINEServer::Deinitialize()
 	s_end.store(true, std::memory_order_release);
 
 #ifndef _WIN32
+	if (!s_generic_socket_name.empty())
+	{
+		unlink(s_generic_socket_name.c_str());
+		s_generic_socket_name = {};
+	}
+
 	if (!s_socket_name.empty())
 	{
 		unlink(s_socket_name.c_str());
