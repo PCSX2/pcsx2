@@ -9,6 +9,7 @@
 #include <QtCore/QLocale>
 #include <QtCore/QtGlobal>
 #include <QtCore/QMetaObject>
+#include <QtCore/QStandardPaths>
 #include <QtGui/QAction>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QIcon>
@@ -37,6 +38,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cstdlib>
 #include <map>
 
 #include "common/CocoaTools.h"
@@ -565,12 +567,24 @@ namespace QtUtils
 		return QIcon(flag_path);
 	}
 
+	bool IsRunningInFlatpak()
+	{
+		// Checks for the existence of the `.flatpak-info` file which seems to be always present inside flatpak sandboxes.
+		return FileSystem::FileExists("/.flatpak-info");
+	}
+
+	bool IsRunningInAppImage()
+	{
+		// The AppImage runtime sets APPIMAGE environment variable so we can check for that.
+		return std::getenv("APPIMAGE") != nullptr;
+	}
+
 	void CreateShortcut(QWidget* parent, const std::string& name, const std::string& game_path,
 		std::vector<std::string> passed_cli_args, const std::string& custom_args,
-		const std::string& icon_path, bool is_desktop)
+		const std::string& icon_path, bool is_desktop, bool prompt_for_destination)
 	{
 		const auto tr_msg = [](const char* str) {
-			return QCoreApplication::translate("ShortcutCreationDialog", str);
+			return QCoreApplication::translate("CreateShortcut", str);
 		};
 
 #if defined(_WIN32)
@@ -581,8 +595,8 @@ namespace QtUtils
 		}
 
 		// Sanitize filename
-		const std::string clean_name = Path::SanitizeFileName(name).c_str();
-		std::string clean_path = Path::ToNativePath(Path::RealPath(game_path)).c_str();
+		const std::string clean_name = Path::SanitizeFileName(name);
+		std::string clean_path = game_path.empty() ? std::string() : Path::ToNativePath(Path::RealPath(game_path));
 		if (!Path::IsValidFileName(clean_name))
 		{
 			QMessageBox::critical(parent, tr_msg("Failed to create shortcut"), tr_msg("Filename contains illegal character."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
@@ -619,7 +633,7 @@ namespace QtUtils
 		}
 
 		// Check if the same shortcut already exists
-		if (FileSystem::FileExists(link_file.c_str()))
+		if (prompt_for_destination && FileSystem::FileExists(link_file.c_str()))
 		{
 			QMessageBox::critical(parent, tr_msg("Failed to create shortcut"), tr_msg("A shortcut with the same name already exists."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 			return;
@@ -629,6 +643,8 @@ namespace QtUtils
 		bool lossless = true;
 		for (std::string& arg : passed_cli_args)
 			lossless &= EscapeShortcutCommandLine(&arg);
+		if (!clean_path.empty())
+			lossless &= EscapeShortcutCommandLine(&clean_path);
 
 		if (!lossless)
 		{
@@ -636,9 +652,19 @@ namespace QtUtils
 			return;
 		}
 
-		EscapeShortcutCommandLine(&clean_path);
-		std::string combined_args = StringUtil::JoinString(passed_cli_args.begin(), passed_cli_args.end(), " ");
-		std::string final_args = fmt::format("{} {} -- {}", combined_args, custom_args, clean_path);
+		std::string final_args = StringUtil::JoinString(passed_cli_args.begin(), passed_cli_args.end(), " ");
+		if (!custom_args.empty())
+		{
+			if (!final_args.empty())
+				final_args += ' ';
+			final_args += custom_args;
+		}
+		if (!clean_path.empty())
+		{
+			if (!final_args.empty())
+				final_args += ' ';
+			final_args += fmt::format("-- {}", clean_path);
+		}
 
 		Console.WriteLnFmt("Creating a shortcut '{}' with arguments '{}'", link_file, final_args);
 
@@ -684,11 +710,20 @@ namespace QtUtils
 		}
 
 		// Set the working directory
-		const std::wstring working_dir = StringUtil::UTF8StringToWideString(FileSystem::GetWorkingDirectory());
+		const std::wstring working_dir = StringUtil::UTF8StringToWideString(Path::GetDirectory(FileSystem::GetProgramPath()));
 		res = pShellLink->SetWorkingDirectory(working_dir.c_str());
 		if (FAILED(res))
 		{
 			report_error(tr_msg("SetWorkingDirectory failed (%1)").arg(QString::fromStdString(str_error(res))));
+			return;
+		}
+
+		// Set the description (shown as the shortcut's tooltip)
+		const std::wstring description = tr_msg("PlayStation 2 Emulator").toStdWString();
+		res = pShellLink->SetDescription(description.c_str());
+		if (FAILED(res))
+		{
+			report_error(tr_msg("SetDescription failed (%1)").arg(QString::fromStdString(str_error(res))));
 			return;
 		}
 
@@ -753,11 +788,11 @@ namespace QtUtils
 			return;
 		}
 
-		bool is_flatpak = (std::getenv("container"));
+		const bool is_flatpak = IsRunningInFlatpak();
 
 		// Sanitize filename and game path
 		const std::string clean_name = Path::SanitizeFileName(name);
-		std::string clean_path = Path::Canonicalize(Path::RealPath(game_path));
+		std::string clean_path = game_path.empty() ? std::string() : Path::Canonicalize(Path::RealPath(game_path));
 		if (!Path::IsValidFileName(clean_name))
 		{
 			QMessageBox::critical(parent, tr_msg("Failed to create shortcut"), tr_msg("Filename contains illegal character."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
@@ -772,33 +807,14 @@ namespace QtUtils
 			return;
 		}
 
-		// Find home directory
-		std::string link_path;
-		const char* home = std::getenv("HOME");
-		const char* xdg_desktop_dir = std::getenv("XDG_DESKTOP_DIR");
-		const char* xdg_data_home = std::getenv("XDG_DATA_HOME");
-		if (home)
+		// Find the destination directory
+		const QString link_dir = QStandardPaths::writableLocation(is_desktop ? QStandardPaths::DesktopLocation : QStandardPaths::ApplicationsLocation);
+		if (link_dir.isEmpty())
 		{
-			if (is_desktop)
-			{
-				if (xdg_desktop_dir)
-					link_path = fmt::format("{}/{}.desktop", xdg_desktop_dir, clean_name);
-				else
-					link_path = fmt::format("{}/Desktop/{}.desktop", home, clean_name);
-			}
-			else
-			{
-				if (xdg_data_home)
-					link_path = fmt::format("{}/applications/{}.desktop", xdg_data_home, clean_name);
-				else
-					link_path = fmt::format("{}/.local/share/applications/{}.desktop", home, clean_name);
-			}
-		}
-		else
-		{
-			QMessageBox::critical(parent, tr_msg("Failed to create shortcut"), tr_msg("Path to the Home directory is empty."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+			QMessageBox::critical(parent, tr_msg("Failed to create shortcut"), tr_msg("Could not determine the shortcut destination directory."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
 			return;
 		}
+		const std::string link_path = fmt::format("{}/{}.desktop", link_dir.toStdString(), clean_name);
 
 		std::string icon_name;
 		if (!icon_path.empty())
@@ -812,13 +828,6 @@ namespace QtUtils
 		}
 		else
 		{
-			// Copy PCSX2 icon
-			std::string icon_dest;
-			if (xdg_data_home)
-				icon_dest = fmt::format("{}/icons/hicolor/512x512/apps/", xdg_data_home);
-			else
-				icon_dest = fmt::format("{}/.local/share/icons/hicolor/512x512/apps/", home);
-
 			if (is_flatpak) // Flatpak
 			{
 				executable_path = "flatpak run net.pcsx2.PCSX2";
@@ -826,11 +835,12 @@ namespace QtUtils
 			}
 			else
 			{
+				// Copy PCSX2 icon
 				icon_name = "PCSX2";
-				std::string icon_path_dest = fmt::format("{}/{}.png", icon_dest, icon_name).c_str();
+				const std::string icon_dest = fmt::format("{}/icons/hicolor/512x512/apps/", QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation).toStdString());
+				const std::string icon_path_dest = fmt::format("{}/{}.png", icon_dest, icon_name);
 				if (FileSystem::EnsureDirectoryExists(icon_dest.c_str(), true))
-					if (!FileSystem::FileExists(icon_path_dest.c_str()))
-						FileSystem::CopyFilePath(Path::Combine(EmuFolders::Resources, "icons/AppIconLarge.png").c_str(), icon_path_dest.c_str(), false);
+					FileSystem::CopyFilePath(Path::Combine(EmuFolders::Resources, "icons/AppIconLarge.png").c_str(), icon_path_dest.c_str(), true);
 			}
 		}
 
@@ -838,6 +848,10 @@ namespace QtUtils
 		bool lossless = true;
 		for (std::string& arg : passed_cli_args)
 			lossless &= EscapeShortcutCommandLine(&arg);
+		if (!is_flatpak)
+			lossless &= EscapeShortcutCommandLine(&executable_path);
+		if (!clean_path.empty())
+			lossless &= EscapeShortcutCommandLine(&clean_path);
 
 		if (!lossless)
 		{
@@ -847,17 +861,16 @@ namespace QtUtils
 
 		std::string cmdline = StringUtil::JoinString(passed_cli_args.begin(), passed_cli_args.end(), " ");
 
-		// Further string sanitization
-		if (!is_flatpak)
-			EscapeShortcutCommandLine(&executable_path);
-		EscapeShortcutCommandLine(&clean_path);
-
 		// Assembling the .desktop file
-		std::string final_args;
-		final_args = fmt::format("{} {} {} -- {}", executable_path, cmdline, custom_args, clean_path);
+		std::string final_args = executable_path;
+		if (!cmdline.empty())
+			final_args += fmt::format(" {}", cmdline);
+		if (!custom_args.empty())
+			final_args += fmt::format(" {}", custom_args);
+		if (!clean_path.empty())
+			final_args += fmt::format(" -- {}", clean_path);
 		std::string file_content =
 			"[Desktop Entry]\n"
-			"Encoding=UTF-8\n"
 			"Version=1.0\n"
 			"Type=Application\n"
 			"Terminal=false\n"
@@ -865,20 +878,32 @@ namespace QtUtils
 			"Exec=" +
 			final_args + "\n" +
 			"Name=" +
-			clean_name + "\n" +
+			name + "\n" +
+			"GenericName=PlayStation 2 Emulator\n"
 			"Icon=" +
 			icon_name + "\n" +
+			"Comment=Sony PlayStation 2 Emulator\n"
+			"Keywords=game;emulator;\n"
 			"Categories=Game;Emulator;\n";
 		std::string_view sv(file_content);
 
-		// Prompt user for shortcut saving destination
-		QString final_path(QStringLiteral("%1").arg(QString::fromStdString(link_path)));
-		const QString filter(tr_msg("Desktop Shortcut Files (*.desktop)"));
-
-		final_path = QDir::toNativeSeparators(QFileDialog::getSaveFileName(parent, tr_msg("Select Shortcut Save Destination"), final_path, filter));
-
-		if (final_path.isEmpty())
-			return;
+		QString final_path = QString::fromStdString(link_path);
+		if (prompt_for_destination)
+		{
+			const QString filter(tr_msg("Desktop Shortcut Files (*.desktop)"));
+			final_path = QDir::toNativeSeparators(QFileDialog::getSaveFileName(parent, tr_msg("Select Shortcut Save Destination"), final_path, filter));
+			if (final_path.isEmpty())
+				return;
+		}
+		else
+		{
+			const std::string link_dir(Path::GetDirectory(link_path));
+			if (!link_dir.empty() && !FileSystem::EnsureDirectoryExists(link_dir.c_str(), true))
+			{
+				QMessageBox::critical(parent, tr_msg("Failed to create shortcut"), tr_msg("Could not create the shortcut directory."), QMessageBox::StandardButton::Ok, QMessageBox::StandardButton::Ok);
+				return;
+			}
+		}
 
 		// Write to .desktop file
 		if (!FileSystem::WriteStringToFile(final_path.toStdString().c_str(), sv))

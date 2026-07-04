@@ -212,11 +212,16 @@ namespace QtUtils
 	/// Returns an empty QIcon if no flag is available for the language
 	QIcon GetFlagIconForLanguage(const QString& language_code);
 
-	/// Creates a desktop or launcher (Start Menu / applications) shortcut for a game.
-	/// Shows error dialogs parented to `parent` when something goes wrong.
+	/// Returns true if PCSX2 is running inside a Flatpak sandbox.
+	bool IsRunningInFlatpak();
+
+	/// Returns true if PCSX2 is running from an AppImage.
+	bool IsRunningInAppImage();
+
+	/// Creates a desktop or launcher (Start Menu / applications) shortcuts
 	void CreateShortcut(QWidget* parent, const std::string& name, const std::string& game_path,
 		std::vector<std::string> passed_cli_args, const std::string& custom_args,
-		const std::string& icon_path, bool is_desktop);
+		const std::string& icon_path, bool is_desktop, bool prompt_for_destination = true);
 
 	/// Escapes the given string for use as a shortcut command line argument.
 	/// Returns whether the escaping operation was lossless.

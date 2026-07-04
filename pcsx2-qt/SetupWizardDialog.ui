@@ -912,6 +912,20 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QCheckBox" name="createDesktopShortcut">
+         <property name="text">
+          <string>Create desktop shortcut</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="addToApplicationMenu">
+         <property name="text">
+          <string>Add PCSX2 to the application menu</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
