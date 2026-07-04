@@ -60,7 +60,7 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>PCSX2</string>
+	<string>yaps2-qt</string>
 	<key>CFBundleIconFile</key>
 	<string>PCSX2.icns</string>
 	<key>CFBundleIdentifier</key>
