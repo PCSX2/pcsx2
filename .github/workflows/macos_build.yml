@@ -118,6 +118,7 @@ jobs:
           cmake -DCMAKE_PREFIX_PATH="$HOME/deps" \
                 -DCMAKE_BUILD_TYPE=Release \
                 -DCMAKE_OSX_ARCHITECTURES=arm64 \
+                -DENABLE_TESTS=OFF \
                 -DDISABLE_ADVANCE_SIMD=ON \
                 -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
                 -DUSE_LINKED_FFMPEG=OFF \
