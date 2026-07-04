@@ -3,6 +3,7 @@
 
 #include "arm64/iR3000A-arm64.h"
 #include "arm64/AsmHelpers.h"
+#include "common/HostSys.h"
 #include "Host.h"
 #include "R3000A.h"
 #include "arm64/BaseblockEx-arm64.h"
@@ -1083,9 +1084,20 @@ static __fi u32 psxRecClearMem(u32 pc)
 
 static void recClearIOP(u32 Addr, u32 Size)
 {
+	// On macOS/Apple Silicon the IOP code cache is MAP_JIT (per-thread W^X).
+	// recClearIOP is IOP SMC detection: every qualifying store in IopMem.cpp (plus
+	// DMA/SIF/BIOS-HLE) funnels here via psxCpu->Clear while the IOP thread is
+	// *executing* recompiled code, i.e. execute-protected with no emit scope open.
+	// psxRecClearMem's recBlocks.Remove() patches compiled block entry points
+	// (Arm64BaseBlocks::Remove -> PatchAtomic) inside that cache, so we must flip
+	// to write mode first or the patch faults (ESR 0x9200004f, byte-write
+	// permission). Refcounted (nests safely), no-op on Linux. Mirrors the EE
+	// recClear fix (b54fbcdad).
+	HostSys::BeginCodeWrite();
 	u32 end = Addr + Size * 4;
 	for (u32 i = Addr; i < end; i += PSXREC_CLEARM(i))
 		;
+	HostSys::EndCodeWrite();
 }
 
 static void iopClearRecLUT(BASEBLOCK* base, int count)
