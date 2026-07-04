@@ -708,12 +708,6 @@ Login token generated on %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1918"/>
-        <source>Score: {0} pts (softcore: {1} pts)
-Unread messages: {2}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../pcsx2/Achievements.cpp" line="1999"/>
         <source>Confirm Hardcore Mode</source>
         <translation type="unfinished"></translation>
@@ -922,6 +916,12 @@ Leaderboard Position: {1} of {2}</source>
         <location filename="../../pcsx2/Achievements.cpp" line="3113"/>
         <location filename="../../pcsx2/Achievements.cpp" line="3281"/>
         <source>Rank</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/Achievements.cpp" line="1918"/>
+        <source>Score: {0} pts (Casual: {1} pts)
+Unread messages: {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -22586,7 +22586,7 @@ Ejecting {2} and replacing it with {3}.</source>
     </message>
     <message>
         <location filename="../QtHost.cpp" line="1149"/>
-        <source>RA: Logged in as %1 (%2 pts, softcore: %3 pts). %4 unread messages.</source>
+        <source>RA: Logged in as %1 (%2 pts, Casual: %3 pts). %4 unread messages.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
