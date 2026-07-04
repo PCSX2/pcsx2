@@ -4,8 +4,9 @@ name: 🌙 Nightly Release
 # "nightly" pre-release on this repo. The `nightly` tag/release is deleted and
 # recreated each run, so its download URLs always point at the latest build.
 #
-# Assets (both self-contained .tar.zst, no FUSE needed):
-#   * yaps2-linux-arm64-qt-…​.tar.zst    (desktop / dev + Rocknix / Batocera)
+# Assets:
+#   * yaps2-linux-arm64-qt-…​.AppImage   (desktop / dev + Rocknix / Batocera)
+#   * yaps2-linux-arm64-qt-…​.tar.zst    (same Qt build, portable no-FUSE tarball)
 #   * yaps2-linux-arm64-sdl-…​.tar.zst   (bare-kmsdrm handhelds)
 
 on:
@@ -60,7 +61,7 @@ jobs:
       - name: Stage release assets
         run: |
           mkdir -p out
-          find ci-artifacts -type f -name '*.tar.zst' -exec cp -v {} out/ \;
+          find ci-artifacts -type f \( -name '*.tar.zst' -o -name '*.AppImage' \) -exec cp -v {} out/ \;
           echo "Assets to publish:"
           ls -la out
 
@@ -83,6 +84,7 @@ jobs:
             --prerelease \
             --notes "Automated nightly build of yaps2 (aarch64 Linux) from \`main\` @ ${SHA} on ${DATE}.
 
-          **Assets** (both self-contained tarballs, no FUSE needed)
-          - \`*-qt-*.tar.zst\` — portable Qt build for desktop / dev and Wayland handhelds (Rocknix / Batocera). Extract and run \`./AppRun\` (or \`usr/bin/yaps2-qt\`).
+          **Assets**
+          - \`*-qt-*.AppImage\` — Qt AppImage for desktop / dev and Wayland handhelds (Rocknix / Batocera). Needs FUSE.
+          - \`*-qt-*.tar.zst\` — the same Qt build as a portable tarball (no FUSE; run \`./AppRun\`).
           - \`*-sdl-*.tar.zst\` — SDL3 build for bare-kmsdrm handhelds (VK_KHR_display direct-display). Extract next to a compatible base system; run \`./yaps2-sdl\`."

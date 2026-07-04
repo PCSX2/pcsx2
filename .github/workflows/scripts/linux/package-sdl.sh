@@ -42,7 +42,10 @@ if [ -x "$BUILDDIR/bin/pcsx2-gsrunner" ]; then
 fi
 
 echo "Staging resources…"
-cp -a "$BUILDDIR/bin/resources" "$STAGE/"
+# From the git-tracked source tree: the no-Qt handheld build does NOT populate
+# $BUILDDIR/bin/resources, and the source copy matches the checked-out commit
+# exactly (same approach rocknix-deploy uses).
+cp -a "$PCSX2DIR/bin/resources" "$STAGE/"
 
 # Copy every shared lib that resolves out of the deps prefix (i.e. one we built).
 gather_from_depsdir() {

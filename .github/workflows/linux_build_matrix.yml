@@ -2,8 +2,8 @@ name: 🐧 Linux Builds (aarch64)
 
 # yaps2 fork: we ship for ARM Linux handhelds only, so CI builds a single
 # platform — native aarch64 — in two flavours:
-#   * yaps2-qt   portable tarball (desktop / dev + Rocknix / Batocera, which run Wayland)
-#   * yaps2-sdl  handheld tarball  (bare-kmsdrm handhelds; VK_KHR_display direct-display)
+#   * yaps2-qt   AppImage + tarball (desktop / dev + Rocknix / Batocera, which run Wayland)
+#   * yaps2-sdl  handheld tarball    (bare-kmsdrm handhelds; VK_KHR_display direct-display)
 
 on:
   push:

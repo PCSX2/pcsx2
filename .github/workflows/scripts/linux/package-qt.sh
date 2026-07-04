@@ -1,18 +1,14 @@
 #!/usr/bin/env bash
 #
-# package-qt.sh — build a portable, self-contained yaps2-qt tarball.
+# package-qt.sh — build portable yaps2-qt artifacts: an .AppImage AND a .tar.zst.
 #
-# yaps2 fork: this uses the very same linuxdeploy + linuxdeploy-plugin-qt
-# bundling that an AppImage build would (it is what correctly gathers the Qt
-# libraries, platform plugins and rpaths), but stops at the AppDir and tars it
-# up instead of wrapping it in an AppImage. No FUSE is needed to run it, which
-# keeps it consistent with the SDL handheld tarball. Extract it and launch with
+# yaps2 fork: linuxdeploy + linuxdeploy-plugin-qt bundle the Qt libraries,
+# platform plugins and rpaths into an AppDir. From that single AppDir we emit
+# BOTH formats so users can take whichever they prefer:
 #
-#     ./<dir>/AppRun            (or ./<dir>/usr/bin/yaps2-qt)
-#
-# The <dir> is a normal directory tree: AppRun launcher, usr/bin/yaps2-qt,
-# usr/lib (Qt + our deps), usr/plugins (Qt platform/imageformat plugins),
-# usr/bin/resources, usr/bin/translations.
+#   * <NAME>.AppImage  — the classic single-file AppImage (needs FUSE to run)
+#   * <NAME>.tar.zst   — the same tree tarred up (no FUSE; run ./<dir>/AppRun
+#                        or ./<dir>/usr/bin/yaps2-qt)
 
 SCRIPTDIR=$(dirname "${BASH_SOURCE[0]}")
 
@@ -26,18 +22,23 @@ BUILDDIR=$2
 DEPSDIR=$3
 NAME=$4
 
+# Fixed AppDir name (ends in .AppDir, no brackets) so appimagetool is happy;
+# we rename to "$NAME" only for the tarball.
+APPDIRNAME=yaps2.AppDir
+
 declare -a MANUAL_LIBS=(
 	"libshaderc_shared.so.1"
 )
 
 set -e
 
-# aarch64-only project: pull the arm64 linuxdeploy tooling. (uname -m reports
-# "aarch64" on the ubuntu-*-arm runners.) No appimagetool — we tar the AppDir.
-ARCH=$(uname -m)
+# aarch64-only project: pull the arm64 tooling. (uname -m reports "aarch64" on
+# the ubuntu-*-arm runners.) appimagetool reads $ARCH to pick its runtime.
+export ARCH=$(uname -m)
 
 LINUXDEPLOY=./linuxdeploy-$ARCH.AppImage
 LINUXDEPLOY_PLUGIN_QT=./linuxdeploy-plugin-qt-$ARCH.AppImage
+APPIMAGETOOL=./appimagetool-$ARCH.AppImage
 
 if [ ! -f "$LINUXDEPLOY" ]; then
 	"$PCSX2DIR/tools/retry.sh" wget -O "$LINUXDEPLOY" https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$ARCH.AppImage
@@ -49,9 +50,12 @@ if [ ! -f "$LINUXDEPLOY_PLUGIN_QT" ]; then
 	chmod +x "$LINUXDEPLOY_PLUGIN_QT"
 fi
 
-# Build the AppDir directly under the artifact name so the extracted top-level
-# folder is self-describing.
-OUTDIR=$(realpath "./$NAME")
+if [ ! -f "$APPIMAGETOOL" ]; then
+	"$PCSX2DIR/tools/retry.sh" wget -O "$APPIMAGETOOL" https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-$ARCH.AppImage
+	chmod +x "$APPIMAGETOOL"
+fi
+
+OUTDIR=$(realpath "./$APPDIRNAME")
 rm -fr "$OUTDIR"
 
 echo "Locating extra libraries..."
@@ -101,7 +105,10 @@ $LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/yaps2-qt
 --desktop-file="net.pcsx2.PCSX2.desktop" --icon-file="PCSX2.png"
 
 echo "Copying resources into AppDir..."
-cp -a "$BUILDDIR/bin/resources" "$OUTDIR/usr/bin"
+# From the git-tracked source tree (matches the checked-out commit exactly and
+# is always present, unlike $BUILDDIR/bin/resources which only the Qt build's
+# POST_BUILD populates). Same approach rocknix-deploy uses.
+cp -a "$PCSX2DIR/bin/resources" "$OUTDIR/usr/bin"
 
 # Restore unstripped deps (for cache).
 rm -fr "$DEPSDIR"
@@ -116,8 +123,18 @@ echo "Generating AppStream metainfo..."
 mkdir -p "$OUTDIR/usr/share/metainfo"
 "$SCRIPTDIR/generate-metainfo.sh" "$OUTDIR/usr/share/metainfo/net.pcsx2.PCSX2.appdata.xml"
 
+# ---- Emit the AppImage ----------------------------------------------------
+echo "Creating $NAME.AppImage..."
+rm -f "$NAME.AppImage"
+$APPIMAGETOOL -v "$OUTDIR" "$NAME.AppImage"
+
+# ---- Emit the portable tarball (same AppDir tree, cleanly-named top dir) ---
 echo "Creating $NAME.tar.zst..."
 rm -f "$NAME.tar.zst"
-# -C to the parent so the archive holds a single top-level "$NAME/" directory.
-tar --zstd -cf "$NAME.tar.zst" -C "$(dirname "$OUTDIR")" "$(basename "$OUTDIR")"
-echo "Done: $(du -h "$NAME.tar.zst" | cut -f1) $NAME.tar.zst"
+rm -rf "./$NAME"
+mv "$OUTDIR" "./$NAME"
+tar --zstd -cf "$NAME.tar.zst" "$NAME"
+
+echo "Done:"
+echo "  $(du -h "$NAME.AppImage" | cut -f1) $NAME.AppImage"
+echo "  $(du -h "$NAME.tar.zst" | cut -f1) $NAME.tar.zst"
