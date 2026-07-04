@@ -12,6 +12,7 @@
 #include "arm64/iR5900-arm64.h"
 #include "arm64/iR5900Analysis.h"
 #include "arm64/AsmHelpers.h"
+#include "common/HostSys.h"
 #include "Host.h"
 #include "R3000A.h"
 #include "R5900.h"
@@ -1534,6 +1535,15 @@ static void recClear(u32 addr, u32 size)
 	if (blockidx == -1)
 		return;
 
+	// macOS/Apple Silicon (no-op elsewhere): recClear runs from the EE
+	// page-fault handler (fastmem backpatch + SMC via mmap_ClearCpuBlock) and
+	// from runtime SMC on the executing CPU thread — both enter with the
+	// MAP_JIT code cache in execute-protected (W^X) mode. The SetFnptr writes
+	// and Arm64BaseBlocks::Remove() stub patches below target that region, so
+	// a write faults (SIGBUS) unless we flip the thread to write mode first.
+	// Refcounted, so it nests harmlessly when reached from an open emit scope.
+	HostSys::BeginCodeWrite();
+
 	// Track the EE-address span of all blocks we touch so the post-walk
 	// tail can reset interior BLOCKs across the *full* extent of the
 	// removed blocks (a straddler can extend well past `end` or below
@@ -1596,6 +1606,8 @@ static void recClear(u32 addr, u32 size)
 	// into the middle of a freshly-recompiled block.
 	if (upperextent > lowerextent)
 		iopClearRecLUT(GETBLOCK(lowerextent), upperextent - lowerextent);
+
+	HostSys::EndCodeWrite();
 }
 
 static void iopClearRecLUT(BASEBLOCK* base, int count)
