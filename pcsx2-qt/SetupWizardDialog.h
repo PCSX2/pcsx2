@@ -66,6 +66,7 @@ private:
 	void setupGameListPage();
 	void setupControllerPage();
 	void setupRetroAchievementsPage();
+	void setupCompletePage();
 	void refreshRetroAchievementsLoginState();
 
 	void pageChangedTo(int page);

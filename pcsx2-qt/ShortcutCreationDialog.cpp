@@ -91,7 +91,7 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 		m_ui.resetIconButton->setEnabled(false);
 	});
 
-	if (std::getenv("container"))
+	if (QtUtils::IsRunningInFlatpak())
 	{
 		m_ui.portableModeToggle->setEnabled(false);
 		m_ui.shortcutDesktop->setEnabled(false);
@@ -99,7 +99,7 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 	}
 
 	connect(m_ui.dialogButtons, &QDialogButtonBox::rejected, this, &QDialog::reject);
-	connect(m_ui.dialogButtons, &QDialogButtonBox::accepted, this, [&]() {
+	connect(m_ui.dialogButtons, &QDialogButtonBox::accepted, this, [this]() {
 		std::vector<std::string> args;
 
 		if (m_ui.portableModeToggle->isChecked())
@@ -153,7 +153,7 @@ ShortcutCreationDialog::ShortcutCreationDialog(QWidget* parent, const QString& t
 		std::string custom_args = m_ui.customArgsInput->text().toStdString();
 		std::string icon_path = m_ui.iconPath->text().toStdString();
 
-		QtUtils::CreateShortcut(this, title.toStdString(), path.toStdString(), std::move(args), custom_args, icon_path, m_ui.shortcutDesktop->isChecked());
+		QtUtils::CreateShortcut(this, m_title.toStdString(), m_path.toStdString(), std::move(args), custom_args, icon_path, m_ui.shortcutDesktop->isChecked());
 
 		accept();
 	});
