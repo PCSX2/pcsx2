@@ -1,3 +1,6 @@
+/* for syscall() */
+#define _DEFAULT_SOURCE
+
 #include <stdbool.h>
 #include <stddef.h>
 
