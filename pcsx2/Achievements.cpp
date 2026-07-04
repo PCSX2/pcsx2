@@ -498,7 +498,7 @@ u32 Achievements::GetExposedEEMemorySize()
 
 bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
 {
-	*http = HTTPDownloader::Create(Host::GetHTTPUserAgent());
+	*http = HTTPDownloader::Create(Host::GetAchievementsUserAgent());
 	if (!*http)
 	{
 		Host::ReportErrorAsync("Achievements Error", "Failed to create HTTPDownloader, cannot use achievements");
@@ -1596,6 +1596,12 @@ bool Achievements::ResetHardcoreMode(bool is_booting)
 
 void Achievements::SetHardcoreMode(bool enabled, bool force_display_message)
 {
+	// yaps2 is not a RetroAchievements-registered hardcore client (it reports as "yaps2", see
+	// Host::GetAchievementsUserAgent), so hardcore is forced off and all unlocks are softcore.
+	// This is the sole non-RAIntegration setter of s_hardcore_mode, so pinning it here keeps
+	// hardcore off across both the boot and runtime paths. Revisit once yaps2 merges into ARMSX2.
+	enabled = false;
+
 	if (enabled == s_hardcore_mode)
 		return;
 
@@ -1789,7 +1795,9 @@ bool Achievements::IsLoggedInOrLoggingIn()
 
 bool Achievements::CanEnableHardcoreMode()
 {
-	return (s_load_game_request || s_has_achievements || s_has_leaderboards);
+	// yaps2 is softcore-only (see SetHardcoreMode / Host::GetAchievementsUserAgent), so it can
+	// never enable hardcore regardless of game/achievement state.
+	return false;
 }
 
 bool Achievements::Login(const char* username, const char* password, Error* error)

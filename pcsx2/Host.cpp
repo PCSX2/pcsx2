@@ -160,6 +160,16 @@ std::string Host::GetHTTPUserAgent()
 	return fmt::format("PCSX2 {} ({})", BuildVersion::GitRev, GetOSVersionString());
 }
 
+std::string Host::GetAchievementsUserAgent()
+{
+	// RetroAchievements identifies the client by the leading Name/Version token of this
+	// User-Agent. Report yaps2 with a stable dotted version (from the release tag, not the
+	// -N-g<hash> snapshot rev) instead of impersonating PCSX2. yaps2 is not a RA-registered
+	// hardcore client, so unlocks are softcore-only (also enforced in Achievements.cpp).
+	return fmt::format("yaps2/{}.{}.{} ({})", BuildVersion::GitTagHi, BuildVersion::GitTagMid,
+		BuildVersion::GitTagLo, GetOSVersionString());
+}
+
 std::unique_lock<std::mutex> Host::GetSettingsLock()
 {
 	return std::unique_lock<std::mutex>(s_settings_mutex);

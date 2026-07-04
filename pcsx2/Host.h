@@ -102,6 +102,11 @@ namespace Host
 	/// Returns the user agent to use for HTTP requests.
 	std::string GetHTTPUserAgent();
 
+	/// Returns the user agent reported to RetroAchievements. RA identifies the client by the
+	/// leading Name/Version token, so this reports yaps2 with a stable dotted version (from the
+	/// release tag, not the -N-g<hash> snapshot rev) rather than impersonating PCSX2.
+	std::string GetAchievementsUserAgent();
+
 	/// Base setting retrieval, bypasses layers.
 	std::string GetBaseStringSettingValue(const char* section, const char* key, const char* default_value = "");
 	SmallString GetBaseSmallStringSettingValue(const char* section, const char* key, const char* default_value = "");
