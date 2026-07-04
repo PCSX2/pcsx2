@@ -4,7 +4,7 @@ This is a fork of [PCSX2](https://pcsx2.net/) targeting ARM based linux handheld
 
 ## Thanks
 
-A massive thank you to the PCSX2 team for 20 years of dedication. I wanted to submit it back as part of their project, but yaps2 understandably doesn't meet their high standards for a submission.
+A massive thank you to the PCSX2 team for 20 years of dedication. yaps2 doesn't meet the rigor required of PCSX2 upstream commits, but maybe someday it will.
 
 The following people worked on the yaps2 fork of this project:
 - bmdhacks
