@@ -8,7 +8,7 @@ on:
       - '**/GameIndex.yaml'
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - '**/GameIndex.yaml'
 

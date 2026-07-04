@@ -1,29 +1,18 @@
 #!/usr/bin/env bash
-
-# This is free and unencumbered software released into the public domain.
 #
-# Anyone is free to copy, modify, publish, use, compile, sell, or
-# distribute this software, either in source code form or as a compiled
-# binary, for any purpose, commercial or non-commercial, and by any
-# means.
+# package-qt.sh — build a portable, self-contained yaps2-qt tarball.
 #
-# In jurisdictions that recognize copyright laws, the author or authors
-# of this software dedicate any and all copyright interest in the
-# software to the public domain. We make this dedication for the benefit
-# of the public at large and to the detriment of our heirs and
-# successors. We intend this dedication to be an overt act of
-# relinquishment in perpetuity of all present and future rights to this
-# software under copyright law.
+# yaps2 fork: this uses the very same linuxdeploy + linuxdeploy-plugin-qt
+# bundling that an AppImage build would (it is what correctly gathers the Qt
+# libraries, platform plugins and rpaths), but stops at the AppDir and tars it
+# up instead of wrapping it in an AppImage. No FUSE is needed to run it, which
+# keeps it consistent with the SDL handheld tarball. Extract it and launch with
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-# IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-# OTHER DEALINGS IN THE SOFTWARE.
+#     ./<dir>/AppRun            (or ./<dir>/usr/bin/yaps2-qt)
 #
-# For more information, please refer to <http://unlicense.org/>
+# The <dir> is a normal directory tree: AppRun launcher, usr/bin/yaps2-qt,
+# usr/lib (Qt + our deps), usr/plugins (Qt platform/imageformat plugins),
+# usr/bin/resources, usr/bin/translations.
 
 SCRIPTDIR=$(dirname "${BASH_SOURCE[0]}")
 
@@ -37,36 +26,32 @@ BUILDDIR=$2
 DEPSDIR=$3
 NAME=$4
 
-BINARY=yaps2-qt
-APPDIRNAME=PCSX2.AppDir
-STRIP=strip
-
 declare -a MANUAL_LIBS=(
 	"libshaderc_shared.so.1"
 )
 
 set -e
 
-LINUXDEPLOY=./linuxdeploy-x86_64.AppImage
-LINUXDEPLOY_PLUGIN_QT=./linuxdeploy-plugin-qt-x86_64.AppImage
-APPIMAGETOOL=./appimagetool-x86_64.AppImage
+# aarch64-only project: pull the arm64 linuxdeploy tooling. (uname -m reports
+# "aarch64" on the ubuntu-*-arm runners.) No appimagetool — we tar the AppDir.
+ARCH=$(uname -m)
+
+LINUXDEPLOY=./linuxdeploy-$ARCH.AppImage
+LINUXDEPLOY_PLUGIN_QT=./linuxdeploy-plugin-qt-$ARCH.AppImage
 
 if [ ! -f "$LINUXDEPLOY" ]; then
-	"$PCSX2DIR/tools/retry.sh" wget -O "$LINUXDEPLOY" https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+	"$PCSX2DIR/tools/retry.sh" wget -O "$LINUXDEPLOY" https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$ARCH.AppImage
 	chmod +x "$LINUXDEPLOY"
 fi
 
 if [ ! -f "$LINUXDEPLOY_PLUGIN_QT" ]; then
-	"$PCSX2DIR/tools/retry.sh" wget -O "$LINUXDEPLOY_PLUGIN_QT" https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+	"$PCSX2DIR/tools/retry.sh" wget -O "$LINUXDEPLOY_PLUGIN_QT" https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-$ARCH.AppImage
 	chmod +x "$LINUXDEPLOY_PLUGIN_QT"
 fi
 
-if [ ! -f "$APPIMAGETOOL" ]; then
-	"$PCSX2DIR/tools/retry.sh" wget -O "$APPIMAGETOOL" https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
-	chmod +x "$APPIMAGETOOL"
-fi
-
-OUTDIR=$(realpath "./$APPDIRNAME")
+# Build the AppDir directly under the artifact name so the extracted top-level
+# folder is self-describing.
+OUTDIR=$(realpath "./$NAME")
 rm -fr "$OUTDIR"
 
 echo "Locating extra libraries..."
@@ -97,6 +82,7 @@ for i in $(find "$DEPSDIR" -iname '*.so'); do
   echo "Stripping deps library ${i}"
   strip "$i"
 done
+unset IFS
 
 echo "Copying desktop file..."
 cp "$PCSX2DIR/.github/workflows/scripts/linux/pcsx2-qt.desktop" "net.pcsx2.PCSX2.desktop"
@@ -130,16 +116,8 @@ echo "Generating AppStream metainfo..."
 mkdir -p "$OUTDIR/usr/share/metainfo"
 "$SCRIPTDIR/generate-metainfo.sh" "$OUTDIR/usr/share/metainfo/net.pcsx2.PCSX2.appdata.xml"
 
-echo "Generating AppImage..."
-GIT_VERSION=$(git tag --points-at HEAD)
-
-if [[ "${GIT_VERSION}" == "" ]]; then
-	# In the odd event that we run this script before the release gets tagged.
-	GIT_VERSION=$(git describe --tags || true)
-	if [[ "${GIT_VERSION}" == "" ]]; then
-		GIT_VERSION=$(git rev-parse HEAD)
-	fi
-fi
-
-rm -f "$NAME.AppImage"
-$APPIMAGETOOL -v "$OUTDIR" "$NAME.AppImage"
+echo "Creating $NAME.tar.zst..."
+rm -f "$NAME.tar.zst"
+# -C to the parent so the archive holds a single top-level "$NAME/" directory.
+tar --zstd -cf "$NAME.tar.zst" -C "$(dirname "$OUTDIR")" "$(basename "$OUTDIR")"
+echo "Done: $(du -h "$NAME.tar.zst" | cut -f1) $NAME.tar.zst"

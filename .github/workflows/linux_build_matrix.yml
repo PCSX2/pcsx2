@@ -1,4 +1,9 @@
-name: 🐧 Linux Builds
+name: 🐧 Linux Builds (aarch64)
+
+# yaps2 fork: we ship for ARM Linux handhelds only, so CI builds a single
+# platform — native aarch64 — in two flavours:
+#   * yaps2-qt   portable tarball (desktop / dev + Rocknix / Batocera, which run Wayland)
+#   * yaps2-sdl  handheld tarball  (bare-kmsdrm handhelds; VK_KHR_display direct-display)
 
 on:
   push:
@@ -6,40 +11,24 @@ on:
       - "l10n_master"
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   build_linux_qt:
-    name: "AppImage"
-    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
+    name: "Qt Tarball"
     uses: ./.github/workflows/linux_build_qt.yml
     with:
-      jobName: "AppImage Build"
-      artifactPrefixName: "PCSX2-linux-Qt-x64-appimage"
+      jobName: "Qt Portable Build (arm64)"
+      artifactPrefixName: "yaps2-linux-arm64-qt"
       compiler: clang
       cmakeflags: ""
-      buildAppImage: true
+      buildTarball: true
     secrets: inherit
-  build_linux_debug:
-    name: "Debug"
-    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
-    uses: ./.github/workflows/linux_build_qt.yml
+
+  build_linux_sdl:
+    name: "SDL Handheld"
+    uses: ./.github/workflows/linux_build_sdl.yml
     with:
-      jobName: "Debug Build"
-      artifactPrefixName: "PCSX2-linux-Qt-x64-debug"
-      compiler: clang
-      cmakeflags: ""
-      buildAppImage: true
-      cmakeBuildType: Debug
-    secrets: inherit
-  build_linux_flatpak:
-    name: "Flatpak"
-    if: github.repository != 'PCSX2/pcsx2' || github.event_name == 'pull_request'
-    uses: ./.github/workflows/linux_build_flatpak.yml
-    with:
-      jobName: "Flatpak Build"
-      artifactPrefixName: "PCSX2-linux-Qt-x64-flatpak"
-      compiler: clang
-      cmakeflags: ""
-      publish: false
+      jobName: "SDL Handheld Build (arm64)"
+      artifactPrefixName: "yaps2-linux-arm64-sdl"
     secrets: inherit

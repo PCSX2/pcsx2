@@ -12,18 +12,18 @@ on:
       os:
         required: false
         type: string
-        default: ubuntu-22.04
+        default: ubuntu-22.04-arm
       platform:
         required: false
         type: string
-        default: x64
+        default: arm64
       compiler:
         required: true
         type: string
       cmakeflags:
         required: true
         type: string
-      buildAppImage:
+      buildTarball:
         required: false
         type: boolean
         default: false
@@ -110,7 +110,7 @@ jobs:
             libwayland-dev libx11-dev libx11-xcb-dev libx264-dev libxcb1-dev libxcb-composite0-dev libxcb-cursor-dev libxcb-damage0-dev libxcb-glx0-dev libxcb-icccm4-dev \
             libxcb-image0-dev libxcb-keysyms1-dev libxcb-present-dev libxcb-randr0-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-shape0-dev \
             libxcb-shm0-dev libxcb-sync-dev libxcb-util-dev libxcb-xfixes0-dev libxcb-xinput-dev libxcb-xkb-dev libxext-dev libxkbcommon-x11-dev libxrandr-dev \
-            lld-17 llvm-17 nasm ninja-build patchelf pkg-config zlib1g-dev
+            lld-17 llvm-17 nasm ninja-build patchelf pkg-config zstd zlib1g-dev
 
       - name: Cache Dependencies
         id: cache-deps
@@ -145,6 +145,7 @@ jobs:
             -DENABLE_SETCAP=OFF \
             -DDISABLE_ADVANCE_SIMD=TRUE \
             -DUSE_LINKED_FFMPEG=ON \
+            -DOVERRIDE_HOST_PAGE_SIZE=4096 \
             -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
             $ADDITIONAL_CMAKE_ARGS
 
@@ -163,17 +164,17 @@ jobs:
         working-directory: ./build
         run: ninja unittests
 
-      - name: Package AppImage
-        if: inputs.buildAppImage == true
+      - name: Package Portable Tarball
+        if: inputs.buildTarball == true
         env:
           NAME: ${{ steps.artifact-metadata.outputs.artifact-name }}
         run: |
-          .github/workflows/scripts/linux/appimage-qt.sh "$(realpath .)" "$(realpath ./build)" "$HOME/deps" "$NAME"
+          .github/workflows/scripts/linux/package-qt.sh "$(realpath .)" "$(realpath ./build)" "$HOME/deps" "$NAME"
           mkdir -p "$GITHUB_WORKSPACE"/ci-artifacts/
-          mv "${NAME}.AppImage" "$GITHUB_WORKSPACE"/ci-artifacts/
+          mv "${NAME}.tar.zst" "$GITHUB_WORKSPACE"/ci-artifacts/
 
       - name: Upload artifact
-        if: inputs.buildAppImage == true
+        if: inputs.buildTarball == true
         uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}

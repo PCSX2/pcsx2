@@ -1,0 +1,88 @@
+name: 🌙 Nightly Release
+
+# yaps2 fork: build the aarch64 artifacts and publish them as a single rolling
+# "nightly" pre-release on this repo. The `nightly` tag/release is deleted and
+# recreated each run, so its download URLs always point at the latest build.
+#
+# Assets (both self-contained .tar.zst, no FUSE needed):
+#   * yaps2-linux-arm64-qt-…​.tar.zst    (desktop / dev + Rocknix / Batocera)
+#   * yaps2-linux-arm64-sdl-…​.tar.zst   (bare-kmsdrm handhelds)
+
+on:
+  schedule:
+    - cron: "0 7 * * *" # 07:00 UTC daily
+  workflow_dispatch: # …and on demand.
+
+permissions:
+  contents: write
+
+jobs:
+  build_qt:
+    if: github.repository == 'yaps2/yaps2'
+    name: "Qt Tarball (arm64)"
+    uses: ./.github/workflows/linux_build_qt.yml
+    with:
+      jobName: "Qt Portable Build (arm64)"
+      artifactPrefixName: "yaps2-linux-arm64-qt"
+      compiler: clang
+      cmakeflags: ""
+      buildTarball: true
+      fetchTags: true
+    secrets: inherit
+
+  build_sdl:
+    if: github.repository == 'yaps2/yaps2'
+    name: "SDL Handheld (arm64)"
+    uses: ./.github/workflows/linux_build_sdl.yml
+    with:
+      jobName: "SDL Handheld Build (arm64)"
+      artifactPrefixName: "yaps2-linux-arm64-sdl"
+      fetchTags: true
+    secrets: inherit
+
+  publish_nightly:
+    if: github.repository == 'yaps2/yaps2'
+    name: "Publish Nightly"
+    needs:
+      - build_qt
+      - build_sdl
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: ci-artifacts
+
+      - name: Stage release assets
+        run: |
+          mkdir -p out
+          find ci-artifacts -type f -name '*.tar.zst' -exec cp -v {} out/ \;
+          echo "Assets to publish:"
+          ls -la out
+
+      - name: Publish rolling nightly release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          DATE=$(date -u +%Y-%m-%d)
+          SHA=$(git rev-parse --short HEAD)
+          TAG=nightly
+
+          # Move the rolling tag+release to the current commit.
+          gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag || true
+
+          gh release create "$TAG" out/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "yaps2 Nightly ($DATE)" \
+            --prerelease \
+            --notes "Automated nightly build of yaps2 (aarch64 Linux) from \`main\` @ ${SHA} on ${DATE}.
+
+          **Assets** (both self-contained tarballs, no FUSE needed)
+          - \`*-qt-*.tar.zst\` — portable Qt build for desktop / dev and Wayland handhelds (Rocknix / Batocera). Extract and run \`./AppRun\` (or \`usr/bin/yaps2-qt\`).
+          - \`*-sdl-*.tar.zst\` — SDL3 build for bare-kmsdrm handhelds (VK_KHR_display direct-display). Extract next to a compatible base system; run \`./yaps2-sdl\`."
