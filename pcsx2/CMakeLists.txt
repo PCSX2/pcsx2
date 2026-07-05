@@ -1079,6 +1079,7 @@ set(pcsx2arm64Sources
 	arm64/iR5900MultDiv-arm64.cpp
 	arm64/iR5900Shift-arm64.cpp
 	arm64/iR5900Misc-arm64.cpp
+	arm64/EERegHeat.cpp
 	arm64/iCOP2-arm64.cpp
 	arm64/iCOP0-arm64.cpp
 	arm64/iFPU-arm64.cpp
@@ -1093,6 +1094,7 @@ set(pcsx2arm64Sources
 
 set(pcsx2arm64Headers
 	arm64/AsmHelpers.h
+	arm64/EERegHeat.h
 	arm64/iCore-arm64.h
 	arm64/iR3000A-arm64.h
 	arm64/iR5900-arm64.h

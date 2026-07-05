@@ -12,6 +12,7 @@
 #include "arm64/iR5900-arm64.h"
 #include "arm64/iR5900Analysis.h"
 #include "arm64/AsmHelpers.h"
+#include "arm64/EERegHeat.h"
 #include "common/HostSys.h"
 #include "Host.h"
 #include "R3000A.h"
@@ -1749,6 +1750,10 @@ static void recResetRaw()
 {
 	Console.WriteLn(Color_Green, "iR5900-ARM64 Recompiler reset.");
 
+	// Flush register-heat records before the code cache (and with it every
+	// emitted exec-counter reference) is dropped.
+	EERegHeat::DumpAndReset("reset");
+
 	armSetAsmPtr(SysMemory::GetEERec(), SysMemory::GetEERecEnd() - SysMemory::GetEERec(), &s_eeConstantPool);
 	armStartBlock();
 	const u8* dispStart = armGetCurrentCodePointer();
@@ -1829,6 +1834,8 @@ static void recResetRaw()
 
 static void recShutdown()
 {
+	EERegHeat::DumpAndReset("shutdown");
+
 	s_eeConstantPool.Destroy();
 	recRAMCopy.deallocate();
 	recLutReserve_RAM.deallocate();
@@ -2155,6 +2162,19 @@ static void recRecompile(const u32 startpc)
 		armEmitCall((void*)ee_divtrace_jit_block_hook);
 	}
 #endif
+
+	// EE-SRA S0 register-heat exec counter (env-gated diagnostics; see
+	// arm64/EERegHeat.h). Emitted before any guest code so every entry —
+	// dispatcher or static link — bumps the block's execution count. The
+	// scratches are free here: the allocator was just re-initialized and
+	// no guest value is register-resident yet.
+	if (u64* heat_cell = EERegHeat::BeginBlock(startpc))
+	{
+		armMoveAddressToReg(RSCRATCHADDR, heat_cell);
+		armAsm->Ldr(RXSCRATCH, a64::MemOperand(RSCRATCHADDR));
+		armAsm->Add(RXSCRATCH, RXSCRATCH, 1);
+		armAsm->Str(RXSCRATCH, a64::MemOperand(RSCRATCHADDR));
+	}
 
 	// EELOAD detection + ELF-load hooks (mirrors iR5900.cpp's recRecompile).
 	// These compile-time-detected, run-time-emitted calls are how PCSX2 learns
@@ -2513,6 +2533,10 @@ StartRecomp:
 				R5900::COP2FlagHackPass().Run(startpc, s_nEndBlock, s_pInstCache + 1);
 		}
 	}
+
+	// Close the register-heat record now that the analysed extent is known
+	// (the backprop loop above reported every GPR reference into it).
+	EERegHeat::EndBlock((s_nEndBlock - startpc) / 4);
 
 	// Try timeout loop speedhack — if detected, skip normal codegen
 	// Timer-poll loops (mfc0 Count / subu / sltu / bne) are NOT skipped because
