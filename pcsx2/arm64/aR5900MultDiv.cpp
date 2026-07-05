@@ -167,3 +167,87 @@ void armEmitMULT1(u32 rd, u32 rs, u32 rt) { emitMult(true, rd, rs, rt, EE_LO1_OF
 void armEmitMULTU1(u32 rd, u32 rs, u32 rt) { emitMult(false, rd, rs, rt, EE_LO1_OFFSET, EE_HI1_OFFSET); }
 void armEmitDIV1(u32 rs, u32 rt) { emitDivS(rs, rt, EE_LO1_OFFSET, EE_HI1_OFFSET); }
 void armEmitDIVU1(u32 rs, u32 rt) { emitDivU(rs, rt, EE_LO1_OFFSET, EE_HI1_OFFSET); }
+
+// ------------------------------------------------------------------------
+// Multiply-accumulate (MMI funct 0x00/0x01 MADD/MADDU, 0x20/0x21 MADD1/MADDU1).
+//   acc  = (u64)LO.UL[0] | ((u64)HI.UL[0] << 32)   (low 32 of each accumulator word)
+//   temp = acc + (rs * rt)        (signed for MADD/MADD1, unsigned for the U forms)
+//   LO   = (s32)(temp & 0xffffffff)  (sign-extended to 64)
+//   HI   = (s32)(temp >> 32)         (sign-extended to 64)
+//   if rd != 0: GPR[rd].UD[0] = LO   (R5900 3-operand form)
+// The two 32-bit accumulator words are added straight onto the 64-bit product
+// (HI word << 32, then LO word), so `acc` never needs its own register and the op
+// fits in the two manual scratch registers. Result sign-extension is identical for
+// the unsigned forms (the interpreter sign-extends LO/HI regardless). The pipeline-1
+// forms select the upper doubleword via lo_off/hi_off, exactly like MULT1.
+// ------------------------------------------------------------------------
+static void emitMadd(bool sign, u32 rd, u32 rs, u32 rt, u32 lo_off, u32 hi_off)
+{
+	armAsm->Ldr(RSCRATCH2W, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Ldr(RSCRATCHW, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+
+	// The live 64-bit accumulator is kept in RSCRATCH (x17), which armStartBlock removes
+	// from VIXL's scratch-register list, so it is safe to hold across the macro ops below —
+	// even if one of them allocated a VIXL temp it could not pick x17. RSCRATCH2 (x16 ==
+	// RXVIXLSCRATCH) is VIXL's macro scratch, so it is only ever loaded and immediately
+	// consumed as a plain operand here, never held across a macro.
+	if (sign)
+		armAsm->Smull(RSCRATCH, RSCRATCH2W, RSCRATCHW);   // x17 = (s64)rs * (s32)rt
+	else
+		armAsm->Umull(RSCRATCH, RSCRATCH2W, RSCRATCHW);   // x17 = (u64)rs * (u32)rt
+
+	// temp = product + (HI.UL[0] << 32) + LO.UL[0]. The w-loads zero-extend, so each
+	// accumulator word contributes exactly its 32 bits with no stray high bits.
+	armAsm->Ldr(RSCRATCH2W, a64::MemOperand(RESTATEPTR, hi_off));   // HI accumulator word
+	armAsm->Add(RSCRATCH, RSCRATCH, a64::Operand(RSCRATCH2, a64::LSL, 32));
+	armAsm->Ldr(RSCRATCH2W, a64::MemOperand(RESTATEPTR, lo_off));   // LO accumulator word
+	armAsm->Add(RSCRATCH, RSCRATCH, RSCRATCH2);                     // RSCRATCH = temp
+
+	// LO = sign-extended low 32 bits of temp; also Rd in the R5900 3-operand form.
+	armAsm->Sxtw(RSCRATCH2, RSCRATCHW);
+	armAsm->Str(RSCRATCH2, a64::MemOperand(RESTATEPTR, lo_off));
+	if (rd != 0)
+		armAsm->Str(RSCRATCH2, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+
+	// HI = sign-extended high 32 bits (asr #32 sign-extends from bit 63 == bit 31 hi).
+	armAsm->Asr(RSCRATCH, RSCRATCH, 32);
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, hi_off));
+}
+
+void armEmitMADD(u32 rd, u32 rs, u32 rt)   { emitMadd(true,  rd, rs, rt, EE_LO_OFFSET,  EE_HI_OFFSET); }
+void armEmitMADDU(u32 rd, u32 rs, u32 rt)  { emitMadd(false, rd, rs, rt, EE_LO_OFFSET,  EE_HI_OFFSET); }
+void armEmitMADD1(u32 rd, u32 rs, u32 rt)  { emitMadd(true,  rd, rs, rt, EE_LO1_OFFSET, EE_HI1_OFFSET); }
+void armEmitMADDU1(u32 rd, u32 rs, u32 rt) { emitMadd(false, rd, rs, rt, EE_LO1_OFFSET, EE_HI1_OFFSET); }
+
+// ------------------------------------------------------------------------
+// Pipeline-1 HI/LO moves (MMI funct 0x10-0x13: MFHI1/MTHI1/MFLO1/MTLO1).
+// Full 64-bit copies to/from the upper doubleword HI1/LO1 — mirror MFHI/MFLO/
+// MTHI/MTLO (aR5900Arith.cpp) but with the +8 offsets.
+// ------------------------------------------------------------------------
+void armEmitMFHI1(u32 rd)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_HI1_OFFSET));
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+void armEmitMFLO1(u32 rd)
+{
+	if (rd == 0)
+		return;
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_LO1_OFFSET));
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rd)));
+}
+
+void armEmitMTHI1(u32 rs)
+{
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_HI1_OFFSET));
+}
+
+void armEmitMTLO1(u32 rs)
+{
+	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
+	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_LO1_OFFSET));
+}

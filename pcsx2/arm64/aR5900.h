@@ -325,6 +325,19 @@ void armEmitMULTU1(u32 rd, u32 rs, u32 rt);
 void armEmitDIV1(u32 rs, u32 rt);
 void armEmitDIVU1(u32 rs, u32 rt);
 
+// MMI multiply-accumulate (MADD/MADDU funct 0x00/0x01; MADD1/MADDU1 0x20/0x21):
+// (HI:LO) += rs*rt, then Rd = LO. The "1" forms target the upper doubleword.
+void armEmitMADD(u32 rd, u32 rs, u32 rt);
+void armEmitMADDU(u32 rd, u32 rs, u32 rt);
+void armEmitMADD1(u32 rd, u32 rs, u32 rt);
+void armEmitMADDU1(u32 rd, u32 rs, u32 rt);
+
+// MMI pipeline-1 HI/LO moves (funct 0x10-0x13): MFHI1/MTHI1/MFLO1/MTLO1.
+void armEmitMFHI1(u32 rd);
+void armEmitMTHI1(u32 rs);
+void armEmitMFLO1(u32 rd);
+void armEmitMTLO1(u32 rs);
+
 // --------------------------------------------------------------------------------------
 //  EE jump opcode generators (Phase 4.1)
 // --------------------------------------------------------------------------------------
@@ -380,6 +393,13 @@ void armEmitBC1T(u32 target, u32 fallthrough);
 // (faithful to x86 microVU_Macro.inl recBC2F/T — a plain bit-test branch).
 void armEmitBC2F(u32 target, u32 fallthrough);
 void armEmitBC2T(u32 target, u32 fallthrough);
+
+// COP0 condition branches (test CPCOND0, the DMA-ready flag the EE polls to wait for
+// DMA completion). BC0T branches when CPCOND0==1, BC0F when ==0 — matching the
+// interpreter (COP0.cpp BC0F/BC0T) and x86 iCOP0.cpp. Games spin on these waiting on
+// DMA; once compiled the rec's existing wait-loop fast-forward can idle-skip the spin.
+void armEmitBC0F(u32 target, u32 fallthrough);
+void armEmitBC0T(u32 target, u32 fallthrough);
 
 // --------------------------------------------------------------------------------------
 //  Branch-likely forms (BEQL/BNEL/BLEZL/BGTZL, BLTZL/BGEZL, BC1FL/BC1TL)
