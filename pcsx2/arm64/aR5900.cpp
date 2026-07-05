@@ -4332,6 +4332,36 @@ static void recRecompile(u32 startpc)
 			continue;
 		}
 
+		// FlushCache / iFlushCache syscall skip (x86 recSYSCALL, ix86-32/iR5900.cpp). This rec
+		// does NOT model the EE instruction/data cache, so a guest `syscall` whose number
+		// ($v1 / GPR[3]) is FlushCache (0x64) or iFlushCache (0x68) has no architectural effect
+		// here. Single-stepping it through the interpreter would run the real BIOS handler, whose
+		// emulated per-op cycle sum does not match real hardware — mis-timing it relative to the
+		// GS/VU/IOP/VBlank schedule. x86 instead skips the op entirely and charges a flat 5650
+		// cycles (measured on hardware, github.com/F0bes/flushcache-cycles). That accurate timing
+		// is why timing-sensitive games render correctly on the x86 rec but glitch under the
+		// interpreter (True Crime: NYC billboard, Mortal Kombat menu — both single-stepped the
+		// real handler here). Fires only when $v1 is a known compile-time constant, exactly like
+		// x86's GPR_IS_CONST1(3); otherwise fall through to the normal syscall single-step below.
+		// 5650 is added UNSCALED into the block cycle sum (recScaleBlockCycles scales the total at
+		// commit), matching x86's `s_nBlockCycles += 5650` which bypasses the per-op *(2-DIE) mult.
+		if ((op >> 26) == 0 && (op & 0x3f) == 0x0C && // SPECIAL / SYSCALL
+			const_state.known[3] &&
+			(((const_state.value[3] & 0xFF) == 0x64) || ((const_state.value[3] & 0xFF) == 0x68)))
+		{
+			raw_cycles += 5650; // flat, unscaled — the syscall body is not emitted (cache unmodelled)
+			pc += 4;
+			endpc = pc;
+			if (++compiled >= MAX_BLOCK_INSTS)
+			{
+				recEmitWritePc(pc);
+				known_dispatch_pc = true;
+				dispatch_pc = pc;
+				break;
+			}
+			continue;
+		}
+
 		if (recIsHandledBranch(op))
 		{
 			// Terminate the block: branch generator + delay slot + dispatch tail.
