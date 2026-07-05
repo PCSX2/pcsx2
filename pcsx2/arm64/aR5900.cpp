@@ -379,6 +379,19 @@ enum : u32
 static void recEmitInterpInline(u32 op);
 static bool recTranslateOp(u32 op, u32 pc);
 
+// LDL/LDR (and SDL/SDR) pair fusion (yaps2 1d6f80984a/5f44e772d0). The game emits an
+// unaligned 64-bit access as an LDL/LDR (or SDL/SDR) pair on the same Rt/Rs whose
+// offsets differ by 7; together they are exactly one (unaligned) 64-bit access at the
+// lower address, which ARM64 performs in a single fastmem op. The leading half emits
+// that fused op and sets s_eeUnalignedFused; the trailing half consumes the flag and
+// emits nothing. Defined after s_eeEndBlock (they need the block-end gate). Reset per
+// block in recRecompile; s_eeCompilingDelaySlot disables fusion inside delay slots
+// (the peeked partner would be off the executed path).
+static bool s_eeUnalignedFused = false;
+static bool s_eeCompilingDelaySlot = false;
+static bool recTryFuseUnalignedLoad(u32 pc, bool is_ldl, u32 rt, u32 rs, s32 imm);
+static bool recTryFuseUnalignedStore(u32 pc, bool is_sdl, u32 rt, u32 rs, s32 imm);
+
 // Macro-mode native COP2 transfer ops (defined after the M2 sync helpers) — used by
 // recTranslateOp's COP2 dispatch.
 static void recCFC2();
@@ -2310,10 +2323,14 @@ static bool recTranslateOp(u32 op, u32 pc)
 		case 0x26: armEmitLWR(rt, rs, imm); return true;
 		case 0x2A: armEmitSWL(rt, rs, imm); return true;
 		case 0x2E: armEmitSWR(rt, rs, imm); return true;
-		case 0x1A: armEmitLDL(rt, rs, imm); return true;
-		case 0x1B: armEmitLDR(rt, rs, imm); return true;
-		case 0x2C: armEmitSDL(rt, rs, imm); return true;
-		case 0x2D: armEmitSDR(rt, rs, imm); return true;
+		case 0x1A: if (recTryFuseUnalignedLoad(pc, /*is_ldl*/ true, rt, rs, imm)) return true;
+			armEmitLDL(rt, rs, imm); return true;
+		case 0x1B: if (recTryFuseUnalignedLoad(pc, /*is_ldl*/ false, rt, rs, imm)) return true;
+			armEmitLDR(rt, rs, imm); return true;
+		case 0x2C: if (recTryFuseUnalignedStore(pc, /*is_sdl*/ true, rt, rs, imm)) return true;
+			armEmitSDL(rt, rs, imm); return true;
+		case 0x2D: if (recTryFuseUnalignedStore(pc, /*is_sdl*/ false, rt, rs, imm)) return true;
+			armEmitSDR(rt, rs, imm); return true;
 
 		// 128-bit quadword load/store (16-byte aligned).
 		case OP_LQ: armEmitLoadQuad(rt, rs, imm); return true;
@@ -3047,8 +3064,12 @@ static void recEmitOp(u32 op, RecGprConstState& const_state, RecGprCacheState& c
 	// tail commits the accumulated cycles for accounting). The VU catch-up still reads the
 	// current cpuRegs.cycle. Harmless for non-COP2 ops (they ignore it).
 	s_cop2RawCycles = 0;
+	// recEmitOp compiles branch delay slots (and the DI-delayed op): disable LDL/LDR·SDL/SDR
+	// pair fusion here — the peeked partner at pc+4 is not the executed-next instruction.
+	s_eeCompilingDelaySlot = true;
 	if (!recTranslateOpOptimized(op, const_state, cache_state, pc))
 		recEmitInterpInline(op);
+	s_eeCompilingDelaySlot = false;
 }
 
 // cpuRegs.pc = imm (block fallthrough / early-exit target).
@@ -3933,6 +3954,72 @@ static constexpr u32 EE_INST_CACHE_SIZE = MAX_BLOCK_INSTS + 4;
 static EEINST s_instCache[EE_INST_CACHE_SIZE];
 static u32 s_eeEndBlock = 0; // first pc past the current block (x86 s_nEndBlock equiv.)
 
+// LDL/LDR pair fusion (yaps2 1d6f80984a). One unaligned 64-bit fastmem load at the lower
+// address replaces the LDL/LDR read-modify-merge dance (×2). The leading half emits it and
+// sets s_eeUnalignedFused; the trailing partner (compiled next) consumes the flag. addr->x9
+// (zero-extended), value->x10; a page-crossing/MMIO fault backpatches to the size-64 thunk,
+// which redoes the read and resumes at the Str below. The fused range [X,X+7] is a subset of
+// the bytes the two separate ops already touch, so no new fault surface.
+static bool recTryFuseUnalignedLoad(u32 pc, bool is_ldl, u32 rt, u32 rs, s32 imm)
+{
+	if (s_eeUnalignedFused) { s_eeUnalignedFused = false; return true; } // trailing half: emit nothing
+
+	if (rt == 0 || s_eeCompilingDelaySlot || !CHECK_FASTMEM ||
+		(pc + 4) >= s_eeEndBlock || vtlb_IsFaultingPC(pc) || vtlb_IsFaultingPC(pc + 4))
+		return false;
+
+	const u32 partner = memRead32(pc + 4);
+	const u32 partnerOp = partner >> 26;
+	const u32 partnerRt = (partner >> 16) & 0x1f;
+	const u32 partnerRs = (partner >> 21) & 0x1f;
+	const s32 partnerImm = static_cast<s16>(partner & 0xffff);
+	const u32 wantOp = is_ldl ? 0x1bu : 0x1au; // LDL(0x1A) pairs with LDR(0x1B), either order
+	const s32 ldlImm = is_ldl ? imm : partnerImm;
+	const s32 ldrImm = is_ldl ? partnerImm : imm;
+	if (partnerOp != wantOp || partnerRt != rt || partnerRs != rs || (ldlImm - ldrImm) != 7)
+		return false;
+
+	armEmitEffectiveAddr(a64::w9, rs, ldrImm);
+	const u8* code_start = armGetCurrentCodePointer();
+	armAsm->Ldr(a64::x10, a64::MemOperand(RFASTMEMBASE, a64::x9));
+	recRecordFastmem(code_start, pc, a64::w9.GetCode(), a64::x10.GetCode(), 64, /*sign*/ false, /*is_load*/ true);
+	armAsm->Str(a64::x10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt))); // low 64 bits; UD[1] preserved
+	s_eeUnalignedFused = true;
+	return true;
+}
+
+// SDL/SDR pair fusion (yaps2 5f44e772d0) — the store twin of the load fusion above. One
+// unaligned 64-bit fastmem store of GPR[rt] at the lower address. rt==0 stores the always-
+// zero GPR[0]. Value is parked in x10 before the (faulting) Str so the size-64 store thunk
+// redoes it from the recorded data register.
+static bool recTryFuseUnalignedStore(u32 pc, bool is_sdl, u32 rt, u32 rs, s32 imm)
+{
+	if (s_eeUnalignedFused) { s_eeUnalignedFused = false; return true; } // trailing half: emit nothing
+
+	if (s_eeCompilingDelaySlot || !CHECK_FASTMEM ||
+		(pc + 4) >= s_eeEndBlock || vtlb_IsFaultingPC(pc) || vtlb_IsFaultingPC(pc + 4))
+		return false;
+
+	const u32 partner = memRead32(pc + 4);
+	const u32 partnerOp = partner >> 26;
+	const u32 partnerRt = (partner >> 16) & 0x1f;
+	const u32 partnerRs = (partner >> 21) & 0x1f;
+	const s32 partnerImm = static_cast<s16>(partner & 0xffff);
+	const u32 wantOp = is_sdl ? 0x2du : 0x2cu; // SDL(0x2C) pairs with SDR(0x2D), either order
+	const s32 sdlImm = is_sdl ? imm : partnerImm;
+	const s32 sdrImm = is_sdl ? partnerImm : imm;
+	if (partnerOp != wantOp || partnerRt != rt || partnerRs != rs || (sdlImm - sdrImm) != 7)
+		return false;
+
+	armEmitEffectiveAddr(a64::w9, rs, sdrImm);
+	armAsm->Ldr(a64::x10, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+	const u8* code_start = armGetCurrentCodePointer();
+	armAsm->Str(a64::x10, a64::MemOperand(RFASTMEMBASE, a64::x9));
+	recRecordFastmem(code_start, pc, a64::w9.GetCode(), a64::x10.GetCode(), 64, /*sign*/ false, /*is_load*/ false);
+	s_eeUnalignedFused = true;
+	return true;
+}
+
 // Forward pre-scan of the block range, mirroring the x86 rec's s_nEndBlock walk
 // (ix86-32/iR5900.cpp:2292) but matching THIS rec's actual block boundaries so the
 // EEINST indices line up with what the emit loop below compiles. It over-approximates
@@ -4093,6 +4180,9 @@ static void recRecompile(u32 startpc)
 	// place to write and the emit loop can expose a g_pCurInstInfo per op. No emit/
 	// behavior change yet — the flags computed here are not consumed until M3.
 	s_eeEndBlock = recScanBlockEnd(startpc);
+	// Sweep any LDL/LDR·SDL/SDR fusion residue from an aborted prior compile (the per-pair
+	// gate otherwise guarantees the partner is consumed in the same block).
+	s_eeUnalignedFused = false;
 	{
 		u32 ninst = (s_eeEndBlock - startpc) >> 2;
 		if (ninst >= EE_INST_CACHE_SIZE)
