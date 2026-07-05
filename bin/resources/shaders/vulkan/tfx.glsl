@@ -1720,9 +1720,13 @@ layout(early_fragment_tests) in;
 #endif
 
 #if PS_ROV_COLOR || PS_ROV_DEPTH
-#define DISCARD rov_discard = true
+	#define DISCARD { rov_discard_color = true; rov_discard_depth = true; }
+	#define DISCARD_COLOR rov_discard_color = true
+	#define DISCARD_DEPTH rov_discard_depth = true
 #else
-#define DISCARD discard
+	#define DISCARD discard
+	#define DISCARD_COLOR o_col0 = sample_from_rt()
+	#define DISCARD_DEPTH input_z = sample_from_depth()
 #endif
 
 void main()
@@ -1747,7 +1751,8 @@ void main()
 #endif
 
 #if PS_ROV_COLOR || PS_ROV_DEPTH
-	bool rov_discard = gl_HelperInvocation;
+	bool rov_discard_color = gl_HelperInvocation;
+	bool rov_discard_depth = gl_HelperInvocation;
 #endif
 
 #if PS_ZTST == ZTST_GEQUAL
@@ -1940,16 +1945,16 @@ void main()
 		// Alpha test with feedback
 		#if PS_AFAIL == AFAIL_FB_ONLY
 			if (!atst_pass)
-				input_z = sample_from_depth();
+				DISCARD_DEPTH;
 		#elif PS_AFAIL == AFAIL_ZB_ONLY
 			if (!atst_pass)
-				o_col0 = sample_from_rt();
+				DISCARD_COLOR;
 		#elif (PS_AFAIL == AFAIL_RGB_ONLY || PS_AFAIL == AFAIL_RGB_ONLY_SW_Z)
 			if (!atst_pass)
 			{
-				o_col0.a = sample_from_rt().a;
+				o_col0.a = sample_from_rt().a; // discard alpha
 			#if PS_AFAIL == AFAIL_RGB_ONLY_SW_Z
-				input_z = sample_from_depth();
+				DISCARD_DEPTH;
 			#endif
 			}
 		#endif
@@ -1961,24 +1966,23 @@ void main()
 	
 	#if PS_AA1 == PS_AA1_TRIANGLE_SW_Z
 		if (!bool(vsIn.interior))
-			input_z = sample_from_depth(); // No depth update for triangle edges.
+			DISCARD_DEPTH; // No depth update for triangle edges.
 	#endif
 	
 	// Writing back color (result already written to o_col0 for non-ROV)
 	#if PS_RETURN_COLOR_ROV
-		bvec4 discard_channels = bvec4(uvec4(rov_discard) | uvec4(equal(FbMask, uvec4(0xFFu))));
-		o_col0 = mix(o_col0, sample_from_rt(), discard_channels);
+		o_col0 = mix(o_col0, sample_from_rt(), equal(FbMask, uvec4(0xFFu))); // channel masking
 
-		imageStore(RtImageRov, ivec2(gl_FragCoord.xy), o_col0);
+		if (!rov_discard_color)
+			imageStore(RtImageRov, ivec2(gl_FragCoord.xy), o_col0);
 	#endif
 	
 	// Writing back depth
 	#if PS_RETURN_DEPTH
 		gl_FragDepth = input_z;
 	#elif PS_RETURN_DEPTH_ROV
-		input_z = rov_discard ? sample_from_depth() : input_z;
-
-		imageStore(DepthImageRov, ivec2(gl_FragCoord.xy), vec4(input_z, 0, 0, 1.0f));
+		if (!rov_discard_depth)
+			imageStore(DepthImageRov, ivec2(gl_FragCoord.xy), vec4(input_z, 0, 0, 1.0f));
 	#endif
 
 	#if PS_ROV_COLOR || PS_ROV_DEPTH
