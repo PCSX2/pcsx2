@@ -259,6 +259,12 @@ void recMFC0()
 			emitFlushBlockCycles();
 			armEmitCall((void*)Interp::MFC0);
 			emitReloadCycle();
+			// Interp::MFC0 wrote GPR[rt] in canonical memory behind the JIT's
+			// back; refresh the pin mirror or a later in-block read of rt is
+			// served the stale pre-call value. Only rt changes, so reload just
+			// its pin (the other interp fallback here, MTC0, writes no GPRs).
+			if (const a64::Register* pin = armEEPinForGPR(_Rt_))
+				armAsm->Ldr(*pin, armCpuRegMem(&cpuRegs.GPR.r[_Rt_].UD[0]));
 			return;
 
 		case 24: // Debug breakpoint register — ignore

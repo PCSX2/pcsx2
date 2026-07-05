@@ -111,6 +111,33 @@ TEST(EeRecPinnedGpr, LoadIntoPinnedThenReadBack)
 	EXPECT_EQ(h.GetGpr64Interp(reg::t1), 0x0000000000445566ull);
 }
 
+// Interp-fallback write-back: MFC0 rd=25 (performance counters) drops to
+// iFlushCall(FLUSH_INTERPRETER) + Interp::MFC0, which writes cpuRegs.GPR[rt]
+// in MEMORY behind the JIT's back. When rt is pinned, the mirror must be
+// re-read after the call or the in-block read-back consumes the stale pin.
+// (MTC0 rd=25 / MTPS seeds PCCR through the same fallback mechanism — it
+// writes no GPRs so it needs no reload. The seed keeps CTE (pccr bit 31)
+// clear, so COP0_UpdatePCCR is inert and the value is pass-deterministic.)
+TEST(EeRecPinnedGpr, Mfc0PerfCounterIntoPinnedThenReadBack)
+{
+	EeRecTestHarness h;
+	h.EnableCop0();
+	h.SetGpr64(reg::t5, 0x0000000000C0FFEEull); // PCCR seed (CTE clear)
+	h.SetGpr64(reg::sp, 0x0000000001F00010ull); // stale-mirror sentinel
+	h.LoadProgram({
+		OR(reg::t6, reg::ra, reg::zero),    // save parking $ra
+		MTC0(reg::t5, 25),                  // MTPS: PERF.pccr.val = t5
+		MFC0(reg::sp, 25),                  // MFPS: GPR[29] = (s32)pccr via interp fallback
+		DADDU(reg::t0, reg::sp, reg::zero), // read $sp back via the pin
+		MFC0(reg::ra, 25),                  // same hole into pinned $ra
+		DADDU(reg::t1, reg::ra, reg::zero), // read $ra back via the pin
+		OR(reg::ra, reg::t6, reg::zero),    // restore parking $ra
+	});
+	h.Run();
+	h.ExpectGpr64(reg::t0, 0x0000000000C0FFEEull);
+	h.ExpectGpr64(reg::t1, 0x0000000000C0FFEEull);
+}
+
 // 32-bit-half write-through (Bfi path): CFC2 writes UL[0] and UL[1] of the
 // pinned reg separately; the read-back consumes the mirror.
 TEST(EeRecPinnedGpr, HalfWordWriteThroughViaCfc2)
