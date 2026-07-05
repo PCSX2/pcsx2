@@ -4,6 +4,7 @@
 #include <chrono>
 #include <vector>
 
+#include "common/Console.h"
 #include "common/Timer.h"
 #include "common/Threading.h"
 
@@ -29,6 +30,15 @@ static u32 s_frames_since_last_update = 0;
 static u32 s_unskipped_frames_since_last_update = 0;
 static Common::Timer s_last_update_time;
 static Common::Timer s_last_frame_time;
+
+// Session perf logging: a rolling emulog line every ~30s of presented
+// frames, and a whole-session average at shutdown (LogSessionSummary).
+// Gives every -logfile run a durable framerate record. Wall-clock based:
+// paused time dilutes the session average but not the rolling lines.
+static const float LOG_INTERVAL = 30.0f;
+static Common::Timer s_session_timer;
+static float s_log_accum_time = 0.0f;
+static u32 s_log_accum_frames = 0;
 
 // frame number, updated by the GS thread
 static u64 s_frame_number = 0;
@@ -96,8 +106,22 @@ void PerformanceMetrics::Clear()
 
 	s_frame_number = 0;
 
+	s_session_timer.Reset();
+	s_log_accum_time = 0.0f;
+	s_log_accum_frames = 0;
+
 	s_frame_time_history.fill(0.0f);
 	s_frame_time_history_pos = 0;
+}
+
+void PerformanceMetrics::LogSessionSummary()
+{
+	const double elapsed = s_session_timer.GetTimeSeconds();
+	if (s_frame_number == 0 || elapsed < 1.0)
+		return;
+	Console.WriteLn("PerfLog session: %llu frames in %.1fs wall = %.2f fps average",
+		static_cast<unsigned long long>(s_frame_number), elapsed,
+		static_cast<double>(s_frame_number) / elapsed);
 }
 
 void PerformanceMetrics::Reset()
@@ -219,6 +243,19 @@ void PerformanceMetrics::Update(bool gs_register_write, bool fb_blit, bool is_sk
 		thread.last_cpu_time = time;
 		thread.usage = static_cast<double>(delta) * pct_divider;
 		thread.time = static_cast<double>(delta) * time_divider;
+	}
+
+	// Rolling perf log (uses this window's frame count before it resets).
+	s_log_accum_time += time;
+	s_log_accum_frames += s_frames_since_last_update;
+	if (s_log_accum_time >= LOG_INTERVAL)
+	{
+		Console.WriteLn("PerfLog: %.1f fps | EE %.0f%% GS %.0f%% VU %.0f%% GPU %.0f%% | frame %llu",
+			static_cast<float>(s_log_accum_frames) / s_log_accum_time, s_cpu_thread_usage,
+			s_gs_thread_usage, s_vu_thread_usage, s_gpu_usage,
+			static_cast<unsigned long long>(s_frame_number));
+		s_log_accum_time = 0.0f;
+		s_log_accum_frames = 0;
 	}
 
 	s_frames_since_last_update = 0;
