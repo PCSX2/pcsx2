@@ -2554,6 +2554,25 @@ static bool recIsCop0DI(u32 op)
 	return (op >> 26) == 0x10 && ((op >> 21) & 0x1f) == 0x10 && (op & 0x3f) == 0x39;
 }
 
+// Ops the x86 rec routes through recBranchCall (iCOP0.cpp), which sets
+// cpuRegs.nextEventCycle = cpuRegs.cycle so that _cpuEventTest_Shared is FORCED to run
+// immediately after the op — not merely "if an event happens to be due". These are the
+// interrupt-flow COP0 ops: ERET (CO funct 0x18, return-from-exception, clears EXL) and
+// EI (CO funct 0x38, re-enable interrupts, sets Status.EIE). Both can make a previously
+// masked INTC/DMAC interrupt (e.g. a completed GIF/VIF DMA or VBlank) deliverable, and
+// the game expects it serviced at once. Without the force, this rec would defer delivery
+// to the next naturally-scheduled event-test, running the next interrupt handler late and
+// throwing EE-vs-GS timing off (misplaced textures — the symptom that motivated this).
+// DI is excluded on purpose: x86's recDI does NOT branch (disabling needs no prompt
+// service), and it is already emitted natively here via recIsCop0DI/recEmitCop0DI.
+static bool recIsForcedEventTestOp(u32 op)
+{
+	if ((op >> 26) != 0x10 || ((op >> 21) & 0x1f) != 0x10)
+		return false;
+	const u32 funct = op & 0x3f;
+	return funct == 0x18 /* ERET */ || funct == 0x38 /* EI */;
+}
+
 // MIPS trap ops: SPECIAL T{GE,GEU,LT,LTU,EQ,NE} (funct 0x30-0x34,0x36) and REGIMM
 // T{GE,GEU,LT,LTU,EQ,NE}I (rt 0x08-0x0C,0x0E). Emitted natively (block-conditional)
 // in recRecompile — see recEmitTrapCompareIfTrap.
@@ -3673,8 +3692,12 @@ static void recGenDispatchers()
 // the loop start and, if so, bumps cpuRegs.cycle up to nextEventCycle so the next
 // event fires after one iteration instead of the EE busy-spinning host-side until
 // the event (the main EE-at-99%/heat case for polling loops).
+// `force_event`: mirror x86 recBranchCall — always run the event test (jump to
+// DispatcherEvent) after this block instead of continuing straight on when no event is due.
+// Set for interp-step EI/ERET (recIsForcedEventTestOp) so a now-unmasked pending interrupt
+// is serviced immediately. Only meaningful on the dynamic-target (!known_dispatch_pc) tail.
 static void recEmitEventTestAndDispatch(u32 scaled_cycles, bool add_cycles, bool known_dispatch_pc, u32 dispatch_pc,
-	u32 waitloop_selfpc = 0)
+	u32 waitloop_selfpc = 0, bool force_event = false)
 {
 	armAsm->Ldr(RXARG1, a64::MemOperand(RESTATEPTR, EE_CYCLE_OFFSET)); // x0 = cpuRegs.cycle (u64)
 	if (add_cycles)
@@ -3702,8 +3725,9 @@ static void recEmitEventTestAndDispatch(u32 scaled_cycles, bool add_cycles, bool
 		return;
 	}
 
-	armEmitCondBranch(a64::mi, DispatcherReg); // N set => (cycle - nextEvent) < 0 => continue
-	armEmitJmp(DispatcherEvent);
+	if (!force_event)
+		armEmitCondBranch(a64::mi, DispatcherReg); // N set => (cycle - nextEvent) < 0 => continue
+	armEmitJmp(DispatcherEvent); // force_event: unconditionally run _cpuEventTest_Shared (x86 recBranchCall)
 }
 
 // --------------------------------------------------------------------------------------
@@ -3838,6 +3862,7 @@ static void recRecompile(u32 startpc)
 	};
 	u32 compiled = 0;
 	bool interp_step = false;
+	bool force_event_test = false; // interp-step EI/ERET: force a post-op event test (x86 recBranchCall)
 	bool known_dispatch_pc = false;
 	u32 dispatch_pc = 0;
 	u32 waitloop_selfpc = 0;
@@ -4138,6 +4163,9 @@ static void recRecompile(u32 startpc)
 			armEmitCall(reinterpret_cast<const void*>(intExecuteOneInst));
 			endpc = pc + 4;
 			interp_step = true;
+			// EI/ERET re-enable / return-from-interrupt: x86 recBranchCall forces an event
+			// test so a now-unmasked pending interrupt fires immediately (see the helper).
+			force_event_test = recIsForcedEventTestOp(op);
 			break;
 		}
 
@@ -4152,7 +4180,7 @@ static void recRecompile(u32 startpc)
 	recCacheKillAll(cache_state);
 
 	recEmitEventTestAndDispatch(interp_step ? 0 : recScaleBlockCycles(raw_cycles), !interp_step,
-		!interp_step && known_dispatch_pc, dispatch_pc, waitloop_selfpc);
+		!interp_step && known_dispatch_pc, dispatch_pc, waitloop_selfpc, force_event_test);
 
 	// Apply SMC protection (must emit any checksum prologue into this block's stream before
 	// armEndBlock flushes it). `block_entry` is what subsequent dispatches jump to.
