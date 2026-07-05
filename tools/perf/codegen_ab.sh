@@ -102,13 +102,26 @@ echo "   base = $BASE_BIN"
 echo "   new  = $NEW_BIN"
 echo "   metric = perf stat -e instructions,cycles --inherit (deterministic; wallclock is NOT used)"
 
-# Run one binary RUNS times under perf stat; parse retired-instructions + cycles.
+# Hottest thermal zone in °C (integer), or "?" when unavailable. Logged per
+# run so a fan/thermal confound is visible in the record instead of silent.
+read_temp_c() {
+  local t
+  t="$(cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null | sort -rn | head -1)"
+  [[ -n "$t" ]] && echo $((t / 1000)) || echo "?"
+}
+
+# Run ONE measurement of one binary under perf stat; parse retired
+# instructions + cycles. Callers interleave base/new (see the run loop below):
+# an all-base-then-all-new order lets a session-long thermal ramp (fan
+# profile, heat soak) correlate with binary identity and masquerade as a
+# codegen delta in the cycles metric. Interleaving decorrelates it;
+# instructions were never exposed (retired counts are clock-independent).
 # NOTE: $PIN is an intentional word-split command prefix (e.g. `taskset -c 4-7`);
 # the savestate/ISO are inlined QUOTED so their spaces never split (the gotcha).
-run_binary() {
-  local tag="$1" bin="$2"
-  for k in $(seq 1 "$RUNS"); do
-    local stat="$OUTDIR/$tag.run$k.stat.txt"
+run_one() {
+  local tag="$1" bin="$2" k="$3"
+  local stat="$OUTDIR/$tag.run$k.stat.txt"
+  local temp_c; temp_c="$(read_temp_c)"
     EERUNNER_SYNCMTGS=0 EERUNNER_MTVU=1 EERUNNER_EE=jit \
       perf stat -e instructions,cycles --inherit -- \
         ${PIN:-} "$bin" --liverun --renderer "$RENDERER" --frames "$FRAMES" \
@@ -138,13 +151,15 @@ run_binary() {
       die "aborting: $tag run$k did not run a real workload"
     fi
     printf '%s\t%s\t%s\t%s\n' "$tag" "$k" "$ins" "$cyc" >> "$RESULTS"
-    awk -v t="$tag" -v k="$k" -v i="$ins" -v c="$cyc" \
-      'BEGIN{printf "   %-4s run%s: insns=%.3fB  cycles=%.3fB  ipc=%.3f\n", t, k, i/1e9, c/1e9, i/c}'
-  done
+    awk -v t="$tag" -v k="$k" -v i="$ins" -v c="$cyc" -v tc="$temp_c" \
+      'BEGIN{printf "   %-4s run%s: insns=%.3fB  cycles=%.3fB  ipc=%.3f  temp=%s°C\n", t, k, i/1e9, c/1e9, i/c, tc}'
 }
 
-run_binary base "$BASE_BIN"
-run_binary new  "$NEW_BIN"
+# Interleaved run order (base,new,base,new,...) — see run_one for why.
+for k in $(seq 1 "$RUNS"); do
+  run_one base "$BASE_BIN" "$k"
+  run_one new  "$NEW_BIN"  "$k"
+done
 
 # Median per tag + deltas -> summary.md.
 python3 - "$OUTDIR" "$RESULTS" "$LABEL" "$SCENE" "$DEVICE" "$RENDERER" "$FRAMES" "$RUNS" "$BASE_BIN" "$NEW_BIN" <<'PY'
