@@ -39,7 +39,6 @@ static constexpr u32 FPUflagSD = 0x00000020; // divide by zero (sticky)
 static constexpr u32 FPUflagC = 0x00800000;  // compare condition bit
 
 // IEEE-754 single-precision sentinel bit patterns used by the EE clamp logic.
-static constexpr u32 kPosInfinity = 0x7f800000; // exponent all-ones, mantissa zero
 static constexpr u32 kPosFmax = 0x7f7fffff;     // largest finite magnitude
 static constexpr u32 kSignBit = 0x80000000;
 static constexpr u32 kExpMask = 0x7f800000;
@@ -125,23 +124,34 @@ void armEmitMOV_S(u32 fd, u32 fs)
 }
 
 // ------------------------------------------------------------------------
-// ABS_S: fpr[fd] = fpr[fs] with the sign bit cleared; clears the O|U cause flags.
+// ABS_S: fpr[fd] = |fpr[fs]|. x86 recABS_S_xmm (iFPU.cpp): clear the sign, then at
+// eeClampMode>=1 clamp +Inf/+NaN -> +fmax (MIN.SS with +fmax; result is already positive).
+// Does NOT clear the FCR31 O/U flags — that clear is commented out in x86 (only the
+// interpreter did it), so match the recompiler and leave them untouched.
 void armEmitABS_S(u32 fd, u32 fs)
 {
-	armAsm->Ldr(RSCRATCHADDR.W(), a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fs)));
-	armAsm->And(RSCRATCHADDR.W(), RSCRATCHADDR.W(), 0x7fffffff);
-	armAsm->Str(RSCRATCHADDR.W(), a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fd)));
-	emitClearFCR31Flags(FPUflagO | FPUflagU);
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fs)));
+	armAsm->And(a64::w9, a64::w9, 0x7fffffff); // clear sign
+	if (EmuConfig.Cpu.Recompiler.fpuOverflow)
+	{
+		const a64::Register wexp = a64::w10;
+		const a64::Register wfmax = a64::w11;
+		armAsm->Ubfx(wexp, a64::w9, 23, 8);
+		armAsm->Mov(wfmax, kPosFmax);
+		armAsm->Cmp(wexp, 0xFF);
+		armAsm->Csel(a64::w9, wfmax, a64::w9, a64::eq); // +Inf/+NaN -> +fmax
+	}
+	armAsm->Str(a64::w9, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fd)));
 }
 
 // ------------------------------------------------------------------------
-// NEG_S: fpr[fd] = fpr[fs] with the sign bit flipped; clears the O|U cause flags.
+// NEG_S: fpr[fd] = fpr[fs] with the sign bit flipped. x86 recNEG_S_xmm does not clear the
+// FCR31 O/U flags (commented out); match the recompiler.
 void armEmitNEG_S(u32 fd, u32 fs)
 {
 	armAsm->Ldr(RSCRATCHADDR.W(), a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fs)));
 	armAsm->Eor(RSCRATCHADDR.W(), RSCRATCHADDR.W(), 0x80000000);
 	armAsm->Str(RSCRATCHADDR.W(), a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fd)));
-	emitClearFCR31Flags(FPUflagO | FPUflagU);
 }
 
 // ------------------------------------------------------------------------
@@ -186,95 +196,11 @@ void armEmitSWC1(u32 ft, u32 rs, s32 imm, u32 pc)
 // w9-w13 as integer scratch and s29-s31 (RSSCRATCH*) for the float operands.
 // ========================================================================
 
-// Apply the EE fpuDouble() input clamp to the 32-bit float bits already in wraw,
-// leaving the clamped single-precision float in dstS. Uses w9-w12 as scratch
-// (wraw may alias w9). denormal/zero -> signed 0; inf/NaN -> signed fmax.
-static void emitClampFpuDoubleBits(const a64::VRegister& dstS, const a64::Register& wraw)
-{
-	const a64::Register w = a64::w9;     // raw bits / clamped result
-	const a64::Register wexp = a64::w10; // exponent field [30:23]
-	const a64::Register wsign = a64::w11;
-	const a64::Register winf = a64::w12;
-
-	if (!w.Is(wraw))
-		armAsm->Mov(w, wraw);
-	armAsm->Ubfx(wexp, w, 23, 8);
-	armAsm->And(wsign, w, kSignBit);
-	// inf/NaN clamp candidate: sign | fmax
-	armAsm->Mov(winf, kPosFmax);
-	armAsm->Orr(winf, wsign, winf);
-	// exp == 0  -> denormal/zero -> result = sign only
-	armAsm->Cmp(wexp, 0);
-	armAsm->Csel(w, wsign, w, a64::eq);
-	// exp == 0xFF -> inf/NaN -> result = sign | fmax
-	armAsm->Cmp(wexp, 0xFF);
-	armAsm->Csel(w, winf, w, a64::eq);
-	armAsm->Fmov(dstS, w);
-}
-
-// Load fpr/ACC at byteOffset, apply the EE fpuDouble() input clamp, leave the
-// resulting single-precision float in dstS.
-static void emitLoadFpuDouble(const a64::VRegister& dstS, u32 byteOffset)
-{
-	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, byteOffset));
-	emitClampFpuDoubleBits(dstS, a64::w9);
-}
-
-// Apply checkOverflow + checkUnderflow to the float result in srcS, update the
-// FCR31 flags (when setFlags), and store the (possibly clamped) 32-bit result to
-// the fpr/ACC slot at dstByteOffset. setFlags=false (DIV/SQRT/RSQRT pass 0 for the
-// flag mask) clamps the value but touches no O/U flags.
-static void emitStoreClampedResult(const a64::VRegister& srcS, u32 dstByteOffset, bool setFlags)
-{
-	const a64::Register w = a64::w9;     // result bits
-	const a64::Register wabs = a64::w10;
-	const a64::Register wtmp = a64::w11;
-	const a64::Register wsign = a64::w12;
-	const a64::Register wflags = a64::w13; // FCR31 (only touched when setFlags)
-
-	armAsm->Fmov(w, srcS);
-	if (setFlags)
-		armAsm->Ldr(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
-
-	a64::Label overflow, doUnderflow, notUnderflow, done;
-
-	// checkOverflow: (w & ~sign) == +Inf  ->  w = sign | fmax, set O|SO, skip underflow
-	armAsm->And(wabs, w, ~kSignBit);
-	armAsm->Mov(wtmp, kPosInfinity);
-	armAsm->Cmp(wabs, wtmp);
-	armAsm->B(&overflow, a64::eq);
-	if (setFlags) // else-path clears the O cause flag
-		armAsm->And(wflags, wflags, ~FPUflagO);
-	armAsm->B(&doUnderflow);
-
-	armAsm->Bind(&overflow);
-	armAsm->And(wsign, w, kSignBit);
-	armAsm->Mov(wtmp, kPosFmax);
-	armAsm->Orr(w, wsign, wtmp);
-	if (setFlags)
-		armAsm->Orr(wflags, wflags, FPUflagO | FPUflagSO);
-	armAsm->B(&done); // overflow returns true -> underflow not evaluated
-
-	// checkUnderflow: exp==0 && mantissa!=0 (denormal) -> w &= sign, set U|SU
-	armAsm->Bind(&doUnderflow);
-	armAsm->And(wtmp, w, kExpMask);
-	armAsm->Cbnz(wtmp, &notUnderflow); // exp != 0 -> not a denormal
-	armAsm->And(wtmp, w, kMantMask);
-	armAsm->Cbz(wtmp, &notUnderflow); // mantissa == 0 -> it's a true zero, not denormal
-	armAsm->And(w, w, kSignBit);
-	if (setFlags)
-		armAsm->Orr(wflags, wflags, FPUflagU | FPUflagSU);
-	armAsm->B(&done);
-
-	armAsm->Bind(&notUnderflow);
-	if (setFlags) // else-path clears the U cause flag
-		armAsm->And(wflags, wflags, ~FPUflagU);
-
-	armAsm->Bind(&done);
-	if (setFlags)
-		armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
-	armAsm->Str(w, a64::MemOperand(RESTATEPTR, dstByteOffset));
-}
+// NOTE: the interpreter-matching helpers that used to live here (emitClampFpuDoubleBits /
+// emitLoadFpuDouble / emitStoreClampedResult — fpuDouble input clamp + checkOverflow/
+// checkUnderflow output clamp with O/U flags) were removed: the non-full paths now match
+// the x86 recompiler via emitLoadOperandX86 / emitStoreResultX86 (defined below). The x86
+// JIT, not the interpreter, is the port's ground truth.
 
 // ========================================================================
 // Full clamp mode (eeClampMode 3 / fpuFullMode) — faithful port of the x86
@@ -522,6 +448,80 @@ static void emitSetHostFPCR(u64 bitmask)
 	armAsm->Msr(a64::FPCR, RXVIXLSCRATCH);
 }
 
+// ========================================================================
+// x86-recompiler-faithful clamp helpers (pcsx2/x86/iFPU.cpp, non-full modes 0/1/2).
+//
+// The non-full paths used to reproduce the INTERPRETER (fpuDouble: denormal-flush on
+// input; checkOverflow+checkUnderflow+O/U flags on output). That is NOT what the x86
+// recompiler — the port's ground truth — does, so those helpers were removed in favour
+// of the ones below. For eeClampMode 0/1/2 the x86 rec:
+//   * clamps OPERANDS only when eeClampMode>=2 (fpuExtraOverflow), and only inf/NaN ->
+//     ±fmax, sign-preserving, with NO denormal flush (fpuFloat2 -> fpuFloat3);
+//   * clamps the RESULT only when eeClampMode>=1 (fpuOverflow): NaN -> +fmax, +Inf ->
+//     +fmax, -Inf -> -fmax (ClampValues -> fpuFloat = MIN.SS(+fmax) then MAX.SS(-fmax));
+//     a finite single is already within ±fmax so it is untouched, and there is NO
+//     underflow handling;
+//   * does NOT maintain the FCR31 O/U cause/sticky flags for arithmetic (the flag
+//     writes are commented out in iFPU.cpp).
+// eeClampMode==3 keeps the dedicated full-mode (iFPUd) path. See the "x86 JIT is ground
+// truth" note: match the recompiler, not the interpreter.
+
+// x86 fpuFloat3 operand clamp, in place on the raw single `w` (w9/w10): exp field ==
+// 0xFF (inf or NaN) -> sign | fmax, sign-preserving. No denormal flush. Scratch: w11,w12.
+static void emitClampOperandBits(const a64::Register& w)
+{
+	const a64::Register wexp = a64::w11;
+	const a64::Register wcand = a64::w12;
+	armAsm->Ubfx(wexp, w, 23, 8);
+	armAsm->And(wcand, w, kSignBit);
+	armAsm->Orr(wcand, wcand, kPosFmax); // sign | fmax
+	armAsm->Cmp(wexp, 0xFF);
+	armAsm->Csel(w, wcand, w, a64::eq);
+}
+
+// x86 fpuFloat / ClampValues result clamp, in place on the raw single `w` (w9/w10):
+// NaN -> +fmax (positive, MIN.SS drops the sign), +Inf -> +fmax, -Inf -> -fmax. A finite
+// single is within ±fmax and left untouched. Scratch: w11,w12,w13.
+static void emitClampResultBits(const a64::Register& w)
+{
+	const a64::Register wexp = a64::w11;
+	const a64::Register wmant = a64::w12;
+	const a64::Register wcand = a64::w13;
+	a64::Label isInf, skip;
+	armAsm->Ubfx(wexp, w, 23, 8);
+	armAsm->Cmp(wexp, 0xFF);
+	armAsm->B(&skip, a64::ne); // finite -> untouched
+	armAsm->And(wmant, w, kMantMask);
+	armAsm->Mov(wcand, kPosFmax);
+	armAsm->Cbz(wmant, &isInf);  // mantissa == 0 -> Inf
+	armAsm->Mov(w, wcand);       // NaN -> +fmax (positive)
+	armAsm->B(&skip);
+	armAsm->Bind(&isInf);
+	armAsm->And(wmant, w, kSignBit);
+	armAsm->Orr(w, wmant, wcand); // Inf -> sign | fmax
+	armAsm->Bind(&skip);
+}
+
+// Load PS2 single at byteOffset into dstS, applying the x86 operand clamp when `clamp`.
+// Uses w9 (+ emitClampOperandBits scratch).
+static void emitLoadOperandX86(const a64::VRegister& dstS, u32 byteOffset, bool clamp)
+{
+	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, byteOffset));
+	if (clamp)
+		emitClampOperandBits(a64::w9);
+	armAsm->Fmov(dstS, a64::w9);
+}
+
+// x86 ClampValues result clamp (when fpuOverflow) + store of srcS to byteOffset. No
+// underflow, no O/U flags. Uses w9 (+ emitClampResultBits scratch).
+static void emitStoreResultX86(const a64::VRegister& srcS, u32 byteOffset)
+{
+	armAsm->Fmov(a64::w9, srcS);
+	if (EmuConfig.Cpu.Recompiler.fpuOverflow)
+		emitClampResultBits(a64::w9);
+	armAsm->Str(a64::w9, a64::MemOperand(RESTATEPTR, byteOffset));
+}
+
 enum class FpuBinOp
 {
 	Add,
@@ -584,17 +584,40 @@ static void emitFpuBinary(FpuBinOp op, u32 dstByteOffset, u32 fs, u32 ft)
 		return;
 	}
 
-	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs)); // s30 = fpuDouble(fs)
-	if (fs != ft)
-		emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft)); // s31 = fpuDouble(ft)
-	const a64::VRegister& rhs = (fs == ft) ? RSSCRATCH : RSSCRATCH2;
-	switch (op)
+	// x86 non-full path (iFPU.cpp recCommutativeOp / FPU_MUL / FPU_ADD_SUB) — ground truth.
+	// Operand inf/NaN clamp only at eeClampMode>=2 (sign-preserving, no denormal flush);
+	// ADD/SUB additionally apply the EE guard-bit mantissa mask (always); result overflow
+	// clamp only at eeClampMode>=1. No underflow, no O/U flags.
+	const bool clampOperands = EmuConfig.Cpu.Recompiler.fpuExtraOverflow;
+	if (op == FpuBinOp::Mul)
 	{
-		case FpuBinOp::Add: armAsm->Fadd(RSSCRATCH, RSSCRATCH, rhs); break;
-		case FpuBinOp::Sub: armAsm->Fsub(RSSCRATCH, RSSCRATCH, rhs); break;
-		case FpuBinOp::Mul: armAsm->Fmul(RSSCRATCH, RSSCRATCH, rhs); break;
+		emitLoadOperandX86(RSSCRATCH, EE_FPR_OFFSET(fs), clampOperands);
+		if (fs != ft)
+		{
+			emitLoadOperandX86(RSSCRATCH2, EE_FPR_OFFSET(ft), clampOperands);
+			armAsm->Fmul(RSSCRATCH, RSSCRATCH, RSSCRATCH2);
+		}
+		else
+			armAsm->Fmul(RSSCRATCH, RSSCRATCH, RSSCRATCH);
 	}
-	emitStoreClampedResult(RSSCRATCH, dstByteOffset, /*setFlags*/ true);
+	else
+	{
+		armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fs)));
+		armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(ft)));
+		if (clampOperands)
+		{
+			emitClampOperandBits(a64::w9);
+			emitClampOperandBits(a64::w10);
+		}
+		emitFpuAddSub(a64::w9, a64::w10); // EE guard-bit mantissa mask (always, x86 FPU_ADD_SUB)
+		armAsm->Fmov(RSSCRATCH, a64::w9);
+		armAsm->Fmov(RSSCRATCH2, a64::w10);
+		if (op == FpuBinOp::Add)
+			armAsm->Fadd(RSSCRATCH, RSSCRATCH, RSSCRATCH2);
+		else
+			armAsm->Fsub(RSSCRATCH, RSSCRATCH, RSSCRATCH2);
+	}
+	emitStoreResultX86(RSSCRATCH, dstByteOffset);
 }
 
 void armEmitADD_S(u32 fd, u32 fs, u32 ft) { emitFpuBinary(FpuBinOp::Add, EE_FPR_OFFSET(fd), fs, ft); }
@@ -692,10 +715,12 @@ void armEmitDIV_S(u32 fd, u32 fs, u32 ft)
 	armAsm->B(&end);
 
 	armAsm->Bind(&normal);
-	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));
-	emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));
+	// x86 recDIVhelper1 (iFPU.cpp): operand clamp at eeClampMode>=2, ClampValues result
+	// clamp at eeClampMode>=1. (The I/D divide-by-zero flags are handled above.)
+	emitLoadOperandX86(RSSCRATCH, EE_FPR_OFFSET(fs), EmuConfig.Cpu.Recompiler.fpuExtraOverflow);
+	emitLoadOperandX86(RSSCRATCH2, EE_FPR_OFFSET(ft), EmuConfig.Cpu.Recompiler.fpuExtraOverflow);
 	armAsm->Fdiv(RSSCRATCH, RSSCRATCH, RSSCRATCH2);
-	emitStoreClampedResult(RSSCRATCH, EE_FPR_OFFSET(fd), /*setFlags*/ false);
+	emitStoreResultX86(RSSCRATCH, EE_FPR_OFFSET(fd));
 
 	armAsm->Bind(&end);
 }
@@ -761,11 +786,14 @@ void armEmitSQRT_S(u32 fd, u32 ft)
 	armAsm->Tbz(wraw, 31, &positive);
 	armAsm->Orr(wflags, wflags, FPUflagI | FPUflagSI);
 	armAsm->Bind(&positive);
-	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(ft));
+	// Commit the I flag before the result clamp (emitStoreResultX86 may use w13=wflags as
+	// scratch). sqrt of a positive finite never overflows, so the clamp is effectively a
+	// no-op, but keep the x86-faithful operand-clamp(>=2)/result-clamp(>=1) shape.
+	armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+	emitLoadOperandX86(RSSCRATCH, EE_FPR_OFFSET(ft), EmuConfig.Cpu.Recompiler.fpuExtraOverflow);
 	armAsm->Fabs(RSSCRATCH, RSSCRATCH);
 	armAsm->Fsqrt(RSSCRATCH, RSSCRATCH);
-	emitStoreClampedResult(RSSCRATCH, EE_FPR_OFFSET(fd), /*setFlags*/ false);
-	armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+	emitStoreResultX86(RSSCRATCH, EE_FPR_OFFSET(fd));
 
 	armAsm->Bind(&done);
 }
@@ -858,13 +886,14 @@ void armEmitRSQRT_S(u32 fd, u32 fs, u32 ft)
 	armAsm->Tbz(wraw, 31, &positive);
 	armAsm->Orr(wflags, wflags, FPUflagI | FPUflagSI);
 	armAsm->Bind(&positive);
-	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));
-	emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));
+	// Commit flags before the result clamp (emitStoreResultX86 may use w13=wflags as scratch).
+	armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+	emitLoadOperandX86(RSSCRATCH, EE_FPR_OFFSET(fs), EmuConfig.Cpu.Recompiler.fpuExtraOverflow);
+	emitLoadOperandX86(RSSCRATCH2, EE_FPR_OFFSET(ft), EmuConfig.Cpu.Recompiler.fpuExtraOverflow);
 	armAsm->Fabs(RSSCRATCH2, RSSCRATCH2);
 	armAsm->Fsqrt(RSSCRATCH2, RSSCRATCH2);
 	armAsm->Fdiv(RSSCRATCH, RSSCRATCH, RSSCRATCH2);
-	emitStoreClampedResult(RSSCRATCH, EE_FPR_OFFSET(fd), /*setFlags*/ false);
-	armAsm->Str(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
+	emitStoreResultX86(RSSCRATCH, EE_FPR_OFFSET(fd));
 
 	armAsm->Bind(&done);
 }
@@ -946,36 +975,38 @@ static void emitFpuMulAcc(bool subtract, bool toAcc, u32 fd, u32 fs, u32 ft)
 		return;
 	}
 
-	// product = clamp(fs) * clamp(ft)
-	emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));
+	// x86 non-full recMADDtemp/recMSUBtemp (iFPU.cpp), the port's ground truth — uniform
+	// for the fd- and ACC-writing forms (no interpreter fd/ACC asymmetry, no ACCflag):
+	//   product = clamp2(fs) * clamp2(ft)                      [operand clamp at >=2]
+	//   if >=2: product = fpuFloat(product); acc = fpuFloat(acc)   [intermediate clamp]
+	//   result = acc (+/-) product   [EE guard-bit mask, single precision, ADD/SUB order]
+	//   result = ClampValues(result)                           [result clamp at >=1]
+	// No underflow, no O/U flags.
+	const bool clampOperands = EmuConfig.Cpu.Recompiler.fpuExtraOverflow;
+
+	emitLoadOperandX86(RSSCRATCH, EE_FPR_OFFSET(fs), clampOperands);
 	if (fs == ft)
-		armAsm->Fmul(RSSCRATCH, RSSCRATCH, RSSCRATCH); // fs*fs: reuse the clamped load
+		armAsm->Fmul(RSSCRATCH, RSSCRATCH, RSSCRATCH);
 	else
 	{
-		emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));
+		emitLoadOperandX86(RSSCRATCH2, EE_FPR_OFFSET(ft), clampOperands);
 		armAsm->Fmul(RSSCRATCH, RSSCRATCH, RSSCRATCH2);
 	}
-
-	if (toAcc)
+	armAsm->Fmov(a64::w9, RSSCRATCH);                                  // product bits
+	armAsm->Ldr(a64::w10, a64::MemOperand(RESTATEPTR, EE_ACC_OFFSET)); // ACC bits
+	if (clampOperands) // x86 intermediate fpuFloat clamp on product + ACC (eeClampMode>=2)
 	{
-		// MADDA/MSUBA: raw ACC (no clamp), unclamped product.
-		armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_ACC_OFFSET));
-		armAsm->Fmov(RSSCRATCH2, a64::w9);
+		emitClampResultBits(a64::w9);
+		emitClampResultBits(a64::w10);
 	}
-	else
-	{
-		// MADD/MSUB: re-clamp the product, then clamp the accumulator.
-		armAsm->Fmov(a64::w9, RSSCRATCH);
-		emitClampFpuDoubleBits(RSSCRATCH, a64::w9);
-		emitLoadFpuDouble(RSSCRATCH2, EE_ACC_OFFSET);
-	}
-
+	emitFpuAddSub(a64::w9, a64::w10); // EE guard-bit mantissa mask (x86 FPU_ADD/FPU_SUB)
+	armAsm->Fmov(RSSCRATCH, a64::w9);   // product
+	armAsm->Fmov(RSSCRATCH2, a64::w10); // ACC
 	if (subtract)
-		armAsm->Fsub(RSSCRATCH, RSSCRATCH2, RSSCRATCH);
+		armAsm->Fsub(RSSCRATCH, RSSCRATCH2, RSSCRATCH); // ACC - product
 	else
-		armAsm->Fadd(RSSCRATCH, RSSCRATCH2, RSSCRATCH);
-
-	emitStoreClampedResult(RSSCRATCH, toAcc ? EE_ACC_OFFSET : EE_FPR_OFFSET(fd), /*setFlags*/ true);
+		armAsm->Fadd(RSSCRATCH, RSSCRATCH2, RSSCRATCH); // ACC + product
+	emitStoreResultX86(RSSCRATCH, toAcc ? EE_ACC_OFFSET : EE_FPR_OFFSET(fd));
 }
 
 void armEmitMADD_S(u32 fd, u32 fs, u32 ft) { emitFpuMulAcc(/*sub*/ false, /*toAcc*/ false, fd, fs, ft); }
@@ -999,6 +1030,15 @@ static void emitFpuMinMax(bool isMax, u32 fd, u32 fs, u32 ft)
 
 	armAsm->Ldr(wa, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fs)));
 	armAsm->Ldr(wb, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(ft)));
+	// x86 recMAX/recMIN (recCommutativeOp op>=2) clamp both operands (fpuFloat2) at
+	// eeClampMode>=1, then SSE min/max. On clamped-finite operands the integer-domain
+	// min/max below is exact. (x86 uses w11,w12 as clamp scratch here — reused as
+	// wmax/wmin only after the clamps, so no clobber.)
+	if (EmuConfig.Cpu.Recompiler.fpuOverflow)
+	{
+		emitClampOperandBits(wa);
+		emitClampOperandBits(wb);
+	}
 	armAsm->Cmp(wa, wb); // signed
 	armAsm->Csel(wmax, wa, wb, a64::gt);
 	armAsm->Csel(wmin, wa, wb, a64::lt);
@@ -1010,7 +1050,8 @@ static void emitFpuMinMax(bool isMax, u32 fd, u32 fs, u32 ft)
 	else
 		armAsm->Csel(wa, wmax, wmin, a64::ne); // both neg -> max, else min
 	armAsm->Str(wa, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fd)));
-	emitClearFCR31Flags(FPUflagO | FPUflagU);
+	// x86 recMAX/recMIN do NOT clear the FCR31 O/U flags (the clears are commented out in
+	// iFPU.cpp); only the interpreter did — so leave them untouched.
 }
 
 void armEmitMAX_S(u32 fd, u32 fs, u32 ft) { emitFpuMinMax(/*isMax*/ true, fd, fs, ft); }
@@ -1035,8 +1076,10 @@ static void emitFpuCompare(a64::Condition cond, u32 fs, u32 ft)
 	}
 	else
 	{
-		emitLoadFpuDouble(RSSCRATCH, EE_FPR_OFFSET(fs));
-		emitLoadFpuDouble(RSSCRATCH2, EE_FPR_OFFSET(ft));
+		// x86 recC_EQ/LT/LE (iFPU.cpp) clamp both operands with fpuFloat3 unconditionally
+		// (sign-preserving inf/NaN -> ±fmax, NO denormal flush), then an ordered compare.
+		emitLoadOperandX86(RSSCRATCH, EE_FPR_OFFSET(fs), /*clamp*/ true);
+		emitLoadOperandX86(RSSCRATCH2, EE_FPR_OFFSET(ft), /*clamp*/ true);
 		armAsm->Fcmp(RSSCRATCH, RSSCRATCH2);
 	}
 	armAsm->Ldr(wflags, a64::MemOperand(RESTATEPTR, EE_FPRC_OFFSET(31)));
