@@ -53,9 +53,12 @@
 // scheduled event — worst case ~one hblank later — instead of the very
 // next block tail. recEventTest still observes eeRecExitRequested.)
 #define RECCYCLE vixl::aarch64::x25
-// x22/x23: Write-through pinned read-cache for the two hottest guest GPRs:
+// x22/x23/x29: Write-through pinned read-cache for the hottest guest GPRs
+// (kEEPinTable below is the single source of truth for the guest→host map):
 //   x22 = cpuRegs.GPR.r[29].UD[0]  ($sp)
 //   x23 = cpuRegs.GPR.r[31].UD[0]  ($ra)
+//   x29 = cpuRegs.GPR.r[2].UD[0]   ($v0 — hottest EE reg: 20.3% of dynamic
+//         refs in the SotC SD865 capture, tools/perf/sotc-regheat-2026-07-05.md)
 // MEMORY STAYS CANONICAL. Every guest-visible write still stores to
 // cpuRegs.GPR; the pin mirror is refreshed at the same emission point
 // (armStoreEERegPtr write-through, armStoreEEGPRQuad for 128-bit stores).
@@ -66,15 +69,41 @@
 // before, and the pins are re-read from memory (armReloadEEGPRPins) after
 // the C calls that can write guest GPRs — interpreter fallbacks
 // (recCall/recBranchCall), recEventTest (savestate load), recRecompile
-// (ELF entry hooks), and eeloadHook/eeloadHook2. The upper 64 bits of the
-// 128-bit guest reg are NOT mirrored; only UD[0] accesses match.
-// Both host regs are callee-saved, carved out of the dynamic allocator
+// (ELF entry hooks), MFC0 rd=25, and eeloadHook/eeloadHook2. The upper 64
+// bits of the 128-bit guest reg are NOT mirrored; only UD[0] accesses match.
+// All pin host regs are callee-saved, carved out of the dynamic allocator
 // pool (ALLOCATABLE_MASK in iCore-arm64.cpp), and are not used by any
 // emission context reachable from inside an EE block: COP2 macro-mode flag
 // code uses the s_cop2DenormStatusFlag memory scratch (not gprF2/F3), and
 // the mVU micro dispatcher saves/restores x19-x28 around VU execution.
+// x29 (the AAPCS frame pointer) is additionally safe because every path
+// that can run under a live EE JIT session preserves it: fastjmp_set saves
+// and fastjmp_jmp restores it around the whole session (FastJmp.cpp), C
+// callees preserve it per AAPCS, the mVU dispatcher Stp/Ldp's x29/x30
+// (microVU-arm64.cpp), the IOP dispatcher uses armBeginStackFrame, and the
+// VIF unpack dynarec emits no x29 references. The known cost: FP-based
+// stack unwinds through JIT frames read a guest value as a frame chain —
+// harmless (we profile via perf jitdump, not FP walks).
 #define REEPIN_SP vixl::aarch64::x22
 #define REEPIN_RA vixl::aarch64::x23
+#define REEPIN_V0 vixl::aarch64::x29
+
+// The static guest→host pin map. Everything pin-related (lookup, reload,
+// write-through) iterates this table; adding a rung = adding a row here,
+// clearing the host reg's ALLOCATABLE_MASK bit in iCore-arm64.cpp, and
+// covering it in ee_rec_pinned_gpr_tests.cpp. Host regs must be preserved
+// by every C-reachable path from inside a block (callee-saved, or shimmed
+// at the call sites — see the EE-SRA plan for rung 2+).
+struct EEPinnedGPR
+{
+	u8 gpr;                        // guest GPR index (cpuRegs.GPR.r[gpr])
+	vixl::aarch64::Register host;  // 64-bit host mirror of .UD[0]
+};
+static const EEPinnedGPR kEEPinTable[] = {
+	{29, REEPIN_SP},
+	{31, REEPIN_RA},
+	{2, REEPIN_V0},
+};
 
 // Build a MemOperand addressing a cpuRegs field via RSTATE.
 // Replaces the 3-instruction `armMoveAddressToReg(RSCRATCHADDR, &cpuRegs.X);
@@ -124,31 +153,30 @@ static __fi bool armIsCpuRegPtr(const void* field)
 // GPR.r[gpr].UD[0], or nullptr when gpr is not pinned.
 static __fi const vixl::aarch64::Register* armEEPinForGPR(int gpr)
 {
-	if (gpr == 29)
-		return &REEPIN_SP;
-	if (gpr == 31)
-		return &REEPIN_RA;
+	for (const EEPinnedGPR& pin : kEEPinTable)
+	{
+		if (pin.gpr == gpr)
+			return &pin.host;
+	}
 	return nullptr;
 }
 
 // Pin lookup by target pointer: matches any byte within the LOWER 64 bits of
 // a pinned guest GPR slot. *offset_in_dword receives the byte offset (0..7)
 // of `field` within UD[0]. UD[1]/UL[2]/UL[3] accesses do not match (the
-// upper half is not mirrored).
-static __fi const vixl::aarch64::Register* armEEPinForPtr(const void* field, int* offset_in_dword)
+// upper half is not mirrored). Returns the table entry (host reg + guest
+// index) so write-through callers can name the canonical memory slot.
+static __fi const EEPinnedGPR* armEEPinForPtr(const void* field, int* offset_in_dword)
 {
 	const u8* p = reinterpret_cast<const u8*>(field);
-	const ptrdiff_t off_sp = p - reinterpret_cast<const u8*>(&cpuRegs.GPR.r[29]);
-	if (off_sp >= 0 && off_sp < 8)
+	for (const EEPinnedGPR& pin : kEEPinTable)
 	{
-		*offset_in_dword = static_cast<int>(off_sp);
-		return &REEPIN_SP;
-	}
-	const ptrdiff_t off_ra = p - reinterpret_cast<const u8*>(&cpuRegs.GPR.r[31]);
-	if (off_ra >= 0 && off_ra < 8)
-	{
-		*offset_in_dword = static_cast<int>(off_ra);
-		return &REEPIN_RA;
+		const ptrdiff_t off = p - reinterpret_cast<const u8*>(&cpuRegs.GPR.r[pin.gpr]);
+		if (off >= 0 && off < 8)
+		{
+			*offset_in_dword = static_cast<int>(off);
+			return &pin;
+		}
 	}
 	return nullptr;
 }
@@ -157,8 +185,8 @@ static __fi const vixl::aarch64::Register* armEEPinForPtr(const void* field, int
 // that can write guest GPRs, and at every JIT entry (see the REEPIN_* doc).
 static __fi void armReloadEEGPRPins()
 {
-	armAsm->Ldr(REEPIN_SP, armCpuRegMem(&cpuRegs.GPR.r[29].UD[0]));
-	armAsm->Ldr(REEPIN_RA, armCpuRegMem(&cpuRegs.GPR.r[31].UD[0]));
+	for (const EEPinnedGPR& pin : kEEPinTable)
+		armAsm->Ldr(pin.host, armCpuRegMem(&cpuRegs.GPR.r[pin.gpr].UD[0]));
 }
 
 static __fi void armLoadEERegPtr(const vixl::aarch64::CPURegister& reg, const void* field)
@@ -166,22 +194,22 @@ static __fi void armLoadEERegPtr(const vixl::aarch64::CPURegister& reg, const vo
 	// Pinned guest GPR: serve the read from the mirror register. The mirror
 	// always equals memory, so this is exactly the load it replaces.
 	int off;
-	if (const vixl::aarch64::Register* pin = armEEPinForPtr(field, &off); pin && reg.IsRegister())
+	if (const EEPinnedGPR* pin = armEEPinForPtr(field, &off); pin && reg.IsRegister())
 	{
 		const vixl::aarch64::Register dst(reg);
 		if (off == 0 && reg.Is64Bits())
 		{
-			armAsm->Mov(dst, *pin);
+			armAsm->Mov(dst, pin->host);
 			return;
 		}
 		if (off == 0 && reg.Is32Bits())
 		{
-			armAsm->Mov(dst, pin->W());
+			armAsm->Mov(dst, pin->host.W());
 			return;
 		}
 		if (off == 4 && reg.Is32Bits())
 		{
-			armAsm->Lsr(dst.X(), *pin, 32);
+			armAsm->Lsr(dst.X(), pin->host, 32);
 			return;
 		}
 		// Unusual shapes fall through to the (identical) canonical memory load.
@@ -200,31 +228,31 @@ static __fi void armStoreEERegPtr(const vixl::aarch64::CPURegister& reg, const v
 
 	// Write-through: keep the pin mirror equal to the memory just written.
 	int off;
-	if (const vixl::aarch64::Register* pin = armEEPinForPtr(field, &off))
+	if (const EEPinnedGPR* pin = armEEPinForPtr(field, &off))
 	{
 		if (reg.IsRegister())
 		{
 			const vixl::aarch64::Register src(reg);
 			if (off == 0 && reg.Is64Bits())
 			{
-				if (!src.Is(*pin))
-					armAsm->Mov(*pin, src);
+				if (!src.Is(pin->host))
+					armAsm->Mov(pin->host, src);
 				return;
 			}
 			if (off == 0 && reg.Is32Bits())
 			{
-				armAsm->Bfi(*pin, src.X(), 0, 32);
+				armAsm->Bfi(pin->host, src.X(), 0, 32);
 				return;
 			}
 			if (off == 4 && reg.Is32Bits())
 			{
-				armAsm->Bfi(*pin, src.X(), 32, 32);
+				armAsm->Bfi(pin->host, src.X(), 32, 32);
 				return;
 			}
 		}
 		// Odd store shape (vector reg / sub-word): reload the mirror from the
 		// just-written canonical memory.
-		armAsm->Ldr(*pin, armCpuRegMem(pin == &REEPIN_SP ? static_cast<const void*>(&cpuRegs.GPR.r[29].UD[0]) : static_cast<const void*>(&cpuRegs.GPR.r[31].UD[0])));
+		armAsm->Ldr(pin->host, armCpuRegMem(&cpuRegs.GPR.r[pin->gpr].UD[0]));
 	}
 }
 

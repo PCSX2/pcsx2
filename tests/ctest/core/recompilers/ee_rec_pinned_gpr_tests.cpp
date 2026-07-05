@@ -154,3 +154,99 @@ TEST(EeRecPinnedGpr, HalfWordWriteThroughViaCfc2)
 	h.Run();
 	EXPECT_EQ(h.GetGpr64Interp(reg::t0), 0x0000000000008123ull);
 }
+
+// ---------------------------------------------------------------------------
+// Rung 1 ($v0 → x29, kEEPinTable). Same coverage matrix as $sp/$ra above.
+// $v0 is the hottest EE register in real games (20.3% of dynamic refs in the
+// SotC SD865 capture, tools/perf/sotc-regheat-2026-07-05.md) and its host reg
+// doubles as the AAPCS frame pointer — any C-reachable path that failed to
+// preserve x29 (or an emitter that treated it as scratch) strands the mirror,
+// which the in-block read-backs surface as a JIT-vs-interp diff.
+// ---------------------------------------------------------------------------
+
+// Pinned $v0 as scalar source and dest: reads, write, RMW, read-backs.
+TEST(EeRecPinnedGpr, V0ScalarReadsAndWriteThrough)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::v0, 0x0000000001F00010ull);
+	h.SetGpr64(reg::t0, 0x0000000000010000ull);
+	h.LoadProgram({
+		ADDIU(reg::t1, reg::v0, -16),       // pinned read (32-bit imm ALU)
+		DADDU(reg::t2, reg::v0, reg::t0),   // pinned read (64-bit 3-op)
+		DSLL(reg::t3, reg::v0, 4),          // pinned read (shift)
+		DADDU(reg::v0, reg::t0, reg::t2),   // write pinned $v0
+		OR(reg::t4, reg::v0, reg::zero),    // read the write back via the pin
+		ADDIU(reg::v0, reg::v0, 0x100),     // pinned RMW: read + write $v0
+		DADDU(reg::t5, reg::v0, reg::zero), // read the RMW result back
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t1), 0x0000000001F00000ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t2), 0x0000000001F10010ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0x000000001F000100ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t4), 0x0000000001F20010ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t5), 0x0000000001F20110ull);
+}
+
+// 128-bit write-through into $v0 (armStoreEEGPRQuad lane-0 refresh).
+TEST(EeRecPinnedGpr, V0MmiQuadWriteThroughThenReadBack)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::t0, 0x1111111122222222ull);
+	h.SetGpr64(reg::t1, 0x0000000300000004ull);
+	h.LoadProgram({
+		PADDW(reg::v0, reg::t0, reg::t1),   // 128-bit write of pinned $v0
+		DADDU(reg::t2, reg::v0, reg::zero), // scalar read-back via the pin
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t2), 0x1111111422222226ull);
+}
+
+// vtlb-load write-through into $v0 (LD 64-bit and LW 32-bit sign-extending),
+// with the pinned $sp as base — one op exercising two pins at once.
+TEST(EeRecPinnedGpr, V0LoadIntoPinnedThenReadBack)
+{
+	EeRecTestHarness h;
+	h.WriteU64(kScratch, 0xFFFFFFFF80332211ull);
+	h.WriteU32(kScratch + 8, 0x00445566u);
+	h.SetGpr64(reg::sp, kScratch);
+	h.LoadProgram({
+		LD(reg::v0, 0, reg::sp),            // pinned base, pinned dest
+		DADDU(reg::t0, reg::v0, reg::zero),
+		LW(reg::v0, 8, reg::sp),            // 32-bit load into pinned dest
+		DADDU(reg::t1, reg::v0, reg::zero),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t0), 0xFFFFFFFF80332211ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t1), 0x0000000000445566ull);
+}
+
+// Interp-fallback write-back into $v0 (the MFC0 rd=25 reload-if-pinned path
+// must serve every kEEPinTable entry, not just the original $sp/$ra pair).
+TEST(EeRecPinnedGpr, V0Mfc0PerfCounterIntoPinnedThenReadBack)
+{
+	EeRecTestHarness h;
+	h.EnableCop0();
+	h.SetGpr64(reg::t5, 0x0000000000C0FFEEull); // PCCR seed (CTE clear)
+	h.SetGpr64(reg::v0, 0x0000000001F00010ull); // stale-mirror sentinel
+	h.LoadProgram({
+		MTC0(reg::t5, 25),                  // MTPS: PERF.pccr.val = t5
+		MFC0(reg::v0, 25),                  // MFPS via interp fallback
+		DADDU(reg::t0, reg::v0, reg::zero), // read $v0 back via the pin
+	});
+	h.Run();
+	h.ExpectGpr64(reg::t0, 0x0000000000C0FFEEull);
+}
+
+// 32-bit-half write-through into $v0 (CFC2 Bfi path).
+TEST(EeRecPinnedGpr, V0HalfWordWriteThroughViaCfc2)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.SeedVu0Vi(1, 0x8123);
+	h.LoadProgram({
+		CFC2(reg::v0, 1),                   // UL[0]+UL[1] stores into pinned $v0
+		DADDU(reg::t0, reg::v0, reg::zero), // read $v0 back via the pin
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t0), 0x0000000000008123ull);
+}

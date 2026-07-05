@@ -492,8 +492,8 @@ static const void* _DynGen_EnterRecompiledCode()
 	// calls that touch cycle/nextEventCycle.
 	armReloadCycleDelta();
 
-	// Load the $sp/$ra write-through pin mirrors (see REEPIN_* doc in
-	// iR5900-arm64.h).
+	// Load the write-through pin mirrors for every kEEPinTable entry
+	// (see the REEPIN_* doc in iR5900-arm64.h).
 	armReloadEEGPRPins();
 
 	// Load &VU0 into RVU0. Same idea as RSTATE: VU0 is a static reference

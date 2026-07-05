@@ -41,7 +41,10 @@ static const int neonAllocTotal = 28;
 // GPR allocatable for VI: x14-x15 (2) + x26-x28 (3) = 5.
 // x0-x7=args/scratch, x8=RXSCRATCH, x9-x13=scratch, x16-x17=vixl,
 // x18=platform, x19=gprVUState, x20-x23=gprF0-F3, x24=gprMVUFlag,
-// x25=gprMVUglob, x29=fp, x30=lr, sp=stack.
+// x25=gprMVUglob, x29=fp (also the EE JIT's REEPIN_V0 $v0 pin — must stay
+// out of this pool: COP2 macro-mode runs mVU emitters inside EE blocks
+// where x29 holds a live guest value; micro-mode is covered by the
+// dispatcher's x29/x30 Stp/Ldp), x30=lr, sp=stack.
 static const int gprAllocCount = 32; // Total GPR IDs (unusable ones are marked in the map)
 
 //------------------------------------------------------------------

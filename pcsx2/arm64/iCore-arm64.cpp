@@ -67,7 +67,8 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 // x24:     RVU0 — NOT allocatable (reserved for &VU0 pointer in EE COP2 JIT)
 // x25:     RECCYCLE — NOT allocatable (pinned cycle delta: cycle - nextEventCycle)
 // x26-x28: callee-saved (allocatable)
-// x29:     frame pointer — NOT allocatable
+// x29:     REEPIN_V0 — NOT allocatable (pinned mirror of GPR.r[2].UD[0], $v0;
+//          doubles as the AAPCS frame pointer outside JIT execution)
 // x30:     link register — NOT allocatable
 
 // Bitmask of allocatable aarch64 GPRs. Bit `n` set ↔ x_n is in the pool.
@@ -81,7 +82,8 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 //   bits 22-23  — x22/x23 : REEPIN_SP/REEPIN_RA (pinned $sp/$ra mirrors)
 //   bit 24      — x24 : RVU0 (pinned &VU0 for iCOP2)
 //   bit 25      — x25 : RECCYCLE (pinned cycle delta)
-//   bits 29-30  — x29/x30 : FP, LR — never allocatable
+//   bits 29-30  — x29 (REEPIN_V0, pinned $v0 mirror / FP), x30 (LR) — never
+//                 allocatable
 // Inner allocator loop runs 31× per cache miss and was nine sequential
 // `if (armreg == N) return false` branches per probe; collapse to one
 // LSR + AND + cbz against this mask.
