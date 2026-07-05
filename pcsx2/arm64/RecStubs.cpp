@@ -145,6 +145,10 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 		else
 			armEmitCall((void*)vtlb_memWrite128);
 		armReloadCycleDelta();
+		// preserve_most spares x9-x15 but never x0-x8 — restore the rung-3
+		// x4-x7 pins the call clobbered (pins are not allocator state, so
+		// the gpr_bitmask save/restore never covers them; q0 untouched).
+		armReloadEEClobberedPins();
 
 		armAsm->Bind(&done);
 	}
@@ -205,6 +209,8 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 			default: break;
 		}
 		armReloadCycleDelta();
+		// x4-x7 pin restore — see the 128-bit slow path above (x0 untouched).
+		armReloadEEClobberedPins();
 		// Extend the handler return into x0 for the 64-bit cpuRegs.GPR store.
 		// AAPCS64 leaves the upper bits of x0 unspecified for sub-word returns,
 		// so UNSIGNED sub-64-bit loads must Uxtw too — otherwise the garbage
@@ -296,6 +302,8 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 			default: pxFailRel("Unsupported store size in backpatch"); break;
 		}
 		armReloadCycleDelta();
+		// x4-x7 pin restore — see the 128-bit slow path above.
+		armReloadEEClobberedPins();
 
 		armAsm->Bind(&done);
 	}

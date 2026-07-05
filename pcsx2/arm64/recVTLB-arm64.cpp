@@ -114,6 +114,9 @@ static void vtlbSoftmemRead(int addr_wreg, u32 bits, bool sign)
 		case 64: armEmitCall((void*)vtlb_memRead<mem64_t>); break;
 	}
 	armReloadCycleDelta();
+	// preserve_most spares x9-x15 but never x0-x8 — restore the rung-3
+	// x4-x7 pins the call clobbered (x0 result is untouched).
+	armReloadEEClobberedPins();
 	// Sign-extend if needed (vtlb_memRead returns zero-extended)
 	if (sign && bits == 8)
 		armAsm->Sxtb(a64::x0, a64::w0);
@@ -183,6 +186,8 @@ static void vtlbSoftmemWrite(int addr_wreg, int value_reg, u32 bits)
 		case 64: armEmitCall((void*)vtlb_memWrite<mem64_t>); break;
 	}
 	armReloadCycleDelta();
+	// x4-x7 pin restore — see vtlbSoftmemRead.
+	armReloadEEClobberedPins();
 
 	armAsm->Bind(&done);
 }
@@ -657,6 +662,8 @@ static void vtlbSoftmemRead128(int addr_wreg)
 	armFlushCycleDelta();
 	armEmitCall((void*)vtlb_memRead128);
 	armReloadCycleDelta();
+	// x4-x7 pin restore — see vtlbSoftmemRead (q0 result untouched).
+	armReloadEEClobberedPins();
 
 	armAsm->Bind(&done);
 }
@@ -689,6 +696,8 @@ static void vtlbSoftmemWrite128(int addr_wreg)
 	armFlushCycleDelta();
 	armEmitCall((void*)vtlb_memWrite128);
 	armReloadCycleDelta();
+	// x4-x7 pin restore — see vtlbSoftmemRead.
+	armReloadEEClobberedPins();
 
 	armAsm->Bind(&done);
 }

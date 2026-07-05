@@ -409,6 +409,38 @@ TEST(EeRecPinnedGpr, V1A0Mfc0PerfCounterAcrossInterpFallback)
 	h.ExpectGpr64(reg::t1, 0x7EDCBA9876543210ull);
 }
 
+// ---------------------------------------------------------------------------
+// Rung 3 ($k0 → x4, $a1 → x5, $s0 → x6, $at → x7): four more caller-saved
+// pins, in argument-register territory — preserve_most never spares x0-x8,
+// so the vtlb softmem/thunk slow paths carry an explicit reload (the seam
+// test below runs with ALL six caller-saved pins live).
+// ---------------------------------------------------------------------------
+
+// Core scalar matrix for the rung-3 pins: reads, writes, RMW, cross-pin ops.
+TEST(EeRecPinnedGpr, RungThreeScalarReadsAndWriteThrough)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::k0, 0x0000000001F00010ull);
+	h.SetGpr64(reg::a1, 0x0000000000010000ull);
+	h.SetGpr64(reg::s0, 0x0000000000000123ull);
+	h.LoadProgram({
+		ADDIU(reg::t1, reg::k0, -16),       // pinned $k0 read
+		DADDU(reg::at, reg::a1, reg::s0),   // pinned $at dest <- $a1 + $s0
+		DADDU(reg::t2, reg::at, reg::zero), // read $at back via the pin
+		ADDIU(reg::s0, reg::s0, 0x100),     // pinned $s0 RMW
+		DADDU(reg::t3, reg::s0, reg::zero),
+		DSLL(reg::t4, reg::a1, 4),          // pinned $a1 read (shift)
+		DADDU(reg::k0, reg::at, reg::a1),   // pin <- pin + pin
+		DADDU(reg::t5, reg::k0, reg::zero),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t1), 0x0000000001F00000ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t2), 0x0000000000010123ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0x0000000000000223ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t4), 0x0000000000100000ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t5), 0x0000000000020123ull);
+}
+
 // The warm-path seam: a vtlb SLOW-PATH C call (handler-page access) with
 // both caller-saved pins live. Fastmem is disabled for this block so
 // recLoad/recStore emit the inline softmem lookup whose slow path BLs
@@ -432,21 +464,35 @@ TEST(EeRecPinnedGpr, CallerSavedPinsSurviveVtlbSlowPath)
 	h.SetGpr64(reg::t1, 0x1000f010ull);             // INTC_STAT vaddr (non-const)
 	h.SetGpr64(reg::v1, 0x0123456789ABCDEFull);
 	h.SetGpr64(reg::a0, 0x7EDCBA9876543210ull);
+	// Rung-3 pins: preserve_most does NOT spare x4-x7, so these four ride
+	// the explicit armReloadEEClobberedPins after the slow-path call.
+	h.SetGpr64(reg::k0, 0x1111222233334444ull);
+	h.SetGpr64(reg::a1, 0x5555666677778888ull);
+	h.SetGpr64(reg::s0, 0x0102030405060708ull);
+	h.SetGpr64(reg::at, 0x69ABCDEF01234567ull);
 	h.LoadProgram({
 		LW(reg::t0, 0, reg::t1),            // handler page → slow-path C read
 		DADDU(reg::t2, reg::v1, reg::zero), // pins survived the read call?
 		DADDU(reg::t3, reg::a0, reg::zero),
+		DADDU(reg::t6, reg::k0, reg::zero),
+		DADDU(reg::t7, reg::a1, reg::zero),
 		SW(reg::zero, 0, reg::t1),          // slow-path C write (0 clears no bits)
 		DADDU(reg::t4, reg::v1, reg::zero), // pins survived the write call?
 		DADDU(reg::t5, reg::a0, reg::zero),
+		DADDU(reg::t8, reg::s0, reg::zero),
+		DADDU(reg::t9, reg::at, reg::zero),
 	});
 	h.Run();
 	EmuConfig.Cpu.Recompiler.EnableFastmem = old_fastmem;
 	EmuConfig.Speedhacks.IntcStat = old_intc;
 	EXPECT_EQ(h.GetGpr64Interp(reg::t2), 0x0123456789ABCDEFull);
 	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0x7EDCBA9876543210ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t6), 0x1111222233334444ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t7), 0x5555666677778888ull);
 	EXPECT_EQ(h.GetGpr64Interp(reg::t4), 0x0123456789ABCDEFull);
 	EXPECT_EQ(h.GetGpr64Interp(reg::t5), 0x7EDCBA9876543210ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t8), 0x0102030405060708ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t9), 0x69ABCDEF01234567ull);
 }
 
 // The cold-path seam: const-paddr MMIO shortcut — a CONST base resolving to

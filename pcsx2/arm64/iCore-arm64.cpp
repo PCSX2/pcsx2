@@ -55,7 +55,11 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 
 // ARM64 register allocation policy:
 // x0-x3:   argument/return registers (caller-saved, allocatable)
-// x4-x15:  caller-saved temporaries (allocatable, except x12/x13)
+// x4-x7:   REEPIN_K0/A1/S0/AT — NOT allocatable (rung-3 pinned mirrors of
+//          GPR.r[26]/[5]/[16]/[1].UD[0]; caller-saved — see the
+//          preservation contract in iR5900-arm64.h)
+// x8-x15:  caller-saved temporaries (allocatable, except x8-x10 scratch
+//          and x12/x13)
 // x12/x13: REEPIN_V1/REEPIN_A0 — NOT allocatable (pinned mirrors of
 //          GPR.r[3]/GPR.r[4].UD[0], $v1/$a0; caller-saved — see the
 //          preservation contract in iR5900-arm64.h)
@@ -76,6 +80,7 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 
 // Bitmask of allocatable aarch64 GPRs. Bit `n` set ↔ x_n is in the pool.
 // Cleared bits, all-pinned/scratch as documented above:
+//   bits 4-7    — x4-x7 : REEPIN_K0/A1/S0/AT (rung-3 pinned mirrors)
 //   bit 8       — x8  : RXSCRATCH/RWSCRATCH (value scratch)
 //   bits 9-10   — x9/x10 : load/store address + value scratch
 //   bits 12-13  — x12/x13 : REEPIN_V1/REEPIN_A0 (pinned $v1/$a0 mirrors)
@@ -91,7 +96,8 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 // Inner allocator loop runs 31× per cache miss and was nine sequential
 // `if (armreg == N) return false` branches per probe; collapse to one
 // LSR + AND + cbz against this mask.
-static constexpr uint32_t ALLOCATABLE_MASK = ~((1u << 8)
+static constexpr uint32_t ALLOCATABLE_MASK = ~((15u << 4)
+	| (1u << 8)
 	| (1u << 9) | (1u << 10)
 	| (3u << 12)
 	| (7u << 16)

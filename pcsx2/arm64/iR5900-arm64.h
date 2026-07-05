@@ -61,6 +61,10 @@
 //         refs in the SotC SD865 capture, tools/perf/sotc-regheat-2026-07-05.md)
 //   x12 = cpuRegs.GPR.r[3].UD[0]   ($v1, 12.6% of dynamic refs)
 //   x13 = cpuRegs.GPR.r[4].UD[0]   ($a0, 7.9%)
+//   x4  = cpuRegs.GPR.r[26].UD[0]  ($k0, 6.3% — rung 3)
+//   x5  = cpuRegs.GPR.r[5].UD[0]   ($a1)
+//   x6  = cpuRegs.GPR.r[16].UD[0]  ($s0)
+//   x7  = cpuRegs.GPR.r[1].UD[0]   ($at)
 // MEMORY STAYS CANONICAL. Every guest-visible write still stores to
 // cpuRegs.GPR; the pin mirror is refreshed at the same emission point
 // (armStoreEERegPtr write-through, armStoreEEGPRQuad for 128-bit stores).
@@ -86,14 +90,17 @@
 // read a guest value as a frame chain — harmless (we profile via perf
 // jitdump, not FP walks).
 //
-// x12/x13 are CALLER-SAVED (the callee-saved budget is exhausted): any C
-// call clobbers the host register even when the callee never touches
-// guest state. The preservation contract, in order of preference:
+// x4-x7 and x12/x13 are CALLER-SAVED (the callee-saved budget is
+// exhausted): any C call clobbers the host register even when the callee
+// never touches guest state. The preservation contract, in order of
+// preference:
 //   1. vtlb_memRead/Write<T> + the 128-bit variants — the ONLY C calls on
 //      warm paths (fastmem backpatch thunk + inline softmem slow paths) —
 //      are annotated preserve_most (vtlb.h): the callee preserves x9-x15,
-//      so those emit sites need nothing. The thunk's own code uses only
-//      w8/w9/w10/x0/x17 (RecStubs.cpp) and its gpr_bitmask save loop
+//      which covers x12/x13 but NOT the rung-3 x4-x7 pins (preserve_most
+//      never spares x0-x8), so those slow paths additionally emit
+//      armReloadEEClobberedPins after the call. The thunk's own code uses
+//      only w8/w9/w10/x0/x17 (RecStubs.cpp) and its gpr_bitmask save loop
 //      stays pin-free — pins are not allocator state.
 //   2. Every other C call reachable inside a live session is followed by
 //      armReloadEEClobberedPins() (2 Ldrs, all cold paths): the const-
@@ -114,6 +121,10 @@
 #define REEPIN_V0 vixl::aarch64::x29
 #define REEPIN_V1 vixl::aarch64::x12
 #define REEPIN_A0 vixl::aarch64::x13
+#define REEPIN_K0 vixl::aarch64::x4
+#define REEPIN_A1 vixl::aarch64::x5
+#define REEPIN_S0 vixl::aarch64::x6
+#define REEPIN_AT vixl::aarch64::x7
 
 // The static guest→host pin map. Everything pin-related (lookup, reload,
 // write-through) iterates this table; adding a rung = adding a row here,
@@ -132,6 +143,10 @@ static const EEPinnedGPR kEEPinTable[] = {
 	{2, REEPIN_V0},
 	{3, REEPIN_V1},
 	{4, REEPIN_A0},
+	{26, REEPIN_K0},
+	{5, REEPIN_A1},
+	{16, REEPIN_S0},
+	{1, REEPIN_AT},
 };
 
 // Build a MemOperand addressing a cpuRegs field via RSTATE.
