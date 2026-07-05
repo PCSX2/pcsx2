@@ -52,6 +52,7 @@ add_pcsx2_test(recompiler_tests
 	ee_rec_mmi_tests.cpp
 	ee_rec_move_tests.cpp
 	ee_rec_pinned_gpr_tests.cpp
+	ee_rec_regalloc_coupling_tests.cpp
 	ee_rec_muldiv_tests.cpp
 	ee_rec_multiblock_tests.cpp
 	ee_rec_shift_tests.cpp
