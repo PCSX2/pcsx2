@@ -148,20 +148,27 @@ void armEmitNEG_S(u32 fd, u32 fs)
 // LWC1: fpr[ft].UL = mem32[GPR[rs] + imm]. Routed through the same slow-path vtlb
 // helper as the GPR loads; the 32-bit result is written to the FPR's low word.
 // (FPR0 is a real register, so there is no rt==0 discard as there is for GPRs.)
-void armEmitLWC1(u32 ft, u32 rs, s32 imm)
+void armEmitLWC1(u32 ft, u32 rs, s32 imm, u32 pc)
 {
 	armEmitEffectiveAddr(RWARG1, rs, imm);
-	armEmitVtlbRead(32, /*sign*/ false, RXRET, RWARG1);
+	// Single-instruction backpatch fastmem 32-bit load into RXRET; falls back to the vtlb
+	// helper for faulting PCs / when fastmem is off. LWC1 stages the FP value through a GPR,
+	// so the memory access is a plain 32-bit integer access (is_fpr=false).
+	if (!armTryEmitFastmemScalar32(pc, /*is_load*/ true, RXRET))
+		armEmitVtlbRead(32, /*sign*/ false, RXRET, RWARG1);
 	armAsm->Str(RWRET, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(ft)));
 }
 
 // ------------------------------------------------------------------------
 // SWC1: mem32[GPR[rs] + imm] = fpr[ft].UL.
-void armEmitSWC1(u32 ft, u32 rs, s32 imm)
+void armEmitSWC1(u32 ft, u32 rs, s32 imm, u32 pc)
 {
 	armAsm->Ldr(RWARG2, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(ft)));
 	armEmitEffectiveAddr(RWARG1, rs, imm);
-	armEmitVtlbWrite(32, RWARG1, RWARG2);
+	// Single-instruction backpatch fastmem 32-bit store of the FPR value (in RWARG2); falls
+	// back to the vtlb helper for faulting PCs / when fastmem is off.
+	if (!armTryEmitFastmemScalar32(pc, /*is_load*/ false, RWARG2))
+		armEmitVtlbWrite(32, RWARG1, RWARG2);
 }
 
 // ========================================================================

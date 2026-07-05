@@ -33,6 +33,10 @@
 //
 #define RESTATEPTR vixl::aarch64::x19
 #define REVTLBPTR vixl::aarch64::x21
+// x28 = host-MMU fastmem base (vtlbdata.fastmem_base). Pinned in recGenDispatchers when
+// CHECK_FASTMEM; dropped from the EE guest-GPR cache (8->7 slots) to free it. The vmap
+// path via REVTLBPTR(x21) is retained as the non-fastmem fallback, so x21 stays reserved.
+#define RFASTMEMBASE vixl::aarch64::x28
 
 // --------------------------------------------------------------------------------------
 //  Slow-path EE memory access codegen (Phase 2)
@@ -56,6 +60,16 @@ void armEmitVtlbRead(u32 bits, bool sign, const vixl::aarch64::Register& dst, co
 void armEmitVtlbWrite(u32 bits, const vixl::aarch64::Register& addr, const vixl::aarch64::Register& data);
 void armEmitVtlbReadQuad(const vixl::aarch64::VRegister& dst, const vixl::aarch64::Register& addr);
 void armEmitVtlbWriteQuad(const vixl::aarch64::Register& addr, const vixl::aarch64::VRegister& data);
+
+// Fastmem backpatch thunk carving (FASTMEM F2): allocate a scratch code region from the
+// EE code buffer (no const pool) for the SIGSEGV backpatch thunk. Called only from the
+// fault handler (vtlb_DynBackpatchLoadStore, RecStubs.cpp), never mid-block-emit.
+u8* recBeginThunk();
+u8* recEndThunk();
+// LWC1/SWC1 (aR5900FPU.cpp, separate TU): single-instruction backpatch fastmem 32-bit
+// access. vaddr must already be in RXARG1 (zero-extended); `data` = value reg (load: dst;
+// store: src). Returns true if fastmem was emitted (caller then skips the vmap path).
+bool armTryEmitFastmemScalar32(u32 pc, bool is_load, const vixl::aarch64::Register& data);
 
 // --------------------------------------------------------------------------------------
 //  EE GPR load/store opcode generators (Phase 2.3)
@@ -138,8 +152,8 @@ void armEmitCTC1(u32 fs, u32 rt);
 void armEmitMOV_S(u32 fd, u32 fs);
 void armEmitABS_S(u32 fd, u32 fs);
 void armEmitNEG_S(u32 fd, u32 fs);
-void armEmitLWC1(u32 ft, u32 rs, s32 imm);
-void armEmitSWC1(u32 ft, u32 rs, s32 imm);
+void armEmitLWC1(u32 ft, u32 rs, s32 imm, u32 pc);
+void armEmitSWC1(u32 ft, u32 rs, s32 imm, u32 pc);
 
 // --------------------------------------------------------------------------------------
 //  FPU (COP1) float arithmetic opcode generators (Phase 5.2b)

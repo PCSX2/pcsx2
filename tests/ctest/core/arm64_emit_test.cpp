@@ -17,6 +17,7 @@
 #include "arm64/AsmHelpers.h"
 #include "arm64/aR5900.h"
 
+#include "Config.h"
 #include "vtlb.h"
 
 #include <gtest/gtest.h>
@@ -125,6 +126,42 @@ TEST(Arm64Emit, LoadStoreThroughPointer)
 	u64 slot = 0;
 	fn(&slot, 41);
 	EXPECT_EQ(slot, 42u);
+}
+
+// FASTMEM F1: armEmitJmpPtr in-place patch. Emit two blocks; block A's tail branch
+// falls straight through to its own Ret (returns 1). Patch that 4-byte B in place to
+// jump to block B (returns 42) and re-execute A: control must now transfer to B.
+// Proves the W^X in-place overwrite + I-cache flush the SIGSEGV backpatch depends on.
+TEST(Arm64Emit, JmpPtrInPlacePatch)
+{
+	JitBuffer buf(8192);
+	ASSERT_NE(buf.ptr(), nullptr) << "MAP_JIT allocation failed";
+	u8* const base = static_cast<u8*>(buf.ptr());
+
+	// Block A: w0 = 1; B .+4 (fall through to Ret) -> returns 1 unpatched.
+	armSetAsmPtr(base, buf.size(), nullptr);
+	u8* const codeA = armStartBlock();
+	armAsm->Mov(w0, 1);
+	Label a_tail;
+	armAsm->B(&a_tail); // the single 4-byte branch we will patch (at codeA + 4)
+	armAsm->Bind(&a_tail);
+	armAsm->Ret();
+	u8* const endA = armEndBlock();
+
+	// Block B: w0 = 42; Ret.
+	armSetAsmPtr(endA, buf.size() - static_cast<size_t>(endA - base), nullptr);
+	u8* const codeB = armStartBlock();
+	armAsm->Mov(w0, 42);
+	armAsm->Ret();
+	armEndBlock();
+
+	using Fn = int (*)();
+	Fn fn = reinterpret_cast<Fn>(codeA);
+	EXPECT_EQ(fn(), 1) << "unpatched block A should fall through to its own Ret";
+
+	// Patch the branch (second instruction of block A) to target block B.
+	armEmitJmpPtr(codeA + 4, codeB, /*flush_icache*/ true);
+	EXPECT_EQ(fn(), 42) << "patched branch must transfer control into block B";
 }
 
 // --------------------------------------------------------------------------------------
@@ -301,6 +338,24 @@ namespace
 	private:
 		VTLBVirtual* m_saved_vmap;
 		std::vector<VTLBVirtual> m_vmap;
+	};
+
+	// Force the EE rec off the host-MMU fastmem path for a test's duration. The fastmem
+	// emitters index [x28 + vaddr], but these unit tests never pin x28 = fastmem_base
+	// (that only happens in the real dispatcher), so they must exercise the vmap/slow
+	// path. Default EmuConfig has EnableEE+EnableFastmem true => CHECK_FASTMEM true.
+	class ScopedNoFastmem
+	{
+	public:
+		ScopedNoFastmem()
+			: m_saved(EmuConfig.Cpu.Recompiler.EnableFastmem)
+		{
+			EmuConfig.Cpu.Recompiler.EnableFastmem = false;
+		}
+		~ScopedNoFastmem() { EmuConfig.Cpu.Recompiler.EnableFastmem = m_saved; }
+
+	private:
+		bool m_saved;
 	};
 
 	// cpuRegs-shaped guest register file (32 * 16-byte GPR slots + HI/LO).
@@ -1699,10 +1754,11 @@ TEST(Arm64EmitEE, LWC1_LoadsIntoFpr)
 	const u32 val = 0x3F80'0000; // 1.0f
 	std::memcpy(&ram[0x50], &val, sizeof(val));
 
+	ScopedNoFastmem no_fastmem; // exercise the vmap path (x28 unpinned in tests)
 	GuestRegs regs;
 	regs.set64(8, kTestVAddr); // $t0 = base
 	// LWC1 $f4, 0x50($t0)
-	RunEEGen(regs, [] { armEmitLWC1(/*ft*/ 4, /*rs*/ 8, /*imm*/ 0x50); });
+	RunEEGen(regs, [] { armEmitLWC1(/*ft*/ 4, /*rs*/ 8, /*imm*/ 0x50, /*pc*/ 0); });
 	EXPECT_EQ(regs.getFPR(4), 0x3F80'0000u);
 }
 
@@ -1711,11 +1767,12 @@ TEST(Arm64EmitEE, SWC1_StoresFprToMemory)
 	alignas(16) std::array<u8, VTLB_PAGE_SIZE> ram{};
 	VtlbMapping map(ram.data(), ram.size());
 
+	ScopedNoFastmem no_fastmem; // exercise the vmap path (x28 unpinned in tests)
 	GuestRegs regs;
 	regs.set64(8, kTestVAddr);
 	regs.setFPR(4, 0x4049'0FDB); // ~pi
 	// SWC1 $f4, 0x60($t0)
-	RunEEGen(regs, [] { armEmitSWC1(/*ft*/ 4, /*rs*/ 8, /*imm*/ 0x60); });
+	RunEEGen(regs, [] { armEmitSWC1(/*ft*/ 4, /*rs*/ 8, /*imm*/ 0x60, /*pc*/ 0); });
 	u32 in_ram;
 	std::memcpy(&in_ram, &ram[0x60], sizeof(in_ram));
 	EXPECT_EQ(in_ram, 0x4049'0FDBu);

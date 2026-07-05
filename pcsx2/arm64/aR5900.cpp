@@ -293,10 +293,36 @@ static void recResetRaw()
 	recGenDispatchers();
 	recClearLUT();
 
+	// Drop the fastmem backpatch registry: it is keyed by HOST code address, and the
+	// rewound buffer reuses those addresses, so a stale LoadstoreBackpatchInfo would
+	// mis-backpatch a fresh access (wrong guest_pc/registers/size). FASTMEM F3.
+	vtlb_ClearLoadStoreInfo();
+
 	// Drop all SMC manual-protection state — every block is being thrown away, so the
 	// per-page counters/weights must start fresh (mirrors x86 lpReset in recResetRaw).
 	std::memset(manual_page, 0, sizeof(manual_page));
 	std::memset(manual_counter, 0, sizeof(manual_counter));
+
+	// FASTMEM F0 (one-shot): report the shared host-MMU fastmem infra state on this ARM64
+	// boot. vtlb_Core_Alloc always reserves s_fastmem_area (it is NOT CHECK_FASTMEM-gated),
+	// so fastmem_base is expected non-zero regardless; CHECK_FASTMEM gates whether pages are
+	// mapped into it, whether the emit side uses x28-relative fastmem (recUseBackpatchFastmem),
+	// and whether the fault handler backpatches. When CHECK_FASTMEM is off the EE rec falls
+	// back to the Tier-A inline vmap path (recEmitVmapHostPointer via REVTLBPTR=x21).
+	{
+		static bool s_fastmem_f0_logged = false;
+		if (!s_fastmem_f0_logged)
+		{
+			s_fastmem_f0_logged = true;
+			Console.WriteLn(Color_StrongGreen,
+				"[FASTMEM F0] CHECK_FASTMEM=%d EnableEE=%d EnableFastmem=%d fastmem_base=%p vmap=%p",
+				CHECK_FASTMEM ? 1 : 0,
+				EmuConfig.Cpu.Recompiler.EnableEE ? 1 : 0,
+				EmuConfig.Cpu.Recompiler.EnableFastmem ? 1 : 0,
+				reinterpret_cast<void*>(vtlb_private::vtlbdata.fastmem_base),
+				reinterpret_cast<void*>(vtlb_private::vtlbdata.vmap));
+		}
+	}
 
 	eeRecNeedsReset = false;
 }
@@ -351,7 +377,7 @@ enum : u32
 
 // Defined below (block-compile helpers) — used by recTranslateOp's COP2 inline path.
 static void recEmitInterpInline(u32 op);
-static bool recTranslateOp(u32 op);
+static bool recTranslateOp(u32 op, u32 pc);
 
 // Macro-mode native COP2 transfer ops (defined after the M2 sync helpers) — used by
 // recTranslateOp's COP2 dispatch.
@@ -690,7 +716,7 @@ static bool recTranslateOpWithConst(u32 op, RecGprConstState& state)
 	if (recTryTranslateConstOp(op, state))
 		return true;
 
-	if (!recTranslateOp(op))
+	if (!recTranslateOp(op, /*pc*/ 0)) // dead path (recTranslateOpWithConst has no callers)
 	{
 		recConstKillAll(state);
 		return false;
@@ -881,18 +907,22 @@ struct RecGprCacheEntry
 
 struct RecGprCacheState
 {
-	RecGprCacheEntry entries[8];
+	RecGprCacheEntry entries[7];
 	u32 age = 1;
 };
 
 // AAPCS64 callee-saved registers dedicated to the guest-GPR cache. x19/x21 hold
-// &cpuRegs / the vtlb vmap base; x20 was reserved for a fastmem base that never got
-// wired up (the vmap path is the fast path), so it serves as the 8th cache slot. All
-// of these survive the C helper calls a block makes (vtlb slow path, inline
-// interpreter ops): the VU rec saves x19-x28 in its prologue, the IOP rec only
-// touches x19 (saved), and the EE rec itself exits via fastjmp which restores the
-// full caller context.
-static constexpr int REC_GPR_CACHE_REGS[8] = {20, 22, 23, 24, 25, 26, 27, 28};
+// &cpuRegs / the vtlb vmap base; x28 is now pinned as RFASTMEMBASE (the host-MMU fastmem
+// base — see recGenDispatchers, FASTMEM F4), so it was dropped from the cache, leaving 7
+// slots. NOTE: x23-x26 double as microVU flag regs mVU_F0-F3 (safe because the cache is
+// killed before any COP2/VU0-macro emit); x27/x28 are outside the VU allocator's tracked
+// range, which is why x28 is safe to pin. All of these survive the C helper calls a block
+// makes (vtlb slow path, inline interpreter ops): the VU rec saves x19-x28 in its prologue,
+// the IOP rec only touches x19 (saved), and the EE rec itself exits via fastjmp which
+// restores the full caller context.
+static constexpr int REC_GPR_CACHE_REGS[7] = {20, 22, 23, 24, 25, 26, 27};
+static_assert(std::size(RecGprCacheState{}.entries) == std::size(REC_GPR_CACHE_REGS),
+	"guest-GPR cache entry count must match the register list");
 
 static const a64::Register& recCacheReg(size_t index)
 {
@@ -1125,8 +1155,49 @@ static void recEmitCachedDirectStore(u32 bits, const a64::Register& src, const a
 	}
 }
 
+// Host-MMU fastmem backpatch toggle (FASTMEM F3). When on, EE integer load/store emit a
+// single Ldr/Str through RFASTMEMBASE (x28); a fault backpatches to the slow path via
+// vtlb_DynBackpatchLoadStore (RecStubs.cpp). Flip off = inline-vmap fallback.
+static bool s_eeFastmemBackpatch = true;
+
+static bool recUseBackpatchFastmem(u32 pc)
+{
+	// Skip PCs that already faulted once (settled MMIO): re-emit the vmap path so we don't
+	// re-backpatch the same instruction on every recompile.
+	return s_eeFastmemBackpatch && CHECK_FASTMEM && !vtlb_IsFaultingPC(pc);
+}
+
+// Record a single fastmem Ldr/Str for SIGSEGV backpatch. code_start must point at exactly
+// one 4-byte access instruction (the whole premise of host-MMU backpatch).
+static void recRecordFastmem(const u8* code_start, u32 pc, u8 addr_reg, u8 data_reg,
+	u32 bits, bool is_signed, bool is_load)
+{
+	const u32 code_size = static_cast<u32>(armGetCurrentCodePointer() - code_start);
+	pxAssert(code_size == 4);
+	vtlb_AddLoadStoreInfo(reinterpret_cast<uptr>(code_start), code_size, pc,
+		/*gpr_bitmask*/ 0, /*fpr_bitmask*/ 0, addr_reg, data_reg,
+		static_cast<u8>(bits), is_signed, is_load, /*is_fpr*/ false);
+}
+
+// Exposed for aR5900FPU.cpp (LWC1/SWC1 live in a separate translation unit): emit a single-
+// instruction backpatch fastmem 32-bit access when eligible. The 32-bit vaddr must already
+// be in RXARG1 (x0, zero-extended). `data` is the value register (load: destination; store:
+// source). Returns true if fastmem was emitted, so the caller then skips the vmap path.
+bool armTryEmitFastmemScalar32(u32 pc, bool is_load, const a64::Register& data)
+{
+	if (!recUseBackpatchFastmem(pc))
+		return false;
+	const u8* code_start = armGetCurrentCodePointer();
+	if (is_load)
+		armAsm->Ldr(data.W(), a64::MemOperand(RFASTMEMBASE, RXARG1));
+	else
+		armAsm->Str(data.W(), a64::MemOperand(RFASTMEMBASE, RXARG1));
+	recRecordFastmem(code_start, pc, RXARG1.GetCode(), data.GetCode(), 32, /*sign*/ false, is_load);
+	return true;
+}
+
 static bool recTryTranslateCachedLoad(u32 bits, bool sign, u32 rt, u32 rs, s32 imm,
-	RecGprCacheState& cache, const RecGprConstState& const_state)
+	RecGprCacheState& cache, const RecGprConstState& const_state, u32 pc)
 {
 	static const a64::Register RADDR = a64::x9;
 	static const a64::Register RHOST = a64::x10;
@@ -1136,6 +1207,27 @@ static bool recTryTranslateCachedLoad(u32 bits, bool sign, u32 rt, u32 rs, s32 i
 	const RecGprCacheState pre_load_cache = cache;
 
 	const a64::Register& dst = (rt == 0) ? RTEMP : recCacheDest(cache, rt, rs);
+
+	if (recUseBackpatchFastmem(pc))
+	{
+		// Single register-offset load through the pinned fastmem base. A handler/MMIO/unmapped
+		// page faults -> HandlePageFault -> vtlb_BackpatchLoadStore -> the thunk. No slow branch,
+		// no cache flush: the fast path is the common one. dst/RADDR high bits are already clean
+		// (RADDR = zero-extended 32-bit vaddr), so [x28 + vaddr] lands inside the 4 GB window.
+		const u8* code_start = armGetCurrentCodePointer();
+		switch (bits)
+		{
+			case 8:  sign ? armAsm->Ldrsb(dst.X(), a64::MemOperand(RFASTMEMBASE, RADDR))
+			              : armAsm->Ldrb(dst.W(), a64::MemOperand(RFASTMEMBASE, RADDR)); break;
+			case 16: sign ? armAsm->Ldrsh(dst.X(), a64::MemOperand(RFASTMEMBASE, RADDR))
+			              : armAsm->Ldrh(dst.W(), a64::MemOperand(RFASTMEMBASE, RADDR)); break;
+			case 32: sign ? armAsm->Ldrsw(dst.X(), a64::MemOperand(RFASTMEMBASE, RADDR))
+			              : armAsm->Ldr(dst.W(), a64::MemOperand(RFASTMEMBASE, RADDR)); break;
+			case 64: armAsm->Ldr(dst.X(), a64::MemOperand(RFASTMEMBASE, RADDR)); break;
+		}
+		recRecordFastmem(code_start, pc, RADDR.GetCode(), dst.GetCode(), bits, sign, /*is_load*/ true);
+		return true;
+	}
 
 	a64::Label slow_path;
 	a64::Label done;
@@ -1154,7 +1246,7 @@ static bool recTryTranslateCachedLoad(u32 bits, bool sign, u32 rt, u32 rs, s32 i
 }
 
 static bool recTryTranslateCachedStore(u32 bits, u32 rt, u32 rs, s32 imm,
-	RecGprCacheState& cache, const RecGprConstState& const_state)
+	RecGprCacheState& cache, const RecGprConstState& const_state, u32 pc)
 {
 	static const a64::Register RADDR = a64::x9;
 	static const a64::Register RHOST = a64::x10;
@@ -1162,6 +1254,23 @@ static bool recTryTranslateCachedStore(u32 bits, u32 rt, u32 rs, s32 imm,
 	recEmitCachedEffectiveAddr(cache, const_state, rs, imm, RADDR);
 	const a64::Register& src = recCacheLoad(cache, rt);
 	const RecGprCacheState pre_store_cache = cache;
+
+	if (recUseBackpatchFastmem(pc))
+	{
+		// Single register-offset store through the pinned fastmem base. A store into a
+		// write-protected code page faults through HandlePageFault's ProtMode_Write branch
+		// (mmap_ClearCpuBlock + retry), NOT the backpatch path — SMC stays correct.
+		const u8* code_start = armGetCurrentCodePointer();
+		switch (bits)
+		{
+			case 8:  armAsm->Strb(src.W(), a64::MemOperand(RFASTMEMBASE, RADDR)); break;
+			case 16: armAsm->Strh(src.W(), a64::MemOperand(RFASTMEMBASE, RADDR)); break;
+			case 32: armAsm->Str(src.W(), a64::MemOperand(RFASTMEMBASE, RADDR)); break;
+			case 64: armAsm->Str(src.X(), a64::MemOperand(RFASTMEMBASE, RADDR)); break;
+		}
+		recRecordFastmem(code_start, pc, RADDR.GetCode(), src.GetCode(), bits, /*is_signed*/ false, /*is_load*/ false);
+		return true;
+	}
 
 	a64::Label slow_path;
 	a64::Label done;
@@ -1178,7 +1287,7 @@ static bool recTryTranslateCachedStore(u32 bits, u32 rt, u32 rs, s32 imm,
 }
 
 static bool recTryTranslateCachedLoadQuad(u32 rt, u32 rs, s32 imm,
-	RecGprCacheState& cache, const RecGprConstState& const_state)
+	RecGprCacheState& cache, const RecGprConstState& const_state, u32 pc)
 {
 	static const a64::Register RADDR = a64::x9;
 	static const a64::Register RHOST = a64::x10;
@@ -1200,6 +1309,22 @@ static bool recTryTranslateCachedLoadQuad(u32 rt, u32 rs, s32 imm,
 	// computation so rt==rs still uses the pre-load value above.
 	recCacheDiscardGuest(cache, rt);
 
+	if (recUseBackpatchFastmem(pc))
+	{
+		// Single 128-bit register-offset load through the fastmem base; a fault backpatches to
+		// the thunk (size 128 -> vtlb_memRead128). Perform the read even when rt==0 (MMIO side
+		// effects). RADDR is the 16-byte-aligned zero-extended vaddr -> stays in the 4 GB window.
+		const u8* code_start = armGetCurrentCodePointer();
+		armAsm->Ldr(RQSCRATCH, a64::MemOperand(RFASTMEMBASE, RADDR));
+		vtlb_AddLoadStoreInfo(reinterpret_cast<uptr>(code_start),
+			static_cast<u32>(armGetCurrentCodePointer() - code_start), pc,
+			/*gpr*/ 0, /*fpr*/ 0, RADDR.GetCode(), RQSCRATCH.GetCode(),
+			/*size*/ 128, /*sign*/ false, /*is_load*/ true, /*is_fpr*/ false);
+		if (rt != 0)
+			armAsm->Str(RQSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
+		return true;
+	}
+
 	a64::Label slow_path;
 	a64::Label done;
 	recEmitVmapHostPointer(RHOST, RADDR, &slow_path);
@@ -1220,7 +1345,7 @@ static bool recTryTranslateCachedLoadQuad(u32 rt, u32 rs, s32 imm,
 }
 
 static bool recTryTranslateCachedStoreQuad(u32 rt, u32 rs, s32 imm,
-	RecGprCacheState& cache, const RecGprConstState& const_state)
+	RecGprCacheState& cache, const RecGprConstState& const_state, u32 pc)
 {
 	static const a64::Register RADDR = a64::x9;
 	static const a64::Register RHOST = a64::x10;
@@ -1234,6 +1359,20 @@ static bool recTryTranslateCachedStoreQuad(u32 rt, u32 rs, s32 imm,
 	recCacheFlushGuest(cache, rt);
 	armAsm->Ldr(RQSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
 	const RecGprCacheState pre_store_cache = cache;
+
+	if (recUseBackpatchFastmem(pc))
+	{
+		// Single 128-bit store through the fastmem base. A store into a write-protected code
+		// page faults through HandlePageFault's ProtMode_Write branch (clear + retry), NOT the
+		// backpatch decoder — SMC stays correct (same as the scalar/vmap quad store).
+		const u8* code_start = armGetCurrentCodePointer();
+		armAsm->Str(RQSCRATCH, a64::MemOperand(RFASTMEMBASE, RADDR));
+		vtlb_AddLoadStoreInfo(reinterpret_cast<uptr>(code_start),
+			static_cast<u32>(armGetCurrentCodePointer() - code_start), pc,
+			/*gpr*/ 0, /*fpr*/ 0, RADDR.GetCode(), RQSCRATCH.GetCode(),
+			/*size*/ 128, /*sign*/ false, /*is_load*/ false, /*is_fpr*/ false);
+		return true;
+	}
 
 	a64::Label slow_path;
 	a64::Label done;
@@ -1437,7 +1576,7 @@ static bool recTryTranslateCachedConstOp(u32 op, RecGprConstState& const_state, 
 	}
 }
 
-static bool recTryTranslateCachedOp(u32 op, RecGprCacheState& cache, const RecGprConstState& const_state)
+static bool recTryTranslateCachedOp(u32 op, RecGprCacheState& cache, const RecGprConstState& const_state, u32 pc)
 {
 	const u32 opcode = op >> 26;
 	const u32 rs = (op >> 21) & 0x1f;
@@ -1550,20 +1689,20 @@ static bool recTryTranslateCachedOp(u32 op, RecGprCacheState& cache, const RecGp
 				return true;
 			}
 
-		case OP_LB:  return recTryTranslateCachedLoad(8,  true,  rt, rs, imm, cache, const_state);
-		case OP_LBU: return recTryTranslateCachedLoad(8,  false, rt, rs, imm, cache, const_state);
-		case OP_LH:  return recTryTranslateCachedLoad(16, true,  rt, rs, imm, cache, const_state);
-		case OP_LHU: return recTryTranslateCachedLoad(16, false, rt, rs, imm, cache, const_state);
-		case OP_LW:  return recTryTranslateCachedLoad(32, true,  rt, rs, imm, cache, const_state);
-		case OP_LWU: return recTryTranslateCachedLoad(32, false, rt, rs, imm, cache, const_state);
-		case OP_LD:  return recTryTranslateCachedLoad(64, false, rt, rs, imm, cache, const_state);
-		case OP_LQ:  return recTryTranslateCachedLoadQuad(rt, rs, imm, cache, const_state);
+		case OP_LB:  return recTryTranslateCachedLoad(8,  true,  rt, rs, imm, cache, const_state, pc);
+		case OP_LBU: return recTryTranslateCachedLoad(8,  false, rt, rs, imm, cache, const_state, pc);
+		case OP_LH:  return recTryTranslateCachedLoad(16, true,  rt, rs, imm, cache, const_state, pc);
+		case OP_LHU: return recTryTranslateCachedLoad(16, false, rt, rs, imm, cache, const_state, pc);
+		case OP_LW:  return recTryTranslateCachedLoad(32, true,  rt, rs, imm, cache, const_state, pc);
+		case OP_LWU: return recTryTranslateCachedLoad(32, false, rt, rs, imm, cache, const_state, pc);
+		case OP_LD:  return recTryTranslateCachedLoad(64, false, rt, rs, imm, cache, const_state, pc);
+		case OP_LQ:  return recTryTranslateCachedLoadQuad(rt, rs, imm, cache, const_state, pc);
 
-		case OP_SB: return recTryTranslateCachedStore(8,  rt, rs, imm, cache, const_state);
-		case OP_SH: return recTryTranslateCachedStore(16, rt, rs, imm, cache, const_state);
-		case OP_SW: return recTryTranslateCachedStore(32, rt, rs, imm, cache, const_state);
-		case OP_SD: return recTryTranslateCachedStore(64, rt, rs, imm, cache, const_state);
-		case OP_SQ: return recTryTranslateCachedStoreQuad(rt, rs, imm, cache, const_state);
+		case OP_SB: return recTryTranslateCachedStore(8,  rt, rs, imm, cache, const_state, pc);
+		case OP_SH: return recTryTranslateCachedStore(16, rt, rs, imm, cache, const_state, pc);
+		case OP_SW: return recTryTranslateCachedStore(32, rt, rs, imm, cache, const_state, pc);
+		case OP_SD: return recTryTranslateCachedStore(64, rt, rs, imm, cache, const_state, pc);
+		case OP_SQ: return recTryTranslateCachedStoreQuad(rt, rs, imm, cache, const_state, pc);
 
 		case 0x00:
 			break;
@@ -1819,7 +1958,7 @@ static void recCacheApplyNativeEffects(u32 op, RecGprCacheState& cache)
 	}
 }
 
-static bool recTranslateOpOptimized(u32 op, RecGprConstState& const_state, RecGprCacheState& cache)
+static bool recTranslateOpOptimized(u32 op, RecGprConstState& const_state, RecGprCacheState& cache, u32 pc)
 {
 	// Fold ops with fully const-known sources first: emits one immediate Mov into the
 	// destination's cache register and updates the const state itself, so neither the
@@ -1827,7 +1966,7 @@ static bool recTranslateOpOptimized(u32 op, RecGprConstState& const_state, RecGp
 	if (recTryTranslateCachedConstOp(op, const_state, cache))
 		return true;
 
-	if (recTryTranslateCachedOp(op, cache, const_state))
+	if (recTryTranslateCachedOp(op, cache, const_state, pc))
 	{
 		if (!recConstApplyCachedEffects(op, const_state))
 			recConstApplyNativeEffects(op, const_state);
@@ -1848,7 +1987,7 @@ static bool recTranslateOpOptimized(u32 op, RecGprConstState& const_state, RecGp
 		return true;
 	}
 
-	if (!recTranslateOp(op))
+	if (!recTranslateOp(op, pc))
 	{
 		// Caller falls back to the inline interpreter, which can write any GPR.
 		recCacheKillAll(cache);
@@ -1981,7 +2120,7 @@ static bool recTranslateMMI3(u32 sa, u32 rd, u32 rs, u32 rt)
 	}
 }
 
-static bool recTranslateOp(u32 op)
+static bool recTranslateOp(u32 op, u32 pc)
 {
 	const u32 opcode = op >> 26;
 	const u32 rs = (op >> 21) & 0x1f;
@@ -2181,8 +2320,8 @@ static bool recTranslateOp(u32 op)
 		case OP_SQ: armEmitStoreQuad(rt, rs, imm); return true;
 
 		// FPU load/store (Phase 5.2a) — 32-bit transfer between memory and FPR[rt].
-		case OP_LWC1: armEmitLWC1(rt, rs, imm); return true;
-		case OP_SWC1: armEmitSWC1(rt, rs, imm); return true;
+		case OP_LWC1: armEmitLWC1(rt, rs, imm, pc); return true;
+		case OP_SWC1: armEmitSWC1(rt, rs, imm, pc); return true;
 
 		// CACHE (0x2F): EE data-cache hint/maintenance. It does real work in the
 		// interpreter (Cache.cpp CACHE(): line invalidate/writeback, writes CP0.TagLo)
@@ -2900,7 +3039,7 @@ static void recEmitCop0DI()
 // collapse (a pre-commit, as the old unconditional pre-flush did, would be lost there).
 static u32 s_cop2RawCycles = 0;
 
-static void recEmitOp(u32 op, RecGprConstState& const_state, RecGprCacheState& cache_state)
+static void recEmitOp(u32 op, RecGprConstState& const_state, RecGprCacheState& cache_state, u32 pc)
 {
 	// Used only for branch delay slots, which the main emit loop's COP2 cycle stash does not
 	// reach. A COP2/LQC2/SQC2 op here would otherwise read a stale s_cop2RawCycles; zero it so
@@ -2908,7 +3047,7 @@ static void recEmitOp(u32 op, RecGprConstState& const_state, RecGprCacheState& c
 	// tail commits the accumulated cycles for accounting). The VU catch-up still reads the
 	// current cpuRegs.cycle. Harmless for non-COP2 ops (they ignore it).
 	s_cop2RawCycles = 0;
-	if (!recTranslateOpOptimized(op, const_state, cache_state))
+	if (!recTranslateOpOptimized(op, const_state, cache_state, pc))
 		recEmitInterpInline(op);
 }
 
@@ -3677,6 +3816,8 @@ static void recGenDispatchers()
 	armAsm->Bind(&dispatcher_reg);
 	armMoveAddressToReg(RESTATEPTR, &cpuRegs);
 	armLoadPtr(REVTLBPTR, &vtlb_private::vtlbdata.vmap);
+	if (CHECK_FASTMEM)
+		armLoadPtr(RFASTMEMBASE, &vtlb_private::vtlbdata.fastmem_base); // x28 = host-MMU fastmem base
 	armAsm->Ldr(RWARG1, a64::MemOperand(RESTATEPTR, EE_PC_OFFSET));    // x0 = pc (zero-extended)
 	armAsm->Lsr(RXARG2, RXARG1, 16);                                  // x1 = pc >> 16
 	armMoveAddressToReg(RXARG3, recLUT);                              // x2 = &recLUT[0]
@@ -3705,6 +3846,8 @@ static void recGenDispatchers()
 	EnterRecompiledCode = armGetCurrentCodePointer();
 	armMoveAddressToReg(RESTATEPTR, &cpuRegs);
 	armLoadPtr(REVTLBPTR, &vtlb_private::vtlbdata.vmap);
+	if (CHECK_FASTMEM)
+		armLoadPtr(RFASTMEMBASE, &vtlb_private::vtlbdata.fastmem_base); // x28 = host-MMU fastmem base
 	armAsm->B(&dispatcher_reg);
 
 	// UnmappedRecLUTPage: target for every word of an unmapped guest page.
@@ -3842,6 +3985,29 @@ static u32 recScanBlockEnd(u32 startpc)
 //     it through the interpreter (intExecuteOneInst handles its own PC/delay/cycles);
 //   - otherwise ends at the next un-compilable op (or the length cap), writing cpuRegs.pc
 //     so the next dispatch resumes there.
+
+// Thunk carving for fastmem backpatch (FASTMEM F2). Carves a scratch code region from the
+// EE code buffer with NO const pool, so armEmitJmp/armEmitCall inside the thunk inline the
+// target through x16 rather than routing via a trampoline (x16 is scratch, clobbered by the
+// call anyway). Thunks are permanent — they live until the next recResetRaw. Called only
+// from the fault handler (vtlb_DynBackpatchLoadStore), never mid-block-emit.
+u8* recBeginThunk()
+{
+	if (recPtr >= recPtrEnd)
+		eeRecNeedsReset = true;
+	armSetAsmPtr(recPtr, recPtrEnd - recPtr, nullptr);
+	recPtr = armStartBlock();
+	return recPtr;
+}
+
+u8* recEndThunk()
+{
+	u8* block_end = armEndBlock();
+	pxAssert(block_end < recPtrEnd);
+	recPtr = block_end;
+	return block_end;
+}
+
 static void recRecompile(u32 startpc)
 {
 	const u32 hw_startpc = recHWAddr(startpc);
@@ -4016,7 +4182,7 @@ static void recRecompile(u32 startpc)
 						nidx = EE_INST_CACHE_SIZE - 1;
 					g_pCurInstInfo = &s_instCache[nidx];
 				}
-				recEmitOp(next_op, const_state, cache_state);
+				recEmitOp(next_op, const_state, cache_state, pc + 4);
 				recEmitCop0DI();
 				raw_cycles += eeOpCycles(next_op);
 
@@ -4088,7 +4254,7 @@ static void recRecompile(u32 startpc)
 
 			const u32 delay_op = memRead32(pc + 4);
 			raw_cycles += eeOpCycles(delay_op);
-			recEmitOp(delay_op, const_state, cache_state); // delay slot — must not write cpuRegs.pc
+			recEmitOp(delay_op, const_state, cache_state, pc + 4); // delay slot — must not write cpuRegs.pc
 			endpc = pc + 8;
 
 			// Wait-loop detection: does this branch loop back to the block start with a
@@ -4134,7 +4300,7 @@ static void recRecompile(u32 startpc)
 
 			const u32 delay_op = memRead32(pc + 4);
 			raw_cycles += eeOpCycles(delay_op);
-			recEmitOp(delay_op, const_state, cache_state);
+			recEmitOp(delay_op, const_state, cache_state, pc + 4);
 			recCacheFlushAll(cache_state);
 			recCacheKillAll(cache_state);
 			recConstKillAll(const_state);
@@ -4211,7 +4377,7 @@ static void recRecompile(u32 startpc)
 
 		// Straight-line op we can codegen? (Generators decode from `op` directly;
 		// they never read cpuRegs.code, so nothing to set here at compile time.)
-		if (recTranslateOpOptimized(op, const_state, cache_state))
+		if (recTranslateOpOptimized(op, const_state, cache_state, pc))
 		{
 			// Record the body for wait-loop analysis (only short blocks qualify).
 			if (waitloop_num_ops < REC_WAITLOOP_MAX_OPS)
