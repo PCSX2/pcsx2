@@ -59,8 +59,9 @@ static void recWritebackRd()
 
 	_deleteEEreg(_Rd_, 0);
 	GPR_DEL_CONST(_Rd_);
-	armLoadEERegPtr(RXSCRATCH, &cpuRegs.LO.UD[0]);
-	armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	const a64::Register dst = armEEDestForGPR(_Rd_, RXSCRATCH);
+	armLoadEERegPtr(dst, &cpuRegs.LO.UD[0]);
+	armStoreEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
 }
 
 //// MULT — signed 32-bit multiply, result in HI:LO, optionally Rd
@@ -263,8 +264,9 @@ static void recWritebackRd1()
 
 	_deleteEEreg(_Rd_, 0);
 	GPR_DEL_CONST(_Rd_);
-	armLoadEERegPtr(RXSCRATCH, &cpuRegs.LO.UD[1]);
-	armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	const a64::Register dst = armEEDestForGPR(_Rd_, RXSCRATCH);
+	armLoadEERegPtr(dst, &cpuRegs.LO.UD[1]);
+	armStoreEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
 }
 
 //// MULT1 — signed 32-bit multiply, pipeline 1 (HI1:LO1)

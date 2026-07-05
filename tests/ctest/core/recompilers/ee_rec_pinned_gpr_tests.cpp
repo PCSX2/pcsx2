@@ -250,3 +250,74 @@ TEST(EeRecPinnedGpr, V0HalfWordWriteThroughViaCfc2)
 	h.Run();
 	EXPECT_EQ(h.GetGpr64Interp(reg::t0), 0x0000000000008123ull);
 }
+
+// S1b pinned-dest fast paths: the scalar templates compute their FINAL
+// result directly into the pin (Add/Sxtw/Cset/Csel/Ldr with an x22/x23/x29
+// dest) and the write-through then emits just the canonical STR. Exercises
+// every emitter shape S1b rewrote with a pinned destination: 3-op ALU whose
+// dest AND both sources are pins, Cset (SLTU), MTLO from a pinned source
+// (plain STR of the mirror), MFLO into a pinned dest (Ldr straight into the
+// pin), and MOVN/MOVZ's Csel with a pinned rd (the current-D "load" is a
+// vixl-elided self-Mov). Each step reads the previous pin state, so a
+// stranded mirror cascades into every subsequent EXPECT.
+TEST(EeRecPinnedGpr, PinnedDestFastPathShapes)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::sp, 0x0000000000010000ull);
+	h.SetGpr64(reg::t0, 0x0000000000000123ull);
+	h.LoadProgram({
+		OR(reg::t6, reg::ra, reg::zero),    // save parking $ra
+		OR(reg::ra, reg::t0, reg::zero),    // $ra = 0x123 (pinned write)
+		DADDU(reg::v0, reg::sp, reg::ra),   // pin dest <- pin + pin
+		DADDU(reg::t1, reg::v0, reg::zero), // = 0x10123
+		SLTU(reg::v0, reg::ra, reg::sp),    // Cset into pinned $v0 (0x123 < 0x10000)
+		DADDU(reg::t2, reg::v0, reg::zero), // = 1
+		MTLO(reg::ra),                      // LO = 0x123, STR of the $ra mirror
+		MFLO(reg::v0),                      // Ldr LO straight into the $v0 pin
+		DADDU(reg::t3, reg::v0, reg::zero), // = 0x123
+		MOVN(reg::v0, reg::sp, reg::t0),    // t0 != 0 -> $v0 = $sp (Csel, pinned rd)
+		DADDU(reg::t4, reg::v0, reg::zero), // = 0x10000
+		MOVZ(reg::v0, reg::ra, reg::zero),  // rt == $zero -> unconditional $v0 = $ra
+		DADDU(reg::t5, reg::v0, reg::zero), // = 0x123
+		OR(reg::ra, reg::t6, reg::zero),    // restore parking $ra
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t1), 0x0000000000010123ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t2), 1ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0x0000000000000123ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t4), 0x0000000000010000ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t5), 0x0000000000000123ull);
+}
+
+// S1b aliasing corners: a pinned register as BOTH dest and source of the
+// same op (the armEEDestForGPR contract's "final instruction reads its
+// sources in the same instruction" clause), plus the vixl LogicalMacro
+// temp paths for unencodable logical immediates — with rd != rn vixl may
+// borrow the pinned rd itself to materialize the immediate (Mov pin, imm;
+// And pin, rn, pin), and with rd == rn (both the same pin) it must fall
+// back to x16/x17 since rn is excluded from the temp pool. 0x12345678 and
+// 0x5A5A1234 are not valid AArch64 logical immediates, so both AND forms
+// take the materialization path; the consts arrive via LUI+ORI const-prop.
+TEST(EeRecPinnedGpr, PinnedDestAliasesPinnedSource)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::v0, 0x0000000000010000ull);
+	h.SetGpr64(reg::sp, 0xFFFFFFFFFFFFFFFFull);
+	h.LoadProgram({
+		ADDIU(reg::v0, reg::v0, 0x111),     // $v0 = 0x10111 (RMW, Sxtw into pin)
+		SLTU(reg::v0, reg::zero, reg::v0),  // $v0 = 1 (dest aliases source via Cset)
+		DADDU(reg::t1, reg::v0, reg::zero),
+		LUI(reg::t2, 0x1234),
+		ORI(reg::t2, reg::t2, 0x5678),      // t2 = const 0x12345678 (unencodable)
+		AND(reg::v0, reg::sp, reg::t2),     // rd-as-imm-temp: Mov x29,imm; And x29,x22,x29
+		DADDU(reg::t3, reg::v0, reg::zero), // = 0x12345678
+		LUI(reg::t4, 0x5A5A),
+		ORI(reg::t4, reg::t4, 0x1234),      // t4 = const 0x5A5A1234 (unencodable)
+		AND(reg::v0, reg::v0, reg::t4),     // rd==rn pin: imm goes via x16/x17
+		DADDU(reg::t5, reg::v0, reg::zero), // = 0x12101230
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t1), 1ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0x0000000012345678ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t5), 0x0000000012101230ull);
+}

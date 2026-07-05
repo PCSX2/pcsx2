@@ -46,6 +46,10 @@ static a64::Register memLoadS64()
 	return RXSCRATCH;
 }
 static void memStoreT(const a64::Register& src) { armStoreEERegPtr(src, &cpuRegs.GPR.r[_Rt_].UD[0]); }
+// Pinned-dest fast path: the FINAL result-producing instruction targets the
+// pin (memStoreT then emits just the canonical STR). See armEEDestForGPR's
+// contract — intermediates stay in scratch.
+static a64::Register memDestT() { return armEEDestForGPR(_Rt_, RXSCRATCH); }
 
 //// ADDI / ADDIU — rt = sign_extend(rs + imm)
 static void recADDI_const()
@@ -56,16 +60,17 @@ static void recADDI_const()
 static void recADDI_(int info)
 {
 	const a64::Register rs = memLoadS32();
+	const a64::Register dst = memDestT();
 	if (_Imm_ != 0)
 	{
 		armAsm->Add(RWSCRATCH, rs, _Imm_);
-		armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
+		armAsm->Sxtw(dst, RWSCRATCH);
 	}
 	else
 	{
-		armAsm->Sxtw(RXSCRATCH, rs);
+		armAsm->Sxtw(dst, rs);
 	}
-	memStoreT(RXSCRATCH);
+	memStoreT(dst);
 }
 
 EERECOMPILE_CODEX_MEM(eeRecompileCodeRC1_MEM, ADDI, XMMINFO_WRITET | XMMINFO_READS);
@@ -85,8 +90,9 @@ static void recDADDI_(int info)
 	{
 		// vixl's Add(int64_t) picks the right ADD/SUB-imm encoding and
 		// materializes via x16 when the immediate is unencodable.
-		armAsm->Add(RXSCRATCH, rs, static_cast<int64_t>(static_cast<s32>(_Imm_)));
-		memStoreT(RXSCRATCH);
+		const a64::Register dst = memDestT();
+		armAsm->Add(dst, rs, static_cast<int64_t>(static_cast<s32>(_Imm_)));
+		memStoreT(dst);
 	}
 	else
 	{
@@ -112,8 +118,9 @@ static void recANDI_(int info)
 		return;
 	}
 	const a64::Register rs = memLoadS64();
-	armAsm->And(RXSCRATCH, rs, static_cast<uint64_t>(static_cast<u16>(_ImmU_)));
-	memStoreT(RXSCRATCH);
+	const a64::Register dst = memDestT();
+	armAsm->And(dst, rs, static_cast<uint64_t>(static_cast<u16>(_ImmU_)));
+	memStoreT(dst);
 }
 
 EERECOMPILE_CODEX_MEM(eeRecompileCodeRC1_MEM, ANDI, XMMINFO_WRITET | XMMINFO_READS | XMMINFO_64BITOP);
@@ -129,8 +136,9 @@ static void recORI_(int info)
 	const a64::Register rs = memLoadS64();
 	if (_ImmU_ != 0)
 	{
-		armAsm->Orr(RXSCRATCH, rs, static_cast<uint64_t>(static_cast<u16>(_ImmU_)));
-		memStoreT(RXSCRATCH);
+		const a64::Register dst = memDestT();
+		armAsm->Orr(dst, rs, static_cast<uint64_t>(static_cast<u16>(_ImmU_)));
+		memStoreT(dst);
 	}
 	else
 	{
@@ -151,8 +159,9 @@ static void recXORI_(int info)
 	const a64::Register rs = memLoadS64();
 	if (_ImmU_ != 0)
 	{
-		armAsm->Eor(RXSCRATCH, rs, static_cast<uint64_t>(static_cast<u16>(_ImmU_)));
-		memStoreT(RXSCRATCH);
+		const a64::Register dst = memDestT();
+		armAsm->Eor(dst, rs, static_cast<uint64_t>(static_cast<u16>(_ImmU_)));
+		memStoreT(dst);
 	}
 	else
 	{
@@ -171,9 +180,10 @@ static void recSLTI_const()
 static void recSLTI_(int info)
 {
 	const a64::Register rs = memLoadS64();
+	const a64::Register dst = memDestT();
 	armAsm->Cmp(rs, static_cast<int64_t>(static_cast<s32>(_Imm_)));
-	armAsm->Cset(RXSCRATCH, a64::lt);
-	memStoreT(RXSCRATCH);
+	armAsm->Cset(dst, a64::lt);
+	memStoreT(dst);
 }
 
 EERECOMPILE_CODEX_MEM(eeRecompileCodeRC1_MEM, SLTI, XMMINFO_WRITET | XMMINFO_READS | XMMINFO_64BITOP);
@@ -187,11 +197,12 @@ static void recSLTIU_const()
 static void recSLTIU_(int info)
 {
 	const a64::Register rs = memLoadS64();
+	const a64::Register dst = memDestT();
 	// Sign-extended imm — Cmp condition flags are signedness-agnostic; only
 	// the Cset (lo = unsigned-less-than) differs from SLTI.
 	armAsm->Cmp(rs, static_cast<int64_t>(static_cast<s32>(_Imm_)));
-	armAsm->Cset(RXSCRATCH, a64::lo);
-	memStoreT(RXSCRATCH);
+	armAsm->Cset(dst, a64::lo);
+	memStoreT(dst);
 }
 
 EERECOMPILE_CODEX_MEM(eeRecompileCodeRC1_MEM, SLTIU, XMMINFO_WRITET | XMMINFO_READS | XMMINFO_64BITOP);

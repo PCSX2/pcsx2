@@ -265,6 +265,26 @@ static __fi void armStoreEEGPRQuad(const vixl::aarch64::VRegister& q, int gpr)
 		armAsm->Mov(*pin, q.V2D(), 0);
 }
 
+// Destination selection for the scalar templates: when the destination
+// guest GPR is pinned, the FINAL result-producing instruction targets the
+// pin directly, so the armStoreEERegPtr write-through that follows emits
+// just the canonical STR (it skips the mirror Mov when the source IS the
+// mirror) — one instruction saved per pinned-dest op.
+// Contract: ONLY the final writing instruction of an emission may target
+// the returned register, with its guest sources read in that same
+// instruction (a pinned dest can alias a pinned source; an earlier write
+// would clobber it — the recSQC2/MGS3 aliasing class), and the
+// write-through store must follow before anything can observe the reg.
+// vixl macro temps are fine: LogicalMacro/AddSubMacro may borrow rd to
+// materialize an unencodable immediate, but they exclude rn and the
+// transient value is dead by the final instruction.
+static __fi vixl::aarch64::Register armEEDestForGPR(int gpr, const vixl::aarch64::Register& scratch)
+{
+	if (const vixl::aarch64::Register* pin = armEEPinForGPR(gpr))
+		return *pin;
+	return scratch;
+}
+
 // Build a MemOperand addressing a VU0 field via RVU0. VURegs is < 2 KB, so
 // every reachable field fits in imm12 for byte/halfword/word/doubleword/quad
 // ldr/str. Mirrors armCpuRegMem for VU0 — used by iCOP2-arm64.cpp.
