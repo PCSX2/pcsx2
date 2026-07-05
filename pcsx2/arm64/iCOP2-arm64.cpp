@@ -495,9 +495,10 @@ static void cop2EmitFlagUpdate(int xyzw)
 	armMoveAddressToReg(RSCRATCHADDR, &s_cop2DenormStatusFlag);
 	armAsm->Ldr(RWSCRATCH, a64::MemOperand(RSCRATCHADDR));
 
-	// Clear current (non-sticky) bits 8-15
-	armAsm->Mov(a64::w4, 0xFF00);
-	armAsm->Bic(RWSCRATCH, RWSCRATCH, a64::w4);
+	// Clear current (non-sticky) bits 8-15. w9 scratch: w4 is an EE-SRA pin
+	// (rung 3) and this body emits inline into EE blocks.
+	armAsm->Mov(a64::w9, 0xFF00);
+	armAsm->Bic(RWSCRATCH, RWSCRATCH, a64::w9);
 
 	// OR macFlag into sticky bits (0-7) — accumulates over time
 	armAsm->Orr(RWSCRATCH, RWSCRATCH, macFlag);
@@ -841,8 +842,8 @@ void recCOP2_CTC2()
 		armAsm->And(a64::w2, a64::w2, 0x1800);
 		armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::w2);
 		armAsm->Lsl(a64::w3, RWARG2, 14);
-		armAsm->Mov(a64::w4, 0x3cf0000); // not a valid logical-imm; materialize
-		armAsm->And(a64::w3, a64::w3, a64::w4);
+		armAsm->Mov(a64::w9, 0x3cf0000); // not a valid logical-imm; materialize (w9: w4 is a rung-3 pin)
+		armAsm->And(a64::w3, a64::w3, a64::w9);
 		armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::w3);
 
 		// Broadcast the denormalized value into all 4 lanes of micro_statusflags.
@@ -1950,9 +1951,10 @@ void recCOP2_VCLIP()
 	armAsm->Cmp(a64::w2, 0);
 	armAsm->Csel(a64::w1, a64::w1, a64::w3, a64::ne); // w1 = clip value
 
-	// Shift clipflag left by 6
-	armAsm->Ldr(a64::w4, armVU0Mem(&VU0.clipflag));
-	armAsm->Lsl(a64::w4, a64::w4, 6);
+	// Shift clipflag left by 6. Accumulates in w9 across the NEON stretch
+	// below (w4 is a rung-3 EE-SRA pin; this body emits inline into EE blocks).
+	armAsm->Ldr(a64::w9, armVU0Mem(&VU0.clipflag));
+	armAsm->Lsl(a64::w9, a64::w9, 6);
 
 	// Load fs = [x,y,z,w] as integers for the lane comparisons.
 	armAsm->Ldr(RQSCRATCH, armVU0Mem(&VU0.VF[_Fs_cop2])); // q30 = [x,y,z,w]
@@ -1985,19 +1987,19 @@ void recCOP2_VCLIP()
 	armAsm->Umov(a64::w2, posMask.V4S(), 0);                // 6-bit clip field
 
 	// Merge into clipflag and mask to 24 bits
-	armAsm->Orr(a64::w4, a64::w4, a64::w2);
-	armAsm->And(a64::w4, a64::w4, 0xFFFFFF);
+	armAsm->Orr(a64::w9, a64::w9, a64::w2);
+	armAsm->And(a64::w9, a64::w9, 0xFFFFFF);
 
 	// Store clipflag and sync to VI[REG_CLIP_FLAG]
-	armAsm->Str(a64::w4, armVU0Mem(&VU0.clipflag));
-	armAsm->Str(a64::w4, armVU0Mem(&VU0.VI[REG_CLIP_FLAG]));
+	armAsm->Str(a64::w9, armVU0Mem(&VU0.clipflag));
+	armAsm->Str(a64::w9, armVU0Mem(&VU0.VI[REG_CLIP_FLAG]));
 
 	// Broadcast the new clipflag into all 4 lanes of micro_clipflags. A
 	// subsequent VU0 microprogram loads its clip-flag instances directly from
 	// the VURegs::micro_clipflags field in the mVU Execute prologue — without
 	// this they would be stale (pre-VCLIP). RQSCRATCH is free here (its earlier
 	// fs load is consumed).
-	armAsm->Dup(RQSCRATCH.V4S(), a64::w4);
+	armAsm->Dup(RQSCRATCH.V4S(), a64::w9);
 	armAsm->Str(RQSCRATCH, armVU0Mem(&VU0.micro_clipflags));
 }
 

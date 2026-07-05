@@ -2063,35 +2063,36 @@ static bool recSkipTimeoutLoop(s32 reg, bool is_timeout_loop)
 	armAsm->Cmp(RECCYCLE, 0);
 	armEmitCondBranch(a64::ge, DispatcherEvent);
 
-	// w4 = reg value (the decrementing counter)
-	armAsm->Ldr(a64::w4, armCpuRegMem(&cpuRegs.GPR.r[reg].UL[0]));
+	// w9 = reg value (the decrementing counter). Scratches are w9/x10/w8:
+	// w4-w7 are rung-3 EE-SRA pins and this emits inline into EE blocks.
+	armAsm->Ldr(a64::w9, armCpuRegMem(&cpuRegs.GPR.r[reg].UL[0]));
 
-	// x5 = reg * 8 + delta (estimated end delta, s64)
-	armAsm->Add(a64::x5, RECCYCLE, a64::Operand(a64::x4, a64::LSL, 3));
+	// x10 = reg * 8 + delta (estimated end delta, s64)
+	armAsm->Add(a64::x10, RECCYCLE, a64::Operand(a64::x9, a64::LSL, 3));
 
-	// x5 = min(x5, 0) — can't run past the next event
-	armAsm->Cmp(a64::x5, 0);
-	armAsm->Csel(a64::x5, a64::xzr, a64::x5, a64::gt); // if x5 > 0, clamp to 0
+	// x10 = min(x10, 0) — can't run past the next event
+	armAsm->Cmp(a64::x10, 0);
+	armAsm->Csel(a64::x10, a64::xzr, a64::x10, a64::gt); // if x10 > 0, clamp to 0
 
-	// w6 = (new_delta - old_delta) >> 3 = iterations consumed (deltas share
+	// w8 = (new_delta - old_delta) >> 3 = iterations consumed (deltas share
 	// the same nextEventCycle base, so their difference equals the absolute
 	// cycle difference).
-	armAsm->Sub(a64::w6, a64::w5, RECCYCLE.W());
-	armAsm->Lsr(a64::w6, a64::w6, 3);
+	armAsm->Sub(RWSCRATCH, a64::w10, RECCYCLE.W());
+	armAsm->Lsr(RWSCRATCH, RWSCRATCH, 3);
 
 	// Commit the new delta into RECCYCLE (no memory store — DispatcherEvent
 	// converts and flushes it if we exit there; otherwise the next block-tail
 	// event check uses RECCYCLE directly).
-	armAsm->Mov(RECCYCLE, a64::x5);
+	armAsm->Mov(RECCYCLE, a64::x10);
 
 	// reg -= iterations consumed; sign-extend into the 64-bit guest reg
 	// (the full UD[0] store covers the UL[0] half).
-	armAsm->Sub(a64::w4, a64::w4, a64::w6);
-	armAsm->Sxtw(a64::x4, a64::w4);
-	armStoreEERegPtr(a64::x4, &cpuRegs.GPR.r[reg].UD[0]);
+	armAsm->Sub(a64::w9, a64::w9, RWSCRATCH);
+	armAsm->Sxtw(a64::x9, a64::w9);
+	armStoreEERegPtr(a64::x9, &cpuRegs.GPR.r[reg].UD[0]);
 
 	// if reg != 0, event interrupted the loop — go to dispatcher
-	armEmitCbnz(a64::w4, DispatcherEvent);
+	armEmitCbnz(a64::w9, DispatcherEvent);
 
 	// Loop finished — set PC to end of block and dispatch
 	armAsm->Mov(RWSCRATCH, s_nEndBlock);
