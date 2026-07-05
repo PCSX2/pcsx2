@@ -53,40 +53,67 @@
 // scheduled event — worst case ~one hblank later — instead of the very
 // next block tail. recEventTest still observes eeRecExitRequested.)
 #define RECCYCLE vixl::aarch64::x25
-// x22/x23/x29: Write-through pinned read-cache for the hottest guest GPRs
-// (kEEPinTable below is the single source of truth for the guest→host map):
+// x22/x23/x29 + x12/x13: Write-through pinned read-cache for the hottest
+// guest GPRs (kEEPinTable below is the single source of truth):
 //   x22 = cpuRegs.GPR.r[29].UD[0]  ($sp)
 //   x23 = cpuRegs.GPR.r[31].UD[0]  ($ra)
 //   x29 = cpuRegs.GPR.r[2].UD[0]   ($v0 — hottest EE reg: 20.3% of dynamic
 //         refs in the SotC SD865 capture, tools/perf/sotc-regheat-2026-07-05.md)
+//   x12 = cpuRegs.GPR.r[3].UD[0]   ($v1, 12.6% of dynamic refs)
+//   x13 = cpuRegs.GPR.r[4].UD[0]   ($a0, 7.9%)
 // MEMORY STAYS CANONICAL. Every guest-visible write still stores to
 // cpuRegs.GPR; the pin mirror is refreshed at the same emission point
 // (armStoreEERegPtr write-through, armStoreEEGPRQuad for 128-bit stores).
 // Reads that would load UD[0] from memory use the pin register instead
 // (armLoadEERegPtr substitution / armEEPinForGPR in the scalar templates).
-// Because the pin never holds a value memory doesn't, there is no new
-// C-call or block-exit contract: C code reads and writes memory exactly as
-// before, and the pins are re-read from memory (armReloadEEGPRPins) after
-// the C calls that can write guest GPRs — interpreter fallbacks
-// (recCall/recBranchCall), recEventTest (savestate load), recRecompile
-// (ELF entry hooks), MFC0 rd=25, and eeloadHook/eeloadHook2. The upper 64
-// bits of the 128-bit guest reg are NOT mirrored; only UD[0] accesses match.
-// All pin host regs are callee-saved, carved out of the dynamic allocator
-// pool (ALLOCATABLE_MASK in iCore-arm64.cpp), and are not used by any
-// emission context reachable from inside an EE block: COP2 macro-mode flag
-// code uses the s_cop2DenormStatusFlag memory scratch (not gprF2/F3), and
-// the mVU micro dispatcher saves/restores x19-x28 around VU execution.
-// x29 (the AAPCS frame pointer) is additionally safe because every path
-// that can run under a live EE JIT session preserves it: fastjmp_set saves
-// and fastjmp_jmp restores it around the whole session (FastJmp.cpp), C
-// callees preserve it per AAPCS, the mVU dispatcher Stp/Ldp's x29/x30
-// (microVU-arm64.cpp), the IOP dispatcher uses armBeginStackFrame, and the
-// VIF unpack dynarec emits no x29 references. The known cost: FP-based
-// stack unwinds through JIT frames read a guest value as a frame chain —
-// harmless (we profile via perf jitdump, not FP walks).
+// Because the pin never holds a value memory doesn't, C code reads and
+// writes memory exactly as before; the pins are re-read from memory
+// (armReloadEEGPRPins) after the C calls that can write guest GPRs —
+// interpreter fallbacks (recCall/recBranchCall), recEventTest (savestate
+// load), recRecompile (ELF entry hooks), MFC0 rd=25, and eeloadHook/2. The
+// upper 64 bits of the 128-bit guest reg are NOT mirrored; only UD[0]
+// accesses match. All pin host regs are carved out of the dynamic
+// allocator pool (ALLOCATABLE_MASK in iCore-arm64.cpp).
+//
+// x22/x23/x29 are CALLEE-SAVED: every C call preserves them, so only
+// GPR-writing callees need a reload. x29 (the AAPCS frame pointer) is
+// additionally safe because every path that can run under a live EE JIT
+// session preserves it: fastjmp_set/jmp save/restore it around the whole
+// session (FastJmp.cpp), C callees preserve it per AAPCS, the mVU
+// dispatcher Stp/Ldp's x29/x30 (microVU-arm64.cpp), the IOP dispatcher
+// uses armBeginStackFrame, and the VIF unpack dynarec emits no x29
+// references. The known cost: FP-based stack unwinds through JIT frames
+// read a guest value as a frame chain — harmless (we profile via perf
+// jitdump, not FP walks).
+//
+// x12/x13 are CALLER-SAVED (the callee-saved budget is exhausted): any C
+// call clobbers the host register even when the callee never touches
+// guest state. The preservation contract, in order of preference:
+//   1. vtlb_memRead/Write<T> + the 128-bit variants — the ONLY C calls on
+//      warm paths (fastmem backpatch thunk + inline softmem slow paths) —
+//      are annotated preserve_most (vtlb.h): the callee preserves x9-x15,
+//      so those emit sites need nothing. The thunk's own code uses only
+//      w8/w9/w10/x0/x17 (RecStubs.cpp) and its gpr_bitmask save loop
+//      stays pin-free — pins are not allocator state.
+//   2. Every other C call reachable inside a live session is followed by
+//      armReloadEEClobberedPins() (2 Ldrs, all cold paths): the const-
+//      paddr MMIO shortcuts, dyna_block_discard/page_reset stubs, Goemon
+//      TLB hooks, SetBranchReg's vtlb_V2P, Interp::MTC0, FPU/VCALLMS
+//      interpreter fallbacks, the vu0Sync family (iCOP2), macro-mode
+//      mVUaddrFix's waitMTVU (via armEmitEEClobberedPinReloadForCOP2),
+//      and the test-build verify/divtrace hooks.
+//   3. GPR-writing callees keep using the full armReloadEEGPRPins().
+// mVU MICRO mode may clobber x12/x13 freely (w12/w13 are its flag-
+// extraction scratch): micro execution only runs behind C boundaries that
+// already reload. MACRO mode emit bodies for the 12 mVU-routed COP2-lower
+// ops reference no x12/x13 (verified: microVU_Lower/Misc/Alloc/Compile/
+// Branch/Clamp-arm64 have zero w12/w13/x12/x13 uses; flag extraction and
+// mVU_CLIP's w12 scratch are micro-mode-only paths).
 #define REEPIN_SP vixl::aarch64::x22
 #define REEPIN_RA vixl::aarch64::x23
 #define REEPIN_V0 vixl::aarch64::x29
+#define REEPIN_V1 vixl::aarch64::x12
+#define REEPIN_A0 vixl::aarch64::x13
 
 // The static guest→host pin map. Everything pin-related (lookup, reload,
 // write-through) iterates this table; adding a rung = adding a row here,
@@ -103,6 +130,8 @@ static const EEPinnedGPR kEEPinTable[] = {
 	{29, REEPIN_SP},
 	{31, REEPIN_RA},
 	{2, REEPIN_V0},
+	{3, REEPIN_V1},
+	{4, REEPIN_A0},
 };
 
 // Build a MemOperand addressing a cpuRegs field via RSTATE.
@@ -187,6 +216,20 @@ static __fi void armReloadEEGPRPins()
 {
 	for (const EEPinnedGPR& pin : kEEPinTable)
 		armAsm->Ldr(pin.host, armCpuRegMem(&cpuRegs.GPR.r[pin.gpr].UD[0]));
+}
+
+// Re-read only the pins whose host registers are CALLER-saved (clobbered by
+// the mere act of a C call). Sufficient after callees that provably do not
+// write guest GPR memory — the callee-saved pins still hold correct values
+// there. Callees that CAN write guest GPRs need armReloadEEGPRPins instead.
+// Future rungs' caller-saved pins join automatically via the table walk.
+static __fi void armReloadEEClobberedPins()
+{
+	for (const EEPinnedGPR& pin : kEEPinTable)
+	{
+		if (!armIsCalleeSavedRegister(static_cast<int>(pin.host.GetCode())))
+			armAsm->Ldr(pin.host, armCpuRegMem(&cpuRegs.GPR.r[pin.gpr].UD[0]));
+	}
 }
 
 static __fi void armLoadEERegPtr(const vixl::aarch64::CPURegister& reg, const void* field)

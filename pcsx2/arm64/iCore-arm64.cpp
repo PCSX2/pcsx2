@@ -55,7 +55,10 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 
 // ARM64 register allocation policy:
 // x0-x3:   argument/return registers (caller-saved, allocatable)
-// x4-x15:  caller-saved temporaries (allocatable)
+// x4-x15:  caller-saved temporaries (allocatable, except x12/x13)
+// x12/x13: REEPIN_V1/REEPIN_A0 — NOT allocatable (pinned mirrors of
+//          GPR.r[3]/GPR.r[4].UD[0], $v1/$a0; caller-saved — see the
+//          preservation contract in iR5900-arm64.h)
 // x16:     VIXL intra-procedure scratch — NOT allocatable
 // x17:     RSCRATCHADDR — NOT allocatable
 // x18:     platform reserved — NOT allocatable
@@ -75,6 +78,7 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 // Cleared bits, all-pinned/scratch as documented above:
 //   bit 8       — x8  : RXSCRATCH/RWSCRATCH (value scratch)
 //   bits 9-10   — x9/x10 : load/store address + value scratch
+//   bits 12-13  — x12/x13 : REEPIN_V1/REEPIN_A0 (pinned $v1/$a0 mirrors)
 //   bits 16-18  — x16 (vixl), x17 (RSCRATCHADDR), x18 (platform reserved)
 //   bit 19      — x19 : RFASTMEMBASE
 //   bit 20      — x20 : RSTATE (cpuRegs base pointer)
@@ -89,6 +93,7 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 // LSR + AND + cbz against this mask.
 static constexpr uint32_t ALLOCATABLE_MASK = ~((1u << 8)
 	| (1u << 9) | (1u << 10)
+	| (3u << 12)
 	| (7u << 16)
 	| (1u << 19) | (1u << 20) | (1u << 21)
 	| (3u << 22)

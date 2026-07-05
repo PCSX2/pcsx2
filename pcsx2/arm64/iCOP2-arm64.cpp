@@ -653,6 +653,10 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 				armEmitCall((void*)finishFunc);
 
 			armReloadCycleDelta();
+			// The sync callees write VU state, not EE GPRs; restore the
+			// caller-saved pins they clobbered. Inside the conditional — the
+			// skip path never made a call, so its pins are intact.
+			armReloadEEClobberedPins();
 
 			armAsm->Bind(&skipSync);
 		}
@@ -691,6 +695,9 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 		armEmitCall((void*)_vu0FinishMicro);
 
 	armReloadCycleDelta();
+	// See the interlock branch above — same caller-saved pin restore, same
+	// inside-the-conditional placement.
+	armReloadEEClobberedPins();
 
 	armAsm->Bind(&skipSync);
 }

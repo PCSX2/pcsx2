@@ -260,11 +260,9 @@ void recMFC0()
 			armEmitCall((void*)Interp::MFC0);
 			emitReloadCycle();
 			// Interp::MFC0 wrote GPR[rt] in canonical memory behind the JIT's
-			// back; refresh the pin mirror or a later in-block read of rt is
-			// served the stale pre-call value. Only rt changes, so reload just
-			// its pin (the other interp fallback here, MTC0, writes no GPRs).
-			if (const a64::Register* pin = armEEPinForGPR(_Rt_))
-				armAsm->Ldr(*pin, armCpuRegMem(&cpuRegs.GPR.r[_Rt_].UD[0]));
+			// back, and the C call itself clobbered the caller-saved pins —
+			// the full table reload covers both.
+			armReloadEEGPRPins();
 			return;
 
 		case 24: // Debug breakpoint register — ignore
@@ -329,6 +327,9 @@ void recMTC0()
 			emitFlushBlockCycles();
 			armEmitCall((void*)Interp::MTC0);
 			emitReloadCycle();
+			// MTC0 writes no guest GPRs; restore the caller-saved pins the
+			// C call clobbered.
+			armReloadEEClobberedPins();
 			return;
 
 		case 24: // Debug breakpoint register — log-only in interp (COP0.cpp:599-601)

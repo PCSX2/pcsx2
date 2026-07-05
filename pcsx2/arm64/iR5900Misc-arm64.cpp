@@ -313,6 +313,9 @@ static void recVCallmsImpl(void (*func)())
 	armFlushCycleDelta();
 	armEmitCall((void*)func);
 	armReloadCycleDelta();
+	// VCALLMS/VCALLMSR run VU0 micro (writes VU state, not EE GPRs); restore
+	// the caller-saved pins the C call clobbered — the block continues.
+	armReloadEEClobberedPins();
 }
 
 static void recVCALLMS()  { recVCallmsImpl(VCALLMS); }

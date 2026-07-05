@@ -83,13 +83,27 @@ extern bool vtlb_IsFaultingPC(u32 guest_pc);
 
 //Memory functions
 
-template< typename DataType >
-extern DataType vtlb_memRead(u32 mem);
-extern RETURNS_R128 vtlb_memRead128(u32 mem);
+// On arm64, the EE JIT keeps guest values live in caller-saved host
+// registers across its vtlb slow paths (the EE-SRA x12/x13 pins; see
+// iR5900-arm64.h). preserve_most makes these dispatchers preserve x9-x15,
+// so the fastmem backpatch thunk and inline softmem slow paths need no
+// pin spill/reload around their calls. Cost lands inside the callee
+// (a prologue/epilogue x9-x15 save) — MMIO-dispatch-only, never on the
+// direct-RAM fast path. Return/argument registers are unaffected, so
+// C++ callers (interpreter memory ops) behave identically.
+#ifdef ARCH_ARM64
+#define VTLB_PRESERVE_MOST __attribute__((preserve_most))
+#else
+#define VTLB_PRESERVE_MOST
+#endif
 
 template< typename DataType >
-extern void vtlb_memWrite(u32 mem, DataType value);
-extern void TAKES_R128 vtlb_memWrite128(u32 mem, r128 value);
+extern DataType VTLB_PRESERVE_MOST vtlb_memRead(u32 mem);
+extern RETURNS_R128 VTLB_PRESERVE_MOST vtlb_memRead128(u32 mem);
+
+template< typename DataType >
+extern void VTLB_PRESERVE_MOST vtlb_memWrite(u32 mem, DataType value);
+extern void TAKES_R128 VTLB_PRESERVE_MOST vtlb_memWrite128(u32 mem, r128 value);
 
 // "Safe" variants of vtlb, designed for external tools.
 // These routines only access the various RAM, and will not call handlers

@@ -513,6 +513,9 @@ static const void* _DynGen_DispatchBlockDiscard()
 {
 	u8* retval = armGetCurrentCodePointer();
 	armEmitCall((void*)dyna_block_discard);
+	// DispatcherReg's cache-hit path reloads nothing — restore the
+	// caller-saved pins the C call clobbered before re-entering blocks.
+	armReloadEEClobberedPins();
 	armEmitJmp(DispatcherReg);
 	return retval;
 }
@@ -521,6 +524,8 @@ static const void* _DynGen_DispatchPageReset()
 {
 	u8* retval = armGetCurrentCodePointer();
 	armEmitCall((void*)dyna_page_reset);
+	// See _DynGen_DispatchBlockDiscard.
+	armReloadEEClobberedPins();
 	armEmitJmp(DispatcherReg);
 	return retval;
 }
@@ -685,6 +690,13 @@ void recEmitInterpTlbMissCheck()
 static u32 interpCallFlushPcBias()
 {
 	return g_recompilingDelaySlot ? 4 : 0;
+}
+
+// Bridge for mVU macro-mode emit bodies (can't see kEEPinTable): emit the
+// caller-saved pin reload after a C call emitted inline into an EE block.
+void armEmitEEClobberedPinReloadForCOP2()
+{
+	armReloadEEClobberedPins();
 }
 
 void recCall(void (*func)())
@@ -944,7 +956,12 @@ void SetBranchReg()
 	// C-call needs no extra save. w0 (== RWARG1) already holds the virtual
 	// target and receives the translated paddr.
 	if (EmuConfig.Gamefixes.GoemonTlbHack)
+	{
 		armEmitCall((void*)vtlb_V2P);
+		// vtlb_V2P writes no guest GPRs but clobbers the caller-saved pins;
+		// the DispatcherReg jump below can cache-hit straight into a block.
+		armReloadEEClobberedPins();
+	}
 
 	// Store to cpuRegs.pc
 	armAsm->Str(a64::w0, armCpuRegMem(&cpuRegs.pc));
@@ -1191,6 +1208,10 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 			armAsm->Mov(a64::w0, cpuRegs.code);
 			armAsm->Mov(a64::w1, pc - 4); // current instruction PC
 			armEmitCall((void*)verifySnapshotPre);
+			// The hook is GPR-read-only but clobbers the caller-saved pins,
+			// and the native codegen emitted next reads guest state through
+			// them.
+			armReloadEEClobberedPins();
 
 			// Step 3: Run the native codegen
 			opcode.recompile();
@@ -1202,6 +1223,7 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 			armAsm->Mov(a64::w0, cpuRegs.code);
 			armAsm->Mov(a64::w1, pc - 4);
 			armEmitCall((void*)verifyCheckPost);
+			armReloadEEClobberedPins(); // see verifySnapshotPre above
 		}
 		else
 #endif
@@ -2160,6 +2182,9 @@ static void recRecompile(const u32 startpc)
 		armFlushCycleDelta();
 		armAsm->Mov(RWARG1, startpc);
 		armEmitCall((void*)ee_divtrace_jit_block_hook);
+		// Read-only hook, but the C call clobbers the caller-saved pins and
+		// the block body it precedes reads guest state through them.
+		armReloadEEClobberedPins();
 	}
 #endif
 
@@ -2241,6 +2266,9 @@ static void recRecompile(const u32 startpc)
 			// 0x33ad48 / 0x35060c are the return address of the function (0x356250)
 			// that populates the TLB cache.
 			armEmitCall((void*)GoemonPreloadTlb);
+			// TLB-cache population writes no guest GPRs; restore the
+			// caller-saved pins the C call clobbered before the block body.
+			armReloadEEClobberedPins();
 		}
 		else if (pc == 0x3563b8)
 		{
@@ -2251,6 +2279,7 @@ static void recRecompile(const u32 startpc)
 			// a0 holds the key. Guest state is memory-resident at the prologue.
 			armAsm->Ldr(RWARG1, armCpuRegMem(&cpuRegs.GPR.n.a0.UL[0]));
 			armEmitCall((void*)GoemonUnloadTlb);
+			armReloadEEClobberedPins(); // see GoemonPreloadTlb above
 		}
 	}
 

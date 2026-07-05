@@ -16,6 +16,8 @@
 
 #include "harness/EeRecTestHarness.h"
 
+#include "Config.h"
+
 #include <gtest/gtest.h>
 
 using namespace recompiler_tests;
@@ -320,4 +322,155 @@ TEST(EeRecPinnedGpr, PinnedDestAliasesPinnedSource)
 	EXPECT_EQ(h.GetGpr64Interp(reg::t1), 1ull);
 	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0x0000000012345678ull);
 	EXPECT_EQ(h.GetGpr64Interp(reg::t5), 0x0000000012101230ull);
+}
+
+// ---------------------------------------------------------------------------
+// Rung 2 ($v1 → x12, $a0 → x13, kEEPinTable): the first CALLER-SAVED pins.
+// Beyond the S1 coverage matrix, the rung-2-specific risk is a C call
+// emitted mid-block clobbering the host registers even though the callee
+// never touches guest state. Preservation is by preserve_most on the vtlb
+// dispatchers (warm paths) and armReloadEEClobberedPins at every other
+// emitted call site — see the REEPIN_* contract in iR5900-arm64.h.
+// ---------------------------------------------------------------------------
+
+// Core scalar matrix for both new pins: reads, 3-op writes, RMW, and a
+// pin-dest ← pin-op-pin shape crossing $v1/$a0 with the S1 pins.
+TEST(EeRecPinnedGpr, V1A0ScalarReadsAndWriteThrough)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::v1, 0x0000000001F00010ull);
+	h.SetGpr64(reg::a0, 0x0000000000010000ull);
+	h.LoadProgram({
+		ADDIU(reg::t1, reg::v1, -16),       // pinned $v1 read (imm ALU)
+		DADDU(reg::t2, reg::v1, reg::a0),   // both new pins as sources
+		DSLL(reg::t3, reg::a0, 4),          // pinned $a0 read (shift)
+		DADDU(reg::v1, reg::a0, reg::t2),   // write pinned $v1 from pinned $a0
+		OR(reg::t4, reg::v1, reg::zero),    // read the write back via the pin
+		ADDIU(reg::a0, reg::a0, 0x100),     // pinned $a0 RMW
+		DADDU(reg::a0, reg::a0, reg::v1),   // $a0 ← $a0 + $v1 (all pins)
+		DADDU(reg::t5, reg::a0, reg::zero), // read the result back
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t1), 0x0000000001F00000ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t2), 0x0000000001F10010ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0x0000000000100000ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t4), 0x0000000001F20010ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t5), 0x0000000001F30110ull);
+}
+
+// 128-bit write-through, vtlb loads with a pinned base, and the CFC2
+// half-word Bfi path — the remaining write-path shapes, on the new pins.
+TEST(EeRecPinnedGpr, V1A0QuadLoadAndHalfWordWriteThrough)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.SeedVu0Vi(1, 0x8123);
+	h.WriteU64(kScratch, 0xFFFFFFFF80332211ull);
+	h.WriteU32(kScratch + 8, 0x00445566u);
+	h.SetGpr64(reg::t0, 0x1111111122222222ull);
+	h.SetGpr64(reg::t1, 0x0000000300000004ull);
+	h.SetGpr64(reg::v1, kScratch);
+	h.LoadProgram({
+		LD(reg::a0, 0, reg::v1),            // pinned base, pinned dest
+		DADDU(reg::t2, reg::a0, reg::zero),
+		LW(reg::v1, 8, reg::v1),            // 32-bit load, pinned base == dest
+		DADDU(reg::t3, reg::v1, reg::zero),
+		PADDW(reg::a0, reg::t0, reg::t1),   // 128-bit write of pinned $a0
+		DADDU(reg::t4, reg::a0, reg::zero), // lane-0 read-back via the pin
+		CFC2(reg::v1, 1),                   // UL[0]+UL[1] Bfi halves into $v1
+		DADDU(reg::t5, reg::v1, reg::zero),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t2), 0xFFFFFFFF80332211ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0x0000000000445566ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t4), 0x1111111422222226ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t5), 0x0000000000008123ull);
+}
+
+// Interp-fallback write-back into a caller-saved pin, with the OTHER
+// caller-saved pin holding a live sentinel ACROSS the C call: Interp::MFC0
+// both writes GPR[rt] in memory AND clobbers x12/x13 per AAPCS — the full
+// armReloadEEGPRPins after it must restore both pins.
+TEST(EeRecPinnedGpr, V1A0Mfc0PerfCounterAcrossInterpFallback)
+{
+	EeRecTestHarness h;
+	h.EnableCop0();
+	h.SetGpr64(reg::t5, 0x0000000000C0FFEEull); // PCCR seed (CTE clear)
+	h.SetGpr64(reg::v1, 0x0000000001F00010ull); // stale-mirror sentinel
+	h.SetGpr64(reg::a0, 0x7EDCBA9876543210ull); // live across the call
+	h.LoadProgram({
+		MTC0(reg::t5, 25),                  // MTPS: PERF.pccr.val = t5
+		MFC0(reg::v1, 25),                  // MFPS via interp fallback
+		DADDU(reg::t0, reg::v1, reg::zero), // read $v1 back via the pin
+		DADDU(reg::t1, reg::a0, reg::zero), // $a0 must have survived the call
+	});
+	h.Run();
+	h.ExpectGpr64(reg::t0, 0x0000000000C0FFEEull);
+	h.ExpectGpr64(reg::t1, 0x7EDCBA9876543210ull);
+}
+
+// The warm-path seam: a vtlb SLOW-PATH C call (handler-page access) with
+// both caller-saved pins live. Fastmem is disabled for this block so
+// recLoad/recStore emit the inline softmem lookup whose slow path BLs
+// vtlb_memRead/Write<mem32_t> — the preserve_most dispatchers. A non-const
+// base defeats the const-paddr MMIO shortcut, so this is exactly the
+// emitted-call shape the fastmem backpatch thunk also takes.
+// Coverage honesty: this wires the seam end-to-end, but whether a BROKEN
+// seam (annotation stripped) actually corrupts x12/x13 depends on the
+// dispatcher's register allocation on the dynamic path taken — the INTC
+// read path happens not to touch them in current clang builds, so this
+// test alone cannot prove the annotation. That proof is object-level (the
+// vtlb_memRead prologue saves x9-x15 iff preserve_most applied) plus the
+// stepdiff/corpus gates, where real games hit fat MMIO paths constantly.
+TEST(EeRecPinnedGpr, CallerSavedPinsSurviveVtlbSlowPath)
+{
+	EeRecTestHarness h;
+	const bool old_fastmem = EmuConfig.Cpu.Recompiler.EnableFastmem;
+	const bool old_intc = EmuConfig.Speedhacks.IntcStat;
+	EmuConfig.Cpu.Recompiler.EnableFastmem = false; // force softmem emit
+	EmuConfig.Speedhacks.IntcStat = false;          // plain pure INTC read handler
+	h.SetGpr64(reg::t1, 0x1000f010ull);             // INTC_STAT vaddr (non-const)
+	h.SetGpr64(reg::v1, 0x0123456789ABCDEFull);
+	h.SetGpr64(reg::a0, 0x7EDCBA9876543210ull);
+	h.LoadProgram({
+		LW(reg::t0, 0, reg::t1),            // handler page → slow-path C read
+		DADDU(reg::t2, reg::v1, reg::zero), // pins survived the read call?
+		DADDU(reg::t3, reg::a0, reg::zero),
+		SW(reg::zero, 0, reg::t1),          // slow-path C write (0 clears no bits)
+		DADDU(reg::t4, reg::v1, reg::zero), // pins survived the write call?
+		DADDU(reg::t5, reg::a0, reg::zero),
+	});
+	h.Run();
+	EmuConfig.Cpu.Recompiler.EnableFastmem = old_fastmem;
+	EmuConfig.Speedhacks.IntcStat = old_intc;
+	EXPECT_EQ(h.GetGpr64Interp(reg::t2), 0x0123456789ABCDEFull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0x7EDCBA9876543210ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t4), 0x0123456789ABCDEFull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t5), 0x7EDCBA9876543210ull);
+}
+
+// The cold-path seam: const-paddr MMIO shortcut — a CONST base resolving to
+// a handler page emits a direct BL to the raw registered handler (plain
+// AAPCS, not preserve_most) followed by armReloadEEClobberedPins. INTC_MASK
+// keeps it side-effect-free: reads are pure and writing 0 toggles nothing.
+TEST(EeRecPinnedGpr, CallerSavedPinsSurviveConstPaddrMMIOShortcut)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::v1, 0x0123456789ABCDEFull);
+	h.SetGpr64(reg::a0, 0x7EDCBA9876543210ull);
+	h.LoadProgram({
+		LUI(reg::t1, 0x1000),
+		ORI(reg::t1, reg::t1, 0xf020),      // t1 = const 0x1000f020 (INTC_MASK)
+		LW(reg::t0, 0, reg::t1),            // shortcut: BL hwRead32 + pin reload
+		DADDU(reg::t2, reg::v1, reg::zero),
+		DADDU(reg::t3, reg::a0, reg::zero),
+		SW(reg::zero, 0, reg::t1),          // shortcut: BL hwWrite32 + pin reload
+		DADDU(reg::t4, reg::v1, reg::zero),
+		DADDU(reg::t5, reg::a0, reg::zero),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t2), 0x0123456789ABCDEFull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0x7EDCBA9876543210ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t4), 0x0123456789ABCDEFull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t5), 0x7EDCBA9876543210ull);
 }

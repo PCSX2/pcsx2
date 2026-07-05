@@ -333,6 +333,11 @@ __fi void mVUaddrFix(mV, const a64::Register& gprReg)
 		{
 			// Need to wait for VU1 thread
 			armEmitCall((void*)mVU.waitMTVU);
+			// COP2 macro mode emits this inline into an EE block where the
+			// caller-saved EE pins (x12/x13) are live across the call; micro
+			// mode runs behind a C boundary whose call site reloads instead.
+			if (mVU.cop2)
+				armEmitEEClobberedPinReloadForCOP2();
 		}
 		armAsm->And(gprReg.W(), gprReg.W(), 0x3f);
 		// Add offset in u128 units (x86 mVUaddrFix uses pointer arithmetic so

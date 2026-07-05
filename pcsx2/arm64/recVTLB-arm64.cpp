@@ -413,6 +413,10 @@ static bool recLoadConstPaddrMMIOShortcut(u32 bits, bool sign)
 	armFlushCycleDelta();
 	armEmitCall(vmv.assumeHandlerGetRaw(szidx, false));
 	armReloadCycleDelta();
+	// Raw registered handlers are plain AAPCS (not preserve_most like the
+	// vtlb_memRead/Write dispatchers) and write no guest GPRs — restore the
+	// caller-saved pins they clobbered. x0 (the handler result) is untouched.
+	armReloadEEClobberedPins();
 
 	// Extend handler return value into x0 for the 64-bit cpuRegs.GPR store.
 	// AAPCS64 leaves the upper bits of x0 unspecified for sub-word returns.
@@ -563,6 +567,8 @@ static bool recStoreConstPaddrMMIOShortcut(u32 bits)
 	armFlushCycleDelta();
 	armEmitCall(vmv.assumeHandlerGetRaw(szidx, true));
 	armReloadCycleDelta();
+	// Caller-saved pin restore — same rationale as the read shortcut.
+	armReloadEEClobberedPins();
 
 	return true;
 }

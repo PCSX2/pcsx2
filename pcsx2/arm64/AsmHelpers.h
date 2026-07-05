@@ -145,6 +145,12 @@ void armBeginStackFrame(bool save_fpr);
 void armEndStackFrame(bool save_fpr);
 bool armIsCalleeSavedRegister(int reg);
 
+// Emits the EE JIT's caller-saved pin reload (see kEEPinTable in
+// iR5900-arm64.h). Out-of-line bridge for emission contexts that can't
+// include the EE rec header — currently only mVU macro-mode emit bodies
+// that emit C calls inline into EE blocks (mVUaddrFix's waitMTVU).
+void armEmitEEClobberedPinReloadForCOP2();
+
 vixl::aarch64::MemOperand armOffsetMemOperand(const vixl::aarch64::MemOperand& op, s64 offset);
 void armGetMemOperandInRegister(const vixl::aarch64::Register& addr_reg,
 	const vixl::aarch64::MemOperand& op, s64 extra_offset = 0);
