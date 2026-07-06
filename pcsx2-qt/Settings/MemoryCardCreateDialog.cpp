@@ -23,6 +23,22 @@ MemoryCardCreateDialog::MemoryCardCreateDialog(QWidget* parent /* = nullptr */)
 
 	connect(m_ui.name, &QLineEdit::textChanged, this, &MemoryCardCreateDialog::nameTextChanged);
 
+	// Pre-populate a sensible default name (the first unused "Mcd00N") so the dialog is
+	// usable on controller-only handhelds with no keyboard: the field is never blank, OK is
+	// enabled immediately, and the text is selected so a keyboard user's first keystroke
+	// replaces it.
+	{
+		QString defaultName;
+		for (int i = 1; i <= 999; i++)
+		{
+			defaultName = QStringLiteral("Mcd%1").arg(i, 3, 10, QChar('0'));
+			if (!FileMcd_GetCardInfo(QStringLiteral("%1.ps2").arg(defaultName).toStdString()).has_value())
+				break;
+		}
+		m_ui.name->setText(defaultName);
+		m_ui.name->selectAll();
+	}
+
 	connect(m_ui.size8MB, &QRadioButton::clicked, this, [this]() { setType(MemoryCardType::File, MemoryCardFileType::PS2_8MB); });
 	connect(m_ui.size16MB, &QRadioButton::clicked, this, [this]() { setType(MemoryCardType::File, MemoryCardFileType::PS2_16MB); });
 	connect(m_ui.size32MB, &QRadioButton::clicked, this, [this]() { setType(MemoryCardType::File, MemoryCardFileType::PS2_32MB); });

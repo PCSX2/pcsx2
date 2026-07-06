@@ -4201,6 +4201,16 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 
 void FullscreenUI::OpenMemoryCardCreateDialog()
 {
+	// Pre-fill the first unused "Mcd00N" so a card can be created with a controller alone:
+	// Big Picture's input popup has no on-screen keyboard, so a blank field is a dead end.
+	std::string default_name;
+	for (int i = 1; i <= 999; i++)
+	{
+		default_name = fmt::format("Mcd{:03d}", i);
+		if (!FileMcd_GetCardInfo(default_name + ".ps2").has_value())
+			break;
+	}
+
 	OpenInputStringDialog(FSUI_ICONSTR(ICON_FA_PLUS, "Create Memory Card"),
 		FSUI_STR("Enter the name for the new memory card."), std::string(),
 		FSUI_ICONSTR(ICON_FA_CHECK, "Create"), [](std::string name) {
@@ -4291,7 +4301,7 @@ void FullscreenUI::OpenMemoryCardCreateDialog()
 					CloseChoiceDialog();
 #endif
 				});
-		});
+		}, default_name);
 }
 
 void FullscreenUI::DoCreateMemoryCard(std::string name, MemoryCardType type, MemoryCardFileType file_type, bool use_ntfs_compression)

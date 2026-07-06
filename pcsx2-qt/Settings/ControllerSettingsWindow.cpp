@@ -17,6 +17,7 @@
 
 #include <array>
 #include <QtWidgets/QInputDialog>
+#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextEdit>
 
@@ -89,10 +90,21 @@ void ControllerSettingsWindow::onCurrentProfileChanged(int index)
 
 void ControllerSettingsWindow::onNewProfileClicked()
 {
+	// Pre-fill the first unused "Profile N" so a controller-only user with no keyboard can
+	// create a profile without typing: the default is unique, so OK just works.
+	QString default_profile_name;
+	for (int i = 1; i <= 999; i++)
+	{
+		default_profile_name = tr("Profile %1").arg(i);
+		if (!FileSystem::FileExists(VMManager::GetInputProfilePath(default_profile_name.toStdString()).c_str()))
+			break;
+	}
+
 	const QString profile_name(QInputDialog::getText(this, tr("Create Input Profile"),
 		tr("Custom input profiles are used to override the Shared input profile for specific games.\n"
 		   "To apply a custom input profile to a game, go to its Game Properties, then change the 'Input Profile' on the Summary tab.\n\n"
-		   "Enter the name for the new input profile:")));
+		   "Enter the name for the new input profile:"),
+		QLineEdit::Normal, default_profile_name));
 	if (profile_name.isEmpty())
 		return;
 
@@ -179,8 +191,10 @@ void ControllerSettingsWindow::onApplyProfileClicked()
 
 void ControllerSettingsWindow::onRenameProfileClicked()
 {
+	// Pre-fill the current name so a controller-only user with no keyboard can confirm or
+	// tweak it without typing from scratch.
 	const QString profile_name(QInputDialog::getText(this, tr("Rename Input Profile"),
-		tr("Enter the new name for the input profile:").arg(m_profile_name)));
+		tr("Enter the new name for the input profile:"), QLineEdit::Normal, m_profile_name));
 
 	if (profile_name.isEmpty())
 		return;
