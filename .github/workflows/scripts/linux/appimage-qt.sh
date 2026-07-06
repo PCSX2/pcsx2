@@ -111,7 +111,7 @@ EXTRA_PLATFORM_PLUGINS="libqwayland.so" \
 DEPLOY_PLATFORM_THEMES="1" \
 QMAKE="$DEPSDIR/bin/qmake" \
 NO_STRIP="1" \
-$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/armsx2-qt" ${EXTRA_LIBS_ARGS[@]} \
+$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt" ${EXTRA_LIBS_ARGS[@]} \
 --desktop-file="net.armsx2.ARMSX2.desktop" --icon-file="ARMSX2.png"
 
 echo "Copying resources into AppDir..."
