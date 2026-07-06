@@ -131,8 +131,8 @@ if [ "$BUILD_FFMPEG" -ne 0 ]; then
 		./configure --prefix="$INSTALLDIR" \
 		--disable-all --disable-autodetect --disable-static --enable-shared \
 		--enable-avcodec --enable-avformat --enable-avutil --enable-swresample --enable-swscale \
-		--enable-gpl --enable-libx264 --enable-libopus --enable-vulkan --enable-ffnvcodec --enable-nvenc --enable-vaapi --enable-libvpl \
-		--enable-encoder=ffv1,qtrle,libx264*,aac,flac,libopus,pcm_s16be,pcm_s16le,*_vulkan,*_qsv,*_nvenc,*_vaapi \
+		--enable-gpl --enable-libx264 --enable-libopus --enable-vulkan --enable-ffnvcodec --enable-nvenc --enable-vaapi \
+		--enable-encoder=ffv1,qtrle,libx264*,aac,flac,libopus,pcm_s16be,pcm_s16le,*_vulkan,*_nvenc,*_vaapi \
 		--enable-muxer=avi,matroska,mov,mp3,mp4,wav \
 		--enable-protocol=file
 	make "-j$NPROCS"
