@@ -99,7 +99,7 @@ jobs:
 
       - name: Cache Dependencies
         id: cache-deps
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/deps
           key: ${{ inputs.os }} ${{ inputs.arch }} deps ${{ hashFiles('.github/workflows/scripts/macos/*', '.github/workflows/scripts/common/*.patch') }}
@@ -120,7 +120,7 @@ jobs:
         run: echo "timestamp=$(date -u "+%Y-%m-%d-%H;%M;%S")" >> $GITHUB_OUTPUT
 
       - name: Cache ccache cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .ccache
           key: ${{ inputs.os }} ${{ inputs.arch }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
@@ -176,7 +176,7 @@ jobs:
 
       - name: Sign the Application
         if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}
-        uses: indygreg/apple-code-sign-action@44d0985b7f4363198e80b6fea63ac3e9dd3e9957
+        uses: indygreg/apple-code-sign-action@5e7a4a01fe4dffe948ef3bcf1f4538d963cb0c72
         with:
           input_path: 'PCSX2.app'
           p12_file: cert.p12
