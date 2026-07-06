@@ -359,17 +359,6 @@ void COP2MicroFinishPass::Run(u32 start, u32 end, EEINST* inst_cache)
 // Otherwise the last use flag won't get set.
 /////////////////////////////////////////////////////////////////////
 
-// EE-SRA register-heat tap (arm64 only): every guest-GPR reference the
-// backprop decode discovers is also reported to the heat collector, split
-// read/write and 64/128-bit. No-op unless PCSX2_EE_REGHEAT_DIR is set; the
-// x86 build compiles it away entirely.
-#ifdef ARCH_ARM64
-#include "arm64/EERegHeat.h"
-#define EEREGHEAT_REF(reg, write, is128) EERegHeat::Ref((reg), (write), (is128))
-#else
-#define EEREGHEAT_REF(reg, write, is128) ((void)0)
-#endif
-
 #define recBackpropSetGPRRead(reg) \
 	do \
 	{ \
@@ -380,7 +369,6 @@ void COP2MicroFinishPass::Run(u32 start, u32 end, EEINST* inst_cache)
 			prev->regs[reg] = (EEINST_LIVE | EEINST_USED); \
 			pinst->regs[reg] = (pinst->regs[reg] & ~EEINST_XMM) | EEINST_USED; \
 			_recFillRegister(*pinst, XMMTYPE_GPRREG, reg, 0); \
-			EEREGHEAT_REF(reg, false, false); \
 		} \
 	} while (0)
 
@@ -394,7 +382,6 @@ void COP2MicroFinishPass::Run(u32 start, u32 end, EEINST* inst_cache)
 				pinst->regs[reg] |= EEINST_LASTUSE; \
 			pinst->regs[reg] |= EEINST_USED; \
 			_recFillRegister(*pinst, XMMTYPE_GPRREG, reg, 1); \
-			EEREGHEAT_REF(reg, true, false); \
 		} \
 	} while (0)
 
@@ -408,7 +395,6 @@ void COP2MicroFinishPass::Run(u32 start, u32 end, EEINST* inst_cache)
 			prev->regs[reg] |= EEINST_LIVE | EEINST_USED | EEINST_XMM; \
 			pinst->regs[reg] |= EEINST_USED | EEINST_XMM; \
 			_recFillRegister(*pinst, XMMTYPE_GPRREG, reg, 0); \
-			EEREGHEAT_REF(reg, false, true); \
 		} \
 	} while (0)
 
@@ -422,8 +408,6 @@ void COP2MicroFinishPass::Run(u32 start, u32 end, EEINST* inst_cache)
 			pinst->regs[reg] |= EEINST_LIVE | EEINST_USED | EEINST_XMM; \
 			prev->regs[reg] |= EEINST_USED | EEINST_XMM; \
 			_recFillRegister(*pinst, XMMTYPE_GPRREG, reg, 1); \
-			EEREGHEAT_REF(reg, false, true); \
-			EEREGHEAT_REF(reg, true, true); \
 		} \
 	} while (0)
 
@@ -437,7 +421,6 @@ void COP2MicroFinishPass::Run(u32 start, u32 end, EEINST* inst_cache)
 				pinst->regs[reg] |= EEINST_LASTUSE; \
 			pinst->regs[reg] |= EEINST_USED | EEINST_XMM; \
 			_recFillRegister(*pinst, XMMTYPE_GPRREG, reg, 1); \
-			EEREGHEAT_REF(reg, true, true); \
 		} \
 	} while (0)
 
