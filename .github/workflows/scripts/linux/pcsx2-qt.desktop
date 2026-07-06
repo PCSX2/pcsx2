@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Terminal=false
+Type=Application
+Name=PCSX2
+StartupWMClass=PCSX2
+GenericName=PlayStation 2 Emulator
+Comment=Sony PlayStation 2 emulator
+Exec=pcsx2-qt
+Icon=PCSX2
+Keywords=game;emulator;
+Categories=Game;Emulator;
