@@ -128,9 +128,15 @@ elseif("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64" OR "${CMAKE_HOST_SYSTEM
 	else()
 		# Require atomic rmw instructions (LSE, ARMv8.1+). This is the upstream
 		# default and targets the broad arm64 ecosystem. In-order ARMv8.0 cores
-		# without LSE (e.g. Cortex-A53 handhelds) must override -march to armv8-a
-		# in their own toolchain/preset — LSE atomics fault on them.
-		add_compile_options("-march=armv8.1-a")
+		# without LSE (e.g. Cortex-A53 handhelds, RK3562) must build with
+		# -march=armv8-a (+ -moutline-atomics) in CMAKE_CXX_FLAGS — LSE atomics
+		# fault on them. Only apply the v8.1 default when the user hasn't chosen
+		# an -march: add_compile_options lands AFTER CMAKE_CXX_FLAGS on the
+		# compile line, so unconditionally adding it here silently overrides any
+		# user -march (proven by a casal SIGILL on a real A53 device).
+		if(NOT CMAKE_CXX_FLAGS MATCHES "-march=")
+			add_compile_options("-march=armv8.1-a")
+		endif()
 	endif()
 
 	# If we're running on Linux, we need to detect the page/cache line size.
