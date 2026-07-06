@@ -14,7 +14,7 @@ jobs:
     uses: ./.github/workflows/linux_build_qt.yml
     with:
       jobName: "AppImage Build"
-      artifactPrefixName: "PCSX2-linux-Qt-arm64-appimage"
+      artifactPrefixName: "ARMSX2-linux-Qt-arm64-appimage"
       compiler: clang
       cmakeflags: ""
       buildAppImage: true

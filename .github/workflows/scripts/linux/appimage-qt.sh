@@ -28,7 +28,7 @@
 SCRIPTDIR=$(dirname "${BASH_SOURCE[0]}")
 
 if [ "$#" -ne 4 ]; then
-    echo "Syntax: $0 <path to pcsx2 directory> <path to build directory> <deps prefix> <output name>"
+    echo "Syntax: $0 <path to armsx2 directory> <path to build directory> <deps prefix> <output name>"
     exit 1
 fi
 
@@ -37,8 +37,8 @@ BUILDDIR=$2
 DEPSDIR=$3
 NAME=$4
 
-BINARY=pcsx2-qt
-APPDIRNAME=PCSX2.AppDir
+BINARY=armsx2-qt
+APPDIRNAME=ARMSX2.AppDir
 STRIP=strip
 
 declare -a MANUAL_LIBS=(
@@ -99,8 +99,8 @@ for i in $(find "$DEPSDIR" -iname '*.so'); do
 done
 
 echo "Copying desktop file..."
-cp "$PCSX2DIR/.github/workflows/scripts/linux/pcsx2-qt.desktop" "net.pcsx2.PCSX2.desktop"
-cp "$PCSX2DIR/bin/resources/icons/AppIconLarge.png" "PCSX2.png"
+cp "$PCSX2DIR/.github/workflows/scripts/linux/armsx2-qt.desktop" "net.armsx2.ARMSX2.desktop"
+cp "$PCSX2DIR/bin/resources/icons/AppIconLarge.png" "ARMSX2.png"
 
 echo "Running linuxdeploy to create AppDir..."
 # The wayland platform plugin requires the plugins deployed for the waylandcompositor module
@@ -111,8 +111,8 @@ EXTRA_PLATFORM_PLUGINS="libqwayland.so" \
 DEPLOY_PLATFORM_THEMES="1" \
 QMAKE="$DEPSDIR/bin/qmake" \
 NO_STRIP="1" \
-$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt" ${EXTRA_LIBS_ARGS[@]} \
---desktop-file="net.pcsx2.PCSX2.desktop" --icon-file="PCSX2.png"
+$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/armsx2-qt" ${EXTRA_LIBS_ARGS[@]} \
+--desktop-file="net.armsx2.ARMSX2.desktop" --icon-file="ARMSX2.png"
 
 echo "Copying resources into AppDir..."
 cp -a "$BUILDDIR/bin/resources" "$OUTDIR/usr/bin"
@@ -128,7 +128,7 @@ cp -a "$BUILDDIR/bin/translations" "$OUTDIR/usr/bin"
 # Generate AppStream meta-info.
 echo "Generating AppStream metainfo..."
 mkdir -p "$OUTDIR/usr/share/metainfo"
-"$SCRIPTDIR/generate-metainfo.sh" "$OUTDIR/usr/share/metainfo/net.pcsx2.PCSX2.appdata.xml"
+"$SCRIPTDIR/generate-metainfo.sh" "$OUTDIR/usr/share/metainfo/net.armsx2.ARMSX2.appdata.xml"
 
 echo "Generating AppImage..."
 GIT_VERSION=$(git tag --points-at HEAD)

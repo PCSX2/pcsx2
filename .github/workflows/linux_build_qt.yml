@@ -148,7 +148,7 @@ jobs:
             -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
             $ADDITIONAL_CMAKE_ARGS
 
-      - name: Build PCSX2
+      - name: Build ARMSX2
         working-directory: build
         run: |
           # Prepare the Cache
