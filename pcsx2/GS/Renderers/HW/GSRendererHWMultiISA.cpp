@@ -3,6 +3,8 @@
 
 #include "GSRendererHW.h"
 
+#include "GS/GSGL.h"
+#include "GS/GSUtil.h"
 #include "GS/Renderers/SW/GSTextureCacheSW.h"
 #include "GS/Renderers/SW/GSRasterizer.h"
 
@@ -10,6 +12,7 @@ class CURRENT_ISA::GSRendererHWFunctions
 {
 public:
 	static bool SwPrimRender(GSRendererHW& hw, bool invalidate_tc, bool add_ee_transfer);
+	static bool SwPrimRender(GSRendererHW& hw, bool invalidate_tc, bool add_ee_transfer, u32 start, u32 count);
 
 	static void Populate(GSRendererHW& renderer)
 	{
@@ -28,7 +31,7 @@ void CURRENT_ISA::GSRendererHWPopulateFunctions(GSRendererHW& renderer)
 static GSVector4i s_dimx_storage[8];
 static GIFRegDIMX s_last_dimx;
 
-bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, bool add_ee_transfer)
+bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, bool add_ee_transfer, u32 start, u32 count)
 {
 	GSVertexTrace& vt = hw.m_vt;
 	const GIFRegPRIM* PRIM = hw.PRIM;
@@ -45,8 +48,8 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, b
 	data.buff = nullptr;
 	data.vertex = hw.m_sw_vertex_buffer.data();
 	data.vertex_count = hw.m_vertex->next;
-	data.index = hw.m_index->buff;
-	data.index_count = hw.m_index->tail;
+	data.index = hw.m_index->buff + start;
+	data.index_count = count;
 	data.scanmsk_value = env.SCANMSK.MSK;
 
 	// Skip per pixel division if q is constant.
@@ -562,4 +565,28 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, b
 	}
 
 	return true;
+}
+
+bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, bool add_ee_transfer)
+{
+	GL_INS("HW: SwPrimRender draw %lld", GSState::s_n);
+	if (hw.HasAutoFlushList())
+	{
+		// The SW renderer does not handle the autoflush list, so we need to flush here.
+		const u32 n = static_cast<u32>(GSUtil::GetClassVertexCount(hw.m_vt.m_primclass));
+		for (size_t i = 0, start = 0; i < hw.m_autoflush_list.size(); i++)
+		{
+			const u32 count = hw.m_autoflush_list[i] * n;
+			if (!SwPrimRender(hw, invalidate_tc, add_ee_transfer, start, count))
+			{
+				return false;
+			}
+			start += count;
+		}
+		return true;
+	}
+	else
+	{
+		return SwPrimRender(hw, invalidate_tc, add_ee_transfer, 0, hw.m_index->tail);
+	}
 }
