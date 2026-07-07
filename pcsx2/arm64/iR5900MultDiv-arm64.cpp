@@ -23,21 +23,30 @@ REC_FUNC(DIV);
 REC_FUNC(DIVU);
 #else
 
-// Load Rs/Rt lower 32 bits from memory (or const)
-static void loadRs32()
+// Fetch Rs/Rt lower 32 bits for the mul/div ops. Substitution-aware
+// (EE-SRA 2 WS-C6): returns the pin / MODE_READ allocator reg directly (zero
+// insns) or materializes into w1/w2. Every caller sits right after
+// _eeFlushAllDirty (the post-flush coherence contract), and every consumer
+// below is read-only on the sources — EXCEPT the DIVU remainder Msub, which
+// therefore targets w3 rather than writing a source in place.
+static a64::Register loadRs32()
 {
 	if (GPR_IS_CONST1(_Rs_))
+	{
 		armAsm->Mov(a64::w1, g_cpuConstRegs[_Rs_].UL[0]);
-	else
-		armLoadEERegPtr(a64::w1, &cpuRegs.GPR.r[_Rs_].UL[0]);
+		return a64::w1;
+	}
+	return _eeGetGPRSourceReg(a64::w1, _Rs_);
 }
 
-static void loadRt32()
+static a64::Register loadRt32()
 {
 	if (GPR_IS_CONST1(_Rt_))
+	{
 		armAsm->Mov(a64::w2, g_cpuConstRegs[_Rt_].UL[0]);
-	else
-		armLoadEERegPtr(a64::w2, &cpuRegs.GPR.r[_Rt_].UL[0]);
+		return a64::w2;
+	}
+	return _eeGetGPRSourceReg(a64::w2, _Rt_);
 }
 
 // Write LO and HI from 64-bit result in x0
@@ -87,10 +96,10 @@ void recMULT()
 	}
 
 	_eeFlushAllDirty();
-	loadRs32();
-	loadRt32();
+	const a64::Register rs32 = loadRs32();
+	const a64::Register rt32 = loadRt32();
 
-	armAsm->Smull(a64::x0, a64::w1, a64::w2);
+	armAsm->Smull(a64::x0, rs32, rt32);
 
 	recWritebackHILO(false);
 	recWritebackRd();
@@ -119,10 +128,10 @@ void recMULTU()
 	}
 
 	_eeFlushAllDirty();
-	loadRs32();
-	loadRt32();
+	const a64::Register rs32 = loadRs32();
+	const a64::Register rt32 = loadRt32();
 
-	armAsm->Umull(a64::x0, a64::w1, a64::w2);
+	armAsm->Umull(a64::x0, rs32, rt32);
 
 	recWritebackHILO(false);
 	recWritebackRd();
@@ -164,26 +173,26 @@ void recDIV()
 	}
 
 	_eeFlushAllDirty();
-	loadRs32();
-	loadRt32();
+	const a64::Register rs32 = loadRs32();
+	const a64::Register rt32 = loadRt32();
 
 	// Branch on rt == 0 → div-by-zero handler.
 	a64::Label divByZero;
 	a64::Label done;
-	armAsm->Cbz(a64::w2, &divByZero);
+	armAsm->Cbz(rt32, &divByZero);
 
 	// Normal path: SDIV w0, w1, w2; MSUB w3 = w1 - w0 * w2 (remainder).
-	armAsm->Sdiv(a64::w0, a64::w1, a64::w2);
-	armAsm->Msub(a64::w3, a64::w0, a64::w2, a64::w1);
+	armAsm->Sdiv(a64::w0, rs32, rt32);
+	armAsm->Msub(a64::w3, a64::w0, rt32, rs32);
 	armAsm->B(&done);
 
 	// Div-by-zero: w0 = (rs >= 0 ? -1 : 1), w3 = rs.
 	// Cneg w0, w0, lt: if rs < 0, w0 = -(-1) = 1; else w0 = -1.
 	armAsm->Bind(&divByZero);
 	armAsm->Mov(a64::w0, -1);
-	armAsm->Cmp(a64::w1, 0);
+	armAsm->Cmp(rs32, 0);
 	armAsm->Cneg(a64::w0, a64::w0, a64::lt);
-	armAsm->Mov(a64::w3, a64::w1);                    // HI = rs
+	armAsm->Mov(a64::w3, rs32);                       // HI = rs
 
 	armAsm->Bind(&done);
 
@@ -226,23 +235,24 @@ void recDIVU()
 	}
 
 	_eeFlushAllDirty();
-	loadRs32();
-	loadRt32();
+	const a64::Register rs32 = loadRs32();
+	const a64::Register rt32 = loadRt32();
 
 	a64::Label divByZero;
 	a64::Label done;
-	armAsm->Cbz(a64::w2, &divByZero);
+	armAsm->Cbz(rt32, &divByZero);
 
-	// Normal path: UDIV w0, w1, w2; MSUB w1 = w1 - w0 * w2 (remainder in-place
-	// over Rs scratch; Msub permits rd==ra). On div-by-zero w1 still holds Rs,
-	// so the slow path doesn't need a separate Mov w3, w1.
-	armAsm->Udiv(a64::w0, a64::w1, a64::w2);
-	armAsm->Msub(a64::w1, a64::w0, a64::w2, a64::w1);
+	// Normal path: UDIV w0; MSUB remainder into w3 — NOT in place over the Rs
+	// source, which may be a pin (WS-C6 pin-safety; the old in-place form
+	// predates operand substitution).
+	armAsm->Udiv(a64::w0, rs32, rt32);
+	armAsm->Msub(a64::w3, a64::w0, rt32, rs32);
 	armAsm->B(&done);
 
-	// Div-by-zero: w0 = -1; w1 already holds Rs (HI).
+	// Div-by-zero: w0 = -1; HI = rs.
 	armAsm->Bind(&divByZero);
 	armAsm->Mov(a64::w0, -1);
+	armAsm->Mov(a64::w3, rs32);
 
 	armAsm->Bind(&done);
 
@@ -251,7 +261,7 @@ void recDIVU()
 	armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.LO.UD[0]));
 
 	// Store HI = sign_extend(remainder or rs)
-	armAsm->Sxtw(RXSCRATCH, a64::w1);
+	armAsm->Sxtw(RXSCRATCH, a64::w3);
 	armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.HI.UD[0]));
 }
 
@@ -292,10 +302,10 @@ void recMULT1()
 	}
 
 	_eeFlushAllDirty();
-	loadRs32();
-	loadRt32();
+	const a64::Register rs32 = loadRs32();
+	const a64::Register rt32 = loadRt32();
 
-	armAsm->Smull(a64::x0, a64::w1, a64::w2);
+	armAsm->Smull(a64::x0, rs32, rt32);
 
 	recWritebackHILO(true);
 	recWritebackRd1();
@@ -324,10 +334,10 @@ void recMULTU1()
 	}
 
 	_eeFlushAllDirty();
-	loadRs32();
-	loadRt32();
+	const a64::Register rs32 = loadRs32();
+	const a64::Register rt32 = loadRt32();
 
-	armAsm->Umull(a64::x0, a64::w1, a64::w2);
+	armAsm->Umull(a64::x0, rs32, rt32);
 
 	recWritebackHILO(true);
 	recWritebackRd1();
@@ -367,23 +377,23 @@ void recDIV1()
 	}
 
 	_eeFlushAllDirty();
-	loadRs32();
-	loadRt32();
+	const a64::Register rs32 = loadRs32();
+	const a64::Register rt32 = loadRt32();
 
 	a64::Label divByZero;
 	a64::Label done;
-	armAsm->Cbz(a64::w2, &divByZero);
+	armAsm->Cbz(rt32, &divByZero);
 
-	armAsm->Sdiv(a64::w0, a64::w1, a64::w2);
-	armAsm->Msub(a64::w3, a64::w0, a64::w2, a64::w1);
+	armAsm->Sdiv(a64::w0, rs32, rt32);
+	armAsm->Msub(a64::w3, a64::w0, rt32, rs32);
 	armAsm->B(&done);
 
 	// Div-by-zero: w0 = (rs >= 0 ? -1 : 1), w3 = rs.  See recDIV for Cneg rationale.
 	armAsm->Bind(&divByZero);
 	armAsm->Mov(a64::w0, -1);
-	armAsm->Cmp(a64::w1, 0);
+	armAsm->Cmp(rs32, 0);
 	armAsm->Cneg(a64::w0, a64::w0, a64::lt);
-	armAsm->Mov(a64::w3, a64::w1);                    // HI = rs
+	armAsm->Mov(a64::w3, rs32);                       // HI = rs
 
 	armAsm->Bind(&done);
 
@@ -423,27 +433,28 @@ void recDIVU1()
 	}
 
 	_eeFlushAllDirty();
-	loadRs32();
-	loadRt32();
+	const a64::Register rs32 = loadRs32();
+	const a64::Register rt32 = loadRt32();
 
 	a64::Label divByZero;
 	a64::Label done;
-	armAsm->Cbz(a64::w2, &divByZero);
+	armAsm->Cbz(rt32, &divByZero);
 
-	// See recDIVU for the Msub-into-w1 rationale.
-	armAsm->Udiv(a64::w0, a64::w1, a64::w2);
-	armAsm->Msub(a64::w1, a64::w0, a64::w2, a64::w1);
+	// Remainder into w3, not in place — see recDIVU (WS-C6 pin-safety).
+	armAsm->Udiv(a64::w0, rs32, rt32);
+	armAsm->Msub(a64::w3, a64::w0, rt32, rs32);
 	armAsm->B(&done);
 
 	armAsm->Bind(&divByZero);
 	armAsm->Mov(a64::w0, -1);
+	armAsm->Mov(a64::w3, rs32);
 
 	armAsm->Bind(&done);
 
 	armAsm->Sxtw(RXSCRATCH, a64::w0);
 	armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.LO.UD[1]));
 
-	armAsm->Sxtw(RXSCRATCH, a64::w1);
+	armAsm->Sxtw(RXSCRATCH, a64::w3);
 	armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.HI.UD[1]));
 }
 
@@ -468,11 +479,11 @@ void recMADD()
 	}
 
 	_eeFlushAllDirty();
-	loadRs32();
-	loadRt32();
+	const a64::Register rs32 = loadRs32();
+	const a64::Register rt32 = loadRt32();
 
 	// x0 = Rs * Rt (signed 32x32→64)
-	armAsm->Smull(a64::x0, a64::w1, a64::w2);
+	armAsm->Smull(a64::x0, rs32, rt32);
 
 	// Load existing HI:LO into x1
 	armLoadEERegPtr(a64::w3, &cpuRegs.LO.UL[0]);
@@ -506,10 +517,10 @@ void recMADDU()
 	}
 
 	_eeFlushAllDirty();
-	loadRs32();
-	loadRt32();
+	const a64::Register rs32 = loadRs32();
+	const a64::Register rt32 = loadRt32();
 
-	armAsm->Umull(a64::x0, a64::w1, a64::w2);
+	armAsm->Umull(a64::x0, rs32, rt32);
 
 	armLoadEERegPtr(a64::w3, &cpuRegs.LO.UL[0]);
 	armLoadEERegPtr(RWSCRATCH, &cpuRegs.HI.UL[0]); // w8: w4 is a rung-3 EE-SRA pin
@@ -541,10 +552,10 @@ void recMADD1()
 	}
 
 	_eeFlushAllDirty();
-	loadRs32();
-	loadRt32();
+	const a64::Register rs32 = loadRs32();
+	const a64::Register rt32 = loadRt32();
 
-	armAsm->Smull(a64::x0, a64::w1, a64::w2);
+	armAsm->Smull(a64::x0, rs32, rt32);
 
 	armLoadEERegPtr(a64::w3, &cpuRegs.LO.UL[2]);  // LO1 = LO.UL[2] (upper 64 bits)
 	armLoadEERegPtr(RWSCRATCH, &cpuRegs.HI.UL[2]); // HI1 = HI.UL[2] (w8: w4 is a rung-3 pin)
@@ -576,10 +587,10 @@ void recMADDU1()
 	}
 
 	_eeFlushAllDirty();
-	loadRs32();
-	loadRt32();
+	const a64::Register rs32 = loadRs32();
+	const a64::Register rt32 = loadRt32();
 
-	armAsm->Umull(a64::x0, a64::w1, a64::w2);
+	armAsm->Umull(a64::x0, rs32, rt32);
 
 	armLoadEERegPtr(a64::w3, &cpuRegs.LO.UL[2]);
 	armLoadEERegPtr(RWSCRATCH, &cpuRegs.HI.UL[2]); // w8: w4 is a rung-3 pin
