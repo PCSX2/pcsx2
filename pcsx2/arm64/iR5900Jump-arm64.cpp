@@ -74,10 +74,11 @@ void recJR()
 	const u32 rs = _Rs_;
 
 	// Save jump target to memory BEFORE delay slot, so it can't be lost
-	// if the delay slot evicts registers.
+	// if the delay slot evicts registers. A pinned/allocator-resident rs is
+	// stored directly (WS-C5) — _deleteEEreg(rs, 1) flushed first, so the
+	// pin is coherent (post-flush contract of _eeGetGPRSourceReg).
 	_deleteEEreg(rs, 1); // flush rs to memory
-	armLoadEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[rs].UL[0]);
-	armStoreEERegPtr(RWSCRATCH, &cpuRegs.pcWriteback);
+	armStoreEERegPtr(_eeGetGPRSourceReg(RWSCRATCH, rs), &cpuRegs.pcWriteback);
 
 	recompileNextInstruction(true, false);
 
@@ -92,10 +93,11 @@ void recJALR()
 	const u32 newpc = pc + 4;
 
 	// Save jump target to memory BEFORE delay slot.
-	// Must read rs before writing rd in case rd == rs.
+	// Must read rs before writing rd in case rd == rs — the Str below
+	// captures the target into pcWriteback before the rd write can refresh
+	// a shared pin. (WS-C5; post-flush pin coherence via _deleteEEreg.)
 	_deleteEEreg(rs, 1); // flush rs to memory
-	armLoadEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[rs].UL[0]);
-	armStoreEERegPtr(RWSCRATCH, &cpuRegs.pcWriteback);
+	armStoreEERegPtr(_eeGetGPRSourceReg(RWSCRATCH, rs), &cpuRegs.pcWriteback);
 
 	// Write link address to rd
 	if (rd)
