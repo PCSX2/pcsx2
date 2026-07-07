@@ -350,16 +350,19 @@ static void recPrepStoreValue(u32 bits)
 	_eeMoveGPRtoR(bits <= 32 ? a64::w10 : a64::x10, _Rt_);
 }
 
-// Store load result from x0 to guest register Rt.
+// Store the load result to guest register Rt.
 // Invalidates any existing allocation for Rt (const/GPR/NEON) and
-// writes the result to cpuRegs memory.
-static void recStoreLoadResult()
+// writes the result to cpuRegs memory. `result` defaults to x0 (the C-call /
+// softmem convention); the fastmem pinned-dest path (WS-C4) loads straight
+// into the pin and passes it here — armStoreEERegPtr then emits just the
+// canonical Str (the mirror Mov self-skips when src IS the pin).
+static void recStoreLoadResult(const a64::Register& result = a64::x0)
 {
 	if (_Rt_)
 	{
 		_deleteEEreg(_Rt_, 0);
 		GPR_DEL_CONST(_Rt_);
-		armStoreEERegPtr(a64::x0, &cpuRegs.GPR.r[_Rt_].UD[0]);
+		armStoreEERegPtr(result, &cpuRegs.GPR.r[_Rt_].UD[0]);
 	}
 }
 
@@ -512,13 +515,21 @@ static void recLoad(u32 bits, bool sign)
 
 	if (useFastmem)
 	{
-		vtlbFastmemRead(addr_reg, 0, bits, sign);
+		// Pinned dest (WS-C4): load straight into the pin — the recorded
+		// data_register makes the backpatch thunk reconstruct into it on a
+		// fault (after armReloadEEClobberedPins, so caller-saved pins get the
+		// load result last). Kills the Mov pin<-x0 mirror refresh; the
+		// canonical Str in recStoreLoadResult stays. Not done for softmem —
+		// its result comes back from a C call in x0.
+		const a64::Register* dpin = _Rt_ ? armEEPinForGPR(_Rt_) : nullptr;
+		vtlbFastmemRead(addr_reg, dpin ? static_cast<unsigned>(dpin->GetCode()) : 0, bits, sign);
+		recStoreLoadResult(dpin ? *dpin : a64::Register(a64::x0));
 	}
 	else
 	{
 		vtlbSoftmemRead(addr_reg, bits, sign);
+		recStoreLoadResult();
 	}
-	recStoreLoadResult();
 
 	if (forceEventTest)
 		g_branch = 2;
@@ -601,12 +612,21 @@ static void recStore(u32 bits)
 	const bool useFastmem = CHECK_FASTMEM && !vtlb_IsFaultingPC(pc);
 
 	// Flush rationale: see recLoad. FLUSH_CONSTANT_REGS only.
+	unsigned value_reg = 10;
 	if (GPR_IS_CONST1(_Rt_))
 	{
 		if (bits <= 32)
 			armAsm->Mov(a64::w10, g_cpuConstRegs[_Rt_].UL[0]);
 		else
 			armAsm->Mov(a64::x10, g_cpuConstRegs[_Rt_].UD[0]);
+	}
+	else if (const a64::Register* vpin = armEEPinForGPR(_Rt_))
+	{
+		// Pinned store value (WS-C3): the pin IS the value register — consumed
+		// by the fastmem Str / softmem call after iFlushCall below, where the
+		// pin is coherent. The per-site backpatch info records it; the thunk
+		// and softmem normalize into w10/x10 read-only.
+		value_reg = static_cast<unsigned>(vpin->GetCode());
 	}
 	else
 	{
@@ -638,11 +658,11 @@ static void recStore(u32 bits)
 
 	if (useFastmem)
 	{
-		vtlbFastmemWrite(addr_reg, 10, bits);
+		vtlbFastmemWrite(addr_reg, value_reg, bits);
 	}
 	else
 	{
-		vtlbSoftmemWrite(addr_reg, 10, bits);
+		vtlbSoftmemWrite(addr_reg, value_reg, bits);
 	}
 }
 
