@@ -649,9 +649,16 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 			// reschedule nextEventCycle.
 			armFlushCycleDelta();
 
+			// Lazy-dirty seam: flush BEFORE the first call of the sequence
+			// (the pins are clobbered from then on; pairs with the reload
+			// below). The iFlushCall above lacks FLUSH_ALL_X86, so the
+			// central hook didn't cover this.
+			armFlushEEClobberedPins();
 			armEmitCall((void*)vu0Sync);
 			if (finishFunc)
+			{
 				armEmitCall((void*)finishFunc);
+			}
 
 			armReloadCycleDelta();
 			// The sync callees write VU state, not EE GPRs; restore the
@@ -687,13 +694,20 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 	// Flush + re-derive the cycle delta around the C call (see comment above).
 	armFlushCycleDelta();
 
+	// Lazy-dirty seam: flush before whichever call is emitted (pairs with the
+	// reload below; the lighter iFlushCall above didn't cover this).
+	armFlushEEClobberedPins();
 	if (needsSync)
+	{
 		// Non-interlocked catch-up: run a 16-cycle minimum to amortize the mVU
 		// dispatch envelope over small blocks (6dc5087cb). If the block also
 		// contains an interlocked op, fall back to the exact sync.
 		armEmitCall((void*)(s_nBlockInterlocked ? vu0Sync : vu0SyncRunAhead));
+	}
 	else
+	{
 		armEmitCall((void*)_vu0FinishMicro);
+	}
 
 	armReloadCycleDelta();
 	// See the interlock branch above — same caller-saved pin restore, same

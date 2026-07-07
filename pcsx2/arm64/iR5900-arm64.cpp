@@ -423,6 +423,7 @@ static const void* _DynGen_JITCompile()
 	// convention is "every C-call boundary syncs RECCYCLE both ways".
 	armFlushCycleDelta();
 
+	armFlushEEGPRPins(); // lazy-dirty seam: compile-time hooks read guest GPRs
 	armAsm->Ldr(RWARG1, armCpuRegMem(&cpuRegs.pc));
 	armEmitCall((void*)recRecompile);
 
@@ -444,6 +445,7 @@ static const void* _DynGen_DispatcherEvent()
 	// modifies cpuRegs.cycle (e.g. fast-forwarding to nextEventCycle) and
 	// reschedules nextEventCycle itself.
 	armFlushCycleDelta();
+	armFlushEEGPRPins(); // lazy-dirty seam: savestate save / VM exit read GPR memory
 	armEmitCall((void*)recEventTest);
 	armReloadCycleDelta();
 	// Event processing can rewrite every guest GPR (savestate load on the EE
@@ -511,6 +513,7 @@ static const void* _DynGen_EnterRecompiledCode()
 static const void* _DynGen_DispatchBlockDiscard()
 {
 	u8* retval = armGetCurrentCodePointer();
+	armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 	armEmitCall((void*)dyna_block_discard);
 	// DispatcherReg's cache-hit path reloads nothing — restore the
 	// caller-saved pins the C call clobbered before re-entering blocks.
@@ -522,6 +525,7 @@ static const void* _DynGen_DispatchBlockDiscard()
 static const void* _DynGen_DispatchPageReset()
 {
 	u8* retval = armGetCurrentCodePointer();
+	armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 	armEmitCall((void*)dyna_page_reset);
 	// See _DynGen_DispatchBlockDiscard.
 	armReloadEEClobberedPins();
@@ -631,6 +635,17 @@ void iFlushCall(int flushtype)
 		g_cpuFlushedCode = true;
 	}
 
+	// Lazy-dirty pin seam (EE-SRA 2 WS-B; no-op in write-through mode).
+	// GPR-reading callees (interpreter fallbacks, branch tails, event paths —
+	// the modes carrying FLUSH_ALL_X86) need every pin canonical in memory.
+	// Lighter modes (FLUSH_CONSTANT_REGS before inline fastmem) do NOT flush
+	// here — their hit paths make no call; the caller-saved flush is emitted
+	// at the actual call sites instead (paired with armReloadEEClobberedPins).
+	// Ordered after _flushConstRegs: a const-tracked pinned reg materializes
+	// through the pin first.
+	if (flushtype & FLUSH_ALL_X86)
+		armFlushEEGPRPins();
+
 #if 0
 	// Disabled in x86 too (iR5900.cpp:1235-1242). Left here #if 0'd so the
 	// FLUSH_CAUSE / g_maySignalException mechanism stays a faithful mirror of
@@ -691,8 +706,14 @@ static u32 interpCallFlushPcBias()
 	return g_recompilingDelaySlot ? 4 : 0;
 }
 
-// Bridge for mVU macro-mode emit bodies (can't see kEEPinTable): emit the
-// caller-saved pin reload after a C call emitted inline into an EE block.
+// Bridges for mVU macro-mode emit bodies (can't see kEEPinTable): emit the
+// caller-saved pin flush-before / reload-after around a C call emitted inline
+// into an EE block. The flush is a lazy-dirty-mode no-op in write-through.
+void armEmitEEClobberedPinFlushForCOP2()
+{
+	armFlushEEClobberedPins();
+}
+
 void armEmitEEClobberedPinReloadForCOP2()
 {
 	armReloadEEClobberedPins();
@@ -991,6 +1012,7 @@ void SetBranchReg()
 	// target and receives the translated paddr.
 	if (EmuConfig.Gamefixes.GoemonTlbHack)
 	{
+		armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 		armEmitCall((void*)vtlb_V2P);
 		// vtlb_V2P writes no guest GPRs but clobbers the caller-saved pins;
 		// the DispatcherReg jump below can cache-hit straight into a block.
@@ -1293,6 +1315,7 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 			// Step 2: Emit call to snapshot pre-instruction state
 			armAsm->Mov(a64::w0, cpuRegs.code);
 			armAsm->Mov(a64::w1, pc - 4); // current instruction PC
+			armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 			armEmitCall((void*)verifySnapshotPre);
 			// The hook is GPR-read-only but clobbers the caller-saved pins,
 			// and the native codegen emitted next reads guest state through
@@ -1308,6 +1331,7 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 			// Step 5: Emit call to verify against interpreter
 			armAsm->Mov(a64::w0, cpuRegs.code);
 			armAsm->Mov(a64::w1, pc - 4);
+			armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 			armEmitCall((void*)verifyCheckPost);
 			armReloadEEClobberedPins(); // see verifySnapshotPre above
 		}
@@ -2262,6 +2286,7 @@ static void recRecompile(const u32 startpc)
 	{
 		armFlushCycleDelta();
 		armAsm->Mov(RWARG1, startpc);
+		armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 		armEmitCall((void*)ee_divtrace_jit_block_hook);
 		// Read-only hook, but the C call clobbers the caller-saved pins and
 		// the block body it precedes reads guest state through them.
@@ -2333,6 +2358,7 @@ static void recRecompile(const u32 startpc)
 		{
 			// 0x33ad48 / 0x35060c are the return address of the function (0x356250)
 			// that populates the TLB cache.
+			armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 			armEmitCall((void*)GoemonPreloadTlb);
 			// TLB-cache population writes no guest GPRs; restore the
 			// caller-saved pins the C call clobbered before the block body.
@@ -2346,6 +2372,7 @@ static void recRecompile(const u32 startpc)
 			// 0x3563b8 is the start of the function that invalidates a TLB-cache entry;
 			// a0 holds the key. Guest state is memory-resident at the prologue.
 			armAsm->Ldr(RWARG1, armCpuRegMem(&cpuRegs.GPR.n.a0.UL[0]));
+			armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 			armEmitCall((void*)GoemonUnloadTlb);
 			armReloadEEClobberedPins(); // see GoemonPreloadTlb above
 		}

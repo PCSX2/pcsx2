@@ -247,6 +247,45 @@ static __fi void armReloadEEClobberedPins()
 	}
 }
 
+// EE-SRA 2 WS-B: lazy-dirty pin mode. 0 = write-through (memory canonical
+// after every guest write — the shipping default). 1 = pins canonical between
+// seams: guest writes to pinned GPRs skip the canonical store, and every seam
+// where C code (or a JIT-internal 128-bit/raw reader) could observe stale GPR
+// memory restores canonicity first via the flush helpers below. A/B by
+// building a second binary with -DEE_PIN_LAZY_DIRTY=1 (codegen_ab two-binary
+// flow); no runtime toggle — mixing modes across blocks is unsound.
+#ifndef EE_PIN_LAZY_DIRTY
+#define EE_PIN_LAZY_DIRTY 0
+#endif
+
+// Write every pin mirror back to canonical memory. No dirty tracking — the
+// lrps2 lesson says compile-time dirty subsets are unsound for runtime-path-
+// dependent dirtiness, so seams flush ALL pins (9 Str to one hot line at
+// already-expensive boundaries). No-op in write-through mode.
+static __fi void armFlushEEGPRPins()
+{
+	if (!EE_PIN_LAZY_DIRTY)
+		return;
+	for (const EEPinnedGPR& pin : kEEPinTable)
+		armAsm->Str(pin.host, armCpuRegMem(&cpuRegs.GPR.r[pin.gpr].UD[0]));
+}
+
+// Flush only the CALLER-saved pins. Required before any C call that is
+// followed by armReloadEEClobberedPins: the reload reads canonical memory,
+// which under lazy-dirty is stale until flushed — the pair would otherwise
+// silently LOSE the in-register writes. (Callee-saved pins ride through the
+// call in their registers, so they need neither.) No-op in write-through.
+static __fi void armFlushEEClobberedPins()
+{
+	if (!EE_PIN_LAZY_DIRTY)
+		return;
+	for (const EEPinnedGPR& pin : kEEPinTable)
+	{
+		if (!armIsCalleeSavedRegister(static_cast<int>(pin.host.GetCode())))
+			armAsm->Str(pin.host, armCpuRegMem(&cpuRegs.GPR.r[pin.gpr].UD[0]));
+	}
+}
+
 static __fi void armLoadEERegPtr(const vixl::aarch64::CPURegister& reg, const void* field)
 {
 	// Pinned guest GPR: serve the read from the mirror register. The mirror

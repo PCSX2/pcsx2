@@ -331,11 +331,14 @@ __fi void mVUaddrFix(mV, const a64::Register& gprReg)
 		// Accessing VU1 regs from VU0
 		if (THREAD_VU1)
 		{
-			// Need to wait for VU1 thread
-			armEmitCall((void*)mVU.waitMTVU);
 			// COP2 macro mode emits this inline into an EE block where the
 			// caller-saved EE pins (x12/x13) are live across the call; micro
 			// mode runs behind a C boundary whose call site reloads instead.
+			// Flush-before is a lazy-dirty no-op in write-through mode.
+			if (mVU.cop2)
+				armEmitEEClobberedPinFlushForCOP2();
+			// Need to wait for VU1 thread
+			armEmitCall((void*)mVU.waitMTVU);
 			if (mVU.cop2)
 				armEmitEEClobberedPinReloadForCOP2();
 		}

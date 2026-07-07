@@ -140,10 +140,15 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 		// events and cause cascading mid-block timing bugs. Matches the
 		// pattern at recVTLB-arm64.cpp:112+120.
 		armFlushCycleDelta();
+		armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 		if (is_load)
+		{
 			armEmitCall((void*)vtlb_memRead128);
+		}
 		else
+		{
 			armEmitCall((void*)vtlb_memWrite128);
+		}
 		armReloadCycleDelta();
 		// preserve_most spares x9-x15 but never x0-x8 — restore the rung-3
 		// x4-x7 pins the call clobbered (pins are not allocator state, so
@@ -200,6 +205,7 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 		armAsm->Mov(a64::w0, a64::w9);
 		// Spill/reload RECCYCLE — see 128-bit slow_path above for rationale.
 		armFlushCycleDelta();
+		armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 		switch (size_in_bits)
 		{
 			case 8:  armEmitCall((void*)vtlb_memRead<mem8_t>);  break;
@@ -293,6 +299,7 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 
 		// Spill/reload RECCYCLE — see 128-bit slow_path above for rationale.
 		armFlushCycleDelta();
+		armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 		switch (size_in_bits)
 		{
 			case 8:  armEmitCall((void*)vtlb_memWrite<mem8_t>);  break;

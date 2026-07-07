@@ -325,6 +325,7 @@ void recMTC0()
 		case 25: // Performance counters
 			iFlushCall(FLUSH_INTERPRETER);
 			emitFlushBlockCycles();
+			armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 			armEmitCall((void*)Interp::MTC0);
 			emitReloadCycle();
 			// MTC0 writes no guest GPRs; restore the caller-saved pins the

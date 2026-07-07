@@ -293,6 +293,7 @@ static void recFPUCall(void (*func)())
 		}
 	}
 
+	armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 	armEmitCall((void*)func);
 	// FPU interpreter fallbacks touch fpuRegs only, never cpuRegs.GPR; restore
 	// the caller-saved pins the C call clobbered — the block continues.

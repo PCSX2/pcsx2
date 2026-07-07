@@ -106,6 +106,7 @@ static void vtlbSoftmemRead(int addr_wreg, u32 bits, bool sign)
 	// this the JIT's pinned x25 stays stale and block-end cycle compare
 	// never trips on tight INTC polls.
 	armFlushCycleDelta();
+	armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 	switch (bits)
 	{
 		case 8:  armEmitCall((void*)vtlb_memRead<mem8_t>);  break;
@@ -178,6 +179,7 @@ static void vtlbSoftmemWrite(int addr_wreg, int value_reg, u32 bits)
 	// any cycle-mutating handler reachable from MMIO must keep the JIT's
 	// pinned x25 coherent. See vtlbSoftmemRead for full rationale.
 	armFlushCycleDelta();
+	armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 	switch (bits)
 	{
 		case 8:  armEmitCall((void*)vtlb_memWrite<mem8_t>);  break;
@@ -419,6 +421,7 @@ static bool recLoadConstPaddrMMIOShortcut(u32 bits, bool sign)
 	// path, including page-0F INTC_STAT → IntCHackCheck which mutates
 	// cpuRegs.cycle. See vtlbSoftmemRead for full rationale.
 	armFlushCycleDelta();
+	armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 	armEmitCall(vmv.assumeHandlerGetRaw(szidx, false));
 	armReloadCycleDelta();
 	// Raw registered handlers are plain AAPCS (not preserve_most like the
@@ -596,6 +599,7 @@ static bool recStoreConstPaddrMMIOShortcut(u32 bits)
 
 	// RECCYCLE coherence — same rationale as recLoadConstPaddrMMIOShortcut.
 	armFlushCycleDelta();
+	armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 	armEmitCall(vmv.assumeHandlerGetRaw(szidx, true));
 	armReloadCycleDelta();
 	// Caller-saved pin restore — same rationale as the read shortcut.
@@ -705,6 +709,7 @@ static void vtlbSoftmemRead128(int addr_wreg)
 	armAsm->Mov(a64::w0, a64::w9);
 	// See vtlbSoftmemRead for the RECCYCLE coherence rationale.
 	armFlushCycleDelta();
+	armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 	armEmitCall((void*)vtlb_memRead128);
 	armReloadCycleDelta();
 	// x4-x7 pin restore — see vtlbSoftmemRead (q0 result untouched).
@@ -739,6 +744,7 @@ static void vtlbSoftmemWrite128(int addr_wreg)
 	armAsm->Mov(a64::w0, a64::w9);
 	// See vtlbSoftmemRead for the RECCYCLE coherence rationale.
 	armFlushCycleDelta();
+	armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 	armEmitCall((void*)vtlb_memWrite128);
 	armReloadCycleDelta();
 	// x4-x7 pin restore — see vtlbSoftmemRead.

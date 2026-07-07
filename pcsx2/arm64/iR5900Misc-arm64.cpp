@@ -311,6 +311,7 @@ static void recVCallmsImpl(void (*func)())
 		armAsm->Add(RECCYCLE, RECCYCLE, cycles);
 
 	armFlushCycleDelta();
+	armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 	armEmitCall((void*)func);
 	armReloadCycleDelta();
 	// VCALLMS/VCALLMSR run VU0 micro (writes VU state, not EE GPRs); restore
