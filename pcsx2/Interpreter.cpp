@@ -683,6 +683,14 @@ static void intExecute()
 
 static void intStep()
 {
+	// Arm the cancel target: intCancelInstruction (TLB miss / vtlb_Miss path)
+	// longjmps to intJmpBuf, which only intExecute used to arm — a cancel
+	// during a single Step (debugger stepping, recompiler_tests interp
+	// oracle) jumped through an unarmed buffer straight to PC=0. A cancelled
+	// instruction has already vectored via cpuException, so returning here
+	// with pc on the exception vector is exactly one completed "step".
+	if (fastjmp_set(&intJmpBuf) != 0)
+		return;
 	execI();
 }
 
