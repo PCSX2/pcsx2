@@ -892,14 +892,18 @@ static void recUnalignedWord(bool is_lwl)
 	if (_Imm_ != 0)
 		armAsm->Add(a64::w9, a64::w9, _Imm_);
 
-	// shift8 and the loaded word both live in callee-saved temps. shift8 must
-	// survive vtlb's slow-path C call (fastmem backpatch thunk OR softmem slow
-	// path); the loaded word must survive the Rt alloc below — under register
-	// pressure _allocArm64GPR can spill a guest reg or land Rt in x0, clobbering
-	// w0 between the read and the merge. Same hazard fixed in
-	// recUnalignedLoadDouble; single-op tests miss it (it needs the pressure).
+	// shift8 is computed before the read and consumed after it, so it must survive
+	// vtlb's slow-path C call (fastmem backpatch thunk OR softmem slow path) —
+	// hence callee-saved. memTemp only parks the loaded word AFTER the read, so it
+	// never crosses the call: a plain temp suffices, and _allocArm64GPR's auto-set
+	// `needed` flag keeps the Rt alloc below from evicting it under pressure (the
+	// hazard the callee-saved home used to cover: the alloc can spill a guest reg
+	// or land Rt in x0, clobbering w0 between the read and the merge — same class
+	// fixed in recUnalignedLoadDouble; single-op tests miss it). EE-SRA 3 Arm B
+	// holds every unaligned handler to ONE callee-saved temp so the tier-1 re-home
+	// can claim x26/x27.
 	const int shift8 = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
-	const int memTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
+	const int memTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, 0);
 
 	armAsm->And(armWRegister(shift8), a64::w9, 3);
 	armAsm->Lsl(armWRegister(shift8), armWRegister(shift8), 3);
@@ -991,15 +995,18 @@ static void recUnalignedStoreWord(bool is_swl)
 	if (_Imm_ != 0)
 		armAsm->Add(a64::w9, a64::w9, _Imm_);
 
-	const int addrTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
-	const int shiftTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
-
-	armAsm->And(armWRegister(addrTemp), a64::w9, ~3u);                 // aligned addr
-	armAsm->And(armWRegister(shiftTemp), a64::w9, 3);
-	armAsm->Lsl(armWRegister(shiftTemp), armWRegister(shiftTemp), 3);  // shift8
+	// EE-SRA 3 Arm B: the full effective address is the ONLY value that must
+	// survive the read's slow-path C call (it re-addresses the write-back), so it
+	// is the sole callee-saved temp. The aligned address is re-masked for the read
+	// and the write, and shift8 = (addr & 3) * 8 is recomputed into w10 — the
+	// store-value scratch, provably free between the read and the write (only
+	// vtlbSoftmemWrite writes w10, after shift8's last use here). One callee-saved
+	// temp per handler leaves room for the tier-1 pin re-home to claim x26/x27.
+	const int addrCS = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
+	armAsm->Mov(armWRegister(addrCS), a64::w9);                        // full addr
 
 	// 32-bit aligned read; mem -> w0.
-	armAsm->Mov(a64::w9, armWRegister(addrTemp));
+	armAsm->And(a64::w9, armWRegister(addrCS), ~3u);                   // aligned addr
 	if (useFastmem)
 		vtlbFastmemRead(9, 0, 32, false);
 	else
@@ -1008,35 +1015,38 @@ static void recUnalignedStoreWord(bool is_swl)
 	// Load Rt after the read (never crosses a call). Handles Rt==0 -> 0.
 	_eeMoveGPRtoR(a64::w1, _Rt_);
 
+	// shift8 recomputed from the surviving full address into w10 (post-read).
+	armAsm->And(a64::w10, armWRegister(addrCS), 3);
+	armAsm->Lsl(a64::w10, a64::w10, 3);                                // shift8
+
 	if (is_swl)
 	{
 		armAsm->Mov(RWSCRATCH, 0xffffff00u);
-		armAsm->Lsl(RWSCRATCH, RWSCRATCH, armWRegister(shiftTemp));    // 0xffffff00 << shift8
+		armAsm->Lsl(RWSCRATCH, RWSCRATCH, a64::w10);                   // 0xffffff00 << shift8
 		armAsm->And(a64::w0, a64::w0, RWSCRATCH);                      // mem & mask
 		armAsm->Mov(RWSCRATCH, 24);
-		armAsm->Sub(RWSCRATCH, RWSCRATCH, armWRegister(shiftTemp));    // 24 - shift8
+		armAsm->Sub(RWSCRATCH, RWSCRATCH, a64::w10);                   // 24 - shift8
 		armAsm->Lsr(a64::w1, a64::w1, RWSCRATCH);                      // Rt >> (24 - shift8)
 	}
 	else
 	{
 		armAsm->Mov(RWSCRATCH, 24);
-		armAsm->Sub(RWSCRATCH, RWSCRATCH, armWRegister(shiftTemp));    // 24 - shift8
+		armAsm->Sub(RWSCRATCH, RWSCRATCH, a64::w10);                   // 24 - shift8
 		armAsm->Mov(RSCRATCHADDR.W(), 0x00ffffffu);
 		armAsm->Lsr(RSCRATCHADDR.W(), RSCRATCHADDR.W(), RWSCRATCH);    // 0x00ffffff >> (24 - shift8)
 		armAsm->And(a64::w0, a64::w0, RSCRATCHADDR.W());               // mem & mask
-		armAsm->Lsl(a64::w1, a64::w1, armWRegister(shiftTemp));        // Rt << shift8
+		armAsm->Lsl(a64::w1, a64::w1, a64::w10);                       // Rt << shift8
 	}
 
 	armAsm->Orr(a64::w0, a64::w0, a64::w1);                            // merged -> w0
 
-	armAsm->Mov(a64::w9, armWRegister(addrTemp));
+	armAsm->And(a64::w9, armWRegister(addrCS), ~3u);                   // aligned addr (write)
 	if (useFastmem)
 		vtlbFastmemWrite(9, 0, 32);
 	else
 		vtlbSoftmemWrite(9, 0, 32);
 
-	_freeArm64GPR(shiftTemp);
-	_freeArm64GPR(addrTemp);
+	_freeArm64GPR(addrCS);
 }
 
 // Inline LDL/LDR codegen (64-bit unaligned load). Mirrors x86 recLDL/recLDR and
@@ -1088,7 +1098,7 @@ static void recUnalignedLoadDouble(bool is_ldl)
 			partnerRs == static_cast<u32>(_Rs_) && (ldlImm - ldrImm) == 7)
 		{
 			// One unaligned 64-bit fastmem load at Rs + ldrImm into Rt. mem is
-			// parked in a callee-saved temp before the Rt alloc (the alloc can
+			// parked in a needed-protected temp before the Rt alloc (the alloc can
 			// spill via / land Rt in x0, clobbering the loaded value — the Black
 			// LDL/LDR boot-hang bug). Rt uses MODE_READ|MODE_WRITE (not WRITE-only):
 			// although the fused load fully overwrites Rt, WRITE-only on a GPR dest
@@ -1101,7 +1111,10 @@ static void recUnalignedLoadDouble(bool is_ldl)
 			iFlushCall(FLUSH_CONSTANT_REGS);
 			if (ldrImm != 0)
 				armAsm->Add(a64::w9, a64::w9, ldrImm);
-			const int memTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
+			// memTemp only parks the loaded value AFTER the read, so it never
+			// crosses a call — a plain (needed-protected) temp keeps the fused
+			// path off the callee-saved pool entirely (EE-SRA 3 Arm B).
+			const int memTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, 0);
 			vtlbFastmemRead(9, 0, 64, false);                 // mem -> x0
 			armAsm->Mov(armXRegister(memTemp), a64::x0);       // park (x0 unsafe across Rt alloc)
 			const int rt = _allocArm64GPR(ARM64TYPE_GPR, _Rt_, MODE_READ | MODE_WRITE);
@@ -1121,13 +1134,15 @@ static void recUnalignedLoadDouble(bool is_ldl)
 	if (_Imm_ != 0)
 		armAsm->Add(a64::w9, a64::w9, _Imm_);
 
-	// mem must be parked in a callee-saved temp before the Rt alloc: under
-	// register pressure the alloc can spill a guest reg or land Rt in x0,
-	// clobbering x0 between the fastmem read and the merge. s = addr & 7 also
-	// lives in a callee-saved temp. The store path parks all its operands in
-	// callee-saved temps for the same reason.
+	// s = addr & 7 is computed before the read and consumed after it, so it must
+	// survive the read's slow-path C call — the sole callee-saved temp. memTemp
+	// only parks the loaded value AFTER the read (never crossing the call), so a
+	// plain (needed-protected) temp suffices and keeps the handler to one
+	// callee-saved reg for the tier-1 pin re-home (EE-SRA 3 Arm B). The Rt alloc
+	// below can still spill a guest reg or land Rt in x0 under pressure — the
+	// `needed` flag on memTemp keeps its parked value safe (the Black boot-hang).
 	const int sTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
-	const int memTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
+	const int memTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, 0);
 	armAsm->And(armWRegister(sTemp), a64::w9, 7);
 	armAsm->And(a64::w9, a64::w9, ~7u);                                // aligned
 
@@ -1226,20 +1241,26 @@ static void recUnalignedStoreDouble(bool is_sdl)
 			partnerRs == static_cast<u32>(_Rs_) && (sdlImm - sdrImm) == 7)
 		{
 			// One unaligned 64-bit fastmem store of Rt at Rs + sdrImm. The address
-			// is parked in a callee-saved temp because _eeMoveGPRtoR(Rt) clobbers w9;
-			// Rt goes through valTemp into x0 (the fastmem write value reg), exactly
-			// like the non-fused store's whole-Rt (special) path. _eeMoveGPRtoR
-			// handles Rt==0 (store $zero).
+			// is parked in a needed-protected temp because _eeMoveGPRtoR(Rt) clobbers
+			// w9; Rt goes through valTemp into x0 (the fastmem write value reg),
+			// exactly like the non-fused store's whole-Rt (special) path.
+			// _eeMoveGPRtoR handles Rt==0 (store $zero).
 			_eeMoveGPRtoR(a64::w9, _Rs_);
 			iFlushCall(FLUSH_CONSTANT_REGS);
 			if (sdrImm != 0)
 				armAsm->Add(a64::w9, a64::w9, sdrImm);
-			const int addrTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
-			const int valTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
+			// Neither temp crosses a call (both are consumed into w9/x0 before the
+			// fastmem write), so plain needed-protected temps suffice — the fused
+			// store path uses no callee-saved reg at all (EE-SRA 3 Arm B).
+			const int addrTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, 0);
+			const int valTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, 0);
 			armAsm->Mov(armWRegister(addrTemp), a64::w9);     // park addr
 			_eeMoveGPRtoR(armXRegister(valTemp), _Rt_);        // Rt (64-bit)
-			armAsm->Mov(a64::x0, armXRegister(valTemp));        // value -> x0
+			// Read the address into w9 BEFORE loading the value into x0: addrTemp is
+			// now a plain temp that can itself be x0, and the value move would then
+			// overwrite the address (the callee-saved home used to preclude x0).
 			armAsm->Mov(a64::w9, armWRegister(addrTemp));       // addr -> w9
+			armAsm->Mov(a64::x0, armXRegister(valTemp));        // value -> x0
 			vtlbFastmemWrite(9, 0, 64);
 			_freeArm64GPR(valTemp);
 			_freeArm64GPR(addrTemp);
@@ -1257,33 +1278,38 @@ static void recUnalignedStoreDouble(bool is_sdl)
 	if (_Imm_ != 0)
 		armAsm->Add(a64::w9, a64::w9, _Imm_);
 
-	const int addrTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
-	const int sTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
-	const int valTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
-
-	armAsm->And(armWRegister(addrTemp), a64::w9, ~7u);                // aligned
-	armAsm->And(armWRegister(sTemp), a64::w9, 7);                     // s
-	_eeMoveGPRtoR(armXRegister(valTemp), _Rt_);                       // Rt (64-bit), handles Rt==0
+	// EE-SRA 3 Arm B: only the full effective address must survive the read's
+	// slow-path C call (it re-addresses the write-back), so it is the sole
+	// callee-saved temp. s = addr & 7 drives the degenerate-alignment branch and
+	// is recomputed from the address for shift8 after the read; Rt is re-derived
+	// per path via _eeMoveGPRtoR (the read writes only x0, never Rt's memory), so
+	// nothing but the address rides the call. One callee-saved temp per handler
+	// leaves room for the tier-1 pin re-home.
+	const int addrCS = _allocArm64GPR(ARM64TYPE_TEMP, 0, MODE_CALLEESAVED);
+	armAsm->Mov(armWRegister(addrCS), a64::w9);                       // full addr
 
 	a64::Label special, merged;
-	armAsm->Cmp(armWRegister(sTemp), is_sdl ? 7 : 0);
+	armAsm->And(RWSCRATCH, armWRegister(addrCS), 7);                  // s (transient, for the branch)
+	armAsm->Cmp(RWSCRATCH, is_sdl ? 7 : 0);
 	armAsm->B(&special, a64::eq);
 
 	// General path: read aligned word, merge with Rt.
-	armAsm->Mov(a64::w9, armWRegister(addrTemp));
+	armAsm->And(a64::w9, armWRegister(addrCS), ~7u);                  // aligned
 	if (useFastmem)
 		vtlbFastmemRead(9, 0, 64, false);                            // mem -> x0
 	else
 		vtlbSoftmemRead(9, 64, false);
 
-	armAsm->Lsl(RWSCRATCH, armWRegister(sTemp), 3);                   // x8 = shift8
+	_eeMoveGPRtoR(a64::x1, _Rt_);                                     // Rt (post-read), handles Rt==0
+	armAsm->And(RWSCRATCH, armWRegister(addrCS), 7);                  // s, recomputed post-read
+	armAsm->Lsl(RWSCRATCH, RWSCRATCH, 3);                            // x8 = shift8 = s * 8
 
 	if (is_sdl)
 	{
 		// Rt >> (56 - shift8)
 		armAsm->Mov(RSCRATCHADDR, 56);
 		armAsm->Sub(RSCRATCHADDR, RSCRATCHADDR, RXSCRATCH);          // 56 - shift8
-		armAsm->Lsr(armXRegister(valTemp), armXRegister(valTemp), RSCRATCHADDR);
+		armAsm->Lsr(a64::x1, a64::x1, RSCRATCHADDR);
 		// mem & (~0 << (shift8 + 8))
 		armAsm->Add(RXSCRATCH, RXSCRATCH, 8);                        // shift8 + 8
 		armAsm->Mov(RSCRATCHADDR, UINT64_C(0xFFFFFFFFFFFFFFFF));
@@ -1293,7 +1319,7 @@ static void recUnalignedStoreDouble(bool is_sdl)
 	else
 	{
 		// Rt << shift8
-		armAsm->Lsl(armXRegister(valTemp), armXRegister(valTemp), RXSCRATCH);
+		armAsm->Lsl(a64::x1, a64::x1, RXSCRATCH);
 		// mem & (~0 >> (64 - shift8))
 		armAsm->Mov(RSCRATCHADDR, 64);
 		armAsm->Sub(RSCRATCHADDR, RSCRATCHADDR, RXSCRATCH);          // 64 - shift8
@@ -1302,22 +1328,20 @@ static void recUnalignedStoreDouble(bool is_sdl)
 		armAsm->And(a64::x0, a64::x0, RXSCRATCH);
 	}
 
-	armAsm->Orr(a64::x0, a64::x0, armXRegister(valTemp));             // merged -> x0
+	armAsm->Orr(a64::x0, a64::x0, a64::x1);                          // merged -> x0
 	armAsm->B(&merged);
 
 	armAsm->Bind(&special);
-	armAsm->Mov(a64::x0, armXRegister(valTemp));                      // store Rt whole
+	_eeMoveGPRtoR(a64::x0, _Rt_);                                     // store Rt whole (no read)
 
 	armAsm->Bind(&merged);
-	armAsm->Mov(a64::w9, armWRegister(addrTemp));
+	armAsm->And(a64::w9, armWRegister(addrCS), ~7u);                  // aligned (write)
 	if (useFastmem)
 		vtlbFastmemWrite(9, 0, 64);
 	else
 		vtlbSoftmemWrite(9, 0, 64);
 
-	_freeArm64GPR(valTemp);
-	_freeArm64GPR(sTemp);
-	_freeArm64GPR(addrTemp);
+	_freeArm64GPR(addrCS);
 }
 
 void recLWL() { recUnalignedWord(true);  }

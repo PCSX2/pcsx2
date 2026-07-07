@@ -5,6 +5,8 @@
 
 #include "harness/EeRecTestHarness.h"
 
+#include "Config.h"
+
 #include <gtest/gtest.h>
 
 using namespace recompiler_tests;
@@ -821,4 +823,102 @@ TEST(EeRecLoadStore, MultiRegUnalignedWordCopyBlock)
 				EXPECT_EQ(h.ReadU8(dst + i), static_cast<u8>(0x10 + i)) << "copied byte " << i;
 		}
 	}
+}
+
+// ===========================================================================
+//  EE-SRA 3 Arm B — softmem (fastmem-off) twins of the two pressure blocks.
+//  Turning fastmem off does what the fastmem versions never can: it disables
+//  LDL/LDR and SDL/SDR pair fusion (gated on CHECK_FASTMEM), so the NON-FUSED
+//  recUnalignedLoadDouble / recUnalignedStoreDouble paths run — the ones Arm B
+//  reworked from three callee-saved temps down to ONE by parking the full
+//  effective address and recomputing the aligned address, s and shift8 after
+//  the read (and re-deriving Rt per path). It also routes each access through
+//  the inline softmem read/write sequence. Sweeping every source/destination
+//  alignment under eight-registers-live pressure is the oracle: a wrong
+//  recompute or a clobbered address surfaces as a mis-shifted or corrupt copy.
+// ===========================================================================
+TEST(EeRecLoadStore, MultiRegUnalignedDwordCopyBlockSoftmem)
+{
+	const bool old_fastmem = EmuConfig.Cpu.Recompiler.EnableFastmem;
+	EmuConfig.Cpu.Recompiler.EnableFastmem = false;
+	constexpr u32 kSrc = kScratch;
+	constexpr u32 kDst = kScratch + 256;
+	for (u32 sa = 0; sa < 8; ++sa)
+	{
+		for (u32 da = 0; da < 8; ++da)
+		{
+			SCOPED_TRACE(testing::Message() << "src_align=" << sa << " dst_align=" << da);
+			EeRecTestHarness h;
+			const u32 src = kSrc + sa;
+			const u32 dst = kDst + da;
+			for (u32 i = 0; i < 40; ++i)
+				h.WriteU8(src + i, static_cast<u8>(0x10 + i));
+			for (u32 i = 0; i < 48; ++i)
+				h.WriteU8(kDst + i, 0xA5);
+			h.SetGpr64(reg::v1, src);
+			h.SetGpr64(reg::a0, dst);
+			h.TrackMemWindow(kDst, 48);
+			h.LoadProgram({
+				ee::LDL(reg::v0, 7,  reg::v1), ee::LDR(reg::v0, 0,  reg::v1),
+				ee::LDL(reg::a2, 15, reg::v1), ee::LDR(reg::a2, 8,  reg::v1),
+				ee::LDL(reg::a3, 23, reg::v1), ee::LDR(reg::a3, 16, reg::v1),
+				ee::LDL(reg::t0, 31, reg::v1), ee::LDR(reg::t0, 24, reg::v1),
+				ee::SDL(reg::v0, 7,  reg::a0), ee::SDR(reg::v0, 0,  reg::a0),
+				ee::SDL(reg::a2, 15, reg::a0), ee::SDR(reg::a2, 8,  reg::a0),
+				ee::SDL(reg::a3, 23, reg::a0), ee::SDR(reg::a3, 16, reg::a0),
+				ee::SDL(reg::t0, 31, reg::a0), ee::SDR(reg::t0, 24, reg::a0),
+			});
+			h.Run();
+			for (u32 i = 0; i < 32; ++i)
+				EXPECT_EQ(h.ReadU8(dst + i), static_cast<u8>(0x10 + i)) << "copied byte " << i;
+		}
+	}
+	EmuConfig.Cpu.Recompiler.EnableFastmem = old_fastmem;
+}
+
+TEST(EeRecLoadStore, MultiRegUnalignedWordCopyBlockSoftmem)
+{
+	const bool old_fastmem = EmuConfig.Cpu.Recompiler.EnableFastmem;
+	EmuConfig.Cpu.Recompiler.EnableFastmem = false;
+	constexpr u32 kSrc = kScratch;
+	constexpr u32 kDst = kScratch + 256;
+	for (u32 sa = 0; sa < 4; ++sa)
+	{
+		for (u32 da = 0; da < 4; ++da)
+		{
+			SCOPED_TRACE(testing::Message() << "src_align=" << sa << " dst_align=" << da);
+			EeRecTestHarness h;
+			const u32 src = kSrc + sa;
+			const u32 dst = kDst + da;
+			for (u32 i = 0; i < 32; ++i)
+				h.WriteU8(src + i, static_cast<u8>(0x10 + i));
+			for (u32 i = 0; i < 40; ++i)
+				h.WriteU8(kDst + i, 0xA5);
+			h.SetGpr64(reg::v1, src);
+			h.SetGpr64(reg::a0, dst);
+			h.TrackMemWindow(kDst, 40);
+			h.LoadProgram({
+				LWL(reg::v0, 3,  reg::v1), LWR(reg::v0, 0,  reg::v1),
+				LWL(reg::a2, 7,  reg::v1), LWR(reg::a2, 4,  reg::v1),
+				LWL(reg::a3, 11, reg::v1), LWR(reg::a3, 8,  reg::v1),
+				LWL(reg::t0, 15, reg::v1), LWR(reg::t0, 12, reg::v1),
+				LWL(reg::t1, 19, reg::v1), LWR(reg::t1, 16, reg::v1),
+				LWL(reg::t2, 23, reg::v1), LWR(reg::t2, 20, reg::v1),
+				LWL(reg::t3, 27, reg::v1), LWR(reg::t3, 24, reg::v1),
+				LWL(reg::t4, 31, reg::v1), LWR(reg::t4, 28, reg::v1),
+				SWL(reg::v0, 3,  reg::a0), SWR(reg::v0, 0,  reg::a0),
+				SWL(reg::a2, 7,  reg::a0), SWR(reg::a2, 4,  reg::a0),
+				SWL(reg::a3, 11, reg::a0), SWR(reg::a3, 8,  reg::a0),
+				SWL(reg::t0, 15, reg::a0), SWR(reg::t0, 12, reg::a0),
+				SWL(reg::t1, 19, reg::a0), SWR(reg::t1, 16, reg::a0),
+				SWL(reg::t2, 23, reg::a0), SWR(reg::t2, 20, reg::a0),
+				SWL(reg::t3, 27, reg::a0), SWR(reg::t3, 24, reg::a0),
+				SWL(reg::t4, 31, reg::a0), SWR(reg::t4, 28, reg::a0),
+			});
+			h.Run();
+			for (u32 i = 0; i < 32; ++i)
+				EXPECT_EQ(h.ReadU8(dst + i), static_cast<u8>(0x10 + i)) << "copied byte " << i;
+		}
+	}
+	EmuConfig.Cpu.Recompiler.EnableFastmem = old_fastmem;
 }
