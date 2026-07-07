@@ -912,6 +912,41 @@ void _eeMoveGPRtoR(const a64::Register& to, int fromgpr, bool allow_preload)
 	armLoadEERegPtr(to, &cpuRegs.GPR.r[fromgpr].UD[0]);
 }
 
+// Operand-substitution variant of _eeMoveGPRtoR (EE-SRA 2 WS-C): returns a
+// register that CURRENTLY holds the guest value — the pin, or an allocator
+// slot already in MODE_READ — emitting nothing at all in those cases; only
+// the fallback (const / NEON-resident / memory) materializes into `scratch`.
+// Contract:
+//   - call only where allocator-dirty state has been flushed (post
+//     _eeFlushAllDirty / iFlushCall): a dirty NEON dual-residence copy makes
+//     the pin/memory stale until write-through fires.
+//   - consume the returned register in the immediately following
+//     instruction(s), before anything can mutate pins or allocator slots.
+//   - the returned register may be `scratch` or may not be — never write it.
+//   - $zero materializes 0 into `scratch` rather than returning xzr: reg 31
+//     in an Rn operand position encodes SP for arithmetic ops (Cmp!), and
+//     callers shouldn't have to care.
+vixl::aarch64::Register _eeGetGPRSourceReg(const a64::Register& scratch, int fromgpr)
+{
+	if (fromgpr != 0 && !GPR_IS_CONST1(fromgpr))
+	{
+		if (const a64::Register* pin = armEEPinForGPR(fromgpr))
+			return scratch.Is64Bits() ? *pin : pin->W();
+
+		for (int i = 0; i < NUM_ARM_GPR_REGS; i++)
+		{
+			if (arm64gprs[i].inuse && arm64gprs[i].type == ARM64TYPE_GPR &&
+				arm64gprs[i].reg == fromgpr && (arm64gprs[i].mode & MODE_READ))
+			{
+				return scratch.Is64Bits() ? armXRegister(i) : armWRegister(i);
+			}
+		}
+	}
+
+	_eeMoveGPRtoR(scratch, fromgpr);
+	return scratch;
+}
+
 // =====================================================================================================
 //  Branch handling
 // =====================================================================================================

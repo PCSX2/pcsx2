@@ -527,6 +527,10 @@ extern u32 g_cpuHasConstReg, g_cpuFlushedConstReg;
 
 // Move guest GPR value to an ARM64 register
 void _eeMoveGPRtoR(const vixl::aarch64::Register& to, int fromgpr, bool allow_preload = true);
+// Returns a register currently holding the guest GPR (pin / MODE_READ
+// allocator slot — zero insns) or materializes into `scratch`. Post-flush
+// contexts only; consume immediately; never write the result. (EE-SRA 2 WS-C)
+vixl::aarch64::Register _eeGetGPRSourceReg(const vixl::aarch64::Register& scratch, int fromgpr);
 
 void _eeFlushAllDirty();
 void _eeOnWriteReg(int reg, int signext);

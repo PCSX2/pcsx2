@@ -38,13 +38,17 @@ REC_SYS(BGEZALL);
 // Thread-local label for the "not taken" forward branch
 static thread_local a64::Label* s_pBranchLabel = nullptr;
 
-// Load a GPR value into an ARM64 X register for comparison. Allocator-aware:
-// _eeFlushAllDirty leaves slots in MODE_READ (clean) so any GPR/NEON slot
-// holding `gprreg` is still authoritative and can be read via Mov/Fmov,
-// saving an LDR per branch operand. Falls back to memory when unallocated.
-static void loadGPRtoX(const a64::Register& dst, int gprreg)
+// Fetch a GPR for comparison. Substitution-aware (EE-SRA 2 WS-C): a pinned or
+// allocator-resident guest reg is used DIRECTLY as the compare operand (zero
+// insns — the old shape was a Mov copy into RXARG1/RXSCRATCH); only the
+// fallback loads into `scratch`. Safe unconditionally here: every caller
+// emits its Cmp/Cbz/Tbz + conditional branch BEFORE the delay slot is
+// compiled (so the slot can't mutate the operand first at runtime), and
+// TrySwapDelaySlot refuses slots that write the compared regs — both callers
+// run right after _eeFlushAllDirty, satisfying the post-flush contract.
+static a64::Register loadGPRtoX(const a64::Register& scratch, int gprreg)
 {
-	_eeMoveGPRtoR(dst, gprreg);
+	return _eeGetGPRSourceReg(scratch, gprreg);
 }
 
 // Emit comparison for BEQ/BNE and set up forward branch.
@@ -71,28 +75,30 @@ static void recSetBranchEQ(int bne, int process)
 		const s64 cval = g_cpuConstRegs[constReg].SD[0];
 
 		_eeFlushAllDirty();
-		loadGPRtoX(RXARG1, liveReg);
+		const a64::Register live = loadGPRtoX(RXARG1, liveReg);
 
 		if (cval == 0)
 		{
 			// Single test-and-branch against $zero — no Cmp.
 			// bne==0 skips on ne → live != 0 → Cbnz; bne==1 skips on eq → Cbz.
 			if (bne)
-				armAsm->Cbz(RXARG1, s_pBranchLabel);
+				armAsm->Cbz(live, s_pBranchLabel);
 			else
-				armAsm->Cbnz(RXARG1, s_pBranchLabel);
+				armAsm->Cbnz(live, s_pBranchLabel);
 			return;
 		}
 
-		// vixl emits a single CMP/CMN immediate when cval fits, else materializes.
-		armAsm->Cmp(RXARG1, cval);
+		// vixl emits a single CMP/CMN immediate when cval fits; an unencodable
+		// cval is materialized into a MacroAssembler pool temp (x16/x17),
+		// never into the operand register, so `live` may safely be a pin.
+		armAsm->Cmp(live, cval);
 	}
 	else
 	{
 		_eeFlushAllDirty();
-		loadGPRtoX(RXARG1, _Rs_);
-		loadGPRtoX(RXSCRATCH, _Rt_);
-		armAsm->Cmp(RXARG1, RXSCRATCH);
+		const a64::Register rs = loadGPRtoX(RXARG1, _Rs_);
+		const a64::Register rt = loadGPRtoX(RXSCRATCH, _Rt_);
+		armAsm->Cmp(rs, rt);
 	}
 
 	if (bne)
@@ -112,13 +118,13 @@ static void recSetBranchEQ(int bne, int process)
 static void recSetBranchL(int ltz)
 {
 	_eeFlushAllDirty();
-	loadGPRtoX(RXSCRATCH, _Rs_);
+	const a64::Register rs = loadGPRtoX(RXSCRATCH, _Rs_);
 
 	s_pBranchLabel = new a64::Label();
 	if (ltz)
-		armAsm->Tbz(RXSCRATCH, 63, s_pBranchLabel);
+		armAsm->Tbz(rs, 63, s_pBranchLabel);
 	else
-		armAsm->Tbnz(RXSCRATCH, 63, s_pBranchLabel);
+		armAsm->Tbnz(rs, 63, s_pBranchLabel);
 }
 
 // Bind the forward branch label
@@ -357,8 +363,8 @@ static void recBranchSingle(a64::Condition skip_cond)
 	else
 	{
 		_eeFlushAllDirty();
-		loadGPRtoX(RXSCRATCH, _Rs_);
-		armAsm->Cmp(RXSCRATCH, 0);
+		const a64::Register rs = loadGPRtoX(RXSCRATCH, _Rs_);
+		armAsm->Cmp(rs, 0);
 		s_pBranchLabel = new a64::Label();
 		armAsm->B(s_pBranchLabel, skip_cond);
 	}
@@ -412,8 +418,8 @@ static void recBranchSingleLikely(a64::Condition skip_cond)
 	else
 	{
 		_eeFlushAllDirty();
-		loadGPRtoX(RXSCRATCH, _Rs_);
-		armAsm->Cmp(RXSCRATCH, 0);
+		const a64::Register rs = loadGPRtoX(RXSCRATCH, _Rs_);
+		armAsm->Cmp(rs, 0);
 		s_pBranchLabel = new a64::Label();
 		armAsm->B(s_pBranchLabel, skip_cond);
 	}
