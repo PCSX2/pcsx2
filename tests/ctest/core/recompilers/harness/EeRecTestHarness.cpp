@@ -295,7 +295,16 @@ void EeRecTestHarness::Run(RunMode mode)
 	// the mutation to the JIT block: snapshot host FPCR and restore it before
 	// the interp oracle runs and before the next test.
 	const FPControlRegister saved_fpcr = FPControlRegister::GetCurrent();
+	// Production (VMManager) keeps the global Cpu pointer on the ACTIVE
+	// provider; code reached from inside JIT blocks branches on it. Concretely,
+	// vtlb_Miss takes the interpreter path when Cpu == &intCpu — including its
+	// intCancelInstruction longjmp into a jmp_buf only intExecute ever arms
+	// (PC=0 crash from harness JIT runs), and cpuTlbMiss's isRec check computes
+	// EPC from the wrong pc convention. Mirror production for the JIT leg;
+	// the environment's default (&intCpu) is restored for the interp oracle.
+	Cpu = &recCpu;
 	recEeExecuteBlock(kCycleBudget, kParkingPc);
+	Cpu = &intCpu;
 	FPControlRegister::SetCurrent(saved_fpcr);
 	if (capture_vu1_)
 		FireVif1Pass(/*jit=*/true);
@@ -391,7 +400,9 @@ void EeRecTestHarness::RunJitNoDiff(RunMode mode)
 
 	// Contain any FPCR mutation the JIT block makes (see note in Run()).
 	const FPControlRegister saved_fpcr = FPControlRegister::GetCurrent();
+	Cpu = &recCpu; // active-provider invariant — see note in Run()
 	recEeExecuteBlock(kCycleBudget, kParkingPc);
+	Cpu = &intCpu;
 	FPControlRegister::SetCurrent(saved_fpcr);
 	jit_snapshot_ = EeSnapshot::Capture(mem_windows_);
 	if (capture_vu0_)
