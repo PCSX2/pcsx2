@@ -301,8 +301,9 @@ static __fi void armMergeEEPinIntoQuad(const vixl::aarch64::VRegister& q, int gp
 
 static __fi void armLoadEERegPtr(const vixl::aarch64::CPURegister& reg, const void* field)
 {
-	// Pinned guest GPR: serve the read from the mirror register. The mirror
-	// always equals memory, so this is exactly the load it replaces.
+	// Pinned guest GPR: serve the read from the mirror register. Write-through
+	// keeps mirror == memory; lazy-dirty keeps the mirror NEWEST — either way
+	// the mirror is authoritative for the lower 64 bits.
 	int off;
 	if (const EEPinnedGPR* pin = armEEPinForPtr(field, &off); pin && reg.IsRegister())
 	{
@@ -331,14 +332,48 @@ static __fi void armLoadEERegPtr(const vixl::aarch64::CPURegister& reg, const vo
 }
 static __fi void armStoreEERegPtr(const vixl::aarch64::CPURegister& reg, const void* field)
 {
+	int off;
+	const EEPinnedGPR* pin = armEEPinForPtr(field, &off);
+
+	// Lazy-dirty (EE-SRA 2 WS-B3): pinned scalar lane-0 shapes write the PIN
+	// ONLY — the canonical store is elided; seams restore memory canonicity
+	// (armFlushEEGPRPins/armFlushEEClobberedPins). A store whose source IS
+	// the pin (armEEDestForGPR / fastmem pinned load dest) emits NOTHING.
+	if (EE_PIN_LAZY_DIRTY && pin && reg.IsRegister())
+	{
+		const vixl::aarch64::Register src(reg);
+		if (off == 0 && reg.Is64Bits())
+		{
+			if (!src.Is(pin->host))
+				armAsm->Mov(pin->host, src);
+			return;
+		}
+		if (off == 0 && reg.Is32Bits())
+		{
+			armAsm->Bfi(pin->host, src.X(), 0, 32);
+			return;
+		}
+		if (off == 4 && reg.Is32Bits())
+		{
+			armAsm->Bfi(pin->host, src.X(), 32, 32);
+			return;
+		}
+		// Odd scalar shape: fall through to the store path, which must first
+		// flush the (possibly newer) pin so the partial store merges into
+		// current bytes rather than stale memory.
+	}
+	if (EE_PIN_LAZY_DIRTY && pin)
+		armAsm->Str(pin->host, armCpuRegMem(&cpuRegs.GPR.r[pin->gpr].UD[0]));
+
 	if (armIsCpuRegPtr(field))
 		armAsm->Str(reg, armCpuRegMem(field));
 	else
 		armStorePtr(reg, field);
 
 	// Write-through: keep the pin mirror equal to the memory just written.
-	int off;
-	if (const EEPinnedGPR* pin = armEEPinForPtr(field, &off))
+	// (Also the lazy-dirty odd-shape tail: memory was made fully current
+	// above, so the reload below re-canonicalizes the mirror.)
+	if (pin)
 	{
 		if (reg.IsRegister())
 		{
