@@ -121,12 +121,20 @@ read_temp_c() {
 run_one() {
   local tag="$1" bin="$2" k="$3"
   local stat="$OUTDIR/$tag.run$k.stat.txt"
+  local runlog="$OUTDIR/$tag.run$k.out.log"
   local temp_c; temp_c="$(read_temp_c)"
     EERUNNER_SYNCMTGS=0 EERUNNER_MTVU=1 EERUNNER_EE=jit \
       perf stat -e instructions,cycles --inherit -- \
         ${PIN:-} "$bin" --liverun --renderer "$RENDERER" --frames "$FRAMES" \
                 --savestate "$SAVESTATE" --iso "$ISO" \
-        >/dev/null 2> "$stat" || true
+        > "$runlog" 2> "$stat" || true
+    # EE-thread CPU seconds from the runner's @THREADCPU@ shutdown lines.
+    # The process-wide perf counts above include the GS/MTVU/worker threads,
+    # which DILUTE an EE-only codegen delta by the EE thread's share of
+    # process cycles (~50% measured on SotC/null) — an EE-thread-scoped
+    # secondary metric keeps effect sizes honest. (2026-07-06 audit.)
+    local ee_s
+    ee_s="$(awk -F': ' '/@THREADCPU@ CPU Thread:/ { gsub(/ s$/,"",$2); if ($2+0 > m) m=$2+0 } END { printf "%.2f", m }' "$runlog")"
     # perf stat writes counts to stderr. Anchor on the EVENT token ($2), so the
     # "insn per cycle" comment on the instructions line can't be misread as cycles.
     # On multi-PMU boxes (Apple M2: apple_avalanche_pmu/instructions/u +
@@ -150,9 +158,9 @@ run_one() {
       tail -n 20 "$stat" >&2 || true
       die "aborting: $tag run$k did not run a real workload"
     fi
-    printf '%s\t%s\t%s\t%s\n' "$tag" "$k" "$ins" "$cyc" >> "$RESULTS"
-    awk -v t="$tag" -v k="$k" -v i="$ins" -v c="$cyc" -v tc="$temp_c" \
-      'BEGIN{printf "   %-4s run%s: insns=%.3fB  cycles=%.3fB  ipc=%.3f  temp=%s°C\n", t, k, i/1e9, c/1e9, i/c, tc}'
+    printf '%s\t%s\t%s\t%s\t%s\n' "$tag" "$k" "$ins" "$cyc" "${ee_s:-0}" >> "$RESULTS"
+    awk -v t="$tag" -v k="$k" -v i="$ins" -v c="$cyc" -v tc="$temp_c" -v e="${ee_s:-?}" \
+      'BEGIN{printf "   %-4s run%s: insns=%.3fB  cycles=%.3fB  ipc=%.3f  ee_thread=%ss  temp=%s°C\n", t, k, i/1e9, c/1e9, i/c, e, tc}'
 }
 
 # Interleaved run order (base,new,base,new,...) — see run_one for why.
@@ -165,13 +173,15 @@ done
 python3 - "$OUTDIR" "$RESULTS" "$LABEL" "$SCENE" "$DEVICE" "$RENDERER" "$FRAMES" "$RUNS" "$BASE_BIN" "$NEW_BIN" <<'PY'
 import statistics, sys, os
 outdir, results, label, scene, device, rend, frames, runs, base_bin, new_bin = sys.argv[1:11]
-rows = {"base": {"ins": [], "cyc": []}, "new": {"ins": [], "cyc": []}}
+rows = {"base": {"ins": [], "cyc": [], "ee": []}, "new": {"ins": [], "cyc": [], "ee": []}}
 for line in open(results):
     parts = line.rstrip("\n").split("\t")
-    if len(parts) != 4: continue
-    tag, _k, ins, cyc = parts
+    if len(parts) not in (4, 5): continue
+    tag, _k, ins, cyc = parts[:4]
     if tag in rows:
         rows[tag]["ins"].append(int(ins)); rows[tag]["cyc"].append(int(cyc))
+        if len(parts) == 5 and float(parts[4]) > 0:
+            rows[tag]["ee"].append(float(parts[4]))
 
 def med(xs): return statistics.median(xs) if xs else float("nan")
 b_ins, b_cyc = med(rows["base"]["ins"]), med(rows["base"]["cyc"])
@@ -193,7 +203,16 @@ with open(out, "w") as o:
     o.write("| | base (median) | new (median) | Δ |\n|---|---|---|---|\n")
     o.write(f"| instructions | {b_ins/1e9:.3f}B | {n_ins/1e9:.3f}B | **{d_ins:+.2f}%** |\n")
     o.write(f"| cycles       | {b_cyc/1e9:.3f}B | {n_cyc/1e9:.3f}B | **{d_cyc:+.2f}%** |\n")
-    o.write(f"| IPC          | {b_ipc:.3f} | {n_ipc:.3f} | {(n_ipc/b_ipc-1)*100:+.2f}% |\n\n")
+    o.write(f"| IPC          | {b_ipc:.3f} | {n_ipc:.3f} | {(n_ipc/b_ipc-1)*100:+.2f}% |\n")
+    b_ee, n_ee = med(rows["base"]["ee"]), med(rows["new"]["ee"])
+    if b_ee == b_ee and n_ee == n_ee and b_ee:  # NaN-safe
+        d_ee = (n_ee / b_ee - 1) * 100
+        o.write(f"| EE-thread CPU s | {b_ee:.2f} | {n_ee:.2f} | **{d_ee:+.2f}%** |\n")
+        o.write(f"\n- ⚠ the instructions/cycles rows are WHOLE-PROCESS (GS+MTVU+workers included): "
+                f"an EE-only codegen change is diluted by the EE thread's share of process cycles. "
+                f"The EE-thread row is time-based (noisier, clock-sensitive — pinned clocks only) "
+                f"but scoped to the treated thread.\n")
+    o.write("\n")
     o.write(f"- run spread (max−min)/median: base insns {spread(rows['base']['ins']):.3f}%, "
             f"new insns {spread(rows['new']['ins']):.3f}% "
             f"(want <0.1% — larger means determinism slipped; raise --runs or pin harder).\n")
