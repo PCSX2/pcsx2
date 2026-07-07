@@ -636,14 +636,18 @@ void iFlushCall(int flushtype)
 	}
 
 	// Lazy-dirty pin seam (EE-SRA 2 WS-B; no-op in write-through mode).
-	// GPR-reading callees (interpreter fallbacks, branch tails, event paths —
-	// the modes carrying FLUSH_ALL_X86) need every pin canonical in memory.
-	// Lighter modes (FLUSH_CONSTANT_REGS before inline fastmem) do NOT flush
-	// here — their hit paths make no call; the caller-saved flush is emitted
-	// at the actual call sites instead (paired with armReloadEEClobberedPins).
-	// Ordered after _flushConstRegs: a const-tracked pinned reg materializes
-	// through the pin first.
-	if (flushtype & FLUSH_ALL_X86)
+	// Flush ALL pins only before GPR-READING callees — the exact
+	// FLUSH_INTERPRETER mode (recCall/recBranchCall interpreter fallbacks,
+	// Interp::MTC0). FLUSH_EVERYTHING at block tails is NOT a C seam: dirty
+	// pins deliberately ride across the dispatcher in their registers (the
+	// entire prize), and the JIT-exit paths (JITCompile/DispatcherEvent
+	// stubs) flush explicitly. Lighter modes flush nothing here — their
+	// call sites carry the caller-saved flush paired with the reload.
+	// Ordered after _flushConstRegs: a const-tracked pinned reg
+	// materializes through the pin first. First lazy census with the naive
+	// FLUSH_ALL_X86 gate: +224k emitted Strs (+20%) — placement is the
+	// whole game here.
+	if ((flushtype & FLUSH_INTERPRETER) == FLUSH_INTERPRETER)
 		armFlushEEGPRPins();
 
 #if 0
@@ -1315,7 +1319,7 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 			// Step 2: Emit call to snapshot pre-instruction state
 			armAsm->Mov(a64::w0, cpuRegs.code);
 			armAsm->Mov(a64::w1, pc - 4); // current instruction PC
-			armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
+			armFlushEEGPRPins(); // lazy-dirty seam: snapshot READS guest GPR memory
 			armEmitCall((void*)verifySnapshotPre);
 			// The hook is GPR-read-only but clobbers the caller-saved pins,
 			// and the native codegen emitted next reads guest state through
@@ -1331,7 +1335,7 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 			// Step 5: Emit call to verify against interpreter
 			armAsm->Mov(a64::w0, cpuRegs.code);
 			armAsm->Mov(a64::w1, pc - 4);
-			armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
+			armFlushEEGPRPins(); // lazy-dirty seam: verify READS guest GPR memory
 			armEmitCall((void*)verifyCheckPost);
 			armReloadEEClobberedPins(); // see verifySnapshotPre above
 		}
@@ -2286,7 +2290,7 @@ static void recRecompile(const u32 startpc)
 	{
 		armFlushCycleDelta();
 		armAsm->Mov(RWARG1, startpc);
-		armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
+		armFlushEEGPRPins(); // lazy-dirty seam: the hook READS guest GPR memory
 		armEmitCall((void*)ee_divtrace_jit_block_hook);
 		// Read-only hook, but the C call clobbers the caller-saved pins and
 		// the block body it precedes reads guest state through them.
