@@ -482,10 +482,25 @@ static void recLoad(u32 bits, bool sign)
 
 	const bool useFastmem = CHECK_FASTMEM && !vtlb_IsFaultingPC(pc);
 
+	unsigned addr_reg = 9;
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		iFlushCall(FLUSH_CONSTANT_REGS);
 		armAsm->Mov(a64::w9, g_cpuConstRegs[_Rs_].UL[0] + _Imm_);
+	}
+	else if (const a64::Register* pin = armEEPinForGPR(_Rs_))
+	{
+		// Pinned base (EE-SRA 2 WS-C2): pins survive iFlushCall (they are not
+		// allocator state), and the flush is precisely what write-backs any
+		// dirty NEON dual-residence copy into the pin — so form the address
+		// AFTER the flush, from the pin. _Imm_==0 skips even the Add: the pin
+		// itself is the fastmem index / softmem address (the backpatch info
+		// records the address register per site; RecStubs normalizes it).
+		iFlushCall(FLUSH_CONSTANT_REGS);
+		if (_Imm_ != 0)
+			armAsm->Add(a64::w9, pin->W(), _Imm_);
+		else
+			addr_reg = static_cast<unsigned>(pin->GetCode());
 	}
 	else
 	{
@@ -497,11 +512,11 @@ static void recLoad(u32 bits, bool sign)
 
 	if (useFastmem)
 	{
-		vtlbFastmemRead(9, 0, bits, sign);
+		vtlbFastmemRead(addr_reg, 0, bits, sign);
 	}
 	else
 	{
-		vtlbSoftmemRead(9, bits, sign);
+		vtlbSoftmemRead(addr_reg, bits, sign);
 	}
 	recStoreLoadResult();
 
@@ -598,10 +613,20 @@ static void recStore(u32 bits)
 		_eeMoveGPRtoR(bits <= 32 ? a64::w10 : a64::x10, _Rt_);
 	}
 
+	unsigned addr_reg = 9;
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		iFlushCall(FLUSH_CONSTANT_REGS);
 		armAsm->Mov(a64::w9, g_cpuConstRegs[_Rs_].UL[0] + _Imm_);
+	}
+	else if (const a64::Register* pin = armEEPinForGPR(_Rs_))
+	{
+		// Pinned base — post-flush pin read; see recLoad. (WS-C2)
+		iFlushCall(FLUSH_CONSTANT_REGS);
+		if (_Imm_ != 0)
+			armAsm->Add(a64::w9, pin->W(), _Imm_);
+		else
+			addr_reg = static_cast<unsigned>(pin->GetCode());
 	}
 	else
 	{
@@ -613,11 +638,11 @@ static void recStore(u32 bits)
 
 	if (useFastmem)
 	{
-		vtlbFastmemWrite(9, 10, bits);
+		vtlbFastmemWrite(addr_reg, 10, bits);
 	}
 	else
 	{
-		vtlbSoftmemWrite(9, 10, bits);
+		vtlbSoftmemWrite(addr_reg, 10, bits);
 	}
 }
 
