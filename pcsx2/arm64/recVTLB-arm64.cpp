@@ -785,6 +785,7 @@ void recSQ()
 	// preferring NEON for full-128-bit guest GPRs.
 	iFlushCall(FLUSH_CONSTANT_REGS);
 	armLoadEERegPtr(a64::q0, &cpuRegs.GPR.r[_Rt_].UQ);
+	armMergeEEPinIntoQuad(a64::q0, _Rt_); // lazy-dirty: stale lower half
 
 	armLoadEERegPtr(a64::w9, &cpuRegs.GPR.r[_Rs_].UL[0]);
 	if (_Imm_ != 0)

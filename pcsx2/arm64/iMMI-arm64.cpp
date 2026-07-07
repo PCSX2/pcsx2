@@ -56,7 +56,9 @@ static void mmiLoadReg(const a64::VRegister& qreg, int gpr)
 	}
 	else
 	{
-				armAsm->Ldr(qreg, armCpuRegMem(&cpuRegs.GPR.r[gpr].UQ));
+		armAsm->Ldr(qreg, armCpuRegMem(&cpuRegs.GPR.r[gpr].UQ));
+		// Lazy-dirty: merge the pin over the possibly-stale lower half.
+		armMergeEEPinIntoQuad(qreg, gpr);
 	}
 }
 
@@ -936,8 +938,12 @@ REC_FUNC(PDIVUW);
 // matches the interp's ordering under every Rd/Rs/Rt aliasing.
 static void recPMADDWLane(int dd, int ss, bool isSub)
 {
-	armAsm->Ldr(a64::w8, armCpuRegMem(&cpuRegs.GPR.r[_Rs_].SL[ss]));
-	armAsm->Ldr(a64::w9, armCpuRegMem(&cpuRegs.GPR.r[_Rt_].SL[ss]));
+	// armLoadEERegPtr: lane 0 (SL[0]) substitutes a pinned reg's mirror —
+	// required under lazy-dirty (memory lower half may be stale) and a free
+	// Ldr→Mov under write-through; lane 2 (SL[2]) is upper-half → memory is
+	// always canonical there and the helper falls through to the plain Ldr.
+	armLoadEERegPtr(a64::w8, &cpuRegs.GPR.r[_Rs_].SL[ss]);
+	armLoadEERegPtr(a64::w9, &cpuRegs.GPR.r[_Rt_].SL[ss]);
 
 	if (!isSub && ss == 0)
 	{

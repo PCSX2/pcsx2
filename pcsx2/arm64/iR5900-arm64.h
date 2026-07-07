@@ -286,6 +286,19 @@ static __fi void armFlushEEClobberedPins()
 	}
 }
 
+// Lazy-dirty read-site merge: a 128-bit guest-GPR read from canonical memory
+// (NEON dual-residence fill, MMI quad loads, SQ/QMTC2 sources) may see a
+// stale lower half when the pin is dirty — Ins the pin into lane 0 after the
+// load. The upper 64 bits are never mirrored, so memory is always right for
+// them. No-op in write-through mode (memory == pin by construction).
+static __fi void armMergeEEPinIntoQuad(const vixl::aarch64::VRegister& q, int gpr)
+{
+	if (!EE_PIN_LAZY_DIRTY)
+		return;
+	if (const vixl::aarch64::Register* pin = armEEPinForGPR(gpr))
+		armAsm->Ins(q.V2D(), 0, *pin);
+}
+
 static __fi void armLoadEERegPtr(const vixl::aarch64::CPURegister& reg, const void* field)
 {
 	// Pinned guest GPR: serve the read from the mirror register. The mirror

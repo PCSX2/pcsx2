@@ -844,6 +844,8 @@ int _allocGPRtoNEONreg(int gprreg, int mode)
 		else
 		{
 			armLoadEERegPtr(armQRegister(neonreg), &cpuRegs.GPR.r[gprreg].UQ);
+			// Lazy-dirty: a dirty pin makes the memory lower half stale.
+			armMergeEEPinIntoQuad(armQRegister(neonreg), gprreg);
 		}
 	}
 

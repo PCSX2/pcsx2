@@ -751,7 +751,8 @@ void recCOP2_QMTC2()
 	}
 	else
 	{
-				armAsm->Ldr(RQSCRATCH, armCpuRegMem(&cpuRegs.GPR.r[_Rt_]));
+		armAsm->Ldr(RQSCRATCH, armCpuRegMem(&cpuRegs.GPR.r[_Rt_]));
+		armMergeEEPinIntoQuad(RQSCRATCH, _Rt_); // lazy-dirty: stale lower half
 	}
 	armAsm->Str(RQSCRATCH, armVU0Mem(&VU0.VF[_Rd_]));
 }
@@ -816,7 +817,9 @@ void recCOP2_CTC2()
 	}
 	else
 	{
-				armAsm->Ldr(RWSCRATCH, armCpuRegMem(&cpuRegs.GPR.r[_Rt_].UL[0]));
+		// armLoadEERegPtr: substitutes a pinned reg's mirror — required under
+		// lazy-dirty, a free Ldr->Mov under write-through.
+		armLoadEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[0]);
 	}
 
 	if (fs == REG_R)
