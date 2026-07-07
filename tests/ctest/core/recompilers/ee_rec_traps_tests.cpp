@@ -15,6 +15,7 @@
 
 #include "harness/EeRecTestHarness.h"
 
+#include "Config.h"
 #include "R5900.h"
 
 #include <gtest/gtest.h>
@@ -156,6 +157,112 @@ TEST(EeRecTraps, TeqTakenInDelaySlotSetsCauseBdAndBranchEpc)
 	EXPECT_NE(h.GetCp0Jit(13) & 0x80000000u, 0u) << "JIT CAUSE.BD";
 	EXPECT_EQ(h.GetCp0Jit(14), RecompilerTestEnvironment::kProgramPc)
 		<< "JIT EPC must be the branch, not the delay slot";
+}
+
+// Delay-slot coverage for the OTHER bd-raisers (SYSCALL, BREAK, TLB miss on a
+// load). Together with the TEQ test above these pin every exception class that
+// can fire inside a delay slot on the arm64 rec — the classes for which the
+// cpuRegs.branch bracket (and its exception-divert epilogue) must stay emitted
+// when the bracket is gated to can-raise delay slots (EE-SRA 2, workstream A).
+
+TEST(EeRecTraps, SyscallInDelaySlotSetsCauseBdAndBranchEpc)
+{
+	EeRecTestHarness h;
+	h.LoadProgram({
+		BEQ(reg::zero, reg::zero, 2),    // +0x0: taken branch to +0xC
+		SYSCALL_(),                      // +0x4: delay slot — raises
+		ADDIU(reg::v0, reg::zero, 99),   // +0x8: skipped by the branch
+		ADDIU(reg::v1, reg::zero, 77),   // +0xC: target — exception preempts it
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 0ull);
+	h.ExpectGpr64(reg::v1, 0ull);
+	EXPECT_EQ(h.GetCp0Interp(13) & 0xFFu, 0x20u);
+	EXPECT_NE(h.GetCp0Interp(13) & 0x80000000u, 0u) << "interp CAUSE.BD";
+	EXPECT_EQ(h.GetCp0Interp(14), RecompilerTestEnvironment::kProgramPc)
+		<< "interp EPC = branch address";
+	EXPECT_EQ(h.GetCp0Jit(13) & 0xFFu, 0x20u);
+	EXPECT_NE(h.GetCp0Jit(13) & 0x80000000u, 0u) << "JIT CAUSE.BD";
+	EXPECT_EQ(h.GetCp0Jit(14), RecompilerTestEnvironment::kProgramPc)
+		<< "JIT EPC must be the branch, not the delay slot";
+}
+
+TEST(EeRecTraps, BreakInDelaySlotSetsCauseBdAndBranchEpc)
+{
+	EeRecTestHarness h;
+	h.LoadProgram({
+		BEQ(reg::zero, reg::zero, 2),
+		BREAK,                           // delay slot — raises
+		ADDIU(reg::v0, reg::zero, 99),
+		ADDIU(reg::v1, reg::zero, 77),
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 0ull);
+	h.ExpectGpr64(reg::v1, 0ull);
+	EXPECT_EQ(h.GetCp0Interp(13) & 0xFFu, 0x24u);
+	EXPECT_NE(h.GetCp0Interp(13) & 0x80000000u, 0u) << "interp CAUSE.BD";
+	EXPECT_EQ(h.GetCp0Interp(14), RecompilerTestEnvironment::kProgramPc);
+	EXPECT_EQ(h.GetCp0Jit(13) & 0xFFu, 0x24u);
+	EXPECT_NE(h.GetCp0Jit(13) & 0x80000000u, 0u) << "JIT CAUSE.BD";
+	EXPECT_EQ(h.GetCp0Jit(14), RecompilerTestEnvironment::kProgramPc);
+}
+
+TEST(EeRecTraps, LoadTlbMissInDelaySlotSetsCauseBdAndBranchEpc)
+{
+	// The memory-op raiser: a LW from an unmapped vaddr in a delay slot. The
+	// inline load path has no recEmitInterpTlbMissCheck — the divert to the
+	// exception vector rides the bracket epilogue, so this test also fails if
+	// the epilogue is dropped for memory delay slots.
+	// Softmem emit: the test binary installs no host SIGSEGV handler, so a
+	// fastmem probe of the unmapped page would kill the process instead of
+	// backpatching (same constraint as CallerSavedPinsSurviveVtlbSlowPath).
+	// The softmem slow path reaches the identical vtlb_Miss → cpuTlbMiss →
+	// cpuException(bd) machinery under test.
+	EeRecTestHarness h;
+	const bool old_fastmem = EmuConfig.Cpu.Recompiler.EnableFastmem;
+	EmuConfig.Cpu.Recompiler.EnableFastmem = false;
+	h.LoadProgram({
+		LUI(reg::a0, 0x4000),            // +0x0: a0 = 0x40000000 (no TLB entry)
+		BEQ(reg::zero, reg::zero, 2),    // +0x4: taken branch to +0x10
+		LW(reg::v1, 0, reg::a0),         // +0x8: delay slot — TLB refill miss
+		ADDIU(reg::v0, reg::zero, 99),   // +0xC: skipped by the branch
+		ADDIU(reg::a1, reg::zero, 77),   // +0x10: target — exception preempts it
+	});
+	h.Run();
+	EmuConfig.Cpu.Recompiler.EnableFastmem = old_fastmem;
+	h.ExpectGpr64(reg::v0, 0ull);
+	h.ExpectGpr64(reg::v1, 0ull);        // faulting load must not write rt
+	h.ExpectGpr64(reg::a1, 0ull);
+	// TLBL: ExcCode=2, Cause.ExcCode<<2 = 0x08. BadVAddr (CP0 r8) = the vaddr.
+	EXPECT_EQ(h.GetCp0Interp(13) & 0xFFu, 0x08u);
+	EXPECT_NE(h.GetCp0Interp(13) & 0x80000000u, 0u) << "interp CAUSE.BD";
+	EXPECT_EQ(h.GetCp0Interp(14), RecompilerTestEnvironment::kProgramPc + 4)
+		<< "interp EPC = branch address";
+	EXPECT_EQ(h.GetCp0Interp(8), 0x40000000u);
+	EXPECT_EQ(h.GetCp0Jit(13) & 0xFFu, 0x08u);
+	EXPECT_NE(h.GetCp0Jit(13) & 0x80000000u, 0u) << "JIT CAUSE.BD";
+	EXPECT_EQ(h.GetCp0Jit(14), RecompilerTestEnvironment::kProgramPc + 4)
+		<< "JIT EPC must be the branch, not the delay slot";
+	EXPECT_EQ(h.GetCp0Jit(8), 0x40000000u);
+}
+
+TEST(EeRecTraps, AluDelaySlotBranchSemanticsSurviveWithoutBracket)
+{
+	// Non-raising (ALU) delay slots lose the cpuRegs.branch bracket under the
+	// workstream-A gate. Pin the plain branch semantics: slot executes, branch
+	// is taken, the skipped instruction stays skipped, no exception fires.
+	EeRecTestHarness h;
+	h.LoadProgram({
+		BEQ(reg::zero, reg::zero, 2),    // +0x0: taken branch to +0xC
+		ADDIU(reg::a0, reg::zero, 5),    // +0x4: ALU delay slot — executes
+		ADDIU(reg::v0, reg::zero, 99),   // +0x8: skipped
+		ADDIU(reg::v1, reg::zero, 77),   // +0xC: target — executes
+	});
+	h.Run();
+	h.ExpectGpr64(reg::a0, 5ull);
+	h.ExpectGpr64(reg::v0, 0ull);
+	h.ExpectGpr64(reg::v1, 77ull);
+	EXPECT_EQ(h.GetCp0Jit(13) & 0xFFu, 0u) << "no exception on this path";
 }
 
 // ---------------- SYSCALL / BREAK (always taken) ----------------
