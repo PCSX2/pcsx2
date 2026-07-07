@@ -452,8 +452,16 @@ void _flushConstReg(int reg)
 {
 	if (GPR_IS_CONST1(reg) && !(g_cpuFlushedConstReg & (1 << reg)))
 	{
-		armAsm->Mov(RXSCRATCH, static_cast<s64>(g_cpuConstRegs[reg].SD[0]));
-		armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[reg].UD[0]);
+		// Materialize the constant into its destination directly. When reg is
+		// pinned, that destination IS the pin mirror: armStoreEERegPtr then
+		// recognizes the pin as its own store source and emits only the
+		// canonical STR (write-through) or nothing (lazy-dirty), collapsing
+		// the old Mov-scratch / STR / Mov-pin triad to Mov-pin / STR. Unpinned
+		// regs keep routing through RXSCRATCH.
+		const vixl::aarch64::Register* pin = armEEPinForGPR(reg);
+		const vixl::aarch64::Register& dst = pin ? *pin : RXSCRATCH;
+		armAsm->Mov(dst, static_cast<s64>(g_cpuConstRegs[reg].SD[0]));
+		armStoreEERegPtr(dst, &cpuRegs.GPR.r[reg].UD[0]);
 		g_cpuFlushedConstReg |= (1 << reg);
 		if (reg == 0)
 			DevCon.Warning("Flushing r0!");
@@ -467,8 +475,12 @@ void _flushConstRegs(bool delete_const)
 		if (!GPR_IS_CONST1(i) || g_cpuFlushedConstReg & (1u << i))
 			continue;
 
-		armAsm->Mov(RXSCRATCH, static_cast<u64>(g_cpuConstRegs[i].UD[0]));
-		armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[i].UD[0]);
+		// Const-into-pin (see _flushConstReg): materialize straight into the
+		// pin mirror when i is pinned, else through RXSCRATCH.
+		const vixl::aarch64::Register* pin = armEEPinForGPR(static_cast<int>(i));
+		const vixl::aarch64::Register& dst = pin ? *pin : RXSCRATCH;
+		armAsm->Mov(dst, static_cast<u64>(g_cpuConstRegs[i].UD[0]));
+		armStoreEERegPtr(dst, &cpuRegs.GPR.r[i].UD[0]);
 		g_cpuFlushedConstReg |= 1u << i;
 	}
 

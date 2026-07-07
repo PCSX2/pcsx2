@@ -221,3 +221,72 @@ TEST(EeRecRegallocCoupling, CrossBlockConstNotLeaked)
 	h.ExpectGpr64(reg::v0, 11ull);
 	h.ExpectBlockLinked(kBlockAPc + 8, kBlockBPc);
 }
+
+// ---------------------------------------------------------------------
+// Arm A (const-into-pin) — a multi-word const chain (LUI/ORI) materialized
+// into a PINNED reg, flushed at the block exit, and consumed by a
+// separately-compiled, statically-linked block through the PIN. Block B
+// starts with fresh const state, so its read routes armLoadEERegPtr → the
+// mirror, NOT const-prop; the static link carries no C call so both a
+// callee-saved pin ($v0 → x29) and a caller-saved one ($v1 → x12) ride
+// live. This is the exact seam Arm A rewrites: _flushConstReg materializes
+// the immediate straight into the pin (Mov pin,#imm) instead of routing it
+// through the scratch triad — a wrong value or a stranded mirror reddens
+// the read-back. The trailing ExpectGpr64 on $v0/$v1 also pins the
+// write-through STR (memory must stay canonical).
+// ---------------------------------------------------------------------
+TEST(EeRecRegallocCoupling, ConstChainMaterializedIntoPinnedCrossBlock)
+{
+	constexpr u32 kBlockAPc = RecompilerTestEnvironment::kProgramPc;
+	constexpr u32 kBlockBPc = kBlockAPc + 0x100;
+
+	EeRecTestHarness h;
+	h.SetGpr64(reg::v0, 0x0BADBADBADBADBADull); // stale-mirror sentinels
+	h.SetGpr64(reg::v1, 0x0BADBADBADBADBADull);
+	h.LoadProgramNoTerm({
+		LUI(reg::v0, 0x1234),
+		ORI(reg::v0, reg::v0, 0x5678),     // $v0 const 0x12345678 (movz/movk into a pin)
+		LUI(reg::v1, 0xFFFF),
+		ORI(reg::v1, reg::v1, 0x8001),     // $v1 const 0xFFFF...8001 (sign-ext, movn into a pin)
+		J(kBlockBPc),
+		NOP,                                // delay slot
+	});
+	h.WriteU32(kBlockBPc + 0,  DADDU(reg::t0, reg::v0, reg::zero)); // read $v0 via the pin
+	h.WriteU32(kBlockBPc + 4,  DADDU(reg::t1, reg::v1, reg::zero)); // read $v1 via the pin
+	h.WriteU32(kBlockBPc + 8,  J(kPark));
+	h.WriteU32(kBlockBPc + 12, NOP);
+	h.Run();
+	h.ExpectGpr64(reg::t0, 0x0000000012345678ull);
+	h.ExpectGpr64(reg::t1, 0xFFFFFFFFFFFF8001ull);
+	h.ExpectGpr64(reg::v0, 0x0000000012345678ull); // write-through STR kept memory canonical
+	h.ExpectGpr64(reg::v1, 0xFFFFFFFFFFFF8001ull);
+	h.ExpectBlockLinked(kBlockAPc + 16, kBlockBPc); // J is the 5th insn
+}
+
+// ---------------------------------------------------------------------
+// Arm A (const-into-pin), the dominant real-world shape: JAL sets $ra to a
+// compile-time-const link address (pc+8). recJAL const-props it and the
+// block-exit flush lands it in the $ra pin (x23) — under Arm A via a direct
+// Mov-imm — after which the JAL target block reads it back through the pin.
+// This is the "every JAL $ra link" triad the arm collapses; a broken
+// materialization strands the return address that any real callee's JR $ra
+// would then fault on. ExpectGpr64($ra) also holds the write-through STR.
+// ---------------------------------------------------------------------
+TEST(EeRecRegallocCoupling, JalRaLinkMaterializedIntoPinCrossBlock)
+{
+	constexpr u32 kBlockAPc = RecompilerTestEnvironment::kProgramPc;
+	constexpr u32 kBlockBPc = kBlockAPc + 0x100;
+
+	EeRecTestHarness h;
+	h.LoadProgramNoTerm({
+		JAL(kBlockBPc),     // $ra = kBlockAPc + 8 (const link), static-link to B
+		NOP,                // delay slot
+	});
+	h.WriteU32(kBlockBPc + 0, DADDU(reg::t0, reg::ra, reg::zero)); // read the $ra link via the pin
+	h.WriteU32(kBlockBPc + 4, J(kPark));
+	h.WriteU32(kBlockBPc + 8, NOP);
+	h.Run();
+	h.ExpectGpr64(reg::t0, static_cast<u64>(kBlockAPc + 8)); // link = JAL_pc + 8
+	h.ExpectGpr64(reg::ra, static_cast<u64>(kBlockAPc + 8)); // write-through STR kept memory canonical
+	h.ExpectBlockLinked(kBlockAPc, kBlockBPc); // JAL is the 1st insn
+}
