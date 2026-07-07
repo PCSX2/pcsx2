@@ -990,9 +990,13 @@ static void recPMADDWLane(int dd, int ss, bool isSub)
 	if (_Rd_)
 	{
 		// Rd.UD[dd] = the two low words just stored: LO in x9[31:0], HI
-		// inserted from x17[31:0].
+		// inserted from x17[31:0]. Through armStoreEERegPtr, NOT a raw Str:
+		// a raw store bypassed the pin mirror, leaving a pinned Rd's mirror
+		// stale after PMADDW/PMSUBW (latent under write-through — any
+		// pin-served read of Rd afterward saw the old value; fatal under
+		// lazy-dirty, where the seam flush then clobbered the result).
 		armAsm->Bfi(a64::x9, a64::x17, 32, 32);
-		armAsm->Str(a64::x9, armCpuRegMem(&cpuRegs.GPR.r[_Rd_].UD[dd]));
+		armStoreEERegPtr(a64::x9, &cpuRegs.GPR.r[_Rd_].UD[dd]);
 	}
 }
 
