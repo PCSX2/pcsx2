@@ -1060,6 +1060,54 @@ void LoadBranchState()
 //  Instruction recompilation
 // =====================================================================================================
 
+// AX-05 bracket gate (EE-SRA 2 WS-A): TRUE when a delay-slot instruction can
+// observe cpuRegs.branch at runtime, i.e. can reach cpuException (which takes
+// it as bd) or the bracket epilogue's exception divert. Fork-verified raiser
+// inventory (2026-07-07):
+//   - memory ops: TLB miss via vtlb_Miss → cpuTlbMissR/W(addr, cpuRegs.branch)
+//     (vtlb.cpp) from BOTH fastmem slow path and softmem, plus the MMIO
+//     fallback _ext_memRead/Write (Memory.cpp). The inline load/store paths
+//     have no recEmitInterpTlbMissCheck — the vector divert rides the bracket
+//     epilogue, so these must keep the bracket.
+//   - SYSCALL (IS_BRANCH|BRANCHTYPE_SYSCALL), BREAK, and the trap family
+//     TGE..TNE / TGEI..TNEI — all recBranchCall/recCall interpreter fallbacks
+//     whose bodies call cpuException(_, cpuRegs.branch). BREAK and the traps
+//     carry flags==0 in the opcode table, so they are keyed on opcode fields.
+//   - any instruction without native codegen (interpreter fallback via
+//     recCall): kept conservatively — an interp body may raise.
+// NON-raisers (bracket dropped — the 4-insn win on the common ALU/move/shift/
+// lui fillers): integer overflow is never raised by the rec (plain Add/Sub,
+// same as x86; only the debug-only FORCE_INTERP_* builds could see interp
+// overflow raise with a weakened BD — accepted), FPU/COP2 have no bd path,
+// INTC/DMAC/TIMR fire only at event tests (block boundary, branch==0 there),
+// and AdEL (RaiseAddressError) is a stub. Pinned by ee_rec_traps_tests.cpp
+// delay-slot raiser tests + AluDelaySlotBranchSemanticsSurviveWithoutBracket.
+static bool delaySlotNeedsBranchBracket(u32 code, const R5900::OPCODE& op)
+{
+	if (op.flags & (IS_LOAD | IS_STORE | IS_MEMORY))
+		return true; // TLB-miss / MMIO-fallback raisers
+	if (op.flags & IS_BRANCH)
+		return true; // SYSCALL + branch-in-delay-slot interpreter fallback
+	if (!op.recompile)
+		return true; // conservative: interpreter fallback may raise
+	const u32 primary = code >> 26;
+	if (primary == 0x00)
+	{
+		const u32 funct = code & 0x3F;
+		if (funct == 0x0D) // BREAK (flags==0 in the table)
+			return true;
+		if (funct >= 0x30 && funct <= 0x36) // TGE/TGEU/TLT/TLTU/TEQ/TNE
+			return true;
+	}
+	else if (primary == 0x01)
+	{
+		const u32 rt = (code >> 16) & 0x1F;
+		if (rt >= 0x08 && rt <= 0x0E) // TGEI/TGEIU/TLTI/TLTIU/TEQI/TNEI
+			return true;
+	}
+	return false;
+}
+
 void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 {
 	// Apply GameDB DynamicPatch pattern-matches during recompilation, matching
@@ -1160,18 +1208,22 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 		}
 	}
 
-	// Bracket every non-NOP delay-slot body with cpuRegs.branch = 1 / 0,
+	// Bracket can-raise delay-slot bodies with cpuRegs.branch = 1 / 0,
 	// mirroring the interpreter's _doBranch_shared. Every exception raiser
-	// (trap/SYSCALL/BREAK/overflow helpers, and the aarch64 vtlb TLB-miss
-	// path) passes cpuRegs.branch as the bd argument to cpuException — with
-	// no store the rec always raised BD=0 with a delay-slot resume address,
-	// and the kernel would ERET straight to the delay slot, losing the
-	// branch. The epilogue below also uses the flag to detect that an
-	// exception fired (cpuException zeroes it) and divert to the dispatcher
-	// — without that, the enclosing branch's static dispatch overwrites the
-	// exception vector and the branch target executes as if nothing
-	// happened. (AX-05)
-	const bool dsExceptionBracket = delayslot && (cpuRegs.code != 0);
+	// (trap/SYSCALL/BREAK, and the aarch64 vtlb TLB-miss path) passes
+	// cpuRegs.branch as the bd argument to cpuException — with no store the
+	// rec always raised BD=0 with a delay-slot resume address, and the kernel
+	// would ERET straight to the delay slot, losing the branch. The epilogue
+	// below also uses the flag to detect that an exception fired
+	// (cpuException zeroes it) and divert to the dispatcher — without that,
+	// the enclosing branch's static dispatch overwrites the exception vector
+	// and the branch target executes as if nothing happened. (AX-05)
+	// Gated to raiser classes only (EE-SRA 2 WS-A): cpuRegs.branch was the
+	// single hottest state field at 4.2% of ALL emitted EE instructions when
+	// every non-NOP slot paid the 4-insn bracket; the common ALU/move/shift
+	// fillers can't observe it (see delaySlotNeedsBranchBracket).
+	const bool dsExceptionBracket = delayslot && (cpuRegs.code != 0) &&
+		delaySlotNeedsBranchBracket(cpuRegs.code, R5900::GetCurrentInstruction());
 	if (dsExceptionBracket)
 	{
 		armAsm->Mov(RWSCRATCH, 1);
