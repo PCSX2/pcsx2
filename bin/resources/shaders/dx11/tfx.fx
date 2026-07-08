@@ -119,6 +119,7 @@
 #define PS_ABE 0
 #define PS_ROV_COLOR 0
 #define PS_ROV_DEPTH 0
+#define PS_ROV_ONESHOT 0
 #endif
 
 #ifndef VS_EXPAND_NONE
@@ -140,10 +141,15 @@
 #define SW_DEPTH (NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST || NEEDS_DEPTH_FOR_AA1)
 #define ZWRITE (PS_ZFLOOR || PS_ZCLAMP || SW_DEPTH)
 
+#define ROV_COLOR_CONTINUOUS (PS_ROV_COLOR && !PS_ROV_ONESHOT)
+#define ROV_DEPTH_CONTINUOUS (PS_ROV_DEPTH && !PS_ROV_ONESHOT)
+#define ROV_COLOR_ONESHOT (PS_ROV_COLOR && PS_ROV_ONESHOT)
+#define ROV_DEPTH_ONESHOT (PS_ROV_DEPTH && PS_ROV_ONESHOT)
+
 #define PS_RETURN_COLOR_ROV (!PS_NO_COLOR && PS_ROV_COLOR)
-#define PS_RETURN_COLOR (!PS_NO_COLOR && !PS_ROV_COLOR)
+#define PS_RETURN_COLOR (!PS_NO_COLOR && !ROV_COLOR_CONTINUOUS)
 #define PS_RETURN_DEPTH_ROV (PS_ROV_DEPTH == PS_ROV_DEPTH_READ_WRITE)
-#define PS_RETURN_DEPTH (ZWRITE && !PS_ROV_DEPTH)
+#define PS_RETURN_DEPTH (ZWRITE && !ROV_DEPTH_CONTINUOUS)
 #define PS_ROV_EARLYDEPTHSTENCIL (PS_ROV_COLOR && !PS_ROV_DEPTH && !ZWRITE)
 
 struct VS_INPUT
@@ -214,7 +220,7 @@ struct PS_OUTPUT
 
 #if PS_RETURN_DEPTH
 	// In DX12 we do depth feedback loops with a color copy.
-	#if SW_DEPTH && PS_NO_COLOR1 && PS_DEPTH_FEEDBACK_SUPPORT == 2
+	#if SW_DEPTH && PS_NO_COLOR1 && PS_DEPTH_FEEDBACK_SUPPORT == 2 && !PS_ROV_DEPTH
 		#if NUM_RTS > 0
 			float depth_color : SV_Target1;
 		#else
@@ -242,13 +248,22 @@ Texture2D<float> DepthTexture : register(t4);
 #endif
 SamplerState TextureSampler : register(s0);
 
+#if DX12 || !ROV_COLOR_ONESHOT
+	#define RT_ROV_SLOT u0
+	#define DS_ROV_SLOT u1
+#else
+	// For DX11 with oneshot color, the real color RT takes slot 0.
+	#define RT_ROV_SLOT u1
+	#define DS_ROV_SLOT u2
+#endif
+
 #if PS_ROV_COLOR
-RasterizerOrderedTexture2D<unorm float4> RtTextureRov : register(u0);
+RasterizerOrderedTexture2D<unorm float4> RtTextureRov : register(RT_ROV_SLOT);
 static float4 rov_rt_value;
 #endif
 
 #if PS_ROV_DEPTH
-RasterizerOrderedTexture2D<float> DepthTextureRov : register(u1);
+RasterizerOrderedTexture2D<float> DepthTextureRov : register(DS_ROV_SLOT);
 static float rov_depth_value;
 #endif
 
@@ -1587,30 +1602,40 @@ if (bad)
 	PS_OUTPUT output;
 #endif
 
-	// Color write back
-#if PS_RETURN_COLOR
-	output.c0 = o_col0;
-	#if !PS_NO_COLOR1
-		output.c1 = o_col1;
-	#endif
-#elif PS_RETURN_COLOR_ROV
+	// Color ROV write back. Must come before normal write back.
+#if PS_RETURN_COLOR_ROV
 	#if !PS_FBMASK
 		o_col0 = (FbMask == 0xFFu) ? RtLoad(input.p.xy) : o_col0; // channel masking
 	#endif
 	if (!rov_discard_color)
 		RtWrite(input.p.xy, o_col0);
+	else
+		o_col0 = RtLoad(input.p.xy); // Discard in case we're doing oneshot ROV.
 #endif
 
-	// Depth write back
+	// Color write back.
+#if PS_RETURN_COLOR
+	output.c0 = o_col0;
+	#if !PS_NO_COLOR1
+		output.c1 = o_col1;
+	#endif
+#endif
+
+	// Depth ROV write back. Must come before normal dept write back.
+#if PS_RETURN_DEPTH_ROV
+	if (!rov_discard_depth)
+		DepthWrite(input.p.xy, input.p.z);
+	else
+		input.p.z = DepthLoad(input.p.xy); // Discard in case we're doing oneshot ROV.
+#endif
+
+	// Depth write back.
 #if PS_RETURN_DEPTH
 	output.depth = input.p.z;
-	#if SW_DEPTH && PS_NO_COLOR1 && PS_DEPTH_FEEDBACK_SUPPORT == 2
+	#if SW_DEPTH && PS_NO_COLOR1 && PS_DEPTH_FEEDBACK_SUPPORT == 2 && !PS_ROV_DEPTH
 		// Output color clone for feedback.
 		output.depth_color = input.p.z;
 	#endif
-#elif PS_RETURN_DEPTH_ROV
-	if (!rov_discard_depth)
-		DepthWrite(input.p.xy, input.p.z);
 #endif
 
 #if (PS_RETURN_COLOR || PS_RETURN_DEPTH)
