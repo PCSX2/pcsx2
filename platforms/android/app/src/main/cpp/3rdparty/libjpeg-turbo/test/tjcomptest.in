@@ -1,0 +1,211 @@
+#/bin/bash
+
+set -u
+set -e
+trap onexit INT
+trap onexit TERM
+trap onexit EXIT
+
+onexit()
+{
+	if [ -d $OUTDIR ]; then
+		rm -rf $OUTDIR
+	fi
+}
+
+runme()
+{
+	echo \*\*\* $* | sed "s@$EXEDIR@\$EXEDIR@g" | sed "s@$IMGDIR@\$IMGDIR@g" |
+		sed "s@$JAVA@\$JAVA@g" | sed "s@:@WITH_JNA@@@g" |
+		sed "s@$OUTDIR@\$OUTDIR@g"
+	"$@"
+}
+
+IMGDIR=@CMAKE_SOURCE_DIR@/testimages
+OUTDIR=`mktemp -d /tmp/__tjcomptest_output.XXXXXX`
+EXEDIR=@CMAKE_BINARY_DIR@
+JAVA="@Java_JAVA_EXECUTABLE@"
+if [ -z "$JAVA" ]; then
+	JAVA=java
+fi
+JNAARGS="-cp $EXEDIR/jna/turbojpeg-jna.jar:@WITH_JNA@ -Djna.library.path=$EXEDIR"
+TJCOMP=$EXEDIR/tjcomp
+JAVAARG=
+
+if [ -d $OUTDIR ]; then
+	rm -rf $OUTDIR
+fi
+mkdir -p $OUTDIR
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	-jna)
+		JAVAARG=-jna
+		TJCOMP="$JAVA $JNAARGS TJComp"
+		;;
+	esac
+	shift
+done
+
+exec >$EXEDIR/test/tjcomptest$JAVAARG.log 2>&1
+
+echo "EXEDIR: $EXEDIR"
+echo "IMGDIR: $IMGDIR"
+echo "OUTDIR: $OUTDIR"
+echo
+
+SUBSAMPOPT=(444 422 440 420 411 441 410 24)
+SAMPOPT=(1x1 2x1 1x2 2x2 4x1 1x4 4x2 2x4)
+
+for precision in 8 12; do
+	if [ $precision -le 8 ]; then
+		RGBIMG=$IMGDIR/testorig.ppm
+		GRAYIMG=$IMGDIR/testorig.png
+		basename=testorig
+	else
+		RGBIMG=$IMGDIR/monkey16.png
+		GRAYIMG=$IMGDIR/monkey16.pgm
+		basename=monkey16
+	fi
+	RGBEXT=${RGBIMG##*.}
+	GRAYEXT=${GRAYIMG##*.}
+	if [ $precision -eq 8 ]; then
+		prearg=
+	else
+		prearg="-pre $precision"
+	fi
+	for restartarg in "" "-r 1 -icc $IMGDIR/test3.icc" "-r 1b"; do
+		for ariarg in "" "-a"; do
+			for dctarg in "" "-dc fa"; do
+				for optarg in "" "-o"; do
+					if [ "$optarg" = "-o" ]; then
+						if [[ "$ariarg" = "-a" || $precision -eq 12 ]]; then
+							continue
+						fi
+					fi
+					for progarg in "" "-p"; do
+						if [[ "$progarg" = "-p" && "$optarg" = "-o" ]]; then
+							continue
+						fi
+						for qualarg in "" "-q 1" "-q 100"; do
+							blarg=
+							if [ "$qualarg" = "-q 1" ]; then
+								blarg=-baseline
+							fi
+							for sampi in {0..7}; do
+								noiccarg=
+								if [ $sampi = 4 -a "$RGBEXT" = "png" ]; then
+									noiccarg=-noicc
+								fi
+
+								runme $TJCOMP $prearg $restartarg $ariarg $dctarg \
+									$optarg $progarg $qualarg -s ${SUBSAMPOPT[$sampi]} \
+									$noiccarg $RGBIMG $OUTDIR/${basename}-tjcomp.jpg
+								runme $EXEDIR/cjpeg $prearg $restartarg $ariarg $dctarg \
+									$optarg $progarg $qualarg $blarg -sa ${SAMPOPT[$sampi]} \
+									$noiccarg -outf $OUTDIR/${basename}-cjpeg.jpg $RGBIMG
+								$EXEDIR/test/md5sum $OUTDIR/${basename}-tjcomp.jpg \
+									$OUTDIR/${basename}-cjpeg.jpg | sed "s@$OUTDIR@\$OUTDIR@g"
+								cmp $OUTDIR/${basename}-tjcomp.jpg \
+									$OUTDIR/${basename}-cjpeg.jpg
+								rm $OUTDIR/${basename}-tjcomp.jpg $OUTDIR/${basename}-cjpeg.jpg
+								echo
+
+								runme $TJCOMP $prearg $restartarg $ariarg $dctarg \
+									$optarg $progarg $qualarg -s ${SUBSAMPOPT[$sampi]} \
+									$noiccarg -g $RGBIMG $OUTDIR/${basename}-tjcomp.jpg
+								runme $EXEDIR/cjpeg $prearg $restartarg $ariarg $dctarg \
+									$optarg $progarg $qualarg $blarg -sa ${SAMPOPT[$sampi]} \
+									$noiccarg -gr -outf $OUTDIR/${basename}-cjpeg.jpg $RGBIMG
+								$EXEDIR/test/md5sum $OUTDIR/${basename}-tjcomp.jpg \
+									$OUTDIR/${basename}-cjpeg.jpg | sed "s@$OUTDIR@\$OUTDIR@g"
+								cmp $OUTDIR/${basename}-tjcomp.jpg \
+									$OUTDIR/${basename}-cjpeg.jpg
+								rm $OUTDIR/${basename}-tjcomp.jpg $OUTDIR/${basename}-cjpeg.jpg
+								echo
+
+								runme $TJCOMP $prearg $restartarg $ariarg $dctarg \
+									$optarg $progarg $qualarg -s ${SUBSAMPOPT[$sampi]} \
+									$noiccarg -rg $RGBIMG $OUTDIR/${basename}-tjcomp.jpg
+								runme $EXEDIR/cjpeg $prearg $restartarg $ariarg $dctarg \
+									$optarg $progarg $qualarg $blarg -sa ${SAMPOPT[$sampi]} \
+									$noiccarg -rgb -outf $OUTDIR/${basename}-cjpeg.jpg $RGBIMG
+								$EXEDIR/test/md5sum $OUTDIR/${basename}-tjcomp.jpg \
+									$OUTDIR/${basename}-cjpeg.jpg | sed "s@$OUTDIR@\$OUTDIR@g"
+								cmp $OUTDIR/${basename}-tjcomp.jpg \
+									$OUTDIR/${basename}-cjpeg.jpg
+								rm $OUTDIR/${basename}-tjcomp.jpg $OUTDIR/${basename}-cjpeg.jpg
+								echo
+
+								noiccarg=
+								if [ $sampi = 4 -a "$GRAYEXT" = "png" ]; then
+									noiccarg=-noicc
+								fi
+
+								runme $TJCOMP $prearg $restartarg $ariarg $dctarg \
+									$optarg $progarg $qualarg -s ${SUBSAMPOPT[$sampi]} \
+									$noiccarg $GRAYIMG $OUTDIR/${basename}-tjcomp.jpg
+								runme $EXEDIR/cjpeg $prearg $restartarg $ariarg $dctarg \
+									$optarg $progarg $qualarg $blarg -sa ${SAMPOPT[$sampi]} \
+									$noiccarg -outf $OUTDIR/${basename}-cjpeg.jpg $GRAYIMG
+								$EXEDIR/test/md5sum $OUTDIR/${basename}-tjcomp.jpg \
+									$OUTDIR/${basename}-cjpeg.jpg | sed "s@$OUTDIR@\$OUTDIR@g"
+								cmp $OUTDIR/${basename}-tjcomp.jpg \
+									$OUTDIR/${basename}-cjpeg.jpg
+								rm $OUTDIR/${basename}-tjcomp.jpg $OUTDIR/${basename}-cjpeg.jpg
+								echo
+							done
+						done
+					done
+				done
+			done
+		done
+	done
+done
+
+for precision in {2..16}; do
+	if [ $precision -le 8 ]; then
+		RGBIMG=$IMGDIR/testorig.ppm
+		GRAYIMG=$IMGDIR/testorig.png
+		basename=testorig
+	else
+		RGBIMG=$IMGDIR/monkey16.png
+		GRAYIMG=$IMGDIR/monkey16.pgm
+		basename=monkey16
+	fi
+	if [ $precision -eq 8 ]; then
+		prearg=
+	else
+		prearg="-pre $precision"
+	fi
+	for psv in {1..7}; do
+		for pt in {0..15}; do
+			if [ $pt -ge $precision ]; then
+				continue
+			fi
+			for restartarg in "" "-r 1 -icc $IMGDIR/test3.icc"; do
+				runme $TJCOMP $prearg -l $psv,$pt $restartarg \
+					$RGBIMG $OUTDIR/${basename}-tjcomp.jpg
+				runme $EXEDIR/cjpeg $prearg -l $psv,$pt $restartarg \
+					-outf $OUTDIR/${basename}-cjpeg.jpg $RGBIMG
+				$EXEDIR/test/md5sum $OUTDIR/${basename}-tjcomp.jpg \
+					$OUTDIR/${basename}-cjpeg.jpg | sed "s@$OUTDIR@\$OUTDIR@g"
+				cmp $OUTDIR/${basename}-tjcomp.jpg $OUTDIR/${basename}-cjpeg.jpg
+				rm $OUTDIR/${basename}-tjcomp.jpg $OUTDIR/${basename}-cjpeg.jpg
+				echo
+
+				runme $TJCOMP $prearg -l $psv,$pt $restartarg \
+					$GRAYIMG $OUTDIR/${basename}-tjcomp.jpg
+				runme $EXEDIR/cjpeg $prearg -l $psv,$pt $restartarg \
+					-outf $OUTDIR/${basename}-cjpeg.jpg $GRAYIMG
+				$EXEDIR/test/md5sum $OUTDIR/${basename}-tjcomp.jpg \
+					$OUTDIR/${basename}-cjpeg.jpg | sed "s@$OUTDIR@\$OUTDIR@g"
+				cmp $OUTDIR/${basename}-tjcomp.jpg $OUTDIR/${basename}-cjpeg.jpg
+				rm $OUTDIR/${basename}-tjcomp.jpg $OUTDIR/${basename}-cjpeg.jpg
+				echo
+			done
+		done
+	done
+done
+
+echo "GREAT SUCCESS!"

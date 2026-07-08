@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="game_selector_grid_padding">24dp</dimen>
+    <dimen name="game_selector_tile_spacing">12dp</dimen>
+    <dimen name="settings_content_padding">32dp</dimen>
+    <dimen name="settings_column_spacing">24dp</dimen>
+</resources>

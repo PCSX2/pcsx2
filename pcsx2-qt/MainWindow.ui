@@ -14,7 +14,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>PCSX2</string>
+   <string>ARMSX2</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -118,10 +118,8 @@
      <string>&amp;Help</string>
     </property>
     <addaction name="actionGitHubRepository"/>
-    <addaction name="actionSupportForums"/>
     <addaction name="actionWiki"/>
     <addaction name="actionDocumentation"/>
-    <addaction name="actionDiscordServer"/>
     <addaction name="separator"/>
     <addaction name="actionCheckForUpdates"/>
     <addaction name="separator"/>
@@ -520,14 +518,6 @@
     <string>&amp;GitHub Repository...</string>
    </property>
   </action>
-  <action name="actionSupportForums">
-   <property name="icon">
-    <iconset theme="at"/>
-   </property>
-   <property name="text">
-    <string>Support &amp;Forums...</string>
-   </property>
-  </action>
   <action name="actionWiki">
    <property name="icon">
     <iconset theme="book"/>
@@ -542,14 +532,6 @@
    </property>
    <property name="text">
     <string>D&amp;ocumentation...</string>
-   </property>
-  </action>
-  <action name="actionDiscordServer">
-   <property name="icon">
-    <iconset theme="discord"/>
-   </property>
-   <property name="text">
-    <string>&amp;Discord Server...</string>
    </property>
   </action>
   <action name="actionCheckForUpdates">
@@ -575,7 +557,7 @@
      <normaloff>:/icons/AppIcon64.png</normaloff>:/icons/AppIcon64.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;About PCSX2...</string>
+    <string>&amp;About ARMSX2...</string>
    </property>
   </action>
   <action name="actionToolbarChangeDisc">

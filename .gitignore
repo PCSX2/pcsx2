@@ -109,6 +109,7 @@ oprofile_data/
 /deps-build
 /deps
 /deps-arm64
+/pcsx2-deps
 /gammaray-build
 /gammaray
 /ipch

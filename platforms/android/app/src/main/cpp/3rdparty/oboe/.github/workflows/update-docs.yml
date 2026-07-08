@@ -1,0 +1,27 @@
+name: Update Docs
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Doxygen Action
+      uses: mattnotmitt/doxygen-action@v1.12.0
+      with:
+        doxyfile-path: "./Doxyfile"
+        working-directory: "."
+
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/reference

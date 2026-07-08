@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>About PCSX2</string>
+   <string>About ARMSX2</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -38,7 +38,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="resources/resources.qrc">:/icons/PCSX2logo.svg</pixmap>
+        <pixmap resource="resources/resources.qrc">:/icons/ARMSX2logo.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>false</bool>

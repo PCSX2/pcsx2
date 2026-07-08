@@ -10,6 +10,9 @@
 #include "common/Assertions.h"
 #include "common/SettingsInterface.h"
 
+static constexpr const char* DEFAULT_COVER_URL_TEMPLATE =
+	"https://raw.githubusercontent.com/xlenore/ps2-covers/main/covers/default/${serial}.jpg";
+
 CoverDownloadDialog::CoverDownloadDialog(QWidget* parent /*= nullptr*/)
 	: QDialog(parent)
 {
@@ -136,6 +139,9 @@ void CoverDownloadDialog::loadCoverURLs()
 		text += QString::fromStdString(url);
 		text += '\n';
 	}
+
+	if (text.trimmed().isEmpty())
+		text = QString::fromUtf8(DEFAULT_COVER_URL_TEMPLATE);
 
 	m_ui.urls->setPlainText(text);
 }

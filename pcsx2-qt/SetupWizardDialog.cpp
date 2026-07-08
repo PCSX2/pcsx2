@@ -198,8 +198,10 @@ void SetupWizardDialog::setupLanguagePage()
 	connect(
 		m_ui.language, &QComboBox::currentIndexChanged, this, &SetupWizardDialog::languageChanged);
 
-	SettingWidgetBinder::BindWidgetToBoolSetting(
-		nullptr, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
+	// ARMSX2: auto-updater temporarily disabled — force the checkbox off and
+	// non-interactive instead of binding it to the AutoUpdater setting.
+	m_ui.autoUpdateEnabled->setChecked(false);
+	m_ui.autoUpdateEnabled->setEnabled(false);
 }
 
 void SetupWizardDialog::themeChanged()

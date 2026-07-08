@@ -1,0 +1,93 @@
+# Cross-platform testing using QEMU emulation
+name: Cross Platform
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+
+jobs:
+  qemu-platforms:
+    name: ${{ matrix.arch }} (QEMU)
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: ARM,      pkgs: 'qemu-system-arm   gcc-arm-linux-gnueabi',     xcc: arm-linux-gnueabi-gcc,     xemu: qemu-arm-static,     makevar: "" }
+          - { arch: ARM64,    pkgs: 'qemu-system-arm   gcc-aarch64-linux-gnu',     xcc: aarch64-linux-gnu-gcc,     xemu: qemu-aarch64-static, makevar: "" }
+          - { arch: PPC,      pkgs: 'qemu-system-ppc   gcc-powerpc-linux-gnu',     xcc: powerpc-linux-gnu-gcc,     xemu: qemu-ppc-static,     makevar: "" }
+          - { arch: PPC64LE,  pkgs: 'qemu-system-ppc   gcc-powerpc64le-linux-gnu', xcc: powerpc64le-linux-gnu-gcc, xemu: qemu-ppc64le-static, makevar: "" }
+          - { arch: S390X,    pkgs: 'qemu-system-s390x gcc-s390x-linux-gnu',       xcc: s390x-linux-gnu-gcc,       xemu: qemu-s390x-static,   makevar: "" }
+          - { arch: MIPS,     pkgs: 'qemu-system-mips gcc-mips-linux-gnu',         xcc: mips-linux-gnu-gcc,        xemu: qemu-mips-static,    makevar: "" }
+          - { arch: M68K,     pkgs: 'qemu-system-m68k gcc-m68k-linux-gnu',         xcc: m68k-linux-gnu-gcc,        xemu: qemu-m68k-static,    makevar: "HAVE_MULTITHREAD=0" }
+          - { arch: RISC-V,   pkgs: 'qemu-system-riscv64 gcc-riscv64-linux-gnu',   xcc: riscv64-linux-gnu-gcc,     xemu: qemu-riscv64-static, makevar: "" }
+          - { arch: SPARC,    pkgs: 'qemu-system-sparc gcc-sparc64-linux-gnu',     xcc: sparc64-linux-gnu-gcc,     xemu: qemu-sparc64-static, makevar: "" }
+
+    runs-on: ubuntu-latest
+    env:
+      XCC: ${{ matrix.xcc }}
+      XEMU: ${{ matrix.xemu }}
+      MAKEVAR: ${{ matrix.makevar }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Install cross-compilation tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-multilib qemu-utils qemu-user-static
+        sudo apt-get install ${{ matrix.pkgs }}
+
+    - name: Display environment info
+      run: |
+        echo "=== Cross Compiler Information ==="
+        type $XCC && which $XCC && $XCC --version
+        $XCC -v  # Show built-in specs
+        echo "=== QEMU Emulator Information ==="
+        type $XEMU && which $XEMU && $XEMU --version
+
+    - name: Run platform tests (ARM/ARM64/PPC/S390X)
+      if: contains(fromJSON('["ARM", "ARM64", "PPC", "S390X"]'), matrix.arch)
+      run: make platformTest V=1 CC=$XCC QEMU_SYS=$XEMU
+
+    - name: Run platform tests (PPC64LE)
+      if: matrix.arch == 'PPC64LE'
+      run: CFLAGS=-m64 make platformTest V=1 CC=$XCC QEMU_SYS=$XEMU
+
+    - name: Run platform tests (MIPS/M68K/RISC-V/SPARC)
+      if: contains(fromJSON('["MIPS", "M68K", "RISC-V", "SPARC"]'), matrix.arch)
+      run: make platformTest V=1 CC=$XCC QEMU_SYS=$XEMU $MAKEVAR
+
+  macos:
+    name: macOS
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Display environment info
+      run: |
+        type cc && which cc && cc --version
+        type make && which make && make -v
+        sysctl -a | grep machdep.cpu  # CPU info
+
+    - name: Build with strict flags
+      run: |
+        make clean
+        CFLAGS="-Werror -O0" make default V=1
+
+    - name: Run comprehensive tests
+      run: |
+        make clean
+        CFLAGS="-O3 -Werror -Wconversion -Wno-sign-conversion" make -j test V=1
+
+    - name: Test console independence
+      # Ensure `make test` doesn't depend on the status of the console
+      # See issue #990 for detailed explanations
+      run: make -j test > /dev/null

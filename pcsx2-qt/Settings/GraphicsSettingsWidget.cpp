@@ -27,11 +27,11 @@ static constexpr RendererInfo s_renderer_info[] = {
 	//: Graphics backend/engine type. Leave as-is.
 	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Direct3D 12"), GSRendererType::DX12},
 #endif
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_OPENGL) && !defined(__APPLE__)
 	//: Graphics backend/engine type. Leave as-is.
 	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "OpenGL"), GSRendererType::OGL},
 #endif
-#ifdef ENABLE_VULKAN
+#if defined(ENABLE_VULKAN) && !defined(__APPLE__)
 	//: Graphics backend/engine type. Leave as-is.
 	{QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Vulkan"), GSRendererType::VK},
 #endif
@@ -217,6 +217,14 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.tvShader, "EmuCore/GS", "TVShader", DEFAULT_TV_SHADER_MODE);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.casMode, "EmuCore/GS", "CASMode", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_CAS_MODE));
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.casSharpness, "EmuCore/GS", "CASSharpness", DEFAULT_CAS_SHARPNESS);
+#ifdef __APPLE__
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.metalfxMode, "EmuCore/GS", "Upscaler",
+		static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_UPSCALER));
+#else
+	// MetalFX is an Apple-Metal-only feature; hide the row entirely on other platforms.
+	m_post.metalfxMode->setVisible(false);
+	m_post.metalfxModeLabel->setVisible(false);
+#endif
 
 	connect(m_post.shadeBoost, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onShadeBoostChanged);
 	onShadeBoostChanged();
@@ -684,6 +692,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		//: You might find an official translation for this on AMD's website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx
 		dialog()->registerWidgetHelp(m_post.casMode, tr("Contrast Adaptive Sharpening"), tr("None (Default)"), tr("Enables FidelityFX Contrast Adaptive Sharpening."));
 
+#ifdef __APPLE__
+		dialog()->registerWidgetHelp(m_post.metalfxMode, tr("MetalFX Upscaling"), tr("Off (Default)"),
+			tr("Uses Apple MetalFX to spatially upscale the rendered image to the display resolution. "
+			   "Best paired with a low internal resolution. Requires a Metal GPU on macOS 13 or newer."));
+#endif
+
 		dialog()->registerWidgetHelp(m_post.casSharpness, tr("Sharpness"), tr("50%"), tr("Determines the intensity the sharpening effect in CAS post-processing."));
 
 		dialog()->registerWidgetHelp(m_post.shadeBoost, tr("Shade Boost"), tr("Unchecked"),
@@ -1052,6 +1066,15 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 
 	if (m_advanced.exclusiveFullscreenControl)
 		m_advanced.exclusiveFullscreenControl->setEnabled(is_auto || is_vk);
+
+#ifdef __APPLE__
+	// MetalFX upscaling only applies to the Metal renderer.
+	{
+		const bool is_metal = (type == GSRendererType::Metal);
+		m_post.metalfxMode->setVisible(is_metal);
+		m_post.metalfxModeLabel->setVisible(is_metal);
+	}
+#endif
 
 	if (m_hw.rov)
 		m_hw.rov->setDisabled(!is_hardware || is_ogl);

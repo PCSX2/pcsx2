@@ -535,10 +535,8 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionViewSystemDisplay, &QAction::triggered, this, &MainWindow::onViewSystemDisplayTriggered);
 	connect(m_ui.actionViewGameProperties, &QAction::triggered, this, &MainWindow::onViewGamePropertiesActionTriggered);
 	connect(m_ui.actionGitHubRepository, &QAction::triggered, this, &MainWindow::onGitHubRepositoryActionTriggered);
-	connect(m_ui.actionSupportForums, &QAction::triggered, this, &MainWindow::onSupportForumsActionTriggered);
 	connect(m_ui.actionWiki, &QAction::triggered, this, &MainWindow::onWikiActionTriggered);
 	connect(m_ui.actionDocumentation, &QAction::triggered, this, &MainWindow::onDocumentationActionTriggered);
-	connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
 	connect(m_ui.actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
 	connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
 	connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, [this]() { checkForUpdates(true, true); });
@@ -662,10 +660,10 @@ void MainWindow::createRendererSwitchMenu()
 #elif defined(__APPLE__)
 		GSRendererType::Metal,
 #endif
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_OPENGL) && !defined(__APPLE__)
 		GSRendererType::OGL,
 #endif
-#ifdef ENABLE_VULKAN
+#if defined(ENABLE_VULKAN) && !defined(__APPLE__)
 		GSRendererType::VK,
 #endif
 		GSRendererType::SW,
@@ -2047,11 +2045,6 @@ void MainWindow::onGitHubRepositoryActionTriggered()
 	QtUtils::OpenURL(this, AboutDialog::getGitHubRepositoryUrl());
 }
 
-void MainWindow::onSupportForumsActionTriggered()
-{
-	QtUtils::OpenURL(this, AboutDialog::getSupportForumsUrl());
-}
-
 void MainWindow::onWikiActionTriggered()
 {
 	QtUtils::OpenURL(this, AboutDialog::getWikiUrl());
@@ -2060,11 +2053,6 @@ void MainWindow::onWikiActionTriggered()
 void MainWindow::onDocumentationActionTriggered()
 {
 	QtUtils::OpenURL(this, AboutDialog::getDocumentationUrl());
-}
-
-void MainWindow::onDiscordServerActionTriggered()
-{
-	QtUtils::OpenURL(this, AboutDialog::getDiscordServerUrl());
 }
 
 void MainWindow::onAboutActionTriggered()

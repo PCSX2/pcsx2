@@ -1,0 +1,57 @@
+LZ4 CODING STYLE
+================
+
+When contributing code and patches to the `LZ4` project, the following rules are expected to be followed for a successful merge.
+
+
+Library
+-------
+
+The library's source code in `lib/` directory has a BSD 2-clause license.
+It's designed to be integrated into 3rd party applications.
+
+It adheres relatively strictly to vanilla `C90`, with the following exceptions:
+- `long long` type is required, in order to support 64-bit values
+- Variadic Macros are used for debug mode (but not required in release mode)
+
+Beyond that, all other rules and limitations of C90 must be respected, including `/* ... */` comment style only, and variable declaration at top of block only. The automated CI test suite will check for these rules.
+
+The code is allowed to use more modern variants (C99 / C11 / C23) when useful
+as long as it provides a clean C90 backup for older compilers.
+For example, C99+ compilers will employ the `restrict` keyword, while `C90` ones will ignore it, thanks to conditional macros.
+This ensures maximum portability across a wide range of systems.
+
+Moreover, in the interest of safety, the code has to respect a fairly strigent list of additional restrictions, provided through warning flags, the list of which is maintained within `Makefile`.
+Among the less common ones, we want the source to be compatible with `-Wc++-compat`, which ensures that the code can be compiled "as is", with no modification, as C++ code. It makes it possible to copy-paste the code into other C++ source files, or the source files are just dropped into a C++ environment which then compiles them as C++ source files.
+
+
+Command Line Interface
+----------------------
+
+The CLI executable's source code in `programs/` directory has a GPLv2+ license.
+While it's designed to be portable and freely distributable, it's not meant to be integrated into 3rd party applications.
+The license difference is meant to reflect that choice.
+
+Similar to the library, the CLI adheres relatively strictly to vanilla `C90`, and features the same exceptions:
+- `long long` requirement for 64-bit values
+- Variadic Macros for console messages (now used all the time, not just debug mode)
+
+The code can also use system-specific libraries and symbols (such as `posix` ones)
+as long as it provides a backup for plain `C90` platforms.
+It's even allowed to lose capabilities, as long as the CLI can be cleanly compiled on `C90`.
+For example, systems without `<pthread>` support nor Completion Ports will just not feature multi-threading support, and run single threaded.
+
+In the interest of build familiarity, the CLI source code also respects the same set of advanced warning flags as the library.
+That being said, this last part is debatable and could deviate in the future.
+For example, there are less reasons to support `-Wc++-compat` on the CLI side, since it's not meant to be integrated into 3rd party applications.
+
+
+Others
+------
+
+The repository includes other directories with their own set of compilable projects, such as `tests/`, `examples/` and `contrib/`.
+
+These repositories do not have to respect the same set of restrictions, and can employ a larger array of different languages.
+For example, some tests employ `sh`, and others employ `python`.
+
+These directories may nonetheless include several targets employing the same coding convention as the `lz4` library. This is in a no way a rule, more like a side effect of build familiarity.

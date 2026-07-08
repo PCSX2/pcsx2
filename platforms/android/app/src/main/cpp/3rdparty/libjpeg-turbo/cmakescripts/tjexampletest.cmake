@@ -1,0 +1,22 @@
+macro(check_error program)
+  if(NOT RESULT EQUAL 0)
+    message(FATAL_ERROR "${program} failed.")
+  endif()
+endmacro()
+
+macro(run_test PROG ARGS)
+  string(REPLACE ";" " " SPACED_ARGS "${ARGS}")
+  message(STATUS "${PROG} ${SPACED_ARGS}")
+  execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test/${PROG} ${ARGS}
+    RESULT_VARIABLE RESULT)
+  check_error("${PROG} ${SPACED_ARGS}")
+endmacro()
+
+run_test(tjcomptest "")
+run_test(tjdecomptest "")
+run_test(tjtrantest "")
+if(WITH_JNA)
+  run_test(tjcomptest "-jna")
+  run_test(tjdecomptest "-jna")
+  run_test(tjtrantest "-jna")
+endif()

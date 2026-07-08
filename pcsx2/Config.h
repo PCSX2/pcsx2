@@ -412,6 +412,12 @@ enum class GSCASMode : u8
 	SharpenAndResize,
 };
 
+enum class GSUpscaler : u8
+{
+	Off,           ///< Plain bilinear present-time stretch (default).
+	MetalFXSpatial, ///< Apple MetalFX spatial upscaler (Metal backend, macOS 13+).
+};
+
 enum class GSHWAutoFlushLevel : u8
 {
 	Disabled,
@@ -721,6 +727,7 @@ struct Pcsx2Config
 		static constexpr GSPostBilinearMode DEFAULT_BILINEAR_FILTERING_MODE = GSPostBilinearMode::BilinearSmooth;
 		static constexpr FMVAspectRatioSwitchType DEFAULT_FMV_ASPECT_RATIO = FMVAspectRatioSwitchType::Off;
 		static constexpr GSCASMode DEFAULT_CAS_MODE = GSCASMode::Disabled;
+		static constexpr GSUpscaler DEFAULT_UPSCALER = GSUpscaler::Off;
 
 		static constexpr float DEFAULT_UPSCALE_MULTIPLIER = 1.0f;
 		static constexpr AccBlendLevel DEFAULT_BLENDING_ACCURACY = AccBlendLevel::Basic;
@@ -870,6 +877,7 @@ struct Pcsx2Config
 		GSDumpCompressionMethod GSDumpCompression = GSDumpCompressionMethod::Zstandard;
 		GSHardwareDownloadMode HWDownloadMode = GSHardwareDownloadMode::Enabled;
 		GSCASMode CASMode = DEFAULT_CAS_MODE;
+		GSUpscaler Upscaler = DEFAULT_UPSCALER;
 		u8 Dithering = 2;
 		u8 MaxAnisotropy = 0;
 		u8 TVShader = 0;
@@ -1489,13 +1497,12 @@ namespace EmuFolders
 
 // ------------ CPU / Recompiler Options ---------------
 
-#ifdef _M_X86 // TODO: Remove me once EE/VU/IOP recs are added.
+// (ARM64 Phase 7.8) microVU0/1 are now ported, so REC_VU1/THREAD_VU1 track the config
+// on both architectures — the old ARM64 hardcoded-false stub would make GetGSPacketSize
+// take its `!REC_VU1` path and return the XGKICK packet size with the bit31 EOP flag set,
+// which mVU_XGKICK_ then mis-reads as a multi-GB transfer (memcpy crash on the first kick).
 #define REC_VU1 (EmuConfig.Cpu.Recompiler.EnableVU1)
 #define THREAD_VU1 (REC_VU1 && EmuConfig.Speedhacks.vuThread)
-#else
-#define THREAD_VU1 false
-#define REC_VU1 false
-#endif
 #define INSTANT_VU1 (EmuConfig.Speedhacks.vu1Instant)
 #define CHECK_EEREC (EmuConfig.Cpu.Recompiler.EnableEE)
 #define CHECK_CACHE (EmuConfig.Cpu.Recompiler.EnableEECache)

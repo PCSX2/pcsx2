@@ -47,11 +47,9 @@ AboutDialog::AboutDialog(QWidget* parent)
 
 	m_ui.links->setTextInteractionFlags(Qt::TextBrowserInteraction);
 	m_ui.links->setText(QStringLiteral(
-		R"(<a href="%1">%2</a> | <a href="%3">%4</a> | <a href="%5">%6</a> | <a href="%7">%8</a> | <a href="%9">%10</a>)")
+		R"(<a href="%1">%2</a> | <a href="%3">%4</a> | <a href="%5">%6</a> | <a href="%7">%8</a>)")
 			.arg(getWebsiteUrl())
 			.arg(tr("Website"))
-			.arg(getSupportForumsUrl())
-			.arg(tr("Support Forums"))
 			.arg(getGitHubRepositoryUrl())
 			.arg(tr("GitHub Repository"))
 			.arg(getLicenseUrl())
@@ -68,11 +66,6 @@ AboutDialog::~AboutDialog() = default;
 QString AboutDialog::getWebsiteUrl()
 {
 	return QString::fromUtf8(PCSX2_WEBSITE_URL);
-}
-
-QString AboutDialog::getSupportForumsUrl()
-{
-	return QString::fromUtf8(PCSX2_FORUMS_URL);
 }
 
 QString AboutDialog::getGitHubRepositoryUrl()
@@ -98,11 +91,6 @@ QString AboutDialog::getWikiUrl()
 QString AboutDialog::getDocumentationUrl()
 {
 	return QString::fromUtf8(PCSX2_DOCUMENTATION_URL);
-}
-
-QString AboutDialog::getDiscordServerUrl()
-{
-	return QString::fromUtf8(PCSX2_DISCORD_URL);
 }
 
 void AboutDialog::linksLinkActivated(const QString& link)

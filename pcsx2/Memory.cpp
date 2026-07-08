@@ -58,6 +58,7 @@ namespace SysMemory
 	static void* s_data_memory_file_handle;
 	static u8* s_code_memory;
 	static std::unique_ptr<SharedMemoryMappingArea> s_memory_mapping_area;
+	static std::unique_ptr<SharedMemoryMappingArea> s_code_mapping_area;
 } // namespace SysMemory
 
 static void memAllocate();
@@ -95,7 +96,8 @@ bool SysMemory::AllocateMemoryMap()
 		return false;
 	}
 
-	if (!(s_memory_mapping_area = SharedMemoryMappingArea::Create(HostMemoryMap::MainSize + HostMemoryMap::CodeSize, true)))
+	Console.WriteLn("@@MAC_MEMMAP@@ data_area_begin size=%zu", static_cast<size_t>(HostMemoryMap::MainSize));
+	if (!(s_memory_mapping_area = SharedMemoryMappingArea::Create(HostMemoryMap::MainSize, false)))
 	{
 		Host::ReportErrorAsync("Error", "Failed to map main memory.");
 		ReleaseMemoryMap();
@@ -109,7 +111,15 @@ bool SysMemory::AllocateMemoryMap()
 		return false;
 	}
 
-	if ((s_code_memory = s_memory_mapping_area->Map(nullptr, 0, s_memory_mapping_area->OffsetPointer(HostMemoryMap::MainSize), HostMemoryMap::CodeSize, PageAccess_Any())) == nullptr)
+	Console.WriteLn("@@MAC_MEMMAP@@ code_area_begin size=%zu", static_cast<size_t>(HostMemoryMap::CodeSize));
+	if (!(s_code_mapping_area = SharedMemoryMappingArea::Create(HostMemoryMap::CodeSize, true)))
+	{
+		Host::ReportErrorAsync("Error", "Failed to map code memory.");
+		ReleaseMemoryMap();
+		return false;
+	}
+
+	if ((s_code_memory = s_code_mapping_area->Map(nullptr, 0, s_code_mapping_area->BasePointer(), HostMemoryMap::CodeSize, PageAccess_Any())) == nullptr)
 	{
 		Host::ReportErrorAsync("Error", "Failed to allocate code memory.");
 		ReleaseMemoryMap();
@@ -153,13 +163,16 @@ void SysMemory::ReleaseMemoryMap()
 {
 	if (s_code_memory)
 	{
-		s_memory_mapping_area->Unmap(s_code_memory, HostMemoryMap::CodeSize, false);
+		if (s_code_mapping_area)
+			s_code_mapping_area->Unmap(s_code_memory, HostMemoryMap::CodeSize, false);
 		s_code_memory = nullptr;
 	}
+	s_code_mapping_area.reset();
 
 	if (s_data_memory)
 	{
-		s_memory_mapping_area->Unmap(s_data_memory, HostMemoryMap::MainSize, true);
+		if (s_memory_mapping_area)
+			s_memory_mapping_area->Unmap(s_data_memory, HostMemoryMap::MainSize, true);
 		s_data_memory = nullptr;
 	}
 

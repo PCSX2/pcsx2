@@ -36,7 +36,7 @@ echo "GIT_DATE: ${GIT_DATE}"
 echo "GIT_VERSION: ${GIT_VERSION}"
 echo "GIT_HASH: ${GIT_HASH}"
 
-cp "${SCRIPTDIR}"/pcsx2-qt.metainfo.xml.in "${OUTFILE}"
+cp "${SCRIPTDIR}"/armsx2-qt.metainfo.xml.in "${OUTFILE}"
 
 sed -i -e "s/@GIT_VERSION@/${GIT_VERSION}/" "${OUTFILE}"
 sed -i -e "s/@GIT_DATE@/${GIT_DATE}/" "${OUTFILE}"

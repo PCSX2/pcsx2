@@ -1,0 +1,163 @@
+# Core LZ4 functionality testing
+name: Core Tests
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+
+jobs:
+  benchmark:
+    name: Benchmark Tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-multilib
+
+    - name: Basic compression test
+      run: make -j -C tests test-lz4c V=1
+
+    - name: Full benchmark test
+      run: make -j -C tests test-fullbench V=1
+
+    - name: 32-bit benchmark test
+      run: make -j -C tests test-fullbench32 V=1
+
+  fuzzer:
+    name: Fuzzer Tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-multilib
+
+    - name: Setup memory mapping
+      run: sudo sysctl -w vm.mmap_min_addr=4096
+
+    - name: Fuzzer test (64-bit)
+      run: make -j -C tests test-fuzzer V=1
+
+    - name: Fuzzer test (32-bit)
+      run: make -C tests test-fuzzer32 V=1
+
+  versions:
+    name: Version Compatibility Tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-multilib
+
+    - name: Version compatibility test
+      run: make -j -C tests versionsTest V=1
+
+  abi:
+    name: ABI Compatibility Tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-multilib
+
+    - name: ABI compatibility test
+      run: make -j -C tests abiTests V=1
+
+  frame:
+    name: LZ4 Frame Tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-multilib
+
+    - name: Frame format test (64-bit)
+      run: make -j -C tests test-frametest V=1
+
+    - name: Frame format test (32-bit)
+      run: make -j -C tests test-frametest32 V=1
+
+  memory-usage:
+    name: Memory Usage Tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Test different LZ4_MEMORY_USAGE values
+      run: make V=1 -C tests test-compile-with-lz4-memory-usage
+
+  custom-distance:
+    name: Custom Configuration Tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Custom LZ4_DISTANCE_MAX test
+      run: |
+        CPPFLAGS='-DLZ4_DISTANCE_MAX=8000' make V=1 check
+        make clean
+
+    - name: Dynamic library linking test
+      run: |
+        make -C programs lz4-wlib V=1
+        make clean
+
+    - name: User memory functions test
+      run: |
+        make -C tests fullbench-wmalloc V=1
+        make clean
+        CC="c++ -Wno-deprecated" make -C tests fullbench-wmalloc V=1
+
+  makefile-variables:
+    name: Makefile Standard Variables Test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Test standard variable propagation
+      run: make test_stdvars V=1
+
+  block-device:
+    name: Block Device Compression Test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Test block device compression
+      run: |
+        make lz4
+        dd if=/dev/zero of=full0.img bs=2M count=1
+        BLOCK_DEVICE=$(sudo losetup --show -fP full0.img)
+        sudo chmod 666 $BLOCK_DEVICE
+        ./lz4 -v $BLOCK_DEVICE -c > /dev/null
+        sudo losetup -d $BLOCK_DEVICE
+        rm full0.img

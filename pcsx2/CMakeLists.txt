@@ -1054,11 +1054,91 @@ set(pcsx2arm64Sources
 	arm64/Vif_Dynarec.cpp
 	arm64/Vif_UnpackNEON.cpp
 	arm64/RecStubs.cpp
+	arm64/aR3000A.cpp
+	arm64/aR5900.cpp
+	arm64/aR5900Analysis.cpp
+	arm64/aR5900LoadStore.cpp
+	arm64/aR5900Arith.cpp
+	arm64/aR5900MultDiv.cpp
+	arm64/aR5900Branch.cpp
+	arm64/aR5900FPU.cpp
+	arm64/aR5900MMI.cpp
+	arm64/aVU.cpp
 	)
 
 set(pcsx2arm64Headers
 	arm64/AsmHelpers.h
+	arm64/aR5900.h
+	arm64/aR5900Analysis.h
+	arm64/aVU.h
+	arm64/aVU_IR.h
+	arm64/aVU_Misc.h
+	arm64/aVU_Analyze.inl
+	arm64/aVU_Alloc.inl
+	arm64/aVU_Clamp.inl
+	arm64/aVU_Misc.inl
+	arm64/aVU_Upper.inl
+	arm64/aVU_Lower.inl
+	arm64/aVU_Tables.inl
+	arm64/aVU_Flags.inl
+	arm64/aVU_Branch.inl
+	arm64/aVU_Compile.inl
 )
+
+# Mobile (arm64) platform sources, relocated from the former android/iOS core
+# forks (refresh-experimental / iOS-refresh). Source wiring only: real NDK /
+# Xcode builds are required to validate include paths and link deps.
+# See REFACTOR_STATUS.md.
+if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+	set(ARMSX2_IOS TRUE)
+endif()
+
+# NEON-optimised SPU2 mixer/reverb: shared by all arm64 mobile targets.
+if(ANDROID OR ARMSX2_IOS)
+	list(APPEND pcsx2SPU2Sources
+		SPU2/spu2_neon.cpp)
+	list(APPEND pcsx2SPU2Headers
+		SPU2/spu2_neon.h
+		SPU2/spu2_neon_dcfilter.h
+		SPU2/spu2_neon_mixer.h
+		SPU2/spu2_neon_reverb_ex.h
+		SPU2/spu2_optimize.h
+		SPU2/spu2_sve2_fir.h
+		SPU2/spu2_mt6899_tuning.h)
+endif()
+
+if(ANDROID)
+	list(APPEND pcsx2HostSources
+		Host/OboeAudioStream.cpp)
+	list(APPEND pcsx2GSSources
+		GS/Renderers/OpenGL/GLContextEGLAndroid.cpp
+		GS/Renderers/Common/GSGPUProfile.cpp)
+	list(APPEND pcsx2GSHeaders
+		GS/Renderers/OpenGL/GLContextEGLAndroid.h
+		GS/Renderers/Common/GSGPUProfile.h)
+	list(APPEND pcsx2Sources
+		Android/AndroidStubs.cpp
+		Android/AndroidPcapStubs.cpp
+		VU1Fingerprint.cpp
+		EEDiffVerify.cpp)
+	list(APPEND pcsx2Headers
+		VU1Fingerprint.h
+		EEDiffVerify.h
+		AndroidEEOpHist.h
+		AndroidPerfBuckets.h
+		PS1DrvTrace.h)
+endif()
+
+if(ARMSX2_IOS)
+	list(APPEND pcsx2Sources
+		MacOSStubs.cpp
+		QAProbe.cpp
+		TestHarness.cpp)
+	list(APPEND pcsx2Headers
+		QAProbe.h
+		TestHarness.h
+		SifRingBuffer.h)
+endif()
 
 # These ones benefit a lot from LTO
 set(pcsx2LTOSources
@@ -1262,6 +1342,9 @@ if (APPLE)
 		${AVFOUNDATION_LIBRARY}
 		${COREMEDIA_LIBRARY}
 	)
+	# MetalFX (spatial upscaler) is macOS 13.0+. Weak-link it so the binary still
+	# loads on older systems; every use is guarded with @available(macOS 13, *).
+	target_link_options(PCSX2_FLAGS INTERFACE "SHELL:-weak_framework MetalFX")
 endif()
 
 set_property(GLOBAL PROPERTY PCSX2_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
@@ -1398,12 +1481,12 @@ function(setup_main_executable target)
 			MACOSX_BUNDLE true
 			MACOSX_BUNDLE_INFO_PLIST "${PCSX2_SOURCE_DIR}/Resources/Info.plist.in"
 			XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "${PCSX2_SOURCE_DIR}/Resources/PCSX2.entitlements"
-			OUTPUT_NAME PCSX2
+			OUTPUT_NAME ARMSX2
 			# Fixes complaints when Xcode tries to sign for running locally about MoltenVK not being signed
 			XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS --deep
 		)
 
-		pcsx2_resource(${target} ${PCSX2_SOURCE_DIR}/Resources/PCSX2.icns ${PCSX2_SOURCE_DIR}/Resources)
+		pcsx2_resource(${target} ${PCSX2_SOURCE_DIR}/Resources/ARMSX2.icns ${PCSX2_SOURCE_DIR}/Resources)
 
 		# Copy shaderc into the bundle
 		target_sources(${target} PRIVATE "${SHADERC_LIBRARY}")

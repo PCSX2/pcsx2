@@ -1,0 +1,172 @@
+#/bin/bash
+
+set -u
+set -e
+trap onexit INT
+trap onexit TERM
+trap onexit EXIT
+
+onexit()
+{
+	if [ -d $OUTDIR ]; then
+		rm -rf $OUTDIR
+	fi
+}
+
+runme()
+{
+	echo \*\*\* $* | sed "s@$EXEDIR@\$EXEDIR@g" | sed "s@$IMGDIR@\$IMGDIR@g" |
+		sed "s@$JAVA@\$JAVA@g" | sed "s@:@WITH_JNA@@@g" |
+		sed "s@$OUTDIR@\$OUTDIR@g"
+	"$@"
+}
+
+IMGDIR=@CMAKE_SOURCE_DIR@/testimages
+OUTDIR=`mktemp -d /tmp/__tjtrantest_output.XXXXXX`
+EXEDIR=@CMAKE_BINARY_DIR@
+JAVA="@Java_JAVA_EXECUTABLE@"
+if [ -z "$JAVA" ]; then
+	JAVA=java
+fi
+JNAARGS="-cp $EXEDIR/jna/turbojpeg-jna.jar:@WITH_JNA@ -Djna.library.path=$EXEDIR"
+TJTRAN=$EXEDIR/tjtran
+JAVAARG=
+
+if [ -d $OUTDIR ]; then
+	rm -rf $OUTDIR
+fi
+mkdir -p $OUTDIR
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	-jna)
+		JAVAARG=-jna
+		TJTRAN="$JAVA $JNAARGS TJTran"
+		;;
+	esac
+	shift
+done
+
+exec >$EXEDIR/test/tjtrantest$JAVAARG.log 2>&1
+
+echo "EXEDIR: $EXEDIR"
+echo "IMGDIR: $IMGDIR"
+echo "OUTDIR: $OUTDIR"
+echo
+
+SUBSAMPOPT=(444 422 440 420 411 441 410 24 32)
+SAMPOPT=(1x1 2x1 1x2 2x2 4x1 1x4 4x2 2x4 3x2)
+
+for precision in 8 12; do
+	if [ $precision -le 8 ]; then
+		RGBIMG=$IMGDIR/testorig.ppm
+		GRAYIMG=$IMGDIR/testorig.png
+		basename=testorig
+	else
+		RGBIMG=$IMGDIR/monkey16.png
+		GRAYIMG=$IMGDIR/monkey16.pgm
+		basename=monkey16
+	fi
+
+	for sampi in {0..8}; do
+		EXTRA_ARGS=
+		if [ $sampi = 1 ]; then
+			EXTRA_ARGS=-p
+		elif [ $sampi = 2 ]; then
+			EXTRA_ARGS=-a
+		elif [ $sampi = 3 ]; then
+			EXTRA_ARGS="-o -icc $IMGDIR/test1.icc"
+		elif [ $sampi = 5 ]; then
+			EXTRA_ARGS="-r 1"
+		fi
+		runme $EXEDIR/cjpeg -pre $precision -sa ${SAMPOPT[$sampi]} $EXTRA_ARGS \
+			-outf $OUTDIR/${basename}-${SUBSAMPOPT[$sampi]}.jpg $RGBIMG
+		if [[ $sampi = 3 || $sampi = 4 ]]; then
+			$EXEDIR/wrjpgcom -comment "This is a test" \
+				$OUTDIR/${basename}-${SUBSAMPOPT[$sampi]}.jpg >$OUTDIR/temp.jpg
+			mv $OUTDIR/temp.jpg $OUTDIR/${basename}-${SUBSAMPOPT[$sampi]}.jpg
+		fi
+	done
+	runme $EXEDIR/cjpeg -pre $precision \
+		-outf $OUTDIR/${basename}-gray.jpg $GRAYIMG
+	echo
+
+	for subsamp in ${SUBSAMPOPT[*]} gray; do
+		for ariarg in "" "-a"; do
+			for copyarg in "" "-c i" "-c n"; do
+				if [[ "$copyarg" = "-c n" && "$subsamp" != "411" && \
+					"$subsamp" != "420" ]]; then
+					continue
+				fi
+				if [[ "$copyarg" = "-c i" && "$subsamp" != "420" && \
+					( "$subsamp" != "444" || $precision -eq 8 ) ]]; then
+					continue
+				fi
+				for croparg in "" "-cr 14x14+23+23" "-cr 21x21+4+4" "-cr 18x18+13+13" \
+					"-cr 21x21+0+0" "-cr 24x26+20+18"; do
+					for xformarg in "" "-f h" "-f v" "-ro 90" "-ro 180" "-ro 270" "-t" \
+						"-transv"; do
+						for grayarg in "" "-g"; do
+							if [ "$grayarg" = "" ]; then
+								if [[ "$subsamp" = "32" && "$croparg" != "" ]]; then
+									continue
+								fi
+							else
+								if [ "$subsamp" = "gray" ]; then
+									continue
+								fi
+							fi
+							for optarg in "" "-o"; do
+								if [ "$optarg" = "-o" ]; then
+									if [[ "$ariarg" = "-a" || $precision -eq 12 ]]; then
+										continue
+									fi
+								fi
+								for progarg in "" "-p"; do
+									if [[ "$progarg" = "-p" && "$optarg" = "-o" ]]; then
+										continue
+									fi
+									for restartarg in "" "-r 1 -icc $IMGDIR/test3.icc" \
+										"-r 1b"; do
+										if [[ "$restartarg" = "-r 1b" && "$croparg" != "" ]]; then
+											continue
+										fi
+										for trimarg in "" "-tri"; do
+											if [ "$trimarg" = "-tri" ]; then
+												if [[ "$xformarg" = "-t" || "$xformarg" = "" ]]; then
+													continue
+												fi
+												if [ "$croparg" != "" ]; then
+													continue
+												fi
+											fi
+											runme $TJTRAN $ariarg $copyarg $croparg $xformarg \
+												$grayarg $optarg $progarg $restartarg $trimarg \
+												$OUTDIR/${basename}-$subsamp.jpg \
+												$OUTDIR/${basename}-tjtran.jpg
+											runme $EXEDIR/jpegtran $ariarg $copyarg $croparg \
+												$xformarg $grayarg $optarg $progarg $restartarg \
+												$trimarg -outf $OUTDIR/${basename}-jpegtran.jpg \
+												$OUTDIR/${basename}-$subsamp.jpg
+											$EXEDIR/test/md5sum $OUTDIR/${basename}-tjtran.jpg \
+												$OUTDIR/${basename}-jpegtran.jpg |
+												sed "s@$OUTDIR@\$OUTDIR@g"
+											cmp $OUTDIR/${basename}-tjtran.jpg \
+												$OUTDIR/${basename}-jpegtran.jpg
+											rm $OUTDIR/${basename}-tjtran.jpg \
+												$OUTDIR/${basename}-jpegtran.jpg
+											echo
+										done
+									done
+								done
+							done
+						done
+					done
+				done
+			done
+		done
+		rm $OUTDIR/${basename}-$subsamp.jpg
+	done
+done
+
+echo "GREAT SUCCESS!"

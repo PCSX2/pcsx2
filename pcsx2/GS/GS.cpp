@@ -1167,8 +1167,40 @@ static void HotkeyAdjustUpscaleMultiplier(const float delta)
 	MTGS::ApplySettings();
 }
 
+static bool s_osd_hotkey_forced_simple = false;
+
+static bool HasConfiguredOSD()
+{
+	return EmuConfig.GS.OsdShowSpeed || EmuConfig.GS.OsdShowFPS || EmuConfig.GS.OsdShowVPS ||
+		   EmuConfig.GS.OsdShowResolution || EmuConfig.GS.OsdShowGSStats || EmuConfig.GS.OsdShowCPU ||
+		   EmuConfig.GS.OsdShowGPU || EmuConfig.GS.OsdShowGPUDebug || EmuConfig.GS.OsdShowIndicators ||
+		   EmuConfig.GS.OsdShowFrameTimes || EmuConfig.GS.OsdShowHardwareInfo || EmuConfig.GS.OsdShowVersion ||
+		   EmuConfig.GS.OsdShowSettings || EmuConfig.GS.OsdshowPatches || EmuConfig.GS.OsdShowInputs ||
+		   EmuConfig.GS.OsdShowInputRec || EmuConfig.GS.OsdShowVideoCapture || EmuConfig.GS.OsdShowTextureReplacements;
+}
+
+static void SetForcedSimpleOSD(bool enabled)
+{
+	s_osd_hotkey_forced_simple = enabled;
+	GSConfig.OsdShowFPS = enabled;
+	GSConfig.OsdShowVPS = enabled;
+	GSConfig.OsdShowSpeed = enabled;
+	GSConfig.OsdShowVersion = enabled;
+	GSConfig.OsdShowIndicators = enabled;
+	GSConfig.OsdMessagesPos = enabled ? OsdOverlayPos::TopLeft : OsdOverlayPos::None;
+	GSConfig.OsdPerformancePos = enabled ? OsdOverlayPos::TopRight : OsdOverlayPos::None;
+}
+
 static void HotkeyToggleOSD()
 {
+	if (!HasConfiguredOSD())
+	{
+		SetForcedSimpleOSD(!s_osd_hotkey_forced_simple || GSConfig.OsdPerformancePos == OsdOverlayPos::None);
+		return;
+	}
+
+	s_osd_hotkey_forced_simple = false;
+
 	GSConfig.OsdShowSettings ^= EmuConfig.GS.OsdShowSettings;
 	GSConfig.OsdshowPatches ^= EmuConfig.GS.OsdshowPatches;
 	GSConfig.OsdShowInputs ^= EmuConfig.GS.OsdShowInputs;

@@ -1,0 +1,105 @@
+# Static analysis and code quality checks
+name: Code Quality
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+
+jobs:
+  cppcheck:
+    name: Cppcheck Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Install cppcheck
+      run: |
+        sudo apt-get update
+        sudo apt-get install cppcheck
+
+    - name: Display cppcheck version
+      run: |
+        type cppcheck && which cppcheck && cppcheck --version
+
+    - name: Run cppcheck analysis
+      # This test script ignores the exit code of cppcheck.
+      # See known issues in README.md.
+      run: make V=1 clean cppcheck || echo "There are some cppcheck reports but we ignore them for now."
+
+  scan-build:
+    name: Clang Static Analyzer
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Install clang-tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install clang-tools
+
+    - name: Display environment info
+      run: |
+        type gcc && which gcc && gcc --version
+        type clang && which clang && clang --version
+        type scan-build && which scan-build
+        type make && which make && make -v
+        cat /proc/cpuinfo || echo "/proc/cpuinfo is not present"
+
+    - name: Run static analysis
+      run: make V=1 clean staticAnalyze
+
+  valgrind:
+    name: Valgrind Memory Analysis
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Install valgrind
+      run: |
+        sudo apt-get update
+        sudo apt-get install valgrind
+
+    - name: Display environment info
+      run: |
+        type cc && which cc && cc --version
+        type valgrind && which valgrind && valgrind --version
+
+    - name: Run memory analysis
+      run: make V=1 -C tests test-mem
+
+  unicode-lint:
+    name: Unicode Linting
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Check for unicode issues
+      run: bash ./tests/unicode_lint.sh
+
+  examples:
+    name: Build Examples
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Install dependencies
+      run: sudo apt-get update
+
+    - name: Display compiler info
+      run: |
+        type cc && which cc && cc --version
+        type c++ && which c++ && c++ --version
+
+    - name: Build examples
+      run: make V=1 examples

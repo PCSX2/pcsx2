@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string-array name="renderers">
+        <item>تلقائي</item>
+        <item>OpenGL</item>
+        <item>سوفتوير</item>
+        <item>Vulkan</item>
+    </string-array>
+
+    <string-array name="gpu_profile_override">
+        <item>تلقائي (موصى به)</item>
+        <item>فرض Mali</item>
+        <item>فرض Adreno</item>
+    </string-array>
+
+    <string-array name="texture_filtering">
+        <item>PS2 (افتراضي)</item>
+        <item>اجباري</item>
+        <item>الاقرب</item>
+    </string-array>
+
+    <string-array name="interlace_modes">
+        <item>تلقائي</item>
+        <item>ايقاف</item>
+        <item>Weave TFF</item>
+        <item>Weave BFF</item>
+        <item>Bob TFF</item>
+        <item>Bob BFF</item>
+        <item>Blend TFF</item>
+        <item>Blend BFF</item>
+        <item>Adaptive TFF</item>
+        <item>Adaptive BFF</item>
+    </string-array>
+
+    <string-array name="cas_modes">
+        <item>بدون (افتراضي)</item>
+        <item>شحذ فقط (داخلي)</item>
+        <item>شحذ وتغيير الحجم (العرض)</item>
+    </string-array>
+
+    <string-array name="texture_preloading">
+        <item>ايقاف</item>
+        <item>جزئي</item>
+        <item>كامل</item>
+    </string-array>
+
+    <string-array name="bilinear_present">
+        <item>ايقاف</item>
+        <item>ثنائي خطي (ناعم)</item>
+        <item>ثنائي خطي (حاد)</item>
+    </string-array>
+
+    <string-array name="trilinear_filtering">
+        <item>تلقائي</item>
+        <item>ايقاف</item>
+        <item>PS2</item>
+        <item>اجباري</item>
+    </string-array>
+
+    <string-array name="dithering_modes">
+        <item>ايقاف</item>
+        <item>مع التحجيم</item>
+        <item>بدون تحجيم (افتراضي)</item>
+        <item>إجبار 32-بت</item>
+    </string-array>
+
+    <string-array name="acc_blending">
+        <item>اقل</item>
+        <item>اساسي</item>
+        <item>متوسط</item>
+        <item>عالي</item>
+        <item>كامل</item>
+        <item>اقصى</item>
+    </string-array>
+
+    <string-array name="anisotropic">
+        <item>ايقاف</item>
+        <item>2x</item>
+        <item>4x</item>
+        <item>8x</item>
+        <item>16x</item>
+    </string-array>
+
+    <string-array name="aspect_ratios">
+        <item>تمديد</item>
+        <item>تلقائي 4:3/3:2</item>
+        <item>4:3</item>
+        <item>16:9</item>
+        <item>10:7</item>
+    </string-array>
+
+    <string-array name="resolution_scales">
+        <item>0.25x</item>
+        <item>0.5x</item>
+        <item>0.75x</item>
+        <item>1x</item>
+        <item>2x</item>
+        <item>3x</item>
+        <item>4x</item>
+        <item>5x</item>
+        <item>6x</item>
+        <item>7x</item>
+        <item>8x</item>
+    </string-array>
+
+    <string-array name="auto_flush_hw">
+        <item>معطل</item>
+        <item>Sprites فقط</item>
+        <item>مفعل</item>
+    </string-array>
+
+    <string-array name="cpu_cores_basic">
+        <item>المترجم (افتراضي)</item>
+        <item>المفسر</item>
+    </string-array>
+
+    <string-array name="network_ethapi">
+        <item>غير محدد</item>
+        <item>PCAP Bridged</item>
+        <item>PCAP Switched</item>
+        <item>Sockets</item>
+    </string-array>
+</resources>

@@ -1,0 +1,43 @@
+# Build system and IDE files
+build/
+.gradle
+.vscode/
+.idea/
+.project
+.settings/
+local.properties
+node_modules/
+bun.lockb
+package-lock.json
+/build-ios*/
+/build-maccatalyst/
+/ipa-package/
+*.ipa
+
+# OS junk & editor/files
+.DS_Store
+app/.DS_Store
+app/src/.DS_Store
+app/src/main/.DS_Store
+
+# Android/NDK/intermediate output
+app/.cxx/
+app/src/main/jniLibs/
+app/src/main/cpp/bin
+
+# Sensitive or key material
+armsx2_release.jks
+armsx2_keystore.properties
+app/src/main/assets/discord_creds.env
+
+# Temporary/log/output files
+log.txt
+
+# Third-party (vendored) native or generated sources
+app/src/main/cpp/3rdparty/rcheevos/.build
+app/src/main/cpp/3rdparty/discord_social_sdk/cdiscord.h
+app/src/main/cpp/3rdparty/discord_social_sdk/discordpp.h
+
+# External libs
+app/libs/discord_partner_sdk.aar
+macos

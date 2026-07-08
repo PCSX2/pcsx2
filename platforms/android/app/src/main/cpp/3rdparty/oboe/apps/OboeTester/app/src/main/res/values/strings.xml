@@ -1,0 +1,373 @@
+<resources>
+    <string name="app_name">Oboe Tester</string>
+    <string name="app_name_version">Oboe Tester,(%d) v %s, Oboe v %d.%d.%d"</string>
+    <string name="init_device">Device:</string>
+    <string name="init_status">Status:</string>
+    <string name="tap_help">Click START button!</string>
+    <string name="openAudio">Open</string>
+    <string name="startAudio">Start</string>
+    <string name="pauseAudio">Pause</string>
+    <string name="flushAudio">Flush</string>
+    <string name="stopAudio">Stop</string>
+    <string name="releaseAudio">Rlse</string>
+    <string name="closeAudio">Close</string>
+    <string name="recordAudio">Record</string>
+    <string name="playAudio">Play</string>
+    <string name="measure">Measure</string>
+    <string name="cancel">Cancel</string>
+    <string name="scan">Scan</string>
+    <string name="clear">Clear</string>
+    <string name="clear_comm">clearCommunicationDevice()</string>
+    <string name="runTest">Run</string>
+    <string name="cancelTest">Cancel</string>
+
+    <string name="GetParam">Get Param</string>
+    <string name="device_name">Device Name</string>
+    <string name="auto_select">Auto select</string>
+    <string name="hint_hide_settings">Hide Settings</string>
+    <string name="hint_show_settings">Show Settings</string>
+    <string name="please_wait">Measuring, please wait...</string>
+    <string name="tap_to_tone_instructions">
+        Tap in green box!\nNo tap-to-tone results yet.
+    </string>
+    <string name="external_tap_instructions">
+        Trigger sound on other device.\nThen quickly tap ANALYZE.
+    </string>
+    <string name="no_double_tap">Please do not tap while measuring.</string>
+    <string name="loopback_instructions_glitch">
+        &#160;Click Show Settings to configure.\n
+        This glitch measurement plays\n
+        and listens to a sine wave.\n
+        It works best with a loopback dongle.\n
+        Set volume to medium-high.\n
+    </string>
+    <string name="echo_instructions">
+        &#160;Be ready to turn down the volume\n
+        if you get feedback. \n
+    </string>
+    <string name="loopback_instructions_latency">
+        &#160;Click Show Settings to configure.\n
+        This latency measurement uses a\n
+        short burst of encoded noise.\n
+        It works with speakers and mic\n
+        or a loopback dongle.\n
+        Set volume to medium-high.\n
+    </string>
+
+    <string name="auto_glitch_instructions">
+        &#160;Plug in a loopback adapter.\n
+        Then set volume to about 80%.\n
+        Then press Run button.\n
+    </string>
+
+    <string name="api_prompt">Choose an API</string>
+    <string-array name="output_modes">
+        <item>Unspecified</item>
+        <item>OpenSL ES</item>
+        <item>AAudio</item>
+    </string-array>
+
+    <string name="audio_mode_prompt">Performance Mode</string>
+    <string-array name="audio_modes">
+        <item>NORMAL</item>
+        <item>RINGTONE</item>
+        <item>IN_CALL</item>
+        <item>IN_COMMUNICATION</item>
+    </string-array>
+
+    <string name="sample_rate_prompt">SRate:</string>
+    <string-array name="sample_rates">
+        <item>0</item>
+        <item>8000</item>
+        <item>11025</item>
+        <item>12000</item>
+        <item>16000</item>
+        <item>22050</item>
+        <item>24000</item>
+        <item>32000</item>
+        <item>44100</item>
+        <item>48000</item>
+        <item>64000</item>
+        <item>88200</item>
+        <item>96000</item>
+    </string-array>
+
+    <string name="format_prompt">Format:</string>
+    <string-array name="audio_formats">
+        <item>Unspecified</item>
+        <item>PCM_I16</item>
+        <item>PCM_FLOAT</item>
+        <item>PCM_I24</item>
+        <item>PCM_I32</item>
+        <item>IEC61937</item>
+        <item>MP3</item>
+    </string-array>
+
+    <string name="input_preset_prompt">InPreset:</string>
+    <string-array name="audio_input_presets">
+        <item>Generic</item>
+        <item>Camcorder</item>
+        <item>VoiceRec</item>
+        <item>VoiceComm</item>
+        <item>Unprocessed</item>
+        <item>Performance</item>
+    </string-array>
+
+    <string name="usage_prompt">Usage:</string>
+    <string-array name="audio_usages">
+        <item>Unspecified</item>
+        <item>Media</item>
+        <item>VoiceComm</item>
+        <item>VoiceCommSig</item>
+        <item>Alarm</item>
+        <item>Notification</item>
+        <item>Ringtone</item>
+        <item>Event</item>
+        <item>Accessability</item>
+        <item>Navigation</item>
+        <item>Sonification</item>
+        <item>Game</item>
+        <item>Assistant</item>
+    </string-array>
+
+    <string-array name="audio_content_types">
+        <item>Unspecified</item>
+        <item>Speech</item>
+        <item>Music</item>
+        <item>Movie</item>
+        <item>Sonification</item>
+    </string-array>
+
+    <string name="spatialization_behavior_prompt">Spatialization:</string>
+    <string-array name="spatialization_behaviors">
+        <item>Unspecified</item>
+        <item>Auto</item>
+        <item>Never</item>
+    </string-array>
+
+    <string name="channel_count_prompt">Channels:</string>
+    <string-array name="channel_counts">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+    </string-array>
+
+    <string name="capacity_prompt">Capacity:</string>
+    <string-array name="capacity_values">
+        <item>0</item>
+        <item>32</item>
+        <item>64</item>
+        <item>128</item>
+        <item>256</item>
+        <item>384</item>
+        <item>512</item>
+        <item>1024</item>
+        <item>2048</item>
+        <item>4096</item>
+        <item>8192</item>
+        <item>16384</item>
+    </string-array>
+
+    <string-array name="glitch_times">
+        <item>10</item>
+        <item>25</item>
+        <item>70</item>
+        <item>200</item>
+        <item>600</item>
+    </string-array>
+
+    <string name="performance_prompt">Perf:</string>
+    <string-array name="performance_modes">
+        <item>NONE</item>
+        <item>POWER_SAVING</item>
+        <item>LOW_LATENCY</item>
+        <item>POWER_SAVING_OFFLOAD</item>
+    </string-array>
+
+    <!--Must match SignalType in NativeAudioContext.h-->
+    <string name="output_signal_prompt">choose a signal</string>
+    <string-array name="output_signals">
+        <item>Sine</item>
+        <item>Sawtooth</item>
+        <item>Freq Sweep</item>
+        <item>Pitch Sweep</item>
+        <item>White Noise</item>
+    </string-array>
+
+    <string name="hang_prompt">, Hang(ms)</string>
+    <string-array name="hang_times">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>10</item>
+        <item>20</item>
+        <item>30</item>
+        <item>100</item>
+        <item>300</item>
+        <item>1000</item>
+        <item>2000</item>
+        <item>5000</item>
+    </string-array>
+
+    <string name="audio_source_prompt">Audio Source:</string>
+    <string-array name="audio_sources">
+        <item>DEFAULT</item>
+        <item>MIC</item>
+        <item>CAMCORDER</item>
+        <item>UNPROCESSED</item>
+        <item>VOICE_RECOGNITION</item>
+        <item>VOICE_COMMUNICATION</item>
+        <item>VOICE_PERFORMANCE</item>
+    </string-array>
+
+    <string name="synth_sender_text">Select Sender for Synth</string>
+    <string name="error_port_busy">Selected port is in use or unavailable.</string>
+    <string name="port_open_ok">Port opened OK.</string>
+    <string-array name="senders">
+        <item>"none"</item>
+    </string-array>
+
+    <string name="title_activity_main">Test Oboe</string>
+    <string name="title_activity_test_output">Test Output</string>
+    <string name="title_activity_test_input">Test Input</string>
+    <string name="title_activity_output_latency">Tap to Tone</string>
+    <string name="title_activity_recorder">Recorder</string>
+    <string name="title_activity_echo">Echo Input to Output</string>
+    <string name="title_activity_rt_latency">Round Trip Latency</string>
+    <string name="title_activity_glitches">Test Glitches</string>
+    <string name="title_activity_auto_glitches">Auto Glitches</string>
+    <string name="title_test_disconnect">Test Disconnect</string>
+    <string name="title_report_devices">Device Report</string>
+    <string name="title_data_paths">Data Paths</string>
+    <string name="title_extra_tests">Extra Tests</string>
+
+    <string name="title_external_tap">External Tap To Tone</string>
+    <string name="title_plug_latency">Plug Latency Test</string>
+    <string name="title_error_callback">Error Callback Test</string>
+    <string name="title_route_during_callback">Route Callback Test</string>
+    <string name="title_dynamic_load">Dynamic CPU Load</string>
+    <string name="title_cold_start_latency">Cold Start Latency</string>
+    <string name="title_rapid_cycle">Rapid Cycle</string>
+    <string name="title_audio_workload_test">Audio Workload Test</string>
+    <string name="title_audio_workload_test_runner">Audio Workload Test Runner</string>
+    <string name="title_reverse_jni">Reverse JNI</string>
+
+    <string name="need_record_audio_permission">"This app needs RECORD_AUDIO permission"</string>
+    <string name="share">Share</string>
+    <string name="seconds_per_test">seconds per test</string>
+    <string name="duration">Duration:</string>
+    <string name="auto_default_status">Status...</string>
+    <string name="device_report">Device Report</string>
+    <string name="plug_or_unplug">Plug in or Unplug a Headset</string>
+    <string name="report_magic_pass">PASS, got %X"</string>
+    <string name="report_magic_fail">FAIL, got %X, expected %X"</string>
+    <string name="log_of_test_results">Log of Test Results</string>
+    <string name="save_file">Save</string>
+    <string name="cpu_affinity">CPUs:</string>
+
+    <string name="src_prompt">SRC:</string>
+    <string name="average">Average</string>
+    <string name="failTest">Fail</string>
+    <string name="skipTest">Skip</string>
+    <string name="test_datapath_instructions">Attach peripherals\nVolume up, [START]</string>
+    <string name="test_disconnect_instructions">Disconnect all headsets.\nPress [RUN]</string>
+
+    <string name="analyze">Analyze</string>
+
+    <string name="routing_crash_intro">
+        &#160;May cause a crash by changing the\n
+        VoiceCommunication routing while playing\n
+        audio with a long duration callback.\n
+        More likely to crash with Bluetooth\n
+        headsets. Fixed in SDK 34 (U).\n
+        Issue #1763
+    </string>
+
+    <string name="rapid_cycle_intro">
+        &#160;Maybe cause a crash or hang by rapidly\n
+        opening, starting, and closing streams.\n
+    </string>
+
+    <string-array name="conversion_qualities">
+        <item>None</item>
+        <item>Fastest</item>
+        <item>Low</item>
+        <item>Medium</item>
+        <item>High</item>
+        <item>Best</item>
+    </string-array>
+
+    <string name="channel_mask_prompt">ChannelMask:</string>
+
+    <string name="close_open_prompt">, Sleep before open (ms)</string>
+    <string name="open_start_prompt">, Sleep between open and start (ms)</string>
+    <string name="start_stabilize_prompt">, Sleep for start to stabilize (ms)</string>
+    <string-array name="sleep_times">
+        <item>0</item>
+        <item>4</item>
+        <item>10</item>
+        <item>20</item>
+        <item>30</item>
+        <item>100</item>
+        <item>300</item>
+        <item>1000</item>
+        <item>2000</item>
+        <item>5000</item>
+        <item>10000</item>
+        <item>20000</item>
+        <item>50000</item>
+    </string-array>
+
+    <string name="audio_attribution_label">Audio</string>
+
+    <string name="package_name_prompt">Package:</string>
+    <string-array name="package_name_values">
+        <item>com.mobileer.oboetester</item>
+        <item>bogus.name</item>
+        <item></item>
+    </string-array>
+
+    <string name="attribution_tag_prompt">Attribution:</string>
+    <string-array name="attribution_tag_values">
+        <item>AudioTag</item>
+        <item>BogusTag</item>
+        <item></item>
+    </string-array>
+
+    <string name="dynamic_workload_graph_info">
+        Dynamic Workload: Black\nCPU Load: Green or Red (Glitch detected)
+    </string>
+
+    <string name="flush_from_accuracy_prompt">Choose a FlushFromAccuracy</string>
+    <string-array name="flush_from_accuracy">
+        <item>Undefined</item>
+        <item>Accurate</item>
+    </string-array>
+
+    <string name="fallback_mode_prompt">Choose a FallbackMode</string>
+    <string-array name="fallback_mode">
+        <item>Default</item>
+        <item>Mute</item>
+        <item>Fail</item>
+    </string-array>
+
+    <string name="stretch_mode_prompt">Choose a StretchMode</string>
+    <string-array name="stretch_mode">
+        <item>Default</item>
+        <item>Voice</item>
+    </string-array>
+</resources>

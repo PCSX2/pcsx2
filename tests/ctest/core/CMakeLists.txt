@@ -4,6 +4,11 @@ add_pcsx2_test(core_test
 	StubHost.cpp
 )
 
+if(ARCH_ARM64)
+	# Phase 0.6: ARM64 JIT toolchain smoke test (emit + execute ARM64 code).
+	target_sources(core_test PRIVATE arm64_emit_test.cpp)
+endif()
+
 set(multi_isa_sources
 	GS/swizzle_test_main.cpp
 )

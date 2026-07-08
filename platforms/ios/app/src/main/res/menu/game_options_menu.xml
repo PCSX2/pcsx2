@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/choose_cover"
+        android:title="@string/cover_action_choose"
+        android:orderInCategory="100"/>
+    <item
+        android:id="@+id/remove_chosen_cover"
+        android:title="@string/cover_action_remove"
+        android:orderInCategory="100"/>
+    <item
+        android:id="@+id/per_game_settings"
+        android:title="@string/per_game_settings_button"
+        android:orderInCategory="100"/>
+</menu>

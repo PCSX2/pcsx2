@@ -1,0 +1,109 @@
+# Build system testing (Visual Studio, Meson)
+name: Build Systems
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+
+jobs:
+  windows-visual-studio:
+    name: ${{ matrix.system.os }} Visual Studio
+    runs-on: ${{ matrix.system.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        system:
+          - { os: windows-2022, build_path: ".\\build\\VS2022" }
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Build Win32 Debug
+      # Switching to debug mode, since vs2022 optimizations seem to introduce a bug since July 2024
+      run: |
+        pushd ${{ matrix.system.build_path }}
+        .\\build-and-test-win32-debug.bat
+        popd
+
+    - name: Build x64 Debug
+      # Switching to debug mode, since vs2022 optimizations seem to introduce a bug since July 2024
+      run: |
+        pushd ${{ matrix.system.build_path }}
+        .\\build-and-test-x64-debug.bat
+        popd
+
+    - name: Generate VS solution
+      run: |
+        pushd ".\\build\\visual"
+        .\\generate_vs2022.cmd
+        popd
+
+    - name: Upload generated VS2022 directory
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      with:
+        name: VS2022-Build-Dir
+        path: "build/visual/Visual Studio 17 2022"
+
+    - name: Build executable with generated solution
+      run: cmake --build "build/visual/Visual Studio 17 2022" --config Debug
+
+    - name: Run minimal runtime test
+      run: |
+        & ".\\build\\visual\\Visual Studio 17 2022\\Debug\\lz4.exe" -vvV
+        & ".\\build\\visual\\Visual Studio 17 2022\\Debug\\lz4.exe" -bi1
+        & ".\\build\\visual\\Visual Studio 17 2022\\Debug\\lz4.exe" ".\\build\\visual\\Visual Studio 17 2022\\Debug\\lz4.exe"
+        & ".\\build\\visual\\Visual Studio 17 2022\\Debug\\lz4.exe" -t ".\\build\\visual\\Visual Studio 17 2022\\Debug\\lz4.exe.lz4"
+
+  meson:
+    name: Meson + Ninja
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Setup Python
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      with:
+        python-version: '3.x'
+
+    - name: Install build tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install tree ninja-build
+        python -m pip install --upgrade pip
+        pip3 install --user meson
+
+    - name: Display environment info
+      run: |
+        type clang && which clang && clang --version
+        type python && which python && python --version
+        type meson && which meson && meson --version
+
+    - name: Configure build
+      run: >
+        meson setup
+        --fatal-meson-warnings
+        --buildtype=debug
+        -Db_lundef=false
+        -Dauto_features=enabled
+        -Dprograms=true
+        -Dcontrib=true
+        -Dtests=true
+        -Dexamples=true
+        build/meson builddir
+
+    - name: Run tests
+      run: meson test -C builddir
+
+    - name: Test installation
+      run: |
+        cd builddir
+        DESTDIR=./staging ninja install
+        tree ./staging

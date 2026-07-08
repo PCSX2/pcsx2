@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <csignal>
 #include <cerrno>
+#include <cstring>
 #include <fcntl.h>
 #include <mutex>
 #include <sys/mman.h>
@@ -164,7 +165,13 @@ std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t 
 #endif
 	void* alloc = mmap(nullptr, size, PROT_NONE, flags, -1, 0);
 	if (alloc == MAP_FAILED)
+	{
+		const int err = errno;
+		std::fprintf(stderr,
+			"@@HOST_MMAP_FAIL@@ op=reserve size=%zu jit=%d flags=0x%x prot=0x%x err=%d message=\"%s\"\n",
+			size, jit ? 1 : 0, flags, PROT_NONE, err, std::strerror(err));
 		return nullptr;
+	}
 
 	return std::unique_ptr<SharedMemoryMappingArea>(new SharedMemoryMappingArea(static_cast<u8*>(alloc), size, size / __pagesize));
 }
@@ -180,7 +187,13 @@ u8* SharedMemoryMappingArea::Map(void* file_handle, size_t file_offset, void* ma
 		// MAP_FIXED is okay here, since we've reserved the entire region, and *want* to overwrite the mapping.
 		void* const ptr = mmap(map_base, map_size, lnxmode, MAP_SHARED | MAP_FIXED, fd, static_cast<off_t>(file_offset));
 		if (ptr == MAP_FAILED)
+		{
+			const int err = errno;
+			std::fprintf(stderr,
+				"@@HOST_MMAP_FAIL@@ op=map_shared base=%p size=%zu prot=0x%x err=%d message=\"%s\"\n",
+				map_base, map_size, lnxmode, err, std::strerror(err));
 			return nullptr;
+		}
 	}
 	else
 	{
@@ -188,7 +201,13 @@ u8* SharedMemoryMappingArea::Map(void* file_handle, size_t file_offset, void* ma
 		// So we do the MAP_JIT in the allocation, and just mprotect here
 		// Note that this will only work the first time for a given region
 		if (mprotect(map_base, map_size, lnxmode) < 0)
+		{
+			const int err = errno;
+			std::fprintf(stderr,
+				"@@HOST_MMAP_FAIL@@ op=mprotect base=%p size=%zu prot=0x%x err=%d message=\"%s\"\n",
+				map_base, map_size, lnxmode, err, std::strerror(err));
 			return nullptr;
+		}
 	}
 
 	m_num_mappings++;

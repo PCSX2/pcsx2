@@ -1,0 +1,7 @@
+status:       PUBLISHED
+technologies: [Android, NDK]
+categories:   [NDK, C++]
+languages:    [C++, Java]
+solutions:    [Mobile]
+github:       googlesamples/android-ndk
+license:      apache2

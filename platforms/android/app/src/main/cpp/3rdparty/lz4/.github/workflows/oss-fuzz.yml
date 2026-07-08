@@ -1,0 +1,45 @@
+# OSS-Fuzz integration testing
+name: OSS-Fuzz
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+
+jobs:
+  oss-fuzz:
+    name: OSS-Fuzz (${{ matrix.sanitizer }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sanitizer: [address, undefined, memory]
+
+    steps:
+    - name: Build Fuzzers
+      id: build
+      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
+      with:
+        oss-fuzz-project-name: 'lz4'
+        dry-run: false
+        sanitizer: ${{ matrix.sanitizer }}
+
+    - name: Run Fuzzers
+      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
+      with:
+        oss-fuzz-project-name: 'lz4'
+        fuzz-seconds: 100
+        dry-run: false
+        sanitizer: ${{ matrix.sanitizer }}
+
+    - name: Upload Crash Artifacts
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      if: failure() && steps.build.outcome == 'success'
+      with:
+        name: ${{ matrix.sanitizer }}-artifacts
+        path: ./out/artifacts

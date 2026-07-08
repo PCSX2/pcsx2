@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    tools:context="com.mobileer.oboetester.MainActivity">
+
+    <LinearLayout
+        android:id="@+id/title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:orientation="horizontal"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="OboeTester"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin" >
+
+        <TextView
+            android:id="@+id/versionText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="V?"
+            />
+
+        <GridLayout
+            android:id="@+id/buttonGrid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2" >
+
+            <Button
+                android:id="@+id/buttonTestOutput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_gravity="fill"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onLaunchTestOutput"
+                android:text="Test Output" />
+
+            <Button
+                android:id="@+id/buttonTestInput"
+                android:layout_gravity="fill"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onLaunchTestInput"
+                android:text="Test Input" />
+
+            <Button
+                android:id="@+id/buttonTapToTone"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_gravity="fill"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onLaunchTapToTone"
+                android:text="Tap to Tone Latency" />
+
+            <Button
+                android:id="@+id/button_rt_latency"
+                android:layout_gravity="fill"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onLaunchRoundTripLatency"
+                android:text="Round Trip Latency" />
+
+            <Button
+                android:id="@+id/buttonEcho"
+                android:layout_gravity="fill"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onLaunchEcho"
+                android:text="Echo Input to Output" />
+
+            <Button
+                android:id="@+id/buttonRecorder"
+                android:layout_gravity="fill"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onLaunchRecorder"
+                android:text="Record and Play"
+                />
+
+            <Button
+                android:id="@+id/button_manual_glitches"
+                android:layout_gravity="fill"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onLaunchManualGlitchTest"
+                android:text="Glitch Test" />
+
+            <Button
+                android:id="@+id/button_auto_glitches"
+                android:layout_gravity="fill"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onLaunchAutoGlitchTest"
+                android:text="Auto Glitch Test" />
+
+            <Button
+                android:id="@+id/button_test_disconnect"
+                android:layout_gravity="fill"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onLaunchTestDisconnect"
+                android:text="Test Disconnect" />
+
+            <Button
+                android:id="@+id/button_test_device_report"
+                android:layout_gravity="fill"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onLaunchTestDeviceReport"
+                android:text="@string/title_report_devices" />
+
+            <Button
+                android:id="@+id/button_test_data_paths"
+                android:layout_gravity="fill"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onLaunchTestDataPaths"
+                android:text="Data Paths" />
+
+            <Button
+                android:id="@+id/button_extra_tests"
+                android:layout_gravity="fill"
+                android:layout_width="0dp"
+                android:layout_columnWeight="1"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/button_tint"
+                android:onClick="onLaunchExtratests"
+                android:text="Extras..." />
+
+        </GridLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/useCallback"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:onClick="onUseCallbackClicked"
+                android:text="Use Callback" />
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="Size:" />
+
+            <EditText
+                android:id="@+id/callbackSize"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="8"
+                android:inputType="number"
+                android:text="0" />
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/usePartialDataCallback"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:onClick="onUsePartialDataCallbackClicked"
+            android:text="Use Partial Data Callback" />
+
+        <CheckBox
+            android:id="@+id/boxEnableWorkarounds"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:checked="false"
+            android:text="enable Oboe workarounds" />
+
+        <CheckBox
+            android:id="@+id/boxEnableBackground"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:checked="true"
+            android:text="enable background operation" />
+
+
+        <CheckBox
+            android:id="@+id/boxEnableForegroundService"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:checked="true"
+            android:text="enable foreground service" />
+
+        <CheckBox
+            android:id="@+id/boxEnableAudioFocus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:checked="true"
+            android:text="enable audio focus" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mode:" />
+
+            <Spinner
+                android:id="@+id/spinnerAudioMode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:entries="@array/audio_modes"
+                android:prompt="@string/audio_mode_prompt" />
+
+            <TextView
+                android:id="@+id/deviceView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:lines="1"
+                android:text="@string/init_device" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/text_build_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lines="3"
+            android:ems="10"
+            android:text="V?" />
+    </LinearLayout>
+</LinearLayout>

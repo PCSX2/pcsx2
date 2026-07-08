@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@/libpng18
+
+Name: libpng
+Description: Loads and saves PNG files
+Version: 1.8.0.git
+Libs: -L${libdir} -lpng18
+Cflags: -I${includedir}

@@ -1,0 +1,25 @@
+name: Verifying libpng on macOS
+
+on:
+  push:
+    branches:
+      - libpng16
+      - libpng18
+  pull_request:
+    branches:
+      - libpng16
+      - libpng18
+
+jobs:
+  verify-macos:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+      - name: Run the CMake verification script
+        run: bash ./ci/ci_verify_cmake.sh
+        env:
+          CI_CMAKE_GENERATOR: Xcode
+          CI_CMAKE_BUILD_FLAGS: -j2
+          CI_CTEST_FLAGS: -j2

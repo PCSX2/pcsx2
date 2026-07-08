@@ -1,0 +1,10 @@
+{
+  "Disable": {
+    "Charset": true,
+    "IndentSize": true
+  },
+  "Exclude": [
+    ".git/",
+    "out/"
+  ]
+}

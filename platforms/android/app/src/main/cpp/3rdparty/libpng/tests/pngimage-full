@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# pngimage-full test:
+# Exhaustive read validation against the pngsuite corpus.
+exec ./pngimage --exhaustive --list-combos --log "${srcdir}/contrib/pngsuite/"*.png

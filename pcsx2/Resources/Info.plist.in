@@ -14,7 +14,7 @@
 				<string>mdf</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>PCSX2.icns</string>
+			<string>ARMSX2.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>PS2 Game</string>
 			<key>CFBundleTypeRole</key>
@@ -26,7 +26,7 @@
 				<string>elf</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>PCSX2.icns</string>
+			<string>ARMSX2.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>PS2 Homebrew Application</string>
 			<key>CFBundleTypeRole</key>
@@ -40,9 +40,9 @@
 				<string>gs.zst</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>PCSX2.icns</string>
+			<string>ARMSX2.icns</string>
 			<key>CFBundleTypeName</key>
-			<string>PCSX2 GSdump</string>
+			<string>ARMSX2 GSdump</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 		</dict>
@@ -52,19 +52,23 @@
 				<string>p2s</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>PCSX2.icns</string>
+			<string>ARMSX2.icns</string>
 			<key>CFBundleTypeName</key>
-			<string>PCSX2 Save State</string>
+			<string>ARMSX2 Save State</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 		</dict>
 	</array>
+	<key>CFBundleName</key>
+	<string>ARMSX2</string>
+	<key>CFBundleDisplayName</key>
+	<string>ARMSX2</string>
 	<key>CFBundleExecutable</key>
-	<string>PCSX2</string>
+	<string>ARMSX2</string>
 	<key>CFBundleIconFile</key>
-	<string>PCSX2.icns</string>
+	<string>ARMSX2.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>net.pcsx2.pcsx2</string>
+	<string>net.armsx2.armsx2</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundlePackageType</key>
@@ -83,7 +87,7 @@
 	<string>${PCSX2_CAMERA_USAGE_DESCRIPTION}</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>${PCSX2_MICROPHONE_USAGE_DESCRIPTION}</string>
-	<key>LSApplicationCategoryType</key> 
+	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.games</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
@@ -179,13 +183,13 @@
 	<array>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>net.pcsx2.pnach</string>
+			<string>net.armsx2.pnach</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.ini</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>PCSX2 Game Patch</string>
+			<string>ARMSX2 Game Patch</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -196,13 +200,13 @@
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>net.pcsx2.memcard</string>
+			<string>net.armsx2.memcard</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>PCSX2 Memory Card</string>
+			<string>ARMSX2 Memory Card</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -213,13 +217,13 @@
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>net.pcsx2.savestate</string>
+			<string>net.armsx2.savestate</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>PCSX2 Save State</string>
+			<string>ARMSX2 Save State</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -230,13 +234,13 @@
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>net.pcsx2.gsdump</string>
+			<string>net.armsx2.gsdump</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>PCSX2 GSdump</string>
+			<string>ARMSX2 GSdump</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>

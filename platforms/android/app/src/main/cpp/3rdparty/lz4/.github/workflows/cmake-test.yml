@@ -1,0 +1,127 @@
+# Simplified CMake Build Tests
+name: CMake Build Tests
+
+on:
+  push:
+    branches: ['dev', 'release', '*cmake*']
+  pull_request:
+    branches: ['dev', 'release']
+
+permissions:
+  contents: read
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+
+jobs:
+  # Core functionality test - multi-platform
+  cmake-core-tests:
+    name: Core Tests (${{ matrix.os }}, ${{ matrix.build_type }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            build_type: Release
+            generator: ""
+          - os: ubuntu-latest
+            build_type: Debug
+            generator: ""
+          - os: windows-latest
+            build_type: Release
+            generator: '-G "Visual Studio 17 2022" -A x64'
+          - os: macos-latest
+            build_type: Release
+            generator: ""
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6.0.2
+
+    - name: Set up MSVC (Windows)
+      if: runner.os == 'Windows'
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Set up CMake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: latest
+
+    - name: Configure and Build
+      shell: bash
+      run: |
+        mkdir cmakebuild && cd cmakebuild
+        cmake ../build/cmake ${{ matrix.generator }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        cmake --build . --config ${{ matrix.build_type }}
+
+    - name: Test Installation (Linux only)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        cd cmakebuild
+        cmake --install . --prefix install-test
+        test -f "install-test/lib/liblz4.a" || test -f "install-test/lib/liblz4.so"
+        test -f "install-test/include/lz4.h"
+
+  # CMake compatibility and integration tests
+  cmake-extended-tests:
+    name: Extended Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        test_type: 
+          - cmake_versions
+          - static_lib
+          - integration
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6.0.2
+
+    - name: Set up CMake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: ${{ matrix.test_type == 'cmake_versions' && '3.10.0' || 'latest' }}
+
+    - name: CMake Version Compatibility Test
+      if: matrix.test_type == 'cmake_versions'
+      run: |
+        mkdir cmakebuild && cd cmakebuild
+        cmake ../build/cmake
+        cmake --build .
+
+    - name: Static Library Test
+      if: matrix.test_type == 'static_lib'
+      run: |
+        # Build and install static library
+        CFLAGS="-Werror -O1" cmake -S build/cmake -B build -DBUILD_STATIC_LIBS=ON -DCMAKE_INSTALL_PREFIX=$PWD/install
+        cmake --build build --target install
+        
+        # Test find_package with static library
+        cmake -S tests/cmake -B build_test -DCMAKE_PREFIX_PATH=$PWD/install
+        cmake --build build_test
+
+    - name: Integration Test
+      if: matrix.test_type == 'integration'
+      run: |
+        # Build and install
+        cmake -S build/cmake -B build -DCMAKE_INSTALL_PREFIX=$PWD/install
+        cmake --build build --target install
+        
+        # Test find_package
+        cmake -S tests/cmake -B test_build -DCMAKE_PREFIX_PATH=$PWD/install
+        cmake --build test_build
+        cd test_build && ctest -V
+
+  # Makefile wrapper test
+  make-cmake-test:
+    name: Make CMake
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6.0.2
+    - name: Test via Makefile
+      run: make clean && make cmakebuild

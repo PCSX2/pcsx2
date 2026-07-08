@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Negative-stride-extra test:
+# Bottom-up layout with non-aligned padding.
+exec ./pngstest \
+     --negative-stride \
+     --stride-extra 7 \
+     --tmpfile "negative-stride-extra-" \
+     --log \
+     "${srcdir}/contrib/testpngs/gray-1.png" \
+     "${srcdir}/contrib/testpngs/gray-16-linear.png" \
+     "${srcdir}/contrib/testpngs/rgb-8-linear.png" \
+     "${srcdir}/contrib/testpngs/rgb-16-linear.png" \
+     "${srcdir}/contrib/testpngs/palette-8-tRNS.png" \
+     "${srcdir}/contrib/testpngs/gray-alpha-8-linear.png" \
+     "${srcdir}/contrib/testpngs/gray-alpha-16-linear.png" \
+     "${srcdir}/contrib/testpngs/rgb-alpha-8-1.8.png" \
+     "${srcdir}/contrib/testpngs/rgb-alpha-8-sRGB.png" \
+     "${srcdir}/contrib/testpngs/rgb-alpha-16-linear.png"

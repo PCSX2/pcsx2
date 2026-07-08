@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Artifact Naming Scheme:
-# PCSX2-<OS>-Qt-[BUILD_SYSTEM]-[ARCH]-[SIMD]-[pr\[PR_NUM\]]-[title|sha\[SHA|PR_TITLE\]
+# ARMSX2-<OS>-Qt-[BUILD_SYSTEM]-[ARCH]-[SIMD]-[pr\[PR_NUM\]]-[title|sha\[SHA|PR_TITLE\]
 # -- limited to 200 chars
 # Outputs:
 # - artifact-name
 
-# Example - PCSX2-linux-Qt-x64-flatpak-sse4-sha[e880a2749]
+# Example - ARMSX2-linux-Qt-x64-flatpak-sse4-sha[e880a2749]
 
 # Inputs as env-vars
 # PREFIX

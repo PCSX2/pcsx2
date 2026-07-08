@@ -1,0 +1,11 @@
+# Disable the "expressions don't expand in single quotes, use double quotes"
+# advice. We need the regular expressions to remain uninterpolated.
+disable=SC2016
+
+# Disable the "variable appears unused" warning caused by the use of getopts
+# with an obligatory (but unused) variable name in the main function.
+disable=SC2034
+
+# Disable all the "quote to prevent globbing or word splitting" advice.
+# We need word splitting for well-known variables like MAKEFLAGS and CFLAGS.
+disable=SC2086,SC2206

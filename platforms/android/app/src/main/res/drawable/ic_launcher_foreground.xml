@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive-icon foreground. The art (savetowerforeground.png) fills its full
+     1024px canvas, which on the 108dp adaptive layer put it edge-to-edge and let
+     the launcher mask crop into it (looked oversized/clipped). Wrap it in a 21dp
+     inset so the art lands inside the ~66dp adaptive safe zone (108 - 2*21 = 66).
+     21dp is a plain dimension (fraction insets need API 28; minSdk is 26) and is
+     proportional to the 108dp layer, so it scales correctly across launchers. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:inset="21dp">
+    <bitmap
+        android:antialias="true"
+        android:dither="true"
+        android:gravity="fill"
+        android:src="@drawable/savetowerforeground" />
+</inset>

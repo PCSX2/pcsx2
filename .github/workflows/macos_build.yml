@@ -13,14 +13,10 @@ on:
         required: false
         type: string
         default: macos-26
-      arch:
-        required: false
-        type: string
-        default: x86-64
       patchesUrl:
         required: false
         type: string
-        default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
+        default: https://github.com/isztldav/pcsx2_patches/releases/download/latest
       fetchTags:
         required: false
         type: boolean
@@ -66,8 +62,8 @@ jobs:
           echo "#define DEFAULT_UPDATER_CHANNEL \"stable\"" > ./pcsx2-qt/DefaultUpdaterChannel.h
           cat ./pcsx2-qt/DefaultUpdaterChannel.h
 
-      - name: Use Xcode 26.2
-        run: sudo xcode-select -s /Applications/Xcode_26.2.app
+      - name: Use Xcode 26.5
+        run: sudo xcode-select -s /Applications/Xcode_26.5.app
 
       - name: Install Metal Toolchain
         run: |
@@ -102,12 +98,12 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/deps
-          key: ${{ inputs.os }} ${{ inputs.arch }} deps ${{ hashFiles('.github/workflows/scripts/macos/*', '.github/workflows/scripts/common/*.patch') }}
+          key: ${{ inputs.os }} arm64 deps ${{ hashFiles('.github/workflows/scripts/macos/*', '.github/workflows/scripts/common/*.patch') }}
 
       - name: Build Dependencies
         if: steps.cache-deps.outputs.cache-hit != 'true'
         run: |
-          .github/workflows/scripts/macos/build-dependencies${{ case(inputs.arch == 'x86-64', '', '-universal') }}.sh "$HOME/deps"
+          .github/workflows/scripts/macos/build-dependencies-universal.sh "$HOME/deps"
 
       - name: Download patches
         run: |
@@ -123,16 +119,16 @@ jobs:
         uses: actions/cache@v5
         with:
           path: .ccache
-          key: ${{ inputs.os }} ${{ inputs.arch }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: ${{ inputs.os }} ${{ inputs.arch }} ccache
+          key: ${{ inputs.os }} arm64 ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: ${{ inputs.os }} arm64 ccache
 
       - name: Generate CMake Files
         run: |
           cmake -DCMAKE_PREFIX_PATH="$HOME/deps" \
                 -DCMAKE_BUILD_TYPE=Release \
-                -DCMAKE_OSX_ARCHITECTURES="${{ case(inputs.arch == 'x86-64', 'x86_64', inputs.arch) }}" \
+                -DCMAKE_OSX_ARCHITECTURES="arm64" \
                 -DDISABLE_ADVANCE_SIMD=ON \
-                -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ case(inputs.arch == 'x86-64', 'ON', 'OFF') }} \
+                -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
                 -DUSE_LINKED_FFMPEG=ON \
                 -DCMAKE_C_COMPILER_LAUNCHER=ccache \
                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
@@ -156,7 +152,6 @@ jobs:
           done
 
       - name: Build GSRunner
-        if: inputs.arch != 'x86-64'
         working-directory: build
         run: make -j$(getconf _NPROCESSORS_ONLN) pcsx2-gsrunner
 
@@ -166,7 +161,7 @@ jobs:
 
       - name: Prepare Build Artifacts
         run: |
-          mv build/pcsx2*/PCSX2.app PCSX2.app
+          mv build/pcsx2*/ARMSX2.app ARMSX2.app
 
       - name: Pull the Signing Keys and Notarization Credentials
         if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}
@@ -174,17 +169,17 @@ jobs:
           echo "${{ secrets.APPLE_SIGN_P12_B64 }}" | base64 -d > cert.p12
           echo "${{ secrets.APPLE_APPSTORECONNECT_CFG }}" | base64 -d > key.json
 
-      - name: Sign the Application
+      - name: Sign the Application (Apple notarization)
         if: ${{ inputs.sign_and_notarize == true && env.SIGN_KEY }}
         uses: indygreg/apple-code-sign-action@44d0985b7f4363198e80b6fea63ac3e9dd3e9957
         with:
-          input_path: 'PCSX2.app'
+          input_path: 'ARMSX2.app'
           p12_file: cert.p12
           p12_password: "${{ secrets.APPLE_SIGN_P12_PASS }}"
           sign_args: |
             --for-notarization
             --code-signature-flags=runtime
-            --entitlements-xml-file=pcsx2/Resources/PCSX2.entitlements
+            --entitlements-xml-file=pcsx2/Resources/ARMSX2.entitlements
           notarize: true
           # max_wait_seconds is only present on my fork located at F0bes/apple-code-sign-action@demo4
           # If we are timing out we should switch to the newest upstream (if I get it upstreamed)
@@ -196,22 +191,26 @@ jobs:
           # passing the issuer id, key, etc through arguments.
           app_store_connect_api_key_json_file: 'key.json'
 
+      # Fallback when Apple signing secrets aren't configured: ad-hoc sign so the
+      # bundle launches on the build machine (matches the README manual build).
+      - name: Ad-hoc Sign the Application
+        if: ${{ !(inputs.sign_and_notarize == true && env.SIGN_KEY) }}
+        run: codesign --force --deep --sign - ARMSX2.app
+
       - name: Zip Build Artifacts
-        if: inputs.arch == 'x86-64'
         run: |
           TAG="$(git tag --points-at HEAD)"
           if [ -z "$TAG" ]; then
             APPNAME="${{ steps.artifact-metadata.outputs.artifact-name }}"
           else
-            APPNAME="PCSX2-$TAG"
+            APPNAME="ARMSX2-$TAG"
           fi
-          mv PCSX2.app "$APPNAME.app"
+          mv ARMSX2.app "$APPNAME.app"
           tar --options xz:compression-level=9 -cvJf "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.xz" "$APPNAME.app"
           mkdir ci-artifacts
-          cp "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.xz" ci-artifacts/macOS.tar.xz
+          cp "${{ steps.artifact-metadata.outputs.artifact-name }}.tar.xz" ci-artifacts/macOS-arm64.tar.xz
 
       - name: Upload Artifact
-        if: inputs.arch == 'x86-64'
         uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}

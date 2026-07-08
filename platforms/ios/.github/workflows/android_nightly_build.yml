@@ -1,0 +1,124 @@
+name: Android Nightly Debug Build
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '**/*.md'
+
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - '**/*.md'
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    outputs:
+      package_name: ${{ steps.package_info.outputs.PACKAGE_NAME }}
+      version_name: ${{ steps.package_info.outputs.VERSION_NAME }}
+      release_tag: ${{ steps.release_vars.outputs.RELEASE_TAG }}
+      release_title: ${{ steps.release_vars.outputs.RELEASE_TITLE }}
+
+    steps:
+      - name: Checkout of code
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Java and Android SDK Setup
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      # --- Build Phase ---
+      - name: Running the Debug Build (only Nightly)
+        run: ./gradlew assembleUnrestrictedDebug
+
+      - name: Get Package Name and Version
+        id: package_info
+        run: |
+          PACKAGE_NAME=$(grep 'applicationId' app/build.gradle | head -n 1 | awk '{print $2}' | tr -d '"')
+          VERSION_NAME=$(grep 'versionName' app/build.gradle | head -n 1 | awk '{print $2}' | tr -d '"')
+          echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_OUTPUT
+
+      - name: Defining the Release Tag and Title
+        id: release_vars
+        run: |
+          # The release tag will be in the format: come.nanodata.armsx2-nightly-1.0.4-20251104-1411
+          DATE_TIME=$(date +%Y%m%d-%H%M)
+          FULL_TAG="${{ steps.package_info.outputs.PACKAGE_NAME }}-nightly-${{ steps.package_info.outputs.VERSION_NAME }}-${DATE_TIME}"
+          TITLE="Nightly Build (DEBUG - ${{ steps.package_info.outputs.VERSION_NAME }}) - ${DATE_TIME}"
+          
+          echo "RELEASE_TAG=$FULL_TAG" >> $GITHUB_OUTPUT
+          echo "RELEASE_TITLE=$TITLE" >> $GITHUB_OUTPUT
+
+      - name: Find and Rename APK to Nightly
+        id: rename_apk
+        run: |
+          ORIGINAL_PATH=$(find ${{ github.workspace }}/app/build -type f -name "*debug.apk" -print -quit)
+          if [ -z "$ORIGINAL_PATH" ]; then
+            echo "CRITICAL ERROR: Debug APK non found."
+            exit 1 
+          fi
+          NEW_FILE_PATH=$(echo "$ORIGINAL_PATH" | sed 's/-debug.apk/-nightly.apk/')
+          mv "$ORIGINAL_PATH" "$NEW_FILE_PATH"
+          echo "APK_FILE_NIGHTLY=$NEW_FILE_PATH" >> $GITHUB_OUTPUT
+          echo "APK renamed and saved in: $NEW_FILE_PATH"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ steps.package_info.outputs.PACKAGE_NAME }}
+          path: ${{ steps.rename_apk.outputs.APK_FILE_NIGHTLY }}
+
+  release:
+    permissions:
+      contents: write
+
+    needs: [ build ]
+
+    if: >
+      github.repository == 'ARMSX2/ARMSX2' &&
+      github.ref == 'refs/heads/master'
+
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: release
+      cancel-in-progress: false
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ needs.build.outputs.package_name }}
+          path: artifact
+
+      - name: Create the Release on GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.build.outputs.release_tag }}
+          name: ${{ needs.build.outputs.release_title }}
+          body: |
+            ## Automatic Night Release (DEBUG)
+            
+            Automated build for community testing. This is an **unsigned** build for public distribution.
+            
+            * **Version:** ${{ needs.build.outputs.version_name }}
+            * **Package Name:** ${{ needs.build.outputs.package_name }}
+            * **Branch:** ${{ github.ref_name }}
+            * **Commit:** ${{ github.sha }}
+            
+            **Check the attached assets for the NIGHTLY APK.**
+          draft: false
+          prerelease: true
+          files: artifact/*.apk

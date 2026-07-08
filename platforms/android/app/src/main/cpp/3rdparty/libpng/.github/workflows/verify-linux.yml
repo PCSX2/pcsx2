@@ -1,0 +1,32 @@
+name: Verifying libpng on Linux
+
+on:
+  push:
+    branches:
+      - libpng16
+      - libpng18
+  pull_request:
+    branches:
+      - libpng16
+      - libpng18
+
+jobs:
+  verify-linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends build-essential zlib1g-dev
+          if [[ "${{ github.ref }}" != refs/*/libpng16 && "${{ github.base_ref }}" != libpng16 ]]
+          then
+            sudo apt-get install -y --no-install-recommends autoconf automake libtool m4
+          fi
+      - name: Check out the code
+        uses: actions/checkout@v4
+      - name: Run the configure verification script
+        run: bash ./ci/ci_verify_configure.sh
+        env:
+          CI_MAKE_FLAGS: -j2
+          CI_SANITIZERS: address,undefined

@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# Negative-stride test:
+# Bottom-up layout through all read/write paths.
+exec ./pngstest \
+     --negative-stride \
+     --tmpfile "negative-stride-" \
+     --log \
+     "${srcdir}/contrib/testpngs/gray-1.png" \
+     "${srcdir}/contrib/testpngs/gray-16-linear.png" \
+     "${srcdir}/contrib/testpngs/rgb-8-linear.png" \
+     "${srcdir}/contrib/testpngs/rgb-16-linear.png" \
+     "${srcdir}/contrib/testpngs/palette-8-tRNS.png" \
+     "${srcdir}/contrib/testpngs/gray-alpha-8-linear.png" \
+     "${srcdir}/contrib/testpngs/gray-alpha-16-linear.png" \
+     "${srcdir}/contrib/testpngs/rgb-alpha-8-1.8.png" \
+     "${srcdir}/contrib/testpngs/rgb-alpha-8-sRGB.png" \
+     "${srcdir}/contrib/testpngs/rgb-alpha-16-linear.png"

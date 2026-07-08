@@ -1,0 +1,49 @@
+#----------------------------------------------------------------
+# Generated CMake target import file for configuration "Release".
+#----------------------------------------------------------------
+
+# Commands may need to know the format version.
+set(CMAKE_IMPORT_FILE_VERSION 1)
+
+# Import target "@CMAKE_PROJECT_NAME@::jpeg" for configuration "Release"
+set_property(TARGET @CMAKE_PROJECT_NAME@::jpeg APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+set_target_properties(@CMAKE_PROJECT_NAME@::jpeg PROPERTIES
+  IMPORTED_IMPLIB_RELEASE "${_IMPORT_PREFIX}/lib/jpeg.lib"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/bin/jpeg62.dll"
+  )
+
+list(APPEND _IMPORT_CHECK_TARGETS @CMAKE_PROJECT_NAME@::jpeg )
+list(APPEND _IMPORT_CHECK_FILES_FOR_@CMAKE_PROJECT_NAME@::jpeg "${_IMPORT_PREFIX}/lib/jpeg.lib" "${_IMPORT_PREFIX}/bin/jpeg62.dll" )
+
+# Import target "@CMAKE_PROJECT_NAME@::turbojpeg" for configuration "Release"
+set_property(TARGET @CMAKE_PROJECT_NAME@::turbojpeg APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+set_target_properties(@CMAKE_PROJECT_NAME@::turbojpeg PROPERTIES
+  IMPORTED_IMPLIB_RELEASE "${_IMPORT_PREFIX}/lib/turbojpeg.lib"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/bin/turbojpeg.dll"
+  )
+
+list(APPEND _IMPORT_CHECK_TARGETS @CMAKE_PROJECT_NAME@::turbojpeg )
+list(APPEND _IMPORT_CHECK_FILES_FOR_@CMAKE_PROJECT_NAME@::turbojpeg "${_IMPORT_PREFIX}/lib/turbojpeg.lib" "${_IMPORT_PREFIX}/bin/turbojpeg.dll" )
+
+# Import target "@CMAKE_PROJECT_NAME@::turbojpeg-static" for configuration "Release"
+set_property(TARGET @CMAKE_PROJECT_NAME@::turbojpeg-static APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+set_target_properties(@CMAKE_PROJECT_NAME@::turbojpeg-static PROPERTIES
+  IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "ASM_NASM;C"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/turbojpeg-static.lib"
+  )
+
+list(APPEND _IMPORT_CHECK_TARGETS @CMAKE_PROJECT_NAME@::turbojpeg-static )
+list(APPEND _IMPORT_CHECK_FILES_FOR_@CMAKE_PROJECT_NAME@::turbojpeg-static "${_IMPORT_PREFIX}/lib/turbojpeg-static.lib" )
+
+# Import target "@CMAKE_PROJECT_NAME@::jpeg-static" for configuration "Release"
+set_property(TARGET @CMAKE_PROJECT_NAME@::jpeg-static APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+set_target_properties(@CMAKE_PROJECT_NAME@::jpeg-static PROPERTIES
+  IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "ASM_NASM;C"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/jpeg-static.lib"
+  )
+
+list(APPEND _IMPORT_CHECK_TARGETS @CMAKE_PROJECT_NAME@::jpeg-static )
+list(APPEND _IMPORT_CHECK_FILES_FOR_@CMAKE_PROJECT_NAME@::jpeg-static "${_IMPORT_PREFIX}/lib/jpeg-static.lib" )
+
+# Commands beyond this point should not need to know the version.
+set(CMAKE_IMPORT_FILE_VERSION)

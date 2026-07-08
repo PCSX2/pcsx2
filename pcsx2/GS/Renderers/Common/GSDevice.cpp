@@ -249,7 +249,7 @@ GSDevice::GSDevice()
 GSDevice::~GSDevice()
 {
 	// should've been cleaned up in Destroy()
-	pxAssert(m_pool[0].empty() && m_pool[1].empty() && !m_merge && !m_weavebob && !m_blend && !m_mad && !m_target_tmp && !m_cas);
+	pxAssert(m_pool[0].empty() && m_pool[1].empty() && !m_merge && !m_weavebob && !m_blend && !m_mad && !m_target_tmp && !m_cas && !m_mfx_output);
 }
 
 const char* GSDevice::RenderAPIToString(RenderAPI api)
@@ -925,6 +925,7 @@ void GSDevice::ClearCurrent()
 	delete m_mad;
 	delete m_target_tmp;
 	delete m_cas;
+	delete m_mfx_output;
 
 	m_merge = nullptr;
 	m_weavebob = nullptr;
@@ -932,6 +933,7 @@ void GSDevice::ClearCurrent()
 	m_mad = nullptr;
 	m_target_tmp = nullptr;
 	m_cas = nullptr;
+	m_mfx_output = nullptr;
 }
 
 void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c)
@@ -1191,6 +1193,37 @@ void GSDevice::CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, con
 	}
 
 	tex = m_cas;
+	src_rect = GSVector4i(0, 0, dst_width, dst_height);
+	src_uv = GSVector4(0.0f, 0.0f, 1.0f, 1.0f);
+}
+
+void GSDevice::MetalFXUpscale(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, const GSVector4& draw_rect)
+{
+	const int dst_width = static_cast<int>(std::ceil(draw_rect.z - draw_rect.x));
+	const int dst_height = static_cast<int>(std::ceil(draw_rect.w - draw_rect.y));
+	if (dst_width <= 0 || dst_height <= 0)
+		return;
+
+	GSTexture* src_tex = tex;
+	if (!m_mfx_output || m_mfx_output->GetWidth() != dst_width || m_mfx_output->GetHeight() != dst_height)
+	{
+		delete m_mfx_output;
+		m_mfx_output = CreateSurface(GSTexture::ShaderWriteTexture, dst_width, dst_height, 1, GSTexture::Format::Color);
+		if (!m_mfx_output)
+		{
+			Console.Error("Failed to allocate MetalFX output texture.");
+			return;
+		}
+	}
+
+	if (!DoMetalFXSpatial(src_tex, m_mfx_output))
+	{
+		// leave textures intact if we failed
+		Console.Warning("Applying MetalFX spatial upscale failed.");
+		return;
+	}
+
+	tex = m_mfx_output;
 	src_rect = GSVector4i(0, 0, dst_width, dst_height);
 	src_uv = GSVector4(0.0f, 0.0f, 1.0f, 1.0f);
 }

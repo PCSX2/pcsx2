@@ -41,6 +41,10 @@
 #include "fmt/format.h"
 #include "imgui.h"
 
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#endif
+
 #include <array>
 #include <cmath>
 #include <limits>
@@ -64,6 +68,7 @@ SmallString s_gs_frame_times_line;
 SmallString s_resolution_line;
 SmallString s_hardware_info_cpu_line;
 SmallString s_hardware_info_gpu_line;
+SmallString s_cpu_jit_line;
 SmallString s_cpu_usage_ee_line;
 SmallString s_cpu_usage_gs_line;
 SmallString s_cpu_usage_vu_line;
@@ -377,7 +382,22 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 			}
 
 			if (GSConfig.OsdShowVersion)
+			{
+#if defined(__APPLE__) && !TARGET_OS_IPHONE
+				if (BuildVersion::GitTagHi != 0 || BuildVersion::GitTagMid != 0 || BuildVersion::GitTagLo != 0)
+				{
+					s_speed_line.append_format("{}ARMSX2-MacOS 2.1 | Core: {}.{}.{}",
+						s_speed_line.empty() ? "" : " | ", BuildVersion::GitTagHi, BuildVersion::GitTagMid, BuildVersion::GitTagLo);
+				}
+				else
+				{
+					s_speed_line.append_format("{}ARMSX2-MacOS 2.1 | Core: {}",
+						s_speed_line.empty() ? "" : " | ", BuildVersion::GitRev);
+				}
+#else
 				s_speed_line.append_format("{}PCSX2 {}", s_speed_line.empty() ? "" : " | ", BuildVersion::GitRev);
+#endif
+			}
 
 			if (!s_speed_line.empty())
 			{
@@ -458,6 +478,15 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 
 			if (GSConfig.OsdShowCPU)
 			{
+#if defined(__APPLE__) && !TARGET_OS_IPHONE
+				s_cpu_jit_line.format("EE:{} | IOP:{} | VU0:{} | VU1:{}",
+					EmuConfig.Cpu.Recompiler.EnableEE ? "JIT" : "INT",
+					EmuConfig.Cpu.Recompiler.EnableIOP ? "JIT" : "INT",
+					EmuConfig.Cpu.Recompiler.EnableVU0 ? "JIT" : "INT",
+					EmuConfig.Cpu.Recompiler.EnableVU1 ? "JIT" : "INT");
+				DRAW_LINE(osd_font, font_size, s_cpu_jit_line.c_str(), white_color);
+#endif
+
 				if (EmuConfig.Speedhacks.EECycleRate != 0 || EmuConfig.Speedhacks.EECycleSkip != 0)
 					s_cpu_usage_ee_line.format("EE[{}/{}]: ", EmuConfig.Speedhacks.EECycleRate, EmuConfig.Speedhacks.EECycleSkip);
 				else
@@ -562,6 +591,10 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 
 			if (GSConfig.OsdShowCPU)
 			{
+#if defined(__APPLE__) && !TARGET_OS_IPHONE
+				if (!s_cpu_jit_line.empty())
+					DRAW_LINE(osd_font, font_size, s_cpu_jit_line.c_str(), white_color);
+#endif
 				DRAW_LINE(osd_font, font_size, s_cpu_usage_ee_line.c_str(), white_color);
 				DRAW_LINE(osd_font, font_size, s_cpu_usage_gs_line.c_str(), white_color);
 				if (THREAD_VU1)

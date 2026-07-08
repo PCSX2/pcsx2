@@ -358,3 +358,10 @@ endif()
 
 fixup_file_properties(pcsx2-qt)
 setup_main_executable(pcsx2-qt)
+
+# On Linux (AppImage), ship the executable under the ARMSX2 brand name.
+# macOS keeps the default target name inside the PCSX2.app bundle to avoid
+# disturbing bundle layout/signing.
+if(UNIX AND NOT APPLE)
+	set_target_properties(pcsx2-qt PROPERTIES OUTPUT_NAME armsx2-qt)
+endif()

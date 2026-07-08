@@ -665,6 +665,12 @@ void VMManager::LoadCoreSettings(SettingsInterface& si)
 	// Force MTVU off when playing back GS dumps, it doesn't get used.
 	if (GSDumpReplayer::IsReplayingDump())
 		EmuConfig.Speedhacks.vuThread = false;
+
+	// DEBUG (ARM64): the microVU1-vs-interpreter shadow differential needs VU1 to run
+	// synchronously on the CPU thread, so force MTVU off when MVU_DIFF is set.
+	static const bool s_mvu_diff_env = (std::getenv("MVU_DIFF") != nullptr);
+	if (s_mvu_diff_env)
+		EmuConfig.Speedhacks.vuThread = false;
 }
 
 void VMManager::LoadInputBindings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
@@ -2667,10 +2673,16 @@ void VMManager::InitializeCPUProviders()
 	CpuMicroVU0.Reserve();
 	CpuMicroVU1.Reserve();
 #else
-	// Despite not having any VU recompilers on ARM64, therefore no MTVU,
-	// we still need the thread alive. Otherwise the read and write positions
-	// of the ring buffer wont match, and various systems in the emulator end up deadlocked.
-	vu1Thread.Open();
+	// ARM64 (Phase 1.5): reserve the EE recompiler so its code cache + constant pool
+	// are set up. (Phase 6) the IOP recompiler is now ported, so reserve it too.
+	// (Phase 7.8) the VU recompilers (microVU0/1) are now ported — reserve them as well.
+	// recMicroVU1::Reserve() opens vu1Thread for us (mirrors x86 microVU.cpp), so we no
+	// longer open it explicitly here.
+	recCpu.Reserve();
+	psxRec.Reserve();
+
+	CpuMicroVU0.Reserve();
+	CpuMicroVU1.Reserve();
 #endif
 
 	VifUnpackSSE_Init();
@@ -2691,10 +2703,13 @@ void VMManager::ShutdownCPUProviders()
 	psxRec.Shutdown();
 	recCpu.Shutdown();
 #else
-	// See the comment in the InitializeCPUProviders for an explaination why we
-	// still need to manage the MTVU thread.
-	if (vu1Thread.IsOpen())
-		vu1Thread.WaitVU();
+	// ARM64 (Phase 1.5 / Phase 6 / Phase 7.8): tear down the VU + IOP + EE recompilers
+	// reserved above. recMicroVU1::Shutdown() waits on / closes vu1Thread for us.
+	CpuMicroVU1.Shutdown();
+	CpuMicroVU0.Shutdown();
+
+	psxRec.Shutdown();
+	recCpu.Shutdown();
 #endif
 }
 
@@ -2716,11 +2731,16 @@ void VMManager::UpdateCPUImplementations()
 	CpuVU0 = EmuConfig.Cpu.Recompiler.EnableVU0 ? static_cast<BaseVUmicroCPU*>(&CpuMicroVU0) : static_cast<BaseVUmicroCPU*>(&CpuIntVU0);
 	CpuVU1 = EmuConfig.Cpu.Recompiler.EnableVU1 ? static_cast<BaseVUmicroCPU*>(&CpuMicroVU1) : static_cast<BaseVUmicroCPU*>(&CpuIntVU1);
 #else
-	Cpu = &intCpu;
-	psxCpu = &psxInt;
+	// ARM64 (Phase 4.3): the EE recompiler is now functional, so select it when the
+	// EE rec is enabled (it falls back to the interpreter per-opcode for anything it
+	// can't compile yet). (Phase 6) the IOP recompiler is functional too — same
+	// per-opcode interpreter fallback model. (Phase 7.8) microVU0/1 are now ported, so
+	// select them when the VU recs are enabled (mirrors the x86 path).
+	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
+	psxCpu = CHECK_IOPREC ? &psxRec : &psxInt;
 
-	CpuVU0 = &CpuIntVU0;
-	CpuVU1 = &CpuIntVU1;
+	CpuVU0 = EmuConfig.Cpu.Recompiler.EnableVU0 ? static_cast<BaseVUmicroCPU*>(&CpuMicroVU0) : static_cast<BaseVUmicroCPU*>(&CpuIntVU0);
+	CpuVU1 = EmuConfig.Cpu.Recompiler.EnableVU1 ? static_cast<BaseVUmicroCPU*>(&CpuMicroVU1) : static_cast<BaseVUmicroCPU*>(&CpuIntVU1);
 #endif
 }
 
@@ -2731,6 +2751,18 @@ void VMManager::Internal::ClearCPUExecutionCaches()
 
 #ifdef _M_X86 // TODO(Stenzek): Remove me once EE/VU/IOP recs are added.
 	// mVU's VU0 needs to be properly initialized for macro mode even if it's not used for micro mode!
+	if (CHECK_EEREC && !EmuConfig.Cpu.Recompiler.EnableVU0)
+		CpuMicroVU0.Reset();
+#else
+	// ARM64 (Phase 1.5 / Phase 6): reset the EE + IOP rec code caches/constant pools
+	// even when not the active provider, so their emit cursors start clean on each VM
+	// reset (Cpu->Reset()/psxCpu->Reset() above only reset the interpreters when the
+	// recs aren't selected).
+	recCpu.Reset();
+	psxRec.Reset();
+
+	// (Phase 7.8) mVU's VU0 needs to be properly initialized for macro mode even if it's
+	// not used for micro mode (mirrors the x86 branch above).
 	if (CHECK_EEREC && !EmuConfig.Cpu.Recompiler.EnableVU0)
 		CpuMicroVU0.Reset();
 #endif

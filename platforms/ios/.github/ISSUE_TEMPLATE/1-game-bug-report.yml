@@ -1,0 +1,100 @@
+name: Game Emulation Bug Report
+description: Problem in a game. (ie. graphical artifacts, crashes, etc.)
+title: '[GAME BUG]: '
+labels:
+  - bug
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Important: Read First
+
+        Please do not make support requests on GitHub. Our issue tracker is for tracking bugs and feature requests only.
+        If you have a support request or are unsure about the nature of your issue please contact us on [discord](https://discord.gg/KwAChKDctz).
+
+        Do not create issues involving software piracy of BIOS or ISO files, our rules specifically prohibit this and your issue will be closed.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched for a similar issue in this repository and did not find one.
+          required: true
+
+  - type: input
+    id: game
+    attributes:
+      label: Game Title
+      placeholder: 'e.g. Dragon Ball Z: Budokai 2'
+    validations:
+      required: true
+
+  - type: input
+    id: emu-ver
+    attributes:
+      label: ARMSX2 Version
+      description: Please ensure you are on the latest version before making an issue.
+      placeholder: e.g. v1.0.4
+    validations:
+      required: true
+
+  - type: dropdown
+    id: renderer
+    attributes:
+      label: Renderer (Graphics Backend)
+      options:
+        - Vulkan
+        - OpenGL
+        - Software
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device Model
+      placeholder: e.g. Google Pixel 4
+    validations:
+      required: true
+
+  - type: input
+    id: os-ver
+    attributes:
+      label: OS Version
+      placeholder: e.g. Android 12
+    validations:
+      required: false
+
+  - type: textarea
+    id: desc
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction Steps
+      description: Steps to reproduce the behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expect
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: false
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Log File
+      description: A log file will help our developers to better diagnose and fix the issue.
+    validations:
+      required: false

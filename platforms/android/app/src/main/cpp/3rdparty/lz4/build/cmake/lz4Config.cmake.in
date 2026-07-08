@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+include( "${CMAKE_CURRENT_LIST_DIR}/lz4Targets.cmake" )
+if(NOT TARGET lz4::lz4)
+    add_library(lz4::lz4 INTERFACE IMPORTED)
+    if("@BUILD_SHARED_LIBS@")
+        set_target_properties(lz4::lz4 PROPERTIES INTERFACE_LINK_LIBRARIES LZ4::lz4_shared)
+    else()
+        set_target_properties(lz4::lz4 PROPERTIES INTERFACE_LINK_LIBRARIES LZ4::lz4_static)
+    endif()
+endif()

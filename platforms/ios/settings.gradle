@@ -1,0 +1,63 @@
+pluginManagement {
+    def isTruthy = { value ->
+        if (value == null) {
+            return false
+        }
+        if (value instanceof Boolean) {
+            return value
+        }
+        def text = value.toString().trim()
+        return text.isEmpty() || text.equalsIgnoreCase("true") || text.equalsIgnoreCase("yes") || text == '1'
+    }
+
+    def enableRNRequested = false
+    if (settings.startParameter.projectProperties.containsKey("enableRN")) {
+        enableRNRequested = isTruthy(settings.startParameter.projectProperties.get("enableRN"))
+    }
+    if (!enableRNRequested) {
+        def sysProp = System.getProperty("enableRN")
+        enableRNRequested = isTruthy(sysProp)
+    }
+
+    def reactPluginDir = new File(settingsDir, "node_modules/@react-native/gradle-plugin")
+    def enableRNLocal = enableRNRequested && reactPluginDir.isDirectory()
+    settings.ext.enableRN = enableRNLocal
+    gradle.ext.enableRN = enableRNLocal
+
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+def enableRN = settings.ext.has("enableRN") ? settings.ext.enableRN : false
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        if (enableRN) {
+            maven { url("$rootDir/../node_modules/react-native/android") }
+        }
+        flatDir {
+            dirs("$rootDir/app/libs")
+        }
+    }
+}
+
+rootProject.name = "PCSX2"
+include ':app'
+
+if (enableRN) {
+    def nativeModulesSettingsFile = file('node_modules/@react-native-community/cli-platform-android/native_modules.gradle')
+    if (nativeModulesSettingsFile.isFile()) {
+        apply from: nativeModulesSettingsFile
+        applyNativeModulesSettingsGradle(settings)
+    } else {
+        gradle.ext.enableRN = false
+        settings.ext.enableRN = false
+        logger.lifecycle('[settings.gradle] React Native native_modules.gradle not found; React Native integration disabled.')
+    }
+}

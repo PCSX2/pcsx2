@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="16dp"
+    android:paddingTop="16dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="8dp">
+
+    <LinearLayout
+        android:id="@+id/per_game_settings_root"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/per_game_switch_enabled"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/per_game_settings_enable_custom"
+            android:checked="false" />
+
+        <LinearLayout
+            android:id="@+id/per_game_settings_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/settings_graphics_renderer"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/per_game_spinner_renderer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/renderers" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/settings_aspect_ratio"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/per_game_spinner_aspect_ratio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/aspect_ratios" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/per_game_switch_widescreen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/per_game_settings_widescreen" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/per_game_switch_enable_cheats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/per_game_settings_enable_cheats" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/per_game_switch_no_interlacing"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/per_game_settings_no_interlacing" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/per_game_switch_load_textures"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/per_game_settings_load_textures" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/per_game_switch_async_textures"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/per_game_settings_async_textures" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/per_game_switch_precache_textures"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/per_game_settings_precache_textures" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/per_game_switch_show_fps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/per_game_settings_show_fps" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.mobileer.oboetester.StreamConfigurationView
+        android:id="@+id/streamConfiguration"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
+    <com.mobileer.oboetester.BufferSizeView
+        android:id="@+id/buffer_size_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
+    <com.mobileer.oboetester.PartialDataCallbackSizeView
+        android:id="@+id/partial_data_callback_size_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
+    <com.mobileer.oboetester.WorkloadView
+        android:id="@+id/workload_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/button_open"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@xml/button_color_selector"
+            android:backgroundTintMode="src_atop"
+            android:onClick="openAudio"
+            android:text="@string/openAudio"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/button_start"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@xml/button_color_selector"
+            android:backgroundTintMode="src_atop"
+            android:onClick="startAudio"
+            android:text="@string/startAudio"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/button_pause"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@xml/button_color_selector"
+            android:backgroundTintMode="src_atop"
+            android:onClick="pauseAudio"
+            android:text="@string/pauseAudio"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/button_flush"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@xml/button_color_selector"
+            android:backgroundTintMode="src_atop"
+            android:onClick="flushAudio"
+            android:text="@string/flushAudio"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/button_stop"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@xml/button_color_selector"
+            android:backgroundTintMode="src_atop"
+            android:onClick="stopAudio"
+            android:text="@string/stopAudio"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/button_release"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@xml/button_color_selector"
+            android:backgroundTintMode="src_atop"
+            android:onClick="releaseAudio"
+            android:text="@string/releaseAudio"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/button_close"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@xml/button_color_selector"
+            android:backgroundTintMode="src_atop"
+            android:onClick="closeAudio"
+            android:text="@string/closeAudio"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/callbackReturnStop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="callback ret STOP" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/hang_prompt" />
+
+        <Spinner
+            android:id="@+id/spinner_hang_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/hang_times" />
+
+    </LinearLayout>
+</merge>
