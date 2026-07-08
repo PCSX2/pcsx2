@@ -410,6 +410,7 @@ private:
 	std::array<ComPtr<ID3D12PipelineState>, 2> m_colclip_setup_pipelines{}; // [depth]
 	std::array<ComPtr<ID3D12PipelineState>, 2> m_colclip_finish_pipelines{}; // [depth]
 	std::array<std::array<ComPtr<ID3D12PipelineState>, 4>, 2> m_primid_image_setup_pipelines{}; // [depth][datm]
+	std::array<std::array<ComPtr<ID3D12PipelineState>, 3>, 3> m_rov_copy_pipelines{}; // [color][depth]
 	ComPtr<ID3D12PipelineState> m_fxaa_pipeline;
 	ComPtr<ID3D12PipelineState> m_shadeboost_pipeline;
 	ComPtr<ID3D12PipelineState> m_imgui_pipeline;
@@ -567,6 +568,9 @@ public:
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox);
 	GSTexture12* SetupPrimitiveTrackingDATE(GSHWDrawConfig& config, PipelineSelector& pipe);
+
+	void SetupOneshotROV(const GSHWDrawConfig& config, GSTexture12* rt, GSTexture12* ds,
+		const std::vector<GSVector4i>& rects, const GSVector2i& size);
 
 	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count);
 	void IASetIndexBuffer(const void* index, size_t count);
@@ -733,6 +737,8 @@ private:
 	const ID3D12PipelineState* m_current_pipeline = nullptr;
 
 	std::unique_ptr<GSTexture12> m_null_texture;
+	std::unique_ptr<GSTexture12> m_rov_rt;
+	std::unique_ptr<GSTexture12> m_rov_ds;
 
 	// current pipeline selector - we save this in the struct to avoid re-zeroing it every draw
 	PipelineSelector m_pipeline_selector = {};
