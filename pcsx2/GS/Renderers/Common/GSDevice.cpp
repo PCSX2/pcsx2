@@ -1537,7 +1537,7 @@ static const char* GetTexHazardName(u32 tex_hazard)
 	return "Unknown";
 }
 
-static const char* GetPSROVDepthname(GSHWDrawConfig::PS_ROV_DEPTH rov_depth)
+static const char* GetPSROVDepthName(GSHWDrawConfig::PS_ROV_DEPTH rov_depth)
 {
 	switch (rov_depth)
 	{
@@ -1606,8 +1606,8 @@ static void DumpPSSelector(DrawConfigWriter& out, const GSHWDrawConfig::PSSelect
 	out.WriteLn("aa1: {} ({})", GetPSAA1Name(ps.aa1), static_cast<u32>(ps.aa1));
 	out.WriteLn("abe: {}", static_cast<u32>(ps.abe));
 	out.WriteLn("sw_aniso: {}", ps.sw_aniso);
-	out.WriteLn("rov_color: {}", ps.rov_color);
-	out.WriteLn("rov_depth: {} ({})", GetPSROVDepthname(ps.rov_depth), static_cast<u32>(ps.rov_depth));
+	out.WriteLn("rov_color: {}", static_cast<u32>(ps.rov_color));
+	out.WriteLn("rov_depth: {} ({})", GetPSROVDepthName(ps.rov_depth), static_cast<u32>(ps.rov_depth));
 	out.WriteLn("ztst: {} ({})", GSUtil::GetZTSTName(ps.ztst), static_cast<u32>(ps.ztst));
 	out.WriteLn("zfloor: {}", static_cast<u32>(ps.zfloor));
 }

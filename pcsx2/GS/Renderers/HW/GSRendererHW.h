@@ -253,11 +253,14 @@ private:
 		const GSVector2i& unscaled_size, float& vs_scale_x, float& vs_scale_y);
 	void DetermineBarriers(GSTextureCache::Target* rt, GSTextureCache::Source* tex);
 
-	void GetForcedROVUsage(bool& color_cov, bool& depth_rov); // Whether having color or depth with the current config forces the other.
+	void GetForcedROVUsage(bool& rov_color, bool& rov_depth); // Whether having color or depth with the current config forces the other.
 	void DetermineROVUsage(GSTextureCache::Target* rt, GSTextureCache::Target* ds); // Heuristics to determine whether to enable/disable ROV
-	void ConfigureROV(bool color_rov, bool depth_rov); // Actual config for ROV
-	void ConvertTextureTypeROV(GSTextureCache::Target* rt, GSTextureCache::Target* ds); // Convert to RW capable textures if needed.
-	void ConvertTextureTypeROVSingle(GSTextureCache::Target* tgt, bool shader_write); // Helper to do the above.
+	void ConfigureROV(bool rov_color, bool rov_depth, bool rov_oneshot); // Actual config for ROV
+	void ConvertTextureTypeContinuousROV(GSTextureCache::Target* rt, GSTextureCache::Target* ds); // Convert to RW capable textures if needed.
+	void ConvertTextureTypeContinuousROVSingle(GSTextureCache::Target* tgt, bool shader_write); // Helper to do the above.
+	
+	void CoarseRasterizeDraw(const GSVector4i& drawarea, const float scale,
+		const int expand = 1, const u32 num_tiles = 32); // Do a coarse rasterization of the current draw into tiles.
 
 	void SetTCOffset();
 	bool NextDrawColClip() const;
@@ -295,6 +298,22 @@ private:
 	bool IsDepthAlwaysPassing();
 	bool IsUsingCsInBlend();
 	bool IsUsingAsInBlend();
+
+	void PutBarriers(u32 barriers)
+	{
+		m_frame_barriers[m_frame_barriers_i] += barriers;
+	}
+	void NextFrameBarriers()
+	{
+		m_frame_barriers_sum += m_frame_barriers[m_frame_barriers_i];
+		m_frame_barriers_i = (m_frame_barriers_i + 1) % (NUM_FRAMES_RECORD_BARRIERS + 1);
+		m_frame_barriers_sum -= m_frame_barriers[m_frame_barriers_i];
+		m_frame_barriers[m_frame_barriers_i] = 0;
+	}
+	u32 GetAvgFrameBarriers()
+	{
+		return m_frame_barriers_sum / NUM_FRAMES_RECORD_BARRIERS;
+	}
 
 	// CRC Hacks
 	bool IsBadFrame();
@@ -345,6 +364,11 @@ private:
 	std::vector<GSVertexSW> m_sw_vertex_buffer;
 	std::unique_ptr<GSTextureCacheSW::Texture> m_sw_texture[7 + 1];
 	std::unique_ptr<GSVirtualAlignedClass<32>> m_sw_rasterizer;
+
+	static constexpr u32 NUM_FRAMES_RECORD_BARRIERS = 4;
+	std::array<u32, NUM_FRAMES_RECORD_BARRIERS + 1> m_frame_barriers{};
+	u32 m_frame_barriers_i = 0;
+	u32 m_frame_barriers_sum = 0;
 
 public:
 	GSRendererHW();

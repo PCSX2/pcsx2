@@ -862,6 +862,8 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(UserHacks_BilinearHack) &&
 		OpEqu(OverrideTextureBarriers) &&
 		OpEqu(DepthFeedbackMode) &&
+		OpEqu(HWROVContinuousBarriers) &&
+		OpEqu(HWROVOneshotBarriers) &&
 
 		OpEqu(CAS_Sharpness) &&
 		OpEqu(ShadeBoost_Brightness) &&
@@ -1079,6 +1081,8 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapIntEnumEx(TriFilter, "TriFilter");
 	SettingsWrapBitfieldEx(OverrideTextureBarriers, "OverrideTextureBarriers");
 	SettingsWrapIntEnumEx(DepthFeedbackMode, "DepthFeedbackMode");
+	SettingsWrapIntEnumEx(HWROVContinuousBarriers, "HWROVContinuousBarriers");
+	SettingsWrapIntEnumEx(HWROVOneshotBarriers, "HWROVOneshotBarriers");
 
 	SettingsWrapBitfield(ShadeBoost_Brightness);
 	SettingsWrapBitfield(ShadeBoost_Contrast);
