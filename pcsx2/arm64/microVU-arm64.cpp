@@ -899,6 +899,21 @@ static void mVUGenerateEndProgramFlagsHelper(mV)
 		armAsm->Dup(a64::q0.V4S(), a64::w11);
 		armAsm->Str(a64::q0, mVUstateMem(offsetof(VURegs, micro_statusflags)));
 
+		// Mirror the status broadcast into the pipeline registers gprF0..3 too.
+		// The shared exitFunct (block-exit stub) unconditionally re-saves
+		// gprF0..3 -> micro_statusflags AFTER this helper runs on the E-bit path
+		// (mVUendProgram: armEmitCall(endProgramFlagsB) ... armEmitJmp(exitFunct)).
+		// Without this, that re-save clobbers the broadcast just written above
+		// with the raw 4-deep pre-broadcast pipeline tail — leaving
+		// micro_statusflags non-uniform where x86/ARMSX2 leave the broadcast, so
+		// the NEXT program's delayed-status reads see stale instances. (gprF0..3
+		// are callee-saved w20..w23, so they survive the intervening mVUTBit
+		// C-call to exitFunct.) Must precede emitSFLAGc(), which destroys w11.
+		armAsm->Mov(gprF0, a64::w11);
+		armAsm->Mov(gprF1, a64::w11);
+		armAsm->Mov(gprF2, a64::w11);
+		armAsm->Mov(gprF3, a64::w11);
+
 		emitSFLAGc();
 		armAsm->Ret();
 	}

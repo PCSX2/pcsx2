@@ -67,6 +67,7 @@ add_pcsx2_test(recompiler_tests
 	vu0_integer_alu_tests.cpp
 	vu0_branch_delay_tests.cpp
 	vu0_flag_pipeline_tests.cpp
+	vu_end_program_status_broadcast_tests.cpp
 	vu0_e_d_t_m_bit_tests.cpp
 	vu0_clamp_modes_tests.cpp
 	vu_ftoi_saturation_tests.cpp
