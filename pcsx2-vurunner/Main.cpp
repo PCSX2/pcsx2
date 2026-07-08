@@ -460,6 +460,18 @@ void HashArchSurface(const recompiler_tests::VuSnapshot& s, bool hash_pipeline,
 		r = mix(r, g.xgkickaddr); r = mix(r, g.xgkickdiff);
 		r = mix(r, g.xgkicksizeremaining); r = mix(r, g.xgkickcyclecount);
 		r = mix(r, g.xgkickenable); r = mix(r, g.xgkickendpacket);
+		// xgkicklastcycle is the one carried XGKICK *timing* field (absolute VU
+		// cycle of the last transfer stall). It is inert on XGKICK-free programs
+		// (carries the primed value untouched) but is exactly the cross-dispatch
+		// carried state the oracle stayed blind to on XGKICK-in-loop programs
+		// (pc0x1748). Grouped with the flag pipeline under hash_pipeline so
+		// --no-hash-pipeline still yields the pure per-op architectural surface
+		// for batch runs where carried state leaks cross-cap.
+		if (hash_pipeline)
+		{
+			r = mix(r, (u32)(g.xgkicklastcycle & 0xFFFFFFFFu));
+			r = mix(r, (u32)(g.xgkicklastcycle >> 32));
+		}
 	}
 	// Carried microVU flag pipeline + pending Q/P scalars. vu_capture serializes
 	// these and VuSnapshot::Restore re-primes them, but the per-op architectural
@@ -499,9 +511,9 @@ void DumpArchRaw(const recompiler_tests::VuSnapshot& s, bool hash_pipeline)
 	for (int i = 0; i < 32; ++i)
 		std::printf("  VI%02d %08x\n", i, g.VI[i].UL & (IsFullWidthVi(i) ? 0xFFFFFFFFu : 0xFFFFu));
 	if (s.index == 1)
-		std::printf("  XGK addr=%08x diff=%08x size=%08x cyc=%08x en=%08x endp=%08x\n",
+		std::printf("  XGK addr=%08x diff=%08x size=%08x cyc=%08x en=%08x endp=%08x lastcyc=%016llx\n",
 			g.xgkickaddr, g.xgkickdiff, g.xgkicksizeremaining, g.xgkickcyclecount,
-			g.xgkickenable, g.xgkickendpacket);
+			g.xgkickenable, g.xgkickendpacket, (unsigned long long)g.xgkicklastcycle);
 	if (hash_pipeline)
 		std::printf("  PIPE mac=%08x,%08x,%08x,%08x clip=%08x,%08x,%08x,%08x "
 			"status=%08x,%08x,%08x,%08x pq=%08x pp=%08x\n",
