@@ -137,7 +137,12 @@ namespace vu_capture
 	//
 	// Trajectory mode (PCSX2_VU_TRAJ_OUT set): append ONE text line per VU
 	// dispatch (every call, no reservoir) to the named file:
-	//   seq vu_index pc cycle_budget cpu_cycle vu_cycle state_hash vumem_hash
+	//   seq vu_index pc cycle_budget cpu_cycle vu_cycle state_hash vumem_hash core_hash
+	// core_hash covers only pure arithmetic/control state (VF[32] + integer
+	// VI[0..15] + ACC), excluding the cycle-timed fields (Q/P, flag pipelines,
+	// xgkick* incl. xgkicklastcycle) that state_hash includes — so a core_hash
+	// divergence at matched cpu_cycle is a real arithmetic bug, not a
+	// cycle-model (the -3) artifact.
 	// seq is a global monotonic counter over BOTH VU0 and VU1 so the line
 	// order is the true dispatch order. state_hash/vumem_hash are FNV-1a over
 	// the architectural register surface and the whole VU data memory. Because

@@ -302,7 +302,7 @@ namespace vu_capture
 					std::setvbuf(g_traj_file, nullptr, _IOLBF, 0);  // line-buffered
 					std::fprintf(g_traj_file,
 						"# vu_capture trajectory — pid %d\n"
-						"# seq vu pc budget cpu_cycle vu_cycle state_hash vumem_hash\n",
+						"# seq vu pc budget cpu_cycle vu_cycle state_hash vumem_hash core_hash\n",
 						::getpid());
 					std::atexit(&CloseTrajAtExit);
 				}
@@ -349,13 +349,25 @@ namespace vu_capture
 			SnapshotState(regs, st);
 			const u64 state_hash = Fnv1a(&st, sizeof(st));
 			const u64 vumem_hash = Fnv1a(vumem_ptr, vumem_size);
+			// core_hash covers ONLY pure arithmetic/control state: VF[32] +
+			// integer VI[0..15] + ACC. It deliberately excludes the cycle-timed
+			// fields (Q/P pipeline results in VI[16..31], pending_q/p, the flag
+			// pipelines, and all xgkick* incl. the xgkicklastcycle timestamp),
+			// which differ between two runs purely from the VU cycle-count model
+			// (the -3 JIT-vs-interp gap) even when the arithmetic is identical.
+			// A core_hash divergence at matched cpu_cycle is therefore a REAL
+			// arithmetic/control divergence, not a cycle-model artifact.
+			u64 core = Fnv1a(st.VF, sizeof(st.VF));          // VF[32][4]
+			core = Fnv1a(st.VI, 16 * sizeof(st.VI[0]), core); // VI[0..15] (int regs)
+			core = Fnv1a(st.ACC, sizeof(st.ACC), core);       // ACC
 			const u64 seq = g_traj_seq.fetch_add(1, std::memory_order_relaxed);
 			std::lock_guard lock(g_traj_mutex);
 			if (g_traj_file)
-				std::fprintf(g_traj_file, "%llu %d 0x%08X %u %llu %llu %016llx %016llx\n",
+				std::fprintf(g_traj_file, "%llu %d 0x%08X %u %llu %llu %016llx %016llx %016llx\n",
 					(unsigned long long)seq, vu_index, start_pc, cycle_budget,
 					(unsigned long long)cpuRegs.cycle, (unsigned long long)regs.cycle,
-					(unsigned long long)state_hash, (unsigned long long)vumem_hash);
+					(unsigned long long)state_hash, (unsigned long long)vumem_hash,
+					(unsigned long long)core);
 		}
 
 		// Decide slot under the state lock; do the heavy I/O after releasing
