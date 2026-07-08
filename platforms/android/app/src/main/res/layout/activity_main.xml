@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:keepScreenOn="true"
+    tools:context=".MainActivity">
+
+    <FrameLayout
+        android:id="@+id/fl_board"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:id="@+id/ll_renderer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_ogl"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="60dip"
+            android:layout_height="wrap_content"
+            android:text="OGL"
+            android:textSize="12dp"
+            android:textColor="@color/white"
+            app:rippleColor="#80cdcdcd"
+            app:strokeColor="#80000000" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_vulkan"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="60dip"
+            android:layout_height="wrap_content"
+            android:text="VK"
+            android:textSize="12dp"
+            android:textColor="@color/white"
+            app:rippleColor="#80cdcdcd"
+            app:strokeColor="#80000000" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_sw"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="60dip"
+            android:layout_height="wrap_content"
+            android:text="SW"
+            android:textSize="12dp"
+            android:textColor="@color/white"
+            app:rippleColor="#80cdcdcd"
+            app:strokeColor="#80000000" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dip"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_file"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="file"
+            android:textColor="@color/white"
+            app:rippleColor="#80cdcdcd"
+            app:strokeColor="#80000000" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_save"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="save"
+            android:textColor="@color/white"
+            app:rippleColor="#80cdcdcd"
+            app:strokeColor="#80000000" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_load"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="load"
+            android:textColor="@color/white"
+            app:rippleColor="#80cdcdcd"
+            app:strokeColor="#80000000" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_pad_select"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="select"
+            android:textColor="@color/white"
+            app:rippleColor="#80cdcdcd"
+            app:strokeColor="#80000000" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_pad_start"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="start"
+            android:textColor="@color/white"
+            app:rippleColor="#80cdcdcd"
+            app:strokeColor="#80000000" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_l3"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="L3"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_r3"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="R3"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_l2"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="L2"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_r2"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="R2"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_l1"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="L1"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_r1"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="R1"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_x"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="▢"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_y"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="△"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_a"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⨉"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_b"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="○"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_pad_joy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_joy_lt"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="60dip"
+                android:layout_height="wrap_content"
+                android:text="↖"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_joy_t"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="60dip"
+                android:layout_height="wrap_content"
+                android:text="↑"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_joy_rt"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="60dip"
+                android:layout_height="wrap_content"
+                android:text="↗"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_joy_l"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="60dip"
+                android:layout_height="wrap_content"
+                android:text="←"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_joy_center"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="60dip"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_joy_r"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="60dip"
+                android:layout_height="wrap_content"
+                android:text="→"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_joy_lb"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="60dip"
+                android:layout_height="wrap_content"
+                android:text="↙"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_joy_b"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="60dip"
+                android:layout_height="wrap_content"
+                android:text="↓"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_joy_rb"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="60dip"
+                android:layout_height="wrap_content"
+                android:text="↘"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="20dip"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/ll_pad_joy">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_dir_top"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="↑"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_dir_bottom"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="↓"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_dir_left"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="←"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pad_dir_right"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="→"
+                android:textColor="@color/white"
+                app:rippleColor="#80cdcdcd"
+                app:strokeColor="#80000000" />
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

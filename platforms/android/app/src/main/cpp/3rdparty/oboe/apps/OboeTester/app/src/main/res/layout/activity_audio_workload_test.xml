@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2025 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    tools:context="com.mobileer.oboetester.AudioWorkloadTestActivity">
+
+    <LinearLayout
+        android:id="@+id/title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:orientation="horizontal"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_audio_workload_test"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true" >
+        <LinearLayout
+            android:id="@+id/buttonGrid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            app:layout_constraintTop_toBottomOf="@+id/title_bar">
+
+            <com.mobileer.oboetester.ExponentialSliderView
+                android:id="@+id/target_duration_ms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:sliderLabel="Target Duration(ms)"
+                app:minValue="1"
+                app:maxValue="10000"
+                app:defaultValue="500" />
+
+            <com.mobileer.oboetester.ExponentialSliderView
+                android:id="@+id/num_bursts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:sliderLabel="Buffer Size In Bursts"
+                app:minValue="1"
+                app:maxValue="1000"
+                app:defaultValue="2" />
+
+            <com.mobileer.oboetester.ExponentialSliderView
+                android:id="@+id/num_voices"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:sliderLabel="Num Voices"
+                app:minValue="1"
+                app:maxValue="500"
+                app:defaultValue="1" />
+
+            <com.mobileer.oboetester.ExponentialSliderView
+                android:id="@+id/alternate_num_voices"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:sliderLabel="Alternate Num Voices"
+                app:minValue="1"
+                app:maxValue="500"
+                app:defaultValue="50" />
+
+            <com.mobileer.oboetester.ExponentialSliderView
+                android:id="@+id/alternating_period_ms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:sliderLabel="Alternating Period(ms)"
+                app:minValue="1"
+                app:maxValue="5000"
+                app:defaultValue="50" />
+
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="@dimen/small_horizontal_margin"
+                android:paddingTop="@dimen/small_vertical_margin"
+                android:paddingRight="@dimen/small_horizontal_margin"
+                android:paddingBottom="@dimen/small_vertical_margin"
+                tools:context="com.mobileer.oboetester.AudioWorkloadTestRunnerActivity">
+
+                <CheckBox
+                    android:id="@+id/enable_adpf"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="8sp"
+                    android:text="ADPF" />
+
+                <CheckBox
+                    android:id="@+id/enable_adpf_workload_increase"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="8sp"
+                    android:text="ADPF Workload Increase" />
+            </LinearLayout>
+
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="@dimen/small_horizontal_margin"
+                android:paddingTop="@dimen/small_vertical_margin"
+                android:paddingRight="@dimen/small_horizontal_margin"
+                android:paddingBottom="@dimen/small_vertical_margin"
+                tools:context="com.mobileer.oboetester.AudioWorkloadTestRunnerActivity">
+
+                <CheckBox
+                    android:id="@+id/hear_workload"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="8sp"
+                    android:text="Hear Workload" />
+            </LinearLayout>
+
+
+            <HorizontalScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    xmlns:tools="http://schemas.android.com/tools"
+
+                    android:id="@+id/affinity_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingLeft="@dimen/small_horizontal_margin"
+                    android:paddingTop="@dimen/small_vertical_margin"
+                    android:paddingRight="@dimen/small_horizontal_margin"
+                    android:paddingBottom="@dimen/small_vertical_margin"
+                    tools:context="com.mobileer.oboetester.AudioWorkloadTestActivity">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/cpu_affinity"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+            </HorizontalScrollView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/button_open"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@xml/button_color_selector"
+                    android:backgroundTintMode="src_atop"
+                    android:onClick="openAudio"
+                    android:text="@string/openAudio" />
+
+                <Button
+                    android:id="@+id/button_start"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@xml/button_color_selector"
+                    android:backgroundTintMode="src_atop"
+                    android:onClick="startTest"
+                    android:text="@string/startAudio" />
+
+                <Button
+                    android:id="@+id/button_stop"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@xml/button_color_selector"
+                    android:backgroundTintMode="src_atop"
+                    android:onClick="stopTest"
+                    android:text="@string/stopAudio" />
+
+                <Button
+                    android:id="@+id/button_close"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@xml/button_color_selector"
+                    android:backgroundTintMode="src_atop"
+                    android:onClick="closeAudio"
+                    android:text="@string/closeAudio" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/stream_info_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lines="2"
+                android:text="TAP OPEN then START"
+                android:fontFamily="monospace" />
+
+            <TextView
+                android:id="@+id/current_status_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lines="2"
+                android:text="Results:"
+                android:fontFamily="monospace" />
+
+            <com.mobileer.oboetester.MultiLineChart
+                android:id="@+id/multiline_chart"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="100dp"
+                app:backgroundColor="@color/background_warm"
+                app:exampleDimension="24sp"
+                app:exampleDrawable="@android:drawable/ic_menu_add"
+                app:exampleString="Hello, MultiLineChart"
+                app:lineColor="@color/light_blue_600" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

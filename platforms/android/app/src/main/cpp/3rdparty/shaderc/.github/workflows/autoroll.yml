@@ -1,0 +1,66 @@
+# Copyright 2023 The Shaderc Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,s either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Update dependencies
+permissions:
+  contents: read
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    permissions:
+      contents: write
+      pull-requests: write
+    name: Update dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # Checkout the depot tools they are needed by roll_deps.sh
+      - name: Checkout depot tools
+        run: git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+
+      - name: Update PATH
+        run: echo "$(pwd)/depot_tools" >> $GITHUB_PATH
+
+      - name: Download dependencies
+        run: python3 utils/git-sync-deps
+
+      - name: Setup git user information
+        run: |
+          git config user.name "GitHub Actions[bot]"
+          git config user.email "<>"
+          git checkout -b roll_deps
+
+      - name: Update dependencies
+        run: |
+          utils/roll-deps
+          if [[ `git diff HEAD..origin/main --name-only | wc -l` == 0 ]]; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+        id: update_dependencies
+      - name: Push changes and create PR
+        if: steps.update_dependencies.outputs.changed == 'true'
+        run: |
+          git push --force --set-upstream origin roll_deps
+          gh pr create --label 'kokoro:run' --base main -f || true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

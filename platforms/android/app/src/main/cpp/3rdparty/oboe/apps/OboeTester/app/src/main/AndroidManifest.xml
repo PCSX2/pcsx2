@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.mobileer.oboetester">
+    <attribution
+        android:tag="AudioTag"
+        android:label="@string/audio_attribution_label" />
+
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.audio.output"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+    <uses-feature
+        android:name="android.software.midi"
+        android:required="false" />
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <application
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:requestLegacyExternalStorage="true"
+        android:banner="@mipmap/ic_launcher">
+        <activity
+            android:name=".MainActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".TestOutputActivity"
+            android:label="@string/title_activity_test_output"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".TestInputActivity"
+            android:label="@string/title_activity_test_input"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".TapToToneActivity"
+            android:label="@string/title_activity_output_latency"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".RecorderActivity"
+            android:label="@string/title_activity_recorder"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".EchoActivity"
+            android:label="@string/title_activity_echo"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".RoundTripLatencyActivity"
+            android:label="@string/title_activity_rt_latency"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ManualGlitchActivity"
+            android:label="@string/title_activity_glitches"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".AutomatedGlitchActivity"
+            android:label="@string/title_activity_auto_glitches"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".TestDisconnectActivity"
+            android:label="@string/title_test_disconnect"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".DeviceReportActivity"
+            android:label="@string/title_report_devices"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".TestDataPathsActivity"
+            android:label="@string/title_data_paths"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ExtraTestsActivity"
+            android:exported="true"
+            android:label="@string/title_extra_tests"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ExternalTapToToneActivity"
+            android:label="@string/title_external_tap"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".TestPlugLatencyActivity"
+            android:label="@string/title_plug_latency"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".TestErrorCallbackActivity"
+            android:label="@string/title_error_callback"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".TestRouteDuringCallbackActivity"
+            android:label="@string/title_route_during_callback"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".DynamicWorkloadActivity"
+            android:label="@string/title_dynamic_load"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".TestColdStartLatencyActivity"
+            android:label="@string/title_cold_start_latency"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".TestRapidCycleActivity"
+            android:label="@string/title_rapid_cycle"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".AudioWorkloadTestActivity"
+            android:label="@string/title_audio_workload_test"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".AudioWorkloadTestRunnerActivity"
+            android:label="@string/title_audio_workload_test_runner"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ReverseJniActivity"
+            android:label="@string/title_reverse_jni"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+
+        <service
+            android:name=".MidiTapTester"
+            android:permission="android.permission.BIND_MIDI_DEVICE_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.media.midi.MidiDeviceService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.media.midi.MidiDeviceService"
+                android:resource="@xml/service_device_info" />
+        </service>
+
+        <service
+            android:name=".AudioForegroundService"
+            android:foregroundServiceType="mediaPlayback|microphone"
+            android:exported="false">
+        </service>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+
+        <receiver android:name=".TestTimeoutReceiver" android:exported="false"/>
+
+    </application>
+
+</manifest>

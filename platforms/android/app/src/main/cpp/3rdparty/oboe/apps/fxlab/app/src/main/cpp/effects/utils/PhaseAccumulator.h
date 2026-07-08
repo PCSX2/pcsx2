@@ -1,0 +1,41 @@
+/*
+ * Copyright  2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef ANDROID_FXLAB_PHASEACCUMULATOR_H
+#define ANDROID_FXLAB_PHASEACCUMULATOR_H
+
+#include <cmath>
+
+
+
+class PhaseAccumulator {
+public:
+    PhaseAccumulator(float frequency, float sampleRate):
+        f(frequency),
+        fs(sampleRate) { }
+    float incrementPhase() {
+        mPhase += kDelta;
+        if (mPhase >= kTwoPi) mPhase -= kTwoPi;
+        return mPhase;
+    }
+private:
+    float mPhase = 0;
+    const float f;
+    const float fs;
+    static constexpr float kTwoPi = M_PI * 2;
+    const float kDelta = kTwoPi * f / fs;
+};
+#endif //ANDROID_FXLAB_PHASEACCUMULATOR_H

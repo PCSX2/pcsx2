@@ -1,0 +1,95 @@
+#!/bin/bash
+
+set -u
+set -e
+trap onexit INT
+trap onexit TERM
+trap onexit EXIT
+
+onexit()
+{
+	if [ -d $OUTDIR ]; then
+		rm -rf $OUTDIR
+	fi
+}
+
+runme()
+{
+	echo \*\*\* $*
+	$*
+}
+
+IMAGE=vgl_6548_0026a.bmp
+WIDTH=128
+HEIGHT=95
+IMGDIR=@CMAKE_SOURCE_DIR@/testimages
+OUTDIR=`mktemp -d /tmp/__croptest_output.XXXXXX`
+EXEDIR=@CMAKE_BINARY_DIR@
+
+if [ -d $OUTDIR ]; then
+	rm -rf $OUTDIR
+fi
+mkdir -p $OUTDIR
+
+exec >$EXEDIR/test/croptest.log 2>&1
+
+echo "============================================================"
+echo "$IMAGE ($WIDTH x $HEIGHT)"
+echo "============================================================"
+echo
+
+for PROGARG in "" -progressive; do
+
+	cp $IMGDIR/$IMAGE $OUTDIR
+	basename=`basename $IMAGE .bmp`
+	echo "------------------------------------------------------------"
+	echo "Generating test images"
+	echo "------------------------------------------------------------"
+	echo
+	runme $EXEDIR/cjpeg $PROGARG -grayscale -outfile $OUTDIR/${basename}_GRAY.jpg $IMGDIR/${basename}.bmp
+	runme $EXEDIR/cjpeg $PROGARG -sample 2x2 -outfile $OUTDIR/${basename}_420.jpg $IMGDIR/${basename}.bmp
+	runme $EXEDIR/cjpeg $PROGARG -sample 2x1 -outfile $OUTDIR/${basename}_422.jpg $IMGDIR/${basename}.bmp
+	runme $EXEDIR/cjpeg $PROGARG -sample 1x2 -outfile $OUTDIR/${basename}_440.jpg $IMGDIR/${basename}.bmp
+	runme $EXEDIR/cjpeg $PROGARG -sample 1x1 -outfile $OUTDIR/${basename}_444.jpg $IMGDIR/${basename}.bmp
+	echo
+
+	for NSARG in "" -nosmooth; do
+
+		for COLORSARG in "" "-colors 256 -dither none -onepass"; do
+
+			for Y in {0..16}; do
+
+				for H in {1..16}; do
+
+					X=$(( (Y*16)%128 ))
+					W=$(( WIDTH-X-7 ))
+					if [ $Y -le 15 ]; then
+						CROPSPEC="${W}x${H}+${X}+${Y}"
+					else
+						Y2=$(( HEIGHT-H ));
+						CROPSPEC="${W}x${H}+${X}+${Y2}"
+					fi
+
+					echo "------------------------------------------------------------"
+					echo $PROGARG $NSARG $COLORSARG -crop $CROPSPEC
+					echo "------------------------------------------------------------"
+					echo
+					for samp in GRAY 420 422 440 444; do
+						$EXEDIR/djpeg $NSARG $COLORSARG -rgb -outfile $OUTDIR/${basename}_${samp}_full.ppm $OUTDIR/${basename}_${samp}.jpg
+						magick $OUTDIR/${basename}_${samp}_full.ppm -crop $CROPSPEC $OUTDIR/${basename}_${samp}_ref.ppm
+						runme $EXEDIR/djpeg $NSARG $COLORSARG -crop $CROPSPEC -rgb -outfile $OUTDIR/${basename}_${samp}.ppm $OUTDIR/${basename}_${samp}.jpg
+						runme cmp $OUTDIR/${basename}_${samp}.ppm $OUTDIR/${basename}_${samp}_ref.ppm
+					done
+					echo
+
+				done
+
+			done
+
+		done
+
+	done
+
+done
+
+echo SUCCESS!

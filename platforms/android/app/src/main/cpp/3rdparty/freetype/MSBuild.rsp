@@ -1,0 +1,4 @@
+# MSBuild.rsp with default command-line switches
+/clp:ForceConsoleColor
+/p:Configuration=Release
+#/p:WindowsTargetPlatformVersion=10.0.16299.0

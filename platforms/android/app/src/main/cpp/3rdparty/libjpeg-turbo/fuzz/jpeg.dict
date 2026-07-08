@@ -1,0 +1,400 @@
+# JPEG Dictionary for libFuzzer
+# Contains JPEG markers, common signatures, and important byte patterns
+
+# ==================================================
+# JPEG markers (2-byte sequences starting with 0xFF)
+# ==================================================
+
+# Start Of Image/End Of Image (SOI/EOI)
+soi="\xff\xd8"
+eoi="\xff\xd9"
+
+# Start Of Frame (SOF0-SOF15)
+
+# Baseline DCT
+sof0="\xff\xc0"
+# Extended sequential DCT, Huffman coding
+sof1="\xff\xc1"
+# Progressive DCT, Huffman coding
+sof2="\xff\xc2"
+# Lossless, Huffman coding
+sof3="\xff\xc3"
+# Differential sequential DCT, Huffman coding
+sof5="\xff\xc5"
+# Differential progressive DCT, Huffman coding
+sof6="\xff\xc6"
+# Differential lossless, Huffman coding
+sof7="\xff\xc7"
+# Sequential DCT, arithmetic coding
+sof9="\xff\xc9"
+# Progressive DCT, arithmetic coding
+sof10="\xff\xca"
+# Lossless, arithmetic coding
+sof11="\xff\xcb"
+# Differential sequential DCT, arithmetic coding
+sof13="\xff\xcd"
+# Differential progressive DCT, arithmetic coding
+sof14="\xff\xce"
+# Differential lossless, arithmetic coding
+sof15="\xff\xcf"
+
+# Define Huffman Tables (DHT)
+dht="\xff\xc4"
+
+# Define Arithmetic Coding conditioning (DAC)
+dac="\xff\xcc"
+
+# Define Quantization Tables (DQT)
+dqt="\xff\xdb"
+
+# Define Restart Interval (DRI)
+dri="\xff\xdd"
+
+# Start Of Scan (SOS)
+sos="\xff\xda"
+
+# Restart (RST0-RST7)
+rst0="\xff\xd0"
+rst1="\xff\xd1"
+rst2="\xff\xd2"
+rst3="\xff\xd3"
+rst4="\xff\xd4"
+rst5="\xff\xd5"
+rst6="\xff\xd6"
+rst7="\xff\xd7"
+
+# Application (APP0-APP15)
+app0="\xff\xe0"
+app1="\xff\xe1"
+app2="\xff\xe2"
+app3="\xff\xe3"
+app4="\xff\xe4"
+app5="\xff\xe5"
+app6="\xff\xe6"
+app7="\xff\xe7"
+app8="\xff\xe8"
+app9="\xff\xe9"
+app10="\xff\xea"
+app11="\xff\xeb"
+app12="\xff\xec"
+app13="\xff\xed"
+app14="\xff\xee"
+app15="\xff\xef"
+
+# Comment (COM)
+com="\xff\xfe"
+
+# Define Number of Lines (DNL)
+dnl="\xff\xdc"
+
+# Expand reference components (EXP)
+exp="\xff\xdf"
+
+# JPEG extensions (JPG0-JPG13)
+jpg0="\xff\xf0"
+jpg1="\xff\xf1"
+jpg2="\xff\xf2"
+jpg3="\xff\xf3"
+jpg4="\xff\xf4"
+jpg5="\xff\xf5"
+jpg6="\xff\xf6"
+jpg7="\xff\xf7"
+jpg8="\xff\xf8"
+jpg9="\xff\xf9"
+jpg10="\xff\xfa"
+jpg11="\xff\xfb"
+jpg12="\xff\xfc"
+jpg13="\xff\xfd"
+
+# Temporary (TEM)
+tem="\xff\x01"
+
+# Reserved (RES)
+res_02="\xff\x02"
+res_bf="\xff\xbf"
+
+# Fill byte (byte stuffing)
+fill="\xff\x00"
+
+# ==============================
+# Application segment signatures
+# ==============================
+
+# JFIF signature (in APP0)
+jfif="JFIF\x00"
+jfif_ver="\x01\x01"
+jfif_ver2="\x01\x02"
+
+# JFXX signature (in APP0)
+jfxx="JFXX\x00"
+
+# Exif signature (in APP1)
+exif="Exif\x00\x00"
+
+# XMP signature (in APP1)
+xmp="http://ns.adobe.com/xap/1.0/\x00"
+
+# ICC Profile signature (in APP2)
+icc="ICC_PROFILE\x00"
+
+# Adobe signature (in APP14)
+adobe="Adobe\x00"
+
+# Photoshop signature (in APP13)
+photoshop="Photoshop 3.0\x008BIM"
+
+# ============================
+# TIFF/Exif byte order markers
+# ============================
+
+tiff_le="II\x2a\x00"
+tiff_be="MM\x00\x2a"
+
+# =================================
+# Common length values (big-endian)
+# =================================
+
+len_2="\x00\x02"
+len_4="\x00\x04"
+len_8="\x00\x08"
+len_16="\x00\x10"
+len_17="\x00\x11"
+len_32="\x00\x20"
+len_64="\x00\x40"
+len_128="\x00\x80"
+len_256="\x01\x00"
+len_512="\x02\x00"
+len_1024="\x04\x00"
+
+# ============================================
+# Image dimensions (common values, big-endian)
+# ============================================
+
+dim_1="\x00\x01"
+dim_8="\x00\x08"
+dim_16="\x00\x10"
+dim_64="\x00\x40"
+dim_128="\x00\x80"
+dim_256="\x01\x00"
+dim_512="\x02\x00"
+dim_1024="\x04\x00"
+dim_2048="\x08\x00"
+dim_4096="\x10\x00"
+
+# ========================
+# Component counts and IDs
+# ========================
+
+comp_1="\x01"
+comp_2="\x02"
+comp_3="\x03"
+comp_4="\x04"
+
+# Component IDs (Y, Cb, Cr)
+comp_y="\x01"
+comp_cb="\x02"
+comp_cr="\x03"
+comp_r="\x52"
+comp_g="\x47"
+comp_b="\x42"
+
+# ===========================================
+# Sampling factors (packed H:V into one byte)
+# ===========================================
+
+samp_11="\x11"
+samp_21="\x21"
+samp_12="\x12"
+samp_22="\x22"
+samp_41="\x41"
+samp_14="\x14"
+samp_44="\x44"
+
+# ======================
+# Quantization table IDs
+# ======================
+
+qt_0="\x00"
+qt_1="\x01"
+qt_2="\x02"
+qt_3="\x03"
+qt_16bit_0="\x10"
+qt_16bit_1="\x11"
+
+# =======================================
+# Huffman table class and ID combinations
+# =======================================
+
+ht_dc_0="\x00"
+ht_dc_1="\x01"
+ht_dc_2="\x02"
+ht_dc_3="\x03"
+ht_ac_0="\x10"
+ht_ac_1="\x11"
+ht_ac_2="\x12"
+ht_ac_3="\x13"
+
+# =====================
+# Data precision values
+# =====================
+
+prec_8="\x08"
+prec_12="\x0c"
+prec_16="\x10"
+
+# =====================================
+# Huffman code lengths (for DHT marker)
+# =====================================
+
+huff_0_codes="\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+huff_std_dc="\x00\x01\x05\x01\x01\x01\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00"
+huff_std_ac="\x00\x02\x01\x03\x03\x02\x04\x03\x05\x05\x04\x04\x00\x00\x01\x7d"
+
+# =======================
+# Restart interval values
+# =======================
+
+ri_0="\x00\x00"
+ri_1="\x00\x01"
+ri_8="\x00\x08"
+ri_16="\x00\x10"
+ri_100="\x00\x64"
+ri_256="\x01\x00"
+
+# ==================
+# Scan header values
+# ==================
+
+scan_start_0="\x00"
+scan_start_1="\x01"
+scan_end_0="\x00"
+scan_end_63="\x3f"
+scan_approx_0="\x00"
+scan_approx_10="\x10"
+scan_approx_01="\x01"
+scan_approx_11="\x11"
+scan_approx_21="\x21"
+
+# ===================================
+# Progressive scan approximation bits
+# ===================================
+
+ah_al_00="\x00"
+ah_al_10="\x10"
+ah_al_20="\x20"
+ah_al_01="\x01"
+ah_al_11="\x11"
+ah_al_21="\x21"
+ah_al_12="\x12"
+
+# =========================
+# Lossless predictor values
+# =========================
+
+pred_0="\x00"
+pred_1="\x01"
+pred_2="\x02"
+pred_3="\x03"
+pred_4="\x04"
+pred_5="\x05"
+pred_6="\x06"
+pred_7="\x07"
+
+# ==============================
+# Common marker segment patterns
+# ==============================
+
+# Minimal DQT segment (64-byte table + header)
+dqt_hdr="\xff\xdb\x00\x43\x00"
+
+# Minimal DHT segment header
+dht_hdr="\xff\xc4\x00\x1f\x00"
+
+# Minimal SOF0 segment header (baseline)
+sof0_hdr="\xff\xc0\x00\x0b\x08"
+
+# Minimal SOS segment header
+sos_hdr="\xff\xda\x00\x08\x01"
+
+# Typical 3-component SOS
+sos_3comp="\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00\x3f\x00"
+
+# ================
+# Edge case values
+# ================
+
+zero="\x00"
+one="\x01"
+max_byte="\xff"
+mid="\x80"
+val_7f="\x7f"
+val_fe="\xfe"
+
+# Large values (for dimension fuzzing)
+large_dim="\xff\xff"
+large_len="\xff\xfe"
+
+# ===============================
+# Entropy coding segment patterns
+# ===============================
+
+# Common DC coefficient patterns
+dc_zero="\x00"
+dc_small="\xf0"
+
+# EOB (End Of Block) for AC
+eob="\x00"
+
+# ZRL (Zero Run Length) - 16 zeros
+zrl="\xf0"
+
+# ===========================
+# JPEG file structure markers
+# ===========================
+
+# SOI + APP0 (JFIF header start)
+soi_app0="\xff\xd8\xff\xe0"
+
+# Minimal JFIF APP0 segment
+jfif_app0="\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00"
+
+# SOI + SOF0 (baseline start)
+soi_sof0="\xff\xd8\xff\xc0"
+
+# SOI + SOF2 (progressive start)
+soi_sof2="\xff\xd8\xff\xc2"
+
+# DQT + SOF sequence
+dqt_sof="\xff\xdb\xff\xc0"
+
+# SOF + DHT sequence
+sof_dht="\xff\xc0\xff\xc4"
+
+# DHT + SOS sequence
+dht_sos="\xff\xc4\xff\xda"
+
+# SOS + EOI (end of scan + End Of Image)
+sos_eoi="\xff\xda\xff\xd9"
+
+# ====================
+# ICC profile patterns
+# ====================
+
+icc_sig="ICC_PROFILE\x00\x01\x01"
+icc_multi_1="ICC_PROFILE\x00\x01\x02"
+icc_multi_2="ICC_PROFILE\x00\x02\x02"
+
+# ==========================
+# Arithmetic coding patterns
+# ==========================
+
+arith_cond="\x00\x00"
+arith_kx="\x00\x05"
+
+# ====================================
+# Color transform values (Adobe APP14)
+# ====================================
+
+adobe_transform_0="\x00"
+adobe_transform_1="\x01"
+adobe_transform_2="\x02"

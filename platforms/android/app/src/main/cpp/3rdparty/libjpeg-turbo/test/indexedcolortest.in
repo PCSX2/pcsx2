@@ -1,0 +1,247 @@
+#!/bin/bash
+
+set -u
+set -e
+trap onexit INT
+trap onexit TERM
+trap onexit EXIT
+
+onexit()
+{
+	if [ -d $OUTDIR ]; then
+		rm -rf $OUTDIR
+	fi
+}
+
+runme()
+{
+	echo \*\*\* $*
+	$*
+}
+
+IMGDIR=@CMAKE_SOURCE_DIR@/testimages
+OUTDIR=`mktemp -d /tmp/__indexedcolortest_output.XXXXXX`
+EXEDIR=@CMAKE_BINARY_DIR@
+
+if [ -d $OUTDIR ]; then
+	rm -rf $OUTDIR
+fi
+mkdir -p $OUTDIR
+
+exec >$EXEDIR/test/indexedcolortest.log 2>&1
+
+MD5_MONKEY16_RGB_JPG=3f9ebcf7dbafbed33cb139106936f7ce
+
+MD5_MONKEY16_RGB_128_PPM=05e39e86013050dea2a2acae4590d73c
+MD5_MONKEY16_RGB_128_JPG=5402cb3a65fb1cbc7a7ebee181217498
+MD5_MONKEY16_RGB_256_PPM=33f0c9615a5d5b3f34c5b7448deec18f
+MD5_MONKEY16_RGB_256_JPG=8134084d3e26761c70b4b814f95c1761
+
+MD5_MONKEY16_RGB2GRAY_128_PGM=fe8b2940504ba8e4534f71dce38bf493
+MD5_MONKEY16_RGB2GRAY_128_JPG=b101265afe908155e8697aa66249a9e7
+MD5_MONKEY16_RGB2GRAY_256_PGM=2931ed6abb354faa9e72ea64b842f7c5
+MD5_MONKEY16_RGB2GRAY_256_JPG=fbf8da2c786433c0a68840b745097f4d
+
+MD5_MONKEY16_GRAY_JPG=6559ea3c3a67b5c2ba3865d9fdb47ac2
+
+MD5_MONKEY16_GRAY_128_PGM=b52414024e5c632ab572196868473eba
+MD5_MONKEY16_GRAY_128_JPG=62dbc599c21e539c5b0476b733912ed0
+MD5_MONKEY16_GRAY_256_PGM=b4484803a19c105798ea384e773d890c
+MD5_MONKEY16_GRAY_256_JPG=a10aed1b8274a330d1ea423542c8f990
+
+MD5_MONKEY16_GRAY2RGB_128_PPM=6b0b62db30139e86ef3703f911f01253
+MD5_MONKEY16_GRAY2RGB_128_JPG=e2c2737b631bfb6201cfc505cf193d9e
+MD5_MONKEY16_GRAY2RGB_256_PPM=6b0b62db30139e86ef3703f911f01253
+MD5_MONKEY16_GRAY2RGB_256_JPG=e2c2737b631bfb6201cfc505cf193d9e
+
+MD5_TESTORIG_RGB_JPG=71d7dca7216d78641519683e588842f3
+
+MD5_TESTORIG_RGB_128_PPM=431681fc0a2cb55dcd4743c82904547d
+MD5_TESTORIG_RGB_128_JPG=8a3dcd318359a29f653a2d975af61985
+MD5_TESTORIG_12_RGB_128_JPG=95ca159af10b726e5f89774329215982
+MD5_TESTORIG_RGB_256_PPM=cdf99d1c5c7789fdce63c263b401c038
+MD5_TESTORIG_RGB_256_JPG=af7e5ae99617cc02faeb3fd4369f29f4
+MD5_TESTORIG_12_RGB_256_JPG=ff778f6d5583b51e8818829ee2b0391c
+
+MD5_TESTORIG_RGB2GRAY_128_PGM=f6a2e8120ba8ed972ab78c01916cc287
+MD5_TESTORIG_RGB2GRAY_128_JPG=5e484699442589c6afa75d51243801ce
+MD5_TESTORIG_12_RGB2GRAY_128_JPG=2380f5f8dec12f99f05d2caf9c89e5c9
+MD5_TESTORIG_RGB2GRAY_256_PGM=aa847f6c7c7ce2677dc61abf72358cc6
+MD5_TESTORIG_RGB2GRAY_256_JPG=0fa74ee809df7766716976fa3987e7cf
+MD5_TESTORIG_12_RGB2GRAY_256_JPG=b0f3ad4a3af24df5141ba0fa75ec1f13
+
+MD5_TESTORIG_GRAY_JPG=eff5b6f54b8df753ab41dbc0dea9bc0d
+
+MD5_TESTORIG_GRAY_128_PGM=a789a9783b39f4c7e834f07ab802e4ce
+MD5_TESTORIG_GRAY_128_JPG=f09e7b1a7fa074895d8c5f82bac72f18
+MD5_TESTORIG_12_GRAY_128_JPG=9e3db30b50b24f9ce4c96598dc8f53b2
+MD5_TESTORIG_GRAY_256_PGM=e5748019c5cf14a91c5df7f6443715f7
+MD5_TESTORIG_GRAY_256_JPG=4c7cb212c7a7919bc7ad535755a90ffd
+MD5_TESTORIG_12_GRAY_256_JPG=af6dcbf382f73d1789ad18f723691556
+
+MD5_TESTORIG_GRAY2RGB_128_PPM=4e3680374af3cc4c088900cd07129af3
+MD5_TESTORIG_GRAY2RGB_128_JPG=e3e3adf9b17c4d688c918f66cfe5a982
+MD5_TESTORIG_12_GRAY2RGB_128_JPG=4372c392dfabb3baccfc5556004079c4
+MD5_TESTORIG_GRAY2RGB_256_PPM=4e3680374af3cc4c088900cd07129af3
+MD5_TESTORIG_GRAY2RGB_256_JPG=e3e3adf9b17c4d688c918f66cfe5a982
+MD5_TESTORIG_12_GRAY2RGB_256_JPG=4372c392dfabb3baccfc5556004079c4
+
+compare()
+{
+	file=$1
+	MD5=MD5_$(echo "$(basename $file)" | tr '[:lower:]' '[:upper:]')
+	MD5=${MD5/\./_}
+	md5/md5cmp ${!MD5} $file
+}
+
+for precision in 8 12; do
+	if [ $precision -eq 8 ]; then
+		RGBIMG=$IMGDIR/testorig.ppm
+		GRAYIMG=$IMGDIR/testorig.png
+		basename=testorig
+	else
+		RGBIMG=$IMGDIR/monkey16.png
+		GRAYIMG=$IMGDIR/monkey16.pgm
+		basename=monkey16
+	fi
+
+	runme $EXEDIR/cjpeg -precision $precision -quality 100 -sample 1x1 \
+		-outfile $OUTDIR/${basename}_rgb.jpg $RGBIMG
+	compare $OUTDIR/${basename}_rgb.jpg
+	echo
+	runme $EXEDIR/cjpeg -precision $precision -quality 100 -sample 1x1 \
+		-outfile $OUTDIR/${basename}_gray.jpg $GRAYIMG
+	compare $OUTDIR/${basename}_gray.jpg
+	echo
+
+	for ext in png ppm bmp os2 gif gif0 tga; do
+		if [ ! "$ext" = "png" -a ! "$ext" = "ppm" -a $precision -eq 12 ]; then
+			continue
+		fi
+
+		if [ "$ext" = "ppm" ]; then
+			grayext=pgm
+		else
+			grayext=$ext
+		fi
+
+		if [ "$ext" = "tga" ]; then
+			extarg=-targa
+		else
+			extarg=-$ext
+		fi
+		if [ "$ext" = "os2" ]; then
+			ext=bmp
+		fi
+		if [ "$ext" = "gif0" ]; then
+			ext=gif
+		fi
+
+		compareppm()
+		{
+			file=$1
+			if [ ! "$ext" = "ppm" ]; then
+				fileext=${file##*.}
+				if [[ "$file" == *"_gray_"* || "$file" == *"_rgb2gray_"* ]]; then
+					newext=pgm
+				else
+					newext=ppm
+				fi
+				newfile=$OUTDIR/`basename $file .$fileext`.$newext
+				if [ -f $newfile ]; then
+					rm $newfile
+				fi
+				magick $file -depth $precision $newfile
+				file=$newfile
+			fi
+			compare $file
+		}
+
+		for colors in 128 256; do
+
+			runme $EXEDIR/djpeg $extarg -quantize $colors \
+				-outfile $OUTDIR/${basename}_rgb_${colors}.$ext \
+				$OUTDIR/${basename}_rgb.jpg
+			compareppm $OUTDIR/${basename}_rgb_${colors}.$ext
+			runme $EXEDIR/cjpeg -verbose -precision $precision -lossless 1 -noicc \
+				-outfile $OUTDIR/${basename}_rgb_${colors}.jpg \
+				$OUTDIR/${basename}_rgb_${colors}.$ext
+			compare $OUTDIR/${basename}_rgb_${colors}.jpg
+			if [ $precision -eq 8 -a ! "$ext" = "bmp" -a ! "$ext" = "gif" -a \
+				! "$ext" = "tga" ]; then
+				runme $EXEDIR/cjpeg -verbose -precision 12 -lossless 1 \
+					-outfile $OUTDIR/${basename}_12_rgb_${colors}.jpg \
+					$OUTDIR/${basename}_rgb_${colors}.$ext
+				compare $OUTDIR/${basename}_12_rgb_${colors}.jpg
+			fi
+			echo
+
+			runme $EXEDIR/djpeg -grayscale $extarg -quantize $colors \
+				-outfile $OUTDIR/${basename}_rgb2gray_${colors}.$grayext \
+				$OUTDIR/${basename}_rgb.jpg
+			compareppm $OUTDIR/${basename}_rgb2gray_${colors}.$grayext
+			runme $EXEDIR/cjpeg -verbose -precision $precision -lossless 1 -noicc \
+				-outfile $OUTDIR/${basename}_rgb2gray_${colors}.jpg \
+				$OUTDIR/${basename}_rgb2gray_${colors}.$grayext
+			compare $OUTDIR/${basename}_rgb2gray_${colors}.jpg
+			if [ $precision -eq 8 -a ! "$ext" = "bmp" -a ! "$ext" = "gif" -a \
+				! "$ext" = "tga" ]; then
+				runme $EXEDIR/cjpeg -verbose -precision 12 -lossless 1 \
+					-outfile $OUTDIR/${basename}_12_rgb2gray_${colors}.jpg \
+					$OUTDIR/${basename}_rgb2gray_${colors}.$grayext
+				compare $OUTDIR/${basename}_12_rgb2gray_${colors}.jpg
+			fi
+			echo
+
+			runme $EXEDIR/djpeg $extarg -quantize $colors \
+				-outfile $OUTDIR/${basename}_gray_${colors}.$grayext \
+				$OUTDIR/${basename}_gray.jpg
+			compareppm $OUTDIR/${basename}_gray_${colors}.$grayext
+			runme $EXEDIR/cjpeg -verbose -precision $precision -lossless 1 -noicc \
+				-outfile $OUTDIR/${basename}_gray_${colors}.jpg \
+				$OUTDIR/${basename}_gray_${colors}.$grayext
+			compare $OUTDIR/${basename}_gray_${colors}.jpg
+			if [ $precision -eq 8 -a ! "$ext" = "bmp" -a ! "$ext" = "gif" -a \
+				! "$ext" = "tga" ]; then
+				runme $EXEDIR/cjpeg -verbose -precision 12 -lossless 1 \
+					-outfile $OUTDIR/${basename}_12_gray_${colors}.jpg \
+					$OUTDIR/${basename}_gray_${colors}.$grayext
+				compare $OUTDIR/${basename}_12_gray_${colors}.jpg
+				if [ "$ext" = "png" ]; then
+					magick $OUTDIR/${basename}_gray_${colors}.$grayext \
+						-define png:color-type=3 \
+						$OUTDIR/${basename}_indexedgray_${colors}.$grayext
+					runme $EXEDIR/cjpeg -verbose -precision $precision -lossless 1 \
+						-outfile $OUTDIR/${basename}_gray_${colors}.jpg \
+						$OUTDIR/${basename}_indexedgray_${colors}.$grayext
+					compare $OUTDIR/${basename}_gray_${colors}.jpg
+					runme $EXEDIR/cjpeg -verbose -precision 12 -lossless 1 \
+						-outfile $OUTDIR/${basename}_12_gray_${colors}.jpg \
+						$OUTDIR/${basename}_indexedgray_${colors}.$grayext
+					compare $OUTDIR/${basename}_12_gray_${colors}.jpg
+				fi
+			fi
+			echo
+
+			runme $EXEDIR/djpeg -rgb $extarg -quantize $colors \
+				-outfile $OUTDIR/${basename}_gray2rgb_${colors}.$ext \
+				$OUTDIR/${basename}_gray.jpg
+			compareppm $OUTDIR/${basename}_gray2rgb_${colors}.$ext
+			runme $EXEDIR/cjpeg -verbose -precision $precision -lossless 1 -noicc \
+				-outfile $OUTDIR/${basename}_gray2rgb_${colors}.jpg \
+				$OUTDIR/${basename}_gray2rgb_${colors}.$ext
+			compare $OUTDIR/${basename}_gray2rgb_${colors}.jpg
+			if [ $precision -eq 8 -a ! "$ext" = "bmp" -a ! "$ext" = "gif" -a \
+				! "$ext" = "tga" ]; then
+				runme $EXEDIR/cjpeg -verbose -precision 12 -lossless 1 \
+					-outfile $OUTDIR/${basename}_12_gray2rgb_${colors}.jpg \
+					$OUTDIR/${basename}_gray2rgb_${colors}.$ext
+				compare $OUTDIR/${basename}_12_gray2rgb_${colors}.jpg
+			fi
+			echo
+
+		done
+	done
+done
+
+echo GREAT SUCCESS!

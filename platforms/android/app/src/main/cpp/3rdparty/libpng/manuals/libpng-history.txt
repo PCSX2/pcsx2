@@ -1,0 +1,758 @@
+libpng-history.txt - The history of libpng
+
+TABLE OF CONTENTS
+
+   I. Changes to Libpng from version 0.88
+  II. Changes to Libpng from version 1.0.x to 1.2.x
+ III. Changes to Libpng from version 1.0.x/1.2.x to 1.4.x
+  IV. Changes to Libpng from version 1.4.x to 1.5.x
+   V. Changes to Libpng from version 1.5.x to 1.6.x
+  VI. Changes to Libpng from version 1.6.x to 1.8.x
+
+I. Changes to Libpng from version 0.88
+
+It should be noted that versions of libpng later than 0.96 are not
+distributed by the original libpng author, Guy Schalnat, nor by
+Andreas Dilger, who had taken over from Guy during 1996 and 1997, and
+distributed versions 0.89 through 0.96, but rather by another member
+of the original PNG Group, Glenn Randers-Pehrson.  Guy and Andreas are
+still alive and well, but they have moved on to other things.
+
+The old libpng functions png_read_init(), png_write_init(),
+png_info_init(), png_read_destroy(), and png_write_destroy() have been
+moved to PNG_INTERNAL in version 0.95 to discourage their use.  These
+functions will be removed from libpng version 1.4.0.
+
+The preferred method of creating and initializing the libpng structures is
+via the png_create_read_struct(), png_create_write_struct(), and
+png_create_info_struct() because they isolate the size of the structures
+from the application, allow version error checking, and also allow the
+use of custom error handling routines during the initialization, which
+the old functions do not.  The functions png_read_destroy() and
+png_write_destroy() do not actually free the memory that libpng
+allocated for these structs, but just reset the data structures, so they
+can be used instead of png_destroy_read_struct() and
+png_destroy_write_struct() if you feel there is too much system overhead
+allocating and freeing the png_struct for each image read.
+
+Setting the error callbacks via png_set_message_fn() before
+png_read_init() as was suggested in libpng-0.88 is no longer supported
+because this caused applications that do not use custom error functions
+to fail if the png_ptr was not initialized to zero.  It is still possible
+to set the error callbacks AFTER png_read_init(), or to change them with
+png_set_error_fn(), which is essentially the same function, but with a new
+name to force compilation errors with applications that try to use the old
+method.
+
+Support for the sCAL, iCCP, iTXt, and sPLT chunks was added at libpng-1.0.6;
+however, iTXt support was not enabled by default.
+
+Starting with version 1.0.7, you can find out which version of the library
+you are using at run-time:
+
+   png_uint_32 libpng_vn = png_access_version_number();
+
+The number libpng_vn is constructed from the major version, minor
+version with leading zero, and release number with leading zero,
+(e.g., libpng_vn for version 1.0.7 is 10007).
+
+Note that this function does not take a png_ptr, so you can call it
+before you've created one.
+
+You can also check which version of png.h you used when compiling your
+application:
+
+   png_uint_32 application_vn = PNG_LIBPNG_VER;
+
+Version numbering during this period was inconsistent due to various
+miscommunications, code incompatibilities and other factors outside the
+authors' control.  The table below shows the relationship between source
+version, PNG_LIBPNG_VER_STRING, PNG_LIBPNG_VER and shared library version
+for early releases:
+
+   source                 png.h  png.h  shared-lib
+   version                string   int  version
+   -------                ------ -----  ----------
+   0.89c "1.0 beta 3"     0.89      89  1.0.89
+   0.90  "1.0 beta 4"     0.90      90  0.90  [should have been 2.0.90]
+   0.95  "1.0 beta 5"     0.95      95  0.95  [should have been 2.0.95]
+   0.96  "1.0 beta 6"     0.96      96  0.96  [should have been 2.0.96]
+   0.97b "1.00.97 beta 7" 1.00.97   97  1.0.1 [should have been 2.0.97]
+   0.97c                  0.97      97  2.0.97
+   0.98                   0.98      98  2.0.98
+   0.99                   0.99      98  2.0.99
+   0.99a-m                0.99      99  2.0.99
+   1.00                   1.00     100  2.1.0 [100 should be 10000]
+   1.0.0                  1.0.0    100  2.1.0 [100 should be 10000]
+
+II. Changes to Libpng from version 1.0.x to 1.2.x
+
+Support for user memory management was enabled by default.  To
+accomplish this, the functions png_create_read_struct_2(),
+png_create_write_struct_2(), png_set_mem_fn(), png_get_mem_ptr(),
+png_malloc_default(), and png_free_default() were added.
+
+Support for the iTXt chunk has been enabled by default as of
+version 1.2.41.
+
+Support for certain MNG features was enabled.
+
+Support for numbered error messages was added.  However, we never got
+around to actually numbering the error messages.  The function
+png_set_strip_error_numbers() was added (Note: the prototype for this
+function was inadvertently removed from png.h in PNG_NO_ASSEMBLER_CODE
+builds of libpng-1.2.15.  It was restored in libpng-1.2.36).
+
+The png_malloc_warn() function was added at libpng-1.2.3.  This issues
+a png_warning and returns NULL instead of aborting when it fails to
+acquire the requested memory allocation.
+
+Support for setting user limits on image width and height was enabled
+by default.  The functions png_set_user_limits(), png_get_user_width_max(),
+and png_get_user_height_max() were added at libpng-1.2.6.
+
+The png_set_add_alpha() function was added at libpng-1.2.7.
+
+The function png_set_expand_gray_1_2_4_to_8() was added at libpng-1.2.9.
+Unlike png_set_gray_1_2_4_to_8(), the new function does not expand the
+tRNS chunk to alpha. The png_set_gray_1_2_4_to_8() function is
+deprecated.
+
+A number of macro definitions in support of runtime selection of
+assembler code features (especially Intel MMX code support) were
+added at libpng-1.2.0:
+
+    PNG_ASM_FLAG_MMX_SUPPORT_COMPILED
+    PNG_ASM_FLAG_MMX_SUPPORT_IN_CPU
+    PNG_ASM_FLAG_MMX_READ_COMBINE_ROW
+    PNG_ASM_FLAG_MMX_READ_INTERLACE
+    PNG_ASM_FLAG_MMX_READ_FILTER_SUB
+    PNG_ASM_FLAG_MMX_READ_FILTER_UP
+    PNG_ASM_FLAG_MMX_READ_FILTER_AVG
+    PNG_ASM_FLAG_MMX_READ_FILTER_PAETH
+    PNG_ASM_FLAGS_INITIALIZED
+    PNG_MMX_READ_FLAGS
+    PNG_MMX_FLAGS
+    PNG_MMX_WRITE_FLAGS
+    PNG_MMX_FLAGS
+
+We added the following functions in support of runtime
+selection of assembler code features:
+
+    png_get_mmx_flagmask()
+    png_set_mmx_thresholds()
+    png_get_asm_flags()
+    png_get_mmx_bitdepth_threshold()
+    png_get_mmx_rowbytes_threshold()
+    png_set_asm_flags()
+
+We replaced all of these functions with simple stubs in libpng-1.2.20,
+when the Intel assembler code was removed due to a licensing issue.
+
+These macros are deprecated:
+
+    PNG_READ_TRANSFORMS_NOT_SUPPORTED
+    PNG_PROGRESSIVE_READ_NOT_SUPPORTED
+    PNG_NO_SEQUENTIAL_READ_SUPPORTED
+    PNG_WRITE_TRANSFORMS_NOT_SUPPORTED
+    PNG_READ_ANCILLARY_CHUNKS_NOT_SUPPORTED
+    PNG_WRITE_ANCILLARY_CHUNKS_NOT_SUPPORTED
+
+They have been replaced, respectively, by:
+
+    PNG_NO_READ_TRANSFORMS
+    PNG_NO_PROGRESSIVE_READ
+    PNG_NO_SEQUENTIAL_READ
+    PNG_NO_WRITE_TRANSFORMS
+    PNG_NO_READ_ANCILLARY_CHUNKS
+    PNG_NO_WRITE_ANCILLARY_CHUNKS
+
+PNG_MAX_UINT was replaced with PNG_UINT_31_MAX.  It has been
+deprecated since libpng-1.0.16 and libpng-1.2.6.
+
+The function
+    png_check_sig(sig, num)
+was replaced with
+    png_sig_cmp(sig, 0, num) == 0
+It has been deprecated since libpng-0.90.
+
+The function
+    png_set_gray_1_2_4_to_8()
+which also expands tRNS to alpha was replaced with
+    png_set_expand_gray_1_2_4_to_8()
+which does not. It has been deprecated since libpng-1.0.18 and 1.2.9.
+
+Version numbering stabilized during the 1.0.x series. From 1.0.0 onward, the
+PNG_LIBPNG_VER_STRING matched the source version, and PNG_LIBPNG_VER became
+a five-digit integer of the form XXYYZZ (where XX=major, YY=minor, ZZ=release).
+Beta versions were initially given the previous release number plus a letter
+(through 1.0.6j), then switched to the upcoming release number plus "betaNN"
+or "rcNN". The table below shows this evolution:
+
+   source                 png.h  png.h  shared-lib
+   version                string   int  version
+   -------                ------ -----  ----------
+   1.0.0      (from here on, the   100  2.1.0 [100 should be 10000]
+   1.0.1       png.h string is   10001  2.1.0
+   1.0.1a-e    identical to the  10002  from here on, the shared library
+   1.0.2       source version)   10002  is 2.V where V is the source code
+   1.0.2a-b                      10003  version, except as noted.
+   1.0.3                         10003
+   1.0.3a-d                      10004
+   1.0.4                         10004
+   1.0.4a-f                      10005
+   1.0.5 (+ 2 patches)           10005
+   1.0.5a-d                      10006
+   1.0.5e-r                      10100 (not source compatible)
+   1.0.5s-v                      10006 (not binary compatible)
+   1.0.6 (+ 3 patches)           10006 (still binary incompatible)
+   1.0.6d-f                      10007 (still binary incompatible)
+   1.0.6g                        10007
+   1.0.6h                        10007  10.6h (testing xy.z so-numbering)
+   1.0.6i                        10007  10.6i
+   1.0.6j                        10007  2.1.0.6j (incompatible with 1.0.0)
+   1.0.7beta11-14        DLLNUM  10007  2.1.0.7beta11-14 (binary compatible)
+   1.0.7beta15-18           1    10007  2.1.0.7beta15-18 (binary compatible)
+   1.0.7rc1-2               1    10007  2.1.0.7rc1-2 (binary compatible)
+   1.0.7                    1    10007  (still compatible)
+   ...
+   1.0.69                  10    10069  10.so.0.69[.0]
+
+From 1.0.7 onward, version numbering became consistent, with the source
+version matching the shared-library major and minor numbers, and the
+shared-library major version indicating backward compatibility.
+
+III. Changes to Libpng from version 1.0.x/1.2.x to 1.4.x
+
+Private libpng prototypes and macro definitions were moved from
+png.h and pngconf.h into a new pngpriv.h header file.
+
+Functions png_set_benign_errors(), png_benign_error(), and
+png_chunk_benign_error() were added.
+
+Support for setting the maximum amount of memory that the application
+will allocate for reading chunks was added, as a security measure.
+The functions png_set_chunk_cache_max() and png_get_chunk_cache_max()
+were added to the library.
+
+We implemented support for I/O states by adding png_ptr member io_state
+and functions png_get_io_chunk_name() and png_get_io_state() in pngget.c
+
+We added PNG_TRANSFORM_GRAY_TO_RGB to the available high-level
+input transforms.
+
+Checking for and reporting of errors in the IHDR chunk is more thorough.
+
+Support for global arrays was removed, to improve thread safety.
+
+Some obsolete/deprecated macros and functions have been removed.
+
+Typecasted NULL definitions such as
+   #define png_voidp_NULL            (png_voidp)NULL
+were eliminated.  If you used these in your application, just use
+NULL instead.
+
+The png_struct and info_struct members "trans" and "trans_values" were
+changed to "trans_alpha" and "trans_color", respectively.
+
+The obsolete, unused pnggccrd.c and pngvcrd.c files and related makefiles
+were removed.
+
+The PNG_1_0_X and PNG_1_2_X macros were eliminated.
+
+The PNG_LEGACY_SUPPORTED macro was eliminated.
+
+Many WIN32_WCE #ifdefs were removed.
+
+The functions png_read_init(info_ptr), png_write_init(info_ptr),
+png_info_init(info_ptr), png_read_destroy(), and png_write_destroy()
+have been removed.  They have been deprecated since libpng-0.95.
+
+The png_permit_empty_plte() was removed. It has been deprecated
+since libpng-1.0.9.  Use png_permit_mng_features() instead.
+
+We removed the obsolete stub functions png_get_mmx_flagmask(),
+png_set_mmx_thresholds(), png_get_asm_flags(),
+png_get_mmx_bitdepth_threshold(), png_get_mmx_rowbytes_threshold(),
+png_set_asm_flags(), and png_mmx_supported()
+
+We removed the obsolete png_check_sig(), png_memcpy_check(), and
+png_memset_check() functions.  Instead use png_sig_cmp() == 0,
+memcpy(), and memset(), respectively.
+
+The function png_set_gray_1_2_4_to_8() was removed. It has been
+deprecated since libpng-1.0.18 and 1.2.9, when it was replaced with
+png_set_expand_gray_1_2_4_to_8() because the former function also
+expanded any tRNS chunk to an alpha channel.
+
+Macros for png_get_uint_16, png_get_uint_32, and png_get_int_32
+were added and are used by default instead of the corresponding
+functions. Unfortunately,
+from libpng-1.4.0 until 1.4.4, the png_get_uint_16 macro (but not the
+function) incorrectly returned a value of type png_uint_32.
+
+We changed the prototype for png_malloc() from
+    png_malloc(png_structp png_ptr, png_uint_32 size)
+to
+    png_malloc(png_structp png_ptr, png_alloc_size_t size)
+
+This also applies to the prototype for the user replacement malloc_fn().
+
+The png_calloc() function was added and is used in place of
+of "png_malloc(); memset();" except in the case in png_read_png()
+where the array consists of pointers; in this case a "for" loop is used
+after the png_malloc() to set the pointers to NULL, to give robust.
+behavior in case the application runs out of memory part-way through
+the process.
+
+We changed the prototypes of png_get_compression_buffer_size() and
+png_set_compression_buffer_size() to work with size_t instead of
+png_uint_32.
+
+Support for numbered error messages was removed by default, since we
+never got around to actually numbering the error messages. The function
+png_set_strip_error_numbers() was removed from the library by default.
+
+The png_zalloc() and png_zfree() functions are no longer exported.
+The png_zalloc() function no longer zeroes out the memory that it
+allocates.  Applications that called png_zalloc(png_ptr, number, size)
+can call png_calloc(png_ptr, number*size) instead, and can call
+png_free() instead of png_zfree().
+
+Support for dithering was disabled by default in libpng-1.4.0, because
+it has not been well tested and doesn't actually "dither".
+The code was not
+removed, however, and could be enabled by building libpng with
+PNG_READ_DITHER_SUPPORTED defined.  In libpng-1.4.2, this support
+was re-enabled, but the function was renamed png_set_quantize() to
+reflect more accurately what it actually does.  At the same time,
+the PNG_DITHER_[RED,GREEN_BLUE]_BITS macros were also renamed to
+PNG_QUANTIZE_[RED,GREEN,BLUE]_BITS, and PNG_READ_DITHER_SUPPORTED
+was renamed to PNG_READ_QUANTIZE_SUPPORTED.
+
+We removed the trailing '.' from the warning and error messages.
+
+IV. Changes to Libpng from version 1.4.x to 1.5.x
+
+From libpng-1.4.0 until 1.4.4, the png_get_uint_16 macro (but not the
+function) incorrectly returned a value of type png_uint_32.
+The incorrect macro was removed from libpng-1.4.5.
+
+Checking for invalid palette index on write was added at libpng
+1.5.10.  If a pixel contains an invalid (out-of-range) index libpng issues
+a benign error.  This is enabled by default because this condition is an
+error according to the PNG specification, Clause 11.3.2, but the error can
+be ignored in each png_ptr with
+
+   png_set_check_for_invalid_index(png_ptr, allowed);
+
+      allowed  - one of
+                 0: disable benign error (accept the
+                    invalid data without warning).
+                 1: enable benign error (treat the
+                    invalid data as an error or a
+                    warning).
+
+If the error is ignored, or if png_benign_error() treats it as a warning,
+any invalid pixels are decoded as opaque black by the decoder and written
+as-is by the encoder.
+
+Retrieving the maximum palette index found was added at libpng-1.5.15.
+This statement must appear after png_read_png() or png_read_image() while
+reading, and after png_write_png() or png_write_image() while writing.
+
+   int max_palette = png_get_palette_max(png_ptr, info_ptr);
+
+This will return the maximum palette index found in the image, or "-1" if
+the palette was not checked, or "0" if no palette was found.  Note that this
+does not account for any palette index used by ancillary chunks such as the
+bKGD chunk; you must check those separately to determine the maximum
+palette index actually used.
+
+There are no substantial API changes between the non-deprecated parts of
+the 1.4.5 API and the 1.5.0 API; however, the ability to directly access
+members of the main libpng control structures, png_struct and png_info,
+deprecated in earlier versions of libpng, has been completely removed from
+libpng 1.5, and new private "pngstruct.h", "pnginfo.h", and "pngdebug.h"
+header files were created.
+
+We no longer include zlib.h in png.h.  The include statement has been moved
+to pngstruct.h, where it is not accessible by applications. Applications that
+need access to information in zlib.h will need to add the '#include "zlib.h"'
+directive.  It does not matter whether this is placed prior to or after
+the '"#include png.h"' directive.
+
+The png_sprintf(), png_strcpy(), and png_strncpy() macros are no longer used
+and were removed.
+
+We moved the png_strlen(), png_memcpy(), png_memset(), and png_memcmp()
+macros into a private header file (pngpriv.h) that is not accessible to
+applications.
+
+In png_get_iCCP, the type of "profile" was changed from png_charpp
+to png_bytepp, and in png_set_iCCP, from png_charp to png_const_bytep.
+
+There are changes of form in png.h, including new and changed macros to
+declare parts of the API.  Some API functions with arguments that are
+pointers to data not modified within the function have been corrected to
+declare these arguments with const.
+
+Much of the internal use of C macros to control the library build has also
+changed and some of this is visible in the exported header files, in
+particular the use of macros to control data and API elements visible
+during application compilation may require significant revision to
+application code.  (It is extremely rare for an application to do this.)
+
+Any program that compiled against libpng 1.4 and did not use deprecated
+features or access internal library structures should compile and work
+against libpng 1.5, except for the change in the prototype for
+png_get_iCCP() and png_set_iCCP() API functions mentioned above.
+
+libpng 1.5.0 adds PNG_ PASS macros to help in the reading and writing of
+interlaced images.  The macros return the number of rows and columns in
+each pass and information that can be used to de-interlace and (if
+absolutely necessary) interlace an image.
+
+libpng 1.5.0 adds an API png_longjmp(png_ptr, value).  This API calls
+the application-provided png_longjmp_ptr on the internal, but application
+initialized, longjmp buffer.  It is provided as a convenience to avoid
+the need to use the png_jmpbuf macro, which had the unnecessary side
+effect of resetting the internal png_longjmp_ptr value.
+
+libpng 1.5.0 includes a complete fixed point API.  By default this is
+present along with the corresponding floating point API.  In general the
+fixed point API is faster and smaller than the floating point one because
+the PNG file format used fixed point, not floating point.  This applies
+even if the library uses floating point in internal calculations.  A new
+macro, PNG_FLOATING_ARITHMETIC_SUPPORTED, reveals whether the library
+uses floating point arithmetic (the default) or fixed point arithmetic
+internally for performance critical calculations such as gamma correction.
+In some cases, the gamma calculations may produce slightly different
+results.  This has changed the results in png_rgb_to_gray and in alpha
+composition (png_set_background for example). This applies even if the
+original image was already linear (gamma == 1.0) and, therefore, it is
+not necessary to linearize the image.  This is because libpng has *not*
+been changed to optimize that case correctly, yet.
+
+Fixed point support for the sCAL chunk comes with an important caveat;
+the sCAL specification uses a decimal encoding of floating point values
+and the accuracy of PNG fixed point values is insufficient for
+representation of these values. Consequently a "string" API
+(png_get_sCAL_s and png_set_sCAL_s) is the only reliable way of reading
+arbitrary sCAL chunks in the absence of either the floating point API or
+internal floating point calculations.  Starting with libpng-1.5.0, both
+of these functions are present when PNG_sCAL_SUPPORTED is defined.  Prior
+to libpng-1.5.0, their presence also depended upon PNG_FIXED_POINT_SUPPORTED
+being defined and PNG_FLOATING_POINT_SUPPORTED not being defined.
+
+Applications no longer need to include the optional distribution header
+file pngusr.h or define the corresponding macros during application
+build in order to see the correct variant of the libpng API.  From 1.5.0
+application code can check for the corresponding _SUPPORTED macro:
+
+#ifdef PNG_INCH_CONVERSIONS_SUPPORTED
+   /* code that uses the inch conversion APIs. */
+#endif
+
+This macro will only be defined if the inch conversion functions have been
+compiled into libpng.  The full set of macros, and whether or not support
+has been compiled in, are available in the header file pnglibconf.h.
+This header file is specific to the libpng build.  Notice that prior to
+1.5.0 the _SUPPORTED macros would always have the default definition unless
+reset by pngusr.h or by explicit settings on the compiler command line.
+These settings may produce compiler warnings or errors in 1.5.0 because
+of macro redefinition.
+
+Applications can now choose whether to use these macros or to call the
+corresponding function by defining PNG_USE_READ_MACROS or
+PNG_NO_USE_READ_MACROS before including png.h.  Notice that this is
+only supported from 1.5.0; defining PNG_NO_USE_READ_MACROS prior to 1.5.0
+will lead to a link failure.
+
+Prior to libpng-1.5.4, the zlib compressor used the same set of parameters
+when compressing the IDAT data and textual data such as zTXt and iCCP.
+In libpng-1.5.4 we reinitialized the zlib stream for each type of data.
+We added five png_set_text_*() functions for setting the parameters to
+use with textual data.
+
+Prior to libpng-1.5.4, the PNG_READ_16_TO_8_ACCURATE_SCALE_SUPPORTED
+option was off by default, and slightly inaccurate scaling occurred.
+This option can no longer be turned off, and the choice of accurate
+or inaccurate 16-to-8 scaling is by using the new png_set_scale_16_to_8()
+API for accurate scaling or the old png_set_strip_16_to_8() API for simple
+chopping.  In libpng-1.5.4, the PNG_READ_16_TO_8_ACCURATE_SCALE_SUPPORTED
+macro became PNG_READ_SCALE_16_TO_8_SUPPORTED, and the PNG_READ_16_TO_8
+macro became PNG_READ_STRIP_16_TO_8_SUPPORTED, to enable the two
+png_set_*_16_to_8() functions separately.
+
+Prior to libpng-1.5.4, the png_set_user_limits() function could only be
+used to reduce the width and height limits from the value of
+PNG_USER_WIDTH_MAX and PNG_USER_HEIGHT_MAX, although this document said
+that it could be used to override them.  Now this function will reduce or
+increase the limits.
+
+Starting in libpng-1.5.22, default user limits were established. These
+can be overridden by application calls to png_set_user_limits(),
+png_set_user_chunk_cache_max(), and/or png_set_user_malloc_max().
+The limits are now
+                             max possible  default
+   png_user_width_max        0x7fffffff    1,000,000
+   png_user_height_max       0x7fffffff    1,000,000
+   png_user_chunk_cache_max  0 (unlimited) 1000
+   png_user_chunk_malloc_max 0 (unlimited) 8,000,000
+
+The png_set_option() function (and the "options" member of the png struct) was
+added to libpng-1.5.15, with option PNG_ARM_NEON.
+
+The library now supports a complete fixed point implementation and can
+thus be used on systems that have no floating point support or very
+limited or slow support.  Previously gamma correction, an essential part
+of complete PNG support, required reasonably fast floating point.
+
+As part of this the choice of internal implementation has been made
+independent of the choice of fixed versus floating point APIs and all the
+missing fixed point APIs have been implemented.
+
+The exact mechanism used to control attributes of API functions has
+changed, as described in the INSTALL file.
+
+A new test program, pngvalid, is provided in addition to pngtest.
+pngvalid validates the arithmetic accuracy of the gamma correction
+calculations and includes a number of validations of the file format.
+A subset of the full range of tests is run when "make check" is done
+(in the 'configure' build.)  pngvalid also allows total allocated memory
+usage to be evaluated and performs additional memory overwrite validation.
+
+Many changes to individual feature macros have been made. The following
+are the changes most likely to be noticed by library builders who
+configure libpng:
+
+1) All feature macros now have consistent naming:
+
+#define PNG_NO_feature turns the feature off
+#define PNG_feature_SUPPORTED turns the feature on
+
+pnglibconf.h contains one line for each feature macro which is either:
+
+#define PNG_feature_SUPPORTED
+
+if the feature is supported or:
+
+/*#undef PNG_feature_SUPPORTED*/
+
+if it is not.  Library code consistently checks for the 'SUPPORTED' macro.
+It does not, and libpng applications should not, check for the 'NO' macro
+which will not normally be defined even if the feature is not supported.
+The 'NO' macros are only used internally for setting or not setting the
+corresponding 'SUPPORTED' macros.
+
+Compatibility with the old names is provided as follows:
+
+PNG_INCH_CONVERSIONS turns on PNG_INCH_CONVERSIONS_SUPPORTED
+
+And the following definitions disable the corresponding feature:
+
+PNG_SETJMP_NOT_SUPPORTED disables SETJMP
+PNG_READ_TRANSFORMS_NOT_SUPPORTED disables READ_TRANSFORMS
+PNG_NO_READ_COMPOSITED_NODIV disables READ_COMPOSITE_NODIV
+PNG_WRITE_TRANSFORMS_NOT_SUPPORTED disables WRITE_TRANSFORMS
+PNG_READ_ANCILLARY_CHUNKS_NOT_SUPPORTED disables READ_ANCILLARY_CHUNKS
+PNG_WRITE_ANCILLARY_CHUNKS_NOT_SUPPORTED disables WRITE_ANCILLARY_CHUNKS
+
+Library builders should remove use of the above, inconsistent, names.
+
+2) Warning and error message formatting was previously conditional on
+the STDIO feature. The library has been changed to use the
+CONSOLE_IO feature instead. This means that if CONSOLE_IO is disabled
+the library no longer uses the printf(3) functions, even though the
+default read/write implementations use (FILE) style stdio.h functions.
+
+3) Three feature macros now control the fixed/floating point decisions:
+
+PNG_FLOATING_POINT_SUPPORTED enables the floating point APIs
+
+PNG_FIXED_POINT_SUPPORTED enables the fixed point APIs; however, in
+practice these are normally required internally anyway (because the PNG
+file format is fixed point), therefore in most cases PNG_NO_FIXED_POINT
+merely stops the function from being exported.
+
+PNG_FLOATING_ARITHMETIC_SUPPORTED chooses between the internal floating
+point implementation or the fixed point one.  Typically the fixed point
+implementation is larger and slower than the floating point implementation
+on a system that supports floating point; however, it may be faster on a
+system which lacks floating point hardware and therefore uses a software
+emulation.
+
+4) Added PNG_{READ,WRITE}_INT_FUNCTIONS_SUPPORTED.  This allows the
+functions to read and write ints to be disabled independently of
+PNG_USE_READ_MACROS, which allows libpng to be built with the functions
+even though the default is to use the macros - this allows applications
+to choose at app buildtime whether or not to use macros (previously
+impossible because the functions weren't in the default build.)
+
+V. Changes to Libpng from version 1.5.x to 1.6.x
+
+A "simplified API" has been added (see documentation in png.h and a simple
+example in contrib/examples/pngtopng.c).  The new publicly visible API
+includes the following:
+
+   macros:
+     PNG_FORMAT_*
+     PNG_IMAGE_*
+   structures:
+     png_control
+     png_image
+   read functions
+     png_image_begin_read_from_file()
+     png_image_begin_read_from_stdio()
+     png_image_begin_read_from_memory()
+     png_image_finish_read()
+     png_image_free()
+   write functions
+     png_image_write_to_file()
+     png_image_write_to_memory()
+     png_image_write_to_stdio()
+
+Starting with libpng-1.6.0, you can configure libpng to prefix all exported
+symbols, using the PNG_PREFIX macro.
+
+We no longer include string.h in png.h.  The include statement has been moved
+to pngpriv.h, where it is not accessible by applications.  Applications that
+need access to information in string.h must add an '#include <string.h>'
+directive.  It does not matter whether this is placed prior to or after
+the '#include "png.h"' directive.
+
+The following API are now DEPRECATED:
+   png_info_init_3()
+   png_malloc_default()
+   png_free_default()
+   png_reset_zstream()
+
+The following have been removed:
+   png_convert_to_rfc1123() which has been replaced
+     with png_convert_to_rfc1123_buffer()
+   png_get_io_chunk_name(), which has been replaced
+     with png_get_io_chunk_type().  The new
+     function returns a 32-bit integer instead of
+     a string.
+   The png_sizeof(), png_strlen(), png_memcpy(), png_memcmp(), and
+     png_memset() macros are no longer used in the libpng sources and
+     have been removed.  These had already been made invisible to applications
+     (i.e., defined in the private pngpriv.h header file) since libpng-1.5.0.
+
+The signatures of many exported functions were changed, such that
+   png_structp became png_structrp or png_const_structrp
+   png_infop became png_inforp or png_const_inforp
+where "rp" indicates a "restricted pointer".
+
+Dropped support for 16-bit platforms. The support for FAR/far types has
+been eliminated and the definition of png_alloc_size_t is now controlled
+by a flag so that 'small size_t' systems can select it if necessary.
+
+Error detection in some chunks has improved; in particular the iCCP chunk
+reader now does pretty complete validation of the basic format.  Some bad
+profiles that were previously accepted are now accepted with a warning or
+rejected, depending upon the png_set_benign_errors() setting, in particular
+the very old broken Microsoft/HP 3144-byte sRGB profile.  Starting with
+libpng-1.6.11, recognizing and checking sRGB profiles can be avoided by
+means of
+
+    #if defined(PNG_SKIP_sRGB_CHECK_PROFILE) && \
+        defined(PNG_SET_OPTION_SUPPORTED)
+       png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE,
+           PNG_OPTION_ON);
+    #endif
+
+It's not a good idea to do this if you are using the "simplified API",
+which needs to be able to recognize sRGB profiles conveyed via the iCCP
+chunk.
+
+The PNG spec requirement that only grayscale profiles may appear in images
+with color type 0 or 4 and that even if the image only contains gray pixels,
+only RGB profiles may appear in images with color type 2, 3, or 6, is now
+enforced.  The sRGB chunk is allowed to appear in images with any color type
+and is interpreted by libpng to convey a one-tracer-curve gray profile or a
+three-tracer-curve RGB profile as appropriate.
+
+Libpng 1.5.x erroneously used /MD for Debug DLL builds; if you used the debug
+builds in your app and you changed your app to use /MD you will need to
+change it back to /MDd for libpng 1.6.x.
+
+Prior to libpng-1.6.0 a warning would be issued if the iTXt chunk contained
+an empty language field or an empty translated keyword.  Both of these
+are allowed by the PNG specification, so these warnings are no longer issued.
+
+The library now issues an error if the application attempts to set a
+transform after it calls png_read_update_info() or if it attempts to call
+both png_read_update_info() and png_start_read_image() or to call either
+of them more than once.
+
+The default condition for benign_errors is now to treat benign errors as
+warnings while reading and as errors while writing.
+
+The library now issues a warning if both background processing and RGB to
+gray are used when gamma correction happens. As with previous versions of
+the library the results are numerically very incorrect in this case.
+
+There are some minor arithmetic changes in some transforms such as
+png_set_background(), that might be detected by certain regression tests.
+
+Unknown chunk handling has been improved internally, without any API change.
+This adds more correct option control of the unknown handling, corrects
+a pre-existing bug where the per-chunk 'keep' setting is ignored, and makes
+it possible to skip IDAT chunks in the sequential reader.
+
+The machine-generated configure files are no longer included in branches
+libpng17 and later of the GIT repository.  They continue to be included
+in the tarball releases, however.
+
+Libpng-1.6.0 through 1.6.2 used the CMF bytes at the beginning of the IDAT
+stream to set the size of the sliding window for reading instead of using the
+default 32-kbyte sliding window size.  It was discovered that there are
+hundreds of PNG files in the wild that have incorrect CMF bytes that caused
+zlib to issue the "invalid distance too far back" error and reject the file.
+Libpng-1.6.3 and later calculate their own safe CMF from the image dimensions,
+provide a way to revert to the libpng-1.5.x behavior (ignoring the CMF bytes
+and using a 32-kbyte sliding window), by using
+
+    png_set_option(png_ptr, PNG_MAXIMUM_INFLATE_WINDOW,
+        PNG_OPTION_ON);
+
+and provide a tool (contrib/tools/pngfix) for rewriting a PNG file while
+optimizing the CMF bytes in its IDAT chunk correctly.
+
+Libpng-1.6.0 and libpng-1.6.1 wrote uncompressed iTXt chunks with the wrong
+length, which resulted in PNG files that cannot be read beyond the bad iTXt
+chunk.  This error was fixed in libpng-1.6.3, and a tool (called
+contrib/tools/png-fix-itxt) has been added to the libpng distribution.
+
+Starting with libpng-1.6.17, the PNG_SAFE_LIMITS macro was eliminated
+and safe limits are used by default (users who need larger limits
+can still override them at compile time or run time, as described above).
+
+The new limits are
+                                default   spec limit
+   png_user_width_max         1,000,000  2,147,483,647
+   png_user_height_max        1,000,000  2,147,483,647
+   png_user_chunk_cache_max         128  unlimited
+   png_user_chunk_malloc_max  8,000,000  unlimited
+
+Starting with libpng-1.6.18, a PNG_RELEASE_BUILD macro was added, which allows
+library builders to control compilation for an installed system (a release build).
+It can be set for testing debug or beta builds to ensure that they will compile
+when the build type is switched to RC or STABLE. In essence this overrides the
+PNG_LIBPNG_BUILD_BASE_TYPE definition which is not directly user controllable.
+
+Starting with libpng-1.6.19, attempting to set an over-length PLTE chunk
+is an error. Previously this requirement of the PNG specification was not
+enforced, and the palette was always limited to 256 entries. An over-length
+PLTE chunk found in an input PNG is silently truncated.
+
+Starting with libpng-1.6.31, the eXIf chunk is supported. Libpng does not
+attempt to decode the Exif profile; it simply returns a byte array
+containing the profile to the calling application which must do its own
+decoding.
+
+VI. Changes to Libpng from version 1.6.x to 1.8.x
+
+[TODO]

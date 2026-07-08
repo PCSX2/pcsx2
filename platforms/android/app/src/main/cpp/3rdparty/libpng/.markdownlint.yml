@@ -1,0 +1,25 @@
+# Markdownlint configuration
+# See https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md
+
+# MD004
+ul-style:
+  style: sublist
+
+# MD007
+ul-indent:
+  start_indented: true
+  start_indent: 1
+  indent: 3
+
+# MD012
+no-multiple-blanks:
+  maximum: 2
+
+# MD024
+no-duplicate-heading: false
+
+# MD025
+single-title: false
+
+# MD028
+no-blanks-blockquote: false

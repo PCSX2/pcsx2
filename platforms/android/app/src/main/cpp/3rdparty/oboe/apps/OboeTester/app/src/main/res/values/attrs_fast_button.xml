@@ -1,0 +1,8 @@
+<resources>
+    <declare-styleable name="FastButton">
+        <attr name="fastString" format="string" />
+        <attr name="fastDimension" format="dimension" />
+        <attr name="fastColor" format="color" />
+        <attr name="fastDrawable" format="color|reference" />
+    </declare-styleable>
+</resources>

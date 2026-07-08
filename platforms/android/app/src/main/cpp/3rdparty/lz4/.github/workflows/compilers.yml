@@ -1,0 +1,112 @@
+# Compiler compatibility testing across multiple C compilers
+name: Compiler Tests
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+
+jobs:
+  compiler-matrix:
+    name: ${{ matrix.cc }} on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # System default compilers
+          - { pkgs: '', cc: cc, cxx: c++, x86: true, cxxtest: true, freestanding: true, os: ubuntu-latest }
+          - { pkgs: '', cc: gcc, cxx: g++, x86: true, cxxtest: true, freestanding: true, os: ubuntu-latest }
+          
+          # GCC versions - latest stable and LTS
+          - { pkgs: 'gcc-14 g++-14 lib32gcc-14-dev', cc: gcc-14, cxx: g++-14, x86: true, cxxtest: true, freestanding: true, os: ubuntu-24.04 }
+          - { pkgs: 'gcc-11 g++-11 lib32gcc-11-dev', cc: gcc-11, cxx: g++-11, x86: true, cxxtest: true, freestanding: true, os: ubuntu-22.04 }
+          
+          # Clang versions - system default, latest stable, and older stable
+          - { pkgs: 'lib32gcc-12-dev', cc: clang, cxx: clang++, x86: true, cxxtest: true, freestanding: false, os: ubuntu-latest }
+          - { pkgs: 'clang-18 lib32gcc-12-dev', cc: clang-18, cxx: clang++-18, x86: true, cxxtest: true, freestanding: false, os: ubuntu-24.04 }
+          - { pkgs: 'clang-14 lib32gcc-12-dev', cc: clang-14, cxx: clang++-14, x86: true, cxxtest: true, freestanding: false, os: ubuntu-22.04 }
+
+    runs-on: ${{ matrix.os }}
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+      FIXME__LZ4_CI_IGNORE: ' echo Error. But we ignore it for now.'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-multilib
+        if [ "${{ matrix.pkgs }}" != "" ]; then
+          sudo apt-get install ${{ matrix.pkgs }}
+        fi
+
+    - name: Display environment info
+      run: |
+        echo "=== Compiler Information ==="
+        type $CC && which $CC && $CC --version
+        echo "=== C++ Compiler Information ==="
+        type $CXX && which $CXX && $CXX --version
+
+    - name: Basic build test
+      run: make -j V=1
+
+    - name: Installation test
+      run: make -C tests test-install V=1
+
+    - name: Build all with strict flags
+      run: |
+        make clean
+        CFLAGS="-Werror -O0" make -j all V=1
+
+    - name: C90 standard compliance test
+      run: |
+        make clean
+        make -j c_standards_c90 V=1
+
+    - name: C11 standard compliance test
+      run: |
+        make clean
+        make -j c_standards_c11 V=1
+
+    - name: C library for C++ program test
+      if: ${{ matrix.cxxtest }}
+      run: |
+        make clean
+        make -j ctocxxtest V=1
+
+    - name: C++ compilation test
+      if: ${{ matrix.cxxtest }}
+      run: |
+        make clean
+        make -j cxxtest V=1
+
+    - name: Freestanding environment test
+      if: ${{ matrix.freestanding }}
+      run: |
+        make clean
+        make test-freestanding V=1
+
+    - name: Fortified build test
+      run: |
+        make clean
+        CFLAGS='-fPIC' LDFLAGS='-pie -fPIE -D_FORTIFY_SOURCE=2' make -j -C programs default V=1
+
+    - name: Core functionality test
+      run: |
+        make clean
+        CPPFLAGS=-DLZ4IO_NO_TSAN_ONLY make -j V=1 -C tests test-lz4
+
+    - name: 32-bit compatibility test
+      if: ${{ matrix.x86 }}
+      run: |
+        make clean
+        CFLAGS='-Werror -O1' make -j -C tests test-lz4c32 V=1

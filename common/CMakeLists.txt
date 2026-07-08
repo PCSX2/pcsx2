@@ -157,6 +157,17 @@ elseif(APPLE)
 		"-framework Foundation"
 		"-framework IOKit"
 	)
+elseif(ANDROID)
+	# Android reuses the Linux host layer plus a JNI-backed HTTP downloader
+	# (relocated from the former android core fork). Source wiring only:
+	# validate against a real NDK build. See REFACTOR_STATUS.md.
+	target_sources(common PRIVATE
+		Linux/LnxHostSys.cpp
+		Linux/LnxThreads.cpp
+		Linux/LnxMisc.cpp
+		HTTPDownloaderAndroid.cpp
+		HTTPDownloaderAndroid.h
+	)
 else()
 	target_sources(common PRIVATE
 		Linux/LnxHostSys.cpp
@@ -189,8 +200,8 @@ if (USE_GCC AND CMAKE_INTERPROCEDURAL_OPTIMIZATION)
 	set_source_files_properties(FastJmp.cpp PROPERTIES COMPILE_FLAGS -fno-lto)
 endif()
 
-if(NOT WIN32)
-	# libcurl-based HTTPDownloader
+if(NOT WIN32 AND NOT ANDROID)
+	# libcurl-based HTTPDownloader (Android uses HTTPDownloaderAndroid instead)
 	target_sources(common PRIVATE
 		HTTPDownloaderCurl.cpp
 		HTTPDownloaderCurl.h

@@ -1085,6 +1085,41 @@ set(pcsx2arm64Headers
 	arm64/aVU_Compile.inl
 )
 
+# Android platform sources, relocated from the former android core fork
+# (refresh-experimental). Source wiring only: a real NDK build is required to
+# validate include paths and link deps. See REFACTOR_STATUS.md.
+if(ANDROID)
+	list(APPEND pcsx2HostSources
+		Host/OboeAudioStream.cpp)
+	list(APPEND pcsx2SPU2Sources
+		SPU2/spu2_neon.cpp)
+	list(APPEND pcsx2SPU2Headers
+		SPU2/spu2_neon.h
+		SPU2/spu2_neon_dcfilter.h
+		SPU2/spu2_neon_mixer.h
+		SPU2/spu2_neon_reverb_ex.h
+		SPU2/spu2_optimize.h
+		SPU2/spu2_sve2_fir.h
+		SPU2/spu2_mt6899_tuning.h)
+	list(APPEND pcsx2GSSources
+		GS/Renderers/OpenGL/GLContextEGLAndroid.cpp
+		GS/Renderers/Common/GSGPUProfile.cpp)
+	list(APPEND pcsx2GSHeaders
+		GS/Renderers/OpenGL/GLContextEGLAndroid.h
+		GS/Renderers/Common/GSGPUProfile.h)
+	list(APPEND pcsx2Sources
+		Android/AndroidStubs.cpp
+		Android/AndroidPcapStubs.cpp
+		VU1Fingerprint.cpp
+		EEDiffVerify.cpp)
+	list(APPEND pcsx2Headers
+		VU1Fingerprint.h
+		EEDiffVerify.h
+		AndroidEEOpHist.h
+		AndroidPerfBuckets.h
+		PS1DrvTrace.h)
+endif()
+
 # These ones benefit a lot from LTO
 set(pcsx2LTOSources
 	${pcsx2Sources}

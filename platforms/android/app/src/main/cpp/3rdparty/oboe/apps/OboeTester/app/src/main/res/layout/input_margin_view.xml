@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/marginText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Input Margin:" />
+
+    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/margin_box_0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onMarginBoxClicked"
+            android:checked="true"
+            android:text="0" />
+
+        <RadioButton
+            android:id="@+id/margin_box_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onMarginBoxClicked"
+            android:text="1" />
+
+        <RadioButton
+            android:id="@+id/margin_box_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onMarginBoxClicked"
+            android:text="2" />
+
+        <RadioButton
+            android:id="@+id/margin_box_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onMarginBoxClicked"
+            android:text="3" />
+
+        <RadioButton
+            android:id="@+id/margin_box_4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onMarginBoxClicked"
+            android:text="4" />
+    </RadioGroup>
+</LinearLayout>

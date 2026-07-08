@@ -1,0 +1,5 @@
+/.gitattributes export-ignore
+/.github export-ignore
+*.ppm binary
+*.pgm binary
+/ChangeLog.md conflict-marker-size=8

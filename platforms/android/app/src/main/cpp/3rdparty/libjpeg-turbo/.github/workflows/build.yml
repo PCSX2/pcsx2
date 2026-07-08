@@ -1,0 +1,291 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  linux:
+    if: ${{!contains(github.ref, 'refs/tags/')}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set global environment variables
+        run: |
+          echo "BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}" >$GITHUB_ENV
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up build
+        run: |
+          mkdir -p $HOME/src/ljt.nightly
+          docker pull dcommander/buildljt:$BRANCH
+          git clone --depth=1 https://github.com/libjpeg-turbo/buildscripts.git -b $BRANCH $HOME/src/buildscripts
+          mkdir $HOME/rpmkeys
+          wget --no-check-certificate "https://libjpeg-turbo.org/key/LJTPR-GPG-KEY" -O $HOME/rpmkeys/LJTPR-GPG-KEY
+      - name: Configure GPG signing
+        if: ${{github.event_name != 'pull_request'}}
+        run: |
+          sudo apt install -y gnupg1
+          printf "${{secrets.GPG_KEY}}" | base64 --decode | gpg1 --batch --import -
+          chmod 600 $HOME/.gnupg/gpg.conf
+          echo "GPG_KEY_NAME=\"${{secrets.GPG_KEY_NAME}}\"" >$HOME/src/buildscripts/gpgsign
+          echo "GPG_KEY_ID=${{secrets.GPG_KEY_ID}}" >>$HOME/src/buildscripts/gpgsign
+          echo "GPG_KEY_PASS=${{secrets.GPG_KEY_PASS}}" >>$HOME/src/buildscripts/gpgsign
+      - name: Build
+        run: |
+          docker run -v $HOME/src/ljt.nightly:/root/src/ljt.nightly -v $HOME/src/buildscripts:/root/src/buildscripts -v $GITHUB_WORKSPACE:/root/src/libjpeg-turbo -v $HOME/.gnupg:/root/.gnupg -v $HOME/rpmkeys:/rpmkeys -t dcommander/buildljt:$BRANCH bash -c "rpm --import /rpmkeys/LJTPR-GPG-KEY && ~/src/buildscripts/buildljt -d /root/src/libjpeg-turbo -v"
+          sudo chown -R runner:runner $HOME/src/ljt.nightly
+          mv $HOME/src/ljt.nightly/latest/log-${{github.job}}.txt $HOME/src/ljt.nightly/latest/files/
+      - name: Configure AWS
+        if: ${{github.event_name != 'pull_request'}}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: ${{secrets.AWS_REGION}}
+      - name: Deploy
+        if: ${{github.event_name != 'pull_request'}}
+        run: |
+          aws s3 sync --acl public-read --delete $HOME/src/ljt.nightly/latest/files/ s3://libjpeg-turbo-pr/${{env.BRANCH}}/${{github.job}}/
+  macos:
+    if: ${{!contains(github.ref, 'refs/tags/')}}
+    runs-on: macos-15
+    steps:
+      - name: Set global environment variables
+        run: |
+          echo "BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}" >$GITHUB_ENV
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up build
+        run: |
+          brew install yasm md5sha1sum
+          sudo xcode-select -s /Applications/Xcode_16.4.app
+          mkdir -p $HOME/src/ljt.nightly
+          git clone --depth=1 https://github.com/libjpeg-turbo/buildscripts.git -b $BRANCH $HOME/src/buildscripts
+      - name: Configure GPG signing
+        if: ${{github.event_name != 'pull_request'}}
+        run: |
+          printf "${{secrets.GPG_KEY}}" | base64 --decode | gpg --batch --import -
+          echo "GPG_KEY_NAME=\"${{secrets.GPG_KEY_NAME}}\"" >$HOME/src/buildscripts/gpgsign
+          echo "GPG_KEY_ID=${{secrets.GPG_KEY_ID}}" >>$HOME/src/buildscripts/gpgsign
+          echo "GPG_KEY_PASS=${{secrets.GPG_KEY_PASS}}" >>$HOME/src/buildscripts/gpgsign
+      - name: Build
+        run: |
+          $HOME/src/buildscripts/buildljt -d $GITHUB_WORKSPACE -v
+          mv $HOME/src/ljt.nightly/latest/log-${{github.job}}.txt $HOME/src/ljt.nightly/latest/files/
+      - name: Configure AWS
+        if: ${{github.event_name != 'pull_request'}}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: ${{secrets.AWS_REGION}}
+      - name: Deploy
+        if: ${{github.event_name != 'pull_request'}}
+        run: |
+          aws s3 sync --acl public-read --delete $HOME/src/ljt.nightly/latest/files/ s3://libjpeg-turbo-pr/${{env.BRANCH}}/${{github.job}}/
+  windows:
+    runs-on: windows-2025
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set global environment variables
+        shell: bash
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            RAWBRANCH=$(git branch -r --contains $GITHUB_REF)
+            echo "BRANCH=${RAWBRANCH##*/}" >$GITHUB_ENV
+          else
+            echo "BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}" >$GITHUB_ENV
+          fi
+      - name: Cache installers
+        uses: actions/cache@v4
+        with:
+          path: c:/installers
+          key: installers-${{github.job}}-${{env.BRANCH}}
+      - name: Set up build
+        shell: bash
+        run: |
+          set -x
+          choco install -y nsis
+          mkdir -p c:/installers
+          if [ ! -f c:/installers/nasm-2.10.01-win32.zip ]; then
+            curl -fSL -o c:/installers/nasm-2.10.01-win32.zip https://nasm.us/pub/nasm/releasebuilds/2.10.01/win32/nasm-2.10.01-win32.zip
+          fi
+          7z x c:/installers/nasm-2.10.01-win32.zip -oc:/ > c:/installers/nasm.install.log
+          if [ ! -f c:/installers/i686-6.4.0-release-posix-dwarf-rt_v5-rev0.7z ]; then
+            curl -fSL -o c:/installers/i686-6.4.0-release-posix-dwarf-rt_v5-rev0.7z https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/6.4.0/threads-posix/dwarf/i686-6.4.0-release-posix-dwarf-rt_v5-rev0.7z
+          fi
+          mkdir -p "c:/Program Files (x86)/mingw-w64/i686-6.4.0-posix-dwarf-rt_v5-rev0"
+          7z x c:/installers/i686-6.4.0-release-posix-dwarf-rt_v5-rev0.7z -o"c:/Program Files (x86)/mingw-w64/i686-6.4.0-posix-dwarf-rt_v5-rev0" > c:/installers/mingw32.install.log
+          if [ ! -f c:/installers/x86_64-6.4.0-release-posix-seh-rt_v5-rev0.7z ]; then
+            curl -fSL -o c:/installers/x86_64-6.4.0-release-posix-seh-rt_v5-rev0.7z https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/6.4.0/threads-posix/seh/x86_64-6.4.0-release-posix-seh-rt_v5-rev0.7z
+          fi
+          mkdir -p "c:/Program Files/mingw-w64/x86_64-6.4.0-posix-seh-rt_v5-rev0"
+          7z x c:/installers/x86_64-6.4.0-release-posix-seh-rt_v5-rev0.7z -o"c:/Program Files/mingw-w64/x86_64-6.4.0-posix-seh-rt_v5-rev0" > c:/installers/mingw64.install.log
+          if [ ! -f c:/installers/OpenJDK8U-jdk_x86-32_windows_hotspot_8u452b09.zip ]; then
+            curl -fSL -o c:/installers/OpenJDK8U-jdk_x86-32_windows_hotspot_8u452b09.zip https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u452-b09/OpenJDK8U-jdk_x86-32_windows_hotspot_8u452b09.zip
+          fi
+          7z x c:/installers/OpenJDK8U-jdk_x86-32_windows_hotspot_8u452b09.zip -o$ProgramData/Oracle > c:/installers/openjdk-x86.install.log
+          mv $ProgramData/Oracle/jdk8u452-b09 $ProgramData/Oracle/Java32
+          if [ ! -f c:/installers/OpenJDK21U-jdk_aarch64_windows_hotspot_21.0.7_6.zip ]; then
+            curl -fSL -o c:/installers/OpenJDK21U-jdk_aarch64_windows_hotspot_21.0.7_6.zip https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_aarch64_windows_hotspot_21.0.7_6.zip
+          fi
+          7z x c:/installers/OpenJDK21U-jdk_aarch64_windows_hotspot_21.0.7_6.zip -o$ProgramData/Oracle > c:/installers/openjdk-arm64.install.log
+          mv $ProgramData/Oracle/jdk-21.0.7+6 $ProgramData/Oracle/JavaArm64
+          mkdir $ProgramData/Oracle/Java
+          ln -fs "$(cygpath "$JAVA_HOME_8_X64")" $ProgramData/Oracle/Java/javapath
+          git clone --depth=1 https://github.com/nathan818fr/vcvars-bash.git c:/vcvars-bash
+          git clone --depth=1 https://github.com/libjpeg-turbo/buildscripts.git -b $BRANCH c:/buildscripts
+      - name: Configure GPG signing
+        if: ${{github.event_name != 'pull_request'}}
+        shell: bash
+        run: |
+          printf "${{secrets.GPG_KEY}}" | base64 --decode | gpg --batch --import -
+          echo "GPG_KEY_NAME=\"${{secrets.GPG_KEY_NAME}}\"" >c:/buildscripts/gpgsign
+          echo "GPG_KEY_ID=${{secrets.GPG_KEY_ID}}" >>c:/buildscripts/gpgsign
+          echo "GPG_KEY_PASS=${{secrets.GPG_KEY_PASS}}" >>c:/buildscripts/gpgsign
+      - name: Build
+        shell: bash
+        run: |
+          export PATH="/c/nasm-2.10.01:/c/Program Files (x86)/NSIS/:$PATH:/c/msys64/usr/bin/"
+          export VSINSTALLDIR='C:\Program Files\Microsoft Visual Studio\2022\Enterprise\'
+          eval "$(c:/vcvars-bash/vcvarsall.sh amd64)"
+          echo INCLUDE=$INCLUDE
+          echo LIB=$LIB
+          echo PATH=$PATH
+          c:/buildscripts/buildljt -d $GITHUB_WORKSPACE -b /c/ljt.nightly -v
+          mv /c/ljt.nightly/log-${{github.job}}.txt /c/ljt.nightly/files/
+      - name: Configure AWS
+        if: ${{github.event_name != 'pull_request' && !contains(github.ref, 'refs/tags/')}}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: ${{secrets.AWS_REGION}}
+      - name: Deploy
+        if: ${{github.event_name != 'pull_request' && !contains(github.ref, 'refs/tags/')}}
+        shell: bash
+        run: |
+          aws s3 sync --acl public-read --delete c:/ljt.nightly/files s3://libjpeg-turbo-pr/${{env.BRANCH}}/${{github.job}}/
+      - name: Upload unsigned artifact
+        if: ${{github.event_name == 'push' && contains(github.ref, 'refs/tags/')}}
+        id: upload-unsigned-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: c:/ljt.nightly/files/libjpeg-turbo-*.exe
+      - name: Sign artifact
+        if: ${{github.event_name == 'push' && contains(github.ref, 'refs/tags/')}}
+        uses: signpath/github-action-submit-signing-request@v1.1
+        with:
+          api-token: ${{secrets.SIGNPATH_API_TOKEN}}
+          organization-id: 3bc964ce-257b-4362-829f-1df1f087f5a0
+          project-slug: libjpeg-turbo
+          signing-policy-slug: release-signing
+          github-artifact-id: ${{steps.upload-unsigned-artifact.outputs.artifact-id}}
+          wait-for-completion: true
+  linux-asan-ubsan:
+    if: ${{!contains(github.ref, 'refs/tags/')}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up build
+        run: |
+          sudo apt install -y nasm
+          sudo sysctl vm.mmap_rnd_bits=28
+      - name: Build
+        env:
+          ASAN_OPTIONS: "detect_leaks=1 symbolize=1"
+          CTEST_OUTPUT_ON_FAILURE: 1
+        run: |
+          mkdir build
+          pushd build
+          cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang -DCMAKE_C_FLAGS_RELWITHDEBINFO="-O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer" -DENABLE_SHARED=0 ..
+          export NUMCPUS=`grep -c '^processor' /proc/cpuinfo`
+          make -j$NUMCPUS --load-average=$NUMCPUS
+          ctest -j$NUMCPUS
+          JSIMD_FORCESSE2=1 ctest -j$NUMCPUS
+          cmake -DFLOATTEST8=no-fp-contract ..
+          JSIMD_FORCENONE=1 ctest -j$NUMCPUS
+          popd
+  linux-jpeg7:
+    if: ${{!contains(github.ref, 'refs/tags/')}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up build
+        run: |
+          sudo apt update
+          sudo apt -y install gcc-14 nasm zlib1g-dev libjna-java
+      - name: Build
+        env:
+          CTEST_OUTPUT_ON_FAILURE: 1
+        run: |
+          mkdir build
+          pushd build
+          cmake -G"Unix Makefiles" -DWITH_JPEG7=1 \
+            -DCMAKE_C_FLAGS='--std=gnu90 -Wall -Werror -Wextra -Wpedantic -pedantic-errors -Wdouble-promotion -Wformat-overflow=2 -Wformat-security -Wformat-signedness -Wformat-truncation=2 -Wformat-y2k -Wmissing-include-dirs -Wshift-overflow=2 -Wswitch-bool -Wno-unused-parameter -Wuninitialized -Wstrict-overflow=2 -Wstringop-overflow=4 -Wstringop-truncation -Wduplicated-branches -Wduplicated-cond -Wdeclaration-after-statement -Wshadow -Wunsafe-loop-optimizations -Wundef -Wcast-align -Wno-clobbered -Wjump-misses-init -Wno-sign-compare -Wlogical-op -Waggregate-return -Wstrict-prototypes -Wold-style-definition -Wmissing-prototypes -Wmissing-declarations -Wpacked -Wredundant-decls -Wnested-externs -Winline -Wno-long-long -Wdisabled-optimization -fcf-protection' \
+            -DCMAKE_C_COMPILER=gcc-14 \
+            -DWITH_SYSTEM_ZLIB=1 \
+            -DWITH_JNA=/usr/share/java/jna.jar \
+            ..
+          export NUMCPUS=`grep -c '^processor' /proc/cpuinfo`
+          make -j$NUMCPUS --load-average=$NUMCPUS
+          ctest -j$NUMCPUS
+          JSIMD_FORCESSE2=1 ctest -j$NUMCPUS
+          cmake -DFLOATTEST8=no-fp-contract ..
+          JSIMD_FORCENONE=1 ctest -j$NUMCPUS
+          popd
+  linux-jpeg8:
+    if: ${{!contains(github.ref, 'refs/tags/')}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up build
+        run: |
+          sudo apt -y install nasm libspng-dev libjna-java
+      - name: Build
+        env:
+          CTEST_OUTPUT_ON_FAILURE: 1
+        run: |
+          mkdir build
+          pushd build
+          cmake -G"Unix Makefiles" -DWITH_JPEG8=1 \
+            -DCMAKE_C_FLAGS='--std=gnu90 -Wall -Werror -Wextra -Wmost -Wnon-gcc -Wpedantic -pedantic-errors -Walloca -Wanon-enum-enum-conversion -Warray-bounds-pointer-arithmetic -Wbitfield-enum-conversion -Wc99-extensions -Wc2x-extensions -Wcast-function-type -Wcompound-token-split -Wdate-time -Wdeclaration-after-statement -Wdeprecated -Wdocumentation -Wdocumentation-pedantic -Wdouble-promotion -Wduplicate-decl-specifier -Wduplicate-enum -Wempty-init-stmt -Wexpansion-to-defined -Wextra-semi -Wformat=2 -Wformat-non-iso -Wno-format-nonliteral -Wformat-pedantic -Wformat-type-confusion -Wfour-char-constants -Wgcc-compat -Wgnu -Wheader-hygiene -Widiomatic-parentheses -Wignored-qualifiers -Wimplicit-fallthrough -Wno-implicit-int-conversion -Wincompatible-function-pointer-types -Wno-long-long -Wloop-analysis -Wmain -Wmax-tokens -Wmisleading-indentation -Wmissing-field-initializers -Wmissing-prototypes -Wmissing-variable-declarations -Wnewline-eof -Wnonportable-system-include-path -Wnullable-to-nonnull-conversion -Wold-style-cast -Wover-aligned -Wparentheses -Wpointer-arith -Wpragmas -Wpre-c2x-compat -Wredundant-parens -Wself-assign -Wshadow-all -Wshift-sign-overflow -Wno-shorten-64-to-32 -Wno-sign-conversion -Wsometimes-uninitialized -Wstatic-in-inline -Wstrict-prototypes -Wswitch-default -Wtautological-constant-in-range-compare -Wthread-safety -Wthread-safety-verbose -Wunaligned-access -Wundef -Wundef-prefix -Wundefined-func-template -Wuninitialized -Wunneeded-internal-declaration -Wunreachable-code-fallthrough -Wno-unused-command-line-argument -Wunused-member-function -Wno-unused-parameter -Wvariadic-macros -Wzero-as-null-pointer-constant -Wzero-length-array -fcf-protection' \
+            -DCMAKE_C_COMPILER=clang-17 \
+            -DWITH_SYSTEM_SPNG=1 \
+            -DWITH_JNA=/usr/share/java/jna.jar \
+            ..
+          export NUMCPUS=`grep -c '^processor' /proc/cpuinfo`
+          make -j$NUMCPUS --load-average=$NUMCPUS
+          ctest -j$NUMCPUS
+          JSIMD_FORCESSE2=1 ctest -j$NUMCPUS
+          cmake -DFLOATTEST8=no-fp-contract ..
+          JSIMD_FORCENONE=1 ctest -j$NUMCPUS
+          popd
+  linux-msan:
+    if: ${{!contains(github.ref, 'refs/tags/')}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up build
+        run: |
+          sudo apt install -y nasm
+          sudo sysctl vm.mmap_rnd_bits=28
+      - name: Build
+        env:
+          CTEST_OUTPUT_ON_FAILURE: 1
+        run: |
+          mkdir build
+          pushd build
+          cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang -DCMAKE_C_FLAGS_RELWITHDEBINFO="-O0 -g -fsanitize=memory -fsanitize-memory-param-retval -fno-sanitize-recover=all -fPIE -DZERO_BUFFERS=1" -DREQUIRE_SIMD=1 ..
+          export NUMCPUS=`grep -c '^processor' /proc/cpuinfo`
+          make -j$NUMCPUS --load-average=$NUMCPUS
+          ctest -j$NUMCPUS
+          popd

@@ -1,0 +1,111 @@
+# makefile for libpng
+# Copyright (C) 2015, 2018-2025 Cosmin Truta
+# Copyright (C) 2002, 2006, 2014 Glenn Randers-Pehrson
+# Copyright (C) 1995 Guy Eric Schalnat, Group 42, Inc.
+#
+# This code is released under the libpng license.
+# For conditions of distribution and use, see the disclaimer
+# and license in png.h
+
+# Where the zlib library and include files are located
+#ZLIBLIB=/usr/local/lib
+#ZLIBINC=/usr/local/include
+ZLIBLIB=../zlib
+ZLIBINC=../zlib
+
+CC = cc
+CPP = $(CC) -E
+LD = $(CC)
+AR = ar
+RANLIB = ranlib
+MV_F = mv -f
+RM_F = rm -f
+AWK = awk
+
+DFNFLAGS = # DFNFLAGS contains -D options to use in the libpng build
+DFA_EXTRA = # extra files that can be used to control configuration
+CPPFLAGS = -I$(ZLIBINC) # -DPNG_DEBUG=5
+CFLAGS = -O2 -g
+ARFLAGS = rc
+LDFLAGS = -L$(ZLIBLIB) -g
+LIBS = -lz -lm
+
+# Pre-built configuration
+# See scripts/pnglibconf/pnglibconf.mak for more options
+PNGLIBCONF_H_PREBUILT = pnglibconf.h.prebuilt
+
+OBJS = png.o pngerror.o pngget.o pngmem.o pngpread.o pngread.o \
+       pngrio.o pngrtran.o pngrutil.o pngset.o pngsimd.o \
+       pngtrans.o pngwio.o pngwrite.o pngwtran.o pngwutil.o
+
+.c.o:
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) -o $@ $*.c
+
+all: libpng.a pngtest
+
+# The standard pnglibconf.h exists as pnglibconf.h.prebuilt.
+# Copy this over if the following doesn't work.
+pnglibconf.h: pnglibconf.dfn
+	$(RM_F) $@ pnglibconf.c pnglibconf.out pnglibconf.tmp
+	echo '#include "pnglibconf.dfn"' >pnglibconf.c
+	@echo "## If '$(CC) -E' fails, try /lib/cpp (e.g. CPP='/lib/cpp')" >&2
+	$(CPP) $(DFNFLAGS) pnglibconf.c >pnglibconf.out
+	$(AWK) -f scripts/pnglibconf/dfn.awk\
+	    out=pnglibconf.tmp pnglibconf.out >&2
+	$(MV_F) pnglibconf.tmp $@
+
+pnglibconf.dfn: scripts/pnglibconf/pnglibconf.dfa \
+                scripts/pnglibconf/options.awk \
+                pngconf.h pngusr.dfa $(DFA_XTRA)
+	$(RM_F) $@ pnglibconf.pre pnglibconf.tmp
+	@echo "## Calling $(AWK) from scripts/pnglibconf/pnglibconf.mak" >&2
+	@echo "## If 'awk' fails, try a better awk (e.g. AWK='nawk')" >&2
+	$(AWK) -f scripts/pnglibconf/options.awk\
+            out=pnglibconf.pre version=search\
+            pngconf.h scripts/pnglibconf/pnglibconf.dfa\
+	    pngusr.dfa $(DFA_XTRA) >&2
+	$(AWK) -f scripts/pnglibconf/options.awk\
+	    out=pnglibconf.tmp pnglibconf.pre >&2
+	$(MV_F) pnglibconf.tmp $@
+
+libpng.a: $(OBJS)
+	$(AR) $(ARFLAGS) $@ $(OBJS)
+	$(RANLIB) $@
+
+pngtest: pngtest.o libpng.a
+	$(LD) $(LDFLAGS) -o $@ pngtest.o libpng.a $(LIBS)
+
+test: pngtest
+	./pngtest
+
+install:
+	@echo "The $@ target is no longer supported by this makefile."
+	@false
+
+clean:
+	$(RM_F) *.o libpng.a pngtest pngout.png pnglibconf.h
+	$(RM_F) pnglibconf.c pnglibconf.dfn pnglibconf.out pnglibconf.pre
+
+# TODO:
+# Use the compiler to generate dependency files (e.g. "$(CC) -MD") and
+# include those files here, for the benefit of the Make implementations
+# that support the GNU Make syntax extensions.
+
+png.o:      png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+pngerror.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+pngget.o:   png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+pngmem.o:   png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+pngpread.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+pngread.o:  png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+pngrio.o:   png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+pngrtran.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+pngrutil.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+pngset.o:   png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+pngsimd.o:  png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+pngtrans.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+pngwio.o:   png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+pngwrite.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+pngwtran.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+pngwutil.o: png.h pngconf.h pnglibconf.h pngpriv.h pngstruct.h pnginfo.h pngdebug.h pngtarget.h
+
+pngtest.o:  png.h pngconf.h pnglibconf.h

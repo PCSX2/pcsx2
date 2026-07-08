@@ -1,0 +1,31 @@
+name: Linting libpng
+
+on:
+  push:
+    branches:
+      - libpng16
+      - libpng18
+  pull_request:
+    branches:
+      - libpng16
+      - libpng18
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Set up the cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pip.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+      - name: Install yamllint
+        run: pip install yamllint
+      - name: Install editorconfig-checker
+        uses: editorconfig-checker/action-editorconfig-checker@main
+      - name: Check out the code
+        uses: actions/checkout@v4
+      - name: Run the linting script
+        run: bash ./ci/ci_lint.sh

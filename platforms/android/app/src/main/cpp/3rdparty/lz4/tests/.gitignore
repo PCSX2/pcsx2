@@ -1,0 +1,28 @@
+
+# build artefacts
+datagen
+frametest
+frametest32
+fullbench
+fullbench32
+fullbench-lib
+fullbench-dll
+fuzzer
+fuzzer32
+fasttest
+roundTripTest
+checkTag
+checkFrame
+decompress-partial
+decompress-partial-usingDict
+abiTest
+freestanding
+
+# test artefacts
+tmp*
+versionsTest
+abiTests
+lz4_all.c
+
+# local tests
+afl

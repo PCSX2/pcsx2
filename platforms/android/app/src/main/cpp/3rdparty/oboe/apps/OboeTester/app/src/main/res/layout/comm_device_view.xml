@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#FFE8E0F0"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/setSpeakerphoneOn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:text="SpkrPhone" />
+
+        <TextView
+            android:id="@+id/spkr_status_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="?" />
+
+        <CheckBox
+            android:id="@+id/setBluetoothScoOn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:text="BT_SCO"
+            />
+
+        <TextView
+            android:id="@+id/sco_status_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="?" />
+
+    </LinearLayout>
+
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Comm Device: " />
+
+        <com.mobileer.audio_device.CommunicationDeviceSpinner
+            android:id="@+id/comm_devices_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,64 @@
+# Object files
+*.o
+*.ko
+obj/
+cacheObjs/
+
+# Libraries
+*.lib
+*.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+*.dSYM   # apple
+
+# Executables
+*.exe
+*.out
+*.app
+lz4
+
+# Builders
+cmakebuild/
+builddir/
+cachedObjs/
+
+# IDE / editors files
+.clang_complete
+.vscode
+_codelite/
+_codelite_lz4/
+bin/
+*.zip
+*.swp
+compile_flags.txt
+compile_commands.json
+.vscode
+.cache
+
+# analyzers
+infer-out
+
+# Mac
+.DS_Store
+*.dSYM
+
+# Windows / Msys
+nul
+ld.exe*
+
+# test artifacts
+*.lz4
+tmp*
+.stdvars.log
+cmake_download/
+cmake_bins/
+cmake_build/
+cmake_install_test/
+
+# generated Windows resource files
+lib/*.rc
+programs/*.rc

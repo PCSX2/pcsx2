@@ -1,0 +1,18 @@
+# Visual C++
+.vs/
+*Copy
+*.db
+*.opensdf
+*.sdf
+*.suo
+*.user
+ver*/
+VS2010/bin/
+VS2017/bin/
+VS*/bin/
+ipch
+
+# Fixup for lz4 project directories
+!VS2010/lz4
+!VS2017/lz4
+!VS*/lz4

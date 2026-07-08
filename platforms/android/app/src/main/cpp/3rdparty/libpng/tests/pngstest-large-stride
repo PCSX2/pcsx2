@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Large-stride test:
+# Use stride_extra > 32767 to trigger row_bytes > 65535 for linear images.
+exec ./pngstest \
+     --stride-extra 33000 \
+     --tmpfile "large-stride-" \
+     --log "${srcdir}/contrib/testpngs/rgb-alpha-16-linear.png"

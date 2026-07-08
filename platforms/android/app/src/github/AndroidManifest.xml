@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  GitHub (sideload) flavor only. The manifest merger UNIONS this onto
+  src/main/AndroidManifest.xml, adding all-files access back for the
+  sideloaded build. This file must NEVER exist for the play flavor:
+  MANAGE_EXTERNAL_STORAGE in a Play upload triggers Google's All Files
+  Access policy review/rejection. The play flavor inherits the clean
+  src/main manifest (no src/play manifest exists), so it can never pick
+  this up. STORAGE_ALL_FILES (BuildConfig) gates the runtime use of it.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+
+</manifest>

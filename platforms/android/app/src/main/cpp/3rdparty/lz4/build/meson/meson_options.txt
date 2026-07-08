@@ -1,0 +1,44 @@
+# #############################################################################
+# Copyright (c) 2018-present        lzutao <taolzu(at)gmail.com>
+# Copyright (c) 2022-present        Tristan Partin <tristan(at)partin.io>
+# All rights reserved.
+#
+# This source code is licensed under both the BSD-style license (found in the
+# LICENSE file in the root directory of this source tree) and the GPLv2 (found
+# in the COPYING file in the root directory of this source tree).
+# #############################################################################
+
+option('enable_multithread', type: 'boolean', value: true,
+  description: 'Enable multi-threading support')
+option('align-test', type: 'boolean', value: true,
+  description: 'See LZ4_ALIGN_TEST')
+option('contrib', type: 'boolean', value: false,
+  description: 'Enable contrib')
+option('debug-level', type: 'integer', min: 0, max: 7, value: 1,
+  description: 'Enable run-time debug. See lib/lz4hc.c')
+option('disable-memory-allocation', type: 'boolean', value: false,
+  description: 'See LZ4_STATIC_LINKING_ONLY_DISABLE_MEMORY_ALLOCATION. Static builds only')
+option('distance-max', type: 'integer', min: 0, max: 65535, value: 65535,
+  description: 'See LZ4_DISTANCE_MAX')
+option('endianness-independent-output', type: 'boolean', value: false,
+  description: 'See LZ4_STATIC_LINKING_ONLY_ENDIANNESS_INDEPENDENT_OUTPUT. Static builds only')
+option('examples', type: 'boolean', value: false,
+  description: 'Enable examples')
+option('fast-dec-loop', type: 'feature', value: 'auto',
+  description: 'See LZ4_FAST_DEC_LOOP')
+option('force-sw-bitcount', type: 'boolean', value: false,
+  description: 'See LZ4_FORCE_SW_BITCOUNT')
+option('freestanding', type: 'boolean', value: false,
+  description: 'See LZ4_FREESTANDING')
+option('memory-usage', type: 'integer', min: 0, max: 20, value: 0,
+  description: 'See LZ4_MEMORY_USAGE. 0 means use the LZ4 default')
+option('ossfuzz', type: 'boolean', value: true,
+  description: 'Enable ossfuzz')
+option('programs', type: 'boolean', value: false,
+  description: 'Enable programs')
+option('tests', type: 'boolean', value: false,
+  description: 'Enable tests')
+option('unstable', type: 'boolean', value: false,
+  description: 'Expose unstable interfaces')
+option('user-memory-functions', type: 'boolean', value: false,
+  description: 'See LZ4_USER_MEMORY_FUNCTIONS')

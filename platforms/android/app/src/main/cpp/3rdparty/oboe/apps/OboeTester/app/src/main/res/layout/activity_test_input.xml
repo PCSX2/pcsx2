@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    tools:context="com.mobileer.oboetester.TestInputActivity">
+
+    <LinearLayout
+        android:id="@+id/title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:orientation="horizontal"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_activity_test_input"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true"
+        tools:context="com.mobileer.oboetester.TestInputActivity"
+        >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin" >
+
+        <include layout="@layout/merge_audio_common"/>
+
+        <com.mobileer.oboetester.CommunicationDeviceView
+            android:id="@+id/comm_device_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal" />
+
+        <com.mobileer.oboetester.VolumeBarView
+            android:id="@+id/volumeBar0"
+            android:layout_marginBottom="4dp"
+            android:layout_width="fill_parent"
+            android:layout_height="20dp" />
+
+        <com.mobileer.oboetester.VolumeBarView
+            android:id="@+id/volumeBar1"
+            android:layout_marginBottom="4dp"
+            android:layout_width="fill_parent"
+            android:layout_height="20dp" />
+
+        <com.mobileer.oboetester.VolumeBarView
+            android:id="@+id/volumeBar2"
+            android:layout_marginBottom="4dp"
+            android:layout_width="fill_parent"
+            android:layout_height="20dp" />
+
+        <com.mobileer.oboetester.VolumeBarView
+            android:id="@+id/volumeBar3"
+            android:layout_marginBottom="4dp"
+            android:layout_width="fill_parent"
+            android:layout_height="20dp" />
+
+        <com.mobileer.oboetester.VolumeBarView
+            android:id="@+id/volumeBar4"
+            android:layout_marginBottom="4dp"
+            android:layout_width="fill_parent"
+            android:layout_height="20dp" />
+
+        <com.mobileer.oboetester.VolumeBarView
+            android:id="@+id/volumeBar5"
+            android:layout_marginBottom="4dp"
+            android:layout_width="fill_parent"
+            android:layout_height="20dp" />
+
+        <com.mobileer.oboetester.VolumeBarView
+            android:id="@+id/volumeBar6"
+            android:layout_marginBottom="4dp"
+            android:layout_width="fill_parent"
+            android:layout_height="20dp" />
+
+        <com.mobileer.oboetester.VolumeBarView
+            android:id="@+id/volumeBar7"
+            android:layout_marginBottom="4dp"
+            android:layout_width="fill_parent"
+            android:layout_height="20dp" />
+    </LinearLayout>
+    </ScrollView>
+</LinearLayout>

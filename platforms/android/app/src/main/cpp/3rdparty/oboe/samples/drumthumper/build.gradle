@@ -1,0 +1,52 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+android {
+    defaultConfig {
+        // Usually the applicationId follows the same scheme as the application package name,
+        // however, this sample will be published on the Google Play Store which will not allow an
+        // applicationId starting with "com.google" as this is reserved for official Google
+        // products. The current owner of the DrumThumper sample apps on Google Play is Paul McLean,
+        // who publishes using the application Id prefix of "com.plausiblesoftware".
+        applicationId "com.plausiblesoftware.drumthumper"
+        minSdkVersion 23
+        compileSdkVersion 36
+        targetSdkVersion 36
+        versionCode 2
+        versionName "1.01"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_18
+        targetCompatibility JavaVersion.VERSION_18
+    }
+    kotlinOptions {
+        jvmTarget = '18'
+    }
+    externalNativeBuild {
+        cmake {
+            path 'src/main/cpp/CMakeLists.txt'
+        }
+    }
+
+    namespace 'com.plausiblesoftware.drumthumper'
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "androidx.core:core-ktx:$core_version"
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation project(path: ':iolib')
+    implementation project(path: ':parselib')
+}
+
