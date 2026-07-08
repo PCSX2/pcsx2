@@ -135,7 +135,21 @@ namespace vu_capture
 	// write sorted top-N to PCSX2_VU_RANK_OUT. Use this to discover which
 	// programs are hot before deciding what to capture in detail.
 	//
-	// The two modes can be active simultaneously.
+	// Trajectory mode (PCSX2_VU_TRAJ_OUT set): append ONE text line per VU
+	// dispatch (every call, no reservoir) to the named file:
+	//   seq vu_index pc cycle_budget cpu_cycle vu_cycle state_hash vumem_hash
+	// seq is a global monotonic counter over BOTH VU0 and VU1 so the line
+	// order is the true dispatch order. state_hash/vumem_hash are FNV-1a over
+	// the architectural register surface and the whole VU data memory. Because
+	// both the JIT probe (mVUexecute) and the interp probe (InterpVU1::Execute)
+	// funnel through here, two runs from the same save-state (e.g. VU1-JIT that
+	// hangs vs VU1-interp that plays) produce directly line-diffable logs: the
+	// first line whose (pc, state_hash) diverges fingerprints a carried-state
+	// bug, while matching hashes with drifting cpu_cycle fingerprints a pure
+	// timing/pacing wedge. The file is flushed per line so a force-killed hang
+	// still leaves a complete trajectory.
+	//
+	// The modes can be active simultaneously.
 	void MaybeCapture(int vu_index, u32 start_pc, u32 cycle_budget,
 		const u8* microcode_ptr, u32 microcode_size,
 		const u8* vumem_ptr, u32 vumem_size,

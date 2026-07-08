@@ -7,6 +7,7 @@
 
 #include "VU.h"
 #include "VUmicro.h"  // VU0_PROGSIZE / VU1_PROGSIZE / VU0_MEMSIZE / VU1_MEMSIZE
+#include "R5900.h"    // cpuRegs.cycle — the EE clock, logged in trajectory mode
 
 #include "common/Console.h"
 
@@ -42,6 +43,21 @@ namespace vu_capture
 		u32 ExpectedSizeFor(u8 vu_index)
 		{
 			return vu_index ? VU1_PROGSIZE : VU0_PROGSIZE;  // PROG == MEM size
+		}
+
+		// FNV-1a over a byte range. Same construction as the vurunner digest so
+		// trajectory hashes are comparable in spirit (values need not match the
+		// runner's — only self-consistency across two trajectory runs matters).
+		u64 Fnv1a(const void* data, size_t len, u64 seed = 0xcbf29ce484222325ull)
+		{
+			const u8* p = static_cast<const u8*>(data);
+			u64 h = seed;
+			for (size_t i = 0; i < len; ++i)
+			{
+				h ^= p[i];
+				h *= 0x100000001b3ull;
+			}
+			return h;
 		}
 	} // namespace
 
@@ -191,6 +207,22 @@ namespace vu_capture
 		std::string g_rank_out;
 		u32 g_max_per_key = 32;
 
+		// Trajectory mode: ordered per-dispatch log (see header).
+		bool g_traj_active = false;
+		std::FILE* g_traj_file = nullptr;
+		std::mutex g_traj_mutex;
+		std::atomic<u64> g_traj_seq{0};
+
+		void CloseTrajAtExit()
+		{
+			std::lock_guard lock(g_traj_mutex);
+			if (g_traj_file)
+			{
+				std::fclose(g_traj_file);
+				g_traj_file = nullptr;
+			}
+		}
+
 		std::mutex g_state_mutex;
 		// Capture-mode: per-key count of executions seen so far. Files are
 		// named with seq = slot index in [0, max), reused on replacement.
@@ -259,12 +291,30 @@ namespace vu_capture
 				std::atexit(&DumpRankReportAtExit);
 			}
 
-			if (g_capture_active || g_rank_active)
+			if (const char* traj = std::getenv("PCSX2_VU_TRAJ_OUT"); traj && *traj)
+			{
+				g_traj_file = std::fopen(traj, "w");
+				if (!g_traj_file)
+					Console.Error("vu_capture: failed to open trajectory file %s", traj);
+				else
+				{
+					g_traj_active = true;
+					std::setvbuf(g_traj_file, nullptr, _IOLBF, 0);  // line-buffered
+					std::fprintf(g_traj_file,
+						"# vu_capture trajectory — pid %d\n"
+						"# seq vu pc budget cpu_cycle vu_cycle state_hash vumem_hash\n",
+						::getpid());
+					std::atexit(&CloseTrajAtExit);
+				}
+			}
+
+			if (g_capture_active || g_rank_active || g_traj_active)
 			{
 				g_active.store(true, std::memory_order_relaxed);
-				Console.WriteLn("vu_capture: capture=%s rank=%s",
+				Console.WriteLn("vu_capture: capture=%s rank=%s traj=%s",
 					g_capture_active ? g_dir.c_str() : "off",
-					g_rank_active ? g_rank_out.c_str() : "off");
+					g_rank_active ? g_rank_out.c_str() : "off",
+					g_traj_active ? "on" : "off");
 			}
 		}
 
@@ -287,6 +337,26 @@ namespace vu_capture
 
 		if (!g_active.load(std::memory_order_relaxed)) [[likely]]
 			return;
+
+		// Trajectory mode: one ordered line per dispatch, EVERY call (no
+		// reservoir). Hash the architectural surface + VU memory so two runs
+		// from the same save-state are line-diffable (see header). cpu_cycle is
+		// the EE clock at dispatch — a matching state_hash with a drifting
+		// cpu_cycle isolates a timing wedge from a carried-state divergence.
+		if (g_traj_active)
+		{
+			CapturedState st{};
+			SnapshotState(regs, st);
+			const u64 state_hash = Fnv1a(&st, sizeof(st));
+			const u64 vumem_hash = Fnv1a(vumem_ptr, vumem_size);
+			const u64 seq = g_traj_seq.fetch_add(1, std::memory_order_relaxed);
+			std::lock_guard lock(g_traj_mutex);
+			if (g_traj_file)
+				std::fprintf(g_traj_file, "%llu %d 0x%08X %u %llu %llu %016llx %016llx\n",
+					(unsigned long long)seq, vu_index, start_pc, cycle_budget,
+					(unsigned long long)cpuRegs.cycle, (unsigned long long)regs.cycle,
+					(unsigned long long)state_hash, (unsigned long long)vumem_hash);
+		}
 
 		// Decide slot under the state lock; do the heavy I/O after releasing
 		// it so concurrent VU0 / VU1 captures don't serialize on the file
