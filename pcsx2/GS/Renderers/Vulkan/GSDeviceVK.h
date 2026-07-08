@@ -686,6 +686,7 @@ public:
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, u32 clear_color);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, float depth, u8 stencil);
+	void BeginTFXRenderPass(const GSHWDrawConfig& config, GSTextureVK* rt, GSTextureVK* ds, const GSVector2i& rtsize);
 	void EndRenderPass();
 
 	void SetViewport(const VkViewport& viewport);

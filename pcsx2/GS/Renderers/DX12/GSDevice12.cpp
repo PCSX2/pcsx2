@@ -3961,6 +3961,30 @@ void GSDevice12::BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE color_b
 		(m_current_depth_target && m_current_depth_read_only) ? (D3D12_RENDER_PASS_FLAG_BIND_READ_ONLY_DEPTH) : D3D12_RENDER_PASS_FLAG_NONE);
 }
 
+void GSDevice12::BeginTFXRenderPass(const GSHWDrawConfig& config, GSTexture12* rt, GSTexture12* ds, bool need_barrier)
+{
+	const PipelineSelector& pipe = m_pipeline_selector;
+
+	const GSVector4 clear_color = rt ?
+		(pipe.ps.colclip_hw ? GSVector4::unorm16(rt->GetClearColor()) : rt->GetClearForFormat()) :
+		GSVector4::zero();
+
+	const bool stencil_DATE = config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
+		config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne;
+
+	BeginRenderPass(GetLoadOpForTexture(rt),
+		rt ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+		GetLoadOpForTexture(ds),
+		ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+		ds ? (stencil_DATE ? D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE :
+			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD) :
+		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
+		ds ? ((stencil_DATE && need_barrier) ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE :
+			D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD) :
+		D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
+		clear_color, ds ? ds->GetClearDepth() : 0.0f, 1);
+}
+
 void GSDevice12::EndRenderPass()
 {
 	if (!m_in_render_pass)
@@ -4613,29 +4637,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 
 	// Begin render pass if new target or out of the area.
 	if (!InRenderPass())
-	{
-		GSVector4 clear_color = draw_rt ? draw_rt->GetClearForFormat() : GSVector4::zero();
-		if (pipe.ps.colclip_hw)
-		{
-			// Denormalize clear color for hw colclip.
-			clear_color *= GSVector4::cxpr(255.0f / 65535.0f, 255.0f / 65535.0f, 255.0f / 65535.0f, 1.0f);
-		}
-
-		const bool stencil_DATE = config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
-		                          config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne;
-
-		BeginRenderPass(GetLoadOpForTexture(draw_rt),
-			draw_rt ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			GetLoadOpForTexture(draw_ds),
-			draw_ds ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE : D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			draw_ds ? (stencil_DATE ? D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE :
-									  D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD) :
-					  D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
-			draw_ds ? ((stencil_DATE && need_barrier) ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE :
-														D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD) :
-					  D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
-			clear_color, draw_ds ? draw_ds->GetClearDepth() : 0.0f, 1);
-	}
+		BeginTFXRenderPass(config, draw_rt, draw_ds, need_barrier);
 
 	// rt -> colclip hw blit if enabled
 	if (colclip_rt && (config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly || config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertAndResolve) && config.rt->GetState() == GSTexture::State::Dirty)
