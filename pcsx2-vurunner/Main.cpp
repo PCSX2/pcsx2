@@ -60,6 +60,7 @@ struct Options
 	bool dump_microcode = false;
 	bool dump_jit_state = false;      // cross-arch JIT post-state digest
 	bool dump_jit_state_raw = false;  // + full per-field raw dump
+	bool hash_pipeline = true;        // hash carried microVU flag/Q-P pipeline (see below)
 	bool divtrace = false;
 	bool bench_no_reprime = false;
 	bool print_bases = false;
@@ -107,6 +108,17 @@ void PrintUsage(const char* argv0)
 		"                Bench: throw out the first iter (JIT compile cost).\n"
 		"  --dump-count N    Number of microinstructions to dump (default 64).\n"
 		"  --cycles N    Override captured cycle budget (0 = keep original, default).\n"
+		"  --hash-pipeline / --no-hash-pipeline\n"
+		"                Include (default) / exclude the carried microVU flag\n"
+		"                pipeline (micro_{mac,clip,status}flags[4]) + pending_q/p\n"
+		"                in the --dump-jit-state reghash. These are re-primed from\n"
+		"                the capture and carried across dispatches, so an E-bit\n"
+		"                end that leaves them un-broadcast is a real cross-JIT\n"
+		"                divergence the per-op arch surface hides. Pass\n"
+		"                --no-hash-pipeline for the old narrow digest (and for\n"
+		"                XGKICK-bearing/non-terminating caps run in batch, where\n"
+		"                the JIT leaks carried state cross-cap — run those\n"
+		"                per-process instead).\n"
 		"  --help        Show this message.\n"
 		"  --            Treat all subsequent args as filenames.\n"
 		"\n"
@@ -158,6 +170,14 @@ bool ParseArgs(int argc, char** argv, Options& opts)
 		{
 			opts.dump_jit_state = true;
 			opts.dump_jit_state_raw = true;
+		}
+		else if (a == "--hash-pipeline")
+		{
+			opts.hash_pipeline = true;
+		}
+		else if (a == "--no-hash-pipeline")
+		{
+			opts.hash_pipeline = false;
 		}
 		else if (a == "--divtrace")
 		{
@@ -413,7 +433,8 @@ bool IsFullWidthVi(int i)
 	    || i == REG_TPC || i == REG_FBRST || i == REG_VPU_STAT;
 }
 
-void HashArchSurface(const recompiler_tests::VuSnapshot& s, u64& reg_hash, u64& mem_hash)
+void HashArchSurface(const recompiler_tests::VuSnapshot& s, bool hash_pipeline,
+	u64& reg_hash, u64& mem_hash)
 {
 	auto mix = [](u64 h, u32 v) {
 		for (int b = 0; b < 4; ++b)
@@ -440,6 +461,24 @@ void HashArchSurface(const recompiler_tests::VuSnapshot& s, u64& reg_hash, u64& 
 		r = mix(r, g.xgkicksizeremaining); r = mix(r, g.xgkickcyclecount);
 		r = mix(r, g.xgkickenable); r = mix(r, g.xgkickendpacket);
 	}
+	// Carried microVU flag pipeline + pending Q/P scalars. vu_capture serializes
+	// these and VuSnapshot::Restore re-primes them, but the per-op architectural
+	// surface above hides them — so two JITs that agree on VF/VI/ACC can still
+	// hand DIFFERENT carried state to the NEXT dispatch. An E-bit program end
+	// that leaves micro_statusflags as the raw 4-deep pipeline tail (vs
+	// broadcast-to-all-4) is exactly such a divergence, and it was this oracle's
+	// original blind spot. Mirrors DiffVu's Strict-mode DiffPipeline().
+	if (hash_pipeline)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			r = mix(r, g.micro_macflags[i]);
+			r = mix(r, g.micro_clipflags[i]);
+			r = mix(r, g.micro_statusflags[i]);
+		}
+		r = mix(r, g.pending_q);
+		r = mix(r, g.pending_p);
+	}
 	reg_hash = r;
 	u64 m = 0xcbf29ce484222325ull;
 	for (const auto& w : s.mem_windows)
@@ -450,7 +489,7 @@ void HashArchSurface(const recompiler_tests::VuSnapshot& s, u64& reg_hash, u64& 
 	mem_hash = m;
 }
 
-void DumpArchRaw(const recompiler_tests::VuSnapshot& s)
+void DumpArchRaw(const recompiler_tests::VuSnapshot& s, bool hash_pipeline)
 {
 	const VURegs& g = s.regs;
 	for (int i = 0; i < 32; ++i)
@@ -463,6 +502,13 @@ void DumpArchRaw(const recompiler_tests::VuSnapshot& s)
 		std::printf("  XGK addr=%08x diff=%08x size=%08x cyc=%08x en=%08x endp=%08x\n",
 			g.xgkickaddr, g.xgkickdiff, g.xgkicksizeremaining, g.xgkickcyclecount,
 			g.xgkickenable, g.xgkickendpacket);
+	if (hash_pipeline)
+		std::printf("  PIPE mac=%08x,%08x,%08x,%08x clip=%08x,%08x,%08x,%08x "
+			"status=%08x,%08x,%08x,%08x pq=%08x pp=%08x\n",
+			g.micro_macflags[0], g.micro_macflags[1], g.micro_macflags[2], g.micro_macflags[3],
+			g.micro_clipflags[0], g.micro_clipflags[1], g.micro_clipflags[2], g.micro_clipflags[3],
+			g.micro_statusflags[0], g.micro_statusflags[1], g.micro_statusflags[2], g.micro_statusflags[3],
+			g.pending_q, g.pending_p);
 	for (size_t wi = 0; wi < s.mem_windows.size(); ++wi)
 	{
 		const auto& w = s.mem_windows[wi];
@@ -479,7 +525,8 @@ void DumpArchRaw(const recompiler_tests::VuSnapshot& s)
 int RunDumpJitState(const std::vector<vu_capture::CaptureRecord>& records,
 	const std::vector<std::string>& names,
 	u32 cycle_override,
-	bool raw)
+	bool raw,
+	bool hash_pipeline)
 {
 	for (size_t fi = 0; fi < records.size(); ++fi)
 	{
@@ -497,7 +544,7 @@ int RunDumpJitState(const std::vector<vu_capture::CaptureRecord>& records,
 			continue;
 		}
 		u64 rh = 0, mh = 0;
-		HashArchSurface(r.jit_snapshot, rh, mh);
+		HashArchSurface(r.jit_snapshot, hash_pipeline, rh, mh);
 		std::printf("%s vu%u pc=%08x ebit=%d jitcyc=%llu reghash=%016llx memhash=%016llx\n",
 			base.c_str(), rec.vu_index, rec.start_pc, r.jit_ebit ? 1 : 0,
 			(unsigned long long)r.jit_cycles,
@@ -505,7 +552,7 @@ int RunDumpJitState(const std::vector<vu_capture::CaptureRecord>& records,
 		if (raw)
 		{
 			std::printf("--- %s raw ---\n", base.c_str());
-			DumpArchRaw(r.jit_snapshot);
+			DumpArchRaw(r.jit_snapshot, hash_pipeline);
 		}
 	}
 	return 0;
@@ -1287,7 +1334,8 @@ int main(int argc, char** argv)
 	if (opts.dump_microcode)
 		exit_code |= RunDumpMicrocode(records, names, opts.dump_count);
 	if (opts.dump_jit_state)
-		exit_code |= RunDumpJitState(records, names, opts.cycle_override, opts.dump_jit_state_raw);
+		exit_code |= RunDumpJitState(records, names, opts.cycle_override, opts.dump_jit_state_raw,
+			opts.hash_pipeline);
 	if (opts.diff)
 		exit_code |= RunDiff(records, names, opts.iters, opts.cycle_override);
 	if (opts.bench)
