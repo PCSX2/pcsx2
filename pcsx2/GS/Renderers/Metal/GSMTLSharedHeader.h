@@ -165,6 +165,7 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_CAS_SHARPEN_ONLY,
 	GSMTLConstantIndex_FRAMEBUFFER_FETCH,
 	GSMTLConstantIndex_DEPTH_FEEDBACK,
+	GSMTLConstantIndex_ROV_NEEDS_R32,
 	GSMTLConstantIndex_FST,
 	GSMTLConstantIndex_IIP,
 	GSMTLConstantIndex_VS_POINT_SIZE,
@@ -227,4 +228,6 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_AA1,
 	GSMTLConstantIndex_PS_ABE,
 	GSMTLConstantIndex_PS_SW_ANISO,
+	GSMTLConstantIndex_PS_ROV_COLOR,
+	GSMTLConstantIndex_PS_ROV_DEPTH,
 };

@@ -1270,12 +1270,12 @@ bool EEMemoryInterface::Write128(u32 address, u128 value)
 	return true;
 }
 
-bool EEMemoryInterface::WriteBytes(u32 address, void* src, u32 size)
+bool EEMemoryInterface::WriteBytes(u32 address, const void* src, u32 size)
 {
 	return vtlb_memSafeWriteBytes(address, src, size);
 }
 
-bool EEMemoryInterface::CompareBytes(u32 address, void* src, u32 size)
+bool EEMemoryInterface::CompareBytes(u32 address, const void* src, u32 size)
 {
 	return vtlb_memSafeCmpBytes(address, src, size) == 0;
 }
