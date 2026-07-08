@@ -633,9 +633,11 @@ static void mVUdispatcherAB(mV)
 	// reset). Cycle accounting and the EE-cycle-skip math (the common cost)
 	// are emitted inline so dispatch costs no `bl` on the hot path.
 	//
-	// 1) Cycle accounting (always hot).
+	// 1) Cycle accounting (always — both the normal and the reset path; see
+	//    below for why it must run before the bounds branch).
 	// 2) Cache-bounds check (rare false): if out-of-range, tail to C++ which
-	//    runs mVUreset + EE-skip math + profiler.Print().
+	//    runs mVUreset + EE-skip math + profiler.Print() (but NOT the cycle
+	//    accounting — that was already banked in step 1).
 	// 3) EE cycle skip math (inline; default EECycleSkip=0 short-circuits at
 	//    the first cbz). VU1+THREAD_VU1 skips the math (matches C++).
 	// 4) profiler.Print() is __fi {} in default builds → elided.
@@ -643,30 +645,15 @@ static void mVUdispatcherAB(mV)
 	// gprVUState (x19) stays pinned to &mVU.regs() across this whole stub.
 	a64::Label cleanUpReturn, cleanUpResetTail, eeSkipDone;
 
-	// (1) Cache-bounds check: out-of-range → reset tail. This MUST precede the
-	// inline cycle math below. On the reset path the C++ mVUcleanUp re-runs the
-	// same cycle accounting (microVU_Execute.inl: mVU.cycles = totalCycles -
-	// max(0,mVU.cycles); mVU.regs().cycle += mVU.cycles), so if the inline math
-	// ran first regs().cycle would be incremented twice — double-counting VU
-	// cycles up to totalCycles. Branching before the inline math leaves exactly
-	// one cycle update on each path: inline on the normal path, C++ on the reset
-	// path. x86ptr / x86start / x86end are three consecutive 8-byte
-	// fields in microProgManager.
-	static_assert(offsetof(microProgManager, x86start) == offsetof(microProgManager, x86ptr) + 8,
-		"inline bounds check expects x86ptr/x86start/x86end adjacent");
-	static_assert(offsetof(microProgManager, x86end)   == offsetof(microProgManager, x86ptr) + 16,
-		"inline bounds check expects x86ptr/x86start/x86end adjacent");
-	armMoveAddressToReg(a64::x8, &mVU.prog.x86ptr);
-	armAsm->Ldr(a64::x9,  a64::MemOperand(a64::x8));            // x86ptr
-	armAsm->Ldr(a64::x10, a64::MemOperand(a64::x8, 8));         // x86start
-	armAsm->Cmp(a64::x9, a64::x10);
-	armAsm->B(&cleanUpResetTail, a64::lt);
-	armAsm->Ldr(a64::x10, a64::MemOperand(a64::x8, 16));        // x86end
-	armAsm->Cmp(a64::x9, a64::x10);
-	armAsm->B(&cleanUpResetTail, a64::ge);
-
-	// (2) Cycle math (inline; normal in-range path only — the reset tail lets
-	// the C++ mVUcleanUp do this exactly once instead).
+	// (1) Cycle accounting — runs on BOTH paths (normal and reset), so it MUST
+	// precede the cache-bounds branch below. Unlike stock x86/ARMSX2 (whose
+	// C++ mVUcleanUp still carries this math), yaps2 inlined it here and trimmed
+	// it out of the helper — so if it ran only on the in-range path, a
+	// cache-exhaustion exit would drop the VU cycle credit entirely, leaving
+	// regs().cycle up to totalCycles below the EE clock and detonating the next
+	// _vu0run/_vu1run (s64)(cpuRegs.cycle - VU.cycle) sync. Running before the
+	// branch banks exactly one cycle update on each path (the helper adds none)
+	// and hands the helper's EE-skip the correct consumed count in mVU.cycles.
 	armMoveAddressToReg(a64::x8, &mVU.totalCycles);
 	armAsm->Ldr(a64::w10, a64::MemOperand(a64::x8));           // totalCycles
 	armAsm->Ldr(a64::w9,  a64::MemOperand(a64::x8, 4));        // cycles
@@ -684,6 +671,24 @@ static void mVUdispatcherAB(mV)
 	armAsm->Ldr(a64::x10, mVUstateMem(offsetof(VURegs, cycle)));
 	armAsm->Add(a64::x10, a64::x10, a64::Operand(a64::w9, a64::SXTW));
 	armAsm->Str(a64::x10, mVUstateMem(offsetof(VURegs, cycle)));
+
+	// (2) Cache-bounds check: out-of-range → reset tail. The cycle accounting
+	// (1) above has already banked regs().cycle and left the consumed count in
+	// mVU.cycles, so the C++ mVUcleanUp on the reset tail only needs mVUreset +
+	// EE-skip (it carries no cycle math of its own). x86ptr / x86start / x86end
+	// are three consecutive 8-byte fields in microProgManager.
+	static_assert(offsetof(microProgManager, x86start) == offsetof(microProgManager, x86ptr) + 8,
+		"inline bounds check expects x86ptr/x86start/x86end adjacent");
+	static_assert(offsetof(microProgManager, x86end)   == offsetof(microProgManager, x86ptr) + 16,
+		"inline bounds check expects x86ptr/x86start/x86end adjacent");
+	armMoveAddressToReg(a64::x8, &mVU.prog.x86ptr);
+	armAsm->Ldr(a64::x9,  a64::MemOperand(a64::x8));            // x86ptr
+	armAsm->Ldr(a64::x10, a64::MemOperand(a64::x8, 8));         // x86start
+	armAsm->Cmp(a64::x9, a64::x10);
+	armAsm->B(&cleanUpResetTail, a64::lt);
+	armAsm->Ldr(a64::x10, a64::MemOperand(a64::x8, 16));        // x86end
+	armAsm->Cmp(a64::x9, a64::x10);
+	armAsm->B(&cleanUpResetTail, a64::ge);
 
 	// (3) EE cycle skip math (inline). Equivalent C++ (mVUcleanUp body):
 	//     u32 cycles_passed = std::min(mVU.cycles, 3000) * EECycleSkip;
@@ -755,11 +760,13 @@ static void mVUdispatcherAB(mV)
 	armAsm->Bind(&eeSkipDone);
 	armAsm->B(&cleanUpReturn);
 
-	// Rare reset tail. C++ helper does the bounds check + mVUreset + the cycle
-	// accounting + the EE-skip math + profiler.Print(). On this bounds-violated
-	// path the inline cycle math (2) and inline EE-skip (3) above are BOTH
-	// skipped — the bounds branch precedes them — so the C++ mVUcleanUp performs
-	// each exactly once with no double-counting. ≪0.01% of dispatches.
+	// Rare reset tail (≪0.01% of dispatches). The inline cycle accounting (1)
+	// already ran before the bounds branch, so the VU cycle credit is banked and
+	// mVU.cycles holds the consumed count. The C++ helper does the bounds check +
+	// mVUreset + EE-skip math (reading that consumed count) + profiler.Print() —
+	// it carries no regs().cycle bump of its own. Only the inline EE-skip (3) is
+	// skipped on this path, so cycle accounting runs exactly once (inline) and
+	// EE-skip runs exactly once (C++). No double-count.
 	armAsm->Bind(&cleanUpResetTail);
 	armEmitCall(isVU1 ? (void*)mVUcleanUpVU1 : (void*)mVUcleanUpVU0);
 
@@ -1503,7 +1510,9 @@ _mVUt void mVUcleanUp()
 
 	// Cycle accounting (mVU.cycles update + regs().cycle bump) is emitted
 	// inline in the dispatcher exit stub — see mVUdispatcherAB; it is not
-	// repeated here.
+	// repeated here. The stub runs it BEFORE branching to this reset tail, so
+	// even on the cache-exhaustion path regs().cycle is already banked and
+	// mVU.cycles below holds the consumed count (not the raw remaining budget).
 
 	// x86ptr is updated in mVUexecute after compilation.
 	if ((mVU.prog.x86ptr < mVU.prog.x86start) || (mVU.prog.x86ptr >= mVU.prog.x86end))
