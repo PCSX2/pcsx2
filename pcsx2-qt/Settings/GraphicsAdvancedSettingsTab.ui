@@ -365,7 +365,6 @@
   <tabstop>gsDumpCompression</tabstop>
   <tabstop>texturePreloading</tabstop>
   <tabstop>exclusiveFullscreenControl</tabstop>
-  <tabstop>rov</tabstop>
   <tabstop>extendedUpscales</tabstop>
   <tabstop>spinGPUDuringReadbacks</tabstop>
   <tabstop>spinCPUDuringReadbacks</tabstop>
