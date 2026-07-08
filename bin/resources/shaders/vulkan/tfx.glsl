@@ -1966,8 +1966,9 @@ void main()
 	
 	// Writing back color (result already written to o_col0 for non-ROV)
 	#if PS_RETURN_COLOR_ROV
-		o_col0 = mix(o_col0, sample_from_rt(), equal(FbMask, uvec4(0xFFu))); // channel masking
-
+		#if !PS_FBMASK
+			o_col0 = mix(o_col0, sample_from_rt(), equal(FbMask, uvec4(0xFFu))); // channel masking
+		#endif
 		if (!rov_discard_color)
 			imageStore(RtImageRov, ivec2(gl_FragCoord.xy), o_col0);
 	#endif
