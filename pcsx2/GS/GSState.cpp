@@ -2637,6 +2637,7 @@ void GSState::FlushPrim()
 		m_quad_check_valid_shuffle = false;
 		m_drawlist.clear();
 		m_drawlist_bbox.clear();
+		m_draw_coarse_rasterize.clear();
 
 		if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 		{
