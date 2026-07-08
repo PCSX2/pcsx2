@@ -5385,11 +5385,6 @@ void GSDeviceVK::PSSetROVs(GSTexture* rt, GSTexture* ds, bool write_rt, bool wri
 			vkRt->SetState(GSTexture::State::Dirty);
 		}
 	}
-	else
-	{
-		// Unbind to avoid conflicts with OM targets.
-		PSSetShaderResource(TFX_TEXTURE_RT_ROV, nullptr, false);
-	}
 
 	if (vkDs)
 	{
@@ -5408,11 +5403,6 @@ void GSDeviceVK::PSSetROVs(GSTexture* rt, GSTexture* ds, bool write_rt, bool wri
 		{
 			vkDs->SetState(GSTexture::State::Dirty);
 		}
-	}
-	else
-	{
-		// Unbind to avoid conflicts with OM targets.
-		PSSetShaderResource(TFX_TEXTURE_DEPTH_ROV, nullptr, false);
 	}
 
 	if (GSConfig.HWROVBarriersVK)
@@ -5767,11 +5757,20 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 
 		// Clear out the RT/DS binding if feedback loop isn't on, because it'll be in the wrong state and make
 		// the validation layer cranky. Not a big deal since we need to write it anyway.
-		std::array<TFX_TEXTURES, 2> texture_types = { TFX_TEXTURE_RT, TFX_TEXTURE_DEPTH };
-		for (u32 texture_type : texture_types)
+		std::array<TFX_TEXTURES, 2> texture_types_feedback = { TFX_TEXTURE_RT, TFX_TEXTURE_DEPTH };
+		for (u32 texture_type : texture_types_feedback)
 		{
 			const GSTextureVK::Layout tex_layout = m_tfx_textures[texture_type]->GetLayout();
 			if (tex_layout != GSTextureVK::Layout::FeedbackLoop && tex_layout != GSTextureVK::Layout::ShaderReadOnly)
+				m_tfx_textures[texture_type] = m_null_texture.get();
+		}
+
+		// Clear out storage image bindings if ROV is not being used.
+		std::array<TFX_TEXTURES, 2> texture_types_storage = { TFX_TEXTURE_RT_ROV, TFX_TEXTURE_DEPTH_ROV };
+		for (u32 texture_type : texture_types_storage)
+		{
+			const GSTextureVK::Layout tex_layout = m_tfx_textures[texture_type]->GetLayout();
+			if (tex_layout != GSTextureVK::Layout::ReadWriteImage)
 				m_tfx_textures[texture_type] = m_null_texture.get();
 		}
 	}
@@ -6286,11 +6285,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			m_dirty_flags |= static_cast<u32>(DIRTY_FLAG_TFX_TEXTURE_RT_ROV);
 		}
 	}
-	else if (!draw_rt_clone)
-	{
-		// Unbind to avoid conflicts with framebuffer
-		PSSetShaderResource(TFX_TEXTURE_RT, nullptr, false);
-	}
 	
 	if (pipe.IsDepthFeedbackLoop() && draw_ds)
 	{
@@ -6303,11 +6297,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			PSSetShaderResource(TFX_TEXTURE_DEPTH_ROV, nullptr, false);
 			m_dirty_flags |= static_cast<u32>(DIRTY_FLAG_TFX_TEXTURE_DEPTH_ROV);
 		}
-	}
-	else
-	{
-		// Unbind to avoid conflicts with framebuffer
-		PSSetShaderResource(TFX_TEXTURE_DEPTH, nullptr, false);
 	}
 	
 	PSSetROVs(draw_rt_rov, draw_ds_rov, config.ps.HasColorOutput(), config.ps.HasDepthROVWrite());
