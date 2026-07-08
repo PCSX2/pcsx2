@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/settings_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurface"
+        android:paddingStart="@dimen/settings_content_padding"
+        android:paddingEnd="@dimen/settings_content_padding"
+        android:paddingTop="@dimen/settings_content_padding"
+        android:paddingBottom="12dp"
+        android:elevation="0dp"
+        app:titleCentered="false" />
+
+    <HorizontalScrollView
+        android:id="@+id/settings_toggle_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/settings_content_padding"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="@dimen/settings_content_padding"
+        android:layout_marginBottom="0dp"
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        android:visibility="gone">
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/settings_toggle_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:selectionRequired="true"
+            app:singleSelection="true" />
+    </HorizontalScrollView>
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/settings_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/settings_content_padding"
+        android:paddingEnd="@dimen/settings_content_padding"
+        android:visibility="visible"
+        app:tabIndicatorColor="?attr/colorPrimary"
+        app:tabIndicatorFullWidth="false"
+        app:tabMode="fixed"
+        app:tabSelectedTextColor="?attr/colorPrimary"
+        app:tabTextColor="?attr/colorOnSurfaceVariant" />
+
+    <ViewFlipper
+        android:id="@+id/settings_view_flipper"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:animateFirstView="false">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/settings_section_general"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/settings_content_padding"
+            android:paddingTop="@dimen/settings_content_padding"
+            android:paddingEnd="@dimen/settings_content_padding"
+            android:paddingBottom="@dimen/settings_content_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <include layout="@layout/include_settings_card_general" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/settings_section_graphics"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/settings_content_padding"
+            android:paddingTop="@dimen/settings_content_padding"
+            android:paddingEnd="@dimen/settings_content_padding"
+            android:paddingBottom="@dimen/settings_content_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <include layout="@layout/include_settings_card_graphics" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/settings_section_performance"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/settings_content_padding"
+            android:paddingTop="@dimen/settings_content_padding"
+            android:paddingEnd="@dimen/settings_content_padding"
+            android:paddingBottom="@dimen/settings_content_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <include layout="@layout/include_settings_card_performance" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/settings_section_stats"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/settings_content_padding"
+            android:paddingTop="@dimen/settings_content_padding"
+            android:paddingEnd="@dimen/settings_content_padding"
+            android:paddingBottom="@dimen/settings_content_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <include layout="@layout/include_settings_card_stats" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/settings_section_controller"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/settings_content_padding"
+            android:paddingTop="@dimen/settings_content_padding"
+            android:paddingEnd="@dimen/settings_content_padding"
+            android:paddingBottom="@dimen/settings_content_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <include layout="@layout/include_settings_card_controller" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/settings_section_customization"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/settings_content_padding"
+            android:paddingTop="@dimen/settings_content_padding"
+            android:paddingEnd="@dimen/settings_content_padding"
+            android:paddingBottom="@dimen/settings_content_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <include layout="@layout/include_settings_card_customization" />
+
+                <include layout="@layout/include_settings_card_app_icon" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/settings_section_storage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/settings_content_padding"
+            android:paddingTop="@dimen/settings_content_padding"
+            android:paddingEnd="@dimen/settings_content_padding"
+            android:paddingBottom="@dimen/settings_content_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <include layout="@layout/include_settings_card_storage" />
+
+                <include layout="@layout/include_settings_card_data_access" />
+
+                <include layout="@layout/include_settings_card_dev9" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/settings_section_memory"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/settings_content_padding"
+            android:paddingTop="@dimen/settings_content_padding"
+            android:paddingEnd="@dimen/settings_content_padding"
+            android:paddingBottom="@dimen/settings_content_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <include layout="@layout/include_settings_card_memory" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/settings_section_achievements"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/settings_content_padding"
+            android:paddingTop="@dimen/settings_content_padding"
+            android:paddingEnd="@dimen/settings_content_padding"
+            android:paddingBottom="@dimen/settings_content_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <include layout="@layout/include_settings_card_achievements" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+    </ViewFlipper>
+
+    <LinearLayout
+        android:id="@+id/settings_footer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/settings_content_padding"
+        android:paddingTop="16dp"
+        android:paddingEnd="@dimen/settings_content_padding"
+        android:paddingBottom="@dimen/settings_content_padding">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_about"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:layout_weight="1"
+            android:text="@string/drawer_about" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_back"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:text="@string/onboarding_back" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:textAppearance="@style/TextAppearance.Material3.TitleLarge" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="12dp"
+            android:text="@string/settings_aspect_ratio"
+            android:textAppearance="@style/TextAppearance.Material3.TitleSmall" />
+
+    <RadioGroup
+            android:id="@+id/rg_aspect"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/rb_ar_auto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Auto (4:3/3:2)" />
+
+            <RadioButton
+                android:id="@+id/rb_ar_4_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="4:3" />
+
+            <RadioButton
+                android:id="@+id/rb_ar_16_9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="16:9" />
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:text="On-screen display"
+            android:textAppearance="@style/TextAppearance.Material3.TitleSmall" />
+
+    <Switch
+            android:id="@+id/switch_osd_fps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Show FPS" />
+
+    <Switch
+            android:id="@+id/switch_osd_res"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Show Resolution" />
+
+    <Switch
+            android:id="@+id/switch_osd_stats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Show GS Stats" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:text="Graphics"
+            android:textAppearance="@style/TextAppearance.Material3.TitleSmall" />
+
+    <Switch
+            android:id="@+id/switch_hw_readbacks"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hardware readbacks" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:text="Memory cards"
+            android:textAppearance="@style/TextAppearance.Material3.TitleSmall" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_import_memcard"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Import memory card" />
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_about"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="About"
+                android:layout_marginEnd="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_close"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Close" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

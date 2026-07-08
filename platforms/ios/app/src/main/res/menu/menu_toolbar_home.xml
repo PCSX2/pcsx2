@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_toggle_view"
+        android:title="@string/home_toolbar_toggle_view"
+        android:icon="@drawable/ic_view_list_24"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_toggle_search"
+        android:title="@string/home_toolbar_search"
+        android:icon="@drawable/ic_search_24"
+                app:showAsAction="always" />
+    <item
+        android:id="@+id/action_open_rn"
+        android:title="@string/home_toolbar_rn_activity"
+        android:icon="@drawable/ic_settings_24"
+        app:showAsAction="always" />
+</menu>

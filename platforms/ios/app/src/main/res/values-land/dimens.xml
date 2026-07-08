@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="in_game_drawer_width">400dp</dimen>
+</resources>

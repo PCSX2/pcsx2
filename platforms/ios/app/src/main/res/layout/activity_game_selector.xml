@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:id="@+id/drawer_root"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="?attr/colorSurface">
+
+	<androidx.constraintlayout.widget.ConstraintLayout
+		android:id="@+id/home_container"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:background="?attr/colorSurface">
+
+		<!-- user background image -->
+		<ImageView
+			android:id="@+id/bg_image"
+			android:layout_width="0dp"
+			android:layout_height="0dp"
+			android:scaleType="centerCrop"
+			android:contentDescription="@null"
+			android:visibility="gone"
+			app:layout_constraintTop_toTopOf="parent"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintEnd_toEndOf="parent"/>
+
+		<com.google.android.material.appbar.MaterialToolbar
+			android:id="@+id/toolbar"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:background="?attr/colorSurface"
+			android:theme="@style/ThemeOverlay.Material3.ActionBar"
+			app:title="@string/home_game_selector_title"
+			app:titleTextColor="?attr/colorOnSurface"
+			app:navigationIconTint="?attr/colorOnSurface"
+			app:layout_constraintTop_toTopOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintEnd_toEndOf="parent" />
+
+		<!-- Search bar -->
+		<EditText
+			android:id="@+id/et_search"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:hint="@string/home_search_games_hint"
+			android:imeOptions="actionDone"
+			android:singleLine="true"
+			android:padding="12dp"
+			android:textColor="?attr/colorOnSurface"
+			android:textColorHint="?attr/colorOnSurfaceVariant"
+			android:background="?attr/colorSurfaceVariant"
+			android:visibility="gone"
+			app:layout_constraintTop_toBottomOf="@id/toolbar"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintEnd_toEndOf="parent"/>
+
+		<!-- Centered empty state container -->
+		<LinearLayout
+			android:id="@+id/empty_container"
+			android:layout_width="0dp"
+			android:layout_height="0dp"
+			android:gravity="center"
+			android:orientation="vertical"
+			app:layout_constraintTop_toBottomOf="@id/et_search"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintEnd_toEndOf="parent">
+
+			<TextView
+				android:id="@+id/tv_empty"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/home_choose_folder_empty"
+				android:textColor="?attr/colorOnSurfaceVariant"
+				android:textSize="18sp"
+				android:layout_marginBottom="16dp"/>
+
+			<com.google.android.material.button.MaterialButton
+				android:id="@+id/btn_choose_folder"
+				style="@style/Widget.Material3.Button.OutlinedButton"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/home_nav_choose_games_folder"
+				android:textColor="?attr/colorPrimary"/>
+		</LinearLayout>
+
+		<androidx.recyclerview.widget.RecyclerView
+			android:id="@+id/rv_games"
+			android:layout_width="0dp"
+			android:layout_height="0dp"
+			android:padding="@dimen/game_selector_grid_padding"
+			android:clipToPadding="false"
+			android:visibility="gone"
+			app:layout_constraintTop_toBottomOf="@id/et_search"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintEnd_toEndOf="parent"/>
+
+		<!-- FAB quick actions -->
+		<com.google.android.material.floatingactionbutton.FloatingActionButton
+			android:id="@+id/fab_actions"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:contentDescription="@string/home_fab_actions_content_description"
+			android:src="@drawable/ic_cd_24"
+			app:tint="?attr/colorOnPrimary"
+			app:backgroundTint="?attr/colorPrimary"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintEnd_toEndOf="parent"
+			android:layout_margin="16dp"/>
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+	<com.google.android.material.navigation.NavigationView
+		android:id="@+id/nav_view_start"
+		android:layout_width="280dp"
+		android:layout_height="match_parent"
+		android:layout_gravity="start"
+		android:fitsSystemWindows="true"
+		android:background="?attr/colorSurface"
+		android:theme="@style/ThemeOverlay.Material3.NavigationView"
+		app:headerLayout="@layout/nav_header"
+		app:menu="@menu/nav_drawer_menu" />
+</androidx.drawerlayout.widget.DrawerLayout>

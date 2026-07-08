@@ -1,0 +1,163 @@
+package com.swmansion.reanimated;
+
+import static com.facebook.react.bridge.ReactMarkerConstants.CREATE_UI_MANAGER_MODULE_END;
+import static com.facebook.react.bridge.ReactMarkerConstants.CREATE_UI_MANAGER_MODULE_START;
+
+import androidx.annotation.NonNull;
+import com.facebook.react.ReactApplication;
+import com.facebook.react.ReactInstanceManager;
+import com.facebook.react.ReactPackage;
+import com.facebook.react.TurboReactPackage;
+import com.facebook.react.bridge.NativeModule;
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactMarker;
+import com.facebook.react.module.annotations.ReactModule;
+import com.facebook.react.module.annotations.ReactModuleList;
+import com.facebook.react.module.model.ReactModuleInfo;
+import com.facebook.react.module.model.ReactModuleInfoProvider;
+import com.facebook.react.uimanager.ReanimatedUIManager;
+import com.facebook.react.uimanager.UIManagerModule;
+import com.facebook.react.uimanager.ViewManager;
+import com.facebook.systrace.Systrace;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+@ReactModuleList(
+    nativeModules = {
+      ReanimatedModule.class,
+      ReanimatedUIManager.class,
+    })
+public class ReanimatedPackage extends TurboReactPackage implements ReactPackage {
+  @Override
+  public NativeModule getModule(String name, @NonNull ReactApplicationContext reactContext) {
+    if (name.equals(ReanimatedModule.NAME)) {
+      return new ReanimatedModule(reactContext);
+    }
+    if (name.equals(ReanimatedUIManager.NAME)) {
+      return createUIManager(reactContext);
+    }
+    return null;
+  }
+
+  @Override
+  public ReactModuleInfoProvider getReactModuleInfoProvider() {
+    Class<? extends NativeModule>[] moduleList =
+        new Class[] {
+          ReanimatedModule.class, ReanimatedUIManager.class,
+        };
+
+    final Map<String, ReactModuleInfo> reactModuleInfoMap = new HashMap<>();
+    for (Class<? extends NativeModule> moduleClass : moduleList) {
+      ReactModule reactModule =
+          Objects.requireNonNull(moduleClass.getAnnotation(ReactModule.class));
+
+      reactModuleInfoMap.put(
+          reactModule.name(),
+          new ReactModuleInfo(
+              reactModule.name(),
+              moduleClass.getName(),
+              true,
+              reactModule.needsEagerInit(),
+              reactModule.isCxxModule(),
+              BuildConfig.IS_NEW_ARCHITECTURE_ENABLED));
+    }
+
+    return () -> reactModuleInfoMap;
+  }
+
+  private UIManagerModule createUIManager(final ReactApplicationContext reactContext) {
+    ReactMarker.logMarker(CREATE_UI_MANAGER_MODULE_START);
+    Systrace.beginSection(Systrace.TRACE_TAG_REACT_JAVA_BRIDGE, "createUIManagerModule");
+    final ReactInstanceManager reactInstanceManager = getReactInstanceManager(reactContext);
+    List<ViewManager> viewManagers = reactInstanceManager.getOrCreateViewManagers(reactContext);
+    int minTimeLeftInFrameForNonBatchedOperationMs = -1;
+    try {
+      return ReanimatedUIManagerFactory.create(
+          reactContext, viewManagers, minTimeLeftInFrameForNonBatchedOperationMs);
+    } finally {
+      Systrace.endSection(Systrace.TRACE_TAG_REACT_JAVA_BRIDGE);
+      ReactMarker.logMarker(CREATE_UI_MANAGER_MODULE_END);
+    }
+  }
+
+  /**
+   * Get the {@link ReactInstanceManager} used by this app. By default, assumes {@link
+   * ReactApplicationContext#getApplicationContext()} is an instance of {@link ReactApplication} and
+   * calls {@link ReactApplication#getReactNativeHost().getReactInstanceManager()}. Override this
+   * method if your application class does not implement {@code ReactApplication} or you simply have
+   * a different mechanism for storing a {@code ReactInstanceManager}, e.g. as a static field
+   * somewhere.
+   */
+  public ReactInstanceManager getReactInstanceManager(ReactApplicationContext reactContext) {
+    try {
+      Object app = reactContext.getApplicationContext();
+      if (app instanceof ReactApplication) {
+        return ((ReactApplication) app).getReactNativeHost().getReactInstanceManager();
+      }
+    } catch (Throwable ignored) {}
+
+    try {
+      android.app.Activity activity = reactContext.getCurrentActivity();
+      if (activity != null) {
+        Class<?> c = activity.getClass();
+        while (c != null) {
+          try {
+            java.lang.reflect.Field field = c.getDeclaredField("reactInstanceManager");
+            field.setAccessible(true);
+            Object value = field.get(activity);
+            if (value instanceof ReactInstanceManager) {
+              return (ReactInstanceManager) value;
+            }
+            break; // found field but not instance manager
+          } catch (NoSuchFieldException e) {
+            c = c.getSuperclass(); // search up the hierarchy
+          }
+        }
+      }
+    } catch (Throwable ignored) {}
+
+    try {
+      Class<?> atClass = Class.forName("android.app.ActivityThread");
+      Object at = atClass.getMethod("currentActivityThread").invoke(null);
+      java.lang.reflect.Field activitiesField = atClass.getDeclaredField("mActivities");
+      activitiesField.setAccessible(true);
+      Object activitiesObj = activitiesField.get(at);
+      if (activitiesObj instanceof java.util.Map) {
+        @SuppressWarnings("unchecked")
+        java.util.Map<Object, Object> activities = (java.util.Map<Object, Object>) activitiesObj;
+        for (Object record : activities.values()) {
+          if (record == null) continue;
+          Class<?> recClass = record.getClass();
+          try {
+            java.lang.reflect.Field activityField = recClass.getDeclaredField("activity");
+            activityField.setAccessible(true);
+            Object act = activityField.get(record);
+            if (act instanceof android.app.Activity) {
+              Class<?> c = act.getClass();
+              while (c != null) {
+                try {
+                  java.lang.reflect.Field f = c.getDeclaredField("reactInstanceManager");
+                  f.setAccessible(true);
+                  Object value = f.get(act);
+                  if (value instanceof ReactInstanceManager) {
+                    return (ReactInstanceManager) value;
+                  }
+                  break;
+                } catch (NoSuchFieldException e) {
+                  c = c.getSuperclass();
+                }
+              }
+            }
+          } catch (Throwable ignored2) {}
+        }
+      }
+    } catch (Throwable ignored) {}
+
+    throw new IllegalStateException(
+        "[Reanimated patched] Could not resolve ReactInstanceManager. " +
+        "Either implement ReactApplication in your Application class or expose a 'reactInstanceManager' " +
+        "field on the Activity hosting React Native.");
+  }
+}

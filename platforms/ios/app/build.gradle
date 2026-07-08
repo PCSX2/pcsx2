@@ -1,0 +1,222 @@
+plugins {
+    id 'com.android.application'
+}
+
+def enableRN = rootProject.ext.has('enableRN') ? rootProject.ext.enableRN : false
+def isSwitchBuild = project.hasProperty('switchbuild') || gradle.startParameter.projectProperties.containsKey('switchbuild')
+
+if (enableRN) {
+    apply from: file('react-native-plugin.gradle')
+}
+
+ext {
+    hermesEnabled = true
+    react = [
+        enableHermes: true
+    ]
+}
+
+def discordEnvFile = file("src/main/assets/discord_creds.env")
+def discordProps = new Properties()
+if (discordEnvFile.exists()) {
+    discordEnvFile.withInputStream { discordProps.load(it) }
+}
+def discordApplicationId = discordProps.getProperty("APPLICATION_ID", "").trim()
+def sanitizeScheme = { String raw ->
+    if (!raw) {
+        return ""
+    }
+    def trimmed = raw.trim()
+    def protocolIdx = trimmed.indexOf("://")
+    if (protocolIdx >= 0) {
+        trimmed = trimmed.substring(0, protocolIdx)
+    }
+    def colonIdx = trimmed.indexOf(':')
+    if (colonIdx >= 0) {
+        trimmed = trimmed.substring(0, colonIdx)
+    }
+    def slashIdx = trimmed.indexOf('/')
+    if (slashIdx >= 0) {
+        trimmed = trimmed.substring(0, slashIdx)
+    }
+    return trimmed
+}
+def discordSchemeFromEnv = sanitizeScheme(discordProps.getProperty("APPLICATION_SCHEME", ""))
+def discordCallbackScheme = discordSchemeFromEnv ? discordSchemeFromEnv : (discordApplicationId ? "discord-${discordApplicationId}" : "armsx2")
+def isDiscordSdkAvailable = file("${project.projectDir}/libs/discord_partner_sdk.aar").exists()
+
+android {
+    namespace 'kr.co.iefriends.pcsx2'
+    compileSdk 36
+    ndkVersion '29.0.14206865'
+
+    flavorDimensions "distribution"
+
+    defaultConfig {
+    applicationId "come.nanodata.armsx2"
+        minSdk 26
+        targetSdk 35
+        versionCode 22
+        versionName "1.0.8"
+
+        // APK
+        def baseName = 'ARMSX2'
+        setProperty('archivesBaseName', "${baseName}_${versionCode}_${new Date().format('yyyyMMddHHmm')}${isSwitchBuild ? '-switch' : ''}")
+
+        externalNativeBuild {
+            cmake {
+                def stlLib = enableRN ? "c++_shared" : "c++_static"
+                arguments "-DANDROID=true", "-DCMAKE_BUILD_TYPE=Release", "-DANDROID_STL=${stlLib}", "-DENABLE_RAINTEGRATION=ON"
+                // Toggle native Discord SDK wiring based on whether the partner SDK AAR is present.
+                arguments "-DUSE_DISCORD_SDK=${isDiscordSdkAvailable ? 'ON' : 'OFF'}"
+                if (isSwitchBuild) {
+                    arguments "-DSWITCHBUILD=ON"
+                    cFlags "-D__NINTENDO_SWITCH__"
+                    cppFlags "-D__NINTENDO_SWITCH__"
+                }
+//                arguments '-DANDROID=true','-DCMAKE_BUILD_TYPE=Debug','-DANDROID_STL=c++_static'
+            }
+        }
+        ndk {
+            abiFilters 'arm64-v8a'
+        }
+        manifestPlaceholders = [
+                discordCallbackScheme       : discordCallbackScheme,
+                discordAuthActivityExported : isDiscordSdkAvailable ? "true" : "false",
+                discordAuthActivityEnabled  : isDiscordSdkAvailable ? "true" : "false"
+        ]
+        buildConfigField "boolean", "ENABLE_RN", enableRN ? "true" : "false"
+        buildConfigField "boolean", "DISCORD_INTEGRATION_ENABLED", isDiscordSdkAvailable ? "true" : "false"
+        buildConfigField "boolean", "IS_GOOGLE_PLAY_BUILD", "false"
+    resValue "bool", "armsx2_documents_provider_enabled", "true"
+    }
+
+    productFlavors {
+        unrestricted {
+            dimension "distribution"
+        }
+        googlePlay {
+            dimension "distribution"
+            buildConfigField "boolean", "IS_GOOGLE_PLAY_BUILD", "true"
+            resValue "bool", "armsx2_documents_provider_enabled", "true"
+        }
+    }
+
+    def keystorePropertiesFile = rootProject.file("app/armsx2_keystore.properties")
+    def keystoreProperties = new Properties()
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    }
+
+    signingConfigs {
+        release {
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+    }
+
+    buildTypes {
+        debug {
+            ndk {
+                debugSymbolLevel 'FULL'
+            }
+            debuggable true
+            minifyEnabled false
+            applicationIdSuffix ".debug"
+            buildConfigField "boolean", "LOGS_ENABLED", "true"
+        }
+        release {
+            ndk {
+                debugSymbolLevel 'SYMBOL_TABLE'
+            }
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+            buildConfigField "boolean", "LOGS_ENABLED", "true"
+        }
+        releaseNoLog {
+            initWith release
+            matchingFallbacks = ["release"]
+            buildConfigField "boolean", "LOGS_ENABLED", "false"
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    externalNativeBuild {
+        cmake {
+            version '3.22.1'
+            path file('src/main/cpp/CMakeLists.txt')
+        }
+    }
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+        resources {
+            excludes += ['META-INF/DEPENDENCIES']
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+        prefab true
+    }
+
+    sourceSets {
+        main {
+            assets.srcDirs += ['../app_icons']
+            jniLibs.srcDirs += ['src/main/jniLibs']
+            if (enableRN) {
+                java.srcDir 'src/reactnative/java'
+            }
+        }
+    }
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+if (enableRN) {
+    react {
+        root = file("..")
+        reactNativeDir = file("../node_modules/react-native")
+        cliFile = file("../node_modules/react-native/cli.js")
+        entryFile = file("../index.js")
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
+    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'com.caverock:androidsvg:1.4'
+    implementation 'androidx.browser:browser:1.9.0'
+    if (enableRN) {
+        // React Native core and Hermes engine (brownfield integration)
+        implementation 'com.facebook.react:react-android:0.74.3'
+        implementation 'com.facebook.react:hermes-android:0.74.3'
+    }
+    if (isDiscordSdkAvailable) {
+        implementation(name: 'discord_partner_sdk', ext: 'aar')
+    } else {
+        logger.lifecycle("[app] Discord SDK not found; Discord integration will be disabled.")
+    }
+}
+
+if (enableRN) {
+    def nativeModulesAppGradle = file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle")
+    if (nativeModulesAppGradle.isFile()) {
+        apply from: nativeModulesAppGradle
+        applyNativeModulesAppBuildGradle(project)
+    } else {
+        logger.lifecycle('[app/build.gradle] React Native native_modules.gradle not found; skipping RN integration.')
+    }
+}

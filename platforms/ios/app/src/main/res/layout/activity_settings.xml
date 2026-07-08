@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="#f5f5f5">
+
+	<LinearLayout
+		android:orientation="vertical"
+		android:padding="16dp"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content">
+
+		<!-- Graphics Section -->
+		<com.google.android.material.card.MaterialCardView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginBottom="12dp"
+			app:cardCornerRadius="8dp"
+			app:cardElevation="2dp">
+			
+			<LinearLayout
+				android:orientation="vertical"
+				android:padding="16dp"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content">
+
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="🎮 Graphics Settings"
+					android:textStyle="bold"
+					android:textSize="18sp"
+					android:textColor="#2196F3" />
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Renderer"
+					android:paddingTop="12dp"/>
+				<Spinner
+					android:id="@+id/sp_renderer"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"/>
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Internal Resolution"
+					android:paddingTop="12dp"/>
+
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal"
+					android:gravity="center_vertical">
+					<SeekBar
+						android:id="@+id/sb_upscale"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"/>
+					<TextView
+						android:id="@+id/tv_upscale_value"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:paddingStart="12dp"
+						android:text="1x"
+						android:textStyle="bold"/>
+				</LinearLayout>
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Texture Filtering"
+					android:paddingTop="12dp"/>
+				<Spinner
+					android:id="@+id/sp_filtering"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"/>
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Deinterlace"
+					android:paddingTop="12dp"/>
+				<Spinner
+					android:id="@+id/sp_interlace"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"/>
+
+				<Switch
+					android:id="@+id/sw_hw_mipmap"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Hardware mipmapping"
+					android:layout_marginTop="8dp"/>
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Texture preloading"
+					android:paddingTop="12dp"/>
+				<Spinner
+					android:id="@+id/sp_texture_preloading"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"/>
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Accurate Blending"
+					android:paddingTop="12dp"/>
+				<Spinner
+					android:id="@+id/sp_acc_blending"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"/>
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Anisotropic Filtering"
+					android:paddingTop="12dp"/>
+				<Spinner
+					android:id="@+id/sp_anisotropic"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"/>
+
+				<Switch
+					android:id="@+id/sw_vsync"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="VSync"
+					android:layout_marginTop="8dp"/>
+
+				<Switch
+					android:id="@+id/sw_hw_readbacks"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Hardware readbacks"/>
+
+			</LinearLayout>
+		</com.google.android.material.card.MaterialCardView>
+
+		<!-- Performance Section -->
+		<com.google.android.material.card.MaterialCardView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginBottom="12dp"
+			app:cardCornerRadius="8dp"
+			app:cardElevation="2dp">
+			
+			<LinearLayout
+				android:orientation="vertical"
+				android:padding="16dp"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content">
+
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="⚡ Performance Settings"
+					android:textStyle="bold"
+					android:textSize="18sp"
+					android:textColor="#FF5722" />
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="FPS Limit"
+					android:paddingTop="12dp"/>
+
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal"
+					android:gravity="center_vertical">
+					<SeekBar
+						android:id="@+id/sb_fps_limit"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:max="240"
+						android:progress="60"/>
+					<TextView
+						android:id="@+id/tv_fps_limit_value"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:paddingStart="12dp"
+						android:text="60 FPS"
+						android:textStyle="bold"/>
+				</LinearLayout>
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Turbo Speed"
+					android:paddingTop="12dp"/>
+
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal"
+					android:gravity="center_vertical">
+					<SeekBar
+						android:id="@+id/sb_turbo_speed"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:max="100"
+						android:progress="50"/>
+					<TextView
+						android:id="@+id/tv_turbo_speed_value"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:paddingStart="12dp"
+						android:text="2.0x"
+						android:textStyle="bold"/>
+				</LinearLayout>
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Slow Motion Speed"
+					android:paddingTop="12dp"/>
+
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal"
+					android:gravity="center_vertical">
+					<SeekBar
+						android:id="@+id/sb_slomo_speed"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:max="100"
+						android:progress="25"/>
+					<TextView
+						android:id="@+id/tv_slomo_speed_value"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:paddingStart="12dp"
+						android:text="0.5x"
+						android:textStyle="bold"/>
+				</LinearLayout>
+
+				<Switch
+					android:id="@+id/sw_fast_boot"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Fast Boot"
+					android:layout_marginTop="8dp"/>
+
+			</LinearLayout>
+		</com.google.android.material.card.MaterialCardView>
+
+		<!-- Controller Section -->
+		<com.google.android.material.card.MaterialCardView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginBottom="12dp"
+			app:cardCornerRadius="8dp"
+			app:cardElevation="2dp">
+			
+			<LinearLayout
+				android:orientation="vertical"
+				android:padding="16dp"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content">
+
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="🎯 Controller Settings"
+					android:textStyle="bold"
+					android:textSize="18sp"
+					android:textColor="#4CAF50" />
+
+				<com.google.android.material.button.MaterialButton
+					android:id="@+id/btn_calibrate_controller"
+					style="@style/Widget.Material3.Button.OutlinedButton"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="🎮 Calibrate Controller"
+					android:layout_marginTop="8dp"/>
+
+				<Switch
+					android:id="@+id/sw_controller_vibration"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Controller Vibration"
+					android:layout_marginTop="8dp"/>
+
+			</LinearLayout>
+		</com.google.android.material.card.MaterialCardView>
+
+		<!-- Display Section -->
+		<com.google.android.material.card.MaterialCardView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginBottom="12dp"
+			app:cardCornerRadius="8dp"
+			app:cardElevation="2dp">
+			
+			<LinearLayout
+				android:orientation="vertical"
+				android:padding="16dp"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content">
+
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="📺 Display Settings"
+					android:textStyle="bold"
+					android:textSize="18sp"
+					android:textColor="#9C27B0" />
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="@string/settings_aspect_ratio"
+					android:paddingTop="12dp"/>
+				<Spinner
+					android:id="@+id/sp_aspect_ratio"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"/>
+
+				<Switch
+					android:id="@+id/sw_osd_fps"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Show FPS"
+					android:layout_marginTop="8dp"/>
+
+				<Switch
+					android:id="@+id/sw_perf_overlay"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Show Performance Overlay"/>
+
+				<Switch
+					android:id="@+id/sw_fsui"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Enable Fullscreen UI (requires restart)"/>
+
+			</LinearLayout>
+		</com.google.android.material.card.MaterialCardView>
+
+		<!-- Audio Section -->
+		<com.google.android.material.card.MaterialCardView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginBottom="12dp"
+			app:cardCornerRadius="8dp"
+			app:cardElevation="2dp">
+			
+			<LinearLayout
+				android:orientation="vertical"
+				android:padding="16dp"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content">
+
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="🔊 Audio Settings"
+					android:textStyle="bold"
+					android:textSize="18sp"
+					android:textColor="#FF9800" />
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Audio Volume"
+					android:paddingTop="12dp"/>
+
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal"
+					android:gravity="center_vertical">
+					<SeekBar
+						android:id="@+id/sb_audio_volume"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:max="100"
+						android:progress="100"/>
+					<TextView
+						android:id="@+id/tv_audio_volume_value"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:paddingStart="12dp"
+						android:text="100%"
+						android:textStyle="bold"/>
+				</LinearLayout>
+
+				<Switch
+					android:id="@+id/sw_audio_sync"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Audio Sync"
+					android:layout_marginTop="8dp"/>
+
+			</LinearLayout>
+		</com.google.android.material.card.MaterialCardView>
+
+		<!-- Memory Cards Section -->
+		<com.google.android.material.card.MaterialCardView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginBottom="12dp"
+			app:cardCornerRadius="8dp"
+			app:cardElevation="2dp">
+			
+			<LinearLayout
+				android:orientation="vertical"
+				android:padding="16dp"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content">
+
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="💾 Memory Cards"
+					android:textStyle="bold"
+					android:textSize="18sp"
+					android:textColor="#795548" />
+
+				<com.google.android.material.button.MaterialButton
+					android:id="@+id/btn_import_memcard"
+					style="@style/Widget.Material3.Button"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="📁 Import Memory Card"
+					android:layout_marginTop="8dp"/>
+
+			</LinearLayout>
+		</com.google.android.material.card.MaterialCardView>
+
+		<!-- System Section -->
+		<com.google.android.material.card.MaterialCardView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginBottom="12dp"
+			app:cardCornerRadius="8dp"
+			app:cardElevation="2dp">
+			
+			<LinearLayout
+				android:orientation="vertical"
+				android:padding="16dp"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content">
+
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="⚙️ System Settings"
+					android:textStyle="bold"
+					android:textSize="18sp"
+					android:textColor="#607D8B" />
+
+				<com.google.android.material.button.MaterialButton
+					android:id="@+id/btn_about"
+					style="@style/Widget.Material3.Button.OutlinedButton"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="ℹ️ About"
+					android:layout_marginTop="8dp"/>
+
+				<com.google.android.material.button.MaterialButton
+					android:id="@+id/btn_back"
+					style="@style/Widget.Material3.Button"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="← Back"
+					android:layout_marginTop="8dp"/>
+
+			</LinearLayout>
+		</com.google.android.material.card.MaterialCardView>
+
+	</LinearLayout>
+
+</ScrollView>

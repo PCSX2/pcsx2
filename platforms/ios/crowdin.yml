@@ -1,0 +1,5 @@
+files:
+  - source: /app/src/main/res/values/strings.xml
+    translation: /app/src/main/res/values-%android_code%/%original_file_name%
+  - source: /app/src/main/res/values/arrays.xml
+    translation: /app/src/main/res/values-%android_code%/%original_file_name%

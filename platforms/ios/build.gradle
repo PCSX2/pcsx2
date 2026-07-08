@@ -1,0 +1,70 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules (NEEDED for RN only change this if we eventually drop it or something).
+buildscript {
+	repositories {
+		google()
+		mavenCentral()
+	}
+	dependencies {
+		classpath 'com.android.tools.build:gradle:8.13.0'
+		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24"
+		def rnEnabled = gradle.ext.has('enableRN') ? gradle.ext.enableRN : false
+		if (rnEnabled) {
+			def rnPluginDir = file("$rootDir/node_modules/@react-native/gradle-plugin")
+			def rnPluginJar = file("$rootDir/node_modules/@react-native/gradle-plugin/build/libs/react-native-gradle-plugin.jar")
+			if (!rnPluginJar.isFile()) {
+				if (!rnPluginDir.isDirectory()) {
+					throw new GradleException("React Native Gradle plugin not installed at ${rnPluginDir}. Did you run yarn install?")
+				}
+				logger.lifecycle("[build.gradle] React Native Gradle plugin JAR missing; running './gradlew build' in ${rnPluginDir} to generate it.")
+				def process = new ProcessBuilder()
+						.directory(rnPluginDir)
+						.command("./gradlew", "build")
+						.inheritIO()
+						.start()
+				def exitCode = process.waitFor()
+				if (exitCode != 0 || !rnPluginJar.isFile()) {
+					throw new GradleException("Failed to build React Native Gradle plugin (exit code ${exitCode}); see logs above.")
+				}
+			}
+			classpath files(rnPluginJar)
+		}
+	}
+}
+
+plugins {
+	id 'com.android.application' version '8.13.0' apply false
+	id 'com.android.library' version '8.13.0' apply false
+}
+
+def enableRN = gradle.ext.has('enableRN') ? gradle.ext.enableRN : false
+
+ext {
+    enableRN = enableRN
+    minSdkVersion = 26
+    targetSdkVersion = 35
+    compileSdkVersion = 36
+    ndkVersion = '29.0.14206865'
+    kotlinVersion = '1.9.24'
+}
+
+
+if (enableRN) {
+	apply plugin: 'com.facebook.react.rootproject'
+}
+
+// Align Kotlin Gradle Plugin across all modules that use legacy buildscript
+subprojects { sub ->
+	buildscript {
+		configurations.classpath?.resolutionStrategy?.eachDependency { details ->
+			if (details.requested.group == 'org.jetbrains.kotlin' && details.requested.name == 'kotlin-gradle-plugin') {
+				details.useVersion(rootProject.ext.kotlinVersion)
+				details.because('Force Kotlin plugin >= 1.5.20 (using 1.9.24) for AGP 8.x')
+			}
+
+			if (details.requested.group == 'com.android.tools.build' && details.requested.name == 'gradle') {
+				details.useVersion('8.2.1')
+				details.because('Align AGP to 8.2.1 to be compatible with Gradle 8.2 wrapper')
+			}
+		}
+	}
+}

@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+
+	<LinearLayout
+		android:orientation="vertical"
+		android:padding="16dp"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content">
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Graphics Settings"
+			android:textStyle="bold"
+			android:textSize="18sp" />
+
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Renderer"
+			android:paddingTop="12dp"/>
+		<Spinner
+			android:id="@+id/sp_renderer"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"/>
+
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Internal Resolution"
+			android:paddingTop="12dp"/>
+
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal"
+			android:gravity="center_vertical">
+			<SeekBar
+				android:id="@+id/sb_upscale"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"/>
+			<TextView
+				android:id="@+id/tv_upscale_value"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:paddingStart="12dp"
+				android:text="1x"/>
+		</LinearLayout>
+
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Texture Filtering"
+			android:paddingTop="12dp"/>
+		<Spinner
+			android:id="@+id/sp_filtering"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"/>
+
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Deinterlace"
+			android:paddingTop="12dp"/>
+		<Spinner
+			android:id="@+id/sp_interlace"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"/>
+
+		<Switch
+			android:id="@+id/sw_hw_mipmap"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Hardware mipmapping"/>
+
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Texture preloading"
+			android:paddingTop="12dp"/>
+		<Spinner
+			android:id="@+id/sp_texture_preloading"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"/>
+
+		<Switch
+			android:id="@+id/sw_vsync"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="VSync"/>
+
+		<Switch
+			android:id="@+id/sw_osd_fps"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Show FPS"/>
+
+		<Switch
+			android:id="@+id/sw_perf_overlay"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Show Performance Overlay"/>
+
+		<Switch
+			android:id="@+id/sw_hw_readbacks"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Hardware readbacks"/>
+
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Quality"
+			android:paddingTop="12dp"/>
+		<Spinner
+			android:id="@+id/sp_acc_blending"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"/>
+		<Spinner
+			android:id="@+id/sp_anisotropic"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"/>
+
+        <Switch
+			android:id="@+id/sw_fsui"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Enable Fullscreen UI (requires restart)"/>
+
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Memory cards"
+			android:paddingTop="12dp"/>
+		<Button
+			android:id="@+id/btn_import_memcard"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Import memory card"/>
+
+		<Button
+			android:id="@+id/btn_about"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="About"/>
+
+		<Button
+			android:id="@+id/btn_back"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="Back"
+			android:layout_marginTop="16dp"/>
+
+	</LinearLayout>
+
+</ScrollView>
+

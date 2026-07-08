@@ -1085,12 +1085,16 @@ set(pcsx2arm64Headers
 	arm64/aVU_Compile.inl
 )
 
-# Android platform sources, relocated from the former android core fork
-# (refresh-experimental). Source wiring only: a real NDK build is required to
-# validate include paths and link deps. See REFACTOR_STATUS.md.
-if(ANDROID)
-	list(APPEND pcsx2HostSources
-		Host/OboeAudioStream.cpp)
+# Mobile (arm64) platform sources, relocated from the former android/iOS core
+# forks (refresh-experimental / iOS-refresh). Source wiring only: real NDK /
+# Xcode builds are required to validate include paths and link deps.
+# See REFACTOR_STATUS.md.
+if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+	set(ARMSX2_IOS TRUE)
+endif()
+
+# NEON-optimised SPU2 mixer/reverb: shared by all arm64 mobile targets.
+if(ANDROID OR ARMSX2_IOS)
 	list(APPEND pcsx2SPU2Sources
 		SPU2/spu2_neon.cpp)
 	list(APPEND pcsx2SPU2Headers
@@ -1101,6 +1105,11 @@ if(ANDROID)
 		SPU2/spu2_optimize.h
 		SPU2/spu2_sve2_fir.h
 		SPU2/spu2_mt6899_tuning.h)
+endif()
+
+if(ANDROID)
+	list(APPEND pcsx2HostSources
+		Host/OboeAudioStream.cpp)
 	list(APPEND pcsx2GSSources
 		GS/Renderers/OpenGL/GLContextEGLAndroid.cpp
 		GS/Renderers/Common/GSGPUProfile.cpp)
@@ -1118,6 +1127,17 @@ if(ANDROID)
 		AndroidEEOpHist.h
 		AndroidPerfBuckets.h
 		PS1DrvTrace.h)
+endif()
+
+if(ARMSX2_IOS)
+	list(APPEND pcsx2Sources
+		MacOSStubs.cpp
+		QAProbe.cpp
+		TestHarness.cpp)
+	list(APPEND pcsx2Headers
+		QAProbe.h
+		TestHarness.h
+		SifRingBuffer.h)
 endif()
 
 # These ones benefit a lot from LTO

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Drawer header for Game Selector -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="180dp"
+	android:background="?attr/colorPrimaryContainer">
+
+	<ImageView
+		android:id="@+id/header_image"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:scaleType="centerCrop"
+		android:contentDescription="@string/home_header_image_content_description" />
+
+	<!-- Bottom blurred overlay -->
+	<ImageView
+		android:id="@+id/header_image_blur"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:scaleType="centerCrop"
+		android:contentDescription="@string/home_header_blur_image_content_description"
+		android:alpha="0.9"
+		android:layout_gravity="bottom"
+		android:foreground="@drawable/gradient_header_fade_up" />
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:orientation="vertical"
+		android:padding="16dp"
+		android:gravity="bottom">
+
+		<TextView
+			android:id="@+id/tv_header_title"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="ARMSX2"
+			android:textStyle="bold"
+			android:textSize="20sp"
+			android:textColor="@android:color/white"/>
+
+		<TextView
+			android:id="@+id/tv_header_sub"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/home_game_selector_subtitle"
+			android:textSize="14sp"
+			android:textColor="@android:color/white"/>
+	</LinearLayout>
+
+</FrameLayout>
