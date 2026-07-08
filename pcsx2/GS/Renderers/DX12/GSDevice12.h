@@ -634,6 +634,7 @@ public:
 		D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE stencil_begin = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS,
 		D3D12_RENDER_PASS_ENDING_ACCESS_TYPE stencil_end = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS,
 		GSVector4 clear_color = GSVector4::zero(), float clear_depth = 0.0f, u8 clear_stencil = 0);
+	void BeginTFXRenderPass(const GSHWDrawConfig& config, GSTexture12* rt, GSTexture12* ds, bool need_barrier);
 	void EndRenderPass();
 
 	void SetViewport(const D3D12_VIEWPORT& viewport);
