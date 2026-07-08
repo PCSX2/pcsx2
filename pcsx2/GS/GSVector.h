@@ -67,6 +67,40 @@ public:
 		return { x / v.x, y / v.y };
 	}
 
+	constexpr GSVector2T operator+(const GSVector2T& v) const
+	{
+		return { x + v.x, y + v.y };
+	}
+
+	constexpr GSVector2T operator-(const GSVector2T& v) const
+	{
+		return { x - v.x, y - v.y };
+	}
+
+	GSVector2T& operator*=(const GSVector2T& v)
+	{
+		*this = *this * v;
+		return *this;
+	}
+
+	GSVector2T& operator/=(const GSVector2T& v)
+	{
+		*this = *this / v;
+		return *this;
+	}
+
+	GSVector2T& operator+=(const GSVector2T& v)
+	{
+		*this = *this + v;
+		return *this;
+	}
+
+	GSVector2T& operator-=(const GSVector2T& v)
+	{
+		*this = *this + v;
+		return *this;
+	}
+
 	GSVector2T min(const GSVector2T& v) const
 	{
 		return { std::min(x, v.x), std::min(y, v.y) };
