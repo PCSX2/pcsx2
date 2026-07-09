@@ -15,3 +15,23 @@
 local.properties
 
 .idea/
+
+# --- signing / release secrets (NEVER commit) ---
+armsx2_keystore.properties
+armsx2_release.jks
+*.jks
+*.keystore
+armsx2_signing_lineage.bin
+*.profdata
+# built release artifacts
+*.aab
+*.apk
+
+# shaderc third-party deps: fetched on demand via git-sync-deps, never committed
+app/src/main/cpp/3rdparty/shaderc/third_party/abseil_cpp/
+app/src/main/cpp/3rdparty/shaderc/third_party/effcee/
+app/src/main/cpp/3rdparty/shaderc/third_party/glslang/
+app/src/main/cpp/3rdparty/shaderc/third_party/googletest/
+app/src/main/cpp/3rdparty/shaderc/third_party/re2/
+app/src/main/cpp/3rdparty/shaderc/third_party/spirv-headers/
+app/src/main/cpp/3rdparty/shaderc/third_party/spirv-tools/

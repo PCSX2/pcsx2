@@ -20,11 +20,19 @@ project(ARMSX2Android C CXX)
 # Absolute path to the repository root (the single source of truth for the core).
 get_filename_component(ARMSX2_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../.." ABSOLUTE)
 
-# Use the root core's cmake modules.
-set(CMAKE_MODULE_PATH "${ARMSX2_ROOT}/cmake")
+# Use the Android-aware cmake modules vendored beside this entry point (copies of
+# the known-good v7-clean modules: Pcsx2Utils has the ANDROID branch, BuildParameters
+# cross-compiles to aarch64 + consumes the page-size arg, SearchForStuff sources the
+# vendored 3rdparty instead of desktop find_package). The root cmake/ modules are
+# desktop-only and FATAL on Android. Fold these back into root as a later unify pass.
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Android is a non-desktop frontend: no Qt UI.
 set(ENABLE_QT_UI OFF CACHE BOOL "" FORCE)
+
+# The core's common/ and pcsx2/ CMakeLists guard on this sentinel (it is normally
+# set by the desktop top-level CMakeLists.txt, which the Android build bypasses).
+set(TOP_CMAKE_WAS_SOURCED TRUE)
 
 include(Pcsx2Utils)
 check_no_parenthesis_in_path()
@@ -39,7 +47,9 @@ write_svnrev_h()
 
 # Build the shared core from the repository root. Each add_subdirectory needs an
 # explicit binary dir because the source dirs live outside this tree.
-add_subdirectory("${ARMSX2_ROOT}/3rdparty" "${CMAKE_BINARY_DIR}/3rdparty" EXCLUDE_FROM_ALL)
+# NOTE: the individual 3rdparty libs are pulled in by SearchForStuff (above),
+# relative to this cpp dir's vendored 3rdparty/. Root 3rdparty/ has no aggregate
+# CMakeLists, so add_subdirectory'ing it would FATAL; do not re-add it here.
 add_subdirectory("${ARMSX2_ROOT}/common"   "${CMAKE_BINARY_DIR}/common")
 add_subdirectory("${ARMSX2_ROOT}/pcsx2"    "${CMAKE_BINARY_DIR}/pcsx2")
 
@@ -52,14 +62,10 @@ set(ARMSX2_EMUCORE_LIBRARY_NAME "emucore_4k" CACHE STRING "Android emucore share
 
 add_library(${ARMSX2_EMUCORE_LIBRARY_NAME} SHARED
 	native-lib.cpp
-	tests/arm64/codegen_tests.cpp
-	tests/arm64/codegen_tests_main.cpp
-	tests/arm64/run_tests.cpp
-	tests/core/run_patch_tests.cpp
-	tests/ee/run_ee_seq_tests.cpp
-	tests/ee/run_ee_tests.cpp
-	tests/mvu/run_mvu_tests.cpp
-	tests/vif/run_vif_tests.cpp
+	# Recompiler/VIF/patch unit tests are compiled out: they call the arm64/mac
+	# backend test hooks (EE_Test*/mVU0_Test*) not present in this core, plus a
+	# gtest scaffold. No-op stubs keep native-lib's dev-only "run tests" JNIs linkable.
+	tests/android_test_stubs.cpp
 )
 
 target_link_libraries(${ARMSX2_EMUCORE_LIBRARY_NAME} PRIVATE

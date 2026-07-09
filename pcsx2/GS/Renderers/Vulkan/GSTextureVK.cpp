@@ -855,7 +855,14 @@ std::unique_ptr<GSDownloadTextureVK> GSDownloadTextureVK::Create(u32 width, u32 
 	VmaAllocationCreateInfo aci = {};
 	aci.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
 	aci.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-	aci.preferredFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+	// Cached host memory is normally the fastest to read back from on the CPU. On the ARM Mali
+	// Vulkan driver, however, cached readbacks are much slower than coherent memory: mapping a
+	// cached readback buffer spends most of its time inside the kernel cache-invalidation routine
+	// (__pi___inval_cache_range), pegging a CPU core. Prefer coherent memory on Mali so texture
+	// readbacks (GT4, Tales, any hardware-download game) skip that invalidation cost. Every other
+	// vendor keeps the cached preference. (Ports Dolphin BUG_SLOW_CACHED_READBACK_MEMORY.)
+	aci.preferredFlags = GSDeviceVK::GetInstance()->IsDeviceMali() ? VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+															   : VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
 
 	VmaAllocationInfo ai = {};
 	VmaAllocation allocation;

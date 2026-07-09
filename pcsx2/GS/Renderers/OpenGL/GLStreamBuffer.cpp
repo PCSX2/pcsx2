@@ -312,8 +312,19 @@ namespace
 
 std::unique_ptr<GLStreamBuffer> GLStreamBuffer::Create(GLenum target, u32 size)
 {
+	// Adreno 650 (Snapdragon 855/865-era driver) tears out a persistent buffer
+	// mapping on an Android task-switch, so the GS thread's next write SIGSEGVs.
+	// Route ONLY that GPU to the orphan-per-draw glBufferData path below. Every other
+	// GPU -- including newer Adreno 7xx/8xx -- keeps the fast persistent path; a broad
+	// version of this gate over ALL Qualcomm/Adreno was a big GS perf regression, so
+	// this is deliberately narrowed to the single reported model.
+	const char* renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+	const bool adreno650_no_persistent = renderer &&
+		std::strstr(renderer, "Adreno") && std::strstr(renderer, "650");
+
 	std::unique_ptr<GLStreamBuffer> buf;
-	if (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage || GLAD_GL_EXT_buffer_storage)
+	if (!adreno650_no_persistent &&
+		(GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage || GLAD_GL_EXT_buffer_storage))
 	{
 		buf = BufferStorageStreamBuffer::Create(target, size);
 		if (buf)

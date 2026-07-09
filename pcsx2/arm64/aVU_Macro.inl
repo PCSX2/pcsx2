@@ -608,6 +608,22 @@ static void (*cop2Mode0Emitter(u32 op))()
 // prologue + native emit on this, falling back to inline-interp otherwise.
 bool recVUMacroIsMode0(u32 op)
 {
+	// SPECIAL1/SPECIAL2 macro ALU ops require the CO bit (rs >= 0x10). The transfer ops
+	// (QMFC2 rs=0x01 / CFC2 0x02 / QMTC2 0x05 / CTC2 0x06) leave their low 11 bits zero
+	// (bit 0 = interlock), which ALIASES funct 0x00/0x01 (VADDx/VADDy) in the decode
+	// below — without this gate every transfer op misclassifies as a native ALU op.
+	// recOpNeedsCycleFlush (aR5900.cpp) then skips the s_cop2RawCycles stash for exactly
+	// the ops whose handlers pass it into the VU0 catch-up sync (mVUSyncVU0 /
+	// COP2_Interlock), so the sync compares a stale EE clock and commits stale/duplicate
+	// cycles: lazy sync starves the VU0 catch-up (Ratchet: Deadlocked SCUS-97465 missing
+	// player model / stuck facing one direction), and under FullVU0SyncHack the repeated
+	// stale commits drift cpuRegs.cycle until EE event timing wedges (frozen image,
+	// audio still running). The dispatch (aR5900.cpp case 0x12) only consults this
+	// predicate for its default (rs >= 0x10) arm, so the gate also keeps junk rs<0x10
+	// encodings off the native ALU emitters (they fall through to the interpreter,
+	// matching x86 COP2_Unknown).
+	if (((op >> 21) & 0x1f) < 0x10)
+		return false;
 	return cop2Mode0Emitter(op) != nullptr;
 }
 

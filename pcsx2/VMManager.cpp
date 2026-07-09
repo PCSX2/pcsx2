@@ -466,6 +466,17 @@ void VMManager::Internal::CPUThreadShutdown()
 	R5900SymbolImporter.ShutdownWorkerThread();
 }
 
+u64 VMManager::Internal::GetPerformanceClusterAffinityMask()
+{
+	// TODO(android-monorepo): full impl (in the known-good core) unions the CPU
+	// clusters of the EE/VU/GS target processors via ClusterAffinityMaskForOSId(),
+	// which isn't ported into this core yet. Returning 0 leaves adjacent helper
+	// threads (Oboe audio callback) on the kernel's default affinity — correct,
+	// just not big-cluster-pinned. Wire up when the thread-affinity subsystem is
+	// reconciled.
+	return 0;
+}
+
 void VMManager::Internal::SetFileLogPath(std::string path)
 {
 	s_log_force_file_log = Log::SetFileOutputLevel(LOGLEVEL_DEBUG, std::move(path));
@@ -1860,7 +1871,9 @@ std::string VMManager::GetSaveStateFileName(const char* game_serial, u32 game_cr
 	std::string filename;
 	if (std::strlen(game_serial) > 0)
 	{
-		if (slot < 0)
+		if (slot == SAVESTATE_SLOT_AUTOSAVE)
+			filename = fmt::format("{} ({:08X}).autosave.p2s", game_serial, game_crc);
+		else if (slot < 0)
 			filename = fmt::format("{} ({:08X}).resume.p2s", game_serial, game_crc);
 		else if (backup)
 			filename = fmt::format("{} ({:08X}).{:02d}.p2s.backup", game_serial, game_crc, slot);
@@ -1989,6 +2002,18 @@ void VMManager::ZipSaveState(std::unique_ptr<ArchiveEntryList> elist,
 		Host::AddIconOSDMessage(fmt::format("SaveStateSlot{}", slot_for_message), ICON_FA_FLOPPY_DISK,
 			fmt::format(TRANSLATE_FS("VMManager", "Saved state to slot {}."), slot_for_message),
 			Host::OSD_QUICK_DURATION);
+	}
+	else if (slot_for_message < 0)
+	{
+		// Autosave / resume slots (negative, e.g. SAVESTATE_SLOT_AUTOSAVE = -2)
+		// get no "Saved to slot N" toast, but SaveStateToSlot posted a keyed
+		// "Saving state to slot N..." progress message under this same key. The
+		// completion callback only fires on error, so on success that keyed
+		// message is never cleared — it lingers for its full 60s duration AND
+		// survives VM shutdown, so it reappears stuck in the corner the next time
+		// you boot a game (the "Save State And Exit then it's stuck saving on the
+		// next boot" symptom). Clear it explicitly here.
+		Host::RemoveKeyedOSDMessage(fmt::format("SaveStateSlot{}", slot_for_message));
 	}
 
 	DevCon.WriteLn("Zipping save state to '%s' took %.2f ms", filename, timer.GetTimeMilliseconds());

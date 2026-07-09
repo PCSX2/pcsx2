@@ -73,6 +73,11 @@ jobs:
       - name: Install NDK
         run: yes | sdkmanager "ndk;27.2.12479018" "cmake;3.22.1" >/dev/null || true
 
+      # shaderc's SPIRV-Tools/glslang/etc. are fetched on demand (not vendored,
+      # not submodules), so `submodules: recursive` above does not provide them.
+      - name: Fetch shaderc third-party deps
+        run: python3 app/src/main/cpp/3rdparty/shaderc/utils/git-sync-deps
+
       - name: Build release APK
         run: ./gradlew :app:assembleRelease --stacktrace
 

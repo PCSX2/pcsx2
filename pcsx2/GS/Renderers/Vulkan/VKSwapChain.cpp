@@ -279,8 +279,19 @@ bool VKSwapChain::SelectPresentMode(VkSurfaceKHR surface, GSVSyncMode* vsync_mod
 
 		case GSVSyncMode::FIFO:
 		{
-			// FIFO is always available.
-			*present_mode = VK_PRESENT_MODE_FIFO_KHR;
+			// Prefer FIFO_RELAXED (adaptive vsync): behaves exactly like FIFO while the app
+			// keeps pace, but a frame that misses its refresh interval is presented late
+			// (with tearing) instead of stalling a whole interval. This avoids the hard
+			// 60->30 fps cliff on borderline titles - a big felt win on weak devices. Plain
+			// FIFO is always available as the fallback when the driver lacks relaxed support.
+			if (CheckForMode(VK_PRESENT_MODE_FIFO_RELAXED_KHR))
+			{
+				*present_mode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+			}
+			else
+			{
+				*present_mode = VK_PRESENT_MODE_FIFO_KHR;
+			}
 		}
 		break;
 

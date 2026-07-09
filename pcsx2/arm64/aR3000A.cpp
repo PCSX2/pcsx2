@@ -34,6 +34,7 @@
 #include "common/Console.h"
 #include "common/Pcsx2Defs.h"
 
+#include <unordered_map>
 #include <vector>
 
 namespace a64 = vixl::aarch64;
@@ -81,6 +82,278 @@ static bool iopRecNeedsReset = false;
 
 static void recResetRaw();
 static void recRecompile(u32 startpc);
+
+#include <unordered_map> // @@IOP_BLOCKLINK@@ trak's aR3000A.cpp includes only <vector>; the link maps need this
+
+static __fi void iopAddEECycles(u32 cycles); // @@IOP_BLOCKLINK@@ used by the link continue helper
+
+// ============================================================================
+//  IOP block chaining — direct-B tail links   @@IOP_BLOCKLINK@@
+// ----------------------------------------------------------------------------
+// Ported from the EE block-chaining system (aR5900.cpp:167-366), adapted to the
+// IOP's different execution model. The EE runs its ENTIRE event loop inside the
+// emitted code (DispatcherReg/DispatcherEvent are code stubs; EnterRecompiledCode
+// never returns — exit is a longjmp), so an EE tail can replace the LUT-indirect
+// dispatch with a direct B trivially: the direct B sits after the inline event
+// guard and is reached only when no event is due.
+//
+// The IOP is NOT like that. Every IOP block RETs to a C++ dispatcher loop
+// (recExecuteBlock) which, AFTER EACH BLOCK, performs: EE-cycle accounting
+// (iopAddEECycles), the IOP event test when due (iopEventTest — which can raise
+// interrupts / take exceptions / advance counters and REWRITE psxRegs.pc), the
+// timeslice gate (iopCycleEE > 0), a periodic stop poll, an iopRecNeedsReset
+// check, and the HLE-BIOS entry check. A naive block->block direct branch would
+// bypass ALL of that — a correctness disaster (broken timing, missed interrupts,
+// no shutdown unwind). So the linked tail must reproduce that per-block work
+// EXACTLY before it may skip the dispatcher round-trip.
+//
+// To avoid drift from the C++ loop, the hard-to-replicate work stays in ONE C++
+// source of truth: iopBlockLinkContinue() runs the identical per-block sequence
+// and returns 1 iff it is safe to continue straight to the statically-known
+// target (psxRegs.pc still equals that target, timeslice alive, no reset/stop/
+// HLE-BIOS/event divergence). The emitted tail calls it; on 1 it takes the
+// patched direct B to the target's entry (skipping the LUT lookup + loop
+// re-entry), on 0 it RETs to the dispatcher exactly as before. Net effect is
+// byte-identical to today's loop, minus the recLUT indirect load on the hot path.
+//
+// Safety invariants (mirroring the EE system):
+//  * No behavior change vs. the dispatcher: iopBlockLinkContinue calls the SAME
+//    C++ helpers in the SAME order as recExecuteBlock's per-block tail, so timing/
+//    events/exceptions are identical. The direct B is taken only when the loop
+//    would have re-dispatched to the very PC we linked.
+//  * No stale jumps: iopInvalidateLinks (from recClearIOP, the SMC path) rewrites
+//    any inbound B back to the Ret-dispatcher stub BEFORE the target's host code
+//    is recycled; iopResetBlockLinks drops every record on a full cache reset.
+//  * A not-yet-compiled target leaves the site at the dispatcher stub (correct
+//    fallback); iopPatchWaitingPredecessors wires it when the target compiles.
+//
+// DEFAULT OFF. Flip s_iopBlockLinkEnabled to true only after on-device A/B
+// validation. When false, the IOP behaves EXACTLY as before (plain Ret).
+static bool s_iopBlockLinkEnabled = false;
+
+// The stub a link site points at until (and after un-linking) it resolves: it just
+// restores the frame and RETs to the C++ dispatcher — identical to the plain epilogue.
+static const void* s_iopLinkDispatchStub = nullptr;
+
+struct IopBlockLinkExit
+{
+	u32  target_pc;      // statically-known successor PC (== psxRegs.pc at this tail)
+	u8*  patch_site;     // address of the unconditional B to rewrite
+	u8*  fallthrough;    // unlinked target (dispatcher stub) — used by unpatch
+	u8*  current_target; // where patch_site currently points
+};
+
+struct IopBlockLinks
+{
+	u8*              entry;     // block's compiled entry — linked callers jump here
+	IopBlockLinkExit exits[1];  // mac emits at most one static tail exit
+	u32              num_exits; // 0 or 1
+};
+
+// Canonical key = the recLUT slot pointer for the block's start PC. All guest-PC
+// mirrors (RAM 0x0000/0x8000/0xa000 etc.) alias to one slot, so this folds mirrors
+// EXACTLY like the recLUT itself — no hand-rolled hw-address math to drift.
+static __fi uptr iopLinkKey(u32 pc)
+{
+	return reinterpret_cast<uptr>(recPtrToBlock(pc));
+}
+
+// key(startpc) -> link record.
+static std::unordered_map<uptr, IopBlockLinks> s_iopBlockLinks;
+// target key -> predecessor keys waiting for that target to compile.
+static std::unordered_map<uptr, std::vector<uptr>> s_iopWaitingForKey;
+
+// Exit staged by the block compiler, consumed by the registration in recRecompile's
+// tail. Reset at the top of each recRecompile.
+static bool s_iopLinkStaged = false;
+static u32  s_iopLinkTargetPc = 0;
+static u8*  s_iopLinkPatchSite = nullptr;
+
+static void iopPatchLinkSite(IopBlockLinkExit& exit, u8* target)
+{
+	if (!exit.patch_site || exit.current_target == target)
+		return;
+	armEmitJmpPtr(exit.patch_site, target, true);
+	exit.current_target = target;
+}
+
+static void iopUnpatchLinkSite(IopBlockLinkExit& exit)
+{
+	iopPatchLinkSite(exit, exit.fallthrough); // back to the dispatcher stub
+}
+
+static u8* iopFindBlockEntry(u32 target_pc)
+{
+	auto it = s_iopBlockLinks.find(iopLinkKey(target_pc));
+	return (it == s_iopBlockLinks.end()) ? nullptr : it->second.entry;
+}
+
+// Wire this block's exits to any targets already compiled.
+static void iopTryForwardLink(IopBlockLinks& block)
+{
+	for (u32 e = 0; e < block.num_exits; e++)
+	{
+		if (u8* target_entry = iopFindBlockEntry(block.exits[e].target_pc))
+			iopPatchLinkSite(block.exits[e], target_entry);
+	}
+}
+
+// Add this block to the reverse index for each unique exit target.
+static void iopIndexBlockExits(u32 my_pc, const IopBlockLinks& bl)
+{
+	const uptr my_key = iopLinkKey(my_pc);
+	for (u32 e = 0; e < bl.num_exits; e++)
+		s_iopWaitingForKey[iopLinkKey(bl.exits[e].target_pc)].push_back(my_key);
+}
+
+// After a block compiles at my_pc/my_entry, patch any predecessor exits that were
+// waiting for this target to jump straight here.
+static void iopPatchWaitingPredecessors(u32 my_pc, u8* my_entry)
+{
+	if (!my_entry)
+		return;
+	const uptr my_key = iopLinkKey(my_pc);
+	auto wit = s_iopWaitingForKey.find(my_key);
+	if (wit == s_iopWaitingForKey.end())
+		return;
+	for (uptr pred_key : wit->second)
+	{
+		auto bit = s_iopBlockLinks.find(pred_key);
+		if (bit == s_iopBlockLinks.end())
+			continue; // stale — pred was invalidated
+		IopBlockLinks& pred = bit->second;
+		for (u32 e = 0; e < pred.num_exits; e++)
+		{
+			IopBlockLinkExit& exit = pred.exits[e];
+			if (iopLinkKey(exit.target_pc) == my_key && exit.current_target != my_entry)
+				iopPatchLinkSite(exit, my_entry);
+		}
+	}
+}
+
+// Unpatch every inbound link whose target slot is in the cleared LUT range, then
+// drop records for blocks whose own start slot is in that range. Called from
+// recClearIOP BEFORE the slots are zeroed / host code recycled.
+static void iopInvalidateLinks(u32 addr, u32 size)
+{
+	if (s_iopBlockLinks.empty())
+		return;
+
+	const u32 end = addr + size * 4;
+
+	// Collect the exact set of cleared LUT-slot keys (mirror-folded via recPtrToBlock),
+	// matching recClearIOP's own iteration precisely.
+	std::unordered_map<uptr, bool> cleared;
+	for (u32 pc = addr & ~3u; pc < end; pc += 4)
+		cleared.emplace(reinterpret_cast<uptr>(recPtrToBlock(pc)), true);
+
+	// Unpatch any inbound B whose target lands in the cleared set.
+	for (auto& kv : s_iopBlockLinks)
+	{
+		IopBlockLinks& pred = kv.second;
+		for (u32 e = 0; e < pred.num_exits; e++)
+		{
+			if (cleared.count(iopLinkKey(pred.exits[e].target_pc)))
+				iopUnpatchLinkSite(pred.exits[e]);
+		}
+	}
+
+	// Drop records for blocks whose own start slot was cleared.
+	for (auto it = s_iopBlockLinks.begin(); it != s_iopBlockLinks.end();)
+	{
+		if (cleared.count(it->first))
+			it = s_iopBlockLinks.erase(it);
+		else
+			++it;
+	}
+}
+
+// Drop all link state (full cache reset — every block is thrown away).
+static void iopResetBlockLinks()
+{
+	s_iopBlockLinks.clear();
+	s_iopWaitingForKey.clear();
+	s_iopLinkStaged = false;
+}
+
+// C++ continue helper — the SINGLE source of truth for the per-block dispatcher
+// work. Called from the linked tail (RESTATEPTR already restored: this is a normal
+// C ABI call). Runs the EXACT sequence recExecuteBlock does after a block returns:
+//   * charge EE cycles for the guest cycles this block consumed,
+//   * run the IOP event test if one is due,
+// then decides whether it is safe to continue straight to `known_target_pc`:
+//   * timeslice must still be alive (iopCycleEE > 0),
+//   * no deferred cache reset pending,
+//   * not sitting on an HLE-BIOS entry (the loop would call psxBiosCall there),
+//   * psxRegs.pc must STILL equal known_target_pc (an event/exception may have
+//     diverted it) — else the direct B would jump to the wrong block.
+// Returns 1 to take the patched direct B, 0 to RET to the dispatcher loop (which
+// re-dispatches correctly from whatever psxRegs.pc now is). `cycles_consumed` is
+// the guest cycles this block charged to psxRegs.cycle (== the loop's
+// `psxRegs.cycle - startCycle`; the native block already added it before this call).
+static u32 iopBlockLinkContinue(u32 cycles_consumed, u32 known_target_pc)
+{
+	iopAddEECycles(cycles_consumed);
+
+	if (static_cast<s64>(psxRegs.cycle - psxRegs.iopNextEventCycle) >= 0)
+		iopEventTest();
+
+	// Timeslice exhausted -> return to the loop (which exits the slice).
+	if (psxRegs.iopCycleEE <= 0)
+		return 0;
+
+	// A deferred full reset was requested (recPtr near end, or external recResetIOP
+	// during execution): must go through the loop, which calls recResetRaw and
+	// invalidates every block (including this link's target).
+	if (iopRecNeedsReset)
+		return 0;
+
+	// The event test (or anything above) may have redirected pc (interrupt vector,
+	// counter-driven branch, exception). Only link if pc is still the known target.
+	if (psxRegs.pc != known_target_pc)
+		return 0;
+
+	// The dispatcher special-cases HLE-BIOS entry PCs (psxBiosCall) before running a
+	// block; never skip that. Mirror recExecuteBlock's exact condition.
+	if ((psxHu32(HW_ICFG) & 8) &&
+		((psxRegs.pc & 0x1fffffffU) == 0xa0 || (psxRegs.pc & 0x1fffffffU) == 0xb0 ||
+			(psxRegs.pc & 0x1fffffffU) == 0xc0))
+	{
+		return 0;
+	}
+
+	// NOTE: the periodic stop-poll (every 64 blocks) is intentionally NOT replicated
+	// here — it is a bounded-latency optimization, not a correctness gate. A linked
+	// chain still unwinds promptly: the timeslice is finite (iopCycleEE decrements via
+	// iopAddEECycles every hop) and any real Stopping/Shutdown also collapses the
+	// slice through the EE side. Keeping it out avoids an atomic acquire-load per hop.
+	return 1;
+}
+
+// Register a freshly-compiled block (entry + any staged exit) and resolve forward/
+// backward links. Called from recRecompile after the block installs.
+static void recRegisterIopBlockLinks(u32 startpc, u8* block_entry)
+{
+	IopBlockLinks bl{};
+	bl.entry = block_entry;
+	bl.num_exits = 0;
+	if (s_iopLinkStaged)
+	{
+		IopBlockLinkExit& e = bl.exits[0];
+		e.target_pc = s_iopLinkTargetPc;
+		e.patch_site = s_iopLinkPatchSite;
+		e.fallthrough = const_cast<u8*>(static_cast<const u8*>(s_iopLinkDispatchStub));
+		e.current_target = const_cast<u8*>(static_cast<const u8*>(s_iopLinkDispatchStub));
+		bl.num_exits = 1;
+	}
+	// Insert first, then index / forward-link / back-patch (mirrors EE order so a
+	// self-loop resolves against the just-inserted record).
+	IopBlockLinks& slot = (s_iopBlockLinks[iopLinkKey(startpc)] = bl);
+	if (slot.num_exits)
+		iopIndexBlockExits(startpc, slot);
+	iopTryForwardLink(slot);
+	iopPatchWaitingPredecessors(startpc, block_entry);
+}
 
 // Associate one 64 KB guest page with the slot array `mapbase`, biased so recPtrToBlock
 // lands at the right element. Direct port of x86 recLUT_SetPage / aR5900.cpp.
@@ -172,12 +445,35 @@ static void recShutdown()
 	recPtrEnd = nullptr;
 }
 
+// @@IOP_BLOCKLINK@@ Emit the tiny fallback stub at the base of a freshly-reset cache:
+// a bare Ret. A link site points here (via s_iopLinkDispatchStub) whenever its target
+// isn't compiled / has been invalidated. Because the linked tail restores the block's
+// frame BEFORE the patchable B, an unlinked site just needs to RET to the C++ dispatcher
+// loop — identical to the plain epilogue. Emitted once per reset (recResetRaw rewinds
+// recPtr, so it must be re-laid each time) and consumes only 4 bytes at the cache base.
+static void iopEmitLinkDispatchStub()
+{
+	armSetAsmPtr(recPtr, recPtrEnd - recPtr, &s_const_pool);
+	armStartBlock();
+	s_iopLinkDispatchStub = armGetCurrentCodePointer();
+	armAsm->Ret();
+	recPtr = armEndBlock();
+}
 static void recResetRaw()
 {
 	recPtr = SysMemory::GetIOPRec();
 	s_const_pool.Reset();
 	recClearLUT();
+	recPtr = SysMemory::GetIOPRec();
+	s_const_pool.Reset();
+	recClearLUT();
 	iopRecNeedsReset = false;
+
+	// @@IOP_BLOCKLINK@@ Drop all link records and re-lay the fallback stub (only when the
+	// feature is enabled; otherwise the cache is byte-identical to before).
+	iopResetBlockLinks();
+	if (s_iopBlockLinkEnabled)
+		iopEmitLinkDispatchStub();
 }
 
 static void recResetIOP()
@@ -1037,6 +1333,15 @@ static void recRecompile(u32 startpc)
 	u32 compiled = 0;
 	bool interp_step = false;
 
+	// @@IOP_BLOCKLINK@@ Single statically-known successor PC for direct-B tail linking.
+	// Set only when the block ends with exactly one compile-time-constant next PC:
+	// an unconditional direct jump (J/JAL), the length cap, or a plain block-end that
+	// writes the next instruction's PC. NOT set for conditional branches (runtime-
+	// selected pc), JR/JALR (register-indirect), or interp-step blocks — those keep the
+	// plain Ret. Left as (false, 0) => plain Ret epilogue (today's behavior).
+	bool has_known_target = false;
+	u32  known_target_pc = 0;
+
 	for (;;)
 	{
 		const u32 op = iopMemRead32(pc);
@@ -1062,6 +1367,7 @@ static void recRecompile(u32 startpc)
 				else
 				{
 					recEmitWritePc(pc); // next dispatch single-steps the branch
+					has_known_target = true; known_target_pc = pc; // @@IOP_BLOCKLINK@@
 				}
 				break;
 			}
@@ -1071,6 +1377,16 @@ static void recRecompile(u32 startpc)
 			recEmitIopBranch(op, pc);
 			recEmitOp(delay_op);
 			block_cycles += 2; // branch + delay slot, 1 cycle each (R3000A is 1 cycle/op)
+
+			// @@IOP_BLOCKLINK@@ Only an UNCONDITIONAL DIRECT jump (J/JAL) has a single
+			// compile-time successor PC. Conditional branches write pc via a runtime Csel
+			// (two possible targets) and JR/JALR are register-indirect, so their next PC is
+			// not a compile-time constant — those keep the plain Ret.
+			if ((op >> 26) == 0x02 || (op >> 26) == 0x03) // J / JAL
+			{
+				has_known_target = true;
+				known_target_pc = ((op & 0x03ffffff) << 2) | ((pc + 4) & 0xf0000000u); // jtarget
+			}
 			break;
 		}
 
@@ -1081,6 +1397,7 @@ static void recRecompile(u32 startpc)
 			if (++compiled >= MAX_BLOCK_INSTS)
 			{
 				recEmitWritePc(pc);
+				has_known_target = true; known_target_pc = pc; // @@IOP_BLOCKLINK@@
 				break;
 			}
 			continue;
@@ -1110,13 +1427,66 @@ static void recRecompile(u32 startpc)
 		armAsm->Str(RXARG1, a64::MemOperand(RESTATEPTR, IOP_CYCLE_OFFSET));
 	}
 
-	// Epilogue: restore x19 + LR, return to the dispatcher loop.
-	armAsm->Ldp(RESTATEPTR, a64::lr, a64::MemOperand(a64::sp, 16, a64::PostIndex));
-	armAsm->Ret();
+	// @@IOP_BLOCKLINK@@ Direct-B tail link (default OFF). Emitted ONLY for native blocks
+	// with a single compile-time-constant successor PC. The tail calls iopBlockLinkContinue
+	// (the SINGLE source of truth for the per-block dispatcher work: EE-cycle accounting +
+	// event test + timeslice/reset/HLE-BIOS/pc-divergence gates); on a safe continue it
+	// takes a patchable direct B to the target block's entry, otherwise RETs to the C++
+	// dispatcher loop exactly as before. When the flag is off (or the target is unknown /
+	// this is an interp-step block) the plain epilogue below runs unchanged.
+	const bool emit_link = s_iopBlockLinkEnabled && has_known_target && !interp_step;
+	s_iopLinkStaged = false;
+	if (emit_link)
+	{
+		// RESTATEPTR (x19) is callee-saved across the call; lr is still on the stack (frame
+		// not yet popped). Args: w0 = guest cycles this block consumed (== the loop's
+		// psxRegs.cycle - startCycle, already added to psxRegs.cycle above), w1 = target pc.
+		armAsm->Mov(RWARG1, block_cycles);
+		armAsm->Mov(RWARG2, known_target_pc);
+		armEmitCall(reinterpret_cast<const void*>(iopBlockLinkContinue)); // w0 = 1 take link / 0 ret
+
+		// Restore the frame BEFORE branching (the target block re-pushes its own frame; an
+		// unlinked site RETs from the dispatch stub). Ldp does not touch x0, so the result
+		// survives into the test below.
+		armAsm->Ldp(RESTATEPTR, a64::lr, a64::MemOperand(a64::sp, 16, a64::PostIndex));
+
+		a64::Label ret_to_dispatcher;
+		armAsm->Cbz(RWARG1, &ret_to_dispatcher); // not safe to link -> fall through to Ret
+
+		// Single stable, patchable B. Initially -> the dispatch stub (a bare Ret, i.e. the
+		// plain epilogue); rewritten to the target's entry once it compiles.
+		u8* patch_site;
+		{
+			a64::SingleEmissionCheckScope guard(armAsm); // flush any pending pool first
+			patch_site = armGetCurrentCodePointer();
+			const s64 disp = static_cast<s64>(reinterpret_cast<intptr_t>(s_iopLinkDispatchStub) -
+											  reinterpret_cast<intptr_t>(patch_site));
+			pxAssert((disp & 3) == 0 && vixl::IsInt26(disp >> 2));
+			armAsm->b(static_cast<int>(disp >> 2));
+		}
+
+		armAsm->Bind(&ret_to_dispatcher);
+		armAsm->Ret();
+
+		s_iopLinkStaged = true;
+		s_iopLinkTargetPc = known_target_pc;
+		s_iopLinkPatchSite = patch_site;
+	}
+	else
+	{
+		// Epilogue: restore x19 + LR, return to the dispatcher loop. (Unchanged plain path.)
+		armAsm->Ldp(RESTATEPTR, a64::lr, a64::MemOperand(a64::sp, 16, a64::PostIndex));
+		armAsm->Ret();
+	}
 
 	recPtr = armEndBlock();
 
 	*recPtrToBlock(startpc) = reinterpret_cast<uptr>(entry);
+
+	// @@IOP_BLOCKLINK@@ Register this block (entry + any staged exit); resolve forward links
+	// (target already compiled) and back-patch predecessors that were waiting on this block.
+	if (s_iopBlockLinkEnabled)
+		recRegisterIopBlockLinks(startpc, entry);
 }
 
 // --------------------------------------------------------------------------------------
@@ -1146,9 +1516,30 @@ static s32 recExecuteBlock(s32 eeCycles)
 
 	iopRecExecuting = true;
 
+	// Bail the IOP slice on a STOP/SHUTDOWN request. PS2 titles spend long
+	// stretches inside this IOP loop, and the EE's own exit check only runs in
+	// recEventTest *after* this call returns — so without bailing here a shutdown
+	// that lands mid-slice never gets back to that check and the CPU thread hangs
+	// (the shutdown 5s-timeout symptom). Only Stop/Shutdown, NOT Paused: pausing
+	// must leave the thread parked where it was (bailing on pause regressed
+	// in-game settings into a crash).
+	//
+	// Perf: poll only on entry and then once every 64 blocks rather than every
+	// block. VMManager::GetState() is an atomic acquire-load, and the IOP runs
+	// this loop millions of times a second — reading it per block was pure
+	// EE-thread overhead during normal play. The slice is bounded and 64 IOP
+	// blocks is only a few microseconds, so a stop still unwinds promptly. The
+	// state read is race-free; nothing here writes psxRegs.
+	u32 stop_poll = 0;
+
 	while (psxRegs.iopCycleEE > 0)
 	{
-		if (iopRecNeedsReset)
+		if ((stop_poll++ & 63u) == 0)
+		{
+			const VMState st = VMManager::GetState();
+			if (st == VMState::Stopping || st == VMState::Shutdown)
+				break;
+		}
 			recResetRaw();
 
 		// HLE BIOS entry (only when HW_ICFG bit 3 enables it), matching intExecuteBlock.

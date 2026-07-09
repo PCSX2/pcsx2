@@ -125,6 +125,11 @@ bool GLContextEGL::Initialize(std::span<const Version> versions_to_try, Error* e
 	return false;
 }
 
+EGLNativeWindowType GLContextEGL::GetNativeWindow(EGLConfig config)
+{
+	return {};
+}
+
 EGLDisplay GLContextEGL::GetPlatformDisplay(Error* error)
 {
 	EGLDisplay dpy = TryGetPlatformDisplay(EGL_PLATFORM_SURFACELESS_MESA, "EGL_MESA_platform_surfaceless");

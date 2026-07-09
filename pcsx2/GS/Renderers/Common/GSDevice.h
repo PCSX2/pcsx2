@@ -7,6 +7,7 @@
 #include "common/WindowInfo.h"
 #include "GS/GS.h"
 #include "GS/Renderers/Common/GSFastList.h"
+#include "GS/Renderers/Common/GSGPUProfile.h"
 #include "GS/Renderers/Common/GSShaderEnums.h"
 #include "GS/Renderers/Common/GSTexture.h"
 #include "GS/Renderers/Common/GSVertex.h"
@@ -1444,6 +1445,7 @@ protected:
 	std::string m_name = "Unknown";
 	FeatureSupport m_features;
 	u32 m_max_texture_size = 0;
+	RuntimeGpuProfile m_runtime_gpu_profile = RuntimeGpuProfile::Adreno;
 
 	struct
 	{
@@ -1562,6 +1564,11 @@ public:
 
 	__fi FeatureSupport Features() const { return m_features; }
 	__fi u32 GetMaxTextureSize() const { return m_max_texture_size; }
+	__fi void SetRuntimeGPUProfile(RuntimeGpuProfile p) { m_runtime_gpu_profile = p; }
+	__fi RuntimeGpuProfile GetRuntimeGPUProfile() const { return m_runtime_gpu_profile; }
+	__fi bool IsMaliGPUProfile() const { return (m_runtime_gpu_profile == RuntimeGpuProfile::Mali); }
+	__fi bool IsAdrenoGPUProfile() const { return (m_runtime_gpu_profile == RuntimeGpuProfile::Adreno); }
+	__fi bool IsPowerVRGPUProfile() const { return (m_runtime_gpu_profile == RuntimeGpuProfile::PowerVR); }
 
 	__fi const WindowInfo& GetWindowInfo() const { return m_window_info; }
 	__fi s32 GetWindowWidth() const { return static_cast<s32>(m_window_info.surface_width); }

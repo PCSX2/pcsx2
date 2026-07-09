@@ -411,8 +411,15 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 	m_optional_extensions.vk_ext_memory_budget = SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_calibrated_timestamps =
 		SupportsExtension(VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME, false);
+	// ROAA is DUAL-NAMED: ARM shipped VK_ARM_rasterization_order_attachment_access (Mali
+	// driver r36p0), and the promoted VK_EXT_ alias only landed at r40p0. The structs/enums
+	// are identical (alias), so accept EITHER - otherwise Mali on r36-r39 blobs (a big chunk
+	// of mid-tier, incl. Tensor G2/G3 on old blobs) exposes only the ARM name and gets
+	// silently demoted to the per-primitive-barrier slideshow. SupportsExtension enables
+	// whichever name it finds (EXT preferred via short-circuit). Matches upstream 5da4b7e.
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access =
-		SupportsExtension(VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
+		SupportsExtension(VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false) ||
+		SupportsExtension(VK_ARM_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_attachment_feedback_loop_layout =
 		SupportsExtension(VK_EXT_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_line_rasterization = SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, false);
@@ -2757,7 +2764,40 @@ bool GSDeviceVK::CheckFeatures()
 	//const bool isAMD = (vendorID == 0x1002 || vendorID == 0x1022);
 	//const bool isNVIDIA = (vendorID == 0x10DE);
 
-	m_features.framebuffer_fetch =
+	// framebuffer_fetch: the tiler-native ordered Cd read (ROAA / subpassLoad in tile memory).
+	// It lets DetermineBarriers() drop every per-primitive barrier and makes ROV auto-disable --
+	// the fast, correct path for blend-heavy games on a TBDR.
+	//
+	// MALI (0x13B5): ENABLED by default when ROAA is present -- without it the per-PRIMITIVE
+	// texture-barrier path tanks blend-heavy games (GT4 = 10-20fps slideshow). No-op on any Mali
+	// lacking the extension.
+	//
+	// ADRENO / other non-Mali: OPT-IN only (GSConfig.EnableAdrenoFramebufferFetch, default off).
+	// The proprietary Adreno driver returned STALE ROAA reads above Basic blending (alpha cutouts /
+	// invisible floors, A/B 2026-06-10); gated behind a toggle to ship dark and be A/B-verified per
+	// device+driver. Gated on ROAA presence, so a no-op on any device lacking the extension.
+	// Keep the runtime GPU profile consistent on Vulkan too. The OpenGL device sets this from the
+	// GpuProfileDetector so the shared HW blend path (GSRendererHW.cpp alpha_mali_custom_set) can route
+	// Mali's broken HW dual-source blends through the in-shader SW-blend path; on Vulkan we reach Cd via
+	// texture-barriers instead of GL_ARM_shader_framebuffer_fetch. The GL-shader GPU_PROFILE_* defines are
+	// unused by the VK path, so this only affects that one cross-platform blend workaround.
+	if (IsDeviceMali())
+		SetRuntimeGPUProfile(RuntimeGpuProfile::Mali);
+	else if (IsDevicePowerVR())
+		SetRuntimeGPUProfile(RuntimeGpuProfile::PowerVR);
+	else if (IsDeviceAdreno())
+		SetRuntimeGPUProfile(RuntimeGpuProfile::Adreno);
+
+	const bool is_mali_vk = IsDeviceMali();
+	// Turnip/Mesa is the open Adreno driver and does NOT exhibit the proprietary blob's stale-ROAA
+	// reads (the reason Adreno fbfetch shipped opt-in), so default it ON there.
+	const bool is_turnip = (m_device_driver_properties.driverID == VK_DRIVER_ID_MESA_TURNIP);
+	// Samsung Xclipse (Exynos AMD-RDNA2) has no working ROAA-based framebuffer fetch -- force it off
+	// there. Inert if the 0x144D vendorID guess is wrong.
+	const bool is_xclipse_vk = IsDeviceXclipse();
+	const bool vendor_allows_fbfetch =
+		(is_mali_vk || is_turnip || GSConfig.EnableAdrenoFramebufferFetch) && !is_xclipse_vk;
+	m_features.framebuffer_fetch = vendor_allows_fbfetch &&
 		m_optional_extensions.vk_ext_rasterization_order_attachment_access && !GSConfig.DisableFramebufferFetch;
 	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
 	m_features.multidraw_fb_copy = false;
@@ -2789,6 +2829,18 @@ bool GSDeviceVK::CheckFeatures()
 
 	// Use D32F depth instead of D32S8 when we have framebuffer fetch.
 	m_features.stencil_buffer &= !m_features.framebuffer_fetch;
+	// @@MALI_TELEMETRY@@ One-line device/driver banner so Mali (and Adreno) field reports are
+	// actionable: which GPU/driver, and - critically - which accurate-blend path was resolved:
+	// in-tile framebuffer_fetch (cheap) vs the per-primitive barrier fallback (the tile-flush
+	// slideshow). ROAA=yes but fbfetch=NO means the barrier path is active.
+	Console.WriteLn("VK: GPU '%s' vendor=0x%04X driver='%s' (%s) | ROAA=%s fbfetch=%s texbarrier=%s",
+		m_device_properties.deviceName,
+		m_device_properties.vendorID,
+		m_device_driver_properties.driverName,
+		m_device_driver_properties.driverInfo,
+		m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "yes" : "NO",
+		m_features.framebuffer_fetch ? "yes(in-tile)" : "NO(barrier-fallback)",
+		m_features.texture_barrier ? "on" : "off");
 
 	// whether we can do point/line expand depends on the range of the device
 	const float f_upscale = static_cast<float>(GSConfig.UpscaleMultiplier);

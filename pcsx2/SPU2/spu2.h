@@ -42,6 +42,13 @@ bool SetOutputMuted(const bool muted);
 /// Returns true if the output is muted (distinct from 0%).
 bool IsOutputMuted();
 
+/// Swaps the final stereo output channels (L<->R) for devices forced into
+/// reverse-landscape (flipped physical speakers, e.g. Clamp pad).
+void SetSwapChannels(bool swap);
+
+/// Returns true if the final stereo output is L<->R swapped.
+bool IsSwapChannels();
+
 /// Updates the current volume based on running state.
 void UpdateOutputVolume();
 
@@ -50,6 +57,11 @@ void SaveOutputVolume();
 
 /// Pauses/resumes the output stream.
 void SetOutputPaused(bool paused);
+
+/// When suppressed, SetOutputPaused() is a no-op so the audio device stays
+/// running across a transient VM park (e.g. settings-apply), preventing the
+/// OS from reclaiming the low-latency stream during a long park.
+void SetOutputPauseSuppressed(bool suppressed);
 
 /// Clears output buffers in no-sync mode, prevents long delays after fast forwarding.
 void OnTargetSpeedChanged();

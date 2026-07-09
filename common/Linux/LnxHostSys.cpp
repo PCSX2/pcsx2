@@ -22,6 +22,16 @@
 
 #include "fmt/format.h"
 
+#if defined(__ANDROID__)
+#include <sys/syscall.h>
+// bionic lacks shm_open until API 30; memfd_create is a libc wrapper only from
+// API 30 too, but the raw syscall works from API 26 (our minSdk).
+static int memfd_create_wrapper(const char* name, unsigned int flags)
+{
+	return static_cast<int>(syscall(__NR_memfd_create, name, flags));
+}
+#endif
+
 #if defined(__FreeBSD__)
 #include "cpuinfo.h"
 #endif
@@ -64,6 +74,15 @@ std::string HostSys::GetFileMappingName(const char* prefix)
 
 void* HostSys::CreateSharedMemory(const char* name, size_t size)
 {
+#if defined(__ANDROID__)
+	// Android: memfd_create available since API 26 (our minSdk), no shm_open until API 30.
+	const int fd = memfd_create_wrapper(name, 0);
+	if (fd < 0)
+	{
+		std::fprintf(stderr, "memfd_create failed: %d\n", errno);
+		return nullptr;
+	}
+#else
 	const int fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
 	if (fd < 0)
 	{
@@ -73,6 +92,7 @@ void* HostSys::CreateSharedMemory(const char* name, size_t size)
 
 	// we're not going to be opening this mapping in other processes, so remove the file
 	shm_unlink(name);
+#endif
 
 	// ensure it's the correct size
 	if (ftruncate(fd, static_cast<off_t>(size)) < 0)

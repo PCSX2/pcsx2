@@ -95,4 +95,14 @@ namespace Vulkan
 	bool LoadVulkanDeviceFunctions(VkDevice device);
 	void UnloadVulkanLibrary();
 	void ResetVulkanLibraryFunctionPointers();
+
+#if defined(__ANDROID__)
+	/// Configures a custom Vulkan driver (e.g. Mesa Turnip) to load via
+	/// libadrenotools instead of the system loader. Must be called BEFORE
+	/// LoadVulkanLibrary — the first MTGS::Open triggers enumerate which
+	/// is the first load, so the setter has to run before VM start.
+	/// Pass empty strings to revert to the system loader on next load.
+	void SetCustomDriverPath(const char* driver_dir, const char* driver_name,
+		const char* redirect_dir, const char* hook_lib_dir);
+#endif
 } // namespace Vulkan

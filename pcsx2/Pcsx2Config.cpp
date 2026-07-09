@@ -721,7 +721,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	UseBlitSwapChain = false;
 	DisableShaderCache = false;
 	DisableFramebufferFetch = false;
-	DisableVertexShaderExpand = false;
+	DisableVertexShaderExpand = false;	EnableAdrenoFramebufferFetch = false;
 	SkipDuplicateFrames = true;
 	OsdMessagesPos = OsdOverlayPos::TopLeft;
 	OsdPerformancePos = OsdOverlayPos::TopRight;
@@ -894,6 +894,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(AudioCaptureBitrate) &&
 
 		OpEqu(Adapter) &&
+		OpEqu(AndroidGpuProfileOverride) &&
 
 		OpEqu(HWDumpDirectory) &&
 		OpEqu(SWDumpDirectory));
@@ -912,7 +913,7 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		   OpEqu(UseBlitSwapChain) &&
 		   OpEqu(DisableShaderCache) &&
 		   OpEqu(DisableFramebufferFetch) &&
-		   OpEqu(DisableVertexShaderExpand) &&
+		   OpEqu(DisableVertexShaderExpand) &&		   OpEqu(EnableAdrenoFramebufferFetch) &&
 		   OpEqu(OverrideTextureBarriers) &&
 		   OpEqu(DepthFeedbackMode) &&
 		   OpEqu(HWAA1) &&
@@ -960,7 +961,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(UseBlitSwapChain);
 	SettingsWrapBitBool(DisableShaderCache);
 	SettingsWrapBitBool(DisableFramebufferFetch);
-	SettingsWrapBitBool(DisableVertexShaderExpand);
+	SettingsWrapBitBool(DisableVertexShaderExpand);	SettingsWrapBitBool(EnableAdrenoFramebufferFetch);
 	SettingsWrapBitBool(SkipDuplicateFrames);
 	SettingsWrapBitBool(OsdShowSpeed);
 	SettingsWrapBitBool(OsdShowFPS);
@@ -1107,6 +1108,13 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitfieldEx(AudioCaptureBitrate, "AudioCaptureBitrate");
 
 	SettingsWrapEntry(Adapter);
+	SettingsWrapEntry(AndroidGpuProfileOverride);
+	if (StringUtil::Strcasecmp(AndroidGpuProfileOverride.c_str(), "mali") == 0)
+		AndroidGpuProfileOverride = "mali";
+	else if (StringUtil::Strcasecmp(AndroidGpuProfileOverride.c_str(), "adreno") == 0)
+		AndroidGpuProfileOverride = "adreno";
+	else
+		AndroidGpuProfileOverride = "auto";
 	SettingsWrapEntry(HWDumpDirectory);
 	if (!HWDumpDirectory.empty() && !Path::IsAbsolute(HWDumpDirectory))
 		HWDumpDirectory = Path::Combine(EmuFolders::DataRoot, HWDumpDirectory);

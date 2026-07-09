@@ -582,6 +582,15 @@ void spu2Mix()
 	WaveDump::WriteCore(1, CoreSrc_External, Out);
 #endif
 
+	// Optional stereo L<->R swap for devices forced into reverse-landscape (flipped
+	// speakers). Applied to the final mixed sample, so it covers every output path.
+	if (SPU2::IsSwapChannels())
+	{
+		const s32 tmp = Out.Left;
+		Out.Left = Out.Right;
+		Out.Right = tmp;
+	}
+
 	spu2Output(Out);
 
 	// Update AutoDMA output positioning

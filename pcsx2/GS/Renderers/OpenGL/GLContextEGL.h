@@ -31,6 +31,10 @@ public:
 protected:
 	virtual EGLDisplay GetPlatformDisplay(Error* error);
 	virtual EGLSurface CreatePlatformSurface(EGLConfig config, void* win, Error* error);
+	// Overridden by GLContextEGLAndroid to return the ANativeWindow; base returns
+	// none. (Surface creation on this core sources the window directly; the Android
+	// subclass keeps this override for parity with the known-good EGL path.)
+	virtual EGLNativeWindowType GetNativeWindow(EGLConfig config);
 
 	EGLDisplay TryGetPlatformDisplay(EGLenum platform, const char* platform_ext);
 	EGLSurface TryCreatePlatformSurface(EGLConfig config, void* window, Error* error);

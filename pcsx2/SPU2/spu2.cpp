@@ -29,6 +29,7 @@ u64 lClocks = 0;
 static bool s_audio_capture_active = false;
 static bool s_psxmode = false;
 static bool s_output_muted = false;
+static bool s_swap_channels = false;
 
 static std::unique_ptr<AudioStream> s_output_stream;
 static std::array<float, AudioStream::CHUNK_SIZE * 2> s_current_chunk;
@@ -192,6 +193,16 @@ bool SPU2::IsOutputMuted()
 	return s_output_muted;
 }
 
+void SPU2::SetSwapChannels(bool swap)
+{
+	s_swap_channels = swap;
+}
+
+bool SPU2::IsSwapChannels()
+{
+	return s_swap_channels;
+}
+
 void SPU2::UpdateOutputVolume()
 {
 	s_output_stream->SetOutputVolume(s_output_muted ?
@@ -210,9 +221,24 @@ void SPU2::SaveOutputVolume()
 	}
 }
 
+// Settings-apply parks the VM (commitSettings / live GS) and the pause edge
+// would otherwise pause the output device. A heavy gamefix can park for
+// seconds; pausing a low-latency Android stream that long lets the OS reclaim
+// it, and the recovery raced the resume so audio stayed dead until a manual
+// menu resume. When this is set, the pause/resume edges are skipped and the
+// stream is left running (silence-on-underrun) for the duration of the park.
+static bool s_output_pause_suppressed = false;
+
 void SPU2::SetOutputPaused(bool paused)
 {
+	if (s_output_pause_suppressed)
+		return;
 	s_output_stream->SetPaused(paused);
+}
+
+void SPU2::SetOutputPauseSuppressed(bool suppressed)
+{
+	s_output_pause_suppressed = suppressed;
 }
 
 void SPU2::SetAudioCaptureActive(bool active)
@@ -230,6 +256,10 @@ void SPU2::InternalReset(bool psxmode)
 	spu2Mix = MULTI_ISA_SELECT(spu2Mix);
 	ReverbDownsample = MULTI_ISA_SELECT(ReverbDownsample);
 	ReverbUpsample = MULTI_ISA_SELECT(ReverbUpsample);
+
+	// Stereo L<->R output swap (opt-in, default off). Read fresh on every reset so
+	// toggling the setting live also survives a game reboot / cold start.
+	s_swap_channels = Host::GetBaseBoolSettingValue("SPU2/Output", "SwapChannels", false);
 
 	s_current_chunk_pos = 0;
 	s_psxmode = psxmode;

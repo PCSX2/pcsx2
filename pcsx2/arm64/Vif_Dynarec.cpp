@@ -4,6 +4,8 @@
 
 #include "arm64/Vif_UnpackNEON.h"
 #include "arm64/AsmHelpers.h"
+#include "AndroidPerfBuckets.h"
+#include "AndroidPerfBuckets.h"
 #include "MTVU.h"
 
 #include "common/Assertions.h"

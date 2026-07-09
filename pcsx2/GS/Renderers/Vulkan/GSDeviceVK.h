@@ -81,6 +81,19 @@ public:
 
 	/// Returns true if running on an AMD GPU.
 	__fi bool IsDeviceAMD() const { return (m_device_properties.vendorID == 0x1002); }
+	/// Returns true if running on an ARM Mali GPU (vendorID 0x13B5).
+	__fi bool IsDeviceMali() const { return (m_device_properties.vendorID == 0x13B5u); }
+
+	/// Returns true if running on a Qualcomm Adreno GPU (vendorID 0x5143).
+	__fi bool IsDeviceAdreno() const { return (m_device_properties.vendorID == 0x5143u); }
+
+	/// Returns true if running on an Imagination PowerVR GPU (vendorID 0x1010).
+	__fi bool IsDevicePowerVR() const { return (m_device_properties.vendorID == 0x1010u); }
+
+	/// Returns true if running on a Samsung Xclipse (Exynos AMD-RDNA2) GPU.
+	/// NOTE: 0x144D (Samsung) is unverified across driver revisions -- a real Xclipse tester
+	/// must confirm this fires; if it reports a different vendorID the gate is simply inert.
+	__fi bool IsDeviceXclipse() const { return (m_device_properties.vendorID == 0x144Du); }
 
 	// Creates a simple render pass.
 	VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format,

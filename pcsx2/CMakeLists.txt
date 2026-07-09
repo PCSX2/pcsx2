@@ -650,6 +650,10 @@ if(USE_VULKAN)
 	)
 	target_link_libraries(PCSX2_FLAGS INTERFACE vulkan-headers)
 	target_include_directories(PCSX2_FLAGS INTERFACE ${SHADERC_INCLUDE_DIR})
+	if(ANDROID AND CMAKE_ANDROID_ARCH_ABI STREQUAL "arm64-v8a")
+		# VKLoader.cpp's adrenotools_open_libvulkan splice needs adrenotools/driver.h.
+		target_link_libraries(PCSX2_FLAGS INTERFACE adrenotools)
+	endif()
 endif()
 
 set(pcsx2GSMetalShaders
@@ -1127,6 +1131,13 @@ if(ANDROID)
 		AndroidEEOpHist.h
 		AndroidPerfBuckets.h
 		PS1DrvTrace.h)
+	# Oboe is the Android audio backend consumed by Host/OboeAudioStream.cpp.
+	# The `oboe` target (created in SearchForStuff.cmake) exports its `include/`
+	# dir as PUBLIC, so linking it into PCSX2_FLAGS propagates <oboe/Oboe.h> to
+	# the PCSX2 translation units. (android/log libs are already linked on the
+	# emucore target in the Android entry CMakeLists, so only oboe is needed here.)
+	target_link_libraries(PCSX2_FLAGS INTERFACE
+		oboe)
 endif()
 
 if(ARMSX2_IOS)
@@ -1243,6 +1254,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	ZLIB::ZLIB
 	LZ4::LZ4
 	SoundTouch::SoundTouch
+	JPEG::JPEG
 	PNG::PNG
 	LZMA::LZMA
 	Zstd::Zstd
@@ -1276,7 +1288,9 @@ if(WIN32)
 		dwmapi.lib
 		OneCore.lib
 	)
-else()
+elseif(NOT ANDROID)
+	# Android has no system libpcap; DEV9 uses Android/AndroidPcapStubs.cpp instead,
+	# so it must NOT link PCAP::PCAP (a bare else() here caught Android and broke it).
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		PCAP::PCAP
 	)

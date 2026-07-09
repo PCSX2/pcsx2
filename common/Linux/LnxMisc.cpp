@@ -13,14 +13,18 @@
 
 #include "fmt/format.h"
 
+#if !defined(__ANDROID__)
 #include <dbus/dbus.h>
+#endif
 #include <spawn.h>
 #include <sys/sysinfo.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#if !defined(__ANDROID__)
 #include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
+#endif
 
 #include <cstdlib>
 #include <cstring>
@@ -140,6 +144,7 @@ std::string GetOSVersionString()
 #endif
 }
 
+#if !defined(__ANDROID__)
 static bool SetScreensaverInhibitDBus(const bool inhibit_requested, const char* program_name, const char* reason)
 {
 	static dbus_uint32_t s_cookie;
@@ -329,6 +334,32 @@ void Common::DetachMousePositionCb()
 	}
 }
 
+#else // __ANDROID__
+
+// Android has no X11 or D-Bus screensaver/session service; these are no-ops.
+bool Common::InhibitScreensaver(bool inhibit)
+{
+	return false;
+}
+
+void Common::SetMousePosition(int x, int y)
+{
+}
+
+bool Common::AttachMousePositionCb(std::function<void(int, int)> cb)
+{
+	return false;
+}
+
+void Common::DetachMousePositionCb()
+{
+}
+
+#endif // !__ANDROID__
+
+// Desktop-Linux only: the aplay/gstreamer approach uses posix_spawnp (bionic API 30+)
+// and external audio tools. Android provides its own Common::PlaySoundAsync (native-lib).
+#ifndef __ANDROID__
 bool Common::PlaySoundAsync(const char* path)
 {
 #ifdef __linux__
@@ -365,6 +396,7 @@ bool Common::PlaySoundAsync(const char* path)
 	return false;
 #endif
 }
+#endif // !__ANDROID__ (PlaySoundAsync — Android impl lives in native-lib.cpp)
 
 void Threading::Sleep(int ms)
 {

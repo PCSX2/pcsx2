@@ -293,6 +293,21 @@ bool IsBIOS(const char* filename, u32& version, std::string& description, u32& r
 	return LoadBiosVersion(fp.get(), version, description, region, zone, serial);
 }
 
+bool IsBIOSFromFd(int fd, u32& version, std::string& description, u32& region, std::string& zone)
+{
+	if (fd < 0)
+		return false;
+
+	std::FILE* fp = ::fdopen(fd, "rb");
+	if (!fp)
+		return false;
+
+	std::string serial;
+	const bool ok = LoadBiosVersion(fp, version, description, region, zone, serial);
+	std::fclose(fp); // closes underlying fd as well
+	return ok;
+}
+
 bool IsBIOSAvailable(const std::string& full_path)
 {
 	// We can't use EmuConfig here since it may not be loaded yet.

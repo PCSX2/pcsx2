@@ -38,6 +38,7 @@
 #include <algorithm>
 #include <array>
 #include <cstdarg>
+#include <cstdio>
 #include <cstdlib>
 #include <functional>
 #include <limits>
@@ -399,6 +400,215 @@ bool Achievements::HasAchievementsOrLeaderboards()
 bool Achievements::HasAchievements()
 {
 	return s_has_achievements;
+}
+
+std::string Achievements::GetAchievementsAsJSON()
+{
+	// JSON-quote a string into the buffer, escaping the bare minimum so
+	// org.json on the Java side can parse the payload. We don't expect
+	// achievement titles/descriptions to contain control chars beyond \n,
+	// but escape them defensively. Characters > 0x7F are passed through —
+	// the JSON spec allows raw UTF-8 in string contents.
+	auto append_json_string = [](std::string& dst, const char* src) {
+		dst += '"';
+		if (src)
+		{
+			for (const char* p = src; *p; ++p)
+			{
+				const unsigned char c = static_cast<unsigned char>(*p);
+				switch (c)
+				{
+					case '"':  dst += "\\\""; break;
+					case '\\': dst += "\\\\"; break;
+					case '\n': dst += "\\n";  break;
+					case '\r': dst += "\\r";  break;
+					case '\t': dst += "\\t";  break;
+					default:
+						if (c < 0x20)
+						{
+							char esc[8];
+							std::snprintf(esc, sizeof(esc), "\\u%04x", c);
+							dst += esc;
+						}
+						else
+						{
+							dst += static_cast<char>(c);
+						}
+						break;
+				}
+			}
+		}
+		dst += '"';
+	};
+
+	std::string out;
+	out.reserve(4096);
+	out += '{';
+
+	auto lock = GetLock();
+
+	const bool active = HasActiveGame() && s_has_achievements;
+
+	// `s_client` is the persistent rc_client created by Achievements::Initialize,
+	// which only runs when a VM is initialized AND EmuConfig.Achievements.Enabled.
+	// On Android the user typically logs in BEFORE loading a game, via the
+	// overlay's right-side panel — that path uses a TEMPORARY client which is
+	// destroyed when Login returns. So `rc_client_get_user_info(s_client)` reports
+	// "not logged in" even though the auth token was just written to the secrets
+	// layer. Fall back to the persisted Username / Token to detect post-login
+	// state. Token lives in the LAYER_SECRETS in-memory store; Username in BASE.
+	const rc_client_user_t* user = s_client ? rc_client_get_user_info(s_client) : nullptr;
+	std::string display_name;
+	bool logged_in = false;
+	if (user && user->display_name)
+	{
+		display_name = user->display_name;
+		logged_in = true;
+	}
+	else
+	{
+		const std::string saved_user = Host::GetBaseStringSettingValue("Achievements", "Username", "");
+		const std::string saved_token = Host::GetStringSettingValue("Achievements", "Token");
+		if (!saved_user.empty() && !saved_token.empty())
+		{
+			display_name = saved_user;
+			logged_in = true;
+		}
+	}
+
+	out += "\"active\":";
+	out += active ? "true" : "false";
+	out += ",\"loggedIn\":";
+	out += logged_in ? "true" : "false";
+	out += ",\"hardcore\":";
+	out += s_hardcore_mode ? "true" : "false";
+	out += ",\"userName\":";
+	append_json_string(out, display_name.c_str());
+
+	// Player score. Only available from the persistent client (a game with
+	// achievements is loaded); the post-login temporary client is destroyed,
+	// so report -1 ("unknown") when we can't read it. The panel hides the
+	// points chip on -1 rather than showing a misleading 0.
+	out += ",\"score\":";
+	out += std::to_string(user ? static_cast<long long>(user->score) : -1LL);
+	out += ",\"softcoreScore\":";
+	out += std::to_string(user ? static_cast<long long>(user->score_softcore) : -1LL);
+
+	// RA presentation options (global [Achievements] settings) so the panel
+	// can show + toggle them without a second JNI poll. Defaults mirror
+	// Pcsx2Config::AchievementsOptions() (all on).
+	out += ",\"notifications\":";
+	out += Host::GetBaseBoolSettingValue("Achievements", "Notifications", true) ? "true" : "false";
+	out += ",\"leaderboardNotifications\":";
+	out += Host::GetBaseBoolSettingValue("Achievements", "LeaderboardNotifications", true) ? "true" : "false";
+	out += ",\"overlays\":";
+	out += Host::GetBaseBoolSettingValue("Achievements", "Overlays", true) ? "true" : "false";
+	out += ",\"lbOverlays\":";
+	out += Host::GetBaseBoolSettingValue("Achievements", "LBOverlays", true) ? "true" : "false";
+	out += ",\"soundEffects\":";
+	out += Host::GetBaseBoolSettingValue("Achievements", "SoundEffects", true) ? "true" : "false";
+
+	out += ",\"items\":[";
+
+	if (active && s_client)
+	{
+		// Build a fresh list — don't reuse s_achievement_list, that one's
+		// owned by the ImGui pause-menu Achievements window and we don't
+		// want to step on its lifecycle.
+		rc_client_achievement_list_t* list = rc_client_create_achievement_list(
+			s_client, RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL,
+			RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS);
+
+		if (list)
+		{
+			// Same display order the ImGui window uses.
+			static constexpr u32 bucket_order[] = {
+				RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE,
+				RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED,
+				RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED,
+				RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE,
+				RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED,
+				RC_CLIENT_ACHIEVEMENT_BUCKET_UNOFFICIAL,
+				RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED,
+			};
+
+			bool first = true;
+			for (u32 bucket_type : bucket_order)
+			{
+				for (u32 b = 0; b < list->num_buckets; b++)
+				{
+					const rc_client_achievement_bucket_t& bucket = list->buckets[b];
+					if (bucket.bucket_type != bucket_type)
+						continue;
+					for (u32 a = 0; a < bucket.num_achievements; a++)
+					{
+						const rc_client_achievement_t* ach = bucket.achievements[a];
+						if (!ach)
+							continue;
+						if (!first)
+							out += ',';
+						first = false;
+						out += "{\"id\":";
+						out += std::to_string(ach->id);
+						out += ",\"title\":";
+						append_json_string(out, ach->title);
+						out += ",\"description\":";
+						append_json_string(out, ach->description);
+						out += ",\"points\":";
+						out += std::to_string(ach->points);
+						out += ",\"unlocked\":";
+						out += (ach->state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED) ? "true" : "false";
+						out += ",\"bucket\":";
+						out += std::to_string(static_cast<int>(bucket.bucket_type));
+						out += ",\"rarity\":";
+						{
+							char buf[32];
+							std::snprintf(buf, sizeof(buf), "%.1f", ach->rarity);
+							out += buf;
+						}
+						out += ",\"measuredProgress\":";
+						append_json_string(out, ach->measured_progress);
+						out += ",\"measuredPercent\":";
+						{
+							char buf[32];
+							std::snprintf(buf, sizeof(buf), "%.1f", ach->measured_percent);
+							out += buf;
+						}
+						// Type lets the UI tag MISSABLE / PROGRESSION / WIN
+						// achievements (STANDARD = 0 → no tag). Unlocked is
+						// the SOFTCORE/HARDCORE bitmask — distinguishes how
+						// the user earned it for the HC indicator. unlockTime
+						// is unix-seconds (0 if locked) so the panel can
+						// render a relative timestamp.
+						out += ",\"type\":";
+						out += std::to_string(static_cast<int>(ach->type));
+						out += ",\"unlockedMask\":";
+						out += std::to_string(static_cast<int>(ach->unlocked));
+						out += ",\"unlockTime\":";
+						out += std::to_string(static_cast<long long>(ach->unlock_time));
+						// Badge image URL for the achievement's current state
+						// (unlocked variant vs `_lock` greyscale). Java side
+						// fetches via Coil into the persistent cover_cache —
+						// RA badge URLs are immutable per badge_name so they
+						// cache forever. Empty string on failure → panel
+						// falls back to the glyph placeholder.
+						{
+							char url_buf[256];
+							const int rc = rc_client_achievement_get_image_url(
+								ach, ach->state, url_buf, std::size(url_buf));
+							out += ",\"iconUrl\":";
+							append_json_string(out, rc == RC_OK ? url_buf : "");
+						}
+						out += '}';
+					}
+				}
+			}
+			rc_client_destroy_achievement_list(list);
+		}
+	}
+
+	out += "]}";
+	return out;
 }
 
 bool Achievements::HasLeaderboards()

@@ -32,6 +32,8 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <vector>#include <cstring>
+#include <unordered_map>
 #include <vector>
 
 namespace a64 = vixl::aarch64;
@@ -153,6 +155,248 @@ static const void* EnterRecompiledCode = nullptr;  // C entry: pin RESTATEPTR, t
 static const void* UnmappedRecLUTPage = nullptr;   // jumped to on an unmapped guest PC
 static const void* DispatchBlockDiscard = nullptr; // manual block failed its checksum -> clear + recompile
 static const void* DispatchPageReset = nullptr;    // counted manual block -> retry write-protection
+
+// ============================================================================
+//  EE block chaining — direct-B tail links   @@MAC_EE_BLOCKLINK@@
+// ----------------------------------------------------------------------------
+// On a statically-known block exit, recEmitEventTestAndDispatch normally emits a
+// LUT-indirect tail dispatch (recEmitDispatchToKnownPc: adrp+add+ldr+br). This
+// replaces that — on the same path, AFTER the untouched "B.pl DispatcherEvent"
+// cycle guard — with a single patchable direct B to the successor block's
+// entry, removing an indirect branch + LUT memory load per block exit on the
+// hot (no-event-due) path.
+//
+// Safety invariants:
+//  * Event timing is byte-identical: the direct B is reached ONLY when no event
+//    is due (it sits after the B.pl guard); a pending event still diverts to
+//    DispatcherEvent first. cpuRegs.pc == dispatch_pc is already guaranteed at
+//    this tail (recEmitWritePc / branch codegen), so the unlinked form
+//    (B -> DispatcherReg, which dispatches from cpuRegs.pc) is exactly the old
+//    behavior, and the linked form jumps straight to that same block.
+//  * No stale jumps: eeInvalidateLinks (from recClear, which every SMC path
+//    funnels through) rewrites any inbound B back to DispatcherReg BEFORE the
+//    target's host code is recycled; recResetRaw drops every record when the
+//    whole cache is thrown away.
+//  * A not-yet-compiled target leaves the site at DispatcherReg (correct
+//    fallback); eePatchWaitingPredecessors wires it when the target compiles.
+//
+// Flip s_eeBlockLinkEnabled to false to fall back to pure LUT dispatch.
+static bool s_eeBlockLinkEnabled = true;
+
+struct EEBlockLinkExit
+{
+	u32 target_pc;      // statically-known successor PC (== cpuRegs.pc at the tail)
+	u8* patch_site;     // address of the unconditional B to rewrite
+	u8* fallthrough;    // unlinked target (DispatcherReg) — used by unpatch
+	u8* current_target; // where patch_site currently points
+};
+
+struct EEBlockLinks
+{
+	u8*             entry;      // block's compiled entry — linked callers jump here
+	EEBlockLinkExit exits[2];   // mac emits at most one; keep the stock shape for safety
+	u32             num_exits;  // 0 or 1
+};
+
+// hwaddr(startpc) -> link record. recHWAddr folds RAM/BIOS mirrors so mirrored
+// PCs collapse to one entry, matching the recLUT.
+static std::unordered_map<u32, EEBlockLinks> s_eeBlockLinks;
+// target_hw -> predecessor hwaddrs waiting for that target to compile.
+static std::unordered_map<u32, std::vector<u32>> s_eeWaitingForHw;
+
+// Exit staged by recEmitEventTestAndDispatch, consumed by the registration in
+// recRecompile's tail. Reset at the top of each recRecompile.
+static bool s_eeLinkStaged = false;
+static u32  s_eeLinkTargetPc = 0;
+static u8*  s_eeLinkPatchSite = nullptr;
+
+static void eePatchLinkSite(EEBlockLinkExit& exit, u8* target)
+{
+	if (!exit.patch_site || exit.current_target == target)
+		return;
+	armEmitJmpPtr(exit.patch_site, target, true);
+	exit.current_target = target;
+}
+
+static void eeUnpatchLinkSite(EEBlockLinkExit& exit)
+{
+	eePatchLinkSite(exit, exit.fallthrough); // back to DispatcherReg
+}
+
+static u8* eeFindBlockEntry(u32 target_pc)
+{
+	auto it = s_eeBlockLinks.find(recHWAddr(target_pc));
+	return (it == s_eeBlockLinks.end()) ? nullptr : it->second.entry;
+}
+
+// Wire this block's exits to any targets already compiled.
+static void eeTryForwardLink(EEBlockLinks& block)
+{
+	for (u32 e = 0; e < block.num_exits; e++)
+	{
+		if (u8* target_entry = eeFindBlockEntry(block.exits[e].target_pc))
+			eePatchLinkSite(block.exits[e], target_entry);
+	}
+}
+
+// Add this block to the reverse index for each unique exit target.
+static void eeIndexBlockExits(u32 my_pc, const EEBlockLinks& bl)
+{
+	const u32 my_hw = recHWAddr(my_pc);
+	for (u32 e = 0; e < bl.num_exits; e++)
+	{
+		const u32 target_hw = recHWAddr(bl.exits[e].target_pc);
+		bool dup = false;
+		for (u32 j = 0; j < e; j++)
+			dup |= (recHWAddr(bl.exits[j].target_pc) == target_hw);
+		if (!dup)
+			s_eeWaitingForHw[target_hw].push_back(my_hw);
+	}
+}
+
+// After a block compiles at my_pc/my_entry, patch any predecessor exits that
+// were waiting for this target to jump straight here.
+static void eePatchWaitingPredecessors(u32 my_pc, u8* my_entry)
+{
+	if (!my_entry)
+		return;
+	const u32 my_hw = recHWAddr(my_pc);
+	auto wit = s_eeWaitingForHw.find(my_hw);
+	if (wit == s_eeWaitingForHw.end())
+		return;
+	for (u32 pred_hw : wit->second)
+	{
+		auto bit = s_eeBlockLinks.find(pred_hw);
+		if (bit == s_eeBlockLinks.end())
+			continue; // stale — pred was invalidated
+		EEBlockLinks& pred = bit->second;
+		for (u32 e = 0; e < pred.num_exits; e++)
+		{
+			EEBlockLinkExit& exit = pred.exits[e];
+			if (recHWAddr(exit.target_pc) == my_hw && exit.current_target != my_entry)
+				eePatchLinkSite(exit, my_entry);
+		}
+	}
+}
+
+// Unpatch every inbound link whose target is in [start_hw, end_hw), then drop
+// records for blocks whose own start is in that range. Called from recClear.
+// Full two-pass scan over every recorded block link. O(total compiled blocks)
+// per call; kept as the fallback for wide clears (see eeInvalidateLinks below).
+static void eeInvalidateLinksScan(u32 start_hw, u32 end_hw)
+{
+	for (auto& kv : s_eeBlockLinks)
+	{
+		EEBlockLinks& pred = kv.second;
+		for (u32 e = 0; e < pred.num_exits; e++)
+		{
+			const u32 t = recHWAddr(pred.exits[e].target_pc);
+			if (t >= start_hw && t < end_hw)
+				eeUnpatchLinkSite(pred.exits[e]);
+		}
+	}
+	for (auto it = s_eeBlockLinks.begin(); it != s_eeBlockLinks.end();)
+	{
+		if (it->first >= start_hw && it->first < end_hw)
+			it = s_eeBlockLinks.erase(it);
+		else
+			++it;
+	}
+}
+
+// Fast path: unlink only blocks intersecting the cleared span, via the
+// s_eeWaitingForHw reverse index. O(span/4 + inbound links), bounded by the
+// write not the cache size — fixes the O(N) recClear storm during code-stream
+// loads (BF2 online #283, DEV9hdd #272) with block chaining on. Falls back to
+// the flat scan when the span is wider than the whole block table.
+static void eeInvalidateLinks(u32 start_hw, u32 end_hw)
+{
+	const u32 span_words = (end_hw - start_hw) >> 2;
+	if (span_words > s_eeBlockLinks.size())
+	{
+		eeInvalidateLinksScan(start_hw, end_hw); // cleared span wider than the table
+		return;
+	}
+	for (u32 hw = start_hw; hw < end_hw; hw += 4)
+	{
+		// Unpatch inbound direct-B links whose target == hw, via the reverse index.
+		auto wit = s_eeWaitingForHw.find(hw);
+		if (wit != s_eeWaitingForHw.end())
+		{
+			for (u32 pred_hw : wit->second)
+			{
+				auto bit = s_eeBlockLinks.find(pred_hw);
+				if (bit == s_eeBlockLinks.end())
+					continue; // stale index entry — predecessor already gone
+				EEBlockLinks& pred = bit->second;
+				for (u32 e = 0; e < pred.num_exits; e++)
+				{
+					if (recHWAddr(pred.exits[e].target_pc) == hw)
+						eeUnpatchLinkSite(pred.exits[e]);
+				}
+			}
+		}
+		// Drop the record whose own start == hw.
+		auto bit = s_eeBlockLinks.find(hw);
+		if (bit != s_eeBlockLinks.end())
+			s_eeBlockLinks.erase(bit);
+	}
+}
+
+// Drop all link state (full cache reset — every block is thrown away).
+static void eeResetBlockLinks()
+{
+	s_eeBlockLinks.clear();
+	s_eeWaitingForHw.clear();
+	s_eeLinkStaged = false;
+}
+
+// Emit a single patchable B for a statically-known block exit (initially ->
+// DispatcherReg) and stage it for registration. Exactly one 4-byte B so the
+// site is stably patchable. Reached only when no event is due, with
+// cpuRegs.pc == pc — so the unlinked DispatcherReg dispatch hits the same block.
+static void recEmitLinkableExitToKnownPc(u32 pc)
+{
+	u8* patch_site;
+	{
+		// Capture the site INSIDE the scope: its ctor flushes any pending pool first,
+		// so patch_site points exactly at the single B (never at a flushed pool).
+		a64::SingleEmissionCheckScope guard(armAsm);
+		patch_site = armGetCurrentCodePointer();
+		const s64 disp = static_cast<s64>(
+			reinterpret_cast<intptr_t>(DispatcherReg) - reinterpret_cast<intptr_t>(patch_site));
+		pxAssert((disp & 3) == 0 && vixl::IsInt26(disp >> 2));
+		armAsm->b(static_cast<int>(disp >> 2));
+	}
+	s_eeLinkStaged = true;
+	s_eeLinkTargetPc = pc;
+	s_eeLinkPatchSite = patch_site;
+}
+
+// Register a freshly-compiled block (entry + any staged exit) and resolve
+// forward/backward links. Called from recRecompile after the block installs.
+static void recRegisterBlockLinks(u32 startpc, u8* block_entry)
+{
+	EEBlockLinks bl{};
+	bl.entry = block_entry;
+	bl.num_exits = 0;
+	if (s_eeLinkStaged)
+	{
+		EEBlockLinkExit& e = bl.exits[0];
+		e.target_pc = s_eeLinkTargetPc;
+		e.patch_site = s_eeLinkPatchSite;
+		e.fallthrough = const_cast<u8*>(static_cast<const u8*>(DispatcherReg));
+		e.current_target = const_cast<u8*>(static_cast<const u8*>(DispatcherReg));
+		bl.num_exits = 1;
+	}
+	// Insert first, then index / forward-link / back-patch (mirrors stock order
+	// so a self-loop resolves against the just-inserted record).
+	EEBlockLinks& slot = (s_eeBlockLinks[recHWAddr(startpc)] = bl);
+	if (slot.num_exits)
+		eeIndexBlockExits(startpc, slot);
+	eeTryForwardLink(slot);
+	eePatchWaitingPredecessors(startpc, block_entry);
+}
 
 // Self-modifying-code (SMC) manual protection, mirroring x86 iR5900.cpp. Both arrays are
 // indexed by host RAM page (the protection granularity, __pageshift — 16 KB on Apple
@@ -292,6 +536,10 @@ static void recResetRaw()
 	s_const_pool.Reset();
 	recGenDispatchers();
 	recClearLUT();
+
+	// Drop every block-chaining link — all host code is being discarded, so all
+	// patch sites vanish with it and every record must go. @@MAC_EE_BLOCKLINK@@
+	eeResetBlockLinks();
 
 	// Drop the fastmem backpatch registry: it is keyed by HOST code address, and the
 	// rewound buffer reuses those addresses, so a stale LoadstoreBackpatchInfo would
@@ -1589,6 +1837,66 @@ static bool recTryTranslateCachedConstOp(u32 op, RecGprConstState& const_state, 
 	}
 }
 
+// --- @@MAC_EE_CONSTFOLD@@ Mixed-operand constant folding (task #121) -------------------
+// When exactly one source of a reg-reg ALU op is a compile-time-known constant (the other
+// runtime), fold that constant into an ARM immediate instead of loading it from guest
+// memory into a cache slot. This reuses the SAME const value that recConstEmitKnown already
+// stored to memory and that recTryTranslateCachedConstOp already trusts (it Movs folded
+// constants straight into dest cache regs) — so it adds no new correctness trust, only
+// better instruction selection. Both the fully-const case (handled earlier by
+// recTryTranslateCachedConstOp) and this mixed case leave the const tracker to
+// recConstApplyCachedEffects, which marks the runtime destination unknown exactly as the
+// plain reg-reg path would. The fold is taken ONLY when the immediate encodes as a single
+// add/sub or logical instruction (IsImmAddSub / IsImmLogical), so it is never worse than
+// the memory load it replaces. Flip to false to fall back to the plain reg-reg emitters.
+static bool s_eeGprMixedConstFold = true;
+
+// True iff `addend` (mod 2^width) can be added to a register with a single add/sub
+// immediate — either directly (ADD) or via its two's complement (SUB). Pure test, emits
+// nothing, so encodability can be decided before any cache load/dest allocation (avoids
+// the load-after-dest aliasing hazard).
+static __fi bool recAddImmEncodableW(u32 addend)
+{
+	return addend == 0 || a64::Assembler::IsImmAddSub(static_cast<int64_t>(addend)) ||
+		   a64::Assembler::IsImmAddSub(static_cast<int64_t>(static_cast<u32>(0u - addend)));
+}
+static __fi bool recAddImmEncodableX(u64 addend)
+{
+	return addend == 0 || a64::Assembler::IsImmAddSub(static_cast<int64_t>(addend)) ||
+		   a64::Assembler::IsImmAddSub(static_cast<int64_t>(0ull - addend));
+}
+
+// Emit dst.W = src.W + addend (mod 2^32) as a single add/sub immediate. Precondition:
+// recAddImmEncodableW(addend) is true, so exactly one instruction is emitted.
+static __fi void recEmitAddImmW(const a64::Register& dst, const a64::Register& src, u32 addend)
+{
+	if (addend == 0)
+	{
+		if (!dst.W().Is(src.W()))
+			armAsm->Mov(dst.W(), src.W());
+		return;
+	}
+	if (a64::Assembler::IsImmAddSub(static_cast<int64_t>(addend)))
+		armAsm->Add(dst.W(), src.W(), addend);
+	else
+		armAsm->Sub(dst.W(), src.W(), static_cast<u32>(0u - addend));
+}
+// Emit dst.X = src.X + addend (mod 2^64) as a single add/sub immediate. Precondition:
+// recAddImmEncodableX(addend) is true.
+static __fi void recEmitAddImmX(const a64::Register& dst, const a64::Register& src, u64 addend)
+{
+	if (addend == 0)
+	{
+		if (!dst.X().Is(src.X()))
+			armAsm->Mov(dst.X(), src.X());
+		return;
+	}
+	if (a64::Assembler::IsImmAddSub(static_cast<int64_t>(addend)))
+		armAsm->Add(dst.X(), src.X(), addend);
+	else
+		armAsm->Sub(dst.X(), src.X(), 0ull - addend);
+}
+
 static bool recTryTranslateCachedOp(u32 op, RecGprCacheState& cache, const RecGprConstState& const_state, u32 pc)
 {
 	const u32 opcode = op >> 26;
@@ -1813,17 +2121,25 @@ static bool recTryTranslateCachedOp(u32 op, RecGprCacheState& cache, const RecGp
 		case 0x3C: // DSLL32
 		case 0x3E: // DSRL32
 		case 0x3F: // DSRA32
-		{
-			if (rd == 0)
-				return true;
-			const u32 shift = sa + ((funct == 0x3C || funct == 0x3E || funct == 0x3F) ? 32 : 0);
-			const a64::Register& src = recCacheLoad(cache, rt);
-			const a64::Register& dst = recCacheDest(cache, rd, rt);
-			if (funct == 0x38 || funct == 0x3C)
-				armAsm->Lsl(dst, src, shift);
-			else if (funct == 0x3A || funct == 0x3E)
-				armAsm->Lsr(dst, src, shift);
-			else
+			{
+				if (rd == 0)
+					return true;
+				const u32 shift = sa + ((funct == 0x3C || funct == 0x3E || funct == 0x3F) ? 32 : 0);
+				if (rt == 0)
+				{
+					const a64::Register& dst = recCacheDest(cache, rd);
+					armAsm->Mov(dst, 0);
+					return true;
+				}
+				const a64::Register& src = recCacheLoad(cache, rt);
+				const a64::Register& dst = recCacheDest(cache, rd, rt);
+				if (shift == 0)
+					move_x(dst, src);
+				else if (funct == 0x38 || funct == 0x3C)
+					armAsm->Lsl(dst, src, shift);
+				else if (funct == 0x3A || funct == 0x3E)
+					armAsm->Lsr(dst, src, shift);
+				else
 				armAsm->Asr(dst, src, shift);
 			return true;
 		}
@@ -1835,10 +2151,42 @@ static bool recTryTranslateCachedOp(u32 op, RecGprCacheState& cache, const RecGp
 		{
 			if (rd == 0)
 				return true;
+			const bool is_add = (funct == 0x20 || funct == 0x21);
+			// @@MAC_EE_CONSTFOLD@@ Exactly one const source -> fold into an add/sub imm.
+			if (s_eeGprMixedConstFold)
+			{
+				// rt const (both ADD and SUB: dst = rs +/- c). Encode as rs + (add ? c : -c).
+				if (const_state.known[rt] && !const_state.known[rs])
+				{
+					const u32 addend = is_add ? static_cast<u32>(const_state.value[rt])
+											  : static_cast<u32>(0u - static_cast<u32>(const_state.value[rt]));
+					if (recAddImmEncodableW(addend))
+					{
+						const a64::Register& src = recCacheLoad(cache, rs);
+						const a64::Register& dst = recCacheDest(cache, rd, rs);
+						recEmitAddImmW(dst, src, addend);
+						armAsm->Sxtw(dst, dst.W());
+						return true;
+					}
+				}
+				// rs const, ADD only (commutative): dst = rt + c.
+				else if (is_add && const_state.known[rs] && !const_state.known[rt])
+				{
+					const u32 addend = static_cast<u32>(const_state.value[rs]);
+					if (recAddImmEncodableW(addend))
+					{
+						const a64::Register& src = recCacheLoad(cache, rt);
+						const a64::Register& dst = recCacheDest(cache, rd, rt);
+						recEmitAddImmW(dst, src, addend);
+						armAsm->Sxtw(dst, dst.W());
+						return true;
+					}
+				}
+			}
 			const a64::Register& lhs = recCacheLoad(cache, rs);
 			const a64::Register& rhs = recCacheLoad(cache, rt);
 			const a64::Register& dst = recCacheDest(cache, rd, rs, rt);
-			if (funct == 0x20 || funct == 0x21)
+			if (is_add)
 				armAsm->Add(dst.W(), lhs.W(), rhs.W());
 			else
 				armAsm->Sub(dst.W(), lhs.W(), rhs.W());
@@ -1853,10 +2201,37 @@ static bool recTryTranslateCachedOp(u32 op, RecGprCacheState& cache, const RecGp
 		{
 			if (rd == 0)
 				return true;
+			const bool is_add = (funct == 0x2C || funct == 0x2D);
+			// @@MAC_EE_CONSTFOLD@@ Exactly one const source -> fold into a 64-bit add/sub imm.
+			if (s_eeGprMixedConstFold)
+			{
+				if (const_state.known[rt] && !const_state.known[rs])
+				{
+					const u64 addend = is_add ? const_state.value[rt] : (0ull - const_state.value[rt]);
+					if (recAddImmEncodableX(addend))
+					{
+						const a64::Register& src = recCacheLoad(cache, rs);
+						const a64::Register& dst = recCacheDest(cache, rd, rs);
+						recEmitAddImmX(dst, src, addend);
+						return true;
+					}
+				}
+				else if (is_add && const_state.known[rs] && !const_state.known[rt])
+				{
+					const u64 addend = const_state.value[rs];
+					if (recAddImmEncodableX(addend))
+					{
+						const a64::Register& src = recCacheLoad(cache, rt);
+						const a64::Register& dst = recCacheDest(cache, rd, rt);
+						recEmitAddImmX(dst, src, addend);
+						return true;
+					}
+				}
+			}
 			const a64::Register& lhs = recCacheLoad(cache, rs);
 			const a64::Register& rhs = recCacheLoad(cache, rt);
 			const a64::Register& dst = recCacheDest(cache, rd, rs, rt);
-			if (funct == 0x2C || funct == 0x2D)
+			if (is_add)
 				armAsm->Add(dst, lhs, rhs);
 			else
 				armAsm->Sub(dst, lhs, rhs);
@@ -1870,6 +2245,53 @@ static bool recTryTranslateCachedOp(u32 op, RecGprCacheState& cache, const RecGp
 		{
 			if (rd == 0)
 				return true;
+			// @@MAC_EE_CONSTFOLD@@ Exactly one const source -> fold into a 64-bit logical imm
+			// (all four ops are commutative in their two register sources).
+			if (s_eeGprMixedConstFold)
+			{
+				u32 vreg = 0xff; // the runtime (non-const) source register
+				u64 c = 0;
+				if (const_state.known[rt] && !const_state.known[rs]) { vreg = rs; c = const_state.value[rt]; }
+				else if (const_state.known[rs] && !const_state.known[rt]) { vreg = rt; c = const_state.value[rs]; }
+				if (vreg != 0xff)
+				{
+					if (c == 0)
+					{
+						// c==0 identities (not encodable as logical immediates): AND->0,
+						// OR/XOR->src, NOR->~src.
+						if (funct == 0x24)
+						{
+							const a64::Register& dst = recCacheDest(cache, rd);
+							armAsm->Mov(dst, 0);
+							return true;
+						}
+						const a64::Register& src = recCacheLoad(cache, vreg);
+						const a64::Register& dst = recCacheDest(cache, rd, vreg);
+						if (funct == 0x27)
+							armAsm->Mvn(dst, src);
+						else if (!dst.Is(src))
+							armAsm->Mov(dst, src);
+						return true;
+					}
+					if (a64::Assembler::IsImmLogical(c, 64))
+					{
+						const a64::Register& src = recCacheLoad(cache, vreg);
+						const a64::Register& dst = recCacheDest(cache, rd, vreg);
+						if (funct == 0x24)
+							armAsm->And(dst, src, c);
+						else if (funct == 0x25)
+							armAsm->Orr(dst, src, c);
+						else if (funct == 0x26)
+							armAsm->Eor(dst, src, c);
+						else
+						{
+							armAsm->Orr(dst, src, c);
+							armAsm->Mvn(dst, dst);
+						}
+						return true;
+					}
+				}
+			}
 			const a64::Register& lhs = recCacheLoad(cache, rs);
 			const a64::Register& rhs = recCacheLoad(cache, rt);
 			const a64::Register& dst = recCacheDest(cache, rd, rs, rt);
@@ -3079,14 +3501,13 @@ static void recEmitWritePc(u32 pc)
 	armAsm->Str(RSCRATCHADDR.W(), a64::MemOperand(RESTATEPTR, EE_PC_OFFSET));
 }
 
-// Tail-dispatch to a compile-time-known next PC. This deliberately stays an
-// *indirect* jump through the block's recLUT slot rather than a direct B to the
-// target block: the slot is the single point recClear/dyna_block_discard rewrite on
-// SMC invalidation, so a stale block can never be entered through here. Emitting a
-// direct block->block branch would require backpatching every inbound link on
-// invalidation (x86-style linked-list per block) — do NOT change this to a direct
-// jump without implementing that. The cost is only adrp+add+ldr+br, and the slot
-// load is a same-cacheline hit in steady state.
+// Tail-dispatch to a compile-time-known next PC via the block's recLUT slot
+// (adrp+add+ldr+br). This is now the FALLBACK path: when s_eeBlockLinkEnabled is
+// set (default), recEmitEventTestAndDispatch instead emits a patchable direct B
+// (recEmitLinkableExitToKnownPc) and the inbound-link backpatching this comment
+// once warned was missing is implemented in eeInvalidateLinks (@@MAC_EE_BLOCKLINK@@).
+// The LUT slot remains the single SMC-invalidation rewrite point, so this fallback
+// can never enter a stale block; the slot load is a same-cacheline hit in steady state.
 static void recEmitDispatchToKnownPc(u32 pc)
 {
 	armMoveAddressToReg(RXARG3, recPtrToBlock(pc));
@@ -3931,7 +4352,10 @@ static void recEmitEventTestAndDispatch(u32 scaled_cycles, bool add_cycles, bool
 	if (known_dispatch_pc)
 	{
 		armEmitCondBranch(a64::pl, DispatcherEvent); // event due => service before continuing
-		recEmitDispatchToKnownPc(dispatch_pc);
+		if (s_eeBlockLinkEnabled)
+			recEmitLinkableExitToKnownPc(dispatch_pc); // patchable direct B, staged for linking @@MAC_EE_BLOCKLINK@@
+		else
+			recEmitDispatchToKnownPc(dispatch_pc); // LUT-indirect fallback
 		return;
 	}
 
@@ -4057,6 +4481,48 @@ static u32 recScanBlockEnd(u32 startpc)
 	return pc;
 }
 
+// Skip MPEG game-fix (CHECK_SKIPMPEGHACK) — ported from the x86 rec's
+// skipMPEG_By_Pattern (ix86-32/iR5900.cpp). It was previously x86-only, so the
+// "Skip MPEG" toggle did nothing on Android (this ARM64 EE backend). The PS2
+// sceMpegIsEnd routine is a tiny 3-instruction leaf:
+//     lw reg, 0x40(a0) ; jr ra ; lw v0, 0(reg)
+// When the fix is on and a block starts exactly on that pattern, we don't
+// recompile it — we stub it to force v0 = 1 ("movie finished") and return to ra,
+// so games that spin waiting for an FMV to end skip it (Katamari et al.). The
+// pattern detection is architecture-independent; the host state change is done by
+// this C helper (called via armEmitCall) so no hand-emitted field writes are
+// needed, and the normal block finalize then event-tests + dispatches from the
+// cpuRegs.pc the helper set.
+static void eeSkipMpegIsEnd()
+{
+	cpuRegs.GPR.n.v0.UD[0] = 1;          // v0 = 1 (UL[0] = 1, UL[1] = 0)
+	cpuRegs.pc = cpuRegs.GPR.n.ra.UL[0]; // jr ra
+}
+
+// Returns true (and emits the stub call) when [startpc] is the sceMpegIsEnd leaf
+// and the fix is enabled. s_eeEndBlock must already be set (recScanBlockEnd).
+static bool recTrySkipMpeg(u32 startpc)
+{
+	if (!CHECK_SKIPMPEGHACK)
+		return false;
+
+	// Exactly three words, middle op == `jr ra` (0x03e00008).
+	if (s_eeEndBlock != startpc + 12 || memRead32(startpc + 4) != 0x03e00008u)
+		return false;
+
+	const u32 code = memRead32(startpc);
+	const u32 p1 = 0x8c800040u;                             // lw ?, 0x40(a0)
+	const u32 p2 = 0x8c020000u | ((code & 0x1f0000u) << 5); // lw v0, 0(reg)
+	if ((code & 0xffe0ffffu) != p1)
+		return false;
+	if (memRead32(startpc + 8) != p2)
+		return false;
+
+	armEmitCall(reinterpret_cast<const void*>(eeSkipMpegIsEnd));
+	Console.WriteLn("sceMpegIsEnd pattern found! Recompiling skip video fix... [ARM64]");
+	return true;
+}
+
 // --------------------------------------------------------------------------------------
 //  Block compiler (Phase 4.3 / 4.4)
 // --------------------------------------------------------------------------------------
@@ -4113,6 +4579,9 @@ static void recRecompile(u32 startpc)
 
 	if (eeRecNeedsReset)
 		recResetRaw();
+
+	// Each block starts with no staged link exit; only the known-target tail sets one.
+	s_eeLinkStaged = false;
 
 	armSetAsmPtr(recPtr, recPtrEnd - recPtr, &s_const_pool);
 	u8* const entry = armStartBlock();
@@ -4218,7 +4687,19 @@ static void recRecompile(u32 startpc)
 		}
 	}
 
-	for (;;)
+	// Skip MPEG game-fix: if enabled and this block IS the sceMpegIsEnd leaf, stub it
+	// (force v0=1 + jr ra) instead of recompiling, then fall straight into the normal
+	// block finalize/dispatch below — which resumes at cpuRegs.pc (= ra) the stub set.
+	const bool skipped_mpeg = recTrySkipMpeg(startpc);
+	if (skipped_mpeg)
+	{
+		endpc = s_eeEndBlock; // the 3-word leaf [startpc, startpc+12)
+		raw_cycles = eeOpCycles(memRead32(startpc)) + eeOpCycles(0x03e00008u) +
+			eeOpCycles(memRead32(startpc + 8));
+		// known_dispatch_pc stays false -> dispatch dynamically from cpuRegs.pc.
+	}
+
+	for (; !skipped_mpeg;)
 	{
 		// Keep every block within a single host RAM page so its SMC protection mode (see
 		// recEmitManualProtection) governs the whole block, and so a page-fault clear of
@@ -4571,6 +5052,12 @@ static void recRecompile(u32 startpc)
 	// Install the block so subsequent dispatches to startpc (and its address mirrors)
 	// branch straight into it instead of recompiling.
 	*recPtrToBlock(startpc) = reinterpret_cast<uptr>(block_entry);
+
+	// Register for direct-B block chaining: resolve forward links (target already
+	// compiled) and back-patch any predecessors that were waiting on this block.
+	// @@MAC_EE_BLOCKLINK@@
+	if (s_eeBlockLinkEnabled)
+		recRegisterBlockLinks(startpc, block_entry);
 }
 
 static void recEventTest()
@@ -4667,6 +5154,21 @@ static void recClear(u32 addr, u32 size)
 		// UnmappedRecLUTPage; don't turn an unmapped word into a compile-on-jump word.
 		if (*slot != reinterpret_cast<uptr>(UnmappedRecLUTPage))
 			*slot = reinterpret_cast<uptr>(JITCompile);
+	}
+
+	// Unpatch any direct-B links whose target is in the cleared range BEFORE that
+	// host code is recycled, so no predecessor can branch into a stale block.
+	// recHWAddr is linear over the (small, intra-mirror) cleared range. @@MAC_EE_BLOCKLINK@@
+	if (s_eeBlockLinkEnabled)
+	{
+		const u32 start_pc = addr & ~3u;
+		const u32 span = (addr + size) - start_pc;
+		const u32 start_hw = recHWAddr(start_pc);
+		// Tripwire: the flat [start_hw, start_hw+span) range assumes recHWAddr is
+		// linear across the cleared span (no RAM/BIOS mirror-fold crossing) — true for
+		// every current caller (page-aligned RAM, 0x400 TLB spans). Catch a future one.
+		pxAssert(span < 4 || recHWAddr(start_pc) + span == recHWAddr(start_pc + span - 4) + 4);
+		eeInvalidateLinks(start_hw, start_hw + span);
 	}
 }
 

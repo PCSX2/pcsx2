@@ -105,6 +105,24 @@ namespace Achievements
 	/// Returns true if the current game has any achievements.
 	bool HasAchievements();
 
+	/// Snapshot the current game's achievements as JSON for the in-game
+	/// overlay's right-side panel. Walks rc_client buckets in display
+	/// order (active challenge → recently unlocked → unlocked → almost
+	/// there → locked → unofficial → unsupported). Empty array when no
+	/// active game / not logged in. Format:
+	///   {
+	///     "active": bool,           // game has any achievements
+	///     "loggedIn": bool,         // a user is logged in to RA
+	///     "userName": "string",     // display name when loggedIn
+	///     "items": [
+	///       { "id": int, "title": "...", "description": "...",
+	///         "points": int, "unlocked": bool, "bucket": int,
+	///         "rarity": float, "measuredProgress": "..." }
+	///     ]
+	///   }
+	/// Self-contained — no rcheevos headers needed by the caller.
+	std::string GetAchievementsAsJSON();
+
 	/// Returns true if the current game has any leaderboards.
 	bool HasLeaderboards();
 

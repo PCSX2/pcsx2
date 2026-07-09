@@ -4,6 +4,7 @@
 #include "GS/Renderers/OpenGL/GLContext.h"
 #include "GS/Renderers/OpenGL/GSDeviceOGL.h"
 #include "GS/Renderers/OpenGL/GLState.h"
+#include "GS/Renderers/Common/GSGPUProfile.h"
 #include "GS/GSState.h"
 #include "GS/GSGL.h"
 #include "GS/GSPerfMon.h"
@@ -578,7 +579,15 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		return false;
 
 	// Image load store and GLSL 420pack is core in GL4.2, no need to check.
-	m_features.cas_sharpening = ((GLAD_GL_VERSION_4_2 && GLAD_GL_ARB_compute_shader) || GLAD_GL_ES_VERSION_3_2) && CreateCASPrograms();
+	// NOTE: CAS uses a desktop-GL compute shader (cas.glsl is "#version 420" +
+	// "#extension GL_ARB_compute_shader") -- that source is invalid GLSL ES. On
+	// devices whose driver only gives a GL ES 3.2 context (e.g. Adreno 650 on the
+	// Retroid Pocket Mini, where the desktop 4.2 context request fails and we fall
+	// back to ES), feeding the ES compiler that shader hard-crashes the driver
+	// during GS init. So gate CAS to a real desktop-GL 4.2 context only; ES devices
+	// just go without the sharpening filter (TV/CRT present shaders are unaffected --
+	// they use the ES-aware "#version 320 es" header and compile fine).
+	m_features.cas_sharpening = (GLAD_GL_VERSION_4_2 && GLAD_GL_ARB_compute_shader) && CreateCASPrograms();
 
 	// ****************************************************************
 	// rasterization configuration
@@ -742,6 +751,31 @@ bool GSDeviceOGL::CheckFeatures()
 		Console.WriteLn(Color_StrongBlue, "GL: Intel GPU detected.");
 		//vendor_id_intel = true;
 	}
+	// ARMSX2: resolve the runtime GPU profile (Mali/Adreno/PowerVR) so the tfx GL
+	// shaders can select their tile-based-GPU arms via GPU_PROFILE_* (emitted in
+	// GenGlslHeader below). The monorepo GS device base is a desktop PCSX2 base and
+	// has no Mali/Adreno vendor branch above, so we detect from the raw vendor/renderer
+	// strings here. Guard null pointers (glGetString may return null).
+	{
+		const char* renderer = (const char*)glGetString(GL_RENDERER);
+		const char* vendor_safe = vendor ? vendor : "";
+		const char* renderer_safe = renderer ? renderer : "";
+#if defined(__ANDROID__)
+		const GpuProfileSelection profile_selection =
+			GpuProfileDetector::Resolve(GSConfig.AndroidGpuProfileOverride, vendor_safe, renderer_safe);
+		SetRuntimeGPUProfile(profile_selection.runtime_profile);
+		Console.WriteLn("GL: GPU profile override='%s' resolved='%s'.",
+			GpuProfileDetector::OverrideToConfigString(profile_selection.override_mode),
+			GpuProfileDetector::RuntimeProfileToString(profile_selection.runtime_profile));
+		DevCon.WriteLn("GL: GPU profile hints: %s", profile_selection.hints.c_str());
+#else
+		// Desktop/non-Android GL: no tile-based-GPU profile arms are used, keep the
+		// device's profile initialized to a benign default.
+		SetRuntimeGPUProfile(RuntimeGpuProfile::Adreno);
+		(void)vendor_safe;
+		(void)renderer_safe;
+#endif
+	}
 
 	GLint major_gl = 0;
 	GLint minor_gl = 0;
@@ -880,6 +914,28 @@ bool GSDeviceOGL::CheckFeatures()
 		m_features.depth_feedback |= GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto;
 	}
 
+	// ARMSX2 (Adreno GLES only; inert on every other GPU/profile). Adreno's driver
+	// rejects a fragment shader declaring TWO framebuffer-fetch `inout` outputs (o_col0
+	// colour + o_col1 depth), which the depth-as-colour SW-Z path emits for accurate-
+	// alpha-test draws -> link failure -> garbage (Everybody's Golf 4 / Minna no Golf 4).
+	// Route depth feedback through the depth path (a single fetch output) so it links, and
+	// read prior depth via the coherent ARM depth-stencil fetch (gl_LastFragDepthARM) when
+	// available -- the mode-1 depth sampler read is incoherent on GLES (no barrier on a
+	// sampled depth attachment) and makes occluded triangles poke through as white shards.
+	// Only overrides Auto; an explicit DepthFeedbackMode choice is honoured. The GPU
+	// profile is already resolved above (SetRuntimeGPUProfile), so IsAdrenoGPUProfile()
+	// is valid here.
+	if (m_features.framebuffer_fetch && IsAdrenoGPUProfile() &&
+		GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto)
+	{
+		m_features.depth_feedback = true;
+		m_arm_depth_fetch = GLAD_GL_ARM_shader_framebuffer_fetch_depth_stencil;
+		Console.WriteLn(m_arm_depth_fetch
+			? "GL: Adreno - depth feedback via coherent ARM depth-stencil fetch (gl_LastFragDepthARM)."
+			: "GL: Adreno - routing depth feedback through the depth sampler "
+			  "(avoids the dual framebuffer-fetch output link failure).");
+	}
+
 	if (GLAD_GL_ARB_shader_storage_buffer_object)
 	{
 		GLint max_vertex_ssbos = 0;
@@ -925,7 +981,13 @@ void GSDeviceOGL::SetSwapInterval()
 	m_vsync_mode = (m_vsync_mode == GSVSyncMode::Mailbox) ? GSVSyncMode::FIFO : m_vsync_mode;
 
 	// Window framebuffer has to be bound to call SetSwapInterval.
-	const s32 interval = static_cast<s32>(m_vsync_mode == GSVSyncMode::FIFO);
+	s32 interval = static_cast<s32>(m_vsync_mode == GSVSyncMode::FIFO);
+	// ARM Mali GLES breaks with eglSwapInterval(0): after a handful of swaps the surface
+	// stops presenting entirely (frozen screen). Never pass 0 on Mali — force interval 1.
+	// A forced-on vsync beats a frozen display, and the FIFO present pacer still lets
+	// fast-forward exceed the panel rate via dropped presents. (cf. Dolphin BUG_BROKEN_VSYNC)
+	if (interval == 0 && IsMaliGPUProfile())
+		interval = 1;
 	GLint current_fbo = 0;
 	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -1570,10 +1632,22 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
 	if (m_features.framebuffer_fetch && GLAD_GL_EXT_shader_framebuffer_fetch)
 		header += "#extension GL_EXT_shader_framebuffer_fetch : require\n";
 
+	// ARMSX2 (Adreno): coherent prior-depth read for SW-Z feedback (gl_LastFragDepthARM).
+	if (m_arm_depth_fetch)
+		header += "#extension GL_ARM_shader_framebuffer_fetch_depth_stencil : require\n";
+
 	if (m_features.framebuffer_fetch)
 		header += "#define HAS_FRAMEBUFFER_FETCH 1\n";
 	else
 		header += "#define HAS_FRAMEBUFFER_FETCH 0\n";
+	// ARMSX2: emit the runtime GPU-profile selectors so the tfx GL shaders can pick
+	// their tile-based-GPU (Mali/Adreno/PowerVR) arms. GenGlslHeader() is prepended to
+	// every GL shader (GetShaderSource / GetTfxVertexShader / GetTfxFragmentShader),
+	// so this is the header string the tfx_fs.glsl `#if GPU_PROFILE_MALI` guards read.
+	header += fmt::format("#define GPU_PROFILE_MALI {}\n", IsMaliGPUProfile() ? 1 : 0);
+	header += fmt::format("#define GPU_PROFILE_ADRENO {}\n", IsAdrenoGPUProfile() ? 1 : 0);
+	header += fmt::format("#define GPU_PROFILE_POWERVR {}\n", IsPowerVRGPUProfile() ? 1 : 0);
+	header += fmt::format("#define HAS_ARM_DEPTH_FETCH {}\n", m_arm_depth_fetch ? 1 : 0);
 
 	if (GLAD_GL_ARB_conservative_depth)
 	{
@@ -2975,7 +3049,10 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	if (m_features.texture_barrier && (config.require_one_barrier || config.require_full_barrier))
 		PSSetShaderResource(TEXTURE_RT, colclip_rt ? colclip_rt : config.rt);
 	if (m_features.texture_barrier && (config.require_one_barrier || config.require_full_barrier) && config.ps.IsFeedbackLoopDepth())
-		PSSetShaderResource(TEXTURE_DEPTH, m_features.depth_feedback ? config.ds : m_ds_as_rt);
+		// ARMSX2 (Adreno): with ARM depth-stencil fetch the shader reads gl_LastFragDepthARM,
+		// not a sampler, so don't bind the live depth attachment as a texture (avoids a
+		// feedback-loop bind the driver may flag).
+		PSSetShaderResource(TEXTURE_DEPTH, (m_features.depth_feedback && !m_arm_depth_fetch) ? config.ds : m_ds_as_rt);
 
 	SetupSampler(config.sampler);
 

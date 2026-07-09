@@ -115,6 +115,9 @@ extern std::vector<u8> BiosRom;
 extern void ReadOSDConfigParames();
 
 extern bool IsBIOS(const char* filename, u32& version, std::string& description, u32& region, std::string& zone);
+// Android: validate/describe a BIOS opened via a SAF content:// fd (the Java layer
+// hands us an fd, not a path). Takes ownership of fd (closed on return).
+extern bool IsBIOSFromFd(int fd, u32& version, std::string& description, u32& region, std::string& zone);
 extern bool IsBIOSAvailable(const std::string& full_path);
 
 extern bool LoadBIOS();
