@@ -576,16 +576,25 @@ public:
 			// Load VI from memory (16-bit zero-extended)
 			armAsm->Ldrh(armWRegister(idx),
 				mVUstateMem(offsetof(VURegs, VI) + viLoadReg * sizeof(REG_VI)));
-			gprMap[idx].isZeroExtended = true;
 		}
 		else if (viLoadReg == 0)
 		{
 			armAsm->Mov(armWRegister(idx), 0);
-			gprMap[idx].isZeroExtended = true;
 		}
 
+		// Pin isZeroExtended unconditionally (x86 microVU_IR.h:1091, ARMSX2
+		// aVU_IR.h:966): the freshly-allocated slot is clean after a 16-bit Ldrh /
+		// zero move. A pure-write alloc (viLoadReg < 0, e.g. IADDIU/IADD/MTIR dest)
+		// runs NEITHER load branch, so leaving the flag unset makes it inherit the
+		// physical register's previous VI occupant — a later
+		// `zext_if_dirty && !isZeroExtended` (mVU_ISW) then wrongly skips the Uxth
+		// and Str(W)s dirty upper bits into VU memory. x86/ARMSX2 set true here then
+		// clear it for a write (microVU_IR.h:1096, aVU_IR.h:971).
+		gprMap[idx].isZeroExtended = true;
 		gprMap[idx].VIreg = (viWriteReg >= 0) ? viWriteReg : ((viLoadReg >= 0) ? viLoadReg : -1);
 		gprMap[idx].dirty = (viWriteReg >= 0);
+		if (viWriteReg >= 0)
+			gprMap[idx].isZeroExtended = false;
 
 		// Same-reg RMW (viLoadReg == viWriteReg): idx holds the loaded pre-write
 		// value, so back it up directly.
