@@ -4089,7 +4089,6 @@ TRANSLATE_NOOP("FullscreenUI", "Current Game");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while deleting empty game settings:\n{}");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while saving game settings:\n{}");
 TRANSLATE_NOOP("FullscreenUI", "{} is not a valid disc image.");
-TRANSLATE_NOOP("FullscreenUI", "{:%H:%M}");
 TRANSLATE_NOOP("FullscreenUI", "This Session: {}");
 TRANSLATE_NOOP("FullscreenUI", "All Time: {}");
 TRANSLATE_NOOP("FullscreenUI", "Save Slot {0}");
