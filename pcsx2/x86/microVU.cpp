@@ -244,8 +244,9 @@ __fi bool mVUcmpProg(microVU& mVU, microProgram& prog)
 _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState)
 {
 	microVU& mVU = mVUx;
-	microProgramQuick& quick = mVU.prog.quick[mVU.regs().start_pc / 8];
-	microProgramList*  list  = mVU.prog.prog [mVU.regs().start_pc / 8];
+	const u32 mvu_spc = mVU.regs().start_pc & (mVU.index ? 0x3ff8u : 0xff8u);
+	microProgramQuick& quick = mVU.prog.quick[mvu_spc / 8];
+	microProgramList*  list  = mVU.prog.prog [mvu_spc / 8];
 
 	if (!quick.prog) // If null, we need to search for new program
 	{
