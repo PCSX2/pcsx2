@@ -157,7 +157,12 @@ void Host::ReportFormattedErrorAsync(const std::string_view title, const char* f
 
 std::string Host::GetHTTPUserAgent()
 {
-	return fmt::format("PCSX2 {} ({})", BuildVersion::GitRev, GetOSVersionString());
+	// RetroAchievements identifies the client by the leading Name/Version token of
+	// this User-Agent, so report ARMSX2 with the stable dotted version the RA server
+	// has registered/pinned (matches the refresh-experimental Android build). A
+	// "PCSX2 <gitrev>" UA is rejected as an outdated/unknown emulator, which disables
+	// hardcore unlocks ("Warning: Outdated Emulator").
+	return fmt::format("ARMSX2/2.7.407.0 ({})", GetOSVersionString());
 }
 
 std::unique_lock<std::mutex> Host::GetSettingsLock()

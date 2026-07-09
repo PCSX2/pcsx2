@@ -734,8 +734,11 @@ void VMManager::WarnAboutUnconfiguredController()
 	if (!si || HasAnyBindingsForPad(*si, 0))
 		return;
 
-	Host::AddIconOSDMessage("ControllerNotConfigured", ICON_FA_GAMEPAD,
-		TRANSLATE_STR("VMManager", "Controller 1 has no input bindings configured."), Host::OSD_WARNING_DURATION);
+	// Android injects pad state directly (NativeApp.setPadButton -> Pad::SetControllerState),
+	// bypassing InputManager bindings, so this warning is always a false positive. Suppressed
+	// to match the refresh-experimental Android build.
+/*	Host::AddIconOSDMessage("ControllerNotConfigured", ICON_FA_GAMEPAD,
+		TRANSLATE_STR("VMManager", "Controller 1 has no input bindings configured."), Host::OSD_WARNING_DURATION);*/
 }
 
 void VMManager::ApplyGameFixes()
