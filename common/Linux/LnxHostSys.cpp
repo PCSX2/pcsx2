@@ -359,6 +359,11 @@ void PageFaultHandler::SignalHandler(int sig, siginfo_t* info, void* ctx)
 bool PageFaultHandler::Install(Error* error)
 {
 	std::unique_lock lock(s_exception_handler_mutex);
+	// Android keeps one process across game launches, so the VM lifecycle can call
+	// Install() more than once. Make it idempotent instead of tripping the release
+	// assert below (which aborts the CPU thread on the second game boot).
+	if (s_installed)
+		return true;
 	pxAssertRel(!s_installed, "Page fault handler has already been installed.");
 
 	struct sigaction sa;

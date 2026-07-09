@@ -141,6 +141,10 @@ bool dyn_shaderc::Open()
 
 #ifdef _WIN32
 	const std::string libname = DynamicLibrary::GetVersionedFilename("shaderc_shared");
+#elif defined(__ANDROID__)
+	// Android jniLibs are unversioned: the APK ships libshaderc_shared.so (no ".so.1"),
+	// extracted to the app's nativeLibraryDir. Requesting the versioned name fails dlopen.
+	const std::string libname = DynamicLibrary::GetVersionedFilename("shaderc_shared");
 #else
 	// Use versioned, bundle post-processing adds it..
 	const std::string libname = DynamicLibrary::GetVersionedFilename("shaderc_shared", 1);

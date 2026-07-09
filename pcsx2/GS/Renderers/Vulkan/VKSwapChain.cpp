@@ -18,6 +18,10 @@
 #include <X11/Xlib.h>
 #endif
 
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+#include <android/native_window.h>
+#endif
+
 static_assert(VKSwapChain::NUM_SEMAPHORES == (GSDeviceVK::NUM_COMMAND_BUFFERS + 1));
 
 VKSwapChain::VKSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR present_mode,
@@ -117,6 +121,24 @@ VkSurfaceKHR VKSwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDev
 		if (res != VK_SUCCESS)
 		{
 			LOG_VULKAN_ERROR(res, "vkCreateMetalSurfaceEXT failed: ");
+			return VK_NULL_HANDLE;
+		}
+
+		return surface;
+	}
+#endif
+
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+	if (wi->type == WindowInfo::Type::Android)
+	{
+		VkAndroidSurfaceCreateInfoKHR surface_create_info = {VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR, nullptr,
+			0, reinterpret_cast<ANativeWindow*>(wi->window_handle)};
+
+		VkSurfaceKHR surface;
+		VkResult res = vkCreateAndroidSurfaceKHR(instance, &surface_create_info, nullptr, &surface);
+		if (res != VK_SUCCESS)
+		{
+			LOG_VULKAN_ERROR(res, "vkCreateAndroidSurfaceKHR failed: ");
 			return VK_NULL_HANDLE;
 		}
 
