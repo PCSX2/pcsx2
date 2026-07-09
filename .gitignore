@@ -19,6 +19,9 @@
 *.dump
 
 *.asm
+# ...but hand-written source assembly is real source, not build output.
+!common/FastJmp.asm
+!common/FastJmp.aarch64.asm
 
 *.VC.db
 *.VC.VC.opendb
