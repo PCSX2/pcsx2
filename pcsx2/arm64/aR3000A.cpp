@@ -464,9 +464,6 @@ static void recResetRaw()
 	recPtr = SysMemory::GetIOPRec();
 	s_const_pool.Reset();
 	recClearLUT();
-	recPtr = SysMemory::GetIOPRec();
-	s_const_pool.Reset();
-	recClearLUT();
 	iopRecNeedsReset = false;
 
 	// @@IOP_BLOCKLINK@@ Drop all link records and re-lay the fallback stub (only when the
@@ -1540,6 +1537,8 @@ static s32 recExecuteBlock(s32 eeCycles)
 			if (st == VMState::Stopping || st == VMState::Shutdown)
 				break;
 		}
+
+		if (iopRecNeedsReset)
 			recResetRaw();
 
 		// HLE BIOS entry (only when HW_ICFG bit 3 enables it), matching intExecuteBlock.
