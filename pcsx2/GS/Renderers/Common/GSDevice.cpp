@@ -1110,7 +1110,7 @@ void GSDevice::BeginDSAsRT(GSTexture* ds, const GSVector4i& drawarea)
 	// Create a temporary RT and copy the area needed for the draw.
 	const int w = ds->GetWidth();
 	const int h = ds->GetHeight();
-	if (m_ds_as_rt = g_gs_device->CreateFeedbackTarget(w, h, GSTexture::Format::DepthColor, false, true))
+	if ((m_ds_as_rt = g_gs_device->CreateFeedbackTarget(w, h, GSTexture::Format::DepthColor, false, true)))
 	{
 		const GSVector4 dRect(drawarea);
 		const GSVector4 sRect(dRect.x / w, dRect.y / h, dRect.z / w, dRect.w / h);

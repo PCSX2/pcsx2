@@ -5297,7 +5297,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 
 			// If it was matched to an old target, make sure to clear the other type and update its information.
 			// Also update information if the buffer width of the new data is larger than the existing target.
-			if (dst->m_was_dst_matched || (Common::AlignUpPow2(w, 64) / GSLocalMemory::m_psm[new_TEX0.PSM].pgs.x) > dst->m_TEX0.TBW)
+			if (dst->m_was_dst_matched || static_cast<u32>(Common::AlignUpPow2(w, 64) / GSLocalMemory::m_psm[new_TEX0.PSM].pgs.x) > dst->m_TEX0.TBW)
 			{
 				dst->m_TEX0 = new_TEX0;
 			}
