@@ -605,6 +605,6 @@ bool D3D12ShaderCache::AddPipelineToBlob(const CacheIndexKey& key, ID3D12Pipelin
 		return false;
 	}
 
-	m_shader_index.emplace(key, data);
+	m_pipeline_index.emplace(key, data);
 	return true;
 }
