@@ -316,9 +316,16 @@ set(pcsx2DEV9Sources
 	DEV9/sockets.cpp
 	DEV9/DEV9.cpp
 	DEV9/flash.cpp
-	DEV9/pcap_io.cpp
 	DEV9/net.cpp
 	)
+
+# libpcap is unavailable on Android; DEV9 uses Android/AndroidPcapStubs.cpp (the
+# stub PCAPAdapter) instead, so the real pcap_io.cpp must NOT be compiled there
+# (it references pcap_findalldevs/pcap_open_live/... -> undefined at link, which
+# LTO release builds surface even though a debug build's --gc-sections hides it).
+if(NOT ANDROID)
+	list(APPEND pcsx2DEV9Sources DEV9/pcap_io.cpp)
+endif()
 
 # DEV9 headers
 set(pcsx2DEV9Headers
