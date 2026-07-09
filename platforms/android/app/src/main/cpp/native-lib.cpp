@@ -2598,6 +2598,15 @@ void Host::RequestExitBigPicture()
 
 void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool default_save_state)
 {
+    // This runs as a queued CPU-thread task (Host::RunOnCPUThread from the shutdown
+    // JNI). Since the EE now bails out of Execute() promptly on Stopping, the run
+    // loop can reach its post-Shutdown message pump and process THIS task AFTER
+    // VMManager::Shutdown(false) already drove s_state to Shutdown. Re-setting
+    // Stopping here would leave s_state stuck at Stopping, so the next game's
+    // VMManager::Initialize fails with "already running" (kick-back to library on
+    // the 2nd launch). If we're already shut down, there's nothing left to stop.
+    if (VMManager::GetState() == VMState::Shutdown)
+        return;
     VMManager::SetState(VMState::Stopping);
     if (!s_execute_exit.load(std::memory_order_acquire) && Cpu)
         Cpu->ExitExecution();

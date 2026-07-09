@@ -363,6 +363,20 @@ __fi void _cpuEventTest_Shared()
 	eeEventTestIsActive = true;
 	cpuRegs.nextEventCycle = cpuRegs.cycle + eeWaitCycles;
 	cpuRegs.lastEventCycle = cpuRegs.cycle;
+
+	// Android's in-game Exit/Reset can flip the VM to Stopping from another
+	// thread while the EE recompiler is in its generated-code event path. Once
+	// Stopping is visible, do not continue into IOP counters/VU sync; return
+	// immediately so the recompiler's outer recEventTest can fastjmp out of
+	// Cpu->Execute(). Without this, PSX-vsync/IOP work can keep running after
+	// the stop latch and the Java shutdown call times out.
+	const VMState vm_state = VMManager::GetState();
+	if (vm_state == VMState::Stopping || vm_state == VMState::Shutdown)
+	{
+		eeEventTestIsActive = false;
+		return;
+	}
+
 	// ---- INTC / DMAC (CPU-level Exceptions) -----------------
 	// Done first because exceptions raised during event tests need to be postponed a few
 	// cycles (fixes Grandia II [PAL], which does a spin loop on a vsync and expects to
@@ -426,6 +440,17 @@ __fi void _cpuEventTest_Shared()
 		else
 			_cpuTestInterrupts();
 	}
+
+#if defined(__ANDROID__)
+	// Android pause/stop requests can be pumped during the counter/vsync work
+	// above. Once that happens, return to the rec/interpreter wrapper immediately
+	// instead of continuing through VU sync and scheduling a fresh event.
+	if (VMManager::Internal::IsExecutionInterrupted())
+	{
+		eeEventTestIsActive = false;
+		return;
+	}
+#endif
 
 	// ---- VU Sync -------------
 	// We're in a EventTest.  All dynarec registers are flushed
