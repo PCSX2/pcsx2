@@ -2,12 +2,12 @@
 #
 # One push to the default branch fans out to every supported target and uploads
 # an individual binary artifact per platform:
-#   * PC arm64 Qt GUI  -> macOS, Linux   (reuses the existing reusable workflows)
+#   * PC arm64 Qt GUI  -> macOS, Linux, Windows  (reuses the reusable workflows)
 #   * Android APK       -> platforms/android  (Gradle + NDK, thin CMake on root core)
 #   * iOS .app          -> platforms/ios      (Xcode/CMake on root core)
 #
-# Windows-on-arm64 is intentionally NOT wired yet: the macOS branch never carried
-# a windows_build_qt.yml to reuse. Tracked in REFACTOR_STATUS.md.
+# Windows-on-arm64 is a cross-compile on an x64 runner (see windows_build_qt.yml):
+# it builds the x64 Qt host tooling first, then the arm64 target deps + GUI.
 #
 # NOTE: The Android and iOS jobs build against the freshly-collapsed single core
 # and have not yet had a green run; they are the mechanism that will surface the
@@ -60,6 +60,14 @@ jobs:
       compiler: clang
       cmakeflags: "-DHOST_PAGE_SIZE=${{ matrix.pageSize }} -DHOST_CACHE_LINE_SIZE=${{ matrix.cacheLineSize }}"
       buildAppImage: true
+
+  # ---- PC arm64 Qt GUI (windows) -----------------------------------------
+  pc-windows-arm64:
+    name: PC · Windows arm64 (Qt)
+    uses: ./.github/workflows/windows_build_qt.yml
+    with:
+      jobName: "Windows arm64"
+      artifactPrefixName: "armsx2-windows-arm64"
 
   # ---- Android APK -------------------------------------------------------
   android:

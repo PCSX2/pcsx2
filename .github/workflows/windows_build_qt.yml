@@ -1,0 +1,155 @@
+name: Windows Build Steps - Qt (arm64)
+
+# Reusable workflow that cross-compiles the arm64 Windows Qt GUI on an x64
+# Windows runner. There is no native arm64 Qt host toolchain, so the build is a
+# two-stage cross:
+#   1. build-dependencies.bat        -> deps/        (x64 host libs + Qt host
+#                                                      tools: moc/rcc/qmlcachegen)
+#   2. build-dependencies-arm64.bat  -> deps-arm64/  (arm64 target libs + Qt,
+#                                                      cross-built via QT_HOST_PATH)
+# PCSX2 is then configured against the arm64 toolchain file, with deps-arm64 as
+# the prefix path and the x64 deps/ as QT_HOST_PATH. ffmpeg is loaded
+# dynamically at runtime, so it is intentionally absent from deps-arm64.
+
+on:
+  workflow_call:
+    inputs:
+      jobName:
+        required: true
+        type: string
+      artifactPrefixName:
+        required: true
+        type: string
+      os:
+        required: false
+        type: string
+        default: windows-2025
+      configuration:
+        required: false
+        type: string
+        default: Release
+      patchesUrl:
+        required: false
+        type: string
+        default: https://github.com/isztldav/pcsx2_patches/releases/download/latest
+      fetchTags:
+        required: false
+        type: boolean
+        default: false
+      stableBuild:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build_windows_qt_arm64:
+    name: ${{ inputs.jobName }}
+    runs-on: ${{ inputs.os }}
+    # Set some sort of timeout in the event of run-away builds. Building the x64
+    # host deps + arm64 target deps + PCSX2 from a cold cache is expensive.
+    timeout-minutes: 120
+    env:
+      POWERSHELL_TELEMETRY_OPTOUT: 1
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      # actions/checkout elides tags, fetch them primarily for releases
+      - name: Fetch Tags
+        if: ${{ inputs.fetchTags }}
+        run: git fetch --tags --no-recurse-submodules
+
+      - name: Add stable release identifier file
+        if: ${{ inputs.stableBuild == true || inputs.stableBuild == 'true' }}
+        shell: bash
+        run: |
+          echo "#define DEFAULT_UPDATER_CHANNEL \"stable\"" > ./pcsx2-qt/DefaultUpdaterChannel.h
+          cat ./pcsx2-qt/DefaultUpdaterChannel.h
+
+      - name: Prepare Artifact Metadata
+        id: artifact-metadata
+        shell: bash
+        env:
+          PREFIX: ${{ inputs.artifactPrefixName }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: ./.github/workflows/scripts/common/name-artifacts.sh
+
+      - name: Locate arm64 cross vcvars
+        shell: cmd
+        run: |
+            for /f "usebackq tokens=*" %%i in (`call vswhere -latest -property installationPath`) do set "VSINSTPATH=%%i"
+            echo VCVARSPATH=%VSINSTPATH%\VC\Auxiliary\Build\vcvarsamd64_arm64.bat>>%GITHUB_ENV%
+
+      - name: Download patches
+        shell: cmd
+        run: |
+          cd bin/resources
+          curl -L -o patches.zip "${{ inputs.patchesUrl }}/patches.zip"
+
+      - name: Cache Dependencies
+        id: cache-deps
+        uses: actions/cache@v5
+        with:
+          # Both the x64 host deps and the cross-built arm64 deps are cached; the
+          # arm64 Qt build consumes deps/ as its QT_HOST_PATH.
+          path: |
+            deps
+            deps-arm64
+          key: ${{ inputs.os }} arm64 deps ${{ hashFiles('.github/workflows/scripts/windows/build-dependencies.bat', '.github/workflows/scripts/windows/build-dependencies-arm64.bat', '.github/workflows/scripts/windows/cmake-toolchain-windows-arm64.cmake', '.github/workflows/scripts/windows/*.patch', '.github/workflows/scripts/common/*.patch') }}
+
+      - name: Build x64 Host Dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        env:
+          DEBUG: 0
+          # ffmpeg is loaded dynamically at runtime; no need to build it for the
+          # host deps that only serve Qt's cross tooling.
+          BUILD_FFMPEG: 0
+        run: .github/workflows/scripts/windows/build-dependencies.bat
+
+      - name: Build arm64 Target Dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        env:
+          DEBUG: 0
+        run: .github/workflows/scripts/windows/build-dependencies-arm64.bat
+
+      - name: Generate CMake
+        id: cmake
+        shell: cmd
+        run: |
+          call "%VCVARSPATH%" || exit /b
+          cmake . -B build ^
+            -DCMAKE_TOOLCHAIN_FILE="%cd%\.github\workflows\scripts\windows\cmake-toolchain-windows-arm64.cmake" ^
+            "-DCMAKE_PREFIX_PATH=%cd%\deps-arm64" ^
+            "-DQT_HOST_PATH=%cd%\deps" ^
+            -DQT_BUILD=ON ^
+            -DCMAKE_BUILD_TYPE=${{ inputs.configuration }} ^
+            -DDISABLE_ADVANCE_SIMD=ON ^
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF ^
+            -G Ninja || exit /b
+
+      - name: Build PCSX2
+        shell: cmd
+        run: |
+          call "%VCVARSPATH%" || exit /b
+          cmake --build build --config ${{ inputs.configuration }} || exit /b
+          cmake --install build --config ${{ inputs.configuration }} || exit /b
+          REM We can use Segoe UI Emoji so we don't need to bundle this
+          del bin\resources\fonts\Twemoji*
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.artifact-metadata.outputs.artifact-name }}
+          path: |
+            ./bin
+            !./bin/**/*.bsc
+            !./bin/**/*.exp
+            !./bin/**/*.ilk
+            !./bin/**/*.iobj
+            !./bin/**/*.ipdb
+            !./bin/**/*.pdb
+            !./bin/**/*.lib

@@ -1,0 +1,52 @@
+diff --git a/source/plutovg-font.c b/source/plutovg-font.c
+index 0ad89b1..110de7f 100644
+--- a/source/plutovg-font.c
++++ b/source/plutovg-font.c
+@@ -836,7 +836,8 @@ int plutovg_font_face_cache_load_file(plutovg_font_face_cache_t* cache, const ch
+         size_t family_index = 0;
+         if(unicode_family_name) {
+             const stbtt_uint8* family_name = unicode_family_name;
+-            while(family_length) {
++            //while(family_length) {
++            for (int i = family_length; i > 0; i -= 2) {
+                 stbtt_uint16 ch = family_name[0] * 256 + family_name[1];
+                 if(ch < 0x80) {
+                     entry->family[family_index++] = ch;
+@@ -853,7 +854,8 @@ int plutovg_font_face_cache_load_file(plutovg_font_face_cache_t* cache, const ch
+                     entry->family[family_index++] = (0x80 + ((c) & 0x3f));
+ 
+                     family_name += 2;
+-                    family_length -= 2;
++                    //family_length -= 2;
++                    i -= 2;
+                 } else {
+                     entry->family[family_index++] = (0xe0 + (ch >> 12));
+                     entry->family[family_index++] = (0x80 + ((ch >> 6) & 0x3f));
+@@ -861,7 +863,7 @@ int plutovg_font_face_cache_load_file(plutovg_font_face_cache_t* cache, const ch
+                 }
+ 
+                 family_name += 2;
+-                family_length -= 2;
++                //family_length -= 2;
+             }
+ 
+             entry->family[family_index] = '\0';
+@@ -902,7 +904,8 @@ int plutovg_font_face_cache_load_file(plutovg_font_face_cache_t* cache, const ch
+             };
+ 
+             const stbtt_uint8* family_name = roman_family_name;
+-            while(family_length) {
++            //while(family_length) {
++            for (int i2 = family_length; i2 > 0; i2--) {
+                 stbtt_uint16 ch = MAC_ROMAN_TABLE[family_name[0]];
+                 if(ch < 0x80) {
+                     entry->family[family_index++] = ch;
+@@ -916,7 +919,7 @@ int plutovg_font_face_cache_load_file(plutovg_font_face_cache_t* cache, const ch
+                 }
+ 
+                 family_name += 1;
+-                family_length -= 1;
++                //family_length -= 1;
+             }
+ 
+             entry->family[family_index] = '\0';
