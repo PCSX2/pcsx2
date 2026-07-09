@@ -79,8 +79,13 @@ void MvuObservedEntries::clear()
 
 static __fi bool mVUProgRangesOverlap(const microProgram* prog, u32 addr, u32 size)
 {
-	if (!prog || !prog->ranges)
-		return false;
+	// Conservative on unknown coverage: a program with no recorded ranges
+	// must never be able to dodge invalidation. (In practice unreachable —
+	// programs are only quick-cached after their first compile records a
+	// range, and hydration restores ranges — but the failure mode of a
+	// wrong answer here is a stale block executing silently.)
+	if (!prog || !prog->ranges || prog->ranges->empty())
+		return true;
 	const s32 lo = static_cast<s32>(addr);
 	const s32 hi = static_cast<s32>(addr + size);
 	for (const auto& r : *prog->ranges)
@@ -1127,16 +1132,30 @@ __fi void mVUclear(mV, u32 addr, u32 size)
 		}
 	}
 
-	// lpState + cleared bookkeeping: only set cleared=1 / zero lpState when we
-	// actually invalidated something. Otherwise we leave the existing pipeline
-	// state intact — surviving quick.prog entries will re-enter with the same
-	// lpState they exited with, which remains valid because their compiled
-	// bytes weren't touched.
-	if (anyInvalidated && !mVU.prog.cleared)
-	{
-		mVU.prog.cleared = 1;
+	// lpState bookkeeping: when the write touched any cached program's
+	// compiled bytes, unconditionally drop the carried entry-search key —
+	// exactly what x86's unconditional nuke achieves. When nothing cached
+	// overlaps, the key survives: it is either zero (last program E-bit
+	// ended) or a mid-program resume key whose owner is quick-resident and
+	// was just proven untouched by the range scan above.
+	//
+	// Do NOT set prog.cleared here, and do NOT latch the memset on it.
+	// cleared==1 is consumed by the emitted E-bit end helpers
+	// (mVU{0,1}clearlpStateJIT) as "lpState is already zero, skip the
+	// zeroing" — an invariant only the full-nuke paths (doWholeProgCompare
+	// above, mVUreset) can guarantee, because they null EVERY quick slot and
+	// so force the next dispatch through a search-resolve that resets
+	// cleared=0 before any block runs. With range-survivors alive, quick-hit
+	// dispatches never reset cleared, the latch goes stale, and every E-bit
+	// end skips its mandatory lpState zero — leaking mid-program resume keys
+	// (blockType / flag instances / xgkickcycles / VI stall info) into the
+	// entry-block search key of the next freshly dispatched program. That
+	// leak compiled truncated/mis-keyed entry blocks and was the root cause
+	// of the Crash Twinsanity VIF1<->VU1 display-list wedge (2026-07-09);
+	// vuJITFreeze also serializes the leaked key into savestates. Pinned by
+	// mvu_lpstate_invariant_tests.cpp.
+	if (anyInvalidated)
 		std::memset(&mVU.prog.lpState, 0, sizeof(mVU.prog.lpState));
-	}
 }
 
 //------------------------------------------------------------------
@@ -1610,6 +1629,37 @@ namespace mvu_test_hooks
 	{
 		microVU& mVU = vu_index ? microVU1 : microVU0;
 		mVU.prog.x86end = (vu_index ? SysMemory::GetVU1RecEnd() : SysMemory::GetVU0RecEnd()) - (mVUcacheSafeZone * _1mb);
+	}
+
+	// lpState-protocol probe for mvu_lpstate_invariant_tests.cpp: true iff the
+	// VU's carried block-search key (mVU.prog.lpState) is the all-zero state.
+	// The protocol contract is "zero after every completed E-bit program";
+	// a nonzero value at that point is a leaked mid-program resume key.
+	bool LpStateIsZero(int vu_index)
+	{
+		const microVU& mVU = vu_index ? microVU1 : microVU0;
+		const u8* p = reinterpret_cast<const u8*>(&mVU.prog.lpState);
+		for (size_t i = 0; i < sizeof(mVU.prog.lpState); ++i)
+		{
+			if (p[i])
+				return false;
+		}
+		return true;
+	}
+
+	// Companion probes for the same test: the cleared latch and quick[] slot
+	// occupancy, so the test can assert each step of the invalidation
+	// choreography actually took the intended path (survivor vs nuked).
+	u32 GetProgCleared(int vu_index)
+	{
+		const microVU& mVU = vu_index ? microVU1 : microVU0;
+		return mVU.prog.cleared;
+	}
+
+	bool QuickSlotOccupied(int vu_index, u32 start_pc_bytes)
+	{
+		const microVU& mVU = vu_index ? microVU1 : microVU0;
+		return mVU.prog.quick[(start_pc_bytes / 8) % (mVU.progSize / 2)].prog != nullptr;
 	}
 }
 #endif
