@@ -127,7 +127,6 @@ jobs:
             "-DQT_HOST_PATH=%cd%\deps" ^
             -DQT_BUILD=ON ^
             -DCMAKE_BUILD_TYPE=${{ inputs.configuration }} ^
-            -DDISABLE_ADVANCE_SIMD=ON ^
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF ^
             -G Ninja || exit /b
 
