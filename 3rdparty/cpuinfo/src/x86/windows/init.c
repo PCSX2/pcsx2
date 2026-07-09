@@ -265,8 +265,6 @@ BOOL CALLBACK cpuinfo_x86_windows_init(PINIT_ONCE init_once, PVOID parameter, PV
 		 * APIC order */
 		const uint32_t core_id = cores_count++;
 		uint32_t smt_id = 0;
-		/* Reconstruct core part of APIC ID */
-		const uint32_t core_apic_id = (core_id & core_bits_mask) << x86_processor.topology.core_bits_offset;
 		/* Iterate processor groups and set the core & SMT parts of APIC
 		 * ID */
 		for (uint32_t i = 0; i < core_info->Processor.GroupCount; i++) {

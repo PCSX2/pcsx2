@@ -256,12 +256,12 @@ void cpuinfo_arm_linux_init(void) {
 	}
 
 #if defined(__ANDROID__)
-	struct cpuinfo_android_properties android_properties;
+	struct cpuinfo_android_properties android_properties = {0};
 	cpuinfo_arm_android_parse_properties(&android_properties);
 #else
-	char proc_cpuinfo_hardware[CPUINFO_HARDWARE_VALUE_MAX];
+	char proc_cpuinfo_hardware[CPUINFO_HARDWARE_VALUE_MAX] = {0};
 #endif
-	char proc_cpuinfo_revision[CPUINFO_REVISION_VALUE_MAX];
+	char proc_cpuinfo_revision[CPUINFO_REVISION_VALUE_MAX] = {0};
 
 	if (!cpuinfo_arm_linux_parse_proc_cpuinfo(
 #if defined(__ANDROID__)
