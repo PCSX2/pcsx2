@@ -126,9 +126,16 @@ if(ARCH_X86)
 endif()
 
 if(WIN32)
-	enable_language(ASM_MASM)
+	# FastJmp is hand-written assembly (MSVC has no inline asm). x86 uses MASM
+	# (ml64); arm64 uses the Microsoft ARM assembler (armasm64 / ASM_MARMASM).
+	if(ARCH_ARM64)
+		enable_language(ASM_MARMASM)
+		target_sources(common PRIVATE FastJmp.aarch64.asm)
+	else()
+		enable_language(ASM_MASM)
+		target_sources(common PRIVATE FastJmp.asm)
+	endif()
 	target_sources(common PRIVATE
-		FastJmp.asm
 		HTTPDownloaderWinHTTP.cpp
 		HTTPDownloaderWinHTTP.h
 		StackWalker.cpp

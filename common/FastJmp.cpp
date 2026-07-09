@@ -3,8 +3,9 @@
 
 #include "FastJmp.h"
 
-// Win32 uses Fastjmp.asm, because MSVC doesn't support inline asm.
-#if !defined(_WIN32) || defined(ARCH_ARM64)
+// Windows uses a hand-written .asm (FastJmp.asm on x86, FastJmp.aarch64.asm on
+// arm64), because MSVC supports no inline asm on either architecture.
+#if !defined(_WIN32)
 
 #if defined(__APPLE__)
 #define PREFIX "_"
