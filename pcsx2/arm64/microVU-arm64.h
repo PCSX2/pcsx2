@@ -313,6 +313,12 @@ struct microProgram
 	XXH128_hash_t contentHash;
 	bool          contentHashValid;
 
+	// mVU.microMemWriteGen at the moment contentHash was anchored (create /
+	// hydrate). While equal, no micro-mem write has happened since anchoring,
+	// so the live image still matches the hash and the drift check in
+	// mVUcacheProg can be skipped.
+	u64           writeGenAtAnchor;
+
 	// Count of mVU.prog.prog[] deque slots holding a (non-owning) pointer
 	// to this microProgram. Bumped on each push_front, decremented at eviction.
 	// The single owner is mVU.prog.contentMap[contentHash]; per-PC deques are
@@ -427,6 +433,19 @@ struct microVU
 	// same key. Lives on microVU (not microProgManager) because mVUinit memsets
 	// the prog manager — std::unordered_map can't survive that.
 	std::unordered_map<XXH128_hash_t, microProgram*, MvuContentHashHash, MvuContentHashEq> mvuContentMap;
+
+	// Ownership parking lot for programs evicted from mvuContentMap after
+	// their content drifted from the anchor image (see the drift check in
+	// mVUcacheProg). Still referenced (non-owning) by per-PC deques / quick
+	// slots until freed alongside the map at mVUreset / mVUclose. Lives on
+	// microVU for the same memset reason as the map above.
+	std::vector<microProgram*> mvuOrphanedProgs;
+
+	// Monotonic count of micro-memory writes (mVUclear calls). Compared
+	// against microProgram::writeGenAtAnchor so mVUcacheProg only pays the
+	// whole-image drift hash when a write can actually have occurred since
+	// the program's identity was anchored.
+	u64 microMemWriteGen;
 
 	microProgManager               prog;
 	microProfiler                  profiler;

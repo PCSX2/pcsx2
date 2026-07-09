@@ -1034,13 +1034,17 @@ void mVUreset(microVU& mVU, bool resetReserve)
 
 	// Single ownership lives in mVU.mvuContentMap. Free each program
 	// exactly once via the map iteration; per-PC deques and quick slots are
-	// non-owning references and just get cleared.
+	// non-owning references and just get cleared. Drift-evicted programs
+	// were moved out of the map into the orphan parking lot — free those too.
 	for (auto& entry : mVU.mvuContentMap)
 	{
 		microProgram* prog = entry.second;
 		mVUdeleteProg(mVU, prog);
 	}
 	mVU.mvuContentMap.clear();
+	for (microProgram*& prog : mVU.mvuOrphanedProgs)
+		mVUdeleteProg(mVU, prog);
+	mVU.mvuOrphanedProgs.clear();
 
 	for (u32 i = 0; i < (mVU.progSize / 2); i++)
 	{
@@ -1072,14 +1076,17 @@ void mVUclose(microVU& mVU)
 	mVUProgCache::SaveAllPrograms(mVU);
 	mVUProgCache::Close(mVU);
 
-	// Same ownership rule as mVUreset: free via contentMap, then
-	// drop the per-PC deque shells.
+	// Same ownership rule as mVUreset: free via contentMap (plus the
+	// drift-evicted orphans), then drop the per-PC deque shells.
 	for (auto& entry : mVU.mvuContentMap)
 	{
 		microProgram* prog = entry.second;
 		mVUdeleteProg(mVU, prog);
 	}
 	mVU.mvuContentMap.clear();
+	for (microProgram*& prog : mVU.mvuOrphanedProgs)
+		mVUdeleteProg(mVU, prog);
+	mVU.mvuOrphanedProgs.clear();
 
 	for (u32 i = 0; i < (mVU.progSize / 2); i++)
 	{
@@ -1092,6 +1099,11 @@ void mVUclose(microVU& mVU)
 // Clears Block Data in specified range
 __fi void mVUclear(mV, u32 addr, u32 size)
 {
+	// Every micro-mem write advances the generation; programs compare it
+	// against their writeGenAtAnchor so mVUcacheProg knows whether the live
+	// image can still match their anchored contentHash (drift check).
+	mVU.microMemWriteGen++;
+
 #ifdef mVUcacheTrace
 	mVUCacheTraceObserveClear(mVU, addr, size, /*wasRealClear=*/!mVU.prog.cleared);
 #endif
@@ -1203,6 +1215,7 @@ __ri microProgram* mVUcreateProg(microVU& mVU, int startPC, const XXH128_hash_t&
 	// subsequent re-caches don't shift the contentMap key.
 	prog->contentHash      = contentHash;
 	prog->contentHashValid = true;
+	prog->writeGenAtAnchor = mVU.microMemWriteGen;
 	mVUcontentMapInsert(mVU, prog);
 
 	double cacheSize = (double)((uptr)mVU.prog.x86end - (uptr)mVU.prog.x86start);
@@ -1212,6 +1225,25 @@ __ri microProgram* mVUcreateProg(microVU& mVU, int startPC, const XXH128_hash_t&
 	DevCon.WriteLn(c, "microVU%d: Cached Prog = [%03d] [PC=%04x] [List=%02d] (Cache=%3.3f%%) [%3.1fmb]",
 		mVU.index, prog->idx, startPC * 8, mVU.prog.prog[startPC]->size() + 1, cachePerc, cacheUsed);
 	return prog;
+}
+
+// Evict a program whose content has drifted from its anchor image out of the
+// hash-keyed identity layer. The contentMap owns its programs, so ownership
+// moves to mVU.mvuOrphanedProgs (freed alongside the map at mVUreset /
+// mVUclose); per-PC deque and quick references keep working — the program
+// stays a valid compile of its ranges, it just can no longer be served by
+// whole-image hash identity. contentHashValid=false also gates the persist /
+// on-disk ProgCache recording off (both check it before saving), so a drifted
+// program can't poison the disk cache under its stale anchor hash either.
+static __ri void mVUcontentMapEvict(microVU& mVU, microProgram& prog)
+{
+	auto it = mVU.mvuContentMap.find(prog.contentHash);
+	if (it != mVU.mvuContentMap.end() && it->second == &prog)
+	{
+		mVU.mvuContentMap.erase(it);
+		mVU.mvuOrphanedProgs.push_back(&prog);
+	}
+	prog.contentHashValid = false;
 }
 
 __ri void mVUcacheProg(microVU& mVU, microProgram& prog)
@@ -1234,6 +1266,29 @@ __ri void mVUcacheProg(microVU& mVU, microProgram& prog)
 	// from live microMem and pinned for the program's lifetime so the contentMap
 	// key stays stable across mVUsetupRange-driven re-caches (range expansions
 	// don't change identity).
+	//
+	// But a re-cache CAN change the program's content: after a write outside
+	// the program's compiled ranges (which range-aware mVUclear correctly
+	// lets it survive), an extension compile into the written region syncs
+	// the NEW live bytes here — the instance is then a mixed compile that no
+	// longer corresponds to its anchor image, while the contentMap would
+	// still serve it for that anchor hash with no memcmp confirm. If the
+	// anchor image is later re-uploaded (A/B/A double-buffering), the deque
+	// walk correctly rejects the program (ranges memcmp fails) but the hash
+	// hit re-installs it — executing code compiled from the other image.
+	// Detect drift here and evict from the hash layer. Gated on the write
+	// generation so the common warmup path (extensions with no intervening
+	// write) never pays the whole-image hash. If the image matches the
+	// anchor again (writes restored it), re-arm instead of hashing forever.
+	// Pinned by mvu_contentmap_drift_tests.cpp.
+	if (prog.contentHashValid && prog.writeGenAtAnchor != mVU.microMemWriteGen)
+	{
+		const XXH128_hash_t liveHash = mVUcomputeProgramHash(mVU);
+		if (liveHash.low64 != prog.contentHash.low64 || liveHash.high64 != prog.contentHash.high64)
+			mVUcontentMapEvict(mVU, prog);
+		else
+			prog.writeGenAtAnchor = mVU.microMemWriteGen;
+	}
 }
 
 u64 mVUrangesHash(microVU& mVU, microProgram& prog)
