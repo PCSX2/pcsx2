@@ -84,6 +84,7 @@ static ImFont* s_fixed_font;
 static ImFont* s_osd_font;
 
 static std::vector<ImGuiManager::FontInfo> s_font_info;
+static std::vector<u8> s_standard_font_data;
 static std::vector<u8> s_custom_font_data;
 static std::vector<u8> s_fixed_font_data;
 static std::vector<u8> s_icon_fa_font_data;
@@ -467,6 +468,27 @@ void ImGuiManager::SetKeyMap()
 
 bool ImGuiManager::LoadFontData()
 {
+	// Android: SetFonts() is never called (no Qt/language layer), so s_font_info stays
+	// empty and AddTextFont() returns null (blank OSD / default-font fallback). Seed it
+	// from the bundled Roboto-Regular.ttf resource, matching the refresh-experimental
+	// Android port.
+	if (s_font_info.empty())
+	{
+		if (s_standard_font_data.empty())
+		{
+			std::optional<std::vector<u8>> font_data = FileSystem::ReadBinaryFile(
+				EmuFolders::GetOverridableResourcePath("fonts" FS_OSPATH_SEPARATOR_STR "Roboto-Regular.ttf").c_str());
+			if (!font_data.has_value())
+				return false;
+			s_standard_font_data = std::move(font_data.value());
+		}
+		FontInfo info;
+		info.data = std::span<const u8>(s_standard_font_data.data(), s_standard_font_data.size());
+		info.face_name = nullptr;
+		info.is_emoji_font = false;
+		s_font_info.push_back(info);
+	}
+
 	const std::string custom_font_path(StringUtil::StripWhitespace(GSConfig.OsdFontPath));
 	if (custom_font_path.empty())
 	{
@@ -522,6 +544,8 @@ bool ImGuiManager::LoadFontData()
 
 void ImGuiManager::UnloadFontData()
 {
+	s_font_info.clear();
+	std::vector<u8>().swap(s_standard_font_data);
 	std::vector<u8>().swap(s_custom_font_data);
 	std::vector<u8>().swap(s_fixed_font_data);
 	std::vector<u8>().swap(s_icon_fa_font_data);
@@ -771,19 +795,33 @@ bool ImGuiManager::AddImGuiFonts()
 	io.Fonts->Clear();
 
 	s_standard_font = AddTextFont();
-	if (!s_standard_font || !AddIconFonts() || !AddEmojiFont())
-		return false;
+	const char* fail = nullptr;
+	if (!s_standard_font) fail = "AddTextFont";
+	else if (!AddIconFonts()) fail = "AddIconFonts#1";
+	else if (!AddEmojiFont()) fail = "AddEmojiFont#1";
+	else if (!(s_fixed_font = AddFixedFont())) fail = "AddFixedFont";
+	else if (!AddEmojiFont()) fail = "AddEmojiFont#2";
+	else if (!(s_osd_font = AddOsdFont())) fail = "AddOsdFont";
+	else if (!AddIconFonts()) fail = "AddIconFonts#2";
+	else if (!AddEmojiFont()) fail = "AddEmojiFont#3";
 
-	s_fixed_font = AddFixedFont();
-	if (!s_fixed_font || !AddEmojiFont())
-		return false;
+	if (!fail)
+	{
+		ImGuiFullscreen::SetFont(s_standard_font);
+		return true;
+	}
 
-	s_osd_font = AddOsdFont();
-	if (!s_osd_font || !AddIconFonts() || !AddEmojiFont())
-		return false;
-
-	ImGuiFullscreen::SetFont(s_standard_font);
-	return true;
+	// Android: the custom font atlas failed to build (which font: logged below).
+	// Fall back to ImGui's built-in default font so ImGui — and therefore the GS
+	// device — can still initialize and the game can render (OSD uses a basic font).
+	Console.ErrorFmt("ImGui: font atlas build failed at {}, falling back to default font", fail);
+	io.Fonts->Clear();
+	s_standard_font = io.Fonts->AddFontDefault();
+	s_fixed_font = s_standard_font;
+	s_osd_font = s_standard_font;
+	if (s_standard_font)
+		ImGuiFullscreen::SetFont(s_standard_font);
+	return s_standard_font != nullptr;
 }
 
 struct OSDMessage
