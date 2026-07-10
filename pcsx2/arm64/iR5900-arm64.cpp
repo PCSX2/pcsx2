@@ -2171,8 +2171,9 @@ static bool recSkipTimeoutLoop(s32 reg, bool is_timeout_loop)
 	armAsm->Cmp(RECCYCLE, 0);
 	armEmitCondBranch(a64::ge, DispatcherEvent);
 
-	// w9 = reg value (the decrementing counter). Scratches are w9/x10/w8:
-	// w4-w7 are rung-3 EE-SRA pins and this emits inline into EE blocks.
+	// w9 = reg value (the decrementing counter). Scratches are w9/x10/w8
+	// (reserved — w4-w7 are allocatable and may hold live values in the
+	// surrounding EE block).
 	armAsm->Ldr(a64::w9, armCpuRegMem(&cpuRegs.GPR.r[reg].UL[0]));
 
 	// x10 = reg * 8 + delta (estimated end delta, s64)

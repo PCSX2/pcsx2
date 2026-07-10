@@ -487,7 +487,7 @@ void recMADD()
 
 	// Load existing HI:LO into x1
 	armLoadEERegPtr(a64::w3, &cpuRegs.LO.UL[0]);
-	armLoadEERegPtr(RWSCRATCH, &cpuRegs.HI.UL[0]); // w8: w4 is a rung-3 EE-SRA pin
+	armLoadEERegPtr(RWSCRATCH, &cpuRegs.HI.UL[0]); // w8: reserved scratch (w4 is allocatable)
 	armAsm->Orr(a64::x3, a64::x3, a64::Operand(RXSCRATCH, a64::LSL, 32));
 
 	// Add
@@ -523,7 +523,7 @@ void recMADDU()
 	armAsm->Umull(a64::x0, rs32, rt32);
 
 	armLoadEERegPtr(a64::w3, &cpuRegs.LO.UL[0]);
-	armLoadEERegPtr(RWSCRATCH, &cpuRegs.HI.UL[0]); // w8: w4 is a rung-3 EE-SRA pin
+	armLoadEERegPtr(RWSCRATCH, &cpuRegs.HI.UL[0]); // w8: reserved scratch (w4 is allocatable)
 	armAsm->Orr(a64::x3, a64::x3, a64::Operand(RXSCRATCH, a64::LSL, 32));
 
 	armAsm->Add(a64::x0, a64::x0, a64::x3);
@@ -558,7 +558,7 @@ void recMADD1()
 	armAsm->Smull(a64::x0, rs32, rt32);
 
 	armLoadEERegPtr(a64::w3, &cpuRegs.LO.UL[2]);  // LO1 = LO.UL[2] (upper 64 bits)
-	armLoadEERegPtr(RWSCRATCH, &cpuRegs.HI.UL[2]); // HI1 = HI.UL[2] (w8: w4 is a rung-3 pin)
+	armLoadEERegPtr(RWSCRATCH, &cpuRegs.HI.UL[2]); // HI1 = HI.UL[2] (w8: reserved scratch — w4 is allocatable)
 	armAsm->Orr(a64::x3, a64::x3, a64::Operand(RXSCRATCH, a64::LSL, 32));
 
 	armAsm->Add(a64::x0, a64::x0, a64::x3);
@@ -593,7 +593,7 @@ void recMADDU1()
 	armAsm->Umull(a64::x0, rs32, rt32);
 
 	armLoadEERegPtr(a64::w3, &cpuRegs.LO.UL[2]);
-	armLoadEERegPtr(RWSCRATCH, &cpuRegs.HI.UL[2]); // w8: w4 is a rung-3 pin
+	armLoadEERegPtr(RWSCRATCH, &cpuRegs.HI.UL[2]); // w8: reserved scratch (w4 is allocatable)
 	armAsm->Orr(a64::x3, a64::x3, a64::Operand(RXSCRATCH, a64::LSL, 32));
 
 	armAsm->Add(a64::x0, a64::x0, a64::x3);

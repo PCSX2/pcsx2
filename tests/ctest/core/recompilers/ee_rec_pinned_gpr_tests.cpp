@@ -412,11 +412,14 @@ TEST(EeRecPinnedGpr, V1A0Mfc0PerfCounterAcrossInterpFallback)
 }
 
 // ---------------------------------------------------------------------------
-// Rung 3 ($k0 → x4, $s0 → x6, $at → x7): the remaining CALLER-SAVED pins,
-// in argument-register territory — preserve_most never spares x0-x8, so the
-// vtlb softmem/thunk slow paths carry an explicit reload. ($a1 was rung 3's
-// fourth pin at x5 until EE-SRA 3 Arm C promoted it to callee-saved x21;
-// its tests below still exercise the pin, now via the tier-1 contract.)
+// Tier 2 ($k0 → x12, $s0 → x13, $at → x11): the remaining CALLER-SAVED pins,
+// homed inside preserve_most's spared x9-x15 range since EE-SRA 3 Arm D —
+// the vtlb softmem/thunk slow paths emit NO pin traffic there
+// (armReloadEEPinsAfterPreserveMostCall is emit-nothing for this table),
+// while every plain-AAPCS C seam keeps the 3-Ldr clobber reload. ($a1 was
+// this tier's fourth pin at x5 until EE-SRA 3 Arm C promoted it to
+// callee-saved x21; its tests below still exercise the pin, now via the
+// tier-1 contract.)
 // ---------------------------------------------------------------------------
 
 // Core scalar matrix for the rung-3 pins: reads, writes, RMW, cross-pin ops.
@@ -445,18 +448,26 @@ TEST(EeRecPinnedGpr, RungThreeScalarReadsAndWriteThrough)
 }
 
 // The warm-path seam: a vtlb SLOW-PATH C call (handler-page access) with
-// both caller-saved pins live. Fastmem is disabled for this block so
+// all caller-saved pins live. Fastmem is disabled for this block so
 // recLoad/recStore emit the inline softmem lookup whose slow path BLs
 // vtlb_memRead/Write<mem32_t> — the preserve_most dispatchers. A non-const
 // base defeats the const-paddr MMIO shortcut, so this is exactly the
-// emitted-call shape the fastmem backpatch thunk also takes.
-// Coverage honesty: this wires the seam end-to-end, but whether a BROKEN
-// seam (annotation stripped) actually corrupts x12/x13 depends on the
-// dispatcher's register allocation on the dynamic path taken — the INTC
-// read path happens not to touch them in current clang builds, so this
-// test alone cannot prove the annotation. That proof is object-level (the
-// vtlb_memRead prologue saves x9-x15 iff preserve_most applied) plus the
-// stepdiff/corpus gates, where real games hit fat MMIO paths constantly.
+// emitted-call shape the fastmem backpatch thunk also takes. Since EE-SRA 3
+// Arm D this seam emits NOTHING for the pins (tier-2 x11/x12/x13 sit in the
+// spared x9-x15 range) — the pins' survival rests entirely on the
+// preserve_most contract, which is what this test rides end-to-end.
+// Coverage honesty: whether a BROKEN contract (annotation stripped) actually
+// corrupts x11/x12/x13 depends on the dispatcher's register allocation on
+// the dynamic path taken — the INTC read path happens not to touch them in
+// current clang builds, so this test alone cannot prove the annotation.
+// (Mutation-verified 2026-07-09: skipping x11-x13 in the GENERIC clobber
+// reload also stays green in-harness — under write-through a clobber reload
+// only matters when the callee physically trashes the register, and no
+// harness-reachable callee does so deterministically.) The proof is
+// object-level (every vtlb_memRead/Write prologue opens with the
+// unconditional str x15 / stp x14,x13 / stp x12,x11 / stp x10,x9 save —
+// re-verified at Arm D) plus the stepdiff/corpus gates, where real games
+// hit fat MMIO paths constantly.
 TEST(EeRecPinnedGpr, CallerSavedPinsSurviveVtlbSlowPath)
 {
 	EeRecTestHarness h;
@@ -467,8 +478,8 @@ TEST(EeRecPinnedGpr, CallerSavedPinsSurviveVtlbSlowPath)
 	h.SetGpr64(reg::t1, 0x1000f010ull);             // INTC_STAT vaddr (non-const)
 	h.SetGpr64(reg::v1, 0x0123456789ABCDEFull);
 	h.SetGpr64(reg::a0, 0x7EDCBA9876543210ull);
-	// Rung-3 pins: preserve_most does NOT spare x4-x7, so these four ride
-	// the explicit armReloadEEClobberedPins after the slow-path call.
+	// Tier-2 pins: preserve_most spares x11/x12/x13, so these ride the call
+	// IN their registers — no reload is emitted at this seam since Arm D.
 	h.SetGpr64(reg::k0, 0x1111222233334444ull);
 	h.SetGpr64(reg::a1, 0x5555666677778888ull);
 	h.SetGpr64(reg::s0, 0x0102030405060708ull);
@@ -522,4 +533,28 @@ TEST(EeRecPinnedGpr, CallerSavedPinsSurviveConstPaddrMMIOShortcut)
 	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0x7EDCBA9876543210ull);
 	EXPECT_EQ(h.GetGpr64Interp(reg::t4), 0x0123456789ABCDEFull);
 	EXPECT_EQ(h.GetGpr64Interp(reg::t5), 0x7EDCBA9876543210ull);
+}
+
+// 128-bit write-through on the tier-2 pins: PADDW/PSUBW allocate $k0/$at/$s0
+// as NEON dests, and the scalar read-back forces the NEON→memory writeback
+// whose lane-0 UMOV must refresh the mirror — the fe786b987 PMADDW bug class
+// (a raw Str that bypasses the pin mirror leaves the pinned value stale),
+// exercised on the Arm D homes.
+TEST(EeRecPinnedGpr, TierTwoQuadWriteThroughThenReadBack)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::t0, 0x0000000100000002ull);
+	h.SetGpr64(reg::t1, 0x0000000300000004ull);
+	h.LoadProgram({
+		PADDW(reg::k0, reg::t0, reg::t1),   // 128-bit write of pinned $k0
+		DADDU(reg::t2, reg::k0, reg::zero), // scalar read-back via the pin
+		PSUBW(reg::at, reg::t0, reg::t1),   // 128-bit write of pinned $at
+		DADDU(reg::t3, reg::at, reg::zero),
+		PADDW(reg::s0, reg::t1, reg::t0),   // 128-bit write of pinned $s0
+		DADDU(reg::t4, reg::s0, reg::zero),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t2), 0x0000000400000006ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0xFFFFFFFEFFFFFFFEull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t4), 0x0000000400000006ull);
 }

@@ -495,8 +495,9 @@ static void cop2EmitFlagUpdate(int xyzw)
 	armMoveAddressToReg(RSCRATCHADDR, &s_cop2DenormStatusFlag);
 	armAsm->Ldr(RWSCRATCH, a64::MemOperand(RSCRATCHADDR));
 
-	// Clear current (non-sticky) bits 8-15. w9 scratch: w4 is an EE-SRA pin
-	// (rung 3) and this body emits inline into EE blocks.
+	// Clear current (non-sticky) bits 8-15. w9 scratch: this body emits
+	// inline into EE blocks, where allocatable regs (w4 since Arm D) may
+	// hold live allocator values — raw scratch stays on reserved w8/w9/w10.
 	armAsm->Mov(a64::w9, 0xFF00);
 	armAsm->Bic(RWSCRATCH, RWSCRATCH, a64::w9);
 
@@ -859,7 +860,7 @@ void recCOP2_CTC2()
 		armAsm->And(a64::w2, a64::w2, 0x1800);
 		armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::w2);
 		armAsm->Lsl(a64::w3, RWARG2, 14);
-		armAsm->Mov(a64::w9, 0x3cf0000); // not a valid logical-imm; materialize (w9: w4 is a rung-3 pin)
+		armAsm->Mov(a64::w9, 0x3cf0000); // not a valid logical-imm; materialize (w9: reserved scratch — w4 is allocatable)
 		armAsm->And(a64::w3, a64::w3, a64::w9);
 		armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::w3);
 
@@ -1969,7 +1970,8 @@ void recCOP2_VCLIP()
 	armAsm->Csel(a64::w1, a64::w1, a64::w3, a64::ne); // w1 = clip value
 
 	// Shift clipflag left by 6. Accumulates in w9 across the NEON stretch
-	// below (w4 is a rung-3 EE-SRA pin; this body emits inline into EE blocks).
+	// below (w9 is reserved scratch; w4 is allocatable and may be live in
+	// the surrounding EE block).
 	armAsm->Ldr(a64::w9, armVU0Mem(&VU0.clipflag));
 	armAsm->Lsl(a64::w9, a64::w9, 6);
 

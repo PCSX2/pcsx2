@@ -106,7 +106,7 @@ static void vtlbSoftmemRead(int addr_wreg, u32 bits, bool sign)
 	// this the JIT's pinned x25 stays stale and block-end cycle compare
 	// never trips on tight INTC polls.
 	armFlushCycleDelta();
-	armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
+	armFlushEEPinsBeforePreserveMostCall(); // lazy-dirty seam twin — emits nothing today
 	switch (bits)
 	{
 		case 8:  armEmitCall((void*)vtlb_memRead<mem8_t>);  break;
@@ -115,9 +115,10 @@ static void vtlbSoftmemRead(int addr_wreg, u32 bits, bool sign)
 		case 64: armEmitCall((void*)vtlb_memRead<mem64_t>); break;
 	}
 	armReloadCycleDelta();
-	// preserve_most spares x9-x15 but never x0-x8 — restore the rung-3
-	// x4-x7 pins the call clobbered (x0 result is untouched).
-	armReloadEEClobberedPins();
+	// vtlb_memRead is preserve_most: the spared x9-x15 range covers every
+	// caller-saved pin (tier-2 x11/x12/x13), so this emits nothing — the
+	// warm softmem seam carries zero pin traffic (x0 result untouched).
+	armReloadEEPinsAfterPreserveMostCall();
 	// Sign-extend if needed (vtlb_memRead returns zero-extended)
 	if (sign && bits == 8)
 		armAsm->Sxtb(a64::x0, a64::w0);
@@ -179,7 +180,7 @@ static void vtlbSoftmemWrite(int addr_wreg, int value_reg, u32 bits)
 	// any cycle-mutating handler reachable from MMIO must keep the JIT's
 	// pinned x25 coherent. See vtlbSoftmemRead for full rationale.
 	armFlushCycleDelta();
-	armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
+	armFlushEEPinsBeforePreserveMostCall(); // lazy-dirty seam twin — emits nothing today
 	switch (bits)
 	{
 		case 8:  armEmitCall((void*)vtlb_memWrite<mem8_t>);  break;
@@ -188,8 +189,8 @@ static void vtlbSoftmemWrite(int addr_wreg, int value_reg, u32 bits)
 		case 64: armEmitCall((void*)vtlb_memWrite<mem64_t>); break;
 	}
 	armReloadCycleDelta();
-	// x4-x7 pin restore — see vtlbSoftmemRead.
-	armReloadEEClobberedPins();
+	// preserve_most seam — emits nothing; see vtlbSoftmemRead.
+	armReloadEEPinsAfterPreserveMostCall();
 
 	armAsm->Bind(&done);
 }
@@ -520,10 +521,12 @@ static void recLoad(u32 bits, bool sign)
 	{
 		// Pinned dest (WS-C4): load straight into the pin — the recorded
 		// data_register makes the backpatch thunk reconstruct into it on a
-		// fault (after armReloadEEClobberedPins, so caller-saved pins get the
-		// load result last). Kills the Mov pin<-x0 mirror refresh; the
-		// canonical Str in recStoreLoadResult stays. Not done for softmem —
-		// its result comes back from a C call in x0.
+		// fault (the thunk's Mov data_register<-x0 runs after its pin reload
+		// seam, so the pin gets the load result last; with tier-2 pins in the
+		// preserve_most-spared x11-x13 that seam emits nothing and the pin
+		// simply rides through the call). Kills the Mov pin<-x0 mirror
+		// refresh; the canonical Str in recStoreLoadResult stays. Not done
+		// for softmem — its result comes back from a C call in x0.
 		const a64::Register* dpin = _Rt_ ? armEEPinForGPR(_Rt_) : nullptr;
 		vtlbFastmemRead(addr_reg, dpin ? static_cast<unsigned>(dpin->GetCode()) : 0, bits, sign);
 		recStoreLoadResult(dpin ? *dpin : a64::Register(a64::x0));
@@ -709,11 +712,11 @@ static void vtlbSoftmemRead128(int addr_wreg)
 	armAsm->Mov(a64::w0, a64::w9);
 	// See vtlbSoftmemRead for the RECCYCLE coherence rationale.
 	armFlushCycleDelta();
-	armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
+	armFlushEEPinsBeforePreserveMostCall(); // lazy-dirty seam twin — emits nothing today
 	armEmitCall((void*)vtlb_memRead128);
 	armReloadCycleDelta();
-	// x4-x7 pin restore — see vtlbSoftmemRead (q0 result untouched).
-	armReloadEEClobberedPins();
+	// preserve_most seam — emits nothing; see vtlbSoftmemRead (q0 untouched).
+	armReloadEEPinsAfterPreserveMostCall();
 
 	armAsm->Bind(&done);
 }
@@ -744,11 +747,11 @@ static void vtlbSoftmemWrite128(int addr_wreg)
 	armAsm->Mov(a64::w0, a64::w9);
 	// See vtlbSoftmemRead for the RECCYCLE coherence rationale.
 	armFlushCycleDelta();
-	armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
+	armFlushEEPinsBeforePreserveMostCall(); // lazy-dirty seam twin — emits nothing today
 	armEmitCall((void*)vtlb_memWrite128);
 	armReloadCycleDelta();
-	// x4-x7 pin restore — see vtlbSoftmemRead.
-	armReloadEEClobberedPins();
+	// preserve_most seam — emits nothing; see vtlbSoftmemRead.
+	armReloadEEPinsAfterPreserveMostCall();
 
 	armAsm->Bind(&done);
 }

@@ -140,7 +140,7 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 		// events and cause cascading mid-block timing bugs. Matches the
 		// pattern at recVTLB-arm64.cpp:112+120.
 		armFlushCycleDelta();
-		armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
+		armFlushEEPinsBeforePreserveMostCall(); // emits nothing for the current table
 		if (is_load)
 		{
 			armEmitCall((void*)vtlb_memRead128);
@@ -150,10 +150,11 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 			armEmitCall((void*)vtlb_memWrite128);
 		}
 		armReloadCycleDelta();
-		// preserve_most spares x9-x15 but never x0-x8 — restore the rung-3
-		// x4-x7 pins the call clobbered (pins are not allocator state, so
-		// the gpr_bitmask save/restore never covers them; q0 untouched).
-		armReloadEEClobberedPins();
+		// vtlb_memRead/Write128 are preserve_most: x9-x15 covers every
+		// caller-saved pin (tier-2 x11/x12/x13), so this emits nothing (pins
+		// are not allocator state, so the gpr_bitmask save/restore never
+		// covers them either; q0 untouched).
+		armReloadEEPinsAfterPreserveMostCall();
 
 		armAsm->Bind(&done);
 	}
@@ -205,7 +206,7 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 		armAsm->Mov(a64::w0, a64::w9);
 		// Spill/reload RECCYCLE — see 128-bit slow_path above for rationale.
 		armFlushCycleDelta();
-		armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
+		armFlushEEPinsBeforePreserveMostCall(); // emits nothing for the current table
 		switch (size_in_bits)
 		{
 			case 8:  armEmitCall((void*)vtlb_memRead<mem8_t>);  break;
@@ -215,8 +216,11 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 			default: break;
 		}
 		armReloadCycleDelta();
-		// x4-x7 pin restore — see the 128-bit slow path above (x0 untouched).
-		armReloadEEClobberedPins();
+		// preserve_most seam — emits nothing; see the 128-bit slow path above.
+		// When data_register below is itself a pin (WS-C4 pinned dest), it
+		// rides the call spared and the Mov lands the fresh result (x0
+		// untouched here).
+		armReloadEEPinsAfterPreserveMostCall();
 		// Extend the handler return into x0 for the 64-bit cpuRegs.GPR store.
 		// AAPCS64 leaves the upper bits of x0 unspecified for sub-word returns,
 		// so UNSIGNED sub-64-bit loads must Uxtw too — otherwise the garbage
@@ -299,7 +303,7 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 
 		// Spill/reload RECCYCLE — see 128-bit slow_path above for rationale.
 		armFlushCycleDelta();
-		armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
+		armFlushEEPinsBeforePreserveMostCall(); // emits nothing for the current table
 		switch (size_in_bits)
 		{
 			case 8:  armEmitCall((void*)vtlb_memWrite<mem8_t>);  break;
@@ -309,8 +313,8 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 			default: pxFailRel("Unsupported store size in backpatch"); break;
 		}
 		armReloadCycleDelta();
-		// x4-x7 pin restore — see the 128-bit slow path above.
-		armReloadEEClobberedPins();
+		// preserve_most seam — emits nothing; see the 128-bit slow path above.
+		armReloadEEPinsAfterPreserveMostCall();
 
 		armAsm->Bind(&done);
 	}

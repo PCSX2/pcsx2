@@ -53,16 +53,21 @@ static uint g_arm64checknext = 0;
 
 _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_REGS];
 
-// ARM64 register allocation policy (EE-SRA 3 Arm C tier-1 re-home):
+// ARM64 register allocation policy (EE-SRA 3 Arm D tier-2 re-home):
 // x0-x3:   argument/return registers (caller-saved, allocatable)
-// x4:      REEPIN_K0 — NOT allocatable (rung-3 pinned mirror of
-//          GPR.r[26].UD[0]; caller-saved — see the preservation contract
-//          in iR5900-arm64.h)
-// x5:      caller-saved temporary (allocatable; vacated by the $a1→x21
-//          re-home)
-// x6/x7:   REEPIN_S0/REEPIN_AT — NOT allocatable (rung-3 pinned mirrors
-//          of GPR.r[16]/[1].UD[0]; caller-saved)
-// x8-x15:  caller-saved temporaries (allocatable, except x8-x10 scratch)
+// x4-x7:   caller-saved temporaries (allocatable; vacated by the Arm D
+//          tier-2 re-home — S3's 0f16948ae removed every hardcoded w4-w7
+//          scratch use, so nothing conflicts with allocator residency)
+// x8-x10:  scratch (RXSCRATCH + load/store addr/value) — NOT allocatable
+// x11:     REEPIN_AT — NOT allocatable for EE (tier-2 pinned mirror of
+//          GPR.r[1].UD[0]; caller-saved but preserve_most-spared — see the
+//          preservation contract in iR5900-arm64.h). IOP-allocatable.
+// x12/x13: REEPIN_K0/REEPIN_S0 — NOT allocatable for EE (tier-2 pinned
+//          mirrors of GPR.r[26]/[16].UD[0]; caller-saved but
+//          preserve_most-spared). IOP-allocatable.
+// x14/x15: caller-saved temporaries (allocatable; shared with the mVU
+//          macro-mode VI pool, which is compatible because macro ops emit
+//          on a flushed allocator)
 // x16:     VIXL intra-procedure scratch — NOT allocatable
 // x17:     RSCRATCHADDR — NOT allocatable
 // x18:     platform reserved — NOT allocatable
@@ -89,10 +94,10 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 // Bitmask of allocatable aarch64 GPRs for EE-side codegen (EE/VU-macro/
 // temps). Bit `n` set ↔ x_n is in the pool. Cleared bits as documented
 // above:
-//   bit 4       — x4  : REEPIN_K0 (rung-3 pinned mirror)
-//   bits 6-7    — x6/x7 : REEPIN_S0/REEPIN_AT (rung-3 pinned mirrors)
 //   bit 8       — x8  : RXSCRATCH/RWSCRATCH (value scratch)
 //   bits 9-10   — x9/x10 : load/store address + value scratch
+//   bits 11-13  — x11/x12/x13 : REEPIN_AT/REEPIN_K0/REEPIN_S0 (tier-2
+//                 pinned mirrors)
 //   bits 16-18  — x16 (vixl), x17 (RSCRATCHADDR), x18 (platform reserved)
 //   bit 19      — x19 : RFASTMEMBASE
 //   bit 20      — x20 : RSTATE (cpuRegs base pointer)
@@ -106,10 +111,9 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 // Inner allocator loop runs 31× per cache miss and was nine sequential
 // `if (armreg == N) return false` branches per probe; collapse to one
 // LSR + AND + cbz against this mask.
-static constexpr uint32_t EE_ALLOCATABLE_MASK = ~((1u << 4)
-	| (3u << 6)
-	| (1u << 8)
+static constexpr uint32_t EE_ALLOCATABLE_MASK = ~((1u << 8)
 	| (1u << 9) | (1u << 10)
+	| (7u << 11)
 	| (7u << 16)
 	| (1u << 19) | (1u << 20) | (1u << 21)
 	| (3u << 22)
@@ -118,16 +122,18 @@ static constexpr uint32_t EE_ALLOCATABLE_MASK = ~((1u << 4)
 	| (3u << 29));
 
 // IOP-side pool (ARM64TYPE_PSX / ARM64TYPE_PSX_PCWRITEBACK allocations):
-// re-admits x26/x27. IOP blocks execute under EnterRecompiledCode's
-// armBeginStackFrame (x19-x28 saved), and IOP execution is reachable from
-// a live EE session only through C seams — so the EE pins are restored
-// before EE JIT code resumes, exactly as for any callee-saved register.
-// The rung-3 EE pins x4/x6/x7 would be legal here for the same reason
-// (they're caller-saved; every EE C seam already reloads them) but stay
-// excluded for simplicity — Arm D vacates them into the shared pool.
+// re-admits the EE pin homes x11-x13 and x26/x27. IOP blocks execute under
+// EnterRecompiledCode's armBeginStackFrame (x19-x28 saved) so the
+// callee-saved pins are restored before EE JIT code resumes; the
+// caller-saved x11-x13 are legal because IOP execution is reachable from a
+// live EE session only through C seams, and every EE C seam that can run
+// IOP reloads its caller-saved pins afterwards (the preserve_most
+// emit-nothing seams cannot run IOP: the vtlb dispatchers' preserve_most
+// contract restores x9-x15 regardless of what they call internally).
 // Shared TEMP allocations always use the EE mask (restrictive = safe for
 // both CPUs).
-static constexpr uint32_t IOP_ALLOCATABLE_MASK = EE_ALLOCATABLE_MASK | (1u << 26) | (1u << 27);
+static constexpr uint32_t IOP_ALLOCATABLE_MASK =
+	EE_ALLOCATABLE_MASK | (7u << 11) | (1u << 26) | (1u << 27);
 
 bool _isAllocatableArm64GPR(int armreg)
 {

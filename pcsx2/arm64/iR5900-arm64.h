@@ -62,9 +62,9 @@
 //   x26 = cpuRegs.GPR.r[3].UD[0]   ($v1, 12.6% of dynamic refs)
 //   x27 = cpuRegs.GPR.r[4].UD[0]   ($a0, 7.9%)
 //   x21 = cpuRegs.GPR.r[5].UD[0]   ($a1)
-//   x4  = cpuRegs.GPR.r[26].UD[0]  ($k0, 6.3% — rung 3)
-//   x6  = cpuRegs.GPR.r[16].UD[0]  ($s0)
-//   x7  = cpuRegs.GPR.r[1].UD[0]   ($at)
+//   x12 = cpuRegs.GPR.r[26].UD[0]  ($k0, 6.3% — tier 2)
+//   x13 = cpuRegs.GPR.r[16].UD[0]  ($s0)
+//   x11 = cpuRegs.GPR.r[1].UD[0]   ($at)
 // MEMORY STAYS CANONICAL. Every guest-visible write still stores to
 // cpuRegs.GPR; the pin mirror is refreshed at the same emission point
 // (armStoreEERegPtr write-through, armStoreEEGPRQuad for 128-bit stores).
@@ -114,37 +114,51 @@
 // instance) is dispatcher-saved and never referenced by macro-mode emit
 // bodies (flag setup/exit thunks are micro-only paths).
 //
-// x4/x6/x7 are CALLER-SAVED (rung 3 — the callee-saved budget is
-// exhausted): any C call clobbers the host register even when the callee
-// never touches guest state. The preservation contract:
+// x11/x12/x13 are CALLER-SAVED (tier 2 — the callee-saved budget is
+// exhausted) but sit inside preserve_most's spared range x9-x15 (EE-SRA 3
+// Arm D). The preservation contract:
 //   1. vtlb_memRead/Write<T> + the 128-bit variants — the ONLY C calls on
 //      warm paths (fastmem backpatch thunk + inline softmem slow paths) —
 //      are annotated preserve_most (vtlb.h): the callee preserves x9-x15,
-//      which since the Arm C re-home covers NO pins (the x4-x7 range is
-//      never spared — preserve_most only helps again when Arm D moves the
-//      tier-2 pins into x11/x12/x13), so those slow paths emit
-//      armReloadEEClobberedPins after the call. The thunk's own code uses
-//      only w8/w9/w10/x0/x17 (RecStubs.cpp) and its gpr_bitmask save loop
-//      stays pin-free — pins are not allocator state.
+//      which covers ALL tier-2 pins. Those seven call sites (4 recVTLB
+//      softmem/128-bit slow paths + 3 RecStubs thunk slow paths) use
+//      armReloadEEPinsAfterPreserveMostCall(), which emits NOTHING for
+//      this table — warm vtlb seams carry zero pin traffic. This holds
+//      even though the dispatchers call arbitrary handlers internally
+//      (VIF dynarec, IntCHackCheck, ...): preserve_most is a callee
+//      contract, so clang saves x9-x15 in the dispatcher's own prologue.
+//      The thunk's own emitted code uses only w8/w9/w10/x0/x17
+//      (RecStubs.cpp) and its gpr_bitmask save loop stays pin-free — pins
+//      are not allocator state.
 //   2. Every other C call reachable inside a live session is followed by
 //      armReloadEEClobberedPins() (3 Ldrs, all cold paths): the const-
-//      paddr MMIO shortcuts, dyna_block_discard/page_reset stubs, Goemon
+//      paddr MMIO shortcuts (raw registered handlers are plain AAPCS,
+//      NOT preserve_most), dyna_block_discard/page_reset stubs, Goemon
 //      TLB hooks, SetBranchReg's vtlb_V2P, Interp::MTC0, FPU/VCALLMS
 //      interpreter fallbacks, the vu0Sync family (iCOP2), macro-mode
 //      mVUaddrFix's waitMTVU (via armEmitEEClobberedPinReloadForCOP2),
 //      and the test-build verify/divtrace hooks.
 //   3. GPR-writing callees keep using the full armReloadEEGPRPins().
-// x12/x13 (the pre-Arm-C $v1/$a0 homes) are plain allocatable again; mVU
-// micro's w12/w13 flag-extraction scratch is irrelevant to EE state.
+// mVU-side x11/x12/x13 uses are all MICRO-mode-only, verified 2026-07-09:
+// gprT3 (w11) appears in NEON_ADD2SS (tri-ace ADDi hack), mVUsetupFlags'
+// 4-distinct shuffle, VU branch emitters, and the shared SFLAGc exit
+// thunk — macro mode hand-rolls its arithmetic natively in iCOP2
+// (cop2Op_*, incl. native VCLIP whose w12 twin lives in Upper.inl's
+// micro CLIP), routes only the 12 Lower.inl ops (zero w11-w13 refs)
+// through the mVU adapter, and never emits VU branches or exit thunks.
+// mVUallocSFLAGd's w11 default has no callers. Micro-mode clobbers are
+// covered by contract 2 (micro runs only behind C seams). x4/x6/x7 (the
+// pre-Arm-D tier-2 homes) are plain allocatable again — S3's 0f16948ae
+// already removed every hardcoded w4-w7 scratch use.
 #define REEPIN_SP vixl::aarch64::x22
 #define REEPIN_RA vixl::aarch64::x23
 #define REEPIN_V0 vixl::aarch64::x29
 #define REEPIN_V1 vixl::aarch64::x26
 #define REEPIN_A0 vixl::aarch64::x27
-#define REEPIN_K0 vixl::aarch64::x4
+#define REEPIN_K0 vixl::aarch64::x12
 #define REEPIN_A1 vixl::aarch64::x21
-#define REEPIN_S0 vixl::aarch64::x6
-#define REEPIN_AT vixl::aarch64::x7
+#define REEPIN_S0 vixl::aarch64::x13
+#define REEPIN_AT vixl::aarch64::x11
 
 // The static guest→host pin map. Everything pin-related (lookup, reload,
 // write-through) iterates this table; adding a rung = adding a row here,
@@ -267,7 +281,31 @@ static __fi void armReloadEEClobberedPins()
 	}
 }
 
-// EE-SRA 2 WS-B: lazy-dirty pin mode. 0 = write-through (memory canonical
+// preserve_most (clang AArch64) spares x9-x15 in the CALLEE: the caller may
+// keep values live there across the call even though the registers are
+// caller-saved under plain AAPCS.
+static __fi bool armIsPreserveMostSparedRegister(int reg)
+{
+	return reg >= 9 && reg <= 15;
+}
+
+// Reload only the pins a preserve_most callee can actually clobber:
+// caller-saved AND outside the spared x9-x15 range. For the current table
+// (tier-2 pins in x11/x12/x13) this emits NOTHING — warm vtlb seams carry
+// zero pin traffic. ONLY valid after calls to preserve_most-annotated
+// callees (vtlb_memRead/Write<T>/128); plain-AAPCS callees (raw registered
+// MMIO handlers, everything else) need armReloadEEClobberedPins. A future
+// pin homed outside x9-x15 joins the reload automatically via the table
+// walk.
+static __fi void armReloadEEPinsAfterPreserveMostCall()
+{
+	for (const EEPinnedGPR& pin : kEEPinTable)
+	{
+		const int reg = static_cast<int>(pin.host.GetCode());
+		if (!armIsCalleeSavedRegister(reg) && !armIsPreserveMostSparedRegister(reg))
+			armAsm->Ldr(pin.host, armCpuRegMem(&cpuRegs.GPR.r[pin.gpr].UD[0]));
+	}
+}
 // after every guest write — the shipping default). 1 = pins canonical between
 // seams: guest writes to pinned GPRs skip the canonical store, and every seam
 // where C code (or a JIT-internal 128-bit/raw reader) could observe stale GPR
@@ -302,6 +340,25 @@ static __fi void armFlushEEClobberedPins()
 	for (const EEPinnedGPR& pin : kEEPinTable)
 	{
 		if (!armIsCalleeSavedRegister(static_cast<int>(pin.host.GetCode())))
+			armAsm->Str(pin.host, armCpuRegMem(&cpuRegs.GPR.r[pin.gpr].UD[0]));
+	}
+}
+
+// Lazy-dirty twin of armReloadEEPinsAfterPreserveMostCall: pins the callee
+// spares ride through the call in their registers (still newest), so they
+// need neither flush nor reload — the same treatment callee-saved pins
+// already get at these seams. That is sound for exactly the reason the
+// callee-saved treatment is: the preserve_most vtlb dispatchers never READ
+// guest GPR memory. Emits nothing for the current table; no-op in
+// write-through mode.
+static __fi void armFlushEEPinsBeforePreserveMostCall()
+{
+	if (!EE_PIN_LAZY_DIRTY)
+		return;
+	for (const EEPinnedGPR& pin : kEEPinTable)
+	{
+		const int reg = static_cast<int>(pin.host.GetCode());
+		if (!armIsCalleeSavedRegister(reg) && !armIsPreserveMostSparedRegister(reg))
 			armAsm->Str(pin.host, armCpuRegMem(&cpuRegs.GPR.r[pin.gpr].UD[0]));
 	}
 }

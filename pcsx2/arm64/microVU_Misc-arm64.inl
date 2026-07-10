@@ -332,9 +332,11 @@ __fi void mVUaddrFix(mV, const a64::Register& gprReg)
 		if (THREAD_VU1)
 		{
 			// COP2 macro mode emits this inline into an EE block where the
-			// caller-saved EE pins (x12/x13) are live across the call; micro
-			// mode runs behind a C boundary whose call site reloads instead.
-			// Flush-before is a lazy-dirty no-op in write-through mode.
+			// caller-saved EE pins (x11/x12/x13 since Arm D) are live across
+			// the call — waitMTVU is plain AAPCS, not preserve_most, so the
+			// full clobber reload applies; micro mode runs behind a C
+			// boundary whose call site reloads instead. Flush-before is a
+			// lazy-dirty no-op in write-through mode.
 			if (mVU.cop2)
 				armEmitEEClobberedPinFlushForCOP2();
 			// Need to wait for VU1 thread
