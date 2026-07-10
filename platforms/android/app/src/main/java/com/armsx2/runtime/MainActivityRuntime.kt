@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Build
@@ -15,8 +16,10 @@ import android.view.KeyCharacterMap
 import android.view.KeyEvent
 import android.view.MotionEvent
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.addCallback
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.compose.foundation.Image
@@ -34,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.nativeKeyCode
@@ -46,6 +50,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.ViewCompat
 import androidx.lifecycle.lifecycleScope
 import com.armsx2.BuildConfig
 import com.armsx2.EmuState
@@ -797,20 +802,43 @@ open class MainActivityRuntime : ComponentActivity() {
         @Volatile
         var pendingAutoLoadOnBoot = false
 
+        @Volatile
+        private var pendingSlotLoadOnBoot: Int? = null
+
+        fun launchCurrentGameFromSaveSlot(slot: Int): Boolean {
+            val game = currentGame.value ?: return false
+            val launchPath = if (game.uri.scheme == "file") {
+                game.uri.path ?: game.uri.toString()
+            } else {
+                game.uri.toString()
+            }
+            if (launchPath.isBlank()) return false
+            pendingSlotLoadOnBoot = slot
+            pendingAutoLoadOnBoot = false
+            launchGame(launchPath, game)
+            return true
+        }
+
         /** Fired when the VM reaches RUNNING (from NativeApp.vmSetPaused). If the
          *  user enabled auto-load-on-boot, restore the autosave state once. Retries
          *  briefly because loadAutosaveState() safely no-ops until the game's CRC is
          *  set a moment into boot; stops on first success or after ~4s. */
         @JvmStatic
         fun onVmRunning() {
-            if (!pendingAutoLoadOnBoot) return
+            val requestedSlot = pendingSlotLoadOnBoot
+            val loadAutosave = pendingAutoLoadOnBoot && requestedSlot == null
+            if (requestedSlot == null && !loadAutosave) return
+            pendingSlotLoadOnBoot = null
             pendingAutoLoadOnBoot = false
             val handler = android.os.Handler(android.os.Looper.getMainLooper())
             val tryLoad = object : Runnable {
                 var attempts = 0
                 override fun run() {
                     if (vmStopInProgress || eState.value == EmuState.STOPPED) return
-                    val loaded = runCatching { NativeApp.loadAutosaveState() }.getOrDefault(false)
+                    val loaded = runCatching {
+                        if (requestedSlot != null) NativeApp.loadStateFromSlot(requestedSlot)
+                        else NativeApp.loadAutosaveState()
+                    }.getOrDefault(false)
                     if (!loaded && ++attempts < 8)
                         handler.postDelayed(this, 500)
                 }
@@ -1271,7 +1299,22 @@ open class MainActivityRuntime : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT,
+            ),
+            navigationBarStyle = SystemBarStyle.auto(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT,
+            ),
+        )
         super.onCreate(savedInstanceState)
+        com.armsx2.navigation.UiNavigator.drawerOpen.value = false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isStatusBarContrastEnforced = false
+            window.isNavigationBarContrastEnforced = false
+        }
         // Local co-op: PS2 port 2 is enabled at GAME BOOT (applyRendererPrefs) when a
         // 2nd controller is already connected — NOT hot-plugged mid-game, which crashed
         // by rebuilding the live pad list. So PadRouter only ROUTES P2 input; it must
@@ -1344,11 +1387,23 @@ open class MainActivityRuntime : ComponentActivity() {
         customDriverId.value = prefs.getString("customDriverId", null)?.takeIf { it.isNotEmpty() }
         surface.value = EmulationSurface(this)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        val initialLightSystemBars = when (com.armsx2.ui.theme.ThemePreferences.mode.value) {
+            com.armsx2.ui.theme.ThemeMode.System ->
+                resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK !=
+                    Configuration.UI_MODE_NIGHT_YES
+            com.armsx2.ui.theme.ThemeMode.Light -> true
+            com.armsx2.ui.theme.ThemeMode.Dark -> false
+        }
         WindowInsetsControllerCompat(window, window.decorView).let { controller ->
-            controller.hide(WindowInsetsCompat.Type.systemBars())
+            controller.show(WindowInsetsCompat.Type.systemBars())
+            controller.isAppearanceLightStatusBars = initialLightSystemBars
+            controller.isAppearanceLightNavigationBars = initialLightSystemBars
             controller.systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
+        ViewCompat.requestApplyInsets(window.decorView)
 
         // Sustained Performance Mode (API 24+): holds a steady, thermally-
         // sustainable clock instead of boost-then-throttle. GOOD for long sessions
@@ -1393,6 +1448,34 @@ open class MainActivityRuntime : ComponentActivity() {
         handleExternalLaunchIntent(intent)
         setContent {
             com.armsx2.ui.theme.Armsx2Theme {
+            val themedWindowBackground = androidx.compose.material3.MaterialTheme.colorScheme.background
+            androidx.compose.runtime.SideEffect {
+                window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(themedWindowBackground.toArgb()))
+            }
+            val showSystemBars = !setupComplete.value ||
+                setupEditorVisible.value ||
+                WindowImpl.showLibrary.value ||
+                eState.value == EmuState.STOPPED ||
+                eState.value == EmuState.RENDER_UNSUPPORTED ||
+                eState.value == EmuState.EMULATOR_UNSUPPORTED
+            val lightSystemBars = when (com.armsx2.ui.theme.ThemePreferences.mode.value) {
+                com.armsx2.ui.theme.ThemeMode.System -> !androidx.compose.foundation.isSystemInDarkTheme()
+                com.armsx2.ui.theme.ThemeMode.Light -> true
+                com.armsx2.ui.theme.ThemeMode.Dark -> false
+            }
+            androidx.compose.runtime.LaunchedEffect(showSystemBars, lightSystemBars) {
+                WindowInsetsControllerCompat(window, window.decorView).apply {
+                    if (showSystemBars) {
+                        show(WindowInsetsCompat.Type.systemBars())
+                        isAppearanceLightStatusBars = lightSystemBars
+                        isAppearanceLightNavigationBars = lightSystemBars
+                    } else {
+                        hide(WindowInsetsCompat.Type.systemBars())
+                    }
+                    systemBarsBehavior =
+                        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                }
+            }
             // First-time setup deferral: when the wizard finishes and
             // setupComplete flips to true, kick off the heavy emucore
             // init now that `MainActivityRuntime.systemDir` reflects the user's pick.
@@ -1869,7 +1952,7 @@ open class MainActivityRuntime : ComponentActivity() {
                 KeyEvent.KEYCODE_BUTTON_R1 -> event.action != KeyEvent.ACTION_DOWN ||
                     com.armsx2.ui.emulation.EmulationMenuInputController.tab(1)
                 KeyEvent.KEYCODE_BUTTON_Y -> event.action != KeyEvent.ACTION_DOWN || run {
-                    com.armsx2.ui.emulation.EmulationMenuInputController.open(com.armsx2.ui.emulation.EmulationMenuTab.Achievements)
+                    com.armsx2.ui.emulation.EmulationMenuInputController.open(com.armsx2.ui.emulation.EmulationMenuTab.Options)
                     true
                 }
                 KeyEvent.KEYCODE_BUTTON_A,
@@ -2068,7 +2151,7 @@ open class MainActivityRuntime : ComponentActivity() {
                     return true
                 }
                 ControllerMappings.SysHotkey.ACHIEVEMENTS -> {
-                    if (down) com.armsx2.ui.emulation.EmulationMenuInputController.open(com.armsx2.ui.emulation.EmulationMenuTab.Achievements)
+                    if (down) com.armsx2.ui.emulation.EmulationMenuInputController.open(com.armsx2.ui.emulation.EmulationMenuTab.Options)
                     return true
                 }
                 ControllerMappings.SysHotkey.CLOSE_GAME -> {
@@ -2581,7 +2664,7 @@ open class MainActivityRuntime : ComponentActivity() {
 
     private fun handleControllerUiScroll(velocityY: Float) {
         if (WindowImpl.overlayVisible.value) {
-            Unit
+            com.armsx2.ui.settings.SettingsControllerNav.setScrollVelocity(velocityY)
         } else if (com.armsx2.ui.home.HomeInputController.active()) {
             com.armsx2.ui.home.HomeInputController.scroll(velocityY)
         }
@@ -2949,7 +3032,7 @@ open class MainActivityRuntime : ComponentActivity() {
             }
             ControllerMappings.SysHotkey.RES_UP -> stepResolution(1)
             ControllerMappings.SysHotkey.RES_DOWN -> stepResolution(-1)
-            ControllerMappings.SysHotkey.ACHIEVEMENTS -> com.armsx2.ui.emulation.EmulationMenuInputController.open(com.armsx2.ui.emulation.EmulationMenuTab.Achievements)
+            ControllerMappings.SysHotkey.ACHIEVEMENTS -> com.armsx2.ui.emulation.EmulationMenuInputController.open(com.armsx2.ui.emulation.EmulationMenuTab.Options)
             ControllerMappings.SysHotkey.CLOSE_GAME -> {
                 if (launchedExternally &&
                     prefs.getBoolean("ui.exitToLauncherExternal", true))
@@ -3141,6 +3224,7 @@ open class MainActivityRuntime : ComponentActivity() {
     }
 
     override fun onPause() {
+        com.armsx2.navigation.UiNavigator.drawerOpen.value = false
         // Leaving the app (home / recents / slide-out) while a game is running:
         // open the pause OVERLAY instead of a silent pause. A bare pause left
         // users staring at a frozen game with no obvious way back — they had to

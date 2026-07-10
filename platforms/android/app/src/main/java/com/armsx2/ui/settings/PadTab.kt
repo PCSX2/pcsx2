@@ -17,6 +17,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -49,7 +51,7 @@ import kr.co.iefriends.pcsx2.NativeApp
 
 @Composable
 fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
-    val scroll = remember { ScrollState(0) }
+    val scroll = settingsScrollState()
     ControllerAutoScroll(scroll)
     val capture = remember { mutableStateOf<ControllerMappings.Action?>(null) }
     // Local co-op: which player's mapping this tab is editing (0 = P1, 1 = P2).
@@ -156,14 +158,12 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                 capture.value = null
                 refreshToken.intValue++
                 true
-            }
-            .verticalScroll(scroll)
-            .verticalScrollbar(scroll),
+            },
     ) {
         Text(
             str("pad.instruction.tapThenPress"),
             color = Color(0xFFBBBBBB),
-            fontSize = 12.sp,
+            fontSize = 15.sp,
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp),
         )
         // Per-game scope hint (#246): the buttons / sticks below follow the
@@ -176,7 +176,7 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                 else -> str("pad.scopeHint.global")
             },
             color = if (editSerial != null) Colors.pasx2_blue else Color(0xFF9A9A9A),
-            fontSize = 11.sp,
+            fontSize = 14.sp,
             fontWeight = if (editSerial != null) FontWeight.Bold else FontWeight.Normal,
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
         )
@@ -187,7 +187,8 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(34.dp)
+                .height(56.dp)
+                .clip(RoundedCornerShape(16.dp))
                 .background(rowAura())
                 .clickable { com.armsx2.ui.InGameOverlay.editTouchLayout() }
                 .controllerFocusable(
@@ -199,7 +200,7 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
         ) {
             Text(
                 str("pad.editTouchLayout"),
-                color = Colors.pasx2_blue, fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                color = Colors.pasx2_blue, fontSize = 16.sp, fontWeight = FontWeight.Bold,
             )
         }
         SettingsDivider()
@@ -221,7 +222,7 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
             Text(
                 str("pad.macros.header"),
                 color = Color(0xFFBBBBBB),
-                fontSize = 12.sp,
+                fontSize = 15.sp,
                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
             )
             listOf(TouchButtonId.MACRO1, TouchButtonId.MACRO2, TouchButtonId.MACRO3, TouchButtonId.MACRO4).forEach { mid ->
@@ -232,7 +233,8 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .height(44.dp)
+                        .height(72.dp)
+                        .clip(RoundedCornerShape(16.dp))
                         .background(rowAura())
                         .clickable { macroDialogFor.value = mid }
                         .controllerFocusable(
@@ -242,10 +244,10 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                         .padding(horizontal = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(mid.label, color = Colors.pasx2_blue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text(mid.label, color = Colors.pasx2_blue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
-                        Text(summary, color = Color(0xFFCCCCCC), fontSize = 12.sp)
+                        Text(summary, color = Color(0xFFCCCCCC), fontSize = 15.sp)
                         Text(
                             when {
                                 capturingThis -> str("pad.pressControllerButton")
@@ -254,13 +256,13 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                                 else -> str("pad.controller.notBound")
                             },
                             color = if (capturingThis) Color(0xFFFFD33A) else Color(0xFF999999),
-                            fontSize = 10.sp,
+                            fontSize = 14.sp,
                         )
                     }
                     if (physCode != android.view.KeyEvent.KEYCODE_UNKNOWN && !capturingThis) {
                         Text(
                             str("pad.action.clear"),
-                            color = Color(0xFFFF6B6B), fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                            color = Color(0xFFFF6B6B), fontSize = 14.sp, fontWeight = FontWeight.Bold,
                             modifier = Modifier
                                 .clickable { TouchControls.clearMacroPhysicalCode(mid); refreshToken.intValue++ }
                                 .padding(end = 10.dp),
@@ -268,7 +270,7 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                     }
                     Text(
                         if (capturingThis) str("action.cancel") else str("pad.action.bind"),
-                        color = Colors.pasx2_blue, fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                        color = Colors.pasx2_blue, fontSize = 14.sp, fontWeight = FontWeight.Bold,
                         modifier = Modifier
                             .clickable {
                                 macroCapture.value = if (capturingThis) null else mid
@@ -277,7 +279,7 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                             }
                             .padding(end = 10.dp),
                     )
-                    Text(str("pad.action.edit"), color = Colors.pasx2_blue, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(str("pad.action.edit"), color = Colors.pasx2_blue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
                 SettingsDivider()
             }
@@ -327,10 +329,6 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                 description = str("pad.multitap.description"),
             ) { on ->
                 ControllerMappings.setMultitapEnabled(on)
-                Thread {
-                    NativeApp.setMultitap(0, on)
-                    NativeApp.setMultitap(1, on)
-                }.start()
                 refreshToken.intValue++
             }
             SettingsDivider()
@@ -340,7 +338,8 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .height(30.dp)
+                    .height(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
                     .background(rowAura())
                     .clickable {
                         NativeApp.testRumble(editPlayer.intValue)
@@ -364,7 +363,7 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
             ) {
                 Text(
                     if (editPlayer.intValue == 0) str("pad.testRumble.player1") else str("pad.testRumble.player2"),
-                    color = Colors.pasx2_blue, fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                    color = Colors.pasx2_blue, fontSize = 16.sp, fontWeight = FontWeight.Bold,
                 )
             }
             SettingsDivider()
@@ -490,14 +489,14 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                         Text(
                             "↳ Turbo (rapid-fire while held)",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 11.sp,
+                            fontSize = 14.sp,
                             modifier = Modifier.weight(1f),
                         )
                         Text(
                             if (turbo.value) "ON" else "OFF",
                             color = if (turbo.value) Color(0xFF4DA3FF)
                             else Color(0xFF808080),
-                            fontSize = 12.sp,
+                            fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                         )
                     }
@@ -516,7 +515,8 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .height(30.dp)
+                    .height(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
                     .background(rowAura())
                     .clickable { resetMappings() }
                     .controllerFocusable(
@@ -526,11 +526,10 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                     .padding(horizontal = 6.dp),
                 contentAlignment = Alignment.CenterStart,
             ) {
-                val who = if (editPlayer.intValue == 0) "Player 1" else "Player 2"
+                val who = str(if (editPlayer.intValue == 0) "pad.player1" else "pad.player2")
                 Text(
-                    if (editSerial != null) "Reset $who Mappings for This Game"
-                    else "Reset $who Mappings",
-                    color = Colors.pasx2_blue, fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                    "${str("action.reset")} · $who${if (editSerial != null) " · ${str("scope.game")}" else ""}",
+                    color = Colors.pasx2_blue, fontSize = 16.sp, fontWeight = FontWeight.Bold,
                 )
             }
         }
@@ -538,13 +537,15 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
             // Controller hotkeys now live in their own dedicated "Hotkeys" tab
             // (see HotkeysTab) so they're easier to find than buried under Pad.
             SettingsDivider()
+            val visibilityOff = str("setup.toggle.off")
+            val visibilityAuto = str("backend.renderer.auto")
             IntSliderRow(
                 label = str("pad.onScreenControls.label"),
                 value = TouchControls.visibilityMode.value,
                 min = 0,
                 max = 11,
                 description = str("pad.onScreenControls.description"),
-                valueFormatter = { when (it) { 0 -> "Never"; 11 -> "Auto"; else -> "${it}s" } },
+                valueFormatter = { when (it) { 0 -> visibilityOff; 11 -> visibilityAuto; else -> "${it}s" } },
                 onChange = { TouchControls.setVisibilityMode(it) },
             )
             SettingsDivider()
@@ -558,11 +559,11 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
             // Multi-touch reach: how far from a button's center a touch still counts.
             // Higher = press adjacent buttons together with more space between them.
             IntSliderRow(
-                label = "Multi-touch Reach",
+                label = str("touch.editor.multiTouchOn"),
                 value = (TouchControls.multiTouchRadius.value * 100f).toInt(),
                 min = 50,
                 max = 95,
-                description = "How far from a button's center a touch still registers. Raise this if multi-touch only works when buttons are almost touching.",
+                description = str("pad.onScreenControls.description"),
                 valueFormatter = { "${it}%" },
                 onChange = { TouchControls.setMultiTouchRadius(it / 100f) },
             )
@@ -668,7 +669,8 @@ private fun StickDirPickerRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(30.dp)
+            .height(64.dp)
+            .clip(RoundedCornerShape(16.dp))
             .background(rowAura())
             .clickable { showPicker.value = true }
             .controllerFocusable(
@@ -682,14 +684,14 @@ private fun StickDirPickerRow(
         Text(
             "    ${dir.id.replaceFirstChar { it.uppercase() }}",
             color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 13.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
         )
         Spacer(Modifier.weight(1f))
         Text(
             str("pad.action.clear"),
             color = Color(0xFFE57373),
-            fontSize = 12.sp,
+            fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .clickable { clear() }
@@ -699,13 +701,13 @@ private fun StickDirPickerRow(
         Text(
             ControllerMappings.stickTargetLabel(code),
             color = Color(0xFFCCCCCC),
-            fontSize = 12.sp,
+            fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
         )
     }
     if (showPicker.value) {
         StickTargetPickerDialog(
-            title = "${if (leftStick) "Left" else "Right"} Stick — ${dir.id.replaceFirstChar { it.uppercase() }}",
+            title = "${str(if (leftStick) "pad.leftStick.label" else "pad.rightStick.label")} — ${dir.id.replaceFirstChar { it.uppercase() }}",
             current = code,
             onPick = { picked ->
                 if (picked == null) ControllerMappings.resetStickCode(leftStick, dir, player, serial)
@@ -738,17 +740,17 @@ private fun StickTargetPickerDialog(
             Column(Modifier.verticalScroll(remember { ScrollState(0) })) {
                 Text(
                     str("pad.stickTarget.intro"),
-                    color = Color(0xFFBBBBBB), fontSize = 12.sp,
+                    color = Color(0xFFBBBBBB), fontSize = 15.sp,
                 )
                 Spacer(Modifier.height(8.dp))
                 StickPickItem(str("pad.stickTarget.analogDefault"), current in 110..123) { onPick(null) }
                 Spacer(Modifier.height(6.dp))
-                Text(str("pad.stickTarget.ps2Buttons"), color = Colors.pasx2_blue, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text(str("pad.stickTarget.ps2Buttons"), color = Colors.pasx2_blue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 ControllerMappings.stickTargets.forEach { t ->
                     StickPickItem(t.label, current == t.code) { onPick(t.code) }
                 }
                 Spacer(Modifier.height(6.dp))
-                Text(str("pad.stickTarget.hotkeys"), color = Colors.pasx2_blue, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text(str("pad.stickTarget.hotkeys"), color = Colors.pasx2_blue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 ControllerMappings.SysHotkey.entries.forEach { h ->
                     val hc = ControllerMappings.stickCodeForHotkey(h)
                     StickPickItem("Hotkey: ${h.label}", current == hc) { onPick(hc) }
@@ -774,12 +776,12 @@ private fun StickPickItem(label: String, selected: Boolean, onClick: () -> Unit)
         Text(
             if (selected) "●  " else "○  ",
             color = if (selected) Colors.pasx2_blue else Color(0xFF777777),
-            fontSize = 13.sp,
+            fontSize = 16.sp,
         )
         Text(
             label,
             color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 13.sp,
+            fontSize = 16.sp,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
         )
     }
@@ -800,12 +802,12 @@ private fun MacroConfigDialog(
         containerColor = MaterialTheme.colorScheme.surface,
         titleContentColor = MaterialTheme.colorScheme.onSurface,
         textContentColor = MaterialTheme.colorScheme.onSurface,
-        title = { Text("Configure ${macroId.label}", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold) },
+        title = { Text("${str("pad.action.edit")}: ${macroId.label}", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold) },
         text = {
             Column(Modifier.verticalScroll(remember { ScrollState(0) })) {
                 Text(
                     str("pad.macroConfig.intro"),
-                    color = Color(0xFFBBBBBB), fontSize = 12.sp,
+                    color = Color(0xFFBBBBBB), fontSize = 15.sp,
                 )
                 Spacer(Modifier.height(8.dp))
                 TouchControls.macroAssignableButtons.forEach { b ->
@@ -813,7 +815,7 @@ private fun MacroConfigDialog(
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .height(36.dp)
+                            .height(52.dp)
                             .clickable { if (on) selected.remove(b) else selected.add(b) }
                             .padding(horizontal = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -851,7 +853,8 @@ private fun PadBindingRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(30.dp)
+            .height(64.dp)
+            .clip(RoundedCornerShape(16.dp))
             .background(rowAura())
             .clickable(onClick = onClick)
             .controllerFocusable(
@@ -861,7 +864,7 @@ private fun PadBindingRow(
             .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(action.label, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+        Text(action.label, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.weight(1f))
         // "Clear" unbinds the button (leaves it blank, free to assign as a hotkey) —
         // mirrors the Hotkeys tab. Shown only when bound and not mid-capture.
@@ -869,7 +872,7 @@ private fun PadBindingRow(
             Text(
                 str("pad.action.clear"),
                 color = Color(0xFFFF6B6B),
-                fontSize = 11.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .clickable(onClick = onClear)
@@ -879,7 +882,7 @@ private fun PadBindingRow(
         Text(
             if (capturing) str("pad.pressButton") else ControllerMappings.labelForKey(physical),
             color = if (capturing) Color(0xFFFFD33A) else Color(0xFFCCCCCC),
-            fontSize = 12.sp,
+            fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
         )
     }

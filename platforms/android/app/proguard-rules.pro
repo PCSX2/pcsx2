@@ -1,21 +1,23 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Preserve useful crash traces and metadata used by Android/Compose tooling.
+-keepattributes SourceFile,LineNumberTable,Signature,InnerClasses,EnclosingMethod
+-keepattributes RuntimeVisibleAnnotations,RuntimeInvisibleAnnotations,AnnotationDefault
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# JNI entry points are resolved from native code by their exact class and member names.
+-keep class kr.co.iefriends.pcsx2.NativeApp { *; }
+-keep class com.armsx2.BiosInfo { *; }
+-keepclasseswithmembernames,includedescriptorclasses class * {
+    native <methods>;
+}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Application components instantiated by the Android framework.
+-keep class com.armsx2.Pasx2Application { *; }
+-keep class com.armsx2.BootSplashActivity { *; }
+-keep class com.armsx2.Main { *; }
+-keep class com.armsx2.RetroAchievementsHostOverrideReceiver { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# SDL resolves its Java bridge classes and callbacks through JNI/reflection.
+-keep class org.libsdl.app.** { *; }
+
+# ReLinker is reached reflectively by SDL on devices that need its fallback loader.
+-keep class com.getkeepsafe.relinker.** { *; }
+-dontwarn com.getkeepsafe.relinker.**

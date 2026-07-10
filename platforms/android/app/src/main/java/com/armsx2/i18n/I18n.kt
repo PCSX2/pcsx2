@@ -122,6 +122,14 @@ fun str(key: String): String {
  * renaming a key orphans it in every translation JSON.
  */
 val EN: Map<String, String> = mapOf(
+    "about.title" to "About",
+    "about.tagline" to "Fast, modern PlayStation 2 emulation for Android.",
+    "about.appVersion" to "App version",
+    "about.coreVersion" to "Emulator version",
+    "about.device" to "Device",
+    "about.androidVersion" to "Android version",
+    "about.repository.title" to "GitHub repository",
+    "about.repository.description" to "Open the source code, releases, and issue tracker.",
     // --- settings tabs ---
     "tab.app" to "App",
     "tab.performance" to "Performance",
@@ -139,6 +147,10 @@ val EN: Map<String, String> = mapOf(
     "app.language" to "Language",
     "app.language.desc" to "Choose the app language. Applies instantly.",
     "app.language.machineNote" to "Translations except English are machine-translated. Spot a bad one? Let us know and we'll fix it.",
+    "app.theme" to "Theme",
+    "app.theme.system" to "System",
+    "app.theme.light" to "Light",
+    "app.theme.dark" to "Dark",
     // --- common actions ---
     "action.play" to "Play",
     "action.resume" to "Resume",

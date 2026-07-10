@@ -19,4 +19,12 @@
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
+
+    <style name="Theme.ARMSX2.Boot.Light" parent="Theme.ARMSX2.Boot">
+        <item name="android:windowBackground">#FFF4F7FC</item>
+    </style>
+
+    <style name="Theme.ARMSX2.Boot.Dark" parent="Theme.ARMSX2.Boot">
+        <item name="android:windowBackground">#FF080B11</item>
+    </style>
 </resources>

@@ -13,12 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,19 +40,17 @@ import androidx.core.content.edit
  */
 @Composable
 fun HotkeysTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
-    val scroll = remember { ScrollState(0) }
+    val scroll = settingsScrollState()
     ControllerAutoScroll(scroll)
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(scroll)
-            .verticalScrollbar(scroll),
+            .fillMaxWidth(),
     ) {
         Text(
             str("hotkeys.header"),
             color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 13.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 8.dp),
         )
@@ -65,7 +65,8 @@ fun HotkeysTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(30.dp)
+                    .height(64.dp)
+                    .clip(RoundedCornerShape(16.dp))
                     .background(rowAura())
                     .clickable { ControllerMappings.beginHotkeyCapture(hk) }
                     .controllerFocusable(
@@ -75,13 +76,13 @@ fun HotkeysTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                     .padding(horizontal = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(hk.label, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Text(hk.label, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.weight(1f))
                 if (!unset && !capturing) {
                     Text(
                         str("hotkeys.clear"),
                         color = Color(0xFFFF6B6B),
-                        fontSize = 11.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
                             .clickable {
@@ -98,7 +99,7 @@ fun HotkeysTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                         else -> binding
                     },
                     color = if (capturing) Color(0xFFFFD33A) else Color(0xFFCCCCCC),
-                    fontSize = 12.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                 )
             }

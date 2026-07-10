@@ -4,6 +4,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -11,10 +12,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsBackdrop
 import com.armsx2.ui.common.ArmsTopBar
 import com.armsx2.ui.common.EmptyState
@@ -44,41 +49,31 @@ fun PatchManagerScreen(onBack: () -> Unit, viewModel: PatchManagerViewModel = vi
     LaunchedEffect(Unit) { viewModel.refresh() }
 
     ArmsBackdrop {
-        Column(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             ArmsTopBar(
-                title = "Patches & cheats",
-                subtitle = "Compatibility patches and PNACH files",
-                leading = { RoundAction("‹", "Back", onBack) },
+                title = str("patches.dialog.patchesAndCheats"),
+                subtitle = str("patches.applyAtBoot"),
+                leading = { RoundAction("‹", str("action.back"), onBack) },
                 actions = {
-                    RoundAction("＋", "Import", { picker.launch(arrayOf("text/plain", "application/octet-stream", "*/*")) })
-                    RoundAction("↻", "Refresh", viewModel::refresh)
+                    RoundAction("＋", str("action.import"), { picker.launch(arrayOf("text/plain", "application/octet-stream", "*/*")) })
+                    RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
                 },
             )
-            Row(
-                Modifier.fillMaxSize().padding(start = 22.dp, end = 22.dp, bottom = 18.dp),
-                horizontalArrangement = Arrangement.spacedBy(18.dp),
-            ) {
-                GlassPanel(Modifier.width(330.dp).fillMaxHeight()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
-                        SectionTitle("Runtime options", "Applied globally")
-                        SettingSwitchRow("Game patches", "Use built-in compatibility fixes", state.settings.enablePatches, onCheckedChange = { value -> viewModel.update { it.copy(enablePatches = value) } })
-                        SettingSwitchRow("Cheats", "Enable PNACH cheat codes", state.settings.enableCheats, onCheckedChange = { value -> viewModel.update { it.copy(enableCheats = value) } })
-                        SettingSwitchRow("Widescreen patches", "Enable 16:9 patches when available", state.settings.enableWideScreenPatches, onCheckedChange = { value -> viewModel.update { it.copy(enableWideScreenPatches = value) } })
-                        SettingSwitchRow("No-interlacing patches", "Use progressive display patches", state.settings.enableNoInterlacingPatches, onCheckedChange = { value -> viewModel.update { it.copy(enableNoInterlacingPatches = value) } })
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val compact = maxWidth < 820.dp
+                if (compact) {
+                    Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
+                        PatchOptions(state, viewModel, Modifier.fillMaxWidth())
+                        Spacer(Modifier.padding(top = 10.dp))
+                        PatchFiles(state, viewModel, Modifier.fillMaxWidth())
                     }
-                }
-                Column(Modifier.weight(1f)) {
-                    SectionTitle("Local files", "${state.files.size} PNACH files")
-                    if (state.files.isEmpty()) {
-                        EmptyState("No custom patch files", "Import a .pnach file to add custom codes.", modifier = Modifier.fillMaxSize())
-                    } else {
-                        LazyColumn(
-                            Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            contentPadding = PaddingValues(bottom = 20.dp),
-                        ) {
-                            items(state.files, key = { it.absolutePath }) { file -> PatchFileRow(file) { viewModel.delete(file) } }
-                        }
+                } else {
+                    Row(
+                        Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    ) {
+                        PatchOptions(state, viewModel, Modifier.width(310.dp))
+                        PatchFiles(state, viewModel, Modifier.weight(1f))
                     }
                 }
             }
@@ -87,10 +82,37 @@ fun PatchManagerScreen(onBack: () -> Unit, viewModel: PatchManagerViewModel = vi
     (state.error ?: state.message)?.let { message ->
         AlertDialog(
             onDismissRequest = viewModel::dismissMessage,
-            title = { Text(if (state.error == null) "Done" else "Patches & cheats") },
+            title = { Text(if (state.error == null) str("action.ok") else str("patches.dialog.patchesAndCheats")) },
             text = { Text(message) },
-            confirmButton = { TextButton(onClick = viewModel::dismissMessage) { Text("OK") } },
+            confirmButton = { TextButton(onClick = viewModel::dismissMessage) { Text(str("action.ok")) } },
         )
+    }
+}
+
+@Composable
+private fun PatchOptions(state: PatchManagerUiState, viewModel: PatchManagerViewModel, modifier: Modifier) {
+    GlassPanel(modifier) {
+        Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+            SectionTitle(str("ra.options.header"), str("scope.global"))
+            SettingSwitchRow(str("patches.enablePatches.label"), str("patches.applyAtBoot"), state.settings.enablePatches, onCheckedChange = { value -> viewModel.update { it.copy(enablePatches = value) } })
+            SettingSwitchRow(str("patches.cheats.label"), str("patches.pasteImportHint"), state.settings.enableCheats, onCheckedChange = { value -> viewModel.update { it.copy(enableCheats = value) } })
+            SettingSwitchRow(str("patches.widescreen.label"), str("patches.applyAtBoot"), state.settings.enableWideScreenPatches, onCheckedChange = { value -> viewModel.update { it.copy(enableWideScreenPatches = value) } })
+            SettingSwitchRow(str("patches.noInterlacing.label"), str("patches.applyAtBoot"), state.settings.enableNoInterlacingPatches, onCheckedChange = { value -> viewModel.update { it.copy(enableNoInterlacingPatches = value) } })
+        }
+    }
+}
+
+@Composable
+private fun PatchFiles(state: PatchManagerUiState, viewModel: PatchManagerViewModel, modifier: Modifier) {
+    Column(modifier) {
+        SectionTitle(str("patches.installedHeader"), state.files.size.toString())
+        if (state.files.isEmpty()) {
+            EmptyState(str("patches.noFilesInstalled"), str("patches.pasteImportHint"), modifier = Modifier.fillMaxWidth().height(220.dp))
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                state.files.forEach { file -> PatchFileRow(file) { viewModel.delete(file) } }
+            }
+        }
     }
 }
 
@@ -109,7 +131,7 @@ private fun PatchFileRow(file: File, onDelete: () -> Unit) {
                 Text(file.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(file.parentFile?.name.orEmpty(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            TextButton(onClick = onDelete) { Text("Delete") }
+            TextButton(onClick = onDelete) { Text(str("action.delete")) }
         }
     }
 }

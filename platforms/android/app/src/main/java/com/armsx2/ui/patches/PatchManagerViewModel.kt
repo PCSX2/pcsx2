@@ -8,6 +8,7 @@ import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.config.ConfigStore
 import com.armsx2.config.Settings
 import java.io.File
+import kr.co.iefriends.pcsx2.NativeApp
 
 data class PatchManagerUiState(
     val settings: Settings = Settings(),
@@ -47,12 +48,14 @@ class PatchManagerViewModel(application: Application) : AndroidViewModel(applica
         }.getOrDefault(false)
         if (!success) target.delete()
         state.value = if (success) state.value.copy(message = "Imported ${target.name}.") else state.value.copy(error = "Patch import failed.")
+        if (success) reloadCore()
         refresh()
     }
 
     fun delete(file: File) {
         val success = runCatching { file.delete() }.getOrDefault(false)
         state.value = if (success) state.value.copy(message = "Deleted ${file.name}.") else state.value.copy(error = "Unable to delete ${file.name}.")
+        if (success) reloadCore()
         refresh()
     }
 
@@ -73,5 +76,11 @@ class PatchManagerViewModel(application: Application) : AndroidViewModel(applica
         while (file.exists()) file = File(directory, "$base-$index$extension").also { index++ }
         return file
     }
-}
 
+    private fun reloadCore() {
+        if (!MainActivityRuntime.nativeReady.value) return
+        kotlin.concurrent.thread(name = "armsx2-patch-reload") {
+            runCatching { NativeApp.reloadPatches() }
+        }
+    }
+}

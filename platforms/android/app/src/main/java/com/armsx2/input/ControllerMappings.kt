@@ -319,6 +319,14 @@ object ControllerMappings {
     fun setMultitapEnabled(on: Boolean) {
         MainActivityRuntime.prefs.edit { putBoolean(KEY_MULTITAP, on) }
         com.armsx2.input.PadRouter.multitapEnabled = on
+        if (MainActivityRuntime.nativeReady.value) {
+            kotlin.concurrent.thread(name = "armsx2-multitap") {
+                runCatching {
+                    kr.co.iefriends.pcsx2.NativeApp.setMultitap(0, on)
+                    kr.co.iefriends.pcsx2.NativeApp.setMultitap(1, on)
+                }
+            }
+        }
     }
 
     // ---- Custom per-direction stick→button binding (StickMode.CUSTOM) ----

@@ -34,30 +34,28 @@ import androidx.core.content.edit
 @Composable
 fun OverlayTab(state: MutableState<Settings>) {
     val s = state.value
-    val scroll = remember { ScrollState(0) }
+    val scroll = settingsScrollState()
     ControllerAutoScroll(scroll)
 
     fun apply(updated: Settings) = InGameOverlay.saveSettings(updated)
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(scroll)
-            .verticalScrollbar(scroll),
+            .fillMaxWidth(),
     ) {
         Text(
             str("overlay.intro.description"),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 11.sp,
+            fontSize = 14.sp,
             modifier = Modifier.padding(bottom = 8.dp),
         )
 
         IntSliderRow(
-            label = "OSD Scale",
+            label = str("overlay.uiSize.label"),
             value = s.osdScale,
             min = 50,
             max = 250,
-            description = "Increases or decreases the size of on-screen messages/statistics.",
+            description = str("overlay.uiSize.description"),
             valueFormatter = { "$it%" },
             onChange = { apply(s.copy(osdScale = it)) },
         )
@@ -108,7 +106,7 @@ fun OverlayTab(state: MutableState<Settings>) {
         Text(
             str("overlay.interfaceScaling.description"),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 11.sp,
+            fontSize = 14.sp,
             modifier = Modifier.padding(top = 10.dp, bottom = 6.dp),
         )
         IntSliderRow(

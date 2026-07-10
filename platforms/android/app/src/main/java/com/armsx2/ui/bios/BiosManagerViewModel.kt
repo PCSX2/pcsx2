@@ -71,7 +71,11 @@ class BiosManagerViewModel(application: Application) : AndroidViewModel(applicat
             state.value = state.value.copy(error = "Select another BIOS before deleting the active one.")
             return
         }
-        runCatching { item.file.delete() }
+        val deleted = runCatching { item.file.delete() }.getOrDefault(false)
+        if (!deleted) {
+            state.value = state.value.copy(error = "Unable to delete ${item.file.name}.")
+            return
+        }
         refresh()
     }
 
@@ -120,4 +124,3 @@ class BiosManagerViewModel(application: Application) : AndroidViewModel(applicat
         super.onCleared()
     }
 }
-

@@ -25,21 +25,19 @@ import com.armsx2.ui.InGameOverlay
 @Composable
 fun AudioTab(state: MutableState<Settings>) {
     val s = state.value
-    val scroll = remember { ScrollState(0) }
+    val scroll = settingsScrollState()
     ControllerAutoScroll(scroll)
 
     fun apply(updated: Settings) = InGameOverlay.saveSettings(updated)
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(scroll)
-            .verticalScrollbar(scroll),
+            .fillMaxWidth(),
     ) {
         Text(
             str("audio.header.description"),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 11.sp,
+            fontSize = 14.sp,
             modifier = Modifier.padding(bottom = 8.dp),
         )
         IntSliderRow(

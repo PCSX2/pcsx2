@@ -3,6 +3,7 @@ package com.armsx2.ui.achievements
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,6 +44,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsBackdrop
 import com.armsx2.ui.common.ArmsTopBar
 import com.armsx2.ui.common.EmptyState
@@ -62,51 +67,36 @@ fun AchievementsScreen(onBack: () -> Unit, viewModel: AchievementsViewModel = vi
     }
 
     ArmsBackdrop {
-        Column(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             ArmsTopBar(
                 title = "RetroAchievements",
-                subtitle = state.richPresence.ifBlank { "Achievement tracking" },
-                leading = { RoundAction("‹", "Back", onBack) },
+                subtitle = state.richPresence.ifBlank { str("ra.status.notSignedIn.body") },
+                leading = { RoundAction("‹", str("action.back"), onBack) },
                 actions = {
                     if (state.loggedIn) {
                         StatusChip("${state.score} pts", Success)
-                        RoundAction("↻", "Refresh", viewModel::refresh)
+                        RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
                     }
                 },
             )
             if (!state.loggedIn) {
-                LoginPanel(state.loading, viewModel::login, Modifier.fillMaxSize())
+                LoginPanel(state.loading, viewModel::login, Modifier.fillMaxWidth())
             } else {
-                Row(
-                    Modifier.fillMaxSize().padding(start = 22.dp, end = 22.dp, bottom = 18.dp),
-                    horizontalArrangement = Arrangement.spacedBy(18.dp),
-                ) {
-                    GlassPanel(Modifier.width(300.dp).fillMaxHeight()) {
-                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            SectionTitle(state.userName.ifBlank { "Signed in" }, "RetroAchievements account")
-                            StatusChip("${state.items.count { it.unlocked }} / ${state.items.size} unlocked")
-                            SettingSwitchRow(
-                                title = "Hardcore mode",
-                                description = "Disables save states and cheats",
-                                checked = state.hardcore,
-                                onCheckedChange = { viewModel.toggleHardcore() },
-                            )
-                            Spacer(Modifier.weight(1f))
-                            TextButton(onClick = viewModel::logout) { Text("Sign out") }
+                BoxWithConstraints(Modifier.fillMaxWidth()) {
+                    val compact = maxWidth < 820.dp
+                    if (compact) {
+                        Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
+                            AchievementAccount(state, viewModel, Modifier.fillMaxWidth(), compact = true)
+                            Spacer(Modifier.height(10.dp))
+                            AchievementList(state, Modifier.fillMaxWidth())
                         }
-                    }
-                    Column(Modifier.weight(1f)) {
-                        SectionTitle("Current game", "${state.items.size} achievements")
-                        if (state.items.isEmpty()) {
-                            EmptyState("No achievements", "Launch a supported game to view its achievement set.", modifier = Modifier.fillMaxSize())
-                        } else {
-                            LazyColumn(
-                                Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                                contentPadding = PaddingValues(bottom = 20.dp),
-                            ) {
-                                items(state.items, key = { it.id }) { item -> AchievementRow(item) }
-                            }
+                    } else {
+                        Row(
+                            Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        ) {
+                            AchievementAccount(state, viewModel, Modifier.width(286.dp), compact = false)
+                            AchievementList(state, Modifier.weight(1f))
                         }
                     }
                 }
@@ -119,8 +109,46 @@ fun AchievementsScreen(onBack: () -> Unit, viewModel: AchievementsViewModel = vi
             onDismissRequest = viewModel::dismissError,
             title = { Text("RetroAchievements") },
             text = { Text(error) },
-            confirmButton = { TextButton(onClick = viewModel::dismissError) { Text("OK") } },
+            confirmButton = { TextButton(onClick = viewModel::dismissError) { Text(str("action.ok")) } },
         )
+    }
+}
+
+@Composable
+private fun AchievementAccount(
+    state: AchievementsUiState,
+    viewModel: AchievementsViewModel,
+    modifier: Modifier,
+    compact: Boolean,
+) {
+    GlassPanel(modifier) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                SectionTitle(state.userName.ifBlank { str("ra.account.signedIn") }, str("ra.options.header"), Modifier.weight(1f))
+                StatusChip("${state.items.count { it.unlocked }} / ${state.items.size}")
+            }
+            SettingSwitchRow(
+                title = str("ra.mode.hardcore"),
+                description = str("patches.hardcoreNoticeCheatsDisabled"),
+                checked = state.hardcore,
+                onCheckedChange = { viewModel.toggleHardcore() },
+            )
+            TextButton(onClick = viewModel::logout) { Text(str("ra.account.logout")) }
+        }
+    }
+}
+
+@Composable
+private fun AchievementList(state: AchievementsUiState, modifier: Modifier) {
+    Column(modifier) {
+        SectionTitle(str("scope.game"), state.items.size.toString())
+        if (state.items.isEmpty()) {
+            EmptyState(str("ra.status.noAchievements.title"), str("ra.status.noAchievements.body"), modifier = Modifier.fillMaxWidth().height(220.dp))
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                state.items.forEach { item -> AchievementRow(item) }
+            }
+        }
     }
 }
 
@@ -129,27 +157,40 @@ private fun LoginPanel(loading: Boolean, onLogin: (String, String) -> Unit, modi
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     Box(modifier, contentAlignment = Alignment.Center) {
-        GlassPanel(Modifier.width(430.dp)) {
+        GlassPanel(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 12.dp).widthIn(max = 460.dp)) {
             Column {
-                SectionTitle("Sign in", "Use your RetroAchievements account")
+                SectionTitle(str("ralogin.title"), str("ra.status.notSignedIn.body"))
                 Spacer(Modifier.height(16.dp))
-                OutlinedTextField(username, { username = it }, label = { Text("Username") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(
+                    username,
+                    { username = it },
+                    label = { Text(str("ralogin.username.label")) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(18.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 Spacer(Modifier.height(10.dp))
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password") },
+                    label = { Text(str("ralogin.password.label")) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
+                    shape = RoundedCornerShape(18.dp),
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.height(15.dp))
-                Button(onClick = { onLogin(username, password) }, enabled = !loading, modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = { onLogin(username, password) },
+                    enabled = !loading,
+                    shape = RoundedCornerShape(18.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
                     if (loading) {
                         CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
                         Spacer(Modifier.width(8.dp))
                     }
-                    Text(if (loading) "Signing in" else "Sign in")
+                    Text(if (loading) str("ralogin.signingIn") else str("ralogin.signIn"))
                 }
             }
         }

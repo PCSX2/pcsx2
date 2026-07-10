@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -13,68 +14,76 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed as listItemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed as gridItemsIndexed
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.SubcomposeAsyncImage
+import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import coil.size.Precision
 import com.armsx2.CustomCovers
 import com.armsx2.GameInfo
+import com.armsx2.i18n.str
 import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.ui.common.ArmsBackdrop
-import com.armsx2.ui.common.ArmsLogo
 import com.armsx2.ui.common.ArmsTopBar
 import com.armsx2.ui.common.EmptyState
-import com.armsx2.ui.common.GlassPanel
 import com.armsx2.ui.common.RoundAction
 import com.armsx2.ui.common.SearchField
 import com.armsx2.ui.common.SectionTitle
 import com.armsx2.ui.common.StatusChip
-import com.armsx2.ui.theme.Success
+import kotlin.math.abs
 
+private val LocalCustomCoverMap = staticCompositionLocalOf<Map<String, java.io.File>> { emptyMap() }
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onOpenMenu: () -> Unit,
-    onOpenSettings: () -> Unit,
     onOpenGameSettings: (GameInfo) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(),
@@ -82,277 +91,233 @@ fun HomeScreen(
     val state = viewModel.state.value
     val directories = MainActivityRuntime.romsDirs.value
     val nativeReady = MainActivityRuntime.nativeReady.value
+    val context = LocalContext.current
+    val coverVersion = CustomCovers.version.value
+    val customCoverMap = remember(coverVersion) { CustomCovers.loadAll(context) }
+    var sortMenu by remember { mutableStateOf(false) }
+    var menuGame by remember { mutableStateOf<GameInfo?>(null) }
 
-    LaunchedEffect(directories, nativeReady) {
-        viewModel.load(directories, nativeReady)
-    }
+    LaunchedEffect(directories, nativeReady) { viewModel.load(directories, nativeReady) }
     DisposableEffect(viewModel, onOpenMenu) {
         HomeInputController.bind(viewModel, onOpenMenu)
         onDispose { HomeInputController.unbind(viewModel) }
     }
 
+    CompositionLocalProvider(LocalCustomCoverMap provides customCoverMap) {
     ArmsBackdrop {
-        Column(modifier.fillMaxSize()) {
-            ArmsTopBar(
-                title = "Game library",
-                subtitle = when {
-                    state.scanning -> "Scanning selected folders"
-                    state.allGames.isEmpty() -> "Add a folder to begin"
-                    else -> "${state.allGames.size} games ready"
-                },
-                leading = { RoundAction("☰", "Navigation", onOpenMenu) },
-                actions = {
-                    RoundAction("↻", "Refresh", viewModel::refresh)
-                    RoundAction(
-                        if (state.layout == LibraryLayout.Grid) "☷" else "▦",
-                        "Change layout",
-                        viewModel::toggleLayout,
-                    )
-                    RoundAction("⚙", "Settings", onOpenSettings)
-                },
-            )
+        BoxWithConstraints(modifier.fillMaxSize()) {
+            val compact = maxWidth < 600.dp
+            val columns = if (state.layout == LibraryLayout.List) {
+                GridCells.Fixed(1)
+            } else {
+                GridCells.Adaptive(if (compact) 104.dp else 118.dp)
+            }
+            val estimatedColumns = if (state.layout == LibraryLayout.List) 1 else (maxWidth.value / if (compact) 112f else 128f).toInt().coerceAtLeast(1)
+            LaunchedEffect(estimatedColumns) { HomeInputController.setColumnCount(estimatedColumns) }
 
-            BoxWithConstraints(Modifier.fillMaxSize()) {
-                val wide = maxWidth >= 780.dp
-                if (wide) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(start = 22.dp, end = 22.dp, bottom = 18.dp),
-                        horizontalArrangement = Arrangement.spacedBy(18.dp),
-                    ) {
-                        LibrarySidebar(
-                            state = state,
-                            onQuery = viewModel::setQuery,
-                            onSort = viewModel::setSort,
-                            onRefresh = viewModel::refresh,
-                            onEditFolders = MainActivityRuntime::reopenSetup,
-                            modifier = Modifier.width(260.dp).fillMaxHeight(),
-                        )
-                        LibraryContent(
-                            state = state,
-                            viewModel = viewModel,
-                            onOpenGameSettings = onOpenGameSettings,
-                            modifier = Modifier.weight(1f).fillMaxHeight(),
-                        )
+            val gridState = rememberLazyGridState()
+            val density = LocalDensity.current
+            LaunchedEffect(gridState) {
+                var lastFrame = withFrameNanos { it }
+                while (true) {
+                    val frame = withFrameNanos { it }
+                    val dt = ((frame - lastFrame).coerceAtMost(50_000_000L)).toFloat() / 1_000_000_000f
+                    lastFrame = frame
+                    val velocity = HomeInputController.scrollVelocity.floatValue
+                    if (abs(velocity) > 0.08f) {
+                        val pxPerSecond = with(density) { 1500.dp.toPx() }
+                        gridState.scrollBy(velocity * pxPerSecond * dt)
                     }
-                } else {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp),
-                    ) {
+                }
+            }
+            LaunchedEffect(state.selectedIndex, state.visibleGames.size) {
+                if (state.visibleGames.isNotEmpty() && state.query.isNotBlank()) {
+                    gridState.animateScrollToItem(state.selectedIndex.coerceAtLeast(0) + 2)
+                }
+            }
+
+            LazyVerticalGrid(
+                columns = columns,
+                state = gridState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 8.dp, end = 8.dp, bottom = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(9.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    ArmsTopBar(
+                        title = str("games.section.library"),
+                        subtitle = if (state.scanning) str("games.scanningRoms") else state.allGames.size.toString(),
+                        leading = { RoundAction("☰", str("games.nav.library"), onOpenMenu) },
+                        actions = {
+                            RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
+                            Box {
+                                RoundAction("⇅", str("games.toolbar.recent"), { sortMenu = true })
+                                SortMenu(sortMenu, state.sort, viewModel::setSort) { sortMenu = false }
+                            }
+                            RoundAction(
+                                if (state.layout == LibraryLayout.Grid) "☷" else "▦",
+                                str("games.toolbar.rows"),
+                                viewModel::toggleLayout,
+                            )
+                        },
+                        horizontalPadding = 0.dp,
+                    )
+                }
+                if (state.initialized) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
                         SearchField(
                             value = state.query,
                             onValueChange = viewModel::setQuery,
+                            placeholder = str("games.search.placeholder"),
                             modifier = Modifier.fillMaxWidth(),
                         )
-                        Spacer(Modifier.height(12.dp))
-                        LibraryContent(
-                            state = state,
-                            viewModel = viewModel,
-                            onOpenGameSettings = onOpenGameSettings,
-                            modifier = Modifier.weight(1f),
-                        )
+                    }
+                }
+
+                if (state.recentGames.isNotEmpty() && state.query.isBlank()) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Column {
+                            SectionTitle(str("games.section.recentlyPlayed"))
+                            Spacer(Modifier.height(9.dp))
+                            LazyRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .layout { measurable, constraints ->
+                                        val edge = 8.dp.roundToPx()
+                                        val placeable = measurable.measure(
+                                            constraints.copy(
+                                                minWidth = constraints.minWidth + edge * 2,
+                                                maxWidth = constraints.maxWidth + edge * 2,
+                                            ),
+                                        )
+                                        layout(constraints.maxWidth, placeable.height) {
+                                            placeable.placeRelative(-edge, 0)
+                                        }
+                                    },
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp),
+                            ) {
+                                items(state.recentGames.take(10), key = { it.uri.toString() }) { game ->
+                                    RecentGameCard(
+                                        game = game,
+                                        onClick = { viewModel.launch(game) },
+                                        onDetails = { menuGame = game },
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!state.initialized) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Box(Modifier.fillMaxWidth().height(240.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                } else if (state.visibleGames.isEmpty()) {
+                    emptyLibrary(state.query.isBlank())
+                } else {
+                    itemsIndexed(
+                        state.visibleGames,
+                        key = { _, game -> game.uri.toString() },
+                        contentType = { _, _ -> state.layout.name },
+                    ) { index, game ->
+                        if (state.layout == LibraryLayout.Grid) {
+                            GameGridCard(
+                                game = game,
+                                selected = index == state.selectedIndex,
+                                onSelect = { viewModel.setSelection(index) },
+                                onLaunch = { viewModel.launch(game) },
+                                onDetails = { menuGame = game },
+                            )
+                        } else {
+                            GameListCard(
+                                game = game,
+                                selected = index == state.selectedIndex,
+                                onClick = { viewModel.setSelection(index); viewModel.launch(game) },
+                                onDetails = { menuGame = game },
+                            )
+                        }
                     }
                 }
             }
         }
     }
-}
+    }
 
-@Composable
-private fun LibrarySidebar(
-    state: HomeUiState,
-    onQuery: (String) -> Unit,
-    onSort: (HomeSort) -> Unit,
-    onRefresh: () -> Unit,
-    onEditFolders: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    var sortMenu by remember { mutableStateOf(false) }
-    GlassPanel(modifier = modifier, contentPadding = 16.dp) {
-        Column(Modifier.fillMaxSize()) {
-            ArmsLogo()
-            Spacer(Modifier.height(20.dp))
-            SearchField(state.query, onQuery, Modifier.fillMaxWidth())
-            Spacer(Modifier.height(18.dp))
-            SectionTitle("Browse", "Your PlayStation library")
-            Spacer(Modifier.height(10.dp))
-            SidebarAction(
-                label = when (state.sort) {
-                    HomeSort.Title -> "Title"
-                    HomeSort.RecentlyPlayed -> "Recently played"
-                    HomeSort.Compatibility -> "Compatibility"
-                },
-                value = "Sort",
-                onClick = { sortMenu = true },
-            )
-            Box {
-                DropdownMenu(expanded = sortMenu, onDismissRequest = { sortMenu = false }) {
-                    DropdownMenuItem(
-                        text = { Text("Title") },
-                        onClick = { onSort(HomeSort.Title); sortMenu = false },
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Recently played") },
-                        onClick = { onSort(HomeSort.RecentlyPlayed); sortMenu = false },
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Compatibility") },
-                        onClick = { onSort(HomeSort.Compatibility); sortMenu = false },
-                    )
+    menuGame?.let { game ->
+        ModalBottomSheet(onDismissRequest = { menuGame = null }) {
+            Column(
+                Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    game.title,
+                    style = MaterialTheme.typography.titleLarge,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                )
+                GameMenuAction("▶", str("action.play")) {
+                    menuGame = null
+                    viewModel.launch(game)
                 }
-            }
-            SidebarAction("Refresh library", "Scan", onRefresh)
-            SidebarAction("Game folders", "Storage", onEditFolders)
-            Spacer(Modifier.weight(1f))
-            if (state.scanning) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                    Spacer(Modifier.width(10.dp))
-                    Text("Updating library", style = MaterialTheme.typography.bodySmall)
+                GameMenuAction("⚙", str("action.settings")) {
+                    menuGame = null
+                    onOpenGameSettings(game)
                 }
-            } else {
-                StatusChip("${state.allGames.size} titles", Success)
             }
         }
     }
 }
 
 @Composable
-private fun SidebarAction(label: String, value: String, onClick: () -> Unit) {
+private fun GameMenuAction(glyph: String, label: String, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)),
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 13.dp, vertical = 11.dp),
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Column(Modifier.weight(1f)) {
-                Text(value, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(label, style = MaterialTheme.typography.labelLarge)
-            }
-            Text("›", fontSize = 22.sp, color = MaterialTheme.colorScheme.primary)
+            Text(glyph, color = MaterialTheme.colorScheme.primary, fontSize = 20.sp)
+            Text(label, style = MaterialTheme.typography.titleMedium)
         }
     }
 }
 
 @Composable
-private fun LibraryContent(
-    state: HomeUiState,
-    viewModel: HomeViewModel,
-    onOpenGameSettings: (GameInfo) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    if (state.visibleGames.isEmpty()) {
-        GlassPanel(modifier.fillMaxSize()) {
-            EmptyState(
-                title = if (state.query.isBlank()) "Your library is empty" else "No matching games",
-                message = if (state.query.isBlank()) {
-                    "Select one or more folders with PS2 or PS1 images."
-                } else {
-                    "Try a different title, serial, or file format."
-                },
-                actionLabel = if (state.query.isBlank()) "Choose folders" else null,
-                onAction = if (state.query.isBlank()) MainActivityRuntime::reopenSetup else null,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
-        return
-    }
-
-    Column(modifier) {
-        if (state.recentGames.isNotEmpty() && state.query.isBlank() && state.sort != HomeSort.RecentlyPlayed) {
-            SectionTitle("Continue playing", "Recently launched games")
-            Spacer(Modifier.height(10.dp))
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(end = 8.dp),
-            ) {
-                items(state.recentGames.take(8), key = { it.uri.toString() }) { game ->
-                    RecentGameCard(
-                        game = game,
-                        onClick = { viewModel.launch(game) },
-                        onDetails = { onOpenGameSettings(game) },
-                    )
-                }
-            }
-            Spacer(Modifier.height(18.dp))
-        }
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            SectionTitle(
-                if (state.query.isBlank()) "All games" else "Search results",
-                "${state.visibleGames.size} shown",
-                Modifier.weight(1f),
-            )
-            state.error?.let { StatusChip(it, MaterialTheme.colorScheme.error) }
-        }
-        Spacer(Modifier.height(10.dp))
-
-        if (state.layout == LibraryLayout.Grid) {
-            GameGrid(state, viewModel, onOpenGameSettings, Modifier.weight(1f))
-        } else {
-            GameList(state, viewModel, onOpenGameSettings, Modifier.weight(1f))
-        }
-    }
-}
-
-@Composable
-private fun GameGrid(
-    state: HomeUiState,
-    viewModel: HomeViewModel,
-    onDetails: (GameInfo) -> Unit,
-    modifier: Modifier,
-) {
-    val gridState = rememberLazyGridState()
-    LaunchedEffect(state.selectedIndex) {
-        if (state.visibleGames.isNotEmpty()) gridState.animateScrollToItem(state.selectedIndex)
-    }
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(142.dp),
-        state = gridState,
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
-        contentPadding = PaddingValues(bottom = 20.dp),
-    ) {
-        gridItemsIndexed(state.visibleGames, key = { _, game -> game.uri.toString() }) { index, game ->
-            GameGridCard(
-                game = game,
-                selected = index == state.selectedIndex,
-                onSelect = { viewModel.setSelection(index) },
-                onLaunch = { viewModel.launch(game) },
-                onDetails = { onDetails(game) },
+private fun SortMenu(expanded: Boolean, selected: HomeSort, onSort: (HomeSort) -> Unit, dismiss: () -> Unit) {
+    DropdownMenu(expanded = expanded, onDismissRequest = dismiss) {
+        listOf(
+            HomeSort.Title to str("games.section.library"),
+            HomeSort.RecentlyPlayed to str("games.section.recentlyPlayed"),
+            HomeSort.Compatibility to str("tab.fixes"),
+        ).forEach { (sort, label) ->
+            DropdownMenuItem(
+                text = { Text(label, fontWeight = if (sort == selected) FontWeight.Bold else FontWeight.Normal) },
+                onClick = { onSort(sort); dismiss() },
             )
         }
     }
 }
 
-@Composable
-private fun GameList(
-    state: HomeUiState,
-    viewModel: HomeViewModel,
-    onDetails: (GameInfo) -> Unit,
-    modifier: Modifier,
-) {
-    LazyColumn(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(bottom = 20.dp),
-    ) {
-        listItemsIndexed(state.visibleGames, key = { _, game -> game.uri.toString() }) { index, game ->
-            GameListCard(
-                game = game,
-                selected = index == state.selectedIndex,
-                onClick = { viewModel.setSelection(index); viewModel.launch(game) },
-                onDetails = { onDetails(game) },
-            )
-        }
+private fun LazyGridScope.emptyLibrary(noFolders: Boolean) {
+    item(span = { GridItemSpan(maxLineSpan) }) {
+        EmptyState(
+            title = if (noFolders) str("games.empty.noFolders.title") else str("games.search.placeholder"),
+            message = if (noFolders) str("games.empty.noFolders.body") else str("games.search.hint"),
+            actionLabel = if (noFolders) str("games.toolbar.setup") else null,
+            onAction = if (noFolders) MainActivityRuntime::reopenSetup else null,
+            modifier = Modifier.fillMaxWidth().height(260.dp),
+        )
     }
 }
 
@@ -367,64 +332,46 @@ private fun GameGridCard(
 ) {
     Column(
         modifier = Modifier
-            .widthIn(min = 132.dp, max = 190.dp)
-            .clip(RoundedCornerShape(18.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .border(
-                BorderStroke(
-                    if (selected) 2.dp else 1.dp,
-                    if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.52f),
-                ),
-                RoundedCornerShape(18.dp),
-            )
-            .combinedClickable(
-                onClick = { onSelect(); onLaunch() },
-                onLongClick = onDetails,
-            )
-            .padding(8.dp),
+            .fillMaxWidth()
+            .combinedClickable(onClick = { onSelect(); onLaunch() }, onLongClick = onDetails),
     ) {
-        GameCover(game, Modifier.fillMaxWidth().aspectRatio(0.72f))
-        Spacer(Modifier.height(9.dp))
-        Text(
-            game.title,
-            style = MaterialTheme.typography.titleSmall,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
+        GameCover(
+            game,
+            Modifier
+                .fillMaxWidth()
+                .aspectRatio(0.72f)
+                .border(
+                    BorderStroke(
+                        if (selected) 2.dp else 1.dp,
+                        if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.42f),
+                    ),
+                    RoundedCornerShape(12.dp),
+                ),
         )
-        Spacer(Modifier.height(5.dp))
-        GameMetadata(game)
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun GameListCard(
-    game: GameInfo,
-    selected: Boolean,
-    onClick: () -> Unit,
-    onDetails: () -> Unit,
-) {
+private fun GameListCard(game: GameInfo, selected: Boolean, onClick: () -> Unit, onDetails: () -> Unit) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                if (selected) 2.dp else 1.dp,
-                if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.48f),
-                RoundedCornerShape(18.dp),
-            )
-            .combinedClickable(onClick = onClick, onLongClick = onDetails),
-        shape = RoundedCornerShape(18.dp),
+        modifier = Modifier.fillMaxWidth().combinedClickable(onClick = onClick, onLongClick = onDetails),
+        shape = RoundedCornerShape(15.dp),
         color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(
+            if (selected) 2.dp else 1.dp,
+            if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.42f),
+        ),
     ) {
-        Row(Modifier.padding(9.dp), verticalAlignment = Alignment.CenterVertically) {
-            GameCover(game, Modifier.width(58.dp).aspectRatio(0.72f))
-            Spacer(Modifier.width(14.dp))
+        Row(Modifier.padding(7.dp), verticalAlignment = Alignment.CenterVertically) {
+            GameCover(game, Modifier.width(54.dp).aspectRatio(0.72f))
+            Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(game.title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(game.title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.height(5.dp))
                 GameMetadata(game)
             }
-            Text("▶", color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(12.dp))
+            Text("▶", color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(10.dp))
         }
     }
 }
@@ -432,34 +379,31 @@ private fun GameListCard(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun RecentGameCard(game: GameInfo, onClick: () -> Unit, onDetails: () -> Unit) {
-    Surface(
+    Column(
         modifier = Modifier
-            .width(228.dp)
-            .height(92.dp)
+            .width(102.dp)
             .combinedClickable(onClick = onClick, onLongClick = onDetails),
-        shape = RoundedCornerShape(18.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)),
     ) {
-        Row(Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            GameCover(game, Modifier.width(54.dp).fillMaxHeight())
-            Spacer(Modifier.width(11.dp))
-            Column(Modifier.weight(1f)) {
-                Text(game.title, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Spacer(Modifier.height(5.dp))
-                Text(game.serial ?: game.extension, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
+        GameCover(
+            game,
+            Modifier.fillMaxWidth().aspectRatio(0.72f).border(
+                1.dp,
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.42f),
+                RoundedCornerShape(12.dp),
+            ),
+        )
+        Spacer(Modifier.height(5.dp))
+        Text(game.title, style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
 @Composable
 private fun GameMetadata(game: GameInfo) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
         StatusChip(game.extension.ifBlank { game.platform.key.uppercase() })
-        game.regionFlag?.let { Text(it, fontSize = 14.sp) }
+        game.regionFlag?.let { Text(it, fontSize = 13.sp) }
         if (game.compatibility > 0) {
-            Text("★".repeat(game.compatibility), color = Color(0xFFFFC857), fontSize = 10.sp, maxLines = 1)
+            Text("★".repeat(game.compatibility), color = Color(0xFFFFC857), fontSize = 9.sp, maxLines = 1)
         }
     }
 }
@@ -467,36 +411,44 @@ private fun GameMetadata(game: GameInfo) {
 @Composable
 private fun GameCover(game: GameInfo, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val custom = remember(game.uri, CustomCovers.version.value) { CustomCovers.fileFor(context, game) }
+    val customCoverMap = LocalCustomCoverMap.current
+    val custom = remember(game.uri, customCoverMap) { CustomCovers.matchIn(customCoverMap, game) }
     val model = custom ?: game.coverUrl
-    SubcomposeAsyncImage(
-        model = ImageRequest.Builder(context).data(model).crossfade(true).build(),
-        contentDescription = game.title,
-        modifier = modifier.clip(RoundedCornerShape(12.dp)),
-        contentScale = ContentScale.Crop,
-        loading = { CoverPlaceholder(game.title) },
-        error = { CoverPlaceholder(game.title) },
-    )
+    val request = remember(model) {
+        ImageRequest.Builder(context)
+            .data(model)
+            .size(360, 500)
+            .precision(Precision.INEXACT)
+            .allowHardware(true)
+            .crossfade(false)
+            .build()
+    }
+    Box(modifier.clip(RoundedCornerShape(12.dp))) {
+        CoverPlaceholder(game.title)
+        if (model != null) {
+            AsyncImage(
+                model = request,
+                contentDescription = game.title,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+            )
+        }
+    }
 }
 
 @Composable
 private fun CoverPlaceholder(title: String) {
     Box(
-        Modifier
-            .fillMaxSize()
-            .background(
-                Brush.linearGradient(
-                    listOf(
-                        MaterialTheme.colorScheme.primaryContainer,
-                        MaterialTheme.colorScheme.surfaceVariant,
-                    ),
-                ),
+        Modifier.fillMaxSize().background(
+            Brush.linearGradient(
+                listOf(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.surfaceVariant),
             ),
+        ),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             title.take(2).uppercase(),
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Black,
             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f),
         )
@@ -506,7 +458,8 @@ private fun CoverPlaceholder(title: String) {
 object HomeInputController {
     private var owner: HomeViewModel? = null
     private var openMenu: (() -> Unit)? = null
-    private var columns = 5
+    private var columns = 3
+    val scrollVelocity = mutableFloatStateOf(0f)
 
     fun bind(viewModel: HomeViewModel, onOpenMenu: () -> Unit) {
         owner = viewModel
@@ -517,13 +470,11 @@ object HomeInputController {
         if (owner === viewModel) {
             owner = null
             openMenu = null
+            scrollVelocity.floatValue = 0f
         }
     }
 
-    fun setColumnCount(value: Int) {
-        columns = value.coerceAtLeast(1)
-    }
-
+    fun setColumnCount(value: Int) { columns = value.coerceAtLeast(1) }
     fun active(): Boolean = owner != null
 
     fun move(dx: Int, dy: Int): Boolean {
@@ -552,7 +503,11 @@ object HomeInputController {
         return true
     }
 
-    fun scroll(@Suppress("UNUSED_PARAMETER") velocity: Float): Boolean = owner != null
+    fun scroll(velocity: Float): Boolean {
+        if (owner == null) return false
+        scrollVelocity.floatValue = if (abs(velocity) > 0.08f) velocity.coerceIn(-1f, 1f) else 0f
+        return true
+    }
 
     fun back(): Boolean {
         openMenu?.invoke() ?: return false

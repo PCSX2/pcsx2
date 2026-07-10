@@ -2,6 +2,7 @@ package com.armsx2.ui.controls
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -9,10 +10,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +35,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.armsx2.input.ControllerMappings
+import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsBackdrop
 import com.armsx2.ui.common.ArmsTopBar
 import com.armsx2.ui.common.GlassPanel
@@ -48,6 +53,7 @@ fun ControllerManagerScreen(onBack: () -> Unit, viewModel: ControllerManagerView
         Column(
             Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .onPreviewKeyEvent { event ->
                     if (state.capturingAction != null && event.type == KeyEventType.KeyDown) {
                         viewModel.captureKey(event.nativeKeyEvent.keyCode)
@@ -55,65 +61,26 @@ fun ControllerManagerScreen(onBack: () -> Unit, viewModel: ControllerManagerView
                 },
         ) {
             ArmsTopBar(
-                title = "Controllers",
-                subtitle = "Bindings, players, hotkeys, and vibration",
-                leading = { RoundAction("‹", "Back", onBack) },
-                actions = { RoundAction("↺", "Reset player", viewModel::resetPlayer) },
+                title = str("tab.controls"),
+                subtitle = str("pad.editing.description"),
+                leading = { RoundAction("‹", str("action.back"), onBack) },
+                actions = { RoundAction("↺", str("action.reset"), viewModel::resetPlayer) },
             )
-            Row(
-                Modifier.fillMaxSize().padding(start = 22.dp, end = 22.dp, bottom = 18.dp),
-                horizontalArrangement = Arrangement.spacedBy(18.dp),
-            ) {
-                GlassPanel(Modifier.width(300.dp).fillMaxHeight()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
-                        SectionTitle("Controller setup", "Configure local players")
-                        ChoiceRow("Player 1", state.player == 0) { viewModel.setPlayer(0) }
-                        ChoiceRow("Player 2", state.player == 1) { viewModel.setPlayer(1) }
-                        ChoiceRow("Button bindings", state.section == ControllerSection.Buttons) { viewModel.setSection(ControllerSection.Buttons) }
-                        ChoiceRow("System hotkeys", state.section == ControllerSection.Hotkeys) { viewModel.setSection(ControllerSection.Hotkeys) }
-                        Spacer(Modifier.weight(1f))
-                        SettingSwitchRow("Vibration", "Route PS2 rumble to the active gamepad", state.rumble, viewModel::setRumble)
-                        SettingSwitchRow("Multitap", "Enable additional controller slots", state.multitap, viewModel::setMultitap)
-                        SettingSwitchRow("D-pad as left stick", "Map digital directions to analog movement", state.dpadAsStick, viewModel::setDpadAsStick)
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val compact = maxWidth < 840.dp
+                if (compact) {
+                    Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
+                        ControllerOptions(state, viewModel, Modifier.fillMaxWidth(), compact = true)
+                        Spacer(Modifier.padding(top = 10.dp))
+                        ControllerBindings(state, viewModel, Modifier.fillMaxWidth())
                     }
-                }
-                Column(Modifier.weight(1f)) {
-                    SectionTitle(
-                        if (state.section == ControllerSection.Buttons) "Player ${state.player + 1} bindings" else "System hotkeys",
-                        if (state.section == ControllerSection.Buttons) "Select an action, then press a controller button" else "Hotkeys may use one button or a two-button combo",
-                    )
-                    if (state.section == ControllerSection.Buttons) {
-                        LazyColumn(
-                            Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            contentPadding = PaddingValues(bottom = 20.dp),
-                        ) {
-                            items(ControllerMappings.actions, key = { it.id }) { action ->
-                                BindingRow(
-                                    label = action.label,
-                                    binding = ControllerMappings.labelForKey(ControllerMappings.physicalFor(action, state.player)),
-                                    capturing = state.capturingAction == action,
-                                    onBind = { viewModel.beginCapture(action) },
-                                    onClear = { viewModel.clear(action) },
-                                )
-                            }
-                        }
-                    } else {
-                        LazyColumn(
-                            Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            contentPadding = PaddingValues(bottom = 20.dp),
-                        ) {
-                            items(ControllerMappings.SysHotkey.entries, key = { it.prefKey }) { hotkey ->
-                                BindingRow(
-                                    label = hotkey.label,
-                                    binding = ControllerMappings.hotkeyLabel(hotkey),
-                                    capturing = ControllerMappings.captureHotkey.value == hotkey,
-                                    onBind = { viewModel.beginHotkeyCapture(hotkey) },
-                                    onClear = { viewModel.clearHotkey(hotkey) },
-                                )
-                            }
-                        }
+                } else {
+                    Row(
+                        Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    ) {
+                        ControllerOptions(state, viewModel, Modifier.width(286.dp), compact = false)
+                        ControllerBindings(state, viewModel, Modifier.weight(1f))
                     }
                 }
             }
@@ -123,18 +90,79 @@ fun ControllerManagerScreen(onBack: () -> Unit, viewModel: ControllerManagerView
     state.capturingAction?.let { action ->
         AlertDialog(
             onDismissRequest = viewModel::cancelCapture,
-            title = { Text("Bind ${action.label}") },
-            text = { Text("Press a button on the controller.") },
-            confirmButton = { TextButton(onClick = viewModel::cancelCapture) { Text("Cancel") } },
+            title = { Text("${str("pad.action.bind")}: ${action.label}") },
+            text = { Text(str("hotkeys.capturePrompt")) },
+            confirmButton = { TextButton(onClick = viewModel::cancelCapture) { Text(str("action.cancel")) } },
         )
     }
 }
 
 @Composable
-private fun ChoiceRow(label: String, selected: Boolean, onClick: () -> Unit) {
+private fun ControllerOptions(
+    state: ControllerManagerUiState,
+    viewModel: ControllerManagerViewModel,
+    modifier: Modifier,
+    compact: Boolean,
+) {
+    GlassPanel(modifier) {
+        Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+            if (!compact) SectionTitle(str("pad.section.playerRumble"), str("pad.editing.description"))
+            Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                ChoiceRow(str("pad.player1"), state.player == 0, { viewModel.setPlayer(0) }, Modifier.weight(1f))
+                ChoiceRow(str("pad.player2"), state.player == 1, { viewModel.setPlayer(1) }, Modifier.weight(1f))
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                ChoiceRow(str("pad.section.buttonMapping"), state.section == ControllerSection.Buttons, { viewModel.setSection(ControllerSection.Buttons) }, Modifier.weight(1f))
+                ChoiceRow(str("tab.hotkeys"), state.section == ControllerSection.Hotkeys, { viewModel.setSection(ControllerSection.Hotkeys) }, Modifier.weight(1f))
+            }
+            if (!compact) Spacer(Modifier.weight(1f))
+            SettingSwitchRow(str("pad.rumble.label"), str("pad.rumble.description"), state.rumble, viewModel::setRumble)
+            SettingSwitchRow(str("pad.multitap.label"), str("pad.multitap.description"), state.multitap, viewModel::setMultitap)
+            SettingSwitchRow(str("pad.dpadAsLeftStick.label"), str("pad.dpadAsLeftStick.description"), state.dpadAsStick, viewModel::setDpadAsStick)
+        }
+    }
+}
+
+@Composable
+private fun ControllerBindings(state: ControllerManagerUiState, viewModel: ControllerManagerViewModel, modifier: Modifier) {
+    Column(modifier) {
+        SectionTitle(
+            if (state.section == ControllerSection.Buttons) str("pad.section.buttonMapping") else str("hotkeys.header"),
+            if (state.section == ControllerSection.Buttons) str("pad.instruction.tapThenPress") else str("hotkeys.help"),
+        )
+        if (state.section == ControllerSection.Buttons) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                ControllerMappings.actions.forEach { action ->
+                    BindingRow(
+                        label = action.label,
+                        binding = ControllerMappings.labelForKey(ControllerMappings.physicalFor(action, state.player)),
+                        capturing = state.capturingAction == action,
+                        onBind = { viewModel.beginCapture(action) },
+                        onClear = { viewModel.clear(action) },
+                    )
+                }
+            }
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                ControllerMappings.SysHotkey.entries.forEach { hotkey ->
+                    BindingRow(
+                        label = hotkey.label,
+                        binding = ControllerMappings.hotkeyLabel(hotkey),
+                        capturing = ControllerMappings.captureHotkey.value == hotkey,
+                        onBind = { viewModel.beginHotkeyCapture(hotkey) },
+                        onClear = { viewModel.clearHotkey(hotkey) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChoiceRow(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.defaultMinSize(minHeight = 54.dp),
         shape = RoundedCornerShape(14.dp),
         color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
     ) {
@@ -150,12 +178,20 @@ private fun BindingRow(label: String, binding: String, capturing: Boolean, onBin
         color = if (capturing) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, if (capturing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.46f)),
     ) {
-        Row(Modifier.padding(13.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-            Text(binding.ifBlank { "Unbound" }, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.width(10.dp))
-            OutlinedButton(onClick = onBind) { Text(if (capturing) "Listening…" else "Bind") }
-            TextButton(onClick = onClear) { Text("Clear") }
+        Column(Modifier.padding(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(label, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                Text(
+                    binding.ifBlank { str("hotkeys.notSet") },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                )
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onClear) { Text(str("pad.action.clear")) }
+                OutlinedButton(onClick = onBind) { Text(if (capturing) str("hotkeys.capturePrompt") else str("pad.action.bind")) }
+            }
         }
     }
 }

@@ -64,7 +64,7 @@ class MemoryCardViewModel(application: Application) : AndroidViewModel(applicati
         val success = runCatching {
             context.contentResolver.openInputStream(uri)?.use { input -> target.outputStream().use(input::copyTo) }
                 ?: error("Unable to read the selected file.")
-            target.length() > 0L
+            target.length() > 0L && NativeApp.isMemoryCard(target.name)
         }.getOrDefault(false)
         if (!success) target.delete()
         state.value = if (success) state.value.copy(message = "Imported ${target.name}.") else state.value.copy(error = "Memory card import failed.")
@@ -120,4 +120,3 @@ class MemoryCardViewModel(application: Application) : AndroidViewModel(applicati
 
     private fun directorySize(directory: File): Long = directory.walkTopDown().filter(File::isFile).sumOf(File::length)
 }
-

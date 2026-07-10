@@ -4,20 +4,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import com.armsx2.runtime.MainActivityRuntime
 import androidx.core.content.edit
 
-enum class ThemeMode { Dark, Light }
+enum class ThemeMode { System, Dark, Light }
 
 object ThemePreferences {
     private const val PreferenceKey = "ui.theme.mode"
 
-    val mode = mutableStateOf(ThemeMode.Dark)
+    val mode = mutableStateOf(ThemeMode.System)
 
     fun load() {
-        mode.value = when (MainActivityRuntime.prefs.getString(PreferenceKey, ThemeMode.Dark.name)) {
+        mode.value = when (MainActivityRuntime.prefs.getString(PreferenceKey, ThemeMode.System.name)) {
+            ThemeMode.System.name -> ThemeMode.System
             ThemeMode.Light.name -> ThemeMode.Light
             else -> ThemeMode.Dark
         }
@@ -28,7 +30,6 @@ object ThemePreferences {
         MainActivityRuntime.prefs.edit { putString(PreferenceKey, value.name) }
     }
 
-    fun toggle() = set(if (mode.value == ThemeMode.Dark) ThemeMode.Light else ThemeMode.Dark)
 }
 
 private val NightScheme = darkColorScheme(
@@ -79,8 +80,13 @@ private val DayScheme = lightColorScheme(
 
 @Composable
 fun Armsx2Theme(content: @Composable () -> Unit) {
+    val dark = when (ThemePreferences.mode.value) {
+        ThemeMode.System -> isSystemInDarkTheme()
+        ThemeMode.Dark -> true
+        ThemeMode.Light -> false
+    }
     MaterialTheme(
-        colorScheme = if (ThemePreferences.mode.value == ThemeMode.Dark) NightScheme else DayScheme,
+        colorScheme = if (dark) NightScheme else DayScheme,
         typography = ArmsTypography,
         content = content,
     )

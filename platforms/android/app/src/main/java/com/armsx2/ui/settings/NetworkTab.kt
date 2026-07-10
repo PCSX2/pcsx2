@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -24,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -48,7 +50,7 @@ import java.net.NetworkInterface
 @Composable
 fun NetworkTab(state: MutableState<Settings>) {
     val s = state.value
-    val scroll = remember { ScrollState(0) }
+    val scroll = settingsScrollState()
     ControllerAutoScroll(scroll)
     val adapters = remember { enumerateAdapters() }
     val apiValues = listOf("Unset", "PCAP Bridged", "PCAP Switched", "TAP", "Sockets")
@@ -62,14 +64,12 @@ fun NetworkTab(state: MutableState<Settings>) {
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(scroll)
-            .verticalScrollbar(scroll),
+            .fillMaxWidth(),
     ) {
         Text(
             str("network.dev9.description"),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 11.sp,
+            fontSize = 14.sp,
             modifier = Modifier.padding(bottom = 8.dp),
         )
         HelpText(str("network.dev9.help"))
@@ -235,18 +235,19 @@ private fun EditableTextRow(label: String, value: String, onChange: (String) -> 
     Row(
         Modifier
             .fillMaxWidth()
-            .height(24.dp)
+            .height(64.dp)
+            .clip(RoundedCornerShape(16.dp))
             .background(rowAura())
             .clickable { editing = true }
             .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(label, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+        Text(label, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.weight(1f))
         Text(
             value.ifEmpty { "0.0.0.0" },
             color = Color(0xFFCCCCCC),
-            fontSize = 11.sp,
+            fontSize = 14.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
@@ -262,17 +263,18 @@ private fun DeviceChooser(
     Column(
         Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
             .background(rowAura())
             .padding(horizontal = 6.dp, vertical = 4.dp),
     ) {
-        Text(str("network.ethernetDevice"), color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+        Text(str("network.ethernetDevice"), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.height(4.dp))
         adapters.forEach { adapter ->
             val active = adapter == selected
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(24.dp)
+                    .height(56.dp)
                     .clickable { onChange(adapter) }
                     .padding(horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -280,14 +282,14 @@ private fun DeviceChooser(
                 Text(
                     adapter,
                     color = if (active) Colors.pasx2_blue else Color(0xFFCCCCCC),
-                    fontSize = 12.sp,
+                    fontSize = 15.sp,
                     fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(Modifier.weight(1f))
                 if (active) {
-                    Text(str("network.selected"), color = Colors.pasx2_blue, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text(str("network.selected"), color = Colors.pasx2_blue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -307,7 +309,7 @@ private fun HddFileRow(fileName: String, onChange: (String) -> Unit, onReset: ()
                     Text(
                         str("network.hddImage.dialogHint"),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 11.sp,
+                        fontSize = 14.sp,
                         modifier = Modifier.padding(bottom = 6.dp),
                     )
                     OutlinedTextField(
@@ -332,6 +334,7 @@ private fun HddFileRow(fileName: String, onChange: (String) -> Unit, onReset: ()
     Box(
         Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
             .background(rowAura())
             .clickable { draft = fileName; editing = true }
             .padding(horizontal = 6.dp, vertical = 4.dp),
@@ -339,13 +342,13 @@ private fun HddFileRow(fileName: String, onChange: (String) -> Unit, onReset: ()
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(str("network.hddImage.title"), color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                Text(fileName, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(str("network.hddImage.title"), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Text(fileName, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Text(
                 str("action.reset"),
                 color = Colors.pasx2_blue,
-                fontSize = 12.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable { onReset() }.padding(start = 8.dp),
             )

@@ -146,6 +146,7 @@ public class NativeApp {
 	 */
 	public static native boolean applyGSSettingsLive();
 	public static native int reloadPatches();
+	public static native boolean reloadTextureReplacements();
 
 	/**
 	 * Set which named patches/cheats are enabled (the [Patches]/[Cheats]
@@ -570,6 +571,7 @@ public class NativeApp {
 	/** Create a memory card in the memcards folder. type: 1=File, 2=Folder.
 	 *  fileType (File only): 1=8MB, 2=16MB, 3=32MB, 4=64MB. Returns success. */
 	public static native boolean createMemoryCard(String name, int type, int fileType);
+	public static native boolean isMemoryCard(String name);
 
 	public static native void onNativeSurfaceCreated();
 	public static native void onNativeSurfaceChanged(Surface surface, int w, int h);
@@ -649,6 +651,7 @@ public class NativeApp {
 	public static native boolean loadStateFromSlot(int slot);
 	public static native String getGamePathSlot(int slot);
 	public static native byte[] getImageSlot(int slot);
+	public static native byte[] getSaveStateImage(String path);
 
 	// Hot-swap the CDVD disc on the running VM (keeps the session alive, cycles
 	// the tray so the game detects the new disc). Returns false if there's no

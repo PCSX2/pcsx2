@@ -27,6 +27,7 @@ data class HomeUiState(
     val scanning: Boolean = false,
     val error: String? = null,
     val selectedIndex: Int = 0,
+    val initialized: Boolean = false,
 )
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
@@ -34,6 +35,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var scanJob: Job? = null
     private var loaded = false
+    private var pendingInitialScan = false
     private var directories: List<String> = emptyList()
 
     var state = androidx.compose.runtime.mutableStateOf(HomeUiState())
@@ -49,11 +51,16 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             } else {
                 LibraryLayout.Grid
             }
+            pendingInitialScan = romDirectories.isNotEmpty() && cached.key != repository.cacheKey(romDirectories)
             state.value = buildState(
-                base = state.value.copy(allGames = cached.games, layout = layout),
+                base = state.value.copy(
+                    allGames = cached.games,
+                    layout = layout,
+                    initialized = cached.games.isNotEmpty() || !pendingInitialScan,
+                ),
             )
-            if (nativeReady && cached.key != repository.cacheKey(romDirectories)) refresh()
-        } else if (nativeReady && state.value.allGames.isEmpty() && romDirectories.isNotEmpty()) {
+            if (nativeReady && pendingInitialScan) refresh()
+        } else if (nativeReady && pendingInitialScan) {
             refresh()
         }
     }
@@ -61,13 +68,23 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     fun refresh() {
         if (directories.isEmpty() || scanJob?.isActive == true) return
         scanJob = scope.launch {
-            state.value = state.value.copy(scanning = true, error = null)
+            val initialScan = pendingInitialScan && state.value.allGames.isEmpty()
+            state.value = state.value.copy(
+                scanning = true,
+                initialized = if (initialScan) false else state.value.initialized,
+                error = null,
+            )
             val result = runCatching { repository.scan(directories) }
             result.onSuccess { games ->
-                state.value = buildState(state.value.copy(allGames = games, scanning = false))
+                pendingInitialScan = false
+                state.value = buildState(
+                    state.value.copy(allGames = games, scanning = false, initialized = true),
+                )
             }.onFailure { failure ->
+                pendingInitialScan = false
                 state.value = state.value.copy(
                     scanning = false,
+                    initialized = true,
                     error = failure.message ?: "Unable to scan the selected folders.",
                 )
             }

@@ -35,16 +35,14 @@ import kotlin.math.roundToInt
 @Composable
 fun PerformanceTab(state: MutableState<Settings>) {
     val s = state.value
-    val scroll = remember { ScrollState(0) }
+    val scroll = settingsScrollState()
     ControllerAutoScroll(scroll)
 
     fun apply(updated: Settings) = InGameOverlay.saveSettings(updated)
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(scroll)
-            .verticalScrollbar(scroll),
+            .fillMaxWidth(),
     ) {
         // Speedhack profile presets. Equality against s.copy(...) means the
         // segment auto-reflects "Custom" once the user tweaks any speedhack below.
@@ -267,152 +265,41 @@ fun PerformanceTab(state: MutableState<Settings>) {
         SettingsDivider()
         CollapsibleSection(str("perf.gamedbFixes.title")) {
             HelpText(str("perf.gamedbFixes.help"))
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                BubbleGridRow {
-                    ToggleBubble(str("perf.fix.skipBios"), s.enableFastBoot, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableFastBoot = it))
-                    }
-                    ToggleBubble(str("perf.fix.gamedbFixes"), s.enableGameFixes, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = it))
-                    }
-                    ToggleBubble(str("perf.fix.skipMpeg"), s.gamefixSkipMpeg, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixSkipMpeg = it))
-                    }
-                    ToggleBubble(str("perf.fix.fmvSoftware"), s.gamefixSoftwareRendererFmv, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixSoftwareRendererFmv = it))
-                    }
-                }
-                if (s.gamefixSkipMpeg) {
-                    HelpText(str("perf.fix.skipMpeg.warning"))
-                }
-                BubbleGridRow {
-                    ToggleBubble(str("perf.fix.eeTiming"), s.gamefixEETiming, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixEETiming = it))
-                    }
-                    ToggleBubble(str("perf.fix.instantDma"), s.gamefixInstantDma, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixInstantDma = it))
-                    }
-                    ToggleBubble(str("perf.fix.blitFps"), s.gamefixBlitInternalFps, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixBlitInternalFps = it))
-                    }
-                    ToggleBubble(str("perf.fix.fpuMultiply"), s.gamefixFpuMul, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixFpuMul = it))
-                    }
-                }
-                BubbleGridRow {
-                    ToggleBubble(str("perf.fix.ophFlag"), s.gamefixOphFlag, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixOphFlag = it))
-                    }
-                    ToggleBubble(str("perf.fix.gifFifo"), s.gamefixGifFifo, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixGifFifo = it))
-                    }
-                    ToggleBubble(str("perf.fix.dmaBusy"), s.gamefixDmaBusy, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixDmaBusy = it))
-                    }
-                    ToggleBubble(str("perf.fix.vif1Stall"), s.gamefixVif1Stall, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixVif1Stall = it))
-                    }
-                }
-                BubbleGridRow {
-                    ToggleBubble(str("perf.fix.iBit"), s.gamefixIbit, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixIbit = it))
-                    }
-                    ToggleBubble(str("perf.fix.fullVu0Sync"), s.gamefixFullVu0Sync, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixFullVu0Sync = it))
-                    }
-                    ToggleBubble(str("perf.fix.vuAddSub"), s.gamefixVuAddSub, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixVuAddSub = it))
-                    }
-                    ToggleBubble(str("perf.fix.vuOverflow"), s.gamefixVuOverflow, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixVuOverflow = it))
-                    }
-                }
-                BubbleGridRow {
-                    ToggleBubble(str("perf.fix.extraXgkick"), s.gamefixXgkick, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixXgkick = it))
-                    }
-                    ToggleBubble(str("perf.fix.goemonTlb"), s.gamefixGoemonTlb, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixGoemonTlb = it))
-                    }
-                    ToggleBubble(str("perf.fix.vuSync"), s.gamefixVuSync, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(enableGameFixes = true, gamefixVuSync = it))
-                    }
-                    Spacer(Modifier.weight(1f))
-                }
-            }
+            ToggleRow(str("perf.fix.skipBios"), s.enableFastBoot) { apply(s.copy(enableFastBoot = it)) }
+            ToggleRow(str("perf.fix.gamedbFixes"), s.enableGameFixes) { apply(s.copy(enableGameFixes = it)) }
+            ToggleRow(str("perf.fix.skipMpeg"), s.gamefixSkipMpeg) { apply(s.copy(enableGameFixes = true, gamefixSkipMpeg = it)) }
+            if (s.gamefixSkipMpeg) HelpText(str("perf.fix.skipMpeg.warning"))
+            ToggleRow(str("perf.fix.fmvSoftware"), s.gamefixSoftwareRendererFmv) { apply(s.copy(enableGameFixes = true, gamefixSoftwareRendererFmv = it)) }
+            ToggleRow(str("perf.fix.eeTiming"), s.gamefixEETiming) { apply(s.copy(enableGameFixes = true, gamefixEETiming = it)) }
+            ToggleRow(str("perf.fix.instantDma"), s.gamefixInstantDma) { apply(s.copy(enableGameFixes = true, gamefixInstantDma = it)) }
+            ToggleRow(str("perf.fix.blitFps"), s.gamefixBlitInternalFps) { apply(s.copy(enableGameFixes = true, gamefixBlitInternalFps = it)) }
+            ToggleRow(str("perf.fix.fpuMultiply"), s.gamefixFpuMul) { apply(s.copy(enableGameFixes = true, gamefixFpuMul = it)) }
+            ToggleRow(str("perf.fix.ophFlag"), s.gamefixOphFlag) { apply(s.copy(enableGameFixes = true, gamefixOphFlag = it)) }
+            ToggleRow(str("perf.fix.gifFifo"), s.gamefixGifFifo) { apply(s.copy(enableGameFixes = true, gamefixGifFifo = it)) }
+            ToggleRow(str("perf.fix.dmaBusy"), s.gamefixDmaBusy) { apply(s.copy(enableGameFixes = true, gamefixDmaBusy = it)) }
+            ToggleRow(str("perf.fix.vif1Stall"), s.gamefixVif1Stall) { apply(s.copy(enableGameFixes = true, gamefixVif1Stall = it)) }
+            ToggleRow(str("perf.fix.iBit"), s.gamefixIbit) { apply(s.copy(enableGameFixes = true, gamefixIbit = it)) }
+            ToggleRow(str("perf.fix.fullVu0Sync"), s.gamefixFullVu0Sync) { apply(s.copy(enableGameFixes = true, gamefixFullVu0Sync = it)) }
+            ToggleRow(str("perf.fix.vuAddSub"), s.gamefixVuAddSub) { apply(s.copy(enableGameFixes = true, gamefixVuAddSub = it)) }
+            ToggleRow(str("perf.fix.vuOverflow"), s.gamefixVuOverflow) { apply(s.copy(enableGameFixes = true, gamefixVuOverflow = it)) }
+            ToggleRow(str("perf.fix.extraXgkick"), s.gamefixXgkick) { apply(s.copy(enableGameFixes = true, gamefixXgkick = it)) }
+            ToggleRow(str("perf.fix.goemonTlb"), s.gamefixGoemonTlb) { apply(s.copy(enableGameFixes = true, gamefixGoemonTlb = it)) }
+            ToggleRow(str("perf.fix.vuSync"), s.gamefixVuSync) { apply(s.copy(enableGameFixes = true, gamefixVuSync = it)) }
             HelpText(str("perf.gamedbFixes.legend"))
         }
         SettingsDivider()
         CollapsibleSection(str("perf.advancedSpeedhacks.title")) {
             Spacer(Modifier.height(8.dp))
-            // On/Off toggles as a 4-wide bubble grid, matching the Playing-Now
-            // action grid in InGameOverlay. Two rows of four cells — last cell
-            // is a Spacer so the seven toggles keep uniform widths across both
-            // rows. Labels are abbreviated to fit the ~74dp cell.
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                BubbleGridRow {
-                    ToggleBubble(str("perf.hack.mtvu"), s.mtvu, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(mtvu = it))
-                    }
-                    ToggleBubble(str("perf.hack.instantVu1"), s.vu1Instant, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(vu1Instant = it))
-                    }
-                    ToggleBubble(str("perf.hack.vuFlagHack"), s.vuFlagHack, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(vuFlagHack = it))
-                    }
-                    ToggleBubble(str("perf.hack.fastCdvd"), s.fastCDVD, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(fastCDVD = it))
-                    }
-                }
-                BubbleGridRow {
-                    ToggleBubble(str("perf.hack.intcStat"), s.intcStat, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(intcStat = it))
-                    }
-                    ToggleBubble(str("perf.hack.waitLoop"), s.waitLoop, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(waitLoop = it))
-                    }
-                    // Frame Limiter lives on the Play tab's quick toggles — no need
-                    // to duplicate it here.
-                    // ARMSX2 perf-knob: A/B disable for the arm64 VU1 JIT
-                    // NEON peephole fusions. Default on; flip off to confirm
-                    // whether a per-game regression traces back to our
-                    // matrix-transform / cross-product fusion peepholes.
-                    // Block recompilation is not invalidated on toggle —
-                    // already-compiled blocks keep their fused path; new
-                    // blocks pick up the new gate. Restart the game for a
-                    // clean A/B (or hit the recompiler tab to flip a CPU off
-                    // then on, which forces a cache rebuild).
-                    ToggleBubble(str("perf.hack.vuNeonFusions"), s.vuNeonFusions, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(vuNeonFusions = it))
-                    }
-                }
-                // Heavy / aggressive perf levers — off by default, may break
-                // some games. Effective on next block recompile; for a clean
-                // A/B, restart the game (or bounce a CPU recompiler toggle
-                // off→on to force a JIT cache rebuild).
-                //
-                //   Skip VU Stall Sim — drops the vu1_TestPipes_VU1 BL
-                //     entirely. Was 19-32% of total CPU on Futurama / GoW2 /
-                //     Ape Escape 3. Breaks games that depend on accurate
-                //     FMAC / FDIV / EFU / IALU pipeline-stall timing
-                //     (glitched models, missing geometry, audio crackle).
-                //   Defer VU Writes — VF stores held in the NEON cache,
-                //     committed at flush sites. Saves 1 Str per FMAC pair on
-                //     transforms. Known to break SH2 graphics (cross-pair
-                //     coherence) and similar.
-                BubbleGridRow {
-                    ToggleBubble(str("perf.hack.skipVuStallSim"), s.vuSkipStallSim, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(vuSkipStallSim = it))
-                    }
-                    ToggleBubble(str("perf.hack.deferVuWrites"), s.vuDeferredWrites, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(vuDeferredWrites = it))
-                    }
-                    ToggleBubble(str("perf.hack.skipDupeFrames"), s.skipDuplicateFrames, modifier = Modifier.weight(1f)) {
-                        apply(s.copy(skipDuplicateFrames = it))
-                    }
-                    Spacer(Modifier.weight(1f))
-                }
-            }
+            ToggleRow(str("perf.hack.mtvu"), s.mtvu) { apply(s.copy(mtvu = it)) }
+            ToggleRow(str("perf.hack.instantVu1"), s.vu1Instant) { apply(s.copy(vu1Instant = it)) }
+            ToggleRow(str("perf.hack.vuFlagHack"), s.vuFlagHack) { apply(s.copy(vuFlagHack = it)) }
+            ToggleRow(str("perf.hack.fastCdvd"), s.fastCDVD) { apply(s.copy(fastCDVD = it)) }
+            ToggleRow(str("perf.hack.intcStat"), s.intcStat) { apply(s.copy(intcStat = it)) }
+            ToggleRow(str("perf.hack.waitLoop"), s.waitLoop) { apply(s.copy(waitLoop = it)) }
+            ToggleRow(str("perf.hack.vuNeonFusions"), s.vuNeonFusions) { apply(s.copy(vuNeonFusions = it)) }
+            ToggleRow(str("perf.hack.skipVuStallSim"), s.vuSkipStallSim) { apply(s.copy(vuSkipStallSim = it)) }
+            ToggleRow(str("perf.hack.deferVuWrites"), s.vuDeferredWrites) { apply(s.copy(vuDeferredWrites = it)) }
+            ToggleRow(str("perf.hack.skipDupeFrames"), s.skipDuplicateFrames) { apply(s.copy(skipDuplicateFrames = it)) }
             HelpText(str("perf.advancedSpeedhacks.legend"))
         }
     }

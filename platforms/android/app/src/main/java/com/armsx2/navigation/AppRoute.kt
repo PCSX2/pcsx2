@@ -16,6 +16,7 @@ sealed interface AppRoute {
     data object PatchManager : AppRoute
     data object TextureManager : AppRoute
     data object Achievements : AppRoute
+    data object Language : AppRoute
     data object About : AppRoute
 }
 
@@ -25,9 +26,12 @@ enum class SettingsCategory {
     Graphics,
     Audio,
     Controls,
+    Hotkeys,
     Network,
     OnScreen,
+    Skins,
     Advanced,
+    Recompiler,
 }
 
 object UiNavigator {
@@ -46,9 +50,16 @@ object UiNavigator {
             drawerOpen.value = false
             return true
         }
-        if (route.value != AppRoute.Home) {
-            route.value = AppRoute.Home
-            return true
+        when (route.value) {
+            AppRoute.Language -> {
+                route.value = AppRoute.Settings(SettingsCategory.General)
+                return true
+            }
+            AppRoute.Home -> Unit
+            else -> {
+                route.value = AppRoute.Home
+                return true
+            }
         }
         drawerOpen.value = true
         return true

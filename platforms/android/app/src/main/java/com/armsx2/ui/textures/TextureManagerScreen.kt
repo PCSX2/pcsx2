@@ -4,6 +4,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -11,10 +12,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsBackdrop
 import com.armsx2.ui.common.ArmsTopBar
 import com.armsx2.ui.common.EmptyState
@@ -43,41 +48,31 @@ fun TextureManagerScreen(onBack: () -> Unit, viewModel: TextureManagerViewModel 
     LaunchedEffect(Unit) { viewModel.refresh() }
 
     ArmsBackdrop {
-        Column(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             ArmsTopBar(
-                title = "Texture packs",
-                subtitle = state.activeSerial?.let { "Active game: $it" } ?: "Launch a game before importing",
-                leading = { RoundAction("‹", "Back", onBack) },
+                title = str("renderer.section.texturePacks"),
+                subtitle = state.activeSerial ?: str("games.info.perGameSettings.body"),
+                leading = { RoundAction("‹", str("action.back"), onBack) },
                 actions = {
-                    RoundAction("＋", "Import folder", { folderPicker.launch(null) })
-                    RoundAction("↻", "Refresh", viewModel::refresh)
+                    RoundAction("＋", str("action.import"), { folderPicker.launch(null) })
+                    RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
                 },
             )
-            Row(
-                Modifier.fillMaxSize().padding(start = 22.dp, end = 22.dp, bottom = 18.dp),
-                horizontalArrangement = Arrangement.spacedBy(18.dp),
-            ) {
-                GlassPanel(Modifier.width(330.dp).fillMaxHeight()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
-                        SectionTitle("Texture replacement", "Global loading options")
-                        SettingSwitchRow("Load replacements", "Use installed replacement textures", state.settings.loadTextureReplacements, onCheckedChange = { value -> viewModel.update { it.copy(loadTextureReplacements = value) } })
-                        SettingSwitchRow("Asynchronous loading", "Load textures in the background", state.settings.loadTextureReplacementsAsync, onCheckedChange = { value -> viewModel.update { it.copy(loadTextureReplacementsAsync = value) } })
-                        SettingSwitchRow("Precache packs", "Prepare textures when the game starts", state.settings.precacheTextureReplacements, onCheckedChange = { value -> viewModel.update { it.copy(precacheTextureReplacements = value) } })
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val compact = maxWidth < 820.dp
+                if (compact) {
+                    Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
+                        TextureOptions(state, viewModel, Modifier.fillMaxWidth())
+                        Spacer(Modifier.padding(top = 10.dp))
+                        TexturePacks(state, viewModel, Modifier.fillMaxWidth())
                     }
-                }
-                Column(Modifier.weight(1f)) {
-                    SectionTitle("Installed packs", "${state.packs.size} games")
-                    if (state.busy) CircularProgressIndicator()
-                    if (state.packs.isEmpty()) {
-                        EmptyState("No texture packs", "Import a folder while its target game is active.", modifier = Modifier.fillMaxSize())
-                    } else {
-                        LazyColumn(
-                            Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            contentPadding = PaddingValues(bottom = 20.dp),
-                        ) {
-                            items(state.packs, key = { it.serial }) { pack -> TexturePackRow(pack) { viewModel.delete(pack) } }
-                        }
+                } else {
+                    Row(
+                        Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    ) {
+                        TextureOptions(state, viewModel, Modifier.width(310.dp))
+                        TexturePacks(state, viewModel, Modifier.weight(1f))
                     }
                 }
             }
@@ -86,10 +81,41 @@ fun TextureManagerScreen(onBack: () -> Unit, viewModel: TextureManagerViewModel 
     (state.error ?: state.message)?.let { message ->
         AlertDialog(
             onDismissRequest = viewModel::dismissMessage,
-            title = { Text(if (state.error == null) "Done" else "Texture packs") },
+            title = { Text(if (state.error == null) str("action.ok") else str("renderer.section.texturePacks")) },
             text = { Text(message) },
-            confirmButton = { TextButton(onClick = viewModel::dismissMessage) { Text("OK") } },
+            confirmButton = { TextButton(onClick = viewModel::dismissMessage) { Text(str("action.ok")) } },
         )
+    }
+}
+
+@Composable
+private fun TextureOptions(state: TextureManagerUiState, viewModel: TextureManagerViewModel, modifier: Modifier) {
+    GlassPanel(modifier) {
+        Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+            SectionTitle(str("renderer.section.texturePacks"), str("scope.global"))
+            SettingSwitchRow(str("renderer.loadTexturePacks.label"), str("renderer.loadTexturePacks.description"), state.settings.loadTextureReplacements, onCheckedChange = { value -> viewModel.update { it.copy(loadTextureReplacements = value) } })
+            SettingSwitchRow(str("renderer.asyncTextureLoading.label"), str("renderer.asyncTextureLoading.description"), state.settings.loadTextureReplacementsAsync, onCheckedChange = { value -> viewModel.update { it.copy(loadTextureReplacementsAsync = value) } })
+            SettingSwitchRow(str("renderer.precacheTexturePacks.label"), str("renderer.precacheTexturePacks.description"), state.settings.precacheTextureReplacements, onCheckedChange = { value -> viewModel.update { it.copy(precacheTextureReplacements = value) } })
+        }
+    }
+}
+
+@Composable
+private fun TexturePacks(state: TextureManagerUiState, viewModel: TextureManagerViewModel, modifier: Modifier) {
+    Column(modifier) {
+        SectionTitle(str("renderer.section.texturePacks"), state.packs.size.toString())
+        if (state.busy) CircularProgressIndicator()
+        if (state.packs.isEmpty()) {
+            EmptyState(
+                str("renderer.section.texturePacks"),
+                str("renderer.loadTexturePacks.description"),
+                modifier = Modifier.fillMaxWidth().padding(top = 10.dp).height(220.dp),
+            )
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                state.packs.forEach { pack -> TexturePackRow(pack) { viewModel.delete(pack) } }
+            }
+        }
     }
 }
 
@@ -106,9 +132,9 @@ private fun TexturePackRow(pack: TexturePackItem, onDelete: () -> Unit) {
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(pack.serial, style = MaterialTheme.typography.titleMedium)
-                Text("${pack.fileCount} files · ${humanSize(pack.size)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("${pack.fileCount} · ${humanSize(pack.size)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            TextButton(onClick = onDelete) { Text("Delete") }
+            TextButton(onClick = onDelete) { Text(str("action.delete")) }
         }
     }
 }

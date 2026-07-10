@@ -30,16 +30,14 @@ import com.armsx2.ui.InGameOverlay
 @Composable
 fun FixesTab(state: MutableState<Settings>) {
     val s = state.value
-    val scroll = remember { ScrollState(0) }
+    val scroll = settingsScrollState()
     ControllerAutoScroll(scroll)
 
     fun apply(updated: Settings) = InGameOverlay.saveSettings(updated)
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(scroll)
-            .verticalScrollbar(scroll),
+            .fillMaxWidth(),
     ) {
         CollapsibleSection(str("fixes.section.display")) {
         HelpText(

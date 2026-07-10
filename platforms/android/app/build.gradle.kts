@@ -56,7 +56,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             // Sign release with the debug keystore so it's installable on-device
             // without a separate signing config. NOT for distribution — the debug
             // keystore is well-known and not secure for Play Store uploads.
@@ -166,6 +167,12 @@ android {
             useLegacyPackaging = true
         }
     }
+}
+
+composeCompiler {
+    // Keep R8 enabled while avoiding AGP's incompatible built-in Kotlin
+    // compose-group-mapping producer. Source/line mappings remain preserved.
+    includeComposeMappingFile.set(false)
 }
 
 // Android Studio's "Build > Clean Project" runs the `clean` task, but AGP

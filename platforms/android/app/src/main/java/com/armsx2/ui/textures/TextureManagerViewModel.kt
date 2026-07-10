@@ -8,6 +8,7 @@ import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.config.ConfigStore
 import com.armsx2.config.Settings
 import java.io.File
+import kr.co.iefriends.pcsx2.NativeApp
 
 data class TexturePackItem(val serial: String, val directory: File, val fileCount: Int, val size: Long)
 
@@ -47,21 +48,25 @@ class TextureManagerViewModel(application: Application) : AndroidViewModel(appli
     }
 
     fun importFolder(uri: Uri) {
-        val serial = state.value.activeSerial
-        if (serial.isNullOrBlank()) {
-            state.value = state.value.copy(error = "Launch the target game before importing its texture pack.")
-            return
-        }
         val context = getApplication<Application>()
         val source = DocumentFile.fromTreeUri(context, uri)
         if (source == null) {
             state.value = state.value.copy(error = "Unable to open the selected folder.")
             return
         }
+        val serial = state.value.activeSerial
+            ?.takeIf(String::isNotBlank)
+            ?: source.name?.let(::normalizeSerial)
+        if (serial.isNullOrBlank()) {
+            state.value = state.value.copy(error = "Name the selected folder with the game's serial, for example SLES-52187.")
+            return
+        }
         state.value = state.value.copy(busy = true)
         val destination = File(textureRoot(), "$serial/replacements").apply { mkdirs() }
-        val copied = runCatching { copyTree(source, destination) }.getOrDefault(0)
+        val contentRoot = source.findFile("replacements")?.takeIf(DocumentFile::isDirectory) ?: source
+        val copied = runCatching { copyTree(contentRoot, destination) }.getOrDefault(0)
         state.value = if (copied > 0) state.value.copy(busy = false, message = "Imported $copied texture files for $serial.") else state.value.copy(busy = false, error = "No texture files were imported.")
+        if (copied > 0) reloadCore()
         refresh()
     }
 
@@ -69,6 +74,7 @@ class TextureManagerViewModel(application: Application) : AndroidViewModel(appli
         val serialDirectory = pack.directory.parentFile ?: return
         val deleted = runCatching { serialDirectory.deleteRecursively() }.getOrDefault(false)
         state.value = if (deleted) state.value.copy(message = "Deleted texture pack ${pack.serial}.") else state.value.copy(error = "Unable to delete ${pack.serial}.")
+        if (deleted && pack.serial.equals(state.value.activeSerial, true)) reloadCore()
         refresh()
     }
 
@@ -83,15 +89,27 @@ class TextureManagerViewModel(application: Application) : AndroidViewModel(appli
             if (child.isDirectory) {
                 copied += copyTree(child, File(destination, name).apply { mkdirs() })
             } else if (child.isFile) {
-                getApplication<Application>().contentResolver.openInputStream(child.uri)?.use { input ->
+                val success = getApplication<Application>().contentResolver.openInputStream(child.uri)?.use { input ->
                     File(destination, name).outputStream().use(input::copyTo)
+                    true
+                } ?: false
+                if (success) {
+                    copied++
                 }
-                copied++
             }
         }
         return copied
     }
 
     private fun textureRoot(): File = File(MainActivityRuntime.assetCopyRoot(getApplication()), "textures")
-}
 
+    private fun normalizeSerial(value: String): String? {
+        val match = Regex("([A-Za-z]{4})[-_ ]?(\\d{3})[._ ]?(\\d{2})").find(value) ?: return null
+        return "${match.groupValues[1].uppercase()}-${match.groupValues[2]}${match.groupValues[3]}"
+    }
+
+    private fun reloadCore() {
+        if (!MainActivityRuntime.nativeReady.value) return
+        runCatching { NativeApp.reloadTextureReplacements() }
+    }
+}

@@ -25,14 +25,15 @@ import com.armsx2.ui.common.SectionTitle
 import com.armsx2.ui.common.StatusChip
 import com.armsx2.ui.theme.Success
 import androidx.core.content.edit
+import com.armsx2.i18n.str
 
 @Composable
 fun RendererBackendSection(state: MutableState<Settings>) {
     val settings = state.value
     val rendererIds = listOf("auto", "opengl", "vulkan", "software")
     SegmentedRow(
-        label = "Graphics API",
-        options = listOf("Automatic", "OpenGL", "Vulkan", "Software"),
+        label = str("backend.graphicsApi.label"),
+        options = listOf(str("backend.renderer.auto"), "OpenGL", "Vulkan", str("backend.renderer.software")),
         selectedIndex = rendererIds.indexOf(settings.renderer).coerceAtLeast(0),
         onChange = { index ->
             val renderer = rendererIds[index]
@@ -53,7 +54,7 @@ fun RendererBackendSection(state: MutableState<Settings>) {
         horizontalArrangement = Arrangement.End,
     ) {
         OutlinedButton(onClick = MainActivityRuntime::restart, shape = RoundedCornerShape(13.dp)) {
-            Text("Apply and restart game")
+            Text(str("backend.applyRestart"))
         }
     }
 }
@@ -67,17 +68,17 @@ private fun DriverSelector() {
         installed.addAll(CustomDriver.listInstalled(context))
     }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionTitle("Vulkan driver", "Choose the system driver or an installed local driver")
+        SectionTitle(str("backend.gpuDriver.label"), str("backend.gpuDriver.description"))
         DriverChoice(
-            title = "System Vulkan",
-            subtitle = "Provided by the device",
+            title = str("backend.driver.systemVulkan"),
+            subtitle = str("renderer.orientation.device"),
             selected = MainActivityRuntime.customDriverId.value == null,
             onClick = { selectDriver(null) },
         )
         installed.forEach { driver ->
             DriverChoice(
                 title = driver.name,
-                subtitle = listOf(driver.vendor, driver.version).filter(String::isNotBlank).joinToString(" · ").ifBlank { "Installed driver" },
+                subtitle = listOf(driver.vendor, driver.version).filter(String::isNotBlank).joinToString(" · ").ifBlank { str("backend.driver.installed") },
                 selected = MainActivityRuntime.customDriverId.value == driver.id,
                 onClick = { selectDriver(driver.id) },
             )
@@ -104,7 +105,7 @@ private fun DriverChoice(
                 Text(title, style = MaterialTheme.typography.titleMedium)
                 Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            if (selected) StatusChip("ACTIVE", Success)
+            if (selected) StatusChip(str("backend.driver.active"), Success)
         }
     }
 }

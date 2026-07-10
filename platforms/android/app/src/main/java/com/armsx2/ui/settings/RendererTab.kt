@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
@@ -26,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -86,16 +88,14 @@ private val UPSCALE_OPTIONS = listOf(
 @Composable
 fun RendererTab(state: MutableState<Settings>) {
     val s = state.value
-    val scroll = remember { ScrollState(0) }
+    val scroll = settingsScrollState()
     ControllerAutoScroll(scroll)
 
     fun apply(updated: Settings) = InGameOverlay.saveSettings(updated)
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(scroll)
-            .verticalScrollbar(scroll),
+            .fillMaxWidth(),
     ) {
         CollapsibleSection(str("renderer.section.displayResolution"), initiallyExpanded = false) {
             // Graphics API (OpenGL / Vulkan) + Vulkan custom-driver picker.
@@ -355,10 +355,10 @@ fun RendererTab(state: MutableState<Settings>) {
             SettingsDivider()
             ToggleRow(
                 str("renderer.accurateAlphaTest.label"),
-                s.hwAat,
+                s.hwAccurateAlphaTest,
                 description = str("renderer.accurateAlphaTest.description"),
             ) {
-                apply(s.copy(hwAat = it))
+                apply(s.copy(hwAccurateAlphaTest = it))
             }
             SettingsDivider()
             ToggleRow(
@@ -463,6 +463,7 @@ private fun TexturePackImportRow() {
         Box(
             Modifier
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
                 .background(rowAura())
                 .clickable { folderLauncher.launch(null) }
                 .padding(horizontal = 6.dp, vertical = 5.dp),
@@ -472,7 +473,7 @@ private fun TexturePackImportRow() {
                 Text(
                     str("renderer.importTexturePack.label"),
                     color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 13.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(Modifier.height(2.dp))
@@ -482,7 +483,7 @@ private fun TexturePackImportRow() {
                             ?: I18n.get("renderer.importTexturePack.bootFirst")
                     },
                     color = Colors.pasx2_blue,
-                    fontSize = 10.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                 )
             }
@@ -491,6 +492,7 @@ private fun TexturePackImportRow() {
         Box(
             Modifier
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
                 .background(rowAura())
                 .clickable {
                     zipLauncher.launch(
@@ -506,7 +508,7 @@ private fun TexturePackImportRow() {
             Text(
                 str("renderer.importTexturePackZip.label"),
                 color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 13.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
             )
         }
@@ -520,6 +522,7 @@ private fun ClearShaderCacheRow() {
     Box(
         Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
             .background(rowAura())
             .clickable {
                 val n = clearShaderCache(File(MainActivityRuntime.assetCopyRoot(context), "cache"))
@@ -536,7 +539,7 @@ private fun ClearShaderCacheRow() {
             Text(
                 str("renderer.clearShaderCache.label"),
                 color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 13.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(Modifier.height(2.dp))
@@ -545,7 +548,7 @@ private fun ClearShaderCacheRow() {
                     I18n.get("renderer.clearShaderCache.description")
                 },
                 color = Colors.pasx2_blue,
-                fontSize = 10.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
             )
         }
@@ -574,6 +577,7 @@ private fun GsDumpCaptureRow() {
     Box(
         Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
             .background(rowAura())
             .clickable {
                 if (MainActivityRuntime.eState.value == com.armsx2.EmuState.STOPPED) {
@@ -590,14 +594,14 @@ private fun GsDumpCaptureRow() {
             Text(
                 str("renderer.gsDump.label"),
                 color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 13.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(Modifier.height(2.dp))
             Text(
                 str("renderer.gsDump.description"),
                 color = Colors.pasx2_blue,
-                fontSize = 10.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
             )
         }

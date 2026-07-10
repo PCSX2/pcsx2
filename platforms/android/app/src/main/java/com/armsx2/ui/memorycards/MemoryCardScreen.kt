@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsBackdrop
 import com.armsx2.ui.common.ArmsTopBar
 import com.armsx2.ui.common.EmptyState
@@ -52,36 +53,31 @@ fun MemoryCardScreen(onBack: () -> Unit, viewModel: MemoryCardViewModel = viewMo
     LaunchedEffect(Unit) { viewModel.refresh() }
 
     ArmsBackdrop {
-        Column(Modifier.fillMaxSize()) {
-            ArmsTopBar(
-                title = "Memory cards",
-                subtitle = "Create cards and assign console slots",
-                leading = { RoundAction("‹", "Back", onBack) },
-                actions = {
-                    RoundAction("＋", "New card", { createDialog = true })
-                    RoundAction("⇩", "Import", { importer.launch(arrayOf("application/octet-stream", "*/*")) })
-                    RoundAction("↻", "Refresh", viewModel::refresh)
-                },
-            )
-            if (state.cards.isEmpty()) {
-                EmptyState(
-                    title = "No memory cards",
-                    message = "Create an 8–64 MB card or import an existing .ps2 file.",
-                    actionLabel = "Create card",
-                    onAction = { createDialog = true },
-                    modifier = Modifier.fillMaxSize(),
+        LazyColumn(
+            Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(horizontal = 8.dp),
+        ) {
+            item {
+                ArmsTopBar(
+                    title = str("memcard.title"),
+                    leading = { RoundAction("‹", str("action.back"), onBack) },
+                    actions = {
+                        RoundAction("＋", str("memcard.newCard"), { createDialog = true })
+                        RoundAction("⇩", str("action.import"), { importer.launch(arrayOf("application/octet-stream", "*/*")) })
+                        RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
+                    },
+                    horizontalPadding = 0.dp,
                 )
+            }
+            if (state.cards.isEmpty()) {
+                item { EmptyState(str("memcard.empty"), str("memcard.size.hint"), str("memcard.create"), { createDialog = true }, Modifier.fillMaxWidth().height(280.dp)) }
             } else {
-                LazyColumn(
-                    Modifier.fillMaxSize().padding(horizontal = 22.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(bottom = 22.dp),
-                ) {
-                    items(state.cards, key = { it.file.absolutePath }) { item ->
-                        MemoryCardRow(item, { viewModel.assign(1, item) }, { viewModel.assign(2, item) }, { deleteTarget = item })
-                    }
+                items(state.cards, key = { it.file.absolutePath }) { item ->
+                    MemoryCardRow(item, { viewModel.assign(1, item) }, { viewModel.assign(2, item) }, { deleteTarget = item })
                 }
             }
+            item { Spacer(Modifier.height(12.dp)) }
         }
     }
 
@@ -94,18 +90,18 @@ fun MemoryCardScreen(onBack: () -> Unit, viewModel: MemoryCardViewModel = viewMo
     deleteTarget?.let { item ->
         AlertDialog(
             onDismissRequest = { deleteTarget = null },
-            title = { Text("Delete memory card?") },
+            title = { Text(str("memcard.delete.confirm")) },
             text = { Text(item.file.name) },
-            confirmButton = { TextButton(onClick = { viewModel.delete(item); deleteTarget = null }) { Text("Delete", color = MaterialTheme.colorScheme.error) } },
-            dismissButton = { TextButton(onClick = { deleteTarget = null }) { Text("Cancel") } },
+            confirmButton = { TextButton(onClick = { viewModel.delete(item); deleteTarget = null }) { Text(str("action.delete"), color = MaterialTheme.colorScheme.error) } },
+            dismissButton = { TextButton(onClick = { deleteTarget = null }) { Text(str("action.cancel")) } },
         )
     }
     (state.error ?: state.message)?.let { message ->
         AlertDialog(
             onDismissRequest = viewModel::dismissMessage,
-            title = { Text(if (state.error != null) "Memory cards" else "Done") },
+            title = { Text(if (state.error != null) str("memcard.title") else str("action.ok")) },
             text = { Text(message) },
-            confirmButton = { TextButton(onClick = viewModel::dismissMessage) { Text("OK") } },
+            confirmButton = { TextButton(onClick = viewModel::dismissMessage) { Text(str("action.ok")) } },
         )
     }
 }
@@ -118,18 +114,22 @@ private fun MemoryCardRow(item: MemoryCardItem, onSlot1: () -> Unit, onSlot2: ()
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
     ) {
-        Row(Modifier.padding(15.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("▤", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.headlineMedium)
-            Spacer(Modifier.width(14.dp))
-            Column(Modifier.weight(1f)) {
-                Text(item.file.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(humanSize(item.size), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Column(Modifier.padding(13.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("▤", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.headlineMedium)
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(item.file.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(humanSize(item.size), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
-            if (item.slot1) StatusChip("SLOT 1", Success) else OutlinedButton(onClick = onSlot1) { Text("Slot 1") }
-            Spacer(Modifier.width(7.dp))
-            if (item.slot2) StatusChip("SLOT 2", Success) else OutlinedButton(onClick = onSlot2) { Text("Slot 2") }
-            Spacer(Modifier.width(7.dp))
-            TextButton(onClick = onDelete, enabled = !item.slot1 && !item.slot2) { Text("Delete") }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                if (item.slot1) StatusChip(str("memcard.slot1.active"), Success) else OutlinedButton(onClick = onSlot1) { Text(str("memcard.slot1")) }
+                Spacer(Modifier.width(7.dp))
+                if (item.slot2) StatusChip(str("memcard.slot2.active"), Success) else OutlinedButton(onClick = onSlot2) { Text(str("memcard.slot2")) }
+                Spacer(Modifier.width(7.dp))
+                TextButton(onClick = onDelete, enabled = !item.slot1 && !item.slot2) { Text(str("action.delete")) }
+            }
         }
     }
 }
@@ -140,10 +140,10 @@ private fun CreateCardDialog(onDismiss: () -> Unit, onCreate: (String, Int) -> U
     var size by remember { mutableIntStateOf(1) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("New memory card") },
+        title = { Text(str("memcard.newCard.title")) },
         text = {
             Column {
-                OutlinedTextField(name, { name = it }, label = { Text("Name") }, singleLine = true)
+                OutlinedTextField(name, { name = it }, label = { Text(str("memcard.cardName.label")) }, singleLine = true)
                 Spacer(Modifier.height(12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
                     listOf(1 to "8 MB", 2 to "16 MB", 3 to "32 MB", 4 to "64 MB").forEach { (id, label) ->
@@ -154,8 +154,8 @@ private fun CreateCardDialog(onDismiss: () -> Unit, onCreate: (String, Int) -> U
                 }
             }
         },
-        confirmButton = { Button(onClick = { onCreate(name, size) }) { Text("Create") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        confirmButton = { Button(onClick = { onCreate(name, size) }) { Text(str("memcard.create")) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(str("action.cancel")) } },
     )
 }
 

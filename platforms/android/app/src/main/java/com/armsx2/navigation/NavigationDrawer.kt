@@ -2,6 +2,9 @@ package com.armsx2.navigation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -22,6 +25,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -30,6 +38,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalConfiguration
+import android.content.res.Configuration
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,12 +49,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armsx2.runtime.MainActivityRuntime
+import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsLogo
 import com.armsx2.ui.common.StatusChip
-import com.armsx2.ui.theme.ThemePreferences
 
 private data class DrawerItem(
-    val title: String,
+    val titleKey: String,
     val glyph: String,
     val destination: AppRoute,
 )
@@ -55,35 +67,42 @@ fun NavigationDrawer(
     onNavigate: (AppRoute) -> Unit,
 ) {
     BackHandler(enabled = visible, onBack = onDismiss)
-    AnimatedVisibility(
-        visible = visible,
-        enter = fadeIn(tween(160)),
-        exit = fadeOut(tween(140)),
-    ) {
-        Box(Modifier.fillMaxSize()) {
+    val scrimState = remember { MutableTransitionState(false) }
+    val panelState = remember { MutableTransitionState(false) }
+    LaunchedEffect(visible) {
+        scrimState.targetState = visible
+        panelState.targetState = visible
+    }
+    Box(Modifier.fillMaxSize()) {
+        AnimatedVisibility(
+            visibleState = scrimState,
+            enter = fadeIn(tween(210, easing = EaseOut)),
+            exit = fadeOut(tween(250, easing = EaseIn)),
+        ) {
             Box(
                 Modifier
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.54f))
                     .clickable(onClick = onDismiss),
             )
-            AnimatedVisibility(
-                visible = visible,
-                enter = slideInHorizontally(tween(240)) { -it },
-                exit = slideOutHorizontally(tween(190)) { -it },
+        }
+        AnimatedVisibility(
+            visibleState = panelState,
+            enter = slideInHorizontally(tween(320, easing = EaseOut)) { -it },
+            exit = slideOutHorizontally(tween(220, easing = EaseIn)) { -it },
+            modifier = Modifier.align(Alignment.CenterStart),
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .widthIn(min = 286.dp, max = 340.dp)
+                    .fillMaxWidth(0.42f),
+                shape = RoundedCornerShape(topEnd = 30.dp, bottomEnd = 30.dp),
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.55f)),
+                shadowElevation = 18.dp,
             ) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .widthIn(min = 286.dp, max = 340.dp)
-                        .fillMaxWidth(0.42f),
-                    shape = RoundedCornerShape(topEnd = 30.dp, bottomEnd = 30.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.55f)),
-                    shadowElevation = 18.dp,
-                ) {
-                    DrawerContent(selected, onNavigate)
-                }
+                DrawerContent(selected, onNavigate)
             }
         }
     }
@@ -91,48 +110,46 @@ fun NavigationDrawer(
 
 @Composable
 private fun DrawerContent(selected: AppRoute, onNavigate: (AppRoute) -> Unit) {
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val primary = listOf(
-        DrawerItem("Library", "▦", AppRoute.Home),
-        DrawerItem("Achievements", "★", AppRoute.Achievements),
-        DrawerItem("Settings", "⚙", AppRoute.Settings()),
+        DrawerItem("games.section.library", "▦", AppRoute.Home),
+        DrawerItem("ra.options.header", "★", AppRoute.Achievements),
+        DrawerItem("action.settings", "⚙", AppRoute.Settings()),
     )
     val managers = listOf(
-        DrawerItem("BIOS", "◉", AppRoute.BiosManager),
-        DrawerItem("Memory cards", "▤", AppRoute.MemoryCardManager),
-        DrawerItem("Save states", "↧", AppRoute.SaveManager),
-        DrawerItem("Controllers", "⌁", AppRoute.ControllerManager),
-        DrawerItem("Patches & cheats", "✦", AppRoute.PatchManager),
-        DrawerItem("Textures", "▧", AppRoute.TextureManager),
+        DrawerItem("setup.step.bios.title", "◉", AppRoute.BiosManager),
+        DrawerItem("memcard.title", "▤", AppRoute.MemoryCardManager),
+        DrawerItem("savestate.title.loadManage", "↧", AppRoute.SaveManager),
+        DrawerItem("tab.controls", "⌁", AppRoute.ControllerManager),
+        DrawerItem("patches.dialog.patchesAndCheats", "✦", AppRoute.PatchManager),
+        DrawerItem("renderer.section.texturePacks", "▧", AppRoute.TextureManager),
     )
 
     Column(
         Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(18.dp),
+            .windowInsetsPadding(
+                WindowInsets.safeDrawing.only(
+                    if (isLandscape) WindowInsetsSides.Bottom else WindowInsetsSides.Vertical,
+                ),
+            )
+            .padding(horizontal = 8.dp, vertical = 16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             ArmsLogo(Modifier.weight(1f))
-            StatusChip(if (MainActivityRuntime.nativeReady.value) "READY" else "STARTING")
+            StatusChip(if (MainActivityRuntime.nativeReady.value) str("backend.driver.active") else str("memcard.status.coreStarting"))
         }
-        Spacer(Modifier.height(22.dp))
-        DrawerSection("Main", primary, selected, onNavigate)
+        Spacer(Modifier.height(20.dp))
+        DrawerSection(str("games.section.library"), primary, selected, onNavigate)
         Spacer(Modifier.height(14.dp))
         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f))
         Spacer(Modifier.height(14.dp))
-        DrawerSection("Managers", managers, selected, onNavigate)
+        DrawerSection(str("ra.options.header"), managers, selected, onNavigate)
         Spacer(Modifier.height(14.dp))
         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f))
         Spacer(Modifier.height(14.dp))
-        DrawerRow(
-            title = if (ThemePreferences.mode.value == com.armsx2.ui.theme.ThemeMode.Dark) "Light theme" else "Dark theme",
-            glyph = if (ThemePreferences.mode.value == com.armsx2.ui.theme.ThemeMode.Dark) "☀" else "◐",
-            selected = false,
-            onClick = ThemePreferences::toggle,
-        )
-        DrawerRow("About ARMSX2", "ⓘ", selected is AppRoute.About, onClick = { onNavigate(AppRoute.About) })
-        Spacer(Modifier.height(8.dp))
-        DrawerRow("Exit", "⏻", false, MainActivityRuntime::exitApp, danger = true)
+        DrawerRow("ARMSX2", "ⓘ", selected is AppRoute.About, onClick = { onNavigate(AppRoute.About) })
     }
 }
 
@@ -145,14 +162,14 @@ private fun DrawerSection(
 ) {
     Text(
         title.uppercase(),
-        style = MaterialTheme.typography.labelSmall,
+        style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         letterSpacing = 1.2.sp,
-        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
     )
     items.forEach { item ->
         DrawerRow(
-            title = item.title,
+            title = str(item.titleKey),
             glyph = item.glyph,
             selected = sameDestination(selected, item.destination),
             onClick = { onNavigate(item.destination) },
@@ -166,26 +183,24 @@ private fun DrawerRow(
     glyph: String,
     selected: Boolean,
     onClick: () -> Unit,
-    danger: Boolean = false,
 ) {
     val contentColor = when {
-        danger -> MaterialTheme.colorScheme.error
         selected -> MaterialTheme.colorScheme.onPrimaryContainer
         else -> MaterialTheme.colorScheme.onSurface
     }
     Surface(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
-        shape = RoundedCornerShape(14.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        shape = RoundedCornerShape(18.dp),
         color = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(glyph, color = contentColor, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(24.dp))
-            Text(title, color = contentColor, style = MaterialTheme.typography.labelLarge)
+            Text(glyph, color = contentColor, fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(32.dp))
+            Text(title, color = contentColor, style = MaterialTheme.typography.titleMedium)
         }
     }
 }
@@ -200,5 +215,6 @@ private fun sameDestination(current: AppRoute, target: AppRoute): Boolean = when
     AppRoute.PatchManager -> current is AppRoute.PatchManager
     AppRoute.TextureManager -> current is AppRoute.TextureManager
     AppRoute.Achievements -> current is AppRoute.Achievements
+    AppRoute.Language -> current is AppRoute.Language
     AppRoute.About -> current is AppRoute.About
 }

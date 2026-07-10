@@ -25,7 +25,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         InGameOverlay.currentSerial.value = serial
         InGameOverlay.settingsScope.value = if (serial == null) SettingsScope.Global else SettingsScope.Game
         settings.value = if (serial == null) ConfigStore.loadGlobal() else ConfigStore.resolveForGame(serial)
-        uiState.value = SettingsUiState(category, game)
+        uiState.value = SettingsUiState(
+            category = if (game != null && category == SettingsCategory.General) SettingsCategory.Performance else category,
+            game = game,
+        )
     }
 
     fun selectCategory(category: SettingsCategory) {

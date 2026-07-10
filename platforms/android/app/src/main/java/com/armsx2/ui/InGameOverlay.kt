@@ -2,7 +2,6 @@ package com.armsx2.ui
 
 import androidx.compose.runtime.mutableStateOf
 import com.armsx2.EmuState
-import com.armsx2.GameInfo
 import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.config.ConfigStore
 import com.armsx2.config.Settings
@@ -16,8 +15,6 @@ object InGameOverlay {
     val hardcoreOn = mutableStateOf(false)
     val frameLimitOn = mutableStateOf(true)
 
-    val patchPreviewGame: GameInfo? get() = null
-
     fun saveSettings(updated: Settings) {
         val previous = settingsState.value
         settingsState.value = updated
@@ -30,6 +27,12 @@ object InGameOverlay {
                     NativeApp.setSetting("EmuCore/GS", "FrameLimitEnable", "bool", updated.frameLimitEnable.toString())
                     NativeApp.speedhackLimitermode(if (updated.frameLimitEnable) 0 else 3)
                     MainActivityRuntime.fastForwardToggleActive = false
+                }
+                if (previous.upscaleFloat != updated.upscaleFloat &&
+                    MainActivityRuntime.eState.value != EmuState.STOPPED
+                ) {
+                    NativeApp.renderUpscalemultiplier(updated.upscaleFloat.coerceIn(0.25f, 8.0f))
+                    MainActivityRuntime.upscale.value = updated.upscaleFloat.coerceIn(0.25f, 8.0f)
                 }
                 if (MainActivityRuntime.eState.value != EmuState.STOPPED) updated.applyTo()
             }
@@ -84,7 +87,7 @@ object InGameOverlay {
 
     fun openSaveStatePicker() {
         com.armsx2.ui.emulation.EmulationMenuInputController.open(
-            com.armsx2.ui.emulation.EmulationMenuTab.States,
+            com.armsx2.ui.emulation.EmulationMenuTab.Session,
         )
     }
 
@@ -99,4 +102,3 @@ object InGameOverlay {
         }
     }
 }
-

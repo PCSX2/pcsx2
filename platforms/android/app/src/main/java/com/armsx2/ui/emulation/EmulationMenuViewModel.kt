@@ -2,34 +2,39 @@ package com.armsx2.ui.emulation
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import com.armsx2.config.Settings
+import com.armsx2.i18n.I18n
+import com.armsx2.input.ControllerMappings
 import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.ui.InGameOverlay
-import com.armsx2.ui.WindowImpl
 import kr.co.iefriends.pcsx2.NativeApp
 import org.json.JSONObject
 
-enum class EmulationMenuTab(val title: String) {
-    Session("Session"),
-    States("Save states"),
-    Graphics("Graphics"),
-    Controls("Controls"),
-    Achievements("Achievements"),
+enum class EmulationMenuTab(val titleKey: String) {
+    Session("games.info.inGameMenu.title"),
+    Graphics("tab.renderer"),
+    Performance("tab.performance"),
+    Controls("tab.controls"),
+    Options("action.settings"),
 }
 
 data class EmulationMenuUiState(
     val tab: EmulationMenuTab = EmulationMenuTab.Session,
     val selectedAction: Int = 0,
     val saveSlot: Int = 0,
-    val renderer: String = "auto",
-    val upscale: Float = 1f,
-    val frameLimit: Boolean = true,
+    val settings: Settings = Settings(),
+    val touchControlsVisible: Boolean = true,
+    val rumbleEnabled: Boolean = true,
+    val multitapEnabled: Boolean = false,
     val hardcore: Boolean = false,
-    val achievementSummary: String = "No achievement data",
+    val achievementSummary: String = I18n.get("ra.status.noAchievements.title"),
 )
 
 class EmulationMenuViewModel(application: Application) : AndroidViewModel(application) {
     var state = androidx.compose.runtime.mutableStateOf(EmulationMenuUiState())
         private set
+
+    var dismissHandler: (() -> Unit)? = null
 
     fun load(initialTab: EmulationMenuTab?) {
         val settings = InGameOverlay.settingsState.value
@@ -37,15 +42,17 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
             val root = JSONObject(NativeApp.getAchievementsJSON().orEmpty())
             val unlocked = root.optInt("unlocked", root.optInt("unlocked_count", 0))
             val total = root.optInt("total", root.optInt("achievement_count", 0))
-            if (total > 0) "$unlocked of $total unlocked" else NativeApp.getRichPresence().orEmpty().ifBlank { "No achievement data" }
-        }.getOrDefault("No achievement data")
+            if (total > 0) "$unlocked / $total" else NativeApp.getRichPresence().orEmpty()
+                .ifBlank { I18n.get("ra.status.noAchievements.title") }
+        }.getOrDefault(I18n.get("ra.status.noAchievements.title"))
         state.value = state.value.copy(
             tab = initialTab ?: state.value.tab,
             selectedAction = 0,
             saveSlot = MainActivityRuntime.currentSaveSlot.value,
-            renderer = settings.renderer,
-            upscale = settings.upscaleFloat,
-            frameLimit = settings.frameLimitEnable,
+            settings = settings,
+            touchControlsVisible = com.armsx2.ui.touch.TouchControls.visible.value,
+            rumbleEnabled = ControllerMappings.rumbleEnabled(),
+            multitapEnabled = ControllerMappings.multitapEnabled(),
             hardcore = runCatching { NativeApp.isHardcoreMode() }.getOrDefault(false),
             achievementSummary = summary,
         )
@@ -63,7 +70,9 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
 
     fun moveSelection(delta: Int) {
         val max = actionCount(state.value.tab) - 1
-        state.value = state.value.copy(selectedAction = (state.value.selectedAction + delta).coerceIn(0, max.coerceAtLeast(0)))
+        state.value = state.value.copy(
+            selectedAction = (state.value.selectedAction + delta).coerceIn(0, max.coerceAtLeast(0)),
+        )
     }
 
     fun selectAction(index: Int) {
@@ -74,43 +83,40 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
         when (state.value.tab) {
             EmulationMenuTab.Session -> when (state.value.selectedAction) {
                 0 -> resume()
-                1 -> openLibrary()
-                2 -> MainActivityRuntime.restart()
-                3 -> MainActivityRuntime.stop(saveAutosave = false)
-            }
-            EmulationMenuTab.States -> when (state.value.selectedAction) {
-                0 -> saveState()
-                1 -> loadState()
-                2 -> previousSlot()
-                3 -> nextSlot()
+                1 -> MainActivityRuntime.restart()
+                2 -> MainActivityRuntime.stop(saveAutosave = false)
             }
             EmulationMenuTab.Graphics -> when (state.value.selectedAction) {
                 0 -> setRenderer("auto")
                 1 -> setRenderer("vulkan")
                 2 -> setRenderer("opengl")
                 3 -> setRenderer("software")
-                4 -> adjustUpscale(-1f)
-                5 -> adjustUpscale(1f)
-                6 -> toggleFrameLimit()
+            }
+            EmulationMenuTab.Performance -> when (state.value.selectedAction) {
+                0 -> updateSettings { it.copy(frameLimitEnable = !it.frameLimitEnable) }
+                1 -> setSpeed(it = state.value.settings.nominalSpeedPercent + 5)
+                2 -> setFrameSkip((state.value.settings.frameSkip + 1) % 6)
             }
             EmulationMenuTab.Controls -> when (state.value.selectedAction) {
                 0 -> editTouchControls()
                 1 -> toggleTouchControls()
             }
-            EmulationMenuTab.Achievements -> when (state.value.selectedAction) {
-                0 -> toggleHardcore()
+            EmulationMenuTab.Options -> when (state.value.selectedAction) {
+                0 -> updateSettings { it.copy(enablePatches = !it.enablePatches) }
+                1 -> updateSettings { it.copy(enableCheats = !it.enableCheats) }
+                2 -> updateSettings { it.copy(enableWideScreenPatches = !it.enableWideScreenPatches) }
+                3 -> updateSettings { it.copy(enableNoInterlacingPatches = !it.enableNoInterlacingPatches) }
+                4 -> toggleHardcore()
             }
         }
     }
 
     fun resume() {
-        InGameOverlay.toggle()
+        dismissHandler?.invoke() ?: resumeImmediately()
     }
 
-    fun openLibrary() {
-        if (MainActivityRuntime.eState.value == com.armsx2.EmuState.PAUSED) MainActivityRuntime.resume()
-        WindowImpl.showLibrary.value = true
-        WindowImpl.overlayVisible.value = false
+    fun resumeImmediately() {
+        InGameOverlay.toggle()
     }
 
     fun saveState() {
@@ -133,36 +139,67 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
     }
 
     fun setRenderer(renderer: String) {
-        val updated = InGameOverlay.settingsState.value.copy(renderer = renderer)
-        InGameOverlay.saveSettings(updated)
+        updateSettings { it.copy(renderer = renderer) }
+        MainActivityRuntime.renderer.value = renderer
         when (renderer) {
             "vulkan" -> MainActivityRuntime.renderVulkan()
             "opengl" -> MainActivityRuntime.renderOpenGL()
             "software" -> MainActivityRuntime.renderSoftware()
+            else -> NativeApp.renderAuto()
         }
-        state.value = state.value.copy(renderer = renderer)
     }
 
-    fun adjustUpscale(delta: Float) {
-        val value = (state.value.upscale + delta).coerceIn(1f, 8f)
-        InGameOverlay.saveSettings(InGameOverlay.settingsState.value.copy(upscaleFloat = value))
-        MainActivityRuntime.upscale.value = value
-        state.value = state.value.copy(upscale = value)
+    fun setUpscale(value: Float) {
+        val normalized = value.coerceIn(1f, 8f)
+        updateSettings { it.copy(upscaleFloat = normalized) }
+        MainActivityRuntime.upscale.value = normalized
+        NativeApp.renderUpscalemultiplier(normalized)
     }
 
-    fun toggleFrameLimit() {
-        val enabled = !state.value.frameLimit
-        InGameOverlay.saveSettings(InGameOverlay.settingsState.value.copy(frameLimitEnable = enabled))
-        state.value = state.value.copy(frameLimit = enabled)
+    fun setAspectRatio(value: Int) = updateSettings { it.copy(aspectRatio = value.coerceIn(0, 4)) }
+
+    fun setTextureFiltering(value: Int) = updateSettings { it.copy(textureFiltering = value.coerceIn(0, 3)) }
+
+    fun setBlending(value: Int) = updateSettings { it.copy(accurateBlendingUnit = value.coerceIn(0, 5)) }
+
+    fun setTexturePreloading(value: Int) = updateSettings { it.copy(texturePreloading = value.coerceIn(0, 2)) }
+
+    fun setHardwareDownloadMode(value: Int) = updateSettings { it.copy(hardwareDownloadMode = value.coerceIn(0, 4)) }
+
+    fun setEeCycleRate(value: Int) = updateSettings { it.copy(eeCycleRate = value.coerceIn(-3, 3)) }
+
+    fun setEeCycleSkip(value: Int) = updateSettings { it.copy(eeCycleSkip = value.coerceIn(0, 3)) }
+
+    fun setSpeed(it: Int) = updateSettings { settings -> settings.copy(nominalSpeedPercent = it.coerceIn(50, 200)) }
+
+    fun setFpsLimit(value: Int) = updateSettings { it.copy(fpsLimit = value.coerceIn(0, 240)) }
+
+    fun setFrameSkip(value: Int) = updateSettings { it.copy(frameSkip = value.coerceIn(0, 5)) }
+
+    fun setVolume(value: Int) = updateSettings { it.copy(audioVolume = value.coerceIn(0, 200)) }
+
+    fun setAudioBuffer(value: Int) = updateSettings { it.copy(audioBufferMs = value.coerceIn(10, 200)) }
+
+    fun setRumble(enabled: Boolean) {
+        ControllerMappings.setRumbleEnabled(enabled)
+        NativeApp.sRumbleEnabled = enabled
+        state.value = state.value.copy(rumbleEnabled = enabled)
+    }
+
+    fun setMultitap(enabled: Boolean) {
+        ControllerMappings.setMultitapEnabled(enabled)
+        state.value = state.value.copy(multitapEnabled = enabled)
     }
 
     fun editTouchControls() {
+        dismissHandler = null
         InGameOverlay.editTouchLayout()
     }
 
     fun toggleTouchControls() {
-        com.armsx2.ui.touch.TouchControls.visible.value = !com.armsx2.ui.touch.TouchControls.visible.value
-        state.value = state.value.copy()
+        val enabled = !state.value.touchControlsVisible
+        com.armsx2.ui.touch.TouchControls.visible.value = enabled
+        state.value = state.value.copy(touchControlsVisible = enabled)
     }
 
     fun toggleHardcore() {
@@ -171,12 +208,18 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
         state.value = state.value.copy(hardcore = enabled)
     }
 
+    fun updateSettings(transform: (Settings) -> Settings) {
+        val updated = transform(state.value.settings)
+        InGameOverlay.saveSettings(updated)
+        state.value = state.value.copy(settings = updated)
+    }
+
     private fun actionCount(tab: EmulationMenuTab): Int = when (tab) {
-        EmulationMenuTab.Session -> 4
-        EmulationMenuTab.States -> 4
-        EmulationMenuTab.Graphics -> 7
+        EmulationMenuTab.Session -> 3
+        EmulationMenuTab.Graphics -> 4
+        EmulationMenuTab.Performance -> 3
         EmulationMenuTab.Controls -> 2
-        EmulationMenuTab.Achievements -> 1
+        EmulationMenuTab.Options -> 5
     }
 
     private fun Int.floorMod(modulus: Int): Int = ((this % modulus) + modulus) % modulus
@@ -198,7 +241,7 @@ object EmulationMenuInputController {
 
     fun open(tab: EmulationMenuTab = EmulationMenuTab.Session) {
         pendingTab = tab
-        if (!WindowImpl.overlayVisible.value) InGameOverlay.open()
+        if (!com.armsx2.ui.WindowImpl.overlayVisible.value) InGameOverlay.open()
         owner?.selectTab(tab)
     }
 
