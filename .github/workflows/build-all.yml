@@ -12,6 +12,13 @@
 # NOTE: The Android and iOS jobs build against the freshly-collapsed single core
 # and have not yet had a green run; they are the mechanism that will surface the
 # remaining reconciliation work. Keep them non-blocking until they first pass.
+#
+# INVARIANT (do not weaken): the PC arm64 jobs (pc-macos-arm64 / pc-linux-arm64 /
+# pc-windows-arm64) are BLOCKING and must stay so. They are the guardrail that a
+# mobile-motivated change has not silently altered the shared canonical core.
+# Anything mobile-specific belongs behind a platform guard (#if __ANDROID__ /
+# ARMSX2_IOS) or in a forked, CMake-selected translation unit (see the aR5900*
+# EE fork in pcsx2/CMakeLists.txt) -- never grafted unguarded into shared files.
 name: Build All Platforms
 
 on:
