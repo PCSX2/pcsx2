@@ -161,7 +161,7 @@ extern _arm64gprregs arm64gprs[NUM_ARM_GPR_REGS], s_saveArm64GPRregs[NUM_ARM_GPR
 
 bool _isAllocatableArm64GPR(int armreg);
 void _initArm64GPRregs();
-int _getFreeArm64GPR(int mode);
+int _getFreeArm64GPR(int mode, u32 pool);
 int _allocArm64GPR(int type, int reg, int mode);
 int _checkArm64GPR(int type, int reg, int mode);
 bool _hasArm64GPR(int type, int reg, int required_mode = 0);

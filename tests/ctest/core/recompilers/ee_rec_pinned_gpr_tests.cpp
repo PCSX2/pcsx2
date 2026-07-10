@@ -325,12 +325,13 @@ TEST(EeRecPinnedGpr, PinnedDestAliasesPinnedSource)
 }
 
 // ---------------------------------------------------------------------------
-// Rung 2 ($v1 → x12, $a0 → x13, kEEPinTable): the first CALLER-SAVED pins.
-// Beyond the S1 coverage matrix, the rung-2-specific risk is a C call
-// emitted mid-block clobbering the host registers even though the callee
-// never touches guest state. Preservation is by preserve_most on the vtlb
-// dispatchers (warm paths) and armReloadEEClobberedPins at every other
-// emitted call site — see the REEPIN_* contract in iR5900-arm64.h.
+// Rung 2 ($v1 → x26, $a0 → x27, kEEPinTable). These landed as the first
+// CALLER-SAVED pins (x12/x13); EE-SRA 3 Arm C re-homed them to CALLEE-SAVED
+// x26/x27, so plain C calls preserve them and only GPR-writing callees
+// reload. The matrix is host-agnostic (guest-level assertions), so it keeps
+// discriminating either way — the cross-C-call tests now guard the
+// callee-saved contract (dispatcher saves, mVU macro VI-pool exclusion)
+// instead of the old clobber-reload path. See REEPIN_* in iR5900-arm64.h.
 // ---------------------------------------------------------------------------
 
 // Core scalar matrix for both new pins: reads, 3-op writes, RMW, and a
@@ -387,10 +388,11 @@ TEST(EeRecPinnedGpr, V1A0QuadLoadAndHalfWordWriteThrough)
 	EXPECT_EQ(h.GetGpr64Interp(reg::t5), 0x0000000000008123ull);
 }
 
-// Interp-fallback write-back into a caller-saved pin, with the OTHER
-// caller-saved pin holding a live sentinel ACROSS the C call: Interp::MFC0
-// both writes GPR[rt] in memory AND clobbers x12/x13 per AAPCS — the full
-// armReloadEEGPRPins after it must restore both pins.
+// Interp-fallback write-back into a pin, with the OTHER pin holding a live
+// sentinel ACROSS the C call: Interp::MFC0 writes GPR[rt] in memory, and the
+// full armReloadEEGPRPins after it must refresh the written pin while the
+// sentinel rides through (callee-saved x26/x27 since Arm C; the reload
+// restores it identically either way).
 TEST(EeRecPinnedGpr, V1A0Mfc0PerfCounterAcrossInterpFallback)
 {
 	EeRecTestHarness h;
@@ -410,10 +412,11 @@ TEST(EeRecPinnedGpr, V1A0Mfc0PerfCounterAcrossInterpFallback)
 }
 
 // ---------------------------------------------------------------------------
-// Rung 3 ($k0 → x4, $a1 → x5, $s0 → x6, $at → x7): four more caller-saved
-// pins, in argument-register territory — preserve_most never spares x0-x8,
-// so the vtlb softmem/thunk slow paths carry an explicit reload (the seam
-// test below runs with ALL six caller-saved pins live).
+// Rung 3 ($k0 → x4, $s0 → x6, $at → x7): the remaining CALLER-SAVED pins,
+// in argument-register territory — preserve_most never spares x0-x8, so the
+// vtlb softmem/thunk slow paths carry an explicit reload. ($a1 was rung 3's
+// fourth pin at x5 until EE-SRA 3 Arm C promoted it to callee-saved x21;
+// its tests below still exercise the pin, now via the tier-1 contract.)
 // ---------------------------------------------------------------------------
 
 // Core scalar matrix for the rung-3 pins: reads, writes, RMW, cross-pin ops.

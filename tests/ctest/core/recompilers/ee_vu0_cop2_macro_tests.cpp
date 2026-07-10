@@ -25,6 +25,11 @@
 
 #include <gtest/gtest.h>
 
+// EE-SRA 3 Arm C: VI-pool probe, defined in arm64/microVU-arm64.cpp
+// (PCSX2_RECOMPILER_TESTS builds only). Global scope — must be declared
+// outside namespace recompiler_tests.
+bool mVUTestProbe_VIPoolUsable(int hostreg, bool cop2mode);
+
 namespace recompiler_tests {
 
 using namespace mips;
@@ -1567,6 +1572,92 @@ TEST(EeVu0Cop2Macro, DISABLED_VaddOverflowSetsStatusUO)
 	EXPECT_EQ(h.GetVu0ViJit(REG_STATUS_FLAG) & 0x30Fu,
 		h.GetVu0ViInterp(REG_STATUS_FLAG) & 0x30Fu)
 		<< "COP2 macro flag update must produce U/O like the interpreter";
+}
+
+// =========================================================================
+//  EE-SRA 3 Arm C: tier-1 EE pins ($v1→x26, $a0→x27, $a1→x21) vs macro mode
+//
+//  The macro-routed COP2 lower ops (VLQI/VSQI/VMTIR/VRNEXT/...) emit INLINE
+//  in EE blocks through microVU0.regAlloc, whose VI pool historically
+//  included the callee-saved x26/x27 — now the REEPIN_V1/REEPIN_A0 hosts.
+//  No dispatcher save wraps a macro emit, so a VI allocation landing on
+//  x26/x27 would silently corrupt a live EE pin. Today's 12 macro-routed
+//  ops allocate at most TWO VI slots and findFreeGPR is first-fit from
+//  x14, so the clobber is unreachable through current emitters — the pool
+//  probe below pins the invariant directly (red before the
+//  microRegAlloc::reset(cop2mode) pool restriction, green after) instead
+//  of waiting for a future higher-pressure emitter to make it live.
+// =========================================================================
+
+TEST(EeVu0Cop2Macro, MacroModeVIPoolExcludesEEPinHosts)
+{
+	// Harness boots the VM so microVU0.regAlloc exists.
+	EeRecTestHarness h;
+
+	// cop2 (macro) mode: the EE pin hosts must be OUT of the VI pool.
+	EXPECT_FALSE(mVUTestProbe_VIPoolUsable(26, true)) << "x26 = REEPIN_V1";
+	EXPECT_FALSE(mVUTestProbe_VIPoolUsable(27, true)) << "x27 = REEPIN_A0";
+	// The surviving macro pool: x14/x15 (caller-saved) + x28. Max
+	// simultaneous VI demand of any macro-routed op is 2, margin 1.
+	EXPECT_TRUE(mVUTestProbe_VIPoolUsable(14, true));
+	EXPECT_TRUE(mVUTestProbe_VIPoolUsable(15, true));
+	EXPECT_TRUE(mVUTestProbe_VIPoolUsable(28, true));
+
+	// micro mode: the mVU dispatcher saves x19-x28, full pool restored —
+	// guards against a sticky disable leaking out of macro mode.
+	for (int r : {14, 15, 26, 27, 28})
+		EXPECT_TRUE(mVUTestProbe_VIPoolUsable(r, false)) << "x" << r << " micro";
+
+	// Never-usable sanity: codegen scratch (w9/w10/w11) and the pinned mVU
+	// bases (x24/x25) stay out in both modes.
+	for (int r : {9, 10, 11, 24, 25})
+	{
+		EXPECT_FALSE(mVUTestProbe_VIPoolUsable(r, true)) << "x" << r << " cop2";
+		EXPECT_FALSE(mVUTestProbe_VIPoolUsable(r, false)) << "x" << r << " micro";
+	}
+}
+
+// Integration: live runtime values in ALL THREE re-homed pins interleaved
+// with macro-routed ops from each alloc shape — VRNEXT (unbound temp slot),
+// VMTIR (VI write slot), VSQI/VLQI (VI read-modify-write slot). The $v1/$a0
+// sums are forced non-const (ADDU of two runtime-flushed consts) so the
+// values genuinely ride the pins across every macro emit. JIT-vs-interp on
+// the consuming GPRs catches any pin corruption; the VU-side witnesses
+// catch a broken macro emit.
+TEST(EeVu0Cop2Macro, PinnedTier1SurvivesMacroRoutedOps)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vi(1, 5);                                  // VSQI address index
+	h.SeedVu0Vi(3, 5);                                  // VLQI readback index
+	h.SeedVu0VfBits(2, 0x3f800000u, 0x40000000u, 0x40400000u, 0x40800000u);
+	h.SetGpr64(reg::t0, 0x1111'2222'3333'4444ull);      // runtime source
+	h.LoadProgram({
+		// Dirty all three tier-1 pins with runtime-derived values.
+		DADDU(reg::v1, reg::t0, reg::t0),
+		DADDU(reg::a0, reg::v1, reg::t0),
+		DADDU(reg::a1, reg::a0, reg::v1),
+		// Macro-routed ops between pin writes and pin reads.
+		VRNEXT_C2(mask_xyzw, /*ft*/7),                  // temp VI slot + R RMW
+		VMTIR_C2(/*fsf*/0, /*it*/4, /*fs*/2),           // VI write slot
+		VSQI_C2(mask_xyzw, /*fs*/2, /*it*/1),           // VI RMW slot (store)
+		VLQI_C2(mask_xyzw, /*ft*/8, /*is*/3),           // VI RMW slot (load)
+		// Consume the pins AFTER the macro emits.
+		DADDU(reg::t1, reg::v1, reg::a0),
+		DADDU(reg::t2, reg::a1, reg::v1),
+	});
+	h.Run();
+	// Pin-carried values match the interpreter on every consumer and pin.
+	for (u32 r : {(u32)reg::v1, (u32)reg::a0, (u32)reg::a1, (u32)reg::t1, (u32)reg::t2})
+		EXPECT_EQ(h.GetGpr64Jit(r), h.GetGpr64Interp(r)) << "GPR " << r;
+	// VU-side witnesses: VMTIR wrote VI[4], VSQI/VLQI advanced VI[1]/VI[3],
+	// VLQI round-tripped the stored quad.
+	EXPECT_EQ(h.GetVu0ViJit(4), h.GetVu0ViInterp(4));
+	EXPECT_EQ(h.GetVu0ViJit(1), 6u);
+	EXPECT_EQ(h.GetVu0ViJit(3), 6u);
+	for (char l : {'x', 'y', 'z', 'w'})
+		EXPECT_EQ(h.GetVu0VfBitsJit(8, l), h.GetVu0VfBitsInterp(8, l));
 }
 
 } // namespace recompiler_tests

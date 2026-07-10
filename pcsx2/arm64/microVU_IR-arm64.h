@@ -235,6 +235,7 @@ public:
 			gprMap[i].usable = true;   // x14-x15: caller-saved, safe for VI
 		for (int i = 26; i <= 28; i++)
 			gprMap[i].usable = true;   // x26-x28: callee-saved, VI cache
+			                           // (x26/x27 micro-mode only — see reset)
 		// x24 = gprMVUFlag (pinned to &mVU.macFlag[0]),
 		// x25 = gprMVUglob (pinned to &mVUglob).
 		// Both pinned by mVUdispatcherAB; excluded from VI allocation.
@@ -242,12 +243,23 @@ public:
 		reset(false);
 	}
 
-	// cop2mode is unused here: x86 toggles fastmem-base/text-pointer GPR
-	// usability per cop2 mode, but the arm64 allocator pins those base
-	// registers outside the allocatable set, so the mode does not change the
-	// reset.
+	// cop2mode gates the x26/x27 pool slots (EE-SRA 3 Arm C): they host the
+	// REEPIN_V1/REEPIN_A0 EE pin mirrors, and macro-mode COP2 lower ops emit
+	// INLINE in EE blocks with no dispatcher save around them — a VI
+	// allocation landing there would corrupt a live EE pin. Micro mode keeps
+	// all five slots (the mVU dispatcher prologue saves x19-x28). Pinned by
+	// EeVu0Cop2Macro.MacroModeVIPoolExcludesEEPinHosts. (x86's cop2mode
+	// meaning — fastmem-base/text-pointer usability — doesn't apply here;
+	// those bases are pinned outside the allocatable set.)
 	void reset(bool cop2mode = false)
 	{
+		// Clear x26/x27 unconditionally so no VI binding survives a
+		// usability flip (the usable-gated loop below skips them when
+		// cop2mode disables them).
+		clearGPR(26);
+		clearGPR(27);
+		gprMap[26].usable = !cop2mode;
+		gprMap[27].usable = !cop2mode;
 		for (int i = 0; i < neonAllocTotal; i++)
 			clearNeon(i);
 		for (int i = 0; i < gprAllocCount; i++)
@@ -840,6 +852,14 @@ public:
 	int getRegVI(int i) const
 	{
 		return (i < gprAllocCount && gprMap[i].usable) ? gprMap[i].VIreg : -1;
+	}
+
+	// Is host GPR i in the VI allocation pool under the CURRENT mode (set by
+	// the last reset(cop2mode))? Test probe surface for the EE-pin/VI-pool
+	// isolation invariant — see mVUTestProbe_VIPoolUsable.
+	bool isUsableGPR(int i) const
+	{
+		return i >= 0 && i < gprAllocCount && gprMap[i].usable;
 	}
 
 	// Move VI value into a specific GPR (for address computation etc.)

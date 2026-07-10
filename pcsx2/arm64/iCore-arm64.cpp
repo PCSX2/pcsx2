@@ -53,62 +53,88 @@ static uint g_arm64checknext = 0;
 
 _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_REGS];
 
-// ARM64 register allocation policy:
+// ARM64 register allocation policy (EE-SRA 3 Arm C tier-1 re-home):
 // x0-x3:   argument/return registers (caller-saved, allocatable)
-// x4-x7:   REEPIN_K0/A1/S0/AT — NOT allocatable (rung-3 pinned mirrors of
-//          GPR.r[26]/[5]/[16]/[1].UD[0]; caller-saved — see the
-//          preservation contract in iR5900-arm64.h)
-// x8-x15:  caller-saved temporaries (allocatable, except x8-x10 scratch
-//          and x12/x13)
-// x12/x13: REEPIN_V1/REEPIN_A0 — NOT allocatable (pinned mirrors of
-//          GPR.r[3]/GPR.r[4].UD[0], $v1/$a0; caller-saved — see the
-//          preservation contract in iR5900-arm64.h)
+// x4:      REEPIN_K0 — NOT allocatable (rung-3 pinned mirror of
+//          GPR.r[26].UD[0]; caller-saved — see the preservation contract
+//          in iR5900-arm64.h)
+// x5:      caller-saved temporary (allocatable; vacated by the $a1→x21
+//          re-home)
+// x6/x7:   REEPIN_S0/REEPIN_AT — NOT allocatable (rung-3 pinned mirrors
+//          of GPR.r[16]/[1].UD[0]; caller-saved)
+// x8-x15:  caller-saved temporaries (allocatable, except x8-x10 scratch)
 // x16:     VIXL intra-procedure scratch — NOT allocatable
 // x17:     RSCRATCHADDR — NOT allocatable
 // x18:     platform reserved — NOT allocatable
 // x19:     RFASTMEMBASE — NOT allocatable (reserved for fastmem base)
 // x20:     RSTATE — NOT allocatable (reserved for cpuRegs pointer)
-// x21:     RPSXSTATE — NOT allocatable (reserved for psxRegs pointer in IOP JIT)
+// x21:     REEPIN_A1 — NOT allocatable (pinned mirror of GPR.r[5].UD[0],
+//          $a1; callee-saved). Doubles as RPSXSTATE (psxRegs base) inside
+//          the IOP dispatcher's armBeginStackFrame — see iR5900-arm64.h.
 // x22:     REEPIN_SP — NOT allocatable (pinned mirror of GPR.r[29].UD[0], $sp)
 // x23:     REEPIN_RA — NOT allocatable (pinned mirror of GPR.r[31].UD[0], $ra)
 // x24:     RVU0 — NOT allocatable (reserved for &VU0 pointer in EE COP2 JIT)
 // x25:     RECCYCLE — NOT allocatable (pinned cycle delta: cycle - nextEventCycle)
-// x26-x28: callee-saved (allocatable)
+// x26/x27: REEPIN_V1/REEPIN_A0 — NOT allocatable for EE (pinned mirrors of
+//          GPR.r[3]/GPR.r[4].UD[0], $v1/$a0; callee-saved). IOP-allocatable
+//          (see IOP_ALLOCATABLE_MASK below).
+// x28:     callee-saved (allocatable) — the ONLY callee-saved pool member
+//          for EE, so total EE MODE_CALLEESAVED demand must stay ≤1 and the
+//          demanders (vtlb unaligned handlers) must issue that alloc before
+//          any same-instruction alloc can hold x28 `needed`.
 // x29:     REEPIN_V0 — NOT allocatable (pinned mirror of GPR.r[2].UD[0], $v0;
 //          doubles as the AAPCS frame pointer outside JIT execution)
 // x30:     link register — NOT allocatable
 
-// Bitmask of allocatable aarch64 GPRs. Bit `n` set ↔ x_n is in the pool.
-// Cleared bits, all-pinned/scratch as documented above:
-//   bits 4-7    — x4-x7 : REEPIN_K0/A1/S0/AT (rung-3 pinned mirrors)
+// Bitmask of allocatable aarch64 GPRs for EE-side codegen (EE/VU-macro/
+// temps). Bit `n` set ↔ x_n is in the pool. Cleared bits as documented
+// above:
+//   bit 4       — x4  : REEPIN_K0 (rung-3 pinned mirror)
+//   bits 6-7    — x6/x7 : REEPIN_S0/REEPIN_AT (rung-3 pinned mirrors)
 //   bit 8       — x8  : RXSCRATCH/RWSCRATCH (value scratch)
 //   bits 9-10   — x9/x10 : load/store address + value scratch
-//   bits 12-13  — x12/x13 : REEPIN_V1/REEPIN_A0 (pinned $v1/$a0 mirrors)
 //   bits 16-18  — x16 (vixl), x17 (RSCRATCHADDR), x18 (platform reserved)
 //   bit 19      — x19 : RFASTMEMBASE
 //   bit 20      — x20 : RSTATE (cpuRegs base pointer)
-//   bit 21      — x21 : RPSXSTATE (psxRegs base; shared alloc table with EE)
+//   bit 21      — x21 : REEPIN_A1 (pinned $a1 mirror / IOP RPSXSTATE)
 //   bits 22-23  — x22/x23 : REEPIN_SP/REEPIN_RA (pinned $sp/$ra mirrors)
 //   bit 24      — x24 : RVU0 (pinned &VU0 for iCOP2)
 //   bit 25      — x25 : RECCYCLE (pinned cycle delta)
+//   bits 26-27  — x26/x27 : REEPIN_V1/REEPIN_A0 (pinned $v1/$a0 mirrors)
 //   bits 29-30  — x29 (REEPIN_V0, pinned $v0 mirror / FP), x30 (LR) — never
 //                 allocatable
 // Inner allocator loop runs 31× per cache miss and was nine sequential
 // `if (armreg == N) return false` branches per probe; collapse to one
 // LSR + AND + cbz against this mask.
-static constexpr uint32_t ALLOCATABLE_MASK = ~((15u << 4)
+static constexpr uint32_t EE_ALLOCATABLE_MASK = ~((1u << 4)
+	| (3u << 6)
 	| (1u << 8)
 	| (1u << 9) | (1u << 10)
-	| (3u << 12)
 	| (7u << 16)
 	| (1u << 19) | (1u << 20) | (1u << 21)
 	| (3u << 22)
 	| (1u << 24) | (1u << 25)
+	| (3u << 26)
 	| (3u << 29));
+
+// IOP-side pool (ARM64TYPE_PSX / ARM64TYPE_PSX_PCWRITEBACK allocations):
+// re-admits x26/x27. IOP blocks execute under EnterRecompiledCode's
+// armBeginStackFrame (x19-x28 saved), and IOP execution is reachable from
+// a live EE session only through C seams — so the EE pins are restored
+// before EE JIT code resumes, exactly as for any callee-saved register.
+// The rung-3 EE pins x4/x6/x7 would be legal here for the same reason
+// (they're caller-saved; every EE C seam already reloads them) but stay
+// excluded for simplicity — Arm D vacates them into the shared pool.
+// Shared TEMP allocations always use the EE mask (restrictive = safe for
+// both CPUs).
+static constexpr uint32_t IOP_ALLOCATABLE_MASK = EE_ALLOCATABLE_MASK | (1u << 26) | (1u << 27);
 
 bool _isAllocatableArm64GPR(int armreg)
 {
-	return ((ALLOCATABLE_MASK >> armreg) & 1u) != 0u;
+	// EE-mask semantics: callers outside the allocator use this as "may EE
+	// codegen ever see a dynamic value here"; the IOP-only extras are
+	// handled inside _getFreeArm64GPR via the pool parameter.
+	return ((EE_ALLOCATABLE_MASK >> armreg) & 1u) != 0u;
 }
 
 void _initArm64GPRregs()
@@ -128,7 +154,7 @@ bool _hasArm64GPR(int type, int reg, int required_mode)
 	return false;
 }
 
-int _getFreeArm64GPR(int mode)
+int _getFreeArm64GPR(int mode, u32 pool)
 {
 	int tempi = -1;
 	u32 bestcount = 0x10000;
@@ -137,7 +163,7 @@ int _getFreeArm64GPR(int mode)
 	for (int i = 0; i < NUM_ARM_GPR_REGS; i++)
 	{
 		const int reg = (g_arm64checknext + i) % NUM_ARM_GPR_REGS;
-		if (arm64gprs[reg].inuse || !_isAllocatableArm64GPR(reg))
+		if (arm64gprs[reg].inuse || !((pool >> reg) & 1u))
 			continue;
 
 		if ((mode & MODE_CALLEESAVED) && !armIsCalleeSavedRegister(reg))
@@ -153,7 +179,7 @@ int _getFreeArm64GPR(int mode)
 	// Second pass: evict by LRU, prefer temps first
 	for (int i = 0; i < NUM_ARM_GPR_REGS; i++)
 	{
-		if (!_isAllocatableArm64GPR(i))
+		if (!((pool >> i) & 1u))
 			continue;
 		if ((mode & MODE_CALLEESAVED) && !armIsCalleeSavedRegister(i))
 			continue;
@@ -324,8 +350,14 @@ int _allocArm64GPR(int type, int reg, int mode)
 		}
 	}
 
-	// Need to allocate a new register
-	const int regnum = _getFreeArm64GPR(mode);
+	// Need to allocate a new register. PSX-typed values may use the wider
+	// IOP pool (x26/x27 ride under armBeginStackFrame); everything else —
+	// EE guest state, VI mirrors, and shared TEMPs — stays inside the EE
+	// mask so it can never land on an EE pin host.
+	const u32 pool = (type == ARM64TYPE_PSX || type == ARM64TYPE_PSX_PCWRITEBACK)
+	                     ? IOP_ALLOCATABLE_MASK
+	                     : EE_ALLOCATABLE_MASK;
+	const int regnum = _getFreeArm64GPR(mode, pool);
 	arm64gprs[regnum].type = type;
 	arm64gprs[regnum].reg = reg;
 	arm64gprs[regnum].mode = mode & ~MODE_CALLEESAVED;

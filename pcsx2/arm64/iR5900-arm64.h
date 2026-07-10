@@ -53,16 +53,16 @@
 // scheduled event — worst case ~one hblank later — instead of the very
 // next block tail. recEventTest still observes eeRecExitRequested.)
 #define RECCYCLE vixl::aarch64::x25
-// x22/x23/x29 + x12/x13: Write-through pinned read-cache for the hottest
+// x22/x23/x29 + x26/x27/x21: Write-through pinned read-cache for the hottest
 // guest GPRs (kEEPinTable below is the single source of truth):
 //   x22 = cpuRegs.GPR.r[29].UD[0]  ($sp)
 //   x23 = cpuRegs.GPR.r[31].UD[0]  ($ra)
 //   x29 = cpuRegs.GPR.r[2].UD[0]   ($v0 — hottest EE reg: 20.3% of dynamic
 //         refs in the SotC SD865 capture, tools/perf/sotc-regheat-2026-07-05.md)
-//   x12 = cpuRegs.GPR.r[3].UD[0]   ($v1, 12.6% of dynamic refs)
-//   x13 = cpuRegs.GPR.r[4].UD[0]   ($a0, 7.9%)
+//   x26 = cpuRegs.GPR.r[3].UD[0]   ($v1, 12.6% of dynamic refs)
+//   x27 = cpuRegs.GPR.r[4].UD[0]   ($a0, 7.9%)
+//   x21 = cpuRegs.GPR.r[5].UD[0]   ($a1)
 //   x4  = cpuRegs.GPR.r[26].UD[0]  ($k0, 6.3% — rung 3)
-//   x5  = cpuRegs.GPR.r[5].UD[0]   ($a1)
 //   x6  = cpuRegs.GPR.r[16].UD[0]  ($s0)
 //   x7  = cpuRegs.GPR.r[1].UD[0]   ($at)
 // MEMORY STAYS CANONICAL. Every guest-visible write still stores to
@@ -79,50 +79,70 @@
 // accesses match. All pin host regs are carved out of the dynamic
 // allocator pool (ALLOCATABLE_MASK in iCore-arm64.cpp).
 //
-// x22/x23/x29 are CALLEE-SAVED: every C call preserves them, so only
-// GPR-writing callees need a reload. x29 (the AAPCS frame pointer) is
-// additionally safe because every path that can run under a live EE JIT
-// session preserves it: fastjmp_set/jmp save/restore it around the whole
-// session (FastJmp.cpp), C callees preserve it per AAPCS, the mVU
-// dispatcher Stp/Ldp's x29/x30 (microVU-arm64.cpp), the IOP dispatcher
-// uses armBeginStackFrame, and the VIF unpack dynarec emits no x29
-// references. The known cost: FP-based stack unwinds through JIT frames
-// read a guest value as a frame chain — harmless (we profile via perf
-// jitdump, not FP walks).
+// x22/x23/x29/x26/x27/x21 (tier 1 — 64.8% of dynamic UD[0] refs) are
+// CALLEE-SAVED: every C call preserves them, so only GPR-writing callees
+// need a reload. x29 (the AAPCS frame pointer) is additionally safe
+// because every path that can run under a live EE JIT session preserves
+// it: fastjmp_set/jmp save/restore it around the whole session
+// (FastJmp.cpp), C callees preserve it per AAPCS, the mVU dispatcher
+// Stp/Ldp's x29/x30 (microVU-arm64.cpp), the IOP dispatcher uses
+// armBeginStackFrame, and the VIF unpack dynarec emits no x29 references.
+// The known cost: FP-based stack unwinds through JIT frames read a guest
+// value as a frame chain — harmless (we profile via perf jitdump, not FP
+// walks).
 //
-// x4-x7 and x12/x13 are CALLER-SAVED (the callee-saved budget is
+// x26/x27 (EE-SRA 3 Arm C) were the allocator's callee-saved temp pool;
+// the vtlb unaligned handlers were narrowed to ONE callee-saved temp each
+// (Arm B) so x28 alone covers that demand — and that only works while
+// each handler's MODE_CALLEESAVED alloc PRECEDES any same-instruction
+// _allocArm64GPR call (nothing can hold x28 `needed` at that point; an
+// inuse-but-not-needed x28 is evicted normally). mVU MICRO mode may use
+// x26/x27 for its VI cache: the mVU dispatcher saves x19-x28. MACRO mode
+// (cop2) emits inline in EE blocks with NO save around it, so
+// microRegAlloc::reset(cop2mode) excludes x26/x27 from the VI pool there
+// (today's 12 macro-routed ops allocate at most two VI slots — first-fit
+// x14/x15 — so the exclusion closes a latent hazard, pinned by
+// EeVu0Cop2Macro.MacroModeVIPoolExcludesEEPinHosts). Macro emit bodies
+// reference no x26/x27 directly (verified across microVU_*-arm64).
+//
+// x21 doubles as the IOP's RPSXSTATE: IOP EnterRecompiledCode establishes
+// it INSIDE armBeginStackFrame's x19-x28 save, and IOP execution is
+// reachable from a live EE session only through C seams — so the EE pin
+// rides through IOP runs exactly like x22 does. Every save site pairs x21
+// with x22 in the same Stp (FastJmp.cpp, armBeginStackFrame, the mVU
+// dispatcher prologue). mVU's gprF1 (w21, micro-mode status-flag
+// instance) is dispatcher-saved and never referenced by macro-mode emit
+// bodies (flag setup/exit thunks are micro-only paths).
+//
+// x4/x6/x7 are CALLER-SAVED (rung 3 — the callee-saved budget is
 // exhausted): any C call clobbers the host register even when the callee
-// never touches guest state. The preservation contract, in order of
-// preference:
+// never touches guest state. The preservation contract:
 //   1. vtlb_memRead/Write<T> + the 128-bit variants — the ONLY C calls on
 //      warm paths (fastmem backpatch thunk + inline softmem slow paths) —
 //      are annotated preserve_most (vtlb.h): the callee preserves x9-x15,
-//      which covers x12/x13 but NOT the rung-3 x4-x7 pins (preserve_most
-//      never spares x0-x8), so those slow paths additionally emit
+//      which since the Arm C re-home covers NO pins (the x4-x7 range is
+//      never spared — preserve_most only helps again when Arm D moves the
+//      tier-2 pins into x11/x12/x13), so those slow paths emit
 //      armReloadEEClobberedPins after the call. The thunk's own code uses
 //      only w8/w9/w10/x0/x17 (RecStubs.cpp) and its gpr_bitmask save loop
 //      stays pin-free — pins are not allocator state.
 //   2. Every other C call reachable inside a live session is followed by
-//      armReloadEEClobberedPins() (2 Ldrs, all cold paths): the const-
+//      armReloadEEClobberedPins() (3 Ldrs, all cold paths): the const-
 //      paddr MMIO shortcuts, dyna_block_discard/page_reset stubs, Goemon
 //      TLB hooks, SetBranchReg's vtlb_V2P, Interp::MTC0, FPU/VCALLMS
 //      interpreter fallbacks, the vu0Sync family (iCOP2), macro-mode
 //      mVUaddrFix's waitMTVU (via armEmitEEClobberedPinReloadForCOP2),
 //      and the test-build verify/divtrace hooks.
 //   3. GPR-writing callees keep using the full armReloadEEGPRPins().
-// mVU MICRO mode may clobber x12/x13 freely (w12/w13 are its flag-
-// extraction scratch): micro execution only runs behind C boundaries that
-// already reload. MACRO mode emit bodies for the 12 mVU-routed COP2-lower
-// ops reference no x12/x13 (verified: microVU_Lower/Misc/Alloc/Compile/
-// Branch/Clamp-arm64 have zero w12/w13/x12/x13 uses; flag extraction and
-// mVU_CLIP's w12 scratch are micro-mode-only paths).
+// x12/x13 (the pre-Arm-C $v1/$a0 homes) are plain allocatable again; mVU
+// micro's w12/w13 flag-extraction scratch is irrelevant to EE state.
 #define REEPIN_SP vixl::aarch64::x22
 #define REEPIN_RA vixl::aarch64::x23
 #define REEPIN_V0 vixl::aarch64::x29
-#define REEPIN_V1 vixl::aarch64::x12
-#define REEPIN_A0 vixl::aarch64::x13
+#define REEPIN_V1 vixl::aarch64::x26
+#define REEPIN_A0 vixl::aarch64::x27
 #define REEPIN_K0 vixl::aarch64::x4
-#define REEPIN_A1 vixl::aarch64::x5
+#define REEPIN_A1 vixl::aarch64::x21
 #define REEPIN_S0 vixl::aarch64::x6
 #define REEPIN_AT vixl::aarch64::x7
 

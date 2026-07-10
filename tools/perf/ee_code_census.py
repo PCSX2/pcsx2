@@ -41,6 +41,8 @@ from collections import Counter
 
 RSTATE = 20  # x20 = &cpuRegs (iR5900-arm64.h)
 PIN_MAPS = {
+    # EE-SRA 3 Arm C tier-1 re-home: $v1→x26, $a0→x27, $a1→x21 (callee-saved).
+    "s4": {29: 22, 31: 23, 2: 29, 3: 26, 4: 27, 26: 4, 5: 21, 16: 6, 1: 7},
     "s3": {29: 22, 31: 23, 2: 29, 3: 12, 4: 13, 26: 4, 5: 5, 16: 6, 1: 7},
     "s0": {29: 22, 31: 23},  # pre-EE-SRA: only the a7312122b $sp/$ra pair
     "none": {},
@@ -158,7 +160,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("jitdump")
     ap.add_argument("perfdata", nargs="?", help="perf.data for sample weighting")
-    ap.add_argument("--pins", choices=sorted(PIN_MAPS), default="s3")
+    ap.add_argument("--pins", choices=sorted(PIN_MAPS), default="s4")
     args = ap.parse_args()
 
     pin_gpr = PIN_MAPS[args.pins]

@@ -1917,6 +1917,25 @@ void mVUmacroEndCOP2State()
 	microVU0.regAlloc->reset(false);
 }
 
+#ifdef PCSX2_RECOMPILER_TESTS
+// EE-SRA 3 Arm C invariant probe: is host GPR `hostreg` in the VI allocation
+// pool under the given mode? Macro-mode (cop2) COP2 lower ops emit INLINE in
+// EE blocks — no dispatcher save wraps them — so the cop2 pool must exclude
+// x26/x27, which host the REEPIN_V1/REEPIN_A0 EE pin mirrors. Today's 12
+// macro-routed ops allocate at most two VI slots (first-fit lands on x14/x15),
+// so a violation is LATENT until an emitter grows a third allocation; this
+// probe pins the invariant directly instead of waiting for that. reset() is
+// data-only (no emission), and the trailing reset(false) restores the
+// micro-mode pool, mirroring mVUmacroEndCOP2State.
+bool mVUTestProbe_VIPoolUsable(int hostreg, bool cop2mode)
+{
+	microVU0.regAlloc->reset(cop2mode);
+	const bool usable = microVU0.regAlloc->isUsableGPR(hostreg);
+	microVU0.regAlloc->reset(false);
+	return usable;
+}
+#endif
+
 // COP2 macro-mode emit adapters. The 12 mVU_* emitters in microVU_Lower-arm64.inl
 // are file-static (the .inl is #include'd here), so iR5900Misc-arm64.cpp can't
 // take their address. Each adapter runs the standard pass1+pass2 dispatch x86
