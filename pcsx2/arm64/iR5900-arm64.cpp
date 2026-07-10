@@ -2321,6 +2321,10 @@ static void recRecompile(const u32 startpc)
 		// init) that may reschedule nextEventCycle — keep the cycle delta
 		// coherent across it. Boot-only path, cost is irrelevant.
 		armFlushCycleDelta();
+		// lazy-dirty seam: eeloadHook READS $a0/$a1 (argc/argv) from GPR
+		// memory, and the full reload below must see flushed memory or it
+		// would clobber dirty pins with stale values.
+		armFlushEEGPRPins();
 		armEmitCall((void*)eeloadHook);
 		armReloadCycleDelta();
 		armReloadEEGPRPins(); // ELF load / arg injection writes guest GPRs
@@ -2346,6 +2350,9 @@ static void recRecompile(const u32 startpc)
 	{
 		// Same coherence rationale as the eeloadHook call above.
 		armFlushCycleDelta();
+		// lazy-dirty seam: the full reload below must not clobber dirty pins
+		// with stale memory (eeloadHook2 itself only WRITES $a0/$a1).
+		armFlushEEGPRPins();
 		armEmitCall((void*)eeloadHook2);
 		armReloadCycleDelta();
 		armReloadEEGPRPins(); // eeloadHook2 injects launch arguments into GPRs
@@ -2375,8 +2382,11 @@ static void recRecompile(const u32 startpc)
 			// compiled block would go stale, so force a full rec reset.
 			eeRecNeedsReset = true;
 			// 0x3563b8 is the start of the function that invalidates a TLB-cache entry;
-			// a0 holds the key. Guest state is memory-resident at the prologue.
-			armAsm->Ldr(RWARG1, armCpuRegMem(&cpuRegs.GPR.n.a0.UL[0]));
+			// a0 holds the key. $a0 is pinned — read the mirror (authoritative in
+			// both pin modes), NOT canonical memory, which is stale under
+			// lazy-dirty until the seam flush (and $a0's pin is callee-saved, so
+			// no clobber flush ever covers it).
+			armLoadEERegPtr(RWARG1, &cpuRegs.GPR.n.a0.UL[0]);
 			armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 			armEmitCall((void*)GoemonUnloadTlb);
 			armReloadEEClobberedPins(); // see GoemonPreloadTlb above

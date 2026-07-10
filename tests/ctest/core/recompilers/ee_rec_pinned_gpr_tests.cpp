@@ -558,3 +558,132 @@ TEST(EeRecPinnedGpr, TierTwoQuadWriteThroughThenReadBack)
 	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0xFFFFFFFEFFFFFFFEull);
 	EXPECT_EQ(h.GetGpr64Interp(reg::t4), 0x0000000400000006ull);
 }
+
+// ---- Arm E (lazy-dirty pins) seam coverage ----
+//
+// The four tests below pin the seam contracts that only BITE when the build
+// is compiled with -DEE_PIN_LAZY_DIRTY=1 (pins newest, memory stale between
+// seams). They must stay green in BOTH modes — write-through satisfies every
+// contract trivially (memory always canonical), so run them under the lazy
+// build (build-lazy/) to exercise the real assertions.
+
+// Interpreter-funnel round trip with dirty pins: recCall's
+// iFlushCall(FLUSH_INTERPRETER) must flush ALL pins before the C call,
+// because the funnel ends in an unconditional full-table reload
+// (armReloadEEGPRPins) — a missing lazy flush would overwrite in-register
+// writes with stale memory and the values would simply vanish. Covers both
+// pin classes: callee-saved ($v0/x29, $a1/x21) and preserve_most-spared
+// ($at/x11, $k0/x12).
+TEST(EeRecPinnedGpr, DirtyPinsSurviveSyscallFunnel)
+{
+	EeRecTestHarness h;
+	h.LoadProgram({
+		ADDIU(reg::v0, reg::zero, 0x123),
+		ADDIU(reg::a1, reg::zero, 0x456),
+		ADDIU(reg::k0, reg::zero, 0x789),
+		ADDIU(reg::at, reg::zero, 0x2AB),
+		SYSCALL_(),
+		ADDIU(reg::t0, reg::zero, 99), // must NOT execute (SYSCALL vectors)
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 0x123ull);
+	h.ExpectGpr64(reg::a1, 0x456ull);
+	h.ExpectGpr64(reg::k0, 0x789ull);
+	h.ExpectGpr64(reg::at, 0x2ABull);
+	h.ExpectGpr64(reg::t0, 0ull);
+	// SYSCALL ExcCode=8, Cause.ExcCode<<2 = 0x20.
+	EXPECT_EQ(h.GetCp0Interp(13) & 0xFFu, 0x20u);
+}
+
+// Riding-dirty across block boundaries: block A dirties pins of both
+// classes, control transfers A → B → C (static links / dispatcher — no C
+// seam in between reloads pins from stale memory), C consumes the pins, and
+// the JIT-exit funnel must flush them so the harness snapshot reads current
+// canonical memory.
+TEST(EeRecPinnedGpr, RidingDirtyPinsAcrossBlockChain)
+{
+	constexpr u32 kBlockBPc = RecompilerTestEnvironment::kProgramPc + 0x100;
+	constexpr u32 kBlockCPc = RecompilerTestEnvironment::kProgramPc + 0x200;
+	constexpr u32 kPark = RecompilerTestEnvironment::kParkingPc;
+	EeRecTestHarness h;
+	h.LoadProgramNoTerm({
+		ADDIU(reg::v0, reg::zero, 0x11), // dirty callee-saved pin
+		ADDIU(reg::a1, reg::zero, 0x22), // dirty callee-saved pin
+		ADDIU(reg::k0, reg::zero, 0x33), // dirty spared-range pin
+		J(kBlockBPc),
+		NOP,
+	});
+	// Block B: unrelated allocator traffic, no pin writes.
+	h.WriteU32(kBlockBPc + 0x0, ADDIU(reg::t0, reg::zero, 0x44));
+	h.WriteU32(kBlockBPc + 0x4, DADDU(reg::t1, reg::t0, reg::t0));
+	h.WriteU32(kBlockBPc + 0x8, J(kBlockCPc));
+	h.WriteU32(kBlockBPc + 0xC, NOP);
+	// Block C: consume the pins dirtied two blocks ago.
+	h.WriteU32(kBlockCPc + 0x0, DADDU(reg::t2, reg::v0, reg::zero));
+	h.WriteU32(kBlockCPc + 0x4, DADDU(reg::t3, reg::a1, reg::zero));
+	h.WriteU32(kBlockCPc + 0x8, DADDU(reg::t4, reg::k0, reg::zero));
+	h.WriteU32(kBlockCPc + 0xC, J(kPark));
+	h.WriteU32(kBlockCPc + 0x10, NOP);
+	h.Run();
+	h.ExpectGpr64(reg::t2, 0x11ull);
+	h.ExpectGpr64(reg::t3, 0x22ull);
+	h.ExpectGpr64(reg::t4, 0x33ull);
+	h.ExpectGpr64(reg::v0, 0x11ull);
+	h.ExpectGpr64(reg::a1, 0x22ull);
+	h.ExpectGpr64(reg::k0, 0x33ull);
+}
+
+// Savestate-load model: while the JIT is parked, C world rewrites canonical
+// GPR memory (here: the harness pre-state seeding between the two Runs).
+// The JIT entry funnel re-establishes every pin mirror from memory, so the
+// second dispatch of the SAME compiled block must observe the new values.
+TEST(EeRecPinnedGpr, PinsReestablishedOnJitReentryAfterExternalWrite)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::v0, 0x1111);
+	h.SetGpr64(reg::k0, 0x2222);
+	h.LoadProgram({
+		DADDU(reg::t2, reg::v0, reg::zero),
+		DADDU(reg::t3, reg::k0, reg::zero),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t2), 0x1111ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0x2222ull);
+	h.SetGpr64(reg::v0, 0x3333);
+	h.SetGpr64(reg::k0, 0x4444);
+	h.Run(EeRecTestHarness::RunMode::PreserveCache);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t2), 0x3333ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0x4444ull);
+}
+
+// Quad-read merge: a scalar write leaves the pin newest for the lower 64
+// bits while the upper 64 live only in memory. A following 128-bit READ of
+// the same GPR (NEON fill for PADDW) must merge the pin into lane 0
+// (armMergeEEPinIntoQuad) — a missing merge feeds the FMAC stale lower
+// lanes under lazy-dirty. Exercised on a callee-saved pin ($v1) and a
+// spared-range pin ($k0).
+TEST(EeRecPinnedGpr, ScalarPinWriteThenQuadReadMergesMirror)
+{
+	EeRecTestHarness h;
+	h.SetGpr128(reg::v1, 0, 0x0000000A0000000Bull);
+	h.SetGpr128(reg::k0, 0, 0x0000000C0000000Dull);
+	h.SetGpr64(reg::t1, 0x0000000100000002ull);
+	// Runtime sources (pre-state, unknown at compile time) — an immediate
+	// write would be const-tracked and flushed through the Arm A const path,
+	// which materializes memory too and would mask a missing quad merge.
+	h.SetGpr64(reg::t6, 0x30);
+	h.SetGpr64(reg::t7, 0x50);
+	h.LoadProgram({
+		DADDU(reg::v1, reg::t6, reg::zero), // scalar write: pin dirty, upper 64 untouched
+		PADDW(reg::t2, reg::v1, reg::t1), // 128-bit read of $v1
+		DADDU(reg::k0, reg::t7, reg::zero),
+		PADDW(reg::t4, reg::k0, reg::t1), // 128-bit read of $k0
+		DADDU(reg::t3, reg::v1, reg::zero),
+		DADDU(reg::t5, reg::k0, reg::zero),
+	});
+	h.Run();
+	h.ExpectGpr128(reg::t2, 0x0000000100000032ull, 0x0000000A0000000Bull);
+	h.ExpectGpr128(reg::t4, 0x0000000100000052ull, 0x0000000C0000000Dull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t3), 0x30ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t5), 0x50ull);
+}
