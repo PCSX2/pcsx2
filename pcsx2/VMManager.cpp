@@ -3374,9 +3374,15 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_TV,
 				TRANSLATE_SV("VMManager", "Integer scaling is enabled. This may shrink the image."));
 		}
-		// The "Graphics API is not set to Automatic" OSD warning was removed:
-		// the setup wizard forces an explicit GL/VK pick by design, so this
-		// banner would fire on every boot regardless of correctness.
+		static bool render_change_warn = false;
+		if (EmuConfig.GS.Renderer != GSRendererType::Auto && EmuConfig.GS.Renderer != GSRendererType::SW && !render_change_warn)
+		{
+			// show messagesbox
+			render_change_warn = true;
+
+			append(ICON_FA_CIRCLE_EXCLAMATION,
+				TRANSLATE_SV("VMManager", "Graphics API is not set to Automatic. This may cause performance problems and graphical issues."));
+		}
 	}
 	if (EmuConfig.GS.DumpGSData)
 	{
@@ -3743,10 +3749,7 @@ void VMManager::SetEmuThreadAffinities()
 	if (s_thread_affinities_set == new_pin_enable)
 		return;
 
-	// Track whether pinning is *currently effective*, not just EmuConfig.EnableThreadPinning
-	// (matches refresh-experimental — a shutdown call with pinning enabled must not leave this
-	// flag true while the affinity + SW-renderer proc list get cleared).
-	s_thread_affinities_set = new_pin_enable;
+	s_thread_affinities_set = EmuConfig.EnableThreadPinning;
 
 	EnsureCPUInfoInitialized();
 
