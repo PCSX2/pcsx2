@@ -17,7 +17,15 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#if defined(__APPLE__)
+// <ucontext.h> declares the deprecated getcontext/setcontext/... routines and
+// #errors out unless _XOPEN_SOURCE is defined. We only need the ucontext_t
+// type, which <sys/ucontext.h> provides without that guard. (Mirrors
+// CrashHandler.cpp / DarwinMisc.cpp, which reach ucontext_t via <csignal>.)
+#include <sys/ucontext.h>
+#else
 #include <ucontext.h>
+#endif
 
 extern VURegs vuRegs[2];
 
@@ -129,7 +137,13 @@ namespace mvu_divtrace
 				return;
 			}
 			auto* uc = static_cast<ucontext_t*>(ucontext_v);
-			const u64 pc = uc->uc_mcontext.pc;
+#if defined(__APPLE__)
+			// Darwin: uc_mcontext is a pointer and PC lives in __ss.__pc.
+			auto& mc_pc = uc->uc_mcontext->__ss.__pc;
+#else
+			auto& mc_pc = uc->uc_mcontext.pc;
+#endif
+			const u64 pc = mc_pc;
 			u32 insn = 0;
 			std::memcpy(&insn, reinterpret_cast<const void*>(pc), sizeof(insn));
 			// Validate it's actually a BRK (top 16 bits == 0xD420).
@@ -162,7 +176,7 @@ namespace mvu_divtrace
 				snap.meta_idx = brk_imm;
 				snap.pre_xPC  = xpc;
 			}
-			uc->uc_mcontext.pc += 4; // skip the brk
+			mc_pc += 4; // skip the brk
 #else
 			// divtrace SIGTRAP capture is aarch64-only: it relies on the JIT
 			// emitting brk instructions and on decoding them via mcontext.pc,
