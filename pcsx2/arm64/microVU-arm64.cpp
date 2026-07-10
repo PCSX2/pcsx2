@@ -1716,6 +1716,18 @@ namespace mvu_test_hooks
 		const microVU& mVU = vu_index ? microVU1 : microVU0;
 		return mVU.prog.quick[(start_pc_bytes / 8) % (mVU.progSize / 2)].prog != nullptr;
 	}
+
+	// Offline live-wedge repro knob (vurunner env PCSX2_VU_POISON_LPSTATE_BLOCKTYPE):
+	// plants a nonzero blockType into the carried block-search key right before a
+	// replay dispatch, presenting the entry block the way a live-carried
+	// mid-program resume key (or a savestate-thawed lpState) would — the entry
+	// compile then goes through the delay-slot/one-instruction paths
+	// (endCount = blockType ? 1 : ...) instead of the normal whole-program scan.
+	void PoisonLpStateBlockType(int vu_index, u32 block_type)
+	{
+		microVU& mVU = vu_index ? microVU1 : microVU0;
+		mVU.prog.lpState.blockType = static_cast<u8>(block_type);
+	}
 }
 #endif
 

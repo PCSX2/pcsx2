@@ -21,10 +21,14 @@
 namespace vu_capture_internal {
 	void GetCompiledRange(int vu_index, const u8** out_start, const u8** out_end);
 }
+namespace mvu_test_hooks {
+	void PoisonLpStateBlockType(int vu_index, u32 block_type);
+}
 #endif
 
 #include <cinttypes>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 namespace recompiler_tests {
@@ -114,6 +118,14 @@ void RunInterpFromSeeded(int idx, u32 cycles)
 
 void RunJitFromSeeded(int idx, u32 cycles)
 {
+#if defined(_M_ARM64) || defined(__aarch64__)
+	// Offline repro knob for live-carried block-search keys: poison lpState
+	// AFTER PrimeFromCapture's cache reset (which zeroes it) and right before
+	// dispatch, the way a live mid-program resume key or a savestate thaw
+	// would present it. Testing-only (vurunner / recompiler_tests).
+	if (const char* poison = std::getenv("PCSX2_VU_POISON_LPSTATE_BLOCKTYPE"))
+		mvu_test_hooks::PoisonLpStateBlockType(idx, static_cast<u32>(std::atoi(poison)));
+#endif
 	JitCpu(idx)->Execute(cycles);
 }
 
