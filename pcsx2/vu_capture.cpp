@@ -5,6 +5,8 @@
 
 #ifdef PCSX2_RECOMPILER_TESTS
 
+#include "Config.h"   // EmuConfig — SnapshotConfig reads the live effective config
+#include "VMManager.h" // disc serial/CRC for capture provenance
 #include "VU.h"
 #include "VUmicro.h"  // VU0_PROGSIZE / VU1_PROGSIZE / VU0_MEMSIZE / VU1_MEMSIZE
 #include "R5900.h"    // cpuRegs.cycle — the EE clock, logged in trajectory mode
@@ -84,6 +86,7 @@ namespace vu_capture
 
 		bool ok = true;
 		ok &= (std::fwrite(&hdr, sizeof(hdr), 1, f) == 1);
+		ok &= (std::fwrite(&rec.config, sizeof(rec.config), 1, f) == 1);
 		ok &= (std::fwrite(rec.microcode.data(), 1, rec.microcode.size(), f) == rec.microcode.size());
 		ok &= (std::fwrite(rec.vumem.data(), 1, rec.vumem.size(), f) == rec.vumem.size());
 		ok &= (std::fwrite(&rec.state, sizeof(rec.state), 1, f) == 1);
@@ -104,7 +107,8 @@ namespace vu_capture
 			std::fclose(f);
 			return false;
 		}
-		if (std::memcmp(hdr.magic, kMagic, sizeof(hdr.magic)) != 0 || hdr.version != kVersion)
+		if (std::memcmp(hdr.magic, kMagic, sizeof(hdr.magic)) != 0 ||
+			hdr.version < kMinReadVersion || hdr.version > kVersion)
 		{
 			std::fclose(f);
 			return false;
@@ -126,14 +130,66 @@ namespace vu_capture
 		rec_out.cycle_budget = hdr.cycle_budget;
 		rec_out.microcode.assign(hdr.microcode_size, 0);
 		rec_out.vumem.assign(hdr.vumem_size, 0);
+		rec_out.config = CapturedConfig{}; // v1 files carry no snapshot
 
 		bool ok = true;
+		if (hdr.version >= 2)
+			ok &= (std::fread(&rec_out.config, sizeof(rec_out.config), 1, f) == 1);
 		ok &= (std::fread(rec_out.microcode.data(), 1, hdr.microcode_size, f) == hdr.microcode_size);
 		ok &= (std::fread(rec_out.vumem.data(), 1, hdr.vumem_size, f) == hdr.vumem_size);
 		ok &= (std::fread(&rec_out.state, sizeof(rec_out.state), 1, f) == 1);
 
 		std::fclose(f);
 		return ok;
+	}
+
+	void SnapshotConfig(CapturedConfig& out)
+	{
+		std::memset(&out, 0, sizeof(out));
+		out.flags = kConfigValid;
+
+		// Disc identity — provenance. Empty/zero in headless environments
+		// (recompiler_tests, vurunner re-capture) where no VM is running;
+		// the snapshot stays valid, the config bits are the truth.
+		const std::string serial = VMManager::GetDiscSerial();
+		std::memcpy(out.serial, serial.data(),
+			std::min(serial.size(), sizeof(out.serial) - 1));
+		out.disc_crc = VMManager::GetDiscCRC();
+
+		for (int i = GamefixId_FIRST; i < GamefixId_COUNT; ++i)
+		{
+			if (EmuConfig.Gamefixes.Get(static_cast<GamefixId>(i)))
+				out.gamefixes |= 1u << i;
+		}
+
+		if (EmuConfig.Speedhacks.vuFlagHack)
+			out.speedhacks |= kSpeedhackVuFlagHack;
+		if (EmuConfig.Speedhacks.vuThread)
+			out.speedhacks |= kSpeedhackVuThread;
+		if (EmuConfig.Speedhacks.vu1Instant)
+			out.speedhacks |= kSpeedhackVu1Instant;
+
+		const auto& rec = EmuConfig.Cpu.Recompiler;
+		if (rec.vu0Overflow)
+			out.vu_clamp |= kClampVu0Overflow;
+		if (rec.vu0ExtraOverflow)
+			out.vu_clamp |= kClampVu0ExtraOverflow;
+		if (rec.vu0SignOverflow)
+			out.vu_clamp |= kClampVu0SignOverflow;
+		if (rec.vu1Overflow)
+			out.vu_clamp |= kClampVu1Overflow;
+		if (rec.vu1ExtraOverflow)
+			out.vu_clamp |= kClampVu1ExtraOverflow;
+		if (rec.vu1SignOverflow)
+			out.vu_clamp |= kClampVu1SignOverflow;
+
+		const auto encode_fpcr = [](const FPControlRegister& r) -> u32 {
+			return (static_cast<u32>(r.GetRoundMode()) & kFpcrRoundMask) |
+				   (r.GetFlushToZero() ? kFpcrFlushToZero : 0) |
+				   (r.GetDenormalsAreZero() ? kFpcrDenormalsAreZero : 0);
+		};
+		out.vu0_fpcr = encode_fpcr(EmuConfig.Cpu.VU0FPCR);
+		out.vu1_fpcr = encode_fpcr(EmuConfig.Cpu.VU1FPCR);
 	}
 
 	void SnapshotState(const VURegs& regs, CapturedState& out)
@@ -414,6 +470,7 @@ namespace vu_capture
 		rec.microcode.assign(microcode_ptr, microcode_ptr + microcode_size);
 		rec.vumem.assign(vumem_ptr, vumem_ptr + vumem_size);
 		SnapshotState(regs, rec.state);
+		SnapshotConfig(rec.config);
 
 		const std::string path = MakeSlotPath(vu_index, start_pc, slot);
 		if (!WriteToFile(path, rec))
