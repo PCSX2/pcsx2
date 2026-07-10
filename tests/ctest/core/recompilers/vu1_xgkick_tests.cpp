@@ -24,6 +24,7 @@
 
 #include "harness/VuTestHarness.h"
 
+#include "Config.h"
 #include "VU.h"
 
 #include <gtest/gtest.h>
@@ -45,6 +46,50 @@ void WriteEopOnlyTagToVu1(VuTestHarness& h, u32 addr)
 }
 
 } // namespace
+
+// Crash Twinsanity wedge root cause (2026-07-09): with the XgKickHack gamefix
+// ON (GameDB forces it for Twinsanity), every mVU_XGKICK_SYNC site must not
+// lose dirty VI register state. The sync's top-of-function
+// flushCallerSavedRegisters() only covers x9-x15; a VI allocated into a
+// CALLEE-SAVED pool register (w26) was only spilled by the mVUbackupRegs
+// emitted BETWEEN the runtime `xgkickenable` / `cyclecount >= 2` branches and
+// the C call — so at runtime the spill is skipped whenever no kick is pending
+// (xgkickenable==0), while the allocator's compile-time state says the reg is
+// clean. The value dies in the callee-saved reg at dispatcher exit; the E-bit
+// end flush writes nothing. Live signature: pc0x0's JALR link (vi15=0x0a) and
+// the terminal handler's vi12=0 lost => VIF1 VEW deadlock. x86 shares the
+// emit structure but is immune (its mVU GPR pool is all caller-saved).
+//
+// Program shape: three distinct VI writes so the third allocation lands in
+// the callee-saved pool reg, then an ISW (isMemWrite => kickcycles flush =>
+// SYNC site emitted before it) while that VI is dirty, then E-bit. No XGKICK
+// op at all — xgkickenable stays 0, so the buggy conditional spill is always
+// skipped at runtime.
+TEST(Vu1Xgkick, XgKickHackSyncMustNotLoseCalleeSavedViWrites)
+{
+	VuTestHarness h(1);
+
+	const bool saved_hack = EmuConfig.Gamefixes.XgKickHack;
+	EmuConfig.Gamefixes.XgKickHack = true;
+
+	h.LoadProgram({
+		LowerOnly(VIADDIU_L(vi::vi1, vi::vi0, 5)),          // vi1 = 5 (caller-saved alloc)
+		LowerOnly(VIADDIU_L(vi::vi2, vi::vi0, 7)),          // vi2 = 7 (caller-saved alloc)
+		LowerOnly(VIADDIU_L(vi::vi3, vi::vi0, 9)),          // vi3 = 9 (callee-saved alloc)
+		LowerOnly(VISW_L(mask::x, vi::vi1, vi::vi0, 9)),    // ISW => SYNC site while vi3 dirty
+		EBitNopPair(),
+	});
+	h.Run();
+
+	EmuConfig.Gamefixes.XgKickHack = saved_hack;
+
+	EXPECT_EQ(h.GetViJit(vi::vi1), 5u);
+	EXPECT_EQ(h.GetViJit(vi::vi2), 7u);
+	EXPECT_EQ(h.GetViJit(vi::vi3), 9u)
+		<< "VI write lost across an XgKickHack mVU_XGKICK_SYNC site: the "
+		   "callee-saved spill was emitted inside the sync's runtime "
+		   "conditionals (Crash Twinsanity vi12/vi15 wedge)";
+}
 
 TEST(Vu1Xgkick, EopOnlyTagEmitsMatchingPath1Stream)
 {

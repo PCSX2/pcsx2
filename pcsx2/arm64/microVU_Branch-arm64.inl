@@ -1060,7 +1060,17 @@ static __fi void mVU_XGKICK_DELAY(mV)
 // JIT emitter: emit code for cycle-counted XGKICK sync
 static __fi void mVU_XGKICK_SYNC(mV, bool flush)
 {
-	mVU.regAlloc->flushCallerSavedRegisters();
+	// Full flush, NOT flushCallerSavedRegisters(): every store emitted here
+	// must sit BEFORE the runtime xgkickenable / cyclecount branches below,
+	// because the allocator marks the regs clean at compile time
+	// unconditionally. Our GPR pool contains CALLEE-SAVED registers (unlike
+	// x86's all-caller-saved pool), and a dirty callee-saved VI would
+	// otherwise only be spilled by the mVUbackupRegs inside the conditional
+	// path — skipped at runtime whenever no kick is pending, silently losing
+	// the write (Crash Twinsanity: pc0x0's JALR link vi15 and the terminal
+	// handler's vi12=0 died in w26 => VIF1 VEW deadlock; pinned by
+	// Vu1Xgkick.XgKickHackSyncMustNotLoseCalleeSavedViWrites).
+	mVU.regAlloc->flushAll();
 
 	// Test if xgkickenable is set
 	a64::Label skipxgkick;
