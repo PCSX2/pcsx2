@@ -1061,34 +1061,22 @@ set(pcsx2x86Headers
 
 # ARM64
 #
-# EE recompiler (aR5900*) is forked: the canonical Phase-7 backend builds for
-# PC (macOS/Linux/Windows arm64); Android builds the mac-port graft variants
-# (arm64/aR5900*.android.cpp) which carry the Android-only EE codegen wins.
-# Both share the canonical aR5900.h/aR5900Analysis.h (identical interface).
-# Keep the two lists in lockstep. See REFACTOR_STATUS.md.
-if(ANDROID)
-	set(pcsx2arm64EESources
-		arm64/aR5900.android.cpp
-		arm64/aR5900Analysis.android.cpp
-		arm64/aR5900LoadStore.android.cpp
-		arm64/aR5900Arith.android.cpp
-		arm64/aR5900MultDiv.android.cpp
-		arm64/aR5900Branch.android.cpp
-		arm64/aR5900FPU.android.cpp
-		arm64/aR5900MMI.android.cpp
-		)
-else()
-	set(pcsx2arm64EESources
-		arm64/aR5900.cpp
-		arm64/aR5900Analysis.cpp
-		arm64/aR5900LoadStore.cpp
-		arm64/aR5900Arith.cpp
-		arm64/aR5900MultDiv.cpp
-		arm64/aR5900Branch.cpp
-		arm64/aR5900FPU.cpp
-		arm64/aR5900MMI.cpp
-		)
-endif()
+# EE recompiler (aR5900*): a SINGLE canonical Phase-7 backend for every arm64 target
+# (PC macOS/Linux/Windows + Android). The Android mac-port graft fork was dropped after a
+# device A/B (canonical EE+VU + force-float, PGO tuned for the mac-port so rigged against
+# canonical) showed canonical EE at refresh parity on Android — GoW2 combat EE ~12.8ms,
+# 100% speed / 60fps. The real Android perf lever is the force-float in
+# VMManager::SetEmuThreadAffinities, not the recompiler backend. See REFACTOR_STATUS.md.
+set(pcsx2arm64EESources
+	arm64/aR5900.cpp
+	arm64/aR5900Analysis.cpp
+	arm64/aR5900LoadStore.cpp
+	arm64/aR5900Arith.cpp
+	arm64/aR5900MultDiv.cpp
+	arm64/aR5900Branch.cpp
+	arm64/aR5900FPU.cpp
+	arm64/aR5900MMI.cpp
+	)
 
 set(pcsx2arm64Sources
 	arm64/AsmHelpers.cpp
