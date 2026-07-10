@@ -1,5 +1,7 @@
 package com.armsx2
 
+import com.armsx2.runtime.MainActivityRuntime
+
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -67,14 +69,14 @@ object ControllerSkinStore {
 
     private fun ensureLoaded(ctx: Context) {
         if (loaded) return
-        val saved = Main.prefs.getString(KEY_ACTIVE, null)
+        val saved = MainActivityRuntime.prefs.getString(KEY_ACTIVE, null)
         activeSkinId.value = saved?.takeIf {
             builtinFor(it) != null || File(root(ctx), it).isDirectory
         }
         loaded = true
     }
 
-    /** Eagerly hydrate the saved selection at app start (Main.onCreate) so the in-game
+    /** Eagerly hydrate the saved selection at app start (MainActivityRuntime.onCreate) so the in-game
      *  touch overlay applies the active skin on FIRST render — without it, activeSkinId
      *  stays null until the Skins tab is opened, so the skin only "took" after a
      *  re-select even though it showed as selected. */
@@ -105,7 +107,7 @@ object ControllerSkinStore {
     fun setActive(ctx: Context, id: String?) {
         ensureLoaded(ctx)
         activeSkinId.value = id
-        Main.prefs.edit().apply { if (id == null) remove(KEY_ACTIVE) else putString(KEY_ACTIVE, id) }.apply()
+        MainActivityRuntime.prefs.edit().apply { if (id == null) remove(KEY_ACTIVE) else putString(KEY_ACTIVE, id) }.apply()
         clearCache()
     }
 

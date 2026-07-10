@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import com.armsx2.config.Settings
 import com.armsx2.i18n.str
@@ -49,7 +50,7 @@ fun RecompilerTab(state: MutableState<Settings>) {
     ) {
         Text(
             str("jit.recompiler.warning"),
-            color = Color(0xFFB0B0B0),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 11.sp,
             modifier = Modifier.padding(bottom = 8.dp),
         )
@@ -101,7 +102,7 @@ fun RecompilerTab(state: MutableState<Settings>) {
             }
             Text(
                 str("jit.eeDiffVerify.description"),
-                color = Color(0xFFB0B0B0),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 10.sp,
                 modifier = Modifier.padding(top = 4.dp),
             )

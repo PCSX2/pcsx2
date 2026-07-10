@@ -1,7 +1,7 @@
 package com.armsx2.ui.settings
 
-import android.view.KeyEvent as AndroidKeyEvent
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,8 +9,6 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,25 +20,28 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
-import androidx.compose.foundation.ScrollState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
@@ -52,13 +53,13 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.nativeKeyCode
 import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -66,9 +67,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.armsx2.ui.Colors
+import com.armsx2.ui.settings.SettingsControllerNav.move
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import android.view.KeyEvent as AndroidKeyEvent
+import androidx.core.content.edit
 
 /**
  * Shared widget primitives for the in-game settings tabs. Style matches
@@ -78,12 +81,13 @@ import kotlin.math.roundToInt
  * tab uses.
  */
 
-private val rowAuraOn = Color.White.copy(alpha = 0.06f)
-private val rowAuraTransparent = Color.Transparent
 private val focusBlue = Color(0xFF3DA5FF)
 
 /** Horizontal background gradient that matches the divider direction. */
-internal fun rowAura() = Brush.horizontalGradient(listOf(rowAuraOn, rowAuraTransparent))
+@Composable
+internal fun rowAura() = Brush.horizontalGradient(
+    listOf(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.055f), Color.Transparent),
+)
 
 internal object SettingsControllerNav {
     private data class Item(
@@ -111,8 +115,8 @@ internal object SettingsControllerNav {
     // is drawn above it).
     private val positions = HashMap<String, Pair<Float, Float>>()
     private val selectedId = mutableStateOf<String?>(null)
-    val selectedIndex = mutableStateOf(-1)
-    val scrollVelocity = mutableStateOf(0f)
+    val selectedIndex = mutableIntStateOf(-1)
+    val scrollVelocity = mutableFloatStateOf(0f)
 
     fun setPosition(id: String, x: Float, y: Float) {
         positions[id] = y to x
@@ -150,7 +154,7 @@ internal object SettingsControllerNav {
             // during this composition and stale ids are pruned by onDispose.
             scopeKey = scope
             selectedId.value = null
-            selectedIndex.value = -1
+            selectedIndex.intValue = -1
         }
     }
 
@@ -164,7 +168,7 @@ internal object SettingsControllerNav {
         // visual order) while refreshing the closures to the current value.
         registry[id] = Item(id, onConfirm, onLeft, onRight)
         if (selectedId.value == id)
-            selectedIndex.value = orderedIds().indexOf(id)
+            selectedIndex.intValue = orderedIds().indexOf(id)
     }
 
     fun unregister(id: String) {
@@ -172,18 +176,18 @@ internal object SettingsControllerNav {
         positions.remove(id)
         if (selectedId.value == id)
             selectedId.value = orderedIds().firstOrNull()
-        selectedIndex.value = orderedIds().indexOf(selectedId.value)
+        selectedIndex.intValue = orderedIds().indexOf(selectedId.value)
     }
 
     fun end() {
         // Keep the highlighted index in sync with the current order.
-        selectedIndex.value = orderedIds().indexOf(selectedId.value)
+        selectedIndex.intValue = orderedIds().indexOf(selectedId.value)
     }
 
     fun clearSelection() {
         selectedId.value = null
-        selectedIndex.value = -1
-        scrollVelocity.value = 0f
+        selectedIndex.intValue = -1
+        scrollVelocity.floatValue = 0f
     }
 
     /** No-op retained for callers; adjustment no longer uses a time gate. */
@@ -206,7 +210,7 @@ internal object SettingsControllerNav {
             (cur + delta).coerceIn(0, ids.lastIndex)
         }
         selectedId.value = ids[next]
-        selectedIndex.value = next
+        selectedIndex.intValue = next
         return true
     }
 
@@ -243,8 +247,8 @@ internal object SettingsControllerNav {
                 if (dy > 0 && py <= cy + rowTol) continue   // need a row strictly below
                 rowY = when {
                     rowY == null -> py
-                    dy < 0 -> if (py > rowY!!) py else rowY  // up: highest row still above
-                    else -> if (py < rowY!!) py else rowY    // down: lowest row still below
+                    dy < 0 -> if (py > rowY) py else rowY  // up: highest row still above
+                    else -> if (py < rowY) py else rowY    // down: lowest row still below
                 }
             }
             val ry = rowY
@@ -253,8 +257,8 @@ internal object SettingsControllerNav {
                 var bestDx = Float.MAX_VALUE
                 for ((id, p) in positions) {
                     if (id == curId || registry[id] == null) continue
-                    if (kotlin.math.abs(p.first - ry) > rowTol) continue
-                    val d = kotlin.math.abs(p.second - cx)
+                    if (abs(p.first - ry) > rowTol) continue
+                    val d = abs(p.second - cx)
                     if (d < bestDx) { bestDx = d; bestId = id }
                 }
                 bestId
@@ -267,10 +271,10 @@ internal object SettingsControllerNav {
                 if (id == curId || registry[id] == null) continue
                 val ddx = p.second - cx
                 val ddy = p.first - cy
-                val inDir = if (dx > 0) ddx > 1f && kotlin.math.abs(ddy) < rowTol
-                            else ddx < -1f && kotlin.math.abs(ddy) < rowTol
+                val inDir = if (dx > 0) ddx > 1f && abs(ddy) < rowTol
+                            else ddx < -1f && abs(ddy) < rowTol
                 if (!inDir) continue
-                val score = kotlin.math.abs(ddx) + kotlin.math.abs(ddy) * 4f
+                val score = abs(ddx) + abs(ddy) * 4f
                 if (score < bestScore) { bestScore = score; bestId = id }
             }
             bestId
@@ -280,7 +284,7 @@ internal object SettingsControllerNav {
             "moveSpatial dx=$dx dy=$dy cur=$curId curY=$cy curX=$cx n=${positions.size} -> $target")
         if (target == null) return false
         selectedId.value = target
-        selectedIndex.value = orderedIds().indexOf(target)
+        selectedIndex.intValue = orderedIds().indexOf(target)
         return true
     }
 
@@ -300,7 +304,7 @@ internal object SettingsControllerNav {
     }
 
     fun setScrollVelocity(velocity: Float): Boolean {
-        scrollVelocity.value = if (abs(velocity) > 0.08f) velocity.coerceIn(-1f, 1f) else 0f
+        scrollVelocity.floatValue = if (abs(velocity) > 0.08f) velocity.coerceIn(-1f, 1f) else 0f
         return true
     }
 
@@ -313,7 +317,7 @@ internal object SettingsControllerNav {
         if (id == null || !registry.containsKey(id)) {
             val first = ids.first()
             selectedId.value = first
-            selectedIndex.value = 0
+            selectedIndex.intValue = 0
             return registry[first]
         }
         return registry[id]
@@ -334,7 +338,7 @@ internal fun ControllerAutoScroll(scroll: ScrollState) {
             val frame = withFrameNanos { it }
             val dt = ((frame - lastFrame).coerceAtMost(50_000_000L)).toFloat() / 1_000_000_000f
             lastFrame = frame
-            val velocity = SettingsControllerNav.scrollVelocity.value
+            val velocity = SettingsControllerNav.scrollVelocity.floatValue
             if (abs(velocity) > 0.08f && scroll.maxValue > 0) {
                 val pxPerSecond = with(density) { 1500.dp.toPx() }
                 scroll.scrollBy(velocity * pxPerSecond * dt)
@@ -423,7 +427,7 @@ fun SettingsDivider() {
             .height(1.dp)
             .background(
                 Brush.horizontalGradient(
-                    listOf(Color.White.copy(alpha = 0.35f), Color.Transparent)
+                    listOf(MaterialTheme.colorScheme.outline.copy(alpha = 0.55f), Color.Transparent)
                 )
             ),
     )
@@ -444,11 +448,11 @@ fun CollapsibleSection(
     // every time. [initiallyExpanded] is only the first-time default.
     val prefKey = "ui.section.$title"
     var expanded by remember(title) {
-        mutableStateOf(com.armsx2.Main.prefs.getBoolean(prefKey, initiallyExpanded))
+        mutableStateOf(com.armsx2.runtime.MainActivityRuntime.prefs.getBoolean(prefKey, initiallyExpanded))
     }
     fun toggle() {
         expanded = !expanded
-        com.armsx2.Main.prefs.edit().putBoolean(prefKey, expanded).apply()
+        com.armsx2.runtime.MainActivityRuntime.prefs.edit { putBoolean(prefKey, expanded) }
     }
     Spacer(Modifier.height(8.dp))
     Row(
@@ -464,13 +468,13 @@ fun CollapsibleSection(
     ) {
         Text(
             title,
-            color = Colors.pasx2_blue,
+            color = MaterialTheme.colorScheme.primary,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(1f),
         )
         // Bigger, easier-to-hit collapse chevron (was 12sp).
-        Text(if (expanded) "▾" else "▸", color = Colors.pasx2_blue, fontSize = 18.sp)
+        Text(if (expanded) "▾" else "▸", color = MaterialTheme.colorScheme.primary, fontSize = 18.sp)
     }
     if (expanded) content()
 }
@@ -479,7 +483,7 @@ fun CollapsibleSection(
 fun HelpText(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
-        color = Color(0xFFB8B8B8),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         fontSize = 10.sp,
         lineHeight = 12.sp,
         modifier = modifier.padding(horizontal = 6.dp, vertical = 4.dp),
@@ -512,11 +516,11 @@ fun ToggleRow(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(label, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Text(label, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 if (description != null) {
                     Text(
                         description,
-                        color = Color(0xFFB8B8B8),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 9.sp,
                         lineHeight = 10.sp,
                         maxLines = 2,
@@ -526,7 +530,7 @@ fun ToggleRow(
             }
             Text(
                 if (value) "On" else "Off",
-                color = if (value) Colors.pasx2_blue else Color(0xFF888888),
+                color = if (value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
             )
@@ -549,11 +553,11 @@ fun ToggleBubble(
     val bg: Color
     val border: Color
     if (value) {
-        bg = Color(0xFF222F40)
-        border = Colors.pasx2_blue.copy(alpha = 0.50f)
+        bg = MaterialTheme.colorScheme.primaryContainer
+        border = MaterialTheme.colorScheme.primary.copy(alpha = 0.50f)
     } else {
-        bg = Color(0xFF1F2123)
-        border = Color.White.copy(alpha = 0.10f)
+        bg = MaterialTheme.colorScheme.surfaceVariant
+        border = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
     }
     Column(
         modifier = modifier
@@ -576,7 +580,7 @@ fun ToggleBubble(
     ) {
         Text(
             label,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 9.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -585,7 +589,7 @@ fun ToggleBubble(
         )
         Text(
             if (value) "On" else "Off",
-            color = if (value) Colors.pasx2_blue else Color.White.copy(alpha = 0.6f),
+            color = if (value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -637,11 +641,11 @@ fun IntSliderRow(
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(label, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                    Text(label, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                     if (description != null) {
                         Text(
                             description,
-                            color = Color(0xFFB8B8B8),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 9.sp,
                             lineHeight = 10.sp,
                             maxLines = 1,
@@ -651,7 +655,7 @@ fun IntSliderRow(
                 }
                 Text(
                     valueFormatter(value),
-                    color = Colors.pasx2_blue,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                 )
@@ -687,9 +691,10 @@ private fun DiscreteSlider(
     // another reverted the first (the EE Cycle Rate/Skip bug). Route every gesture
     // through the always-current lambda instead.
     val latestOnChange by rememberUpdatedState(onChange)
-    val activeColor = Colors.pasx2_blue
-    val inactiveTrackColor = Color.White.copy(alpha = 0.12f)
-    val inactiveTickColor = Color.White.copy(alpha = 0.35f)
+    val activeColor = MaterialTheme.colorScheme.primary
+    val inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+    val inactiveTickColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
+    val thumbHighlight = MaterialTheme.colorScheme.onPrimary
 
     Box(
         modifier = modifier
@@ -858,7 +863,7 @@ private fun DiscreteSlider(
                 center = Offset(thumbX, centerY),
             )
             drawCircle(
-                color = Color.White,
+                color = thumbHighlight,
                 radius = 1.5.dp.toPx(),
                 center = Offset(thumbX, centerY),
             )
@@ -901,12 +906,12 @@ fun SegmentedRow(
         contentAlignment = Alignment.CenterStart,
     ) {
         Column {
-            Text(label, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            Text(label, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
             if (description != null) {
                 Spacer(Modifier.height(1.dp))
                 Text(
                     description,
-                    color = Color(0xFFB8B8B8),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 9.sp,
                     lineHeight = 10.sp,
                     maxLines = 2,
@@ -920,13 +925,13 @@ fun SegmentedRow(
                     Box(
                         Modifier
                             .clip(RoundedCornerShape(4.dp))
-                            .background(if (on) Colors.pasx2_blue else Color(0xFF272525).copy(alpha = 0.5f))
+                            .background(if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
                             .clickable { onChange(idx) }
                             .padding(horizontal = 8.dp, vertical = 3.dp),
                     ) {
                         Text(
                             option,
-                            color = if (on) Color.White else Color(0xFFAAAAAA),
+                            color = if (on) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                         )
@@ -972,12 +977,12 @@ fun SegmentedGridRow(
         contentAlignment = Alignment.CenterStart,
     ) {
         Column {
-            Text(label, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            Text(label, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
             if (description != null) {
                 Spacer(Modifier.height(1.dp))
                 Text(
                     description,
-                    color = Color(0xFFB8B8B8),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 9.sp,
                     lineHeight = 10.sp,
                     maxLines = 2,
@@ -995,14 +1000,14 @@ fun SegmentedGridRow(
                                 Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(if (on) Colors.pasx2_blue else Color(0xFF272525).copy(alpha = 0.5f))
+                                    .background(if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
                                     .clickable { onChange(idx) }
                                     .padding(horizontal = 5.dp, vertical = 3.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
                                     option,
-                                    color = if (on) Color.White else Color(0xFFAAAAAA),
+                                    color = if (on) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     maxLines = 1,
@@ -1053,7 +1058,7 @@ fun Modifier.verticalScrollbar(
     width: Dp = 5.dp,
     gutter: Dp = 12.dp,
     edgeInset: Dp = 3.dp,
-    color: Color = Color.White.copy(alpha = 0.45f),
+    color: Color = Color(0x99718097),
     minThumb: Dp = 28.dp,
 ): Modifier = this
     .drawWithContent {

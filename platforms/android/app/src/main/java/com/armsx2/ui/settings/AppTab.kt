@@ -9,13 +9,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -46,14 +46,14 @@ fun AppTab() {
     ) {
         Text(
             str("app.language"),
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(bottom = 2.dp),
         )
         Text(
             str("app.language.desc"),
-            color = Color(0xFFB0B0B0),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 11.sp,
             modifier = Modifier.padding(bottom = 10.dp),
         )
@@ -63,7 +63,10 @@ fun AppTab() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
-                    .background(if (selected) Color(0x332E8BFF) else Color.Transparent)
+                    .background(
+                        if (selected) MaterialTheme.colorScheme.primaryContainer
+                        else MaterialTheme.colorScheme.surface.copy(alpha = 0f),
+                    )
                     .controllerFocusable(
                         controllerId = "lang:${lang.code}",
                         shape = RoundedCornerShape(8.dp),
@@ -75,20 +78,20 @@ fun AppTab() {
             ) {
                 Text(
                     lang.nativeName,
-                    color = if (selected) Color(0xFF4DA3FF) else Color.White,
+                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp,
                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
                     modifier = Modifier.weight(1f),
                 )
                 Text(
                     lang.englishName,
-                    color = Color(0xFF8A8A8A),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 11.sp,
                 )
                 if (selected) {
                     Text(
                         "  ✓",
-                        color = Color(0xFF4DA3FF),
+                        color = MaterialTheme.colorScheme.primary,
                         fontSize = 14.sp,
                     )
                 }

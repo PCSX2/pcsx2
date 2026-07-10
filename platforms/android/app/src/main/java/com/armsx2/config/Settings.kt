@@ -1,8 +1,10 @@
 package com.armsx2.config
 
+import com.armsx2.config.Settings.Companion.emitSink
+import com.armsx2.config.Settings.Companion.merge
 import kr.co.iefriends.pcsx2.NativeApp
-import org.json.JSONObject
 import org.json.JSONArray
+import org.json.JSONObject
 
 /**
  * Resolved emulator config used to drive a VM launch / live-apply.
@@ -307,7 +309,7 @@ data class Settings(
     /** USB1/Type = hidkbd — attach an emulated USB HID keyboard on USB port 1.
      *  Needed by games that require a real USB keyboard (EverQuest Online
      *  Adventures, Konami-keyboard titles). A physical/Bluetooth keyboard's key
-     *  events are forwarded to it (see Main.dispatchKeyEvent → NativeApp.usbKeyboardKey).
+     *  events are forwarded to it (see MainActivityRuntime.dispatchKeyEvent → NativeApp.usbKeyboardKey).
      *  Default off. */
     val usbKeyboard: Boolean = false,
 

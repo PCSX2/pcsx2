@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -67,7 +68,7 @@ fun NetworkTab(state: MutableState<Settings>) {
     ) {
         Text(
             str("network.dev9.description"),
-            color = Color(0xFFB0B0B0),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 11.sp,
             modifier = Modifier.padding(bottom = 8.dp),
         )
@@ -240,7 +241,7 @@ private fun EditableTextRow(label: String, value: String, onChange: (String) -> 
             .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(label, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+        Text(label, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.weight(1f))
         Text(
             value.ifEmpty { "0.0.0.0" },
@@ -264,7 +265,7 @@ private fun DeviceChooser(
             .background(rowAura())
             .padding(horizontal = 6.dp, vertical = 4.dp),
     ) {
-        Text(str("network.ethernetDevice"), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+        Text(str("network.ethernetDevice"), color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.height(4.dp))
         adapters.forEach { adapter ->
             val active = adapter == selected
@@ -305,7 +306,7 @@ private fun HddFileRow(fileName: String, onChange: (String) -> Unit, onReset: ()
                 Column {
                     Text(
                         str("network.hddImage.dialogHint"),
-                        color = Color(0xFFAAAAAA),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 11.sp,
                         modifier = Modifier.padding(bottom = 6.dp),
                     )
@@ -338,8 +339,8 @@ private fun HddFileRow(fileName: String, onChange: (String) -> Unit, onReset: ()
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(str("network.hddImage.title"), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                Text(fileName, color = Color(0xFFAAAAAA), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(str("network.hddImage.title"), color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Text(fileName, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Text(
                 str("action.reset"),

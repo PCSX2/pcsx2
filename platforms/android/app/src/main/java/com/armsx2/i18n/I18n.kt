@@ -6,8 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.armsx2.Main
+import com.armsx2.runtime.MainActivityRuntime
 import org.json.JSONObject
+import androidx.core.content.edit
 
 /**
  * Live UI localization.
@@ -63,9 +64,9 @@ object I18n {
     /** code → (key → translated text). English is never stored here (it lives in [EN]). */
     private val tables = HashMap<String, Map<String, String>>()
 
-    /** Call once at startup (after Main.prefs is ready). Restores the saved language. */
+    /** Call once at startup (after MainActivityRuntime.prefs is ready). Restores the saved language. */
     fun init(context: Context) {
-        val saved = runCatching { Main.prefs.getString(PREF_KEY, null) }.getOrNull()
+        val saved = runCatching { MainActivityRuntime.prefs.getString(PREF_KEY, null) }.getOrNull()
         val code = if (saved != null && languages.any { it.code == saved }) saved else "en"
         if (code != "en") ensureLoaded(context, code)
         current = code
@@ -75,7 +76,7 @@ object I18n {
     fun setLanguage(context: Context, code: String) {
         if (code != "en") ensureLoaded(context, code)
         current = code
-        runCatching { Main.prefs.edit().putString(PREF_KEY, code).apply() }
+        runCatching { MainActivityRuntime.prefs.edit { putString(PREF_KEY, code) } }
     }
 
     private fun ensureLoaded(context: Context, code: String) {

@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -48,17 +50,17 @@ fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
     val scope = rememberCoroutineScope()
     val scroll = remember { ScrollState(0) }
     ControllerAutoScroll(scroll)
-    val refresh = remember { mutableStateOf(0) }
+    val refresh = remember { mutableIntStateOf(0) }
     val busy = remember { mutableStateOf(false) }
     val status = remember { mutableStateOf<String?>(null) }
-    val skins = remember(refresh.value) { ControllerSkinStore.list(ctx) }
+    val skins = remember(refresh.intValue) { ControllerSkinStore.list(ctx) }
     val activeId = ControllerSkinStore.activeSkinId.value
 
     fun onImported(id: String?, sourceLabel: String) {
         busy.value = false
         if (id != null) {
             ControllerSkinStore.setActive(ctx, id)
-            refresh.value++
+            refresh.intValue++
             status.value = I18n.get("skins.status.importedAndSelected")
         } else {
             status.value = "No ic_controller_*.png images found in that $sourceLabel."
@@ -93,10 +95,10 @@ fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
             .verticalScrollbar(scroll)
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
-        Text(str("skins.title"), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+        Text(str("skins.title"), color = MaterialTheme.colorScheme.onSurface, fontSize = 15.sp, fontWeight = FontWeight.Bold)
         Text(
             str("skins.description"),
-            color = Color(0xFFAAAAAA), fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp,
             modifier = Modifier.padding(top = 2.dp, bottom = 8.dp),
         )
 
@@ -119,7 +121,7 @@ fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
         }
 
         Spacer(Modifier.height(10.dp))
-        Text(str("skins.activeSkin"), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
+        Text(str("skins.activeSkin"), color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(bottom = 4.dp))
 
         SkinRow(
@@ -148,7 +150,7 @@ fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                 onSelect = { ControllerSkinStore.setActive(ctx, s.id) },
                 onDelete = {
                     ControllerSkinStore.delete(ctx, s.id)
-                    refresh.value++
+                    refresh.intValue++
                 },
             )
         }
@@ -192,7 +194,7 @@ private fun SkinRow(
     ) {
         Text(
             (if (selected) "● " else "○ ") + name,
-            color = if (selected) Colors.pasx2_blue else Color.White,
+            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
             fontSize = 13.sp,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
             modifier = Modifier.weight(1f),

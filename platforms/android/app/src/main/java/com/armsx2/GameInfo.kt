@@ -1,5 +1,7 @@
 package com.armsx2
 
+import com.armsx2.runtime.MainActivityRuntime
+
 import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
@@ -8,16 +10,16 @@ import java.io.File
 /**
  * Box-art style for the library: 2D flat scans (the "default" mirror, JPG) or
  * 3D rendered cases (the "3d" mirror, PNG). Both come from the same xlenore
- * repos. Persisted in Main.prefs and read by [GameInfo.coverUrl], so flipping
+ * repos. Persisted in MainActivityRuntime.prefs and read by [GameInfo.coverUrl], so flipping
  * it recomposes the grid and re-downloads covers in the chosen style.
  */
 object CoverArtStyle {
     private const val KEY = "library.coverArt3d"
     val use3d = mutableStateOf(false)
-    fun load() { use3d.value = Main.prefs.getBoolean(KEY, false) }
+    fun load() { use3d.value = MainActivityRuntime.prefs.getBoolean(KEY, false) }
     fun set(value: Boolean) {
         use3d.value = value
-        Main.prefs.edit().putBoolean(KEY, value).apply()
+        MainActivityRuntime.prefs.edit().putBoolean(KEY, value).apply()
     }
 }
 
@@ -30,10 +32,10 @@ object CoverArtStyle {
 object LibraryTitles {
     private const val KEY = "library.showTitles"
     val show = mutableStateOf(false)
-    fun load() { show.value = Main.prefs.getBoolean(KEY, false) }
+    fun load() { show.value = MainActivityRuntime.prefs.getBoolean(KEY, false) }
     fun set(value: Boolean) {
         show.value = value
-        Main.prefs.edit().putBoolean(KEY, value).apply()
+        MainActivityRuntime.prefs.edit().putBoolean(KEY, value).apply()
     }
 }
 
@@ -42,10 +44,10 @@ object LibraryTitles {
 object LibraryRecentShelf {
     private const val KEY = "library.showRecentlyPlayed"
     val show = mutableStateOf(true)
-    fun load() { show.value = Main.prefs.getBoolean(KEY, true) }
+    fun load() { show.value = MainActivityRuntime.prefs.getBoolean(KEY, true) }
     fun set(value: Boolean) {
         show.value = value
-        Main.prefs.edit().putBoolean(KEY, value).apply()
+        MainActivityRuntime.prefs.edit().putBoolean(KEY, value).apply()
     }
 }
 
@@ -53,7 +55,7 @@ object LibraryRecentShelf {
  * Library view options: switch between the cover SHELF view and a compact LIST
  * view (game names only) for fast finding on small screens, plus a manual grid
  * size (columns + rows) that drives cover size in shelf view. 0 = Auto.
- * Persisted in Main.prefs; observed by GamesList so changes recompose the grid.
+ * Persisted in MainActivityRuntime.prefs and observed by the library so changes recompose the grid.
  */
 object LibraryView {
     private const val KEY_LIST = "library.listMode"
@@ -68,13 +70,13 @@ object LibraryView {
     /** Target visible rows in shelf view (caps cover height); 0 = auto. */
     val rows = mutableStateOf(0)
     fun load() {
-        listMode.value = Main.prefs.getBoolean(KEY_LIST, false)
-        columns.value = Main.prefs.getInt(KEY_COLS, 0).coerceIn(0, MAX_COLS)
-        rows.value = Main.prefs.getInt(KEY_ROWS, 0).coerceIn(0, MAX_ROWS)
+        listMode.value = MainActivityRuntime.prefs.getBoolean(KEY_LIST, false)
+        columns.value = MainActivityRuntime.prefs.getInt(KEY_COLS, 0).coerceIn(0, MAX_COLS)
+        rows.value = MainActivityRuntime.prefs.getInt(KEY_ROWS, 0).coerceIn(0, MAX_ROWS)
     }
     fun setListMode(v: Boolean) {
         listMode.value = v
-        Main.prefs.edit().putBoolean(KEY_LIST, v).apply()
+        MainActivityRuntime.prefs.edit().putBoolean(KEY_LIST, v).apply()
     }
     fun toggleListMode() = setListMode(!listMode.value)
     /** Cycle columns Auto→2→3→…→MAX→Auto (shelf view cover size). */
@@ -85,7 +87,7 @@ object LibraryView {
             else -> columns.value + 1
         }
         columns.value = next
-        Main.prefs.edit().putInt(KEY_COLS, next).apply()
+        MainActivityRuntime.prefs.edit().putInt(KEY_COLS, next).apply()
     }
     /** Cycle rows Auto→2→3→…→MAX→Auto (caps cover height). */
     fun cycleRows() {
@@ -95,7 +97,7 @@ object LibraryView {
             else -> rows.value + 1
         }
         rows.value = next
-        Main.prefs.edit().putInt(KEY_ROWS, next).apply()
+        MainActivityRuntime.prefs.edit().putInt(KEY_ROWS, next).apply()
     }
 }
 
@@ -187,15 +189,15 @@ object CustomCovers {
     /** Bumped on set/remove so cover tiles re-resolve. */
     val version = mutableStateOf(0)
 
-    // Main.assetCopyRoot() can flip between the chosen system dir and the
+    // MainActivityRuntime.assetCopyRoot() can flip between the chosen system dir and the
     // app-private fallback depending on a transient write-probe — so covers got
     // stored under one root and looked up under another ("sometimes there,
     // sometimes not"). Cache the covers root on first resolve so set + load always
-    // agree, and share this exact cache with GamesList.coversDir (remote covers).
+    // agree, and share this exact cache with the library cover loader.
     @Volatile
     private var cachedCoversRoot: File? = null
     fun coversRoot(context: Context): File =
-        cachedCoversRoot ?: File(Main.assetCopyRoot(context), "covers").also { cachedCoversRoot = it }
+        cachedCoversRoot ?: File(MainActivityRuntime.assetCopyRoot(context), "covers").also { cachedCoversRoot = it }
 
     private fun dir(context: Context): File = File(coversRoot(context), "custom")
 

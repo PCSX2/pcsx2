@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import com.armsx2.config.Settings
 import com.armsx2.i18n.str
 import com.armsx2.ui.InGameOverlay
+import androidx.core.content.edit
+import kotlin.math.roundToInt
 
 /**
  * Performance section of the in-game settings overlay.
@@ -61,7 +63,7 @@ fun PerformanceTab(state: MutableState<Settings>) {
                 upscaleFloat = 1.0f, accurateBlendingUnit = 1)
             // Low-End = every cheap GPU/CPU lever, MTVU gated on core count. Built
             // from the shared Settings.lowEndPreset so it matches the setup wizard.
-            val lowEnd = com.armsx2.config.Settings.lowEndPreset(
+            val lowEnd = Settings.lowEndPreset(
                 s.copy(eeCycleRate = 0, mtvu = true, vu1Instant = true,
                     vuFlagHack = true, intcStat = true, waitLoop = true, fastCDVD = true),
                 mtvu = com.armsx2.DeviceTier.mtvuDefault(),
@@ -80,12 +82,12 @@ fun PerformanceTab(state: MutableState<Settings>) {
         // ---- Display Resolution (HW scaler), NetherSX2-style ----------------
         // Shrinks the game's OUTPUT surface (hardware-composer upscales to the
         // screen) to cut GPU present cost, heat and battery. Global pref (not a
-        // Settings/EmuCore field) applied live via SurfaceCallbacks.applyHwScaler.
+        // Settings field) applied live to the active output surface.
         run {
             // Observable state seeded from the raw pref so the segmented control reflects
             // the change LIVE — a plain prefs.getInt() read isn't observed by Compose, so
             // the highlight only moved on menu re-entry.
-            val hwScaler = remember { androidx.compose.runtime.mutableStateOf(com.armsx2.Main.prefs.getInt("ui.hwScaler", 0)) }
+            val hwScaler = remember { androidx.compose.runtime.mutableStateOf(com.armsx2.runtime.MainActivityRuntime.prefs.getInt("ui.hwScaler", 0)) }
             SegmentedRow(
                 label = str("perf.displayResolution.label"),
                 options = listOf(str("perf.displayResolution.screen"), str("perf.displayResolution.3xPs2"), str("perf.displayResolution.2xPs2"), str("perf.displayResolution.1xPs2")),
@@ -94,8 +96,8 @@ fun PerformanceTab(state: MutableState<Settings>) {
                 onChange = {
                     val n = when (it) { 1 -> 3; 2 -> 2; 3 -> 1; else -> 0 }
                     hwScaler.value = n
-                    com.armsx2.Main.prefs.edit().putInt("ui.hwScaler", n).apply()
-                    (com.armsx2.Main.surface.value as? com.armsx2.SurfaceCallbacks)?.applyHwScaler()
+                    com.armsx2.runtime.MainActivityRuntime.prefs.edit { putInt("ui.hwScaler", n) }
+                    com.armsx2.runtime.MainActivityRuntime.surface.value?.applyOutputScale()
                 },
             )
         }
@@ -103,9 +105,9 @@ fun PerformanceTab(state: MutableState<Settings>) {
         // Asks Android to hold a steady, thermally-sustainable clock instead of
         // boost-then-throttle. Better for long sessions on handhelds, but it CAPS the
         // peak clock so peak-hungry games can lose fps — a user choice, default Off.
-        // Global pref, applied at launch (Main.onCreate) and live here via the window.
+        // Global pref, applied at launch (MainActivityRuntime.onCreate) and live here via the window.
         run {
-            val sustained = remember { androidx.compose.runtime.mutableStateOf(com.armsx2.Main.prefs.getBoolean("ui.sustainedPerf", false)) }
+            val sustained = remember { androidx.compose.runtime.mutableStateOf(com.armsx2.runtime.MainActivityRuntime.prefs.getBoolean("ui.sustainedPerf", false)) }
             SegmentedRow(
                 label = str("perf.sustainedPerformance.label"),
                 options = listOf(str("common.off"), str("common.on")),
@@ -114,10 +116,15 @@ fun PerformanceTab(state: MutableState<Settings>) {
                 onChange = {
                     val on = it == 1
                     sustained.value = on
-                    com.armsx2.Main.prefs.edit().putBoolean("ui.sustainedPerf", on).apply()
+                    com.armsx2.runtime.MainActivityRuntime.prefs.edit {
+                        putBoolean(
+                            "ui.sustainedPerf",
+                            on
+                        )
+                    }
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
                         runCatching {
-                            (com.armsx2.Main.surface.value?.context as? android.app.Activity)
+                            (com.armsx2.runtime.MainActivityRuntime.surface.value?.context as? android.app.Activity)
                                 ?.window?.setSustainedPerformanceMode(on)
                         }
                     }
@@ -229,7 +236,7 @@ fun PerformanceTab(state: MutableState<Settings>) {
             // Speed Limit % is relative to this; this is the rate, not a display cap.
             IntSliderRow(
                 label = str("perf.ntscFramerate.label"),
-                value = Math.round(s.framerateNtsc).coerceIn(20, 75),
+                value = s.framerateNtsc.roundToInt().coerceIn(20, 75),
                 min = 20,
                 max = 75,
                 description = str("perf.ntscFramerate.description"),
@@ -239,7 +246,7 @@ fun PerformanceTab(state: MutableState<Settings>) {
             SettingsDivider()
             IntSliderRow(
                 label = str("perf.palFramerate.label"),
-                value = Math.round(s.frameratePal).coerceIn(20, 75),
+                value = s.frameratePal.roundToInt().coerceIn(20, 75),
                 min = 20,
                 max = 75,
                 description = str("perf.palFramerate.description"),

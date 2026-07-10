@@ -5,9 +5,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="archos.permission.FULLSCREEN.FULL" />
-    <!-- Coil fetches PS2 cover art from raw.githubusercontent.com on the
-         games-list screen. Without INTERNET the games list still works
-         but covers all show as the placeholder. -->
+    <!-- Cover artwork can be loaded from the configured remote artwork source. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -27,7 +25,7 @@
         android:supportsRtl="true"
         android:isGame="true"
         android:appCategory="game"
-        android:theme="@style/Theme.PASX2"
+        android:theme="@style/Theme.ARMSX2"
         android:allowNativeHeapPointerTagging="false"
         tools:targetApi="31"
         >
@@ -50,7 +48,7 @@
             android:hardwareAccelerated="true"
             android:exported="true"
             android:resizeableActivity="false"
-            android:theme="@style/Theme.PASX2.Boot">
+            android:theme="@style/Theme.ARMSX2.Boot">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

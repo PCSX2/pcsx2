@@ -1,3 +1,4 @@
+@file:Suppress("UnstableApiUsage", "DEPRECATION")
 import org.gradle.api.GradleException
 import java.util.Properties
 
@@ -29,16 +30,12 @@ if (armsx2SigningPropertiesFile.isFile && !armsx2PlaySigningReady) {
 
 android {
     namespace = "com.armsx2"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = armsx2ApplicationId.get()
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = armsx2VersionCode.get()
         versionName = armsx2VersionName.get()
 
@@ -201,6 +198,8 @@ dependencies {
     implementation(libs.androidx.documentfile)
     implementation(libs.coil.compose)
     implementation(libs.coil.gif) // animated GIF / WebP / APNG (library background)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
