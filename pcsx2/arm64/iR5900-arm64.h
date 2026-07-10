@@ -65,19 +65,22 @@
 //   x12 = cpuRegs.GPR.r[26].UD[0]  ($k0, 6.3% — tier 2)
 //   x13 = cpuRegs.GPR.r[16].UD[0]  ($s0)
 //   x11 = cpuRegs.GPR.r[1].UD[0]   ($at)
-// MEMORY STAYS CANONICAL. Every guest-visible write still stores to
-// cpuRegs.GPR; the pin mirror is refreshed at the same emission point
-// (armStoreEERegPtr write-through, armStoreEEGPRQuad for 128-bit stores).
-// Reads that would load UD[0] from memory use the pin register instead
-// (armLoadEERegPtr substitution / armEEPinForGPR in the scalar templates).
-// Because the pin never holds a value memory doesn't, C code reads and
-// writes memory exactly as before; the pins are re-read from memory
-// (armReloadEEGPRPins) after the C calls that can write guest GPRs —
-// interpreter fallbacks (recCall/recBranchCall), recEventTest (savestate
-// load), recRecompile (ELF entry hooks), MFC0 rd=25, and eeloadHook/2. The
-// upper 64 bits of the 128-bit guest reg are NOT mirrored; only UD[0]
-// accesses match. All pin host regs are carved out of the dynamic
-// allocator pool (ALLOCATABLE_MASK in iCore-arm64.cpp).
+// THE PIN IS AUTHORITATIVE for the lower 64 bits. Under the shipping
+// lazy-dirty policy (EE_PIN_LAZY_DIRTY=1, EE-SRA 3 Arm E) guest writes
+// update the pin only (armStoreEERegPtr / armStoreEEGPRQuad lane 0) and the
+// canonical store is elided; every seam where C code or a JIT-internal
+// 128-bit/raw reader could observe GPR memory flushes the pins first
+// (armFlushEEGPRPins / armFlushEEClobberedPins, and armMergeEEPinIntoQuad
+// for quad reads). Reads that would load UD[0] from memory use the pin
+// register instead (armLoadEERegPtr substitution / armEEPinForGPR in the
+// scalar templates). The pins are re-read from memory (armReloadEEGPRPins)
+// after the C calls that can write guest GPRs — interpreter fallbacks
+// (recCall/recBranchCall), recEventTest (savestate load), recRecompile (ELF
+// entry hooks), MFC0 rd=25, and eeloadHook/2. (Under the A/B-only
+// write-through build, -DEE_PIN_LAZY_DIRTY=0, memory stays canonical and the
+// flush helpers are no-ops.) The upper 64 bits of the 128-bit guest reg are
+// NOT mirrored; only UD[0] accesses match. All pin host regs are carved out
+// of the dynamic allocator pool (ALLOCATABLE_MASK in iCore-arm64.cpp).
 //
 // x22/x23/x29/x26/x27/x21 (tier 1 — 64.8% of dynamic UD[0] refs) are
 // CALLEE-SAVED: every C call preserves them, so only GPR-writing callees
@@ -161,7 +164,7 @@
 #define REEPIN_AT vixl::aarch64::x11
 
 // The static guest→host pin map. Everything pin-related (lookup, reload,
-// write-through) iterates this table; adding a rung = adding a row here,
+// flush, write policy) iterates this table; adding a rung = adding a row here,
 // clearing the host reg's ALLOCATABLE_MASK bit in iCore-arm64.cpp, and
 // covering it in ee_rec_pinned_gpr_tests.cpp. Host regs must be preserved
 // by every C-reachable path from inside a block (callee-saved, or shimmed
@@ -306,14 +309,24 @@ static __fi void armReloadEEPinsAfterPreserveMostCall()
 			armAsm->Ldr(pin.host, armCpuRegMem(&cpuRegs.GPR.r[pin.gpr].UD[0]));
 	}
 }
-// after every guest write — the shipping default). 1 = pins canonical between
-// seams: guest writes to pinned GPRs skip the canonical store, and every seam
-// where C code (or a JIT-internal 128-bit/raw reader) could observe stale GPR
-// memory restores canonicity first via the flush helpers below. A/B by
-// building a second binary with -DEE_PIN_LAZY_DIRTY=1 (codegen_ab two-binary
-// flow); no runtime toggle — mixing modes across blocks is unsound.
+// Pin write policy. EE_PIN_LAZY_DIRTY=1 (the shipping default since EE-SRA 3
+// Arm E): guest writes to pinned GPRs update the PIN ONLY — the canonical
+// store is elided, and every seam where C code (or a JIT-internal 128-bit /
+// raw reader) could observe stale GPR memory restores canonicity first via
+// the flush helpers below. 0 = write-through (pin + canonical store after
+// every guest write) — kept for A/B: build a second binary with
+// -DEE_PIN_LAZY_DIRTY=0 (codegen_ab two-binary flow); no runtime toggle —
+// mixing modes across blocks is unsound.
+//
+// Arm E verdict (RK3562, 2026-07-09): lazy removes 4.3% of emitted EE-block
+// instructions (write-through Strs 54.8k → 7.9k on the SotC census) and wins
+// EE-thread SotC −1.05% / UYA −0.25% against write-through ON THE ARM C/D
+// TABLE (callee-saved tier-1 + preserve_most-spared tier-2 = near-zero seam
+// bills). WS-B's earlier UYA +0.84% lazy regression was the old caller-saved
+// homing paying 6 Str + 6 Ldr at every C seam — the re-home, not the lazy
+// idea, was what that verdict measured.
 #ifndef EE_PIN_LAZY_DIRTY
-#define EE_PIN_LAZY_DIRTY 0
+#define EE_PIN_LAZY_DIRTY 1
 #endif
 
 // Write every pin mirror back to canonical memory. No dirty tracking — the
