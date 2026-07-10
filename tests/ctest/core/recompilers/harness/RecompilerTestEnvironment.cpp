@@ -21,6 +21,7 @@
 #include "cpuinfo.h"
 
 #include <cstdio>
+#include <cstdlib>
 
 extern s32 psxNextDeltaCounter;
 extern u64 psxNextStartCounter;
@@ -174,6 +175,15 @@ bool RecompilerTestEnvironment::Initialize()
 	EmuConfig.Speedhacks.vu1Instant = false;
 	EmuConfig.Speedhacks.vuFlagHack = false;
 	EmuConfig.Gamefixes.XgKickHack = false;
+
+	// Testing-only override: PCSX2_VU_XGKICKHACK=1 replays with the XgKickHack
+	// gamefix ON, matching games whose GameDB entry forces it (e.g. Crash
+	// Twinsanity). CHECK_XGKICKHACK changes the COMPILED SHAPE of every VU1
+	// block containing an XGKICK and of the E-bit end sequence
+	// (mVU_XGKICK_SYNC emission), so a live-vs-replay divergence can hide in
+	// the hack-ON code paths that the deterministic default never compiles.
+	if (const char* xgkick = std::getenv("PCSX2_VU_XGKICKHACK"))
+		EmuConfig.Gamefixes.XgKickHack = std::atoi(xgkick) != 0;
 
 	// 9. Parking lot for test programs' `jr ra` sentinel + EE exception
 	//    vector `jr ra; nop` stubs that trap-bearing opcode tests return
