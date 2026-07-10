@@ -2173,8 +2173,12 @@ static bool recSkipTimeoutLoop(s32 reg, bool is_timeout_loop)
 
 	// w9 = reg value (the decrementing counter). Scratches are w9/x10/w8
 	// (reserved — w4-w7 are allocatable and may hold live values in the
-	// surrounding EE block).
-	armAsm->Ldr(a64::w9, armCpuRegMem(&cpuRegs.GPR.r[reg].UL[0]));
+	// surrounding EE block). MUST go through the pin helper: the counter can
+	// be a pinned GPR (UYA idles on $at), and under lazy-dirty the loop's
+	// decrements live in the pin while canonical memory is stale — a raw Ldr
+	// here read a stale counter and the pin-aware store below then clobbered
+	// the real one, collapsing UYA's frame pacing (600 frames in 1s).
+	armLoadEERegPtr(a64::w9, &cpuRegs.GPR.r[reg].UL[0]);
 
 	// x10 = reg * 8 + delta (estimated end delta, s64)
 	armAsm->Add(a64::x10, RECCYCLE, a64::Operand(a64::x9, a64::LSL, 3));

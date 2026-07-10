@@ -288,3 +288,62 @@ TEST(EeRecWaitLoopDetect, AllNopSelfLoopStillDetected)
 	h.RunJitNoDiff();
 	EXPECT_TRUE(g_eeRecLastBlockFF);
 }
+
+// A GENUINE self-loop timeout loop whose counter is a PINNED register with a
+// DIRTY pin at loop entry (Arm E, lazy-dirty pins). Block A writes the counter
+// ($at, pinned x11) from a runtime source and statically links into the loop —
+// no C seam between, so under EE_PIN_LAZY_DIRTY the decrement value lives in
+// the pin while canonical memory still holds the stale pre-state value.
+// recSkipTimeoutLoop must read the counter through the pin helper (the raw-Ldr
+// bug read stale memory and burned the stale count's worth of CYCLES; UYA's
+// idle loop collapsed to 600 frames/1s of nothing).
+//
+// HONESTY NOTE (mutation-verified 2026-07-09): this test CANNOT go red on the
+// raw-Ldr bug itself — when no event clamps the skip, the skip drains whatever
+// counter value it read down to 0, so the final architectural state matches
+// the interpreter regardless of staleness; the divergence is pure cycle
+// consumption, which the auto-diff excludes by design (see the header note on
+// genuine timeout loops). The RED gate for the stale-read class is the live
+// repro: `EERUNNER_SYNCMTGS=0 EERUNNER_MTVU=1 pcsx2-eerunner --liverun` on
+// uya-gameplay — buggy lazy builds finish 600 frames in ~1s (idle collapse),
+// healthy ones pace at the scene's real fps. What this test DOES pin: the
+// detector still classifies the pinned-counter self-loop, the skip's exact
+// full-drain semantics ($at==0 read back through the pin), and the
+// already-compiled static-link re-entry traversal under PreserveCache.
+//
+// Layout: block A at kProgramPc, loop at +0x100, read-back at +0x200.
+TEST(EeRecTimeoutLoop, PinnedCounterWithDirtyPinSkipsExactly)
+{
+	ScopedWaitLoop wl(true);
+	constexpr u32 kProgramPc = RecompilerTestEnvironment::kProgramPc;
+	constexpr u32 kLoopPc = kProgramPc + 0x100;
+	constexpr u32 kAfterPc = kProgramPc + 0x200;
+	EeRecTestHarness h;
+	h.SetGpr64(reg::t0, 3);        // runtime counter value (not const-foldable)
+	h.SetGpr64(reg::at, 0x7777);   // stale memory value the buggy raw Ldr read
+	h.LoadProgramNoTerm({
+		ee::DADDU(reg::at, reg::t0, reg::zero), // dirty the $at pin
+		J(kLoopPc),                         // static link, no C seam
+		NOP,
+	});
+	h.WriteU32(kLoopPc + 0x0, ADDIU(reg::at, reg::at, -1)); // loop TOP (self-loop)
+	h.WriteU32(kLoopPc + 0x4, BNE(reg::at, reg::zero, -2)); // -> TOP
+	h.WriteU32(kLoopPc + 0x8, NOP);                         // delay slot
+	h.WriteU32(kLoopPc + 0xC, J(kAfterPc));                 // loop exit
+	h.WriteU32(kLoopPc + 0x10, NOP);
+	h.WriteU32(kAfterPc + 0x0, ee::DADDU(reg::t2, reg::at, reg::zero)); // read back
+	h.WriteU32(kAfterPc + 0x4, J(RecompilerTestEnvironment::kParkingPc));
+	h.WriteU32(kAfterPc + 0x8, NOP);
+	// Pass 1 compiles and links; it can't trip the bug — compiling the loop
+	// block goes through the dispatcher's C recompile seam, which flushes the
+	// dirty caller-saved pin right before the counter read.
+	h.Run();
+	h.ExpectGpr64(reg::at, 0ull);
+	h.ExpectGpr64(reg::t2, 0ull);
+	// Pass 2 re-enters the ALREADY-COMPILED loop block through the patched
+	// static link — no C seam between the pin write and the skip's counter
+	// read. This is the traversal that collapsed UYA.
+	h.Run(EeRecTestHarness::RunMode::PreserveCache);
+	h.ExpectGpr64(reg::at, 0ull);
+	h.ExpectGpr64(reg::t2, 0ull);
+}
