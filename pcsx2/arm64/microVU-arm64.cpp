@@ -1130,7 +1130,6 @@ __fi void mVUclear(mV, u32 addr, u32 size)
 	// compiled range overlapping [addr, addr+size). Programs whose ranges are
 	// disjoint from the touched bytes stay quick-cached, skipping the per-PC
 	// deque walk on the next dispatch.
-	bool anyInvalidated = false;
 	for (u32 i = 0; i < (mVU.progSize / 2); i++)
 	{
 		const microProgram* p = mVU.prog.quick[i].prog;
@@ -1140,16 +1139,23 @@ __fi void mVUclear(mV, u32 addr, u32 size)
 		{
 			mVU.prog.quick[i].block = NULL;
 			mVU.prog.quick[i].prog  = NULL;
-			anyInvalidated = true;
 		}
 	}
 
-	// lpState bookkeeping: when the write touched any cached program's
-	// compiled bytes, unconditionally drop the carried entry-search key —
-	// exactly what x86's unconditional nuke achieves. When nothing cached
-	// overlaps, the key survives: it is either zero (last program E-bit
-	// ended) or a mid-program resume key whose owner is quick-resident and
-	// was just proven untouched by the range scan above.
+	// Drop the carried entry-search key on ANY micro-mem write — x86's
+	// contract, NOT "any write that invalidated something". A mid-program
+	// cycle-budget break parks a live resume key here (copyPLState); if the
+	// game abandons that program — uploads fresh code to a region no cached
+	// program covers (range scan above invalidates nothing) and MSCALs it —
+	// a surviving key becomes the fresh program's entry-block search key.
+	// blockType!=0 in that key (break landed on a branch-delay mini-block, or
+	// a poisoned savestate thaw) truncates the entry compile to a
+	// ONE-INSTRUCTION program-ending block (endCount = blockType ? 1 : ...) —
+	// the Crash Twinsanity wedge signature, reproduced offline via vurunner
+	// PCSX2_VU_POISON_LPSTATE_BLOCKTYPE=1. Zeroing when already zero is a
+	// no-op, so unconditional is a strict-superset-safe translation of x86's
+	// !cleared-latched memset (their latch is equivalent to per-write zeroing
+	// under full-nuke semantics; our range-survivor world voids the latch).
 	//
 	// Do NOT set prog.cleared here, and do NOT latch the memset on it.
 	// cleared==1 is consumed by the emitted E-bit end helpers
@@ -1161,13 +1167,10 @@ __fi void mVUclear(mV, u32 addr, u32 size)
 	// dispatches never reset cleared, the latch goes stale, and every E-bit
 	// end skips its mandatory lpState zero — leaking mid-program resume keys
 	// (blockType / flag instances / xgkickcycles / VI stall info) into the
-	// entry-block search key of the next freshly dispatched program. That
-	// leak compiled truncated/mis-keyed entry blocks and was the root cause
-	// of the Crash Twinsanity VIF1<->VU1 display-list wedge (2026-07-09);
-	// vuJITFreeze also serializes the leaked key into savestates. Pinned by
+	// entry-block search key of the next freshly dispatched program.
+	// vuJITFreeze also serializes a leaked key into savestates. Pinned by
 	// mvu_lpstate_invariant_tests.cpp.
-	if (anyInvalidated)
-		std::memset(&mVU.prog.lpState, 0, sizeof(mVU.prog.lpState));
+	std::memset(&mVU.prog.lpState, 0, sizeof(mVU.prog.lpState));
 }
 
 //------------------------------------------------------------------

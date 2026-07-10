@@ -195,4 +195,72 @@ TEST(MvuLpStateInvariant, EbitEndZeroesLpStateAfterPartialRangeClear)
 		   "program's entry-block search key (Crash Twinsanity wedge)";
 }
 
+// x86's mVUclear contract is "any micro-mem write drops the carried
+// entry-search key", full stop — NOT "any write that happened to invalidate a
+// cached program". The difference matters when a mid-program cycle-budget
+// break has parked a live resume key in lpState and the game then abandons
+// that program: uploads fresh code to a region no cached program covers
+// (range scan invalidates nothing) and MSCALs it. The stale resume key must
+// not become the fresh program's entry-block search key — if the break landed
+// on a branch-delay mini-block, the key carries blockType!=0 and the entry
+// compile truncates to a ONE-INSTRUCTION program-ending block
+// (endCount = pState->blockType ? 1 : ..., microVU_Compile-arm64.inl) —
+// reproduced offline against the Crash Twinsanity wedge capture via
+// PCSX2_VU_POISON_LPSTATE_BLOCKTYPE=1 (vi12/vi15 signature exact).
+TEST(MvuLpStateInvariant, ClearWithoutInvalidationMustStillZeroLpState)
+{
+	VuTestHarness h(1);
+
+	// Same multi-block loop program as above (see comments there): the
+	// starved dispatch must break mid-program with a nonzero resume key.
+	h.SetVfBits(1, 0x3F800000u, 0x3F800000u, 0x3F800000u, 0x3F800000u);
+	h.SetVi(vi::vi5, 0);
+	h.LoadProgram({
+		LowerOnly(VIADDIU_L(vi::vi1, vi::vi0, 4)),           // pair 0: vi1 = 4
+		VuOp{VIADDIU_L(vi::vi5, vi::vi5, 1),
+			VADD_U(mask::xyzw, vf::vf1, vf::vf1, vf::vf0)},  // pair 1: L1: vi5 += 1
+		LowerOnly(VIADDI_L(vi::vi1, vi::vi1, -1)),           // pair 2: vi1 -= 1
+		LowerOnly(0),                                        // pair 3: NOP (hazard pad)
+		LowerOnly(0),                                        // pair 4: NOP (hazard pad)
+		LowerOnly(VIBNE_L(vi::vi1, vi::vi0, -5)),            // pair 5: if vi1 != 0 → L1
+		LowerOnly(VIADDIU_L(vi::vi4, vi::vi0, 0xAA)),        // pair 6: branch delay
+		EBit(LowerOnly(VIADDIU_L(vi::vi2, vi::vi0, 0x55))),  // pair 7: E-bit end
+	});
+	h.Run();
+	ASSERT_EQ(h.GetViJit(vi::vi2), 0x55u);
+
+	// Re-establish P through the production dispatcher (Run()'s interp pass
+	// reset the block cache).
+	SeedVu1Dispatch(0);
+	CpuMicroVU1.Execute(kBigBudget);
+	ASSERT_FALSE(Vu1Busy()) << "P must run to its E-bit end";
+	ASSERT_TRUE(mvu_test_hooks::QuickSlotOccupied(1, 0));
+
+	// Starved re-dispatch: budget break parks a nonzero resume key in lpState.
+	SeedVu1Dispatch(0);
+	CpuMicroVU1.Execute(1);
+	ASSERT_TRUE(Vu1Busy())
+		<< "precondition: the starved dispatch must break mid-program";
+	ASSERT_FALSE(mvu_test_hooks::LpStateIsZero(1))
+		<< "precondition: the budget break must save a nonzero resume key";
+
+	// Write to a region NO cached program covers. The range scan invalidates
+	// nothing — P's quick slot survives (that survival IS the perf win and
+	// must be preserved)...
+	WritePairToMicro(0x3800, LowerOnly(VIADDIU_L(vi::vi9, vi::vi0, 1)));
+	CpuMicroVU1.Clear(0x3800, 8);
+	ASSERT_TRUE(mvu_test_hooks::QuickSlotOccupied(1, 0))
+		<< "choreography: the disjoint write must not invalidate P";
+
+	// ...but the carried search key must be dropped regardless, matching the
+	// x86/ARMSX2 contract. On unfixed code the memset is gated on
+	// anyInvalidated and the resume key survives into the next fresh
+	// dispatch's search.
+	EXPECT_TRUE(mvu_test_hooks::LpStateIsZero(1))
+		<< "mVUclear must zero lpState on ANY micro-mem write, even one that "
+		   "invalidates no cached program (x86 contract) — a surviving "
+		   "mid-program resume key poisons the next fresh MSCAL's entry "
+		   "compile (blockType!=0 => one-instruction program)";
+}
+
 } // namespace recompiler_tests
