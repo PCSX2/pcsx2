@@ -27,10 +27,11 @@
 #include "R5900.h"
 #include "VU.h" // VU0 / REG_VPU_STAT for the COP2 (BC2) branch condition
 #include "Memory.h" // eeHw — the backing store the DMAC registers alias into
-#include "Hw.h"     // HW-register address enum (Dmac.h prerequisite)
+#include "Hw.h"     // D0_CHCR.. HW-register address enum (Dmac.h prerequisite)
 #include "Dmac.h"   // dmacRegs / DMACregisters for the COP0 (BC0) CPCOND0 condition
 
 #include "common/Assertions.h"
+
 
 namespace a64 = vixl::aarch64;
 
@@ -230,20 +231,15 @@ void armEmitBC2T(u32 target, u32 fallthrough)
 // BC0F/BC0T) and x86 iCOP0.cpp _setupBranchTest. No cycle commit / VU sync — a plain
 // HW-register-test branch like BC1/BC2. The likely forms BC0FL/BC0TL (rt 0x02/0x03)
 // are in armEmitBranchLikelyTest below.
-//
-// RSCRATCHADDR (x17) holds the base; RXVIXLSCRATCH (x16) accumulates the condition.
-// Every macro op below uses register operands or encodable immediates (Mvn/Orr regs,
-// And #0x3FF — 10-bit run of ones, Cmp #0x3FF — 12-bit arith imm), so VIXL never needs
-// x16 as a temp and it is safe to hold live across them.
 static void emitCpcond0Test()
 {
-	armMoveAddressToReg(RSCRATCHADDR, &dmacRegs);                                                    // x17 = &dmacRegs
-	armAsm->Ldr(RXVIXLSCRATCH.W(), a64::MemOperand(RSCRATCHADDR, offsetof(DMACregisters, pcr)));     // w16 = PCR (CPC)
-	armAsm->Ldr(RSCRATCHW, a64::MemOperand(RSCRATCHADDR, offsetof(DMACregisters, stat)));            // w17 = STAT (CIS); clobbers base last
-	armAsm->Mvn(RXVIXLSCRATCH.W(), RXVIXLSCRATCH.W());               // ~CPC
-	armAsm->Orr(RXVIXLSCRATCH.W(), RXVIXLSCRATCH.W(), RSCRATCHW);    // CIS | ~CPC
-	armAsm->And(RXVIXLSCRATCH.W(), RXVIXLSCRATCH.W(), 0x3FF);        // & 0x3FF (bits[9:0])
-	armAsm->Cmp(RXVIXLSCRATCH.W(), 0x3FF);                           // eq <=> CPCOND0 == 1
+	armMoveAddressToReg(RSCRATCHADDR, &dmacRegs);                                              // x17 = &dmacRegs
+	armAsm->Ldr(RXVIXLSCRATCH.W(), a64::MemOperand(RSCRATCHADDR, offsetof(DMACregisters, pcr)));  // w16 = PCR (CPC)
+	armAsm->Ldr(RSCRATCHW, a64::MemOperand(RSCRATCHADDR, offsetof(DMACregisters, stat)));         // w17 = STAT (CIS); clobbers base last
+	armAsm->Mvn(RXVIXLSCRATCH.W(), RXVIXLSCRATCH.W());                // ~CPC
+	armAsm->Orr(RXVIXLSCRATCH.W(), RXVIXLSCRATCH.W(), RSCRATCHW);     // CIS | ~CPC
+	armAsm->And(RXVIXLSCRATCH.W(), RXVIXLSCRATCH.W(), 0x3FF);         // & 0x3FF (bits[9:0])
+	armAsm->Cmp(RXVIXLSCRATCH.W(), 0x3FF);                            // eq <=> CPCOND0 == 1
 }
 
 void armEmitBC0F(u32 target, u32 fallthrough)
@@ -327,3 +323,4 @@ vixl::aarch64::Condition armEmitBranchLikelyTest(u32 op, u32 target, u32 fallthr
 	emitSelectPc(target, fallthrough, taken);
 	return taken;
 }
+

@@ -39,7 +39,6 @@
 #define EEINST_COP2_FINISH_VU0              0x4000
 #define EEINST_COP2_FLUSH_VU0_REGISTERS     0x8000
 
-
 struct EEINST
 {
 	u16 info; // extra info, if 1 inst is COP1, 2 inst is COP2. Also uses EEINST_XMM
@@ -136,4 +135,3 @@ namespace R5900
 // M1.3 — env-gated (EE_COP2_DUMP=1) annotated dump of a block's computed COP2 flags.
 // Pure diagnostic; no-op unless the env var is set. (No behavior change.)
 void eeDumpCOP2AnnotatedBlock(u32 start, u32 end, EEINST* inst_cache);
-

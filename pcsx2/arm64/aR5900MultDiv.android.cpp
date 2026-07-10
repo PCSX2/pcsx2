@@ -32,6 +32,8 @@
 
 #include <cstddef>
 
+
+
 namespace a64 = vixl::aarch64;
 
 // Two scratch registers. RSCRATCH (x17) is the safe manual scratch; RSCRATCH2
@@ -186,11 +188,11 @@ static void emitMadd(bool sign, u32 rd, u32 rs, u32 rt, u32 lo_off, u32 hi_off)
 	armAsm->Ldr(RSCRATCH2W, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
 	armAsm->Ldr(RSCRATCHW, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
 
-	// The live 64-bit accumulator is kept in RSCRATCH (x17), which armStartBlock removes
-	// from VIXL's scratch-register list, so it is safe to hold across the macro ops below —
-	// even if one of them allocated a VIXL temp it could not pick x17. RSCRATCH2 (x16 ==
-	// RXVIXLSCRATCH) is VIXL's macro scratch, so it is only ever loaded and immediately
-	// consumed as a plain operand here, never held across a macro.
+	// The live 64-bit accumulator is kept in RSCRATCH (x17), which AsmHelpers removes
+	// from VIXL's scratch-register list (AsmHelpers.cpp), so it is safe to hold across
+	// the macro ops below — even if one of them allocated a VIXL temp it could not pick
+	// x17. RSCRATCH2 (x16 == RXVIXLSCRATCH) is VIXL's macro scratch, so it is only ever
+	// loaded and immediately consumed as a plain operand here, never held across a macro.
 	if (sign)
 		armAsm->Smull(RSCRATCH, RSCRATCH2W, RSCRATCHW);   // x17 = (s64)rs * (s32)rt
 	else
@@ -251,3 +253,5 @@ void armEmitMTLO1(u32 rs)
 	armAsm->Ldr(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs)));
 	armAsm->Str(RSCRATCH, a64::MemOperand(RESTATEPTR, EE_LO1_OFFSET));
 }
+
+

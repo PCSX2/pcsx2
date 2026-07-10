@@ -38,6 +38,8 @@
 
 #include "R5900.h"
 
+
+
 namespace a64 = vixl::aarch64;
 
 // Scratch q-registers (caller-saved NEON, not held across any external call):
@@ -304,7 +306,7 @@ void armEmitPINTH(u32 rd, u32 rs, u32 rt)
 	loadQ(VT, rt);
 	loadQ(VS, rs);
 	// Build result lane-by-lane using Ins.
-	armAsm->Ins(VD.V8H(), 0, VT.V8H(), 0); // VD[0] = Rt[0]
+	armAsm->Ins(VD.V8H(), 0, VT.V8H(), 0);  // VD[0] = Rt[0] (INS element; Mov-with-index needs a scalar dest)
 	armAsm->Ins(VD.V8H(), 1, VS.V8H(), 4); // VD[1] = Rs[4]
 	armAsm->Ins(VD.V8H(), 2, VT.V8H(), 1); // VD[2] = Rt[1]
 	armAsm->Ins(VD.V8H(), 3, VS.V8H(), 5); // VD[3] = Rs[5]
@@ -323,7 +325,7 @@ void armEmitPINTEH(u32 rd, u32 rs, u32 rt)
 		return;
 	loadQ(VT, rt);
 	loadQ(VS, rs);
-	armAsm->Ins(VD.V8H(), 0, VT.V8H(), 0); // VD[0] = Rt[0]
+	armAsm->Ins(VD.V8H(), 0, VT.V8H(), 0);  // VD[0] = Rt[0] (INS element; Mov-with-index needs a scalar dest)
 	armAsm->Ins(VD.V8H(), 1, VS.V8H(), 0); // VD[1] = Rs[0]
 	armAsm->Ins(VD.V8H(), 2, VT.V8H(), 2); // VD[2] = Rt[2]
 	armAsm->Ins(VD.V8H(), 3, VS.V8H(), 2); // VD[3] = Rs[2]
@@ -341,7 +343,7 @@ void armEmitPEXEH(u32 rd, u32 rt)
 	if (rd == 0)
 		return;
 	loadQ(VT, rt);
-	armAsm->Ins(VD.V8H(), 0, VT.V8H(), 2); // VD[0] = Rt[2]
+	armAsm->Ins(VD.V8H(), 0, VT.V8H(), 2);  // VD[0] = Rt[2] (INS element; Mov-with-index needs a scalar dest)
 	armAsm->Ins(VD.V8H(), 1, VT.V8H(), 1); // VD[1] = Rt[1]
 	armAsm->Ins(VD.V8H(), 2, VT.V8H(), 0); // VD[2] = Rt[0]
 	armAsm->Ins(VD.V8H(), 3, VT.V8H(), 3); // VD[3] = Rt[3]
@@ -359,7 +361,7 @@ void armEmitPEXEW(u32 rd, u32 rt)
 	if (rd == 0)
 		return;
 	loadQ(VT, rt);
-	armAsm->Ins(VD.V4S(), 0, VT.V4S(), 2); // VD[0] = Rt[2]
+	armAsm->Ins(VD.V4S(), 0, VT.V4S(), 2);  // VD[0] = Rt[2] (INS element; Mov-with-index needs a scalar dest)
 	armAsm->Ins(VD.V4S(), 1, VT.V4S(), 1); // VD[1] = Rt[1]
 	armAsm->Ins(VD.V4S(), 2, VT.V4S(), 0); // VD[2] = Rt[0]
 	armAsm->Ins(VD.V4S(), 3, VT.V4S(), 3); // VD[3] = Rt[3]
@@ -388,7 +390,7 @@ void armEmitPROT3W(u32 rd, u32 rt)
 	if (rd == 0)
 		return;
 	loadQ(VT, rt);
-	armAsm->Ins(VD.V4S(), 0, VT.V4S(), 1); // VD[0] = Rt[1]
+	armAsm->Ins(VD.V4S(), 0, VT.V4S(), 1);  // VD[0] = Rt[1] (INS element; Mov-with-index needs a scalar dest)
 	armAsm->Ins(VD.V4S(), 1, VT.V4S(), 2); // VD[1] = Rt[2]
 	armAsm->Ins(VD.V4S(), 2, VT.V4S(), 0); // VD[2] = Rt[0]
 	armAsm->Ins(VD.V4S(), 3, VT.V4S(), 3); // VD[3] = Rt[3]  (unchanged)
@@ -403,7 +405,7 @@ void armEmitPEXCH(u32 rd, u32 rt)
 	if (rd == 0)
 		return;
 	loadQ(VT, rt);
-	armAsm->Ins(VD.V8H(), 0, VT.V8H(), 0); // VD[0] = Rt[0]
+	armAsm->Ins(VD.V8H(), 0, VT.V8H(), 0);  // VD[0] = Rt[0] (INS element; Mov-with-index needs a scalar dest)
 	armAsm->Ins(VD.V8H(), 1, VT.V8H(), 2); // VD[1] = Rt[2]
 	armAsm->Ins(VD.V8H(), 2, VT.V8H(), 1); // VD[2] = Rt[1]
 	armAsm->Ins(VD.V8H(), 3, VT.V8H(), 3); // VD[3] = Rt[3]
@@ -421,7 +423,7 @@ void armEmitPEXCW(u32 rd, u32 rt)
 	if (rd == 0)
 		return;
 	loadQ(VT, rt);
-	armAsm->Ins(VD.V4S(), 0, VT.V4S(), 0); // VD[0] = Rt[0]
+	armAsm->Ins(VD.V4S(), 0, VT.V4S(), 0);  // VD[0] = Rt[0] (INS element; Mov-with-index needs a scalar dest)
 	armAsm->Ins(VD.V4S(), 1, VT.V4S(), 2); // VD[1] = Rt[2]
 	armAsm->Ins(VD.V4S(), 2, VT.V4S(), 1); // VD[2] = Rt[1]
 	armAsm->Ins(VD.V4S(), 3, VT.V4S(), 3); // VD[3] = Rt[3]
@@ -1331,3 +1333,5 @@ void armEmitPMTHL(u32 rs, u32 sa)
 	armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rs) + 12));
 	armAsm->Str(a64::w9, a64::MemOperand(RESTATEPTR, EE_HI1_OFFSET));
 }
+
+
