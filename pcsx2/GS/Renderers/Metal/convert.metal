@@ -564,3 +564,23 @@ fragment float4 ps_shadeboost(float4 p [[position]], DirectReadTextureIn<float> 
 
 	return float4(csb, 1);
 }
+
+struct ROVCopyBothOut
+{
+	float4 color [[color(0)]];
+	float  depth [[color(1)]];
+};
+
+fragment float4 ps_rov_copy_color(float4 p [[position]], texture2d<float> tex [[texture(GSMTLTextureIndexNonHW)]])
+{
+	return tex.read(uint2(p.xy));
+}
+fragment float ps_rov_copy_depth(float4 p [[position]], depth2d<float> tex [[texture(GSMTLTextureIndexNonHW)]])
+{
+	return tex.read(uint2(p.xy));
+}
+fragment ROVCopyBothOut ps_rov_copy_both(float4 p [[position]], texture2d<float> ctex [[texture(0)]], depth2d<float> dtex [[texture(1)]])
+{
+	uint2 pos = uint2(p.xy);
+	return { ctex.read(pos), dtex.read(pos) };
+}
