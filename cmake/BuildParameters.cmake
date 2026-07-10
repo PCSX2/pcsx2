@@ -157,8 +157,10 @@ if(MSVC AND NOT USE_CLANG_CL)
 		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>"
 		"$<$<COMPILE_LANGUAGE:CXX>:/permissive->"
 		"$<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>"
-		"/Zo"
-		"/utf-8"
+		# C/C++ codegen flags only: the armasm64 assembler (ASM_MARMASM, used for
+		# the arm64 FastJmp) rejects /Zo and doesn't want /utf-8.
+		"$<$<COMPILE_LANGUAGE:C,CXX>:/Zo>"
+		"$<$<COMPILE_LANGUAGE:C,CXX>:/utf-8>"
 	)
 endif()
 
@@ -204,9 +206,9 @@ if(LINUX)
 endif()
 
 if(MSVC)
-	# Enable PDB generation in release builds
+	# Enable PDB generation in release builds (C/C++ only; armasm64 doesn't take /Zi)
 	add_compile_options(
-		$<${CONFIG_REL_NO_DEB}:/Zi>
+		$<$<AND:${CONFIG_REL_NO_DEB},$<COMPILE_LANGUAGE:C,CXX>>:/Zi>
 	)
 	add_link_options(
 		$<${CONFIG_REL_NO_DEB}:/DEBUG>
