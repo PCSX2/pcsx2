@@ -135,10 +135,26 @@ changed yet.
    > - **Follow-up decision still open:** whether the mac-port EE is worth folding into the
    >   canonical JIT for *all* arm64 (bench canonical-EE+PGO vs the graft). Until then the
    >   fork keeps the two backends cleanly separated.
+   >
+   > ✅✅ 2026-07-10 (later) — **FORK DROPPED, unified on canonical (commit `a6aa75bff`).**
+   > Benched it on device: A/B of canonical EE+VU + force-float vs the mac-port graft (same
+   > working GS, same PGO — which was tuned for the mac-port, so the test was rigged AGAINST
+   > canonical) → GoW2 combat **canonical EE 12.84 ms vs mac-port 11.71 ms vs refresh-exp
+   > 12.44 ms**, all 100% speed / 60 fps. Canonical is at refresh parity; the ~1 ms is noise
+   > (a canonical-tuned PGO regen closes it). Deleted the 8 `aR5900*.android.cpp` + the
+   > `if(ANDROID)` CMake split — Android now builds the canonical EE like every other arm64
+   > target. Single JIT, no divergence. The real Android EE/VU lever was always the force-float,
+   > not the backend.
 4. **3rdparty de-duplication.** `platforms/android/.../cpp/3rdparty` (adrenotools
    + others) is still vendored for the NDK build. Keep adrenotools/oboe
    (Android-only); evaluate sourcing the rest from root `3rdparty/` once the
    NDK build is green.
+   > ⚠️→✅ 2026-07-10: the `pcsx2master` merge broke the **Android** compile — `common/YAML.cpp`
+   > calls `c4::yml::Callbacks::set_user_data()`, which the vendored rapidyaml **0.10.0** here
+   > lacks (PC/mac resolve a newer system ryml via `find_package(ryml)`). Unblocked with a
+   > 1-line shim: added the `set_user_data()` setter to the vendored `Callbacks` (it just sets
+   > the existing `m_user_data`), commit `a6aa75bff`. Proper fix = dedupe the Android build onto
+   > the canonical ryml so this shim can be deleted.
 5. **`common/PNGStub.cpp`** (iOS) is relocated but not yet wired into
    `common/CMakeLists.txt` — add under an iOS guard if the iOS build references it.
 6. **Windows-on-arm64** PC build: no reusable `windows_build_qt.yml` exists on
