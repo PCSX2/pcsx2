@@ -21,12 +21,13 @@ class GSTextureMTL : public GSTexture
 {
 	GSDeviceMTL* m_dev;
 	MRCOwned<id<MTLTexture>> m_texture;
+	MRCOwned<id<MTLTexture>> m_rov_texture;
 	bool m_has_mipmaps = false;
 
 public:
 	u64 m_last_read = 0;  ///< Last time this texture was read by a draw
 	u64 m_last_write = 0; ///< Last time this texture was written by a draw
-	GSTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLTexture>> texture, Type type, Format format);
+	GSTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLTexture>> texture, MRCOwned<id<MTLTexture>> rov_texture, Usage usage, Format format);
 	~GSTextureMTL();
 
 	/// For making fake backbuffers
@@ -42,6 +43,7 @@ public:
 	void Unmap() override;
 	void GenerateMipmap() override;
 	id<MTLTexture> GetTexture() { return m_texture; }
+	id<MTLTexture> GetROVTexture() { return m_rov_texture; }
 
 #ifdef PCSX2_DEVBUILD
 	void SetDebugName(std::string_view name) override;

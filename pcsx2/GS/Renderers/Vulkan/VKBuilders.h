@@ -240,11 +240,6 @@ namespace Vulkan
 		void PushUpdate(VkCommandBuffer cmdbuf, VkPipelineBindPoint bind_point, VkPipelineLayout layout, u32 set,
 			bool clear = true);
 
-		// Patches the dstSet of every pending write to the given set. Used by the non-push-descriptor
-		// binding path (Mali workaround) where writes are accumulated with a VK_NULL_HANDLE set and the
-		// real per-frame allocated set is only known just before Update().
-		void SetDestinationSet(VkDescriptorSet set);
-
 		void AddImageDescriptorWrite(VkDescriptorSet set, u32 binding, VkImageView view,
 			VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, bool storage_image = false);
 		void AddSamplerDescriptorWrite(VkDescriptorSet set, u32 binding, VkSampler sampler);

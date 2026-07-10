@@ -100,61 +100,6 @@ static void FillPipelineCacheHeader(VK_PIPELINE_CACHE_HEADER* header)
 	std::memcpy(header->uuid, GSDeviceVK::GetInstance()->GetDeviceProperties().pipelineCacheUUID, VK_UUID_SIZE);
 }
 
-#if defined(__ANDROID__)
-
-// Android: shaderc is statically linked, call functions directly.
-namespace dyn_shaderc
-{
-	static bool Open();
-	static void Close();
-
-	static shaderc_compiler_t s_compiler = nullptr;
-
-	// Direct function pointers to the statically-linked shaderc.
-	static constexpr auto shaderc_compiler_initialize = ::shaderc_compiler_initialize;
-	static constexpr auto shaderc_compiler_release = ::shaderc_compiler_release;
-	static constexpr auto shaderc_compile_options_initialize = ::shaderc_compile_options_initialize;
-	static constexpr auto shaderc_compile_options_release = ::shaderc_compile_options_release;
-	static constexpr auto shaderc_compile_options_set_source_language = ::shaderc_compile_options_set_source_language;
-	static constexpr auto shaderc_compile_options_set_generate_debug_info = ::shaderc_compile_options_set_generate_debug_info;
-	static constexpr auto shaderc_compile_options_set_optimization_level = ::shaderc_compile_options_set_optimization_level;
-	static constexpr auto shaderc_compile_options_set_target_env = ::shaderc_compile_options_set_target_env;
-	static constexpr auto shaderc_compile_into_spv = ::shaderc_compile_into_spv;
-	static constexpr auto shaderc_result_release = ::shaderc_result_release;
-	static constexpr auto shaderc_result_get_length = ::shaderc_result_get_length;
-	static constexpr auto shaderc_result_get_num_warnings = ::shaderc_result_get_num_warnings;
-	static constexpr auto shaderc_result_get_bytes = ::shaderc_result_get_bytes;
-	static constexpr auto shaderc_result_get_error_message = ::shaderc_result_get_error_message;
-	static constexpr auto shaderc_result_get_compilation_status = ::shaderc_result_get_compilation_status;
-} // namespace dyn_shaderc
-
-bool dyn_shaderc::Open()
-{
-	if (s_compiler)
-		return true;
-
-	s_compiler = shaderc_compiler_initialize();
-	if (!s_compiler)
-	{
-		ERROR_LOG("shaderc_compiler_initialize() failed");
-		return false;
-	}
-
-	std::atexit(&dyn_shaderc::Close);
-	return true;
-}
-
-void dyn_shaderc::Close()
-{
-	if (s_compiler)
-	{
-		shaderc_compiler_release(s_compiler);
-		s_compiler = nullptr;
-	}
-}
-
-#else // !__ANDROID__
-
 #define SHADERC_FUNCTIONS(X) \
 	X(shaderc_compiler_initialize) \
 	X(shaderc_compiler_release) \
@@ -196,13 +141,15 @@ bool dyn_shaderc::Open()
 
 #ifdef _WIN32
 	const std::string libname = DynamicLibrary::GetVersionedFilename("shaderc_shared");
+#elif defined(__ANDROID__)
+	// Android jniLibs are unversioned: the APK ships libshaderc_shared.so (no ".so.1"),
+	// extracted to the app's nativeLibraryDir. Requesting the versioned name fails dlopen.
+	const std::string libname = DynamicLibrary::GetVersionedFilename("shaderc_shared");
 #else
 	// Use versioned, bundle post-processing adds it..
 	const std::string libname = DynamicLibrary::GetVersionedFilename("shaderc_shared", 1);
-	// Debian packages the library as libshaderc.so.1
-	const std::string libname_fallback = DynamicLibrary::GetVersionedFilename("shaderc", 1);
 #endif
-	if (!s_library.Open(libname.c_str(), &error) && !s_library.Open(libname_fallback.c_str(), &error))
+	if (!s_library.Open(libname.c_str(), &error))
 	{
 		ERROR_LOG("Failed to load shaderc: {}", error.GetDescription());
 		return false;
@@ -248,8 +195,6 @@ void dyn_shaderc::Close()
 
 #undef SHADERC_FUNCTIONS
 #undef SHADERC_INIT_FUNCTIONS
-
-#endif // !__ANDROID__
 
 static void DumpBadShader(std::string_view code, std::string_view errors)
 {
@@ -616,17 +561,9 @@ bool VKShaderCache::FlushPipelineCache()
 	if (!FileSystem::StatFile(m_pipeline_cache_filename.c_str(), &sd) || sd.Size != static_cast<s64>(data_size))
 	{
 		Console.WriteLn("Writing %zu bytes to '%s'", data_size, m_pipeline_cache_filename.c_str());
-		// @@ARMSX2_VKCACHE_ATOMIC@@ Stage to a temp file then rename over the real one. A swipe-kill
-		// or crash mid-write otherwise leaves a half-written pipeline cache that some drivers (Adreno)
-		// still accept past the header check and then render garbage from — the "corrupt VK cache"
-		// bug that manifested as dark/purple textures until the cache was manually cleared. rename()
-		// is atomic on POSIX, so the previous valid cache survives a failed/interrupted write.
-		const std::string tmp_filename = m_pipeline_cache_filename + ".tmp";
-		if (!FileSystem::WriteBinaryFile(tmp_filename.c_str(), data.data(), data.size()) ||
-			!FileSystem::RenamePath(tmp_filename.c_str(), m_pipeline_cache_filename.c_str()))
+		if (!FileSystem::WriteBinaryFile(m_pipeline_cache_filename.c_str(), data.data(), data.size()))
 		{
 			Console.Error("Failed to write pipeline cache to '%s'", m_pipeline_cache_filename.c_str());
-			FileSystem::DeleteFilePath(tmp_filename.c_str());
 			return false;
 		}
 	}

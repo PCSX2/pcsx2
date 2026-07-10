@@ -430,16 +430,7 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 				// The width is mismatched to the page.
 				if (!is_invalidation && GSConfig.UserHacks_TextureInsideRt < GSTextureInRtMode::MergeTargets)
 				{
-					// Some titles (e.g. Jackie Chan Adventures) hit this every frame; the bail
-					// itself is the intended behavior, but the unconditional DevCon.Warning then
-					// re-formats + logs ~60x/sec. Fire it once per process to keep the diagnostic
-					// without the per-frame logging cost. GS behavior unchanged.
-					static bool warned_uneven_pages = false;
-					if (!warned_uneven_pages)
-					{
-						warned_uneven_pages = true;
-						DevCon.Warning("Uneven pages mess up sbp %x dbp %x spgw %d dpgw %d src fmt %d dst fmt %d src_rect %d, %d, %d, %d draw %lld", sbp, tbp, src_pgw, dst_pgw, spsm, tpsm, in_rect.x, in_rect.y, in_rect.z, in_rect.w, GSState::s_n);
-					}
+					DevCon.Warning("Uneven pages mess up sbp %x dbp %x spgw %d dpgw %d src fmt %d dst fmt %d src_rect %d, %d, %d, %d draw %lld", sbp, tbp, src_pgw, dst_pgw, spsm, tpsm, in_rect.x, in_rect.y, in_rect.z, in_rect.w, GSState::s_n);
 					return GSVector4i::zero();
 				}
 
@@ -7352,32 +7343,10 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 
 	const GSVector4 src(GSVector4(r) * GSVector4(t->m_scale) / GSVector4(t->m_texture->GetSize()).xyxy());
 	const GSVector4i drc(0, 0, r.width(), r.height());
-
-	// yaps2 d84a571a: a 16-bit color readback at native scale doesn't need the GPU
-	// format-convert pass — copy the RGBA8 target directly and pack to RGB5A1 on the CPU
-	// below. The StretchRect pass otherwise sits inside the synchronous readback window
-	// (submit -> fence wait), where a whole extra render pass costs far more than packing a
-	// small rect on the CPU (readback-every-frame games pay it 3+ times/frame — OutRun 2006
-	// SD865: 16.2->15.4ms). Upscaled targets keep the GPU path (which also downsamples).
-	const bool cpu_convert_rgb5a1 = ps_shader == ShaderConvert::RGB5A1_TO_16_BITS &&
-		t->m_type == RenderTarget && t->m_scale == 1.0f &&
-		t->m_texture->GetFormat() == GSTexture::Format::Color;
-	if (cpu_convert_rgb5a1)
-	{
-		fmt = GSTexture::Format::Color;
-		dltex = &m_color_download_texture;
-	}
-
-	const bool direct_read =
-		(t->m_type == RenderTarget && t->m_scale == 1.0f && ps_shader == ShaderConvert::COPY) || cpu_convert_rgb5a1;
+	const bool direct_read = t->m_type == RenderTarget && t->m_scale == 1.0f && ps_shader == ShaderConvert::COPY;
 
 	if (!PrepareDownloadTexture(drc.z, drc.w, fmt, dltex))
 		return;
-
-	// yaps2 2a5c0b1b: per-frame readback patterns (occlusion tests etc.) redraw the same
-	// target before each read; let the backend schedule submissions around the next
-	// producing draw (see GSDeviceVK::HintReadbackSource / the mid-frame kick).
-	g_gs_device->HintReadbackSource(t->m_texture);
 
 	if (direct_read)
 	{
@@ -7420,32 +7389,7 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 		case PSMCT16S:
 		case PSMZ16:
 		case PSMZ16S:
-			if (cpu_convert_rgb5a1)
-			{
-				// yaps2 d84a571a: bit-identical to ps_convert_rgb5a1_16bits — the shader
-				// truncates each unorm channel back to its byte and packs
-				// (r&0xF8)>>3 | (g&0xF8)<<2 | (b&0xF8)<<7 | (a&0x80)<<8; here c already
-				// holds those bytes (direct RGBA8 copy of the native-scale target).
-				const u32 w = static_cast<u32>(drc.z);
-				const u32 h = static_cast<u32>(drc.w);
-				std::vector<u16> packed(w * h);
-				for (u32 y = 0; y < h; y++)
-				{
-					const u32* src_px = reinterpret_cast<const u32*>(bits + y * pitch);
-					u16* dst_px = &packed[y * w];
-					for (u32 x = 0; x < w; x++)
-					{
-						const u32 c = src_px[x];
-						dst_px[x] = static_cast<u16>(
-							((c >> 3) & 0x001Fu) | ((c >> 6) & 0x03E0u) | ((c >> 9) & 0x7C00u) | ((c >> 16) & 0x8000u));
-					}
-				}
-				g_gs_renderer->m_mem.WritePixel16(reinterpret_cast<u8*>(packed.data()), w * sizeof(u16), off, r);
-			}
-			else
-			{
-				g_gs_renderer->m_mem.WritePixel16(bits, pitch, off, r);
-			}
+			g_gs_renderer->m_mem.WritePixel16(bits, pitch, off, r);
 			break;
 
 		default:

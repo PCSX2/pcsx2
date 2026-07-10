@@ -2402,7 +2402,7 @@ void GSState::FlushWrite()
 
 			if (m_draw_transfers.size() > 0 && m_tr.m_blit.DBP == m_draw_transfers.back().blit.DBP)
 			{
-				m_draw_transfers.back().rect = r;
+				m_draw_transfers.back().rect = m_draw_transfers.back().rect.runion(r);
 			}
 		}
 	}
@@ -5740,20 +5740,12 @@ __forceinline void GSState::HandleAutoFlush()
 	}
 }
 
-// yaps2 ce186a0a: called once per vertex kick, so the common case (no recent buffer
-// switch, or draw buffering off) must stay inline — an out-of-line call here costs
-// caller-saved spills in every GIF vertex handler loop on top of the call itself.
-__fi bool GSState::CheckOverlapVerts(u32 n)
+bool GSState::CheckOverlapVerts(u32 n)
 {
-	if (!m_recent_buffer_switch || !GSConfig.UserHacks_DrawBuffering)
+	if (!GSConfig.UserHacks_DrawBuffering)
 		return false;
 
-	return CheckOverlapVertsSlow(n);
-}
-
-__noinline bool GSState::CheckOverlapVertsSlow(u32 n)
-{
-	if (((m_vertex->tail + 1) - m_vertex->head) == n)
+	if (m_recent_buffer_switch && ((m_vertex->tail + 1) - m_vertex->head) == n)
 	{
 		m_recent_buffer_switch = false;
 
@@ -5892,11 +5884,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 	u32 next = m_vertex->next;
 	u32 xy_tail = m_vertex->xy_tail;
 
-	// yaps2 ce186a0a: config test first — this runs per vertex kick, and with the hack
-	// disabled (the default) the reorder short-circuits the GSIsHardwareRenderer() call
-	// and the psm-table walk on every kick.
-	if (GSConfig.UserHacks_Limit24BitDepth != GSLimit24BitDepth::Disabled &&
-		GSIsHardwareRenderer() && GSLocalMemory::m_psm[m_context->ZBUF.PSM].bpp == 32)
+	if (GSIsHardwareRenderer() && GSLocalMemory::m_psm[m_context->ZBUF.PSM].bpp == 32)
 	{
 		if (GSConfig.UserHacks_Limit24BitDepth == GSLimit24BitDepth::PrioritizeUpper)
 			m_v.XYZ.Z = ((m_v.XYZ.Z >> 8) & ~0xFF) | (m_v.XYZ.Z & 0xFF);
@@ -6914,7 +6902,16 @@ bool GSState::GSTransferBuffer::Update(int tw, int th, int bpp, int& len)
 	const int remaining = total - end;
 
 	if (len > remaining)
+	{
+		if (len > packet_size)
+		{
+#if defined(_DEBUG)
+			Console.Warning("GS transfer buffer overflow len %d remaining %d, tex_size %d tw %d th %d bpp %d", len, remaining, tex_size, tw, th, bpp);
+#endif
+		}
+
 		len = remaining;
+	}
 
 	return len > 0;
 }

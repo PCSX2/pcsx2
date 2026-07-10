@@ -94,9 +94,6 @@ bool GLContextEGL::Initialize(std::span<const Version> versions_to_try, Error* e
 	if (!LoadGLADEGL(EGL_NO_DISPLAY, error))
 		return false;
 
-	if (!SetDisplay())
-		return false;
-
 	m_display = GetPlatformDisplay(error);
 	if (m_display == EGL_NO_DISPLAY)
 		return false;
@@ -131,18 +128,6 @@ bool GLContextEGL::Initialize(std::span<const Version> versions_to_try, Error* e
 EGLNativeWindowType GLContextEGL::GetNativeWindow(EGLConfig config)
 {
 	return {};
-}
-
-bool GLContextEGL::SetDisplay()
-{
-	m_display = eglGetDisplay(static_cast<EGLNativeDisplayType>(m_wi.display_connection));
-	if (!m_display)
-	{
-		Console.Error("eglGetDisplay() failed: %d", eglGetError());
-		return false;
-	}
-
-	return true;
 }
 
 EGLDisplay GLContextEGL::GetPlatformDisplay(Error* error)
@@ -366,25 +351,12 @@ bool GLContextEGL::CreateSurface()
 			return CreatePBufferSurface();
 	}
 
-	EGLNativeWindowType native_window = GetNativeWindow(m_config);
-	if (native_window)
+	Error error;
+	m_surface = CreatePlatformSurface(m_config, m_wi.window_handle, &error);
+	if (m_surface == EGL_NO_SURFACE)
 	{
-		m_surface = eglCreateWindowSurface(m_display, m_config, native_window, nullptr);
-		if (m_surface == EGL_NO_SURFACE)
-		{
-			Console.ErrorFmt("eglCreateWindowSurface() failed: 0x{:x}", eglGetError());
-			return false;
-		}
-	}
-	else
-	{
-		Error error;
-		m_surface = CreatePlatformSurface(m_config, m_wi.window_handle, &error);
-		if (m_surface == EGL_NO_SURFACE)
-		{
-			Console.ErrorFmt("Failed to create platform surface: {}", error.GetDescription());
-			return false;
-		}
+		Console.ErrorFmt("Failed to create platform surface: {}", error.GetDescription());
+		return false;
 	}
 
 	// Some implementations may require the size to be queried at runtime.
@@ -468,26 +440,14 @@ void GLContextEGL::DestroySurface()
 
 bool GLContextEGL::CreateContext(const Version& version, EGLContext share_context)
 {
-	Console.WriteLn("Trying version %u.%u (%s)", version.major_version, version.minor_version,
-		version.profile == Profile::ES ? "ES" : (version.profile == Profile::Core ? "Core" : "None"));
-
-	int surface_attribs[16];
-	int nsurface_attribs = 0;
-	surface_attribs[nsurface_attribs++] = EGL_RENDERABLE_TYPE;
-	surface_attribs[nsurface_attribs++] = (version.profile == Profile::ES) ?
-		((version.major_version >= 3) ? EGL_OPENGL_ES3_BIT :
-		 ((version.major_version == 2) ? EGL_OPENGL_ES2_BIT : EGL_OPENGL_ES_BIT)) :
-		EGL_OPENGL_BIT;
-	surface_attribs[nsurface_attribs++] = EGL_SURFACE_TYPE;
-	surface_attribs[nsurface_attribs++] = (m_wi.type != WindowInfo::Type::Surfaceless) ? EGL_WINDOW_BIT : 0;
-	surface_attribs[nsurface_attribs++] = EGL_RED_SIZE;
-	surface_attribs[nsurface_attribs++] = 8;
-	surface_attribs[nsurface_attribs++] = EGL_GREEN_SIZE;
-	surface_attribs[nsurface_attribs++] = 8;
-	surface_attribs[nsurface_attribs++] = EGL_BLUE_SIZE;
-	surface_attribs[nsurface_attribs++] = 8;
-	surface_attribs[nsurface_attribs++] = EGL_NONE;
-	surface_attribs[nsurface_attribs++] = 0;
+	DevCon.WriteLnFmt("Trying GL version {}.{}", version.major_version, version.minor_version);
+	const int surface_attribs[] = {
+		EGL_RENDERABLE_TYPE,
+		EGL_OPENGL_BIT,
+		EGL_SURFACE_TYPE,
+		(m_wi.type != WindowInfo::Type::Surfaceless) ? EGL_WINDOW_BIT : 0,
+		EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8,
+		EGL_BLUE_SIZE, 8, EGL_NONE, 0};
 
 	EGLint num_configs;
 	if (!eglChooseConfig(m_display, surface_attribs, nullptr, 0, &num_configs) || num_configs == 0)
@@ -520,21 +480,17 @@ bool GLContextEGL::CreateContext(const Version& version, EGLContext share_contex
 		config = configs.front();
 	}
 
-	int attribs[8];
-	int nattribs = 0;
-	if (version.profile != Profile::NoProfile)
-	{
-		attribs[nattribs++] = EGL_CONTEXT_MAJOR_VERSION;
-		attribs[nattribs++] = version.major_version;
-		attribs[nattribs++] = EGL_CONTEXT_MINOR_VERSION;
-		attribs[nattribs++] = version.minor_version;
-	}
-	attribs[nattribs++] = EGL_NONE;
-	attribs[nattribs++] = 0;
+	const int attribs[] = {
+		EGL_CONTEXT_MAJOR_VERSION,
+		version.major_version,
+		EGL_CONTEXT_MINOR_VERSION,
+		version.minor_version,
+		EGL_NONE,
+		0};
 
-	if (!eglBindAPI((version.profile == Profile::ES) ? EGL_OPENGL_ES_API : EGL_OPENGL_API))
+	if (!eglBindAPI(EGL_OPENGL_API))
 	{
-		Console.Error("eglBindAPI(%s) failed", (version.profile == Profile::ES) ? "EGL_OPENGL_ES_API" : "EGL_OPENGL_API");
+		Console.ErrorFmt("eglBindAPI() failed: 0x{:x}", eglGetError());
 		return false;
 	}
 
@@ -545,7 +501,19 @@ bool GLContextEGL::CreateContext(const Version& version, EGLContext share_contex
 		return false;
 	}
 
-	Console.WriteLn("eglCreateContext() succeeded for version %u.%u", version.major_version, version.minor_version);
+	Console.WriteLnFmt("Got GL version {}.{}", version.major_version, version.minor_version);
+
+	EGLint min_swap_interval, max_swap_interval;
+	m_supports_negative_swap_interval = false;
+	if (eglGetConfigAttrib(m_display, config.value(), EGL_MIN_SWAP_INTERVAL, &min_swap_interval) &&
+		eglGetConfigAttrib(m_display, config.value(), EGL_MAX_SWAP_INTERVAL, &max_swap_interval))
+	{
+		DEV_LOG("EGL_MIN_SWAP_INTERVAL = {}", min_swap_interval);
+		DEV_LOG("EGL_MAX_SWAP_INTERVAL = {}", max_swap_interval);
+		m_supports_negative_swap_interval = (min_swap_interval <= -1);
+	}
+
+	INFO_LOG("Negative swap interval/tear-control is {}supported", m_supports_negative_swap_interval ? "" : "NOT ");
 
 	m_config = config.value();
 	m_version = version;

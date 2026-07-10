@@ -617,20 +617,7 @@ bool DDSLoader(const std::string& filename, GSTextureReplacements::ReplacementTe
 	// Read in any remaining mip levels in the file.
 	if (!only_base_image)
 	{
-		// info.mip_count is the DDS dwMipMapCount, which INCLUDES the base image
-		// (loaded above as level 0), so there are at most (mip_count - 1) EXTRA
-		// mip levels here. The old `level <= info.mip_count` bound loaded one
-		// level too many: many packs leave trailing padding after the last real
-		// mip (or over-declare dwMipMapCount), so that extra read succeeds and
-		// the texture is then created with mips.size()+1 levels — more than the
-		// dimensions allow — which trips GSDevice::CreateTexture's assert and
-		// aborts the GS thread (SIGABRT). The whole DDS pack crashes even though
-		// BC support and the textures themselves are fine. Cap the level count
-		// at what the size can actually hold (the same bound the assert uses).
-		const u32 max_levels = static_cast<u32>(
-			GSDevice::GetMipmapLevelsForSize(static_cast<int>(info.width), static_cast<int>(info.height)));
-		const u32 mip_levels = std::min(info.mip_count, max_levels);
-		for (u32 level = 1; level < mip_levels; level++)
+		for (u32 level = 1; level <= info.mip_count; level++)
 		{
 			GSTextureReplacements::ReplacementTexture::MipData md;
 			u32 mip_size;

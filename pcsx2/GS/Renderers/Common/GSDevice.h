@@ -900,7 +900,7 @@ struct alignas(16) GSHWDrawConfig
 
 		__fi bool HasDepthROV() const
 		{
-			return rov_depth == PS_ROV_DEPTH::READ_ONLY || rov_depth == PS_ROV_DEPTH::READ_WRITE;
+			return rov_depth != PS_ROV_DEPTH::NONE;
 		}
 
 		__fi bool HasDepthROVWrite() const
@@ -1402,6 +1402,7 @@ public:
 		bool depth_feedback       : 1; ///< Depth feedback loops can be done with DS directly (otherwise need to copy to separate RT).  Implies `feedback_loops`.
 		bool aa1                  : 1; ///< Supports the GS AA1 feature.
 		bool rov                  : 1; ///< Supports rasterizer ordered views for both depth and color.
+		bool metalfx_spatial      : 1; ///< Supports Apple MetalFX spatial upscaling (Metal backend, macOS 13+).
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));
@@ -1485,6 +1486,7 @@ protected:
 	GSTexture* m_target_tmp = nullptr;
 	GSTexture* m_current = nullptr;
 	GSTexture* m_cas = nullptr;
+	GSTexture* m_mfx_output = nullptr; ///< MetalFX spatial upscale destination (Metal backend).
 	GSTexture* m_colclip_rt = nullptr; ///< Temp hw colclip texture
 	GSTexture* m_ds_as_rt = nullptr; ///< Depth as color
 
@@ -1502,6 +1504,10 @@ protected:
 
 	/// Applies CAS and writes to the destination texture, which should be a shader writeable texture.
 	virtual bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) = 0;
+
+	/// Upscales sTex into dTex using a backend-specific spatial upscaler (MetalFX on Metal).
+	/// Base implementation is a no-op; only the Metal backend overrides it.
+	virtual bool DoMetalFXSpatial(GSTexture* sTex, GSTexture* dTex) { return false; }
 
 	/// Perform texture operations for ImGui
 	void UpdateImGuiTextures();
@@ -1558,7 +1564,6 @@ public:
 
 	__fi FeatureSupport Features() const { return m_features; }
 	__fi u32 GetMaxTextureSize() const { return m_max_texture_size; }
-
 	__fi void SetRuntimeGPUProfile(RuntimeGpuProfile p) { m_runtime_gpu_profile = p; }
 	__fi RuntimeGpuProfile GetRuntimeGPUProfile() const { return m_runtime_gpu_profile; }
 	__fi bool IsMaliGPUProfile() const { return (m_runtime_gpu_profile == RuntimeGpuProfile::Mali); }
@@ -1663,13 +1668,6 @@ public:
 
 	virtual std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) = 0;
 
-	/// Hints that a synchronous CPU readback of `tex` is being performed. Games that read
-	/// back every frame (e.g. small occlusion-test targets) will typically draw into the
-	/// same texture again shortly before the next readback; backends can use this to
-	/// schedule command submission so that readback has minimal GPU backlog to wait on.
-	/// (Ported from yaps2 27984e96/2a5c0b1b — the mid-frame readback kick.)
-	virtual void HintReadbackSource(GSTexture* tex);
-
 	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) = 0;
 
 	// StretchRect - all options
@@ -1720,6 +1718,10 @@ public:
 	void Resize(int width, int height);
 
 	void CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, const GSVector4& draw_rect, bool sharpen_only);
+
+	/// Spatially upscales the merged display texture (MetalFX) to the draw-rect size, rewriting
+	/// tex/src_rect/src_uv to point at the upscaled result, mirroring CAS().
+	void MetalFXUpscale(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, const GSVector4& draw_rect);
 
 	bool ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_contents, bool recycle);
 

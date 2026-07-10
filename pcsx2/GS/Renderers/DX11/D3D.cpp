@@ -20,7 +20,7 @@
 
 #include <array>
 #include <d3d11.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
 #include <d3dcompiler.h>
 #include <fstream>
 

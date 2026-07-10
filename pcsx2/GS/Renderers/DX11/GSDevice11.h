@@ -93,6 +93,7 @@ private:
 		VERTEX_BUFFER_SIZE = 32 * 1024 * 1024,
 		INDEX_BUFFER_SIZE = 16 * 1024 * 1024,
 		NUM_TIMESTAMP_QUERIES = 5,
+		NUM_PIPELINE_STATISTICS_QUERIES = 5,
 	};
 
 	void SetFeatures(IDXGIAdapter1* adapter);
@@ -106,6 +107,11 @@ private:
 	void DestroyTimestampQueries();
 	void PopTimestampQuery();
 	void KickTimestampQuery();
+
+	bool CreatePipelineStatisticsQueries();
+	void DestroyPipelineStatisticsQueries();
+	void PopPipelineStatisticsQuery();
+	void KickPipelineStatisticsQuery();
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter) override;
 	void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, Filter filter, const InterlaceConstantBuffer& cb) override;
@@ -173,10 +179,12 @@ private:
 		ID3D11BlendState* bs;
 		u8 bf;
 		ID3D11RenderTargetView* rtv;
+		ID3D11RenderTargetView* dsv_as_rtv;
 		ID3D11DepthStencilView* dsv;
 		ID3D11UnorderedAccessView* rt_uav;
 		ID3D11UnorderedAccessView* ds_uav;
 		GSTexture* current_rt;
+		GSTexture* current_ds_as_rt;
 		GSTexture* current_ds;
 		GSTexture* current_rt_uav;
 		GSTexture* current_ds_uav;
@@ -189,6 +197,14 @@ private:
 	u8 m_waiting_timestamp_queries = 0;
 	bool m_timestamp_query_started = false;
 	bool m_gpu_timing_enabled = false;
+
+	std::array<wil::com_ptr_nothrow<ID3D11Query>, NUM_PIPELINE_STATISTICS_QUERIES> m_pipeline_statistics_queries = {};
+	GPUPipelineStatistics m_accumulated_gpu_pipeline_statistics{};
+	u8 m_read_pipeline_statistics_query = 0;
+	u8 m_write_pipeline_statistics_query = 0;
+	u8 m_waiting_pipeline_statistics_queries = 0;
+	bool m_gpu_pipeline_statistics_enabled = false;
+	bool m_pipeline_statistics_query_started = false;
 
 	struct
 	{
@@ -323,8 +339,8 @@ public:
 	bool SetGPUTimingEnabled(bool enabled) override;
 	float GetAndResetAccumulatedGPUTime() override;
 
-	bool SetGPUPipelineStatisticsEnabled(bool enabled) override { return false; }
-	GPUPipelineStatistics GetAndResetAccumulatedGPUPipelineStatistics() override { return {}; }
+	bool SetGPUPipelineStatisticsEnabled(bool enabled) override;
+	GPUPipelineStatistics GetAndResetAccumulatedGPUPipelineStatistics() override;
 
 	// Helpers and utility draws.
 	void DrawPrimitive();
@@ -340,7 +356,7 @@ public:
 	void PopDebugGroup() override;
 	void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) override;
 
-	GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) override;
+	GSTexture* CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format) override;
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
 	void CommitClear(GSTexture* t);
@@ -386,7 +402,7 @@ public:
 
 	void OMSetDepthStencilState(ID3D11DepthStencilState* dss, u8 sref);
 	void OMSetBlendState(ID3D11BlendState* bs, u8 bf);
-	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, GSTexture* rt_uav = nullptr, GSTexture* ds_uav = nullptr,
+	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, GSTexture* rt_uav = nullptr, GSTexture* ds_uav = nullptr,
 		const GSVector4i* scissor = nullptr, ID3D11DepthStencilView* read_only_dsv = nullptr);
 	void SetViewport(const GSVector2i& viewport);
 	void SetScissor(const GSVector4i& scissor);
