@@ -24,6 +24,7 @@
 #include <cstdlib>
 #include <string>
 
+
 using namespace R5900;
 
 // Set per-op in recRecompile (aR5900.cpp); the macro-mode emit reads the COP2_*
@@ -136,7 +137,7 @@ void __fi R5900::AnalysisPass::DumpAnnotatedBlock(u32 start, u32 end, EEINST* in
 	{
 		const u32 code = memRead32(apc);
 		d.clear();
-		disR5900Fasm(d, code, apc, false);
+		::R5900::disR5900Fasm(d, code, apc, false);
 		func(apc, eeinst, d);
 		Console.WriteLn("  %08X %08X %s", apc, code, d.c_str());
 	}
@@ -442,7 +443,7 @@ void eeDumpCOP2AnnotatedBlock(u32 start, u32 end, EEINST* inst_cache)
 	{
 		const u32 code = memRead32(apc);
 		d.clear();
-		disR5900Fasm(d, code, apc, false);
+		::R5900::disR5900Fasm(d, code, apc, false);
 		if (eeinst->info & EEINST_COP2_DENORMALIZE_STATUS_FLAG)
 			d.append(" COP2_DENORMALIZE_STATUS_FLAG");
 		if (eeinst->info & EEINST_COP2_NORMALIZE_STATUS_FLAG)
@@ -462,3 +463,4 @@ void eeDumpCOP2AnnotatedBlock(u32 start, u32 end, EEINST* inst_cache)
 		Console.WriteLn("  %08X %08X %s", apc, code, d.c_str());
 	}
 }
+

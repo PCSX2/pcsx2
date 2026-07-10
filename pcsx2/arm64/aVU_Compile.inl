@@ -384,6 +384,9 @@ static void mvuPreloadRegisters(microVU& mVU, u32 endCount)
 
 void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 {
+#if defined(__ANDROID__)
+	const u64 diag_compile_start_us = AndroidPerfBuckets::NowUs();
+#endif
 	microFlagCycles mFC;
 	u8* thisPtr = armGetCurrentCodePointer();
 	const u32 endCount = (((microRegInfo*)pState)->blockType) ? 1 : (mVU.microMemSize / 8);
@@ -699,6 +702,23 @@ perf_and_return:
 		else
 			Perf::vu0.RegisterPC(thisPtr, static_cast<u32>(armGetCurrentCodePointer() - thisPtr), startPC);
 	}
+
+#if defined(__ANDROID__)
+	if (mVU.index)
+	{
+		AndroidPerfBuckets::Add(AndroidPerfBuckets::s_vu1_compile_count);
+		AndroidPerfBuckets::Add(AndroidPerfBuckets::s_vu1_compile_us,
+			AndroidPerfBuckets::NowUs() - diag_compile_start_us);
+		AndroidPerfBuckets::MaybeReport("vu1_compile");
+	}
+	else
+	{
+		AndroidPerfBuckets::Add(AndroidPerfBuckets::s_vu0_compile_count);
+		AndroidPerfBuckets::Add(AndroidPerfBuckets::s_vu0_compile_us,
+			AndroidPerfBuckets::NowUs() - diag_compile_start_us);
+		AndroidPerfBuckets::MaybeReport("vu0_compile");
+	}
+#endif
 
 	return thisPtr;
 }

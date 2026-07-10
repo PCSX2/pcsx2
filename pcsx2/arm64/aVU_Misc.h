@@ -30,6 +30,8 @@
 // Bit flags in the VU instruction word + branch-name table
 //------------------------------------------------------------------
 
+
+
 static const uint _Ibit_ = 1 << 31;
 static const uint _Ebit_ = 1 << 30;
 static const uint _Mbit_ = 1 << 29;
@@ -286,3 +288,5 @@ static constexpr bool mVUdebugNow = false;
 
 // Status Flag Speed Hack — only update the Status Flag on blocks that read it.
 #define CHECK_VU_FLAGHACK (EmuConfig.Speedhacks.vuFlagHack)
+
+

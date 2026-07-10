@@ -59,9 +59,9 @@ bool GLShaderCache::CacheIndexKey::operator!=(const CacheIndexKey& key) const
 			fragment_source_length != key.fragment_source_length);
 }
 
-bool GLShaderCache::Open()
+bool GLShaderCache::Open(bool is_gles)
 {
-	m_program_binary_supported = GLAD_GL_ARB_get_program_binary;
+	m_program_binary_supported = GLAD_GL_ARB_get_program_binary || is_gles;
 	if (m_program_binary_supported)
 	{
 		// check that there's at least one format and the extension isn't being "faked"

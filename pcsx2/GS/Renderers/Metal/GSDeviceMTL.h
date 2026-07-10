@@ -19,7 +19,6 @@
 #include "GSMTLSharedHeader.h"
 #include <AppKit/AppKit.h>
 #include <Metal/Metal.h>
-#include <MetalFX/MetalFX.h>
 #include <QuartzCore/QuartzCore.h>
 #include <atomic>
 #include <memory>
@@ -250,12 +249,6 @@ public:
 
 	// Functions and Pipeline States
 	MRCOwned<id<MTLComputePipelineState>> m_cas_pipeline[2];
-
-	// MetalFX spatial upscaler. Creating the scaler is expensive, so it's cached and
-	// only rebuilt when the input/output size or format changes (the cache key below).
-	API_AVAILABLE(macos(13.0)) MRCOwned<id<MTLFXSpatialScaler>> m_mfx_spatial;
-	int m_mfx_in_w = 0, m_mfx_in_h = 0, m_mfx_out_w = 0, m_mfx_out_h = 0;
-	MTLPixelFormat m_mfx_in_fmt = MTLPixelFormatInvalid, m_mfx_out_fmt = MTLPixelFormatInvalid;
 	std::vector<MRCOwned<id<MTLRenderPipelineState>>> m_convert_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_present_pipeline[static_cast<int>(PresentShader::Count)];
 	MRCOwned<id<MTLRenderPipelineState>> m_merge_pipeline[4];
@@ -286,7 +279,6 @@ public:
 	std::unordered_map<PipelineSelectorMTL, MRCOwned<id<MTLRenderPipelineState>>> m_hw_pipeline;
 
 	MRCOwned<MTLRenderPassDescriptor*> m_render_pass_desc[16];
-	MRCOwned<MTLRenderPassDescriptor*> m_full_rov_render_pass_desc;
 
 	MRCOwned<id<MTLSamplerState>> m_sampler_hw[1 << 8];
 
@@ -324,14 +316,12 @@ public:
 		// Clear line (Things below here are tracked by `has` and don't need to be cleared to reset)
 		SamplerSelector sampler_sel;
 		u8 blend_color;
-		struct { u32 w, h; } full_rov_size;
 		GSVector4i scissor;
 		PipelineSelectorMTL pipeline_sel;
 		GSHWDrawConfig::VSConstantBuffer cb_vs;
 		GSHWDrawConfig::PSConstantBuffer cb_ps;
 		MainRenderEncoder(const MainRenderEncoder&) = delete;
 		MainRenderEncoder() = default;
-		bool is_full_rov() const { return encoder && !color_target && !depth_target && !stencil_target; }
 	} m_current_render;
 	MRCOwned<id<MTLCommandBuffer>> m_texture_upload_cmdbuf;
 	MRCOwned<id<MTLBlitCommandEncoder>> m_texture_upload_encoder;
@@ -340,8 +330,6 @@ public:
 	MRCOwned<id<MTLBlitCommandEncoder>> m_vertex_upload_encoder;
 	id<MTLTexture> m_ds_as_rt_texture = nil;
 	GSTexture* m_ds_as_rt_gstexture = nullptr;
-	MRCOwned<id<MTLTexture>> m_rov_dummy_texture;
-	struct { u32 w, h; } m_rov_dummy_texture_size = {};
 
 	struct DebugEntry
 	{
@@ -384,16 +372,12 @@ public:
 	void FlushEncodersForReadback();
 	/// End current render pass without flushing
 	void EndRenderPass();
-	/// Prepare to begin a new render pass
-	void PrepareBeginRenderPass();
 	/// Begin a new render pass (may reuse existing)
 	void BeginRenderPass(NSString* name, GSTexture* color, MTLLoadAction color_load, GSTexture* depth, MTLLoadAction depth_load, GSTexture* stencil = nullptr, MTLLoadAction stencil_load = MTLLoadActionDontCare, bool rt1 = false);
-	/// Begin a new full-ROV render pass (may reuse existing)
-	void BeginFullROV(NSString* name, uint32_t width, uint32_t height);
 	/// Call at the end of each frame
 	void FrameCompleted();
 
-	GSTexture* CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format) override;
+	GSTexture* CreateSurface(GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) override;
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter) override;
 	void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, Filter filter, const InterlaceConstantBuffer& cb) override;
@@ -401,10 +385,6 @@ public:
 	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) override;
 
 	bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) override;
-
-	/// (Re)builds m_mfx_spatial when the src/dst size or format changes. Returns false on failure.
-	API_AVAILABLE(macos(13.0)) bool EnsureMetalFXSpatial(GSTexture* sTex, GSTexture* dTex);
-	bool DoMetalFXSpatial(GSTexture* sTex, GSTexture* dTex) override;
 
 	MRCOwned<id<MTLFunction>> LoadShader(NSString* name);
 	MRCOwned<id<MTLRenderPipelineState>> MakePipeline(MTLRenderPipelineDescriptor* desc, id<MTLFunction> vertex, id<MTLFunction> fragment, NSString* name);
@@ -462,7 +442,6 @@ public:
 	void MRESetDSS(id<MTLDepthStencilState> dss);
 	void MRESetSampler(SamplerSelector sel);
 	void MRESetTexture(GSTexture* tex, int pos);
-	void MRESetTexture(id<MTLTexture> tex, int pos);
 	void MRESetVertices(id<MTLBuffer> buffer, size_t offset);
 	void MRESetVSIndices(id<MTLBuffer> buffer, size_t offset);
 	void MRESetScissor(const GSVector4i& scissor);
@@ -476,7 +455,6 @@ public:
 	// MARK: Render HW
 
 	void SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, SetDATM datm);
-	void PrepareROVTexture(GSTexture** ptex);
 	void RenderHW(GSHWDrawConfig& config) override;
 	void SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder> enc, id<MTLBuffer> buffer, size_t off,
 		bool one_barrier, bool full_barrier);

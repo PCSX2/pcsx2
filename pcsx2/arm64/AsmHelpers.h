@@ -47,6 +47,8 @@
 #define RQSCRATCH2F vixl::aarch64::VRegister(31, 128, 4)
 #define RQSCRATCH2D vixl::aarch64::VRegister(31, 128, 2)
 
+
+
 static inline s64 GetPCDisplacement(const void* current, const void* target)
 {
 	return static_cast<s64>((reinterpret_cast<ptrdiff_t>(target) - reinterpret_cast<ptrdiff_t>(current)) >> 2);
@@ -91,10 +93,8 @@ void armDisassembleAndDumpCode(const void* ptr, size_t size);
 void armEmitJmp(const void* ptr, bool force_inline = false);
 void armEmitCall(const void* ptr, bool force_inline = false);
 // In-place patch: overwrite the 4-byte B at `code_address` with a branch to
-// `target`. Used by the fastmem SIGSEGV backpatch to redirect a faulting Ldr/Str
-// to its slow-path thunk (code_address is not tied to the current emit cursor).
-// `code_address` must already hold a single 4-byte instruction; target must be
-// within +/-128 MB (B imm26 range).
+// `target`. Used by EE block chaining to rewrite a link site (not tied to the
+// current emit cursor). `code_address` must already hold a single B instruction.
 void armEmitJmpPtr(void* code_address, const void* target, bool flush_icache = true);
 void armEmitCbnz(const vixl::aarch64::Register& reg, const void* ptr);
 void armEmitCondBranch(vixl::aarch64::Condition cond, const void* ptr);
@@ -151,3 +151,5 @@ private:
 	u32 m_capacity = 0;
 	u32 m_used = 0;
 };
+
+

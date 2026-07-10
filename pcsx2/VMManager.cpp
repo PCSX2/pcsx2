@@ -3374,15 +3374,9 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_TV,
 				TRANSLATE_SV("VMManager", "Integer scaling is enabled. This may shrink the image."));
 		}
-		static bool render_change_warn = false;
-		if (EmuConfig.GS.Renderer != GSRendererType::Auto && EmuConfig.GS.Renderer != GSRendererType::SW && !render_change_warn)
-		{
-			// show messagesbox
-			render_change_warn = true;
-
-			append(ICON_FA_CIRCLE_EXCLAMATION,
-				TRANSLATE_SV("VMManager", "Graphics API is not set to Automatic. This may cause performance problems and graphical issues."));
-		}
+		// The "Graphics API is not set to Automatic" OSD warning was removed:
+		// the setup wizard forces an explicit GL/VK pick by design, so this
+		// banner would fire on every boot regardless of correctness.
 	}
 	if (EmuConfig.GS.DumpGSData)
 	{
@@ -3728,11 +3722,31 @@ void VMManager::EnsureCPUInfoInitialized()
 
 void VMManager::SetEmuThreadAffinities()
 {
+#if defined(__ANDROID__)
+	// Android: never hard-pin the emu threads to fixed cores. Under Android's EAS
+	// scheduler the busiest thread (VU1 sits at ~99% in VU-bound titles like GoW2)
+	// is placed on the highest-capacity core — the prime (Cortex-X3). The desktop
+	// pinning path (used when a stale EnableThreadPinning=1 is in the ini) instead
+	// hands the prime to EE via s_processor_list[0] and locks VU onto a mid-tier big
+	// core (measured: VU pinned to an A7xx runs ~1.4x slower than floating to the X3,
+	// which slams GoW2). cpuinfo also can't read per-core frequency on many Android
+	// devices (all clusters report 0 MHz), so the frequency-ordered pin is unreliable
+	// anyway. Release any affinity so the scheduler can use the prime for VU.
+	MTGS::GetThreadHandle().SetAffinity(0);
+	vu1Thread.GetThreadHandle().SetAffinity(0);
+	s_vm_thread_handle.SetAffinity(0);
+	s_software_renderer_processor_list = {};
+	s_thread_affinities_set = false;
+	return;
+#else
 	const bool new_pin_enable = (GetState() != VMState::Shutdown && EmuConfig.EnableThreadPinning);
 	if (s_thread_affinities_set == new_pin_enable)
 		return;
 
-	s_thread_affinities_set = EmuConfig.EnableThreadPinning;
+	// Track whether pinning is *currently effective*, not just EmuConfig.EnableThreadPinning
+	// (matches refresh-experimental — a shutdown call with pinning enabled must not leave this
+	// flag true while the affinity + SW-renderer proc list get cleared).
+	s_thread_affinities_set = new_pin_enable;
 
 	EnsureCPUInfoInitialized();
 
@@ -3780,6 +3794,16 @@ void VMManager::SetEmuThreadAffinities()
 	INFO_LOG("  GS thread is on processor {} (0x{:x})", gs_index, gs_affinity);
 	MTGS::GetThreadHandle().SetAffinity(gs_affinity);
 
+#ifdef __ANDROID__
+	// Bump the emu-critical threads slightly above default so Android's
+	// scheduler favors them over app/UI housekeeping under load. EPERM is
+	// tolerated inside SetNicePriority (rlimit may forbid negative nice).
+	s_vm_thread_handle.SetNicePriority(-1);
+	if (EmuConfig.Speedhacks.vuThread)
+		vu1Thread.GetThreadHandle().SetNicePriority(-1);
+	MTGS::GetThreadHandle().SetNicePriority(-1);
+#endif
+
 	// Try to find some threads for the software renderer.
 	// They should be in the same cluster as the main GS thread. If they're not, for example,
 	// we had 4 P cores and 6 E cores, let the OS schedule them instead.
@@ -3798,12 +3822,46 @@ void VMManager::SetEmuThreadAffinities()
 
 		s_software_renderer_processor_list.push_back(proc_index);
 	}
+#endif // __ANDROID__ (else branch of the top-level guard)
 }
 
 const std::vector<u32>& VMManager::Internal::GetSoftwareRendererProcessorList()
 {
 	EnsureCPUInfoInitialized();
 	return s_software_renderer_processor_list;
+}
+
+std::string VMManager::Internal::GetThreadPlacementDebug()
+{
+	const auto describe = [](const char* name, const Threading::ThreadHandle& h) {
+		const int cpu = h.GetCurrentCpu();
+		const u64 mask = h.GetAffinity();
+		return fmt::format("{}=c{}/m{:x}", name, cpu, mask);
+	};
+
+	std::string out = describe("EE", s_vm_thread_handle);
+	out += ' ';
+	out += describe("VU", vu1Thread.GetThreadHandle());
+	out += ' ';
+	out += describe("GS", MTGS::GetThreadHandle());
+
+#if defined(__linux__) || defined(_WIN32)
+	if (cpuinfo_initialize())
+	{
+		const u32 clusters = cpuinfo_get_clusters_count();
+		out += " |";
+		for (u32 i = 0; i < clusters; i++)
+		{
+			const cpuinfo_cluster* cl = cpuinfo_get_cluster(i);
+			if (!cl)
+				continue;
+			// cpuinfo frequency is in Hz; show MHz (0 = cpuinfo couldn't read sysfs cpufreq).
+			out += fmt::format(" {}x{}MHz", cl->processor_count, static_cast<u32>(cl->frequency / 1000000));
+		}
+	}
+#endif
+
+	return out;
 }
 
 void VMManager::ReloadPINE()

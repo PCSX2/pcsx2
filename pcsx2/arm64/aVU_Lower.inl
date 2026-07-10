@@ -178,6 +178,15 @@ mVUop(mVU_DIV)
 		const a64::VRegister Fs = mVU.regAlloc->allocReg(_Fs_, 0, (1 << (3 - _Fsf_)));
 		const a64::VRegister t1 = mVU.regAlloc->allocReg();
 
+		// DEBUG: capture runtime numerator/denominator
+		extern bool g_mvuDiffActive; extern volatile u32 g_divDbg[4]; extern void mvuDivDump(u32 wq, u32 rq, u32 pc);
+		if (g_mvuDiffActive && isVU1)
+		{
+			armMoveAddressToReg(RSCRATCHADDR, (void*)&g_divDbg[0]);
+			armAsm->Str(Fs.S(), a64::MemOperand(RSCRATCHADDR, 0)); // numerator
+			armAsm->Str(Ft.S(), a64::MemOperand(RSCRATCHADDR, 4)); // denominator
+		}
+
 		a64::Label cjmp, ajmp, bjmp, djmp;
 		testZero(Ft, t1, gprT1); // Test if Ft is zero
 		armAsm->B(&cjmp, a64::eq); // Skip if not zero
@@ -204,6 +213,19 @@ mVUop(mVU_DIV)
 		armAsm->Bind(&djmp);
 
 		writeQreg(Fs, mVUinfo.writeQ);
+
+		// DEBUG: capture runtime result + log
+		if (g_mvuDiffActive && isVU1)
+		{
+			armMoveAddressToReg(RSCRATCHADDR, (void*)&g_divDbg[2]);
+			armAsm->Str(Fs.S(), a64::MemOperand(RSCRATCHADDR)); // result
+			mVUbackupRegs(mVU, true, true);
+			armAsm->Mov(RWARG1.W(), mVUinfo.writeQ);
+			armAsm->Mov(RWARG2.W(), mVUinfo.readQ);
+			armAsm->Mov(RWARG3.W(), xPC);
+			armEmitCall(reinterpret_cast<const void*>(&mvuDivDump));
+			mVUrestoreRegs(mVU, true, true);
+		}
 
 		if (mVU.cop2)
 		{
@@ -326,7 +348,7 @@ static __fi void mVU_EATAN_(mV, const a64::VRegister& PQ, const a64::VRegister& 
 {
 	armAsm->Ins(PQ.V4S(), 0, Fs.V4S(), 0);
 	mvuLdrSS(RQSCRATCH, mVUglob.T1);
-	mVUscalarMulKeep(PQ, PQ, RQSCRATCH); // keep Q lanes (see aVU_IR.h)
+	mVUscalarMulKeep(PQ, PQ, RQSCRATCH);
 	armAsm->Mov(t2.V16B(), Fs.V16B());
 	EATANhelper(mVUglob.T2);
 	EATANhelper(mVUglob.T3);
@@ -336,7 +358,7 @@ static __fi void mVU_EATAN_(mV, const a64::VRegister& PQ, const a64::VRegister& 
 	EATANhelper(mVUglob.T7);
 	EATANhelper(mVUglob.T8);
 	mvuLdrSS(RQSCRATCH, mVUglob.Pi4);
-	mVUscalarAddKeep(PQ, PQ, RQSCRATCH); // keep Q lanes (see aVU_IR.h)
+	mVUscalarAddKeep(PQ, PQ, RQSCRATCH);
 	mVUshufflePS(PQ, PQ, mVUinfo.writeP ? 0x27 : 0xC6);
 }
 
@@ -360,7 +382,7 @@ mVUop(mVU_EATAN)
 		armAsm->Ins(mVU_xmmPQ.V4S(), 0, Fs.V4S(), 0);
 		mvuLdrSS(RQSCRATCH, mVUglob.one);
 		armAsm->Fsub(Fs.S(), Fs.S(), RQSCRATCH.S());
-		mVUscalarAddKeep(mVU_xmmPQ, mVU_xmmPQ, RQSCRATCH); // keep Q lanes (see aVU_IR.h)
+		mVUscalarAddKeep(mVU_xmmPQ, mVU_xmmPQ, RQSCRATCH);
 		SSE_DIVSS(mVU, Fs, mVU_xmmPQ);
 		mVU_EATAN_(mVU, mVU_xmmPQ, Fs, t1, t2);
 		mVU.regAlloc->clearNeeded(Fs);
@@ -461,9 +483,9 @@ mVUop(mVU_EEXP)
 		mVUshufflePS(mVU_xmmPQ, mVU_xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
 		armAsm->Ins(mVU_xmmPQ.V4S(), 0, Fs.V4S(), 0);
 		mvuLdrSS(RQSCRATCH, mVUglob.E1);
-		mVUscalarMulKeep(mVU_xmmPQ, mVU_xmmPQ, RQSCRATCH); // keep Q lanes (see aVU_IR.h)
+		mVUscalarMulKeep(mVU_xmmPQ, mVU_xmmPQ, RQSCRATCH);
 		mvuLdrSS(RQSCRATCH, mVUglob.one);
-		mVUscalarAddKeep(mVU_xmmPQ, mVU_xmmPQ, RQSCRATCH); // keep Q lanes (see aVU_IR.h)
+		mVUscalarAddKeep(mVU_xmmPQ, mVU_xmmPQ, RQSCRATCH);
 		armAsm->Mov(t1.V16B(), Fs.V16B());
 		SSE_MULSS(mVU, t1, Fs);
 		armAsm->Mov(t2.V16B(), t1.V16B());
@@ -518,7 +540,7 @@ mVUop(mVU_ELENG)
 		const a64::VRegister Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
 		mVUshufflePS(mVU_xmmPQ, mVU_xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
 		mVU_sumXYZ(mVU, mVU_xmmPQ, Fs);
-		mVUscalarSqrtKeep(mVU_xmmPQ, mVU_xmmPQ); // keep Q lanes (see aVU_IR.h)
+		mVUscalarSqrtKeep(mVU_xmmPQ, mVU_xmmPQ);
 		mVUshufflePS(mVU_xmmPQ, mVU_xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.profiler.EmitOp(opELENG);
@@ -568,7 +590,7 @@ mVUop(mVU_ERLENG)
 		const a64::VRegister Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
 		mVUshufflePS(mVU_xmmPQ, mVU_xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
 		mVU_sumXYZ(mVU, mVU_xmmPQ, Fs);
-		mVUscalarSqrtKeep(mVU_xmmPQ, mVU_xmmPQ); // keep Q lanes (see aVU_IR.h)
+		mVUscalarSqrtKeep(mVU_xmmPQ, mVU_xmmPQ);
 		mvuLdrSS(Fs, mVUglob.one);
 		SSE_DIVSS(mVU, Fs, mVU_xmmPQ);
 		armAsm->Ins(mVU_xmmPQ.V4S(), 0, Fs.V4S(), 0);
@@ -622,7 +644,7 @@ mVUop(mVU_ERSQRT)
 		mVUshufflePS(mVU_xmmPQ, mVU_xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
 		mvuLdrQ(RQSCRATCH, mVUglob.absclip);
 		armAsm->And(Fs.V16B(), Fs.V16B(), RQSCRATCH.V16B());
-		mVUscalarSqrtKeep(mVU_xmmPQ, Fs); // keep Q lanes (see aVU_IR.h)
+		mVUscalarSqrtKeep(mVU_xmmPQ, Fs);
 		mvuLdrSS(Fs, mVUglob.one);
 		SSE_DIVSS(mVU, Fs, mVU_xmmPQ);
 		armAsm->Ins(mVU_xmmPQ.V4S(), 0, Fs.V4S(), 0);
@@ -722,7 +744,7 @@ mVUop(mVU_ESQRT)
 		mVUshufflePS(mVU_xmmPQ, mVU_xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip xmmPQ to get Valid P instance
 		mvuLdrQ(RQSCRATCH, mVUglob.absclip);
 		armAsm->And(Fs.V16B(), Fs.V16B(), RQSCRATCH.V16B());
-		mVUscalarSqrtKeep(mVU_xmmPQ, Fs); // keep Q lanes (see aVU_IR.h)
+		mVUscalarSqrtKeep(mVU_xmmPQ, Fs);
 		mVUshufflePS(mVU_xmmPQ, mVU_xmmPQ, mVUinfo.writeP ? 0x27 : 0xC6); // Flip back
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.profiler.EmitOp(opESQRT);
@@ -1873,8 +1895,13 @@ mVUop(mVU_XITOP)
 
 void mVU_XGKICK_(u32 addr)
 {
-	if (g_mvuShadowRun) // DEBUG shadow run: don't transfer to GS (see MVU_DIFF)
+	if (s_mvuShadowRun) // DEBUG shadow run: don't transfer to GS (see MVU_DIFF)
 		return;
+#if defined(__ANDROID__) && ARMSX2_ANDROID_VU_PROBES
+	static u32 s_mvu_xgkick_direct_sample = 0;
+	const bool sample_xgkick = ((++s_mvu_xgkick_direct_sample & 0x3f) == 0);
+	const u64 xgkick_start = sample_xgkick ? Common::Timer::GetCurrentValue() : 0;
+#endif
 	addr = (addr & 0x3ff) * 16;
 	u32 diff = 0x4000 - addr;
 	u32 size = gifUnit.GetGSPacketSize(GIF_PATH_1, vuRegs[1].Mem, addr, ~0u, true);
@@ -1888,12 +1915,29 @@ void mVU_XGKICK_(u32 addr)
 	{
 		gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &vuRegs[1].Mem[addr], size, true);
 	}
+#if defined(__ANDROID__) && ARMSX2_ANDROID_VU_PROBES
+	if (sample_xgkick)
+	{
+		const u64 elapsed = Common::Timer::GetCurrentValue() - xgkick_start;
+		Console.WriteLnFmt("@@MVU_XGKICK_DIRECT@@ bytes={} wrapped={} usec={:.2f}",
+			size, size > diff, Common::Timer::ConvertValueToSeconds(elapsed) * 1000000.0);
+	}
+#endif
 }
 
 void _vuXGKICKTransfermVU(bool flush)
 {
-	if (g_mvuShadowRun) // DEBUG shadow run: don't transfer to GS (see MVU_DIFF)
+	if (s_mvuShadowRun) // DEBUG shadow run: don't transfer to GS (see MVU_DIFF)
 		return;
+#if defined(__ANDROID__) && ARMSX2_ANDROID_VU_PROBES
+	static u32 s_mvu_xgkick_sample = 0;
+	const bool sample_xgkick = ((++s_mvu_xgkick_sample & 0x3f) == 0);
+	const u64 xgkick_start = sample_xgkick ? Common::Timer::GetCurrentValue() : 0;
+	u32 sample_loops = 0;
+	u32 sample_bytes = 0;
+	u32 sample_direct = 0;
+	u32 sample_copied = 0;
+#endif
 	while (VU1.xgkickenable && (flush || VU1.xgkickcyclecount >= 2))
 	{
 		u32 transfersize = 0;
@@ -1928,14 +1972,29 @@ void _vuXGKICKTransfermVU(bool flush)
 		if (THREAD_VU1)
 		{
 			if (transfersize < VU1.xgkicksizeremaining)
+			{
 				gifUnit.gifPath[GIF_PATH_1].CopyGSPacketData(&VU1.Mem[VU1.xgkickaddr], transfersize, true);
+			}
 			else
+			{
 				gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &vuRegs[1].Mem[VU1.xgkickaddr], transfersize, true);
+			}
 		}
 		else
 		{
 			gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &vuRegs[1].Mem[VU1.xgkickaddr], transfersize, true);
 		}
+#if defined(__ANDROID__) && ARMSX2_ANDROID_VU_PROBES
+		if (sample_xgkick)
+		{
+			sample_loops++;
+			sample_bytes += transfersize;
+			if (THREAD_VU1 && transfersize < VU1.xgkicksizeremaining)
+				sample_copied++;
+			else
+				sample_direct++;
+		}
+#endif
 
 		if (flush)
 			VU1.cycle += transfersize / 8;
@@ -1951,6 +2010,15 @@ void _vuXGKICKTransfermVU(bool flush)
 			VU1.xgkickenable = false;
 		}
 	}
+#if defined(__ANDROID__) && ARMSX2_ANDROID_VU_PROBES
+	if (sample_xgkick)
+	{
+		const u64 elapsed = Common::Timer::GetCurrentValue() - xgkick_start;
+		Console.WriteLnFmt("@@MVU_XGKICK_SYNC@@ flush={} loops={} bytes={} copied={} direct={} remaining={} usec={:.2f}",
+			flush, sample_loops, sample_bytes, sample_copied, sample_direct, VU1.xgkicksizeremaining,
+			Common::Timer::ConvertValueToSeconds(elapsed) * 1000000.0);
+	}
+#endif
 }
 
 static __fi void mVU_XGKICK_SYNC(mV, bool flush)

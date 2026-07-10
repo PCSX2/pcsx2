@@ -131,7 +131,7 @@ void VU_Thread::ExecuteRingBuffer()
 
 	for (;;)
 	{
-		semaEvent.WaitForWork();
+		semaEvent.WaitForWorkWithSpin();
 		if (m_shutdown_flag.load(std::memory_order_acquire))
 			break;
 

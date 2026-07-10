@@ -495,6 +495,8 @@ __fi void mVUanalyzeXGkick(mV, int Fs, int xCycles)
 // Branches - Branch Opcodes
 //------------------------------------------------------------------
 
+static constexpr bool kVerboseMicroVUBranchAnalyzeLog = false;
+
 // If the VI reg is modified directly before the branch, then the VI
 // value read by the branch is the value the VI reg had at the start
 // of the instruction 4 instructions ago (assuming no stalls).
@@ -505,7 +507,8 @@ static void analyzeBranchVI(mV, int xReg, bool& infoVar)
 		return;
 	if (mVUstall) // I assume a stall on branch means the vi reg is not modified directly b4 the branch...
 	{
-		DevCon.Warning("microVU%d: %d cycle stall on branch instruction [%04x]", getIndex, mVUstall, xPC);
+		if constexpr (kVerboseMicroVUBranchAnalyzeLog)
+			DevCon.Warning("microVU%d: %d cycle stall on branch instruction [%04x]", getIndex, mVUstall, xPC);
 		return;
 	}
 	int i, j = 0;
@@ -517,7 +520,8 @@ static void analyzeBranchVI(mV, int xReg, bool& infoVar)
 	{
 		if (i && mVUstall)
 		{
-			DevCon.Warning("microVU%d: Branch VI-Delay with %d cycle stall (%d) [%04x]", getIndex, mVUstall, i, xPC);
+			if constexpr (kVerboseMicroVUBranchAnalyzeLog)
+				DevCon.Warning("microVU%d: Branch VI-Delay with %d cycle stall (%d) [%04x]", getIndex, mVUstall, i, xPC);
 		}
 		if (i == (int)mVUcount)
 		{
@@ -537,7 +541,7 @@ static void analyzeBranchVI(mV, int xReg, bool& infoVar)
 				j = i;
 				i++;
 			}
-			if (warn)
+			if (warn && kVerboseMicroVUBranchAnalyzeLog)
 				DevCon.Warning("microVU%d: Branch VI-Delay with small block (%d) [%04x]", getIndex, i, xPC);
 			break; // if (warn), we don't have enough information to always guarantee the correct result.
 		}
@@ -545,7 +549,7 @@ static void analyzeBranchVI(mV, int xReg, bool& infoVar)
 		{
 			if (mVUlow.readFlags)
 			{
-				if (i)
+				if (i && kVerboseMicroVUBranchAnalyzeLog)
 					DevCon.Warning("microVU%d: Branch VI-Delay with Read Flags Set (%d) [%04x]", getIndex, i, xPC);
 				break; // Not sure if on the above "if (i)" case, if we need to "continue" or if we should "break"
 			}
@@ -569,7 +573,8 @@ static void analyzeBranchVI(mV, int xReg, bool& infoVar)
 			infoVar = true;
 		}
 		iPC = bPC;
-		DevCon.WriteLn(Color_Green, "microVU%d: Branch VI-Delay (%d) [%04x][%03d]", getIndex, j + 1, xPC, mVU.prog.cur->idx);
+		if constexpr (kVerboseMicroVUBranchAnalyzeLog)
+			DevCon.WriteLn(Color_Green, "microVU%d: Branch VI-Delay (%d) [%04x][%03d]", getIndex, j + 1, xPC, mVU.prog.cur->idx);
 	}
 	else
 	{

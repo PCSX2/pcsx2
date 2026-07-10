@@ -32,11 +32,22 @@ namespace GameDatabaseSchema
 
 namespace GameDatabase
 {
+	static void populateEntry(GameDatabaseSchema::GameEntry& gameEntry, const std::string_view serial,
+		const ryml::NodeRef& node, bool is_override);
 	static void parseAndInsert(const std::string_view serial, const ryml::NodeRef& node);
+	static void mergeOverride(const std::string_view serial, const ryml::NodeRef& node);
+	static void loadFile(const std::string& path, const std::string& name, bool is_override);
 	static void initDatabase();
 } // namespace GameDatabase
 
 static constexpr char GAMEDB_YAML_FILE_NAME[] = "GameIndex.yaml";
+// ARMSX2 GameDB overrides — layered on top of upstream GameIndex.yaml after it
+// loads. Entries either add NEW serials upstream doesn't cover, or PARTIAL-
+// override existing upstream entries: scalar fields replace upstream when
+// present; list fields (gameFixes / speedHacks / gsHWFixes / memcardFilters /
+// patches / dynaPatches) get cleared when the override specifies them so we
+// REPLACE rather than append. The file is optional — missing is a silent skip.
+static constexpr char GAMEDB_OVERRIDE_YAML_FILE_NAME[] = "armsx2_overrides.yaml";
 
 static std::unordered_map<std::string, GameDatabaseSchema::GameEntry> s_game_db;
 static std::once_flag s_load_once_flag;
@@ -83,9 +94,9 @@ const char* GameDatabaseSchema::GameEntry::compatAsString() const
 	}
 }
 
-void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::NodeRef& node)
+void GameDatabase::populateEntry(GameDatabaseSchema::GameEntry& gameEntry, const std::string_view serial,
+	const ryml::NodeRef& node, bool is_override)
 {
-	GameDatabaseSchema::GameEntry gameEntry;
 	if (node.has_child("name"))
 	{
 		node["name"] >> gameEntry.name;
@@ -193,6 +204,9 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::Nod
 	// Validate game fixes, invalid ones will be dropped!
 	if (node.has_child("gameFixes") && node["gameFixes"].has_children())
 	{
+		// Override REPLACES upstream's list, it does not append.
+		if (is_override)
+			gameEntry.gameFixes.clear();
 		for (const auto& n : node["gameFixes"].children())
 		{
 			bool fixValidated = false;
@@ -223,6 +237,8 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::Nod
 
 	if (node.has_child("speedHacks") && node["speedHacks"].has_children())
 	{
+		if (is_override)
+			gameEntry.speedHacks.clear();
 		for (const auto& n : node["speedHacks"].children())
 		{
 			const std::string_view id_view = std::string_view(n.key().str, n.key().len);
@@ -246,6 +262,8 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::Nod
 
 	if (node.has_child("gsHWFixes"))
 	{
+		if (is_override)
+			gameEntry.gsHWFixes.clear();
 		for (const auto& n : node["gsHWFixes"].children())
 		{
 			const std::string_view id_name(n.key().data(), n.key().size());
@@ -287,6 +305,8 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::Nod
 	// - currently they are used as a '\n' delimited string in the app
 	if (node.has_child("memcardFilters") && node["memcardFilters"].has_children())
 	{
+		if (is_override)
+			gameEntry.memcardFilters.clear();
 		for (const auto& n : node["memcardFilters"].children())
 		{
 			auto memcardFilter = std::string(n.val().str, n.val().len);
@@ -297,6 +317,10 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::Nod
 	// Game Patches
 	if (node.has_child("patches") && node["patches"].has_children())
 	{
+		// Patches are keyed by CRC — clearing on override means upstream's
+		// CRC-keyed patches are dropped when the override ships its own block.
+		if (is_override)
+			gameEntry.patches.clear();
 		for (const auto& n : node["patches"].children())
 		{
 			// use a crc of 0 for default patches
@@ -322,6 +346,8 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::Nod
 
 	if (node.has_child("dynaPatches") && node["dynaPatches"].has_children())
 	{
+		if (is_override)
+			gameEntry.dynaPatches.clear();
 		for (const auto& n : node["dynaPatches"].children())
 		{
 			Patch::DynamicPatch patch;
@@ -349,7 +375,23 @@ void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::Nod
 		}
 	}
 
-	s_game_db.emplace(std::move(serial), std::move(gameEntry));
+}
+
+void GameDatabase::parseAndInsert(const std::string_view serial, const ryml::NodeRef& node)
+{
+	GameDatabaseSchema::GameEntry gameEntry;
+	populateEntry(gameEntry, serial, node, /*is_override=*/false);
+	s_game_db.emplace(std::string(serial), std::move(gameEntry));
+}
+
+void GameDatabase::mergeOverride(const std::string_view serial, const ryml::NodeRef& node)
+{
+	// Fetch-or-create: when the serial already exists (a PARTIAL override of
+	// upstream), the override's scalars replace and its list fields clear-then-
+	// replace; when it's a NEW serial, this creates it from scratch, same shape
+	// as a normal entry.
+	auto& gameEntry = s_game_db[std::string(serial)];
+	populateEntry(gameEntry, serial, node, /*is_override=*/true);
 }
 
 static const char* s_round_modes[static_cast<u32>(FPRoundMode::MaxCount)] = {
@@ -1015,15 +1057,15 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 	}
 }
 
-void GameDatabase::initDatabase()
+void GameDatabase::loadFile(const std::string& path, const std::string& name, bool is_override)
 {
-	const std::string path(Path::Combine(EmuFolders::Resources, GAMEDB_YAML_FILE_NAME));
-	const std::string name(GAMEDB_YAML_FILE_NAME);
-
 	const std::optional<std::string> buffer = FileSystem::ReadFileToString(path.c_str());
 	if (!buffer.has_value())
 	{
-		Console.Error("GameDB: Unable to open GameDB file, file does not exist.");
+		// Override file is optional — silent skip when not shipped.
+		// Upstream is mandatory — keep the error loud.
+		if (!is_override)
+			Console.Error("GameDB: Unable to open GameDB file, file does not exist.");
 		return;
 	}
 
@@ -1047,8 +1089,10 @@ void GameDatabase::initDatabase()
 		// Serials and CRCs must be inserted as lower-case, as that is how they are retrieved
 		// this is because the application may pass a lowercase CRC or serial along
 		//
-		// However, YAML's keys are as expected case-sensitive, so we have to explicitly do our own duplicate checking
-		if (s_game_db.count(serial) == 1)
+		// However, YAML's keys are as expected case-sensitive, so we have to explicitly do our own duplicate checking.
+		// The override file legitimately reuses upstream serials by design — that's the whole point — so the duplicate
+		// guard only fires in the upstream load path.
+		if (!is_override && s_game_db.count(serial) == 1)
 		{
 			Console.ErrorFmt("GameDB: Duplicate serial '{}' found in GameDB. Skipping, Serials are case-insensitive!", serial);
 			continue;
@@ -1056,9 +1100,24 @@ void GameDatabase::initDatabase()
 
 		if (n.is_map())
 		{
-			parseAndInsert(serial, n);
+			if (is_override)
+				mergeOverride(serial, n);
+			else
+				parseAndInsert(serial, n);
 		}
 	}
+}
+
+void GameDatabase::initDatabase()
+{
+	loadFile(
+		Path::Combine(EmuFolders::Resources, GAMEDB_YAML_FILE_NAME),
+		GAMEDB_YAML_FILE_NAME,
+		/*is_override=*/false);
+	loadFile(
+		Path::Combine(EmuFolders::Resources, GAMEDB_OVERRIDE_YAML_FILE_NAME),
+		GAMEDB_OVERRIDE_YAML_FILE_NAME,
+		/*is_override=*/true);
 }
 
 void GameDatabase::ensureLoaded()

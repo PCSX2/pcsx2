@@ -42,6 +42,19 @@ changed yet.
       *(commit: "move iOS frontend …")*
 - [x] `.github/workflows/build-all.yml` — one push builds PC macOS-arm64,
       PC Linux-arm64, Android APK, iOS .app; each uploads its own artifact.
+- [x] **Android brought compile-green AND up to refresh-experimental parity
+      (2026-07-10).** GoW2 boots and runs full-speed (60fps) on RP6 (Adreno 740 /
+      QCS8550 / Turnip). Landed this pass — but read the caveats in Remaining #2/#3,
+      some of it touches shared code:
+      Vulkan render fixes (GS device backends), Oboe audio backend, GameDB
+      `armsx2_overrides.yaml` override loader, OGL/GLES fixes, EE+VU mac-port
+      recompiler graft, PGO=optimize, and the **VU-slam fix**. The VU slam was
+      root-caused to Android thread PINNING hard-locking the VU1 worker off the
+      prime core (diagnostic showed `VU=core3` while the X3 sat idle); fixed with an
+      Android-only force-float in `VMManager::SetEmuThreadAffinities` — VU 20→14ms,
+      82%→100% speed. Also (all `#if __ANDROID__`-guarded / runtime-gated, mac-safe):
+      "CPU: Unknown" SoC-name fallback, Mali VK attachment-feedback-loop crash gate,
+      MediaTek fbfetch disable.
 
 ## Remaining (the long pole — needs real toolchains / CI iteration)
 
@@ -50,6 +63,10 @@ changed yet.
    `build-all.yml` Android + iOS jobs are `continue-on-error: true` on purpose —
    they are the mechanism to surface and fix the remaining issues. Flip to
    blocking once green.
+   > ✅ 2026-07-10: **Android is compile-green + runtime-verified** (dual-core 4k/16k
+   > APK, PGO, running games on device). PC-macOS-arm64 / PC-Linux-arm64 / iOS still
+   > need a CI green pass — and #2/#3 below may have perturbed the shared core, so
+   > re-check the mac/Linux arm64 build after this push.
 2. **Shared-file reconciliation (~250 files).** The Android core fork also
    *modified* shared files (FullscreenUI, Achievements, GS device backends,
    VMManager, MemoryCardFile). Those deltas are **not** yet merged — only the
@@ -57,9 +74,31 @@ changed yet.
    fold in the genuinely mobile-specific changes behind platform guards; discard
    stale-upstream noise. Source of truth for the deltas:
    `git diff macOS refresh-experimental -- pcsx2 common`.
+   > ⚠️ 2026-07-10: to get Android green fast, the GS device backends (~47 `pcsx2/GS/*`
+   > files) + `VMManager`/`GameDatabase`/`AudioStream`/`Config`/`Pcsx2Config`/`MTVU`/
+   > `Semaphore`/`Threading` deltas were brought over by **wholesale graft/copy from
+   > refresh-experimental, mostly UNGUARDED** — i.e. they now ride into the mac/Linux
+   > arm64 builds, not just Android. This is the fast-but-dirty version of this item.
+   > The genuinely Android-only pieces (force-float, Oboe, SoC-name, Mali/MediaTek VK
+   > gates, OSD label) ARE `#if __ANDROID__`/runtime-gated and mac-safe. The rest still
+   > needs the careful per-file pass: keep mobile-specific behind guards, verify PC/mac
+   > unaffected, drop stale-upstream noise.
 3. **arm64 JIT fixes to port** (3 real Android commits):
    `45b4b68d10` (microVU PQ lanes), `75351e8545` (FTOI NaN / SQRT clamp),
    `ec06302ccf` (skip microVU emit on jump-cache hits).
+   > ⚠️ 2026-07-10 — **HEADS-UP, this contradicts the "mac backend dropped" decision.**
+   > To reach refresh-experimental EE/VU perf on Android quickly, this pass GRAFTED the
+   > mac-port EE+VU backend into the shared canonical files (`pcsx2/arm64/aR5900*`,
+   > `aVU*`) — i.e. it re-introduced the "superseded experiment" logic *under the
+   > canonical filenames*, UNGUARDED. **This changes the mac/Linux arm64 recompiler too**,
+   > so the mac build needs a re-verify after this push.
+   > - The **VU graft is now REDUNDANT**: the VU slam was Android thread-pinning, not the
+   >   VU codegen, and the fix (force-float, `#if __ANDROID__`) is backend-agnostic. So
+   >   `aVU*` can be reverted to canonical with **zero** Android perf loss — recommended.
+   > - The **EE graft** is the one genuine Android win (canonical Phase-7 EE was ~98%
+   >   slammed pre-graft). Decision needed: guard it Android-only, fold the improvement
+   >   into the canonical JIT for all arm64, or bench canonical-EE+PGO to see if the gap
+   >   is real. Until decided, mac inherits the mac-port EE.
 4. **3rdparty de-duplication.** `platforms/android/.../cpp/3rdparty` (adrenotools
    + others) is still vendored for the NDK build. Keep adrenotools/oboe
    (Android-only); evaluate sourcing the rest from root `3rdparty/` once the

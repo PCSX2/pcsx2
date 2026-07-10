@@ -10,7 +10,7 @@
 
 #include <bitset>
 #include <cstring>
-#include <directx/d3d12.h>
+#include <d3d12.h>
 #include <unordered_map>
 #include <vector>
 

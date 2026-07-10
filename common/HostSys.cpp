@@ -9,6 +9,10 @@
 #include "cpuinfo.h"
 #endif
 
+#if defined(__ANDROID__)
+#include <sys/system_properties.h>
+#endif
+
 static u32 PAUSE_TIME = 0;
 
 static void MultiPause()
@@ -145,7 +149,26 @@ void AbortWithMessage(const char* msg)
 static CPUInfo CalcCPUInfo()
 {
 	CPUInfo out;
-	out.name = cpuinfo_get_package(0)->name;
+	const cpuinfo_package* pkg = cpuinfo_get_package(0);
+	out.name = (pkg && pkg->name[0] != '\0') ? pkg->name : "Unknown";
+
+#if defined(__ANDROID__)
+	// cpuinfo's bundled SoC database may not recognise newer chips (e.g. QCS8550),
+	// leaving the package name empty or "Unknown". Fall back to the Android SoC build
+	// properties so the OSD shows a real name instead of "Unknown".
+	if (out.name.empty() || out.name.find("Unknown") != std::string::npos)
+	{
+		char model[PROP_VALUE_MAX] = {};
+		char manuf[PROP_VALUE_MAX] = {};
+		__system_property_get("ro.soc.model", model);
+		__system_property_get("ro.soc.manufacturer", manuf);
+		if (model[0] != '\0')
+			out.name = (manuf[0] != '\0') ? (std::string(manuf) + " " + model) : std::string(model);
+		else if (manuf[0] != '\0')
+			out.name = manuf;
+	}
+#endif
+
 	out.num_threads = cpuinfo_get_processors_count();
 	out.num_clusters = cpuinfo_get_clusters_count();
 	out.num_big_cores = 0;

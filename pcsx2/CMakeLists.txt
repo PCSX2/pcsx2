@@ -1122,9 +1122,11 @@ if(ANDROID)
 	list(APPEND pcsx2HostSources
 		Host/OboeAudioStream.cpp)
 	list(APPEND pcsx2GSSources
+		GS/Renderers/OpenGL/GLContextEGL.cpp
 		GS/Renderers/OpenGL/GLContextEGLAndroid.cpp
 		GS/Renderers/Common/GSGPUProfile.cpp)
 	list(APPEND pcsx2GSHeaders
+		GS/Renderers/OpenGL/GLContextEGL.h
 		GS/Renderers/OpenGL/GLContextEGLAndroid.h
 		GS/Renderers/Common/GSGPUProfile.h)
 	list(APPEND pcsx2Sources

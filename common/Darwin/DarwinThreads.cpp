@@ -192,6 +192,24 @@ bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
 	return false;
 }
 
+bool Threading::ThreadHandle::SetNicePriority(int nice) const
+{
+	// Darwin uses Mach thread policies; nice values on pthreads are advisory
+	// and not reliably honored. No-op for now.
+	return false;
+}
+
+u64 Threading::ThreadHandle::GetAffinity() const
+{
+	// No per-thread affinity introspection on Darwin.
+	return 0;
+}
+
+int Threading::ThreadHandle::GetCurrentCpu() const
+{
+	return -1;
+}
+
 Threading::Thread::Thread() = default;
 
 Threading::Thread::Thread(Thread&& thread)

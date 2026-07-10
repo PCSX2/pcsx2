@@ -25,6 +25,7 @@ static constexpr const GSScanlineConstantData128B& g_const = g_const_128b;
 // Yay, you can't offsetof with non-constant array indices in GCC
 #define OFFSETOF(base, field) (reinterpret_cast<uptr>(&reinterpret_cast<base*>(0)->field))
 #define _local(field) MemOperand(_locals, OFFSETOF(GSScanlineLocalData, field))
+#define _local_di(i, field) MemOperand(_locals, OFFSETOF(GSScanlineLocalData, d[0].field) + sizeof(GSScanlineLocalData::skip) * (i))
 #define armAsm (&m_emitter)
 
 GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(u64 key, void* code, size_t maxsize)
@@ -93,7 +94,7 @@ void GSSetupPrimCodeGenerator::Depth()
 				armAsm->Fcvtzs(v2.V4S(), v2.V4S());
 				armAsm->Trn1(v2.V8H(), v2.V8H(), v2.V8H());
 
-				armAsm->Str(v2.V4S(), _local(d[i].f));
+				armAsm->Str(v2.V4S(), _local_di(i,f));
 			}
 		}
 
@@ -117,7 +118,7 @@ void GSSetupPrimCodeGenerator::Depth()
 				// m_local.d[i].z1 = dz.mul64(VectorF::f32to64(half_shift[2 * i + 3]));
 
 				armAsm->Fmul(v1.V4S(), v0.V4S(), VRegister(4 + i, kFormat4S));
-				armAsm->Str(v1.V4S(), _local(d[i].z));
+				armAsm->Str(v1.V4S(), _local_di(i,z));
 			}
 		}
 	}
@@ -198,8 +199,8 @@ void GSSetupPrimCodeGenerator::Texture()
 
 				switch (j)
 				{
-					case 0: armAsm->Str(v2, _local(d[i].s)); break;
-					case 1: armAsm->Str(v2, _local(d[i].t)); break;
+					case 0: armAsm->Str(v2, _local_di(i,s)); break;
+					case 1: armAsm->Str(v2, _local_di(i,t)); break;
 				}
 			}
 			else
@@ -208,9 +209,9 @@ void GSSetupPrimCodeGenerator::Texture()
 
 				switch (j)
 				{
-					case 0: armAsm->Str(v2, _local(d[i].s)); break;
-					case 1: armAsm->Str(v2, _local(d[i].t)); break;
-					case 2: armAsm->Str(v2, _local(d[i].q)); break;
+					case 0: armAsm->Str(v2, _local_di(i,s)); break;
+					case 1: armAsm->Str(v2, _local_di(i,t)); break;
+					case 2: armAsm->Str(v2, _local_di(i,q)); break;
 				}
 			}
 		}
@@ -258,7 +259,7 @@ void GSSetupPrimCodeGenerator::Color()
 
 			// m_local.d[i].rb = r.trn1_16(b); // Not currently in GSVector since that's mainly targeting x86 for now
 			armAsm->Trn1(v2.V8H(), v2.V8H(), v3.V8H());
-			armAsm->Str(v2, _local(d[i].rb));
+			armAsm->Str(v2, _local_di(i,rb));
 		}
 
 		// GSVector4 c = dscan.c;
@@ -284,7 +285,7 @@ void GSSetupPrimCodeGenerator::Color()
 			// m_local.d[i].ga = g.trn1_16(a); // Not currently in GSVector since that's mainly targeting x86 for now
 
 			armAsm->Trn1(v2.V8H(), v2.V8H(), v3.V8H());
-			armAsm->Str(v2, _local(d[i].ga));
+			armAsm->Str(v2, _local_di(i,ga));
 		}
 	}
 	else

@@ -25,6 +25,8 @@
 
 #include <cstddef>
 
+
+
 namespace a64 = vixl::aarch64;
 
 // FCR31 (fprc[31]) flag bits — see pcsx2/FPU.cpp.
@@ -161,9 +163,8 @@ void armEmitNEG_S(u32 fd, u32 fs)
 void armEmitLWC1(u32 ft, u32 rs, s32 imm, u32 pc)
 {
 	armEmitEffectiveAddr(RWARG1, rs, imm);
-	// Single-instruction backpatch fastmem 32-bit load into RXRET; falls back to the vtlb
-	// helper for faulting PCs / when fastmem is off. LWC1 stages the FP value through a GPR,
-	// so the memory access is a plain 32-bit integer access (is_fpr=false).
+	// Single-instruction backpatch fastmem 32-bit load into RXRET; falls back to inline vmap
+	// for faulting PCs / when fastmem is off. The load's memory access is a plain GPR access.
 	if (!armTryEmitFastmemScalar32(pc, /*is_load*/ true, RXRET))
 		armEmitVtlbRead(32, /*sign*/ false, RXRET, RWARG1);
 	armAsm->Str(RWRET, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(ft)));
@@ -176,7 +177,7 @@ void armEmitSWC1(u32 ft, u32 rs, s32 imm, u32 pc)
 	armAsm->Ldr(RWARG2, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(ft)));
 	armEmitEffectiveAddr(RWARG1, rs, imm);
 	// Single-instruction backpatch fastmem 32-bit store of the FPR value (in RWARG2); falls
-	// back to the vtlb helper for faulting PCs / when fastmem is off.
+	// back to inline vmap for faulting PCs / when fastmem is off.
 	if (!armTryEmitFastmemScalar32(pc, /*is_load*/ false, RWARG2))
 		armEmitVtlbWrite(32, RWARG1, RWARG2);
 }
@@ -547,7 +548,7 @@ static void emitFpuBinary(FpuBinOp op, u32 dstByteOffset, u32 fs, u32 ft)
 			}
 			else
 			{
-				emitToDouble(RDSCRATCH2, EE_FPR_OFFSET(ft)); // d31 = ToDouble(ft), no clamp
+				emitToDouble(RDSCRATCH2, EE_FPR_OFFSET(ft));  // d31 = ToDouble(ft), no clamp
 				armAsm->Fmul(RDSCRATCH, RDSCRATCH, RDSCRATCH2);
 			}
 		}
@@ -555,7 +556,7 @@ static void emitFpuBinary(FpuBinOp op, u32 dstByteOffset, u32 fs, u32 ft)
 		{
 			// Equal operands: the guard-bit masking (emitFpuAddSub) is an exact no-op
 			// (exponent difference 0 takes its untouched early-out), and both
-			// conversions yield the same double — convert once and reuse it.
+			// conversions yield the same double -- convert once and reuse it.
 			armAsm->Ldr(a64::w9, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fs)));
 			emitToDoubleFromBits(RDSCRATCH, a64::w9, a64::x11);
 			if (op == FpuBinOp::Add)
@@ -1138,3 +1139,5 @@ void armEmitCVT_S(u32 fd, u32 fs)
 	armAsm->Fmov(a64::w9, RSSCRATCH);
 	armAsm->Str(a64::w9, a64::MemOperand(RESTATEPTR, EE_FPR_OFFSET(fd)));
 }
+
+

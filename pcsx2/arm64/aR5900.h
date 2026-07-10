@@ -34,8 +34,7 @@
 #define RESTATEPTR vixl::aarch64::x19
 #define REVTLBPTR vixl::aarch64::x21
 // x28 = host-MMU fastmem base (vtlbdata.fastmem_base). Pinned in recGenDispatchers when
-// CHECK_FASTMEM; dropped from the EE guest-GPR cache (8->7 slots) to free it. The vmap
-// path via REVTLBPTR(x21) is retained as the non-fastmem fallback, so x21 stays reserved.
+// CHECK_FASTMEM; dropped from the EE guest-GPR cache to free it. @@MAC_FASTMEM_BACKPATCH@@
 #define RFASTMEMBASE vixl::aarch64::x28
 
 // --------------------------------------------------------------------------------------
@@ -56,19 +55,18 @@
 // persistent state regs (x19-x21) are callee-saved and survive. Once the EE rec
 // has a register allocator (Phase 3) it must flush live caller-saved guest state
 // before invoking these.
+
 void armEmitVtlbRead(u32 bits, bool sign, const vixl::aarch64::Register& dst, const vixl::aarch64::Register& addr);
 void armEmitVtlbWrite(u32 bits, const vixl::aarch64::Register& addr, const vixl::aarch64::Register& data);
 void armEmitVtlbReadQuad(const vixl::aarch64::VRegister& dst, const vixl::aarch64::Register& addr);
 void armEmitVtlbWriteQuad(const vixl::aarch64::Register& addr, const vixl::aarch64::VRegister& data);
 
-// Fastmem backpatch thunk carving (FASTMEM F2): allocate a scratch code region from the
-// EE code buffer (no const pool) for the SIGSEGV backpatch thunk. Called only from the
-// fault handler (vtlb_DynBackpatchLoadStore, RecStubs.cpp), never mid-block-emit.
+// Fastmem backpatch thunk carving (@@MAC_FASTMEM_BACKPATCH@@): allocate a scratch code
+// region from the EE code buffer (no const pool) for the SIGSEGV backpatch thunk.
 u8* recBeginThunk();
 u8* recEndThunk();
-// LWC1/SWC1 (aR5900FPU.cpp, separate TU): single-instruction backpatch fastmem 32-bit
-// access. vaddr must already be in RXARG1 (zero-extended); `data` = value reg (load: dst;
-// store: src). Returns true if fastmem was emitted (caller then skips the vmap path).
+// LWC1/SWC1 (aR5900FPU.cpp, separate TU): single-instruction backpatch fastmem 32-bit access.
+// vaddr in RXARG1, `data` = value reg. Returns true if fastmem emitted. @@MAC_FASTMEM_BACKPATCH@@
 bool armTryEmitFastmemScalar32(u32 pc, bool is_load, const vixl::aarch64::Register& data);
 
 // --------------------------------------------------------------------------------------
@@ -590,3 +588,4 @@ void armEmitPEXT5(u32 rd, u32 rt);
 void armEmitPPAC5(u32 rd, u32 rt);
 bool armEmitPMFHL(u32 rd, u32 sa);
 void armEmitPMTHL(u32 rs, u32 sa);
+

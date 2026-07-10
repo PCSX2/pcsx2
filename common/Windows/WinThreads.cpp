@@ -131,6 +131,32 @@ bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
 	return (SetThreadAffinityMask(GetCurrentThread(), (DWORD_PTR)processor_mask) != 0 || GetLastError() != ERROR_SUCCESS);
 }
 
+bool Threading::ThreadHandle::SetNicePriority(int nice) const
+{
+	if (!m_native_handle)
+		return false;
+	int win_priority = THREAD_PRIORITY_NORMAL;
+	if (nice <= -15)
+		win_priority = THREAD_PRIORITY_HIGHEST;
+	else if (nice <= -5)
+		win_priority = THREAD_PRIORITY_ABOVE_NORMAL;
+	else if (nice >= 15)
+		win_priority = THREAD_PRIORITY_LOWEST;
+	else if (nice >= 5)
+		win_priority = THREAD_PRIORITY_BELOW_NORMAL;
+	return SetThreadPriority(static_cast<HANDLE>(m_native_handle), win_priority) != 0;
+}
+
+u64 Threading::ThreadHandle::GetAffinity() const
+{
+	return 0;
+}
+
+int Threading::ThreadHandle::GetCurrentCpu() const
+{
+	return static_cast<int>(GetCurrentProcessorNumber());
+}
+
 Threading::Thread::Thread() = default;
 
 Threading::Thread::Thread(Thread&& thread)

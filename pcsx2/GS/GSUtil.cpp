@@ -288,6 +288,20 @@ GSRendererType GSUtil::GetPreferredRenderer()
 #elif defined(_WIN32)
 		// Use D3D device info to select renderer.
 		preferred_renderer = D3D::GetPreferredRenderer();
+#elif defined(__ANDROID__)
+		// Android: prefer OpenGL HW. Vulkan's suitability probe is fragile
+		// across the wide spread of mobile driver stacks, and falling through
+		// to SW for alpha-heavy games (FFX battles, smoke effects) is far
+		// worse than running OGL HW even on devices where Vulkan would also
+		// have worked. Users can still pick Vulkan or SW explicitly via the
+		// renderer setting; this only steers the Auto resolution.
+#if defined(ENABLE_OPENGL)
+		preferred_renderer = GSRendererType::OGL;
+#elif defined(ENABLE_VULKAN)
+		preferred_renderer = GSRendererType::VK;
+#else
+		preferred_renderer = GSRendererType::SW;
+#endif
 #else
 		// Linux: Prefer Vulkan if the driver isn't buggy.
 #if defined(ENABLE_VULKAN)

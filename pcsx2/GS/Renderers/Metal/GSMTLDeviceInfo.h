@@ -34,9 +34,6 @@ struct GSMTLDevice
 		bool has_fast_half          : 1;
 		bool memoryless_textures    : 1;
 		bool depth_feedback         : 1;
-		bool rov                    : 1;
-		bool rov_requires_rt        : 1;
-		bool rov_requires_r32       : 1;
 		MetalVersion shader_version;
 		int max_texsize;
 	};

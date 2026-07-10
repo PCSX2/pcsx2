@@ -14,7 +14,7 @@
 
 #include "D3D12MemAlloc.h"
 
-GSTexture12::GSTexture12(Usage usage, Format format, int width, int height, int levels, DXGI_FORMAT dxgi_format,
+GSTexture12::GSTexture12(Type type, Format format, int width, int height, int levels, DXGI_FORMAT dxgi_format,
 	wil::com_ptr_nothrow<ID3D12Resource> resource, wil::com_ptr_nothrow<ID3D12Resource> resource_fbl,
 	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation, const D3D12DescriptorHandle& srv_descriptor,
 	const D3D12DescriptorHandle& write_descriptor, const D3D12DescriptorHandle& ro_dsv_descriptor,
@@ -33,7 +33,7 @@ GSTexture12::GSTexture12(Usage usage, Format format, int width, int height, int 
 	, m_resource_state(resource_state)
 	, m_simultaneous_tex(simultaneous_texture)
 {
-	m_usage = usage;
+	m_type = type;
 	m_format = format;
 	m_size.x = width;
 	m_size.y = height;
@@ -175,12 +175,10 @@ static D3D12_RESOURCE_STATES GetD3D12ResourceState(GSTexture12::ResourceState st
 	}
 }
 
-std::unique_ptr<GSTexture12> GSTexture12::Create(Usage usage, Format format, int width, int height, int levels,
+std::unique_ptr<GSTexture12> GSTexture12::Create(Type type, Format format, int width, int height, int levels,
 	DXGI_FORMAT dxgi_format, DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format, DXGI_FORMAT dsv_format,
 	DXGI_FORMAT uav_format)
 {
-	pxAssert(ValidateUsageAndFormat(usage, format));
-
 	GSDevice12* const dev = GSDevice12::GetInstance();
 
 	GSDevice12::D3D12_RESOURCE_DESCU desc = {};
@@ -200,55 +198,67 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Usage usage, Format format, int
 	D3D12_CLEAR_VALUE optimized_clear_value = {};
 	ResourceState state;
 
-	if (IsTexture(usage))
+	switch (type)
 	{
-		// This is a little annoying. basically, to do mipmap generation, we need to be a render target.
-		// If it's a compressed texture, we won't be generating mips anyway, so this should be fine.
-		desc.desc1.Flags |= (levels > 1 && !IsCompressedFormat(format)) ? D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET :
-		                                                                  D3D12_RESOURCE_FLAG_NONE;
-		state = ResourceState::CopyDst;
-	}
-	else
-	{
-		allocationDesc.Flags |= D3D12MA::ALLOCATION_FLAG_COMMITTED;
-	}
+		case Type::Texture:
+		{
+			// This is a little annoying. basically, to do mipmap generation, we need to be a render target.
+			// If it's a compressed texture, we won't be generating mips anyway, so this should be fine.
+			desc.desc1.Flags = (levels > 1 && !IsCompressedFormat(format)) ? D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET :
+			                                                                 D3D12_RESOURCE_FLAG_NONE;
+			state = ResourceState::CopyDst;
+			pxAssert(uav_format == DXGI_FORMAT_UNKNOWN);
+		}
+		break;
 
-	if (IsRenderTarget(usage))
-	{
-		// RT's tend to be larger, so we'll keep them committed for speed.
-		pxAssert(levels == 1);
-		desc.desc1.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-		optimized_clear_value.Format = rtv_format;
-		state = ResourceState::RenderTarget;
-	}
+		case Type::RenderTarget:
+		{
+			// RT's tend to be larger, so we'll keep them committed for speed.
+			pxAssert(levels == 1);
+			allocationDesc.Flags |= D3D12MA::ALLOCATION_FLAG_COMMITTED;
+			allocationDesc.ExtraHeapFlags = D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES;
+			desc.desc1.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS;
+			if (!dev->UseEnhancedBarriers())
+				desc.desc1.Layout = D3D12_TEXTURE_LAYOUT_64KB_UNDEFINED_SWIZZLE;
+			optimized_clear_value.Format = rtv_format;
+			state = ResourceState::RenderTarget;
+			if (uav_format != DXGI_FORMAT_UNKNOWN)
+			{
+				desc.desc1.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+			}
+		}
+		break;
 
-	if (IsFeedback(usage))
-	{
-		allocationDesc.ExtraHeapFlags |= D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES;
-		desc.desc1.Flags |= D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS;
-		if (!dev->UseEnhancedBarriers())
-			desc.desc1.Layout = D3D12_TEXTURE_LAYOUT_64KB_UNDEFINED_SWIZZLE;
-	}
+		case Type::DepthStencil:
+		{
+			pxAssert(levels == 1);
+			allocationDesc.Flags |= D3D12MA::ALLOCATION_FLAG_COMMITTED;
+			desc.desc1.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+			optimized_clear_value.Format = dsv_format;
+			state = ResourceState::DepthWriteStencil;
+			pxAssert(uav_format == DXGI_FORMAT_UNKNOWN);
+		}
+		break;
 
-	if (IsDepthStencil(usage))
-	{
-		pxAssert(levels == 1);
-		desc.desc1.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-		optimized_clear_value.Format = dsv_format;
-		state = ResourceState::DepthWriteStencil;
-	}
+		case Type::RWTexture:
+		{
+			pxAssert(levels == 1);
+			allocationDesc.Flags |= D3D12MA::ALLOCATION_FLAG_COMMITTED;
+			state = ResourceState::PixelShaderResource;
+			pxAssert(uav_format != DXGI_FORMAT_UNKNOWN);
+			desc.desc1.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		}
+		break;
 
-	if (IsShaderWrite(usage))
-	{
-		desc.desc1.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-		state = ResourceState::PixelShaderResource;
+		default:
+			return {};
 	}
 
 	wil::com_ptr_nothrow<ID3D12Resource> resource;
 	wil::com_ptr_nothrow<ID3D12Resource> resource_fbl;
 	wil::com_ptr_nothrow<D3D12MA::Allocation> allocation;
 
-	if (IsFeedback(usage) && !dev->UseEnhancedBarriers())
+	if (type == Type::RenderTarget && !dev->UseEnhancedBarriers())
 	{
 		// We need to use an aliased resource for feedback with legacy barriers.
 		const D3D12_RESOURCE_ALLOCATION_INFO allocInfo = dev->GetDevice()->GetResourceAllocationInfo(0, 1, &desc.desc);
@@ -291,14 +301,14 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Usage usage, Format format, int
 		if (dev->UseEnhancedBarriers())
 		{
 			hr = dev->GetAllocator()->CreateResource3(&allocationDesc, &desc.desc1,
-				IsFeedback(usage) ? D3D12_BARRIER_LAYOUT_COMMON : GetD3D12BarrierLayout(state),
-				IsRenderTargetOrDepthStencil(usage) ? &optimized_clear_value : nullptr,
+				type == Type::RenderTarget ? D3D12_BARRIER_LAYOUT_COMMON : GetD3D12BarrierLayout(state),
+				(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr,
 				0, nullptr, allocation.put(), IID_PPV_ARGS(resource.put()));
 		}
 		else
 		{
 			hr = dev->GetAllocator()->CreateResource(&allocationDesc, &desc.desc, GetD3D12ResourceState(state),
-				IsRenderTargetOrDepthStencil(usage) ? &optimized_clear_value : nullptr, allocation.put(),
+				(type == Type::RenderTarget || type == Type::DepthStencil) ? &optimized_clear_value : nullptr, allocation.put(),
 				IID_PPV_ARGS(resource.put()));
 		}
 		if (FAILED(hr))
@@ -319,39 +329,51 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Usage usage, Format format, int
 			return {};
 	}
 
-	if (IsRenderTarget(usage))
+	switch (type)
 	{
-		write_descriptor_type = WriteDescriptorType::RTV;
-		if (!CreateRTVDescriptor(resource.get(), rtv_format, &write_descriptor))
+		case Type::RenderTarget:
 		{
-			dev->GetDescriptorHeapManager().Free(&srv_descriptor);
-			return {};
+			write_descriptor_type = WriteDescriptorType::RTV;
+			if (!CreateRTVDescriptor(resource.get(), rtv_format, &write_descriptor))
+			{
+				dev->GetDescriptorHeapManager().Free(&srv_descriptor);
+				return {};
+			}
+			if (uav_format != DXGI_FORMAT_UNKNOWN && !CreateUAVDescriptor(resource.get(), uav_format, &uav_descriptor))
+			{
+				dev->GetRTVHeapManager().Free(&write_descriptor);
+				dev->GetDescriptorHeapManager().Free(&srv_descriptor);
+				return {};
+			}
 		}
-	}
+		break;
 
-	if (IsDepthStencil(usage))
-	{
-		write_descriptor_type = WriteDescriptorType::DSV;
-		if (!CreateDSVDescriptor(resource.get(), dsv_format, &write_descriptor, false))
+		case Type::DepthStencil:
 		{
-			dev->GetDescriptorHeapManager().Free(&srv_descriptor);
-			return {};
+			write_descriptor_type = WriteDescriptorType::DSV;
+			if (!CreateDSVDescriptor(resource.get(), dsv_format, &write_descriptor, false))
+			{
+				dev->GetDescriptorHeapManager().Free(&srv_descriptor);
+				return {};
+			}
+			if (!CreateDSVDescriptor(resource.get(), dsv_format, &ro_dsv_descriptor, true))
+			{
+				dev->GetDSVHeapManager().Free(&write_descriptor);
+				dev->GetDescriptorHeapManager().Free(&srv_descriptor);
+				return {};
+			}
 		}
-		if (!CreateDSVDescriptor(resource.get(), dsv_format, &ro_dsv_descriptor, true))
-		{
-			dev->GetDSVHeapManager().Free(&write_descriptor);
-			dev->GetDescriptorHeapManager().Free(&srv_descriptor);
-			return {};
-		}
-	}
+		break;
 
-	pxAssert(IsShaderWrite(usage) == (uav_format != DXGI_FORMAT_UNKNOWN));
-	if (IsShaderWrite(usage) && !CreateUAVDescriptor(resource.get(), uav_format, &uav_descriptor))
-	{
-		if (IsRenderTarget(usage))
-			dev->GetRTVHeapManager().Free(&write_descriptor);
-		dev->GetDescriptorHeapManager().Free(&srv_descriptor);
-		return {};
+		case Type::RWTexture:
+		{
+			if (uav_format != DXGI_FORMAT_UNKNOWN && !CreateUAVDescriptor(resource.get(), uav_format, &uav_descriptor))
+			{
+				dev->GetDescriptorHeapManager().Free(&srv_descriptor);
+				return {};
+			}
+		}
+		break;
 	}
 
 	// Feedback descriptor used with legacy barriers
@@ -379,11 +401,11 @@ std::unique_ptr<GSTexture12> GSTexture12::Create(Usage usage, Format format, int
 	}
 
 	return std::unique_ptr<GSTexture12>(
-		new GSTexture12(usage, format, width, height, levels, dxgi_format, std::move(resource), std::move(resource_fbl), std::move(allocation),
-			srv_descriptor, write_descriptor, ro_dsv_descriptor, uav_descriptor, fbl_descriptor, write_descriptor_type, IsFeedback(usage), state));
+		new GSTexture12(type, format, width, height, levels, dxgi_format, std::move(resource), std::move(resource_fbl), std::move(allocation),
+			srv_descriptor, write_descriptor, ro_dsv_descriptor, uav_descriptor, fbl_descriptor, write_descriptor_type, type == Type::RenderTarget, state));
 }
 
-std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resource> resource, Usage usage, Format format,
+std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resource> resource, Type type, Format format,
 	int width, int height, int levels, DXGI_FORMAT dxgi_format, DXGI_FORMAT srv_format, DXGI_FORMAT rtv_format,
 	DXGI_FORMAT dsv_format, DXGI_FORMAT uav_format, ResourceState resource_state)
 {
@@ -397,7 +419,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 			return {};
 	}
 
-	if (IsRenderTarget(usage))
+	if (type == Type::RenderTarget)
 	{
 		write_descriptor_type = WriteDescriptorType::RTV;
 		if (!CreateRTVDescriptor(resource.get(), rtv_format, &write_descriptor))
@@ -406,7 +428,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 			return {};
 		}
 	}
-	else if (IsDepthStencil(usage))
+	else if (type == Type::DepthStencil)
 	{
 		write_descriptor_type = WriteDescriptorType::DSV;
 		if (!CreateDSVDescriptor(resource.get(), dsv_format, &write_descriptor, false))
@@ -422,8 +444,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 		}
 	}
 
-	pxAssert(IsShaderWrite(usage) == (uav_format != DXGI_FORMAT_UNKNOWN));
-	if (IsShaderWrite(usage))
+	if (uav_format != DXGI_FORMAT_UNKNOWN)
 	{
 		if (!CreateUAVDescriptor(resource.get(), uav_format, &uav_descriptor))
 		{
@@ -445,7 +466,7 @@ std::unique_ptr<GSTexture12> GSTexture12::Adopt(wil::com_ptr_nothrow<ID3D12Resou
 		}
 	}
 
-	return std::unique_ptr<GSTexture12>(new GSTexture12(usage, format, static_cast<u32>(desc.Width), desc.Height,
+	return std::unique_ptr<GSTexture12>(new GSTexture12(type, format, static_cast<u32>(desc.Width), desc.Height,
 		desc.MipLevels, desc.Format, std::move(resource), {}, {}, srv_descriptor, write_descriptor, {}, uav_descriptor,
 		{}, write_descriptor_type, false, resource_state));
 }
@@ -514,7 +535,7 @@ void* GSTexture12::GetNativeHandle() const
 const D3D12CommandList& GSTexture12::GetCommandBufferForUpdate()
 {
 	GSDevice12* const dev = GSDevice12::GetInstance();
-	if (!IsTexture() || m_use_fence_counter == dev->GetCurrentFenceValue())
+	if (m_type != Type::Texture || m_use_fence_counter == dev->GetCurrentFenceValue())
 	{
 		// Console.WriteLn("Texture update within frame, can't use do beforehand");
 		GSDevice12::GetInstance()->EndRenderPass();
@@ -640,7 +661,7 @@ bool GSTexture12::Update(const GSVector4i& r, const void* data, int pitch, int l
 		TransitionSubresourceToState(cmdlist, layer, m_resource_state, GSTexture12::ResourceState::CopyDst);
 
 	// if we're an rt and have been cleared, and the full rect isn't being uploaded, do the clear
-	if (IsRenderTarget())
+	if (m_type == Type::RenderTarget)
 	{
 		if (!r.eq(GSVector4i(0, 0, m_size.x, m_size.y)))
 			CommitClear(cmdlist);
@@ -660,7 +681,7 @@ bool GSTexture12::Update(const GSVector4i& r, const void* data, int pitch, int l
 	if (m_resource_state != GSTexture12::ResourceState::CopyDst)
 		TransitionSubresourceToState(cmdlist, layer, GSTexture12::ResourceState::CopyDst, m_resource_state);
 
-	if (IsTexture())
+	if (m_type == Type::Texture)
 		m_needs_mipmaps_generated |= (layer == 0);
 
 	return true;
@@ -719,7 +740,7 @@ void GSTexture12::Unmap()
 		TransitionSubresourceToState(cmdlist, m_map_level, m_resource_state, ResourceState::CopyDst);
 
 	// if we're an rt and have been cleared, and the full rect isn't being uploaded, do the clear
-	if (IsRenderTarget())
+	if (m_type == Type::RenderTarget)
 	{
 		if (!m_map_area.eq(GSVector4i(0, 0, m_size.x, m_size.y)))
 			CommitClear(cmdlist);
@@ -748,7 +769,7 @@ void GSTexture12::Unmap()
 	if (m_resource_state != ResourceState::CopyDst)
 		TransitionSubresourceToState(cmdlist, m_map_level, ResourceState::CopyDst, m_resource_state);
 
-	if (IsTexture())
+	if (m_type == Type::Texture)
 		m_needs_mipmaps_generated |= (m_map_level == 0);
 }
 

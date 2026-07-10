@@ -137,6 +137,33 @@ void Threading::WorkSema::Reset()
 	m_state = STATE_RUNNING_0;
 }
 
+void Threading::UserspaceSemaphore::WaitWithSpin()
+{
+	// See header for rationale. The peek-and-CAS spin path is the win — when
+	// the producer is about to Post (within ~50µs), we acquire in user space
+	// and skip the futex syscall entirely.
+	int32_t counter = m_counter.load(std::memory_order_relaxed);
+	u32 waited = 0;
+	while (true)
+	{
+		while (counter > 0)
+		{
+			if (m_counter.compare_exchange_weak(counter, counter - 1,
+				std::memory_order_acquire, std::memory_order_relaxed))
+			{
+				return;
+			}
+		}
+		if (waited >= SPIN_TIME_NS)
+			break;
+		waited += ShortSpin();
+		counter = m_counter.load(std::memory_order_relaxed);
+	}
+	// Spin window expired — block in the kernel (same as plain Wait()).
+	if (m_counter.fetch_sub(1, std::memory_order_acquire) <= 0)
+		m_sema.Wait();
+}
+
 #if !defined(__APPLE__) // macOS implementations are in DarwinThreads
 
 Threading::KernelSemaphore::KernelSemaphore()

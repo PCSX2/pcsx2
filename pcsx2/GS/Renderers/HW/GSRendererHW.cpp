@@ -5463,7 +5463,7 @@ void GSRendererHW::SetupIA(float target_scale, float sx, float sy, bool req_vert
 						m_conf.cb_vs.line_aa1_width = half_native_px + upscaled_px;
 
 						// Opaque in middle and linear falloff on last 2 upscaled pixels on each side.
-						m_conf.cb_ps.LineCovScale = (half_native_px + upscaled_px) / (2 * upscaled_px); 
+						m_conf.cb_ps.LineCovScale = (half_native_px + upscaled_px) / (2 * upscaled_px);
 					}
 
 					m_conf.topology = GSHWDrawConfig::Topology::Triangle;
@@ -5905,7 +5905,7 @@ void GSRendererHW::EmulateDATESelectMethod(DATEOptions& date_options, GSTextureC
 
 	const GSDevice::FeatureSupport& features = g_gs_device->Features();
 
-	// Date one can run with complex alpha test if there's no overlap.
+	// DATE one can run with complex alpha test if there's no overlap.
 	const bool complex_alpha_test = m_cached_ctx.TEST.ATE &&
 	                                m_cached_ctx.TEST.ATST != ATST_ALWAYS &&
 	                                m_cached_ctx.TEST.ATST != ATST_NEVER &&
@@ -5955,6 +5955,7 @@ void GSRendererHW::EmulateDATESelectMethod(DATEOptions& date_options, GSTextureC
 	}
 	else if (m_conf.colormask.wa && complex_alpha_test && features.feedback_loops())
 	{
+		// Complex alpha test with overlap → make DATE accurate with a full barrier.
 		GL_PERF("DATE: Accurate with complex alpha test.");
 		m_conf.require_full_barrier = true;
 		date_options.barrier = true;
@@ -6806,6 +6807,8 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 	const bool alpha_eq_one = alpha_c0_eq_one || alpha_c2_eq_one;
 	const bool alpha_high_one = alpha_c0_high_min_one || alpha_c2_high_one;
 	const bool alpha_eq_less_one = alpha_c0_eq_less_max_one || alpha_c2_eq_less_one;
+	const bool alpha_mali_custom_set = g_gs_device && g_gs_device->IsMaliGPUProfile() &&
+		(alpha_eq_less_one || alpha_c0_high_max_one);
 
 	// Optimize blending equations, must be done before index calculation
 	if ((m_conf.ps.blend_a == m_conf.ps.blend_b) || ((m_conf.ps.blend_b == m_conf.ps.blend_d) && alpha_eq_one))
@@ -6984,7 +6987,7 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 			// Enable sw blending for barriers.
 			sw_blending |= blend_requires_barrier || prefer_sw_blend;
 			// Enable sw blending for free blending (non recursive, accumulation).
-			sw_blending |= free_blend;
+			sw_blending |= free_blend || alpha_mali_custom_set;
 			// Do not run BLEND MIX if sw blending is already present, it's less accurate.
 			blend_mix &= !sw_blending;
 			sw_blending |= blend_mix;
@@ -7538,11 +7541,7 @@ __fi void GSRendererHW::GetForcedROVUsage(bool& rov_color, bool& rov_depth)
 	// Separate flag for DATE since they are many methods and the interaction with ROV is not clear.
 	const bool date = m_cached_ctx.TEST.DATE;
 
-	// Alpha test might require depth feedback once we configure ROV.
-	const bool atst_needs_depth = m_cached_ctx.TEST.ATE &&
-		(m_cached_ctx.TEST.AFAIL == AFAIL_FB_ONLY || m_cached_ctx.TEST.AFAIL == AFAIL_RGB_ONLY);
-
-	if (rov_color && (m_conf.ps.HasShaderDiscard() || m_conf.ps.HasDepthOutput() || date || atst_needs_depth))
+	if (rov_color && (m_conf.ps.HasShaderDiscard() || m_conf.ps.HasDepthOutput() || date))
 	{
 		GL_INS("ROV: Color ROV with shader discard/depth write forces depth ROV");
 		rov_depth = true;
@@ -7807,61 +7806,60 @@ void GSRendererHW::ConvertTextureTypeROVSingle(GSTextureCache::Target* tgt, bool
 
 	GSTexture* old_tex = depth ? m_conf.ds : m_conf.rt;
 
-	const GSTexture::Usage usage = shader_write ? GSTexture::ShaderWriteTarget : GSTexture::FeedbackTarget;
-	if (GSTexture* new_tex = depth ?
+	GSTexture::Usage usage = shader_write ? GSTexture::ShaderWriteTarget : GSTexture::FeedbackTarget;
+	GSTexture* new_tex = depth ?
 		(shader_write ?
 			g_gs_device->FetchSurface(usage, old_tex->GetSize(), 1, GSTexture::Format::DepthColor, false, true) :
 			g_gs_device->CreateDepthStencil(old_tex->GetSize(), false, true)) :
-			g_gs_device->FetchSurface(usage, old_tex->GetSize(), 1, GSTexture::Format::Color, false, true))
-	{
-		switch (old_tex->GetState())
-		{
-			case GSTexture::State::Cleared:
-				if (depth)
-					g_gs_device->ClearDepth(new_tex, old_tex->GetClearDepth());
-				else
-					g_gs_device->ClearRenderTarget(new_tex, old_tex->GetClearColor());
-				break;
-			case GSTexture::State::Invalidated:
-				g_gs_device->InvalidateRenderTarget(new_tex);
-				break;
-			case GSTexture::State::Dirty:
-				g_gs_device->StretchRectAuto(old_tex, new_tex, Nearest);
+		g_gs_device->FetchSurface(usage, old_tex->GetSize(), 1, GSTexture::Format::Color, false, true);
 
-				// Count stats as part of both standard and ROV.
-				g_perfmon.Put(GSPerfMon::TextureCopiesROV, 1.0);
-				g_perfmon.Put(GSPerfMon::DrawCallsROV, 1.0);
-				break;
-			default:
-				pxAssert(false);
-				break;
-		}
+	switch (old_tex->GetState())
+	{
+		case GSTexture::State::Cleared:
+			if (depth)
+				g_gs_device->ClearDepth(new_tex, old_tex->GetClearDepth());
+			else
+				g_gs_device->ClearRenderTarget(new_tex, old_tex->GetClearColor());
+			break;
+		case GSTexture::State::Invalidated:
+			g_gs_device->InvalidateRenderTarget(new_tex);
+			break;
+		case GSTexture::State::Dirty:
+			g_gs_device->StretchRectAuto(old_tex, new_tex, Nearest);
+
+			// Count stats as part of both standard and ROV.
+			g_perfmon.Put(GSPerfMon::TextureCopiesROV, 1.0);
+			g_perfmon.Put(GSPerfMon::DrawCallsROV, 1.0);
+			break;
+		default:
+			pxAssert(false);
+			break;
+	}
 
 #if PCSX2_DEVBUILD
-		new_tex->SetDebugName(tgt->m_texture->GetDebugName());
+	new_tex->SetDebugName(tgt->m_texture->GetDebugName());
 #endif
 
-		if (tgt->m_texture == old_tex)
-		{
-			GL_CACHE("HW: Replaced texture for %s @ 0x%04x", depth ? "DS" : "RT", tgt->m_TEX0.TBP0);
-			tgt->m_texture = new_tex;
-		}
-		else
-		{
-			// Must be the temporary Z.
-			pxAssert(depth && g_texture_cache->GetTemporaryZ() == old_tex);
-			GL_CACHE("HW: Replaced texture for temporary Z @ 0x%04x", g_texture_cache->GetTemporaryZInfo().ZBP);
-			g_texture_cache->SetTemporaryZ(new_tex);
-		}
-
-		// Fixup the backend config.
-		if (depth)
-			m_conf.ds = new_tex;
-		else
-			m_conf.rt = new_tex;
-
-		g_gs_device->Recycle(old_tex);
+	if (tgt->m_texture == old_tex)
+	{
+		GL_CACHE("HW: Replaced texture for %s @ 0x%04x", depth ? "DS" : "RT", tgt->m_TEX0.TBP0);
+		tgt->m_texture = new_tex;
 	}
+	else
+	{
+		// Must be the temporary Z.
+		pxAssert(depth && g_texture_cache->GetTemporaryZ() == old_tex);
+		GL_CACHE("HW: Replaced texture for temporary Z @ 0x%04x", g_texture_cache->GetTemporaryZInfo().ZBP);
+		g_texture_cache->SetTemporaryZ(new_tex);
+	}
+
+	// Fixup the backend config.
+	if (depth)
+		m_conf.ds = new_tex;
+	else
+		m_conf.rt = new_tex;
+
+	g_gs_device->Recycle(old_tex);
 }
 
 void GSRendererHW::ConvertTextureTypeROV(GSTextureCache::Target* rt, GSTextureCache::Target* ds)
@@ -10510,7 +10508,9 @@ bool GSRendererHW::OI_BlitFMV(GSTextureCache::Target* _rt, GSTextureCache::Sourc
 		r_texture.w -= offset;
 		const int new_height = std::max(r_texture.w, th);
 
-		if (GSTexture* temp_tex = g_gs_device->CreateTexture(tw, new_height, 1, tex->m_texture->GetFormat(), true))
+		GSTexture* temp_tex = g_gs_device->CreateTexture(tw, new_height, 1, tex->m_texture->GetFormat(), true);
+
+		if (temp_tex)
 		{
 			if (GSTexture* rt = g_gs_device->CreateFeedbackTarget(tw, new_height, GSTexture::Format::Color))
 			{

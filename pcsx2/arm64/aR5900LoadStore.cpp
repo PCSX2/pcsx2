@@ -11,9 +11,7 @@
 // That makes these helpers correct by construction (interpreter is ground truth)
 // and avoids needing the register allocator / indirect dispatchers yet.
 //
-// The fastmem path (direct access through a pinned 4GB base with SIGSEGV
-// backpatching via vtlb_DynBackpatchLoadStore) was never wired up; the vtlb
-// vmap path through REVTLBPTR is the fast path (see aR5900.h).
+// The vtlb vmap path through REVTLBPTR is the fast path for this backend.
 
 #include "aR5900.h"
 
@@ -25,7 +23,23 @@
 
 #include <cstddef>
 
+// Inline VTLB vmap fast path (finishing the mac backend's reserved-but-unbuilt
+// "Phase 2": REVTLBPTR=x21 is already pinned to vtlbdata.vmap in EnterRecompiledCode).
+// When on, scalar loads decode the vmap entry inline and do a direct host access for
+// RAM pages, falling back to the existing vtlb_memRead C call only for handler/MMIO
+// pages — no signal handler, no backpatch (unlike the SIGSEGV-fastmem in arm64/).
+// Enabled after initial on-device validation. Marker: @@MAC_FASTMEM@@.
+#ifndef ARMSX2_MAC_FASTMEM
+#define ARMSX2_MAC_FASTMEM 1
+#endif
+
+
 namespace a64 = vixl::aarch64;
+
+// VTLB page shift (vtlb.h VTLBVirtual::VTLB_PAGE_BITS == 12). vmap is an array of
+// 8-byte VTLBVirtual entries; for guest vaddr v, host = vmap[v>>12].value + v, and
+// the access is a handler/MMIO page iff that sum is negative (sign bit set).
+static constexpr int MAC_VTLB_PAGE_BITS = 12;
 
 // The effective-address codegen assumes guest GPRs are laid out as 16-byte
 // GPR_reg slots starting at the base of cpuRegs (so GPR[n].UL[0] is at n*16).
@@ -35,9 +49,33 @@ static_assert(offsetof(cpuRegisters, GPR) == 0, "GPR must be the first member of
 // ------------------------------------------------------------------------
 void armEmitVtlbRead(u32 bits, bool sign, const a64::Register& dst, const a64::Register& addr)
 {
-	// 32-bit guest address goes in the first argument register.
+	// 32-bit guest address goes in the first argument register (zero-extended into
+	// RXARG1/x0, so the 64-bit views below see the full guest vaddr).
 	if (!addr.W().Is(RWARG1))
 		armAsm->Mov(RWARG1, addr.W());
+
+#if ARMSX2_MAC_FASTMEM
+	// Inline vmap fast path: host = vmap[vaddr>>12].value + vaddr; handler iff host<0.
+	// On a RAM hit, do the direct host load (with the same extension the C path uses)
+	// and skip the call; otherwise fall through to the vtlb_memRead helper.
+	// x16/x17 are emit scratch; x0 (RXARG1) keeps the vaddr for the slow path because
+	// the direct load (which would overwrite dst==x0) only runs after the handler test.
+	a64::Label fastmem_slow, fastmem_done;
+	armAsm->Lsr(RXVIXLSCRATCH, RXARG1, MAC_VTLB_PAGE_BITS);                              // x16 = vaddr >> 12
+	armAsm->Ldr(RSCRATCHADDR, a64::MemOperand(REVTLBPTR, RXVIXLSCRATCH, a64::LSL, 3));    // x17 = vmap[page].value
+	armAsm->Add(RSCRATCHADDR, RSCRATCHADDR, RXARG1);                                      // x17 = value + vaddr (host, or <0)
+	armAsm->Tbnz(RSCRATCHADDR, 63, &fastmem_slow);                                        // negative => handler/MMIO
+	switch (bits)
+	{
+		case 8:  sign ? armAsm->Ldrsb(dst.X(), a64::MemOperand(RSCRATCHADDR)) : armAsm->Ldrb(dst.W(), a64::MemOperand(RSCRATCHADDR)); break;
+		case 16: sign ? armAsm->Ldrsh(dst.X(), a64::MemOperand(RSCRATCHADDR)) : armAsm->Ldrh(dst.W(), a64::MemOperand(RSCRATCHADDR)); break;
+		case 32: sign ? armAsm->Ldrsw(dst.X(), a64::MemOperand(RSCRATCHADDR)) : armAsm->Ldr(dst.W(), a64::MemOperand(RSCRATCHADDR)); break;
+		case 64: armAsm->Ldr(dst.X(), a64::MemOperand(RSCRATCHADDR)); break;
+		jNO_DEFAULT
+	}
+	armAsm->B(&fastmem_done);
+	armAsm->Bind(&fastmem_slow);
+#endif
 
 	const void* fn;
 	switch (bits)
@@ -61,6 +99,10 @@ void armEmitVtlbRead(u32 bits, bool sign, const a64::Register& dst, const a64::R
 		case 64: if (!dst.X().Is(RXRET)) armAsm->Mov(dst.X(), RXRET); break;
 		jNO_DEFAULT
 	}
+
+#if ARMSX2_MAC_FASTMEM
+	armAsm->Bind(&fastmem_done);
+#endif
 }
 
 // ------------------------------------------------------------------------
@@ -76,24 +118,47 @@ void armEmitVtlbWrite(u32 bits, const a64::Register& addr, const a64::Register& 
 		jNO_DEFAULT
 	}
 
-	// vtlb_memWrite<T>(u32 addr, T data): addr -> arg1, data -> arg2. Stage the
-	// value through the scratch reg first so addr/data may live in any registers
-	// (including each other's arg reg) without an aliasing hazard.
+	// vtlb_memWrite<T>(u32 addr, T data): addr -> arg1, data -> arg2. Stage the value
+	// through VIXLSCRATCH (x16) so addr/data can't alias, and put the address in RWARG1
+	// (x0 zero-extended) — shared by the inline fast store and the slow C call.
 	if (bits == 64)
-	{
 		armAsm->Mov(RXVIXLSCRATCH, data.X());
-		if (!addr.W().Is(RWARG1))
-			armAsm->Mov(RWARG1, addr.W());
-		armAsm->Mov(RXARG2, RXVIXLSCRATCH);
-	}
 	else
-	{
 		armAsm->Mov(RWVIXLSCRATCH, data.W());
-		if (!addr.W().Is(RWARG1))
-			armAsm->Mov(RWARG1, addr.W());
-		armAsm->Mov(RWARG2, RWVIXLSCRATCH);
+	if (!addr.W().Is(RWARG1))
+		armAsm->Mov(RWARG1, addr.W());
+
+#if ARMSX2_MAC_FASTMEM
+	// Inline vmap fast path: host = vmap[vaddr>>12].value + vaddr; handler iff host<0.
+	// x17 holds page→vmap→host in sequence (x16 keeps the staged data). A direct store
+	// that faults on an SMC-protected code page is handled by the shared page-fault
+	// handler (mmap_ClearCpuBlock + retry), exactly like a faulting vtlb_memWrite.
+	a64::Label fastmem_slow, fastmem_done;
+	armAsm->Lsr(RSCRATCHADDR, RXARG1, MAC_VTLB_PAGE_BITS);                            // x17 = vaddr >> 12
+	armAsm->Ldr(RSCRATCHADDR, a64::MemOperand(REVTLBPTR, RSCRATCHADDR, a64::LSL, 3));  // x17 = vmap[page].value
+	armAsm->Add(RSCRATCHADDR, RSCRATCHADDR, RXARG1);                                   // x17 = value + vaddr (host, or <0)
+	armAsm->Tbnz(RSCRATCHADDR, 63, &fastmem_slow);                                     // negative => handler/MMIO
+	switch (bits)
+	{
+		case 8:  armAsm->Strb(RWVIXLSCRATCH, a64::MemOperand(RSCRATCHADDR)); break;
+		case 16: armAsm->Strh(RWVIXLSCRATCH, a64::MemOperand(RSCRATCHADDR)); break;
+		case 32: armAsm->Str(RWVIXLSCRATCH, a64::MemOperand(RSCRATCHADDR)); break;
+		case 64: armAsm->Str(RXVIXLSCRATCH, a64::MemOperand(RSCRATCHADDR)); break;
+		jNO_DEFAULT
 	}
+	armAsm->B(&fastmem_done);
+	armAsm->Bind(&fastmem_slow);
+#endif
+
+	if (bits == 64)
+		armAsm->Mov(RXARG2, RXVIXLSCRATCH);
+	else
+		armAsm->Mov(RWARG2, RWVIXLSCRATCH);
 	armEmitCall(fn);
+
+#if ARMSX2_MAC_FASTMEM
+	armAsm->Bind(&fastmem_done);
+#endif
 }
 
 // ------------------------------------------------------------------------
@@ -102,24 +167,60 @@ void armEmitVtlbReadQuad(const a64::VRegister& dst, const a64::Register& addr)
 	if (!addr.W().Is(RWARG1))
 		armAsm->Mov(RWARG1, addr.W());
 
+#if ARMSX2_MAC_FASTMEM
+	// Inline vmap fast path (addr is already 16-byte aligned by the caller). RAM hit:
+	// a single 128-bit host load; handler/MMIO falls through to vtlb_memRead128.
+	a64::Label fastmem_slow, fastmem_done;
+	armAsm->Lsr(RSCRATCHADDR, RXARG1, MAC_VTLB_PAGE_BITS);                            // x17 = vaddr >> 12
+	armAsm->Ldr(RSCRATCHADDR, a64::MemOperand(REVTLBPTR, RSCRATCHADDR, a64::LSL, 3));  // x17 = vmap[page].value
+	armAsm->Add(RSCRATCHADDR, RSCRATCHADDR, RXARG1);                                   // x17 = host (or <0)
+	armAsm->Tbnz(RSCRATCHADDR, 63, &fastmem_slow);
+	armAsm->Ldr(dst.Q(), a64::MemOperand(RSCRATCHADDR));                               // direct 128-bit load
+	armAsm->B(&fastmem_done);
+	armAsm->Bind(&fastmem_slow);
+#endif
+
 	// vtlb_memRead128 returns r128 (uint32x4_t) in q0.
 	armEmitCall(reinterpret_cast<const void*>(&vtlb_memRead128));
 
 	if (!dst.Q().Is(RQRET))
 		armAsm->Mov(dst.Q(), RQRET);
+
+#if ARMSX2_MAC_FASTMEM
+	armAsm->Bind(&fastmem_done);
+#endif
 }
 
 // ------------------------------------------------------------------------
 void armEmitVtlbWriteQuad(const a64::Register& addr, const a64::VRegister& data)
 {
-	// vtlb_memWrite128(u32 mem, r128 value): mem -> w0, value (uint32x4_t) -> q0.
-	// Set the vector arg first; it can't alias the GPR address argument.
-	if (!data.Q().Is(RQRET))
-		armAsm->Mov(RQRET, data.Q());
+	// Address into RWARG1 (x0 zero-extended) for both the inline decode and the C call.
+	// data is a vector reg, so it can't alias the GPR address.
 	if (!addr.W().Is(RWARG1))
 		armAsm->Mov(RWARG1, addr.W());
 
+#if ARMSX2_MAC_FASTMEM
+	// Inline vmap fast path (addr is already 16-byte aligned by the caller). RAM hit:
+	// a single 128-bit host store (SMC-protected code pages fault → shared handler →
+	// mmap_ClearCpuBlock + retry, same as vtlb_memWrite128). Else fall through to C.
+	a64::Label fastmem_slow, fastmem_done;
+	armAsm->Lsr(RSCRATCHADDR, RXARG1, MAC_VTLB_PAGE_BITS);                            // x17 = vaddr >> 12
+	armAsm->Ldr(RSCRATCHADDR, a64::MemOperand(REVTLBPTR, RSCRATCHADDR, a64::LSL, 3));  // x17 = vmap[page].value
+	armAsm->Add(RSCRATCHADDR, RSCRATCHADDR, RXARG1);                                   // x17 = host (or <0)
+	armAsm->Tbnz(RSCRATCHADDR, 63, &fastmem_slow);
+	armAsm->Str(data.Q(), a64::MemOperand(RSCRATCHADDR));                              // direct 128-bit store
+	armAsm->B(&fastmem_done);
+	armAsm->Bind(&fastmem_slow);
+#endif
+
+	// vtlb_memWrite128(u32 mem, r128 value): mem -> w0, value (uint32x4_t) -> q0.
+	if (!data.Q().Is(RQRET))
+		armAsm->Mov(RQRET, data.Q());
 	armEmitCall(reinterpret_cast<const void*>(&vtlb_memWrite128));
+
+#if ARMSX2_MAC_FASTMEM
+	armAsm->Bind(&fastmem_done);
+#endif
 }
 
 // ========================================================================
@@ -217,26 +318,10 @@ void armEmitStoreQuad(u32 rt, u32 rs, s32 imm)
 // ========================================================================
 //  Unaligned load/store (LWL/LWR/SWL/SWR, LDL/LDR/SDL/SDR)
 // ========================================================================
-// Bit-exact ports of the interpreter's mask/shift tables (R5900OpcodeImpl.cpp),
-// computed at runtime from the low address bits instead of via lookup tables:
-//
-//   shift_bits = (addr & 3) << 3            (word forms;  0/8/16/24)
-//   shift_bits = (addr & 7) << 3            (doubleword;  0..56)
-//
-//   LWL_MASK[s] = 0x00ffffff >> shift_bits
-//   LWR_MASK[s] = ~(0xffffffff >> shift_bits)
-//   SWL_MASK[s] = low32(0xffffffffull << (shift_bits + 8))   (X-shift: s=3 -> 0)
-//   SWR_MASK[s] = ~(0xffffffff << shift_bits)
-//   LDL_MASK[s] = 0x00ffffffffffffff >> shift_bits
-//   LDR_MASK[s] = ~(0xffffffffffffffff >> shift_bits)
-//   SDL_MASK[s] = 0xffffffffffffff00 << shift_bits           (s=7 shifts to 0)
-//   SDR_MASK[s] = ~(0xffffffffffffffff << shift_bits)
-//
-// The vtlb call clobbers all caller-saved registers, so the effective address is
-// recomputed afterwards from GPR[rs] in memory — safe because nothing in the read
-// (or in this op before the final write) modifies GPR memory. Scratch: w9-w15.
+// Bit-exact ports of the interpreter's mask/shift table semantics, computed
+// from the low runtime address bits. The vtlb call clobbers caller-saved regs,
+// so the effective address is recomputed after the call from guest state.
 
-// addr -> w9 (recomputed post-call), shift_bits -> w10.
 static void emitUnalignedShift(u32 rs, s32 imm, u32 addr_mask)
 {
 	armEmitEffectiveAddr(a64::w9, rs, imm);
@@ -246,15 +331,13 @@ static void emitUnalignedShift(u32 rs, s32 imm, u32 addr_mask)
 
 void armEmitLWL(u32 rt, u32 rs, s32 imm)
 {
-	// mem = memRead32(addr & ~3)  (the access happens even for rt==0).
 	armEmitEffectiveAddr(RWARG1, rs, imm);
 	armAsm->And(RWARG1, RWARG1, ~0x03);
-	armEmitVtlbRead(32, /*sign*/ false, RXRET, RWARG1);
+	armEmitVtlbRead(32, false, RXRET, RWARG1);
 	if (rt == 0)
 		return;
 
 	emitUnalignedShift(rs, imm, 3);
-	// rt = (s32)((rt & (0x00ffffff >> sh)) | (mem << (24 - sh)))
 	armAsm->Mov(a64::w11, 0x00ffffff);
 	armAsm->Lsr(a64::w11, a64::w11, a64::w10);
 	armAsm->Mov(a64::w12, 24);
@@ -263,7 +346,7 @@ void armEmitLWL(u32 rt, u32 rs, s32 imm)
 	armAsm->Ldr(a64::w14, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
 	armAsm->And(a64::w14, a64::w14, a64::w11);
 	armAsm->Orr(a64::w14, a64::w14, a64::w13);
-	armAsm->Sxtw(a64::x14, a64::w14); // SD[0] = (s32)merged
+	armAsm->Sxtw(a64::x14, a64::w14);
 	armAsm->Str(a64::x14, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
 }
 
@@ -271,49 +354,44 @@ void armEmitLWR(u32 rt, u32 rs, s32 imm)
 {
 	armEmitEffectiveAddr(RWARG1, rs, imm);
 	armAsm->And(RWARG1, RWARG1, ~0x03);
-	armEmitVtlbRead(32, /*sign*/ false, RXRET, RWARG1);
+	armEmitVtlbRead(32, false, RXRET, RWARG1);
 	if (rt == 0)
 		return;
 
 	emitUnalignedShift(rs, imm, 3);
-	// merged = (rt & ~(0xffffffff >> sh)) | (mem >> sh)
 	armAsm->Lsr(a64::w13, RWRET, a64::w10);
-	armAsm->Mvn(a64::w11, a64::wzr); // 0xffffffff
+	armAsm->Mvn(a64::w11, a64::wzr);
 	armAsm->Lsr(a64::w11, a64::w11, a64::w10);
 	armAsm->Mvn(a64::w11, a64::w11);
 	armAsm->Ldr(a64::x14, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
 	armAsm->And(a64::w15, a64::w14, a64::w11);
 	armAsm->Orr(a64::w15, a64::w15, a64::w13);
 
-	// shift==0 loads the whole word and sign-extends into SD[0]; any other shift
-	// writes only UL[0] and preserves the upper half of UD[0] (interpreter LWR).
 	a64::Label partial, done;
 	armAsm->Cbnz(a64::w10, &partial);
 	armAsm->Sxtw(a64::x15, a64::w15);
 	armAsm->Str(a64::x15, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
 	armAsm->B(&done);
 	armAsm->Bind(&partial);
-	armAsm->Bfi(a64::x14, a64::x15, 0, 32); // UD[0][31:0] = merged, [63:32] kept
+	armAsm->Bfi(a64::x14, a64::x15, 0, 32);
 	armAsm->Str(a64::x14, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
 	armAsm->Bind(&done);
 }
 
 void armEmitSWL(u32 rt, u32 rs, s32 imm)
 {
-	// mem = memRead32(addr & ~3)
 	armEmitEffectiveAddr(RWARG1, rs, imm);
 	armAsm->And(RWARG1, RWARG1, ~0x03);
-	armEmitVtlbRead(32, /*sign*/ false, RXRET, RWARG1);
+	armEmitVtlbRead(32, false, RXRET, RWARG1);
 
 	emitUnalignedShift(rs, imm, 3);
-	// value = (rt >> (24 - sh)) | (mem & low32(0xffffffffull << (sh + 8)))
 	armAsm->Ldr(a64::w13, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
 	armAsm->Mov(a64::w12, 24);
 	armAsm->Sub(a64::w12, a64::w12, a64::w10);
 	armAsm->Lsr(a64::w13, a64::w13, a64::w12);
-	armAsm->Mvn(a64::w11, a64::wzr);            // x11 = 0x00000000ffffffff
+	armAsm->Mvn(a64::w11, a64::wzr);
 	armAsm->Add(a64::w12, a64::w10, 8);
-	armAsm->Lsl(a64::x11, a64::x11, a64::x12);  // X shift: sh=24 -> mask bits leave low32
+	armAsm->Lsl(a64::x11, a64::x11, a64::x12);
 	armAsm->And(a64::w11, a64::w11, RWRET);
 	armAsm->Orr(a64::w13, a64::w13, a64::w11);
 
@@ -325,15 +403,14 @@ void armEmitSWR(u32 rt, u32 rs, s32 imm)
 {
 	armEmitEffectiveAddr(RWARG1, rs, imm);
 	armAsm->And(RWARG1, RWARG1, ~0x03);
-	armEmitVtlbRead(32, /*sign*/ false, RXRET, RWARG1);
+	armEmitVtlbRead(32, false, RXRET, RWARG1);
 
 	emitUnalignedShift(rs, imm, 3);
-	// value = (rt << sh) | (mem & ~(0xffffffff << sh))
 	armAsm->Ldr(a64::w13, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
 	armAsm->Lsl(a64::w13, a64::w13, a64::w10);
 	armAsm->Mvn(a64::w11, a64::wzr);
 	armAsm->Lsl(a64::w11, a64::w11, a64::w10);
-	armAsm->Bic(a64::w11, RWRET, a64::w11); // mem & ~(0xffffffff << sh)
+	armAsm->Bic(a64::w11, RWRET, a64::w11);
 	armAsm->Orr(a64::w13, a64::w13, a64::w11);
 
 	armAsm->And(RWARG1, a64::w9, ~0x03);
@@ -344,12 +421,11 @@ void armEmitLDL(u32 rt, u32 rs, s32 imm)
 {
 	armEmitEffectiveAddr(RWARG1, rs, imm);
 	armAsm->And(RWARG1, RWARG1, ~0x07);
-	armEmitVtlbRead(64, /*sign*/ false, RXRET, RWARG1);
+	armEmitVtlbRead(64, false, RXRET, RWARG1);
 	if (rt == 0)
 		return;
 
 	emitUnalignedShift(rs, imm, 7);
-	// rt = (rt & (0x00ffffffffffffff >> sh)) | (mem << (56 - sh))
 	armAsm->Mov(a64::x11, 0x00ffffffffffffffULL);
 	armAsm->Lsr(a64::x11, a64::x11, a64::x10);
 	armAsm->Mov(a64::w12, 56);
@@ -365,12 +441,11 @@ void armEmitLDR(u32 rt, u32 rs, s32 imm)
 {
 	armEmitEffectiveAddr(RWARG1, rs, imm);
 	armAsm->And(RWARG1, RWARG1, ~0x07);
-	armEmitVtlbRead(64, /*sign*/ false, RXRET, RWARG1);
+	armEmitVtlbRead(64, false, RXRET, RWARG1);
 	if (rt == 0)
 		return;
 
 	emitUnalignedShift(rs, imm, 7);
-	// rt = (rt & ~(0xffffffffffffffff >> sh)) | (mem >> sh)
 	armAsm->Lsr(a64::x13, RXRET, a64::x10);
 	armAsm->Mvn(a64::x11, a64::xzr);
 	armAsm->Lsr(a64::x11, a64::x11, a64::x10);
@@ -385,16 +460,15 @@ void armEmitSDL(u32 rt, u32 rs, s32 imm)
 {
 	armEmitEffectiveAddr(RWARG1, rs, imm);
 	armAsm->And(RWARG1, RWARG1, ~0x07);
-	armEmitVtlbRead(64, /*sign*/ false, RXRET, RWARG1);
+	armEmitVtlbRead(64, false, RXRET, RWARG1);
 
 	emitUnalignedShift(rs, imm, 7);
-	// value = (rt >> (56 - sh)) | (mem & (0xffffffffffffff00 << sh))
 	armAsm->Ldr(a64::x13, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
 	armAsm->Mov(a64::w12, 56);
 	armAsm->Sub(a64::w12, a64::w12, a64::w10);
 	armAsm->Lsr(a64::x13, a64::x13, a64::x12);
 	armAsm->Mov(a64::x11, 0xffffffffffffff00ULL);
-	armAsm->Lsl(a64::x11, a64::x11, a64::x10); // sh=56 -> all mask bits shift out -> 0
+	armAsm->Lsl(a64::x11, a64::x11, a64::x10);
 	armAsm->And(a64::x11, a64::x11, RXRET);
 	armAsm->Orr(a64::x13, a64::x13, a64::x11);
 
@@ -406,10 +480,9 @@ void armEmitSDR(u32 rt, u32 rs, s32 imm)
 {
 	armEmitEffectiveAddr(RWARG1, rs, imm);
 	armAsm->And(RWARG1, RWARG1, ~0x07);
-	armEmitVtlbRead(64, /*sign*/ false, RXRET, RWARG1);
+	armEmitVtlbRead(64, false, RXRET, RWARG1);
 
 	emitUnalignedShift(rs, imm, 7);
-	// value = (rt << sh) | (mem & ~(0xffffffffffffffff << sh))
 	armAsm->Ldr(a64::x13, a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(rt)));
 	armAsm->Lsl(a64::x13, a64::x13, a64::x10);
 	armAsm->Mvn(a64::x11, a64::xzr);
@@ -420,3 +493,5 @@ void armEmitSDR(u32 rt, u32 rs, s32 imm)
 	armAsm->And(RWARG1, a64::w9, ~0x07);
 	armEmitVtlbWrite(64, RWARG1, a64::x13);
 }
+
+

@@ -152,9 +152,6 @@ public:
 	/// Test for support for the specified texture format.
 	bool SupportsTextureFormat(DXGI_FORMAT format);
 
-	/// Test for UAV support for the specified texture format.
-	bool IsTextureFormatUAVCapable(DXGI_FORMAT format);
-
 	// Partial depth copies require ProgrammableSamplePositions tier 1.
 	bool SupportsProgrammableSamplePositions();
 
@@ -191,14 +188,6 @@ public:
 	void UploadIndices(D3D12StreamBuffer& buffer, const void* index, size_t count);
 
 private:
-	// For pipeline statistics
-	enum class QueryState
-	{
-		None,
-		Querying,
-		Ready,
-	};
-
 	struct CommandListResources
 	{
 		std::array<ComPtr<ID3D12CommandAllocator>, 2> command_allocators;
@@ -210,7 +199,6 @@ private:
 		u64 ready_fence_value = 0;
 		bool init_command_list_used = false;
 		bool has_timestamp_query = false;
-		QueryState pipeline_statistics_query = QueryState::None;
 	};
 
 	void LoadAgilitySDK();
@@ -219,7 +207,6 @@ private:
 	bool CreateDescriptorHeaps();
 	bool CreateCommandLists();
 	bool CreateTimestampQuery();
-	bool CreatePipelineStatisticsQuery();
 	void MoveToNextCommandList();
 	void DestroyPendingResources(CommandListResources& cmdlist);
 
@@ -243,12 +230,6 @@ private:
 	float m_accumulated_gpu_time = 0.0f;
 	bool m_gpu_timing_enabled = false;
 	bool m_programmable_sample_positions = false;
-
-	ComPtr<ID3D12QueryHeap> m_pipeline_statistics_query_heap;
-	ComPtr<ID3D12Resource> m_pipeline_statistics_query_buffer;
-	ComPtr<D3D12MA::Allocation> m_pipeline_statistics_query_allocation;
-	GPUPipelineStatistics m_accumulated_gpu_pipeline_statistics{};
-	bool m_gpu_pipeline_statistics_enabled = false;
 
 	D3D12DescriptorHeapManager m_descriptor_heap_manager;
 	D3D12DescriptorHeapManager m_rtv_heap_manager;
@@ -450,7 +431,8 @@ private:
 	void DestroySwapChainRTVs();
 	void DestroySwapChain();
 
-	GSTexture* CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format) override;
+	GSTexture* CreateSurface(
+		GSTexture::Type type, int width, int height, int levels, GSTexture::Format format) override;
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE,
 		const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter) final;
@@ -526,8 +508,8 @@ public:
 	bool SetGPUTimingEnabled(bool enabled) override;
 	float GetAndResetAccumulatedGPUTime() override;
 
-	bool SetGPUPipelineStatisticsEnabled(bool enabled) override;
-	GPUPipelineStatistics GetAndResetAccumulatedGPUPipelineStatistics() override;
+	bool SetGPUPipelineStatisticsEnabled(bool enabled) override { return false; }
+	GPUPipelineStatistics GetAndResetAccumulatedGPUPipelineStatistics() override { return {}; }
 
 	void PushDebugGroup(const char* fmt, ...) override;
 	void PopDebugGroup() override;
@@ -574,7 +556,7 @@ public:
 
 	void PSSetShaderResource(int i, GSTexture* sr, bool check_state, ResourceType type = ResourceType::SRV);
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
-	void PSSetROVs(GSTexture* rt, GSTexture* ds, bool write_rt, bool write_ds);
+	void PSSetUnorderedAccess(GSTexture* rt, GSTexture* ds, bool write_rt, bool write_ds);
 
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, GSTexture* ds_as_rt, const GSVector4i& scissor,
 		bool depth_read = false, const GSVector2i& viewport_size = {});
@@ -717,6 +699,7 @@ private:
 
 	std::array<D3D12_GPU_VIRTUAL_ADDRESS, NUM_TFX_CONSTANT_BUFFERS> m_tfx_constant_buffers{};
 	std::array<D3D12DescriptorHandle, NUM_TOTAL_TFX_TEXTURES> m_tfx_textures{};
+	std::array<GSTexture12*, NUM_TFX_UAV_TEXTURES> m_tfx_textures_uav{};
 	D3D12DescriptorHandle m_tfx_sampler;
 	u32 m_tfx_sampler_sel = 0;
 	D3D12DescriptorHandle m_tfx_textures_handle_gpu;

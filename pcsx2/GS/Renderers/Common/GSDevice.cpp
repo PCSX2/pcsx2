@@ -249,7 +249,7 @@ GSDevice::GSDevice()
 GSDevice::~GSDevice()
 {
 	// should've been cleaned up in Destroy()
-	pxAssert(m_pool[0].empty() && m_pool[1].empty() && !m_merge && !m_weavebob && !m_blend && !m_mad && !m_target_tmp && !m_cas && !m_mfx_output);
+	pxAssert(m_pool[0].empty() && m_pool[1].empty() && !m_merge && !m_weavebob && !m_blend && !m_mad && !m_target_tmp && !m_cas);
 }
 
 const char* GSDevice::RenderAPIToString(RenderAPI api)
@@ -451,6 +451,11 @@ void GSDevice::ClearDepth(GSTexture* t, float d)
 	t->SetClearDepth(d);
 }
 
+void GSDevice::HintReadbackSource(GSTexture* tex)
+{
+	// Default: no scheduling hint. See GSDeviceVK for a backend that uses it.
+}
+
 bool GSDevice::ProcessClearsBeforeCopy(GSTexture* sTex, GSTexture* dTex, const bool full_copy)
 {
 	pxAssert(sTex->GetState() == GSTexture::State::Cleared && dTex->IsRenderTargetOrDepthStencil());
@@ -502,67 +507,68 @@ void GSDevice::UpdateImGuiTextures()
 			case ImTextureStatus_Destroyed:
 				continue;
 			case ImTextureStatus_WantCreate:
-				if (GSTexture* gs_tex = g_gs_device->CreateTexture(im_tex->Width, im_tex->Height, 1, GSTexture::Format::Color))
+			{
+				GSTexture* gs_tex = g_gs_device->CreateTexture(im_tex->Width, im_tex->Height, 1, GSTexture::Format::Color);
+				if (!gs_tex)
+					pxFailRel("Failed to create ImGui texture");
+
+				im_tex->SetTexID(reinterpret_cast<ImTextureID>(gs_tex->GetNativeHandle()));
+				im_tex->BackendUserData = gs_tex;
+				[[fallthrough]];
+			}
+			case ImTextureStatus_WantUpdates:
+			{
+				// If we fell through from WantCreate, then we are uploading the full size
+				// Otherwise, we are just updating the specified region
+				// clange-format off
+				const int upload_x = (im_tex->Status == ImTextureStatus_WantCreate) ? 0 : im_tex->UpdateRect.x;
+				const int upload_y = (im_tex->Status == ImTextureStatus_WantCreate) ? 0 : im_tex->UpdateRect.y;
+				const int upload_w = (im_tex->Status == ImTextureStatus_WantCreate) ? im_tex->Width : im_tex->UpdateRect.w;
+				const int upload_h = (im_tex->Status == ImTextureStatus_WantCreate) ? im_tex->Height : im_tex->UpdateRect.h;
+				const int upload_pitch = upload_w * im_tex->BytesPerPixel;
+				// clange-format on
+
+				const GSVector4i rect{
+					upload_x,
+					upload_y,
+					upload_x + upload_w,
+					upload_y + upload_h,
+				};
+
+				GSTexture* gs_tex = static_cast<GSTexture*>(im_tex->BackendUserData);
+				GSTexture::GSMap map;
+				if (gs_tex->Map(map, &rect))
 				{
-					im_tex->SetTexID(reinterpret_cast<ImTextureID>(gs_tex->GetNativeHandle()));
-					im_tex->BackendUserData = gs_tex;
+					for (int y = 0; y < upload_h; y++)
+						std::memcpy(map.bits + map.pitch * y, im_tex->GetPixelsAt(rect.x, rect.y + y), upload_pitch);
+
+					gs_tex->Unmap();
 				}
 				else
 				{
-					pxFailRel("Failed to create ImGui texture");
-					break;
+					for (int y = 0; y < upload_h; y++)
+						gs_tex->Update({rect.left, rect.top + y, rect.right, rect.top + y + 1},
+							im_tex->GetPixelsAt(rect.x, rect.y + y), upload_pitch);
 				}
-				[[fallthrough]];
-			case ImTextureStatus_WantUpdates:
-				if (GSTexture* gs_tex = static_cast<GSTexture*>(im_tex->BackendUserData))
-				{
-					// If we fell through from WantCreate, then we are uploading the full size
-					// Otherwise, we are just updating the specified region
-					// clange-format off
-					const int upload_x = (im_tex->Status == ImTextureStatus_WantCreate) ? 0 : im_tex->UpdateRect.x;
-					const int upload_y = (im_tex->Status == ImTextureStatus_WantCreate) ? 0 : im_tex->UpdateRect.y;
-					const int upload_w = (im_tex->Status == ImTextureStatus_WantCreate) ? im_tex->Width : im_tex->UpdateRect.w;
-					const int upload_h = (im_tex->Status == ImTextureStatus_WantCreate) ? im_tex->Height : im_tex->UpdateRect.h;
-					const int upload_pitch = upload_w * im_tex->BytesPerPixel;
-					// clange-format on
 
-					const GSVector4i rect{
-						upload_x,
-						upload_y,
-						upload_x + upload_w,
-						upload_y + upload_h,
-					};
-
-					GSTexture::GSMap map;
-					if (gs_tex->Map(map, &rect))
-					{
-						for (int y = 0; y < upload_h; y++)
-							std::memcpy(map.bits + map.pitch * y, im_tex->GetPixelsAt(rect.x, rect.y + y), upload_pitch);
-
-						gs_tex->Unmap();
-					}
-					else
-					{
-						for (int y = 0; y < upload_h; y++)
-							gs_tex->Update({rect.left, rect.top + y, rect.right, rect.top + y + 1},
-								im_tex->GetPixelsAt(rect.x, rect.y + y), upload_pitch);
-					}
-
-					im_tex->Status = ImTextureStatus_OK;
-				}
+				im_tex->Status = ImTextureStatus_OK;
 				break;
+			}
 			case ImTextureStatus_WantDestroy:
-				if (GSTexture* gs_tex = static_cast<GSTexture*>(im_tex->BackendUserData))
-				{
-					// While it's unlikely we're going to reuse the same size as imgui for rendering,
-					// imgui may request a new atlas of the same size if old font sizes are evicted.
-					Recycle(gs_tex);
+			{
+				GSTexture* gs_tex = static_cast<GSTexture*>(im_tex->BackendUserData);
+				if (gs_tex == nullptr)
+					break;
 
-					im_tex->SetTexID(ImTextureID_Invalid);
-					im_tex->BackendUserData = nullptr;
-					im_tex->Status = ImTextureStatus_Destroyed;
-				}
+				// While it's unlikely we're going to reuse the same size as imgui for rendering,
+				// imgui may request a new atlas of the same size if old font sizes are evicted.
+				Recycle(gs_tex);
+
+				im_tex->SetTexID(ImTextureID_Invalid);
+				im_tex->BackendUserData = nullptr;
+				im_tex->Status = ImTextureStatus_Destroyed;
 				break;
+			}
 			default:
 				pxAssert(false);
 				break;
@@ -925,7 +931,6 @@ void GSDevice::ClearCurrent()
 	delete m_mad;
 	delete m_target_tmp;
 	delete m_cas;
-	delete m_mfx_output;
 
 	m_merge = nullptr;
 	m_weavebob = nullptr;
@@ -933,7 +938,6 @@ void GSDevice::ClearCurrent()
 	m_mad = nullptr;
 	m_target_tmp = nullptr;
 	m_cas = nullptr;
-	m_mfx_output = nullptr;
 }
 
 void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c)
@@ -1193,37 +1197,6 @@ void GSDevice::CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, con
 	}
 
 	tex = m_cas;
-	src_rect = GSVector4i(0, 0, dst_width, dst_height);
-	src_uv = GSVector4(0.0f, 0.0f, 1.0f, 1.0f);
-}
-
-void GSDevice::MetalFXUpscale(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, const GSVector4& draw_rect)
-{
-	const int dst_width = static_cast<int>(std::ceil(draw_rect.z - draw_rect.x));
-	const int dst_height = static_cast<int>(std::ceil(draw_rect.w - draw_rect.y));
-	if (dst_width <= 0 || dst_height <= 0)
-		return;
-
-	GSTexture* src_tex = tex;
-	if (!m_mfx_output || m_mfx_output->GetWidth() != dst_width || m_mfx_output->GetHeight() != dst_height)
-	{
-		delete m_mfx_output;
-		m_mfx_output = CreateSurface(GSTexture::ShaderWriteTexture, dst_width, dst_height, 1, GSTexture::Format::Color);
-		if (!m_mfx_output)
-		{
-			Console.Error("Failed to allocate MetalFX output texture.");
-			return;
-		}
-	}
-
-	if (!DoMetalFXSpatial(src_tex, m_mfx_output))
-	{
-		// leave textures intact if we failed
-		Console.Warning("Applying MetalFX spatial upscale failed.");
-		return;
-	}
-
-	tex = m_mfx_output;
 	src_rect = GSVector4i(0, 0, dst_width, dst_height);
 	src_uv = GSVector4(0.0f, 0.0f, 1.0f, 1.0f);
 }

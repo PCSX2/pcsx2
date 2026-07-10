@@ -20,6 +20,7 @@
 #include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/Timer.h"
+#include "common/HostSys.h"
 
 #include "fmt/format.h"
 #include "IconsFontAwesome.h"
@@ -630,6 +631,62 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		}
 	}
 
+	// Manual frameskip (Android low-end devices): present 1 of every (N+1)
+	// frames, skipping presentation of N. Reuses the duplicate-frame skip path
+	// (skips present + post-processing). Emulation still runs every frame, so
+	// this trades smoothness for GPU/present headroom.
+	if (const u32 manual_skip = GSGetManualFrameSkip(); manual_skip > 0 && !GSCapture::IsCapturingVideo())
+	{
+		if (m_manual_frameskip_counter < manual_skip)
+		{
+			m_manual_frameskip_counter++;
+			skip_frame = true;
+		}
+		else
+		{
+			m_manual_frameskip_counter = 0;
+		}
+	}
+	else
+	{
+		m_manual_frameskip_counter = 0;
+	}
+
+	// Max-FPS cap (Android): hold the *presented* frame rate at/below a target
+	// without slowing emulation (decoupled from the speed limiter / Speed %). The
+	// EE keeps running full speed, only presents are dropped. Set via setFpsCap.
+	//
+	// ACCUMULATOR pacer: schedule the next present at +cap_interval and drop every
+	// frame until that time. This holds the AVERAGE present rate at ANY target
+	// (e.g. 47 / 55 fps for the per-game "golden spot" tuning), not just whole
+	// divisions of the source rate. Targets between the clean divisions get
+	// slightly uneven spacing (a periodic doubled frame) — the price of an
+	// arbitrary cap. Resync after a stall so we never burst-present to catch up.
+	if (const u64 cap_interval = GSGetMaxPresentInterval(); cap_interval > 0 && !skip_frame && !GSCapture::IsCapturingVideo())
+	{
+		if (GSGetPresentCapSuspended())
+		{
+			// Fast-forward (Turbo): don't drop presents, so the speed-up is
+			// actually visible. Re-prime the schedule so the cap resumes cleanly
+			// the instant FF ends (no burst-present to "catch up").
+			m_fps_cap_next_present = 0;
+		}
+		else
+		{
+			const u64 now = GetCPUTicks();
+			if (m_fps_cap_next_present == 0)
+				m_fps_cap_next_present = now; // first present primes the schedule
+			if (now < m_fps_cap_next_present)
+				skip_frame = true; // not yet time for the next present → drop it
+			else
+			{
+				m_fps_cap_next_present += cap_interval;
+				if (m_fps_cap_next_present < now)
+					m_fps_cap_next_present = now + cap_interval; // stalled → resync, no burst
+			}
+		}
+	}
+
 	const bool blank_frame = !Merge(field);
 
 	m_last_draw_n = s_n;
@@ -665,27 +722,6 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 				src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
 				GetVideoMode() == GSVideoMode::SDTV_480P);
 			s_last_draw_rect = draw_rect;
-
-			// MetalFX spatial upscale runs before CAS/present, and only when actually upscaling
-			// (source smaller than the on-screen draw rect). CAS can still sharpen afterward.
-			if (GSConfig.Upscaler == GSUpscaler::MetalFXSpatial)
-			{
-				static bool mfx_log_once = false;
-				if (g_gs_device->Features().metalfx_spatial)
-				{
-					const int draw_w = static_cast<int>(std::ceil(draw_rect.z - draw_rect.x));
-					const int draw_h = static_cast<int>(std::ceil(draw_rect.w - draw_rect.y));
-					if (current->GetWidth() < draw_w && current->GetHeight() < draw_h)
-						g_gs_device->MetalFXUpscale(current, src_rect, src_uv, draw_rect);
-				}
-				else if (!mfx_log_once)
-				{
-					Host::AddIconOSDMessage("MetalFXUnsupported", ICON_FA_TRIANGLE_EXCLAMATION,
-						TRANSLATE_SV("GS", "MetalFX upscaling is not available on this system (requires a Metal GPU on macOS 13 or newer)."),
-						10.0f);
-					mfx_log_once = true;
-				}
-			}
 
 			if (GSConfig.CASMode != GSCASMode::Disabled)
 			{
