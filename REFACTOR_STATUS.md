@@ -67,6 +67,12 @@ changed yet.
    > APK, PGO, running games on device). PC-macOS-arm64 / PC-Linux-arm64 / iOS still
    > need a CI green pass — and #2/#3 below may have perturbed the shared core, so
    > re-check the mac/Linux arm64 build after this push.
+   > 🔧 2026-07-10 (restoration pass, branch `refactor/restore-canonical-core`):
+   > the unguarded grafts from `ecfebfd6b2` that leaked into the shared core have been
+   > backed out — see the resolution notes on #2 and #3. The shared PC/mac/Linux/Windows
+   > arm64 core is now byte-for-canonical again; Android-specific work is isolated behind
+   > `#if __ANDROID__` guards or in a CMake-selected forked TU. Done as **forward commits**
+   > (HEAD `ecfebfd6b2` is already on `origin/master`, so no history rewrite).
 2. **Shared-file reconciliation (~250 files).** The Android core fork also
    *modified* shared files (FullscreenUI, Achievements, GS device backends,
    VMManager, MemoryCardFile). Those deltas are **not** yet merged — only the
@@ -83,6 +89,26 @@ changed yet.
    > gates, OSD label) ARE `#if __ANDROID__`/runtime-gated and mac-safe. The rest still
    > needs the careful per-file pass: keep mobile-specific behind guards, verify PC/mac
    > unaffected, drop stale-upstream noise.
+   >
+   > ✅ 2026-07-10 RESOLVED (restoration pass):
+   > - **GS subsystem (all 47 `pcsx2/GS/*` files) reverted to canonical.** The graft was
+   >   not Android rendering fixes — it dragged in refresh-experimental's *divergent* GS,
+   >   touching Windows-only DX11/DX12 and Metal with zero Android guards (e.g. DX11
+   >   `depth_feedback`/`multidraw_fb_copy` flag flips). The GS interface headers all moved
+   >   together, so GS is an all-or-nothing snapshot; reverting the whole subsystem restores
+   >   canonical PC/mac/Linux/Windows exactly.
+   > - **Core files reconciled per-file:** kept the guarded Android features (force-float +
+   >   nice-priority in `VMManager`, Oboe in `AudioStream`/`Config`/`Pcsx2Config`, SoC-name
+   >   in `HostSys`, OSD label in `ImGuiOverlays`) and the *additive* shared bits (new
+   >   `ThreadHandle` API + cache-line alignment in `Threading`/`*Threads`/`Semaphore`, the
+   >   `armsx2_overrides.yaml` GameDB loader — PC-safe, no override file shipped). Reverted
+   >   the three unguarded desktop-behavioral regressions: `MTVU` `WaitForWork`→spin swap,
+   >   the removed "Graphics API not Automatic" OSD warning, and the `s_thread_affinities_set`
+   >   pinning-flag change.
+   > - **STILL OPEN (needs a device):** Android GS parity now has to be re-earned the right
+   >   way — the mobile-specific VK/GLES fixes (and the Mali/MediaTek gates) must be
+   >   re-applied on top of canonical GS behind `#if __ANDROID__`, device-tested. The graft
+   >   itself is preserved in `origin/master` history (`ecfebfd6b2`) as the reference.
 3. **arm64 JIT fixes to port** (3 real Android commits):
    `45b4b68d10` (microVU PQ lanes), `75351e8545` (FTOI NaN / SQRT clamp),
    `ec06302ccf` (skip microVU emit on jump-cache hits).
@@ -92,13 +118,23 @@ changed yet.
    > `aVU*`) — i.e. it re-introduced the "superseded experiment" logic *under the
    > canonical filenames*, UNGUARDED. **This changes the mac/Linux arm64 recompiler too**,
    > so the mac build needs a re-verify after this push.
-   > - The **VU graft is now REDUNDANT**: the VU slam was Android thread-pinning, not the
-   >   VU codegen, and the fix (force-float, `#if __ANDROID__`) is backend-agnostic. So
-   >   `aVU*` can be reverted to canonical with **zero** Android perf loss — recommended.
-   > - The **EE graft** is the one genuine Android win (canonical Phase-7 EE was ~98%
-   >   slammed pre-graft). Decision needed: guard it Android-only, fold the improvement
-   >   into the canonical JIT for all arm64, or bench canonical-EE+PGO to see if the gap
-   >   is real. Until decided, mac inherits the mac-port EE.
+   >
+   > ✅ 2026-07-10 RESOLVED (restoration pass):
+   > - **VU (`aVU*`) reverted to canonical.** Confirmed redundant — the slam was
+   >   thread-pinning, and the fix (force-float, `#if __ANDROID__` in `VMManager`) is
+   >   backend-agnostic. Zero Android perf loss.
+   > - **EE (`aR5900*`) forked Android-only.** Decision (per owner): *guard it Android-only*.
+   >   Because the graft is 57 hunks interleaved through the canonical file (inline `#ifdef`
+   >   would be unmaintainable), it's forked at the *file* level instead: the grafted
+   >   mac-port EE lives in `pcsx2/arm64/aR5900*.android.cpp`, the canonical Phase-7 EE is
+   >   restored at `pcsx2/arm64/aR5900*.cpp`, and `pcsx2/CMakeLists.txt` selects between them
+   >   with `if(ANDROID)`. Both share the canonical `aR5900.h`/`aR5900Analysis.h` (the graft
+   >   only added comments there — identical interface). Result: PC/mac/Linux/Windows arm64
+   >   build the canonical EE; Android keeps its tested win. `AsmHelpers.*` kept as-is
+   >   (comment-only + a harmless `#include <new>`; no codegen change).
+   > - **Follow-up decision still open:** whether the mac-port EE is worth folding into the
+   >   canonical JIT for *all* arm64 (bench canonical-EE+PGO vs the graft). Until then the
+   >   fork keeps the two backends cleanly separated.
 4. **3rdparty de-duplication.** `platforms/android/.../cpp/3rdparty` (adrenotools
    + others) is still vendored for the NDK build. Keep adrenotools/oboe
    (Android-only); evaluate sourcing the rest from root `3rdparty/` once the
