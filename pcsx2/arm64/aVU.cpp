@@ -20,9 +20,7 @@
 #include "arm64/aVU.h"
 #include "arm64/aVU_IR.h"
 #include "arm64/aVU_Misc.h" // arch-neutral macro layer (task 7.3)
-#include "arm64/aR5900Analysis.h"
 
-#include "AndroidPerfBuckets.h"
 #include "VUmicro.h"
 #include "Memory.h"
 #include "Dmac.h"
@@ -45,7 +43,6 @@
 
 // microVU rec contexts (x86 defines these in microVU.h; on ARM64 they live here,
 // where microRegAlloc is a complete type so microVU's unique_ptr dtor compiles).
-
 alignas(16) microVU microVU0;
 alignas(16) microVU microVU1;
 
@@ -65,39 +62,11 @@ typedef void (*mVUrecCallXG)(void);
 // When set, recMicroVU1::Execute runs microVU1 as the REAL (committed) VU1 — so the
 // game behaves exactly as without the harness — and runs the *interpreter* as a
 // side-effect-suppressed shadow over the same input, comparing VF/VI/ACC/Mem to find
-// the first diverging program. s_mvuShadowRun gates side-effecting paths during the
+// the first diverging program. g_mvuShadowRun gates side-effecting paths during the
 // shadow run: the microVU XGKICK C entry points (aVU_Lower.inl), the interpreter's
 // XGKICK GS transfer (_vuXGKICKTransfer, VUops.cpp), and the interp's D/T-bit INTC
 // interrupt (VU1microInterp.cpp) — all guarded with ARCH_ARM64 so x86 is untouched.
-static bool s_mvuShadowRun = false;
-
-// DEBUG shadow differential helpers used by aVU_Upper.inl/aVU_Lower.inl. They are
-// normally off unless MVU_DIFF is present in the environment.
-bool g_mvuDiffActive = (getenv("MVU_DIFF") != nullptr);
-volatile u32 g_fmacDbg[3][4];
-void mvuFmacDump(u32 fd, u32 pc)
-{
-	static int n = 0;
-	if (n++ > 40)
-		return;
-	Console.Error("FMACDUMP @pc=%04x vf%02d ACC=%08x %08x %08x %08x Ft=%08x %08x %08x %08x res=%08x %08x %08x %08x",
-		pc, fd,
-		g_fmacDbg[0][0], g_fmacDbg[0][1], g_fmacDbg[0][2], g_fmacDbg[0][3],
-		g_fmacDbg[1][0], g_fmacDbg[1][1], g_fmacDbg[1][2], g_fmacDbg[1][3],
-		g_fmacDbg[2][0], g_fmacDbg[2][1], g_fmacDbg[2][2], g_fmacDbg[2][3]);
-}
-volatile u32 g_divDbg[4];
-void mvuDivDump(u32 wq, u32 rq, u32 pc)
-{
-	static int n = 0;
-	if (n++ > 60)
-		return;
-	const float num = *(const float*)&g_divDbg[0];
-	const float den = *(const float*)&g_divDbg[1];
-	const float res = *(const float*)&g_divDbg[2];
-	Console.Error("DIVDUMP @pc=%04x num=%g(%08x) den=%g(%08x) res=%g(%08x) wQ=%u rQ=%u",
-		pc, num, g_divDbg[0], den, g_divDbg[1], res, g_divDbg[2], wq, rq);
-}
+bool g_mvuShadowRun = false;
 
 // --- dispatcher + helper-thunk codegen (task 7.2d) ----------------------------
 // These emit into the already-open armAsm (mVUgenerateDispatchers opens it).
@@ -1430,12 +1399,12 @@ void recMicroVU1::Execute(u32 cycles)
 			mvuSaveGlobals(g);        // microVU's committed global side-effect state
 
 			// SHADOW run = interpreter (ground truth), side effects suppressed:
-			// XGKICK GS transfer and D/T-bit INTC are gated by s_mvuShadowRun.
+			// XGKICK GS transfer and D/T-bit INTC are gated by g_mvuShadowRun.
 			mvuRestore(in);
 			VU0.VI[REG_VPU_STAT].UL |= 0x100; // re-arm so the interp loop runs the program
-			s_mvuShadowRun = true;
+			g_mvuShadowRun = true;
 			CpuIntVU1.Execute(cycles);
-			s_mvuShadowRun = false;
+			g_mvuShadowRun = false;
 			VU1Snap io;
 			mvuSnap(io);
 
@@ -1451,19 +1420,19 @@ void recMicroVU1::Execute(u32 cycles)
 				mvuRestore(in);
 				VU0.VI[REG_VPU_STAT].UL |= 0x100;
 				g_mvuTraceActive = true;
-				s_mvuShadowRun = true;
+				g_mvuShadowRun = true;
 				VU1.VI[REG_TPC].UL <<= 3;
 				((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
 				VU1.VI[REG_TPC].UL >>= 3;
-				s_mvuShadowRun = false;
+				g_mvuShadowRun = false;
 				g_mvuTraceActive = false;
 
 				// 2) single-step the interpreter over the same input and compare.
 				mvuRestore(in);
 				VU0.VI[REG_VPU_STAT].UL |= 0x100;
-				s_mvuShadowRun = true;
+				g_mvuShadowRun = true;
 				mvuLocalizeCompare(startPC, cycles);
-				s_mvuShadowRun = false;
+				g_mvuShadowRun = false;
 			}
 
 			// Commit microVU's result + globals — the harness is now transparent.
@@ -1499,8 +1468,15 @@ void recMicroVU1::ResumeXGkick()
 	((mVUrecCallXG)microVU1.startFunctXG)();
 }
 
-// vuJITFreeze stays as the original Android arm64 backend's stub. SaveStateBase is
-// global, and the original backend already provides the single definition.
+bool SaveStateBase::vuJITFreeze()
+{
+	if (IsSaving())
+		vu1Thread.WaitVU();
+
+	Freeze(microVU0.prog.lpState);
+	Freeze(microVU1.prog.lpState);
+	return IsOkay();
+}
 
 //------------------------------------------------------------------
 // Dispatcher / helper-thunk code generation (task 7.2d)
@@ -2078,26 +2054,4 @@ static_assert(alignof(microBlock) == 16, "microBlock must stay 16-byte aligned")
 	mVUendProgram(mVU, &mFC, 1);
 	mVUDTendProgram(mVU, &mFC, 1);
 	mVUsetupBranch(mVU, mFC);
-}
-
-
-// --- ARMSX2 unification compat shims (grafted mac-port VU backend) -------------
-// The mac-port microVU backend (grafted from refresh-experimental) omits two
-// integration points the unified core still references; both were provided by
-// the original Android arm64 backend that the unification dropped.
-//  * g_mvuShadowRun — the MVU_DIFF shadow-run gate read by VUops.cpp /
-//    VU1microInterp.cpp. The mac VU never sets it, so mono's shadow-diff paths
-//    stay inert (false).
-//  * SaveStateBase::vuJITFreeze — VU-JIT savestate freeze called by SaveState.cpp.
-//    Serializes the microVU program pipeline state (present in the shared struct).
-bool g_mvuShadowRun = false;
-
-bool SaveStateBase::vuJITFreeze()
-{
-	if (IsSaving())
-		vu1Thread.WaitVU();
-
-	Freeze(microVU0.prog.lpState);
-	Freeze(microVU1.prog.lpState);
-	return IsOkay();
 }

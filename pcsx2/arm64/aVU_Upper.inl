@@ -222,15 +222,13 @@ static bool doSafeSub(microVU& mVU, int opCase, int opType, bool isACC)
 }
 
 // Sets Up Ft Reg for Normal, BC, I, and Q Cases
-// AX-14 lane-indexed FMUL broadcast fold master gate. Proven bit-identical (ARM64
-// by-element FMUL == broadcast Dup + 4-lane FMUL, IEEE-exact) under the willClamp gate,
-// but flip to false to instantly A/B or disable if a VU-heavy game ever regresses.
-static constexpr bool kMvuFmulLaneFold = true;
-
-// [bcLane] out: -1 = Ft is a materialized full-width operand (normal path); 0..3 = Ft is
-// the RAW source VF reg (broadcast NOT materialized) and the caller's multiply step must
-// fold the lane into a by-element Fmul(Vd.4S, Vn.4S, Ft.S(), bcLane). [canLaneFold]: the
-// sole Ft consumer is the multiply step.
+// bcLane: out-param for the lane-indexed FMUL broadcast fold (yaps2 06d4ff00d4,
+// idea from ARMSX2's tryEmitFmulLaneBroadcast — Tyler Bochard, GPLv3). -1 = Ft is
+// a materialized full-width operand (the normal path). 0..3 = Ft is the RAW source
+// VF register (read-only allocator mapping, broadcast NOT materialized) and the
+// caller's multiply step must fold the lane select into a by-element FMUL on that
+// lane. Only set when canLaneFold (the sole Ft consumer is the multiply step) and no
+// Ft clamp will be emitted.
 static void setupFtReg(microVU& mVU, a64::VRegister& Ft, a64::VRegister& tempFt, int opCase, int clampType, int& bcLane, bool canLaneFold)
 {
 	bcLane = -1;
@@ -245,27 +243,26 @@ static void setupFtReg(microVU& mVU, a64::VRegister& Ft, a64::VRegister& tempFt,
 	}
 	opCase2
 	{
-		// AX-14 fold (idea from ARMSX2's tryEmitFmulLaneBroadcast; ported back from yaps2
-		// 06d4ff00). When the only Ft consumer is the multiply and no Ft clamp will emit,
-		// skip materializing the broadcast (allocReg scratch + Dup) and hand the caller the
-		// raw Ft reg + lane so it emits Fmul Vd.4S, Vn.4S, Ft.S()[bc]. willClamp mirrors
-		// opCase1: SSE_MULPS's mVUclamp3/4 are clampE-gated and the explicit cFt mVUclamp2
-		// is skipped for the fold, so under !willClamp no Ft clamp is lost.
+		// Lane-indexed FMUL fold: when the only consumer is the multiply step and no
+		// Ft clamp will be emitted, skip materializing the broadcast (allocReg + Dup)
+		// and let the consumer emit Fmul Vd.4S, Vn.4S, Vm.S[_bc_] — bit-identical per
+		// lane. willClamp mirrors opCase1: under !willClamp neither the body's
+		// clampType&cFt mVUclamp2 nor SSE_MULPS's clampE-gated mVUclamp3/4 emit, so
+		// bypassing SSE_MULPS loses no clamps and the raw guest reg is never clamped
+		// in place. x86 SSE cannot express this fold.
 		const bool willClamp = (clampE || ((clampType & cFt) && !clampE && (CHECK_VU_OVERFLOW(mVU.index) || CHECK_VU_SIGN_OVERFLOW(mVU.index))));
-		if (kMvuFmulLaneFold && canLaneFold && !willClamp && !_XYZW_SS)
+		if (canLaneFold && !willClamp && !_XYZW_SS)
 		{
-			Ft     = mVU.regAlloc->allocReg(_Ft_); // read-only raw mapping, held until the consumer's Fmul
+			Ft     = mVU.regAlloc->allocReg(_Ft_); // read-only mapping, held until the consumer's Fmul
 			tempFt = xEmptyReg;
 			bcLane = _bc_;
+			return;
 		}
-		else
-		{
-			tempFt = mVU.regAlloc->allocReg(_Ft_);
-			Ft     = mVU.regAlloc->allocReg();
-			mVUunpack_xyzw(Ft, tempFt, _bc_);
-			mVU.regAlloc->clearNeeded(tempFt);
-			tempFt = Ft;
-		}
+		tempFt = mVU.regAlloc->allocReg(_Ft_);
+		Ft     = mVU.regAlloc->allocReg();
+		mVUunpack_xyzw(Ft, tempFt, _bc_);
+		mVU.regAlloc->clearNeeded(tempFt);
+		tempFt = Ft;
 	}
 	opCase3
 	{
@@ -299,7 +296,7 @@ static void mVU_FMACa(microVU& mVU, int recPass, int opCase, int opType, bool is
 
 		a64::VRegister Fs, Ft, ACC, tempFt;
 		int bcLane = -1;
-		setupFtReg(mVU, Ft, tempFt, opCase, clampType, bcLane, opType == 2); // fold only for MUL
+		setupFtReg(mVU, Ft, tempFt, opCase, clampType, bcLane, opType == 2);
 
 		if (isACC)
 		{
@@ -316,10 +313,9 @@ static void mVU_FMACa(microVU& mVU, int recPass, int opCase, int opType, bool is
 		if ((clampType & cFt) && bcLane < 0) mVUclamp2(mVU, Ft, xEmptyReg, _X_Y_Z_W);
 		if (clampType & cFs)                 mVUclamp2(mVU, Fs, xEmptyReg, _X_Y_Z_W);
 
-		// AX-14 fold: by-element FMUL on the raw Ft lane (== SSE_MULPS under the no-clamp
-		// gate; bit-identical, one fewer insn + NEON reg). Ft.S() scalar view is REQUIRED —
-		// vixl keys the element size off vm's scalar format; a V4S vm silently selects the
-		// half-precision opcode once Devel strips the VIXL_ASSERT.
+		// Lane-fold (bcLane>=0) == Dup + SSE_PS[2] under the no-clamp gate; opType==2
+		// (MUL) is the only foldable FMACa op. vm MUST be the scalar .S() view — vixl's
+		// by-element Fmul keys element size off vm's format; a V4S vm selects fp16.
 		if (bcLane >= 0)   armAsm->Fmul(Fs.V4S(), Fs.V4S(), Ft.S(), bcLane);
 		else if (_XYZW_SS) SSE_SS[opType](mVU, Fs, Ft, xEmptyReg, xEmptyReg);
 		else               SSE_PS[opType](mVU, Fs, Ft, xEmptyReg, xEmptyReg);
@@ -369,7 +365,7 @@ static void mVU_FMACb(microVU& mVU, int recPass, int opCase, int opType, microOp
 		if ((clampType & cFt) && bcLane < 0) mVUclamp2(mVU, Ft, xEmptyReg, _X_Y_Z_W);
 		if (clampType & cFs)                 mVUclamp2(mVU, Fs, xEmptyReg, _X_Y_Z_W);
 
-		// Step 1: Multiply Fs * Ft (AX-14 fold on the raw Ft lane when materialized).
+		// Step 1: Multiply Fs * Ft (lane-fold when bcLane>=0; see mVU_FMACa).
 		if (bcLane >= 0)   armAsm->Fmul(Fs.V4S(), Fs.V4S(), Ft.S(), bcLane);
 		else if (_XYZW_SS) SSE_SS[2](mVU, Fs, Ft, xEmptyReg, xEmptyReg);
 		else               SSE_PS[2](mVU, Fs, Ft, xEmptyReg, xEmptyReg);
@@ -421,38 +417,17 @@ static void mVU_FMACc(microVU& mVU, int recPass, int opCase, microOpcode opEnum,
 		if (clampType & cFs)                 mVUclamp2(mVU, Fs,  xEmptyReg, _X_Y_Z_W);
 		if (clampType & cACC)                mVUclamp2(mVU, ACC, xEmptyReg, _X_Y_Z_W);
 
-		// DEBUG: capture the operand (Ft) of the vf24-writing MADD
-		extern bool g_mvuDiffActive; extern volatile u32 g_fmacDbg[3][4]; extern void mvuFmacDump(u32 fd, u32 pc);
-		const bool dbgF = (g_mvuDiffActive && isVU1 && _Fd_ == 24);
-		if (dbgF)
-		{
-			armMoveAddressToReg(RSCRATCHADDR, (void*)&g_fmacDbg[0][0]);
-			armAsm->Str(ACC.Q(), a64::MemOperand(RSCRATCHADDR));
-			armMoveAddressToReg(RSCRATCHADDR, (void*)&g_fmacDbg[1][0]);
-			armAsm->Str(Ft.Q(), a64::MemOperand(RSCRATCHADDR));
-		}
-
+		// Step 1: Fs = Fs * Ft (lane-fold when bcLane>=0). Step 2: Fs = Fs + ACC.
 		if (_XYZW_SS) { SSE_SS[2](mVU, Fs, Ft, xEmptyReg, xEmptyReg); SSE_SS[0](mVU, Fs, ACC, tempFt, xEmptyReg); }
 		else
 		{
-			if (bcLane >= 0) armAsm->Fmul(Fs.V4S(), Fs.V4S(), Ft.S(), bcLane); // AX-14 fold
+			if (bcLane >= 0) armAsm->Fmul(Fs.V4S(), Fs.V4S(), Ft.S(), bcLane);
 			else             SSE_PS[2](mVU, Fs, Ft, xEmptyReg, xEmptyReg);
 			SSE_PS[0](mVU, Fs, ACC, tempFt, xEmptyReg);
 		}
 
 		if (_XYZW_SS2)
 			mVUshufflePS(ACC, ACC, shuffleSS(_X_Y_Z_W));
-
-		if (dbgF)
-		{
-			armMoveAddressToReg(RSCRATCHADDR, (void*)&g_fmacDbg[2][0]);
-			armAsm->Str(Fs.Q(), a64::MemOperand(RSCRATCHADDR)); // result
-			mVUbackupRegs(mVU, true, true);
-			armAsm->Mov(RWARG1.W(), _Fd_);
-			armAsm->Mov(RWARG2.W(), xPC);
-			armEmitCall(reinterpret_cast<const void*>(&mvuFmacDump));
-			mVUrestoreRegs(mVU, true, true);
-		}
 
 		mVUupdateFlags(mVU, Fs, tempFt);
 
@@ -482,10 +457,11 @@ static void mVU_FMACd(microVU& mVU, int recPass, int opCase, microOpcode opEnum,
 		if (clampType & cFs)                 mVUclamp2(mVU, Fs, xEmptyReg, _X_Y_Z_W);
 		if (clampType & cACC)                mVUclamp2(mVU, Fd, xEmptyReg, _X_Y_Z_W);
 
+		// Step 1: Fs = Fs * Ft (lane-fold when bcLane>=0). Step 2: Fd = Fd - Fs.
 		if (_XYZW_SS) { SSE_SS[2](mVU, Fs, Ft, xEmptyReg, xEmptyReg); SSE_SS[1](mVU, Fd, Fs, tempFt, xEmptyReg); }
 		else
 		{
-			if (bcLane >= 0) armAsm->Fmul(Fs.V4S(), Fs.V4S(), Ft.S(), bcLane); // AX-14 fold
+			if (bcLane >= 0) armAsm->Fmul(Fs.V4S(), Fs.V4S(), Ft.S(), bcLane);
 			else             SSE_PS[2](mVU, Fs, Ft, xEmptyReg, xEmptyReg);
 			SSE_PS[1](mVU, Fd, Fs, tempFt, xEmptyReg);
 		}
