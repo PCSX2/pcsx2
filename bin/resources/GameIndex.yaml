@@ -200,7 +200,7 @@ PAPX-90203:
   name-sort: "ぐらんつーりすも 2000 [たいけんばん]"
   name-en: "Gran Turismo 2000 [Trial]"
   region: "NTSC-J"
-  gsHWFixes:
+  gsHWFixes: &gran-turismo-3-gs-fixes
     halfPixelOffset: 5 # Fixes edge bleed and lines.
     autoFlush: 1 # Fixes missing lens flare and intensity.
     getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
@@ -226,28 +226,19 @@ PAPX-90207:
   name-sort: "ぐらんつーりすも 3 A-Spec おーとばっくすげんていりぷれいしあたー"
   name-en: "Gran Turismo 3 - A-Spec - Autobacs Gentei Replay Theater"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes edge bleed and lines.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 PAPX-90208:
   name: "GRAN TURISMO 3 - A-Spec - リプレイシアター"
   name-sort: "ぐらんつーりすも 3 A-Spec りぷれいしあたー"
   name-en: "Gran Turismo 3 - A-Spec - Replay Theater"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes edge bleed and lines.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 PAPX-90209:
   name: "GRAN TURISMO 3 - A-Spec - Netz TOYOTA - リプレイシアターディスク"
   name-sort: "ぐらんつーりすも 3 A-Spec ねっつとよたりぷれいしあたーでぃすく"
   name-en: "Gran Turismo 3 - A-Spec - Netz TOYOTA - Replay Theater Disc"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes edge bleed and lines.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 PAPX-90210:
   name: "やっぱ RPGでしょ。 [オリジナルムービーディスク]"
   name-sort: "やっぱ あーるぴーじーでしょ [おりじなるむーびーでぃすく]"
@@ -421,10 +412,7 @@ PAPX-90504:
   name-sort: "ぐらんつーりすも こんせぷと えあとれっく たーぼ すぺしゃるえでぃしょん [たいけんばん]"
   name-en: "Gran Turismo Concept - Airtrek Turbo Special Edition [Trial]"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 PAPX-90505:
   name: "2002 夏のオススメソフト おためしDisc"
   name-sort: "2002 なつのおすすめそふと おためしでぃすく"
@@ -454,19 +442,13 @@ PAPX-90508:
   name-sort: "ぐらんつーりすも こんせぷと るぽ かっぷ とれいにんぐ ばーじょん"
   name-en: "Gran Turismo Concept - LUPO CUP Training Version"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 PAPX-90509:
   name: "GRAN TURISMO Concept - LUPO CUP Training Version 2"
   name-sort: "ぐらんつーりすも こんせぷと るぽ かっぷ とれいにんぐ ばーじょん 2"
   name-en: "Gran Turismo Concept - LUPO CUP Training Version 2"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 PAPX-90511:
   name: "SIREN [体験版]"
   name-sort: "さいれん [たいけんばん]"
@@ -481,11 +463,9 @@ PAPX-90512:
   name-sort: "ぐらんつーりすも 4 - とよた ぷりうす [たいけんばん]"
   name-en: "Gran Turismo 4 - TOYOTA Prius [Trial]"
   region: "NTSC-J"
-  gsHWFixes:
+  gsHWFixes: &gran-turismo-4-prologue-gs-fixes
+    <<: *gran-turismo-3-gs-fixes
     recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 PAPX-90514:
   name: "冬のオススメソフト おためしDISC"
   name-sort: "ふゆのおすすめそふとおためしでぃすく"
@@ -538,13 +518,11 @@ PAPX-90523:
   name-sort: "ぐらんつーりすも 4 - おんらいんじっけんばーじょん"
   name-en: "Gran Turismo 4 - Online Test Version"
   region: "NTSC-J"
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
+  clampModes: &gran-turismo-4-clamp-modes
+    vuClampMode: 2 # In GT4, text in GT mode works. In TT, fixes SPS in TT Mode menu caused by the moving tooltips.
+  gsHWFixes: &gran-turismo-4-gs-fixes
+    <<: *gran-turismo-4-prologue-gs-fixes
     halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
 PAPX-90524:
   name: "ワイルドアームズ ザ フィフスヴァンガード [体験版]"
   name-sort: "わいるどあーむず ざ ふぃふすゔぁんがーど [たいけんばん]"
@@ -691,20 +669,14 @@ PBPX-95502:
   name-sort: "ぐらんつーりすも 3 - A-Spec [ほんたいどうこんばん]"
   name-en: "Gran Turismo 3 - A-Spec [PS2 Bundle]"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
   memcardFilters:
     - "PBPX-95502"
     - "SCPS-15009"
 PBPX-95503:
   name: "Gran Turismo 3 - A-Spec [PS2 Bundle]"
   region: "NTSC-U"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
   memcardFilters:
     - "PBPX-95503"
     - "SCUS-97102"
@@ -765,20 +737,12 @@ PBPX-95523:
   name-sort: "ぐらんつーりすも 4 ぷろろーぐ [ほんたいどうこんばん]"
   name-en: "Gran Turismo 4 Prologue [PS2 Bundle]"
   region: "NTSC-J"
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-4-prologue-gs-fixes
 PBPX-95524:
   name: "Gran Turismo 4 Prologue [PlayStation 2 Racing Pack]"
   region: "NTSC-C"
   compat: 5
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-4-prologue-gs-fixes
 PBPX-95525:
   name: "ファイナルファンタジーⅫ [本体同梱版]"
   name-sort: "ふぁいなるふぁんたじー 12 [ほんたいどうこんばん]"
@@ -790,13 +754,8 @@ PBPX-95601:
   name-en: "Gran Turismo 4 [PS2 Bundle]"
   region: "NTSC-J"
   compat: 5
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
   memcardFilters:
     - "PBPX-95502"
     - "SCAJ-20066"
@@ -844,10 +803,7 @@ PCPX-96309:
   name-sort: "ぐらんつーりすも 3 ねっつ とよた [Demo]"
   name-en: "Gran Turismo 3 Netz TOYOTA [Demo]"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes edge bleed and lines.
-    autoFlush: 1 # Fixes missing lens flare and intensity.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 PCPX-96310:
   name: "エクストリーム・レーシング SSX [体験版]"
   name-sort: "えくすとりーむ れーしんぐ SSX [たいけんばん]"
@@ -862,19 +818,13 @@ PCPX-96311:
   name-sort: "ぐらんつーりすも 3 てんとうしゆうでぃすくVol.1"
   name-en: "Gran Turismo 3 Trial Disk Volume 1"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes edge bleed and lines.
-    autoFlush: 1 # Fixes missing lens flare and intensity.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 PCPX-96312:
   name: "GRAN TURISMO 3 - A-Spec - [オートバックス店頭試遊ディスク]"
   name-sort: "ぐらんつーりすも 3 A-Spec おーとばっくすてんとうしゆうでぃすく"
   name-en: "Gran Turismo 3 - A-Spec - Autobacs Tentou Shiyuu Disc"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes edge bleed and lines.
-    autoFlush: 1 # Fixes missing lens flare and intensity.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 PCPX-96314:
   name: "スカイオデッセイ [体験版]"
   name-sort: "すかいおでっせい [たいけんばん]"
@@ -1005,10 +955,7 @@ PCPX-96609:
   name-sort: "ぐらんつーりすも 3 - A-Spec - てんとうしゆう Disc Vol. 2"
   name-en: "Gran Turismo 3 - A-Spec - Tentou Shiyuu Disc Vol. 2"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 PCPX-96610:
   name: "見る見る 2001年2月度受注号"
   name-sort: "みるみる 2001ねん 2がつどじゅちゅうごう"
@@ -1082,10 +1029,7 @@ PCPX-96624:
   name-sort: "ぐらんつーりすも こんせぷと 2001 Tokyo"
   name-en: "Gran Turismo - Concept 2001 Tokyo"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 PCPX-96625:
   name: "プレプレ2 VOLUME.4"
   name-sort: "ぷれぷれ2 VOLUME. 4"
@@ -1136,10 +1080,7 @@ PCPX-96634:
   name-sort: "ぐらんつーりすも すばるどらいびんぐしみゅれーたーばーじょん"
   name-en: "Gran Turismo - SUBARU Driving Simulator Version"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 PCPX-96635:
   name: "プレプレ2 VOLUME.8"
   name-sort: "ぷれぷれ2 VOLUME. 8"
@@ -1176,13 +1117,8 @@ PCPX-96649:
   name-en: "Gran Turismo 4 [Trial]"
   region: "NTSC-J"
   compat: 5
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 PCPX-96653:
   name: "ラチェット&クランク3 突撃！ガラクチック★レンジャーズ [店頭体験版]"
   name-sort: "らちぇっとあんどくらんく3 とつげき！がらくちっくれんじゃーず [てんとうたいけんばん]"
@@ -1223,13 +1159,8 @@ PCPX-96660:
   name-sort: "つーりすと とろふぃー [Demo]"
   name-en: "Tourist Trophy [Demo]"
   region: "NTSC-J"
-  clampModes:
-    vuClampMode: 2 # Fixes SPS in TT Mode menu caused by the moving tooltips.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 PCPX-98017:
   name: "ラチェット&クランク4th ギリギリ銀河のギガバトル [体験版]"
   name-sort: "らちぇっとあんどくらんく4th ぎりぎりぎんがのぎがばとる [たいけんばん]"
@@ -1691,11 +1622,7 @@ SCAJ-20066:
   name: "Gran Turismo 4 Prologue"
   region: "NTSC-Unk"
   compat: 5
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-4-prologue-gs-fixes
   memcardFilters:
     - "PBPX-95502"
     - "SCAJ-20066"
@@ -1708,7 +1635,6 @@ SCAJ-20066:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # vuClampMode = 2  Text in GT mode works.
 SCAJ-20067:
   name: "Gungrave O.D."
   region: "NTSC-Unk"
@@ -2446,13 +2372,8 @@ SCAJ-20170:
   name: "Tourist Trophy"
   region: "NTSC-C"
   compat: 5
-  clampModes:
-    vuClampMode: 2 # Fixes SPS in TT Mode menu caused by the moving tooltips.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCAJ-20171:
   name: "絶体絶命都市2 - 凍てついた記憶たち"
   name-sort: "ぜったいぜつめいとし いてついたきおくたち"
@@ -2743,14 +2664,11 @@ SCAJ-30006:
   name-sort: "ぐらんつーりすも 4"
   name-en: "Gran Turismo 4"
   region: "NTSC-J"
+  clampModes: *gran-turismo-4-clamp-modes
   roundModes:
     eeRoundMode: 3 # Using chop for both normal+div fixes crash in B5 license test.
     eeDivRoundMode: 3 # See above.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-4-gs-fixes
   memcardFilters:
     - "PBPX-95502"
     - "SCAJ-20066"
@@ -2767,25 +2685,19 @@ SCAJ-30007:
   name: "Gran Turismo 4"
   region: "NTSC-C"
   compat: 5
+  clampModes: *gran-turismo-4-clamp-modes
   roundModes:
     eeRoundMode: 3 # Using chop for both normal+div fixes crash in B5 license test.
     eeDivRoundMode: 3 # See above.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCAJ-30008:
   name: "Gran Turismo 4 [PlayStation2 the Best]"
   region: "NTSC-C"
+  clampModes: *gran-turismo-4-clamp-modes
   roundModes:
     eeRoundMode: 3 # Using chop for both normal+div fixes crash in B5 license test.
     eeDivRoundMode: 3 # See above.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-4-gs-fixes
   memcardFilters:
     - "PBPX-95502"
     - "SCAJ-20066"
@@ -2949,11 +2861,8 @@ SCCS-60002:
   name-sort: "Paoche Langmanlu 4"
   name-en: "Gran Turismo 4 [Review Copy]"
   region: "NTSC-C"
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCED-50041:
   name: "Tekken Tag Tournament [Demo]"
   region: "PAL-E"
@@ -3353,10 +3262,7 @@ SCED-51351:
 SCED-51352:
   name: "Gran Turismo - Nissan Micra Edition [Demo]"
   region: "PAL-E"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 SCED-51359:
   name: "Official PlayStation 2 Magazine Demo 27"
   region: "PAL-M5"
@@ -3920,11 +3826,7 @@ SCED-52452:
 SCED-52455:
   name: "Gran Turismo Special Edition 2004 Geneva Version"
   region: "PAL-E"
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-4-prologue-gs-fixes
 SCED-52461:
   name: "SingStar [Press Kit]"
   region: "PAL-E"
@@ -3947,11 +3849,7 @@ SCED-52549:
 SCED-52578:
   name: "Gran Turismo 4 BMW 1 Series Virtual Drive Dealership [Demo]"
   region: "PAL-M5"
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCED-52580:
   name: "Magazine Ufficiale PlayStation 2 Italia 06/04"
   region: "PAL-I"
@@ -3964,11 +3862,7 @@ SCED-52619:
 SCED-52681:
   name: "Gran Turismo 4 BMW 1 Series Virtual Drive [Demo]"
   region: "PAL-M11"
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCED-52687:
   name: "Formula One 04 [Demo]"
   region: "PAL-M11"
@@ -4903,10 +4797,7 @@ SCES-50294:
   name: "Gran Turismo 3 - A-Spec"
   region: "PAL-M5"
   compat: 5
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 SCES-50295:
   name: "Dark Cloud"
   region: "PAL-M5"
@@ -5174,10 +5065,7 @@ SCES-50858:
   name: "Gran Turismo - Concept 2002 Tokyo-Geneva"
   region: "PAL-M6"
   compat: 5
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
   memcardFilters:
     - "SCES-50858"
     - "SCES-50294"
@@ -5607,13 +5495,8 @@ SCES-51719:
   name: "Gran Turismo 4"
   region: "PAL-M5"
   compat: 5
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
   memcardFilters:
     - "SCES-51719"
     - "SCES-52438"
@@ -5871,16 +5754,11 @@ SCES-52438:
   name: "Gran Turismo 4 Prologue"
   region: "PAL-M5"
   compat: 5
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-4-prologue-gs-fixes
   memcardFilters:
     - "SCES-51719"
     - "SCES-52438"
     - "SCES-50294"
-  # vuClampMode = 2  Text in GT mode works.
 SCES-52456:
   name: "Ratchet & Clank 3"
   region: "PAL-M5"
@@ -6229,13 +6107,8 @@ SCES-53372:
   name: "Tourist Trophy - The Real Riding Simulator"
   region: "PAL-M5"
   compat: 5
-  clampModes:
-    vuClampMode: 2 # Fixes SPS in TT Mode menu caused by the moving tooltips.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCES-53397:
   name: "SingStar - Popworld Events Code"
   region: "PAL-Unk"
@@ -7418,11 +7291,7 @@ SCKA-20020:
 SCKA-20022:
   name: "Gran Turismo 4 - Prologue" # No listed Korean name on ReDump
   region: "NTSC-K"
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
-  # vuClampMode = 2  Text in GT mode works.
+  gsHWFixes: *gran-turismo-4-prologue-gs-fixes
 SCKA-20023:
   name: "제로 ~붉은 나비~"
   name-sort: "Zero: Bulgeun Nabi"
@@ -7481,10 +7350,7 @@ SCKA-20028:
 SCKA-20029:
   name: "Gran Turismo Concept - 2002 Tokyo-Seoul [PlayStation 2 BigHit Series]" # No listed Korean name on ReDump
   region: "NTSC-K"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 SCKA-20030:
   name: "슬라이 쿠퍼 - 전설의 비법서를 찾아서 [PlayStation 2 BigHit Series]"
   name-sort: "Sly Cooper - Jeonseolui Bibeobseoreul Chajaseo [PlayStation 2 BigHit Series]"
@@ -8355,13 +8221,8 @@ SCKA-24012:
 SCKA-30001:
   name: "Gran Turismo 4" # No listed Korean name on ReDump
   region: "NTSC-K"
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCKA-30002:
   name: "GOD OF WAR 영혼의 반역자"
   name-sort: "God of War: Yeonghonui Banyeokja"
@@ -8382,13 +8243,8 @@ SCKA-30003:
 SCKA-30004:
   name: "Gran Turismo 4 [PlayStation 2 BigHit Series]" # No listed Korean name on ReDump
   region: "NTSC-K"
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCKA-30005:
   name: "로그 갤럭시"
   name-en: "Rogue Galaxy"
@@ -8488,10 +8344,7 @@ SCPM-85301:
   name-sort: "ぐらんつーりすも こんせぷと こぺん すぺしゃるえでぃしょん [Demo]"
   name-en: "Gran Turismo Concept - Copen Special Edition [Demo]"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 SCPM-85302:
   name: "みんなのGOLF オンライン"
   name-sort: "みんなのごるふ おんらいん"
@@ -8507,11 +8360,7 @@ SCPM-85304:
   name-sort: "ぐらんつーりすも 4 ふぁーすとぷれびゅー"
   name-en: "Gran Turismo 4 - First Preview -"
   region: "NTSC-J"
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCPN-60101:
   name: "PlayStation BB Navigator - Version 0.10 [Prerelease] [Disc 1]"
   name-sort: "ぷれいすてーしょん BB なびげーたー - Version 0.10 [Prerelease] [Disc 1]"
@@ -8824,10 +8673,7 @@ SCPS-15009:
   name-sort: "ぐらんつーりすも3 A-spec"
   name-en: "Gran Turismo 3 - A-Spec"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
   memcardFilters:
     - "PBPX-95502"
     - "SCPS-15009"
@@ -8837,10 +8683,7 @@ SCPS-15010:
   name-en: "Gran Turismo - Concept 2001 Tokyo"
   region: "NTSC-J"
   compat: 5
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 SCPS-15011:
   name: "EXTERMINATION"
   name-sort: "エクスターミネーション"
@@ -9177,11 +9020,7 @@ SCPS-15055:
   name-sort: "ぐらんつーりすも 4 ぷろろーぐ"
   name-en: "Gran Turismo 4 Prologue"
   region: "NTSC-J"
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-4-prologue-gs-fixes
   memcardFilters:
     - "PBPX-95502"
     - "SCAJ-20066"
@@ -9194,7 +9033,6 @@ SCPS-15055:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # vuClampMode = 2  Text in GT mode works.
 SCPS-15056:
   name: "ラチェット&クランク2 ガガガ！銀河のコマンドーっす"
   name-sort: "らちぇっとあんどくらんく2 ががが！ぎんがのこまんどーっす"
@@ -9650,13 +9488,8 @@ SCPS-15105:
   name-sort: "つーりすと とろふぃー"
   name-en: "Tourist Trophy - The Real Riding Simulator"
   region: "NTSC-J"
-  clampModes:
-    vuClampMode: 2 # Fixes SPS in TT Mode menu caused by the moving tooltips.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCPS-15106:
   name: "SIREN2"
   name-sort: "さいれん2"
@@ -9811,16 +9644,11 @@ SCPS-17001:
   name-en: "Gran Turismo 4"
   region: "NTSC-J"
   compat: 5
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
+  clampModes: *gran-turismo-4-clamp-modes
   roundModes:
     eeRoundMode: 3 # Using chop for both normal+div fixes crash in B5 license test.
     eeDivRoundMode: 3 # See above.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-4-gs-fixes
   memcardFilters:
     - "PBPX-95502"
     - "SCAJ-20066"
@@ -9847,41 +9675,29 @@ SCPS-17008:
   name-sort: "ぐらんつーりすも ないき りみてっどえでぃしょん [8inch]"
   name-en: "Nike - Gran Turismo [Limited Edition - 8 inch]"
   region: "NTSC-J"
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCPS-17009:
   name: "NIKE/ GRAN TURISMO Limited Edition [9inch]"
   name-sort: "ぐらんつーりすも ないき りみてっどえでぃしょん [9inch]"
   name-en: "Nike - Gran Turismo [Limited Edition - 9 inch]"
   region: "NTSC-J"
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCPS-17010:
   name: "NIKE/ GRAN TURISMO Limited Edition [10inch]"
   name-sort: "ぐらんつーりすも ないき りみてっどえでぃしょん [10inch]"
   name-en: "Nike - Gran Turismo [Limited Edition - 10 inch]"
   region: "NTSC-J"
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCPS-17011:
   name: "NIKE/ GRAN TURISMO Limited Edition [11inch]"
   name-sort: "ぐらんつーりすも ないき りみてっどえでぃしょん [11inch]"
   name-en: "Nike - Gran Turismo [Limited Edition - 11 inch]"
   region: "NTSC-J"
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCPS-17013:
   name: "ローグギャラクシー ディレクターズカット"
   name-sort: "ろーぐぎゃらくしー でぃれくたーずかっと"
@@ -10037,10 +9853,7 @@ SCPS-19208:
   name-sort: "ぐらんつーりすも Concept 2001 Tokyo [PlayStation2 the Best]"
   name-en: "Gran Turismo - Concept 2001 Tokyo [PlayStation2 the Best]"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 SCPS-19209:
   name: "ぼくのなつやすみ2 海の冒険篇 [PlayStation2 the Best]"
   name-sort: "ぼくのなつやすみ2 うみのぼうけんへん [PlayStation2 the Best]"
@@ -10107,13 +9920,8 @@ SCPS-19252:
   name-sort: "ぐらんつーりすも 4 [PlayStation2 the Best]"
   name-en: "Gran Turismo 4 [PlayStation2 the Best]"
   region: "NTSC-J"
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
   memcardFilters:
     - "PBPX-95502"
     - "SCAJ-20066"
@@ -10178,11 +9986,7 @@ SCPS-19304:
   name-sort: "ぐらんつーりすも 4 ぷろろーぐ [PlayStation2 the Best]"
   name-en: "Gran Turismo 4 Prologue [PlayStation2 the Best]"
   region: "NTSC-J"
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-4-prologue-gs-fixes
   memcardFilters:
     - "PBPX-95502"
     - "SCAJ-20066"
@@ -10195,7 +9999,6 @@ SCPS-19304:
     - "SCPS-19304"
     - "SCPS-15009"
     - "SCPS-55007"
-  # vuClampMode = 2  Text in GT mode works.
 SCPS-19305:
   name: "SIREN [PlayStation2 the Best]"
   name-sort: "さいれん [PlayStation2 the Best]"
@@ -10424,13 +10227,8 @@ SCPS-19324:
   name-sort: "つーりすと とろふぃー [PlayStation2 the Best]"
   name-en: "Tourist Trophy - The Real Riding Simulator [PlayStation2 the Best]"
   region: "NTSC-J"
-  clampModes:
-    vuClampMode: 2 # Fixes SPS in TT Mode menu caused by the moving tooltips.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCPS-19325:
   name: "サルゲッチュ ミリオンモンキーズ [PlayStation2 the Best]"
   name-sort: "さるげっちゅ みりおんもんきーず [PlayStation2 the Best]"
@@ -10650,10 +10448,7 @@ SCPS-55005:
   name-sort: "ぐらんつーりすも こんせぷと 2001 Tokyo"
   name-en: "Gran Turismo - Concept 2001 Tokyo"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 SCPS-55006:
   name: "ワイルドアームズ アドヴァンスドサード"
   name-sort: "わいるどあーむず あどゔぁんすどさーど"
@@ -10667,10 +10462,7 @@ SCPS-55007:
   name-sort: "ぐらんつーりすも 3 - A-Spec"
   name-en: "Gran Turismo 3 - A-Spec"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 SCPS-55008:
   name: "サンダーストライカー"
   name-sort: "さんだーすとらいかー"
@@ -11001,19 +10793,13 @@ SCPS-55902:
   name-sort: "ぐらんつーりすも - こんせぷと 2002 Tokyo-Geneva"
   name-en: "Gran Turismo - Concept 2002 Tokyo-Geneva"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 SCPS-55903:
   name: "GRAN TURISMO - Concept 2002 Tokyo-Geneva"
   name-sort: "ぐらんつーりすも - こんせぷと 2002 Tokyo-Geneva"
   name-en: "Gran Turismo - Concept 2002 Tokyo-Geneva"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 SCPS-56001:
   name: "이코"
   name-en: "Ico"
@@ -11049,10 +10835,7 @@ SCPS-56004:
 SCPS-56005:
   name: "Gran Turismo Concept - 2002 Tokyo-Seoul" # No listed Korean name on ReDump
   region: "NTSC-K"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 SCPS-56006:
   name: "철권　４"
   name-en: "Tekken 4"
@@ -11131,10 +10914,7 @@ SCPS-72001:
   name-sort: "ぐらんつーりすも3 A-spec [MEGA HITS!]"
   name-en: "Gran Turismo 3 - A-Spec [MEGA HITS!]"
   region: "NTSC-J"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 SCPS-72002:
   name: "みんなのGOLF 3 [MEGA HITS!]"
   name-sort: "みんなのごるふ 3 [MEGA HITS!]"
@@ -11170,13 +10950,8 @@ SCUS-90174:
 SCUS-90682:
   name: "Gran Turismo 4"
   region: "NTSC-U"
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCUS-94346:
   name: "SingStar - Latino"
   region: "NTSC-U"
@@ -11200,10 +10975,7 @@ SCUS-97102:
   name: "Gran Turismo 3 - A-Spec"
   region: "NTSC-U"
   compat: 5
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
   memcardFilters:
     - "PBPX-95503"
     - "SCUS-97102"
@@ -11267,10 +11039,7 @@ SCUS-97114:
 SCUS-97115:
   name: "Gran Turismo 3 - A-Spec [Demo]"
   region: "NTSC-U"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 SCUS-97116:
   name: "Kiosk Disc 2.1"
   region: "NTSC-U"
@@ -11701,12 +11470,9 @@ SCUS-97218:
   name: "Kiosk Demo Disc 2.6"
   region: "NTSC-U"
 SCUS-97219:
-  name: "Gran Turismo 3 - A-Spec - Nissan 350Z Edition"
+  name: "Gran Turismo Concept - Nissan 350Z Edition"
   region: "NTSC-U"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
   memcardFilters:
     - "SCUS-97219"
     - "SCUS-97102"
@@ -12063,13 +11829,8 @@ SCUS-97328:
   name: "Gran Turismo 4"
   region: "NTSC-U"
   compat: 5
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
   memcardFilters: # Allows car imports from GT3 or something.
     - "PBPX-95503"
     - "SCUS-97328"
@@ -12274,11 +12035,7 @@ SCUS-97383:
 SCUS-97384:
   name: "Gran Turismo Special Edition 2004 Toyota [Demo]"
   region: "NTSC-U"
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-4-prologue-gs-fixes
 SCUS-97392:
   name: "NBA '06 featuring The Life Vol.1 [Demo]"
   region: "NTSC-U"
@@ -12507,13 +12264,8 @@ SCUS-97432:
 SCUS-97436:
   name: "Gran Turismo 4 [Online Public Beta]"
   region: "NTSC-U"
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
   memcardFilters:
     - "PBPX-95503"
     - "SCUS-97328"
@@ -12731,13 +12483,8 @@ SCUS-97482:
 SCUS-97483:
   name: "Gran Turismo 4 MX-5 Edition [Demo]"
   region: "NTSC-U"
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCUS-97484:
   name: "Sly 3 - Honor Among Thieves [E3 Demo]"
   region: "NTSC-U"
@@ -12860,13 +12607,8 @@ SCUS-97502:
   name: "Tourist Trophy"
   region: "NTSC-U"
   compat: 5
-  clampModes:
-    vuClampMode: 2 # Fixes SPS in TT Mode menu caused by the moving tooltips.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCUS-97503:
   name: "MLB '06 - The Show [Demo]"
   region: "NTSC-U"
@@ -12920,10 +12662,7 @@ SCUS-97512:
     - "PBPX-95503"
     - "SCUS-97102"
     - "SCUS-97512"
-  gsHWFixes:
-    halfPixelOffset: 5 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Partially fixes the sun occlusion and lens flare.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  gsHWFixes: *gran-turismo-3-gs-fixes
 SCUS-97513:
   name: "Ratchet & Clank 2 - Going Commando [Greatest Hits]"
   region: "NTSC-U"
@@ -13126,13 +12865,8 @@ SCUS-97560:
 SCUS-97563:
   name: "Gran Turismo 4"
   region: "NTSC-U"
-  clampModes:
-    vuClampMode: 2 # Text in GT mode works.
-  gsHWFixes:
-    recommendedBlendingLevel: 3 # Improves banding in car showcase as well as car brightness and sheen.
-    halfPixelOffset: 4 # Fixes weird edge shadows and depth bleed which happens on the edge as well.
-    autoFlush: 1 # Helps lens flare and sun occlusion somewhat but doesn't full fix it.
-    getSkipCount: "GSC_PolyphonyDigitalGames" # Fixes post-processing.
+  clampModes: *gran-turismo-4-clamp-modes
+  gsHWFixes: *gran-turismo-4-gs-fixes
 SCUS-97564:
   name: "Jampack Demo Disc Vol.15 [T-Rated]"
   region: "NTSC-U"

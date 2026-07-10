@@ -1030,7 +1030,7 @@ void GameDatabase::initDatabase()
 	const ryml::csubstr yaml = ryml::to_csubstr(*buffer);
 
 	Error error;
-	std::optional<ryml::Tree> tree = ParseYAMLFromString(yaml, ryml::to_csubstr(name), &error);
+	std::optional<ryml::Tree> tree = ParseYAMLFromString(yaml, ryml::to_csubstr(name), &error, true);
 	if (!tree.has_value())
 	{
 		Console.ErrorFmt("GameDB: Failed to parse game database file {}:", path);
