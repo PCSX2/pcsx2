@@ -3374,6 +3374,10 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_TV,
 				TRANSLATE_SV("VMManager", "Integer scaling is enabled. This may shrink the image."));
 		}
+#if !defined(__ANDROID__)
+		// On Android the setup wizard forces an explicit GL/VK renderer pick by design —
+		// there is no "Automatic" backend to resolve to — so this banner would fire on every
+		// boot regardless of correctness. Desktop keeps the canonical warning.
 		static bool render_change_warn = false;
 		if (EmuConfig.GS.Renderer != GSRendererType::Auto && EmuConfig.GS.Renderer != GSRendererType::SW && !render_change_warn)
 		{
@@ -3383,6 +3387,7 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_CIRCLE_EXCLAMATION,
 				TRANSLATE_SV("VMManager", "Graphics API is not set to Automatic. This may cause performance problems and graphical issues."));
 		}
+#endif
 	}
 	if (EmuConfig.GS.DumpGSData)
 	{

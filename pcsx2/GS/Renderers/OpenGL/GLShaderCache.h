@@ -22,7 +22,7 @@ public:
 	GLShaderCache();
 	~GLShaderCache();
 
-	bool Open();
+	bool Open(bool is_gles);
 	void Close();
 
 	std::optional<GLProgram> GetProgram(const std::string_view vertex_shader, const std::string_view fragment_shader,
