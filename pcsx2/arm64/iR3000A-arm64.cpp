@@ -1155,6 +1155,7 @@ static void recReserve()
 void recResetIOP()
 {
 	Console.WriteLn(Color_Green, "iR3000A-ARM64 Recompiler reset.");
+	ArmJitTelemetry::AddIOPFullReset();
 
 	if (CHECK_EXTRAMEM != extraRam)
 	{

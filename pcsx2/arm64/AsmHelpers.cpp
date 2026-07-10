@@ -2,11 +2,117 @@
 // SPDX-License-Identifier: GPL-3.0
 
 #include "arm64/AsmHelpers.h"
+#include "arm64/JitTelemetry.h"
 
 #include "common/Assertions.h"
 #include "common/BitUtils.h"
 #include "common/Console.h"
 #include "common/HostSys.h"
+#include "common/Timer.h"
+
+#include <atomic>
+
+#ifdef PCSX2_DEVBUILD
+namespace ArmJitTelemetry
+{
+	// Relaxed atomics: EE/IOP compile+link on the CPU thread, mVU also on the
+	// MTVU thread. Approximate windows are fine — this is rate telemetry.
+	static std::atomic<u64> s_linkPatches{0};
+	static std::atomic<u64> s_blockFlushes{0};
+	static std::atomic<u64> s_blockFlushBytes{0};
+	static std::atomic<u64> s_vuFlushes{0};
+	static std::atomic<u64> s_vuFlushBytes{0};
+	static std::atomic<u64> s_blockDiscards{0};
+	static std::atomic<u64> s_pageResets{0};
+	static std::atomic<u64> s_eeFullResets{0};
+	static std::atomic<u64> s_iopFullResets{0};
+
+	static void MaybeReport()
+	{
+		static std::atomic<Common::Timer::Value> s_lastReport{0};
+		// Window-delta snapshots; only the CAS-elected printer touches these.
+		static u64 s_prev[9] = {};
+
+		const Common::Timer::Value now = Common::Timer::GetCurrentValue();
+		Common::Timer::Value last = s_lastReport.load(std::memory_order_relaxed);
+		if (last != 0 && Common::Timer::ConvertValueToSeconds(now - last) < 5.0)
+			return;
+		if (!s_lastReport.compare_exchange_strong(last, now, std::memory_order_relaxed))
+			return;
+		if (last == 0)
+			return; // first event opens the window; nothing to rate yet
+
+		const u64 cur[9] = {
+			s_linkPatches.load(std::memory_order_relaxed),
+			s_blockFlushes.load(std::memory_order_relaxed),
+			s_blockFlushBytes.load(std::memory_order_relaxed),
+			s_vuFlushes.load(std::memory_order_relaxed),
+			s_vuFlushBytes.load(std::memory_order_relaxed),
+			s_blockDiscards.load(std::memory_order_relaxed),
+			s_pageResets.load(std::memory_order_relaxed),
+			s_eeFullResets.load(std::memory_order_relaxed),
+			s_iopFullResets.load(std::memory_order_relaxed),
+		};
+		const double secs = Common::Timer::ConvertValueToSeconds(now - last);
+		Console.WriteLn("JITTELEM +%llu linkPatch +%llu blkFlush(%lluKB) +%llu vuFlush(%lluKB) "
+						"+%llu discard +%llu pageReset +%llu/+%llu fullReset(ee/iop) in %.1fs | "
+						"tot %llu patch %lluKB blk %lluKB vu",
+			cur[0] - s_prev[0], cur[1] - s_prev[1], (cur[2] - s_prev[2]) / 1024,
+			cur[3] - s_prev[3], (cur[4] - s_prev[4]) / 1024,
+			cur[5] - s_prev[5], cur[6] - s_prev[6], cur[7] - s_prev[7], cur[8] - s_prev[8],
+			secs, cur[0], cur[2] / 1024, cur[4] / 1024);
+		for (int i = 0; i < 9; i++)
+			s_prev[i] = cur[i];
+	}
+
+	void AddLinkPatch()
+	{
+		// Counter-only: PatchAtomic can run from the SIGSEGV fastmem handler
+		// (Arm64BaseBlocks::Remove), where Console output is not signal-safe.
+		// Reporting rides on the compile-side events instead — a link storm
+		// always has block compiles alongside it.
+		s_linkPatches.fetch_add(1, std::memory_order_relaxed);
+	}
+
+	void AddBlockFlush(u32 bytes)
+	{
+		s_blockFlushes.fetch_add(1, std::memory_order_relaxed);
+		s_blockFlushBytes.fetch_add(bytes, std::memory_order_relaxed);
+		MaybeReport();
+	}
+
+	void AddVUFlush(u32 bytes)
+	{
+		s_vuFlushes.fetch_add(1, std::memory_order_relaxed);
+		s_vuFlushBytes.fetch_add(bytes, std::memory_order_relaxed);
+		MaybeReport();
+	}
+
+	void AddBlockDiscard()
+	{
+		s_blockDiscards.fetch_add(1, std::memory_order_relaxed);
+		MaybeReport();
+	}
+
+	void AddPageReset()
+	{
+		s_pageResets.fetch_add(1, std::memory_order_relaxed);
+		MaybeReport();
+	}
+
+	void AddEEFullReset()
+	{
+		s_eeFullResets.fetch_add(1, std::memory_order_relaxed);
+		MaybeReport();
+	}
+
+	void AddIOPFullReset()
+	{
+		s_iopFullResets.fetch_add(1, std::memory_order_relaxed);
+		MaybeReport();
+	}
+} // namespace ArmJitTelemetry
+#endif
 
 const vixl::aarch64::Register& armWRegister(int n)
 {
@@ -137,6 +243,7 @@ u8* armEndBlock()
 	HostSys::EndCodeWrite();
 
 	HostSys::FlushInstructionCache(armAsmPtr, size);
+	ArmJitTelemetry::AddBlockFlush(size);
 
 	armAsmPtr = armAsmPtr + size;
 	armAsmCapacity -= size;

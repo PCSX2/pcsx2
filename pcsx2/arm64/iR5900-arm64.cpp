@@ -1756,11 +1756,13 @@ static void iopClearRecLUT(BASEBLOCK* base, int count)
 static void dyna_block_discard(u32 start, u32 sz)
 {
 	DevCon.WriteLn("%.8X rec block discard (sz=%d)", start, sz);
+	ArmJitTelemetry::AddBlockDiscard();
 	recClear(start, sz);
 }
 
 static void dyna_page_reset(u32 start, u32 sz)
 {
+	ArmJitTelemetry::AddPageReset();
 	recClear(start & ~0xFFF, 0x400); // clear 4KB page
 	manual_counter[start >> 12]++;
 	mmap_MarkCountedRamPage(start);
@@ -1885,6 +1887,7 @@ static void recReserve()
 static void recResetRaw()
 {
 	Console.WriteLn(Color_Green, "iR5900-ARM64 Recompiler reset.");
+	ArmJitTelemetry::AddEEFullReset();
 
 	armSetAsmPtr(SysMemory::GetEERec(), SysMemory::GetEERecEnd() - SysMemory::GetEERec(), &s_eeConstantPool);
 	armStartBlock();

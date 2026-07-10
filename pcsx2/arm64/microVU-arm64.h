@@ -19,6 +19,7 @@
 #include "Gif_Unit.h"
 #include "iR5900-arm64.h"
 #include "R5900OpcodeTables.h"
+#include "arm64/JitTelemetry.h"
 #include "common/Perf.h"
 
 #include "microVU_Misc-arm64.h"

@@ -15,6 +15,14 @@ sample-weighted dynamic mix — samples are binned into block address ranges
 directly (no `perf inject` needed).
 
 Usage:    ee_code_census.py <jit-XXXX.dump> [perf.data] [--pins s3|s0|none]
+          ee_code_census.py <jit-XXXX.dump> perf.data --footprint [--window 1.0]
+
+--footprint (needs perf.data): instead of the category census, measure the hot
+JIT working set — bin sample IPs by 64-byte host cacheline over the jitdump
+block ranges and report distinct lines/KB covering 50/90/99% of samples, per
+JIT (EE / mVU0 / mVU1 / ...) and combined. Whole-run numbers overstate the
+instantaneous set, so it also reports the per-`--window`-second median. The
+number to compare against L1I capacity: A77 64KB, A55/A53 32KB.
 
 Categories:
   ldr_gpr_pinned(reload)   loads of a pinned guest GPR into its own pin (seam reloads)
@@ -159,12 +167,126 @@ def classify_block(code, pin_gpr, pins):
     return c, per_gpr_ld, n
 
 
+def _coverage(cnt, fracs=(0.5, 0.9, 0.99)):
+    """{addr_unit: samples} -> {frac: n_units covering that fraction, hottest-first}."""
+    tot = sum(cnt.values())
+    out = {}
+    acc = 0
+    targets = sorted(fracs)
+    ti = 0
+    for i, (_, v) in enumerate(cnt.most_common(), 1):
+        acc += v
+        while ti < len(targets) and acc >= targets[ti] * tot:
+            out[targets[ti]] = i
+            ti += 1
+        if ti == len(targets):
+            break
+    for f in fracs:
+        out.setdefault(f, len(cnt))
+    return out
+
+
+def run_footprint(blocks, perfdata, window):
+    ranges = sorted((addr, addr + size, name.split("_")[0])
+                    for addr, size, name, _ in blocks if size)
+    lows = [r[0] for r in ranges]
+
+    # Stream perf script output — big captures (700MB+ perf.data) produce
+    # more text than is sane to hold in one string.
+    proc = subprocess.Popen(["perf", "script", "-i", perfdata, "-F", "time,ip"],
+                            stdout=subprocess.PIPE, text=True)
+    lines_by = {}   # group -> Counter(line addr)
+    pages_by = {}   # group -> Counter(4K page)
+    wins_by = {}    # group -> {window idx -> Counter(line addr)}
+    n_jit = 0
+    n_samples = 0
+    t0 = tmax = None
+    # Two output shapes: flat samples print "TIME: IP" on one line; call-graph
+    # captures print "TIME:" alone with the callchain on following lines. Take
+    # only the LEAF (first IP after a time line) — that's where cycles retired.
+    pending_t = None
+    for line in proc.stdout:
+        parts = line.split()
+        if not parts:
+            continue
+        t = ip = None
+        if parts[0].endswith(":"):
+            try:
+                t = float(parts[0][:-1])
+            except ValueError:
+                continue
+            if len(parts) >= 2:
+                try:
+                    ip = int(parts[1], 16)
+                except ValueError:
+                    pass
+            if ip is None:
+                pending_t = t
+                continue
+        elif pending_t is not None:
+            try:
+                ip = int(parts[0], 16)
+            except ValueError:
+                continue
+            t, pending_t = pending_t, None
+        else:
+            continue
+        n_samples += 1
+        if t0 is None:
+            t0 = t
+        tmax = t
+        j = bisect.bisect_right(lows, ip) - 1
+        if j < 0 or ip >= ranges[j][1]:
+            continue
+        n_jit += 1
+        for g in (ranges[j][2], "ALL-JIT"):
+            lines_by.setdefault(g, Counter())[ip >> 6] += 1
+            pages_by.setdefault(g, Counter())[ip >> 12] += 1
+            wins_by.setdefault(g, {}).setdefault(int((t - t0) / window), Counter())[ip >> 6] += 1
+    proc.wait()
+    if not n_samples:
+        sys.exit("no time,ip samples parsed from perf.data")
+
+    dur = (tmax - t0) if tmax is not None else 0.0
+    print(f"samples: {n_samples} total over {dur:.1f}s, "
+          f"{n_jit} ({100.0 * n_jit / n_samples:.1f}%) in JIT blocks")
+    print(f"footprint units: 64B cachelines (KB = lines*64/1024); pages = 4KB")
+    print(f"L1I capacity for comparison: A77 64KB, A55/A53 32KB\n")
+    hdr = (f"{'group':8s} {'samples':>9s} {'lines':>7s} {'KB':>7s} "
+           f"{'50%KB':>7s} {'90%KB':>7s} {'99%KB':>7s} {'90%pg':>6s} "
+           f"{'w-med90%KB':>10s} {'w-medKB':>8s}")
+    print(hdr)
+    for g in sorted(lines_by, key=lambda g: -sum(lines_by[g].values()) if g != "ALL-JIT" else 1):
+        cnt = lines_by[g]
+        cov = _coverage(cnt)
+        pcov = _coverage(pages_by[g], fracs=(0.9,))
+        # per-window medians: instantaneous working-set estimate
+        w90 = sorted(_coverage(wc, fracs=(0.9,))[0.9] for wc in wins_by[g].values())
+        wall = sorted(len(wc) for wc in wins_by[g].values())
+        med = lambda v: v[len(v) // 2] if v else 0
+        print(f"{g:8s} {sum(cnt.values()):9d} {len(cnt):7d} {len(cnt) * 64 / 1024:7.1f} "
+              f"{cov[0.5] * 64 / 1024:7.1f} {cov[0.9] * 64 / 1024:7.1f} {cov[0.99] * 64 / 1024:7.1f} "
+              f"{pcov[0.9]:6d} {med(w90) * 64 / 1024:10.1f} {med(wall) * 64 / 1024:8.1f}")
+    print("\nw-med90%KB = median across windows of the KB of hottest lines covering 90%")
+    print(f"of that window's samples (window = {window:.2f}s); w-medKB = median distinct KB/window.")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("jitdump")
     ap.add_argument("perfdata", nargs="?", help="perf.data for sample weighting")
     ap.add_argument("--pins", choices=sorted(PIN_MAPS), default="s5")
+    ap.add_argument("--footprint", action="store_true",
+                    help="hot-working-set report (needs perf.data); skips the census")
+    ap.add_argument("--window", type=float, default=1.0,
+                    help="footprint time-window seconds (default 1.0)")
     args = ap.parse_args()
+
+    if args.footprint:
+        if not args.perfdata:
+            sys.exit("--footprint requires perf.data")
+        run_footprint(list(parse_jitdump(args.jitdump)), args.perfdata, args.window)
+        return
 
     pin_gpr = PIN_MAPS[args.pins]
     pins = set(pin_gpr.values())

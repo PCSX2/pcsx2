@@ -32,6 +32,7 @@
 
 #include <map>
 
+#include "arm64/JitTelemetry.h"
 #include "x86/BaseblockEx.h"  // BASEBLOCK, BASEBLOCKEX, BaseBlockArray, recLUT_SetPage
 
 class Arm64BaseBlocks
@@ -62,6 +63,9 @@ protected:
 		// Then make sure cores fetching instructions see the new word.
 		__builtin___clear_cache(reinterpret_cast<char*>(site),
 			reinterpret_cast<char*>(site) + 4);
+		// Signal-safe (counter-only) — Remove() can call this from the
+		// SIGSEGV fastmem handler.
+		ArmJitTelemetry::AddLinkPatch();
 	}
 
 public:

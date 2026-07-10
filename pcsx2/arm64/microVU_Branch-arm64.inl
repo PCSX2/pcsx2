@@ -444,7 +444,10 @@ static void mVUcloseCodeCache(microVU& mVU)
 	armAsm = nullptr; // unbind; do not delete (persistent)
 	HostSys::EndCodeWrite();
 	if (codeSize > 0)
+	{
 		HostSys::FlushInstructionCache(codeStart, codeSize);
+		ArmJitTelemetry::AddVUFlush(codeSize);
+	}
 
 	mVU.prog.x86ptr = codeStart + codeSize;
 }
