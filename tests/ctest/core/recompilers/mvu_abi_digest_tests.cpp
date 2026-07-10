@@ -78,6 +78,9 @@ struct DigestSet
 	// (AX-14, unconditional since ABI v6). 0 in a pin row means "probe did
 	// not exist for that ABI"; the assert skips zero pins.
 	u64 broadcastChain;
+	// Conditional branch in a branch delay slot — pins the condEvilBranch
+	// target-select emission (ported at ABI v7; MGS2 VU0 solver hang).
+	u64 condEvilBranch;
 };
 
 struct AbiPin
@@ -92,20 +95,28 @@ constexpr AbiPin kPins[] = {
 	// LQ/SQ/ILW/ISW, so the folded ops leave their emitted shape unchanged — the
 	// digests are bit-identical to abi 3; the bump is to evict on-disk caches
 	// recorded with the pre-fold loadstore shape.
-	{4, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8, 0}},
+	{4, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8, 0, 0}},
 	// abi 5: mVUclamp2 2-row sign-clamp bounds (AX-02). The probes run under
 	// the default clamp config, where the sign-overflow path never emits —
 	// digests are bit-identical to abi 4; the bump evicts on-disk caches
 	// recorded with the old all-lane sign-clamp shape (the options sentinel
 	// can't distinguish those: same config, different emitter).
-	{5, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8, 0}},
+	{5, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8, 0, 0}},
 	// abi 6: lane-indexed FMUL broadcast fold unconditional (AX-14). The three
 	// original probes contain no broadcast ops, so their digests are
 	// bit-identical to abi 5; the bump evicts caches recorded with the old
 	// Dup-materialized broadcast shape, and the new broadcastChain probe pins
 	// the folded emission from here on (harvested from the first,
 	// deliberately red, run).
-	{6, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8, 0x44bd2acfb23dff74}},
+	{6, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8, 0x44bd2acfb23dff74, 0}},
+	// abi 7: condEvilBranch ported (conditional branch in a branch delay slot
+	// emits the badBranch/evilBranch target-select sequence; MGS2 VU0 solver
+	// hang). The four original probes contain no branch-in-delay-slot, so
+	// their digests are bit-identical to abi 6; the bump evicts caches
+	// recorded when that sequence emitted nothing, and the new condEvilBranch
+	// probe pins the ported emission from here on (harvested from the first,
+	// deliberately red, run).
+	{7, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8, 0x44bd2acfb23dff74, 0xd04db07f3eb1a343}},
 };
 
 u64 CompileAndDigest(std::initializer_list<vu::VuOp> pairs)
@@ -167,6 +178,18 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 		UpperOnly(VMSUBAz_U(mask::xyzw, vf::vf5, vf::vf2)),
 		UpperOnly(bits::E | VMADDw_U(mask::xyzw, vf::vf7, vf::vf6, vf::vf2)),
 	});
+	// Taken branch with a taken conditional branch in its delay slot. The
+	// E-bit stays OUT of the evil continuation window (one plain op at #1's
+	// target, then #2 lands on a common E-bit tail) — E-bit inside an evil
+	// branch is not implemented on x86 either and diverges from the interp.
+	actual.condEvilBranch = CompileAndDigest({
+		LowerOnly(VIBNE_L(vi::vi1, vi::vi0, 2)),                 // pair 0 → pair 3
+		LowerOnly(VIBNE_L(vi::vi1, vi::vi0, 3)),                 // pair 1 (delay slot) → pair 5
+		UpperOnly(VADD_U(mask::xyzw, vf::vf3, vf::vf1, vf::vf2)), // pair 2: skipped
+		UpperOnly(VMUL_U(mask::xyzw, vf::vf4, vf::vf1, vf::vf2)), // pair 3: #1 target (1 op runs)
+		UpperOnly(VSUB_U(mask::xyzw, vf::vf5, vf::vf1, vf::vf2)), // pair 4: skipped
+		UpperOnly(bits::E | VADD_U(mask::xyzw, vf::vf6, vf::vf1, vf::vf2)), // pair 5: #2 target
+	});
 
 	mVUPersist::SetRecordingEnabled(false);
 
@@ -174,6 +197,7 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 	ASSERT_NE(actual.branchBothArms, 0u);
 	ASSERT_NE(actual.indirectJump, 0u);
 	ASSERT_NE(actual.broadcastChain, 0u);
+	ASSERT_NE(actual.condEvilBranch, 0u);
 
 	const u32 abi = mVUProgCache::GetCompilerAbiVersion();
 	const AbiPin* pin = nullptr;
@@ -188,7 +212,8 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 		<< "  actual: {0x" << std::hex << actual.straightLine
 		<< ", 0x" << actual.branchBothArms
 		<< ", 0x" << actual.indirectJump
-		<< ", 0x" << actual.broadcastChain << "}";
+		<< ", 0x" << actual.broadcastChain
+		<< ", 0x" << actual.condEvilBranch << "}";
 
 	const auto explain = [&](const char* which, u64 got, u64 want) {
 		char buf[256];
@@ -209,6 +234,11 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 	{
 		EXPECT_EQ(actual.broadcastChain, pin->digests.broadcastChain)
 			<< explain("broadcastChain", actual.broadcastChain, pin->digests.broadcastChain);
+	}
+	if (pin->digests.condEvilBranch != 0) // probe added at abi 7; older rows unpinned
+	{
+		EXPECT_EQ(actual.condEvilBranch, pin->digests.condEvilBranch)
+			<< explain("condEvilBranch", actual.condEvilBranch, pin->digests.condEvilBranch);
 	}
 }
 

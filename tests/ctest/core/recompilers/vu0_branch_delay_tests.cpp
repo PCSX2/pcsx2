@@ -452,6 +452,117 @@ TEST(Vu0BranchDelay, VibgezNotTakenWhenNegative)
 }
 
 // =========================================================================
+//  Conditional branch in a branch delay slot — mVU "bad/evil branch"
+// =========================================================================
+// x86 mVU routes the delay-slot branch's condition through condEvilBranch(),
+// which conditionally selects the taken/not-taken continuation address into
+// mVU.badBranch/evilBranch. The arm64 port dropped condEvilBranch entirely, so
+// the condition was computed and discarded and the continuation used stale
+// target state. Found via MGS2 SLUS-20144: its VU0 collision solver runs
+// `FMAND vi13 ; IBNE vi12 ; IBNE vi13` (both IBNEs to the same retry target) —
+// the wrong path writes "miss" (3) into the result mailbox, the EE retries
+// forever, and the game hangs 3s after the intro savestate.
+
+TEST(Vu0BranchDelay, CondBranchInDelaySlotOfNotTakenBranch_Taken)
+{
+	// Branch #1 not taken; its delay slot holds IBNE that IS taken (condition
+	// seeded pre-program, so no VI hazard — pure control flow).
+	VuTestHarness h(0);
+	h.SetVi(vi::vi1, 0); // #1: IBNE vi1,vi0 → not taken
+	h.SetVi(vi::vi2, 1); // #2: IBNE vi2,vi0 → taken
+	h.LoadProgram({
+		LowerOnly(VIBNE_L(vi::vi1, vi::vi0, +2)),       // pair 0: not taken
+		LowerOnly(VIBNE_L(vi::vi2, vi::vi0, +2)),       // pair 1: delay slot; taken → pair 4
+		LoadViImm(vi::vi3, 0x101),                      // pair 2: #2's delay slot — runs
+		LoadViImm(vi::vi4, 0x202),                      // pair 3: skipped
+		LoadViImm(vi::vi5, 0x303),                      // pair 4: #2's target — runs
+		EBitNopPair(),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetViJit(vi::vi3), 0x101u);
+	EXPECT_EQ(h.GetViJit(vi::vi4), 0u);
+	EXPECT_EQ(h.GetViJit(vi::vi5), 0x303u);
+	EXPECT_EQ(h.GetViJit(vi::vi3), h.GetViInterp(vi::vi3));
+	EXPECT_EQ(h.GetViJit(vi::vi4), h.GetViInterp(vi::vi4));
+	EXPECT_EQ(h.GetViJit(vi::vi5), h.GetViInterp(vi::vi5));
+}
+
+TEST(Vu0BranchDelay, CondBranchInDelaySlotOfNotTakenBranch_NotTaken)
+{
+	// Branch #1 not taken; delay-slot IBNE also not taken → pure fall-through.
+	VuTestHarness h(0);
+	h.SetVi(vi::vi1, 0);
+	h.SetVi(vi::vi2, 0);
+	h.LoadProgram({
+		LowerOnly(VIBNE_L(vi::vi1, vi::vi0, +2)),       // pair 0: not taken
+		LowerOnly(VIBNE_L(vi::vi2, vi::vi0, +2)),       // pair 1: delay slot; not taken
+		LoadViImm(vi::vi3, 0x101),                      // pair 2: runs
+		LoadViImm(vi::vi4, 0x202),                      // pair 3: runs
+		LoadViImm(vi::vi5, 0x303),                      // pair 4: runs
+		EBitNopPair(),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetViJit(vi::vi3), 0x101u);
+	EXPECT_EQ(h.GetViJit(vi::vi4), 0x202u);
+	EXPECT_EQ(h.GetViJit(vi::vi5), 0x303u);
+	EXPECT_EQ(h.GetViJit(vi::vi4), h.GetViInterp(vi::vi4));
+}
+
+TEST(Vu0BranchDelay, CondBranchInDelaySlot_MGS2Shape_WriteTwoBack_DelaySlotRuns)
+{
+	// The exact MGS2 sequence: condition VI written 2 ops before the delay-slot
+	// branch. The interp's VI backup window (VIBackupCycles=2, decremented
+	// BEFORE each op executes) has elapsed at gap 2, so the FRESH value (1) is
+	// read and the delay-slot branch is taken. The pre-fix arm64 failure mode
+	// here was skipping the taken branch's own delay slot (pair 3) — in MGS2
+	// that skipped a WAITQ, desynced the Q pipeline, and fed the collision
+	// solver garbage.
+	VuTestHarness h(0);
+	h.SetVi(vi::vi1, 0); // #1's condition: not taken
+	h.LoadProgram({
+		LoadViImm(vi::vi2, 1),                          // pair 0: write vi2 (fresh=1)
+		LowerOnly(VIBNE_L(vi::vi1, vi::vi0, +2)),       // pair 1: not taken
+		LowerOnly(VIBNE_L(vi::vi2, vi::vi0, +2)),       // pair 2: delay slot; fresh vi2=1 → taken → pair 5
+		LoadViImm(vi::vi3, 0x101),                      // pair 3: #2's delay slot — MUST run
+		LoadViImm(vi::vi4, 0x202),                      // pair 4: skipped
+		LoadViImm(vi::vi5, 0x303),                      // pair 5: #2's target — runs
+		EBitNopPair(),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetViJit(vi::vi3), 0x101u);
+	EXPECT_EQ(h.GetViJit(vi::vi4), 0u);
+	EXPECT_EQ(h.GetViJit(vi::vi5), 0x303u);
+	EXPECT_EQ(h.GetViJit(vi::vi3), h.GetViInterp(vi::vi3));
+	EXPECT_EQ(h.GetViJit(vi::vi4), h.GetViInterp(vi::vi4));
+	EXPECT_EQ(h.GetViJit(vi::vi5), h.GetViInterp(vi::vi5));
+}
+
+TEST(Vu0BranchDelay, CondBranchInDelaySlotOfTakenBranch_MatchesInterp)
+{
+	// Branch #1 taken with a conditional (taken) branch in its delay slot —
+	// the "evil" quadrant. One instruction at #1's target executes, then #2's
+	// branch lands. Assert full JIT==interp equivalence rather than hardcoding
+	// the (deliberately weird) hardware semantics.
+	VuTestHarness h(0);
+	h.SetVi(vi::vi1, 1); // #1 taken
+	h.SetVi(vi::vi2, 1); // #2 taken
+	h.LoadProgram({
+		LowerOnly(VIBNE_L(vi::vi1, vi::vi0, +2)),       // pair 0: taken → pair 3
+		LowerOnly(VIBNE_L(vi::vi2, vi::vi0, +3)),       // pair 1: delay slot; taken → pair 5
+		LoadViImm(vi::vi3, 0x101),                      // pair 2
+		LoadViImm(vi::vi4, 0x202),                      // pair 3: #1's target
+		LoadViImm(vi::vi5, 0x303),                      // pair 4
+		LoadViImm(vi::vi6, 0x404),                      // pair 5: #2's target
+		EBitNopPair(),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetViJit(vi::vi3), h.GetViInterp(vi::vi3));
+	EXPECT_EQ(h.GetViJit(vi::vi4), h.GetViInterp(vi::vi4));
+	EXPECT_EQ(h.GetViJit(vi::vi5), h.GetViInterp(vi::vi5));
+	EXPECT_EQ(h.GetViJit(vi::vi6), h.GetViInterp(vi::vi6));
+}
+
+// =========================================================================
 //  Delay-slot semantics — upper-pipe op in delay slot
 // =========================================================================
 

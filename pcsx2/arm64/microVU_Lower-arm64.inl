@@ -2028,6 +2028,68 @@ void setBranchA(mP, int x, int _x_)
 	pass4 { if (_Imm11_ == 1 && !_x_ && !isBranchDelaySlot) { return; } mVUbranch = x; }
 }
 
+// Conditional branch sitting in another branch's delay slot ("bad"/"evil"
+// branch). The condition value is in gprT1 (sign-extended for the signed
+// compares, so the 32-bit Cmp matches x86's 16-bit signed xCMP). Conditionally
+// selects the taken/not-taken continuation address into mVU.badBranch /
+// evilBranch / evilevilBranch — port of x86 microVU_Lower.inl condEvilBranch.
+// JMPcc is the "branch taken" condition. Dropping this (pre-fix arm64 state)
+// left the continuation targets stale: MGS2's VU0 collision solver
+// (FMAND;IBNE;IBNE) took the retry path forever and hung the game.
+void condEvilBranch(mV, a64::Condition JMPcc)
+{
+	if (mVUlow.badBranch)
+	{
+		armStorePtr(gprT1, &mVU.branch);
+		armAsm->Mov(gprT2.W(), branchAddr(mVU));
+		armStorePtr(gprT2, &mVU.badBranch);
+
+		armAsm->Cmp(gprT1.W(), 0);
+		a64::Label cJMP;
+		armAsm->B(&cJMP, JMPcc);
+		{
+			incPC(4); // Branch Not Taken Addr
+			armAsm->Mov(gprT2.W(), xPC);
+			armStorePtr(gprT2, &mVU.badBranch);
+			incPC(-4);
+		}
+		armAsm->Bind(&cJMP);
+		return;
+	}
+	if (isEvilBlock)
+	{
+		armAsm->Mov(gprT2.W(), branchAddr(mVU));
+		armStorePtr(gprT2, &mVU.evilevilBranch);
+		armAsm->Cmp(gprT1.W(), 0);
+		a64::Label cJMP;
+		armAsm->B(&cJMP, JMPcc);
+		{
+			armLoadPtr(gprT2, &mVU.evilBranch); // Branch Not Taken
+			armAsm->Add(gprT2.W(), gprT2.W(), 8); // We have already executed 1 instruction from the original branch
+			armStorePtr(gprT2, &mVU.evilevilBranch);
+		}
+		armAsm->Bind(&cJMP);
+	}
+	else
+	{
+		armAsm->Mov(gprT2.W(), branchAddr(mVU));
+		armStorePtr(gprT2, &mVU.evilBranch);
+		armAsm->Cmp(gprT1.W(), 0);
+		a64::Label cJMP;
+		armAsm->B(&cJMP, JMPcc);
+		{
+			armLoadPtr(gprT2, &mVU.badBranch); // Branch Not Taken
+			armAsm->Add(gprT2.W(), gprT2.W(), 8); // We have already executed 1 instruction from the original branch
+			armStorePtr(gprT2, &mVU.evilBranch);
+		}
+		armAsm->Bind(&cJMP);
+		incPC(-2);
+		if (mVUlow.branch >= 9)
+			DevCon.Warning("Conditional in JALR/JR delay slot - If game broken report to PCSX2 Team");
+		incPC(2);
+	}
+}
+
 mVUop(mVU_B)
 {
 	setBranchA(mX, 1, 0);
@@ -2110,6 +2172,8 @@ mVUop(mVU_IBEQ)
 
 		if (!(isBadOrEvil))
 			armStorePtr(gprT1, &mVU.branch);
+		else
+			condEvilBranch(mVU, a64::eq);
 		mVU.profiler.EmitOp(opIBEQ);
 	}
 	pass3 { mVUlog("IBEQ vi%02d, vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Ft_, _Fs_, branchAddr(mVU), branchAddr(mVU)); }
@@ -2127,6 +2191,8 @@ mVUop(mVU_IBGEZ)
 			mVU.regAlloc->moveVIToGPR(gprT1, _Is_, true); // sign-extend for comparison
 		if (!(isBadOrEvil))
 			armStorePtr(gprT1, &mVU.branch);
+		else
+			condEvilBranch(mVU, a64::ge);
 		mVU.profiler.EmitOp(opIBGEZ);
 	}
 	pass3 { mVUlog("IBGEZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr(mVU), branchAddr(mVU)); }
@@ -2144,6 +2210,8 @@ mVUop(mVU_IBGTZ)
 			mVU.regAlloc->moveVIToGPR(gprT1, _Is_, true);
 		if (!(isBadOrEvil))
 			armStorePtr(gprT1, &mVU.branch);
+		else
+			condEvilBranch(mVU, a64::gt);
 		mVU.profiler.EmitOp(opIBGTZ);
 	}
 	pass3 { mVUlog("IBGTZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr(mVU), branchAddr(mVU)); }
@@ -2161,6 +2229,8 @@ mVUop(mVU_IBLEZ)
 			mVU.regAlloc->moveVIToGPR(gprT1, _Is_, true);
 		if (!(isBadOrEvil))
 			armStorePtr(gprT1, &mVU.branch);
+		else
+			condEvilBranch(mVU, a64::le);
 		mVU.profiler.EmitOp(opIBLEZ);
 	}
 	pass3 { mVUlog("IBLEZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr(mVU), branchAddr(mVU)); }
@@ -2178,6 +2248,8 @@ mVUop(mVU_IBLTZ)
 			mVU.regAlloc->moveVIToGPR(gprT1, _Is_, true);
 		if (!(isBadOrEvil))
 			armStorePtr(gprT1, &mVU.branch);
+		else
+			condEvilBranch(mVU, a64::lt);
 		mVU.profiler.EmitOp(opIBLTZ);
 	}
 	pass3 { mVUlog("IBLTZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr(mVU), branchAddr(mVU)); }
@@ -2208,6 +2280,8 @@ mVUop(mVU_IBNE)
 
 		if (!(isBadOrEvil))
 			armStorePtr(gprT1, &mVU.branch);
+		else
+			condEvilBranch(mVU, a64::ne);
 		mVU.profiler.EmitOp(opIBNE);
 	}
 	pass3 { mVUlog("IBNE vi%02d, vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Ft_, _Fs_, branchAddr(mVU), branchAddr(mVU)); }

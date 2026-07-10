@@ -49,7 +49,11 @@
 //       broadcast-multiply emission changed shape (scratch Dup + 4-lane
 //       FMUL -> by-element FMUL on the raw source reg); the experiment's
 //       sentinel byte was retired in the same change.
-static constexpr u32 kMvuCompilerAbiVersion = 6;
+//   7 — condEvilBranch ported (conditional branch in a branch delay slot
+//       now emits the badBranch/evilBranch target-select sequence that
+//       the arm64 port had dropped — MGS2 VU0 solver hang); pre-fix
+//       payloads compiled the broken shape and must not be rehydrated.
+static constexpr u32 kMvuCompilerAbiVersion = 7;
 
 // Hash/equality functors for XXH128_hash_t — let std::unordered_map<XXH128_hash_t, …>
 // work without a wrapping struct. low64 already carries the well-mixed half of
