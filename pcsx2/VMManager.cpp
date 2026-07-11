@@ -737,11 +737,11 @@ void VMManager::WarnAboutUnconfiguredController()
 	// Android injects pad state directly (NativeApp.setPadButton -> Pad::SetControllerState),
 	// bypassing InputManager bindings, so this warning is always a false positive. Suppressed
 	// to match the refresh-experimental Android build.
-/*	// Android injects pad state directly (NativeApp.setPadButton -> Pad::SetControllerState),
+	// Android injects pad state directly (NativeApp.setPadButton -> Pad::SetControllerState),
 	// bypassing InputManager bindings, so this warning is always a false positive. Suppressed
 	// to match the refresh-experimental Android build.
 /*	Host::AddIconOSDMessage("ControllerNotConfigured", ICON_FA_GAMEPAD,
-		TRANSLATE_STR("VMManager", "Controller 1 has no input bindings configured."), Host::OSD_WARNING_DURATION);*/*/
+		TRANSLATE_STR("VMManager", "Controller 1 has no input bindings configured."), Host::OSD_WARNING_DURATION);*/
 }
 
 void VMManager::ApplyGameFixes()
@@ -3843,39 +3843,6 @@ const std::vector<u32>& VMManager::Internal::GetSoftwareRendererProcessorList()
 {
 	EnsureCPUInfoInitialized();
 	return s_software_renderer_processor_list;
-}
-
-std::string VMManager::Internal::GetThreadPlacementDebug()
-{
-	const auto describe = [](const char* name, const Threading::ThreadHandle& h) {
-		const int cpu = h.GetCurrentCpu();
-		const u64 mask = h.GetAffinity();
-		return fmt::format("{}=c{}/m{:x}", name, cpu, mask);
-	};
-
-	std::string out = describe("EE", s_vm_thread_handle);
-	out += ' ';
-	out += describe("VU", vu1Thread.GetThreadHandle());
-	out += ' ';
-	out += describe("GS", MTGS::GetThreadHandle());
-
-#if defined(__linux__) || defined(_WIN32)
-	if (cpuinfo_initialize())
-	{
-		const u32 clusters = cpuinfo_get_clusters_count();
-		out += " |";
-		for (u32 i = 0; i < clusters; i++)
-		{
-			const cpuinfo_cluster* cl = cpuinfo_get_cluster(i);
-			if (!cl)
-				continue;
-			// cpuinfo frequency is in Hz; show MHz (0 = cpuinfo couldn't read sysfs cpufreq).
-			out += fmt::format(" {}x{}MHz", cl->processor_count, static_cast<u32>(cl->frequency / 1000000));
-		}
-	}
-#endif
-
-	return out;
 }
 
 std::string VMManager::Internal::GetThreadPlacementDebug()

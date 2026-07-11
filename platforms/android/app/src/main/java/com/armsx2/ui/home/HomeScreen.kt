@@ -6,6 +6,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.ExperimentalFoundationApi
+import android.net.Uri
+import androidx.compose.runtime.key
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -138,11 +140,12 @@ fun HomeScreen(
     val keyboard = LocalSoftwareKeyboardController.current
     LaunchedEffect(state.initialized) {
         HomeInputController.setSearchAction(state.initialized) {
-            runCatching { searchFocus.requestFocus() }
-            keyboard?.show()
+            // Controller path: open our own D-pad-navigable keyboard (the system IME
+            // can't be driven by a D-pad). Touch still uses the system keyboard by
+            // tapping the field directly.
+            LibraryKeyboard.open(viewModel.state.value.query, viewModel::setQuery)
         }
     }
-
     LaunchedEffect(directories, nativeReady) { viewModel.load(directories, nativeReady) }
     DisposableEffect(viewModel, onOpenMenu) {
         HomeInputController.bind(viewModel, onOpenMenu)
@@ -150,25 +153,32 @@ fun HomeScreen(
     }
 
     CompositionLocalProvider(LocalCustomCoverMap provides customCoverMap) {
-    ArmsBackdrop {
-        BoxWithConstraints(modifier.fillMaxSize()) {
+    ArmsBackdrop(
+        // Full-bleed wallpaper: the library video/image + readability scrim, drawn
+        // edge-to-edge (behind the gesture bar) so it never leaves an exposed strip at
+        // the bottom — that strip was the "blue bar" in landscape.
+        backgroundLayer = {
             val libraryBg = LibraryBackground.uri.value
-            if (libraryBg != null) {
+            val bgVideoUri = when {
+                // Default (no user pick): the bundled PS3 XMB-wave video background.
+                libraryBg == null -> defaultBackgroundVideoUri(context)
+                // User picked a video file — play it as a moving background.
+                isVideoBackground(context, libraryBg) -> Uri.parse(libraryBg)
+                // User picked a still image / GIF — Coil handles it below.
+                else -> null
+            }
+            if (bgVideoUri != null) {
+                // key() so swapping the URI rebuilds the player (the AndroidView
+                // factory only runs once).
+                key(bgVideoUri.toString()) {
+                    VideoBackground(bgVideoUri, Modifier.fillMaxSize())
+                }
+            } else {
                 AsyncImage(
                     model = ImageRequest.Builder(context).data(libraryBg).crossfade(true).build(),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
-                )
-            } else {
-                // Default backdrop: the ARMSX2 tower logo, centred like the old UI.
-                // Its baked-in dark radial blends with the app background, so Fit
-                // (letterboxed) reads as a proper centred hero rather than a crop.
-                Image(
-                    painter = painterResource(R.drawable.savetowerforeground),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit,
                 )
             }
             // Scrim so covers and text stay readable over the backdrop.
@@ -182,6 +192,9 @@ fun HomeScreen(
                     ),
                 ),
             )
+        },
+    ) {
+        BoxWithConstraints(modifier.fillMaxSize()) {
             val compact = maxWidth < 600.dp
             val columns = if (state.layout == LibraryLayout.Grid) {
                 GridCells.Adaptive(if (compact) 104.dp else 118.dp)
@@ -238,6 +251,10 @@ fun HomeScreen(
                 state.initialized && state.visibleGames.isNotEmpty()
             LaunchedEffect(state.selectedIndex, state.visibleGames.size, state.layout, HomeInputController.zone.value) {
                 if (HomeInputController.zone.value != HomeZone.Grid) return@LaunchedEffect
+                // Don't follow (and thus don't scroll away from the top) until the user
+                // has actually navigated — otherwise a cold open snaps the grid to the
+                // initially-selected cover and hides the toolbar/search/recents header.
+                if (!HomeInputController.userNavigated) return@LaunchedEffect
                 val sel = state.selectedIndex
                 if (sel < 0 || state.visibleGames.isEmpty()) return@LaunchedEffect
                 val leading = 1 + // toolbar
@@ -322,7 +339,7 @@ fun HomeScreen(
                             DropdownMenu(expanded = bgMenu, onDismissRequest = { bgMenu = false }) {
                                 DropdownMenuItem(
                                     text = { Text(str("games.background.choose")) },
-                                    onClick = { bgMenu = false; backgroundPicker.launch(arrayOf("image/*")) },
+                                    onClick = { bgMenu = false; backgroundPicker.launch(arrayOf("image/*", "video/*")) },
                                 )
                                 if (LibraryBackground.uri.value != null) {
                                     DropdownMenuItem(
@@ -543,6 +560,9 @@ fun HomeScreen(
                 }
             }
         }
+        // Controller on-screen keyboard for search — drawn over the library, above the
+        // nav inset (it's inside the inset-padded content Box).
+        LibraryKeyboard.Overlay(this)
     }
     }
 
@@ -795,9 +815,17 @@ object HomeInputController {
     private var searchConfirm: (() -> Unit)? = null
     private var toolbarAtBottom = false
 
+    /** True once the user has actually moved the selector with the controller. The
+     *  grid camera-follow is gated on this so a cold app-open rests at the TOP (toolbar
+     *  / search / recently-played) instead of the follow snapping the grid to the
+     *  initially-selected cover and hiding the whole header. Reset in bind() so each
+     *  time the library (re)opens it starts at the top again. */
+    var userNavigated = false
+
     fun bind(viewModel: HomeViewModel, onOpenMenu: () -> Unit) {
         owner = viewModel
         openMenu = onOpenMenu
+        userNavigated = false
     }
 
     fun unbind(viewModel: HomeViewModel) {
@@ -849,6 +877,7 @@ object HomeInputController {
 
     fun move(dx: Int, dy: Int): Boolean {
         val viewModel = owner ?: return false
+        userNavigated = true
         when (zone.value) {
             HomeZone.Toolbar -> when {
                 // Toolbar at top: Down descends into the chrome/grid. At bottom: Up
@@ -1003,14 +1032,28 @@ private fun GameShelf(
             contentScale = ContentScale.FillBounds,
         )
         if (scroll) {
+            // Controller selection must drive the same blue highlight the non-scroll
+            // path draws, and keep the selected cover on-screen — without this the
+            // Recently-Played shelf (scroll = true) showed NO highlight, so it looked
+            // like the controller couldn't select it.
+            val rowState = rememberLazyListState()
+            LaunchedEffect(selectedIndex) {
+                val local = selectedIndex - startIndex
+                if (local in games.indices) rowState.animateScrollToItem(local)
+            }
             LazyRow(
+                state = rowState,
                 modifier = Modifier.align(Alignment.TopStart).fillMaxWidth().height(rowHeight),
                 // 12dp start so the first cover lines up with the section header.
                 contentPadding = PaddingValues(horizontal = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                items(games, key = { "shelfcard_${shelfRes}_${it.uri}" }) { game ->
-                    ShelfGameCard(game, coverWidth, reflectionHeight, onLaunch = onLaunch)
+                itemsIndexed(games, key = { _, g -> "shelfcard_${shelfRes}_${g.uri}" }) { index, game ->
+                    ShelfGameCard(
+                        game, coverWidth, reflectionHeight,
+                        selected = startIndex + index == selectedIndex,
+                        onLaunch = onLaunch,
+                    )
                 }
             }
         } else {

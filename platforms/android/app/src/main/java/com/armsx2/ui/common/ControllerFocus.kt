@@ -10,7 +10,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -48,8 +47,13 @@ fun Modifier.padFocusRing(
         .onFocusChanged { focused = it.isFocused || it.hasFocus }
         .then(
             if (focused)
+                // Driver-safe focus ring: solid inner + translucent outer border. We avoid
+                // Modifier.shadow with a custom ambient/spot color — Adreno / Mali / Turnip
+                // drivers commonly ignore the tint and render the elevation shadow as an
+                // opaque BLACK box (visible only under controller focus, which is what lights
+                // this up; touch never does). Borders render identically on every driver.
                 Modifier
-                    .shadow(10.dp, shape, ambientColor = FocusRingColor, spotColor = FocusRingColor)
+                    .border(width + 2.dp, FocusRingColor.copy(alpha = 0.30f), shape)
                     .border(width, FocusRingColor, shape)
             else Modifier,
         )

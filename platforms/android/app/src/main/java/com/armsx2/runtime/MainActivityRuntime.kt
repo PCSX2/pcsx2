@@ -1867,6 +1867,30 @@ open class MainActivityRuntime : ComponentActivity() {
                 return true
             }
         }
+        // Controller search keyboard (library). While it's up it owns the pad —
+        // directional input arrives via the motion path (fireNavMove, so the RP6 HAT
+        // and the stick both work); here we take the face buttons: A presses the
+        // highlighted key, X backspaces, B/Back closes. D-pad keys are handled too for
+        // pads that report the D-pad as KEYCODE_DPAD_*. Placed before every other
+        // frontend handler so nothing leaks to the grid behind it.
+        if (com.armsx2.ui.home.LibraryKeyboard.visible.value) {
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                when (kc) {
+                    KeyEvent.KEYCODE_DPAD_UP -> com.armsx2.ui.home.LibraryKeyboard.move(0, -1)
+                    KeyEvent.KEYCODE_DPAD_DOWN -> com.armsx2.ui.home.LibraryKeyboard.move(0, 1)
+                    KeyEvent.KEYCODE_DPAD_LEFT -> com.armsx2.ui.home.LibraryKeyboard.move(-1, 0)
+                    KeyEvent.KEYCODE_DPAD_RIGHT -> com.armsx2.ui.home.LibraryKeyboard.move(1, 0)
+                    KeyEvent.KEYCODE_BUTTON_A, KeyEvent.KEYCODE_DPAD_CENTER,
+                    KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER ->
+                        if (event.repeatCount == 0) com.armsx2.ui.home.LibraryKeyboard.press()
+                    KeyEvent.KEYCODE_BUTTON_X ->
+                        if (event.repeatCount == 0) com.armsx2.ui.home.LibraryKeyboard.backspace()
+                    KeyEvent.KEYCODE_BUTTON_B, KeyEvent.KEYCODE_BACK ->
+                        if (event.repeatCount == 0) com.armsx2.ui.home.LibraryKeyboard.close()
+                }
+            }
+            return true
+        }
         // Memory-card dialog (opened from the library). Touch mode blocks Compose
         // D-pad focus, so it's driven by the manual nav model (same as the
         // settings tabs). Any direction steps the control list; A activates; B closes.
@@ -2533,6 +2557,11 @@ open class MainActivityRuntime : ComponentActivity() {
         // Mirror the key-event routing priority so the analog stick drives every
         // surface the D-pad does.
         when {
+            com.armsx2.ui.home.LibraryKeyboard.visible.value -> {
+                // Controller search keyboard owns the stick/HAT/D-pad while it's up
+                // (this is the RP6 path — its D-pad arrives here as a HAT axis).
+                com.armsx2.ui.home.LibraryKeyboard.move(dx, dy)
+            }
             com.armsx2.ui.MemoryCardManager.visible.value -> {
                 // Memcard dialog: 2D spatial nav (Slot 1 / Slot 2 / Delete across,
                 // cards down). Driven by the hold-repeat job so a held direction

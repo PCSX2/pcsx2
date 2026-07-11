@@ -67,7 +67,10 @@ import com.armsx2.ui.theme.ArmsBlue
 import com.armsx2.ui.theme.ArmsCyan
 
 @Composable
-fun ArmsBackdrop(content: @Composable BoxScope.() -> Unit) {
+fun ArmsBackdrop(
+    backgroundLayer: (@Composable BoxScope.() -> Unit)? = null,
+    content: @Composable BoxScope.() -> Unit,
+) {
     val colors = MaterialTheme.colorScheme
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val safeSides = if (isLandscape) {
@@ -83,6 +86,14 @@ fun ArmsBackdrop(content: @Composable BoxScope.() -> Unit) {
         Box(
             modifier = Modifier.fillMaxSize(),
         ) {
+            // A full-bleed wallpaper layer (library video/image background) that
+            // deliberately ignores the safe-area insets, so it reaches every screen
+            // edge — including behind the gesture bar. Kept OUT of the inset-padded
+            // content Box below; otherwise it stops short of the bottom edge and the
+            // exposed strip reads as a bar (most visibly in landscape).
+            if (backgroundLayer != null) {
+                Box(modifier = Modifier.fillMaxSize(), content = backgroundLayer)
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()

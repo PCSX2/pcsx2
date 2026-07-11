@@ -33,6 +33,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -259,9 +261,16 @@ private fun MenuRail(selected: EmulationMenuTab, onSelect: (EmulationMenuTab) ->
 
 @Composable
 private fun MenuTab(tab: EmulationMenuTab, active: Boolean, onSelect: (EmulationMenuTab) -> Unit) {
+    // Keep the active tab scrolled into view so controller nav reaches tabs that fall off
+    // the rail on short screens — e.g. the 7th "Achievements" (RA) tab on a Retroid Pocket
+    // in landscape. Mirrors the settings-hub / library camera-follow. Resolves against the
+    // nearest scrollable ancestor, so it works for both the vertical rail and the compact
+    // horizontal strip.
+    val bring = remember { BringIntoViewRequester() }
+    LaunchedEffect(active) { if (active) runCatching { bring.bringIntoView() } }
     Surface(
         onClick = { onSelect(tab) },
-        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp).bringIntoViewRequester(bring),
         shape = RoundedCornerShape(14.dp),
         color = if (active) MaterialTheme.colorScheme.primary.copy(alpha = 0.17f) else Color.Transparent,
         border = if (active) BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.62f)) else null,
@@ -333,11 +342,17 @@ private fun SessionPane(state: EmulationMenuUiState, viewModel: EmulationMenuVie
     // toggles live in All Settings. Plus a frame-limit switch so fast-forward is one
     // tap away.
     SectionCard(str("tab.overlay")) {
-        val osdOn = with(state.settings) {
-            osdShowFps || osdShowVps || osdShowSpeed || osdShowCpu || osdShowGpu || osdShowResolution ||
+        // Full OSD = any verbose stat line (FPS is shared with Simple, so it's excluded
+        // from the "full is on" test); Simple OSD = FPS only. Reading the same osdShow*
+        // fields two ways keeps the two toggles mutually exclusive.
+        val osdFullOn = with(state.settings) {
+            osdShowVps || osdShowSpeed || osdShowCpu || osdShowGpu || osdShowResolution ||
                 osdShowGsStats || osdShowFrameTimes || osdShowHardwareInfo || osdShowGpuStats || osdShowVersion
         }
-        MenuSwitchRow(str("overlay.master.label"), osdOn) { viewModel.setOsdMaster(it) }
+        val osdSimpleOn = state.settings.osdShowFps && !osdFullOn
+        MenuSwitchRow(str("overlay.master.label"), osdFullOn) { viewModel.setOsdMaster(it) }
+        Spacer(Modifier.height(6.dp))
+        MenuSwitchRow(str("overlay.simple.label"), osdSimpleOn) { viewModel.setOsdSimple(it) }
         Spacer(Modifier.height(6.dp))
         MenuSwitchRow(str("perf.frameLimit.label"), state.settings.frameLimitEnable) { value ->
             viewModel.updateSettings { it.copy(frameLimitEnable = value) }

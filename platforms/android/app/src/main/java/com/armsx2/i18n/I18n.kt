@@ -55,6 +55,7 @@ object I18n {
         AppLanguage("id", "Indonesian", "Indonesia"),
         AppLanguage("vi", "Vietnamese", "Tiếng Việt"),
         AppLanguage("th", "Thai", "ไทย"),
+        AppLanguage("fa", "Persian", "فارسی", rtl = true),
     )
 
     private const val PREF_KEY = "ui.language"
@@ -226,6 +227,15 @@ val EN: Map<String, String> = mapOf(
     "backend.applyRestart" to "Apply & Restart",
     "backend.driver.active" to "Active",
     "backend.driver.browseOnline" to "Browse online",
+    "backend.driver.download" to "Download",
+    "backend.driver.hideDownloads" to "Hide downloads",
+    "backend.driver.import" to "Import",
+    "backend.driver.get" to "Get",
+    "backend.driver.fetching" to "Fetching…",
+    "backend.driver.none" to "No drivers found",
+    "backend.driver.installedOk" to "Installed",
+    "backend.driver.downloadFailed" to "Download failed",
+    "backend.driver.importFailed" to "Import failed",
     "backend.driver.default" to "Default",
     "backend.driver.fetchError" to "Couldn't reach github.com/K11MCH1/AdrenoToolsDrivers. Check your connection and try again.",
     "backend.driver.hideOnline" to "Hide online",
@@ -522,6 +532,7 @@ val EN: Map<String, String> = mapOf(
     "overlay.toggle.fastForwardPopups" to "Fast-Forward pop-ups",
     "overlay.toggle.fps" to "FPS",
     "overlay.master.label" to "On-screen display",
+    "overlay.simple.label" to "Simple OSD (FPS only)",
     "overlay.toggle.frameTimesGraph" to "Frame times graph",
     "overlay.toggle.gpuPipelineStats" to "GPU pipeline stats (VSI/PSI, Vulkan only)",
     "overlay.toggle.gpuUsage" to "GPU usage (saves perf when off)",

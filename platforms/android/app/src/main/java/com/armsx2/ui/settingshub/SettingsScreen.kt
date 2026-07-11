@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -152,9 +153,15 @@ private fun SettingsCategoryBar(
     gameSpecific: Boolean,
     onSelect: (SettingsCategory) -> Unit,
 ) {
-    LazyRow(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-        contentPadding = PaddingValues(horizontal = 8.dp),
+    // Row + horizontalScroll (NOT LazyRow): controllerFocusable registers each tab via a
+    // SideEffect that only runs for COMPOSED children. A LazyRow leaves every off-screen
+    // tab (Skins / Fixes / Recompiler, past On-Screen) unregistered and unreachable, so
+    // the controller got stuck at the last visible tab. A plain Row composes them all;
+    // each selected chip's bringIntoView then scrolls it into view as the selector moves.
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(vertical = 6.dp, horizontal = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         val sections = settingsSections().filterNot {
@@ -163,7 +170,7 @@ private fun SettingsCategoryBar(
             (gameSpecific && it.category == SettingsCategory.General) ||
                 (!gameSpecific && it.category == SettingsCategory.Info)
         }
-        items(sections, key = { it.category.name }) { section ->
+        sections.forEach { section ->
             val active = section.category == selected
             FilterChip(
                 modifier = Modifier.height(44.dp)

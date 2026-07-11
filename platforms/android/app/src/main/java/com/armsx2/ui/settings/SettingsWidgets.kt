@@ -50,7 +50,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -455,9 +454,15 @@ internal fun Modifier.controllerFocusable(
         }
         .then(
             if (focused || selected) {
+                // Driver-safe selection ring: solid inner + translucent outer border. We
+                // deliberately avoid Modifier.shadow with a custom ambient/spot color here —
+                // Adreno / Mali / Turnip drivers frequently ignore the tint and render the
+                // elevation shadow as an ugly opaque BLACK box behind the row (visible only
+                // under controller nav, which is what sets `selected`; touch never does).
+                // Borders render identically on every driver.
                 Modifier
-                    .shadow(6.dp, shape, ambientColor = focusBlue, spotColor = focusBlue)
-                    .border(1.dp, focusBlue, shape)
+                    .border(3.dp, focusBlue.copy(alpha = 0.30f), shape)
+                    .border(1.5.dp, focusBlue, shape)
             } else {
                 Modifier
             }
