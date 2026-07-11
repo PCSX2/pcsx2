@@ -32,6 +32,25 @@ object ThemePreferences {
 
 }
 
+/** Whether the animated intro video plays on cold boot. Read by
+ *  [com.armsx2.BootSplashActivity] straight from the "ARMSX2" prefs (key
+ *  "ui.bootLogo") before Compose is up; this holder just backs the App-tab
+ *  toggle and keeps that same key in sync. */
+object BootLogoPreferences {
+    private const val PreferenceKey = "ui.bootLogo"
+
+    val enabled = mutableStateOf(true)
+
+    fun load() {
+        enabled.value = MainActivityRuntime.prefs.getBoolean(PreferenceKey, true)
+    }
+
+    fun set(value: Boolean) {
+        enabled.value = value
+        MainActivityRuntime.prefs.edit { putBoolean(PreferenceKey, value) }
+    }
+}
+
 private val NightScheme = darkColorScheme(
     primary = ArmsBlueBright,
     onPrimary = Color(0xFF07101F),

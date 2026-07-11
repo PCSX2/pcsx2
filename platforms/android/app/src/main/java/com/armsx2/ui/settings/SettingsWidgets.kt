@@ -593,12 +593,17 @@ fun IntSliderRow(
     valueFormatter: (Int) -> String = { it.toString() },
     onChange: (Int) -> Unit,
 ) {
+    // Include the call-site composite-key hash so two sliders that happen to share a
+    // label (e.g. the OSD-scale and border-scale rows both labelled "UI Size") get
+    // DISTINCT registry ids — otherwise one overwrites the other and the controller
+    // skips right over it.
+    val sliderId = "slider:$label:${androidx.compose.runtime.currentCompositeKeyHash}"
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 5.dp)
             .controllerFocusable(
-                controllerId = "slider:$label",
+                controllerId = sliderId,
                 onLeft = { onChange((value - 1).coerceAtLeast(min)) },
                 onRight = { onChange((value + 1).coerceAtMost(max)) },
             ),

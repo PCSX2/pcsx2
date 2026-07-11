@@ -210,7 +210,8 @@ private fun DriverSourceGroup(
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Surface(
             onClick = onToggle,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .controllerFocusable("driver.group.$source", RoundedCornerShape(14.dp), onConfirm = onToggle),
             shape = RoundedCornerShape(14.dp),
             color = MaterialTheme.colorScheme.surfaceVariant,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)),

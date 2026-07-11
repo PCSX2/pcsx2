@@ -173,7 +173,15 @@ fun HomeScreen(
                 // List and Shelf are full-width rows.
                 GridCells.Fixed(1)
             }
-            val estimatedColumns = if (state.layout == LibraryLayout.Grid) (maxWidth.value / if (compact) 112f else 128f).toInt().coerceAtLeast(1) else 1
+            // Column count feeds HomeInputController's Up/Down step. Shelf view lays
+            // covers out in rows of `perShelf`, so it must report that count (not 1) —
+            // otherwise Up/Down move one cover at a time (feeling like Left/Right) and
+            // only the very first cover can step up into the Recents row.
+            val estimatedColumns = when (state.layout) {
+                LibraryLayout.Grid -> (maxWidth.value / if (compact) 112f else 128f).toInt().coerceAtLeast(1)
+                LibraryLayout.Shelf -> (maxWidth.value / ((if (compact) 84f else 100f) + 20f)).toInt().coerceIn(3, 8)
+                LibraryLayout.List -> 1
+            }
             LaunchedEffect(estimatedColumns) { HomeInputController.setColumnCount(estimatedColumns) }
 
             val gridState = rememberLazyGridState()

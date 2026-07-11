@@ -23,6 +23,7 @@ import com.armsx2.i18n.I18n
 import com.armsx2.i18n.str
 import com.armsx2.navigation.AppRoute
 import com.armsx2.navigation.UiNavigator
+import com.armsx2.ui.theme.BootLogoPreferences
 import com.armsx2.ui.theme.ThemeMode
 import com.armsx2.ui.theme.ThemePreferences
 
@@ -36,7 +37,8 @@ fun AppTab() {
     ) {
         Surface(
             onClick = { UiNavigator.navigate(AppRoute.Language) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .controllerFocusable("app.language", RoundedCornerShape(20.dp), onConfirm = { UiNavigator.navigate(AppRoute.Language) }),
             shape = RoundedCornerShape(20.dp),
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.46f)),
@@ -84,6 +86,13 @@ fun AppTab() {
                     },
                 )
             },
+        )
+
+        ToggleRow(
+            label = str("app.bootLogo"),
+            value = BootLogoPreferences.enabled.value,
+            description = str("app.bootLogo.desc"),
+            onChange = { BootLogoPreferences.set(it) },
         )
     }
 }

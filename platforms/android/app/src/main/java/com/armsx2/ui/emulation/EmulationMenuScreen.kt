@@ -885,7 +885,13 @@ private fun <T> HorizontalOptions(
 @Composable
 private fun FramerateSlider(title: String, value: Float, onValue: (Float) -> Unit) {
     SectionCard(title) {
-        Column(Modifier.fillMaxWidth()) {
+        Column(
+            Modifier.fillMaxWidth().controllerFocusable(
+                "pause.framerate.$title",
+                onLeft = { onValue((value - 1f).coerceAtLeast(20f)) },
+                onRight = { onValue((value + 1f).coerceAtMost(120f)) },
+            ),
+        ) {
             val label = if (value % 1f == 0f) "${value.toInt()} Hz" else "%.2f Hz".format(value)
             Text(label, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
             Slider(
