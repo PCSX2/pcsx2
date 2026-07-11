@@ -172,6 +172,9 @@ val EN: Map<String, String> = mapOf(
     "app.theme.dark" to "Dark",
     "app.bootLogo" to "Boot animation",
     "app.bootLogo.desc" to "Play the ARMSX2 intro video when the app starts.",
+    "app.toolbarPosition" to "Library toolbar",
+    "app.toolbarPosition.top" to "Top",
+    "app.toolbarPosition.bottom" to "Bottom",
     // --- common actions ---
     "action.play" to "Play",
     "action.resume" to "Resume",

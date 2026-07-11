@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -75,6 +77,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.armsx2.CoverArtStyle
 import com.armsx2.R
+import com.armsx2.ui.theme.ToolbarPositionPreferences
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -262,6 +265,78 @@ fun HomeScreen(
             // edge rather than bleeding under the cutout.
             val cutout = WindowInsets.displayCutout.asPaddingValues()
             val ld = LocalLayoutDirection.current
+
+            // Toolbar position is an App setting. At the top it's the first grid item;
+            // at the bottom it's a pinned bar (identical rounded-pill shape). The grid
+            // reserves the matching inset so nothing hides behind whichever edge it's on.
+            val toolbarBottom = ToolbarPositionPreferences.atBottom.value
+            LaunchedEffect(toolbarBottom) { HomeInputController.setToolbarAtBottom(toolbarBottom) }
+            val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+            val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            val libraryToolbar: @Composable (Boolean) -> Unit = { bottomEdge ->
+                // Register the toolbar button actions (left→right order) so the
+                // controller's toolbar zone can fire them, and read the highlight
+                // state so the focused button lights up.
+                HomeInputController.setToolbarActions(
+                    listOf(
+                        onOpenMenu,
+                        { viewModel.refresh() },
+                        { sortMenu = true },
+                        { viewModel.toggleLayout() },
+                        { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
+                        { bgMenu = true },
+                    ),
+                )
+                val tb = HomeInputController.zone.value == HomeZone.Toolbar
+                val tbi = HomeInputController.toolbarIndex.intValue
+                ArmsTopBar(
+                    title = str("games.section.library"),
+                    subtitle = if (state.scanning) str("games.scanningRoms") else state.allGames.size.toString(),
+                    leading = { RoundAction("☰", str("games.nav.library"), onOpenMenu, selected = tb && tbi == 0) },
+                    actions = {
+                        RoundAction("↻", str("games.card.refresh"), viewModel::refresh, selected = tb && tbi == 1)
+                        Box {
+                            RoundAction("⇅", str("games.toolbar.recent"), { sortMenu = true }, selected = tb && tbi == 2)
+                            SortMenu(sortMenu, state.sort, viewModel::setSort) { sortMenu = false }
+                        }
+                        RoundAction(
+                            when (state.layout) {
+                                LibraryLayout.Grid -> "☷"
+                                LibraryLayout.List -> "▦"
+                                LibraryLayout.Shelf -> "▤"
+                            },
+                            str("games.toolbar.rows"),
+                            viewModel::toggleLayout,
+                            selected = tb && tbi == 3,
+                        )
+                        // 3D box-art covers vs flat 2D scans (xlenore covers/3d).
+                        // Shows the current mode (like the layout toggle), tap to flip.
+                        RoundAction(
+                            if (CoverArtStyle.use3d.value) "3D" else "2D",
+                            str("games.toolbar.covers3d"),
+                            { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
+                            selected = tb && tbi == 4,
+                        )
+                        Box {
+                            RoundAction("▧", str("games.toolbar.background"), { bgMenu = true }, selected = tb && tbi == 5)
+                            DropdownMenu(expanded = bgMenu, onDismissRequest = { bgMenu = false }) {
+                                DropdownMenuItem(
+                                    text = { Text(str("games.background.choose")) },
+                                    onClick = { bgMenu = false; backgroundPicker.launch(arrayOf("image/*")) },
+                                )
+                                if (LibraryBackground.uri.value != null) {
+                                    DropdownMenuItem(
+                                        text = { Text(str("games.background.clear")) },
+                                        onClick = { bgMenu = false; LibraryBackground.clear() },
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    horizontalPadding = 0.dp,
+                    bottomEdge = bottomEdge,
+                )
+            }
             LazyVerticalGrid(
                 columns = columns,
                 state = gridState,
@@ -269,73 +344,14 @@ fun HomeScreen(
                 contentPadding = PaddingValues(
                     start = 8.dp + cutout.calculateStartPadding(ld),
                     end = 8.dp + cutout.calculateEndPadding(ld),
-                    bottom = 16.dp,
+                    top = if (toolbarBottom) statusBarTop + 8.dp else 0.dp,
+                    bottom = if (toolbarBottom) navBarBottom + 72.dp else 16.dp,
                 ),
                 horizontalArrangement = Arrangement.spacedBy(9.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    // Register the toolbar button actions (left→right order) so the
-                    // controller's toolbar zone can fire them, and read the highlight
-                    // state so the focused button lights up.
-                    HomeInputController.setToolbarActions(
-                        listOf(
-                            onOpenMenu,
-                            { viewModel.refresh() },
-                            { sortMenu = true },
-                            { viewModel.toggleLayout() },
-                            { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
-                            { bgMenu = true },
-                        ),
-                    )
-                    val tb = HomeInputController.zone.value == HomeZone.Toolbar
-                    val tbi = HomeInputController.toolbarIndex.intValue
-                    ArmsTopBar(
-                        title = str("games.section.library"),
-                        subtitle = if (state.scanning) str("games.scanningRoms") else state.allGames.size.toString(),
-                        leading = { RoundAction("☰", str("games.nav.library"), onOpenMenu, selected = tb && tbi == 0) },
-                        actions = {
-                            RoundAction("↻", str("games.card.refresh"), viewModel::refresh, selected = tb && tbi == 1)
-                            Box {
-                                RoundAction("⇅", str("games.toolbar.recent"), { sortMenu = true }, selected = tb && tbi == 2)
-                                SortMenu(sortMenu, state.sort, viewModel::setSort) { sortMenu = false }
-                            }
-                            RoundAction(
-                                when (state.layout) {
-                                    LibraryLayout.Grid -> "☷"
-                                    LibraryLayout.List -> "▦"
-                                    LibraryLayout.Shelf -> "▤"
-                                },
-                                str("games.toolbar.rows"),
-                                viewModel::toggleLayout,
-                                selected = tb && tbi == 3,
-                            )
-                            // 3D box-art covers vs flat 2D scans (xlenore covers/3d).
-                            // Shows the current mode (like the layout toggle), tap to flip.
-                            RoundAction(
-                                if (CoverArtStyle.use3d.value) "3D" else "2D",
-                                str("games.toolbar.covers3d"),
-                                { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
-                                selected = tb && tbi == 4,
-                            )
-                            Box {
-                                RoundAction("▧", str("games.toolbar.background"), { bgMenu = true }, selected = tb && tbi == 5)
-                                DropdownMenu(expanded = bgMenu, onDismissRequest = { bgMenu = false }) {
-                                    DropdownMenuItem(
-                                        text = { Text(str("games.background.choose")) },
-                                        onClick = { bgMenu = false; backgroundPicker.launch(arrayOf("image/*")) },
-                                    )
-                                    if (LibraryBackground.uri.value != null) {
-                                        DropdownMenuItem(
-                                            text = { Text(str("games.background.clear")) },
-                                            onClick = { bgMenu = false; LibraryBackground.clear() },
-                                        )
-                                    }
-                                }
-                            }
-                        },
-                        horizontalPadding = 0.dp,
-                    )
+                if (!toolbarBottom) {
+                    item(span = { GridItemSpan(maxLineSpan) }) { libraryToolbar(false) }
                 }
                 if (state.initialized) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
@@ -506,6 +522,14 @@ fun HomeScreen(
                             )
                         }
                     }
+                }
+            }
+
+            // Pinned bottom toolbar (App setting) — same rounded-pill component as the
+            // top placement, just hugging the bottom edge.
+            if (toolbarBottom) {
+                Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth()) {
+                    libraryToolbar(true)
                 }
             }
         }
@@ -759,6 +783,7 @@ object HomeInputController {
     private var recentLauncher: ((Int) -> Unit)? = null
     private var searchAvailable = false
     private var searchConfirm: (() -> Unit)? = null
+    private var toolbarAtBottom = false
 
     fun bind(viewModel: HomeViewModel, onOpenMenu: () -> Unit) {
         owner = viewModel
@@ -798,60 +823,70 @@ object HomeInputController {
         if (!available && zone.value == HomeZone.Search) zone.value = HomeZone.Grid
     }
 
-    /** The zone directly above / below Grid's top row, honoring which chrome is shown.
-     *  Vertical order top→bottom: Toolbar, Search, Recents, Grid. */
+    /** HomeScreen registers where the view toolbar is drawn (App setting). At the
+     *  bottom it's reached by pressing Down off the grid's last row instead of Up. */
+    fun setToolbarAtBottom(value: Boolean) { toolbarAtBottom = value }
+
+    /** The chrome zone directly above the grid, honoring which chrome is shown and
+     *  whether the toolbar is at the top. Order top→bottom (toolbar-top): Toolbar,
+     *  Search, Recents, Grid. When the toolbar is at the bottom it isn't above. */
     private fun zoneAboveGrid(): HomeZone = when {
         recentCount > 0 -> HomeZone.Recents
         searchAvailable -> HomeZone.Search
-        toolbarActions.isNotEmpty() -> HomeZone.Toolbar
+        !toolbarAtBottom && toolbarActions.isNotEmpty() -> HomeZone.Toolbar
         else -> HomeZone.Grid
-    }
-
-    private fun atTopRow(): Boolean {
-        val vm = owner ?: return false
-        return vm.state.value.selectedIndex < columns
     }
 
     fun move(dx: Int, dy: Int): Boolean {
         val viewModel = owner ?: return false
         when (zone.value) {
             HomeZone.Toolbar -> when {
-                dy > 0 -> zone.value = when {
+                // Toolbar at top: Down descends into the chrome/grid. At bottom: Up
+                // returns to the grid.
+                !toolbarAtBottom && dy > 0 -> zone.value = when {
                     searchAvailable -> HomeZone.Search
                     recentCount > 0 -> HomeZone.Recents
                     else -> HomeZone.Grid
                 }
+                toolbarAtBottom && dy < 0 -> zone.value = HomeZone.Grid
                 dx != 0 && toolbarActions.isNotEmpty() ->
                     toolbarIndex.intValue = (toolbarIndex.intValue + dx).coerceIn(0, toolbarActions.lastIndex)
             }
             HomeZone.Search -> when {
-                dy < 0 -> if (toolbarActions.isNotEmpty()) zone.value = HomeZone.Toolbar
+                dy < 0 -> if (!toolbarAtBottom && toolbarActions.isNotEmpty()) zone.value = HomeZone.Toolbar
                 dy > 0 -> zone.value = if (recentCount > 0) HomeZone.Recents else HomeZone.Grid
             }
             HomeZone.Recents -> when {
                 dy < 0 -> zone.value = when {
                     searchAvailable -> HomeZone.Search
-                    toolbarActions.isNotEmpty() -> HomeZone.Toolbar
+                    !toolbarAtBottom && toolbarActions.isNotEmpty() -> HomeZone.Toolbar
                     else -> HomeZone.Recents
                 }
                 dy > 0 -> zone.value = HomeZone.Grid
                 dx != 0 && recentCount > 0 ->
                     recentIndex.intValue = (recentIndex.intValue + dx).coerceIn(0, recentCount - 1)
             }
-            HomeZone.Grid -> {
-                // Up from the top cover row steps into the chrome above (Recents /
-                // Search / Toolbar, whichever is shown).
-                if (dy < 0 && atTopRow() && zoneAboveGrid() != HomeZone.Grid) {
-                    zone.value = zoneAboveGrid()
-                } else {
-                    val delta = when {
-                        dx < 0 -> -1
-                        dx > 0 -> 1
-                        dy < 0 -> -columns
-                        dy > 0 -> columns
-                        else -> 0
+            HomeZone.Grid -> when {
+                dx != 0 -> viewModel.moveSelection(dx)
+                // Up: try to climb a row; if the selection didn't move we're on the top
+                // row → step into the chrome above. This "move-then-check" is robust to
+                // the exact per-row count (shelf/grid), unlike a selectedIndex<columns
+                // guess — which is why Recently Played was being skipped in shelf view.
+                dy < 0 -> {
+                    val before = viewModel.state.value.selectedIndex
+                    viewModel.moveSelection(-columns)
+                    if (viewModel.state.value.selectedIndex == before && zoneAboveGrid() != HomeZone.Grid) {
+                        zone.value = zoneAboveGrid()
                     }
-                    if (delta != 0) viewModel.moveSelection(delta)
+                }
+                // Down: climb a row; if it didn't move we're on the last row → step into
+                // the bottom toolbar (only when the toolbar is drawn there).
+                dy > 0 -> {
+                    val before = viewModel.state.value.selectedIndex
+                    viewModel.moveSelection(columns)
+                    if (viewModel.state.value.selectedIndex == before && toolbarAtBottom && toolbarActions.isNotEmpty()) {
+                        zone.value = HomeZone.Toolbar
+                    }
                 }
             }
         }

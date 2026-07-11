@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
@@ -124,16 +125,21 @@ fun ArmsTopBar(
     leading: (@Composable () -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
     horizontalPadding: Dp = 8.dp,
+    // When true the bar hugs the BOTTOM of the screen (library toolbar setting): it
+    // takes the navigation-bar inset instead of the status-bar inset, but keeps the
+    // exact same rounded-pill shape so the top and bottom placements look identical.
+    bottomEdge: Boolean = false,
 ) {
     val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(
                 start = horizontalPadding,
                 end = horizontalPadding,
-                top = statusBarPadding + 8.dp,
-                bottom = 4.dp,
+                top = if (bottomEdge) 4.dp else statusBarPadding + 8.dp,
+                bottom = if (bottomEdge) navBarPadding + 8.dp else 4.dp,
             ),
         shape = RoundedCornerShape(26.dp),
         color = MaterialTheme.colorScheme.surface,

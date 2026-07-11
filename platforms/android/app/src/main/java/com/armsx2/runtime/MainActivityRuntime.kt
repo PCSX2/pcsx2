@@ -1346,6 +1346,7 @@ open class MainActivityRuntime : ComponentActivity() {
         com.armsx2.ui.UiScale.load()
         com.armsx2.ui.theme.ThemePreferences.load()
         com.armsx2.ui.theme.BootLogoPreferences.load()
+        com.armsx2.ui.theme.ToolbarPositionPreferences.load()
         com.armsx2.ControllerSkinStore.load(applicationContext)
         // Restore the saved rumble master toggle into the native gate (NativeApp.onPadRumble).
         NativeApp.sRumbleEnabled = ControllerMappings.rumbleEnabled()

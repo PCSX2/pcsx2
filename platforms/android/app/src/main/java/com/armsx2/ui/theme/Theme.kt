@@ -51,6 +51,23 @@ object BootLogoPreferences {
     }
 }
 
+/** Whether the library view toolbar is pinned to the bottom of the screen (App
+ *  setting). Default false = the toolbar sits at the top. */
+object ToolbarPositionPreferences {
+    private const val PreferenceKey = "ui.toolbarBottom"
+
+    val atBottom = mutableStateOf(false)
+
+    fun load() {
+        atBottom.value = MainActivityRuntime.prefs.getBoolean(PreferenceKey, false)
+    }
+
+    fun set(value: Boolean) {
+        atBottom.value = value
+        MainActivityRuntime.prefs.edit { putBoolean(PreferenceKey, value) }
+    }
+}
+
 private val NightScheme = darkColorScheme(
     primary = ArmsBlueBright,
     onPrimary = Color(0xFF07101F),

@@ -26,6 +26,7 @@ import com.armsx2.navigation.UiNavigator
 import com.armsx2.ui.theme.BootLogoPreferences
 import com.armsx2.ui.theme.ThemeMode
 import com.armsx2.ui.theme.ThemePreferences
+import com.armsx2.ui.theme.ToolbarPositionPreferences
 
 @Composable
 fun AppTab() {
@@ -93,6 +94,13 @@ fun AppTab() {
             value = BootLogoPreferences.enabled.value,
             description = str("app.bootLogo.desc"),
             onChange = { BootLogoPreferences.set(it) },
+        )
+
+        SegmentedRow(
+            label = str("app.toolbarPosition"),
+            options = listOf(str("app.toolbarPosition.top"), str("app.toolbarPosition.bottom")),
+            selectedIndex = if (ToolbarPositionPreferences.atBottom.value) 1 else 0,
+            onChange = { ToolbarPositionPreferences.set(it == 1) },
         )
     }
 }
