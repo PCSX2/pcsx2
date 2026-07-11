@@ -526,9 +526,19 @@ fun HomeScreen(
             }
 
             // Pinned bottom toolbar (App setting) — same rounded-pill component as the
-            // top placement, just hugging the bottom edge.
+            // top placement. Match the top's width by applying the SAME side inset the
+            // grid's contentPadding gives the top bar (8dp + display cutout); otherwise
+            // the bottom bar spans edge-to-edge and reads wider than the top.
             if (toolbarBottom) {
-                Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth()) {
+                Box(
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .padding(
+                            start = 8.dp + cutout.calculateStartPadding(ld),
+                            end = 8.dp + cutout.calculateEndPadding(ld),
+                        ),
+                ) {
                     libraryToolbar(true)
                 }
             }
