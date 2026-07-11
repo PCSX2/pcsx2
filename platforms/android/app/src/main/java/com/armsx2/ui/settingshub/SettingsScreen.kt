@@ -72,6 +72,15 @@ fun SettingsScreen(
     var showReset by remember { mutableStateOf(false) }
     val screenScroll = rememberScrollState()
     LaunchedEffect(initialCategory, game?.uri) { viewModel.load(initialCategory, game) }
+    // When the controller focus returns to the category-chip row (the top-most
+    // navigable element), snap the whole page back to the top so the title bar +
+    // chips are fully visible — per-row bringIntoView otherwise leaves the header
+    // scrolled off after diving deep into a tab and coming back up.
+    LaunchedEffect(com.armsx2.ui.settings.SettingsControllerNav.selectedIndex.intValue) {
+        if (com.armsx2.ui.settings.SettingsControllerNav.currentSelectedId()?.startsWith("settings.chip.") == true) {
+            screenScroll.animateScrollTo(0)
+        }
+    }
     val ui = viewModel.uiState.value
     val contentReady = ui.game?.uri?.toString() == game?.uri?.toString()
     val displayedCategory = if (game != null && ui.category == SettingsCategory.General) {

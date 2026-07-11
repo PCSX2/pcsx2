@@ -32,6 +32,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
@@ -194,6 +196,23 @@ fun HomeScreen(
                     gridState.animateScrollToItem(state.selectedIndex.coerceAtLeast(0) + 2)
                 }
             }
+            // The Recently-Played games shown above the grid (empty while searching);
+            // register them so the controller's Recents zone can launch them.
+            val shownRecents = if (state.recentGames.isNotEmpty() && state.query.isBlank()) {
+                state.recentGames.take(10)
+            } else {
+                emptyList()
+            }
+            LaunchedEffect(shownRecents) {
+                HomeInputController.setRecents(shownRecents.size) { i ->
+                    shownRecents.getOrNull(i)?.let(viewModel::launch)
+                }
+            }
+            // Entering the Recents / Toolbar zone scrolls the grid to the very top so
+            // those rows are on-screen when focused.
+            LaunchedEffect(HomeInputController.zone.value) {
+                if (HomeInputController.zone.value != HomeZone.Grid) gridState.animateScrollToItem(0)
+            }
 
             // Keep covers/text out of the display's unsafe edge (cutout / rounded
             // corner) — add the cutout inset to the side padding. The full-bleed
@@ -227,7 +246,7 @@ fun HomeScreen(
                             { bgMenu = true },
                         ),
                     )
-                    val tb = HomeInputController.toolbarFocused.value
+                    val tb = HomeInputController.zone.value == HomeZone.Toolbar
                     val tbi = HomeInputController.toolbarIndex.intValue
                     ArmsTopBar(
                         title = str("games.section.library"),
@@ -287,7 +306,9 @@ fun HomeScreen(
                     }
                 }
 
-                if (state.recentGames.isNotEmpty() && state.query.isBlank()) {
+                if (shownRecents.isNotEmpty()) {
+                    val recentsSelected = HomeInputController.zone.value == HomeZone.Recents
+                    val recentSel = if (recentsSelected) HomeInputController.recentIndex.intValue else -1
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         Column {
                             // In shelf view nudge the header right so it lines up with
@@ -303,10 +324,11 @@ fun HomeScreen(
                                 // Same frosted-glass plank as All Games (bagas: one
                                 // shelf design everywhere).
                                 GameShelf(
-                                    games = state.recentGames.take(10),
+                                    games = shownRecents,
                                     shelfRes = R.drawable.shelf_frosted,
                                     coverWidth = if (compact) 84.dp else 100.dp,
                                     scroll = true,
+                                    selectedIndex = recentSel,
                                     onLaunch = { viewModel.launch(it) },
                                     modifier = Modifier.layout { measurable, constraints ->
                                         val edge = 8.dp.roundToPx()
@@ -320,7 +342,12 @@ fun HomeScreen(
                                     },
                                 )
                             } else {
+                                val recentsRowState = rememberLazyListState()
+                                LaunchedEffect(recentSel) {
+                                    if (recentSel >= 0) recentsRowState.animateScrollToItem(recentSel)
+                                }
                                 LazyRow(
+                                    state = recentsRowState,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .layout { measurable, constraints ->
@@ -338,9 +365,10 @@ fun HomeScreen(
                                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                                     contentPadding = PaddingValues(horizontal = 8.dp),
                                 ) {
-                                    items(state.recentGames.take(10), key = { it.uri.toString() }) { game ->
+                                    itemsIndexed(shownRecents, key = { _, g -> g.uri.toString() }) { index, game ->
                                         RecentGameCard(
                                             game = game,
+                                            selected = index == recentSel,
                                             onClick = { viewModel.launch(game) },
                                             onDetails = { menuGame = game },
                                         )
@@ -570,7 +598,7 @@ private fun GameListCard(game: GameInfo, selected: Boolean, onClick: () -> Unit,
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun RecentGameCard(game: GameInfo, onClick: () -> Unit, onDetails: () -> Unit) {
+private fun RecentGameCard(game: GameInfo, selected: Boolean = false, onClick: () -> Unit, onDetails: () -> Unit) {
     Column(
         modifier = Modifier
             .width(102.dp)
@@ -579,8 +607,8 @@ private fun RecentGameCard(game: GameInfo, onClick: () -> Unit, onDetails: () ->
         GameCover(
             game,
             Modifier.fillMaxWidth().aspectRatio(0.72f).border(
-                1.dp,
-                MaterialTheme.colorScheme.outline.copy(alpha = 0.42f),
+                if (selected) 2.5.dp else 1.dp,
+                if (selected) Color(0xFF3DA5FF) else MaterialTheme.colorScheme.outline.copy(alpha = 0.42f),
                 RoundedCornerShape(12.dp),
             ),
         )
@@ -662,22 +690,29 @@ private fun CoverPlaceholder(title: String) {
     }
 }
 
+/** Vertical focus zones of the library screen, stacked top→bottom. */
+enum class HomeZone { Toolbar, Recents, Grid }
+
 object HomeInputController {
     private var owner: HomeViewModel? = null
     private var openMenu: (() -> Unit)? = null
     private var columns = 3
     val scrollVelocity = mutableFloatStateOf(0f)
 
-    // Top-toolbar zone. The cover grid is data-driven (owner.selectedIndex), but the
-    // toolbar (refresh / sort / layout / 2D-3D / background, plus the leading menu
-    // button) sits above it and can't be part of that index space. So the toolbar is
-    // a separate "zone": pressing Up from the grid's top row focuses it, Left/Right
-    // move between its buttons, A fires the highlighted one, Down drops back to the
-    // grid. HomeScreen registers the button actions and reads `toolbarFocused` /
-    // `toolbarIndex` to draw the highlight.
-    val toolbarFocused = mutableStateOf(false)
+    // Three vertical zones stacked above the cover grid. The grid itself is
+    // data-driven (owner.selectedIndex); the Recently-Played row and the top toolbar
+    // (refresh / sort / layout / 2D-3D / background + the leading menu button) sit
+    // above it and can't share that index space, so each is its own zone. From the
+    // grid's top row, Up steps into Recents (if shown), then Up again into the
+    // Toolbar; Down walks back down. Left/Right move within the focused row. A fires
+    // the highlighted item. HomeScreen reads `zone` + `toolbarIndex` / `recentIndex`
+    // to draw the highlight and registers the toolbar actions + recents launcher.
+    val zone = mutableStateOf(HomeZone.Grid)
     val toolbarIndex = mutableIntStateOf(0)
+    val recentIndex = mutableIntStateOf(0)
     private var toolbarActions: List<() -> Unit> = emptyList()
+    private var recentCount = 0
+    private var recentLauncher: ((Int) -> Unit)? = null
 
     fun bind(viewModel: HomeViewModel, onOpenMenu: () -> Unit) {
         owner = viewModel
@@ -689,7 +724,7 @@ object HomeInputController {
             owner = null
             openMenu = null
             scrollVelocity.floatValue = 0f
-            toolbarFocused.value = false
+            zone.value = HomeZone.Grid
         }
     }
 
@@ -700,6 +735,15 @@ object HomeInputController {
      *  order (leading menu button first). */
     fun setToolbarActions(actions: List<() -> Unit>) { toolbarActions = actions }
 
+    /** HomeScreen registers the currently-shown Recently-Played games (0 when the
+     *  shelf is hidden, e.g. while searching). */
+    fun setRecents(count: Int, launcher: (Int) -> Unit) {
+        recentCount = count
+        recentLauncher = launcher
+        if (recentIndex.intValue >= count) recentIndex.intValue = (count - 1).coerceAtLeast(0)
+        if (count == 0 && zone.value == HomeZone.Recents) zone.value = HomeZone.Grid
+    }
+
     private fun atTopRow(): Boolean {
         val vm = owner ?: return false
         return vm.state.value.selectedIndex < columns
@@ -707,38 +751,47 @@ object HomeInputController {
 
     fun move(dx: Int, dy: Int): Boolean {
         val viewModel = owner ?: return false
-        if (toolbarFocused.value) {
-            when {
-                dy > 0 -> toolbarFocused.value = false            // Down → back to grid
+        when (zone.value) {
+            HomeZone.Toolbar -> when {
+                dy > 0 -> zone.value = if (recentCount > 0) HomeZone.Recents else HomeZone.Grid
                 dx != 0 && toolbarActions.isNotEmpty() ->
                     toolbarIndex.intValue = (toolbarIndex.intValue + dx).coerceIn(0, toolbarActions.lastIndex)
             }
-            return true
+            HomeZone.Recents -> when {
+                dy < 0 -> if (toolbarActions.isNotEmpty()) zone.value = HomeZone.Toolbar
+                dy > 0 -> zone.value = HomeZone.Grid
+                dx != 0 && recentCount > 0 ->
+                    recentIndex.intValue = (recentIndex.intValue + dx).coerceIn(0, recentCount - 1)
+            }
+            HomeZone.Grid -> {
+                // Up from the top cover row steps into Recents (then Toolbar).
+                if (dy < 0 && atTopRow() && (recentCount > 0 || toolbarActions.isNotEmpty())) {
+                    zone.value = if (recentCount > 0) HomeZone.Recents else HomeZone.Toolbar
+                } else {
+                    val delta = when {
+                        dx < 0 -> -1
+                        dx > 0 -> 1
+                        dy < 0 -> -columns
+                        dy > 0 -> columns
+                        else -> 0
+                    }
+                    if (delta != 0) viewModel.moveSelection(delta)
+                }
+            }
         }
-        // Up from the top cover row jumps into the toolbar.
-        if (dy < 0 && atTopRow() && toolbarActions.isNotEmpty()) {
-            toolbarFocused.value = true
-            return true
-        }
-        val delta = when {
-            dx < 0 -> -1
-            dx > 0 -> 1
-            dy < 0 -> -columns
-            dy > 0 -> columns
-            else -> 0
-        }
-        if (delta != 0) viewModel.moveSelection(delta)
         return true
     }
 
     fun confirm(): Boolean {
         val viewModel = owner ?: return false
-        if (toolbarFocused.value) {
-            toolbarActions.getOrNull(toolbarIndex.intValue)?.invoke()
-            return true
+        when (zone.value) {
+            HomeZone.Toolbar -> toolbarActions.getOrNull(toolbarIndex.intValue)?.invoke()
+            HomeZone.Recents -> recentLauncher?.invoke(recentIndex.intValue)
+            HomeZone.Grid -> {
+                val game = viewModel.selectedGame() ?: return false
+                viewModel.launch(game)
+            }
         }
-        val game = viewModel.selectedGame() ?: return false
-        viewModel.launch(game)
         return true
     }
 
@@ -755,9 +808,10 @@ object HomeInputController {
     }
 
     fun back(): Boolean {
-        // B while the toolbar is focused just drops back to the grid.
-        if (toolbarFocused.value) {
-            toolbarFocused.value = false
+        // B in the Recents / Toolbar zone drops back to the grid; on the grid it
+        // opens the nav drawer.
+        if (zone.value != HomeZone.Grid) {
+            zone.value = HomeZone.Grid
             return true
         }
         openMenu?.invoke() ?: return false

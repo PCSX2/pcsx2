@@ -141,6 +141,11 @@ internal object SettingsControllerNav {
     val selectedIndex = mutableIntStateOf(-1)
     val scrollVelocity = mutableFloatStateOf(0f)
 
+    /** The id of the currently highlighted control (null if none). Screens read
+     *  this to react to WHICH control is focused — e.g. the settings hub snaps its
+     *  scroll to the very top when a category chip regains focus. */
+    fun currentSelectedId(): String? = selectedId.value
+
     fun setPosition(id: String, x: Float, y: Float) {
         positions[id] = y to x
     }
