@@ -8,6 +8,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -256,11 +258,22 @@ fun SearchField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String = "",
+    focusRequester: FocusRequester? = null,
+    selected: Boolean = false,
 ) {
     TextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = modifier.height(56.dp),
+        modifier = modifier
+            .height(56.dp)
+            .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
+            .then(
+                if (selected) {
+                    Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(18.dp))
+                } else {
+                    Modifier
+                },
+            ),
         singleLine = true,
         placeholder = { Text(placeholder) },
         leadingIcon = { Text("⌕", fontSize = 21.sp, fontWeight = FontWeight.Bold) },

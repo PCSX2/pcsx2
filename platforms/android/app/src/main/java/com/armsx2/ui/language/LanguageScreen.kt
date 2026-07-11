@@ -3,20 +3,20 @@ package com.armsx2.ui.language
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -28,6 +28,8 @@ import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsBackdrop
 import com.armsx2.ui.common.ArmsTopBar
 import com.armsx2.ui.common.RoundAction
+import com.armsx2.ui.settings.ControllerAutoScroll
+import com.armsx2.ui.settings.LocalSettingsScrollState
 import com.armsx2.ui.settings.controllerFocusable
 
 @Composable
@@ -35,25 +37,35 @@ fun LanguageScreen(
     onBack: () -> Unit,
     viewModel: LanguageViewModel = viewModel(),
 ) {
-
+    // A plain scrolling Column (not a LazyColumn): every language row must be composed
+    // so its controllerFocusable registers in the nav registry and bring-into-view can
+    // scroll to it. A LazyColumn only composes visible rows, so controller nav got
+    // stuck on the last on-screen language (couldn't reach anything below the fold).
+    val scroll = rememberScrollState()
+    ControllerAutoScroll(scroll)
     ArmsBackdrop {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            item {
+        CompositionLocalProvider(LocalSettingsScrollState provides scroll) {
+            Column(
+                modifier = Modifier.fillMaxSize().verticalScroll(scroll).padding(bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 ArmsTopBar(
                     title = str("app.language"),
                     subtitle = str("app.language.desc"),
                     leading = { RoundAction("‹", str("action.back"), onBack) },
                 )
-            }
-                items(I18n.languages, key = { it.code }) { language ->
+                I18n.languages.forEach { language ->
                     val selected = language.code == I18n.current
                     Surface(
                         onClick = { viewModel.select(language.code) },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp).controllerFocusable("lang.${language.code}", RoundedCornerShape(12.dp), onConfirm = { viewModel.select(language.code) }),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp)
+                            .controllerFocusable(
+                                "lang.${language.code}",
+                                RoundedCornerShape(12.dp),
+                                onConfirm = { viewModel.select(language.code) },
+                            ),
                         shape = RoundedCornerShape(18.dp),
                         color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
                         border = BorderStroke(
@@ -88,6 +100,7 @@ fun LanguageScreen(
                             )
                         }
                     }
+                }
             }
         }
     }
