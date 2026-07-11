@@ -14,8 +14,9 @@ Optionally wrap in `perf record -F 999 -o perf.data` and pass perf.data for a
 sample-weighted dynamic mix — samples are binned into block address ranges
 directly (no `perf inject` needed).
 
-Usage:    ee_code_census.py <jit-XXXX.dump> [perf.data] [--pins s3|s0|none]
+Usage:    ee_code_census.py <jit-XXXX.dump> [perf.data ...] [--pins s3|s0|none]
           ee_code_census.py <jit-XXXX.dump> perf.data --footprint [--window 1.0]
+          ee_code_census.py <jit-XXXX.dump> perf.data [...] --coldbytes
 
 --footprint (needs perf.data): instead of the category census, measure the hot
 JIT working set — bin sample IPs by 64-byte host cacheline over the jitdump
@@ -23,6 +24,16 @@ block ranges and report distinct lines/KB covering 50/90/99% of samples, per
 JIT (EE / mVU0 / mVU1 / ...) and combined. Whole-run numbers overstate the
 instantaneous set, so it also reports the per-`--window`-second median. The
 number to compare against L1I capacity: A77 64KB, A55/A53 32KB.
+
+--coldbytes (icache Phase 3): per-block byte-layout census + line utilization.
+Splits every block into smc_preamble (the ProtMode_Manual inline compare emitted
+by memory_protect_recompiled_code — exact structural match) / body / tail_junk
+(bytes after the last unconditional branch: vixl literal pools + unreachable),
+plus inter-block align_pad gaps. With perf.data (several may be given; samples
+are pooled): the executed share of each category, and LINE UTILIZATION — for the
+64B lines that make up the hot working set, what fraction of their bytes is
+sampled-block body. 1 - utilization is the theoretical ceiling of all packing /
+cold-extraction work; the 90%-coverage-set row is the honest headline.
 
 Categories:
   ldr_gpr_pinned(reload)   loads of a pinned guest GPR into its own pin (seam reloads)
@@ -167,6 +178,317 @@ def classify_block(code, pin_gpr, pins):
     return c, per_gpr_ld, n
 
 
+def _match_smc_preamble(ins):
+    """Byte length of the ProtMode_Manual SMC compare preamble at block start.
+
+    Matches the exact emission shape of memory_protect_recompiled_code
+    (iR5900-arm64.cpp): Mov w0,start; Mov w1,nwords; per word {addr-mat x17;
+    Ldr w8,[x17]; Mov w9,expected; Cmp w8,w9; B.ne(±long form)}; optional
+    manual_counter epilogue {addr-mat x17; Ldrh w8; Add w8,imm; Strh w8;
+    Tst w8; B.ne(±long)}. Returns 0 if the block doesn't start with it.
+    """
+    n = len(ins)
+    pos = 0
+
+    def imm_mat(rd):  # vixl Mov(w<rd>, imm): movz/movn/orr-imm, + trailing movk*
+        nonlocal pos
+        if pos >= n:
+            return False
+        i = ins[pos]
+        ok = (((i & 0xFF800000) in (0x52800000, 0x12800000) and (i & 31) == rd)
+              or ((i & 0xFF8003E0) == 0x320003E0 and (i & 31) == rd))
+        if not ok:
+            return False
+        pos += 1
+        while pos < n and (ins[pos] & 0xFF800000) == 0x72800000 and (ins[pos] & 31) == rd:
+            pos += 1
+        return True
+
+    def addr_mat(rd):  # armMoveAddressToReg: adrp+add/orr | movz x + movk x{1..3}
+        nonlocal pos
+        if pos >= n:
+            return False
+        i = ins[pos]
+        if (i & 0x9F00001F) == (0x90000000 | rd):  # adrp
+            if pos + 1 < n:
+                j = ins[pos + 1]
+                if ((j & 0xFF800000) in (0x91000000, 0xB2000000)
+                        and (j & 31) == rd and ((j >> 5) & 31) == rd):
+                    pos += 2
+                    return True
+            return False
+        if (i & 0xFF80001F) == (0xD2800000 | rd):  # movz x
+            pos += 1
+            while pos < n and (ins[pos] & 0xFF80001F) == (0xF2800000 | rd):
+                pos += 1
+            return True
+        return False
+
+    def one(pattern, mask):
+        nonlocal pos
+        if pos < n and (ins[pos] & mask) == pattern:
+            pos += 1
+            return True
+        return False
+
+    def condbr():  # armEmitCondBranch(ne): b.ne | b.eq +8; b imm26 (long form)
+        nonlocal pos
+        if pos >= n:
+            return False
+        i = ins[pos]
+        if (i & 0xFF000010) == 0x54000000:
+            cond = i & 0xF
+            if cond == 1:  # ne
+                pos += 1
+                return True
+            if cond == 0 and pos + 1 < n and (ins[pos + 1] & 0xFC000000) == 0x14000000:
+                pos += 2
+                return True
+        return False
+
+    if not (imm_mat(0) and imm_mat(1)):
+        return 0
+    units = 0
+    while True:
+        save = pos
+        if (addr_mat(17) and one(0xB9400228, 0xFFC003FF)      # ldr  w8,[x17,#i]
+                and imm_mat(9) and one(0x6B09011F, 0xFFFFFFFF)  # cmp w8,w9
+                and condbr()):
+            units += 1
+            continue
+        pos = save
+        break
+    if not units:
+        return 0
+    save = pos
+    if not (addr_mat(17) and one(0x79400228, 0xFFC003FF)      # ldrh w8,[x17,#i]
+            and one(0x11000108, 0xFF8003FF)                    # add  w8,w8,#imm
+            and one(0x79000228, 0xFFC003FF)                    # strh w8,[x17,#i]
+            and one(0x7200011F, 0xFF8003FF)                    # tst  w8,#imm
+            and condbr()):
+        pos = save
+    return pos * 4
+
+
+def _tail_junk(ins):
+    """Bytes after the last unconditional control transfer (B/BR/RET) in the
+    block = trailing vixl literal-pool data + unreachable bytes."""
+    last = -1
+    for k, i in enumerate(ins):
+        if ((i & 0xFC000000) == 0x14000000            # b imm26
+                or (i & 0xFFFFFC1F) == 0xD61F0000     # br
+                or (i & 0xFFFFFC1F) == 0xD65F0000):   # ret
+            last = k
+    if last < 0:
+        return 0
+    return (len(ins) - 1 - last) * 4
+
+
+def _dedupe_blocks(blocks):
+    """Jitdump can contain overlapping records (full rec resets rewind the bump
+    allocator). Keep the LATER-loaded record for any overlap."""
+    recs = sorted(((addr, addr + size, idx, b) for idx, b in enumerate(blocks)
+                   for addr, size, _, _ in (b,) if size),
+                  key=lambda r: (r[0], r[2]))
+    out = []
+    for lo, hi, idx, b in recs:
+        while out and out[-1][1] > lo:  # overlap with previous kept record
+            if out[-1][2] < idx:
+                out.pop()               # previous is older — drop it
+            else:
+                break                   # previous is newer — drop this one
+        else:
+            out.append((lo, hi, idx, b))
+            continue
+    return [b for _, _, _, b in out]
+
+
+def _iter_samples(perfdata):
+    """Yield (time, leaf_ip) from perf.data via perf script — handles both flat
+    'TIME: IP' lines and call-graph shape (TIME line + IP lines, leaf first)."""
+    proc = subprocess.Popen(["perf", "script", "-i", perfdata, "-F", "time,ip"],
+                            stdout=subprocess.PIPE, text=True)
+    pending_t = None
+    for line in proc.stdout:
+        parts = line.split()
+        if not parts:
+            continue
+        if parts[0].endswith(":"):
+            try:
+                t = float(parts[0][:-1])
+            except ValueError:
+                continue
+            if len(parts) >= 2:
+                try:
+                    yield t, int(parts[1], 16)
+                except ValueError:
+                    pass
+                pending_t = None
+            else:
+                pending_t = t
+        elif pending_t is not None:
+            try:
+                yield pending_t, int(parts[0], 16)
+            except ValueError:
+                continue
+            pending_t = None
+    proc.wait()
+
+
+def run_coldbytes(blocks, perfdatas):
+    blocks = _dedupe_blocks(blocks)
+    meta = []  # (lo, hi, group, smc_bytes, junk_bytes)
+    for addr, size, name, code in sorted(blocks):
+        n = len(code) // 4
+        ins = list(struct.unpack_from(f"<{n}I", code)) if n else []
+        group = name.split("_")[0]
+        smc = _match_smc_preamble(ins) if name.startswith("EE_") else 0
+        junk = _tail_junk(ins)
+        meta.append((addr, addr + size, group, smc, junk))
+    lows = [m[0] for m in meta]
+
+    # -- static byte census -------------------------------------------------
+    stat = {}  # group -> [blocks, bytes, smc_bytes, smc_blocks, junk_bytes, pad_bytes]
+    for k, (lo, hi, g, smc, junk) in enumerate(meta):
+        s = stat.setdefault(g, [0, 0, 0, 0, 0, 0])
+        s[0] += 1
+        s[1] += hi - lo
+        s[2] += smc
+        s[3] += smc > 0
+        s[4] += junk
+        if k + 1 < len(meta):
+            gap = meta[k + 1][0] - hi
+            if 0 < gap <= 64:
+                s[5] += gap
+    print("== STATIC byte layout (deduped jitdump) ==")
+    print(f"{'group':8s} {'blocks':>7s} {'KB':>8s} {'smcKB':>7s} {'smc%':>6s} "
+          f"{'smcBlks':>7s} {'junkKB':>7s} {'junk%':>6s} {'padKB':>6s} {'pad%':>6s}")
+    for g in sorted(stat, key=lambda g: -stat[g][1]):
+        b, tot, smc, sb, junk, pad = stat[g]
+        kb = lambda v: v / 1024
+        print(f"{g:8s} {b:7d} {kb(tot):8.1f} {kb(smc):7.1f} {100 * smc / tot:6.2f} "
+              f"{sb:7d} {kb(junk):7.1f} {100 * junk / tot:6.2f} {kb(pad):6.1f} {100 * pad / tot:6.2f}")
+
+    if not perfdatas:
+        return
+
+    # -- sample attribution --------------------------------------------------
+    def locate(ip):
+        j = bisect.bisect_right(lows, ip) - 1
+        if j >= 0 and ip < meta[j][1]:
+            return j
+        return -1
+
+    csamp = {}          # group -> Counter(category)
+    line_cnt = Counter()  # 64B line -> samples (JIT only)
+    line_grp = {}         # 64B line -> group of first sample's block
+    blk_sampled = set()   # indices into meta with >=1 sample
+    n_tot = n_jit = 0
+    for pd in perfdatas:
+        for _t, ip in _iter_samples(pd):
+            n_tot += 1
+            j = locate(ip)
+            if j < 0:
+                continue
+            n_jit += 1
+            lo, hi, g, smc, junk = meta[j]
+            off = ip - lo
+            cat = ("smc_preamble" if off < smc
+                   else "tail_junk" if off >= (hi - lo) - junk else "body")
+            csamp.setdefault(g, Counter())[cat] += 1
+            csamp.setdefault("ALL-JIT", Counter())[cat] += 1
+            line = ip >> 6
+            line_cnt[line] += 1
+            line_grp.setdefault(line, g)
+            blk_sampled.add(j)
+    print(f"\n== EXECUTED share ({n_tot} samples pooled from {len(perfdatas)} file(s), "
+          f"{n_jit} in JIT) ==")
+    print(f"{'group':8s} {'samples':>9s} {'smc%':>7s} {'body%':>7s} {'junk%':>7s}")
+    for g in sorted(csamp, key=lambda g: -sum(csamp[g].values()) if g != "ALL-JIT" else 1):
+        c = csamp[g]
+        tot = sum(c.values())
+        print(f"{g:8s} {tot:9d} {100 * c['smc_preamble'] / tot:7.3f} "
+              f"{100 * c['body'] / tot:7.3f} {100 * c['tail_junk'] / tot:7.3f}")
+
+    # -- line utilization ----------------------------------------------------
+    # For each hot 64B line, classify its bytes: body of a sampled block
+    # (useful) vs smc/junk of a sampled block, any byte of an unsampled block,
+    # or gap/pad. Two universes: all sampled lines, and the hottest lines
+    # covering 90% of JIT samples (== the working set headline from
+    # --footprint). 1 - utilization = the packing/cold-extraction ceiling.
+    def classify_lines(lines):
+        agg = Counter()
+        for line in lines:
+            b0, b1 = line << 6, (line << 6) + 64
+            j = bisect.bisect_right(lows, b0) - 1
+            if j < 0:
+                j = 0
+            p = b0
+            while p < b1:
+                if j >= len(meta) or meta[j][1] <= p:
+                    if j + 1 < len(meta) and meta[j + 1][0] <= p:
+                        j += 1
+                        continue
+                    nxt = meta[j + 1][0] if j + 1 < len(meta) else b1
+                    step = min(b1, nxt) - p
+                    agg["gap"] += step
+                    p += step
+                    continue
+                lo, hi, g, smc, junk = meta[j]
+                if p < lo:
+                    step = min(b1, lo) - p
+                    agg["gap"] += step
+                    p += step
+                    continue
+                step = min(b1, hi) - p
+                if j not in blk_sampled:
+                    agg["cold_block"] += step
+                else:
+                    # split the [p, p+step) run across smc/body/junk boundaries
+                    q = p
+                    while q < p + step:
+                        off = q - lo
+                        if off < smc:
+                            lim = min(p + step, lo + smc)
+                            agg["hot_smc"] += lim - q
+                        elif off >= (hi - lo) - junk:
+                            lim = p + step
+                            agg["hot_junk"] += lim - q
+                        else:
+                            lim = min(p + step, hi - junk)
+                            agg["hot_body"] += lim - q
+                        q = lim
+                p += step
+        return agg
+
+    cov90 = _coverage(line_cnt, fracs=(0.9,))[0.9]
+    hot90 = [l for l, _ in line_cnt.most_common(cov90)]
+    print(f"\n== LINE UTILIZATION (64B lines; 'useful' = body bytes of sampled blocks) ==")
+    print(f"{'universe':22s} {'lines':>7s} {'KB':>7s} {'body%':>7s} {'smc%':>6s} "
+          f"{'junk%':>6s} {'coldblk%':>8s} {'gap%':>6s}")
+    for label, lines in (("all sampled lines", list(line_cnt)),
+                         ("90%-coverage set", hot90)):
+        a = classify_lines(lines)
+        tot = sum(a.values())
+        if not tot:
+            continue
+        print(f"{label:22s} {len(lines):7d} {len(lines) * 64 / 1024:7.1f} "
+              f"{100 * a['hot_body'] / tot:7.2f} {100 * a['hot_smc'] / tot:6.2f} "
+              f"{100 * a['hot_junk'] / tot:6.2f} {100 * a['cold_block'] / tot:8.2f} "
+              f"{100 * a['gap'] / tot:6.2f}")
+    # per-group utilization over the 90% set (where do the wasted bytes live?)
+    by_grp = {}
+    for line in hot90:
+        by_grp.setdefault(line_grp.get(line, "?"), []).append(line)
+    print("\n90%-set by group:")
+    for g in sorted(by_grp, key=lambda g: -len(by_grp[g])):
+        a = classify_lines(by_grp[g])
+        tot = sum(a.values())
+        print(f"  {g:8s} {len(by_grp[g]) * 64 / 1024:7.1f}KB  body {100 * a['hot_body'] / tot:6.2f}%  "
+              f"smc {100 * a['hot_smc'] / tot:5.2f}%  junk {100 * a['hot_junk'] / tot:5.2f}%  "
+              f"coldblk {100 * a['cold_block'] / tot:5.2f}%  gap {100 * a['gap'] / tot:5.2f}%")
+
+
 def _coverage(cnt, fracs=(0.5, 0.9, 0.99)):
     """{addr_unit: samples} -> {frac: n_units covering that fraction, hottest-first}."""
     tot = sum(cnt.values())
@@ -283,10 +605,13 @@ def run_footprint(blocks, perfdata, window):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("jitdump")
-    ap.add_argument("perfdata", nargs="?", help="perf.data for sample weighting")
+    ap.add_argument("perfdata", nargs="*", help="perf.data for sample weighting "
+                    "(several allowed; pooled in --coldbytes, first used elsewhere)")
     ap.add_argument("--pins", choices=sorted(PIN_MAPS), default="s5")
     ap.add_argument("--footprint", action="store_true",
                     help="hot-working-set report (needs perf.data); skips the census")
+    ap.add_argument("--coldbytes", action="store_true",
+                    help="byte-layout census + line utilization (icache Phase 3)")
     ap.add_argument("--window", type=float, default=1.0,
                     help="footprint time-window seconds (default 1.0)")
     args = ap.parse_args()
@@ -294,7 +619,11 @@ def main():
     if args.footprint:
         if not args.perfdata:
             sys.exit("--footprint requires perf.data")
-        run_footprint(list(parse_jitdump(args.jitdump)), args.perfdata, args.window)
+        run_footprint(list(parse_jitdump(args.jitdump)), args.perfdata[0], args.window)
+        return
+
+    if args.coldbytes:
+        run_coldbytes(list(parse_jitdump(args.jitdump)), args.perfdata)
         return
 
     pin_gpr = PIN_MAPS[args.pins]
@@ -326,7 +655,7 @@ def main():
         print(f"    {GPR_NAMES[g]:5s} {'PIN' if g in pin_gpr else '   '} {v:7d}")
 
     if args.perfdata:
-        out = subprocess.run(["perf", "script", "-i", args.perfdata, "-F", "ip"],
+        out = subprocess.run(["perf", "script", "-i", args.perfdata[0], "-F", "ip"],
                              capture_output=True, text=True)
         ips = [int(l.strip(), 16) for l in out.stdout.splitlines() if l.strip()]
         ranges = sorted(per_block)
