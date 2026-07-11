@@ -222,6 +222,83 @@ Vulkan::GraphicsPipelineBuilder::GraphicsPipelineBuilder()
 	Clear();
 }
 
+Vulkan::GraphicsPipelineBuilder::GraphicsPipelineBuilder(const GraphicsPipelineBuilder& other)
+{
+	std::memcpy(this, &other, sizeof(GraphicsPipelineBuilder));
+	SetPointersAfterCopy();
+}
+
+Vulkan::GraphicsPipelineBuilder& Vulkan::GraphicsPipelineBuilder::operator=(const GraphicsPipelineBuilder& other)
+{
+	std::memcpy(this, &other, sizeof(GraphicsPipelineBuilder));
+	SetPointersAfterCopy();
+	return *this;
+}
+
+void Vulkan::GraphicsPipelineBuilder::SetPointersAfterCopy()
+{
+	if (m_ci.pStages)
+		m_ci.pStages = m_shader_stages.data();
+
+	if (m_vertex_input_state.pVertexBindingDescriptions)
+		m_vertex_input_state.pVertexBindingDescriptions = m_vertex_buffers.data();
+
+	if (m_vertex_input_state.pVertexAttributeDescriptions)
+		m_vertex_input_state.pVertexAttributeDescriptions = m_vertex_attributes.data();
+
+	if (m_ci.pVertexInputState)
+		m_ci.pVertexInputState = &m_vertex_input_state;
+
+	if (m_ci.pInputAssemblyState)
+		m_ci.pInputAssemblyState = &m_input_assembly;
+
+	if (m_ci.pRasterizationState)
+		m_ci.pRasterizationState = &m_rasterization_state;
+
+	if (m_ci.pDepthStencilState)
+		m_ci.pDepthStencilState = &m_depth_state;
+
+	if (m_ci.pColorBlendState)
+		m_ci.pColorBlendState = &m_blend_state;
+
+	if (m_blend_state.pAttachments)
+		m_blend_state.pAttachments = m_blend_attachments.data();
+
+	if (m_ci.pColorBlendState)
+		m_ci.pColorBlendState = &m_blend_state;
+
+	if (m_dynamic_state.pDynamicStates)
+		m_dynamic_state.pDynamicStates = m_dynamic_state_values.data();
+
+	if (m_ci.pDynamicState)
+		m_ci.pDynamicState = &m_dynamic_state;
+
+	if (m_viewport_state.pViewports)
+		m_viewport_state.pViewports = &m_viewport;
+	
+	if (m_ci.pViewportState)
+		m_ci.pViewportState = &m_viewport_state;
+
+	if (m_viewport_state.pScissors)
+		m_viewport_state.pScissors = &m_scissor;
+
+	if (m_ci.pViewportState)
+		m_ci.pViewportState = &m_viewport_state;
+
+	if (m_ci.pMultisampleState)
+		m_ci.pMultisampleState = &m_multisample_state;
+
+	m_rasterization_state.pNext = nullptr;
+	m_provoking_vertex.pNext = nullptr;
+	m_line_rasterization_state.pNext = nullptr;
+
+	if (m_set_provoking_vertex)
+		AddPointerToChain(&m_rasterization_state, &m_provoking_vertex);
+
+	if (m_set_line_rasterization_state)
+		AddPointerToChain(&m_rasterization_state, &m_line_rasterization_state);
+}
+
 void Vulkan::GraphicsPipelineBuilder::Clear()
 {
 	m_ci = {};
@@ -261,9 +338,11 @@ void Vulkan::GraphicsPipelineBuilder::Clear()
 
 	m_provoking_vertex = {};
 	m_provoking_vertex.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT;
+	m_set_provoking_vertex = false;
 
 	m_line_rasterization_state = {};
 	m_line_rasterization_state.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_EXT;
+	m_set_line_rasterization_state = false;
 
 	// set defaults
 	SetNoCullRasterizationState();
@@ -379,6 +458,8 @@ void Vulkan::GraphicsPipelineBuilder::SetLineRasterizationMode(VkLineRasterizati
 	AddPointerToChain(&m_rasterization_state, &m_line_rasterization_state);
 
 	m_line_rasterization_state.lineRasterizationMode = mode;
+
+	m_set_line_rasterization_state = true;
 }
 
 void Vulkan::GraphicsPipelineBuilder::SetMultisamples(u32 multisamples, bool per_sample_shading)
@@ -572,6 +653,38 @@ void Vulkan::GraphicsPipelineBuilder::SetProvokingVertex(VkProvokingVertexModeEX
 	AddPointerToChain(&m_rasterization_state, &m_provoking_vertex);
 
 	m_provoking_vertex.provokingVertexMode = mode;
+
+	m_set_provoking_vertex = true;
+}
+
+bool Vulkan::GraphicsPipelineBuilder::HasVertexShader() const
+{
+	for (u32 i = 0; i < m_ci.stageCount; i++)
+	{
+		if (m_shader_stages[i].stage == VK_SHADER_STAGE_VERTEX_BIT)
+			return true;
+	}
+	return false;
+}
+
+bool Vulkan::GraphicsPipelineBuilder::HasGeometryShader() const
+{
+	for (u32 i = 0; i < m_ci.stageCount; i++)
+	{
+		if (m_shader_stages[i].stage == VK_SHADER_STAGE_GEOMETRY_BIT)
+			return true;
+	}
+	return false;
+}
+
+bool Vulkan::GraphicsPipelineBuilder::HasFragmentShader() const
+{
+	for (u32 i = 0; i < m_ci.stageCount; i++)
+	{
+		if (m_shader_stages[i].stage == VK_SHADER_STAGE_FRAGMENT_BIT)
+			return true;
+	}
+	return false;
 }
 
 Vulkan::ComputePipelineBuilder::ComputePipelineBuilder()
