@@ -25,6 +25,18 @@ JIT (EE / mVU0 / mVU1 / ...) and combined. Whole-run numbers overstate the
 instantaneous set, so it also reports the per-`--window`-second median. The
 number to compare against L1I capacity: A77 64KB, A55/A53 32KB.
 
+--brmis (P2-2 branch-mispredict attribution): pass perf.data captured with a
+MISPREDICT event (perf record -e r22/r10) and bucket sample IPs: native code,
+each non-block jitdump region ("EE Dispatcher", ...), and JIT blocks split by
+position + the instruction class AT the sampled IP (b.cond / cbz / b / bl /
+br / ret / other). Mispredict samples attribute at the branch OR its resolved
+target (skid), so block-entry (first 8B) is reported separately — entry hits
+= target-side attribution of an incoming indirect edge (the dispatcher Br
+funnel). EE blocks are also classified has-indirect-exit (contain a B/BL into
+the dispatcher region = JR/JALR tail) vs linked-only, as a second cut on the
+funnel share. Shares only — multiply by the BrMis/kinsn stat-window rate for
+the cycle pool.
+
 --coldbytes (icache Phase 3): per-block byte-layout census + line utilization.
 Splits every block into smc_preamble (the ProtMode_Manual inline compare emitted
 by memory_protect_recompiled_code — exact structural match) / body / tail_junk
@@ -489,6 +501,169 @@ def run_coldbytes(blocks, perfdatas):
               f"coldblk {100 * a['cold_block'] / tot:5.2f}%  gap {100 * a['gap'] / tot:5.2f}%")
 
 
+def _insn_class(i):
+    if (i & 0xFF000010) == 0x54000000:
+        return "b.cond"
+    if (i & 0x7E000000) == 0x34000000:
+        return "cbz/cbnz"
+    if (i & 0x7E000000) == 0x36000000:
+        return "tbz/tbnz"
+    if (i & 0xFC000000) == 0x14000000:
+        return "b"
+    if (i & 0xFC000000) == 0x94000000:
+        return "bl"
+    if (i & 0xFFFFFC1F) == 0xD61F0000:
+        return "br"
+    if (i & 0xFFFFFC1F) == 0xD63F0000:
+        return "blr"
+    if (i & 0xFFFFFC1F) == 0xD65F0000:
+        return "ret"
+    return "non-branch"
+
+
+def _b_target(addr, k, i):
+    """Absolute target of an unconditional B at insn index k of a block at addr."""
+    imm26 = i & 0x03FFFFFF
+    if imm26 & 0x02000000:
+        imm26 -= 1 << 26
+    return addr + k * 4 + imm26 * 4
+
+
+def run_brmis(blocks, perfdatas):
+    blocks = _dedupe_blocks(blocks)
+    # regions: non-block records (names contain spaces: "EE Dispatcher", ...)
+    meta = []  # (lo, hi, name, group, insns)
+    for addr, size, name, code in sorted(blocks):
+        n = len(code) // 4
+        ins = list(struct.unpack_from(f"<{n}I", code)) if n else []
+        group = name.split("_")[0] if " " not in name else f"[{name}]"
+        meta.append((addr, addr + size, name, group, ins))
+    lows = [m[0] for m in meta]
+    disp = next((m for m in meta if m[2] == "EE Dispatcher"), None)
+
+    # -- pin DispatcherReg by code signature ----------------------------------
+    # DispatcherReg starts with `Ldr w0, [RSTATE, #pc]` and ends with `Br x17`
+    # within a few insns (iR5900-arm64.cpp _DynGen_DispatcherReg). Scan the
+    # dispatcher region for that pair — deterministic, unlike B-target
+    # clustering (the hottest non-event cluster is actually JITCompile via
+    # unlinked link placeholders). The B-target histogram is still printed as
+    # a diagnostic (DispatcherEvent = the b.lt+8-preceded target; the
+    # JITCompile cluster = links whose target PC never compiled).
+    ldr_pc = 0xB9400000 | ((680 // 4) << 10) | (RSTATE << 5)
+    disp_reg = None
+    if disp:
+        dlo, _dhi, _dn, _dg, dins = disp
+        for k, i in enumerate(dins):
+            if i == ldr_pc and 0xD61F0220 in dins[k + 1 : k + 9]:
+                disp_reg = dlo + k * 4
+                break
+    tgt_cnt, tgt_prev = Counter(), {}
+    if disp:
+        dlo, dhi = disp[0], disp[1]
+        for lo, hi, name, group, ins in meta:
+            if group != "EE":
+                continue
+            for k, i in enumerate(ins):
+                if (i & 0xFC000000) != 0x14000000:
+                    continue
+                t = _b_target(lo, k, i)
+                if dlo <= t < dhi:
+                    tgt_cnt[t] += 1
+                    tgt_prev.setdefault(t, Counter())[
+                        "b.lt+8" if k and ins[k - 1] == 0x5400004B
+                        else _insn_class(ins[k - 1]) if k else "?"] += 1
+    if tgt_cnt:
+        print("== dispatcher-region B targets from EE blocks ==")
+        for t, c in tgt_cnt.most_common(6):
+            prev = ", ".join(f"{k}:{v}" for k, v in tgt_prev[t].most_common(3))
+            mark = "  <- DispatcherReg" if t == disp_reg else ""
+            print(f"  {t:#x}  {c:7d}  prev insn: {prev}{mark}")
+        print(f"  -> DispatcherReg (signature scan) = "
+              f"{disp_reg:#x}" if disp_reg else "  -> DispatcherReg NOT FOUND")
+
+    # EE block kind: contains a B straight to DispatcherReg = indirect exit
+    # (JR/JALR tail). Everything else = linked/event-only exits.
+    jr_exit = set()
+    if disp_reg is not None:
+        for j, (lo, hi, name, group, ins) in enumerate(meta):
+            if group != "EE":
+                continue
+            for k, i in enumerate(ins):
+                if (i & 0xFC000000) == 0x14000000 and _b_target(lo, k, i) == disp_reg:
+                    jr_exit.add(j)
+                    break
+
+    # -- sample attribution ---------------------------------------------------
+    def locate(ip):
+        j = bisect.bisect_right(lows, ip) - 1
+        if j >= 0 and ip < meta[j][1]:
+            return j
+        return -1
+
+    n_tot = n_native = 0
+    reg_samp = {}                 # region name -> Counter(offset)
+    grp = {}                      # group -> Counter(bucket)
+    ee_kind = Counter()           # (kind, bucket) for EE blocks
+    offenders = Counter()         # (name, off, class) -> samples
+    for pd in perfdatas:
+        for _t, ip in _iter_samples(pd):
+            n_tot += 1
+            j = locate(ip)
+            if j < 0:
+                n_native += 1
+                continue
+            lo, hi, name, group, ins = meta[j]
+            off = ip - lo
+            if group.startswith("["):
+                reg_samp.setdefault(name, Counter())[off] += 1
+                continue
+            k = off // 4
+            cls = _insn_class(ins[k]) if k < len(ins) else "?"
+            bucket = "entry8" if off < 8 else cls
+            grp.setdefault(group, Counter())[bucket] += 1
+            if group == "EE":
+                ee_kind[("jr-exit" if j in jr_exit else "linked", bucket)] += 1
+            offenders[(name, off, cls)] += 1
+
+    n_jit = n_tot - n_native - sum(sum(c.values()) for c in reg_samp.values())
+    print(f"\n== BRMIS attribution ({n_tot} samples pooled from {len(perfdatas)} file(s)) ==")
+    print(f"  native (non-JIT):    {n_native:8d}  {100 * n_native / n_tot:6.2f}%")
+    for name, c in sorted(reg_samp.items(), key=lambda kv: -sum(kv[1].values())):
+        tot = sum(c.values())
+        print(f"  region '{name}': {tot:8d}  {100 * tot / n_tot:6.2f}%")
+        rlo, _rhi, _n, _g, rins = next(m for m in meta if m[2] == name)
+        for off, v in c.most_common(5):
+            k = off // 4
+            i = rins[k] if k < len(rins) else 0
+            print(f"      +{off:#06x}  {v:7d}  {i:08x}  {_insn_class(i)}")
+    print(f"  JIT blocks:          {n_jit:8d}  {100 * n_jit / n_tot:6.2f}%")
+
+    print(f"\n== JIT-block samples by group × bucket (entry8 = first 8B: "
+          f"target-side skid of an incoming indirect edge) ==")
+    buckets = ["entry8", "b.cond", "cbz/cbnz", "tbz/tbnz", "b", "bl", "br",
+               "blr", "ret", "non-branch", "?"]
+    print(f"{'group':8s} {'samples':>8s} " + " ".join(f"{b:>9s}" for b in buckets))
+    for g in sorted(grp, key=lambda g: -sum(grp[g].values())):
+        c, tot = grp[g], sum(grp[g].values())
+        print(f"{g:8s} {tot:8d} " + " ".join(
+            f"{100 * c.get(b, 0) / tot:8.2f}%" for b in buckets))
+
+    if ee_kind:
+        print("\n== EE samples by block kind (jr-exit = block tails B→DispatcherReg) ==")
+        for kind in ("jr-exit", "linked"):
+            tot = sum(v for (k, _), v in ee_kind.items() if k == kind)
+            if not tot:
+                continue
+            top = sorted(((b, v) for (k, b), v in ee_kind.items() if k == kind),
+                         key=lambda t: -t[1])[:4]
+            det = "  ".join(f"{b}:{100 * v / tot:.1f}%" for b, v in top)
+            print(f"  {kind:8s} {tot:8d}  {det}")
+
+    print("\n== top offenders (block, offset) ==")
+    for (name, off, cls), v in offenders.most_common(25):
+        print(f"  {name:16s} +{off:#06x}  {cls:10s} {v:7d}")
+
+
 def _coverage(cnt, fracs=(0.5, 0.9, 0.99)):
     """{addr_unit: samples} -> {frac: n_units covering that fraction, hottest-first}."""
     tot = sum(cnt.values())
@@ -612,6 +787,9 @@ def main():
                     help="hot-working-set report (needs perf.data); skips the census")
     ap.add_argument("--coldbytes", action="store_true",
                     help="byte-layout census + line utilization (icache Phase 3)")
+    ap.add_argument("--brmis", action="store_true",
+                    help="branch-mispredict attribution (perf.data from a "
+                    "mispredict-event record, e.g. -e r22/r10) (P2-2)")
     ap.add_argument("--window", type=float, default=1.0,
                     help="footprint time-window seconds (default 1.0)")
     args = ap.parse_args()
@@ -624,6 +802,12 @@ def main():
 
     if args.coldbytes:
         run_coldbytes(list(parse_jitdump(args.jitdump)), args.perfdata)
+        return
+
+    if args.brmis:
+        if not args.perfdata:
+            sys.exit("--brmis requires perf.data from a mispredict-event record")
+        run_brmis(list(parse_jitdump(args.jitdump)), args.perfdata)
         return
 
     pin_gpr = PIN_MAPS[args.pins]
