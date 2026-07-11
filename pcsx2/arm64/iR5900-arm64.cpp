@@ -1019,6 +1019,18 @@ namespace
 	// there, which can never match the virtual frame RAs. Gamefix flips
 	// reset the rec, so emit-time gating is sound.)
 
+#if EE_CALLRET_TELEM
+	// Emitted counter bump (validation builds only — hot-tail cost). Clobbers
+	// x9/x10; callers place it where both are dead.
+	void emitCallRetCount(u64* counter)
+	{
+		armMoveAddressToReg(a64::x9, counter);
+		armAsm->Ldr(a64::x10, a64::MemOperand(a64::x9));
+		armAsm->Add(a64::x10, a64::x10, 1);
+		armAsm->Str(a64::x10, a64::MemOperand(a64::x9));
+	}
+#endif
+
 	// {guestRA, landing} frame push. Emitted between the tail flush and the
 	// event check: the frame must exist on EVERY downstream path (an event
 	// detour still reaches the callee, whose eventual return must find a
@@ -1035,6 +1047,9 @@ namespace
 		armAsm->Str(a64::x10, armCpuRegMem(&_cpuRegistersPack.eeCallRetOff));
 		armAsm->Add(a64::x9, a64::x9, a64::x10);
 		armAsm->Stp(RXSCRATCH, RSCRATCHADDR, a64::MemOperand(a64::x9));
+#if EE_CALLRET_TELEM
+		emitCallRetCount(&ArmJitTelemetry::g_callret_push);
+#endif
 	}
 } // namespace
 #endif // EE_CALLRET_STACK
@@ -1126,9 +1141,15 @@ void SetBranchReg(EEBranchRegMode mode, u32 call_return_pc)
 		a64::Label miss;
 		armAsm->Cmp(RXSCRATCH, a64::x0);
 		armAsm->B(&miss, a64::ne);
+#if EE_CALLRET_TELEM
+		emitCallRetCount(&ArmJitTelemetry::g_callret_hit); // x17 (landing) survives
+#endif
 		armAsm->Ret(RSCRATCHADDR);
 
 		armAsm->Bind(&miss);
+#if EE_CALLRET_TELEM
+		emitCallRetCount(&ArmJitTelemetry::g_callret_miss);
+#endif
 		armMoveAddressToReg(RSCRATCHADDR, DispatcherReg);
 		armAsm->Ret(RSCRATCHADDR);
 	}
@@ -2077,6 +2098,9 @@ static void recResetRaw()
 	// call-ret ring — sentinel-fill so no stale frame can match. (recClear
 	// needs nothing: dead block entries keep resolving via redirect stubs.)
 	eeCallRetResetRing();
+#if EE_CALLRET_TELEM
+	ArmJitTelemetry::ReportCallRet("ee-reset");
+#endif
 #endif
 
 	armSetAsmPtr(SysMemory::GetEERec(), SysMemory::GetEERecEnd() - SysMemory::GetEERec(), &s_eeConstantPool);
@@ -2159,6 +2183,9 @@ static void recResetRaw()
 
 static void recShutdown()
 {
+#if EE_CALLRET_TELEM
+	ArmJitTelemetry::ReportCallRet("shutdown");
+#endif
 	s_eeConstantPool.Destroy();
 	recRAMCopy.deallocate();
 	recLutReserve_RAM.deallocate();

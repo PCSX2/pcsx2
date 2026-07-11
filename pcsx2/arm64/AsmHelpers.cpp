@@ -114,6 +114,28 @@ namespace ArmJitTelemetry
 } // namespace ArmJitTelemetry
 #endif
 
+#if EE_CALLRET_TELEM
+namespace ArmJitTelemetry
+{
+	// Plain u64s, not atomics: incremented from EMITTED EE JIT code
+	// (Ldr/Add/Str), and the EE thread is the only writer.
+	u64 g_callret_push = 0;
+	u64 g_callret_hit = 0;
+	u64 g_callret_miss = 0;
+
+	void ReportCallRet(const char* when)
+	{
+		const u64 pops = g_callret_hit + g_callret_miss;
+		if (!g_callret_push && !pops)
+			return;
+		Console.WriteLn("JITTELEM callret[%s]: push %llu | pop %llu = hit %llu + miss %llu (hit rate %.1f%%)",
+			when, (unsigned long long)g_callret_push, (unsigned long long)pops,
+			(unsigned long long)g_callret_hit, (unsigned long long)g_callret_miss,
+			pops ? 100.0 * (double)g_callret_hit / (double)pops : 0.0);
+	}
+} // namespace ArmJitTelemetry
+#endif
+
 const vixl::aarch64::Register& armWRegister(int n)
 {
 	using namespace vixl::aarch64;
