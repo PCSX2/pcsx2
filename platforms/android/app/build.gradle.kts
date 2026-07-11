@@ -71,7 +71,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            externalNativeBuild {
+            if (false) externalNativeBuild {
                 cmake {
                     arguments += "-DANDROID=true"
                     arguments += "-DANDROID_STL=c++_static"
@@ -144,17 +144,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    externalNativeBuild {
-        cmake {
-            path = file("src/main/cpp/CMakeLists.txt")
-            // Pin a current CMake. AGP otherwise defaults to 3.22.1, which is the
-            // exact cmake_minimum_required floor the (2026-dated) shaderc deps
-            // declare; configuring spirv-tools at that floor fails to create the
-            // SPIRV-Tools target ("SPIRV-Tools was not found"). A newer CMake
-            // configures them cleanly. Must match a cmake installed in CI.
-            version = "3.30.5"
-        }
-    }
+    // NATIVE BUILD DISABLED for the recovered tree: the prebuilt native .so files
+    // (extracted from vc1063 into src/main/jniLibs/arm64-v8a) are packaged directly,
+    // so UI/Kotlin iteration doesn't require recompiling the C++ core. Re-enable this
+    // block (and the per-buildType cmake blocks above) to rebuild native from source.
+    // externalNativeBuild {
+    //     cmake {
+    //         path = file("src/main/cpp/CMakeLists.txt")
+    //         version = "3.30.5"
+    //     }
+    // }
     buildFeatures {
         // Generated BuildConfig.DEBUG used by Main.kt's debug-only auto-boot
         // path. AGP 8 made this opt-in.

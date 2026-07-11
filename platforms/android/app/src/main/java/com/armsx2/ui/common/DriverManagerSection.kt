@@ -63,6 +63,9 @@ fun DriverManagerSection() {
     val installedMsg = str("backend.driver.installed")
     val importErr = str("backend.driver.importError")
     val fetchErr = str("backend.driver.fetchError")
+    val installedOkMsg = str("backend.driver.installedOk")
+    val importFailedMsg = str("backend.driver.importFailed")
+    val downloadFailedMsg = str("backend.driver.downloadFailed")
     // Which source groups are expanded in the online list (collapsed by default).
     val expandedSources = remember { mutableStateMapOf<String, Boolean>() }
 
@@ -77,8 +80,8 @@ fun DriverManagerSection() {
             busyId = "import"; message = null
             val d = withContext(Dispatchers.IO) { CustomDriver.installFromUri(context, uri) }
             busyId = null
-            if (d != null) { refreshInstalled(); selectDriver(d.id); message = "${str("backend.driver.installedOk")} ${d.name}" }
-            else message = str("backend.driver.importFailed")
+            if (d != null) { refreshInstalled(); selectDriver(d.id); message = "$installedOkMsg ${d.name}" }
+            else message = importFailedMsg
         }
     }
 
@@ -145,8 +148,8 @@ fun DriverManagerSection() {
                                 busyId = rd.id; message = null
                                 val d = withContext(Dispatchers.IO) { CustomDriver.download(context, rd) }
                                 busyId = null
-                                if (d != null) { refreshInstalled(); selectDriver(d.id); message = "${str("backend.driver.installedOk")} ${d.name}" }
-                                else message = str("backend.driver.downloadFailed")
+                                if (d != null) { refreshInstalled(); selectDriver(d.id); message = "$installedOkMsg ${d.name}" }
+                                else message = downloadFailedMsg
                             }
                         },
                     )
