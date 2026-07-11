@@ -5,22 +5,22 @@
 
 // clang-format off
 
-#define VM_SIZE 4194304u
-#define HALF_VM_SIZE (VM_SIZE / 2u)
-#define GS_PAGE_SIZE 8192u
-#define GS_BLOCK_SIZE 256u
-#define GS_COLUMN_SIZE 64u
-#define GS_BLOCKS_PER_PAGE (GS_PAGE_SIZE / GS_BLOCK_SIZE)
-
-#define GS_MAX_PAGES (VM_SIZE / GS_PAGE_SIZE)
-#define GS_MAX_BLOCKS (VM_SIZE / GS_BLOCK_SIZE)
-#define GS_MAX_COLUMNS (VM_SIZE / GS_COLUMN_SIZE)
-
 //if defined, will send much info in reply to the API title info queri from PCSX2
 //default should be undefined
 //#define GSTITLEINFO_API_FORCE_VERBOSE
 
 #include "GSVector.h"
+
+constexpr u32 VM_SIZE = 4194304u;
+constexpr u32 HALF_VM_SIZE = (VM_SIZE / 2u);
+constexpr u32 GS_PAGE_SIZE = 8192u;
+constexpr u32 GS_BLOCK_SIZE = 256u;
+constexpr u32 GS_COLUMN_SIZE = 64u;
+constexpr u32 GS_BLOCKS_PER_PAGE = (GS_PAGE_SIZE / GS_BLOCK_SIZE);
+
+constexpr u32 GS_MAX_PAGES =  (VM_SIZE / GS_PAGE_SIZE);
+constexpr u32 GS_MAX_BLOCKS = (VM_SIZE / GS_BLOCK_SIZE);
+constexpr u32 GS_MAX_COLUMNS = (VM_SIZE / GS_COLUMN_SIZE);
 
 #pragma pack(push, 1)
 
