@@ -4591,9 +4591,10 @@ void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 wr
 
 			if (type == DepthStencil || start_bp == t->m_TEX0.TBP0 || (start_bp < t->m_TEX0.TBP0 && t->UnwrappedEndBlock() <= end_bp))
 			{
-				t->m_valid_alpha_low &= preserve_alpha;
-				t->m_valid_alpha_high &= preserve_alpha;
-				t->m_valid_rgb &= (fb_mask & 0x00FFFFFF) != 0;
+				const bool compatible_channel_swizzle = GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == GSLocalMemory::m_psm[write_psm].bpp;
+				t->m_valid_alpha_low &= preserve_alpha && compatible_channel_swizzle;
+				t->m_valid_alpha_high &= preserve_alpha && compatible_channel_swizzle;
+				t->m_valid_rgb &= (fb_mask & 0x00FFFFFF) != 0 && compatible_channel_swizzle;
 				t->m_was_dst_matched = false;
 			}
 
