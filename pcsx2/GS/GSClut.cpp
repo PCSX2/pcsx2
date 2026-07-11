@@ -385,7 +385,13 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 				case PSMT4HH:
 					clut += (TEX0.CSA & 15) << 4;
 					// TODO: merge these functions
-					ReadCLUT_T32_I4(clut, m_buff32);
+
+					// This is for a situation with Breath of Fire Dragon Quarter where it reinterprets the buffer under CSM2 after reading as CSM1.
+					if (TEX0.CSM == 1 && m_write.TEX0.CSM == 0)
+						ReadCLUT_T32_I4_Swizzled(clut, m_buff32);
+					else
+						ReadCLUT_T32_I4(clut, m_buff32);
+
 					ExpandCLUT64_T32_I8(m_buff32, (u64*)m_buff64); // sw renderer does not need m_buff64 anymore
 					break;
 			}
@@ -630,6 +636,27 @@ __forceinline void GSClut::WriteCLUT_T16_I4_CSM1(const u16* RESTRICT src, u16* R
 	{
 		clut[i] = src[clutTableT16I4[i]];
 	}
+}
+
+// These functions are only used if the CLUT is in 32bit mode and it swaps to CSM2, a very obscure setup used by Breath of Fire Dragon Quarter.
+// This doesn't handle offsetting the CLUT or anything crazy, that would be a lot more work
+void GSClut::ReadCLUT_T32_I4_Swizzled(const u16* RESTRICT clut, u32* RESTRICT dst)
+{
+	// Point to the base of the palette block
+	GSVector4i* s = (GSVector4i*)clut;
+	GSVector4i* d = (GSVector4i*)dst;
+
+	GSVector4i v0 = s[0];
+	GSVector4i v1 = s[2];
+	GSVector4i v2 = s[32];
+	GSVector4i v3 = s[34];
+
+	GSVector4i::sw16(v0, v2, v1, v3);
+
+	d[0] = v0;
+	d[1] = v1;
+	d[2] = v2;
+	d[3] = v3;
 }
 
 void GSClut::ReadCLUT_T32_I8(const u16* RESTRICT clut, u32* RESTRICT dst, int offset)
