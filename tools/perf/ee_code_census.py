@@ -254,21 +254,30 @@ def run_footprint(blocks, perfdata, window):
     print(f"L1I capacity for comparison: A77 64KB, A55/A53 32KB\n")
     hdr = (f"{'group':8s} {'samples':>9s} {'lines':>7s} {'KB':>7s} "
            f"{'50%KB':>7s} {'90%KB':>7s} {'99%KB':>7s} {'90%pg':>6s} "
-           f"{'w-med90%KB':>10s} {'w-medKB':>8s}")
+           f"{'w-med90%':>8s} {'w-p90':>7s} {'w-max90%':>8s}")
     print(hdr)
+    worst = {}
     for g in sorted(lines_by, key=lambda g: -sum(lines_by[g].values()) if g != "ALL-JIT" else 1):
         cnt = lines_by[g]
         cov = _coverage(cnt)
         pcov = _coverage(pages_by[g], fracs=(0.9,))
-        # per-window medians: instantaneous working-set estimate
-        w90 = sorted(_coverage(wc, fracs=(0.9,))[0.9] for wc in wins_by[g].values())
-        wall = sorted(len(wc) for wc in wins_by[g].values())
-        med = lambda v: v[len(v) // 2] if v else 0
-        print(f"{g:8s} {sum(cnt.values()):9d} {len(cnt):7d} {len(cnt) * 64 / 1024:7.1f} "
-              f"{cov[0.5] * 64 / 1024:7.1f} {cov[0.9] * 64 / 1024:7.1f} {cov[0.99] * 64 / 1024:7.1f} "
-              f"{pcov[0.9]:6d} {med(w90) * 64 / 1024:10.1f} {med(wall) * 64 / 1024:8.1f}")
-    print("\nw-med90%KB = median across windows of the KB of hottest lines covering 90%")
-    print(f"of that window's samples (window = {window:.2f}s); w-medKB = median distinct KB/window.")
+        # per-window 90%-coverage distribution: instantaneous working-set estimate,
+        # tails included — a phase change (load, cutscene->combat) shows up in max.
+        witems = sorted(((wi, _coverage(wc, fracs=(0.9,))[0.9]) for wi, wc in wins_by[g].items()),
+                        key=lambda t: t[1])
+        w90 = [v for _, v in witems]
+        kb = lambda v: v * 64 / 1024
+        med = w90[len(w90) // 2] if w90 else 0
+        p90 = w90[min(len(w90) - 1, int(len(w90) * 0.9))] if w90 else 0
+        wmax = w90[-1] if w90 else 0
+        worst[g] = witems[-5:][::-1] if witems else []
+        print(f"{g:8s} {sum(cnt.values()):9d} {len(cnt):7d} {kb(len(cnt)):7.1f} "
+              f"{kb(cov[0.5]):7.1f} {kb(cov[0.9]):7.1f} {kb(cov[0.99]):7.1f} "
+              f"{pcov[0.9]:6d} {kb(med):8.1f} {kb(p90):7.1f} {kb(wmax):8.1f}")
+    print(f"\nw-* = per-window 90-percent-coverage KB (window = {window:.2f}s): median / p90 / max across windows.")
+    if "ALL-JIT" in worst:
+        print("worst ALL-JIT windows (t+sec into capture -> 90%KB):",
+              "  ".join(f"t+{wi * window:.0f}s={v * 64 / 1024:.0f}KB" for wi, v in worst["ALL-JIT"]))
 
 
 def main():
