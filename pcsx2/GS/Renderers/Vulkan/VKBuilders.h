@@ -81,15 +81,20 @@ namespace Vulkan
 			MAX_VERTEX_ATTRIBUTES = 16,
 			MAX_VERTEX_BUFFERS = 8,
 			MAX_ATTACHMENTS = 2,
-			MAX_DYNAMIC_STATE = 8
+			MAX_DYNAMIC_STATE = 16
 		};
 
 		GraphicsPipelineBuilder();
+
+		GraphicsPipelineBuilder(const GraphicsPipelineBuilder& other);
+		GraphicsPipelineBuilder& operator=(const GraphicsPipelineBuilder& other);
 
 		void Clear();
 
 		VkPipeline Create(VkDevice device, VkPipelineCache pipeline_cache = VK_NULL_HANDLE, bool clear = true);
 
+		void AddPipelineFlags(u32 flags);
+		
 		void SetShaderStage(VkShaderStageFlagBits stage, VkShaderModule module, const char* entry_point);
 		void SetVertexShader(VkShaderModule module) { SetShaderStage(VK_SHADER_STAGE_VERTEX_BIT, module, "main"); }
 		void SetGeometryShader(VkShaderModule module) { SetShaderStage(VK_SHADER_STAGE_GEOMETRY_BIT, module, "main"); }
@@ -141,7 +146,14 @@ namespace Vulkan
 
 		void SetProvokingVertex(VkProvokingVertexModeEXT mode);
 
+		bool HasVertexShader() const;
+		bool HasGeometryShader() const;
+		bool HasFragmentShader() const;
+
+		const VkGraphicsPipelineCreateInfo& GetCI() const { return m_ci; }
 	private:
+		void SetPointersAfterCopy();
+
 		VkGraphicsPipelineCreateInfo m_ci;
 		std::array<VkPipelineShaderStageCreateInfo, MAX_SHADER_STAGES> m_shader_stages;
 
@@ -167,7 +179,9 @@ namespace Vulkan
 		VkPipelineMultisampleStateCreateInfo m_multisample_state;
 
 		VkPipelineRasterizationProvokingVertexStateCreateInfoEXT m_provoking_vertex;
+		bool m_set_provoking_vertex;
 		VkPipelineRasterizationLineStateCreateInfoEXT m_line_rasterization_state;
+		bool m_set_line_rasterization_state;
 	};
 
 	class ComputePipelineBuilder
