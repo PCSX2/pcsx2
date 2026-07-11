@@ -14,6 +14,24 @@ D3D12::GraphicsPipelineBuilder::GraphicsPipelineBuilder()
 	Clear();
 }
 
+D3D12::GraphicsPipelineBuilder::GraphicsPipelineBuilder(const GraphicsPipelineBuilder& other)
+	: m_desc(other.m_desc)
+	, m_input_elements(other.m_input_elements)
+{
+	if (m_desc.InputLayout.NumElements > 0)
+		m_desc.InputLayout.pInputElementDescs = m_input_elements.data();
+}
+
+D3D12::GraphicsPipelineBuilder& D3D12::GraphicsPipelineBuilder::operator=(
+	const GraphicsPipelineBuilder& other)
+{
+	m_desc = other.m_desc;
+	m_input_elements = other.m_input_elements;
+	if (m_desc.InputLayout.NumElements > 0)
+		m_desc.InputLayout.pInputElementDescs = m_input_elements.data();
+	return *this;
+}
+
 void D3D12::GraphicsPipelineBuilder::Clear()
 {
 	std::memset(&m_desc, 0, sizeof(m_desc));
@@ -41,9 +59,9 @@ wil::com_ptr_nothrow<ID3D12PipelineState> D3D12::GraphicsPipelineBuilder::Create
 }
 
 wil::com_ptr_nothrow<ID3D12PipelineState> D3D12::GraphicsPipelineBuilder::Create(
-	ID3D12Device* device, D3D12ShaderCache& cache, bool clear /*= true*/)
+	ID3D12Device* device, D3D12ShaderCache& cache, bool uber, bool clear /*= true*/)
 {
-	wil::com_ptr_nothrow<ID3D12PipelineState> pso = cache.GetPipelineState(device, m_desc);
+	wil::com_ptr_nothrow<ID3D12PipelineState> pso = cache.GetPipelineState(device, m_desc, uber);
 	if (!pso)
 		return {};
 
@@ -92,6 +110,21 @@ void D3D12::GraphicsPipelineBuilder::SetPixelShader(const void* data, u32 data_s
 {
 	m_desc.PS.pShaderBytecode = data;
 	m_desc.PS.BytecodeLength = data_size;
+}
+
+bool D3D12::GraphicsPipelineBuilder::HasVertexShader() const
+{
+	return m_desc.VS.pShaderBytecode && m_desc.VS.BytecodeLength;
+}
+
+bool D3D12::GraphicsPipelineBuilder::HasGeometryShader() const
+{
+	return m_desc.GS.pShaderBytecode && m_desc.GS.BytecodeLength;
+}
+
+bool D3D12::GraphicsPipelineBuilder::HasPixelShader() const
+{
+	return m_desc.PS.pShaderBytecode && m_desc.PS.BytecodeLength;
 }
 
 void D3D12::GraphicsPipelineBuilder::AddVertexAttribute(
