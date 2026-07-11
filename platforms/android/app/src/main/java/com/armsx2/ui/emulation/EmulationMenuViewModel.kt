@@ -14,6 +14,7 @@ import kr.co.iefriends.pcsx2.NativeApp
 enum class EmulationMenuTab(val titleKey: String) {
     Session("games.info.inGameMenu.title"),
     Graphics("tab.renderer"),
+    Fixes("tab.fixes"),
     Performance("tab.performance"),
     Controls("tab.controls"),
     Options("action.settings"),
@@ -101,6 +102,9 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
                 2 -> setRenderer("opengl")
                 3 -> setRenderer("software")
             }
+            // Fixes is a registry-driven pane (its controls self-navigate), so it has
+            // no discrete action grid — nothing to activate here.
+            EmulationMenuTab.Fixes -> Unit
             EmulationMenuTab.Performance -> when (state.value.selectedAction) {
                 0 -> updateSettings { it.copy(frameLimitEnable = !it.frameLimitEnable) }
                 1 -> setSpeed(it = state.value.settings.nominalSpeedPercent + 5)
@@ -287,6 +291,7 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
     private fun actionCount(tab: EmulationMenuTab): Int = when (tab) {
         EmulationMenuTab.Session -> 3
         EmulationMenuTab.Graphics -> 4
+        EmulationMenuTab.Fixes -> 0
         EmulationMenuTab.Performance -> 3
         EmulationMenuTab.Controls -> 2
         EmulationMenuTab.Options -> 5

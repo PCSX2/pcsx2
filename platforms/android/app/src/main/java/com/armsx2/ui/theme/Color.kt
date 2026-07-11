@@ -7,10 +7,13 @@ val ArmsBlueBright = Color(0xFF73A8FF)
 val ArmsCyan = Color(0xFF48D7F0)
 val ArmsViolet = Color(0xFF8B7CFF)
 
-val NightBackground = Color(0xFF080B11)
-val NightSurface = Color(0xFF111722)
-val NightSurfaceRaised = Color(0xFF182130)
-val NightOutline = Color(0xFF2A3950)
+// Night palette leans on the OG ARMSX2 blue — a deep navy rather than near-black —
+// so the backdrop scrim, cards, toolbar and search field all read blue (matching
+// vivi's mockups). Kept dark/desaturated so covers still pop; tune the ramp here.
+val NightBackground = Color(0xFF0A1C36)
+val NightSurface = Color(0xFF13284A)
+val NightSurfaceRaised = Color(0xFF1A3357)
+val NightOutline = Color(0xFF2F4E76)
 val NightText = Color(0xFFF2F6FF)
 val NightTextMuted = Color(0xFF9BAAC0)
 

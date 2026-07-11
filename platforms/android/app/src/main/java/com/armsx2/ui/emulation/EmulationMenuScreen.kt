@@ -67,6 +67,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.armsx2.i18n.str
 import com.armsx2.runtime.MainActivityRuntime
+import com.armsx2.ui.InGameOverlay
 import com.armsx2.ui.achievements.AchievementItem
 import com.armsx2.ui.common.ArmsLogo
 import com.armsx2.ui.common.GameCoverArt
@@ -182,28 +183,42 @@ private fun MenuPage(
     val tabScrollStates = remember {
         EmulationMenuTab.entries.associateWith { ScrollState(initial = 0) }
     }
-    Column(
-        modifier
-            .verticalScroll(tabScrollStates.getValue(state.tab))
-            .padding(bottom = 18.dp),
+    val scrollState = tabScrollStates.getValue(state.tab)
+    // Provide the pane's scroll state to the settings widgets so the Fixes pane's
+    // right-stick free-scroll (settingsScrollState / ControllerAutoScroll) drives the
+    // pane the user is actually looking at. Per-control bring-into-view handles the
+    // primary "keep selection on screen" via the nearest scrollable ancestor already.
+    androidx.compose.runtime.CompositionLocalProvider(
+        com.armsx2.ui.settings.LocalSettingsScrollState provides scrollState,
     ) {
-        if (compact) CompactMenuTabs(state.tab, viewModel::selectTab)
-        MenuHeader(compact, state.hardcore)
-        HorizontalDivider(
-            modifier = Modifier.padding(horizontal = 8.dp),
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.34f),
-        )
         Column(
-            Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier
+                .verticalScroll(scrollState)
+                .padding(bottom = 18.dp),
         ) {
-            when (state.tab) {
-                EmulationMenuTab.Session -> SessionPane(state, viewModel)
-                EmulationMenuTab.Graphics -> GraphicsPane(state, viewModel)
-                EmulationMenuTab.Performance -> PerformancePane(state, viewModel)
-                EmulationMenuTab.Controls -> ControlsPane(state, viewModel)
-                EmulationMenuTab.Options -> OptionsPane(state, viewModel)
-                EmulationMenuTab.Achievements -> AchievementsPane(state, viewModel)
+            if (compact) CompactMenuTabs(state.tab, viewModel::selectTab)
+            MenuHeader(compact, state.hardcore)
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 8.dp),
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.34f),
+            )
+            Column(
+                Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                when (state.tab) {
+                    EmulationMenuTab.Session -> SessionPane(state, viewModel)
+                    EmulationMenuTab.Graphics -> GraphicsPane(state, viewModel)
+                    // The full Fixes settings tab, live-applying via InGameOverlay's
+                    // shared Settings state (same as the rest of the overlay); its
+                    // controls are SettingsControllerNav items, so the pause menu's
+                    // content-pane nav drives them for free.
+                    EmulationMenuTab.Fixes -> com.armsx2.ui.settings.FixesTab(InGameOverlay.settingsState)
+                    EmulationMenuTab.Performance -> PerformancePane(state, viewModel)
+                    EmulationMenuTab.Controls -> ControlsPane(state, viewModel)
+                    EmulationMenuTab.Options -> OptionsPane(state, viewModel)
+                    EmulationMenuTab.Achievements -> AchievementsPane(state, viewModel)
+                }
             }
         }
     }
