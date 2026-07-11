@@ -43,24 +43,30 @@ void recJ()
 void recJAL()
 {
 	u32 newpc = (_InstrucTarget_ << 2) + (pc & 0xf0000000);
+	const u32 retpc = pc + 4; // == the $ra link value; capture before the delay slot advances pc
 	_deleteEEreg(31, 0);
 	if (EE_CONST_PROP)
 	{
 		GPR_SET_CONST(31);
-		g_cpuConstRegs[31].UL[0] = pc + 4;
+		g_cpuConstRegs[31].UL[0] = retpc;
 		g_cpuConstRegs[31].UL[1] = 0;
 	}
 	else
 	{
-		armAsm->Mov(RXSCRATCH, (u64)(pc + 4));
+		armAsm->Mov(RXSCRATCH, (u64)retpc);
 		armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[31].UD[0]);
 	}
 
 	recompileNextInstruction(true, false);
 	if (EmuConfig.Gamefixes.GoemonTlbHack)
 		SetBranchImm(vtlb_V2P(newpc));
+#if EE_CALLRET_STACK
+	else
+		SetBranchImmCall(newpc, retpc);
+#else
 	else
 		SetBranchImm(newpc);
+#endif
 }
 
 /*********************************************************
@@ -82,7 +88,14 @@ void recJR()
 
 	recompileNextInstruction(true, false);
 
-	SetBranchReg();
+	// JR $ra is the ABI return idiom — pop the call-ret ring and RET so the
+	// hardware RAS (pushed by the paired call-site BL) predicts the target.
+	// Emit-gated off under GoemonTlbHack: SetBranchReg compares V2P-translated
+	// targets there, which can never match the virtual frame RAs.
+	if (rs == 31 && !EmuConfig.Gamefixes.GoemonTlbHack)
+		SetBranchReg(EEBranchRegMode::Return);
+	else
+		SetBranchReg();
 }
 
 //// JALR — jump to rs, link in rd
@@ -118,7 +131,14 @@ void recJALR()
 
 	recompileNextInstruction(true, false);
 
-	SetBranchReg();
+	// JALR linking into $ra is the ABI indirect-call idiom — push a call-ret
+	// frame and transfer via BL so the callee's return RETs to our landing.
+	// Other link registers don't pair with the JR-$ra pop, so they take the
+	// plain jump (their returns just compare-miss if the callee uses jr $ra).
+	if (rd == 31 && !EmuConfig.Gamefixes.GoemonTlbHack)
+		SetBranchReg(EEBranchRegMode::Call, newpc);
+	else
+		SetBranchReg();
 }
 
 #endif // !FORCE_INTERP_JUMP

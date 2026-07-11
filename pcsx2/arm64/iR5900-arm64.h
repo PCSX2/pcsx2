@@ -329,6 +329,20 @@ static __fi void armReloadEEPinsAfterPreserveMostCall()
 #define EE_PIN_LAZY_DIRTY 1
 #endif
 
+// EE call-ret shadow stack (P2-2). Guest JAL/JALR-rd31 tails push
+// {return PC, host landing} onto a small ring and transfer via BL; the
+// guest JR-$ra tail pops, compares, and transfers via RET on EVERY path —
+// hit or miss — so the hardware return-address stack stays paired with the
+// BLs and predicts guest returns. Design: FEX-Emu's call-ret stack (MIT) /
+// MAMBO-X64 (PLDI'17); ring-with-wrap replaces FEX's guard-page recentering
+// (our PageFaultHandler interface has no ucontext access, and wrap needs no
+// recovery at all). 1 = on (default), build a second binary with
+// -DEE_CALLRET_STACK=0 for the A/B baseline; no runtime toggle — mixing
+// push/pop-emitting and plain blocks across one ring is nonsense.
+#ifndef EE_CALLRET_STACK
+#define EE_CALLRET_STACK 1
+#endif
+
 // Write every pin mirror back to canonical memory. No dirty tracking — the
 // lrps2 lesson says compile-time dirty subsets are unsound for runtime-path-
 // dependent dirtiness, so seams flush ALL pins (9 Str to one hot line at
@@ -615,8 +629,24 @@ void SaveBranchState();
 void LoadBranchState();
 
 void recompileNextInstruction(bool delayslot, bool swapped_delay_slot);
-void SetBranchReg();
+
+// Block-tail transfer for register-indirect targets (recJR/recJALR).
+// Return = guest JR-$ra: pop the call-ret ring and RET (miss RETs into
+// DispatcherReg). Call = guest JALR-rd31: push a frame and BL into
+// DispatcherReg with a linked landing for call_return_pc. Jump = everything
+// else (plain shared-dispatcher exit; also every mode's meaning when
+// EE_CALLRET_STACK=0 or the Goemon gamefix is active — callers gate).
+enum class EEBranchRegMode
+{
+	Jump,
+	Return,
+	Call,
+};
+void SetBranchReg(EEBranchRegMode mode = EEBranchRegMode::Jump, u32 call_return_pc = 0);
 void SetBranchImm(u32 imm);
+// recJAL tail: SetBranchImm plus a call-ret frame push and a BL-form link
+// to the callee (falls back to SetBranchImm for WaitLoop-FF-shaped blocks).
+void SetBranchImmCall(u32 imm, u32 return_pc);
 
 void iFlushCall(int flushtype);
 void recBranchCall(void (*func)());

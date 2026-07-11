@@ -976,6 +976,69 @@ vixl::aarch64::Register _eeGetGPRSourceReg(const a64::Register& scratch, int fro
 //  Branch handling
 // =====================================================================================================
 
+#if EE_CALLRET_STACK
+// Call-ret shadow-stack ring (P2-2; FEX-Emu design, adapted). Frames are
+// {u64 guest return PC, u64 host landing}; the landing sits right after the
+// call site's BL, so a matching guest JR-$ra can RET to it and the hardware
+// return-address stack — pushed by that BL — predicts the transfer.
+//
+// Ring instead of FEX's guard-page stack: eeCallRetOff wraps via a masked
+// And, so over/underflow simply cycles the ring — no bounds checks, no
+// SIGSEGV recentering (our PageFaultHandler interface exposes no ucontext),
+// and net push/pop imbalance (interpreter-path calls, exceptions, thread
+// switches) degrades to compare-misses that re-sync within one call depth.
+//
+// Consuming a frame is correct whenever its guestRA matches the live target:
+// the landing's B is linked to that same PC, and Remove() keeps dead block
+// entries resolving via redirect stubs, so stale-but-matching frames stay
+// VALID across every recClear. Only recResetRaw (code cache rewind) dangles
+// host pointers — it sentinel-fills the ring (guestRA=1 can never match an
+// alignment-checked target; the compare fails before the landing is used).
+namespace
+{
+	constexpr u32 kEECallRetRingBytes = 0x10000; // 4096 x 16-byte frames
+	constexpr u64 kEECallRetOffMask = kEECallRetRingBytes - 16;
+	constexpr u64 kEECallRetSentinelRA = 1;
+
+	alignas(16) u8 s_eeCallRetRing[kEECallRetRingBytes];
+
+	void eeCallRetResetRing()
+	{
+		u64* p = reinterpret_cast<u64*>(s_eeCallRetRing);
+		for (size_t i = 0; i < kEECallRetRingBytes / 8; i += 2)
+		{
+			p[i] = kEECallRetSentinelRA;
+			p[i + 1] = 0;
+		}
+		_cpuRegistersPack.eeCallRetBase = reinterpret_cast<u64>(s_eeCallRetRing);
+		_cpuRegistersPack.eeCallRetOff = 0;
+	}
+
+	// (Push/pop emission is gated off at the recJAL/recJALR/recJR call sites
+	// under GoemonTlbHack: SetBranchReg compares V2P-translated targets
+	// there, which can never match the virtual frame RAs. Gamefix flips
+	// reset the rec, so emit-time gating is sound.)
+
+	// {guestRA, landing} frame push. Emitted between the tail flush and the
+	// event check: the frame must exist on EVERY downstream path (an event
+	// detour still reaches the callee, whose eventual return must find a
+	// balanced ring). Clobbers x8/x9/x10/x17; all dead post-flush, and the
+	// tier-2 pins (x11-x13) are untouched.
+	void emitCallRetPush(u32 return_pc, a64::Label* landing)
+	{
+		armAsm->Mov(RXSCRATCH, return_pc);
+		armAsm->Adr(RSCRATCHADDR, landing);
+		armAsm->Ldr(a64::x9, armCpuRegMem(&_cpuRegistersPack.eeCallRetBase));
+		armAsm->Ldr(a64::x10, armCpuRegMem(&_cpuRegistersPack.eeCallRetOff));
+		armAsm->Sub(a64::x10, a64::x10, 16);
+		armAsm->And(a64::x10, a64::x10, kEECallRetOffMask);
+		armAsm->Str(a64::x10, armCpuRegMem(&_cpuRegistersPack.eeCallRetOff));
+		armAsm->Add(a64::x9, a64::x9, a64::x10);
+		armAsm->Stp(RXSCRATCH, RSCRATCHADDR, a64::MemOperand(a64::x9));
+	}
+} // namespace
+#endif // EE_CALLRET_STACK
+
 // Block-tail cycle update + event check under the delta representation:
 // fold the pending block cycles into RECCYCLE with a flag-setting add, then
 // branch to DispatcherEvent when the delta is non-negative (an event is
@@ -993,9 +1056,13 @@ static void emitCycleUpdateAndEventCheck()
 	armEmitCondBranch(a64::ge, DispatcherEvent);
 }
 
-void SetBranchReg()
+void SetBranchReg(EEBranchRegMode mode, u32 call_return_pc)
 {
 	g_branch = 1;
+
+#if !EE_CALLRET_STACK
+	mode = EEBranchRegMode::Jump;
+#endif
 
 	// Flush all GPR/NEON/constant allocations FIRST, while host registers
 	// still hold correct guest values. iFlushCall writes back delay slot
@@ -1013,9 +1080,11 @@ void SetBranchReg()
 	// The iFlushCall(FLUSH_EVERYTHING) above has already spilled guest state;
 	// vtlb_V2P preserves callee-saved x25 (RECCYCLE) per AAPCS64, so the
 	// C-call needs no extra save. w0 (== RWARG1) already holds the virtual
-	// target and receives the translated paddr.
+	// target and receives the translated paddr. (Call/Return modes are
+	// emit-gated off under this hack — see eeCallRetActive.)
 	if (EmuConfig.Gamefixes.GoemonTlbHack)
 	{
+		pxAssert(mode == EEBranchRegMode::Jump);
 		armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
 		armEmitCall((void*)vtlb_V2P);
 		// vtlb_V2P writes no guest GPRs but clobbers the caller-saved pins;
@@ -1031,11 +1100,68 @@ void SetBranchReg()
 	armAsm->Tst(a64::w0, 3);
 	armAsm->B(&unaligned, a64::ne);
 
-	// Update the pinned cycle delta and check events (delta >= 0 →
-	// DispatcherEvent converts RECCYCLE itself before calling recEventTest).
-	emitCycleUpdateAndEventCheck();
+#if EE_CALLRET_STACK
+	if (mode == EEBranchRegMode::Return)
+	{
+		// Guest JR-$ra: pop a frame — ALWAYS, before the event check, so an
+		// event detour (which still reaches the return target through the
+		// dispatcher) leaves the ring balanced. Frame regs survive the event
+		// check below: it is flags-only (Adds/Cmp + b.ge).
+		armAsm->Ldr(a64::x9, armCpuRegMem(&_cpuRegistersPack.eeCallRetBase));
+		armAsm->Ldr(a64::x10, armCpuRegMem(&_cpuRegistersPack.eeCallRetOff));
+		armAsm->Add(a64::x9, a64::x9, a64::x10);
+		armAsm->Ldp(RXSCRATCH, RSCRATCHADDR, a64::MemOperand(a64::x9));
+		armAsm->Add(a64::x10, a64::x10, 16);
+		armAsm->And(a64::x10, a64::x10, kEECallRetOffMask);
+		armAsm->Str(a64::x10, armCpuRegMem(&_cpuRegistersPack.eeCallRetOff));
 
-	armEmitJmp(DispatcherReg);
+		emitCycleUpdateAndEventCheck();
+
+		// Hit: RET to the frame's landing — paired with the pushing BL, the
+		// hardware RAS predicts it. Miss: STILL exit via RET (into the
+		// dispatcher) so the hardware RAS pops in lockstep with the software
+		// ring — a plain B here would leave the paired RAS entry unpopped
+		// and desync every subsequent return (the FEX detail our first
+		// sketch got wrong).
+		a64::Label miss;
+		armAsm->Cmp(RXSCRATCH, a64::x0);
+		armAsm->B(&miss, a64::ne);
+		armAsm->Ret(RSCRATCHADDR);
+
+		armAsm->Bind(&miss);
+		armMoveAddressToReg(RSCRATCHADDR, DispatcherReg);
+		armAsm->Ret(RSCRATCHADDR);
+	}
+	else if (mode == EEBranchRegMode::Call)
+	{
+		// Guest JALR-rd31: push the frame (before the event check — the
+		// callee is reached either way and its return must pop this frame),
+		// then transfer with a BL through the shared dispatcher. The BL
+		// pushes the hardware RAS entry the callee's RET will consume.
+		a64::Label landing;
+		emitCallRetPush(call_return_pc, &landing);
+
+		emitCycleUpdateAndEventCheck();
+
+		armEmitCall(DispatcherReg);
+
+		armAsm->Bind(&landing);
+		{
+			a64::SingleEmissionCheckScope guard(armAsm);
+			u8* patch_site = armGetCurrentCodePointer();
+			armAsm->b(int64_t{0});
+			recBlocks.Link(HWADDR(call_return_pc), patch_site);
+		}
+	}
+	else
+#endif
+	{
+		// Update the pinned cycle delta and check events (delta >= 0 →
+		// DispatcherEvent converts RECCYCLE itself before calling recEventTest).
+		emitCycleUpdateAndEventCheck();
+
+		armEmitJmp(DispatcherReg);
+	}
 
 	armAsm->Bind(&unaligned);
 	armAsm->Mov(RWARG1, 1);
@@ -1082,6 +1208,63 @@ void SetBranchImm(u32 imm)
 		armAsm->b(int64_t{0}); // placeholder; recBlocks.Link will overwrite
 		recBlocks.Link(HWADDR(imm), patch_site);
 	}
+}
+
+// recJAL tail: SetBranchImm's shape plus a call-ret frame push, a BL-form
+// link to the callee (hardware RAS push), and a linked landing at the
+// return PC. See the call-ret ring comment block above SetBranchReg.
+void SetBranchImmCall(u32 imm, u32 return_pc)
+{
+#if EE_CALLRET_STACK
+	// A WaitLoop-FF-shaped block wants the fast-forward path, and a
+	// self-spinning JAL never returns anyway — keep the plain tail.
+	if (EmuConfig.Speedhacks.WaitLoop && s_nBlockFF && imm == s_branchTo)
+	{
+		SetBranchImm(imm);
+		return;
+	}
+
+	g_branch = 1;
+	pxAssert(imm);
+
+	armAsm->Mov(RWSCRATCH, imm);
+	armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.pc));
+
+	iFlushCall(FLUSH_EVERYTHING);
+
+	// Push before the event check: an event detour still reaches the callee
+	// (via DispatcherEvent → DispatcherReg), whose eventual return must find
+	// this frame. Only the hardware-RAS pairing is lost on that rare path.
+	a64::Label landing;
+	emitCallRetPush(return_pc, &landing);
+
+	emitCycleUpdateAndEventCheck();
+
+	// BL-form link site: patched toward JITCompile now, re-patched to the
+	// callee block when it compiles — always keeping the BL opcode so the
+	// RAS entry gets pushed no matter where the site currently points.
+	{
+		a64::SingleEmissionCheckScope guard(armAsm);
+		u8* patch_site = armGetCurrentCodePointer();
+		armAsm->bl(int64_t{0}); // placeholder; recBlocks.Link will overwrite
+		recBlocks.Link(HWADDR(imm), patch_site, /*call=*/true);
+	}
+
+	// The RET landing: a plain linked B to the return-PC block (the one
+	// conscious deviation from FEX/MAMBO-X64 — they translate through the
+	// call so the continuation falls through; our block formation ends at
+	// the call, and one predicted direct B costs ~a cycle on the hit path).
+	armAsm->Bind(&landing);
+	{
+		a64::SingleEmissionCheckScope guard(armAsm);
+		u8* patch_site = armGetCurrentCodePointer();
+		armAsm->b(int64_t{0}); // placeholder; recBlocks.Link will overwrite
+		recBlocks.Link(HWADDR(return_pc), patch_site);
+	}
+#else
+	(void)return_pc;
+	SetBranchImm(imm);
+#endif
 }
 
 // =====================================================================================================
@@ -1888,6 +2071,13 @@ static void recResetRaw()
 {
 	Console.WriteLn(Color_Green, "iR5900-ARM64 Recompiler reset.");
 	ArmJitTelemetry::AddEEFullReset();
+
+#if EE_CALLRET_STACK
+	// The code-cache rewind below dangles every host landing pointer in the
+	// call-ret ring — sentinel-fill so no stale frame can match. (recClear
+	// needs nothing: dead block entries keep resolving via redirect stubs.)
+	eeCallRetResetRing();
+#endif
 
 	armSetAsmPtr(SysMemory::GetEERec(), SysMemory::GetEERecEnd() - SysMemory::GetEERec(), &s_eeConstantPool);
 	armStartBlock();
