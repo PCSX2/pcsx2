@@ -660,6 +660,89 @@ struct HWBlend
 	BlendFactor src, dst;
 };
 
+// The expansion macro (EXPAND) must take the arguments:
+// 1. Index - index of the field.
+// 2. Dynamic - whether the field can be used dynamically.
+// 3. Type - type of the field.
+// 4. Name - name of the field.
+// 5. Bits - number of bits in the field.
+// 6. Shader name - name of the shader macro.
+
+#define PSSEL_FIELDS_EXPAND \
+	EXPAND(0, true, u32, aem_fmt, 2, "PS_AEM_FMT") \
+	EXPAND(1, true, u32, pal_fmt, 2, "PS_PAL_FMT") \
+	EXPAND(2, true, u32, dst_fmt, 2, "PS_DST_FMT") \
+	EXPAND(3, true, u32, depth_fmt, 2, "PS_DEPTH_FMT") \
+	EXPAND(4, true, u32, aem, 1, "PS_AEM") \
+	EXPAND(5, true, u32, fba, 1, "PS_FBA") \
+	EXPAND(6, true, u32, fog, 1, "PS_FOG") \
+	EXPAND(7, false, u32, iip, 1, "PS_IIP") \
+	EXPAND(8, true, u32, date, 3, "PS_DATE") \
+	EXPAND(9, true, PS_ATST, atst, 3, "PS_ATST") \
+	EXPAND(10, true, PS_AFAIL, afail, 3, "PS_AFAIL") \
+	EXPAND(11, true, u32, ztst, 2, "PS_ZTST") \
+	EXPAND(12, true, u32, fst, 1, "PS_FST") \
+	EXPAND(13, true, u32, tfx, 3, "PS_TFX") \
+	EXPAND(14, true, u32, tcc, 1, "PS_TCC") \
+	EXPAND(15, true, u32, wms, 2, "PS_WMS") \
+	EXPAND(16, true, u32, wmt, 2, "PS_WMT") \
+	EXPAND(17, true, u32, adjs, 1, "PS_ADJS") \
+	EXPAND(18, true, u32, adjt, 1, "PS_ADJT") \
+	EXPAND(19, true, u32, ltf, 1, "PS_LTF") \
+	EXPAND(20, true, u32, shuffle, 1, "PS_SHUFFLE") \
+	EXPAND(21, true, u32, shuffle_same, 1, "PS_SHUFFLE_SAME") \
+	EXPAND(22, true, u32, real16src, 1, "PS_READ16_SRC") \
+	EXPAND(23, true, u32, process_ba, 2, "PS_PROCESS_BA") \
+	EXPAND(24, true, u32, process_rg, 2, "PS_PROCESS_RG") \
+	EXPAND(25, true, u32, shuffle_across, 1, "PS_SHUFFLE_ACROSS") \
+	EXPAND(26, true, u32, write_rg, 1, "PS_WRITE_RG") \
+	EXPAND(27, true, u32, fbmask, 1, "PS_FBMASK") \
+	EXPAND(28, true, u32, blend_a, 2, "PS_BLEND_A") \
+	EXPAND(29, true, u32, blend_b, 2, "PS_BLEND_B") \
+	EXPAND(30, true, u32, blend_c, 2, "PS_BLEND_C") \
+	EXPAND(31, true, u32, blend_d, 2, "PS_BLEND_D") \
+	EXPAND(32, true, u32, fixed_one_a, 1, "PS_FIXED_ONE_A") \
+	EXPAND(33, true, u32, blend_hw, 3, "PS_BLEND_HW") \
+	EXPAND(34, true, u32, a_masked, 1, "PS_A_MASKED") \
+	EXPAND(35, true, u32, colclip_hw, 1, "PS_COLCLIP_HW") \
+	EXPAND(36, true, u32, rta_correction, 1, "PS_RTA_CORRECTION") \
+	EXPAND(37, true, u32, rta_source_correction, 1, "PS_RTA_SRC_CORRECTION") \
+	EXPAND(38, true, u32, colclip, 1, "PS_COLCLIP") \
+	EXPAND(39, true, u32, blend_mix, 2, "PS_BLEND_MIX") \
+	EXPAND(40, true, u32, round_inv, 1, "PS_ROUND_INV") \
+	EXPAND(41, true, u32, pabe, 1, "PS_PABE") \
+	EXPAND(42, false, u32, no_color, 1, "PS_NO_COLOR") \
+	EXPAND(43, false, u32, no_color1, 1, "PS_NO_COLOR1") \
+	EXPAND(44, true, u32, channel, 3, "PS_CHANNEL_FETCH") \
+	EXPAND(45, true, u32, dither, 2, "PS_DITHER") \
+	EXPAND(46, true, u32, dither_adjust, 1, "PS_DITHER_ADJUST") \
+	EXPAND(47, true, u32, zclamp, 1, "PS_ZCLAMP") \
+	EXPAND(48, true, u32, zfloor, 1, "PS_ZFLOOR") \
+	EXPAND(49, true, u32, tcoffsethack, 1, "PS_TCOFFSETHACK") \
+	EXPAND(50, true, u32, urban_chaos_hle, 1, "PS_URBAN_CHAOS_HLE") \
+	EXPAND(51, true, u32, tales_of_abyss_hle, 1, "PS_TALES_OF_ABYSS_HLE") \
+	EXPAND(52, true, u32, tex_is_fb, 1, "PS_TEX_IS_FB") \
+	EXPAND(53, true, u32, automatic_lod, 1, "PS_AUTOMATIC_LOD") \
+	EXPAND(54, true, u32, manual_lod, 1, "PS_MANUAL_LOD") \
+	EXPAND(55, true, u32, point_sampler, 1, "PS_POINT_SAMPLER") \
+	EXPAND(56, true, u32, region_rect, 1, "PS_REGION_RECT") \
+	EXPAND(57, true, u32, scanmsk, 2, "PS_SCANMSK") \
+	EXPAND(58, true, PS_AA1, aa1, 2, "PS_AA1") \
+	EXPAND(59, true, u32, abe, 1, "PS_ABE") \
+	EXPAND(60, true, u32, sw_aniso, 5, "PS_ANISOTROPIC_FILTERING") \
+	EXPAND(61, true, u32, zmask, 1, "PS_ZMASK") \
+	EXPAND(62, true, u32, cmask, 1, "PS_CMASK") \
+	EXPAND(63, false, u32, rov_color, 1, "PS_ROV_COLOR") \
+	EXPAND(64, false, PS_ROV_DEPTH, rov_depth, 2, "PS_ROV_DEPTH")
+
+
+#define VSSEL_FIELDS_EXPAND \
+	EXPAND(0, true, u8, fst, 1, "VS_FST") \
+	EXPAND(1, true, u8, tme, 1, "VS_TME") \
+	EXPAND(2, false, u8, iip, 1, "VS_IIP") \
+	EXPAND(3, false, u8, point_size, 1, "VS_POINT_SIZE") \
+	EXPAND(4, true, VSExpand, expand, 3, "VS_EXPAND")
+
 struct alignas(16) GSHWDrawConfig
 {
 	enum class Topology: u8
@@ -673,6 +756,16 @@ struct alignas(16) GSHWDrawConfig
 	using PS_AFAIL = GSShader::PS_AFAIL;
 	using PS_AA1   = GSShader::PS_AA1;
 	using PS_ROV_DEPTH = GSShader::PS_ROV_DEPTH;
+
+	struct PipelineSelectorFieldDesc
+	{
+		u32 index;
+		bool dynamic;
+		const char* name;
+		u32 bits;
+		const char* shader_name;
+	};
+
 #pragma pack(push, 1)
 	struct VSSelector
 	{
@@ -680,23 +773,27 @@ struct alignas(16) GSHWDrawConfig
 		{
 			struct
 			{
-				u8 fst : 1;
-				u8 tme : 1;
-				u8 iip : 1;
-				u8 point_size : 1;		///< Set when points need to be expanded without VS expanding.
-				VSExpand expand : 3;
-				u8 _free : 1;
+				#define EXPAND(INDEX, DYNAMIC, TYPE, NAME, WIDTH, SHADER_NAME) TYPE NAME : WIDTH;
+					VSSEL_FIELDS_EXPAND
+				#undef EXPAND
 			};
 			u8 key;
 		};
 		VSSelector(): key(0) {}
 		VSSelector(u8 k): key(k) {}
 
+		u32 GetField(const std::string& name) const;
+		u32 GetField(u32 index) const;
+
 		/// Returns true if the fixed index buffer should be used.
 		__fi bool UseFixedExpandIndexBuffer() const { return (expand == VSExpand::Point || expand == VSExpand::Sprite); }
 		
 		/// Return true if the index buffer should be bound as a vertex shader resource.
 		__fi bool UseVSExpandIndexBuffer() const { return (expand == VSExpand::TriangleAA1); }
+
+		__fi bool operator==(const VSSelector& rhs) const { return key == rhs.key; }
+		__fi bool operator!=(const VSSelector& rhs) const { return key != rhs.key; }
+		__fi bool operator<(const VSSelector& rhs) const { return key < rhs.key; }
 	};
 	static_assert(sizeof(VSSelector) == 1, "VSSelector is a single byte");
 
@@ -709,94 +806,9 @@ struct alignas(16) GSHWDrawConfig
 		{
 			struct
 			{
-				// Format
-				u32 aem_fmt   : 2;
-				u32 pal_fmt   : 2;
-				u32 dst_fmt   : 2; // 0 → 32-bit, 1 → 24-bit, 2 → 16-bit
-				u32 depth_fmt : 2; // 0 → None, 1 → 32-bit, 2 → 16-bit, 3 → RGBA
-				// Alpha extension/Correction
-				u32 aem : 1;
-				u32 fba : 1;
-				// Fog
-				u32 fog : 1;
-				// Flat/goround shading
-				u32 iip : 1;
-				// Pixel test
-				u32 date : 3;
-				PS_ATST atst : 3;
-				PS_AFAIL afail : 3;
-				u32 ztst : 2;
-				// Color sampling
-				u32 fst : 1; // Investigate to do it on the VS
-				u32 tfx : 3;
-				u32 tcc : 1;
-				u32 wms : 2;
-				u32 wmt : 2;
-				u32 adjs : 1;
-				u32 adjt : 1;
-				u32 ltf : 1;
-				// Shuffle and fbmask effect
-				u32 shuffle  : 1;
-				u32 shuffle_same : 1;
-				u32 real16src: 1;
-				u32 process_ba : 2;
-				u32 process_rg : 2;
-				u32 shuffle_across : 1;
-				u32 write_rg : 1;
-				u32 fbmask   : 1;
-
-				// Blend and Colclip
-				u32 blend_a        : 2;
-				u32 blend_b        : 2;
-				u32 blend_c        : 2;
-				u32 blend_d        : 2;
-				u32 fixed_one_a    : 1;
-				u32 blend_hw       : 3; /*HWBlendType*/
-				u32 a_masked       : 1;
-				u32 colclip_hw     : 1; // colclip (COLCLAMP off) emulation through HQ textures
-				u32 rta_correction : 1;
-				u32 rta_source_correction : 1;
-				u32 colclip        : 1; // COLCLAMP off (color blend outputs wrap around 0-255)
-				u32 blend_mix      : 2;
-				u32 round_inv      : 1; // Blending will invert the value, so rounding needs to go the other way
-				u32 pabe           : 1;
-				u32 no_color       : 1; // disables color output entirely (depth only)
-				u32 no_color1      : 1; // disables second color output (when unnecessary)
-
-				// Others ways to fetch the texture
-				u32 channel : 3;
-
-				// Dithering
-				u32 dither : 2;
-				u32 dither_adjust : 1;
-
-				// Depth writing
-				u32 zclamp : 1;
-				u32 zfloor : 1;
-
-				// Hack
-				u32 tcoffsethack : 1;
-				u32 urban_chaos_hle : 1;
-				u32 tales_of_abyss_hle : 1;
-				u32 tex_is_fb : 1; // Jak Shadows
-				u32 automatic_lod : 1;
-				u32 manual_lod : 1;
-				u32 point_sampler : 1;
-				u32 region_rect : 1;
-
-				// Scan mask
-				u32 scanmsk : 2;
-
-				// AA1
-				PS_AA1 aa1 : 2; // Pixel shader AA1 primitive. Must be used in conjunction with VS AA1 expand.
-				u32 abe : 1; // Alpha blend enabled. Currently only used for emulating AA1/ABE interaction.
-
-				// Anisotropic filtering
-				u32 sw_aniso : 5;
-				
-				// ROVs
-				u32 rov_color : 1;
-				PS_ROV_DEPTH rov_depth : 2;
+				#define EXPAND(INDEX, DYNAMIC, TYPE, NAME, WIDTH, SHADER_NAME) TYPE NAME : WIDTH;
+					PSSEL_FIELDS_EXPAND
+				#undef EXPAND
 			};
 
 			struct
@@ -810,6 +822,9 @@ struct alignas(16) GSHWDrawConfig
 		__fi bool operator==(const PSSelector& rhs) const { return (key_lo == rhs.key_lo && key_hi == rhs.key_hi); }
 		__fi bool operator!=(const PSSelector& rhs) const { return (key_lo != rhs.key_lo || key_hi != rhs.key_hi); }
 		__fi bool operator<(const PSSelector& rhs) const { return (key_lo < rhs.key_lo || key_hi < rhs.key_hi); }
+
+		u32 GetField(const std::string& name) const;
+		u32 GetField(u32 index) const;
 
 		__fi bool IsSWBlending() const
 		{
@@ -831,7 +846,7 @@ struct alignas(16) GSHWDrawConfig
 			const u32 sw_blend_bits = blend_a | blend_b | blend_d;
 			const bool sw_blend_needs_rt = (sw_blend_bits != 0 && ((sw_blend_bits | blend_c) & 1u)) || ((a_masked & blend_c) != 0);
 			const bool afail_needs_rt = afail == PS_AFAIL::ZB_ONLY || afail == PS_AFAIL::RGB_ONLY || afail == PS_AFAIL::RGB_ONLY_SW_Z;
-			return tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt || afail_needs_rt;
+			return tex_is_fb || fbmask || (date >= 5) || sw_blend_needs_rt || afail_needs_rt || cmask;
 		}
 
 		__fi bool IsFeedbackLoopDepth() const
@@ -839,7 +854,7 @@ struct alignas(16) GSHWDrawConfig
 			const bool afail_needs_depth = afail == PS_AFAIL::FB_ONLY || afail == PS_AFAIL::RGB_ONLY_SW_Z;
 			const bool ztst_needs_depth = ztst == ZTST_GEQUAL || ztst == ZTST_GREATER;
 			const bool aa1_needs_depth = aa1 == PS_AA1::TRIANGLE_SW_Z;
-			return afail_needs_depth || ztst_needs_depth || aa1_needs_depth;
+			return afail_needs_depth || ztst_needs_depth || aa1_needs_depth || zmask;
 		}
 
 		__fi bool HasShaderDiscard() const
@@ -906,9 +921,15 @@ struct alignas(16) GSHWDrawConfig
 		{
 			return rov_depth == PS_ROV_DEPTH::READ_WRITE;
 		}
+
+		__fi bool HasDATEInit() const
+		{
+			return date == 1 || date == 2;
+		}
 	};
 	static_assert(sizeof(PSSelector) == 16, "PSSelector is 12 bytes");
 #pragma pack(pop)
+
 	struct PSSelectorHash
 	{
 		std::size_t operator()(const PSSelector& p) const
@@ -918,6 +939,157 @@ struct alignas(16) GSHWDrawConfig
 			return h;
 		}
 	};
+
+	enum class TFX_RT : u32
+	{
+		None,
+		Color,
+		ColclipHW,
+		PrimID,
+		Count,
+	};
+
+	enum class TFX_DS : u32
+	{
+		None,
+		Depth,
+		DepthStencil,
+		Count,
+	};
+
+	enum class UberVSSelector
+	{
+		InputAssembly,
+		VSExpand,
+	};
+#pragma pack(push, 1)
+	template<bool allow_color_feedback>
+	struct UberPSSelector
+	{
+		enum class Color : u8
+		{
+			None,
+			Standard,
+			Feedback,
+			ROV,
+			Count,
+		};
+
+		enum class Depth : u8
+		{
+			None,
+			Standard,
+			Feedback,
+			ROV,
+			Count,
+		};
+
+		union
+		{
+			struct
+			{
+				Color color : 2;
+				u8 color1 : 1;
+				Depth depth : 2;
+				u8 date_init : 1; // DATE primid init.
+			};
+
+			u8 key;
+		};
+
+		static constexpr u32 MAX_NUM_SELECTORS = 64;
+
+		__fi constexpr UberPSSelector() : key(0) {}
+
+		__fi static constexpr UberPSSelector Decode(u8 key)
+		{
+			UberPSSelector ps;
+
+			ps.color = static_cast<Color>((key >> 0) & 3);
+			ps.color1 = (key >> 2) & 1;
+			ps.depth = static_cast<Depth>((key >> 3) & 3);
+			ps.date_init = (key >> 5) & 1;
+
+			return ps;
+		}
+
+		__fi constexpr bool IsValid() const
+		{
+			// Make sure enums are valid.
+			if (color >= Color::Count || depth >= Depth::Count)
+				return false;
+			const bool rov = color == Color::ROV || depth == Depth::ROV;
+			const bool feedback = color == Color::Feedback || depth == Depth::Feedback;
+			// These are mutually incompatible.
+			if (rov && (feedback || color1))
+				return false;
+			// Only VK fragment shaders needs explicit color feedback.
+			if (!allow_color_feedback && color == Color::Feedback)
+				return false;
+			// Depth ROV must imply color ROV (if color is used).
+			if (depth == Depth::ROV && !(color == Color::None || color == Color::ROV))
+				return false;
+			// Color1 must imply color.
+			if (color1 && color == Color::None)
+				return false;
+			// Must have either color or depth.
+			if (color == Color::None && depth == Depth::None)
+				return false;
+			// There's only one uber date init shader and disallows DSB or special depth.
+			if (date_init && (color != Color::Standard || color1 || depth > Depth::Standard))
+				return false;
+			return true;
+		}
+
+		__fi constexpr bool CompatibleWithAttachments(TFX_RT rt, TFX_DS ds) const
+		{
+			if ((rt == TFX_RT::None) != (color == Color::None || color == Color::ROV))
+				return false;
+			if ((ds == TFX_DS::None) != (depth == Depth::None || depth == Depth::ROV))
+				return false;
+			if (static_cast<bool>(date_init) != (rt == TFX_RT::PrimID))
+				return false;
+			if (date_init && (ds == TFX_DS::DepthStencil))
+				return false;
+			if (color1 && (rt == TFX_RT::PrimID))
+				return false;
+			return true;
+		}
+
+		__fi bool HasColor() const
+		{
+			return color != Color::None;
+		}
+
+		__fi bool HasDepth() const
+		{
+			return depth != Depth::None;
+		}
+
+		__fi bool HasColorFeedback() const
+		{
+			return color == Color::Feedback;
+		}
+
+		__fi bool HasDepthFeedback() const
+		{
+			return depth == Depth::Feedback;
+		}
+
+		__fi bool HasColorROV() const
+		{
+			return color == Color::ROV;
+		}
+
+		__fi bool HasDepthROV() const
+		{
+			return depth == Depth::ROV;
+		}
+
+		static std::span<const UberPSSelector> GetValidSelectors();
+	};
+#pragma pack(pop)
+
 #pragma pack(push, 1)
 	struct SamplerSelector
 	{
@@ -1001,6 +1173,14 @@ struct alignas(16) GSHWDrawConfig
 			out.ztst = ZTST_ALWAYS;
 			return out;
 		}
+		static constexpr DepthStencilSelector DepthWriteAlways()
+		{
+			DepthStencilSelector out;
+			out.zwe = true;
+			out.ztst = ZTST_ALWAYS;
+			return out;
+		}
+		static constexpr DepthStencilSelector ReducedUberDefault() { return DepthWriteAlways(); }
 	};
 	struct ColorMaskSelector
 	{
@@ -1023,6 +1203,7 @@ struct alignas(16) GSHWDrawConfig
 		};
 		constexpr ColorMaskSelector(): key(0xF) {}
 		constexpr ColorMaskSelector(u8 c): key(0) { wrgba = c; }
+		static constexpr ColorMaskSelector ReducedUberDefault() { return ColorMaskSelector(); }
 	};
 
 #pragma pack(pop)
@@ -1035,6 +1216,7 @@ struct alignas(16) GSHWDrawConfig
 		GSVector2 point_size;
 		u32 max_depth;
 		float line_aa1_width;
+		
 		__fi VSConstantBuffer()
 		{
 			memset(static_cast<void*>(this), 0, sizeof(*this));
@@ -1066,12 +1248,10 @@ struct alignas(16) GSHWDrawConfig
 		}
 	};
 
-	struct alignas(16) VSPushConstants
+	struct VSPushConstants
 	{
 		u32 base_vertex;
 		u32 base_index;
-		u32 _pad0;
-		u32 _pad1;
 
 		__fi VSPushConstants()
 		{
@@ -1103,7 +1283,102 @@ struct alignas(16) GSHWDrawConfig
 			return true;
 		}
 	};
-	static_assert(sizeof(VSPushConstants) == 16, "VSPushConstants wrong size");
+
+	static_assert(sizeof(VSPushConstants) == 2 * sizeof(u32));
+
+	struct UberDynamicSelector
+	{
+		union
+		{
+			struct
+			{
+				u32 vs_selector;
+				u32 ps_selector[4];
+			};
+			u32 selector[5];
+		};
+
+		static constexpr u32 VS_OFFSET = 0;
+		static constexpr u32 PS_OFFSET = 1;
+		static constexpr u32 NUM_SELECTORS = 5;
+
+		__fi UberDynamicSelector()
+		{
+			memset(static_cast<void*>(this), 0, sizeof(*this));
+		}
+		__fi UberDynamicSelector(const UberDynamicSelector& other)
+		{
+			memcpy(static_cast<void*>(this), static_cast<const void*>(&other), sizeof(*this));
+		}
+		__fi UberDynamicSelector& operator=(const UberDynamicSelector& other)
+		{
+			new (this) UberDynamicSelector(other);
+			return *this;
+		}
+		__fi bool operator==(const UberDynamicSelector& other) const
+		{
+			return BitEqual(*this, other);
+		}
+		__fi bool operator!=(const UberDynamicSelector& other) const
+		{
+			return !(*this == other);
+		}
+		__fi bool Update(const UberDynamicSelector& other)
+		{
+			if (*this == other)
+				return false;
+
+			memcpy(static_cast<void*>(this), static_cast<const void*>(&other), sizeof(*this));
+			return true;
+		}
+	};
+
+	static_assert(sizeof(UberDynamicSelector) == UberDynamicSelector::NUM_SELECTORS * sizeof(u32));
+	static_assert(offsetof(UberDynamicSelector, vs_selector) == UberDynamicSelector::VS_OFFSET * sizeof(u32));
+	static_assert(offsetof(UberDynamicSelector, ps_selector) == UberDynamicSelector::PS_OFFSET * sizeof(u32));
+
+	struct alignas(16) TFXPushConstants
+	{
+		VSPushConstants vs_pc;
+		UberDynamicSelector uber_selector;
+		u32 _pad_0;
+
+		static constexpr u32 VS_PC_OFFSET = 0;
+		static constexpr u32 VS_PC_NUM_CONSTANTS = sizeof(vs_pc) / sizeof(u32);
+
+		__fi TFXPushConstants()
+		{
+			memset(static_cast<void*>(this), 0, sizeof(*this));
+		}
+		__fi TFXPushConstants(const TFXPushConstants& other)
+		{
+			memcpy(static_cast<void*>(this), static_cast<const void*>(&other), sizeof(*this));
+		}
+		__fi TFXPushConstants& operator=(const TFXPushConstants& other)
+		{
+			new (this) TFXPushConstants(other);
+			return *this;
+		}
+		__fi bool operator==(const TFXPushConstants& other) const
+		{
+			return BitEqual(*this, other);
+		}
+		__fi bool operator!=(const TFXPushConstants& other) const
+		{
+			return !(*this == other);
+		}
+		__fi bool Update(const TFXPushConstants& other)
+		{
+			if (*this == other)
+				return false;
+
+			memcpy(static_cast<void*>(this), static_cast<const void*>(&other), sizeof(*this));
+			return true;
+		}
+	};
+
+	static_assert(sizeof(TFXPushConstants) == 32, "TFXPushConstants wrong size");
+	static_assert(offsetof(TFXPushConstants, vs_pc) == TFXPushConstants::VS_PC_OFFSET * sizeof(u32));
 
 	struct alignas(16) PSConstantBuffer
 	{
@@ -1124,6 +1399,7 @@ struct alignas(16) GSHWDrawConfig
 		GSVector4 DitherMatrix[4];
 
 		GSVector4 ScaleFactor;
+
 		float LineCovScale;
 		float _pad0;
 		float _pad1;
@@ -1194,7 +1470,7 @@ struct alignas(16) GSHWDrawConfig
 			dst_factor_alpha = dst_alpha_factor_;
 			constant = constant_;
 		}
-
+		static constexpr BlendState ReducedUberDefault() { return BlendState(); }
 		// Blending has no effect if RGB is masked.
 		bool IsEffective(ColorMaskSelector colormask) const;
 	};
@@ -1255,6 +1531,7 @@ struct alignas(16) GSHWDrawConfig
 
 	alignas(8) PSSelector ps;
 	VSSelector vs;
+	bool uber_shader; ///< Use uber shader in the current draw.
 
 	BlendState blend;
 	SamplerSelector sampler;
@@ -1302,6 +1579,9 @@ struct alignas(16) GSHWDrawConfig
 	static_assert(sizeof(BlendMultiPass) == 8, "blend multi pass is 8 bytes");
 
 	BlendMultiPass blend_multi_pass;
+	
+	// Place push constants before constant buffer so that they're zeroed out ever draw.
+	TFXPushConstants pc;
 
 	VSConstantBuffer cb_vs;
 	PSConstantBuffer cb_ps;
@@ -1326,10 +1606,145 @@ struct alignas(16) GSHWDrawConfig
 		return blend.enable || blend_multi_pass.enable || ps.IsSWBlending();
 	}
 
+	// Draw pass selectors
+	enum class DrawPass
+	{
+		Main,
+		AlphaSecond,
+		PrimID,
+		Blend,
+	};
+
+	bool GetFullBarrier(DrawPass pass) const
+	{
+		switch (pass)
+		{
+			default:
+			case DrawPass::Main: return require_full_barrier;
+			case DrawPass::AlphaSecond: return alpha_second_pass.require_full_barrier;
+			case DrawPass::PrimID: return false;
+			case DrawPass::Blend: return false;
+		}
+	}
+
+	bool GetOneBarrier(DrawPass pass) const
+	{
+		switch (pass)
+		{
+			default:
+			case DrawPass::Main: return require_one_barrier;
+			case DrawPass::AlphaSecond: return alpha_second_pass.require_one_barrier;
+			case DrawPass::PrimID: return false;
+			case DrawPass::Blend: return false;
+		}
+	}
+
+	const VSSelector& GetVS(DrawPass pass) const
+	{
+		switch (pass)
+		{
+			default:
+			case DrawPass::Main: return vs;
+			case DrawPass::AlphaSecond: return vs;
+			case DrawPass::Blend: return vs;
+			case DrawPass::PrimID: return vs;
+		}
+	}
+
+	const PSSelector GetPS(DrawPass pass) const
+	{
+		switch (pass)
+		{
+			default:
+			case DrawPass::Main: return ps;
+			case DrawPass::AlphaSecond: return alpha_second_pass.ps;
+			case DrawPass::Blend:
+			{
+				PSSelector ps_blend = ps;
+				ps_blend.no_color1 = blend_multi_pass.no_color1;
+				ps_blend.blend_hw = blend_multi_pass.blend_hw;
+				ps_blend.dither = blend_multi_pass.dither;
+				return ps_blend;
+			}
+			case DrawPass::PrimID: return ps;
+		}
+	}
+
+	ColorMaskSelector GetColorMask(DrawPass pass) const
+	{
+		switch (pass)
+		{
+			default:
+			case DrawPass::Main: return colormask;
+			case DrawPass::AlphaSecond: return alpha_second_pass.colormask;
+			case DrawPass::Blend: return colormask;
+			case DrawPass::PrimID: return GSHWDrawConfig::ColorMaskSelector(1);
+		}
+	}
+
+	DepthStencilSelector GetDepth(DrawPass pass) const
+	{
+		switch (pass)
+		{
+			default:
+			case DrawPass::Main: return depth;
+			case DrawPass::AlphaSecond: return alpha_second_pass.depth;
+			case DrawPass::Blend: return depth;
+			case DrawPass::PrimID:
+			{
+				DepthStencilSelector primid_depth = depth;
+				primid_depth.zwe = false;
+				return primid_depth;
+			}
+		}
+	}
+
+	BlendState GetBlend(DrawPass pass) const
+	{
+		switch (pass)
+		{
+			default:
+			case DrawPass::AlphaSecond:
+			case DrawPass::PrimID:
+			case DrawPass::Main:
+				return blend;
+			case DrawPass::Blend:;
+				return blend_multi_pass.blend;
+		}
+	}
+
 	// Dumping
 	static void DumpConfig(const std::string& path, const GSHWDrawConfig& conf,
 		bool ps = true, bool vs = true, bool bs = true, bool dss = true, bool ss = true, bool asp = true, bool bmp = true,
 		bool cbvs = true, bool cbps = true);
+
+	// Uber shader
+	struct ShaderDefine
+	{
+		u32 index;
+		const char* name;
+		const char* shader_name;
+		std::string value;
+	};
+
+	static constexpr std::array<PipelineSelectorFieldDesc, 6> vs_selector_fields = {
+		#define EXPAND(INDEX, DYNAMIC, TYPE, NAME, WIDTH, SHADER_NAME) \
+				PipelineSelectorFieldDesc{ INDEX, DYNAMIC, #NAME, WIDTH, SHADER_NAME },
+			VSSEL_FIELDS_EXPAND
+		#undef EXPAND
+	};
+
+	static constexpr std::array<PipelineSelectorFieldDesc, 65> ps_selector_fields = {
+		#define EXPAND(INDEX, DYNAMIC, TYPE, NAME, WIDTH, SHADER_NAME) \
+				PipelineSelectorFieldDesc{ INDEX, DYNAMIC, #NAME, WIDTH, SHADER_NAME },
+			PSSEL_FIELDS_EXPAND
+		#undef EXPAND
+	};
+
+	static std::span<const ShaderDefine> GetUberShaderVSSelectorDefines();
+	static std::span<const ShaderDefine> GetUberShaderPSSelectorDefines();
+
+	static UberDynamicSelector GetUberDynamicSelector(const VSSelector& vs, const PSSelector& ps);
 };
 
 static inline u32 GetExpansionFactor(GSHWDrawConfig::VSExpand expand)
@@ -1364,6 +1779,10 @@ static inline u32 GetVertexAlignment(GSHWDrawConfig::VSExpand expand)
 class GSDevice : public GSAlignedClass<32>
 {
 public:
+	using DrawPass = GSHWDrawConfig::DrawPass;
+	using TFX_RT = GSHWDrawConfig::TFX_RT;
+	using TFX_DS = GSHWDrawConfig::TFX_DS;
+
 	enum class PresentResult
 	{
 		OK,
@@ -1401,12 +1820,15 @@ public:
 		bool depth_feedback       : 1; ///< Depth feedback loops can be done with DS directly (otherwise need to copy to separate RT).  Implies `feedback_loops`.
 		bool aa1                  : 1; ///< Supports the GS AA1 feature.
 		bool rov                  : 1; ///< Supports rasterizer ordered views for both depth and color.
+		bool uber_shader          : 1; ///< Supports uber shader.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));
 		}
 		/// Supports feedback loops through either texture barriers or rt copies.
 		bool feedback_loops() const { return texture_barrier || multidraw_fb_copy; }
+		/// FB fetch can handle depth feedback via color copy.
+		bool FBFetchDepthFeedback() const { return framebuffer_fetch && !depth_feedback; }
 	};
 
 	struct MultiStretchRect
@@ -1724,6 +2146,8 @@ public:
 	// Index is computed as ((((A * 3 + B) * 3) + C) * 3) + D. A, B, C, D taken from ALPHA register.
 	__ri static HWBlend GetBlend(u32 index) { return m_blendMap[index]; }
 	__ri static u16 GetBlendFlags(u32 index) { return m_blendMap[index].flags; }
+
+	virtual bool StartPipelineCompilationAsync(const GSHWDrawConfig& conf);
 };
 
 template <>

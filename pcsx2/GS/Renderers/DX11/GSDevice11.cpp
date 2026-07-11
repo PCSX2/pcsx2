@@ -518,7 +518,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_vs_pc.put())))
+	if (FAILED(m_dev->CreateBuffer(&bd, nullptr, m_tfx_pc.put())))
 	{
 		Console.Error("D3D11: Failed to create vertex shader push constant buffer.");
 		return false;
@@ -637,7 +637,7 @@ void GSDevice11::Destroy()
 
 	m_vs.clear();
 	m_vs_cb.reset();
-	m_vs_pc.reset();
+	m_tfx_pc.reset();
 	m_gs.clear();
 	m_ps.clear();
 	m_ps_cb.reset();
@@ -2688,16 +2688,16 @@ void GSDevice11::VSSetPushConstants(u32 base_vertex, u32 base_index, bool force_
 	vs_pc.base_vertex = base_vertex;
 	vs_pc.base_index = base_index;
 
-	if (m_vs_pc_cache.Update(vs_pc) || force_update)
+	if (m_tfx_pc_cache.vs_pc.Update(vs_pc) || force_update)
 	{
-		m_ctx->UpdateSubresource(m_vs_pc.get(), 0, NULL, &vs_pc, 0, 0);
+		m_ctx->UpdateSubresource(m_tfx_pc.get(), 0, NULL, &m_tfx_pc_cache, 0, 0);
 	}
 
-	if (m_state.vs_pc != m_vs_pc.get())
+	if (m_state.tfx_pc != m_tfx_pc.get())
 	{
-		m_state.vs_pc = m_vs_pc.get();
+		m_state.tfx_pc = m_tfx_pc.get();
 
-		m_ctx->VSSetConstantBuffers(1, 1, &m_state.vs_pc);
+		m_ctx->VSSetConstantBuffers(1, 1, &m_state.tfx_pc);
 	}
 }
 

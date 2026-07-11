@@ -3299,6 +3299,13 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		FSUI_NSTR("Zstandard (zst)"),
 	};
 
+	static constexpr const char* s_shader_cache_type[] = {
+		FSUI_NSTR("Disabled"),
+		FSUI_NSTR("Standard"),
+		FSUI_NSTR("Hybrid"),
+		FSUI_NSTR("Uber"),
+	};
+
 	if (show_advanced_settings)
 	{
 		MenuHeading(FSUI_CSTR("Advanced"));
@@ -3330,8 +3337,8 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			"GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::LZMA), s_gsdump_compression, std::size(s_gsdump_compression), true);
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BAN, "Disable Framebuffer Fetch"),
 			FSUI_CSTR("Prevents the usage of framebuffer fetch when supported by host GPU."), "EmuCore/GS", "DisableFramebufferFetch", false);
-		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BAN, "Disable Shader Cache"), FSUI_CSTR("Prevents the loading and saving of shaders/pipelines to disk."),
-			"EmuCore/GS", "DisableShaderCache", false);
+		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_BAN, "Shader Cache Type"), FSUI_CSTR("Method of loading and saving of shaders/pipelines to disk."),
+			"EmuCore/GS", "ShaderCacheType", static_cast<int>(GSShaderCacheType::Standard), s_shader_cache_type, std::size(s_shader_cache_type), true);
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BAN, "Disable Vertex Shader Expand"), FSUI_CSTR("Falls back to the CPU for expanding sprites/lines."),
 			"EmuCore/GS", "DisableVertexShaderExpand", false);
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ROAD_BARRIER, "ROV Barriers Vulkan"),

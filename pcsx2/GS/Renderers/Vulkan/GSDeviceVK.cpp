@@ -7,7 +7,6 @@
 #include "GS/GSUtil.h"
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
 #include "GS/Renderers/Vulkan/VKBuilders.h"
-#include "GS/Renderers/Vulkan/VKShaderCache.h"
 #include "GS/Renderers/Vulkan/VKSwapChain.h"
 #include "GS/Renderers/Common/GSDevice.h"
 
@@ -47,6 +46,25 @@ enum : u32
 	TEXTURE_BUFFER_SIZE = 64 * 1024 * 1024,
 };
 
+static constexpr std::array<VkBlendFactor, 16> VK_BLEND_FACTORS = { {
+	VK_BLEND_FACTOR_SRC_COLOR, VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR, VK_BLEND_FACTOR_DST_COLOR, VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR,
+	VK_BLEND_FACTOR_SRC1_COLOR, VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+	VK_BLEND_FACTOR_DST_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA, VK_BLEND_FACTOR_SRC1_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA,
+	VK_BLEND_FACTOR_CONSTANT_COLOR, VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO
+} };
+
+static constexpr std::array<VkBlendOp, 3> VK_BLEND_OPS = { {
+	VK_BLEND_OP_ADD, VK_BLEND_OP_SUBTRACT, VK_BLEND_OP_REVERSE_SUBTRACT
+} };
+
+static constexpr std::array<VkCompareOp, 4> VK_COMPARE_OPS = {
+	VK_COMPARE_OP_NEVER, VK_COMPARE_OP_ALWAYS, VK_COMPARE_OP_GREATER_OR_EQUAL, VK_COMPARE_OP_GREATER };
+
+static VkStencilOpState GetDATEStencilOpState(const bool date_one)
+{
+	return VkStencilOpState { VK_STENCIL_OP_KEEP, date_one ? VK_STENCIL_OP_ZERO : VK_STENCIL_OP_KEEP,
+	VK_STENCIL_OP_KEEP, VK_COMPARE_OP_EQUAL, 1u, 1u, 1u };
+}
 
 #ifdef ENABLE_OGL_DEBUG
 static u32 s_debug_scope_depth = 0;
@@ -110,7 +128,7 @@ VkInstance GSDeviceVK::CreateVulkanInstance(const WindowInfo& wi, OptionalExtens
 	app_info.pEngineName = "PCSX2";
 	app_info.engineVersion = VK_MAKE_VERSION(
 		BuildVersion::GitTagHi, BuildVersion::GitTagMid, BuildVersion::GitTagLo);
-	app_info.apiVersion = VK_API_VERSION_1_1;
+	app_info.apiVersion = (GSConfig.ShaderCacheType >= GSShaderCacheType::Hybrid) ? VK_API_VERSION_1_3 : VK_API_VERSION_1_1;
 
 	VkInstanceCreateInfo instance_create_info = {};
 	instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -417,6 +435,10 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 		SupportsExtension(VK_EXT_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_line_rasterization = SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, false);
 	m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
+	if (GSConfig.ShaderCacheType >= GSShaderCacheType::Hybrid)
+		m_optional_extensions.vk_ext_extended_dynamic_state_3 = SupportsExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME, false);
+	else
+		m_optional_extensions.vk_ext_extended_dynamic_state_3 = false;
 
 	if (m_optional_extensions.vk_swapchain_maintenance1)
 	{
@@ -634,7 +656,8 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_KHR};
 	VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_ext_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT};
-
+	VkPhysicalDeviceExtendedDynamicState3FeaturesEXT extended_dynamic_state3_feature = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT };
 	if (m_optional_extensions.vk_ext_provoking_vertex)
 	{
 		provoking_vertex_feature.provokingVertexLast = VK_TRUE;
@@ -664,6 +687,13 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	{
 		fragment_shader_interlock_ext_feature.fragmentShaderPixelInterlock = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &fragment_shader_interlock_ext_feature);
+	}
+	if (m_optional_extensions.vk_ext_extended_dynamic_state_3)
+	{
+		extended_dynamic_state3_feature.extendedDynamicState3ColorBlendEnable = VK_TRUE;
+		extended_dynamic_state3_feature.extendedDynamicState3ColorBlendEquation = VK_TRUE;
+		extended_dynamic_state3_feature.extendedDynamicState3ColorWriteMask = VK_TRUE;
+		Vulkan::AddPointerToChain(&device_info, &extended_dynamic_state3_feature);
 	}
 
 	VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
@@ -740,7 +770,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT};
 	VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_ext_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT };
-
+	VkPhysicalDeviceExtendedDynamicState3FeaturesEXT extended_dynamic_state3_feature = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT };
 	// add in optional feature structs
 	if (m_optional_extensions.vk_ext_provoking_vertex)
 		Vulkan::AddPointerToChain(&features2, &provoking_vertex_features);
@@ -754,6 +785,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		Vulkan::AddPointerToChain(&features2, &swapchain_maintenance1_feature);
 	if (m_optional_extensions.vk_ext_fragment_shader_interlock)
 		Vulkan::AddPointerToChain(&features2, &fragment_shader_interlock_ext_feature);
+	if (m_optional_extensions.vk_ext_extended_dynamic_state_3)
+		Vulkan::AddPointerToChain(&features2, &extended_dynamic_state3_feature);
 
 	// query
 	vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
@@ -834,6 +867,14 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	m_optional_extensions.vk_ext_fragment_shader_interlock &=
 		(fragment_shader_interlock_ext_feature.fragmentShaderPixelInterlock == VK_TRUE);
 
+	if (m_optional_extensions.vk_ext_extended_dynamic_state_3)
+	{
+		m_optional_extensions.vk_ext_extended_dynamic_state_3 =
+			extended_dynamic_state3_feature.extendedDynamicState3ColorBlendEnable &&
+			extended_dynamic_state3_feature.extendedDynamicState3ColorBlendEquation &&
+			extended_dynamic_state3_feature.extendedDynamicState3ColorWriteMask;
+	}
+
 	Console.WriteLn(
 		"VK_EXT_provoking_vertex is %s", m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
 	Console.WriteLn(
@@ -853,6 +894,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		m_optional_extensions.vk_ext_attachment_feedback_loop_layout ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_fragment_shader_interlock is %s",
 		m_optional_extensions.vk_ext_fragment_shader_interlock ? "supported" : "NOT supported");
+	Console.WriteLn("VK_EXT_extended_dynamic_state_3 is %s",
+		m_optional_extensions.vk_ext_extended_dynamic_state_3 ? "supported" : "NOT supported");
 
 	return true;
 }
@@ -1018,7 +1061,7 @@ bool GSDeviceVK::CreateGlobalDescriptorPool()
 	return true;
 }
 
-VkRenderPass GSDeviceVK::GetRenderPass(VkFormat color_format, VkFormat depth_format, VkAttachmentLoadOp color_load_op,
+GSDeviceVK::VKCachedRenderPass GSDeviceVK::GetRenderPass(VkFormat color_format, VkFormat depth_format, VkAttachmentLoadOp color_load_op,
 	VkAttachmentStoreOp color_store_op, VkAttachmentLoadOp depth_load_op, VkAttachmentStoreOp depth_store_op,
 	VkAttachmentLoadOp stencil_load_op, VkAttachmentStoreOp stencil_store_op, bool color_feedback_loop,
 	bool depth_sampling)
@@ -1035,40 +1078,31 @@ VkRenderPass GSDeviceVK::GetRenderPass(VkFormat color_format, VkFormat depth_for
 	key.color_feedback_loop = color_feedback_loop;
 	key.depth_sampling = depth_sampling;
 
-	auto it = m_render_pass_cache.find(key.key);
+	auto it = m_render_pass_cache.find(key);
 	if (it != m_render_pass_cache.end())
 		return it->second;
 
 	return CreateCachedRenderPass(key);
 }
 
-VkRenderPass GSDeviceVK::GetRenderPassForRestarting(VkRenderPass pass)
+GSDeviceVK::VKCachedRenderPass GSDeviceVK::GetRenderPassForRestarting(VKCachedRenderPass pass)
 {
-	for (const auto& it : m_render_pass_cache)
-	{
-		if (it.second != pass)
-			continue;
+	RenderPassCacheKey modified_key = pass.key;
+	if (modified_key.color_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
+		modified_key.color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
+	if (modified_key.depth_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
+		modified_key.depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
+	if (modified_key.stencil_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
+		modified_key.stencil_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
 
-		RenderPassCacheKey modified_key;
-		modified_key.key = it.first;
-		if (modified_key.color_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
-			modified_key.color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
-		if (modified_key.depth_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
-			modified_key.depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
-		if (modified_key.stencil_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
-			modified_key.stencil_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
+	if (modified_key == pass.key)
+		return pass;
 
-		if (modified_key.key == it.first)
-			return pass;
+	auto fit = m_render_pass_cache.find(modified_key);
+	if (fit != m_render_pass_cache.end())
+		return fit->second;
 
-		auto fit = m_render_pass_cache.find(modified_key.key);
-		if (fit != m_render_pass_cache.end())
-			return fit->second;
-
-		return CreateCachedRenderPass(modified_key);
-	}
-
-	return pass;
+	return CreateCachedRenderPass(modified_key);
 }
 
 VkCommandBuffer GSDeviceVK::GetCurrentInitCommandBuffer()
@@ -1503,7 +1537,7 @@ void GSDeviceVK::ExecuteCommandBuffer(WaitType wait_for_completion)
 	}
 
 	// Push constants need to be refreshed each command buffer.
-	m_dirty_flags |= DIRTY_FLAG_VS_PUSH_CONSTANTS;
+	m_dirty_flags |= DIRTY_FLAG_TFX_PUSH_CONSTANTS;
 }
 
 void GSDeviceVK::DeferBufferDestruction(VkBuffer object, VmaAllocation allocation)
@@ -1600,7 +1634,7 @@ void GSDeviceVK::DisableDebugUtils()
 	}
 }
 
-VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
+GSDeviceVK::VKCachedRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 {
 	VkAttachmentReference color_reference;
 	VkAttachmentReference* color_reference_ptr = nullptr;
@@ -1714,11 +1748,13 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkCreateRenderPass failed: ");
-		return VK_NULL_HANDLE;
+		return {};
 	}
 
-	m_render_pass_cache.emplace(key.key, pass);
-	return pass;
+	VKCachedRenderPass cached_pass(pass, key);
+
+	m_render_pass_cache.emplace(key, cached_pass);
+	return cached_pass;
 }
 
 static constexpr std::string_view SPIN_SHADER = R"(
@@ -2201,6 +2237,17 @@ bool GSDeviceVK::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		m_tfx_source = std::move(*shader);
 	}
 
+	{
+		std::optional<std::string> shader = ReadShaderSource("shaders/vulkan/tfx_uber.glsl");
+		if (!shader.has_value())
+		{
+			Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan/tfx_uber.glsl.");
+			return false;
+		}
+
+		m_uber_tfx_source = std::move(*shader);
+	}
+
 	if (!CreatePipelineLayouts())
 	{
 		Host::ReportErrorAsync("GS", "Failed to create pipeline layouts");
@@ -2217,7 +2264,8 @@ bool GSDeviceVK::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		return false;
 
 	if (!CompileConvertPipelines() || !CompilePresentPipelines() || !CompileInterlacePipelines() ||
-		!CompileMergePipelines() || !CompilePostProcessingPipelines() || !InitSpinResources())
+		!CompileMergePipelines() || !CompilePostProcessingPipelines() || !InitSpinResources() ||
+		(GSConfig.ShaderCacheType >= GSShaderCacheType::Hybrid && !CompileTFXUberPipelines()))
 	{
 		Host::ReportErrorAsync("GS", "Failed to compile utility pipelines");
 		return false;
@@ -2855,6 +2903,8 @@ bool GSDeviceVK::CheckFeatures()
 	                 has_rov_storage_flags &&
 	                 !m_features.framebuffer_fetch;
 
+	m_features.uber_shader = m_features.vs_expand && m_optional_extensions.vk_ext_extended_dynamic_state_3;
+
 	return true;
 }
 
@@ -2893,12 +2943,13 @@ void GSDeviceVK::DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_ind
 	}
 }
 
-void GSDeviceVK::Draw(const GSHWDrawConfig& config, int offset, int count)
+void GSDeviceVK::Draw(const GSHWDrawConfig& config, DrawPass pass, int offset, int count)
 {
-	if (config.vs.expand != GSHWDrawConfig::VSExpand::None)
+	const GSHWDrawConfig::VSSelector& vs = config.GetVS(pass);
+	if (vs.expand != GSHWDrawConfig::VSExpand::None)
 	{
-		const bool vs_indexing = config.vs.UseVSExpandIndexBuffer();
-		const u32 vs_indexing_expansion = GetExpansionFactor(config.vs.expand);
+		const bool vs_indexing = vs.UseVSExpandIndexBuffer();
+		const u32 vs_indexing_expansion = GetExpansionFactor(vs.expand);
 		DrawIndexedPrimitiveVSExpand(offset, count, vs_indexing, vs_indexing_expansion);
 	}
 	else
@@ -2907,9 +2958,9 @@ void GSDeviceVK::Draw(const GSHWDrawConfig& config, int offset, int count)
 	}
 }
 
-void GSDeviceVK::Draw(const GSHWDrawConfig& config)
+void GSDeviceVK::Draw(const GSHWDrawConfig& config, DrawPass pass)
 {
-	Draw(config, 0, m_index.count);
+	Draw(config, pass, 0, m_index.count);
 }
 
 VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format) const
@@ -3209,7 +3260,7 @@ void GSDeviceVK::BeginRenderPassForStretchRect(
 	else
 	{
 		// integer formats, etc
-		const VkRenderPass rp = GetRenderPass(dTex->GetVkFormat(), VK_FORMAT_UNDEFINED, load_op,
+		const VKCachedRenderPass rp = GetRenderPass(dTex->GetVkFormat(), VK_FORMAT_UNDEFINED, load_op,
 			VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 		if (load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
 		{
@@ -3829,9 +3880,10 @@ void GSDeviceVK::ClearSamplerCache()
 	m_tfx_sampler = m_point_sampler;
 }
 
-static void AddMacro(std::stringstream& ss, const char* name, int value)
+template<typename T>
+static void AddMacro(std::stringstream& ss, const char* name, const T& value)
 {
-	ss << "#define " << name << " " << value << "\n";
+	ss << "#define " << name << " " << fmt::format("{}", value) << "\n";
 }
 
 static void AddShaderHeader(std::stringstream& ss)
@@ -3889,7 +3941,7 @@ VkShaderModule GSDeviceVK::GetUtilityVertexShader(const std::string& source, con
 		ss << "#define " << replace_main << " main\n";
 	ss << source;
 
-	return g_vulkan_shader_cache->GetVertexShader(ss.str());
+	return g_vulkan_shader_cache->GetVertexShader(ss.str(), false).module;
 }
 
 VkShaderModule GSDeviceVK::GetUtilityFragmentShader(const std::string& source, const char* replace_main = nullptr)
@@ -3901,7 +3953,7 @@ VkShaderModule GSDeviceVK::GetUtilityFragmentShader(const std::string& source, c
 		ss << "#define " << replace_main << " main\n";
 	ss << source;
 
-	return g_vulkan_shader_cache->GetFragmentShader(ss.str());
+	return g_vulkan_shader_cache->GetFragmentShader(ss.str(), false).module;
 }
 
 bool GSDeviceVK::CreateNullTexture()
@@ -3922,6 +3974,11 @@ bool GSDeviceVK::CreateNullTexture()
 	return true;
 }
 
+u32 GSDeviceVK::GetExpandIndexStreamBufferSize() const
+{
+	return m_features.aa1 ? INDEX_BUFFER_SIZE : 4;
+}
+
 bool GSDeviceVK::CreateBuffers()
 {
 	if (!m_vertex_stream_buffer.Create(
@@ -3938,7 +3995,7 @@ bool GSDeviceVK::CreateBuffers()
 		return false;
 	}
 
-	if (!m_expand_index_stream_buffer.Create(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, m_features.aa1 ? INDEX_BUFFER_SIZE : 4))
+	if (!m_expand_index_stream_buffer.Create(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, GetExpandIndexStreamBufferSize()))
 	{
 		Host::ReportErrorAsync("GS", "Failed to allocate expansion index buffer (VS resource)");
 		return false;
@@ -4004,9 +4061,10 @@ bool GSDeviceVK::CreatePipelineLayouts()
 	if (m_features.vs_expand)
 	{
 		dslb.AddBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
-		plb.AddPushConstants(VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GSHWDrawConfig::VSPushConstants));
+		plb.AddPushConstants(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+			0, sizeof(GSHWDrawConfig::TFXPushConstants));
 	}
-	if (m_features.aa1)
+	if (m_features.aa1 || GSConfig.ShaderCacheType >= GSShaderCacheType::Hybrid)
 		dslb.AddBinding(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
 	if ((m_tfx_ubo_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
@@ -4623,7 +4681,7 @@ bool GSDeviceVK::CompileImGuiPipeline()
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_LINE_WIDTH);
 
-	m_imgui_pipeline = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(), false);
+	m_imgui_pipeline = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(false), false);
 	if (!m_imgui_pipeline)
 	{
 		Console.Error("VK: Failed to compile ImGui pipeline");
@@ -4631,6 +4689,82 @@ bool GSDeviceVK::CompileImGuiPipeline()
 	}
 
 	Vulkan::SetObjectName(m_device, m_imgui_pipeline, "ImGui pipeline");
+	return true;
+}
+
+bool GSDeviceVK::CompileTFXUberPipelines()
+{
+	if (GSConfig.ShaderCacheType >= GSShaderCacheType::Hybrid)
+	{
+		constexpr bool COMPILE_ASYNC = true; // Change to enable/disable async compile.
+
+		Common::Timer timer;
+
+		// Compile uber pipelines async (stage 0 to start compilation, stage 1 to wait for finish).
+		for (u32 stage = 0; stage < (COMPILE_ASYNC ? 2 : 1); stage++)
+		{
+			size_t num_pipelines = 0;
+			PipelineSelector selector;
+			std::memset(&selector, 0, sizeof(selector));
+			for (u32 vs_sel = 0; vs_sel < 2; vs_sel++)
+			{
+				for (const UberPSSelector& ps_sel : UberPSSelector::GetValidSelectors())
+				{
+					for (u32 topology = 0; topology < 3; topology++)
+					{
+						for (u32 rt_i = 0; rt_i < static_cast<u32>(TFX_RT::Count); rt_i++)
+						{
+							for (u32 ds_i = 0; ds_i < static_cast<u32>(TFX_DS::Count); ds_i++)
+							{
+								TFX_RT rt = static_cast<TFX_RT>(rt_i);
+								TFX_DS ds = static_cast<TFX_DS>(ds_i);
+
+								if (!ps_sel.CompatibleWithAttachments(rt, ds))
+									continue;
+
+								selector.uber_shader = true;
+								selector.uber_vs = static_cast<GSHWDrawConfig::UberVSSelector>(vs_sel);
+								selector.uber_ps = ps_sel;
+								selector.topology = topology;
+
+								selector.rt = rt;
+								selector.ds = ds;
+
+								selector.feedback_loop_flags = FeedbackLoopFlag_None;
+								if (ps_sel.HasColorFeedback())
+									selector.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteRT;
+								if (ps_sel.HasDepthFeedback())
+									selector.feedback_loop_flags |= (FeedbackLoopFlag_ReadAndWriteDepth | FeedbackLoopFlag_ReadDepth);
+
+								if (stage == 0)
+								{
+									// Start compilation
+									const VkPipeline pipeline = GetTFXPipeline(selector, COMPILE_ASYNC);
+									if (!pipeline && !m_tfx_pipelines_async.contains(selector))
+										return false; // failed
+								}
+								else
+								{
+									// Wait for compilation to finish
+									while (!GetTFXPipeline(selector, true))
+									{
+										if (!m_tfx_pipelines_async.contains(selector))
+											return false; // failed
+										std::this_thread::sleep_for(std::chrono::milliseconds(100));
+									}
+								}
+								num_pipelines++;
+							}
+						}
+					}
+				}
+			}
+
+			if (stage == (COMPILE_ASYNC ? 1 : 0))
+				Console.WriteLn("Compiled %u uber pipelines in %.2f seconds", num_pipelines, timer.GetTimeSecondsAndReset());
+		}
+	}
+
 	return true;
 }
 
@@ -4773,11 +4907,35 @@ void GSDeviceVK::DestroyResources()
 		FreePersistentDescriptorSet(m_tfx_ubo_descriptor_set);
 
 	for (auto& it : m_tfx_pipelines)
-		vkDestroyPipeline(m_device, it.second, nullptr);
+		vkDestroyPipeline(m_device, it.second.pipeline, nullptr);
 	for (auto& it : m_tfx_fragment_shaders)
-		vkDestroyShaderModule(m_device, it.second, nullptr);
+		vkDestroyShaderModule(m_device, it.second.module, nullptr);
+	for (auto& it : m_tfx_uber_fragment_shaders)
+		vkDestroyShaderModule(m_device, it.second.module, nullptr);
 	for (auto& it : m_tfx_vertex_shaders)
-		vkDestroyShaderModule(m_device, it.second, nullptr);
+		vkDestroyShaderModule(m_device, it.second.module, nullptr);
+	for (auto& it : m_tfx_uber_vertex_shaders)
+		vkDestroyShaderModule(m_device, it.module, nullptr);
+
+	for (auto& it : m_tfx_pipelines_async)
+		vkDestroyPipeline(m_device, it.second->GetPipeline(), nullptr);
+	for (auto& it : m_tfx_fragment_shaders_async)
+		vkDestroyShaderModule(m_device, it.second->GetModule(), nullptr);
+	for (auto& it : m_tfx_uber_fragment_shaders_async)
+		vkDestroyShaderModule(m_device, it.second->GetModule(), nullptr);
+	for (auto& it : m_tfx_vertex_shaders_async)
+		vkDestroyShaderModule(m_device, it.second->GetModule(), nullptr);
+	
+	m_tfx_pipelines.clear();
+	m_tfx_fragment_shaders.clear();
+	m_tfx_uber_fragment_shaders.clear();
+	m_tfx_vertex_shaders.clear();
+
+	m_tfx_pipelines_async.clear();
+	m_tfx_fragment_shaders_async.clear();
+	m_tfx_uber_fragment_shaders_async.clear();
+	m_tfx_vertex_shaders_async.clear();
+
 	for (VkPipeline it : m_interlace)
 	{
 		if (it != VK_NULL_HANDLE)
@@ -4905,8 +5063,74 @@ void GSDeviceVK::DestroyResources()
 		vmaDestroyAllocator(m_allocator);
 }
 
-VkShaderModule GSDeviceVK::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
+static void SetVertexShaderName(VkDevice device, VkShaderModule mod, const GSHWDrawConfig::VSSelector& sel)
 {
+	Vulkan::SetObjectName(device, mod, "TFX Vertex %08X", static_cast<u32>(sel.key));
+}
+
+static void SetVertexShaderName(VkDevice device, VkShaderModule mod, const GSHWDrawConfig::UberVSSelector& sel)
+{
+	Vulkan::SetObjectName(device, mod, "TFX Uber Vertex %08X", static_cast<u32>(sel));
+}
+
+static void SetFragmentShaderName(VkDevice device, VkShaderModule mod, const GSHWDrawConfig::PSSelector& sel)
+{
+	Vulkan::SetObjectName(device, mod, "TFX Fragment %016" PRIX64 "_%016" PRIX64, sel.key_hi, sel.key_lo);
+}
+
+static void SetFragmentShaderName(VkDevice device, VkShaderModule mod, const GSDeviceVK::UberPSSelector& sel)
+{
+	Vulkan::SetObjectName(device, mod, "TFX Uber Fragment %08X", static_cast<u32>(sel.key));
+}
+
+static void SetPipelineName(VkDevice device, VkPipeline pipeline, const GSDeviceVK::PipelineSelector& sel)
+{
+	Vulkan::SetObjectName(
+		device, pipeline, "TFX Pipeline %08X/%016" PRIX64 "_%016" PRIX64, sel.vs.key, sel.ps.key_hi, sel.ps.key_lo);
+}
+
+static void SetUberPipelineName(VkDevice device, VkPipeline pipeline, const GSDeviceVK::PipelineSelector& sel)
+{
+	Vulkan::SetObjectName(
+		device, pipeline, "TFX Uber Pipeline %X/%02X", static_cast<u32>(sel.uber_vs), sel.uber_ps.key);
+}
+
+template<typename ReturnType, typename SelType, typename AsyncMapType, typename MapType>
+std::shared_ptr<ReturnType> GSDeviceVK::ProcessAsyncJob(const SelType& sel, AsyncMapType& async_map, MapType& map)
+{
+	if (!async_map.empty())
+	{
+		g_vulkan_shader_cache->ProcessAsyncCompileJobs(); // Let shader cache catch up with async compiler.
+
+		const auto it_async = async_map.find(sel);
+		if (it_async != async_map.end())
+		{
+			const std::shared_ptr<ReturnType>& job = it_async->second;
+
+			if (job->IsDone())
+			{
+				// Remove from async map and add to map.
+				map.emplace(sel, GetJobOutput(*job.get()));
+				async_map.erase(it_async);
+			}
+			else
+			{
+				return job;
+			}
+		}
+	}
+	return nullptr;
+}
+
+GSDeviceVK::VKShaderModuleOrJob GSDeviceVK::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel, bool async)
+{
+	// Check async results first.
+	if (std::shared_ptr<VKShaderJob> async_job =
+		ProcessAsyncJob<VKShaderJob>(sel.key, m_tfx_vertex_shaders_async, m_tfx_vertex_shaders))
+	{
+		return async_job; // Forward incomplete job for pipeline creation.
+	}
+
 	const auto it = m_tfx_vertex_shaders.find(sel.key);
 	if (it != m_tfx_vertex_shaders.end())
 		return it->second;
@@ -4914,31 +5138,96 @@ VkShaderModule GSDeviceVK::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 	std::stringstream ss;
 	AddShaderHeader(ss);
 	AddShaderStageMacro(ss, true, false, false);
+
+	const std::string& source = m_tfx_source; // FIXME: Unify with TFX source.
+
+	// FIXME: Just use the same process as above but set all the macros (not just dynamic).
+	AddMacro(ss, "UBER_SHADER", 0);
 	AddMacro(ss, "VS_TME", sel.tme);
 	AddMacro(ss, "VS_FST", sel.fst);
 	AddMacro(ss, "VS_IIP", sel.iip);
 	AddMacro(ss, "VS_POINT_SIZE", sel.point_size);
 	AddMacro(ss, "VS_EXPAND", static_cast<int>(sel.expand));
 	AddMacro(ss, "VS_PROVOKING_VERTEX_LAST", static_cast<int>(m_features.provoking_vertex_last));
-	ss << m_tfx_source;
 
-	VkShaderModule mod = g_vulkan_shader_cache->GetVertexShader(ss.str());
-	if (mod)
-		Vulkan::SetObjectName(m_device, mod, "TFX Vertex %08X", sel.key);
+	ss << source;
+
+	std::string full_source = ss.str();
+
+	// Start async compilation if needed.
+	if (async && !g_vulkan_shader_cache->HasVertexShader(full_source, false))
+	{
+		std::shared_ptr<VKShaderJob> job = std::make_shared<VKShaderJob>(
+			m_device, shaderc_vertex_shader, full_source, static_cast<u64>(sel.key), false);
+		g_vulkan_shader_cache->StartPipelineCompilationAsync(job);
+		m_tfx_vertex_shaders_async.emplace(sel.key, job);
+		return std::move(job);
+	}
+
+	VKCachedShaderModule mod = g_vulkan_shader_cache->GetVertexShader(full_source, false);
+
+	if (mod.module)
+		SetVertexShaderName(m_device, mod.module, sel.key);
 
 	m_tfx_vertex_shaders.emplace(sel.key, mod);
+
 	return mod;
 }
 
-VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector& sel)
+GSDeviceVK::VKShaderModuleOrJob GSDeviceVK::GetTFXUberVertexShader(GSHWDrawConfig::UberVSSelector sel)
 {
-	const auto it = m_tfx_fragment_shaders.find(sel);
-	if (it != m_tfx_fragment_shaders.end())
-		return it->second;
+	if (m_tfx_uber_vertex_shaders[static_cast<u32>(sel)].module != VK_NULL_HANDLE)
+		return m_tfx_uber_vertex_shaders[static_cast<u32>(sel)];
+
+	std::stringstream ss;
+	AddShaderHeader(ss);
+	AddShaderStageMacro(ss, true, false, false);
+
+	const std::string& source = m_uber_tfx_source; // FIXME: Unify with TFX source.
+
+	// Do the dynamic macros.
+	for (const GSHWDrawConfig::ShaderDefine& dynamic_define : GSHWDrawConfig::GetUberShaderVSSelectorDefines())
+		AddMacro(ss, dynamic_define.shader_name, dynamic_define.value);
+
+	// Do the static macros.
+	AddMacro(ss, "UBER_SHADER", 1);
+	AddMacro(ss, "UBER_VS_EXPAND_ENABLE", static_cast<u32>(sel == GSHWDrawConfig::UberVSSelector::VSExpand));
+
+	ss << source;
+
+	std::string full_source = ss.str();
+
+	VKCachedShaderModule mod = g_vulkan_shader_cache->GetVertexShader(full_source, true);
+
+	if (mod.module)
+		SetVertexShaderName(m_device, mod.module, sel);
+
+	m_tfx_uber_vertex_shaders[static_cast<u32>(sel)] = mod;
+
+	return mod;
+}
+
+GSDeviceVK::VKShaderModuleOrJob GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector& sel, bool async)
+{
+	// Check async results first.
+	if (std::shared_ptr<VKShaderJob> async_job =
+		ProcessAsyncJob<VKShaderJob>(sel, m_tfx_fragment_shaders_async, m_tfx_fragment_shaders))
+	{
+		return async_job; // Forward incomplete job for pipeline creation.
+	}
 
 	std::stringstream ss;
 	AddShaderHeader(ss);
 	AddShaderStageMacro(ss, false, false, true);
+
+	const std::string& source = m_tfx_source; // FIXME Unify uber/non-uber sources.
+
+	const auto it = m_tfx_fragment_shaders.find(sel);
+
+	if (it != m_tfx_fragment_shaders.end())
+		return it->second;
+
+	AddMacro(ss, "UBER_SHADER", 0);
 	AddMacro(ss, "PS_FST", sel.fst);
 	AddMacro(ss, "PS_WMS", sel.wms);
 	AddMacro(ss, "PS_WMT", sel.wmt);
@@ -5001,17 +5290,89 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_ANISOTROPIC_FILTERING", sel.sw_aniso);
 	AddMacro(ss, "PS_ROV_COLOR", sel.rov_color);
 	AddMacro(ss, "PS_ROV_DEPTH", static_cast<u32>(sel.rov_depth));
-	ss << m_tfx_source;
+	AddMacro(ss, "PS_ZMASK", static_cast<u32>(sel.zmask));
+	AddMacro(ss, "PS_CMASK", static_cast<u32>(sel.cmask));
+	
+	ss << source;
 
-	VkShaderModule mod = g_vulkan_shader_cache->GetFragmentShader(ss.str());
-	if (mod)
-		Vulkan::SetObjectName(m_device, mod, "TFX Fragment %016" PRIX64 "_%016" PRIX64, sel.key_hi, sel.key_lo);
+	const std::string full_source = ss.str();
+
+	// Start async compilation if needed.
+	if (async && !g_vulkan_shader_cache->HasFragmentShader(full_source, false))
+	{
+		std::shared_ptr<VKShaderJob> job = std::make_shared<VKShaderJob>(
+			m_device, shaderc_fragment_shader, full_source, GSHWDrawConfig::PSSelectorHash()(sel), false);
+		g_vulkan_shader_cache->StartPipelineCompilationAsync(job);
+		m_tfx_fragment_shaders_async.emplace(sel, job);
+		return std::move(job);
+	}
+
+	VKCachedShaderModule mod = g_vulkan_shader_cache->GetFragmentShader(full_source, false);
+
+	if (mod.module)
+		SetFragmentShaderName(m_device, mod.module, sel);
 
 	m_tfx_fragment_shaders.emplace(sel, mod);
+
 	return mod;
 }
 
-VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
+GSDeviceVK::VKShaderModuleOrJob GSDeviceVK::GetTFXUberFragmentShader(const UberPSSelector& sel, bool async)
+{
+	// Check async results first.
+	if (std::shared_ptr<VKShaderJob> async_job =
+		ProcessAsyncJob<VKShaderJob>(sel.key, m_tfx_uber_fragment_shaders_async, m_tfx_uber_fragment_shaders))
+	{
+		return async_job; // Forward incomplete job for pipeline creation.
+	}
+
+	const auto it = m_tfx_uber_fragment_shaders.find(sel.key);
+
+	if (it != m_tfx_uber_fragment_shaders.end())
+		return it->second;
+
+	std::stringstream ss;
+	AddShaderHeader(ss);
+	AddShaderStageMacro(ss, false, false, true);
+
+	const std::string& source = m_uber_tfx_source; // FIXME Unify uber/non-uber sources.
+
+	// Do the dynamic macros
+	for (const GSHWDrawConfig::ShaderDefine& dynamic_define : GSHWDrawConfig::GetUberShaderPSSelectorDefines())
+		AddMacro(ss, dynamic_define.shader_name, dynamic_define.value);
+
+	// Do the static macros.
+	AddMacro(ss, "UBER_SHADER", 1);
+	AddMacro(ss, "UBER_COLOR", static_cast<u32>(sel.color));
+	AddMacro(ss, "UBER_COLOR1", static_cast<u32>(sel.color1));
+	AddMacro(ss, "UBER_DEPTH", static_cast<u32>(sel.depth));
+	AddMacro(ss, "UBER_DATE_INIT", static_cast<u32>(sel.date_init));
+
+	ss << source;
+
+	const std::string full_source = ss.str();
+
+	// Start async compilation if needed.
+	if (async && !g_vulkan_shader_cache->HasFragmentShader(full_source, true))
+	{
+		std::shared_ptr<VKShaderJob> job = std::make_shared<VKShaderJob>(
+			m_device, shaderc_fragment_shader, full_source, sel.key, true);
+		g_vulkan_shader_cache->StartPipelineCompilationAsync(job);
+		m_tfx_uber_fragment_shaders_async.emplace(sel.key, job);
+		return std::move(job);
+	}
+
+	VKCachedShaderModule mod = g_vulkan_shader_cache->GetFragmentShader(full_source, true);
+
+	if (mod.module)
+		SetFragmentShaderName(m_device, mod.module, sel);
+
+	m_tfx_uber_fragment_shaders.emplace(sel.key, mod);
+
+	return mod;
+}
+
+GSDeviceVK::VKPipelineOrJob GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p, bool async)
 {
 	static constexpr std::array<VkPrimitiveTopology, 3> topology_lookup = {{
 		VK_PRIMITIVE_TOPOLOGY_POINT_LIST, // Point
@@ -5028,30 +5389,40 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 		pps.no_color1 = true;
 	}
 
-	VkShaderModule vs = GetTFXVertexShader(p.vs);
-	VkShaderModule fs = GetTFXFragmentShader(pps);
-	if (vs == VK_NULL_HANDLE || fs == VK_NULL_HANDLE)
-		return VK_NULL_HANDLE;
+	VKShaderModuleOrJob vs = p.uber_shader ? GetTFXUberVertexShader(p.uber_vs) : GetTFXVertexShader(p.vs, async);
+	VKShaderModuleOrJob fs = p.uber_shader ? GetTFXUberFragmentShader(p.uber_ps, async) : GetTFXFragmentShader(pps, async);
+
+	if (IsNullShaderModule(vs) || IsNullShaderModule(fs))
+		return {}; // Failed
+
+	if (!async && !(IsShaderModule(vs) && IsShaderModule(fs)))
+		return {}; // Not allowed to do async.
+
+	VKShaderCache::ShaderCacheIndexKey vs_key = IsShaderModule(vs) ? GetShaderModule(vs).key : GetShaderJob(vs)->GetCacheKey();
+	VKShaderCache::ShaderCacheIndexKey fs_key = IsShaderModule(fs) ? GetShaderModule(fs).key : GetShaderJob(fs)->GetCacheKey();
 
 	Vulkan::GraphicsPipelineBuilder gpb;
 	SetPipelineProvokingVertex(m_features, gpb);
 
 	// Common state
 	gpb.SetPipelineLayout(m_tfx_pipeline_layout);
-	if (IsDATEModePrimIDInit(p.ps.date))
+
+	VKCachedRenderPass rp;
+
+	if (IsDATEModePrimIDInit(p.HasDATEPrimIDInit()))
 	{
 		// DATE image prepass
-		gpb.SetRenderPass(m_primid_image_setup_render_passes[p.ds][0], 0);
+		rp = m_primid_image_setup_render_passes[p.HasDS()][0];
 	}
 	else
 	{
-		gpb.SetRenderPass(
-			GetTFXRenderPass(p.rt, p.ds, p.ps.colclip_hw, p.dss.date,
-				p.IsRTFeedbackLoop(), p.IsTestingAndSamplingDepth(),
-				p.rt ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-				p.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
-			0);
+		rp = GetTFXRenderPass(p.HasRT(), p.HasDS(), p.HasColclipHW(), p.HasDATEStencil(),
+			p.IsRTFeedbackLoop(), p.IsTestingAndSamplingDepth(),
+			p.HasRT() ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+			p.HasDS() ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE);
 	}
+	gpb.SetRenderPass(rp, 0);
+
 	gpb.SetPrimitiveTopology(topology_lookup[p.topology]);
 	gpb.SetRasterizationState(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
 	if (m_optional_extensions.vk_ext_line_rasterization &&
@@ -5062,13 +5433,29 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	gpb.SetDynamicViewportAndScissorState();
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_LINE_WIDTH);
+	if (p.uber_shader)
+	{
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_COLOR_BLEND_ENABLE_EXT);
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_COLOR_BLEND_EQUATION_EXT);
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_COLOR_WRITE_MASK_EXT);
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE);
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE);
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_DEPTH_COMPARE_OP);
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE);
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_STENCIL_OP);
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_STENCIL_COMPARE_MASK);
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_STENCIL_WRITE_MASK);
+		gpb.AddDynamicState(VK_DYNAMIC_STATE_STENCIL_REFERENCE);
+	}
 
 	// Shaders
-	gpb.SetVertexShader(vs);
-	gpb.SetFragmentShader(fs);
+	if (IsShaderModule(vs))
+		gpb.SetVertexShader(GetShaderModule(vs).module);
+	if (IsShaderModule(fs))
+		gpb.SetFragmentShader(GetShaderModule(fs).module);
 
 	// IA
-	if (p.vs.expand == GSHWDrawConfig::VSExpand::None)
+	if (!p.HasVSExpand())
 	{
 		gpb.AddVertexBuffer(0, sizeof(GSVertex));
 		gpb.AddVertexAttribute(0, 0, VK_FORMAT_R32G32_SFLOAT, 0); // ST
@@ -5081,18 +5468,15 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	}
 
 	// DepthStencil
-	static const VkCompareOp ztst[] = {
-		VK_COMPARE_OP_NEVER, VK_COMPARE_OP_ALWAYS, VK_COMPARE_OP_GREATER_OR_EQUAL, VK_COMPARE_OP_GREATER};
-	gpb.SetDepthState((p.dss.ztst != ZTST_ALWAYS || p.dss.zwe), p.dss.zwe, ztst[p.dss.ztst]);
+	gpb.SetDepthState((p.dss.ztst != ZTST_ALWAYS || p.dss.zwe), p.dss.zwe, VK_COMPARE_OPS[p.dss.ztst]);
 	if (p.dss.date)
 	{
-		const VkStencilOpState sos{VK_STENCIL_OP_KEEP, p.dss.date_one ? VK_STENCIL_OP_ZERO : VK_STENCIL_OP_KEEP,
-			VK_STENCIL_OP_KEEP, VK_COMPARE_OP_EQUAL, 1u, 1u, 1u};
+		const VkStencilOpState sos = GetDATEStencilOpState(p.dss.date_one);
 		gpb.SetStencilState(true, sos, sos);
 	}
 
 	// Blending
-	if (IsDATEModePrimIDInit(p.ps.date))
+	if (p.HasDATEPrimIDInit())
 	{
 		// image DATE prepass
 		gpb.SetBlendAttachment(0, true, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_MIN, VK_BLEND_FACTOR_ONE,
@@ -5100,20 +5484,8 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	}
 	else if (pbs.enable)
 	{
-		// clang-format off
-		static constexpr std::array<VkBlendFactor, 16> vk_blend_factors = { {
-			VK_BLEND_FACTOR_SRC_COLOR, VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR, VK_BLEND_FACTOR_DST_COLOR, VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR,
-			VK_BLEND_FACTOR_SRC1_COLOR, VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-			VK_BLEND_FACTOR_DST_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA, VK_BLEND_FACTOR_SRC1_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA,
-			VK_BLEND_FACTOR_CONSTANT_COLOR, VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO
-		}};
-		static constexpr std::array<VkBlendOp, 3> vk_blend_ops = {{
-				VK_BLEND_OP_ADD, VK_BLEND_OP_SUBTRACT, VK_BLEND_OP_REVERSE_SUBTRACT
-		}};
-		// clang-format on
-
-		gpb.SetBlendAttachment(0, true, vk_blend_factors[pbs.src_factor], vk_blend_factors[pbs.dst_factor],
-			vk_blend_ops[pbs.op], vk_blend_factors[pbs.src_factor_alpha], vk_blend_factors[pbs.dst_factor_alpha],
+		gpb.SetBlendAttachment(0, true, VK_BLEND_FACTORS[pbs.src_factor], VK_BLEND_FACTORS[pbs.dst_factor],
+			VK_BLEND_OPS[pbs.op], VK_BLEND_FACTORS[pbs.src_factor_alpha], VK_BLEND_FACTORS[pbs.dst_factor_alpha],
 			VK_BLEND_OP_ADD, p.cms.wrgba);
 	}
 	else
@@ -5128,30 +5500,86 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	if (m_features.framebuffer_fetch && p.IsRTFeedbackLoop())
 		gpb.AddBlendFlags(VK_PIPELINE_COLOR_BLEND_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_BIT_EXT);
 
-	VkPipeline pipeline = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true));
-	if (pipeline)
+	const VKShaderCache::GraphicsPipelineCacheIndexKey pipeline_key = (IsShaderModule(vs) && IsShaderModule(fs))
+		? g_vulkan_shader_cache->GetGraphicsPipelineCacheKey(vs_key, fs_key, rp.key.key, gpb.GetCI())
+		: VKShaderCache::GraphicsPipelineCacheIndexKey{};
+	const u64 pipeline_hash = PipelineSelectorHash()(p);
+
+	// Handle async compilation if requested.
+	if (async && (!IsShaderModule(vs) || !IsShaderModule(fs) ||
+		!g_vulkan_shader_cache->HasGraphicsPipeline(pipeline_key, p.uber_shader)))
 	{
-		Vulkan::SetObjectName(
-			m_device, pipeline, "TFX Pipeline %08X/%016" PRIX64 "_%016" PRIX64, p.vs.key, p.ps.key_hi, p.ps.key_lo);
+		const auto it = m_tfx_pipelines_async.find(p);
+		if (it != m_tfx_pipelines_async.end())
+		{
+			return it->second.get();
+		}
+		else
+		{
+			// Submit pipeline async compilation.
+			std::shared_ptr<VKPipelineJob> job = std::make_shared<VKPipelineJob>(
+				m_device, g_vulkan_shader_cache->GetPipelineCache(true, p.uber_shader),
+				gpb, vs_key, fs_key, rp.key.key, pipeline_hash, p.uber_shader);
+
+			if (IsShaderJob(vs))
+				job->SetVSJob(GetShaderJob(vs));
+
+			if (IsShaderJob(fs))
+				job->SetFSJob(GetShaderJob(fs));
+
+			m_tfx_pipelines_async.emplace(p, job);
+			g_vulkan_shader_cache->StartPipelineCompilationAsync(job);
+
+			return job.get();
+		}
+	}
+
+	if (p.uber_shader && !g_vulkan_shader_cache->HasGraphicsPipeline(pipeline_key, p.uber_shader))
+	{
+		bool valid = p.uber_ps.IsValid();
+		Console.Warning("Warning: Creating an uber pipeline %016" PRIX64 " synchronously!", pipeline_hash);
+		// Console.Warning("ps=%08X vs=%08x key=%08x", p.uber_ps.key, (u32)p.uber_vs, p.key); // FIXME: DELETE AFTER DEBUGGING
+	}
+
+	VKCachedPipeline pipeline = g_vulkan_shader_cache->GetGraphicsPipeline(m_device, vs_key, fs_key, rp.key.key,
+		gpb.GetCI(), p.uber_shader);
+	if (pipeline.pipeline)
+	{
+		if (p.uber_shader)
+			SetUberPipelineName(m_device, pipeline.pipeline, p);
+		else
+			SetPipelineName(m_device, pipeline.pipeline, p);
 	}
 
 	return pipeline;
 }
 
-VkPipeline GSDeviceVK::GetTFXPipeline(const PipelineSelector& p)
+VkPipeline GSDeviceVK::GetTFXPipeline(const PipelineSelector& p, bool async)
 {
+	// Check async results first.
+	if (std::shared_ptr<VKPipelineJob> async_job =
+		ProcessAsyncJob<VKPipelineJob>(p, m_tfx_pipelines_async, m_tfx_pipelines))
+	{
+		return nullptr; // Don't forward incomplete pipelines jobs.
+	}
+
 	const auto it = m_tfx_pipelines.find(p);
 	if (it != m_tfx_pipelines.end())
-		return it->second;
+		return it->second.pipeline;
 
-	VkPipeline pipeline = CreateTFXPipeline(p);
-	m_tfx_pipelines.emplace(p, pipeline);
-	return pipeline;
+	VKPipelineOrJob pipeline = CreateTFXPipeline(p, async);
+
+	if (IsPipelineJob(pipeline))
+		return VK_NULL_HANDLE; // Just started compiling
+
+	m_tfx_pipelines.emplace(p, GetPipeline(pipeline));
+	return GetPipeline(pipeline).pipeline;
 }
 
 bool GSDeviceVK::BindDrawPipeline(const PipelineSelector& p)
 {
 	VkPipeline pipeline = GetTFXPipeline(p);
+
 	if (pipeline == VK_NULL_HANDLE)
 		return false;
 
@@ -5163,7 +5591,7 @@ bool GSDeviceVK::BindDrawPipeline(const PipelineSelector& p)
 void GSDeviceVK::InitializeState()
 {
 	m_current_framebuffer = VK_NULL_HANDLE;
-	m_current_render_pass = VK_NULL_HANDLE;
+	m_current_render_pass = VKCachedRenderPass();
 
 	for (u32 i = 0; i < NUM_TFX_TEXTURES; i++)
 		m_tfx_textures[i] = m_null_texture.get();
@@ -5202,10 +5630,10 @@ bool GSDeviceVK::CreatePersistentDescriptorSets()
 		dsub.AddBufferDescriptorWrite(m_tfx_ubo_descriptor_set, 2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 			m_vertex_stream_buffer.GetBuffer(), 0, VERTEX_BUFFER_SIZE);
 	}
-	if (m_features.aa1)
+	if (m_features.aa1 || GSConfig.ShaderCacheType >= GSShaderCacheType::Hybrid)
 	{
 		dsub.AddBufferDescriptorWrite(m_tfx_ubo_descriptor_set, 3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-			m_expand_index_stream_buffer.GetBuffer(), 0, INDEX_BUFFER_SIZE);
+			m_expand_index_stream_buffer.GetBuffer(), 0, GetExpandIndexStreamBufferSize());
 	}
 	dsub.Update(dev);
 	Vulkan::SetObjectName(dev, m_tfx_ubo_descriptor_set, "Persistent TFX UBO set");
@@ -5243,7 +5671,7 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completi
 {
 	Console.Warning("VK: Executing command buffer due to '%s'", reason);
 
-	const VkRenderPass render_pass = m_current_render_pass;
+	const VKCachedRenderPass render_pass = m_current_render_pass;
 	const GSVector4i render_pass_area = m_current_render_pass_area;
 	const GSVector4i scissor = m_scissor;
 	GSTexture* const current_rt = m_current_render_target;
@@ -5545,7 +5973,7 @@ bool GSDeviceVK::InRenderPass()
 	return m_current_render_pass != VK_NULL_HANDLE;
 }
 
-void GSDeviceVK::BeginRenderPass(VkRenderPass rp, const GSVector4i& rect)
+void GSDeviceVK::BeginRenderPass(VKCachedRenderPass rp, const GSVector4i& rect)
 {
 	if (m_current_render_pass != VK_NULL_HANDLE)
 		EndRenderPass();
@@ -5561,9 +5989,9 @@ void GSDeviceVK::BeginRenderPass(VkRenderPass rp, const GSVector4i& rect)
 	vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &begin_info, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void GSDeviceVK::BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count)
+void GSDeviceVK::BeginClearRenderPass(VKCachedRenderPass rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count)
 {
-	if (m_current_render_pass != VK_NULL_HANDLE)
+	if (!m_current_render_pass.IsNull())
 		EndRenderPass();
 
 	m_current_render_pass = rp;
@@ -5576,14 +6004,14 @@ void GSDeviceVK::BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, c
 	vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &begin_info, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void GSDeviceVK::BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, u32 clear_color)
+void GSDeviceVK::BeginClearRenderPass(VKCachedRenderPass rp, const GSVector4i& rect, u32 clear_color)
 {
 	alignas(16) VkClearValue cv;
 	GSVector4::store<true>((void*)cv.color.float32, GSVector4::unorm8(clear_color));
 	BeginClearRenderPass(rp, rect, &cv, 1);
 }
 
-void GSDeviceVK::BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, float depth, u8 stencil)
+void GSDeviceVK::BeginClearRenderPass(VKCachedRenderPass rp, const GSVector4i& rect, float depth, u8 stencil)
 {
 	VkClearValue cv;
 	cv.depthStencil.depth = depth;
@@ -5593,10 +6021,10 @@ void GSDeviceVK::BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, f
 
 void GSDeviceVK::EndRenderPass()
 {
-	if (m_current_render_pass == VK_NULL_HANDLE)
+	if (m_current_render_pass.IsNull())
 		return;
 
-	m_current_render_pass = VK_NULL_HANDLE;
+	m_current_render_pass = {};
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
 	vkCmdEndRenderPass(GetCurrentCommandBuffer());
@@ -5723,7 +6151,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 	if (m_current_pipeline_layout != PipelineLayout::TFX)
 	{
 		m_current_pipeline_layout = PipelineLayout::TFX;
-		flags |= DIRTY_FLAG_TFX_UBO | DIRTY_FLAG_TFX_TEXTURES | DIRTY_FLAG_VS_PUSH_CONSTANTS;
+		flags |= DIRTY_FLAG_TFX_UBO | DIRTY_FLAG_TFX_TEXTURES | DIRTY_FLAG_TFX_PUSH_CONSTANTS | DIRTY_TFX_UBER_STATE;
 
 		// Clear out the RT/DS binding if feedback loop isn't on, because it'll be in the wrong state and make
 		// the validation layer cranky. Not a big deal since we need to write it anyway.
@@ -5743,8 +6171,8 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			&m_tfx_ubo_descriptor_set, NUM_TFX_DYNAMIC_OFFSETS, m_tfx_dynamic_offsets.data());
 	}
 
-	if (m_features.vs_expand && (flags & DIRTY_FLAG_VS_PUSH_CONSTANTS))
-		SetVSPushConstants(m_vs_pc_cache.base_vertex, m_vs_pc_cache.base_index, true);
+	if (m_features.vs_expand && (flags & DIRTY_FLAG_TFX_PUSH_CONSTANTS))
+		WriteTFXPushConstants(0, sizeof(m_tfx_pc_cache) / sizeof(u32));
 
 	if (flags & DIRTY_FLAG_TFX_TEXTURES)
 	{
@@ -5804,6 +6232,77 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_tfx_pipeline_layout, TFX_DESCRIPTOR_SET_TEXTURES);
 	}
 
+	if (m_uber_dynamic_state.enabled)
+	{
+		if (flags & DIRTY_FLAG_TFX_UBER_COLOR_BLEND)
+		{
+			if (m_uber_dynamic_state.date_primid_init)
+			{
+				VkColorBlendEquationEXT vk_blend_eqn = { VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO,
+					VK_BLEND_OP_MIN, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD };
+				VkBool32 vk_enable = true;
+				vkCmdSetColorBlendEquationEXT(cmdbuf, 0, 1, &vk_blend_eqn);
+				vkCmdSetColorBlendEnableEXT(cmdbuf, 0, 1, &vk_enable);
+			}
+			else if (m_uber_dynamic_state.bs.enable)
+			{
+				const GSHWDrawConfig::BlendState& bs = m_uber_dynamic_state.bs;
+				VkColorBlendEquationEXT vk_blend_eqn = { VK_BLEND_FACTORS[bs.src_factor], VK_BLEND_FACTORS[bs.dst_factor],
+					VK_BLEND_OPS[bs.op], VK_BLEND_FACTORS[bs.src_factor_alpha], VK_BLEND_FACTORS[bs.dst_factor_alpha],
+					VK_BLEND_OP_ADD };
+				VkBool32 vk_enable = true;
+				vkCmdSetColorBlendEquationEXT(cmdbuf, 0, 1, &vk_blend_eqn);
+				vkCmdSetColorBlendEnableEXT(cmdbuf, 0, 1, &vk_enable);
+			}
+			else
+			{
+				VkColorBlendEquationEXT vk_blend_eqn = { VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
+					VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD };
+				VkBool32 vk_enable = false;
+				vkCmdSetColorBlendEquationEXT(cmdbuf, 0, 1, &vk_blend_eqn);
+				vkCmdSetColorBlendEnableEXT(cmdbuf, 0, 1, &vk_enable);
+			}
+		}
+
+		if (flags & DIRTY_FLAG_TFX_UBER_COLOR_MASK)
+		{
+			if (m_uber_dynamic_state.date_primid_init)
+			{
+				VkColorComponentFlags vk_color_mask = VK_COLOR_COMPONENT_R_BIT;
+				vkCmdSetColorWriteMaskEXT(cmdbuf, 0, 1, &vk_color_mask);
+			}
+			else
+			{
+				VkColorComponentFlags vk_color_mask = static_cast<VkColorComponentFlags>(m_uber_dynamic_state.cms.wrgba);
+				vkCmdSetColorWriteMaskEXT(cmdbuf, 0, 1, &vk_color_mask);
+			}
+		}
+
+		if (flags & DIRTY_FLAG_TFX_UBER_DEPTH)
+		{
+			vkCmdSetDepthTestEnable(cmdbuf, true);
+			vkCmdSetDepthCompareOp(cmdbuf, VK_COMPARE_OPS[m_uber_dynamic_state.dss.ztst]);
+			vkCmdSetDepthWriteEnable(cmdbuf, m_uber_dynamic_state.dss.zwe);
+		}
+
+		if (flags & DIRTY_FLAG_TFX_UBER_STENCIL)
+		{
+			if (m_uber_dynamic_state.dss.date)
+			{
+				const VkStencilOpState& sos = GetDATEStencilOpState(m_uber_dynamic_state.dss.date_one);
+				vkCmdSetStencilOp(cmdbuf, VK_STENCIL_FACE_FRONT_AND_BACK, sos.failOp, sos.passOp, sos.depthFailOp, sos.compareOp);
+				vkCmdSetStencilCompareMask(cmdbuf, VK_STENCIL_FACE_FRONT_AND_BACK, 1);
+				vkCmdSetStencilWriteMask(cmdbuf, VK_STENCIL_FACE_FRONT_AND_BACK, 1);
+				vkCmdSetStencilReference(cmdbuf, VK_STENCIL_FACE_FRONT_AND_BACK, 1);
+				vkCmdSetStencilTestEnable(cmdbuf, true);
+			}
+			else
+			{
+				vkCmdSetStencilTestEnable(cmdbuf, false);
+			}
+		}
+	}
+
 	ApplyBaseState(flags, cmdbuf);
 	return true;
 }
@@ -5846,15 +6345,30 @@ void GSDeviceVK::SetPSConstantBuffer(const GSHWDrawConfig::PSConstantBuffer& cb)
 
 void GSDeviceVK::SetVSPushConstants(u32 base_vertex, u32 base_index, bool force_update)
 {
-	GSHWDrawConfig::VSPushConstants pc;
-	pc.base_vertex = base_vertex;
-	pc.base_index = base_index;
-
-	if (m_vs_pc_cache.Update(pc) || force_update)
+	GSHWDrawConfig::VSPushConstants vs_pc;
+	vs_pc.base_vertex = base_vertex;
+	vs_pc.base_index = base_index;
+	if (m_tfx_pc_cache.vs_pc.Update(vs_pc) || force_update)
 	{
-		vkCmdPushConstants(GetCurrentCommandBuffer(), m_tfx_pipeline_layout,
-			VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(pc), &pc);
+		// Need constants per draw call so write immediately.
+		WriteTFXPushConstants(
+			GSHWDrawConfig::TFXPushConstants::VS_PC_OFFSET,
+			GSHWDrawConfig::TFXPushConstants::VS_PC_NUM_CONSTANTS);
 	}
+}
+
+void GSDeviceVK::SetUberDynamicSelector(const GSHWDrawConfig::UberDynamicSelector& sel)
+{
+	if (m_tfx_pc_cache.uber_selector.Update(sel))
+		m_dirty_flags |= DIRTY_FLAG_TFX_PUSH_CONSTANTS; // Needs constants per pipeline so just set dirty bit.
+}
+
+void GSDeviceVK::WriteTFXPushConstants(u32 offset, u32 num_constants)
+{
+	// Offsets/counts are in units of 32 bit constants for uniformity with DX12 root constants.
+	vkCmdPushConstants(GetCurrentCommandBuffer(), m_tfx_pipeline_layout,
+		VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+		offset * sizeof(u32), num_constants * sizeof(u32), &m_tfx_pc_cache);
 }
 
 void GSDeviceVK::SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox)
@@ -5949,17 +6463,17 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 
 	// cut down the configuration for the prepass, we don't need blending or any feedback loop
 	PipelineSelector& pipe = m_pipeline_selector;
-	UpdateHWPipelineSelector(config, pipe);
+	UpdateHWPipelineSelector(config, DrawPass::PrimID, pipe);
 	pipe.dss.zwe = false;
 	pipe.cms.wrgba = 0;
 	pipe.bs = {};
 	pipe.feedback_loop_flags = FeedbackLoopFlag_None;
-	pipe.rt = true;
+	pipe.rt = TFX_RT::PrimID;
 	pipe.ps.blend_a = pipe.ps.blend_b = pipe.ps.blend_c = pipe.ps.blend_d = false;
 	pipe.ps.no_color = false;
 	pipe.ps.no_color1 = true;
 	if (BindDrawPipeline(pipe))
-		Draw(config);
+		Draw(config, DrawPass::PrimID);
 
 	// image is initialized/prepass is done, so finish up and get ready to do the "real" draw
 	EndRenderPass();
@@ -5972,6 +6486,46 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 	image->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 	PSSetShaderResource(3, image, false);
 	return image;
+}
+
+bool GSDeviceVK::StartPipelineCompilationAsync(const GSHWDrawConfig& config)
+{
+	// Note: this function does not catch certain pipeline combinations, such as those
+	// created by render pass restart optimizations, DATE setup, colclip resolve, etc.
+	// However, such combinations should be relatively rare.
+
+	bool compiling_async = false;
+
+	PipelineSelector selector{};
+
+	UpdateHWPipelineSelector(config, DrawPass::Main, selector);
+	if (!m_tfx_pipelines.contains(selector))
+	{
+		GetTFXPipeline(selector, true);
+		compiling_async = true;
+	}
+
+	if (config.alpha_second_pass.enable)
+	{
+		UpdateHWPipelineSelector(config, DrawPass::AlphaSecond, selector);
+		if (!m_tfx_pipelines.contains(m_pipeline_selector))
+		{
+			GetTFXPipeline(m_pipeline_selector, true);
+			compiling_async = true;
+		}
+	}
+
+	if (config.blend_multi_pass.enable)
+	{
+		UpdateHWPipelineSelector(config, DrawPass::Blend, selector);
+		if (!m_tfx_pipelines.contains(m_pipeline_selector))
+		{
+			GetTFXPipeline(m_pipeline_selector, true);
+			compiling_async = true;
+		}
+	}
+
+	return compiling_async;
 }
 
 void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
@@ -6026,7 +6580,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	// figure out the pipeline
 	PipelineSelector& pipe = m_pipeline_selector;
-	UpdateHWPipelineSelector(config, pipe);
+	UpdateHWPipelineSelector(config, DrawPass::Main, pipe);
 
 	// now blit the colclip texture back to the original target
 	if (colclip_rt)
@@ -6050,23 +6604,23 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 				if (draw_ds)
 					cvs[cv_count++].depthStencil = {draw_ds->GetClearDepth(), 1};
 
-				BeginClearRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
+				BeginClearRenderPass(GetTFXRenderPass(true, pipe.HasDS(), false, false, pipe.IsRTFeedbackLoop(),
 										 pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_CLEAR,
-										 pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
+										 pipe.HasDS() ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 					draw_rt->GetRect(), cvs, cv_count);
 				draw_rt->SetState(GSTexture::State::Dirty);
 			}
 			else
 			{
-				BeginRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
+				BeginRenderPass(GetTFXRenderPass(true, pipe.HasDS(), false, false, pipe.IsRTFeedbackLoop(),
 									pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_LOAD,
-									pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
+									pipe.HasDS() ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 					draw_rt->GetRect());
 			}
 
 			const GSVector4 drawareaf = GSVector4(config.colclip_update_area);
 			const GSVector4 sRect(drawareaf / GSVector4(rtsize).xyxy());
-			SetPipeline(m_colclip_finish_pipelines[pipe.ds][pipe.IsRTFeedbackLoop()]);
+			SetPipeline(m_colclip_finish_pipelines[pipe.HasDS()][pipe.IsRTFeedbackLoop()]);
 			SetUtilityTexture(colclip_rt, m_point_sampler);
 			DrawStretchRect(sRect, drawareaf, rtsize);
 
@@ -6078,7 +6632,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 		else
 		{
-			pipe.ps.colclip_hw = 1;
+			config.ps.colclip_hw = true;
+			UpdateHWPipelineSelector(config, DrawPass::Main, pipe);
 			draw_rt = colclip_rt;
 		}
 	}
@@ -6108,7 +6663,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	}
 
 	// Switch to colclip target for colclip hw rendering
-	if (pipe.ps.colclip_hw)
+	if (pipe.HasColclipHW())
 	{
 		if (!colclip_rt)
 		{
@@ -6157,13 +6712,14 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		PSSetShaderResource(0, nullptr, false);
 	}
 
-	// render pass restart optimizations
+	// Render pass restart optimizations.
+	// Don't do for uber shader since we don't want to create new uber pipelines.
 	if (colclip_rt && (config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertAndResolve || config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly))
 	{
 		// colclip hw requires blitting.
 		EndRenderPass();
 	}
-	else if (InRenderPass() &&
+	else if (InRenderPass() && !config.uber_shader && 
 		((draw_rt && m_current_render_target == draw_rt) ||
 		(draw_ds && m_current_depth_target == draw_ds)))
 	{
@@ -6173,13 +6729,13 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			draw_ds && m_current_render_target->GetSize() == draw_ds->GetSize())
 		{
 			draw_rt = m_current_render_target;
-			m_pipeline_selector.rt = true;
+			pipe.rt = TFX_RT::Color;
 		}
 		else if (!(draw_ds || draw_ds_rov) && m_current_depth_target && config.tex != m_current_depth_target &&
 			draw_rt && m_current_depth_target->GetSize() == draw_rt->GetSize())
 		{
 			draw_ds = m_current_depth_target;
-			m_pipeline_selector.ds = true;
+			pipe.ds = TFX_DS::Depth;
 		}
 
 		// Prefer keeping feedback loop enabled, that way we're not constantly restarting render passes
@@ -6279,14 +6835,14 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	{
 		const VkAttachmentLoadOp rt_op = GetLoadOpForTexture(draw_rt);
 		const VkAttachmentLoadOp ds_op = GetLoadOpForTexture(draw_ds);
-		const VkRenderPass rp = GetTFXRenderPass(pipe.rt, pipe.ds, pipe.ps.colclip_hw,
+		const VKCachedRenderPass rp = GetTFXRenderPass(pipe.HasRT(), pipe.HasDS(), pipe.HasColclipHW(),
 			config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil, pipe.IsRTFeedbackLoop(),
 			pipe.IsTestingAndSamplingDepth(), rt_op, ds_op);
 		const bool is_clearing_rt = (rt_op == VK_ATTACHMENT_LOAD_OP_CLEAR || ds_op == VK_ATTACHMENT_LOAD_OP_CLEAR);
 
 		// Only draw to the active area of the colclip hw target. Except when depth is cleared, we need to use the full
 		// buffer size, otherwise it'll only clear the draw part of the depth buffer.
-		const GSVector4i render_area = (pipe.ps.colclip_hw && (config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertAndResolve) && ds_op != VK_ATTACHMENT_LOAD_OP_CLEAR)
+		const GSVector4i render_area = (pipe.HasColclipHW() && (config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertAndResolve) && ds_op != VK_ATTACHMENT_LOAD_OP_CLEAR)
 		                             ? config.drawarea
 		                             : GSVector4i::loadh(rtsize);
 
@@ -6298,7 +6854,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			if (draw_rt)
 			{
 				GSVector4 clear_color = draw_rt->GetClearForFormat();
-				if (pipe.ps.colclip_hw)
+				if (pipe.HasColclipHW())
 				{
 					// Denormalize clear color for hw colclip.
 					clear_color *= GSVector4::cxpr(255.0f / 65535.0f, 255.0f / 65535.0f, 255.0f / 65535.0f, 1.0f);
@@ -6330,7 +6886,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	{
 		OMSetRenderTargets(draw_rt, draw_ds, GSVector4i::loadh(rtsize), static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
 		SetUtilityTexture(static_cast<GSTextureVK*>(config.rt), m_point_sampler);
-		SetPipeline(m_colclip_setup_pipelines[pipe.ds][pipe.IsRTFeedbackLoop()]);
+		SetPipeline(m_colclip_setup_pipelines[pipe.HasDS()][pipe.IsRTFeedbackLoop()]);
 
 		const GSVector4 drawareaf = GSVector4((config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly) ? GSVector4i::loadh(rtsize) : config.drawarea);
 		const GSVector4 sRect(drawareaf / GSVector4(rtsize).xyxy());
@@ -6346,23 +6902,19 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	// now we can do the actual draw
 	if (BindDrawPipeline(pipe))
-		SendHWDraw(config, pipe.IsRTFeedbackLoop() ? draw_rt : nullptr, pipe.IsDepthFeedbackLoop() ? draw_ds : nullptr,
-			config.require_one_barrier, config.require_full_barrier);
+		SendHWDraw(config, DrawPass::Main,
+			pipe.IsRTFeedbackLoop() ? draw_rt : nullptr, pipe.IsDepthFeedbackLoop() ? draw_ds : nullptr);
 
 	// blend second pass
 	if (config.blend_multi_pass.enable)
 	{
 		if (config.blend_multi_pass.blend.constant_enable)
 			SetBlendConstants(config.blend_multi_pass.blend.constant);
-
-		pipe.bs = config.blend_multi_pass.blend;
-		pipe.ps.no_color1 = config.blend_multi_pass.no_color1;
-		pipe.ps.blend_hw = config.blend_multi_pass.blend_hw;
-		pipe.ps.dither = config.blend_multi_pass.dither;
+		UpdateHWPipelineSelector(config, DrawPass::Blend, pipe);
 		if (BindDrawPipeline(pipe))
 		{
 			// TODO: This probably should have barriers, in case we want to use it conditionally.
-			Draw(config);
+			Draw(config, DrawPass::Blend);
 		}
 	}
 
@@ -6376,14 +6928,12 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			SetPSConstantBuffer(config.cb_ps);
 		}
 
-		pipe.ps = config.alpha_second_pass.ps;
-		pipe.cms = config.alpha_second_pass.colormask;
-		pipe.dss = config.alpha_second_pass.depth;
-		pipe.bs = config.blend;
+		UpdateHWPipelineSelector(config, DrawPass::AlphaSecond, pipe, true);
+		
 		if (BindDrawPipeline(pipe))
 		{
-			SendHWDraw(config, pipe.IsRTFeedbackLoop() ? draw_rt : nullptr, pipe.IsDepthFeedbackLoop() ? draw_ds : nullptr,
-				config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier);
+			SendHWDraw(config, DrawPass::AlphaSecond,
+				pipe.IsRTFeedbackLoop() ? draw_rt : nullptr, pipe.IsDepthFeedbackLoop() ? draw_ds : nullptr);
 		}
 	}
 
@@ -6418,23 +6968,23 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 				if (draw_ds)
 					cvs[cv_count++].depthStencil = {draw_ds->GetClearDepth(), 1};
 
-				BeginClearRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
+				BeginClearRenderPass(GetTFXRenderPass(true, pipe.HasDS(), false, false, pipe.IsRTFeedbackLoop(),
 										 pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_CLEAR,
-										 pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
+										 pipe.HasDS() ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 					draw_rt->GetRect(), cvs, cv_count);
 				draw_rt->SetState(GSTexture::State::Dirty);
 			}
 			else
 			{
-				BeginRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
+				BeginRenderPass(GetTFXRenderPass(true, pipe.HasDS(), false, false, pipe.IsRTFeedbackLoop(),
 									pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_LOAD,
-									pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
+									pipe.HasDS() ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 					draw_rt->GetRect());
 			}
 
 			const GSVector4 drawareaf = GSVector4(config.colclip_update_area);
 			const GSVector4 sRect(drawareaf / GSVector4(rtsize).xyxy());
-			SetPipeline(m_colclip_finish_pipelines[pipe.ds][pipe.IsRTFeedbackLoop()]);
+			SetPipeline(m_colclip_finish_pipelines[pipe.HasDS()][pipe.IsRTFeedbackLoop()]);
 			SetUtilityTexture(colclip_rt, m_point_sampler);
 			DrawStretchRect(sRect, drawareaf, rtsize);
 
@@ -6446,35 +6996,181 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	config.colclip_mode = GSHWDrawConfig::ColClipMode::NoModify;
 }
 
-void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe)
+void GSDeviceVK::UpdateHWPipelineSelector(const GSHWDrawConfig& config, DrawPass pass, PipelineSelector& pipe,
+	bool preserve_feedback_flags)
 {
-	pipe.vs.key = config.vs.key;
-	pipe.ps.key_hi = config.ps.key_hi;
-	pipe.ps.key_lo = config.ps.key_lo;
-	pipe.dss.key = config.ps.HasDepthROV() ? GSHWDrawConfig::DepthStencilSelector::NoDepth().key : config.depth.key;
-	pipe.bs.key = config.ps.HasColorROV() ? GSHWDrawConfig::BlendState().key : config.blend.key;
-	pipe.bs.constant = 0; // don't dupe states with different alpha values
-	pipe.cms.key = config.ps.HasColorROV() ? GSHWDrawConfig::ColorMaskSelector().key : config.colormask.key;
-	pipe.topology = static_cast<u32>(config.topology);
-	pipe.rt = config.rt != nullptr && !config.ps.HasColorROV();
-	pipe.ds = config.ds != nullptr && !config.ps.HasDepthROV();
-	pipe.line_width = config.line_expand;
-	pipe.feedback_loop_flags = FeedbackLoopFlag_None;
-	if (m_features.texture_barrier && (config.require_one_barrier || config.require_full_barrier))
-	{
-		if (config.IsFeedbackLoopRT(config.ps))
-			pipe.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteRT;
+	const GSHWDrawConfig::VSSelector vs = config.GetVS(pass);
+	const GSHWDrawConfig::PSSelector ps = config.GetPS(pass);
+	const GSHWDrawConfig::ColorMaskSelector cms = config.GetColorMask(pass);
+	const GSHWDrawConfig::DepthStencilSelector dss = config.GetDepth(pass);
+	const GSHWDrawConfig::BlendState bs = config.GetBlend(pass);
+	const bool require_one_barrier = config.GetOneBarrier(pass);
+	const bool require_full_barrier = config.GetFullBarrier(pass);
 
-		if (config.IsFeedbackLoopDepth(config.ps))
-			pipe.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteDepth;
-	}
-	if (pipe.ds && !(pipe.feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteDepth))
+	// RT setup
+	pipe.rt = TFX_RT::None;
+	if (config.rt != nullptr && !ps.HasColorROV())
 	{
-		pipe.feedback_loop_flags |= (config.tex && config.tex == config.ds) ? FeedbackLoopFlag_ReadDepth : FeedbackLoopFlag_None;
+		if (IsDATEModePrimIDInit(ps.date))
+			pipe.rt = TFX_RT::PrimID;
+		else if (ps.colclip_hw)
+			pipe.rt = TFX_RT::ColclipHW;
+		else
+			pipe.rt = TFX_RT::Color;
 	}
+
+	// DT setup
+	pipe.ds = TFX_DS::None;
+	if (config.ds != nullptr && !ps.HasDepthROV())
+	{
+		if (dss.date)
+			pipe.ds = TFX_DS::DepthStencil;
+		else
+			pipe.ds = TFX_DS::Depth;
+	}
+
+	pipe.vs.key = vs.key;
+	pipe.ps.key_hi = ps.key_hi;
+	pipe.ps.key_lo = ps.key_lo;
+	pipe.dss.key = ps.HasDepthROV() ? GSHWDrawConfig::DepthStencilSelector::NoDepth().key : dss.key;
+	pipe.bs.key = ps.HasColorROV() ? GSHWDrawConfig::BlendState().key : bs.key;
+	pipe.bs.constant = 0; // don't dupe states with different alpha values
+	pipe.cms.key = ps.HasColorROV() ? GSHWDrawConfig::ColorMaskSelector().key : cms.key;
+	pipe.topology = static_cast<u32>(config.topology);
+
+	pipe.line_width = config.line_expand;
 
 	// enable point size in the vertex shader if we're rendering points regardless of upscaling.
 	pipe.vs.point_size |= (config.topology == GSHWDrawConfig::Topology::Point);
+
+	m_uber_dynamic_state.enabled = false;
+
+	if (!preserve_feedback_flags)
+	{
+		pipe.feedback_loop_flags = FeedbackLoopFlag_None;
+		if (m_features.texture_barrier && (require_one_barrier || require_full_barrier))
+		{
+			if (config.IsFeedbackLoopRT(ps))
+				pipe.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteRT;
+
+			if (config.IsFeedbackLoopDepth(ps))
+				pipe.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteDepth;
+		}
+		if (pipe.HasDS() && !(pipe.feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteDepth))
+		{
+			pipe.feedback_loop_flags |= (config.tex && config.tex == config.ds) ? FeedbackLoopFlag_ReadDepth : FeedbackLoopFlag_None;
+		}
+	}
+
+	if (config.uber_shader)
+	{
+		pipe.uber_shader = true;
+
+		// Clear the state that will be set with VK dynamic state.
+		pipe.vs.key = 0;
+		pipe.ps.key_lo = 0;
+		pipe.ps.key_hi = 0;
+		pipe.cms.key = 0;
+		pipe.bs.key = 0;
+		pipe.dss.key = 0;
+
+		// Update pipeline's dynamic state.
+		SetUberDynamicState(dss, bs, cms, IsDATEModePrimIDInit(ps.date));
+
+		if (!m_uber_dynamic_state.enabled)
+		{
+			// Refresh dynamic state if we move from non-uber to uber.
+			m_dirty_flags |= DIRTY_TFX_UBER_STATE;
+			m_uber_dynamic_state.enabled = true;
+		}
+
+		// Get the state for dynamic branching in the VS/PS.
+		SetUberDynamicSelector(GSHWDrawConfig::GetUberDynamicSelector(vs, ps));
+
+		// Uber VS
+		pipe.uber_vs = (vs.expand != GSHWDrawConfig::VSExpand::None) ?
+			GSHWDrawConfig::UberVSSelector::VSExpand : GSHWDrawConfig::UberVSSelector::InputAssembly;
+
+		// Uber PS color
+		pipe.uber_ps = {};
+		if (ps.HasColorROV())
+			pipe.uber_ps.color = UberPSSelector::Color::ROV;
+		else if (pipe.feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteRT)
+			pipe.uber_ps.color = UberPSSelector::Color::Feedback;
+		else if (pipe.HasRT())
+			pipe.uber_ps.color = UberPSSelector::Color::Standard;
+		else
+			pipe.uber_ps.color = UberPSSelector::Color::None;
+
+		// Uber PS depth
+		if (ps.HasDepthROV())
+			pipe.uber_ps.depth = UberPSSelector::Depth::ROV;
+		else if (pipe.feedback_loop_flags & (FeedbackLoopFlag_ReadAndWriteDepth | FeedbackLoopFlag_ReadDepth))
+			pipe.uber_ps.depth = UberPSSelector::Depth::Feedback;
+		else if (pipe.HasDS())
+			pipe.uber_ps.depth = UberPSSelector::Depth::Standard;
+		else
+			pipe.uber_ps.depth = UberPSSelector::Depth::None;
+
+		pipe.uber_ps.color1 = !config.ps.no_color1;
+		pipe.uber_ps.date_init = IsDATEModePrimIDInit(ps.date);
+
+		pxAssert(pipe.uber_ps.IsValid());
+
+		// Feedback loop flags
+		if (!preserve_feedback_flags)
+		{
+			if (pipe.feedback_loop_flags & (FeedbackLoopFlag_ReadDepth | FeedbackLoopFlag_ReadAndWriteDepth))
+				pipe.feedback_loop_flags |= (FeedbackLoopFlag_ReadDepth | FeedbackLoopFlag_ReadAndWriteDepth);
+		}
+	}
+	else
+	{
+		pipe.uber_shader = false;
+		pipe.uber_vs = static_cast<GSHWDrawConfig::UberVSSelector>(0);
+		pipe.uber_ps.key = 0;
+		m_uber_dynamic_state.enabled = false;
+	}
+}
+
+void GSDeviceVK::SetUberDynamicState(const GSHWDrawConfig::DepthStencilSelector& dss, const GSHWDrawConfig::BlendState& bs,
+	const GSHWDrawConfig::ColorMaskSelector& cms, bool date_primid_init)
+{
+	// Stencil
+	if (m_uber_dynamic_state.dss.date != dss.date ||
+		m_uber_dynamic_state.dss.date_one != dss.date_one)
+	{
+		m_dirty_flags |= DIRTY_FLAG_TFX_UBER_STENCIL;
+	}
+
+	// Depth
+	if (m_uber_dynamic_state.dss.ztst != dss.ztst ||
+		m_uber_dynamic_state.dss.zwe != dss.zwe)
+	{
+		m_dirty_flags |= DIRTY_FLAG_TFX_UBER_DEPTH;
+	}
+
+	m_uber_dynamic_state.dss.key = dss.key;
+
+	// Blending
+	if (m_uber_dynamic_state.date_primid_init != date_primid_init)
+	{
+		m_dirty_flags |= DIRTY_FLAG_TFX_UBER_COLOR_BLEND;
+		m_dirty_flags |= DIRTY_FLAG_TFX_UBER_COLOR_MASK;
+		m_uber_dynamic_state.date_primid_init = date_primid_init;
+	}
+	if (m_uber_dynamic_state.bs.key != bs.key)
+	{
+		m_dirty_flags |= DIRTY_FLAG_TFX_UBER_COLOR_BLEND;
+		m_uber_dynamic_state.bs.key = bs.key;
+	}
+
+	// Color mask
+	if (m_uber_dynamic_state.cms.key != cms.key)
+	{
+		m_dirty_flags |= DIRTY_FLAG_TFX_UBER_COLOR_MASK;
+		m_uber_dynamic_state.cms.key = cms.key;
+	}
 }
 
 void GSDeviceVK::UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config)
@@ -6527,17 +7223,21 @@ VkDependencyFlags GSDeviceVK::GetFeedbackBarrierDependencyFlags() const
 	                                 VK_DEPENDENCY_BY_REGION_BIT;
 }
 
-void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds,
-	bool one_barrier, bool full_barrier)
+void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, DrawPass pass, GSTextureVK* draw_rt, GSTextureVK* draw_ds)
 {
 	if (!m_features.texture_barrier) [[unlikely]]
 	{
-		Draw(config);
+		Draw(config, pass);
 		return;
 	}
 
+	const bool one_barrier = config.GetOneBarrier(pass);
+	const bool full_barrier = config.GetFullBarrier(pass);
+
 #ifdef PCSX2_DEVBUILD
-	if ((one_barrier || full_barrier) && !(config.IsFeedbackLoopRT(m_pipeline_selector.ps) || config.IsFeedbackLoopDepth(m_pipeline_selector.ps))) [[unlikely]]
+	if ((one_barrier || full_barrier) &&
+		!(config.IsFeedbackLoopRT(m_pipeline_selector.ps) || config.IsFeedbackLoopDepth(m_pipeline_selector.ps) || config.uber_shader)) 
+		[[unlikely]]
 		Console.Warning("VK: Possible unnecessary barrier detected.");
 #endif
 	VkDependencyFlags barrier_flags = GetFeedbackBarrierDependencyFlags();
@@ -6588,7 +7288,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 			IssueBarriers();
 
 			const u32 count = config.drawlist->at(n) * indices_per_prim;
-			Draw(config, p, count);
+			Draw(config, pass, p, count);
 			p += count;
 		}
 
@@ -6601,7 +7301,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 		IssueBarriers();
 	}
 
-	Draw(config);
+	Draw(config, pass);
 
 	if (config.ps.HasColorROV() || config.ps.HasDepthROV())
 		g_perfmon.Put(GSPerfMon::DrawCallsROV, 1);

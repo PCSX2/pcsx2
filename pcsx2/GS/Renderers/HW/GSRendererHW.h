@@ -251,13 +251,22 @@ private:
 
 	void DetermineVSConfig(GSTextureCache::Target* rt, float rtscale, const GSVector2i& rtsize,
 		const GSVector2i& unscaled_size, float& vs_scale_x, float& vs_scale_y);
-	void DetermineBarriers(GSTextureCache::Target* rt, GSTextureCache::Source* tex);
+	void DetermineBarriers(GSTextureCache::Target* rt, GSTextureCache::Target* ds, GSTextureCache::Source* tex);
 
+	void ConfigureFullSW(bool color, bool depth); // Emulate everything in SW (shader).
+
+	bool TexHazardPreventsROVUsage() const;
 	void GetForcedROVUsage(bool& color_cov, bool& depth_rov); // Whether having color or depth with the current config forces the other.
 	void DetermineROVUsage(GSTextureCache::Target* rt, GSTextureCache::Target* ds); // Heuristics to determine whether to enable/disable ROV
 	void ConfigureROV(bool color_rov, bool depth_rov); // Actual config for ROV
 	void ConvertTextureTypeROV(GSTextureCache::Target* rt, GSTextureCache::Target* ds); // Convert to RW capable textures if needed.
 	void ConvertTextureTypeROVSingle(GSTextureCache::Target* tgt, bool shader_write); // Helper to do the above.
+
+	void HandleUberOrHybridShader(GSTextureCache::Target* rt, GSTextureCache::Target* ds,
+		GSTextureCache::Source* tex, GSDevice::RecycledTexture& temp_tex);
+
+	void BeginDSAsRT();
+	void EndDSAsRT();
 
 	void SetTCOffset();
 	bool NextDrawColClip() const;
@@ -337,6 +346,8 @@ private:
 	GSVector2i m_lod = {}; // Min & Max level of detail
 
 	GIFRegALPHA m_optimized_blend = {}; // Save for ROV setup
+
+	bool m_flat_expanded = false; // Whether we expanded vertices to accomodate flat shading.
 
 	GSHWDrawConfig m_conf = {};
 	HWCachedCtx m_cached_ctx;

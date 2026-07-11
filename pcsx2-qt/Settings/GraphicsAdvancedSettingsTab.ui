@@ -313,9 +313,9 @@
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QCheckBox" name="disableShaderCache">
+         <widget class="QCheckBox" name="useDebugBlend">
           <property name="text">
-           <string>Disable Shader Cache</string>
+           <string>Use Debug Blend</string>
           </property>
          </widget>
         </item>
@@ -333,12 +333,112 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QCheckBox" name="useDebugBlend">
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="shaderCacheOptions">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Shader Cache Options</string>
+     </property>
+     <layout class="QFormLayout" name="shaderCacheOptionsFormLayout">
+      <item row="1" column="0" colspan="2">
+       <layout class="QGridLayout" name="shaderCacheOptionsLayout">
+        <item row="0" column="0">
+        <widget class="QLabel" name="shaderCacheTypeLabel">
           <property name="text">
-           <string>Use Debug Blend</string>
+          <string>Shader Cache Type:</string>
           </property>
-         </widget>
+          <property name="buddy">
+          <cstring>shaderCacheType</cstring>
+          </property>
+        </widget>
+        </item>
+        <item row="0" column="1">
+        <widget class="QComboBox" name="shaderCacheType">
+          <item>
+          <property name="text">
+            <string>Disabled</string>
+          </property>
+          </item>
+          <item>
+          <property name="text">
+            <string>Standard</string>
+          </property>
+          </item>
+          <item>
+          <property name="text">
+            <string>Hybrid</string>
+          </property>
+          </item>
+          <item>
+          <property name="text">
+            <string>Uber</string>
+          </property>
+          </item>
+        </widget>
+        </item>
+        <item row="1" column="0">
+        <widget class="QLabel" name="hybridShaderCacheThreadsLabel">
+          <property name="text">
+          <string>Hybrid Shader Cache Threads:</string>
+          </property>
+          <property name="buddy">
+          <cstring>hybridShaderCacheThreads</cstring>
+          </property>
+        </widget>
+        </item>
+        <item row="1" column="1">
+        <widget class="QSpinBox" name="hybridShaderCacheThreads">
+          <property name="minimum">
+          <number>1</number>
+          </property>
+          <property name="maximum">
+          <number>16</number>
+          </property>
+        </widget>
+        </item>
+        <item row="2" column="0">
+          <widget class="QLabel" name="hybridShaderCacheLatencyMSLabel">
+            <property name="text">
+            <string>Hybrid Shader Cache Latency:</string>
+            </property>
+            <property name="buddy">
+            <cstring>hybridShaderCacheLatencyMS</cstring>
+            </property>
+          </widget>
+        </item>
+        <item row="2" column="1">
+        <widget class="QSpinBox" name="hybridShaderCacheLatencyMS">
+          <property name="suffix">
+          <string> ms</string>
+          </property>
+          <property name="minimum">
+          <number>0</number>
+          </property>
+          <property name="maximum">
+          <number>99999999</number>
+          </property>
+        </widget>
+        </item>
+        <item row="3" column="0" colspan="2">
+        <layout class="QGridLayout" name="shaderCacheCheckBoxesLayout">
+          <item row="0" column="1">
+          <widget class="QCheckBox" name="reducedUberShaders">
+            <property name="text">
+            <string>Reduced Uber Shaders</string>
+            </property>
+          </widget>
+          </item>
+        </layout>
         </item>
        </layout>
       </item>
@@ -376,7 +476,6 @@
   <tabstop>overrideTextureBarriers</tabstop>
   <tabstop>useDebugDevice</tabstop>
   <tabstop>disableFramebufferFetch</tabstop>
-  <tabstop>disableShaderCache</tabstop>
   <tabstop>disableVertexShaderExpand</tabstop>
   <tabstop>useDebugBlend</tabstop>
  </tabstops>
