@@ -1,21 +1,24 @@
 package com.armsx2.ui.touch
 
 import android.view.KeyEvent
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import com.armsx2.EmuState
-import com.armsx2.Main
+import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.ui.InGameOverlay
 import kr.co.iefriends.pcsx2.NativeApp
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import androidx.core.content.edit
 
 /**
  * On-screen touch controls — state, persistence, and the runtime
  * input-mode latch.
  *
- * Three storage tiers in Main.prefs (single "ARMSX2" SharedPreferences):
+ * Three storage tiers in MainActivityRuntime.prefs (single "ARMSX2" SharedPreferences):
  *   - `touch.profiles`            JSON array of {name, layout}
  *   - `touch.active`              Currently-selected profile name
  *
@@ -65,7 +68,7 @@ object TouchControls {
      *  No-op if the VM isn't paused. */
     fun exitEditMode() {
         editMode.value = false
-        if (Main.eState.value == EmuState.PAUSED) Main.resume()
+        if (MainActivityRuntime.eState.value == EmuState.PAUSED) MainActivityRuntime.resume()
     }
 
     /** Currently-selected widget in edit mode. When non-null, the edit
@@ -90,7 +93,7 @@ object TouchControls {
     val activeLayout = mutableStateOf(TouchLayout.default())
 
     /** Master opacity 0.20..1.00. Persisted. */
-    val opacity = mutableStateOf(0.55f)
+    val opacity = mutableFloatStateOf(0.55f)
 
     /** When enabled, the face-button diamond has a shared hit layer so a
      *  single thumb can slide/press between Cross/Square/Circle/Triangle and
@@ -114,14 +117,14 @@ object TouchControls {
     // Multi-touch hit radius as a fraction of a button's size (GGPO-style). Higher =
     // buttons register a press from further out, so multitouch/rolling works with more
     // space between them. Persisted under KEY_MULTI_RADIUS. Default 0.62.
-    val multiTouchRadius = mutableStateOf(0.62f)
+    val multiTouchRadius = mutableFloatStateOf(0.62f)
 
     // On-screen D-pad key spacing, as a fraction of the pad's half-size. 0 = the four
     // directions meet at the center (a tight +). Higher pushes each direction OUT toward
     // its edge, opening a visible gap in the middle (NetherSX2-style) and growing the
     // center dead-zone to match. Edited in the Touch Layout editor (select the D-Pad).
     // Persisted under KEY_DPAD_SPACING. Default 0 (normal tight D-pad).
-    val dpadSpacing = mutableStateOf(0.0f)
+    val dpadSpacing = mutableFloatStateOf(0.0f)
 
     // Floating on-screen stick: the first touch-down inside a stick's zone becomes
     // its origin (the ring re-centers under your finger) instead of a fixed center —
@@ -158,11 +161,11 @@ object TouchControls {
      *  overlaps R1); 1..10 = auto-hide after that many seconds of no touch;
      *  11 = Auto — show on screen touch, hide when a controller is used (the
      *  default / legacy behavior). Persisted. */
-    val visibilityMode = mutableStateOf(11)
+    val visibilityMode = mutableIntStateOf(11)
 
     /** Bumped on every touch interaction (screen tap or on-screen button press)
      *  so the auto-hide timer restarts. Not persisted. */
-    val interactionTick = mutableStateOf(0)
+    val interactionTick = mutableIntStateOf(0)
 
     // ---- On-screen macro / combo buttons (Macro1-4) ----------------------------
     // Each macro fires a user-chosen SET of pad buttons at once (e.g. R1+R2+R3).
@@ -170,7 +173,7 @@ object TouchControls {
     private const val KEY_MACRO_PREFIX = "touch.macro."
 
     /** Bumped when any macro's button set changes so the config UI + overlay recompose. */
-    val macroBindTick = mutableStateOf(0)
+    val macroBindTick = mutableIntStateOf(0)
 
     /** The discrete pad buttons a macro may fire (face / shoulders / L3 R3 / Start /
      *  Select). No D-pad/sticks (directional) or pause/macro/fast-forward (not pad
@@ -183,7 +186,7 @@ object TouchControls {
 
     /** Buttons macro [id] fires, in config order (empty if unconfigured). */
     fun macroButtons(id: TouchButtonId): List<TouchButtonId> {
-        val raw = Main.prefs.getString(KEY_MACRO_PREFIX + id.name, "").orEmpty()
+        val raw = MainActivityRuntime.prefs.getString(KEY_MACRO_PREFIX + id.name, "").orEmpty()
         if (raw.isEmpty()) return emptyList()
         val set = raw.split(",").mapNotNull { runCatching { TouchButtonId.valueOf(it) }.getOrNull() }.toSet()
         // Keep macroAssignableButtons order, drop anything stale/non-assignable.
@@ -192,8 +195,8 @@ object TouchControls {
 
     fun setMacroButtons(id: TouchButtonId, buttons: List<TouchButtonId>) {
         val csv = macroAssignableButtons.filter { it in buttons.toSet() }.joinToString(",") { it.name }
-        Main.prefs.edit().putString(KEY_MACRO_PREFIX + id.name, csv).apply()
-        macroBindTick.value++
+        MainActivityRuntime.prefs.edit { putString(KEY_MACRO_PREFIX + id.name, csv) }
+        macroBindTick.intValue++
     }
 
     // Optional PHYSICAL-controller trigger per macro: bind a physical button to fire
@@ -203,19 +206,19 @@ object TouchControls {
     private const val KEY_MACRO_PHYS_PREFIX = "touch.macro.phys."
 
     fun macroPhysicalCode(id: TouchButtonId): Int =
-        Main.prefs.getInt(KEY_MACRO_PHYS_PREFIX + id.name, android.view.KeyEvent.KEYCODE_UNKNOWN)
+        MainActivityRuntime.prefs.getInt(KEY_MACRO_PHYS_PREFIX + id.name, KeyEvent.KEYCODE_UNKNOWN)
 
     fun setMacroPhysicalCode(id: TouchButtonId, keycode: Int) {
-        Main.prefs.edit().putInt(KEY_MACRO_PHYS_PREFIX + id.name, keycode).apply()
-        macroBindTick.value++
+        MainActivityRuntime.prefs.edit { putInt(KEY_MACRO_PHYS_PREFIX + id.name, keycode)}
+        macroBindTick.intValue++
     }
 
-    fun clearMacroPhysicalCode(id: TouchButtonId) = setMacroPhysicalCode(id, android.view.KeyEvent.KEYCODE_UNKNOWN)
+    fun clearMacroPhysicalCode(id: TouchButtonId) = setMacroPhysicalCode(id, KeyEvent.KEYCODE_UNKNOWN)
 
     /** The macro a physical [keycode] triggers — only if it's bound AND has buttons
      *  configured. Checked in the gameplay key path (Main) before normal pad routing. */
     fun macroForPhysicalCode(keycode: Int): TouchButtonId? {
-        if (keycode == android.view.KeyEvent.KEYCODE_UNKNOWN) return null
+        if (keycode == KeyEvent.KEYCODE_UNKNOWN) return null
         for (id in listOf(TouchButtonId.MACRO1, TouchButtonId.MACRO2, TouchButtonId.MACRO3, TouchButtonId.MACRO4)) {
             if (macroPhysicalCode(id) == keycode && macroButtons(id).isNotEmpty()) return id
         }
@@ -233,7 +236,7 @@ object TouchControls {
     }
 
     private fun load() {
-        val raw = Main.prefs.getString(KEY_PROFILES, null)
+        val raw = MainActivityRuntime.prefs.getString(KEY_PROFILES, null)
         val list = mutableListOf<TouchProfile>()
         if (raw != null) {
             runCatching {
@@ -254,25 +257,25 @@ object TouchControls {
         profiles.clear()
         profiles.addAll(list)
 
-        val active = Main.prefs.getString(KEY_ACTIVE, list.first().name) ?: list.first().name
+        val active = MainActivityRuntime.prefs.getString(KEY_ACTIVE, list.first().name) ?: list.first().name
         activeProfileName.value = active
         val match = list.firstOrNull { it.name == active } ?: list.first()
         activeLayout.value = match.layout.copy()
-        opacity.value = Main.prefs.getFloat(KEY_OPACITY, 0.55f).coerceIn(0.20f, 1.0f)
-        faceMultiTouch.value = Main.prefs.getBoolean(KEY_FACE_MULTI, true)
-        touchGliding.value = Main.prefs.getBoolean(KEY_TOUCH_GLIDING, false)
-        touchHaptics.value = Main.prefs.getBoolean(KEY_TOUCH_HAPTICS, true)
-        multiTouchRadius.value = Main.prefs.getFloat(KEY_MULTI_RADIUS, 0.62f).coerceIn(0.50f, 0.95f)
-        dpadSpacing.value = Main.prefs.getFloat(KEY_DPAD_SPACING, 0.0f).coerceIn(0.0f, 0.35f)
-        floatingStick.value = Main.prefs.getBoolean(KEY_FLOATING_STICK, false)
-        visibilityMode.value = Main.prefs.getInt(KEY_VIS_MODE, 11).coerceIn(0, 11)
-        if (visibilityMode.value == 0) visible.value = false
+        opacity.floatValue = MainActivityRuntime.prefs.getFloat(KEY_OPACITY, 0.55f).coerceIn(0.20f, 1.0f)
+        faceMultiTouch.value = MainActivityRuntime.prefs.getBoolean(KEY_FACE_MULTI, true)
+        touchGliding.value = MainActivityRuntime.prefs.getBoolean(KEY_TOUCH_GLIDING, false)
+        touchHaptics.value = MainActivityRuntime.prefs.getBoolean(KEY_TOUCH_HAPTICS, true)
+        multiTouchRadius.floatValue = MainActivityRuntime.prefs.getFloat(KEY_MULTI_RADIUS, 0.62f).coerceIn(0.50f, 0.95f)
+        dpadSpacing.floatValue = MainActivityRuntime.prefs.getFloat(KEY_DPAD_SPACING, 0.0f).coerceIn(0.0f, 0.35f)
+        floatingStick.value = MainActivityRuntime.prefs.getBoolean(KEY_FLOATING_STICK, false)
+        visibilityMode.intValue = MainActivityRuntime.prefs.getInt(KEY_VIS_MODE, 11).coerceIn(0, 11)
+        if (visibilityMode.intValue == 0) visible.value = false
 
         // One-shot 2.4.7 defaults migration: existing users have saved prefs/layouts
         // that predate the new defaults (multi-touch was off, the Pressure button was
         // visible), so the default flips above don't reach them. Apply once; after this
         // the user's own choices stick.
-        if (!Main.prefs.getBoolean(KEY_DEFAULTS_MIGRATED_247, false)) {
+        if (!MainActivityRuntime.prefs.getBoolean(KEY_DEFAULTS_MIGRATED_247, false)) {
             faceMultiTouch.value = true
             fun hidePressure(layout: TouchLayout): TouchLayout = layout.copy(
                 buttons = layout.buttons.map {
@@ -281,7 +284,7 @@ object TouchControls {
             )
             for (i in profiles.indices) profiles[i] = profiles[i].copy(layout = hidePressure(profiles[i].layout))
             activeLayout.value = hidePressure(activeLayout.value)
-            Main.prefs.edit().putBoolean(KEY_DEFAULTS_MIGRATED_247, true).apply()
+            MainActivityRuntime.prefs.edit { putBoolean(KEY_DEFAULTS_MIGRATED_247, true) }
             persist()
         }
     }
@@ -289,36 +292,36 @@ object TouchControls {
     private fun persist() {
         val arr = JSONArray()
         for (p in profiles) arr.put(p.toJson())
-        Main.prefs.edit()
-            .putString(KEY_PROFILES, arr.toString())
-            .putString(KEY_ACTIVE, activeProfileName.value)
-            .putFloat(KEY_OPACITY, opacity.value)
-            .putBoolean(KEY_FACE_MULTI, faceMultiTouch.value)
-            .putBoolean(KEY_TOUCH_GLIDING, touchGliding.value)
-            .putBoolean(KEY_TOUCH_HAPTICS, touchHaptics.value)
-            .putFloat(KEY_MULTI_RADIUS, multiTouchRadius.value)
-            .putFloat(KEY_DPAD_SPACING, dpadSpacing.value)
-            .putBoolean(KEY_FLOATING_STICK, floatingStick.value)
-            .putInt(KEY_VIS_MODE, visibilityMode.value)
-            .apply()
+        MainActivityRuntime.prefs.edit {
+            putString(KEY_PROFILES, arr.toString())
+                .putString(KEY_ACTIVE, activeProfileName.value)
+                .putFloat(KEY_OPACITY, opacity.floatValue)
+                .putBoolean(KEY_FACE_MULTI, faceMultiTouch.value)
+                .putBoolean(KEY_TOUCH_GLIDING, touchGliding.value)
+                .putBoolean(KEY_TOUCH_HAPTICS, touchHaptics.value)
+                .putFloat(KEY_MULTI_RADIUS, multiTouchRadius.floatValue)
+                .putFloat(KEY_DPAD_SPACING, dpadSpacing.floatValue)
+                .putBoolean(KEY_FLOATING_STICK, floatingStick.value)
+                .putInt(KEY_VIS_MODE, visibilityMode.intValue)
+        }
         syncFolder()
     }
 
     /** Set the on-screen controls visibility mode (see [visibilityMode]). */
     fun setVisibilityMode(mode: Int) {
-        visibilityMode.value = mode.coerceIn(0, 11)
+        visibilityMode.intValue = mode.coerceIn(0, 11)
         // Reflect immediately: Never hides; any other mode shows.
-        visible.value = visibilityMode.value != 0
-        interactionTick.value++
+        visible.value = visibilityMode.intValue != 0
+        interactionTick.intValue++
         persist()
     }
 
     /** Note a touch interaction (screen tap or on-screen button press): show
      *  the controls (unless disabled) and restart the auto-hide timer. */
     fun noteTouchInteraction() {
-        if (visibilityMode.value == 0) return
+        if (visibilityMode.intValue == 0) return
         if (!visible.value) visible.value = true
-        interactionTick.value++
+        interactionTick.intValue++
     }
 
     /** Commit the live edit. When a game is running, store the edited layout as
@@ -330,7 +333,7 @@ object TouchControls {
     fun saveLiveLayoutToActive() {
         // gameIsRunning() is the OUTER gate. The per-serial/CRC isolation paths
         // must only run when a VM is actually up — keying off a merely-non-null
-        // serial was wrong because Main.currentGame (hence runningSerial()) stays
+        // serial was wrong because MainActivityRuntime.currentGame (hence runningSerial()) stays
         // stale after Close Game, so a Global-Default edit from the main menu
         // would silently write into the LAST-PLAYED game's per-serial key.
         if (gameIsRunning()) {
@@ -338,12 +341,12 @@ object TouchControls {
             if (serial != null) {
                 // In-game with a resolved serial -> isolated per-serial layout.
                 // Never touches any shared profile.
-                Main.prefs.edit()
-                    .putString(
+                MainActivityRuntime.prefs.edit {
+                    putString(
                         KEY_LAYOUT_GAME_PREFIX + serial,
                         activeLayout.value.toJson().toString(),
                     )
-                    .apply()
+                }
             } else {
                 // In-game but no serial (homebrew / BIOS / serial-less disc).
                 // Key by disc CRC so it stays isolated; if even the CRC is
@@ -351,12 +354,12 @@ object TouchControls {
                 val crc = runCatching { NativeApp.getGameCRC() }.getOrNull()
                     ?.trim()?.uppercase()?.takeIf { it.isNotEmpty() && it != "00000000" }
                 if (crc != null) {
-                    Main.prefs.edit()
-                        .putString(
+                    MainActivityRuntime.prefs.edit {
+                        putString(
                             KEY_LAYOUT_GAME_PREFIX + "crc." + crc,
                             activeLayout.value.toJson().toString(),
                         )
-                        .apply()
+                    }
                 } else {
                     println(
                         "@@ARMSX2_TOUCH@@ refusing to save in-game layout to global " +
@@ -389,11 +392,11 @@ object TouchControls {
         // Bind the new profile to the game currently running so it only applies
         // to THAT game (otherwise it becomes the globally-active profile and
         // bleeds into every other game's boot). No game running -> global only.
-        // Gate on gameIsRunning() so a stale Main.currentGame (after Close Game)
+        // Gate on gameIsRunning() so a stale MainActivityRuntime.currentGame (after Close Game)
         // can't bind this profile to the last-played game from the library.
         val serial = if (gameIsRunning()) runningSerial() else null
         if (serial != null)
-            Main.prefs.edit().putString(KEY_ACTIVE_GAME_PREFIX + serial, trimmed).apply()
+            MainActivityRuntime.prefs.edit { putString(KEY_ACTIVE_GAME_PREFIX + serial, trimmed) }
         persist()
     }
 
@@ -404,11 +407,11 @@ object TouchControls {
         // When a game is running, remember this profile FOR that game so it
         // auto-applies on the next boot (per-game tier). With no game (library),
         // it's just the global default, persisted via KEY_ACTIVE in persist().
-        // Gate on gameIsRunning() so a stale Main.currentGame (after Close Game)
+        // Gate on gameIsRunning() so a stale MainActivityRuntime.currentGame (after Close Game)
         // can't bind this from the library to the last-played game.
         val serial = if (gameIsRunning()) runningSerial() else null
         if (serial != null)
-            Main.prefs.edit().putString(KEY_ACTIVE_GAME_PREFIX + serial, name).apply()
+            MainActivityRuntime.prefs.edit { putString(KEY_ACTIVE_GAME_PREFIX + serial, name) }
         persist()
     }
 
@@ -434,7 +437,7 @@ object TouchControls {
     /** True when a VM is up (RUNNING or PAUSED) — i.e. an in-game edit, where we
      *  must NEVER fall back to overwriting the shared Default profile. */
     private fun gameIsRunning(): Boolean =
-        Main.eState.value == EmuState.RUNNING || Main.eState.value == EmuState.PAUSED
+        MainActivityRuntime.eState.value == EmuState.RUNNING || MainActivityRuntime.eState.value == EmuState.PAUSED
 
     /** Authoritative serial of the booted disc straight from the core. Returns a
      *  clean "AAAA-NNNNN" with no CRC/paren formatting, regardless of how the
@@ -452,7 +455,7 @@ object TouchControls {
      *   3. InGameOverlay.currentSerial as a last resort (may be a formatted
      *      "SERIAL (CRC)" string — only use if the cleaner sources are empty). */
     private fun runningSerial(): String? =
-        Main.currentGame.value?.serial?.takeIf { it.isNotEmpty() }
+        MainActivityRuntime.currentGame.value?.serial?.takeIf { it.isNotEmpty() }
             ?: coreSerial()
             ?: InGameOverlay.currentSerial.value?.takeIf { it.isNotEmpty() }
 
@@ -478,7 +481,7 @@ object TouchControls {
             val crc = runCatching { NativeApp.getGameCRC() }.getOrNull()
                 ?.trim()?.uppercase()?.takeIf { it.isNotEmpty() && it != "00000000" }
             if (crc != null) {
-                val rawCrc = Main.prefs.getString(KEY_LAYOUT_GAME_PREFIX + "crc." + crc, null)
+                val rawCrc = MainActivityRuntime.prefs.getString(KEY_LAYOUT_GAME_PREFIX + "crc." + crc, null)
                 if (rawCrc != null) {
                     runCatching { TouchLayout.fromJson(JSONObject(rawCrc)) }.getOrNull()?.let {
                         activeProfileName.value = "Default"
@@ -490,7 +493,7 @@ object TouchControls {
             return
         }
         // (1) Per-serial custom layout.
-        val rawLayout = Main.prefs.getString(KEY_LAYOUT_GAME_PREFIX + effSerial, null)
+        val rawLayout = MainActivityRuntime.prefs.getString(KEY_LAYOUT_GAME_PREFIX + effSerial, null)
         if (rawLayout != null) {
             runCatching { TouchLayout.fromJson(JSONObject(rawLayout)) }.getOrNull()?.let {
                 activeProfileName.value = "Default"
@@ -499,7 +502,7 @@ object TouchControls {
             }
         }
         // (2) Legacy per-game profile-name binding (Profiles dialog).
-        val name = Main.prefs.getString(KEY_ACTIVE_GAME_PREFIX + effSerial, null)
+        val name = MainActivityRuntime.prefs.getString(KEY_ACTIVE_GAME_PREFIX + effSerial, null)
         if (name != null) {
             val match = profiles.firstOrNull { it.name == name }
             if (match != null) {
@@ -522,23 +525,23 @@ object TouchControls {
     }
 
     private fun clearGameOverridesFor(profileName: String) {
-        val ed = Main.prefs.edit()
-        for ((k, v) in Main.prefs.all) {
-            if (k.startsWith(KEY_ACTIVE_GAME_PREFIX) && v == profileName) ed.remove(k)
+        MainActivityRuntime.prefs.edit {
+            for ((k, v) in MainActivityRuntime.prefs.all) {
+                if (k.startsWith(KEY_ACTIVE_GAME_PREFIX) && v == profileName) remove(k)
+            }
         }
-        ed.apply()
     }
 
     /** Clear any per-serial custom layout for [serial] so the game reverts to the
      *  active/Default profile on next boot (used by the editor's Reset chip). */
     fun clearGameLayout(serial: String?) {
         if (serial == null) return
-        Main.prefs.edit().remove(KEY_LAYOUT_GAME_PREFIX + serial).apply()
+        MainActivityRuntime.prefs.edit {remove(KEY_LAYOUT_GAME_PREFIX + serial) }
     }
 
     /** Reset chip: only clear the running game's per-serial layout when a VM is
      *  actually up. From the library (Global Default edit) there is no per-game
-     *  key to clear, and Main.currentGame may still point at the last-played
+     *  key to clear, and MainActivityRuntime.currentGame may still point at the last-played
      *  game — so resolving a serial there would wrongly delete that game's
      *  custom layout. */
     fun clearGameLayoutIfRunning() {
@@ -551,8 +554,8 @@ object TouchControls {
         // systemDirPosix() is null for the DEFAULT (private app folder) — fall
         // back to getExternalFilesDir (= Android/data/<pkg>/files), which is
         // exactly where the native core puts EmuFolders::InputProfiles.
-        val root = Main.systemDirPosix()
-            ?: Main.instance?.applicationContext?.getExternalFilesDir(null)?.absolutePath
+        val root = MainActivityRuntime.systemDirPosix()
+            ?: MainActivityRuntime.instance?.applicationContext?.getExternalFilesDir(null)?.absolutePath
             ?: return null
         val dir = File(root, "inputprofiles")
         if (!dir.exists()) runCatching { dir.mkdirs() }
@@ -601,7 +604,7 @@ object TouchControls {
     }
 
     fun setOpacity(o: Float) {
-        opacity.value = o.coerceIn(0.20f, 1.0f)
+        opacity.floatValue = o.coerceIn(0.20f, 1.0f)
         persist()
     }
 
@@ -621,12 +624,12 @@ object TouchControls {
     }
 
     fun setMultiTouchRadius(v: Float) {
-        multiTouchRadius.value = v.coerceIn(0.50f, 0.95f)
+        multiTouchRadius.floatValue = v.coerceIn(0.50f, 0.95f)
         persist()
     }
 
     fun setDpadSpacing(v: Float) {
-        dpadSpacing.value = v.coerceIn(0.0f, 0.35f)
+        dpadSpacing.floatValue = v.coerceIn(0.0f, 0.35f)
         persist()
     }
 
@@ -646,7 +649,7 @@ object TouchControls {
      *  Only in "Auto" mode (11) — when an auto-hide timeout is set (1..10) the
      *  timer owns hiding, and "Never" (0) is already hidden. Idempotent. */
     fun onControllerInputDetected() {
-        if (visibilityMode.value == 11 && visible.value) visible.value = false
+        if (visibilityMode.intValue == 11 && visible.value) visible.value = false
     }
 
     /** Latched on by any pointer-down on the surface so a controller user
@@ -689,13 +692,13 @@ enum class TouchButtonId(val label: String, val keycode: Int, val kind: Kind) {
     PAUSE("Pause", 0, Kind.PAUSE),
 
     // On-screen fast-forward (Turbo) toggle. Emits no PS2 keycode; tapping it
-    // toggles locked fast-forward via Main.toggleFastForward() — the same action
+    // toggles locked fast-forward via MainActivityRuntime.toggleFastForward() — the same action
     // as the FAST_FORWARD_TOGGLE hotkey. Opt-in: disabled in the default layout.
     // Rendered by FastForwardWidget.
     FAST_FORWARD("▶▶", 0, Kind.FASTFORWARD),
 
     // On-screen quick save-state / load-state buttons (to the active slot). Emit no
-    // PS2 keycode; tapping calls Main.saveState() / Main.loadState() — the same actions
+    // PS2 keycode; tapping calls MainActivityRuntime.saveState() / MainActivityRuntime.loadState() — the same actions
     // as the SAVE_STATE/LOAD_STATE hotkeys. Opt-in (disabled in the default layout).
     SAVE_STATE("SAVE", 0, Kind.STATEACTION),
     LOAD_STATE("LOAD", 0, Kind.STATEACTION),

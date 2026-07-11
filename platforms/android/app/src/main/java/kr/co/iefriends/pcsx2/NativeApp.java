@@ -17,7 +17,7 @@ import android.view.Surface;
 
 import com.armsx2.BiosInfo;
 import com.armsx2.EmuState;
-import com.armsx2.Main;
+import com.armsx2.runtime.MainActivityRuntime;
 import com.armsx2.events.TestResult;
 
 import java.io.File;
@@ -73,20 +73,20 @@ public class NativeApp {
 		// URI resolves to a POSIX path that native code can actually write.
 		// Falls back to externalFilesDir when unset, unresolvable, or blocked
 		// by scoped storage.
-		String chosen = Main.Companion.systemDirPosix();
-		if (chosen != null && !Main.Companion.validateSystemDirWritable(chosen)) {
+		String chosen = MainActivityRuntime.Companion.systemDirPosix();
+		if (chosen != null && !MainActivityRuntime.Companion.validateSystemDirWritable(chosen)) {
 			chosen = null;
 		}
 		String dataPath = (chosen != null) ? chosen : externalFilesDir.getAbsolutePath();
 
 		// BIOS folder: the directory that actually holds the configured BIOS file.
-		// The setup wizard (and the migration in Main.kickoffEmucoreInit) keep the
+		// The setup wizard (and the migration in MainActivityRuntime.kickoffEmucoreInit) keep the
 		// BIOS in app-private internal storage — NOT under a custom/SD data root —
 		// because the native FileSystem APIs can't reliably open a BIOS off a
 		// removable/SAF volume on Android 11+ (that made a data-root-on-SD game fail
 		// VM init and bounce back to the library). Falls back to externalFilesDir/bios
 		// (always app-owned + readable), matching that decoupled-BIOS design.
-		String biosFolder = Main.Companion.biosFolderPosix();
+		String biosFolder = MainActivityRuntime.Companion.biosFolderPosix();
 		if (biosFolder == null || biosFolder.isEmpty()) {
 			biosFolder = externalFilesDir.getAbsolutePath() + java.io.File.separator + "bios";
 		}
@@ -146,6 +146,7 @@ public class NativeApp {
 	 */
 	public static native boolean applyGSSettingsLive();
 	public static native int reloadPatches();
+	public static native boolean reloadTextureReplacements();
 
 	/**
 	 * Set which named patches/cheats are enabled (the [Patches]/[Cheats]
@@ -260,7 +261,7 @@ public class NativeApp {
 	public static native boolean gameIniCommitWrite();
 
 	/** Pin a custom Vulkan driver (e.g. Mesa Turnip) for the next VM
-	 *  start. Must be called BEFORE Main.start() — the first MTGS::Open
+	 *  start. Must be called BEFORE MainActivityRuntime.start() — the first MTGS::Open
 	 *  triggers Vulkan::LoadVulkanLibrary which reads these paths. Pass
 	 *  empty strings to revert to the system loader.
 	 *
@@ -304,7 +305,7 @@ public class NativeApp {
 	public static native boolean usbKeyboardKey(int port, int androidKeyCode, boolean pressed);
 
 	// ---- Controller rumble (BT/USB gamepads via Android InputDevice) ----
-	// Device id of the most-recently-used gamepad, set from Main.dispatchKeyEvent.
+	// Device id of the most-recently-used gamepad, set from MainActivityRuntime.dispatchKeyEvent.
 	public static volatile int sRumbleDeviceId = -1;
 	// Master enable (default on).
 	public static volatile boolean sRumbleEnabled = true;
@@ -570,6 +571,7 @@ public class NativeApp {
 	/** Create a memory card in the memcards folder. type: 1=File, 2=Folder.
 	 *  fileType (File only): 1=8MB, 2=16MB, 3=32MB, 4=64MB. Returns success. */
 	public static native boolean createMemoryCard(String name, int type, int fileType);
+	public static native boolean isMemoryCard(String name);
 
 	public static native void onNativeSurfaceCreated();
 	public static native void onNativeSurfaceChanged(Surface surface, int w, int h);
@@ -584,7 +586,7 @@ public class NativeApp {
 
 	/** Persist the Vulkan pipeline cache to disk so cold restarts don't have
 	 *  to recompile every TFX pipeline. No-op for OpenGL (its cache flushes
-	 *  on its own). Called from Main.onPause so backgrounding the app saves
+	 *  on its own). Called from MainActivityRuntime.onPause so backgrounding the app saves
 	 *  the cache before Android can reap the process. Safe to call when no
 	 *  Vulkan device is active (becomes a no-op). */
 	public static native void flushShaderCache();
@@ -609,7 +611,7 @@ public class NativeApp {
 
 	/** Called from native when a test suite finishes.  Override or observe to surface results in UI. */
 	public static void onTestResults(String label, int passed, int total) {
-		Main.Companion.onTestResults(new TestResult(label, passed, total));
+		MainActivityRuntime.Companion.onTestResults(new TestResult(label, passed, total));
 	}
 
 	/**
@@ -649,6 +651,7 @@ public class NativeApp {
 	public static native boolean loadStateFromSlot(int slot);
 	public static native String getGamePathSlot(int slot);
 	public static native byte[] getImageSlot(int slot);
+	public static native byte[] getSaveStateImage(String path);
 
 	// Hot-swap the CDVD disc on the running VM (keeps the session alive, cycles
 	// the tray so the game detects the new disc). Returns false if there's no
@@ -674,17 +677,17 @@ public class NativeApp {
 			// Pause/resume callbacks can arrive after the user has already
 			// requested Close Game / Reset. Do not let a stale resume flip the
 			// Compose state back to RUNNING while the native VM is unwinding.
-			if (Main.isVmStopInProgress())
+			if (MainActivityRuntime.isVmStopInProgress())
 				return;
-			if (!paused && Main.eState.getValue() == EmuState.STOPPED)
+			if (!paused && MainActivityRuntime.eState.getValue() == EmuState.STOPPED)
 				return;
 			if (paused) {
-				Main.eState.setValue(EmuState.PAUSED);
+				MainActivityRuntime.eState.setValue(EmuState.PAUSED);
 			} else {
-				Main.eState.setValue(EmuState.RUNNING);
+				MainActivityRuntime.eState.setValue(EmuState.RUNNING);
 				// One-shot auto-load of the autosave state, if the user enabled
 				// "Auto-load last state on boot" (no-op otherwise).
-				Main.onVmRunning();
+				MainActivityRuntime.onVmRunning();
 			}
 		});
 	}

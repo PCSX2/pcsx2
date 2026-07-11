@@ -1,99 +1,89 @@
 package com.armsx2.ui.settings
 
-import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armsx2.i18n.I18n
 import com.armsx2.i18n.str
+import com.armsx2.navigation.AppRoute
+import com.armsx2.navigation.UiNavigator
+import com.armsx2.ui.theme.ThemeMode
+import com.armsx2.ui.theme.ThemePreferences
 
-/**
- * App-level settings. Currently the Language picker — the live-translation control.
- *
- * Picking a language calls [I18n.setLanguage], which flips the [I18n.current] snapshot State and
- * recomposes every [str] call site instantly (no restart). This tab's own labels use [str], so
- * switching language re-texts them live — the visible proof the system works. English is the
- * source of truth; other languages fall back to English per-key for any untranslated string.
- */
 @Composable
 fun AppTab() {
-    val context = LocalContext.current
-    val scroll = remember { ScrollState(0) }
-    ControllerAutoScroll(scroll)
-    val current = I18n.current // subscribe: re-highlight the selected row on change
+    val currentLanguage = I18n.languages.firstOrNull { it.code == I18n.current } ?: I18n.languages.first()
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(scroll)
-            .verticalScrollbar(scroll),
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(
-            str("app.language"),
-            color = Color.White,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(bottom = 2.dp),
-        )
-        Text(
-            str("app.language.desc"),
-            color = Color(0xFFB0B0B0),
-            fontSize = 11.sp,
-            modifier = Modifier.padding(bottom = 10.dp),
-        )
-        I18n.languages.forEach { lang ->
-            val selected = lang.code == current
+        Surface(
+            onClick = { UiNavigator.navigate(AppRoute.Language) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.46f)),
+        ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(if (selected) Color(0x332E8BFF) else Color.Transparent)
-                    .controllerFocusable(
-                        controllerId = "lang:${lang.code}",
-                        shape = RoundedCornerShape(8.dp),
-                        onConfirm = { I18n.setLanguage(context, lang.code) },
-                    )
-                    .clickable { I18n.setLanguage(context, lang.code) }
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    lang.nativeName,
-                    color = if (selected) Color(0xFF4DA3FF) else Color.White,
-                    fontSize = 14.sp,
-                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f),
-                )
-                Text(
-                    lang.englishName,
-                    color = Color(0xFF8A8A8A),
-                    fontSize = 11.sp,
-                )
-                if (selected) {
+                Surface(
+                    modifier = Modifier.size(46.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                        Text("◎", color = MaterialTheme.colorScheme.primary, fontSize = 23.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(str("app.language"), style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "  ✓",
-                        color = Color(0xFF4DA3FF),
-                        fontSize = 14.sp,
+                        currentLanguage.nativeName,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+                Text("›", color = MaterialTheme.colorScheme.primary, fontSize = 26.sp)
             }
-            SettingsDivider()
         }
+
+        SegmentedRow(
+            label = str("app.theme"),
+            options = listOf(str("app.theme.system"), str("app.theme.light"), str("app.theme.dark")),
+            selectedIndex = when (ThemePreferences.mode.value) {
+                ThemeMode.System -> 0
+                ThemeMode.Light -> 1
+                ThemeMode.Dark -> 2
+            },
+            onChange = { index ->
+                ThemePreferences.set(
+                    when (index) {
+                        1 -> ThemeMode.Light
+                        2 -> ThemeMode.Dark
+                        else -> ThemeMode.System
+                    },
+                )
+            },
+        )
     }
 }

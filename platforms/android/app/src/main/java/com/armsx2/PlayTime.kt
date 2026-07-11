@@ -1,12 +1,14 @@
 package com.armsx2
 
+import com.armsx2.runtime.MainActivityRuntime
+
 import android.os.SystemClock
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 /**
- * Per-game play-time + last-played tracking, persisted in [Main.prefs] keyed by
+ * Per-game play-time + last-played tracking, persisted in [MainActivityRuntime.prefs] keyed by
  * PS2 serial. A "session" runs while the VM is RUNNING; pausing, stopping or
  * backgrounding accumulates the elapsed time into the per-serial total. Shown in
  * the Game Properties info tab.
@@ -29,7 +31,7 @@ object PlayTime {
         val s = serial?.takeIf { it.isNotEmpty() } ?: return
         sessionSerial = s
         sessionStart = SystemClock.elapsedRealtime()
-        Main.prefs.edit().putLong(LAST_PREFIX + s, System.currentTimeMillis()).apply()
+        MainActivityRuntime.prefs.edit().putLong(LAST_PREFIX + s, System.currentTimeMillis()).apply()
     }
 
     /** Accumulate the open session's elapsed time into its serial's total. */
@@ -39,15 +41,15 @@ object PlayTime {
         sessionSerial = null
         val elapsedMs = SystemClock.elapsedRealtime() - sessionStart
         if (elapsedMs < 1000L) return
-        val prev = Main.prefs.getLong(SECS_PREFIX + s, 0L)
-        Main.prefs.edit().putLong(SECS_PREFIX + s, prev + elapsedMs / 1000L).apply()
+        val prev = MainActivityRuntime.prefs.getLong(SECS_PREFIX + s, 0L)
+        MainActivityRuntime.prefs.edit().putLong(SECS_PREFIX + s, prev + elapsedMs / 1000L).apply()
     }
 
     fun playedSeconds(serial: String?): Long =
-        serial?.takeIf { it.isNotEmpty() }?.let { Main.prefs.getLong(SECS_PREFIX + it, 0L) } ?: 0L
+        serial?.takeIf { it.isNotEmpty() }?.let { MainActivityRuntime.prefs.getLong(SECS_PREFIX + it, 0L) } ?: 0L
 
     fun lastPlayedMillis(serial: String?): Long =
-        serial?.takeIf { it.isNotEmpty() }?.let { Main.prefs.getLong(LAST_PREFIX + it, 0L) } ?: 0L
+        serial?.takeIf { it.isNotEmpty() }?.let { MainActivityRuntime.prefs.getLong(LAST_PREFIX + it, 0L) } ?: 0L
 
     /** "" when zero, else e.g. "2h 15m", "45m", "30s". */
     fun formatPlayed(seconds: Long): String {

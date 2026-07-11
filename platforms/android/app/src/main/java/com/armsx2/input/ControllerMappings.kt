@@ -2,7 +2,8 @@ package com.armsx2.input
 
 import android.view.KeyEvent
 import androidx.compose.runtime.mutableStateOf
-import com.armsx2.Main
+import com.armsx2.runtime.MainActivityRuntime
+import androidx.core.content.edit
 
 object ControllerMappings {
     data class Action(
@@ -59,7 +60,7 @@ object ControllerMappings {
     // ---- Analog stick remapping (physical sticks → digital PS2 inputs) ----
     // Lets a physical stick drive the D-pad or the face buttons instead of the PS2
     // analog stick — handy for fighting games on analog-centric pads (e.g. left
-    // stick = D-pad). Global, like the button bindings; persisted in Main.prefs.
+    // stick = D-pad). Global, like the button bindings; persisted in MainActivityRuntime.prefs.
     enum class StickMode(val id: String, val label: String) {
         ANALOG("analog", "Analog"),
         FACE("face", "Face"),
@@ -96,23 +97,23 @@ object ControllerMappings {
 
     /** Serial of the running game whose overrides apply at RUNTIME (input
      *  dispatch), or null in menus so use falls back to global. */
-    private fun runtimeSerial(): String? = Main.currentGame.value?.serial?.takeIf { it.isNotEmpty() }
+    private fun runtimeSerial(): String? = MainActivityRuntime.currentGame.value?.serial?.takeIf { it.isNotEmpty() }
 
     /** Read an int pref: per-game override (for the active game) first, else global. */
     private fun resolveInt(baseKey: String, default: Int): Int {
         val s = runtimeSerial()
         if (s != null) {
             val gk = gameKey(s, baseKey)
-            if (Main.prefs.contains(gk)) return Main.prefs.getInt(gk, default)
+            if (MainActivityRuntime.prefs.contains(gk)) return MainActivityRuntime.prefs.getInt(gk, default)
         }
-        return Main.prefs.getInt(baseKey, default)
+        return MainActivityRuntime.prefs.getInt(baseKey, default)
     }
 
     /** Read a string pref: per-game override first, else global. */
     private fun resolveString(baseKey: String, default: String): String {
         val s = runtimeSerial()
-        if (s != null) Main.prefs.getString(gameKey(s, baseKey), null)?.let { return it }
-        return Main.prefs.getString(baseKey, default) ?: default
+        if (s != null) MainActivityRuntime.prefs.getString(gameKey(s, baseKey), null)?.let { return it }
+        return MainActivityRuntime.prefs.getString(baseKey, default) ?: default
     }
 
     /** Scope-explicit int read for the Pad UI: the override at [serial]'s tier if
@@ -120,15 +121,15 @@ object ControllerMappings {
      *  inherited value instead of blank). serial=null reads the global tier. */
     private fun scopedInt(baseKey: String, serial: String?, default: Int): Int {
         val key = scopedKey(baseKey, serial)
-        if (Main.prefs.contains(key)) return Main.prefs.getInt(key, default)
-        return Main.prefs.getInt(baseKey, default)
+        if (MainActivityRuntime.prefs.contains(key)) return MainActivityRuntime.prefs.getInt(key, default)
+        return MainActivityRuntime.prefs.getInt(baseKey, default)
     }
 
     private const val KEY_LSTICK = "pad.lstick.mode"
     private const val KEY_RSTICK = "pad.rstick.mode"
 
     private fun stickModeFromId(id: String?): StickMode =
-        StickMode.values().firstOrNull { it.id == id } ?: StickMode.ANALOG
+        StickMode.entries.firstOrNull { it.id == id } ?: StickMode.ANALOG
 
     // Runtime (per-game aware): used by the input dispatcher.
     fun leftStickMode(player: Int = 0): StickMode =
@@ -141,15 +142,30 @@ object ControllerMappings {
 
     // Scope-explicit (Pad UI): read/edit the global tier (serial=null) or a per-game tier.
     fun leftStickModeScope(player: Int, serial: String?): StickMode =
-        stickModeFromId(Main.prefs.getString(scopedKey(playerPrefix(player) + KEY_LSTICK, serial), null)
-            ?: Main.prefs.getString(playerPrefix(player) + KEY_LSTICK, StickMode.ANALOG.id))
+        stickModeFromId(MainActivityRuntime.prefs.getString(scopedKey(playerPrefix(player) + KEY_LSTICK, serial), null)
+            ?: MainActivityRuntime.prefs.getString(playerPrefix(player) + KEY_LSTICK, StickMode.ANALOG.id))
     fun rightStickModeScope(player: Int, serial: String?): StickMode =
-        stickModeFromId(Main.prefs.getString(scopedKey(playerPrefix(player) + KEY_RSTICK, serial), null)
-            ?: Main.prefs.getString(playerPrefix(player) + KEY_RSTICK, StickMode.ANALOG.id))
+        stickModeFromId(MainActivityRuntime.prefs.getString(scopedKey(playerPrefix(player) + KEY_RSTICK, serial), null)
+            ?: MainActivityRuntime.prefs.getString(playerPrefix(player) + KEY_RSTICK, StickMode.ANALOG.id))
     fun setLeftStickMode(m: StickMode, player: Int = 0, serial: String? = null) =
-        Main.prefs.edit().putString(scopedKey(playerPrefix(player) + KEY_LSTICK, serial), m.id).apply()
+        MainActivityRuntime.prefs.edit {
+            putString(
+                scopedKey(
+                    playerPrefix(player) + KEY_LSTICK,
+                    serial
+                ), m.id
+            )
+        }
+
     fun setRightStickMode(m: StickMode, player: Int = 0, serial: String? = null) =
-        Main.prefs.edit().putString(scopedKey(playerPrefix(player) + KEY_RSTICK, serial), m.id).apply()
+        MainActivityRuntime.prefs.edit {
+            putString(
+                scopedKey(
+                    playerPrefix(player) + KEY_RSTICK,
+                    serial
+                ), m.id
+            )
+        }
 
     // ---- Per-stick axis correction (invert / swap) ------------------------
     // Fixes pads whose stick reads rotated or mirrored — e.g. a right stick where
@@ -164,30 +180,50 @@ object ControllerMappings {
     private const val KEY_RSTICK_INVY = "pad.rstick.invertY"
     private const val KEY_RSTICK_SWAP = "pad.rstick.swapXY"
     fun stickInvertX(left: Boolean): Boolean =
-        Main.prefs.getBoolean(if (left) KEY_LSTICK_INVX else KEY_RSTICK_INVX, false)
+        MainActivityRuntime.prefs.getBoolean(if (left) KEY_LSTICK_INVX else KEY_RSTICK_INVX, false)
     fun stickInvertY(left: Boolean): Boolean =
-        Main.prefs.getBoolean(if (left) KEY_LSTICK_INVY else KEY_RSTICK_INVY, false)
+        MainActivityRuntime.prefs.getBoolean(if (left) KEY_LSTICK_INVY else KEY_RSTICK_INVY, false)
     fun stickSwapXY(left: Boolean): Boolean =
-        Main.prefs.getBoolean(if (left) KEY_LSTICK_SWAP else KEY_RSTICK_SWAP, false)
+        MainActivityRuntime.prefs.getBoolean(if (left) KEY_LSTICK_SWAP else KEY_RSTICK_SWAP, false)
     fun setStickInvertX(left: Boolean, on: Boolean) =
-        Main.prefs.edit().putBoolean(if (left) KEY_LSTICK_INVX else KEY_RSTICK_INVX, on).apply()
+        MainActivityRuntime.prefs.edit {
+            putBoolean(
+                if (left) KEY_LSTICK_INVX else KEY_RSTICK_INVX,
+                on
+            )
+        }
     fun setStickInvertY(left: Boolean, on: Boolean) =
-        Main.prefs.edit().putBoolean(if (left) KEY_LSTICK_INVY else KEY_RSTICK_INVY, on).apply()
+        MainActivityRuntime.prefs.edit {
+            putBoolean(
+                if (left) KEY_LSTICK_INVY else KEY_RSTICK_INVY,
+                on
+            )
+        }
     fun setStickSwapXY(left: Boolean, on: Boolean) =
-        Main.prefs.edit().putBoolean(if (left) KEY_LSTICK_SWAP else KEY_RSTICK_SWAP, on).apply()
+        MainActivityRuntime.prefs.edit {
+            putBoolean(
+                if (left) KEY_LSTICK_SWAP else KEY_RSTICK_SWAP,
+                on
+            )
+        }
 
     // Make the physical D-pad drive the LEFT analog stick (full deflection) so it
     // works in games that only read the analog stick. While on, the D-pad no
     // longer sends digital d-pad presses in-game.
     private const val KEY_DPAD_AS_LSTICK = "pad.dpadAsLeftStick"
-    fun dpadAsLeftStick(): Boolean = Main.prefs.getBoolean(KEY_DPAD_AS_LSTICK, false)
-    fun setDpadAsLeftStick(on: Boolean) = Main.prefs.edit().putBoolean(KEY_DPAD_AS_LSTICK, on).apply()
+    fun dpadAsLeftStick(): Boolean = MainActivityRuntime.prefs.getBoolean(KEY_DPAD_AS_LSTICK, false)
+    fun setDpadAsLeftStick(on: Boolean) = MainActivityRuntime.prefs.edit {
+        putBoolean(
+            KEY_DPAD_AS_LSTICK,
+            on
+        )
+    }
 
     // ---- Analog stick response shaping (physical sticks → PS2 analog) ----
     // Sensitivity = a linear output scale. Acceleration = an exponential response
     // curve applied to the post-deadzone magnitude (0 = linear; higher = finer
     // control near center, ramping to full speed at full tilt). Global controller
-    // feel, persisted in Main.prefs; cached so the hot motion path avoids a lookup.
+    // feel, persisted in MainActivityRuntime.prefs; cached so the hot motion path avoids a lookup.
     //
     // PER-STICK since the feature batch that split them: every feel tunable exists
     // for the LEFT and RIGHT stick independently (tester feedback: lowering
@@ -209,15 +245,15 @@ object ControllerMappings {
         fun get(left: Boolean): Float {
             val c = if (left) cacheL else cacheR
             if (!c.isNaN()) return c
-            val v = (if (Main.prefs.contains(key(left))) Main.prefs.getFloat(key(left), def)
-                else Main.prefs.getFloat(baseKey, def)).coerceIn(lo, hi)
+            val v = (if (MainActivityRuntime.prefs.contains(key(left))) MainActivityRuntime.prefs.getFloat(key(left), def)
+                else MainActivityRuntime.prefs.getFloat(baseKey, def)).coerceIn(lo, hi)
             if (left) cacheL = v else cacheR = v
             return v
         }
         fun set(left: Boolean, v: Float) {
             val c = v.coerceIn(lo, hi)
             if (left) cacheL = c else cacheR = c
-            Main.prefs.edit().putFloat(key(left), c).apply()
+            MainActivityRuntime.prefs.edit { putFloat(key(left), c) }
         }
         fun reset(edit: android.content.SharedPreferences.Editor) {
             edit.remove(baseKey).remove(key(true)).remove(key(false))
@@ -234,7 +270,7 @@ object ControllerMappings {
     // App-side analog stick deadzone (fraction of travel ignored). Kept small by
     // default and user-adjustable down to 0 — handheld "switch" sticks have tiny
     // range, so a big deadzone wastes most of it. Output is re-normalized past the
-    // deadzone (see Main.shapeStickMag) so movement ramps smoothly from 0 instead
+    // deadzone (see MainActivityRuntime.shapeStickMag) so movement ramps smoothly from 0 instead
     // of jumping. Pairs with forcing the NATIVE pad deadzone to 0.
     private const val KEY_STICK_DZ = "pad.stick.deadzone"
     const val STICK_DZ_MAX = 0.40f
@@ -245,7 +281,7 @@ object ControllerMappings {
     // Outer (anti-)deadzone: fraction of travel near the EDGE that maps to full
     // output, so a stick that can't physically reach its corners still hits 100%
     // (short-throw / handheld sticks like the AYN Odin). 0 = off. Applied in
-    // Main.shapeStickMag as the upper edge of the post-deadzone re-normalize window.
+    // MainActivityRuntime.shapeStickMag as the upper edge of the post-deadzone re-normalize window.
     private const val KEY_STICK_OUTER = "pad.stick.outerDeadzone"
     const val STICK_OUTER_MAX = 0.40f
     private val prefStickOuter = PerStickPref(KEY_STICK_OUTER, 0.0f, 0f, STICK_OUTER_MAX)
@@ -257,7 +293,7 @@ object ControllerMappings {
     // the stick until ~45%), so with a linear map the game feels dead at the bottom then
     // jumps. Set this near the game's deadzone and ANY stick movement maps to just past it,
     // so the full physical travel maps smoothly onto the game's active range (immediate +
-    // proportional, no jump, no slow zone). 0 = off (unchanged). Applied in Main.shapeStickMag
+    // proportional, no jump, no slow zone). 0 = off (unchanged). Applied in MainActivityRuntime.shapeStickMag
     // AFTER sensitivity, only to a non-zero magnitude (true center still reads 0).
     private const val KEY_STICK_ANTIDZ = "pad.stick.antiDeadzone"
     const val STICK_ANTIDZ_MAX = 0.60f
@@ -267,11 +303,11 @@ object ControllerMappings {
 
     // Master rumble / vibration enable. Gates NativeApp.onPadRumble (controller motors AND
     // the device-haptic fallback). Persisted in prefs and mirrored into the native gate
-    // NativeApp.sRumbleEnabled — live on change and at app start (Main.onCreate). Default on.
+    // NativeApp.sRumbleEnabled — live on change and at app start (MainActivityRuntime.onCreate). Default on.
     private const val KEY_RUMBLE = "pad.rumble.enabled"
-    fun rumbleEnabled(): Boolean = Main.prefs.getBoolean(KEY_RUMBLE, true)
+    fun rumbleEnabled(): Boolean = MainActivityRuntime.prefs.getBoolean(KEY_RUMBLE, true)
     fun setRumbleEnabled(on: Boolean) {
-        Main.prefs.edit().putBoolean(KEY_RUMBLE, on).apply()
+        MainActivityRuntime.prefs.edit { putBoolean(KEY_RUMBLE, on) }
         kr.co.iefriends.pcsx2.NativeApp.sRumbleEnabled = on
     }
 
@@ -279,10 +315,18 @@ object ControllerMappings {
     // controllers routed to the 2 ports x 4 slots. Extra pads (slots 2-7) reuse the P1
     // button mapping. Also drives PadRouter's routing gate.
     private const val KEY_MULTITAP = "pad.multitap.enabled"
-    fun multitapEnabled(): Boolean = Main.prefs.getBoolean(KEY_MULTITAP, false)
+    fun multitapEnabled(): Boolean = MainActivityRuntime.prefs.getBoolean(KEY_MULTITAP, false)
     fun setMultitapEnabled(on: Boolean) {
-        Main.prefs.edit().putBoolean(KEY_MULTITAP, on).apply()
+        MainActivityRuntime.prefs.edit { putBoolean(KEY_MULTITAP, on) }
         com.armsx2.input.PadRouter.multitapEnabled = on
+        if (MainActivityRuntime.nativeReady.value) {
+            kotlin.concurrent.thread(name = "armsx2-multitap") {
+                runCatching {
+                    kr.co.iefriends.pcsx2.NativeApp.setMultitap(0, on)
+                    kr.co.iefriends.pcsx2.NativeApp.setMultitap(1, on)
+                }
+            }
+        }
     }
 
     // ---- Custom per-direction stick→button binding (StickMode.CUSTOM) ----
@@ -327,7 +371,12 @@ object ControllerMappings {
     fun customStickCode(left: Boolean, dir: StickDir, player: Int = 0): Int =
         resolveInt(customKey(left, dir, player), defaultCustomCode(left, dir))
     fun setCustomStickCode(left: Boolean, dir: StickDir, code: Int, player: Int = 0, serial: String? = null) =
-        Main.prefs.edit().putInt(scopedKey(customKey(left, dir, player), serial), code).apply()
+        MainActivityRuntime.prefs.edit {
+            putInt(
+                scopedKey(customKey(left, dir, player), serial),
+                code
+            )
+        }
     /** Scope-explicit read for the Pad UI (per-game tier else global baseline). */
     fun customStickCodeScope(left: Boolean, dir: StickDir, player: Int, serial: String?): Int =
         scopedInt(customKey(left, dir, player), serial, defaultCustomCode(left, dir))
@@ -338,7 +387,7 @@ object ControllerMappings {
     // customStickCode storage via a reserved code range (no separate persistence). To
     // bind one, the user — while capturing a direction — presses a physical button they
     // already assigned to that hotkey in the Hotkeys tab; PadTab maps it to these codes.
-    // Edge-triggered in Main.emitCustom (fires once when the direction crosses the
+    // Edge-triggered in MainActivityRuntime.emitCustom (fires once when the direction crosses the
     // digital threshold). [SysHotkey] is defined later in this object — fine, it's an
     // object so member order doesn't matter.
     const val HOTKEY_STICK_CODE_BASE = 300
@@ -370,7 +419,7 @@ object ControllerMappings {
     /** Clear a direction back to its analog default (the Reset affordance). With a
      *  [serial], clears only that game's per-game override for the direction. */
     fun resetStickCode(left: Boolean, dir: StickDir, player: Int = 0, serial: String? = null) {
-        Main.prefs.edit().remove(scopedKey(customKey(left, dir, player), serial)).apply(); stickBindTick.value++
+        MainActivityRuntime.prefs.edit { remove(scopedKey(customKey(left, dir, player), serial)) }; stickBindTick.value++
     }
 
     private const val KEY_PREFIX = "pad.map."
@@ -418,7 +467,14 @@ object ControllerMappings {
     }
 
     fun bind(action: Action, physicalKeyCode: Int, player: Int = 0, serial: String? = null) {
-        Main.prefs.edit().putInt(scopedKey(playerPrefix(player) + KEY_PREFIX + action.id, serial), physicalKeyCode).apply()
+        MainActivityRuntime.prefs.edit {
+            putInt(
+                scopedKey(
+                    playerPrefix(player) + KEY_PREFIX + action.id,
+                    serial
+                ), physicalKeyCode
+            )
+        }
     }
 
     /** Unbind a pad button: store KEYCODE_UNKNOWN — the same "unbound" sentinel the
@@ -427,13 +483,13 @@ object ControllerMappings {
      *  the freed physical button can instead be assigned as an ARMSX2 hotkey. With a
      *  [serial], unbinds the button for that game only (per-game override). */
     fun clearAction(action: Action, player: Int = 0, serial: String? = null) {
-        Main.prefs.edit().putInt(scopedKey(playerPrefix(player) + KEY_PREFIX + action.id, serial), KeyEvent.KEYCODE_UNKNOWN).apply()
+        MainActivityRuntime.prefs.edit().putInt(scopedKey(playerPrefix(player) + KEY_PREFIX + action.id, serial), KeyEvent.KEYCODE_UNKNOWN).apply()
     }
 
     /** Reset button binds for [player]. serial=null clears the GLOBAL binds; a
      *  serial removes that game's per-game button overrides (reverting to global). */
     fun reset(player: Int = 0, serial: String? = null) {
-        val edit = Main.prefs.edit()
+        val edit = MainActivityRuntime.prefs.edit()
         actions.forEach { edit.remove(scopedKey(playerPrefix(player) + KEY_PREFIX + it.id, serial)) }
         edit.apply()
     }
@@ -443,7 +499,7 @@ object ControllerMappings {
      *  global. Used by the Pad-tab Reset when editing in Game scope. */
     fun clearGameOverrides(serial: String, player: Int) {
         if (serial.isEmpty()) return
-        val edit = Main.prefs.edit()
+        val edit = MainActivityRuntime.prefs.edit()
         actions.forEach { edit.remove(gameKey(serial, playerPrefix(player) + KEY_PREFIX + it.id)) }
         edit.remove(gameKey(serial, playerPrefix(player) + KEY_LSTICK))
             .remove(gameKey(serial, playerPrefix(player) + KEY_RSTICK))
@@ -458,12 +514,12 @@ object ControllerMappings {
      *  the Pad-tab "Game" scope badge so the user knows a game-specific map exists. */
     fun hasGameOverrides(serial: String?, player: Int): Boolean {
         if (serial.isNullOrEmpty()) return false
-        if (actions.any { Main.prefs.contains(gameKey(serial, playerPrefix(player) + KEY_PREFIX + it.id)) }) return true
-        if (Main.prefs.contains(gameKey(serial, playerPrefix(player) + KEY_LSTICK))) return true
-        if (Main.prefs.contains(gameKey(serial, playerPrefix(player) + KEY_RSTICK))) return true
+        if (actions.any { MainActivityRuntime.prefs.contains(gameKey(serial, playerPrefix(player) + KEY_PREFIX + it.id)) }) return true
+        if (MainActivityRuntime.prefs.contains(gameKey(serial, playerPrefix(player) + KEY_LSTICK))) return true
+        if (MainActivityRuntime.prefs.contains(gameKey(serial, playerPrefix(player) + KEY_RSTICK))) return true
         for (left in booleanArrayOf(true, false))
             for (dir in StickDir.values())
-                if (Main.prefs.contains(gameKey(serial, customKey(left, dir, player)))) return true
+                if (MainActivityRuntime.prefs.contains(gameKey(serial, customKey(left, dir, player)))) return true
         return false
     }
 
@@ -474,19 +530,19 @@ object ControllerMappings {
      *  recomposes. (The button-bind sliders live outside the Settings object, which is
      *  why the Settings reset alone didn't clear them.) */
     fun resetTunables() {
-        val edit = Main.prefs.edit()
-        edit.remove(KEY_DPAD_AS_LSTICK)
-            .remove(KEY_LSTICK_INVX).remove(KEY_LSTICK_INVY).remove(KEY_LSTICK_SWAP)
-            .remove(KEY_RSTICK_INVX).remove(KEY_RSTICK_INVY).remove(KEY_RSTICK_SWAP)
-        prefStickSens.reset(edit); prefStickAccel.reset(edit); prefStickDz.reset(edit)
-        prefStickOuter.reset(edit); prefStickAntiDz.reset(edit)
-        for (p in intArrayOf(P1, P2)) {
-            edit.remove(playerPrefix(p) + KEY_LSTICK).remove(playerPrefix(p) + KEY_RSTICK)
-            for (left in booleanArrayOf(true, false))
-                for (dir in StickDir.values())
-                    edit.remove(customKey(left, dir, p))
+        MainActivityRuntime.prefs.edit {
+            remove(KEY_DPAD_AS_LSTICK)
+                .remove(KEY_LSTICK_INVX).remove(KEY_LSTICK_INVY).remove(KEY_LSTICK_SWAP)
+                .remove(KEY_RSTICK_INVX).remove(KEY_RSTICK_INVY).remove(KEY_RSTICK_SWAP)
+            prefStickSens.reset(this); prefStickAccel.reset(this); prefStickDz.reset(this)
+            prefStickOuter.reset(this); prefStickAntiDz.reset(this)
+            for (p in intArrayOf(P1, P2)) {
+                remove(playerPrefix(p) + KEY_LSTICK).remove(playerPrefix(p) + KEY_RSTICK)
+                for (left in booleanArrayOf(true, false))
+                    for (dir in StickDir.values())
+                        remove(customKey(left, dir, p))
+            }
         }
-        edit.apply()
         stickBindTick.value++
     }
 
@@ -499,15 +555,16 @@ object ControllerMappings {
 
     // ---- Turbo / rapid-fire (per PS2 button, per player) -------------------
     // A turbo-flagged button, while its bound PHYSICAL controller button is held,
-    // auto-presses/releases the PS2 button at ~15 Hz (Main.handleTurbo). Global
+    // auto-presses/releases the PS2 button at ~15 Hz (MainActivityRuntime.handleTurbo). Global
     // (not per-game). Only the physical-controller dispatch consults this — the
     // on-screen touch buttons stay normal — matching "hold a back paddle to spam".
     private const val TURBO_PREFIX = "pad.turbo."
     private fun turboKey(action: Action, player: Int) = playerPrefix(player) + TURBO_PREFIX + action.id
     fun isTurboAction(action: Action, player: Int = 0): Boolean =
-        Main.prefs.getBoolean(turboKey(action, player), false)
+        MainActivityRuntime.prefs.getBoolean(turboKey(action, player), false)
     fun setTurboAction(action: Action, player: Int, on: Boolean) =
-        Main.prefs.edit().putBoolean(turboKey(action, player), on).apply()
+        MainActivityRuntime.prefs.edit { putBoolean(turboKey(action, player), on) }
+
     /** True when a physical button's PS2 target [targetKeyCode] is turbo-flagged. */
     fun isTurboTarget(targetKeyCode: Int, player: Int = 0): Boolean {
         val action = actions.firstOrNull { it.targetKeyCode == targetKeyCode } ?: return false
@@ -516,7 +573,7 @@ object ControllerMappings {
 
     // ---- System hotkeys (menu / quick save / quick load) -----------------
     // Physical buttons bound to app actions, NOT forwarded to the PS2. Handled in
-    // Main.dispatchKeyEvent (so they can catch KEYCODE_BACK / back-paddle keys the
+    // MainActivityRuntime.dispatchKeyEvent (so they can catch KEYCODE_BACK / back-paddle keys the
     // back dispatcher would otherwise swallow). KEYCODE_UNKNOWN = unbound.
     enum class SysHotkey(val prefKey: String, val label: String) {
         MENU("pad.menu.keycode", "Menu / Pause"),
@@ -543,7 +600,7 @@ object ControllerMappings {
         RESET_GAME("pad.resetgame.keycode", "Reset Game"),
         // Hold-type binding: while the bound button is held, pressure-capable PS2
         // buttons report a soft (~50%) press. Handled as a HOLD in
-        // Main.dispatchKeyEvent (sets TouchControls.pressureModifierHeld), not as a
+        // MainActivityRuntime.dispatchKeyEvent (sets TouchControls.pressureModifierHeld), not as a
         // one-shot action like the others.
         PRESSURE_MOD("pad.pressuremod.keycode", "Pressure Modifier (hold)"),
     }
@@ -554,44 +611,44 @@ object ControllerMappings {
     private const val MOD_SUFFIX = ".mod"
 
     fun hotkeyCode(h: SysHotkey): Int =
-        Main.prefs.getInt(h.prefKey, KeyEvent.KEYCODE_UNKNOWN)
+        MainActivityRuntime.prefs.getInt(h.prefKey, KeyEvent.KEYCODE_UNKNOWN)
 
     /** Modifier button that must be held with [hotkeyCode], or UNKNOWN for none. */
     fun hotkeyModCode(h: SysHotkey): Int =
-        Main.prefs.getInt(h.prefKey + MOD_SUFFIX, KeyEvent.KEYCODE_UNKNOWN)
+        MainActivityRuntime.prefs.getInt(h.prefKey + MOD_SUFFIX, KeyEvent.KEYCODE_UNKNOWN)
 
     /** Bind a single-button hotkey (clears any modifier). */
     fun bindHotkey(h: SysHotkey, physicalKeyCode: Int) {
-        Main.prefs.edit()
-            .putInt(h.prefKey, physicalKeyCode)
-            .putInt(h.prefKey + MOD_SUFFIX, KeyEvent.KEYCODE_UNKNOWN)
-            .apply()
+        MainActivityRuntime.prefs.edit {
+            putInt(h.prefKey, physicalKeyCode)
+                .putInt(h.prefKey + MOD_SUFFIX, KeyEvent.KEYCODE_UNKNOWN)
+        }
     }
 
     /** Bind a two-button combo: [modCode] held + [keyCode] pressed. */
     fun bindHotkeyCombo(h: SysHotkey, modCode: Int, keyCode: Int) {
-        Main.prefs.edit()
-            .putInt(h.prefKey, keyCode)
-            .putInt(h.prefKey + MOD_SUFFIX, modCode)
-            .apply()
+        MainActivityRuntime.prefs.edit {
+            putInt(h.prefKey, keyCode)
+                .putInt(h.prefKey + MOD_SUFFIX, modCode)
+        }
     }
 
     fun clearHotkey(h: SysHotkey) {
-        Main.prefs.edit()
-            .putInt(h.prefKey, KeyEvent.KEYCODE_UNKNOWN)
-            .putInt(h.prefKey + MOD_SUFFIX, KeyEvent.KEYCODE_UNKNOWN)
-            .apply()
+        MainActivityRuntime.prefs.edit {
+            putInt(h.prefKey, KeyEvent.KEYCODE_UNKNOWN)
+                .putInt(h.prefKey + MOD_SUFFIX, KeyEvent.KEYCODE_UNKNOWN)
+        }
     }
 
     /** Clear ALL system hotkey bindings (the global "Reset to defaults"). Bumps
      *  hotkeyBindTick so the Hotkeys tab recomposes. */
     fun clearAllHotkeys() {
-        val edit = Main.prefs.edit()
-        SysHotkey.values().forEach {
-            edit.putInt(it.prefKey, KeyEvent.KEYCODE_UNKNOWN)
-                .putInt(it.prefKey + MOD_SUFFIX, KeyEvent.KEYCODE_UNKNOWN)
+        MainActivityRuntime.prefs.edit {
+            SysHotkey.values().forEach {
+                putInt(it.prefKey, KeyEvent.KEYCODE_UNKNOWN)
+                    .putInt(it.prefKey + MOD_SUFFIX, KeyEvent.KEYCODE_UNKNOWN)
+            }
         }
-        edit.apply()
         hotkeyBindTick.value++
     }
 
@@ -628,14 +685,14 @@ object ControllerMappings {
         }
     }
 
-    // True while the Pad tab is waiting for a button to bind. Main.dispatchKeyEvent
+    // True while the Pad tab is waiting for a button to bind. MainActivityRuntime.dispatchKeyEvent
     // checks this and lets EVERY key fall through to Compose's onPreviewKeyEvent so
     // any button — including B/A/Y/D-pad/L1/R1 the overlay nav would otherwise
     // consume (B = exit) — can be captured. Normal nav resumes when it clears.
     val padCapturing = mutableStateOf(false)
 
     // Capture bridge: the Hotkeys tab calls [beginHotkeyCapture]; the next
-    // button(s) seen by Main.dispatchKeyEvent are bound to it. Press one button
+    // button(s) seen by MainActivityRuntime.dispatchKeyEvent are bound to it. Press one button
     // for a single bind, or two together for a combo. Observed for UI feedback.
     val captureHotkey = mutableStateOf<SysHotkey?>(null)
 

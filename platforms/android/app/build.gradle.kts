@@ -1,3 +1,4 @@
+@file:Suppress("UnstableApiUsage", "DEPRECATION")
 import org.gradle.api.GradleException
 import java.util.Properties
 
@@ -29,16 +30,12 @@ if (armsx2SigningPropertiesFile.isFile && !armsx2PlaySigningReady) {
 
 android {
     namespace = "com.armsx2"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = armsx2ApplicationId.get()
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = armsx2VersionCode.get()
         versionName = armsx2VersionName.get()
 
@@ -59,7 +56,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             // Sign release with the debug keystore so it's installable on-device
             // without a separate signing config. NOT for distribution — the debug
             // keystore is well-known and not secure for Play Store uploads.
@@ -177,6 +175,12 @@ android {
     }
 }
 
+composeCompiler {
+    // Keep R8 enabled while avoiding AGP's incompatible built-in Kotlin
+    // compose-group-mapping producer. Source/line mappings remain preserved.
+    includeComposeMappingFile.set(false)
+}
+
 // Android Studio's "Build > Clean Project" runs the `clean` task, but AGP
 // leaves `app/.cxx/` (the CMake/Ninja workspace) in place. Stale .cxx state
 // can lead to ghost builds — old object files linking against newer headers,
@@ -207,6 +211,8 @@ dependencies {
     implementation(libs.androidx.documentfile)
     implementation(libs.coil.compose)
     implementation(libs.coil.gif) // animated GIF / WebP / APNG (library background)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
