@@ -70,6 +70,7 @@ import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.ui.achievements.AchievementItem
 import com.armsx2.ui.common.ArmsLogo
 import com.armsx2.ui.common.GameCoverArt
+import com.armsx2.ui.settings.controllerFocusable
 import com.armsx2.ui.theme.Danger
 import com.armsx2.ui.theme.Success
 import kotlinx.coroutines.delay
@@ -346,6 +347,7 @@ private fun SessionPane(state: EmulationMenuUiState, viewModel: EmulationMenuVie
                 OptionChip(
                     label = "${slot + 1}",
                     selected = slot == state.saveSlot,
+                    controllerId = "pause.saveslot.$slot",
                     onClick = { viewModel.setSaveSlot(slot) },
                 )
             }
@@ -514,6 +516,7 @@ private fun PerformancePane(state: EmulationMenuUiState, viewModel: EmulationMen
         HorizontalOptionRow(
             options = listOf(50, 75, 90, 100, 110, 125, 150, 200).map { it to "$it%" },
             selected = settings.nominalSpeedPercent,
+            keyPrefix = str("perf.speedLimit.label"),
             onSelect = viewModel::setSpeed,
         )
     }
@@ -810,7 +813,9 @@ private fun ActionGrid(actions: List<MenuAction>, selected: Int, onSelect: (Int)
             val active = index == selected
             Surface(
                 onClick = { onSelect(index); item.action() },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .controllerFocusable("pause.action.$index", onConfirm = { onSelect(index); item.action() }),
                 shape = RoundedCornerShape(16.dp),
                 color = if (active) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
                 else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.48f),
@@ -870,7 +875,7 @@ private fun <T> HorizontalOptions(
     onSelect: (T) -> Unit,
 ) {
     SectionCard(title) {
-        HorizontalOptionRow(options, selected, onSelect)
+        HorizontalOptionRow(options, selected, keyPrefix = title, onSelect = onSelect)
     }
 }
 
@@ -896,6 +901,7 @@ private fun FramerateSlider(title: String, value: Float, onValue: (Float) -> Uni
 private fun <T> HorizontalOptionRow(
     options: List<Pair<T, String>>,
     selected: T,
+    keyPrefix: String,
     onSelect: (T) -> Unit,
 ) {
     Row(
@@ -907,15 +913,16 @@ private fun <T> HorizontalOptionRow(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         options.forEach { (value, label) ->
-            OptionChip(label, selected == value) { onSelect(value) }
+            OptionChip(label, selected == value, controllerId = "pause.$keyPrefix.$label") { onSelect(value) }
         }
     }
 }
 
 @Composable
-private fun OptionChip(label: String, selected: Boolean, onClick: () -> Unit) {
+private fun OptionChip(label: String, selected: Boolean, controllerId: String? = null, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
+        modifier = Modifier.controllerFocusable(controllerId, RoundedCornerShape(12.dp), onConfirm = onClick),
         shape = RoundedCornerShape(12.dp),
         color = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.17f)
         else MaterialTheme.colorScheme.surface,
@@ -944,7 +951,14 @@ private fun MenuSwitchRow(
 ) {
     Surface(
         onClick = { if (enabled) onCheckedChange(!checked) },
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .controllerFocusable(
+                "pause.switch.$title",
+                onConfirm = { if (enabled) onCheckedChange(!checked) },
+                onLeft = { if (enabled) onCheckedChange(false) },
+                onRight = { if (enabled) onCheckedChange(true) },
+            ),
         enabled = enabled,
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (enabled) 0.42f else 0.24f),
@@ -971,7 +985,7 @@ private fun MenuSwitchRow(
 private fun CompactAction(title: String, glyph: String, modifier: Modifier, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier.controllerFocusable("pause.compact.$title", onConfirm = onClick),
         shape = RoundedCornerShape(14.dp),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.42f)),

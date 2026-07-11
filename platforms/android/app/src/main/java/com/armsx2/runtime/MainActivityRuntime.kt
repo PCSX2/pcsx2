@@ -1908,80 +1908,27 @@ open class MainActivityRuntime : ComponentActivity() {
             }
         }
         if (WindowImpl.overlayVisible.value) {
+            // Pause menu two-zone nav (EmulationMenuInputController): the left tab
+            // column is walked with Up/Down (Right steps into the content pane); the
+            // content pane's controls are SettingsControllerNav registry items that
+            // move()/confirm() drive. L1/R1 cycle tabs from anywhere; Y jumps to the
+            // Options tab; B backs out (content → tabs → resume). Edge-triggered.
+            val emu = com.armsx2.ui.emulation.EmulationMenuInputController
+            val down = event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0
             val handled = when (kc) {
-                KeyEvent.KEYCODE_DPAD_LEFT -> when (event.action) {
-                    KeyEvent.ACTION_UP -> {
-                        true
-                    }
-                    KeyEvent.ACTION_DOWN -> {
-                        if (event.repeatCount != 0) {
-                            true
-                        } else {
-                            val now = SystemClock.uptimeMillis()
-                            if (!shouldSuppressUiNav(kc, fromAxis = false, now)) {
-                                recordUiNav(kc, fromAxis = false)
-                                if (!com.armsx2.ui.emulation.EmulationMenuInputController.move(-1, 0))
-                                    dispatchSyntheticUiKey(kc)
-                            }
-                            true
-                        }
-                    }
-                    else -> true
-                }
-                KeyEvent.KEYCODE_DPAD_RIGHT -> when (event.action) {
-                    KeyEvent.ACTION_UP -> {
-                        true
-                    }
-                    KeyEvent.ACTION_DOWN -> {
-                        if (event.repeatCount != 0) {
-                            true
-                        } else {
-                            val now = SystemClock.uptimeMillis()
-                            if (!shouldSuppressUiNav(kc, fromAxis = false, now)) {
-                                recordUiNav(kc, fromAxis = false)
-                                if (!com.armsx2.ui.emulation.EmulationMenuInputController.move(1, 0))
-                                    dispatchSyntheticUiKey(kc)
-                            }
-                            true
-                        }
-                    }
-                    else -> true
-                }
-                KeyEvent.KEYCODE_DPAD_UP -> event.action != KeyEvent.ACTION_DOWN || run {
-                    if (event.repeatCount != 0) return@run true
-                    val now = SystemClock.uptimeMillis()
-                    if (shouldSuppressUiNav(kc, fromAxis = false, now)) return@run true
-                    recordUiNav(kc, fromAxis = false)
-                    if (!com.armsx2.ui.emulation.EmulationMenuInputController.move(0, -1)) dispatchSyntheticUiKey(kc)
-                    true
-                }
-                KeyEvent.KEYCODE_DPAD_DOWN -> event.action != KeyEvent.ACTION_DOWN || run {
-                    if (event.repeatCount != 0) return@run true
-                    val now = SystemClock.uptimeMillis()
-                    if (shouldSuppressUiNav(kc, fromAxis = false, now)) return@run true
-                    recordUiNav(kc, fromAxis = false)
-                    if (!com.armsx2.ui.emulation.EmulationMenuInputController.move(0, 1)) dispatchSyntheticUiKey(kc)
-                    true
-                }
-                KeyEvent.KEYCODE_BUTTON_L1 -> event.action != KeyEvent.ACTION_DOWN ||
-                    com.armsx2.ui.emulation.EmulationMenuInputController.tab(-1)
-                KeyEvent.KEYCODE_BUTTON_R1 -> event.action != KeyEvent.ACTION_DOWN ||
-                    com.armsx2.ui.emulation.EmulationMenuInputController.tab(1)
-                KeyEvent.KEYCODE_BUTTON_Y -> event.action != KeyEvent.ACTION_DOWN || run {
-                    com.armsx2.ui.emulation.EmulationMenuInputController.open(com.armsx2.ui.emulation.EmulationMenuTab.Options)
-                    true
-                }
+                KeyEvent.KEYCODE_DPAD_LEFT -> { if (down) emu.move(-1, 0); true }
+                KeyEvent.KEYCODE_DPAD_RIGHT -> { if (down) emu.move(1, 0); true }
+                KeyEvent.KEYCODE_DPAD_UP -> { if (down) emu.move(0, -1); true }
+                KeyEvent.KEYCODE_DPAD_DOWN -> { if (down) emu.move(0, 1); true }
+                KeyEvent.KEYCODE_BUTTON_L1 -> { if (down) emu.tab(-1); true }
+                KeyEvent.KEYCODE_BUTTON_R1 -> { if (down) emu.tab(1); true }
+                KeyEvent.KEYCODE_BUTTON_Y -> { if (down) emu.open(com.armsx2.ui.emulation.EmulationMenuTab.Options); true }
                 KeyEvent.KEYCODE_BUTTON_A,
                 KeyEvent.KEYCODE_DPAD_CENTER,
                 KeyEvent.KEYCODE_ENTER,
-                KeyEvent.KEYCODE_NUMPAD_ENTER -> event.action != KeyEvent.ACTION_DOWN || run {
-                    if (!com.armsx2.ui.emulation.EmulationMenuInputController.confirm())
-                        dispatchSyntheticUiKey(KeyEvent.KEYCODE_DPAD_CENTER)
-                    true
-                }
+                KeyEvent.KEYCODE_NUMPAD_ENTER -> { if (down) emu.confirm(); true }
                 KeyEvent.KEYCODE_BUTTON_B,
-                KeyEvent.KEYCODE_BACK -> event.action != KeyEvent.ACTION_DOWN ||
-                    com.armsx2.ui.emulation.EmulationMenuInputController.back()
+                KeyEvent.KEYCODE_BACK -> { if (down) emu.back(); true }
                 else -> false
             }
             if (handled) return true
@@ -2591,12 +2538,9 @@ open class MainActivityRuntime : ComponentActivity() {
                 com.armsx2.ui.settings.SettingsControllerNav.moveSpatial(dx, dy)
             }
             WindowImpl.overlayVisible.value -> {
-                // Fall back to synthetic D-pad (Compose focus) for overlay screens
-                // the manual model doesn't handle (e.g. the save-state slot grid).
-                if (!com.armsx2.ui.emulation.EmulationMenuInputController.move(dx, dy)) {
-                    val kc = directionKeyCode(dx, dy)
-                    if (kc != 0) dispatchSyntheticUiKey(kc)
-                }
+                // Pause menu — two-zone controller handles both the tab column and
+                // the registry-driven content pane.
+                com.armsx2.ui.emulation.EmulationMenuInputController.move(dx, dy)
             }
             // Library cover grid — only when it actually owns input (same gate as
             // the key path: not behind the drawer / an in-game screen).

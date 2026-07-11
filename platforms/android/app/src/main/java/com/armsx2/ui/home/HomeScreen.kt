@@ -394,6 +394,8 @@ fun HomeScreen(
                             // Every row lays out on the same perShelf-slot grid, so a
                             // short last row keeps its covers packed left in sequence.
                             slotsPerRow = perShelf,
+                            selectedIndex = state.selectedIndex,
+                            startIndex = rowIndex * perShelf,
                             onLaunch = { viewModel.launch(it) },
                             // Bleed past the grid's 8dp side padding so the glass shelf
                             // reaches both screen edges instead of floating inset.
@@ -795,6 +797,10 @@ private fun GameShelf(
     onLaunch: (GameInfo) -> Unit,
     modifier: Modifier = Modifier,
     slotsPerRow: Int = games.size,
+    // Controller selection highlight: the global visibleGames index that's selected,
+    // and this shelf row's first global index. -1 = nothing selected on this shelf.
+    selectedIndex: Int = -1,
+    startIndex: Int = 0,
 ) {
     val coverHeight = coverWidth / 0.7f
     // Slimmer plank to match bagas's slimmer frosted-shelf PNG (2903×200).
@@ -828,7 +834,7 @@ private fun GameShelf(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 items(games, key = { "shelfcard_${shelfRes}_${it.uri}" }) { game ->
-                    ShelfGameCard(game, coverWidth, reflectionHeight, onLaunch)
+                    ShelfGameCard(game, coverWidth, reflectionHeight, onLaunch = onLaunch)
                 }
             }
         } else {
@@ -841,7 +847,9 @@ private fun GameShelf(
                 modifier = Modifier.align(Alignment.TopStart).fillMaxWidth().height(rowHeight).padding(horizontal = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                games.forEach { game -> ShelfGameCard(game, coverWidth, reflectionHeight, onLaunch) }
+                games.forEachIndexed { i, game ->
+                    ShelfGameCard(game, coverWidth, reflectionHeight, selected = startIndex + i == selectedIndex, onLaunch = onLaunch)
+                }
                 repeat((slotsPerRow - games.size).coerceAtLeast(0)) {
                     Spacer(Modifier.width(coverWidth))
                 }
@@ -851,7 +859,7 @@ private fun GameShelf(
 }
 
 @Composable
-private fun ShelfGameCard(game: GameInfo, width: Dp, reflectionHeight: Dp, onLaunch: (GameInfo) -> Unit) {
+private fun ShelfGameCard(game: GameInfo, width: Dp, reflectionHeight: Dp, selected: Boolean = false, onLaunch: (GameInfo) -> Unit) {
     Column(modifier = Modifier.width(width).clickable { onLaunch(game) }) {
         // Square corners in shelf view — rounding fought the 3D box-art edges. The
         // grid/cover view keeps rounded corners (GameCover's 12.dp default).
@@ -859,7 +867,12 @@ private fun ShelfGameCard(game: GameInfo, width: Dp, reflectionHeight: Dp, onLau
         // large standing covers.
         GameCover(
             game,
-            Modifier.fillMaxWidth().aspectRatio(0.7f),
+            Modifier.fillMaxWidth().aspectRatio(0.7f)
+                .then(
+                    if (selected)
+                        Modifier.border(2.5.dp, Color(0xFF3DA5FF), RoundedCornerShape(4.dp))
+                    else Modifier,
+                ),
             cornerRadius = 0.dp,
             contentScale = ContentScale.Fit,
         )

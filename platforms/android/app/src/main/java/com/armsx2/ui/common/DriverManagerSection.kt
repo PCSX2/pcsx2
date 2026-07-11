@@ -160,22 +160,36 @@ fun DriverManagerSection() {
                     Text(str("backend.driver.fetching"), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 remote.isNullOrEmpty() -> Text(str("backend.driver.none"), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                else -> remote!!.forEach { rd ->
-                    RemoteDriverRow(
-                        controllerId = "driver.remote.${rd.id}",
-                        title = rd.releaseName.ifBlank { rd.assetName },
-                        subtitle = listOf(rd.source, rd.tagName).filter(String::isNotBlank).joinToString(" · "),
-                        busy = busyId == rd.id,
-                        onDownload = {
-                            scope.launch {
-                                busyId = rd.id; message = null
-                                val d = withContext(Dispatchers.IO) { CustomDriver.download(context, rd) }
-                                busyId = null
-                                if (d != null) { refreshInstalled(); selectDriver(d.id); message = "$installedOkMsg ${d.name}" }
-                                else message = downloadFailedMsg
+                // Group the online drivers by source (K11MCH1 / MrPurple / StevenMXZ /
+                // crueter…), each an expandable, controller-navigable section.
+                else -> remote!!.groupBy { it.source }.forEach { (source, drivers) ->
+                    val expanded = expandedSources[source] ?: false
+                    DriverSourceGroup(
+                        source = source,
+                        count = drivers.size,
+                        expanded = expanded,
+                        onToggle = { expandedSources[source] = !expanded },
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            drivers.forEach { rd ->
+                                RemoteDriverRow(
+                                    controllerId = "driver.remote.${rd.id}",
+                                    title = rd.releaseName.ifBlank { rd.assetName },
+                                    subtitle = listOf(rd.source, rd.tagName).filter(String::isNotBlank).joinToString(" · "),
+                                    busy = busyId == rd.id,
+                                    onDownload = {
+                                        scope.launch {
+                                            busyId = rd.id; message = null
+                                            val d = withContext(Dispatchers.IO) { CustomDriver.download(context, rd) }
+                                            busyId = null
+                                            if (d != null) { refreshInstalled(); selectDriver(d.id); message = "$installedOkMsg ${d.name}" }
+                                            else message = downloadFailedMsg
+                                        }
+                                    },
+                                )
                             }
-                        },
-                    )
+                        }
+                    }
                 }
             }
         }

@@ -300,10 +300,20 @@ object EmulationMenuInputController {
     private var owner: EmulationMenuViewModel? = null
     private var pendingTab: EmulationMenuTab? = null
 
+    // Two-zone nav. The pause menu is a vertical TAB column on the left and a
+    // CONTENT pane on the right. `inContent` = false means the D-pad walks the tab
+    // column (Up/Down between tabs, which switches the shown pane); Right (or A)
+    // steps into the content pane, where every control is a SettingsControllerNav
+    // registry item and the router drives it (Up/Down move, Left/Right adjust, A
+    // confirm). B (or Left off the first control) returns to the tab column.
+    val inContent = androidx.compose.runtime.mutableStateOf(false)
+    private val nav get() = com.armsx2.ui.settings.SettingsControllerNav
+
     fun bind(viewModel: EmulationMenuViewModel) {
         owner = viewModel
         viewModel.load(pendingTab)
         pendingTab = null
+        inContent.value = false
     }
 
     fun unbind(viewModel: EmulationMenuViewModel) {
@@ -314,30 +324,57 @@ object EmulationMenuInputController {
         pendingTab = tab
         if (!com.armsx2.ui.WindowImpl.overlayVisible.value) InGameOverlay.open()
         owner?.selectTab(tab)
+        inContent.value = false
+    }
+
+    private fun enterContent() {
+        inContent.value = true
+        nav.clearSelection()
+        nav.move(1) // select the first content control so the highlight appears
+    }
+
+    private fun exitContent() {
+        inContent.value = false
+        nav.clearSelection()
     }
 
     fun move(dx: Int, dy: Int): Boolean {
         val viewModel = owner ?: return false
+        if (!inContent.value) {
+            // Tab column (vertical): Up/Down switch tabs; Right steps into content.
+            when {
+                dy < 0 -> viewModel.cycleTab(-1)
+                dy > 0 -> viewModel.cycleTab(1)
+                dx > 0 -> enterContent()
+            }
+            return true
+        }
+        // Content pane: registry-driven.
         when {
-            dx < 0 -> viewModel.cycleTab(-1)
-            dx > 0 -> viewModel.cycleTab(1)
-            dy < 0 -> viewModel.moveSelection(-1)
-            dy > 0 -> viewModel.moveSelection(1)
+            dy != 0 -> nav.moveSpatial(0, dy)
+            dx < 0 -> if (!nav.adjust(-1) && !nav.moveSpatial(-1, 0)) exitContent()
+            dx > 0 -> if (!nav.adjust(1)) nav.moveSpatial(1, 0)
         }
         return true
     }
 
+    /** L1 / R1 always cycle tabs, snapping back to the tab column. */
     fun tab(delta: Int): Boolean {
-        owner?.cycleTab(delta) ?: return false
+        val viewModel = owner ?: return false
+        if (inContent.value) exitContent()
+        viewModel.cycleTab(delta)
         return true
     }
 
     fun confirm(): Boolean {
-        owner?.activateSelection() ?: return false
+        owner ?: return false
+        if (!inContent.value) { enterContent(); return true }
+        nav.confirm()
         return true
     }
 
     fun back(): Boolean {
+        if (inContent.value) { exitContent(); return true }
         owner?.resume() ?: return false
         return true
     }
