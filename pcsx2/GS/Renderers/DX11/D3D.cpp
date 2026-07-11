@@ -566,3 +566,41 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D::Sha
 
 	return blob;
 }
+
+D3D::ShaderMacro::ShaderMacro()
+{
+	mlist.emplace_back("DX12", "1");
+}
+
+void D3D::ShaderMacro::AddMacro(const char* n, int d)
+{
+	AddMacro(n, std::to_string(d));
+}
+
+void D3D::ShaderMacro::AddMacro(const char* n, std::string d)
+{
+	mlist.emplace_back(n, std::move(d));
+}
+
+D3D_SHADER_MACRO* D3D::ShaderMacro::GetPtr(void)
+{
+	mout.clear();
+
+	for (auto& i : mlist)
+		mout.emplace_back(i.name.c_str(), i.def.c_str());
+
+	mout.emplace_back(nullptr, nullptr);
+	return (D3D_SHADER_MACRO*)mout.data();
+}
+
+bool D3D::ShaderMacro::operator==(const ShaderMacro& other) const
+{
+	if (mlist.size() != other.mlist.size())
+		return false;
+	for (size_t i = 0; i < mlist.size(); i++)
+	{
+		if (mlist[i].name != other.mlist[i].name || mlist[i].def != other.mlist[i].def)
+			return false;
+	}
+	return true;
+}
