@@ -78,6 +78,7 @@ class alignas(32) GSClut final : public GSAlignedClass<32>
 	static void WriteCLUT_T32_I4_CSM1(const u32* RESTRICT src, u16* RESTRICT clut);
 	static void WriteCLUT_T16_I8_CSM1(const u16* RESTRICT src, u16* RESTRICT clut);
 	static void WriteCLUT_T16_I4_CSM1(const u16* RESTRICT src, u16* RESTRICT clut);
+	static void ReadCLUT_T32_I4_Swizzled(const u16* RESTRICT clut, u32* RESTRICT dst);
 	static void ReadCLUT_T32_I8(const u16* RESTRICT clut, u32* RESTRICT dst, int offset);
 	static void ReadCLUT_T32_I4(const u16* RESTRICT clut, u32* RESTRICT dst);
 	//static void ReadCLUT_T32_I4(const u16* RESTRICT clut, u32* RESTRICT dst32, u64* RESTRICT dst64);
