@@ -34,6 +34,7 @@ add_pcsx2_test(recompiler_tests
 	iop_smc_tests.cpp
 	iop_cop0_exception_tests.cpp
 	iop_irx_hle_tests.cpp
+	arm64_baseblocks_link_tests.cpp
 	ee_rec_alu_tests.cpp
 	ee_rec_alu64_tests.cpp
 	ee_rec_alu_imm_tests.cpp

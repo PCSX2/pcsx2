@@ -44,16 +44,22 @@ protected:
 	linkmap_t links;
 	uptr jitcompile = 0;
 
-	// Encode a B imm26 from `site` to `target`. ARM64 B encoding:
-	//   bits[31:26] = 000101
-	//   bits[25:0]  = sign-extended ((target - site) >> 2)
-	static u32 EncodeB(uptr site, uptr target)
+	// Link sites are 4-byte-aligned instruction addresses, so bit 0 of the
+	// stored uptr is free: it tags the site's branch form. Untagged = B,
+	// tagged = BL (call-ret stack call sites — the BL pushes the hardware
+	// return-address stack so the callee's paired RET predicts).
+	static constexpr uptr kLinkSiteCallBit = 1;
+
+	// Encode a B/BL imm26 from `site` to `target`. ARM64 encoding:
+	//   B : bits[31:26] = 000101, BL: bits[31:26] = 100101
+	//   bits[25:0] = sign-extended ((target - site) >> 2)
+	static u32 EncodeB(uptr site, uptr target, bool call = false)
 	{
 		const intptr_t off = static_cast<intptr_t>(target) - static_cast<intptr_t>(site);
 		pxAssertRel((off & 3) == 0, "Branch offset not 4-byte aligned");
 		const intptr_t imm26 = off >> 2;
 		pxAssertRel(imm26 >= -(1 << 25) && imm26 < (1 << 25), "Branch offset out of B imm26 range");
-		return 0x14000000u | (static_cast<u32>(imm26) & 0x03FFFFFFu);
+		return (call ? 0x94000000u : 0x14000000u) | (static_cast<u32>(imm26) & 0x03FFFFFFu);
 	}
 
 	static void PatchAtomic(uptr site, u32 instr)
@@ -81,18 +87,21 @@ public:
 
 	// Register a link site that wants to branch directly to the block at
 	// `pc`. Patches immediately if a block already exists; otherwise
-	// records the site so New(pc, ...) can patch it later.
-	void Link(u32 pc, void* patch_site)
+	// records the site so New(pc, ...) can patch it later. `call` sites
+	// get BL instead of B (and keep it across every re-patch).
+	void Link(u32 pc, void* patch_site, bool call = false)
 	{
 		pxAssertRel(jitcompile, "SetJITCompile() must be called before Link()");
+		pxAssertRel((reinterpret_cast<uptr>(patch_site) & kLinkSiteCallBit) == 0,
+			"Link patch site must be 4-byte aligned");
 
 		BASEBLOCKEX* target = Get(pc);
 		const uptr target_addr = (target && target->startpc == pc)
 			? target->fnptr : jitcompile;
 		PatchAtomic(reinterpret_cast<uptr>(patch_site),
-			EncodeB(reinterpret_cast<uptr>(patch_site), target_addr));
+			EncodeB(reinterpret_cast<uptr>(patch_site), target_addr, call));
 
-		links.insert({pc, reinterpret_cast<uptr>(patch_site)});
+		links.insert({pc, reinterpret_cast<uptr>(patch_site) | (call ? kLinkSiteCallBit : 0)});
 	}
 
 	BASEBLOCKEX* New(u32 startpc, uptr fnptr)
@@ -102,7 +111,10 @@ public:
 		// JITCompile.
 		const auto range = links.equal_range(startpc);
 		for (auto it = range.first; it != range.second; ++it)
-			PatchAtomic(it->second, EncodeB(it->second, fnptr));
+		{
+			const uptr site = it->second & ~kLinkSiteCallBit;
+			PatchAtomic(site, EncodeB(site, fnptr, (it->second & kLinkSiteCallBit) != 0));
+		}
 
 		return blocks.insert(startpc, fnptr);
 	}
@@ -207,7 +219,8 @@ public:
 		const auto range = links.equal_range(dst_pc);
 		for (auto it = range.first; it != range.second; ++it)
 		{
-			if (it->second >= lo && it->second < hi)
+			const uptr site = it->second & ~kLinkSiteCallBit;
+			if (site >= lo && site < hi)
 				return true;
 		}
 		return false;
