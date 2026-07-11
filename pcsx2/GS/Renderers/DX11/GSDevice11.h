@@ -163,11 +163,11 @@ private:
 		ID3D11Buffer* index_buffer;
 		ID3D11VertexShader* vs;
 		ID3D11Buffer* vs_cb;
-		ID3D11Buffer* vs_pc;
 		std::array<ID3D11ShaderResourceView*, MAX_TEXTURES> ps_pending_srv;
 		std::array<ID3D11ShaderResourceView*, MAX_TEXTURES> ps_current_srv;
 		ID3D11PixelShader* ps;
 		ID3D11Buffer* ps_cb;
+		ID3D11Buffer* tfx_pc;
 		std::array<ID3D11SamplerState*, MAX_SAMPLERS> ps_pending_ss;
 		std::array<ID3D11SamplerState*, MAX_SAMPLERS> ps_current_ss;
 		GSVector2i viewport;
@@ -289,10 +289,10 @@ private:
 
 	std::unordered_map<u32, GSVertexShader11> m_vs;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_vs_cb;
-	wil::com_ptr_nothrow<ID3D11Buffer> m_vs_pc;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11GeometryShader>> m_gs;
 	std::unordered_map<PSSelector, wil::com_ptr_nothrow<ID3D11PixelShader>, GSHWDrawConfig::PSSelectorHash> m_ps;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_ps_cb;
+	wil::com_ptr_nothrow<ID3D11Buffer> m_tfx_pc;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11SamplerState>> m_ps_ss;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11DepthStencilState>> m_om_dss;
 	std::unordered_map<u64, wil::com_ptr_nothrow<ID3D11BlendState>> m_om_bs;
@@ -300,7 +300,7 @@ private:
 
 	GSHWDrawConfig::VSConstantBuffer m_vs_cb_cache;
 	GSHWDrawConfig::PSConstantBuffer m_ps_cb_cache;
-	GSHWDrawConfig::VSPushConstants m_vs_pc_cache;
+	GSHWDrawConfig::TFXPushConstants m_tfx_pc_cache;
 
 	D3D11ShaderCache m_shader_cache;
 	std::string m_tfx_source;
