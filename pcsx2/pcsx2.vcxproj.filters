@@ -408,6 +408,12 @@
     <None Include="GS\Renderers\Vulkan\VKEntryPoints.inl">
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </None>
+    <None Include="..\bin\resources\shaders\dx11\tfx_uber.fx">
+      <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\vulkan\tfx_uber.glsl">
+      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Patch.cpp">
@@ -1452,6 +1458,18 @@
     <ClCompile Include="GS\GSDrawingEnvironment.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
+    <ClCompile Include="GS\Renderers\Vulkan\VKShaderCompilerAsync.cpp">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Common\GSShaderCompilerAsync.cpp">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\DX12\D3D12ShaderCompilerAsync.cpp">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Vulkan\VKShadercWrapper.cpp">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2418,6 +2436,18 @@
     </ClInclude>
     <ClInclude Include="SIO\Pad\PadNegcon.h">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Vulkan\VKShaderCompilerAsync.h">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Common\GSShaderCompilerAsync.h">
+      <Filter>System\Ps2\GS\Renderers\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\DX12\D3D12ShaderCompilerAsync.h">
+      <Filter>System\Ps2\GS\Renderers\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Vulkan\VKShadercWrapper.h">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
