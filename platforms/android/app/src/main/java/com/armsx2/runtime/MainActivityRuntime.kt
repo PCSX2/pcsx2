@@ -755,9 +755,15 @@ open class MainActivityRuntime : ComponentActivity() {
 
             WindowImpl.overlayVisible.value = false
             WindowImpl.showLibrary.value = false
+            // Auto-save-on-exit: any normal close (not a reset/restart) writes the
+            // autosave state when the user has the toggle on, so the next boot can
+            // auto-load it. An explicit Save-and-Exit still forces it via saveAutosave.
+            val doAutosave = saveAutosave ||
+                (!restartAfterStop &&
+                    runCatching { prefs.getBoolean("autoSaveOnExit", false) }.getOrDefault(false))
             vmStopControl.execute {
-                println("@@ANDROID_STOP_JAVA@@ begin saveAutosave=$saveAutosave restart=$restartAfterStop")
-                if (saveAutosave)
+                println("@@ANDROID_STOP_JAVA@@ begin saveAutosave=$doAutosave forced=$saveAutosave restart=$restartAfterStop")
+                if (doAutosave)
                     NativeApp.saveAutosaveState()
                 NativeApp.shutdown()
                 println("@@ANDROID_STOP_JAVA@@ shutdown_return active=${NativeApp.hasActiveVM()} runLoop=$vmRunLoopActive state=${eState.value}")
@@ -1567,9 +1573,17 @@ open class MainActivityRuntime : ComponentActivity() {
                         // focus so Android focus moves into the Compose tree and the
                         // overlay's requestFocus can take it. Restore it (and re-grab
                         // game input) when the overlay closes.
-                        androidx.compose.runtime.LaunchedEffect(WindowImpl.overlayVisible.value) {
+                        // The surface must release Android focus whenever the pad
+                        // drives the frontend — either a Compose surface covers a
+                        // running game (frontendCovers) OR no game is running at all
+                        // (the root library + every manager/settings sub-screen). If
+                        // the focusable surface kept focus at rest it would swallow
+                        // the synthetic D-pad meant for those Compose screens.
+                        val frontendOwnsFocus = WindowImpl.frontendCovers ||
+                            eState.value != EmuState.RUNNING
+                        androidx.compose.runtime.LaunchedEffect(frontendOwnsFocus) {
                             val sv = surface.value
-                            if (WindowImpl.overlayVisible.value) {
+                            if (frontendOwnsFocus) {
                                 sv?.isFocusableInTouchMode = false
                                 sv?.isFocusable = false
                                 sv?.clearFocus()
@@ -1598,10 +1612,12 @@ open class MainActivityRuntime : ComponentActivity() {
                             }
                         }
                         AndroidView(factory = { surface.value!! }, modifier = Modifier
-                            // Drop the surface from the focus system while the
-                            // pause overlay is open so it can't hold/steal focus
-                            // away from the overlay's controller navigation.
-                            .focusable(!WindowImpl.overlayVisible.value)
+                            // Drop the surface from the focus system while ANY
+                            // Compose frontend surface (pause overlay, in-game
+                            // manager/Save-Load screen, memcard dialog, library) is
+                            // open, or while no game is running, so it can't hold or
+                            // steal focus away from that surface's controller nav.
+                            .focusable(!frontendOwnsFocus)
                             .focusRequester(focusRequester)
                             .fillMaxSize()
                             .pointerInput(Unit) {
@@ -1971,7 +1987,15 @@ open class MainActivityRuntime : ComponentActivity() {
             if (handled) return true
         }
         if (controllerDrivesFrontend()) {
-            if (!WindowImpl.overlayVisible.value && com.armsx2.ui.home.HomeInputController.active()) {
+            // Library COVER grid/list/shelf gets the dedicated data-driven spatial
+            // model (HomeInputController). It must yield when something is layered
+            // ON TOP of the library — the nav drawer, an in-game manager screen, or
+            // the pause overlay — so those own the pad instead of the grid behind.
+            if (!WindowImpl.overlayVisible.value &&
+                WindowImpl.inGameScreen.value == null &&
+                !com.armsx2.navigation.UiNavigator.drawerOpen.value &&
+                com.armsx2.ui.home.HomeInputController.active()
+            ) {
                 // Square button (or the Menu hotkey) opens settings for the
                 // highlighted cover — the controller equivalent of long-press.
                 if (ControllerMappings.hotkeyFor(kc) == ControllerMappings.SysHotkey.MENU ||
@@ -1985,6 +2009,19 @@ open class MainActivityRuntime : ComponentActivity() {
                 // single-button access. While the panel is open Y is swallowed
                 // (the panel owns nav; B closes it).
                 if (kc == KeyEvent.KEYCODE_BUTTON_Y) return true
+                // Shoulder buttons drive the touch-only toolbar toggles so the
+                // whole library is controller-reachable: R1 cycles the view mode
+                // (Grid → List → Shelf — "all 3 modes"), L1 cycles the sort order.
+                if (kc == KeyEvent.KEYCODE_BUTTON_R1) {
+                    if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0)
+                        com.armsx2.ui.home.HomeInputController.cycleLayout()
+                    return true
+                }
+                if (kc == KeyEvent.KEYCODE_BUTTON_L1) {
+                    if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0)
+                        com.armsx2.ui.home.HomeInputController.cycleSort()
+                    return true
+                }
                 val handled = when (kc) {
                     KeyEvent.KEYCODE_DPAD_LEFT -> event.action != KeyEvent.ACTION_DOWN || run {
                         if (event.repeatCount == 0) {
@@ -2038,10 +2075,14 @@ open class MainActivityRuntime : ComponentActivity() {
                 }
                 if (handled) return true
             }
-            if (kc == KeyEvent.KEYCODE_BACK && WindowImpl.showLibrary.value) {
-                if (event.action == KeyEvent.ACTION_DOWN) WindowImpl.showLibrary.value = false
-                return true
-            }
+            // Everything else layered over/instead of the game — the nav drawer,
+            // an in-game manager/Save-Load/settings screen, a library sub-screen,
+            // and every root manager/settings screen — is navigated through
+            // Compose's own focus system: D-pad moves focus, A activates the
+            // focused control, B/BACK dismisses the topmost surface in priority
+            // order. Every such screen is built from focusable Compose controls
+            // (Button / Surface(onClick) / .clickable / .controllerFocusable), so
+            // this single bridge covers them all.
             if (kc == KeyEvent.KEYCODE_DPAD_LEFT ||
                 kc == KeyEvent.KEYCODE_DPAD_RIGHT ||
                 kc == KeyEvent.KEYCODE_DPAD_UP ||
@@ -2058,13 +2099,9 @@ open class MainActivityRuntime : ComponentActivity() {
                 }
                 return true
             }
-            if (kc == KeyEvent.KEYCODE_BUTTON_B) {
+            if (kc == KeyEvent.KEYCODE_BUTTON_B || kc == KeyEvent.KEYCODE_BACK) {
                 if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
-                    if (WindowImpl.showLibrary.value) {
-                        WindowImpl.showLibrary.value = false
-                    } else {
-                        dispatchSyntheticUiKey(KeyEvent.KEYCODE_BACK)
-                    }
+                    handleFrontendBack()
                 }
                 return true
             }
@@ -2287,9 +2324,15 @@ open class MainActivityRuntime : ComponentActivity() {
         kotlin.concurrent.thread { runCatching { NativeApp.saveStateToSlot(slot) } }
     }
 
-    fun loadState() {
+    fun loadState(onLoaded: (() -> Unit)? = null) {
         val slot = currentSaveSlot.value
-        kotlin.concurrent.thread { runCatching { NativeApp.loadStateFromSlot(slot) } }
+        kotlin.concurrent.thread {
+            runCatching { NativeApp.loadStateFromSlot(slot) }
+            // Resume/dismiss only AFTER the load lands. The caller used to resume
+            // immediately, which raced the async load (the menu resumed the VM before
+            // the state was restored) — that's why "Load" appeared to do nothing.
+            onLoaded?.let { cb -> android.os.Handler(android.os.Looper.getMainLooper()).post(cb) }
+        }
     }
 
     private fun cycleSaveSlot() {
@@ -2467,9 +2510,39 @@ open class MainActivityRuntime : ComponentActivity() {
             z, rz, rx, ry, mag, shapeStickMag(mag.coerceAtMost(1f), false)))
     }
 
+    // True whenever a Compose frontend surface is drawn over (or instead of) the
+    // game and should own the gamepad. Every navigable surface must be listed
+    // here or its D-pad/A/B never reach Compose. The four explicit surfaces cover
+    // the in-game overlays (pause menu, Save/Load & manager screens, memcard
+    // dialog, the library shown over a running game); when NO game is RUNNING the
+    // whole app IS the frontend (root library + every manager/settings sub-screen
+    // reached from the drawer), so the pad drives it unconditionally.
     private fun controllerDrivesFrontend(): Boolean =
         WindowImpl.overlayVisible.value ||
-            com.armsx2.ui.home.HomeInputController.active()
+            WindowImpl.inGameScreen.value != null ||
+            WindowImpl.showLibrary.value ||
+            com.armsx2.ui.MemoryCardManager.visible.value ||
+            eState.value != EmuState.RUNNING
+
+    // B / BACK from any frontend surface EXCEPT the pause overlay, the memcard
+    // dialog and the library cover grid (each consumes its own B earlier). Peels
+    // the topmost layer: modal dialog > nav drawer > in-game manager screen >
+    // library sub-route (Settings/Bios/... reached inside the in-game library) >
+    // the library overlay itself > a root sub-route > (root Home) open the drawer.
+    private fun handleFrontendBack() {
+        val nav = com.armsx2.navigation.UiNavigator
+        val onHome = nav.route.value == com.armsx2.navigation.AppRoute.Home
+        when {
+            nav.drawerOpen.value -> nav.drawerOpen.value = false
+            WindowImpl.inGameScreen.value != null -> WindowImpl.dismissInGameScreen()
+            WindowImpl.showLibrary.value && !onHome -> nav.back()
+            WindowImpl.showLibrary.value -> WindowImpl.showLibrary.value = false
+            !onHome -> nav.back()
+            // Root library home with nothing above it: B opens the nav drawer
+            // (mirrors the cover-grid B handled in HomeInputController.back()).
+            else -> nav.drawerOpen.value = true
+        }
+    }
 
     // --- Controller menu nav hold-to-repeat ---------------------------------
     // The per-frame stick handlers below are edge-triggered (one move per push),
@@ -2489,22 +2562,40 @@ open class MainActivityRuntime : ComponentActivity() {
     }
 
     private fun fireNavMove(dx: Int, dy: Int) {
-        if (com.armsx2.ui.MemoryCardManager.visible.value) {
-            // Memcard dialog: 2D spatial nav (Slot 1 / Slot 2 / Delete across, cards
-            // down). Driven by the hold-repeat job so a held direction keeps moving.
-            com.armsx2.ui.settings.SettingsControllerNav.moveSpatial(dx, dy)
-        } else if (WindowImpl.overlayVisible.value) {
-            // Fall back to synthetic D-pad (Compose focus) for overlay screens
-            // the manual model doesn't handle (e.g. the save-state slot grid).
-            if (!com.armsx2.ui.emulation.EmulationMenuInputController.move(dx, dy)) {
+        // Mirror the key-event routing priority so the analog stick drives every
+        // surface the D-pad does.
+        when {
+            com.armsx2.ui.MemoryCardManager.visible.value -> {
+                // Memcard dialog: 2D spatial nav (Slot 1 / Slot 2 / Delete across,
+                // cards down). Driven by the hold-repeat job so a held direction
+                // keeps moving.
+                com.armsx2.ui.settings.SettingsControllerNav.moveSpatial(dx, dy)
+            }
+            WindowImpl.overlayVisible.value -> {
+                // Fall back to synthetic D-pad (Compose focus) for overlay screens
+                // the manual model doesn't handle (e.g. the save-state slot grid).
+                if (!com.armsx2.ui.emulation.EmulationMenuInputController.move(dx, dy)) {
+                    val kc = directionKeyCode(dx, dy)
+                    if (kc != 0) dispatchSyntheticUiKey(kc)
+                }
+            }
+            // Library cover grid — only when it actually owns input (same gate as
+            // the key path: not behind the drawer / an in-game screen).
+            WindowImpl.inGameScreen.value == null &&
+                !com.armsx2.navigation.UiNavigator.drawerOpen.value &&
+                com.armsx2.ui.home.HomeInputController.active() -> {
+                com.armsx2.ui.home.HomeInputController.move(dx, dy)
+            }
+            // Drawer, in-game manager/Save-Load screens, library sub-routes and
+            // every root manager/settings screen: Compose-focus traversal.
+            controllerDrivesFrontend() -> {
                 val kc = directionKeyCode(dx, dy)
                 if (kc != 0) dispatchSyntheticUiKey(kc)
             }
-        } else if (com.armsx2.ui.home.HomeInputController.active()) {
-            com.armsx2.ui.home.HomeInputController.move(dx, dy)
-        } else {
-            // Menu closed while a direction was held — stop repeating.
-            stopNavRepeat()
+            else -> {
+                // Menu closed while a direction was held — stop repeating.
+                stopNavRepeat()
+            }
         }
     }
 

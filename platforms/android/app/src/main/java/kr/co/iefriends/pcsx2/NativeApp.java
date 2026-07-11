@@ -333,44 +333,27 @@ public class NativeApp {
 	// ---- Achievement / notification sound playback ----
 	// Called from native Common::PlaySoundAsync (RetroAchievements unlock/info/
 	// leaderboard-submit .wav). Fire-and-forget; must never throw back to JNI.
-	private static android.media.SoundPool sSoundPool;
-	private static final java.util.HashMap<String, Integer> sSoundIds = new java.util.HashMap<>();
-	private static final java.util.HashSet<Integer> sSoundPending = new java.util.HashSet<>();
-
+	// Uses MediaPlayer, not SoundPool: SoundPool decoded/resampled the 44.1 kHz
+	// stereo PCM oddly and it came out "weird". MediaPlayer plays the .wav straight,
+	// matching desktop PCSX2. One short-lived player per shot, released on complete.
 	public static void playSound(String path) {
 		if (path == null || path.isEmpty()) return;
-		try {
-			synchronized (sSoundIds) {
-				if (sSoundPool == null) {
-					android.media.AudioAttributes attrs = new android.media.AudioAttributes.Builder()
-							.setUsage(android.media.AudioAttributes.USAGE_GAME)
-							.setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
-							.build();
-					sSoundPool = new android.media.SoundPool.Builder()
-							.setMaxStreams(4)
-							.setAudioAttributes(attrs)
-							.build();
-					// load() is async; play each sound once its first load completes,
-					// then reuse the cached sample id for instant replays.
-					sSoundPool.setOnLoadCompleteListener((sp, sampleId, status) -> {
-						synchronized (sSoundIds) {
-							if (status == 0 && sSoundPending.remove(sampleId))
-								sp.play(sampleId, 1f, 1f, 1, 0, 1f);
-						}
-					});
-				}
-				Integer id = sSoundIds.get(path);
-				if (id != null) {
-					sSoundPool.play(id, 1f, 1f, 1, 0, 1f);
-				} else {
-					int sid = sSoundPool.load(path, 1);
-					sSoundIds.put(path, sid);
-					sSoundPending.add(sid);
-				}
+		new Thread(() -> {
+			try {
+				android.media.MediaPlayer mp = new android.media.MediaPlayer();
+				mp.setAudioAttributes(new android.media.AudioAttributes.Builder()
+						.setUsage(android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+						.setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+						.build());
+				mp.setDataSource(path);
+				mp.setOnCompletionListener(m -> { try { m.release(); } catch (Throwable ignore) {} });
+				mp.setOnErrorListener((m, what, extra) -> { try { m.release(); } catch (Throwable ignore) {} return true; });
+				mp.prepare();
+				mp.start();
+			} catch (Throwable t) {
+				android.util.Log.e("ARMSX2", "playSound failed: " + path, t);
 			}
-		} catch (Throwable t) {
-			android.util.Log.e("ARMSX2", "playSound failed: " + path, t);
-		}
+		}, "armsx2-ra-sound").start();
 	}
 
 	/** Drive [devId]'s vibrator(s) with the PS2 large/high motor intensities for [ms].

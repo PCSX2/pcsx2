@@ -150,6 +150,11 @@ bool GLContextEGL::SetDisplay()
 	return true;
 }
 
+EGLNativeWindowType GLContextEGL::GetNativeWindow(EGLConfig config)
+{
+	return {};
+}
+
 EGLDisplay GLContextEGL::GetPlatformDisplay(Error* error)
 {
 	EGLDisplay dpy = TryGetPlatformDisplay(EGL_PLATFORM_SURFACELESS_MESA, "EGL_MESA_platform_surfaceless");

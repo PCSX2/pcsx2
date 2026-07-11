@@ -4,6 +4,7 @@ import android.content.res.Configuration
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
@@ -52,11 +53,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armsx2.R
 import com.armsx2.ui.theme.ArmsBlue
 import com.armsx2.ui.theme.ArmsCyan
 
@@ -90,35 +93,15 @@ fun ArmsBackdrop(content: @Composable BoxScope.() -> Unit) {
 }
 
 @Composable
-fun ArmsLogo(modifier: Modifier = Modifier, showWordmark: Boolean = true) {
+fun ArmsLogo(modifier: Modifier = Modifier, showWordmark: Boolean = true, iconSize: Dp = 42.dp) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Canvas(Modifier.size(42.dp)) {
-            val stroke = size.minDimension * 0.12f
-            val inset = stroke * 0.8f
-            drawRoundRect(
-                brush = Brush.linearGradient(listOf(ArmsBlue, ArmsCyan)),
-                topLeft = Offset(inset, size.height * 0.28f),
-                size = Size(size.width - inset * 2, size.height * 0.46f),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.height * 0.18f),
-                style = Stroke(width = stroke, cap = StrokeCap.Round),
-            )
-            drawLine(
-                color = ArmsCyan,
-                start = Offset(size.width * 0.36f, size.height * 0.40f),
-                end = Offset(size.width * 0.36f, size.height * 0.62f),
-                strokeWidth = stroke * 0.72f,
-                cap = StrokeCap.Round,
-            )
-            drawLine(
-                color = ArmsCyan,
-                start = Offset(size.width * 0.25f, size.height * 0.51f),
-                end = Offset(size.width * 0.47f, size.height * 0.51f),
-                strokeWidth = stroke * 0.72f,
-                cap = StrokeCap.Round,
-            )
-            drawCircle(ArmsBlue, stroke * 0.45f, Offset(size.width * 0.70f, size.height * 0.44f))
-            drawCircle(ArmsCyan, stroke * 0.45f, Offset(size.width * 0.80f, size.height * 0.58f))
-        }
+        // The ARMSX2 tower mark (bagas's logo), circle-cropped so its dark square
+        // corners don't show — matches the round hero render.
+        Image(
+            painter = painterResource(id = R.drawable.savetowerforeground),
+            contentDescription = "ARMSX2",
+            modifier = Modifier.size(iconSize).clip(CircleShape),
+        )
         if (showWordmark) {
             Spacer(Modifier.width(12.dp))
             Text(

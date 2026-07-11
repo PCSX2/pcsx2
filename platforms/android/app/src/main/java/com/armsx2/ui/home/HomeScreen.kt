@@ -1,7 +1,12 @@
 package com.armsx2.ui.home
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
@@ -11,6 +16,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -25,6 +35,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -51,11 +62,21 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.armsx2.CoverArtStyle
+import com.armsx2.R
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -96,6 +117,12 @@ fun HomeScreen(
     val customCoverMap = remember(coverVersion) { CustomCovers.loadAll(context) }
     var sortMenu by remember { mutableStateOf(false) }
     var menuGame by remember { mutableStateOf<GameInfo?>(null) }
+    // #9 custom library background — inert until the user picks an image.
+    LaunchedEffect(Unit) { LibraryBackground.ensureLoaded(); CoverArtStyle.load() }
+    var bgMenu by remember { mutableStateOf(false) }
+    val backgroundPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { picked ->
+        picked?.let { LibraryBackground.set(context, it) }
+    }
 
     LaunchedEffect(directories, nativeReady) { viewModel.load(directories, nativeReady) }
     DisposableEffect(viewModel, onOpenMenu) {
@@ -106,13 +133,44 @@ fun HomeScreen(
     CompositionLocalProvider(LocalCustomCoverMap provides customCoverMap) {
     ArmsBackdrop {
         BoxWithConstraints(modifier.fillMaxSize()) {
-            val compact = maxWidth < 600.dp
-            val columns = if (state.layout == LibraryLayout.List) {
-                GridCells.Fixed(1)
+            val libraryBg = LibraryBackground.uri.value
+            if (libraryBg != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context).data(libraryBg).crossfade(true).build(),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                )
             } else {
-                GridCells.Adaptive(if (compact) 104.dp else 118.dp)
+                // Default backdrop: the ARMSX2 tower logo, centred like the old UI.
+                // Its baked-in dark radial blends with the app background, so Fit
+                // (letterboxed) reads as a proper centred hero rather than a crop.
+                Image(
+                    painter = painterResource(R.drawable.savetowerforeground),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit,
+                )
             }
-            val estimatedColumns = if (state.layout == LibraryLayout.List) 1 else (maxWidth.value / if (compact) 112f else 128f).toInt().coerceAtLeast(1)
+            // Scrim so covers and text stay readable over the backdrop.
+            Box(
+                Modifier.fillMaxSize().background(
+                    Brush.verticalGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.55f),
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.80f),
+                        ),
+                    ),
+                ),
+            )
+            val compact = maxWidth < 600.dp
+            val columns = if (state.layout == LibraryLayout.Grid) {
+                GridCells.Adaptive(if (compact) 104.dp else 118.dp)
+            } else {
+                // List and Shelf are full-width rows.
+                GridCells.Fixed(1)
+            }
+            val estimatedColumns = if (state.layout == LibraryLayout.Grid) (maxWidth.value / if (compact) 112f else 128f).toInt().coerceAtLeast(1) else 1
             LaunchedEffect(estimatedColumns) { HomeInputController.setColumnCount(estimatedColumns) }
 
             val gridState = rememberLazyGridState()
@@ -136,11 +194,21 @@ fun HomeScreen(
                 }
             }
 
+            // Keep covers/text out of the display's unsafe edge (cutout / rounded
+            // corner) — add the cutout inset to the side padding. The full-bleed
+            // shelf/recent rows only negate the base 8dp, so they stop at the safe
+            // edge rather than bleeding under the cutout.
+            val cutout = WindowInsets.displayCutout.asPaddingValues()
+            val ld = LocalLayoutDirection.current
             LazyVerticalGrid(
                 columns = columns,
                 state = gridState,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 8.dp, end = 8.dp, bottom = 16.dp),
+                contentPadding = PaddingValues(
+                    start = 8.dp + cutout.calculateStartPadding(ld),
+                    end = 8.dp + cutout.calculateEndPadding(ld),
+                    bottom = 16.dp,
+                ),
                 horizontalArrangement = Arrangement.spacedBy(9.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
@@ -156,10 +224,36 @@ fun HomeScreen(
                                 SortMenu(sortMenu, state.sort, viewModel::setSort) { sortMenu = false }
                             }
                             RoundAction(
-                                if (state.layout == LibraryLayout.Grid) "☷" else "▦",
+                                when (state.layout) {
+                                    LibraryLayout.Grid -> "☷"
+                                    LibraryLayout.List -> "▦"
+                                    LibraryLayout.Shelf -> "▤"
+                                },
                                 str("games.toolbar.rows"),
                                 viewModel::toggleLayout,
                             )
+                            // 3D box-art covers vs flat 2D scans (xlenore covers/3d).
+                            // Shows the current mode (like the layout toggle), tap to flip.
+                            RoundAction(
+                                if (CoverArtStyle.use3d.value) "3D" else "2D",
+                                str("games.toolbar.covers3d"),
+                                { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
+                            )
+                            Box {
+                                RoundAction("▧", str("games.toolbar.background"), { bgMenu = true })
+                                DropdownMenu(expanded = bgMenu, onDismissRequest = { bgMenu = false }) {
+                                    DropdownMenuItem(
+                                        text = { Text(str("games.background.choose")) },
+                                        onClick = { bgMenu = false; backgroundPicker.launch(arrayOf("image/*")) },
+                                    )
+                                    if (LibraryBackground.uri.value != null) {
+                                        DropdownMenuItem(
+                                            text = { Text(str("games.background.clear")) },
+                                            onClick = { bgMenu = false; LibraryBackground.clear() },
+                                        )
+                                    }
+                                }
+                            }
                         },
                         horizontalPadding = 0.dp,
                     )
@@ -178,34 +272,80 @@ fun HomeScreen(
                 if (state.recentGames.isNotEmpty() && state.query.isBlank()) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         Column {
-                            SectionTitle(str("games.section.recentlyPlayed"))
+                            // In shelf view nudge the header right so it lines up with
+                            // the first cover's left edge (the shelf's 12dp inset).
+                            SectionTitle(
+                                str("games.section.recentlyPlayed"),
+                                modifier = Modifier.padding(
+                                    start = if (state.layout == LibraryLayout.Shelf) 4.dp else 0.dp,
+                                ),
+                            )
                             Spacer(Modifier.height(9.dp))
-                            LazyRow(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .layout { measurable, constraints ->
+                            if (state.layout == LibraryLayout.Shelf) {
+                                // Same frosted-glass plank as All Games (bagas: one
+                                // shelf design everywhere).
+                                GameShelf(
+                                    games = state.recentGames.take(10),
+                                    shelfRes = R.drawable.shelf_frosted,
+                                    coverWidth = if (compact) 84.dp else 100.dp,
+                                    scroll = true,
+                                    onLaunch = { viewModel.launch(it) },
+                                    modifier = Modifier.layout { measurable, constraints ->
                                         val edge = 8.dp.roundToPx()
                                         val placeable = measurable.measure(
                                             constraints.copy(
-                                                minWidth = constraints.minWidth + edge * 2,
+                                                minWidth = constraints.maxWidth + edge * 2,
                                                 maxWidth = constraints.maxWidth + edge * 2,
                                             ),
                                         )
-                                        layout(constraints.maxWidth, placeable.height) {
-                                            placeable.placeRelative(-edge, 0)
-                                        }
+                                        layout(constraints.maxWidth, placeable.height) { placeable.placeRelative(-edge, 0) }
                                     },
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                contentPadding = PaddingValues(horizontal = 8.dp),
-                            ) {
-                                items(state.recentGames.take(10), key = { it.uri.toString() }) { game ->
-                                    RecentGameCard(
-                                        game = game,
-                                        onClick = { viewModel.launch(game) },
-                                        onDetails = { menuGame = game },
-                                    )
+                                )
+                            } else {
+                                LazyRow(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .layout { measurable, constraints ->
+                                            val edge = 8.dp.roundToPx()
+                                            val placeable = measurable.measure(
+                                                constraints.copy(
+                                                    minWidth = constraints.minWidth + edge * 2,
+                                                    maxWidth = constraints.maxWidth + edge * 2,
+                                                ),
+                                            )
+                                            layout(constraints.maxWidth, placeable.height) {
+                                                placeable.placeRelative(-edge, 0)
+                                            }
+                                        },
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    contentPadding = PaddingValues(horizontal = 8.dp),
+                                ) {
+                                    items(state.recentGames.take(10), key = { it.uri.toString() }) { game ->
+                                        RecentGameCard(
+                                            game = game,
+                                            onClick = { viewModel.launch(game) },
+                                            onDetails = { menuGame = game },
+                                        )
+                                    }
                                 }
                             }
+                        }
+                    }
+                }
+
+                // Separate the Recently Played shelf from the full library with an
+                // "All Games" header so the two rows don't run together.
+                if (state.recentGames.isNotEmpty() && state.query.isBlank() && state.initialized && state.visibleGames.isNotEmpty()) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Column {
+                            Spacer(Modifier.height(20.dp))
+                            SectionTitle(
+                                str("games.section.allGames"),
+                                modifier = Modifier.padding(
+                                    start = if (state.layout == LibraryLayout.Shelf) 4.dp else 0.dp,
+                                ),
+                            )
+                            Spacer(Modifier.height(9.dp))
                         }
                     }
                 }
@@ -218,6 +358,39 @@ fun HomeScreen(
                     }
                 } else if (state.visibleGames.isEmpty()) {
                     emptyLibrary(state.query.isBlank())
+                } else if (state.layout == LibraryLayout.Shelf) {
+                    // Fill each plank: chunk by how many covers fit the shelf width.
+                    val shelfCoverW = if (compact) 84.dp else 100.dp
+                    val perShelf = (maxWidth.value / (shelfCoverW.value + 20f)).toInt().coerceIn(3, 8)
+                    val shelfRows = state.visibleGames.chunked(perShelf)
+                    items(
+                        shelfRows.size,
+                        span = { GridItemSpan(maxLineSpan) },
+                        key = { "shelf_$it" },
+                    ) { rowIndex ->
+                        GameShelf(
+                            games = shelfRows[rowIndex],
+                            shelfRes = R.drawable.shelf_frosted,
+                            coverWidth = shelfCoverW,
+                            scroll = false,
+                            // Every row lays out on the same perShelf-slot grid, so a
+                            // short last row keeps its covers packed left in sequence.
+                            slotsPerRow = perShelf,
+                            onLaunch = { viewModel.launch(it) },
+                            // Bleed past the grid's 8dp side padding so the glass shelf
+                            // reaches both screen edges instead of floating inset.
+                            modifier = Modifier.layout { measurable, constraints ->
+                                val edge = 8.dp.roundToPx()
+                                val placeable = measurable.measure(
+                                    constraints.copy(
+                                        minWidth = constraints.maxWidth + edge * 2,
+                                        maxWidth = constraints.maxWidth + edge * 2,
+                                    ),
+                                )
+                                layout(constraints.maxWidth, placeable.height) { placeable.placeRelative(-edge, 0) }
+                            },
+                        )
+                    }
                 } else {
                     itemsIndexed(
                         state.visibleGames,
@@ -299,7 +472,6 @@ private fun SortMenu(expanded: Boolean, selected: HomeSort, onSort: (HomeSort) -
         listOf(
             HomeSort.Title to str("games.section.library"),
             HomeSort.RecentlyPlayed to str("games.section.recentlyPlayed"),
-            HomeSort.Compatibility to str("tab.fixes"),
         ).forEach { (sort, label) ->
             DropdownMenuItem(
                 text = { Text(label, fontWeight = if (sort == selected) FontWeight.Bold else FontWeight.Normal) },
@@ -409,12 +581,23 @@ private fun GameMetadata(game: GameInfo) {
 }
 
 @Composable
-private fun GameCover(game: GameInfo, modifier: Modifier = Modifier) {
+private fun GameCover(
+    game: GameInfo,
+    modifier: Modifier = Modifier,
+    cornerRadius: Dp = 12.dp,
+    // Fit (not Crop) everywhere so the whole box art shows — Crop trims the top of
+    // covers whose source art is a touch taller than the 0.7 slot.
+    contentScale: ContentScale = ContentScale.Fit,
+) {
     val context = LocalContext.current
+    // Read the 3D-cover flag explicitly (not just via game.coverUrl, which is
+    // skipped when a custom cover wins) so EVERY card — the Recently Played shelf
+    // included — is subscribed and re-resolves when the toolbar toggle flips.
+    val use3d = CoverArtStyle.use3d.value
     val customCoverMap = LocalCustomCoverMap.current
     val custom = remember(game.uri, customCoverMap) { CustomCovers.matchIn(customCoverMap, game) }
     val model = custom ?: game.coverUrl
-    val request = remember(model) {
+    val request = remember(model, use3d) {
         ImageRequest.Builder(context)
             .data(model)
             .size(360, 500)
@@ -423,14 +606,18 @@ private fun GameCover(game: GameInfo, modifier: Modifier = Modifier) {
             .crossfade(false)
             .build()
     }
-    Box(modifier.clip(RoundedCornerShape(12.dp))) {
-        CoverPlaceholder(game.title)
-        if (model != null) {
+    Box(modifier.clip(RoundedCornerShape(cornerRadius))) {
+        if (model == null) {
+            CoverPlaceholder(game.title)
+        } else {
+            // No fill behind the art: 3D box-art PNGs are transparent around the
+            // angled case, and any backing shows as a dark/coloured "notch" at the
+            // top. Keeping it transparent lets the case sit directly on the shelf.
             AsyncImage(
                 model = request,
                 contentDescription = game.title,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
+                contentScale = contentScale,
             )
         }
     }
@@ -513,4 +700,116 @@ object HomeInputController {
         openMenu?.invoke() ?: return false
         return true
     }
+
+    /** Cycle the library layout Grid → List → Shelf (bound to R1). Gives the
+     *  controller direct access to all three view modes without needing to reach
+     *  the touch-only toolbar toggle. */
+    fun cycleLayout(): Boolean {
+        val viewModel = owner ?: return false
+        viewModel.toggleLayout()
+        return true
+    }
+
+    /** Cycle the library sort order (bound to L1). */
+    fun cycleSort(): Boolean {
+        val viewModel = owner ?: return false
+        val entries = HomeSort.entries
+        val next = entries[(viewModel.state.value.sort.ordinal + 1) % entries.size]
+        viewModel.setSort(next)
+        return true
+    }
 }
+
+// -- vivi's shelf library layout — covers standing on vivi's plank PNGs (frosted
+//    for All Games, navy for Now Playing). Each cover sits seated on the plank's
+//    top face (back-of-centre, like a book on a shelf) with shelf surface visible
+//    in front of it, and a faint mirror reflection on that surface. --
+
+@Composable
+private fun GameShelf(
+    games: List<GameInfo>,
+    shelfRes: Int,
+    coverWidth: Dp,
+    scroll: Boolean,
+    onLaunch: (GameInfo) -> Unit,
+    modifier: Modifier = Modifier,
+    slotsPerRow: Int = games.size,
+) {
+    val coverHeight = coverWidth / 0.7f
+    // Slimmer plank to match bagas's slimmer frosted-shelf PNG (2903×200).
+    val plankHeight = 84.dp
+    // How far below the plank's back (top) edge the cover base sits — small, so the
+    // cover rests toward the BACK of the top face with plenty of shelf in front of
+    // it (not perched on the front edge). Scaled with the slimmer plank.
+    val surfaceInset = 16.dp
+    val reflectionHeight = coverHeight * 0.18f
+    // Covers + reflection are top-anchored; the box is tall enough that the cover
+    // base lands on the top face and the reflection lays over the shelf in front.
+    val rowHeight = coverHeight + reflectionHeight
+    Box(modifier.fillMaxWidth().height(coverHeight + plankHeight - surfaceInset)) {
+        Image(
+            painter = painterResource(shelfRes),
+            contentDescription = null,
+            modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(plankHeight),
+            contentScale = ContentScale.FillBounds,
+        )
+        if (scroll) {
+            LazyRow(
+                modifier = Modifier.align(Alignment.TopStart).fillMaxWidth().height(rowHeight),
+                // 12dp start so the first cover lines up with the section header.
+                contentPadding = PaddingValues(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                items(games, key = { "shelfcard_${shelfRes}_${it.uri}" }) { game ->
+                    ShelfGameCard(game, coverWidth, reflectionHeight, onLaunch)
+                }
+            }
+        } else {
+            // Covers laid left-to-right at their full-row positions. SpaceBetween
+            // pins the first cover to the left padding (aligned with the section
+            // header) and spreads the row across the shelf width. A short trailing
+            // row is padded with invisible spacers so its covers stay packed on the
+            // left in sequence instead of sprawling across the whole shelf.
+            Row(
+                modifier = Modifier.align(Alignment.TopStart).fillMaxWidth().height(rowHeight).padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                games.forEach { game -> ShelfGameCard(game, coverWidth, reflectionHeight, onLaunch) }
+                repeat((slotsPerRow - games.size).coerceAtLeast(0)) {
+                    Spacer(Modifier.width(coverWidth))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ShelfGameCard(game: GameInfo, width: Dp, reflectionHeight: Dp, onLaunch: (GameInfo) -> Unit) {
+    Column(modifier = Modifier.width(width).clickable { onLaunch(game) }) {
+        // Square corners in shelf view — rounding fought the 3D box-art edges. The
+        // grid/cover view keeps rounded corners (GameCover's 12.dp default).
+        // ContentScale.Fit shows the WHOLE cover — Crop was trimming the top off the
+        // large standing covers.
+        GameCover(
+            game,
+            Modifier.fillMaxWidth().aspectRatio(0.7f),
+            cornerRadius = 0.dp,
+            contentScale = ContentScale.Fit,
+        )
+        // A faint mirror of the cover on the shelf surface just in front of it.
+        // clipToBounds keeps it to reflectionHeight — without it the full flipped
+        // cover renders and bleeds down onto the row below.
+        Box(Modifier.fillMaxWidth().height(reflectionHeight).clipToBounds()) {
+            GameCover(
+                game,
+                Modifier.fillMaxWidth().aspectRatio(0.7f)
+                    .graphicsLayer { scaleY = -1f; alpha = 0.18f },
+                cornerRadius = 0.dp,
+                contentScale = ContentScale.Fit,
+            )
+            // Fade the reflection out toward the front of the shelf.
+            Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0x55000000)))))
+        }
+    }
+}
+

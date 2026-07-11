@@ -6,6 +6,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.config.ConfigStore
+import com.armsx2.config.SettingsScope
 import java.io.File
 import kr.co.iefriends.pcsx2.NativeApp
 
@@ -90,6 +91,39 @@ class MemoryCardViewModel(application: Application) : AndroidViewModel(applicati
         }.getOrDefault(false)
         state.value = if (success) state.value.copy(message = "${item.file.name} assigned to slot $slot.") else state.value.copy(error = "Unable to change slot $slot.")
         refresh()
+    }
+
+    /**
+     * Per-game memory card (#137, NetherSX2-style): store the card as a per-game
+     * override in the `config.game.<serial>` tier. MainActivityRuntime.applyRendererPrefs
+     * already resolves and applies this at every boot, so no native call is needed —
+     * it takes effect the next time the game starts.
+     */
+    fun assignToGame(serial: String, slot: Int, item: MemoryCardItem) {
+        val resolved = ConfigStore.resolveForGame(serial)
+        val updated = if (slot == 1) {
+            resolved.copy(memoryCardSlot1Enabled = true, memoryCardSlot1Filename = item.file.name)
+        } else {
+            resolved.copy(memoryCardSlot2Enabled = true, memoryCardSlot2Filename = item.file.name)
+        }
+        val ok = runCatching { ConfigStore.save(SettingsScope.Game, serial, updated) }.isSuccess
+        state.value = if (ok) {
+            state.value.copy(message = "${item.file.name} set for this game (slot $slot). Restart the game to apply.")
+        } else {
+            state.value.copy(error = "Unable to set a per-game card.")
+        }
+        refresh()
+    }
+
+    /** The card filename this game currently resolves to (for the "in use" chip). */
+    fun perGameCard(serial: String?, slot: Int): String? {
+        serial ?: return null
+        val resolved = runCatching { ConfigStore.resolveForGame(serial) }.getOrNull() ?: return null
+        return if (slot == 1) {
+            resolved.memoryCardSlot1Filename.takeIf { resolved.memoryCardSlot1Enabled }
+        } else {
+            resolved.memoryCardSlot2Filename.takeIf { resolved.memoryCardSlot2Enabled }
+        }
     }
 
     fun delete(item: MemoryCardItem) {

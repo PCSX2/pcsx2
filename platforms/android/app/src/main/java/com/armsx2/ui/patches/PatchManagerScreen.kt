@@ -3,6 +3,7 @@ package com.armsx2.ui.patches
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,8 +23,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,6 +38,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.armsx2.GameInfo
+import com.armsx2.PatchRepo
 import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsBackdrop
 import com.armsx2.ui.common.ArmsTopBar
@@ -40,10 +48,11 @@ import com.armsx2.ui.common.GlassPanel
 import com.armsx2.ui.common.RoundAction
 import com.armsx2.ui.common.SectionTitle
 import com.armsx2.ui.common.SettingSwitchRow
+import com.armsx2.ui.common.StatusChip
 import java.io.File
 
 @Composable
-fun PatchManagerScreen(onBack: () -> Unit, viewModel: PatchManagerViewModel = viewModel()) {
+fun PatchManagerScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: PatchManagerViewModel = viewModel()) {
     val state = viewModel.state.value
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(viewModel::import) }
     LaunchedEffect(Unit) { viewModel.refresh() }
@@ -59,6 +68,7 @@ fun PatchManagerScreen(onBack: () -> Unit, viewModel: PatchManagerViewModel = vi
                     RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
                 },
             )
+            OnlineBrowser(state, viewModel, game, Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp))
             BoxWithConstraints(Modifier.fillMaxWidth()) {
                 val compact = maxWidth < 820.dp
                 if (compact) {
@@ -103,6 +113,71 @@ private fun PatchOptions(state: PatchManagerUiState, viewModel: PatchManagerView
 }
 
 @Composable
+private fun OnlineBrowser(
+    state: PatchManagerUiState,
+    viewModel: PatchManagerViewModel,
+    game: GameInfo?,
+    modifier: Modifier,
+) {
+    GlassPanel(modifier) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SectionTitle(str("patches.online.header"), game?.title ?: str("scope.game"))
+            when {
+                state.onlineLoading -> Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                    Spacer(Modifier.width(10.dp))
+                    Text(str("patches.online.loading"))
+                }
+                state.onlineEntries.isEmpty() -> Button(onClick = { viewModel.fetchOnline(game) }) {
+                    Text(str("patches.online.fetch"))
+                }
+                else -> {
+                    if (state.onlineTitle.isNotBlank()) {
+                        Text(state.onlineTitle, style = MaterialTheme.typography.titleSmall)
+                    }
+                    state.onlineEntries.forEach { entry ->
+                        OnlineEntryRow(entry, entry.name in state.onlineSelected) { viewModel.toggleOnline(entry.name) }
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Button(onClick = viewModel::installSelected, enabled = state.onlineSelected.isNotEmpty()) {
+                            Text("${str("patches.online.install")} (${state.onlineSelected.size})")
+                        }
+                        TextButton(onClick = { viewModel.fetchOnline(game) }) { Text(str("games.card.refresh")) }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OnlineEntryRow(entry: PatchRepo.Entry, checked: Boolean, onToggle: () -> Unit) {
+    Surface(
+        onClick = onToggle,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        color = if (checked) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+        border = BorderStroke(
+            1.dp,
+            if (checked) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.42f),
+        ),
+    ) {
+        Row(Modifier.padding(horizontal = 10.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(checked = checked, onCheckedChange = { onToggle() })
+            Spacer(Modifier.width(6.dp))
+            Column(Modifier.weight(1f)) {
+                Text(entry.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (entry.description.isNotBlank()) {
+                    Text(entry.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                }
+            }
+            Spacer(Modifier.width(8.dp))
+            StatusChip(entry.source)
+        }
+    }
+}
+
+@Composable
 private fun PatchFiles(state: PatchManagerUiState, viewModel: PatchManagerViewModel, modifier: Modifier) {
     Column(modifier) {
         SectionTitle(str("patches.installedHeader"), state.files.size.toString())
@@ -110,28 +185,81 @@ private fun PatchFiles(state: PatchManagerUiState, viewModel: PatchManagerViewMo
             EmptyState(str("patches.noFilesInstalled"), str("patches.pasteImportHint"), modifier = Modifier.fillMaxWidth().height(220.dp))
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                state.files.forEach { file -> PatchFileRow(file) { viewModel.delete(file) } }
+                state.files.forEach { file ->
+                    val expanded = state.localExpandedPath == file.absolutePath
+                    PatchFileRow(
+                        file = file,
+                        expanded = expanded,
+                        cheats = if (expanded) state.localCheats else emptyList(),
+                        onExpand = { viewModel.expandLocal(file) },
+                        onToggleCheat = viewModel::toggleLocalCheat,
+                        onDelete = { viewModel.delete(file) },
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun PatchFileRow(file: File, onDelete: () -> Unit) {
+private fun PatchFileRow(
+    file: File,
+    expanded: Boolean,
+    cheats: List<PatchRepo.LocalCheat>,
+    onExpand: () -> Unit,
+    onToggleCheat: (String) -> Unit,
+    onDelete: () -> Unit,
+) {
     Surface(
         Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.46f)),
     ) {
-        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("✦", color = MaterialTheme.colorScheme.primary)
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Text(file.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(file.parentFile?.name.orEmpty(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Column {
+            Row(
+                Modifier.fillMaxWidth().clickable(onClick = onExpand).padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(if (expanded) "▾" else "▸", color = MaterialTheme.colorScheme.primary)
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(file.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(file.parentFile?.name.orEmpty(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                TextButton(onClick = onDelete) { Text(str("action.delete")) }
             }
-            TextButton(onClick = onDelete) { Text(str("action.delete")) }
+            if (expanded) {
+                if (cheats.isEmpty()) {
+                    Text(
+                        str("patches.local.noCheats"),
+                        Modifier.padding(start = 42.dp, end = 14.dp, bottom = 12.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    Column(Modifier.padding(start = 34.dp, end = 12.dp, bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        cheats.forEach { cheat -> LocalCheatRow(cheat) { onToggleCheat(cheat.name) } }
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun LocalCheatRow(cheat: PatchRepo.LocalCheat, onToggle: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().clickable(onClick = onToggle).padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(cheat.name, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (cheat.description.isNotBlank()) {
+                Text(cheat.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            }
+        }
+        Spacer(Modifier.width(8.dp))
+        Switch(checked = cheat.enabled, onCheckedChange = { onToggle() })
     }
 }

@@ -86,12 +86,17 @@ object InGameOverlay {
     }
 
     fun openSaveStatePicker() {
-        com.armsx2.ui.emulation.EmulationMenuInputController.open(
-            com.armsx2.ui.emulation.EmulationMenuTab.Session,
-        )
+        // Freeze the game behind the (opaque) picker; dismiss resumes it. The
+        // pause-menu path is already paused, so this only bites the on-screen
+        // touch-button path that fires mid-game.
+        if (MainActivityRuntime.eState.value != EmuState.STOPPED) MainActivityRuntime.pauseForOverlay()
+        WindowImpl.openInGameScreen(InGameScreen.SaveState)
     }
 
-    fun openLoadStatePicker() = openSaveStatePicker()
+    fun openLoadStatePicker() {
+        if (MainActivityRuntime.eState.value != EmuState.STOPPED) MainActivityRuntime.pauseForOverlay()
+        WindowImpl.openInGameScreen(InGameScreen.LoadState)
+    }
 
     private fun closeAndResume() {
         WindowImpl.overlayVisible.value = false

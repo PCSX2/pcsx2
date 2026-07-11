@@ -15,7 +15,7 @@ import androidx.core.content.edit
 
 enum class HomeSort { Title, RecentlyPlayed, Compatibility }
 
-enum class LibraryLayout { Grid, List }
+enum class LibraryLayout { Grid, List, Shelf }
 
 data class HomeUiState(
     val allGames: List<GameInfo> = emptyList(),
@@ -46,11 +46,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         if (!loaded) {
             loaded = true
             val cached = repository.loadCached()
-            val layout = if (MainActivityRuntime.prefs.getBoolean(LayoutPreference, false)) {
-                LibraryLayout.List
-            } else {
-                LibraryLayout.Grid
-            }
+            val layout = runCatching {
+                LibraryLayout.valueOf(
+                    MainActivityRuntime.prefs.getString(LayoutPreference, LibraryLayout.Grid.name) ?: LibraryLayout.Grid.name,
+                )
+            }.getOrDefault(LibraryLayout.Grid)
             pendingInitialScan = romDirectories.isNotEmpty() && cached.key != repository.cacheKey(romDirectories)
             state.value = buildState(
                 base = state.value.copy(
@@ -100,8 +100,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun toggleLayout() {
-        val next = if (state.value.layout == LibraryLayout.Grid) LibraryLayout.List else LibraryLayout.Grid
-        MainActivityRuntime.prefs.edit {putBoolean(LayoutPreference, next == LibraryLayout.List) }
+        val entries = LibraryLayout.entries
+        val next = entries[(state.value.layout.ordinal + 1) % entries.size]
+        MainActivityRuntime.prefs.edit { putString(LayoutPreference, next.name) }
         state.value = state.value.copy(layout = next)
     }
 
@@ -158,6 +159,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private companion object {
-        const val LayoutPreference = "library.layout.list"
+        // String-valued now (Grid/List/Shelf). New key so the old boolean pref is
+        // ignored and everyone starts at Grid rather than mis-parsing "true"/"false".
+        const val LayoutPreference = "library.layout.mode"
     }
 }

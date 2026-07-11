@@ -3,6 +3,8 @@ package com.armsx2.ui.memorycards
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -36,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.armsx2.GameInfo
 import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsBackdrop
 import com.armsx2.ui.common.ArmsTopBar
@@ -45,8 +48,9 @@ import com.armsx2.ui.common.StatusChip
 import com.armsx2.ui.theme.Success
 
 @Composable
-fun MemoryCardScreen(onBack: () -> Unit, viewModel: MemoryCardViewModel = viewModel()) {
+fun MemoryCardScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: MemoryCardViewModel = viewModel()) {
     val state = viewModel.state.value
+    val serial = game?.serial?.takeIf { it.isNotBlank() }
     var createDialog by remember { mutableStateOf(false) }
     var deleteTarget by remember { mutableStateOf<MemoryCardItem?>(null) }
     val importer = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(viewModel::import) }
@@ -74,7 +78,14 @@ fun MemoryCardScreen(onBack: () -> Unit, viewModel: MemoryCardViewModel = viewMo
                 item { EmptyState(str("memcard.empty"), str("memcard.size.hint"), str("memcard.create"), { createDialog = true }, Modifier.fillMaxWidth().height(280.dp)) }
             } else {
                 items(state.cards, key = { it.file.absolutePath }) { item ->
-                    MemoryCardRow(item, { viewModel.assign(1, item) }, { viewModel.assign(2, item) }, { deleteTarget = item })
+                    MemoryCardRow(
+                        item = item,
+                        onSlot1 = { viewModel.assign(1, item) },
+                        onSlot2 = { viewModel.assign(2, item) },
+                        onDelete = { deleteTarget = item },
+                        perGameActive = serial != null && viewModel.perGameCard(serial, 1)?.equals(item.file.name, true) == true,
+                        onAssignGame = serial?.let { { viewModel.assignToGame(it, 1, item) } },
+                    )
                 }
             }
             item { Spacer(Modifier.height(12.dp)) }
@@ -107,7 +118,14 @@ fun MemoryCardScreen(onBack: () -> Unit, viewModel: MemoryCardViewModel = viewMo
 }
 
 @Composable
-private fun MemoryCardRow(item: MemoryCardItem, onSlot1: () -> Unit, onSlot2: () -> Unit, onDelete: () -> Unit) {
+private fun MemoryCardRow(
+    item: MemoryCardItem,
+    onSlot1: () -> Unit,
+    onSlot2: () -> Unit,
+    onDelete: () -> Unit,
+    perGameActive: Boolean = false,
+    onAssignGame: (() -> Unit)? = null,
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(19.dp),
@@ -123,7 +141,19 @@ private fun MemoryCardRow(item: MemoryCardItem, onSlot1: () -> Unit, onSlot2: ()
                     Text(humanSize(item.size), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (onAssignGame != null) {
+                    if (perGameActive) {
+                        StatusChip(str("memcard.thisGame.active"), Success)
+                    } else {
+                        OutlinedButton(onClick = onAssignGame) { Text(str("memcard.thisGame")) }
+                    }
+                    Spacer(Modifier.width(7.dp))
+                }
                 if (item.slot1) StatusChip(str("memcard.slot1.active"), Success) else OutlinedButton(onClick = onSlot1) { Text(str("memcard.slot1")) }
                 Spacer(Modifier.width(7.dp))
                 if (item.slot2) StatusChip(str("memcard.slot2.active"), Success) else OutlinedButton(onClick = onSlot2) { Text(str("memcard.slot2")) }

@@ -52,6 +52,8 @@ import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsLogo
 import com.armsx2.ui.common.StatusChip
+import com.armsx2.ui.common.initialPadFocus
+import com.armsx2.ui.common.padFocusRing
 
 private data class DrawerItem(
     val titleKey: String,
@@ -113,7 +115,7 @@ private fun DrawerContent(selected: AppRoute, onNavigate: (AppRoute) -> Unit) {
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val primary = listOf(
         DrawerItem("games.section.library", "▦", AppRoute.Home),
-        DrawerItem("ra.options.header", "★", AppRoute.Achievements),
+        DrawerItem("ra.title", "★", AppRoute.Achievements),
         DrawerItem("action.settings", "⚙", AppRoute.Settings()),
     )
     val managers = listOf(
@@ -141,7 +143,7 @@ private fun DrawerContent(selected: AppRoute, onNavigate: (AppRoute) -> Unit) {
             StatusChip(if (MainActivityRuntime.nativeReady.value) str("backend.driver.active") else str("memcard.status.coreStarting"))
         }
         Spacer(Modifier.height(20.dp))
-        DrawerSection(str("games.section.library"), primary, selected, onNavigate)
+        DrawerSection(str("games.section.library"), primary, selected, onNavigate, focusFirst = true)
         Spacer(Modifier.height(14.dp))
         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f))
         Spacer(Modifier.height(14.dp))
@@ -159,6 +161,7 @@ private fun DrawerSection(
     items: List<DrawerItem>,
     selected: AppRoute,
     onNavigate: (AppRoute) -> Unit,
+    focusFirst: Boolean = false,
 ) {
     Text(
         title.uppercase(),
@@ -167,11 +170,12 @@ private fun DrawerSection(
         letterSpacing = 1.2.sp,
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
     )
-    items.forEach { item ->
+    items.forEachIndexed { index, item ->
         DrawerRow(
             title = str(item.titleKey),
             glyph = item.glyph,
             selected = sameDestination(selected, item.destination),
+            initialFocus = focusFirst && index == 0,
             onClick = { onNavigate(item.destination) },
         )
     }
@@ -182,6 +186,7 @@ private fun DrawerRow(
     title: String,
     glyph: String,
     selected: Boolean,
+    initialFocus: Boolean = false,
     onClick: () -> Unit,
 ) {
     val contentColor = when {
@@ -190,7 +195,9 @@ private fun DrawerRow(
     }
     Surface(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            .then(if (initialFocus) Modifier.initialPadFocus() else Modifier)
+            .padFocusRing(RoundedCornerShape(18.dp)),
         shape = RoundedCornerShape(18.dp),
         color = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
     ) {

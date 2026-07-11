@@ -45,6 +45,8 @@ import com.armsx2.ui.common.ArmsTopBar
 import com.armsx2.ui.common.GlassPanel
 import com.armsx2.ui.common.RoundAction
 import com.armsx2.ui.common.SectionTitle
+import com.armsx2.ui.common.initialPadFocus
+import com.armsx2.ui.common.padFocusRing
 import com.armsx2.ui.settings.AppTab
 import com.armsx2.ui.settings.AudioTab
 import com.armsx2.ui.settings.FixesTab
@@ -147,10 +149,18 @@ private fun SettingsCategoryBar(
         contentPadding = PaddingValues(horizontal = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        items(settingsSections().filterNot { gameSpecific && it.category == SettingsCategory.General }, key = { it.category.name }) { section ->
+        val sections = settingsSections().filterNot {
+            // General is redundant per-game (redirects to Performance); Info only makes
+            // sense for a specific game, so hide it in the global settings.
+            (gameSpecific && it.category == SettingsCategory.General) ||
+                (!gameSpecific && it.category == SettingsCategory.Info)
+        }
+        items(sections, key = { it.category.name }) { section ->
             val active = section.category == selected
             FilterChip(
-                modifier = Modifier.height(44.dp),
+                modifier = Modifier.height(44.dp)
+                    .then(if (active) Modifier.initialPadFocus() else Modifier)
+                    .padFocusRing(RoundedCornerShape(13.dp)),
                 selected = active,
                 onClick = { onSelect(section.category) },
                 label = { Text(str(section.titleKey), maxLines = 1) },
@@ -179,6 +189,7 @@ private fun SettingsCategoryBar(
 
 private fun settingsSections() = listOf(
     SettingsSection(SettingsCategory.General, "tab.app", "⌂"),
+    SettingsSection(SettingsCategory.Info, "tab.info", "ⓘ"),
     SettingsSection(SettingsCategory.Performance, "tab.performance", "↯"),
     SettingsSection(SettingsCategory.Graphics, "tab.renderer", "◫"),
     SettingsSection(SettingsCategory.Audio, "tab.audio", "♫"),
@@ -195,6 +206,7 @@ private fun settingsSections() = listOf(
 private fun CategoryContent(category: SettingsCategory, viewModel: SettingsViewModel) {
     when (category) {
         SettingsCategory.General -> AppTab()
+        SettingsCategory.Info -> com.armsx2.ui.settings.InfoTab(viewModel.uiState.value.game)
         SettingsCategory.Performance -> PerformanceTab(viewModel.settings)
         SettingsCategory.Graphics -> RendererTab(viewModel.settings)
         SettingsCategory.Audio -> AudioTab(viewModel.settings)
@@ -211,6 +223,7 @@ private fun CategoryContent(category: SettingsCategory, viewModel: SettingsViewM
 @Composable
 private fun categoryTitle(category: SettingsCategory): String = when (category) {
     SettingsCategory.General -> str("tab.app")
+    SettingsCategory.Info -> str("tab.info")
     SettingsCategory.Performance -> str("tab.performance")
     SettingsCategory.Graphics -> str("tab.renderer")
     SettingsCategory.Audio -> str("tab.audio")

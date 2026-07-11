@@ -152,7 +152,7 @@ android {
             // declare; configuring spirv-tools at that floor fails to create the
             // SPIRV-Tools target ("SPIRV-Tools was not found"). A newer CMake
             // configures them cleanly. Must match a cmake installed in CI.
-            version = "3.31.6"
+            version = "3.30.5"
         }
     }
     buildFeatures {

@@ -210,6 +210,17 @@ int Threading::ThreadHandle::GetCurrentCpu() const
 	return -1;
 }
 
+u64 Threading::ThreadHandle::GetAffinity() const
+{
+	// No per-thread affinity introspection on Darwin.
+	return 0;
+}
+
+int Threading::ThreadHandle::GetCurrentCpu() const
+{
+	return -1;
+}
+
 Threading::Thread::Thread() = default;
 
 Threading::Thread::Thread(Thread&& thread)

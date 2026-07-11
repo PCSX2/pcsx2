@@ -83,6 +83,15 @@ void* HostSys::CreateSharedMemory(const char* name, size_t size)
 		return nullptr;
 	}
 #else
+#if defined(__ANDROID__)
+	// Android: memfd_create available since API 26 (our minSdk), no shm_open until API 30.
+	const int fd = memfd_create_wrapper(name, 0);
+	if (fd < 0)
+	{
+		std::fprintf(stderr, "memfd_create failed: %d\n", errno);
+		return nullptr;
+	}
+#else
 	const int fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
 	if (fd < 0)
 	{
@@ -92,6 +101,7 @@ void* HostSys::CreateSharedMemory(const char* name, size_t size)
 
 	// we're not going to be opening this mapping in other processes, so remove the file
 	shm_unlink(name);
+#endif
 #endif
 
 	// ensure it's the correct size

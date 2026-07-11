@@ -1126,6 +1126,27 @@ std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, F
 	Error::SetErrno(error, errno);
 	return nullptr;
 #else
+	#if defined(__ANDROID__)
+	// content:// URIs (Storage Access Framework) must route through the JNI
+	// ContentResolver bridge — std::fopen can't open them. ChdFileReader opens
+	// the disc through this shared variant, so without this bridge every .chd on
+	// external/SD storage failed VM init ("Failed to open CDVD ... errno 2") and
+	// bounced back to the library, while .iso (which uses OpenCFile) worked.
+	// Mirrors the identical bridge in OpenCFile / OpenFDFile / FileExists.
+	if (std::strncmp(filename, "content://", 10) == 0)
+	{
+		const int fd = OpenFDFileContent(filename);
+		if (fd < 0)
+		{
+			Error::SetString(error, "Unable to open Android content URI.");
+			return nullptr;
+		}
+		std::FILE* fp = fdopen(fd, mode);
+		if (!fp)
+			Error::SetErrno(error, errno);
+		return fp;
+	}
+	#endif
 	std::FILE* fp = std::fopen(filename, mode);
 	if (!fp)
 		Error::SetErrno(error, errno);

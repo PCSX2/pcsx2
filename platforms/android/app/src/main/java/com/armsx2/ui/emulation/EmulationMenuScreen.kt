@@ -37,11 +37,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -52,15 +55,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.armsx2.i18n.str
 import com.armsx2.runtime.MainActivityRuntime
+import com.armsx2.ui.achievements.AchievementItem
 import com.armsx2.ui.common.ArmsLogo
 import com.armsx2.ui.common.GameCoverArt
 import com.armsx2.ui.theme.Danger
@@ -98,6 +105,20 @@ fun EmulationMenuScreen(viewModel: EmulationMenuViewModel = viewModel()) {
     }
     LaunchedEffect(Unit) { shown = true }
     BackHandler(onBack = closeMenu)
+
+    state.pendingHardcore?.let { enabling ->
+        AlertDialog(
+            onDismissRequest = viewModel::cancelToggleHardcore,
+            title = { Text(str(if (enabling) "ra.hardcore.enable.title" else "ra.hardcore.disable.title")) },
+            text = { Text(str(if (enabling) "ra.hardcore.enable.body" else "ra.hardcore.disable.body")) },
+            confirmButton = {
+                TextButton(onClick = viewModel::confirmToggleHardcore) {
+                    Text(str(if (enabling) "ra.hardcore.enable.confirm" else "ra.hardcore.disable.confirm"))
+                }
+            },
+            dismissButton = { TextButton(onClick = viewModel::cancelToggleHardcore) { Text(str("action.cancel")) } },
+        )
+    }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val compact = maxWidth < 700.dp
@@ -166,7 +187,7 @@ private fun MenuPage(
             .padding(bottom = 18.dp),
     ) {
         if (compact) CompactMenuTabs(state.tab, viewModel::selectTab)
-        MenuHeader(compact)
+        MenuHeader(compact, state.hardcore)
         HorizontalDivider(
             modifier = Modifier.padding(horizontal = 8.dp),
             color = MaterialTheme.colorScheme.outline.copy(alpha = 0.34f),
@@ -181,6 +202,7 @@ private fun MenuPage(
                 EmulationMenuTab.Performance -> PerformancePane(state, viewModel)
                 EmulationMenuTab.Controls -> ControlsPane(state, viewModel)
                 EmulationMenuTab.Options -> OptionsPane(state, viewModel)
+                EmulationMenuTab.Achievements -> AchievementsPane(state, viewModel)
             }
         }
     }
@@ -211,7 +233,7 @@ private fun MenuRail(selected: EmulationMenuTab, onSelect: (EmulationMenuTab) ->
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 10.dp, vertical = 16.dp),
     ) {
-        ArmsLogo(showWordmark = true)
+        ArmsLogo(showWordmark = false, iconSize = 72.dp, modifier = Modifier.align(Alignment.CenterHorizontally))
         Spacer(Modifier.height(18.dp))
         EmulationMenuTab.entries.forEach { tab ->
             MenuTab(tab, tab == selected, onSelect)
@@ -240,7 +262,7 @@ private fun MenuTab(tab: EmulationMenuTab, active: Boolean, onSelect: (Emulation
 }
 
 @Composable
-private fun MenuHeader(compact: Boolean) {
+private fun MenuHeader(compact: Boolean, hardcore: Boolean) {
     val game = MainActivityRuntime.currentGame.value
     Row(
         Modifier.fillMaxWidth().padding(horizontal = if (compact) 12.dp else 16.dp, vertical = 12.dp),
@@ -251,14 +273,21 @@ private fun MenuHeader(compact: Boolean) {
             Spacer(Modifier.width(11.dp))
         }
         Column(Modifier.weight(1f)) {
-            Text(
-                game?.title ?: "PlayStation 2",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    game?.title ?: "PlayStation 2",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                if (hardcore) {
+                    Spacer(Modifier.width(8.dp))
+                    HardcoreBadge()
+                }
+            }
             if (!game?.serial.isNullOrBlank()) {
                 Spacer(Modifier.height(2.dp))
                 Text(
@@ -284,6 +313,20 @@ private fun SessionPane(state: EmulationMenuUiState, viewModel: EmulationMenuVie
         selected = state.selectedAction,
         onSelect = viewModel::selectAction,
     )
+    // On-screen display — a single universal on/off (old-UI style); the per-stat
+    // toggles live in All Settings. Plus a frame-limit switch so fast-forward is one
+    // tap away.
+    SectionCard(str("tab.overlay")) {
+        val osdOn = with(state.settings) {
+            osdShowFps || osdShowVps || osdShowSpeed || osdShowCpu || osdShowGpu || osdShowResolution ||
+                osdShowGsStats || osdShowFrameTimes || osdShowHardwareInfo || osdShowGpuStats || osdShowVersion
+        }
+        MenuSwitchRow(str("overlay.master.label"), osdOn) { viewModel.setOsdMaster(it) }
+        Spacer(Modifier.height(6.dp))
+        MenuSwitchRow(str("perf.frameLimit.label"), state.settings.frameLimitEnable) { value ->
+            viewModel.updateSettings { it.copy(frameLimitEnable = value) }
+        }
+    }
     SectionCard(str("savestate.title.loadManage")) {
         Text(
             "${str("memcard.slot1").substringBefore(' ')} ${state.saveSlot + 1}",
@@ -308,9 +351,16 @@ private fun SessionPane(state: EmulationMenuUiState, viewModel: EmulationMenuVie
             }
         }
         Spacer(Modifier.height(9.dp))
+        // Save / Load open the rich slot picker (thumbnails + autosave + the
+        // auto-save/-load toggles), matching the old UI. The slot chips above stay
+        // the quick-slot selector used by the on-screen / hotkey quick-save.
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            CompactAction(str("savestate.title.save"), "↥", Modifier.weight(1f), viewModel::saveState)
-            CompactAction(str("touch.stateAction.load"), "↧", Modifier.weight(1f), viewModel::loadState)
+            CompactAction(str("savestate.title.save"), "↥", Modifier.weight(1f)) {
+                com.armsx2.ui.WindowImpl.openInGameScreen(com.armsx2.ui.InGameScreen.SaveState)
+            }
+            CompactAction(str("touch.stateAction.load"), "↧", Modifier.weight(1f)) {
+                com.armsx2.ui.WindowImpl.openInGameScreen(com.armsx2.ui.InGameScreen.LoadState)
+            }
         }
     }
 }
@@ -329,6 +379,12 @@ private fun GraphicsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVi
         selected = settings.renderer,
         onSelect = viewModel::setRenderer,
     )
+    // GPU driver manager (download/import/select) — Vulkan only — plus Apply &
+    // Restart, since renderer + driver changes only take effect on renderer init.
+    if (settings.renderer == "vulkan") {
+        com.armsx2.ui.common.DriverManagerSection()
+    }
+    CompactAction(str("backend.applyRestart"), "↻", Modifier.fillMaxWidth(), MainActivityRuntime::restart)
     HorizontalOptions(
         title = str("renderer.upscale.label"),
         options = listOf(1f, 1.5f, 2f, 3f, 4f, 5f, 6f, 8f).map { value ->
@@ -463,7 +519,7 @@ private fun PerformancePane(state: EmulationMenuUiState, viewModel: EmulationMen
     }
     HorizontalOptions(
         title = str("perf.displayFpsCap.label"),
-        options = listOf(0, 30, 45, 60, 90, 120).map {
+        options = listOf(0, 20, 30, 45, 60, 90, 120).map {
             it to if (it == 0) str("setup.toggle.off") else "$it FPS"
         },
         selected = settings.fpsLimit,
@@ -474,6 +530,16 @@ private fun PerformancePane(state: EmulationMenuUiState, viewModel: EmulationMen
         options = (0..5).map { it to if (it == 0) str("setup.toggle.off") else "$it" },
         selected = settings.frameSkip,
         onSelect = viewModel::setFrameSkip,
+    )
+    FramerateSlider(
+        title = str("perf.ntscFramerate.label"),
+        value = settings.framerateNtsc,
+        onValue = { value -> viewModel.updateSettings { it.copy(framerateNtsc = value) } },
+    )
+    FramerateSlider(
+        title = str("perf.palFramerate.label"),
+        value = settings.frameratePal,
+        onValue = { value -> viewModel.updateSettings { it.copy(frameratePal = value) } },
     )
     HorizontalOptions(
         title = str("perf.eeCycleRate.label"),
@@ -581,12 +647,25 @@ private fun ControlsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVi
     MenuSwitchRow(str("network.emulateUsbKeyboard"), state.settings.usbKeyboard) {
         viewModel.updateSettings { current -> current.copy(usbKeyboard = it) }
     }
+    CompactAction(str("pad.controllerMapping"), "⌁", Modifier.fillMaxWidth(), viewModel::openControlsManager)
+    Spacer(Modifier.height(6.dp))
     CompactAction(str("pad.editTouchLayout"), "✥", Modifier.fillMaxWidth(), viewModel::editTouchControls)
 }
 
 @Composable
 private fun OptionsPane(state: EmulationMenuUiState, viewModel: EmulationMenuViewModel) {
     val settings = state.settings
+    // Item 3: gateway to the full per-game settings (all categories the compact menu omits:
+    // OSD, Skins, Audio, Hotkeys, Network, Recompiler, ...).
+    CompactAction(str("action.allSettings"), "⚙", Modifier.fillMaxWidth(), viewModel::openFullSettings)
+    Spacer(Modifier.height(6.dp))
+    // In-game access to the manager screens (the library drawer's Memory Cards /
+    // Patches & Cheats / Controller mapping) — open over the paused game.
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        CompactAction(str("memcard.title"), "▤", Modifier.weight(1f), viewModel::openMemcard)
+        CompactAction(str("patches.dialog.patchesAndCheats"), "✦", Modifier.weight(1f), viewModel::openPatches)
+    }
+    Spacer(Modifier.height(6.dp))
     MenuSwitchRow(str("patches.enablePatches.label"), settings.enablePatches) {
         viewModel.updateSettings { current -> current.copy(enablePatches = it) }
     }
@@ -630,6 +709,13 @@ private fun OptionsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVie
     MenuSwitchRow(str("perf.fix.vuSync"), settings.gamefixVuSync) {
         viewModel.updateSettings { current -> current.copy(enableGameFixes = true, gamefixVuSync = it) }
     }
+}
+
+@Composable
+private fun AchievementsPane(state: EmulationMenuUiState, viewModel: EmulationMenuViewModel) {
+    // Gateway to the full RetroAchievements screen (unlock list + presentation options).
+    CompactAction(str("ra.viewAchievements"), "★", Modifier.fillMaxWidth(), viewModel::openAchievements)
+    Spacer(Modifier.height(4.dp))
     SectionCard("RetroAchievements") {
         Text(
             state.achievementSummary,
@@ -640,7 +726,71 @@ private fun OptionsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVie
         MenuSwitchRow(
             str(if (state.hardcore) "ra.mode.hardcore" else "ra.mode.casual"),
             state.hardcore,
-            onCheckedChange = { viewModel.toggleHardcore() },
+            onCheckedChange = { viewModel.requestToggleHardcore() },
+        )
+    }
+    // Inline unlock list, right below the hardcore toggle — no need to open the full
+    // screen (it's still available via the button above).
+    state.achievements.forEach { item -> InGameAchievementRow(item) }
+}
+
+@Composable
+private fun InGameAchievementRow(item: AchievementItem) {
+    Surface(
+        Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        color = if (item.unlocked) MaterialTheme.colorScheme.primaryContainer
+        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f),
+        border = BorderStroke(
+            1.dp,
+            if (item.unlocked) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+            else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+        ),
+    ) {
+        Row(Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (item.iconUrl.isNotBlank()) {
+                AsyncImage(
+                    item.iconUrl,
+                    item.title,
+                    Modifier.size(40.dp).clip(RoundedCornerShape(9.dp)),
+                    contentScale = ContentScale.Crop,
+                )
+            } else {
+                Box(
+                    Modifier.size(40.dp).clip(RoundedCornerShape(9.dp))
+                        .background(MaterialTheme.colorScheme.surface),
+                    contentAlignment = Alignment.Center,
+                ) { Text(if (item.unlocked) "★" else "☆") }
+            }
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                Text(item.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(item.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                if (item.progress.isNotBlank()) {
+                    Text(item.progress, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                }
+            }
+            Spacer(Modifier.width(8.dp))
+            Text(
+                "${item.points}",
+                style = MaterialTheme.typography.labelMedium,
+                color = if (item.unlocked) Success else MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+    }
+}
+
+@Composable
+private fun HardcoreBadge() {
+    // Firebrick red to match the old UI's hardcore pill (theme Danger reads pink here).
+    Surface(shape = RoundedCornerShape(6.dp), color = Color(0xFFB22222)) {
+        Text(
+            "HC",
+            modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp),
+            color = Color.White,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
         )
     }
 }
@@ -721,6 +871,24 @@ private fun <T> HorizontalOptions(
 ) {
     SectionCard(title) {
         HorizontalOptionRow(options, selected, onSelect)
+    }
+}
+
+// Free-choice framerate cap (30–120 Hz) instead of a couple of fixed chips. The
+// default (59.94 / 50) is kept exactly until the user drags; dragging snaps to
+// whole Hz so common targets (50/60/72/90/120) are easy to hit.
+@Composable
+private fun FramerateSlider(title: String, value: Float, onValue: (Float) -> Unit) {
+    SectionCard(title) {
+        Column(Modifier.fillMaxWidth()) {
+            val label = if (value % 1f == 0f) "${value.toInt()} Hz" else "%.2f Hz".format(value)
+            Text(label, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+            Slider(
+                value = value.coerceIn(20f, 120f),
+                onValueChange = { onValue(Math.round(it).toFloat()) },
+                valueRange = 20f..120f,
+            )
+        }
     }
 }
 

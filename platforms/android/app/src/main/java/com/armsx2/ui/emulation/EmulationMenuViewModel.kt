@@ -7,8 +7,9 @@ import com.armsx2.i18n.I18n
 import com.armsx2.input.ControllerMappings
 import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.ui.InGameOverlay
+import com.armsx2.ui.achievements.AchievementItem
+import com.armsx2.ui.achievements.parseAchievementItems
 import kr.co.iefriends.pcsx2.NativeApp
-import org.json.JSONObject
 
 enum class EmulationMenuTab(val titleKey: String) {
     Session("games.info.inGameMenu.title"),
@@ -16,6 +17,7 @@ enum class EmulationMenuTab(val titleKey: String) {
     Performance("tab.performance"),
     Controls("tab.controls"),
     Options("action.settings"),
+    Achievements("ra.title"),
 }
 
 data class EmulationMenuUiState(
@@ -27,7 +29,10 @@ data class EmulationMenuUiState(
     val rumbleEnabled: Boolean = true,
     val multitapEnabled: Boolean = false,
     val hardcore: Boolean = false,
+    // Non-null while the hardcore confirm dialog is up; holds the target state.
+    val pendingHardcore: Boolean? = null,
     val achievementSummary: String = I18n.get("ra.status.noAchievements.title"),
+    val achievements: List<AchievementItem> = emptyList(),
 )
 
 class EmulationMenuViewModel(application: Application) : AndroidViewModel(application) {
@@ -38,13 +43,16 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
 
     fun load(initialTab: EmulationMenuTab?) {
         val settings = InGameOverlay.settingsState.value
-        val summary = runCatching {
-            val root = JSONObject(NativeApp.getAchievementsJSON().orEmpty())
-            val unlocked = root.optInt("unlocked", root.optInt("unlocked_count", 0))
-            val total = root.optInt("total", root.optInt("achievement_count", 0))
-            if (total > 0) "$unlocked / $total" else NativeApp.getRichPresence().orEmpty()
+        // The native JSON emits the unlock list under "items"; count from that rather
+        // than the non-existent "unlocked"/"total" keys the old code read (which always
+        // fell through to rich presence). Fall back to rich presence when no set loaded.
+        val items = runCatching { parseAchievementItems(NativeApp.getAchievementsJSON().orEmpty()) }.getOrDefault(emptyList())
+        val summary = if (items.isNotEmpty()) {
+            "${items.count { it.unlocked }} / ${items.size}"
+        } else {
+            runCatching { NativeApp.getRichPresence().orEmpty() }.getOrDefault("")
                 .ifBlank { I18n.get("ra.status.noAchievements.title") }
-        }.getOrDefault(I18n.get("ra.status.noAchievements.title"))
+        }
         state.value = state.value.copy(
             tab = initialTab ?: state.value.tab,
             selectedAction = 0,
@@ -55,6 +63,7 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
             multitapEnabled = ControllerMappings.multitapEnabled(),
             hardcore = runCatching { NativeApp.isHardcoreMode() }.getOrDefault(false),
             achievementSummary = summary,
+            achievements = items,
         )
     }
 
@@ -106,7 +115,10 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
                 1 -> updateSettings { it.copy(enableCheats = !it.enableCheats) }
                 2 -> updateSettings { it.copy(enableWideScreenPatches = !it.enableWideScreenPatches) }
                 3 -> updateSettings { it.copy(enableNoInterlacingPatches = !it.enableNoInterlacingPatches) }
-                4 -> toggleHardcore()
+            }
+            EmulationMenuTab.Achievements -> when (state.value.selectedAction) {
+                0 -> requestToggleHardcore()
+                1 -> openAchievements()
             }
         }
     }
@@ -119,13 +131,29 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
         InGameOverlay.toggle()
     }
 
+    /**
+     * Item 3: the in-game compact menu only exposes a reduced set of settings. This opens the
+     * FULL per-game settings (every category — OSD, Skins, Audio, Hotkeys, Network, Recompiler,
+     * ...) over the running game via the app-nav's showLibrary layer, scoped to the current game.
+     * Changes live-apply through the settings system while the VM is running.
+     */
+    fun openFullSettings() = com.armsx2.ui.WindowImpl.openInGameScreen(com.armsx2.ui.InGameScreen.Settings)
+
+    /** In-game access to the manager screens the library drawer exposes. */
+    fun openMemcard() = com.armsx2.ui.WindowImpl.openInGameScreen(com.armsx2.ui.InGameScreen.Memcard)
+
+    fun openPatches() = com.armsx2.ui.WindowImpl.openInGameScreen(com.armsx2.ui.InGameScreen.Patches)
+
+    fun openControlsManager() = com.armsx2.ui.WindowImpl.openInGameScreen(com.armsx2.ui.InGameScreen.Controls)
+
     fun saveState() {
         MainActivityRuntime.instance?.saveState()
     }
 
     fun loadState() {
-        MainActivityRuntime.instance?.loadState()
-        resume()
+        // Resume/dismiss only after the state has actually loaded (avoids the race
+        // where the menu resumed the VM before the load landed).
+        MainActivityRuntime.instance?.loadState { resume() }
     }
 
     fun previousSlot() = setSaveSlot((state.value.saveSlot - 1).floorMod(10))
@@ -180,6 +208,30 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
 
     fun setAudioBuffer(value: Int) = updateSettings { it.copy(audioBufferMs = value.coerceIn(10, 200)) }
 
+    /** Universal on-screen-display toggle (old-UI style): flips the perf stats as a
+     *  group; the granular per-stat toggles stay in All Settings. Notifications are
+     *  left alone so achievement/message popups aren't affected. */
+    // The one-tap OSD master mirrors what refresh showed by default: FPS/VPS, speed,
+    // the EE/GS/VU/GPU perf lines, resolution, GS + GPU pipeline stats, frame times,
+    // the hardware-info line, and the "ARMSX2 <version>" banner. Granular control of
+    // each stays in All Settings; the bottom Settings-summary / Inputs overlays are
+    // left out so this can't force those debug strips on.
+    fun setOsdMaster(enabled: Boolean) = updateSettings {
+        it.copy(
+            osdShowFps = enabled,
+            osdShowVps = enabled,
+            osdShowSpeed = enabled,
+            osdShowCpu = enabled,
+            osdShowGpu = enabled,
+            osdShowResolution = enabled,
+            osdShowGsStats = enabled,
+            osdShowFrameTimes = enabled,
+            osdShowHardwareInfo = enabled,
+            osdShowGpuStats = enabled,
+            osdShowVersion = enabled,
+        )
+    }
+
     fun setRumble(enabled: Boolean) {
         ControllerMappings.setRumbleEnabled(enabled)
         NativeApp.sRumbleEnabled = enabled
@@ -202,11 +254,29 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
         state.value = state.value.copy(touchControlsVisible = enabled)
     }
 
-    fun toggleHardcore() {
-        val enabled = !state.value.hardcore
-        NativeApp.setHardcoreMode(enabled)
-        state.value = state.value.copy(hardcore = enabled)
+    // Hardcore toggle is confirmed (both directions): enabling restarts the game and
+    // disables save states/cheats; disabling drops to casual so unlocks stop counting.
+    fun requestToggleHardcore() {
+        state.value = state.value.copy(pendingHardcore = !state.value.hardcore)
     }
+
+    fun confirmToggleHardcore() {
+        val target = state.value.pendingHardcore ?: return
+        NativeApp.setHardcoreMode(target)
+        state.value = state.value.copy(hardcore = target, pendingHardcore = null)
+        // Enabling hardcore only takes hold on a system reset, and the VM is paused
+        // behind this menu — so the native "will be enabled on system reset" toast
+        // just sits there. Reboot now so "Enable & restart" actually restarts.
+        // (Disabling stays live — casual mode applies immediately.)
+        if (target) MainActivityRuntime.restart()
+    }
+
+    fun cancelToggleHardcore() {
+        state.value = state.value.copy(pendingHardcore = null)
+    }
+
+    /** Open the full RetroAchievements screen (list + options) over the paused game. */
+    fun openAchievements() = com.armsx2.ui.WindowImpl.openInGameScreen(com.armsx2.ui.InGameScreen.Achievements)
 
     fun updateSettings(transform: (Settings) -> Settings) {
         val updated = transform(state.value.settings)
@@ -220,6 +290,7 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
         EmulationMenuTab.Performance -> 3
         EmulationMenuTab.Controls -> 2
         EmulationMenuTab.Options -> 5
+        EmulationMenuTab.Achievements -> 2
     }
 
     private fun Int.floorMod(modulus: Int): Int = ((this % modulus) + modulus) % modulus

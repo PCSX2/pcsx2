@@ -59,6 +59,7 @@ import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsBackdrop
 import com.armsx2.ui.common.ArmsLogo
 import com.armsx2.ui.common.StatusChip
+import com.armsx2.ui.common.padFocusRing
 import com.armsx2.ui.theme.Success
 
 private val setupStepKeys = listOf(
@@ -74,11 +75,59 @@ fun OnboardingScreen(viewModel: OnboardingViewModel = viewModel()) {
     val state = viewModel.state.value
     val canContinue = viewModel.canContinue()
     var swipeDistance by remember { mutableFloatStateOf(0f) }
-    val biosPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        uri?.let(viewModel::importBios)
+    // Item 7: BIOS onboarding is folder-based (refresh parity) — pick a folder and
+    // every valid BIOS inside is imported and made available here and in the BIOS
+    // settings tab. The button already reads "Pick a different folder"; this makes
+    // the action match. Single-file import still lives in the BIOS settings tab.
+    val biosPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        uri?.let(viewModel::importBiosFolder)
     }
     val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         uri?.let(viewModel::addGameFolder)
+    }
+    // github flavor only: a third "Custom folder" data-root, with all-files access
+    // (MANAGE_EXTERNAL_STORAGE) like the old UI. The Play build stays SAF-scoped
+    // (Internal / SD only). Flow: grant all-files access if needed → pick a folder →
+    // resolve the tree URI to a POSIX path the native core can write to directly.
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val customFolderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        uri?.let { u ->
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    u,
+                    android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                        android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                )
+            }
+            com.armsx2.runtime.MainActivityRuntime.resolveTreeUriToPosix(u.toString())
+                ?.let(viewModel::selectCustomStorage)
+        }
+    }
+    val allFilesLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R &&
+            android.os.Environment.isExternalStorageManager()
+        ) {
+            customFolderPicker.launch(null)
+        }
+    }
+    val onCustomStorage: () -> Unit = {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R &&
+            !android.os.Environment.isExternalStorageManager()
+        ) {
+            val manageIntent = android.content.Intent(
+                android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                android.net.Uri.parse("package:${context.packageName}"),
+            )
+            runCatching { allFilesLauncher.launch(manageIntent) }.onFailure {
+                runCatching {
+                    allFilesLauncher.launch(
+                        android.content.Intent(android.provider.Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION),
+                    )
+                }
+            }
+        } else {
+            customFolderPicker.launch(null)
+        }
     }
 
     LaunchedEffect(Unit) { viewModel.load() }
@@ -134,8 +183,8 @@ fun OnboardingScreen(viewModel: OnboardingViewModel = viewModel()) {
                         ) { page ->
                             PageViewport(compact = false) {
                                 WizardPage(page, state, viewModel, showWelcomeLogo = false, biosPicker = {
-                                    biosPicker.launch(arrayOf("application/octet-stream", "*/*"))
-                                }, folderPicker = { folderPicker.launch(null) })
+                                    biosPicker.launch(null)
+                                }, folderPicker = { folderPicker.launch(null) }, onCustomStorage = onCustomStorage)
                             }
                         }
                         NavigationBar(
@@ -174,8 +223,8 @@ fun OnboardingScreen(viewModel: OnboardingViewModel = viewModel()) {
                     ) { page ->
                         PageViewport(compact = true) {
                             WizardPage(page, state, viewModel, showWelcomeLogo = true, biosPicker = {
-                                biosPicker.launch(arrayOf("application/octet-stream", "*/*"))
-                            }, folderPicker = { folderPicker.launch(null) })
+                                biosPicker.launch(null)
+                            }, folderPicker = { folderPicker.launch(null) }, onCustomStorage = onCustomStorage)
                         }
                     }
                     NavigationBar(
@@ -209,11 +258,12 @@ private fun WizardPage(
     showWelcomeLogo: Boolean,
     biosPicker: () -> Unit,
     folderPicker: () -> Unit,
+    onCustomStorage: () -> Unit,
 ) {
     when (page) {
         0 -> WelcomePage(compact = true, showLogo = showWelcomeLogo)
-        1 -> StoragePage(state, compact = true, viewModel::selectStorage)
-        2 -> BiosPage(state, compact = true, onPick = biosPicker)
+        1 -> StoragePage(state, compact = true, viewModel::selectStorage, onCustomStorage)
+        2 -> BiosPage(state, compact = true, onPick = biosPicker, onSelectBios = viewModel::selectBiosCandidate)
         3 -> GamesPage(state, folderPicker, viewModel::removeGameFolder)
         else -> ReadyPage(state, compact = true)
     }
@@ -339,15 +389,20 @@ private fun SetupBenefit(number: String, text: String, modifier: Modifier = Modi
 }
 
 @Composable
-private fun StoragePage(state: OnboardingUiState, compact: Boolean, onSelect: (StorageLocation) -> Unit) {
+private fun StoragePage(
+    state: OnboardingUiState,
+    compact: Boolean,
+    onSelect: (StorageLocation) -> Unit,
+    onCustom: () -> Unit,
+) {
     SetupPage(str("setup.step.appData.title"), str("setup.step.appData.description.play")) {
         if (compact) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                StorageChoices(state, onSelect)
+                StorageChoices(state, onSelect, onCustom)
             }
         } else {
             Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                StorageChoices(state, onSelect)
+                StorageChoices(state, onSelect, onCustom)
             }
         }
     }
@@ -357,6 +412,7 @@ private fun StoragePage(state: OnboardingUiState, compact: Boolean, onSelect: (S
 private fun androidx.compose.foundation.layout.ColumnScope.StorageChoices(
     state: OnboardingUiState,
     onSelect: (StorageLocation) -> Unit,
+    onCustom: () -> Unit,
 ) {
     ChoiceCard(
         title = str("setup.storageChooser.internalShort"),
@@ -374,12 +430,24 @@ private fun androidx.compose.foundation.layout.ColumnScope.StorageChoices(
         onClick = { onSelect(StorageLocation.SdCard) },
         modifier = Modifier.fillMaxWidth(),
     )
+    // github APK only: custom folder with all-files access (like the old UI).
+    if (com.armsx2.BuildConfig.STORAGE_ALL_FILES) {
+        ChoiceCard(
+            title = str("setup.storageChooser.customShort"),
+            detail = str("setup.storageChooser.customSubtitle"),
+            glyph = "▦",
+            selected = state.systemLocation == StorageLocation.Custom,
+            onClick = onCustom,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
 }
 
 @Composable
 private fun androidx.compose.foundation.layout.RowScope.StorageChoices(
     state: OnboardingUiState,
     onSelect: (StorageLocation) -> Unit,
+    onCustom: () -> Unit,
 ) {
     ChoiceCard(
         title = str("setup.storageChooser.internalShort"),
@@ -397,37 +465,69 @@ private fun androidx.compose.foundation.layout.RowScope.StorageChoices(
         onClick = { onSelect(StorageLocation.SdCard) },
         modifier = Modifier.weight(1f),
     )
+    if (com.armsx2.BuildConfig.STORAGE_ALL_FILES) {
+        ChoiceCard(
+            title = str("setup.storageChooser.customShort"),
+            detail = str("setup.storageChooser.customSubtitle"),
+            glyph = "▦",
+            selected = state.systemLocation == StorageLocation.Custom,
+            onClick = onCustom,
+            modifier = Modifier.weight(1f),
+        )
+    }
 }
 
 @Composable
-private fun BiosPage(state: OnboardingUiState, compact: Boolean, onPick: () -> Unit) {
+private fun BiosPage(state: OnboardingUiState, compact: Boolean, onPick: () -> Unit, onSelectBios: (BiosCandidate) -> Unit) {
     SetupPage(str("setup.page.bios.title"), str("setup.step.bios.description")) {
-        if (state.biosInfo == null) {
-            ChoiceCard(
-                title = str("setup.bios.selectTitle"),
-                detail = str("setup.step.bios.description"),
-                glyph = "◉",
-                selected = false,
-                onClick = onPick,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        } else {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)),
-            ) {
-                if (compact) {
-                    Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        BiosDetails(state)
-                        OutlinedButton(onClick = onPick, modifier = Modifier.fillMaxWidth()) { Text(str("setup.button.pickDifferentFolder")) }
+        when {
+            state.biosInfo == null -> {
+                ChoiceCard(
+                    title = str("setup.bios.selectTitle"),
+                    detail = str("setup.step.bios.description"),
+                    glyph = "◉",
+                    selected = false,
+                    onClick = onPick,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            // A folder import turned up several BIOSes — let the user pick the active
+            // one right here instead of accepting the auto-selected first entry.
+            state.biosOptions.size > 1 -> {
+                Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                    Text(
+                        "${state.biosOptions.size} ${str("setup.bios.multipleFound")}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    state.biosOptions.forEach { candidate ->
+                        BiosOptionRow(
+                            candidate = candidate,
+                            selected = candidate.path == state.selectedBiosPath,
+                            onClick = { onSelectBios(candidate) },
+                        )
                     }
-                } else {
-                    Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
-                        BiosDetails(state, Modifier.weight(1f))
-                        Spacer(Modifier.width(14.dp))
-                        OutlinedButton(onClick = onPick) { Text(str("setup.button.choose")) }
+                    OutlinedButton(onClick = onPick, modifier = Modifier.fillMaxWidth()) { Text(str("setup.button.pickDifferentFolder")) }
+                }
+            }
+            else -> {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)),
+                ) {
+                    if (compact) {
+                        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            BiosDetails(state)
+                            OutlinedButton(onClick = onPick, modifier = Modifier.fillMaxWidth()) { Text(str("setup.button.pickDifferentFolder")) }
+                        }
+                    } else {
+                        Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f)) { BiosDetails(state) }
+                            Spacer(Modifier.width(14.dp))
+                            OutlinedButton(onClick = onPick) { Text(str("setup.button.choose")) }
+                        }
                     }
                 }
             }
@@ -438,6 +538,39 @@ private fun BiosPage(state: OnboardingUiState, compact: Boolean, onPick: () -> U
                 CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                 Spacer(Modifier.width(10.dp))
                 Text(str("setup.bios.scanning"), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+@Composable
+private fun BiosOptionRow(candidate: BiosCandidate, selected: Boolean, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+        border = BorderStroke(
+            1.dp,
+            if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+        ),
+    ) {
+        Row(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(candidate.info.regionFlag, fontSize = 26.sp)
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(candidate.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    listOfNotNull(candidate.info.description, candidate.info.versionString).joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            if (selected) {
+                Spacer(Modifier.width(10.dp))
+                StatusChip(str("setup.status.biosSelected"), Success)
             }
         }
     }
@@ -493,13 +626,13 @@ private fun ReadyPage(state: OnboardingUiState, compact: Boolean) {
     SetupPage(str("setup.button.applyFinish"), str("games.scanningRoms")) {
         if (compact) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                SummaryCard(str("setup.step.appData.title"), if (state.systemLocation == StorageLocation.Internal) str("setup.storageChooser.internalShort") else str("setup.systemDir.sdCard"))
+                SummaryCard(str("setup.step.appData.title"), when (state.systemLocation) { StorageLocation.Internal -> str("setup.storageChooser.internalShort"); StorageLocation.SdCard -> str("setup.systemDir.sdCard"); StorageLocation.Custom -> str("setup.storageChooser.customShort") })
                 SummaryCard(str("setup.step.bios.title"), state.biosInfo?.versionString ?: str("setup.status.notSelected"))
                 SummaryCard(str("setup.step.rom.title"), state.gameFolders.size.toString())
             }
         } else {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                SummaryCard(str("setup.step.appData.title"), if (state.systemLocation == StorageLocation.Internal) str("setup.storageChooser.internalShort") else str("setup.systemDir.sdCard"), Modifier.weight(1f))
+                SummaryCard(str("setup.step.appData.title"), when (state.systemLocation) { StorageLocation.Internal -> str("setup.storageChooser.internalShort"); StorageLocation.SdCard -> str("setup.systemDir.sdCard"); StorageLocation.Custom -> str("setup.storageChooser.customShort") }, Modifier.weight(1f))
                 SummaryCard(str("setup.step.bios.title"), state.biosInfo?.versionString ?: str("setup.status.notSelected"), Modifier.weight(1f))
                 SummaryCard(str("setup.step.rom.title"), state.gameFolders.size.toString(), Modifier.weight(1f))
             }
@@ -529,7 +662,8 @@ private fun ChoiceCard(
 ) {
     Surface(
         onClick = onClick,
-        modifier = modifier.defaultMinSize(minHeight = 96.dp),
+        modifier = modifier.defaultMinSize(minHeight = 96.dp)
+            .padFocusRing(RoundedCornerShape(20.dp)),
         shape = RoundedCornerShape(20.dp),
         color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
         border = BorderStroke(

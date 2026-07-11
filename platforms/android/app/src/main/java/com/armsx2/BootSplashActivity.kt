@@ -126,7 +126,15 @@ class BootSplashActivity : ComponentActivity() {
         launch.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         startActivity(launch)
         finish()
-        overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, 0, 0)
+        // overrideActivityTransition is API 34 (Android 14); on 13 and below it
+        // throws NoSuchMethodError (crashed the splash on the Retroid). Fall back to
+        // the deprecated overridePendingTransition there.
+        if (android.os.Build.VERSION.SDK_INT >= 34) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, 0, 0)
+        } else {
+            @Suppress("DEPRECATION")
+            overridePendingTransition(0, 0)
+        }
     }
 
     private companion object {

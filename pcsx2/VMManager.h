@@ -305,6 +305,11 @@ namespace VMManager
 		/// can pin onto the same cluster. Returns 0 when pinning is off / unresolved.
 		u64 GetPerformanceClusterAffinityMask();
 
+		/// Android: affinity mask of the performance ("big") CPU cluster hosting the
+		/// EE/VU/GS threads, so adjacent helper threads (e.g. the Oboe audio callback)
+		/// can pin onto the same cluster. Returns 0 when pinning is off / unresolved.
+		u64 GetPerformanceClusterAffinityMask();
+
 		/// Resets any state for hotkey-related VMs, called on VM startup.
 		void ResetVMHotkeyState();
 
@@ -337,6 +342,11 @@ namespace VMManager
 
 		/// Returns a list of processors in the system, suitable for pinning for the software renderer.
 		const std::vector<u32>& GetSoftwareRendererProcessorList();
+
+		/// Diagnostic (OSD): where the EE/VU/GS threads are actually running (current core +
+		/// affinity mask) plus the cpuinfo cluster/frequency topology. Used to see whether the
+		/// worker threads are being scheduled onto slow cores / clamped by a cpuset.
+		std::string GetThreadPlacementDebug();
 
 		/// Diagnostic (OSD): where the EE/VU/GS threads are actually running (current core +
 		/// affinity mask) plus the cpuinfo cluster/frequency topology. Used to see whether the

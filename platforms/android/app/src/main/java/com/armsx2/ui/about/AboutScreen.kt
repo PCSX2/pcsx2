@@ -35,7 +35,7 @@ import com.armsx2.ui.common.ArmsTopBar
 import com.armsx2.ui.common.GlassPanel
 import com.armsx2.ui.common.RoundAction
 
-private const val RepositoryUrl = "https://github.com/jpolo1224/pcsx2"
+private const val RepositoryUrl = "https://github.com/ARMSX2/ARMSX2"
 
 @Composable
 fun AboutScreen(onBack: () -> Unit, viewModel: AboutViewModel = viewModel()) {
@@ -120,7 +120,7 @@ private fun RepositoryCard(onOpen: () -> Unit) {
             Column(Modifier.weight(1f)) {
                 Text(str("about.repository.title"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text(
-                    "jpolo1224/pcsx2",
+                    "ARMSX2/ARMSX2",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
                     maxLines = 1,

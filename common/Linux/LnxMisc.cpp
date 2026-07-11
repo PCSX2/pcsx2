@@ -145,6 +145,7 @@ std::string GetOSVersionString()
 }
 
 #if !defined(__ANDROID__)
+#if !defined(__ANDROID__)
 static bool SetScreensaverInhibitDBus(const bool inhibit_requested, const char* program_name, const char* reason)
 {
 	static dbus_uint32_t s_cookie;

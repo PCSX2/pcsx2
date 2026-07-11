@@ -109,7 +109,16 @@ internal object SettingsControllerNav {
         val onConfirm: (() -> Unit)?,
         val onLeft: (() -> Unit)?,
         val onRight: (() -> Unit)?,
+        val layer: String? = null,
     )
+
+    // Exclusive input layer. When non-null (e.g. the nav drawer is open), only
+    // items registered with that layer participate in nav — otherwise the drawer
+    // selection could "escape" into the still-composed screen behind it.
+    val activeLayer = mutableStateOf<String?>(null)
+
+    private fun inActiveLayer(id: String): Boolean =
+        registry[id]?.layer == activeLayer.value
 
     private var scopeKey: String = ""
     // Persistent registry keyed by row id. Each row UPSERTS its latest closures
@@ -148,12 +157,13 @@ internal object SettingsControllerNav {
         val effY = HashMap<String, Float>(registry.size)
         val idx = HashMap<String, Int>(registry.size)
         var i = 0
-        for (id in registry.keys) {
+        val layerIds = registry.keys.filter { inActiveLayer(it) }
+        for (id in layerIds) {
             positions[id]?.first?.let { lastY = it }
             effY[id] = lastY
             idx[id] = i++
         }
-        return registry.keys.sortedWith(
+        return layerIds.sortedWith(
             compareBy(
                 { effY[it] ?: 0f },
                 { positions[it]?.second ?: 0f },
@@ -177,10 +187,11 @@ internal object SettingsControllerNav {
         onConfirm: (() -> Unit)? = null,
         onLeft: (() -> Unit)? = null,
         onRight: (() -> Unit)? = null,
+        layer: String? = null,
     ) {
         // Upsert — replacing an existing key keeps its insertion order (stable
         // visual order) while refreshing the closures to the current value.
-        registry[id] = Item(id, onConfirm, onLeft, onRight)
+        registry[id] = Item(id, onConfirm, onLeft, onRight, layer)
         if (selectedId.value == id)
             selectedIndex.intValue = orderedIds().indexOf(id)
     }
@@ -204,7 +215,13 @@ internal object SettingsControllerNav {
         scrollVelocity.floatValue = 0f
     }
 
-    fun hasItems(): Boolean = registry.isNotEmpty()
+    fun hasItems(): Boolean = registry.keys.any { inActiveLayer(it) }
+
+    /** True when a registered item in the active layer is currently highlighted —
+     *  i.e. the registry "lane" owns D-pad focus (used by the home screen to split
+     *  input between the cover grid and the toolbar/recents lane). */
+    fun hasSelection(): Boolean =
+        selectedId.value?.let { registry.containsKey(it) && inActiveLayer(it) } == true
 
     /** Number of registered focusable items in the current scope. Used by the
      *  achievements panel nav to know when Down off the last control above the
@@ -364,6 +381,7 @@ internal fun Modifier.controllerFocusable(
     onConfirm: (() -> Unit)? = null,
     onLeft: (() -> Unit)? = null,
     onRight: (() -> Unit)? = null,
+    layer: String? = null,
 ): Modifier = composed {
     var focused by remember { mutableStateOf(false) }
     val bringIntoView = remember { BringIntoViewRequester() }
@@ -378,6 +396,7 @@ internal fun Modifier.controllerFocusable(
                 onConfirm = onConfirm,
                 onLeft = onLeft,
                 onRight = onRight,
+                layer = layer,
             )
         }
         DisposableEffect(controllerId) {
@@ -411,8 +430,21 @@ internal fun Modifier.controllerFocusable(
                     onConfirm?.invoke()
                     onConfirm != null
                 }
-                AndroidKeyEvent.KEYCODE_DPAD_LEFT,
-                AndroidKeyEvent.KEYCODE_DPAD_RIGHT -> false
+                // Left/Right adjust the value in place (stepper −/+, toggle off/on,
+                // dropdown prev/next) when this row has an adjust handler. Consumed
+                // only when a handler exists, so plain nav rows still let Left/Right
+                // move focus. This is what makes sliders/steppers adjustable with a
+                // controller when the row is driven by Compose focus (the settings
+                // hub) rather than the registry's own adjust() path (the memcard
+                // dialog, which consumes these keys upstream in the router).
+                AndroidKeyEvent.KEYCODE_DPAD_LEFT -> {
+                    onLeft?.invoke()
+                    onLeft != null
+                }
+                AndroidKeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    onRight?.invoke()
+                    onRight != null
+                }
                 else -> false
             }
         }

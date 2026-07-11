@@ -45,7 +45,7 @@ fun RendererBackendSection(state: MutableState<Settings>) {
 
     if (settings.renderer == "vulkan") {
         SettingsDivider()
-        DriverSelector()
+        com.armsx2.ui.common.DriverManagerSection()
     }
 
     SettingsDivider()
@@ -55,57 +55,6 @@ fun RendererBackendSection(state: MutableState<Settings>) {
     ) {
         OutlinedButton(onClick = MainActivityRuntime::restart, shape = RoundedCornerShape(13.dp)) {
             Text(str("backend.applyRestart"))
-        }
-    }
-}
-
-@Composable
-private fun DriverSelector() {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val installed = androidx.compose.runtime.remember { mutableStateListOf<CustomDriver.InstalledDriver>() }
-    LaunchedEffect(Unit) {
-        installed.clear()
-        installed.addAll(CustomDriver.listInstalled(context))
-    }
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionTitle(str("backend.gpuDriver.label"), str("backend.gpuDriver.description"))
-        DriverChoice(
-            title = str("backend.driver.systemVulkan"),
-            subtitle = str("renderer.orientation.device"),
-            selected = MainActivityRuntime.customDriverId.value == null,
-            onClick = { selectDriver(null) },
-        )
-        installed.forEach { driver ->
-            DriverChoice(
-                title = driver.name,
-                subtitle = listOf(driver.vendor, driver.version).filter(String::isNotBlank).joinToString(" · ").ifBlank { str("backend.driver.installed") },
-                selected = MainActivityRuntime.customDriverId.value == driver.id,
-                onClick = { selectDriver(driver.id) },
-            )
-        }
-    }
-}
-
-@Composable
-private fun DriverChoice(
-    title: String,
-    subtitle: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
-    Surface(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-        border = BorderStroke(1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)),
-    ) {
-        Row(Modifier.padding(13.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleMedium)
-                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            if (selected) StatusChip(str("backend.driver.active"), Success)
         }
     }
 }

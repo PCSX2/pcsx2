@@ -51,6 +51,11 @@ fun BiosManagerScreen(onBack: () -> Unit, viewModel: BiosManagerViewModel = view
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let(viewModel::import)
     }
+    // Item 7: folder-import — point at a folder of BIOSes; all valid ones are imported and shown
+    // in the list below to choose between (refresh parity).
+    val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        uri?.let(viewModel::importFolder)
+    }
     LaunchedEffect(Unit) { viewModel.refresh() }
 
     ArmsBackdrop {
@@ -65,6 +70,7 @@ fun BiosManagerScreen(onBack: () -> Unit, viewModel: BiosManagerViewModel = view
                     leading = { RoundAction("‹", str("action.back"), onBack) },
                     actions = {
                         RoundAction("＋", str("action.import"), { picker.launch(arrayOf("application/octet-stream", "*/*")) })
+                        RoundAction("📁", str("action.importFolder"), { folderPicker.launch(null) })
                         RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
                     },
                     horizontalPadding = 0.dp,

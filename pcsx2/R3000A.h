@@ -193,6 +193,9 @@ extern R3000Acpu psxRec;
 extern void psxReset();
 extern void psxException(u32 code, u32 step);
 extern void iopEventTest();
+// Single IOP interpreter step (execI wrapper); consumed by the arm64 IOP recompiler's
+// interpreter-fallback path. Defined in R3000AInterpreter.cpp.
+extern void iopExecuteOneInst();
 
 int psxIsBreakpointNeeded(u32 addr);
 int psxIsMemcheckNeeded(u32 pc);

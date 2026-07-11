@@ -60,6 +60,31 @@ class BiosManagerViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    /**
+     * Item 7: import every valid PS2 BIOS from a chosen folder in one shot (refresh parity — the
+     * old UI let you point at a BIOS folder and pick between them, not import one file at a time).
+     * Non-BIOS files are silently skipped (importFile validates via getBiosInfoFromFd); the existing
+     * list + "Use selected" UI then lets the user choose between the imported BIOSes.
+     */
+    fun importFolder(treeUri: Uri) {
+        scope.launch {
+            state.value = state.value.copy(busy = true, error = null)
+            val imported = withContext(Dispatchers.IO) {
+                val context = getApplication<Application>()
+                var count = 0
+                DocumentFile.fromTreeUri(context, treeUri)?.listFiles()?.forEach { child ->
+                    if (child.isFile && importFile(child.uri).isSuccess) count++
+                }
+                count
+            }
+            if (imported == 0) {
+                state.value = state.value.copy(busy = false, error = "No valid PlayStation 2 BIOS found in that folder.")
+            } else {
+                refresh()
+            }
+        }
+    }
+
     fun select(file: File) {
         MainActivityRuntime.bios.value = file.absolutePath
         MainActivityRuntime.prefs.edit().putString("bios", file.absolutePath).apply()

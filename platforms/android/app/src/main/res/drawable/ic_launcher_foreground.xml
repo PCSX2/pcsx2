@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <path
-        android:fillColor="#4C8DFF"
-        android:pathData="M54,18 L86,84 L70,84 L63,68 L45,68 L38,84 L22,84 Z" />
-    <path
-        android:fillColor="#01071C"
-        android:pathData="M54,40 L47.5,56 L60.5,56 Z" />
-    <path
-        android:fillColor="#48D7F0"
-        android:pathData="M31,49 L43,49 L43,54 L31,54 Z M34.5,45.5 L39.5,45.5 L39.5,57.5 L34.5,57.5 Z" />
-    <path
-        android:fillColor="#48D7F0"
-        android:pathData="M72,47 A4,4 0,1 0,72.01 47 M79,54 A4,4 0,1 0,79.01 54" />
-</vector>
+<!--
+  savetowerforeground is a fully pre-composed icon (tower + its own dark radial
+  background) that fills the whole 1024px square. Dropping it straight into an
+  adaptive-icon <foreground> with gravity="fill" stretches it across the entire
+  108dp layer, so the launcher mask (which only shows the centre ~72dp safe zone)
+  crops the dark margins and zooms hard into the tower. Inset the artwork so the
+  full composition lands inside the safe zone and the tower keeps its breathing
+  room; the ~18% margin shows the solid #01071C adaptive background, which matches
+  the artwork's dark edges so the seam is invisible.
+-->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:inset="18%">
+    <bitmap
+        android:antialias="true"
+        android:dither="true"
+        android:gravity="fill"
+        android:src="@drawable/savetowerforeground" />
+</inset>

@@ -22,6 +22,7 @@ sealed interface AppRoute {
 
 enum class SettingsCategory {
     General,
+    Info,
     Performance,
     Graphics,
     Audio,

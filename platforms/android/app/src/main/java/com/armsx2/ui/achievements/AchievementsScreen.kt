@@ -112,6 +112,20 @@ fun AchievementsScreen(onBack: () -> Unit, viewModel: AchievementsViewModel = vi
             confirmButton = { TextButton(onClick = viewModel::dismissError) { Text(str("action.ok")) } },
         )
     }
+
+    state.pendingHardcore?.let { enabling ->
+        AlertDialog(
+            onDismissRequest = viewModel::cancelToggleHardcore,
+            title = { Text(str(if (enabling) "ra.hardcore.enable.title" else "ra.hardcore.disable.title")) },
+            text = { Text(str(if (enabling) "ra.hardcore.enable.body" else "ra.hardcore.disable.body")) },
+            confirmButton = {
+                TextButton(onClick = viewModel::confirmToggleHardcore) {
+                    Text(str(if (enabling) "ra.hardcore.enable.confirm" else "ra.hardcore.disable.confirm"))
+                }
+            },
+            dismissButton = { TextButton(onClick = viewModel::cancelToggleHardcore) { Text(str("action.cancel")) } },
+        )
+    }
 }
 
 @Composable
@@ -131,7 +145,37 @@ private fun AchievementAccount(
                 title = str("ra.mode.hardcore"),
                 description = str("patches.hardcoreNoticeCheatsDisabled"),
                 checked = state.hardcore,
-                onCheckedChange = { viewModel.toggleHardcore() },
+                onCheckedChange = { viewModel.requestToggleHardcore() },
+            )
+            SettingSwitchRow(
+                title = str("ra.options.unlockNotifications"),
+                description = str("ra.options.unlockNotifications.desc"),
+                checked = state.notifications,
+                onCheckedChange = { viewModel.setOption("notifications", it) },
+            )
+            SettingSwitchRow(
+                title = str("ra.options.leaderboardNotifications"),
+                description = str("ra.options.leaderboardNotifications.desc"),
+                checked = state.leaderboardNotifications,
+                onCheckedChange = { viewModel.setOption("leaderboardNotifications", it) },
+            )
+            SettingSwitchRow(
+                title = str("ra.options.inGameIndicators"),
+                description = str("ra.options.inGameIndicators.desc"),
+                checked = state.overlays,
+                onCheckedChange = { viewModel.setOption("overlays", it) },
+            )
+            SettingSwitchRow(
+                title = str("ra.options.leaderboardTrackers"),
+                description = str("ra.options.leaderboardTrackers.desc"),
+                checked = state.lbOverlays,
+                onCheckedChange = { viewModel.setOption("lbOverlays", it) },
+            )
+            SettingSwitchRow(
+                title = str("ra.options.soundEffects"),
+                description = str("ra.options.soundEffects.desc"),
+                checked = state.soundEffects,
+                onCheckedChange = { viewModel.setOption("soundEffects", it) },
             )
             TextButton(onClick = viewModel::logout) { Text(str("ra.account.logout")) }
         }
