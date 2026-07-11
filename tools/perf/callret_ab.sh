@@ -62,6 +62,9 @@ for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
 	echo performance > "$g" 2>/dev/null
 done
 
+# Rocknix device: the eerunner binaries need the bundled libs (libjpeg/lz4).
+[ -d /storage/pcsx2/lib ] && export LD_LIBRARY_PATH=/storage/pcsx2/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+
 # One event set, no multiplexing on A77 (6 programmable + fixed cycles):
 EVENTS="cycles,instructions,r21,r22,r78,r79"
 TASKSET=""
