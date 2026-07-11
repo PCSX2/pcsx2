@@ -52,8 +52,7 @@ import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsLogo
 import com.armsx2.ui.common.StatusChip
-import com.armsx2.ui.common.initialPadFocus
-import com.armsx2.ui.common.padFocusRing
+import com.armsx2.ui.settings.controllerFocusable
 
 private data class DrawerItem(
     val titleKey: String,
@@ -151,7 +150,7 @@ private fun DrawerContent(selected: AppRoute, onNavigate: (AppRoute) -> Unit) {
         Spacer(Modifier.height(14.dp))
         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f))
         Spacer(Modifier.height(14.dp))
-        DrawerRow("ARMSX2", "ⓘ", selected is AppRoute.About, onClick = { onNavigate(AppRoute.About) })
+        DrawerRow("drawer.About", "ARMSX2", "ⓘ", selected is AppRoute.About, onClick = { onNavigate(AppRoute.About) })
     }
 }
 
@@ -172,10 +171,10 @@ private fun DrawerSection(
     )
     items.forEachIndexed { index, item ->
         DrawerRow(
+            controllerId = "drawer.${item.destination::class.simpleName}",
             title = str(item.titleKey),
             glyph = item.glyph,
             selected = sameDestination(selected, item.destination),
-            initialFocus = focusFirst && index == 0,
             onClick = { onNavigate(item.destination) },
         )
     }
@@ -183,10 +182,10 @@ private fun DrawerSection(
 
 @Composable
 private fun DrawerRow(
+    controllerId: String,
     title: String,
     glyph: String,
     selected: Boolean,
-    initialFocus: Boolean = false,
     onClick: () -> Unit,
 ) {
     val contentColor = when {
@@ -196,8 +195,7 @@ private fun DrawerRow(
     Surface(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-            .then(if (initialFocus) Modifier.initialPadFocus() else Modifier)
-            .padFocusRing(RoundedCornerShape(18.dp)),
+            .controllerFocusable(controllerId, RoundedCornerShape(18.dp), onConfirm = onClick),
         shape = RoundedCornerShape(18.dp),
         color = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
     ) {

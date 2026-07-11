@@ -55,6 +55,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -213,14 +214,29 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
+                    // Register the toolbar button actions (left→right order) so the
+                    // controller's toolbar zone can fire them, and read the highlight
+                    // state so the focused button lights up.
+                    HomeInputController.setToolbarActions(
+                        listOf(
+                            onOpenMenu,
+                            { viewModel.refresh() },
+                            { sortMenu = true },
+                            { viewModel.toggleLayout() },
+                            { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
+                            { bgMenu = true },
+                        ),
+                    )
+                    val tb = HomeInputController.toolbarFocused.value
+                    val tbi = HomeInputController.toolbarIndex.intValue
                     ArmsTopBar(
                         title = str("games.section.library"),
                         subtitle = if (state.scanning) str("games.scanningRoms") else state.allGames.size.toString(),
-                        leading = { RoundAction("☰", str("games.nav.library"), onOpenMenu) },
+                        leading = { RoundAction("☰", str("games.nav.library"), onOpenMenu, selected = tb && tbi == 0) },
                         actions = {
-                            RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
+                            RoundAction("↻", str("games.card.refresh"), viewModel::refresh, selected = tb && tbi == 1)
                             Box {
-                                RoundAction("⇅", str("games.toolbar.recent"), { sortMenu = true })
+                                RoundAction("⇅", str("games.toolbar.recent"), { sortMenu = true }, selected = tb && tbi == 2)
                                 SortMenu(sortMenu, state.sort, viewModel::setSort) { sortMenu = false }
                             }
                             RoundAction(
@@ -231,6 +247,7 @@ fun HomeScreen(
                                 },
                                 str("games.toolbar.rows"),
                                 viewModel::toggleLayout,
+                                selected = tb && tbi == 3,
                             )
                             // 3D box-art covers vs flat 2D scans (xlenore covers/3d).
                             // Shows the current mode (like the layout toggle), tap to flip.
@@ -238,9 +255,10 @@ fun HomeScreen(
                                 if (CoverArtStyle.use3d.value) "3D" else "2D",
                                 str("games.toolbar.covers3d"),
                                 { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
+                                selected = tb && tbi == 4,
                             )
                             Box {
-                                RoundAction("▧", str("games.toolbar.background"), { bgMenu = true })
+                                RoundAction("▧", str("games.toolbar.background"), { bgMenu = true }, selected = tb && tbi == 5)
                                 DropdownMenu(expanded = bgMenu, onDismissRequest = { bgMenu = false }) {
                                     DropdownMenuItem(
                                         text = { Text(str("games.background.choose")) },
@@ -648,6 +666,17 @@ object HomeInputController {
     private var columns = 3
     val scrollVelocity = mutableFloatStateOf(0f)
 
+    // Top-toolbar zone. The cover grid is data-driven (owner.selectedIndex), but the
+    // toolbar (refresh / sort / layout / 2D-3D / background, plus the leading menu
+    // button) sits above it and can't be part of that index space. So the toolbar is
+    // a separate "zone": pressing Up from the grid's top row focuses it, Left/Right
+    // move between its buttons, A fires the highlighted one, Down drops back to the
+    // grid. HomeScreen registers the button actions and reads `toolbarFocused` /
+    // `toolbarIndex` to draw the highlight.
+    val toolbarFocused = mutableStateOf(false)
+    val toolbarIndex = mutableIntStateOf(0)
+    private var toolbarActions: List<() -> Unit> = emptyList()
+
     fun bind(viewModel: HomeViewModel, onOpenMenu: () -> Unit) {
         owner = viewModel
         openMenu = onOpenMenu
@@ -658,14 +687,37 @@ object HomeInputController {
             owner = null
             openMenu = null
             scrollVelocity.floatValue = 0f
+            toolbarFocused.value = false
         }
     }
 
     fun setColumnCount(value: Int) { columns = value.coerceAtLeast(1) }
     fun active(): Boolean = owner != null
 
+    /** HomeScreen registers the toolbar button actions here, in visual left→right
+     *  order (leading menu button first). */
+    fun setToolbarActions(actions: List<() -> Unit>) { toolbarActions = actions }
+
+    private fun atTopRow(): Boolean {
+        val vm = owner ?: return false
+        return vm.state.value.selectedIndex < columns
+    }
+
     fun move(dx: Int, dy: Int): Boolean {
         val viewModel = owner ?: return false
+        if (toolbarFocused.value) {
+            when {
+                dy > 0 -> toolbarFocused.value = false            // Down → back to grid
+                dx != 0 && toolbarActions.isNotEmpty() ->
+                    toolbarIndex.intValue = (toolbarIndex.intValue + dx).coerceIn(0, toolbarActions.lastIndex)
+            }
+            return true
+        }
+        // Up from the top cover row jumps into the toolbar.
+        if (dy < 0 && atTopRow() && toolbarActions.isNotEmpty()) {
+            toolbarFocused.value = true
+            return true
+        }
         val delta = when {
             dx < 0 -> -1
             dx > 0 -> 1
@@ -679,6 +731,10 @@ object HomeInputController {
 
     fun confirm(): Boolean {
         val viewModel = owner ?: return false
+        if (toolbarFocused.value) {
+            toolbarActions.getOrNull(toolbarIndex.intValue)?.invoke()
+            return true
+        }
         val game = viewModel.selectedGame() ?: return false
         viewModel.launch(game)
         return true
@@ -697,6 +753,11 @@ object HomeInputController {
     }
 
     fun back(): Boolean {
+        // B while the toolbar is focused just drops back to the grid.
+        if (toolbarFocused.value) {
+            toolbarFocused.value = false
+            return true
+        }
         openMenu?.invoke() ?: return false
         return true
     }
@@ -750,7 +811,13 @@ private fun GameShelf(
         Image(
             painter = painterResource(shelfRes),
             contentDescription = null,
-            modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(plankHeight),
+            // The shelf PNG carries a ~1.1% transparent/faded margin on each side, so
+            // when stretched full-width its *visible* plank edge sits ~11dp inset while
+            // the first/last covers reach the screen edge — making them overhang the
+            // shelf's faded end. Scale the plank out ~5% horizontally so its solid
+            // surface bleeds to (past) the screen edges and the covers sit on it.
+            modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(plankHeight)
+                .graphicsLayer { scaleX = 1.05f },
             contentScale = ContentScale.FillBounds,
         )
         if (scroll) {

@@ -28,6 +28,7 @@ import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsBackdrop
 import com.armsx2.ui.common.ArmsTopBar
 import com.armsx2.ui.common.RoundAction
+import com.armsx2.ui.settings.controllerFocusable
 
 @Composable
 fun LanguageScreen(
@@ -52,7 +53,7 @@ fun LanguageScreen(
                     val selected = language.code == I18n.current
                     Surface(
                         onClick = { viewModel.select(language.code) },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp).controllerFocusable("lang.${language.code}", RoundedCornerShape(12.dp), onConfirm = { viewModel.select(language.code) }),
                         shape = RoundedCornerShape(18.dp),
                         color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
                         border = BorderStroke(

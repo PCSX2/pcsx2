@@ -53,6 +53,7 @@ import com.armsx2.ui.common.RoundAction
 import com.armsx2.ui.common.SectionTitle
 import com.armsx2.ui.common.SettingSwitchRow
 import com.armsx2.ui.common.StatusChip
+import com.armsx2.ui.settings.controllerFocusable
 import com.armsx2.ui.theme.Success
 import kotlinx.coroutines.delay
 
@@ -146,38 +147,77 @@ private fun AchievementAccount(
                 description = str("patches.hardcoreNoticeCheatsDisabled"),
                 checked = state.hardcore,
                 onCheckedChange = { viewModel.requestToggleHardcore() },
+                modifier = Modifier.controllerFocusable(
+                    "ra.hardcore",
+                    onConfirm = { viewModel.requestToggleHardcore() },
+                    onLeft = { if (state.hardcore) viewModel.requestToggleHardcore() },
+                    onRight = { if (!state.hardcore) viewModel.requestToggleHardcore() },
+                ),
             )
             SettingSwitchRow(
                 title = str("ra.options.unlockNotifications"),
                 description = str("ra.options.unlockNotifications.desc"),
                 checked = state.notifications,
                 onCheckedChange = { viewModel.setOption("notifications", it) },
+                modifier = Modifier.controllerFocusable(
+                    "ra.notifications",
+                    onConfirm = { viewModel.setOption("notifications", !state.notifications) },
+                    onLeft = { if (state.notifications) viewModel.setOption("notifications", false) },
+                    onRight = { if (!state.notifications) viewModel.setOption("notifications", true) },
+                ),
             )
             SettingSwitchRow(
                 title = str("ra.options.leaderboardNotifications"),
                 description = str("ra.options.leaderboardNotifications.desc"),
                 checked = state.leaderboardNotifications,
                 onCheckedChange = { viewModel.setOption("leaderboardNotifications", it) },
+                modifier = Modifier.controllerFocusable(
+                    "ra.leaderboardNotifications",
+                    onConfirm = { viewModel.setOption("leaderboardNotifications", !state.leaderboardNotifications) },
+                    onLeft = { if (state.leaderboardNotifications) viewModel.setOption("leaderboardNotifications", false) },
+                    onRight = { if (!state.leaderboardNotifications) viewModel.setOption("leaderboardNotifications", true) },
+                ),
             )
             SettingSwitchRow(
                 title = str("ra.options.inGameIndicators"),
                 description = str("ra.options.inGameIndicators.desc"),
                 checked = state.overlays,
                 onCheckedChange = { viewModel.setOption("overlays", it) },
+                modifier = Modifier.controllerFocusable(
+                    "ra.overlays",
+                    onConfirm = { viewModel.setOption("overlays", !state.overlays) },
+                    onLeft = { if (state.overlays) viewModel.setOption("overlays", false) },
+                    onRight = { if (!state.overlays) viewModel.setOption("overlays", true) },
+                ),
             )
             SettingSwitchRow(
                 title = str("ra.options.leaderboardTrackers"),
                 description = str("ra.options.leaderboardTrackers.desc"),
                 checked = state.lbOverlays,
                 onCheckedChange = { viewModel.setOption("lbOverlays", it) },
+                modifier = Modifier.controllerFocusable(
+                    "ra.lbOverlays",
+                    onConfirm = { viewModel.setOption("lbOverlays", !state.lbOverlays) },
+                    onLeft = { if (state.lbOverlays) viewModel.setOption("lbOverlays", false) },
+                    onRight = { if (!state.lbOverlays) viewModel.setOption("lbOverlays", true) },
+                ),
             )
             SettingSwitchRow(
                 title = str("ra.options.soundEffects"),
                 description = str("ra.options.soundEffects.desc"),
                 checked = state.soundEffects,
                 onCheckedChange = { viewModel.setOption("soundEffects", it) },
+                modifier = Modifier.controllerFocusable(
+                    "ra.soundEffects",
+                    onConfirm = { viewModel.setOption("soundEffects", !state.soundEffects) },
+                    onLeft = { if (state.soundEffects) viewModel.setOption("soundEffects", false) },
+                    onRight = { if (!state.soundEffects) viewModel.setOption("soundEffects", true) },
+                ),
             )
-            TextButton(onClick = viewModel::logout) { Text(str("ra.account.logout")) }
+            TextButton(
+                onClick = viewModel::logout,
+                modifier = Modifier.controllerFocusable("ra.logout", onConfirm = { viewModel.logout() }),
+            ) { Text(str("ra.account.logout")) }
         }
     }
 }
@@ -228,7 +268,7 @@ private fun LoginPanel(loading: Boolean, onLogin: (String, String) -> Unit, modi
                     onClick = { onLogin(username, password) },
                     enabled = !loading,
                     shape = RoundedCornerShape(18.dp),
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().controllerFocusable("ra.login", RoundedCornerShape(18.dp), onConfirm = { onLogin(username, password) }),
                 ) {
                     if (loading) {
                         CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)

@@ -42,6 +42,7 @@ import com.armsx2.ui.common.GlassPanel
 import com.armsx2.ui.common.RoundAction
 import com.armsx2.ui.common.SectionTitle
 import com.armsx2.ui.common.SettingSwitchRow
+import com.armsx2.ui.settings.controllerFocusable
 
 @Composable
 fun ControllerManagerScreen(onBack: () -> Unit, viewModel: ControllerManagerViewModel = viewModel()) {
@@ -108,17 +109,41 @@ private fun ControllerOptions(
         Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
             if (!compact) SectionTitle(str("pad.section.playerRumble"), str("pad.editing.description"))
             Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                ChoiceRow(str("pad.player1"), state.player == 0, { viewModel.setPlayer(0) }, Modifier.weight(1f))
-                ChoiceRow(str("pad.player2"), state.player == 1, { viewModel.setPlayer(1) }, Modifier.weight(1f))
+                ChoiceRow(str("pad.player1"), state.player == 0, { viewModel.setPlayer(0) }, Modifier.weight(1f).controllerFocusable("controls.player1", RoundedCornerShape(14.dp), onConfirm = { viewModel.setPlayer(0) }))
+                ChoiceRow(str("pad.player2"), state.player == 1, { viewModel.setPlayer(1) }, Modifier.weight(1f).controllerFocusable("controls.player2", RoundedCornerShape(14.dp), onConfirm = { viewModel.setPlayer(1) }))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                ChoiceRow(str("pad.section.buttonMapping"), state.section == ControllerSection.Buttons, { viewModel.setSection(ControllerSection.Buttons) }, Modifier.weight(1f))
-                ChoiceRow(str("tab.hotkeys"), state.section == ControllerSection.Hotkeys, { viewModel.setSection(ControllerSection.Hotkeys) }, Modifier.weight(1f))
+                ChoiceRow(str("pad.section.buttonMapping"), state.section == ControllerSection.Buttons, { viewModel.setSection(ControllerSection.Buttons) }, Modifier.weight(1f).controllerFocusable("controls.section.buttons", RoundedCornerShape(14.dp), onConfirm = { viewModel.setSection(ControllerSection.Buttons) }))
+                ChoiceRow(str("tab.hotkeys"), state.section == ControllerSection.Hotkeys, { viewModel.setSection(ControllerSection.Hotkeys) }, Modifier.weight(1f).controllerFocusable("controls.section.hotkeys", RoundedCornerShape(14.dp), onConfirm = { viewModel.setSection(ControllerSection.Hotkeys) }))
             }
             if (!compact) Spacer(Modifier.weight(1f))
-            SettingSwitchRow(str("pad.rumble.label"), str("pad.rumble.description"), state.rumble, viewModel::setRumble)
-            SettingSwitchRow(str("pad.multitap.label"), str("pad.multitap.description"), state.multitap, viewModel::setMultitap)
-            SettingSwitchRow(str("pad.dpadAsLeftStick.label"), str("pad.dpadAsLeftStick.description"), state.dpadAsStick, viewModel::setDpadAsStick)
+            SettingSwitchRow(
+                str("pad.rumble.label"), str("pad.rumble.description"), state.rumble, viewModel::setRumble,
+                modifier = Modifier.controllerFocusable(
+                    "controls.rumble",
+                    onConfirm = { viewModel.setRumble(!state.rumble) },
+                    onLeft = { if (state.rumble) viewModel.setRumble(false) },
+                    onRight = { if (!state.rumble) viewModel.setRumble(true) },
+                ),
+            )
+            SettingSwitchRow(
+                str("pad.multitap.label"), str("pad.multitap.description"), state.multitap, viewModel::setMultitap,
+                modifier = Modifier.controllerFocusable(
+                    "controls.multitap",
+                    onConfirm = { viewModel.setMultitap(!state.multitap) },
+                    onLeft = { if (state.multitap) viewModel.setMultitap(false) },
+                    onRight = { if (!state.multitap) viewModel.setMultitap(true) },
+                ),
+            )
+            SettingSwitchRow(
+                str("pad.dpadAsLeftStick.label"), str("pad.dpadAsLeftStick.description"), state.dpadAsStick, viewModel::setDpadAsStick,
+                modifier = Modifier.controllerFocusable(
+                    "controls.dpadAsStick",
+                    onConfirm = { viewModel.setDpadAsStick(!state.dpadAsStick) },
+                    onLeft = { if (state.dpadAsStick) viewModel.setDpadAsStick(false) },
+                    onRight = { if (!state.dpadAsStick) viewModel.setDpadAsStick(true) },
+                ),
+            )
         }
     }
 }
@@ -134,6 +159,7 @@ private fun ControllerBindings(state: ControllerManagerUiState, viewModel: Contr
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 ControllerMappings.actions.forEach { action ->
                     BindingRow(
+                        controllerId = "controls.button.${action.id}",
                         label = action.label,
                         binding = ControllerMappings.labelForKey(ControllerMappings.physicalFor(action, state.player)),
                         capturing = state.capturingAction == action,
@@ -146,6 +172,7 @@ private fun ControllerBindings(state: ControllerManagerUiState, viewModel: Contr
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 ControllerMappings.SysHotkey.entries.forEach { hotkey ->
                     BindingRow(
+                        controllerId = "controls.hotkey.${hotkey.name}",
                         label = hotkey.label,
                         binding = ControllerMappings.hotkeyLabel(hotkey),
                         capturing = ControllerMappings.captureHotkey.value == hotkey,
@@ -171,7 +198,7 @@ private fun ChoiceRow(label: String, selected: Boolean, onClick: () -> Unit, mod
 }
 
 @Composable
-private fun BindingRow(label: String, binding: String, capturing: Boolean, onBind: () -> Unit, onClear: () -> Unit) {
+private fun BindingRow(controllerId: String, label: String, binding: String, capturing: Boolean, onBind: () -> Unit, onClear: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(17.dp),
@@ -189,8 +216,8 @@ private fun BindingRow(label: String, binding: String, capturing: Boolean, onBin
                 )
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onClear) { Text(str("pad.action.clear")) }
-                OutlinedButton(onClick = onBind) { Text(if (capturing) str("hotkeys.capturePrompt") else str("pad.action.bind")) }
+                TextButton(onClick = onClear, modifier = Modifier.controllerFocusable("$controllerId.clear", onConfirm = onClear)) { Text(str("pad.action.clear")) }
+                OutlinedButton(onClick = onBind, modifier = Modifier.controllerFocusable("$controllerId.bind", onConfirm = onBind)) { Text(if (capturing) str("hotkeys.capturePrompt") else str("pad.action.bind")) }
             }
         }
     }

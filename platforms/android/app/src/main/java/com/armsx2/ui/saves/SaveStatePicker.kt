@@ -49,8 +49,7 @@ import com.armsx2.ui.common.ArmsBackdrop
 import com.armsx2.ui.common.ArmsTopBar
 import com.armsx2.ui.common.GlassPanel
 import com.armsx2.ui.common.RoundAction
-import com.armsx2.ui.common.initialPadFocus
-import com.armsx2.ui.common.padFocusRing
+import com.armsx2.ui.settings.controllerFocusable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -112,7 +111,7 @@ fun SaveStatePickerScreen(mode: SaveMode, onBack: () -> Unit) {
             ) {
                 if (mode == SaveMode.Load && hasAutosave) {
                     item(key = "autosave") {
-                        AutosaveTile(initialFocus = true) {
+                        AutosaveTile {
                             scope.launch(Dispatchers.IO) {
                                 NativeApp.loadAutosaveState()
                                 withContext(Dispatchers.Main) { onBack() }
@@ -121,7 +120,7 @@ fun SaveStatePickerScreen(mode: SaveMode, onBack: () -> Unit) {
                     }
                 }
                 items((0 until SLOTS).toList(), key = { "slot_$it" }) { slot ->
-                    SlotTile(slot, mode, initialFocus = slot == 0 && !(mode == SaveMode.Load && hasAutosave)) { selected ->
+                    SlotTile(slot, mode) { selected ->
                         scope.launch(Dispatchers.IO) {
                             when (mode) {
                                 SaveMode.Save -> NativeApp.saveStateToSlot(selected)
@@ -144,12 +143,12 @@ private fun AutoOptions(modifier: Modifier = Modifier) {
     var autoLoad by remember { mutableStateOf(prefs.getBoolean("autoLoadOnBoot", false)) }
     GlassPanel(modifier = modifier, contentPadding = 12.dp) {
         Column {
-            ToggleRow(str("savestate.autoSaveOnExit"), autoSave) { value ->
+            ToggleRow("save.opt.autoSave", str("savestate.autoSaveOnExit"), autoSave) { value ->
                 autoSave = value
                 prefs.edit().putBoolean("autoSaveOnExit", value).apply()
             }
             Spacer(Modifier.height(6.dp))
-            ToggleRow(str("savestate.autoLoadOnBoot"), autoLoad) { value ->
+            ToggleRow("save.opt.autoLoad", str("savestate.autoLoadOnBoot"), autoLoad) { value ->
                 autoLoad = value
                 prefs.edit().putBoolean("autoLoadOnBoot", value).apply()
             }
@@ -158,9 +157,16 @@ private fun AutoOptions(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ToggleRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+private fun ToggleRow(controllerId: String, label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
     Row(
-        Modifier.fillMaxWidth().clickable { onChange(!checked) },
+        Modifier.fillMaxWidth()
+            .controllerFocusable(
+                controllerId,
+                onConfirm = { onChange(!checked) },
+                onLeft = { onChange(false) },
+                onRight = { onChange(true) },
+            )
+            .clickable { onChange(!checked) },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -174,7 +180,7 @@ private fun ToggleRow(label: String, checked: Boolean, onChange: (Boolean) -> Un
 }
 
 @Composable
-private fun AutosaveTile(initialFocus: Boolean = false, onPick: () -> Unit) {
+private fun AutosaveTile(onPick: () -> Unit) {
     val gamePath by produceState<String?>(initialValue = null) {
         value = withContext(Dispatchers.IO) { runCatching { NativeApp.getAutosaveGamePath() }.getOrNull() }
     }
@@ -187,9 +193,9 @@ private fun AutosaveTile(initialFocus: Boolean = false, onPick: () -> Unit) {
         }
     }
     TileFrame(
+        controllerId = "save.autosave",
         borderColor = Color(0xFFFFB347).copy(alpha = 0.7f),
         backgroundColor = Color(0xFF2F2820),
-        initialFocus = initialFocus,
         onClick = onPick,
     ) {
         image?.let {
@@ -206,7 +212,7 @@ private fun AutosaveTile(initialFocus: Boolean = false, onPick: () -> Unit) {
 }
 
 @Composable
-private fun SlotTile(slot: Int, mode: SaveMode, initialFocus: Boolean = false, onPick: (Int) -> Unit) {
+private fun SlotTile(slot: Int, mode: SaveMode, onPick: (Int) -> Unit) {
     val gamePath by produceState<String?>(initialValue = null, slot) {
         value = withContext(Dispatchers.IO) { runCatching { NativeApp.getGamePathSlot(slot) }.getOrNull() }
     }
@@ -222,10 +228,10 @@ private fun SlotTile(slot: Int, mode: SaveMode, initialFocus: Boolean = false, o
     // Load: empty slots disabled. Save: any slot is a valid target.
     val enabled = mode == SaveMode.Save || !empty
     TileFrame(
+        controllerId = if (enabled) "save.slot.$slot" else null,
         borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
         backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
         enabled = enabled,
-        initialFocus = initialFocus,
         onClick = { onPick(slot) },
     ) {
         image?.let {
@@ -246,10 +252,10 @@ private fun SlotTile(slot: Int, mode: SaveMode, initialFocus: Boolean = false, o
 
 @Composable
 private fun TileFrame(
+    controllerId: String?,
     borderColor: Color,
     backgroundColor: Color,
     enabled: Boolean = true,
-    initialFocus: Boolean = false,
     onClick: () -> Unit,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -257,8 +263,7 @@ private fun TileFrame(
         Modifier
             .width(TILE_WIDTH_DP.dp)
             .fillMaxHeight()
-            .then(if (initialFocus) Modifier.initialPadFocus() else Modifier)
-            .padFocusRing(RoundedCornerShape(12.dp))
+            .controllerFocusable(controllerId, RoundedCornerShape(12.dp), onConfirm = { if (enabled) onClick() })
             .clip(RoundedCornerShape(12.dp))
             .background(backgroundColor)
             .border(1.dp, borderColor, RoundedCornerShape(12.dp))

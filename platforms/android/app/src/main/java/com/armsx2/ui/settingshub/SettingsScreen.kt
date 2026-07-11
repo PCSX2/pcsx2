@@ -45,8 +45,7 @@ import com.armsx2.ui.common.ArmsTopBar
 import com.armsx2.ui.common.GlassPanel
 import com.armsx2.ui.common.RoundAction
 import com.armsx2.ui.common.SectionTitle
-import com.armsx2.ui.common.initialPadFocus
-import com.armsx2.ui.common.padFocusRing
+import com.armsx2.ui.settings.controllerFocusable
 import com.armsx2.ui.settings.AppTab
 import com.armsx2.ui.settings.AudioTab
 import com.armsx2.ui.settings.FixesTab
@@ -159,8 +158,11 @@ private fun SettingsCategoryBar(
             val active = section.category == selected
             FilterChip(
                 modifier = Modifier.height(44.dp)
-                    .then(if (active) Modifier.initialPadFocus() else Modifier)
-                    .padFocusRing(RoundedCornerShape(13.dp)),
+                    .controllerFocusable(
+                        "settings.chip.${section.category.name}",
+                        RoundedCornerShape(13.dp),
+                        onConfirm = { onSelect(section.category) },
+                    ),
                 selected = active,
                 onClick = { onSelect(section.category) },
                 label = { Text(str(section.titleKey), maxLines = 1) },

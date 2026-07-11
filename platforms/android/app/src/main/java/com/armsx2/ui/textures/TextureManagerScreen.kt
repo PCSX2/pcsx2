@@ -40,6 +40,7 @@ import com.armsx2.ui.common.GlassPanel
 import com.armsx2.ui.common.RoundAction
 import com.armsx2.ui.common.SectionTitle
 import com.armsx2.ui.common.SettingSwitchRow
+import com.armsx2.ui.settings.controllerFocusable
 
 @Composable
 fun TextureManagerScreen(onBack: () -> Unit, viewModel: TextureManagerViewModel = viewModel()) {
@@ -93,9 +94,45 @@ private fun TextureOptions(state: TextureManagerUiState, viewModel: TextureManag
     GlassPanel(modifier) {
         Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
             SectionTitle(str("renderer.section.texturePacks"), str("scope.global"))
-            SettingSwitchRow(str("renderer.loadTexturePacks.label"), str("renderer.loadTexturePacks.description"), state.settings.loadTextureReplacements, onCheckedChange = { value -> viewModel.update { it.copy(loadTextureReplacements = value) } })
-            SettingSwitchRow(str("renderer.asyncTextureLoading.label"), str("renderer.asyncTextureLoading.description"), state.settings.loadTextureReplacementsAsync, onCheckedChange = { value -> viewModel.update { it.copy(loadTextureReplacementsAsync = value) } })
-            SettingSwitchRow(str("renderer.precacheTexturePacks.label"), str("renderer.precacheTexturePacks.description"), state.settings.precacheTextureReplacements, onCheckedChange = { value -> viewModel.update { it.copy(precacheTextureReplacements = value) } })
+            SettingSwitchRow(
+                str("renderer.loadTexturePacks.label"),
+                str("renderer.loadTexturePacks.description"),
+                state.settings.loadTextureReplacements,
+                onCheckedChange = { value -> viewModel.update { it.copy(loadTextureReplacements = value) } },
+                modifier = Modifier.controllerFocusable(
+                    "textureMgr.opt.loadReplacements",
+                    RoundedCornerShape(22.dp),
+                    onConfirm = { viewModel.update { it.copy(loadTextureReplacements = !state.settings.loadTextureReplacements) } },
+                    onLeft = { viewModel.update { it.copy(loadTextureReplacements = false) } },
+                    onRight = { viewModel.update { it.copy(loadTextureReplacements = true) } },
+                ),
+            )
+            SettingSwitchRow(
+                str("renderer.asyncTextureLoading.label"),
+                str("renderer.asyncTextureLoading.description"),
+                state.settings.loadTextureReplacementsAsync,
+                onCheckedChange = { value -> viewModel.update { it.copy(loadTextureReplacementsAsync = value) } },
+                modifier = Modifier.controllerFocusable(
+                    "textureMgr.opt.asyncLoading",
+                    RoundedCornerShape(22.dp),
+                    onConfirm = { viewModel.update { it.copy(loadTextureReplacementsAsync = !state.settings.loadTextureReplacementsAsync) } },
+                    onLeft = { viewModel.update { it.copy(loadTextureReplacementsAsync = false) } },
+                    onRight = { viewModel.update { it.copy(loadTextureReplacementsAsync = true) } },
+                ),
+            )
+            SettingSwitchRow(
+                str("renderer.precacheTexturePacks.label"),
+                str("renderer.precacheTexturePacks.description"),
+                state.settings.precacheTextureReplacements,
+                onCheckedChange = { value -> viewModel.update { it.copy(precacheTextureReplacements = value) } },
+                modifier = Modifier.controllerFocusable(
+                    "textureMgr.opt.precache",
+                    RoundedCornerShape(22.dp),
+                    onConfirm = { viewModel.update { it.copy(precacheTextureReplacements = !state.settings.precacheTextureReplacements) } },
+                    onLeft = { viewModel.update { it.copy(precacheTextureReplacements = false) } },
+                    onRight = { viewModel.update { it.copy(precacheTextureReplacements = true) } },
+                ),
+            )
         }
     }
 }
@@ -134,7 +171,10 @@ private fun TexturePackRow(pack: TexturePackItem, onDelete: () -> Unit) {
                 Text(pack.serial, style = MaterialTheme.typography.titleMedium)
                 Text("${pack.fileCount} · ${humanSize(pack.size)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            TextButton(onClick = onDelete) { Text(str("action.delete")) }
+            TextButton(
+                onClick = onDelete,
+                modifier = Modifier.controllerFocusable("textureMgr.delete.${pack.serial}", onConfirm = onDelete),
+            ) { Text(str("action.delete")) }
         }
     }
 }

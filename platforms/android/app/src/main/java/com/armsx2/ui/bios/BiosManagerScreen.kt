@@ -42,6 +42,7 @@ import com.armsx2.ui.common.ArmsTopBar
 import com.armsx2.ui.common.EmptyState
 import com.armsx2.ui.common.RoundAction
 import com.armsx2.ui.common.StatusChip
+import com.armsx2.ui.settings.controllerFocusable
 import com.armsx2.ui.theme.Success
 
 @Composable
@@ -83,7 +84,12 @@ fun BiosManagerScreen(onBack: () -> Unit, viewModel: BiosManagerViewModel = view
                         message = str("setup.step.bios.description"),
                         actionLabel = str("action.import"),
                         onAction = { picker.launch(arrayOf("application/octet-stream", "*/*")) },
-                        modifier = Modifier.fillMaxWidth().height(280.dp),
+                        modifier = Modifier.fillMaxWidth().height(280.dp)
+                            .controllerFocusable(
+                                "bios.empty.import",
+                                RoundedCornerShape(24.dp),
+                                onConfirm = { picker.launch(arrayOf("application/octet-stream", "*/*")) },
+                            ),
                     )
                 }
             } else {
@@ -148,9 +154,24 @@ private fun BiosRow(item: InstalledBios, onSelect: () -> Unit, onDelete: () -> U
                 if (item.selected) StatusChip(str("backend.driver.active"), Success)
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                if (!item.selected) OutlinedButton(onClick = onSelect, shape = RoundedCornerShape(12.dp)) { Text(str("setup.bios.useSelected")) }
+                if (!item.selected) OutlinedButton(
+                    onClick = onSelect,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.controllerFocusable(
+                        "bios.use.${item.file.absolutePath}",
+                        RoundedCornerShape(12.dp),
+                        onConfirm = onSelect,
+                    ),
+                ) { Text(str("setup.bios.useSelected")) }
                 Spacer(Modifier.width(8.dp))
-                TextButton(onClick = onDelete, enabled = !item.selected) { Text(str("action.delete")) }
+                TextButton(
+                    onClick = onDelete,
+                    enabled = !item.selected,
+                    modifier = Modifier.controllerFocusable(
+                        if (item.selected) null else "bios.delete.${item.file.absolutePath}",
+                        onConfirm = onDelete,
+                    ),
+                ) { Text(str("action.delete")) }
             }
         }
     }

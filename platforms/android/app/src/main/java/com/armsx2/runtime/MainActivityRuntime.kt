@@ -2077,33 +2077,52 @@ open class MainActivityRuntime : ComponentActivity() {
             }
             // Everything else layered over/instead of the game — the nav drawer,
             // an in-game manager/Save-Load/settings screen, a library sub-screen,
-            // and every root manager/settings screen — is navigated through
-            // Compose's own focus system: D-pad moves focus, A activates the
-            // focused control, B/BACK dismisses the topmost surface in priority
-            // order. Every such screen is built from focusable Compose controls
-            // (Button / Surface(onClick) / .clickable / .controllerFocusable), so
-            // this single bridge covers them all.
-            if (kc == KeyEvent.KEYCODE_DPAD_LEFT ||
-                kc == KeyEvent.KEYCODE_DPAD_RIGHT ||
-                kc == KeyEvent.KEYCODE_DPAD_UP ||
-                kc == KeyEvent.KEYCODE_DPAD_DOWN
-            ) {
-                if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
-                    dispatchSyntheticUiKey(kc)
+            // and every root manager/settings screen — is driven through the manual
+            // SettingsControllerNav REGISTRY, the exact model the memory-card dialog
+            // and the settings rows already use. Compose's own focus system is NOT
+            // usable here: the game view is an embedded SurfaceView, so the Compose
+            // tree never reliably holds Android focus and synthetic D-pad keys go
+            // nowhere. Instead every navigable control on these screens registers
+            // itself via Modifier.controllerFocusable(id, onConfirm, onLeft, onRight)
+            // (position tracked by onGloballyPositioned), and here we step the
+            // registry directly: Up/Down move between rows, Left/Right adjust the
+            // focused control's value (falling back to horizontal move when it has
+            // no adjust action, e.g. the memcard's Slot 1 / Slot 2), A confirms, B
+            // dismisses the topmost surface.
+            val nav = com.armsx2.ui.settings.SettingsControllerNav
+            when (kc) {
+                KeyEvent.KEYCODE_DPAD_UP -> {
+                    if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) nav.moveSpatial(0, -1)
+                    return true
                 }
-                return true
-            }
-            if (kc == KeyEvent.KEYCODE_BUTTON_A) {
-                if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
-                    dispatchSyntheticUiKey(KeyEvent.KEYCODE_DPAD_CENTER)
+                KeyEvent.KEYCODE_DPAD_DOWN -> {
+                    if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) nav.moveSpatial(0, 1)
+                    return true
                 }
-                return true
-            }
-            if (kc == KeyEvent.KEYCODE_BUTTON_B || kc == KeyEvent.KEYCODE_BACK) {
-                if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
-                    handleFrontendBack()
+                KeyEvent.KEYCODE_DPAD_LEFT -> {
+                    if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+                        if (!nav.adjust(-1)) nav.moveSpatial(-1, 0)
+                    }
+                    return true
                 }
-                return true
+                KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+                        if (!nav.adjust(1)) nav.moveSpatial(1, 0)
+                    }
+                    return true
+                }
+                KeyEvent.KEYCODE_BUTTON_A,
+                KeyEvent.KEYCODE_DPAD_CENTER,
+                KeyEvent.KEYCODE_ENTER,
+                KeyEvent.KEYCODE_NUMPAD_ENTER -> {
+                    if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) nav.confirm()
+                    return true
+                }
+                KeyEvent.KEYCODE_BUTTON_B,
+                KeyEvent.KEYCODE_BACK -> {
+                    if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) handleFrontendBack()
+                    return true
+                }
             }
         }
         // Runtime: bound system hotkeys. Caught here so back-button bindings work
@@ -2587,10 +2606,12 @@ open class MainActivityRuntime : ComponentActivity() {
                 com.armsx2.ui.home.HomeInputController.move(dx, dy)
             }
             // Drawer, in-game manager/Save-Load screens, library sub-routes and
-            // every root manager/settings screen: Compose-focus traversal.
+            // every root manager/settings screen: the manual registry (same as the
+            // D-pad path). Left/Right adjust the focused control, else move.
             controllerDrivesFrontend() -> {
-                val kc = directionKeyCode(dx, dy)
-                if (kc != 0) dispatchSyntheticUiKey(kc)
+                val nav = com.armsx2.ui.settings.SettingsControllerNav
+                if (dx != 0 && dy == 0) { if (!nav.adjust(dx)) nav.moveSpatial(dx, 0) }
+                else nav.moveSpatial(dx, dy)
             }
             else -> {
                 // Menu closed while a direction was held — stop repeating.

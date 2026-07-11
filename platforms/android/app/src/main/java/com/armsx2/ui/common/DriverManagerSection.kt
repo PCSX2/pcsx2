@@ -36,6 +36,7 @@ import androidx.core.content.edit
 import com.armsx2.CustomDriver
 import com.armsx2.i18n.str
 import com.armsx2.runtime.MainActivityRuntime
+import com.armsx2.ui.settings.controllerFocusable
 import com.armsx2.ui.theme.Success
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -89,6 +90,7 @@ fun DriverManagerSection() {
         SectionTitle(str("backend.gpuDriver.label"), str("backend.gpuDriver.description"))
 
         DriverRow(
+            controllerId = "driver.system",
             title = str("backend.driver.systemVulkan"),
             subtitle = str("renderer.orientation.device"),
             selected = MainActivityRuntime.customDriverId.value == null,
@@ -96,6 +98,7 @@ fun DriverManagerSection() {
         )
         installed.forEach { driver ->
             DriverRow(
+                controllerId = "driver.${driver.id}",
                 title = driver.name,
                 subtitle = listOf(driver.vendor, driver.version).filter(String::isNotBlank).joinToString(" · ")
                     .ifBlank { str("backend.driver.installed") },
@@ -113,6 +116,20 @@ fun DriverManagerSection() {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(
                 shape = RoundedCornerShape(13.dp),
+                modifier = Modifier.controllerFocusable(
+                    "driver.toggleDownloads",
+                    RoundedCornerShape(13.dp),
+                    onConfirm = {
+                        showRemote = !showRemote
+                        if (showRemote && remote == null && !loadingRemote) {
+                            loadingRemote = true
+                            scope.launch {
+                                val r = withContext(Dispatchers.IO) { CustomDriver.fetchRemote() }
+                                remote = r; loadingRemote = false
+                            }
+                        }
+                    },
+                ),
                 onClick = {
                     showRemote = !showRemote
                     if (showRemote && remote == null && !loadingRemote) {
@@ -126,6 +143,11 @@ fun DriverManagerSection() {
             ) { Text(if (showRemote) str("backend.driver.hideDownloads") else str("backend.driver.download")) }
             OutlinedButton(
                 shape = RoundedCornerShape(13.dp),
+                modifier = Modifier.controllerFocusable(
+                    "driver.import",
+                    RoundedCornerShape(13.dp),
+                    onConfirm = { importLauncher.launch(arrayOf("application/zip", "application/octet-stream", "*/*")) },
+                ),
                 onClick = { importLauncher.launch(arrayOf("application/zip", "application/octet-stream", "*/*")) },
             ) { Text(str("backend.driver.import")) }
         }
@@ -140,6 +162,7 @@ fun DriverManagerSection() {
                 remote.isNullOrEmpty() -> Text(str("backend.driver.none"), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 else -> remote!!.forEach { rd ->
                     RemoteDriverRow(
+                        controllerId = "driver.remote.${rd.id}",
                         title = rd.releaseName.ifBlank { rd.assetName },
                         subtitle = listOf(rd.source, rd.tagName).filter(String::isNotBlank).joinToString(" · "),
                         busy = busyId == rd.id,
@@ -191,6 +214,7 @@ private fun DriverSourceGroup(
 
 @Composable
 private fun DriverRow(
+    controllerId: String,
     title: String,
     subtitle: String,
     selected: Boolean,
@@ -199,7 +223,7 @@ private fun DriverRow(
 ) {
     Surface(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().controllerFocusable(controllerId, RoundedCornerShape(16.dp), onConfirm = onClick),
         shape = RoundedCornerShape(16.dp),
         color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
         border = BorderStroke(1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)),
@@ -210,13 +234,13 @@ private fun DriverRow(
                 Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             if (selected) StatusChip(str("backend.driver.active"), Success)
-            if (onDelete != null) TextButton(onClick = onDelete) { Text(str("action.delete"), color = MaterialTheme.colorScheme.error) }
+            if (onDelete != null) TextButton(onClick = onDelete, modifier = Modifier.controllerFocusable("$controllerId.delete", onConfirm = onDelete)) { Text(str("action.delete"), color = MaterialTheme.colorScheme.error) }
         }
     }
 }
 
 @Composable
-private fun RemoteDriverRow(title: String, subtitle: String, busy: Boolean, onDownload: () -> Unit) {
+private fun RemoteDriverRow(controllerId: String, title: String, subtitle: String, busy: Boolean, onDownload: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -229,7 +253,7 @@ private fun RemoteDriverRow(title: String, subtitle: String, busy: Boolean, onDo
                 if (subtitle.isNotBlank()) Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             if (busy) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-            else OutlinedButton(onClick = onDownload, shape = RoundedCornerShape(12.dp)) { Text(str("backend.driver.get")) }
+            else OutlinedButton(onClick = onDownload, shape = RoundedCornerShape(12.dp), modifier = Modifier.controllerFocusable(controllerId, RoundedCornerShape(12.dp), onConfirm = onDownload)) { Text(str("backend.driver.get")) }
         }
     }
 }

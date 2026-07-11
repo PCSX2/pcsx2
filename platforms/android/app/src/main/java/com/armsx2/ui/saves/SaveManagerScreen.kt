@@ -44,6 +44,7 @@ import com.armsx2.ui.common.ArmsTopBar
 import com.armsx2.ui.common.EmptyState
 import com.armsx2.ui.common.RoundAction
 import com.armsx2.ui.common.SectionTitle
+import com.armsx2.ui.settings.controllerFocusable
 
 @Composable
 fun SaveManagerScreen(onBack: () -> Unit, viewModel: SaveManagerViewModel = viewModel()) {
@@ -158,16 +159,27 @@ private fun SaveStateCard(
             Spacer(Modifier.height(9.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 if (save.canUseWithActiveGame && save.slot != null) {
-                    OutlinedButton(onClick = onSave, contentPadding = PaddingValues(horizontal = 14.dp)) {
+                    OutlinedButton(
+                        onClick = onSave,
+                        contentPadding = PaddingValues(horizontal = 14.dp),
+                        modifier = Modifier.controllerFocusable("saveMgr.save.${save.file.absolutePath}", onConfirm = onSave),
+                    ) {
                         Text(str("action.save"))
                     }
                     Spacer(Modifier.width(7.dp))
-                    OutlinedButton(onClick = onLoad, contentPadding = PaddingValues(horizontal = 14.dp)) {
+                    OutlinedButton(
+                        onClick = onLoad,
+                        contentPadding = PaddingValues(horizontal = 14.dp),
+                        modifier = Modifier.controllerFocusable("saveMgr.load.${save.file.absolutePath}", onConfirm = onLoad),
+                    ) {
                         Text(str("touch.stateAction.load"))
                     }
                     Spacer(Modifier.width(3.dp))
                 }
-                TextButton(onClick = onDelete) { Text(str("action.delete")) }
+                TextButton(
+                    onClick = onDelete,
+                    modifier = Modifier.controllerFocusable("saveMgr.delete.${save.file.absolutePath}", onConfirm = onDelete),
+                ) { Text(str("action.delete")) }
             }
         }
     }

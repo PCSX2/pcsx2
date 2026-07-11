@@ -49,6 +49,7 @@ import com.armsx2.ui.common.RoundAction
 import com.armsx2.ui.common.SectionTitle
 import com.armsx2.ui.common.SettingSwitchRow
 import com.armsx2.ui.common.StatusChip
+import com.armsx2.ui.settings.controllerFocusable
 import java.io.File
 
 @Composable
@@ -104,10 +105,46 @@ private fun PatchOptions(state: PatchManagerUiState, viewModel: PatchManagerView
     GlassPanel(modifier) {
         Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
             SectionTitle(str("ra.options.header"), str("scope.global"))
-            SettingSwitchRow(str("patches.enablePatches.label"), str("patches.applyAtBoot"), state.settings.enablePatches, onCheckedChange = { value -> viewModel.update { it.copy(enablePatches = value) } })
-            SettingSwitchRow(str("patches.cheats.label"), str("patches.pasteImportHint"), state.settings.enableCheats, onCheckedChange = { value -> viewModel.update { it.copy(enableCheats = value) } })
-            SettingSwitchRow(str("patches.widescreen.label"), str("patches.applyAtBoot"), state.settings.enableWideScreenPatches, onCheckedChange = { value -> viewModel.update { it.copy(enableWideScreenPatches = value) } })
-            SettingSwitchRow(str("patches.noInterlacing.label"), str("patches.applyAtBoot"), state.settings.enableNoInterlacingPatches, onCheckedChange = { value -> viewModel.update { it.copy(enableNoInterlacingPatches = value) } })
+            SettingSwitchRow(
+                str("patches.enablePatches.label"), str("patches.applyAtBoot"), state.settings.enablePatches,
+                onCheckedChange = { value -> viewModel.update { it.copy(enablePatches = value) } },
+                modifier = Modifier.controllerFocusable(
+                    "patches.enablePatches",
+                    onConfirm = { viewModel.update { it.copy(enablePatches = !state.settings.enablePatches) } },
+                    onLeft = { if (state.settings.enablePatches) viewModel.update { it.copy(enablePatches = false) } },
+                    onRight = { if (!state.settings.enablePatches) viewModel.update { it.copy(enablePatches = true) } },
+                ),
+            )
+            SettingSwitchRow(
+                str("patches.cheats.label"), str("patches.pasteImportHint"), state.settings.enableCheats,
+                onCheckedChange = { value -> viewModel.update { it.copy(enableCheats = value) } },
+                modifier = Modifier.controllerFocusable(
+                    "patches.enableCheats",
+                    onConfirm = { viewModel.update { it.copy(enableCheats = !state.settings.enableCheats) } },
+                    onLeft = { if (state.settings.enableCheats) viewModel.update { it.copy(enableCheats = false) } },
+                    onRight = { if (!state.settings.enableCheats) viewModel.update { it.copy(enableCheats = true) } },
+                ),
+            )
+            SettingSwitchRow(
+                str("patches.widescreen.label"), str("patches.applyAtBoot"), state.settings.enableWideScreenPatches,
+                onCheckedChange = { value -> viewModel.update { it.copy(enableWideScreenPatches = value) } },
+                modifier = Modifier.controllerFocusable(
+                    "patches.widescreen",
+                    onConfirm = { viewModel.update { it.copy(enableWideScreenPatches = !state.settings.enableWideScreenPatches) } },
+                    onLeft = { if (state.settings.enableWideScreenPatches) viewModel.update { it.copy(enableWideScreenPatches = false) } },
+                    onRight = { if (!state.settings.enableWideScreenPatches) viewModel.update { it.copy(enableWideScreenPatches = true) } },
+                ),
+            )
+            SettingSwitchRow(
+                str("patches.noInterlacing.label"), str("patches.applyAtBoot"), state.settings.enableNoInterlacingPatches,
+                onCheckedChange = { value -> viewModel.update { it.copy(enableNoInterlacingPatches = value) } },
+                modifier = Modifier.controllerFocusable(
+                    "patches.noInterlacing",
+                    onConfirm = { viewModel.update { it.copy(enableNoInterlacingPatches = !state.settings.enableNoInterlacingPatches) } },
+                    onLeft = { if (state.settings.enableNoInterlacingPatches) viewModel.update { it.copy(enableNoInterlacingPatches = false) } },
+                    onRight = { if (!state.settings.enableNoInterlacingPatches) viewModel.update { it.copy(enableNoInterlacingPatches = true) } },
+                ),
+            )
         }
     }
 }
@@ -128,7 +165,10 @@ private fun OnlineBrowser(
                     Spacer(Modifier.width(10.dp))
                     Text(str("patches.online.loading"))
                 }
-                state.onlineEntries.isEmpty() -> Button(onClick = { viewModel.fetchOnline(game) }) {
+                state.onlineEntries.isEmpty() -> Button(
+                    onClick = { viewModel.fetchOnline(game) },
+                    modifier = Modifier.controllerFocusable("patches.online.fetch", onConfirm = { viewModel.fetchOnline(game) }),
+                ) {
                     Text(str("patches.online.fetch"))
                 }
                 else -> {
@@ -139,10 +179,17 @@ private fun OnlineBrowser(
                         OnlineEntryRow(entry, entry.name in state.onlineSelected) { viewModel.toggleOnline(entry.name) }
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Button(onClick = viewModel::installSelected, enabled = state.onlineSelected.isNotEmpty()) {
+                        Button(
+                            onClick = viewModel::installSelected,
+                            enabled = state.onlineSelected.isNotEmpty(),
+                            modifier = Modifier.controllerFocusable("patches.online.install", onConfirm = { if (state.onlineSelected.isNotEmpty()) viewModel.installSelected() }),
+                        ) {
                             Text("${str("patches.online.install")} (${state.onlineSelected.size})")
                         }
-                        TextButton(onClick = { viewModel.fetchOnline(game) }) { Text(str("games.card.refresh")) }
+                        TextButton(
+                            onClick = { viewModel.fetchOnline(game) },
+                            modifier = Modifier.controllerFocusable("patches.online.refresh", onConfirm = { viewModel.fetchOnline(game) }),
+                        ) { Text(str("games.card.refresh")) }
                     }
                 }
             }
@@ -154,7 +201,13 @@ private fun OnlineBrowser(
 private fun OnlineEntryRow(entry: PatchRepo.Entry, checked: Boolean, onToggle: () -> Unit) {
     Surface(
         onClick = onToggle,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().controllerFocusable(
+            "patches.online.entry.${entry.name}",
+            RoundedCornerShape(14.dp),
+            onConfirm = onToggle,
+            onLeft = { if (checked) onToggle() },
+            onRight = { if (!checked) onToggle() },
+        ),
         shape = RoundedCornerShape(14.dp),
         color = if (checked) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
         border = BorderStroke(
@@ -218,7 +271,7 @@ private fun PatchFileRow(
     ) {
         Column {
             Row(
-                Modifier.fillMaxWidth().clickable(onClick = onExpand).padding(14.dp),
+                Modifier.fillMaxWidth().clickable(onClick = onExpand).controllerFocusable("patches.file.${file.absolutePath}", onConfirm = onExpand).padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(if (expanded) "▾" else "▸", color = MaterialTheme.colorScheme.primary)
@@ -227,7 +280,7 @@ private fun PatchFileRow(
                     Text(file.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(file.parentFile?.name.orEmpty(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                TextButton(onClick = onDelete) { Text(str("action.delete")) }
+                TextButton(onClick = onDelete, modifier = Modifier.controllerFocusable("patches.file.${file.absolutePath}.delete", onConfirm = onDelete)) { Text(str("action.delete")) }
             }
             if (expanded) {
                 if (cheats.isEmpty()) {
@@ -250,7 +303,12 @@ private fun PatchFileRow(
 @Composable
 private fun LocalCheatRow(cheat: PatchRepo.LocalCheat, onToggle: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().clickable(onClick = onToggle).padding(vertical = 4.dp),
+        Modifier.fillMaxWidth().clickable(onClick = onToggle).controllerFocusable(
+            "patches.cheat.${cheat.name}",
+            onConfirm = onToggle,
+            onLeft = { if (cheat.enabled) onToggle() },
+            onRight = { if (!cheat.enabled) onToggle() },
+        ).padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
