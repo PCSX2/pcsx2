@@ -94,6 +94,7 @@ add_pcsx2_test(recompiler_tests
 	mvu_abi_digest_tests.cpp
 	mvu_persist_roundtrip_tests.cpp
 	mvu_progcache_disk_tests.cpp
+	mvu_waitmtvu_stub_tests.cpp
 )
 
 target_include_directories(recompiler_tests PRIVATE

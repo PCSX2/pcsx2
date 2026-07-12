@@ -816,6 +816,54 @@ static void mVUdispatcherCD(mV)
 static void mVUGenerateWaitMTVU(mV)
 {
 	mVU.waitMTVU = armStartBlock();
+
+	// Sync the async VU1 worker before VU0/COP2 reads VU1's register space (the
+	// `addr & 0x400` seam in mVUaddrFix, reached under MTVU). x86's stub does the
+	// same save-call-restore around mVUwaitMTVU (microVU_Execute.inl); a bare Ret
+	// here silently skipped vu1Thread.WaitVU(), racing the VU1 thread.
+	//
+	// This thunk is reached via BL from inside a compiled VU/COP2 block whose
+	// register allocator is NOT flushed at the seam, so it must be transparent:
+	// preserve everything the AAPCS call to mVUwaitMTVU can clobber that may be
+	// live there. Callee-saved state survives the C call automatically (x19-x28 =
+	// gprVUState/flags/mVUglob + the VI pool's x26-x28; x29). What we must save:
+	//   * q0-q27  — the full VF allocation pool; any subset may be live, and the
+	//               C call only preserves the low 64 bits of q8-q15 (d8-d15), so
+	//               those must be spilled in full to keep the VF upper lanes.
+	//   * q28     — PQ (mVUbackupRegs treats it as live across every C call).
+	//   * x9      — gprT1, holds the fixed-up address, consumed after the call.
+	//   * x14/x15 — the caller-saved half of the VI GPR pool.
+	//   * x10-x13 — saved only to keep a clean contiguous window (harmless; in
+	//               COP2 macro mode x11-x13 are EE pins the seam flush/reloads).
+	//   * x30     — the inner BL overwrites LR; without restoring it, ret returns
+	//               into this thunk and walks sp into the thread's guard page.
+	// The COP2 EE-pin flush/reload brackets this call at the seam, so the
+	// clobbered tier-2 EE pins are handled there, not here.
+	constexpr int kGprBytes  = 8 * 8;                  // x9-x15 + x30
+	constexpr int kNeonBytes = 29 * 16;                // q0-q28
+	constexpr int kFrame     = kGprBytes + kNeonBytes; // 0x210, 16-byte aligned
+
+	armAsm->Sub(a64::sp, a64::sp, kFrame);
+	// GPRs first (STP x has a ±504 signed offset limit; keep it near sp).
+	armAsm->Stp(a64::x9,  a64::x10, a64::MemOperand(a64::sp, 0));
+	armAsm->Stp(a64::x11, a64::x12, a64::MemOperand(a64::sp, 16));
+	armAsm->Stp(a64::x13, a64::x14, a64::MemOperand(a64::sp, 32));
+	armAsm->Stp(a64::x15, a64::x30, a64::MemOperand(a64::sp, 48));
+	for (int i = 0; i < 28; i += 2)
+		armAsm->Stp(armQRegister(i), armQRegister(i + 1), a64::MemOperand(a64::sp, kGprBytes + i * 16));
+	armAsm->Str(qmmPQ, a64::MemOperand(a64::sp, kGprBytes + 28 * 16));
+
+	armEmitCall((void*)mVUwaitMTVU);
+
+	armAsm->Ldp(a64::x9,  a64::x10, a64::MemOperand(a64::sp, 0));
+	armAsm->Ldp(a64::x11, a64::x12, a64::MemOperand(a64::sp, 16));
+	armAsm->Ldp(a64::x13, a64::x14, a64::MemOperand(a64::sp, 32));
+	armAsm->Ldp(a64::x15, a64::x30, a64::MemOperand(a64::sp, 48));
+	for (int i = 0; i < 28; i += 2)
+		armAsm->Ldp(armQRegister(i), armQRegister(i + 1), a64::MemOperand(a64::sp, kGprBytes + i * 16));
+	armAsm->Ldr(qmmPQ, a64::MemOperand(a64::sp, kGprBytes + 28 * 16));
+	armAsm->Add(a64::sp, a64::sp, kFrame);
+
 	armAsm->Ret();
 	armEndBlock();
 }
@@ -1933,6 +1981,16 @@ bool mVUTestProbe_VIPoolUsable(int hostreg, bool cop2mode)
 	const bool usable = microVU0.regAlloc->isUsableGPR(hostreg);
 	microVU0.regAlloc->reset(false);
 	return usable;
+}
+
+// waitMTVU stub-shape probe: returns the emitted VU1-sync thunk entry
+// (mVU.waitMTVU, generated once by mVUgenerateDispatchers) for VU `index`.
+// mVUaddrFix branches to this thunk when VU0/COP2 touches VU1 register space
+// under MTVU; a bare Ret here makes vu1Thread.WaitVU() a silent no-op (a data
+// race). Tests scan the emitted words to assert it actually calls out.
+const u8* mVUTestProbe_WaitMTVUStub(int index)
+{
+	return (index ? microVU1 : microVU0).waitMTVU;
 }
 #endif
 
