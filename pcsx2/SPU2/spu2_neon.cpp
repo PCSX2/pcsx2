@@ -12,14 +12,23 @@
 #if defined(__aarch64__) || defined(_M_ARM64)
 
 #include "SPU2/spu2_neon.h"
-#include "SPU2/spu2_neon_mixer.h"
-#include "SPU2/spu2_neon_reverb_ex.h"
-#include "SPU2/spu2_neon_dcfilter.h"
+// spu2_sve2_fir.h defines SPU2_HAS_SVE2_COMPILER and, when the compiler actually
+// targets SVE2, TryRegisterSVE2FIR(); it also pulls in spu2_mt6899_tuning.h for
+// runtime CPU feature detection. defs.h provides V_Core / StereoOut32 /
+// clamp_mix and the ReverbDownsample/ReverbUpsample function pointers.
 #include "SPU2/spu2_sve2_fir.h"
-#include "SPU2/spu2_mt6899_tuning.h"
 #include "SPU2/defs.h"
+// NOTE: the spu2_neon_mixer / _reverb_ex / _dcfilter helper headers are
+// intentionally NOT included. They hold drop-in SIMD helpers meant to be called
+// from mixer.cpp / ReaVerb.cpp, but that integration hasn't been wired up — this
+// TU only needs the reverb FIR below plus the SVE2 hook. Pulling them in would
+// compile a pile of currently-unused (and not-yet-portable) code on every arm64
+// target (they use the MSVC-only __forceinline keyword unguarded).
 
 #include <arm_neon.h>
+#include <array>
+#include <algorithm>
+#include <cstdint>
 #include <cstdio>
 
 // ============================================================================

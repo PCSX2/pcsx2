@@ -21,7 +21,14 @@
 #include <sys/ioctl.h>
 #include <string.h>
 
+// TargetConditionals.h (which defines TARGET_OS_IPHONE) is an Apple-only header.
+// Guard the include so non-Apple POSIX targets (Linux, Android, FreeBSD) still
+// build: on those, TARGET_OS_IPHONE is undefined and evaluates to 0 in the #if
+// below, while the __FreeBSD__/__APPLE__ gate already keeps them out of the
+// BSD-socket block. The net effect is that only iOS is excluded here.
+#ifdef __APPLE__
 #include <TargetConditionals.h>
+#endif
 #if (defined(__FreeBSD__) || (__APPLE__)) && !TARGET_OS_IPHONE
 #include <sys/types.h>
 #include <net/if_dl.h>

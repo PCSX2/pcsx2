@@ -22,13 +22,16 @@
     #define SPU2_UNLIKELY(x)     __builtin_expect(!!(x), 0)
     #define SPU2_PREFETCH_R(ptr) __builtin_prefetch((ptr), 0, 3)
     #define SPU2_PREFETCH_W(ptr) __builtin_prefetch((ptr), 1, 3)
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && !defined(_M_ARM64) && !defined(_M_ARM64EC)
     #include <xmmintrin.h>
     #define SPU2_LIKELY(x)       (x)
     #define SPU2_UNLIKELY(x)     (x)
     #define SPU2_PREFETCH_R(ptr) _mm_prefetch((const char*)(ptr), _MM_HINT_T0)
     #define SPU2_PREFETCH_W(ptr) ((void)(ptr))
 #else
+    // Fallback — includes MSVC on ARM64, which has no <xmmintrin.h>/_mm_prefetch
+    // (those are x86-only). Branch hints have no portable MSVC equivalent; the
+    // prefetch is a perf hint, so a no-op is functionally correct.
     #define SPU2_LIKELY(x)       (x)
     #define SPU2_UNLIKELY(x)     (x)
     #define SPU2_PREFETCH_R(ptr) ((void)(ptr))

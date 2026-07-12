@@ -1115,8 +1115,12 @@ if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
 	set(ARMSX2_IOS TRUE)
 endif()
 
-# NEON-optimised SPU2 mixer/reverb: shared by all arm64 mobile targets.
-if(ANDROID OR ARMSX2_IOS)
+# NEON-optimised SPU2 reverb FIR backend. Compiled on EVERY arm64 target
+# (desktop macOS/Linux/Windows as well as Android/iOS): the call site in
+# spu2.cpp is guarded only by __aarch64__ / _M_ARM64, so RegisterNEONBackend()
+# must be defined on all arm64 builds or desktop arm64 fails to link. The
+# feature itself stays opt-in via SPU2/NeonReverbSIMD (default off).
+if(ANDROID OR ARMSX2_IOS OR ARCH_ARM64)
 	list(APPEND pcsx2SPU2Sources
 		SPU2/spu2_neon.cpp)
 	list(APPEND pcsx2SPU2Headers
