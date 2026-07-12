@@ -1100,7 +1100,6 @@ set(pcsx2arm64Sources
 set(pcsx2arm64Headers
 	arm64/AsmHelpers.h
 	arm64/iCore-arm64.h
-	arm64/JitTelemetry.h
 	arm64/iR3000A-arm64.h
 	arm64/iR5900-arm64.h
 	arm64/iR5900Analysis.h

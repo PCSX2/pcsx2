@@ -20,12 +20,6 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 	u32 gpr_bitmask, u32 fpr_bitmask, u8 address_register, u8 data_register,
 	u8 size_in_bits, bool is_signed, bool is_load, bool is_fpr)
 {
-#if 0
-	DevCon.WriteLn("Backpatching %s at %p[%u] (pc %08X vaddr %08X): GPR %08X FPR %08X Addr %u Data %u Size %u Flags %02X %02X",
-		is_load ? "load" : "store", (void*)code_address, code_size, guest_pc, guest_addr,
-		gpr_bitmask, fpr_bitmask, address_register, data_register, size_in_bits, is_signed, is_load);
-#endif
-
 	u8* thunk = recBeginThunk();
 
 	// Collect caller-saved GPRs that need saving.

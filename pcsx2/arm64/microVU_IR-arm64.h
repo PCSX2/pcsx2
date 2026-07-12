@@ -4,7 +4,6 @@
 #pragma once
 
 #include "microVU_Divtrace.h"
-#include "arm64/JitTelemetry.h"
 
 //#define MVURALOG(...) fprintf(stderr, __VA_ARGS__)
 #define MVURALOG(...)
@@ -106,9 +105,6 @@ protected:
 
 	int findFreeNeon(int vfreg)
 	{
-#if JIT_ALLOC_CENSUS
-		ArmJitTelemetry::g_allocCensus.mvu_vf_allocs.fetch_add(1, std::memory_order_relaxed);
-#endif
 		// Prefer unoccupied temp regs
 		for (int i = 0; i < neonAllocTotal; i++)
 		{
@@ -118,14 +114,6 @@ protected:
 		// Evict LRU
 		int x = findFreeNeonRec(0);
 		pxAssertMsg(x >= 0, "microVU NEON register allocation failure!");
-#if JIT_ALLOC_CENSUS
-		if (x >= 0 && neonMap[x].VFreg >= 0)
-		{
-			ArmJitTelemetry::g_allocCensus.mvu_vf_evict.fetch_add(1, std::memory_order_relaxed);
-			if (neonMap[x].xyzw != 0)
-				ArmJitTelemetry::g_allocCensus.mvu_vf_evict_dirty.fetch_add(1, std::memory_order_relaxed);
-		}
-#endif
 		return x;
 	}
 
@@ -153,10 +141,6 @@ protected:
 		}
 		int x = findFreeGPRRec(0);
 		pxAssertMsg(x >= 0, "microVU GPR register allocation failure!");
-#if JIT_ALLOC_CENSUS
-		if (x >= 0 && gprMap[x].VIreg >= 0)
-			ArmJitTelemetry::g_allocCensus.mvu_vi_evict.fetch_add(1, std::memory_order_relaxed);
-#endif
 		return x;
 	}
 

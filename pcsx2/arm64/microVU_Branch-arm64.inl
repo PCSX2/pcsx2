@@ -446,7 +446,6 @@ static void mVUcloseCodeCache(microVU& mVU)
 	if (codeSize > 0)
 	{
 		HostSys::FlushInstructionCache(codeStart, codeSize);
-		ArmJitTelemetry::AddVUFlush(codeSize);
 	}
 
 	mVU.prog.x86ptr = codeStart + codeSize;
