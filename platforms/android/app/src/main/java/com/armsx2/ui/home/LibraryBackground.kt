@@ -8,10 +8,11 @@ import com.armsx2.runtime.MainActivityRuntime
 
 /**
  * Optional user-chosen library background (#9). Stores a persisted content URI;
- * when unset the library falls back to the bundled default XMB-wave video (see
- * HomeScreen / [defaultBackgroundVideoUri]). The user can pick a still image,
- * an animated GIF/WebP (Coil handles those), or an MP4/other video (played via
- * [VideoBackground]); `clear()` reverts to the default video.
+ * when unset the library falls back to the bundled default XMB-wave still image
+ * (R.drawable.library_bg_xmb, drawn in HomeScreen). The user can pick a still image
+ * or an animated GIF/WebP (Coil handles both); `clear()` reverts to the default.
+ * (The background used to be a looping MP4 but that hurt performance, so it's a
+ * static image now.)
  */
 object LibraryBackground {
     private const val PREF = "library.background.uri"

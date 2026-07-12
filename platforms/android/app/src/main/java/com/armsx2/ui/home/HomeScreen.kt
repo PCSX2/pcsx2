@@ -6,8 +6,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.ExperimentalFoundationApi
-import android.net.Uri
-import androidx.compose.runtime.key
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -160,26 +158,23 @@ fun HomeScreen(
 
     CompositionLocalProvider(LocalCustomCoverMap provides customCoverMap) {
     ArmsBackdrop(
-        // Full-bleed wallpaper: the library video/image + readability scrim, drawn
-        // edge-to-edge (behind the gesture bar) so it never leaves an exposed strip at
-        // the bottom — that strip was the "blue bar" in landscape.
+        // Full-bleed wallpaper: the library image + readability scrim, drawn edge-to-edge
+        // (behind the gesture bar) so it never leaves an exposed strip at the bottom —
+        // that strip was the "blue bar" in landscape.
         backgroundLayer = {
             val libraryBg = LibraryBackground.uri.value
-            val bgVideoUri = when {
-                // Default (no user pick): the bundled PS3 XMB-wave video background.
-                libraryBg == null -> defaultBackgroundVideoUri(context)
-                // User picked a video file — play it as a moving background.
-                isVideoBackground(context, libraryBg) -> Uri.parse(libraryBg)
-                // User picked a still image / GIF — Coil handles it below.
-                else -> null
-            }
-            if (bgVideoUri != null) {
-                // key() so swapping the URI rebuilds the player (the AndroidView
-                // factory only runs once).
-                key(bgVideoUri.toString()) {
-                    VideoBackground(bgVideoUri, Modifier.fillMaxSize())
-                }
+            if (libraryBg == null) {
+                // Default: the bundled PS3 XMB-wave STILL. It used to be a looping MP4,
+                // but the continuous video decode cost in-library performance (sbro
+                // review), so it's a static image now.
+                Image(
+                    painter = painterResource(R.drawable.library_bg_xmb),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                )
             } else {
+                // User-picked still image / GIF (Coil handles both).
                 AsyncImage(
                     model = ImageRequest.Builder(context).data(libraryBg).crossfade(true).build(),
                     contentDescription = null,
@@ -365,7 +360,7 @@ fun HomeScreen(
                                 onOpenNavigation = onOpenMenu,
                                 onSort = viewModel::setSort,
                                 onToggleCoverStyle = { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
-                                onChooseBackground = { backgroundPicker.launch(arrayOf("image/*", "video/*")) },
+                                onChooseBackground = { backgroundPicker.launch(arrayOf("image/*")) },
                                 onClearBackground = LibraryBackground::clear,
                             )
                         }
