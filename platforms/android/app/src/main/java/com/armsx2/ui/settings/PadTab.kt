@@ -74,8 +74,6 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
     val ctx = LocalContext.current
     val refreshToken = remember { mutableIntStateOf(0) }
     val focusRequester = remember { FocusRequester() }
-    // Which macro's "configure button set" dialog is open (null = none).
-    val macroDialogFor = remember { mutableStateOf<TouchButtonId?>(null) }
     // Which macro is capturing a physical-controller trigger button (null = none).
     val macroCapture = remember { mutableStateOf<TouchButtonId?>(null) }
 
@@ -214,83 +212,16 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
         // so the feel sliders / stick modes refresh without re-opening the tab.
         @Suppress("UNUSED_EXPRESSION")
         ControllerMappings.stickBindTick.value
-        CollapsibleSection(str("pad.section.macros"), initiallyExpanded = false) {
-            // Macros — 4 combo buttons, each firing a chosen SET of pad buttons at once
-            // (e.g. R1+R2+R3). Tap a row to pick its buttons. Use them on-screen (enable +
-            // position the M1-M4 buttons in the layout editor, off by default) and/or bind a
-            // PHYSICAL controller button to fire the same macro ("Bind").
-            Text(
-                str("pad.macros.header"),
-                color = Color(0xFFBBBBBB),
-                fontSize = 15.sp,
-                modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
-            )
-            listOf(TouchButtonId.MACRO1, TouchButtonId.MACRO2, TouchButtonId.MACRO3, TouchButtonId.MACRO4).forEach { mid ->
-                val buttons = TouchControls.macroButtons(mid)
-                val summary = if (buttons.isEmpty()) str("pad.macro.notSet") else buttons.joinToString(" + ") { it.label }
-                val physCode = TouchControls.macroPhysicalCode(mid)
-                val capturingThis = macroCapture.value == mid
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(72.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(rowAura())
-                        .clickable { macroDialogFor.value = mid }
-                        .controllerFocusable(
-                            controllerId = "pad-macro-${mid.name}",
-                            onConfirm = { macroDialogFor.value = mid },
-                        )
-                        .padding(horizontal = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(mid.label, color = Colors.pasx2_blue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.width(10.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(summary, color = Color(0xFFCCCCCC), fontSize = 15.sp)
-                        Text(
-                            when {
-                                capturingThis -> str("pad.pressControllerButton")
-                                physCode != android.view.KeyEvent.KEYCODE_UNKNOWN ->
-                                    "Controller: ${ControllerMappings.labelForKey(physCode)}"
-                                else -> str("pad.controller.notBound")
-                            },
-                            color = if (capturingThis) Color(0xFFFFD33A) else Color(0xFF999999),
-                            fontSize = 14.sp,
-                        )
-                    }
-                    if (physCode != android.view.KeyEvent.KEYCODE_UNKNOWN && !capturingThis) {
-                        Text(
-                            str("pad.action.clear"),
-                            color = Color(0xFFFF6B6B), fontSize = 14.sp, fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .clickable { TouchControls.clearMacroPhysicalCode(mid); refreshToken.intValue++ }
-                                .padding(end = 10.dp),
-                        )
-                    }
-                    Text(
-                        if (capturingThis) str("action.cancel") else str("pad.action.bind"),
-                        color = Colors.pasx2_blue, fontSize = 14.sp, fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .clickable {
-                                macroCapture.value = if (capturingThis) null else mid
-                                capture.value = null
-                                ControllerMappings.captureStickDir.value = null
-                            }
-                            .padding(end = 10.dp),
-                    )
-                    Text(str("pad.action.edit"), color = Colors.pasx2_blue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                }
-                SettingsDivider()
-            }
-            macroDialogFor.value?.let { mid ->
-                MacroConfigDialog(
-                    macroId = mid,
-                    onSaved = { refreshToken.intValue++ },
-                    onDismiss = { macroDialogFor.value = null },
-                )
-            }
-        }
+        // Macros section — extracted so the in-game Controls tab can reuse it. Here in the
+        // full Pad tab we pass the physical-trigger capture host, so the "Bind" column is live.
+        MacrosSection(
+            macroCapture = macroCapture,
+            onArmCapture = { mid ->
+                macroCapture.value = if (macroCapture.value == mid) null else mid
+                capture.value = null
+                ControllerMappings.captureStickDir.value = null
+            },
+        )
         CollapsibleSection(str("pad.section.playerRumble"), initiallyExpanded = false) {
             // Local co-op: pick which player's buttons / stick mode you're editing. P2 is
             // the second controller to press a button in-game (auto-assigned). Stick
@@ -784,6 +715,101 @@ private fun StickPickItem(label: String, selected: Boolean, onClick: () -> Unit)
             fontSize = 16.sp,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
         )
+    }
+}
+
+/**
+ * Macros — 4 combo buttons, each firing a chosen SET of pad buttons at once (e.g. R1+R2+R3).
+ * Shared between the full Pad settings tab and the in-game Controls tab. Tap a row to pick
+ * its buttons (the M1-M4 on-screen buttons + any physical trigger fire that set).
+ *
+ * Physical-trigger binding needs a capture host (the Pad tab's root key listener), so the
+ * "Bind"/"Clear" column only renders when [onArmCapture] is supplied. In the in-game quick
+ * menu both params are null: you can still edit each macro's button set, just not bind a
+ * controller button to it (do that from All Settings › Controls).
+ */
+@Composable
+internal fun MacrosSection(
+    macroCapture: MutableState<TouchButtonId?>? = null,
+    onArmCapture: ((TouchButtonId) -> Unit)? = null,
+) {
+    val macroDialogFor = remember { mutableStateOf<TouchButtonId?>(null) }
+    // Recompose when any macro's button set / physical bind changes.
+    @Suppress("UNUSED_EXPRESSION")
+    TouchControls.macroBindTick.value
+    val physicalSupported = onArmCapture != null
+    CollapsibleSection(str("pad.section.macros"), initiallyExpanded = false) {
+        Text(
+            str("pad.macros.header"),
+            color = Color(0xFFBBBBBB),
+            fontSize = 15.sp,
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
+        )
+        listOf(TouchButtonId.MACRO1, TouchButtonId.MACRO2, TouchButtonId.MACRO3, TouchButtonId.MACRO4).forEach { mid ->
+            val buttons = TouchControls.macroButtons(mid)
+            val summary = if (buttons.isEmpty()) str("pad.macro.notSet") else buttons.joinToString(" + ") { it.label }
+            val physCode = TouchControls.macroPhysicalCode(mid)
+            val capturingThis = macroCapture?.value == mid
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .height(72.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(rowAura())
+                    .clickable { macroDialogFor.value = mid }
+                    .controllerFocusable(
+                        controllerId = "pad-macro-${mid.name}",
+                        onConfirm = { macroDialogFor.value = mid },
+                    )
+                    .padding(horizontal = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(mid.label, color = Colors.pasx2_blue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(summary, color = Color(0xFFCCCCCC), fontSize = 15.sp)
+                    if (physicalSupported) {
+                        Text(
+                            when {
+                                capturingThis -> str("pad.pressControllerButton")
+                                physCode != android.view.KeyEvent.KEYCODE_UNKNOWN ->
+                                    "Controller: ${ControllerMappings.labelForKey(physCode)}"
+                                else -> str("pad.controller.notBound")
+                            },
+                            color = if (capturingThis) Color(0xFFFFD33A) else Color(0xFF999999),
+                            fontSize = 14.sp,
+                        )
+                    }
+                }
+                if (physicalSupported) {
+                    if (physCode != android.view.KeyEvent.KEYCODE_UNKNOWN && !capturingThis) {
+                        Text(
+                            str("pad.action.clear"),
+                            color = Color(0xFFFF6B6B), fontSize = 14.sp, fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clickable { TouchControls.clearMacroPhysicalCode(mid) }
+                                .padding(end = 10.dp),
+                        )
+                    }
+                    Text(
+                        if (capturingThis) str("action.cancel") else str("pad.action.bind"),
+                        color = Colors.pasx2_blue, fontSize = 14.sp, fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .clickable { onArmCapture?.invoke(mid) }
+                            .padding(end = 10.dp),
+                    )
+                }
+                Text(str("pad.action.edit"), color = Colors.pasx2_blue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            }
+            SettingsDivider()
+        }
+        macroDialogFor.value?.let { mid ->
+            MacroConfigDialog(
+                macroId = mid,
+                onSaved = { },
+                onDismiss = { macroDialogFor.value = null },
+            )
+        }
     }
 }
 

@@ -121,8 +121,10 @@ fun FixesTab(state: MutableState<Settings>) {
         SettingsDivider()
         SegmentedRow(
             label = str("fixes.dithering.label"),
-            options = listOf(str("fixes.opt.off"), str("fixes.opt.scaled"), str("fixes.opt.unscaled")),
-            selectedIndex = s.dithering.coerceIn(0, 2),
+            // "Force 32bit" (native Dithering==3) removes PS2 16-bit color banding — many
+            // games look noticeably cleaner with it on.
+            options = listOf(str("fixes.opt.off"), str("fixes.opt.scaled"), str("fixes.opt.unscaled"), str("fixes.opt.force32")),
+            selectedIndex = s.dithering.coerceIn(0, 3),
             description = str("fixes.dithering.desc"),
             onChange = { apply(s.copy(dithering = it)) },
         )

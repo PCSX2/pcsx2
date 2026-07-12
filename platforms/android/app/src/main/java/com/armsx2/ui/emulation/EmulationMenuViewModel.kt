@@ -34,6 +34,9 @@ data class EmulationMenuUiState(
     val pendingHardcore: Boolean? = null,
     val achievementSummary: String = I18n.get("ra.status.noAchievements.title"),
     val achievements: List<AchievementItem> = emptyList(),
+    // RetroAchievements rich-presence line ("what you're doing right now"); shown in the
+    // pause-menu header when a set is loaded. Empty when RA is off / no set.
+    val richPresence: String = "",
 )
 
 class EmulationMenuViewModel(application: Application) : AndroidViewModel(application) {
@@ -48,11 +51,11 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
         // than the non-existent "unlocked"/"total" keys the old code read (which always
         // fell through to rich presence). Fall back to rich presence when no set loaded.
         val items = runCatching { parseAchievementItems(NativeApp.getAchievementsJSON().orEmpty()) }.getOrDefault(emptyList())
+        val richPresence = runCatching { NativeApp.getRichPresence().orEmpty() }.getOrDefault("")
         val summary = if (items.isNotEmpty()) {
             "${items.count { it.unlocked }} / ${items.size}"
         } else {
-            runCatching { NativeApp.getRichPresence().orEmpty() }.getOrDefault("")
-                .ifBlank { I18n.get("ra.status.noAchievements.title") }
+            richPresence.ifBlank { I18n.get("ra.status.noAchievements.title") }
         }
         state.value = state.value.copy(
             tab = initialTab ?: state.value.tab,
@@ -65,6 +68,7 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
             hardcore = runCatching { NativeApp.isHardcoreMode() }.getOrDefault(false),
             achievementSummary = summary,
             achievements = items,
+            richPresence = richPresence,
         )
     }
 

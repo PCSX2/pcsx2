@@ -24,11 +24,17 @@ name: Build All Platforms
 on:
   push:
     branches:
-      - main
       - master
-      - macOS
-      - refactor/monorepo
+    # Doc-only pushes shouldn't burn ~2h of arm64 CI.
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE*'
+      - '.gitignore'
   pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE*'
+      - '.gitignore'
   workflow_dispatch:
 
 concurrency:
@@ -86,7 +92,7 @@ jobs:
       run:
         working-directory: platforms/android
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -115,7 +121,7 @@ jobs:
         run: ./gradlew :app:assembleRelease --stacktrace
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: armsx2-android-arm64
           path: platforms/android/app/build/outputs/apk/**/*.apk
@@ -128,7 +134,7 @@ jobs:
     # Non-blocking until the collapsed-core iOS build first goes green.
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -181,3 +187,28 @@ jobs:
           name: ${{ env.IPA_NAME }}
           path: ${{ github.workspace }}/${{ env.IPA_NAME }}
           if-no-files-found: error
+
+  # ---- Alert on a broken master build ------------------------------------
+  # Fires only when a BLOCKING guardrail job (the PC arm64 builds) fails on a
+  # push to master -- never on PRs, and never on the non-blocking mobile jobs
+  # (they are continue-on-error, so they can't trip `failure()`). GitHub also
+  # emails the pusher natively; this adds a Discord ping to the shared channel.
+  notify-failure:
+    name: Notify on master build failure
+    needs: [pc-macos-arm64, pc-linux-arm64, pc-windows-arm64]
+    if: ${{ failure() && github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    # Job-level so the step's `if: env.HOOK != ''` guard can see it.
+    env:
+      HOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
+    steps:
+      - name: Discord failure ping
+        if: ${{ env.HOOK != '' }}   # no-op on forks that lack the secret
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          jq -n \
+            --arg url "$RUN_URL" \
+            --arg desc "Commit \`${{ github.sha }}\` by ${{ github.actor }} failed a required build." \
+            '{username:"ARMSX2 CI", embeds:[{title:"❌ master build broke", url:$url, color:15158332, description:$desc}]}' \
+          | curl -fsSL -H 'Content-Type: application/json' -d @- "$HOOK"

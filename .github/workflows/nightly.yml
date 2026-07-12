@@ -1,0 +1,223 @@
+# Nightly build pipeline for the single-core monorepo.
+#
+# Once a day (and on manual dispatch) this builds every shippable target and
+# publishes them as a dated GitHub *pre-release* (nightly-YYYYMMDD) so anyone can
+# download them. A prune step keeps only the newest 7 nightlies so the Releases
+# page stays tidy (stable vX.Y.Z releases are never touched).
+#
+# Platform coverage mirrors build-all.yml's guardrail:
+#   * PC arm64 Qt GUI  -> macOS / Linux (4K+16K) / Windows   (blocking for release)
+#   * Android APK       -> sideloadable, debug-key-signed     (non-blocking, attach-if-present)
+#   * iOS               -> NOT yet: the current CI job is only a simulator
+#                          compile-check. Wire platforms/ios/scripts/build-ios-ipa.sh
+#                          (unsigned device .ipa) here once the iphoneos build is green.
+name: Nightly
+
+on:
+  schedule:
+    - cron: '0 8 * * *'      # 08:00 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: write            # create the release + tag, prune old ones
+
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+
+jobs:
+  # ---- gate: skip empty nights; never run on forks -----------------------
+  gate:
+    name: Decide whether to build
+    if: ${{ github.repository == 'ARMSX2/ARMSX2' }}
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check.outputs.proceed }}
+      date: ${{ steps.check.outputs.date }}
+      sha: ${{ steps.check.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0     # needed for the 24h commit count below
+      - id: check
+        run: |
+          DATE=$(date -u +%Y%m%d)
+          SHA=$(git rev-parse --short HEAD)
+          # A manual dispatch always builds; a scheduled run only builds if there
+          # was at least one commit in the last 24h (no point rebuilding nothing).
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PROCEED=true
+          elif [ "$(git rev-list --count --since='24 hours ago' HEAD)" -gt 0 ]; then
+            PROCEED=true
+          else
+            PROCEED=false
+          fi
+          echo "date=$DATE"       >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA"         >> "$GITHUB_OUTPUT"
+          echo "proceed=$PROCEED" >> "$GITHUB_OUTPUT"
+          echo "proceed=$PROCEED date=$DATE sha=$SHA"
+
+  # ---- PC arm64 Qt GUI (blocking for the release) ------------------------
+  pc-macos-arm64:
+    name: PC · macOS arm64 (Qt)
+    needs: gate
+    if: ${{ needs.gate.outputs.proceed == 'true' }}
+    uses: ./.github/workflows/macos_build.yml
+    with:
+      jobName: "macOS arm64"
+      artifactPrefixName: "armsx2-macos-arm64"
+      fetchTags: true
+
+  pc-linux-arm64:
+    name: PC · Linux arm64 (Qt)
+    needs: gate
+    if: ${{ needs.gate.outputs.proceed == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - pageVariant: "4k"
+            pageSize: "4096"
+            cacheLineSize: "64"
+          - pageVariant: "16k"
+            pageSize: "16384"
+            cacheLineSize: "128"
+    uses: ./.github/workflows/linux_build_qt.yml
+    with:
+      jobName: "Linux arm64 (${{ matrix.pageVariant }} pages)"
+      artifactPrefixName: "armsx2-linux-arm64-${{ matrix.pageVariant }}-appimage"
+      compiler: clang
+      cmakeflags: "-DHOST_PAGE_SIZE=${{ matrix.pageSize }} -DHOST_CACHE_LINE_SIZE=${{ matrix.cacheLineSize }}"
+      buildAppImage: true
+      fetchTags: true
+
+  pc-windows-arm64:
+    name: PC · Windows arm64 (Qt)
+    needs: gate
+    if: ${{ needs.gate.outputs.proceed == 'true' }}
+    uses: ./.github/workflows/windows_build_qt.yml
+    with:
+      jobName: "Windows arm64"
+      artifactPrefixName: "armsx2-windows-arm64"
+      fetchTags: true
+
+  # ---- Android APK (non-blocking; attached if it builds) -----------------
+  android:
+    name: Android APK
+    needs: gate
+    if: ${{ needs.gate.outputs.proceed == 'true' }}
+    continue-on-error: true
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: platforms/android
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install NDK + CMake
+        run: yes | sdkmanager "ndk;28.2.13676358" "cmake;3.31.6" >/dev/null || true
+
+      - name: Fetch shaderc third-party deps
+        run: python3 app/src/main/cpp/3rdparty/shaderc/utils/git-sync-deps
+
+      # Release build; when armsx2_keystore.properties is absent (it is, in CI) the
+      # release APK is debug-key-signed -> installable/sideloadable, not Play-grade.
+      - name: Build release APK
+        run: ./gradlew :app:assembleRelease --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: armsx2-android-arm64
+          path: platforms/android/app/build/outputs/apk/**/*.apk
+          if-no-files-found: warn
+
+  # ---- publish: gather artifacts -> dated pre-release --------------------
+  publish:
+    name: Publish nightly release
+    needs: [gate, pc-macos-arm64, pc-linux-arm64, pc-windows-arm64, android]
+    # Run as long as the PC guardrail passed, even if Android failed (its APK is
+    # then simply absent). `!cancelled()` disables the implicit "all needs must
+    # succeed" gate so we can require only the PC jobs explicitly.
+    # NOTE: must be a single-line ${{ }} with nothing around it -- a folded/multi-line
+    # scalar leaves extra characters (a newline) around the expression, which GitHub
+    # then treats as a truthy string and the guard is silently bypassed.
+    if: ${{ !cancelled() && needs.gate.outputs.proceed == 'true' && needs.pc-macos-arm64.result == 'success' && needs.pc-linux-arm64.result == 'success' && needs.pc-windows-arm64.result == 'success' }}
+    runs-on: ubuntu-latest
+    # Job-level so the Discord step's `if: env.HOOK != ''` guard can see it.
+    env:
+      HOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: dl
+
+      - name: Collect release assets
+        run: |
+          mkdir -p out
+          # Single-file assets: macOS .tar.xz, Linux .AppImage, Android .apk
+          find dl -type f \( -name '*.tar.xz' -o -name '*.AppImage' -o -name '*.apk' \) -exec cp {} out/ \;
+          # Windows artifacts are a bin/ tree -> zip each one up
+          for d in dl/*windows*/; do
+            [ -d "$d" ] || continue
+            base=$(basename "$d")
+            (cd "$d" && zip -qr "$GITHUB_WORKSPACE/out/${base}.zip" .)
+          done
+          echo "Release assets:"; ls -la out
+
+      - name: Publish GitHub pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: nightly-${{ needs.gate.outputs.date }}
+          name: "ARMSX2 nightly ${{ needs.gate.outputs.date }} (${{ needs.gate.outputs.sha }})"
+          prerelease: true
+          target_commitish: ${{ github.sha }}
+          fail_on_unmatched_files: false
+          body: |
+            Automated **nightly** build from `${{ github.sha }}` — unsigned, for community testing.
+
+            **Platforms:** macOS arm64 · Linux arm64 (4K + 16K pages) · Windows arm64 · Android (sideloadable APK).
+            _iOS is not yet included — the device build is still being brought up._
+          files: out/*
+
+      - name: Discord announce
+        if: ${{ env.HOOK != '' }}
+        env:
+          REL_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/nightly-${{ needs.gate.outputs.date }}
+        run: |
+          jq -n --arg url "$REL_URL" --arg d "ARMSX2 nightly ${{ needs.gate.outputs.date }}" \
+            '{username:"ARMSX2 CI", embeds:[{title:("🌙 " + $d + " published"), url:$url, color:5763719, description:"New nightly build available for download."}]}' \
+          | curl -fsSL -H 'Content-Type: application/json' -d @- "$HOOK"
+
+  # ---- prune: keep only the newest 7 nightlies ---------------------------
+  prune:
+    name: Prune old nightlies (keep 7)
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete all but the newest 7 nightly-* releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          # startswith('nightly-') scopes this to nightlies -> stable vX.Y.Z is safe.
+          gh release list --limit 100 --json tagName,createdAt \
+            | jq -r '[.[] | select(.tagName | startswith("nightly-"))]
+                     | sort_by(.createdAt) | reverse | .[7:] | .[].tagName' \
+            | while read -r tag; do
+                [ -n "$tag" ] || continue
+                echo "Deleting old nightly: $tag"
+                gh release delete "$tag" --cleanup-tag --yes
+              done

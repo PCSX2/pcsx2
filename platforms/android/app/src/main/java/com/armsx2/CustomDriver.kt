@@ -78,6 +78,15 @@ object CustomDriver {
             "https://api.github.com/repos/crueter/GameHub-8Elite-Drivers/releases",
             "gamehub8e",
         ),
+        // PojavLauncherTeam/freedreno-builder — biweekly Mesa Turnip builds (archived at
+        // Mesa ~Jan 2025). Each release ships a bare libvulkan_freedreno.so (no meta.json,
+        // synthesized on install). A solid known-good Turnip for older Adreno 6xx /
+        // Android 10 devices.
+        DriverSource(
+            "PojavLauncherTeam · freedreno (A10)",
+            "https://api.github.com/repos/PojavLauncherTeam/freedreno-builder/releases",
+            "freedrenobuilder",
+        ),
     )
 
     /** Sane default for the driver's library soname when meta.json
@@ -331,7 +340,31 @@ object CustomDriver {
             return null
         }
 
+        // Some sources ship a bare libvulkan_*.so with no meta.json (e.g.
+        // PojavLauncherTeam/freedreno-builder). Synthesize a minimal manifest so those
+        // still install as adrenotools packs — honoring the DRIVER_SOURCES contract above.
         val meta = File(tmpDir, "meta.json")
+        if (!meta.exists()) {
+            val soFile = tmpDir.listFiles { f -> f.isFile && f.name.endsWith(".so") }?.firstOrNull()
+            if (soFile != null) {
+                val synthLib = if (File(tmpDir, DEFAULT_LIBRARY_NAME).exists()) DEFAULT_LIBRARY_NAME else soFile.name
+                runCatching {
+                    meta.writeText(
+                        JSONObject().apply {
+                            put("schemaVersion", 1)
+                            put("name", id)
+                            put("description", "Turnip / freedreno (synthesized manifest)")
+                            put("author", "freedreno-builder")
+                            put("vendor", "Mesa")
+                            put("driverVersion", "")
+                            put("minApi", 24)
+                            put("libraryName", synthLib)
+                        }.toString()
+                    )
+                    Log.i(TAG, "install: synthesized meta.json ($synthLib)")
+                }
+            }
+        }
         if (!meta.exists()) {
             Log.w(TAG, "install: zip missing meta.json")
             tmpDir.deleteRecursively()
