@@ -60,13 +60,8 @@ void recJAL()
 	recompileNextInstruction(true, false);
 	if (EmuConfig.Gamefixes.GoemonTlbHack)
 		SetBranchImm(vtlb_V2P(newpc));
-#if EE_CALLRET_STACK
 	else
 		SetBranchImmCall(newpc, retpc);
-#else
-	else
-		SetBranchImm(newpc);
-#endif
 }
 
 /*********************************************************

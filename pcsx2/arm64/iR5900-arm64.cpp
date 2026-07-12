@@ -976,7 +976,6 @@ vixl::aarch64::Register _eeGetGPRSourceReg(const a64::Register& scratch, int fro
 //  Branch handling
 // =====================================================================================================
 
-#if EE_CALLRET_STACK
 // Call-ret shadow-stack ring (P2-2; FEX-Emu design, adapted). Frames are
 // {u64 guest return PC, u64 host landing}; the landing sits right after the
 // call site's BL, so a matching guest JR-$ra can RET to it and the hardware
@@ -1037,7 +1036,6 @@ namespace
 		armAsm->Stp(RXSCRATCH, RSCRATCHADDR, a64::MemOperand(a64::x9));
 	}
 } // namespace
-#endif // EE_CALLRET_STACK
 
 // Block-tail cycle update + event check under the delta representation:
 // fold the pending block cycles into RECCYCLE with a flag-setting add, then
@@ -1059,10 +1057,6 @@ static void emitCycleUpdateAndEventCheck()
 void SetBranchReg(EEBranchRegMode mode, u32 call_return_pc)
 {
 	g_branch = 1;
-
-#if !EE_CALLRET_STACK
-	mode = EEBranchRegMode::Jump;
-#endif
 
 	// Flush all GPR/NEON/constant allocations FIRST, while host registers
 	// still hold correct guest values. iFlushCall writes back delay slot
@@ -1100,7 +1094,6 @@ void SetBranchReg(EEBranchRegMode mode, u32 call_return_pc)
 	armAsm->Tst(a64::w0, 3);
 	armAsm->B(&unaligned, a64::ne);
 
-#if EE_CALLRET_STACK
 	if (mode == EEBranchRegMode::Return)
 	{
 		// Guest JR-$ra: pop a frame — ALWAYS, before the event check, so an
@@ -1154,7 +1147,6 @@ void SetBranchReg(EEBranchRegMode mode, u32 call_return_pc)
 		}
 	}
 	else
-#endif
 	{
 		// Update the pinned cycle delta and check events (delta >= 0 →
 		// DispatcherEvent converts RECCYCLE itself before calling recEventTest).
@@ -1215,7 +1207,6 @@ void SetBranchImm(u32 imm)
 // return PC. See the call-ret ring comment block above SetBranchReg.
 void SetBranchImmCall(u32 imm, u32 return_pc)
 {
-#if EE_CALLRET_STACK
 	// A WaitLoop-FF-shaped block wants the fast-forward path, and a
 	// self-spinning JAL never returns anyway — keep the plain tail.
 	if (EmuConfig.Speedhacks.WaitLoop && s_nBlockFF && imm == s_branchTo)
@@ -1261,10 +1252,6 @@ void SetBranchImmCall(u32 imm, u32 return_pc)
 		armAsm->b(int64_t{0}); // placeholder; recBlocks.Link will overwrite
 		recBlocks.Link(HWADDR(return_pc), patch_site);
 	}
-#else
-	(void)return_pc;
-	SetBranchImm(imm);
-#endif
 }
 
 // =====================================================================================================
@@ -2128,12 +2115,10 @@ static void recResetRaw()
 {
 	Console.WriteLn(Color_Green, "iR5900-ARM64 Recompiler reset.");
 
-#if EE_CALLRET_STACK
 	// The code-cache rewind below dangles every host landing pointer in the
 	// call-ret ring — sentinel-fill so no stale frame can match. (recClear
 	// needs nothing: dead block entries keep resolving via redirect stubs.)
 	eeCallRetResetRing();
-#endif
 
 	// Full reset regenerates every block and dispatcher, so nothing can
 	// reference old pool content — drop it. Required since FX-03a: the

@@ -66,7 +66,7 @@
 //   x13 = cpuRegs.GPR.r[16].UD[0]  ($s0)
 //   x11 = cpuRegs.GPR.r[1].UD[0]   ($at)
 // THE PIN IS AUTHORITATIVE for the lower 64 bits. Under the shipping
-// lazy-dirty policy (EE_PIN_LAZY_DIRTY=1, EE-SRA 3 Arm E) guest writes
+// lazy-dirty policy (EE-SRA 3 Arm E) guest writes
 // update the pin only (armStoreEERegPtr / armStoreEEGPRQuad lane 0) and the
 // canonical store is elided; every seam where C code or a JIT-internal
 // 128-bit/raw reader could observe GPR memory flushes the pins first
@@ -76,9 +76,7 @@
 // scalar templates). The pins are re-read from memory (armReloadEEGPRPins)
 // after the C calls that can write guest GPRs — interpreter fallbacks
 // (recCall/recBranchCall), recEventTest (savestate load), recRecompile (ELF
-// entry hooks), MFC0 rd=25, and eeloadHook/2. (Under the A/B-only
-// write-through build, -DEE_PIN_LAZY_DIRTY=0, memory stays canonical and the
-// flush helpers are no-ops.) The upper 64 bits of the 128-bit guest reg are
+// entry hooks), MFC0 rd=25, and eeloadHook/2. The upper 64 bits of the 128-bit guest reg are
 // NOT mirrored; only UD[0] accesses match. All pin host regs are carved out
 // of the dynamic allocator pool (ALLOCATABLE_MASK in iCore-arm64.cpp).
 //
@@ -246,7 +244,7 @@ static __fi const vixl::aarch64::Register* armEEPinForGPR(int gpr)
 // a pinned guest GPR slot. *offset_in_dword receives the byte offset (0..7)
 // of `field` within UD[0]. UD[1]/UL[2]/UL[3] accesses do not match (the
 // upper half is not mirrored). Returns the table entry (host reg + guest
-// index) so write-through callers can name the canonical memory slot.
+// index) so callers can name the canonical memory slot.
 static __fi const EEPinnedGPR* armEEPinForPtr(const void* field, int* offset_in_dword)
 {
 	const u8* p = reinterpret_cast<const u8*>(field);
@@ -309,25 +307,19 @@ static __fi void armReloadEEPinsAfterPreserveMostCall()
 			armAsm->Ldr(pin.host, armCpuRegMem(&cpuRegs.GPR.r[pin.gpr].UD[0]));
 	}
 }
-// Pin write policy. EE_PIN_LAZY_DIRTY=1 (the shipping default since EE-SRA 3
-// Arm E): guest writes to pinned GPRs update the PIN ONLY — the canonical
-// store is elided, and every seam where C code (or a JIT-internal 128-bit /
-// raw reader) could observe stale GPR memory restores canonicity first via
-// the flush helpers below. 0 = write-through (pin + canonical store after
-// every guest write) — kept for A/B: build a second binary with
-// -DEE_PIN_LAZY_DIRTY=0 (codegen_ab two-binary flow); no runtime toggle —
-// mixing modes across blocks is unsound.
+// Pin write policy (lazy-dirty, shipping since EE-SRA 3 Arm E). Guest writes
+// to pinned GPRs update the PIN ONLY — the canonical store is elided, and
+// every seam where C code (or a JIT-internal 128-bit / raw reader) could
+// observe stale GPR memory restores canonicity first via the flush helpers
+// below.
 //
-// Arm E verdict (RK3562, 2026-07-09): lazy removes 4.3% of emitted EE-block
-// instructions (write-through Strs 54.8k → 7.9k on the SotC census) and wins
-// EE-thread SotC −1.05% / UYA −0.25% against write-through ON THE ARM C/D
+// Arm E verdict (RK3562, 2026-07-09): lazy removed 4.3% of emitted EE-block
+// instructions (Strs 54.8k → 7.9k on the SotC census) and won EE-thread SotC
+// −1.05% / UYA −0.25% against the old write-through discipline ON THE ARM C/D
 // TABLE (callee-saved tier-1 + preserve_most-spared tier-2 = near-zero seam
 // bills). WS-B's earlier UYA +0.84% lazy regression was the old caller-saved
 // homing paying 6 Str + 6 Ldr at every C seam — the re-home, not the lazy
 // idea, was what that verdict measured.
-#ifndef EE_PIN_LAZY_DIRTY
-#define EE_PIN_LAZY_DIRTY 1
-#endif
 
 // EE call-ret shadow stack (P2-2). Guest JAL/JALR-rd31 tails push
 // {return PC, host landing} onto a small ring and transfer via BL; the
@@ -336,21 +328,14 @@ static __fi void armReloadEEPinsAfterPreserveMostCall()
 // BLs and predicts guest returns. Design: FEX-Emu's call-ret stack (MIT) /
 // MAMBO-X64 (PLDI'17); ring-with-wrap replaces FEX's guard-page recentering
 // (our PageFaultHandler interface has no ucontext access, and wrap needs no
-// recovery at all). 1 = on (default), build a second binary with
-// -DEE_CALLRET_STACK=0 for the A/B baseline; no runtime toggle — mixing
-// push/pop-emitting and plain blocks across one ring is nonsense.
-#ifndef EE_CALLRET_STACK
-#define EE_CALLRET_STACK 1
-#endif
+// recovery at all).
 
 // Write every pin mirror back to canonical memory. No dirty tracking — the
 // lrps2 lesson says compile-time dirty subsets are unsound for runtime-path-
 // dependent dirtiness, so seams flush ALL pins (9 Str to one hot line at
-// already-expensive boundaries). No-op in write-through mode.
+// already-expensive boundaries).
 static __fi void armFlushEEGPRPins()
 {
-	if (!EE_PIN_LAZY_DIRTY)
-		return;
 	for (const EEPinnedGPR& pin : kEEPinTable)
 		armAsm->Str(pin.host, armCpuRegMem(&cpuRegs.GPR.r[pin.gpr].UD[0]));
 }
@@ -359,11 +344,9 @@ static __fi void armFlushEEGPRPins()
 // followed by armReloadEEClobberedPins: the reload reads canonical memory,
 // which under lazy-dirty is stale until flushed — the pair would otherwise
 // silently LOSE the in-register writes. (Callee-saved pins ride through the
-// call in their registers, so they need neither.) No-op in write-through.
+// call in their registers, so they need neither.)
 static __fi void armFlushEEClobberedPins()
 {
-	if (!EE_PIN_LAZY_DIRTY)
-		return;
 	for (const EEPinnedGPR& pin : kEEPinTable)
 	{
 		if (!armIsCalleeSavedRegister(static_cast<int>(pin.host.GetCode())))
@@ -376,12 +359,9 @@ static __fi void armFlushEEClobberedPins()
 // need neither flush nor reload — the same treatment callee-saved pins
 // already get at these seams. That is sound for exactly the reason the
 // callee-saved treatment is: the preserve_most vtlb dispatchers never READ
-// guest GPR memory. Emits nothing for the current table; no-op in
-// write-through mode.
+// guest GPR memory. Emits nothing for the current table.
 static __fi void armFlushEEPinsBeforePreserveMostCall()
 {
-	if (!EE_PIN_LAZY_DIRTY)
-		return;
 	for (const EEPinnedGPR& pin : kEEPinTable)
 	{
 		const int reg = static_cast<int>(pin.host.GetCode());
@@ -394,11 +374,9 @@ static __fi void armFlushEEPinsBeforePreserveMostCall()
 // (NEON dual-residence fill, MMI quad loads, SQ/QMTC2 sources) may see a
 // stale lower half when the pin is dirty — Ins the pin into lane 0 after the
 // load. The upper 64 bits are never mirrored, so memory is always right for
-// them. No-op in write-through mode (memory == pin by construction).
+// them.
 static __fi void armMergeEEPinIntoQuad(const vixl::aarch64::VRegister& q, int gpr)
 {
-	if (!EE_PIN_LAZY_DIRTY)
-		return;
 	if (const vixl::aarch64::Register* pin = armEEPinForGPR(gpr))
 		armAsm->Ins(q.V2D(), 0, *pin);
 }
@@ -443,7 +421,7 @@ static __fi void armStoreEERegPtr(const vixl::aarch64::CPURegister& reg, const v
 	// ONLY — the canonical store is elided; seams restore memory canonicity
 	// (armFlushEEGPRPins/armFlushEEClobberedPins). A store whose source IS
 	// the pin (armEEDestForGPR / fastmem pinned load dest) emits NOTHING.
-	if (EE_PIN_LAZY_DIRTY && pin && reg.IsRegister())
+	if (pin && reg.IsRegister())
 	{
 		const vixl::aarch64::Register src(reg);
 		if (off == 0 && reg.Is64Bits())
@@ -466,7 +444,7 @@ static __fi void armStoreEERegPtr(const vixl::aarch64::CPURegister& reg, const v
 		// flush the (possibly newer) pin so the partial store merges into
 		// current bytes rather than stale memory.
 	}
-	if (EE_PIN_LAZY_DIRTY && pin)
+	if (pin)
 		armAsm->Str(pin->host, armCpuRegMem(&cpuRegs.GPR.r[pin->gpr].UD[0]));
 
 	if (armIsCpuRegPtr(field))
@@ -516,14 +494,14 @@ static __fi void armStoreEEGPRQuad(const vixl::aarch64::VRegister& q, int gpr)
 
 // Destination selection for the scalar templates: when the destination
 // guest GPR is pinned, the FINAL result-producing instruction targets the
-// pin directly, so the armStoreEERegPtr write-through that follows emits
+// pin directly, so the armStoreEERegPtr store that follows emits
 // just the canonical STR (it skips the mirror Mov when the source IS the
 // mirror) — one instruction saved per pinned-dest op.
 // Contract: ONLY the final writing instruction of an emission may target
 // the returned register, with its guest sources read in that same
 // instruction (a pinned dest can alias a pinned source; an earlier write
 // would clobber it — the recSQC2/MGS3 aliasing class), and the
-// write-through store must follow before anything can observe the reg.
+// store must follow before anything can observe the reg.
 // vixl macro temps are fine: LogicalMacro/AddSubMacro may borrow rd to
 // materialize an unencodable immediate, but they exclude rn and the
 // transient value is dead by the final instruction.
@@ -635,7 +613,7 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot);
 // DispatcherReg). Call = guest JALR-rd31: push a frame and BL into
 // DispatcherReg with a linked landing for call_return_pc. Jump = everything
 // else (plain shared-dispatcher exit; also every mode's meaning when
-// EE_CALLRET_STACK=0 or the Goemon gamefix is active — callers gate).
+// the Goemon gamefix is active — callers gate).
 enum class EEBranchRegMode
 {
 	Jump,

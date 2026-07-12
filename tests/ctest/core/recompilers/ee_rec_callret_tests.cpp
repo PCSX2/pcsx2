@@ -6,20 +6,13 @@
 // BL; guest JR-$ra tails pop, compare, and RET on hit or miss. These tests
 // pin the ABI-visible correctness of both paths (roundtrips, nesting,
 // clobbered $ra misses, ring wrap, sentinel misses) through the standard
-// JIT-vs-interp diff. Ring-state assertions are gated on the compile flag
-// so the -DEE_CALLRET_STACK=0 A/B baseline build still passes this file.
+// JIT-vs-interp diff.
 
 #include "harness/EeRecTestHarness.h"
 
 #include "R5900.h"
 
 #include <gtest/gtest.h>
-
-// Mirror of the iR5900-arm64.h default; the real value arrives via the
-// global compile flag on -DEE_CALLRET_STACK=0 builds.
-#ifndef EE_CALLRET_STACK
-#define EE_CALLRET_STACK 1
-#endif
 
 using namespace recompiler_tests;
 using namespace mips;
@@ -32,7 +25,6 @@ constexpr u32 kPark = RecompilerTestEnvironment::kParkingPc;
 constexpr u32 kFuncA = kProgramPc + 0x100;
 constexpr u32 kFuncB = kProgramPc + 0x200;
 
-#if EE_CALLRET_STACK
 constexpr u64 kRingBytes = 0x10000;
 constexpr u64 kOffMask = kRingBytes - 16;
 
@@ -49,7 +41,6 @@ RingFrame ReadFrame(u64 off)
 		sizeof(f));
 	return f;
 }
-#endif
 } // namespace
 
 TEST(EeRecCallRet, JalSubroutineRoundtrip)
@@ -172,7 +163,6 @@ TEST(EeRecCallRet, ReturnWithEmptyRingMissesSafely)
 	// post-recResetRaw state) — the compare must miss (sentinel RA=1 can
 	// never equal an alignment-checked target) and the return must resolve
 	// through the dispatcher.
-#if EE_CALLRET_STACK
 	ASSERT_NE(_cpuRegistersPack.eeCallRetBase, 0ull);
 	u64* ring = reinterpret_cast<u64*>(_cpuRegistersPack.eeCallRetBase);
 	for (u64 i = 0; i < kRingBytes / 8; i += 2)
@@ -181,7 +171,6 @@ TEST(EeRecCallRet, ReturnWithEmptyRingMissesSafely)
 		ring[i + 1] = 0;
 	}
 	_cpuRegistersPack.eeCallRetOff = 0;
-#endif
 	EeRecTestHarness h;
 	h.LoadProgramNoTerm({
 		JR(reg::ra), // harness convention: ra = kParkingPc
@@ -192,7 +181,6 @@ TEST(EeRecCallRet, ReturnWithEmptyRingMissesSafely)
 	h.ExpectGpr64(reg::v0, 0ull);
 }
 
-#if EE_CALLRET_STACK
 TEST(EeRecCallRet, RingWrapsAcrossZeroAndStaysBalanced)
 {
 	// Start the ring offset at 16 so the two nested pushes cross the zero
@@ -252,4 +240,3 @@ TEST(EeRecCallRet, PushRecordsFrameAndPopRebalances)
 	EXPECT_EQ(f.guest_ra, static_cast<u64>(kProgramPc + 8));
 	EXPECT_NE(f.landing, 0ull);
 }
-#endif // EE_CALLRET_STACK
