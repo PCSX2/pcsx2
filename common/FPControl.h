@@ -113,14 +113,24 @@ struct FPControlRegister
 	__fi static FPControlRegister GetCurrent()
 	{
 		u64 value;
+#if defined(_MSC_VER) && !defined(__clang__)
+		// MSVC's arm64 compiler doesn't accept GCC inline asm; read FPCR via the
+		// system-register intrinsic (ARM64_FPCR / _ReadStatusReg from <intrin.h>).
+		value = static_cast<u64>(_ReadStatusReg(ARM64_FPCR));
+#else
 		asm volatile("\tmrs %0, FPCR\n"
 					 : "=r"(value));
+#endif
 		return FPControlRegister{value};
 	}
 
 	__fi static void SetCurrent(FPControlRegister value)
 	{
+#if defined(_MSC_VER) && !defined(__clang__)
+		_WriteStatusReg(ARM64_FPCR, static_cast<__int64>(value.bitmask));
+#else
 		asm volatile("\tmsr FPCR, %0\n" ::"r"(value.bitmask));
+#endif
 	}
 
 	__fi static constexpr FPControlRegister GetDefault()
