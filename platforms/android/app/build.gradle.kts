@@ -142,10 +142,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    // NATIVE BUILD DISABLED for the recovered tree: the prebuilt native .so files
-    // (extracted from vc1063 into src/main/jniLibs/arm64-v8a) are packaged directly,
-    // so UI/Kotlin iteration doesn't require recompiling the C++ core. Re-enable this
-    // block (and the per-buildType cmake blocks above) to rebuild native from source.
+    // Native core (emucore_4k), its from-source deps (shaderc, SPIRV-Tools, ...) and
+    // the adrenotools runtime hooks (hook_impl/main_hook/file_redirect_hook/
+    // gsl_alloc_hook, built by 3rdparty/adrenotools) are all compiled here from
+    // src/main/cpp. src/main/jniLibs/arm64-v8a therefore holds ONLY genuine external
+    // prebuilts that are NOT built from source (currently just libandroidx.graphics.path.so).
+    // Anything the CMake build emits must NOT be duplicated there or AGP's
+    // mergeNativeLibs fails with DuplicateRelativeFileException.
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")

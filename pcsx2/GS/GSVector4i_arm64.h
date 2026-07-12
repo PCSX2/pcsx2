@@ -5,6 +5,84 @@
 
 #include "common/Assertions.h"
 
+// ---- MSVC arm64 shim: __builtin_shufflevector ------------------------------
+// clang/clang-cl provide __builtin_shufflevector (a constant-index vector
+// shuffle); MSVC's arm64 cl.exe does not. Where it's unavailable, route the
+// existing call sites (this file + GSVector4_arm64.h, same TU via GSVector.h)
+// through a NEON lane-by-lane shuffle built from the SAME compile-time indices
+// -- correctness-exact. clang keeps its single-instruction lowering (this whole
+// block is #if'd out there). Mirrors the __has_builtin(__builtin_nontemporal_*)
+// idiom already used below.
+// TODO: lower hot shuffles to dedicated NEON ops instead of lane-by-lane.
+#if !defined(__has_builtin) || !__has_builtin(__builtin_shufflevector)
+
+template <int I>
+static __forceinline int32_t gsneon_pick(int32x4_t a, int32x4_t b)
+{
+	if constexpr (I < 4)
+		return vgetq_lane_s32(a, I);
+	else
+		return vgetq_lane_s32(b, I - 4);
+}
+template <int I>
+static __forceinline float32_t gsneon_pickf(float32x4_t a, float32x4_t b)
+{
+	if constexpr (I < 4)
+		return vgetq_lane_f32(a, I);
+	else
+		return vgetq_lane_f32(b, I - 4);
+}
+template <int I>
+static __forceinline int16_t gsneon_pick16(int16x8_t a, int16x8_t b)
+{
+	if constexpr (I < 8)
+		return vgetq_lane_s16(a, I);
+	else
+		return vgetq_lane_s16(b, I - 8);
+}
+
+template <int I0, int I1, int I2, int I3>
+static __forceinline int32x4_t gsneon_shuffle(int32x4_t a, int32x4_t b)
+{
+	int32x4_t r = vdupq_n_s32(0);
+	r = vsetq_lane_s32(gsneon_pick<I0>(a, b), r, 0);
+	r = vsetq_lane_s32(gsneon_pick<I1>(a, b), r, 1);
+	r = vsetq_lane_s32(gsneon_pick<I2>(a, b), r, 2);
+	r = vsetq_lane_s32(gsneon_pick<I3>(a, b), r, 3);
+	return r;
+}
+template <int I0, int I1, int I2, int I3>
+static __forceinline float32x4_t gsneon_shuffle(float32x4_t a, float32x4_t b)
+{
+	float32x4_t r = vdupq_n_f32(0.0f);
+	r = vsetq_lane_f32(gsneon_pickf<I0>(a, b), r, 0);
+	r = vsetq_lane_f32(gsneon_pickf<I1>(a, b), r, 1);
+	r = vsetq_lane_f32(gsneon_pickf<I2>(a, b), r, 2);
+	r = vsetq_lane_f32(gsneon_pickf<I3>(a, b), r, 3);
+	return r;
+}
+template <int I0, int I1, int I2, int I3, int I4, int I5, int I6, int I7>
+static __forceinline int16x8_t gsneon_shuffle(int16x8_t a, int16x8_t b)
+{
+	int16x8_t r = vdupq_n_s16(0);
+	r = vsetq_lane_s16(gsneon_pick16<I0>(a, b), r, 0);
+	r = vsetq_lane_s16(gsneon_pick16<I1>(a, b), r, 1);
+	r = vsetq_lane_s16(gsneon_pick16<I2>(a, b), r, 2);
+	r = vsetq_lane_s16(gsneon_pick16<I3>(a, b), r, 3);
+	r = vsetq_lane_s16(gsneon_pick16<I4>(a, b), r, 4);
+	r = vsetq_lane_s16(gsneon_pick16<I5>(a, b), r, 5);
+	r = vsetq_lane_s16(gsneon_pick16<I6>(a, b), r, 6);
+	r = vsetq_lane_s16(gsneon_pick16<I7>(a, b), r, 7);
+	return r;
+}
+
+// cl.exe: __builtin_shufflevector isn't a keyword, so a guarded macro cleanly
+// reroutes the call sites. Overload resolution picks the int32/float32/int16
+// variant by the vector arg types; the index pack forwards as template args.
+#define __builtin_shufflevector(a, b, ...) gsneon_shuffle<__VA_ARGS__>((a), (b))
+
+#endif
+
 class alignas(16) GSVector4i
 {
 	static const GSVector4i m_xff[17];
