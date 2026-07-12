@@ -6419,42 +6419,42 @@ Do you want to overwrite?</source>
 <context>
     <name>FileOperations</name>
     <message>
-        <location filename="../QtUtils.cpp" line="280"/>
+        <location filename="../QtUtils.cpp" line="297"/>
         <source>Failed to show file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="281"/>
+        <location filename="../QtUtils.cpp" line="298"/>
         <source>Failed to show file in file explorer.
 
 The file was: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="289"/>
+        <location filename="../QtUtils.cpp" line="306"/>
         <source>Show in Explorer</source>
         <extracomment>Windows action to show a file in Windows Explorer</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="292"/>
+        <location filename="../QtUtils.cpp" line="309"/>
         <source>Show in Finder</source>
         <extracomment>macOS action to show a file in Finder</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="295"/>
+        <location filename="../QtUtils.cpp" line="312"/>
         <source>Open Containing Directory</source>
         <extracomment>Linux/*NIX: Opens the system file manager to the directory containing a selected file</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="303"/>
+        <location filename="../QtUtils.cpp" line="320"/>
         <source>Failed to open URL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../QtUtils.cpp" line="304"/>
+        <location filename="../QtUtils.cpp" line="321"/>
         <source>Failed to open URL.
 
 The URL was: %1</source>
@@ -23225,233 +23225,243 @@ Do you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="69"/>
+        <location filename="../SetupWizardDialog.ui" line="68"/>
         <source>Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="76"/>
+        <location filename="../SetupWizardDialog.ui" line="75"/>
         <source>BIOS Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="83"/>
+        <location filename="../SetupWizardDialog.ui" line="82"/>
         <source>Game Directories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="90"/>
+        <location filename="../SetupWizardDialog.ui" line="89"/>
         <source>Controller Setup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="97"/>
-        <location filename="../SetupWizardDialog.ui" line="700"/>
+        <location filename="../SetupWizardDialog.ui" line="96"/>
+        <location filename="../SetupWizardDialog.ui" line="705"/>
         <source>RetroAchievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="104"/>
+        <location filename="../SetupWizardDialog.ui" line="103"/>
         <source>Complete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="171"/>
+        <location filename="../SetupWizardDialog.ui" line="170"/>
         <source>Language:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="191"/>
+        <location filename="../SetupWizardDialog.ui" line="190"/>
         <source>Theme:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="217"/>
+        <location filename="../SetupWizardDialog.ui" line="216"/>
         <source>Enable Automatic Updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="242"/>
+        <location filename="../SetupWizardDialog.ui" line="241"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 requires a PS2 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;strong&gt;from an actual PS2 unit that you own&lt;/strong&gt; (borrowing doesn&apos;t count).&lt;/p&gt;&lt;p&gt;Once dumped, this BIOS image should be placed in the bios folder within the data directory shown below, or you can instruct PCSX2 to scan an alternative directory.&lt;/p&gt;&lt;p&gt;A guide for dumping your BIOS can be found &lt;a href=&quot;https://pcsx2.net/docs/setup/bios/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="263"/>
+        <location filename="../SetupWizardDialog.ui" line="262"/>
         <source>BIOS Directory:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="276"/>
+        <location filename="../SetupWizardDialog.ui" line="275"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="283"/>
+        <location filename="../SetupWizardDialog.ui" line="282"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="302"/>
+        <location filename="../SetupWizardDialog.ui" line="301"/>
         <source>Filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="307"/>
+        <location filename="../SetupWizardDialog.ui" line="306"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="330"/>
+        <location filename="../SetupWizardDialog.ui" line="329"/>
         <source>Open BIOS Folder...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="337"/>
+        <location filename="../SetupWizardDialog.ui" line="336"/>
         <source>Refresh List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="362"/>
+        <location filename="../SetupWizardDialog.ui" line="361"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 will automatically scan and identify games from the selected directories below, and populate the game list.&lt;br&gt;These games should be dumped from discs you own. Guides for dumping discs can be found &lt;a href=&quot;https://pcsx2.net/docs/setup/dumping&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Supported formats for dumps include:&lt;/p&gt;&lt;p&gt;&lt;ul&gt;&lt;li&gt;.bin/.iso (ISO Disc Images)&lt;/li&gt;&lt;li&gt;.mdf (Media Descriptor File)&lt;/li&gt;&lt;li&gt;.chd (Compressed Hunks of Data)&lt;/li&gt;&lt;li&gt;.cso (Compressed ISO)&lt;/li&gt;&lt;li&gt;.zso (Compressed ISO)&lt;/li&gt;&lt;li&gt;.gz (Gzip Compressed ISO)&lt;/li&gt;&lt;/ul&gt;&lt;/p&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="383"/>
+        <location filename="../SetupWizardDialog.ui" line="382"/>
         <source>Search Directories (will be scanned for games)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="412"/>
+        <location filename="../SetupWizardDialog.ui" line="411"/>
         <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="431"/>
-        <location filename="../SetupWizardDialog.cpp" line="272"/>
+        <location filename="../SetupWizardDialog.ui" line="430"/>
+        <location filename="../SetupWizardDialog.cpp" line="278"/>
         <source>Remove</source>
         <extracomment>Part of the right-click menu for game directory entries</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="447"/>
+        <location filename="../SetupWizardDialog.ui" line="446"/>
         <source>Search Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="452"/>
+        <location filename="../SetupWizardDialog.ui" line="451"/>
         <source>Scan Recursively</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="722"/>
+        <location filename="../SetupWizardDialog.ui" line="727"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;PCSX2 supports RetroAchievements, a service that adds achievements, leaderboards, and extra challenges to classic games.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Sign in below to link your account and start earning achievements in supported titles, or create a free account at &lt;a href=&quot;https://retroachievements.org/createaccount.php&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#27bf73;&quot;&gt;retroachievements.org/createaccount.php&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Using RetroAchievements is completely optional and not required to use PCSX2.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="747"/>
+        <location filename="../SetupWizardDialog.ui" line="755"/>
         <source>RAIntegration is being used, built-in RetroAchievements support is disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="781"/>
+        <location filename="../SetupWizardDialog.ui" line="789"/>
         <source>Enable Achievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="788"/>
+        <location filename="../SetupWizardDialog.ui" line="796"/>
         <source>Enable Hardcore Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="811"/>
+        <location filename="../SetupWizardDialog.ui" line="819"/>
         <source>Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="817"/>
-        <location filename="../SetupWizardDialog.cpp" line="455"/>
+        <location filename="../SetupWizardDialog.ui" line="825"/>
+        <location filename="../SetupWizardDialog.cpp" line="477"/>
         <source>Not Logged In.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="846"/>
+        <location filename="../SetupWizardDialog.ui" line="854"/>
         <source>View Profile...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="853"/>
-        <location filename="../SetupWizardDialog.cpp" line="456"/>
+        <location filename="../SetupWizardDialog.ui" line="861"/>
+        <location filename="../SetupWizardDialog.cpp" line="478"/>
         <source>Login...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="863"/>
+        <location filename="../SetupWizardDialog.ui" line="871"/>
         <source>You can customize additional RetroAchievements options later in Settings &gt; Achievements.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="905"/>
+        <location filename="../SetupWizardDialog.ui" line="913"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Setup Complete!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;You are now ready to run games.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Warning: Do not run untrusted programs in PCSX2. It is not a sandbox and cannot protect your computer from malicious software.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Further options are available under the settings menu. You can also use the Big Picture UI for navigation entirely with a gamepad.&lt;/p&gt;&lt;p&gt;We hope you enjoy using PCSX2.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="150"/>
+        <location filename="../SetupWizardDialog.ui" line="149"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Welcome to PCSX2!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;This wizard will help guide you through the configuration steps required to use the application. It is recommended if this is your first time installing PCSX2 that you view the setup guide &lt;a href=&quot;https://pcsx2.net/docs/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;By default, PCSX2 will connect to the server at &lt;a href=&quot;https://pcsx2.net/&quot;&gt;pcsx2.net&lt;/a&gt; to check for updates, and if available and confirmed, download update packages from &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;. If you do not wish for PCSX2 to make any network connections on startup, you should uncheck the Automatic Updates option now. The Automatic Update setting can be changed later at any time in Interface Settings.&lt;/p&gt;&lt;p&gt;Please choose a language and theme to begin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="479"/>
+        <location filename="../SetupWizardDialog.ui" line="478"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, PCSX2 will map your keyboard to the virtual PS2 controller.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:704;&quot;&gt;To use an external controller, you must map it first. &lt;/span&gt;On this screen, you can automatically map any controller which is currently connected. If your controller is not currently connected, you can plug it in now.&lt;/p&gt;&lt;p&gt;To change controller bindings in more detail, or use multi-tap, open the Settings menu and choose Controllers once you have completed the Setup Wizard.&lt;/p&gt;&lt;p&gt;Guides for configuring controllers can be found &lt;a href=&quot;https://pcsx2.net/docs/post/controllers/&quot;&gt;&lt;span style=&quot;&quot;&gt;here&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="492"/>
+        <location filename="../SetupWizardDialog.ui" line="491"/>
         <source>Controller Port 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="501"/>
-        <location filename="../SetupWizardDialog.ui" line="578"/>
+        <location filename="../SetupWizardDialog.ui" line="500"/>
+        <location filename="../SetupWizardDialog.ui" line="580"/>
         <source>Controller Mapped To:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="508"/>
-        <location filename="../SetupWizardDialog.ui" line="565"/>
+        <location filename="../SetupWizardDialog.ui" line="507"/>
+        <location filename="../SetupWizardDialog.ui" line="567"/>
         <source>Controller Type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="520"/>
-        <location filename="../SetupWizardDialog.ui" line="587"/>
-        <location filename="../SetupWizardDialog.cpp" line="404"/>
+        <location filename="../SetupWizardDialog.ui" line="519"/>
+        <location filename="../SetupWizardDialog.ui" line="589"/>
+        <location filename="../SetupWizardDialog.cpp" line="410"/>
         <source>Default (Keyboard)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="540"/>
-        <location filename="../SetupWizardDialog.ui" line="607"/>
+        <location filename="../SetupWizardDialog.ui" line="542"/>
+        <location filename="../SetupWizardDialog.ui" line="612"/>
         <source>Automatic Mapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="559"/>
+        <location filename="../SetupWizardDialog.ui" line="561"/>
         <source>Controller Port 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="940"/>
+        <location filename="../SetupWizardDialog.ui" line="926"/>
+        <source>Create Desktop shortcut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SetupWizardDialog.ui" line="933"/>
+        <source>Add PCSX2 to the Application Menu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SetupWizardDialog.ui" line="962"/>
         <source>&amp;Back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="947"/>
-        <location filename="../SetupWizardDialog.cpp" line="140"/>
+        <location filename="../SetupWizardDialog.ui" line="969"/>
+        <location filename="../SetupWizardDialog.cpp" line="145"/>
         <source>&amp;Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.ui" line="957"/>
+        <location filename="../SetupWizardDialog.ui" line="979"/>
         <source>&amp;Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -23474,73 +23484,78 @@ Are you sure you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.cpp" line="140"/>
+        <location filename="../SetupWizardDialog.cpp" line="145"/>
         <source>&amp;Finish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.cpp" line="146"/>
+        <location filename="../SetupWizardDialog.cpp" line="151"/>
         <source>Cancel Setup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.cpp" line="147"/>
+        <location filename="../SetupWizardDialog.cpp" line="152"/>
         <source>Are you sure you want to cancel PCSX2 setup?
 
 Any changes have been saved, and the wizard will run again next time you start PCSX2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.cpp" line="275"/>
+        <location filename="../SetupWizardDialog.cpp" line="281"/>
         <source>Open Directory...</source>
         <extracomment>Part of the right-click menu for game directory entries</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.cpp" line="287"/>
+        <location filename="../SetupWizardDialog.cpp" line="293"/>
         <source>Select Search Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.cpp" line="292"/>
+        <location filename="../SetupWizardDialog.cpp" line="298"/>
         <source>Scan Recursively?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.cpp" line="293"/>
+        <location filename="../SetupWizardDialog.cpp" line="299"/>
         <source>Would you like to scan the directory &quot;%1&quot; recursively?
 
 Scanning recursively takes more time, but will identify files in subdirectories.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.cpp" line="404"/>
+        <location filename="../SetupWizardDialog.cpp" line="410"/>
         <source>Default (None)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../SetupWizardDialog.cpp" line="448"/>
+        <source>Add PCSX2 to the Start Menu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SetupWizardDialog.cpp" line="470"/>
         <source>Username: %1
 Login token generated on %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.cpp" line="451"/>
+        <location filename="../SetupWizardDialog.cpp" line="473"/>
         <source>Logout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.cpp" line="520"/>
+        <location filename="../SetupWizardDialog.cpp" line="542"/>
         <source>No devices available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.cpp" line="533"/>
+        <location filename="../SetupWizardDialog.cpp" line="555"/>
         <source>Automatic Binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SetupWizardDialog.cpp" line="534"/>
+        <location filename="../SetupWizardDialog.cpp" line="556"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -23695,190 +23710,63 @@ Login token generated on %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="29"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="20"/>
         <source>Create Shortcut For %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="33"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="24"/>
         <source>Start Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="35"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="26"/>
         <source>Application Launcher</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="45"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="36"/>
         <source>Select ELF File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="45"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="36"/>
         <source>ELF Files (*.elf);;All Files (*.*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="51"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="42"/>
         <source>Select Save State File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="51"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="42"/>
         <source>Save States (*.p2s);;All Files (*.*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="77"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="68"/>
         <source>Icon Files (*.ico);;All Files (*.*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="79"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="70"/>
         <source>Image Files (*.png *.jpg *.svg *.webp);;All Files (*.*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="81"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="72"/>
         <source>Select Icon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="87"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="78"/>
         <source>Invalid Icon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="87"/>
+        <location filename="../ShortcutCreationDialog.cpp" line="78"/>
         <source>The selected file could not be loaded as an icon.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="185"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="205"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="214"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="221"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="232"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="254"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="262"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="311"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="349"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="360"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="368"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="396"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="405"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="441"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="483"/>
-        <source>Failed to create shortcut</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="185"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="360"/>
-        <source>Filename contains illegal character.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="205"/>
-        <source>Could not create start menu directory.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="214"/>
-        <source>&apos;Desktop&apos; directory not found</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="214"/>
-        <source>User&apos;s &apos;Start Menu\Programs&apos; directory not found</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="221"/>
-        <source>A shortcut with the same name already exists.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="232"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="441"/>
-        <source>File path contains invalid character(s).</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="254"/>
-        <source>CoInitialize failed (%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="270"/>
-        <source>CoCreateInstance failed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="279"/>
-        <source>SetPath failed (%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="288"/>
-        <source>SetWorkingDirectory failed (%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="299"/>
-        <source>SetArguments failed (%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="311"/>
-        <location filename="../ShortcutCreationDialog.cpp" line="405"/>
-        <source>The selected icon file does not exist.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="324"/>
-        <source>SetIconLocation failed (%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="332"/>
-        <source>QueryInterface failed (%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="341"/>
-        <source>Failed to save the shortcut (%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="349"/>
-        <source>Cannot create a shortcut without a title.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="368"/>
-        <source>Executable path is empty.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="396"/>
-        <source>Path to the Home directory is empty.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="473"/>
-        <source>Desktop Shortcut Files (*.desktop)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="475"/>
-        <source>Select Shortcut Save Destination</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ShortcutCreationDialog.cpp" line="483"/>
-        <source>Failed to create .desktop file</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
