@@ -304,6 +304,7 @@ private:
 
 	D3D11ShaderCache m_shader_cache;
 	std::string m_tfx_source;
+	std::unordered_map<std::string, std::string> m_tfx_includes;
 
 protected:
 	using GSDevice::DoStretchRect; // Suppress overloaded virtual function warning

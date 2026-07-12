@@ -22,7 +22,7 @@ namespace GSShaderCompileIndicator
 		return hold;
 	}
 
-	inline void OnCompileDone(u64 duration_ns, u64 start_time)
+	inline void OnCompileDone(u64 duration_ns, u64 start_time, bool partial)
 	{
 		const u64 now = Common::Timer::GetCurrentValue();
 		const u64 last = s_last_time.load(std::memory_order_relaxed);
@@ -32,7 +32,8 @@ namespace GSShaderCompileIndicator
 			s_time_ns.store(0, std::memory_order_relaxed);
 		}
 
-		s_count.fetch_add(1, std::memory_order_relaxed);
+		if (!partial)
+			s_count.fetch_add(1, std::memory_order_relaxed);
 		s_time_ns.fetch_add(duration_ns, std::memory_order_relaxed);
 		s_last_time.store(now, std::memory_order_relaxed);
 	}
@@ -85,12 +86,21 @@ namespace GSShaderCompileIndicator
 	struct CompileTimer
 	{
 		Common::Timer timer;
+		bool is_partial = false;
 
 		CompileTimer() = default;
 
+		// For a shader compile with multiple steps;
+		// Intermediate steps/timers are to be marked partial.
+		// Final step/timer to me marked not partial.
+		explicit CompileTimer(bool partial)
+		{
+			is_partial = partial;
+		}
+
 		~CompileTimer()
 		{
-			OnCompileDone(static_cast<u64>(timer.GetTimeNanoseconds()), timer.GetStartValue());
+			OnCompileDone(static_cast<u64>(timer.GetTimeNanoseconds()), timer.GetStartValue(), is_partial);
 		}
 
 		CompileTimer(const CompileTimer&) = delete;

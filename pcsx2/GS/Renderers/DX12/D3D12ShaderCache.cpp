@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "GS/Renderers/DX12/GSDevice12.h"
 #include "GS/Renderers/DX12/D3D12ShaderCache.h"
 #include "GS/GS.h"
 #include "GS/GSShaderCompileIndicator.h"
@@ -12,8 +13,11 @@
 #include "common/Console.h"
 #include "common/MD5Digest.h"
 #include "common/Path.h"
+#include "common/StringUtil.h"
 
 #include <d3dcompiler.h>
+
+//#define DEBUG_LIBS 1
 
 #pragma pack(push, 1)
 struct CacheIndexEntry
@@ -56,7 +60,6 @@ bool D3D12ShaderCache::CacheIndexKey::operator!=(const CacheIndexKey& key) const
 
 bool D3D12ShaderCache::Open(D3D::ShaderModel shader_model, bool debug)
 {
-	// Only support SM5.1 for now, which is the minimum for D3D12.
 	pxAssert(shader_model >= D3D::ShaderModel::SM51);
 	m_shader_model = shader_model;
 	m_debug = debug;
@@ -188,6 +191,10 @@ bool D3D12ShaderCache::CreateNew(
 bool D3D12ShaderCache::ReadExisting(const std::string& index_filename, const std::string& blob_filename,
 	std::FILE*& index_file, std::FILE*& blob_file, CacheIndex& index)
 {
+#if DEBUG_LIBS
+	return false;
+#endif
+
 	index_file = FileSystem::OpenCFile(index_filename.c_str(), "r+b");
 	if (!index_file)
 	{
@@ -268,16 +275,6 @@ std::string D3D12ShaderCache::GetCacheBaseFileName(const std::string_view type, 
 	return Path::Combine(EmuFolders::Cache, base_filename);
 }
 
-union MD5Hash
-{
-	struct
-	{
-		u64 low;
-		u64 high;
-	};
-	u8 hash[16];
-};
-
 D3D12ShaderCache::CacheIndexKey D3D12ShaderCache::GetShaderCacheKey(
 	EntryType type, const std::string_view shader_code, const D3D_SHADER_MACRO* macros, const char* entry_point)
 {
@@ -314,11 +311,76 @@ D3D12ShaderCache::CacheIndexKey D3D12ShaderCache::GetShaderCacheKey(
 		key.macro_hash_high = hash_high;
 	}
 
-	digest.Reset();
-	digest.Update(entry_point, static_cast<u32>(std::strlen(entry_point)));
-	digest.Final(hash);
-	key.entry_point_low = hash_low;
-	key.entry_point_high = hash_high;
+	if (entry_point)
+	{
+		digest.Reset();
+		digest.Update(entry_point, static_cast<u32>(std::strlen(entry_point)));
+		digest.Final(hash);
+		key.entry_point_low = hash_low;
+		key.entry_point_high = hash_high;
+	}
+	else
+	{
+		key.entry_point_low = 0;
+		key.entry_point_high = 0;
+	}
+
+	return key;
+}
+
+D3D12ShaderCache::CacheIndexKey D3D12ShaderCache::GetShaderCacheKey(
+	EntryType type, const std::vector<std::pair<std::string, const char*>>& shader, const D3D_SHADER_MACRO* macros, const char* entry_point)
+{
+	union
+	{
+		struct
+		{
+			u64 hash_low;
+			u64 hash_high;
+		};
+		u8 hash[16];
+	};
+
+	CacheIndexKey key = {};
+	key.type = type;
+
+	MD5Digest digest;
+	for (const std::pair<std::string, const char*>& lib : shader)
+	{
+		digest.Reset();
+		digest.Update(lib.first.data(), static_cast<u32>(lib.first.length()));
+		digest.Final(hash);
+		key.source_hash_low = hash_low;
+		key.source_hash_high = hash_high;
+		key.source_length = static_cast<u32>(lib.first.length());
+	}
+
+	if (macros)
+	{
+		digest.Reset();
+		for (const D3D_SHADER_MACRO* macro = macros; macro->Name != nullptr; macro++)
+		{
+			digest.Update(macro->Name, std::strlen(macro->Name));
+			digest.Update(macro->Definition, std::strlen(macro->Definition));
+		}
+		digest.Final(hash);
+		key.macro_hash_low = hash_low;
+		key.macro_hash_high = hash_high;
+	}
+
+	if (entry_point)
+	{
+		digest.Reset();
+		digest.Update(entry_point, static_cast<u32>(std::strlen(entry_point)));
+		digest.Final(hash);
+		key.entry_point_low = hash_low;
+		key.entry_point_high = hash_high;
+	}
+	else
+	{
+		key.entry_point_low = 0;
+		key.entry_point_high = 0;
+	}
 
 	return key;
 }
@@ -393,13 +455,33 @@ D3D12ShaderCache::CacheIndexKey D3D12ShaderCache::GetPipelineCacheKey(const D3D1
 	return CacheIndexKey{h.low, h.high, 0, 0, 0, 0, length, EntryType::ComputePipeline};
 }
 
-D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::GetShaderBlob(EntryType type, std::string_view shader_code,
-	const D3D_SHADER_MACRO* macros /* = nullptr */, const char* entry_point /* = "main" */)
+D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::GetShaderBlob(EntryType type, const std::string_view shader_code, const char* shader_name,
+	const D3D_SHADER_MACRO* macros /* = nullptr */, const char* entry_point /* = "main" */, const std::unordered_map<std::string, std::string>& includes /*= {} */)
 {
 	const auto key = GetShaderCacheKey(type, shader_code, macros, entry_point);
 	auto iter = m_shader_index.find(key);
 	if (iter == m_shader_index.end())
-		return CompileAndAddShaderBlob(key, shader_code, macros, entry_point);
+		return CompileAndAddShaderBlob(key, shader_code, shader_name, macros, entry_point, includes);
+
+	ComPtr<ID3DBlob> blob;
+	HRESULT hr = D3DCreateBlob(iter->second.blob_size, blob.put());
+	if (FAILED(hr) || std::fseek(m_shader_blob_file, iter->second.file_offset, SEEK_SET) != 0 ||
+		std::fread(blob->GetBufferPointer(), 1, iter->second.blob_size, m_shader_blob_file) != iter->second.blob_size)
+	{
+		Console.Error("Read blob from file failed");
+		return {};
+	}
+
+	return blob;
+}
+
+D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::GetShaderBlob(EntryType type, const std::vector<std::pair<std::string, const char*>>& shader,
+	const D3D_SHADER_MACRO* macros /* = nullptr */, const char* entry_point /* = "main" */, const std::unordered_map<std::string, std::string>& includes /*= {} */)
+{
+	const auto key = GetShaderCacheKey(type, shader, macros, entry_point);
+	auto iter = m_shader_index.find(key);
+	if (iter == m_shader_index.end())
+		return CompileAndAddShaderBlob(key, shader, macros, entry_point, includes);
 
 	ComPtr<ID3DBlob> blob;
 	HRESULT hr = D3DCreateBlob(iter->second.blob_size, blob.put());
@@ -482,23 +564,253 @@ D3D12ShaderCache::ComPtr<ID3D12PipelineState> D3D12ShaderCache::GetPipelineState
 }
 
 D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::CompileAndAddShaderBlob(
-	const CacheIndexKey& key, std::string_view shader_code, const D3D_SHADER_MACRO* macros, const char* entry_point)
+	const CacheIndexKey& key, const std::string_view shader_code, const char* shader_name, const D3D_SHADER_MACRO* macros, const char* entry_point, const std::unordered_map<std::string, std::string>& includes)
 {
 	ComPtr<ID3DBlob> blob;
+
+#if DEBUG_LIBS
+	{
+		std::vector<std::string> macro_list;
+
+		if (macros)
+		{
+			const D3D_SHADER_MACRO* c_macro = macros;
+
+			while (c_macro->Name != nullptr)
+			{
+				macro_list.push_back(fmt::format("{} = {}", c_macro->Name, c_macro->Definition));
+				c_macro++;
+			}
+		}
+
+		Console.WriteLnFmt("Compiling {} with macros:\n\t{}", shader_name,
+			macro_list.empty() ? "None" : StringUtil::JoinString(macro_list.begin(), macro_list.end(), "\n\t"));
+	}
+#endif
 
 	switch (key.type)
 	{
 		case EntryType::VertexShader:
 			blob =
-				D3D::CompileShader(D3D::ShaderType::Vertex, m_shader_model, m_debug, shader_code, macros, entry_point);
+				D3D::CompileShader(D3D::ShaderType::Vertex, m_shader_model, m_debug, shader_code, shader_name, macros, entry_point, includes);
 			break;
 		case EntryType::PixelShader:
 			blob =
-				D3D::CompileShader(D3D::ShaderType::Pixel, m_shader_model, m_debug, shader_code, macros, entry_point);
+				D3D::CompileShader(D3D::ShaderType::Pixel, m_shader_model, m_debug, shader_code, shader_name, macros, entry_point, includes);
 			break;
 		case EntryType::ComputeShader:
 			blob =
-				D3D::CompileShader(D3D::ShaderType::Compute, m_shader_model, m_debug, shader_code, macros, entry_point);
+				D3D::CompileShader(D3D::ShaderType::Compute, m_shader_model, m_debug, shader_code, shader_name, macros, entry_point, includes);
+			break;
+		case EntryType::LibraryShader:
+			blob =
+				D3D::CompileShader(D3D::ShaderType::Libary, m_shader_model, m_debug, shader_code, shader_name, macros, entry_point, includes);
+			break;
+		default:
+			break;
+	}
+
+	if (!blob)
+		return {};
+
+	if (!m_shader_blob_file || std::fseek(m_shader_blob_file, 0, SEEK_END) != 0)
+		return blob;
+
+	CacheIndexData data;
+	data.file_offset = static_cast<u32>(std::ftell(m_shader_blob_file));
+	data.blob_size = static_cast<u32>(blob->GetBufferSize());
+
+	CacheIndexEntry entry = {};
+	entry.source_hash_low = key.source_hash_low;
+	entry.source_hash_high = key.source_hash_high;
+	entry.macro_hash_low = key.macro_hash_low;
+	entry.macro_hash_high = key.macro_hash_high;
+	entry.entry_point_low = key.entry_point_low;
+	entry.entry_point_high = key.entry_point_high;
+	entry.source_length = key.source_length;
+	entry.shader_type = static_cast<u32>(key.type);
+	entry.blob_size = data.blob_size;
+	entry.file_offset = data.file_offset;
+
+	if (std::fwrite(blob->GetBufferPointer(), 1, entry.blob_size, m_shader_blob_file) != entry.blob_size ||
+		std::fflush(m_shader_blob_file) != 0 || std::fwrite(&entry, sizeof(entry), 1, m_shader_index_file) != 1 ||
+		std::fflush(m_shader_index_file) != 0)
+	{
+		Console.Error("Failed to write shader blob to file");
+		return blob;
+	}
+
+	m_shader_index.emplace(key, data);
+	return blob;
+}
+
+void D3D12ShaderCache::CollectIncludes(const std::string& shader_code, const std::unordered_map<std::string, std::string>& includes,
+	std::vector<std::unordered_map<std::string, std::string>::const_iterator>& included_files, std::string_view parent_path)
+{
+	// Collect includes, going line by line.
+	const std::vector<std::string_view> lines = StringUtil::SplitString(shader_code, '\n');
+	for (const std::string_view line : lines)
+	{
+		const std::string_view str = StringUtil::StripWhitespace(line);
+		if (str.starts_with("#include"))
+		{
+			// Extract path.
+			const size_t s = str.find_first_of('"');
+			const size_t e = str.find_last_of('"');
+			if (s == std::string_view::npos || e == std::string_view::npos)
+			{
+				pxAssert(false);
+				continue;
+			}
+			const std::string filename = std::string(str.substr(s + 1, e - s - 1));
+
+			std::unordered_map<std::string, std::string>::const_iterator iter;
+			if (!parent_path.empty())
+			{
+				// Search same directory as file.
+				const std::string path = Path::Canonicalize(Path::Combine(parent_path, filename));
+
+				iter = includes.find(path);
+				if (iter == includes.end())
+				{
+					// Search root directory.
+					iter = includes.find(filename);
+				}
+			}
+			else
+				iter = includes.find(filename);
+
+			if (iter == includes.end())
+			{
+				pxAssert(false);
+				continue;
+			}
+
+			// Check if we found this include already.
+			bool already_found = false;
+			for (auto& i : included_files)
+			{
+				if (i == iter)
+				{
+					already_found = true;
+					break;
+				}
+			}
+			if (already_found)
+				continue;
+
+			included_files.push_back(iter);
+			CollectIncludes(iter->second, includes, included_files, Path::GetDirectory(filename));
+		}
+	}
+}
+
+D3D12ShaderCache::ComPtr<ID3DBlob> D3D12ShaderCache::CompileAndAddShaderBlob(
+	const CacheIndexKey& key, const std::vector<std::pair<std::string, const char*>>& shader, const D3D_SHADER_MACRO* macros, const char* entry_point, const std::unordered_map<std::string, std::string>& includes)
+{
+	pxAssert(key.type != EntryType::LibraryShader);
+
+#if DEBUG_LIBS
+	{
+		std::vector<std::string> macro_list;
+		const D3D_SHADER_MACRO* c_macro = macros;
+		while (c_macro->Name != nullptr)
+		{
+			macro_list.push_back(fmt::format("{} = {}", c_macro->Name, c_macro->Definition));
+			c_macro++;
+		}
+
+		Console.WriteLnFmt("Compiling linked shader with macros:\n\t{}",
+			macro_list.empty() ? "None" : StringUtil::JoinString(macro_list.begin(), macro_list.end(), "\n\t"));
+	}
+#endif
+
+	std::vector<ComPtr<ID3DBlob>> compiled_blobs;
+	compiled_blobs.reserve(shader.size());
+
+	for (const std::pair<std::string, const char*>& lib : shader)
+	{
+		std::vector<D3D_SHADER_MACRO> lib_macros;
+
+		if (macros)
+		{
+			MD5Hash lib_hash;
+			MD5Digest digest;
+			digest.Update(lib.first.data(), static_cast<u32>(lib.first.length()));
+			digest.Final(lib_hash.hash);
+
+			auto macro_iter = m_lib_defines.find(lib_hash);
+			if (macro_iter == m_lib_defines.end())
+				macro_iter = m_lib_defines.emplace(lib_hash, std::unordered_map<std::string, bool>{}).first;
+
+			const D3D_SHADER_MACRO* c_macro = macros;
+
+			std::vector<std::unordered_map<std::string, std::string>::const_iterator> included_files;
+			bool loaded_includes = false;
+
+			while (c_macro->Name != nullptr)
+			{
+				bool hit = false;
+				const auto hit_iter = macro_iter->second.find(c_macro->Name);
+				if (hit_iter == macro_iter->second.end())
+				{
+					// Search file
+					if (StringUtil::ContainsSubString(lib.first, c_macro->Name))
+						hit = true;
+					// Search includes
+					if (!hit)
+					{
+						if (!loaded_includes)
+						{
+							CollectIncludes(lib.first, includes, included_files);
+							loaded_includes = true;
+						}
+
+						for (auto& i : included_files)
+						{
+							if (StringUtil::ContainsSubString(i->second, c_macro->Name))
+							{
+								hit = true;
+								break;
+							}
+						}
+					}
+
+					macro_iter->second.emplace(c_macro->Name, hit);
+				}
+				else
+					hit = hit_iter->second;
+
+				if (hit)
+					lib_macros.push_back(*c_macro);
+				c_macro++;
+			}
+		}
+
+		lib_macros.push_back({nullptr, nullptr});
+
+		ComPtr<ID3DBlob> lib_blob = GetShaderBlob(EntryType::LibraryShader, lib.first, lib.second, lib_macros.data(), nullptr, includes);
+		if (lib_blob == nullptr)
+			return nullptr;
+
+		compiled_blobs.push_back(std::move(lib_blob));
+	}
+
+	// Now Link
+	ComPtr<ID3DBlob> blob;
+	switch (key.type)
+	{
+		case EntryType::VertexShader:
+			blob =
+				D3D::LinkShaderDXIL(D3D::ShaderType::Vertex, m_shader_model, m_debug, compiled_blobs, entry_point);
+			break;
+		case EntryType::PixelShader:
+			blob =
+				D3D::LinkShaderDXIL(D3D::ShaderType::Pixel, m_shader_model, m_debug, compiled_blobs, entry_point);
+			break;
+		case EntryType::ComputeShader:
+			blob =
+				D3D::LinkShaderDXIL(D3D::ShaderType::Compute, m_shader_model, m_debug, compiled_blobs, entry_point);
 			break;
 		default:
 			break;
