@@ -39,7 +39,6 @@ BIOS
 #include "common/Error.h"
 
 #ifdef __linux__
-#include <cstdlib>
 #include <sys/mman.h>
 #endif
 
@@ -142,17 +141,15 @@ bool SysMemory::AllocateMemoryMap()
 	// Rocknix default THP mode ("madvise") honors, and the code half is a
 	// private anonymous mapping, which is what THP backs. Scoped to the
 	// EE+IOP and mVU0+mVU1 rec caches — each pair contiguous in the map —
-	// leaving the VIF/SW-renderer tail alone. YAPS2_NO_THP=1 disables for
-	// iTLB A/B runs (testing-only gate).
+	// leaving the VIF/SW-renderer tail alone. A/B off-arm: launch under
+	// prctl(PR_SET_THP_DISABLE) (see tools/perf/fx15_thp_ab.sh) — it
+	// survives execve, so no in-tree gate is needed.
 	static_assert(HostMemoryMap::IOPrecOffset == HostMemoryMap::EErecOffset + HostMemoryMap::EErecSize);
 	static_assert(HostMemoryMap::mVU1recOffset == HostMemoryMap::mVU0recOffset + HostMemoryMap::mVU0recSize);
-	if (!std::getenv("YAPS2_NO_THP"))
-	{
-		madvise(s_code_memory + HostMemoryMap::EErecOffset,
-			HostMemoryMap::EErecSize + HostMemoryMap::IOPrecSize, MADV_HUGEPAGE);
-		madvise(s_code_memory + HostMemoryMap::mVU0recOffset,
-			HostMemoryMap::mVU0recSize + HostMemoryMap::mVU1recSize, MADV_HUGEPAGE);
-	}
+	madvise(s_code_memory + HostMemoryMap::EErecOffset,
+		HostMemoryMap::EErecSize + HostMemoryMap::IOPrecSize, MADV_HUGEPAGE);
+	madvise(s_code_memory + HostMemoryMap::mVU0recOffset,
+		HostMemoryMap::mVU0recSize + HostMemoryMap::mVU1recSize, MADV_HUGEPAGE);
 #endif
 
 	HostMemoryMap::EEmem = (uptr)(s_data_memory + HostMemoryMap::EEmemOffset);

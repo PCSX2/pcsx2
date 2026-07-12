@@ -1,8 +1,11 @@
 #!/bin/bash
 # fx15_thp_ab.sh — interleaved A/B for FX-15 (MADV_HUGEPAGE on the JIT code caches).
 #
-# ONE pcsx2-eerunner binary, two arms: A = YAPS2_NO_THP=1 (4K pages, baseline),
-# B = default (THP madvise on). Same savestate-anchored --liverun workloads as
+# ONE pcsx2-eerunner binary, two arms: A = prctl(PR_SET_THP_DISABLE) before
+# exec (4K pages, baseline — the flag survives execve, so no in-tree gate),
+# B = default (THP madvise on). Both arms exec through the same python3
+# wrapper so interpreter startup cancels. Same savestate-anchored --liverun
+# workloads as
 # callret_ab.sh, ABBA-interleaved so thermal/clock drift cancels, perf stat
 # around each run. Throughput truth = wall seconds per N frames (unlimited
 # limiter, headless --renderer null); mechanism check = ITLB_WALK (r35) and
@@ -88,15 +91,22 @@ probe_thp() { # $1=outfile — sample JIT-arena AnonHugePages of the live run
 	echo "total-kB $(awk '{s+=$3} END{print s+0}' "$1")" >> "$1"
 }
 
+# Exec wrappers: PR_SET_THP_DISABLE (41) is inherited across execve, so arm A
+# disables THP from OUTSIDE the process; arm B execs through the identical
+# wrapper minus the prctl so interpreter startup is symmetric.
+WRAP_A='import ctypes,os,sys; ctypes.CDLL(None).prctl(41,1,0,0,0); os.execv(sys.argv[1], sys.argv[1:])'
+WRAP_B='import os,sys; os.execv(sys.argv[1], sys.argv[1:])'
+
 run_one() { # $1=arm(A|B) $2=name $3=state $4=iso $5=round
-	local tag="$2-$1-r$5" envA=""
-	[ "$1" = A ] && envA="YAPS2_NO_THP=1"
+	local tag="$2-$1-r$5" wrap="$WRAP_B"
+	[ "$1" = A ] && wrap="$WRAP_A"
 	echo "=== $tag ($(date +%H:%M:%S)) ==="
 	if [ "$1" = B ] && [ "$5" = 1 ]; then
 		probe_thp "$OUT/$tag.thp" &
 	fi
-	env $envA EERUNNER_SYNCMTGS=0 $TASKSET perf stat -e "$EVENTS" \
+	EERUNNER_SYNCMTGS=0 $TASKSET perf stat -e "$EVENTS" \
 		-o "$OUT/$tag.stat" -- \
+		python3 -c "$wrap" \
 		"$BIN" --liverun --renderer null --savestate "$3" --iso "$4" \
 		--frames "$FRAMES" > "$OUT/$tag.log" 2>&1
 	echo "exit=$? $(grep -o 'PerfLog session:.*' "$OUT/$tag.log" | tail -1)"
