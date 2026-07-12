@@ -96,7 +96,7 @@ fun SaveStatePickerScreen(mode: SaveMode, onBack: () -> Unit) {
             ArmsTopBar(
                 title = if (mode == SaveMode.Save) str("savestate.title.save")
                 else str("savestate.title.loadManage"),
-                leading = { RoundAction("‹", str("action.back"), onBack) },
+                leading = { RoundAction("←", str("action.back"), onBack) },
             )
             if (mode == SaveMode.Load) {
                 AutoOptions(Modifier.fillMaxWidth().padding(horizontal = 8.dp))

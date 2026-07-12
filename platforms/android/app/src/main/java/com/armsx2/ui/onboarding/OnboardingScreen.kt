@@ -182,7 +182,7 @@ fun OnboardingScreen(viewModel: OnboardingViewModel = viewModel()) {
                             label = "onboarding-landscape-page",
                         ) { page ->
                             PageViewport(compact = false) {
-                                WizardPage(page, state, viewModel, showWelcomeLogo = false, biosPicker = {
+                                WizardPage(page, state, viewModel, biosPicker = {
                                     biosPicker.launch(null)
                                 }, folderPicker = { folderPicker.launch(null) }, onCustomStorage = onCustomStorage)
                             }
@@ -222,7 +222,7 @@ fun OnboardingScreen(viewModel: OnboardingViewModel = viewModel()) {
                         label = "onboarding-portrait-page",
                     ) { page ->
                         PageViewport(compact = true) {
-                            WizardPage(page, state, viewModel, showWelcomeLogo = true, biosPicker = {
+                            WizardPage(page, state, viewModel, biosPicker = {
                                 biosPicker.launch(null)
                             }, folderPicker = { folderPicker.launch(null) }, onCustomStorage = onCustomStorage)
                         }
@@ -255,13 +255,12 @@ private fun WizardPage(
     page: Int,
     state: OnboardingUiState,
     viewModel: OnboardingViewModel,
-    showWelcomeLogo: Boolean,
     biosPicker: () -> Unit,
     folderPicker: () -> Unit,
     onCustomStorage: () -> Unit,
 ) {
     when (page) {
-        0 -> WelcomePage(compact = true, showLogo = showWelcomeLogo)
+        0 -> WelcomePage(compact = true)
         1 -> StoragePage(state, compact = true, viewModel::selectStorage, onCustomStorage)
         2 -> BiosPage(state, compact = true, onPick = biosPicker, onSelectBios = viewModel::selectBiosCandidate)
         3 -> GamesPage(state, folderPicker, viewModel::removeGameFolder)
@@ -326,22 +325,11 @@ private fun PageViewport(compact: Boolean, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun WelcomePage(compact: Boolean, showLogo: Boolean) {
+private fun WelcomePage(compact: Boolean) {
     Column(
         Modifier.fillMaxWidth(),
         horizontalAlignment = if (compact) Alignment.Start else Alignment.CenterHorizontally,
     ) {
-        if (showLogo) {
-            Surface(
-                modifier = Modifier.size(if (compact) 72.dp else 82.dp),
-                shape = RoundedCornerShape(if (compact) 18.dp else 22.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)),
-            ) {
-                Box(contentAlignment = Alignment.Center) { ArmsLogo(showWordmark = false) }
-            }
-            Spacer(Modifier.height(if (compact) 18.dp else 24.dp))
-        }
         Text(
             str("setup.welcome.heading"),
             style = MaterialTheme.typography.displayLarge,

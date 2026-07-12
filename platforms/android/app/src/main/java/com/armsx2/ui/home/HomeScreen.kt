@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -50,6 +51,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
@@ -80,6 +82,7 @@ import androidx.compose.ui.res.painterResource
 import com.armsx2.CoverArtStyle
 import com.armsx2.R
 import com.armsx2.ui.theme.ToolbarPositionPreferences
+import com.armsx2.ui.theme.LibraryChromePreferences
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -94,6 +97,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import coil.size.Precision
 import com.armsx2.CustomCovers
@@ -125,11 +129,10 @@ fun HomeScreen(
     val context = LocalContext.current
     val coverVersion = CustomCovers.version.value
     val customCoverMap = remember(coverVersion) { CustomCovers.loadAll(context) }
-    var sortMenu by remember { mutableStateOf(false) }
+    var overflowMenu by remember { mutableStateOf(false) }
     var menuGame by remember { mutableStateOf<GameInfo?>(null) }
     // #9 custom library background — inert until the user picks an image.
     LaunchedEffect(Unit) { LibraryBackground.ensureLoaded(); CoverArtStyle.load() }
-    var bgMenu by remember { mutableStateOf(false) }
     val backgroundPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { picked ->
         picked?.let { LibraryBackground.set(context, it) }
     }
@@ -138,8 +141,11 @@ fun HomeScreen(
     // the field only exists then.)
     val searchFocus = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
-    LaunchedEffect(state.initialized) {
-        HomeInputController.setSearchAction(state.initialized) {
+    val showSearch = LibraryChromePreferences.showSearch.value
+    val showRecents = LibraryChromePreferences.showRecents.value
+    LaunchedEffect(state.initialized, showSearch) {
+        if (!showSearch && viewModel.state.value.query.isNotEmpty()) viewModel.setQuery("")
+        HomeInputController.setSearchAction(state.initialized && showSearch) {
             // Controller path: open our own D-pad-navigable keyboard (the system IME
             // can't be driven by a D-pad). Touch still uses the system keyboard by
             // tapping the field directly.
@@ -230,7 +236,7 @@ fun HomeScreen(
             }
             // The Recently-Played games shown above the grid (empty while searching);
             // register them so the controller's Recents zone can launch them.
-            val shownRecents = if (state.recentGames.isNotEmpty() && state.query.isBlank()) {
+            val shownRecents = if (showRecents && state.recentGames.isNotEmpty() && state.query.isBlank()) {
                 state.recentGames.take(10)
             } else {
                 emptyList()
@@ -247,7 +253,7 @@ fun HomeScreen(
             // (grid, list). Only scroll when it's actually off-screen so paging through a
             // visible screenful doesn't jitter. (Previously this only ran while searching,
             // so normal browsing never followed the selector.)
-            val allGamesHeaderShown = state.recentGames.isNotEmpty() && state.query.isBlank() &&
+            val allGamesHeaderShown = shownRecents.isNotEmpty() &&
                 state.initialized && state.visibleGames.isNotEmpty()
             LaunchedEffect(state.selectedIndex, state.visibleGames.size, state.layout, HomeInputController.zone.value) {
                 if (HomeInputController.zone.value != HomeZone.Grid) return@LaunchedEffect
@@ -258,7 +264,7 @@ fun HomeScreen(
                 val sel = state.selectedIndex
                 if (sel < 0 || state.visibleGames.isEmpty()) return@LaunchedEffect
                 val leading = 1 + // toolbar
-                    (if (state.initialized) 1 else 0) + // search field
+                    (if (state.initialized && showSearch) 1 else 0) + // search field
                     (if (shownRecents.isNotEmpty()) 1 else 0) + // recents section
                     (if (allGamesHeaderShown) 1 else 0) // All Games header
                 val cols = estimatedColumns.coerceAtLeast(1)
@@ -298,24 +304,39 @@ fun HomeScreen(
                     listOf(
                         onOpenMenu,
                         { viewModel.refresh() },
-                        { sortMenu = true },
                         { viewModel.toggleLayout() },
-                        { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
-                        { bgMenu = true },
+                        { overflowMenu = true },
                     ),
                 )
                 val tb = HomeInputController.zone.value == HomeZone.Toolbar
                 val tbi = HomeInputController.toolbarIndex.intValue
                 ArmsTopBar(
                     title = str("games.section.library"),
-                    subtitle = if (state.scanning) str("games.scanningRoms") else state.allGames.size.toString(),
-                    leading = { RoundAction("☰", str("games.nav.library"), onOpenMenu, selected = tb && tbi == 0) },
+                    subtitle = if (state.scanning) {
+                        str("games.scanningRoms")
+                    } else {
+                        "${str("games.library.totalGames")}: ${state.allGames.size}"
+                    },
+                    leading = {
+                        RoundAction(
+                            "☰",
+                            str("games.overflow.openNavigation"),
+                            onOpenMenu,
+                            selected = tb && tbi == 0,
+                            framed = true,
+                            buttonSize = 44.dp,
+                            buttonShape = RoundedCornerShape(14.dp),
+                            subtleFrame = true,
+                        )
+                    },
                     actions = {
-                        RoundAction("↻", str("games.card.refresh"), viewModel::refresh, selected = tb && tbi == 1)
-                        Box {
-                            RoundAction("⇅", str("games.toolbar.recent"), { sortMenu = true }, selected = tb && tbi == 2)
-                            SortMenu(sortMenu, state.sort, viewModel::setSort) { sortMenu = false }
-                        }
+                        RoundAction(
+                            "↻",
+                            str("games.card.refresh"),
+                            viewModel::refresh,
+                            selected = tb && tbi == 1,
+                            framed = false,
+                        )
                         RoundAction(
                             when (state.layout) {
                                 LibraryLayout.Grid -> "☷"
@@ -324,30 +345,29 @@ fun HomeScreen(
                             },
                             str("games.toolbar.rows"),
                             viewModel::toggleLayout,
-                            selected = tb && tbi == 3,
-                        )
-                        // 3D box-art covers vs flat 2D scans (xlenore covers/3d).
-                        // Shows the current mode (like the layout toggle), tap to flip.
-                        RoundAction(
-                            if (CoverArtStyle.use3d.value) "3D" else "2D",
-                            str("games.toolbar.covers3d"),
-                            { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
-                            selected = tb && tbi == 4,
+                            selected = tb && tbi == 2,
+                            framed = false,
                         )
                         Box {
-                            RoundAction("▧", str("games.toolbar.background"), { bgMenu = true }, selected = tb && tbi == 5)
-                            DropdownMenu(expanded = bgMenu, onDismissRequest = { bgMenu = false }) {
-                                DropdownMenuItem(
-                                    text = { Text(str("games.background.choose")) },
-                                    onClick = { bgMenu = false; backgroundPicker.launch(arrayOf("image/*", "video/*")) },
-                                )
-                                if (LibraryBackground.uri.value != null) {
-                                    DropdownMenuItem(
-                                        text = { Text(str("games.background.clear")) },
-                                        onClick = { bgMenu = false; LibraryBackground.clear() },
-                                    )
-                                }
-                            }
+                            RoundAction(
+                                "⋮",
+                                str("games.toolbar.more"),
+                                { overflowMenu = true },
+                                selected = overflowMenu || tb && tbi == 3,
+                                framed = false,
+                            )
+                            LibraryOverflowMenu(
+                                expanded = overflowMenu,
+                                selectedSort = state.sort,
+                                use3dCovers = CoverArtStyle.use3d.value,
+                                hasCustomBackground = LibraryBackground.uri.value != null,
+                                onDismiss = { overflowMenu = false },
+                                onOpenNavigation = onOpenMenu,
+                                onSort = viewModel::setSort,
+                                onToggleCoverStyle = { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
+                                onChooseBackground = { backgroundPicker.launch(arrayOf("image/*", "video/*")) },
+                                onClearBackground = LibraryBackground::clear,
+                            )
                         }
                     },
                     horizontalPadding = 0.dp,
@@ -370,7 +390,7 @@ fun HomeScreen(
                 if (!toolbarBottom) {
                     item(span = { GridItemSpan(maxLineSpan) }) { libraryToolbar(false) }
                 }
-                if (state.initialized) {
+                if (state.initialized && showSearch) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         SearchField(
                             value = state.query,
@@ -458,18 +478,12 @@ fun HomeScreen(
 
                 // Separate the Recently Played shelf from the full library with an
                 // "All Games" header so the two rows don't run together.
-                if (state.recentGames.isNotEmpty() && state.query.isBlank() && state.initialized && state.visibleGames.isNotEmpty()) {
+                if (shownRecents.isNotEmpty() && state.initialized && state.visibleGames.isNotEmpty()) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        Column {
-                            Spacer(Modifier.height(20.dp))
-                            SectionTitle(
-                                str("games.section.allGames"),
-                                modifier = Modifier.padding(
-                                    start = if (state.layout == LibraryLayout.Shelf) 4.dp else 0.dp,
-                                ),
-                            )
-                            Spacer(Modifier.height(9.dp))
-                        }
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.34f),
+                        )
                     }
                 }
 
@@ -613,18 +627,118 @@ private fun GameMenuAction(glyph: String, label: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun SortMenu(expanded: Boolean, selected: HomeSort, onSort: (HomeSort) -> Unit, dismiss: () -> Unit) {
-    DropdownMenu(expanded = expanded, onDismissRequest = dismiss) {
-        listOf(
-            HomeSort.Title to str("games.section.library"),
-            HomeSort.RecentlyPlayed to str("games.section.recentlyPlayed"),
-        ).forEach { (sort, label) ->
-            DropdownMenuItem(
-                text = { Text(label, fontWeight = if (sort == selected) FontWeight.Bold else FontWeight.Normal) },
-                onClick = { onSort(sort); dismiss() },
-            )
+private fun LibraryOverflowMenu(
+    expanded: Boolean,
+    selectedSort: HomeSort,
+    use3dCovers: Boolean,
+    hasCustomBackground: Boolean,
+    onDismiss: () -> Unit,
+    onOpenNavigation: () -> Unit,
+    onSort: (HomeSort) -> Unit,
+    onToggleCoverStyle: () -> Unit,
+    onChooseBackground: () -> Unit,
+    onClearBackground: () -> Unit,
+) {
+    fun closeThen(action: () -> Unit) {
+        onDismiss()
+        action()
+    }
+
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismiss,
+        modifier = Modifier.widthIn(min = 320.dp, max = 380.dp),
+        shape = RoundedCornerShape(22.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 8.dp,
+        shadowElevation = 14.dp,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.42f)),
+    ) {
+        Text(
+            text = str("games.section.library"),
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold,
+        )
+        LibraryOverflowItem("☰", str("games.overflow.openNavigation")) {
+            closeThen(onOpenNavigation)
+        }
+        LibraryOverflowItem(
+            glyph = "A–Z",
+            label = str("games.overflow.sortTitle"),
+            selected = selectedSort == HomeSort.Title,
+        ) {
+            closeThen { onSort(HomeSort.Title) }
+        }
+        LibraryOverflowItem(
+            glyph = "⇅",
+            label = str("games.overflow.sortRecent"),
+            selected = selectedSort == HomeSort.RecentlyPlayed,
+        ) {
+            closeThen { onSort(HomeSort.RecentlyPlayed) }
+        }
+        LibraryOverflowItem(
+            glyph = if (use3dCovers) "3D" else "2D",
+            label = str("games.overflow.coverStyle"),
+            trailing = if (use3dCovers) "3D" else "2D",
+        ) {
+            closeThen(onToggleCoverStyle)
+        }
+        LibraryOverflowItem("▧", str("games.background.choose")) {
+            closeThen(onChooseBackground)
+        }
+        if (hasCustomBackground) {
+            LibraryOverflowItem("×", str("games.background.clear")) {
+                closeThen(onClearBackground)
+            }
         }
     }
+}
+
+@Composable
+private fun LibraryOverflowItem(
+    glyph: String,
+    label: String,
+    selected: Boolean = false,
+    trailing: String? = null,
+    onClick: () -> Unit,
+) {
+    DropdownMenuItem(
+        text = {
+            Text(
+                text = label,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                maxLines = 2,
+                lineHeight = 20.sp,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
+        onClick = onClick,
+        leadingIcon = {
+            Surface(
+                modifier = Modifier.size(34.dp),
+                shape = RoundedCornerShape(11.dp),
+                color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = glyph,
+                        fontSize = if (glyph.length > 2) 11.sp else 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
+        },
+        trailingIcon = {
+            when {
+                selected -> Text("✓", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                trailing != null -> Text(trailing, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
+            }
+        },
+        modifier = Modifier.padding(horizontal = 6.dp),
+    )
 }
 
 private fun LazyGridScope.emptyLibrary(noFolders: Boolean) {
@@ -734,6 +848,7 @@ private fun GameCover(
     // Fit (not Crop) everywhere so the whole box art shows — Crop trims the top of
     // covers whose source art is a touch taller than the 0.7 slot.
     contentScale: ContentScale = ContentScale.Fit,
+    placeholderText: Boolean = true,
 ) {
     val context = LocalContext.current
     // Read the 3D-cover flag explicitly (not just via game.coverUrl, which is
@@ -754,23 +869,25 @@ private fun GameCover(
     }
     Box(modifier.clip(RoundedCornerShape(cornerRadius))) {
         if (model == null) {
-            CoverPlaceholder(game.title)
+            CoverPlaceholder(game.title, game.serial, showText = placeholderText)
         } else {
             // No fill behind the art: 3D box-art PNGs are transparent around the
             // angled case, and any backing shows as a dark/coloured "notch" at the
             // top. Keeping it transparent lets the case sit directly on the shelf.
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = request,
                 contentDescription = game.title,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = contentScale,
+                loading = { CoverPlaceholder(game.title, game.serial, showText = placeholderText) },
+                error = { CoverPlaceholder(game.title, game.serial, showText = placeholderText) },
             )
         }
     }
 }
 
 @Composable
-private fun CoverPlaceholder(title: String) {
+private fun CoverPlaceholder(title: String, serial: String?, showText: Boolean) {
     Box(
         Modifier.fillMaxSize().background(
             Brush.linearGradient(
@@ -779,12 +896,29 @@ private fun CoverPlaceholder(title: String) {
         ),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            title.take(2).uppercase(),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Black,
-            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f),
-        )
+        if (showText) {
+            Column(Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    textAlign = TextAlign.Center,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (!serial.isNullOrBlank()) {
+                    Text(
+                        text = serial,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.66f),
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -1105,6 +1239,7 @@ private fun ShelfGameCard(game: GameInfo, width: Dp, reflectionHeight: Dp, selec
                     .graphicsLayer { scaleY = -1f; alpha = 0.18f },
                 cornerRadius = 0.dp,
                 contentScale = ContentScale.Fit,
+                placeholderText = false,
             )
             // Fade the reflection out toward the front of the shelf.
             Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0x55000000)))))

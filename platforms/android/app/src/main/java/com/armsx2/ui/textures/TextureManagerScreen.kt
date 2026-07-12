@@ -53,7 +53,7 @@ fun TextureManagerScreen(onBack: () -> Unit, viewModel: TextureManagerViewModel 
             ArmsTopBar(
                 title = str("renderer.section.texturePacks"),
                 subtitle = state.activeSerial ?: str("games.info.perGameSettings.body"),
-                leading = { RoundAction("‹", str("action.back"), onBack) },
+                leading = { RoundAction("←", str("action.back"), onBack) },
                 actions = {
                     RoundAction("＋", str("action.import"), { folderPicker.launch(null) })
                     RoundAction("↻", str("games.card.refresh"), viewModel::refresh)

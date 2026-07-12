@@ -59,7 +59,6 @@ import com.armsx2.ui.settings.RecompilerTab
 import com.armsx2.ui.settings.RendererTab
 import com.armsx2.ui.settings.SkinsTab
 import com.armsx2.ui.settings.LocalSettingsScrollState
-import com.armsx2.ui.settings.verticalScrollbar
 
 private data class SettingsSection(val category: SettingsCategory, val titleKey: String, val glyph: String)
 
@@ -68,6 +67,7 @@ fun SettingsScreen(
     initialCategory: SettingsCategory,
     game: GameInfo?,
     onBack: () -> Unit,
+    onOpenAbout: () -> Unit = {},
     viewModel: SettingsViewModel = viewModel(),
 ) {
     var showReset by remember { mutableStateOf(false) }
@@ -96,17 +96,22 @@ fun SettingsScreen(
                 Modifier
                     .fillMaxSize()
                     .verticalScroll(screenScroll)
-                    .verticalScrollbar(screenScroll)
                     .padding(bottom = 8.dp),
             ) {
                 ArmsTopBar(
                     title = game?.title ?: str("action.settings"),
                     subtitle = if (game == null) str("scope.global") else str("scope.game"),
-                    leading = { RoundAction("‹", str("action.back"), onBack) },
+                    leading = { RoundAction("←", str("action.back"), onBack) },
                     actions = { RoundAction("↺", str("action.reset"), { showReset = true }) },
                 )
                 if (contentReady) {
-                    SettingsCategoryBar(displayedCategory, gameSpecific = game != null, viewModel::selectCategory)
+                    SettingsCategoryBar(
+                        selected = displayedCategory,
+                        gameSpecific = game != null,
+                        onSelect = { category ->
+                            if (category == SettingsCategory.About) onOpenAbout() else viewModel.selectCategory(category)
+                        },
+                    )
                     Spacer(Modifier.height(10.dp))
                     SettingsPanel(displayedCategory, viewModel, Modifier.fillMaxWidth())
                     Spacer(Modifier.height(16.dp))
@@ -158,49 +163,56 @@ private fun SettingsCategoryBar(
     // tab (Skins / Fixes / Recompiler, past On-Screen) unregistered and unreachable, so
     // the controller got stuck at the last visible tab. A plain Row composes them all;
     // each selected chip's bringIntoView then scrolls it into view as the selector moves.
-    Row(
-        modifier = Modifier.fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(vertical = 6.dp, horizontal = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        val sections = settingsSections().filterNot {
-            // General is redundant per-game (redirects to Performance); Info only makes
-            // sense for a specific game, so hide it in the global settings.
-            (gameSpecific && it.category == SettingsCategory.General) ||
-                (!gameSpecific && it.category == SettingsCategory.Info)
-        }
-        sections.forEach { section ->
-            val active = section.category == selected
-            FilterChip(
-                modifier = Modifier.height(44.dp)
-                    .controllerFocusable(
-                        "settings.chip.${section.category.name}",
-                        RoundedCornerShape(13.dp),
-                        onConfirm = { onSelect(section.category) },
-                    ),
-                selected = active,
-                onClick = { onSelect(section.category) },
-                label = { Text(str(section.titleKey), maxLines = 1) },
-                leadingIcon = {
-                    Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
-                        Text(
-                            section.glyph,
-                            fontSize = 15.sp,
-                            color = if (active) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                },
-                shape = RoundedCornerShape(13.dp),
-                colors = FilterChipDefaults.filterChipColors(
-                    containerColor = Color.Transparent,
-                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    iconColor = MaterialTheme.colorScheme.primary,
-                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                ),
-            )
+    val sections = settingsSections().filterNot {
+        // General is redundant per-game (redirects to Performance); Info only makes
+        // sense for a specific game, so hide it in the global settings.
+        (gameSpecific && it.category == SettingsCategory.General) ||
+            (!gameSpecific && it.category == SettingsCategory.Info) ||
+            (gameSpecific && it.category == SettingsCategory.About)
+    }
+    Box(Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()).padding(vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            // Edge spacing belongs to the scrollable CONTENT, not its viewport. This
+            // lets the final chip scroll fully into view before the trailing inset.
+            Spacer(Modifier.size(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                sections.forEach { section ->
+                    val active = section.category == selected
+                    FilterChip(
+                        modifier = Modifier.height(36.dp)
+                            .controllerFocusable(
+                                "settings.chip.${section.category.name}",
+                                RoundedCornerShape(11.dp),
+                                onConfirm = { onSelect(section.category) },
+                            ),
+                        selected = active,
+                        onClick = { onSelect(section.category) },
+                        label = { Text(str(section.titleKey), maxLines = 1, style = MaterialTheme.typography.labelLarge) },
+                        leadingIcon = {
+                            Box(Modifier.size(17.dp), contentAlignment = Alignment.Center) {
+                                Text(
+                                    section.glyph,
+                                    fontSize = 13.sp,
+                                    color = if (active) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        },
+                        shape = RoundedCornerShape(11.dp),
+                        colors = FilterChipDefaults.filterChipColors(
+                            containerColor = Color.Transparent,
+                            labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            iconColor = MaterialTheme.colorScheme.primary,
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ),
+                    )
+                }
+            }
+            Spacer(Modifier.size(8.dp))
         }
     }
 }
@@ -218,6 +230,7 @@ private fun settingsSections() = listOf(
     SettingsSection(SettingsCategory.Skins, "tab.skins", "◈"),
     SettingsSection(SettingsCategory.Advanced, "tab.fixes", "⌘"),
     SettingsSection(SettingsCategory.Recompiler, "tab.recompiler", "⚙"),
+    SettingsSection(SettingsCategory.About, "about.title", "ⓘ"),
 )
 
 @Composable
@@ -235,6 +248,7 @@ private fun CategoryContent(category: SettingsCategory, viewModel: SettingsViewM
         SettingsCategory.Skins -> SkinsTab(viewModel.settings)
         SettingsCategory.Advanced -> FixesTab(viewModel.settings)
         SettingsCategory.Recompiler -> RecompilerTab(viewModel.settings)
+        SettingsCategory.About -> Unit
     }
 }
 
@@ -252,4 +266,5 @@ private fun categoryTitle(category: SettingsCategory): String = when (category) 
     SettingsCategory.Skins -> str("tab.skins")
     SettingsCategory.Advanced -> str("tab.fixes")
     SettingsCategory.Recompiler -> str("tab.recompiler")
+    SettingsCategory.About -> str("about.title")
 }

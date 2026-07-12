@@ -61,6 +61,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -71,7 +73,6 @@ import com.armsx2.i18n.str
 import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.ui.InGameOverlay
 import com.armsx2.ui.achievements.AchievementItem
-import com.armsx2.ui.common.ArmsLogo
 import com.armsx2.ui.common.GameCoverArt
 import com.armsx2.ui.settings.controllerFocusable
 import com.armsx2.ui.theme.Danger
@@ -144,30 +145,51 @@ fun EmulationMenuScreen(viewModel: EmulationMenuViewModel = viewModel()) {
             exit = slideOutHorizontally(tween(220, easing = EaseIn)) { it },
             modifier = Modifier.align(Alignment.CenterEnd),
         ) {
-            Surface(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(if (compact) 0.96f else 0.76f)
-                    .widthIn(max = 1020.dp)
-                    .windowInsetsPadding(
-                        WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical),
-                    ),
-                shape = RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
-                shadowElevation = 22.dp,
-            ) {
-                if (compact) {
+            if (compact) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(0.96f)
+                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical)),
+                    shape = RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
+                    shadowElevation = 22.dp,
+                ) {
                     MenuPage(state, viewModel, compact = true, modifier = Modifier.fillMaxSize())
-                } else {
-                    Row(Modifier.fillMaxSize()) {
-                        MenuRail(state.tab, viewModel::selectTab)
+                }
+            } else {
+                Row(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(0.64f)
+                        .widthIn(max = 900.dp)
+                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical))
+                        .padding(top = 14.dp, end = 12.dp, bottom = 14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Surface(
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        shape = RoundedCornerShape(28.dp),
+                        color = MaterialTheme.colorScheme.surface,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
+                        shadowElevation = 22.dp,
+                    ) {
                         MenuPage(
                             state = state,
                             viewModel = viewModel,
                             compact = false,
-                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            modifier = Modifier.fillMaxSize(),
                         )
+                    }
+                    Surface(
+                        modifier = Modifier.width(76.dp).fillMaxHeight(),
+                        shape = RoundedCornerShape(28.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.94f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
+                        shadowElevation = 18.dp,
+                    ) {
+                        MenuRail(state.tab, viewModel::selectTab)
                     }
                 }
             }
@@ -246,15 +268,39 @@ private fun MenuRail(selected: EmulationMenuTab, onSelect: (EmulationMenuTab) ->
     Column(
         Modifier
             .fillMaxHeight()
-            .width(184.dp)
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.34f))
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 10.dp, vertical = 16.dp),
+            .padding(horizontal = 8.dp, vertical = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        ArmsLogo(showWordmark = false, iconSize = 72.dp, modifier = Modifier.align(Alignment.CenterHorizontally))
-        Spacer(Modifier.height(18.dp))
         EmulationMenuTab.entries.forEach { tab ->
-            MenuTab(tab, tab == selected, onSelect)
+            MenuRailTab(tab, tab == selected, onSelect)
+        }
+    }
+}
+
+@Composable
+private fun MenuRailTab(tab: EmulationMenuTab, active: Boolean, onSelect: (EmulationMenuTab) -> Unit) {
+    val bring = remember { BringIntoViewRequester() }
+    val label = str(tab.titleKey)
+    LaunchedEffect(active) { if (active) runCatching { bring.bringIntoView() } }
+    Surface(
+        onClick = { onSelect(tab) },
+        modifier = Modifier.size(56.dp).bringIntoViewRequester(bring).semantics { contentDescription = label },
+        shape = RoundedCornerShape(18.dp),
+        color = if (active) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+        border = BorderStroke(
+            if (active) 2.dp else 1.dp,
+            if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.34f),
+        ),
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = tabGlyph(tab),
+                fontSize = 23.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
@@ -270,20 +316,59 @@ private fun MenuTab(tab: EmulationMenuTab, active: Boolean, onSelect: (Emulation
     LaunchedEffect(active) { if (active) runCatching { bring.bringIntoView() } }
     Surface(
         onClick = { onSelect(tab) },
-        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp).bringIntoViewRequester(bring),
+        modifier = Modifier
+            .widthIn(min = 132.dp, max = 210.dp)
+            .padding(vertical = 3.dp)
+            .bringIntoViewRequester(bring),
         shape = RoundedCornerShape(14.dp),
-        color = if (active) MaterialTheme.colorScheme.primary.copy(alpha = 0.17f) else Color.Transparent,
-        border = if (active) BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.62f)) else null,
+        color = if (active) MaterialTheme.colorScheme.primaryContainer
+        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.56f),
+        border = BorderStroke(
+            if (active) 1.5.dp else 1.dp,
+            if (active) MaterialTheme.colorScheme.primary.copy(alpha = 0.72f)
+            else MaterialTheme.colorScheme.outline.copy(alpha = 0.32f),
+        ),
     ) {
-        Text(
-            str(tab.titleKey),
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-            color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
-            maxLines = 2,
-        )
+        Row(
+            modifier = Modifier.padding(horizontal = 11.dp, vertical = 9.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Surface(
+                modifier = Modifier.size(30.dp),
+                shape = RoundedCornerShape(9.dp),
+                color = if (active) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+                else MaterialTheme.colorScheme.surface.copy(alpha = 0.72f),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = tabGlyph(tab),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Text(
+                text = str(tab.titleKey),
+                color = if (active) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
+}
+
+private fun tabGlyph(tab: EmulationMenuTab): String = when (tab) {
+    EmulationMenuTab.Session -> "☰"
+    EmulationMenuTab.Graphics -> "✣"
+    EmulationMenuTab.Fixes -> "⚙"
+    EmulationMenuTab.Performance -> "↯"
+    EmulationMenuTab.Controls -> "⌁"
+    EmulationMenuTab.Options -> "▣"
+    EmulationMenuTab.Achievements -> "★"
 }
 
 @Composable

@@ -36,7 +36,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -53,6 +52,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalConfiguration
@@ -173,6 +175,15 @@ fun ArmsTopBar(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+                if (!subtitle.isNullOrBlank()) {
+                    Text(
+                        text = subtitle,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), content = actions)
         }
@@ -210,35 +221,53 @@ fun RoundAction(
     description: String,
     onClick: () -> Unit,
     selected: Boolean = false,
+    framed: Boolean = true,
+    buttonSize: Dp = 42.dp,
+    buttonShape: Shape = CircleShape,
+    subtleFrame: Boolean = false,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
-    IconButton(
+    val actionBorder = if (framed || focused || selected) {
+        BorderStroke(
+            width = if (focused) 2.dp else 1.dp,
+            color = when {
+                focused -> MaterialTheme.colorScheme.primary
+                selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.76f)
+                else -> MaterialTheme.colorScheme.outline.copy(alpha = if (subtleFrame) 0.30f else 0.58f)
+            },
+        )
+    } else {
+        null
+    }
+    val actionColor = when {
+        selected -> MaterialTheme.colorScheme.primaryContainer
+        framed -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (subtleFrame) 0.58f else 1f)
+        else -> Color.Transparent
+    }
+    Surface(
         onClick = onClick,
         interactionSource = interaction,
         modifier = Modifier
-            .size(44.dp)
-            .border(
-                width = if (focused) 2.dp else 1.dp,
-                color = when {
-                    focused -> MaterialTheme.colorScheme.primary
-                    selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.76f)
-                    else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.58f)
-                },
-                shape = CircleShape,
-            )
-            .background(
-                if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                CircleShape,
-            )
+            .size(buttonSize)
+            .semantics { contentDescription = description }
             .focusable(interactionSource = interaction),
+        shape = buttonShape,
+        color = actionColor,
+        border = actionBorder,
     ) {
-        Text(
-            text = glyph,
-            color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-        )
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(
+                text = glyph,
+                color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                fontSize = when {
+                    glyph.length >= 3 -> 13.sp
+                    glyph.length == 2 -> 18.sp
+                    else -> 22.sp
+                },
+                fontWeight = FontWeight.Bold,
+            )
+        }
     }
 }
 

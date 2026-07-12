@@ -80,6 +80,9 @@ import kotlin.math.min
 import androidx.core.net.toUri
 import androidx.core.content.edit
 
+private const val LIGHT_NAVIGATION_BAR_SCRIM = 0x04000000
+private const val DARK_NAVIGATION_BAR_SCRIM = 0x0A000000
+
 private const val STICK_DEAD = 0.15f
 // Trigger (L2/R2) dead-low: much smaller than the stick deadzone — triggers want fine
 // control and full range. Just enough to swallow resting-axis noise on cheaper / non-Xbox
@@ -1304,17 +1307,36 @@ open class MainActivityRuntime : ComponentActivity() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    private fun applyEdgeToEdge() {
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.auto(
                 android.graphics.Color.TRANSPARENT,
                 android.graphics.Color.TRANSPARENT,
             ),
             navigationBarStyle = SystemBarStyle.auto(
-                android.graphics.Color.TRANSPARENT,
-                android.graphics.Color.TRANSPARENT,
+                LIGHT_NAVIGATION_BAR_SCRIM,
+                DARK_NAVIGATION_BAR_SCRIM,
             ),
         )
+    }
+
+    private fun applySystemBarTheme(darkTheme: Boolean, showSystemBars: Boolean) {
+        // Re-apply edge-to-edge along with icon appearance. Some Android versions
+        // reset one half of this state when the app switches theme at runtime.
+        applyEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            val useDarkIcons = !darkTheme
+            isAppearanceLightStatusBars = useDarkIcons
+            isAppearanceLightNavigationBars = useDarkIcons
+            if (showSystemBars) show(WindowInsetsCompat.Type.systemBars())
+            else hide(WindowInsetsCompat.Type.systemBars())
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        applyEdgeToEdge()
         super.onCreate(savedInstanceState)
         com.armsx2.navigation.UiNavigator.drawerOpen.value = false
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -1347,6 +1369,7 @@ open class MainActivityRuntime : ComponentActivity() {
         com.armsx2.ui.theme.ThemePreferences.load()
         com.armsx2.ui.theme.BootLogoPreferences.load()
         com.armsx2.ui.theme.ToolbarPositionPreferences.load()
+        com.armsx2.ui.theme.LibraryChromePreferences.load()
         com.armsx2.ControllerSkinStore.load(applicationContext)
         // Restore the saved rumble master toggle into the native gate (NativeApp.onPadRumble).
         NativeApp.sRumbleEnabled = ControllerMappings.rumbleEnabled()
@@ -1466,23 +1489,13 @@ open class MainActivityRuntime : ComponentActivity() {
                 eState.value == EmuState.STOPPED ||
                 eState.value == EmuState.RENDER_UNSUPPORTED ||
                 eState.value == EmuState.EMULATOR_UNSUPPORTED
-            val lightSystemBars = when (com.armsx2.ui.theme.ThemePreferences.mode.value) {
-                com.armsx2.ui.theme.ThemeMode.System -> !androidx.compose.foundation.isSystemInDarkTheme()
-                com.armsx2.ui.theme.ThemeMode.Light -> true
-                com.armsx2.ui.theme.ThemeMode.Dark -> false
+            val darkTheme = when (com.armsx2.ui.theme.ThemePreferences.mode.value) {
+                com.armsx2.ui.theme.ThemeMode.System -> androidx.compose.foundation.isSystemInDarkTheme()
+                com.armsx2.ui.theme.ThemeMode.Light -> false
+                com.armsx2.ui.theme.ThemeMode.Dark -> true
             }
-            androidx.compose.runtime.LaunchedEffect(showSystemBars, lightSystemBars) {
-                WindowInsetsControllerCompat(window, window.decorView).apply {
-                    if (showSystemBars) {
-                        show(WindowInsetsCompat.Type.systemBars())
-                        isAppearanceLightStatusBars = lightSystemBars
-                        isAppearanceLightNavigationBars = lightSystemBars
-                    } else {
-                        hide(WindowInsetsCompat.Type.systemBars())
-                    }
-                    systemBarsBehavior =
-                        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                }
+            androidx.compose.runtime.SideEffect {
+                applySystemBarTheme(darkTheme = darkTheme, showSystemBars = showSystemBars)
             }
             // First-time setup deferral: when the wizard finishes and
             // setupComplete flips to true, kick off the heavy emucore

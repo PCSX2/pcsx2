@@ -12,8 +12,6 @@ val armsx2Pgo = providers.gradleProperty("armsx2.pgo").orElse("none") // none | 
 val armsx2PgoProfile = providers.gradleProperty("armsx2.pgoProfile").orElse("") // abs path to merged .profdata (optimize)
 val armsx2HostPageSize = providers.gradleProperty("armsx2.hostPageSize").orElse("0x1000")
 val armsx2ApplicationId = providers.gradleProperty("armsx2.applicationId").orElse("com.armsx2")
-val armsx2VersionCode = providers.gradleProperty("armsx2.versionCode").map { it.toInt() }.orElse(1088)
-val armsx2VersionName = providers.gradleProperty("armsx2.versionName").orElse("2.5.8")
 val armsx2SigningPropertiesFile = rootProject.file("armsx2_keystore.properties")
 val armsx2SigningProperties = Properties().apply {
     if (armsx2SigningPropertiesFile.isFile) {
@@ -36,8 +34,8 @@ android {
         applicationId = armsx2ApplicationId.get()
         minSdk = 26
         targetSdk = 37
-        versionCode = armsx2VersionCode.get()
-        versionName = armsx2VersionName.get()
+        versionCode = providers.gradleProperty("armsx2.versionCode").orNull?.toInt() ?: 1088
+        versionName = providers.gradleProperty("armsx2.versionName").orNull ?: "2.5.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk {
@@ -151,7 +149,7 @@ android {
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
-            version = "3.30.5"
+            version = "3.22.1"
         }
     }
     buildFeatures {

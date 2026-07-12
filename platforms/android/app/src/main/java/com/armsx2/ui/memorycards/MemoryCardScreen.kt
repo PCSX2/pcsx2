@@ -66,7 +66,7 @@ fun MemoryCardScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: Memo
             item {
                 ArmsTopBar(
                     title = str("memcard.title"),
-                    leading = { RoundAction("‹", str("action.back"), onBack) },
+                    leading = { RoundAction("←", str("action.back"), onBack) },
                     actions = {
                         RoundAction("＋", str("memcard.newCard"), { createDialog = true })
                         RoundAction("⇩", str("action.import"), { importer.launch(arrayOf("application/octet-stream", "*/*")) })

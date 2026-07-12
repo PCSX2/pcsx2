@@ -155,10 +155,6 @@ private fun DrawerContent(selected: AppRoute, onNavigate: (AppRoute) -> Unit) {
         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f))
         Spacer(Modifier.height(14.dp))
         DrawerSection(str("ra.options.header"), managers, selected, onNavigate)
-        Spacer(Modifier.height(14.dp))
-        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f))
-        Spacer(Modifier.height(14.dp))
-        DrawerRow("drawer.About", "ARMSX2", "ⓘ", selected = selected is AppRoute.About, onClick = { onNavigate(AppRoute.About) })
     }
 }
 

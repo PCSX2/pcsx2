@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -43,7 +44,6 @@ import com.armsx2.PatchRepo
 import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsBackdrop
 import com.armsx2.ui.common.ArmsTopBar
-import com.armsx2.ui.common.EmptyState
 import com.armsx2.ui.common.GlassPanel
 import com.armsx2.ui.common.RoundAction
 import com.armsx2.ui.common.SectionTitle
@@ -62,8 +62,7 @@ fun PatchManagerScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: Pa
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             ArmsTopBar(
                 title = str("patches.dialog.patchesAndCheats"),
-                subtitle = str("patches.applyAtBoot"),
-                leading = { RoundAction("‹", str("action.back"), onBack) },
+                leading = { RoundAction("←", str("action.back"), onBack) },
                 actions = {
                     RoundAction("＋", str("action.import"), { picker.launch(arrayOf("text/plain", "application/octet-stream", "*/*")) })
                     RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
@@ -235,7 +234,7 @@ private fun PatchFiles(state: PatchManagerUiState, viewModel: PatchManagerViewMo
     Column(modifier) {
         SectionTitle(str("patches.installedHeader"), state.files.size.toString())
         if (state.files.isEmpty()) {
-            EmptyState(str("patches.noFilesInstalled"), str("patches.pasteImportHint"), modifier = Modifier.fillMaxWidth().height(220.dp))
+            PatchFilesEmptyState()
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 state.files.forEach { file ->
@@ -249,6 +248,52 @@ private fun PatchFiles(state: PatchManagerUiState, viewModel: PatchManagerViewMo
                         onDelete = { viewModel.delete(file) },
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PatchFilesEmptyState() {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.42f)),
+        tonalElevation = 1.dp,
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 18.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ) {
+                BoxWithConstraints(
+                    modifier = Modifier.size(48.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "✦",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+            }
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = str("patches.noFilesInstalled"),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = str("patches.pasteImportHint"),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }

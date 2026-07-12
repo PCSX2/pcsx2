@@ -34,6 +34,11 @@ class Pasx2Application : Application(), ImageLoaderFactory {
 		installCrashLogging()
 	}
 
+	override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+		super.onConfigurationChanged(newConfig)
+		com.armsx2.i18n.I18n.refreshSystemLanguage(this)
+	}
+
 	/**
 	 * Diagnostics for the no-ADB case: some games (e.g. GoW2, LEGO Batman) drop
 	 * back to the library on boot on some setups. We can't read logcat on the
