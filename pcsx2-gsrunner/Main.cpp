@@ -521,6 +521,8 @@ static void PrintCommandLineHelp(const char* progname)
 						 "Falls back to hardware/geometry expansion.\n");
 	std::fprintf(stderr, "  -no-tex-barriers: Force OverrideTextureBarriers=0. Disables the texture-barrier render-pass pattern "
 						 "and the framebuffer-fetch / depth-feedback paths that build on it.\n");
+	std::fprintf(stderr, "  -accblend <0-5>: Force accurate blending unit (0=Minimum, 1=Basic, 2=Medium, 3=High, 4=Full, 5=Maximum). "
+						 "Overrides the game/global default; use to exercise the SW-blend / fb-fetch (ROV) path headlessly.\n");
 	std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
 						 "    parameters make up the filename. Use when the filename contains\n"
 						 "    spaces or starts with a dash.\n");
@@ -835,6 +837,18 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 			{
 				Console.WriteLn("Forcing texture barriers off (OverrideTextureBarriers=0)");
 				s_settings_interface.SetIntValue("EmuCore/GS", "OverrideTextureBarriers", 0);
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-accblend"))
+			{
+				const std::optional<int> level = StringUtil::FromChars<int>(argv[++i]);
+				if (!level.has_value() || level.value() < 0 || level.value() > 5)
+				{
+					Console.Error("Invalid -accblend level (expected 0=Minimum .. 5=Maximum)");
+					return false;
+				}
+				Console.WriteLn(fmt::format("Forcing accurate blending unit = {}", level.value()));
+				s_settings_interface.SetIntValue("EmuCore/GS", "accurate_blending_unit", level.value());
 				continue;
 			}
 			else if (CHECK_ARG("-debugdevice"))
