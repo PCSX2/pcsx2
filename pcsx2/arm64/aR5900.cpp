@@ -2071,6 +2071,12 @@ static bool recTryTranslateCachedOp(u32 op, RecGprCacheState& cache, const RecGp
 		{
 			if (rd == 0)
 				return true;
+			if (rt == 0)
+			{
+				const a64::Register& dst = recCacheDest(cache, rd);
+				armAsm->Mov(dst, 0);
+				return true;
+			}
 			const a64::Register& src = recCacheLoad(cache, rt);
 			const a64::Register& dst = recCacheDest(cache, rd, rt);
 			if (funct == 0x00)
@@ -2089,6 +2095,21 @@ static bool recTryTranslateCachedOp(u32 op, RecGprCacheState& cache, const RecGp
 		{
 			if (rd == 0)
 				return true;
+			if (rt == 0)
+			{
+				const a64::Register& dst = recCacheDest(cache, rd);
+				armAsm->Mov(dst, 0);
+				return true;
+			}
+			if (rs == 0)
+			{
+				// Shift by zero is a sign-extending move.
+				const a64::Register& src = recCacheLoad(cache, rt);
+				const a64::Register& dst = recCacheDest(cache, rd, rt);
+				move_w(dst.W(), src.W());
+				armAsm->Sxtw(dst, dst.W());
+				return true;
+			}
 			const a64::Register& src = recCacheLoad(cache, rt);
 			const a64::Register& sh = recCacheLoad(cache, rs);
 			const a64::Register& dst = recCacheDest(cache, rd, rt, rs);
@@ -2108,6 +2129,20 @@ static bool recTryTranslateCachedOp(u32 op, RecGprCacheState& cache, const RecGp
 		{
 			if (rd == 0)
 				return true;
+			if (rt == 0)
+			{
+				const a64::Register& dst = recCacheDest(cache, rd);
+				armAsm->Mov(dst, 0);
+				return true;
+			}
+			if (rs == 0)
+			{
+				// Shift by zero is a plain move.
+				const a64::Register& src = recCacheLoad(cache, rt);
+				const a64::Register& dst = recCacheDest(cache, rd, rt);
+				move_x(dst, src);
+				return true;
+			}
 			const a64::Register& src = recCacheLoad(cache, rt);
 			const a64::Register& sh = recCacheLoad(cache, rs);
 			const a64::Register& dst = recCacheDest(cache, rd, rt, rs);

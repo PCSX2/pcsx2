@@ -14,6 +14,10 @@
 
 #include "common/Error.h"
 
+#if defined(__aarch64__) || defined(_M_ARM64)
+#include "SPU2/spu2_neon.h"
+#endif
+
 const StereoOut32 StereoOut32::Empty(0, 0);
 
 namespace SPU2
@@ -260,6 +264,16 @@ void SPU2::InternalReset(bool psxmode)
 	// Stereo L<->R output swap (opt-in, default off). Read fresh on every reset so
 	// toggling the setting live also survives a game reboot / cold start.
 	s_swap_channels = Host::GetBaseBoolSettingValue("SPU2/Output", "SwapChannels", false);
+
+#if defined(__aarch64__) || defined(_M_ARM64)
+	// Optional NEON reverb FIR (opt-in, default off). Overrides the Multi-ISA
+	// scalar reverb resamplers assigned just above. Read fresh on every reset so
+	// toggling the setting and rebooting switches backends.
+	if (Host::GetBaseBoolSettingValue("SPU2", "NeonReverbSIMD", false))
+	{
+		SPU2::RegisterNEONBackend();
+	}
+#endif
 
 	s_current_chunk_pos = 0;
 	s_psxmode = psxmode;

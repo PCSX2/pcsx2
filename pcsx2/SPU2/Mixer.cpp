@@ -9,6 +9,10 @@
 
 #include "common/Assertions.h"
 
+#if defined(__aarch64__)
+#include <arm_neon.h>
+#endif
+
 // LOOP/END sets the ENDX bit and sets NAX to LSA, and the voice is muted if LOOP is not set
 // LOOP seems to only have any effect on the block with LOOP/END set, where it prevents muting the voice
 // (the documented requirement that every block in a loop has the LOOP bit set is nonsense according to tests)
@@ -157,18 +161,47 @@ static __forceinline s32 ApplyVolume(s32 data, s32 volume)
 	return (volume * data) >> 15;
 }
 
+#if defined(__aarch64__)
+// NEON helper: lanewise (volume * data) >> 15 on s32x2. Bit-exact with the
+// scalar mul + asr 15 — narrow the s64 product to s32 first (matching the
+// scalar's implicit s32 truncation) then arithmetic-shift right 15.
+static __forceinline int32x2_t ApplyVolumeStereoNEON(int32x2_t data, int32x2_t volume)
+{
+	const int64x2_t prod = vmull_s32(data, volume);
+	const int32x2_t lo32 = vmovn_s64(prod);
+	return vshr_n_s32(lo32, 15);
+}
+#endif
+
 static __forceinline StereoOut32 ApplyVolume(const StereoOut32& data, const V_VolumeLR& volume)
 {
+#if defined(__aarch64__)
+	const int32x2_t d = vld1_s32(&data.Left);
+	const int32x2_t v = vld1_s32(&volume.Left);
+	StereoOut32 out;
+	vst1_s32(&out.Left, ApplyVolumeStereoNEON(d, v));
+	return out;
+#else
 	return StereoOut32(
 		ApplyVolume(data.Left, volume.Left),
 		ApplyVolume(data.Right, volume.Right));
+#endif
 }
 
 static __forceinline StereoOut32 ApplyVolume(const StereoOut32& data, const V_VolumeSlideLR& volume)
 {
+#if defined(__aarch64__)
+	static_assert(sizeof(V_VolumeSlide) == 12, "V_VolumeSlide layout assumed by NEON ApplyVolume");
+	const int32x2_t d = vld1_s32(&data.Left);
+	const int32x2_t v = { volume.Left.Value, volume.Right.Value };
+	StereoOut32 out;
+	vst1_s32(&out.Left, ApplyVolumeStereoNEON(d, v));
+	return out;
+#else
 	return StereoOut32(
 		ApplyVolume(data.Left, volume.Left.Value),
 		ApplyVolume(data.Right, volume.Right.Value));
+#endif
 }
 
 static __forceinline void UpdateBlockHeader(V_Core& thiscore, uint voiceidx)
@@ -424,6 +457,22 @@ static __forceinline void MixCoreVoices(VoiceMixSet& dest, const uint coreidx)
 {
 	V_Core& thiscore(Cores[coreidx]);
 
+#if defined(__aarch64__)
+	// dest is {Dry.L, Dry.R, Wet.L, Wet.R} = 4 contiguous s32, and each
+	// V_VoiceGates entry is the same {DryL, DryR, WetL, WetR} contiguous s32x4.
+	// Per voice: vval = {VVal.L, VVal.R, VVal.L, VVal.R}, accum += vval & gates.
+	// Bit-identical to the scalar version below.
+	int32x4_t accum = vld1q_s32(&dest.Dry.Left);
+	for (uint voiceidx = 0; voiceidx < V_Core::NumVoices; ++voiceidx)
+	{
+		const StereoOut32 VVal(MixVoice(coreidx, voiceidx));
+		const int32x2_t lr = vld1_s32(&VVal.Left);
+		const int32x4_t vval = vcombine_s32(lr, lr);
+		const int32x4_t gate = vld1q_s32(&thiscore.VoiceGates[voiceidx].DryL);
+		accum = vaddq_s32(accum, vandq_s32(vval, gate));
+	}
+	vst1q_s32(&dest.Dry.Left, accum);
+#else
 	for (uint voiceidx = 0; voiceidx < V_Core::NumVoices; ++voiceidx)
 	{
 		StereoOut32 VVal(MixVoice(coreidx, voiceidx));
@@ -435,6 +484,7 @@ static __forceinline void MixCoreVoices(VoiceMixSet& dest, const uint coreidx)
 		dest.Wet.Left += VVal.Left & thiscore.VoiceGates[voiceidx].WetL;
 		dest.Wet.Right += VVal.Right & thiscore.VoiceGates[voiceidx].WetR;
 	}
+#endif
 }
 
 static __forceinline StereoOut32 MixCore(const uint coreidx, const VoiceMixSet& inVoices, const StereoOut32& Input, const StereoOut32& Ext)
