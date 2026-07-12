@@ -1006,6 +1006,13 @@ static void vtlb_RemoveFastmemMapping(u32 vaddr)
 
 static void vtlb_RemoveFastmemMappings(u32 vaddr, u32 size)
 {
+	// When the 4 GB fastmem area reservation fails (e.g. on low-memory iOS
+	// devices like the iPhone SE 2), s_fastmem_virtual_mapping is never
+	// resized and remains empty. Indexing it would dereference NULL, so bail
+	// out early — there are no mappings to remove.
+	if (s_fastmem_virtual_mapping.empty())
+		return;
+
 	pxAssert((vaddr & VTLB_PAGE_MASK) == 0);
 	pxAssert(size > 0 && (size & VTLB_PAGE_MASK) == 0);
 

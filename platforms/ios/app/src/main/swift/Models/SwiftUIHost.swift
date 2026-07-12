@@ -55,6 +55,30 @@ class ARMSX2HostingController<Content: View>: UIHostingController<Content> {
         applyNativeContentScale(to: view)
     }
 
+    /// Force SwiftUI to re-evaluate its layout when the device rotates.
+    ///
+    /// This hosting controller is a child of SDL's root view controller. While
+    /// UIKit does forward `viewWillTransition` to child controllers,
+    /// `UIHostingController`'s internal layout engine sometimes fails to
+    /// invalidate its `GeometryReader` contents promptly — especially when the
+    /// view is pinned via Auto Layout constraints rather than living directly
+    /// under the window. Without this nudge, SwiftUI keeps stale geometry after
+    /// rotation, producing broken layouts (black bars, cropped viewports,
+    /// misplaced touch controls). We force a re-evaluation by toggling the
+    /// `rootView` on the animation coordinator so the re-layout rides the
+    /// standard rotation animation block.
+    override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        // Re-assigning rootView forces UIHostingController to invalidate its
+        // internal sizing cache and re-measure for the new container size.
+        let current = rootView
+        coordinator.animate(alongsideTransition: { _ in
+            self.rootView = current
+            self.view.setNeedsLayout()
+            self.view.layoutIfNeeded()
+        })
+    }
+
     @objc private func systemChromeNeedsUpdate() {
         setNeedsStatusBarAppearanceUpdate()
         setNeedsUpdateOfHomeIndicatorAutoHidden()

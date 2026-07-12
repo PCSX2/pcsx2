@@ -97,12 +97,13 @@ struct QuickMenuView: View {
 
     /// Two columns only when the card is wide enough to keep both columns comfortable.
     /// iPad portrait and short/small phone-landscape devices fall back to one column.
-    /// iPhone portrait uses two columns when wide enough (e.g. plus/max in portrait)
-    /// so the pause menu content is compact and readable without scrolling.
+    /// iPhone portrait always uses a single-column scroll layout — the screen is
+    /// too narrow for two comfortable columns, even on Plus/Max devices. Landscape
+    /// and iPad still get two columns when wide enough.
     private func supportsTwoColumns(width: CGFloat, height: CGFloat) -> Bool {
         switch variant {
         case .phonePortrait:
-            return width >= 390
+            return false
         case .ipadTwoColumn:
             return width >= 500 && height >= 320
         case .phoneLandscape:
