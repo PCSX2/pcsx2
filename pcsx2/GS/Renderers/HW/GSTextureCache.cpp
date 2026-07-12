@@ -8178,8 +8178,9 @@ bool GSTextureCache::Target::ResizeTexture(int new_unscaled_width, int new_unsca
 		{
 			// Can't do partial copies in DirectX for depth textures, and it's probably not ideal in other
 			// APIs either. So use a fullscreen quad setting depth instead.
-			// Use bilinear to avoid artifacts with upscaling. At native this is equivalent to nearest.
-			g_gs_device->StretchRectAuto(m_texture, tex, GSVector4(rc), Biln);
+			// Use bilinear to avoid artifacts with upscaling during native scaling.
+			const bool req_bilinear = m_downscaled && m_scale < g_gs_renderer->GetUpscaleMultiplier();
+			g_gs_device->StretchRectAuto(m_texture, tex, GSVector4(rc), req_bilinear ? Biln : Nearest);
 		}
 		else
 		{
