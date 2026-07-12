@@ -186,7 +186,15 @@ static const void* DispatchPageReset = nullptr;    // counted manual block -> re
 //    fallback); eePatchWaitingPredecessors wires it when the target compiles.
 //
 // Flip s_eeBlockLinkEnabled to false to fall back to pure LUT dispatch.
+// Disabled on iOS: the direct-B patching system is a new code path that the
+// proven fork doesn't use, and it has been linked to crashes on iOS devices
+// (corrupted branch targets, JIT code region writes). The LUT-indirect path
+// is slightly slower but stable.
+#if defined(__APPLE__) && TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+static bool s_eeBlockLinkEnabled = false;
+#else
 static bool s_eeBlockLinkEnabled = true;
+#endif
 
 struct EEBlockLinkExit
 {
