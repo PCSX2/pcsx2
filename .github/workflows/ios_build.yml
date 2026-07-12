@@ -1,0 +1,49 @@
+# iOS build — self-contained on this fork.
+# Mirrors the iOS job from build-all.yml but triggers on push to ios/bring-up
+# (and manual dispatch), so CI runs without needing a PR to jpolo1224/pcsx2.
+name: iOS Build
+
+on:
+  push:
+    branches:
+      - ios/bring-up
+      - ios/*
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios:
+    name: iOS (arm64, unsigned)
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode.app
+
+      - name: Configure (CMake, Xcode generator, simulator SDK, no signing)
+        working-directory: platforms/ios/app/src/main/cpp
+        run: >
+          cmake -G Xcode -B build
+          -DCMAKE_SYSTEM_NAME=iOS
+          -DCMAKE_OSX_ARCHITECTURES=arm64
+          -DARMSX2_REAL_DEVICE=OFF
+
+      - name: Build
+        working-directory: platforms/ios/app/src/main/cpp
+        run: >
+          cmake --build build --config Release
+          -- -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO
+
+      - name: Upload .app
+        uses: actions/upload-artifact@v4
+        with:
+          name: armsx2-ios-arm64
+          path: platforms/ios/app/src/main/cpp/build/**/*.app
+          if-no-files-found: warn

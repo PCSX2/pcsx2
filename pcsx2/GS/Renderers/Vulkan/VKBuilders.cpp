@@ -282,24 +282,12 @@ VkPipeline Vulkan::GraphicsPipelineBuilder::Create(
 {
 	const GSShaderCompileIndicator::CompileTimer compile_timer;
 
-	VkPipeline pipeline = VK_NULL_HANDLE;
+	VkPipeline pipeline;
 	VkResult res = vkCreateGraphicsPipelines(device, pipeline_cache, 1, &m_ci, nullptr, &pipeline);
 	if (res != VK_SUCCESS)
 	{
-		// Some Adreno drivers illegally return VK_INCOMPLETE from
-		// vkCreateGraphicsPipelines even though the pipeline was actually created
-		// (ported from PPSSPP; seen in Burnout). Dropping the "failed" pipeline
-		// skips the draw and leaves missing graphics — so if the handle came back
-		// valid, keep it and just warn. Any other result is a genuine failure.
-		if (res == VK_INCOMPLETE && pipeline != VK_NULL_HANDLE)
-		{
-			Console.Warning("Vulkan: vkCreateGraphicsPipelines() returned VK_INCOMPLETE (Adreno driver quirk); using the created pipeline.");
-		}
-		else
-		{
-			LOG_VULKAN_ERROR(res, "vkCreateGraphicsPipelines() failed: ");
-			return VK_NULL_HANDLE;
-		}
+		LOG_VULKAN_ERROR(res, "vkCreateGraphicsPipelines() failed: ");
+		return VK_NULL_HANDLE;
 	}
 
 	if (clear)
@@ -742,12 +730,6 @@ void Vulkan::DescriptorSetUpdateBuilder::PushUpdate(
 
 	if (clear)
 		Clear();
-}
-
-void Vulkan::DescriptorSetUpdateBuilder::SetDestinationSet(VkDescriptorSet set)
-{
-	for (u32 i = 0; i < m_num_writes; i++)
-		m_writes[i].dstSet = set;
 }
 
 void Vulkan::DescriptorSetUpdateBuilder::AddImageDescriptorWrite(VkDescriptorSet set, u32 binding, VkImageView view,

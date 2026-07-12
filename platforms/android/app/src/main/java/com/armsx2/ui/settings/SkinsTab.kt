@@ -14,18 +14,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -50,19 +46,19 @@ import kotlinx.coroutines.withContext
 fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
-    val scroll = settingsScrollState()
+    val scroll = remember { ScrollState(0) }
     ControllerAutoScroll(scroll)
-    val refresh = remember { mutableIntStateOf(0) }
+    val refresh = remember { mutableStateOf(0) }
     val busy = remember { mutableStateOf(false) }
     val status = remember { mutableStateOf<String?>(null) }
-    val skins = remember(refresh.intValue) { ControllerSkinStore.list(ctx) }
+    val skins = remember(refresh.value) { ControllerSkinStore.list(ctx) }
     val activeId = ControllerSkinStore.activeSkinId.value
 
     fun onImported(id: String?, sourceLabel: String) {
         busy.value = false
         if (id != null) {
             ControllerSkinStore.setActive(ctx, id)
-            refresh.intValue++
+            refresh.value++
             status.value = I18n.get("skins.status.importedAndSelected")
         } else {
             status.value = "No ic_controller_*.png images found in that $sourceLabel."
@@ -93,12 +89,14 @@ fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
     Column(
         Modifier
             .fillMaxWidth()
+            .verticalScroll(scroll)
+            .verticalScrollbar(scroll)
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
-        Text(str("skins.title"), color = MaterialTheme.colorScheme.onSurface, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+        Text(str("skins.title"), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
         Text(
             str("skins.description"),
-            color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp,
+            color = Color(0xFFAAAAAA), fontSize = 11.sp,
             modifier = Modifier.padding(top = 2.dp, bottom = 8.dp),
         )
 
@@ -112,16 +110,16 @@ fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
         SettingsDivider()
 
         if (busy.value) {
-            Text(str("skins.importing"), color = Color(0xFFAACCFF), fontSize = 15.sp,
+            Text(str("skins.importing"), color = Color(0xFFAACCFF), fontSize = 12.sp,
                 modifier = Modifier.padding(vertical = 4.dp))
         }
         status.value?.let {
-            Text(it, color = Color(0xFFAACCFF), fontSize = 14.sp,
+            Text(it, color = Color(0xFFAACCFF), fontSize = 11.sp,
                 modifier = Modifier.padding(vertical = 2.dp))
         }
 
         Spacer(Modifier.height(10.dp))
-        Text(str("skins.activeSkin"), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
+        Text(str("skins.activeSkin"), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(bottom = 4.dp))
 
         SkinRow(
@@ -150,7 +148,7 @@ fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                 onSelect = { ControllerSkinStore.setActive(ctx, s.id) },
                 onDelete = {
                     ControllerSkinStore.delete(ctx, s.id)
-                    refresh.intValue++
+                    refresh.value++
                 },
             )
         }
@@ -163,15 +161,14 @@ private fun ActionRow(label: String, controllerId: String, onClick: () -> Unit) 
     Box(
         Modifier
             .fillMaxWidth()
-            .height(56.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .height(32.dp)
             .background(rowAura())
             .clickable { onClick() }
             .controllerFocusable(controllerId = controllerId, onConfirm = { onClick() })
             .padding(horizontal = 6.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
-        Text(label, color = Colors.pasx2_blue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(label, color = Colors.pasx2_blue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -187,7 +184,7 @@ private fun SkinRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp)
+            .height(36.dp)
             .clickable { onSelect() }
             .controllerFocusable(controllerId = controllerId, onConfirm = { onSelect() })
             .padding(horizontal = 6.dp),
@@ -195,8 +192,8 @@ private fun SkinRow(
     ) {
         Text(
             (if (selected) "● " else "○ ") + name,
-            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-            fontSize = 16.sp,
+            color = if (selected) Colors.pasx2_blue else Color.White,
+            fontSize = 13.sp,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
             modifier = Modifier.weight(1f),
         )
@@ -204,15 +201,14 @@ private fun SkinRow(
             Spacer(Modifier.width(8.dp))
             Box(
                 Modifier
-                    .height(48.dp)
-                    .clip(RoundedCornerShape(14.dp))
+                    .height(26.dp)
                     .background(Color(0x33FF5555))
                     .clickable { onDelete() }
                     .controllerFocusable(controllerId = "$controllerId-del", onConfirm = { onDelete() })
                     .padding(horizontal = 10.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(str("action.delete"), color = Color(0xFFFF8888), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Text(str("action.delete"), color = Color(0xFFFF8888), fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

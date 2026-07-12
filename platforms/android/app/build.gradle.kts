@@ -1,4 +1,3 @@
-@file:Suppress("UnstableApiUsage", "DEPRECATION")
 import org.gradle.api.GradleException
 import java.util.Properties
 
@@ -30,12 +29,16 @@ if (armsx2SigningPropertiesFile.isFile && !armsx2PlaySigningReady) {
 
 android {
     namespace = "com.armsx2"
-    compileSdk = 37
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
         applicationId = armsx2ApplicationId.get()
         minSdk = 26
-        targetSdk = 37
+        targetSdk = 36
         versionCode = armsx2VersionCode.get()
         versionName = armsx2VersionName.get()
 
@@ -56,8 +59,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
             // Sign release with the debug keystore so it's installable on-device
             // without a separate signing config. NOT for distribution — the debug
             // keystore is well-known and not secure for Play Store uploads.
@@ -71,7 +73,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            if (false) externalNativeBuild {
+            externalNativeBuild {
                 cmake {
                     arguments += "-DANDROID=true"
                     arguments += "-DANDROID_STL=c++_static"
@@ -144,16 +146,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    // NATIVE BUILD DISABLED for the recovered tree: the prebuilt native .so files
-    // (extracted from vc1063 into src/main/jniLibs/arm64-v8a) are packaged directly,
-    // so UI/Kotlin iteration doesn't require recompiling the C++ core. Re-enable this
-    // block (and the per-buildType cmake blocks above) to rebuild native from source.
-    // externalNativeBuild {
-    //     cmake {
-    //         path = file("src/main/cpp/CMakeLists.txt")
-    //         version = "3.30.5"
-    //     }
-    // }
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+        }
+    }
     buildFeatures {
         // Generated BuildConfig.DEBUG used by Main.kt's debug-only auto-boot
         // path. AGP 8 made this opt-in.
@@ -172,12 +169,6 @@ android {
             useLegacyPackaging = true
         }
     }
-}
-
-composeCompiler {
-    // Keep R8 enabled while avoiding AGP's incompatible built-in Kotlin
-    // compose-group-mapping producer. Source/line mappings remain preserved.
-    includeComposeMappingFile.set(false)
 }
 
 // Android Studio's "Build > Clean Project" runs the `clean` task, but AGP
@@ -210,8 +201,6 @@ dependencies {
     implementation(libs.androidx.documentfile)
     implementation(libs.coil.compose)
     implementation(libs.coil.gif) // animated GIF / WebP / APNG (library background)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.lifecycle.runtime.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

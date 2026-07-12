@@ -415,13 +415,6 @@ struct RYML_EXPORT Callbacks
                 m_free == that.m_free &&
                 m_error == that.m_error);
     }
-
-    /** ARMSX2 shim: back-port of the set_user_data() setter that newer rapidyaml
-     * exposes. common/YAML.cpp (from the pcsx2master merge) calls this; the PC/mac
-     * build resolves a newer system ryml, but the Android NDK build still vendors
-     * ryml 0.10.0, which only has the raw m_user_data member. Remove once the
-     * vendored 3rdparty rapidyaml is de-duplicated onto canonical (REFACTOR_STATUS #4). */
-    void set_user_data(void *user_data) noexcept { m_user_data = user_data; }
 };
 
 

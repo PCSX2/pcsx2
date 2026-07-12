@@ -5,20 +5,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armsx2.config.Settings
 import com.armsx2.i18n.str
 import com.armsx2.ui.InGameOverlay
 import com.armsx2.ui.UiScale
-import androidx.core.content.edit
 
 /**
  * Performance Overlay element toggles. Lets the user show/hide individual
@@ -34,28 +33,30 @@ import androidx.core.content.edit
 @Composable
 fun OverlayTab(state: MutableState<Settings>) {
     val s = state.value
-    val scroll = settingsScrollState()
+    val scroll = remember { ScrollState(0) }
     ControllerAutoScroll(scroll)
 
     fun apply(updated: Settings) = InGameOverlay.saveSettings(updated)
 
     Column(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .verticalScroll(scroll)
+            .verticalScrollbar(scroll),
     ) {
         Text(
             str("overlay.intro.description"),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 14.sp,
+            color = Color(0xFFB0B0B0),
+            fontSize = 11.sp,
             modifier = Modifier.padding(bottom = 8.dp),
         )
 
         IntSliderRow(
-            label = str("overlay.uiSize.label"),
+            label = "OSD Scale",
             value = s.osdScale,
             min = 50,
             max = 250,
-            description = str("overlay.uiSize.description"),
+            description = "Increases or decreases the size of on-screen messages/statistics.",
             valueFormatter = { "$it%" },
             onChange = { apply(s.copy(osdScale = it)) },
         )
@@ -93,10 +94,10 @@ fun OverlayTab(state: MutableState<Settings>) {
         // Android hotkey pop-ups (Fast-Forward on/off, etc.) — separate from the emulator
         // OSD, pref-backed. Cancel-previous already stops them stacking; this switches
         // them off entirely for heavy fast-forward users.
-        val ffToasts = remember { mutableStateOf(com.armsx2.runtime.MainActivityRuntime.prefs.getBoolean("ui.hotkeyToasts", true)) }
+        val ffToasts = remember { mutableStateOf(com.armsx2.Main.prefs.getBoolean("ui.hotkeyToasts", true)) }
         ToggleRow(str("overlay.toggle.fastForwardPopups"), ffToasts.value) {
             ffToasts.value = it
-            com.armsx2.runtime.MainActivityRuntime.prefs.edit { putBoolean("ui.hotkeyToasts", it) }
+            com.armsx2.Main.prefs.edit().putBoolean("ui.hotkeyToasts", it).apply()
         }
         SettingsDivider()
 
@@ -105,8 +106,8 @@ fun OverlayTab(state: MutableState<Settings>) {
         // touch the game image or the on-screen touch controls.
         Text(
             str("overlay.interfaceScaling.description"),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 14.sp,
+            color = Color(0xFFB0B0B0),
+            fontSize = 11.sp,
             modifier = Modifier.padding(top = 10.dp, bottom = 6.dp),
         )
         IntSliderRow(

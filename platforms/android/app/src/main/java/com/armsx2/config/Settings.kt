@@ -1,10 +1,8 @@
 package com.armsx2.config
 
-import com.armsx2.config.Settings.Companion.emitSink
-import com.armsx2.config.Settings.Companion.merge
 import kr.co.iefriends.pcsx2.NativeApp
-import org.json.JSONArray
 import org.json.JSONObject
+import org.json.JSONArray
 
 /**
  * Resolved emulator config used to drive a VM launch / live-apply.
@@ -309,7 +307,7 @@ data class Settings(
     /** USB1/Type = hidkbd — attach an emulated USB HID keyboard on USB port 1.
      *  Needed by games that require a real USB keyboard (EverQuest Online
      *  Adventures, Konami-keyboard titles). A physical/Bluetooth keyboard's key
-     *  events are forwarded to it (see MainActivityRuntime.dispatchKeyEvent → NativeApp.usbKeyboardKey).
+     *  events are forwarded to it (see Main.dispatchKeyEvent → NativeApp.usbKeyboardKey).
      *  Default off. */
     val usbKeyboard: Boolean = false,
 
@@ -813,6 +811,7 @@ data class Settings(
         put("EmuCore/GS", "DisableFramebufferFetch", "bool", disableFramebufferFetch.toString())
         put("EmuCore/GS", "HWROV", "bool", hwRov.toString())
         put("EmuCore/GS", "HWAA1", "bool", hwAa1.toString())
+        put("EmuCore/GS", "HWAccurateAlphaTest", "bool", hwAat.toString())
         put("EmuCore/GS", "EnableAdrenoFramebufferFetch", "bool", adrenoFbFetch.toString())
         put("EmuCore/GS", "OverrideTextureBarriers", "int", overrideTextureBarriers.coerceIn(-1, 1).toString())
         put("EmuCore/GS", "DisableVertexShaderExpand", "bool", disableVertexShaderExpand.toString())
@@ -1032,6 +1031,7 @@ data class Settings(
         put("disableFramebufferFetch", disableFramebufferFetch)
         put("hwRov", hwRov)
         put("hwAa1", hwAa1)
+        put("hwAat", hwAat)
         put("adrenoFbFetch", adrenoFbFetch)
         put("overrideTextureBarriers", overrideTextureBarriers)
         put("disableVertexShaderExpand", disableVertexShaderExpand)
@@ -1260,16 +1260,13 @@ data class Settings(
                 disableFramebufferFetch = json.optBoolean("disableFramebufferFetch", def.disableFramebufferFetch),
                 hwRov = json.optBoolean("hwRov", def.hwRov),
                 hwAa1 = json.optBoolean("hwAa1", def.hwAa1),
-                hwAat = false,
+                hwAat = json.optBoolean("hwAat", def.hwAat),
                 adrenoFbFetch = json.optBoolean("adrenoFbFetch", def.adrenoFbFetch),
                 overrideTextureBarriers = json.optInt("overrideTextureBarriers", def.overrideTextureBarriers),
                 disableVertexShaderExpand = json.optBoolean("disableVertexShaderExpand", def.disableVertexShaderExpand),
                 useBlitSwapChain = json.optBoolean("useBlitSwapChain", def.useBlitSwapChain),
                 disableShaderCache = json.optBoolean("disableShaderCache", def.disableShaderCache),
-                hwAccurateAlphaTest = json.optBoolean(
-                    "hwAccurateAlphaTest",
-                    json.optBoolean("hwAat", def.hwAccurateAlphaTest),
-                ),
+                hwAccurateAlphaTest = json.optBoolean("hwAccurateAlphaTest", def.hwAccurateAlphaTest),
                 skipDrawStart = json.optInt("skipDrawStart", def.skipDrawStart),
                 skipDrawEnd = json.optInt("skipDrawEnd", def.skipDrawEnd),
                 spinGpuReadbacks = json.optBoolean("spinGpuReadbacks", def.spinGpuReadbacks),
@@ -1473,6 +1470,7 @@ data class Settings(
             if (current.disableFramebufferFetch != base.disableFramebufferFetch) j.put("disableFramebufferFetch", current.disableFramebufferFetch)
             if (current.hwRov != base.hwRov) j.put("hwRov", current.hwRov)
             if (current.hwAa1 != base.hwAa1) j.put("hwAa1", current.hwAa1)
+            if (current.hwAat != base.hwAat) j.put("hwAat", current.hwAat)
             if (current.adrenoFbFetch != base.adrenoFbFetch) j.put("adrenoFbFetch", current.adrenoFbFetch)
             if (current.overrideTextureBarriers != base.overrideTextureBarriers) j.put("overrideTextureBarriers", current.overrideTextureBarriers)
             if (current.disableVertexShaderExpand != base.disableVertexShaderExpand) j.put("disableVertexShaderExpand", current.disableVertexShaderExpand)
@@ -1508,17 +1506,6 @@ data class Settings(
             if (current.dev9AutoGateway     != base.dev9AutoGateway)     j.put("dev9AutoGateway", current.dev9AutoGateway)
             if (current.dev9ModeDns1        != base.dev9ModeDns1)        j.put("dev9ModeDns1", current.dev9ModeDns1)
             if (current.dev9ModeDns2        != base.dev9ModeDns2)        j.put("dev9ModeDns2", current.dev9ModeDns2)
-            if (current.dev9EthHosts        != base.dev9EthHosts) {
-                j.put("dev9EthHosts", JSONArray().apply {
-                    current.dev9EthHosts.forEach { host ->
-                        put(JSONObject().apply {
-                            put("url", host.url)
-                            put("ip", host.ip)
-                            put("enabled", host.enabled)
-                        })
-                    }
-                })
-            }
             if (current.dev9HddEnable       != base.dev9HddEnable)       j.put("dev9HddEnable", current.dev9HddEnable)
             if (current.dev9HddFile         != base.dev9HddFile)         j.put("dev9HddFile", current.dev9HddFile)
             if (current.memoryCardSlot1Enabled != base.memoryCardSlot1Enabled) j.put("memoryCardSlot1Enabled", current.memoryCardSlot1Enabled)
@@ -1668,17 +1655,13 @@ data class Settings(
             disableFramebufferFetch = if (overrides.has("disableFramebufferFetch")) overrides.getBoolean("disableFramebufferFetch") else base.disableFramebufferFetch,
             hwRov = if (overrides.has("hwRov")) overrides.getBoolean("hwRov") else base.hwRov,
             hwAa1 = if (overrides.has("hwAa1")) overrides.getBoolean("hwAa1") else base.hwAa1,
-            hwAat = false,
+            hwAat = if (overrides.has("hwAat")) overrides.getBoolean("hwAat") else base.hwAat,
             adrenoFbFetch = if (overrides.has("adrenoFbFetch")) overrides.getBoolean("adrenoFbFetch") else base.adrenoFbFetch,
             overrideTextureBarriers = if (overrides.has("overrideTextureBarriers")) overrides.getInt("overrideTextureBarriers") else base.overrideTextureBarriers,
             disableVertexShaderExpand = if (overrides.has("disableVertexShaderExpand")) overrides.getBoolean("disableVertexShaderExpand") else base.disableVertexShaderExpand,
             useBlitSwapChain = if (overrides.has("useBlitSwapChain")) overrides.getBoolean("useBlitSwapChain") else base.useBlitSwapChain,
             disableShaderCache = if (overrides.has("disableShaderCache")) overrides.getBoolean("disableShaderCache") else base.disableShaderCache,
-            hwAccurateAlphaTest = when {
-                overrides.has("hwAccurateAlphaTest") -> overrides.getBoolean("hwAccurateAlphaTest")
-                overrides.has("hwAat") -> overrides.getBoolean("hwAat")
-                else -> base.hwAccurateAlphaTest
-            },
+            hwAccurateAlphaTest = if (overrides.has("hwAccurateAlphaTest")) overrides.getBoolean("hwAccurateAlphaTest") else base.hwAccurateAlphaTest,
             skipDrawStart = if (overrides.has("skipDrawStart")) overrides.getInt("skipDrawStart") else base.skipDrawStart,
             skipDrawEnd = if (overrides.has("skipDrawEnd")) overrides.getInt("skipDrawEnd") else base.skipDrawEnd,
             spinGpuReadbacks = if (overrides.has("spinGpuReadbacks")) overrides.getBoolean("spinGpuReadbacks") else base.spinGpuReadbacks,
@@ -1708,23 +1691,6 @@ data class Settings(
             dev9AutoGateway = if (overrides.has("dev9AutoGateway")) overrides.getBoolean("dev9AutoGateway") else base.dev9AutoGateway,
             dev9ModeDns1 = if (overrides.has("dev9ModeDns1")) overrides.getString("dev9ModeDns1").ifEmpty { base.dev9ModeDns1 } else base.dev9ModeDns1,
             dev9ModeDns2 = if (overrides.has("dev9ModeDns2")) overrides.getString("dev9ModeDns2").ifEmpty { base.dev9ModeDns2 } else base.dev9ModeDns2,
-            dev9EthHosts = if (overrides.has("dev9EthHosts")) {
-                overrides.optJSONArray("dev9EthHosts")?.let { array ->
-                    buildList {
-                        repeat(array.length()) { index ->
-                            array.optJSONObject(index)?.let { host ->
-                                add(
-                                    Dev9HostMapping(
-                                        url = host.optString("url"),
-                                        ip = host.optString("ip", "0.0.0.0"),
-                                        enabled = host.optBoolean("enabled", true),
-                                    ),
-                                )
-                            }
-                        }
-                    }
-                } ?: base.dev9EthHosts
-            } else base.dev9EthHosts,
             dev9HddEnable = if (overrides.has("dev9HddEnable")) overrides.getBoolean("dev9HddEnable") else base.dev9HddEnable,
             dev9HddFile = if (overrides.has("dev9HddFile")) overrides.getString("dev9HddFile").ifEmpty { base.dev9HddFile } else base.dev9HddFile,
             memoryCardSlot1Enabled = if (overrides.has("memoryCardSlot1Enabled")) overrides.getBoolean("memoryCardSlot1Enabled") else base.memoryCardSlot1Enabled,

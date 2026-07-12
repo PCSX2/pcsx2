@@ -149,6 +149,19 @@ if(WIN32)
 		winmm
 		pathcch
 	)
+elseif(APPLE AND IOS)
+	target_sources(common PRIVATE
+		Darwin/DarwinThreads.cpp
+		Darwin/DarwinMisc.cpp
+		Darwin/DarwinMisc.h
+		Linux/LnxHostSys.cpp
+	)
+	target_compile_options(common PRIVATE -fobjc-arc)
+	target_link_options(common PRIVATE -fobjc-link-runtime)
+	target_link_libraries(common PRIVATE
+		"-framework Foundation"
+		"-framework UIKit"
+	)
 elseif(APPLE)
 	target_sources(common PRIVATE
 		CocoaTools.mm
@@ -207,7 +220,7 @@ if (USE_GCC AND CMAKE_INTERPROCEDURAL_OPTIMIZATION)
 	set_source_files_properties(FastJmp.cpp PROPERTIES COMPILE_FLAGS -fno-lto)
 endif()
 
-if(NOT WIN32 AND NOT ANDROID)
+if(NOT WIN32 AND NOT ANDROID AND NOT IOS)
 	# libcurl-based HTTPDownloader (Android uses HTTPDownloaderAndroid instead)
 	target_sources(common PRIVATE
 		HTTPDownloaderCurl.cpp

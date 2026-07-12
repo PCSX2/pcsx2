@@ -46,6 +46,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
 	endif()
 	set(CMAKE_OSX_ARCHITECTURES "arm64")
 	set(USE_OPENGL OFF CACHE BOOL "Enable OpenGL renderer" FORCE)
+	set(USE_VULKAN OFF CACHE BOOL "Enable Vulkan renderer" FORCE)
 	set(SDL_OPENGL OFF CACHE BOOL "Enable SDL OpenGL support" FORCE)
 	set(SDL_OPENGLES OFF CACHE BOOL "Enable SDL OpenGL ES support" FORCE)
 endif()
@@ -80,8 +81,13 @@ set(TOP_CMAKE_WAS_SOURCED TRUE)
 # they are built from the repo root. See REFACTOR_STATUS.md.
 get_filename_component(ARMSX2_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../.." ABSOLUTE)
 
-# set module path (root core's cmake modules)
-set(CMAKE_MODULE_PATH ${ARMSX2_ROOT}/cmake)
+# Use the iOS-aware cmake modules vendored beside this entry point (copies of
+# the known-good modules: Pcsx2Utils has the IOS branch + a cross-compile-safe
+# page-size detect, BuildParameters sets Apple-Silicon ARM64 flags, SearchForStuff
+# builds all deps from vendored sources instead of desktop find_package). The
+# root cmake/ modules are desktop-only and do system find_package() calls iOS
+# cannot satisfy, so we point at our LOCAL dir (mirroring how Android does it).
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Write binaries to the bin directory under the build directory.
 # This makes it simple to run development builds directly out of the build directory.
@@ -121,7 +127,10 @@ write_svnrev_h()
 
 # Build the shared core from the repository root. Explicit binary dirs are
 # required because the source dirs live outside this iOS app tree.
-add_subdirectory(${ARMSX2_ROOT}/3rdparty ${CMAKE_BINARY_DIR}/3rdparty EXCLUDE_FROM_ALL)
+# NOTE: the individual 3rdparty libs are pulled in by SearchForStuff (above),
+# sourced from ${ARMSX2_ROOT}/3rdparty and the Android-vendored tree. The root
+# 3rdparty/ has no aggregate CMakeLists, so add_subdirectory'ing it would
+# FATAL; do not re-add it here.
 
 # make common
 add_subdirectory(${ARMSX2_ROOT}/common ${CMAKE_BINARY_DIR}/common)

@@ -1,7 +1,5 @@
 package com.armsx2
 
-import com.armsx2.runtime.MainActivityRuntime
-
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -362,7 +360,7 @@ object CustomDriver {
     /** Push the active selection to native. Pass null to revert to the
      *  system loader. The native side reads these on the next
      *  Vulkan::LoadVulkanLibrary call (first MTGS::Open), so this must
-     *  be called BEFORE MainActivityRuntime.start()'s applyRendererPrefs runs the VM. */
+     *  be called BEFORE Main.start()'s applyRendererPrefs runs the VM. */
     fun applyToNative(context: Context, installed: InstalledDriver?) {
         if (installed == null) {
             NativeApp.setCustomVulkanDriver("", "", "", "")

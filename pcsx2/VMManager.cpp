@@ -737,11 +737,8 @@ void VMManager::WarnAboutUnconfiguredController()
 	// Android injects pad state directly (NativeApp.setPadButton -> Pad::SetControllerState),
 	// bypassing InputManager bindings, so this warning is always a false positive. Suppressed
 	// to match the refresh-experimental Android build.
-/*	// Android injects pad state directly (NativeApp.setPadButton -> Pad::SetControllerState),
-	// bypassing InputManager bindings, so this warning is always a false positive. Suppressed
-	// to match the refresh-experimental Android build.
 /*	Host::AddIconOSDMessage("ControllerNotConfigured", ICON_FA_GAMEPAD,
-		TRANSLATE_STR("VMManager", "Controller 1 has no input bindings configured."), Host::OSD_WARNING_DURATION);*/*/
+		TRANSLATE_STR("VMManager", "Controller 1 has no input bindings configured."), Host::OSD_WARNING_DURATION);*/
 }
 
 void VMManager::ApplyGameFixes()
@@ -3377,10 +3374,6 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_TV,
 				TRANSLATE_SV("VMManager", "Integer scaling is enabled. This may shrink the image."));
 		}
-#if !defined(__ANDROID__)
-		// On Android the setup wizard forces an explicit GL/VK renderer pick by design —
-		// there is no "Automatic" backend to resolve to — so this banner would fire on every
-		// boot regardless of correctness. Desktop keeps the canonical warning.
 		static bool render_change_warn = false;
 		if (EmuConfig.GS.Renderer != GSRendererType::Auto && EmuConfig.GS.Renderer != GSRendererType::SW && !render_change_warn)
 		{
@@ -3390,7 +3383,6 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_CIRCLE_EXCLAMATION,
 				TRANSLATE_SV("VMManager", "Graphics API is not set to Automatic. This may cause performance problems and graphical issues."));
 		}
-#endif
 	}
 	if (EmuConfig.GS.DumpGSData)
 	{
@@ -3757,10 +3749,7 @@ void VMManager::SetEmuThreadAffinities()
 	if (s_thread_affinities_set == new_pin_enable)
 		return;
 
-	// Track whether pinning is *currently effective*, not just EmuConfig.EnableThreadPinning
-	// (matches refresh-experimental — a shutdown call with pinning enabled must not leave this
-	// flag true while the affinity + SW-renderer proc list get cleared).
-	s_thread_affinities_set = new_pin_enable;
+	s_thread_affinities_set = EmuConfig.EnableThreadPinning;
 
 	EnsureCPUInfoInitialized();
 
@@ -3843,39 +3832,6 @@ const std::vector<u32>& VMManager::Internal::GetSoftwareRendererProcessorList()
 {
 	EnsureCPUInfoInitialized();
 	return s_software_renderer_processor_list;
-}
-
-std::string VMManager::Internal::GetThreadPlacementDebug()
-{
-	const auto describe = [](const char* name, const Threading::ThreadHandle& h) {
-		const int cpu = h.GetCurrentCpu();
-		const u64 mask = h.GetAffinity();
-		return fmt::format("{}=c{}/m{:x}", name, cpu, mask);
-	};
-
-	std::string out = describe("EE", s_vm_thread_handle);
-	out += ' ';
-	out += describe("VU", vu1Thread.GetThreadHandle());
-	out += ' ';
-	out += describe("GS", MTGS::GetThreadHandle());
-
-#if defined(__linux__) || defined(_WIN32)
-	if (cpuinfo_initialize())
-	{
-		const u32 clusters = cpuinfo_get_clusters_count();
-		out += " |";
-		for (u32 i = 0; i < clusters; i++)
-		{
-			const cpuinfo_cluster* cl = cpuinfo_get_cluster(i);
-			if (!cl)
-				continue;
-			// cpuinfo frequency is in Hz; show MHz (0 = cpuinfo couldn't read sysfs cpufreq).
-			out += fmt::format(" {}x{}MHz", cl->processor_count, static_cast<u32>(cl->frequency / 1000000));
-		}
-	}
-#endif
-
-	return out;
 }
 
 std::string VMManager::Internal::GetThreadPlacementDebug()

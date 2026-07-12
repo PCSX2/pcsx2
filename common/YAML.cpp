@@ -145,11 +145,7 @@ std::optional<ryml::Tree> ParseYAMLFromString(ryml::csubstr yaml, ryml::csubstr 
 
 	// Callbacks passed to ryml::Tree are used for value parsing errors later,
 	// so we need to clear the context before it goes out of scope.
-#if RYML_VERSION_MAJOR > 0 || RYML_VERSION_MINOR >= 11
 	callbacks.set_user_data(nullptr);
-#else
-	callbacks.m_user_data = nullptr;
-#endif
 	tree.callbacks(callbacks);
 
 	return tree;

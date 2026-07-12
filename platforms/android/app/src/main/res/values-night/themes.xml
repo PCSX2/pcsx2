@@ -1,23 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.ARMSX2" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <!-- Base application theme. -->
+    <style name="Theme.PASX2" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Primary brand color. -->
         <item name="colorPrimary">@color/purple_200</item>
         <item name="colorPrimaryVariant">@color/purple_700</item>
         <item name="colorOnPrimary">@color/black</item>
+        <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/teal_200</item>
         <item name="colorSecondaryVariant">@color/teal_200</item>
         <item name="colorOnSecondary">@color/black</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">false</item>
-    </style>
-
-    <style name="Theme.ARMSX2.Boot.Light" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:windowBackground">#FFF4F7FC</item>
-        <item name="android:windowFullscreen">true</item>
-    </style>
-
-    <style name="Theme.ARMSX2.Boot.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:windowBackground">#FF080B11</item>
-        <item name="android:windowFullscreen">true</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
     </style>
 </resources>

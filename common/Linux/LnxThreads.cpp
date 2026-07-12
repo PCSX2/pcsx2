@@ -12,9 +12,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 
 #include <pthread.h>
 #include <unistd.h>
@@ -188,85 +185,6 @@ bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
 	return sched_setaffinity((pid_t)m_native_id, sizeof(set), &set) >= 0;
 #else
 	return false;
-#endif
-}
-
-bool Threading::ThreadHandle::SetNicePriority(int nice) const
-{
-#if defined(__linux__)
-	if (m_native_id == 0)
-		return false;
-	// PRIO_PROCESS + a tid sets the nice value of that specific thread on Linux.
-	// Silently tolerate EPERM — the process rlimit may forbid going negative.
-	errno = 0;
-	if (setpriority(PRIO_PROCESS, static_cast<id_t>(m_native_id), nice) == 0)
-		return true;
-	return errno == 0;
-#else
-	return false;
-#endif
-}
-
-u64 Threading::ThreadHandle::GetAffinity() const
-{
-#if defined(__linux__)
-	if (m_native_id == 0)
-		return 0;
-	cpu_set_t set;
-	CPU_ZERO(&set);
-	if (sched_getaffinity((pid_t)m_native_id, sizeof(set), &set) < 0)
-		return 0;
-	u64 mask = 0;
-	for (u32 i = 0; i < 64; i++)
-	{
-		if (CPU_ISSET(i, &set))
-			mask |= (static_cast<u64>(1) << i);
-	}
-	return mask;
-#else
-	return 0;
-#endif
-}
-
-int Threading::ThreadHandle::GetCurrentCpu() const
-{
-#if defined(__linux__)
-	if (m_native_id == 0)
-		return -1;
-	// /proc/self/task/<tid>/stat field 39 (1-indexed) is the last CPU the thread ran on.
-	// The comm field (2) is wrapped in parens and may contain spaces, so scan from the
-	// last ')' and count whitespace-separated tokens (first token after it = field 3).
-	char path[64];
-	std::snprintf(path, sizeof(path), "/proc/self/task/%u/stat", m_native_id);
-	FILE* fp = std::fopen(path, "re");
-	if (!fp)
-		return -1;
-	char buf[1024];
-	const size_t n = std::fread(buf, 1, sizeof(buf) - 1, fp);
-	std::fclose(fp);
-	if (n == 0)
-		return -1;
-	buf[n] = '\0';
-	const char* p = std::strrchr(buf, ')');
-	if (!p)
-		return -1;
-	p++;
-	int token = 0; // first token after ')' is field 3 (state); processor is field 39
-	while (*p)
-	{
-		while (*p == ' ')
-			p++;
-		if (!*p)
-			break;
-		token++;
-		if (token == 37) // field 39 == 37th token after ')'
-			return std::atoi(p);
-		while (*p && *p != ' ')
-			p++;
-	}
-	return -1;
-#else
-	return -1;
 #endif
 }
 

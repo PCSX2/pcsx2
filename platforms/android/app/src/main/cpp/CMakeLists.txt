@@ -34,10 +34,6 @@ set(ENABLE_QT_UI OFF CACHE BOOL "" FORCE)
 # set by the desktop top-level CMakeLists.txt, which the Android build bypasses).
 set(TOP_CMAKE_WAS_SOURCED TRUE)
 
-# The core's common/ and pcsx2/ CMakeLists guard on this sentinel (it is normally
-# set by the desktop top-level CMakeLists.txt, which the Android build bypasses).
-set(TOP_CMAKE_WAS_SOURCED TRUE)
-
 include(Pcsx2Utils)
 check_no_parenthesis_in_path()
 detect_operating_system()

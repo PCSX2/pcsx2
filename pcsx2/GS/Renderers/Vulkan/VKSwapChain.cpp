@@ -22,10 +22,6 @@
 #include <android/native_window.h>
 #endif
 
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-#include <android/native_window.h>
-#endif
-
 static_assert(VKSwapChain::NUM_SEMAPHORES == (GSDeviceVK::NUM_COMMAND_BUFFERS + 1));
 
 VKSwapChain::VKSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR present_mode,
@@ -125,24 +121,6 @@ VkSurfaceKHR VKSwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDev
 		if (res != VK_SUCCESS)
 		{
 			LOG_VULKAN_ERROR(res, "vkCreateMetalSurfaceEXT failed: ");
-			return VK_NULL_HANDLE;
-		}
-
-		return surface;
-	}
-#endif
-
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-	if (wi->type == WindowInfo::Type::Android)
-	{
-		VkAndroidSurfaceCreateInfoKHR surface_create_info = {VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR, nullptr,
-			0, reinterpret_cast<ANativeWindow*>(wi->window_handle)};
-
-		VkSurfaceKHR surface;
-		VkResult res = vkCreateAndroidSurfaceKHR(instance, &surface_create_info, nullptr, &surface);
-		if (res != VK_SUCCESS)
-		{
-			LOG_VULKAN_ERROR(res, "vkCreateAndroidSurfaceKHR failed: ");
 			return VK_NULL_HANDLE;
 		}
 
@@ -326,7 +304,7 @@ bool VKSwapChain::SelectPresentMode(VkSurfaceKHR surface, GSVSyncMode* vsync_mod
 			// Prefer FIFO_RELAXED (adaptive vsync): behaves exactly like FIFO while the app
 			// keeps pace, but a frame that misses its refresh interval is presented late
 			// (with tearing) instead of stalling a whole interval. This avoids the hard
-			// 60->30 fps cliff on borderline titles — a big felt win on weak devices. Plain
+			// 60->30 fps cliff on borderline titles - a big felt win on weak devices. Plain
 			// FIFO is always available as the fallback when the driver lacks relaxed support.
 			if (CheckForMode(VK_PRESENT_MODE_FIFO_RELAXED_KHR))
 			{
@@ -397,18 +375,6 @@ bool VKSwapChain::CreateSwapChain()
 		std::clamp(size.width, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width);
 	size.height =
 		std::clamp(size.height, surface_capabilities.minImageExtent.height, surface_capabilities.maxImageExtent.height);
-
-	// PowerVR (Imagination) driver bug: older drivers heavily corrupt the output
-	// unless the swap-chain width is a multiple of 32. Ported from PPSSPP
-	// (VulkanContext::InitSwapchain, issues #11743/#15773) — round the width down
-	// to a /32 boundary on affected PowerVR drivers. ARMSX2 had zero PowerVR
-	// handling, so this can only help. Gated by vendorID (0x1010) + driver version.
-	if (GSDeviceVK::GetInstance()->IsDevicePowerVR() &&
-		GSDeviceVK::GetInstance()->GetDeviceProperties().driverVersion < 0x00582558u &&
-		(size.width & ~31u) >= surface_capabilities.minImageExtent.width)
-	{
-		size.width &= ~31u;
-	}
 
 	// Prefer identity transform if possible
 	VkSurfaceTransformFlagBitsKHR transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;

@@ -452,17 +452,6 @@ __fi void _cpuEventTest_Shared()
 	}
 #endif
 
-#if defined(__ANDROID__)
-	// Android pause/stop requests can be pumped during the counter/vsync work
-	// above. Once that happens, return to the rec/interpreter wrapper immediately
-	// instead of continuing through VU sync and scheduling a fresh event.
-	if (VMManager::Internal::IsExecutionInterrupted())
-	{
-		eeEventTestIsActive = false;
-		return;
-	}
-#endif
-
 	// ---- VU Sync -------------
 	// We're in a EventTest.  All dynarec registers are flushed
 	// so there is no need to freeze registers here.

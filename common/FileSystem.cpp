@@ -999,26 +999,6 @@ std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* 
 
 	return fp;
 #else
-	#if defined(__ANDROID__)
-	if (std::strncmp(filename, "content://", 10) == 0)
-	{
-		const int fd = OpenFDFileContent(filename);
-		if (fd < 0)
-		{
-			Error::SetString(error, "Unable to open Android content URI.");
-			return nullptr;
-		}
-
-		std::FILE* fp = fdopen(fd, mode);
-		if (!fp)
-		{
-			Error::SetErrno(error, errno);
-			close(fd);
-		}
-		return fp;
-	}
-	#endif
-
 	std::FILE* fp = std::fopen(filename, mode);
 	if (!fp)
 		Error::SetErrno(error, errno);
@@ -1066,16 +1046,6 @@ int FileSystem::OpenFDFile(const char* filename, int flags, int mode, Error* err
 
 	return -1;
 #else
-	#if defined(__ANDROID__)
-	if (std::strncmp(filename, "content://", 10) == 0 && (flags & O_ACCMODE) == O_RDONLY)
-	{
-		const int fd = OpenFDFileContent(filename);
-		if (fd < 0)
-			Error::SetString(error, "Unable to open Android content URI.");
-		return fd;
-	}
-	#endif
-
 	const int fd = open(filename, flags, mode);
 	if (fd < 0)
 		Error::SetErrno(error, errno);
@@ -1126,27 +1096,6 @@ std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, F
 	Error::SetErrno(error, errno);
 	return nullptr;
 #else
-	#if defined(__ANDROID__)
-	// content:// URIs (Storage Access Framework) must route through the JNI
-	// ContentResolver bridge — std::fopen can't open them. ChdFileReader opens
-	// the disc through this shared variant, so without this bridge every .chd on
-	// external/SD storage failed VM init ("Failed to open CDVD ... errno 2") and
-	// bounced back to the library, while .iso (which uses OpenCFile) worked.
-	// Mirrors the identical bridge in OpenCFile / OpenFDFile / FileExists.
-	if (std::strncmp(filename, "content://", 10) == 0)
-	{
-		const int fd = OpenFDFileContent(filename);
-		if (fd < 0)
-		{
-			Error::SetString(error, "Unable to open Android content URI.");
-			return nullptr;
-		}
-		std::FILE* fp = fdopen(fd, mode);
-		if (!fp)
-			Error::SetErrno(error, errno);
-		return fp;
-	}
-	#endif
 	std::FILE* fp = std::fopen(filename, mode);
 	if (!fp)
 		Error::SetErrno(error, errno);
@@ -2421,18 +2370,6 @@ bool FileSystem::FileExists(const char* path)
 	// has a path
 	if (path[0] == '\0')
 		return false;
-
-#if defined(__ANDROID__)
-	if (std::strncmp(path, "content://", 10) == 0)
-	{
-		const int fd = OpenFDFileContent(path);
-		if (fd < 0)
-			return false;
-
-		close(fd);
-		return true;
-	}
-#endif
 
 	// stat file
 	struct stat sysStatData;

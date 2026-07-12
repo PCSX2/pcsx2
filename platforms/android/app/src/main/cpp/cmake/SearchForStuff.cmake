@@ -110,13 +110,8 @@ if(ANDROID)
 		set(SHADERC_SKIP_COPYRIGHT_CHECK ON CACHE BOOL "" FORCE)
 		set(SHADERC_ENABLE_WERROR_COMPILE OFF CACHE BOOL "" FORCE)
 		set(SHADERC_THIRD_PARTY_ROOT_DIR "${CMAKE_SOURCE_DIR}/3rdparty/shaderc/third_party" CACHE STRING "" FORCE)
-		# Lowercase to match the directories git-sync-deps actually creates
-		# (DEPS uses third_party/spirv-tools, third_party/spirv-headers). The
-		# PascalCase repo names only resolve on case-insensitive filesystems
-		# (macOS APFS); on case-sensitive Linux CI they miss and shaderc fails
-		# with "SPIRV-Tools was not found".
-		set(SHADERC_SPIRV_TOOLS_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/spirv-tools" CACHE STRING "" FORCE)
-		set(SHADERC_SPIRV_HEADERS_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/spirv-headers" CACHE STRING "" FORCE)
+		set(SHADERC_SPIRV_TOOLS_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/SPIRV-Tools" CACHE STRING "" FORCE)
+		set(SHADERC_SPIRV_HEADERS_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/SPIRV-Headers" CACHE STRING "" FORCE)
 		set(SHADERC_GLSLANG_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/glslang" CACHE STRING "" FORCE)
 		set(SPIRV_SKIP_TESTS ON CACHE BOOL "" FORCE)
 		set(SPIRV_SKIP_EXECUTABLES ON CACHE BOOL "" FORCE)

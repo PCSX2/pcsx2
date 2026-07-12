@@ -540,15 +540,6 @@ namespace R3000A
 
 		std::string host_path(const std::string_view path, bool allow_open_host_root)
 		{
-			// The explicitly-launched ELF override can be an Android content:// URI
-			// (SAF) which Path::Canonicalize/Combine below mangle — they collapse the
-			// "//" and mishandle the scheme — so the override escape hatch further
-			// down misses and the standalone .elf is denied, booting to a black
-			// screen. Let the trusted override through verbatim before any path
-			// normalization; the downstream file open is content-URI aware.
-			if (!path.empty() && path == VMManager::Internal::GetELFOverride())
-				return std::string(path);
-
 			// We are NOT allowing to use the root of the host unit.
 			// For now it just supports relative folders from the location of the elf
 			std::string native_path(Path::Canonicalize(path));

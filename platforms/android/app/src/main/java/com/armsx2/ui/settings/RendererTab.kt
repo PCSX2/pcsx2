@@ -11,51 +11,47 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.documentfile.provider.DocumentFile
+import com.armsx2.Main
 import com.armsx2.config.Settings
 import com.armsx2.i18n.I18n
 import com.armsx2.i18n.str
-import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.ui.Colors
 import com.armsx2.ui.InGameOverlay
+import kr.co.iefriends.pcsx2.NativeApp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kr.co.iefriends.pcsx2.NativeApp
 import java.io.BufferedInputStream
 import java.io.File
 import java.util.zip.ZipInputStream
 import kotlin.math.abs
-import androidx.core.content.edit
 
 /**
  * Renderer section of the in-game settings overlay.
  *
  * Most fields write into [Settings] via [InGameOverlay.saveSettings],
  * which honors the overlay's scope toggle (Global / Game). Upscale is
- * the one outlier — it has its own dedicated `MainActivityRuntime.upscale` state that's
- * also consumed by `MainActivityRuntime.applyRendererPrefs` and the setup wizard. Upscale
+ * the one outlier — it has its own dedicated `Main.upscale` state that's
+ * also consumed by `Main.applyRendererPrefs` and the setup wizard. Upscale
  * uses a narrow native GS helper so it can visibly apply while a game is live
  * without running the full settings commit path.
  */
@@ -88,17 +84,19 @@ private val UPSCALE_OPTIONS = listOf(
 @Composable
 fun RendererTab(state: MutableState<Settings>) {
     val s = state.value
-    val scroll = settingsScrollState()
+    val scroll = remember { ScrollState(0) }
     ControllerAutoScroll(scroll)
 
     fun apply(updated: Settings) = InGameOverlay.saveSettings(updated)
 
     Column(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .verticalScroll(scroll)
+            .verticalScrollbar(scroll),
     ) {
         CollapsibleSection(str("renderer.section.displayResolution"), initiallyExpanded = false) {
-            // Graphics API (OpenGL / Vulkan) + Vulkan custom-driver picker.
+            // Graphics API (OpenGL / Vulkan) + Vulkan custom-driver picker. Ported
             // from the removed first-run setup renderer page into settings.
             RendererBackendSection(state)
             SettingsDivider()
@@ -139,7 +137,7 @@ fun RendererTab(state: MutableState<Settings>) {
             SettingsDivider()
             // Emulation Screen Orientation — global (Android activity orientation), stored
             // in prefs and applied via Main; not an emucore/per-game setting.
-            val orientation = remember { mutableIntStateOf(MainActivityRuntime.prefs.getInt("ui.orientation", 0)) }
+            val orientation = remember { mutableStateOf(com.armsx2.Main.prefs.getInt("ui.orientation", 0)) }
             SegmentedRow(
                 label = str("renderer.orientation.label"),
                 options = listOf(
@@ -152,13 +150,8 @@ fun RendererTab(state: MutableState<Settings>) {
                 description = str("renderer.orientation.description"),
                 onChange = {
                     orientation.value = it
-                    MainActivityRuntime.prefs.edit {
-                        putInt(
-                            "ui.orientation",
-                            it
-                        )
-                    }
-                    MainActivityRuntime.instance?.applyEmulationOrientation()
+                    com.armsx2.Main.prefs.edit().putInt("ui.orientation", it).apply()
+                    com.armsx2.Main.instance?.applyEmulationOrientation()
                 },
             )
             SettingsDivider()
@@ -355,10 +348,10 @@ fun RendererTab(state: MutableState<Settings>) {
             SettingsDivider()
             ToggleRow(
                 str("renderer.accurateAlphaTest.label"),
-                s.hwAccurateAlphaTest,
+                s.hwAat,
                 description = str("renderer.accurateAlphaTest.description"),
             ) {
-                apply(s.copy(hwAccurateAlphaTest = it))
+                apply(s.copy(hwAat = it))
             }
             SettingsDivider()
             ToggleRow(
@@ -407,7 +400,7 @@ fun RendererTab(state: MutableState<Settings>) {
             // barriers; Adreno uses the EXT fetch / generic path; PowerVR
             // (Imagination) uses EXT/PLS like Adreno but is its own tile-based
             // GPU family. Changing requires a renderer restart — CheckFeatures
-            // runs once at device init, so we kick MainActivityRuntime.restart() the same way
+            // runs once at device init, so we kick Main.restart() the same way
             // RestartButton does.
             SegmentedRow(
                 label = str("renderer.gpuProfile.label"),
@@ -463,7 +456,6 @@ private fun TexturePackImportRow() {
         Box(
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
                 .background(rowAura())
                 .clickable { folderLauncher.launch(null) }
                 .padding(horizontal = 6.dp, vertical = 5.dp),
@@ -472,8 +464,8 @@ private fun TexturePackImportRow() {
             Column {
                 Text(
                     str("renderer.importTexturePack.label"),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 16.sp,
+                    color = Color.White,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(Modifier.height(2.dp))
@@ -483,7 +475,7 @@ private fun TexturePackImportRow() {
                             ?: I18n.get("renderer.importTexturePack.bootFirst")
                     },
                     color = Colors.pasx2_blue,
-                    fontSize = 14.sp,
+                    fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                 )
             }
@@ -492,7 +484,6 @@ private fun TexturePackImportRow() {
         Box(
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
                 .background(rowAura())
                 .clickable {
                     zipLauncher.launch(
@@ -507,8 +498,8 @@ private fun TexturePackImportRow() {
         ) {
             Text(
                 str("renderer.importTexturePackZip.label"),
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 16.sp,
+                color = Color.White,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
             )
         }
@@ -522,10 +513,9 @@ private fun ClearShaderCacheRow() {
     Box(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
             .background(rowAura())
             .clickable {
-                val n = clearShaderCache(File(MainActivityRuntime.assetCopyRoot(context), "cache"))
+                val n = clearShaderCache(File(Main.assetCopyRoot(context), "cache"))
                 status.value = if (n > 0)
                     "Cleared $n shader-cache file${if (n == 1) "" else "s"} — restart the game to rebuild."
                 else
@@ -538,8 +528,8 @@ private fun ClearShaderCacheRow() {
         Column {
             Text(
                 str("renderer.clearShaderCache.label"),
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 16.sp,
+                color = Color.White,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(Modifier.height(2.dp))
@@ -548,7 +538,7 @@ private fun ClearShaderCacheRow() {
                     I18n.get("renderer.clearShaderCache.description")
                 },
                 color = Colors.pasx2_blue,
-                fontSize = 14.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
             )
         }
@@ -577,10 +567,9 @@ private fun GsDumpCaptureRow() {
     Box(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
             .background(rowAura())
             .clickable {
-                if (MainActivityRuntime.eState.value == com.armsx2.EmuState.STOPPED) {
+                if (Main.eState.value == com.armsx2.EmuState.STOPPED) {
                     Toast.makeText(context, I18n.get("renderer.gsDump.startGameFirst"), Toast.LENGTH_LONG).show()
                 } else {
                     runCatching { NativeApp.captureGsDump(1) }
@@ -593,15 +582,15 @@ private fun GsDumpCaptureRow() {
         Column {
             Text(
                 str("renderer.gsDump.label"),
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 16.sp,
+                color = Color.White,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(Modifier.height(2.dp))
             Text(
                 str("renderer.gsDump.description"),
                 color = Colors.pasx2_blue,
-                fontSize = 14.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
             )
         }
@@ -609,14 +598,14 @@ private fun GsDumpCaptureRow() {
 }
 
 private fun activeTextureSerial(): String? {
-    return MainActivityRuntime.currentGame.value?.serial?.takeIf { it.isNotBlank() }
+    return Main.currentGame.value?.serial?.takeIf { it.isNotBlank() }
         ?: runCatching { NativeApp.getGameSerial() }.getOrNull()?.takeIf { it.isNotBlank() }
 }
 
 private fun importTexturePack(context: Context, uri: Uri, serial: String): Int {
     val root = DocumentFile.fromTreeUri(context, uri) ?: return -1
     val source = root.findFile("replacements")?.takeIf { it.isDirectory } ?: root
-    val dest = File(MainActivityRuntime.assetCopyRoot(context), "textures/$serial/replacements")
+    val dest = File(Main.assetCopyRoot(context), "textures/$serial/replacements")
     if (!dest.exists() && !dest.mkdirs())
         return -1
     return copyDocumentTree(context, source, dest)
@@ -628,7 +617,7 @@ private fun importTexturePack(context: Context, uri: Uri, serial: String): Int {
  *  (e.g. under its own "replacements/" or a pack-name folder) still resolves. Guards
  *  against Zip-Slip path traversal by rejecting any entry that escapes the dest dir. */
 private fun importTexturePackZip(context: Context, zipUri: Uri, serial: String): Int {
-    val dest = File(MainActivityRuntime.assetCopyRoot(context), "textures/$serial/replacements")
+    val dest = File(Main.assetCopyRoot(context), "textures/$serial/replacements")
     if (!dest.exists() && !dest.mkdirs())
         return -1
     val destCanon = dest.canonicalPath

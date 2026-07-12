@@ -1,13 +1,12 @@
 package com.armsx2.config
 
-import com.armsx2.runtime.MainActivityRuntime
+import com.armsx2.Main
 import org.json.JSONObject
-import androidx.core.content.edit
 
 /**
  * Persistence + resolution for emu [Settings].
  *
- * Two storage tiers, both in `MainActivityRuntime.prefs`:
+ * Two storage tiers, both in `Main.prefs`:
  *   - **Global** under `config.global` — the user's baseline. Stored as a
  *     full Settings JSON.
  *   - **Per-game** under `config.game.<serial>` — sparse JSON containing
@@ -48,7 +47,7 @@ object ConfigStore {
     private fun keyForGame(serial: String) = "config.game.$serial"
 
     fun loadGlobal(): Settings {
-        val raw = MainActivityRuntime.prefs.getString(KEY_GLOBAL, null)
+        val raw = Main.prefs.getString(KEY_GLOBAL, null)
         var parsed = if (raw != null) {
             try { Settings.fromJson(JSONObject(raw)) } catch (_: Exception) { Settings() }
         } else {
@@ -57,20 +56,20 @@ object ConfigStore {
         var dirty = false
 
         // Legacy: "Basic" blending migration.
-        if (raw != null && !MainActivityRuntime.prefs.getBoolean(KEY_BLEND_BASIC_MIGRATED, false) &&
+        if (raw != null && !Main.prefs.getBoolean(KEY_BLEND_BASIC_MIGRATED, false) &&
             parsed.accurateBlendingUnit == 4) {
             parsed = parsed.copy(accurateBlendingUnit = 1)
             dirty = true
         }
-        if (!MainActivityRuntime.prefs.getBoolean(KEY_BLEND_BASIC_MIGRATED, false)) {
-            MainActivityRuntime.prefs.edit { putBoolean(KEY_BLEND_BASIC_MIGRATED, true) }
+        if (!Main.prefs.getBoolean(KEY_BLEND_BASIC_MIGRATED, false)) {
+            Main.prefs.edit().putBoolean(KEY_BLEND_BASIC_MIGRATED, true).apply()
         }
 
         // Seed renderer/upscale from the legacy global prefs (where they used to
         // live) into the Settings tier, once. After this they're scope-aware like
         // every other setting; the old prefs become vestigial.
-        if (!MainActivityRuntime.prefs.getBoolean(KEY_RENDERER_MIGRATED, false)) {
-            MainActivityRuntime.prefs.getString("renderer", null)?.takeIf { it.isNotBlank() }?.let {
+        if (!Main.prefs.getBoolean(KEY_RENDERER_MIGRATED, false)) {
+            Main.prefs.getString("renderer", null)?.takeIf { it.isNotBlank() }?.let {
                 parsed = parsed.copy(renderer = it)
                 dirty = true
             }
@@ -78,19 +77,19 @@ object ConfigStore {
                 parsed = parsed.copy(upscaleFloat = it)
                 dirty = true
             }
-            MainActivityRuntime.prefs.edit { putBoolean(KEY_RENDERER_MIGRATED, true) }
+            Main.prefs.edit().putBoolean(KEY_RENDERER_MIGRATED, true).apply()
         }
 
         // Adreno framebuffer-fetch is now default-on. Flip existing global saves that
         // still carry the old default-off ONCE, so updating users get the fast
         // accurate-blending path too (they can turn it back off in the Renderer tab).
-        if (raw != null && !MainActivityRuntime.prefs.getBoolean(KEY_ADRENO_FBFETCH_MIGRATED, false) &&
+        if (raw != null && !Main.prefs.getBoolean(KEY_ADRENO_FBFETCH_MIGRATED, false) &&
             !parsed.adrenoFbFetch) {
             parsed = parsed.copy(adrenoFbFetch = true)
             dirty = true
         }
-        if (!MainActivityRuntime.prefs.getBoolean(KEY_ADRENO_FBFETCH_MIGRATED, false)) {
-            MainActivityRuntime.prefs.edit { putBoolean(KEY_ADRENO_FBFETCH_MIGRATED, true) }
+        if (!Main.prefs.getBoolean(KEY_ADRENO_FBFETCH_MIGRATED, false)) {
+            Main.prefs.edit().putBoolean(KEY_ADRENO_FBFETCH_MIGRATED, true).apply()
         }
 
         // The perf OSD (FPS/stats counters) now defaults OFF — it read as clutter.
@@ -98,7 +97,7 @@ object ConfigStore {
         // who'd already turned any element off is left untouched, and the in-game
         // "OSD" toggle re-enables everything. (The bottom-left/right summaries are
         // handled by their own absent-key default for pre-2.6 saves.)
-        if (raw != null && !MainActivityRuntime.prefs.getBoolean(KEY_OSD_OFF_MIGRATED, false) &&
+        if (raw != null && !Main.prefs.getBoolean(KEY_OSD_OFF_MIGRATED, false) &&
             parsed.osdShowFps && parsed.osdShowVps && parsed.osdShowSpeed &&
             parsed.osdShowCpu && parsed.osdShowGpu && parsed.osdShowResolution &&
             parsed.osdShowGsStats && parsed.osdShowFrameTimes &&
@@ -111,8 +110,8 @@ object ConfigStore {
             )
             dirty = true
         }
-        if (!MainActivityRuntime.prefs.getBoolean(KEY_OSD_OFF_MIGRATED, false)) {
-            MainActivityRuntime.prefs.edit { putBoolean(KEY_OSD_OFF_MIGRATED, true) }
+        if (!Main.prefs.getBoolean(KEY_OSD_OFF_MIGRATED, false)) {
+            Main.prefs.edit().putBoolean(KEY_OSD_OFF_MIGRATED, true).apply()
         }
 
         if (dirty) saveGlobal(parsed)
@@ -121,7 +120,7 @@ object ConfigStore {
 
     /** Read the legacy global upscale pref (float, or older int/string), or null. */
     private fun legacyUpscalePref(): Float? {
-        val all = MainActivityRuntime.prefs.all
+        val all = Main.prefs.all
         fun coerce(raw: Any?): Float? = when (raw) {
             is Float -> raw
             is Double -> raw.toFloat()
@@ -134,12 +133,12 @@ object ConfigStore {
     }
 
     fun saveGlobal(s: Settings) {
-        MainActivityRuntime.prefs.edit { putString(KEY_GLOBAL, s.toJson().toString()) }
+        Main.prefs.edit().putString(KEY_GLOBAL, s.toJson().toString()).apply()
     }
 
     /** Load the sparse per-game override blob, or null if there are none. */
     fun loadOverrides(serial: String): JSONObject? {
-        val raw = MainActivityRuntime.prefs.getString(keyForGame(serial), null) ?: return null
+        val raw = Main.prefs.getString(keyForGame(serial), null) ?: return null
         return try {
             JSONObject(raw)
         } catch (_: Exception) {
@@ -148,11 +147,11 @@ object ConfigStore {
     }
 
     fun saveOverrides(serial: String, overrides: JSONObject) {
-        MainActivityRuntime.prefs.edit { putString(keyForGame(serial), overrides.toString()) }
+        Main.prefs.edit().putString(keyForGame(serial), overrides.toString()).apply()
     }
 
     fun clearOverrides(serial: String) {
-        MainActivityRuntime.prefs.edit { remove(keyForGame(serial)) }
+        Main.prefs.edit().remove(keyForGame(serial)).apply()
     }
 
     /**

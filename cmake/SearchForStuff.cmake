@@ -39,7 +39,9 @@ if (WIN32)
 	find_package(Vtune)
 else()
 	find_package(CURL REQUIRED)
-	find_package(PCAP REQUIRED)
+	if(NOT IOS)
+		find_package(PCAP REQUIRED)
+	endif()
 	find_package(Vtune)
 
 	# Use bundled ffmpeg v4.x.x headers if we can't locate it in the system.

@@ -5,7 +5,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
-import com.armsx2.runtime.MainActivityRuntime
+import com.armsx2.Main
 
 /**
  * Global UI scaling for the Compose chrome (game library + in-game overlay + memory
@@ -15,7 +15,7 @@ import com.armsx2.runtime.MainActivityRuntime
  * surfaces via [ScaledUi] — NEVER the game SurfaceView (renders natively at the real
  * pixel size, unaffected) or the on-screen touch controls (positioned per-game in dp
  * and would shift). Default 1.0 = no change, so the stock layout is untouched until
- * the user opts in. Persisted in MainActivityRuntime.prefs.
+ * the user opts in. Persisted in Main.prefs.
  */
 object UiScale {
     private const val KEY_BORDER = "ui.borderScale"
@@ -29,20 +29,20 @@ object UiScale {
     val fontScale = mutableStateOf(1.0f)
 
     fun load() {
-        borderScale.value = MainActivityRuntime.prefs.getFloat(KEY_BORDER, 1.0f).coerceIn(MIN, BORDER_MAX)
-        fontScale.value = MainActivityRuntime.prefs.getFloat(KEY_FONT, 1.0f).coerceIn(MIN, MAX)
+        borderScale.value = Main.prefs.getFloat(KEY_BORDER, 1.0f).coerceIn(MIN, BORDER_MAX)
+        fontScale.value = Main.prefs.getFloat(KEY_FONT, 1.0f).coerceIn(MIN, MAX)
     }
 
     fun setBorderScale(v: Float) {
         val c = v.coerceIn(MIN, BORDER_MAX)
         borderScale.value = c
-        MainActivityRuntime.prefs.edit().putFloat(KEY_BORDER, c).apply()
+        Main.prefs.edit().putFloat(KEY_BORDER, c).apply()
     }
 
     fun setFontScale(v: Float) {
         val c = v.coerceIn(MIN, MAX)
         fontScale.value = c
-        MainActivityRuntime.prefs.edit().putFloat(KEY_FONT, c).apply()
+        Main.prefs.edit().putFloat(KEY_FONT, c).apply()
     }
 
     /** Reset UI border + font scale to 1.0 (the global "Reset to defaults"). The
