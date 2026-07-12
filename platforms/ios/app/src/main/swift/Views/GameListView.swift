@@ -271,7 +271,6 @@ struct GameListView: View {
                 }
             }
 			.navigationTitle(settings.localized("Games"))
-			.navigationBarTitleDisplayMode(.inline)
 			.toolbarBackground(hasCustomBackground ? .hidden : .automatic, for: .navigationBar)
 				.toolbar {
 					ToolbarItem(placement: .topBarTrailing) {
