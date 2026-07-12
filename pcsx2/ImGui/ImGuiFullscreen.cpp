@@ -3256,12 +3256,13 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 		// rounds the top-left corner. Guarded on IMGUI_VERSION_NUM so both platforms are correct;
 		// collapses to the >= branch once the two 3rdparty/imgui copies are deduped.
 #if IMGUI_VERSION_NUM >= 19280
-		// 1.92.8+ signature: AddRect(p_min, p_max, col, rounding, float thickness, ImDrawFlags flags)
-		// ImGui v1.92 AddRect signature: (p_min, p_max, col, rounding, ImDrawFlags flags,
-		// float thickness). The old arg order passed LayoutScale(1.0f) as the flags (→ only
-		// TopLeft corner rounded) and ImDrawFlags_RoundCornersAll (~240) as the thickness (→
-		// a giant malformed border) — that's the "broken" RetroAchievements toast.
-		dl->AddRect(box_min, box_max, border_color, rounding, ImDrawFlags_RoundCornersAll, ImGuiFullscreen::LayoutScale(1.0f));
+		// 1.92.8+ signature: AddRect(p_min, p_max, col, rounding, float thickness, ImDrawFlags flags).
+		// Pass LayoutScale(1.0f) as the thickness and ImDrawFlags_RoundCornersAll as the flags.
+		// (The old arg order passed LayoutScale(1.0f) as the flags → only TopLeft corner rounded,
+		// and ImDrawFlags_RoundCornersAll (~240) as the thickness → a giant malformed border,
+		// i.e. the "broken" RetroAchievements toast. It also hits imgui's `= delete`d obsolete
+		// overload and fails to compile.)
+		dl->AddRect(box_min, box_max, border_color, rounding, ImGuiFullscreen::LayoutScale(1.0f), ImDrawFlags_RoundCornersAll);
 #else
 		// <= 1.92.6 signature: AddRect(p_min, p_max, col, rounding, ImDrawFlags flags, float thickness)
 		dl->AddRect(box_min, box_max, border_color, rounding, ImDrawFlags_RoundCornersAll, ImGuiFullscreen::LayoutScale(1.0f));
