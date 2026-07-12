@@ -99,6 +99,56 @@ fun PatchManagerScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: Pa
     }
 }
 
+/**
+ * Cheats/patches as a Settings-hub tab — lets users manage PNACH cheats outside a game.
+ * Reuses the full PatchManager stack (per-cheat toggles + online browser); it just drops
+ * the screen chrome (ArmsBackdrop / ArmsTopBar / own scroll) since the settings hub
+ * already supplies those, and re-surfaces Import/Refresh as an inline action row.
+ */
+@Composable
+fun PatchesSettingsTab(game: GameInfo? = null, viewModel: PatchManagerViewModel = viewModel()) {
+    val state = viewModel.state.value
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(viewModel::import) }
+    LaunchedEffect(Unit) { viewModel.refresh() }
+
+    Column(Modifier.fillMaxWidth()) {
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            RoundAction("＋", str("action.import"), { picker.launch(arrayOf("text/plain", "application/octet-stream", "*/*")) })
+            RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
+        }
+        OnlineBrowser(state, viewModel, game, Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp))
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            val compact = maxWidth < 820.dp
+            if (compact) {
+                Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
+                    PatchOptions(state, viewModel, Modifier.fillMaxWidth())
+                    Spacer(Modifier.padding(top = 10.dp))
+                    PatchFiles(state, viewModel, Modifier.fillMaxWidth())
+                }
+            } else {
+                Row(
+                    Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    PatchOptions(state, viewModel, Modifier.width(310.dp))
+                    PatchFiles(state, viewModel, Modifier.weight(1f))
+                }
+            }
+        }
+    }
+    (state.error ?: state.message)?.let { message ->
+        AlertDialog(
+            onDismissRequest = viewModel::dismissMessage,
+            title = { Text(if (state.error == null) str("action.ok") else str("patches.dialog.patchesAndCheats")) },
+            text = { Text(message) },
+            confirmButton = { TextButton(onClick = viewModel::dismissMessage) { Text(str("action.ok")) } },
+        )
+    }
+}
+
 @Composable
 private fun PatchOptions(state: PatchManagerUiState, viewModel: PatchManagerViewModel, modifier: Modifier) {
     GlassPanel(modifier) {
@@ -142,6 +192,18 @@ private fun PatchOptions(state: PatchManagerUiState, viewModel: PatchManagerView
                     onConfirm = { viewModel.update { it.copy(enableNoInterlacingPatches = !state.settings.enableNoInterlacingPatches) } },
                     onLeft = { if (state.settings.enableNoInterlacingPatches) viewModel.update { it.copy(enableNoInterlacingPatches = false) } },
                     onRight = { if (!state.settings.enableNoInterlacingPatches) viewModel.update { it.copy(enableNoInterlacingPatches = true) } },
+                ),
+            )
+            // HostFS (host: filesystem) — lets ELF/homebrew and certain advanced mods read
+            // from the host. Native field + apply already exist; this restores the toggle.
+            SettingSwitchRow(
+                str("patches.hostFs.label"), str("patches.hostFs.description"), state.settings.hostFs,
+                onCheckedChange = { value -> viewModel.update { it.copy(hostFs = value) } },
+                modifier = Modifier.controllerFocusable(
+                    "patches.hostFs",
+                    onConfirm = { viewModel.update { it.copy(hostFs = !state.settings.hostFs) } },
+                    onLeft = { if (state.settings.hostFs) viewModel.update { it.copy(hostFs = false) } },
+                    onRight = { if (!state.settings.hostFs) viewModel.update { it.copy(hostFs = true) } },
                 ),
             )
         }

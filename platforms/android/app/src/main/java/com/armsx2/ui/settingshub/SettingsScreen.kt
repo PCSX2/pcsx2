@@ -230,6 +230,7 @@ private fun settingsSections() = listOf(
     SettingsSection(SettingsCategory.Skins, "tab.skins", "◈"),
     SettingsSection(SettingsCategory.Advanced, "tab.fixes", "⌘"),
     SettingsSection(SettingsCategory.Recompiler, "tab.recompiler", "⚙"),
+    SettingsSection(SettingsCategory.Patches, "tab.patches", "✦"),
     SettingsSection(SettingsCategory.About, "about.title", "ⓘ"),
 )
 
@@ -248,6 +249,7 @@ private fun CategoryContent(category: SettingsCategory, viewModel: SettingsViewM
         SettingsCategory.Skins -> SkinsTab(viewModel.settings)
         SettingsCategory.Advanced -> FixesTab(viewModel.settings)
         SettingsCategory.Recompiler -> RecompilerTab(viewModel.settings)
+        SettingsCategory.Patches -> com.armsx2.ui.patches.PatchesSettingsTab(viewModel.uiState.value.game)
         SettingsCategory.About -> Unit
     }
 }
@@ -266,5 +268,6 @@ private fun categoryTitle(category: SettingsCategory): String = when (category) 
     SettingsCategory.Skins -> str("tab.skins")
     SettingsCategory.Advanced -> str("tab.fixes")
     SettingsCategory.Recompiler -> str("tab.recompiler")
+    SettingsCategory.Patches -> str("patches.dialog.patchesAndCheats")
     SettingsCategory.About -> str("about.title")
 }

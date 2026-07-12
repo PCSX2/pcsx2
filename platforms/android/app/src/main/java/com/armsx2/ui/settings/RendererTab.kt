@@ -59,9 +59,12 @@ import androidx.core.content.edit
  * uses a narrow native GS helper so it can visibly apply while a game is live
  * without running the full settings commit path.
  */
-private data class UpscaleOption(val value: Float, val label: String)
+internal data class UpscaleOption(val value: Float, val label: String)
 
-private val UPSCALE_OPTIONS = listOf(
+// Shared so the in-game quick Graphics pane (EmulationMenuScreen) shows the exact same
+// scale list — including the sub-native 0.25/0.5/0.75/Native options that its old
+// hardcoded list omitted.
+internal val UPSCALE_OPTIONS = listOf(
     // Sub-native (issue #207) — fewer pixels = big perf win on low/mid devices,
     // at the cost of sharpness. The GS only clamps the upper bound, so these are
     // applied as-is.
@@ -275,6 +278,33 @@ fun RendererTab(state: MutableState<Settings>) {
                     description = str("renderer.shadeboost.fiftyIsNormal"),
                     valueFormatter = { "$it%" },
                     onChange = { apply(s.copy(shadeBoostGamma = it)) },
+                )
+            }
+            SettingsDivider()
+            ToggleRow(
+                str("renderer.fxaa.label"),
+                s.fxaa,
+                description = str("renderer.fxaa.description"),
+            ) {
+                apply(s.copy(fxaa = it))
+            }
+            SettingsDivider()
+            SegmentedRow(
+                label = str("renderer.cas.label"),
+                options = listOf(str("fixes.opt.off"), str("renderer.cas.sharpen"), str("renderer.cas.sharpenResize")),
+                selectedIndex = s.casMode.coerceIn(0, 2),
+                description = str("renderer.cas.description"),
+                onChange = { apply(s.copy(casMode = it)) },
+            )
+            if (s.casMode != 0) {
+                SettingsDivider()
+                IntSliderRow(
+                    label = str("renderer.cas.sharpness.label"),
+                    value = s.casSharpness.coerceIn(0, 100),
+                    min = 0,
+                    max = 100,
+                    valueFormatter = { "$it%" },
+                    onChange = { apply(s.copy(casSharpness = it)) },
                 )
             }
         }

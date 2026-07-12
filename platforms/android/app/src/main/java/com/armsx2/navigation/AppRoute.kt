@@ -33,6 +33,7 @@ enum class SettingsCategory {
     Skins,
     Advanced,
     Recompiler,
+    Patches,
     About,
 }
 

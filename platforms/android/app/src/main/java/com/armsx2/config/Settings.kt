@@ -231,7 +231,7 @@ data class Settings(
     val spinCpuReadbacks: Boolean = false,
     /** EmuCore/GS/IntegerScaling — integer pixel scaling for the presented image. Default off. */
     val integerScaling: Boolean = false,
-    /** EmuCore/GS/dithering_ps2 — 0 Off / 1 Scaled / 2 Unscaled. PCSX2 default Unscaled. */
+    /** EmuCore/GS/dithering_ps2 — 0 Off / 1 Scaled / 2 Unscaled / 3 Force 32bit. PCSX2 default Unscaled. */
     val dithering: Int = 2,
     /** EmuCore/GS/VsyncQueueSize — frames the GS thread may queue (0-3). PCSX2 default 2. */
     val vsyncQueueSize: Int = 2,
@@ -392,6 +392,12 @@ data class Settings(
     val shadeBoostContrast: Int = 50,
     val shadeBoostSaturation: Int = 50,
     val shadeBoostGamma: Int = 50,
+    /** EmuCore/GS/fxaa — FXAA post-process anti-aliasing. */
+    val fxaa: Boolean = false,
+    /** EmuCore/GS/CASMode — GSCASMode: 0 Off / 1 Sharpen Only / 2 Sharpen + Resize. */
+    val casMode: Int = 0,
+    /** EmuCore/GS/CASSharpness — sharpening strength 0..100 (%). */
+    val casSharpness: Int = 50,
     /** EmuCore/GS/LoadTextureReplacements. */
     val loadTextureReplacements: Boolean = false,
     /** EmuCore/GS/LoadTextureReplacementsAsync. */
@@ -783,6 +789,9 @@ data class Settings(
         put("EmuCore/GS", "ShadeBoost_Contrast", "int", shadeBoostContrast.coerceIn(1, 100).toString())
         put("EmuCore/GS", "ShadeBoost_Saturation", "int", shadeBoostSaturation.coerceIn(1, 100).toString())
         put("EmuCore/GS", "ShadeBoost_Gamma", "int", shadeBoostGamma.coerceIn(1, 100).toString())
+        put("EmuCore/GS", "fxaa", "bool", fxaa.toString())
+        put("EmuCore/GS", "CASMode", "int", casMode.coerceIn(0, 2).toString())
+        put("EmuCore/GS", "CASSharpness", "int", casSharpness.coerceIn(0, 100).toString())
         put("EmuCore/GS", "LoadTextureReplacements", "bool", loadTextureReplacements.toString())
         put("EmuCore/GS", "LoadTextureReplacementsAsync", "bool", loadTextureReplacementsAsync.toString())
         put("EmuCore/GS", "PrecacheTextureReplacements", "bool", precacheTextureReplacements.toString())
@@ -823,7 +832,7 @@ data class Settings(
         put("EmuCore/GS", "HWSpinGPUForReadbacks", "bool", spinGpuReadbacks.toString())
         put("EmuCore/GS", "HWSpinCPUForReadbacks", "bool", spinCpuReadbacks.toString())
         put("EmuCore/GS", "IntegerScaling", "bool", integerScaling.toString())
-        put("EmuCore/GS", "dithering_ps2", "int", dithering.coerceIn(0, 2).toString())
+        put("EmuCore/GS", "dithering_ps2", "int", dithering.coerceIn(0, 3).toString())
         put("EmuCore/GS", "VsyncQueueSize", "int", vsyncQueueSize.coerceIn(0, 3).toString())
         put("EmuCore/GS", "autoflush_sw", "bool", autoFlushSw.toString())
         put("EmuCore/GS", "mipmap", "bool", mipmapSw.toString())
@@ -922,6 +931,9 @@ data class Settings(
             shadeBoostContrast != other.shadeBoostContrast ||
             shadeBoostSaturation != other.shadeBoostSaturation ||
             shadeBoostGamma != other.shadeBoostGamma ||
+            fxaa != other.fxaa ||
+            casMode != other.casMode ||
+            casSharpness != other.casSharpness ||
             accurateBlendingUnit != other.accurateBlendingUnit ||
             hwMipmap != other.hwMipmap ||
             triFilter != other.triFilter ||
@@ -1104,6 +1116,9 @@ data class Settings(
         put("shadeBoostContrast", shadeBoostContrast)
         put("shadeBoostSaturation", shadeBoostSaturation)
         put("shadeBoostGamma", shadeBoostGamma)
+        put("fxaa", fxaa)
+        put("casMode", casMode)
+        put("casSharpness", casSharpness)
         put("loadTextureReplacements", loadTextureReplacements)
         put("loadTextureReplacementsAsync", loadTextureReplacementsAsync)
         put("precacheTextureReplacements", precacheTextureReplacements)
@@ -1342,6 +1357,9 @@ data class Settings(
                 shadeBoostContrast = json.optInt("shadeBoostContrast", def.shadeBoostContrast),
                 shadeBoostSaturation = json.optInt("shadeBoostSaturation", def.shadeBoostSaturation),
                 shadeBoostGamma = json.optInt("shadeBoostGamma", def.shadeBoostGamma),
+                fxaa = json.optBoolean("fxaa", def.fxaa),
+                casMode = json.optInt("casMode", def.casMode),
+                casSharpness = json.optInt("casSharpness", def.casSharpness),
                 loadTextureReplacements = json.optBoolean("loadTextureReplacements", def.loadTextureReplacements),
                 loadTextureReplacementsAsync = json.optBoolean("loadTextureReplacementsAsync", def.loadTextureReplacementsAsync),
                 precacheTextureReplacements = json.optBoolean("precacheTextureReplacements", def.precacheTextureReplacements),
@@ -1547,6 +1565,9 @@ data class Settings(
             if (current.shadeBoostContrast  != base.shadeBoostContrast)  j.put("shadeBoostContrast", current.shadeBoostContrast)
             if (current.shadeBoostSaturation != base.shadeBoostSaturation) j.put("shadeBoostSaturation", current.shadeBoostSaturation)
             if (current.shadeBoostGamma     != base.shadeBoostGamma)     j.put("shadeBoostGamma", current.shadeBoostGamma)
+            if (current.fxaa                != base.fxaa)                j.put("fxaa", current.fxaa)
+            if (current.casMode             != base.casMode)             j.put("casMode", current.casMode)
+            if (current.casSharpness        != base.casSharpness)        j.put("casSharpness", current.casSharpness)
             if (current.loadTextureReplacements != base.loadTextureReplacements) j.put("loadTextureReplacements", current.loadTextureReplacements)
             if (current.loadTextureReplacementsAsync != base.loadTextureReplacementsAsync) j.put("loadTextureReplacementsAsync", current.loadTextureReplacementsAsync)
             if (current.precacheTextureReplacements != base.precacheTextureReplacements) j.put("precacheTextureReplacements", current.precacheTextureReplacements)
@@ -1757,6 +1778,9 @@ data class Settings(
             shadeBoostContrast = if (overrides.has("shadeBoostContrast")) overrides.getInt("shadeBoostContrast") else base.shadeBoostContrast,
             shadeBoostSaturation = if (overrides.has("shadeBoostSaturation")) overrides.getInt("shadeBoostSaturation") else base.shadeBoostSaturation,
             shadeBoostGamma = if (overrides.has("shadeBoostGamma")) overrides.getInt("shadeBoostGamma") else base.shadeBoostGamma,
+            fxaa = if (overrides.has("fxaa")) overrides.getBoolean("fxaa") else base.fxaa,
+            casMode = if (overrides.has("casMode")) overrides.getInt("casMode") else base.casMode,
+            casSharpness = if (overrides.has("casSharpness")) overrides.getInt("casSharpness") else base.casSharpness,
             loadTextureReplacements = if (overrides.has("loadTextureReplacements")) overrides.getBoolean("loadTextureReplacements") else base.loadTextureReplacements,
             loadTextureReplacementsAsync = if (overrides.has("loadTextureReplacementsAsync")) overrides.getBoolean("loadTextureReplacementsAsync") else base.loadTextureReplacementsAsync,
             precacheTextureReplacements = if (overrides.has("precacheTextureReplacements")) overrides.getBoolean("precacheTextureReplacements") else base.precacheTextureReplacements,

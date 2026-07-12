@@ -221,7 +221,7 @@ private fun MenuPage(
                 .padding(bottom = 18.dp),
         ) {
             if (compact) CompactMenuTabs(state.tab, viewModel::selectTab)
-            MenuHeader(compact, state.hardcore)
+            MenuHeader(compact, state.hardcore, state.richPresence)
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 8.dp),
                 color = MaterialTheme.colorScheme.outline.copy(alpha = 0.34f),
@@ -372,7 +372,7 @@ private fun tabGlyph(tab: EmulationMenuTab): String = when (tab) {
 }
 
 @Composable
-private fun MenuHeader(compact: Boolean, hardcore: Boolean) {
+private fun MenuHeader(compact: Boolean, hardcore: Boolean, richPresence: String) {
     val game = MainActivityRuntime.currentGame.value
     Row(
         Modifier.fillMaxWidth().padding(horizontal = if (compact) 12.dp else 16.dp, vertical = 12.dp),
@@ -404,6 +404,18 @@ private fun MenuHeader(compact: Boolean, hardcore: Boolean) {
                     game?.serial.orEmpty(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            // RetroAchievements rich presence — the live "what you're doing" line
+            // (e.g. "Pooh & Piglet are in a Scaring Contest"). Restored from the old UI.
+            if (richPresence.isNotBlank()) {
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    richPresence,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
@@ -504,9 +516,9 @@ private fun GraphicsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVi
     CompactAction(str("backend.applyRestart"), "↻", Modifier.fillMaxWidth(), MainActivityRuntime::restart)
     HorizontalOptions(
         title = str("renderer.upscale.label"),
-        options = listOf(1f, 1.5f, 2f, 3f, 4f, 5f, 6f, 8f).map { value ->
-            value to if (value % 1f == 0f) "${value.toInt()}×" else "${value}×"
-        },
+        // Share the full settings-tab list so the sub-native 0.25/0.5/0.75/Native
+        // options aren't dropped in the in-game quick menu.
+        options = com.armsx2.ui.settings.UPSCALE_OPTIONS.map { it.value to it.label },
         selected = settings.upscaleFloat,
         onSelect = viewModel::setUpscale,
     )
@@ -568,7 +580,7 @@ private fun GraphicsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVi
     )
     HorizontalOptions(
         title = str("fixes.dithering.label"),
-        options = listOf(str("fixes.opt.off"), str("fixes.opt.scaled"), str("fixes.opt.unscaled"))
+        options = listOf(str("fixes.opt.off"), str("fixes.opt.scaled"), str("fixes.opt.unscaled"), str("fixes.opt.force32"))
             .mapIndexed { index, label -> index to label },
         selected = settings.dithering,
         onSelect = { value -> viewModel.updateSettings { it.copy(dithering = value) } },
@@ -768,6 +780,9 @@ private fun ControlsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVi
     CompactAction(str("pad.controllerMapping"), "⌁", Modifier.fillMaxWidth(), viewModel::openControlsManager)
     Spacer(Modifier.height(6.dp))
     CompactAction(str("pad.editTouchLayout"), "✥", Modifier.fillMaxWidth(), viewModel::editTouchControls)
+    // Macros — edit each M1-M4 button set here in-game too (physical-trigger binding stays
+    // in All Settings › Controls, which hosts the key-capture listener).
+    com.armsx2.ui.settings.MacrosSection()
 }
 
 @Composable
