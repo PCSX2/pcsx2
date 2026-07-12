@@ -1067,7 +1067,7 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_features.cas_sharpening = true;
 	m_features.test_and_sample_depth = true;
 	m_features.depth_feedback = getDepthFeedback(m_dev, m_features.framebuffer_fetch);
-	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand;
+	m_features.aa1 = GSConfig.HWAA1 != GSHWAA1Level::Off && m_features.vs_expand;
 	m_features.rov = m_dev.features.rov && !m_features.framebuffer_fetch;
 	m_max_texture_size = m_dev.features.max_texsize;
 
@@ -1251,11 +1251,13 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_primid_init_pipeline[1][1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm1"), @"PrimID DATM1 Clear");
 	m_primid_init_pipeline[1][2] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_rta_init_datm0"), @"PrimID DATM0 RTA Clear");
 	m_primid_init_pipeline[1][3] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_rta_init_datm1"), @"PrimID DATM1 RTA Clear");
+	m_primid_init_pipeline[1][4] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_aa1"), @"PrimID AA1 Clear");
 	pdesc.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
 	m_primid_init_pipeline[0][0] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm0"), @"PrimID DATM0 Clear");
 	m_primid_init_pipeline[0][1] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_datm1"), @"PrimID DATM1 Clear");
 	m_primid_init_pipeline[0][2] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_rta_init_datm0"), @"PrimID DATM0 RTA Clear");
 	m_primid_init_pipeline[0][3] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_rta_init_datm1"), @"PrimID DATM1 RTA Clear");
+	m_primid_init_pipeline[0][4] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_init_aa1"), @"PrimID AA1 Clear");
 
 	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
 	applyAttribute(pdesc.vertexDescriptor, 0, MTLVertexFormatFloat2, offsetof(ConvertShaderVertex, pos),    0);
@@ -1735,9 +1737,11 @@ void GSDeviceMTL::RenderCopy(GSTexture* sTex, id<MTLRenderPipelineState> pipelin
 	// FS Triangle encoder uses vertex ID alone to make a FS triangle, which we then scissor to the desired rectangle
 	MRESetScissor(rect);
 	MRESetPipeline(pipeline);
-	MRESetTexture(sTex, GSMTLTextureIndexNonHW);
+	if (sTex)
+		MRESetTexture(sTex, GSMTLTextureIndexNonHW);
 	[m_current_render.encoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
-	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+	if (sTex)
+		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 }
 
@@ -2360,14 +2364,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	if (!config.vs.UseFixedExpandIndexBuffer())
 	{
 		memcpy(static_cast<u8*>(allocation.cpu_buffer) + vertsize, config.indices, idxsize);
-		if (config.vs.UseVSExpandIndexBuffer())
-		{
-			// VS expand index buffer is bound to the VS instead of the input assembler
-			u32 expand = GetExpansionFactor(config.vs.expand);
-			config.nindices *= expand;
-			config.indices_per_prim *= expand;
-		}
-		else
+		if (!config.vs.UseVSExpandIndexBuffer())
 		{
 			index_buffer = allocation.gpu_buffer;
 			index_buffer_offset = allocation.gpu_offset + vertsize;
@@ -2446,27 +2443,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		case GSHWDrawConfig::DestinationAlphaMode::Full:
 			break; // No setup
 		case GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking:
-		{
-			FlushClears(rt);
-			GSVector2i size = rt->GetSize();
-			primid_tex = CreateRenderTarget(size.x, size.y, GSTexture::Format::PrimID);
-			DepthStencilSelector dsel = config.depth;
-			dsel.zwe = 0;
-			GSTexture* depth = dsel.key == DepthStencilSelector::NoDepth().key ? nullptr : config.ds;
-			BeginRenderPass(@"PrimID Destination Alpha Init", primid_tex, MTLLoadActionDontCare, depth, MTLLoadActionLoad);
-			RenderCopy(rt, m_primid_init_pipeline[static_cast<bool>(depth)][static_cast<u8>(config.datm)], config.drawarea);
-			MRESetDSS(dsel);
-			pxAssert(config.ps.date == 1 || config.ps.date == 2);
-			if (config.ps.tex_is_fb)
-				MRESetTexture(rt, GSMTLTextureIndexRenderTarget);
-			config.require_one_barrier = false; // Ending render pass is our barrier
-			pxAssert(config.require_full_barrier == false && config.drawlist == nullptr);
-			MRESetHWPipelineState(config.vs, config.ps, {}, {});
-			MREInitHWDraw(config, allocation);
-			SendHWDraw(config, m_current_render.encoder, index_buffer, index_buffer_offset, false, false);
-			config.ps.date = 3;
-			break;
-		}
+			break; // Done below
 		case GSHWDrawConfig::DestinationAlphaMode::StencilOne:
 			BeginRenderPass(@"Destination Alpha Stencil Clear", nullptr, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare, config.ds, MTLLoadActionDontCare);
 			[m_current_render.encoder setStencilReferenceValue:1];
@@ -2478,6 +2455,39 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 			SetupDestinationAlpha(rt, config.ds, config.drawarea, config.datm);
 			stencil = config.ds;
 			break;
+	}
+
+	// Destination alpha / AA1 primid setup
+	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking ||
+		config.aa1_mode == GSHWDrawConfig::AA1Mode::ThreePassPrimid)
+	{
+		const bool date = (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking);
+		const bool aa1 = (config.aa1_mode == GSHWDrawConfig::AA1Mode::ThreePassPrimid);
+		pxAssert(date != aa1); // exactly one must be true
+		FlushClears(rt);
+		GSVector2i size = rt->GetSize();
+		primid_tex = CreateRenderTarget(size.x, size.y, GSTexture::Format::PrimID);
+		DepthStencilSelector dsel = config.depth;
+		dsel.zwe = 0;
+		GSTexture* depth = dsel.key == DepthStencilSelector::NoDepth().key ? nullptr : config.ds;
+		BeginRenderPass(date ? @"PrimID Destination Alpha Init" : @"PrimID AA1 Init", primid_tex, MTLLoadActionDontCare, depth, MTLLoadActionLoad);
+		if (date)
+			RenderCopy(rt, m_primid_init_pipeline[static_cast<bool>(depth)][static_cast<u8>(config.datm)], config.drawarea);
+		else
+			RenderCopy(nullptr, m_primid_init_pipeline[static_cast<bool>(depth)][4], config.drawarea);
+		MRESetDSS(dsel);
+		pxAssert(config.ps.date == 1 || config.ps.date == 2);
+		if (config.ps.tex_is_fb)
+			MRESetTexture(rt, GSMTLTextureIndexRenderTarget);
+		config.require_one_barrier = false; // Ending render pass is our barrier
+		pxAssert(config.require_full_barrier == false && config.drawlist == nullptr);
+		MRESetHWPipelineState(config.vs, config.ps, {}, {});
+		MREInitHWDraw(config, allocation);
+		SendHWDraw(config, GSHWDrawConfig::DrawPass::PrimID, m_current_render.encoder, index_buffer, index_buffer_offset);
+		if (date)
+			config.ps.date = 3;
+		else
+			config.ps.aa1 = GSHWDrawConfig::PS_AA1::TRIANGLE;
 	}
 
 	// Try to reduce render pass restarts
@@ -2531,7 +2541,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	MRESetHWPipelineState(config.vs, config.ps, config.blend, config.colormask);
 	MRESetDSS(config.depth);
 
-	SendHWDraw(config, mtlenc, index_buffer, index_buffer_offset, config.require_one_barrier, config.require_full_barrier);
+	SendHWDraw(config, GSHWDrawConfig::DrawPass::Main, mtlenc, index_buffer, index_buffer_offset);
 
 	if (config.alpha_second_pass.enable)
 	{
@@ -2542,7 +2552,19 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		}
 		MRESetHWPipelineState(config.vs, config.alpha_second_pass.ps, config.blend, config.alpha_second_pass.colormask);
 		MRESetDSS(config.alpha_second_pass.depth);
-		SendHWDraw(config, mtlenc, index_buffer, index_buffer_offset, config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier);
+		SendHWDraw(config, GSHWDrawConfig::DrawPass::AlphaSecond, mtlenc, index_buffer, index_buffer_offset);
+	}
+
+	if (config.aa1_multi_pass.enable)
+	{
+		if (config.aa1_multi_pass.ps_aref != config.cb_ps.FogColor_AREF.a)
+		{
+			config.cb_ps.FogColor_AREF.a = config.aa1_multi_pass.ps_aref;
+			MRESetCB(config.cb_ps);
+		}
+		MRESetHWPipelineState(config.aa1_multi_pass.vs, config.aa1_multi_pass.ps, config.aa1_multi_pass.blend, config.aa1_multi_pass.colormask);
+		MRESetDSS(config.aa1_multi_pass.depth);
+		SendHWDraw(config, GSHWDrawConfig::DrawPass::AA1Second, mtlenc, index_buffer, index_buffer_offset);
 	}
 
 	if (colclip_rt)
@@ -2582,7 +2604,7 @@ static void EncodeDraw(id<MTLRenderCommandEncoder> enc, MTLPrimitiveType topolog
 	}
 }
 
-void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder> enc, id<MTLBuffer> buffer, size_t off, bool one_barrier, bool full_barrier)
+void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, GSHWDrawConfig::DrawPass pass, id<MTLRenderCommandEncoder> enc, id<MTLBuffer> buffer, size_t off)
 {
 	MTLPrimitiveType topology;
 	switch (config.topology)
@@ -2592,19 +2614,35 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 		case GSHWDrawConfig::Topology::Triangle: topology = MTLPrimitiveTypeTriangle; break;
 	}
 
+	u32 nindices = config.nindices;
+	u32 indices_per_prim = config.indices_per_prim;
+	
+	// VS expand index buffer is bound to the VS instead of the input assembler.
+	// Do the index expansion here as this the only type of expansion that may
+	// vary between different passes.
+	const GSHWDrawConfig::VSSelector& vs = config.GetVS(pass);
+	if (vs.UseVSExpandIndexBuffer())
+	{
+		u32 expand = GetExpansionFactor(vs.expand);
+		nindices *= expand;
+		indices_per_prim *= expand;
+	}
+
 	if (!m_features.texture_barrier) [[unlikely]]
 	{
-		EncodeDraw(enc, topology, config.nindices, buffer, off, 0);
+		EncodeDraw(enc, topology, nindices, buffer, off, 0);
 		g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 		return;
 	}
 
+	const bool full_barrier = config.GetFullBarrier(pass);
+	const bool one_barrier = config.GetOneBarrier(pass);
 
 	if (full_barrier)
 	{
 		pxAssert(config.drawlist && !config.drawlist->empty());
 
-		[enc pushDebugGroup:[NSString stringWithFormat:@"Full barrier split draw (%d primitives in %zu groups)", config.nindices / config.indices_per_prim, config.drawlist->size()]];
+		[enc pushDebugGroup:[NSString stringWithFormat:@"Full barrier split draw (%d primitives in %zu groups)", nindices / indices_per_prim, config.drawlist->size()]];
 #if defined(_DEBUG)
 		// Check how draw call is split.
 		std::map<size_t, size_t> frequency;
@@ -2616,14 +2654,13 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 			message += " " + std::to_string(it.first) + "(" + std::to_string(it.second) + ")";
 
 		[enc insertDebugSignpost:[NSString stringWithFormat:@"Split single draw (%d primitives) into %zu draws: consecutive draws(frequency):%s",
-			config.nindices / config.indices_per_prim, config.drawlist->size(), message.c_str()]];
+			nindices / indices_per_prim, config.drawlist->size(), message.c_str()]];
 #endif
 
 
 		g_perfmon.Put(GSPerfMon::DrawCalls, config.drawlist->size());
 		g_perfmon.Put(GSPerfMon::Barriers, config.drawlist->size());
 
-		const u32 indices_per_prim = config.indices_per_prim;
 		const u32 draw_list_size = static_cast<u32>(config.drawlist->size());
 
 		for (u32 n = 0, p = 0; n < draw_list_size; n++)
@@ -2644,7 +2681,7 @@ void GSDeviceMTL::SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder>
 		g_perfmon.Put(GSPerfMon::Barriers, 1);
 	}
 
-	EncodeDraw(enc, topology, config.nindices, buffer, off, 0);
+	EncodeDraw(enc, topology, nindices, buffer, off, 0);
 	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 }
 

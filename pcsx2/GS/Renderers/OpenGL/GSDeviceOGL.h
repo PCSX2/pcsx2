@@ -219,7 +219,7 @@ private:
 	struct
 	{
 		GSDepthStencilOGL* dss = nullptr;
-		GLProgram primid_ps[4];
+		GLProgram primid_ps[5];
 	} m_date;
 
 	struct
@@ -308,7 +308,7 @@ private:
 	void OMAttachDs(GSTexture* ds = nullptr);
 	void OMSetFBO(GLuint fbo);
 
-	void DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds);
+	void DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds, bool has_src = true);
 
 	void SetIndexBuffer(std::unique_ptr<GLStreamBuffer>& buffer, const void* index, size_t count);
 
@@ -362,12 +362,12 @@ public:
 	void DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_indexing, int vs_indexing_expansion);
 
 	// Main GS primitive draws.
-	void Draw(const GSHWDrawConfig& config);
-	void Draw(const GSHWDrawConfig& config, int offset, int count);
+	void Draw(const GSHWDrawConfig& config, GSHWDrawConfig::DrawPass pass);
+	void Draw(const GSHWDrawConfig& config, GSHWDrawConfig::DrawPass pass, int offset, int count);
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
-	GSTexture* InitPrimDateTexture(GSTexture* rt, const GSVector4i& area, SetDATM datm);
+	GSTexture* InitPrimIDTexture(GSTexture* rt, const GSVector2i& rtsize, const GSVector4i& area, u8 shader);
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
 
@@ -394,9 +394,8 @@ public:
 	void FeedbackCopyAndBind(const GSHWDrawConfig& config,
 		GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone,
 		const GSVector4i& copyarea, const GSVector4i& samplearea);
-	void SendHWDraw(const GSHWDrawConfig& config,
-		GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
-		const bool one_barrier, const bool full_barrier);
+	void SendHWDraw(const GSHWDrawConfig& config, GSHWDrawConfig::DrawPass pass,
+		GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds);
 	void SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox);
 
 	void VSSetUniformBuffer(GSHWDrawConfig::VSConstantBuffer& cb);

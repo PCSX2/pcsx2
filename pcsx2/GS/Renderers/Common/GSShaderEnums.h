@@ -11,12 +11,15 @@ namespace GSShader {
 
 enum class VSExpand : uint8_t
 {
-	None        = 0,
-	Point       = 1,
-	Line        = 2,
-	Sprite      = 3,
-	LineAA1     = 4,
-	TriangleAA1 = 5,
+	None                = 0,
+	Point               = 1,
+	Line                = 2,
+	Sprite              = 3,
+	LineAA1             = 4,
+	TriangleAA1         = 5,
+	TriangleAA1Interior = 6,
+	TriangleAA1Edge     = 7,
+	Count               = 8,
 };
 
 enum class PS_ATST : uint32_t
@@ -50,10 +53,12 @@ enum class ZTST : uint32_t
 
 enum class PS_AA1 : uint32_t
 {
-	NONE          = 0, ///< No AA1
-	LINE          = 1, ///< AA1 lines
-	TRIANGLE      = 2, ///< AA1 triangles
-	TRIANGLE_SW_Z = 3, ///< AA1 triangles with software Z discard
+	NONE                 = 0, ///< No AA1
+	LINE                 = 1, ///< AA1 lines
+	TRIANGLE             = 2, ///< AA1 triangles
+	TRIANGLE_SW_Z        = 3, ///< AA1 triangles with software Z discard
+	TRIANGLE_PRIMID      = 4, ///< AA1 triangle edges with primid discard
+	TRIANGLE_PRIMID_INIT = 5, ///< AA1 triangle interiors primid init
 };
 
 enum class PS_ROV_DEPTH : uint32_t
