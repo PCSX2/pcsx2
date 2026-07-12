@@ -95,14 +95,14 @@ struct QuickMenuView: View {
         .environment(\.overlayCompact, true)
     }
 
-    /// Two columns only when the card is wide enough (and, for phone landscape, tall enough) to
-    /// keep both columns comfortable. iPad portrait and short/small phone-landscape devices fall
-    /// back to one column. iPhone portrait is always one column. One unified scroll surface either
-    /// way — never independent per-column scrolls.
+    /// Two columns only when the card is wide enough to keep both columns comfortable.
+    /// iPad portrait and short/small phone-landscape devices fall back to one column.
+    /// iPhone portrait uses two columns when wide enough (e.g. plus/max in portrait)
+    /// so the pause menu content is compact and readable without scrolling.
     private func supportsTwoColumns(width: CGFloat, height: CGFloat) -> Bool {
         switch variant {
         case .phonePortrait:
-            return false
+            return width >= 390
         case .ipadTwoColumn:
             return width >= 500 && height >= 320
         case .phoneLandscape:
@@ -281,7 +281,7 @@ private struct LandscapeCommandBar: View {
                         .font(.caption)
                         .foregroundStyle(OverlayTheme.textSecondary)
                         .lineLimit(1)
-                        .truncationMode(.middle)
+                        .truncationMode(.tail)
                         .layoutPriority(-1)
                 }
                 Spacer(minLength: 8)

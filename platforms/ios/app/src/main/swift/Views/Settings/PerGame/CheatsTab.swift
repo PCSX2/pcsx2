@@ -11,6 +11,7 @@ struct CheatsTab: View {
     @Binding var perGameNoInterlace: Int
     @Binding var showCheatsManager: Bool
 
+    let savesToRunningGame: Bool
     let settings: SettingsStore
 
     var body: some View {
@@ -37,7 +38,7 @@ struct CheatsTab: View {
                     Text(settings.localized("On")).tag(1)
                 }
                 .disabled(!enabled)
-                Text(settings.localized("If a game looks worse after GameDB, turn off GameDB Graphics Fixes for this game and reset/relaunch it. Core fixes cover timing, clamps, and other compatibility behavior."))
+                Text(settings.localized("If a game looks worse after GameDB, turn off GameDB Graphics Fixes for this game and reset/relaunch it. Core fixes cover timing, clamps, and other compatibility behavior. " + (savesToRunningGame ? "Widescreen and no-interlace patches apply when you save." : "Patch changes apply on next boot.")))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

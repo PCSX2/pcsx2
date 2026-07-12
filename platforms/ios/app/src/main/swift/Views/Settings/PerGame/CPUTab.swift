@@ -16,12 +16,23 @@ struct CPUTab: View {
     @Binding var perGameIOP: Int
     @Binding var perGameVU0: Int
     @Binding var perGameVU1: Int
+    @Binding var perGameEEFpuRound: Int
+    @Binding var perGameVU0Round: Int
+    @Binding var perGameVU1Round: Int
+    @Binding var perGameEEClamp: Int
+    @Binding var perGameVUClamp: Int
 
+    let savesToRunningGame: Bool
     let settings: SettingsStore
     let eeCycleRateUseGlobalSentinel: Int
     let fastBootUseGlobalSentinel: Int
     let fastBootOff: Int
     let fastBootOn: Int
+    let globalEEFpuRound: Int
+    let globalVU0Round: Int
+    let globalVU1Round: Int
+    let globalEEClamp: Int
+    let globalVUClamp: Int
 
     var body: some View {
         PerGameTab(title: settings.localized("CPU & Speedhacks")) {
@@ -79,7 +90,7 @@ struct CPUTab: View {
                 }
                 .disabled(!enabled || eeCycleRate == eeCycleRateUseGlobalSentinel)
 
-                Text("Can improve performance in heavy games, but may cause timing or compatibility issues. Reset or relaunch the game after changing it.")
+                Text(settings.localized("Can improve performance in heavy games, but may cause timing or compatibility issues. " + (savesToRunningGame ? "Takes effect when you save." : "Takes effect on next boot.")))
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
@@ -96,7 +107,7 @@ struct CPUTab: View {
                 }
                 .disabled(!enabled || eeCycleSkip == -1)
 
-                Text("Skips EE cycles to boost performance; higher values are more aggressive and can cause audio or timing issues. Reset or relaunch the game after changing it.")
+                Text(settings.localized("Skips EE cycles to boost performance; higher values are more aggressive and can cause audio or timing issues. " + (savesToRunningGame ? "Takes effect when you save." : "Takes effect on next boot.")))
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
@@ -116,7 +127,40 @@ struct CPUTab: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+
+            Section {
+                modeOverridePicker("EE FPU Round Mode", selection: $perGameEEFpuRound,
+                                   globalValue: globalEEFpuRound, labels: SettingsStore.roundModeLabels)
+                modeOverridePicker("VU0 Round Mode", selection: $perGameVU0Round,
+                                   globalValue: globalVU0Round, labels: SettingsStore.roundModeLabels)
+                modeOverridePicker("VU1 Round Mode", selection: $perGameVU1Round,
+                                   globalValue: globalVU1Round, labels: SettingsStore.roundModeLabels)
+                modeOverridePicker("EE Clamp Mode", selection: $perGameEEClamp,
+                                   globalValue: globalEEClamp, labels: SettingsStore.eeClampModeLabels)
+                modeOverridePicker("VU Clamp Mode", selection: $perGameVUClamp,
+                                   globalValue: globalVUClamp, labels: SettingsStore.vuClampModeLabels)
+
+                Text("Rounding and clamping can improve compatibility for specific games, but may break others. Reset or relaunch the game after changing these.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } header: {
+                Text("Advanced CPU")
+            }
         }
+    }
+
+    /// A per-game round/clamp picker whose "use global" option (-1) reads the inherited
+    /// global level from `labels`, matching the "Global Default (…)" style used elsewhere.
+    @ViewBuilder
+    private func modeOverridePicker(_ title: String, selection: Binding<Int>,
+                                    globalValue: Int, labels: [String]) -> some View {
+        Picker(title, selection: selection) {
+            Text("Global Default (\(labels[min(max(globalValue, 0), labels.count - 1)]))").tag(-1)
+            ForEach(Array(labels.enumerated()), id: \.offset) { index, label in
+                Text(label).tag(index)
+            }
+        }
+        .disabled(!enabled)
     }
 
     private static func clampedEECycleRate(_ value: Int) -> Int {

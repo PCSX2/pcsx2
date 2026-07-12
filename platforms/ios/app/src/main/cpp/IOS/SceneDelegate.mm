@@ -34,6 +34,7 @@
 #include "pcsx2/PerformanceMetrics.h"
 #include "pcsx2/R5900.h"              // cpuRegs
 #include "pcsx2/VMManager.h"
+#include "pcsx2/vtlb.h"               // vtlb_FastmemAreaUnavailable
 #include "pcsx2/SIO/Memcard/MemoryCardFile.h"
 #include "pcsx2/ImGui/ImGuiManager.h"
 
@@ -807,6 +808,12 @@
                 s_settings_interface->GetBoolValue("EmuCore/Speedhacks", "vuThread", EmuConfig.Speedhacks.vuThread);
             EmuConfig.Cpu.Recompiler.EnableFastmem =
                 s_settings_interface->GetBoolValue("EmuCore/CPU/Recompiler", "EnableFastmem", EmuConfig.Cpu.Recompiler.EnableFastmem);
+            // Re-apply the sticky fastmem-area-unavailable disable. The INI read above
+            // can re-enable fastmem (the default is true), but if the 4 GB reservation
+            // failed at boot the recompiler would emit load/store against fastmem_base=0
+            // and SIGSEGV on the first memory access.
+            if (vtlb_FastmemAreaUnavailable() && EmuConfig.Cpu.Recompiler.EnableFastmem)
+                EmuConfig.Cpu.Recompiler.EnableFastmem = false;
             std::fprintf(stderr, "@@IOS_PREVM_SYNC_SETTINGS@@ mtvu=%d fastmem=%d\n",
                 EmuConfig.Speedhacks.vuThread ? 1 : 0,
                 EmuConfig.Cpu.Recompiler.EnableFastmem ? 1 : 0);

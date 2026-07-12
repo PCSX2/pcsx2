@@ -1048,12 +1048,66 @@ void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 #include <sys/syscall.h>
 #include <android/sharedmem.h>
 #endif
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#include <mach/mach.h>
+#include <mach/vm_map.h>
+#endif
 
 static int s_shm_fd = -1;
+#if defined(__APPLE__) && TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+static bool s_ios_mach_wrapped_memory = false;
+#endif
 
 void* GSAllocateWrappedMemory(size_t size, size_t repeat)
 {
 	pxAssert(s_shm_fd == -1);
+
+#if defined(__APPLE__) && TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+	// iOS: shm_open is blocked by the sandbox. Use anonymous mmap + vm_remap
+	// to create the repeated mapping (same physical memory at consecutive VAs).
+	const size_t total_size = size * repeat;
+
+	void* const reserved = mmap(nullptr, total_size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	if (reserved == MAP_FAILED)
+		return nullptr;
+
+	void* const first = mmap(reserved, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+	if (first != reserved)
+	{
+		munmap(reserved, total_size);
+		return nullptr;
+	}
+
+	for (size_t i = 1; i < repeat; i++)
+	{
+		vm_address_t target_address = reinterpret_cast<vm_address_t>(static_cast<u8*>(reserved) + (size * i));
+		vm_prot_t cur_protection = VM_PROT_READ | VM_PROT_WRITE;
+		vm_prot_t max_protection = VM_PROT_READ | VM_PROT_WRITE;
+		const kern_return_t kr = vm_remap(
+			mach_task_self(),
+			&target_address,
+			static_cast<vm_size_t>(size),
+			0,
+			VM_FLAGS_FIXED | VM_FLAGS_OVERWRITE,
+			mach_task_self(),
+			reinterpret_cast<vm_address_t>(reserved),
+			false,
+			&cur_protection,
+			&max_protection,
+			VM_INHERIT_NONE);
+		const vm_address_t expected_address =
+			reinterpret_cast<vm_address_t>(static_cast<u8*>(reserved) + (size * i));
+		if (kr != KERN_SUCCESS || target_address != expected_address)
+		{
+			munmap(reserved, total_size);
+			return nullptr;
+		}
+	}
+
+	s_ios_mach_wrapped_memory = true;
+	return reserved;
+#endif
 
 	const char* file_name = "/GS.mem";
 #if defined(__ANDROID__)
@@ -1094,6 +1148,15 @@ void* GSAllocateWrappedMemory(size_t size, size_t repeat)
 
 void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 {
+#if defined(__APPLE__) && TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+	if (s_ios_mach_wrapped_memory)
+	{
+		munmap(ptr, size * repeat);
+		s_ios_mach_wrapped_memory = false;
+		return;
+	}
+#endif
+
 	pxAssert(s_shm_fd >= 0);
 
 	if (s_shm_fd < 0)

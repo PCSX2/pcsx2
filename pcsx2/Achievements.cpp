@@ -649,10 +649,19 @@ bool Achievements::Initialize()
 
 	auto lock = GetLock();
 	pxAssertRel(EmuConfig.Achievements.Enabled, "Achievements are enabled");
-	pxAssertRel(!s_client && !s_http_downloader, "No client and downloader");
+	if (s_client || s_http_downloader)
+	{
+		// Already initialized (possibly from a failed attempt). Don't crash.
+		return s_client != nullptr;
+	}
 
 	if (!CreateClient(&s_client, &s_http_downloader))
+	{
+		// CreateClient failed (e.g. no HTTP downloader on iOS without CURL).
+		// Disable achievements gracefully instead of crashing on retry.
+		s_http_downloader.reset();
 		return false;
+	}
 
 	// Hardcore starts off. We enable it on first boot.
 	s_hardcore_mode = false;

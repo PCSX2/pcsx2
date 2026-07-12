@@ -11,11 +11,17 @@
 #include <cstdio>
 #include <csignal>
 #include <cerrno>
+#include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
+#include <limits.h>
 #include <mutex>
 #include <sys/mman.h>
 #include <unistd.h>
+#ifdef __APPLE__
+#include <libkern/OSCacheControl.h>
+#include <TargetConditionals.h>
+#endif
 #ifndef __APPLE__
 #include <ucontext.h>
 #endif
@@ -72,8 +78,72 @@ std::string HostSys::GetFileMappingName(const char* prefix)
 #endif
 }
 
+#if defined(__APPLE__) && TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+static int CreateIOSFileBackedSharedMemory(const char* name, size_t size, int shm_errno)
+{
+	const char* tmpdir = std::getenv("TMPDIR");
+	if (!tmpdir || tmpdir[0] == '\0')
+		tmpdir = "/tmp";
+
+	for (int attempt = 0; attempt < 16; attempt++)
+	{
+		char path[PATH_MAX];
+		const int written = std::snprintf(path, sizeof(path), "%s/armsx2_%s_%u_%d.mem",
+			tmpdir, name, static_cast<unsigned>(getpid()), attempt);
+		if (written <= 0 || static_cast<size_t>(written) >= sizeof(path))
+			break;
+
+		const int fd = open(path, O_RDWR | O_CREAT | O_EXCL, 0600);
+		if (fd < 0)
+		{
+			if (errno == EEXIST)
+				continue;
+
+			std::fprintf(stderr,
+				"@@IOS_SHM_FILE_FALLBACK_FAIL@@ shm_open_errno=%d open_errno=%d path=\"%s\" size=%zu\n",
+				shm_errno, errno, path, size);
+			return -1;
+		}
+
+		if (fcntl(fd, F_SETFD, FD_CLOEXEC) != 0)
+			std::fprintf(stderr, "@@IOS_SHM_CLOEXEC_FAIL@@ errno=%d fd=%d\n", errno, fd);
+
+		if (ftruncate(fd, static_cast<off_t>(size)) < 0)
+		{
+			const int truncate_errno = errno;
+			unlink(path);
+			close(fd);
+			std::fprintf(stderr,
+				"@@IOS_SHM_FILE_FALLBACK_FAIL@@ shm_open_errno=%d ftruncate_errno=%d path=\"%s\" size=%zu\n",
+				shm_errno, truncate_errno, path, size);
+			return -1;
+		}
+
+		const int unlink_errno = (unlink(path) != 0) ? errno : 0;
+		std::fprintf(stderr,
+			"@@IOS_SHM_FILE_FALLBACK@@ shm_open_errno=%d fd=%d size=%zu path=\"%s\" unlink_errno=%d\n",
+			shm_errno, fd, size, path, unlink_errno);
+		return fd;
+	}
+
+	std::fprintf(stderr,
+		"@@IOS_SHM_FILE_FALLBACK_FAIL@@ shm_open_errno=%d reason=path_exhausted size=%zu\n",
+		shm_errno, size);
+	return -1;
+}
+#endif
+
 void* HostSys::CreateSharedMemory(const char* name, size_t size)
 {
+#if defined(__ANDROID__)
+	// Android: memfd_create available since API 26 (our minSdk), no shm_open until API 30.
+	const int fd = memfd_create_wrapper(name, 0);
+	if (fd < 0)
+	{
+		std::fprintf(stderr, "memfd_create failed: %d\n", errno);
+		return nullptr;
+	}
+#else
 #if defined(__ANDROID__)
 	// Android: memfd_create available since API 26 (our minSdk), no shm_open until API 30.
 	const int fd = memfd_create_wrapper(name, 0);
@@ -86,12 +156,19 @@ void* HostSys::CreateSharedMemory(const char* name, size_t size)
 	const int fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
 	if (fd < 0)
 	{
-		std::fprintf(stderr, "shm_open failed: %d\n", errno);
+		const int shm_errno = errno;
+#if defined(__APPLE__) && TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+		const int file_fd = CreateIOSFileBackedSharedMemory(name, size, shm_errno);
+		if (file_fd >= 0)
+			return reinterpret_cast<void*>(static_cast<intptr_t>(file_fd));
+#endif
+		std::fprintf(stderr, "shm_open failed: %d\n", shm_errno);
 		return nullptr;
 	}
 
 	// we're not going to be opening this mapping in other processes, so remove the file
 	shm_unlink(name);
+#endif
 #endif
 
 	// ensure it's the correct size
@@ -179,17 +256,25 @@ std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t 
 	pxAssertRel(Common::IsAlignedPow2(size, __pagesize), "Size is page aligned");
 
 	uint flags = MAP_ANONYMOUS | MAP_PRIVATE;
+	uint prot = PROT_NONE;
 #ifdef __APPLE__
-	if (jit)
+	if (jit) {
 		flags |= MAP_JIT;
+#if TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+		// iOS rejects PROT_NONE MAP_JIT reservations on the LiveContainer/JIT path.
+		// Code memory must be born as an actual JIT mapping; callers can mprotect it
+		// afterward, but we never fall back to a non-MAP_JIT executable region.
+		prot = PROT_READ | PROT_WRITE | PROT_EXEC;
 #endif
-	void* alloc = mmap(nullptr, size, PROT_NONE, flags, -1, 0);
+	}
+#endif
+	void* alloc = mmap(nullptr, size, prot, flags, -1, 0);
 	if (alloc == MAP_FAILED)
 	{
 		const int err = errno;
 		std::fprintf(stderr,
 			"@@HOST_MMAP_FAIL@@ op=reserve size=%zu jit=%d flags=0x%x prot=0x%x err=%d message=\"%s\"\n",
-			size, jit ? 1 : 0, flags, PROT_NONE, err, std::strerror(err));
+			size, jit ? 1 : 0, flags, prot, err, std::strerror(err));
 		return nullptr;
 	}
 
@@ -249,7 +334,11 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size, bool is_fil
 
 void HostSys::FlushInstructionCache(void* address, u32 size)
 {
+#ifdef __APPLE__
+	sys_icache_invalidate(address, size);
+#else
 	__builtin___clear_cache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address) + size);
+#endif
 }
 
 #endif

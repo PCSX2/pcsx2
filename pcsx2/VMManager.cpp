@@ -76,6 +76,7 @@
 #endif
 
 #ifdef __APPLE__
+#include <TargetConditionals.h>
 #include "common/Darwin/DarwinMisc.h"
 #endif
 
@@ -419,6 +420,18 @@ bool VMManager::Internal::CPUThreadInitialize()
 	// This also sorts out input sources.
 	LoadSettings();
 
+	// LoadSettings() re-reads EnableFastmem from the INI, clobbering the runtime
+	// disable that vtlb_Core_Alloc applied when the 4 GB fastmem area failed to
+	// allocate on low-VA devices (e.g. iPhone SE 2). Re-apply the disable from
+	// the sticky flag so the EE recompiler does not emit fastmem load/store
+	// against a null base. The flag is process-lifetime: once the area fails,
+	// it stays failed.
+	if (vtlb_FastmemAreaUnavailable() && EmuConfig.Cpu.Recompiler.EnableFastmem)
+	{
+		EmuConfig.Cpu.Recompiler.EnableFastmem = false;
+		Console.Warning("Fastmem re-disabled after settings reload (area allocation previously failed)");
+	}
+
 	if (EmuConfig.Achievements.Enabled)
 		Achievements::Initialize();
 
@@ -734,11 +747,13 @@ void VMManager::WarnAboutUnconfiguredController()
 	if (!si || HasAnyBindingsForPad(*si, 0))
 		return;
 
-	// Android injects pad state directly (NativeApp.setPadButton -> Pad::SetControllerState),
-	// bypassing InputManager bindings, so this warning is always a false positive. Suppressed
-	// to match the refresh-experimental Android build.
-/*	Host::AddIconOSDMessage("ControllerNotConfigured", ICON_FA_GAMEPAD,
-		TRANSLATE_STR("VMManager", "Controller 1 has no input bindings configured."), Host::OSD_WARNING_DURATION);*/
+	// Android and iOS inject pad state directly through the platform bridge,
+	// bypassing InputManager bindings, so this warning is always a false
+	// positive on mobile. Desktop platforms keep it.
+#if !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IPHONE)
+	Host::AddIconOSDMessage("ControllerNotConfigured", ICON_FA_GAMEPAD,
+		TRANSLATE_STR("VMManager", "Controller 1 has no input bindings configured."), Host::OSD_WARNING_DURATION);
+#endif
 }
 
 void VMManager::ApplyGameFixes()
@@ -783,6 +798,9 @@ void VMManager::ApplySettings()
 	EmuConfig = Pcsx2Config();
 	EmuConfig.CopyRuntimeConfig(old_config);
 	LoadSettings();
+	// Re-apply the sticky fastmem-area-unavailable disable (see CPUThreadInitialize).
+	if (vtlb_FastmemAreaUnavailable() && EmuConfig.Cpu.Recompiler.EnableFastmem)
+		EmuConfig.Cpu.Recompiler.EnableFastmem = false;
 	CheckForConfigChanges(old_config);
 }
 
@@ -3374,10 +3392,9 @@ void VMManager::WarnAboutUnsafeSettings()
 			append(ICON_FA_TV,
 				TRANSLATE_SV("VMManager", "Integer scaling is enabled. This may shrink the image."));
 		}
-#if !defined(__ANDROID__)
-		// On Android the setup wizard forces an explicit GL/VK renderer pick by design —
-		// there is no "Automatic" backend to resolve to — so this banner would fire on every
-		// boot regardless of correctness. Desktop keeps the canonical warning.
+#if !(defined(__APPLE__) && TARGET_OS_IPHONE)
+		// iOS always renders with Metal; "Automatic" is not a meaningful choice
+		// there, so this desktop-only warning is a false positive and is omitted.
 		static bool render_change_warn = false;
 		if (EmuConfig.GS.Renderer != GSRendererType::Auto && EmuConfig.GS.Renderer != GSRendererType::SW && !render_change_warn)
 		{
@@ -3754,7 +3771,10 @@ void VMManager::SetEmuThreadAffinities()
 	if (s_thread_affinities_set == new_pin_enable)
 		return;
 
-	s_thread_affinities_set = EmuConfig.EnableThreadPinning;
+	// Track whether pinning is *currently effective*, not just EmuConfig.EnableThreadPinning
+	// (matches refresh-experimental — a shutdown call with pinning enabled must not leave this
+	// flag true while the affinity + SW-renderer proc list get cleared).
+	s_thread_affinities_set = new_pin_enable;
 
 	EnsureCPUInfoInitialized();
 

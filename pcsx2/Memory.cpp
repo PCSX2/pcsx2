@@ -42,6 +42,11 @@ BIOS
 #include "Cache.h"
 #endif
 
+#ifdef __APPLE__
+#include "common/Darwin/DarwinMisc.h"
+#include <TargetConditionals.h>
+#endif
+
 namespace Ps2MemSize
 {
 	u32 ExposedRam = MainRam;
@@ -112,6 +117,20 @@ bool SysMemory::AllocateMemoryMap()
 	}
 
 	Console.WriteLn("@@MAC_MEMMAP@@ code_area_begin size=%zu", static_cast<size_t>(HostMemoryMap::CodeSize));
+#if defined(__APPLE__) && TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+	// [iOS] Code is allocated separately via DarwinMisc dual-mapping (W^X RW/RX aliases),
+	// not through SharedMemoryMappingArea. iOS rejects PROT_NONE MAP_JIT and MAP_FIXED+MAP_JIT,
+	// so the generic SharedMemoryMappingArea code path is unusable here.
+	if ((s_code_memory = static_cast<u8*>(DarwinMisc::MmapCodeDualMap(HostMemoryMap::CodeSize))) == nullptr)
+	{
+		Host::ReportErrorAsync("Error", "Failed to allocate iOS executable code memory.");
+		ReleaseMemoryMap();
+		return false;
+	}
+	Console.WriteLn("@@P43_OFFSET@@ g_code_rw_offset=%ld rw_base=%p size=%zu",
+		(long)DarwinMisc::g_code_rw_offset, reinterpret_cast<void*>(DarwinMisc::g_code_rw_base),
+		static_cast<size_t>(DarwinMisc::g_code_rw_size));
+#else
 	if (!(s_code_mapping_area = SharedMemoryMappingArea::Create(HostMemoryMap::CodeSize, true)))
 	{
 		Host::ReportErrorAsync("Error", "Failed to map code memory.");
@@ -125,10 +144,16 @@ bool SysMemory::AllocateMemoryMap()
 		ReleaseMemoryMap();
 		return false;
 	}
+#endif
 
 	HostMemoryMap::EEmem = (uptr)(s_data_memory + HostMemoryMap::EEmemOffset);
 	HostMemoryMap::IOPmem = (uptr)(s_data_memory + HostMemoryMap::IOPmemOffset);
 	HostMemoryMap::VUmem = (uptr)(s_data_memory + HostMemoryMap::VUmemOffset);
+
+#ifdef __APPLE__
+	DarwinMisc::SetJitRange(s_code_memory, HostMemoryMap::CodeSize);
+	Console.WriteLn("@@P43_OFFSET@@ g_code_rw_offset=%ld", (long)DarwinMisc::g_code_rw_offset);
+#endif
 
 	DumpMemoryMap();
 	return true;
@@ -163,8 +188,12 @@ void SysMemory::ReleaseMemoryMap()
 {
 	if (s_code_memory)
 	{
+#if defined(__APPLE__) && TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+		DarwinMisc::MunmapCodeDualMap(s_code_memory, HostMemoryMap::CodeSize);
+#else
 		if (s_code_mapping_area)
 			s_code_mapping_area->Unmap(s_code_memory, HostMemoryMap::CodeSize, false);
+#endif
 		s_code_memory = nullptr;
 	}
 	s_code_mapping_area.reset();
@@ -197,7 +226,15 @@ bool SysMemory::Allocate()
 	vuMemAllocate();
 
 	if (!vtlb_Core_Alloc())
+	{
+		// Clean up already-allocated memory so the destructor doesn't assert
+		// ("No mappings left") on a failed boot path.
+		vuMemRelease();
+		iopMemRelease();
+		memRelease();
+		ReleaseMemoryMap();
 		return false;
+	}
 
 	return true;
 }

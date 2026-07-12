@@ -122,6 +122,86 @@ struct SettingsRootView: View {
         .navigationSplitViewStyle(.balanced)
 #else
         List {
+            Section(settings.localized("Interface")) {
+                NavigationLink {
+                    LanguageSettingsView()
+                } label: {
+                    Label(settings.localized("Language"), systemImage: "globe")
+                }
+                NavigationLink {
+                    AppearanceSettingsView()
+                } label: {
+                    Label(settings.localized("Appearance"), systemImage: "paintpalette")
+                }
+            }
+
+            Section(settings.localized("Emulation")) {
+                NavigationLink {
+                    EmulatorSettingsView()
+                } label: {
+                    Label(settings.localized("Emulator"), systemImage: "cpu")
+                }
+                NavigationLink {
+                    GraphicsSettingsView()
+                } label: {
+                    Label(settings.localized("Graphics"), systemImage: "paintbrush")
+                }
+                NavigationLink {
+                    AudioSettingsView()
+                } label: {
+                    Label(settings.localized("Audio"), systemImage: "speaker.wave.2")
+                }
+            }
+
+            Section(settings.localized("Input")) {
+                NavigationLink {
+                    GamepadSettingsView()
+                } label: {
+                    Label(settings.localized("Game Controller"), systemImage: "gamecontroller")
+                }
+                NavigationLink {
+                    VirtualPadSettingsView()
+                } label: {
+                    Label(settings.localized("Virtual Pad"), systemImage: "hand.draw")
+                }
+                NavigationLink {
+                    LocalMultiplayerSettingsView()
+                } label: {
+                    Label(settings.localized("Local Multiplayer"), systemImage: "person.3")
+                }
+            }
+
+            Section(settings.localized("Storage & Memory")) {
+                NavigationLink {
+                    MemoryCardSettingsView()
+                } label: {
+                    Label(settings.localized("Memory Cards"), systemImage: "memorychip")
+                }
+                NavigationLink {
+                    StorageSettingsView()
+                } label: {
+                    Label(settings.localized("Storage"), systemImage: "internaldrive")
+                }
+                NavigationLink {
+                    NetworkSettingsView()
+                } label: {
+                    Label(settings.localized("Network"), systemImage: "network")
+                }
+            }
+
+            Section(settings.localized("Features")) {
+                NavigationLink {
+                    RetroAchievementsSettingsView()
+                } label: {
+                    Label(settings.localized("RetroAchievements"), systemImage: "trophy")
+                }
+                NavigationLink {
+                    OverlaySettingsView()
+                } label: {
+                    Label(settings.localized("Overlay (OSD)"), systemImage: "text.below.photo")
+                }
+            }
+
             Section {
                 jitStatusRow
 
@@ -143,74 +223,6 @@ struct SettingsRootView: View {
                     .foregroundStyle(.secondary)
             } header: {
                 Text(settings.localized("JIT Status"))
-            }
-
-            Section {
-                NavigationLink {
-                    LanguageSettingsView()
-                } label: {
-                    Label(settings.localized("Language"), systemImage: "globe")
-                }
-                NavigationLink {
-                    AppearanceSettingsView()
-                } label: {
-                    Label(settings.localized("Appearance"), systemImage: "paintpalette")
-                }
-                NavigationLink {
-                    EmulatorSettingsView()
-                } label: {
-                    Label(settings.localized("Emulator"), systemImage: "cpu")
-                }
-                NavigationLink {
-                    GraphicsSettingsView()
-                } label: {
-                    Label(settings.localized("Graphics"), systemImage: "paintbrush")
-                }
-                NavigationLink {
-                    AudioSettingsView()
-                } label: {
-                    Label(settings.localized("Audio"), systemImage: "speaker.wave.2")
-                }
-                NavigationLink {
-                    NetworkSettingsView()
-                } label: {
-                    Label(settings.localized("Network"), systemImage: "network")
-                }
-                NavigationLink {
-                    MemoryCardSettingsView()
-                } label: {
-                    Label(settings.localized("Memory Cards"), systemImage: "memorychip")
-                }
-                NavigationLink {
-                    StorageSettingsView()
-                } label: {
-                    Label(settings.localized("Storage"), systemImage: "internaldrive")
-                }
-                NavigationLink {
-                    RetroAchievementsSettingsView()
-                } label: {
-                    Label(settings.localized("RetroAchievements"), systemImage: "trophy")
-                }
-                NavigationLink {
-                    OverlaySettingsView()
-                } label: {
-                    Label(settings.localized("Overlay (OSD)"), systemImage: "text.below.photo")
-                }
-                NavigationLink {
-                    GamepadSettingsView()
-                } label: {
-                    Label(settings.localized("Game Controller"), systemImage: "gamecontroller")
-                }
-                NavigationLink {
-                    LocalMultiplayerSettingsView()
-                } label: {
-                    Label(settings.localized("Local Multiplayer"), systemImage: "person.3")
-                }
-                NavigationLink {
-                    VirtualPadSettingsView()
-                } label: {
-                    Label(settings.localized("Virtual Pad"), systemImage: "hand.draw")
-                }
             }
 
             Section {

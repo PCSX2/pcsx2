@@ -85,6 +85,17 @@ struct VirtualPadSettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
+            Section {
+                Toggle(settings.localized("Invert Left Horizontal"), isOn: $settings.invertLeftStickX)
+                Toggle(settings.localized("Invert Left Vertical"), isOn: $settings.invertLeftStickY)
+                Toggle(settings.localized("Invert Right Horizontal"), isOn: $settings.invertRightStickX)
+                Toggle(settings.localized("Invert Right Vertical (Camera)"), isOn: $settings.invertRightStickY)
+            } header: {
+                Text(settings.localized("Stick Inversion"))
+            } footer: {
+                Text(settings.localized("Flips the on-screen stick axes. Useful for games with fixed inverted camera or flight controls. Per-game overrides are available in the game’s Virtual Pad settings."))
+            }
+
             Section(settings.localized("Custom Skin")) {
                 Button {
                     showSkinImporter = true

@@ -29,6 +29,65 @@ import java.io.File
  */
 class Pasx2Application : Application(), ImageLoaderFactory {
 
+	override fun onCreate() {
+		super.onCreate()
+		installCrashLogging()
+	}
+
+	/**
+	 * Diagnostics for the no-ADB case: some games (e.g. GoW2, LEGO Batman) drop
+	 * back to the library on boot on some setups. We can't read logcat on the
+	 * user's device, so:
+	 *   1. Tee stdout/stderr — which carry the `@@ANDROID_LAUNCH_GAME@@` markers
+	 *      and native Console output — into `<externalFilesDir>/logs/session.log`,
+	 *      so even a native crash leaves a breadcrumb of the last thing attempted.
+	 *   2. Install an uncaught-exception handler that dumps Kotlin/Java crashes to
+	 *      `<externalFilesDir>/logs/crash-<time>.txt` with game + build context.
+	 * Both are reachable via the in-app "Open data folder" action. Every step is
+	 * guarded so the logger itself can never take the app down.
+	 */
+	private fun installCrashLogging() {
+		runCatching {
+			val logDir = File(getExternalFilesDir(null) ?: filesDir, "logs").apply { mkdirs() }
+
+			runCatching {
+				val sessionLog = File(logDir, "session.log")
+				if (sessionLog.length() > 512L * 1024L) sessionLog.delete()
+				val sink = java.io.PrintStream(java.io.FileOutputStream(sessionLog, true), true)
+				System.setOut(TeePrintStream(System.out, sink))
+				System.setErr(TeePrintStream(System.err, sink))
+			}
+
+			val previous = Thread.getDefaultUncaughtExceptionHandler()
+			Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+				runCatching {
+					File(logDir, "crash-${System.currentTimeMillis()}.txt").writeText(
+						buildString {
+							appendLine("ARMSX2 crash log")
+							appendLine("time=${System.currentTimeMillis()}")
+							appendLine("thread=${thread.name}")
+							appendLine(
+								"game=" + runCatching {
+									com.armsx2.runtime.MainActivityRuntime.currentGame.value
+										?.let { "${it.title} / ${it.serial}" }
+								}.getOrNull(),
+							)
+							appendLine(
+								"version=" + runCatching {
+									packageManager.getPackageInfo(packageName, 0).versionName
+								}.getOrNull(),
+							)
+							appendLine("device=${Build.MANUFACTURER} ${Build.MODEL} / Android ${Build.VERSION.RELEASE}")
+							appendLine("---")
+							appendLine(android.util.Log.getStackTraceString(throwable))
+						},
+					)
+				}
+				previous?.uncaughtException(thread, throwable)
+			}
+		}
+	}
+
 	override fun newImageLoader(): ImageLoader {
 		val coverCacheDir = File(filesDir, "cover_cache").apply { mkdirs() }
 
@@ -68,5 +127,26 @@ class Pasx2Application : Application(), ImageLoaderFactory {
 			.respectCacheHeaders(false)
 			.crossfade(150)
 			.build()
+	}
+}
+
+/** PrintStream that mirrors everything to a second sink (the on-disk session log). */
+private class TeePrintStream(
+	private val primary: java.io.PrintStream,
+	private val mirror: java.io.PrintStream,
+) : java.io.PrintStream(primary) {
+	override fun write(b: Int) {
+		primary.write(b)
+		runCatching { mirror.write(b) }
+	}
+
+	override fun write(buf: ByteArray, off: Int, len: Int) {
+		primary.write(buf, off, len)
+		runCatching { mirror.write(buf, off, len) }
+	}
+
+	override fun flush() {
+		primary.flush()
+		runCatching { mirror.flush() }
 	}
 }

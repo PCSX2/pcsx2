@@ -102,10 +102,14 @@ namespace HostSys
 	// clang-format -off
 	[[maybe_unused]] __fi static void BeginCodeWrite() {}
 	[[maybe_unused]] __fi static void EndCodeWrite() {}
+	[[maybe_unused]] __fi static void BeginCodeWriteRange(void*, size_t) {}
+	[[maybe_unused]] __fi static void EndCodeWriteRange(void*, size_t) {}
 	// clang-format on
 #else
 	void BeginCodeWrite();
 	void EndCodeWrite();
+	void BeginCodeWriteRange(void* address, size_t size);
+	void EndCodeWriteRange(void* address, size_t size);
 #endif
 
 	/// Flushes the instruction cache on the host for the specified range.

@@ -14,26 +14,35 @@
 #include "fmt/format.h"
 
 #include <csignal>
+#include <cstdio>
 #include <cstring>
 #include <cstdlib>
-#include <functional>
+#include <errno.h>
+#include <dlfcn.h>
+#include <setjmp.h>
 #include <optional>
+#include <sys/mman.h>
 #include <sys/sysctl.h>
 #include <thread>
 #include <time.h>
+#include <unistd.h>
 #include <mach/mach_time.h>
 #include <mach/message.h>
 #include <mach/task.h>
 #include <mach/thread_state.h>
+#include <mach/vm_map.h>
 #include <mutex>
+#include <pthread.h>
 #include <TargetConditionals.h>
-#include <unistd.h>
-#if TARGET_OS_IPHONE
-// iOS has no ApplicationServices (CGEvent mouse APIs) or IOKit pwr_mgt.
-// Stub these out — iOS uses UIKit GameController, not mouse/screen-saver APIs.
-#else
+#if !TARGET_OS_IPHONE
 #include <ApplicationServices/ApplicationServices.h>
 #include <IOKit/pwr_mgt/IOPMLib.h>
+#else
+#include <glob.h>
+#endif
+
+#if TARGET_OS_IPHONE
+extern "C" int csops(pid_t pid, unsigned int ops, void* useraddr, size_t usersize);
 #endif
 
 // Darwin (OSX) is a bit different from Linux when requesting properties of
@@ -99,7 +108,15 @@ static const u64 tickfreq = []() {
 // GetTickFrequency() to maintain good precision.
 u64 GetTickFrequency()
 {
+#if defined(__APPLE__) && TARGET_OS_IPHONE && defined(__aarch64__)
+	// iOS: read the frequency of the architected virtual counter directly,
+	// avoiding the mach_absolute_time trap overhead on every GetCPUTicks call.
+	u64 freq;
+	asm volatile("mrs %0, cntfrq_el0" : "=r"(freq));
+	return freq;
+#else
 	return tickfreq;
+#endif
 }
 
 // return the number of "ticks" since some arbitrary, fixed time in the
@@ -108,7 +125,15 @@ u64 GetTickFrequency()
 // nanoseconds.
 u64 GetCPUTicks()
 {
+#if defined(__APPLE__) && TARGET_OS_IPHONE && defined(__aarch64__)
+	// iOS: read the monotonic architected virtual counter directly, avoiding
+	// the mach_absolute_time trap on every tick (frame limiter, profiling).
+	u64 val;
+	asm volatile("mrs %0, cntvct_el0" : "=r"(val)::"memory");
+	return val;
+#else
 	return mach_absolute_time();
+#endif
 }
 
 static std::string sysctl_str(int category, int name)
@@ -240,6 +265,24 @@ void Threading::Sleep(int ms)
 
 void Threading::SleepUntil(u64 ticks)
 {
+#if defined(__APPLE__) && TARGET_OS_IPHONE && defined(__aarch64__)
+	// iOS: convert the remaining counter ticks and retry after interrupted sleeps.
+	for (;;)
+	{
+		const s64 diff = static_cast<s64>(ticks - GetCPUTicks());
+		if (diff <= 0)
+			return;
+
+		const u64 freq = GetTickFrequency();
+		struct timespec ts;
+		ts.tv_sec = static_cast<time_t>(static_cast<u64>(diff) / freq);
+		ts.tv_nsec = static_cast<long>(((static_cast<u64>(diff) % freq) * 1000000000ULL) / freq);
+
+		const int err = nanosleep(&ts, nullptr);
+		if (err != 0 && errno != EINTR)
+			return;
+	}
+#else
 	// This is definitely sub-optimal, but apparently clock_nanosleep() doesn't exist.
 	const s64 diff = static_cast<s64>(ticks - GetCPUTicks());
 	if (diff <= 0)
@@ -253,6 +296,7 @@ void Threading::SleepUntil(u64 ticks)
 	ts.tv_sec = nanos / 1000000000ULL;
 	ts.tv_nsec = nanos % 1000000000ULL;
 	nanosleep(&ts, nullptr);
+#endif
 }
 
 std::vector<DarwinMisc::CPUClass> DarwinMisc::GetCPUClasses()
@@ -326,30 +370,6 @@ const CPUInfo& GetCPUInfo()
 	return info;
 }
 
-#if TARGET_OS_IPHONE
-// iOS JIT diagnostics stubs — Phase 3 will add the real W^X/JIT implementation.
-namespace DarwinMisc {
-bool iPSX2_FORCE_EE_INTERP = false;
-int iPSX2_FORCE_JIT_VERIFY = 0;
-int iPSX2_CALL_TGT_X9 = 0;
-int iPSX2_CRASH_PACK = 0;
-int iPSX2_WX_TRACE = 0;
-int iPSX2_CALLPROBE = 0;
-int iPSX2_JIT_HLE = 0;
-int iPSX2_BISECT_COP1_EVERYTHING_ONLY = 0;
-int iPSX2_BISECT_COP1_EVERYTHING_PLUS_LOADSTORE = 0;
-int iPSX2_BISECT_COP1_EVERYTHING_PLUS_MMI = 0;
-int iPSX2_BISECT_COP1_EVERYTHING_PLUS_COP2_VU = 0;
-int iPSX2_BISECT_COP1_EVERYTHING_PLUS_MULTDIV = 0;
-int iPSX2_BISECT_COP1_EVERYTHING_PLUS_SHIFTS = 0;
-int iPSX2_BISECT_COP1_EVERYTHING_PLUS_MOVES = 0;
-int iPSX2_BISECT_COP1_EVERYTHING_PLUS_INTEGER_ALU = 0;
-int iPSX2_BISECT_COP1_EVERYTHING_PLUS_BRANCHES = 0;
-bool IsJITAvailable() { return false; }
-void SetCrashLogFD(int fd) {}
-} // namespace DarwinMisc
-#endif
-
 size_t HostSys::GetRuntimePageSize()
 {
 	return sysctlbyname_T<u32>("hw.pagesize").value_or(0);
@@ -362,13 +382,94 @@ size_t HostSys::GetRuntimeCacheLineSize()
 
 #ifdef ARCH_ARM64
 
+#if TARGET_OS_IPHONE
+static void* s_legacy_code_base = nullptr;
+static size_t s_legacy_code_size = 0;
+static bool s_legacy_is_writable = true;
+static bool s_legacy_range_log_done = false;
+#endif
+
 static thread_local int s_code_write_depth = 0;
+static thread_local int s_code_write_range_full_depth = 0;
+
+#if TARGET_OS_IPHONE
+static bool LegacyProtectCodeRange(void* address, size_t size, int prot, const char* tag)
+{
+	if (!s_legacy_code_base || !address || size == 0)
+		return false;
+
+	const uintptr_t base = reinterpret_cast<uintptr_t>(s_legacy_code_base);
+	const uintptr_t limit = base + s_legacy_code_size;
+	const uintptr_t start = reinterpret_cast<uintptr_t>(address);
+	uintptr_t end = start + size;
+	if (end < start || end > limit)
+		end = limit;
+
+	if (start < base || start >= limit || end <= start)
+		return false;
+
+	static const size_t page_size = []() {
+		size_t detected_page_size = HostSys::GetRuntimePageSize();
+		return detected_page_size ? detected_page_size : static_cast<size_t>(getpagesize());
+	}();
+
+	const uintptr_t page_mask = ~(static_cast<uintptr_t>(page_size) - 1);
+	const uintptr_t aligned_start = start & page_mask;
+	const uintptr_t aligned_end = (end + page_size - 1) & page_mask;
+	if (aligned_end <= aligned_start)
+		return false;
+
+	if (mprotect(reinterpret_cast<void*>(aligned_start), aligned_end - aligned_start, prot) != 0)
+	{
+		static int s_range_fail_count = 0;
+		if (s_range_fail_count++ < 8)
+		{
+			std::fprintf(stderr, "@@JIT_ALLOC@@ legacy_mprotect_%s_fail addr=%p size=0x%zx err=%d count=%d\n",
+				tag, address, size, errno, s_range_fail_count);
+			std::fflush(stderr);
+		}
+		return false;
+	}
+
+	if (!s_legacy_range_log_done)
+	{
+		std::fprintf(stderr, "@@JIT_ALLOC@@ legacy_range_wx_enabled page=0x%zx base=%p size=0x%zx\n",
+			page_size, s_legacy_code_base, s_legacy_code_size);
+		std::fflush(stderr);
+		s_legacy_range_log_done = true;
+	}
+
+	return true;
+}
+#endif
 
 void HostSys::BeginCodeWrite()
 {
 	if ((s_code_write_depth++) == 0)
 	{
-#if !TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE
+		if (DarwinMisc::g_code_rw_offset == 0 &&
+			DarwinMisc::GetJitMode() == DarwinMisc::JitMode::Legacy && s_legacy_code_base)
+		{
+			if (!s_legacy_is_writable)
+			{
+				if (mprotect(s_legacy_code_base, s_legacy_code_size, PROT_READ | PROT_WRITE) != 0)
+				{
+					static int s_begin_fail_count = 0;
+					if (s_begin_fail_count++ < 5)
+						std::fprintf(stderr, "@@JIT_ALLOC@@ legacy_mprotect_rw_fail err=%d count=%d\n",
+							errno, s_begin_fail_count);
+				}
+				s_legacy_is_writable = true;
+			}
+		}
+		else if (DarwinMisc::g_code_rw_offset == 0)
+		{
+			static auto func = reinterpret_cast<void (*)(int)>(dlsym(RTLD_DEFAULT, "pthread_jit_write_protect_np"));
+			if (func)
+				func(0);
+		}
+#else
 		pthread_jit_write_protect_np(0);
 #endif
 	}
@@ -379,10 +480,64 @@ void HostSys::EndCodeWrite()
 	pxAssert(s_code_write_depth > 0);
 	if ((--s_code_write_depth) == 0)
 	{
-#if !TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE
+		if (DarwinMisc::g_code_rw_offset == 0 &&
+			DarwinMisc::GetJitMode() == DarwinMisc::JitMode::Legacy && s_legacy_code_base)
+		{
+			if (s_legacy_is_writable)
+			{
+				if (mprotect(s_legacy_code_base, s_legacy_code_size, PROT_READ | PROT_EXEC) != 0)
+				{
+					static int s_end_fail_count = 0;
+					if (s_end_fail_count++ < 5)
+						std::fprintf(stderr, "@@JIT_ALLOC@@ legacy_mprotect_rx_fail err=%d count=%d\n",
+							errno, s_end_fail_count);
+				}
+				s_legacy_is_writable = false;
+			}
+		}
+		else if (DarwinMisc::g_code_rw_offset == 0)
+		{
+			static auto func = reinterpret_cast<void (*)(int)>(dlsym(RTLD_DEFAULT, "pthread_jit_write_protect_np"));
+			if (func)
+				func(1);
+		}
+#else
 		pthread_jit_write_protect_np(1);
 #endif
 	}
+}
+
+void HostSys::BeginCodeWriteRange(void* address, size_t size)
+{
+#if TARGET_OS_IPHONE
+	if (DarwinMisc::g_code_rw_offset == 0 &&
+		DarwinMisc::GetJitMode() == DarwinMisc::JitMode::Legacy && s_legacy_code_base &&
+		LegacyProtectCodeRange(address, size, PROT_READ | PROT_WRITE, "range_rw"))
+	{
+		return;
+	}
+#endif
+	s_code_write_range_full_depth++;
+	BeginCodeWrite();
+}
+
+void HostSys::EndCodeWriteRange(void* address, size_t size)
+{
+	if (s_code_write_range_full_depth > 0)
+	{
+		s_code_write_range_full_depth--;
+		EndCodeWrite();
+		return;
+	}
+
+#if TARGET_OS_IPHONE
+	if (DarwinMisc::g_code_rw_offset == 0 &&
+		DarwinMisc::GetJitMode() == DarwinMisc::JitMode::Legacy && s_legacy_code_base)
+	{
+		LegacyProtectCodeRange(address, size, PROT_READ | PROT_EXEC, "range_rx");
+	}
+#endif
 }
 
 [[maybe_unused]] static bool IsStoreInstruction(const void* ptr)
@@ -421,6 +576,454 @@ void HostSys::EndCodeWrite()
 }
 
 #endif // ARCH_ARM64
+
+namespace
+{
+	static int s_user_crash_log_fd = -1;
+	static uintptr_t s_jit_base = 0;
+	static uintptr_t s_jit_end = 0;
+	static u32 s_last_guest_pc = 0;
+	static uintptr_t s_last_rec_ptr = 0;
+	static DarwinMisc::JitMode s_jit_mode = DarwinMisc::JitMode::Simulator;
+	static bool s_jit_mode_detected = false;
+}
+
+int DarwinMisc::iPSX2_CRASH_DIAG = 0;
+int DarwinMisc::iPSX2_REC_DIAG = 0;
+int DarwinMisc::iPSX2_FORCE_EE_INTERP = 0;
+int DarwinMisc::iPSX2_FORCE_JIT_VERIFY = 0;
+int DarwinMisc::iPSX2_CALL_TGT_X9 = 0;
+int DarwinMisc::iPSX2_CRASH_PACK = 0;
+int DarwinMisc::iPSX2_WX_TRACE = 0;
+int DarwinMisc::iPSX2_CALLPROBE = 0;
+int DarwinMisc::iPSX2_JIT_HLE = 1;
+int DarwinMisc::iPSX2_BISECT_COP1_EVERYTHING_ONLY = 0;
+int DarwinMisc::iPSX2_BISECT_COP1_EVERYTHING_PLUS_LOADSTORE = 0;
+int DarwinMisc::iPSX2_BISECT_COP1_EVERYTHING_PLUS_MMI = 0;
+int DarwinMisc::iPSX2_BISECT_COP1_EVERYTHING_PLUS_COP2_VU = 0;
+int DarwinMisc::iPSX2_BISECT_COP1_EVERYTHING_PLUS_MULTDIV = 0;
+int DarwinMisc::iPSX2_BISECT_COP1_EVERYTHING_PLUS_SHIFTS = 0;
+int DarwinMisc::iPSX2_BISECT_COP1_EVERYTHING_PLUS_MOVES = 0;
+int DarwinMisc::iPSX2_BISECT_COP1_EVERYTHING_PLUS_INTEGER_ALU = 0;
+int DarwinMisc::iPSX2_BISECT_COP1_EVERYTHING_PLUS_BRANCHES = 0;
+volatile DarwinMisc::IndirectEvent DarwinMisc::g_ie[8] = {};
+volatile u32 DarwinMisc::g_ie_idx = 0;
+volatile DarwinMisc::WXTraceEvent DarwinMisc::g_wx_events[16] = {};
+volatile u32 DarwinMisc::g_wx_idx = 0;
+volatile DarwinMisc::EmitEvent DarwinMisc::g_emit_events[32] = {};
+volatile u32 DarwinMisc::g_emit_idx = 0;
+volatile int DarwinMisc::g_jit_write_state = 0;
+volatile int DarwinMisc::g_rec_stage = 0;
+ptrdiff_t DarwinMisc::g_code_rw_offset = 0;
+uintptr_t DarwinMisc::g_code_rw_base = 0;
+size_t DarwinMisc::g_code_rw_size = 0;
+
+void DarwinMisc::SetCrashLogFD(int fd)
+{
+	s_user_crash_log_fd = fd;
+}
+
+void DarwinMisc::SetJitRange(void* base, size_t size)
+{
+	s_jit_base = reinterpret_cast<uintptr_t>(base);
+	s_jit_end = s_jit_base + size;
+}
+
+void DarwinMisc::SetLastGuestPC(u32 pc)
+{
+	s_last_guest_pc = pc;
+}
+
+void DarwinMisc::SetLastRecPtr(void* ptr)
+{
+	s_last_rec_ptr = reinterpret_cast<uintptr_t>(ptr);
+}
+
+uintptr_t DarwinMisc::GetJitBase()
+{
+	return s_jit_base;
+}
+
+uintptr_t DarwinMisc::GetJitEnd()
+{
+	return s_jit_end;
+}
+
+u32 DarwinMisc::GetLastGuestPC()
+{
+	return s_last_guest_pc;
+}
+
+uintptr_t DarwinMisc::GetLastRecPtr()
+{
+	return s_last_rec_ptr;
+}
+
+static const char* JitModeName(DarwinMisc::JitMode mode)
+{
+	switch (mode)
+	{
+		case DarwinMisc::JitMode::Simulator:
+			return "Simulator";
+		case DarwinMisc::JitMode::LuckTXM:
+			return "LuckTXM";
+		case DarwinMisc::JitMode::LuckNoTXM:
+			return "LuckNoTXM";
+		case DarwinMisc::JitMode::Legacy:
+			return "Legacy";
+		default:
+			return "Unknown";
+	}
+}
+
+#if TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+static bool HasTXM()
+{
+	glob_t g = {};
+	const int ret = glob("/System/Volumes/Preboot/*/boot/*/usr/standalone/firmware/FUD/Ap,TrustedExecutionMonitor.img4",
+		GLOB_NOSORT, nullptr, &g);
+	const bool found = (ret == 0 && g.gl_pathc > 0);
+	globfree(&g);
+	return found;
+}
+#endif
+
+bool DarwinMisc::IsJITAvailable()
+{
+#if TARGET_OS_SIMULATOR
+	return true;
+#elif TARGET_OS_IPHONE
+	u32 cs_flags = 0;
+	const int rv = csops(getpid(), 0, &cs_flags, sizeof(cs_flags));
+	const bool cs_debugged = (rv == 0) && ((cs_flags & 0x10000000u) != 0);
+	std::fprintf(stderr, "@@JIT_DETECT@@ csops=%d cs_flags=0x%08x CS_DEBUGGED=%d\n",
+		rv, cs_flags, cs_debugged ? 1 : 0);
+	std::fflush(stderr);
+
+	if (!cs_debugged)
+	{
+		s_jit_mode = JitMode::Legacy;
+		s_jit_mode_detected = true;
+		std::fprintf(stderr, "@@JIT_DETECT@@ result=UNAVAILABLE reason=no_cs_debugged\n");
+		std::fflush(stderr);
+		return false;
+	}
+
+	constexpr size_t probe_size = 16 * 1024;
+	constexpr int probe_prot = PROT_READ | PROT_WRITE | PROT_EXEC;
+	constexpr int probe_flags = MAP_PRIVATE | MAP_ANON | MAP_JIT;
+	void* probe = mmap(nullptr, probe_size, probe_prot, probe_flags, -1, 0);
+	if (probe == MAP_FAILED)
+	{
+		const int probe_errno = errno;
+		if (!s_jit_mode_detected)
+			DetectJitMode();
+		std::fprintf(stderr,
+			"@@JIT_DETECT@@ map_jit_probe=0 size=%zu flags=0x%x prot=0x%x err=%d cs_debugged=1 result=AVAILABLE mode=%s\n",
+			probe_size, probe_flags, probe_prot, probe_errno, JitModeName(s_jit_mode));
+		std::fflush(stderr);
+		return true;
+	}
+
+	munmap(probe, probe_size);
+	s_jit_mode = JitMode::Simulator;
+	s_jit_mode_detected = true;
+	std::fprintf(stderr,
+		"@@JIT_DETECT@@ map_jit_probe=1 size=%zu flags=0x%x prot=0x%x cs_debugged=%d result=AVAILABLE mode=%s\n",
+		probe_size, probe_flags, probe_prot, cs_debugged ? 1 : 0, JitModeName(s_jit_mode));
+	std::fflush(stderr);
+	return true;
+#else
+	return true;
+#endif
+}
+
+DarwinMisc::JitMode DarwinMisc::DetectJitMode()
+{
+#if TARGET_OS_SIMULATOR
+	s_jit_mode = JitMode::Simulator;
+#elif TARGET_OS_IPHONE
+	char version[64] = {};
+	size_t version_len = sizeof(version);
+	if (sysctlbyname("kern.osproductversion", version, &version_len, nullptr, 0) != 0)
+		std::snprintf(version, sizeof(version), "0");
+
+	const int major = std::atoi(version);
+	const bool has_txm = HasTXM();
+	if (major >= 26)
+		s_jit_mode = JitMode::LuckTXM;
+	else
+		s_jit_mode = JitMode::Legacy;
+
+	if (const char* force_dual = std::getenv("ARMSX2_FORCE_DUAL_MAP"))
+	{
+		if (std::atoi(force_dual) == 1)
+			s_jit_mode = JitMode::LuckNoTXM;
+	}
+
+	std::fprintf(stderr, "@@JIT_MODE@@ version=%s major=%d txm_probe=%d mode=%s (%d)\n",
+		version, major, has_txm ? 1 : 0, JitModeName(s_jit_mode), static_cast<int>(s_jit_mode));
+	std::fflush(stderr);
+#else
+	s_jit_mode = JitMode::Legacy;
+#endif
+	s_jit_mode_detected = true;
+	return s_jit_mode;
+}
+
+DarwinMisc::JitMode DarwinMisc::GetJitMode()
+{
+	if (!s_jit_mode_detected)
+		DetectJitMode();
+	return s_jit_mode;
+}
+
+#if TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+__attribute__((noinline, optnone))
+static void JIT26PrepareRegion(void* addr, size_t len)
+{
+	asm volatile("mov x0, %0\n"
+	             "mov x1, %1\n"
+	             "mov x16, #1\n"
+	             "brk #0xf00d\n"
+	             :: "r"(addr), "r"(len) : "x0", "x1", "x16", "memory");
+}
+
+__attribute__((noinline, optnone))
+static void JIT26Detach(void)
+{
+	asm volatile("mov x16, #0\n"
+	             "brk #0xf00d\n"
+	             ::: "x16", "memory");
+}
+#endif
+
+void* DarwinMisc::MmapCodeDualMap(size_t size)
+{
+#if !TARGET_OS_IPHONE || TARGET_OS_SIMULATOR
+	void* ptr = mmap(nullptr, size, PROT_READ | PROT_WRITE | PROT_EXEC,
+		MAP_PRIVATE | MAP_ANON | MAP_JIT, -1, 0);
+	if (ptr == MAP_FAILED)
+	{
+		std::fprintf(stderr, "@@JIT_ALLOC@@ map_jit_fail size=0x%zx err=%d\n", size, errno);
+		std::fflush(stderr);
+		return nullptr;
+	}
+
+	g_code_rw_offset = 0;
+	g_code_rw_base = reinterpret_cast<uintptr_t>(ptr);
+	g_code_rw_size = size;
+	std::fprintf(stderr, "@@JIT_ALLOC@@ map_jit_ok rx=%p rw=%p offset=0 size=0x%zx mode=%s\n",
+		ptr, ptr, size, JitModeName(JitMode::Simulator));
+	std::fflush(stderr);
+	return ptr;
+#else
+	JitMode mode = GetJitMode();
+
+	void* jit_ptr = mmap(nullptr, size, PROT_READ | PROT_WRITE | PROT_EXEC,
+		MAP_PRIVATE | MAP_ANON | MAP_JIT, -1, 0);
+	if (jit_ptr != MAP_FAILED)
+	{
+		s_jit_mode = JitMode::Simulator;
+		s_jit_mode_detected = true;
+		g_code_rw_offset = 0;
+		g_code_rw_base = reinterpret_cast<uintptr_t>(jit_ptr);
+		g_code_rw_size = size;
+		std::fprintf(stderr, "@@JIT_ALLOC@@ map_jit_ok rx=%p rw=%p offset=0 size=0x%zx mode=%s\n",
+			jit_ptr, jit_ptr, size, JitModeName(s_jit_mode));
+		std::fflush(stderr);
+		return jit_ptr;
+	}
+
+	const int map_jit_errno = errno;
+	if (mode == JitMode::Simulator)
+		mode = DetectJitMode();
+	std::fprintf(stderr, "@@JIT_ALLOC@@ map_jit_fail size=0x%zx err=%d selected_mode=%s\n",
+		size, map_jit_errno, JitModeName(mode));
+	std::fflush(stderr);
+
+	if (mode == JitMode::Legacy)
+	{
+		void* ptr = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
+		if (ptr == MAP_FAILED)
+		{
+			std::fprintf(stderr, "@@JIT_ALLOC@@ legacy_rw_fail size=0x%zx err=%d\n", size, errno);
+			std::fflush(stderr);
+			return nullptr;
+		}
+
+		g_code_rw_offset = 0;
+		g_code_rw_base = reinterpret_cast<uintptr_t>(ptr);
+		g_code_rw_size = size;
+		s_legacy_code_base = ptr;
+		s_legacy_code_size = size;
+		s_legacy_is_writable = true;
+		s_legacy_range_log_done = false;
+
+		std::fprintf(stderr, "@@JIT_ALLOC@@ legacy_wx_toggle_ok rx=%p rw=%p offset=0 size=0x%zx\n",
+			ptr, ptr, size);
+		std::fflush(stderr);
+		return ptr;
+	}
+
+	void* rx_ptr = mmap(nullptr, size, PROT_READ | PROT_EXEC, MAP_ANON | MAP_PRIVATE, -1, 0);
+	if (rx_ptr == MAP_FAILED)
+	{
+		std::fprintf(stderr, "@@JIT_ALLOC@@ dualmap_rx_fail size=0x%zx err=%d\n", size, errno);
+		std::fflush(stderr);
+		return nullptr;
+	}
+	std::fprintf(stderr, "@@JIT_ALLOC@@ dualmap_rx_ok rx=%p size=0x%zx mode=%s\n",
+		rx_ptr, size, JitModeName(mode));
+	std::fflush(stderr);
+
+	if (mode == JitMode::LuckTXM)
+	{
+		static sigjmp_buf s_alloc_brk_jmp;
+		struct sigaction sa_brk = {};
+		struct sigaction sa_brk_old = {};
+		sa_brk.sa_handler = +[](int) { siglongjmp(s_alloc_brk_jmp, 1); };
+		sigemptyset(&sa_brk.sa_mask);
+		sigaction(SIGTRAP, &sa_brk, &sa_brk_old);
+
+		const bool useLegacy = []() {
+			const char* proto = std::getenv("ARMSX2_JIT_PROTOCOL");
+			return proto && std::strcmp(proto, "legacy") == 0;
+		}();
+
+		std::fprintf(stderr, "@@JIT_ALLOC@@ txm_protocol=%s\n", useLegacy ? "legacy" : "universal");
+		std::fflush(stderr);
+
+		bool brk_ok = false;
+		if (useLegacy)
+		{
+			std::fprintf(stderr, "@@JIT_ALLOC@@ txm_register_begin rx=%p size=0x%zx\n", rx_ptr, size);
+			std::fflush(stderr);
+			if (sigsetjmp(s_alloc_brk_jmp, 1) == 0)
+			{
+				asm volatile("mov x0, %0\n"
+				             "mov x1, %1\n"
+				             "brk #0x69"
+				             :: "r"(rx_ptr), "r"(size) : "x0", "x1");
+				brk_ok = true;
+				std::fprintf(stderr, "@@JIT_ALLOC@@ txm_register_ok\n");
+				std::fflush(stderr);
+			}
+			else
+			{
+				std::fprintf(stderr, "@@JIT_ALLOC@@ txm_register_sigtrap\n");
+				std::fflush(stderr);
+			}
+		}
+		else
+		{
+			std::fprintf(stderr, "@@JIT_ALLOC@@ txm_register_universal_begin rx=%p size=0x%zx\n", rx_ptr, size);
+			std::fflush(stderr);
+			if (sigsetjmp(s_alloc_brk_jmp, 1) == 0)
+			{
+				JIT26PrepareRegion(rx_ptr, size);
+				std::fprintf(stderr, "@@JIT_ALLOC@@ txm_register_universal_ok\n");
+				std::fflush(stderr);
+
+				std::fprintf(stderr, "@@JIT_ALLOC@@ txm_detach_begin\n");
+				std::fflush(stderr);
+				if (sigsetjmp(s_alloc_brk_jmp, 1) == 0)
+				{
+					JIT26Detach();
+					brk_ok = true;
+					std::fprintf(stderr, "@@JIT_ALLOC@@ txm_detach_ok\n");
+					std::fflush(stderr);
+				}
+				else
+				{
+					std::fprintf(stderr, "@@JIT_ALLOC@@ txm_detach_sigtrap\n");
+					std::fflush(stderr);
+				}
+			}
+			else
+			{
+				std::fprintf(stderr, "@@JIT_ALLOC@@ txm_register_universal_sigtrap\n");
+				std::fflush(stderr);
+			}
+		}
+		sigaction(SIGTRAP, &sa_brk_old, nullptr);
+
+		if (!brk_ok)
+		{
+			munmap(rx_ptr, size);
+			return nullptr;
+		}
+	}
+
+	vm_address_t rw_region = 0;
+	vm_address_t target = reinterpret_cast<vm_address_t>(rx_ptr);
+	vm_prot_t cur_protection = 0;
+	vm_prot_t max_protection = 0;
+	const kern_return_t kr = vm_remap(mach_task_self(), &rw_region, static_cast<vm_size_t>(size), 0,
+		VM_FLAGS_ANYWHERE, mach_task_self(), target, false, &cur_protection, &max_protection, VM_INHERIT_DEFAULT);
+	if (kr != KERN_SUCCESS)
+	{
+		std::fprintf(stderr, "@@JIT_ALLOC@@ dualmap_remap_fail kr=%d\n", kr);
+		std::fflush(stderr);
+		munmap(rx_ptr, size);
+		return nullptr;
+	}
+
+	u8* const rw_ptr = reinterpret_cast<u8*>(rw_region);
+	if (mprotect(rw_ptr, size, PROT_READ | PROT_WRITE) != 0)
+	{
+		std::fprintf(stderr, "@@JIT_ALLOC@@ dualmap_rw_protect_fail err=%d\n", errno);
+		std::fflush(stderr);
+		vm_deallocate(mach_task_self(), rw_region, static_cast<vm_size_t>(size));
+		munmap(rx_ptr, size);
+		return nullptr;
+	}
+
+	g_code_rw_offset = rw_ptr - static_cast<u8*>(rx_ptr);
+	g_code_rw_base = reinterpret_cast<uintptr_t>(rw_ptr);
+	g_code_rw_size = size;
+	std::fprintf(stderr, "@@JIT_ALLOC@@ dualmap_ok rx=%p rw=%p offset=%td size=0x%zx mode=%s\n",
+		rx_ptr, rw_ptr, g_code_rw_offset, size, JitModeName(mode));
+	std::fflush(stderr);
+	return rx_ptr;
+#endif
+}
+
+void DarwinMisc::MunmapCodeDualMap(void* rx_ptr, size_t size)
+{
+	if (g_code_rw_base && g_code_rw_offset != 0)
+		vm_deallocate(mach_task_self(), static_cast<vm_address_t>(g_code_rw_base), static_cast<vm_size_t>(g_code_rw_size));
+	if (rx_ptr)
+		munmap(rx_ptr, size);
+	g_code_rw_offset = 0;
+	g_code_rw_base = 0;
+	g_code_rw_size = 0;
+#if TARGET_OS_IPHONE
+	s_legacy_code_base = nullptr;
+	s_legacy_code_size = 0;
+	s_legacy_is_writable = true;
+	s_legacy_range_log_done = false;
+#endif
+}
+
+void DarwinMisc::LegacyEnsureExecutable()
+{
+#if TARGET_OS_IPHONE
+	if (!s_legacy_code_base || !s_legacy_is_writable)
+		return;
+
+	if (mprotect(s_legacy_code_base, s_legacy_code_size, PROT_READ | PROT_EXEC) != 0)
+	{
+		std::fprintf(stderr, "@@JIT_ALLOC@@ legacy_ensure_rx_fail err=%d\n", errno);
+		std::fflush(stderr);
+		return;
+	}
+	s_legacy_is_writable = false;
+#endif
+}
+void DarwinMisc::LogDyldMain() {}
+void DarwinMisc::RecordJitBlock(u32 guest_pc, void* recptr, u32 size) {}
+bool DarwinMisc::FindJitBlock(uintptr_t site, u32* out_guest_pc, void** out_recptr) { return false; }
 
 #define USE_MACH_EXCEPTION_PORTS
 

@@ -939,11 +939,24 @@ bool GSDeviceMTL::HasSurface()  const { return static_cast<bool>(m_layer);}
 void GSDeviceMTL::AttachSurfaceOnMainThread()
 {
 	pxAssert([NSThread isMainThread]);
+	m_view = MRCRetain((__bridge GSMTLView*)m_window_info.window_handle);
+#if PCSX2_MTL_USES_UIVIEW
+	// On iOS the UIView already owns its backing CAMetalLayer (created by the host
+	// view). Reuse that existing layer instead of allocating a detached one that
+	// would never be attached to the view hierarchy.
+	CALayer* view_layer = [m_view layer];
+	if (![view_layer isKindOfClass:[CAMetalLayer class]])
+	{
+		return;
+	}
+
+	m_layer = MRCRetain((CAMetalLayer*)view_layer);
+	[m_layer setDrawableSize:CGSizeMake(m_window_info.surface_width, m_window_info.surface_height)];
+	[m_layer setDevice:m_dev.dev];
+#else
 	m_layer = MRCRetain([CAMetalLayer layer]);
 	[m_layer setDrawableSize:CGSizeMake(m_window_info.surface_width, m_window_info.surface_height)];
 	[m_layer setDevice:m_dev.dev];
-#if !TARGET_OS_IPHONE
-	m_view = MRCRetain((__bridge NSView*)m_window_info.window_handle);
 	[m_view setWantsLayer:YES];
 	[m_view setLayer:m_layer];
 #endif
@@ -952,11 +965,11 @@ void GSDeviceMTL::AttachSurfaceOnMainThread()
 void GSDeviceMTL::DetachSurfaceOnMainThread()
 {
 	pxAssert([NSThread isMainThread]);
-#if !TARGET_OS_IPHONE
+#if !PCSX2_MTL_USES_UIVIEW
 	[m_view setLayer:nullptr];
 	[m_view setWantsLayer:NO];
-	m_view = nullptr;
 #endif
+	m_view = nullptr;
 	m_layer = nullptr;
 }
 
@@ -1136,7 +1149,13 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_features.broken_point_sampler = false;
 	m_features.vs_expand = !GSConfig.DisableVertexShaderExpand;
 	m_features.primitive_id = m_dev.features.primid;
+	// Apple GPUs cannot synchronize fragment writes to fragment reads within a
+	// render pass. Let the GS renderer choose its non-barrier feedback fallback.
+#if TARGET_OS_IPHONE
+	m_features.texture_barrier = false;
+#else
 	m_features.texture_barrier = true;
+#endif
 	m_features.multidraw_fb_copy = false;
 	m_features.provoking_vertex_last = false;
 	m_features.point_expand = true;

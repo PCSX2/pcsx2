@@ -12,6 +12,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include <pthread.h>
 #include <unistd.h>

@@ -80,6 +80,10 @@ struct RetroAchievementsSettingsView: View {
                             if int("unreadMessages") > 0 {
                                 statusRow("Messages", value: "\(int("unreadMessages")) \(settings.localized("unread"))", localizeValue: false)
                             }
+                        } else {
+                            // Stored account but not logged in (token expired or session dead).
+                            // Show a re-login button so the user is not stuck behind "Log Out".
+                            statusRow("Session", value: settings.localized("Not connected — log in again"))
                         }
 
                         Button(role: .destructive) {
@@ -87,6 +91,17 @@ struct RetroAchievementsSettingsView: View {
                             refreshSoon()
                         } label: {
                             Text(settings.localized("Log Out"))
+                        }
+
+                        if !bool("loggedIn") {
+                            Button {
+                                username = string("username")
+                                password = ""
+                                showingLogin = true
+                            } label: {
+                                Text(settings.localized(loggingIn ? "Logging In..." : "Log In Again"))
+                            }
+                            .disabled(!achievementsEnabled || loggingIn)
                         }
                     } else {
                         Button {
@@ -198,6 +213,12 @@ struct RetroAchievementsSettingsView: View {
                     Text(settings.localized(unavailableMessage))
                         .foregroundStyle(.secondary)
                 }
+            }
+
+            Section {
+                Text(settings.localized("Per-game RetroAchievements overrides can be set from the per-game settings panel."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .navigationTitle(settings.localized("RetroAchievements"))

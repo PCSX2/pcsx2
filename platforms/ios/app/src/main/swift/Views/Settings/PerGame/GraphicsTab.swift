@@ -64,6 +64,7 @@ struct GraphicsTab: View {
     @Binding var perGamePrecacheTextureReplacements: Int
     @Binding var perGameSyncToHostRefresh: Int
 
+    let savesToRunningGame: Bool
     let settings: SettingsStore
 
     // MARK: Static option tables (moved from the panel)
@@ -172,7 +173,7 @@ struct GraphicsTab: View {
 
             Toggle(settings.localized("Hardware Mipmapping"), isOn: $hardwareMipmapping)
                 .disabled(!enabled)
-            Text(settings.localized("Turn this off only for games with mipmap-related texture stripes, shimmer, or bad LOD. Reset/relaunch the game after changing it."))
+            Text(settings.localized("Turn this off only for games with mipmap-related texture stripes, shimmer, or bad LOD. " + (savesToRunningGame ? "Applies when you save." : "Applies on next boot.")))
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -302,7 +303,7 @@ struct GraphicsTab: View {
         }
 
         Section(settings.localized("Advanced Upscaling Hacks")) {
-            Text(settings.localized("Manual advanced hacks only apply when Use Per-Game Overrides is on and GameDB Graphics Fixes is off. Save, then reset or relaunch the game."))
+            Text(settings.localized("Manual advanced hacks only apply when Use Per-Game Overrides is on and GameDB Graphics Fixes is off. " + (savesToRunningGame ? "They apply when you save." : "They apply on next boot.")))
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -384,7 +385,7 @@ struct GraphicsTab: View {
                 ClampedIntField(title: settings.localized("Skipdraw End"), value: skipDrawEndBinding, range: SettingsStore.skipDrawRange, isEnabled: manualAdvancedHacksEnabled)
             }
             if skipDrawStartOverride || skipDrawEndOverride {
-                Text(settings.localized("For Skipdraw 1, use Start 1 and End 1. Changes apply after reset/relaunch."))
+                Text(settings.localized("For Skipdraw 1, use Start 1 and End 1. " + (savesToRunningGame ? "Changes apply when you save." : "Changes apply on next boot.")))
                     .font(.caption)
                     .foregroundStyle(.orange)
             }

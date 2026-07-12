@@ -1,5 +1,5 @@
 # iOS build — self-contained on this fork.
-# Produces an unsigned .ipa named with the commit SHA.
+# Produces an unsigned .ipa for REAL DEVICE (iphoneos SDK), named with commit SHA.
 name: iOS Build
 
 on:
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   ios:
-    name: iOS (arm64, unsigned IPA)
+    name: iOS (arm64, unsigned device IPA)
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v6
@@ -26,19 +26,19 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -switch /Applications/Xcode.app
 
-      - name: Configure (CMake, Xcode generator, simulator SDK, no signing)
+      - name: Configure (CMake, Xcode generator, real device SDK, no signing)
         working-directory: platforms/ios/app/src/main/cpp
         run: >
           cmake -G Xcode -B build
           -DCMAKE_SYSTEM_NAME=iOS
           -DCMAKE_OSX_ARCHITECTURES=arm64
-          -DARMSX2_REAL_DEVICE=OFF
+          -DARMSX2_REAL_DEVICE=ON
 
-      - name: Build
+      - name: Build (iphoneos SDK, unsigned)
         working-directory: platforms/ios/app/src/main/cpp
         run: >
           cmake --build build --config Release
-          -- -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO
+          -- -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
 
       - name: Package unsigned .ipa
         working-directory: platforms/ios/app/src/main/cpp
@@ -46,7 +46,7 @@ jobs:
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
           IPA_NAME="ARMSX2-iOS-${SHORT_SHA}.ipa"
 
-          # Find the built .app (Xcode generator puts it under build/.../Release-iphonesimulator/)
+          # Find the built .app (Xcode generator puts it under build/.../Release-iphoneos/)
           APP_PATH=$(find build -name "ARMSX2iOS.app" -type d | head -1)
           if [ -z "$APP_PATH" ]; then
             echo "ERROR: ARMSX2iOS.app not found in build output"

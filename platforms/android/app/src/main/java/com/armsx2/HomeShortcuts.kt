@@ -1,5 +1,7 @@
 package com.armsx2
 
+import com.armsx2.runtime.MainActivityRuntime
+
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -25,9 +27,9 @@ object HomeShortcuts {
      *  if pinning isn't supported (the caller should surface that). The launcher shows
      *  its own confirm UI, so this can't report the user's accept/decline. */
     fun pin(ctx: Context, game: GameInfo): Boolean {
-        // Mirror GamesList.launchGame: file:// (raw all-files) games hand the core the
+        // Raw file:// games hand the core the
         // bare /storage path; SAF games pass the content:// URI string. The boot path
-        // (Main.handleExternalLaunchIntent -> extractLaunchUri) reads the "path" extra.
+        // (MainActivityRuntime.handleExternalLaunchIntent -> extractLaunchUri) reads the "path" extra.
         val launchArg = if (game.uri.scheme == "file") (game.uri.path ?: game.uri.toString())
             else game.uri.toString()
         val intent = Intent(ctx, Main::class.java).apply {

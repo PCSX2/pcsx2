@@ -305,6 +305,11 @@ namespace VMManager
 		/// can pin onto the same cluster. Returns 0 when pinning is off / unresolved.
 		u64 GetPerformanceClusterAffinityMask();
 
+		/// Android: affinity mask of the performance ("big") CPU cluster hosting the
+		/// EE/VU/GS threads, so adjacent helper threads (e.g. the Oboe audio callback)
+		/// can pin onto the same cluster. Returns 0 when pinning is off / unresolved.
+		u64 GetPerformanceClusterAffinityMask();
+
 		/// Resets any state for hotkey-related VMs, called on VM startup.
 		void ResetVMHotkeyState();
 

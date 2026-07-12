@@ -58,7 +58,7 @@ enum OverlayTheme {
     /// Primary labels, headers, primary button title.
     static let textPrimary = Color(red: 0.925, green: 0.933, blue: 0.949)   // #ECEEF2
     /// Trailing values, captions, subtitles.
-    static let textSecondary = Color(red: 0.604, green: 0.627, blue: 0.674)  // #9AA0AC
+    static let textSecondary = Color(red: 0.66, green: 0.69, blue: 0.74)  // #A8B0BD
 
     // MARK: Footer
 
@@ -67,7 +67,7 @@ enum OverlayTheme {
 
     // MARK: Glass — controlled frosted chrome (panel shell + cards; never the gameplay scrim)
 
-    static let shellGlassTint: Double = 0.62
+    static let shellGlassTint: Double = 0.72
     static let cardGlassTint: Double = 0.78
     static let glassTopHighlight = Color.white.opacity(0.10)
     static let cardTopHighlight = Color.white.opacity(0.07)

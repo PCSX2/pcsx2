@@ -34,43 +34,42 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.zIndex
-import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.armsx2.ControllerSkinStore
 import com.armsx2.EmuState
-import com.armsx2.i18n.str
-import com.armsx2.Main
-import com.armsx2.input.ControllerMappings
 import com.armsx2.R
+import com.armsx2.i18n.str
+import com.armsx2.input.ControllerMappings
+import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.ui.Colors
 import com.armsx2.ui.InGameOverlay
 import com.armsx2.ui.WindowImpl
 import compose.icons.LineAwesomeIcons
 import compose.icons.lineawesomeicons.CogSolid
-import kr.co.iefriends.pcsx2.NativeApp
 import kotlinx.coroutines.delay
+import kr.co.iefriends.pcsx2.NativeApp
 import kotlin.math.abs
 import kotlin.math.hypot
-import kotlin.math.max
 import kotlin.math.min
 
 /** Root entry point. Place this in the same fillMaxSize() container as
@@ -83,19 +82,19 @@ fun TouchControlsOverlay() {
     // Auto-apply the per-game touch profile when a game boots (serial becomes
     // known). Placed before the early-returns below so it fires regardless of
     // overlay visibility; keyed on the serial so it only re-applies on a change.
-    // Prefer the launch-time serial (Main.currentGame is set in launchGame BEFORE
+    // Prefer the launch-time serial (MainActivityRuntime.currentGame is set in launchGame BEFORE
     // the VM starts) so the per-game profile applies from the first frame, not only
     // after the pause overlay opens (which is what populated InGameOverlay.currentSerial).
     // Re-key on eState so it re-applies on the STOPPED->RUNNING transition.
-    val gameSerial = Main.currentGame.value?.serial?.takeIf { it.isNotEmpty() }
+    val gameSerial = MainActivityRuntime.currentGame.value?.serial?.takeIf { it.isNotEmpty() }
         ?: InGameOverlay.currentSerial.value
-    LaunchedEffect(gameSerial, Main.eState.value) {
-        if (Main.eState.value == EmuState.RUNNING || Main.eState.value == EmuState.PAUSED)
+    LaunchedEffect(gameSerial, MainActivityRuntime.eState.value) {
+        if (MainActivityRuntime.eState.value == EmuState.RUNNING || MainActivityRuntime.eState.value == EmuState.PAUSED)
             TouchControls.applyForSerial(gameSerial)
     }
     val edit = TouchControls.editMode.value
-    val running = Main.eState.value == EmuState.RUNNING ||
-                  Main.eState.value == EmuState.PAUSED
+    val running = MainActivityRuntime.eState.value == EmuState.RUNNING ||
+                  MainActivityRuntime.eState.value == EmuState.PAUSED
     // Edit mode renders even with no game running, so the touch-layout editor can be
     // opened from the main-menu Pad settings — not only in-game. (Lines below already
     // let the overlay paint over the library while editing.)
@@ -177,8 +176,8 @@ fun TouchControlsOverlay() {
         // Auto-hide timer: in modes 1..10, hide the controls after that many
         // seconds with no touch interaction. Restarts whenever interactionTick
         // changes (screen tap / on-screen button press) and when they reappear.
-        val visMode = TouchControls.visibilityMode.value
-        val tick = TouchControls.interactionTick.value
+        val visMode = TouchControls.visibilityMode.intValue
+        val tick = TouchControls.interactionTick.intValue
         if (visMode in 1..10 && TouchControls.visible.value && !edit) {
             LaunchedEffect(visMode, tick) {
                 delay(visMode * 1000L)
@@ -341,7 +340,7 @@ private fun ButtonWidget(
 ) {
     var localPressed by remember(cfg.id) { mutableStateOf(false) }
     val pressed = forcedPressed || localPressed
-    val opacity = TouchControls.opacity.value
+    val opacity = TouchControls.opacity.floatValue
     val mod = Modifier
         .fillMaxSize()
         .let {
@@ -365,7 +364,7 @@ private fun ButtonWidget(
             contentScale = ContentScale.Fit,
             alpha = opacity,
             colorFilter = if (darkenOnPress)
-                ColorFilter.tint(androidx.compose.ui.graphics.Color(0xFFB0B0B0), BlendMode.Modulate)
+                ColorFilter.tint(Color(0xFFB0B0B0), BlendMode.Modulate)
             else null,
             modifier = Modifier
                 .fillMaxSize()
@@ -451,10 +450,10 @@ private fun drawableFor(id: TouchButtonId, pressed: Boolean): Int = when (id) {
 @Composable
 private fun PressureButtonWidget(cfg: TouchButtonCfg, edit: Boolean) {
     val held = TouchControls.pressureModifierHeld.value
-    val opacity = TouchControls.opacity.value
+    val opacity = TouchControls.opacity.floatValue
     val mod = Modifier
         .fillMaxSize()
-        .let {
+        .let { it ->
             if (edit) it.editGestures(cfg)
             else it.pointerInput(cfg.id) {
                 awaitPointerEventScope {
@@ -532,7 +531,7 @@ private fun UnifiedTouchLayer(
         val sizePx = with(density) { cfg.sizeDp.dp.toPx() }
         val cx = widthPx * cfg.xFrac
         val cy = heightPx * cfg.yFrac
-        UnifiedHit(id = cfg.id, cx = cx, cy = cy, radius = sizePx * TouchControls.multiTouchRadius.value)
+        UnifiedHit(id = cfg.id, cx = cx, cy = cy, radius = sizePx * TouchControls.multiTouchRadius.floatValue)
     }
     val cogPx = with(density) { CogTapZoneDp.toPx() }
     val foreignBounds = foreignRects.map { cfg ->
@@ -676,7 +675,7 @@ private data class UnifiedRect(
 /* -------------------------------------------------------------------- */
 
 /** Invisible in play mode; long-press opens the in-game pause overlay.
- *  Replaced the old long-press-anywhere surface gesture (see Main.kt),
+ *  Replaced the old long-press-anywhere surface gesture (see MainActivityRuntime.kt),
  *  which paused on accidental presses in empty screen space. The default
  *  spot sits between the DPad and the face-button diamond; in edit mode
  *  it renders an outlined "PAUSE" box so it can be dragged/resized like
@@ -702,7 +701,7 @@ private fun PauseWidget(cfg: TouchButtonCfg, edit: Boolean) {
                 .fillMaxSize()
                 .pointerInput(cfg.id) {
                     detectTapGestures(
-                        onLongPress = { com.armsx2.ui.InGameOverlay.open() },
+                        onLongPress = { InGameOverlay.open() },
                     )
                 },
         )
@@ -711,7 +710,7 @@ private fun PauseWidget(cfg: TouchButtonCfg, edit: Boolean) {
 
 /** On-screen fast-forward (Turbo) toggle. Edit mode renders an outlined "▶▶" box
  *  so it can be dragged/resized like any widget; in play mode a tap calls
- *  Main.toggleFastForward() — the same action as the FAST_FORWARD_TOGGLE hotkey.
+ *  MainActivityRuntime.toggleFastForward() — the same action as the FAST_FORWARD_TOGGLE hotkey.
  *  Opt-in (disabled in the default layout). */
 @Composable
 private fun FastForwardWidget(cfg: TouchButtonCfg, edit: Boolean) {
@@ -724,14 +723,14 @@ private fun FastForwardWidget(cfg: TouchButtonCfg, edit: Boolean) {
             Text("▶▶", color = Color.White.copy(alpha = 0.75f), fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
     } else {
-        val opacity = TouchControls.opacity.value
+        val opacity = TouchControls.opacity.floatValue
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(CircleShape)
                 .background(Color.Black.copy(alpha = 0.30f * opacity))
                 .pointerInput(cfg.id) {
-                    detectTapGestures(onTap = { com.armsx2.Main.instance?.toggleFastForward() })
+                    detectTapGestures(onTap = { MainActivityRuntime.instance?.toggleFastForward() })
                 },
             contentAlignment = Alignment.Center,
         ) {
@@ -781,8 +780,8 @@ private fun MacroWidget(cfg: TouchButtonCfg, edit: Boolean) {
             Text(cfg.id.label, color = Color.White.copy(alpha = 0.75f), fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
     } else {
-        val opacity = TouchControls.opacity.value
-        val keycodes = remember(cfg.id, TouchControls.macroBindTick.value) {
+        val opacity = TouchControls.opacity.floatValue
+        val keycodes = remember(cfg.id, TouchControls.macroBindTick.intValue) {
             TouchControls.macroButtons(cfg.id).map { it.keycode }
         }
         Box(
@@ -819,7 +818,7 @@ private fun StateActionWidget(cfg: TouchButtonCfg, edit: Boolean) {
             Text(label, color = Color.White.copy(alpha = 0.75f), fontSize = 12.sp, fontWeight = FontWeight.Bold)
         }
     } else {
-        val opacity = TouchControls.opacity.value
+        val opacity = TouchControls.opacity.floatValue
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -850,7 +849,7 @@ private fun StateActionWidget(cfg: TouchButtonCfg, edit: Boolean) {
 @Composable
 private fun DpadWidget(cfg: TouchButtonCfg, edit: Boolean) {
     val active = remember(cfg.id) { mutableStateOf(DpadState()) }
-    val opacity = TouchControls.opacity.value
+    val opacity = TouchControls.opacity.floatValue
 
     val pressMod: Modifier = if (edit) {
         Modifier.editGestures(cfg)
@@ -875,7 +874,7 @@ private fun DpadWidget(cfg: TouchButtonCfg, edit: Boolean) {
                     // Dead-center grows with the key spacing so the empty middle gap
                     // between the spread-apart arms registers nothing (a small base gap
                     // is always present to avoid center-jitter at spacing 0).
-                    val deadR = min(cx, cy) * (0.08f + TouchControls.dpadSpacing.value)
+                    val deadR = min(cx, cy) * (0.08f + TouchControls.dpadSpacing.floatValue)
                     val r = hypot(dx, dy)
                     // 8-way with cardinal-biased sectors: the minor axis
                     // only fires when its magnitude is at least
@@ -885,8 +884,8 @@ private fun DpadWidget(cfg: TouchButtonCfg, edit: Boolean) {
                     // the dominant cardinal so a slightly-angled press
                     // doesn't fire two axes by accident.
                     val target = if (r < deadR) DpadState() else {
-                        val absDx = kotlin.math.abs(dx)
-                        val absDy = kotlin.math.abs(dy)
+                        val absDx = abs(dx)
+                        val absDy = abs(dy)
                         val diagBias = 0.55f
                         val keepX = absDx >= absDy * diagBias
                         val keepY = absDy >= absDx * diagBias
@@ -921,7 +920,7 @@ private fun DpadWidget(cfg: TouchButtonCfg, edit: Boolean) {
     // D-pad key spacing (NetherSX2-style): each arm normally fills half the pad and meets
     // at center; subtracting the gap pulls it back toward its edge, opening a middle gap so
     // the four directions read as spaced-apart keys. Clamped so an arm never vanishes.
-    val dpadGap = TouchControls.dpadSpacing.value.coerceIn(0f, 0.35f)
+    val dpadGap = TouchControls.dpadSpacing.floatValue.coerceIn(0f, 0.35f)
     val armFill = 0.5f - dpadGap
     Box(
         modifier = Modifier.fillMaxSize().then(pressMod),
@@ -1026,10 +1025,10 @@ private fun StickWidget(cfg: TouchButtonCfg, edit: Boolean) {
     val origin = remember(cfg.id) { mutableStateOf<Offset?>(null) }
     val baseShift = remember(cfg.id) { mutableStateOf(Offset.Zero) }
     val lastEmit = remember(cfg.id) { mutableStateOf(StickEmit()) }
-    val opacity = TouchControls.opacity.value
+    val opacity = TouchControls.opacity.floatValue
     val density = LocalDensity.current
 
-    // See Main.dispatchGenericMotionEvent for the L / R axis mappings —
+    // See MainActivityRuntime.dispatchGenericMotionEvent for the L / R axis mappings —
     // posCode / negCode per axis.
     val codes = when (cfg.id) {
         TouchButtonId.L_STICK -> StickCodes(xPos = 111, xNeg = 113, yPos = 112, yNeg = 110)
@@ -1105,13 +1104,13 @@ private fun StickWidget(cfg: TouchButtonCfg, edit: Boolean) {
                     var nx = (capDx / capPx).coerceIn(-1f, 1f)
                     var ny = (capDy / capPx).coerceIn(-1f, 1f)
                     // Honor the per-stick axis correction (swap first, then inverts)
-                    // exactly like the physical-pad path (Main.dispatchStick) — the
+                    // exactly like the physical-pad path (MainActivityRuntime.dispatchStick) — the
                     // tester's "Right Stick Invert Y works on a gamepad but the touch
                     // stick is still upside-down".
                     val leftStick = cfg.id == TouchButtonId.L_STICK
-                    if (com.armsx2.input.ControllerMappings.stickSwapXY(leftStick)) { val t = nx; nx = ny; ny = t }
-                    if (com.armsx2.input.ControllerMappings.stickInvertX(leftStick)) nx = -nx
-                    if (com.armsx2.input.ControllerMappings.stickInvertY(leftStick)) ny = -ny
+                    if (ControllerMappings.stickSwapXY(leftStick)) { val t = nx; nx = ny; ny = t }
+                    if (ControllerMappings.stickInvertX(leftStick)) nx = -nx
+                    if (ControllerMappings.stickInvertY(leftStick)) ny = -ny
                     val emit = computeStickEmit(nx, ny, leftStick)
                     if (emit != lastEmit.value) {
                         applyStickDiff(codes, lastEmit.value, emit)
@@ -1175,7 +1174,7 @@ private data class StickEmit(
 
 /** Apply the user-configurable PER-STICK analog deadzone and re-normalize past it
  *  so the on-screen stick responds from low values without a jump — matching the
- *  physical-stick path (Main.shapeStickMag). */
+ *  physical-stick path (MainActivityRuntime.shapeStickMag). */
 private fun shapeTouchAxis(m: Float, left: Boolean): Float {
     val dz = ControllerMappings.stickDeadzone(left)
     if (m <= dz) return 0f
@@ -1341,10 +1340,10 @@ private fun DisabledMarker() {
     androidx.compose.foundation.Canvas(Modifier.fillMaxSize()) {
         val c = Color(0xFFFF5555)
         val sw = size.minDimension * 0.06f
-        drawLine(c, androidx.compose.ui.geometry.Offset(size.width * 0.2f, size.height * 0.2f),
-            androidx.compose.ui.geometry.Offset(size.width * 0.8f, size.height * 0.8f), strokeWidth = sw)
-        drawLine(c, androidx.compose.ui.geometry.Offset(size.width * 0.8f, size.height * 0.2f),
-            androidx.compose.ui.geometry.Offset(size.width * 0.2f, size.height * 0.8f), strokeWidth = sw)
+        drawLine(c, Offset(size.width * 0.2f, size.height * 0.2f),
+            Offset(size.width * 0.8f, size.height * 0.8f), strokeWidth = sw)
+        drawLine(c, Offset(size.width * 0.8f, size.height * 0.2f),
+            Offset(size.width * 0.2f, size.height * 0.8f), strokeWidth = sw)
     }
 }
 
@@ -1375,7 +1374,7 @@ private fun EditToolbar(modifier: Modifier = Modifier) {
         // Scope hint: with no game running the editor edits the GLOBAL Default
         // layout (per-game layouts need a running disc).
         Text(
-            if (Main.eState.value == EmuState.RUNNING || Main.eState.value == EmuState.PAUSED)
+            if (MainActivityRuntime.eState.value == EmuState.RUNNING || MainActivityRuntime.eState.value == EmuState.PAUSED)
                 str("touch.editor.scopeGame")
             else str("touch.editor.scopeGlobal"),
             color = Color(0xFFFFD33A), fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
@@ -1399,7 +1398,7 @@ private fun EditToolbar(modifier: Modifier = Modifier) {
                 TouchControls.resetActiveToDefault()
                 // Only clear a per-game key when a VM is actually running. From
                 // the library this is a Global Default edit; resolving a serial
-                // off the (possibly stale) Main.currentGame would wrongly delete
+                // off the (possibly stale) MainActivityRuntime.currentGame would wrongly delete
                 // the last-played game's per-serial layout.
                 TouchControls.clearGameLayoutIfRunning()
             }
@@ -1427,7 +1426,7 @@ private fun EditToolbar(modifier: Modifier = Modifier) {
         ) {
             Text("α", color = Color(0xFFAAAAAA), fontSize = 12.sp)
             androidx.compose.material3.Slider(
-                value = TouchControls.opacity.value,
+                value = TouchControls.opacity.floatValue,
                 onValueChange = { TouchControls.setOpacity(it) },
                 valueRange = 0.20f..1.0f,
                 modifier = Modifier
@@ -1440,7 +1439,7 @@ private fun EditToolbar(modifier: Modifier = Modifier) {
                 ),
             )
             Text(
-                "${(TouchControls.opacity.value * 100).toInt()}%",
+                "${(TouchControls.opacity.floatValue * 100).toInt()}%",
                 color = Color(0xFFAAAAAA),
                 fontSize = 11.sp,
                 modifier = Modifier.width(40.dp),
@@ -1516,7 +1515,7 @@ private fun EditToolbar(modifier: Modifier = Modifier) {
                         fontWeight = FontWeight.SemiBold,
                     )
                     androidx.compose.material3.Slider(
-                        value = TouchControls.dpadSpacing.value,
+                        value = TouchControls.dpadSpacing.floatValue,
                         onValueChange = { TouchControls.setDpadSpacing(it) },
                         valueRange = 0f..0.35f,
                         modifier = Modifier
@@ -1529,7 +1528,7 @@ private fun EditToolbar(modifier: Modifier = Modifier) {
                         ),
                     )
                     Text(
-                        "${(TouchControls.dpadSpacing.value * 100).toInt()}%",
+                        "${(TouchControls.dpadSpacing.floatValue * 100).toInt()}%",
                         color = Color(0xFFAAAAAA),
                         fontSize = 11.sp,
                         modifier = Modifier.width(48.dp),

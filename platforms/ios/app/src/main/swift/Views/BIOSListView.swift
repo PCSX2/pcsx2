@@ -126,12 +126,12 @@ struct BIOSListView: View {
                         .foregroundStyle(.secondary)
                     if bios.valid && !bios.descriptionText.isEmpty {
                         Text(bios.descriptionText)
-                            .font(.caption2.monospaced())
+                            .font(.caption2)
                             .foregroundStyle(.tertiary)
                             .lineLimit(1)
                     } else if !bios.valid {
                         Text(settings.localized("Companion ROM or unsupported BIOS dump"))
-                            .font(.caption2.monospaced())
+                            .font(.caption2)
                             .foregroundStyle(.tertiary)
                             .lineLimit(1)
                     }
@@ -166,13 +166,6 @@ struct BIOSListView: View {
                 Label(settings.localized("Import BIOS"), systemImage: "plus")
             }
             .buttonStyle(.borderedProminent)
-            Button {
-                NSLog("[ARMSX2 iOS BIOS] opening compatibility BIOS picker from empty state")
-                showBIOSCompatibilityImporter = true
-            } label: {
-                Label(settings.localized("Compatibility Picker"), systemImage: "folder.badge.plus")
-            }
-            .buttonStyle(.bordered)
             Text(settings.localized("If one picker refuses to select your .bin/.rom file, try the other."))
                 .font(.caption)
                 .foregroundStyle(.tertiary)

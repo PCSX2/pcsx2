@@ -165,6 +165,11 @@ struct GameListView: View {
 	@State private var isLoadingGames = false
 	@State private var showCoverImporter = false
     @State private var showCoverPhotoPicker = false
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    private var cardMaterial: Material {
+        reduceTransparency ? .regularMaterial : .thinMaterial
+    }
     @State private var showRestartAlert = false
     @State private var showStopAlert = false
     @State private var showCoverTemplateEditor = false
@@ -184,23 +189,15 @@ struct GameListView: View {
     @State private var pendingDeleteDataGame: ISOEntry?
     @State private var gameActionTitle = ""
     @State private var gameActionMessage: String?
+    @State private var showBackgroundAssetError = false
     @AppStorage("ARMSX2iOSGameLibraryLayout") private var libraryLayout = "grid"
     @AppStorage("ARMSX2iOSLandscapeCoverFlowEnabled") private var landscapeCoverFlowEnabled = true
-    @State private var backgroundImage: UIImage?
-    @State private var landscapeBackgroundImage: UIImage?
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
-
+#if DEBUG
+    @State private var ranBackgroundValidation = false
+#endif
+    // Background state is now kept in SettingsStore and rendered by BackgroundContainerView.
     private var hasCustomBackground: Bool {
-        backgroundImage != nil || landscapeBackgroundImage != nil
-    }
-
-    private var effectiveDim: Double {
-        let dim = settings.libraryBackgroundDim
-        if reduceTransparency || colorSchemeContrast == .increased {
-            return max(dim, 0.55)
-        }
-        return dim
+        settings.backgroundPrimaryAsset != nil || settings.backgroundLandscapeAsset != nil
     }
 
     private struct CoverFlowMetrics {
@@ -242,27 +239,7 @@ struct GameListView: View {
     @ViewBuilder
     private var libraryBackgroundLayer: some View {
         GeometryReader { geometry in
-            if let animatedURL = activeAnimatedBackgroundURL(for: geometry.size) {
-                ZStack {
-                    AnimatedLibraryBackgroundView(url: animatedURL)
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                        .clipped()
-
-                    Color.black.opacity(effectiveDim)
-                }
-                .frame(width: geometry.size.width, height: geometry.size.height)
-            } else if let image = libraryBackgroundImage(for: geometry.size) {
-                ZStack {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                        .clipped()
-
-                    Color.black.opacity(effectiveDim)
-                }
-                .frame(width: geometry.size.width, height: geometry.size.height)
-            }
+            BackgroundContainerView(size: geometry.size)
         }
         .ignoresSafeArea()
         .accessibilityHidden(true)
@@ -294,6 +271,8 @@ struct GameListView: View {
                 }
             }
 			.navigationTitle(settings.localized("Games"))
+			.navigationBarTitleDisplayMode(.inline)
+			.toolbarBackground(hasCustomBackground ? .hidden : .automatic, for: .navigationBar)
 				.toolbar {
 					ToolbarItem(placement: .topBarTrailing) {
 						Button {
@@ -384,7 +363,7 @@ struct GameListView: View {
                                 appState.bootBIOSOnly()
                             }
                         }
-                        .font(.caption)
+                        .font(.callout)
                     }
                 }
             }
@@ -491,6 +470,11 @@ struct GameListView: View {
             } message: {
                 Text(FileImportHandler.replacementConfirmationMessage(for: existingGameImportFileNames))
             }
+            .alert(settings.localized("Background image could not be loaded."), isPresented: $showBackgroundAssetError) {
+                Button(settings.localized("OK")) {
+                    showBackgroundAssetError = false
+                }
+            }
 				.sheet(isPresented: $showGameImporter) {
 					ImportDocumentPicker(
 						allowedContentTypes: FileImportHandler.gameContentTypes,
@@ -547,7 +531,7 @@ struct GameListView: View {
                 PerGameSettingsPanel(game: game)
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
-                    .presentationBackground(.regularMaterial)
+                    .presentationBackground(.clear)
                     .presentationCornerRadius(34)
             }
             .sheet(item: $discLinkTarget) { game in
@@ -567,20 +551,19 @@ struct GameListView: View {
                     .presentationDragIndicator(.visible)
             }
         }
-	        .onAppear {
+		.onAppear {
 			externalLibrary.reload()
 			restoreCachedGamesIfNeeded()
 			loadGames(autoDownloadExternalCovers: true)
-			reloadLibraryBackground()
-		}
-		.onChange(of: settings.libraryBackgroundPath) { _, _ in
-			reloadLibraryBackground()
-		}
-		.onChange(of: settings.libraryLandscapeBackgroundPath) { _, _ in
-			reloadLibraryBackground()
-		}
-		.onChange(of: settings.libraryBackgroundRevision) { _, _ in
-			reloadLibraryBackground()
+			if settings.sanitizeBackgroundAssets() {
+				showBackgroundAssetError = true
+			}
+#if DEBUG
+			if !ranBackgroundValidation {
+				ranBackgroundValidation = true
+				BackgroundValidation.run()
+			}
+#endif
 		}
 		.onReceive(NotificationCenter.default.publisher(for: ExternalGameLibrary.didChangeNotification)) { _ in
 			loadGames(autoDownloadExternalCovers: true)
@@ -622,7 +605,19 @@ struct GameListView: View {
             }
             .padding(.top, 12)
         }
-        .background(hasCustomBackground ? Color.clear : Color(.systemGroupedBackground))
+        .background(
+            Group {
+                if hasCustomBackground {
+                    Color.clear
+                } else {
+                    LinearGradient(
+                        colors: [Color(.systemGroupedBackground), Color(.secondarySystemGroupedBackground)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                }
+            }
+        )
         .transaction { transaction in
             transaction.animation = nil
         }
@@ -783,6 +778,8 @@ struct GameListView: View {
 				} label: {
 					Image(systemName: game.isFavorite ? "star.fill" : "star")
 						.foregroundStyle(game.isFavorite ? .yellow : .gray)
+						.frame(width: 44, height: 44)
+						.contentShape(Rectangle())
 				}
 				.buttonStyle(.plain)
 				.accessibilityLabel(game.isFavorite ? settings.localized("Remove from favorites") : settings.localized("Add to favorites"))
@@ -803,7 +800,7 @@ struct GameListView: View {
         Button {
             open(game)
         } label: {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .center, spacing: 10) {
                 ZStack(alignment: .topTrailing) {
                     coverThumbnail(for: game, width: 126, height: 189)
                         .frame(maxWidth: .infinity)
@@ -814,22 +811,22 @@ struct GameListView: View {
 						Image(systemName: game.isFavorite ? "star.fill" : "star")
                             .font(.callout.weight(.semibold))
                             .foregroundStyle(game.isFavorite ? .yellow : .white.opacity(0.86))
-                            .padding(8)
-                            .background(.black.opacity(0.48), in: Circle())
+                            .padding(6)
+                            .background(.black.opacity(0.36), in: Circle())
                     }
                     .buttonStyle(.plain)
                     .padding(6)
                     .accessibilityLabel(game.isFavorite ? settings.localized("Remove from favorites") : settings.localized("Add to favorites"))
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .center, spacing: 4) {
                     HStack(alignment: .firstTextBaseline, spacing: 5) {
                         Text(coverStore.displayName(forGameName: game.name))
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.primary)
                             .lineLimit(2)
-                            .multilineTextAlignment(.leading)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity, alignment: .center)
                         if isRunning(game) {
                             Image(systemName: "circle.fill")
                                 .font(.system(size: 7))
@@ -855,12 +852,13 @@ struct GameListView: View {
                     }
                     .font(.caption2)
                     .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .center)
             }
-            .padding(8)
+            .padding(12)
             .frame(maxWidth: .infinity, minHeight: 268, alignment: .top)
-            .background(.background, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .background(cardMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
 				.overlay {
 					RoundedRectangle(cornerRadius: 18, style: .continuous)
 						.strokeBorder(isRunning(game) ? .green.opacity(0.6) : .white.opacity(0.08), lineWidth: 1)
@@ -915,7 +913,7 @@ struct GameListView: View {
                 .frame(width: metrics.textWidth)
             }
             .padding(metrics.cardPadding)
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: metrics.cornerRadius, style: .continuous))
+            .background(cardMaterial, in: RoundedRectangle(cornerRadius: metrics.cornerRadius, style: .continuous))
 			.overlay {
 				RoundedRectangle(cornerRadius: metrics.cornerRadius, style: .continuous)
 					.strokeBorder(isRunning(game) ? .green.opacity(0.7) : .white.opacity(0.12), lineWidth: 1)
@@ -964,7 +962,7 @@ struct GameListView: View {
             .buttonStyle(.bordered)
         }
         .padding()
-        .background(.background, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(cardMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .alert(settings.localized("Stop Emulation?"), isPresented: $showStopAlert) {
             Button(settings.localized("Cancel"), role: .cancel) { }
             Button(settings.localized("Stop"), role: .destructive) {
@@ -1004,7 +1002,7 @@ struct GameListView: View {
         }
         .frame(width: metrics.statusWidth, height: metrics.statusHeight)
         .padding(metrics.cardPadding)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: metrics.cornerRadius, style: .continuous))
+        .background(cardMaterial, in: RoundedRectangle(cornerRadius: metrics.cornerRadius, style: .continuous))
         .alert(settings.localized("Stop Emulation?"), isPresented: $showStopAlert) {
             Button(settings.localized("Cancel"), role: .cancel) { }
             Button(settings.localized("Stop"), role: .destructive) {
@@ -1455,44 +1453,11 @@ struct GameListView: View {
         return String(format: "%.0f MB", mb)
     }
 
-    private func libraryBackgroundImage(for size: CGSize) -> UIImage? {
-        if size.width > size.height, let landscapeBackgroundImage {
-            return landscapeBackgroundImage
-        }
-        return backgroundImage ?? landscapeBackgroundImage
-    }
-
-    /// Returns the active animated-background file URL when the chosen
-    /// background is a multi-frame image, following the same landscape/main
-    /// resolution rule as `libraryBackgroundImage(for:)`. Returns nil for
-    /// static images so the static render path is used instead.
-    private func activeAnimatedBackgroundURL(for size: CGSize) -> URL? {
-        func animatedURL(forPath path: String) -> URL? {
-            guard !path.isEmpty, FileManager.default.fileExists(atPath: path),
-                  AnimatedBackgroundLoader.isAnimated(URL(fileURLWithPath: path)) else { return nil }
-            return URL(fileURLWithPath: path)
-        }
-        if size.width > size.height,
-           let landscape = animatedURL(forPath: settings.libraryLandscapeBackgroundPath) {
-            return landscape
-        }
-        return animatedURL(forPath: settings.libraryBackgroundPath)
-            ?? animatedURL(forPath: settings.libraryLandscapeBackgroundPath)
-    }
-
-    private func reloadLibraryBackground() {
-        backgroundImage = loadLibraryBackground(at: settings.libraryBackgroundPath)
-        landscapeBackgroundImage = loadLibraryBackground(at: settings.libraryLandscapeBackgroundPath)
-    }
-
-    private func loadLibraryBackground(at path: String) -> UIImage? {
-        guard !path.isEmpty, FileManager.default.fileExists(atPath: path) else { return nil }
-        return UIImage(contentsOfFile: path)
-    }
 }
 
 private struct LibraryBackgroundListRowModifier: ViewModifier {
     let isEnabled: Bool
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     @ViewBuilder
     func body(content: Content) -> some View {
@@ -1500,7 +1465,7 @@ private struct LibraryBackgroundListRowModifier: ViewModifier {
             content
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .background(reduceTransparency ? AnyShapeStyle(.background) : AnyShapeStyle(.regularMaterial), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)

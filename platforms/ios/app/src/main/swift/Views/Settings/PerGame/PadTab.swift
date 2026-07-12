@@ -10,6 +10,10 @@ struct PadTab: View {
     let layoutPresets: PadLayoutPresetStore
     let skinLibrary: VPadSkinLibraryStore
 
+    @State private var inversionDrafts: [String: Int] = [:]
+    private let inversionKeys = ["InvertLeftStickX", "InvertLeftStickY", "InvertRightStickX", "InvertRightStickY"]
+    private let inversionSection = "ARMSX2iOS/UI"
+
     var body: some View {
         PerGameTab(title: "Virtual Pad") {
             Section("Virtual Pad") {
@@ -68,6 +72,10 @@ struct PadTab: View {
 
                     Button(role: .destructive) {
                         layoutPresets.clearVPadOverrides(for: padLayoutIdentity)
+                        inversionDrafts = [:]
+                        for key in inversionKeys {
+                            ARMSX2Bridge.deletePerGameINIValueForCurrentGame(inversionSection, key: key)
+                        }
                     } label: {
                         Label("Reset All VPad Overrides", systemImage: "arrow.counterclockwise")
                     }
@@ -77,6 +85,57 @@ struct PadTab: View {
                         .foregroundStyle(.secondary)
                 }
             }
+
+            if padLayoutIdentity != nil {
+                Section {
+                    ForEach(inversionKeys, id: \.self) { key in
+                        Picker(inversionLabel(for: key), selection: Binding<Int>(
+                            get: { inversionDrafts[key] ?? -1 },
+                            set: { applyInversion(key, value: $0) }
+                        )) {
+                            Text("Use Global").tag(-1)
+                            Text("Off").tag(0)
+                            Text("On").tag(1)
+                        }
+                    }
+                } header: {
+                    Text("Stick Inversion")
+                } footer: {
+                    Text("Overrides the global stick inversion for this game only.")
+                }
+            }
+        }
+        .onAppear { loadInversionDrafts() }
+    }
+
+    private func inversionLabel(for key: String) -> String {
+        switch key {
+        case "InvertLeftStickX": return "Left Horizontal"
+        case "InvertLeftStickY": return "Left Vertical"
+        case "InvertRightStickX": return "Right Horizontal"
+        case "InvertRightStickY": return "Right Vertical (Camera)"
+        default: return key
+        }
+    }
+
+    private func loadInversionDrafts() {
+        var drafts: [String: Int] = [:]
+        for key in inversionKeys {
+            if ARMSX2Bridge.hasPerGameINIValueForCurrentGame(inversionSection, key: key) {
+                drafts[key] = ARMSX2Bridge.getPerGameINIBoolForCurrentGame(inversionSection, key: key, defaultValue: false) ? 1 : 0
+            }
+        }
+        inversionDrafts = drafts
+    }
+
+    private func applyInversion(_ key: String, value: Int) {
+        var drafts = inversionDrafts
+        drafts[key] = value
+        inversionDrafts = drafts
+        if value == -1 {
+            ARMSX2Bridge.deletePerGameINIValueForCurrentGame(inversionSection, key: key)
+        } else {
+            ARMSX2Bridge.setPerGameINIBoolForCurrentGame(inversionSection, key: key, value: value == 1)
         }
     }
 

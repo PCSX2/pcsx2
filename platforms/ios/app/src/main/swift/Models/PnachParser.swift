@@ -107,12 +107,24 @@ enum PnachParser {
     }
 
     private static func category(for draft: Draft, isLegacy: Bool) -> PatchCategory {
+        let name = draft.name.lowercased()
         let blob = (draft.name + " " + draft.description + " " + draft.comment).lowercased()
+
+        // Cheat/hack keywords win first so a presentation word in the description can't
+        // reclassify a gameplay cheat (e.g. "60fps invincible health" stays .cheats).
+        let cheatWords = ["cheat", "hack", "infinite", "infinity", "unlimited", "max money",
+                          "max ammo", "infinite health", "god mode", "one-hit", "one hit kill",
+                          "no death", "never die", "unlock all", "infinite mp", "max hp"]
+        if cheatWords.contains(where: { blob.contains($0) }) && !isLegacy { return .cheats }
+
+        // Prefer the header name for presentation categories — it's the more structured field.
+        if name.contains("widescreen") || name.contains("16:9") { return .widescreen }
+        if name.contains("60fps") || name.contains("60 fps") || name.contains("60-frame") { return .fps60 }
         if blob.contains("widescreen") || blob.contains("16:9") { return .widescreen }
         if blob.contains("60fps") || blob.contains("60 fps") || blob.contains("60-frame") { return .fps60 }
         if blob.contains("no-interlace") || blob.contains("no interlace") || blob.contains("deinterlace") || blob.contains("progressive") { return .noInterlace }
         if blob.contains("performance") || blob.contains("fastboot") || blob.contains("fast boot") { return .performance }
-        if blob.contains("fix") || blob.contains("compatib") { return .gameFix }
+        if blob.contains("compatib") || name.contains("fix") { return .gameFix }
         if blob.contains("experimental") || blob.contains("beta") { return .experimental }
         return isLegacy ? .other : .cheats
     }

@@ -7,6 +7,7 @@
 #include "common/Path.h"
 
 #ifdef __APPLE__
+#include <TargetConditionals.h>
 
 static id<MTLLibrary> loadMainLibrary(id<MTLDevice> dev, NSString* name)
 {

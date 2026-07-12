@@ -292,6 +292,11 @@ private:
 	// Mali stacks (zero/stale Cd → black/missing textures). Ported from EmuCoreX.
 	bool m_is_mediatek_soc = false;
 
+	// True when the SoC hints look like MediaTek (Dimensity/Helio). Set in CheckFeatures
+	// from GpuProfileDetector; used to disable the broken Vulkan fbfetch path on their
+	// Mali stacks (zero/stale Cd → black/missing textures). Ported from EmuCoreX.
+	bool m_is_mediatek_soc = false;
+
 	VkQueue m_graphics_queue = VK_NULL_HANDLE;
 	VkQueue m_present_queue = VK_NULL_HANDLE;
 	u32 m_graphics_queue_family_index = 0;
@@ -500,6 +505,7 @@ private:
 	std::unordered_map<GSHWDrawConfig::PSSelector, VkShaderModule, GSHWDrawConfig::PSSelectorHash>
 		m_tfx_fragment_shaders;
 	std::unordered_map<PipelineSelector, VkPipeline, PipelineSelectorHash> m_tfx_pipelines;
+	u32 m_tfx_pipeline_compile_counter = 0;
 	u32 m_tfx_pipeline_compile_counter = 0;
 
 	VkRenderPass m_utility_color_render_pass_load = VK_NULL_HANDLE;

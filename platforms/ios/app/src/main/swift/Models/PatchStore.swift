@@ -147,6 +147,31 @@ final class PatchStore: @unchecked Sendable {
         return active || preference || ARMSX2Bridge.isRetroAchievementsHardcoreActive()
     }
 
+    /// Presentation patches that stay legal under Hardcore: widescreen and 60fps from a
+    /// trusted patch database. Trust anchors on `isCheat` (file location) first, then narrows
+    /// by category and source — category never promotes a cheat. User-imported files are never
+    /// exempt, even when tagged 60fps, so a misplaced cheat can't slip through.
+    static func hardcoreAllowsPatch(_ entry: PatchEntry) -> Bool {
+        hardcoreAllowsPatch(isCheat: entry.isCheat, category: entry.category, source: entry.source, sourceDetail: entry.sourceDetail)
+    }
+
+    /// Primitives form of `hardcoreAllowsPatch(_:)`, for sites that have a parsed draft and a
+    /// source provenance but not yet a full `PatchEntry` (e.g. during import auto-enable).
+    static func hardcoreAllowsPatch(isCheat: Bool, category: PatchCategory, source: PatchSource, sourceDetail: String?) -> Bool {
+        guard !isCheat,
+              source == .database,
+              category == .widescreen || category == .fps60,
+              let detail = sourceDetail else { return false }
+        return detail == PatchSource.databaseName(forTemplate: defaultPatchDatabaseURLTemplate)
+            || detail == PatchSource.databaseName(forTemplate: defaultUltraWidescreenPatchURLTemplate)
+    }
+
+    /// Whether `entry` can be toggled on while Hardcore is active. Exempt presentation patches
+    /// toggle freely; everything else is blocked from off→on but may still be turned off.
+    static func hardcorePermitsEnable(_ entry: PatchEntry) -> Bool {
+        !hardcoreBlocksPnachContent() || hardcoreAllowsPatch(entry)
+    }
+
     // MARK: - Load installed
 
     func loadInstalled(forISO iso: String, launchContext: CheatsPatchesLaunchContext? = nil) {
@@ -278,11 +303,21 @@ final class PatchStore: @unchecked Sendable {
             return
         }
 
+        // Per-game patch keys are written to the game INI regardless of the master
+        // overrides toggle. Block the write when overrides are off so stale keys
+        // don't linger and apply on the next boot.
+        if launchContext == .inGame,
+           !ARMSX2Bridge.getPerGameINIBoolForCurrentGame("ARMSX2iOS/PerGame", key: "Enabled", defaultValue: false)
+        {
+            applyFeedback("Per-game overrides are off — enable them in Per-Game Settings to save cheats for this game.", kind: .error)
+            return
+        }
+
         var names = enableList(forISO: isoName, isCheat: entry.isCheat)
         if let index = names.firstIndex(where: { $0.caseInsensitiveCompare(entry.name) == .orderedSame }) {
             names.remove(at: index)
         } else {
-            if Self.hardcoreBlocksPnachContent() {
+            if !Self.hardcorePermitsEnable(entry) {
                 applyFeedback(InstallOutcome.blockedByHardcore.message, kind: .error)
                 return
             }
@@ -299,7 +334,7 @@ final class PatchStore: @unchecked Sendable {
 
     var canEnableAll: Bool {
         installed.contains { entry in
-            !entry.isLegacy && !entry.name.isEmpty && !entry.enabled && !Self.hardcoreBlocksPnachContent()
+            !entry.isLegacy && !entry.name.isEmpty && !entry.enabled && Self.hardcorePermitsEnable(entry)
         }
     }
 
@@ -310,15 +345,31 @@ final class PatchStore: @unchecked Sendable {
     func setAllNamedEntries(enabled: Bool) {
         guard canManageInstalledFiles else { return }
 
-        let patchNames = enabled && !Self.hardcoreBlocksPnachContent()
-            ? installed.filter { !$0.isCheat && !$0.isLegacy && !$0.name.isEmpty }.map(\.name)
+        if enabled, launchContext == .inGame,
+           !ARMSX2Bridge.getPerGameINIBoolForCurrentGame("ARMSX2iOS/PerGame", key: "Enabled", defaultValue: false)
+        {
+            applyFeedback("Per-game overrides are off — enable them in Per-Game Settings to save cheats for this game.", kind: .error)
+            return
+        }
+
+        let hcBlocks = Self.hardcoreBlocksPnachContent()
+        let existingPatch = enabled ? enableList(forISO: isoName, isCheat: false) : []
+        let existingCheat = enabled ? enableList(forISO: isoName, isCheat: true) : []
+        // Under Hardcore, only exempt patches may be newly enabled, but entries already in the
+        // list are preserved so they reapply once Hardcore is off. Cheats never enable under HC.
+        let patchNames = enabled
+            ? installed.filter { !$0.isCheat && !$0.isLegacy && !$0.name.isEmpty && (!hcBlocks || Self.hardcoreAllowsPatch($0)) }.map(\.name) + (hcBlocks ? existingPatch : [])
             : []
-        let cheatNames = enabled && !Self.hardcoreBlocksPnachContent()
-            ? installed.filter { $0.isCheat && !$0.isLegacy && !$0.name.isEmpty }.map(\.name)
+        let cheatNames = enabled
+            ? installed.filter { $0.isCheat && !$0.isLegacy && !$0.name.isEmpty && !hcBlocks }.map(\.name) + (hcBlocks ? existingCheat : [])
             : []
-        setEnableList(patchNames, forISO: isoName, isCheat: false)
-        setEnableList(cheatNames, forISO: isoName, isCheat: true)
-        if !cheatNames.isEmpty {
+        var seenP = Set<String>()
+        let mergedPatch = patchNames.filter { seenP.insert($0.lowercased()).inserted }
+        var seenC = Set<String>()
+        let mergedCheat = cheatNames.filter { seenC.insert($0.lowercased()).inserted }
+        setEnableList(mergedPatch, forISO: isoName, isCheat: false)
+        setEnableList(mergedCheat, forISO: isoName, isCheat: true)
+        if !mergedCheat.isEmpty {
             ARMSX2Bridge.setINIBool("EmuCore", key: "EnableCheats", value: true)
         }
         ARMSX2Bridge.reloadPatches()
@@ -457,18 +508,23 @@ final class PatchStore: @unchecked Sendable {
         }
 
         let newNames = parsed.filter { !$0.name.isEmpty }.map(\.name)
-        // Under RetroAchievements Hardcore Mode nothing is auto-enabled (cheats or patches) —
-        // the file is still written so entries can be enabled later, and the core refuses to
-        // apply any .pnach content while Hardcore is active. Enabling is gated in `toggle`.
-        let effectiveAutoEnable = autoEnable && !Self.hardcoreBlocksPnachContent()
+        // Under RetroAchievements Hardcore Mode only exempt presentation patches auto-enable;
+        // everything else is written but left disabled, to be enabled later. Cheats never
+        // auto-enable under Hardcore. Enabling is also gated in `toggle`.
+        let hcBlocks = Self.hardcoreBlocksPnachContent()
+        let effectiveAutoEnable = autoEnable && (!hcBlocks || !asCheat)
         let merged: [String]
         if effectiveAutoEnable {
-            // Union: keep previously enabled entries and add the newly imported ones.
             var seen = Set<String>()
-            merged = (existingEnabled + newNames).filter { seen.insert($0.lowercased()).inserted }
+            let autoEnableable: [String]
+            if hcBlocks {
+                // Only exempt (presentation, db-trusted) entries may join the enable list.
+                autoEnableable = parsed.filter { !$0.name.isEmpty && Self.hardcoreAllowsPatch(isCheat: asCheat, category: $0.category, source: source, sourceDetail: sourceDetail) }.map(\.name)
+            } else {
+                autoEnableable = newNames
+            }
+            merged = (existingEnabled + autoEnableable).filter { seen.insert($0.lowercased()).inserted }
         } else {
-            // Download, or cheat import under Hardcore: preserve existing enables rather than
-            // clearing them or silently enabling a cheat.
             merged = existingEnabled
         }
         setEnableList(merged, forISO: iso, isCheat: asCheat)

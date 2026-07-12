@@ -11,6 +11,7 @@ struct GeneralTab: View {
 
     let displayName: String
     let hasPendingChanges: Bool
+    let savesToRunningGame: Bool
     let game: ISOEntry
     let settings: SettingsStore
 
@@ -43,7 +44,9 @@ struct GeneralTab: View {
                             .textSelection(.enabled)
                     }
                     Text(hasPendingChanges
-                         ? settings.localized("Unsaved changes — Save to apply on next boot/reset.")
+                         ? (savesToRunningGame
+                            ? settings.localized("Unsaved changes — tap Save to apply now.")
+                            : settings.localized("Unsaved changes — Save to apply on next boot."))
                          : settings.localized("No pending changes."))
                         .font(.caption)
                         .foregroundStyle(hasPendingChanges ? Color.accentColor : Color.secondary)
@@ -57,7 +60,9 @@ struct GeneralTab: View {
     private var overridesSection: some View {
         Section {
             Toggle(settings.localized("Use Per-Game Overrides"), isOn: $enabled)
-            Text(settings.localized("Overrides are saved for this game only and apply on the next boot/reset of this title."))
+            Text(settings.localized(savesToRunningGame
+                ? "Overrides are saved for this game only and apply when you save, while the game runs."
+                : "Overrides are saved for this game only and apply on the next boot of this title."))
                 .font(.caption)
                 .foregroundStyle(.secondary)
             if !hasGameSettingsIdentity {

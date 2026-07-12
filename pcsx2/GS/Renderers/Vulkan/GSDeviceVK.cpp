@@ -2933,6 +2933,16 @@ bool GSDeviceVK::CheckFeatures()
 							.is_mediatek_soc;
 #endif
 
+#if defined(__ANDROID__)
+	// MediaTek (Dimensity/Helio) Mali Vulkan stacks return zero/stale destination color
+	// through ROAA (black / missing textures) across GPU generations, so detect the SoC
+	// here and disable fbfetch below. Ported from sashkinbro/EmuCoreX. Detection reads the
+	// ro.soc.* props already folded into the profile hints (no new JNI needed).
+	m_is_mediatek_soc = GpuProfileDetector::Resolve(
+		GSConfig.AndroidGpuProfileOverride, std::string_view(), m_device_properties.deviceName)
+							.is_mediatek_soc;
+#endif
+
 	// framebuffer_fetch: the tiler-native ordered Cd read (ROAA / subpassLoad in tile
 	// memory). It lets DetermineBarriers() (GSRendererHW.cpp) drop every per-primitive
 	// barrier and makes ROV (m_features.rov below) auto-disable — the fast, correct path

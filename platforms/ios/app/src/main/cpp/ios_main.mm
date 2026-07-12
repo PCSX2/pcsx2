@@ -317,8 +317,13 @@ void ARMSX2ConfigureImGuiFonts(const char* reason)
     int w = std::max(1, (int)(self.bounds.size.width * scale + 0.5));
     int h = std::max(1, (int)(self.bounds.size.height * scale + 0.5));
     float s = (float)scale;
-    MTGS::RunOnGSThread([w, h, s]() {
+
+    // Indent corner-anchored OSD by a small fixed clearance so it isn't clipped by the display's rounded corners
+    constexpr double kOsdCornerInsetPt = 18.0;
+    const float osd_inset = (float)(kOsdCornerInsetPt * scale);
+    MTGS::RunOnGSThread([w, h, s, osd_inset]() {
         GSResizeDisplayWindow(w, h, s);
+        ImGuiManager::SetOSDSafeAreaInsets(osd_inset, osd_inset, osd_inset, osd_inset);
     });
 }
 @end
@@ -878,39 +883,29 @@ void ARMSX2ApplyIOSOsdPresetFromConfig(const char* reason)
     if (!s_settings_interface)
         return;
 
-    const int preset = std::clamp(s_settings_interface->GetIntValue("ARMSX2iOS/UI", "OsdPreset", 0), 0, 3);
+    ARMSX2SetIOSOsdFlags(
+        s_settings_interface->GetBoolValue("EmuCore/GS", "OsdShowFPS", false),
+        s_settings_interface->GetBoolValue("EmuCore/GS", "OsdShowVPS", false),
+        s_settings_interface->GetBoolValue("EmuCore/GS", "OsdShowSpeed", false),
+        s_settings_interface->GetBoolValue("EmuCore/GS", "OsdShowCPU", false),
+        s_settings_interface->GetBoolValue("EmuCore/GS", "OsdShowGPU", false),
+        s_settings_interface->GetBoolValue("EmuCore/GS", "OsdShowResolution", false),
+        s_settings_interface->GetBoolValue("EmuCore/GS", "OsdShowGSStats", false),
+        s_settings_interface->GetBoolValue("EmuCore/GS", "OsdShowIndicators", false),
+        s_settings_interface->GetBoolValue("EmuCore/GS", "OsdShowSettings", false),
+        s_settings_interface->GetBoolValue("EmuCore/GS", "OsdShowInputs", false),
+        s_settings_interface->GetBoolValue("EmuCore/GS", "OsdShowFrameTimes", false),
+        s_settings_interface->GetBoolValue("EmuCore/GS", "OsdShowVersion", false),
+        s_settings_interface->GetBoolValue("EmuCore/GS", "OsdShowHardwareInfo", false));
+
     int position = s_settings_interface->GetIntValue("EmuCore/GS", "OsdPerformancePos", static_cast<int>(OsdOverlayPos::TopRight));
     if (position == static_cast<int>(OsdOverlayPos::TopCenter))
         position = static_cast<int>(OsdOverlayPos::TopRight);
-
-    switch (preset) {
-    case 1:
-        ARMSX2SetIOSOsdFlags(true, false, true, true, true, false, false, true, false, false, false, true, false);
-        break;
-    case 2:
-        ARMSX2SetIOSOsdFlags(true, true, true, true, true, true, false, true, false, false, false, true, false);
-        break;
-    case 3:
-        ARMSX2SetIOSOsdFlags(true, true, true, true, true, true, true, true, true, true, true, true, true);
-        break;
-    default:
-        ARMSX2SetIOSOsdFlags(false, false, false, false, false, false, false, false, false, false, false, false, false);
-        position = 0;
-        break;
-    }
-
-    if (preset != 0 && (position < static_cast<int>(OsdOverlayPos::TopLeft) || position > static_cast<int>(OsdOverlayPos::TopRight)))
-        position = static_cast<int>(OsdOverlayPos::TopRight);
-
     EmuConfig.GS.OsdPerformancePos = static_cast<OsdOverlayPos>(position);
     GSConfig.OsdPerformancePos = static_cast<OsdOverlayPos>(position);
-    ARMSX2WriteIOSOsdFlagsToSettings();
-    s_settings_interface->SetIntValue("ARMSX2iOS/UI", "OsdPreset", preset);
-    s_settings_interface->SetIntValue("EmuCore/GS", "OsdPerformancePos", position);
-    s_settings_interface->Save();
 
     Console.WriteLn("@@OSD@@ preset=%d position=%d reason=%s fps=%d vps=%d speed=%d gpu=%d device_stats=%d frame_times=%d version=%d hardware=%d",
-        preset, position, reason ? reason : "unknown",
+        s_settings_interface->GetIntValue("ARMSX2iOS/UI", "OsdPreset", 0), position, reason ? reason : "unknown",
         EmuConfig.GS.OsdShowFPS ? 1 : 0,
         EmuConfig.GS.OsdShowVPS ? 1 : 0,
         EmuConfig.GS.OsdShowSpeed ? 1 : 0,

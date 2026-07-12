@@ -396,6 +396,8 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				}
 #elif defined(__ANDROID__)
 				s_speed_line.append_format("{}ARMSX2 2.7", s_speed_line.empty() ? "" : " | ");
+#elif defined(__ANDROID__)
+				s_speed_line.append_format("{}ARMSX2 2.7", s_speed_line.empty() ? "" : " | ");
 #else
 				s_speed_line.append_format("{}PCSX2 {}", s_speed_line.empty() ? "" : " | ", BuildVersion::GitRev);
 #endif
@@ -476,6 +478,18 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 					gpu_suffix);
 
 				DRAW_LINE(osd_font, font_size, s_hardware_info_gpu_line.c_str(), white_color);
+
+#if defined(__ANDROID__)
+				// Diagnostic: which core each emu thread is actually running on (c<N>),
+				// its allowed-core affinity mask (m<hex>), and the cpuinfo cluster topology.
+				// Reveals whether the VU/GS worker threads are being parked on slow cores.
+				if (VMManager::HasValidVM())
+				{
+					static std::string s_thread_placement_line;
+					s_thread_placement_line = VMManager::Internal::GetThreadPlacementDebug();
+					DRAW_LINE(osd_font, font_size, s_thread_placement_line.c_str(), white_color);
+				}
+#endif
 			}
 
 			if (GSConfig.OsdShowCPU)

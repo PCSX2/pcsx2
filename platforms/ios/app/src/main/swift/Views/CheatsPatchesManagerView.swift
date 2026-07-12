@@ -48,7 +48,7 @@ struct CheatsPatchesManagerView: View {
                 if PatchStore.hardcoreBlocksPnachContent() {
                     Section {
                         Label {
-                            Text("Hardcore Mode is on. Cheats and patches can’t be enabled or applied because .pnach content may affect achievement legitimacy.")
+                            Text("Hardcore Mode is on. Cheats and most patches are blocked, but widescreen and 60fps patches from a trusted database can still be enabled.")
                                 .fixedSize(horizontal: false, vertical: true)
                         } icon: {
                             Image(systemName: "lock.fill")
@@ -362,24 +362,51 @@ struct CheatsPatchesManagerView: View {
 
     @ViewBuilder
     private func installedRow(_ entry: PatchEntry) -> some View {
+        let isOn = store.installed.first(where: { $0.id == entry.id })?.enabled ?? entry.enabled
+        let hcBlocks = PatchStore.hardcoreBlocksPnachContent()
+        let suppressed = hcBlocks && isOn && !PatchStore.hardcoreAllowsPatch(entry)
         VStack(alignment: .leading, spacing: 7) {
             if entry.isLegacy {
                 Label(entry.displayTitle, systemImage: "doc.text")
                     .font(.body)
                     .fixedSize(horizontal: false, vertical: true)
-            } else {
-                Toggle(
-                    isOn: Binding(
-                        get: { store.installed.first(where: { $0.id == entry.id })?.enabled ?? entry.enabled },
-                        set: { _ in store.toggle(entry) }
-                    )
-                ) {
+            } else if suppressed {
+                HStack(alignment: .firstTextBaseline) {
                     Text(entry.displayTitle)
                         .font(.body)
                         .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 4)
+                    Button {
+                        store.toggle(entry)
+                    } label: {
+                        Label("Suppressed by Hardcore", systemImage: "lock.fill")
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(.orange)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Turns this entry off. It can’t be turned back on while Hardcore is active.")
+                }
+            } else {
+                Toggle(
+                    isOn: Binding(
+                        get: { isOn },
+                        set: { _ in store.toggle(entry) }
+                    )
+                ) {
+                    HStack(spacing: 6) {
+                        Text(entry.displayTitle)
+                            .font(.body)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if PatchStore.hardcoreAllowsPatch(entry) {
+                            Image(systemName: "checkmark.shield.fill")
+                                .font(.caption2)
+                                .foregroundStyle(.green)
+                                .accessibilityLabel("Hardcore-safe")
+                        }
+                    }
                 }
                 .accessibilityHint("Enables or disables this entry for the current game")
-                .disabled(!entry.enabled && PatchStore.hardcoreBlocksPnachContent())
+                .disabled(!isOn && !PatchStore.hardcorePermitsEnable(entry))
             }
 
             if !entry.summary.isEmpty {

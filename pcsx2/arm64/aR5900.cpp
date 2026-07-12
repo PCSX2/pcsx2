@@ -29,6 +29,11 @@
 #include "common/FastJmp.h"
 #include "common/Pcsx2Defs.h"
 
+#if defined(__APPLE__)
+#include "common/Darwin/DarwinMisc.h"
+#include <TargetConditionals.h>
+#endif
+
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
@@ -5079,6 +5084,13 @@ static void recExecute()
 {
 	if (eeRecNeedsReset || !EnterRecompiledCode)
 		recResetRaw();
+
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+	// [iOS] Ensure the JIT region is executable (and writable for code emission) before
+	// dispatching. On iOS the MAP_JIT dual-map can be revoked by the OS between boots;
+	// LegacyEnsureExecutable re-arms pthread_jit_write_protect_np / the W^X aliases.
+	DarwinMisc::LegacyEnsureExecutable();
+#endif
 
 	if (fastjmp_set(&s_jmp_buf) != 0)
 	{

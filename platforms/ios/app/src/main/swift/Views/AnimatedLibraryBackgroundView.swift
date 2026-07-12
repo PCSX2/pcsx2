@@ -13,6 +13,7 @@ import UIKit
 /// caps enforced by `AnimatedBackgroundLoader`.
 struct AnimatedLibraryBackgroundView: View {
     let url: URL
+    let fitMode: BackgroundFitMode
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var frames: [AnimatedBackgroundLoader.Frame] = []
     @State private var loadFailed = false
@@ -22,7 +23,7 @@ struct AnimatedLibraryBackgroundView: View {
             if reduceMotion || frames.isEmpty {
                 staticFirstFrame
             } else {
-                AnimatedFramePlayer(frames: frames)
+                AnimatedFramePlayer(frames: frames, fitMode: fitMode)
             }
         }
         .task(id: url.path) {
@@ -50,7 +51,7 @@ struct AnimatedLibraryBackgroundView: View {
             if let image = AnimatedBackgroundLoader.staticImage(from: url) {
                 Image(uiImage: image)
                     .resizable()
-                    .scaledToFill()
+                    .applyBackgroundFitMode(fitMode)
                     .frame(width: geometry.size.width, height: geometry.size.height)
                     .clipped()
             }
@@ -64,13 +65,14 @@ struct AnimatedLibraryBackgroundView: View {
 /// leaves the hierarchy.
 private struct AnimatedFramePlayer: UIViewRepresentable {
     let frames: [AnimatedBackgroundLoader.Frame]
+    let fitMode: BackgroundFitMode
 
     func makeUIView(context: Context) -> AnimatedBackgroundImageView {
         AnimatedBackgroundImageView()
     }
 
     func updateUIView(_ uiView: AnimatedBackgroundImageView, context: Context) {
-        uiView.configure(with: frames)
+        uiView.configure(with: frames, fitMode: fitMode)
     }
 
     static func dismantleUIView(_ uiView: AnimatedBackgroundImageView, coordinator: ()) {
@@ -91,7 +93,6 @@ private final class AnimatedBackgroundImageView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         addSubview(imageView)
         // Pause while backgrounded to avoid burning CPU/GPU off-screen.
@@ -115,7 +116,8 @@ private final class AnimatedBackgroundImageView: UIView {
         }
     }
 
-    func configure(with frames: [AnimatedBackgroundLoader.Frame]) {
+    func configure(with frames: [AnimatedBackgroundLoader.Frame], fitMode: BackgroundFitMode) {
+        imageView.contentMode = uiContentMode(for: fitMode)
         guard frames != self.frames, !frames.isEmpty else { return }
         stop()
         self.frames = frames
@@ -163,6 +165,14 @@ private final class AnimatedBackgroundImageView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         imageView.frame = bounds
+    }
+
+    private func uiContentMode(for fitMode: BackgroundFitMode) -> UIView.ContentMode {
+        switch fitMode {
+        case .fill: return .scaleAspectFill
+        case .fit: return .scaleAspectFit
+        case .stretch: return .scaleToFill
+        }
     }
 }
 
@@ -238,5 +248,19 @@ enum AnimatedBackgroundLoader {
             }
         }
         return 0.1
+    }
+}
+
+private extension Image {
+    @ViewBuilder
+    func applyBackgroundFitMode(_ mode: BackgroundFitMode) -> some View {
+        switch mode {
+        case .fill:
+            self.scaledToFill()
+        case .fit:
+            self.scaledToFit()
+        case .stretch:
+            self
+        }
     }
 }

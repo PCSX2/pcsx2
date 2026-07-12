@@ -13,7 +13,7 @@ struct PerGameSettingsPanel: View {
     @State private var skinLibrary = VPadSkinLibraryStore.shared
 
     private enum PerGameSettingsCategory: CaseIterable, Identifiable {
-        case general, graphics, audio, cpu, pad, fixes, cheats
+        case general, graphics, audio, cpu, pad, fixes, cheats, retroAchievements
 
         var id: Self { self }
 
@@ -26,6 +26,7 @@ struct PerGameSettingsPanel: View {
             case .pad: return "Virtual Pad"
             case .fixes: return "Fixes & Compatibility"
             case .cheats: return "Cheats & Patches"
+            case .retroAchievements: return "RetroAchievements"
             }
         }
 
@@ -38,6 +39,7 @@ struct PerGameSettingsPanel: View {
             case .pad: return "gamecontroller"
             case .fixes: return "wrench.and.screwdriver"
             case .cheats: return "rectangle.stack.badge.plus"
+            case .retroAchievements: return "trophy"
             }
         }
     }
@@ -124,6 +126,16 @@ struct PerGameSettingsPanel: View {
     @State private var perGameIOP: Int
     @State private var perGameVU0: Int
     @State private var perGameVU1: Int
+    @State private var perGameEEFpuRound: Int
+    @State private var perGameVU0Round: Int
+    @State private var perGameVU1Round: Int
+    @State private var perGameEEClamp: Int
+    @State private var perGameVUClamp: Int
+    @State private var globalEEFpuRound: Int
+    @State private var globalVU0Round: Int
+    @State private var globalVU1Round: Int
+    @State private var globalEEClamp: Int
+    @State private var globalVUClamp: Int
     @State private var perGameHWDownloadMode: Int
     @State private var perGameCPUCLUT: Int
     @State private var perGameGPUTargetCLUT: Int
@@ -140,6 +152,8 @@ struct PerGameSettingsPanel: View {
     @State private var showDiscardConfirmation = false
     @State private var savedFingerprint: String = ""
     @State private var landscapeCategory: PerGameSettingsCategory = .general
+    @State private var raEnabledOverride: Int
+    @State private var raHardcoreOverride: Int
 
     init(
         game: ISOEntry,
@@ -271,6 +285,22 @@ struct PerGameSettingsPanel: View {
         _perGameIOP = State(initialValue: Self.loadedPerGameBool("EmuCore/CPU/Recompiler", "EnableIOP", useCurrent: useCurrent, iso: perGameISO))
         _perGameVU0 = State(initialValue: Self.loadedPerGameBool("EmuCore/CPU/Recompiler", "EnableVU0", useCurrent: useCurrent, iso: perGameISO))
         _perGameVU1 = State(initialValue: Self.loadedPerGameBool("EmuCore/CPU/Recompiler", "EnableVU1", useCurrent: useCurrent, iso: perGameISO))
+        _perGameEEFpuRound = State(initialValue: Self.loadedPerGameInt("EmuCore/CPU", "FPU.Roundmode", globalDefault: 3, useCurrent: useCurrent, iso: perGameISO))
+        _perGameVU0Round = State(initialValue: Self.loadedPerGameInt("EmuCore/CPU", "VU0.Roundmode", globalDefault: 3, useCurrent: useCurrent, iso: perGameISO))
+        _perGameVU1Round = State(initialValue: Self.loadedPerGameInt("EmuCore/CPU", "VU1.Roundmode", globalDefault: 3, useCurrent: useCurrent, iso: perGameISO))
+        _perGameEEClamp = State(initialValue: Self.loadedPerGameEEClamp(useCurrent: useCurrent, iso: perGameISO))
+        _perGameVUClamp = State(initialValue: Self.loadedPerGameVUClamp(useCurrent: useCurrent, iso: perGameISO))
+        _globalEEFpuRound = State(initialValue: SettingsStore.clampedRoundMode(Int(ARMSX2Bridge.getINIInt("EmuCore/CPU", key: "FPU.Roundmode", defaultValue: 3))))
+        _globalVU0Round = State(initialValue: SettingsStore.clampedRoundMode(Int(ARMSX2Bridge.getINIInt("EmuCore/CPU", key: "VU0.Roundmode", defaultValue: 3))))
+        _globalVU1Round = State(initialValue: SettingsStore.clampedRoundMode(Int(ARMSX2Bridge.getINIInt("EmuCore/CPU", key: "VU1.Roundmode", defaultValue: 3))))
+        _globalEEClamp = State(initialValue: SettingsStore.eeClampModeFromBools(
+            ARMSX2Bridge.getINIBool("EmuCore/CPU/Recompiler", key: "fpuOverflow", defaultValue: true),
+            ARMSX2Bridge.getINIBool("EmuCore/CPU/Recompiler", key: "fpuExtraOverflow", defaultValue: false),
+            ARMSX2Bridge.getINIBool("EmuCore/CPU/Recompiler", key: "fpuFullMode", defaultValue: false)))
+        _globalVUClamp = State(initialValue: SettingsStore.vuClampModeFromBools(
+            ARMSX2Bridge.getINIBool("EmuCore/CPU/Recompiler", key: "vu0Overflow", defaultValue: true),
+            ARMSX2Bridge.getINIBool("EmuCore/CPU/Recompiler", key: "vu0ExtraOverflow", defaultValue: false),
+            ARMSX2Bridge.getINIBool("EmuCore/CPU/Recompiler", key: "vu0SignOverflow", defaultValue: false)))
         _perGameHWDownloadMode = State(initialValue: Self.loadedPerGameInt("EmuCore/GS", "HWDownloadMode", globalDefault: 0, useCurrent: useCurrent, iso: perGameISO))
         _perGameCPUCLUT = State(initialValue: Self.loadedPerGameInt("EmuCore/GS", "UserHacks_CPUCLUTRender", globalDefault: 0, useCurrent: useCurrent, iso: perGameISO))
         _perGameGPUTargetCLUT = State(initialValue: Self.loadedPerGameInt("EmuCore/GS", "UserHacks_GPUTargetCLUTMode", globalDefault: 0, useCurrent: useCurrent, iso: perGameISO))
@@ -281,17 +311,33 @@ struct PerGameSettingsPanel: View {
         _perGameSyncToHostRefresh = State(initialValue: Self.loadedPerGameBool("EmuCore/GS", "SyncToHostRefreshRate", useCurrent: useCurrent, iso: perGameISO))
         _perGameBufferMS = State(initialValue: Self.loadedPerGameInt("SPU2/Output", "BufferMS", globalDefault: 50, useCurrent: useCurrent, iso: perGameISO))
         _perGameOutputLatencyMS = State(initialValue: Self.loadedPerGameInt("SPU2/Output", "OutputLatencyMS", globalDefault: 20, useCurrent: useCurrent, iso: perGameISO))
+        _raEnabledOverride = State(initialValue: Self.loadedPerGameBool("Achievements", "Enabled", useCurrent: useCurrent, iso: perGameISO))
+        _raHardcoreOverride = State(initialValue: Self.loadedPerGameBool("Achievements", "ChallengeMode", useCurrent: useCurrent, iso: perGameISO))
         _savedFingerprint = State(initialValue: perGameFingerprint())
     }
 
     /// Encodes the current editable per-game state so Save can be gated on real changes.
     private func perGameFingerprint() -> String {
         let fixes = SettingsStore.gameFixOptions.map { "\($0.key):\(perGameFixes[$0.key] ?? -1)" }.joined(separator: ",")
-        return "\(enabled)|\(upscaleMultiplier)|\(aspectRatio)|\(textureFiltering)|\(hardwareMipmapping)|\(blendingAccuracy)|\(interlaceMode)|\(trilinearFiltering)|\(halfPixelOffset)|\(roundSprite)|\(alignSpriteOverride)|\(alignSprite)|\(mergeSpriteOverride)|\(mergeSprite)|\(wildArmsOffsetOverride)|\(wildArmsOffset)|\(textureOffsetXOverride)|\(textureOffsetX)|\(textureOffsetYOverride)|\(textureOffsetY)|\(skipDrawStartOverride)|\(skipDrawStart)|\(skipDrawEndOverride)|\(skipDrawEnd)|\(volumeOverride)|\(volumePercent)|\(eeCoreType)|\(mtvu)|\(eeCycleRate)|\(eeCycleSkip)|\(fastBoot)|\(enableCheats)|\(enablePatches)|\(enableGameFixes)|\(enableGameDBHardwareFixes)|\(perGameAAT)|\(perGameTextureInsideRt)|\(perGameRenderer)|\(perGameFXAA)|\(perGameShadeBoost)|\(perGameTVShader)|\(perGameCASMode)|\(perGameMaxAnisotropy)|\(perGameCASSharpness)|\(perGamePCRTCOffsets)|\(perGameIntegerScaling)|\(perGameSkipDupFrames)|\(perGamePCRTCOverscan)|\(perGamePCRTCAntiBlur)|\(perGameDisableInterlaceOffset)|\(perGameWidescreen)|\(perGameNoInterlace)|\(perGameShadeBoostBrightness)|\(perGameShadeBoostContrast)|\(perGameShadeBoostSaturation)|\(perGameShadeBoostGamma)|\(perGameDithering)|\(perGameFastForwardVolume)|\(perGameIOP)|\(perGameVU0)|\(perGameVU1)|\(perGameHWDownloadMode)|\(perGameCPUCLUT)|\(perGameGPUTargetCLUT)|\(perGameVsyncQueue)|\(perGameLoadTextureReplacements)|\(perGameLoadTextureReplacementsAsync)|\(perGamePrecacheTextureReplacements)|\(perGameSyncToHostRefresh)|\(perGameBufferMS)|\(perGameOutputLatencyMS)|\(fixes)"
+        return "\(enabled)|\(upscaleMultiplier)|\(aspectRatio)|\(textureFiltering)|\(hardwareMipmapping)|\(blendingAccuracy)|\(interlaceMode)|\(trilinearFiltering)|\(halfPixelOffset)|\(roundSprite)|\(alignSpriteOverride)|\(alignSprite)|\(mergeSpriteOverride)|\(mergeSprite)|\(wildArmsOffsetOverride)|\(wildArmsOffset)|\(textureOffsetXOverride)|\(textureOffsetX)|\(textureOffsetYOverride)|\(textureOffsetY)|\(skipDrawStartOverride)|\(skipDrawStart)|\(skipDrawEndOverride)|\(skipDrawEnd)|\(volumeOverride)|\(volumePercent)|\(eeCoreType)|\(mtvu)|\(eeCycleRate)|\(eeCycleSkip)|\(fastBoot)|\(enableCheats)|\(enablePatches)|\(enableGameFixes)|\(enableGameDBHardwareFixes)|\(perGameAAT)|\(perGameTextureInsideRt)|\(perGameRenderer)|\(perGameFXAA)|\(perGameShadeBoost)|\(perGameTVShader)|\(perGameCASMode)|\(perGameMaxAnisotropy)|\(perGameCASSharpness)|\(perGamePCRTCOffsets)|\(perGameIntegerScaling)|\(perGameSkipDupFrames)|\(perGamePCRTCOverscan)|\(perGamePCRTCAntiBlur)|\(perGameDisableInterlaceOffset)|\(perGameWidescreen)|\(perGameNoInterlace)|\(perGameShadeBoostBrightness)|\(perGameShadeBoostContrast)|\(perGameShadeBoostSaturation)|\(perGameShadeBoostGamma)|\(perGameDithering)|\(perGameFastForwardVolume)|\(perGameIOP)|\(perGameVU0)|\(perGameVU1)|\(perGameHWDownloadMode)|\(perGameCPUCLUT)|\(perGameGPUTargetCLUT)|\(perGameVsyncQueue)|\(perGameLoadTextureReplacements)|\(perGameLoadTextureReplacementsAsync)|\(perGamePrecacheTextureReplacements)|\(perGameSyncToHostRefresh)|\(perGameBufferMS)|\(perGameOutputLatencyMS)|\(perGameEEFpuRound)|\(perGameVU0Round)|\(perGameVU1Round)|\(perGameEEClamp)|\(perGameVUClamp)|\(raEnabledOverride)|\(raHardcoreOverride)|\(fixes)"
     }
 
     private var hasPendingChanges: Bool {
         perGameFingerprint() != savedFingerprint
+    }
+
+    /// Status shown after Save. In-game most settings apply immediately via the
+    /// live-apply bridge path; a few (renderer, recompiler toggles, MTVU) need a
+    /// reset. From the library nothing is running, so the next boot is the earliest.
+    private var postSaveMessage: String {
+        if !enabled {
+            return settings.localized("Per-game overrides cleared.")
+        }
+        let serial = game.metadata["serial"] ?? game.name
+        let suffix = savesToRunningGame
+            ? settings.localized("Saved — changes apply now. Renderer and recompiler settings need a reset.")
+            : settings.localized("Reset or relaunch the game to apply.")
+        return "\(settings.localized("Saved for")) \(serial). \(suffix)"
     }
 
     /// Clears every per-game override by disabling the master toggle and saving; the
@@ -477,6 +523,7 @@ struct PerGameSettingsPanel: View {
         case .pad:      return AnyView(padTab)
         case .fixes:    return AnyView(fixesTab)
         case .cheats:   return AnyView(cheatsTab)
+        case .retroAchievements: return AnyView(retroAchievementsTab)
         }
     }
 
@@ -490,6 +537,7 @@ struct PerGameSettingsPanel: View {
             statusMessage: $statusMessage,
             displayName: displayName,
             hasPendingChanges: hasPendingChanges,
+            savesToRunningGame: savesToRunningGame,
             game: game,
             settings: settings
         )
@@ -549,6 +597,7 @@ struct PerGameSettingsPanel: View {
             perGameLoadTextureReplacementsAsync: $perGameLoadTextureReplacementsAsync,
             perGamePrecacheTextureReplacements: $perGamePrecacheTextureReplacements,
             perGameSyncToHostRefresh: $perGameSyncToHostRefresh,
+            savesToRunningGame: savesToRunningGame,
             settings: settings
         )
     }
@@ -580,11 +629,22 @@ struct PerGameSettingsPanel: View {
             perGameIOP: $perGameIOP,
             perGameVU0: $perGameVU0,
             perGameVU1: $perGameVU1,
+            perGameEEFpuRound: $perGameEEFpuRound,
+            perGameVU0Round: $perGameVU0Round,
+            perGameVU1Round: $perGameVU1Round,
+            perGameEEClamp: $perGameEEClamp,
+            perGameVUClamp: $perGameVUClamp,
+            savesToRunningGame: savesToRunningGame,
             settings: settings,
             eeCycleRateUseGlobalSentinel: Self.eeCycleRateUseGlobalSentinel,
             fastBootUseGlobalSentinel: Self.fastBootUseGlobalSentinel,
             fastBootOff: Self.fastBootOff,
-            fastBootOn: Self.fastBootOn
+            fastBootOn: Self.fastBootOn,
+            globalEEFpuRound: globalEEFpuRound,
+            globalVU0Round: globalVU0Round,
+            globalVU1Round: globalVU1Round,
+            globalEEClamp: globalEEClamp,
+            globalVUClamp: globalVUClamp
         )
     }
 
@@ -604,6 +664,7 @@ struct PerGameSettingsPanel: View {
             perGameAAT: $perGameAAT,
             perGameTextureInsideRt: $perGameTextureInsideRt,
             perGameFixes: $perGameFixes,
+            savesToRunningGame: savesToRunningGame,
             settings: settings
         )
     }
@@ -616,6 +677,16 @@ struct PerGameSettingsPanel: View {
             perGameWidescreen: $perGameWidescreen,
             perGameNoInterlace: $perGameNoInterlace,
             showCheatsManager: $showCheatsManager,
+            savesToRunningGame: savesToRunningGame,
+            settings: settings
+        )
+    }
+
+    private var retroAchievementsTab: some View {
+        RetroAchievementsTab(
+            enabled: $enabled,
+            raEnabledOverride: $raEnabledOverride,
+            raHardcoreOverride: $raHardcoreOverride,
             settings: settings
         )
     }
@@ -651,7 +722,9 @@ struct PerGameSettingsPanel: View {
                             .textSelection(.enabled)
                     }
                     Text(hasPendingChanges
-                         ? settings.localized("Unsaved changes — Save to apply on next boot/reset.")
+                         ? (savesToRunningGame
+                            ? settings.localized("Unsaved changes — tap Save to apply now.")
+                            : settings.localized("Unsaved changes — Save to apply on next boot."))
                          : settings.localized("No pending changes."))
                         .font(.caption)
                         .foregroundStyle(hasPendingChanges ? Color.accentColor : Color.secondary)
@@ -665,13 +738,15 @@ struct PerGameSettingsPanel: View {
     private var overridesSection: some View {
         Section {
             Toggle(settings.localized("Use Per-Game Overrides"), isOn: $enabled)
-            Text(settings.localized("Overrides are saved for this game only and apply on the next boot/reset of this title."))
+            Text(settings.localized(savesToRunningGame
+                ? "Overrides are saved for this game only and apply when you save, while the game runs."
+                : "Overrides are saved for this game only and apply on the next boot of this title."))
                 .font(.caption)
                 .foregroundStyle(.secondary)
             if !hasGameSettingsIdentity {
-                Text("Start this game once before saving its settings.")
+                Text(settings.localized("Start this game once before saving its settings."))
                     .font(.caption)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(OverlayTheme.warm)
             }
             Button(role: .destructive) {
                 showResetAllConfirmation = true
@@ -714,6 +789,11 @@ struct PerGameSettingsPanel: View {
                 cheatsTab
             } label: {
                 Label(settings.localized("Cheats & Patches"), systemImage: "rectangle.stack.badge.plus")
+            }
+            NavigationLink {
+                retroAchievementsTab
+            } label: {
+                Label(settings.localized("RetroAchievements"), systemImage: "trophy")
             }
         }
     }
@@ -847,6 +927,50 @@ struct PerGameSettingsPanel: View {
         }
     }
 
+    private static func loadedPerGameEEClamp(useCurrent: Bool, iso: String) -> Int {
+        let overflow = loadedPerGameBool("EmuCore/CPU/Recompiler", "fpuOverflow", useCurrent: useCurrent, iso: iso)
+        guard overflow != -1 else { return -1 }
+        let extra = loadedPerGameBool("EmuCore/CPU/Recompiler", "fpuExtraOverflow", useCurrent: useCurrent, iso: iso) == 1
+        let full = loadedPerGameBool("EmuCore/CPU/Recompiler", "fpuFullMode", useCurrent: useCurrent, iso: iso) == 1
+        return SettingsStore.eeClampModeFromBools(overflow == 1, extra, full)
+    }
+
+    private static func savePerGameEEClamp(_ mode: Int, enabled: Bool, useCurrent: Bool, iso: String) {
+        if enabled && mode != -1 {
+            setPerGameBoolValue("EmuCore/CPU/Recompiler", "fpuOverflow", mode >= 1, useCurrent: useCurrent, iso: iso)
+            setPerGameBoolValue("EmuCore/CPU/Recompiler", "fpuExtraOverflow", mode >= 2, useCurrent: useCurrent, iso: iso)
+            setPerGameBoolValue("EmuCore/CPU/Recompiler", "fpuFullMode", mode >= 3, useCurrent: useCurrent, iso: iso)
+        } else {
+            for key in ["fpuOverflow", "fpuExtraOverflow", "fpuFullMode"] {
+                clearPerGameValue("EmuCore/CPU/Recompiler", key, useCurrent: useCurrent, iso: iso)
+            }
+        }
+    }
+
+    private static func loadedPerGameVUClamp(useCurrent: Bool, iso: String) -> Int {
+        let overflow = loadedPerGameBool("EmuCore/CPU/Recompiler", "vu0Overflow", useCurrent: useCurrent, iso: iso)
+        guard overflow != -1 else { return -1 }
+        let extra = loadedPerGameBool("EmuCore/CPU/Recompiler", "vu0ExtraOverflow", useCurrent: useCurrent, iso: iso) == 1
+        let sign = loadedPerGameBool("EmuCore/CPU/Recompiler", "vu0SignOverflow", useCurrent: useCurrent, iso: iso) == 1
+        return SettingsStore.vuClampModeFromBools(overflow == 1, extra, sign)
+    }
+
+    private static func savePerGameVUClamp(_ mode: Int, enabled: Bool, useCurrent: Bool, iso: String) {
+        if enabled && mode != -1 {
+            for prefix in ["vu0", "vu1"] {
+                setPerGameBoolValue("EmuCore/CPU/Recompiler", "\(prefix)Overflow", mode >= 1, useCurrent: useCurrent, iso: iso)
+                setPerGameBoolValue("EmuCore/CPU/Recompiler", "\(prefix)ExtraOverflow", mode >= 2, useCurrent: useCurrent, iso: iso)
+                setPerGameBoolValue("EmuCore/CPU/Recompiler", "\(prefix)SignOverflow", mode >= 3, useCurrent: useCurrent, iso: iso)
+            }
+        } else {
+            for prefix in ["vu0", "vu1"] {
+                for suffix in ["Overflow", "ExtraOverflow", "SignOverflow"] {
+                    clearPerGameValue("EmuCore/CPU/Recompiler", "\(prefix)\(suffix)", useCurrent: useCurrent, iso: iso)
+                }
+            }
+        }
+    }
+
     private func save() {
         guard hasGameSettingsIdentity else {
             statusMessage = "Start this game once before saving its settings."
@@ -888,16 +1012,16 @@ struct PerGameSettingsPanel: View {
                 skipDrawEnd: Int32(normalizedSkipDraw.end),
                 volumeOverride: enabled && volumeOverride,
                 volumePercent: Int32(volumePercent),
-                eeCoreType: Int32(eeCoreType),
-                mtvu: mtvu,
+                eeCoreType: enabled ? Int32(eeCoreType) : 0,
+                mtvu: enabled && mtvu,
                 eeCycleRateOverride: enabled && eeCycleRate != Self.eeCycleRateUseGlobalSentinel,
                 eeCycleRate: Int32(Self.clampedEECycleRate(eeCycleRate == Self.eeCycleRateUseGlobalSentinel ? globalEECycleRate : eeCycleRate)),
                 fastBootOverride: enabled && fastBoot != Self.fastBootUseGlobalSentinel,
                 fastBoot: fastBoot == Self.fastBootOn,
-                enableCheats: enableCheats,
-                enablePatches: enablePatches,
-                enableGameFixes: enableGameFixes,
-                enableGameDBHardwareFixes: enableGameDBHardwareFixes
+                enableCheats: enabled && enableCheats,
+                enablePatches: enabled && enablePatches,
+                enableGameFixes: enabled && enableGameFixes,
+                enableGameDBHardwareFixes: enabled && enableGameDBHardwareFixes
             )
         } else {
             ARMSX2Bridge.setGameSettings(
@@ -928,23 +1052,20 @@ struct PerGameSettingsPanel: View {
                 skipDrawEnd: Int32(normalizedSkipDraw.end),
                 volumeOverride: enabled && volumeOverride,
                 volumePercent: Int32(volumePercent),
-                eeCoreType: Int32(eeCoreType),
-                mtvu: mtvu,
+                eeCoreType: enabled ? Int32(eeCoreType) : 0,
+                mtvu: enabled && mtvu,
                 eeCycleRateOverride: enabled && eeCycleRate != Self.eeCycleRateUseGlobalSentinel,
                 eeCycleRate: Int32(Self.clampedEECycleRate(eeCycleRate == Self.eeCycleRateUseGlobalSentinel ? globalEECycleRate : eeCycleRate)),
                 fastBootOverride: enabled && fastBoot != Self.fastBootUseGlobalSentinel,
                 fastBoot: fastBoot == Self.fastBootOn,
-                enableCheats: enableCheats,
-                enablePatches: enablePatches,
-                enableGameFixes: enableGameFixes,
-                enableGameDBHardwareFixes: enableGameDBHardwareFixes
+                enableCheats: enabled && enableCheats,
+                enablePatches: enabled && enablePatches,
+                enableGameFixes: enabled && enableGameFixes,
+                enableGameDBHardwareFixes: enabled && enableGameDBHardwareFixes
             )
         }
         savePerGameCompatibility()
-        let applyMessage = savesToRunningGame ?
-            settings.localized("Volume changes apply now; some settings need reset or relaunch.") :
-            settings.localized("Reset or relaunch the game to apply.")
-        statusMessage = enabled ? "\(settings.localized("Saved for")) \(game.metadata["serial"] ?? game.name). \(applyMessage)" : settings.localized("Per-game overrides cleared.")
+        statusMessage = postSaveMessage
         savedFingerprint = perGameFingerprint()
     }
 
@@ -972,8 +1093,10 @@ struct PerGameSettingsPanel: View {
         } else {
             Self.clearPerGameValue("EmuCore/GS", "UserHacks_TextureInsideRt", useCurrent: useCurrent, iso: iso)
         }
-        // Renderer is a boot-time choice, so write the per-game file only and let it
-        // take effect on the next boot rather than switching a running game live.
+        // Renderer is a boot-time choice — switching Metal↔Software mid-game would
+        // require recreating the GS device, which PCSX2's GSreopen does support but
+        // not from the per-game INI write path. Write the file only (bypassing the
+        // live-apply ForCurrentGame variant) so it takes effect on next boot.
         let rendererIso = game.bootName
         if enabled && perGameRenderer != -1 {
             ARMSX2Bridge.setPerGameINIInt("EmuCore/GS", key: "Renderer", value: Int32(perGameRenderer), forISO: rendererIso)
@@ -1150,6 +1273,33 @@ struct PerGameSettingsPanel: View {
             Self.setPerGameIntValue("EmuCore/Speedhacks", "EECycleSkip", eeCycleSkip, useCurrent: useCurrent, iso: iso)
         } else {
             Self.clearPerGameValue("EmuCore/Speedhacks", "EECycleSkip", useCurrent: useCurrent, iso: iso)
+        }
+        if enabled && perGameEEFpuRound != -1 {
+            Self.setPerGameIntValue("EmuCore/CPU", "FPU.Roundmode", perGameEEFpuRound, useCurrent: useCurrent, iso: iso)
+        } else {
+            Self.clearPerGameValue("EmuCore/CPU", "FPU.Roundmode", useCurrent: useCurrent, iso: iso)
+        }
+        if enabled && perGameVU0Round != -1 {
+            Self.setPerGameIntValue("EmuCore/CPU", "VU0.Roundmode", perGameVU0Round, useCurrent: useCurrent, iso: iso)
+        } else {
+            Self.clearPerGameValue("EmuCore/CPU", "VU0.Roundmode", useCurrent: useCurrent, iso: iso)
+        }
+        if enabled && perGameVU1Round != -1 {
+            Self.setPerGameIntValue("EmuCore/CPU", "VU1.Roundmode", perGameVU1Round, useCurrent: useCurrent, iso: iso)
+        } else {
+            Self.clearPerGameValue("EmuCore/CPU", "VU1.Roundmode", useCurrent: useCurrent, iso: iso)
+        }
+        Self.savePerGameEEClamp(perGameEEClamp, enabled: enabled, useCurrent: useCurrent, iso: iso)
+        Self.savePerGameVUClamp(perGameVUClamp, enabled: enabled, useCurrent: useCurrent, iso: iso)
+        if enabled && raEnabledOverride != -1 {
+            Self.setPerGameBoolValue("Achievements", "Enabled", raEnabledOverride == 1, useCurrent: useCurrent, iso: iso)
+        } else {
+            Self.clearPerGameValue("Achievements", "Enabled", useCurrent: useCurrent, iso: iso)
+        }
+        if enabled && raHardcoreOverride != -1 {
+            Self.setPerGameBoolValue("Achievements", "ChallengeMode", raHardcoreOverride == 1, useCurrent: useCurrent, iso: iso)
+        } else {
+            Self.clearPerGameValue("Achievements", "ChallengeMode", useCurrent: useCurrent, iso: iso)
         }
     }
 

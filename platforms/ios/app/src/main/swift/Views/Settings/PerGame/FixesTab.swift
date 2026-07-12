@@ -10,6 +10,7 @@ struct FixesTab: View {
     @Binding var perGameTextureInsideRt: Int
     @Binding var perGameFixes: [String: Int]
 
+    let savesToRunningGame: Bool
     let settings: SettingsStore
 
     var body: some View {
@@ -30,7 +31,7 @@ struct FixesTab: View {
                     Text(settings.localized("On")).tag(1)
                 }
                 .disabled(!enabled)
-                Text(settings.localized("Improves the accuracy of transparency and alpha-blended edges. Leave Off unless a game shows halos or broken transparency on Metal. Applies on next boot."))
+                Text(settings.localized("Improves the accuracy of transparency and alpha-blended edges. Leave Off unless a game shows halos or broken transparency on Metal. " + (savesToRunningGame ? "Applies when you save." : "Applies on next boot.")))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Picker(settings.localized("Texture Inside RT"), selection: $perGameTextureInsideRt) {
@@ -40,7 +41,7 @@ struct FixesTab: View {
                     Text(settings.localized("Merge Targets")).tag(2)
                 }
                 .disabled(!enabled)
-                Text(settings.localized("Fixes games that render into areas of the framebuffer they later read back as textures (common half-screen or garbled-graphics fixes). Applies on next boot."))
+                Text(settings.localized("Fixes games that render into areas of the framebuffer they later read back as textures (common half-screen or garbled-graphics fixes). " + (savesToRunningGame ? "Applies when you save." : "Applies on next boot.")))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 ForEach(SettingsStore.gameFixOptions) { option in
@@ -62,7 +63,7 @@ struct FixesTab: View {
             } header: {
                 Text(settings.localized("Compatibility Overrides"))
             } footer: {
-                Text(settings.localized("Override global settings for this game only. Game fixes apply while per-game GameDB Core Fixes is on. Some changes need a game reset or relaunch."))
+                Text(settings.localized("Override global settings for this game only. Game fixes apply while per-game GameDB Core Fixes is on. " + (savesToRunningGame ? "Most changes apply when you save; the renderer needs a reset." : "Changes apply on next boot.")))
             }
         }
     }

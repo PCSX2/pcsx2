@@ -279,6 +279,11 @@ void ImGuiManager::RequestScaleUpdate()
 		s_scale_changed = true;
 }
 
+void ImGuiManager::SetOSDSafeAreaInsets(float left, float top, float right, float bottom)
+{
+	// Stub — iOS uses this for rounded-corner OSD clearance. Full implementation in Phase 5.
+}
+
 void ImGuiManager::ReloadFonts()
 {
 	if (!ImGui::GetCurrentContext())
