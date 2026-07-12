@@ -2024,26 +2024,81 @@ static void memory_protect_recompiled_code(u32 startpc, u32 size)
 			armAsm->Mov(a64::w0, inpage_ptr);
 			armAsm->Mov(a64::w1, inpage_sz / 4);
 
-			u32 lpc = inpage_ptr;
-			u32 stg = inpage_sz;
-
-			// Generate inline byte-by-byte comparison of compiled block source with current RAM.
-			// If any word differs, the block is stale and must be discarded.
-			while (stg > 0)
+			// FX-03a fast compare (mirrors the AetherSX2 leak's hoisted-base
+			// wide-compare shape, module 1030, which strides 8 bytes; we take
+			// it to 16): snapshot the source words into the constant pool,
+			// hoist both base addresses once, then Ldp 16-byte pairs through
+			// a single Cmp/Ccmp flag chain with ONE exit branch. ~1.3
+			// insns/word vs ~8 for the per-word fallback below. Post-index
+			// addressing dodges the Ldp imm7 range limit on page-size blocks.
+			// The snapshot must be OUR frozen copy — comparing against
+			// recRAMCopy would alias later recompiles of overlapping blocks.
+			const u8* expected_blob = armConstantPool ?
+				armConstantPool->GetBlob((const u8*)PSM(inpage_ptr), inpage_sz) : nullptr;
+			if (expected_blob)
 			{
-				const u32 expected = *(u32*)PSM(lpc);
-
-				// Load current memory word
-				armMoveAddressToReg(RSCRATCHADDR, (void*)PSM(lpc));
-				armAsm->Ldr(RWSCRATCH, a64::MemOperand(RSCRATCHADDR));
-
-				// Compare with compile-time snapshot
-				armAsm->Mov(a64::w9, expected);
-				armAsm->Cmp(RWSCRATCH, a64::w9);
+				// Clobbers x2/x3/x8/x9/x10/x17 — all dead at block head
+				// (w0/w1 hold the discard args and are untouched).
+				armMoveAddressToReg(RSCRATCHADDR, (void*)PSM(inpage_ptr));
+				armMoveAddressToReg(RXSCRATCH, expected_blob);
+				u32 rem = inpage_sz;
+				bool first = true;
+				while (rem >= 16)
+				{
+					armAsm->Ldp(a64::x9, a64::x10, a64::MemOperand(RSCRATCHADDR, 16, a64::PostIndex));
+					armAsm->Ldp(a64::x2, a64::x3, a64::MemOperand(RXSCRATCH, 16, a64::PostIndex));
+					if (first)
+						armAsm->Cmp(a64::x9, a64::x2);
+					else
+						armAsm->Ccmp(a64::x9, a64::x2, a64::NoFlag, a64::eq);
+					armAsm->Ccmp(a64::x10, a64::x3, a64::NoFlag, a64::eq);
+					first = false;
+					rem -= 16;
+				}
+				if (rem >= 8)
+				{
+					armAsm->Ldr(a64::x9, a64::MemOperand(RSCRATCHADDR, 8, a64::PostIndex));
+					armAsm->Ldr(a64::x2, a64::MemOperand(RXSCRATCH, 8, a64::PostIndex));
+					if (first)
+						armAsm->Cmp(a64::x9, a64::x2);
+					else
+						armAsm->Ccmp(a64::x9, a64::x2, a64::NoFlag, a64::eq);
+					first = false;
+					rem -= 8;
+				}
+				if (rem)
+				{
+					armAsm->Ldr(a64::w9, a64::MemOperand(RSCRATCHADDR));
+					armAsm->Ldr(a64::w2, a64::MemOperand(RXSCRATCH));
+					if (first)
+						armAsm->Cmp(a64::w9, a64::w2);
+					else
+						armAsm->Ccmp(a64::w9, a64::w2, a64::NoFlag, a64::eq);
+				}
 				armEmitCondBranch(a64::ne, DispatchBlockDiscard);
+			}
+			else
+			{
+				// Pool full — per-word fallback (the original emission).
+				u32 lpc = inpage_ptr;
+				u32 stg = inpage_sz;
 
-				stg -= 4;
-				lpc += 4;
+				while (stg > 0)
+				{
+					const u32 expected = *(u32*)PSM(lpc);
+
+					// Load current memory word
+					armMoveAddressToReg(RSCRATCHADDR, (void*)PSM(lpc));
+					armAsm->Ldr(RWSCRATCH, a64::MemOperand(RSCRATCHADDR));
+
+					// Compare with compile-time snapshot
+					armAsm->Mov(a64::w9, expected);
+					armAsm->Cmp(RWSCRATCH, a64::w9);
+					armEmitCondBranch(a64::ne, DispatchBlockDiscard);
+
+					stg -= 4;
+					lpc += 4;
+				}
 			}
 
 			// Counted blocks: track how often this block runs. If the counter overflows,
@@ -2104,7 +2159,11 @@ static void recReserve()
 	if (!s_pInstCache)
 		pxFailRel("Failed to allocate R5900 InstCache array.");
 
-	const u32 poolSize = 65536;
+	// 256KB: the FX-03a manual-check snapshots are blobs, not dedup'd
+	// literals — a manual-heavy title banks ~70-80KB of them per rec
+	// generation (SotC 17k words, UYA 19k). Overflow falls back to the
+	// per-word check emission, so this is a soft ceiling.
+	const u32 poolSize = 262144;
 	u8* poolBase = SysMemory::GetEERecEnd() - poolSize;
 	s_eeConstantPool.Init(poolBase, poolSize);
 }
@@ -2132,6 +2191,12 @@ static void recResetRaw()
 #if JIT_ALLOC_CENSUS
 	ArmJitTelemetry::ReportAllocCensus("ee-reset");
 #endif
+
+	// Full reset regenerates every block and dispatcher, so nothing can
+	// reference old pool content — drop it. Required since FX-03a: the
+	// manual-check snapshot blobs are not dedup'd, so without this the pool
+	// grows monotonically across resets into permanent per-word fallback.
+	s_eeConstantPool.Reset();
 
 	armSetAsmPtr(SysMemory::GetEERec(), SysMemory::GetEERecEnd() - SysMemory::GetEERec(), &s_eeConstantPool);
 	armStartBlock();

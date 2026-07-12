@@ -819,6 +819,17 @@ u8* ArmConstantPool::GetLiteral(const u8* bytes, size_t len)
 	return GetLiteral(table_u128);
 }
 
+u8* ArmConstantPool::GetBlob(const u8* bytes, size_t len)
+{
+	const u32 offset = Common::AlignUpPow2(m_used, 8);
+	if (offset + len > m_capacity)
+		return nullptr;
+
+	std::memcpy(&m_base_ptr[offset], bytes, len);
+	m_used = offset + static_cast<u32>(len);
+	return m_base_ptr + offset;
+}
+
 void ArmConstantPool::EmitLoadLiteral(const vixl::aarch64::CPURegister& reg, const u8* literal) const
 {
 	armMoveAddressToReg(RXVIXLSCRATCH, literal);

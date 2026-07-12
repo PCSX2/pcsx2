@@ -204,6 +204,9 @@ public:
 	u8* GetLiteral(u64 value);
 	u8* GetLiteral(const u128& value);
 	u8* GetLiteral(const u8* bytes, size_t len);
+	// Contiguous 8-aligned copy of an arbitrary-length blob (no dedup).
+	// Returns nullptr when the pool is full — callers must have a fallback.
+	u8* GetBlob(const u8* bytes, size_t len);
 
 	void EmitLoadLiteral(const vixl::aarch64::CPURegister& reg, const u8* literal) const;
 
