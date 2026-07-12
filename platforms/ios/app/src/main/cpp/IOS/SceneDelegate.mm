@@ -635,11 +635,10 @@ static void ARMSX2StartJITKeepalive()
                               dispatch_time(DISPATCH_TIME_NOW, 12 * NSEC_PER_SEC),
                               12 * NSEC_PER_SEC, 0);
     dispatch_source_set_event_handler(s_jitKeepaliveTimer, ^{
-        // Check JIT on every interval, even during active gameplay.
-        // iOS can revoke CS_DEBUGGED at any time — including mid-frame —
-        // which flips protection on code and data pages and crashes the
-        // CPU, GS, and MTVU threads simultaneously. The canary write is
-        // cheap (one byte) and the csops check is a single syscall.
+        // Skip while VM is running — the recompiler constantly writes code,
+        // so JIT cannot expire during active gameplay.
+        if (s_vmThreadActive.load(std::memory_order_relaxed))
+            return;
         if (!DarwinMisc::ValidateJITAlive())
         {
             s_jitExpired.store(true);
@@ -1032,9 +1031,8 @@ static void ARMSX2StartJITKeepalive()
             ARMSX2ApplyJITScriptProtocol("pre-vm-initialize");
 
             // --- Initialize & Execute VM ---
-            // Keep the keepalive timer running during gameplay. iOS can
-            // revoke CS_DEBUGGED mid-frame, and the timer detects it before
-            // a protection fault crashes the CPU/GS/MTVU threads.
+            // VM about to run — JIT is in active use, keepalive not needed.
+            ARMSX2StopJITKeepalive();
             Error bootError;
             const VMBootResult bootResult = VMManager::Initialize(boot_params, &bootError);
             const std::string bootErrorText = bootError.GetDescription();
