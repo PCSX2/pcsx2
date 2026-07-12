@@ -2491,11 +2491,16 @@ static int RunStepDiff()
 // herrings of the Burnout 3 hunt all collapsed this way. Confirm any lead from
 // here with an arm64-jit-vs-x86-jit diff before trusting it.
 
-// Capture hooks live in pcsx2/VU0.cpp; null in production.
+// Capture hooks live in pcsx2/VU0.cpp; null in production. They only EXIST
+// under PCSX2_RECOMPILER_TESTS (ENABLE_RECOMPILER_TEST_HOOKS=ON) — production
+// configs (build-rocknix) compile eerunner without them, so every reference
+// here must share the gate or the link breaks.
+#ifdef PCSX2_RECOMPILER_TESTS
 typedef void (*Cop2ReadHook)(u32 ee_pc, u32 op, u32 fs, const u32* lanes);
 typedef void (*Cop2StateHook)(u32 tpc, u32 q, u32 mac, u32 status, u32 clip);
 extern Cop2ReadHook g_cop2ReadHook;
 extern Cop2StateHook g_cop2StateHook;
+#endif
 
 namespace
 {
@@ -2507,6 +2512,7 @@ struct Cop2Read
 };
 std::vector<Cop2Read> s_cop2_sink;
 
+#ifdef PCSX2_RECOMPILER_TESTS
 void Cop2ReadCapture(u32 ee_pc, u32 op, u32 fs, const u32* lanes)
 {
 	Cop2Read r{};
@@ -2532,6 +2538,7 @@ void Cop2StateCapture(u32 tpc, u32 q, u32 mac, u32 status, u32 clip)
 	r.status = status;
 	r.clip = clip;
 }
+#endif // PCSX2_RECOMPILER_TESTS
 } // namespace
 
 // Diff two per-COP2-read VU0-value streams (a=interp golden, b=jit candidate) and
@@ -2601,6 +2608,10 @@ static void ReportCop2ReadDiff(const std::vector<Cop2Read>& a, const std::vector
 
 static int RunVu0Diff()
 {
+#ifndef PCSX2_RECOMPILER_TESTS
+	Console.Error("--vu0diff needs the COP2 capture hooks: rebuild with ENABLE_RECOMPILER_TEST_HOOKS=ON.");
+	return EXIT_FAILURE;
+#endif
 	Error error;
 	const std::string ckpt = Path::Combine(EmuFolders::Cache, "eerunner_vu0diff.p2s");
 
@@ -2621,11 +2632,13 @@ static int RunVu0Diff()
 		}
 		SetVu0Mode(vu0_jit);
 		s_cop2_sink.clear();
+#ifdef PCSX2_RECOMPILER_TESTS
 		g_cop2ReadHook = &Cop2ReadCapture;
 		g_cop2StateHook = &Cop2StateCapture;
 		AdvanceFrames(1);
 		g_cop2ReadHook = nullptr;
 		g_cop2StateHook = nullptr;
+#endif
 		out = s_cop2_sink;
 		return true;
 	};
