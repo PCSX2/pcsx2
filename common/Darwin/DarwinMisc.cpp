@@ -13,6 +13,8 @@
 #include "common/HostSys.h"
 #include "fmt/format.h"
 
+#include <atomic>
+#include <chrono>
 #include <csignal>
 #include <cstdio>
 #include <cstring>
@@ -625,6 +627,8 @@ void DarwinMisc::SetCrashLogFD(int fd)
 
 void DarwinMisc::SetJitRange(void* base, size_t size)
 {
+	if (!base || size == 0)
+		return; // interpreter-only mode: no code region
 	s_jit_base = reinterpret_cast<uintptr_t>(base);
 	s_jit_end = s_jit_base + size;
 }
@@ -735,6 +739,44 @@ bool DarwinMisc::IsJITAvailable()
 	return true;
 #else
 	return true;
+#endif
+}
+
+bool DarwinMisc::ValidateJITAlive()
+{
+#if TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+	// Check 1: CS_DEBUGGED still set?
+	u32 cs_flags = 0;
+	const int rv = csops(getpid(), 0, &cs_flags, sizeof(cs_flags));
+	const bool cs_debugged = (rv == 0) && ((cs_flags & 0x10000000u) != 0);
+	if (!cs_debugged)
+	{
+		std::fprintf(stderr, "@@JIT_KEEPALIVE@@ alive=0 reason=cs_debugged_revoked\n");
+		std::fflush(stderr);
+		return false;
+	}
+
+	// Check 2: RW alias still writable? Write a canary, read it back.
+	if (g_code_rw_base != 0 && g_code_rw_size > 0)
+	{
+		volatile u8* canary = reinterpret_cast<volatile u8*>(g_code_rw_base);
+		const u8 saved = *canary;
+		*canary = 0x42;
+		const u8 readback = *canary;
+		*canary = saved; // restore so we don't corrupt the first code byte
+		if (readback != 0x42)
+		{
+			std::fprintf(stderr, "@@JIT_KEEPALIVE@@ alive=0 reason=rw_alias_dead readback=0x%02x\n", readback);
+			std::fflush(stderr);
+			return false;
+		}
+	}
+
+	std::fprintf(stderr, "@@JIT_KEEPALIVE@@ alive=1 cs_debugged=1 canary=ok\n");
+	std::fflush(stderr);
+	return true;
+#else
+	return true; // macOS and Simulator always have JIT
 #endif
 }
 
@@ -879,7 +921,7 @@ void* DarwinMisc::MmapCodeDualMap(size_t size)
 
 	if (mode == JitMode::LuckTXM)
 	{
-		static sigjmp_buf s_alloc_brk_jmp;
+		static thread_local sigjmp_buf s_alloc_brk_jmp;
 		struct sigaction sa_brk = {};
 		struct sigaction sa_brk_old = {};
 		sa_brk.sa_handler = +[](int) { siglongjmp(s_alloc_brk_jmp, 1); };
@@ -915,37 +957,91 @@ void* DarwinMisc::MmapCodeDualMap(size_t size)
 				std::fflush(stderr);
 			}
 		}
-		else
+		else // universal protocol
 		{
+			// Run TXM prepare on a worker thread with an 8-second timeout.
+			// The brk #0xf00d instruction can hang on large code regions; if it
+			// doesn't complete in 8 seconds, fall back to the Legacy brk #0x69 path.
+			std::atomic<bool> universal_done{false};
+			std::atomic<bool> universal_ok{false};
+
 			std::fprintf(stderr, "@@JIT_ALLOC@@ txm_register_universal_begin rx=%p size=0x%zx\n", rx_ptr, size);
 			std::fflush(stderr);
-			if (sigsetjmp(s_alloc_brk_jmp, 1) == 0)
-			{
-				JIT26PrepareRegion(rx_ptr, size);
-				std::fprintf(stderr, "@@JIT_ALLOC@@ txm_register_universal_ok\n");
-				std::fflush(stderr);
 
-				std::fprintf(stderr, "@@JIT_ALLOC@@ txm_detach_begin\n");
+			std::thread txm_worker([&]() {
+				if (sigsetjmp(s_alloc_brk_jmp, 1) == 0)
+				{
+					JIT26PrepareRegion(rx_ptr, size);
+					std::fprintf(stderr, "@@JIT_ALLOC@@ txm_register_universal_ok\n");
+					std::fflush(stderr);
+
+					std::fprintf(stderr, "@@JIT_ALLOC@@ txm_detach_begin\n");
+					std::fflush(stderr);
+					if (sigsetjmp(s_alloc_brk_jmp, 1) == 0)
+					{
+						JIT26Detach();
+						universal_ok.store(true);
+						std::fprintf(stderr, "@@JIT_ALLOC@@ txm_detach_ok\n");
+						std::fflush(stderr);
+					}
+					else
+					{
+						std::fprintf(stderr, "@@JIT_ALLOC@@ txm_detach_sigtrap\n");
+						std::fflush(stderr);
+					}
+				}
+				else
+				{
+					std::fprintf(stderr, "@@JIT_ALLOC@@ txm_register_universal_sigtrap\n");
+					std::fflush(stderr);
+				}
+				universal_done.store(true);
+			});
+			txm_worker.detach();
+
+			// Wait up to 8 seconds
+			for (int i = 0; i < 80; i++)
+			{
+				if (universal_done.load(std::memory_order_relaxed))
+					break;
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			}
+
+			if (universal_done.load() && universal_ok.load())
+			{
+				brk_ok = true;
+			}
+			else if (!universal_done.load())
+			{
+				// Worker hung — try Legacy fallback
+				std::fprintf(stderr, "@@JIT_ALLOC@@ txm_universal_timeout — falling back to legacy brk #0x69\n");
+				std::fflush(stderr);
+				// The worker thread is still running (hung). It's detached so it won't
+				// block shutdown, but the SIGTRAP handler is still installed. Try Legacy.
+				std::fprintf(stderr, "@@JIT_ALLOC@@ txm_register_begin rx=%p size=0x%zx\n", rx_ptr, size);
 				std::fflush(stderr);
 				if (sigsetjmp(s_alloc_brk_jmp, 1) == 0)
 				{
-					JIT26Detach();
+					asm volatile("mov x0, %0\n"
+					             "mov x1, %1\n"
+					             "brk #0x69"
+					             :: "r"(rx_ptr), "r"(size) : "x0", "x1");
 					brk_ok = true;
-					std::fprintf(stderr, "@@JIT_ALLOC@@ txm_detach_ok\n");
+					std::fprintf(stderr, "@@JIT_ALLOC@@ txm_register_ok\n");
 					std::fflush(stderr);
 				}
 				else
 				{
-					std::fprintf(stderr, "@@JIT_ALLOC@@ txm_detach_sigtrap\n");
+					std::fprintf(stderr, "@@JIT_ALLOC@@ txm_register_sigtrap\n");
 					std::fflush(stderr);
 				}
 			}
-			else
-			{
-				std::fprintf(stderr, "@@JIT_ALLOC@@ txm_register_universal_sigtrap\n");
-				std::fflush(stderr);
-			}
+			// else: universal completed but failed (sigtrap) — brk_ok stays false
 		}
+		// NOTE: If the Universal TXM worker (detached, possibly hung) traps late
+		// after the Legacy fallback, it may hit the handler after restoration.
+		// This race is bounded: it only occurs with Universal protocol + hang +
+		// late trap. ARMSX2_JIT_PROTOCOL=legacy avoids the Universal path entirely.
 		sigaction(SIGTRAP, &sa_brk_old, nullptr);
 
 		if (!brk_ok)

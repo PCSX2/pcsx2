@@ -38,6 +38,8 @@ BIOS
 #include "common/AlignedMalloc.h"
 #include "common/Error.h"
 
+#include <cstdio>
+
 #ifdef ENABLECACHE
 #include "Cache.h"
 #endif
@@ -121,15 +123,31 @@ bool SysMemory::AllocateMemoryMap()
 	// [iOS] Code is allocated separately via DarwinMisc dual-mapping (W^X RW/RX aliases),
 	// not through SharedMemoryMappingArea. iOS rejects PROT_NONE MAP_JIT and MAP_FIXED+MAP_JIT,
 	// so the generic SharedMemoryMappingArea code path is unusable here.
-	if ((s_code_memory = static_cast<u8*>(DarwinMisc::MmapCodeDualMap(HostMemoryMap::CodeSize))) == nullptr)
+	//
+	// In forced-interpreter mode (JIT unavailable/expired), skip executable code
+	// allocation entirely. The interpreter does not generate native code, and
+	// intCpu::Reserve() never touches s_code_memory.
+	if (!DarwinMisc::iPSX2_FORCE_EE_INTERP)
 	{
-		Host::ReportErrorAsync("Error", "Failed to allocate iOS executable code memory.");
-		ReleaseMemoryMap();
-		return false;
+		if ((s_code_memory = static_cast<u8*>(DarwinMisc::MmapCodeDualMap(HostMemoryMap::CodeSize))) == nullptr)
+		{
+			std::fprintf(stderr, "@@BOOT_FAIL@@ reason=ios_code_alloc_failed stage=code_dualmap\n");
+			std::fflush(stderr);
+			Host::ReportErrorAsync("Error",
+				"Failed to allocate iOS executable code memory. "
+				"Try Settings \u2192 Emulator \u2192 JIT Script \u2192 Legacy, or relaunch via StikDebug.");
+			ReleaseMemoryMap();
+			return false;
+		}
+		Console.WriteLn("@@P43_OFFSET@@ g_code_rw_offset=%ld rw_base=%p size=%zu",
+			(long)DarwinMisc::g_code_rw_offset, reinterpret_cast<void*>(DarwinMisc::g_code_rw_base),
+			static_cast<size_t>(DarwinMisc::g_code_rw_size));
 	}
-	Console.WriteLn("@@P43_OFFSET@@ g_code_rw_offset=%ld rw_base=%p size=%zu",
-		(long)DarwinMisc::g_code_rw_offset, reinterpret_cast<void*>(DarwinMisc::g_code_rw_base),
-		static_cast<size_t>(DarwinMisc::g_code_rw_size));
+	else
+	{
+		Console.WriteLn("[iOS] Skipping code-memory allocation \u2014 interpreter-only mode (iPSX2_FORCE_EE_INTERP=1)");
+		s_code_memory = nullptr;
+	}
 #else
 	if (!(s_code_mapping_area = SharedMemoryMappingArea::Create(HostMemoryMap::CodeSize, true)))
 	{

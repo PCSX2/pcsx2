@@ -2168,6 +2168,10 @@ final class SettingsStore {
     /// Reset emulator settings to ARMSX2 iOS defaults
     func resetEmulatorDefaults() {
         eeCoreType = 2          // ARM64 JIT
+        // Core uses EnableEE (not CoreType) to select interpreter vs recompiler.
+        // Restore EnableEE=true so the core actually uses the recompiler again,
+        // undoing any prior applyFullInterpreterPreset() that forced the interpreter.
+        ARMSX2Bridge.setINIBool("EmuCore/CPU/Recompiler", key: "EnableEE", value: true)
         iopRecompiler = true
         vu0Recompiler = true
         vu1Recompiler = true
@@ -2216,6 +2220,10 @@ final class SettingsStore {
     /// Keep EE/IOP/VU0 fast while isolating suspected VU1 JIT regressions.
     func applyVU1CompatibilityPreset() {
         eeCoreType = 2
+        // Core uses EnableEE (not CoreType) to select interpreter vs recompiler.
+        // Restore EnableEE=true so the core actually uses the EE recompiler again,
+        // undoing any prior applyFullInterpreterPreset() that forced the interpreter.
+        ARMSX2Bridge.setINIBool("EmuCore/CPU/Recompiler", key: "EnableEE", value: true)
         iopRecompiler = true
         vu0Recompiler = true
         vu1Recompiler = false
@@ -2227,6 +2235,9 @@ final class SettingsStore {
     /// Slow diagnostic preset for crash isolation when dynarec state is suspect.
     func applyFullInterpreterPreset() {
         eeCoreType = 1
+        // Core uses EnableEE (not CoreType) to select interpreter vs recompiler.
+        // Must write EnableEE=false to actually force the EE interpreter.
+        ARMSX2Bridge.setINIBool("EmuCore/CPU/Recompiler", key: "EnableEE", value: false)
         iopRecompiler = false
         vu0Recompiler = false
         vu1Recompiler = false
