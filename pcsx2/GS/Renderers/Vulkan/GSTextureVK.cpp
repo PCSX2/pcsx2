@@ -117,13 +117,19 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Type type, Format format, int w
 		case Type::RenderTarget:
 		{
 			pxAssert(levels == 1);
-			// STORAGE usage only feeds ROV, which is disabled on Adreno. Omit it there so the driver can
-			// pick optimal tiling/compression for a color + input-attachment target.
-			const bool is_adreno = GSDeviceVK::GetInstance()->IsDeviceAdreno();
+			// STORAGE usage on a colour RT only feeds the fragment-shader-interlock ROV path
+			// (PSSetUnorderedAccess binds the RT as a storage image); CAS output is a separate RWTexture.
+			// That path is gated on Features().rov, which is false on every mobile tiler — Adreno
+			// force-disables it (A6xx pixel-interlock hangcheck) and Mali/libmali never exposes
+			// VK_EXT_fragment_shader_interlock. Omitting STORAGE where rov is unavailable lets the tiler
+			// pick optimal tiling/compression (AFBC on Mali) for the colour + input-attachment target.
+			// Removing a usage bit cannot change rendered pixels, only the driver's layout freedom.
+			// (AetherSX2 never sets STORAGE on RTs on any vendor.)
+			const bool rov = GSDeviceVK::GetInstance()->Features().rov;
 			ici.usage =
 				VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
 				VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
-				(is_adreno ? 0 : VK_IMAGE_USAGE_STORAGE_BIT) |
+				(rov ? VK_IMAGE_USAGE_STORAGE_BIT : 0) |
 				(GSDeviceVK::GetInstance()->UseFeedbackLoopLayout()
 				         ? VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT
 				         : VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
