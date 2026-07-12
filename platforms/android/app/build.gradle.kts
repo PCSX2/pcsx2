@@ -12,8 +12,6 @@ val armsx2Pgo = providers.gradleProperty("armsx2.pgo").orElse("none") // none | 
 val armsx2PgoProfile = providers.gradleProperty("armsx2.pgoProfile").orElse("") // abs path to merged .profdata (optimize)
 val armsx2HostPageSize = providers.gradleProperty("armsx2.hostPageSize").orElse("0x1000")
 val armsx2ApplicationId = providers.gradleProperty("armsx2.applicationId").orElse("com.armsx2")
-val armsx2VersionCode = providers.gradleProperty("armsx2.versionCode").map { it.toInt() }.orElse(17)
-val armsx2VersionName = providers.gradleProperty("armsx2.versionName").orElse("1.0-overlay-3")
 val armsx2SigningPropertiesFile = rootProject.file("armsx2_keystore.properties")
 val armsx2SigningProperties = Properties().apply {
     if (armsx2SigningPropertiesFile.isFile) {
@@ -36,8 +34,8 @@ android {
         applicationId = armsx2ApplicationId.get()
         minSdk = 26
         targetSdk = 37
-        versionCode = armsx2VersionCode.get()
-        versionName = armsx2VersionName.get()
+        versionCode = providers.gradleProperty("armsx2.versionCode").orNull?.toInt() ?: 1088
+        versionName = providers.gradleProperty("armsx2.versionName").orNull ?: "2.5.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk {
@@ -71,7 +69,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            if (false) externalNativeBuild {
+            if (true) externalNativeBuild {
                 cmake {
                     arguments += "-DANDROID=true"
                     arguments += "-DANDROID_STL=c++_static"
@@ -148,12 +146,12 @@ android {
     // (extracted from vc1063 into src/main/jniLibs/arm64-v8a) are packaged directly,
     // so UI/Kotlin iteration doesn't require recompiling the C++ core. Re-enable this
     // block (and the per-buildType cmake blocks above) to rebuild native from source.
-    // externalNativeBuild {
-    //     cmake {
-    //         path = file("src/main/cpp/CMakeLists.txt")
-    //         version = "3.30.5"
-    //     }
-    // }
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
     buildFeatures {
         // Generated BuildConfig.DEBUG used by Main.kt's debug-only auto-boot
         // path. AGP 8 made this opt-in.

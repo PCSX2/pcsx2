@@ -1448,8 +1448,33 @@ void InputManager::SetUSBVibrationIntensity(u32 port, float large_or_single_moto
 	SetPadVibrationIntensity(Pad::NUM_CONTROLLER_PORTS + port, large_or_single_motor_intensity, small_motor_intensity);
 }
 
+#ifdef __ANDROID__
+// The Android pad is fed by the custom JNI input path, not an input source with motor
+// bindings, so s_pad_vibration_array is empty and the loop below never drives a vibrator
+// (this is why rumble did nothing after the mono migration). Forward intensity changes
+// straight to the gamepad's Android vibrator via onPadRumble (NativeApp routes them to
+// that player's controller, or the handheld's own haptic as a fallback). Deduped per pad
+// to match the Java one-shot model (RUMBLE_MS re-issued only on change, cancelled on 0).
+namespace Native { void onPadRumble(int pad, int largeMotor, int smallMotor); }
+#endif
+
 void InputManager::SetPadVibrationIntensity(u32 pad_index, float large_or_single_motor_intensity, float small_motor_intensity)
 {
+#ifdef __ANDROID__
+	if (pad_index < Pad::NUM_CONTROLLER_PORTS)
+	{
+		static float s_android_last[Pad::NUM_CONTROLLER_PORTS][2] = {};
+		if (s_android_last[pad_index][0] != large_or_single_motor_intensity ||
+			s_android_last[pad_index][1] != small_motor_intensity)
+		{
+			s_android_last[pad_index][0] = large_or_single_motor_intensity;
+			s_android_last[pad_index][1] = small_motor_intensity;
+			Native::onPadRumble(static_cast<int>(pad_index),
+				static_cast<int>(large_or_single_motor_intensity * 255.0f + 0.5f),
+				static_cast<int>(small_motor_intensity * 255.0f + 0.5f));
+		}
+	}
+#endif
 	for (PadVibrationBinding& pad : s_pad_vibration_array)
 	{
 		if (pad.pad_index != pad_index)

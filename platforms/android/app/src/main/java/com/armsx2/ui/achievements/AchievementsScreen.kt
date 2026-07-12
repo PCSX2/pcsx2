@@ -71,8 +71,7 @@ fun AchievementsScreen(onBack: () -> Unit, viewModel: AchievementsViewModel = vi
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             ArmsTopBar(
                 title = "RetroAchievements",
-                subtitle = state.richPresence.ifBlank { str("ra.status.notSignedIn.body") },
-                leading = { RoundAction("‹", str("action.back"), onBack) },
+                leading = { RoundAction("←", str("action.back"), onBack) },
                 actions = {
                     if (state.loggedIn) {
                         StatusChip("${state.score} pts", Success)

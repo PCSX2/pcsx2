@@ -335,8 +335,6 @@ void Pad::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface&
 	{
 		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort1");
 		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort2");
-		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort1");
-		dest_si->CopyBoolValue(src_si, "Pad", "MultitapPort2");
 		dest_si->CopyFloatValue(src_si, "Pad", "PointerXScale");
 		dest_si->CopyFloatValue(src_si, "Pad", "PointerYScale");
 		for (u32 i = 0; i < static_cast<u32>(InputSourceType::Count); i++)

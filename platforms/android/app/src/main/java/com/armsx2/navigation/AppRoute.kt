@@ -33,6 +33,7 @@ enum class SettingsCategory {
     Skins,
     Advanced,
     Recompiler,
+    About,
 }
 
 object UiNavigator {
@@ -53,6 +54,10 @@ object UiNavigator {
         }
         when (route.value) {
             AppRoute.Language -> {
+                route.value = AppRoute.Settings(SettingsCategory.General)
+                return true
+            }
+            AppRoute.About -> {
                 route.value = AppRoute.Settings(SettingsCategory.General)
                 return true
             }

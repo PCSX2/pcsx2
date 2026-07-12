@@ -57,7 +57,8 @@ fun AppNavigation() {
                     ),
                 )
                 val isReturning = targetState is AppRoute.Home ||
-                    (initialState is AppRoute.Language && targetState is AppRoute.Settings)
+                    ((initialState is AppRoute.Language || initialState is AppRoute.About) &&
+                        targetState is AppRoute.Settings)
                 val exit = if (isReturning) {
                     fadeOut(
                         animationSpec = tween(
@@ -87,6 +88,7 @@ fun AppNavigation() {
                     initialCategory = destination.category,
                     game = destination.game,
                     onBack = UiNavigator::home,
+                    onOpenAbout = { UiNavigator.navigate(AppRoute.About) },
                 )
                 AppRoute.BiosManager -> BiosManagerScreen(onBack = UiNavigator::home)
                 AppRoute.MemoryCardManager -> MemoryCardScreen(onBack = UiNavigator::home)
@@ -98,7 +100,9 @@ fun AppNavigation() {
                 AppRoute.Language -> LanguageScreen(
                     onBack = { UiNavigator.navigate(AppRoute.Settings(SettingsCategory.General)) },
                 )
-                AppRoute.About -> AboutScreen(onBack = UiNavigator::home)
+                AppRoute.About -> AboutScreen(
+                    onBack = { UiNavigator.navigate(AppRoute.Settings(SettingsCategory.General)) },
+                )
             }
         }
 

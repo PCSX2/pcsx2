@@ -19,6 +19,7 @@
 #include "pcsx2/Counters.h"
 #include "pcsx2/VMManager.h"
 #include "pcsx2/CDVD/CDVDcommon.h"
+#include "pcsx2/CDVD/CDVD.h" // cdvdSaveNVRAM (flush BIOS NVM on background)
 #include "SIO/Memcard/MemoryCardFile.h"
 #include "pcsx2/Patch.h"
 #include "pcsx2/R5900.h"
@@ -355,18 +356,21 @@ Java_kr_co_iefriends_pcsx2_NativeApp_initialize(JNIEnv *env, jclass clazz,
         si.SetBoolValue("Logging", "EnableTimestamps", true);
         si.SetBoolValue("Logging", "EnableVerbose", true);
 
-        // and show some stats :)
-        si.SetBoolValue("EmuCore/GS", "OsdShowFPS", true);
-        si.SetBoolValue("EmuCore/GS", "OsdShowSpeed", true);
-        si.SetBoolValue("EmuCore/GS", "OsdShowResolution", true);
-        si.SetBoolValue("EmuCore/GS", "OsdShowCPU", true);
-        si.SetBoolValue("EmuCore/GS", "OsdShowGPU", true);
-        si.SetBoolValue("EmuCore/GS", "OsdShowGSStats", true);
-        si.SetBoolValue("EmuCore/GS", "OsdShowFrameTimes", true);
-        si.SetBoolValue("EmuCore/GS", "OsdShowHardwareInfo", true);
-        si.SetBoolValue("EmuCore/GS", "OsdShowVersion", true);
-        si.SetBoolValue("EmuCore/GS", "OsdShowSettings", true);
-        si.SetBoolValue("EmuCore/GS", "OsdShowInputs", true);
+        // Perf OSD defaults OFF (it reads as clutter). The canonical GSOptions
+        // bitfields default every OsdShow* to 1 (desktop PCSX2 shows FPS etc. by
+        // default), so we MUST explicitly seed them false here — otherwise a fresh
+        // install renders the overlay even though the UI toggle reads "off".
+        // This block only runs when the INI IsEmpty() (first launch), so it never
+        // clobbers a returning user who turned the OSD on; the overlay renderer
+        // (ImGuiOverlays.cpp DrawPerformanceOverlay) reads EmuConfig.GS, which loads
+        // exactly these seeded values. The in-game "On-screen display" toggle turns
+        // them back on and persists true, which this block then skips.
+        for (const char* k : {"OsdShowFPS", "OsdShowVPS", "OsdShowSpeed", "OsdShowResolution",
+            "OsdShowGSStats", "OsdShowCPU", "OsdShowGPU", "OsdShowGPUStats", "OsdShowFrameTimes",
+            "OsdShowHardwareInfo", "OsdShowVersion", "OsdShowSettings", "OsdShowInputs"})
+        {
+            si.SetBoolValue("EmuCore/GS", k, false);
+        }
 //        // remove memory cards, so we don't have sharing violations
 //        for (u32 i = 0; i < 2; i++)
 //        {
@@ -2093,6 +2097,15 @@ Java_kr_co_iefriends_pcsx2_NativeApp_pause(JNIEnv *env, jclass clazz) {
         Host::RunOnCPUThread([]() {
             if (VMManager::HasValidVM() && VMManager::GetState() == VMState::Running)
                 VMManager::SetPaused(true);
+            // Persist the BIOS NVRAM (clock / language / console config) on every
+            // background/pause, not only on a clean Shutdown. Android users background
+            // or swipe the app far more than they cleanly Stop a game, and the process
+            // is frequently killed while paused — so BIOS config written to the in-RAM
+            // NVM buffer never reached disk, and the BIOS re-ran its first-boot setup
+            // on every launch. Runs on the CPU thread (owns CDVD state); cdvdSaveNVRAM()
+            // no-ops when the NVM is unchanged, so pausing repeatedly is cheap.
+            if (VMManager::HasValidVM())
+                cdvdSaveNVRAM();
         });
 
         if (!s_execute_exit.load(std::memory_order_acquire) && Cpu)
@@ -3061,9 +3074,31 @@ int Host::LocaleSensitiveCompare(std::string_view lhs, std::string_view rhs)
     return lhs.compare(rhs);
 }
 
-// OSD toggle helpers — apply immediately via EmuConfig.GS then push to MTGS
+// OSD toggle helpers. The perf-overlay renderer reads the LIVE GSConfig every
+// frame; the canonical sync (EmuConfig.GS -> GSConfig) only happens inside
+// MTGS::ApplySettings, which DEFERS the copy to the GS thread and is skipped
+// entirely when MTGS isn't open. That meant an OSD toggle could land in
+// EmuConfig yet never reach GSConfig, so the on-screen display appeared to
+// ignore the switch. Copy the OSD fields straight into GSConfig here (plain
+// bools/ints — a torn cross-thread read is impossible), so the change is
+// immediate and reliable, then still run the MTGS reconfigure for the rest.
 static void applyOsdSetting()
 {
+    GSConfig.OsdShowSpeed = EmuConfig.GS.OsdShowSpeed;
+    GSConfig.OsdShowFPS = EmuConfig.GS.OsdShowFPS;
+    GSConfig.OsdShowVPS = EmuConfig.GS.OsdShowVPS;
+    GSConfig.OsdShowCPU = EmuConfig.GS.OsdShowCPU;
+    GSConfig.OsdShowGPU = EmuConfig.GS.OsdShowGPU;
+    GSConfig.OsdShowResolution = EmuConfig.GS.OsdShowResolution;
+    GSConfig.OsdShowGSStats = EmuConfig.GS.OsdShowGSStats;
+    GSConfig.OsdShowFrameTimes = EmuConfig.GS.OsdShowFrameTimes;
+    GSConfig.OsdShowHardwareInfo = EmuConfig.GS.OsdShowHardwareInfo;
+    GSConfig.OsdShowGPUStats = EmuConfig.GS.OsdShowGPUStats;
+    GSConfig.OsdShowVersion = EmuConfig.GS.OsdShowVersion;
+    GSConfig.OsdShowSettings = EmuConfig.GS.OsdShowSettings;
+    GSConfig.OsdShowInputs = EmuConfig.GS.OsdShowInputs;
+    GSConfig.OsdMessagesPos = EmuConfig.GS.OsdMessagesPos;
+    GSConfig.OsdScale = EmuConfig.GS.OsdScale;
     if (MTGS::IsOpen())
         MTGS::ApplySettings();
 }

@@ -34,8 +34,11 @@ data class AppLanguage(
 )
 
 object I18n {
-    /** English first (source of truth), then the machine-translated set. */
+    const val SYSTEM_CODE = "system"
+
+    /** System default first, then English (source of truth) and translations. */
     val languages: List<AppLanguage> = listOf(
+        AppLanguage(SYSTEM_CODE, "System", "System"),
         AppLanguage("en", "English", "English"),
         AppLanguage("es", "Spanish", "Español"),
         AppLanguage("pt-BR", "Portuguese (Brazil)", "Português (Brasil)"),
@@ -55,6 +58,7 @@ object I18n {
         AppLanguage("id", "Indonesian", "Indonesia"),
         AppLanguage("vi", "Vietnamese", "Tiếng Việt"),
         AppLanguage("th", "Thai", "ไทย"),
+        AppLanguage("fa", "Persian", "فارسی", rtl = true),
     )
 
     private const val PREF_KEY = "ui.language"
@@ -63,22 +67,54 @@ object I18n {
     var current by mutableStateOf("en")
         private set
 
+    /** Picker selection. `system` resolves to an actual [current] language. */
+    var selected by mutableStateOf(SYSTEM_CODE)
+        private set
+
     /** code → (key → translated text). English is never stored here (it lives in [EN]). */
     private val tables = HashMap<String, Map<String, String>>()
 
     /** Call once at startup (after MainActivityRuntime.prefs is ready). Restores the saved language. */
     fun init(context: Context) {
         val saved = runCatching { MainActivityRuntime.prefs.getString(PREF_KEY, null) }.getOrNull()
-        val code = if (saved != null && languages.any { it.code == saved }) saved else "en"
-        if (code != "en") ensureLoaded(context, code)
-        current = code
+        val selection = if (saved != null && languages.any { it.code == saved }) saved else SYSTEM_CODE
+        applySelection(context, selection)
     }
 
     /** Switch language live + persist. Loads the JSON if not already cached. */
     fun setLanguage(context: Context, code: String) {
-        if (code != "en") ensureLoaded(context, code)
-        current = code
+        if (languages.none { it.code == code }) return
+        applySelection(context, code)
         runCatching { MainActivityRuntime.prefs.edit { putString(PREF_KEY, code) } }
+    }
+
+    /** Re-resolve only when the picker is following the device language. */
+    fun refreshSystemLanguage(context: Context) {
+        if (selected == SYSTEM_CODE) applySelection(context, SYSTEM_CODE)
+    }
+
+    private fun applySelection(context: Context, selection: String) {
+        val code = if (selection == SYSTEM_CODE) resolveSystemLanguage(context) else selection
+        if (code != "en") ensureLoaded(context, code)
+        selected = selection
+        current = code
+    }
+
+    private fun resolveSystemLanguage(context: Context): String {
+        val locale = context.resources.configuration.locales[0] ?: return "en"
+        val supported = languages.filterNot { it.code == SYSTEM_CODE }
+        supported.firstOrNull { it.code.equals(locale.toLanguageTag(), ignoreCase = true) }?.let { return it.code }
+
+        if (locale.language.equals("zh", ignoreCase = true)) {
+            val traditional = locale.script.equals("Hant", ignoreCase = true) ||
+                locale.country.uppercase() in setOf("TW", "HK", "MO")
+            return if (traditional) "zh-TW" else "zh-CN"
+        }
+        if (locale.language.equals("pt", ignoreCase = true)) return "pt-BR"
+
+        return supported.firstOrNull {
+            it.code.substringBefore('-').equals(locale.language, ignoreCase = true)
+        }?.code ?: "en"
     }
 
     private fun ensureLoaded(context: Context, code: String) {
@@ -124,7 +160,7 @@ fun str(key: String): String {
  * renaming a key orphans it in every translation JSON.
  */
 val EN: Map<String, String> = mapOf(
-    "about.title" to "About",
+    "about.title" to "About app",
     "about.tagline" to "Fast, modern PlayStation 2 emulation for Android.",
     "about.appVersion" to "App version",
     "about.coreVersion" to "Emulator version",
@@ -132,6 +168,17 @@ val EN: Map<String, String> = mapOf(
     "about.androidVersion" to "Android version",
     "about.repository.title" to "GitHub repository",
     "about.repository.description" to "Open the source code, releases, and issue tracker.",
+    "about.build.title" to "Build information",
+    "about.hardware.title" to "Device information",
+    "about.soc" to "Chipset",
+    "about.gpu" to "GPU",
+    "about.cpuCores" to "CPU cores",
+    "about.memory" to "Memory",
+    "about.display" to "Display",
+    "about.architecture" to "Architecture",
+    "about.pageSize" to "Memory page",
+    "about.pcsx2.title" to "PCSX2 project",
+    "about.pcsx2.description" to "ARMSX2 is built on the open-source PCSX2 emulator.",
     // --- settings tabs ---
     "tab.app" to "App",
     "tab.info" to "Info",
@@ -165,7 +212,12 @@ val EN: Map<String, String> = mapOf(
     // --- App tab / language ---
     "app.language" to "Language",
     "app.language.desc" to "Choose the app language. Applies instantly.",
+    "app.language.system" to "System language",
     "app.language.machineNote" to "Translations except English are machine-translated. Spot a bad one? Let us know and we'll fix it.",
+    "app.library.search" to "Library search",
+    "app.library.search.desc" to "Show the game search field on the library home screen.",
+    "app.library.recents" to "Recently played games",
+    "app.library.recents.desc" to "Show the Recently Played section on the library home screen.",
     "app.theme" to "Theme",
     "app.theme.system" to "System",
     "app.theme.light" to "Light",
@@ -226,6 +278,15 @@ val EN: Map<String, String> = mapOf(
     "backend.applyRestart" to "Apply & Restart",
     "backend.driver.active" to "Active",
     "backend.driver.browseOnline" to "Browse online",
+    "backend.driver.download" to "Download",
+    "backend.driver.hideDownloads" to "Hide downloads",
+    "backend.driver.import" to "Import",
+    "backend.driver.get" to "Get",
+    "backend.driver.fetching" to "Fetching…",
+    "backend.driver.none" to "No drivers found",
+    "backend.driver.installedOk" to "Installed",
+    "backend.driver.downloadFailed" to "Download failed",
+    "backend.driver.importFailed" to "Import failed",
     "backend.driver.default" to "Default",
     "backend.driver.fetchError" to "Couldn't reach github.com/K11MCH1/AdrenoToolsDrivers. Check your connection and try again.",
     "backend.driver.hideOnline" to "Hide online",
@@ -396,7 +457,12 @@ val EN: Map<String, String> = mapOf(
     "games.info.perGameSettings.title" to "Per-game settings",
     "games.info.tapToClose" to "Tap anywhere or press B to close",
     "games.info.title" to "Library Help",
+    "games.library.totalGames" to "Total games",
     "games.nav.library" to "LIBRARY",
+    "games.overflow.coverStyle" to "Cover style",
+    "games.overflow.openNavigation" to "Open navigation",
+    "games.overflow.sortRecent" to "Sort by recently played",
+    "games.overflow.sortTitle" to "Sort by title",
     "games.noCover" to "No cover",
     "games.noSerial" to "No serial",
     "games.scanningRoms" to "Scanning ROMs…",
@@ -522,6 +588,7 @@ val EN: Map<String, String> = mapOf(
     "overlay.toggle.fastForwardPopups" to "Fast-Forward pop-ups",
     "overlay.toggle.fps" to "FPS",
     "overlay.master.label" to "On-screen display",
+    "overlay.simple.label" to "Simple OSD (FPS only)",
     "overlay.toggle.frameTimesGraph" to "Frame times graph",
     "overlay.toggle.gpuPipelineStats" to "GPU pipeline stats (VSI/PSI, Vulkan only)",
     "overlay.toggle.gpuUsage" to "GPU usage (saves perf when off)",
@@ -864,6 +931,8 @@ val EN: Map<String, String> = mapOf(
     "savestate.autosave.screenshotDesc" to "Autosave screenshot",
     "savestate.autosave.title" to "Autosave",
     "savestate.backup" to "Backup",
+    "savestate.empty.description" to "Create a save state while a game is running, then manage or back it up here.",
+    "savestate.empty.title" to "No save states yet",
     "savestate.noBackupFound" to "No backup found",
     "savestate.noSavesToBackUp" to "No saves to back up",
     "savestate.restore" to "Restore",

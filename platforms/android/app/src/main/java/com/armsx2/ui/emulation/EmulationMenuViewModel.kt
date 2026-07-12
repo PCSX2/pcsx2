@@ -236,6 +236,25 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
         )
     }
 
+    /** Simple OSD: just the FPS/VPS counter, none of the verbose CPU/GPU/GS/frame-time/
+     *  hardware lines. Mutually exclusive with the full OSD through the shared osdShow*
+     *  fields — the menu reads "FPS on + everything-else off" as the simple state. */
+    fun setOsdSimple(enabled: Boolean) = updateSettings {
+        it.copy(
+            osdShowFps = enabled,
+            osdShowVps = false,
+            osdShowSpeed = false,
+            osdShowCpu = false,
+            osdShowGpu = false,
+            osdShowResolution = false,
+            osdShowGsStats = false,
+            osdShowFrameTimes = false,
+            osdShowHardwareInfo = false,
+            osdShowGpuStats = false,
+            osdShowVersion = false,
+        )
+    }
+
     fun setRumble(enabled: Boolean) {
         ControllerMappings.setRumbleEnabled(enabled)
         NativeApp.sRumbleEnabled = enabled

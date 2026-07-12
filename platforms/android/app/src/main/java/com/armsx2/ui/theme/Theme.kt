@@ -68,6 +68,31 @@ object ToolbarPositionPreferences {
     }
 }
 
+/** Visibility of optional library-home sections. Both default to visible so
+ * existing users keep the current layout until they explicitly opt out. */
+object LibraryChromePreferences {
+    private const val SearchKey = "ui.library.showSearch"
+    private const val RecentsKey = "ui.library.showRecents"
+
+    val showSearch = mutableStateOf(false)
+    val showRecents = mutableStateOf(true)
+
+    fun load() {
+        showSearch.value = MainActivityRuntime.prefs.getBoolean(SearchKey, false)
+        showRecents.value = MainActivityRuntime.prefs.getBoolean(RecentsKey, true)
+    }
+
+    fun setShowSearch(value: Boolean) {
+        showSearch.value = value
+        MainActivityRuntime.prefs.edit { putBoolean(SearchKey, value) }
+    }
+
+    fun setShowRecents(value: Boolean) {
+        showRecents.value = value
+        MainActivityRuntime.prefs.edit { putBoolean(RecentsKey, value) }
+    }
+}
+
 private val NightScheme = darkColorScheme(
     primary = ArmsBlueBright,
     onPrimary = Color(0xFF07101F),

@@ -64,7 +64,7 @@ fun ControllerManagerScreen(onBack: () -> Unit, viewModel: ControllerManagerView
             ArmsTopBar(
                 title = str("tab.controls"),
                 subtitle = str("pad.editing.description"),
-                leading = { RoundAction("‹", str("action.back"), onBack) },
+                leading = { RoundAction("←", str("action.back"), onBack) },
                 actions = { RoundAction("↺", str("action.reset"), viewModel::resetPlayer) },
             )
             BoxWithConstraints(Modifier.fillMaxWidth()) {

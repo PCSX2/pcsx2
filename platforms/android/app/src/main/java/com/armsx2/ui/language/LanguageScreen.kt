@@ -52,10 +52,10 @@ fun LanguageScreen(
                 ArmsTopBar(
                     title = str("app.language"),
                     subtitle = str("app.language.desc"),
-                    leading = { RoundAction("‹", str("action.back"), onBack) },
+                    leading = { RoundAction("←", str("action.back"), onBack) },
                 )
                 I18n.languages.forEach { language ->
-                    val selected = language.code == I18n.current
+                    val selected = language.code == I18n.selected
                     Surface(
                         onClick = { viewModel.select(language.code) },
                         modifier = Modifier
@@ -79,11 +79,11 @@ fun LanguageScreen(
                         ) {
                             Column(Modifier.weight(1f)) {
                                 Text(
-                                    language.nativeName,
+                                    if (language.code == I18n.SYSTEM_CODE) str("app.language.system") else language.nativeName,
                                     style = MaterialTheme.typography.titleMedium,
                                     color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                                 )
-                                if (language.nativeName != language.englishName) {
+                                if (language.code != I18n.SYSTEM_CODE && language.nativeName != language.englishName) {
                                     Text(
                                         language.englishName,
                                         style = MaterialTheme.typography.bodySmall,

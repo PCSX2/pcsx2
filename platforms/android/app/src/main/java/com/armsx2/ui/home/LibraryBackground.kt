@@ -7,10 +7,12 @@ import androidx.compose.runtime.mutableStateOf
 import com.armsx2.runtime.MainActivityRuntime
 
 /**
- * Optional user-chosen library background image (#9). Stores a persisted content
- * URI; when unset the library looks exactly as before (nothing renders), so this
- * is inert unless the user picks a background. Static images and animated GIF/WebP
- * both work — the library already loads via Coil with animated-image decoders.
+ * Optional user-chosen library background (#9). Stores a persisted content URI;
+ * when unset the library falls back to the bundled default XMB-wave still image
+ * (R.drawable.library_bg_xmb, drawn in HomeScreen). The user can pick a still image
+ * or an animated GIF/WebP (Coil handles both); `clear()` reverts to the default.
+ * (The background used to be a looping MP4 but that hurt performance, so it's a
+ * static image now.)
  */
 object LibraryBackground {
     private const val PREF = "library.background.uri"

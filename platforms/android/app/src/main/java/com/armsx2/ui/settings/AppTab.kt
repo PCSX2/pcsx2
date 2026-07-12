@@ -27,10 +27,11 @@ import com.armsx2.ui.theme.BootLogoPreferences
 import com.armsx2.ui.theme.ThemeMode
 import com.armsx2.ui.theme.ThemePreferences
 import com.armsx2.ui.theme.ToolbarPositionPreferences
+import com.armsx2.ui.theme.LibraryChromePreferences
 
 @Composable
 fun AppTab() {
-    val currentLanguage = I18n.languages.firstOrNull { it.code == I18n.current } ?: I18n.languages.first()
+    val currentLanguage = I18n.languages.firstOrNull { it.code == I18n.current }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -61,7 +62,7 @@ fun AppTab() {
                 Column(Modifier.weight(1f)) {
                     Text(str("app.language"), style = MaterialTheme.typography.titleMedium)
                     Text(
-                        currentLanguage.nativeName,
+                        if (I18n.selected == I18n.SYSTEM_CODE) str("app.language.system") else currentLanguage?.nativeName ?: "English",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -101,6 +102,20 @@ fun AppTab() {
             options = listOf(str("app.toolbarPosition.top"), str("app.toolbarPosition.bottom")),
             selectedIndex = if (ToolbarPositionPreferences.atBottom.value) 1 else 0,
             onChange = { ToolbarPositionPreferences.set(it == 1) },
+        )
+
+        ToggleRow(
+            label = str("app.library.search"),
+            value = LibraryChromePreferences.showSearch.value,
+            description = str("app.library.search.desc"),
+            onChange = LibraryChromePreferences::setShowSearch,
+        )
+
+        ToggleRow(
+            label = str("app.library.recents"),
+            value = LibraryChromePreferences.showRecents.value,
+            description = str("app.library.recents.desc"),
+            onChange = LibraryChromePreferences::setShowRecents,
         )
     }
 }

@@ -41,7 +41,6 @@ import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsBackdrop
 import com.armsx2.ui.common.ArmsLogo
 import com.armsx2.ui.common.ArmsTopBar
-import com.armsx2.ui.common.EmptyState
 import com.armsx2.ui.common.RoundAction
 import com.armsx2.ui.common.SectionTitle
 import com.armsx2.ui.settings.controllerFocusable
@@ -60,7 +59,7 @@ fun SaveManagerScreen(onBack: () -> Unit, viewModel: SaveManagerViewModel = view
             item {
                 ArmsTopBar(
                     title = str("savestate.title.loadManage"),
-                    leading = { RoundAction("‹", str("action.back"), onBack) },
+                    leading = { RoundAction("←", str("action.back"), onBack) },
                     actions = {
                         if (state.saves.isNotEmpty()) {
                             RoundAction("▣", str("savestate.backup"), viewModel::backupAll)
@@ -83,11 +82,7 @@ fun SaveManagerScreen(onBack: () -> Unit, viewModel: SaveManagerViewModel = view
                 }
             } else if (state.saves.isEmpty()) {
                 item {
-                    EmptyState(
-                        title = str("savestate.noSavesToBackUp"),
-                        message = str("savestate.title.save"),
-                        modifier = Modifier.fillMaxWidth().height(190.dp),
-                    )
+                    SaveManagerEmptyState()
                 }
             } else {
                 items(state.saves, key = { it.file.absolutePath }) { save ->
@@ -112,6 +107,52 @@ fun SaveManagerScreen(onBack: () -> Unit, viewModel: SaveManagerViewModel = view
                 TextButton(onClick = viewModel::dismissMessage) { Text(str("action.ok")) }
             },
         )
+    }
+}
+
+@Composable
+private fun SaveManagerEmptyState() {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.42f)),
+        tonalElevation = 1.dp,
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 18.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ) {
+                Box(
+                    modifier = Modifier.width(48.dp).height(48.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "▣",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+            }
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = str("savestate.empty.title"),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = str("savestate.empty.description"),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 

@@ -4,6 +4,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,11 +15,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -32,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,6 +54,7 @@ import com.armsx2.ui.theme.Success
 fun BiosManagerScreen(onBack: () -> Unit, viewModel: BiosManagerViewModel = viewModel()) {
     val state = viewModel.state.value
     var deleteTarget by remember { mutableStateOf<InstalledBios?>(null) }
+    var actionsMenuExpanded by remember { mutableStateOf(false) }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let(viewModel::import)
     }
@@ -68,11 +74,23 @@ fun BiosManagerScreen(onBack: () -> Unit, viewModel: BiosManagerViewModel = view
             item {
                 ArmsTopBar(
                     title = str("setup.page.bios.title"),
-                    leading = { RoundAction("‹", str("action.back"), onBack) },
+                    leading = { RoundAction("←", str("action.back"), onBack) },
                     actions = {
-                        RoundAction("＋", str("action.import"), { picker.launch(arrayOf("application/octet-stream", "*/*")) })
-                        RoundAction("📁", str("action.importFolder"), { folderPicker.launch(null) })
-                        RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
+                        Box {
+                            RoundAction(
+                                glyph = "⋮",
+                                description = str("games.toolbar.more"),
+                                onClick = { actionsMenuExpanded = true },
+                                selected = actionsMenuExpanded,
+                            )
+                            BiosActionsMenu(
+                                expanded = actionsMenuExpanded,
+                                onDismiss = { actionsMenuExpanded = false },
+                                onImportFile = { picker.launch(arrayOf("application/octet-stream", "*/*")) },
+                                onImportFolder = { folderPicker.launch(null) },
+                                onRefresh = viewModel::refresh,
+                            )
+                        }
                     },
                     horizontalPadding = 0.dp,
                 )
@@ -127,6 +145,75 @@ fun BiosManagerScreen(onBack: () -> Unit, viewModel: BiosManagerViewModel = view
             confirmButton = { TextButton(onClick = viewModel::dismissError) { Text(str("action.ok")) } },
         )
     }
+}
+
+@Composable
+private fun BiosActionsMenu(
+    expanded: Boolean,
+    onDismiss: () -> Unit,
+    onImportFile: () -> Unit,
+    onImportFolder: () -> Unit,
+    onRefresh: () -> Unit,
+) {
+    fun closeThen(action: () -> Unit) {
+        onDismiss()
+        action()
+    }
+
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismiss,
+        modifier = Modifier.widthIn(min = 280.dp, max = 340.dp),
+        shape = RoundedCornerShape(22.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 8.dp,
+        shadowElevation = 14.dp,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.42f)),
+    ) {
+        Text(
+            text = str("setup.page.bios.title"),
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold,
+        )
+        BiosActionMenuItem("＋", str("action.import")) { closeThen(onImportFile) }
+        BiosActionMenuItem("▣", str("action.importFolder")) { closeThen(onImportFolder) }
+        BiosActionMenuItem("↻", str("games.card.refresh")) { closeThen(onRefresh) }
+    }
+}
+
+@Composable
+private fun BiosActionMenuItem(glyph: String, label: String, onClick: () -> Unit) {
+    DropdownMenuItem(
+        text = {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Medium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
+        onClick = onClick,
+        leadingIcon = {
+            Surface(
+                modifier = Modifier.size(36.dp),
+                shape = RoundedCornerShape(11.dp),
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = glyph,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+            }
+        },
+        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp),
+    )
 }
 
 @Composable

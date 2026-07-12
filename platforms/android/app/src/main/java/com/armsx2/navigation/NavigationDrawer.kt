@@ -15,6 +15,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -54,10 +57,15 @@ import com.armsx2.ui.common.ArmsLogo
 import com.armsx2.ui.common.StatusChip
 import com.armsx2.ui.settings.controllerFocusable
 
+// Warm gold for the RetroAchievements trophy, matching the old (refresh) UI's
+// gold trophy rather than the flat monochrome nav glyphs.
+private val TrophyGold = Color(0xFFFFC93C)
+
 private data class DrawerItem(
     val titleKey: String,
     val glyph: String,
     val destination: AppRoute,
+    val iconRes: Int? = null,
 )
 
 @Composable
@@ -114,7 +122,7 @@ private fun DrawerContent(selected: AppRoute, onNavigate: (AppRoute) -> Unit) {
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val primary = listOf(
         DrawerItem("games.section.library", "▦", AppRoute.Home),
-        DrawerItem("ra.title", "★", AppRoute.Achievements),
+        DrawerItem("ra.title", "★", AppRoute.Achievements, iconRes = com.armsx2.R.drawable.ic_trophy),
         DrawerItem("action.settings", "⚙", AppRoute.Settings()),
     )
     val managers = listOf(
@@ -147,10 +155,6 @@ private fun DrawerContent(selected: AppRoute, onNavigate: (AppRoute) -> Unit) {
         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f))
         Spacer(Modifier.height(14.dp))
         DrawerSection(str("ra.options.header"), managers, selected, onNavigate)
-        Spacer(Modifier.height(14.dp))
-        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f))
-        Spacer(Modifier.height(14.dp))
-        DrawerRow("drawer.About", "ARMSX2", "ⓘ", selected is AppRoute.About, onClick = { onNavigate(AppRoute.About) })
     }
 }
 
@@ -174,6 +178,7 @@ private fun DrawerSection(
             controllerId = "drawer.${item.destination::class.simpleName}",
             title = str(item.titleKey),
             glyph = item.glyph,
+            iconRes = item.iconRes,
             selected = sameDestination(selected, item.destination),
             onClick = { onNavigate(item.destination) },
         )
@@ -185,6 +190,7 @@ private fun DrawerRow(
     controllerId: String,
     title: String,
     glyph: String,
+    iconRes: Int? = null,
     selected: Boolean,
     onClick: () -> Unit,
 ) {
@@ -204,7 +210,13 @@ private fun DrawerRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(glyph, color = contentColor, fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(32.dp))
+            if (iconRes != null) {
+                Box(Modifier.width(32.dp), contentAlignment = Alignment.Center) {
+                    Icon(painterResource(iconRes), contentDescription = null, tint = TrophyGold, modifier = Modifier.size(24.dp))
+                }
+            } else {
+                Text(glyph, color = contentColor, fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(32.dp))
+            }
             Text(title, color = contentColor, style = MaterialTheme.typography.titleMedium)
         }
     }
