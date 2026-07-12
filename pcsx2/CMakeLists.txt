@@ -1388,6 +1388,9 @@ elseif(IOS)
 		${METAL_LIBRARY}
 		${QUARTZCORE_LIBRARY}
 	)
+	# MetalFX spatial upscaler is iOS 16+. Weak-link it so the binary still loads
+	# on older iOS revisions; every use is guarded by @available(iOS 16, *).
+	target_link_options(PCSX2_FLAGS INTERFACE "SHELL:-weak_framework MetalFX")
 endif()
 
 set_property(GLOBAL PROPERTY PCSX2_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})

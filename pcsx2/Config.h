@@ -415,7 +415,7 @@ enum class GSCASMode : u8
 enum class GSUpscaler : u8
 {
 	Off,           ///< Plain bilinear present-time stretch (default).
-	MetalFXSpatial, ///< Apple MetalFX spatial upscaler (Metal backend, macOS 13+).
+	MetalFXSpatial, ///< Apple MetalFX spatial upscaler (Metal backend, macOS 13+ / iOS 16+).
 };
 
 enum class GSHWAutoFlushLevel : u8

@@ -25,9 +25,12 @@ using GSMTLView = UIView;
 #else
 #define PCSX2_MTL_USES_UIVIEW 0
 #include <AppKit/AppKit.h>
-#include <MetalFX/MetalFX.h>
 using GSMTLView = NSView;
 #endif
+// MetalFX spatial upscaler ships on macOS 13+ and iOS 16+. It is weak-linked
+// (see CMakeLists.txt) so the binary still loads on older OS revisions, and
+// every call site is guarded by @available plus a runtime supportsDevice: probe.
+#include <MetalFX/MetalFX.h>
 #include <Metal/Metal.h>
 #include <QuartzCore/QuartzCore.h>
 #include <atomic>
@@ -262,9 +265,8 @@ public:
 
 	// MetalFX spatial upscaler. Creating the scaler is expensive, so it's cached and
 	// only rebuilt when the input/output size or format changes (the cache key below).
-#if !PCSX2_MTL_USES_UIVIEW
-	API_AVAILABLE(macos(13.0)) MRCOwned<id<MTLFXSpatialScaler>> m_mfx_spatial;
-#endif
+	// Available macOS 13+ / iOS 16+; weak-linked so this compiles on all targets.
+	API_AVAILABLE(macos(13.0), ios(16.0)) MRCOwned<id<MTLFXSpatialScaler>> m_mfx_spatial;
 	int m_mfx_in_w = 0, m_mfx_in_h = 0, m_mfx_out_w = 0, m_mfx_out_h = 0;
 	MTLPixelFormat m_mfx_in_fmt = MTLPixelFormatInvalid, m_mfx_out_fmt = MTLPixelFormatInvalid;
 	std::vector<MRCOwned<id<MTLRenderPipelineState>>> m_convert_pipeline;
@@ -414,7 +416,7 @@ public:
 	bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) override;
 
 	/// (Re)builds m_mfx_spatial when the src/dst size or format changes. Returns false on failure.
-	API_AVAILABLE(macos(13.0)) bool EnsureMetalFXSpatial(GSTexture* sTex, GSTexture* dTex);
+	API_AVAILABLE(macos(13.0), ios(16.0)) bool EnsureMetalFXSpatial(GSTexture* sTex, GSTexture* dTex);
 	bool DoMetalFXSpatial(GSTexture* sTex, GSTexture* dTex) override;
 
 	MRCOwned<id<MTLFunction>> LoadShader(NSString* name);

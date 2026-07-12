@@ -18,6 +18,8 @@ A major update that brings iOS to feature parity with the desktop and Android bu
 
 **Metal renderer.** The Metal surface now reuses the UIView's existing `CAMetalLayer` instead of creating an orphaned one, fixing the half-screen crop. GS wrapped memory uses `mmap` + `vm_remap` instead of `shm_open` (which is blocked by the iOS sandbox).
 
+**MetalFX spatial upscaling.** GPU-accelerated spatial upscaling is now available on iOS 16+ — the same MetalFX (FSR-backed) upscaler that ships on macOS 13. Games render at their native PS2 resolution and are upscaled to the full draw rectangle in a single Metal compute pass, producing a sharper image than plain bilinear stretching at a fraction of the cost of running the GS at a higher internal resolution. The framework is weak-linked, so the app still loads on pre-iOS-16 devices and the iOS Simulator (where MetalFX is unavailable), falling back to bilinear with a one-time on-screen notice. The scaler is cached by input/output size and format, so it is only created once per resolution change.
+
 ---
 
 ### JIT & W^X
