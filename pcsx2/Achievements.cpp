@@ -248,6 +248,10 @@ namespace Achievements
 	static std::optional<AchievementProgressIndicator> s_active_progress_indicator;
 } // namespace Achievements
 
+bool Achievements::GetCurrentUserStats(UserStats*) { return false; }
+bool Achievements::GetCurrentGameStats(GameStats*) { return false; }
+bool Achievements::GetCurrentAchievementList(std::vector<AchievementInfo>*) { return false; }
+
 
 std::unique_lock<std::recursive_mutex> Achievements::GetLock()
 {

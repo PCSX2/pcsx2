@@ -149,6 +149,12 @@ android {
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
+            // Pin a current CMake. AGP otherwise defaults to 3.22.1, which is the
+            // exact cmake_minimum_required floor the (2026-dated) shaderc deps
+            // declare; configuring spirv-tools at that floor fails to create the
+            // SPIRV-Tools target ("SPIRV-Tools was not found"). A newer CMake
+            // configures them cleanly. Must match a cmake installed in CI.
+            version = "3.31.6"
         }
     }
     buildFeatures {

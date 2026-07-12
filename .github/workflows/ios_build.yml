@@ -1,6 +1,5 @@
 # iOS build — self-contained on this fork.
-# Mirrors the iOS job from build-all.yml but triggers on push to ios/bring-up
-# (and manual dispatch), so CI runs without needing a PR to jpolo1224/pcsx2.
+# Produces an unsigned .ipa named with the commit SHA.
 name: iOS Build
 
 on:
@@ -17,7 +16,7 @@ concurrency:
 
 jobs:
   ios:
-    name: iOS (arm64, unsigned)
+    name: iOS (arm64, unsigned IPA)
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v6
@@ -41,9 +40,38 @@ jobs:
           cmake --build build --config Release
           -- -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO
 
-      - name: Upload .app
+      - name: Package unsigned .ipa
+        working-directory: platforms/ios/app/src/main/cpp
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+          IPA_NAME="ARMSX2-iOS-${SHORT_SHA}.ipa"
+
+          # Find the built .app (Xcode generator puts it under build/.../Release-iphonesimulator/)
+          APP_PATH=$(find build -name "ARMSX2iOS.app" -type d | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: ARMSX2iOS.app not found in build output"
+            exit 1
+          fi
+
+          echo "Found app at: $APP_PATH"
+          echo "Packaging as: $IPA_NAME"
+
+          # Create the Payload directory structure that .ipa expects
+          STAGING=$(mktemp -d)
+          mkdir -p "$STAGING/Payload"
+          cp -R "$APP_PATH" "$STAGING/Payload/"
+
+          # Zip as .ipa (zip stores Payload/ at root)
+          cd "$STAGING"
+          zip -r "$GITHUB_WORKSPACE/$IPA_NAME" Payload -x "*.DS_Store"
+          cd "$GITHUB_WORKSPACE"
+
+          echo "IPA_NAME=$IPA_NAME" >> $GITHUB_ENV
+          ls -lh "$IPA_NAME"
+
+      - name: Upload .ipa
         uses: actions/upload-artifact@v4
         with:
-          name: armsx2-ios-arm64
-          path: platforms/ios/app/src/main/cpp/build/**/*.app
-          if-no-files-found: warn
+          name: ${{ env.IPA_NAME }}
+          path: ${{ github.workspace }}/${{ env.IPA_NAME }}
+          if-no-files-found: error

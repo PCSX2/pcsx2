@@ -722,7 +722,7 @@ elseif(LINUX)
 	list(APPEND pcsx2USBHeaders
 		USB/usb-eyetoy/cam-linux.h
 	)
-elseif(APPLE)
+elseif(APPLE AND NOT IOS)
 	list(APPEND pcsx2USBSources
 		USB/usb-eyetoy/cam-macos.mm
 	)
@@ -1061,34 +1061,22 @@ set(pcsx2x86Headers
 
 # ARM64
 #
-# EE recompiler (aR5900*) is forked: the canonical Phase-7 backend builds for
-# PC (macOS/Linux/Windows arm64); Android builds the mac-port graft variants
-# (arm64/aR5900*.android.cpp) which carry the Android-only EE codegen wins.
-# Both share the canonical aR5900.h/aR5900Analysis.h (identical interface).
-# Keep the two lists in lockstep. See REFACTOR_STATUS.md.
-if(ANDROID)
-	set(pcsx2arm64EESources
-		arm64/aR5900.android.cpp
-		arm64/aR5900Analysis.android.cpp
-		arm64/aR5900LoadStore.android.cpp
-		arm64/aR5900Arith.android.cpp
-		arm64/aR5900MultDiv.android.cpp
-		arm64/aR5900Branch.android.cpp
-		arm64/aR5900FPU.android.cpp
-		arm64/aR5900MMI.android.cpp
-		)
-else()
-	set(pcsx2arm64EESources
-		arm64/aR5900.cpp
-		arm64/aR5900Analysis.cpp
-		arm64/aR5900LoadStore.cpp
-		arm64/aR5900Arith.cpp
-		arm64/aR5900MultDiv.cpp
-		arm64/aR5900Branch.cpp
-		arm64/aR5900FPU.cpp
-		arm64/aR5900MMI.cpp
-		)
-endif()
+# EE recompiler (aR5900*): a SINGLE canonical Phase-7 backend for every arm64 target
+# (PC macOS/Linux/Windows + Android). The Android mac-port graft fork was dropped after a
+# device A/B (canonical EE+VU + force-float, PGO tuned for the mac-port so rigged against
+# canonical) showed canonical EE at refresh parity on Android — GoW2 combat EE ~12.8ms,
+# 100% speed / 60fps. The real Android perf lever is the force-float in
+# VMManager::SetEmuThreadAffinities, not the recompiler backend. See REFACTOR_STATUS.md.
+set(pcsx2arm64EESources
+	arm64/aR5900.cpp
+	arm64/aR5900Analysis.cpp
+	arm64/aR5900LoadStore.cpp
+	arm64/aR5900Arith.cpp
+	arm64/aR5900MultDiv.cpp
+	arm64/aR5900Branch.cpp
+	arm64/aR5900FPU.cpp
+	arm64/aR5900MMI.cpp
+	)
 
 set(pcsx2arm64Sources
 	arm64/AsmHelpers.cpp
@@ -1258,10 +1246,10 @@ endif()
 target_sources(PCSX2 PRIVATE ${pcsx2USBSources} ${pcsx2USBHeaders})
 
 if(APPLE OR BSD)
-	if(APPLE)
+	if(APPLE AND NOT IOS)
 		target_sources(PCSX2 PRIVATE
 			${pcsx2OSXSources})
-	else()
+	elseif(BSD)
 		target_sources(PCSX2 PRIVATE
 			${pcsx2FreeBSDSources})
 	endif()
@@ -1373,7 +1361,8 @@ fixup_file_properties(PCSX2)
 # To ensure the dependency build script's headers are preferred, push any directories that look like */local/include to the end.
 force_include_last(PCSX2_FLAGS "/(usr|local)/include/?$")
 
-if (APPLE)
+if(APPLE AND NOT IOS)
+	# macOS desktop: AppKit + IOKit are available.
 	find_library(APPKIT_LIBRARY AppKit)
 	find_library(IOKIT_LIBRARY IOKit)
 	find_library(METAL_LIBRARY Metal)
@@ -1391,6 +1380,14 @@ if (APPLE)
 	# MetalFX (spatial upscaler) is macOS 13.0+. Weak-link it so the binary still
 	# loads on older systems; every use is guarded with @available(macOS 13, *).
 	target_link_options(PCSX2_FLAGS INTERFACE "SHELL:-weak_framework MetalFX")
+elseif(IOS)
+	# iOS: Metal + QuartzCore (CAMetalLayer) are available; AppKit/IOKit are not.
+	find_library(METAL_LIBRARY Metal)
+	find_library(QUARTZCORE_LIBRARY QuartzCore)
+	target_link_libraries(PCSX2_FLAGS INTERFACE
+		${METAL_LIBRARY}
+		${QUARTZCORE_LIBRARY}
+	)
 endif()
 
 set_property(GLOBAL PROPERTY PCSX2_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})

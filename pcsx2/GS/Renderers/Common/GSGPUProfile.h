@@ -27,6 +27,11 @@ struct GpuProfileSelection
 {
 	GpuProfileOverride override_mode = GpuProfileOverride::Auto;
 	RuntimeGpuProfile runtime_profile = RuntimeGpuProfile::Adreno;
+	// True when the SoC hints look like a MediaTek chipset (Dimensity/Helio). Used
+	// to disable the Vulkan framebuffer-fetch/ROAA path on MediaTek Mali stacks,
+	// whose driver returns zero/stale destination color (black or missing textures)
+	// across GPU generations. Ported from sashkinbro/EmuCoreX.
+	bool is_mediatek_soc = false;
 	std::string hints;
 };
 

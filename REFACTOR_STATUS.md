@@ -109,6 +109,36 @@ changed yet.
    >   way — the mobile-specific VK/GLES fixes (and the Mali/MediaTek gates) must be
    >   re-applied on top of canonical GS behind `#if __ANDROID__`, device-tested. The graft
    >   itself is preserved in `origin/master` history (`ecfebfd6b2`) as the reference.
+   >
+   > ✅✅ 2026-07-10 (later) — **DONE, clean re-apply, device-verified on RP6 (Adreno 740 / Turnip).**
+   >   Method: reset the GS dir to canonical, then re-applied ONLY the mobile delta as guarded
+   >   hunks (dropped the yaps2 readback-kick perf graft entirely — it was unguarded desktop
+   >   divergence, not needed for rendering), then audited every remaining hunk so PC/mac/Linux/
+   >   Windows is byte-for-canonical. Touches VK (6 files) + OGL (`GSDeviceOGL`, `GLContext*`,
+   >   `GLShaderCache`, `GSGPUProfile`).
+   >   - **Vulkan black screen** was the missing **push-descriptor fallback**: canonical assumes
+   >     `VK_KHR_push_descriptor` always exists; Adreno/Mali stall inside `vkCmdPushDescriptorSetKHR`,
+   >     so textures never bind → black. Restored the capability-gated fallback (`m_use_push_descriptors`
+   >     false only on Mali 0x13B5 / Adreno 0x5143 → per-frame descriptor-set path). Desktop keeps the
+   >     push path byte-identical.
+   >   - **OpenGL "boots straight back to the library"** was canonical having **no GLES path at all**;
+   >     re-applied the GLES support (EGL context, `is_gles` shader branches, GLES query objects),
+   >     runtime-gated by `is_gles` (false on desktop GL).
+   >   - Found + fixed the one genuine desktop divergence in the delta: `m_features.depth_feedback`
+   >     was force-`false` unconditionally → now `#if __ANDROID__` (desktop keeps `feedback_loops()`).
+   >     Guarded 3 desktop-reachable OGL riders (present-path `glInvalidateFramebuffer` → `is_gles`,
+   >     EGL `SetDisplay()` body → `#if __ANDROID__`, restored the dropped negative-swap-interval probe).
+   >     KEPT (deliberately, they match upstream master and are in refresh-experimental): the RenderHW
+   >     feedback-loop guard + `ProgramSelector::operator==` field-compare (#243).
+   >   - **RA toast "giant malformed border"**: your `00bea431d` `AddRect` fix is correct for the
+   >     desktop imgui **1.92.8** (which swapped the `thickness`/`flags` args) but the Android build
+   >     vendors imgui **1.92.6** (pre-swap), so the same line drew a ~240px border there. Guarded that
+   >     one call on `IMGUI_VERSION_NUM` — both platforms correct; the guard collapses to one branch
+   >     once the two `3rdparty/imgui` copies dedup (see #4). *(This is the imgui sibling of the ryml
+   >     shim below — same root cause: two vendored copies at different versions.)*
+   >   - The "Graphics API is not set to Automatic" OSD warning (reintroduced by the merge) is now
+   >     `#if !__ANDROID__` — Android forces an explicit GL/VK pick by design so it fired every boot;
+   >     desktop keeps the canonical warning.
 3. **arm64 JIT fixes to port** (3 real Android commits):
    `45b4b68d10` (microVU PQ lanes), `75351e8545` (FTOI NaN / SQRT clamp),
    `ec06302ccf` (skip microVU emit on jump-cache hits).
@@ -135,10 +165,31 @@ changed yet.
    > - **Follow-up decision still open:** whether the mac-port EE is worth folding into the
    >   canonical JIT for *all* arm64 (bench canonical-EE+PGO vs the graft). Until then the
    >   fork keeps the two backends cleanly separated.
+   >
+   > ✅✅ 2026-07-10 (later) — **FORK DROPPED, unified on canonical (commit `a6aa75bff`).**
+   > Benched it on device: A/B of canonical EE+VU + force-float vs the mac-port graft (same
+   > working GS, same PGO — which was tuned for the mac-port, so the test was rigged AGAINST
+   > canonical) → GoW2 combat **canonical EE 12.84 ms vs mac-port 11.71 ms vs refresh-exp
+   > 12.44 ms**, all 100% speed / 60 fps. Canonical is at refresh parity; the ~1 ms is noise
+   > (a canonical-tuned PGO regen closes it). Deleted the 8 `aR5900*.android.cpp` + the
+   > `if(ANDROID)` CMake split — Android now builds the canonical EE like every other arm64
+   > target. Single JIT, no divergence. The real Android EE/VU lever was always the force-float,
+   > not the backend.
 4. **3rdparty de-duplication.** `platforms/android/.../cpp/3rdparty` (adrenotools
    + others) is still vendored for the NDK build. Keep adrenotools/oboe
    (Android-only); evaluate sourcing the rest from root `3rdparty/` once the
    NDK build is green.
+   > ⚠️→✅ 2026-07-10: the `pcsx2master` merge broke the **Android** compile — `common/YAML.cpp`
+   > calls `c4::yml::Callbacks::set_user_data()`, which the vendored rapidyaml **0.10.0** here
+   > lacks (PC/mac resolve a newer system ryml via `find_package(ryml)`). Unblocked with a
+   > 1-line shim: added the `set_user_data()` setter to the vendored `Callbacks` (it just sets
+   > the existing `m_user_data`), commit `a6aa75bff`. Proper fix = dedupe the Android build onto
+   > the canonical ryml so this shim can be deleted.
+   > ⚠️ 2026-07-10: **imgui has the exact same two-copies-different-versions problem** — desktop
+   > `3rdparty/imgui` = **1.92.8**, Android `platforms/android/.../cpp/3rdparty/imgui` = **1.92.6**.
+   > It already bit us once (the RA-toast `AddRect` arg-swap, see #2), now papered over with an
+   > `IMGUI_VERSION_NUM` guard. Deduping imgui to one version deletes that guard too — same task
+   > as the ryml dedup, worth doing together.
 5. **`common/PNGStub.cpp`** (iOS) is relocated but not yet wired into
    `common/CMakeLists.txt` — add under an iOS guard if the iOS build references it.
 6. **Windows-on-arm64** PC build: no reusable `windows_build_qt.yml` exists on

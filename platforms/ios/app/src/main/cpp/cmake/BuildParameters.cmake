@@ -300,7 +300,7 @@ if(POSITION_INDEPENDENT_CODE)
 				"The POSITION_INDEPENDENT_CODE option is enabled but is not "
 				"supported at link time:\n${PIE_SUPPORTED_OUTPUT}")
 		endif()
-	endif
+	endif()
 
 	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 else()

@@ -21,7 +21,8 @@
 #include <sys/ioctl.h>
 #include <string.h>
 
-#if defined(__FreeBSD__) || (__APPLE__)
+#include <TargetConditionals.h>
+#if (defined(__FreeBSD__) || (__APPLE__)) && !TARGET_OS_IPHONE
 #include <sys/types.h>
 #include <net/if_dl.h>
 #include <sys/param.h>
@@ -225,27 +226,46 @@ bool AdapterUtils::GetAdapterAuto(Adapter* adapter, AdapterBuffer* buffer)
 	do
 	{
 		if ((pAdapter->ifa_flags & IFF_LOOPBACK) == 0 &&
-			(pAdapter->ifa_flags & IFF_UP) != 0)
+			(pAdapter->ifa_flags & IFF_UP) != 0 &&
+			pAdapter->ifa_addr != nullptr &&
+			ReadAddressFamily(pAdapter->ifa_addr) == AF_INET)
 		{
 			// Search for an adapter with;
 			// IPv4 Address,
 			// Gateway.
 
 			bool hasIPv4 = false;
+#if !defined(__APPLE__) || !TARGET_OS_IPHONE
 			bool hasGateway = false;
+#endif
 
 			if (GetAdapterIP(pAdapter).has_value())
 				hasIPv4 = true;
 
+#if !defined(__APPLE__) || !TARGET_OS_IPHONE
 			if (GetGateways(pAdapter).size() > 0)
 				hasGateway = true;
+#endif
 
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+			// iOS does not expose the desktop/macOS route sysctl path used by
+			// GetGateways(), but sockets mode only needs a usable IPv4
+			// interface here. The internal DHCP gateway is injected later.
+			if (hasIPv4)
+			{
+				Console.WriteLn("DEV9: Socket: iOS Auto selected adapter '%s' without gateway probe", pAdapter->ifa_name);
+				*adapter = *pAdapter;
+				buffer->swap(adapterInfo);
+				return true;
+			}
+#else
 			if (hasIPv4 && hasGateway)
 			{
 				*adapter = *pAdapter;
 				buffer->swap(adapterInfo);
 				return true;
 			}
+#endif
 		}
 
 		pAdapter = pAdapter->ifa_next;
@@ -267,6 +287,11 @@ std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(const Adapter* adapter)
 	}
 
 	return std::nullopt;
+}
+#elif defined(__APPLE__) && TARGET_OS_IPHONE
+std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(const Adapter* adapter)
+{
+    return std::nullopt;
 }
 #else
 std::optional<MAC_Address> AdapterUtils::GetAdapterMAC(const Adapter* adapter)
@@ -436,7 +461,7 @@ std::vector<IP_Address> AdapterUtils::GetGateways(const Adapter* adapter)
 	}
 	return collection;
 }
-#elif defined(__FreeBSD__) || defined(__APPLE__)
+#elif (defined(__FreeBSD__) || defined(__APPLE__)) && !TARGET_OS_IPHONE
 std::vector<IP_Address> AdapterUtils::GetGateways(const Adapter* adapter)
 {
 	if (adapter == nullptr)
@@ -518,7 +543,7 @@ std::vector<IP_Address> AdapterUtils::GetGateways(const Adapter* adapter)
 	return collection;
 }
 #else
-std::vector<IP_Address> AdapterUtils::GetGateways(Adapter* adapter)
+std::vector<IP_Address> AdapterUtils::GetGateways(const Adapter* adapter)
 {
 	Console.Error("DEV9: Unsupported OS, can't find Gateway");
 	return {};
@@ -567,8 +592,17 @@ std::vector<IP_Address> AdapterUtils::GetDNS(const Adapter* adapter)
 	if (servers.fail())
 	{
 		servers.close();
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+		// iOS app sandbox has no /etc/resolv.conf; fall back to public resolvers so the
+		// emulated PS2 gets a working DNS list. Overrideable via Network settings.
+		Console.WriteLn("DEV9: no /etc/resolv.conf on iOS; using public DNS fallback 1.1.1.1 / 8.8.8.8");
+		collection.push_back(IP_Address{{{1, 1, 1, 1}}});
+		collection.push_back(IP_Address{{{8, 8, 8, 8}}});
+		return collection;
+#else
 		Console.Error("DEV9: Failed to open /etc/resolv.conf");
 		return collection;
+#endif
 	}
 
 	std::string line;

@@ -18,13 +18,22 @@ public:
 	GLContext(const WindowInfo& wi);
 	virtual ~GLContext();
 
+	enum class Profile
+	{
+		NoProfile,
+		Core,
+		ES
+	};
+
 	struct Version
 	{
+		Profile profile;
 		int major_version;
 		int minor_version;
 	};
 
 	__fi const WindowInfo& GetWindowInfo() const { return m_wi; }
+	__fi bool IsGLES() const { return (m_version.profile == Profile::ES); }
 	__fi u32 GetSurfaceWidth() const { return m_wi.surface_width; }
 	__fi u32 GetSurfaceHeight() const { return m_wi.surface_height; }
 

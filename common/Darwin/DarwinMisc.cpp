@@ -16,6 +16,7 @@
 #include <csignal>
 #include <cstring>
 #include <cstdlib>
+#include <functional>
 #include <optional>
 #include <sys/sysctl.h>
 #include <thread>
@@ -25,8 +26,15 @@
 #include <mach/task.h>
 #include <mach/thread_state.h>
 #include <mutex>
+#include <TargetConditionals.h>
+#include <unistd.h>
+#if TARGET_OS_IPHONE
+// iOS has no ApplicationServices (CGEvent mouse APIs) or IOKit pwr_mgt.
+// Stub these out — iOS uses UIKit GameController, not mouse/screen-saver APIs.
+#else
 #include <ApplicationServices/ApplicationServices.h>
 #include <IOKit/pwr_mgt/IOPMLib.h>
+#endif
 
 // Darwin (OSX) is a bit different from Linux when requesting properties of
 // the OS because of its BSD/Mach heritage. Helpfully, most of this code
@@ -136,10 +144,13 @@ std::string GetOSVersionString()
 	return type + " " + release + " " + arch;
 }
 
+#if !TARGET_OS_IPHONE
 static IOPMAssertionID s_pm_assertion;
+#endif
 
 bool Common::InhibitScreensaver(bool inhibit)
 {
+#if !TARGET_OS_IPHONE
 	if (s_pm_assertion)
 	{
 		IOPMAssertionRelease(s_pm_assertion);
@@ -148,10 +159,16 @@ bool Common::InhibitScreensaver(bool inhibit)
 
 	if (inhibit)
 		IOPMAssertionCreateWithName(kIOPMAssertionTypePreventUserIdleDisplaySleep, kIOPMAssertionLevelOn, CFSTR("Playing a game"), &s_pm_assertion);
-
+#endif
 	return true;
 }
 
+#if TARGET_OS_IPHONE
+// iOS has no mouse cursor — stub these out.
+void Common::SetMousePosition(int x, int y) {}
+bool Common::AttachMousePositionCb(std::function<void(int, int)> cb) { return false; }
+void Common::DetachMousePositionCb() {}
+#else
 void Common::SetMousePosition(int x, int y)
 {
 	// Little bit ugly but;
@@ -214,6 +231,7 @@ void Common::DetachMousePositionCb()
 	mouseRunLoopSource = nullptr;
 	mouseEventTap = nullptr;
 }
+#endif // !TARGET_OS_IPHONE
 
 void Threading::Sleep(int ms)
 {
@@ -308,6 +326,30 @@ const CPUInfo& GetCPUInfo()
 	return info;
 }
 
+#if TARGET_OS_IPHONE
+// iOS JIT diagnostics stubs — Phase 3 will add the real W^X/JIT implementation.
+namespace DarwinMisc {
+bool iPSX2_FORCE_EE_INTERP = false;
+int iPSX2_FORCE_JIT_VERIFY = 0;
+int iPSX2_CALL_TGT_X9 = 0;
+int iPSX2_CRASH_PACK = 0;
+int iPSX2_WX_TRACE = 0;
+int iPSX2_CALLPROBE = 0;
+int iPSX2_JIT_HLE = 0;
+int iPSX2_BISECT_COP1_EVERYTHING_ONLY = 0;
+int iPSX2_BISECT_COP1_EVERYTHING_PLUS_LOADSTORE = 0;
+int iPSX2_BISECT_COP1_EVERYTHING_PLUS_MMI = 0;
+int iPSX2_BISECT_COP1_EVERYTHING_PLUS_COP2_VU = 0;
+int iPSX2_BISECT_COP1_EVERYTHING_PLUS_MULTDIV = 0;
+int iPSX2_BISECT_COP1_EVERYTHING_PLUS_SHIFTS = 0;
+int iPSX2_BISECT_COP1_EVERYTHING_PLUS_MOVES = 0;
+int iPSX2_BISECT_COP1_EVERYTHING_PLUS_INTEGER_ALU = 0;
+int iPSX2_BISECT_COP1_EVERYTHING_PLUS_BRANCHES = 0;
+bool IsJITAvailable() { return false; }
+void SetCrashLogFD(int fd) {}
+} // namespace DarwinMisc
+#endif
+
 size_t HostSys::GetRuntimePageSize()
 {
 	return sysctlbyname_T<u32>("hw.pagesize").value_or(0);
@@ -325,14 +367,22 @@ static thread_local int s_code_write_depth = 0;
 void HostSys::BeginCodeWrite()
 {
 	if ((s_code_write_depth++) == 0)
+	{
+#if !TARGET_OS_IPHONE
 		pthread_jit_write_protect_np(0);
+#endif
+	}
 }
 
 void HostSys::EndCodeWrite()
 {
 	pxAssert(s_code_write_depth > 0);
 	if ((--s_code_write_depth) == 0)
+	{
+#if !TARGET_OS_IPHONE
 		pthread_jit_write_protect_np(1);
+#endif
+	}
 }
 
 [[maybe_unused]] static bool IsStoreInstruction(const void* ptr)

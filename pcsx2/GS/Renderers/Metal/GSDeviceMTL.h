@@ -17,9 +17,12 @@
 #include "GS/GS.h"
 #include "GSMTLDeviceInfo.h"
 #include "GSMTLSharedHeader.h"
+#include <TargetConditionals.h>
+#if !TARGET_OS_IPHONE
 #include <AppKit/AppKit.h>
-#include <Metal/Metal.h>
 #include <MetalFX/MetalFX.h>
+#endif
+#include <Metal/Metal.h>
 #include <QuartzCore/QuartzCore.h>
 #include <atomic>
 #include <memory>
@@ -225,7 +228,9 @@ public:
 	MTLResourceOptions m_resource_options_shared_wc;
 
 	// Previously in MetalHostDisplay.
+#if !TARGET_OS_IPHONE
 	MRCOwned<NSView*> m_view;
+#endif
 	MRCOwned<CAMetalLayer*> m_layer;
 	MRCOwned<id<CAMetalDrawable>> m_current_drawable;
 	MRCOwned<MTLRenderPassDescriptor*> m_pass_desc;
@@ -253,7 +258,9 @@ public:
 
 	// MetalFX spatial upscaler. Creating the scaler is expensive, so it's cached and
 	// only rebuilt when the input/output size or format changes (the cache key below).
+#if !TARGET_OS_IPHONE
 	API_AVAILABLE(macos(13.0)) MRCOwned<id<MTLFXSpatialScaler>> m_mfx_spatial;
+#endif
 	int m_mfx_in_w = 0, m_mfx_in_h = 0, m_mfx_out_w = 0, m_mfx_out_h = 0;
 	MTLPixelFormat m_mfx_in_fmt = MTLPixelFormatInvalid, m_mfx_out_fmt = MTLPixelFormatInvalid;
 	std::vector<MRCOwned<id<MTLRenderPipelineState>>> m_convert_pipeline;

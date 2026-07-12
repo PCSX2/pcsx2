@@ -125,5 +125,51 @@ bool PCAPAdapter::recv(NetPacket* p) { return false; }
 bool PCAPAdapter::send(NetPacket* p) { return false; }
 void PCAPAdapter::reloadSettings() {}
 
+#else // TARGET_OS_IPHONE — iOS stubs for CocoaTools (CocoaTools.mm is macOS-only)
+
+// On iOS, CocoaTools.mm is excluded from the build. Provide stubs for the
+// functions referenced by iOS-compiled core code (DynamicLibrary, WindowInfo,
+// Pcsx2Config, etc.). iOS uses UIKit/Foundation, not Cocoa/AppKit.
+#include "common/CocoaTools.h"
+#include "common/WindowInfo.h"
+#include <optional>
+#include <string>
+
+namespace CocoaTools
+{
+	bool CreateMetalLayer(WindowInfo* wi) { return false; }
+	void DestroyMetalLayer(WindowInfo* wi) {}
+	std::optional<float> GetViewRefreshRate(const WindowInfo& wi) { return std::nullopt; }
+	void MarkHelpMenu(void* menu) {}
+	std::optional<std::string> GetBundlePath() { return std::nullopt; }
+	std::optional<std::string> GetNonTranslocatedBundlePath() { return std::nullopt; }
+	std::optional<std::string> MoveToTrash(std::string_view file) { return std::nullopt; }
+	bool DelayedLaunch(std::string_view file) { return false; }
+	bool ShowInFinder(std::string_view file) { return false; }
+	std::optional<std::string> GetResourcePath() { return std::nullopt; }
+	void* CreateWindow(std::string_view title, uint32_t width, uint32_t height) { return nullptr; }
+	void DestroyWindow(void* window) {}
+	void GetWindowInfoFromWindow(WindowInfo* wi, void* window) {}
+	void RunCocoaEventLoop(bool wait_forever) {}
+	void StopMainThreadEventLoop() {}
+}
+
+// --- Discord Register stubs (discord_register_osx.m excluded on iOS) ---
+extern "C" {
+void Discord_Register(const char* applicationId, const char* command) {}
+void Discord_RegisterSteamGame(const char* applicationId, const char* steamId) {}
+}
+
+// --- Host capture + hotkey stubs (frontend callbacks not yet wired) ---
+#include "Host.h"
+#include "GS/GS.h"
+#include "Input/InputManager.h"
+void Host::OnCaptureStarted(const std::string& filename) {}
+void Host::OnCaptureStopped() {}
+
+// g_host_hotkeys - normally defined in pcsx2-qt, empty on iOS
+BEGIN_HOTKEY_LIST(g_host_hotkeys)
+END_HOTKEY_LIST()
+
 #endif // !TARGET_OS_IPHONE
 

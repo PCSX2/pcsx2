@@ -130,8 +130,18 @@ public:
 		VSSelector vs;
 		u8 pad[3];
 
-		__fi bool operator==(const ProgramSelector& p) const { return BitEqual(*this, p); }
-		__fi bool operator!=(const ProgramSelector& p) const { return !BitEqual(*this, p); }
+		// Compare ONLY the meaningful key fields, matching ProgramSelectorHash above
+		// (which hashes {vs.key, ps.key_hi, ps.key_lo}). BitEqual() memcmp'd all 32 bytes
+		// including this struct's uninitialized trailing/alignment padding, so two
+		// logically-identical selectors landed in the same hash bucket yet failed ==,
+		// making m_programs.find() miss every time. Result: the same shaders recompiled
+		// every frame (issue #243 — Jackie Chan Adventures: 142 unique shaders, 41k+
+		// recompiles, GS-thread pegged). Field compare is hash-consistent and padding-proof.
+		__fi bool operator==(const ProgramSelector& p) const
+		{
+			return vs.key == p.vs.key && ps.key_hi == p.ps.key_hi && ps.key_lo == p.ps.key_lo;
+		}
+		__fi bool operator!=(const ProgramSelector& p) const { return !(*this == p); }
 	};
 	static_assert(sizeof(ProgramSelector) == 32, "Program selector is 32 bytes");
 
@@ -151,6 +161,8 @@ private:
 
 	std::unique_ptr<GLContext> m_gl_context;
 
+	bool m_is_gles = false;
+
 	struct
 	{
 		bool buggy_pbo              : 1; ///< Avoid PBOs and just use glTextureSubImage2D with immediate data
@@ -158,9 +170,9 @@ private:
 	} m_bugs;
 
 	bool m_disable_download_pbo = false;
-	// ARMSX2 (Adreno GLES): read prior depth for SW-Z feedback via the coherent ARM
-	// depth-stencil fetch (gl_LastFragDepthARM) instead of the incoherent depth sampler,
-	// when GL_ARM_shader_framebuffer_fetch_depth_stencil is present. False everywhere else.
+	// Adreno: read prior depth for SW-Z feedback via the coherent ARM depth-stencil
+	// fetch (gl_LastFragDepthARM) instead of the incoherent depth sampler, when the
+	// GL_ARM_shader_framebuffer_fetch_depth_stencil extension is present.
 	bool m_arm_depth_fetch = false;
 
 	GLuint m_fbo = 0; // frame buffer container
@@ -284,12 +296,12 @@ private:
 	void PopTimestampQuery();
 	void KickTimestampQuery();
 
-	GSTexture* CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format) override;
-
 	void CreatePipelineStatisticsQueries();
 	void DestroyPipelineStatisticsQueries();
 	void PopPipelineStatisticsQuery();
 	void KickPipelineStatisticsQuery();
+
+	GSTexture* CreateSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format) override;
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c, const Filter filter) override;
 	void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, Filter filter, const InterlaceConstantBuffer& cb) override;

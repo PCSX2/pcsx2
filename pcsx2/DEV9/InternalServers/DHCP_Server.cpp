@@ -9,7 +9,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#if defined(__FreeBSD__) || (__APPLE__)
+#if (defined(__FreeBSD__) || (__APPLE__)) && !TARGET_OS_IPHONE
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #include <sys/socket.h>

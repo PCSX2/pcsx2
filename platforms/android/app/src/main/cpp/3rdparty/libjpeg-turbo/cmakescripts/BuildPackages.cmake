@@ -139,7 +139,7 @@ endif() # WIN32
 # Mac DMG
 ###############################################################################
 
-if(APPLE)
+if(APPLE AND NOT IOS)
 
 set(SECONDARY_BUILD "" CACHE PATH
   "Directory containing cross-compiled x86-64 or Armv8 (64-bit) iOS or macOS build to include in universal binaries")

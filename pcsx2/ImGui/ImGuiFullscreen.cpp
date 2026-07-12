@@ -3248,11 +3248,20 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 			ImVec2(box_max.x + shadow_size, box_max.y + shadow_size),
 			IM_COL32(20, 20, 20, (180 * opacity) / 255u), rounding, ImDrawFlags_RoundCornersAll);
 		dl->AddRectFilled(box_min, box_max, background_color, rounding, ImDrawFlags_RoundCornersAll);
-		// ImGui v1.92 AddRect signature: (p_min, p_max, col, rounding, float thickness,
-		// ImDrawFlags flags). The old arg order passed ImDrawFlags_RoundCornersAll (~240) as the
-		// thickness (→ a giant malformed border) and LayoutScale(1.0f) as the flags (→ only
-		// TopLeft corner rounded) — that's the "broken" RetroAchievements toast.
+		// ImGui 1.92.8 SWAPPED the AddRect thickness/flags argument order, and the desktop
+		// (1.92.8) and Android (1.92.6) builds vendor DIFFERENT ImGui copies — so this call
+		// must be written per-version or the toast border breaks on one platform. Passing
+		// ImDrawFlags_RoundCornersAll (~240) as the thickness draws a giant malformed border
+		// (the "broken" RetroAchievements toast); passing LayoutScale(1.0f) as the flags only
+		// rounds the top-left corner. Guarded on IMGUI_VERSION_NUM so both platforms are correct;
+		// collapses to the >= branch once the two 3rdparty/imgui copies are deduped.
+#if IMGUI_VERSION_NUM >= 19280
+		// 1.92.8+ signature: AddRect(p_min, p_max, col, rounding, float thickness, ImDrawFlags flags)
 		dl->AddRect(box_min, box_max, border_color, rounding, ImGuiFullscreen::LayoutScale(1.0f), ImDrawFlags_RoundCornersAll);
+#else
+		// <= 1.92.6 signature: AddRect(p_min, p_max, col, rounding, ImDrawFlags flags, float thickness)
+		dl->AddRect(box_min, box_max, border_color, rounding, ImDrawFlags_RoundCornersAll, ImGuiFullscreen::LayoutScale(1.0f));
+#endif
 
 		const ImVec2 badge_min(box_min.x + horizontal_padding, box_min.y + vertical_padding);
 		const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);

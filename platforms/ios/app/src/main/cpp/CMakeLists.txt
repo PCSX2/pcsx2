@@ -49,6 +49,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
 	set(USE_VULKAN OFF CACHE BOOL "Enable Vulkan renderer" FORCE)
 	set(SDL_OPENGL OFF CACHE BOOL "Enable SDL OpenGL support" FORCE)
 	set(SDL_OPENGLES OFF CACHE BOOL "Enable SDL OpenGL ES support" FORCE)
+	# iOS uses its own SwiftUI frontend, not the desktop Qt GUI or test harnesses.
+	set(ENABLE_QT_UI OFF CACHE BOOL "Enables building the PCSX2 Qt interface." FORCE)
+	set(ENABLE_TESTS OFF CACHE BOOL "Enables building the unit tests" FORCE)
+	set(ENABLE_GSRUNNER OFF CACHE BOOL "Enables building the GSRunner" FORCE)
 endif()
 
 # Project Name
@@ -57,10 +61,10 @@ project(ARMSX2iOS VERSION ${ARMSX2_VERSION} LANGUAGES C CXX)
 add_compile_definitions(ARMSX2_VERSION_STR="${ARMSX2_VERSION}")
 
 if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
-	add_compile_definitions(_M_ARM64=1)
 	set(_M_ARM64 TRUE)
 	set(_M_X86 FALSE)
 	set(CMAKE_HOST_SYSTEM_PROCESSOR "arm64")
+	set(CMAKE_SYSTEM_PROCESSOR "arm64")
 
 	if(CMAKE_GENERATOR STREQUAL "Xcode")
 		if(ARMSX2_MAC_CATALYST OR NOT ARMSX2_REAL_DEVICE)
@@ -356,6 +360,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
 
 	target_include_directories(ARMSX2iOS PRIVATE
 		${CMAKE_SOURCE_DIR}
+		${ARMSX2_ROOT}
 		${ARMSX2_ROOT}/common
 		${ARMSX2_ROOT}/pcsx2
 		${ARMSX2_ROOT}/pcsx2/GS/Renderers/Metal

@@ -29,12 +29,11 @@ public:
 	virtual std::unique_ptr<GLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
 
 protected:
+	virtual bool SetDisplay();
+	virtual EGLNativeWindowType GetNativeWindow(EGLConfig config);
+
 	virtual EGLDisplay GetPlatformDisplay(Error* error);
 	virtual EGLSurface CreatePlatformSurface(EGLConfig config, void* win, Error* error);
-	// Overridden by GLContextEGLAndroid to return the ANativeWindow; base returns
-	// none. (Surface creation on this core sources the window directly; the Android
-	// subclass keeps this override for parity with the known-good EGL path.)
-	virtual EGLNativeWindowType GetNativeWindow(EGLConfig config);
 
 	EGLDisplay TryGetPlatformDisplay(EGLenum platform, const char* platform_ext);
 	EGLSurface TryCreatePlatformSurface(EGLConfig config, void* window, Error* error);

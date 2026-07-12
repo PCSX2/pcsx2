@@ -114,6 +114,37 @@ static bool LooksLikeMali(std::string_view lowered_hints)
 	// on Mali-specific markers. "valhall"/"bifrost"/"midgard" are Mali GPU arches.
 	return ContainsAny(lowered_hints, {"mali", "valhall", "bifrost", "midgard"});
 }
+
+static bool LooksLikeMediaTekSoc(std::string_view lowered_hints)
+{
+	// Ported from sashkinbro/EmuCoreX. Detect MediaTek (Dimensity/Helio) SoCs so
+	// we can disable the broken Vulkan fbfetch path on their Mali stacks. The SoC
+	// props (ro.soc.manufacturer/model/platform) are already folded into the hints
+	// string by BuildHints().
+	if (ContainsAny(lowered_hints, {"mediatek", "dimensity", "helio", "mtk"}))
+		return true;
+
+	// MediaTek board/platform properties commonly use compact part numbers such as
+	// mt6877 or mt6989z without spelling out the vendor. Require a token boundary and
+	// four digits so an unrelated "mt" isn't treated as a chipset id.
+	for (size_t i = 0; i + 6 <= lowered_hints.size(); i++)
+	{
+		if (lowered_hints[i] != 'm' || lowered_hints[i + 1] != 't' ||
+			(i > 0 && std::isalnum(static_cast<unsigned char>(lowered_hints[i - 1]))))
+		{
+			continue;
+		}
+
+		bool has_four_digits = true;
+		for (size_t digit = i + 2; digit < i + 6; digit++)
+			has_four_digits &= (std::isdigit(static_cast<unsigned char>(lowered_hints[digit])) != 0);
+
+		if (has_four_digits)
+			return true;
+	}
+
+	return false;
+}
 } // namespace
 
 GpuProfileOverride GpuProfileDetector::ParseOverride(std::string_view value)
@@ -181,6 +212,9 @@ GpuProfileSelection GpuProfileDetector::Resolve(std::string_view override_value,
 	GpuProfileSelection selection;
 	selection.override_mode = ParseOverride(override_value);
 	selection.hints = BuildHints(gpu_vendor, gpu_renderer_or_name);
+	// Detected from the SoC hints regardless of any GPU-profile override — the
+	// MediaTek-Mali Vulkan fbfetch breakage is orthogonal to the Mali/Adreno profile.
+	selection.is_mediatek_soc = LooksLikeMediaTekSoc(ToLowerASCII(selection.hints));
 
 	if (selection.override_mode == GpuProfileOverride::Mali)
 	{

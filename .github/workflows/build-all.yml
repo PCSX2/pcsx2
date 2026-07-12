@@ -99,8 +99,12 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install NDK
-        run: yes | sdkmanager "ndk;27.2.12479018" "cmake;3.22.1" >/dev/null || true
+      # NDK matches the version AGP resolves to (build.gradle.kts pins none, so it
+      # uses AGP's default 28.2.13676358); cmake 3.31.6 matches the pin in
+      # build.gradle.kts. 3.22.1 (AGP's default) is the shaderc deps' exact
+      # cmake_minimum_required floor and fails to configure spirv-tools.
+      - name: Install NDK + CMake
+        run: yes | sdkmanager "ndk;28.2.13676358" "cmake;3.31.6" >/dev/null || true
 
       # shaderc's SPIRV-Tools/glslang/etc. are fetched on demand (not vendored,
       # not submodules), so `submodules: recursive` above does not provide them.
