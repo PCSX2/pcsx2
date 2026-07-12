@@ -63,6 +63,9 @@ oprofile_data/
 *.kdev4
 /.kdev4*
 
+# Kate Projects
+.kateproject*
+
 # Resources and docs in /bin are tracked
 /bin/**/*.dll
 /bin/**/*.dmp
