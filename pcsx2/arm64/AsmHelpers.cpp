@@ -136,6 +136,172 @@ namespace ArmJitTelemetry
 } // namespace ArmJitTelemetry
 #endif
 
+#if EE_SMC_TELEM
+namespace ArmJitTelemetry
+{
+	// Plain u64s: the exec pairs are bumped from EMITTED EE JIT code
+	// (Ldp/Add/Stp), the emit-side tallies from C during recompilation — EE
+	// thread is the only writer. _ts = contains_thread_stack-forced blocks.
+	u64 g_smc_manual_exec[2] = {};
+	u64 g_smc_manual_exec_ts[2] = {};
+	u64 g_smc_manual_emits = 0;
+	u64 g_smc_manual_words_emitted = 0;
+	u64 g_smc_manual_emits_ts = 0;
+	u64 g_smc_manual_words_emitted_ts = 0;
+
+	void MaybeReportSmc()
+	{
+		static Common::Timer::Value s_last = 0;
+		static u64 s_prev[4] = {};
+
+		const Common::Timer::Value now = Common::Timer::GetCurrentValue();
+		if (s_last == 0)
+		{
+			s_last = now;
+			return;
+		}
+		const double secs = Common::Timer::ConvertValueToSeconds(now - s_last);
+		if (secs < 5.0)
+			return;
+		s_last = now;
+
+		const u64 cur[4] = {g_smc_manual_exec[0], g_smc_manual_exec[1],
+			g_smc_manual_exec_ts[0], g_smc_manual_exec_ts[1]};
+		// Silence while no manual block ran this window — that quiet is the datum.
+		if (cur[0] == s_prev[0] && cur[2] == s_prev[2])
+		{
+			s_prev[1] = cur[1];
+			s_prev[3] = cur[3];
+			return;
+		}
+		const u64 dchecks = cur[0] - s_prev[0];
+		const u64 dwords = cur[1] - s_prev[1];
+		const u64 dchecks_ts = cur[2] - s_prev[2];
+		const u64 dwords_ts = cur[3] - s_prev[3];
+		Console.WriteLn("JITTELEM smc: +%llu checks +%llu words (%.3fM w/s) | ts +%llu checks +%llu words (%.3fM w/s) in %.1fs | "
+						"emitted %llu seqs %llu words + ts %llu seqs %llu words",
+			(unsigned long long)dchecks, (unsigned long long)dwords, (double)dwords / secs / 1e6,
+			(unsigned long long)dchecks_ts, (unsigned long long)dwords_ts, (double)dwords_ts / secs / 1e6,
+			secs,
+			(unsigned long long)g_smc_manual_emits, (unsigned long long)g_smc_manual_words_emitted,
+			(unsigned long long)g_smc_manual_emits_ts, (unsigned long long)g_smc_manual_words_emitted_ts);
+		for (int i = 0; i < 4; i++)
+			s_prev[i] = cur[i];
+	}
+
+	void ReportSmc(const char* when)
+	{
+		if (!g_smc_manual_exec[0] && !g_smc_manual_exec_ts[0] && !g_smc_manual_emits && !g_smc_manual_emits_ts)
+			return;
+		Console.WriteLn("JITTELEM smc[%s]: %llu checks %llu words | ts %llu checks %llu words | emitted %llu seqs %llu words + ts %llu seqs %llu words",
+			when, (unsigned long long)g_smc_manual_exec[0], (unsigned long long)g_smc_manual_exec[1],
+			(unsigned long long)g_smc_manual_exec_ts[0], (unsigned long long)g_smc_manual_exec_ts[1],
+			(unsigned long long)g_smc_manual_emits, (unsigned long long)g_smc_manual_words_emitted,
+			(unsigned long long)g_smc_manual_emits_ts, (unsigned long long)g_smc_manual_words_emitted_ts);
+	}
+} // namespace ArmJitTelemetry
+#endif
+
+#if EE_BRSHAPE_CENSUS
+namespace ArmJitTelemetry
+{
+	// Plain (non-atomic): only ever touched from recRecompile on the EE thread.
+	BrShapeCensus g_brshape = {};
+
+	void ReportBrShape(const char* when)
+	{
+		const BrShapeCensus& c = g_brshape;
+		if (!c.blocks)
+			return;
+		const double pb = 100.0 / (double)c.blocks;
+		Console.WriteLn("JITTELEM brshape[%s]: %llu blocks | fwd-cond %llu (%.1f%%) of which link %llu likely %llu",
+			when, (unsigned long long)c.blocks, (unsigned long long)c.fwd_cond, (double)c.fwd_cond * pb,
+			(unsigned long long)c.link, (unsigned long long)c.likely);
+		Console.WriteLn("JITTELEM brshape[%s]: dist 1-2:%llu 3-4:%llu 5-8:%llu 9-16:%llu 17-32:%llu >32:%llu",
+			when, (unsigned long long)c.dist[0], (unsigned long long)c.dist[1], (unsigned long long)c.dist[2],
+			(unsigned long long)c.dist[3], (unsigned long long)c.dist[4], (unsigned long long)c.dist[5]);
+		Console.WriteLn("JITTELEM brshape[%s]: <=8: FUSABLE plain %llu (%.1f%% of blocks) + likely %llu (%.1f%%) | "
+						"diamond %llu | killed: ctrl %llu sys %llu xpage %llu",
+			when,
+			(unsigned long long)c.fusable_plain_le8, (double)c.fusable_plain_le8 * pb,
+			(unsigned long long)c.fusable_likely_le8, (double)c.fusable_likely_le8 * pb,
+			(unsigned long long)c.diamond_le8,
+			(unsigned long long)c.unsafe_ctrl_le8, (unsigned long long)c.unsafe_sys_le8,
+			(unsigned long long)c.crosspage_le8);
+	}
+} // namespace ArmJitTelemetry
+#endif
+
+#if JIT_ALLOC_CENSUS
+#include <cstdio>
+namespace ArmJitTelemetry
+{
+	AllocCensus g_allocCensus;
+
+	void ReportAllocCensus(const char* when, bool use_stdio)
+	{
+		const AllocCensus& c = g_allocCensus;
+		char l1[256], l2[256];
+		std::snprintf(l1, sizeof(l1),
+			"JITTELEM alloc[%s]: gpr-pool %llu allocs | live-evict ee %llu iop %llu other %llu (dirty %llu)",
+			when, (unsigned long long)c.gpr_allocs.load(), (unsigned long long)c.gpr_evict_ee.load(),
+			(unsigned long long)c.gpr_evict_iop.load(), (unsigned long long)c.gpr_evict_other.load(),
+			(unsigned long long)c.gpr_evict_dirty.load());
+		std::snprintf(l2, sizeof(l2),
+			"JITTELEM alloc[%s]: ee-neon %llu allocs | evict dead %llu LIVE %llu || mVU %llu vf-allocs | VF evict %llu (dirty %llu) VI evict %llu",
+			when, (unsigned long long)c.neon_allocs.load(), (unsigned long long)c.neon_evict_dead.load(),
+			(unsigned long long)c.neon_evict_live.load(), (unsigned long long)c.mvu_vf_allocs.load(),
+			(unsigned long long)c.mvu_vf_evict.load(), (unsigned long long)c.mvu_vf_evict_dirty.load(),
+			(unsigned long long)c.mvu_vi_evict.load());
+		if (use_stdio)
+		{
+			std::fprintf(stderr, "%s\n%s\n", l1, l2);
+			std::fflush(stderr);
+		}
+		else
+		{
+			Console.WriteLn("%s", l1);
+			Console.WriteLn("%s", l2);
+		}
+	}
+
+	// Exit fallback for binaries that never reach recShutdown (vurunner, unit
+	// tests): totals at static destruction, via stderr since Console's own
+	// destruction order is unknowable. Duplicates an explicit shutdown print
+	// harmlessly — the labels differ.
+	static struct AllocCensusExitReporter
+	{
+		~AllocCensusExitReporter() { ReportAllocCensus("exit", true); }
+	} s_allocCensusExitReporter;
+} // namespace ArmJitTelemetry
+#endif
+
+#if EE_BRSHAPE_CENSUS || JIT_ALLOC_CENSUS
+namespace ArmJitTelemetry
+{
+	void MaybeReportCensusTick()
+	{
+		// EE-thread only (recEventTest) — plain statics are fine.
+		static Common::Timer::Value s_last = 0;
+		const Common::Timer::Value now = Common::Timer::GetCurrentValue();
+		if (s_last == 0)
+		{
+			s_last = now;
+			return;
+		}
+		if (Common::Timer::ConvertValueToSeconds(now - s_last) < 30.0)
+			return;
+		s_last = now;
+#if EE_BRSHAPE_CENSUS
+		ReportBrShape("tick");
+#endif
+#if JIT_ALLOC_CENSUS
+		ReportAllocCensus("tick");
+#endif
+	}
+} // namespace ArmJitTelemetry
+#endif
+
 const vixl::aarch64::Register& armWRegister(int n)
 {
 	using namespace vixl::aarch64;

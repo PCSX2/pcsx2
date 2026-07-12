@@ -8,6 +8,7 @@
 #include "VU.h"
 #include "arm64/iR5900-arm64.h"
 #include "arm64/iR3000A-arm64.h"
+#include "arm64/JitTelemetry.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"
@@ -165,6 +166,10 @@ int _getFreeArm64GPR(int mode, u32 pool)
 	int tempi = -1;
 	u32 bestcount = 0x10000;
 
+#if JIT_ALLOC_CENSUS
+	ArmJitTelemetry::g_allocCensus.gpr_allocs.fetch_add(1, std::memory_order_relaxed);
+#endif
+
 	// First pass: find a completely free register
 	for (int i = 0; i < NUM_ARM_GPR_REGS; i++)
 	{
@@ -211,6 +216,18 @@ int _getFreeArm64GPR(int mode, u32 pool)
 
 	if (tempi != -1)
 	{
+#if JIT_ALLOC_CENSUS
+		{
+			ArmJitTelemetry::AllocCensus& c = ArmJitTelemetry::g_allocCensus;
+			const int t = arm64gprs[tempi].type;
+			std::atomic<u64>& bucket = (t == ARM64TYPE_GPR) ? c.gpr_evict_ee :
+			                           (t == ARM64TYPE_PSX) ? c.gpr_evict_iop :
+			                                                  c.gpr_evict_other;
+			bucket.fetch_add(1, std::memory_order_relaxed);
+			if (arm64gprs[tempi].mode & MODE_WRITE)
+				c.gpr_evict_dirty.fetch_add(1, std::memory_order_relaxed);
+		}
+#endif
 		_freeArm64GPR(tempi);
 		return tempi;
 	}
@@ -661,6 +678,10 @@ int _getFreeArm64NEON(u32 minreg, u32 maxreg)
 	int tempi = -1;
 	u32 bestcount = 0x10000;
 
+#if JIT_ALLOC_CENSUS
+	ArmJitTelemetry::g_allocCensus.neon_allocs.fetch_add(1, std::memory_order_relaxed);
+#endif
+
 	// Check for free registers
 	for (u32 i = minreg; i < maxreg; i++)
 	{
@@ -708,6 +729,9 @@ int _getFreeArm64NEON(u32 minreg, u32 maxreg)
 
 	if (tempi != -1)
 	{
+#if JIT_ALLOC_CENSUS
+		ArmJitTelemetry::g_allocCensus.neon_evict_dead.fetch_add(1, std::memory_order_relaxed);
+#endif
 		_freeNEONreg(tempi);
 		return tempi;
 	}
@@ -731,6 +755,9 @@ int _getFreeArm64NEON(u32 minreg, u32 maxreg)
 
 	if (tempi != -1)
 	{
+#if JIT_ALLOC_CENSUS
+		ArmJitTelemetry::g_allocCensus.neon_evict_live.fetch_add(1, std::memory_order_relaxed);
+#endif
 		_freeNEONreg(tempi);
 		return tempi;
 	}

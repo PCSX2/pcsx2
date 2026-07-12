@@ -353,6 +353,13 @@ static void recEventTest()
 	_cpuEventTest_Shared();
 	eeEventTestIsActive = false;
 
+#if EE_SMC_TELEM
+	ArmJitTelemetry::MaybeReportSmc();
+#endif
+#if EE_BRSHAPE_CENSUS || JIT_ALLOC_CENSUS
+	ArmJitTelemetry::MaybeReportCensusTick();
+#endif
+
 	if (eeRecExitRequested)
 	{
 		eeRecExitRequested = false;
@@ -1999,6 +2006,20 @@ static void memory_protect_recompiled_code(u32 startpc, u32 size)
 
 		case ProtMode_Manual:
 		{
+#if EE_SMC_TELEM
+			// Census bump (census builds only): single Ldp/Add/Add/Stp over the
+			// adjacent {checks, words} pair — the thread-stack-forced class gets
+			// its own pair so the report can attribute the tax. x0/x1 are free
+			// until the DispatchBlockDiscard argument setup below.
+			armMoveAddressToReg(RSCRATCHADDR, contains_thread_stack ?
+				ArmJitTelemetry::g_smc_manual_exec_ts : ArmJitTelemetry::g_smc_manual_exec);
+			armAsm->Ldp(a64::x0, a64::x1, a64::MemOperand(RSCRATCHADDR));
+			armAsm->Add(a64::x0, a64::x0, 1);
+			armAsm->Add(a64::x1, a64::x1, inpage_sz / 4);
+			armAsm->Stp(a64::x0, a64::x1, a64::MemOperand(RSCRATCHADDR));
+			(contains_thread_stack ? ArmJitTelemetry::g_smc_manual_emits_ts : ArmJitTelemetry::g_smc_manual_emits)++;
+			(contains_thread_stack ? ArmJitTelemetry::g_smc_manual_words_emitted_ts : ArmJitTelemetry::g_smc_manual_words_emitted) += inpage_sz / 4;
+#endif
 			// Set up arguments for DispatchBlockDiscard (w0=addr, w1=size)
 			armAsm->Mov(a64::w0, inpage_ptr);
 			armAsm->Mov(a64::w1, inpage_sz / 4);
@@ -2102,6 +2123,15 @@ static void recResetRaw()
 	ArmJitTelemetry::ReportCallRet("ee-reset");
 #endif
 #endif
+#if EE_SMC_TELEM
+	ArmJitTelemetry::ReportSmc("ee-reset");
+#endif
+#if EE_BRSHAPE_CENSUS
+	ArmJitTelemetry::ReportBrShape("ee-reset");
+#endif
+#if JIT_ALLOC_CENSUS
+	ArmJitTelemetry::ReportAllocCensus("ee-reset");
+#endif
 
 	armSetAsmPtr(SysMemory::GetEERec(), SysMemory::GetEERecEnd() - SysMemory::GetEERec(), &s_eeConstantPool);
 	armStartBlock();
@@ -2185,6 +2215,15 @@ static void recShutdown()
 {
 #if EE_CALLRET_TELEM
 	ArmJitTelemetry::ReportCallRet("shutdown");
+#endif
+#if EE_SMC_TELEM
+	ArmJitTelemetry::ReportSmc("shutdown");
+#endif
+#if EE_BRSHAPE_CENSUS
+	ArmJitTelemetry::ReportBrShape("shutdown");
+#endif
+#if JIT_ALLOC_CENSUS
+	ArmJitTelemetry::ReportAllocCensus("shutdown");
 #endif
 	s_eeConstantPool.Destroy();
 	recRAMCopy.deallocate();
@@ -2438,6 +2477,97 @@ static bool recSkipTimeoutLoop(s32 reg, bool is_timeout_loop)
 	return true;
 }
 
+#if EE_BRSHAPE_CENSUS
+// FX-16 ceiling gate: classify a block-ending forward conditional branch.
+// Called only from the scanner's `s_nEndBlock = i + 8` arms, so branchpc is
+// the branch, branchpc+4 the delay slot, and the skipped region is
+// [branchpc+8, target). Decodes from `op` directly — the _Rs_/_Rt_ macros
+// read the cpuRegs.code global and can't be reused here.
+static void brshapeCensusRecord(u32 branchpc, u32 target, u32 op)
+{
+	using ArmJitTelemetry::g_brshape;
+
+	if (target <= branchpc + 8)
+		return; // backward/degenerate — not the skip shape
+	const u32 dist = (target - (branchpc + 8)) >> 2; // ops skipped, >= 1
+	g_brshape.fwd_cond++;
+
+	const u32 op26 = op >> 26;
+	const u32 rs = (op >> 21) & 31;
+	const u32 rt = (op >> 16) & 31;
+	bool likely = false, link = false;
+	if (op26 >= 20 && op26 <= 23) // BEQL/BNEL/BLEZL/BGTZL
+		likely = true;
+	else if (op26 == 1) // REGIMM: BLTZ/BGEZ(+L) 0-3, BLTZAL/BGEZAL(+LL) 16-19
+	{
+		likely = (rt & 2) != 0;
+		link = rt >= 16;
+	}
+	else if (op26 >= 16 && op26 <= 18 && rs == 8) // BC0/BC1/BC2 F/T/FL/TL
+		likely = (rt & 2) != 0;
+	if (likely)
+		g_brshape.likely++;
+	if (link)
+		g_brshape.link++;
+
+	const int bucket = dist <= 2 ? 0 : dist <= 4 ? 1 : dist <= 8 ? 2 : dist <= 16 ? 3 : dist <= 32 ? 4 : 5;
+	g_brshape.dist[bucket]++;
+	if (dist > 8)
+		return;
+
+	// 4K page crossing kills fusion (the scanner ends blocks at page edges).
+	if ((branchpc & ~0xfffu) != ((target - 4) & ~0xfffu))
+	{
+		g_brshape.crosspage_le8++;
+		return;
+	}
+
+	// Scan the skipped region: sys-class ops (SYSCALL/BREAK/traps/COP0/CACHE)
+	// kill it; control flow kills it unless it's exactly one unconditional J
+	// at the region tail (the if/else diamond join).
+	u32 nctrl = 0, nsys = 0;
+	bool tail_j = false;
+	for (u32 a = branchpc + 8; a < target; a += 4)
+	{
+		const u32 w = memRead32(a);
+		const u32 w26 = w >> 26;
+		const u32 wrs = (w >> 21) & 31;
+		const u32 wrt = (w >> 16) & 31;
+		const u32 wfn = w & 63;
+		if (w26 == 0 && (wfn == 12 || wfn == 13 || (wfn >= 48 && wfn <= 54))) // SYSCALL/BREAK/TGE..TNE
+			nsys++;
+		else if (w26 == 0 && (wfn == 8 || wfn == 9)) // JR/JALR
+			nctrl++;
+		else if (w26 == 1 && (wrt < 4 || (wrt >= 8 && wrt < 15) || (wrt >= 16 && wrt < 20))) // REGIMM branches + trap-imm
+			(wrt >= 8 && wrt < 15) ? nsys++ : nctrl++;
+		else if (w26 == 2 || w26 == 3) // J/JAL
+		{
+			nctrl++;
+			if (w26 == 2 && a == target - 8)
+				tail_j = true;
+		}
+		else if ((w26 >= 4 && w26 <= 7) || (w26 >= 20 && w26 <= 23)) // cond branches
+			nctrl++;
+		else if (w26 >= 16 && w26 <= 18 && wrs == 8) // BC0/1/2
+			nctrl++;
+		else if (w26 == 16 || w26 == 47) // COP0 anything / CACHE
+			nsys++;
+	}
+	if (nsys)
+		g_brshape.unsafe_sys_le8++;
+	else if (nctrl == 1 && tail_j)
+		g_brshape.diamond_le8++;
+	else if (nctrl)
+		g_brshape.unsafe_ctrl_le8++;
+	else if (link)
+		; // $ra-writing variants excluded from the fusable count
+	else if (likely)
+		g_brshape.fusable_likely_le8++;
+	else
+		g_brshape.fusable_plain_le8++;
+}
+#endif // EE_BRSHAPE_CENSUS
+
 // =====================================================================================================
 //  Main Recompilation Loop
 // =====================================================================================================
@@ -2622,6 +2752,10 @@ static void recRecompile(const u32 startpc)
 	s_nEndBlock = 0xffffffff;
 	s_branchTo = -1;
 
+#if EE_BRSHAPE_CENSUS
+	ArmJitTelemetry::g_brshape.blocks++;
+#endif
+
 	// Timeout loop detection (matches x86 recSkipTimeoutLoop pattern):
 	//   addiu reg,reg,-N / nop*N / bne reg,zero,loop / nop
 	s32 timeout_reg = -1;
@@ -2696,7 +2830,12 @@ static void recRecompile(const u32 startpc)
 					if (s_branchTo > startpc && s_branchTo < i)
 						s_nEndBlock = s_branchTo;
 					else
+					{
 						s_nEndBlock = i + 8;
+#if EE_BRSHAPE_CENSUS
+						brshapeCensusRecord(i, s_branchTo, cpuRegs.code);
+#endif
+					}
 					goto StartRecomp;
 				}
 				break;
@@ -2716,7 +2855,12 @@ static void recRecompile(const u32 startpc)
 				if (s_branchTo > startpc && s_branchTo < i)
 					s_nEndBlock = s_branchTo;
 				else
+				{
 					s_nEndBlock = i + 8;
+#if EE_BRSHAPE_CENSUS
+					brshapeCensusRecord(i, s_branchTo, cpuRegs.code);
+#endif
+				}
 				goto StartRecomp;
 
 			case 16: // COP0
@@ -2736,7 +2880,12 @@ static void recRecompile(const u32 startpc)
 					if (s_branchTo > startpc && s_branchTo < i)
 						s_nEndBlock = s_branchTo;
 					else
+					{
 						s_nEndBlock = i + 8;
+#if EE_BRSHAPE_CENSUS
+						brshapeCensusRecord(i, s_branchTo, cpuRegs.code);
+#endif
+					}
 					goto StartRecomp;
 				}
 				break;
