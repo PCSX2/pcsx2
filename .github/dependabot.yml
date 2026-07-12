@@ -6,6 +6,9 @@ updates:
     schedule:
       # Check for updates to GitHub Actions every week
       interval: "weekly"
+    commit-message:
+      # Prefix all commit messages with "Deps/gha: "
+      prefix: "Deps/gha"
     groups:
       ci-deps:
         patterns:
