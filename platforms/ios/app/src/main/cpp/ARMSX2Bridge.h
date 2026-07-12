@@ -238,6 +238,11 @@ typedef void (^ARMSX2RetroAchievementsCompletion)(BOOL success, NSString * _Nonn
 + (void)applyGraphicsSettingsNow;
 + (void)flushINISettings;
 
+// MetalFX Spatial upscaler availability probe. Returns YES only on iOS 16+ with
+// a device GPU that reports MetalFX support (NO on the simulator and unsupported
+// hardware). Used by the settings UI to hide the Upscaler option where unusable.
++ (BOOL)isMetalFXSupported;
+
 // Per-game INI access — reads/writes the per-game INI file
 // (EmuFolders::GameSettings/<serial>_<crc>.ini) used by the game-settings and
 // patch-enable-list helpers. "For current game" write/delete variants live-apply.

@@ -39,6 +39,7 @@ struct GraphicsTab: View {
 
     // Per-game compatibility overrides surfaced on this tab.
     @Binding var perGameFXAA: Int
+    @Binding var perGameUpscaler: Int
     @Binding var perGameShadeBoost: Int
     @Binding var perGameShadeBoostBrightness: Int
     @Binding var perGameShadeBoostContrast: Int
@@ -159,6 +160,15 @@ struct GraphicsTab: View {
                 Text(settings.localized("Tip: OPH Flag Hack may help reduce slowdowns at higher resolutions."))
                     .font(.caption)
                     .foregroundStyle(OverlayTheme.warm)
+            }
+
+            if settings.isMetalFXAvailable {
+                Picker(settings.localized("Spatial Upscaler"), selection: $perGameUpscaler) {
+                    Text(settings.localized("Use Global")).tag(-1)
+                    Text(settings.localized("Off")).tag(0)
+                    Text(settings.localized("MetalFX Spatial")).tag(1)
+                }
+                .disabled(!enabled)
             }
 
             EnumPicker(Self.aspectRatioOptions, selection: $aspectRatio) {

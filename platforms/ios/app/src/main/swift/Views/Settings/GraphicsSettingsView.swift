@@ -92,6 +92,22 @@ struct GraphicsSettingsView: View {
                 }
             }
 
+            if settings.isMetalFXAvailable {
+                Section(settings.localized("Upscaler")) {
+                    Picker(settings.localized("Spatial Upscaler"), selection: $settings.upscaler) {
+                        Text(settings.localized("Off (Bilinear)")).tag(0)
+                        Text(settings.localized("MetalFX Spatial")).tag(1)
+                    }
+                    Text(settings.localized(
+                        "GPU-accelerated upscaling via MetalFX. Renders at the native PS2 "
+                        + "resolution and upscales to the display for sharper visuals at "
+                        + "lower cost than a higher internal resolution. Applies immediately."
+                    ))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
+            }
+
             Section(settings.localized("Filtering")) {
                 Picker(settings.localized("Texture Filtering"), selection: $settings.textureFiltering) {
                     Text(settings.localized("Nearest (Pixelated)")).tag(0)

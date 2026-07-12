@@ -104,6 +104,7 @@ struct PerGameSettingsPanel: View {
     @State private var perGameTextureInsideRt: Int
     @State private var perGameRenderer: Int
     @State private var perGameFXAA: Int
+    @State private var perGameUpscaler: Int
     @State private var perGameShadeBoost: Int
     @State private var perGameTVShader: Int
     @State private var perGameCASMode: Int
@@ -246,6 +247,8 @@ struct PerGameSettingsPanel: View {
         _perGameRenderer = State(initialValue: hasPerGameRenderer ? Self.intValue(info["perGameRenderer"], defaultValue: 17) : -1)
         let hasPerGameFXAA = Self.boolValue(info["hasPerGameFXAA"], defaultValue: false)
         _perGameFXAA = State(initialValue: hasPerGameFXAA ? Self.intValue(info["perGameFXAA"], defaultValue: 0) : -1)
+        let hasPerGameUpscaler = Self.boolValue(info["hasPerGameUpscaler"], defaultValue: false)
+        _perGameUpscaler = State(initialValue: hasPerGameUpscaler ? Self.intValue(info["perGameUpscaler"], defaultValue: 0) : -1)
         let hasPerGameShadeBoost = Self.boolValue(info["hasPerGameShadeBoost"], defaultValue: false)
         _perGameShadeBoost = State(initialValue: hasPerGameShadeBoost ? Self.intValue(info["perGameShadeBoost"], defaultValue: 0) : -1)
         let hasPerGameTVShader = Self.boolValue(info["hasPerGameTVShader"], defaultValue: false)
@@ -319,7 +322,7 @@ struct PerGameSettingsPanel: View {
     /// Encodes the current editable per-game state so Save can be gated on real changes.
     private func perGameFingerprint() -> String {
         let fixes = SettingsStore.gameFixOptions.map { "\($0.key):\(perGameFixes[$0.key] ?? -1)" }.joined(separator: ",")
-        return "\(enabled)|\(upscaleMultiplier)|\(aspectRatio)|\(textureFiltering)|\(hardwareMipmapping)|\(blendingAccuracy)|\(interlaceMode)|\(trilinearFiltering)|\(halfPixelOffset)|\(roundSprite)|\(alignSpriteOverride)|\(alignSprite)|\(mergeSpriteOverride)|\(mergeSprite)|\(wildArmsOffsetOverride)|\(wildArmsOffset)|\(textureOffsetXOverride)|\(textureOffsetX)|\(textureOffsetYOverride)|\(textureOffsetY)|\(skipDrawStartOverride)|\(skipDrawStart)|\(skipDrawEndOverride)|\(skipDrawEnd)|\(volumeOverride)|\(volumePercent)|\(eeCoreType)|\(mtvu)|\(eeCycleRate)|\(eeCycleSkip)|\(fastBoot)|\(enableCheats)|\(enablePatches)|\(enableGameFixes)|\(enableGameDBHardwareFixes)|\(perGameAAT)|\(perGameTextureInsideRt)|\(perGameRenderer)|\(perGameFXAA)|\(perGameShadeBoost)|\(perGameTVShader)|\(perGameCASMode)|\(perGameMaxAnisotropy)|\(perGameCASSharpness)|\(perGamePCRTCOffsets)|\(perGameIntegerScaling)|\(perGameSkipDupFrames)|\(perGamePCRTCOverscan)|\(perGamePCRTCAntiBlur)|\(perGameDisableInterlaceOffset)|\(perGameWidescreen)|\(perGameNoInterlace)|\(perGameShadeBoostBrightness)|\(perGameShadeBoostContrast)|\(perGameShadeBoostSaturation)|\(perGameShadeBoostGamma)|\(perGameDithering)|\(perGameFastForwardVolume)|\(perGameIOP)|\(perGameVU0)|\(perGameVU1)|\(perGameHWDownloadMode)|\(perGameCPUCLUT)|\(perGameGPUTargetCLUT)|\(perGameVsyncQueue)|\(perGameLoadTextureReplacements)|\(perGameLoadTextureReplacementsAsync)|\(perGamePrecacheTextureReplacements)|\(perGameSyncToHostRefresh)|\(perGameBufferMS)|\(perGameOutputLatencyMS)|\(perGameEEFpuRound)|\(perGameVU0Round)|\(perGameVU1Round)|\(perGameEEClamp)|\(perGameVUClamp)|\(raEnabledOverride)|\(raHardcoreOverride)|\(fixes)"
+        return "\(enabled)|\(upscaleMultiplier)|\(aspectRatio)|\(textureFiltering)|\(hardwareMipmapping)|\(blendingAccuracy)|\(interlaceMode)|\(trilinearFiltering)|\(halfPixelOffset)|\(roundSprite)|\(alignSpriteOverride)|\(alignSprite)|\(mergeSpriteOverride)|\(mergeSprite)|\(wildArmsOffsetOverride)|\(wildArmsOffset)|\(textureOffsetXOverride)|\(textureOffsetX)|\(textureOffsetYOverride)|\(textureOffsetY)|\(skipDrawStartOverride)|\(skipDrawStart)|\(skipDrawEndOverride)|\(skipDrawEnd)|\(volumeOverride)|\(volumePercent)|\(eeCoreType)|\(mtvu)|\(eeCycleRate)|\(eeCycleSkip)|\(fastBoot)|\(enableCheats)|\(enablePatches)|\(enableGameFixes)|\(enableGameDBHardwareFixes)|\(perGameAAT)|\(perGameTextureInsideRt)|\(perGameRenderer)|\(perGameFXAA)|\(perGameUpscaler)|\(perGameShadeBoost)|\(perGameTVShader)|\(perGameCASMode)|\(perGameMaxAnisotropy)|\(perGameCASSharpness)|\(perGamePCRTCOffsets)|\(perGameIntegerScaling)|\(perGameSkipDupFrames)|\(perGamePCRTCOverscan)|\(perGamePCRTCAntiBlur)|\(perGameDisableInterlaceOffset)|\(perGameWidescreen)|\(perGameNoInterlace)|\(perGameShadeBoostBrightness)|\(perGameShadeBoostContrast)|\(perGameShadeBoostSaturation)|\(perGameShadeBoostGamma)|\(perGameDithering)|\(perGameFastForwardVolume)|\(perGameIOP)|\(perGameVU0)|\(perGameVU1)|\(perGameHWDownloadMode)|\(perGameCPUCLUT)|\(perGameGPUTargetCLUT)|\(perGameVsyncQueue)|\(perGameLoadTextureReplacements)|\(perGameLoadTextureReplacementsAsync)|\(perGamePrecacheTextureReplacements)|\(perGameSyncToHostRefresh)|\(perGameBufferMS)|\(perGameOutputLatencyMS)|\(perGameEEFpuRound)|\(perGameVU0Round)|\(perGameVU1Round)|\(perGameEEClamp)|\(perGameVUClamp)|\(raEnabledOverride)|\(raHardcoreOverride)|\(fixes)"
     }
 
     private var hasPendingChanges: Bool {
@@ -573,6 +576,7 @@ struct PerGameSettingsPanel: View {
             skipDrawEndOverride: $skipDrawEndOverride,
             skipDrawEnd: $skipDrawEnd,
             perGameFXAA: $perGameFXAA,
+            perGameUpscaler: $perGameUpscaler,
             perGameShadeBoost: $perGameShadeBoost,
             perGameShadeBoostBrightness: $perGameShadeBoostBrightness,
             perGameShadeBoostContrast: $perGameShadeBoostContrast,
@@ -1107,6 +1111,11 @@ struct PerGameSettingsPanel: View {
             Self.setPerGameBoolValue("EmuCore/GS", "fxaa", perGameFXAA == 1, useCurrent: useCurrent, iso: iso)
         } else {
             Self.clearPerGameValue("EmuCore/GS", "fxaa", useCurrent: useCurrent, iso: iso)
+        }
+        if enabled && perGameUpscaler != -1 {
+            Self.setPerGameIntValue("EmuCore/GS", "Upscaler", perGameUpscaler, useCurrent: useCurrent, iso: iso)
+        } else {
+            Self.clearPerGameValue("EmuCore/GS", "Upscaler", useCurrent: useCurrent, iso: iso)
         }
         if enabled && perGameShadeBoost != -1 {
             Self.setPerGameBoolValue("EmuCore/GS", "ShadeBoost", perGameShadeBoost == 1, useCurrent: useCurrent, iso: iso)

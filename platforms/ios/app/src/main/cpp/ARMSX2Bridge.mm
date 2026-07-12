@@ -14,6 +14,11 @@
 #define ARMSX2_HAS_SWIFTUI_HOST 0
 #endif
 
+// MetalFX spatial upscaler is iOS 16+ and weak-linked (see PCSX2 CMake). Both
+// headers are pulled in here so isMetalFXSupported can probe device capability.
+#import <Metal/Metal.h>
+#import <MetalFX/MetalFX.h>
+
 #include "common/Darwin/DarwinMisc.h"
 #include <SDL3/SDL.h>
 
@@ -44,6 +49,7 @@ extern "C" void ARMSX2_iOSCopyDeviceStats(int* outBatteryPercent, int* outTherma
 #include "common/Path.h"
 #include "common/ZipHelpers.h"
 #include "common/Error.h"
+#include "common/MRCHelpers.h"
 
 #include <algorithm>
 #include <cctype>
@@ -1785,6 +1791,11 @@ static void ARMSX2ApplyPerGameSettingsOverrides(NSMutableDictionary<NSString*, i
         result[@"hasPerGameCASMode"] = @(hasPerGameCASMode);
         result[@"perGameCASMode"] = @(hasPerGameCASMode ? si.GetIntValue("EmuCore/GS", "CASMode", 0) : 0);
 
+        // MetalFX Spatial upscaler (Off = 0, MetalFXSpatial = 1).
+        const bool hasPerGameUpscaler = si.ContainsValue("EmuCore/GS", "Upscaler");
+        result[@"hasPerGameUpscaler"] = @(hasPerGameUpscaler);
+        result[@"perGameUpscaler"] = @(hasPerGameUpscaler ? si.GetIntValue("EmuCore/GS", "Upscaler", 0) : 0);
+
         const bool hasPerGameMaxAnisotropy = si.ContainsValue("EmuCore/GS", "MaxAnisotropy");
         result[@"hasPerGameMaxAnisotropy"] = @(hasPerGameMaxAnisotropy);
         result[@"perGameMaxAnisotropy"] = @(hasPerGameMaxAnisotropy ? si.GetIntValue("EmuCore/GS", "MaxAnisotropy", 0) : 0);
@@ -3499,6 +3510,21 @@ static std::string ARMSX2PerGameSettingsPath(const std::string& serial, u32 crc)
 + (void)flushINISettings
 {
     ARMSX2FlushINISave();
+}
+
+// Probes whether MetalFX Spatial upscaling is available on this device. This is
+// a standalone check that works from the main menu before any GS device exists,
+// so the settings UI can decide whether to show the Upscaler section at all. It
+// returns NO on pre-iOS-16, the simulator, and any GPU that fails the framework
+// capability probe.
++ (BOOL)isMetalFXSupported {
+    if (@available(iOS 16.0, *)) {
+        MRCOwned<id<MTLDevice>> device = MRCTransfer(MTLCreateSystemDefaultDevice());
+        if (!device)
+            return NO;
+        return [MTLFXSpatialScalerDescriptor supportsDevice:device];
+    }
+    return NO;
 }
 
 #pragma mark - Per-game INI getter/setter

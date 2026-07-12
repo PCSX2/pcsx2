@@ -468,6 +468,13 @@ final class SettingsStore {
     }
 
     // ── Graphics ──
+
+    /// MetalFX Spatial upscaling requires iOS 16+ and a device GPU that supports it.
+    /// Probes at runtime so the UI can hide the option on unsupported hardware.
+    var isMetalFXAvailable: Bool {
+        ARMSX2Bridge.isMetalFXSupported()
+    }
+
     let _rendererConfig = Setting<Int>(
         section: "EmuCore/GS", key: "Renderer", default: 17,
         suppressible: false,
@@ -877,6 +884,18 @@ final class SettingsStore {
         guard !(_tvShaderConfig.suppressible && suppressINIWrites) else { return }
         _tvShaderConfig.writer(_tvShaderConfig.section, _tvShaderConfig.key, tvShader)
         _tvShaderConfig.onSet?(tvShader)
+    }}
+    // MetalFX Spatial upscaler (0 = Off / bilinear, 1 = MetalFX Spatial).
+    // Hidden in the UI when isMetalFXAvailable is false; default is Off.
+    let _upscalerConfig = Setting<Int>(
+        section: "EmuCore/GS", key: "Upscaler", default: 0,
+        suppressible: false,
+        writer: { s, k, v in ARMSX2Bridge.setINIInt(s, key: k, value: Int32(v)) },
+        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+    var upscaler: Int = 0 { didSet {
+        guard !(_upscalerConfig.suppressible && suppressINIWrites) else { return }
+        _upscalerConfig.writer(_upscalerConfig.section, _upscalerConfig.key, upscaler)
+        _upscalerConfig.onSet?(upscaler)
     }}
 
     /// Homogeneous bool GS hacks — see SettingsStore+Graphics.swift for the option list.
@@ -1640,6 +1659,7 @@ final class SettingsStore {
         maxAnisotropy = Self.clamped(Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "MaxAnisotropy", defaultValue: 0)), to: 0...16)
         hardwareDownloadMode = Self.clamped(Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "HWDownloadMode", defaultValue: 0)), to: 0...4)
         tvShader = Self.clamped(Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "TVShader", defaultValue: 0)), to: 0...7)
+        upscaler = Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "Upscaler", defaultValue: 0))
         gsBoolHacks = Self.loadGSBoolHacks()
         // Screen / PCRTC
         pcrtcOffsets = ARMSX2Bridge.getINIBool("EmuCore/GS", key: "pcrtc_offsets", defaultValue: false)
@@ -1840,6 +1860,7 @@ final class SettingsStore {
         maxAnisotropy = Self.clamped(Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "MaxAnisotropy", defaultValue: 0)), to: 0...16)
         hardwareDownloadMode = Self.clamped(Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "HWDownloadMode", defaultValue: 0)), to: 0...4)
         tvShader = Self.clamped(Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "TVShader", defaultValue: 0)), to: 0...7)
+        upscaler = Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "Upscaler", defaultValue: 0))
         gsBoolHacks = Self.loadGSBoolHacks()
         // Screen / PCRTC
         pcrtcOffsets = ARMSX2Bridge.getINIBool("EmuCore/GS", key: "pcrtc_offsets", defaultValue: false)
@@ -2251,6 +2272,7 @@ final class SettingsStore {
         maxAnisotropy = 0
         hardwareDownloadMode = 0
         tvShader = 0
+        upscaler = 0
         for option in Self.gsBoolHackOptions {
             gsBoolHacks[option.key] = false
             ARMSX2Bridge.setINIBool("EmuCore/GS", key: option.key, value: false)
