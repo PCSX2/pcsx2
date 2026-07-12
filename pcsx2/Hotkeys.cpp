@@ -11,6 +11,8 @@
 #include "Recording/InputRecording.h"
 #include "SPU2/spu2.h"
 #include "VMManager.h"
+#include "INISettingsInterface.h"
+#include "Patch.h"
 #include "SIO/Memcard/MemoryCardFile.h"
 
 #include "common/Assertions.h"
@@ -246,7 +248,7 @@ DEFINE_HOTKEY("ReloadPatches", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NO
 		{
 			Host::RunOnCPUThread([]() {
 				Host::AddKeyedOSDMessage("ReloadPatchHotkey", "Reloading Patches...");
-				VMManager::ReloadPatches(true, false, true, true);
+				VMManager::ReloadPatches(true, true, true, true);
 			});
 		}
 	})
@@ -355,4 +357,31 @@ DEFINE_HOTKEY("ToggleMouseLock", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_
 		if (!pressed)
 			Host::SetMouseLock(!Host::GetBoolSettingValue("EmuCore", "EnableMouseLock"));
 	})
+
+DEFINE_HOTKEY("ToggleBerserkerFilter", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Berserker Filter"), [](s32 pressed) {
+	if (!pressed && VMManager::HasValidVM())
+	{
+		Host::RunOnCPUThread([]() {
+                        SettingsInterface* si = Host::Internal::GetGameSettingsLayer();
+                        if (!si)
+                                return;
+                        const char* cheat_name = "Sem filtro vermelho Berserker";
+                        std::vector<std::string> enabled = si->GetStringList(Patch::CHEATS_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY);
+                        auto it = std::find(enabled.begin(), enabled.end(), cheat_name);
+                        if (it != enabled.end())
+                        {
+                                si->RemoveFromStringList(Patch::CHEATS_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY, cheat_name);
+                                Host::AddKeyedOSDMessage("BerserkerFilter", "Berserker Filter: OFF");
+                        }
+                        else
+                        {
+                                si->AddToStringList(Patch::CHEATS_CONFIG_SECTION, Patch::PATCH_ENABLE_CONFIG_KEY, cheat_name);
+                                Host::AddKeyedOSDMessage("BerserkerFilter", "Berserker Filter: ON");
+                        }
+                        si->Save();
+                        VMManager::ReloadPatches(true, true, true, true);
+                
+                });
+	}
+})
 END_HOTKEY_LIST()
