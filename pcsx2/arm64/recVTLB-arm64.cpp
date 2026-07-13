@@ -587,6 +587,15 @@ static void recLoad(u32 bits, bool sign)
 		// refresh; the canonical Str in recStoreLoadResult stays. Not done
 		// for softmem — its result comes back from a C call in x0.
 		const a64::Register* dpin = _Rt_ ? armEEPinForGPR(_Rt_) : nullptr;
+		// A dirty NEON quad for Rt (an MMI Rd dest) must be retired BEFORE the
+		// Ldr-into-pin below: recStoreLoadResult's _deleteEEreg would other-
+		// wise write it back AFTER the load, and armStoreEEGPRQuad's pin
+		// refresh would clobber the just-loaded result with the quad's stale
+		// lane 0. The unpinned path is order-safe (writeback touches memory,
+		// not x0) but retiring here keeps the quad out of the thunk's save
+		// mask either way.
+		if (dpin)
+			_deleteGPRtoNEONreg(_Rt_, DELETE_REG_FREE);
 		// GE-07: with allocator state now live across fastmem, x0 (a pool
 		// member) may hold a guest value — evict it before it becomes the
 		// load result. Freed before mask capture so the thunk skips it too.

@@ -963,3 +963,52 @@ TEST(EeRecMmiCoherence, PpacwThenAddiuPreservesUpper64)
 	// UD[1] preserved = {rs.UL[0]=0x11111111, rs.UL[2]=0x22222222} = 0x22222222_11111111
 	h.ExpectMmiPair(reg::v0, 0x0000000033333333ull, 0x2222222211111111ull);
 }
+
+// ============================================================================
+//  Dirty resident quad + scalar LOAD into the same PINNED dest (WS-C4 order).
+//
+//  recLoad's pinned-dest fastmem path emits Ldr-straight-into-the-pin and
+//  only THEN retires the dest's allocator state (recStoreLoadResult →
+//  _deleteEEreg). A dirty NEON quad for the dest (an MMI Rd) is written
+//  back at that point, and armStoreEEGPRQuad's pin refresh clobbers the
+//  just-loaded value with the quad's stale lane 0. The quad must be
+//  retired BEFORE the pin load.
+// ============================================================================
+
+// The pre-existing MMI route: PADDW leaves v0 (pinned) dirty-resident, LW
+// overwrites its lower 64 — the loaded value must win over the stale lane 0.
+TEST(EeRecMmiCoherence, PaddwThenLwSamePinnedDestPreservesLoadedValue)
+{
+	EeRecTestHarness h;
+	const u32 kScratch = RecompilerTestEnvironment::kScratchAddr;
+	h.WriteU32(kScratch, 0x00ABCDEFu);
+	h.SetGpr64(reg::sp, kScratch);
+	h.SetMmiPair(reg::a0, 0x1111'2222'3333'4444ull, 0x5555'6666'7777'8888ull);
+	h.SetMmiPair(reg::a1, 0x0101'0101'0101'0101ull, 0x0202'0202'0202'0202ull);
+	h.LoadProgram({
+		ee::PADDW(reg::v0, reg::a0, reg::a1), // v0 (pinned) dirty-resident
+		LW       (reg::v0, 0, reg::sp),       // load must win over the stale lane 0
+	});
+	h.Run();
+	h.ExpectMmiPair(reg::v0, 0x0000'0000'00ABCDEFull, 0x5757'6868'7979'8a8aull);
+}
+
+// Same hazard with LQ as the quad producer (load-bearing once LQ dests are
+// allocator-resident — GE-14; on the memory-round-trip LQ shape this is a
+// plain guard).
+TEST(EeRecMmiCoherence, LqThenScalarLoadIntoSamePinnedDest)
+{
+	EeRecTestHarness h;
+	const u32 kScratch = RecompilerTestEnvironment::kScratchAddr;
+	h.WriteU64(kScratch + 0, 0x1111'2222'3333'4444ull);
+	h.WriteU64(kScratch + 8, 0x5555'6666'7777'8888ull);
+	h.WriteU32(kScratch + 16, 0xCAFE1234u);
+	h.SetGpr64(reg::sp, kScratch);
+	h.LoadProgram({
+		ee::LQ(reg::v1, 0,  reg::sp), // v1 (pinned) = 128-bit dest
+		LW    (reg::v1, 16, reg::sp), // scalar load into the SAME pinned reg
+	});
+	h.Run();
+	// LW writes UD[0] (sign-extended) and preserves UD[1] from the LQ.
+	h.ExpectMmiPair(reg::v1, 0xFFFFFFFF'CAFE1234ull, 0x5555'6666'7777'8888ull);
+}
