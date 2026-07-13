@@ -140,6 +140,13 @@ constexpr AbiPin kPins[] = {
 	// block carries a testCycles, so every probe's fixup structure (and
 	// therefore digest) moves.
 	{11, {0x5606c91c74538771, 0xf50098b57b42c70c, 0xdda10863aa6fe8f7, 0xb93a633324c1d588, 0x6efd9e660ba61479}},
+	// abi 12: exit-stub gprF re-save removed (VE-03); the defensive
+	// compile-failed guards grow a 5-insn inline flag backup. Only the two
+	// probes that emit those guards (indirectJump via normJumpCompile,
+	// condEvilBranch via condBranch badBranch) change shape; the
+	// straight-line, branch-both-arms, and broadcast probes are
+	// bit-identical to abi 11.
+	{12, {0x5606c91c74538771, 0xf50098b57b42c70c, 0x421bbc34e2552655, 0xb93a633324c1d588, 0x29d9172f7ccbd58f}},
 };
 
 u64 CompileAndDigest(std::initializer_list<vu::VuOp> pairs)

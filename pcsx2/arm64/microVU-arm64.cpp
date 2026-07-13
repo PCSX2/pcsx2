@@ -643,12 +643,16 @@ static void mVUdispatcherAB(mV)
 	if (mvuNeedsFPCRUpdate(mVU))
 		mVUemitLoadFPCR(&EmuConfig.Cpu.FPUFPCR.bitmask);
 
-	// Save status flags back to VU state via gprVUState (still pinned across
-	// the block-exit path; restored only by the final Ldp below).
-	armAsm->Str(gprF0, mVUstateMem(offsetof(VURegs, micro_statusflags) + 0));
-	armAsm->Str(gprF1, mVUstateMem(offsetof(VURegs, micro_statusflags) + 4));
-	armAsm->Str(gprF2, mVUstateMem(offsetof(VURegs, micro_statusflags) + 8));
-	armAsm->Str(gprF3, mVUstateMem(offsetof(VURegs, micro_statusflags) + 12));
+	// VE-03: no status-flag re-save here. Every real block exit BLs
+	// endProgramFlagsA/B before jumping to exitFunct — helper A stores
+	// gprF0..3 into micro_statusflags, helper B broadcasts AND mirrors the
+	// broadcast back into gprF0..3 — so the re-save x86 carries in its exit
+	// dispatcher was pure redundancy on this port. The only exitFunct
+	// entries that bypass the helpers are (a) the null-block Cbz above,
+	// where gprF still hold the values the entry marshalling just loaded,
+	// and (b) the two defensive compile-failed guards in
+	// microVU_Branch-arm64.inl, which now emit their own full flag backup
+	// inline (mVUcompileFailedFlagBackup).
 
 	// mVUcleanUp logic inlined in this exit stub. The C++ helper (mVUcleanUpVU0/1)
 	// is only called on the rare bounds-violation path (program cache exhausted →
@@ -1018,15 +1022,18 @@ static void mVUGenerateEndProgramFlagsHelper(mV)
 		armAsm->Str(a64::q0, mVUstateMem(offsetof(VURegs, micro_statusflags)));
 
 		// Mirror the status broadcast into the pipeline registers gprF0..3 too.
-		// The shared exitFunct (block-exit stub) unconditionally re-saves
-		// gprF0..3 -> micro_statusflags AFTER this helper runs on the E-bit path
-		// (mVUendProgram: armEmitCall(endProgramFlagsB) ... armEmitJmp(exitFunct)).
-		// Without this, that re-save clobbers the broadcast just written above
-		// with the raw 4-deep pre-broadcast pipeline tail — leaving
-		// micro_statusflags non-uniform where x86/ARMSX2 leave the broadcast, so
-		// the NEXT program's delayed-status reads see stale instances. (gprF0..3
+		// Load-bearing for the isEbit==2 callers (mVUendProgram(2) falls
+		// through and keeps executing in the same block): the continuation
+		// must see gprF uniform == the broadcast, exactly as if freshly
+		// marshalled. Also keeps gprF authoritative for any later exit path
+		// (e.g. the defensive compile-failed backups) — micro_statusflags
+		// and gprF must never disagree after an E-bit broadcast. (gprF0..3
 		// are callee-saved w20..w23, so they survive the intervening mVUTBit
 		// C-call to exitFunct.) Must precede emitSFLAGc(), which destroys w11.
+		//
+		// (Historical: this mirror originally also protected the broadcast
+		// from the shared exitFunct's unconditional gprF re-save, removed in
+		// VE-03 as redundant.)
 		armAsm->Mov(gprF0, a64::w11);
 		armAsm->Mov(gprF1, a64::w11);
 		armAsm->Mov(gprF2, a64::w11);

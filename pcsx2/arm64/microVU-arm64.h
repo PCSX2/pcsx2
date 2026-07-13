@@ -72,7 +72,12 @@
 //       breaking block's hostEntry in mVU.resumeEntry; the next dispatch
 //       consumes it and skips mVUlookupProg. Block insn count is
 //       unchanged but the recorded stub fixup id is new.
-static constexpr u32 kMvuCompilerAbiVersion = 11;
+//  12 — exit-stub gprF re-save removed (VE-03): the two defensive
+//       compile-failed guards (normJumpCompile null-return, condBranch
+//       badBranch null jumpAddr) now emit a 5-insn inline flag backup
+//       before jumping to exitFunct; blocks carrying those guards change
+//       shape.
+static constexpr u32 kMvuCompilerAbiVersion = 12;
 
 // Hash/equality functors for XXH128_hash_t — let std::unordered_map<XXH128_hash_t, …>
 // work without a wrapping struct. low64 already carries the well-mixed half of

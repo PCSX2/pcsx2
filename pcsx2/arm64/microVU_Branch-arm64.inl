@@ -315,6 +315,23 @@ void mVUsetupBranch(mV, microFlagCycles& mFC)
 // normBranchCompile — Compile/link to a block at known PC
 //------------------------------------------------------------------
 
+// Full flag-instance backup for the defensive compile-failed bails below —
+// the only exitFunct entries that don't pass through endProgramFlagsA/B
+// (which otherwise own the micro_*flags backup; the shared exit stub's
+// redundant gprF re-save was removed in VE-03). Same paired-copy shape as
+// helper A minus the SFLAGc denorm (w11 doesn't carry a flag-instance
+// selector here). x8/q0/q1 are free: block boundary, allocator flushed.
+// Never executed unless a runtime compile fails; also MORE faithful than
+// the old exit-stub re-save, which lost the mac/clip shadows on this path.
+static void mVUcompileFailedFlagBackup(mV)
+{
+	armAsm->Add(a64::x8, gprVUState, offsetof(VURegs, micro_macflags));
+	armAsm->Ldp(a64::q0, a64::q1, a64::MemOperand(gprMVUFlag));
+	armAsm->Stp(a64::q0, a64::q1, a64::MemOperand(a64::x8));
+	armAsm->Stp(gprF0, gprF1, a64::MemOperand(a64::x8, 32));
+	armAsm->Stp(gprF2, gprF3, a64::MemOperand(a64::x8, 40));
+}
+
 void normBranchCompile(microVU& mVU, u32 branchPC)
 {
 	microBlock* pBlock;
@@ -406,6 +423,7 @@ void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump)
 	// Guard against NULL: if compile failed, exit instead of crashing.
 	a64::Label validBlock;
 	armAsm->Cbnz(a64::x0, &validBlock);
+	mVUcompileFailedFlagBackup(mVU);
 	armEmitJmp(mVU.exitFunct);
 	armAsm->Bind(&validBlock);
 	armAsm->Br(a64::x0);
@@ -892,9 +910,15 @@ void condBranch(mV, microFlagCycles& mFC, a64::Condition cond)
 		void* jumpAddr = mVUblockFetch(mVU, branchAddr(mVU), (uptr)&regBackup);
 		armAsm->Bind(&takenLabel);
 		if (jumpAddr)
+		{
 			armEmitJmp(jumpAddr);
+		}
 		else
-			armEmitJmp(mVU.exitFunct); // Safety: exit if compile failed
+		{
+			// Safety: exit if compile failed
+			mVUcompileFailedFlagBackup(mVU);
+			armEmitJmp(mVU.exitFunct);
+		}
 	}
 }
 
