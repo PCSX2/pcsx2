@@ -553,15 +553,15 @@ static void mVUdispatcherAB(mV)
 	// x0 holds the block pointer; we keep it there until the Br below.
 	// FPCR setup, gprVUState pin, and the flag/PQ loads emit no calls and
 	// don't touch x0, so it survives across them.
-
-	// Park PS2 FPU clamp constants. AAPCS64 preserves the lower 64 bits of
-	// d8/d9 across every C call reachable from inside this dispatcher.
-	// Matches the EE dispatcher's convention so iCOP2 scalar clamps (which
-	// can execute inside macro-mode VU emissions) and any future scalar FPU
-	// work share s8/s9. Lives in the post-lookup tail so the resume entry
-	// below shares it.
-	armAsm->Ldr(a64::s8, FLT_MAX);
-	armAsm->Ldr(a64::s9, -FLT_MAX);
+	//
+	// NOTE (VE-04): no s8/s9 clamp-const parking here. The EE dispatcher's
+	// convention (s8=+FLT_MAX / s9=-FLT_MAX for iCOP2/iFPU scalar clamps)
+	// only serves code emitted into EE blocks; nothing emitted by the
+	// microVU_*.inl universe reads s8/s9 (micro clamps go through the
+	// x25-pinned mVUglob constants), so re-parking them per dispatch was
+	// two dead literal loads. The EE's parked values are protected across
+	// the dispatch by this stub's d8/d9 save/restore pairs, not by any
+	// reload.
 
 	// Pin gprVUState (x19) = &mVU.regs(). All subsequent regs() field accesses
 	// (here in the dispatcher and in compiled blocks) use [gprVUState, #off]
