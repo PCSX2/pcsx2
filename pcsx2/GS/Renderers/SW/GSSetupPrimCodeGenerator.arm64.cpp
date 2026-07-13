@@ -9,6 +9,18 @@
 
 #include <cstdint>
 
+// On iOS dual-map JIT, write through the RW alias (rx + g_code_rw_offset).
+// Identity no-op elsewhere. Mirrors armGetWritableCodePtr in pcsx2/arm64/AsmHelpers.cpp.
+#if defined(__APPLE__) && TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+#include "common/Darwin/DarwinMisc.h"
+static void* gsGetWritableCodePtr(void* rx_ptr)
+{
+	return static_cast<u8*>(rx_ptr) + DarwinMisc::g_code_rw_offset;
+}
+#else
+static void* gsGetWritableCodePtr(void* rx_ptr) { return rx_ptr; }
+#endif
+
 MULTI_ISA_UNSHARED_IMPL;
 
 using namespace vixl::aarch64;
@@ -28,8 +40,9 @@ static constexpr const GSScanlineConstantData128B& g_const = g_const_128b;
 #define armAsm (&m_emitter)
 
 GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(u64 key, void* code, size_t maxsize)
-	: m_emitter(static_cast<vixl::byte*>(code), maxsize, vixl::aarch64::PositionDependentCode)
+	: m_emitter(static_cast<vixl::byte*>(gsGetWritableCodePtr(code)), maxsize, vixl::aarch64::PositionDependentCode)
 	, m_sel(key)
+	, m_code_rx(static_cast<const u8*>(code))
 {
 	m_en.z = m_sel.zb ? 1 : 0;
 	m_en.f = m_sel.fb && m_sel.fge ? 1 : 0;
