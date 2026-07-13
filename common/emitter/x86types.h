@@ -635,7 +635,16 @@ extern const xRegister32
     calleeSavedReg2d;
 
 /// Holds a pointer to program text at all times so we don't need to be within 2GB of text
+// x86-only: RTEXTPTR aliases the x86 register `rbx`, which is defined only in
+// x86emitter.cpp (compiled under ARCH_X86). Binding this reference ODR-uses
+// `rbx`, so on ARM64 it would emit an undefined external — clang dead-code-
+// eliminates the unused reference, but MSVC keeps it, breaking the Windows-arm64
+// link (LNK2001 x86Emitter::rbx from VMManager.cpp, which pulls in this header).
+// Every real user of RTEXTPTR lives in pcsx2/x86/** or common/emitter/*.cpp, all
+// ARCH_X86-only, so gating the alias to x86 is safe and changes nothing there.
+#ifdef _M_X86
 static constexpr const xAddressReg& RTEXTPTR = rbx;
+#endif
 
 	// clang-format on
 
