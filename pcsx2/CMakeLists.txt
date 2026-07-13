@@ -1446,8 +1446,17 @@ function(setup_main_executable target)
 			install(FILES $<TARGET_PDB_FILE:${target}> DESTINATION ${CMAKE_SOURCE_DIR}/bin)
 		endif()
 
-		# Copy dependency libraries.
+		# Copy dependency libraries. Bundle the DLLs from the dependency prefix we
+		# actually built against -- deps/bin for the x64 build, deps-arm64/bin for
+		# the native arm64 build -- rather than assuming a fixed path, so we never
+		# ship wrong-arch DLLs. Fall back to deps/bin when no prefix was supplied.
 		set(DEPS_BINDIR "${CMAKE_SOURCE_DIR}/deps/bin")
+		foreach(_prefix IN LISTS CMAKE_PREFIX_PATH)
+			if(EXISTS "${_prefix}/bin")
+				set(DEPS_BINDIR "${_prefix}/bin")
+				break()
+			endif()
+		endforeach()
 		set(DEPS_TO_COPY freetype.dll harfbuzz.dll jpeg62.dll libpng16.dll libsharpyuv.dll libwebp.dll libwebpdemux.dll libwebpmux.dll lz4.dll SDL3.dll shaderc_shared.dll z.dll zstd.dll plutovg.dll plutosvg.dll ryml.dll)
 		set(DEPS_TO_COPY
 			$<IF:$<CONFIG:Debug>,kddockwidgets-qt6d.dll,kddockwidgets-qt6.dll>
@@ -1468,7 +1477,6 @@ function(setup_main_executable target)
 			install(FILES "${DEPS_BINDIR}/${SYMBOL_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/bin" OPTIONAL)
 		endforeach()
 
-		set(AGILITY_DIR "${CMAKE_SOURCE_DIR}/deps/bin/D3D12")
 		set(AGILITY_DEPS_TO_COPY D3D12Core.dll d3d12SDKLayers.dll)
 		foreach(AGILITY_DEP_TO_COPY ${AGILITY_DEPS_TO_COPY})
 			install(FILES "${DEPS_BINDIR}/D3D12/${AGILITY_DEP_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/bin/D3D12" OPTIONAL)
