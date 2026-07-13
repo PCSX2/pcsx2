@@ -308,6 +308,82 @@ TEST(EeVu0Vcallms, MicroprogramSetsViVisibleViaCfc2)
 	EXPECT_EQ(h.GetGpr64Jit(8), h.GetGpr64Interp(8));
 }
 
+TEST(EeVu0Vcallms, RepeatedIdenticalKicksAccumulateVi)
+{
+	// Three identical kicks of the same microprogram from a clean pipeline
+	// state. Kick 1 compiles (slow path), kick 2 resolves via the C quick
+	// path (seeding the VE-02 inline last-hit probe in the dispatcher
+	// stub), kick 3 dispatches through the probe's inline-hit path. vi3
+	// accumulates +5 per kick on both engines regardless of which path
+	// resolved the dispatch.
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Microprogram(0, {
+		VuOp{vu::VIADDIU_L(/*it*/3, /*is*/3, 5), vu::VNOP_U()},
+		EBitNopPair(),
+	});
+	h.LoadProgram({
+		VCALLMS(0),
+		CFC2(/*rt*/8, /*fs*/3),
+		VCALLMS(0),
+		CFC2(/*rt*/9, /*fs*/3),
+		VCALLMS(0),
+		CFC2(/*rt*/10, /*fs*/3),
+	});
+	h.Run();
+	EXPECT_EQ(static_cast<u32>(h.GetGpr64Jit(8)), 5u);
+	EXPECT_EQ(static_cast<u32>(h.GetGpr64Jit(9)), 10u);
+	EXPECT_EQ(static_cast<u32>(h.GetGpr64Jit(10)), 15u);
+	for (int r : {8, 9, 10})
+		EXPECT_EQ(h.GetGpr64Jit(r), h.GetGpr64Interp(r));
+}
+
+TEST(EeVu0Vcallms, MicroMemRewriteInvalidatesInlineLookupCache)
+{
+	// Stale-probe (VE-02) SMC guard: after three kicks have the inline
+	// last-hit probe hot, the EE rewrites the microprogram's pair-0 lower
+	// op in place (vi3 += 5 → vi3 += 9) with an SW to VU0 micro mem. The
+	// write must funnel through mVUclear, which drops the probe cache
+	// (mVU.prog.lastHit) along with the quick slots, so the fourth kick
+	// re-resolves and runs the NEW program. A stale inline hit would run
+	// the old +5 block: JIT vi3 = 20 vs interp 24.
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	// Seed only the parts the test never mutates (the upper word of pair 0
+	// and the E-bit pair). Pair-0's LOWER op is written by the EE program
+	// itself in BOTH engine passes: the harness shares VU0 micro mem across
+	// the interp and JIT passes, so a mutation done by only one pass would
+	// leak into the other's initial state.
+	h.SeedVu0Microprogram(0, {
+		VuOp{0, vu::VNOP_U()}, // pair-0 lower is a placeholder — overwritten by the SW below before any kick
+		EBitNopPair(),
+	});
+	const u32 old_lower = vu::VIADDIU_L(/*it*/3, /*is*/3, 5);
+	const u32 new_lower = vu::VIADDIU_L(/*it*/3, /*is*/3, 9);
+	h.LoadProgram({
+		LUI(/*rt*/12, 0x1100), // r12 = 0x11000000 (VU0 micro mem)
+		LUI(/*rt*/13, static_cast<u16>(old_lower >> 16)),
+		ORI(/*rt*/13, /*rs*/13, static_cast<u16>(old_lower & 0xFFFF)),
+		SW(/*rt*/13, 0, /*base*/12), // establish the +5 program
+		VCALLMS(0),
+		CFC2(/*rt*/8, /*fs*/3), // 5
+		VCALLMS(0),
+		CFC2(/*rt*/9, /*fs*/3), // 10
+		VCALLMS(0),
+		CFC2(/*rt*/10, /*fs*/3), // 15
+		LUI(/*rt*/14, static_cast<u16>(new_lower >> 16)),
+		ORI(/*rt*/14, /*rs*/14, static_cast<u16>(new_lower & 0xFFFF)),
+		SW(/*rt*/14, 0, /*base*/12), // rewrite in place: +5 → +9
+		VCALLMS(0),
+		CFC2(/*rt*/11, /*fs*/3), // 24 with the fresh program
+	});
+	h.Run();
+	EXPECT_EQ(static_cast<u32>(h.GetGpr64Jit(11)), 24u);
+	EXPECT_EQ(h.GetGpr64Jit(11), h.GetGpr64Interp(11));
+}
+
 TEST(EeVu0Vcallmsr, KickFromCmsar1Register)
 {
 	// VCALLMSR reads the start PC from VI[REG_CMSAR1] (* 8). Seed it.

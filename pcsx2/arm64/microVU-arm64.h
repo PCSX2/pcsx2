@@ -367,6 +367,25 @@ struct microProgramQuick
 	microProgram*      prog;
 };
 
+// VE-02: last-dispatch resolution cache, probed INLINE by the dispatcher
+// stub before the mVUlookupProg BL. A hit requires hostEntry != null AND
+// key_quick64 == live lpState.quick64[0] (modulo the sFlagHack 0x0C00
+// flagInfo bits — NOT bit 2, which is part of needExactMatch and must
+// compare exactly so exact-match states always miss to the C walk) AND
+// key_pcs == (maskedPC << 32 | regs().start_pc). Seeded only by
+// mVUlookupProg's quick-path resolutions (needExactMatch == 0), so a
+// seeded key always describes a non-exact state. hostEntry == null is
+// the invalid sentinel; mVUclear (any micro-mem write) and mVUreset
+// clear it. Single-threaded per VU (EE thread for VU0, the VU thread
+// for MTVU VU1), so no atomics.
+struct MvuLastHit
+{
+	u64           key_quick64;
+	u64           key_pcs;
+	void*         hostEntry;
+	microProgram* prog;
+};
+
 struct microProgManager
 {
 	microIR<mProgSize> IRinfo;
@@ -381,6 +400,7 @@ struct microProgManager
 	u8*                x86start; // Start of rec-cache
 	u8*                x86end;   // Reset threshold — mVUcacheSafeZone MB below the physical rec-region end
 	microRegInfo       lpState;
+	MvuLastHit         lastHit;  // VE-02 inline-probe cache — keep adjacent to lpState (one probe base reaches both)
 };
 
 // Safe-Zone (megabytes): the gap between prog.x86end (mVUcleanUp's

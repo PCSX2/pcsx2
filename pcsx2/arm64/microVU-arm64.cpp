@@ -542,9 +542,72 @@ static void mVUdispatcherAB(mV)
 	armAsm->Mov(a64::w26, a64::w0);  // stash startPC
 	armAsm->Mov(a64::w27, a64::w1);  // stash cycles
 
-	armEmitCall(isVU1 ? (void*)mVUlookupProg_VU1 : (void*)mVUlookupProg_VU0);
+	// Pin gprVUState (x19) = &mVU.regs(), gprMVUFlag (x24) = &mVU.macFlag[0],
+	// gprMVUglob (x25) = &mVUglob. Emit-time constants per VU; set once per
+	// dispatch, never re-pinned. Emitted BEFORE the lookup (VE-02) so the
+	// inline probe can read regs().start_pc and store cycles through them;
+	// all three are callee-saved, so they survive the lookup/execute C calls
+	// for the post-resolution state loads below. Field-reach rationale in
+	// microVU_Misc-arm64.h (mVUstateMem / mVUfieldMem / mVUglobMem).
+	armMoveAddressToReg(gprVUState, &mVU.regs());
+	armMoveAddressToReg(gprMVUFlag, mVU.macFlag);
+	armMoveAddressToReg(gprMVUglob, (void*)&mVUglob);
 
 	a64::Label gotHostEntry;
+
+	// VE-02: inline last-hit probe. mVUlookupProg's quick path resolves the
+	// same (start_pc, lpState) to the same host entry thousands of times in
+	// a row on VU0-from-EE titles; cache the last resolution in
+	// mVU.prog.lastHit and check it here, skipping the whole C round trip on
+	// a hit. Hit condition replicates the quickLookup branch of
+	// microBlockManager::search exactly: quick64 equality (modulo the
+	// sFlagHack flagInfo bits 10-11 — NOT C's full 0x0C04 mask, since bit 2
+	// is part of needExactMatch byte 0 and must compare exactly so any
+	// exact-match live state misses to the C walk against a seeded byte-0
+	// == 0 key), plus maskedPC and regs().start_pc. Seeding + invalidation
+	// contract in microVU-arm64.h (MvuLastHit). Not emitted when program-
+	// cache recording is on (the C path's observed.record bookkeeping must
+	// run per dispatch); recording toggles re-enter mVUreset, which
+	// re-emits this stub.
+	if (!mVUPersist::IsRecordingEnabled())
+	{
+		const u8* progBase = reinterpret_cast<const u8*>(&mVU.prog.cur);
+		const int offLp    = (int)(reinterpret_cast<const u8*>(&mVU.prog.lpState) - progBase);
+		const int offLh    = (int)(reinterpret_cast<const u8*>(&mVU.prog.lastHit) - progBase);
+		const int offSame  = (int)(reinterpret_cast<const u8*>(&mVU.prog.isSame) - progBase);
+
+		a64::Label probeMiss;
+		armMoveAddressToReg(a64::x2, &mVU.prog.cur);
+		armAsm->Ldp(a64::x5, a64::x6, a64::MemOperand(a64::x2, offLh));      // key_quick64, key_pcs
+		armAsm->Ldp(a64::x7, a64::x9, a64::MemOperand(a64::x2, offLh + 16)); // hostEntry, prog
+		armAsm->Ldr(a64::x3, a64::MemOperand(a64::x2, offLp));               // live lpState.quick64[0]
+		armAsm->And(a64::w10, a64::w0, isVU1 ? 0x3ff8 : 0xff8);              // maskedPC (wrapper's mask)
+		armAsm->Ldr(a64::w11, a64::MemOperand(gprVUState, offsetof(VURegs, start_pc)));
+		armAsm->Orr(a64::x10, a64::x11, a64::Operand(a64::x10, a64::LSL, 32)); // live key_pcs
+		armAsm->Eor(a64::x3, a64::x3, a64::x5);
+		if (CHECK_VU_FLAGHACK)
+			armAsm->Bic(a64::x3, a64::x3, 0x0C00);
+		armAsm->Eor(a64::x10, a64::x10, a64::x6);
+		armAsm->Orr(a64::x3, a64::x3, a64::x10);
+		armAsm->Cbnz(a64::x3, &probeMiss);
+		armAsm->Cbz(a64::x7, &probeMiss); // hostEntry == null: invalidated / never seeded
+
+		// Hit: replicate the wrapper's cycle setup and the fast path's
+		// bookkeeping (prog.cur / prog.isSame — downstream consumers must
+		// not see stale values), then take the entry with no call.
+		armAsm->Str(a64::w1, mVUfieldMem(mVU, &mVU.cycles));
+		armAsm->Str(a64::w1, mVUfieldMem(mVU, &mVU.totalCycles));
+		armAsm->Str(a64::x9, a64::MemOperand(a64::x2));           // prog.cur
+		armAsm->Mov(a64::w11, -1);
+		armAsm->Str(a64::w11, a64::MemOperand(a64::x2, offSame)); // prog.isSame
+		armAsm->Mov(a64::x0, a64::x7);
+		armAsm->B(&gotHostEntry);
+
+		armAsm->Bind(&probeMiss);
+	}
+
+	armEmitCall(isVU1 ? (void*)mVUlookupProg_VU1 : (void*)mVUlookupProg_VU0);
+
 	armAsm->Cbnz(a64::x0, &gotHostEntry);
 
 	// Miss: restore args and run the full slow path.
@@ -554,26 +617,9 @@ static void mVUdispatcherAB(mV)
 
 	armAsm->Bind(&gotHostEntry);
 	// x0 holds the block pointer; we keep it there until the Br below.
-	// FPCR setup, gprVUState pin, and the flag/PQ loads emit no calls and
-	// don't touch x0, so it survives across them.
-
-	// Pin gprVUState (x19) = &mVU.regs(). All subsequent regs() field accesses
-	// (here in the dispatcher and in compiled blocks) use [gprVUState, #off]
-	// instead of paying the 3-insn movz/movk/movk address-materialization tax.
-	// Address is constant per-VU (= &vuRegs[mVU.index]), so we set this once
-	// per dispatch and never re-pin. Survives armEmitCall (callee-saved).
-	armMoveAddressToReg(gprVUState, &mVU.regs());
-
-	// Pin gprMVUFlag (x24) = &mVU.macFlag[0]. Reaches statFlag / macFlag /
-	// clipFlag / neonCTemp / neonBackup via signed [+/-imm12] (see
-	// microVU_Misc-arm64.h). Lets every flag-touching FMAC drop the 3-insn
-	// abs-addr materialization down to a single ldr/str.
-	armMoveAddressToReg(gprMVUFlag, mVU.macFlag);
-
-	// Pin gprMVUglob (x25) = &mVUglob. Every clamp / FTOI / ITOF / EATAN /
-	// SQRT et al. constant load goes via [gprMVUglob, #imm12] instead of
-	// materializing the global's absolute address.
-	armMoveAddressToReg(gprMVUglob, (void*)&mVUglob);
+	// FPCR setup and the flag/PQ loads emit no calls and don't touch x0,
+	// so it survives across them. The x19/x24/x25 pins were established
+	// above the lookup and survived any C calls (callee-saved).
 
 	// Load VU-specific FPCR (round-toward-zero + FZ/DaZ) — only when needed.
 	// PS2 VU float ops require this rounding mode; the gating skips the
@@ -1041,6 +1087,7 @@ void mVUreset(microVU& mVU, bool resetReserve)
 
 	mVU.regs().nextBlockCycles = 0;
 	memset(&mVU.prog.lpState, 0, sizeof(mVU.prog.lpState));
+	mVU.prog.lastHit = {}; // VE-02: programs + code cache are gone; invalidate the inline probe
 	mVU.branchCondCarryGpr = -1;
 	mVU.profiler.Reset(mVU.index);
 
@@ -1150,6 +1197,14 @@ __fi void mVUclear(mV, u32 addr, u32 size)
 	// against their writeGenAtAnchor so mVUcacheProg knows whether the live
 	// image can still match their anchored contentHash (drift check).
 	mVU.microMemWriteGen++;
+
+	// VE-02: drop the inline last-hit probe cache on ANY micro-mem write —
+	// same unconditional per-write contract as the lpState zeroing below.
+	// Over-invalidates (a disjoint-range write also clears it), but uploads
+	// are rare next to dispatches and the cache reseeds on the next C
+	// lookup. Every quick-slot nulling path funnels through here or
+	// through mVUreset, so a live probe hit can never outlive its program.
+	mVU.prog.lastHit.hostEntry = nullptr;
 
 #ifdef mVUcacheTrace
 	mVUCacheTraceObserveClear(mVU, addr, size, /*wasRealClear=*/!mVU.prog.cleared);
@@ -1568,6 +1623,26 @@ _mVUt __fi void* mVUlookupProg(u32 startPC, uptr pState)
 	// createProg's slow-path seed keeps observed valid going forward.
 	if (mVUPersist::IsRecordingEnabled())
 		quick.prog->observed.record(startPC);
+
+	// VE-02: seed the dispatcher stub's inline last-hit probe. Only
+	// quick-path resolutions (needExactMatch == 0) are cacheable — the
+	// probe's equality-modulo-0x0C00 compare replicates exactly the
+	// quickLookup branch of microBlockManager::search, and byte 0 of
+	// key_quick64 being zero forces any exact-match live state to miss
+	// inline and take the C walk. Key stored UNMASKED; the probe masks
+	// the XOR diff, so sFlagHack on/off at emit time only affects hit
+	// rate, never correctness.
+	{
+		const microRegInfo* ri = (const microRegInfo*)pState;
+		if (ri->needExactMatch == 0)
+		{
+			MvuLastHit& lh = mVU.prog.lastHit;
+			lh.key_quick64 = ri->quick64[0];
+			lh.key_pcs     = ((u64)startPC << 32) | mVU.regs().start_pc;
+			lh.prog        = quick.prog;
+			lh.hostEntry   = pBlock->hostEntry;
+		}
+	}
 	return pBlock->hostEntry;
 }
 
