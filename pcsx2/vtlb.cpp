@@ -933,6 +933,11 @@ static bool vtlb_GetMainMemoryOffset(u32 paddr, u32* mainmem_offset, u32* mainme
 
 static void vtlb_CreateFastmemMapping(u32 vaddr, u32 mainmem_offset, const PageProtectionMode& mode)
 {
+	// Bail if the fastmem area was never allocated (e.g. 4 GB reservation
+	// failed on a low-memory iOS device). Mirrors vtlb_RemoveFastmemMappings.
+	if (s_fastmem_virtual_mapping.empty())
+		return;
+
 	FASTMEM_LOG("Create fastmem mapping @ vaddr %08X mainmem %08X", vaddr, mainmem_offset);
 
 	const u32 page = vaddr / VTLB_PAGE_SIZE;
@@ -1315,6 +1320,11 @@ void vtlb_ResetFastmem()
 	s_fastmem_faulting_pcs.clear();
 
 	if (!CHECK_FASTMEM || !CHECK_EEREC || !vtlbdata.vmap)
+		return;
+
+	// If the reservation failed at boot, fastmem is permanently unavailable --
+	// don't let a config change resurrect it.
+	if (s_fastmem_area_unavailable)
 		return;
 
 	// we need to go through and look at the vtlb pointers, to remap the host area
