@@ -79,10 +79,9 @@ mark_as_advanced(CMAKE_C_FLAGS_DEVEL CMAKE_CXX_FLAGS_DEVEL CMAKE_LINKER_FLAGS_DE
 # Select the architecture
 #-------------------------------------------------------------------------------
 # Detection keys off the *target* processor (CMAKE_SYSTEM_PROCESSOR), not the
-# host, so cross-compiles (e.g. arm64 Windows built on an x64 runner via the
-# cmake-toolchain-windows-arm64.cmake toolchain file) select the right arch.
-# On native builds CMAKE_SYSTEM_PROCESSOR == CMAKE_HOST_SYSTEM_PROCESSOR, so this
-# is behavior-preserving there.
+# host, so both native and cross builds select the right arch. The spelling
+# varies by toolchain (native MSVC reports "ARM64"/"AMD64"; other toolchains use
+# lowercase "arm64"/"aarch64"), so each branch matches all the casings.
 if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "amd64" OR
    "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "AMD64" OR "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "x86_64")
 	# Multi-ISA only exists on x86.
@@ -115,7 +114,8 @@ if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_SYSTEM_PROCESSOR}" 
 			endif()
 		endif()
 	endif()
-elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR
+elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "ARM64" OR
+       "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "AARCH64" OR
        "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "arm64")
 	message(STATUS "Building for ARM64.")
 	set(ARCH_ARM64 TRUE)
