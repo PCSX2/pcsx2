@@ -486,6 +486,31 @@ static void emitFpuMul(const a64::VRegister& dst, const a64::VRegister& s, const
 // Simple FPU ops — no clamping needed
 //------------------------------------------------------------------
 
+// "Full" / DOUBLE-precision emitters (iFPUd-arm64.cpp), selected per-op when
+// CHECK_FPU_FULL (GameDB eeClampMode:3). Default config uses the fast paths.
+// MOV.S is a raw bit-copy in BOTH modes (x86 DOUBLE::recMOV_S_xmm == the fast
+// body), so it has no DOUBLE selection.
+namespace DOUBLE {
+void recADD_S_xmm(int info);
+void recSUB_S_xmm(int info);
+void recADDA_S_xmm(int info);
+void recSUBA_S_xmm(int info);
+void recMUL_S_xmm(int info);
+void recMULA_S_xmm(int info);
+void recMADD_S_xmm(int info);
+void recMSUB_S_xmm(int info);
+void recMADDA_S_xmm(int info);
+void recMSUBA_S_xmm(int info);
+// GE-20: non-arith DOUBLE bodies.
+void recABS_S_xmm(int info);
+void recNEG_S_xmm(int info);
+void recMAX_S_xmm(int info);
+void recMIN_S_xmm(int info);
+void recC_EQ_xmm(int info);
+void recC_LT_xmm(int info);
+void recC_LE_xmm(int info);
+} // namespace DOUBLE
+
 static void recMOV_S_xmm(int info)
 {
 	// MOV.S is a raw bit-copy (PS2 FPR[fd] = FPR[fs]); no clamp/NaN logic.
@@ -511,7 +536,7 @@ static void recABS_S_xmm(int info)
 
 void recABS_S()
 {
-	eeFPURecompileCode(recABS_S_xmm, Interp::ABS_S,
+	eeFPURecompileCode(CHECK_FPU_FULL ? DOUBLE::recABS_S_xmm : recABS_S_xmm, Interp::ABS_S,
 		XMMINFO_WRITED | XMMINFO_READS);
 }
 
@@ -526,7 +551,7 @@ static void recNEG_S_xmm(int info)
 
 void recNEG_S()
 {
-	eeFPURecompileCode(recNEG_S_xmm, Interp::NEG_S,
+	eeFPURecompileCode(CHECK_FPU_FULL ? DOUBLE::recNEG_S_xmm : recNEG_S_xmm, Interp::NEG_S,
 		XMMINFO_WRITED | XMMINFO_READS);
 }
 
@@ -591,28 +616,39 @@ static void recCompareFPRs(a64::Condition cond)
 	}
 }
 
-void recC_EQ() { recCompareFPRs(a64::eq); }
-void recC_LT() { recCompareFPRs(a64::lt); }
-void recC_LE() { recCompareFPRs(a64::le); }
+// GE-20: FULL mode compares as PS2-widened doubles with no operand clamping
+// (DOUBLE::recC_*_xmm); the fast path clamps and compares as singles.
+void recC_EQ()
+{
+	if (CHECK_FPU_FULL)
+	{
+		eeFPURecompileCode(DOUBLE::recC_EQ_xmm, Interp::C_EQ, XMMINFO_READS | XMMINFO_READT);
+		return;
+	}
+	recCompareFPRs(a64::eq);
+}
+void recC_LT()
+{
+	if (CHECK_FPU_FULL)
+	{
+		eeFPURecompileCode(DOUBLE::recC_LT_xmm, Interp::C_LT, XMMINFO_READS | XMMINFO_READT);
+		return;
+	}
+	recCompareFPRs(a64::lt);
+}
+void recC_LE()
+{
+	if (CHECK_FPU_FULL)
+	{
+		eeFPURecompileCode(DOUBLE::recC_LE_xmm, Interp::C_LE, XMMINFO_READS | XMMINFO_READT);
+		return;
+	}
+	recCompareFPRs(a64::le);
+}
 
 //------------------------------------------------------------------
 // FPU Arithmetic — native with PS2 clamping (no inf/nan)
 //------------------------------------------------------------------
-
-// "Full" / DOUBLE-precision emitters (iFPUd-arm64.cpp), selected per-op when
-// CHECK_FPU_FULL (GameDB eeClampMode:3). Default config uses the fast paths below.
-namespace DOUBLE {
-void recADD_S_xmm(int info);
-void recSUB_S_xmm(int info);
-void recADDA_S_xmm(int info);
-void recSUBA_S_xmm(int info);
-void recMUL_S_xmm(int info);
-void recMULA_S_xmm(int info);
-void recMADD_S_xmm(int info);
-void recMSUB_S_xmm(int info);
-void recMADDA_S_xmm(int info);
-void recMSUBA_S_xmm(int info);
-} // namespace DOUBLE
 
 static void recADD_S_xmm(int info)
 {
@@ -841,7 +877,7 @@ static void recMAX_S_xmm(int info)
 
 void recMAX_S()
 {
-	eeFPURecompileCode(recMAX_S_xmm, Interp::MAX_S,
+	eeFPURecompileCode(CHECK_FPU_FULL ? DOUBLE::recMAX_S_xmm : recMAX_S_xmm, Interp::MAX_S,
 		XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 }
 
@@ -852,7 +888,7 @@ static void recMIN_S_xmm(int info)
 
 void recMIN_S()
 {
-	eeFPURecompileCode(recMIN_S_xmm, Interp::MIN_S,
+	eeFPURecompileCode(CHECK_FPU_FULL ? DOUBLE::recMIN_S_xmm : recMIN_S_xmm, Interp::MIN_S,
 		XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 }
 

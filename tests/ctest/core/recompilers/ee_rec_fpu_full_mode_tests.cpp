@@ -308,3 +308,175 @@ TEST(EeRecFpuFull, MaddaProductOverflowSetsAccflag)
 	EXPECT_NE(h.JitSnapshot().fprs.fprc[31] & (kFPUflagO | kFPUflagSO), 0u);
 	EXPECT_NE(h.JitSnapshot().fprs.ACCflag & 1u, 0u);
 }
+
+// ---- GE-20 slice 1: ABS/NEG/MAX/MIN/C.cond DOUBLE bodies. ------------------
+//
+// Discriminators: pseudo-infinity operands (exp field 0xff). The fast path
+// clamps them to ±FLT_MAX before/after the op; DOUBLE preserves them (ABS/NEG
+// are raw sign-bit ops, MAX/MIN order them by magnitude, C.cond compares them
+// as the distinct finite numbers they are on PS2). DOUBLE ABS/NEG/MAX/MIN also
+// clear the O/U status flags (x86 CLEAR_OU_FLAGS), which the fast path leaves.
+
+TEST(EeRecFpuFull, AbsPreservesPseudoInf)
+{
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, 0xff800000u); // -1.0 * 2^128
+	h.LoadProgram({ABS_S(2, 0)});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetFprBitsJit(2), kPs2HugePos); // fast path would clamp to 0x7f7fffff
+}
+
+TEST(EeRecFpuFull, NegPreservesPseudoInf)
+{
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, kPs2HugePos);
+	h.LoadProgram({NEG_S(2, 0)});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetFprBitsJit(2), 0xff800000u);
+}
+
+TEST(EeRecFpuFull, AbsClearsOUFlags)
+{
+	// Seed O|U into FCR31 via CTC1; DOUBLE ABS must clear both (x86
+	// CLEAR_OU_FLAGS), the fast body leaves them set.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, FloatBits(1.0f));
+	h.SetGpr64(reg::t0, 0x0000c000u); // FPUflagO | FPUflagU
+	h.LoadProgram({
+		CTC1(reg::t0, 31),
+		ABS_S(2, 0),
+		CFC1(reg::v0, 31),
+	});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetGpr64Jit(reg::v0) & 0x0000c000u, 0u);
+}
+
+TEST(EeRecFpuFull, MaxOrdersPseudoInfAgainstNormal)
+{
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, kPs2HugePos);       // 2^128
+	h.SetFprBits(1, FloatBits(1.0f));
+	h.LoadProgram({MAX_S(2, 0, 1)});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetFprBitsJit(2), kPs2HugePos); // fast path clamps to 0x7f7fffff
+}
+
+TEST(EeRecFpuFull, MinOrdersNegPseudoInfAgainstNormal)
+{
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, 0xff800000u);       // -2^128
+	h.SetFprBits(1, FloatBits(-1.0f));
+	h.LoadProgram({MIN_S(2, 0, 1)});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetFprBitsJit(2), 0xff800000u);
+}
+
+TEST(EeRecFpuFull, MaxOfTwoNegativesPicksSmaller)
+{
+	// Plain-range semantics guard through the integer-ordering construction
+	// (negative operands order inversely on raw bits — the constructed upper
+	// word must fix the sign ordering).
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, FloatBits(-2.0f));
+	h.SetFprBits(1, FloatBits(-8.0f));
+	h.LoadProgram({MAX_S(2, 0, 1)});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetFprBitsJit(2), FloatBits(-2.0f));
+}
+
+TEST(EeRecFpuFull, CEqDistinctPseudoInfsNotEqual)
+{
+	// 0x7f800000 and 0x7f800001 are DIFFERENT finite 2^128-scale numbers on
+	// PS2. The fast path clamps both to +FLT_MAX and calls them equal.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, 0x7f800000u);
+	h.SetFprBits(1, 0x7f800001u);
+	h.LoadProgram({
+		C_EQ_S(0, 1),
+		CFC1(reg::v0, 31),
+	});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetGpr64Jit(reg::v0) & 0x00800000u, 0u) << "distinct pseudo-infs compared equal";
+}
+
+TEST(EeRecFpuFull, CLtDistinctPseudoInfsOrdered)
+{
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, 0x7f800000u);
+	h.SetFprBits(1, 0x7f800001u);
+	h.LoadProgram({
+		C_LT_S(0, 1),
+		CFC1(reg::v0, 31),
+	});
+	h.RunJitNoDiff();
+	EXPECT_NE(h.GetGpr64Jit(reg::v0) & 0x00800000u, 0u) << "fs < ft not detected";
+}
+
+TEST(EeRecFpuFull, CLeEqualOperandsTrue)
+{
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, FloatBits(4.0f));
+	h.SetFprBits(1, FloatBits(4.0f));
+	h.LoadProgram({
+		C_LE_S(0, 1),
+		CFC1(reg::v0, 31),
+	});
+	h.RunJitNoDiff();
+	EXPECT_NE(h.GetGpr64Jit(reg::v0) & 0x00800000u, 0u);
+}
+
+TEST(EeRecFpuFull, MaxClearsOUFlags)
+{
+	// The pseudo-inf value cases pass on the fast body via IEEE Inf handling;
+	// the deterministic DOUBLE discriminator for MAX/MIN is CLEAR_OU_FLAGS.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, FloatBits(1.0f));
+	h.SetFprBits(1, FloatBits(2.0f));
+	h.SetGpr64(reg::t0, 0x0000c000u); // FPUflagO | FPUflagU
+	h.LoadProgram({
+		CTC1(reg::t0, 31),
+		MAX_S(2, 0, 1),
+		CFC1(reg::v0, 31),
+	});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetGpr64Jit(reg::v0) & 0x0000c000u, 0u);
+	EXPECT_EQ(h.GetFprBitsJit(2), FloatBits(2.0f));
+}
+
+TEST(EeRecFpuFull, MinClearsOUFlags)
+{
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, FloatBits(1.0f));
+	h.SetFprBits(1, FloatBits(2.0f));
+	h.SetGpr64(reg::t0, 0x0000c000u);
+	h.LoadProgram({
+		CTC1(reg::t0, 31),
+		MIN_S(2, 0, 1),
+		CFC1(reg::v0, 31),
+	});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetGpr64Jit(reg::v0) & 0x0000c000u, 0u);
+	EXPECT_EQ(h.GetFprBitsJit(2), FloatBits(1.0f));
+}

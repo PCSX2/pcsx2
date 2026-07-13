@@ -377,6 +377,8 @@ constexpr u32 RSQRT_S(u32 fd, u32 fs, u32 ft)          { return COP1(0x10, ft, f
 constexpr u32 ABS_S(u32 fd, u32 fs)                    { return COP1(0x10, 0,  fs, fd, 0x05); }
 constexpr u32 MOV_S(u32 fd, u32 fs)                    { return COP1(0x10, 0,  fs, fd, 0x06); }
 constexpr u32 NEG_S(u32 fd, u32 fs)                    { return COP1(0x10, 0,  fs, fd, 0x07); }
+constexpr u32 MAX_S(u32 fd, u32 fs, u32 ft)            { return COP1(0x10, ft, fs, fd, 0x28); }
+constexpr u32 MIN_S(u32 fd, u32 fs, u32 ft)            { return COP1(0x10, ft, fs, fd, 0x29); }
 constexpr u32 CVT_W_S(u32 fd, u32 fs)                  { return COP1(0x10, 0,  fs, fd, 0x24); }
 constexpr u32 CVT_S_W(u32 fd, u32 fs)                  { return COP1(0x14, 0,  fs, fd, 0x20); }
 // PS2-specific FPU accumulator family. ADDA/SUBA/MULA write to ACC (no Fd

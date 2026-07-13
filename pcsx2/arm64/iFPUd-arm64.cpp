@@ -401,6 +401,106 @@ void recMSUB_S_xmm(int info)  { recMaddsub(info, EEREC_D,   1, false); }
 void recMADDA_S_xmm(int info) { recMaddsub(info, EEREC_ACC, 0, true);  }
 void recMSUBA_S_xmm(int info) { recMaddsub(info, EEREC_ACC, 1, true);  }
 
+// ---- GE-20: the non-arith DOUBLE bodies (x86 iFPUd.cpp ports) --------------
+
+// x86 CLEAR_OU_FLAGS. Memory RMW is coherent with the GE-12 FCR31 residency
+// because fpuTryAllocFCR31 refuses to allocate under CHECK_FPU_FULL — in FULL
+// mode fprc[31] memory is the only home.
+static void ClearOUFlags()
+{
+	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	armAsm->Bic(RWSCRATCH, RWSCRATCH, FPUflagO | FPUflagU);
+	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+}
+
+// ABS/NEG: raw sign-bit ops — NO clamp (a pseudo-inf stays a pseudo-inf) —
+// plus the O/U clear. ARM FABS/FNEG are non-arithmetic bit operations (no
+// exceptions, NaN patterns pass through with only the sign changed), so they
+// match x86's AND/XOR-with-mask exactly.
+void recABS_S_xmm(int info)
+{
+	ClearOUFlags();
+	armAsm->Fabs(armSRegister(EEREC_D), armSRegister(EEREC_S));
+}
+
+void recNEG_S_xmm(int info)
+{
+	ClearOUFlags();
+	armAsm->Fneg(armSRegister(EEREC_D), armSRegister(EEREC_S));
+}
+
+// MAX/MIN: PS2 semantics on ALL values (incl. denormals — no FTZ, no clamp).
+// Port of x86 recMINMAX's integer-ordering trick: for each operand build the
+// 64-bit double pattern {lo32 = raw float bits, hi32 = sign | 0x40000000} and
+// compare as doubles. The fixed 0x400-exponent upper word makes IEEE-double
+// ordering equal PS2 total (sign, magnitude) ordering over the raw bits, and
+// no constructed input can be NaN/Inf (the double exponent field is constant),
+// so Fmin/Fmax's NaN propagation can never trigger. Result = lower 32 bits of
+// the selected pattern.
+static void recMINMAX(int info, bool ismin)
+{
+	// Temps FIRST: the alloc's eviction stores must not land between the GPR
+	// pattern builds and their consuming Fmovs (alloc-before-emit rule).
+	const int sreg = _allocTempNEONreg();
+	const int treg = _allocTempNEONreg();
+
+	ClearOUFlags();
+
+	armAsm->Fmov(RWSCRATCH, armSRegister(EEREC_S)); // x8 = zext(s bits)
+	armAsm->And(RWARG1, RWSCRATCH, 0x80000000);
+	armAsm->Orr(RWARG1, RWARG1, 0x40000000);
+	armAsm->Orr(RXSCRATCH, RXSCRATCH, a64::Operand(RXARG1, a64::LSL, 32));
+
+	armAsm->Fmov(RWARG2, armSRegister(EEREC_T)); // x1 = zext(t bits)
+	armAsm->And(RWARG3, RWARG2, 0x80000000);
+	armAsm->Orr(RWARG3, RWARG3, 0x40000000);
+	armAsm->Orr(RXARG2, RXARG2, a64::Operand(RXARG3, a64::LSL, 32));
+
+	armAsm->Fmov(armDRegister(sreg), RXSCRATCH);
+	armAsm->Fmov(armDRegister(treg), RXARG2);
+	if (ismin)
+		armAsm->Fmin(armDRegister(sreg), armDRegister(sreg), armDRegister(treg));
+	else
+		armAsm->Fmax(armDRegister(sreg), armDRegister(sreg), armDRegister(treg));
+	armAsm->Fmov(RXSCRATCH, armDRegister(sreg));
+	armAsm->Fmov(armSRegister(EEREC_D), RWSCRATCH); // lower 32 = winner's raw bits
+	_freeNEONreg(sreg);
+	_freeNEONreg(treg);
+}
+
+void recMAX_S_xmm(int info) { recMINMAX(info, false); }
+void recMIN_S_xmm(int info) { recMINMAX(info, true); }
+
+// C.cond: widen both operands with ToDouble and compare as doubles — a PS2
+// pseudo-inf compares as the finite 2^128-scale number it is, with no operand
+// clamping (x86 recCMP + recC_*_xmm). ToDouble never yields NaN, so the
+// compare is always ordered and the lt/le/eq condition reads are exact.
+static void recCMP(int info)
+{
+	const int sreg = copySrc(EEREC_S);
+	const int treg = copySrc(EEREC_T);
+	ToDouble(sreg);
+	ToDouble(treg);
+	armAsm->Fcmp(armDRegister(sreg), armDRegister(treg));
+	_freeNEONreg(sreg);
+	_freeNEONreg(treg);
+}
+
+static void recCcond(int info, a64::Condition cond)
+{
+	recCMP(info);
+	// NZCV is live from the Fcmp: _freeNEONreg emits at most plain stores and
+	// the fprc load below is a plain Ldr — neither touches the flags.
+	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	armAsm->Cset(RWARG1, cond);
+	armAsm->Bfi(RWSCRATCH, RWARG1, 23, 1); // FPUflagC = bit 23
+	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+}
+
+void recC_EQ_xmm(int info) { recCcond(info, a64::eq); }
+void recC_LT_xmm(int info) { recCcond(info, a64::lt); }
+void recC_LE_xmm(int info) { recCcond(info, a64::le); }
+
 #undef _Ft_
 #undef _Fs_
 #undef _Fd_
