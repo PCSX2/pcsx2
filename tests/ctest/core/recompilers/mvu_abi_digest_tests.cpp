@@ -117,6 +117,12 @@ constexpr AbiPin kPins[] = {
 	// probe pins the ported emission from here on (harvested from the first,
 	// deliberately red, run).
 	{7, {0x4c3b6e1330199619, 0xd6f530cc13f0d0aa, 0xfcead342cc0b7df8, 0x44bd2acfb23dff74, 0xd04db07f3eb1a343}},
+	// abi 8: hot microVU scalars (divFlag/branch/VIbackup/VIxgkick/cycles/…)
+	// moved adjacent to the flag block and addressed as [gprMVUFlag, #imm]
+	// via mVUfieldMem instead of per-site absolute materialization. Every
+	// probe that touches those fields changes shape, and pre-8 payloads
+	// bake the old field addresses/offsets, so the bump must evict them.
+	{8, {0xb35dd0237372d734, 0xc3c40fd5a5ec19c7, 0x23682664f86a2f8d, 0xbdfce8a7ecebe6a6, 0x45837d5d1d23009f}},
 };
 
 u64 CompileAndDigest(std::initializer_list<vu::VuOp> pairs)

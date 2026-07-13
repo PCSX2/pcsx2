@@ -39,14 +39,14 @@ mVUop(mVU_DIV)
 
 		// 0/0 => Invalid
 		armAsm->Mov(gprT1.W(), divI);
-		armStorePtr(gprT1, &mVU.divFlag);
+		mVUstrField(mVU, gprT1, &mVU.divFlag);
 		a64::Label afterDivFlag;
 		armAsm->B(&afterDivFlag);
 
 		armAsm->Bind(&fsNotZero);
 		// Non-zero / 0 => Divide by zero
 		armAsm->Mov(gprT1.W(), divD);
-		armStorePtr(gprT1, &mVU.divFlag);
+		mVUstrField(mVU, gprT1, &mVU.divFlag);
 
 		armAsm->Bind(&afterDivFlag);
 		// Result = +/- fmax: sign(Fs) XOR sign(Ft), magnitude = fmax
@@ -61,7 +61,7 @@ mVUop(mVU_DIV)
 		armAsm->Bind(&ftNotZero);
 		// Normal division
 		armAsm->Mov(gprT1.W(), 0);
-		armStorePtr(gprT1, &mVU.divFlag);
+		mVUstrField(mVU, gprT1, &mVU.divFlag);
 		armAsm->Fdiv(sFs, sFs, sFt);
 		mVUclamp1(mVU, Fs, t1, 8, true);
 
@@ -72,7 +72,7 @@ mVUop(mVU_DIV)
 		if (mVU.cop2)
 		{
 			armAsm->Bic(gprF0, gprF0, 0xc0000);
-			armLoadPtr(gprT1, &mVU.divFlag);
+			mVUldrField(mVU, gprT1, &mVU.divFlag);
 			armAsm->Orr(gprF0, gprF0, gprT1.W());
 		}
 
@@ -94,7 +94,7 @@ mVUop(mVU_SQRT)
 
 		// Clear divFlag
 		armAsm->Mov(gprT1.W(), 0);
-		armStorePtr(gprT1, &mVU.divFlag);
+		mVUstrField(mVU, gprT1, &mVU.divFlag);
 
 		// Check for negative: if sign bit set, set I flag and make positive
 		armAsm->Umov(gprT1.W(), Ft.V4S(), 0);
@@ -102,7 +102,7 @@ mVUop(mVU_SQRT)
 		a64::Label notNeg;
 		armAsm->B(&notNeg, a64::eq);
 		armAsm->Mov(gprT1.W(), divI);
-		armStorePtr(gprT1, &mVU.divFlag);
+		mVUstrField(mVU, gprT1, &mVU.divFlag);
 		armAsm->Ldr(RQSCRATCH, mVUglobMem(&mVUglob.absclip[0]));
 		armAsm->And(Ft.V16B(), Ft.V16B(), RQSCRATCH.V16B());
 		armAsm->Bind(&notNeg);
@@ -122,7 +122,7 @@ mVUop(mVU_SQRT)
 		if (mVU.cop2)
 		{
 			armAsm->Bic(gprF0, gprF0, 0xc0000);
-			armLoadPtr(gprT1, &mVU.divFlag);
+			mVUldrField(mVU, gprT1, &mVU.divFlag);
 			armAsm->Orr(gprF0, gprF0, gprT1.W());
 		}
 
@@ -145,7 +145,7 @@ mVUop(mVU_RSQRT)
 
 		// Clear divFlag
 		armAsm->Mov(gprT1.W(), 0);
-		armStorePtr(gprT1, &mVU.divFlag);
+		mVUstrField(mVU, gprT1, &mVU.divFlag);
 
 		// Check for negative Ft: if sign bit set, set I flag and make positive
 		armAsm->Umov(gprT1.W(), Ft.V4S(), 0);
@@ -153,7 +153,7 @@ mVUop(mVU_RSQRT)
 		a64::Label notNeg;
 		armAsm->B(&notNeg, a64::eq);
 		armAsm->Mov(gprT1.W(), divI);
-		armStorePtr(gprT1, &mVU.divFlag);
+		mVUstrField(mVU, gprT1, &mVU.divFlag);
 		armAsm->Ldr(RQSCRATCH, mVUglobMem(&mVUglob.absclip[0]));
 		armAsm->And(Ft.V16B(), Ft.V16B(), RQSCRATCH.V16B());
 		armAsm->Bind(&notNeg);
@@ -172,13 +172,13 @@ mVUop(mVU_RSQRT)
 
 		// 0/0 => Invalid
 		armAsm->Mov(gprT1.W(), divI);
-		armStorePtr(gprT1, &mVU.divFlag);
+		mVUstrField(mVU, gprT1, &mVU.divFlag);
 		a64::Label afterFlag2;
 		armAsm->B(&afterFlag2);
 
 		armAsm->Bind(&fsNotZero2);
 		armAsm->Mov(gprT1.W(), divD);
-		armStorePtr(gprT1, &mVU.divFlag);
+		mVUstrField(mVU, gprT1, &mVU.divFlag);
 
 		armAsm->Bind(&afterFlag2);
 		// Result = sign(Fs) | fmax
@@ -198,7 +198,7 @@ mVUop(mVU_RSQRT)
 		if (mVU.cop2)
 		{
 			armAsm->Bic(gprF0, gprF0, 0xc0000);
-			armLoadPtr(gprT1, &mVU.divFlag);
+			mVUldrField(mVU, gprT1, &mVU.divFlag);
 			armAsm->Orr(gprF0, gprF0, gprT1.W());
 		}
 
@@ -1951,38 +1951,32 @@ mVUop(mVU_XGKICK)
 		const a64::Register& regS = mVU.regAlloc->allocGPR(_Is_, -1);
 		if (!CHECK_XGKICKHACK)
 		{
-			armStorePtr(regS, &mVU.VIxgkick);
+			mVUstrField(mVU, regS, &mVU.VIxgkick);
 		}
 		else
 		{
 			// Gamefix XgKickHack — set up VU1 xgkick state registers so
 			// _vuXGKICKTransfermVU's loop can run cycle-by-cycle.
 			// Mirrors the x86 mVU_XGKICK XgKickHack path.
-			armMoveAddressToReg(a64::x8, &VU1.xgkickenable);
+			// XGKICK is a VU1-only op, so gprVUState (x19) == &VU1 here and
+			// every VU1.* field is a single [x19, #off] access.
 			armAsm->Mov(a64::w9, 1);
-			armAsm->Str(a64::w9, a64::MemOperand(a64::x8));
+			armAsm->Str(a64::w9, mVUstateMem(offsetof(VURegs, xgkickenable)));
 
-			armMoveAddressToReg(a64::x8, &VU1.xgkickendpacket);
-			armAsm->Str(a64::wzr, a64::MemOperand(a64::x8));
-			armMoveAddressToReg(a64::x8, &VU1.xgkicksizeremaining);
-			armAsm->Str(a64::wzr, a64::MemOperand(a64::x8));
-			armMoveAddressToReg(a64::x8, &VU1.xgkickcyclecount);
-			armAsm->Str(a64::wzr, a64::MemOperand(a64::x8));
+			armAsm->Str(a64::wzr, mVUstateMem(offsetof(VURegs, xgkickendpacket)));
+			armAsm->Str(a64::wzr, mVUstateMem(offsetof(VURegs, xgkicksizeremaining)));
+			armAsm->Str(a64::wzr, mVUstateMem(offsetof(VURegs, xgkickcyclecount)));
 
 			// xgkicklastcycle = totalCycles - cycles + VU1.cycle
-			armMoveAddressToReg(a64::x8, &mVU.totalCycles);
-			armAsm->Ldr(gprT2.W(), a64::MemOperand(a64::x8));
-			armMoveAddressToReg(a64::x8, &mVU.cycles);
-			armAsm->Ldr(a64::w9, a64::MemOperand(a64::x8));
+			armAsm->Ldr(gprT2.W(), mVUfieldMem(mVU, &mVU.totalCycles));
+			armAsm->Ldr(a64::w9, mVUfieldMem(mVU, &mVU.cycles));
 			armAsm->Sub(gprT2.W(), gprT2.W(), a64::w9);
-			armMoveAddressToReg(a64::x8, &VU1.cycle);
 			// VU1.cycle is u64 (upstream f0723a6ec widened it). Read the full
 			// value to match x86's ptr64. The xgkicklastcycle store below is
 			// 32-bit (matching x86 ptr32), so only the low 32 bits are retained.
-			armAsm->Ldr(a64::x9, a64::MemOperand(a64::x8));
+			armAsm->Ldr(a64::x9, mVUstateMem(offsetof(VURegs, cycle)));
 			armAsm->Add(gprT2q, gprT2q, a64::x9);
-			armMoveAddressToReg(a64::x8, &VU1.xgkicklastcycle);
-			armAsm->Str(gprT2.W(), a64::MemOperand(a64::x8));
+			armAsm->Str(gprT2.W(), mVUstateMem(offsetof(VURegs, xgkicklastcycle)));
 
 			// xgkickaddr = (regS & 0x3FF) << 4
 			armAsm->Mov(gprT1.W(), regS);
@@ -2040,9 +2034,9 @@ void condEvilBranch(mV, a64::Condition JMPcc)
 {
 	if (mVUlow.badBranch)
 	{
-		armStorePtr(gprT1, &mVU.branch);
+		mVUstrField(mVU, gprT1, &mVU.branch);
 		armAsm->Mov(gprT2.W(), branchAddr(mVU));
-		armStorePtr(gprT2, &mVU.badBranch);
+		mVUstrField(mVU, gprT2, &mVU.badBranch);
 
 		armAsm->Cmp(gprT1.W(), 0);
 		a64::Label cJMP;
@@ -2050,7 +2044,7 @@ void condEvilBranch(mV, a64::Condition JMPcc)
 		{
 			incPC(4); // Branch Not Taken Addr
 			armAsm->Mov(gprT2.W(), xPC);
-			armStorePtr(gprT2, &mVU.badBranch);
+			mVUstrField(mVU, gprT2, &mVU.badBranch);
 			incPC(-4);
 		}
 		armAsm->Bind(&cJMP);
@@ -2059,28 +2053,28 @@ void condEvilBranch(mV, a64::Condition JMPcc)
 	if (isEvilBlock)
 	{
 		armAsm->Mov(gprT2.W(), branchAddr(mVU));
-		armStorePtr(gprT2, &mVU.evilevilBranch);
+		mVUstrField(mVU, gprT2, &mVU.evilevilBranch);
 		armAsm->Cmp(gprT1.W(), 0);
 		a64::Label cJMP;
 		armAsm->B(&cJMP, JMPcc);
 		{
-			armLoadPtr(gprT2, &mVU.evilBranch); // Branch Not Taken
+			mVUldrField(mVU, gprT2, &mVU.evilBranch); // Branch Not Taken
 			armAsm->Add(gprT2.W(), gprT2.W(), 8); // We have already executed 1 instruction from the original branch
-			armStorePtr(gprT2, &mVU.evilevilBranch);
+			mVUstrField(mVU, gprT2, &mVU.evilevilBranch);
 		}
 		armAsm->Bind(&cJMP);
 	}
 	else
 	{
 		armAsm->Mov(gprT2.W(), branchAddr(mVU));
-		armStorePtr(gprT2, &mVU.evilBranch);
+		mVUstrField(mVU, gprT2, &mVU.evilBranch);
 		armAsm->Cmp(gprT1.W(), 0);
 		a64::Label cJMP;
 		armAsm->B(&cJMP, JMPcc);
 		{
-			armLoadPtr(gprT2, &mVU.badBranch); // Branch Not Taken
+			mVUldrField(mVU, gprT2, &mVU.badBranch); // Branch Not Taken
 			armAsm->Add(gprT2.W(), gprT2.W(), 8); // We have already executed 1 instruction from the original branch
-			armStorePtr(gprT2, &mVU.evilBranch);
+			mVUstrField(mVU, gprT2, &mVU.evilBranch);
 		}
 		armAsm->Bind(&cJMP);
 		incPC(-2);
@@ -2096,11 +2090,11 @@ mVUop(mVU_B)
 	pass1 { mVUanalyzeNormBranch(mVU, 0, false); }
 	pass2
 	{
-		if (mVUlow.badBranch)  { armAsm->Mov(gprT1.W(), branchAddr(mVU)); armStorePtr(gprT1, &mVU.badBranch); }
+		if (mVUlow.badBranch)  { armAsm->Mov(gprT1.W(), branchAddr(mVU)); mVUstrField(mVU, gprT1, &mVU.badBranch); }
 		if (mVUlow.evilBranch) {
 			armAsm->Mov(gprT1.W(), branchAddr(mVU));
-			if (isEvilBlock) armStorePtr(gprT1, &mVU.evilevilBranch);
-			else             armStorePtr(gprT1, &mVU.evilBranch);
+			if (isEvilBlock) mVUstrField(mVU, gprT1, &mVU.evilevilBranch);
+			else             mVUstrField(mVU, gprT1, &mVU.evilBranch);
 		}
 		mVU.profiler.EmitOp(opB);
 	}
@@ -2127,20 +2121,20 @@ mVUop(mVU_BAL)
 
 			const a64::Register& regT = mVU.regAlloc->allocGPR(-1, _It_, mVUlow.backupVI);
 			if (isEvilBlock)
-				armLoadPtr(regT, &mVU.evilBranch);
+				mVUldrField(mVU, regT, &mVU.evilBranch);
 			else
-				armLoadPtr(regT, &mVU.badBranch);
+				mVUldrField(mVU, regT, &mVU.badBranch);
 
 			armAsm->Add(regT.W(), regT.W(), 8);
 			armAsm->Lsr(regT.W(), regT.W(), 3);
 			mVU.regAlloc->clearNeeded(regT);
 		}
 
-		if (mVUlow.badBranch)  { armAsm->Mov(gprT1.W(), branchAddr(mVU)); armStorePtr(gprT1, &mVU.badBranch); }
+		if (mVUlow.badBranch)  { armAsm->Mov(gprT1.W(), branchAddr(mVU)); mVUstrField(mVU, gprT1, &mVU.badBranch); }
 		if (mVUlow.evilBranch) {
 			armAsm->Mov(gprT1.W(), branchAddr(mVU));
-			if (isEvilBlock) armStorePtr(gprT1, &mVU.evilevilBranch);
-			else             armStorePtr(gprT1, &mVU.evilBranch);
+			if (isEvilBlock) mVUstrField(mVU, gprT1, &mVU.evilevilBranch);
+			else             mVUstrField(mVU, gprT1, &mVU.evilBranch);
 		}
 		mVU.profiler.EmitOp(opBAL);
 	}
@@ -2154,13 +2148,13 @@ mVUop(mVU_IBEQ)
 	pass2
 	{
 		if (mVUlow.memReadIs)
-			armLoadPtr(gprT1, &mVU.VIbackup);
+			mVUldrField(mVU, gprT1, &mVU.VIbackup);
 		else
 			mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
 
 		if (mVUlow.memReadIt)
 		{
-			armLoadPtr(gprT2, &mVU.VIbackup);
+			mVUldrField(mVU, gprT2, &mVU.VIbackup);
 			armAsm->Eor(gprT1.W(), gprT1.W(), gprT2.W());
 		}
 		else
@@ -2171,7 +2165,7 @@ mVUop(mVU_IBEQ)
 		}
 
 		if (!(isBadOrEvil))
-			armStorePtr(gprT1, &mVU.branch);
+			mVUstrField(mVU, gprT1, &mVU.branch);
 		else
 			condEvilBranch(mVU, a64::eq);
 		mVU.profiler.EmitOp(opIBEQ);
@@ -2186,11 +2180,11 @@ mVUop(mVU_IBGEZ)
 	pass2
 	{
 		if (mVUlow.memReadIs)
-			armLoadPtr(gprT1, &mVU.VIbackup);
+			mVUldrField(mVU, gprT1, &mVU.VIbackup);
 		else
 			mVU.regAlloc->moveVIToGPR(gprT1, _Is_, true); // sign-extend for comparison
 		if (!(isBadOrEvil))
-			armStorePtr(gprT1, &mVU.branch);
+			mVUstrField(mVU, gprT1, &mVU.branch);
 		else
 			condEvilBranch(mVU, a64::ge);
 		mVU.profiler.EmitOp(opIBGEZ);
@@ -2205,11 +2199,11 @@ mVUop(mVU_IBGTZ)
 	pass2
 	{
 		if (mVUlow.memReadIs)
-			armLoadPtr(gprT1, &mVU.VIbackup);
+			mVUldrField(mVU, gprT1, &mVU.VIbackup);
 		else
 			mVU.regAlloc->moveVIToGPR(gprT1, _Is_, true);
 		if (!(isBadOrEvil))
-			armStorePtr(gprT1, &mVU.branch);
+			mVUstrField(mVU, gprT1, &mVU.branch);
 		else
 			condEvilBranch(mVU, a64::gt);
 		mVU.profiler.EmitOp(opIBGTZ);
@@ -2224,11 +2218,11 @@ mVUop(mVU_IBLEZ)
 	pass2
 	{
 		if (mVUlow.memReadIs)
-			armLoadPtr(gprT1, &mVU.VIbackup);
+			mVUldrField(mVU, gprT1, &mVU.VIbackup);
 		else
 			mVU.regAlloc->moveVIToGPR(gprT1, _Is_, true);
 		if (!(isBadOrEvil))
-			armStorePtr(gprT1, &mVU.branch);
+			mVUstrField(mVU, gprT1, &mVU.branch);
 		else
 			condEvilBranch(mVU, a64::le);
 		mVU.profiler.EmitOp(opIBLEZ);
@@ -2243,11 +2237,11 @@ mVUop(mVU_IBLTZ)
 	pass2
 	{
 		if (mVUlow.memReadIs)
-			armLoadPtr(gprT1, &mVU.VIbackup);
+			mVUldrField(mVU, gprT1, &mVU.VIbackup);
 		else
 			mVU.regAlloc->moveVIToGPR(gprT1, _Is_, true);
 		if (!(isBadOrEvil))
-			armStorePtr(gprT1, &mVU.branch);
+			mVUstrField(mVU, gprT1, &mVU.branch);
 		else
 			condEvilBranch(mVU, a64::lt);
 		mVU.profiler.EmitOp(opIBLTZ);
@@ -2262,13 +2256,13 @@ mVUop(mVU_IBNE)
 	pass2
 	{
 		if (mVUlow.memReadIs)
-			armLoadPtr(gprT1, &mVU.VIbackup);
+			mVUldrField(mVU, gprT1, &mVU.VIbackup);
 		else
 			mVU.regAlloc->moveVIToGPR(gprT1, _Is_);
 
 		if (mVUlow.memReadIt)
 		{
-			armLoadPtr(gprT2, &mVU.VIbackup);
+			mVUldrField(mVU, gprT2, &mVU.VIbackup);
 			armAsm->Eor(gprT1.W(), gprT1.W(), gprT2.W());
 		}
 		else
@@ -2279,7 +2273,7 @@ mVUop(mVU_IBNE)
 		}
 
 		if (!(isBadOrEvil))
-			armStorePtr(gprT1, &mVU.branch);
+			mVUstrField(mVU, gprT1, &mVU.branch);
 		else
 			condEvilBranch(mVU, a64::ne);
 		mVU.profiler.EmitOp(opIBNE);
@@ -2297,19 +2291,19 @@ static void normJumpPass2(mV)
 
 		if (!mVUlow.evilBranch)
 		{
-			armStorePtr(gprT1, &mVU.branch);
+			mVUstrField(mVU, gprT1, &mVU.branch);
 		}
 		else
 		{
 			if (isEvilBlock)
-				armStorePtr(gprT1, &mVU.evilevilBranch);
+				mVUstrField(mVU, gprT1, &mVU.evilevilBranch);
 			else
-				armStorePtr(gprT1, &mVU.evilBranch);
+				mVUstrField(mVU, gprT1, &mVU.evilBranch);
 		}
 
 		if (mVUlow.badBranch)
 		{
-			armStorePtr(gprT1, &mVU.badBranch);
+			mVUstrField(mVU, gprT1, &mVU.badBranch);
 		}
 	}
 }
@@ -2344,7 +2338,7 @@ mVUop(mVU_JALR)
 			const a64::Register& regT = mVU.regAlloc->allocGPR(-1, _It_, mVUlow.backupVI);
 			if (isEvilBlock)
 			{
-				armLoadPtr(regT, &mVU.evilBranch);
+				mVUldrField(mVU, regT, &mVU.evilBranch);
 				armAsm->Add(regT.W(), regT.W(), 8);
 				armAsm->Lsr(regT.W(), regT.W(), 3);
 			}
@@ -2354,7 +2348,7 @@ mVUop(mVU_JALR)
 				DevCon.Warning("Linking JALR from %s branch taken/not taken target! - If game broken report to PCSX2 Team", branchSTR[mVUlow.branch & 0xf]);
 				incPC(2);
 
-				armLoadPtr(regT, &mVU.badBranch);
+				mVUldrField(mVU, regT, &mVU.badBranch);
 				armAsm->Add(regT.W(), regT.W(), 8);
 				armAsm->Lsr(regT.W(), regT.W(), 3);
 			}

@@ -421,8 +421,7 @@ static void mVUtestCycles(mV, microFlagCycles& mFC)
 		}
 	}
 
-	armMoveAddressToReg(a64::x8, &mVU.cycles);
-	armAsm->Ldr(a64::w9, a64::MemOperand(a64::x8));
+	armAsm->Ldr(a64::w9, mVUfieldMem(mVU, &mVU.cycles));
 	if (EmuConfig.Gamefixes.VUSyncHack)
 		armAsm->Subs(a64::w9, a64::w9, mVUcycles);
 	else
@@ -445,12 +444,13 @@ static void mVUtestCycles(mV, microFlagCycles& mFC)
 	armAsm->Bind(&skip);
 
 	// Budget remains — deduct block cycles from mVU.cycles and fall through
-	// into the block body. x8 still holds &mVU.cycles from the first
-	// materialization above; the early-exit path that clobbers it tail-calls
-	// mVUendProgram and never reaches here, so x8 is safe to reuse directly.
-	armAsm->Ldr(a64::w9, a64::MemOperand(a64::x8));
-	armAsm->Sub(a64::w9, a64::w9, mVUcycles);
-	armAsm->Str(a64::w9, a64::MemOperand(a64::x8));
+	// into the block body. w9 still holds the Subs result from the test
+	// above (the early-exit path never reaches here), so the deducted value
+	// is derivable without reloading: under VUSyncHack it IS cycles -
+	// mVUcycles; otherwise it's cycles - 1, one short of the full deduction.
+	if (!EmuConfig.Gamefixes.VUSyncHack && mVUcycles != 1)
+		armAsm->Sub(a64::w9, a64::w9, mVUcycles - 1);
+	armAsm->Str(a64::w9, mVUfieldMem(mVU, &mVU.cycles));
 }
 
 //------------------------------------------------------------------

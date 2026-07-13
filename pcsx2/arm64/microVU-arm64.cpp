@@ -659,13 +659,12 @@ static void mVUdispatcherAB(mV)
 	// _vu0run/_vu1run (s64)(cpuRegs.cycle - VU.cycle) sync. Running before the
 	// branch banks exactly one cycle update on each path (the helper adds none)
 	// and hands the helper's EE-skip the correct consumed count in mVU.cycles.
-	armMoveAddressToReg(a64::x8, &mVU.totalCycles);
-	armAsm->Ldr(a64::w10, a64::MemOperand(a64::x8));           // totalCycles
-	armAsm->Ldr(a64::w9,  a64::MemOperand(a64::x8, 4));        // cycles
+	armAsm->Ldr(a64::w10, mVUfieldMem(mVU, &mVU.totalCycles));
+	armAsm->Ldr(a64::w9,  mVUfieldMem(mVU, &mVU.cycles));
 	armAsm->Cmp(a64::w9, 0);
 	armAsm->Csel(a64::w9, a64::w9, a64::wzr, a64::gt);          // max(0, cycles)
 	armAsm->Sub(a64::w9, a64::w10, a64::w9);                    // totalCycles - max(0,c)
-	armAsm->Str(a64::w9, a64::MemOperand(a64::x8, 4));          // mVU.cycles = ...
+	armAsm->Str(a64::w9, mVUfieldMem(mVU, &mVU.cycles));
 	// VURegs::cycle is u64 (matching cpuRegs.cycle); the add MUST be 64-bit or
 	// the carry is dropped once the low 32 bits wrap (~every 14s of EE time),
 	// leaving VU0.cycle ~4 billion below the EE clock and detonating every
@@ -731,8 +730,7 @@ static void mVUdispatcherAB(mV)
 	}
 
 	// cycles_passed = min(mVU.cycles, 3000) * EECycleSkip (w11)
-	armMoveAddressToReg(a64::x8, &mVU.totalCycles);
-	armAsm->Ldr(a64::w9, a64::MemOperand(a64::x8, 4));           // mVU.cycles (post-update)
+	armAsm->Ldr(a64::w9, mVUfieldMem(mVU, &mVU.cycles));         // post-update
 	armAsm->Mov(a64::w10, 3000);
 	armAsm->Cmp(a64::w9, a64::w10);
 	armAsm->Csel(a64::w9, a64::w9, a64::w10, a64::lt);            // min(cycles, 3000)

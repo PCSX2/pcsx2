@@ -333,12 +333,12 @@ void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump)
 
 	if (isEvilJump)
 	{
-		armLoadPtr(RWARG1, &mVU.evilBranch);
-		armLoadPtr(gprT1, &mVU.evilevilBranch);
-		armStorePtr(gprT1, &mVU.evilBranch);
+		mVUldrField(mVU, RWARG1, &mVU.evilBranch);
+		mVUldrField(mVU, gprT1, &mVU.evilevilBranch);
+		mVUstrField(mVU, gprT1, &mVU.evilBranch);
 	}
 	else
-		armLoadPtr(RWARG1, &mVU.branch);
+		mVUldrField(mVU, RWARG1, &mVU.branch);
 
 	if (doJumpCaching)
 		armMoveAddressToReg(RXARG2, mVUpBlock);
@@ -646,8 +646,7 @@ void condBranch(mV, microFlagCycles& mFC, a64::Condition cond)
 			armAsm->Str(a64::w9, mVUstateMem(offsetof(VURegs, flags)));
 		}
 		mVUDTendProgram(mVU, &mFC, 2);
-		armMoveAddressToReg(a64::x8, &mVU.branch);
-		armAsm->Ldrsh(a64::w9, a64::MemOperand(a64::x8));
+		armAsm->Ldrsh(a64::w9, mVUfieldMem(mVU, &mVU.branch));
 		armAsm->Cmp(a64::w9, 0);
 
 		// DELIBERATE divergence from x86 (which wraps JMPcc in xInvertCond
@@ -703,8 +702,7 @@ void condBranch(mV, microFlagCycles& mFC, a64::Condition cond)
 			armAsm->Str(a64::w9, mVUstateMem(offsetof(VURegs, flags)));
 		}
 		mVUDTendProgram(mVU, &mFC, 2);
-		armMoveAddressToReg(a64::x8, &mVU.branch);
-		armAsm->Ldrsh(a64::w9, a64::MemOperand(a64::x8));
+		armAsm->Ldrsh(a64::w9, mVUfieldMem(mVU, &mVU.branch));
 		armAsm->Cmp(a64::w9, 0);
 
 		// Direct cond on purpose — see the T-bit stub above (AX-01).
@@ -736,8 +734,7 @@ void condBranch(mV, microFlagCycles& mFC, a64::Condition cond)
 		armEmitCall(mVU.copyPLState);
 
 		mVUendProgram(mVU, &mFC, 3);
-		armMoveAddressToReg(a64::x8, &mVU.branch);
-		armAsm->Ldrsh(a64::w9, a64::MemOperand(a64::x8));
+		armAsm->Ldrsh(a64::w9, mVUfieldMem(mVU, &mVU.branch));
 		armAsm->Cmp(a64::w9, 0);
 
 		a64::Label mJMP;
@@ -776,8 +773,7 @@ void condBranch(mV, microFlagCycles& mFC, a64::Condition cond)
 		// path uses a 16-bit memory cmp (xCMP ptr16[&mVU.branch], 0) which
 		// treats the value as signed s16. Match that here with Ldrsh so
 		// negative VI values (e.g. 0xFFFE = -2) trigger .le/.lt correctly.
-		armMoveAddressToReg(a64::x8, &mVU.branch);
-		armAsm->Ldrsh(a64::w9, a64::MemOperand(a64::x8));
+		armAsm->Ldrsh(a64::w9, mVUfieldMem(mVU, &mVU.branch));
 		armAsm->Cmp(a64::w9, 0);
 
 		a64::Label taken;
@@ -806,8 +802,7 @@ void condBranch(mV, microFlagCycles& mFC, a64::Condition cond)
 	}
 
 	// Normal conditional branch. See E-bit path above for why Ldrsh.
-	armMoveAddressToReg(a64::x8, &mVU.branch);
-	armAsm->Ldrsh(a64::w9, a64::MemOperand(a64::x8));
+	armAsm->Ldrsh(a64::w9, mVUfieldMem(mVU, &mVU.branch));
 	armAsm->Cmp(a64::w9, 0);
 
 	incPC(3);
@@ -895,7 +890,7 @@ void normJump(mV, microFlagCycles& mFC)
 			armAsm->Str(a64::w9, mVUstateMem(offsetof(VURegs, flags)));
 		}
 		mVUDTendProgram(mVU, &mFC, 2);
-		armLoadPtr(gprT1, &mVU.branch);
+		mVUldrField(mVU, gprT1, &mVU.branch);
 		armAsm->Str(gprT1, mVUstateMem(offsetof(VURegs, VI) + REG_TPC * sizeof(REG_VI)));
 		armEmitJmp(mVU.exitFunct);
 
@@ -923,7 +918,7 @@ void normJump(mV, microFlagCycles& mFC)
 			armAsm->Str(a64::w9, mVUstateMem(offsetof(VURegs, flags)));
 		}
 		mVUDTendProgram(mVU, &mFC, 2);
-		armLoadPtr(gprT1, &mVU.branch);
+		mVUldrField(mVU, gprT1, &mVU.branch);
 		armAsm->Str(gprT1, mVUstateMem(offsetof(VURegs, VI) + REG_TPC * sizeof(REG_VI)));
 		if (mVU.index && THREAD_VU1)
 			armEmitCall((void*)mVUTBit);
@@ -934,7 +929,7 @@ void normJump(mV, microFlagCycles& mFC)
 	if (mVUup.eBit)
 	{
 		mVUendProgram(mVU, &mFC, 2);
-		armLoadPtr(gprT1, &mVU.branch);
+		mVUldrField(mVU, gprT1, &mVU.branch);
 		armAsm->Str(gprT1, mVUstateMem(offsetof(VURegs, VI) + REG_TPC * sizeof(REG_VI)));
 		if (mVU.index && THREAD_VU1)
 			armEmitCall((void*)mVUEBit);
@@ -961,8 +956,7 @@ static void mVUdivSet(mV)
 		// accepts 0x000C0000 (two consecutive 1s, ROR 14 in 32-bit element) as
 		// a valid logical-immediate, so this collapses Mov + And → single Bic.
 		armAsm->Bic(sReg.W(), sReg.W(), 0x000C0000u);
-		armMoveAddressToReg(a64::x8, &mVU.divFlag);
-		armAsm->Ldr(gprT1, a64::MemOperand(a64::x8));
+		mVUldrField(mVU, gprT1, &mVU.divFlag);
 		armAsm->Orr(sReg.W(), sReg.W(), gprT1);
 	}
 }
@@ -1053,7 +1047,7 @@ static __fi void mVU_XGKICK_DELAY(mV)
 	mVUbackupRegs(mVU, true, true);
 
 	// Load VIxgkick value as argument and call the C helper
-	armLoadPtr(RWARG1, &mVU.VIxgkick);
+	mVUldrField(mVU, RWARG1, &mVU.VIxgkick);
 	armEmitCall((void*)mVU_XGKICK_);
 
 	mVUrestoreRegs(mVU, true, true);

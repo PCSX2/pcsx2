@@ -53,7 +53,12 @@
 //       now emits the badBranch/evilBranch target-select sequence that
 //       the arm64 port had dropped — MGS2 VU0 solver hang); pre-fix
 //       payloads compiled the broken shape and must not be rehydrated.
-static constexpr u32 kMvuCompilerAbiVersion = 7;
+//   8 — hot microVU scalars (divFlag/branch/cycles/…) moved adjacent to
+//       the flag block and addressed as [gprMVUFlag, #imm] via
+//       mVUfieldMem instead of per-site absolute materialization; every
+//       block that touches them changes shape, and payloads bake the
+//       field offsets, which the move changed.
+static constexpr u32 kMvuCompilerAbiVersion = 8;
 
 // Hash/equality functors for XXH128_hash_t — let std::unordered_map<XXH128_hash_t, …>
 // work without a wrapping struct. low64 already carries the well-mixed half of
@@ -413,6 +418,23 @@ struct microVU
 	alignas(16) u32 neonCTemp[4];      // Backup used in mVUclamp2()
 	alignas(16) u32 neonBackup[32][4]; // Backup for q0~q31
 
+	// Hot JIT-runtime scalars. Kept directly after the flag arrays so
+	// emitted code reaches them with a single [gprMVUFlag, #imm] Ldr/Str
+	// (see mVUfieldMem below); anything placed after `prog` sits several
+	// hundred KB from the x24 pin and falls out of immediate range.
+	u32 code;
+	u32 divFlag;
+	u32 VIbackup;
+	u32 VIxgkick;
+	u32 branch;
+	u32 badBranch;
+	u32 evilBranch;
+	u32 evilevilBranch;
+	u32 p;
+	u32 q;
+	u32 totalCycles;
+	s32 cycles;
+
 	u32 index;
 	u32 cop2;
 	u32 vuMemSize;
@@ -475,18 +497,6 @@ struct microVU
 	u8* endProgramFlagsA; // non-Ebit exits (isEbit == 0 || isEbit == 3)
 	u8* endProgramFlagsB; // Ebit exits (isEbit && isEbit != 3)
 	u8* resumePtrXG;
-	u32 code;
-	u32 divFlag;
-	u32 VIbackup;
-	u32 VIxgkick;
-	u32 branch;
-	u32 badBranch;
-	u32 evilBranch;
-	u32 evilevilBranch;
-	u32 p;
-	u32 q;
-	u32 totalCycles;
-	s32 cycles;
 
 	VURegs& regs() const { return ::vuRegs[index]; }
 
@@ -516,6 +526,37 @@ struct microVU
 		return (vminvq_u32(vandq_u32(a23, a45)) == 0) ? 1 : 0;
 	}
 };
+
+// MemOperand for one of the hot microVU scalars (the code..cycles block
+// right after the flag arrays), addressed off the gprMVUFlag (x24) pin the
+// same way mVUglobMem rides gprMVUglob. Micro mode only: cop2 macro ops
+// emit inline in EE blocks, where x24 holds the EE recompiler's &VU0 pin.
+__fi static a64::MemOperand mVUfieldMem(mV, const void* addr)
+{
+	pxAssert(!mVU.cop2);
+	const ptrdiff_t off = reinterpret_cast<const u8*>(addr) - reinterpret_cast<const u8*>(&mVU.macFlag[0]);
+	pxAssert(off > 0 && off <= 16380 && (off & 3) == 0);
+	return a64::MemOperand(gprMVUFlag, off);
+}
+
+// Ldr/Str a hot microVU scalar. In cop2 macro mode x24 is not ours (see
+// mVUfieldMem), so shared emit bodies (DIV/SQRT/RSQRT divFlag traffic) fall
+// back to the absolute-address path there.
+__fi static void mVUldrField(mV, const a64::CPURegister& reg, const void* addr)
+{
+	if (mVU.cop2)
+		armLoadPtr(reg, addr);
+	else
+		armAsm->Ldr(reg, mVUfieldMem(mVU, addr));
+}
+
+__fi static void mVUstrField(mV, const a64::CPURegister& reg, const void* addr)
+{
+	if (mVU.cop2)
+		armStorePtr(reg, addr);
+	else
+		armAsm->Str(reg, mVUfieldMem(mVU, addr));
+}
 
 //------------------------------------------------------------------
 // Block Manager (from x86/microVU.h — platform-independent)
@@ -703,7 +744,7 @@ typedef void (*mVUrecCallXG)(void);
 inline void microRegAlloc::writeVIBackup(const a64::Register& reg)
 {
 	microVU& mVU = (index ? microVU1 : microVU0);
-	armStorePtr(reg.W(), &mVU.VIbackup);
+	mVUstrField(mVU, reg.W(), &mVU.VIbackup);
 }
 
 template <typename T>
