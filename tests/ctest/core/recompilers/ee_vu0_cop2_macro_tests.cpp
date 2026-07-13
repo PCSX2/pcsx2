@@ -21,6 +21,7 @@
 #include "harness/EeRecTestHarness.h"
 
 #include "VU.h"
+#include "VUmicro.h"
 #include "Config.h"
 
 #include <gtest/gtest.h>
@@ -29,6 +30,10 @@
 // (PCSX2_RECOMPILER_TESTS builds only). Global scope — must be declared
 // outside namespace recompiler_tests.
 bool mVUTestProbe_VIPoolUsable(int hostreg, bool cop2mode);
+
+// VE-08: thin rec-only sync helpers, defined in arm64/iCOP2-arm64.cpp.
+void vu0SyncThin();
+void vu0SyncRunAheadThin();
 
 namespace recompiler_tests {
 
@@ -1732,6 +1737,147 @@ TEST(EeVu0Cop2Macro, PinnedTier1SurvivesMacroRoutedOps)
 	EXPECT_EQ(h.GetVu0ViJit(3), 6u);
 	for (char l : {'x', 'y', 'z', 'w'})
 		EXPECT_EQ(h.GetVu0VfBitsJit(8, l), h.GetVu0VfBitsInterp(8, l));
+}
+
+// =========================================================================
+//  VE-08 — thin sync helpers (vu0SyncThin / vu0SyncRunAheadThin)
+// =========================================================================
+// These are the BL targets of the rec-emitted COP2 sync sites
+// (cop2EmitConditionalSync). Contract pinned here:
+//   - the emitted site owns the VPU_STAT gate (Tbz) and the cycle flush;
+//     the helpers do a bare delta clamp + CpuVU0->Execute tail-call.
+//   - dispatch DECISIONS are bit-identical to _vu0run's sync path:
+//     delta < 0 dispatches nothing; delta >= 0 dispatches (including
+//     Execute(0) on the exact variant — skipping delta == 0 shifts VU0
+//     run-ahead timing and moved the UYA stepdiff signature off the
+//     known-benign timer block, so VE-08 is wrapper thinning ONLY).
+//   - run-ahead floors the dispatch at 16 cycles (mirrors _vu0run /
+//     upstream CalculateMinRunCycles); the exact variant passes delta
+//     through untouched.
+
+class CaptureVU0CPU final : public BaseVUmicroCPU
+{
+public:
+	int executeCalls = 0;
+	u32 lastCycles = 0;
+
+	const char* GetShortName() const override { return "capture"; }
+	const char* GetLongName() const override { return "capture VU0"; }
+	void Shutdown() override {}
+	void Reset() override {}
+	void SetStartPC(u32) override {}
+	void Execute(u32 cycles) override
+	{
+		executeCalls++;
+		lastCycles = cycles;
+	}
+	void Step() override {}
+	void Clear(u32, u32) override {}
+};
+
+// RAII: swap CpuVU0 for the capture mock and pin cpuRegs.cycle/VU0.cycle
+// to produce a given EE-minus-VU0 delta; restore everything on scope exit.
+class SyncThinFixture
+{
+public:
+	explicit SyncThinFixture(s64 delta)
+		: m_savedCpu(CpuVU0)
+		, m_savedEeCycle(cpuRegs.cycle)
+		, m_savedVuCycle(VU0.cycle)
+	{
+		CpuVU0 = &mock;
+		cpuRegs.cycle = 0x100000;
+		VU0.cycle = static_cast<u64>(static_cast<s64>(cpuRegs.cycle) - delta);
+	}
+
+	~SyncThinFixture()
+	{
+		CpuVU0 = m_savedCpu;
+		cpuRegs.cycle = m_savedEeCycle;
+		VU0.cycle = m_savedVuCycle;
+	}
+
+	CaptureVU0CPU mock;
+
+private:
+	BaseVUmicroCPU* m_savedCpu;
+	u64 m_savedEeCycle;
+	u64 m_savedVuCycle;
+};
+
+TEST(EeVu0SyncThin, NegativeDeltaDispatchesNothing)
+{
+	SyncThinFixture f(-5);
+	vu0SyncThin();
+	vu0SyncRunAheadThin();
+	EXPECT_EQ(f.mock.executeCalls, 0);
+}
+
+TEST(EeVu0SyncThin, ZeroDeltaMatchesVu0Run)
+{
+	// _vu0run parity: delta == 0 still dispatches — Execute(0) exact,
+	// Execute(16) with the run-ahead floor.
+	{
+		SyncThinFixture f(0);
+		vu0SyncThin();
+		EXPECT_EQ(f.mock.executeCalls, 1);
+		EXPECT_EQ(f.mock.lastCycles, 0u);
+	}
+	{
+		SyncThinFixture f(0);
+		vu0SyncRunAheadThin();
+		EXPECT_EQ(f.mock.executeCalls, 1);
+		EXPECT_EQ(f.mock.lastCycles, 16u);
+	}
+}
+
+TEST(EeVu0SyncThin, ExactPassesSmallDeltaThrough)
+{
+	SyncThinFixture f(3);
+	vu0SyncThin();
+	EXPECT_EQ(f.mock.executeCalls, 1);
+	EXPECT_EQ(f.mock.lastCycles, 3u);
+}
+
+TEST(EeVu0SyncThin, RunAheadFloorsSmallDeltaTo16)
+{
+	SyncThinFixture f(3);
+	vu0SyncRunAheadThin();
+	EXPECT_EQ(f.mock.executeCalls, 1);
+	EXPECT_EQ(f.mock.lastCycles, 16u);
+}
+
+TEST(EeVu0SyncThin, RunAheadFloorBoundaryAt16)
+{
+	{
+		SyncThinFixture f(15);
+		vu0SyncRunAheadThin();
+		EXPECT_EQ(f.mock.lastCycles, 16u);
+	}
+	{
+		SyncThinFixture f(16);
+		vu0SyncRunAheadThin();
+		EXPECT_EQ(f.mock.lastCycles, 16u);
+	}
+	{
+		SyncThinFixture f(17);
+		vu0SyncRunAheadThin();
+		EXPECT_EQ(f.mock.lastCycles, 17u);
+	}
+}
+
+TEST(EeVu0SyncThin, LargeDeltaPassesThroughBothVariants)
+{
+	{
+		SyncThinFixture f(5000);
+		vu0SyncThin();
+		EXPECT_EQ(f.mock.lastCycles, 5000u);
+	}
+	{
+		SyncThinFixture f(5000);
+		vu0SyncRunAheadThin();
+		EXPECT_EQ(f.mock.lastCycles, 5000u);
+	}
 }
 
 } // namespace recompiler_tests

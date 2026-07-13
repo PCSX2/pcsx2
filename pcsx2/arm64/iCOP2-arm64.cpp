@@ -8,6 +8,8 @@
 
 #include "arm64/iR5900-arm64.h"
 
+#include "VUmicro.h" // CpuVU0 — VE-08 thin sync helpers
+
 namespace a64 = vixl::aarch64;
 
 // ========================================================================
@@ -607,10 +609,47 @@ void endMacroOp_arm64(int mode)
 // VU0 sync is conditional on VU0 actually running (VPU_STAT bit 0).
 // Sync is skipped in the common case where VU0 micro isn't executing.
 
-extern void vu0Sync();
-extern void vu0SyncRunAhead();
 extern void _vu0FinishMicro();
 extern void _vu0WaitMicro();
+
+// VE-08: thin sync helpers for the rec-emitted COP2 sync sites below.
+// Non-static so the recompiler tests can pin the contract.
+//
+// The emitted site (cop2EmitConditionalSync) has already
+//   (a) checked VPU_STAT bit 0 (Tbz — kills the VU0-idle calls before they
+//       get here; the generic _vu0run re-check is dropped), and
+//   (b) flushed the absolute cpuRegs.cycle (armFlushCycleDelta).
+// EE rec is running by construction — only rec-emitted code reaches these —
+// so _vu0run's interp-only intUpdateCPUCycles probe is dead here too.
+//
+// Shape mirrors AetherSX2's unified vuSync(cpu, interlocked): a bare delta
+// clamp + CpuVU0->Execute in tail position, no frame, no EmuConfig load
+// (SD865 locked-60: aether's vuSync runs 0.22 Mcyc/f where our generic
+// _vu0run specialization paid 0.60 for the same payload).
+//
+// The dispatch DECISIONS are bit-identical to _vu0run's sync path — same
+// >= 0 gate, same 16-cycle floor. (Aether additionally skips delta == 0;
+// that shifts VU0 run-ahead timing and moved the UYA stepdiff signature
+// off the known-benign 0x0013d208 timer block, so it was dropped —
+// wrapper thinning only, no timing change.) Pinned by EeVu0SyncThin.*.
+
+// Exact catch-up (interlocked COP2 ops) — vu0Sync minus the wrapper.
+void vu0SyncThin()
+{
+	const s32 runCycles = static_cast<s32>(static_cast<s64>(cpuRegs.cycle - VU0.cycle));
+	if (runCycles >= 0)
+		CpuVU0->Execute(runCycles);
+}
+
+// Non-interlocked catch-up with the 16-cycle run-ahead floor (mirrors
+// _vu0run / upstream CalculateMinRunCycles — overshooting the EE is fine
+// here; the next sync sees a negative delta and no-ops).
+void vu0SyncRunAheadThin()
+{
+	const s32 runCycles = static_cast<s32>(static_cast<s64>(cpuRegs.cycle - VU0.cycle));
+	if (runCycles >= 0)
+		CpuVU0->Execute(runCycles < 16 ? 16 : runCycles);
+}
 
 // Emit conditional VU0 sync: uses EEINST analysis flags when available,
 // falls back to runtime VPU_STAT check otherwise.
@@ -644,9 +683,9 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 			armAsm->Ldr(RWSCRATCH, armVU0Mem(&VU0.VI[REG_VPU_STAT]));
 			armAsm->Tbz(RWSCRATCH, 0, &skipSync);
 
-			// Flush the absolute cycle before vu0Sync — it reads
+			// Flush the absolute cycle before the sync — it reads
 			// cpuRegs.cycle to determine how many VU0 micro cycles to run.
-			// Re-derive after, since vu0Sync may advance cpuRegs.cycle and
+			// Re-derive after, since the sync may advance cpuRegs.cycle and
 			// reschedule nextEventCycle.
 			armFlushCycleDelta();
 
@@ -655,7 +694,7 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 			// below). The iFlushCall above lacks FLUSH_ALL_X86, so the
 			// central hook didn't cover this.
 			armFlushEEClobberedPins();
-			armEmitCall((void*)vu0Sync);
+			armEmitCall((void*)vu0SyncThin);
 			if (finishFunc)
 			{
 				armEmitCall((void*)finishFunc);
@@ -703,7 +742,7 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 		// Non-interlocked catch-up: run a 16-cycle minimum to amortize the mVU
 		// dispatch envelope over small blocks (6dc5087cb). If the block also
 		// contains an interlocked op, fall back to the exact sync.
-		armEmitCall((void*)(s_nBlockInterlocked ? vu0Sync : vu0SyncRunAhead));
+		armEmitCall((void*)(s_nBlockInterlocked ? vu0SyncThin : vu0SyncRunAheadThin));
 	}
 	else
 	{
