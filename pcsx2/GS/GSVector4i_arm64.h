@@ -25,14 +25,6 @@ static __forceinline int32_t gsneon_pick(int32x4_t a, int32x4_t b)
 		return vgetq_lane_s32(b, I - 4);
 }
 template <int I>
-static __forceinline float32_t gsneon_pickf(float32x4_t a, float32x4_t b)
-{
-	if constexpr (I < 4)
-		return vgetq_lane_f32(a, I);
-	else
-		return vgetq_lane_f32(b, I - 4);
-}
-template <int I>
 static __forceinline int16_t gsneon_pick16(int16x8_t a, int16x8_t b)
 {
 	if constexpr (I < 8)
@@ -41,6 +33,14 @@ static __forceinline int16_t gsneon_pick16(int16x8_t a, int16x8_t b)
 		return vgetq_lane_s16(b, I - 8);
 }
 
+// MSVC's arm64 <arm64_neon.h> makes int32x4_t, float32x4_t and int16x8_t all
+// typedefs of the same underlying __n128, so we can't provide distinct
+// int32x4_t/float32x4_t overloads -- they'd have an identical signature and cl
+// rejects the second as a redefinition (C2995). Keep a single 4-lane (32-bit)
+// overload and a single 8-lane (16-bit) overload, distinguished only by arity.
+// A lane copy is bit-preserving, so routing float32x4_t shuffles (the three
+// GSVector4 call sites) through the s32 lane ops reproduces the exact float
+// result -- float32x4_t is the very same __n128 type here.
 template <int I0, int I1, int I2, int I3>
 static __forceinline int32x4_t gsneon_shuffle(int32x4_t a, int32x4_t b)
 {
@@ -49,16 +49,6 @@ static __forceinline int32x4_t gsneon_shuffle(int32x4_t a, int32x4_t b)
 	r = vsetq_lane_s32(gsneon_pick<I1>(a, b), r, 1);
 	r = vsetq_lane_s32(gsneon_pick<I2>(a, b), r, 2);
 	r = vsetq_lane_s32(gsneon_pick<I3>(a, b), r, 3);
-	return r;
-}
-template <int I0, int I1, int I2, int I3>
-static __forceinline float32x4_t gsneon_shuffle(float32x4_t a, float32x4_t b)
-{
-	float32x4_t r = vdupq_n_f32(0.0f);
-	r = vsetq_lane_f32(gsneon_pickf<I0>(a, b), r, 0);
-	r = vsetq_lane_f32(gsneon_pickf<I1>(a, b), r, 1);
-	r = vsetq_lane_f32(gsneon_pickf<I2>(a, b), r, 2);
-	r = vsetq_lane_f32(gsneon_pickf<I3>(a, b), r, 3);
 	return r;
 }
 template <int I0, int I1, int I2, int I3, int I4, int I5, int I6, int I7>
