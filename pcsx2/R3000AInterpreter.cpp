@@ -247,7 +247,7 @@ static void doBranch(s32 tar) {
 	}
 
 	// Override the memory size argument to IOPBOOT
-	if(tar == 0xbfc4a000) {
+	if(static_cast<u32>(tar) == 0xbfc4a000) {
 		psxRegs.GPR.n.a0 = Ps2MemSize::ExposedIopRam >> 20;
 	}
 
