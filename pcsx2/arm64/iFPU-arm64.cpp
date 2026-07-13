@@ -131,8 +131,14 @@ void recMTC1()
 	// following FPU op; the block epilogue flushes the S-reg to fpr[fs].f.
 	// MTC1 overwrites fpr[fs] wholesale, so any prior MODE_WRITE-only value
 	// in the slot is dead and correctly discarded by overwriting lane 0.
-	// Not-resident → store to memory.
-	const int fsreg = _checkNEONreg(NEONTYPE_FPREG, _Fs_, MODE_WRITE);
+	// GE-11: when fs is NOT resident but the backprop analysis says it is
+	// used later in the block, ALLOCATE the destination slot (write-only, no
+	// memory load) — this is the previously-dead _allocIfUsedFPUtoNEON, the
+	// x86 recMTC1 model. Kills the Str+Ldr idiom between MTC1 and the
+	// following CVT.S/arith. Unused-dest falls back to the memory store.
+	int fsreg = _checkNEONreg(NEONTYPE_FPREG, _Fs_, MODE_WRITE);
+	if (fsreg < 0)
+		fsreg = _allocIfUsedFPUtoNEON(_Fs_, MODE_WRITE);
 	if (fsreg >= 0)
 	{
 		armAsm->Fmov(armSRegister(fsreg), RWSCRATCH);

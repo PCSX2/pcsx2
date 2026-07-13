@@ -378,6 +378,7 @@ constexpr u32 ABS_S(u32 fd, u32 fs)                    { return COP1(0x10, 0,  f
 constexpr u32 MOV_S(u32 fd, u32 fs)                    { return COP1(0x10, 0,  fs, fd, 0x06); }
 constexpr u32 NEG_S(u32 fd, u32 fs)                    { return COP1(0x10, 0,  fs, fd, 0x07); }
 constexpr u32 CVT_W_S(u32 fd, u32 fs)                  { return COP1(0x10, 0,  fs, fd, 0x24); }
+constexpr u32 CVT_S_W(u32 fd, u32 fs)                  { return COP1(0x14, 0,  fs, fd, 0x20); }
 // PS2-specific FPU accumulator family. ADDA/SUBA/MULA write to ACC (no Fd
 // field in the op); MADD/MSUB/MADDA/MSUBA are multiply-then-add/sub forms.
 constexpr u32 ADDA_S (u32 fs, u32 ft)                  { return COP1(0x10, ft, fs, 0,  0x18); }

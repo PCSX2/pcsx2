@@ -1166,3 +1166,54 @@ TEST(EeRecFpu, MaddSFpuMulHackAppliesToProduct)
 	h.RunJitNoDiff();
 	EXPECT_EQ(h.GetFprBitsJit(2), 0x3f490fdau);
 }
+
+// ---- GE-11: MTC1 allocates a used destination FPR slot ---------------------
+// MTC1 followed by consumers of fs must produce the same results whether fs
+// went through the newly-allocated write-only slot (used-dest) or memory
+// (unused dest). Chains through CVT.S and ADD.S pin the residency handoff.
+
+TEST(EeRecFpu, Mtc1ThenCvtSThenAddSUsesResidentSlot)
+{
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetGpr64(reg::a0, 7);          // int bits for CVT.S
+	h.SetFprBits(5, 0x3F800000u);    // f5 = 1.0f
+	h.LoadProgram({
+		ee::MTC1(reg::a0, 1),        // f1 = raw 7 (int bits) — dest USED below
+		ee::CVT_S_W(2, 1),           // f2 = 7.0f
+		ee::ADD_S(3, 2, 5),          // f3 = 8.0f
+		ee::MFC1(reg::v0, 3),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::v0) & 0xFFFFFFFFull, 0x41000000ull); // 8.0f
+}
+
+TEST(EeRecFpu, Mtc1UnusedDestStoresToMemory)
+{
+	// fs never touched again in-block: the alloc-if-used gate must decline and
+	// the value must still land in fpr memory for the post-state diff.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetGpr64(reg::a0, 0xDEADBEEFull);
+	h.LoadProgram({
+		ee::MTC1(reg::a0, 4),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetFprBitsInterp(4), 0xDEADBEEFu);
+}
+
+TEST(EeRecFpu, Mtc1ConstSourceAllocatesUsedDest)
+{
+	// Const-propagated rt (LUI) through the same alloc-if-used path.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFprBits(5, 0x40000000u);    // f5 = 2.0f
+	h.LoadProgram({
+		LUI(reg::a1, 0x4040),        // a1 = 0x40400000 = 3.0f bits (const)
+		ee::MTC1(reg::a1, 1),        // f1 = 3.0f via const path
+		ee::ADD_S(2, 1, 5),          // f2 = 5.0f
+		ee::MFC1(reg::v0, 2),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::v0) & 0xFFFFFFFFull, 0x40A00000ull); // 5.0f
+}
