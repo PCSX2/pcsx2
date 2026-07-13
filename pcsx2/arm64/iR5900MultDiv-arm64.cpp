@@ -49,16 +49,16 @@ static a64::Register loadRt32()
 	return _eeGetGPRSourceReg(a64::w2, _Rt_);
 }
 
-// Write LO and HI from 64-bit result in x0
+// Write LO and HI from 64-bit result in x0 (clobbers x0)
 // lo = lower 32, hi = upper 32, both sign-extended to 64 bits
 static void recWritebackHILO(bool upper)
 {
 	armAsm->Sxtw(RXSCRATCH, a64::w0);
 	armAsm->Str(RXSCRATCH, armCpuRegMem(upper ? &cpuRegs.LO.UD[1] : &cpuRegs.LO.UD[0]));
 
+	// Asr(x0, #32) already yields the sign-extended upper half — store it directly (GE-01).
 	armAsm->Asr(a64::x0, a64::x0, 32);
-	armAsm->Sxtw(RXSCRATCH, a64::w0);
-	armAsm->Str(RXSCRATCH, armCpuRegMem(upper ? &cpuRegs.HI.UD[1] : &cpuRegs.HI.UD[0]));
+	armAsm->Str(a64::x0, armCpuRegMem(upper ? &cpuRegs.HI.UD[1] : &cpuRegs.HI.UD[0]));
 }
 
 // Write Rd from LO (memory-based — no register allocation)
