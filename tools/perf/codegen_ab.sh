@@ -135,6 +135,16 @@ run_one() {
     # secondary metric keeps effect sizes honest. (2026-07-06 audit.)
     local ee_s
     ee_s="$(awk -F': ' '/@THREADCPU@ CPU Thread:/ { gsub(/ s$/,"",$2); if ($2+0 > m) m=$2+0 } END { printf "%.2f", m }' "$runlog")"
+    # EE-thread-SCOPED hardware counters from the runner's @THREADPERF@ lines
+    # (per-tid perf_event_open over the frame window). THE primary metric since
+    # 2026-07-12: deterministic like process insns, but undiluted by GS/MTVU
+    # threads and excluding boot/savestate-load work. Zero when unsupported
+    # (old binary / perf_event_paranoid) — summary falls back to process-wide.
+    # (max across same-named threads: spawned helpers can inherit the "CPU Thread"
+    # comm; the EE core is always the one with the most retired instructions)
+    local ee_ins ee_cyc
+    ee_ins="$(awk '/@THREADPERF@ CPU Thread:/ { for (i=1;i<=NF;i++) if ($i ~ /^instructions=/) { v=$i; sub(/^instructions=/,"",v); if (v+0 > m) m=v+0 } } END { printf "%.0f", m }' "$runlog")"
+    ee_cyc="$(awk '/@THREADPERF@ CPU Thread:/ { for (i=1;i<=NF;i++) if ($i ~ /^cycles=/) { v=$i; sub(/^cycles=/,"",v); if (v+0 > m) m=v+0 } } END { printf "%.0f", m }' "$runlog")"
     # perf stat writes counts to stderr. Anchor on the EVENT token ($2), so the
     # "insn per cycle" comment on the instructions line can't be misread as cycles.
     # On multi-PMU boxes (Apple M2: apple_avalanche_pmu/instructions/u +
@@ -158,9 +168,19 @@ run_one() {
       tail -n 20 "$stat" >&2 || true
       die "aborting: $tag run$k did not run a real workload"
     fi
-    printf '%s\t%s\t%s\t%s\t%s\n' "$tag" "$k" "$ins" "$cyc" "${ee_s:-0}" >> "$RESULTS"
+    # A missing @THREADCPU@ line means the VM never actually ran (e.g. GS init
+    # failure: renderer rejected over ssh) — startup alone can retire billions of
+    # instructions on a slow core, sailing past the 1e8 floor while measuring
+    # nothing. The shutdown thread-CPU report only prints after a real run.
+    if ! awk "BEGIN{exit !(${ee_s:-0} > 0)}"; then
+      echo "   $tag run$k: FAST-FAIL (no @THREADCPU@ EE-thread line — VM never ran). Check $runlog." >&2
+      tail -n 15 "$runlog" >&2 || true
+      die "aborting: $tag run$k did not boot the VM (GS init failure?)"
+    fi
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$tag" "$k" "$ins" "$cyc" "${ee_s:-0}" "${ee_ins:-0}" "${ee_cyc:-0}" >> "$RESULTS"
     awk -v t="$tag" -v k="$k" -v i="$ins" -v c="$cyc" -v tc="$temp_c" -v e="${ee_s:-?}" \
-      'BEGIN{printf "   %-4s run%s: insns=%.3fB  cycles=%.3fB  ipc=%.3f  ee_thread=%ss  temp=%s°C\n", t, k, i/1e9, c/1e9, i/c, e, tc}'
+        -v ei="${ee_ins:-0}" -v ec="${ee_cyc:-0}" \
+      'BEGIN{printf "   %-4s run%s: EE insns=%.3fB cycles=%.3fB | proc insns=%.3fB cycles=%.3fB | ee_thread=%ss temp=%s°C\n", t, k, ei/1e9, ec/1e9, i/1e9, c/1e9, e, tc}'
 }
 
 # Interleaved run order (base,new,base,new,...) — see run_one for why.
@@ -173,23 +193,31 @@ done
 python3 - "$OUTDIR" "$RESULTS" "$LABEL" "$SCENE" "$DEVICE" "$RENDERER" "$FRAMES" "$RUNS" "$BASE_BIN" "$NEW_BIN" <<'PY'
 import statistics, sys, os
 outdir, results, label, scene, device, rend, frames, runs, base_bin, new_bin = sys.argv[1:11]
-rows = {"base": {"ins": [], "cyc": [], "ee": []}, "new": {"ins": [], "cyc": [], "ee": []}}
+rows = {"base": {"ins": [], "cyc": [], "ee": [], "eins": [], "ecyc": []},
+        "new":  {"ins": [], "cyc": [], "ee": [], "eins": [], "ecyc": []}}
 for line in open(results):
     parts = line.rstrip("\n").split("\t")
-    if len(parts) not in (4, 5): continue
+    if len(parts) not in (4, 5, 7): continue
     tag, _k, ins, cyc = parts[:4]
     if tag in rows:
         rows[tag]["ins"].append(int(ins)); rows[tag]["cyc"].append(int(cyc))
-        if len(parts) == 5 and float(parts[4]) > 0:
+        if len(parts) >= 5 and float(parts[4]) > 0:
             rows[tag]["ee"].append(float(parts[4]))
+        if len(parts) == 7:
+            if int(parts[5]) > 0: rows[tag]["eins"].append(int(parts[5]))
+            if int(parts[6]) > 0: rows[tag]["ecyc"].append(int(parts[6]))
 
 def med(xs): return statistics.median(xs) if xs else float("nan")
+def delta(b, n): return (n / b - 1) * 100 if b == b and n == n and b else float("nan")
 b_ins, b_cyc = med(rows["base"]["ins"]), med(rows["base"]["cyc"])
 n_ins, n_cyc = med(rows["new"]["ins"]),  med(rows["new"]["cyc"])
-d_ins = (n_ins / b_ins - 1) * 100 if b_ins else float("nan")
-d_cyc = (n_cyc / b_cyc - 1) * 100 if b_cyc else float("nan")
+d_ins, d_cyc = delta(b_ins, n_ins), delta(b_cyc, n_cyc)
 b_ipc = b_ins / b_cyc if b_cyc else float("nan")
 n_ipc = n_ins / n_cyc if n_cyc else float("nan")
+be_ins, be_cyc = med(rows["base"]["eins"]), med(rows["base"]["ecyc"])
+ne_ins, ne_cyc = med(rows["new"]["eins"]),  med(rows["new"]["ecyc"])
+de_ins, de_cyc = delta(be_ins, ne_ins), delta(be_cyc, ne_cyc)
+have_ee_hw = be_ins == be_ins and ne_ins == ne_ins  # NaN-safe
 
 # Per-tag run spread (max-min)/median, to flag if determinism slipped.
 def spread(xs): return (max(xs) - min(xs)) / statistics.median(xs) * 100 if xs else float("nan")
@@ -198,28 +226,40 @@ out = os.path.join(outdir, "summary.md")
 with open(out, "w") as o:
     o.write(f"# Codegen A/B — {label} · {scene} (renderer={rend})\n\n")
     o.write(f"- device: **{device}**  · runs: {runs}  · frames: {frames}\n")
-    o.write(f"- metric: **retired instructions** (deterministic; `perf stat -e instructions,cycles --inherit`)\n")
     o.write(f"- base: `{base_bin}`\n- new:  `{new_bin}`\n\n")
-    o.write("| | base (median) | new (median) | Δ |\n|---|---|---|---|\n")
-    o.write(f"| instructions | {b_ins/1e9:.3f}B | {n_ins/1e9:.3f}B | **{d_ins:+.2f}%** |\n")
-    o.write(f"| cycles       | {b_cyc/1e9:.3f}B | {n_cyc/1e9:.3f}B | **{d_cyc:+.2f}%** |\n")
+    if have_ee_hw:
+        o.write("**Primary metric: EE-thread-scoped retired instructions** (@THREADPERF@ per-tid "
+                "perf_event_open over the frame window — undiluted by GS/MTVU threads, excludes boot).\n\n")
+        o.write("| EE thread | base (median) | new (median) | Δ |\n|---|---|---|---|\n")
+        o.write(f"| instructions | {be_ins/1e9:.3f}B | {ne_ins/1e9:.3f}B | **{de_ins:+.2f}%** |\n")
+        o.write(f"| cycles       | {be_cyc/1e9:.3f}B | {ne_cyc/1e9:.3f}B | **{de_cyc:+.2f}%** |\n")
+        o.write(f"| IPC          | {be_ins/be_cyc:.3f} | {ne_ins/ne_cyc:.3f} | {delta(be_ins/be_cyc, ne_ins/ne_cyc):+.2f}% |\n\n")
+    o.write("| whole process | base (median) | new (median) | Δ |\n|---|---|---|---|\n")
+    o.write(f"| instructions | {b_ins/1e9:.3f}B | {n_ins/1e9:.3f}B | {d_ins:+.2f}% |\n")
+    o.write(f"| cycles       | {b_cyc/1e9:.3f}B | {n_cyc/1e9:.3f}B | {d_cyc:+.2f}% |\n")
     o.write(f"| IPC          | {b_ipc:.3f} | {n_ipc:.3f} | {(n_ipc/b_ipc-1)*100:+.2f}% |\n")
     b_ee, n_ee = med(rows["base"]["ee"]), med(rows["new"]["ee"])
     if b_ee == b_ee and n_ee == n_ee and b_ee:  # NaN-safe
         d_ee = (n_ee / b_ee - 1) * 100
-        o.write(f"| EE-thread CPU s | {b_ee:.2f} | {n_ee:.2f} | **{d_ee:+.2f}%** |\n")
-        o.write(f"\n- ⚠ the instructions/cycles rows are WHOLE-PROCESS (GS+MTVU+workers included): "
-                f"an EE-only codegen change is diluted by the EE thread's share of process cycles. "
-                f"The EE-thread row is time-based (noisier, clock-sensitive — pinned clocks only) "
-                f"but scoped to the treated thread.\n")
+        o.write(f"| EE-thread CPU s | {b_ee:.2f} | {n_ee:.2f} | {d_ee:+.2f}% |\n")
+    if not have_ee_hw:
+        o.write(f"\n- ⚠ no @THREADPERF@ EE-thread counters in this run (old binary or perf_event_paranoid): "
+                f"the whole-process rows above are the only hardware counts, and an EE-only codegen change "
+                f"is diluted by the GS/MTVU threads' share of process cycles.\n")
     o.write("\n")
-    o.write(f"- run spread (max−min)/median: base insns {spread(rows['base']['ins']):.3f}%, "
-            f"new insns {spread(rows['new']['ins']):.3f}% "
+    sp = rows['base']['eins'] if have_ee_hw else rows['base']['ins']
+    sn = rows['new']['eins'] if have_ee_hw else rows['new']['ins']
+    o.write(f"- run spread (max−min)/median on the primary insns metric: base {spread(sp):.3f}%, "
+            f"new {spread(sn):.3f}% "
             f"(want <0.1% — larger means determinism slipped; raise --runs or pin harder).\n")
-    verdict = ("density-only (cycles absorbed by OoO)" if abs(d_cyc) + 0.3 < abs(d_ins)
+    pi, pc = (de_ins, de_cyc) if have_ee_hw else (d_ins, d_cyc)
+    verdict = ("density-only (cycles absorbed by OoO)" if abs(pc) + 0.3 < abs(pi)
                else "real cycle effect")
-    o.write(f"- read: |Δinsns|={abs(d_ins):.2f}% vs |Δcycles|={abs(d_cyc):.2f}% → **{verdict}**.\n")
+    o.write(f"- read: |Δinsns|={abs(pi):.2f}% vs |Δcycles|={abs(pc):.2f}% → **{verdict}**.\n")
 print(f"wrote {out}")
-print(f"  instructions: {d_ins:+.2f}%   cycles: {d_cyc:+.2f}%   (base IPC {b_ipc:.3f} -> new {n_ipc:.3f})")
+if have_ee_hw:
+    print(f"  EE-thread: insns {de_ins:+.2f}%  cycles {de_cyc:+.2f}%   (proc: insns {d_ins:+.2f}%, cycles {d_cyc:+.2f}%)")
+else:
+    print(f"  instructions: {d_ins:+.2f}%   cycles: {d_cyc:+.2f}%   (base IPC {b_ipc:.3f} -> new {n_ipc:.3f})")
 PY
 echo "done. summary: $OUTDIR/summary.md"
