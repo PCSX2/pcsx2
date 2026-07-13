@@ -14,6 +14,11 @@
 name: Nightly
 
 on:
+  push:
+    branches: [master]       # build a nightly on every push to master
+    paths-ignore:
+      - '**/*.md'            # skip doc-only pushes
+      - 'docs/**'
   schedule:
     - cron: '0 8 * * *'      # 08:00 UTC daily
   workflow_dispatch:
@@ -35,6 +40,7 @@ jobs:
       proceed: ${{ steps.check.outputs.proceed }}
       date: ${{ steps.check.outputs.date }}
       sha: ${{ steps.check.outputs.sha }}
+      notes: ${{ steps.notes.outputs.body }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -56,6 +62,58 @@ jobs:
           echo "sha=$SHA"         >> "$GITHUB_OUTPUT"
           echo "proceed=$PROCEED" >> "$GITHUB_OUTPUT"
           echo "proceed=$PROCEED date=$DATE sha=$SHA"
+
+      # Plain-language changelog for the release body: one bullet per commit
+      # since the previous nightly tag, with noise filtered and dev "[scope]"
+      # tags stripped. No hashes/emojis/dashes. Built here because gate already
+      # has full history (+ tags) checked out; the publish job (which has no
+      # checkout) consumes it via needs.gate.outputs.notes.
+      - id: notes
+        run: |
+          DATE="${{ steps.check.outputs.date }}"
+          REPO="${{ github.repository }}"
+          # most recent nightly-* tag that isn't today's (empty on the first nightly)
+          PREV="$(git tag -l 'nightly-*' --sort=-creatordate | grep -vx "nightly-${DATE}" | head -1 || true)"
+          if [ -n "$PREV" ] && git rev-parse -q --verify "refs/tags/${PREV}" >/dev/null; then
+            RANGE="${PREV}..HEAD"
+          elif git rev-parse -q --verify "HEAD~20" >/dev/null; then
+            RANGE="HEAD~20..HEAD"        # first nightly: fall back to the last 20 commits
+          else
+            RANGE="HEAD"
+          fi
+          # Turn commit subjects into plain user-facing bullets:
+          #  - drop internal commits (merge/revert/ci/chore/docs/build/style/test/
+          #    refactor, translation syncs, version/cmake bumps)
+          #  - strip conventional "feat/fix/perf:" prefixes and leading "[scope]" tags
+          #  - convert em/en dashes (—/–) to commas so no AI-style dashes survive
+          #  || true keeps head's SIGPIPE from tripping pipefail; empty output is fine.
+          git log "$RANGE" --no-merges --pretty=format:'%s' \
+            | grep -ivE '^(merge |revert )' \
+            | grep -ivE '^(ci|chore|docs|build|style|test|refactor)(\(|:)' \
+            | grep -ivE 'update translations|transifex|bump version|^version |^cmake ' \
+            | sed -E 's/^(feat|fix|perf)(\([^)]*\))?!?: *//' \
+            | sed 's/ *— */, /g; s/ *– */, /g' \
+            | sed 's/^\[[^]]*\] *//' \
+            | sed 's/^/- /' \
+            | head -100 > changes.txt || true
+          {
+            echo "Automated nightly build for community testing (unsigned)."
+            echo
+            echo "Platforms: macOS arm64, Linux arm64 (4K and 16K pages), Windows arm64, Android (sideloadable APK). iOS is not included yet."
+            echo
+            echo "## What's new"
+            if [ -s changes.txt ]; then cat changes.txt; else echo "- No notable changes since the last nightly."; fi
+            if [ -n "$PREV" ]; then
+              echo
+              echo "Full changelog: https://github.com/${REPO}/compare/${PREV}...${{ github.sha }}"
+            fi
+          } > notes.md
+          {
+            echo 'body<<ARMSX2_NOTES_EOF'
+            cat notes.md
+            echo 'ARMSX2_NOTES_EOF'
+          } >> "$GITHUB_OUTPUT"
+          echo "----- generated release notes -----"; cat notes.md
 
   # ---- PC arm64 Qt GUI (blocking for the release) ------------------------
   pc-macos-arm64:
@@ -131,16 +189,38 @@ jobs:
       - name: Fetch shaderc third-party deps
         run: python3 app/src/main/cpp/3rdparty/shaderc/utils/git-sync-deps
 
-      # Release build; when armsx2_keystore.properties is absent (it is, in CI) the
-      # release APK is debug-key-signed -> installable/sideloadable, not Play-grade.
-      - name: Build release APK
-        run: ./gradlew :app:assembleRelease --stacktrace
+      # Dual-core (4k + 16k page size) + PGO nightly. A stock `assembleRelease`
+      # ships ONLY the 4k core and cannot load its native core on 16k-page
+      # devices (Android 15+ handhelds). This compiles the core at both page
+      # sizes and merges both .so's into one APK, with PGO=optimize so the
+      # nightly matches release performance. See tools/ci-nightly-dualcore.sh.
+      - name: Build dual-core (4k + 16k) + PGO APK
+        env:
+          FLAVOR: Github   # sideload build (com.armsx2); use Play for the SAF-only build
+          # Optional stable signing: add repo secrets NIGHTLY_KEYSTORE_B64 (base64 of a
+          # .jks) + NIGHTLY_KS_PASS / NIGHTLY_KEY_ALIAS / NIGHTLY_KEY_PASS so every
+          # nightly is signed with one key and installs as an update. Without them a
+          # throwaway debug key is generated (users reinstall between nightlies).
+          NIGHTLY_KS_PASS: ${{ secrets.NIGHTLY_KS_PASS }}
+          NIGHTLY_KEY_ALIAS: ${{ secrets.NIGHTLY_KEY_ALIAS }}
+          NIGHTLY_KEY_PASS: ${{ secrets.NIGHTLY_KEY_PASS }}
+        run: |
+          export VC="${{ github.run_number }}"
+          export VN="$(grep 'versionName' app/build.gradle.kts | sed -n 's/.*?:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
+          export VN="${VN:-nightly}"
+          if [ -n "${{ secrets.NIGHTLY_KEYSTORE_B64 }}" ]; then
+            echo "${{ secrets.NIGHTLY_KEYSTORE_B64 }}" | base64 -d > "$RUNNER_TEMP/nightly.jks"
+            export NIGHTLY_KEYSTORE="$RUNNER_TEMP/nightly.jks"
+          fi
+          bash tools/ci-nightly-dualcore.sh
 
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
           name: armsx2-android-arm64
-          path: platforms/android/app/build/outputs/apk/**/*.apk
+          # ONLY the merged dual-core APK — not the intermediate single-core bases —
+          # so the publish job attaches exactly one APK to the release.
+          path: platforms/android/app/build/outputs/apk/nightly/*.apk
           if-no-files-found: warn
 
   # ---- publish: gather artifacts -> dated pre-release --------------------
@@ -185,11 +265,9 @@ jobs:
           prerelease: true
           target_commitish: ${{ github.sha }}
           fail_on_unmatched_files: false
-          body: |
-            Automated **nightly** build from `${{ github.sha }}` — unsigned, for community testing.
-
-            **Platforms:** macOS arm64 · Linux arm64 (4K + 16K pages) · Windows arm64 · Android (sideloadable APK).
-            _iOS is not yet included — the device build is still being brought up._
+          # Eden-style release notes (static intro + per-commit changelog + Full
+          # Changelog link) assembled by the gate job, which has git history.
+          body: ${{ needs.gate.outputs.notes }}
           files: out/*
 
       - name: Discord announce

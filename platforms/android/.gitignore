@@ -55,3 +55,6 @@ app/src/main/cpp/3rdparty/shaderc/third_party/googletest/
 app/src/main/cpp/3rdparty/shaderc/third_party/re2/
 app/src/main/cpp/3rdparty/shaderc/third_party/spirv-headers/
 app/src/main/cpp/3rdparty/shaderc/third_party/spirv-tools/
+
+# CI PGO profile for the dual-core nightly (build-release recipe uses this)
+!pgo/armsx2.profdata
