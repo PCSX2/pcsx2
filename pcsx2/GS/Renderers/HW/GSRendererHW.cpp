@@ -7838,7 +7838,7 @@ void GSRendererHW::ConvertTextureTypeROVSingle(GSTextureCache::Target* tgt, bool
 		}
 
 #if PCSX2_DEVBUILD
-		new_tex->SetDebugName(tgt->m_texture->GetDebugName());
+		new_tex->SetDebugName(old_tex->GetDebugName());
 #endif
 
 		if (tgt->m_texture == old_tex)
@@ -7869,12 +7869,13 @@ void GSRendererHW::ConvertTextureTypeROV(GSTextureCache::Target* rt, GSTextureCa
 	// Convert depth to the proper type/format.
 	if (ds)
 	{
-		if (m_conf.ps.HasDepthROV() && !ds->m_texture->IsShaderWrite())
+		// Note: we must use m_conf.ds because it might be the temporary Z texture.
+		if (m_conf.ps.HasDepthROV() && !m_conf.ds->IsShaderWrite())
 		{
 			GL_PUSH("HW: Convert DepthStencil -> DepthColor for ROV.");
 			ConvertTextureTypeROVSingle(ds, true);
 		}
-		else if (!m_conf.ps.HasDepthROV() && !ds->m_texture->IsDepthStencil())
+		else if (!m_conf.ps.HasDepthROV() && !m_conf.ds->IsDepthStencil())
 		{
 			GL_PUSH("HW: Convert DepthColor -> DepthStencil for non-ROV.");
 			ConvertTextureTypeROVSingle(ds, false);
