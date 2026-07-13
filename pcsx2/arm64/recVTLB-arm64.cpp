@@ -309,6 +309,25 @@ static void vtlbFastmemRead128(int addr_wreg)
 		/*size_in_bits*/ 128, /*is_signed*/ false, /*is_load*/ true, /*is_fpr*/ true);
 }
 
+// Emit a single 32-bit fastmem load straight into an allocated FPR NEON slot
+// (LDR S<n>, [RFASTMEMBASE, w_addr, UXTW]) — GE-10, the x86-master/4248
+// dest-alloc-callback model. The backpatch thunk's is_fpr load tail already
+// lands the slow-path C-handler result with Fmov S<n>, w0, and its save-mask
+// logic skips the load dest (RecStubs.cpp).
+static void vtlbFastmemReadFPR32(int addr_wreg, int dest_neonreg)
+{
+	u32 gpr_bitmask, fpr_bitmask;
+	vtlbGetLiveRegisterMasks(gpr_bitmask, fpr_bitmask);
+
+	const u8* codeStart = armGetCurrentCodePointer();
+	armAsm->Ldr(a64::SRegister(dest_neonreg),
+		a64::MemOperand(RFASTMEMBASE, armWRegister(addr_wreg), a64::UXTW));
+
+	vtlb_AddLoadStoreInfo((uptr)codeStart, 4, pc, gpr_bitmask, fpr_bitmask,
+		static_cast<u8>(addr_wreg), static_cast<u8>(dest_neonreg),
+		/*size_in_bits*/ 32, /*is_signed*/ false, /*is_load*/ true, /*is_fpr*/ true);
+}
+
 // Emit a single 128-bit fastmem store (STR Q0, [RFASTMEMBASE, w_addr, UXTW]).
 // Value in q0. Backpatch thunk extended in RecStubs.cpp.
 static void vtlbFastmemWrite128(int addr_wreg)
@@ -903,9 +922,8 @@ void recSQ()
 void recLWC1()
 {
 	// On the fast path a single inline LDR off RFASTMEMBASE + backpatch,
-	// no iFlushCall and no vtlb C call. The result lands in w0 (a plain GPR
-	// rather than an allocated FPR host reg). Softmem stays as the
-	// faulting-PC fallback.
+	// no iFlushCall and no vtlb C call. Softmem stays as the faulting-PC
+	// fallback.
 	const bool useFastmem = CHECK_FASTMEM && !vtlb_IsFaultingPC(pc);
 
 	// Compute address into w9 from live registers.
@@ -913,19 +931,29 @@ void recLWC1()
 
 	if (useFastmem)
 	{
-		vtlbFastmemRead(9, 0, 32, false);
+		// GE-10: the inline LDR targets ft's allocated S register directly —
+		// no w0 bounce, no fpr-memory store, and ft stays resident for the
+		// following FPU op (the LWC1→arith idiom). MODE_WRITE only: LWC1
+		// overwrites fpr[ft] wholesale, so a prior value in the slot is dead
+		// (same rule as recMTC1); the dirty slot flushes at the next seam.
+		// Alloc BEFORE the fastmem emit: its eviction writeback must not
+		// split the LDR from its backpatch record, and the dest must be in
+		// the live-mask snapshot taken inside the emitter (where the thunk's
+		// is-load-dest skip excludes it from the save set).
+		const int ftreg = _allocFPtoNEONreg(_Rt_, MODE_WRITE);
+		vtlbFastmemReadFPR32(9, ftreg);
 	}
 	else
 	{
 		iFlushCall(FLUSH_CONSTANT_REGS);
 		vtlbSoftmemRead(9, 32, false);
-	}
 
-	// fpr[ft] in memory is about to be overwritten; the allocator's slot
-	// (if any) is now stale and must not flush back over the write.
-	_deleteFPtoNEONreg(_Rt_, DELETE_REG_FREE_NO_WRITEBACK);
-	// Store to fpuRegs.fpr[ft]
-	armStoreEERegPtr(a64::w0, &fpuRegs.fpr[_Rt_].UL);
+		// fpr[ft] in memory is about to be overwritten; the allocator's slot
+		// (if any) is now stale and must not flush back over the write.
+		_deleteFPtoNEONreg(_Rt_, DELETE_REG_FREE_NO_WRITEBACK);
+		// Store to fpuRegs.fpr[ft]
+		armStoreEERegPtr(a64::w0, &fpuRegs.fpr[_Rt_].UL);
+	}
 }
 
 void recSWC1()

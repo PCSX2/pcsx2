@@ -1024,3 +1024,73 @@ TEST(EeRecLoadStore, Swc1ResidentValueStoresAndSurvivesFault)
 		faulted |= vtlb_IsFaultingPC(a);
 	EXPECT_TRUE(faulted) << "MMIO SWC1 did not take the fastmem-fault/backpatch path";
 }
+
+// ---- GE-10: LWC1 loads straight into the allocated FPR slot ------------------
+
+TEST(EeRecLoadStore, Lwc1LoadsToResidentSlotThenArith)
+{
+	// LWC1's fastmem LDR targets ft's allocated S register; the following
+	// ADD.S must consume the resident slot, and the block-end flush must land
+	// the loaded value in fpr memory for the post-state diff.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.WriteU32(kScratch, 0x40400000u); // 3.0f
+	h.SetFprBits(3, 0x3F800000u);      // 1.0f
+	h.SetGpr64(reg::a0, kScratch);
+	h.LoadProgram({
+		ee::LWC1(1, 0, reg::a0),      // f1 = 3.0f
+		ee::ADD_S(2, 1, 3),           // f2 = 4.0f
+	});
+	h.Run();
+	EXPECT_EQ(h.GetFprBitsInterp(1), 0x40400000u);
+	EXPECT_EQ(h.GetFprBitsInterp(2), 0x40800000u);
+}
+
+TEST(EeRecLoadStore, Lwc1OverwritesStaleDirtyResidentDest)
+{
+	// f1 is left resident+dirty by ADD.S, then LWC1 overwrites it. The loaded
+	// value must win — for the next consumer AND the block-end flush (a
+	// stale-slot writeback over the load is the classic hazard the old shape
+	// avoided with DELETE_REG_FREE_NO_WRITEBACK).
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.WriteU32(kScratch, 0x41200000u); // 10.0f
+	h.SetFprBits(3, 0x3F800000u);      // 1.0f
+	h.SetFprBits(4, 0x40000000u);      // 2.0f
+	h.SetGpr64(reg::a0, kScratch);
+	h.LoadProgram({
+		ee::ADD_S(1, 3, 4),            // f1 = 3.0f (resident, dirty)
+		ee::LWC1(1, 0, reg::a0),       // f1 = 10.0f overwrites the slot
+		ee::ADD_S(2, 1, 3),            // f2 = 11.0f
+	});
+	h.Run();
+	EXPECT_EQ(h.GetFprBitsInterp(1), 0x41200000u);
+	EXPECT_EQ(h.GetFprBitsInterp(2), 0x41300000u);
+}
+
+TEST(EeRecLoadStore, Lwc1FaultPathLandsInResidentSlot)
+{
+	// MMIO LWC1 faults; the backpatch thunk's slow path must Fmov the
+	// C-handler result into the allocated S register (the is_fpr load tail),
+	// with OTHER live NEON state (dirty f6) saved/restored around the call.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFprBits(4, 0x40000000u); // 2.0f
+	h.SetFprBits(5, 0x3F800000u); // 1.0f
+	h.SetGpr64(reg::a1, 0x1000F000u); // INTC_STAT (harness state 0 → loads 0)
+	vtlb_ClearLoadStoreInfo();
+	h.LoadProgram({
+		ee::ADD_S(6, 4, 5),           // f6 = 3.0f resident+dirty across the fault
+		ee::LWC1(1, 0, reg::a1),      // MMIO load → fault → thunk → f1 = 0.0f
+		ee::ADD_S(7, 1, 4),           // f7 = 2.0f from the faulted-in f1
+		ee::ADD_S(8, 6, 5),           // f8 = 4.0f from the still-resident f6
+	});
+	h.Run();
+	EXPECT_EQ(h.GetFprBitsInterp(1), 0x00000000u);
+	EXPECT_EQ(h.GetFprBitsInterp(7), 0x40000000u);
+	EXPECT_EQ(h.GetFprBitsInterp(8), 0x40800000u);
+	bool faulted = false;
+	for (u32 a = RecompilerTestEnvironment::kProgramPc; a < RecompilerTestEnvironment::kProgramPc + 0x20; a += 4)
+		faulted |= vtlb_IsFaultingPC(a);
+	EXPECT_TRUE(faulted) << "MMIO LWC1 did not take the fastmem-fault/backpatch path";
+}
