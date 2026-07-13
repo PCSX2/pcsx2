@@ -521,7 +521,7 @@ std::string Achievements::GetAchievementsAsJSON()
 		// want to step on its lifecycle.
 		rc_client_achievement_list_t* list = rc_client_create_achievement_list(
 			s_client, RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL,
-			RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS);
+			RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_LOCK_STATE); // per-subset LOCKED/UNLOCKED buckets carry real subset_id (PROGRESS misfiles in-progress to subset 0)
 
 		if (list)
 		{
@@ -564,6 +564,10 @@ std::string Achievements::GetAchievementsAsJSON()
 						out += (ach->state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED) ? "true" : "false";
 						out += ",\"bucket\":";
 						out += std::to_string(static_cast<int>(bucket.bucket_type));
+						// Subset this achievement belongs to (0 = base/shared set). Lets the
+						// Android UI split base-game vs bonus-subset achievements into tabs.
+						out += ",\"subsetId\":";
+						out += std::to_string(bucket.subset_id);
 						out += ",\"rarity\":";
 						{
 							char buf[32];
@@ -611,6 +615,35 @@ std::string Achievements::GetAchievementsAsJSON()
 		}
 	}
 
+	out += "]";
+	// Subsets (RA bonus/base sets) so the UI can offer per-subset tabs; subset_id 0 is the
+	// base/shared set. Single-subset games get one entry and the UI shows no tabs.
+	out += ",\"subsets\":[";
+	if (active && s_client)
+	{
+		rc_client_subset_list_t* subset_list = rc_client_create_subset_list(s_client);
+		if (subset_list)
+		{
+			bool sfirst = true;
+			for (u32 si = 0; si < subset_list->num_subsets; si++)
+			{
+				const rc_client_subset_t* sub = subset_list->subsets[si];
+				if (!sub)
+					continue;
+				if (!sfirst)
+					out += ',';
+				sfirst = false;
+				out += "{\"id\":";
+				out += std::to_string(sub->id);
+				out += ",\"title\":";
+				append_json_string(out, sub->title);
+				out += ",\"numAchievements\":";
+				out += std::to_string(sub->num_achievements);
+				out += '}';
+			}
+			rc_client_destroy_subset_list(subset_list);
+		}
+	}
 	out += "]}";
 	return out;
 }

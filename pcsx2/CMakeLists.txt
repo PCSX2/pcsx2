@@ -1139,11 +1139,15 @@ if(ANDROID)
 	list(APPEND pcsx2GSSources
 		GS/Renderers/OpenGL/GLContextEGL.cpp
 		GS/Renderers/OpenGL/GLContextEGLAndroid.cpp
-		GS/Renderers/Common/GSGPUProfile.cpp)
+		GS/Renderers/Common/GSGPUProfile.cpp
+		GS/Renderers/Common/GSGPUProfileMali.cpp
+		GS/Renderers/Common/GSGPUProfileAdreno.cpp
+		GS/Renderers/Common/GSGPUProfilePowerVR.cpp)
 	list(APPEND pcsx2GSHeaders
 		GS/Renderers/OpenGL/GLContextEGL.h
 		GS/Renderers/OpenGL/GLContextEGLAndroid.h
-		GS/Renderers/Common/GSGPUProfile.h)
+		GS/Renderers/Common/GSGPUProfile.h
+		GS/Renderers/Common/GSGPUProfilePrivate.h)
 	list(APPEND pcsx2Sources
 		Android/AndroidStubs.cpp
 		Android/AndroidPcapStubs.cpp

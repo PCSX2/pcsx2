@@ -6861,7 +6861,13 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 	// Replace Ad with As, blend flags will be used from As since we are chaging the blend_index value.
 	// Must be done before index calculation, after blending equation optimizations
 	const bool blend_ad = m_conf.ps.blend_c == 1;
-	bool blend_ad_alpha_masked = blend_ad && !m_conf.colormask.wa;
+	// On Vulkan without framebuffer fetch (notably Mali, which reads Cd through texture-barrier), this
+	// path forces thousands of RT feedback reads in blend-heavy scenes — a heavy cost and a source of
+	// stale-tile artifacts (the G615/G57 rainbow-box blinks). Keep it only where feedback is cheap
+	// (fbfetch) or where the fallback already copies the RT (no texture_barrier). Ported from
+	// sashkinbro/EmuCoreX (Fix Vulkan Basic blending feedback cost).
+	const bool fast_ad_alpha_masked_feedback = features.framebuffer_fetch || !features.texture_barrier;
+	bool blend_ad_alpha_masked = blend_ad && !m_conf.colormask.wa && fast_ad_alpha_masked_feedback;
 	const bool is_basic_blend = GSConfig.AccurateBlendingUnit != AccBlendLevel::Minimum;
 	if (blend_ad_alpha_masked && ((is_basic_blend || (COLCLAMP.CLAMP == 0) || m_conf.require_one_barrier)))
 	{
@@ -6954,7 +6960,12 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 		// Ad blends are completely wrong without sw blend (Ad is 0.5 not 1 for 128). We can spare a barrier for it.
 		|| (blend_ad && !blend_multipass_group && no_prim_overlap && !new_rt_alpha_scale));
 
-	switch (GSConfig.AccurateBlendingUnit)
+	// NOTE: an old Mali "clamp blending accuracy up to Full" band-aid used to live here. The real
+	// cause of Mali needing Full/Maximum by hand was missing hardware dual-source blending, now
+	// handled precisely per-draw in force_sw_blending below (features.dual_source_blend). Clamping
+	// the whole unit up was a blanket perf tax on every draw, so it's gone. Per sashkinbro/EmuCoreX.
+	const AccBlendLevel blend_unit = GSConfig.AccurateBlendingUnit;
+	switch (blend_unit)
 	{
 		case AccBlendLevel::Maximum:
 			sw_blending |= true;
@@ -6995,6 +7006,14 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 			break;
 	}
 
+	// GLES/Vulkan do not guarantee dual-source blending. If the equation would actually use SRC1
+	// (or PABE/blend-mix, which can introduce SRC1 later), emulate the full equation in the shader.
+	// Ordinary one-source HW blends keep their fast path. This is what lets Mali render correctly at
+	// the default blending-accuracy level instead of needing Full/Maximum. Per sashkinbro/EmuCoreX.
+	const bool blend_path_requires_dual_source =
+		GSDevice::IsDualSourceBlendFactor(blend.src) || GSDevice::IsDualSourceBlendFactor(blend.dst) ||
+		blend_mix || PABE;
+
 	const bool force_sw_blending =
 		// If we have fbfetch, use software blending when we need the fb value for anything else.
 		// This saves outputting the second color when it's not needed.
@@ -7003,7 +7022,11 @@ void GSRendererHW::EmulateBlending(int rt_alpha_min, int rt_alpha_max, DATEOptio
 		// If we are doing depth feedback with a second RT we must use SW blending to avoid
 		// mixing dual source blending with multiple render targets.
 		(m_conf.ps.IsFeedbackLoopDepth() && !features.depth_feedback) ||
-		
+
+		// Mobile GPUs (notably Mali) that lack a hardware dual-source blend unit: emulate the
+		// SRC1 equations in-shader for exactly the draws that need it, at any accuracy level.
+		(!features.dual_source_blend && blend_path_requires_dual_source) ||
+
 		// Force SW blending with barriers.
 		GSConfig.UseDebugBlend;
 	
@@ -8937,7 +8960,10 @@ void GSRendererHW::EmulateAlphaTest(DATEOptions& date_options)
 
 	// Flags to determine if we can achieve full accuracy with less passes.
 	const bool simple_fb_only = (afail == AFAIL_FB_ONLY) && independent_z;
-	const bool simple_rgb_only = (afail == AFAIL_RGB_ONLY) && independent_z && independent_rgb;
+	// AFAIL_RGB_ONLY's single-pass path outputs RGB via the second blend source, so it needs
+	// hardware dual-source blending. Without it (e.g. Mali), fall to the full path. Per sashkinbro/EmuCoreX.
+	const bool simple_rgb_only =
+		(afail == AFAIL_RGB_ONLY) && independent_z && independent_rgb && features.dual_source_blend;
 	const bool simple_zb_only = (afail == AFAIL_ZB_ONLY) && independent_z;
 
 	// Determine where RT and/or depth are needed for the feedback methods.

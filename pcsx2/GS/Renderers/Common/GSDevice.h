@@ -1403,9 +1403,16 @@ public:
 		bool aa1                  : 1; ///< Supports the GS AA1 feature.
 		bool rov                  : 1; ///< Supports rasterizer ordered views for both depth and color.
 		bool metalfx_spatial      : 1; ///< Supports Apple MetalFX spatial upscaling (Metal backend, macOS 13+ / iOS 16+).
+		bool dual_source_blend    : 1; ///< Supports a second fragment output (SRC1) as a hardware blend factor.
+		bool broken_mad_deinterlace : 1; ///< Driver can't reliably preserve/read the two-bank FastMAD history target.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));
+			// Desktop backends (GL 3.3+, Metal, DX) always support this. GLES and Vulkan override it
+			// after querying the device, because mobile GPUs (notably Mali) may omit dual-source
+			// blending. When absent, GSRendererHW emulates SRC1 blend equations in-shader per-draw
+			// instead of forcing a global high blending-accuracy level. Ported from sashkinbro/EmuCoreX.
+			dual_source_blend = true;
 		}
 		/// Supports feedback loops through either texture barriers or rt copies.
 		bool feedback_loops() const { return texture_barrier || multidraw_fb_copy; }
@@ -1446,6 +1453,10 @@ protected:
 	FeatureSupport m_features;
 	u32 m_max_texture_size = 0;
 	RuntimeGpuProfile m_runtime_gpu_profile = RuntimeGpuProfile::Adreno;
+	// Per-vendor mobile GPU identity + GS tuning (pool sizes / ages / constrained), resolved from the
+	// GPU-profile system (sashkinbro/EmuCoreX). Drives texture/target pool sizing on Android below.
+	MobileGpuIdentity m_mobile_gpu_identity;
+	MobileGsTuning m_mobile_gs_tuning;
 
 	struct
 	{
@@ -1565,6 +1576,11 @@ public:
 	__fi FeatureSupport Features() const { return m_features; }
 	__fi u32 GetMaxTextureSize() const { return m_max_texture_size; }
 	__fi void SetRuntimeGPUProfile(RuntimeGpuProfile p) { m_runtime_gpu_profile = p; }
+	__fi void SetMobileGPUIdentity(const MobileGpuIdentity& identity) { m_mobile_gpu_identity = identity; }
+	__fi void SetMobileGSTuning(const MobileGsTuning& tuning) { m_mobile_gs_tuning = tuning; }
+	__fi const MobileGpuIdentity& GetMobileGPUIdentity() const { return m_mobile_gpu_identity; }
+	__fi const MobileGsTuning& GetMobileGSTuning() const { return m_mobile_gs_tuning; }
+	__fi bool IsConstrainedMobileGPUProfile() const { return m_mobile_gs_tuning.constrained; }
 	__fi RuntimeGpuProfile GetRuntimeGPUProfile() const { return m_runtime_gpu_profile; }
 	__fi bool IsMaliGPUProfile() const { return (m_runtime_gpu_profile == RuntimeGpuProfile::Mali); }
 	__fi bool IsAdrenoGPUProfile() const { return (m_runtime_gpu_profile == RuntimeGpuProfile::Adreno); }

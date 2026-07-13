@@ -638,7 +638,12 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Usage usage, int width, int height,
 
 	if (!t)
 	{
-		if (pool.size() >= (GSTexture::IsTexture(usage) ? MAX_POOLED_TEXTURES : MAX_POOLED_TARGETS) &&
+#if defined(__ANDROID__)
+		const u32 pool_limit = GSTexture::IsTexture(usage) ? m_mobile_gs_tuning.pooled_textures : m_mobile_gs_tuning.pooled_targets;
+#else
+		const u32 pool_limit = GSTexture::IsTexture(usage) ? MAX_POOLED_TEXTURES : MAX_POOLED_TARGETS;
+#endif
+		if (pool.size() >= pool_limit &&
 			fallback != pool.end())
 		{
 			t = *fallback;
@@ -704,8 +709,13 @@ void GSDevice::Recycle(GSTexture* t)
 	pool.push_front(t);
 	m_pool_memory_usage += t->GetMemUsage();
 
+#if defined(__ANDROID__)
+	const u32 max_size = t->IsTexture() ? m_mobile_gs_tuning.pooled_textures : m_mobile_gs_tuning.pooled_targets;
+	const u32 max_age = t->IsTexture() ? m_mobile_gs_tuning.texture_age : m_mobile_gs_tuning.target_age;
+#else
 	const u32 max_size = t->IsTexture() ? MAX_POOLED_TEXTURES : MAX_POOLED_TARGETS;
 	const u32 max_age = t->IsTexture() ? MAX_TEXTURE_AGE : MAX_TARGET_AGE;
+#endif
 	while (pool.size() > max_size)
 	{
 		// Don't toss when the texture was last used in this frame.

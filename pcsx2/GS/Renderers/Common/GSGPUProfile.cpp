@@ -1,19 +1,18 @@
-// SPDX-FileCopyrightText: 2002-2025 PCSX2 Dev Team
+// SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#include "GS/Renderers/Common/GSGPUProfile.h"
+#include "GS/Renderers/Common/GSGPUProfilePrivate.h"
 
 #include <array>
 #include <cctype>
-#include <initializer_list>
 
 #if defined(__ANDROID__)
 #include <sys/system_properties.h>
 #endif
 
-namespace
+namespace GpuProfileDetail
 {
-static std::string ToLowerASCII(std::string_view value)
+std::string ToLowerASCII(std::string_view value)
 {
 	std::string lowered;
 	lowered.reserve(value.size());
@@ -29,7 +28,7 @@ static bool Contains(std::string_view haystack, std::string_view needle)
 	return (haystack.find(needle) != std::string_view::npos);
 }
 
-static bool ContainsAny(std::string_view haystack, std::initializer_list<const char*> needles)
+bool ContainsAny(std::string_view haystack, std::initializer_list<const char*> needles)
 {
 	for (const char* needle : needles)
 	{
@@ -40,6 +39,28 @@ static bool ContainsAny(std::string_view haystack, std::initializer_list<const c
 	return false;
 }
 
+MobileGsTuning MakeMobileGsTuning(u32 pooled_targets, u32 target_age, u32 pooled_textures, u32 texture_age,
+	bool prefer_new_textures)
+{
+	MobileGsTuning tuning;
+	tuning.pooled_targets = pooled_targets;
+	tuning.target_age = target_age;
+	tuning.pooled_textures = pooled_textures;
+	tuning.texture_age = texture_age;
+	tuning.constrained = (pooled_targets < 128 || pooled_textures < 128);
+	tuning.prefer_new_textures = prefer_new_textures;
+	tuning.force_partial_texture_preloading = tuning.constrained;
+	return tuning;
+}
+
+MobileGsTuning MakeConservativeMobileGsTuning()
+{
+	return MakeMobileGsTuning(96, 8, 96, 6, false);
+}
+} // namespace GpuProfileDetail
+
+namespace
+{
 static void AppendHint(std::string& hints, std::string_view key, std::string_view value)
 {
 	if (value.empty())
@@ -79,7 +100,15 @@ static std::string BuildHints(std::string_view gpu_vendor, std::string_view gpu_
 		"ro.soc.platform",
 		"ro.board.platform",
 		"ro.hardware",
+		"ro.hardware.chipname",
+		"ro.chipname",
 		"ro.product.board",
+		"ro.product.manufacturer",
+		"ro.product.model",
+		"ro.vendor.product.manufacturer",
+		"ro.vendor.product.model",
+		"ro.mediatek.platform",
+		"ro.vendor.mediatek.platform",
 		"ro.product.cpu.abi",
 		"ro.vendor.product.cpu.abilist",
 	};
@@ -91,42 +120,14 @@ static std::string BuildHints(std::string_view gpu_vendor, std::string_view gpu_
 	return hints;
 }
 
-static bool LooksLikeAdreno(std::string_view lowered_hints)
-{
-	const bool has_adreno = ContainsAny(lowered_hints, {"adreno"});
-	const bool has_qualcomm = ContainsAny(lowered_hints, {"qualcomm", "qcom", "snapdragon"});
-	return (has_adreno || has_qualcomm);
-}
-
-static bool LooksLikePowerVR(std::string_view lowered_hints)
-{
-	// "imagination" is unambiguous. "powervr" appears in PowerVR renderer strings
-	// (e.g. "PowerVR B-Series BXM-8-256"). "img" is a common Imagination prefix
-	// in SoC manifests (Mediatek MT68xx/MT69xx use "ro.soc.manufacturer=Mediatek"
-	// with "img" markers on some boards). We deliberately do NOT match bare "vr"
-	// to avoid false positives.
-	return ContainsAny(lowered_hints, {"imagination", "powervr", "img"});
-}
-
-static bool LooksLikeMali(std::string_view lowered_hints)
-{
-	// "arm" alone is too broad (it matches the CPU ABI string "arm64-v8a") — gate
-	// on Mali-specific markers. "valhall"/"bifrost"/"midgard" are Mali GPU arches.
-	return ContainsAny(lowered_hints, {"mali", "valhall", "bifrost", "midgard"});
-}
-
 static bool LooksLikeMediaTekSoc(std::string_view lowered_hints)
 {
-	// Ported from sashkinbro/EmuCoreX. Detect MediaTek (Dimensity/Helio) SoCs so
-	// we can disable the broken Vulkan fbfetch path on their Mali stacks. The SoC
-	// props (ro.soc.manufacturer/model/platform) are already folded into the hints
-	// string by BuildHints().
-	if (ContainsAny(lowered_hints, {"mediatek", "dimensity", "helio", "mtk"}))
+	if (GpuProfileDetail::ContainsAny(lowered_hints, {"mediatek", "dimensity", "helio"}))
 		return true;
 
-	// MediaTek board/platform properties commonly use compact part numbers such as
-	// mt6877 or mt6989z without spelling out the vendor. Require a token boundary and
-	// four digits so an unrelated "mt" isn't treated as a chipset id.
+	// MediaTek board/platform properties commonly use compact part numbers such as mt6877 or
+	// mt6989z without spelling out the vendor. Require a token boundary and four digits to avoid
+	// treating an unrelated occurrence of "mt" as a chipset identifier.
 	for (size_t i = 0; i + 6 <= lowered_hints.size(); i++)
 	{
 		if (lowered_hints[i] != 'm' || lowered_hints[i + 1] != 't' ||
@@ -149,7 +150,7 @@ static bool LooksLikeMediaTekSoc(std::string_view lowered_hints)
 
 GpuProfileOverride GpuProfileDetector::ParseOverride(std::string_view value)
 {
-	const std::string lowered = ToLowerASCII(value);
+	const std::string lowered = GpuProfileDetail::ToLowerASCII(value);
 	if (lowered == "mali")
 		return GpuProfileOverride::Mali;
 	if (lowered == "adreno")
@@ -201,9 +202,46 @@ const char* GpuProfileDetector::RuntimeProfileToString(RuntimeGpuProfile value)
 		case RuntimeGpuProfile::PowerVR:
 			return "PowerVR";
 		case RuntimeGpuProfile::Adreno:
-		default:
 			return "Adreno";
+		case RuntimeGpuProfile::Unknown:
+		default:
+			return "Unknown";
 	}
+}
+
+const char* GpuProfileDetector::ArchitectureToString(MobileGpuArchitecture value)
+{
+	switch (value)
+	{
+		case MobileGpuArchitecture::Adreno2xx: return "Adreno 2xx";
+		case MobileGpuArchitecture::Adreno3xx: return "Adreno 3xx";
+		case MobileGpuArchitecture::Adreno4xx: return "Adreno 4xx";
+		case MobileGpuArchitecture::Adreno5xx: return "Adreno 5xx";
+		case MobileGpuArchitecture::Adreno6xx: return "Adreno 6xx";
+		case MobileGpuArchitecture::Adreno7xx: return "Adreno 7xx";
+		case MobileGpuArchitecture::Adreno8xx: return "Adreno 8xx";
+		case MobileGpuArchitecture::AdrenoX: return "Adreno X";
+		case MobileGpuArchitecture::MaliUtgard: return "Mali Utgard";
+		case MobileGpuArchitecture::MaliMidgard: return "Mali Midgard";
+		case MobileGpuArchitecture::MaliBifrost: return "Mali Bifrost";
+		case MobileGpuArchitecture::MaliValhall1: return "Mali Valhall (1st Gen)";
+		case MobileGpuArchitecture::MaliValhall2: return "Mali Valhall (2nd Gen)";
+		case MobileGpuArchitecture::MaliValhall3: return "Mali Valhall (3rd Gen)";
+		case MobileGpuArchitecture::MaliFifthGen: return "Arm 5th Gen";
+		case MobileGpuArchitecture::MaliG1: return "Arm Mali G1";
+		case MobileGpuArchitecture::PowerVR: return "PowerVR";
+		case MobileGpuArchitecture::Unknown:
+		default:
+			return "Unknown";
+	}
+}
+
+static void ApplyResolvedProfile(GpuProfileSelection& selection, RuntimeGpuProfile runtime_profile,
+	GpuProfileDetail::ResolvedGpuProfile&& resolved)
+{
+	selection.runtime_profile = runtime_profile;
+	selection.gpu = std::move(resolved.gpu);
+	selection.gs_tuning = resolved.tuning;
 }
 
 GpuProfileSelection GpuProfileDetector::Resolve(std::string_view override_value, std::string_view gpu_vendor,
@@ -212,55 +250,41 @@ GpuProfileSelection GpuProfileDetector::Resolve(std::string_view override_value,
 	GpuProfileSelection selection;
 	selection.override_mode = ParseOverride(override_value);
 	selection.hints = BuildHints(gpu_vendor, gpu_renderer_or_name);
-	// Detected from the SoC hints regardless of any GPU-profile override — the
-	// MediaTek-Mali Vulkan fbfetch breakage is orthogonal to the Mali/Adreno profile.
-	selection.is_mediatek_soc = LooksLikeMediaTekSoc(ToLowerASCII(selection.hints));
+	const std::string lowered_hints = GpuProfileDetail::ToLowerASCII(selection.hints);
+	const std::string lowered_override = GpuProfileDetail::ToLowerASCII(override_value);
+	selection.is_mediatek_soc = (lowered_override == "mediatek") || LooksLikeMediaTekSoc(lowered_hints);
+	selection.gs_tuning = GpuProfileDetail::MakeConservativeMobileGsTuning();
 
 	if (selection.override_mode == GpuProfileOverride::Mali)
 	{
-		selection.runtime_profile = RuntimeGpuProfile::Mali;
+		ApplyResolvedProfile(selection, RuntimeGpuProfile::Mali, GpuProfileDetail::ResolveMaliProfile(lowered_hints));
 		return selection;
 	}
 
 	if (selection.override_mode == GpuProfileOverride::Adreno)
 	{
-		selection.runtime_profile = RuntimeGpuProfile::Adreno;
+		ApplyResolvedProfile(selection, RuntimeGpuProfile::Adreno, GpuProfileDetail::ResolveAdrenoProfile(lowered_hints));
 		return selection;
 	}
 
 	if (selection.override_mode == GpuProfileOverride::PowerVR)
 	{
-		selection.runtime_profile = RuntimeGpuProfile::PowerVR;
+		ApplyResolvedProfile(selection, RuntimeGpuProfile::PowerVR, GpuProfileDetail::ResolvePowerVRProfile(lowered_hints));
 		return selection;
 	}
 
-	const std::string lowered_hints = ToLowerASCII(selection.hints);
-
-#if defined(__ANDROID__)
-	if (LooksLikeAdreno(lowered_hints))
+	if (GpuProfileDetail::LooksLikeAdreno(lowered_hints))
 	{
-		selection.runtime_profile = RuntimeGpuProfile::Adreno;
+		ApplyResolvedProfile(selection, RuntimeGpuProfile::Adreno, GpuProfileDetail::ResolveAdrenoProfile(lowered_hints));
 	}
-	else if (LooksLikePowerVR(lowered_hints))
+	else if (GpuProfileDetail::LooksLikePowerVR(lowered_hints))
 	{
-		selection.runtime_profile = RuntimeGpuProfile::PowerVR;
+		ApplyResolvedProfile(selection, RuntimeGpuProfile::PowerVR, GpuProfileDetail::ResolvePowerVRProfile(lowered_hints));
 	}
-	else if (LooksLikeMali(lowered_hints))
+	else if (GpuProfileDetail::LooksLikeMali(lowered_hints))
 	{
-		selection.runtime_profile = RuntimeGpuProfile::Mali;
+		ApplyResolvedProfile(selection, RuntimeGpuProfile::Mali, GpuProfileDetail::ResolveMaliProfile(lowered_hints));
 	}
-	else
-	{
-		// No vendor/renderer string matched. Mali used to be the catch-all on this
-		// fork but that classified Imagination/PowerVR — which only has EXT fbfetch,
-		// not ARM — as Mali and broke device init. EXT-style fbfetch is the de-facto
-		// standard on every modern non-Mali mobile GPU, so default unknowns to
-		// Adreno profile instead.
-		selection.runtime_profile = RuntimeGpuProfile::Adreno;
-	}
-#else
-	selection.runtime_profile = RuntimeGpuProfile::Adreno;
-#endif
 
 	return selection;
 }

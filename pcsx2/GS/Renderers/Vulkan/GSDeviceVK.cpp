@@ -2899,38 +2899,27 @@ bool GSDeviceVK::CheckFeatures()
 	//const bool isAMD = (vendorID == 0x1002 || vendorID == 0x1022);
 	//const bool isNVIDIA = (vendorID == 0x10DE);
 
-	// Disabled on the upstream-sync codebase: the reworked SW-blend path reads
-	// the RT through rasterization-order input attachments, and on Adreno
-	// (proprietary driver 0842.x) that produces stale reads — alpha cutouts
-	// around sprites and invisible floor patches at blending accuracy above
-	// Basic. The pre-sync code drove the same extension differently and was
-	// fine; until that interplay is root-caused, take the barrier path, which
-	// renders correctly. (A/B-verified 2026-06-10 on Adreno 840.)
-	// Mali (ARM, vendorID 0x13B5): the hardware dual-source blend unit (INV_SRC1_COLOR,
-	// used for the blend-mix destination blends PCSX2 emits below Maximum accuracy)
-	// mis-renders on these drivers → white-band / blowout corruption on translucency and
-	// bloom unless the user forces Maximum blending. These GPUs also expose none of the
-	// coherent in-shader RT-read extensions (rasterization_order / feedback_loop_layout /
-	// fragment_shader_interlock), so framebuffer fetch is no help either — an earlier
-	// attempt to enable it only dropped the per-draw barriers and still corrupted (the
-	// HW dual-source path was still taken). Fix: select the Mali runtime GPU profile so
-	// the shared blend path's alpha_mali_custom_set (GSRendererHW.cpp) forces these alpha
-	// blends through the in-shader SW-blend path — reading Cd via the texture-barrier full
-	// barriers and never touching the broken HW unit. This is the exact workaround the
-	// OpenGL renderer already uses for Mali; on Vulkan we reach Cd via barriers instead of
-	// GL_ARM_shader_framebuffer_fetch. Its only cross-platform effect is enabling that one
-	// blend workaround (the GL-shader GPU_PROFILE_MALI defines are not used by the VK path).
-	if (m_device_properties.vendorID == 0x13B5u)
-		SetRuntimeGPUProfile(RuntimeGpuProfile::Mali);
+	// NOTE (2026-07-12): we deliberately do NOT force the Mali runtime GPU profile here.
+	// The old band-aid clamped blending accuracy up to Full on Mali (via the profile) to
+	// dodge the broken HW dual-source unit — which is exactly why Mali used to "need
+	// Blending=Max". sashkinbro/EmuCoreX replaced that with the correct, targeted fix:
+	// m_features.dual_source_blend = dualSrcBlend (below), so GSRendererHW SW-blends ONLY
+	// the specific SRC1/blend-mix/PABE draws instead of globally clamping. We already carry
+	// that path, and the Vulkan renderer never reads the runtime profile anyway (only
+	// GSDeviceOGL does), so the force was dead weight that diverged from his known-good tree.
 
 #if defined(__ANDROID__)
 	// MediaTek (Dimensity/Helio) Mali Vulkan stacks return zero/stale destination color
 	// through ROAA (black / missing textures) across GPU generations, so detect the SoC
 	// here and disable fbfetch below. Ported from sashkinbro/EmuCoreX. Detection reads the
 	// ro.soc.* props already folded into the profile hints (no new JNI needed).
-	m_is_mediatek_soc = GpuProfileDetector::Resolve(
-		GSConfig.AndroidGpuProfileOverride, std::string_view(), m_device_properties.deviceName)
-							.is_mediatek_soc;
+	const GpuProfileSelection mobile_profile = GpuProfileDetector::Resolve(
+		GSConfig.AndroidGpuProfileOverride, std::string_view(), m_device_properties.deviceName);
+	m_is_mediatek_soc = mobile_profile.is_mediatek_soc;
+	// Per-vendor GS tuning (pool sizes/ages + constrained) — drives GSDevice pool sizing above.
+	// This is what constrains texture/target caching on weaker Mali (e.g. G615). From EmuCoreX.
+	SetMobileGPUIdentity(mobile_profile.gpu);
+	SetMobileGSTuning(mobile_profile.gs_tuning);
 #endif
 
 	// framebuffer_fetch: the tiler-native ordered Cd read (ROAA / subpassLoad in tile
@@ -2999,8 +2988,20 @@ bool GSDeviceVK::CheckFeatures()
 	// Fbfetch is useless if we don't have barriers enabled.
 	m_features.framebuffer_fetch &= m_features.texture_barrier;
 
-	// Buggy drivers with broken barriers probably have no chance using GENERAL layout for depth either...
-	m_features.test_and_sample_depth = true;
+	// Mali Vulkan stacks frequently report dualSrcBlend=false. When absent, GSRendererHW SW-blends
+	// the specific draws that need SRC1 instead of relying on a global high blending-accuracy level
+	// (which is why Mali no longer needs Blending=Max by hand). Ported from sashkinbro/EmuCoreX.
+	m_features.dual_source_blend = m_device_features.dualSrcBlend;
+
+	// Mali-G57 r13p0-class drivers can expose alternating/stale FastMAD history banks instead of the
+	// reconstructed frame; GSRenderer::Merge falls those back to weave+blend. Ported from sashkinbro/EmuCoreX.
+	m_features.broken_mad_deinterlace = is_mali_g57;
+
+	// Concurrent depth test + depth-as-texture rides the same feedback-sync path as texture_barrier;
+	// a driver with broken barriers has no chance doing GENERAL-layout depth feedback either. Ours
+	// used to force this true unconditionally, which diverged from upstream/EmuCoreX and could enable
+	// an unsupported depth-feedback read (stale depth) on mobile. Tie it to texture_barrier like his.
+	m_features.test_and_sample_depth = m_features.texture_barrier;
 
 	// Use D32F depth instead of D32S8 when we have framebuffer fetch.
 	m_features.stencil_buffer &= !m_features.framebuffer_fetch;
@@ -3010,7 +3011,8 @@ bool GSDeviceVK::CheckFeatures()
 	// in-tile framebuffer_fetch (cheap) vs the per-primitive barrier fallback (the tile-flush
 	// slideshow). ROAA=yes but fbfetch=NO on Mali means the barrier path is active. See the
 	// Mali driver-support deep dive.
-	Console.WriteLn("VK: GPU '%s' vendor=0x%04X driver='%s' (%s) | ROAA=%s fbfetch=%s texbarrier=%s pushdesc=%s",
+	Console.WriteLn("VK: GPU '%s' vendor=0x%04X driver='%s' (%s) | ROAA=%s fbfetch=%s texbarrier=%s "
+					"inpAttFB=%s dualSrc=%s testSampleDepth=%s madFallback=%s pushdesc=%s",
 		m_device_properties.deviceName,
 		m_device_properties.vendorID,
 		m_device_driver_properties.driverName,
@@ -3018,6 +3020,13 @@ bool GSDeviceVK::CheckFeatures()
 		m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "yes" : "NO",
 		m_features.framebuffer_fetch ? "yes(in-tile)" : "NO(barrier-fallback)",
 		m_features.texture_barrier ? "on" : "off",
+		// inputAttachmentFeedback: the subpassInput/INPUT_ATTACHMENT descriptor path is active
+		// when texture_barrier is on AND feedback_loop_layout is unavailable (Mali). This is the
+		// path sashkinbro's stale-tile descriptor fix targets — the rainbow-blink suspect.
+		(m_features.texture_barrier && !UseFeedbackLoopLayout()) ? "yes" : "NO",
+		m_features.dual_source_blend ? "yes" : "NO(sw-blend-fallback)",
+		m_features.test_and_sample_depth ? "on" : "off",
+		m_features.broken_mad_deinterlace ? "weave+blend(G57)" : "motion-adaptive",
 		m_use_push_descriptors ? "on" : "off");
 
 	// Adreno colorWriteMask-with-depthtest bug (PPSSPP #10421 / thin3d_vulkan.cpp): on
@@ -3804,7 +3813,12 @@ void GSDeviceVK::IASetVertexBuffer(const void* vertex, size_t stride, size_t cou
 	const u32 size = static_cast<u32>(stride) * static_cast<u32>(count);
 	if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride) * align_multiplier))
 	{
-		ExecuteCommandBufferAndRestartRenderPass(false, "Uploading bytes to vertex buffer");
+		// While presenting, the swap-chain pass isn't tracked by m_current_render_pass, so the ordinary
+		// render-pass restart would leave the command buffer with an open present pass. From EmuCoreX.
+		if (m_is_presenting)
+			ExecuteCommandBufferAndRestartPresent(false, "Uploading bytes to vertex buffer");
+		else
+			ExecuteCommandBufferAndRestartRenderPass(false, "Uploading bytes to vertex buffer");
 		if (!m_vertex_stream_buffer.ReserveMemory(size, static_cast<u32>(stride) * align_multiplier))
 			pxFailRel("Failed to reserve space for vertices");
 	}
@@ -3821,7 +3835,10 @@ void GSDeviceVK::UploadIndices(VKStreamBuffer& buffer, const void* index, size_t
 	const u32 size = sizeof(u16) * static_cast<u32>(count);
 	if (!buffer.ReserveMemory(size, sizeof(u16)))
 	{
-		ExecuteCommandBufferAndRestartRenderPass(false, "Uploading bytes to index buffer");
+		if (m_is_presenting)
+			ExecuteCommandBufferAndRestartPresent(false, "Uploading bytes to index buffer");
+		else
+			ExecuteCommandBufferAndRestartRenderPass(false, "Uploading bytes to index buffer");
 		if (!buffer.ReserveMemory(size, sizeof(u16)))
 			pxFailRel("Failed to reserve space for vertices");
 	}
@@ -4272,15 +4289,19 @@ bool GSDeviceVK::CreatePipelineLayouts()
 		dslb.SetPushFlag();
 	dslb.AddBinding(TFX_TEXTURE_TEXTURE, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_PALETTE, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-	dslb.AddBinding(TFX_TEXTURE_RT,
-		(m_features.texture_barrier && !UseFeedbackLoopLayout()) ? VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT :
-																                              VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-		1, VK_SHADER_STAGE_FRAGMENT_BIT);
+		// Mali needs real input-attachment descriptors for the subpass feedback path; its shader reads
+	// Cd/Zd via subpassLoad. Adreno mishandles input-attachment descriptors here and produces
+	// alternating stale destination colour (flicker) in accurate-blending draws, so keep Qualcomm on
+	// the long-standing sampled-image descriptor — subpassLoad still reads the render-pass input
+	// attachment (not vendor-scoped). Keep this condition identical to the writes in ApplyTFXState.
+	// Vendor-scoped per sashkinbro/EmuCoreX 30b09c8 (Fix Adreno Vulkan accurate blending flicker).
+	const VkDescriptorType feedback_descriptor_type =
+		(m_features.texture_barrier && !UseFeedbackLoopLayout() && m_device_properties.vendorID == 0x13B5u) ?
+			VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT :
+			VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+	dslb.AddBinding(TFX_TEXTURE_RT, feedback_descriptor_type, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_PRIMID, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-	dslb.AddBinding(TFX_TEXTURE_DEPTH,
-		(m_features.texture_barrier && !UseFeedbackLoopLayout()) ? VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT :
-		                                                           VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-		1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(TFX_TEXTURE_DEPTH, feedback_descriptor_type, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_RT_ROV, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_DEPTH_ROV, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	if ((m_tfx_texture_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
@@ -5567,6 +5588,16 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completi
 		// restart render pass
 		BeginRenderPass(GetRenderPassForRestarting(render_pass), render_pass_area);
 	}
+
+	// Push constants are command-buffer state. Utility draws often upload them before reserving their
+	// vertices, so a stream-buffer rollover can happen after the upload — restore the cached block so
+	// strict mobile drivers don't draw post-process/interlace with stale coordinates. From EmuCoreX.
+	if (m_utility_push_constants_size > 0)
+	{
+		vkCmdPushConstants(GetCurrentCommandBuffer(), m_utility_pipeline_layout,
+			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+			m_utility_push_constants_size, m_utility_push_constants.data());
+	}
 }
 
 void GSDeviceVK::ExecuteCommandBufferAndRestartPresent(bool wait_for_completion, const char* reason, ...)
@@ -5594,6 +5625,23 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartPresent(bool wait_for_completion,
 		{{0, 0}, {static_cast<u32>(swap_chain_texture->GetWidth()), static_cast<u32>(swap_chain_texture->GetHeight())}},
 		0u, nullptr};
 	vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
+
+	// Dynamic viewport/scissor and push-constant state do not survive a command-buffer submission.
+	// BeginPresent() normally emits them; this rare restart path must do the same, or strict mobile
+	// Vulkan drivers present with undefined viewport/coordinates. Ported from sashkinbro/EmuCoreX.
+	const VkViewport present_vp{0.0f, 0.0f, static_cast<float>(swap_chain_texture->GetWidth()),
+		static_cast<float>(swap_chain_texture->GetHeight()), 0.0f, 1.0f};
+	const VkRect2D present_scissor{
+		{0, 0}, {static_cast<u32>(swap_chain_texture->GetWidth()), static_cast<u32>(swap_chain_texture->GetHeight())}};
+	vkCmdSetViewport(GetCurrentCommandBuffer(), 0, 1, &present_vp);
+	vkCmdSetScissor(GetCurrentCommandBuffer(), 0, 1, &present_scissor);
+
+	if (m_utility_push_constants_size > 0)
+	{
+		vkCmdPushConstants(GetCurrentCommandBuffer(), m_utility_pipeline_layout,
+			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+			m_utility_push_constants_size, m_utility_push_constants.data());
+	}
 }
 
 void GSDeviceVK::ExecuteCommandBufferForReadback()
@@ -5818,6 +5866,10 @@ void GSDeviceVK::SetUtilityTexture(GSTexture* tex, VkSampler sampler)
 
 void GSDeviceVK::SetUtilityPushConstants(const void* data, u32 size)
 {
+	// Cache so a mid-utility-draw command-buffer rollover can replay these. Ported from sashkinbro/EmuCoreX.
+	pxAssert(size <= m_utility_push_constants.size());
+	std::memcpy(m_utility_push_constants.data(), data, size);
+	m_utility_push_constants_size = size;
 	vkCmdPushConstants(GetCurrentCommandBuffer(), m_utility_pipeline_layout,
 		VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, size, data);
 }
@@ -6074,7 +6126,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		}
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_RT)
 		{
-			if (m_features.texture_barrier && !UseFeedbackLoopLayout())
+			if (m_features.texture_barrier && !UseFeedbackLoopLayout() && m_device_properties.vendorID == 0x13B5u)
 			{
 				dsub.AddInputAttachmentDescriptorWrite(
 					VK_NULL_HANDLE, TFX_TEXTURE_RT, m_tfx_textures[TFX_TEXTURE_RT]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
@@ -6092,7 +6144,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		}
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_DEPTH)
 		{
-			if (m_features.texture_barrier && !UseFeedbackLoopLayout())
+			if (m_features.texture_barrier && !UseFeedbackLoopLayout() && m_device_properties.vendorID == 0x13B5u)
 			{
 				dsub.AddInputAttachmentDescriptorWrite(
 					VK_NULL_HANDLE, TFX_TEXTURE_DEPTH, m_tfx_textures[TFX_TEXTURE_DEPTH]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
@@ -6526,12 +6578,10 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			m_pipeline_selector.ds = true;
 		}
 
-		// Prefer keeping feedback loop enabled, that way we're not constantly restarting render passes
-		if (draw_rt)
-			pipe.feedback_loop_flags |= m_current_framebuffer_feedback_loop & FeedbackLoopFlag_ReadAndWriteRT;
-		if (draw_ds)
-			pipe.feedback_loop_flags |= (m_current_framebuffer_feedback_loop &
-				(FeedbackLoopFlag_ReadAndWriteDepth | FeedbackLoopFlag_ReadDepth));
+		// Keep feedback-loop state draw-local. Carrying it over can leave later draws
+		// in the previous feedback render pass/layout and cause Vulkan-only flicker.
+		// Matches sashkinbro/EmuCoreX exactly (the carry is removed globally there — no
+		// vendor-scoping, unlike my earlier reverted attempt).
 	}
 
 	if (draw_rt && ((config.require_one_barrier && (config.IsFeedbackLoopRT(config.ps) || config.IsFeedbackLoopRT(config.alpha_second_pass.ps)))) && !m_features.texture_barrier)
