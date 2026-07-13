@@ -1370,3 +1370,132 @@ TEST(EeRecFpu, MsubaSProductOverflowExtraModeClampsProduct)
 // (Default-mode A-form raw-product behavior is already pinned by
 // MaddaSDoesNotClampIntermediateProduct / MsubaSDoesNotClampIntermediateProduct
 // above — x86 and interp agree there, no extra test needed.)
+
+// ---- GE-12: FCR31 block residency — cross-op coherence corners ---------------
+// fprc[31] lives in a host GPR (ARM64TYPE_FPRC) across ops inside a block in
+// the default clamp mode. Every architectural observer — CFC1 read, BC1
+// branch, DIV/SQRT flag RMW, C-call seams, block end — must see the value the
+// memory image would have carried. Run()'s auto-diff does not gate on
+// fprc[31], so flag-value asserts go through JitSnapshot (see the DIV flag
+// tests above).
+
+TEST(EeRecFpu, CompareThenCfc1SeesFreshConditionBit)
+{
+	// C.LT writes the resident flag; CFC1 in the same block must read it back
+	// through the resident copy (stale-memory read would miss the fresh bit).
+	//
+	// JIT-only assert: CFC1 emulates FCR31's fixed bits on the READ side
+	// (And 0x0083c078 / Orr 0x01000001 — exact x86 recCFC1 shape), while the
+	// interpreter returns the raw word. With fprc[31] starting at 0 the two
+	// legitimately diverge (JIT 0x01800001 vs interp 0x00800000) — x86-JIT
+	// parity is the bar (see the GE-19 block above), so pin the JIT value.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFpr(1, 1.0f);
+	h.SetFpr(2, 2.0f);
+	h.LoadProgram({
+		ee::C_LT_S(1, 2),          // 1 < 2 → CC = 1
+		ee::CFC1(reg::v0, 31),
+	});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetGpr64Jit(reg::v0), 0x01800001ull); // CC | always-one bits
+}
+
+TEST(EeRecFpu, Ctc1ThenBc1BranchesOnWrittenFlag)
+{
+	// CTC1 writes FCR31 (write-only resident slot); BC1T in the same block
+	// must branch on the just-written bit.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetGpr64(reg::a0, 1u << 23);
+	h.LoadProgramNoTerm({
+		ee::CTC1(reg::a0, 31),
+		ee::BC1T(3),
+		NOP,
+		ADDIU(reg::v0, reg::zero, 1), J(kPark), NOP, NOP,
+		ADDIU(reg::v0, reg::zero, 2), J(kPark), NOP,
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 2ull);
+}
+
+TEST(EeRecFpu, Ctc1ThenDivByZeroAccumulatesStickyFlags)
+{
+	// CTC1 seeds sticky bits; DIV x/0 RMWs D|SD on the resident copy; the
+	// block-end writeback must carry BOTH the seeded and the new bits.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetGpr64(reg::a0, 0x00000040u);       // SI sticky pre-seeded via CTC1
+	h.SetFpr(1, 10.0f);
+	h.SetFprBits(2, 0x00000000u);           // +0.0f divisor
+	h.LoadProgram({
+		ee::CTC1(reg::a0, 31),
+		ee::DIV_S(3, 1, 2),                 // x/0 → D|SD
+	});
+	h.Run();
+	const u32 mask = 0x00030060u;           // I|D|SI|SD
+	EXPECT_EQ(h.JitSnapshot().fprs.fprc[31] & mask,    0x10000u | 0x20u | 0x40u); // D|SD + kept SI
+	EXPECT_EQ(h.InterpSnapshot().fprs.fprc[31] & mask, 0x10000u | 0x20u | 0x40u);
+}
+
+TEST(EeRecFpu, ComparePreservesStickyFlagBits)
+{
+	// C.cond must touch ONLY bit 23 (single Bfi) — pre-seeded sticky I|D|SI|SD
+	// bits must survive the compare and land in memory at block end.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFcr31(0x00030060u);                // I|D|SI|SD all set
+	h.SetFpr(1, 5.0f);
+	h.SetFpr(2, 5.0f);
+	h.LoadProgram({
+		ee::C_EQ_S(1, 2),                   // sets CC, must not clear stickies
+	});
+	h.Run();
+	const u32 want = 0x00030060u | (1u << 23);
+	EXPECT_EQ(h.JitSnapshot().fprs.fprc[31] & (0x00030060u | (1u << 23)), want);
+	EXPECT_EQ(h.InterpSnapshot().fprs.fprc[31] & (0x00030060u | (1u << 23)), want);
+}
+
+TEST(EeRecFpu, CompareReadsWriteOnlyResidentOperand)
+{
+	// ADD.S leaves f3 NEON-resident MODE_WRITE-only; C.EQ must read the live
+	// host value (authoritative), not stale fpr memory.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFpr(1, 3.0f);
+	h.SetFpr(2, 4.0f);
+	h.SetFpr(4, 7.0f);
+	h.SetFprBits(3, 0xDEADBEEFu);           // stale memory image for f3
+	h.LoadProgram({
+		ee::ADD_S(3, 1, 2),                 // f3 = 7.0 (resident, dirty)
+		ee::C_EQ_S(3, 4),                   // 7 == 7 → CC set
+	});
+	h.Run();
+	EXPECT_NE(h.JitSnapshot().fprs.fprc[31] & (1u << 23), 0u);
+	EXPECT_NE(h.InterpSnapshot().fprs.fprc[31] & (1u << 23), 0u);
+}
+
+TEST(EeRecFpu, ConditionFlagSurvivesInterpFallbackSeam)
+{
+	// RSQRT.S defers to the interpreter (recCall → FLUSH_INTERPRETER), which
+	// fully evicts the resident FCR31 slot and lets C code RMW fprc memory.
+	// The C bit set before the seam must survive into the BC1T after it, and
+	// the interp fallback's own flag writes must not be clobbered by a stale
+	// resident copy. (interp RSQRT preserves bit 23; 4/1 sets no new flags.)
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFpr(1, 5.0f);
+	h.SetFpr(2, 5.0f);
+	h.SetFpr(5, 4.0f);
+	h.SetFpr(6, 1.0f);
+	h.LoadProgramNoTerm({
+		ee::C_EQ_S(1, 2),                   // CC = 1 (resident)
+		ee::RSQRT_S(7, 5, 6),               // interp fallback seam
+		ee::BC1T(3),
+		NOP,
+		ADDIU(reg::v0, reg::zero, 1), J(kPark), NOP, NOP,
+		ADDIU(reg::v0, reg::zero, 2), J(kPark), NOP,
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 2ull);
+}

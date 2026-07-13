@@ -359,8 +359,20 @@ int _allocArm64GPR(int type, int reg, int mode)
 	// IOP pool (x26/x27 ride under armBeginStackFrame); everything else —
 	// EE guest state, VI mirrors, and shared TEMPs — stays inside the EE
 	// mask so it can never land on an EE pin host.
+	//
+	// FPRC (FCR31 residency, GE-12) gets a further-restricted pool: x0/x1
+	// are raw-clobbered as RWARG1/RWARG2 scratch by FPU/MULT emitters with
+	// no allocator free, and x28 doubles as COP2 macro-mode VI-pool
+	// spillover (mVUIsReservedCOP2 is a stub, and the COP2 wrappers' light
+	// iFlushCall only evicts caller-saved homes) plus the sole
+	// MODE_CALLEESAVED candidate for the vtlb unaligned handlers. A flag
+	// register that persists across ops must live where neither habit can
+	// touch it: {x2-x7, x14, x15} — all caller-saved, so every iFlushCall
+	// seam writes it back before C code can observe or mutate fprc[31].
 	const u32 pool = (type == ARM64TYPE_PSX || type == ARM64TYPE_PSX_PCWRITEBACK)
 	                     ? IOP_ALLOCATABLE_MASK
+	                 : (type == ARM64TYPE_FPRC)
+	                     ? (EE_ALLOCATABLE_MASK & ~((1u << 0) | (1u << 1) | (1u << 28)))
 	                     : EE_ALLOCATABLE_MASK;
 	const int regnum = _getFreeArm64GPR(mode, pool);
 	arm64gprs[regnum].type = type;

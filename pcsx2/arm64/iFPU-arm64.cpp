@@ -41,6 +41,32 @@ REC_SYS(BC1TL);
 #define FPUflagSD 0x00000020
 
 //------------------------------------------------------------------
+// FCR31 block residency (GE-12)
+//------------------------------------------------------------------
+// The leak/4248 guest-class-0xc design: the C.cond/BC1/CFC1/CTC1/DIV/SQRT
+// family accesses fprc[31] through the GPR allocator (ARM64TYPE_FPRC — the
+// load/writeback plumbing existed in iCore but had no allocation site).
+// C.cond becomes Fcmp+Cset+Bfi on the resident reg, BC1 a Tbnz on it (zero
+// loads after a preceding compare), and the DIV/SQRT flag RMWs lose their
+// Ldr/Str round-trips. Every iFlushCall seam writes the slot back (FPRC
+// lives in a caller-saved-only pool — see _allocArm64GPR), and recCall's
+// FLUSH_INTERPRETER fully evicts it (e.g. the recRSQRT_S fallback, whose
+// interp body RMWs fprc in C), so fprc[31] memory is canonical wherever C
+// code or another block can look.
+//
+// Returns -1 under CHECK_FPU_FULL: the DOUBLE:: bodies (iFPUd-arm64.cpp)
+// RMW fprc[31] memory raw, and these entry points are shared between modes —
+// mixing a resident copy with raw-memory RMWs inside one block would desync.
+// Under FULL every site below keeps today's raw-memory shape (GE-20 owns
+// FULL-mode depth).
+static int fpuTryAllocFCR31(int mode)
+{
+	if (CHECK_FPU_FULL)
+		return -1;
+	return _allocArm64GPR(ARM64TYPE_FPRC, 31, mode);
+}
+
+//------------------------------------------------------------------
 // CFC1 — rt = fprc[fs] (read FPU control register)
 //------------------------------------------------------------------
 void recCFC1()
@@ -52,9 +78,18 @@ void recCFC1()
 
 	if (_Fs_ >= 16)
 	{
-		// FCR31: mask out always-zero bits, set always-one bits
-		armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
-		armAsm->And(RWSCRATCH, RWSCRATCH, 0x0083c078);
+		// FCR31: mask out always-zero bits, set always-one bits (x86 recCFC1
+		// shape; the interpreter returns the raw word — JIT-side fixed-bit
+		// emulation is an x86-parity divergence by design, pinned by
+		// EeRecFpu.CompareThenCfc1SeesFreshConditionBit).
+		const int fl = fpuTryAllocFCR31(MODE_READ);
+		if (fl >= 0)
+			armAsm->And(RWSCRATCH, armWRegister(fl), 0x0083c078);
+		else
+		{
+			armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+			armAsm->And(RWSCRATCH, RWSCRATCH, 0x0083c078);
+		}
 		armAsm->Orr(RWSCRATCH, RWSCRATCH, 0x01000001);
 		armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
 	}
@@ -74,14 +109,25 @@ void recCTC1()
 {
 	if (_Fs_ != 31) return;
 
-	if (GPR_IS_CONST1(_Rt_))
-		armAsm->Mov(RWSCRATCH, g_cpuConstRegs[_Rt_].UL[0]);
+	const int fl = fpuTryAllocFCR31(MODE_WRITE);
+	if (fl >= 0)
+	{
+		// Full-register write: no read-in, just materialize rt into the slot.
+		// _eeMoveGPRtoR reads const/pin/allocator-resident rt directly (the
+		// old shape forced rt to memory with _deleteEEreg and reloaded it).
+		_eeMoveGPRtoR(armWRegister(fl), _Rt_);
+	}
 	else
 	{
-		_deleteEEreg(_Rt_, 1);
-		armLoadEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[0]);
+		if (GPR_IS_CONST1(_Rt_))
+			armAsm->Mov(RWSCRATCH, g_cpuConstRegs[_Rt_].UL[0]);
+		else
+		{
+			_deleteEEreg(_Rt_, 1);
+			armLoadEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[0]);
+		}
+		armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[_Fs_]);
 	}
-	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[_Fs_]);
 }
 
 //------------------------------------------------------------------
@@ -162,7 +208,16 @@ static void recSetBranchBC1(bool branchOnTrue)
 {
 	_eeFlushAllDirty();
 
-	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	// GE-12: _eeFlushAllDirty writes back but KEEPS residency, so when an
+	// earlier op in the block touched FCR31 (C.cond, DIV, CTC1, ...) the
+	// common compare→branch chain pays zero loads here; not-resident
+	// allocates with one Ldr, same cost as the old raw load.
+	a64::Register flagReg = RWSCRATCH;
+	const int fl = fpuTryAllocFCR31(MODE_READ);
+	if (fl >= 0)
+		flagReg = armWRegister(fl);
+	else
+		armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
 
 	// FPUflagC (0x00800000) is a single fixed bit (23), so the Tst+B.cond pair
 	// collapses to one test-bit-and-branch (Tbnz/Tbz). The forward branch
@@ -170,9 +225,9 @@ static void recSetBranchBC1(bool branchOnTrue)
 	static_assert(FPUflagC == (1u << 23), "FPUflagC must be a single bit for Tbz/Tbnz");
 	s_pBC1Label = new a64::Label();
 	if (branchOnTrue)
-		armAsm->Tbz(RWSCRATCH, 23, s_pBC1Label);   // BC1T: skip taken if C clear
+		armAsm->Tbz(flagReg, 23, s_pBC1Label);   // BC1T: skip taken if C clear
 	else
-		armAsm->Tbnz(RWSCRATCH, 23, s_pBC1Label);  // BC1F: skip taken if C set
+		armAsm->Tbnz(flagReg, 23, s_pBC1Label);  // BC1F: skip taken if C set
 }
 
 static void recBindBC1Label()
@@ -482,59 +537,63 @@ void recNEG_S()
 void recC_F()
 {
 	// Always false — clear condition bit
-	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
-	armAsm->Mov(RWARG1, FPUflagC); armAsm->Bic(RWSCRATCH, RWSCRATCH, RWARG1);
-	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	const int fl = fpuTryAllocFCR31(MODE_READ | MODE_WRITE);
+	if (fl >= 0)
+	{
+		armAsm->And(armWRegister(fl), armWRegister(fl), ~u32(FPUflagC));
+	}
+	else
+	{
+		armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+		armAsm->And(RWSCRATCH, RWSCRATCH, ~u32(FPUflagC));
+		armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	}
 }
 
-void recC_EQ()
+// Shared C.EQ/C.LT/C.LE body (GE-12). Operand reads probe the NEON allocator
+// read-only — a MODE_WRITE-only slot is authoritative, same rule as recMFC1 —
+// with the clamped compare copies always going to scratch (the old shape
+// flush-and-FREED both operands and reloaded them from memory). The flag
+// write is a single Bfi of the Cset bit into the resident FCR31, replacing
+// the Ldr + Mov/Bic/Orr(LSL 23) + Str chain; the Cset result parks in
+// RWSCRATCH (w8), not w0 — pool regs can hold live allocator values.
+static void recCompareFPRs(a64::Condition cond)
 {
-	_deleteFPtoNEONreg(_Fs_, DELETE_REG_FLUSH_AND_FREE);
-	_deleteFPtoNEONreg(_Ft_, DELETE_REG_FLUSH_AND_FREE);
-	armLoadEERegPtr(RSSCRATCH, &fpuRegs.fpr[_Fs_].f);
-	armLoadEERegPtr(RSSCRATCH2, &fpuRegs.fpr[_Ft_].f);
+	// Allocate FIRST: the alloc can emit an eviction store, which must not
+	// land between the Fcmp and the Cset (NZCV) nor split the scratch loads.
+	const int fl = fpuTryAllocFCR31(MODE_READ | MODE_WRITE);
+
+	const int fsreg = _checkNEONreg(NEONTYPE_FPREG, _Fs_, 0);
+	if (fsreg >= 0)
+		armAsm->Fmov(RSSCRATCH, armSRegister(fsreg));
+	else
+		armLoadEERegPtr(RSSCRATCH, &fpuRegs.fpr[_Fs_].f);
+	const int ftreg = (_Ft_ == _Fs_) ? fsreg : _checkNEONreg(NEONTYPE_FPREG, _Ft_, 0);
+	if (ftreg >= 0)
+		armAsm->Fmov(RSSCRATCH2, armSRegister(ftreg));
+	else
+		armLoadEERegPtr(RSSCRATCH2, &fpuRegs.fpr[_Ft_].f);
 	fpuClampCompareOperand(RSSCRATCH);
 	fpuClampCompareOperand(RSSCRATCH2);
 	armAsm->Fcmp(RSSCRATCH, RSSCRATCH2);
-	armAsm->Cset(a64::w0, a64::eq); // fully defines w0 — no pre-zero needed (GE-03)
-	// Set or clear FPUflagC based on result (w0 holds cset result, don't clobber)
-	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
-	armAsm->Mov(RWARG2, FPUflagC); armAsm->Bic(RWSCRATCH, RWSCRATCH, RWARG2);
-	armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::Operand(a64::w0, a64::LSL, 23));
-	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	armAsm->Cset(RWSCRATCH, cond);
+
+	static_assert(FPUflagC == (1u << 23), "Bfi below inserts the C bit at bit 23");
+	if (fl >= 0)
+	{
+		armAsm->Bfi(armWRegister(fl), RWSCRATCH, 23, 1);
+	}
+	else
+	{
+		armLoadEERegPtr(RWARG1, &fpuRegs.fprc[31]);
+		armAsm->Bfi(RWARG1, RWSCRATCH, 23, 1);
+		armStoreEERegPtr(RWARG1, &fpuRegs.fprc[31]);
+	}
 }
 
-void recC_LT()
-{
-	_deleteFPtoNEONreg(_Fs_, DELETE_REG_FLUSH_AND_FREE);
-	_deleteFPtoNEONreg(_Ft_, DELETE_REG_FLUSH_AND_FREE);
-	armLoadEERegPtr(RSSCRATCH, &fpuRegs.fpr[_Fs_].f);
-	armLoadEERegPtr(RSSCRATCH2, &fpuRegs.fpr[_Ft_].f);
-	fpuClampCompareOperand(RSSCRATCH);
-	fpuClampCompareOperand(RSSCRATCH2);
-	armAsm->Fcmp(RSSCRATCH, RSSCRATCH2);
-	armAsm->Cset(a64::w0, a64::lt); // fully defines w0 — no pre-zero needed (GE-03)
-	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
-	armAsm->Mov(RWARG2, FPUflagC); armAsm->Bic(RWSCRATCH, RWSCRATCH, RWARG2);
-	armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::Operand(a64::w0, a64::LSL, 23));
-	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
-}
-
-void recC_LE()
-{
-	_deleteFPtoNEONreg(_Fs_, DELETE_REG_FLUSH_AND_FREE);
-	_deleteFPtoNEONreg(_Ft_, DELETE_REG_FLUSH_AND_FREE);
-	armLoadEERegPtr(RSSCRATCH, &fpuRegs.fpr[_Fs_].f);
-	armLoadEERegPtr(RSSCRATCH2, &fpuRegs.fpr[_Ft_].f);
-	fpuClampCompareOperand(RSSCRATCH);
-	fpuClampCompareOperand(RSSCRATCH2);
-	armAsm->Fcmp(RSSCRATCH, RSSCRATCH2);
-	armAsm->Cset(a64::w0, a64::le); // fully defines w0 — no pre-zero needed (GE-03)
-	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
-	armAsm->Mov(RWARG2, FPUflagC); armAsm->Bic(RWSCRATCH, RWSCRATCH, RWARG2);
-	armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::Operand(a64::w0, a64::LSL, 23));
-	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
-}
+void recC_EQ() { recCompareFPRs(a64::eq); }
+void recC_LT() { recCompareFPRs(a64::lt); }
+void recC_LE() { recCompareFPRs(a64::le); }
 
 //------------------------------------------------------------------
 // FPU Arithmetic — native with PS2 clamping (no inf/nan)
@@ -634,10 +693,24 @@ static void recDIV_S_xmm(int info)
 	const a64::VRegister fs = armSRegister(EEREC_S);
 	const a64::VRegister ft = armSRegister(EEREC_T);
 
+	// GE-12: the three flag RMWs below (clear I|D, then I|SI or D|SD on the
+	// zero-divisor paths) hit the resident FCR31 — no Ldr/Str round-trips.
+	// The alloc emits any eviction store HERE, before the Fcmp chain (NZCV)
+	// and the branch arms (allocator calls inside a runtime-conditional emit
+	// region are forbidden — the Twinsanity class). Note recDIV_S has no
+	// DOUBLE:: variant, so this body serves FULL mode too → the fl<0 raw
+	// fallback is reachable, not dead code.
+	const int fl = fpuTryAllocFCR31(MODE_READ | MODE_WRITE);
+
 	// Clear I|D.
-	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
-	armAsm->Bic(RWSCRATCH, RWSCRATCH, FPUflagI | FPUflagD);
-	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	if (fl >= 0)
+		armAsm->Bic(armWRegister(fl), armWRegister(fl), FPUflagI | FPUflagD);
+	else
+	{
+		armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+		armAsm->Bic(RWSCRATCH, RWSCRATCH, FPUflagI | FPUflagD);
+		armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	}
 
 	a64::Label normal, setMax, xDiv, end;
 
@@ -647,14 +720,24 @@ static void recDIV_S_xmm(int info)
 	// Divisor is zero: distinguish 0/0 (I|SI) from x/0 (D|SD).
 	armAsm->Fcmp(fs, 0.0);
 	armAsm->B(&xDiv, a64::ne);
-	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
-	armAsm->Orr(RWSCRATCH, RWSCRATCH, FPUflagI | FPUflagSI);
-	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	if (fl >= 0)
+		armAsm->Orr(armWRegister(fl), armWRegister(fl), FPUflagI | FPUflagSI);
+	else
+	{
+		armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+		armAsm->Orr(RWSCRATCH, RWSCRATCH, FPUflagI | FPUflagSI);
+		armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	}
 	armAsm->B(&setMax);
 	armAsm->Bind(&xDiv);
-	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
-	armAsm->Orr(RWSCRATCH, RWSCRATCH, FPUflagD | FPUflagSD);
-	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	if (fl >= 0)
+		armAsm->Orr(armWRegister(fl), armWRegister(fl), FPUflagD | FPUflagSD);
+	else
+	{
+		armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+		armAsm->Orr(RWSCRATCH, RWSCRATCH, FPUflagD | FPUflagSD);
+		armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	}
 
 	armAsm->Bind(&setMax);
 	// result = sign(Fs ^ Ft) | 0x7f7fffff — raw sign reads precede the D write.
@@ -704,16 +787,23 @@ static void recSQRT_S_xmm(int info)
 	// negative *non-zero* value (exp field nonzero AND sign bit set). The
 	// ±0 / denormal-as-zero case (exp field == 0) sets no flag. Read the Ft
 	// bits before Fabs clobbers EEREC_D, which may alias EEREC_T.
+	// GE-12: flag RMW on the resident FCR31; alloc first (eviction stores
+	// must precede the RWARG1 clobber and the branch arms). Like recDIV_S
+	// this body has no DOUBLE:: variant, so the fl<0 fallback serves FULL.
+	const int fl = fpuTryAllocFCR31(MODE_READ | MODE_WRITE);
 	armAsm->Fmov(RWARG1, ft);
-	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
-	armAsm->Bic(RWSCRATCH, RWSCRATCH, FPUflagI | FPUflagD);
+	const a64::Register flagReg = (fl >= 0) ? armWRegister(fl) : RWSCRATCH;
+	if (fl < 0)
+		armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	armAsm->Bic(flagReg, flagReg, FPUflagI | FPUflagD);
 	a64::Label skipFlag;
 	armAsm->Tst(RWARG1, 0x7F800000);                 // exp field
 	armAsm->B(&skipFlag, a64::eq);                    // ±0/denorm → no flag
 	armAsm->Tbz(RWARG1, 31, &skipFlag);              // positive → no flag
-	armAsm->Orr(RWSCRATCH, RWSCRATCH, FPUflagI | FPUflagSI);
+	armAsm->Orr(flagReg, flagReg, FPUflagI | FPUflagSI);
 	armAsm->Bind(&skipFlag);
-	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	if (fl < 0)
+		armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
 
 	// PS2 takes sqrt of |ft| → Fabs first.
 	armAsm->Fabs(armSRegister(EEREC_D), ft);
