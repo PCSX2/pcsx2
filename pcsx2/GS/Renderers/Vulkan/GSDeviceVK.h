@@ -54,6 +54,7 @@ public:
 	__fi VkInstance GetVulkanInstance() const { return m_instance; }
 	__fi VkPhysicalDevice GetPhysicalDevice() const { return m_physical_device; }
 	__fi VkDevice GetDevice() const { return m_device; }
+	__fi VkQueue GetGraphicsQueue() const { return m_graphics_queue; }
 	__fi VmaAllocator GetAllocator() const { return m_allocator; }
 	__fi u32 GetGraphicsQueueFamilyIndex() const { return m_graphics_queue_family_index; }
 	__fi u32 GetPresentQueueFamilyIndex() const { return m_present_queue_family_index; }

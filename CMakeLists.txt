@@ -98,6 +98,15 @@ if(UNIX AND NOT APPLE)
 	endif()
 endif()
 
+# libretro core (yaps2_libretro.so)
+if(UNIX AND NOT APPLE)
+	if(ENABLE_LIBRETRO)
+		add_subdirectory(pcsx2-libretro)
+	else()
+		add_subdirectory(pcsx2-libretro EXCLUDE_FROM_ALL)
+	endif()
+endif()
+
 #-------------------------------------------------------------------------------
 if(NOT IS_SUPPORTED_COMPILER)
 	message(WARNING "

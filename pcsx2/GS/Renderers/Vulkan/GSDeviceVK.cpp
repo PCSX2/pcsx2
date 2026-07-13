@@ -9,6 +9,32 @@
 #include "GS/Renderers/Vulkan/VKBuilders.h"
 #include "GS/Renderers/Vulkan/VKShaderCache.h"
 #include "GS/Renderers/Vulkan/VKSwapChain.h"
+#include "GS/Renderers/Vulkan/VKLibretro.h"
+
+// Libretro presentation backbuffers: the frontend samples the published
+// VkImageView asynchronously (including cached-frame replays long after the
+// present), so it must never point at a pooled texture that GSDeviceVK can
+// recycle. Frames are copied into this small ring of dedicated textures that
+// live until device teardown.
+namespace
+{
+	constexpr int kLibretroBackbuffers = 3;
+	std::unique_ptr<GSTextureVK> s_libretro_bb[kLibretroBackbuffers];
+	int s_libretro_bb_idx = 0;
+	// Monotonic count of libretro presents; used to age out retired backbuffers.
+	u64 s_libretro_present_count = 0;
+	// A backbuffer displaced by a resolution change: the frontend may still be
+	// replaying its image for a few frames (cached/duped frames up to its
+	// swapchain depth), so it can't be freed immediately -- but leaving it here
+	// forever leaks a full-resolution render target on every interlace<->
+	// progressive switch (frequent in FMV-heavy games). Each is tagged with the
+	// present count at retirement and reclaimed once enough presents have gone
+	// by that the frontend can no longer reference it.
+	struct RetiredBackbuffer { std::unique_ptr<GSTextureVK> tex; u64 retired_at; };
+	std::vector<RetiredBackbuffer> s_libretro_bb_retired;
+	// Comfortably beyond any libretro frontend's swapchain depth (2-3).
+	constexpr u64 kLibretroRetireFrames = 6;
+} // namespace
 #include "GS/Renderers/Common/GSDevice.h"
 
 #include "BuildVersion.h"
@@ -351,7 +377,10 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs()
 	}
 	else
 	{
-		if (Vulkan::LoadVulkanLibrary(nullptr))
+		// The library may already be loaded by the host (libretro preloads it
+		// for the context negotiation) — use it, and don't unload it after.
+		const bool library_was_loaded = Vulkan::IsVulkanLibraryLoaded();
+		if (library_was_loaded || Vulkan::LoadVulkanLibrary(nullptr))
 		{
 			OptionalExtensions oe = {};
 			const VkInstance instance = CreateVulkanInstance(WindowInfo(), &oe, false, false);
@@ -363,7 +392,8 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs()
 				vkDestroyInstance(instance, nullptr);
 			}
 
-			Vulkan::UnloadVulkanLibrary();
+			if (!library_was_loaded)
+				Vulkan::UnloadVulkanLibrary();
 		}
 	}
 
@@ -2326,6 +2356,18 @@ bool GSDeviceVK::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 void GSDeviceVK::Destroy()
 {
+	// Free the libretro backbuffers while the device is still alive; the
+	// frontend stopped sampling at context_destroy.
+	if (VKLibretro::Active)
+	{
+		WaitForGPUIdle();
+		for (std::unique_ptr<GSTextureVK>& bb : s_libretro_bb)
+			bb.reset();
+		s_libretro_bb_retired.clear();
+		s_libretro_bb_idx = 0;
+		s_libretro_present_count = 0;
+	}
+
 	std::unique_lock lock(s_instance_mutex);
 
 	GSDevice::Destroy();
@@ -2344,14 +2386,19 @@ void GSDeviceVK::Destroy()
 
 	VKShaderCache::Destroy();
 
+	// The negotiated device belongs to the libretro frontend (it made the
+	// vkCreateDevice call) and it destroys it after context_destroy —
+	// destroying it here would leave the frontend tearing down a dead device.
 	if (m_device != VK_NULL_HANDLE)
-		vkDestroyDevice(m_device, nullptr);
+		if (!(VKLibretro::Active && VKLibretro::Init.device == m_device))
+			vkDestroyDevice(m_device, nullptr);
 
 	if (m_debug_messenger_callback != VK_NULL_HANDLE)
 		DisableDebugUtils();
 
 	if (m_instance != VK_NULL_HANDLE)
-		vkDestroyInstance(m_instance, nullptr);
+		if (!(VKLibretro::Active && VKLibretro::Init.instance == m_instance))
+			vkDestroyInstance(m_instance, nullptr);
 
 	Vulkan::UnloadVulkanLibrary();
 }
@@ -2410,8 +2457,18 @@ void GSDeviceVK::ResizeWindow(u32 new_window_width, u32 new_window_height, float
 {
 	m_resize_requested = false;
 
-	if (!m_swap_chain || (m_swap_chain->GetWidth() == new_window_width &&
-							 m_swap_chain->GetHeight() == new_window_height))
+	if (!m_swap_chain)
+	{
+		// Surfaceless (libretro): the "window" is the backbuffer rendered for
+		// the frontend, so just adopt the new size — BeginPresent recreates
+		// the backbuffer to match on the next frame.
+		m_window_info.surface_width = new_window_width;
+		m_window_info.surface_height = new_window_height;
+		m_window_info.surface_scale = new_window_scale;
+		return;
+	}
+
+	if (m_swap_chain->GetWidth() == new_window_width && m_swap_chain->GetHeight() == new_window_height)
 	{
 		// skip unnecessary resizes
 		m_window_info.surface_scale = new_window_scale;
@@ -2513,6 +2570,61 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 	// If we're running surfaceless, kick the command buffer so we don't run out of descriptors.
 	if (!m_swap_chain)
 	{
+		// Libretro: run a REAL present targeting a dedicated backbuffer, so
+		// the whole normal path (PresentRect aspect-correct draw, TV shaders,
+		// FullscreenUI, ImGui OSD in EndPresent) works unchanged; EndPresent
+		// then hands the finished image to the frontend. The backbuffers are
+		// owned outside the texture pool because the frontend keeps sampling
+		// the published view for cached-frame replays.
+		if (VKLibretro::Active)
+		{
+			// Reclaim backbuffers retired long enough ago that the frontend's
+			// replay window has moved past them (see kLibretroRetireFrames).
+			const u64 now = ++s_libretro_present_count;
+			std::erase_if(s_libretro_bb_retired, [now](const RetiredBackbuffer& r) {
+				return now - r.retired_at >= kLibretroRetireFrames;
+			});
+
+			const GSVector2i pres = GetPresentationSize();
+			std::unique_ptr<GSTextureVK>& bb = s_libretro_bb[s_libretro_bb_idx];
+			if (!bb || bb->GetWidth() != pres.x || bb->GetHeight() != pres.y)
+			{
+				// The frontend may still replay the displaced image for a few
+				// frames -- retire (freed later above), don't destroy now.
+				if (bb)
+					s_libretro_bb_retired.push_back({std::move(bb), now});
+				bb = GSTextureVK::Create(GSTexture::Type::RenderTarget, GSTexture::Format::Color,
+					pres.x, pres.y, 1);
+			}
+			if (bb)
+			{
+				VkCommandBuffer cmdbuffer = GetCurrentCommandBuffer();
+				if (!frame_skip && m_current)
+					static_cast<GSTextureVK*>(m_current)->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
+				bb->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::ColorAttachment);
+
+				const VkFramebuffer fb = bb->GetFramebuffer(false);
+				if (fb != VK_NULL_HANDLE)
+				{
+					const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr,
+						GetRenderPass(bb->GetVkFormat(), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_CLEAR,
+							VK_ATTACHMENT_STORE_OP_STORE),
+						fb, {{0, 0}, {static_cast<u32>(bb->GetWidth()), static_cast<u32>(bb->GetHeight())}},
+						1u, &s_present_clear_color};
+					vkCmdBeginRenderPass(cmdbuffer, &rp, VK_SUBPASS_CONTENTS_INLINE);
+
+					const VkViewport vp{0.0f, 0.0f, static_cast<float>(bb->GetWidth()),
+						static_cast<float>(bb->GetHeight()), 0.0f, 1.0f};
+					const VkRect2D scissor{
+						{0, 0}, {static_cast<u32>(bb->GetWidth()), static_cast<u32>(bb->GetHeight())}};
+					vkCmdSetViewport(cmdbuffer, 0, 1, &vp);
+					vkCmdSetScissor(cmdbuffer, 0, 1, &scissor);
+					m_is_presenting = true;
+					return PresentResult::OK;
+				}
+			}
+		}
+
 		ExecuteCommandBuffer(false);
 		return PresentResult::FrameSkipped;
 	}
@@ -2594,6 +2706,30 @@ void GSDeviceVK::EndPresent()
 	VkCommandBuffer cmdbuffer = GetCurrentCommandBuffer();
 	vkCmdEndRenderPass(cmdbuffer);
 	m_is_presenting = false;
+
+	if (VKLibretro::Active && !m_swap_chain)
+	{
+		// Libretro: finish the backbuffer, submit without any swapchain
+		// semantics, and hand the image to the frontend.
+		GSTextureVK* bb = s_libretro_bb[s_libretro_bb_idx].get();
+		bb->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::ShaderReadOnly);
+		g_perfmon.Put(GSPerfMon::RenderPasses, 1);
+
+		SubmitCommandBuffer(static_cast<VKSwapChain*>(nullptr));
+		MoveToNextCommandBuffer();
+		InvalidateCachedState();
+
+		VKLibretro::Frame frame;
+		frame.image = bb->GetImage();
+		frame.view = bb->GetView();
+		frame.format = bb->GetVkFormat();
+		frame.width = static_cast<u32>(bb->GetWidth());
+		frame.height = static_cast<u32>(bb->GetHeight());
+		s_libretro_bb_idx = (s_libretro_bb_idx + 1) % kLibretroBackbuffers;
+		VKLibretro::PublishFrame(frame);
+		return;
+	}
+
 	m_swap_chain->GetCurrentTexture()->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::PresentSrc);
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
@@ -2692,7 +2828,9 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	bool enable_validation_layer = GSConfig.UseDebugDevice;
 
 	Error error;
-	if (!Vulkan::LoadVulkanLibrary(&error))
+	// The libretro frontend loads the library (and installs the negotiation
+	// wraps) before GS opens; loading twice trips the loader's assert.
+	if (!Vulkan::IsVulkanLibraryLoaded() && !Vulkan::LoadVulkanLibrary(&error))
 	{
 		Error::AddPrefix(&error, "Failed to load Vulkan library. Does your GPU and/or driver support Vulkan?\nThe error was:\n");
 		Host::ReportErrorAsync("Error", error.GetDescription());
@@ -2702,7 +2840,13 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	if (!AcquireWindow(true))
 		return false;
 
-	m_instance = CreateVulkanInstance(m_window_info, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
+	// Libretro context sharing: the VkInstance comes from the frontend's
+	// negotiation interface. Function loading still goes through the wrapped
+	// vkGetInstanceProcAddr so vkCreateDevice/vkQueueSubmit get intercepted.
+	if (VKLibretro::Active && VKLibretro::Init.instance != VK_NULL_HANDLE)
+		m_instance = VKLibretro::Init.instance;
+	else
+		m_instance = CreateVulkanInstance(m_window_info, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
 	if (m_instance == VK_NULL_HANDLE)
 	{
 		if (enable_debug_utils || enable_validation_layer)
@@ -2734,6 +2878,15 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 		return false;
 	}
 
+	if (VKLibretro::Active && VKLibretro::Init.gpu != VK_NULL_HANDLE)
+	{
+		// Frontend picked the physical device during negotiation.
+		m_physical_device = VKLibretro::Init.gpu;
+		vkGetPhysicalDeviceProperties(m_physical_device, &m_device_properties);
+		m_name = m_device_properties.deviceName;
+	}
+	else
+	{
 	const bool is_default_gpu = GSConfig.Adapter == GetDefaultAdapter();
 	if (!(GSConfig.Adapter.empty() || is_default_gpu))
 	{
@@ -2765,6 +2918,7 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 
 	// Stores the GPU name
 	m_name = m_device_properties.deviceName;
+	} // !VKLibretro gpu adoption
 
 	// We need this to be at least 32 byte aligned for AVX2 stores.
 	m_device_properties.limits.minUniformBufferOffsetAlignment =

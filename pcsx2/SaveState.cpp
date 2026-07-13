@@ -1068,6 +1068,61 @@ bool SaveState_ZipToDisk(
 	return true;
 }
 
+// libretro: write a state into an in-memory zip (retro_serialize buffer).
+bool SaveState_ZipToBuffer(std::unique_ptr<ArchiveEntryList> srclist,
+	std::unique_ptr<SaveStateScreenshotData> screenshot, std::vector<u8>* out_data, Error* error)
+{
+	zip_error_t ze = {};
+	zip_source_t* zs = zip_source_buffer_create(nullptr, 0, 0, &ze);
+	zip_t* zf = nullptr;
+	if (zs && !(zf = zip_open_from_source(zs, ZIP_TRUNCATE, &ze)))
+	{
+		Error::SetString(error, fmt::format("Savestate buffer zip error: {}", zip_error_strerror(&ze)));
+		zip_source_free(zs);
+		return false;
+	}
+
+	// keep the source alive across zip_close so the bytes can be read back
+	zip_source_keep(zs);
+
+	if (!SaveState_AddToZip(zf, srclist.get(), screenshot.get()))
+	{
+		Error::SetString(error, "Failed to save state to memory zip.");
+		zip_discard(zf);
+		zip_source_free(zs);
+		return false;
+	}
+
+	if (zip_close(zf) != 0)
+	{
+		Error::SetString(error, fmt::format("Failed to close memory zip: {}", zip_strerror(zf)));
+		zip_discard(zf);
+		zip_source_free(zs);
+		return false;
+	}
+
+	bool res = false;
+	if (zip_source_open(zs) == 0)
+	{
+		if (zip_source_seek(zs, 0, SEEK_END) == 0)
+		{
+			const zip_int64_t size = zip_source_tell(zs);
+			if (size > 0 && zip_source_seek(zs, 0, SEEK_SET) == 0)
+			{
+				out_data->resize(static_cast<size_t>(size));
+				res = (zip_source_read(zs, out_data->data(), out_data->size()) ==
+					   static_cast<zip_int64_t>(out_data->size()));
+			}
+		}
+		zip_source_close(zs);
+	}
+	if (!res)
+		Error::SetString(error, "Failed to read back memory zip.");
+
+	zip_source_free(zs);
+	return res;
+}
+
 bool SaveState_ReadScreenshot(const std::string& filename, u32* out_width, u32* out_height, std::vector<u32>* out_pixels)
 {
 	zip_error_t ze = {};
@@ -1162,6 +1217,8 @@ static bool LoadInternalStructuresState(zip_t* zf, s64 index, Error* error)
 	return true;
 }
 
+static bool SaveState_UnzipFromZip(zip_t* zf, const std::string& label, Error* error);
+
 bool SaveState_UnzipFromDisk(const std::string& filename, Error* error)
 {
 	zip_error_t ze = {};
@@ -1176,6 +1233,37 @@ bool SaveState_UnzipFromDisk(const std::string& filename, Error* error)
 
 		return false;
 	}
+
+	return SaveState_UnzipFromZip(zf.get(), filename, error);
+}
+
+// libretro: load a state from an in-memory zip (retro_unserialize buffer).
+bool SaveState_UnzipFromBuffer(const void* data, size_t size, Error* error)
+{
+	zip_error_t ze = {};
+	zip_source_t* zs = zip_source_buffer_create(data, size, 0, &ze);
+	zip_t* zf_raw = zs ? zip_open_from_source(zs, ZIP_RDONLY, &ze) : nullptr;
+	if (!zf_raw)
+	{
+		Error::SetString(error, fmt::format("Savestate buffer zip error: {}", zip_error_strerror(&ze)));
+		if (zs)
+			zip_source_free(zs);
+		return false;
+	}
+
+	const bool res = SaveState_UnzipFromZip(zf_raw, "<memory>", error);
+	zip_discard(zf_raw);
+	return res;
+}
+
+static bool SaveState_UnzipFromZip(zip_t* zf_raw, const std::string& filename, Error* error)
+{
+	// Wrap in the same interface the file path uses.
+	struct ZipRef
+	{
+		zip_t* p;
+		zip_t* get() const { return p; }
+	} zf{zf_raw};
 
 	// look for version and screenshot information in the zip stream:
 	if (!CheckVersion(filename, zf.get(), error))

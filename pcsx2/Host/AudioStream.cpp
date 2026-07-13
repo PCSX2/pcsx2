@@ -227,6 +227,14 @@ u32 AudioStream::GetBufferedFramesRelaxed() const
 	return (wpos + m_buffer_size - rpos) % m_buffer_size;
 }
 
+u32 AudioStream::PullFrames(SampleType* samples, u32 num_frames)
+{
+	num_frames = std::min(num_frames, GetBufferedFramesRelaxed());
+	if (num_frames > 0)
+		ReadFrames(samples, num_frames);
+	return num_frames;
+}
+
 void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
 {
 	const u32 available_frames = GetBufferedFramesRelaxed();

@@ -83,6 +83,7 @@ endif()
 set(CMAKE_FIND_FRAMEWORK ${FIND_FRAMEWORK_BACKUP})
 
 add_subdirectory(3rdparty/fast_float EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/libretro EXCLUDE_FROM_ALL)
 # rapidyaml re-vendored in-tree (fork-local; upstream 0beb18c9e un-bundled it in
 # favour of a system ryml). Keeps the build self-contained for handheld/cross builds.
 add_subdirectory(3rdparty/rapidyaml EXCLUDE_FROM_ALL)

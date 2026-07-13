@@ -59,6 +59,10 @@ extern bool SaveState_ZipToDisk(
 	const char* filename, Error* error);
 extern bool SaveState_ReadScreenshot(const std::string& filename, u32* out_width, u32* out_height, std::vector<u32>* out_pixels);
 extern bool SaveState_UnzipFromDisk(const std::string& filename, Error* error);
+// libretro in-memory state (retro_serialize/retro_unserialize)
+extern bool SaveState_ZipToBuffer(std::unique_ptr<ArchiveEntryList> srclist,
+	std::unique_ptr<SaveStateScreenshotData> screenshot, std::vector<u8>* out_data, Error* error);
+extern bool SaveState_UnzipFromBuffer(const void* data, size_t size, Error* error);
 
 // --------------------------------------------------------------------------------------
 //  SaveStateBase class

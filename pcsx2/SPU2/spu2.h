@@ -63,6 +63,9 @@ u32 GetConsoleSampleRate();
 /// Tells SPU2 to forward audio packets to GSCapture.
 void SetAudioCaptureActive(bool active);
 bool IsAudioCaptureActive();
+	// libretro: direct access to the output stream so the frontend can pull
+	// mixed frames from retro_run.
+	AudioStream* GetOutputStream();
 } // namespace SPU2
 
 void SPU2write(u32 mem, u16 value);
