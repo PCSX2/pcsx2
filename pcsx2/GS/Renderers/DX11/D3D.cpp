@@ -8,7 +8,10 @@
 #include "GS/GSExtra.h"
 #include "Host.h"
 
-#ifdef ARCH_X86
+// Match the guard on the GSDeviceVK::EnumerateGPUs() use below. Vulkan is
+// enabled on Windows arm64 too (GSDeviceVK builds there), so gating the include
+// on ARCH_X86 left the type undeclared on arm64 while the use was still compiled.
+#ifdef ENABLE_VULKAN
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
 #endif
 

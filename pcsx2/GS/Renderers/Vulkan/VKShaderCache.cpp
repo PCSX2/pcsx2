@@ -202,7 +202,13 @@ bool dyn_shaderc::Open()
 	// Debian packages the library as libshaderc.so.1
 	const std::string libname_fallback = DynamicLibrary::GetVersionedFilename("shaderc", 1);
 #endif
-	if (!s_library.Open(libname.c_str(), &error) && !s_library.Open(libname_fallback.c_str(), &error))
+	if (!s_library.Open(libname.c_str(), &error)
+#ifndef _WIN32
+		// libname_fallback only exists on non-Windows (see above); Windows has no
+		// versioned/Debian .so fallback to try.
+		&& !s_library.Open(libname_fallback.c_str(), &error)
+#endif
+	)
 	{
 		ERROR_LOG("Failed to load shaderc: {}", error.GetDescription());
 		return false;
