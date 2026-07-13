@@ -6,8 +6,8 @@
 #   * Android APK       -> platforms/android  (Gradle + NDK, thin CMake on root core)
 #   * iOS .app          -> platforms/ios      (Xcode/CMake on root core)
 #
-# Windows-on-arm64 is a cross-compile on an x64 runner (see windows_build_qt.yml):
-# it builds the x64 Qt host tooling first, then the arm64 target deps + GUI.
+# Windows-on-arm64 builds natively on a Windows 11 arm64 runner (see
+# windows_build_qt.yml): a single arm64 deps stage, then the arm64 GUI.
 #
 # NOTE: The Android and iOS jobs build against the freshly-collapsed single core
 # and have not yet had a green run; they are the mechanism that will surface the
