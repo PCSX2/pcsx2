@@ -14,11 +14,6 @@
 name: Nightly
 
 on:
-  push:
-    branches: [master]       # build a nightly on every push to master
-    paths-ignore:
-      - '**/*.md'            # skip doc-only pushes
-      - 'docs/**'
   schedule:
     - cron: '0 8 * * *'      # 08:00 UTC daily
   workflow_dispatch:

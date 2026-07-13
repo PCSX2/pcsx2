@@ -11,6 +11,18 @@
 
 #include <cstdint>
 
+// On iOS dual-map JIT, write through the RW alias (rx + g_code_rw_offset).
+// Identity no-op elsewhere. Mirrors armGetWritableCodePtr in pcsx2/arm64/AsmHelpers.cpp.
+#if defined(__APPLE__) && TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR
+#include "common/Darwin/DarwinMisc.h"
+static void* gsGetWritableCodePtr(void* rx_ptr)
+{
+	return static_cast<u8*>(rx_ptr) + DarwinMisc::g_code_rw_offset;
+}
+#else
+static void* gsGetWritableCodePtr(void* rx_ptr) { return rx_ptr; }
+#endif
+
 // warning : offset of on non-standard-layout type 'GSScanlineGlobalData' [-Winvalid-offsetof]
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -84,8 +96,9 @@ static const auto& _fd = v2;
 #define armAsm (&m_emitter)
 
 GSDrawScanlineCodeGenerator::GSDrawScanlineCodeGenerator(u64 key, void* code, size_t maxsize)
-	: m_emitter(static_cast<vixl::byte*>(code), maxsize, vixl::aarch64::PositionDependentCode)
+	: m_emitter(static_cast<vixl::byte*>(gsGetWritableCodePtr(code)), maxsize, vixl::aarch64::PositionDependentCode)
 	, m_sel(key)
+	, m_code_rx(static_cast<const u8*>(code))
 {
 	// hopefully no constants which need to be moved to register first..
 	m_emitter.GetScratchRegisterList()->Remove(_xscratch.GetCode());
