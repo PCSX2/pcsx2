@@ -1217,3 +1217,53 @@ TEST(EeRecFpu, Mtc1ConstSourceAllocatesUsedDest)
 	h.Run();
 	EXPECT_EQ(h.GetGpr64Interp(reg::v0) & 0xFFFFFFFFull, 0x40A00000ull); // 5.0f
 }
+
+// ---- GE-13: DIV.S without operand copies — destination aliasing edges -------
+// The restructured recDIV_S reads raw fs/ft directly; every zero-path sign
+// read precedes the single fd write, so fd==fs / fd==ft must stay exact.
+
+TEST(EeRecFpu, DivSAliasedDestEqualsSource)
+{
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFprBits(1, 0x41200000u); // 10.0f
+	h.SetFprBits(2, 0x40000000u); // 2.0f
+	h.LoadProgram({ee::DIV_S(1, 1, 2), ee::MFC1(reg::v0, 1)}); // f1 = f1/f2 = 5.0
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::v0) & 0xFFFFFFFFull, 0x40A00000ull);
+}
+
+TEST(EeRecFpu, DivSAliasedDestEqualsDivisor)
+{
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFprBits(1, 0x41200000u); // 10.0f
+	h.SetFprBits(2, 0x40000000u); // 2.0f
+	h.LoadProgram({ee::DIV_S(2, 1, 2), ee::MFC1(reg::v0, 2)}); // f2 = f1/f2 = 5.0
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::v0) & 0xFFFFFFFFull, 0x40A00000ull);
+}
+
+TEST(EeRecFpu, DivSByZeroAliasedDestSignFromBothOperands)
+{
+	// x/0 with fd==ft: the ±fMax result sign = sign(fs^ft), read from the RAW
+	// operands — a premature fd write would corrupt the ft sign read.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFprBits(1, 0xC1200000u); // -10.0f
+	h.SetFprBits(2, 0x80000000u); // -0.0f
+	h.LoadProgram({ee::DIV_S(2, 1, 2), ee::MFC1(reg::v0, 2)}); // -10/-0 → +fMax
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::v0) & 0xFFFFFFFFull, 0x7F7FFFFFull);
+}
+
+TEST(EeRecFpu, DivSZeroOverZeroAliasedDest)
+{
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFprBits(1, 0x00000000u); // +0.0f
+	h.SetFprBits(2, 0x80000000u); // -0.0f
+	h.LoadProgram({ee::DIV_S(1, 1, 2), ee::MFC1(reg::v0, 1)}); // 0/0 → -fMax (sign fs^ft)
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::v0) & 0xFFFFFFFFull, 0xFF7FFFFFull);
+}

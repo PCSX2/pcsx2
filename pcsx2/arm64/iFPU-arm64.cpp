@@ -597,14 +597,16 @@ void recMUL_S()
 		XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 }
 
-// Emit: ldr x9, [addr]; msr FPCR, x9 — load a 64-bit FPCR bitmask from `addr`.
-// The PS2 FPU divides/sqrts in round-to-nearest while ADD/MUL round toward zero,
-// so DIV must briefly swap FPCR to FPUDivFPCR and restore FPUFPCR after (mirrors
-// x86 recDIV_S_xmm's xLDMXCSR pair). Uses x8/x9 as scratch.
-static void emitLoadFPCR(const void* addr)
+// Emit: mov x9, #bitmask; msr FPCR, x9 — set FPCR to a compile-time-known
+// bitmask. The PS2 FPU divides/sqrts in round-to-nearest while ADD/MUL round
+// toward zero, so DIV must briefly swap FPCR to FPUDivFPCR and restore FPUFPCR
+// after (mirrors x86 recDIV_S_xmm's xLDMXCSR pair). GE-13: the swap gate
+// itself is baked per-compile (a CPU-config change resets the recompilers), so
+// the VALUE is equally bake-safe — the old adrp+Ldr+Msr paid an address setup
+// plus a dependent load on both sides of every DIV/SQRT.
+static void emitLoadFPCR(u64 bitmask)
 {
-	armMoveAddressToReg(a64::x8, const_cast<void*>(addr));
-	armAsm->Ldr(a64::x9, a64::MemOperand(a64::x8));
+	armAsm->Mov(a64::x9, bitmask);
 	armAsm->Msr(a64::FPCR, a64::x9);
 }
 
@@ -621,14 +623,16 @@ static void recDIV_S_xmm(int info)
 {
 	const bool swapFpcr = EmuConfig.Cpu.FPUFPCR.bitmask != EmuConfig.Cpu.FPUDivFPCR.bitmask;
 	if (swapFpcr)
-		emitLoadFPCR(&EmuConfig.Cpu.FPUDivFPCR.bitmask);
+		emitLoadFPCR(EmuConfig.Cpu.FPUDivFPCR.bitmask);
 
-	// Copy both operands into temps: EEREC_D may alias EEREC_S/EEREC_T, and the
-	// div-by-zero path needs the raw (pre-clamp) dividend/divisor sign bits.
-	const int dreg = _allocTempNEONreg();
-	const int treg = _allocTempNEONreg();
-	armAsm->Fmov(armSRegister(dreg), armSRegister(EEREC_S));
-	armAsm->Fmov(armSRegister(treg), armSRegister(EEREC_T));
+	// GE-13: no operand copies — every read of the raw (pre-clamp) fs/ft bits
+	// on the zero-divisor paths happens BEFORE the single EEREC_D write, so D
+	// aliasing S or T is safe; the normal path routes through fpuClampInput
+	// (scratch copies only when CHECK_FPU_EXTRA_OVERFLOW clamping is on, like
+	// the rest of the arithmetic family). The old shape paid two temp allocs
+	// plus two Fmovs unconditionally.
+	const a64::VRegister fs = armSRegister(EEREC_S);
+	const a64::VRegister ft = armSRegister(EEREC_T);
 
 	// Clear I|D.
 	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
@@ -637,11 +641,11 @@ static void recDIV_S_xmm(int info)
 
 	a64::Label normal, setMax, xDiv, end;
 
-	armAsm->Fcmp(armSRegister(treg), 0.0);
+	armAsm->Fcmp(ft, 0.0);
 	armAsm->B(&normal, a64::ne);   // divisor != 0 → normal divide (unordered too)
 
 	// Divisor is zero: distinguish 0/0 (I|SI) from x/0 (D|SD).
-	armAsm->Fcmp(armSRegister(dreg), 0.0);
+	armAsm->Fcmp(fs, 0.0);
 	armAsm->B(&xDiv, a64::ne);
 	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
 	armAsm->Orr(RWSCRATCH, RWSCRATCH, FPUflagI | FPUflagSI);
@@ -653,9 +657,9 @@ static void recDIV_S_xmm(int info)
 	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
 
 	armAsm->Bind(&setMax);
-	// result = sign(Fs ^ Ft) | 0x7f7fffff
-	armAsm->Fmov(RWARG1, armSRegister(dreg));
-	armAsm->Fmov(RWARG2, armSRegister(treg));
+	// result = sign(Fs ^ Ft) | 0x7f7fffff — raw sign reads precede the D write.
+	armAsm->Fmov(RWARG1, fs);
+	armAsm->Fmov(RWARG2, ft);
 	armAsm->Eor(RWARG1, RWARG1, RWARG2);
 	armAsm->And(RWARG1, RWARG1, 0x80000000);
 	armAsm->Orr(RWARG1, RWARG1, 0x7f7fffff);
@@ -663,21 +667,17 @@ static void recDIV_S_xmm(int info)
 	armAsm->B(&end);
 
 	armAsm->Bind(&normal);
-	if (CHECK_FPU_EXTRA_OVERFLOW)
 	{
-		fpuClampCompareOperand(armSRegister(dreg));
-		fpuClampCompareOperand(armSRegister(treg));
+		const a64::VRegister s = fpuClampInput(fs, RSSCRATCH);
+		const a64::VRegister t = fpuClampInput(ft, RSSCRATCH2);
+		armAsm->Fdiv(armSRegister(EEREC_D), s, t);
+		fpuClampResult(armSRegister(EEREC_D));
 	}
-	armAsm->Fdiv(armSRegister(EEREC_D), armSRegister(dreg), armSRegister(treg));
-	fpuClampResult(armSRegister(EEREC_D));
 
 	armAsm->Bind(&end);
 
-	_freeNEONreg(dreg);
-	_freeNEONreg(treg);
-
 	if (swapFpcr)
-		emitLoadFPCR(&EmuConfig.Cpu.FPUFPCR.bitmask);
+		emitLoadFPCR(EmuConfig.Cpu.FPUFPCR.bitmask);
 }
 
 void recDIV_S()
@@ -697,7 +697,7 @@ static void recSQRT_S_xmm(int info)
 	// FPUFPCR after. Mirrors x86 recSQRT_S_xmm (iFPU.cpp:1745-1782).
 	const bool swapFpcr = EmuConfig.Cpu.FPUFPCR.bitmask != EmuConfig.Cpu.FPUDivFPCR.bitmask;
 	if (swapFpcr)
-		emitLoadFPCR(&EmuConfig.Cpu.FPUDivFPCR.bitmask);
+		emitLoadFPCR(EmuConfig.Cpu.FPUDivFPCR.bitmask);
 
 	// PS2 SQRT.S flag handling (interp SQRT_S, FPU.cpp; CHECK_FPU_EXTRA_FLAGS
 	// is always on): clear I|D unconditionally, then set I|SI when Ft is a
@@ -721,7 +721,7 @@ static void recSQRT_S_xmm(int info)
 	fpuClampResult(armSRegister(EEREC_D));
 
 	if (swapFpcr)
-		emitLoadFPCR(&EmuConfig.Cpu.FPUFPCR.bitmask);
+		emitLoadFPCR(EmuConfig.Cpu.FPUFPCR.bitmask);
 }
 
 void recSQRT_S()
