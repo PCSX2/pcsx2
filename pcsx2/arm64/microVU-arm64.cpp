@@ -488,7 +488,7 @@ void mVUinit(microVU& mVU, uint vuIndex)
 // run, and at exit to restore the EE's FPCR.
 static void mVUemitLoadFPCR(const u64* addr)
 {
-	armMoveAddressToReg(a64::x8, (void*)addr);
+	armAsm->Ldr(a64::x8, reinterpret_cast<u64>(addr)); // literal-pool load
 	armAsm->Ldr(a64::x9, a64::MemOperand(a64::x8));
 	armAsm->Msr(a64::FPCR, a64::x9);
 }
@@ -565,21 +565,25 @@ static void mVUdispatcherAB(mV)
 
 	// Pin gprVUState (x19) = &mVU.regs(). All subsequent regs() field accesses
 	// (here in the dispatcher and in compiled blocks) use [gprVUState, #off]
-	// instead of paying the 3-insn movz/movk/movk address-materialization tax.
-	// Address is constant per-VU (= &vuRegs[mVU.index]), so we set this once
-	// per dispatch and never re-pin. Survives armEmitCall (callee-saved).
-	armMoveAddressToReg(gprVUState, &mVU.regs());
+	// instead of paying address-materialization tax. Address is constant
+	// per-VU (= &vuRegs[mVU.index]), so we set this once per dispatch and
+	// never re-pin. Survives armEmitCall (callee-saved).
+	//
+	// VE-03: all three pins come from the stub's literal pool (1 insn each)
+	// instead of movz/movk chains (3 each) — this stub is regenerated per
+	// process, so baking the addresses as data is safe.
+	armAsm->Ldr(gprVUState, reinterpret_cast<u64>(&mVU.regs()));
 
 	// Pin gprMVUFlag (x24) = &mVU.macFlag[0]. Reaches statFlag / macFlag /
 	// clipFlag / neonCTemp / neonBackup via signed [+/-imm12] (see
 	// microVU_Misc-arm64.h). Lets every flag-touching FMAC drop the 3-insn
 	// abs-addr materialization down to a single ldr/str.
-	armMoveAddressToReg(gprMVUFlag, mVU.macFlag);
+	armAsm->Ldr(gprMVUFlag, reinterpret_cast<u64>(&mVU.macFlag[0]));
 
 	// Pin gprMVUglob (x25) = &mVUglob. Every clamp / FTOI / ITOF / EATAN /
 	// SQRT et al. constant load goes via [gprMVUglob, #imm12] instead of
 	// materializing the global's absolute address.
-	armMoveAddressToReg(gprMVUglob, (void*)&mVUglob);
+	armAsm->Ldr(gprMVUglob, reinterpret_cast<u64>(&mVUglob));
 
 	// Load VU-specific FPCR (round-toward-zero + FZ/DaZ) — only when needed.
 	// PS2 VU float ops require this rounding mode; the gating skips the
@@ -587,34 +591,41 @@ static void mVUdispatcherAB(mV)
 	if (mvuNeedsFPCRUpdate(mVU))
 		mVUemitLoadFPCR(isVU0 ? &EmuConfig.Cpu.VU0FPCR.bitmask : &EmuConfig.Cpu.VU1FPCR.bitmask);
 
-	// Load macro/clip flags from VU state into microVU shadow copies via the
-	// pinned base. Shadow copies live in `microVU` not `VURegs`.
-	armAsm->Ldr(a64::q0, mVUstateMem(offsetof(VURegs, micro_macflags)));
-	armAsm->Str(a64::q0, a64::MemOperand(gprMVUFlag));
+	// Load macro/clip flags from VU state into microVU shadow copies, and the
+	// status flag instances into callee-saved GPRs. VE-03: the three micro_*
+	// fields are consecutive alignas(16) u32[4] arrays (48 contiguous bytes),
+	// and the mac/clip shadows are adjacent in `microVU` in the same order —
+	// so the whole marshalling runs off one base add: a q-pair copy plus two
+	// w-pair loads (was 2x Ldr/Str q + 4x Ldr w).
+	static_assert(offsetof(VURegs, micro_clipflags) == offsetof(VURegs, micro_macflags) + 16,
+		"flag marshalling loads mac+clip as one q-pair");
+	static_assert(offsetof(VURegs, micro_statusflags) == offsetof(VURegs, micro_macflags) + 32,
+		"flag marshalling loads status off the mac base");
+	pxAssert(reinterpret_cast<const u8*>(&mVU.clipFlag[0]) ==
+			 reinterpret_cast<const u8*>(&mVU.macFlag[0]) + 16);
+	armAsm->Add(a64::x8, gprVUState, offsetof(VURegs, micro_macflags));
+	armAsm->Ldp(a64::q0, a64::q1, a64::MemOperand(a64::x8));
+	armAsm->Stp(a64::q0, a64::q1, a64::MemOperand(gprMVUFlag));
+	armAsm->Ldp(gprF0, gprF1, a64::MemOperand(a64::x8, 32));
+	armAsm->Ldp(gprF2, gprF3, a64::MemOperand(a64::x8, 40));
 
-	armAsm->Ldr(a64::q0, mVUstateMem(offsetof(VURegs, micro_clipflags)));
-	armAsm->Str(a64::q0, a64::MemOperand(gprMVUFlag, 16));
-
-	// Load status flag instances into callee-saved GPRs
-	armAsm->Ldr(gprF0, mVUstateMem(offsetof(VURegs, micro_statusflags) + 0));
-	armAsm->Ldr(gprF1, mVUstateMem(offsetof(VURegs, micro_statusflags) + 4));
-	armAsm->Ldr(gprF2, mVUstateMem(offsetof(VURegs, micro_statusflags) + 8));
-	armAsm->Ldr(gprF3, mVUstateMem(offsetof(VURegs, micro_statusflags) + 12));
-
-	// Load P/Q into qmmPQ
-	// x86 packs P, Q, pending_q, pending_p into xmmPQ via shuffles.
-	// For now, load Q and pending_q into lanes 0,1 (P is VU1-only).
+	// Load P/Q into qmmPQ: [0]=Q, [1]=pending_q, [2]=P, [3]=pending_p.
+	// Zip1 packs lane 0 of two s-loads; the s-load zeroes lanes 1-3, so the
+	// upper lanes end up zero for VU0 — matching x86's MOVSSZX-based pack
+	// (nothing reads or stores lanes 2/3 on VU0; P is VU1-only).
 	armAsm->Ldr(a64::s0, mVUstateMem(offsetof(VURegs, VI) + REG_Q * sizeof(REG_VI)));
 	armAsm->Ldr(a64::s1, mVUstateMem(offsetof(VURegs, pending_q)));
-	// Pack into qmmPQ: [0]=Q, [1]=pending_q, [2]=P, [3]=pending_p
-	armAsm->Ins(qmmPQ.V4S(), 0, a64::q0.V4S(), 0);
-	armAsm->Ins(qmmPQ.V4S(), 1, a64::q1.V4S(), 0);
 	if (isVU1)
 	{
-		armAsm->Ldr(a64::s0, mVUstateMem(offsetof(VURegs, VI) + REG_P * sizeof(REG_VI)));
-		armAsm->Ldr(a64::s1, mVUstateMem(offsetof(VURegs, pending_p)));
-		armAsm->Ins(qmmPQ.V4S(), 2, a64::q0.V4S(), 0);
-		armAsm->Ins(qmmPQ.V4S(), 3, a64::q1.V4S(), 0);
+		armAsm->Ldr(a64::s2, mVUstateMem(offsetof(VURegs, VI) + REG_P * sizeof(REG_VI)));
+		armAsm->Ldr(a64::s3, mVUstateMem(offsetof(VURegs, pending_p)));
+		armAsm->Zip1(a64::q0.V4S(), a64::q0.V4S(), a64::q1.V4S()); // [Q, pending_q, 0, 0]
+		armAsm->Zip1(a64::q2.V4S(), a64::q2.V4S(), a64::q3.V4S()); // [P, pending_p, 0, 0]
+		armAsm->Zip1(qmmPQ.V2D(), a64::q0.V2D(), a64::q2.V2D());
+	}
+	else
+	{
+		armAsm->Zip1(qmmPQ.V4S(), a64::q0.V4S(), a64::q1.V4S());
 	}
 
 	// Jump to compiled block (address still in x0 from mVUexecuteVU return).
@@ -691,7 +702,7 @@ static void mVUdispatcherAB(mV)
 		"inline bounds check expects x86ptr/x86start/x86end adjacent");
 	static_assert(offsetof(microProgManager, x86end)   == offsetof(microProgManager, x86ptr) + 16,
 		"inline bounds check expects x86ptr/x86start/x86end adjacent");
-	armMoveAddressToReg(a64::x8, &mVU.prog.x86ptr);
+	armAsm->Ldr(a64::x8, reinterpret_cast<u64>(&mVU.prog.x86ptr)); // literal-pool load
 	armAsm->Ldr(a64::x9,  a64::MemOperand(a64::x8));            // x86ptr
 	armAsm->Ldr(a64::x10, a64::MemOperand(a64::x8, 8));         // x86start
 	armAsm->Cmp(a64::x9, a64::x10);
@@ -716,7 +727,7 @@ static void mVUdispatcherAB(mV)
 	//
 	// VU1+THREAD_VU1 skips the math entirely — MTVU runs the dispatcher on
 	// the VU1 thread, where touching cpuRegs.cycle is wrong (matches C++).
-	armMoveAddressToReg(a64::x8, &EmuConfig.Speedhacks.EECycleSkip);
+	armAsm->Ldr(a64::x8, reinterpret_cast<u64>(&EmuConfig.Speedhacks.EECycleSkip)); // literal
 	armAsm->Ldrb(a64::w11, a64::MemOperand(a64::x8));
 	armAsm->Cbz(a64::w11, &eeSkipDone);                         // EECycleSkip == 0 → skip
 
@@ -812,7 +823,7 @@ static void mVUdispatcherAB(mV)
 	// generation time instead.)
 	pxAssert(reinterpret_cast<const u8*>(&mVU.cycles) ==
 			 reinterpret_cast<const u8*>(&mVU.totalCycles) + 4);
-	armMoveAddressToReg(a64::x8, &mVU.totalCycles);
+	armAsm->Ldr(a64::x8, reinterpret_cast<u64>(&mVU.totalCycles)); // literal-pool load
 	armAsm->Stp(a64::w1, a64::w1, a64::MemOperand(a64::x8));
 
 	armAsm->B(&gotHostEntry);
@@ -944,7 +955,7 @@ static void mVUGenerateCopyPipelineState(mV)
 //
 // ABI:
 //   Input  : w11 (gprT3) = caller-evaluated getFlagReg(fStatus) value
-//   Clobbers: w9 (gprT1), w11, q0/v0
+//   Clobbers: x8, w9 (gprT1), w11, q0/v0, q1/v1
 //   Reads  : pinned x19 (gprVUState), x24 (gprMVUFlag), w20..w23 (gprF0..3)
 //   Returns via ret using LR set by the bl at the caller
 static void mVUGenerateEndProgramFlagsHelper(mV)
@@ -971,18 +982,19 @@ static void mVUGenerateEndProgramFlagsHelper(mV)
 	};
 
 	// Helper A — non-Ebit (isEbit == 0 || isEbit == 3): backup all 4 flag
-	// instances into micro_*flags[] for block-link restore.
+	// instances into micro_*flags[] for block-link restore. VE-03: paired
+	// copies off one base add — the exact store-side mirror of the
+	// dispatcher's entry marshalling (see mVUdispatcherAB for the layout
+	// static_asserts). Additionally clobbers x8/q1 vs the old shape; both
+	// are free at every call site (allocator flushed, q0 already clobbered).
 	mVU.endProgramFlagsA = armStartBlock();
 	{
 		emitSFLAGc();
-		armAsm->Ldr(a64::q0, a64::MemOperand(gprMVUFlag));
-		armAsm->Str(a64::q0, mVUstateMem(offsetof(VURegs, micro_macflags)));
-		armAsm->Ldr(a64::q0, a64::MemOperand(gprMVUFlag, 16));
-		armAsm->Str(a64::q0, mVUstateMem(offsetof(VURegs, micro_clipflags)));
-		armAsm->Str(gprF0, mVUstateMem(offsetof(VURegs, micro_statusflags) + 0));
-		armAsm->Str(gprF1, mVUstateMem(offsetof(VURegs, micro_statusflags) + 4));
-		armAsm->Str(gprF2, mVUstateMem(offsetof(VURegs, micro_statusflags) + 8));
-		armAsm->Str(gprF3, mVUstateMem(offsetof(VURegs, micro_statusflags) + 12));
+		armAsm->Add(a64::x8, gprVUState, offsetof(VURegs, micro_macflags));
+		armAsm->Ldp(a64::q0, a64::q1, a64::MemOperand(gprMVUFlag));
+		armAsm->Stp(a64::q0, a64::q1, a64::MemOperand(a64::x8));
+		armAsm->Stp(gprF0, gprF1, a64::MemOperand(a64::x8, 32));
+		armAsm->Stp(gprF2, gprF3, a64::MemOperand(a64::x8, 40));
 		armAsm->Ret();
 	}
 	armEndBlock();
