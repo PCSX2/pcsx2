@@ -446,7 +446,7 @@ void recMFSA()
 	_deleteEEreg(_Rd_, 0);
 	GPR_DEL_CONST(_Rd_);
 	armLoadEERegPtr(RWSCRATCH, &cpuRegs.sa);
-	armAsm->Mov(RXSCRATCH, RWSCRATCH); // zero-extend to 64
+	// Ldr w8 already zero-extends into x8 (GE-04) — store the x view directly.
 	armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rd_].UD[0]);
 }
 
