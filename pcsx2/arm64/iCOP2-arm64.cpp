@@ -692,6 +692,27 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 	armAsm->Ldr(RWSCRATCH, armVU0Mem(&VU0.VI[REG_VPU_STAT]));
 	armAsm->Tbz(RWSCRATCH, 0, &skipSync);
 
+	// VE-01: hoist _vu0run's negative-delta early-out. Both sync callees
+	// (vu0Sync / vu0SyncRunAhead, sync_only=1) reduce to `if ((s32)(cpuRegs.cycle
+	// - VU0.cycle) < 0) return;` when VU0 is at-or-ahead of the EE — and the
+	// run-ahead 16-cycle floor makes "ahead" the common steady state at these
+	// sites ("several round-trips collapse into one"). Skipping here avoids the
+	// whole call round-trip: cycle-delta flush/reload, pin flush/reload, BL. The
+	// skipped flush/reload pairs are round-trip identities when the callee
+	// no-ops, so machine state is bit-identical. C truncates the u64 difference
+	// to s32, so the sign is bit 31 of the 64-bit difference — Tbnz #31 matches
+	// it exactly (including the wrap corner where a huge positive s64 delta
+	// reads as negative s32). Not emitted for the _vu0FinishMicro-only path,
+	// which runs to E-bit regardless of the cycle delta.
+	if (needsSync)
+	{
+		armAsm->Ldr(RXSCRATCH, armCpuRegMem(&cpuRegs.nextEventCycle));
+		armAsm->Add(RXSCRATCH, RECCYCLE, RXSCRATCH); // absolute EE cycle
+		armAsm->Ldr(RSCRATCHADDR, armVU0Mem(&VU0.cycle));
+		armAsm->Sub(RXSCRATCH, RXSCRATCH, RSCRATCHADDR);
+		armAsm->Tbnz(RXSCRATCH, 31, &skipSync);
+	}
+
 	// Flush + re-derive the cycle delta around the C call (see comment above).
 	armFlushCycleDelta();
 
