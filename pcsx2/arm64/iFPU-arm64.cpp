@@ -509,6 +509,9 @@ void recMIN_S_xmm(int info);
 void recC_EQ_xmm(int info);
 void recC_LT_xmm(int info);
 void recC_LE_xmm(int info);
+void recDIV_S_xmm(int info);
+void recSQRT_S_xmm(int info);
+void recRSQRT_S_xmm(int info);
 } // namespace DOUBLE
 
 static void recMOV_S_xmm(int info)
@@ -733,9 +736,9 @@ static void recDIV_S_xmm(int info)
 	// zero-divisor paths) hit the resident FCR31 — no Ldr/Str round-trips.
 	// The alloc emits any eviction store HERE, before the Fcmp chain (NZCV)
 	// and the branch arms (allocator calls inside a runtime-conditional emit
-	// region are forbidden — the Twinsanity class). Note recDIV_S has no
-	// DOUBLE:: variant, so this body serves FULL mode too → the fl<0 raw
-	// fallback is reachable, not dead code.
+	// region are forbidden — the Twinsanity class). GE-20 gave DIV a DOUBLE::
+	// variant, so this body no longer runs under FULL mode; the fl<0 fallback
+	// stays as defensive coverage.
 	const int fl = fpuTryAllocFCR31(MODE_READ | MODE_WRITE);
 
 	// Clear I|D.
@@ -801,7 +804,7 @@ static void recDIV_S_xmm(int info)
 
 void recDIV_S()
 {
-	eeFPURecompileCode(recDIV_S_xmm, Interp::DIV_S,
+	eeFPURecompileCode(CHECK_FPU_FULL ? DOUBLE::recDIV_S_xmm : recDIV_S_xmm, Interp::DIV_S,
 		XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 }
 
@@ -824,8 +827,9 @@ static void recSQRT_S_xmm(int info)
 	// ±0 / denormal-as-zero case (exp field == 0) sets no flag. Read the Ft
 	// bits before Fabs clobbers EEREC_D, which may alias EEREC_T.
 	// GE-12: flag RMW on the resident FCR31; alloc first (eviction stores
-	// must precede the RWARG1 clobber and the branch arms). Like recDIV_S
-	// this body has no DOUBLE:: variant, so the fl<0 fallback serves FULL.
+	// must precede the RWARG1 clobber and the branch arms). GE-20 gave SQRT
+	// a DOUBLE:: variant, so this body no longer runs under FULL mode; the
+	// fl<0 fallback stays as defensive coverage.
 	const int fl = fpuTryAllocFCR31(MODE_READ | MODE_WRITE);
 	armAsm->Fmov(RWARG1, ft);
 	const a64::Register flagReg = (fl >= 0) ? armWRegister(fl) : RWSCRATCH;
@@ -852,18 +856,26 @@ static void recSQRT_S_xmm(int info)
 
 void recSQRT_S()
 {
-	eeFPURecompileCode(recSQRT_S_xmm, Interp::SQRT_S,
+	eeFPURecompileCode(CHECK_FPU_FULL ? DOUBLE::recSQRT_S_xmm : recSQRT_S_xmm, Interp::SQRT_S,
 		XMMINFO_WRITED | XMMINFO_READT);
 }
 
 void recRSQRT_S()
 {
-	// Defer to the interpreter: interp RSQRT_S (FPU.cpp) sets D|SD when Ft
-	// (divisor) is zero and I|SI when Ft is negative, and its Ft==0 branch
-	// returns ±posFmax keyed off the Ft sign (not Fs) — neither the sticky
-	// flags nor that result shape are reproducible by a raw Fdiv. RSQRT is
-	// rare, so the interpreter call is the lowest-risk match and keeps emitted
-	// code small. Same shape as recDIV_S.
+	// GE-20: FULL mode gets the x86 DOUBLE body (widen -> sqrt+div in double,
+	// zero-divisor max keyed off the DIVIDEND's sign per x86).
+	if (CHECK_FPU_FULL)
+	{
+		eeFPURecompileCode(DOUBLE::recRSQRT_S_xmm, Interp::RSQRT_S,
+			XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
+		return;
+	}
+	// Fast mode defers to the interpreter: interp RSQRT_S (FPU.cpp) sets D|SD
+	// when Ft (divisor) is zero and I|SI when Ft is negative, and its Ft==0
+	// branch returns ±posFmax keyed off the Ft sign (not Fs) — neither the
+	// sticky flags nor that result shape are reproducible by a raw Fdiv. RSQRT
+	// is rare, so the interpreter call is the lowest-risk match and keeps
+	// emitted code small. Same shape as recDIV_S.
 	recFPUCall(Interp::RSQRT_S);
 }
 

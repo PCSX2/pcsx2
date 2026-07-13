@@ -480,3 +480,102 @@ TEST(EeRecFpuFull, MinClearsOUFlags)
 	EXPECT_EQ(h.GetGpr64Jit(reg::v0) & 0x0000c000u, 0u);
 	EXPECT_EQ(h.GetFprBitsJit(2), FloatBits(1.0f));
 }
+
+// ---- GE-20 slice 2: DIV/SQRT/RSQRT DOUBLE bodies. --------------------------
+//
+// The heavy widen->op->narrow ports (x86 iFPUd.cpp recDIVhelper1 /
+// recSQRT_S_xmm / recRSQRThelper1). Discriminators: pseudo-inf operands run
+// exactly in double (the fast bodies clamp them; the RSQRT interp fallback
+// zeroes them), and the RSQRT divide-by-zero result takes the DIVIDEND's
+// sign (the interp fallback keys it off the divisor).
+
+TEST(EeRecFpuFull, DivPseudoInfByTwoExact)
+{
+	// 2^128 / 2.0 = 2^127 = 0x7f000000 — representable, exact in double.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, kPs2HugePos);
+	h.SetFprBits(1, FloatBits(2.0f));
+	h.LoadProgram({DIV_S(2, 0, 1)});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetFprBitsJit(2), 0x7f000000u); // fast path clamps fs -> 0x7effffff
+}
+
+TEST(EeRecFpuFull, DivByZeroFlagsAndMax)
+{
+	// x/0: D|SD set, result = sign(fs^ft) | +max. Semantics guard (the fast
+	// body shares this shape); pins the DOUBLE zero-path port.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, FloatBits(-3.0f));
+	h.SetFprBits(1, 0x00000000u);
+	h.LoadProgram({
+		DIV_S(2, 0, 1),
+		CFC1(reg::v0, 31),
+	});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetFprBitsJit(2), 0xff7fffffu);
+	EXPECT_EQ(h.GetGpr64Jit(reg::v0) & 0x00010020u, 0x00010020u) << "D|SD not set";
+}
+
+TEST(EeRecFpuFull, SqrtPseudoInfExact)
+{
+	// sqrt(2^128) = 2^64 = 0x5f800000 exactly.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(1, kPs2HugePos);
+	h.LoadProgram({SQRT_S(2, 1)});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetFprBitsJit(2), 0x5f800000u); // fast: sqrt(clamped FLT_MAX)
+}
+
+TEST(EeRecFpuFull, SqrtNegativeSetsIFlagAndUsesAbs)
+{
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(1, FloatBits(-4.0f));
+	h.LoadProgram({
+		SQRT_S(2, 1),
+		CFC1(reg::v0, 31),
+	});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetFprBitsJit(2), FloatBits(2.0f));
+	EXPECT_EQ(h.GetGpr64Jit(reg::v0) & 0x00020040u, 0x00020040u) << "I|SI not set";
+}
+
+TEST(EeRecFpuFull, RsqrtPseudoInfExact)
+{
+	// 1.0 / sqrt(2^128) = 2^-64 = 0x1f800000 exactly. The current interp
+	// fallback reads 0x7f800000 as IEEE +Inf and returns 0.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, FloatBits(1.0f));
+	h.SetFprBits(1, kPs2HugePos);
+	h.LoadProgram({RSQRT_S(2, 0, 1)});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetFprBitsJit(2), 0x1f800000u);
+}
+
+TEST(EeRecFpuFull, RsqrtDivByZeroSignedMaxFromDividend)
+{
+	// ft == 0: D|SD and result = sign(FS) | +max (x86 DOUBLE keys the sign off
+	// the DIVIDEND; the interp fallback keys it off the divisor — x86-JIT is
+	// the FULL-mode oracle).
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, FloatBits(-1.0f));
+	h.SetFprBits(1, 0x00000000u);
+	h.LoadProgram({
+		RSQRT_S(2, 0, 1),
+		CFC1(reg::v0, 31),
+	});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetFprBitsJit(2), 0xff7fffffu);
+	EXPECT_EQ(h.GetGpr64Jit(reg::v0) & 0x00010020u, 0x00010020u) << "D|SD not set";
+}

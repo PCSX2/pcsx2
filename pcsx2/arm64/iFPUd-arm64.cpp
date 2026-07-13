@@ -36,6 +36,10 @@ namespace DOUBLE {
 #define FPUflagU  0x00004000
 #define FPUflagSO 0x00000010
 #define FPUflagSU 0x00000008
+#define FPUflagI  0x00020000
+#define FPUflagD  0x00010000
+#define FPUflagSI 0x00000040
+#define FPUflagSD 0x00000020
 
 // ---- PS2 single -> IEEE double --------------------------------------------
 //
@@ -500,6 +504,183 @@ static void recCcond(int info, a64::Condition cond)
 void recC_EQ_xmm(int info) { recCcond(info, a64::eq); }
 void recC_LT_xmm(int info) { recCcond(info, a64::lt); }
 void recC_LE_xmm(int info) { recCcond(info, a64::le); }
+
+// ---- DIV / SQRT / RSQRT ----------------------------------------------------
+
+// GE-13's immediate-FPCR idiom (local copy of iFPU-arm64.cpp emitLoadFPCR —
+// the value is bake-safe: a CPU-config change resets the recompilers).
+static void emitLoadFPCRImm(u64 bitmask)
+{
+	armAsm->Mov(a64::x9, bitmask);
+	armAsm->Msr(a64::FPCR, a64::x9);
+}
+
+// Plain memory RMWs on fprc[31] (FULL mode ⇒ never GPR-resident, see
+// ClearOUFlags). No allocator calls — safe inside conditional emit arms.
+static void SetFprcOr(u32 bits)
+{
+	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	armAsm->Orr(RWSCRATCH, RWSCRATCH, bits);
+	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+}
+
+static void ClearIDFlags()
+{
+	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	armAsm->Bic(RWSCRATCH, RWSCRATCH, FPUflagI | FPUflagD);
+	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+}
+
+// x86 SetMaxValue: keep the sign bit, force all magnitude bits -> ±PS2 max.
+static void SetMaxValueS(int idx)
+{
+	armAsm->Fmov(RWSCRATCH, armSRegister(idx));
+	armAsm->And(RWSCRATCH, RWSCRATCH, 0x80000000);
+	armAsm->Orr(RWSCRATCH, RWSCRATCH, 0x7f7fffff);
+	armAsm->Fmov(armSRegister(idx), RWSCRATCH);
+}
+
+// x86 recDIVhelper1 (FPU_FLAGS_ID == 1 unconditionally): divide-by-zero
+// flag/result shape in the single domain, otherwise divide in double.
+// sreg/treg are temp copies (mutated); the result lands in sreg's S lane.
+// The Fcmp-with-zero runs under the EE FPCR whose FZ bit flushes denormal
+// inputs — same divisor-is-zero net as x86's DAZ'd CMPEQ.SS. The double
+// quotient of two in-range PS2 values is always finite (max magnitude
+// ~2^255), so ToPS2FPU_Full's finite-only contract holds.
+static void recDIVhelper1(int sreg, int treg)
+{
+	ClearIDFlags();
+
+	a64::Label normal, xOverZero, setDone, done;
+	armAsm->Fcmp(armSRegister(treg), 0.0);
+	armAsm->B(&normal, a64::ne);
+
+	// Divisor is ±0: pick the flag pair, then result = sign(fs^ft) | +max.
+	armAsm->Fcmp(armSRegister(sreg), 0.0);
+	armAsm->B(&xOverZero, a64::ne);
+	SetFprcOr(FPUflagI | FPUflagSI); // 0/0
+	armAsm->B(&setDone);
+	armAsm->Bind(&xOverZero);
+	SetFprcOr(FPUflagD | FPUflagSD); // x/0
+	armAsm->Bind(&setDone);
+
+	armAsm->Fmov(RWSCRATCH, armSRegister(sreg));
+	armAsm->Fmov(RWARG1, armSRegister(treg));
+	armAsm->Eor(RWSCRATCH, RWSCRATCH, RWARG1);
+	armAsm->And(RWSCRATCH, RWSCRATCH, 0x80000000);
+	armAsm->Orr(RWSCRATCH, RWSCRATCH, 0x7f7fffff);
+	armAsm->Fmov(armSRegister(sreg), RWSCRATCH);
+	armAsm->B(&done);
+
+	armAsm->Bind(&normal);
+	ToDouble(sreg);
+	ToDouble(treg);
+	armAsm->Fdiv(armDRegister(sreg), armDRegister(sreg), armDRegister(treg));
+	ToPS2FPU_Full(sreg, false, treg, false, false);
+
+	armAsm->Bind(&done);
+}
+
+void recDIV_S_xmm(int info)
+{
+	// PS2 DIV rounds to nearest (x86 swaps MXCSR to FPUDivFPCR around the op).
+	const bool swapFpcr = EmuConfig.Cpu.FPUFPCR.bitmask != EmuConfig.Cpu.FPUDivFPCR.bitmask;
+	if (swapFpcr)
+		emitLoadFPCRImm(EmuConfig.Cpu.FPUDivFPCR.bitmask);
+
+	const int sreg = copySrc(EEREC_S);
+	const int treg = copySrc(EEREC_T);
+	recDIVhelper1(sreg, treg);
+	armAsm->Fmov(armSRegister(EEREC_D), armSRegister(sreg));
+	_freeNEONreg(sreg);
+	_freeNEONreg(treg);
+
+	if (swapFpcr)
+		emitLoadFPCRImm(EmuConfig.Cpu.FPUFPCR.bitmask);
+}
+
+void recSQRT_S_xmm(int info)
+{
+	// Round-to-nearest for the double Fsqrt + the ToPS2FPU narrowing, like
+	// x86's roundmode_nearest swap (FPUDivFPCR is the nearest-mode FPCR).
+	const bool swapFpcr = EmuConfig.Cpu.FPUFPCR.bitmask != EmuConfig.Cpu.FPUDivFPCR.bitmask;
+	if (swapFpcr)
+		emitLoadFPCRImm(EmuConfig.Cpu.FPUDivFPCR.bitmask);
+
+	const int treg = copySrc(EEREC_T); // SQRT.S reads FT
+
+	ClearIDFlags();
+	// x86 DOUBLE tests the raw SIGN BIT (unlike the fast body's exp-field
+	// gate): sqrt(-0) sets I|SI too, then |t| makes the operand positive.
+	// x86-JIT is the FULL-mode oracle for this corner.
+	armAsm->Fmov(RWARG1, armSRegister(treg));
+	a64::Label tPositive;
+	armAsm->Tbz(RWARG1, 31, &tPositive);
+	SetFprcOr(FPUflagI | FPUflagSI);
+	armAsm->Fabs(armSRegister(treg), armSRegister(treg));
+	armAsm->Bind(&tPositive);
+
+	ToDouble(treg);
+	armAsm->Fsqrt(armDRegister(treg), armDRegister(treg));
+	ToPS2FPU_Full(treg, false, treg, false, false);
+	armAsm->Fmov(armSRegister(EEREC_D), armSRegister(treg));
+	_freeNEONreg(treg);
+
+	if (swapFpcr)
+		emitLoadFPCRImm(EmuConfig.Cpu.FPUFPCR.bitmask);
+}
+
+// x86 recRSQRThelper1: negative-divisor I|SI + |t|, zero-divisor flag pair
+// with SetMaxValue keyed off the DIVIDEND's sign, else fs / sqrt(ft) in
+// double. (The interp keys the zero-divisor sign off the DIVISOR — x86-JIT
+// wins that disagreement under FULL.)
+void recRSQRT_S_xmm(int info)
+{
+	const bool swapFpcr = EmuConfig.Cpu.FPUFPCR.bitmask != EmuConfig.Cpu.FPUDivFPCR.bitmask;
+	if (swapFpcr)
+		emitLoadFPCRImm(EmuConfig.Cpu.FPUDivFPCR.bitmask);
+
+	const int sreg = copySrc(EEREC_S);
+	const int treg = copySrc(EEREC_T);
+
+	ClearIDFlags();
+
+	armAsm->Fmov(RWARG1, armSRegister(treg));
+	a64::Label tPositive;
+	armAsm->Tbz(RWARG1, 31, &tPositive);
+	SetFprcOr(FPUflagI | FPUflagSI);
+	armAsm->Fabs(armSRegister(treg), armSRegister(treg));
+	armAsm->Bind(&tPositive);
+
+	a64::Label normal, zeroOverZero, setDone, done;
+	armAsm->Fcmp(armSRegister(treg), 0.0);
+	armAsm->B(&normal, a64::ne);
+
+	armAsm->Fcmp(armSRegister(sreg), 0.0);
+	armAsm->B(&zeroOverZero, a64::eq);
+	SetFprcOr(FPUflagD | FPUflagSD); // x/0
+	armAsm->B(&setDone);
+	armAsm->Bind(&zeroOverZero);
+	SetFprcOr(FPUflagI | FPUflagSI); // 0/0
+	armAsm->Bind(&setDone);
+	SetMaxValueS(sreg);
+	armAsm->B(&done);
+
+	armAsm->Bind(&normal);
+	ToDouble(treg);
+	ToDouble(sreg);
+	armAsm->Fsqrt(armDRegister(treg), armDRegister(treg));
+	armAsm->Fdiv(armDRegister(sreg), armDRegister(sreg), armDRegister(treg));
+	ToPS2FPU_Full(sreg, false, treg, false, false);
+
+	armAsm->Bind(&done);
+	armAsm->Fmov(armSRegister(EEREC_D), armSRegister(sreg));
+	_freeNEONreg(sreg);
+	_freeNEONreg(treg);
+
+	if (swapFpcr)
+		emitLoadFPCRImm(EmuConfig.Cpu.FPUFPCR.bitmask);
+}
 
 #undef _Ft_
 #undef _Fs_
