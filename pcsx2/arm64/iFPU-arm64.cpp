@@ -490,8 +490,7 @@ void recC_EQ()
 	fpuClampCompareOperand(RSSCRATCH);
 	fpuClampCompareOperand(RSSCRATCH2);
 	armAsm->Fcmp(RSSCRATCH, RSSCRATCH2);
-	armAsm->Mov(a64::w0, 0);
-	armAsm->Cset(a64::w0, a64::eq);
+	armAsm->Cset(a64::w0, a64::eq); // fully defines w0 — no pre-zero needed (GE-03)
 	// Set or clear FPUflagC based on result (w0 holds cset result, don't clobber)
 	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
 	armAsm->Mov(RWARG2, FPUflagC); armAsm->Bic(RWSCRATCH, RWSCRATCH, RWARG2);
@@ -508,8 +507,7 @@ void recC_LT()
 	fpuClampCompareOperand(RSSCRATCH);
 	fpuClampCompareOperand(RSSCRATCH2);
 	armAsm->Fcmp(RSSCRATCH, RSSCRATCH2);
-	armAsm->Mov(a64::w0, 0);
-	armAsm->Cset(a64::w0, a64::lt);
+	armAsm->Cset(a64::w0, a64::lt); // fully defines w0 — no pre-zero needed (GE-03)
 	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
 	armAsm->Mov(RWARG2, FPUflagC); armAsm->Bic(RWSCRATCH, RWSCRATCH, RWARG2);
 	armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::Operand(a64::w0, a64::LSL, 23));
@@ -525,8 +523,7 @@ void recC_LE()
 	fpuClampCompareOperand(RSSCRATCH);
 	fpuClampCompareOperand(RSSCRATCH2);
 	armAsm->Fcmp(RSSCRATCH, RSSCRATCH2);
-	armAsm->Mov(a64::w0, 0);
-	armAsm->Cset(a64::w0, a64::le);
+	armAsm->Cset(a64::w0, a64::le); // fully defines w0 — no pre-zero needed (GE-03)
 	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
 	armAsm->Mov(RWARG2, FPUflagC); armAsm->Bic(RWSCRATCH, RWSCRATCH, RWARG2);
 	armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::Operand(a64::w0, a64::LSL, 23));
