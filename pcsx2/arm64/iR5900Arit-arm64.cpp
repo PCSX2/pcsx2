@@ -145,8 +145,7 @@ static void recDADD_consts(int info)
 	if (cval != 0)
 	{
 		const a64::Register dst = memDestD();
-		armAsm->Mov(RXARG1, cval);
-		armAsm->Add(dst, rt, RXARG1);
+		armAsm->Add(dst, rt, cval); // commutative — vixl folds encodable imms (GE-05)
 		memStoreD(dst);
 	}
 	else
@@ -251,8 +250,23 @@ static void recDSUB_consts(int info)
 	const s64 cval = g_cpuConstRegs[_Rs_].SD[0];
 	const a64::Register rt = memLoadT64();
 	const a64::Register dst = memDestD();
-	armAsm->Mov(RXARG1, cval);
-	armAsm->Sub(dst, RXARG1, rt);
+	// cval - rt == -(rt - cval): the negated form folds an add/sub-encodable
+	// imm (2 insns, 0 for the const); non-encodable keeps Mov+Sub — the
+	// Sub-with-temp fallback would be 3 insns vs this 2 (GE-05).
+	if (cval == 0)
+	{
+		armAsm->Neg(dst, rt);
+	}
+	else if (a64::Assembler::IsImmAddSub(cval) || (cval != INT64_MIN && a64::Assembler::IsImmAddSub(-cval)))
+	{
+		armAsm->Sub(RXSCRATCH, rt, cval);
+		armAsm->Neg(dst, RXSCRATCH);
+	}
+	else
+	{
+		armAsm->Mov(RXARG1, cval);
+		armAsm->Sub(dst, RXARG1, rt);
+	}
 	memStoreD(dst);
 }
 
@@ -384,20 +398,34 @@ static void recXOR_const()
 
 static void recXOR_consts(int info)
 {
+	const u64 cval = g_cpuConstRegs[_Rs_].UD[0];
 	const a64::Register rt = memLoadT64();
-	const a64::Register dst = memDestD();
-	armAsm->Mov(RXARG1, g_cpuConstRegs[_Rs_].UD[0]);
-	armAsm->Eor(dst, rt, RXARG1);
-	memStoreD(dst);
+	if (cval != 0)
+	{
+		const a64::Register dst = memDestD();
+		armAsm->Eor(dst, rt, cval); // vixl folds bitmask-encodable imms (GE-05)
+		memStoreD(dst);
+	}
+	else
+	{
+		memStoreD(rt);
+	}
 }
 
 static void recXOR_constt(int info)
 {
+	const u64 cval = g_cpuConstRegs[_Rt_].UD[0];
 	const a64::Register rs = memLoadS64();
-	const a64::Register dst = memDestD();
-	armAsm->Mov(RXSCRATCH, g_cpuConstRegs[_Rt_].UD[0]);
-	armAsm->Eor(dst, rs, RXSCRATCH);
-	memStoreD(dst);
+	if (cval != 0)
+	{
+		const a64::Register dst = memDestD();
+		armAsm->Eor(dst, rs, cval);
+		memStoreD(dst);
+	}
+	else
+	{
+		memStoreD(rs);
+	}
 }
 
 static void recXOR_(int info)
@@ -481,9 +509,10 @@ static void recSLT_consts(int info)
 {
 	const a64::Register rt = memLoadT64();
 	const a64::Register dst = memDestD();
-	armAsm->Mov(RXARG1, g_cpuConstRegs[_Rs_].SD[0]);
-	armAsm->Cmp(RXARG1, rt);
-	armAsm->Cset(dst, a64::lt);
+	// cval < rt  ==  rt > cval: reversed compare with flipped condition lets the
+	// vixl macro fold an encodable immediate (GE-05).
+	armAsm->Cmp(rt, g_cpuConstRegs[_Rs_].SD[0]);
+	armAsm->Cset(dst, a64::gt);
 	memStoreD(dst);
 }
 
@@ -491,8 +520,7 @@ static void recSLT_constt(int info)
 {
 	const a64::Register rs = memLoadS64();
 	const a64::Register dst = memDestD();
-	armAsm->Mov(RXSCRATCH, g_cpuConstRegs[_Rt_].SD[0]);
-	armAsm->Cmp(rs, RXSCRATCH);
+	armAsm->Cmp(rs, g_cpuConstRegs[_Rt_].SD[0]);
 	armAsm->Cset(dst, a64::lt);
 	memStoreD(dst);
 }
@@ -520,9 +548,9 @@ static void recSLTU_consts(int info)
 {
 	const a64::Register rt = memLoadT64();
 	const a64::Register dst = memDestD();
-	armAsm->Mov(RXARG1, g_cpuConstRegs[_Rs_].UD[0]);
-	armAsm->Cmp(RXARG1, rt);
-	armAsm->Cset(dst, a64::lo);
+	// cval <u rt  ==  rt >u cval (GE-05, see recSLT_consts).
+	armAsm->Cmp(rt, g_cpuConstRegs[_Rs_].UD[0]);
+	armAsm->Cset(dst, a64::hi);
 	memStoreD(dst);
 }
 
@@ -530,8 +558,7 @@ static void recSLTU_constt(int info)
 {
 	const a64::Register rs = memLoadS64();
 	const a64::Register dst = memDestD();
-	armAsm->Mov(RXSCRATCH, g_cpuConstRegs[_Rt_].UD[0]);
-	armAsm->Cmp(rs, RXSCRATCH);
+	armAsm->Cmp(rs, g_cpuConstRegs[_Rt_].UD[0]);
 	armAsm->Cset(dst, a64::lo);
 	memStoreD(dst);
 }
