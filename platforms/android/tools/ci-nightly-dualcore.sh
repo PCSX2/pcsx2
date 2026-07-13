@@ -99,23 +99,39 @@ zip -qd "$UNS" "lib/arm64-v8a/libemucore_4k.so" "lib/arm64-v8a/libemucore_16k.so
 ( cd "$WORK/lib-stage" && zip -qr -0 "$UNS" lib )
 "$ZIPALIGN" -f -P 16 4 "$UNS" "$ALN"
 
-# --- sign: stable key if provided, else a throwaway debug key (warn) ----------
-KS="${NIGHTLY_KEYSTORE:-$HOME/.android/debug.keystore}"
-KS_PASS="${NIGHTLY_KS_PASS:-android}"
-KS_ALIAS="${NIGHTLY_KEY_ALIAS:-androiddebugkey}"
-KEY_PASS="${NIGHTLY_KEY_PASS:-android}"
-if [[ ! -f "$KS" ]]; then
-	echo "WARNING: no keystore at $KS — generating a throwaway debug key." >&2
-	echo "         Set NIGHTLY_KEYSTORE (repo secret) for stable nightly-over-nightly updates." >&2
-	mkdir -p "$(dirname "$KS")"
-	keytool -genkeypair -keystore "$KS" -storepass "$KS_PASS" -keypass "$KEY_PASS" \
-		-alias "$KS_ALIAS" -keyalg RSA -keysize 2048 -validity 10000 \
-		-dname "CN=Android Debug,O=Android,C=US" >/dev/null 2>&1
-fi
+# --- sign ---------------------------------------------------------------------
+# Preferred: the SAME v3 rotation lineage as the hand-built releases (old debug
+# key for API<=32 --next-signer--> release key for API33+). This is what lets a
+# nightly install OVER an existing com.armsx2 install. The three keystores +
+# lineage arrive as repo secrets, decoded to files by the workflow and passed in
+# as ROTATION_* env vars. If they're absent we fall back to a throwaway key and
+# LOUDLY warn (that APK won't update over installed builds).
 rm -f "$OUT"
-"$APKSIGNER" sign --ks "$KS" --ks-key-alias "$KS_ALIAS" \
-	--ks-pass "pass:$KS_PASS" --key-pass "pass:$KEY_PASS" \
-	--out "$OUT" "$ALN"
+if [[ -n "${ROTATION_DEBUG_KS:-}"   && -f "${ROTATION_DEBUG_KS:-/nope}"   \
+   && -n "${ROTATION_RELEASE_KS:-}" && -f "${ROTATION_RELEASE_KS:-/nope}" \
+   && -n "${ROTATION_LINEAGE:-}"    && -f "${ROTATION_LINEAGE:-/nope}"    \
+   && -n "${ROTATION_RELEASE_KEY_ALIAS:-}" && -n "${ROTATION_RELEASE_KS_PASS:-}" ]]; then
+	echo "Signing with the release rotation lineage (debug<=API32 -> release>=API33)."
+	"$APKSIGNER" sign \
+		--ks "$ROTATION_DEBUG_KS" --ks-key-alias "${ROTATION_DEBUG_ALIAS:-androiddebugkey}" \
+		--ks-pass "pass:${ROTATION_DEBUG_PASS:-android}" --key-pass "pass:${ROTATION_DEBUG_PASS:-android}" \
+		--next-signer \
+		--ks "$ROTATION_RELEASE_KS" --ks-key-alias "$ROTATION_RELEASE_KEY_ALIAS" \
+		--ks-pass "pass:$ROTATION_RELEASE_KS_PASS" --key-pass "pass:${ROTATION_RELEASE_KEY_PASS:-$ROTATION_RELEASE_KS_PASS}" \
+		--lineage "$ROTATION_LINEAGE" \
+		--in "$ALN" --out "$OUT"
+else
+	echo "WARNING: ROTATION_* signing secrets not set — using a throwaway key." >&2
+	echo "         This nightly will NOT install over existing com.armsx2 builds." >&2
+	KS="${NIGHTLY_KEYSTORE:-$HOME/.android/debug.keystore}"
+	KS_PASS="${NIGHTLY_KS_PASS:-android}"; KS_ALIAS="${NIGHTLY_KEY_ALIAS:-androiddebugkey}"; KEY_PASS="${NIGHTLY_KEY_PASS:-android}"
+	if [[ ! -f "$KS" ]]; then
+		mkdir -p "$(dirname "$KS")"
+		keytool -genkeypair -keystore "$KS" -storepass "$KS_PASS" -keypass "$KEY_PASS" \
+			-alias "$KS_ALIAS" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" >/dev/null 2>&1
+	fi
+	"$APKSIGNER" sign --ks "$KS" --ks-key-alias "$KS_ALIAS" --ks-pass "pass:$KS_PASS" --key-pass "pass:$KEY_PASS" --out "$OUT" "$ALN"
+fi
 
 echo; echo "================= VERIFY ================="
 echo "-- both cores present --"

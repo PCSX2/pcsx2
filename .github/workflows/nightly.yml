@@ -196,21 +196,35 @@ jobs:
       # nightly matches release performance. See tools/ci-nightly-dualcore.sh.
       - name: Build dual-core (4k + 16k) + PGO APK
         env:
-          FLAVOR: Github   # sideload build (com.armsx2); use Play for the SAF-only build
-          # Optional stable signing: add repo secrets NIGHTLY_KEYSTORE_B64 (base64 of a
-          # .jks) + NIGHTLY_KS_PASS / NIGHTLY_KEY_ALIAS / NIGHTLY_KEY_PASS so every
-          # nightly is signed with one key and installs as an update. Without them a
-          # throwaway debug key is generated (users reinstall between nightlies).
-          NIGHTLY_KS_PASS: ${{ secrets.NIGHTLY_KS_PASS }}
-          NIGHTLY_KEY_ALIAS: ${{ secrets.NIGHTLY_KEY_ALIAS }}
-          NIGHTLY_KEY_PASS: ${{ secrets.NIGHTLY_KEY_PASS }}
+          FLAVOR: Github   # sideload build (com.armsx2)
+          # Rotation signing so a nightly installs OVER an existing com.armsx2 build.
+          # Add these repo secrets (base64 the keystores + lineage.bin):
+          #   NIGHTLY_DEBUG_KS_B64      = base64 of the <=API32 debug keystore (f942d6bb)
+          #   NIGHTLY_RELEASE_KS_B64    = base64 of armsx2_release.jks (df91c9ce)
+          #   NIGHTLY_LINEAGE_B64       = base64 of the signing lineage .bin
+          #   NIGHTLY_RELEASE_KS_PASS / NIGHTLY_RELEASE_KEY_ALIAS / NIGHTLY_RELEASE_KEY_PASS
+          # Without them the script warns and uses a throwaway key (won't update-install).
+          ROTATION_DEBUG_KS_B64: ${{ secrets.NIGHTLY_DEBUG_KS_B64 }}
+          ROTATION_RELEASE_KS_B64: ${{ secrets.NIGHTLY_RELEASE_KS_B64 }}
+          ROTATION_LINEAGE_B64: ${{ secrets.NIGHTLY_LINEAGE_B64 }}
+          ROTATION_RELEASE_KS_PASS: ${{ secrets.NIGHTLY_RELEASE_KS_PASS }}
+          ROTATION_RELEASE_KEY_ALIAS: ${{ secrets.NIGHTLY_RELEASE_KEY_ALIAS }}
+          ROTATION_RELEASE_KEY_PASS: ${{ secrets.NIGHTLY_RELEASE_KEY_PASS }}
         run: |
-          export VC="${{ github.run_number }}"
+          # versionCode = Unix seconds since 2023-11-14: monotonic, unique per build, and
+          # always far above the manual 10xx codes, so a nightly always installs over the
+          # previously installed build (and over the last hand-built release). Fits int32
+          # for ~60 years. Manual builds, if any, should stay below or also use this.
+          export VC="$(( $(date -u +%s) - 1700000000 ))"
           export VN="$(grep 'versionName' app/build.gradle.kts | sed -n 's/.*?:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
           export VN="${VN:-nightly}"
-          if [ -n "${{ secrets.NIGHTLY_KEYSTORE_B64 }}" ]; then
-            echo "${{ secrets.NIGHTLY_KEYSTORE_B64 }}" | base64 -d > "$RUNNER_TEMP/nightly.jks"
-            export NIGHTLY_KEYSTORE="$RUNNER_TEMP/nightly.jks"
+          if [ -n "$ROTATION_DEBUG_KS_B64" ] && [ -n "$ROTATION_RELEASE_KS_B64" ] && [ -n "$ROTATION_LINEAGE_B64" ]; then
+            printf '%s' "$ROTATION_DEBUG_KS_B64"   | base64 -d > "$RUNNER_TEMP/debug.jks"
+            printf '%s' "$ROTATION_RELEASE_KS_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            printf '%s' "$ROTATION_LINEAGE_B64"    | base64 -d > "$RUNNER_TEMP/lineage.bin"
+            export ROTATION_DEBUG_KS="$RUNNER_TEMP/debug.jks"
+            export ROTATION_RELEASE_KS="$RUNNER_TEMP/release.jks"
+            export ROTATION_LINEAGE="$RUNNER_TEMP/lineage.bin"
           fi
           bash tools/ci-nightly-dualcore.sh
 
@@ -274,9 +288,14 @@ jobs:
         if: ${{ env.HOOK != '' }}
         env:
           REL_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/nightly-${{ needs.gate.outputs.date }}
+          NOTES: ${{ needs.gate.outputs.notes }}
         run: |
-          jq -n --arg url "$REL_URL" --arg d "ARMSX2 nightly ${{ needs.gate.outputs.date }}" \
-            '{username:"ARMSX2 CI", embeds:[{title:("🌙 " + $d + " published"), url:$url, color:5763719, description:"New nightly build available for download."}]}' \
+          # Put the changelog in the embed. Discord caps embed descriptions at 4096
+          # chars, so trim with headroom and point at the release page if it overflows.
+          BODY=$(printf '%s' "$NOTES" | head -c 3800)
+          if [ "${#NOTES}" -gt 3800 ]; then BODY=$(printf '%s\n\n(full changelog on the release page)' "$BODY"); fi
+          jq -n --arg url "$REL_URL" --arg d "ARMSX2 nightly ${{ needs.gate.outputs.date }}" --arg body "$BODY" \
+            '{username:"ARMSX2 CI", embeds:[{title:("🌙 " + $d + " published"), url:$url, color:5763719, description:$body}]}' \
           | curl -fsSL -H 'Content-Type: application/json' -d @- "$HOOK"
 
   # ---- prune: keep only the newest 7 nightlies ---------------------------
