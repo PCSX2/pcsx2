@@ -1,6 +1,8 @@
 package com.armsx2.ui.achievements
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -34,11 +36,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -223,13 +227,54 @@ private fun AchievementAccount(
 
 @Composable
 private fun AchievementList(state: AchievementsUiState, modifier: Modifier) {
+    // Show subset tabs (Base Set / Bonus Subset / …) only when a game actually has more than
+    // one subset; otherwise the list looks exactly as before. The selection survives the 3s
+    // poll (rememberSaveable), re-keyed on the subset id set so it resets when the game changes.
+    val hasSubsets = state.subsets.size > 1
+    var selectedSubset by rememberSaveable(state.subsets.joinToString { it.id.toString() }) {
+        mutableStateOf(state.subsets.firstOrNull()?.id ?: 0)
+    }
+    val shown = if (hasSubsets) state.items.filter { it.subsetId == selectedSubset } else state.items
     Column(modifier) {
-        SectionTitle(str("scope.game"), state.items.size.toString())
-        if (state.items.isEmpty()) {
+        SectionTitle(str("scope.game"), shown.size.toString())
+        if (hasSubsets) {
+            SubsetTabs(state.subsets, selectedSubset, onSelect = { selectedSubset = it })
+            Spacer(Modifier.height(10.dp))
+        }
+        if (shown.isEmpty()) {
             EmptyState(str("ra.status.noAchievements.title"), str("ra.status.noAchievements.body"), modifier = Modifier.fillMaxWidth().height(220.dp))
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                state.items.forEach { item -> AchievementRow(item) }
+                shown.forEach { item -> AchievementRow(item) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SubsetTabs(subsets: List<Subset>, selectedId: Int, onSelect: (Int) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        subsets.forEach { sub ->
+            val selected = sub.id == selectedId
+            Surface(
+                shape = RoundedCornerShape(999.dp),
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .clickable { onSelect(sub.id) }
+                    .controllerFocusable("ra.subset.${sub.id}", onConfirm = { onSelect(sub.id) }),
+            ) {
+                Text(
+                    text = sub.title.ifBlank { str("ra.subset.base") },
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
     }
@@ -275,6 +320,23 @@ private fun LoginPanel(loading: Boolean, onLogin: (String, String) -> Unit, modi
                     }
                     Text(if (loading) str("ralogin.signingIn") else str("ralogin.signIn"))
                 }
+                // Escape hatch for a stuck custom/offline RA server override ([Achievements] Host,
+                // set by loopback-proxy tools via RetroAchievementsHostOverrideReceiver). With the
+                // proxy gone, every request dies with "No response" and there was no in-app way
+                // out. Clearing an absent override is a harmless no-op.
+                Spacer(Modifier.height(6.dp))
+                TextButton(
+                    onClick = { runCatching { kr.co.iefriends.pcsx2.NativeApp.clearAchievementsHostOverride() } },
+                    modifier = Modifier.fillMaxWidth().controllerFocusable(
+                        "ra.serverReset",
+                        onConfirm = { runCatching { kr.co.iefriends.pcsx2.NativeApp.clearAchievementsHostOverride() } },
+                    ),
+                ) { Text(str("ra.server.reset")) }
+                Text(
+                    str("ra.server.reset.desc"),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }

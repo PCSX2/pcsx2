@@ -189,7 +189,7 @@ fun EmulationMenuScreen(viewModel: EmulationMenuViewModel = viewModel()) {
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
                         shadowElevation = 18.dp,
                     ) {
-                        MenuRail(state.tab, viewModel::selectTab)
+                        MenuRail(state.tab, viewModel::selectTab, viewModel::openFullSettings)
                     }
                 }
             }
@@ -264,7 +264,11 @@ private fun CompactMenuTabs(selected: EmulationMenuTab, onSelect: (EmulationMenu
 }
 
 @Composable
-private fun MenuRail(selected: EmulationMenuTab, onSelect: (EmulationMenuTab) -> Unit) {
+private fun MenuRail(
+    selected: EmulationMenuTab,
+    onSelect: (EmulationMenuTab) -> Unit,
+    onAllSettings: () -> Unit,
+) {
     Column(
         Modifier
             .fillMaxHeight()
@@ -275,6 +279,33 @@ private fun MenuRail(selected: EmulationMenuTab, onSelect: (EmulationMenuTab) ->
     ) {
         EmulationMenuTab.entries.forEach { tab ->
             MenuRailTab(tab, tab == selected, onSelect)
+        }
+        // Always-visible shortcut to the full settings screen — otherwise only reachable via the
+        // Options tab. Sits at the bottom of the rail, set apart from the tab buttons.
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 2.dp).width(40.dp),
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.34f),
+        )
+        MenuRailAction("⚙", str("action.allSettings"), onAllSettings)
+    }
+}
+
+@Composable
+private fun MenuRailAction(glyph: String, label: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.size(56.dp).semantics { contentDescription = label },
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = glyph,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
     }
 }

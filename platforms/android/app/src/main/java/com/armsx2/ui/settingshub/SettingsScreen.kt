@@ -2,6 +2,7 @@ package com.armsx2.ui.settingshub
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
@@ -18,11 +20,13 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -57,6 +61,7 @@ import com.armsx2.ui.settings.PadTab
 import com.armsx2.ui.settings.PerformanceTab
 import com.armsx2.ui.settings.RecompilerTab
 import com.armsx2.ui.settings.RendererTab
+import com.armsx2.ui.settings.SegmentedRow
 import com.armsx2.ui.settings.SkinsTab
 import com.armsx2.ui.settings.LocalSettingsScrollState
 
@@ -70,7 +75,22 @@ fun SettingsScreen(
     onOpenAbout: () -> Unit = {},
     viewModel: SettingsViewModel = viewModel(),
 ) {
+    // Effective settings scope. Starts on the scope we were opened for (per-game when a game was
+    // passed, else global). A running game — even when opened from the global entry — becomes the
+    // per-game target so the top toggle can switch between Global and that game. Switching just
+    // re-load()s the ViewModel, which re-hydrates settingsState/scope/serial together (no bleed).
+    val scopeContext = game ?: com.armsx2.runtime.MainActivityRuntime.currentGame.value
+    var scopeGame by remember(game?.uri) { mutableStateOf(game) }
     var showReset by remember { mutableStateOf(false) }
+    // Settings-search "jump to control": holds the resolved label of the target row while the
+    // freshly-switched tab composes + lays out, then selects it (highlight + scroll into view).
+    var pendingJump by remember { mutableStateOf<String?>(null) }
+    val openSearch = {
+        SettingsSearch.open { category, label ->
+            viewModel.selectCategory(category)
+            pendingJump = label
+        }
+    }
     val screenScroll = rememberScrollState()
     LaunchedEffect(initialCategory, game?.uri) { viewModel.load(initialCategory, game) }
     // When the controller focus returns to the category-chip row (the top-most
@@ -82,9 +102,21 @@ fun SettingsScreen(
             screenScroll.animateScrollTo(0)
         }
     }
+    // Search-jump: after selectCategory swaps the tab, retry selecting the target row until its
+    // tab has composed + registered (rows self-register via controllerFocusable); the row's own
+    // bringIntoView then scrolls it on-screen and draws the focus ring.
+    LaunchedEffect(pendingJump) {
+        val anchor = pendingJump ?: return@LaunchedEffect
+        var tries = 0
+        while (tries < 40 && !com.armsx2.ui.settings.SettingsControllerNav.selectByLabel(anchor)) {
+            kotlinx.coroutines.delay(25)
+            tries++
+        }
+        pendingJump = null
+    }
     val ui = viewModel.uiState.value
-    val contentReady = ui.game?.uri?.toString() == game?.uri?.toString()
-    val displayedCategory = if (game != null && ui.category == SettingsCategory.General) {
+    val contentReady = ui.game?.uri?.toString() == scopeGame?.uri?.toString()
+    val displayedCategory = if (scopeGame != null && ui.category == SettingsCategory.General) {
         SettingsCategory.Performance
     } else {
         ui.category
@@ -99,15 +131,48 @@ fun SettingsScreen(
                     .padding(bottom = 8.dp),
             ) {
                 ArmsTopBar(
-                    title = game?.title ?: str("action.settings"),
-                    subtitle = if (game == null) str("scope.global") else str("scope.game"),
-                    leading = { RoundAction("←", str("action.back"), onBack) },
-                    actions = { RoundAction("↺", str("action.reset"), { showReset = true }) },
+                    title = scopeGame?.title ?: str("action.settings"),
+                    subtitle = if (scopeGame == null) str("scope.global") else str("scope.game"),
+                    leading = {
+                        // Registered in the settings nav so a controller reaches it (up from the chips).
+                        Box(Modifier.controllerFocusable("settings.action.back", CircleShape, onConfirm = onBack)) {
+                            RoundAction("←", str("action.back"), onBack)
+                        }
+                    },
+                    actions = {
+                        // Top-bar actions registered in the settings nav so a controller can reach them
+                        // (D-pad up from the category chips, then left/right across the bar), not just touch.
+                        Box(Modifier.controllerFocusable("settings.action.search", CircleShape, onConfirm = openSearch)) {
+                            RoundAction("⌕", str("action.search"), openSearch)
+                        }
+                        Box(Modifier.controllerFocusable("settings.action.reset", CircleShape, onConfirm = { showReset = true })) {
+                            RoundAction("↺", str("action.reset"), { showReset = true })
+                        }
+                    },
                 )
+                if (scopeContext != null) {
+                    // Global ↔ Per-Game switch. Re-load()s the ViewModel for the chosen scope, which
+                    // re-hydrates the shared settingsState/scope/serial together (every tab follows).
+                    Box(Modifier.padding(horizontal = 8.dp)) {
+                        SegmentedRow(
+                            label = str("settings.scope.label"),
+                            options = listOf(str("scope.global"), str("scope.game")),
+                            selectedIndex = if (scopeGame == null) 0 else 1,
+                            description = scopeContext.title,
+                            onChange = { idx ->
+                                val next = if (idx == 0) null else scopeContext
+                                if ((next == null) != (scopeGame == null)) {
+                                    scopeGame = next
+                                    viewModel.load(ui.category, next)
+                                }
+                            },
+                        )
+                    }
+                }
                 if (contentReady) {
                     SettingsCategoryBar(
                         selected = displayedCategory,
-                        gameSpecific = game != null,
+                        gameSpecific = scopeGame != null,
                         onSelect = { category ->
                             if (category == SettingsCategory.About) onOpenAbout() else viewModel.selectCategory(category)
                         },
@@ -118,13 +183,16 @@ fun SettingsScreen(
                 }
             }
         }
+        // Controller-native search overlay (own keyboard + result nav); inside ArmsBackdrop's
+        // BoxScope so its keyboard can dock to the bottom edge over everything.
+        SettingsSearchOverlay(this, scopeGame != null)
     }
 
     if (showReset) {
         AlertDialog(
             onDismissRequest = { showReset = false },
             title = { Text(str("action.reset")) },
-            text = { Text(if (game == null) str("scope.global") else str("scope.game")) },
+            text = { Text(if (scopeGame == null) str("scope.global") else str("scope.game")) },
             confirmButton = {
                 TextButton(onClick = { viewModel.resetCurrentScope(); showReset = false }) {
                     Text(str("action.reset"), color = MaterialTheme.colorScheme.error)
@@ -255,7 +323,7 @@ private fun CategoryContent(category: SettingsCategory, viewModel: SettingsViewM
 }
 
 @Composable
-private fun categoryTitle(category: SettingsCategory): String = when (category) {
+internal fun categoryTitle(category: SettingsCategory): String = when (category) {
     SettingsCategory.General -> str("tab.app")
     SettingsCategory.Info -> str("tab.info")
     SettingsCategory.Performance -> str("tab.performance")

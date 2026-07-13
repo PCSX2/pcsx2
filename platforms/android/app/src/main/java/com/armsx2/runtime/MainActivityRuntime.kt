@@ -1904,6 +1904,26 @@ open class MainActivityRuntime : ComponentActivity() {
             }
             return true
         }
+        // Settings search, result-browse mode (reached once the on-screen keyboard is dismissed
+        // with Done — the keyboard block above owns input while it's up). D-pad moves the result
+        // selection, A jumps to the setting, Y re-opens the keyboard, B closes. Owns the pad so
+        // nothing leaks to the settings screen behind.
+        if (com.armsx2.ui.settingshub.SettingsSearch.visible.value) {
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+                when (kc) {
+                    KeyEvent.KEYCODE_DPAD_UP -> com.armsx2.ui.settingshub.SettingsSearch.move(-1)
+                    KeyEvent.KEYCODE_DPAD_DOWN -> com.armsx2.ui.settingshub.SettingsSearch.move(1)
+                    KeyEvent.KEYCODE_BUTTON_A, KeyEvent.KEYCODE_DPAD_CENTER,
+                    KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER ->
+                        com.armsx2.ui.settingshub.SettingsSearch.activate()
+                    KeyEvent.KEYCODE_BUTTON_Y ->
+                        com.armsx2.ui.settingshub.SettingsSearch.reopenKeyboard()
+                    KeyEvent.KEYCODE_BUTTON_B, KeyEvent.KEYCODE_BACK ->
+                        com.armsx2.ui.settingshub.SettingsSearch.close()
+                }
+            }
+            return true
+        }
         // Memory-card dialog (opened from the library). Touch mode blocks Compose
         // D-pad focus, so it's driven by the manual nav model (same as the
         // settings tabs). Any direction steps the control list; A activates; B closes.
@@ -2574,6 +2594,10 @@ open class MainActivityRuntime : ComponentActivity() {
                 // Controller search keyboard owns the stick/HAT/D-pad while it's up
                 // (this is the RP6 path — its D-pad arrives here as a HAT axis).
                 com.armsx2.ui.home.LibraryKeyboard.move(dx, dy)
+            }
+            com.armsx2.ui.settingshub.SettingsSearch.visible.value -> {
+                // Settings-search result browse (keyboard dismissed): vertical list nav.
+                if (dy != 0) com.armsx2.ui.settingshub.SettingsSearch.move(if (dy < 0) -1 else 1)
             }
             com.armsx2.ui.MemoryCardManager.visible.value -> {
                 // Memcard dialog: 2D spatial nav (Slot 1 / Slot 2 / Delete across,

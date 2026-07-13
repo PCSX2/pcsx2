@@ -16,9 +16,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -66,61 +66,63 @@ fun BiosManagerScreen(onBack: () -> Unit, viewModel: BiosManagerViewModel = view
     LaunchedEffect(Unit) { viewModel.refresh() }
 
     ArmsBackdrop {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+        // Column + verticalScroll (not LazyColumn): controller nav registers rows via a SideEffect
+        // when they compose, and LazyColumn never composes off-screen rows — so on a pad the
+        // selection would stick partway down and the camera wouldn't follow. Composing every row
+        // keeps registry nav + bringIntoView working. The BIOS list is short, so there's no cost.
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 8.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
         ) {
-            item {
-                ArmsTopBar(
-                    title = str("setup.page.bios.title"),
-                    leading = { RoundAction("←", str("action.back"), onBack) },
-                    actions = {
-                        Box {
-                            RoundAction(
-                                glyph = "⋮",
-                                description = str("games.toolbar.more"),
-                                onClick = { actionsMenuExpanded = true },
-                                selected = actionsMenuExpanded,
-                            )
-                            BiosActionsMenu(
-                                expanded = actionsMenuExpanded,
-                                onDismiss = { actionsMenuExpanded = false },
-                                onImportFile = { picker.launch(arrayOf("application/octet-stream", "*/*")) },
-                                onImportFolder = { folderPicker.launch(null) },
-                                onRefresh = viewModel::refresh,
-                            )
-                        }
-                    },
-                    horizontalPadding = 0.dp,
-                )
-            }
-            if (state.items.isEmpty() && !state.busy) {
-                item {
-                    EmptyState(
-                        title = str("setup.bios.error.noneFound"),
-                        message = str("setup.step.bios.description"),
-                        actionLabel = str("action.import"),
-                        onAction = { picker.launch(arrayOf("application/octet-stream", "*/*")) },
-                        modifier = Modifier.fillMaxWidth().height(280.dp)
-                            .controllerFocusable(
-                                "bios.empty.import",
-                                RoundedCornerShape(24.dp),
-                                onConfirm = { picker.launch(arrayOf("application/octet-stream", "*/*")) },
-                            ),
-                    )
-                }
-            } else {
-                    if (state.busy) item { CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp) }
-                    items(state.items, key = { it.file.absolutePath }) { item ->
-                        BiosRow(
-                            item = item,
-                            onSelect = { viewModel.select(item.file) },
-                            onDelete = { deleteTarget = item },
+            ArmsTopBar(
+                title = str("setup.page.bios.title"),
+                leading = { RoundAction("←", str("action.back"), onBack) },
+                actions = {
+                    Box {
+                        RoundAction(
+                            glyph = "⋮",
+                            description = str("games.toolbar.more"),
+                            onClick = { actionsMenuExpanded = true },
+                            selected = actionsMenuExpanded,
+                        )
+                        BiosActionsMenu(
+                            expanded = actionsMenuExpanded,
+                            onDismiss = { actionsMenuExpanded = false },
+                            onImportFile = { picker.launch(arrayOf("application/octet-stream", "*/*")) },
+                            onImportFolder = { folderPicker.launch(null) },
+                            onRefresh = viewModel::refresh,
                         )
                     }
+                },
+                horizontalPadding = 0.dp,
+            )
+            if (state.items.isEmpty() && !state.busy) {
+                EmptyState(
+                    title = str("setup.bios.error.noneFound"),
+                    message = str("setup.step.bios.description"),
+                    actionLabel = str("action.import"),
+                    onAction = { picker.launch(arrayOf("application/octet-stream", "*/*")) },
+                    modifier = Modifier.fillMaxWidth().height(280.dp)
+                        .controllerFocusable(
+                            "bios.empty.import",
+                            RoundedCornerShape(24.dp),
+                            onConfirm = { picker.launch(arrayOf("application/octet-stream", "*/*")) },
+                        ),
+                )
+            } else {
+                if (state.busy) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
+                state.items.forEach { item ->
+                    BiosRow(
+                        item = item,
+                        onSelect = { viewModel.select(item.file) },
+                        onDelete = { deleteTarget = item },
+                    )
+                }
             }
-            item { Spacer(Modifier.height(12.dp)) }
+            Spacer(Modifier.height(12.dp))
         }
     }
 

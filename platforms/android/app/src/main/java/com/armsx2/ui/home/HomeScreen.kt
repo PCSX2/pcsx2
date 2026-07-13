@@ -53,7 +53,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -128,6 +130,7 @@ fun HomeScreen(
     val coverVersion = CustomCovers.version.value
     val customCoverMap = remember(coverVersion) { CustomCovers.loadAll(context) }
     var overflowMenu by remember { mutableStateOf(false) }
+    var showExitConfirm by remember { mutableStateOf(false) }
     var menuGame by remember { mutableStateOf<GameInfo?>(null) }
     // #9 custom library background — inert until the user picks an image.
     LaunchedEffect(Unit) { LibraryBackground.ensureLoaded(); CoverArtStyle.load() }
@@ -362,7 +365,26 @@ fun HomeScreen(
                                 onToggleCoverStyle = { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
                                 onChooseBackground = { backgroundPicker.launch(arrayOf("image/*")) },
                                 onClearBackground = LibraryBackground::clear,
+                                onExitApp = { showExitConfirm = true },
                             )
+                            if (showExitConfirm) {
+                                AlertDialog(
+                                    onDismissRequest = { showExitConfirm = false },
+                                    title = { Text(str("games.exit.title")) },
+                                    text = { Text(str("games.exit.message")) },
+                                    confirmButton = {
+                                        TextButton(onClick = {
+                                            showExitConfirm = false
+                                            MainActivityRuntime.exitApp()
+                                        }) { Text(str("games.toolbar.exit")) }
+                                    },
+                                    dismissButton = {
+                                        TextButton(onClick = { showExitConfirm = false }) {
+                                            Text(str("action.cancel"))
+                                        }
+                                    },
+                                )
+                            }
                         }
                     },
                     horizontalPadding = 0.dp,
@@ -633,6 +655,7 @@ private fun LibraryOverflowMenu(
     onToggleCoverStyle: () -> Unit,
     onChooseBackground: () -> Unit,
     onClearBackground: () -> Unit,
+    onExitApp: () -> Unit,
 ) {
     fun closeThen(action: () -> Unit) {
         onDismiss()
@@ -687,6 +710,9 @@ private fun LibraryOverflowMenu(
             LibraryOverflowItem("×", str("games.background.clear")) {
                 closeThen(onClearBackground)
             }
+        }
+        LibraryOverflowItem("⏻", str("games.toolbar.exit")) {
+            closeThen(onExitApp)
         }
     }
 }

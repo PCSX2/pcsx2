@@ -221,6 +221,22 @@ internal object SettingsControllerNav {
 
     fun hasItems(): Boolean = registry.keys.any { inActiveLayer(it) }
 
+    /** Highlight + scroll to the row whose id derives from [label] — used by settings search
+     *  to jump to a specific control after switching tabs. The shared row widgets register
+     *  label-based ids (toggle:/segmented:/segmented-grid:/slider:<label>[:hash]); sliders
+     *  append a composition hash, so those are matched by prefix. Returns true once a row
+     *  matched (the target tab must already be composed — retry until it is). */
+    fun selectByLabel(label: String): Boolean {
+        val ids = orderedIds()
+        val exact = setOf("toggle:$label", "segmented:$label", "segmented-grid:$label", "slider:$label")
+        val id = ids.firstOrNull { it in exact }
+            ?: ids.firstOrNull { it.startsWith("slider:$label:") }
+            ?: return false
+        selectedId.value = id
+        selectedIndex.intValue = ids.indexOf(id)
+        return true
+    }
+
     /** True when a registered item in the active layer is currently highlighted —
      *  i.e. the registry "lane" owns D-pad focus (used by the home screen to split
      *  input between the cover grid and the toolbar/recents lane). */

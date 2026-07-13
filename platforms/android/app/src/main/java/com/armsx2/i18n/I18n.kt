@@ -22,9 +22,9 @@ import androidx.core.content.edit
  * Reads fall back English-ward: a missing key or a missing translation shows the English string
  * (never a raw key), so a half-translated locale degrades gracefully instead of showing "tab.audio".
  *
- * All non-English JSONs are MACHINE-TRANSLATED (labelled as such in the picker); users can report
- * bad strings and we patch the JSON. Adding a language = drop one JSON in assets/i18n + one row in
- * [languages]. Nothing else changes.
+ * All non-English JSONs are AI-TRANSLATED — a full per-language localization pass (Fable 5),
+ * replacing the original Google-MT batch; users can report bad strings and we patch the JSON.
+ * Adding a language = drop one JSON in assets/i18n + one row in [languages]. Nothing else changes.
  */
 data class AppLanguage(
     val code: String,
@@ -213,7 +213,7 @@ val EN: Map<String, String> = mapOf(
     "app.language" to "Language",
     "app.language.desc" to "Choose the app language. Applies instantly.",
     "app.language.system" to "System language",
-    "app.language.machineNote" to "Translations except English are machine-translated. Spot a bad one? Let us know and we'll fix it.",
+    "app.language.machineNote" to "Translations except English are AI-translated. Spot a bad one? Let us know and we'll fix it.",
     "app.library.search" to "Library search",
     "app.library.search.desc" to "Show the game search field on the library home screen.",
     "app.library.recents" to "Recently played games",
@@ -248,6 +248,7 @@ val EN: Map<String, String> = mapOf(
     // --- scope toggle (global / per-game) ---
     "scope.global" to "Global",
     "scope.game" to "Game",
+    "settings.scope.label" to "Configuring",
     // --- Audio tab ---
     "audio.header.description" to "PS2 audio (SPU2) output. Volume/mute apply instantly; the rest reapply the moment you change them.",
     "audio.volume.label" to "Volume",
@@ -810,6 +811,11 @@ val EN: Map<String, String> = mapOf(
     "ra.mode.hardcore" to "HARDCORE",
     "ra.options.header" to "Options",
     "ra.title" to "RetroAchievements",
+    "ra.subset.base" to "Base Set",
+    "ra.server.reset" to "Reset achievements server",
+    "ra.server.reset.desc" to "Clears a custom/offline server override — fixes sign-in failing with 'No response'.",
+    "settings.search.placeholder" to "Search settings…",
+    "settings.search.noResults" to "No matching settings",
     "ra.viewAchievements" to "Achievements & Options",
     "ra.hardcore.enable.title" to "Enable hardcore mode?",
     "ra.hardcore.enable.body" to "This restarts the game now and turns off save states, cheats, and speed changes. Achievements you earn will count for hardcore.",

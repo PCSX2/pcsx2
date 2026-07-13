@@ -45,6 +45,8 @@ object LibraryKeyboard {
     /** Live buffer, seeded from the current query on open; every edit pushes to onChange. */
     val text = mutableStateOf("")
     private var onChange: (String) -> Unit = {}
+    /** Empty-buffer hint; caller-set so the same keyboard serves library + settings search. */
+    private val placeholder = mutableStateOf("Search games…")
 
     // Special keys carry multi-char labels; letter keys are single chars.
     const val SPACE = "space"
@@ -60,9 +62,10 @@ object LibraryKeyboard {
         listOf(SPACE, BACKSPACE, CLEAR, DONE),
     )
 
-    fun open(initial: String, onChange: (String) -> Unit) {
+    fun open(initial: String, onChange: (String) -> Unit, placeholder: String = "Search games…") {
         text.value = initial
         this.onChange = onChange
+        this.placeholder.value = placeholder
         row.intValue = 0
         col.intValue = 0
         visible.value = true
@@ -134,7 +137,7 @@ object LibraryKeyboard {
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
-                    text = text.value.ifEmpty { "Search games…" },
+                    text = text.value.ifEmpty { placeholder.value },
                     color = if (text.value.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant
                     else MaterialTheme.colorScheme.onSurface,
                     fontSize = 18.sp,

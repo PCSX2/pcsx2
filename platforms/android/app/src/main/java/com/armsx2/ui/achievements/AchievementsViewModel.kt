@@ -19,6 +19,16 @@ data class AchievementItem(
     val unlocked: Boolean,
     val progress: String,
     val iconUrl: String,
+    // Which RA subset this achievement belongs to (0 = base/shared set). Used to split
+    // base-game vs bonus-subset achievements into tabs.
+    val subsetId: Int = 0,
+)
+
+/** An RA subset (base set or a bonus subset) for the achievements tab selector. */
+data class Subset(
+    val id: Int,
+    val title: String,
+    val numAchievements: Int,
 )
 
 data class AchievementsUiState(
@@ -27,6 +37,8 @@ data class AchievementsUiState(
     val hardcore: Boolean = false,
     val score: Long = 0,
     val items: List<AchievementItem> = emptyList(),
+    // RA subsets (base + any bonus subsets). >1 entry → the UI shows subset tabs.
+    val subsets: List<Subset> = emptyList(),
     val richPresence: String = "",
     // Presentation options (mirrored from getAchievementsJSON, set via setAchievementsOption).
     val notifications: Boolean = true,
@@ -88,12 +100,13 @@ class AchievementsViewModel(application: Application) : AndroidViewModel(applica
         val target = state.value.pendingHardcore ?: return
         NativeApp.setHardcoreMode(target)
         state.value = state.value.copy(hardcore = target, pendingHardcore = null)
-        // Enabling hardcore only takes hold on a system reset (upstream design). The
-        // VM is paused behind this panel, so the native "will be enabled on system
-        // reset" toast would just sit there forever. Reboot the game now — so
-        // "Enable & restart" actually restarts — and drop back to it so the reset is
-        // visible. Disabling needs no reboot (casual mode applies live).
-        if (target) {
+        // Enabling hardcore only takes hold on a system reset. Reboot the game now — so
+        // "Enable & restart" actually restarts — but ONLY when a game is actually running.
+        // This screen is the GLOBAL (library) RA tab too, where there's no VM; restart()
+        // would fall into start() and boot the BIOS. With no game, the persisted
+        // ChallengeMode simply engages on the next game boot (what isHardcorePersisted
+        // drives). Disabling needs no reboot (casual mode applies live).
+        if (target && com.armsx2.runtime.MainActivityRuntime.eState.value != com.armsx2.EmuState.STOPPED) {
             com.armsx2.runtime.MainActivityRuntime.restart()
             com.armsx2.ui.WindowImpl.dismissInGameScreen()
         }
@@ -126,9 +139,14 @@ class AchievementsViewModel(application: Application) : AndroidViewModel(applica
         return AchievementsUiState(
             loggedIn = root.optBoolean("loggedIn"),
             userName = root.optString("userName"),
-            hardcore = root.optBoolean("hardcore"),
+            // Reflect the PERSISTED ChallengeMode (what takes effect on the next boot), not
+            // the live rcheevos flag from the JSON — that's always off with no game running,
+            // which would make the library RA tab's Hardcore toggle snap back off after you
+            // enable it. isHardcorePersisted() is valid with or without a running game.
+            hardcore = runCatching { NativeApp.isHardcorePersisted() }.getOrDefault(root.optBoolean("hardcore")),
             score = root.optLong("score").coerceAtLeast(0),
             items = parseAchievementItems(json),
+            subsets = parseSubsets(json),
             notifications = root.optBoolean("notifications", true),
             leaderboardNotifications = root.optBoolean("leaderboardNotifications", true),
             overlays = root.optBoolean("overlays", true),
@@ -166,9 +184,23 @@ fun parseAchievementItems(json: String): List<AchievementItem> {
                     unlocked = item.optBoolean("unlocked"),
                     progress = item.optString("measuredProgress"),
                     iconUrl = item.optString("iconUrl", item.optString("badgeUrl")),
+                    subsetId = item.optInt("subsetId"),
                 ),
             )
         }
     }.sortedWith(compareByDescending<AchievementItem> { it.unlocked }.thenBy { it.title })
+}
+
+/** Parse the top-level "subsets" array (base + bonus subsets) emitted by the native side. */
+fun parseSubsets(json: String): List<Subset> {
+    if (json.isBlank()) return emptyList()
+    val root = runCatching { JSONObject(json) }.getOrNull() ?: return emptyList()
+    val array = root.optJSONArray("subsets") ?: return emptyList()
+    return buildList {
+        repeat(array.length()) { index ->
+            val o = array.optJSONObject(index) ?: return@repeat
+            add(Subset(o.optInt("id"), o.optString("title"), o.optInt("numAchievements")))
+        }
+    }
 }
 
