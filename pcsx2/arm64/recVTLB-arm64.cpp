@@ -930,12 +930,18 @@ void recLWC1()
 
 void recSWC1()
 {
-	// fpr[ft] may be live in NEON with MODE_WRITE-only state; flush dirty
-	// content to memory and drop the slot before reading via armLoad.
-	_deleteFPtoNEONreg(_Rt_, DELETE_REG_FLUSH_AND_FREE);
-
-	// Load FPU register value into w10
-	armLoadEERegPtr(a64::w10, &fpuRegs.fpr[_Rt_].UL);
+	// GE-08: a NEON-resident ft moves its value straight to w10 (Fmov, zero
+	// memory traffic) and KEEPS the slot — the old flush+reload paid a
+	// Str/Ldr round-trip and killed FPR residency at every SWC1. The store
+	// only needs the VALUE; fpr[ft] memory may stay stale while the slot is
+	// mapped (a fastmem fault saves/restores the live slot via the GE-07
+	// masks; the softmem iFlushCall below evicts-with-writeback as before,
+	// after w10 already holds the value).
+	const int fslot = _checkNEONreg(NEONTYPE_FPREG, _Rt_, 0);
+	if (fslot >= 0)
+		armAsm->Fmov(a64::w10, armSRegister(fslot));
+	else
+		armLoadEERegPtr(a64::w10, &fpuRegs.fpr[_Rt_].UL);
 
 	// Inline STR off RFASTMEMBASE + backpatch on the fast path, softmem
 	// fallback otherwise.

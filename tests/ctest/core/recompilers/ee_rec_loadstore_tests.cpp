@@ -993,3 +993,34 @@ TEST(EeRecLoadStore, FastmemFaultStorePreservesLiveMmiState)
 		faulted |= vtlb_IsFaultingPC(a);
 	EXPECT_TRUE(faulted) << "MMIO SW did not take the fastmem-fault/backpatch path";
 }
+
+// ---- GE-08: SWC1 reads a resident FPR slot via Fmov (slot kept) -------------
+
+TEST(EeRecLoadStore, Swc1ResidentValueStoresAndSurvivesFault)
+{
+	// f6 is left NEON-resident (dirty) by ADD.S; the first SWC1 must store its
+	// CURRENT value without a memory round-trip, the MMIO SWC1 faults with the
+	// slot live across the thunk C call, and the final ADD.S consumes the
+	// still-resident slot. Exact powers of two keep the clamped FPU math exact.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFprBits(4, 0x40000000u); // 2.0f
+	h.SetFprBits(5, 0x3F800000u); // 1.0f
+	h.SetGpr64(reg::a0, kScratch);
+	h.SetGpr64(reg::a1, 0x1000F000u); // INTC_STAT (W1C; harness state 0 stays 0)
+	vtlb_ClearLoadStoreInfo();
+	h.LoadProgram({
+		ee::ADD_S(6, 4, 5),           // f6 = 3.0f, resident + dirty
+		ee::SWC1(6, 0, reg::a0),      // resident-store fast path
+		ee::SWC1(6, 0, reg::a1),      // MMIO store → fastmem fault → thunk
+		ee::ADD_S(7, 6, 5),           // f7 = 4.0f from the still-resident f6
+		ee::SWC1(7, 8, reg::a0),
+	});
+	h.Run();
+	EXPECT_EQ(h.ReadU32(kScratch + 0), 0x40400000u); // 3.0f
+	EXPECT_EQ(h.ReadU32(kScratch + 8), 0x40800000u); // 4.0f
+	bool faulted = false;
+	for (u32 a = RecompilerTestEnvironment::kProgramPc; a < RecompilerTestEnvironment::kProgramPc + 0x20; a += 4)
+		faulted |= vtlb_IsFaultingPC(a);
+	EXPECT_TRUE(faulted) << "MMIO SWC1 did not take the fastmem-fault/backpatch path";
+}
