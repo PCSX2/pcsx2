@@ -381,6 +381,43 @@ void SymbolList<SymbolType>::merge_from(SymbolList<SymbolType>& list)
 }
 
 template <typename SymbolType>
+void SymbolList<SymbolType>::merge_from_vector(std::vector<SymbolType> & symbols)
+{
+	m_address_to_handle.clear();
+	m_name_to_handle.clear();
+
+	std::vector<SymbolType> lhs = std::move(m_symbols);
+	std::vector<SymbolType> rhs = std::move(symbols);
+
+	m_symbols = std::vector<SymbolType>();
+	m_symbols.reserve(lhs.size() + rhs.size());
+
+	size_t lhs_pos = 0;
+	size_t rhs_pos = 0;
+	for (;;)
+	{
+		SymbolType* symbol;
+		if (lhs_pos < lhs.size() && (rhs_pos >= rhs.size() || lhs[lhs_pos].handle() < rhs[rhs_pos].handle()))
+		{
+			symbol = &m_symbols.emplace_back(std::move(lhs[lhs_pos++]));
+		}
+		else if (rhs_pos < rhs.size())
+		{
+			symbol = &m_symbols.emplace_back(std::move(rhs[rhs_pos++]));
+		}
+		else
+		{
+			break;
+		}
+
+		link_address_map(*symbol);
+		link_name_map(*symbol);
+	}
+
+	CCC_ASSERT(m_symbols.size() == lhs.size() + rhs.size());
+}
+
+template <typename SymbolType>
 bool SymbolList<SymbolType>::mark_symbol_for_destruction(SymbolHandle<SymbolType> handle, SymbolDatabase* database)
 {
 	SymbolType* symbol = symbol_from_handle(handle);
