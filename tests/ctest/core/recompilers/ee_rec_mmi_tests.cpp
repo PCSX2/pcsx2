@@ -1012,3 +1012,32 @@ TEST(EeRecMmi, PmaddwRdAliasesRsPerLaneCommitOrder)
 	h.ExpectGpr128(reg::v1, 0, 0);
 	h.ExpectGpr128(reg::a0, 15, 77);
 }
+
+// ---- GE-09: Rd writeback rides RXSCRATCH out of recWritebackHILO ------------
+// MULT1/MULTU1 with rd exercise the collapsed pipeline-1 path (rd must get the
+// sign-extended low-32 of the PIPELINE-1 product, and LO1/HI1 must be written;
+// pipeline-0 LO/HI stay untouched).
+
+TEST(EeRecMmi, Mult1WithRdNegativeProduct)
+{
+	EeRecTestHarness h;
+	h.SetLoPair(0x1111111111111111ull, 0x2222222222222222ull);
+	h.SetHiPair(0x3333333333333333ull, 0x4444444444444444ull);
+	h.SetGpr64(reg::a0, 0xFFFF'FFFF'FFFF'FFFEull); // -2
+	h.SetGpr64(reg::a1, 3);
+	h.LoadProgram({ee::MULT1(reg::v0, reg::a0, reg::a1)}); // -6
+	h.Run();
+	h.ExpectGpr64(reg::v0, 0xFFFF'FFFF'FFFF'FFFAull);
+}
+
+TEST(EeRecMmi, Multu1WithRdLargeProduct)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a0, 0xFFFF'FFFFull);
+	h.SetGpr64(reg::a1, 0xFFFF'FFFFull);
+	// 0xFFFFFFFF^2 = 0xFFFFFFFE_00000001: LO1=sext(0x00000001), HI1=sext(0xFFFFFFFE),
+	// rd = sext(low 32) = 1.
+	h.LoadProgram({ee::MULTU1(reg::v0, reg::a0, reg::a1)});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 1ull);
+}

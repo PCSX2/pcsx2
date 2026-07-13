@@ -61,16 +61,19 @@ static void recWritebackHILO(bool upper)
 	armAsm->Str(a64::x0, armCpuRegMem(upper ? &cpuRegs.HI.UD[1] : &cpuRegs.HI.UD[0]));
 }
 
-// Write Rd from LO (memory-based — no register allocation)
+// Write Rd from the sign-extended LO value recWritebackHILO leaves in
+// RXSCRATCH (GE-09). Contract: every caller invokes this IMMEDIATELY after
+// recWritebackHILO — the old Ldr from LO.UD[half] was a store→load
+// round-trip on the value computed one instruction earlier. Same helper
+// serves both pipelines (the RXSCRATCH value is the rd value either way).
+// _deleteEEreg's NEON writeback emits only Str q/pin Movs — x8 untouched.
 static void recWritebackRd()
 {
 	if (!_Rd_) return;
 
 	_deleteEEreg(_Rd_, 0);
 	GPR_DEL_CONST(_Rd_);
-	const a64::Register dst = armEEDestForGPR(_Rd_, RXSCRATCH);
-	armLoadEERegPtr(dst, &cpuRegs.LO.UD[0]);
-	armStoreEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rd_].UD[0]);
 }
 
 //// MULT — signed 32-bit multiply, result in HI:LO, optionally Rd
@@ -267,16 +270,11 @@ void recDIVU()
 
 #endif // !FORCE_INTERP_MULTDIV
 
-// Write Rd from LO1 (pipeline 1)
+// Pipeline-1 Rd writeback — identical to recWritebackRd since GE-09 (the
+// rd value rides RXSCRATCH out of recWritebackHILO for either pipeline).
 static void recWritebackRd1()
 {
-	if (!_Rd_) return;
-
-	_deleteEEreg(_Rd_, 0);
-	GPR_DEL_CONST(_Rd_);
-	const a64::Register dst = armEEDestForGPR(_Rd_, RXSCRATCH);
-	armLoadEERegPtr(dst, &cpuRegs.LO.UD[1]);
-	armStoreEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	recWritebackRd();
 }
 
 //// MULT1 — signed 32-bit multiply, pipeline 1 (HI1:LO1)
