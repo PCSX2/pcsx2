@@ -311,11 +311,10 @@ TEST(EeVu0Vcallms, MicroprogramSetsViVisibleViaCfc2)
 TEST(EeVu0Vcallms, RepeatedIdenticalKicksAccumulateVi)
 {
 	// Three identical kicks of the same microprogram from a clean pipeline
-	// state. Kick 1 compiles (slow path), kick 2 resolves via the C quick
-	// path (seeding the VE-02 inline last-hit probe in the dispatcher
-	// stub), kick 3 dispatches through the probe's inline-hit path. vi3
+	// state — the repeated-dispatch shape every dispatch-path optimization
+	// (quick-slot caching, lookup fast paths) must keep correct. vi3
 	// accumulates +5 per kick on both engines regardless of which path
-	// resolved the dispatch.
+	// resolved each dispatch.
 	EeRecTestHarness h;
 	h.EnableVu0Capture();
 	h.EnableCop1();
@@ -341,13 +340,12 @@ TEST(EeVu0Vcallms, RepeatedIdenticalKicksAccumulateVi)
 
 TEST(EeVu0Vcallms, MicroMemRewriteInvalidatesInlineLookupCache)
 {
-	// Stale-probe (VE-02) SMC guard: after three kicks have the inline
-	// last-hit probe hot, the EE rewrites the microprogram's pair-0 lower
-	// op in place (vi3 += 5 → vi3 += 9) with an SW to VU0 micro mem. The
-	// write must funnel through mVUclear, which drops the probe cache
-	// (mVU.prog.lastHit) along with the quick slots, so the fourth kick
-	// re-resolves and runs the NEW program. A stale inline hit would run
-	// the old +5 block: JIT vi3 = 20 vs interp 24.
+	// VU0-micro SMC guard: after three kicks have the dispatch path warm,
+	// the EE rewrites the microprogram's pair-0 lower op in place
+	// (vi3 += 5 → vi3 += 9) with an SW to VU0 micro mem. The write must
+	// funnel through mVUclear so the fourth kick re-resolves and runs the
+	// NEW program. Any dispatch-path cache that survives the micro-mem
+	// write would run the old +5 block: JIT vi3 = 20 vs interp 24.
 	EeRecTestHarness h;
 	h.EnableVu0Capture();
 	h.EnableCop1();
