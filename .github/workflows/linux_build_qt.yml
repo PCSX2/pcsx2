@@ -95,8 +95,8 @@ jobs:
         uses: actions/cache@v6
         with:
           path: .ccache
-          key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ccache
+          key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ${{ inputs.cmakeBuildType }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ${{ inputs.cmakeBuildType }} ccache
 
       - name: Install Packages
         run: |
