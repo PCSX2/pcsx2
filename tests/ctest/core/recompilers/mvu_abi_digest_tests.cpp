@@ -134,6 +134,12 @@ constexpr AbiPin kPins[] = {
 	// compiles a normal JR tail) change shape; the branch-only and
 	// straight-line probes are bit-identical to abi 9.
 	{10, {0xb35dd0237372d734, 0xb6dfab5c9a56d900, 0xc9abe2f224fb5710, 0xbdfce8a7ecebe6a6, 0x1fe80e2917de1c2d}},
+	// abi 11: resume-aware dispatch (VE-07). mVUtestCycles' budget-break
+	// exit BLs copyPLStateResume — a new stub id in the fixup stream. The
+	// instruction count and shape of every block are unchanged, but every
+	// block carries a testCycles, so every probe's fixup structure (and
+	// therefore digest) moves.
+	{11, {0x5606c91c74538771, 0xf50098b57b42c70c, 0xdda10863aa6fe8f7, 0xb93a633324c1d588, 0x6efd9e660ba61479}},
 };
 
 u64 CompileAndDigest(std::initializer_list<vu::VuOp> pairs)

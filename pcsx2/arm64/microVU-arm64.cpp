@@ -28,6 +28,7 @@
 #ifdef mVUcacheTrace
 #include <algorithm>
 #include <limits>
+#include <utility>
 #include <vector>
 #endif
 
@@ -505,28 +506,24 @@ static bool mvuNeedsFPCRUpdate(mV)
 
 static void mVUdispatcherAB(mV)
 {
+	const auto emitCalleeSaveProlog = []() {
+		// Save callee-saved GPRs and LR
+		armAsm->Stp(a64::x29, a64::x30, a64::MemOperand(a64::sp, -16, a64::PreIndex));
+		armAsm->Stp(a64::x19, a64::x20, a64::MemOperand(a64::sp, -16, a64::PreIndex));
+		armAsm->Stp(a64::x21, a64::x22, a64::MemOperand(a64::sp, -16, a64::PreIndex));
+		armAsm->Stp(a64::x23, a64::x24, a64::MemOperand(a64::sp, -16, a64::PreIndex));
+		armAsm->Stp(a64::x25, a64::x26, a64::MemOperand(a64::sp, -16, a64::PreIndex));
+		armAsm->Stp(a64::x27, a64::x28, a64::MemOperand(a64::sp, -16, a64::PreIndex));
+		// Save callee-saved NEON (d8-d15)
+		armAsm->Stp(a64::d8,  a64::d9,  a64::MemOperand(a64::sp, -16, a64::PreIndex));
+		armAsm->Stp(a64::d10, a64::d11, a64::MemOperand(a64::sp, -16, a64::PreIndex));
+		armAsm->Stp(a64::d12, a64::d13, a64::MemOperand(a64::sp, -16, a64::PreIndex));
+		armAsm->Stp(a64::d14, a64::d15, a64::MemOperand(a64::sp, -16, a64::PreIndex));
+	};
+
 	mVU.startFunct = armStartBlock();
 
-	// Save callee-saved GPRs and LR
-	armAsm->Stp(a64::x29, a64::x30, a64::MemOperand(a64::sp, -16, a64::PreIndex));
-	armAsm->Stp(a64::x19, a64::x20, a64::MemOperand(a64::sp, -16, a64::PreIndex));
-	armAsm->Stp(a64::x21, a64::x22, a64::MemOperand(a64::sp, -16, a64::PreIndex));
-	armAsm->Stp(a64::x23, a64::x24, a64::MemOperand(a64::sp, -16, a64::PreIndex));
-	armAsm->Stp(a64::x25, a64::x26, a64::MemOperand(a64::sp, -16, a64::PreIndex));
-	armAsm->Stp(a64::x27, a64::x28, a64::MemOperand(a64::sp, -16, a64::PreIndex));
-	// Save callee-saved NEON (d8-d15)
-	armAsm->Stp(a64::d8,  a64::d9,  a64::MemOperand(a64::sp, -16, a64::PreIndex));
-	armAsm->Stp(a64::d10, a64::d11, a64::MemOperand(a64::sp, -16, a64::PreIndex));
-	armAsm->Stp(a64::d12, a64::d13, a64::MemOperand(a64::sp, -16, a64::PreIndex));
-	armAsm->Stp(a64::d14, a64::d15, a64::MemOperand(a64::sp, -16, a64::PreIndex));
-
-	// Park PS2 FPU clamp constants. AAPCS64 preserves the lower 64 bits of
-	// d8/d9 across mVUexecuteVU0/1, mVUcompile, and every other C call
-	// reachable from inside this dispatcher. Matches the EE dispatcher's
-	// convention so iCOP2 scalar clamps (which can execute inside macro-mode
-	// VU emissions) and any future scalar FPU work share s8/s9.
-	armAsm->Ldr(a64::s8, FLT_MAX);
-	armAsm->Ldr(a64::s9, -FLT_MAX);
+	emitCalleeSaveProlog();
 
 	// Inline mVUlookupProg fast path: stash w0/w1 into callee-saved
 	// w26/w27, BL the lookup-only wrapper (mVUlookupProg_VU0/1) which
@@ -556,6 +553,15 @@ static void mVUdispatcherAB(mV)
 	// x0 holds the block pointer; we keep it there until the Br below.
 	// FPCR setup, gprVUState pin, and the flag/PQ loads emit no calls and
 	// don't touch x0, so it survives across them.
+
+	// Park PS2 FPU clamp constants. AAPCS64 preserves the lower 64 bits of
+	// d8/d9 across every C call reachable from inside this dispatcher.
+	// Matches the EE dispatcher's convention so iCOP2 scalar clamps (which
+	// can execute inside macro-mode VU emissions) and any future scalar FPU
+	// work share s8/s9. Lives in the post-lookup tail so the resume entry
+	// below shares it.
+	armAsm->Ldr(a64::s8, FLT_MAX);
+	armAsm->Ldr(a64::s9, -FLT_MAX);
 
 	// Pin gprVUState (x19) = &mVU.regs(). All subsequent regs() field accesses
 	// (here in the dispatcher and in compiled blocks) use [gprVUState, #off]
@@ -790,6 +796,27 @@ static void mVUdispatcherAB(mV)
 
 	armAsm->Ret();
 
+	// === Resume entry (VE-07) === (x0 = block hostEntry, w1 = cycles)
+	// A cycle-budget break re-enters the exact block that broke; Execute
+	// hands that parked hostEntry straight in, skipping the lookup BL. Only
+	// the mVUlookupProg_VUx wrapper's work needs replicating here: the
+	// cycles/totalCycles stores (mVUtestCycles reads mVU.cycles). Program
+	// bookkeeping (prog.cur/isSame/quick) is untouched — the previous
+	// dispatch resolved the same program and nothing ran in between (any
+	// event that could change the resolution disarms; see microVU struct).
+	mVU.startFunctResume = armGetCurrentCodePointer();
+
+	emitCalleeSaveProlog();
+
+	// (offsetof on microVU is non-standard-layout UB — assert adjacency at
+	// generation time instead.)
+	pxAssert(reinterpret_cast<const u8*>(&mVU.cycles) ==
+			 reinterpret_cast<const u8*>(&mVU.totalCycles) + 4);
+	armMoveAddressToReg(a64::x8, &mVU.totalCycles);
+	armAsm->Stp(a64::w1, a64::w1, a64::MemOperand(a64::x8));
+
+	armAsm->B(&gotHostEntry);
+
 	u8* end = armEndBlock();
 
 	Perf::any.Register(mVU.startFunct, static_cast<u32>(end - mVU.startFunct),
@@ -868,23 +895,44 @@ static void mVUGenerateWaitMTVU(mV)
 
 static void mVUGenerateCopyPipelineState(mV)
 {
-	mVU.copyPLState = armStartBlock();
-
 	// x0 = source pointer to microRegInfo (96 bytes)
 	// Copy 96 bytes (6 x 16-byte loads) to mVU.prog.lpState
-	const a64::Register src = a64::x0;
+	const auto emitCopy = [&mVU]() {
+		const a64::Register src = a64::x0;
 
-	armMoveAddressToReg(a64::x1, &mVU.prog.lpState);
+		armMoveAddressToReg(a64::x1, &mVU.prog.lpState);
 
-	// 96 bytes = 6 x LDR/STR Q or 3 x LDP/STP Q
-	armAsm->Ldp(a64::q0, a64::q1, a64::MemOperand(src, 0));
-	armAsm->Ldp(a64::q2, a64::q3, a64::MemOperand(src, 32));
-	armAsm->Ldp(a64::q4, a64::q5, a64::MemOperand(src, 64));
+		// 96 bytes = 6 x LDR/STR Q or 3 x LDP/STP Q
+		armAsm->Ldp(a64::q0, a64::q1, a64::MemOperand(src, 0));
+		armAsm->Ldp(a64::q2, a64::q3, a64::MemOperand(src, 32));
+		armAsm->Ldp(a64::q4, a64::q5, a64::MemOperand(src, 64));
 
-	armAsm->Stp(a64::q0, a64::q1, a64::MemOperand(a64::x1, 0));
-	armAsm->Stp(a64::q2, a64::q3, a64::MemOperand(a64::x1, 32));
-	armAsm->Stp(a64::q4, a64::q5, a64::MemOperand(a64::x1, 64));
+		armAsm->Stp(a64::q0, a64::q1, a64::MemOperand(a64::x1, 0));
+		armAsm->Stp(a64::q2, a64::q3, a64::MemOperand(a64::x1, 32));
+		armAsm->Stp(a64::q4, a64::q5, a64::MemOperand(a64::x1, 64));
+	};
 
+	mVU.copyPLState = armStartBlock();
+	emitCopy();
+	armAsm->Ret();
+	armEndBlock();
+
+	// Resume-arming variant (VE-07), called ONLY from mVUtestCycles'
+	// budget-break exit. There x0 is &pBlock->pState of the block that
+	// failed its cycle test — i.e. the microBlock itself (pState sits at
+	// offset 0) — and that block is exactly what the next dispatch's
+	// lookup would re-resolve (the copy just made lpState == its pState,
+	// TPC gets its PC). Park its hostEntry so Execute can skip the lookup.
+	// Reaches resumeEntry via the x24 pin: testCycles only exists in
+	// micro-mode blocks, where gprMVUFlag is live. Clobbers x1/x2/q0-q5
+	// (x2 is free at the call site: block entry, before any emission).
+	static_assert(offsetof(microBlock, pState) == 0,
+		"copyPLStateResume derives the microBlock from &pState");
+
+	mVU.copyPLStateResume = armStartBlock();
+	emitCopy();
+	armAsm->Ldr(a64::x2, a64::MemOperand(a64::x0, offsetof(microBlock, hostEntry)));
+	armAsm->Str(a64::x2, mVUfieldMem(mVU, &mVU.resumeEntry));
 	armAsm->Ret();
 	armEndBlock();
 }
@@ -1041,6 +1089,10 @@ void mVUreset(microVU& mVU, bool resetReserve)
 
 	mVU.regs().nextBlockCycles = 0;
 	memset(&mVU.prog.lpState, 0, sizeof(mVU.prog.lpState));
+	// The parked resume points into the code cache we just tore down. Note
+	// mVUreset can run at dispatcher exit (mVUcleanUp's cache-exhaustion
+	// tail) AFTER the exiting block armed it — this null must win (VE-07).
+	mVU.resumeEntry = nullptr;
 	mVU.branchCondCarryGpr = -1;
 	mVU.profiler.Reset(mVU.index);
 
@@ -1150,6 +1202,13 @@ __fi void mVUclear(mV, u32 addr, u32 size)
 	// against their writeGenAtAnchor so mVUcacheProg knows whether the live
 	// image can still match their anchored contentHash (drift check).
 	mVU.microMemWriteGen++;
+
+	// Disarm the parked resume on ANY micro-mem write — same unconditional
+	// contract as the lpState zero below. A mid-run write to the running
+	// program's code must force the next dispatch through the full
+	// search-resolve (program identity may have changed); the resume
+	// shortcut would re-enter stale code (VE-07).
+	mVU.resumeEntry = nullptr;
 
 #ifdef mVUcacheTrace
 	mVUCacheTraceObserveClear(mVU, addr, size, /*wasRealClear=*/!mVU.prog.cleared);
@@ -1778,6 +1837,25 @@ namespace mvu_test_hooks
 		microVU& mVU = vu_index ? microVU1 : microVU0;
 		mVU.prog.lpState.blockType = static_cast<u8>(block_type);
 	}
+
+	// Resume-dispatch probes (mvu_resume_dispatch_tests.cpp, VE-07).
+	void* GetResumeEntry(int vu_index)
+	{
+		const microVU& mVU = vu_index ? microVU1 : microVU0;
+		return mVU.resumeEntry;
+	}
+
+	// The oracle for the parked resume: what the full production lookup
+	// would resolve for the VU's current TPC + carried lpState. Runs the
+	// REAL read-only fast path (mVUlookupProg_VUx). Side effects (cycles
+	// stores, prog.cur/isSame/quick refresh) are the same idempotent
+	// bookkeeping a real dispatch performs for the same program.
+	void* ResolveLookupEntry(int vu_index)
+	{
+		const u32 tpc_bytes = vuRegs[vu_index & 1].VI[REG_TPC].UL << 3;
+		return vu_index ? mVUlookupProg_VU1(tpc_bytes, 0)
+		                : mVUlookupProg_VU0(tpc_bytes, 0);
+	}
 }
 #endif
 
@@ -1844,6 +1922,10 @@ void recMicroVU1::Reset()
 
 void recMicroVU0::SetStartPC(u32 startPC)
 {
+	// Fresh kick: a parked resume must never survive it. The kick selects
+	// the quick slot by start_pc and enters at the kicked PC, neither of
+	// which the resume path consults (VE-07).
+	microVU0.resumeEntry = nullptr;
 	VU0.start_pc = startPC;
 }
 
@@ -1855,7 +1937,16 @@ void recMicroVU0::Execute(u32 cycles)
 		return;
 	VU0.VI[REG_TPC].UL <<= 3;
 
-	((mVUrecCall)microVU0.startFunct)(VU0.VI[REG_TPC].UL, cycles);
+	// Resume fast path (VE-07): a preceding cycle-budget break parked the
+	// breaking block's hostEntry (copyPLStateResume); re-enter it directly,
+	// skipping mVUlookupProg. Consume-once: every other exit kind (E-bit,
+	// T/D/M-bit) leaves the slot empty and takes the full path. Recording
+	// gets the full path so observed.record keeps seeing resume TPCs.
+	void* const resume = std::exchange(microVU0.resumeEntry, nullptr);
+	if (resume && !mVUPersist::IsRecordingEnabled())
+		((mVUrecCallResume)microVU0.startFunctResume)(resume, cycles);
+	else
+		((mVUrecCall)microVU0.startFunct)(VU0.VI[REG_TPC].UL, cycles);
 	VU0.VI[REG_TPC].UL >>= 3;
 	if (microVU0.regs().flags & 0x4)
 	{
@@ -1866,6 +1957,8 @@ void recMicroVU0::Execute(u32 cycles)
 
 void recMicroVU1::SetStartPC(u32 startPC)
 {
+	// Fresh kick disarms the parked resume — see recMicroVU0::SetStartPC.
+	microVU1.resumeEntry = nullptr;
 	VU1.start_pc = startPC;
 }
 
@@ -1886,7 +1979,12 @@ void recMicroVU1::Execute(u32 cycles)
 		? vu1_trace::begin('r', VU1.VI[REG_TPC].UL, cycles)
 		: nullptr;
 #endif
-	((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
+	// Resume fast path — see recMicroVU0::Execute (VE-07).
+	void* const resume = std::exchange(microVU1.resumeEntry, nullptr);
+	if (resume && !mVUPersist::IsRecordingEnabled())
+		((mVUrecCallResume)microVU1.startFunctResume)(resume, cycles);
+	else
+		((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
 	VU1.VI[REG_TPC].UL >>= 3;
 #ifdef PCSX2_RECOMPILER_TESTS
 	vu1_trace::finish(trace);

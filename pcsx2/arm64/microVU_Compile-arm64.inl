@@ -432,8 +432,12 @@ static void mVUtestCycles(mV, microFlagCycles& mFC)
 	armAsm->B(&skip, a64::pl); // pl = N clear = non-negative
 
 	// Early exit path: save pipeline state then exit via mVUendProgram(0).
+	// The resume variant additionally parks this block's hostEntry in
+	// mVU.resumeEntry — a budget break resumes at this very block (the
+	// state saved here IS this block's entry state), so the next dispatch
+	// can skip mVUlookupProg (VE-07).
 	armMoveAddressToReg(a64::x0, &mVUpBlock->pState);
-	armEmitCall(mVU.copyPLState);
+	armEmitCall(mVU.copyPLStateResume);
 	if (EmuConfig.Gamefixes.VUSyncHack || EmuConfig.Gamefixes.FullVU0SyncHack)
 	{
 		armAsm->Mov(a64::w9, mVUcycles);

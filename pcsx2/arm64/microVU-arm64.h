@@ -67,7 +67,12 @@
 //       hostEntry on a hit, only falling into mVUbackupRegs + the
 //       mVUcompileJIT C call on a miss; indirect-jump blocks change
 //       shape.
-static constexpr u32 kMvuCompilerAbiVersion = 10;
+//  11 — resume-aware dispatch (VE-07): mVUtestCycles' budget-break exit
+//       BLs copyPLStateResume (new stub id) which additionally parks the
+//       breaking block's hostEntry in mVU.resumeEntry; the next dispatch
+//       consumes it and skips mVUlookupProg. Block insn count is
+//       unchanged but the recorded stub fixup id is new.
+static constexpr u32 kMvuCompilerAbiVersion = 11;
 
 // Hash/equality functors for XXH128_hash_t — let std::unordered_map<XXH128_hash_t, …>
 // work without a wrapping struct. low64 already carries the well-mixed half of
@@ -444,6 +449,17 @@ struct microVU
 	u32 totalCycles;
 	s32 cycles;
 
+	// Resume-aware dispatch (VE-07). A cycle-budget break re-enters the very
+	// block that broke (mVUtestCycles saves that block's own pState/TPC), so
+	// its early-exit path parks the block's hostEntry here (copyPLStateResume,
+	// [gprMVUFlag, #imm] — keep this field in the pin window above `prog`).
+	// recMicroVUx::Execute consumes it once (std::exchange) and enters
+	// startFunctResume, skipping mVUlookupProg entirely. Disarmed by anything
+	// that can change what a fresh lookup would resolve: SetStartPC (fresh
+	// kick selects a new quick slot), mVUclear (any micro-mem write, same
+	// contract as the lpState zero), mVUreset (pointer would dangle).
+	void* resumeEntry;
+
 	u32 index;
 	u32 cop2;
 	u32 vuMemSize;
@@ -494,11 +510,21 @@ struct microVU
 
 	u8* cache;
 	u8* startFunct;
+	// Resume entry (VE-07): (x0 = block hostEntry, w1 = cycles). Same
+	// callee-save prolog as startFunct, stores cycles/totalCycles, then
+	// joins startFunct's post-lookup tail with x0 as the block to enter.
+	u8* startFunctResume;
 	u8* exitFunct;
 	u8* startFunctXG;
 	u8* exitFunctXG;
 	u8* waitMTVU;
 	u8* copyPLState;
+	// copyPLState + parks the breaking block's hostEntry in resumeEntry.
+	// Called ONLY from mVUtestCycles' budget-break exit, where x0 is the
+	// block's own &pState (== the microBlock, pState sits at offset 0).
+	// The M-bit end sites keep plain copyPLState: they save pStateEnd and
+	// resume at the *branch target*, which a fresh lookup must resolve.
+	u8* copyPLStateResume;
 	// Per-VU SFLAGc + micro_flag tail helpers BL'd by mVUendProgram /
 	// mVUsetupBranch emit. See mVUGenerateEndProgramFlagsHelper in
 	// microVU-arm64.cpp — each exit thunk's inline shrinks from ~20 insns
@@ -767,6 +793,7 @@ extern void          mVUbuildOptionsSentinel(microVU& mVU);
 extern XXH128_hash_t mVUcomputeProgramHash(microVU& mVU);
 
 typedef void (*mVUrecCall)(u32, u32);
+typedef void (*mVUrecCallResume)(void*, u32);
 typedef void (*mVUrecCallXG)(void);
 
 // Out-of-line definition — needs complete microVU type and globals
