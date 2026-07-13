@@ -213,10 +213,16 @@ else()
 	)
 endif()
 
-# Enable debug information in release builds for Linux.
-# Makes the backtrace actually meaningful.
+# Enable debug information in release builds.
+# - Linux: needed for a meaningful libbacktrace backtrace.
+# - iOS: inject -g in Release so dsymutil can extract a .dSYM. Gated behind
+#   ARMSX2_IOS_DSYM (default OFF) to avoid link overhead. Must go through
+#   add_compile_options, not OTHER_CFLAGS -- CMake bug #15224.
 if(LINUX)
 	add_compile_options($<$<CONFIG:Release>:-g1>)
+endif()
+if(IOS AND ARMSX2_IOS_DSYM)
+	add_compile_options($<$<CONFIG:Release>:-g>)
 endif()
 
 if(MSVC)
