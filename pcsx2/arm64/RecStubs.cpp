@@ -98,15 +98,18 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 
 	// Set up arguments for the vtlb handler call.
 
-	// 128-bit fastmem path. Always uses q0 (data_register == 0); the JIT
-	// callers in recVTLB-arm64.cpp materialize the load result / store
-	// value into q0 and never allocate q0 to a guest register at the
-	// fastmem emit point. vtlb_memRead128 returns r128 in q0 per AAPCS64;
-	// vtlb_memWrite128 takes value in q0.
+	// 128-bit fastmem path. data_register is the q register the inline
+	// Ldr/Str targeted: q0 for the legacy temp shape (LQC2/SQC2, LQ-to-r0 —
+	// emitted post-iFlushCall so q0 is allocator-detached), or an allocated
+	// NEONTYPE_GPRREG slot (GE-14 LQ/SQ). vtlb_memRead128 returns r128 in q0
+	// per AAPCS64 and vtlb_memWrite128 takes the value in q0, so a non-q0
+	// data_register needs a Mov on each side of the slow-path call; q0
+	// itself is save/restored by the mask machinery when live (store case —
+	// the load case skips the dest from the save set, and the result-landing
+	// Mov below runs before the restores).
 	if (size_in_bits == 128)
 	{
-		pxAssertRel(is_fpr && data_register == 0,
-			"128-bit fastmem backpatch must target q0");
+		pxAssertRel(is_fpr, "128-bit fastmem backpatch must target a q register");
 
 		if (address_register != 9)
 			armAsm->Mov(a64::w9, armWRegister(address_register));
@@ -120,12 +123,14 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 		armAsm->Tbnz(a64::x0, 63, &slow_path);
 
 		if (is_load)
-			armAsm->Ldr(a64::q0, a64::MemOperand(a64::x0));
+			armAsm->Ldr(a64::QRegister(data_register), a64::MemOperand(a64::x0));
 		else
-			armAsm->Str(a64::q0, a64::MemOperand(a64::x0));
+			armAsm->Str(a64::QRegister(data_register), a64::MemOperand(a64::x0));
 		armAsm->B(&done);
 
 		armAsm->Bind(&slow_path);
+		if (!is_load && data_register != 0)
+			armAsm->Mov(a64::q0.V16B(), a64::QRegister(data_register).V16B());
 		armAsm->Mov(a64::w0, a64::w9);
 		// Spill/reload RECCYCLE around the vtlb handler call — the slow path
 		// dispatches to MMIO handlers (hwRead*/hwWrite*) which read/write
@@ -149,6 +154,10 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 		// are not allocator state, so the gpr_bitmask save/restore never
 		// covers them either; q0 untouched).
 		armReloadEEPinsAfterPreserveMostCall();
+		// Land the read result in the resident dest slot (excluded from the
+		// save set above, so the restores below can't clobber it).
+		if (is_load && data_register != 0)
+			armAsm->Mov(a64::QRegister(data_register).V16B(), a64::q0.V16B());
 
 		armAsm->Bind(&done);
 	}

@@ -293,19 +293,22 @@ static void vtlbFastmemWrite(int addr_wreg, int value_reg, u32 bits)
 		static_cast<u8>(bits), false, false, false);
 }
 
-// Emit a single 128-bit fastmem load (LDR Q0, [RFASTMEMBASE, w_addr, UXTW]).
-// Result in q0. Mirrors x86 PCSX2's MOVAPS-via-RFASTMEMBASE pattern
-// (ix86-32/recVTLB.cpp). Backpatch thunk extended in RecStubs.cpp.
-static void vtlbFastmemRead128(int addr_wreg)
+// Emit a single 128-bit fastmem load (LDR Q<n>, [RFASTMEMBASE, w_addr, UXTW]).
+// dest_qreg 0 = the legacy q0-temp shape (LQC2, LQ-to-r0 — caller must have
+// iFlushCall'd so q0 is allocator-detached); GE-14 passes an allocated
+// NEONTYPE_GPRREG slot and the backpatch thunk lands the slow-path result
+// there. Mirrors x86 PCSX2's alloc-callback MOVAPS pattern (ix86-32/recVTLB.cpp).
+static void vtlbFastmemRead128(int addr_wreg, int dest_qreg)
 {
 	u32 gpr_bitmask, fpr_bitmask;
 	vtlbGetLiveRegisterMasks(gpr_bitmask, fpr_bitmask);
 
 	const u8* codeStart = armGetCurrentCodePointer();
-	armAsm->Ldr(a64::q0, a64::MemOperand(RFASTMEMBASE, armWRegister(addr_wreg), a64::UXTW));
+	armAsm->Ldr(a64::QRegister(dest_qreg),
+		a64::MemOperand(RFASTMEMBASE, armWRegister(addr_wreg), a64::UXTW));
 
 	vtlb_AddLoadStoreInfo((uptr)codeStart, 4, pc, gpr_bitmask, fpr_bitmask,
-		static_cast<u8>(addr_wreg), /*data_register*/ 0,
+		static_cast<u8>(addr_wreg), static_cast<u8>(dest_qreg),
 		/*size_in_bits*/ 128, /*is_signed*/ false, /*is_load*/ true, /*is_fpr*/ true);
 }
 
@@ -328,18 +331,21 @@ static void vtlbFastmemReadFPR32(int addr_wreg, int dest_neonreg)
 		/*size_in_bits*/ 32, /*is_signed*/ false, /*is_load*/ true, /*is_fpr*/ true);
 }
 
-// Emit a single 128-bit fastmem store (STR Q0, [RFASTMEMBASE, w_addr, UXTW]).
-// Value in q0. Backpatch thunk extended in RecStubs.cpp.
-static void vtlbFastmemWrite128(int addr_wreg)
+// Emit a single 128-bit fastmem store (STR Q<n>, [RFASTMEMBASE, w_addr, UXTW]).
+// src_qreg 0 = the legacy q0-temp shape (SQC2 — caller iFlushCall'd first);
+// GE-14 passes the allocator-resident source quad and the backpatch thunk's
+// slow path hands it to the C write handler.
+static void vtlbFastmemWrite128(int addr_wreg, int src_qreg)
 {
 	u32 gpr_bitmask, fpr_bitmask;
 	vtlbGetLiveRegisterMasks(gpr_bitmask, fpr_bitmask);
 
 	const u8* codeStart = armGetCurrentCodePointer();
-	armAsm->Str(a64::q0, a64::MemOperand(RFASTMEMBASE, armWRegister(addr_wreg), a64::UXTW));
+	armAsm->Str(a64::QRegister(src_qreg),
+		a64::MemOperand(RFASTMEMBASE, armWRegister(addr_wreg), a64::UXTW));
 
 	vtlb_AddLoadStoreInfo((uptr)codeStart, 4, pc, gpr_bitmask, fpr_bitmask,
-		static_cast<u8>(addr_wreg), /*data_register*/ 0,
+		static_cast<u8>(addr_wreg), static_cast<u8>(src_qreg),
 		/*size_in_bits*/ 128, /*is_signed*/ false, /*is_load*/ false, /*is_fpr*/ true);
 }
 
@@ -587,13 +593,13 @@ static void recLoad(u32 bits, bool sign)
 		// refresh; the canonical Str in recStoreLoadResult stays. Not done
 		// for softmem — its result comes back from a C call in x0.
 		const a64::Register* dpin = _Rt_ ? armEEPinForGPR(_Rt_) : nullptr;
-		// A dirty NEON quad for Rt (an MMI Rd dest) must be retired BEFORE the
-		// Ldr-into-pin below: recStoreLoadResult's _deleteEEreg would other-
-		// wise write it back AFTER the load, and armStoreEEGPRQuad's pin
-		// refresh would clobber the just-loaded result with the quad's stale
-		// lane 0. The unpinned path is order-safe (writeback touches memory,
-		// not x0) but retiring here keeps the quad out of the thunk's save
-		// mask either way.
+		// A dirty NEON quad for Rt (an LQ or MMI Rd dest) must be retired
+		// BEFORE the Ldr-into-pin below: recStoreLoadResult's _deleteEEreg
+		// would otherwise write it back AFTER the load, and
+		// armStoreEEGPRQuad's pin refresh would clobber the just-loaded
+		// result with the quad's stale lane 0. The unpinned path is
+		// order-safe (writeback touches memory, not x0) but retiring here
+		// keeps the quad out of the thunk's save mask either way.
 		if (dpin)
 			_deleteGPRtoNEONreg(_Rt_, DELETE_REG_FREE);
 		// GE-07: with allocator state now live across fastmem, x0 (a pool
@@ -878,14 +884,43 @@ static void vtlbSoftmemWrite128(int addr_wreg)
 
 void recLQ()
 {
+	const bool useFastmem = CHECK_FASTMEM && !vtlb_IsFaultingPC(pc);
+
+	// GE-14 fastmem path: load straight into an allocated NEONTYPE_GPRREG
+	// slot (x86 recLoadQuad's alloc-callback model) — the canonical
+	// cpuRegs.GPR store is elided; dirty tracking writes it back at the next
+	// seam (armStoreEEGPRQuad in _writebackNEONreg refreshes the pin, and
+	// scalar readers either probe the slot via _eeMoveGPRtoR or force the
+	// writeback via _deleteEEreg — the exact state an MMI Rd write creates).
+	// No iFlushCall: GE-07's fault-thunk live-mask machinery saves/restores
+	// allocator state, only constants must be memory-visible for the
+	// slow-path C handler. Rt==0 keeps the legacy flush + q0-discard shape
+	// (the load must still happen for MMIO side effects, and q0 is only
+	// safe to clobber once the allocator is evicted).
+	if (useFastmem && _Rt_)
+	{
+		// Address BEFORE the const flush (keeps the const-Rs fold — the flush
+		// clears every const flag) and BEFORE the dest alloc (rt may alias rs,
+		// and the MODE_WRITE alloc invalidates rt's prior GPR/const residency).
+		// w9 is immune to both: the flush materializes into pins/RXSCRATCH and
+		// the alloc's evictions are NEON stores.
+		recComputeAddr();
+		armAsm->And(a64::w9, a64::w9, (u32)~0xF);
+		_flushConstRegs(true);
+
+		const int qd = _allocGPRtoNEONreg(_Rt_, MODE_WRITE);
+		_validateRegs();
+		vtlbFastmemRead128(9, qd);
+		return;
+	}
+
 	// addr = (rs + imm) & ~0xF — compute from live registers, then flush
 	recComputeAddr();
 	armAsm->And(a64::w9, a64::w9, (u32)~0xF);
 	iFlushCall(FLUSH_CONSTANT_REGS);
 
-	const bool useFastmem = CHECK_FASTMEM && !vtlb_IsFaultingPC(pc);
 	if (useFastmem)
-		vtlbFastmemRead128(9);
+		vtlbFastmemRead128(9, 0);
 	else
 		vtlbSoftmemRead128(9);
 
@@ -900,7 +935,30 @@ void recLQ()
 
 void recSQ()
 {
-	// Flush rationale: see recLoad. FLUSH_CONSTANT_REGS only.
+	const bool useFastmem = CHECK_FASTMEM && !vtlb_IsFaultingPC(pc);
+
+	// GE-14 fastmem path: store from the allocator-resident quad (x86
+	// recStore's _allocGPRtoXMMreg(_Rt_, MODE_READ) model). The allocator
+	// handles every source state: already-resident (MMI Rd / prior LQ —
+	// zero-emit reuse), const rt (128 load + Ins const lower), dual-dirty
+	// scalar copy (Ins + free), and the lazy-dirty pin merge
+	// (armMergeEEPinIntoQuad) on the fresh-load path. An rs==rt alias is
+	// order-safe either way: the address materializes into w9 from wherever
+	// rt currently lives before the alloc can move it.
+	if (useFastmem)
+	{
+		// Address first (before the const flush clears the const-Rs fold; w9
+		// is immune to the flush and alloc emissions — see recLQ).
+		recComputeAddr();
+		armAsm->And(a64::w9, a64::w9, (u32)~0xF);
+		_flushConstRegs(true);
+		const int qs = _allocGPRtoNEONreg(_Rt_, MODE_READ);
+		_validateRegs();
+		vtlbFastmemWrite128(9, qs);
+		return;
+	}
+
+	// Softmem: FLUSH_CONSTANT_REGS only (flush rationale: see recLoad).
 	// Rt and Rs are read from memory after the flush. iFlushCall has
 	// freed all NEON unconditionally (writeback-on-dirty), so any EE
 	// GPR allocated in NEON is in memory. EE GPRs in arm64gprs[] are
@@ -915,11 +973,7 @@ void recSQ()
 		armAsm->Add(a64::w9, a64::w9, _Imm_);
 	armAsm->And(a64::w9, a64::w9, (u32)~0xF);
 
-	const bool useFastmem = CHECK_FASTMEM && !vtlb_IsFaultingPC(pc);
-	if (useFastmem)
-		vtlbFastmemWrite128(9);
-	else
-		vtlbSoftmemWrite128(9);
+	vtlbSoftmemWrite128(9);
 }
 
 // =====================================================================================================
@@ -1520,7 +1574,7 @@ void recLQC2()
 
 	const bool useFastmem = CHECK_FASTMEM && !vtlb_IsFaultingPC(pc);
 	if (useFastmem)
-		vtlbFastmemRead128(9);
+		vtlbFastmemRead128(9, 0);
 	else
 		vtlbSoftmemRead128(9);
 
@@ -1557,7 +1611,7 @@ void recSQC2()
 
 	const bool useFastmem = CHECK_FASTMEM && !vtlb_IsFaultingPC(pc);
 	if (useFastmem)
-		vtlbFastmemWrite128(9);
+		vtlbFastmemWrite128(9, 0);
 	else
 		vtlbSoftmemWrite128(9);
 }

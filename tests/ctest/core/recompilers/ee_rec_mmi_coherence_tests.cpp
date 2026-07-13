@@ -25,6 +25,8 @@
 #include "harness/EeRecTestHarness.h"
 #include "harness/RecompilerTestEnvironment.h"
 
+#include "vtlb.h"
+
 #include <gtest/gtest.h>
 
 using namespace recompiler_tests;
@@ -1011,4 +1013,204 @@ TEST(EeRecMmiCoherence, LqThenScalarLoadIntoSamePinnedDest)
 	h.Run();
 	// LW writes UD[0] (sign-extended) and preserves UD[1] from the LQ.
 	h.ExpectMmiPair(reg::v1, 0xFFFFFFFF'CAFE1234ull, 0x5555'6666'7777'8888ull);
+}
+
+// ============================================================================
+//  GE-14: LQ/SQ allocator-resident quads.
+//
+//  LQ loads into an allocated NEONTYPE_GPRREG slot (fastmem Ldr q<n> direct,
+//  canonical store elided under dirty tracking — the MMI-Rd state); SQ reads
+//  Rt through the allocator (MODE_READ, pin-merge/const/dual-dirty handled by
+//  _allocGPRtoNEONreg). These are coherence GUARDS: they must pass on the
+//  memory-round-trip shape (pre-GE-14) and the resident-quad shape alike.
+//  The oracle is Run()'s JIT-vs-interp post-state diff plus explicit expects.
+// ============================================================================
+
+// LQ dest feeds a converted MMI op: the loaded 128 bits must be what PADDW
+// consumes (resident slot or memory — either way the LOADED value).
+TEST(EeRecMmiCoherence, LqThenMmiUsesLoadedQuad)
+{
+	EeRecTestHarness h;
+	const u32 kScratch = RecompilerTestEnvironment::kScratchAddr;
+	h.WriteU64(kScratch + 0, 0x1111'2222'3333'4444ull);
+	h.WriteU64(kScratch + 8, 0x5555'6666'7777'8888ull);
+	h.SetGpr64(reg::sp, kScratch);
+	h.SetMmiPair(reg::t5, 0x0101'0101'0101'0101ull, 0x0202'0202'0202'0202ull);
+	// Sentinel in the dest so a stale read is visible.
+	h.SetMmiPair(reg::t4, 0xDEADBEEFDEADBEEFull, 0xCAFEBABECAFEBABEull);
+	h.LoadProgram({
+		ee::LQ   (reg::t4, 0, reg::sp),
+		ee::PADDW(reg::t6, reg::t4, reg::t5),
+	});
+	h.Run();
+	h.ExpectMmiPair(reg::t4, 0x1111'2222'3333'4444ull, 0x5555'6666'7777'8888ull);
+	h.ExpectMmiPair(reg::t6, 0x1212'2323'3434'4545ull, 0x5757'6868'7979'8a8aull);
+}
+
+// A dirty resident dest (PADDW result) is overwritten by LQ; the LOADED value
+// must win for the next consumer AND the block-end flush (the stale-slot
+// writeback-over-the-load hazard — LWC1's GE-10 analog at 128 bits).
+TEST(EeRecMmiCoherence, LqOverwritesDirtyResidentDest)
+{
+	EeRecTestHarness h;
+	const u32 kScratch = RecompilerTestEnvironment::kScratchAddr;
+	h.WriteU64(kScratch + 0, 0x00AA'00BB'00CC'00DDull);
+	h.WriteU64(kScratch + 8, 0x00EE'00FF'0011'0022ull);
+	h.SetGpr64(reg::sp, kScratch);
+	h.SetMmiPair(reg::t4, 0x1111'2222'3333'4444ull, 0x5555'6666'7777'8888ull);
+	h.SetMmiPair(reg::t5, 0x0101'0101'0101'0101ull, 0x0202'0202'0202'0202ull);
+	h.LoadProgram({
+		ee::PADDW(reg::t6, reg::t4, reg::t5), // t6 resident + dirty
+		ee::LQ   (reg::t6, 0, reg::sp),       // overwrites the slot
+		ee::PADDW(reg::t7, reg::t6, reg::t5), // consumes the LOADED t6
+	});
+	h.Run();
+	h.ExpectMmiPair(reg::t6, 0x00AA'00BB'00CC'00DDull, 0x00EE'00FF'0011'0022ull);
+	h.ExpectMmiPair(reg::t7, 0x01AB'01BC'01CD'01DEull, 0x02F0'0301'0213'0224ull);
+}
+
+// LQ into a PINNED guest reg (v0 is in kEEPinTable) followed by a scalar read
+// of its lower 64. Under residency the pin is STALE until writeback — the
+// scalar template's _deleteEEreg flush (writeback + pin refresh via
+// armStoreEEGPRQuad) or the allocator-aware read must yield the loaded value.
+TEST(EeRecMmiCoherence, LqToPinnedRegThenScalarReadsLoadedLower64)
+{
+	EeRecTestHarness h;
+	const u32 kScratch = RecompilerTestEnvironment::kScratchAddr;
+	h.WriteU64(kScratch + 0, 0x0000'0000'1234'5678ull);
+	h.WriteU64(kScratch + 8, 0x9999'8888'7777'6666ull);
+	h.SetGpr64(reg::sp, kScratch);
+	h.SetGpr64(reg::v0, 0xDEADBEEFDEADBEEFull); // stale pin sentinel
+	h.LoadProgram({
+		ee::LQ   (reg::v0, 0, reg::sp),
+		ee::DADDU(reg::v1, reg::v0, reg::zero), // must read the LOADED lower 64
+	});
+	h.Run();
+	h.ExpectMmiPair(reg::v0, 0x0000'0000'1234'5678ull, 0x9999'8888'7777'6666ull);
+	EXPECT_EQ(h.GetGpr64Jit(reg::v1), 0x0000'0000'1234'5678ull);
+}
+
+// LQ where the dest aliases the address base: LQ a0, 0(a0). The address must
+// be formed from a0's PRE-LOAD value (dest alloc after addr materialization).
+TEST(EeRecMmiCoherence, LqDestAliasesAddressBase)
+{
+	EeRecTestHarness h;
+	const u32 kScratch = RecompilerTestEnvironment::kScratchAddr;
+	h.WriteU64(kScratch + 0, 0xAAAA'BBBB'CCCC'DDDDull);
+	h.WriteU64(kScratch + 8, 0x1111'3333'5555'7777ull);
+	h.SetGpr64(reg::a0, kScratch);
+	h.LoadProgram({
+		ee::LQ(reg::a0, 0, reg::a0),
+	});
+	h.Run();
+	h.ExpectMmiPair(reg::a0, 0xAAAA'BBBB'CCCC'DDDDull, 0x1111'3333'5555'7777ull);
+}
+
+// Scalar write to a pinned reg (lazy-dirty: pin holds the fresh lower 64,
+// memory is stale) followed by SQ of that reg. The stored quad must combine
+// the FRESH lower 64 with the preserved upper 64 (the armMergeEEPinIntoQuad /
+// allocator MODE_READ pin-merge path).
+TEST(EeRecMmiCoherence, SqAfterScalarWriteToPinnedRegStoresFreshLower64)
+{
+	EeRecTestHarness h;
+	const u32 kScratch = RecompilerTestEnvironment::kScratchAddr;
+	h.SetGpr64(reg::sp, kScratch);
+	h.SetMmiPair(reg::v0, 0x1111'1111'1111'1111ull, 0x2222'2222'2222'2222ull);
+	h.TrackMemWindow(kScratch, 16);
+	h.LoadProgram({
+		ee::DADDIU(reg::v0, reg::v0, 0x111), // v0.UD[0] += 0x111 (pin dirty), UD[1] preserved
+		ee::SQ    (reg::v0, 0, reg::sp),
+	});
+	h.Run();
+	EXPECT_EQ(h.ReadU64(kScratch + 0), 0x1111'1111'1111'1222ull) << "SQ stored stale lower 64";
+	EXPECT_EQ(h.ReadU64(kScratch + 8), 0x2222'2222'2222'2222ull) << "SQ lost the upper 64";
+}
+
+// LQ → SQ round trip through two tracked memory windows (the vertex-streaming
+// idiom GE-14 targets: the SQ should consume LQ's resident quad).
+TEST(EeRecMmiCoherence, LqSqRoundTripCopies128Bits)
+{
+	EeRecTestHarness h;
+	const u32 kScratch = RecompilerTestEnvironment::kScratchAddr;
+	h.WriteU64(kScratch + 0, 0xFEED'FACE'CAFE'F00Dull);
+	h.WriteU64(kScratch + 8, 0x0123'4567'89AB'CDEFull);
+	h.SetGpr64(reg::sp, kScratch);
+	h.TrackMemWindow(kScratch, 48);
+	h.LoadProgram({
+		ee::LQ(reg::t4, 0,  reg::sp),
+		ee::SQ(reg::t4, 32, reg::sp),
+	});
+	h.Run();
+	EXPECT_EQ(h.ReadU64(kScratch + 32), 0xFEED'FACE'CAFE'F00Dull);
+	EXPECT_EQ(h.ReadU64(kScratch + 40), 0x0123'4567'89AB'CDEFull);
+}
+
+// Two LQs to the same dest: the allocator reuse path must let the second load
+// overwrite the slot (last-write-wins), not merge or reload stale state.
+TEST(EeRecMmiCoherence, ConsecutiveLqSameDestLastWins)
+{
+	EeRecTestHarness h;
+	const u32 kScratch = RecompilerTestEnvironment::kScratchAddr;
+	h.WriteU64(kScratch + 0,  0x1111'1111'1111'1111ull);
+	h.WriteU64(kScratch + 8,  0x2222'2222'2222'2222ull);
+	h.WriteU64(kScratch + 16, 0x3333'3333'3333'3333ull);
+	h.WriteU64(kScratch + 24, 0x4444'4444'4444'4444ull);
+	h.SetGpr64(reg::sp, kScratch);
+	h.LoadProgram({
+		ee::LQ(reg::t4, 0,  reg::sp),
+		ee::LQ(reg::t4, 16, reg::sp),
+	});
+	h.Run();
+	h.ExpectMmiPair(reg::t4, 0x3333'3333'3333'3333ull, 0x4444'4444'4444'4444ull);
+}
+
+// MMIO LQ faults into the backpatch thunk; the slow-path C handler result must
+// land in the RESIDENT dest slot (general-q extension of the RecStubs 128-bit
+// path), with OTHER dirty NEON state (t6) preserved across the call.
+TEST(EeRecMmiCoherence, LqFaultPathLandsInResidentQuad)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a1, 0x1000F000u); // INTC_STAT page → fastmem fault → thunk
+	h.SetMmiPair(reg::t4, 0x1111'2222'3333'4444ull, 0x5555'6666'7777'8888ull);
+	h.SetMmiPair(reg::t5, 0x0101'0101'0101'0101ull, 0x0202'0202'0202'0202ull);
+	h.SetMmiPair(reg::t7, 0xDEADBEEFDEADBEEFull, 0xCAFEBABECAFEBABEull);
+	vtlb_ClearLoadStoreInfo();
+	h.LoadProgram({
+		ee::PADDW(reg::t6, reg::t4, reg::t5), // dirty resident quad across the fault
+		ee::LQ   (reg::t7, 0, reg::a1),       // faults → thunk → hw read lands in t7
+		ee::PADDW(reg::t8, reg::t6, reg::t5), // consumes the preserved t6 AFTER the call
+	});
+	h.Run();
+	// INTC_STAT/MASK are 0 in the harness → the hw 128-bit read returns zeros;
+	// the JIT-vs-interp diff is the primary oracle for t7's exact value.
+	h.ExpectMmiPair(reg::t7, 0, 0);
+	h.ExpectMmiPair(reg::t6, 0x1212'2323'3434'4545ull, 0x5757'6868'7979'8a8aull);
+	h.ExpectMmiPair(reg::t8, 0x1313'2424'3535'4646ull, 0x5959'6a6a'7b7b'8c8cull);
+	bool faulted = false;
+	for (u32 a = RecompilerTestEnvironment::kProgramPc; a < RecompilerTestEnvironment::kProgramPc + 0x20; a += 4)
+		faulted |= vtlb_IsFaultingPC(a);
+	EXPECT_TRUE(faulted) << "MMIO LQ did not take the fastmem-fault/backpatch path";
+}
+
+// MMIO SQ faults; the thunk's slow path must hand the RESIDENT dirty quad to
+// the C write handler (Mov q0 <- q<n> glue), and the quad must stay live after.
+TEST(EeRecMmiCoherence, SqFaultPathStoresResidentQuad)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a1, 0x1000F000u); // INTC_STAT is W1C; harness state 0 stays 0
+	h.SetMmiPair(reg::t4, 0x1111'2222'3333'4444ull, 0x5555'6666'7777'8888ull);
+	h.SetMmiPair(reg::t5, 0x0101'0101'0101'0101ull, 0x0202'0202'0202'0202ull);
+	vtlb_ClearLoadStoreInfo();
+	h.LoadProgram({
+		ee::PADDW(reg::t6, reg::t4, reg::t5), // t6 resident + dirty
+		ee::SQ   (reg::t6, 0, reg::a1),       // faults → thunk → hwWrite128(t6)
+		ee::PADDW(reg::t7, reg::t6, reg::t5), // t6 must survive the fault live
+	});
+	h.Run();
+	h.ExpectMmiPair(reg::t6, 0x1212'2323'3434'4545ull, 0x5757'6868'7979'8a8aull);
+	h.ExpectMmiPair(reg::t7, 0x1313'2424'3535'4646ull, 0x5959'6a6a'7b7b'8c8cull);
+	bool faulted = false;
+	for (u32 a = RecompilerTestEnvironment::kProgramPc; a < RecompilerTestEnvironment::kProgramPc + 0x20; a += 4)
+		faulted |= vtlb_IsFaultingPC(a);
+	EXPECT_TRUE(faulted) << "MMIO SQ did not take the fastmem-fault/backpatch path";
 }
