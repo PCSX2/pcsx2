@@ -151,3 +151,99 @@ TEST(EeRecSmc, StraddlerBlockRecClearResetsStartFnptr)
 	h.Run(EeRecTestHarness::RunMode::PreserveCache);
 	h.ExpectGpr64(reg::v0, 0x1E00ull);
 }
+
+// ===========================================================================
+//  GE-18: recRAMCopy overlap check.
+//
+//  x86 model (ix86-32/iR5900.cpp:2636-2661): after compiling a block, walk
+//  older blocks overlapping its range and memcmp each old block's
+//  recRAMCopy snapshot against live memory; a mismatch means that old block
+//  went stale through a write no protection path caught — recClear it.
+//  The arm64 port disabled the walk (it compared the wrong region and
+//  recompile-looped); only the snapshot memcpy survived.
+//
+//  The harness wires no page protection, so a raw PSM poke of a compiled
+//  non-manual block leaves it genuinely stale — exactly the class the walk
+//  exists to catch at the next overlapping compile.
+// ===========================================================================
+
+namespace {
+// A plain RAM page well away from the program/scratch/manual regions.
+constexpr u32 kOverlapRoutinePc = 0x00090000;
+
+void SeedOverlapRoutine(EeRecTestHarness& h, u16 imm)
+{
+	h.WriteU32(kOverlapRoutinePc + 0, ADDIU(reg::v0, reg::zero, imm));
+	h.WriteU32(kOverlapRoutinePc + 4, JR(reg::ra));
+	h.WriteU32(kOverlapRoutinePc + 8, NOP);
+}
+
+// Caller preserving the harness return address around a JAL to `target`.
+void LoadOverlapCaller(EeRecTestHarness& h, u32 target, u16 sentinel)
+{
+	h.LoadProgram({
+		OR(reg::t0, reg::ra, reg::zero),
+		ADDIU(reg::v0, reg::zero, sentinel),
+		JAL(target),
+		NOP,
+		OR(reg::ra, reg::t0, reg::zero),
+	});
+}
+} // namespace
+
+TEST(EeRecSmc, OverlappingCompileClearsStaleBlock)
+{
+	EeRecTestHarness h;
+
+	// 1. Compile + run the routine: v0 = 5. Its source is snapshotted into
+	//    recRAMCopy at compile time.
+	SeedOverlapRoutine(h, 5);
+	LoadOverlapCaller(h, kOverlapRoutinePc, 0x111);
+	h.Run(EeRecTestHarness::RunMode::FreshCache);
+	h.ExpectGpr64(reg::v0, 5);
+
+	// 2. RAW poke (no memWrite32, no recClear — the write class no
+	//    protection path sees in the harness): v0 = 7 semantics now in RAM,
+	//    but the compiled block still encodes v0 = 5.
+	*(u32*)PSM(kOverlapRoutinePc) = ADDIU(reg::v0, reg::zero, 7);
+
+	// 3. Compile an OVERLAPPING block by entering mid-routine (at the JR).
+	//    The overlap walk must see the stale older block and recClear it.
+	//    v0 keeps the caller sentinel through the JR ra block.
+	LoadOverlapCaller(h, kOverlapRoutinePc + 4, 0x222);
+	h.Run(EeRecTestHarness::RunMode::PreserveCache);
+	h.ExpectGpr64(reg::v0, 0x222);
+
+	// 4. Re-enter the routine at its head: a cleared block recompiles from
+	//    current memory (v0 = 7); a stale survivor still executes v0 = 5.
+	LoadOverlapCaller(h, kOverlapRoutinePc, 0x333);
+	h.Run(EeRecTestHarness::RunMode::PreserveCache);
+	h.ExpectGpr64(reg::v0, 7);
+}
+
+TEST(EeRecSmc, OverlapWalkIgnoresUnmodifiedNeighbors)
+{
+	// Guard for the disable-comment's recompile-loop concern: compiling an
+	// overlapping block over an UNMODIFIED older block must NOT clear it.
+	// (The old bug compared the new block's not-yet-snapshotted region —
+	// always-mismatch — which recClear-looped. The x86 walk compares old
+	// blocks' own snapshots, which match untouched memory.)
+	EeRecTestHarness h;
+
+	SeedOverlapRoutine(h, 9);
+	LoadOverlapCaller(h, kOverlapRoutinePc, 0x111);
+	h.Run(EeRecTestHarness::RunMode::FreshCache);
+	h.ExpectGpr64(reg::v0, 9);
+
+	// Overlapping compile with NO modification anywhere.
+	LoadOverlapCaller(h, kOverlapRoutinePc + 4, 0x222);
+	h.Run(EeRecTestHarness::RunMode::PreserveCache);
+	h.ExpectGpr64(reg::v0, 0x222);
+
+	// The head block still runs (recompiled or cached — result identical
+	// either way; the real assertion is we didn't recompile-loop above and
+	// the block graph stayed sane).
+	LoadOverlapCaller(h, kOverlapRoutinePc, 0x333);
+	h.Run(EeRecTestHarness::RunMode::PreserveCache);
+	h.ExpectGpr64(reg::v0, 9);
+}

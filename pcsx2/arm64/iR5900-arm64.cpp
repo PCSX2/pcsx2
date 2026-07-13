@@ -2969,13 +2969,40 @@ StartRecomp:
 	if (!(pc & 0x10000000))
 		maxrecmem = std::max((pc & ~0xa0000000), maxrecmem);
 
-	// Snapshot current block's source to recRAMCopy for future overlap detection.
-	// Note: The overlap check (comparing old blocks' recRAMCopy vs current memory) is
-	// disabled because it causes infinite recompilation loops — recRAMCopy starts zeroed
-	// but memory has real code, so the memcmp always fails. The inline CMP checks from
-	// memory_protect_recompiled_code are the primary SMC detection mechanism.
+	// Stale-overlap walk + snapshot (x86 iR5900.cpp:2636-2661, GE-18). Walk
+	// OLDER blocks overlapping [startpc, pc) and memcmp each one's recRAMCopy
+	// snapshot — taken when THAT block compiled — against live memory. A
+	// mismatch means the old block went stale through a write no protection
+	// path caught (raw host pokes, protection-bypassing writes); recClear the
+	// range so it recompiles. recClear skips s_pCurBlockEx (in-progress), so
+	// the re-Get below always finds it. The original port compared the NEW
+	// block's not-yet-snapshotted (zeroed) region instead — every compile
+	// mismatched and recompile-looped — which is why this was disabled; the
+	// old-block-region compare is the correct x86 semantics
+	// (OverlapWalkIgnoresUnmodifiedNeighbors pins the no-false-positive side).
 	if (HWADDR(pc) <= Ps2MemSize::MainRam)
 	{
+		BASEBLOCKEX* oldBlock;
+		int i = recBlocks.LastIndex(HWADDR(pc) - 4);
+		while ((oldBlock = recBlocks[i--]))
+		{
+			if (oldBlock == s_pCurBlockEx)
+				continue;
+			if (oldBlock->startpc >= HWADDR(pc))
+				continue;
+			if ((oldBlock->startpc + oldBlock->size * 4) <= HWADDR(startpc))
+				break;
+
+			if (memcmp(&recRAMCopy[oldBlock->startpc / 4], PSM(oldBlock->startpc),
+					oldBlock->size * 4))
+			{
+				recClear(startpc, (pc - startpc) / 4);
+				s_pCurBlockEx = recBlocks.Get(HWADDR(startpc));
+				pxAssert(s_pCurBlockEx && s_pCurBlockEx->startpc == HWADDR(startpc));
+				break;
+			}
+		}
+
 		memcpy(&recRAMCopy[HWADDR(startpc) / 4], PSM(startpc), pc - startpc);
 	}
 
