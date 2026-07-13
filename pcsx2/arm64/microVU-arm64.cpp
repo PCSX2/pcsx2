@@ -2005,27 +2005,56 @@ const u8* mVUTestProbe_WaitMTVUStub(int index)
 // rebase x19 = RVU0 (x24, which the EE rec already loaded with &VU0) before
 // the mVU emit, then reload x19 from vtlbdata.fastmem_base afterward so any
 // subsequent fastmem ldr/str in the EE block keeps working.
-static void mVUmacroEmitPrologue()
+// Ceiling of the per-op VF footprint of the 12 macro-routed emitters: a
+// fresh reset(cop2mode) allocates NEON first-fit from Q0 (no preload in
+// macro mode), and the routed ops are all 1-VF + 1-2-VI class, so Q0-Q3 is
+// generous. mVUmacroEmitEpilogue asserts the actual watermark against this
+// so a deeper future op fails loudly in Devel instead of silently
+// clobbering a cached EE value the narrowed eviction kept live.
+static constexpr int kMacroVFEvictHighWater = 4;
+
+static void mVUmacroEmitPrologue(bool mayEmitCCall)
 {
-	// Evict the EE register cache before the mVU emit runs. The mVU regAlloc
-	// allocates VI into host x14/x15/x26-x28 and VF into Q0-Q27, all of which
-	// overlap the EE allocator's pool — and the EE recompiler keeps GPR/NEON
-	// values cached across instruction boundaries (recompileNextInstruction
-	// only _clearNeeded's, it does not write back). With no cross-allocator
-	// coordination on arm64 (clearRegCOP2/clearGPRCOP2 are stubs) the mVU emit
-	// would silently clobber a live EE GPR/NEON value. Free+writeback all EE
-	// allocations here so the mVU emit gets a clean slate; subsequent EE code
-	// reloads from cpuRegs as needed. This is at most the cost of the old
-	// REC_COP2_INTERP path (which full-flushed via recCall). Pinned regs
-	// (x19/x20/x24/x25) are outside the allocatable pool and untouched.
-	_freeArm64GPRregs();
-	_freeNEONregs();
+	// Evict the slice of the EE register cache the mVU emit can actually
+	// touch. The cop2-mode mVU pools are VI = {x14, x15, x28} (reset(true)
+	// gates out x26/x27 — EE pin homes) and VF = Q0.. first-fit (see
+	// kMacroVFEvictHighWater); the EE-allocatable GPRs are {x0-x7, x14,
+	// x15, x28}, so x0-x7 and the NEON slots above the watermark stay
+	// cached across the macro op. The EE recompiler keeps GPR/NEON values
+	// cached across instruction boundaries and there is no cross-allocator
+	// coordination on arm64 (clearRegCOP2/clearGPRCOP2 are stubs), so
+	// everything the emit CAN touch must be freed+written-back here.
+	//
+	// Exception: when the op can emit a C call (mVUaddrFix's waitMTVU seam
+	// on the VU0-reads-VU1-regs path, memory-class ops under THREAD_VU1),
+	// the callee clobbers the full caller-saved set — x0-x7 included — so
+	// fall back to the old full eviction.
+	if (mayEmitCCall)
+	{
+		_freeArm64GPRregs();
+		_freeNEONregs();
+	}
+	else
+	{
+		_freeArm64GPR(14);
+		_freeArm64GPR(15);
+		_freeArm64GPR(28);
+		for (int i = 0; i < kMacroVFEvictHighWater; i++)
+			_freeNEONreg(i);
+	}
 
 	armAsm->Mov(gprVUState, RVU0);
 }
 
 static void mVUmacroEmitEpilogue()
 {
+	// Tripwire for the narrowed eviction above: every NEON slot the emit
+	// allocated must be inside the evicted window. (The VI side is
+	// structurally pool-limited to {x14, x15, x28} — pinned by
+	// EeVu0Cop2Macro.MacroModeVIPoolExcludesEEPinHosts.)
+	pxAssertMsg(microVU0.regAlloc->getNeonWatermark() <= kMacroVFEvictHighWater,
+		"COP2 macro emit allocated past the narrowed EE-cache eviction window");
+
 	if (CHECK_FASTMEM)
 	{
 		armMoveAddressToReg(RSCRATCHADDR, &vtlb_private::vtlbdata.fastmem_base);
@@ -2033,10 +2062,14 @@ static void mVUmacroEmitEpilogue()
 	}
 }
 
-#define MVU_MACRO_EMIT_ADAPTER(opname)                                 \
+// mayEmitCCall: memory-class ops route addresses through mVUaddrFix, whose
+// VU0-reads-VU1-regs path emits the waitMTVU call under THREAD_VU1 — the
+// prologue must full-evict for those (see mVUmacroEmitPrologue). Reg-class
+// ops emit no calls.
+#define MVU_MACRO_EMIT_ADAPTER(opname, mayEmitCCall)                   \
 	void mVUmacroEmit_##opname(int mode)                               \
 	{                                                                  \
-		mVUmacroEmitPrologue();                                        \
+		mVUmacroEmitPrologue(mayEmitCCall);                            \
 		if (mode & 0x04)                                               \
 		{                                                              \
 			mVU_##opname(microVU0, 0);                                 \
@@ -2056,18 +2089,18 @@ static void mVUmacroEmitEpilogue()
 		mVUmacroEmitEpilogue();                                        \
 	}
 
-MVU_MACRO_EMIT_ADAPTER(LQI)
-MVU_MACRO_EMIT_ADAPTER(SQI)
-MVU_MACRO_EMIT_ADAPTER(LQD)
-MVU_MACRO_EMIT_ADAPTER(SQD)
-MVU_MACRO_EMIT_ADAPTER(MTIR)
-MVU_MACRO_EMIT_ADAPTER(MFIR)
-MVU_MACRO_EMIT_ADAPTER(ILWR)
-MVU_MACRO_EMIT_ADAPTER(ISWR)
-MVU_MACRO_EMIT_ADAPTER(RNEXT)
-MVU_MACRO_EMIT_ADAPTER(RGET)
-MVU_MACRO_EMIT_ADAPTER(RINIT)
-MVU_MACRO_EMIT_ADAPTER(RXOR)
+MVU_MACRO_EMIT_ADAPTER(LQI,   THREAD_VU1)
+MVU_MACRO_EMIT_ADAPTER(SQI,   THREAD_VU1)
+MVU_MACRO_EMIT_ADAPTER(LQD,   THREAD_VU1)
+MVU_MACRO_EMIT_ADAPTER(SQD,   THREAD_VU1)
+MVU_MACRO_EMIT_ADAPTER(MTIR,  false)
+MVU_MACRO_EMIT_ADAPTER(MFIR,  false)
+MVU_MACRO_EMIT_ADAPTER(ILWR,  THREAD_VU1)
+MVU_MACRO_EMIT_ADAPTER(ISWR,  THREAD_VU1)
+MVU_MACRO_EMIT_ADAPTER(RNEXT, false)
+MVU_MACRO_EMIT_ADAPTER(RGET,  false)
+MVU_MACRO_EMIT_ADAPTER(RINIT, false)
+MVU_MACRO_EMIT_ADAPTER(RXOR,  false)
 
 #undef MVU_MACRO_EMIT_ADAPTER
 

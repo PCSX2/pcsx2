@@ -58,6 +58,7 @@ protected:
 	std::array<microMapGPR, gprAllocCount>   gprMap;
 
 	int counter;
+	int neonWatermark; // see getNeonWatermark()
 	int index; // VU0 or VU1
 
 	VURegs& regs() const { return ::vuRegs[index]; }
@@ -109,11 +110,15 @@ protected:
 		for (int i = 0; i < neonAllocTotal; i++)
 		{
 			if (!neonMap[i].isNeeded && neonMap[i].VFreg < 0)
+			{
+				neonWatermark = std::max(neonWatermark, i + 1);
 				return i;
+			}
 		}
 		// Evict LRU
 		int x = findFreeNeonRec(0);
 		pxAssertMsg(x >= 0, "microVU NEON register allocation failure!");
+		neonWatermark = std::max(neonWatermark, x + 1);
 		return x;
 	}
 
@@ -268,7 +273,14 @@ public:
 				clearGPR(i);
 		}
 		counter = 0;
+		neonWatermark = 0;
 	}
+
+	// Highest NEON slot index + 1 handed out since the last reset(). The COP2
+	// macro adapter uses this to assert its narrowed EE-cache eviction
+	// covered every slot the emit could have dirtied (see
+	// mVUmacroEmitPrologue in microVU-arm64.cpp).
+	int getNeonWatermark() const { return neonWatermark; }
 
 	//------------------------------------------------------------------
 	// VF Register Allocation (NEON Q registers)
