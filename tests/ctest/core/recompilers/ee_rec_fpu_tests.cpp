@@ -1267,3 +1267,106 @@ TEST(EeRecFpu, DivSZeroOverZeroAliasedDest)
 	h.Run();
 	EXPECT_EQ(h.GetGpr64Interp(reg::v0) & 0xFFFFFFFFull, 0xFF7FFFFFull);
 }
+
+// ---- GE-19: MADD/MSUB-family intermediate-product clamp mirrors the x86 JIT -
+// Acceptance bar (user decision 2026-07-13): x86-JIT parity, NOT interp parity.
+// x86 recMADDtemp/recMSUBtemp clamp the fs*ft product (and pre-add ACC) only
+// under CHECK_FPU_EXTRA_OVERFLOW; in the default clamp mode the raw product
+// rides to the accumulate as Inf and only the final result clamp applies.
+// The interpreter ALWAYS clamps MADD/MSUB's product (fpuDouble temp,
+// FPU.cpp:271-277) — so on the product-overflow + opposite-sign-ACC corner,
+// default-mode JIT = ±fMax while interp = 0. That divergence is BY DESIGN and
+// shared with x86 (same class as the mVU broadcast-FMAC divergence); games are
+// tuned against the x86 JIT. MADDA/MSUBA get the same extra-mode product clamp
+// from the shared x86 recMADDtemp — there interp diverges in the OTHER
+// direction (interp never clamps the A-form product).
+
+TEST(EeRecFpu, MaddSProductOverflowDefaultModeMatchesX86Jit)
+{
+	// Interp leg: product clamped to +fMax → -fMax + fMax = 0.
+	{
+		EeRecTestHarness h;
+		h.EnableCop1();
+		h.SetAccBits(0xFF7FFFFFu);    // ACC = -fMax
+		h.SetFprBits(1, 0x7F000000u); // 1.70141e38; product overflows float
+		h.SetFprBits(2, 0x7F000000u);
+		h.LoadProgram({ee::MADD_S(3, 1, 2)});
+		h.RunInterpOnly();
+		EXPECT_EQ(h.GetFprBitsInterp(3), 0x00000000u);
+	}
+	// JIT leg (x86 parity): raw product +Inf → -fMax + Inf = +Inf → final
+	// result clamp → +fMax. Intentionally != interp.
+	{
+		EeRecTestHarness h;
+		h.EnableCop1();
+		h.SetAccBits(0xFF7FFFFFu);
+		h.SetFprBits(1, 0x7F000000u);
+		h.SetFprBits(2, 0x7F000000u);
+		h.LoadProgram({ee::MADD_S(3, 1, 2)});
+		h.RunJitNoDiff();
+		EXPECT_EQ(h.GetFprBitsJit(3), 0x7F7FFFFFu);
+	}
+}
+
+TEST(EeRecFpu, MsubSProductOverflowDefaultModeMatchesX86Jit)
+{
+	// JIT (x86 parity): fd = +fMax - (+Inf) = -Inf → final clamp → -fMax.
+	// (Interp clamps the product: +fMax - fMax = 0.)
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetAccBits(0x7F7FFFFFu);    // ACC = +fMax
+	h.SetFprBits(1, 0x7F000000u);
+	h.SetFprBits(2, 0x7F000000u);
+	h.LoadProgram({ee::MSUB_S(3, 1, 2)});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetFprBitsJit(3), 0xFF7FFFFFu);
+}
+
+TEST(EeRecFpu, MaddSProductOverflowExtraModeClampsProduct)
+{
+	// Extra mode: x86 clamps the product pre-add → -fMax + fMax = 0, which
+	// matches interp — auto-diffing Run() pins both sides at once.
+	FpuExtraOverflowGuard guard;
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetAccBits(0xFF7FFFFFu);
+	h.SetFprBits(1, 0x7F000000u);
+	h.SetFprBits(2, 0x7F000000u);
+	h.LoadProgram({ee::MADD_S(3, 1, 2)});
+	h.Run();
+	h.ExpectFpr(3, 0x00000000u);
+}
+
+TEST(EeRecFpu, MaddaSProductOverflowExtraModeClampsProduct)
+{
+	// x86 serves MADDA through the same recMADDtemp, so extra mode clamps the
+	// A-form product too: ACC = -fMax + clamp(+Inf) = 0. Interp MADDA adds the
+	// raw product (no fpuDouble temp) → +fMax — divergence by design, mirror x86.
+	FpuExtraOverflowGuard guard;
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetAccBits(0xFF7FFFFFu);
+	h.SetFprBits(1, 0x7F000000u);
+	h.SetFprBits(2, 0x7F000000u);
+	h.LoadProgram({ee::MADDA_S(1, 2)});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetAccBitsJit(), 0x00000000u);
+}
+
+TEST(EeRecFpu, MsubaSProductOverflowExtraModeClampsProduct)
+{
+	// ACC = +fMax - clamp(+Inf) = 0 under extra mode (x86 recMSUBtemp).
+	FpuExtraOverflowGuard guard;
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetAccBits(0x7F7FFFFFu);
+	h.SetFprBits(1, 0x7F000000u);
+	h.SetFprBits(2, 0x7F000000u);
+	h.LoadProgram({ee::MSUBA_S(1, 2)});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetAccBitsJit(), 0x00000000u);
+}
+
+// (Default-mode A-form raw-product behavior is already pinned by
+// MaddaSDoesNotClampIntermediateProduct / MsubaSDoesNotClampIntermediateProduct
+// above — x86 and interp agree there, no extra test needed.)

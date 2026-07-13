@@ -820,7 +820,18 @@ static void recMADD_S_xmm(int info)
 	const a64::VRegister s = fpuClampInput(armSRegister(EEREC_S), RSSCRATCH);
 	const a64::VRegister t = fpuClampInput(armSRegister(EEREC_T), RSSCRATCH2);
 	emitFpuMul(RSSCRATCH, s, t);
-	fpuClampResult(RSSCRATCH);
+	// Intermediate-product clamp gated on CHECK_FPU_EXTRA_OVERFLOW — x86-JIT
+	// parity (GE-19; x86 recMADDtemp applies fpuFloat to the product under
+	// the same gate). The INTERPRETER always clamps this product (fpuDouble
+	// temp, FPU.cpp:271-277), so on the product-overflow + opposite-sign-ACC
+	// corner default-mode JIT = ±fMax while interp = 0 — divergence BY
+	// DESIGN, shared with x86; games are tuned against the x86 JIT. Pinned
+	// by EeRecFpu.MaddSProductOverflowDefaultModeMatchesX86Jit.
+	// (x86 also pre-clamps ACC here under the gate; our ACC writers all end
+	// in an unconditional fpuClampResult, so a resident ACC can never hold
+	// Inf/NaN and that leg is dead on arm64.)
+	if (CHECK_FPU_EXTRA_OVERFLOW)
+		fpuClampResult(RSSCRATCH);
 	armAsm->Fadd(armSRegister(EEREC_D), armSRegister(EEREC_ACC), RSSCRATCH);
 	fpuClampResult(armSRegister(EEREC_D));
 }
@@ -837,7 +848,9 @@ static void recMSUB_S_xmm(int info)
 	const a64::VRegister s = fpuClampInput(armSRegister(EEREC_S), RSSCRATCH);
 	const a64::VRegister t = fpuClampInput(armSRegister(EEREC_T), RSSCRATCH2);
 	emitFpuMul(RSSCRATCH, s, t);
-	fpuClampResult(RSSCRATCH);
+	// Extra-gated product clamp — x86-JIT parity, see recMADD_S_xmm (GE-19).
+	if (CHECK_FPU_EXTRA_OVERFLOW)
+		fpuClampResult(RSSCRATCH);
 	armAsm->Fsub(armSRegister(EEREC_D), armSRegister(EEREC_ACC), RSSCRATCH);
 	fpuClampResult(armSRegister(EEREC_D));
 }
@@ -848,16 +861,21 @@ void recMSUB_S()
 		XMMINFO_WRITED | XMMINFO_READACC | XMMINFO_READS | XMMINFO_READT);
 }
 
-// ACC = ACC + fs * ft. Unlike MADD_S, interp MADDA_S (FPU.cpp) adds the raw
-// fs*ft product without routing it through fpuDouble — only the final ACC is
-// overflow-clamped. So do NOT clamp the intermediate product here, else an
-// overflowing product clamped to +-fMax cancels an opposite-signed ACC instead
-// of overflowing the accumulate.
+// ACC = ACC + fs * ft. In the default clamp mode the raw fs*ft product is
+// added unclamped — interp MADDA_S (FPU.cpp) has no fpuDouble temp for the
+// product, and x86 recMADDtemp doesn't clamp it either; both agree that an
+// overflowing product overflows the accumulate (→ ±fMax) rather than
+// cancelling an opposite-signed ACC. Under CHECK_FPU_EXTRA_OVERFLOW the x86
+// JIT clamps the A-form product too (same recMADDtemp serves MADD and MADDA)
+// — mirror it (GE-19; x86-JIT parity is the bar, and there interp diverges
+// the other way by never clamping the A-form product).
 static void recMADDA_S_xmm(int info)
 {
 	const a64::VRegister s = fpuClampInput(armSRegister(EEREC_S), RSSCRATCH);
 	const a64::VRegister t = fpuClampInput(armSRegister(EEREC_T), RSSCRATCH2);
 	emitFpuMul(RSSCRATCH, s, t);
+	if (CHECK_FPU_EXTRA_OVERFLOW)
+		fpuClampResult(RSSCRATCH);
 	armAsm->Fadd(armSRegister(EEREC_ACC), armSRegister(EEREC_ACC), RSSCRATCH);
 	fpuClampResult(armSRegister(EEREC_ACC));
 }
@@ -868,13 +886,15 @@ void recMADDA_S()
 		XMMINFO_WRITEACC | XMMINFO_READACC | XMMINFO_READS | XMMINFO_READT);
 }
 
-// ACC = ACC - fs * ft. Same as MADDA_S: interp MSUBA_S does not clamp the
-// intermediate product, only the final ACC.
+// ACC = ACC - fs * ft. Same as MADDA_S: raw product in the default mode,
+// extra-gated product clamp for x86-JIT parity (GE-19).
 static void recMSUBA_S_xmm(int info)
 {
 	const a64::VRegister s = fpuClampInput(armSRegister(EEREC_S), RSSCRATCH);
 	const a64::VRegister t = fpuClampInput(armSRegister(EEREC_T), RSSCRATCH2);
 	emitFpuMul(RSSCRATCH, s, t);
+	if (CHECK_FPU_EXTRA_OVERFLOW)
+		fpuClampResult(RSSCRATCH);
 	armAsm->Fsub(armSRegister(EEREC_ACC), armSRegister(EEREC_ACC), RSSCRATCH);
 	fpuClampResult(armSRegister(EEREC_ACC));
 }
