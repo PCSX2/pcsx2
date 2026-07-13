@@ -33,6 +33,9 @@
 #include <vector>
 
 #ifdef __linux__
+#include <linux/perf_event.h>
+#include <sys/ioctl.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 #endif
 
@@ -106,6 +109,7 @@ static uint32_t s_frames = 300;
 static bool s_no_console = false;
 static bool s_contmem_vu0_interp = false; // --vu0-interp modifier for --contmem
 static GSRendererType s_renderer = GSRendererType::Null; // --renderer (Null default; vk for Intel/headless)
+static bool s_renderer_explicit = false; // user passed --renderer (an explicit null is honored in liverun)
 static std::string s_memdump_prefix; // --memdump <prefix>: write <prefix>.{interp,jit}.bin at the last frame
 static bool s_perf_jitdump = false; // --perf-jitdump: emit Linux perf jitdump for `perf inject --jit` (profiling)
 
@@ -611,6 +615,7 @@ bool EERunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 			else if (CHECK_ARG_PARAM("--renderer"))
 			{
 				const std::string_view r = StringUtil::StripWhitespace(argv[++i]);
+				s_renderer_explicit = true;
 				if (r == "null" || r == "Null")            s_renderer = GSRendererType::Null;
 				else if (r == "vk" || r == "vulkan")       s_renderer = GSRendererType::VK;
 				else if (r == "ogl" || r == "gl" || r == "opengl") s_renderer = GSRendererType::OGL;
@@ -720,11 +725,11 @@ void EERunner::SettingsOverride()
 	// like Null) and MTVU. Null GS is meaningless for it, so force VK if unset.
 	const bool live = (s_mode == RunMode::LiveRun);
 	GSRendererType rend = s_renderer;
-	// Liverun normally needs a real GS (Null drops GIF/PATH3), so Null is forced to VK.
-	// When profiling (--perf-jitdump), honor an explicit --renderer null so the
-	// "scalar EE/IOP minus GS-feeding" diagnostic baseline is reachable. vk stays the
-	// representative whole-system profile; null is the secondary diagnostic.
-	if (live && rend == GSRendererType::Null && !s_perf_jitdump)
+	// Liverun normally needs a real GS (Null drops GIF/PATH3), so a DEFAULTED Null is
+	// forced to VK. An EXPLICIT --renderer null (or --perf-jitdump profiling) is
+	// honored: codegen_ab.sh depends on it for deterministic A/Bs on boxes whose
+	// Vulkan is unusable from a scripted session (mq65 turnip reports 1.0 over ssh).
+	if (live && rend == GSRendererType::Null && !s_perf_jitdump && !s_renderer_explicit)
 		rend = GSRendererType::VK;
 	s_settings_interface.SetIntValue("EmuCore/GS", "Renderer", static_cast<int>(rend));
 
@@ -2772,6 +2777,86 @@ static void DumpEeEventState(int snap)
 	}
 }
 
+#ifdef __linux__
+// Per-thread hardware counters over the liverun frame window (attached after
+// savestate load, read at shutdown next to @THREADCPU@). The @THREADPERF@
+// "CPU Thread" line gives codegen_ab.sh an EE-thread-SCOPED deterministic
+// metric: whole-process `perf stat` dilutes an EE-only codegen delta by the
+// GS/MTVU/worker threads' share (~50% measured on SotC), and the time-based
+// @THREADCPU@ line is clock-sensitive. Counters attach per-tid, so boot and
+// savestate-load work is excluded (JIT compile of the scene's blocks is not —
+// it runs on the EE thread inside the window, identically for base/new).
+struct ThreadPerfCounter
+{
+	std::string comm;
+	int fd_ins = -1;
+	int fd_cyc = -1;
+	bool user_only = false;
+};
+static std::vector<ThreadPerfCounter> s_thread_perf;
+
+static int OpenThreadPerfCounter(pid_t tid, u64 config, bool* user_only)
+{
+	perf_event_attr attr = {};
+	attr.type = PERF_TYPE_HARDWARE;
+	attr.size = sizeof(attr);
+	attr.config = config;
+	attr.exclude_hv = 1;
+	int fd = static_cast<int>(syscall(SYS_perf_event_open, &attr, tid, -1, -1, 0));
+	if (fd < 0 && errno == EACCES)
+	{
+		// perf_event_paranoid >= 2 (unprivileged dev box): user-space-only counting.
+		attr.exclude_kernel = 1;
+		fd = static_cast<int>(syscall(SYS_perf_event_open, &attr, tid, -1, -1, 0));
+		if (fd >= 0)
+			*user_only = true;
+	}
+	return fd;
+}
+
+static void StartThreadPerfCounters()
+{
+	for (const auto& entry : std::filesystem::directory_iterator("/proc/self/task"))
+	{
+		const pid_t tid = static_cast<pid_t>(std::strtol(entry.path().filename().c_str(), nullptr, 10));
+		std::ifstream comm_file(entry.path() / "comm");
+		std::string comm;
+		std::getline(comm_file, comm);
+		ThreadPerfCounter c;
+		c.comm = comm.empty() ? entry.path().filename().string() : comm;
+		c.fd_ins = OpenThreadPerfCounter(tid, PERF_COUNT_HW_INSTRUCTIONS, &c.user_only);
+		c.fd_cyc = OpenThreadPerfCounter(tid, PERF_COUNT_HW_CPU_CYCLES, &c.user_only);
+		if (c.fd_ins >= 0 || c.fd_cyc >= 0)
+			s_thread_perf.push_back(std::move(c));
+	}
+	if (s_thread_perf.empty())
+		Console.Warning("liverun: perf_event_open failed for all threads; no @THREADPERF@ lines (perf_event_paranoid?)");
+}
+
+static void ReportThreadPerfCounters()
+{
+	for (ThreadPerfCounter& c : s_thread_perf)
+	{
+		u64 ins = 0, cyc = 0;
+		if (c.fd_ins >= 0)
+		{
+			if (read(c.fd_ins, &ins, sizeof(ins)) != sizeof(ins))
+				ins = 0;
+			close(c.fd_ins);
+		}
+		if (c.fd_cyc >= 0)
+		{
+			if (read(c.fd_cyc, &cyc, sizeof(cyc)) != sizeof(cyc))
+				cyc = 0;
+			close(c.fd_cyc);
+		}
+		Console.WriteLn(fmt::format("@THREADPERF@ {}: instructions={} cycles={}{}",
+			c.comm, ins, cyc, c.user_only ? " (user-only)" : ""));
+	}
+	s_thread_perf.clear();
+}
+#endif
+
 static int RunLiveRun()
 {
 	Error error;
@@ -2780,6 +2865,10 @@ static int RunLiveRun()
 		Console.ErrorFmt("liverun: load failed: {}", error.GetDescription());
 		return EXIT_FAILURE;
 	}
+
+#ifdef __linux__
+	StartThreadPerfCounters();
+#endif
 
 	Console.WriteLn(fmt::format(
 		"LIVERUN: EE=jit, MTVU=on, real GS — running up to {} frames (10s no-progress watchdog)...",
@@ -2941,6 +3030,8 @@ static int RunLiveRun()
 	}
 
 #ifdef __linux__
+	ReportThreadPerfCounters();
+
 	// Per-thread CPU seconds (utime+stime) while the VM threads are still alive.
 	// Wallclock A/B on the SD865 is too noisy for sub-ms/frame codegen deltas; the
 	// per-thread number isolates e.g. GS-thread cost from GPU/sync/scheduler jitter.
