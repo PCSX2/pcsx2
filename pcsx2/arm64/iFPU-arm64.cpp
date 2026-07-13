@@ -883,10 +883,11 @@ void recMSUBA_S()
 }
 
 // CVT.S: fd = (float)int_bits_of(fpr[fs])
+// Single NEON-scalar SCVTF Sd,Sn — the int32 bits are already in the V file;
+// the old Fmov-to-GPR bounce cost an extra insn + cross-file hazard (GE-02).
 static void recCVT_S_xmm(int info)
 {
-	armAsm->Fmov(RWSCRATCH, armSRegister(EEREC_S));
-	armAsm->Scvtf(armSRegister(EEREC_D), RWSCRATCH);
+	armAsm->Scvtf(armSRegister(EEREC_D), armSRegister(EEREC_S));
 }
 
 void recCVT_S()
