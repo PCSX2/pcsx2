@@ -51,6 +51,14 @@ echo SCRIPTDIR=%SCRIPTDIR%
 echo BUILDDIR=%BUILDDIR%
 echo INSTALLDIR=%INSTALLDIR%
 
+rem Native build: Qt's freshly-built tools (rcc/moc/qmlcachegen) are invoked
+rem during the Qt build and link against the shared system libs (zlib, libpng,
+rem freetype, harfbuzz, ...) we install into deps-arm64\bin. Those DLLs aren't
+rem next to the tools in build\bin, so put deps-arm64\bin on PATH or the tools
+rem fail to start with STATUS_DLL_NOT_FOUND (0xC0000135). The cross build didn't
+rem need this because the host tools ran from deps\bin alongside their DLLs.
+set "PATH=%PATH%;%INSTALLDIR%\bin"
+
 cd "%BUILDDIR%"
 
 set QT=6.11.1
