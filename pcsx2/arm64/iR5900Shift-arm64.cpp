@@ -100,8 +100,10 @@ static void recSLL_(int info)
 	const a64::Register dst = memDestD();
 	if (_Sa_ != 0)
 	{
-		armAsm->Lsl(RWSCRATCH, rt, _Sa_);
-		armAsm->Sxtw(dst, RWSCRATCH);
+		// Sbfiz(sa, 32-sa) == sign_extend((s32)(rt << sa)) in ONE insn (GE-06):
+		// source bits [31-sa:0] land at [31:sa], sign-extended from bit 31.
+		// Reads only the low 32 source bits, so pin upper halves are inert.
+		armAsm->Sbfiz(dst, rt.X(), _Sa_, 32 - _Sa_);
 	}
 	else
 	{
@@ -124,8 +126,9 @@ static void recSRL_(int info)
 	const a64::Register dst = memDestD();
 	if (_Sa_ != 0)
 	{
-		armAsm->Lsr(RWSCRATCH, rt, _Sa_);
-		armAsm->Sxtw(dst, RWSCRATCH);
+		// sa>0 clears bit 31 of the 32-bit result, so zero-extension IS the
+		// MIPS sign-extension: Ubfx(sa, 32-sa) in ONE insn (GE-06).
+		armAsm->Ubfx(dst, rt.X(), _Sa_, 32 - _Sa_);
 	}
 	else
 	{
@@ -148,8 +151,8 @@ static void recSRA_(int info)
 	const a64::Register dst = memDestD();
 	if (_Sa_ != 0)
 	{
-		armAsm->Asr(RWSCRATCH, rt, _Sa_);
-		armAsm->Sxtw(dst, RWSCRATCH);
+		// Sbfx(sa, 32-sa) == sign_extend((s32)rt >> sa) in ONE insn (GE-06).
+		armAsm->Sbfx(dst, rt.X(), _Sa_, 32 - _Sa_);
 	}
 	else
 	{

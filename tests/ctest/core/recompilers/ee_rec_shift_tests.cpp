@@ -289,3 +289,81 @@ TEST(EeRecShift, DsllvToZeroIsNoOp)
 	h.Run();
 	EXPECT_EQ(h.GetGpr64Interp(reg::zero), 0ull);
 }
+
+// ---- GE-06: constant-shift single-insn folds (Sbfiz/Sbfx/Ubfx) --------------
+// The folds read the source through its X view; upper-32 garbage (pins hold
+// the full 64-bit guest value) must not leak into the 32-bit shift semantics.
+
+TEST(EeRecShift, SllByOneIgnoresUpperSourceBits)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a0, 0xDEAD'BEEF'4000'0001ull);
+	h.LoadProgram({SLL(reg::v0, reg::a0, 1)});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::v0), 0xFFFF'FFFF'8000'0002ull);
+}
+
+TEST(EeRecShift, SllBy31IgnoresUpperSourceBits)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a0, 0xFFFF'FFFF'0000'0001ull);
+	h.LoadProgram({SLL(reg::v0, reg::a0, 31)});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::v0), 0xFFFF'FFFF'8000'0000ull);
+}
+
+TEST(EeRecShift, SrlByOneClearsSignAndUpper)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a0, 0xDEAD'BEEF'8000'0000ull);
+	h.LoadProgram({SRL(reg::v0, reg::a0, 1)});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::v0), 0x0000'0000'4000'0000ull);
+}
+
+TEST(EeRecShift, SrlBy31ExtractsSignBit)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a0, 0x0000'0000'8000'0000ull);
+	h.LoadProgram({SRL(reg::v0, reg::a0, 31)});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::v0), 1ull);
+}
+
+TEST(EeRecShift, SrlByZeroSignExtendsLow32)
+{
+	// sa==0 keeps the plain Sxtw path: SRL by 0 of a negative low-32 must
+	// still sign-extend into the 64-bit GPR.
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a0, 0x0000'0000'8000'0000ull);
+	h.LoadProgram({SRL(reg::v0, reg::a0, 0)});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::v0), 0xFFFF'FFFF'8000'0000ull);
+}
+
+TEST(EeRecShift, SraBy31OfNegativeIsAllOnes)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a0, 0x1111'2222'8000'0000ull);
+	h.LoadProgram({SRA(reg::v0, reg::a0, 31)});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::v0), 0xFFFF'FFFF'FFFF'FFFFull);
+}
+
+TEST(EeRecShift, SraBy31OfPositiveIsZero)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a0, 0xFFFF'FFFF'7FFF'FFFFull);
+	h.LoadProgram({SRA(reg::v0, reg::a0, 31)});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::v0), 0ull);
+}
+
+TEST(EeRecShift, SraByOneIgnoresUpperSourceBits)
+{
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a0, 0x0000'0001'8000'0004ull);
+	h.LoadProgram({SRA(reg::v0, reg::a0, 1)});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::v0), 0xFFFF'FFFF'C000'0002ull);
+}
