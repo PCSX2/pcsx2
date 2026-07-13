@@ -604,14 +604,34 @@ void iFlushCall(int flushtype)
 		}
 	}
 
-	// Only the lower 64 bits of v8-v15 are callee-saved per AAPCS64; the
-	// NEON allocator uses 128-bit slots, so all of them are effectively
-	// caller-saved across a C call. Always free + writeback. Matches x86
-	// iFlushCall (pcsx2/x86/ix86-32/iR5900.cpp:1196-1207) which also
-	// unconditionally evicts caller-saved XMM regs.
+	// GE-15: 32-bit FPR-class slots (NEONTYPE_FPREG/FPACC) in the
+	// callee-saved q10-q15 range survive plain C-helper seams — AAPCS64
+	// preserves the LOWER 64 bits of v8-v15, and this class only ever
+	// reads/writes lane 0 (S register; _writebackNEONreg stores S-width, so
+	// post-call garbage in the upper lanes is never observed). Writeback if
+	// dirty but KEEP mapped — 4248's writeback-dirty-but-keep passes, whose
+	// type-mask 0x482 likewise excludes the 128-bit classes: GPRREG quads /
+	// VFREG upper lanes are caller-saved and must still flush
+	// (feedback_arm64_callee_saved_neon_const_pattern).
+	//
+	// Retention is vetoed by FLUSH_FREE_XMM: FLUSH_EVERYTHING/INTERPRETER
+	// carry it (interp fallbacks like recRSQRT_S RMW fpr[]/ACC memory in C,
+	// so a kept slot would go stale), and the COP2 macro wrappers pass it
+	// explicitly (the inlined mVU bodies need the NEON file to themselves).
+	// Everything outside q10-q15 always frees (x86 iFlushCall model,
+	// pcsx2/x86/ix86-32/iR5900.cpp:1196-1207 — all XMM caller-saved there).
 	for (int i = 0; i < NUM_ARM_NEON_REGS; i++)
 	{
-		if (arm64neon[i].inuse)
+		if (!arm64neon[i].inuse)
+			continue;
+
+		const bool retainable = !(flushtype & FLUSH_FREE_XMM) &&
+			static_cast<u32>(i) >= NEON_CALLEE_SAVED_START &&
+			static_cast<u32>(i) < NEON_CALLEE_SAVED_END &&
+			(arm64neon[i].type == NEONTYPE_FPREG || arm64neon[i].type == NEONTYPE_FPACC);
+		if (retainable)
+			_flushNEONreg(i);
+		else
 			_freeNEONreg(i);
 	}
 

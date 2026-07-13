@@ -1475,6 +1475,77 @@ TEST(EeRecFpu, CompareReadsWriteOnlyResidentOperand)
 	EXPECT_NE(h.InterpSnapshot().fprs.fprc[31] & (1u << 23), 0u);
 }
 
+// ---- GE-15: FPR-class NEON slots retained across C-helper seams --------------
+// iFlushCall keeps 32-bit FPR/ACC slots in q10-q15 mapped (writeback-if-dirty)
+// across plain C seams, and FLUSH_FREE_XMM vetoes retention where C code can
+// touch fpr[]/ACC memory. These chains pin both directions.
+
+TEST(EeRecFpu, FprValueCorrectAcrossLqSeam)
+{
+	// recLQ emits an unconditional iFlushCall(FLUSH_CONSTANT_REGS) — a
+	// retention-eligible seam. The dirty f6 must survive it (retained or
+	// reloaded, the VALUE must be right), and the quad load must be intact.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.WriteU64(RecompilerTestEnvironment::kScratchAddr + 0, 0x1122334455667788ull);
+	h.WriteU64(RecompilerTestEnvironment::kScratchAddr + 8, 0x99AABBCCDDEEFF00ull);
+	h.SetFprBits(4, 0x40000000u); // 2.0f
+	h.SetFprBits(5, 0x3F800000u); // 1.0f
+	h.SetGpr64(reg::a0, RecompilerTestEnvironment::kScratchAddr);
+	h.LoadProgram({
+		ee::ADD_S(6, 4, 5),          // f6 = 3.0f, dirty in a (preferably) q10-q15 slot
+		ee::LQ(reg::t0, 0, reg::a0), // seam: iFlushCall(FLUSH_CONSTANT_REGS)
+		ee::ADD_S(7, 6, 5),          // f7 = 4.0f from the surviving f6
+	});
+	h.Run();
+	EXPECT_EQ(h.GetFprBitsInterp(6), 0x40400000u);
+	EXPECT_EQ(h.GetFprBitsInterp(7), 0x40800000u);
+	EXPECT_EQ(h.GetGpr64Interp(reg::t0), 0x1122334455667788ull);
+}
+
+TEST(EeRecFpu, InterpFallbackWriteInvalidatesRetainedFpr)
+{
+	// recRSQRT_S defers to the interpreter (FLUSH_INTERPRETER carries
+	// FLUSH_FREE_XMM → retention VETO). The interp body REWRITES f7 in C;
+	// a wrongly-retained dirty slot would either clobber the interp result
+	// on writeback or feed the stale 4.0f into the final ADD.S.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFpr(1, 2.0f);
+	h.SetFpr(2, 2.0f);
+	h.SetFpr(5, 6.0f);
+	h.SetFpr(6, 4.0f);
+	h.LoadProgram({
+		ee::ADD_S(7, 1, 2),          // f7 = 4.0f, dirty resident
+		ee::RSQRT_S(7, 5, 6),        // interp: f7 = 6/sqrt(4) = 3.0f
+		ee::ADD_S(8, 7, 1),          // f8 = 5.0f from interp's f7, not stale 4.0f
+	});
+	h.Run();
+	EXPECT_EQ(h.GetFprBitsInterp(7), 0x40400000u); // 3.0f
+	EXPECT_EQ(h.GetFprBitsInterp(8), 0x40A00000u); // 5.0f
+}
+
+TEST(EeRecFpu, MmiQuadNotRetainedAcrossSeam)
+{
+	// 128-bit NEONTYPE_GPRREG quads must still fully flush at every seam —
+	// only their LOWER 64 bits survive a C call. Dirty quad → LQ seam →
+	// quad consumer; a wrongly-retained quad risks garbage upper lanes.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.WriteU64(RecompilerTestEnvironment::kScratchAddr + 0, 5ull);
+	h.WriteU64(RecompilerTestEnvironment::kScratchAddr + 8, 7ull);
+	h.SetGpr128(reg::t1, 0x0000000100000002ull, 0x0000000300000004ull);
+	h.SetGpr128(reg::t2, 0x0000001000000020ull, 0x0000003000000040ull);
+	h.SetGpr64(reg::a0, RecompilerTestEnvironment::kScratchAddr);
+	h.LoadProgram({
+		ee::PADDW(reg::t3, reg::t1, reg::t2), // t3 quad dirty in NEON
+		ee::LQ(reg::t0, 0, reg::a0),          // seam
+		ee::PADDW(reg::v0, reg::t3, reg::t1), // consumes all 128 bits of t3
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::t0), 5ull);
+}
+
 TEST(EeRecFpu, ConditionFlagSurvivesInterpFallbackSeam)
 {
 	// RSQRT.S defers to the interpreter (recCall → FLUSH_INTERPRETER), which

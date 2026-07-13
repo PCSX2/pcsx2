@@ -119,6 +119,15 @@ struct _arm64gprregs
 #define NEONTYPE_FPACC  7  // FPU accumulator
 #define NEONTYPE_VFREG  8  // VU VF register
 
+// Callee-saved NEON range available to the allocator: q10-q15 (q8/q9 hold
+// the pinned FPU clamp constants and are excluded from the pool entirely).
+// AAPCS64 preserves only the LOWER 64 bits of v8-v15 across C calls, so
+// full-128-bit classes (NEONTYPE_GPRREG quads, VFREG) can never be retained
+// across a seam — but 32-bit FPR-class slots (FPREG/FPACC, lane 0 only) can
+// (GE-15; iFlushCall's retention loop keys off this range).
+static constexpr u32 NEON_CALLEE_SAVED_START = 10;
+static constexpr u32 NEON_CALLEE_SAVED_END = 16; // exclusive
+
 // x86 type aliases — used by shared analysis code (iR5900Analysis.cpp)
 #define XMMTYPE_TEMP    NEONTYPE_TEMP
 #define XMMTYPE_GPRREG  NEONTYPE_GPRREG

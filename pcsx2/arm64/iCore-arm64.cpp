@@ -661,11 +661,24 @@ void _initArm64NEONregs()
 static constexpr u32 NEON_RESERVED_FPU_MAX = 8;
 static constexpr u32 NEON_RESERVED_FPU_MIN = 9;
 
-// Callee-saved NEON range available to the allocator: q10-q15
-// (indices 8/9 reserved above). EE GPR values allocated here survive FPU
-// interpreter calls without flushing.
-static constexpr u32 NEON_CALLEE_SAVED_START = 10;
-static constexpr u32 NEON_CALLEE_SAVED_END = 16; // exclusive
+// (The callee-saved allocator range q10-q15 is declared in iCore-arm64.h —
+// NEON_CALLEE_SAVED_START/END; indices 8/9 reserved above.)
+
+// Free-slot-only probe of a range: no eviction, -1 when the range is full.
+// Used by the FPR-class allocators to PREFER a call-surviving home (GE-15)
+// without adding eviction pressure — the normal full-range search below
+// handles the fallback (and may still evict into the range via LRU).
+static int _getFreeArm64NEONInRangeNoEvict(u32 minreg, u32 maxreg)
+{
+	for (u32 i = minreg; i < maxreg; i++)
+	{
+		if (i == NEON_RESERVED_FPU_MAX || i == NEON_RESERVED_FPU_MIN)
+			continue;
+		if (!arm64neon[i].inuse)
+			return static_cast<int>(i);
+	}
+	return -1;
+}
 
 int _getFreeArm64NEON(u32 minreg, u32 maxreg)
 {
@@ -813,8 +826,13 @@ int _allocFPtoNEONreg(int fpreg, int mode)
 		return i;
 	}
 
-	// New allocation
-	const int neonreg = _getFreeArm64NEON();
+	// New allocation. GE-15: prefer a free callee-saved home (q10-q15) so
+	// the value can ride iFlushCall's FPR-class retention across C-helper
+	// seams; fall back to the normal full-range search when the range is
+	// occupied.
+	int neonreg = _getFreeArm64NEONInRangeNoEvict(NEON_CALLEE_SAVED_START, NEON_CALLEE_SAVED_END);
+	if (neonreg < 0)
+		neonreg = _getFreeArm64NEON();
 	arm64neon[neonreg].inuse = 1;
 	arm64neon[neonreg].type = NEONTYPE_FPREG;
 	arm64neon[neonreg].reg = fpreg;
@@ -936,7 +954,11 @@ int _allocFPACCtoNEONreg(int mode)
 		return i;
 	}
 
-	const int neonreg = _getFreeArm64NEON();
+	// GE-15: same callee-saved-home preference as _allocFPtoNEONreg (ACC is
+	// a 32-bit lane-0 value, retainable across C-helper seams).
+	int neonreg = _getFreeArm64NEONInRangeNoEvict(NEON_CALLEE_SAVED_START, NEON_CALLEE_SAVED_END);
+	if (neonreg < 0)
+		neonreg = _getFreeArm64NEON();
 	arm64neon[neonreg].inuse = 1;
 	arm64neon[neonreg].type = NEONTYPE_FPACC;
 	arm64neon[neonreg].reg = 0;
