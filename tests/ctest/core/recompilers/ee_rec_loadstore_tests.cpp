@@ -6,6 +6,7 @@
 #include "harness/EeRecTestHarness.h"
 
 #include "Config.h"
+#include "vtlb.h"
 
 #include <gtest/gtest.h>
 
@@ -921,4 +922,74 @@ TEST(EeRecLoadStore, MultiRegUnalignedWordCopyBlockSoftmem)
 		}
 	}
 	EmuConfig.Cpu.Recompiler.EnableFastmem = old_fastmem;
+}
+
+// ===========================================================================
+//  GE-07: fastmem no longer evicts allocator state at L/S sites — live
+//  register preservation across a GENUINE fastmem fault.
+//
+//  An MMIO access (INTC_STAT, 0x1000F000) through a runtime (non-const)
+//  address takes the fastmem path, SIGSEGVs on the unmapped arena page, and
+//  is backpatched to the RecStubs thunk, whose C call must save/restore the
+//  live allocator registers per the masks recorded at emit time. Before
+//  GE-07 those masks were ~always 0 (iFlushCall evicted everything first);
+//  these tests are the first to exercise nonzero masks with dirty NEON
+//  (128-bit MMI) and GPR state crossing the fault. Run()'s JIT-vs-interp
+//  auto-diff plus the explicit 128-bit expects are the oracle.
+// ===========================================================================
+
+TEST(EeRecLoadStore, FastmemFaultLoadPreservesLiveMmiState)
+{
+	EeRecTestHarness h;
+	h.WriteU32(kScratch + 0, 0x00003000u);
+	h.SetGpr64(reg::a0, kScratch);
+	h.SetGpr64(reg::a1, 0x1000F000u); // INTC_STAT: MMIO page → fastmem fault → thunk
+	h.SetGpr128(reg::t4, 0x1111'2222'3333'4444ull, 0x5555'6666'7777'8888ull);
+	h.SetGpr128(reg::t5, 0x0101'0101'0101'0101ull, 0x0202'0202'0202'0202ull);
+	vtlb_ClearLoadStoreInfo(); // ensure this compile takes fastmem (set is process-global)
+	h.LoadProgram({
+		LW(reg::t0, 0, reg::a0),          // non-const live scalar
+		ee::PADDW(reg::t6, reg::t4, reg::t5), // dirty 128-bit NEON result, left resident
+		LW(reg::v1, 0, reg::a1),          // faults → thunk C call with live state
+		ee::PADDW(reg::t7, reg::t6, reg::t5), // consumes the resident quad AFTER the call
+		ADDU(reg::v0, reg::t0, reg::t0),
+	});
+	h.Run();
+	h.ExpectGpr64(reg::t0, 0x3000ull);
+	h.ExpectGpr64(reg::v0, 0x6000ull);
+	h.ExpectGpr128(reg::t6, 0x1212'2323'3434'4545ull, 0x5757'6868'7979'8a8aull);
+	h.ExpectGpr128(reg::t7, 0x1313'2424'3535'4646ull, 0x5959'6a6a'7b7b'8c8cull);
+	// Prove the FAULT path actually ran (not a softmem compile that would pass
+	// vacuously): a genuine fastmem fault records the guest PC of the MMIO LW.
+	bool faulted = false;
+	for (u32 a = RecompilerTestEnvironment::kProgramPc; a < RecompilerTestEnvironment::kProgramPc + 0x20; a += 4)
+		faulted |= vtlb_IsFaultingPC(a);
+	EXPECT_TRUE(faulted) << "MMIO LW did not take the fastmem-fault/backpatch path";
+}
+
+TEST(EeRecLoadStore, FastmemFaultStorePreservesLiveMmiState)
+{
+	EeRecTestHarness h;
+	h.WriteU32(kScratch + 0, 0x00004000u);
+	h.SetGpr64(reg::a0, kScratch);
+	h.SetGpr64(reg::a1, 0x1000F000u); // INTC_STAT is write-1-to-clear; state 0 stays 0
+	h.SetGpr128(reg::t4, 0x1111'2222'3333'4444ull, 0x5555'6666'7777'8888ull);
+	h.SetGpr128(reg::t5, 0x0101'0101'0101'0101ull, 0x0202'0202'0202'0202ull);
+	vtlb_ClearLoadStoreInfo();
+	h.LoadProgram({
+		LW(reg::t0, 0, reg::a0),
+		ee::PADDW(reg::t6, reg::t4, reg::t5),
+		SW(reg::t0, 0, reg::a1),          // store fault → thunk C call
+		ee::PADDW(reg::t7, reg::t6, reg::t5),
+		ADDU(reg::v0, reg::t0, reg::t0),
+	});
+	h.Run();
+	h.ExpectGpr64(reg::t0, 0x4000ull);
+	h.ExpectGpr64(reg::v0, 0x8000ull);
+	h.ExpectGpr128(reg::t6, 0x1212'2323'3434'4545ull, 0x5757'6868'7979'8a8aull);
+	h.ExpectGpr128(reg::t7, 0x1313'2424'3535'4646ull, 0x5959'6a6a'7b7b'8c8cull);
+	bool faulted = false;
+	for (u32 a = RecompilerTestEnvironment::kProgramPc; a < RecompilerTestEnvironment::kProgramPc + 0x20; a += 4)
+		faulted |= vtlb_IsFaultingPC(a);
+	EXPECT_TRUE(faulted) << "MMIO SW did not take the fastmem-fault/backpatch path";
 }

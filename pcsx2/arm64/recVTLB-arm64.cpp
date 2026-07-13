@@ -490,7 +490,47 @@ static void recLoad(u32 bits, bool sign)
 	const bool useFastmem = CHECK_FASTMEM && !vtlb_IsFaultingPC(pc);
 
 	unsigned addr_reg = 9;
-	if (GPR_IS_CONST1(_Rs_))
+	if (useFastmem)
+	{
+		// GE-07: the fastmem path emits no C call, so the blanket
+		// iFlushCall eviction (which clipped FPU/MMI allocator residency at
+		// EVERY interleaved load) is not needed — the fault thunk
+		// (vtlb_DynBackpatchLoadStore) saves/restores live registers per the
+		// masks recorded at emit time, which become nonzero with this change.
+		// What must remain:
+		//   - _flushConstRegs: load-bearing at L/S sites (Tier-2G bisect
+		//     f4601964b).
+		//   - Rs coherence: a dirty NEON dual-residence (or MODE_WRITE GPR)
+		//     copy of Rs means the pin/memory value is stale — write it back
+		//     (mapping kept). Same writeback today's eviction performed,
+		//     minus the eviction of everything else.
+		//   - x0 eviction below (the load result target when Rt is unpinned;
+		//     x0 is an allocator pool member).
+		// Rt dest invalidation is recStoreLoadResult's job (unchanged).
+		_flushConstRegs(true);
+		if (GPR_IS_CONST1(_Rs_))
+		{
+			armAsm->Mov(a64::w9, g_cpuConstRegs[_Rs_].UL[0] + _Imm_);
+		}
+		else
+		{
+			_flushEEreg(_Rs_, false);
+			if (const a64::Register* pin = armEEPinForGPR(_Rs_))
+			{
+				if (_Imm_ != 0)
+					armAsm->Add(a64::w9, pin->W(), _Imm_);
+				else
+					addr_reg = static_cast<unsigned>(pin->GetCode());
+			}
+			else
+			{
+				_eeMoveGPRtoR(a64::w9, _Rs_);
+				if (_Imm_ != 0)
+					armAsm->Add(a64::w9, a64::w9, _Imm_);
+			}
+		}
+	}
+	else if (GPR_IS_CONST1(_Rs_))
 	{
 		iFlushCall(FLUSH_CONSTANT_REGS);
 		armAsm->Mov(a64::w9, g_cpuConstRegs[_Rs_].UL[0] + _Imm_);
@@ -528,6 +568,11 @@ static void recLoad(u32 bits, bool sign)
 		// refresh; the canonical Str in recStoreLoadResult stays. Not done
 		// for softmem — its result comes back from a C call in x0.
 		const a64::Register* dpin = _Rt_ ? armEEPinForGPR(_Rt_) : nullptr;
+		// GE-07: with allocator state now live across fastmem, x0 (a pool
+		// member) may hold a guest value — evict it before it becomes the
+		// load result. Freed before mask capture so the thunk skips it too.
+		if (!dpin && arm64gprs[0].inuse)
+			_freeArm64GPR(0);
 		vtlbFastmemRead(addr_reg, dpin ? static_cast<unsigned>(dpin->GetCode()) : 0, bits, sign);
 		recStoreLoadResult(dpin ? *dpin : a64::Register(a64::x0));
 	}
@@ -618,7 +663,61 @@ static void recStore(u32 bits)
 
 	const bool useFastmem = CHECK_FASTMEM && !vtlb_IsFaultingPC(pc);
 
-	// Flush rationale: see recLoad. FLUSH_CONSTANT_REGS only.
+	if (useFastmem)
+	{
+		// GE-07: no blanket eviction on the fastmem path — see recLoad.
+		// Coherence here: Rs (address) AND Rt (store value) each need any
+		// dirty NEON/GPR copy written back (mappings kept); the store emit
+		// itself clobbers no allocator pool member (w9/w10/x8/x17 are all
+		// outside the pool).
+		_flushConstRegs(true);
+
+		unsigned value_reg = 10;
+		if (GPR_IS_CONST1(_Rt_))
+		{
+			if (bits <= 32)
+				armAsm->Mov(a64::w10, g_cpuConstRegs[_Rt_].UL[0]);
+			else
+				armAsm->Mov(a64::x10, g_cpuConstRegs[_Rt_].UD[0]);
+		}
+		else
+		{
+			_flushEEreg(_Rt_, false);
+			if (const a64::Register* vpin = armEEPinForGPR(_Rt_))
+				value_reg = static_cast<unsigned>(vpin->GetCode());
+			else
+				_eeMoveGPRtoR(bits <= 32 ? a64::w10 : a64::x10, _Rt_);
+		}
+
+		unsigned addr_reg = 9;
+		if (GPR_IS_CONST1(_Rs_))
+		{
+			armAsm->Mov(a64::w9, g_cpuConstRegs[_Rs_].UL[0] + _Imm_);
+		}
+		else
+		{
+			_flushEEreg(_Rs_, false);
+			if (const a64::Register* pin = armEEPinForGPR(_Rs_))
+			{
+				if (_Imm_ != 0)
+					armAsm->Add(a64::w9, pin->W(), _Imm_);
+				else
+					addr_reg = static_cast<unsigned>(pin->GetCode());
+			}
+			else
+			{
+				_eeMoveGPRtoR(a64::w9, _Rs_);
+				if (_Imm_ != 0)
+					armAsm->Add(a64::w9, a64::w9, _Imm_);
+			}
+		}
+
+		vtlbFastmemWrite(addr_reg, value_reg, bits);
+		return;
+	}
+
+	// Softmem: full flush, as before. Flush rationale: see recLoad.
+	// FLUSH_CONSTANT_REGS only.
 	unsigned value_reg = 10;
 	if (GPR_IS_CONST1(_Rt_))
 	{
@@ -663,14 +762,7 @@ static void recStore(u32 bits)
 			armAsm->Add(a64::w9, a64::w9, _Imm_);
 	}
 
-	if (useFastmem)
-	{
-		vtlbFastmemWrite(addr_reg, value_reg, bits);
-	}
-	else
-	{
-		vtlbSoftmemWrite(addr_reg, value_reg, bits);
-	}
+	vtlbSoftmemWrite(addr_reg, value_reg, bits);
 }
 
 #ifdef FORCE_INTERP_MEMORY
