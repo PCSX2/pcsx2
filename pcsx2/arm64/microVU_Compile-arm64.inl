@@ -848,6 +848,7 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 	iPC = startPC / 4;
 	mVUsetupRange(mVU, startPC, 1);
 	mVU.regAlloc->reset(false);
+	mVUclearBranchCondCarry(mVU);
 	mVUinitFirstPass(mVU, pState, thisPtr);
 	mVUbranch = 0;
 
@@ -1034,6 +1035,10 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 		// per-op probe into the block.
 		if (mvu_divtrace::g_enabled.load(std::memory_order_relaxed))
 		{
+			// The brk hands control to the divtrace SIGTRAP handler — don't
+			// trust pool temps across it.
+			mVUclearBranchCondCarry(mVU);
+
 			mvu_divtrace::OpMeta meta{};
 			meta.op_idx     = static_cast<u16>(mvu_divtrace::g_meta.size());
 			meta.microvu_pc = xPC;

@@ -58,7 +58,11 @@
 //       mVUfieldMem instead of per-site absolute materialization; every
 //       block that touches them changes shape, and payloads bake the
 //       field offsets, which the move changed.
-static constexpr u32 kMvuCompilerAbiVersion = 8;
+//   9 — IBcc condition carry (doBranchCondCarry): the condition computes
+//       into a pool temp and condBranch's tail Cmps it directly instead
+//       of reloading mVU.branch with Ldrsh; conditional-branch blocks
+//       change shape.
+static constexpr u32 kMvuCompilerAbiVersion = 9;
 
 // Hash/equality functors for XXH128_hash_t — let std::unordered_map<XXH128_hash_t, …>
 // work without a wrapping struct. low64 already carries the well-mixed half of
@@ -498,6 +502,16 @@ struct microVU
 	u8* endProgramFlagsB; // Ebit exits (isEbit && isEbit != 3)
 	u8* resumePtrXG;
 
+	// Compile-time only (never read by emitted code): pool GPR index holding
+	// the live IBcc condition value between the branch op and condBranch's
+	// tail Cmp, or -1. The mVU.branch memory store stays authoritative
+	// (bad/evil-branch continuations read it cross-block); the carry just
+	// skips the tail's Ldrsh reload. Cleared by anything emitted in between
+	// that can clobber a caller-saved pool reg at runtime or recycle the
+	// slot at compile time (XGKICK's C call, end-program emission, the
+	// divtrace per-op hook).
+	int branchCondCarryGpr;
+
 	VURegs& regs() const { return ::vuRegs[index]; }
 
 	__fi REG_VI& getVI(uint reg) const { return regs().VI[reg]; }
@@ -556,6 +570,16 @@ __fi static void mVUstrField(mV, const a64::CPURegister& reg, const void* addr)
 		armStorePtr(reg, addr);
 	else
 		armAsm->Str(reg, mVUfieldMem(mVU, addr));
+}
+
+// Drop the IBcc condition carry (see microVU::branchCondCarryGpr). Called
+// from every emission site between the branch op and condBranch's tail that
+// either emits a C call (XGKICK, end-program helpers) or hands control to a
+// trap handler (divtrace) — after those, the pool temp's value can't be
+// trusted, so the tail falls back to the Ldrsh reload.
+__fi static void mVUclearBranchCondCarry(mV)
+{
+	mVU.branchCondCarryGpr = -1;
 }
 
 //------------------------------------------------------------------

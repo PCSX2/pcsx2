@@ -1041,6 +1041,7 @@ void mVUreset(microVU& mVU, bool resetReserve)
 
 	mVU.regs().nextBlockCycles = 0;
 	memset(&mVU.prog.lpState, 0, sizeof(mVU.prog.lpState));
+	mVU.branchCondCarryGpr = -1;
 	mVU.profiler.Reset(mVU.index);
 
 	// Program Variables

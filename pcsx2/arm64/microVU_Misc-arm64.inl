@@ -271,6 +271,10 @@ void mVUmergeRegs(const a64::VRegister& dest, const a64::VRegister& src, int xyz
 // are accepted for signature parity with x86 mVUbackupRegs and ignored here.
 __fi void mVUbackupRegs(microVU& mVU, bool toMemory = false, bool onlyNeeded = false)
 {
+	// Every mid-block C call is wrapped in this backup — the plain-AAPCS
+	// callee clobbers caller-saved pool regs, so the branch-condition carry
+	// can't survive past it.
+	mVUclearBranchCondCarry(mVU);
 	mVU.regAlloc->flushAll();
 	armAsm->Str(qmmPQ, mVUneonBackupMem(qmmPQ.GetCode()));
 }

@@ -358,6 +358,10 @@ static constexpr bool doJumpCaching = true;
 static constexpr bool doJumpAsSameProgram = false;
 static constexpr bool doDBitHandling = false;
 static constexpr bool doWholeProgCompare = false;
+// Keep the IBcc condition value live in a pool temp from the branch op to
+// condBranch's tail Cmp, skipping the Ldrsh reload of mVU.branch (WS-C1
+// analog from the EE-SRA campaign). The memory store stays authoritative.
+static constexpr bool doBranchCondCarry = true;
 
 // Status Flag Speed Hack
 #define CHECK_VU_FLAGHACK (EmuConfig.Speedhacks.vuFlagHack)

@@ -24,6 +24,11 @@ __fi int getLastFlagInst(microRegInfo& pState, int* xFlag, int flagType, int isE
 
 void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit)
 {
+	// End-program emission BLs plain-AAPCS helpers (clearlpStateJIT et al.)
+	// that clobber caller-saved pool regs — the branch-condition carry can't
+	// survive past here.
+	mVUclearBranchCondCarry(mVU);
+
 	int fStatus = getLastFlagInst(mVUpBlock->pState, mFC->xStatus, 0, isEbit);
 	int fMac    = getLastFlagInst(mVUpBlock->pState, mFC->xMac, 1, isEbit);
 	int fClip   = getLastFlagInst(mVUpBlock->pState, mFC->xClip, 2, isEbit);
@@ -140,6 +145,9 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit)
 
 void mVUendProgram(mV, microFlagCycles* mFC, int isEbit)
 {
+	// See mVUDTendProgram — end-program emission kills the condition carry.
+	mVUclearBranchCondCarry(mVU);
+
 	int fStatus = getLastFlagInst(mVUpBlock->pState, mFC->xStatus, 0, isEbit && isEbit != 3);
 	int fMac    = getLastFlagInst(mVUpBlock->pState, mFC->xMac, 1, isEbit && isEbit != 3);
 	int fClip   = getLastFlagInst(mVUpBlock->pState, mFC->xClip, 2, isEbit && isEbit != 3);
@@ -802,8 +810,20 @@ void condBranch(mV, microFlagCycles& mFC, a64::Condition cond)
 	}
 
 	// Normal conditional branch. See E-bit path above for why Ldrsh.
-	armAsm->Ldrsh(a64::w9, mVUfieldMem(mVU, &mVU.branch));
-	armAsm->Cmp(a64::w9, 0);
+	if (doBranchCondCarry && mVU.branchCondCarryGpr >= 0)
+	{
+		// Condition still live in a pool temp from the IBcc op (sign-correct
+		// by construction — see mVUcondBranchDest/Finish). The mVUsetupBranch
+		// flushAll only unmapped the temp; any emission that could have
+		// clobbered it would have cleared the carry.
+		armAsm->Cmp(armWRegister(mVU.branchCondCarryGpr), 0);
+		mVUclearBranchCondCarry(mVU);
+	}
+	else
+	{
+		armAsm->Ldrsh(a64::w9, mVUfieldMem(mVU, &mVU.branch));
+		armAsm->Cmp(a64::w9, 0);
+	}
 
 	incPC(3);
 	// Try to find cached block for not-taken path

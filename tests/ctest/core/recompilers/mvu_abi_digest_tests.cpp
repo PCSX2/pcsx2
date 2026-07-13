@@ -123,6 +123,12 @@ constexpr AbiPin kPins[] = {
 	// probe that touches those fields changes shape, and pre-8 payloads
 	// bake the old field addresses/offsets, so the bump must evict them.
 	{8, {0xb35dd0237372d734, 0xc3c40fd5a5ec19c7, 0x23682664f86a2f8d, 0xbdfce8a7ecebe6a6, 0x45837d5d1d23009f}},
+	// abi 9: IBcc condition carry (doBranchCondCarry) — the condition
+	// computes into a pool temp and condBranch's tail Cmps it directly
+	// instead of the Ldrsh reload. Only the branch-bearing probe moved;
+	// the other four contain no conditional branch and are bit-identical
+	// to abi 8.
+	{9, {0xb35dd0237372d734, 0xb6dfab5c9a56d900, 0x23682664f86a2f8d, 0xbdfce8a7ecebe6a6, 0x45837d5d1d23009f}},
 };
 
 u64 CompileAndDigest(std::initializer_list<vu::VuOp> pairs)
