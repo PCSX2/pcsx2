@@ -1041,3 +1041,36 @@ TEST(EeRecMmi, Multu1WithRdLargeProduct)
 	h.Run();
 	h.ExpectGpr64(reg::v0, 1ull);
 }
+
+// ---- GE-16: allocator-resident packed shifts — sa==0 + aliasing edges -------
+
+TEST(EeRecMmi, PsllwZeroSaIsCopy)
+{
+	EeRecTestHarness h;
+	h.SetMmiPair(reg::a0, 0xDEAD'BEEF'8000'0001ull, 0x0123'4567'89AB'CDEFull);
+	h.LoadProgram({ee::PSLLW(reg::v0, reg::a0, 0)});
+	h.Run();
+	h.ExpectMmiPair(reg::v0, 0xDEAD'BEEF'8000'0001ull, 0x0123'4567'89AB'CDEFull);
+}
+
+TEST(EeRecMmi, PsrawAliasedRdRt)
+{
+	// Rd == Rt: the allocator aliases qd onto qt; the single Sshr must
+	// read-then-write the same slot correctly.
+	EeRecTestHarness h;
+	h.SetMmiPair(reg::a0, 0x8000'0000'7FFF'FFFFull, 0xFFFF'FFF0'0000'0010ull);
+	h.LoadProgram({ee::PSRAW(reg::a0, reg::a0, 4)});
+	h.Run();
+	h.ExpectMmiPair(reg::a0, 0xF800'0000'07FF'FFFFull, 0xFFFF'FFFF'0000'0001ull);
+}
+
+TEST(EeRecMmi, PsllhZeroEffectiveSaAliased)
+{
+	// sa=16 masks to 0 on halfword shifts AND Rd==Rt — the copy degenerates
+	// to a no-op on the aliased slot.
+	EeRecTestHarness h;
+	h.SetMmiPair(reg::a0, 0x1111'2222'3333'4444ull, 0x5555'6666'7777'8888ull);
+	h.LoadProgram({ee::PSLLH(reg::a0, reg::a0, 16)});
+	h.Run();
+	h.ExpectMmiPair(reg::a0, 0x1111'2222'3333'4444ull, 0x5555'6666'7777'8888ull);
+}

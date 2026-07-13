@@ -437,49 +437,45 @@ void recPMTLO()
 //  Packed Shifts (by immediate sa field)
 // ============================================================================
 
+// GE-16: allocator-resident single-insn shifts through the XMM template
+// (rd = SHIFT(rt)) — the old shape memory-bounced via mmiFlush+Ldr+op+Str
+// and evicted residency at every immediate shift. sa==0 degenerates to a
+// register move (skipped when the allocator aliased rd onto rt).
+
 void recPSLLW()
 {
-	if (!_Rd_) return;
-	mmiFlushReg(_Rt_);
-	mmiInvalidateDest(_Rd_);
-	mmiLoadReg(RQSCRATCH, _Rt_);
+	MMI_2OP_SETUP();
 	if (_Sa_ == 0)
 	{
-		mmiStoreReg(_Rd_, RQSCRATCH);
+		if (!qd.Is(qt))
+			armAsm->Mov(qd.V16B(), qt.V16B());
 		return;
 	}
-	armAsm->Shl(RQSCRATCH.V4S(), RQSCRATCH.V4S(), _Sa_);
-	mmiStoreReg(_Rd_, RQSCRATCH);
+	armAsm->Shl(qd.V4S(), qt.V4S(), _Sa_);
 }
 
 void recPSRLW()
 {
-	if (!_Rd_) return;
-	mmiFlushReg(_Rt_);
-	mmiInvalidateDest(_Rd_);
-	mmiLoadReg(RQSCRATCH, _Rt_);
+	MMI_2OP_SETUP();
 	if (_Sa_ == 0)
 	{
-		mmiStoreReg(_Rd_, RQSCRATCH);
+		if (!qd.Is(qt))
+			armAsm->Mov(qd.V16B(), qt.V16B());
 		return;
 	}
-	armAsm->Ushr(RQSCRATCH.V4S(), RQSCRATCH.V4S(), _Sa_);
-	mmiStoreReg(_Rd_, RQSCRATCH);
+	armAsm->Ushr(qd.V4S(), qt.V4S(), _Sa_);
 }
 
 void recPSRAW()
 {
-	if (!_Rd_) return;
-	mmiFlushReg(_Rt_);
-	mmiInvalidateDest(_Rd_);
-	mmiLoadReg(RQSCRATCH, _Rt_);
+	MMI_2OP_SETUP();
 	if (_Sa_ == 0)
 	{
-		mmiStoreReg(_Rd_, RQSCRATCH);
+		if (!qd.Is(qt))
+			armAsm->Mov(qd.V16B(), qt.V16B());
 		return;
 	}
-	armAsm->Sshr(RQSCRATCH.V4S(), RQSCRATCH.V4S(), _Sa_);
-	mmiStoreReg(_Rd_, RQSCRATCH);
+	armAsm->Sshr(qd.V4S(), qt.V4S(), _Sa_);
 }
 
 // Halfword shifts: interp uses (_Sa_ & 0xf) per MMI.cpp:228/240/252 —
@@ -488,50 +484,41 @@ void recPSRAW()
 // interp and stay inside the encoder's range.
 void recPSLLH()
 {
-	if (!_Rd_) return;
-	mmiFlushReg(_Rt_);
-	mmiInvalidateDest(_Rd_);
-	mmiLoadReg(RQSCRATCH, _Rt_);
+	MMI_2OP_SETUP();
 	const u32 sa = _Sa_ & 0xf;
 	if (sa == 0)
 	{
-		mmiStoreReg(_Rd_, RQSCRATCH);
+		if (!qd.Is(qt))
+			armAsm->Mov(qd.V16B(), qt.V16B());
 		return;
 	}
-	armAsm->Shl(RQSCRATCH.V8H(), RQSCRATCH.V8H(), sa);
-	mmiStoreReg(_Rd_, RQSCRATCH);
+	armAsm->Shl(qd.V8H(), qt.V8H(), sa);
 }
 
 void recPSRLH()
 {
-	if (!_Rd_) return;
-	mmiFlushReg(_Rt_);
-	mmiInvalidateDest(_Rd_);
-	mmiLoadReg(RQSCRATCH, _Rt_);
+	MMI_2OP_SETUP();
 	const u32 sa = _Sa_ & 0xf;
 	if (sa == 0)
 	{
-		mmiStoreReg(_Rd_, RQSCRATCH);
+		if (!qd.Is(qt))
+			armAsm->Mov(qd.V16B(), qt.V16B());
 		return;
 	}
-	armAsm->Ushr(RQSCRATCH.V8H(), RQSCRATCH.V8H(), sa);
-	mmiStoreReg(_Rd_, RQSCRATCH);
+	armAsm->Ushr(qd.V8H(), qt.V8H(), sa);
 }
 
 void recPSRAH()
 {
-	if (!_Rd_) return;
-	mmiFlushReg(_Rt_);
-	mmiInvalidateDest(_Rd_);
-	mmiLoadReg(RQSCRATCH, _Rt_);
+	MMI_2OP_SETUP();
 	const u32 sa = _Sa_ & 0xf;
 	if (sa == 0)
 	{
-		mmiStoreReg(_Rd_, RQSCRATCH);
+		if (!qd.Is(qt))
+			armAsm->Mov(qd.V16B(), qt.V16B());
 		return;
 	}
-	armAsm->Sshr(RQSCRATCH.V8H(), RQSCRATCH.V8H(), sa);
-	mmiStoreReg(_Rd_, RQSCRATCH);
+	armAsm->Sshr(qd.V8H(), qt.V8H(), sa);
 }
 
 // ============================================================================
