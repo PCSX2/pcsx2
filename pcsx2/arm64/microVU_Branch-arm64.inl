@@ -334,7 +334,6 @@ void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump)
 {
 	memcpy(&mVUpBlock->pStateEnd, &mVUregs, sizeof(microRegInfo));
 	mVUsetupBranch(mVU, mFC);
-	mVUbackupRegs(mVU);
 
 	if (!mVUpBlock->jumpCache)
 		mVUpBlock->jumpCache = new microJumpCache[mProgSize / 2];
@@ -352,6 +351,40 @@ void normJumpCompile(mV, microFlagCycles& mFC, bool isEvilJump)
 		armMoveAddressToReg(RXARG2, mVUpBlock);
 	else
 		armMoveAddressToReg(RXARG2, &mVUpBlock->pStateEnd);
+
+	// Inline jump-cache probe — mVUcompileJIT's hit path without the BL/RET
+	// round trip or the qmmPQ spill (mVUbackupRegs moved below the probe; a
+	// hit never calls C, so q28 rides live into the target block exactly as
+	// a compile-time-linked branch would leave it). Field-for-field mirror
+	// of the C path: store start_pc, then hit iff jc.prog ==
+	// prog.quick[startPC/8].prog and jc.hostEntry != null. A fresh (zeroed)
+	// entry falls to the null-hostEntry check, and a program clear changes
+	// quick.prog so the compare misses — same invalidation the C path
+	// relies on. The jumpCache base is loaded at runtime through mVUpBlock
+	// (already materialized in RXARG2) rather than baked, so persisted
+	// payloads never embed the heap pointer.
+	if (doJumpCaching && !doJumpAsSameProgram && !isEvilJump && !(mVUup.eBit))
+	{
+		a64::Label slowPath;
+		armAsm->Str(RWARG1, mVUstateMem(offsetof(VURegs, start_pc)));
+		armAsm->Ldr(a64::x8, a64::MemOperand(RXARG2, offsetof(microBlock, jumpCache)));
+		// startPC is 8-aligned, so startPC/8 scaled by the 24-byte entry
+		// stride is startPC*3; the 16-byte quick stride is startPC*2.
+		armAsm->Add(a64::x9, a64::x0, a64::Operand(a64::x0, a64::LSL, 1));
+		armAsm->Add(a64::x8, a64::x8, a64::x9);
+		armAsm->Ldr(a64::x10, a64::MemOperand(a64::x8, offsetof(microJumpCache, prog)));
+		armMoveAddressToReg(a64::x11, &mVU.prog.quick[0].prog);
+		armAsm->Lsl(a64::x12, a64::x0, 1);
+		armAsm->Ldr(a64::x11, a64::MemOperand(a64::x11, a64::x12));
+		armAsm->Cmp(a64::x10, a64::x11);
+		armAsm->B(&slowPath, a64::ne);
+		armAsm->Ldr(a64::x10, a64::MemOperand(a64::x8, offsetof(microJumpCache, hostEntry)));
+		armAsm->Cbz(a64::x10, &slowPath);
+		armAsm->Br(a64::x10);
+		armAsm->Bind(&slowPath);
+	}
+
+	mVUbackupRegs(mVU);
 
 	if (mVUup.eBit && isEvilJump)
 	{

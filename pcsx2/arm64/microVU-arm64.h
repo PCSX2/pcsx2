@@ -62,7 +62,12 @@
 //       into a pool temp and condBranch's tail Cmps it directly instead
 //       of reloading mVU.branch with Ldrsh; conditional-branch blocks
 //       change shape.
-static constexpr u32 kMvuCompilerAbiVersion = 9;
+//  10 — inline jump-cache probe in normJumpCompile: JR/JALR tails probe
+//       jc.prog vs prog.quick[].prog inline and Br to the cached
+//       hostEntry on a hit, only falling into mVUbackupRegs + the
+//       mVUcompileJIT C call on a miss; indirect-jump blocks change
+//       shape.
+static constexpr u32 kMvuCompilerAbiVersion = 10;
 
 // Hash/equality functors for XXH128_hash_t — let std::unordered_map<XXH128_hash_t, …>
 // work without a wrapping struct. low64 already carries the well-mixed half of

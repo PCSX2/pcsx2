@@ -129,6 +129,11 @@ constexpr AbiPin kPins[] = {
 	// the other four contain no conditional branch and are bit-identical
 	// to abi 8.
 	{9, {0xb35dd0237372d734, 0xb6dfab5c9a56d900, 0x23682664f86a2f8d, 0xbdfce8a7ecebe6a6, 0x45837d5d1d23009f}},
+	// abi 10: inline jump-cache probe in normJumpCompile. The two
+	// jump-bearing probes (indirectJump, condEvilBranch — its continuation
+	// compiles a normal JR tail) change shape; the branch-only and
+	// straight-line probes are bit-identical to abi 9.
+	{10, {0xb35dd0237372d734, 0xb6dfab5c9a56d900, 0xc9abe2f224fb5710, 0xbdfce8a7ecebe6a6, 0x1fe80e2917de1c2d}},
 };
 
 u64 CompileAndDigest(std::initializer_list<vu::VuOp> pairs)
