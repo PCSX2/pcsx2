@@ -1301,6 +1301,38 @@ function(pcsx2_resource target path basedir)
 	source_group(Resources/${subdir} FILES ${path})
 endfunction()
 
+# Copy the bin/resources tree (and, off-Windows, bin/docs) next to a built
+# executable so it can find them at runtime via AppRoot/resources. Shared by
+# every user-facing frontend (pcsx2-qt, pcsx2-sdl) so they stay in lockstep.
+function(pcsx2_copy_runtime_resources target)
+	file(GLOB_RECURSE RESOURCE_FILES ${CMAKE_SOURCE_DIR}/bin/resources/*)
+	foreach(path IN LISTS RESOURCE_FILES)
+		get_filename_component(file ${path} NAME)
+		if("${file}" MATCHES "^\\.") # Don't copy macOS garbage (mainly Finder's .DS_Store files) into application
+			continue()
+		endif()
+		if (NOT WIN32 AND "${path}" MATCHES "/dx11/") # Don't include unneccessary stuff
+			continue()
+		endif()
+		if (NOT BUNDLE_EMOJI_FONT AND "${path}" MATCHES "fonts/Twemoji")
+			continue()
+		endif()
+		pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/bin/resources/)
+	endforeach()
+
+	# Add docs to resources for not-Windows, since they don't use the bin directory.
+	if(NOT WIN32)
+		file(GLOB_RECURSE DOCS_FILES ${CMAKE_SOURCE_DIR}/bin/docs/*)
+		foreach(path IN LISTS DOCS_FILES)
+			get_filename_component(file ${path} NAME)
+			if("${file}" MATCHES "^\\.") # Don't copy macOS garbage (mainly Finder's .DS_Store files) into application
+				continue()
+			endif()
+			pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/bin/)
+		endforeach()
+	endif()
+endfunction()
+
 if (NOT APPLE)
 	set_target_properties(PCSX2 PROPERTIES
 		OUTPUT_NAME pcsx2
@@ -1334,32 +1366,7 @@ set_property(GLOBAL PROPERTY PCSX2_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set_property(GLOBAL PROPERTY PCSX2_METAL_SHADERS ${pcsx2GSMetalShaders})
 
 function(setup_main_executable target)
-	file(GLOB_RECURSE RESOURCE_FILES ${CMAKE_SOURCE_DIR}/bin/resources/*)
-	foreach(path IN LISTS RESOURCE_FILES)
-		get_filename_component(file ${path} NAME)
-		if("${file}" MATCHES "^\\.") # Don't copy macOS garbage (mainly Finder's .DS_Store files) into application
-			continue()
-		endif()
-		if (NOT WIN32 AND "${path}" MATCHES "/dx11/") # Don't include unneccessary stuff
-			continue()
-		endif()
-		if (NOT BUNDLE_EMOJI_FONT AND "${path}" MATCHES "fonts/Twemoji")
-			continue()
-		endif()
-		pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/bin/resources/)
-	endforeach()
-
-	# Add docs to resources for not-Windows, since they don't use the bin directory.
-	if(NOT WIN32)
-		file(GLOB_RECURSE DOCS_FILES ${CMAKE_SOURCE_DIR}/bin/docs/*)
-		foreach(path IN LISTS DOCS_FILES)
-			get_filename_component(file ${path} NAME)
-			if("${file}" MATCHES "^\\.") # Don't copy macOS garbage (mainly Finder's .DS_Store files) into application
-				continue()
-			endif()
-			pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/bin/)
-		endforeach()
-	endif()
+	pcsx2_copy_runtime_resources(${target})
 
 	get_property(PCSX2_SOURCE_DIR GLOBAL PROPERTY PCSX2_SOURCE_DIR)
 	get_property(PCSX2_METAL_SHADERS GLOBAL PROPERTY PCSX2_METAL_SHADERS)

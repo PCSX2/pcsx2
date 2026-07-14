@@ -6,6 +6,7 @@ set_target_properties(pcsx2-sdl PROPERTIES OUTPUT_NAME "yaps2-sdl")
 
 if (PACKAGE_MODE)
 	install(TARGETS pcsx2-sdl DESTINATION ${CMAKE_INSTALL_BINDIR})
+	install(DIRECTORY ${CMAKE_SOURCE_DIR}/bin/resources DESTINATION ${CMAKE_INSTALL_FULL_DATADIR}/PCSX2)
 else()
 	install(TARGETS pcsx2-sdl DESTINATION ${CMAKE_SOURCE_DIR}/bin)
 endif()
@@ -24,6 +25,12 @@ target_link_libraries(pcsx2-sdl PRIVATE
 	PCSX2
 	SDL3::SDL3
 )
+
+# Copy bin/resources (GameDB, shaders, fonts, sounds, icons) + docs next to the
+# built binary, exactly like setup_main_executable() does for pcsx2-qt. Without
+# this the SDL frontend bails at startup ("Resources directory is missing.")
+# because EmuFolders::SetResourcesDirectory() looks for AppRoot/resources.
+pcsx2_copy_runtime_resources(pcsx2-sdl)
 
 # Deterministic process layout for the persisted-JIT VU program cache: a
 # non-PIE executable (ET_EXEC) loads at its fixed link address even with
