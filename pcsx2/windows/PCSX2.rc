@@ -5,14 +5,14 @@
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
 
-#define VER_FILE_DESCRIPTION_STR    "PCSX2 PS2 Emulator"
+#define VER_FILE_DESCRIPTION_STR    "ARMSX2 PS2 Emulator"
 #define VER_FILE_VERSION            GIT_TAG_HI, GIT_TAG_MID, GIT_TAG_LO, 0
 #define VER_FILE_VERSION_STR        STRINGIZE(GIT_TAG_HI)      \
                                     "." STRINGIZE(GIT_TAG_MID) \
                                     "." STRINGIZE(GIT_TAG_LO)  \
                                     "." STRINGIZE(0)
 
-#define VER_PRODUCTNAME_STR         "PCSX2"
+#define VER_PRODUCTNAME_STR         "ARMSX2"
 #define VER_PRODUCT_VERSION         VER_FILE_VERSION
 #define VER_PRODUCT_VERSION_STR     VER_FILE_VERSION_STR
 #define VER_ORIGINAL_FILENAME_STR   VER_PRODUCTNAME_STR ".exe"
