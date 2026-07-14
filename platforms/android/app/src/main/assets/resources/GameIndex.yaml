@@ -5944,11 +5944,15 @@ SCES-52460:
     - InstantDMAHack # Fixes holes in face geometry.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves metal reflections and shadow quality.
-    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderBW: 1 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 2 # Fixes lighting.
+    autoFlush: 1 # Fixes lighting.
     halfPixelOffset: 5 # Aligns post-processing and fixes desert tiles.
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
+    textureInsideRT: 2 # Fixes texture-inside-target effects.
+    gpuTargetCLUT: 2 # Fixes CLUT-based lighting.
+    cpuCLUTRender: 2 # Fixes colour LUT rendering.
+    limit24BitDepth: 2 # Prioritise lower 24-bit depth.
 SCES-52529:
   name: "Sly 2 - Band of Thieves"
   region: "PAL-M11"
@@ -7618,11 +7622,15 @@ SCKA-20040:
     - InstantDMAHack # Fixes holes in face geometry.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves metal reflections and shadow quality.
-    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderBW: 1 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 2 # Fixes lighting.
+    autoFlush: 1 # Fixes lighting.
     halfPixelOffset: 5 # Aligns post-processing and fixes desert tiles.
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
+    textureInsideRT: 2 # Fixes texture-inside-target effects.
+    gpuTargetCLUT: 2 # Fixes CLUT-based lighting.
+    cpuCLUTRender: 2 # Fixes colour LUT rendering.
+    limit24BitDepth: 2 # Prioritise lower 24-bit depth.
 SCKA-20041:
   name: "아이토이 - 플레이 2"
   name-en: "EyeToy - Play 2"
@@ -12169,11 +12177,15 @@ SCUS-97330:
     - InstantDMAHack # Fixes holes in face geometry.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves metal reflections and shadow quality.
-    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderBW: 1 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 2 # Fixes lighting.
+    autoFlush: 1 # Fixes lighting.
     halfPixelOffset: 5 # Aligns post-processing and fixes desert tiles.
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
+    textureInsideRT: 2 # Fixes texture-inside-target effects.
+    gpuTargetCLUT: 2 # Fixes CLUT-based lighting.
+    cpuCLUTRender: 2 # Fixes colour LUT rendering.
+    limit24BitDepth: 2 # Prioritise lower 24-bit depth.
 SCUS-97331:
   name: "Official U.S. PlayStation Magazine Demo Disc 078"
   region: "NTSC-U"
@@ -13047,11 +13059,15 @@ SCUS-97516:
     - InstantDMAHack # Fixes holes in face geometry.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves metal reflections and shadow quality.
-    cpuSpriteRenderBW: 4 # Fixes character and water textures.
+    cpuSpriteRenderBW: 1 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
-    autoFlush: 2 # Fixes lighting.
+    autoFlush: 1 # Fixes lighting.
     halfPixelOffset: 5 # Aligns post-processing and fixes desert tiles.
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
+    textureInsideRT: 2 # Fixes texture-inside-target effects.
+    gpuTargetCLUT: 2 # Fixes CLUT-based lighting.
+    cpuCLUTRender: 2 # Fixes colour LUT rendering.
+    limit24BitDepth: 2 # Prioritise lower 24-bit depth.
 SCUS-97517:
   name: "Killzone [Greatest Hits]"
   region: "NTSC-U"

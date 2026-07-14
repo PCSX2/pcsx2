@@ -916,6 +916,24 @@ bool GSDeviceOGL::CheckFeatures()
 		Emulate_DSA::Init();
 	}
 
+	// glDrawElementsBaseVertex entered core in GL ES 3.2. ANGLE-over-Vulkan caps its context at
+	// ES 3.1, so GLAD leaves the UNSUFFIXED core pointer NULL even though ANGLE advertises
+	// GL_OES/EXT_draw_elements_base_vertex (whose suffixed entry points ARE loaded). Every draw
+	// path calls the unsuffixed glDrawElementsBaseVertex directly (RenderImGui + DrawIndexedPrimitive),
+	// so on ANGLE the first overlay draw jumped to a null pointer and aborted via the fastmem SIGSEGV
+	// handler (Mali-G77 / Retroid Pocket 4 Pro). Native Mali/Adreno report ES 3.2 so the core pointer
+	// is non-null there — which is why this only bit ANGLE. Alias it to the OES/EXT variant, matching
+	// the glTextureBarrier = glTextureBarrierNV replacement above. Fixes all call sites at once.
+	if (!glDrawElementsBaseVertex)
+	{
+		if (GLAD_GL_OES_draw_elements_base_vertex && glDrawElementsBaseVertexOES)
+			glDrawElementsBaseVertex = glDrawElementsBaseVertexOES;
+		else if (GLAD_GL_EXT_draw_elements_base_vertex && glDrawElementsBaseVertexEXT)
+			glDrawElementsBaseVertex = glDrawElementsBaseVertexEXT;
+		else
+			Console.Error("GL: glDrawElementsBaseVertex is unavailable (no core/OES/EXT) — draws will fail.");
+	}
+
 	// Don't use PBOs when we don't have ARB_buffer_storage, orphaning buffers probably ends up worse than just
 	// using the normal texture update routines and letting the driver take care of it.
 	if (!m_is_gles) {
