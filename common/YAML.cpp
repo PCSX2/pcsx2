@@ -119,10 +119,16 @@ std::optional<ryml::Tree> ParseYAMLFromString(ryml::csubstr yaml, ryml::csubstr 
 #else
 	callbacks.m_user_data = static_cast<void*>(&context);
 	callbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location location, void* user_data) {
-		RapidYAMLContext* context = static_cast<RapidYAMLContext*>(user_data);
-
-		Error::SetString(context->error, std::string(msg, msg_len));
-		std::longjmp(context->env, 1);
+		if (RapidYAMLContext* context = static_cast<RapidYAMLContext*>(user_data))
+		{
+			Error::SetString(context->error, std::string(msg, msg_len));
+			std::longjmp(context->env, 1);
+		}
+		else
+		{
+			std::string description(msg, msg_len);
+			pxFailRel(description.c_str());
+		}
 	};
 #endif
 

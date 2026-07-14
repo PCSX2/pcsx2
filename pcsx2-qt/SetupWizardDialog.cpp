@@ -88,6 +88,11 @@ void SetupWizardDialog::nextPage()
 	const int current_page = m_ui.pages->currentIndex();
 	if (current_page == Page_Complete)
 	{
+		if (m_ui.createDesktopShortcut->isChecked())
+			QtUtils::CreateShortcut(this, "PCSX2", std::string(), {}, std::string(), std::string(), true, false);
+		if (m_ui.addToApplicationMenu->isChecked())
+			QtUtils::CreateShortcut(this, "PCSX2", std::string(), {}, std::string(), std::string(), false, false);
+
 		accept();
 		return;
 	}
@@ -177,6 +182,7 @@ void SetupWizardDialog::setupUi()
 	setupGameListPage();
 	setupControllerPage();
 	setupRetroAchievementsPage();
+	setupCompletePage();
 }
 
 void SetupWizardDialog::setupLanguagePage()
@@ -435,6 +441,22 @@ void SetupWizardDialog::setupRetroAchievementsPage()
 	connect(m_ui.raLoginButton, &QPushButton::clicked, this, &SetupWizardDialog::onRetroAchievementsLoginLogoutPressed);
 	connect(m_ui.raViewProfileButton, &QPushButton::clicked, this, &SetupWizardDialog::onRetroAchievementsViewProfilePressed);
 	refreshRetroAchievementsLoginState();
+}
+
+void SetupWizardDialog::setupCompletePage()
+{
+#if defined(_WIN32)
+	const bool can_create_shortcuts = true;
+	m_ui.addToApplicationMenu->setText(tr("Add PCSX2 to the Start Menu"));
+#elif defined(__linux__)
+	// Only offer shortcuts for the AppImage since Flatpak creates its own launcher, and
+	// third-party builds (AUR, COPR, etc.) ship their own .desktop file.
+	const bool can_create_shortcuts = QtUtils::IsRunningInAppImage();
+#else
+	const bool can_create_shortcuts = false;
+#endif
+	m_ui.createDesktopShortcut->setVisible(can_create_shortcuts);
+	m_ui.addToApplicationMenu->setVisible(can_create_shortcuts);
 }
 
 void SetupWizardDialog::refreshRetroAchievementsLoginState()

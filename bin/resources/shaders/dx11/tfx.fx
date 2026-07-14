@@ -198,7 +198,7 @@ struct PS_OUTPUT
 
 #if PS_RETURN_COLOR
 	#if PS_DATE == 1 || PS_DATE == 2
-		float c : SV_Target;
+		float c0 : SV_Target;
 	#else
 		
 		float4 c0 : SV_Target0;

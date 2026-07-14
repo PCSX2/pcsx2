@@ -603,7 +603,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	}
 
 	// 1x1 dummy texture.
-	const GSTexture::Usage null_usage = m_features.rov ? GSTexture::ShaderWriteTarget : GSTexture::Feedback;
+	const GSTexture::Usage null_usage = m_uav_texture ? GSTexture::ShaderWriteTarget : GSTexture::Feedback;
 	m_null_texture = CreateSurface(null_usage, 1, 1, 1, GSTexture::Format::Color);
 	if (!m_null_texture)
 		return false;
