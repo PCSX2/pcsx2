@@ -16246,7 +16246,7 @@ SLES-50672:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fixes lines in menus.
-    textureInsideRT: 1 # Fixes half right.
+    textureInsideRT: 2 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLES-50677:
@@ -20051,7 +20051,7 @@ SLES-52187:
   region: "PAL-M3"
   compat: 5
   gsHWFixes:
-    textureInsideRT: 1 # Fixes half right.
+    textureInsideRT: 2 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
@@ -20060,7 +20060,7 @@ SLES-52188:
   region: "PAL-M3"
   compat: 5
   gsHWFixes:
-    textureInsideRT: 1 # Fixes half right.
+    textureInsideRT: 2 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
@@ -46434,7 +46434,7 @@ SLPM-65845:
   region: "NTSC-J"
   compat: 5
   gsHWFixes:
-    textureInsideRT: 1 # Fixes half right.
+    textureInsideRT: 2 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
@@ -58446,7 +58446,7 @@ SLPS-25139:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fixes lines in menus.
-    textureInsideRT: 1 # Fixes half right.
+    textureInsideRT: 2 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPS-25140:
@@ -58456,7 +58456,7 @@ SLPS-25140:
   region: "NTSC-J"
   gsHWFixes:
     roundSprite: 1 # Fixes lines in menus.
-    textureInsideRT: 1 # Fixes half right.
+    textureInsideRT: 2 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPS-25141:
@@ -59323,7 +59323,7 @@ SLPS-25291:
   compat: 5
   gsHWFixes:
     roundSprite: 1 # Fixes lines in menus.
-    textureInsideRT: 1 # Fixes half right.
+    textureInsideRT: 2 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPS-25292:
@@ -64849,7 +64849,7 @@ SLUS-20035:
     - SoftwareRendererFMVHack # Fixes FMVs.
   gsHWFixes:
     roundSprite: 1 # Fixes lines in menus.
-    textureInsideRT: 1 # Fixes half right.
+    textureInsideRT: 2 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLUS-20037:
@@ -68010,7 +68010,7 @@ SLUS-20675:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes FMVs.
   gsHWFixes:
-    textureInsideRT: 1 # Fixes half right.
+    textureInsideRT: 2 # Fixes half right.
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
     roundSprite: 1 # Fixes lines in sprites but still some lines left.
