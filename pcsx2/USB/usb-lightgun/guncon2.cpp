@@ -92,6 +92,7 @@ namespace usb_lightgun
 		{"SLPS-25077", 90.0f, 97.5f, 422, 118, 640, 240}, // Vampire Night (J)
 		{"SLUS-20221", 89.8f, 102.5f, 422, 124, 640, 228}, // Vampire Night (U)
 		{"SLES-51229", 110.15f, 100.0f, 433, 159, 512, 256}, // Virtua Cop - Elite Edition (E,J) (480i)
+		{"SLPM-62205", 110.15f, 100.0f, 433, 159, 512, 256}, // Virtua Cop Re-Birth (J) (480i)
 		// {"SLES-51229", 85.75f, 92.0f, 456, 164, 640, 256}, // Virtua Cop - Elite Edition (E,J) (480p)
 	};
 
