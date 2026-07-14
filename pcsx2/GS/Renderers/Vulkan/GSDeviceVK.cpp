@@ -729,6 +729,24 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		queue_family_properties[m_graphics_queue_family_index].timestampValidBits,
 		m_device_properties.limits.timestampPeriod);
 
+#if defined(__ANDROID__)
+	// Mali-G615 (Valhall 4th-gen) on the r44p1 blob advertises timestampValidBits>0, but its
+	// timestamp query pool never resolves even after the command-buffer fence signals —
+	// vkGetQueryPoolResults returns VK_NOT_READY every frame ("(CommandBufferCompleted)
+	// vkGetQueryPoolResults failed: VK_NOT_READY"), and the present spin-manager that leans on
+	// those timestamps stalls into a multi-second freeze (Burnout 3 at native res). Disable GPU
+	// timing + present spinning on THIS GPU only: other Mali report better results with them on,
+	// so the gate is deliberately narrow (deviceName match, not a blanket Mali rule). Costs only
+	// the GPU-time OSD stat and a present-pacing optimisation; rendering correctness is unaffected.
+	if (m_device_properties.vendorID == 0x13B5u &&
+		std::string_view(m_device_properties.deviceName).find("Mali-G615") != std::string_view::npos)
+	{
+		Console.WriteLn("Mali-G615: disabling GPU timing + present spinning (r44p1 timestamp-query VK_NOT_READY freeze).");
+		m_gpu_timing_supported = false;
+		m_spinning_supported = false;
+	}
+#endif
+
 	m_gpu_pipeline_statistics_supported = (m_device_features.pipelineStatisticsQuery != 0);
 	DevCon.WriteLn("GPU pipeline statistics is %s", m_gpu_pipeline_statistics_supported ? "supported" : "not supported");
 
@@ -2908,6 +2926,11 @@ bool GSDeviceVK::CheckFeatures()
 	// that path, and the Vulkan renderer never reads the runtime profile anyway (only
 	// GSDeviceOGL does), so the force was dead weight that diverged from his known-good tree.
 
+	// Set when the user (or auto-detection) selects the Xclipse GPU profile; forces the
+	// Xclipse fbfetch-off path below even if the 0x144D vendorID guess doesn't fire on
+	// their driver. Declared outside the Android block so it stays a harmless false on
+	// desktop. Populated from the resolved mobile profile just below.
+	bool force_xclipse_profile = false;
 #if defined(__ANDROID__)
 	// MediaTek (Dimensity/Helio) Mali Vulkan stacks return zero/stale destination color
 	// through ROAA (black / missing textures) across GPU generations, so detect the SoC
@@ -2915,7 +2938,9 @@ bool GSDeviceVK::CheckFeatures()
 	// ro.soc.* props already folded into the profile hints (no new JNI needed).
 	const GpuProfileSelection mobile_profile = GpuProfileDetector::Resolve(
 		GSConfig.AndroidGpuProfileOverride, std::string_view(), m_device_properties.deviceName);
-	m_is_mediatek_soc = mobile_profile.is_mediatek_soc;
+	SetMediaTekSoC(mobile_profile.is_mediatek_soc);
+	force_xclipse_profile = (mobile_profile.override_mode == GpuProfileOverride::Xclipse) ||
+		(mobile_profile.runtime_profile == RuntimeGpuProfile::Xclipse);
 	// Per-vendor GS tuning (pool sizes/ages + constrained) — drives GSDevice pool sizing above.
 	// This is what constrains texture/target caching on weaker Mali (e.g. G615). From EmuCoreX.
 	SetMobileGPUIdentity(mobile_profile.gpu);
@@ -2949,15 +2974,17 @@ bool GSDeviceVK::CheckFeatures()
 	const bool is_turnip = (m_device_driver_properties.driverID == VK_DRIVER_ID_MESA_TURNIP);
 	// Samsung Xclipse (Exynos AMD-RDNA2) has no working ROAA-based framebuffer fetch — force it off
 	// there so we never route the fast-blend path into a broken unit. Inert if the 0x144D vendorID
-	// guess is wrong (a real Xclipse tester must confirm IsDeviceXclipse() fires).
-	const bool is_xclipse_vk = IsDeviceXclipse();
+	// guess is wrong (a real Xclipse tester must confirm IsDeviceXclipse() fires). The user
+	// can also force it from Settings → Renderer → GPU Profile (force_xclipse_profile) for
+	// drivers where the 0x144D vendorID doesn't report.
+	const bool is_xclipse_vk = IsDeviceXclipse() || force_xclipse_profile;
 	// MediaTek Mali + Mali-G57 expose ROAA but return zero/stale destination color from it
 	// (black or intermittently missing textures); force those onto the texture-barrier path
 	// instead of fbfetch. Ported from sashkinbro/EmuCoreX (MediaTek across GPU generations,
 	// plus the older Mali-G57 case). deviceName is null-terminated by Vulkan.
 	const bool is_mali_g57 = is_mali_vk &&
 		(std::string_view(m_device_properties.deviceName).find("Mali-G57") != std::string_view::npos);
-	const bool is_mediatek_mali_vk = is_mali_vk && m_is_mediatek_soc;
+	const bool is_mediatek_mali_vk = is_mali_vk && IsMediaTekSoC();
 	const bool unreliable_mali_fbfetch = is_mediatek_mali_vk || is_mali_g57;
 	const bool vendor_allows_fbfetch = !unreliable_mali_fbfetch &&
 		(is_mali_vk || is_turnip || GSConfig.EnableAdrenoFramebufferFetch) && !is_xclipse_vk;

@@ -248,10 +248,6 @@ namespace Achievements
 	static std::optional<AchievementProgressIndicator> s_active_progress_indicator;
 } // namespace Achievements
 
-bool Achievements::GetCurrentUserStats(UserStats*) { return false; }
-bool Achievements::GetCurrentGameStats(GameStats*) { return false; }
-bool Achievements::GetCurrentAchievementList(std::vector<AchievementInfo>*) { return false; }
-
 
 std::unique_lock<std::recursive_mutex> Achievements::GetLock()
 {
@@ -682,19 +678,10 @@ bool Achievements::Initialize()
 
 	auto lock = GetLock();
 	pxAssertRel(EmuConfig.Achievements.Enabled, "Achievements are enabled");
-	if (s_client || s_http_downloader)
-	{
-		// Already initialized (possibly from a failed attempt). Don't crash.
-		return s_client != nullptr;
-	}
+	pxAssertRel(!s_client && !s_http_downloader, "No client and downloader");
 
 	if (!CreateClient(&s_client, &s_http_downloader))
-	{
-		// CreateClient failed (e.g. no HTTP downloader on iOS without CURL).
-		// Disable achievements gracefully instead of crashing on retry.
-		s_http_downloader.reset();
 		return false;
-	}
 
 	// Hardcore starts off. We enable it on first boot.
 	s_hardcore_mode = false;

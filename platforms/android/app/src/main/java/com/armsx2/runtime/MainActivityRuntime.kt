@@ -579,7 +579,17 @@ open class MainActivityRuntime : ComponentActivity() {
             // Mode 0 = Nominal (60fps cap), 3 = Unlimited.
             val limit = InGameOverlay.frameLimitOn.value
             NativeApp.setSetting("EmuCore/GS", "FrameLimitEnable", "bool", limit.toString())
-            NativeApp.speedhackLimitermode(if (limit) 0 else 3)
+            // Preserve an active fast-forward / slow-down latch across a settings apply.
+            // Otherwise this re-application of the limiter clobbers mode 1/2 back to the base
+            // limit while the toggle state stays ON — so fast-forward is "forgotten" and the
+            // user has to toggle off then on again to resync. Re-assert the latched mode.
+            NativeApp.speedhackLimitermode(
+                when {
+                    fastForwardToggleActive -> 1
+                    slowDownToggleActive -> 2
+                    else -> if (limit) 0 else 3
+                }
+            )
         }
 
         /**
@@ -604,6 +614,9 @@ open class MainActivityRuntime : ComponentActivity() {
                     "uri=${uri.take(240)} state=${eState.value} runLoop=$vmRunLoopActive " +
                     "stopping=$vmStopInProgress nativeReady=${nativeReady.value}"
             )
+            // Refresh the ANGLE EGL env before the GS thread opens the GL context, so a
+            // just-changed AndroidUseAngleOpenGL / renderer choice takes effect on this boot.
+            instance?.applicationContext?.let { applyAngleEnv(it) }
             // Native GS/settings calls in start()→applyRendererPrefs null-deref if the
             // base settings layer isn't installed yet (initialize() not finished). On a
             // cold first launch — reliably on Samsung DeX — a fast game tap races init
@@ -805,6 +818,54 @@ open class MainActivityRuntime : ComponentActivity() {
                 stop(restartAfterStop = true)
         }
 
+        /** Open a file picker to swap the mounted disc WITHOUT rebooting the VM.
+         *  The picked URI is handed to NativeApp.changeDisc (see swapDiscAction),
+         *  which parks the CPU thread and cycles the CDVD tray so the running game
+         *  detects the new disc — needed for multi-disc titles and cheat discs
+         *  (CodeBreaker/GameShark) that hand off to a game disc. Bridges Compose
+         *  (the in-game menu) to the Activity-scoped ActivityResult launcher; the
+         *  picker + native swap were intact but had no trigger after the monorepo
+         *  UI migration, so Swap Disc silently did nothing. */
+        fun promptSwapDisc() {
+            val activity = instance ?: return
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "*/*"
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            runCatching { activity.swapDiscAction.launch(intent) }
+        }
+
+        /** ANGLE (GLES-on-Vulkan) for the OpenGL renderer. Ported from sashkinbro/EmuCoreX:
+         *  when the AndroidUseAngleOpenGL setting is on AND the renderer is OpenGL, point the
+         *  ARMSX2_ANGLE_EGL_LIBRARY / _GLES_LIBRARY env vars at the bundled ANGLE .so in the
+         *  native-lib dir; GLContextEGL::LoadEGL (native) then loads ANGLE's EGL instead of the
+         *  system GLES driver — useful where the native GLES stack is broken (e.g. some MediaTek
+         *  Mali). Cleared otherwise. Env vars are read by native getenv in this same process, so
+         *  this Kotlin call is the whole hook. MUST run before the GS thread opens the GL context,
+         *  so it's invoked at emucore init and before each game launch. Renderer restart applies a
+         *  live toggle (like the GPU-profile override). Uses the GLOBAL settings; per-game renderer
+         *  overrides are out of scope for v1. */
+        fun applyAngleEnv(context: Context) {
+            val settings = runCatching { com.armsx2.config.ConfigStore.loadGlobal() }.getOrNull()
+            val eligible = settings?.useAngleOpenGL == true && settings.renderer == "opengl"
+            val libDir = context.applicationInfo.nativeLibraryDir
+            val egl = File(libDir, "libEGL_angle.so")
+            val gles = File(libDir, "libGLESv2_angle.so")
+            try {
+                if (eligible && egl.exists() && gles.exists()) {
+                    android.system.Os.setenv("ARMSX2_ANGLE_EGL_LIBRARY", egl.absolutePath, true)
+                    android.system.Os.setenv("ARMSX2_ANGLE_GLES_LIBRARY", gles.absolutePath, true)
+                    android.util.Log.i("ARMSX2", "ANGLE OpenGL enabled: ${egl.absolutePath}")
+                } else {
+                    runCatching { android.system.Os.unsetenv("ARMSX2_ANGLE_EGL_LIBRARY") }
+                    runCatching { android.system.Os.unsetenv("ARMSX2_ANGLE_GLES_LIBRARY") }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("ARMSX2", "applyAngleEnv failed: ${e.message}")
+            }
+        }
+
         // Armed per-launch in launchGame when "Auto-load last state on boot" is on;
         // consumed once by onVmRunning. Set in launchGame (NOT start) so a manual
         // Reset Game — which re-enters start() directly — never re-loads the state.
@@ -829,9 +890,10 @@ open class MainActivityRuntime : ComponentActivity() {
         }
 
         /** Fired when the VM reaches RUNNING (from NativeApp.vmSetPaused). If the
-         *  user enabled auto-load-on-boot, restore the autosave state once. Retries
-         *  briefly because loadAutosaveState() safely no-ops until the game's CRC is
-         *  set a moment into boot; stops on first success or after ~4s. */
+         *  user enabled auto-load-on-boot, restore the autosave state once — but only
+         *  after the renderer is actually presenting frames (polls getPresentedFrameCount),
+         *  because restoring before the present loop is flowing leaves a black screen.
+         *  Polls every 250ms, giving up after ~15s if the game never starts presenting. */
         @JvmStatic
         fun onVmRunning() {
             val requestedSlot = pendingSlotLoadOnBoot
@@ -842,17 +904,35 @@ open class MainActivityRuntime : ComponentActivity() {
             val handler = android.os.Handler(android.os.Looper.getMainLooper())
             val tryLoad = object : Runnable {
                 var attempts = 0
+                var lastFrame = -1
+                var advancingPolls = 0
                 override fun run() {
                     if (vmStopInProgress || eState.value == EmuState.STOPPED) return
+                    // Wait until the renderer is actually PRESENTING frames before restoring the
+                    // state. A boot-time load that fires as soon as the disc CRC is known — before
+                    // the present loop is flowing — leaves the restored frame undisplayed (a black
+                    // screen); loading the same state manually works only because the game is
+                    // already rendering by then. The present counter can read stale-high across a
+                    // re-launch (the GS may not fully reset between games), so gate on SUSTAINED
+                    // advancement rather than an absolute value: require frames to have grown
+                    // across a few consecutive polls (~0.75s of continuous presenting). (Native
+                    // then forces one present of the restored frame so it shows immediately.)
+                    val frame = runCatching { NativeApp.getPresentedFrameCount() }.getOrDefault(0)
+                    advancingPolls = if (lastFrame in 0 until frame) advancingPolls + 1 else 0
+                    lastFrame = frame
+                    if (advancingPolls < 3) {
+                        if (++attempts < 60) handler.postDelayed(this, 250)
+                        return
+                    }
                     val loaded = runCatching {
                         if (requestedSlot != null) NativeApp.loadStateFromSlot(requestedSlot)
                         else NativeApp.loadAutosaveState()
                     }.getOrDefault(false)
-                    if (!loaded && ++attempts < 8)
-                        handler.postDelayed(this, 500)
+                    if (!loaded && ++attempts < 60)
+                        handler.postDelayed(this, 250)
                 }
             }
-            handler.postDelayed(tryLoad, 500)
+            handler.postDelayed(tryLoad, 250)
         }
 
         fun finishSetup() {
@@ -1116,12 +1196,21 @@ open class MainActivityRuntime : ComponentActivity() {
         // detected and trigger a restart instead of silently not taking effect.
         lastInitDataRoot = assetCopyRoot(applicationContext)
 
+        // #9: one-time recovery for a fresh install that reuses an old data folder — restore
+        // settings from the in-folder mirror, or seed from the folder's old PCSX2-Android.ini,
+        // BEFORE the core loads/rewrites it. No-op (guarded) for anyone already on the new UI.
+        runCatching { com.armsx2.config.ConfigStore.reconcileReusedFolder() }
+
         // Default resources — shaders, GameIndex, fonts, fullscreenui,
         // patches.zip, controller DB. assetCopyRoot resolves to the
         // user's chosen systemDir (now valid post-setup) so emucore
         // finds them at <systemDir>/resources/...
         copyAssetAll(applicationContext, "bios")
         copyAssetAll(applicationContext, "resources")
+
+        // Point the ANGLE EGL env vars at the bundled libs (or clear them) before the
+        // GS thread ever opens a GL context. Re-applied per launch below too.
+        applyAngleEnv(applicationContext)
 
         // Keep the configured BIOS in app-private internal storage (NOT under a
         // custom/SD data root). The native core can't reliably open a BIOS off a
@@ -1362,6 +1451,7 @@ open class MainActivityRuntime : ComponentActivity() {
         com.armsx2.i18n.I18n.init(applicationContext)
         applyEmulationOrientation()
         com.armsx2.CoverArtStyle.load()
+        com.armsx2.GridLabels.load()
         com.armsx2.LibraryTitles.load()
         com.armsx2.LibraryRecentShelf.load()
         com.armsx2.LibraryView.load()
@@ -1483,10 +1573,13 @@ open class MainActivityRuntime : ComponentActivity() {
             androidx.compose.runtime.SideEffect {
                 window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(themedWindowBackground.toArgb()))
             }
+            // Keep the library/menu immersive (nav bar hidden, swipe-transient) just like
+            // in-game, so it doesn't sit on top of the toolbar. Bars stay visible only where
+            // reliable system UI is genuinely needed: the setup wizard, the touch-layout
+            // editor, and the unsupported-hardware error screens. (Previously `showLibrary`
+            // and plain STOPPED forced the bar on for the whole library.)
             val showSystemBars = !setupComplete.value ||
                 setupEditorVisible.value ||
-                WindowImpl.showLibrary.value ||
-                eState.value == EmuState.STOPPED ||
                 eState.value == EmuState.RENDER_UNSUPPORTED ||
                 eState.value == EmuState.EMULATOR_UNSUPPORTED
             val darkTheme = when (com.armsx2.ui.theme.ThemePreferences.mode.value) {

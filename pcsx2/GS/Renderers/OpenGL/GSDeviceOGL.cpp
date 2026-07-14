@@ -807,11 +807,19 @@ bool GSDeviceOGL::CheckFeatures()
 	}
 
 #if defined(__ANDROID__)
+	// ANGLE (GLES-on-Vulkan) reports the underlying GPU in GL_RENDERER, e.g.
+	// "ANGLE (ARM, Vulkan 1.1.177 (Mali-G77 MC9 ...))", so the native Mali profile and its vendor
+	// extensions (GL_ARM_shader_framebuffer_fetch, tile optimisations) engage through ANGLE too —
+	// and that is desirable: they are a large performance win on Mali (dropping them measurably
+	// regressed FPS on Mali-G615). The Mali-G77 crash under ANGLE was NOT these hacks but stale
+	// program binaries from the native driver being fed to ANGLE's glProgramBinary(); that is
+	// fixed at the source in GLShaderCache (driver-keyed cache), so no per-GPU profile gating here.
 	const GpuProfileSelection profile_selection =
 		GpuProfileDetector::Resolve(GSConfig.AndroidGpuProfileOverride, vendor_str, renderer_str);
 	SetRuntimeGPUProfile(profile_selection.runtime_profile);
 	SetMobileGPUIdentity(profile_selection.gpu);
 	SetMobileGSTuning(profile_selection.gs_tuning);
+	SetMediaTekSoC(profile_selection.is_mediatek_soc);
 	Console.WriteLn("GL: GPU profile override='%s' resolved='%s'.",
 		GpuProfileDetector::OverrideToConfigString(profile_selection.override_mode),
 		GpuProfileDetector::RuntimeProfileToString(profile_selection.runtime_profile));

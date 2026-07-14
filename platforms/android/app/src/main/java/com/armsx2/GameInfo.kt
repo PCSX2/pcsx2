@@ -23,6 +23,18 @@ object CoverArtStyle {
     }
 }
 
+/** Show the game title under every cover in the main library grid (the old-UI behaviour),
+ *  not only where a name is otherwise shown. Toggled from the library 3-dot overflow menu. */
+object GridLabels {
+    private const val KEY = "library.showGridNames"
+    val show = mutableStateOf(false)
+    fun load() { show.value = MainActivityRuntime.prefs.getBoolean(KEY, false) }
+    fun set(value: Boolean) {
+        show.value = value
+        MainActivityRuntime.prefs.edit().putBoolean(KEY, value).apply()
+    }
+}
+
 /**
  * Library toggle: show the game title under each cover on the shelves. Off by
  * default — the cover already carries the title and a label under every card

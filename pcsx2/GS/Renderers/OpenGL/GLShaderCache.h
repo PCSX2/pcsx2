@@ -93,4 +93,9 @@ private:
 
 	CacheIndex m_index;
 	bool m_program_binary_supported = false;
+	// Identity hash of the live GL driver (vendor/renderer/version). Program binaries are only
+	// valid for the exact driver that produced them, so a mismatch (e.g. switching between the
+	// native GLES driver and ANGLE) must invalidate the cache instead of feeding foreign blobs
+	// to glProgramBinary(), which crashes some drivers.
+	u32 m_driver_signature = 0;
 };

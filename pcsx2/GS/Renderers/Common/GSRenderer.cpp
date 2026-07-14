@@ -690,7 +690,7 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 				else if (!mfx_log_once)
 				{
 					Host::AddIconOSDMessage("MetalFXUnsupported", ICON_FA_TRIANGLE_EXCLAMATION,
-						TRANSLATE_SV("GS", "MetalFX upscaling is not available on this system (requires macOS 13, iOS 16, or newer with a supported Metal GPU)."),
+						TRANSLATE_SV("GS", "MetalFX upscaling is not available on this system (requires a Metal GPU on macOS 13 or newer)."),
 						10.0f);
 					mfx_log_once = true;
 				}

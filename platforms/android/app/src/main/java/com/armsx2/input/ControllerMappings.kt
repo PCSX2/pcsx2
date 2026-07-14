@@ -116,6 +116,16 @@ object ControllerMappings {
         return MainActivityRuntime.prefs.getString(baseKey, default) ?: default
     }
 
+    /** Read a boolean pref: per-game override (for the active game) first, else global. */
+    private fun resolveBoolean(baseKey: String, default: Boolean): Boolean {
+        val s = runtimeSerial()
+        if (s != null) {
+            val gk = gameKey(s, baseKey)
+            if (MainActivityRuntime.prefs.contains(gk)) return MainActivityRuntime.prefs.getBoolean(gk, default)
+        }
+        return MainActivityRuntime.prefs.getBoolean(baseKey, default)
+    }
+
     /** Scope-explicit int read for the Pad UI: the override at [serial]'s tier if
      *  present, else the global baseline (so a fresh per-game row shows the
      *  inherited value instead of blank). serial=null reads the global tier. */
@@ -123,6 +133,14 @@ object ControllerMappings {
         val key = scopedKey(baseKey, serial)
         if (MainActivityRuntime.prefs.contains(key)) return MainActivityRuntime.prefs.getInt(key, default)
         return MainActivityRuntime.prefs.getInt(baseKey, default)
+    }
+
+    /** Scope-explicit boolean read for the Pad UI: the override at [serial]'s tier if
+     *  present, else the global baseline. serial=null reads the global tier. */
+    private fun scopedBoolean(baseKey: String, serial: String?, default: Boolean): Boolean {
+        val key = scopedKey(baseKey, serial)
+        if (MainActivityRuntime.prefs.contains(key)) return MainActivityRuntime.prefs.getBoolean(key, default)
+        return MainActivityRuntime.prefs.getBoolean(baseKey, default)
     }
 
     private const val KEY_LSTICK = "pad.lstick.mode"
@@ -328,6 +346,49 @@ object ControllerMappings {
             }
         }
     }
+
+    // ---- Gyroscope / motion controls (per-game aware) ---------------------
+    // Drive a PS2 analog stick from the device's motion sensors: AIM (mode 1) reads the
+    // gyroscope's angular velocity onto the RIGHT stick (camera / look), STEERING
+    // (mode 2) reads the game-rotation-vector's roll onto the LEFT stick's X (tilt to
+    // steer). OFF (default) leaves the sensors untouched. Sensitivity / smoothing /
+    // invert tune the feel. These follow the SAME Global/per-game scope as the button
+    // binds (#246): a per-game override lives under "game.<serial>." and shadows the
+    // global value for that serial only. The sensor lifecycle in TouchControlsOverlay
+    // reads the runtime (per-game aware) getters while the game is running.
+    const val GYRO_OFF = 0
+    const val GYRO_AIM = 1
+    const val GYRO_STEER = 2
+    private const val KEY_GYRO_MODE = "pad.gyro.mode"
+    private const val KEY_GYRO_SENS = "pad.gyro.sensitivity"
+    private const val KEY_GYRO_SMOOTH = "pad.gyro.smoothing"
+    private const val KEY_GYRO_INVX = "pad.gyro.invertX"
+    private const val KEY_GYRO_INVY = "pad.gyro.invertY"
+
+    // Runtime (per-game aware): read by the sensor lifecycle while a game runs.
+    fun gyroMode(): Int = resolveInt(KEY_GYRO_MODE, GYRO_OFF).coerceIn(0, 2)
+    fun gyroSensitivity(): Int = resolveInt(KEY_GYRO_SENS, 100).coerceIn(25, 300)
+    fun gyroSmoothing(): Int = resolveInt(KEY_GYRO_SMOOTH, 45).coerceIn(0, 90)
+    fun gyroInvertX(): Boolean = resolveBoolean(KEY_GYRO_INVX, false)
+    fun gyroInvertY(): Boolean = resolveBoolean(KEY_GYRO_INVY, false)
+
+    // Scope-explicit (Pad UI): read the global tier (serial=null) or a per-game tier.
+    fun gyroModeScope(serial: String?): Int = scopedInt(KEY_GYRO_MODE, serial, GYRO_OFF).coerceIn(0, 2)
+    fun gyroSensitivityScope(serial: String?): Int = scopedInt(KEY_GYRO_SENS, serial, 100).coerceIn(25, 300)
+    fun gyroSmoothingScope(serial: String?): Int = scopedInt(KEY_GYRO_SMOOTH, serial, 45).coerceIn(0, 90)
+    fun gyroInvertXScope(serial: String?): Boolean = scopedBoolean(KEY_GYRO_INVX, serial, false)
+    fun gyroInvertYScope(serial: String?): Boolean = scopedBoolean(KEY_GYRO_INVY, serial, false)
+
+    fun setGyroMode(value: Int, serial: String? = null) =
+        MainActivityRuntime.prefs.edit { putInt(scopedKey(KEY_GYRO_MODE, serial), value) }
+    fun setGyroSensitivity(value: Int, serial: String? = null) =
+        MainActivityRuntime.prefs.edit { putInt(scopedKey(KEY_GYRO_SENS, serial), value) }
+    fun setGyroSmoothing(value: Int, serial: String? = null) =
+        MainActivityRuntime.prefs.edit { putInt(scopedKey(KEY_GYRO_SMOOTH, serial), value) }
+    fun setGyroInvertX(on: Boolean, serial: String? = null) =
+        MainActivityRuntime.prefs.edit { putBoolean(scopedKey(KEY_GYRO_INVX, serial), on) }
+    fun setGyroInvertY(on: Boolean, serial: String? = null) =
+        MainActivityRuntime.prefs.edit { putBoolean(scopedKey(KEY_GYRO_INVY, serial), on) }
 
     // ---- Custom per-direction stick→button binding (StickMode.CUSTOM) ----
 

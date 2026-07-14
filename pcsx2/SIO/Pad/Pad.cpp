@@ -547,6 +547,12 @@ void Pad::SetControllerState(u32 controller, u32 bind, float value)
 	if (controller >= NUM_CONTROLLER_PORTS)
 		return;
 
+	// Input can arrive before the pads are constructed (no VM yet) — e.g. the Android
+	// gyroscope overlay emits a neutral release the moment it first composes in the
+	// library. s_controllers[] is empty then, so guard the deref.
+	if (!s_controllers[controller])
+		return;
+
 	s_controllers[controller]->Set(bind, value);
 }
 

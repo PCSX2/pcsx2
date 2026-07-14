@@ -3,6 +3,7 @@ package com.armsx2.config
 import com.armsx2.runtime.MainActivityRuntime
 import org.json.JSONObject
 import androidx.core.content.edit
+import java.io.File
 
 /**
  * Persistence + resolution for emu [Settings].
@@ -45,6 +46,12 @@ object ConfigStore {
     private const val KEY_ADRENO_FBFETCH_MIGRATED = "config.migrated.adrenoFbFetchOn"
     // One-time flip of existing all-on OSD saves to the new default-off.
     private const val KEY_OSD_OFF_MIGRATED = "config.migrated.osdDefaultOff"
+    // One-time reconcile for the fresh-install + reused-data-folder case (people who
+    // can't update in place and re-point setup at their old folder). See reconcileReusedFolder.
+    private const val KEY_FOLDER_RECONCILE = "config.migrated.folderReconcile"
+    // Mirror of the settings, written INTO the data folder so a later fresh install that
+    // reuses the same folder can restore them (SharedPreferences don't survive uninstall).
+    private const val BACKUP_FILENAME = "armsx2-settings.json"
     private fun keyForGame(serial: String) = "config.game.$serial"
 
     fun loadGlobal(): Settings {
@@ -135,6 +142,7 @@ object ConfigStore {
 
     fun saveGlobal(s: Settings) {
         MainActivityRuntime.prefs.edit { putString(KEY_GLOBAL, s.toJson().toString()) }
+        writeBackupMirror()
     }
 
     /** Load the sparse per-game override blob, or null if there are none. */
@@ -149,10 +157,12 @@ object ConfigStore {
 
     fun saveOverrides(serial: String, overrides: JSONObject) {
         MainActivityRuntime.prefs.edit { putString(keyForGame(serial), overrides.toString()) }
+        writeBackupMirror()
     }
 
     fun clearOverrides(serial: String) {
         MainActivityRuntime.prefs.edit { remove(keyForGame(serial)) }
+        writeBackupMirror()
     }
 
     /**
@@ -186,5 +196,108 @@ object ConfigStore {
         } else {
             saveGlobal(updated)
         }
+    }
+
+    // ---- Fresh-install + reused-data-folder recovery (#9) ----
+    //
+    // SharedPreferences (where config.global lives) are WIPED when the app is
+    // uninstalled. People who can't update in place — different signing key between the
+    // old-UI and new-UI builds — must uninstall+reinstall, then re-point setup at their
+    // existing data folder to keep their games/BIOS/saves. That folder still holds their
+    // old native config (PCSX2-Android.ini) + per-game gamesettings/*.ini, so the core
+    // applies old settings while the new UI shows defaults and then clobbers them.
+    //
+    // Fix: mirror settings INTO the folder on every save, and on first run — when there
+    // is NO config.global in prefs — restore from that mirror (lossless) or, failing that,
+    // seed from the old PCSX2-Android.ini (best-effort). The `config.global == null` guard
+    // means anyone ALREADY on the new UI is never touched: with settings present there is
+    // nothing to recover, so this can only ADD when there are none, never overwrite.
+
+    private fun backupFile(): File? {
+        val root = MainActivityRuntime.currentInitDataRoot()?.takeIf { it.isNotBlank() } ?: return null
+        return File(root, BACKUP_FILENAME)
+    }
+
+    /** Write the in-folder settings mirror (global + every per-game blob). Cheap; called
+     *  on each save. Silently no-ops until the data root is known. */
+    private fun writeBackupMirror() {
+        val file = backupFile() ?: return
+        runCatching {
+            val root = JSONObject()
+            MainActivityRuntime.prefs.getString(KEY_GLOBAL, null)?.let { root.put("global", JSONObject(it)) }
+            val games = JSONObject()
+            for ((k, v) in MainActivityRuntime.prefs.all) {
+                if (k.startsWith("config.game.") && v is String) {
+                    runCatching { games.put(k.removePrefix("config.game."), JSONObject(v)) }
+                }
+            }
+            if (games.length() > 0) root.put("games", games)
+            file.parentFile?.mkdirs()
+            file.writeText(root.toString())
+        }
+    }
+
+    /** One-time, guarded recovery for the fresh-install + reused-folder case. Call once at
+     *  app init (after the data root is resolved). Ordered: (1) restore losslessly from the
+     *  in-folder mirror a prior new-UI install left; (2) else seed config.global from the
+     *  folder's PCSX2-Android.ini. NEVER runs when config.global already exists. */
+    fun reconcileReusedFolder() {
+        if (MainActivityRuntime.prefs.getBoolean(KEY_FOLDER_RECONCILE, false)) return
+        MainActivityRuntime.prefs.edit { putBoolean(KEY_FOLDER_RECONCILE, true) }
+        // Hard guard: an existing new-UI user (has config.global) is off-limits.
+        if (MainActivityRuntime.prefs.getString(KEY_GLOBAL, null) != null) return
+
+        // (1) Lossless restore from the in-folder mirror (written by a prior new-UI install).
+        val mirror = backupFile()
+        if (mirror != null && mirror.exists() && mirror.length() > 0L) {
+            val restored = runCatching {
+                val root = JSONObject(mirror.readText())
+                root.optJSONObject("global")?.let { g ->
+                    MainActivityRuntime.prefs.edit { putString(KEY_GLOBAL, g.toString()) }
+                }
+                root.optJSONObject("games")?.let { games ->
+                    val it = games.keys()
+                    while (it.hasNext()) {
+                        val serial = it.next()
+                        games.optJSONObject(serial)?.let { g ->
+                            MainActivityRuntime.prefs.edit { putString(keyForGame(serial), g.toString()) }
+                        }
+                    }
+                }
+                MainActivityRuntime.prefs.getString(KEY_GLOBAL, null) != null
+            }.getOrDefault(false)
+            if (restored) return
+        }
+
+        // (2) Best-effort seed from the folder's old native PCSX2-Android.ini (old-UI case).
+        val root = MainActivityRuntime.currentInitDataRoot()?.takeIf { it.isNotBlank() } ?: return
+        val ini = File(root, "PCSX2-Android.ini")
+        if (!ini.exists() || ini.length() == 0L) return
+        runCatching {
+            val map = parseIni(ini.readText())
+            if (map.isNotEmpty()) saveGlobal(Settings().readFromIni(map))
+        }
+    }
+
+    /** Minimal INI reader: "[Section]" + "Key = Value" -> map keyed "Section/Key". Comments
+     *  (# / ;) and blank lines ignored. Section text is taken verbatim (it can itself contain
+     *  slashes, e.g. "EmuCore/GS"), matching the (section,key) applyTo/readFromIni use. */
+    private fun parseIni(text: String): Map<String, String> {
+        val map = HashMap<String, String>()
+        var section = ""
+        for (raw in text.lineSequence()) {
+            val line = raw.trim()
+            if (line.isEmpty() || line.startsWith("#") || line.startsWith(";")) continue
+            if (line.startsWith("[") && line.endsWith("]")) {
+                section = line.substring(1, line.length - 1).trim()
+                continue
+            }
+            val eq = line.indexOf('=')
+            if (eq <= 0) continue
+            val key = line.substring(0, eq).trim()
+            val value = line.substring(eq + 1).trim()
+            if (key.isNotEmpty()) map["$section/$key"] = value
+        }
+        return map
     }
 }

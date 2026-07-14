@@ -1402,7 +1402,7 @@ public:
 		bool depth_feedback       : 1; ///< Depth feedback loops can be done with DS directly (otherwise need to copy to separate RT).  Implies `feedback_loops`.
 		bool aa1                  : 1; ///< Supports the GS AA1 feature.
 		bool rov                  : 1; ///< Supports rasterizer ordered views for both depth and color.
-		bool metalfx_spatial      : 1; ///< Supports Apple MetalFX spatial upscaling (Metal backend, macOS 13+ / iOS 16+).
+		bool metalfx_spatial      : 1; ///< Supports Apple MetalFX spatial upscaling (Metal backend, macOS 13+).
 		bool dual_source_blend    : 1; ///< Supports a second fragment output (SRC1) as a hardware blend factor.
 		bool broken_mad_deinterlace : 1; ///< Driver can't reliably preserve/read the two-bank FastMAD history target.
 		FeatureSupport()
@@ -1457,6 +1457,10 @@ protected:
 	// GPU-profile system (sashkinbro/EmuCoreX). Drives texture/target pool sizing on Android below.
 	MobileGpuIdentity m_mobile_gpu_identity;
 	MobileGsTuning m_mobile_gs_tuning;
+	// Android: true when the SoC is MediaTek (Dimensity/Helio). Hoisted from GSDeviceVK
+	// so both backends + GS.cpp Android GameDB overrides can read it. Set during device
+	// open from the resolved GPU profile.
+	bool m_is_mediatek_soc = false;
 
 	struct
 	{
@@ -1582,6 +1586,8 @@ public:
 	__fi const MobileGsTuning& GetMobileGSTuning() const { return m_mobile_gs_tuning; }
 	__fi bool IsConstrainedMobileGPUProfile() const { return m_mobile_gs_tuning.constrained; }
 	__fi RuntimeGpuProfile GetRuntimeGPUProfile() const { return m_runtime_gpu_profile; }
+	__fi void SetMediaTekSoC(bool v) { m_is_mediatek_soc = v; }
+	__fi bool IsMediaTekSoC() const { return m_is_mediatek_soc; }
 	__fi bool IsMaliGPUProfile() const { return (m_runtime_gpu_profile == RuntimeGpuProfile::Mali); }
 	__fi bool IsAdrenoGPUProfile() const { return (m_runtime_gpu_profile == RuntimeGpuProfile::Adreno); }
 	__fi bool IsPowerVRGPUProfile() const { return (m_runtime_gpu_profile == RuntimeGpuProfile::PowerVR); }

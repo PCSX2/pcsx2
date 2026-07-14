@@ -12,6 +12,10 @@
         android:maxSdkVersion="28"
         tools:ignore="ScopedStorage" />
 
+    <!-- Optional motion controls (Pad settings). Not required, so the Play install
+         isn't gated for devices without a gyroscope. -->
+    <uses-feature android:name="android.hardware.sensor.gyroscope" android:required="false" />
+
     <application
         android:name=".Pasx2Application"
         android:allowBackup="true"

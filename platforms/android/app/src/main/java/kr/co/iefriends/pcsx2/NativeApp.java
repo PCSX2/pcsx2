@@ -654,6 +654,11 @@ public class NativeApp {
 	public static native boolean hasAutosaveState();
 	public static native byte[] getAutosaveImage();
 	public static native String getAutosaveGamePath();
+	// Frames the GS has presented since it opened (host-side, not saved in the state). The
+	// auto-load-on-boot path waits until this is advancing before restoring, so the load happens
+	// once the renderer is actually presenting — otherwise the restored frame never reaches the
+	// surface and the screen stays black.
+	public static native int getPresentedFrameCount();
 
 	public static void vmSetPaused(boolean paused) {
 		new Handler(Looper.getMainLooper()).post(() -> {

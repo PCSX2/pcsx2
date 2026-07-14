@@ -771,6 +771,10 @@ static void applyPadButton(u32 port, jint p_key, jint p_range, jboolean p_keyPre
     const float state = p_keyPressed
         ? ((p_range > 0) ? (p_range / 32767.0f) : 1.0f)
         : 0.0f;
+    // Pad input can arrive with no VM running (e.g. the gyroscope overlay emits a neutral
+    // release when it first composes in the library) — the pads don't exist yet, so drop it.
+    if (!VMManager::HasValidVM())
+        return;
     std::lock_guard<std::mutex> lk(s_pad_mutex);
     Pad::SetControllerState(port, static_cast<u32>(_key), state);
 }
@@ -2268,7 +2272,14 @@ Java_kr_co_iefriends_pcsx2_NativeApp_loadStateFromSlot(JNIEnv *env, jclass clazz
         Console.Error("loadStateFromSlot: CPU thread failed to park, refusing to load");
         return false;
     }
-    return VMManager::LoadStateFromSlot(p_slot);
+    const bool loaded = VMManager::LoadStateFromSlot(p_slot);
+    // A normal LoadState does not present (only the input-recording path does), so the restored
+    // frame isn't shown until the game draws its next frame. When the game is already running
+    // that's the next vsync (imperceptible), but a load early in boot — before the present loop
+    // is flowing — otherwise leaves a black screen. Force the restored frame to display now.
+    if (loaded)
+        MTGS::PresentCurrentFrame();
+    return loaded;
 }
 
 extern "C"
@@ -2424,7 +2435,25 @@ Java_kr_co_iefriends_pcsx2_NativeApp_loadAutosaveState(JNIEnv *env, jclass clazz
         Console.Error("loadAutosaveState: CPU thread failed to park, refusing to load");
         return false;
     }
-    return VMManager::LoadStateFromSlot(VMManager::SAVESTATE_SLOT_AUTOSAVE);
+    const bool loaded = VMManager::LoadStateFromSlot(VMManager::SAVESTATE_SLOT_AUTOSAVE);
+    // Force the restored frame to display — this load fires during boot (auto-load / Save+Quit
+    // resume), before the game has drawn its first frame, so without an explicit present the
+    // screen stays black until the game happens to redraw. See loadStateFromSlot.
+    if (loaded)
+        MTGS::PresentCurrentFrame();
+    return loaded;
+}
+
+// Host-side count of frames the GS has presented since it opened (g_perfmon frame counter, NOT
+// part of the savestate). The auto-load-on-boot path polls this so it only restores the state
+// once the renderer is actually presenting frames — loading before the present loop is flowing
+// leaves a black screen (the restored frame never reaches the surface).
+extern "C"
+JNIEXPORT jint JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_getPresentedFrameCount(JNIEnv *env, jclass clazz) {
+    if (!VMManager::HasValidVM())
+        return 0;
+    return static_cast<jint>(g_perfmon.GetFrame());
 }
 
 extern "C"
