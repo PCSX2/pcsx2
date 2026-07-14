@@ -459,13 +459,13 @@ TEST(EeRecFpu, SqrtSRoundsToNearestUnderChopFpcr)
 	EXPECT_EQ(h.GetFprBitsJit(2), 0x400F1BBDu); // nearest-rounded sqrt(5)
 }
 
-// ----- RSQRT.S deferred to interpreter --------------------------------
+// ----- RSQRT.S sticky flags (native) ----------------------------------
 //
 // RSQRT.S sets D|SD when the divisor Ft is zero and I|SI when Ft is negative
-// (interp RSQRT_S, FPU.cpp), and its Ft==0 branch returns ±posFmax keyed off
-// the Ft sign. The op defers to the interpreter to handle flags and the
-// zero-divisor result correctly. Assert the flag bits directly (Run() doesn't
-// diff fprc[31]).
+// (interp RSQRT_S, FPU.cpp), and its Ft==0 branch returns +/-posFmax keyed off
+// the Ft sign. The op is native (recRSQRT_S_xmm); these two cases have exact
+// results so they stay differential. Assert the flag bits directly (Run()
+// doesn't diff fprc[31]). Broad coverage lives in ee_rec_fpu_rsqrt_tests.cpp.
 TEST(EeRecFpu, RsqrtSZeroDivisorSetsDenormFlags)
 {
 	EeRecTestHarness h;

@@ -44,6 +44,8 @@ add_pcsx2_test(recompiler_tests
 	ee_rec_cop0_tests.cpp
 	ee_rec_fpu_tests.cpp
 	ee_rec_fpu_full_mode_tests.cpp
+	ee_rec_fpu_guardbit_tests.cpp
+	ee_rec_fpu_rsqrt_tests.cpp
 	ee_rec_harness_validation_tests.cpp
 	ee_rec_iop_handoff_tests.cpp
 	ee_rec_jump_tests.cpp

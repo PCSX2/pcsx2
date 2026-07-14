@@ -536,6 +536,18 @@ static __fi void armLd1rVU0(const vixl::aarch64::VRegister& vt, const void* fiel
 }
 
 extern u32 maxrecmem;
+
+// PS2 FPU add/sub guard-bit masking is emitted one of two equivalent ways,
+// chosen at build time by FPU_GUARD_MASK_STUB:
+//   0 = masking inlined into each add/sub block
+//   1 = masking emitted once as a shared stub, reached by a bl
+#ifndef FPU_GUARD_MASK_STUB
+#define FPU_GUARD_MASK_STUB 0
+#endif
+#if FPU_GUARD_MASK_STUB
+extern const void* g_fpuGuardMaskStub;
+#endif
+
 extern u32 pc;             // recompiler pc
 extern int g_branch;       // set for branch
 extern u32 target;         // branch target

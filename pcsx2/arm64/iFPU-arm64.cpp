@@ -4,7 +4,10 @@
 // ARM64 EE FPU (COP1) Instruction Codegen — NEON-based
 // Transfer ops (MFC1/MTC1/CFC1/CTC1): native with NEON allocation.
 // Branch ops (BC1F/BC1T): native, read fprc[31] directly.
-// Arithmetic ops: interpreter fallback (PS2 float clamping needed).
+// Arithmetic ops: native NEON with PS2 clamping and guard-bit ADD/SUB emulation
+//   (fast single-precision path here; the accuracy-mode DOUBLE path is in
+//   iFPUd-arm64.cpp, selected when CHECK_FPU_FULL). All ops including DIV/SQRT/
+//   RSQRT are native; nothing here defers to the interpreter.
 
 #include "arm64/iR5900-arm64.h"
 
@@ -323,45 +326,6 @@ void recBC1TL()
 
 #endif // !FORCE_INTERP_FPU
 
-//------------------------------------------------------------------
-// FPU Arithmetic — lightweight interpreter call
-// FPU ops only touch fpuRegs memory, not cpuRegs.GPR. EE GPRs are
-// in callee-saved NEON registers (q8-q15) that survive C calls.
-// Only flush PC/code for exception handling — skip NEON flush.
-//------------------------------------------------------------------
-
-static void recFPUCall(void (*func)())
-{
-	// Flush PC and code (needed if FPU op triggers an exception)
-	armAsm->Mov(RWSCRATCH, pc);
-	armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.pc));
-
-	armAsm->Mov(RWSCRATCH, cpuRegs.code);
-	armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.code));
-
-	// FPU allocator coherence: the interpreter reads fpuRegs.fpr[] and
-	// fpuRegs.ACC directly, and those values can live in NEON slots
-	// (MODE_WRITE-only) until block-end flush — so writeback every
-	// FPREG/FPACC slot before the call. EE GPRs in callee-saved q8-q15
-	// survive (FPU interpreter doesn't touch cpuRegs.GPR), so iFlushCall's
-	// full eviction is not needed here.
-	for (int i = 0; i < NUM_ARM_NEON_REGS; i++)
-	{
-		if (arm64neon[i].inuse &&
-			(arm64neon[i].type == NEONTYPE_FPREG || arm64neon[i].type == NEONTYPE_FPACC))
-		{
-			_freeNEONreg(i);
-		}
-	}
-
-	armFlushEEClobberedPins(); // lazy-dirty seam: pairs with the reload below
-	armEmitCall((void*)func);
-	// FPU interpreter fallbacks touch fpuRegs only, never cpuRegs.GPR; restore
-	// the caller-saved pins the C call clobbered — the block continues.
-	armReloadEEClobberedPins();
-}
-
-
 #define _Ft_ _Rt_
 #define _Fs_ _Rd_
 #define _Fd_ _Sa_
@@ -447,6 +411,127 @@ static a64::VRegister fpuClampInput(const a64::VRegister& src, const a64::VRegis
 	armAsm->Fmov(scratch, src);
 	fpuClampCompareOperand(scratch);
 	return scratch;
+}
+
+// PS2 add/sub guard-bit emulation for the single-precision fast path.
+//
+// A compliant IEEE FPU keeps "guard" bits to the right of the mantissa during
+// add/sub; the EE FPU does not. On a subtraction (or mixed-sign add) that
+// left-shifts the mantissa, the bits that would have lived in those guard
+// positions must read as zero on hardware. This masks the low mantissa bits of
+// the smaller-exponent operand by the exponent difference, then does the single
+// op. It is the arm64 fast-path port of x86 FPU_ADD_SUB (iFPU.cpp:402, applied
+// unconditionally in the fast path if FPU_CORRECT_ADD_SUB=1) and reproduces the
+// masking already present in the DOUBLE path's FPU_ADD_SUB (iFPUd-arm64.cpp:200).
+// The CHECK_FPU_FULL (double) config dispatches to that path instead and never
+// reaches here.
+//
+// When |expd - expt| <= 1 the mask clears zero bits, so that (common) case skips
+// straight to the plain op. Only |diff| >= 2 masks the smaller-exponent operand;
+// the guest fpr slots (EEREC_S/T/ACC) are never mutated, and s/t may alias dst.
+// result = issub ? (s - t) : (s + t), written to dst.
+//
+// The masking is emitted one of two equivalent ways, chosen at build time by
+// FPU_GUARD_MASK_STUB (iR5900-arm64.h): inlined here, or via a bl to the shared
+// g_fpuGuardMaskStub. Both produce identical results.
+static void fpuEmitGuardedAddSub(const a64::VRegister& dst,
+	const a64::VRegister& s, const a64::VRegister& t, bool issub)
+{
+	armAsm->Fmov(RWARG1, s);                 // s bits (non-destructive read)
+	armAsm->Fmov(RWARG2, t);                 // t bits
+	armAsm->Ubfx(RWARG3, RWARG1, 23, 8);     // expd
+	armAsm->Ubfx(RWSCRATCH, RWARG2, 23, 8);  // expt
+	armAsm->Sub(RWARG3, RWARG3, RWSCRATCH);  // diff = expd - expt (signed)
+
+	const int tmp = _allocTempNEONreg();
+	const a64::VRegister vtmp = armSRegister(tmp);
+
+#if FPU_GUARD_MASK_STUB
+	a64::Label slow, done;
+	armAsm->Cmp(RWARG3, 1);
+	armAsm->B(&slow, a64::gt);                // diff >= 2
+	armAsm->Cmn(RWARG3, 1);
+	armAsm->B(&slow, a64::lt);                // diff <= -2
+	if (issub)                                // -1 <= diff <= 1: no masking
+		armAsm->Fsub(dst, s, t);
+	else
+		armAsm->Fadd(dst, s, t);
+	armAsm->B(&done);
+
+	armAsm->Bind(&slow);
+	// RWARG1/RWARG2 still hold s/t bits; the stub masks them in place
+	// (in: w0=A, w1=B; out: w0=maskedA, w1=maskedB; clobbers w0-w6, x30).
+	armEmitCall(g_fpuGuardMaskStub);
+	armAsm->Fmov(dst, RWARG1);
+	armAsm->Fmov(vtmp, RWARG2);
+	if (issub)
+		armAsm->Fsub(dst, dst, vtmp);
+	else
+		armAsm->Fadd(dst, dst, vtmp);
+	armAsm->Bind(&done);
+#else
+	a64::Label maskT, maskS, plain, done;
+
+	armAsm->Cmp(RWARG3, 1);
+	armAsm->B(&maskT, a64::gt);               // diff >= 2  -> t smaller, mask t
+	armAsm->Cmn(RWARG3, 1);
+	armAsm->B(&maskS, a64::lt);               // diff <= -2 -> s smaller, mask s
+	armAsm->B(&plain);                        // -1 <= diff <= 1 -> mask nothing
+
+	// diff >= 2: mask t's low (diff-1) bits; diff >= 25 keeps only t's sign.
+	armAsm->Bind(&maskT);
+	{
+		a64::Label big, apply;
+		armAsm->Cmp(RWARG3, 25);
+		armAsm->B(&big, a64::ge);
+		armAsm->Sub(RWSCRATCH, RWARG3, 1);
+		armAsm->Mov(RWARG4, 0xffffffff);
+		armAsm->Lsl(RWARG4, RWARG4, RWSCRATCH);
+		armAsm->And(RWARG2, RWARG2, RWARG4);
+		armAsm->B(&apply);
+		armAsm->Bind(&big);
+		armAsm->And(RWARG2, RWARG2, 0x80000000);
+		armAsm->Bind(&apply);
+		armAsm->Fmov(vtmp, RWARG2);
+	}
+	if (issub)
+		armAsm->Fsub(dst, s, vtmp);
+	else
+		armAsm->Fadd(dst, s, vtmp);
+	armAsm->B(&done);
+
+	// diff <= -2: mask s's low (-diff-1) bits; diff <= -25 keeps only s's sign.
+	armAsm->Bind(&maskS);
+	{
+		a64::Label big, apply;
+		armAsm->Cmn(RWARG3, 25);
+		armAsm->B(&big, a64::le);
+		armAsm->Neg(RWSCRATCH, RWARG3);
+		armAsm->Sub(RWSCRATCH, RWSCRATCH, 1);
+		armAsm->Mov(RWARG4, 0xffffffff);
+		armAsm->Lsl(RWARG4, RWARG4, RWSCRATCH);
+		armAsm->And(RWARG1, RWARG1, RWARG4);
+		armAsm->B(&apply);
+		armAsm->Bind(&big);
+		armAsm->And(RWARG1, RWARG1, 0x80000000);
+		armAsm->Bind(&apply);
+		armAsm->Fmov(vtmp, RWARG1);
+	}
+	if (issub)
+		armAsm->Fsub(dst, vtmp, t);
+	else
+		armAsm->Fadd(dst, vtmp, t);
+	armAsm->B(&done);
+
+	armAsm->Bind(&plain);
+	if (issub)
+		armAsm->Fsub(dst, s, t);
+	else
+		armAsm->Fadd(dst, s, t);
+
+	armAsm->Bind(&done);
+#endif
+	_freeNEONreg(tmp);
 }
 
 // FpuMulHack (Tales of Destiny Remake gamefix, EmuConfig.Gamefixes.FpuMulHack).
@@ -657,7 +742,7 @@ static void recADD_S_xmm(int info)
 {
 	const a64::VRegister s = fpuClampInput(armSRegister(EEREC_S), RSSCRATCH);
 	const a64::VRegister t = fpuClampInput(armSRegister(EEREC_T), RSSCRATCH2);
-	armAsm->Fadd(armSRegister(EEREC_D), s, t);
+	fpuEmitGuardedAddSub(armSRegister(EEREC_D), s, t, false);
 	fpuClampResult(armSRegister(EEREC_D));
 }
 
@@ -671,7 +756,7 @@ static void recSUB_S_xmm(int info)
 {
 	const a64::VRegister s = fpuClampInput(armSRegister(EEREC_S), RSSCRATCH);
 	const a64::VRegister t = fpuClampInput(armSRegister(EEREC_T), RSSCRATCH2);
-	armAsm->Fsub(armSRegister(EEREC_D), s, t);
+	fpuEmitGuardedAddSub(armSRegister(EEREC_D), s, t, true);
 	fpuClampResult(armSRegister(EEREC_D));
 }
 
@@ -860,6 +945,80 @@ void recSQRT_S()
 		XMMINFO_WRITED | XMMINFO_READT);
 }
 
+// Native RSQRT.S: Fd = Fs / sqrt(|Ft|) implemented in the shape of
+// recDIV_S_xmm/recSQRT_S_xmm and matching interp RSQRT_S (FPU.cpp) and
+// x86 recRSQRThelper1 (CHECK_FPU_EXTRA_FLAGS always on):
+//   - Ft exponent field == 0 (zero, including denormals-as-zero): result is
+//     sign(Ft) | 0x7f7fffff (+/-fMax), and set D|SD;
+//   - Ft negative (exp nonzero): set I|SI, then divide by sqrt(|Ft|);
+//   - Ft positive nonzero: divide by sqrt(Ft).
+// I|D are cleared first (sticky SI|SD survive). Like DIV.S/SQRT.S the PS2
+// rounds RSQRT to nearest regardless of the configured FCR31 rounding mode, so
+// swap host FPCR to the nearest-rounding FPUDivFPCR around the sqrt+div and
+// restore FPUFPCR after
+static void recRSQRT_S_xmm(int info)
+{
+	const bool swapFpcr = EmuConfig.Cpu.FPUFPCR.bitmask != EmuConfig.Cpu.FPUDivFPCR.bitmask;
+	if (swapFpcr)
+		emitLoadFPCR(EmuConfig.Cpu.FPUDivFPCR.bitmask);
+
+	// Copy operands into temps: EEREC_D may alias EEREC_S/EEREC_T, and the
+	// zero-divisor path needs the raw Ft sign bit after EEREC_D is written.
+	const int dreg = _allocTempNEONreg();   // dividend Fs
+	const int treg = _allocTempNEONreg();   // divisor, made |Ft| for the sqrt
+	armAsm->Fmov(armSRegister(dreg), armSRegister(EEREC_S));
+	armAsm->Fmov(armSRegister(treg), armSRegister(EEREC_T));
+
+	// Raw Ft bits drive the zero/negative branch and the +/-fMax result sign.
+	armAsm->Fmov(RWARG1, armSRegister(EEREC_T));
+
+	// Clear I|D (sticky SI|SD are left intact).
+	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	armAsm->Bic(RWSCRATCH, RWSCRATCH, FPUflagI | FPUflagD);
+	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+
+	a64::Label notZero, doDiv, end;
+
+	// Ft is treated as zero when its exponent field is 0 (denormals included).
+	armAsm->Tst(RWARG1, 0x7F800000);
+	armAsm->B(&notZero, a64::ne);
+
+	// Zero divisor: set D|SD; result = sign(Ft) | 0x7f7fffff.
+	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	armAsm->Orr(RWSCRATCH, RWSCRATCH, FPUflagD | FPUflagSD);
+	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	armAsm->And(RWARG1, RWARG1, 0x80000000);
+	armAsm->Orr(RWARG1, RWARG1, 0x7f7fffff);
+	armAsm->Fmov(armSRegister(EEREC_D), RWARG1);
+	armAsm->B(&end);
+
+	armAsm->Bind(&notZero);
+	// Negative divisor (exp nonzero, sign set): set I|SI. sqrt still takes |Ft|.
+	armAsm->Tbz(RWARG1, 31, &doDiv);
+	armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+	armAsm->Orr(RWSCRATCH, RWSCRATCH, FPUflagI | FPUflagSI);
+	armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[31]);
+
+	armAsm->Bind(&doDiv);
+	armAsm->Fabs(armSRegister(treg), armSRegister(treg)); // |Ft| (no-op if positive)
+	if (CHECK_FPU_EXTRA_OVERFLOW)
+	{
+		fpuClampCompareOperand(armSRegister(dreg));
+		fpuClampCompareOperand(armSRegister(treg));
+	}
+	armAsm->Fsqrt(armSRegister(treg), armSRegister(treg));
+	armAsm->Fdiv(armSRegister(EEREC_D), armSRegister(dreg), armSRegister(treg));
+	fpuClampResult(armSRegister(EEREC_D));
+
+	armAsm->Bind(&end);
+
+	_freeNEONreg(dreg);
+	_freeNEONreg(treg);
+
+	if (swapFpcr)
+		emitLoadFPCR(EmuConfig.Cpu.FPUFPCR.bitmask);
+}
+
 void recRSQRT_S()
 {
 	// GE-20: FULL mode gets the x86 DOUBLE body (widen -> sqrt+div in double,
@@ -870,13 +1029,8 @@ void recRSQRT_S()
 			XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 		return;
 	}
-	// Fast mode defers to the interpreter: interp RSQRT_S (FPU.cpp) sets D|SD
-	// when Ft (divisor) is zero and I|SI when Ft is negative, and its Ft==0
-	// branch returns ±posFmax keyed off the Ft sign (not Fs) — neither the
-	// sticky flags nor that result shape are reproducible by a raw Fdiv. RSQRT
-	// is rare, so the interpreter call is the lowest-risk match and keeps
-	// emitted code small. Same shape as recDIV_S.
-	recFPUCall(Interp::RSQRT_S);
+	eeFPURecompileCode(recRSQRT_S_xmm, Interp::RSQRT_S,
+		XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 }
 
 // PS2 FPU has no NaN concept — match x86 MAXSS/MINSS NaN-eating semantics
@@ -912,7 +1066,7 @@ static void recADDA_S_xmm(int info)
 {
 	const a64::VRegister s = fpuClampInput(armSRegister(EEREC_S), RSSCRATCH);
 	const a64::VRegister t = fpuClampInput(armSRegister(EEREC_T), RSSCRATCH2);
-	armAsm->Fadd(armSRegister(EEREC_ACC), s, t);
+	fpuEmitGuardedAddSub(armSRegister(EEREC_ACC), s, t, false);
 	fpuClampResult(armSRegister(EEREC_ACC));
 }
 
@@ -926,7 +1080,7 @@ static void recSUBA_S_xmm(int info)
 {
 	const a64::VRegister s = fpuClampInput(armSRegister(EEREC_S), RSSCRATCH);
 	const a64::VRegister t = fpuClampInput(armSRegister(EEREC_T), RSSCRATCH2);
-	armAsm->Fsub(armSRegister(EEREC_ACC), s, t);
+	fpuEmitGuardedAddSub(armSRegister(EEREC_ACC), s, t, true);
 	fpuClampResult(armSRegister(EEREC_ACC));
 }
 
@@ -970,7 +1124,7 @@ static void recMADD_S_xmm(int info)
 	// Inf/NaN and that leg is dead on arm64.)
 	if (CHECK_FPU_EXTRA_OVERFLOW)
 		fpuClampResult(RSSCRATCH);
-	armAsm->Fadd(armSRegister(EEREC_D), armSRegister(EEREC_ACC), RSSCRATCH);
+	fpuEmitGuardedAddSub(armSRegister(EEREC_D), armSRegister(EEREC_ACC), RSSCRATCH, false);
 	fpuClampResult(armSRegister(EEREC_D));
 }
 
@@ -989,7 +1143,7 @@ static void recMSUB_S_xmm(int info)
 	// Extra-gated product clamp — x86-JIT parity, see recMADD_S_xmm (GE-19).
 	if (CHECK_FPU_EXTRA_OVERFLOW)
 		fpuClampResult(RSSCRATCH);
-	armAsm->Fsub(armSRegister(EEREC_D), armSRegister(EEREC_ACC), RSSCRATCH);
+	fpuEmitGuardedAddSub(armSRegister(EEREC_D), armSRegister(EEREC_ACC), RSSCRATCH, true);
 	fpuClampResult(armSRegister(EEREC_D));
 }
 
@@ -1014,7 +1168,7 @@ static void recMADDA_S_xmm(int info)
 	emitFpuMul(RSSCRATCH, s, t);
 	if (CHECK_FPU_EXTRA_OVERFLOW)
 		fpuClampResult(RSSCRATCH);
-	armAsm->Fadd(armSRegister(EEREC_ACC), armSRegister(EEREC_ACC), RSSCRATCH);
+	fpuEmitGuardedAddSub(armSRegister(EEREC_ACC), armSRegister(EEREC_ACC), RSSCRATCH, false);
 	fpuClampResult(armSRegister(EEREC_ACC));
 }
 
@@ -1033,7 +1187,7 @@ static void recMSUBA_S_xmm(int info)
 	emitFpuMul(RSSCRATCH, s, t);
 	if (CHECK_FPU_EXTRA_OVERFLOW)
 		fpuClampResult(RSSCRATCH);
-	armAsm->Fsub(armSRegister(EEREC_ACC), armSRegister(EEREC_ACC), RSSCRATCH);
+	fpuEmitGuardedAddSub(armSRegister(EEREC_ACC), armSRegister(EEREC_ACC), RSSCRATCH, true);
 	fpuClampResult(armSRegister(EEREC_ACC));
 }
 

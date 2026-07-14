@@ -880,7 +880,7 @@ void recPSRAVW()
 }
 
 // ============================================================================
-//  Multiply / Divide / MAC — at x86 parity via interpreter fallback
+//  Multiply / Divide / MAC - PDIV* stay interp (x86 parity); PMADD*/PMSUBW native
 // ============================================================================
 
 // These stay as REC_FUNC because production x86 stays REC_FUNC too (the

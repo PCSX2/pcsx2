@@ -342,7 +342,7 @@ static void recVMULAx() { recCOP2_VMULAx(); }  static void recVMULAy() { recCOP2
 static void recVMULAz() { recCOP2_VMULAz(); }  static void recVMULAw() { recCOP2_VMULAw(); }
 static void recVMULAq() { recCOP2_VMULAq(); }  static void recVABS()   { recCOP2_VABS(); }
 static void recVMULAi() { recCOP2_VMULAi(); }
-// CLIP — still interpreter fallback (complex flag logic)
+// CLIP: native (recCOP2_VCLIP, iCOP2-arm64.cpp) - NEON vectorized 6-plane clip test
 static void recVCLIP() { recCOP2_VCLIP(); }
 // Accumulator Q/I variants
 static void recVADDAq() { recCOP2_VADDAq(); }  static void recVMADDAq(){ recCOP2_VMADDAq(); }

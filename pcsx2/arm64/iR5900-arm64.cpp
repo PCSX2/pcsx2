@@ -347,6 +347,12 @@ static const void* DispatchBlockDiscard = nullptr;
 static const void* DispatchPageReset = nullptr;
 static const void* UnmappedRecLUTPage = nullptr;
 
+#if FPU_GUARD_MASK_STUB
+// Shared FPU add/sub guard-bit masking stub. Emitted once per dispatcher
+// generation, re-set on cache reset. See iFPU-arm64.cpp.
+const void* g_fpuGuardMaskStub = nullptr;
+#endif
+
 static void recEventTest()
 {
 	eeEventTestIsActive = true;
@@ -541,12 +547,48 @@ static const void* _DynGen_UnmappedRecLUTPage()
 	return retval;
 }
 
+#if FPU_GUARD_MASK_STUB
+// Shared PS2 FPU guard-bit masking stub. Branchless, GPR-only; does the masking
+// but not the fadd/fsub, so one stub serves both add and sub (the caller does
+// the op):
+//   in:  w0 = operand A bits, w1 = operand B bits
+//   out: w0 = masked A bits,  w1 = masked B bits
+//   clobbers w0-w6, x30; no NEON, no memory. Leaf (ret x30).
+static const void* _DynGen_FpuGuardMaskStub()
+{
+	u8* retval = armGetCurrentCodePointer();
+	armAsm->Ubfx(a64::w2, a64::w0, 23, 8);            // expA
+	armAsm->Ubfx(a64::w3, a64::w1, 23, 8);            // expB
+	armAsm->Sub(a64::w2, a64::w2, a64::w3);           // diff = expA - expB
+	armAsm->Sub(a64::w3, a64::w2, 1);                 // diff - 1
+	armAsm->Mvn(a64::w4, a64::wzr);                   // 0xffffffff
+	armAsm->Lsl(a64::w3, a64::w4, a64::w3);           // mask B: clear low (diff-1) bits
+	armAsm->Lsl(a64::w5, a64::w4, 31);                // 0x80000000 (sign-only)
+	armAsm->Cmp(a64::w2, 25);
+	armAsm->Csel(a64::w3, a64::w5, a64::w3, a64::ge); // diff >= 25 -> keep only sign
+	armAsm->And(a64::w3, a64::w1, a64::w3);           // masked-B candidate
+	armAsm->Mvn(a64::w6, a64::w2);                    // ~diff = -diff - 1
+	armAsm->Lsl(a64::w6, a64::w4, a64::w6);           // mask A: clear low (-diff-1) bits
+	armAsm->Cmn(a64::w2, 25);
+	armAsm->Csel(a64::w6, a64::w5, a64::w6, a64::le); // diff <= -25 -> keep only sign
+	armAsm->And(a64::w6, a64::w0, a64::w6);           // masked-A candidate
+	armAsm->Cmp(a64::w2, 0);
+	armAsm->Csel(a64::w1, a64::w3, a64::w1, a64::gt); // diff > 0 -> B is smaller, mask B
+	armAsm->Csel(a64::w0, a64::w6, a64::w0, a64::lt); // diff < 0 -> A is smaller, mask A
+	armAsm->Ret();
+	return retval;
+}
+#endif // FPU_GUARD_MASK_STUB
+
 static void _DynGen_Dispatchers()
 {
 	const u8* start = armGetCurrentCodePointer();
 
 	DispatcherEvent = _DynGen_DispatcherEvent();
 	DispatcherReg = _DynGen_DispatcherReg();
+#if FPU_GUARD_MASK_STUB
+	g_fpuGuardMaskStub = _DynGen_FpuGuardMaskStub();
+#endif
 
 	JITCompile = _DynGen_JITCompile();
 	EnterRecompiledCode = _DynGen_EnterRecompiledCode();
