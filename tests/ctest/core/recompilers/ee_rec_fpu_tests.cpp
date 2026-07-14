@@ -1419,6 +1419,107 @@ TEST(EeRecFpu, Ctc1ThenBc1BranchesOnWrittenFlag)
 	h.ExpectGpr64(reg::v0, 2ull);
 }
 
+TEST(EeRecFpu, CompareSurvivesInterposedGuardedAddCfc1)
+{
+	// GE-12 × guard-bit masking (17c4adb9e) interaction — the SotC glitch.
+	//
+	// The resident FCR31 lives in the ARM64TYPE_FPRC pool {x2-x7, x14, x15}
+	// (iCore-arm64.cpp _allocArm64GPR: x0/x1/x28 are excluded precisely
+	// because FPU/MULT emitters raw-clobber RWARG1/RWARG2). But
+	// fpuEmitGuardedAddSub raw-clobbers RWARG3 (w2) on EVERY ADD/SUB-family
+	// emit (Ubfx expd / Sub diff) and RWARG4 (w3) on the mask paths — and
+	// x2/x3 ARE in the FPRC pool. _initArm64GPRregs resets the round-robin
+	// cursor per block, so a block whose first int alloc is the FPU compare
+	// deterministically parks FCR31 in x2 → any following guarded ADD.S in
+	// the same block destroys the condition flag before BC1x/CFC1 reads it.
+	//
+	// Shape: C.LT (false → C=0, FCR31 resident) → ADD.S with |expdiff| ≥ 2
+	// (both w2 and w3 end bit-23-set: w2 = negative diff, w3 = mask
+	// 0xff..fc) → CFC1 must still read C=0.
+	//
+	// JIT-only assert: CFC1's fixed-bit emulation diverges from interp by
+	// design (see CompareThenCfc1SeesFreshConditionBit above).
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFpr(1, 2.0f);
+	h.SetFpr(2, 1.0f);
+	h.SetFpr(4, 1.0f);            // exp 127
+	h.SetFpr(5, 8.0f);            // exp 130 → diff = -3 → maskS path
+	h.LoadProgram({
+		ee::C_LT_S(1, 2),         // 2 < 1 → false → C = 0; FCR31 resident (x2)
+		ee::ADD_S(3, 4, 5),       // guarded add: clobbers w2 (always) + w3 (mask path)
+		ee::CFC1(reg::v0, 31),
+	});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetGpr64Jit(reg::v0), 0x01000001ull); // C clear + always-one bits
+}
+
+TEST(EeRecFpu, CompareSurvivesInterposedGuardedAddBc1)
+{
+	// Same clobber as CompareSurvivesInterposedGuardedAddCfc1 but observed
+	// through the branch — the game-visible mechanism (compare → arithmetic →
+	// conditional branch is the canonical FPU idiom): C=0, an interposed
+	// guarded ADD.S leaves bit 23 set in the clobbered host reg, and BC1F
+	// (must-take on C clear) falls through instead.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFpr(1, 2.0f);
+	h.SetFpr(2, 1.0f);
+	h.SetFpr(4, 1.0f);
+	h.SetFpr(5, 8.0f);
+	h.LoadProgramNoTerm({
+		ee::C_LT_S(1, 2),         // false → C = 0
+		ee::ADD_S(3, 4, 5),       // guarded add clobber
+		ee::BC1F(3),              // C clear → must be taken
+		NOP,
+		ADDIU(reg::v0, reg::zero, 1), J(kPark), NOP, NOP,
+		ADDIU(reg::v0, reg::zero, 2), J(kPark), NOP,
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 2ull);
+}
+
+TEST(EeRecFpu, CompareSurvivesInterposedMult)
+{
+	// Same bug class as CompareSurvivesInterposedGuardedAddCfc1, pre-existing
+	// instance: the MULT/DIV emitters (iR5900MultDiv-arm64.cpp) raw-clobbered
+	// w2 (loadRt32 fallback) and w3 (DIV remainder / MADD LO load) — both in
+	// the FPRC pool. rt's value 0x00800000 lands bit 23 in the clobbered reg,
+	// flipping a C=0 flag to set.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFpr(1, 2.0f);
+	h.SetFpr(2, 1.0f);
+	h.SetGpr64(reg::t0, 3);
+	h.SetGpr64(reg::t1, 0x00800000ull); // bit 23 set — poison signature
+	h.LoadProgram({
+		ee::C_LT_S(1, 2),         // false → C = 0; FCR31 resident (x2)
+		MULT(reg::t0, reg::t1),   // rt materialization must not touch x2/x3
+		ee::CFC1(reg::v0, 31),
+	});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetGpr64Jit(reg::v0), 0x01000001ull); // C still clear
+}
+
+TEST(EeRecFpu, CompareSurvivesInterposedDiv)
+{
+	// DIV flavor: quotient/remainder of 0x00900000/0x00800001 both carry
+	// bit-23-relevant garbage through the old w2/w3 scratches.
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFpr(1, 2.0f);
+	h.SetFpr(2, 1.0f);
+	h.SetGpr64(reg::t0, 0x00900000ull);
+	h.SetGpr64(reg::t1, 0x00800001ull);
+	h.LoadProgram({
+		ee::C_LT_S(1, 2),         // false → C = 0
+		DIV(reg::t0, reg::t1),
+		ee::CFC1(reg::v0, 31),
+	});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetGpr64Jit(reg::v0), 0x01000001ull);
+}
+
 TEST(EeRecFpu, Ctc1ThenDivByZeroAccumulatesStickyFlags)
 {
 	// CTC1 seeds sticky bits; DIV x/0 RMWs D|SD on the resident copy; the

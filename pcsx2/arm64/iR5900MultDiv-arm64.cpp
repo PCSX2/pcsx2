@@ -25,10 +25,17 @@ REC_FUNC(DIVU);
 
 // Fetch Rs/Rt lower 32 bits for the mul/div ops. Substitution-aware
 // (EE-SRA 2 WS-C6): returns the pin / MODE_READ allocator reg directly (zero
-// insns) or materializes into w1/w2. Every caller sits right after
+// insns) or materializes into w1/w9. Every caller sits right after
 // _eeFlushAllDirty (the post-flush coherence contract), and every consumer
 // below is read-only on the sources — EXCEPT the DIVU remainder Msub, which
-// therefore targets w3 rather than writing a source in place.
+// therefore targets w10 rather than writing a source in place.
+//
+// ⚠️ Scratch choice: w9/w10 (non-allocatable), NOT w2/w3. A resident FCR31
+// (ARM64TYPE_FPRC, GE-12) lives in the {x2-x7, x14, x15} pool ACROSS ops —
+// _eeFlushAllDirty writes it back but keeps residency, so a raw w2/w3
+// clobber here poisons the flag a later BC1x/CFC1/DIV-flag-RMW reads (same
+// class as the fpuEmitGuardedAddSub SotC bug; pinned by
+// EeRecFpu.CompareSurvivesInterposed{Mult,Div}).
 static a64::Register loadRs32()
 {
 	if (GPR_IS_CONST1(_Rs_))
@@ -43,10 +50,10 @@ static a64::Register loadRt32()
 {
 	if (GPR_IS_CONST1(_Rt_))
 	{
-		armAsm->Mov(a64::w2, g_cpuConstRegs[_Rt_].UL[0]);
-		return a64::w2;
+		armAsm->Mov(a64::w9, g_cpuConstRegs[_Rt_].UL[0]);
+		return a64::w9;
 	}
-	return _eeGetGPRSourceReg(a64::w2, _Rt_);
+	return _eeGetGPRSourceReg(a64::w9, _Rt_);
 }
 
 // Write LO and HI from 64-bit result in x0 (clobbers x0)
@@ -184,18 +191,18 @@ void recDIV()
 	a64::Label done;
 	armAsm->Cbz(rt32, &divByZero);
 
-	// Normal path: SDIV w0, w1, w2; MSUB w3 = w1 - w0 * w2 (remainder).
+	// Normal path: SDIV w0 = rs/rt; MSUB w10 = rs - w0*rt (remainder).
 	armAsm->Sdiv(a64::w0, rs32, rt32);
-	armAsm->Msub(a64::w3, a64::w0, rt32, rs32);
+	armAsm->Msub(a64::w10, a64::w0, rt32, rs32);
 	armAsm->B(&done);
 
-	// Div-by-zero: w0 = (rs >= 0 ? -1 : 1), w3 = rs.
+	// Div-by-zero: w0 = (rs >= 0 ? -1 : 1), w10 = rs.
 	// Cneg w0, w0, lt: if rs < 0, w0 = -(-1) = 1; else w0 = -1.
 	armAsm->Bind(&divByZero);
 	armAsm->Mov(a64::w0, -1);
 	armAsm->Cmp(rs32, 0);
 	armAsm->Cneg(a64::w0, a64::w0, a64::lt);
-	armAsm->Mov(a64::w3, rs32);                       // HI = rs
+	armAsm->Mov(a64::w10, rs32);                       // HI = rs
 
 	armAsm->Bind(&done);
 
@@ -204,7 +211,7 @@ void recDIV()
 	armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.LO.UD[0]));
 
 	// Store HI = sign_extend(remainder or rs)
-	armAsm->Sxtw(RXSCRATCH, a64::w3);
+	armAsm->Sxtw(RXSCRATCH, a64::w10);
 	armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.HI.UD[0]));
 }
 
@@ -245,17 +252,17 @@ void recDIVU()
 	a64::Label done;
 	armAsm->Cbz(rt32, &divByZero);
 
-	// Normal path: UDIV w0; MSUB remainder into w3 — NOT in place over the Rs
+	// Normal path: UDIV w0; MSUB remainder into w10 — NOT in place over the Rs
 	// source, which may be a pin (WS-C6 pin-safety; the old in-place form
 	// predates operand substitution).
 	armAsm->Udiv(a64::w0, rs32, rt32);
-	armAsm->Msub(a64::w3, a64::w0, rt32, rs32);
+	armAsm->Msub(a64::w10, a64::w0, rt32, rs32);
 	armAsm->B(&done);
 
 	// Div-by-zero: w0 = -1; HI = rs.
 	armAsm->Bind(&divByZero);
 	armAsm->Mov(a64::w0, -1);
-	armAsm->Mov(a64::w3, rs32);
+	armAsm->Mov(a64::w10, rs32);
 
 	armAsm->Bind(&done);
 
@@ -264,7 +271,7 @@ void recDIVU()
 	armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.LO.UD[0]));
 
 	// Store HI = sign_extend(remainder or rs)
-	armAsm->Sxtw(RXSCRATCH, a64::w3);
+	armAsm->Sxtw(RXSCRATCH, a64::w10);
 	armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.HI.UD[0]));
 }
 
@@ -383,22 +390,22 @@ void recDIV1()
 	armAsm->Cbz(rt32, &divByZero);
 
 	armAsm->Sdiv(a64::w0, rs32, rt32);
-	armAsm->Msub(a64::w3, a64::w0, rt32, rs32);
+	armAsm->Msub(a64::w10, a64::w0, rt32, rs32);
 	armAsm->B(&done);
 
-	// Div-by-zero: w0 = (rs >= 0 ? -1 : 1), w3 = rs.  See recDIV for Cneg rationale.
+	// Div-by-zero: w0 = (rs >= 0 ? -1 : 1), w10 = rs.  See recDIV for Cneg rationale.
 	armAsm->Bind(&divByZero);
 	armAsm->Mov(a64::w0, -1);
 	armAsm->Cmp(rs32, 0);
 	armAsm->Cneg(a64::w0, a64::w0, a64::lt);
-	armAsm->Mov(a64::w3, rs32);                       // HI = rs
+	armAsm->Mov(a64::w10, rs32);                       // HI = rs
 
 	armAsm->Bind(&done);
 
 	armAsm->Sxtw(RXSCRATCH, a64::w0);
 	armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.LO.UD[1]));
 
-	armAsm->Sxtw(RXSCRATCH, a64::w3);
+	armAsm->Sxtw(RXSCRATCH, a64::w10);
 	armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.HI.UD[1]));
 }
 
@@ -438,21 +445,21 @@ void recDIVU1()
 	a64::Label done;
 	armAsm->Cbz(rt32, &divByZero);
 
-	// Remainder into w3, not in place — see recDIVU (WS-C6 pin-safety).
+	// Remainder into w10, not in place — see recDIVU (WS-C6 pin-safety).
 	armAsm->Udiv(a64::w0, rs32, rt32);
-	armAsm->Msub(a64::w3, a64::w0, rt32, rs32);
+	armAsm->Msub(a64::w10, a64::w0, rt32, rs32);
 	armAsm->B(&done);
 
 	armAsm->Bind(&divByZero);
 	armAsm->Mov(a64::w0, -1);
-	armAsm->Mov(a64::w3, rs32);
+	armAsm->Mov(a64::w10, rs32);
 
 	armAsm->Bind(&done);
 
 	armAsm->Sxtw(RXSCRATCH, a64::w0);
 	armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.LO.UD[1]));
 
-	armAsm->Sxtw(RXSCRATCH, a64::w3);
+	armAsm->Sxtw(RXSCRATCH, a64::w10);
 	armAsm->Str(RXSCRATCH, armCpuRegMem(&cpuRegs.HI.UD[1]));
 }
 
@@ -466,8 +473,8 @@ void recMADD()
 		// Add to existing HI:LO — load, add, store
 		_eeFlushAllDirty();
 		armLoadEERegPtr(a64::w1, &cpuRegs.LO.UL[0]);
-		armLoadEERegPtr(a64::w2, &cpuRegs.HI.UL[0]);
-		armAsm->Orr(a64::x1, a64::x1, a64::Operand(a64::x2, a64::LSL, 32));
+		armLoadEERegPtr(a64::w9, &cpuRegs.HI.UL[0]);
+		armAsm->Orr(a64::x1, a64::x1, a64::Operand(a64::x9, a64::LSL, 32));
 		armAsm->Mov(RXSCRATCH, result);
 		armAsm->Add(a64::x0, a64::x1, RXSCRATCH);
 
@@ -484,12 +491,12 @@ void recMADD()
 	armAsm->Smull(a64::x0, rs32, rt32);
 
 	// Load existing HI:LO into x1
-	armLoadEERegPtr(a64::w3, &cpuRegs.LO.UL[0]);
+	armLoadEERegPtr(a64::w10, &cpuRegs.LO.UL[0]);
 	armLoadEERegPtr(RWSCRATCH, &cpuRegs.HI.UL[0]); // w8: reserved scratch (w4 is allocatable)
-	armAsm->Orr(a64::x3, a64::x3, a64::Operand(RXSCRATCH, a64::LSL, 32));
+	armAsm->Orr(a64::x10, a64::x10, a64::Operand(RXSCRATCH, a64::LSL, 32));
 
 	// Add
-	armAsm->Add(a64::x0, a64::x0, a64::x3);
+	armAsm->Add(a64::x0, a64::x0, a64::x10);
 
 	recWritebackHILO(false);
 	recWritebackRd();
@@ -504,8 +511,8 @@ void recMADDU()
 
 		_eeFlushAllDirty();
 		armLoadEERegPtr(a64::w1, &cpuRegs.LO.UL[0]);
-		armLoadEERegPtr(a64::w2, &cpuRegs.HI.UL[0]);
-		armAsm->Orr(a64::x1, a64::x1, a64::Operand(a64::x2, a64::LSL, 32));
+		armLoadEERegPtr(a64::w9, &cpuRegs.HI.UL[0]);
+		armAsm->Orr(a64::x1, a64::x1, a64::Operand(a64::x9, a64::LSL, 32));
 		armAsm->Mov(RXSCRATCH, result);
 		armAsm->Add(a64::x0, a64::x1, RXSCRATCH);
 
@@ -520,11 +527,11 @@ void recMADDU()
 
 	armAsm->Umull(a64::x0, rs32, rt32);
 
-	armLoadEERegPtr(a64::w3, &cpuRegs.LO.UL[0]);
+	armLoadEERegPtr(a64::w10, &cpuRegs.LO.UL[0]);
 	armLoadEERegPtr(RWSCRATCH, &cpuRegs.HI.UL[0]); // w8: reserved scratch (w4 is allocatable)
-	armAsm->Orr(a64::x3, a64::x3, a64::Operand(RXSCRATCH, a64::LSL, 32));
+	armAsm->Orr(a64::x10, a64::x10, a64::Operand(RXSCRATCH, a64::LSL, 32));
 
-	armAsm->Add(a64::x0, a64::x0, a64::x3);
+	armAsm->Add(a64::x0, a64::x0, a64::x10);
 
 	recWritebackHILO(false);
 	recWritebackRd();
@@ -539,8 +546,8 @@ void recMADD1()
 
 		_eeFlushAllDirty();
 		armLoadEERegPtr(a64::w1, &cpuRegs.LO.UL[2]);
-		armLoadEERegPtr(a64::w2, &cpuRegs.HI.UL[2]);
-		armAsm->Orr(a64::x1, a64::x1, a64::Operand(a64::x2, a64::LSL, 32));
+		armLoadEERegPtr(a64::w9, &cpuRegs.HI.UL[2]);
+		armAsm->Orr(a64::x1, a64::x1, a64::Operand(a64::x9, a64::LSL, 32));
 		armAsm->Mov(RXSCRATCH, result);
 		armAsm->Add(a64::x0, a64::x1, RXSCRATCH);
 
@@ -555,11 +562,11 @@ void recMADD1()
 
 	armAsm->Smull(a64::x0, rs32, rt32);
 
-	armLoadEERegPtr(a64::w3, &cpuRegs.LO.UL[2]);  // LO1 = LO.UL[2] (upper 64 bits)
+	armLoadEERegPtr(a64::w10, &cpuRegs.LO.UL[2]);  // LO1 = LO.UL[2] (upper 64 bits)
 	armLoadEERegPtr(RWSCRATCH, &cpuRegs.HI.UL[2]); // HI1 = HI.UL[2] (w8: reserved scratch — w4 is allocatable)
-	armAsm->Orr(a64::x3, a64::x3, a64::Operand(RXSCRATCH, a64::LSL, 32));
+	armAsm->Orr(a64::x10, a64::x10, a64::Operand(RXSCRATCH, a64::LSL, 32));
 
-	armAsm->Add(a64::x0, a64::x0, a64::x3);
+	armAsm->Add(a64::x0, a64::x0, a64::x10);
 
 	recWritebackHILO(true);
 	recWritebackRd1();
@@ -574,8 +581,8 @@ void recMADDU1()
 
 		_eeFlushAllDirty();
 		armLoadEERegPtr(a64::w1, &cpuRegs.LO.UL[2]);
-		armLoadEERegPtr(a64::w2, &cpuRegs.HI.UL[2]);
-		armAsm->Orr(a64::x1, a64::x1, a64::Operand(a64::x2, a64::LSL, 32));
+		armLoadEERegPtr(a64::w9, &cpuRegs.HI.UL[2]);
+		armAsm->Orr(a64::x1, a64::x1, a64::Operand(a64::x9, a64::LSL, 32));
 		armAsm->Mov(RXSCRATCH, result);
 		armAsm->Add(a64::x0, a64::x1, RXSCRATCH);
 
@@ -590,11 +597,11 @@ void recMADDU1()
 
 	armAsm->Umull(a64::x0, rs32, rt32);
 
-	armLoadEERegPtr(a64::w3, &cpuRegs.LO.UL[2]);
+	armLoadEERegPtr(a64::w10, &cpuRegs.LO.UL[2]);
 	armLoadEERegPtr(RWSCRATCH, &cpuRegs.HI.UL[2]); // w8: reserved scratch (w4 is allocatable)
-	armAsm->Orr(a64::x3, a64::x3, a64::Operand(RXSCRATCH, a64::LSL, 32));
+	armAsm->Orr(a64::x10, a64::x10, a64::Operand(RXSCRATCH, a64::LSL, 32));
 
-	armAsm->Add(a64::x0, a64::x0, a64::x3);
+	armAsm->Add(a64::x0, a64::x0, a64::x10);
 
 	recWritebackHILO(true);
 	recWritebackRd1();

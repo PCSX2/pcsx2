@@ -553,28 +553,37 @@ static const void* _DynGen_UnmappedRecLUTPage()
 // the op):
 //   in:  w0 = operand A bits, w1 = operand B bits
 //   out: w0 = masked A bits,  w1 = masked B bits
-//   clobbers w0-w6, x30; no NEON, no memory. Leaf (ret x30).
+//   clobbers w0/w1/w8/w9/w10/w16/w17, x30; no NEON, no memory. Leaf (ret x30).
+//
+// ⚠️ Scratches must stay OFF the int-allocator pools: a resident FCR31
+// (ARM64TYPE_FPRC, GE-12) lives in {x2-x7, x14, x15} across ops and is NOT
+// evicted around this call (the caller emits a raw bl, no iFlushCall). The
+// original w2-w6 scratch choice corrupted it — the SotC guard-bit bug; see
+// fpuEmitGuardedAddSub's contract note and the
+// EeRecFpu.CompareSurvivesInterposedGuardedAdd* tests. w8-w10 are the
+// non-allocatable value scratches, w16/w17 the vixl/addr scratches (dead
+// across a bl — veneers may clobber them anyway).
 static const void* _DynGen_FpuGuardMaskStub()
 {
 	u8* retval = armGetCurrentCodePointer();
-	armAsm->Ubfx(a64::w2, a64::w0, 23, 8);            // expA
-	armAsm->Ubfx(a64::w3, a64::w1, 23, 8);            // expB
-	armAsm->Sub(a64::w2, a64::w2, a64::w3);           // diff = expA - expB
-	armAsm->Sub(a64::w3, a64::w2, 1);                 // diff - 1
-	armAsm->Mvn(a64::w4, a64::wzr);                   // 0xffffffff
-	armAsm->Lsl(a64::w3, a64::w4, a64::w3);           // mask B: clear low (diff-1) bits
-	armAsm->Lsl(a64::w5, a64::w4, 31);                // 0x80000000 (sign-only)
-	armAsm->Cmp(a64::w2, 25);
-	armAsm->Csel(a64::w3, a64::w5, a64::w3, a64::ge); // diff >= 25 -> keep only sign
-	armAsm->And(a64::w3, a64::w1, a64::w3);           // masked-B candidate
-	armAsm->Mvn(a64::w6, a64::w2);                    // ~diff = -diff - 1
-	armAsm->Lsl(a64::w6, a64::w4, a64::w6);           // mask A: clear low (-diff-1) bits
-	armAsm->Cmn(a64::w2, 25);
-	armAsm->Csel(a64::w6, a64::w5, a64::w6, a64::le); // diff <= -25 -> keep only sign
-	armAsm->And(a64::w6, a64::w0, a64::w6);           // masked-A candidate
-	armAsm->Cmp(a64::w2, 0);
-	armAsm->Csel(a64::w1, a64::w3, a64::w1, a64::gt); // diff > 0 -> B is smaller, mask B
-	armAsm->Csel(a64::w0, a64::w6, a64::w0, a64::lt); // diff < 0 -> A is smaller, mask A
+	armAsm->Ubfx(a64::w8, a64::w0, 23, 8);              // expA
+	armAsm->Ubfx(a64::w9, a64::w1, 23, 8);              // expB
+	armAsm->Sub(a64::w8, a64::w8, a64::w9);             // diff = expA - expB
+	armAsm->Sub(a64::w9, a64::w8, 1);                   // diff - 1
+	armAsm->Mvn(a64::w10, a64::wzr);                    // 0xffffffff
+	armAsm->Lsl(a64::w9, a64::w10, a64::w9);            // mask B: clear low (diff-1) bits
+	armAsm->Lsl(a64::w16, a64::w10, 31);                // 0x80000000 (sign-only)
+	armAsm->Cmp(a64::w8, 25);
+	armAsm->Csel(a64::w9, a64::w16, a64::w9, a64::ge);  // diff >= 25 -> keep only sign
+	armAsm->And(a64::w9, a64::w1, a64::w9);             // masked-B candidate
+	armAsm->Mvn(a64::w17, a64::w8);                     // ~diff = -diff - 1
+	armAsm->Lsl(a64::w17, a64::w10, a64::w17);          // mask A: clear low (-diff-1) bits
+	armAsm->Cmn(a64::w8, 25);
+	armAsm->Csel(a64::w17, a64::w16, a64::w17, a64::le); // diff <= -25 -> keep only sign
+	armAsm->And(a64::w17, a64::w0, a64::w17);           // masked-A candidate
+	armAsm->Cmp(a64::w8, 0);
+	armAsm->Csel(a64::w1, a64::w9, a64::w1, a64::gt);   // diff > 0 -> B is smaller, mask B
+	armAsm->Csel(a64::w0, a64::w17, a64::w0, a64::lt);  // diff < 0 -> A is smaller, mask A
 	armAsm->Ret();
 	return retval;
 }

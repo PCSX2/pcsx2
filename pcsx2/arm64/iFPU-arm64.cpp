@@ -434,23 +434,44 @@ static a64::VRegister fpuClampInput(const a64::VRegister& src, const a64::VRegis
 // The masking is emitted one of two equivalent ways, chosen at build time by
 // FPU_GUARD_MASK_STUB (iR5900-arm64.h): inlined here, or via a bl to the shared
 // g_fpuGuardMaskStub. Both produce identical results.
+//
+// ⚠️ GPR scratch contract: this sequence touches only w0/w1 (RWARG1/2 — the
+// raw-clobber habit the ARM64TYPE_FPRC pool exclusion in _allocArm64GPR is
+// built around), w8 (RWSCRATCH), the non-allocatable x9/x10 value scratches
+// and x16/x17 (vixl/addr scratch, via any temp-alloc eviction). None are in
+// an int-allocator pool. It must NEVER touch x2-x7/x14/x15: a resident FCR31
+// (GE-12, dirty from a C.cond/DIV/CTC1 earlier in the block) lives in that
+// pool and survives across ops — clobbering it flips later BC1x/CFC1/flag
+// writebacks. This is
+// exactly the SotC geometry/movement bug (w2/w3 were used here); pinned by
+// EeRecFpu.CompareSurvivesInterposedGuardedAdd{Cfc1,Bc1}.
 static void fpuEmitGuardedAddSub(const a64::VRegister& dst,
 	const a64::VRegister& s, const a64::VRegister& t, bool issub)
 {
-	armAsm->Fmov(RWARG1, s);                 // s bits (non-destructive read)
-	armAsm->Fmov(RWARG2, t);                 // t bits
-	armAsm->Ubfx(RWARG3, RWARG1, 23, 8);     // expd
-	armAsm->Ubfx(RWSCRATCH, RWARG2, 23, 8);  // expt
-	armAsm->Sub(RWARG3, RWARG3, RWSCRATCH);  // diff = expd - expt (signed)
-
+	// Alloc the NEON temp FIRST, before any raw GPR scratch below goes live.
+	// The alloc can emit a victim eviction whose address materialization uses
+	// scratch (today only x16/x17 via armMoveAddressToReg); keeping w9/w10
+	// dead across it is the defensive invariant, so a future eviction path
+	// that reaches for a value scratch can't corrupt our diff/mask. (EEREC_S/
+	// T/D/ACC are `needed` for the whole op and RSSCRATCH/RSSCRATCH2 are
+	// outside the pool, so the temp can never alias s/t/dst.)
 	const int tmp = _allocTempNEONreg();
 	const a64::VRegister vtmp = armSRegister(tmp);
 
+	const a64::Register rdiff = a64::w9;  // non-allocatable scratch (iCore mask)
+	const a64::Register rmask = a64::w10; // non-allocatable scratch (iCore mask)
+
+	armAsm->Fmov(RWARG1, s);                 // s bits (non-destructive read)
+	armAsm->Fmov(RWARG2, t);                 // t bits
+	armAsm->Ubfx(rdiff, RWARG1, 23, 8);      // expd
+	armAsm->Ubfx(RWSCRATCH, RWARG2, 23, 8);  // expt
+	armAsm->Sub(rdiff, rdiff, RWSCRATCH);    // diff = expd - expt (signed)
+
 #if FPU_GUARD_MASK_STUB
 	a64::Label slow, done;
-	armAsm->Cmp(RWARG3, 1);
+	armAsm->Cmp(rdiff, 1);
 	armAsm->B(&slow, a64::gt);                // diff >= 2
-	armAsm->Cmn(RWARG3, 1);
+	armAsm->Cmn(rdiff, 1);
 	armAsm->B(&slow, a64::lt);                // diff <= -2
 	if (issub)                                // -1 <= diff <= 1: no masking
 		armAsm->Fsub(dst, s, t);
@@ -460,7 +481,8 @@ static void fpuEmitGuardedAddSub(const a64::VRegister& dst,
 
 	armAsm->Bind(&slow);
 	// RWARG1/RWARG2 still hold s/t bits; the stub masks them in place
-	// (in: w0=A, w1=B; out: w0=maskedA, w1=maskedB; clobbers w0-w6, x30).
+	// (in: w0=A, w1=B; out: w0=maskedA, w1=maskedB; clobbers w0/w1/w8/w9/
+	// w10/w16/w17 + x30 — nothing in the int-allocator pools).
 	armEmitCall(g_fpuGuardMaskStub);
 	armAsm->Fmov(dst, RWARG1);
 	armAsm->Fmov(vtmp, RWARG2);
@@ -472,9 +494,9 @@ static void fpuEmitGuardedAddSub(const a64::VRegister& dst,
 #else
 	a64::Label maskT, maskS, plain, done;
 
-	armAsm->Cmp(RWARG3, 1);
+	armAsm->Cmp(rdiff, 1);
 	armAsm->B(&maskT, a64::gt);               // diff >= 2  -> t smaller, mask t
-	armAsm->Cmn(RWARG3, 1);
+	armAsm->Cmn(rdiff, 1);
 	armAsm->B(&maskS, a64::lt);               // diff <= -2 -> s smaller, mask s
 	armAsm->B(&plain);                        // -1 <= diff <= 1 -> mask nothing
 
@@ -482,12 +504,12 @@ static void fpuEmitGuardedAddSub(const a64::VRegister& dst,
 	armAsm->Bind(&maskT);
 	{
 		a64::Label big, apply;
-		armAsm->Cmp(RWARG3, 25);
+		armAsm->Cmp(rdiff, 25);
 		armAsm->B(&big, a64::ge);
-		armAsm->Sub(RWSCRATCH, RWARG3, 1);
-		armAsm->Mov(RWARG4, 0xffffffff);
-		armAsm->Lsl(RWARG4, RWARG4, RWSCRATCH);
-		armAsm->And(RWARG2, RWARG2, RWARG4);
+		armAsm->Sub(RWSCRATCH, rdiff, 1);
+		armAsm->Mov(rmask, 0xffffffff);
+		armAsm->Lsl(rmask, rmask, RWSCRATCH);
+		armAsm->And(RWARG2, RWARG2, rmask);
 		armAsm->B(&apply);
 		armAsm->Bind(&big);
 		armAsm->And(RWARG2, RWARG2, 0x80000000);
@@ -504,13 +526,13 @@ static void fpuEmitGuardedAddSub(const a64::VRegister& dst,
 	armAsm->Bind(&maskS);
 	{
 		a64::Label big, apply;
-		armAsm->Cmn(RWARG3, 25);
+		armAsm->Cmn(rdiff, 25);
 		armAsm->B(&big, a64::le);
-		armAsm->Neg(RWSCRATCH, RWARG3);
+		armAsm->Neg(RWSCRATCH, rdiff);
 		armAsm->Sub(RWSCRATCH, RWSCRATCH, 1);
-		armAsm->Mov(RWARG4, 0xffffffff);
-		armAsm->Lsl(RWARG4, RWARG4, RWSCRATCH);
-		armAsm->And(RWARG1, RWARG1, RWARG4);
+		armAsm->Mov(rmask, 0xffffffff);
+		armAsm->Lsl(rmask, rmask, RWSCRATCH);
+		armAsm->And(RWARG1, RWARG1, rmask);
 		armAsm->B(&apply);
 		armAsm->Bind(&big);
 		armAsm->And(RWARG1, RWARG1, 0x80000000);
