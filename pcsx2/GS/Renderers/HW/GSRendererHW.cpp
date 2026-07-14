@@ -2772,6 +2772,14 @@ void GSRendererHW::Draw()
 		return;
 	}
 
+	if ((m_cached_ctx.FRAME.PSM == PSMCT16) != (m_cached_ctx.ZBUF.PSM == PSMZ16))
+	{
+		// There are two groups of formats that a draw can use, group 2 is PSMCT16 and PSMZ16, those are exclusive to each other, every other combination is group 1.
+		// These are not allowed to be mixed due to a different swizzle, which causes writes to Z to be omitted.
+		m_cached_ctx.ZBUF.ZMSK = 1;
+		m_cached_ctx.TEST.ZTE = 0;
+	}
+
 	// Sometimes everything will get reset and it will draw a single black point in the top left corner,
 	// which can cause invalid targets to be created, so might as well skip it.
 	if (GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).eq(GSVector4i::zero()) && m_vt.m_eq.rgba == 0xffff && 

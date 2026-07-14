@@ -1069,8 +1069,12 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	gd.sel.ababcd = 0xff;
 	gd.sel.prim = primclass;
 
+	// There are two groups of formats that a draw can use, group 2 is PSMCT16 and PSMZ16, those are exclusive to each other, every other combination is group 1.
+	// These are not allowed to be mixed due to a different swizzle, which causes writes to Z to be omitted.
+	const bool invalid_combination = (m_context->FRAME.PSM == PSMCT16) != (m_context->ZBUF.PSM == PSMZ16);
+
 	u32 fm = context->FRAME.FBMSK;
-	u32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
+	u32 zm = invalid_combination || context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
 	const u32 fm_mask = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmsk;
 
 	// When the format is 24bit (Z or C), DATE ceases to function.
@@ -1123,7 +1127,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	bool ftest = gd.sel.atst != ATST_ALWAYS || (context->TEST.DATE && context->FRAME.PSM != PSMCT24);
 
 	bool zwrite = zm != 0xffffffff;
-	bool ztest = context->TEST.ZTE && context->TEST.ZTST > ZTST_ALWAYS;
+	bool ztest = !invalid_combination && context->TEST.ZTE && context->TEST.ZTST > ZTST_ALWAYS;
 	/*
 	printf("%05x %d %05x %d %05x %d %dx%d\n",
 		fwrite || ftest ? m_context->FRAME.Block() : 0xfffff, m_context->FRAME.PSM,
