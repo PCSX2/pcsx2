@@ -26860,7 +26860,7 @@ SLES-54385:
   gameFixes:
     - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
-    roundSprite: 1 # Fixes font artifacts for health and other sprites.
+    roundSprite: 2 # Fixes font artifacts for health and other sprites.
     texturePreloading: 0 # Improves performance and prevents it disabling itself regardless.
 SLES-54388:
   name: "Disney's Kim Possible - What's the Switch?"
@@ -28321,7 +28321,7 @@ SLES-54822:
   name: "Atelier Iris 3 - Grand Phantasm"
   region: "PAL-E"
   gsHWFixes:
-    roundSprite: 1 # Fixes vertical lines in FMVs, character portraits and other sprites.
+    roundSprite: 2 # Fixes vertical lines in FMVs, character portraits and other sprites.
 SLES-54825:
   name: "Bob the Builder"
   region: "PAL-M3"
@@ -72027,7 +72027,7 @@ SLUS-21327:
   gameFixes:
     - SoftwareRendererFMVHack # Flickering in FMV.
   gsHWFixes:
-    roundSprite: 1 # Fixes font artifacts for health and other sprites.
+    roundSprite: 2 # Fixes font artifacts for health and other sprites.
     texturePreloading: 0 # Improves performance and prevents it disabling itself regardless.
 SLUS-21328:
   name: "Pac-Man World Rally"
@@ -73395,7 +73395,7 @@ SLUS-21564:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fixes vertical lines in FMVs, character portraits and other sprites.
+    roundSprite: 2 # Fixes vertical lines in FMVs, character portraits and other sprites.
 SLUS-21565:
   name: "Pirates of the Caribbean - At World's End"
   region: "NTSC-U"
