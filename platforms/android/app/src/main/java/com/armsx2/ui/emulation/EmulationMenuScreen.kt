@@ -205,7 +205,16 @@ private fun MenuPage(
     modifier: Modifier,
 ) {
     val tabScrollStates = remember {
-        EmulationMenuTab.entries.associateWith { ScrollState(initial = 0) }
+        EmulationMenuTab.entries.associateWith {
+            ScrollState(initial = InGameOverlay.menuTabScroll[it.name] ?: 0)
+        }
+    }
+    // Remember each tab's scroll offset when the menu closes so reopening a tab (especially
+    // the long Fixes list) returns to where you were instead of snapping back to the top.
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        onDispose {
+            tabScrollStates.forEach { (tab, ss) -> InGameOverlay.menuTabScroll[tab.name] = ss.value }
+        }
     }
     val scrollState = tabScrollStates.getValue(state.tab)
     // Provide the pane's scroll state to the settings widgets so the Fixes pane's
@@ -431,6 +440,12 @@ private fun MenuHeader(compact: Boolean, hardcore: Boolean, richPresence: String
                 if (hardcore) {
                     Spacer(Modifier.width(8.dp))
                     HardcoreBadge()
+                }
+                // File-type chip after the HC badge (ISO / CHD / …), mirroring the library
+                // list view so the pause/RA header shows the same at-a-glance file info.
+                game?.let { g ->
+                    Spacer(Modifier.width(6.dp))
+                    com.armsx2.ui.common.StatusChip(g.extension.ifBlank { g.platform.key.uppercase() })
                 }
             }
             if (!game?.serial.isNullOrBlank()) {

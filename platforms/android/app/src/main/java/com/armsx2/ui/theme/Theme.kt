@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 import com.armsx2.runtime.MainActivityRuntime
 import androidx.core.content.edit
 
-enum class ThemeMode { System, Dark, Light }
+enum class ThemeMode { System, Dark, Light, Black, Oled }
 
 object ThemePreferences {
     private const val PreferenceKey = "ui.theme.mode"
@@ -21,6 +21,8 @@ object ThemePreferences {
         mode.value = when (MainActivityRuntime.prefs.getString(PreferenceKey, ThemeMode.System.name)) {
             ThemeMode.System.name -> ThemeMode.System
             ThemeMode.Light.name -> ThemeMode.Light
+            ThemeMode.Black.name -> ThemeMode.Black
+            ThemeMode.Oled.name -> ThemeMode.Oled
             else -> ThemeMode.Dark
         }
     }
@@ -139,15 +141,43 @@ private val DayScheme = lightColorScheme(
     surfaceTint = Color.Transparent,
 )
 
+// Neutral dark schemes derived from Night — same accents, but black/neutral-grey backgrounds and
+// selection highlights instead of Night's blue-tinted ones (users asked for a black, not-blue UI).
+// Black = a slightly-lifted neutral dark; Oled = true #000000 for OLED panels (deepest black, less
+// power). Only surfaces/containers/outlines change; the primary accent stays for contrast/usability.
+private val BlackScheme = NightScheme.copy(
+    background = Color(0xFF0B0B0B),
+    surface = Color(0xFF111111),
+    surfaceVariant = Color(0xFF1B1B1B),
+    primaryContainer = Color(0xFF242424),
+    onPrimaryContainer = Color(0xFFEAEAEA),
+    secondaryContainer = Color(0xFF1A1A1A),
+    outline = Color(0xFF333333),
+    outlineVariant = Color(0xFF242424),
+)
+
+private val OledScheme = NightScheme.copy(
+    background = Color.Black,
+    surface = Color.Black,
+    surfaceVariant = Color(0xFF0E0E0E),
+    primaryContainer = Color(0xFF1A1A1A),
+    onPrimaryContainer = Color(0xFFEAEAEA),
+    secondaryContainer = Color(0xFF121212),
+    outline = Color(0xFF262626),
+    outlineVariant = Color(0xFF161616),
+)
+
 @Composable
 fun Armsx2Theme(content: @Composable () -> Unit) {
-    val dark = when (ThemePreferences.mode.value) {
-        ThemeMode.System -> isSystemInDarkTheme()
-        ThemeMode.Dark -> true
-        ThemeMode.Light -> false
+    val scheme = when (ThemePreferences.mode.value) {
+        ThemeMode.System -> if (isSystemInDarkTheme()) NightScheme else DayScheme
+        ThemeMode.Dark -> NightScheme
+        ThemeMode.Light -> DayScheme
+        ThemeMode.Black -> BlackScheme
+        ThemeMode.Oled -> OledScheme
     }
     MaterialTheme(
-        colorScheme = if (dark) NightScheme else DayScheme,
+        colorScheme = scheme,
         typography = ArmsTypography,
         content = content,
     )

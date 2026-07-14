@@ -752,6 +752,13 @@ object ControllerMappings {
     // consume (B = exit) — can be captured. Normal nav resumes when it clears.
     val padCapturing = mutableStateOf(false)
 
+    /** A pad-button capture in progress from the Controls screen (ControllerManagerScreen). While
+     *  set, MainActivityRuntime.dispatchKeyEvent binds the next pressed keycode via this lambda —
+     *  handled there, like [captureHotkey], instead of a focus-stealing AlertDialog whose separate
+     *  window swallowed controller keys before Compose's onPreviewKeyEvent could see them (the
+     *  2.6.0 "can't remap buttons" bug). The lambda binds the key and returns true. */
+    val capturePadAction = mutableStateOf<((Int) -> Boolean)?>(null)
+
     // Capture bridge: the Hotkeys tab calls [beginHotkeyCapture]; the next
     // button(s) seen by MainActivityRuntime.dispatchKeyEvent are bound to it. Press one button
     // for a single bind, or two together for a combo. Observed for UI feedback.

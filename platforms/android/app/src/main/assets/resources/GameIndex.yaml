@@ -2972,6 +2972,9 @@ SCCS-60002:
 SCED-50041:
   name: "Tekken Tag Tournament [Demo]"
   region: "PAL-E"
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCED-50065:
@@ -3282,6 +3285,9 @@ SCED-51111:
 SCED-51120:
   name: "Tekken 4 [Demo]"
   region: "PAL-E"
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCED-51140:
@@ -4834,6 +4840,9 @@ SCES-50001:
   name: "Tekken Tag Tournament"
   region: "PAL-M5"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCES-50002:
@@ -5205,6 +5214,9 @@ SCES-50878:
   name: "Tekken 4"
   region: "PAL-M5"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCES-50885:
@@ -7645,6 +7657,9 @@ SCKA-20045:
   name: "철권　４ [PlayStation 2 Big Hit Series]"
   name-en: "Tekken 4 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCKA-20046:
@@ -10798,6 +10813,9 @@ SCPS-55017:
   name-en: "Tekken 4"
   region: "NTSC-J"
   compat: 3
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1
 SCPS-55018:
@@ -11085,6 +11103,9 @@ SCPS-56002:
   name-en: "Tekken Tag Tournament"
   region: "NTSC-K"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCPS-56003:
@@ -11112,6 +11133,9 @@ SCPS-56006:
   name-en: "Tekken 4"
   region: "NTSC-K"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1
 SCPS-56007:
@@ -23955,6 +23979,8 @@ SLES-53518:
 SLES-53521:
   name: "Musashi - Samurai Legend"
   region: "PAL-M4"
+  gsHWFixes:
+    mergeSprite: 1 # Fixes ghosting.
 SLES-53523:
   name: "Gun"
   region: "PAL-M4"
@@ -25442,6 +25468,8 @@ SLES-53955:
 SLES-53956:
   name: "Aeon Flux"
   region: "PAL-E"
+  speedHacks:
+    eeCycleRate: 1 # Improves performance.
   compat: 5
 SLES-53957:
   name: "Namco Museum - 50th Anniversary"
@@ -26089,6 +26117,8 @@ SLES-54168:
 SLES-54169:
   name: "Aeon Flux"
   region: "PAL-M4"
+  speedHacks:
+    eeCycleRate: 1 # Improves performance.
 SLES-54170:
   name: "Jaws Unleashed"
   region: "PAL-M5"
@@ -27493,7 +27523,7 @@ SLES-54586:
   name: "Ar tonelico - Melody of Elemia"
   region: "PAL-E"
   gsHWFixes:
-    roundSprite: 1 # Fixes vertical lines in FMVs, character portraits and other sprites.
+    roundSprite: 2 # Fixes vertical lines in FMVs, character portraits and other sprites.
 SLES-54587:
   name: "Raw Danger"
   region: "PAL-E"
@@ -55077,6 +55107,9 @@ SLPS-20015:
   name-en: "Tekken Tag Tournament"
   region: "NTSC-J"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20016:
@@ -58185,6 +58218,9 @@ SLPS-25100:
   name-en: "Tekken 4"
   region: "NTSC-J"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-25101:
@@ -61251,7 +61287,7 @@ SLPS-25604:
   name-en: "Ar tonelico - Sekai no Owari de Utai Tsuzukeru Shoujo"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fixes vertical lines in FMVs, character portraits and other sprites.
+    roundSprite: 2 # Fixes vertical lines in FMVs, character portraits and other sprites.
 SLPS-25605:
   name: "NEOGEOオンラインコレクション Vol.3 THE KING OF FIGHTERS ～オロチ編～ [通常版]"
   name-sort: "ねおじおおんらいんこれくしょん Vol. 3 ざ きんぐ おぶ ふぁいたーず おろちへん [つうじょうばん]"
@@ -63672,6 +63708,9 @@ SLPS-71501:
   name-sort: "てっけんたっぐとーなめんと [MEGA HITS!]"
   name-en: "Tekken Tag Tournament [MEGA HITS!]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-71502:
@@ -63768,6 +63807,9 @@ SLPS-73104:
   name-sort: "てっけんたっぐとーなめんと [PlayStation2 the Best]"
   name-en: "Tekken Tag Tournament [PlayStation2 the Best]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-73105:
@@ -63904,6 +63946,9 @@ SLPS-73209:
   name-sort: "てっけん4 [PlayStation2 the Best]"
   name-en: "Tekken 4 [PlayStation2 the Best]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-73210:
@@ -64296,7 +64341,7 @@ SLPS-73249:
   name-en: "Ar tonelico - Sekai no Owari de Utai Tsuzukeru Shoujo [PlayStation2 the Best]"
   region: "NTSC-J"
   gsHWFixes:
-    roundSprite: 1 # Fixes vertical lines in FMVs, character portraits and other sprites.
+    roundSprite: 2 # Fixes vertical lines in FMVs, character portraits and other sprites.
 SLPS-73250:
   name: "エースコンバット・ゼロ・ザ・ベルカン・ウォー [PlayStation2 the Best]"
   name-sort: "えーすこんばっと・ぜろ・ざ・べるかん・うぉー [PlayStation2 the Best]"
@@ -64673,6 +64718,9 @@ SLUS-20001:
   name: "Tekken Tag Tournament"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLUS-20002:
@@ -66078,6 +66126,9 @@ SLUS-20328:
   name: "Tekken 4"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLUS-20329:
@@ -69698,6 +69749,8 @@ SLUS-20983:
   name: "Musashi Samurai Legend"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    mergeSprite: 1 # Fixes ghosting.
 SLUS-20984:
   name: "Resident Evil Outbreak - File #2"
   region: "NTSC-U"
@@ -71080,6 +71133,8 @@ SLUS-21204:
 SLUS-21205:
   name: "Aeon Flux"
   region: "NTSC-U"
+  speedHacks:
+    eeCycleRate: 1 # Improves performance.
   compat: 5
 SLUS-21206:
   name: "Shining Force Neo"
@@ -72811,7 +72866,7 @@ SLUS-21445:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    roundSprite: 1 # Fixes vertical lines in FMVs, character portraits and other sprites.
+    roundSprite: 2 # Fixes vertical lines in FMVs, character portraits and other sprites.
 SLUS-21446:
   name: "Family Feud"
   region: "NTSC-U"
@@ -75493,6 +75548,9 @@ SLUS-28010:
 SLUS-28012:
   name: "Tekken 4 [Trade Demo]"
   region: "NTSC-U"
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLUS-28013:
@@ -75787,6 +75845,9 @@ SLUS-29033:
 SLUS-29034:
   name: "Tekken 4 [Regular Demo]"
   region: "NTSC-U"
+  clampModes:
+    eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
+    vu1ClampMode: 2 # Fixes broken effects.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLUS-29035:

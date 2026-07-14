@@ -41,6 +41,9 @@ class ControllerManagerViewModel(application: Application) : AndroidViewModel(ap
 
     fun beginCapture(action: ControllerMappings.Action) {
         ControllerMappings.padCapturing.value = true
+        // Bind via the Activity's dispatchKeyEvent (see ControllerMappings.capturePadAction) so any
+        // button binds even though the bind prompt is no longer a focus-stealing dialog.
+        ControllerMappings.capturePadAction.value = { kc -> captureKey(kc) }
         state.value = state.value.copy(capturingAction = action)
     }
 
@@ -48,12 +51,14 @@ class ControllerManagerViewModel(application: Application) : AndroidViewModel(ap
         val action = state.value.capturingAction ?: return false
         ControllerMappings.bind(action, keyCode, state.value.player)
         ControllerMappings.padCapturing.value = false
+        ControllerMappings.capturePadAction.value = null
         state.value = state.value.copy(capturingAction = null, tick = state.value.tick + 1)
         return true
     }
 
     fun cancelCapture() {
         ControllerMappings.padCapturing.value = false
+        ControllerMappings.capturePadAction.value = null
         state.value = state.value.copy(capturingAction = null)
     }
 

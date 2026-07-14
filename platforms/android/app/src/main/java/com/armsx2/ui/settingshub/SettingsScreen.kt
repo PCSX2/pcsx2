@@ -67,6 +67,13 @@ import com.armsx2.ui.settings.LocalSettingsScrollState
 
 private data class SettingsSection(val category: SettingsCategory, val titleKey: String, val glyph: String)
 
+/** Retains the settings page's scroll offset across close/reopen. The selected category already
+ *  persists in the view-model, so restoring this one offset returns you to where you were (esp.
+ *  useful in long lists like Fixes) instead of snapping to the top every time. */
+private object SettingsScrollMemory {
+    var lastOffset = 0
+}
+
 @Composable
 fun SettingsScreen(
     initialCategory: SettingsCategory,
@@ -91,7 +98,10 @@ fun SettingsScreen(
             pendingJump = label
         }
     }
-    val screenScroll = rememberScrollState()
+    val screenScroll = rememberScrollState(initial = SettingsScrollMemory.lastOffset)
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        onDispose { SettingsScrollMemory.lastOffset = screenScroll.value }
+    }
     LaunchedEffect(initialCategory, game?.uri) { viewModel.load(initialCategory, game) }
     // When the controller focus returns to the category-chip row (the top-most
     // navigable element), snap the whole page back to the top so the title bar +

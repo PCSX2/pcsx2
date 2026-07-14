@@ -73,17 +73,24 @@ fun AppTab() {
 
         SegmentedRow(
             label = str("app.theme"),
-            options = listOf(str("app.theme.system"), str("app.theme.light"), str("app.theme.dark")),
+            options = listOf(
+                str("app.theme.system"), str("app.theme.light"), str("app.theme.dark"),
+                str("app.theme.black"), str("app.theme.oled"),
+            ),
             selectedIndex = when (ThemePreferences.mode.value) {
                 ThemeMode.System -> 0
                 ThemeMode.Light -> 1
                 ThemeMode.Dark -> 2
+                ThemeMode.Black -> 3
+                ThemeMode.Oled -> 4
             },
             onChange = { index ->
                 ThemePreferences.set(
                     when (index) {
                         1 -> ThemeMode.Light
                         2 -> ThemeMode.Dark
+                        3 -> ThemeMode.Black
+                        4 -> ThemeMode.Oled
                         else -> ThemeMode.System
                     },
                 )

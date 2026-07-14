@@ -15,6 +15,11 @@ object InGameOverlay {
     val hardcoreOn = mutableStateOf(false)
     val frameLimitOn = mutableStateOf(true)
 
+    /** Per-tab scroll offset (px) of the in-game pause menu, retained across menu open/close so
+     *  reopening a tab — especially the long Fixes list — returns to where you were instead of
+     *  snapping back to the top. Keyed by EmulationMenuTab.name to avoid coupling to that enum. */
+    val menuTabScroll = HashMap<String, Int>()
+
     fun saveSettings(updated: Settings) {
         val previous = settingsState.value
         settingsState.value = updated

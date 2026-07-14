@@ -187,7 +187,10 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
     }
 
     fun setUpscale(value: Float) {
-        val normalized = value.coerceIn(1f, 8f)
+        // Allow sub-native (0.25x–0.75x, issue #207) — the in-game menu offers them via
+        // UPSCALE_OPTIONS, so don't clamp them up to Native like the old 1f floor did (that
+        // made every below-Native pick silently apply as Native). Matches the settings tab.
+        val normalized = value.coerceIn(0.25f, 8f)
         updateSettings { it.copy(upscaleFloat = normalized) }
         MainActivityRuntime.upscale.value = normalized
         NativeApp.renderUpscalemultiplier(normalized)

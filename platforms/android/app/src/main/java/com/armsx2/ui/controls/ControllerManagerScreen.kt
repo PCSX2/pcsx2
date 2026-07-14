@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -88,14 +87,11 @@ fun ControllerManagerScreen(onBack: () -> Unit, viewModel: ControllerManagerView
         }
     }
 
-    state.capturingAction?.let { action ->
-        AlertDialog(
-            onDismissRequest = viewModel::cancelCapture,
-            title = { Text("${str("pad.action.bind")}: ${action.label}") },
-            text = { Text(str("hotkeys.capturePrompt")) },
-            confirmButton = { TextButton(onClick = viewModel::cancelCapture) { Text(str("action.cancel")) } },
-        )
-    }
+    // No capture dialog. A Compose AlertDialog is a separate focused WINDOW that swallowed all
+    // controller key events before either this Activity's dispatchKeyEvent or the main Compose
+    // tree could see them — so no button ever bound (the 2.6.0 "can't remap buttons" bug). The
+    // bind prompt now shows inline on the row (highlight + "press a button" text, like hotkeys),
+    // and the key is captured in MainActivityRuntime.dispatchKeyEvent via capturePadAction.
 }
 
 @Composable
@@ -163,7 +159,7 @@ private fun ControllerBindings(state: ControllerManagerUiState, viewModel: Contr
                         label = action.label,
                         binding = ControllerMappings.labelForKey(ControllerMappings.physicalFor(action, state.player)),
                         capturing = state.capturingAction == action,
-                        onBind = { viewModel.beginCapture(action) },
+                        onBind = { if (state.capturingAction == action) viewModel.cancelCapture() else viewModel.beginCapture(action) },
                         onClear = { viewModel.clear(action) },
                     )
                 }

@@ -64,8 +64,11 @@ private val TrophyGold = Color(0xFFFFC93C)
 private data class DrawerItem(
     val titleKey: String,
     val glyph: String,
-    val destination: AppRoute,
+    // A nav destination OR an action (onAction). Action rows (e.g. Boot BIOS) run onAction and
+    // close the drawer instead of navigating to a screen.
+    val destination: AppRoute? = null,
     val iconRes: Int? = null,
+    val onAction: (() -> Unit)? = null,
 )
 
 @Composable
@@ -111,17 +114,20 @@ fun NavigationDrawer(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.55f)),
                 shadowElevation = 18.dp,
             ) {
-                DrawerContent(selected, onNavigate)
+                DrawerContent(selected, onNavigate, onDismiss)
             }
         }
     }
 }
 
 @Composable
-private fun DrawerContent(selected: AppRoute, onNavigate: (AppRoute) -> Unit) {
+private fun DrawerContent(selected: AppRoute, onNavigate: (AppRoute) -> Unit, onDismiss: () -> Unit) {
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val primary = listOf(
         DrawerItem("games.section.library", "▦", AppRoute.Home),
+        // Boot straight into the PS2 system BIOS with no disc — distinct from "BIOS Location"
+        // below, which only points the emulator at your BIOS file.
+        DrawerItem("bios.boot.title", "▶", onAction = { MainActivityRuntime.startBios(); onDismiss() }),
         DrawerItem("ra.title", "★", AppRoute.Achievements, iconRes = com.armsx2.R.drawable.ic_trophy),
         DrawerItem("action.settings", "⚙", AppRoute.Settings()),
     )
@@ -175,12 +181,12 @@ private fun DrawerSection(
     )
     items.forEachIndexed { index, item ->
         DrawerRow(
-            controllerId = "drawer.${item.destination::class.simpleName}",
+            controllerId = "drawer.${item.destination?.let { it::class.simpleName } ?: item.titleKey}",
             title = str(item.titleKey),
             glyph = item.glyph,
             iconRes = item.iconRes,
-            selected = sameDestination(selected, item.destination),
-            onClick = { onNavigate(item.destination) },
+            selected = item.destination != null && sameDestination(selected, item.destination),
+            onClick = { item.onAction?.invoke() ?: item.destination?.let(onNavigate) },
         )
     }
 }

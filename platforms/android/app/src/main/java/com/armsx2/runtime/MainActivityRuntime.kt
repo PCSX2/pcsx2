@@ -1515,7 +1515,9 @@ open class MainActivityRuntime : ComponentActivity() {
                 resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK !=
                     Configuration.UI_MODE_NIGHT_YES
             com.armsx2.ui.theme.ThemeMode.Light -> true
-            com.armsx2.ui.theme.ThemeMode.Dark -> false
+            com.armsx2.ui.theme.ThemeMode.Dark,
+            com.armsx2.ui.theme.ThemeMode.Black,
+            com.armsx2.ui.theme.ThemeMode.Oled -> false
         }
         WindowInsetsControllerCompat(window, window.decorView).let { controller ->
             controller.show(WindowInsetsCompat.Type.systemBars())
@@ -1585,7 +1587,9 @@ open class MainActivityRuntime : ComponentActivity() {
             val darkTheme = when (com.armsx2.ui.theme.ThemePreferences.mode.value) {
                 com.armsx2.ui.theme.ThemeMode.System -> androidx.compose.foundation.isSystemInDarkTheme()
                 com.armsx2.ui.theme.ThemeMode.Light -> false
-                com.armsx2.ui.theme.ThemeMode.Dark -> true
+                com.armsx2.ui.theme.ThemeMode.Dark,
+                com.armsx2.ui.theme.ThemeMode.Black,
+                com.armsx2.ui.theme.ThemeMode.Oled -> true
             }
             androidx.compose.runtime.SideEffect {
                 applySystemBarTheme(darkTheme = darkTheme, showSystemBars = showSystemBars)
@@ -1900,6 +1904,18 @@ open class MainActivityRuntime : ComponentActivity() {
                 }
             }
             return true // swallow down + up while capturing
+        }
+        // Pad-button capture (Controls screen): bind here — like the hotkey capture above —
+        // instead of via Compose's onPreviewKeyEvent, because the bind prompt is no longer a
+        // focus-stealing dialog (a Dialog window would swallow controller keys before Compose or
+        // this handler saw them — the 2.6.0 "can't remap buttons" bug). Bind the first real key
+        // press; swallow down+up so nav (B = exit, A = confirm) can't fire mid-capture.
+        val padCapture = ControllerMappings.capturePadAction.value
+        if (padCapture != null) {
+            if (kc != KeyEvent.KEYCODE_UNKNOWN && event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+                padCapture(kc)
+            }
+            return true
         }
         // Pad-button capture (Pad tab): let every key fall through to Compose's
         // onPreviewKeyEvent so ANY button binds — without this the overlay nav
