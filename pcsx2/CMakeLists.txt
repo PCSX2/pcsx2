@@ -1450,8 +1450,13 @@ function(setup_main_executable target)
 		# actually built against -- deps/bin for the x64 build, deps-arm64/bin for
 		# the native arm64 build -- rather than assuming a fixed path, so we never
 		# ship wrong-arch DLLs. Fall back to deps/bin when no prefix was supplied.
-		set(DEPS_BINDIR "${CMAKE_SOURCE_DIR}/deps/bin")
+		# Normalize to forward slashes: CMAKE_PREFIX_PATH may arrive with native
+		# backslashes (e.g. %cd%\deps-arm64 from the Windows workflow), and a
+		# backslash path baked into the generated cmake_install.cmake string trips
+		# "Invalid character escape" (\a, \b, ...) at install time.
+		file(TO_CMAKE_PATH "${CMAKE_SOURCE_DIR}/deps/bin" DEPS_BINDIR)
 		foreach(_prefix IN LISTS CMAKE_PREFIX_PATH)
+			file(TO_CMAKE_PATH "${_prefix}" _prefix)
 			if(EXISTS "${_prefix}/bin")
 				set(DEPS_BINDIR "${_prefix}/bin")
 				break()
