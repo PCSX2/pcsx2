@@ -128,12 +128,13 @@ public:
 	{
 		PSSelector ps;
 		VSSelector vs;
-		u8 pad[3];
+		u8 pad[15];
 
 		__fi bool operator==(const ProgramSelector& p) const { return BitEqual(*this, p); }
 		__fi bool operator!=(const ProgramSelector& p) const { return !BitEqual(*this, p); }
 	};
 	static_assert(sizeof(ProgramSelector) == 32, "Program selector is 32 bytes");
+	static_assert(offsetof(ProgramSelector, pad) + sizeof(ProgramSelector::pad) == sizeof(ProgramSelector));
 
 	struct ProgramSelectorHash
 	{
