@@ -287,10 +287,8 @@ private:
 	// vkCmdPushDescriptorSetKHR, so texture binding falls back to per-frame descriptor sets.
 	bool m_use_push_descriptors = true;
 
-	// True when the SoC hints look like MediaTek (Dimensity/Helio). Set in CheckFeatures
-	// from GpuProfileDetector; used to disable the broken Vulkan fbfetch path on their
-	// Mali stacks (zero/stale Cd → black/missing textures). Ported from EmuCoreX.
-	bool m_is_mediatek_soc = false;
+	// MediaTek-SoC detection now lives in the base GSDevice (SetMediaTekSoC/IsMediaTekSoC),
+	// so both backends and GS.cpp's Android GameDB overrides can read it.
 
 	VkQueue m_graphics_queue = VK_NULL_HANDLE;
 	VkQueue m_present_queue = VK_NULL_HANDLE;

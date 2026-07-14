@@ -80,6 +80,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.armsx2.CoverArtStyle
+import com.armsx2.GridLabels
 import com.armsx2.R
 import com.armsx2.ui.theme.ToolbarPositionPreferences
 import com.armsx2.ui.theme.LibraryChromePreferences
@@ -358,11 +359,13 @@ fun HomeScreen(
                                 expanded = overflowMenu,
                                 selectedSort = state.sort,
                                 use3dCovers = CoverArtStyle.use3d.value,
+                                showGridNames = GridLabels.show.value,
                                 hasCustomBackground = LibraryBackground.uri.value != null,
                                 onDismiss = { overflowMenu = false },
                                 onOpenNavigation = onOpenMenu,
                                 onSort = viewModel::setSort,
                                 onToggleCoverStyle = { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
+                                onToggleGridNames = { GridLabels.set(!GridLabels.show.value) },
                                 onChooseBackground = { backgroundPicker.launch(arrayOf("image/*")) },
                                 onClearBackground = LibraryBackground::clear,
                                 onExitApp = { showExitConfirm = true },
@@ -648,11 +651,13 @@ private fun LibraryOverflowMenu(
     expanded: Boolean,
     selectedSort: HomeSort,
     use3dCovers: Boolean,
+    showGridNames: Boolean,
     hasCustomBackground: Boolean,
     onDismiss: () -> Unit,
     onOpenNavigation: () -> Unit,
     onSort: (HomeSort) -> Unit,
     onToggleCoverStyle: () -> Unit,
+    onToggleGridNames: () -> Unit,
     onChooseBackground: () -> Unit,
     onClearBackground: () -> Unit,
     onExitApp: () -> Unit,
@@ -702,6 +707,13 @@ private fun LibraryOverflowMenu(
             trailing = if (use3dCovers) "3D" else "2D",
         ) {
             closeThen(onToggleCoverStyle)
+        }
+        LibraryOverflowItem(
+            glyph = "Aa",
+            label = str("games.overflow.gridNames"),
+            trailing = if (showGridNames) str("common.on") else str("common.off"),
+        ) {
+            closeThen(onToggleGridNames)
         }
         LibraryOverflowItem("▧", str("games.background.choose")) {
             closeThen(onChooseBackground)
@@ -801,6 +813,16 @@ private fun GameGridCard(
                     RoundedCornerShape(12.dp),
                 ),
         )
+        if (GridLabels.show.value) {
+            Spacer(Modifier.height(4.dp))
+            Text(
+                game.title,
+                style = MaterialTheme.typography.labelSmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = 2.dp),
+            )
+        }
     }
 }
 

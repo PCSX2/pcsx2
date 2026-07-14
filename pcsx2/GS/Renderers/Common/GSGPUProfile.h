@@ -14,6 +14,7 @@ enum class GpuProfileOverride : u8
 	Mali,
 	Adreno,
 	PowerVR,
+	Xclipse,
 };
 
 enum class RuntimeGpuProfile : u8
@@ -22,6 +23,7 @@ enum class RuntimeGpuProfile : u8
 	Mali,
 	Adreno,
 	PowerVR,
+	Xclipse,
 };
 
 enum class MobileGpuArchitecture : u8

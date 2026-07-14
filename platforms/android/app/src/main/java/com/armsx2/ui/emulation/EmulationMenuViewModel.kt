@@ -98,7 +98,8 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
             EmulationMenuTab.Session -> when (state.value.selectedAction) {
                 0 -> resume()
                 1 -> MainActivityRuntime.restart()
-                2 -> MainActivityRuntime.stop(saveAutosave = false)
+                2 -> MainActivityRuntime.promptSwapDisc()
+                3 -> MainActivityRuntime.stop(saveAutosave = false)
             }
             EmulationMenuTab.Graphics -> when (state.value.selectedAction) {
                 0 -> setRenderer("auto")
@@ -312,7 +313,7 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
     }
 
     private fun actionCount(tab: EmulationMenuTab): Int = when (tab) {
-        EmulationMenuTab.Session -> 3
+        EmulationMenuTab.Session -> 4
         EmulationMenuTab.Graphics -> 4
         EmulationMenuTab.Fixes -> 0
         EmulationMenuTab.Performance -> 3

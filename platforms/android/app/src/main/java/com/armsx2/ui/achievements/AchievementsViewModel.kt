@@ -188,7 +188,10 @@ fun parseAchievementItems(json: String): List<AchievementItem> {
                 ),
             )
         }
-    }.sortedWith(compareByDescending<AchievementItem> { it.unlocked }.thenBy { it.title })
+    }
+    // Keep RetroAchievements' native list order (its display/progression order = the
+    // story/unlock sequence). We used to re-sort unlocked-first then alphabetically by
+    // title, which made it impossible to see what to unlock next; restore progression.
 }
 
 /** Parse the top-level "subsets" array (base + bonus subsets) emitted by the native side. */

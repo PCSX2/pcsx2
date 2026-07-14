@@ -157,6 +157,8 @@ GpuProfileOverride GpuProfileDetector::ParseOverride(std::string_view value)
 		return GpuProfileOverride::Adreno;
 	if (lowered == "powervr")
 		return GpuProfileOverride::PowerVR;
+	if (lowered == "xclipse")
+		return GpuProfileOverride::Xclipse;
 
 	return GpuProfileOverride::Auto;
 }
@@ -171,6 +173,8 @@ const char* GpuProfileDetector::OverrideToConfigString(GpuProfileOverride value)
 			return "adreno";
 		case GpuProfileOverride::PowerVR:
 			return "powervr";
+		case GpuProfileOverride::Xclipse:
+			return "xclipse";
 		case GpuProfileOverride::Auto:
 		default:
 			return "auto";
@@ -187,6 +191,8 @@ const char* GpuProfileDetector::OverrideToString(GpuProfileOverride value)
 			return "Force Adreno";
 		case GpuProfileOverride::PowerVR:
 			return "Force PowerVR";
+		case GpuProfileOverride::Xclipse:
+			return "Force Xclipse";
 		case GpuProfileOverride::Auto:
 		default:
 			return "Auto";
@@ -203,6 +209,8 @@ const char* GpuProfileDetector::RuntimeProfileToString(RuntimeGpuProfile value)
 			return "PowerVR";
 		case RuntimeGpuProfile::Adreno:
 			return "Adreno";
+		case RuntimeGpuProfile::Xclipse:
+			return "Xclipse";
 		case RuntimeGpuProfile::Unknown:
 		default:
 			return "Unknown";
@@ -270,6 +278,17 @@ GpuProfileSelection GpuProfileDetector::Resolve(std::string_view override_value,
 	if (selection.override_mode == GpuProfileOverride::PowerVR)
 	{
 		ApplyResolvedProfile(selection, RuntimeGpuProfile::PowerVR, GpuProfileDetail::ResolvePowerVRProfile(lowered_hints));
+		return selection;
+	}
+
+	if (selection.override_mode == GpuProfileOverride::Xclipse)
+	{
+		// Samsung Xclipse (Exynos, AMD-RDNA2) has no dedicated resolver — there is no reliable
+		// SoC-property signature and its one hardware quirk (broken ROAA framebuffer fetch) is
+		// keyed off the Vulkan vendorID (GSDeviceVK::IsDeviceXclipse). Setting the runtime
+		// profile is enough for GSDeviceVK to force fbfetch off; keep the conservative GS
+		// tuning already assigned above.
+		selection.runtime_profile = RuntimeGpuProfile::Xclipse;
 		return selection;
 	}
 

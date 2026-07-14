@@ -383,6 +383,17 @@ fun RendererTab(state: MutableState<Settings>) {
                 apply(s.copy(adrenoFbFetch = it))
             }
             SettingsDivider()
+            // ANGLE (GLES-on-Vulkan) for the OpenGL renderer — helps on devices whose
+            // native GLES driver is broken (e.g. some MediaTek Mali). Only bites when the
+            // renderer is OpenGL; applies on game restart. Driven by MainActivityRuntime.applyAngleEnv.
+            ToggleRow(
+                str("renderer.angleOpenGL.label"),
+                s.useAngleOpenGL,
+                description = str("renderer.angleOpenGL.description"),
+            ) {
+                apply(s.copy(useAngleOpenGL = it))
+            }
+            SettingsDivider()
             ToggleRow(
                 str("renderer.accurateAlphaTest.label"),
                 s.hwAccurateAlphaTest,
@@ -436,13 +447,16 @@ fun RendererTab(state: MutableState<Settings>) {
             // hints). Mali uses ARM_shader_framebuffer_fetch over texture
             // barriers; Adreno uses the EXT fetch / generic path; PowerVR
             // (Imagination) uses EXT/PLS like Adreno but is its own tile-based
-            // GPU family. Changing requires a renderer restart — CheckFeatures
+            // GPU family; Xclipse (Samsung Exynos, AMD-RDNA2) forces framebuffer
+            // fetch OFF on Vulkan (its ROAA path is broken) — pick it if the auto
+            // 0x144D vendor guess doesn't fire on your driver. Marginal otherwise.
+            // Changing requires a renderer restart — CheckFeatures
             // runs once at device init, so we kick MainActivityRuntime.restart() the same way
             // RestartButton does.
             SegmentedRow(
                 label = str("renderer.gpuProfile.label"),
-                options = listOf("Auto", "Mali", "Adreno", "PowerVR"),
-                selectedIndex = s.gpuProfile.coerceIn(0, 3),
+                options = listOf("Auto", "Mali", "Adreno", "PowerVR", "Xclipse"),
+                selectedIndex = s.gpuProfile.coerceIn(0, 4),
                 description = str("renderer.gpuProfile.description"),
                 onChange = {
                     apply(s.copy(gpuProfile = it))

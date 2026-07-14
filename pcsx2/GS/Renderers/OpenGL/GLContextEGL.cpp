@@ -17,6 +17,30 @@
 static DynamicLibrary s_egl_library;
 static std::atomic_uint32_t s_egl_refcount = 0;
 
+// ANGLE integration (ported from sashkinbro/EmuCoreX): when the app wants to run the
+// OpenGL renderer through ANGLE's GLES-on-Vulkan translation (Android only, driven by
+// the AndroidUseAngleOpenGL setting), the Kotlin side sets ARMSX2_ANGLE_EGL_LIBRARY to
+// the absolute path of the bundled libEGL_angle.so before the GS thread opens. When it's
+// present we load ANGLE's EGL instead of the system libEGL; ANGLE's libEGL then pulls in
+// libGLESv2_angle.so from the same native-lib dir. Inert (returns false) when the env var
+// is unset, so the default path is untouched.
+static bool TryLoadEGLFromOverride(Error* error)
+{
+#ifdef __ANDROID__
+	const char* egl_override = std::getenv("ARMSX2_ANGLE_EGL_LIBRARY");
+	if (!egl_override || !egl_override[0])
+		return false;
+
+	Console.WriteLnFmt("Loading ANGLE EGL from override {}...", egl_override);
+	if (s_egl_library.Open(egl_override, error))
+		return true;
+
+	Console.ErrorFmt("Failed to load ANGLE EGL from {}: {}", egl_override, error->GetDescription());
+#endif
+
+	return false;
+}
+
 static bool LoadEGL()
 {
 	// We're not going to be calling this from multiple threads concurrently.
@@ -25,10 +49,13 @@ static bool LoadEGL()
 	{
 		pxAssert(!s_egl_library.IsOpen());
 
+		Error error;
+		if (TryLoadEGLFromOverride(&error))
+			return true;
+
 		std::string egl_libname = DynamicLibrary::GetVersionedFilename("libEGL");
 		Console.WriteLnFmt("Loading EGL from {}...", egl_libname);
 
-		Error error;
 		if (!s_egl_library.Open(egl_libname.c_str(), &error))
 		{
 			// Try versioned.

@@ -77,6 +77,35 @@ bool GLShaderCache::Open(bool is_gles)
 		return true;
 	}
 
+	// Compute an identity signature for the live driver. Program binaries are only valid for the
+	// exact driver that produced them; if the cache was written by a different driver (e.g. the
+	// device's native GLES driver, then the user switched the renderer to ANGLE which reports a
+	// completely different vendor/renderer/version), reusing those binaries feeds foreign blobs to
+	// glProgramBinary() and crashes some drivers on the first cached draw. Fold vendor/renderer/
+	// version (and the binary format list) into an FNV-1a hash so any driver change invalidates it.
+	{
+		u32 sig = 0x811c9dc5u;
+		const auto fold = [&sig](const char* s) {
+			if (!s)
+				return;
+			for (; *s; ++s)
+				sig = (sig ^ static_cast<u8>(*s)) * 0x01000193u;
+		};
+		fold(reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+		fold(reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+		fold(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+		GLint num_formats = 0;
+		glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &num_formats);
+		if (num_formats > 0)
+		{
+			std::vector<GLint> formats(static_cast<size_t>(num_formats));
+			glGetIntegerv(GL_PROGRAM_BINARY_FORMATS, formats.data());
+			for (const GLint f : formats)
+				sig = (sig ^ static_cast<u32>(f)) * 0x01000193u;
+		}
+		m_driver_signature = sig;
+	}
+
 	if (!GSConfig.DisableShaderCache)
 	{
 		const std::string index_filename = GetIndexFileName();
@@ -112,7 +141,8 @@ bool GLShaderCache::CreateNew(const std::string& index_filename, const std::stri
 	}
 
 	const u32 file_version = SHADER_CACHE_VERSION;
-	if (std::fwrite(&file_version, sizeof(file_version), 1, m_index_file) != 1)
+	if (std::fwrite(&file_version, sizeof(file_version), 1, m_index_file) != 1 ||
+		std::fwrite(&m_driver_signature, sizeof(m_driver_signature), 1, m_index_file) != 1)
 	{
 		Console.Error("Failed to write version to index file '%s'", index_filename.c_str());
 		std::fclose(m_index_file);
@@ -154,6 +184,20 @@ bool GLShaderCache::ReadExisting(const std::string& index_filename, const std::s
 	if (std::fread(&file_version, sizeof(file_version), 1, m_index_file) != 1 || file_version != SHADER_CACHE_VERSION)
 	{
 		Console.Error("Bad file/data version in '%s'", index_filename.c_str());
+		std::fclose(m_index_file);
+		m_index_file = nullptr;
+		return false;
+	}
+
+	u32 file_driver_signature = 0;
+	if (std::fread(&file_driver_signature, sizeof(file_driver_signature), 1, m_index_file) != 1 ||
+		file_driver_signature != m_driver_signature)
+	{
+		// Cache was produced by a different GL driver (e.g. native GLES vs ANGLE). Its program
+		// binaries are not portable across drivers, so discard and recompile rather than risk
+		// feeding foreign blobs to glProgramBinary().
+		Console.WriteLn("GL driver signature changed (0x%08X -> 0x%08X), invalidating shader cache '%s'.",
+			file_driver_signature, m_driver_signature, index_filename.c_str());
 		std::fclose(m_index_file);
 		m_index_file = nullptr;
 		return false;

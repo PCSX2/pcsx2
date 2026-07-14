@@ -323,7 +323,7 @@ set(pcsx2DEV9Sources
 # stub PCAPAdapter) instead, so the real pcap_io.cpp must NOT be compiled there
 # (it references pcap_findalldevs/pcap_open_live/... -> undefined at link, which
 # LTO release builds surface even though a debug build's --gc-sections hides it).
-if(NOT ANDROID AND NOT IOS)
+if(NOT ANDROID)
 	list(APPEND pcsx2DEV9Sources DEV9/pcap_io.cpp)
 endif()
 
@@ -722,7 +722,7 @@ elseif(LINUX)
 	list(APPEND pcsx2USBHeaders
 		USB/usb-eyetoy/cam-linux.h
 	)
-elseif(APPLE AND NOT IOS)
+elseif(APPLE)
 	list(APPEND pcsx2USBSources
 		USB/usb-eyetoy/cam-macos.mm
 	)
@@ -1115,12 +1115,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
 	set(ARMSX2_IOS TRUE)
 endif()
 
-# NEON-optimised SPU2 reverb FIR backend. Compiled on EVERY arm64 target
-# (desktop macOS/Linux/Windows as well as Android/iOS): the call site in
-# spu2.cpp is guarded only by __aarch64__ / _M_ARM64, so RegisterNEONBackend()
-# must be defined on all arm64 builds or desktop arm64 fails to link. The
-# feature itself stays opt-in via SPU2/NeonReverbSIMD (default off).
-if(ANDROID OR ARMSX2_IOS OR ARCH_ARM64)
+# NEON-optimised SPU2 mixer/reverb: shared by all arm64 mobile targets.
+if(ANDROID OR ARMSX2_IOS)
 	list(APPEND pcsx2SPU2Sources
 		SPU2/spu2_neon.cpp)
 	list(APPEND pcsx2SPU2Headers
@@ -1254,10 +1250,10 @@ endif()
 target_sources(PCSX2 PRIVATE ${pcsx2USBSources} ${pcsx2USBHeaders})
 
 if(APPLE OR BSD)
-	if(APPLE AND NOT IOS)
+	if(APPLE)
 		target_sources(PCSX2 PRIVATE
 			${pcsx2OSXSources})
-	elseif(BSD)
+	else()
 		target_sources(PCSX2 PRIVATE
 			${pcsx2FreeBSDSources})
 	endif()
@@ -1316,7 +1312,7 @@ if(WIN32)
 		dwmapi.lib
 		OneCore.lib
 	)
-elseif(NOT ANDROID AND NOT IOS)
+elseif(NOT ANDROID)
 	# Android has no system libpcap; DEV9 uses Android/AndroidPcapStubs.cpp instead,
 	# so it must NOT link PCAP::PCAP (a bare else() here caught Android and broke it).
 	target_link_libraries(PCSX2_FLAGS INTERFACE
@@ -1369,8 +1365,7 @@ fixup_file_properties(PCSX2)
 # To ensure the dependency build script's headers are preferred, push any directories that look like */local/include to the end.
 force_include_last(PCSX2_FLAGS "/(usr|local)/include/?$")
 
-if(APPLE AND NOT IOS)
-	# macOS desktop: AppKit + IOKit are available.
+if (APPLE)
 	find_library(APPKIT_LIBRARY AppKit)
 	find_library(IOKIT_LIBRARY IOKit)
 	find_library(METAL_LIBRARY Metal)
@@ -1387,17 +1382,6 @@ if(APPLE AND NOT IOS)
 	)
 	# MetalFX (spatial upscaler) is macOS 13.0+. Weak-link it so the binary still
 	# loads on older systems; every use is guarded with @available(macOS 13, *).
-	target_link_options(PCSX2_FLAGS INTERFACE "SHELL:-weak_framework MetalFX")
-elseif(IOS)
-	# iOS: Metal + QuartzCore (CAMetalLayer) are available; AppKit/IOKit are not.
-	find_library(METAL_LIBRARY Metal)
-	find_library(QUARTZCORE_LIBRARY QuartzCore)
-	target_link_libraries(PCSX2_FLAGS INTERFACE
-		${METAL_LIBRARY}
-		${QUARTZCORE_LIBRARY}
-	)
-	# MetalFX spatial upscaler is iOS 16+. Weak-link it so the binary still loads
-	# on older iOS revisions; every use is guarded by @available(iOS 16, *).
 	target_link_options(PCSX2_FLAGS INTERFACE "SHELL:-weak_framework MetalFX")
 endif()
 

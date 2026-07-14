@@ -286,7 +286,7 @@ private fun MenuRail(
             modifier = Modifier.padding(vertical = 2.dp).width(40.dp),
             color = MaterialTheme.colorScheme.outline.copy(alpha = 0.34f),
         )
-        MenuRailAction("⚙", str("action.allSettings"), onAllSettings)
+        MenuRailAction("⤢", str("action.allSettings"), onAllSettings)
     }
 }
 
@@ -392,14 +392,18 @@ private fun MenuTab(tab: EmulationMenuTab, active: Boolean, onSelect: (Emulation
     }
 }
 
+// Rail tab icons. No monochrome Unicode exists for gamepad/wrench/trophy/display, so those
+// use color emoji (the bundled NotoColorEmoji renders them); Session/Performance keep their
+// clean text glyphs. Options carries the settings gear; the full-settings shortcut below the
+// rail divider uses a distinct "open" glyph so there aren't two gears.
 private fun tabGlyph(tab: EmulationMenuTab): String = when (tab) {
     EmulationMenuTab.Session -> "☰"
-    EmulationMenuTab.Graphics -> "✣"
-    EmulationMenuTab.Fixes -> "⚙"
+    EmulationMenuTab.Graphics -> "🖥️"
+    EmulationMenuTab.Fixes -> "🔧"
     EmulationMenuTab.Performance -> "↯"
-    EmulationMenuTab.Controls -> "⌁"
-    EmulationMenuTab.Options -> "▣"
-    EmulationMenuTab.Achievements -> "★"
+    EmulationMenuTab.Controls -> "🎮"
+    EmulationMenuTab.Options -> "⚙"
+    EmulationMenuTab.Achievements -> "🏆"
 }
 
 @Composable
@@ -459,6 +463,7 @@ private fun SessionPane(state: EmulationMenuUiState, viewModel: EmulationMenuVie
         actions = listOf(
             MenuAction(str("action.resume"), str("action.play"), "▶", Success, viewModel::resume),
             MenuAction(str("memcard.restart"), str("action.reset"), "↻", null, MainActivityRuntime::restart),
+            MenuAction(str("action.swapDisc"), str("action.swapDisc.detail"), "⏏", null, MainActivityRuntime::promptSwapDisc),
             MenuAction(str("action.close"), MainActivityRuntime.currentGame.value?.title.orEmpty(), "■", Danger) {
                 MainActivityRuntime.stop(false)
             },
@@ -811,6 +816,9 @@ private fun ControlsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVi
     CompactAction(str("pad.controllerMapping"), "⌁", Modifier.fillMaxWidth(), viewModel::openControlsManager)
     Spacer(Modifier.height(6.dp))
     CompactAction(str("pad.editTouchLayout"), "✥", Modifier.fillMaxWidth(), viewModel::editTouchControls)
+    // Motion / gyroscope controls in-game (mode, sensitivity, smoothing, invert). Global scope
+    // to match the rumble/multitap toggles above; the per-game scope lives in All Settings › Controls.
+    com.armsx2.ui.settings.GyroSection()
     // Macros — edit each M1-M4 button set here in-game too (physical-trigger binding stays
     // in All Settings › Controls, which hosts the key-capture listener).
     com.armsx2.ui.settings.MacrosSection()
