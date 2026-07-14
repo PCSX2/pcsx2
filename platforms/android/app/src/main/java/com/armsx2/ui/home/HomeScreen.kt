@@ -723,6 +723,9 @@ private fun LibraryOverflowMenu(
                 closeThen(onClearBackground)
             }
         }
+        LibraryOverflowItem("↻", str("games.overflow.setup")) {
+            closeThen { MainActivityRuntime.reopenSetup() }
+        }
         LibraryOverflowItem("⏻", str("games.toolbar.exit")) {
             closeThen(onExitApp)
         }

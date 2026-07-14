@@ -468,6 +468,7 @@ val EN: Map<String, String> = mapOf(
     "games.overflow.coverStyle" to "Cover style",
     "games.overflow.gridNames" to "Game names in grid",
     "games.overflow.openNavigation" to "Open navigation",
+    "games.overflow.setup" to "Setup / Change Folders",
     "games.overflow.sortRecent" to "Sort by recently played",
     "games.overflow.sortTitle" to "Sort by title",
     "games.noCover" to "No cover",
