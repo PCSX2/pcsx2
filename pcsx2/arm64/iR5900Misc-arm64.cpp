@@ -444,10 +444,10 @@ void recMFSA()
 {
 	if (!_Rd_) return;
 	_deleteEEreg(_Rd_, 0);
-	GPR_DEL_CONST(_Rd_);
-	armLoadEERegPtr(RWSCRATCH, &cpuRegs.sa);
-	// Ldr w8 already zero-extends into x8 (GE-04) — store the x view directly.
-	armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
+	// Ldr of the 32-bit sa zero-extends into the 64-bit dest (GE-04).
+	armLoadEERegPtr(dst.W(), &cpuRegs.sa);
+	_eeStoreGPRDestReg(_Rd_, dst);
 }
 
 // MTSA — sa = rs
@@ -461,8 +461,8 @@ void recMTSA()
 	else
 	{
 		_deleteEEreg(_Rs_, 1);
-		armLoadEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rs_].UL[0]);
-		armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.sa));
+		const a64::Register rs = _eeGetGPRSourceReg(RWSCRATCH, _Rs_);
+		armAsm->Str(rs, armCpuRegMem(&cpuRegs.sa));
 	}
 }
 
@@ -478,8 +478,8 @@ void recMTSAB()
 	else
 	{
 		_deleteEEreg(_Rs_, 1);
-		armLoadEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rs_].UL[0]);
-		armAsm->And(RWSCRATCH, RWSCRATCH, 0xF);
+		const a64::Register rs = _eeGetGPRSourceReg(RWSCRATCH, _Rs_);
+		armAsm->And(RWSCRATCH, rs, 0xF); // read rs, write scratch (rs may be a pin)
 		armAsm->Eor(RWSCRATCH, RWSCRATCH, _Imm_ & 0xF);
 		armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.sa));
 	}
@@ -497,8 +497,8 @@ void recMTSAH()
 	else
 	{
 		_deleteEEreg(_Rs_, 1);
-		armLoadEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rs_].UL[0]);
-		armAsm->Eor(RWSCRATCH, RWSCRATCH, _Imm_ & 0x7);
+		const a64::Register rs = _eeGetGPRSourceReg(RWSCRATCH, _Rs_);
+		armAsm->Eor(RWSCRATCH, rs, _Imm_ & 0x7); // read rs, write scratch (rs may be a pin)
 		// ubfiz w, w, #1, #3 extracts bits[2:0] and places them at bit 1
 		armAsm->Ubfiz(RWSCRATCH, RWSCRATCH, 1, 3);
 		armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.sa));
