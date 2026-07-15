@@ -1490,8 +1490,8 @@ void Host::CommitBaseSettingChanges()
 	if (!connected)
 	{
 		QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, []() {
-			delete s_settings_save_timer;
-			s_settings_save_timer = nullptr;
+			if (s_settings_save_timer)
+				QtHost::SaveSettings();
 		});
 
 		connected = true;
