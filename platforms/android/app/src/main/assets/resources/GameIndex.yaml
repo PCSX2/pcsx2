@@ -30966,12 +30966,14 @@ SLES-82018:
   name: "Cy Girls [Ice] [Disc 1 of 2]"
   region: "PAL-M3"
   gsHWFixes:
+    roundSprite: 2 # Fixes NPC walking onscreen
     halfPixelOffset: 5 # Fixes post-processing alignment.
     nativeScaling: 2 # Fixes post-processing intensity.
 SLES-82019:
   name: "Cy Girls [Aska] [Disc 2 of 2]"
   region: "PAL-M3"
   gsHWFixes:
+    roundSprite: 2 # Fixes NPC walking onscreen.
     halfPixelOffset: 5 # Fixes post-processing alignment.
     nativeScaling: 2 # Fixes post-processing intensity.
   memcardFilters:
@@ -30980,12 +30982,14 @@ SLES-82020:
   name: "Cy Girls [Ice] [Disc 1 of 2]"
   region: "PAL-M3"
   gsHWFixes:
+    roundSprite: 2 # Fixes NPC walking onscreen.
     halfPixelOffset: 5 # Fixes post-processing alignment.
     nativeScaling: 2 # Fixes post-processing intensity.
 SLES-82021:
   name: "Cy Girls [Aska] [Disc 2 of 2]"
   region: "PAL-M3"
   gsHWFixes:
+    roundSprite: 2 # Fixes NPC walking onscreen.
     halfPixelOffset: 5 # Fixes post-processing alignment.
     nativeScaling: 2 # Fixes post-processing intensity.
   memcardFilters:
@@ -68164,6 +68168,7 @@ SLUS-20697:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    roundSprite: 2 # Fixes NPC walking onscreen.
     halfPixelOffset: 5 # Fixes post-processing alignment.
     nativeScaling: 2 # Fixes post-processing intensity.
 SLUS-20698:
@@ -68976,6 +68981,7 @@ SLUS-20854:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    roundSprite: 2 # Fixes NPC walking onscreen.
     halfPixelOffset: 5 # Fixes post-processing alignment.
     nativeScaling: 2 # Fixes post-processing intensity.
   memcardFilters:
