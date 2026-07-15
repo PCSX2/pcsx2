@@ -25940,6 +25940,7 @@ SLES-54123:
   clampModes:
     vu1ClampMode: 3 # Fixes triangle holes in geometry.
   speedHacks:
+    instantVU1: 0 # Fixes break rendering
     mtvu: 0 # Fixes internal FPS stuttering and freezing.
 SLES-54124:
   name: "The Quest for Aladdin's Treasure"
@@ -30462,6 +30463,9 @@ SLES-55492:
 SLES-55493:
   name: "Marvel - Ultimate Alliance 2"
   region: "PAL-E"
+  speedHacks:
+    instantVU1: 0 # Fixes break rendering.
+    mtvu: 0 # Fixes break rendering.
 SLES-55494:
   name: "X-Men Origins - Wolverine"
   region: "PAL-E-F"
@@ -72402,6 +72406,9 @@ SLUS-21374:
   compat: 5
   clampModes:
     vu1ClampMode: 3 # Fixes triangle holes in geometry.
+  speedHacks:
+    instantVU1: 0 # Fixes break rendering.
+    mtvu: 0 # Fixes break rendering.
 SLUS-21375:
   name: "Torino 2006 - The Official Game of the XX Olympic Winter Games"
   region: "NTSC-U"
@@ -75170,6 +75177,9 @@ SLUS-21879:
   name: "Marvel - Ultimate Alliance 2"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    instantVU1: 0 # Fixes break rendering.
+    mtvu: 0 # Fixes break rendering.
 SLUS-21880:
   name: "X-Men Origins - Wolverine"
   region: "NTSC-U"
