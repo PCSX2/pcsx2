@@ -381,6 +381,12 @@ static __fi void armMergeEEPinIntoQuad(const vixl::aarch64::VRegister& q, int gp
 		armAsm->Ins(q.V2D(), 0, *pin);
 }
 
+// GE-M2 superset of armMergeEEPinIntoQuad: also merges a dirty scalar
+// ARM64TYPE_GPR slot (a resident lower-64 write not yet flushed) into lane 0.
+// Used by the raw SQ/QMFC2/MMI quad-load sites so they stay coherent once
+// scalar residency is flipped on. Defined in iCore-arm64.cpp.
+void armMergeEEResidentIntoQuad(const vixl::aarch64::VRegister& q, int gpr);
+
 static __fi void armLoadEERegPtrRaw(const vixl::aarch64::CPURegister& reg, const void* field)
 {
 	// Pinned guest GPR: serve the read from the mirror register. Write-through

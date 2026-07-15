@@ -792,7 +792,7 @@ void recCOP2_QMTC2()
 	else
 	{
 		armAsm->Ldr(RQSCRATCH, armCpuRegMem(&cpuRegs.GPR.r[_Rt_]));
-		armMergeEEPinIntoQuad(RQSCRATCH, _Rt_); // lazy-dirty: stale lower half
+		armMergeEEResidentIntoQuad(RQSCRATCH, _Rt_); // lazy-dirty / residency merge
 	}
 	armAsm->Str(RQSCRATCH, armVU0Mem(&VU0.VF[_Rd_]));
 }

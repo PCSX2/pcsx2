@@ -954,6 +954,36 @@ int _allocGPRtoNEONreg(int gprreg, int mode)
 	return neonreg;
 }
 
+// GE-M2 residency merge for a RAW quad load from cpuRegs memory (the SQ /
+// QMFC2 / MMI memory-path loads that build a 128-bit value in a scratch NEON
+// register rather than allocating one via _allocGPRtoNEONreg). The canonical
+// lower 64 bits may be stale relative to a dirty pin mirror OR a dirty scalar
+// ARM64TYPE_GPR slot (a resident lower-64 write the flip has not flushed yet);
+// Ins the newest lower 64 into lane 0. Pin and scalar slot are mutually
+// exclusive (invariant I1), so at most one branch fires. The upper 64 bits are
+// never mirrored, so memory is always current for them. Side-effect-free: it
+// does not bump the allocator LRU or touch `needed`, so a following consumer of
+// the scalar slot is unaffected. Superset of armMergeEEPinIntoQuad — replaces it
+// at the raw quad-load sites; the pin-only variant stays where a scalar slot is
+// structurally impossible (inside _allocGPRtoNEONreg's no-scalar branch).
+void armMergeEEResidentIntoQuad(const vixl::aarch64::VRegister& q, int gpr)
+{
+	if (const vixl::aarch64::Register* pin = armEEPinForGPR(gpr))
+	{
+		armAsm->Ins(q.V2D(), 0, *pin);
+		return;
+	}
+	for (int i = 0; i < NUM_ARM_GPR_REGS; i++)
+	{
+		if (arm64gprs[i].inuse && arm64gprs[i].type == ARM64TYPE_GPR &&
+			arm64gprs[i].reg == gpr && (arm64gprs[i].mode & MODE_WRITE))
+		{
+			armAsm->Ins(q.V2D(), 0, armXRegister(i));
+			return;
+		}
+	}
+}
+
 int _allocFPACCtoNEONreg(int mode)
 {
 	for (int i = 0; i < NUM_ARM_NEON_REGS; i++)

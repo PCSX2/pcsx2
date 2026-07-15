@@ -145,3 +145,27 @@ TEST(EeRecGeM2Coherence, PoolPoisonWideBandSurvivesMixedOps)
 	EXPECT_EQ(h.GetGpr64Interp(reg::t0), 0x0101010101010101ull);
 	EXPECT_EQ(h.GetGpr64Interp(reg::t4), static_cast<u64>(kSentinelV0));
 }
+
+// SQ reads a full 128-bit guest GPR through the raw quad-load + residency-merge
+// path (recVTLB SQ, which only iFlushCall(FLUSH_CONSTANT_REGS) — it does NOT
+// write back scalar allocator slots). Under the flip, the lower 64 bits live
+// dirty in a scalar slot produced by the preceding ADDU; armMergeEEResidentIntoQuad
+// must Ins that over the stale memory lower half. The upper 64 come from memory.
+TEST(EeRecGeM2Coherence, SqAfterScalarWriteMergesDirtyLowerHalf)
+{
+	EeRecTestHarness h;
+	constexpr u32 kAddr = RecompilerTestEnvironment::kScratchAddr;
+	h.SetGpr128(reg::s2, 0x3333333344444444ull, 0x1111111122222222ull); // lo, hi
+	h.SetGpr64(reg::t0, 0x00000000AAAA0000ull);
+	h.SetGpr64(reg::t1, 0x000000000000BBBBull);
+	h.SetGpr64(reg::t3, kAddr);
+	h.TrackMemWindow(kAddr, 16);
+	h.LoadProgram({
+		ADDU(reg::s2, reg::t0, reg::t1), // s2.lo = sext32(0xAAAABBBB); s2.hi preserved
+		SQ(reg::s2, 0, reg::t3),         // store the full 128 bits of s2
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Interp(reg::s2), 0xFFFFFFFFAAAABBBBull);
+	EXPECT_EQ(h.ReadU64(kAddr + 0), 0xFFFFFFFFAAAABBBBull); // lower half (dirty-merged)
+	EXPECT_EQ(h.ReadU64(kAddr + 8), 0x1111111122222222ull); // upper half (from memory)
+}

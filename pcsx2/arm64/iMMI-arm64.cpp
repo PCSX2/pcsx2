@@ -57,8 +57,9 @@ static void mmiLoadReg(const a64::VRegister& qreg, int gpr)
 	else
 	{
 		armAsm->Ldr(qreg, armCpuRegMem(&cpuRegs.GPR.r[gpr].UQ));
-		// Lazy-dirty: merge the pin over the possibly-stale lower half.
-		armMergeEEPinIntoQuad(qreg, gpr);
+		// Lazy-dirty / residency: merge a dirty pin OR scalar slot over the
+		// possibly-stale lower half.
+		armMergeEEResidentIntoQuad(qreg, gpr);
 	}
 }
 

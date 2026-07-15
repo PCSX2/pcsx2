@@ -965,8 +965,10 @@ void recSQ()
 	// not written back by FLUSH_CONSTANT_REGS — relies on allocator
 	// preferring NEON for full-128-bit guest GPRs.
 	iFlushCall(FLUSH_CONSTANT_REGS);
-	armLoadEERegPtr(a64::q0, &cpuRegs.GPR.r[_Rt_].UQ);
-	armMergeEEPinIntoQuad(a64::q0, _Rt_); // lazy-dirty: stale lower half
+	// Raw quad load (bypasses the scalar tripwire): the lower half is
+	// intentionally stale-then-merged below for a dirty pin OR scalar slot.
+	armLoadEERegPtrRaw(a64::q0, &cpuRegs.GPR.r[_Rt_].UQ);
+	armMergeEEResidentIntoQuad(a64::q0, _Rt_); // lazy-dirty / residency merge
 
 	armLoadEERegPtr(a64::w9, &cpuRegs.GPR.r[_Rs_].UL[0]);
 	if (_Imm_ != 0)
