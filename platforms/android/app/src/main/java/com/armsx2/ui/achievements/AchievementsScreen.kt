@@ -1,7 +1,10 @@
 package com.armsx2.ui.achievements
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -139,6 +142,9 @@ private fun AchievementAccount(
     modifier: Modifier,
     compact: Boolean,
 ) {
+    val soundPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri -> if (uri != null) viewModel.setUnlockSound(uri) }
     GlassPanel(modifier) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -217,6 +223,42 @@ private fun AchievementAccount(
                     onRight = { if (!state.soundEffects) viewModel.setOption("soundEffects", true) },
                 ),
             )
+            Surface(
+                onClick = { soundPicker.launch(arrayOf("audio/*")) },
+                modifier = Modifier.fillMaxWidth().controllerFocusable(
+                    "ra.unlockSound",
+                    onConfirm = { soundPicker.launch(arrayOf("audio/*")) },
+                ),
+                shape = RoundedCornerShape(22.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.42f)),
+            ) {
+                Row(
+                    Modifier.defaultMinSize(minHeight = 78.dp).padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(str("ra.options.unlockSound"), style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            state.unlockSoundName ?: str("ra.options.unlockSound.default"),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    if (state.unlockSoundName != null) {
+                        TextButton(
+                            onClick = { viewModel.clearUnlockSound() },
+                            modifier = Modifier.controllerFocusable(
+                                "ra.unlockSound.reset",
+                                onConfirm = { viewModel.clearUnlockSound() },
+                            ),
+                        ) { Text(str("action.reset")) }
+                    } else {
+                        Text("›", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
             TextButton(
                 onClick = viewModel::logout,
                 modifier = Modifier.controllerFocusable("ra.logout", onConfirm = { viewModel.logout() }),

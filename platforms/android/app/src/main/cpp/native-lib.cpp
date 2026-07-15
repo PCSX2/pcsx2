@@ -33,6 +33,7 @@
 #include "GS/Renderers/Vulkan/VKShaderCache.h"
 #include "GSDumpReplayer.h"
 #include "ImGui/ImGuiManager.h"
+#include "ImGui/ImGuiOverlays.h"
 #include "common/Path.h"
 #include "common/MemorySettingsInterface.h"
 #include "common/SettingsWrapper.h"
@@ -611,6 +612,23 @@ Java_kr_co_iefriends_pcsx2_NativeApp_setAchievementsOption(JNIEnv *env, jclass c
         return;
 
     Host::SetBaseBoolSettingValue("Achievements", ini_key, enabled == JNI_TRUE);
+    if (s_settings_interface && s_settings_interface->IsDirty())
+        s_settings_interface->Save();
+    if (VMManager::HasValidVM())
+        VMManager::ApplySettings();
+}
+
+// Custom achievement-unlock sound. Writes the [Achievements] UnlockSoundName path
+// (an app-private absolute file the MediaPlayer reads on unlock) and enables the
+// specific-sound path. An empty path clears it, so PlayAchievementSound falls back
+// to the bundled default. Persisted to the base INI so it survives restarts.
+extern "C"
+JNIEXPORT void JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_setAchievementsUnlockSound(JNIEnv *env, jclass clazz,
+                                                                jstring p_path) {
+    const std::string path = GetJavaString(env, p_path);
+    Host::SetBaseStringSettingValue("Achievements", "UnlockSoundName", path.c_str());
+    Host::SetBaseBoolSettingValue("Achievements", "UnlockSound", true);
     if (s_settings_interface && s_settings_interface->IsDirty())
         s_settings_interface->Save();
     if (VMManager::HasValidVM())
@@ -3128,6 +3146,17 @@ static void applyOsdSetting()
     GSConfig.OsdShowInputs = EmuConfig.GS.OsdShowInputs;
     GSConfig.OsdMessagesPos = EmuConfig.GS.OsdMessagesPos;
     GSConfig.OsdScale = EmuConfig.GS.OsdScale;
+    // Record the user's authoritative OSD choice for the overlay renderer. This snapshot
+    // is immune to VMManager::ApplySettings (which re-derives EmuConfig.GS from the layered
+    // settings and could otherwise resurrect an OSD the user just turned off). Every OSD
+    // setter (osdShow*, osdShowAll, osdApplyFlags) funnels through here, so this always
+    // reflects the last explicit choice.
+    ImGuiManager::SetAndroidOSDVisibility(
+        EmuConfig.GS.OsdShowFPS, EmuConfig.GS.OsdShowVPS, EmuConfig.GS.OsdShowSpeed,
+        EmuConfig.GS.OsdShowResolution, EmuConfig.GS.OsdShowCPU, EmuConfig.GS.OsdShowGPU,
+        EmuConfig.GS.OsdShowGSStats, EmuConfig.GS.OsdShowFrameTimes, EmuConfig.GS.OsdShowHardwareInfo,
+        EmuConfig.GS.OsdShowVersion, EmuConfig.GS.OsdShowGPUStats, EmuConfig.GS.OsdShowSettings,
+        EmuConfig.GS.OsdShowInputs);
     if (MTGS::IsOpen())
         MTGS::ApplySettings();
 }
@@ -3264,6 +3293,31 @@ Java_kr_co_iefriends_pcsx2_NativeApp_osdShowAll(JNIEnv*, jclass, jboolean enable
     if (s_settings_interface && s_settings_interface->IsDirty())
         s_settings_interface->Save();
 
+    applyOsdSetting();
+}
+
+// Live-only OSD flag apply — writes EmuConfig.GS.* (read per-frame by the OSD renderer) but does
+// NOT persist to the settings store. The OSD on/off hotkey uses this to hide/restore the on-screen
+// stats without clobbering the user's saved per-stat selection: on hide it pushes all-false, on
+// show it pushes the user's saved Settings values back. Because s_settings_interface is untouched,
+// the stored selection survives — fixing the "hotkey resets my chosen stats" report.
+extern "C" JNIEXPORT void JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_osdApplyFlags(JNIEnv*, jclass,
+    jboolean fps, jboolean vps, jboolean speed, jboolean cpu, jboolean gpu,
+    jboolean res, jboolean gsStats, jboolean frameTimes, jboolean hwInfo,
+    jboolean version, jboolean settings, jboolean inputs) {
+    EmuConfig.GS.OsdShowFPS = fps;
+    EmuConfig.GS.OsdShowVPS = vps;
+    EmuConfig.GS.OsdShowSpeed = speed;
+    EmuConfig.GS.OsdShowCPU = cpu;
+    EmuConfig.GS.OsdShowGPU = gpu;
+    EmuConfig.GS.OsdShowResolution = res;
+    EmuConfig.GS.OsdShowGSStats = gsStats;
+    EmuConfig.GS.OsdShowFrameTimes = frameTimes;
+    EmuConfig.GS.OsdShowHardwareInfo = hwInfo;
+    EmuConfig.GS.OsdShowVersion = version;
+    EmuConfig.GS.OsdShowSettings = settings;
+    EmuConfig.GS.OsdShowInputs = inputs;
     applyOsdSetting();
 }
 

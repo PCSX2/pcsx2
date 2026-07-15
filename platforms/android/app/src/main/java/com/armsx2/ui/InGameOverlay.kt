@@ -15,6 +15,11 @@ object InGameOverlay {
     val hardcoreOn = mutableStateOf(false)
     val frameLimitOn = mutableStateOf(true)
 
+    /** Master OSD visibility for the on/off hotkey. A transient, in-game-only hide that does NOT
+     *  touch the user's per-stat Settings selection — so toggling it back on restores exactly the
+     *  stats they had chosen (not "everything"). Resets to visible each game boot. */
+    val osdHidden = mutableStateOf(false)
+
     /** Per-tab scroll offset (px) of the in-game pause menu, retained across menu open/close so
      *  reopening a tab — especially the long Fixes list — returns to where you were instead of
      *  snapping back to the top. Keyed by EmulationMenuTab.name to avoid coupling to that enum. */
@@ -62,26 +67,23 @@ object InGameOverlay {
     }
 
     fun toggleOsd() {
-        val current = settingsState.value
-        val enabled = !(current.osdShowFps || current.osdShowVps || current.osdShowSpeed ||
-            current.osdShowCpu || current.osdShowGpu || current.osdShowResolution ||
-            current.osdShowGsStats || current.osdShowFrameTimes ||
-            current.osdShowHardwareInfo || current.osdShowVersion)
-        saveSettings(
-            current.copy(
-                osdShowFps = enabled,
-                osdShowVps = enabled,
-                osdShowSpeed = enabled,
-                osdShowCpu = enabled,
-                osdShowGpu = enabled,
-                osdShowResolution = enabled,
-                osdShowGsStats = enabled,
-                osdShowFrameTimes = enabled,
-                osdShowHardwareInfo = enabled,
-                osdShowVersion = enabled,
-            ),
-        )
-        NativeApp.osdShowAll(enabled)
+        // Toggle OSD *visibility* only. Previously this overwrote every per-stat flag in Settings
+        // with the master on/off value, so turning the OSD off then on lost the user's chosen
+        // subset (it came back as "all stats on"). Now we flip a transient master flag and apply
+        // live-only: on hide, push all-off; on show, push the user's saved selection back — the
+        // saved Settings/store are never mutated, so the selection is preserved.
+        val hide = !osdHidden.value
+        osdHidden.value = hide
+        if (hide) {
+            NativeApp.osdApplyFlags(false, false, false, false, false, false, false, false, false, false, false, false)
+        } else {
+            val s = settingsState.value
+            NativeApp.osdApplyFlags(
+                s.osdShowFps, s.osdShowVps, s.osdShowSpeed, s.osdShowCpu, s.osdShowGpu,
+                s.osdShowResolution, s.osdShowGsStats, s.osdShowFrameTimes, s.osdShowHardwareInfo,
+                s.osdShowVersion, s.osdShowSettings, s.osdShowInputs,
+            )
+        }
     }
 
     fun editTouchLayout() {

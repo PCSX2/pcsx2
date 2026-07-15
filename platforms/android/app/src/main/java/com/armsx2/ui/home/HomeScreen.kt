@@ -360,12 +360,14 @@ fun HomeScreen(
                                 selectedSort = state.sort,
                                 use3dCovers = CoverArtStyle.use3d.value,
                                 showGridNames = GridLabels.show.value,
+                                showHidden = com.armsx2.HiddenGames.showHidden.value,
                                 hasCustomBackground = LibraryBackground.uri.value != null,
                                 onDismiss = { overflowMenu = false },
                                 onOpenNavigation = onOpenMenu,
                                 onSort = viewModel::setSort,
                                 onToggleCoverStyle = { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
                                 onToggleGridNames = { GridLabels.set(!GridLabels.show.value) },
+                                onToggleShowHidden = { viewModel.setShowHidden(!com.armsx2.HiddenGames.showHidden.value) },
                                 onChooseBackground = { backgroundPicker.launch(arrayOf("image/*")) },
                                 onClearBackground = LibraryBackground::clear,
                                 onExitApp = { showExitConfirm = true },
@@ -447,6 +449,7 @@ fun HomeScreen(
                                     scroll = true,
                                     selectedIndex = recentSel,
                                     onLaunch = { viewModel.launch(it) },
+                                    onDetails = { menuGame = it },
                                     modifier = Modifier.layout { measurable, constraints ->
                                         val edge = 8.dp.roundToPx()
                                         val placeable = measurable.measure(
@@ -536,6 +539,7 @@ fun HomeScreen(
                             selectedIndex = state.selectedIndex,
                             startIndex = rowIndex * perShelf,
                             onLaunch = { viewModel.launch(it) },
+                            onDetails = { menuGame = it },
                             // Bleed past the grid's 8dp side padding so the glass shelf
                             // reaches both screen edges instead of floating inset.
                             modifier = Modifier.layout { measurable, constraints ->
@@ -621,6 +625,11 @@ fun HomeScreen(
                     menuGame = null
                     onOpenGameSettings(game)
                 }
+                val hidden = com.armsx2.HiddenGames.isHidden(game)
+                GameMenuAction(if (hidden) "◍" else "🚫", str(if (hidden) "games.unhide" else "games.hide")) {
+                    viewModel.setHidden(game, !hidden)
+                    menuGame = null
+                }
             }
         }
     }
@@ -652,12 +661,14 @@ private fun LibraryOverflowMenu(
     selectedSort: HomeSort,
     use3dCovers: Boolean,
     showGridNames: Boolean,
+    showHidden: Boolean,
     hasCustomBackground: Boolean,
     onDismiss: () -> Unit,
     onOpenNavigation: () -> Unit,
     onSort: (HomeSort) -> Unit,
     onToggleCoverStyle: () -> Unit,
     onToggleGridNames: () -> Unit,
+    onToggleShowHidden: () -> Unit,
     onChooseBackground: () -> Unit,
     onClearBackground: () -> Unit,
     onExitApp: () -> Unit,
@@ -714,6 +725,13 @@ private fun LibraryOverflowMenu(
             trailing = if (showGridNames) str("common.on") else str("common.off"),
         ) {
             closeThen(onToggleGridNames)
+        }
+        LibraryOverflowItem(
+            glyph = "◍",
+            label = str("games.overflow.showHidden"),
+            trailing = if (showHidden) str("common.on") else str("common.off"),
+        ) {
+            closeThen(onToggleShowHidden)
         }
         LibraryOverflowItem("▧", str("games.background.choose")) {
             closeThen(onChooseBackground)
@@ -1180,6 +1198,7 @@ private fun GameShelf(
     coverWidth: Dp,
     scroll: Boolean,
     onLaunch: (GameInfo) -> Unit,
+    onDetails: (GameInfo) -> Unit = {},
     modifier: Modifier = Modifier,
     slotsPerRow: Int = games.size,
     // Controller selection highlight: the global visibleGames index that's selected,
@@ -1197,8 +1216,11 @@ private fun GameShelf(
     val reflectionHeight = coverHeight * 0.18f
     // Covers + reflection are top-anchored; the box is tall enough that the cover
     // base lands on the top face and the reflection lays over the shelf in front.
-    val rowHeight = coverHeight + reflectionHeight
-    Box(modifier.fillMaxWidth().height(coverHeight + plankHeight - surfaceInset)) {
+    // "Name on grid" also labels shelf covers (previously only the flat grid honoured it) — reserve
+    // a line under the reflection for the title so it isn't clipped by the plank.
+    val nameHeight = if (GridLabels.show.value) 18.dp else 0.dp
+    val rowHeight = coverHeight + reflectionHeight + nameHeight
+    Box(modifier.fillMaxWidth().height(coverHeight + plankHeight - surfaceInset + nameHeight)) {
         Image(
             painter = painterResource(shelfRes),
             contentDescription = null,
@@ -1233,6 +1255,7 @@ private fun GameShelf(
                         game, coverWidth, reflectionHeight,
                         selected = startIndex + index == selectedIndex,
                         onLaunch = onLaunch,
+                        onDetails = onDetails,
                     )
                 }
             }
@@ -1247,7 +1270,7 @@ private fun GameShelf(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 games.forEachIndexed { i, game ->
-                    ShelfGameCard(game, coverWidth, reflectionHeight, selected = startIndex + i == selectedIndex, onLaunch = onLaunch)
+                    ShelfGameCard(game, coverWidth, reflectionHeight, selected = startIndex + i == selectedIndex, onLaunch = onLaunch, onDetails = onDetails)
                 }
                 repeat((slotsPerRow - games.size).coerceAtLeast(0)) {
                     Spacer(Modifier.width(coverWidth))
@@ -1258,8 +1281,10 @@ private fun GameShelf(
 }
 
 @Composable
-private fun ShelfGameCard(game: GameInfo, width: Dp, reflectionHeight: Dp, selected: Boolean = false, onLaunch: (GameInfo) -> Unit) {
-    Column(modifier = Modifier.width(width).clickable { onLaunch(game) }) {
+private fun ShelfGameCard(game: GameInfo, width: Dp, reflectionHeight: Dp, selected: Boolean = false, onLaunch: (GameInfo) -> Unit, onDetails: (GameInfo) -> Unit = {}) {
+    // Long-press opens the game context menu (per-game settings, hide, etc.) — same as the grid /
+    // list / recents cards. Without this the shelf layout had no way to reach per-game settings.
+    Column(modifier = Modifier.width(width).combinedClickable(onClick = { onLaunch(game) }, onLongClick = { onDetails(game) })) {
         // Square corners in shelf view — rounding fought the 3D box-art edges. The
         // grid/cover view keeps rounded corners (GameCover's 12.dp default).
         // ContentScale.Fit shows the WHOLE cover — Crop was trimming the top off the
@@ -1289,6 +1314,17 @@ private fun ShelfGameCard(game: GameInfo, width: Dp, reflectionHeight: Dp, selec
             )
             // Fade the reflection out toward the front of the shelf.
             Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0x55000000)))))
+        }
+        // Title under the cover when "Name on grid" is on — shelf covers honour it too now.
+        if (GridLabels.show.value) {
+            Text(
+                game.title,
+                style = MaterialTheme.typography.labelSmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
+            )
         }
     }
 }

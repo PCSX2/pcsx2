@@ -802,6 +802,11 @@ open class MainActivityRuntime : ComponentActivity() {
                             WindowImpl.showLibrary.value = false
                             WindowImpl.overlayVisible.value = false
                         }
+                        // No game is running any more — clear the current-game pointer so the
+                        // Settings screen reverts to Global scope. Otherwise the last-played game
+                        // lingered here and SettingsScreen's scopeContext (game ?: currentGame)
+                        // kept surfacing per-game scope for it after returning to the library.
+                        currentGame.value = null
                         finishToLauncherIfRequested()
                     }
                 }
@@ -1452,6 +1457,7 @@ open class MainActivityRuntime : ComponentActivity() {
         applyEmulationOrientation()
         com.armsx2.CoverArtStyle.load()
         com.armsx2.GridLabels.load()
+        com.armsx2.HiddenGames.load()
         com.armsx2.LibraryTitles.load()
         com.armsx2.LibraryRecentShelf.load()
         com.armsx2.LibraryView.load()

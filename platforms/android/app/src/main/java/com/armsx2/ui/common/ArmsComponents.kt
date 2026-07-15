@@ -225,6 +225,7 @@ fun RoundAction(
     buttonSize: Dp = 42.dp,
     buttonShape: Shape = CircleShape,
     subtleFrame: Boolean = false,
+    glyphColor: Color? = null,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
@@ -259,7 +260,8 @@ fun RoundAction(
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
                 text = glyph,
-                color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                color = glyphColor
+                    ?: if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                 fontSize = when {
                     glyph.length >= 3 -> 13.sp
                     glyph.length == 2 -> 18.sp

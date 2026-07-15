@@ -123,21 +123,23 @@ fun NavigationDrawer(
 @Composable
 private fun DrawerContent(selected: AppRoute, onNavigate: (AppRoute) -> Unit, onDismiss: () -> Unit) {
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    // Intuitive glyphs that read as what they do — matching the in-game overlay's emoji-icon style
+    // (the old box-drawing characters like ▦ ◉ ⌁ ✦ were unclear per tester feedback).
     val primary = listOf(
-        DrawerItem("games.section.library", "▦", AppRoute.Home),
+        DrawerItem("games.section.library", "🎮", AppRoute.Home),
         // Boot straight into the PS2 system BIOS with no disc — distinct from "BIOS Location"
         // below, which only points the emulator at your BIOS file.
-        DrawerItem("bios.boot.title", "▶", onAction = { MainActivityRuntime.startBios(); onDismiss() }),
-        DrawerItem("ra.title", "★", AppRoute.Achievements, iconRes = com.armsx2.R.drawable.ic_trophy),
-        DrawerItem("action.settings", "⚙", AppRoute.Settings()),
+        DrawerItem("bios.boot.title", "▶️", onAction = { MainActivityRuntime.startBios(); onDismiss() }),
+        DrawerItem("ra.title", "🏆", AppRoute.Achievements, iconRes = com.armsx2.R.drawable.ic_trophy),
+        DrawerItem("action.settings", "⚙️", AppRoute.Settings()),
     )
     val managers = listOf(
-        DrawerItem("setup.step.bios.title", "◉", AppRoute.BiosManager),
-        DrawerItem("memcard.title", "▤", AppRoute.MemoryCardManager),
-        DrawerItem("savestate.title.loadManage", "↧", AppRoute.SaveManager),
-        DrawerItem("tab.controls", "⌁", AppRoute.ControllerManager),
-        DrawerItem("patches.dialog.patchesAndCheats", "✦", AppRoute.PatchManager),
-        DrawerItem("renderer.section.texturePacks", "▧", AppRoute.TextureManager),
+        DrawerItem("setup.step.bios.title", "📀", AppRoute.BiosManager),
+        DrawerItem("memcard.title", "💾", AppRoute.MemoryCardManager),
+        DrawerItem("savestate.title.loadManage", "📥", AppRoute.SaveManager),
+        DrawerItem("tab.controls", "🕹️", AppRoute.ControllerManager),
+        DrawerItem("patches.dialog.patchesAndCheats", "🪄", AppRoute.PatchManager),
+        DrawerItem("renderer.section.texturePacks", "🖌️", AppRoute.TextureManager),
     )
 
     Column(

@@ -2,6 +2,7 @@ package com.armsx2.ui.achievements
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import com.armsx2.runtime.MainActivityRuntime
 import kr.co.iefriends.pcsx2.NativeApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +47,8 @@ data class AchievementsUiState(
     val overlays: Boolean = true,
     val lbOverlays: Boolean = true,
     val soundEffects: Boolean = true,
+    // Display name of the user's custom achievement-unlock sound, or null for the default.
+    val unlockSoundName: String? = null,
     // Non-null while the hardcore confirm dialog is up; holds the target state.
     val pendingHardcore: Boolean? = null,
     val loading: Boolean = false,
@@ -152,12 +155,60 @@ class AchievementsViewModel(application: Application) : AndroidViewModel(applica
             overlays = root.optBoolean("overlays", true),
             lbOverlays = root.optBoolean("lbOverlays", true),
             soundEffects = root.optBoolean("soundEffects", true),
+            unlockSoundName = MainActivityRuntime.prefs.getString(UNLOCK_SOUND_PREF, null),
         )
     }
+
+    /** Copy the picked audio file into app-private storage and point the native
+     *  [Achievements] UnlockSoundName at it, so achievement unlocks play it. */
+    fun setUnlockSound(uri: android.net.Uri) {
+        val context = getApplication<Application>()
+        scope.launch {
+            val name = withContext(Dispatchers.IO) {
+                runCatching {
+                    val dir = java.io.File(context.filesDir, "achievements").apply { mkdirs() }
+                    // Drop any prior custom sound so a new extension can't leave a stale file behind.
+                    dir.listFiles()?.forEach { it.delete() }
+                    val display = queryDisplayName(context, uri) ?: "unlock_sound.wav"
+                    val ext = display.substringAfterLast('.', "wav").ifBlank { "wav" }
+                    val out = java.io.File(dir, "unlock_sound.$ext")
+                    val copied = context.contentResolver.openInputStream(uri)?.use { input ->
+                        out.outputStream().use { input.copyTo(it) }; true
+                    } ?: false
+                    if (!copied) return@runCatching null
+                    NativeApp.setAchievementsUnlockSound(out.absolutePath)
+                    MainActivityRuntime.prefs.edit().putString(UNLOCK_SOUND_PREF, display).apply()
+                    display
+                }.getOrNull()
+            }
+            if (name != null) state.value = state.value.copy(unlockSoundName = name)
+            else state.value = state.value.copy(error = "Couldn't import that sound file.")
+        }
+    }
+
+    /** Remove the custom unlock sound, reverting to the bundled default. */
+    fun clearUnlockSound() {
+        val context = getApplication<Application>()
+        runCatching { java.io.File(context.filesDir, "achievements").deleteRecursively() }
+        NativeApp.setAchievementsUnlockSound("")
+        MainActivityRuntime.prefs.edit().remove(UNLOCK_SOUND_PREF).apply()
+        state.value = state.value.copy(unlockSoundName = null)
+    }
+
+    private fun queryDisplayName(context: android.content.Context, uri: android.net.Uri): String? =
+        runCatching {
+            context.contentResolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use {
+                if (it.moveToFirst()) it.getString(0) else null
+            }
+        }.getOrNull()
 
     override fun onCleared() {
         scope.cancel()
         super.onCleared()
+    }
+
+    private companion object {
+        const val UNLOCK_SOUND_PREF = "ra.unlockSoundName"
     }
 }
 

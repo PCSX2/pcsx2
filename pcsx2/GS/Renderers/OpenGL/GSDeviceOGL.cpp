@@ -934,6 +934,21 @@ bool GSDeviceOGL::CheckFeatures()
 			Console.Error("GL: glDrawElementsBaseVertex is unavailable (no core/OES/EXT) — draws will fail.");
 	}
 
+	// glColorMaski (indexed color mask) is core in GLSL ES 3.2 but only extension-provided on
+	// an ES 3.1 context; GLAD leaves the unsuffixed pointer null on ANGLE (which caps at ES 3.1),
+	// so GSDeviceOGL::OMSetColorMaskState calls a null pointer → SIGSEGV mid-render (VSync→Merge→
+	// GetOutput→StretchRect). ANGLE exposes the suffixed variant via GL_OES/EXT_draw_buffers_indexed,
+	// so alias to it. Same class of fix as glDrawElementsBaseVertex above.
+	if (!glColorMaski)
+	{
+		if (GLAD_GL_OES_draw_buffers_indexed && glColorMaskiOES)
+			glColorMaski = glColorMaskiOES;
+		else if (GLAD_GL_EXT_draw_buffers_indexed && glColorMaskiEXT)
+			glColorMaski = glColorMaskiEXT;
+		else
+			Console.Error("GL: glColorMaski is unavailable (no core/OES/EXT) — draws will fail.");
+	}
+
 	// Don't use PBOs when we don't have ARB_buffer_storage, orphaning buffers probably ends up worse than just
 	// using the normal texture update routines and letting the driver take care of it.
 	if (!m_is_gles) {
@@ -1884,6 +1899,21 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
             header = "#version 320 es\n";
         else if (GLAD_GL_ES_VERSION_3_1)
             header = "#version 310 es\n";
+
+        // Vertex↔fragment interface blocks (out/in SHADER {}) are core only in GLSL ES
+        // 3.20. On an ES 3.1 context — notably ANGLE, which reports ES 3.1 and validates
+        // shaders strictly — they must be enabled explicitly or every TFX shader fails with
+        // "'out' : invalid qualifier: shader IO blocks need shader io block extension",
+        // leaving no valid programs (black screen, and downstream crashes when a null
+        // program is later bound). Native Mali is lenient and compiled these fine without
+        // it; ANGLE does not. Harmless where already core.
+        if (!GLAD_GL_ES_VERSION_3_2)
+        {
+            if (GLAD_GL_EXT_shader_io_blocks)
+                header += "#extension GL_EXT_shader_io_blocks : enable\n";
+            else if (GLAD_GL_OES_shader_io_blocks)
+                header += "#extension GL_OES_shader_io_blocks : enable\n";
+        }
 
         if (GLAD_GL_EXT_blend_func_extended)
             header += "#extension GL_EXT_blend_func_extended : require\n";

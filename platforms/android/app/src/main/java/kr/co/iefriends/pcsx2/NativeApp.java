@@ -211,6 +211,10 @@ public class NativeApp {
 	 *  {@link #getAchievementsJSON}. */
 	public static native void setAchievementsOption(String key, boolean enabled);
 
+	// Custom achievement-unlock sound. `path` is an app-private absolute file the
+	// MediaPlayer can read; an empty string clears it back to the bundled default.
+	public static native void setAchievementsUnlockSound(String path);
+
 	/** Repoint the RetroAchievements client at a loopback proxy. Persists
 	 *  the [Achievements] Host setting (read by CreateClient), forces
 	 *  hardcore off while active — saving the prior choice — and rebuilds
@@ -230,6 +234,12 @@ public class NativeApp {
 	/** Master OSD toggle — flips every OsdShow* bit we enable at first
 	 *  init. Backs the in-game overlay's OSD pill. */
 	public static native void osdShowAll(boolean enabled);
+
+	// Live-only OSD flag apply (no persist) — lets the OSD on/off hotkey hide/restore stats
+	// without clobbering the user's saved per-stat selection.
+	public static native void osdApplyFlags(boolean fps, boolean vps, boolean speed, boolean cpu,
+		boolean gpu, boolean res, boolean gsStats, boolean frameTimes, boolean hwInfo,
+		boolean version, boolean settings, boolean inputs);
 
 	/** Per-element OSD toggles (Performance Overlay tab). Apply live via
 	 *  EmuConfig.GS + MTGS::ApplySettings; persistence to base is done on

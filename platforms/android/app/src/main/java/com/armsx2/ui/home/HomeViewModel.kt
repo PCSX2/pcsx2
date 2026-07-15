@@ -126,15 +126,29 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         MainActivityRuntime.launchGame(launchPath, game)
     }
 
+    /** Mark a game hidden (or un-hidden) and refresh the visible list. */
+    fun setHidden(game: GameInfo, value: Boolean) {
+        com.armsx2.HiddenGames.setHidden(game, value)
+        state.value = buildState(state.value)
+    }
+
+    /** Toggle whether hidden games are shown (so they can be un-hidden). */
+    fun setShowHidden(value: Boolean) {
+        com.armsx2.HiddenGames.setShowHidden(value)
+        state.value = buildState(state.value)
+    }
+
     private fun buildState(base: HomeUiState): HomeUiState {
         val recents = repository.recentGames(base.allGames)
         val recentOrder = recents.mapIndexed { index, game -> game.uri.toString() to index }.toMap()
         val filtered = base.allGames.filter { game ->
             val query = base.query.trim()
-            query.isBlank() ||
-                game.title.contains(query, ignoreCase = true) ||
-                game.serial?.contains(query, ignoreCase = true) == true ||
-                game.extension.contains(query, ignoreCase = true)
+            // Exclude games the user marked hidden (long-press → Hide), unless "Show hidden" is on.
+            (com.armsx2.HiddenGames.showHidden.value || !com.armsx2.HiddenGames.isHidden(game)) &&
+                (query.isBlank() ||
+                    game.title.contains(query, ignoreCase = true) ||
+                    game.serial?.contains(query, ignoreCase = true) == true ||
+                    game.extension.contains(query, ignoreCase = true))
         }
         val sorted = when (base.sort) {
             HomeSort.Title -> filtered.sortedBy { it.title.lowercase() }

@@ -36,6 +36,34 @@ object GridLabels {
 }
 
 /**
+ * Games the user has marked hidden from the library (long-press → Hide). Persisted by game URI so
+ * it survives rescans. Also the intended way to get rid of stray non-game files that show up in the
+ * list (e.g. BIOS dumps kept in a scanned subfolder). "Show hidden" reveals them so they can be
+ * unhidden again.
+ */
+object HiddenGames {
+    private const val KEY = "library.hiddenGames"
+    private const val SHOW_KEY = "library.showHidden"
+    val hidden = mutableStateOf<Set<String>>(emptySet())
+    val showHidden = mutableStateOf(false)
+    private fun keyOf(game: GameInfo) = game.uri.toString()
+    fun load() {
+        hidden.value = MainActivityRuntime.prefs.getStringSet(KEY, emptySet())?.toSet() ?: emptySet()
+        showHidden.value = MainActivityRuntime.prefs.getBoolean(SHOW_KEY, false)
+    }
+    fun isHidden(game: GameInfo) = hidden.value.contains(keyOf(game))
+    fun setHidden(game: GameInfo, value: Boolean) {
+        val next = hidden.value.toMutableSet().apply { if (value) add(keyOf(game)) else remove(keyOf(game)) }
+        hidden.value = next
+        MainActivityRuntime.prefs.edit().putStringSet(KEY, next).apply()
+    }
+    fun setShowHidden(value: Boolean) {
+        showHidden.value = value
+        MainActivityRuntime.prefs.edit().putBoolean(SHOW_KEY, value).apply()
+    }
+}
+
+/**
  * Library toggle: show the game title under each cover on the shelves. Off by
  * default — the cover already carries the title and a label under every card
  * crowds the shelf UI — but exposed as a quick toggle on the library's left

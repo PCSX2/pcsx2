@@ -11,6 +11,16 @@ struct ImVec2;
 namespace ImGuiManager
 {
 	void RenderOverlays();
+
+#ifdef __ANDROID__
+	// Android: record the user's authoritative OSD visibility so the overlay renderer
+	// honours it even after VMManager::ApplySettings re-derives EmuConfig.GS from the
+	// layered settings (base + per-game), which can otherwise resurrect an OSD the user
+	// just turned off. See RenderOverlays() and the native applyOsdSetting() choke point.
+	void SetAndroidOSDVisibility(bool fps, bool vps, bool speed, bool resolution, bool cpu,
+		bool gpu, bool gsStats, bool frameTimes, bool hardwareInfo, bool version,
+		bool gpuStats, bool settings, bool inputs);
+#endif
 }
 
 ImVec2 CalculateOSDPosition(OsdOverlayPos position, float margin, const ImVec2& text_size, float window_width, float window_height);

@@ -431,21 +431,18 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access =
 		SupportsExtension(VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false) ||
 		SupportsExtension(VK_ARM_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
-	// VK_EXT_attachment_feedback_loop_layout: disable on Mali (vendorID 0x13B5). The Mali
-	// blob's implementation returns zero/stale destination color in the feedback-loop layout,
-	// producing black/missing textures and, on some driver revisions, device-lost crashes
-	// (found on MediaTek-Mali stacks by the EmuCoreX dev). We fall back to texture_barrier
-	// there. Adreno/other vendors are unaffected. m_device_properties isn't populated yet at
-	// this point, so read the vendor straight off the physical device.
-	bool is_mali_vendor = false;
-	if (m_physical_device != VK_NULL_HANDLE)
-	{
-		VkPhysicalDeviceProperties phys_props = {};
-		vkGetPhysicalDeviceProperties(m_physical_device, &phys_props);
-		is_mali_vendor = (phys_props.vendorID == 0x13B5u);
-	}
+	// VK_EXT_attachment_feedback_loop_layout: the in-tile feedback-loop path is what lets
+	// accurate blending run WITHOUT the per-primitive texture-barrier "slideshow". We used to
+	// blanket-disable it on Mali (vendorID 0x13B5) after the EmuCoreX dev saw stale-color /
+	// device-lost on SOME MediaTek-Mali blobs — but that demoted EVERY modern Mali (e.g.
+	// Mali-G615 on r44p1) to the barrier path, costing ~3-4x on blend-heavy games. izzy2lost's
+	// PSX2 (PCSX2_ARM64) keeps it enabled on Mali and runs those same devices full-speed, so
+	// the disable was over-broad. Enable wherever the driver advertises it; the authoritative
+	// feature-bit reconciliation below (attachmentFeedbackLoopLayout == VK_TRUE) still filters
+	// blobs that don't truly support it. If a specific old blob regresses, narrow by driver
+	// version rather than re-blocking the whole vendor.
 	m_optional_extensions.vk_ext_attachment_feedback_loop_layout =
-		SupportsExtension(VK_EXT_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_EXTENSION_NAME, false) && !is_mali_vendor;
+		SupportsExtension(VK_EXT_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_line_rasterization = SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, false);
 	m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
 

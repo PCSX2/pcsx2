@@ -1851,28 +1851,76 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
 		Host::OSD_QUICK_DURATION);
 }
 
+#ifdef __ANDROID__
+namespace {
+	// Reload-immune snapshot of the Android UI's OSD choice. VMManager::ApplySettings
+	// re-derives EmuConfig.GS from the layered settings interface (base + per-game) every
+	// time it runs, which can resurrect an OSD the user just turned off (a per-game layer
+	// or a reload race overriding the base). The native applyOsdSetting() choke point
+	// records the user's intent HERE after every OSD change, and RenderOverlays honours
+	// it — so no core settings reload can revert the on-screen state.
+	struct AndroidOSDVisibility
+	{
+		bool valid = false;
+		bool fps = false, vps = false, speed = false, resolution = false, cpu = false,
+			 gpu = false, gsStats = false, frameTimes = false, hardwareInfo = false,
+			 version = false, gpuStats = false, settings = false, inputs = false;
+	};
+	AndroidOSDVisibility s_android_osd_vis;
+} // namespace
+
+void ImGuiManager::SetAndroidOSDVisibility(bool fps, bool vps, bool speed, bool resolution,
+	bool cpu, bool gpu, bool gsStats, bool frameTimes, bool hardwareInfo, bool version,
+	bool gpuStats, bool settings, bool inputs)
+{
+	s_android_osd_vis = {true, fps, vps, speed, resolution, cpu, gpu, gsStats, frameTimes,
+		hardwareInfo, version, gpuStats, settings, inputs};
+}
+#endif
+
 void ImGuiManager::RenderOverlays()
 {
 	// Android: the live GSConfig can be stale — the GS device reopens whenever the
 	// pause/overlay releases the render surface, and GSopen re-derives GSConfig from a
-	// config whose canonical struct defaults every OsdShow* ON, so an OSD the user turned
-	// off silently came back. EmuConfig.GS is the authoritative, INI-backed config the
-	// on-screen toggles actually write, so mirror every perf / settings-summary / inputs
-	// OSD flag from it here, once, before any overlay draws — the perf, settings and
-	// inputs overlays all then honour their switches reliably.
-	GSConfig.OsdShowFPS = EmuConfig.GS.OsdShowFPS;
-	GSConfig.OsdShowVPS = EmuConfig.GS.OsdShowVPS;
-	GSConfig.OsdShowSpeed = EmuConfig.GS.OsdShowSpeed;
-	GSConfig.OsdShowResolution = EmuConfig.GS.OsdShowResolution;
-	GSConfig.OsdShowCPU = EmuConfig.GS.OsdShowCPU;
-	GSConfig.OsdShowGPU = EmuConfig.GS.OsdShowGPU;
-	GSConfig.OsdShowGSStats = EmuConfig.GS.OsdShowGSStats;
-	GSConfig.OsdShowFrameTimes = EmuConfig.GS.OsdShowFrameTimes;
-	GSConfig.OsdShowHardwareInfo = EmuConfig.GS.OsdShowHardwareInfo;
-	GSConfig.OsdShowVersion = EmuConfig.GS.OsdShowVersion;
-	GSConfig.OsdShowGPUStats = EmuConfig.GS.OsdShowGPUStats;
-	GSConfig.OsdShowSettings = EmuConfig.GS.OsdShowSettings;
-	GSConfig.OsdShowInputs = EmuConfig.GS.OsdShowInputs;
+	// freshly-loaded config, so an OSD the user turned off silently came back. The Android
+	// UI records the user's authoritative OSD choice via SetAndroidOSDVisibility (immune to
+	// any VMManager::ApplySettings reload); honour that here when present, else fall back to
+	// EmuConfig.GS. Mirror every perf / settings-summary / inputs flag once, before any
+	// overlay draws, so the perf, settings and inputs overlays all honour their switches.
+#ifdef __ANDROID__
+	if (s_android_osd_vis.valid)
+	{
+		GSConfig.OsdShowFPS = s_android_osd_vis.fps;
+		GSConfig.OsdShowVPS = s_android_osd_vis.vps;
+		GSConfig.OsdShowSpeed = s_android_osd_vis.speed;
+		GSConfig.OsdShowResolution = s_android_osd_vis.resolution;
+		GSConfig.OsdShowCPU = s_android_osd_vis.cpu;
+		GSConfig.OsdShowGPU = s_android_osd_vis.gpu;
+		GSConfig.OsdShowGSStats = s_android_osd_vis.gsStats;
+		GSConfig.OsdShowFrameTimes = s_android_osd_vis.frameTimes;
+		GSConfig.OsdShowHardwareInfo = s_android_osd_vis.hardwareInfo;
+		GSConfig.OsdShowVersion = s_android_osd_vis.version;
+		GSConfig.OsdShowGPUStats = s_android_osd_vis.gpuStats;
+		GSConfig.OsdShowSettings = s_android_osd_vis.settings;
+		GSConfig.OsdShowInputs = s_android_osd_vis.inputs;
+	}
+	else
+#endif
+	{
+		GSConfig.OsdShowFPS = EmuConfig.GS.OsdShowFPS;
+		GSConfig.OsdShowVPS = EmuConfig.GS.OsdShowVPS;
+		GSConfig.OsdShowSpeed = EmuConfig.GS.OsdShowSpeed;
+		GSConfig.OsdShowResolution = EmuConfig.GS.OsdShowResolution;
+		GSConfig.OsdShowCPU = EmuConfig.GS.OsdShowCPU;
+		GSConfig.OsdShowGPU = EmuConfig.GS.OsdShowGPU;
+		GSConfig.OsdShowGSStats = EmuConfig.GS.OsdShowGSStats;
+		GSConfig.OsdShowFrameTimes = EmuConfig.GS.OsdShowFrameTimes;
+		GSConfig.OsdShowHardwareInfo = EmuConfig.GS.OsdShowHardwareInfo;
+		GSConfig.OsdShowVersion = EmuConfig.GS.OsdShowVersion;
+		GSConfig.OsdShowGPUStats = EmuConfig.GS.OsdShowGPUStats;
+		GSConfig.OsdShowSettings = EmuConfig.GS.OsdShowSettings;
+		GSConfig.OsdShowInputs = EmuConfig.GS.OsdShowInputs;
+	}
 
 	const float scale = ImGuiManager::GetGlobalScale();
 	const float margin = std::ceil(GSConfig.OsdMargin * scale);
