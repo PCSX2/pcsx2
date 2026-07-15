@@ -76,7 +76,11 @@ bool DisassemblyView::fromJson(const JsonValueWrapper& json)
 
 	auto start_address = json.value().FindMember("startAddress");
 	if (start_address != json.value().MemberEnd() && start_address->value.IsUint())
+	{
 		m_visibleStart = start_address->value.GetUint() & ~3;
+		m_navigation_history.clear();
+		m_navigation_history.pushInstantly(m_visibleStart);
+	}
 
 	auto go_to_pc_on_pause = json.value().FindMember("goToPCOnPause");
 	if (go_to_pc_on_pause != json.value().MemberEnd() && go_to_pc_on_pause->value.IsBool())
@@ -388,6 +392,41 @@ QString DisassemblyView::GetLineDisasm(u32 address)
 	return QString("%1 %2").arg(lineInfo.name.c_str()).arg(lineInfo.params.c_str());
 };
 
+bool DisassemblyView::supportsNavigation()
+{
+	return true;
+}
+
+bool DisassemblyView::canNavigateBack()
+{
+	return m_navigation_history.canGoBack();
+}
+
+bool DisassemblyView::canNavigateForward()
+{
+	return m_navigation_history.canGoForward();
+}
+
+void DisassemblyView::navigateBack()
+{
+	std::optional<u32> address = m_navigation_history.back();
+	if (!address.has_value())
+		return;
+
+	m_visibleStart = *address;
+	update();
+}
+
+void DisassemblyView::navigateForward()
+{
+	std::optional<u32> address = m_navigation_history.forward();
+	if (!address.has_value())
+		return;
+
+	m_visibleStart = *address;
+	update();
+}
+
 // Here we go!
 void DisassemblyView::paintEvent(QPaintEvent* event)
 {
@@ -629,19 +668,21 @@ void DisassemblyView::mouseDoubleClickEvent(QMouseEvent* event)
 
 void DisassemblyView::wheelEvent(QWheelEvent* event)
 {
-	if (event->angleDelta().y() < 0) // todo: max address bounds check?
-	{
+	if (event->angleDelta().y() < 0)
 		m_visibleStart += 4;
-	}
 	else if (event->angleDelta().y() && m_visibleStart > 0)
-	{
 		m_visibleStart -= 4;
-	}
+
+	m_navigation_history.pushWithDelay(m_visibleStart);
 	update();
 }
 
 void DisassemblyView::keyPressEvent(QKeyEvent* event)
 {
+	// Alt is used for the global navigation shortcuts.
+	if (event->modifiers() & Qt::AltModifier)
+		return;
+
 	switch (event->key())
 	{
 		case Qt::Key_Up:
@@ -653,15 +694,19 @@ void DisassemblyView::keyPressEvent(QKeyEvent* event)
 			// Auto scroll
 			if (m_visibleStart > m_selectedAddressStart)
 				m_visibleStart -= 4;
+
+			m_navigation_history.pushWithDelay(m_visibleStart);
+			break;
 		}
-		break;
 		case Qt::Key_PageUp:
 		{
 			m_selectedAddressStart -= m_visibleRows * 4;
 			m_selectedAddressEnd = m_selectedAddressStart;
 			m_visibleStart -= m_visibleRows * 4;
+
+			m_navigation_history.pushWithDelay(m_visibleStart);
+			break;
 		}
-		break;
 		case Qt::Key_Down:
 		{
 			m_selectedAddressEnd += 4;
@@ -673,6 +718,7 @@ void DisassemblyView::keyPressEvent(QKeyEvent* event)
 			if (m_visibleStart + ((m_visibleRows - 1) * 4) < m_selectedAddressEnd)
 				m_visibleStart += 4;
 
+			m_navigation_history.pushWithDelay(m_visibleStart);
 			break;
 		}
 		case Qt::Key_PageDown:
@@ -680,6 +726,7 @@ void DisassemblyView::keyPressEvent(QKeyEvent* event)
 			m_selectedAddressStart += m_visibleRows * 4;
 			m_selectedAddressEnd = m_selectedAddressStart;
 			m_visibleStart += m_visibleRows * 4;
+			m_navigation_history.pushWithDelay(m_visibleStart);
 			break;
 		}
 		case Qt::Key_G:
@@ -1013,6 +1060,8 @@ void DisassemblyView::gotoAddress(u32 address, bool should_set_focus)
 	m_visibleStart = (destAddress - (m_visibleRows * 4 / 2)) & ~3;
 	m_selectedAddressStart = destAddress;
 	m_selectedAddressEnd = destAddress;
+
+	m_navigation_history.pushInstantly(m_visibleStart);
 
 	update();
 	if (should_set_focus)

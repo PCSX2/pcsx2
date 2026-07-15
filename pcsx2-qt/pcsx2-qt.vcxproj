@@ -246,6 +246,7 @@
     <QtMoc Include="Debugger\StackView.h" />
     <QtMoc Include="Debugger\ModuleModel.h" />
     <QtMoc Include="Debugger\ModuleView.h" />
+    <QtMoc Include="Debugger\NavigationHistoryStack.h" />
     <QtMoc Include="Debugger\ThreadModel.h" />
     <QtMoc Include="Debugger\ThreadView.h" />
     <ClInclude Include="Debugger\DebuggerSettingsManager.h" />

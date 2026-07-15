@@ -2,12 +2,14 @@
 	<qresource>
 		<file>icons/AppIcon64.png</file>
 		<file>icons/black/index.theme</file>
+		<file>icons/black/svg/arrow-left-line.svg</file>
 		<file>icons/black/svg/arrow-left-right-line.svg</file>
+		<file>icons/black/svg/arrow-right-line.svg</file>
 		<file>icons/black/svg/artboard-2-line.svg</file>
 		<file>icons/black/svg/at.svg</file>
 		<file>icons/black/svg/band-aid-line.svg</file>
-		<file>icons/black/svg/booklet.svg</file>
 		<file>icons/black/svg/book.svg</file>
+		<file>icons/black/svg/booklet.svg</file>
 		<file>icons/black/svg/brush-line.svg</file>
 		<file>icons/black/svg/bug-line.svg</file>
 		<file>icons/black/svg/buzz-controller-line.svg</file>
@@ -114,12 +116,14 @@
 		<file>icons/QT.png</file>
 		<file>icons/update.png</file>
 		<file>icons/white/index.theme</file>
+		<file>icons/white/svg/arrow-left-line.svg</file>
 		<file>icons/white/svg/arrow-left-right-line.svg</file>
+		<file>icons/white/svg/arrow-right-line.svg</file>
 		<file>icons/white/svg/artboard-2-line.svg</file>
 		<file>icons/white/svg/at.svg</file>
 		<file>icons/white/svg/band-aid-line.svg</file>
-		<file>icons/white/svg/booklet.svg</file>
 		<file>icons/white/svg/book.svg</file>
+		<file>icons/white/svg/booklet.svg</file>
 		<file>icons/white/svg/brush-line.svg</file>
 		<file>icons/white/svg/bug-line.svg</file>
 		<file>icons/white/svg/buzz-controller-line.svg</file>

@@ -82,6 +82,7 @@ DockWidget::DockWidget(
 	: KDDockWidgets::QtWidgets::DockWidget(unique_name, options, layout_saver_options, window_flags)
 {
 	connect(this, &DockWidget::isOpenChanged, this, &DockWidget::openStateChanged);
+	connect(this, &DockWidget::isFocusedChanged, this, &DockWidget::focusStateChanged);
 }
 
 void DockWidget::openStateChanged(bool open)
@@ -93,6 +94,12 @@ void DockWidget::openStateChanged(bool open)
 
 	if (!open && g_debugger_window)
 		g_debugger_window->dockManager().destroyDebuggerView(uniqueName());
+}
+
+void DockWidget::focusStateChanged(bool focused)
+{
+	if (focused && g_debugger_window)
+		g_debugger_window->dockManager().onFocusedDockWidgetChanged(this);
 }
 
 // *****************************************************************************

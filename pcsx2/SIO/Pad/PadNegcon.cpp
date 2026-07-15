@@ -307,7 +307,7 @@ const Pad::ControllerInfo& PadNegcon::GetInfo() const
 
 void PadNegcon::Set(u32 index, float value)
 {
-	if (index > Inputs::LENGTH)
+	if (index >= Inputs::LENGTH)
 	{
 		return;
 	}

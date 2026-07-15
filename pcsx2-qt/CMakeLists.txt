@@ -196,6 +196,7 @@ target_sources(pcsx2-qt PRIVATE
 	Debugger/ModuleModel.h
 	Debugger/ModuleView.cpp
 	Debugger/ModuleView.h
+	Debugger/NavigationHistoryStack.h
 	Debugger/RegisterView.cpp
 	Debugger/RegisterView.h
 	Debugger/RegisterView.ui

@@ -128,7 +128,7 @@ public:
 	{
 		PSSelector ps;
 		VSSelector vs;
-		u8 pad[3];
+		u8 pad[15];
 
 		// Compare ONLY the meaningful key fields, matching ProgramSelectorHash above
 		// (which hashes {vs.key, ps.key_hi, ps.key_lo}). BitEqual() memcmp'd all 32 bytes
@@ -144,6 +144,7 @@ public:
 		__fi bool operator!=(const ProgramSelector& p) const { return !(*this == p); }
 	};
 	static_assert(sizeof(ProgramSelector) == 32, "Program selector is 32 bytes");
+	static_assert(offsetof(ProgramSelector, pad) + sizeof(ProgramSelector::pad) == sizeof(ProgramSelector));
 
 	struct ProgramSelectorHash
 	{

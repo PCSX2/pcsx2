@@ -3225,8 +3225,10 @@ void GSRendererHW::Draw()
 
 		// Be careful of being 1 pixel from filled.
 		const bool page_aligned = (m_r.w % pgs.y) == (pgs.y - 1) || (m_r.w % pgs.y) == 0;
-		const bool is_zero_color_clear = (GetConstantDirectWriteMemClearColor() == 0 && !preserve_rt_color && page_aligned);
-		const bool is_zero_depth_clear = (GetConstantDirectWriteMemClearDepth() == 0 && !preserve_depth && page_aligned);
+		const bool is_full_color_cover = !preserve_rt_color && page_aligned;
+		const bool is_full_depth_cover = !preserve_depth && page_aligned;
+		const bool is_zero_color_clear = (GetConstantDirectWriteMemClearColor() == 0 && is_full_color_cover);
+		const bool is_zero_depth_clear = (GetConstantDirectWriteMemClearDepth() == 0 && is_full_depth_cover);
 		bool gs_mem_cleared = false;
 		// If it's an invalid-sized draw, do the mem clear on the CPU, we don't want to create huge targets.
 		// If clearing to zero, don't bother creating the target. Games tend to clear more than they use, wasting VRAM/bandwidth.
@@ -3261,8 +3263,8 @@ void GSRendererHW::Draw()
 			}
 			gs_mem_cleared |= overwriting_whole_rt && overwriting_whole_ds && (!no_rt || !no_ds);
 			if (overwriting_whole_rt && overwriting_whole_ds &&
-				TryGSMemClear(no_rt, preserve_rt_color, is_zero_color_clear, rt_end_bp,
-					no_ds, preserve_depth, is_zero_depth_clear, ds_end_bp))
+				TryGSMemClear(no_rt, preserve_rt_color, is_full_color_cover, rt_end_bp,
+					no_ds, preserve_depth, is_full_depth_cover, ds_end_bp))
 			{
 				GL_INS("HW: Skipping (%d,%d=>%d,%d) draw at FBP %x/ZBP %x due to invalid height or zero clear.", m_r.x, m_r.y,
 					m_r.z, m_r.w, m_cached_ctx.FRAME.Block(), m_cached_ctx.ZBUF.Block());
@@ -3285,8 +3287,14 @@ void GSRendererHW::Draw()
 					}
 				}
 
-				CleanupDraw(false);
-				return;
+				no_rt |= is_zero_color_clear;
+				no_ds |= is_zero_depth_clear;
+
+				if (no_rt && no_ds)
+				{
+					CleanupDraw(false);
+					return;
+				}
 			}
 		}
 
@@ -10001,9 +10009,11 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 		// path write out FRAME and Z separately, with their associated masks. Limit it to black to avoid false positives.
 		if (write_color == 0)
 		{
+			// Don't check the *entire* size for the end, as some games (X-Men) decide it's done with Z and starts overwriting
+			// the end with other things, which causes a resize, so the end point is no longer in the right place.
+			// So let's just check there's at least one page over the half way point, at worst it means 2 targets overlap.
 			const GSTextureCache::Target* base_tgt = g_texture_cache->GetExactTarget(base * GS_BLOCKS_PER_PAGE,
-				m_cached_ctx.FRAME.FBW, clear_depth ? GSTextureCache::DepthStencil : GSTextureCache::RenderTarget,
-				GSLocalMemory::GetEndBlockAddress(half * GS_BLOCKS_PER_PAGE, m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM, m_r));
+				m_cached_ctx.FRAME.FBW, clear_depth ? GSTextureCache::DepthStencil : GSTextureCache::RenderTarget, (half + 1) * GS_BLOCKS_PER_PAGE);
 			if (base_tgt)
 			{
 				GL_INS("HW: DetectDoubleHalfClear(): Invalidating targets at 0x%x/0x%x due to different formats, and clear to black.",

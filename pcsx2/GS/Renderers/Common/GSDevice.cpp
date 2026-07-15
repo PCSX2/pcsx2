@@ -815,7 +815,7 @@ GSTexture* GSDevice::CreateTexture(int w, int h, int mipmap_levels, GSTexture::F
 {
 	pxAssert(mipmap_levels != 0 && (mipmap_levels < 0 || mipmap_levels <= GetMipmapLevelsForSize(w, h)));
 	const int levels = mipmap_levels < 0 ? GetMipmapLevelsForSize(w, h) : mipmap_levels;
-	return FetchSurface(GSTexture::Texture, w, h, levels, format, false, m_features.prefer_new_textures && prefer_reuse);
+	return FetchSurface(GSTexture::Texture, w, h, levels, format, false, !m_features.prefer_new_textures || prefer_reuse);
 }
 
 GSTexture* GSDevice::CreateTexture(const GSVector2i& size, int mipmap_levels, GSTexture::Format format, bool prefer_reuse)

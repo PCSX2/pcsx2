@@ -80,6 +80,8 @@ namespace usb_lightgun
 		{"SLUS-20669", 90.25f, 93.5f, 420, 132, 640, 240}, // Resident Evil - Dead Aim (U)
 		{"SLUS-20619", 90.25f, 91.75f, 453, 154, 640, 256}, // Starsky & Hutch (U)
 		{"SCES-50300", 90.25f, 102.75f, 390, 138, 640, 256}, // Time Crisis II (E)
+		{"SLPS-20122", 90.25f, 97.5f, 390, 154, 640, 240}, // Time Crisis II (J)
+		{"SLPS-20113", 90.25f, 97.5f, 390, 154, 640, 240}, // Time Crisis II (with GunCon 2) (J)
 		{"SLUS-20219", 90.25f, 97.5f, 390, 154, 640, 240}, // Time Crisis 2 (U)
 		{"SCES-51844", 90.25f, 102.75f, 390, 138, 640, 256}, // Time Crisis 3 (E)
 		{"SLUS-20645", 90.25f, 97.5f, 390, 154, 640, 240}, // Time Crisis 3 (U)
