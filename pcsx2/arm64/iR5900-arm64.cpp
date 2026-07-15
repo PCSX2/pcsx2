@@ -1029,15 +1029,27 @@ vixl::aarch64::Register _eeGetGPRSourceReg(const a64::Register& scratch, int fro
 {
 	if (fromgpr != 0 && !GPR_IS_CONST1(fromgpr))
 	{
-		if (const a64::Register* pin = armEEPinForGPR(fromgpr))
-			return scratch.Is64Bits() ? *pin : pin->W();
-
-		for (int i = 0; i < NUM_ARM_GPR_REGS; i++)
+		// A live 128-bit NEON home (an in-flight MMI / LQ result) is authoritative
+		// over BOTH the pin mirror and any GPR slot: an MMI write updates only the
+		// quad, and the pin + cpuRegs memory stay stale until a seam runs
+		// armStoreEEGPRQuad to refresh them. Take the no-emit pin/slot fast path
+		// only when no quad is live; otherwise fall through to _eeMoveGPRtoR, which
+		// reads lane 0 straight out of the quad. This is the coherence the RC0
+		// residency flip depends on — pre-flip the templates flushed the source
+		// (refreshing the pin) so the fast path was always current; post-flip a
+		// producer's quad can still be live when a consumer reads the reg here.
+		if (!_hasNEONreg(NEONTYPE_GPRREG, fromgpr))
 		{
-			if (arm64gprs[i].inuse && arm64gprs[i].type == ARM64TYPE_GPR &&
-				arm64gprs[i].reg == fromgpr && (arm64gprs[i].mode & MODE_READ))
+			if (const a64::Register* pin = armEEPinForGPR(fromgpr))
+				return scratch.Is64Bits() ? *pin : pin->W();
+
+			for (int i = 0; i < NUM_ARM_GPR_REGS; i++)
 			{
-				return scratch.Is64Bits() ? armXRegister(i) : armWRegister(i);
+				if (arm64gprs[i].inuse && arm64gprs[i].type == ARM64TYPE_GPR &&
+					arm64gprs[i].reg == fromgpr && (arm64gprs[i].mode & MODE_READ))
+				{
+					return scratch.Is64Bits() ? armXRegister(i) : armWRegister(i);
+				}
 			}
 		}
 	}
