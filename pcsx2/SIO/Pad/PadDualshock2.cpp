@@ -60,6 +60,9 @@ static const SettingInfo s_settings[] = {
 		TRANSLATE_NOOP(
 			"Pad", "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
 		"0.00", "0.00", "1.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
+	{SettingInfo::Type::Float, "AntiDeadzone", TRANSLATE_NOOP("Pad", "Analog Anti-Deadzone"),
+		TRANSLATE_NOOP("Pad", "Sets the minimum analog stick output after movement exceeds the deadzone."),
+		"0.00", "0.00", "1.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "AxisScale", TRANSLATE_NOOP("Pad", "Analog Sensitivity"),
 		TRANSLATE_NOOP("Pad",
 			"Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent "
@@ -587,10 +590,11 @@ void PadDualshock2::Set(u32 index, float value)
 		}
 #undef MERGE
 
-		// Deadzone computation.
+		// Deadzone and anti-deadzone computation.
 		const float dz = this->axisDeadzone;
+		const float adz = this->axisAntiDeadzone;
 
-		if (dz > 0.0f)
+		if (dz > 0.0f || adz > 0.0f)
 		{
 #define MERGE_F(pos, neg) ((this->rawInputs[pos] != 0) ? (static_cast<float>(this->rawInputs[pos]) / 255.0f) : (static_cast<float>(this->rawInputs[neg]) / -255.0f))
 			float posX, posY;
@@ -608,18 +612,20 @@ void PadDualshock2::Set(u32 index, float value)
 			// No point checking if we're at dead center (usually keyboard with no buttons pressed).
 			if (posX != 0.0f || posY != 0.0f)
 			{
-				// Compute the angle at the given position in the stick's square bounding box.
-				const float theta = std::atan2(posY, posX);
+				const float magnitude = std::hypot(posX, posY);
+				bool inDeadzone = false;
+				if (dz > 0.0f)
+				{
+					// Compute the position that the edge of the deadzone circle would be at for this angle.
+					const float theta = std::atan2(posY, posX);
+					const float dzX = std::cos(theta) * dz;
+					const float dzY = std::sin(theta) * dz;
+					const bool inX = (posX < 0.0f) ? (posX > dzX) : (posX <= dzX);
+					const bool inY = (posY < 0.0f) ? (posY > dzY) : (posY <= dzY);
+					inDeadzone = inX && inY;
+				}
 
-				// Compute the position that the edge of the circle would be at, given the angle.
-				const float dzX = std::cos(theta) * dz;
-				const float dzY = std::sin(theta) * dz;
-
-				// We're in the deadzone if our position is less than the circle edge.
-				const bool inX = (posX < 0.0f) ? (posX > dzX) : (posX <= dzX);
-				const bool inY = (posY < 0.0f) ? (posY > dzY) : (posY <= dzY);
-				
-				if (inX && inY)
+				if (inDeadzone)
 				{
 					// In deadzone. Set to 127 (center).
 					if (index <= Inputs::PAD_L_LEFT)
@@ -629,7 +635,35 @@ void PadDualshock2::Set(u32 index, float value)
 					else
 					{
 						this->analogs.rx = this->analogs.ry = 127;
-					}	
+					}
+				}
+				else if (adz > 0.0f)
+				{
+					// Remap from the deadzone edge to the edge of the stick's square range. This preserves
+					// direction and full-scale diagonal input while making adz the minimum output magnitude.
+					const float directionX = posX / magnitude;
+					const float directionY = posY / magnitude;
+					const float maximumMagnitude = 1.0f / std::max(std::abs(directionX), std::abs(directionY));
+					const float normalizedMagnitude = std::clamp((magnitude - dz) / (maximumMagnitude - dz), 0.0f, 1.0f);
+					const float outputMagnitude = adz + ((maximumMagnitude - adz) * normalizedMagnitude);
+					posX = directionX * outputMagnitude;
+					posY = directionY * outputMagnitude;
+
+					const auto convert_axis = [](float axis) {
+						const u8 raw = static_cast<u8>(std::lroundf(std::clamp(std::abs(axis) * 255.0f, 0.0f, 255.0f)));
+						return static_cast<u8>((axis >= 0.0f) ? (127u + ((raw + 1u) / 2u)) : (127u - (raw / 2u)));
+					};
+
+					if (index <= Inputs::PAD_L_LEFT)
+					{
+						this->analogs.lx = convert_axis(posX);
+						this->analogs.ly = convert_axis(posY);
+					}
+					else
+					{
+						this->analogs.rx = convert_axis(posX);
+						this->analogs.ry = convert_axis(posY);
+					}
 				}
 			}
 #undef MERGE_F
@@ -737,6 +771,11 @@ void PadDualshock2::SetAxisScale(float deadzone, float scale)
 {
 	this->axisDeadzone = deadzone;
 	this->axisScale = scale;
+}
+
+void PadDualshock2::SetAxisAntiDeadzone(float anti_deadzone)
+{
+	this->axisAntiDeadzone = std::clamp(anti_deadzone, 0.0f, 1.0f);
 }
 
 float PadDualshock2::GetVibrationScale(u32 motor) const
