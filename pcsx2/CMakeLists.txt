@@ -1115,8 +1115,15 @@ if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
 	set(ARMSX2_IOS TRUE)
 endif()
 
-# NEON-optimised SPU2 mixer/reverb: shared by all arm64 mobile targets.
-if(ANDROID OR ARMSX2_IOS)
+# NEON-optimised SPU2 mixer/reverb: compiled on every arm64 target. spu2.cpp
+# calls SPU2::RegisterNEONBackend() under `#if defined(__aarch64__) ||
+# defined(_M_ARM64)` (all arm64 builds, not just mobile), so the definition in
+# spu2_neon.cpp must be built wherever that guard is live — otherwise desktop
+# arm64 (macOS/Windows arm64) link with an undefined symbol. The file itself is
+# self-gated by the same arm64 macro and compiles to nothing on x86. ANDROID /
+# ARMSX2_IOS are kept as belt-and-suspenders so the mobile targets that already
+# built this file keep doing so regardless of how they set ARCH_ARM64.
+if(ARCH_ARM64 OR ANDROID OR ARMSX2_IOS)
 	list(APPEND pcsx2SPU2Sources
 		SPU2/spu2_neon.cpp)
 	list(APPEND pcsx2SPU2Headers
