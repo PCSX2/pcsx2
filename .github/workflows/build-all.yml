@@ -49,6 +49,8 @@ jobs:
     with:
       jobName: "macOS arm64"
       artifactPrefixName: "armsx2-macos-arm64"
+      sign_and_notarize: true
+    secrets: inherit
 
   pc-linux-arm64:
     name: PC · Linux arm64 (Qt)
