@@ -42,10 +42,9 @@ void recLUI()
 	}
 	else
 	{
-		GPR_DEL_CONST(_Rt_);
-		const a64::Register dst = armEEDestForGPR(_Rt_, RXSCRATCH);
+		const a64::Register dst = _eeGetGPRDestReg(_Rt_, RXSCRATCH);
 		armAsm->Mov(dst, s64(s32((u32)_ImmU_ << 16)));
-		armStoreEERegPtr(dst, &cpuRegs.GPR.r[_Rt_].UD[0]);
+		_eeStoreGPRDestReg(_Rt_, dst);
 	}
 }
 
@@ -55,10 +54,9 @@ void recMFLO()
 	if (!_Rd_) return;
 
 	_deleteEEreg(_Rd_, 0);
-	GPR_DEL_CONST(_Rd_);
-	const a64::Register dst = armEEDestForGPR(_Rd_, RXSCRATCH);
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
 	armLoadEERegPtr(dst, &cpuRegs.LO.UD[0]);
-	armStoreEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	_eeStoreGPRDestReg(_Rd_, dst);
 }
 
 void recMFHI()
@@ -66,10 +64,9 @@ void recMFHI()
 	if (!_Rd_) return;
 
 	_deleteEEreg(_Rd_, 0);
-	GPR_DEL_CONST(_Rd_);
-	const a64::Register dst = armEEDestForGPR(_Rd_, RXSCRATCH);
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
 	armLoadEERegPtr(dst, &cpuRegs.HI.UD[0]);
-	armStoreEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	_eeStoreGPRDestReg(_Rd_, dst);
 }
 
 //// MTLO / MTHI — LO/HI = rs (memory to memory)
@@ -83,11 +80,7 @@ void recMTLO()
 	else
 	{
 		_deleteEEreg(_Rs_, 1);
-		a64::Register src = RXSCRATCH;
-		if (const a64::Register* pin = armEEPinForGPR(_Rs_))
-			src = *pin; // LO/HI aren't pinned: plain STR of the mirror, no load
-		else
-			armLoadEERegPtr(src, &cpuRegs.GPR.r[_Rs_].UD[0]);
+		const a64::Register src = _eeGetGPRSourceReg(RXSCRATCH, _Rs_);
 		armStoreEERegPtr(src, &cpuRegs.LO.UD[0]);
 	}
 }
@@ -102,11 +95,7 @@ void recMTHI()
 	else
 	{
 		_deleteEEreg(_Rs_, 1);
-		a64::Register src = RXSCRATCH;
-		if (const a64::Register* pin = armEEPinForGPR(_Rs_))
-			src = *pin; // LO/HI aren't pinned: plain STR of the mirror, no load
-		else
-			armLoadEERegPtr(src, &cpuRegs.GPR.r[_Rs_].UD[0]);
+		const a64::Register src = _eeGetGPRSourceReg(RXSCRATCH, _Rs_);
 		armStoreEERegPtr(src, &cpuRegs.HI.UD[0]);
 	}
 }
@@ -117,10 +106,9 @@ void recMFLO1()
 	if (!_Rd_) return;
 
 	_deleteEEreg(_Rd_, 0);
-	GPR_DEL_CONST(_Rd_);
-	const a64::Register dst = armEEDestForGPR(_Rd_, RXSCRATCH);
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
 	armLoadEERegPtr(dst, &cpuRegs.LO.UD[1]);
-	armStoreEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	_eeStoreGPRDestReg(_Rd_, dst);
 }
 
 void recMFHI1()
@@ -128,10 +116,9 @@ void recMFHI1()
 	if (!_Rd_) return;
 
 	_deleteEEreg(_Rd_, 0);
-	GPR_DEL_CONST(_Rd_);
-	const a64::Register dst = armEEDestForGPR(_Rd_, RXSCRATCH);
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
 	armLoadEERegPtr(dst, &cpuRegs.HI.UD[1]);
-	armStoreEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	_eeStoreGPRDestReg(_Rd_, dst);
 }
 
 //// MTLO1/MTHI1 — LO1/HI1 = rs
@@ -145,11 +132,7 @@ void recMTLO1()
 	else
 	{
 		_deleteEEreg(_Rs_, 1);
-		a64::Register src = RXSCRATCH;
-		if (const a64::Register* pin = armEEPinForGPR(_Rs_))
-			src = *pin; // LO/HI aren't pinned: plain STR of the mirror, no load
-		else
-			armLoadEERegPtr(src, &cpuRegs.GPR.r[_Rs_].UD[0]);
+		const a64::Register src = _eeGetGPRSourceReg(RXSCRATCH, _Rs_);
 		armStoreEERegPtr(src, &cpuRegs.LO.UD[1]);
 	}
 }
@@ -164,11 +147,7 @@ void recMTHI1()
 	else
 	{
 		_deleteEEreg(_Rs_, 1);
-		a64::Register src = RXSCRATCH;
-		if (const a64::Register* pin = armEEPinForGPR(_Rs_))
-			src = *pin; // LO/HI aren't pinned: plain STR of the mirror, no load
-		else
-			armLoadEERegPtr(src, &cpuRegs.GPR.r[_Rs_].UD[0]);
+		const a64::Register src = _eeGetGPRSourceReg(RXSCRATCH, _Rs_);
 		armStoreEERegPtr(src, &cpuRegs.HI.UD[1]);
 	}
 }
@@ -183,39 +162,39 @@ static void recMOVZtemp_const()
 
 static void recMOVZtemp_consts(int info)
 {
-	// S is const — load T from memory, compare, conditionally store
-	armLoadEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rt_].UD[0]);
-	armAsm->Cmp(RXSCRATCH, 0);
+	// S is const — compare T, conditionally select S over the old D.
+	const a64::Register tval = _eeGetGPRSourceReg(RXSCRATCH, _Rt_);
+	armAsm->Cmp(tval, 0);
 
 	armAsm->Mov(RXARG1, g_cpuConstRegs[_Rs_].SD[0]);
-	const a64::Register dst = armEEDestForGPR(_Rd_, RXSCRATCH);
-	armLoadEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]); // pinned rd: self-Mov, elided by vixl
-	armAsm->Csel(dst, RXARG1, dst, a64::eq);
-	armStoreEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
+	const a64::Register dval = _eeGetGPRSourceReg(RXSCRATCH, _Rd_); // old D
+	armAsm->Csel(dst, RXARG1, dval, a64::eq);
+	_eeStoreGPRDestReg(_Rd_, dst);
 }
 
 static void recMOVZtemp_constt(int info)
 {
 	// T is constant and zero (checked in wrapper) — unconditional move
-	const a64::Register dst = armEEDestForGPR(_Rd_, RXSCRATCH);
-	armLoadEERegPtr(dst, &cpuRegs.GPR.r[_Rs_].UD[0]);
-	armStoreEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
+	_eeMoveGPRtoR(dst, _Rs_);
+	_eeStoreGPRDestReg(_Rd_, dst);
 }
 
 static void recMOVZtemp_(int info)
 {
-	// Load T for comparison
-	armLoadEERegPtr(RXARG1, &cpuRegs.GPR.r[_Rt_].UD[0]);
-	armAsm->Cmp(RXARG1, 0);
+	// Compare T
+	const a64::Register tval = _eeGetGPRSourceReg(RXARG1, _Rt_);
+	armAsm->Cmp(tval, 0);
 
-	// Load S
-	armLoadEERegPtr(RXARG1, &cpuRegs.GPR.r[_Rs_].UD[0]);
+	// Read S
+	const a64::Register sval = _eeGetGPRSourceReg(RXARG1, _Rs_);
 
-	// Load current D, conditional select, store back
-	const a64::Register dst = armEEDestForGPR(_Rd_, RXSCRATCH);
-	armLoadEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
-	armAsm->Csel(dst, RXARG1, dst, a64::eq);
-	armStoreEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	// Read current D, conditional select, store back
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
+	const a64::Register dval = _eeGetGPRSourceReg(RXSCRATCH, _Rd_);
+	armAsm->Csel(dst, sval, dval, a64::eq);
+	_eeStoreGPRDestReg(_Rd_, dst);
 }
 
 static EERECOMPILE_CODERC0_MEM(MOVZtemp, XMMINFO_READS | XMMINFO_READT | XMMINFO_READD | XMMINFO_WRITED | XMMINFO_NORENAME);
@@ -240,35 +219,35 @@ static void recMOVNtemp_const()
 
 static void recMOVNtemp_consts(int info)
 {
-	armLoadEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rt_].UD[0]);
-	armAsm->Cmp(RXSCRATCH, 0);
+	const a64::Register tval = _eeGetGPRSourceReg(RXSCRATCH, _Rt_);
+	armAsm->Cmp(tval, 0);
 
 	armAsm->Mov(RXARG1, g_cpuConstRegs[_Rs_].SD[0]);
-	const a64::Register dst = armEEDestForGPR(_Rd_, RXSCRATCH);
-	armLoadEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]); // pinned rd: self-Mov, elided by vixl
-	armAsm->Csel(dst, RXARG1, dst, a64::ne);
-	armStoreEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
+	const a64::Register dval = _eeGetGPRSourceReg(RXSCRATCH, _Rd_); // old D
+	armAsm->Csel(dst, RXARG1, dval, a64::ne);
+	_eeStoreGPRDestReg(_Rd_, dst);
 }
 
 static void recMOVNtemp_constt(int info)
 {
 	// T is constant and non-zero (checked in wrapper) — unconditional move
-	const a64::Register dst = armEEDestForGPR(_Rd_, RXSCRATCH);
-	armLoadEERegPtr(dst, &cpuRegs.GPR.r[_Rs_].UD[0]);
-	armStoreEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
+	_eeMoveGPRtoR(dst, _Rs_);
+	_eeStoreGPRDestReg(_Rd_, dst);
 }
 
 static void recMOVNtemp_(int info)
 {
-	armLoadEERegPtr(RXARG1, &cpuRegs.GPR.r[_Rt_].UD[0]);
-	armAsm->Cmp(RXARG1, 0);
+	const a64::Register tval = _eeGetGPRSourceReg(RXARG1, _Rt_);
+	armAsm->Cmp(tval, 0);
 
-	armLoadEERegPtr(RXARG1, &cpuRegs.GPR.r[_Rs_].UD[0]);
+	const a64::Register sval = _eeGetGPRSourceReg(RXARG1, _Rs_);
 
-	const a64::Register dst = armEEDestForGPR(_Rd_, RXSCRATCH);
-	armLoadEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
-	armAsm->Csel(dst, RXARG1, dst, a64::ne);
-	armStoreEERegPtr(dst, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
+	const a64::Register dval = _eeGetGPRSourceReg(RXSCRATCH, _Rd_);
+	armAsm->Csel(dst, sval, dval, a64::ne);
+	_eeStoreGPRDestReg(_Rd_, dst);
 }
 
 static EERECOMPILE_CODERC0_MEM(MOVNtemp, XMMINFO_READS | XMMINFO_READT | XMMINFO_READD | XMMINFO_WRITED | XMMINFO_NORENAME);
