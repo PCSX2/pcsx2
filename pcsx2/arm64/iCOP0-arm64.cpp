@@ -247,10 +247,10 @@ void recMFC0()
 				return;
 			// rt = sign_extend(CP0.r[9]) (interp :571-577)
 			_deleteEEreg(_Rt_, 0);
-			GPR_DEL_CONST(_Rt_);
 			armLoadEERegPtr(RWSCRATCH, &cpuRegs.CP0.r[9]);
-			armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-			armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rt_].UD[0]);
+			const a64::Register dst = _eeGetGPRDestReg(_Rt_, RXSCRATCH);
+			armAsm->Sxtw(dst, RWSCRATCH);
+			_eeStoreGPRDestReg(_Rt_, dst);
 			return;
 		}
 
@@ -270,7 +270,6 @@ void recMFC0()
 
 		case 12: // Status — mask reserved bits, matching interp MFC0 case 12 (COP0.cpp)
 			_deleteEEreg(_Rt_, 0);
-			GPR_DEL_CONST(_Rt_);
 			armLoadEERegPtr(RWSCRATCH, &cpuRegs.CP0.r[_Rd_]);
 			// 0xf0c79c1f is not a valid AArch64 logical immediate, so materialize it
 			// in a scratch register. Use the non-allocatable w10, not the reserved
@@ -279,17 +278,22 @@ void recMFC0()
 			// path a cached guest value (e.g. a preceding load's dest) may live there.
 			armAsm->Mov(a64::w10, 0xf0c79c1fu);
 			armAsm->And(RWSCRATCH, RWSCRATCH, a64::w10);
-			armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-			armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rt_].UD[0]);
+			{
+				const a64::Register dst = _eeGetGPRDestReg(_Rt_, RXSCRATCH);
+				armAsm->Sxtw(dst, RWSCRATCH);
+				_eeStoreGPRDestReg(_Rt_, dst);
+			}
 			return;
 
 		default:
 			// Simple case: rt = sign_extend(cpuRegs.CP0.r[rd])
 			_deleteEEreg(_Rt_, 0);
-			GPR_DEL_CONST(_Rt_);
 			armLoadEERegPtr(RWSCRATCH, &cpuRegs.CP0.r[_Rd_]);
-			armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-			armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rt_].UD[0]);
+			{
+				const a64::Register dst = _eeGetGPRDestReg(_Rt_, RXSCRATCH);
+				armAsm->Sxtw(dst, RWSCRATCH);
+				_eeStoreGPRDestReg(_Rt_, dst);
+			}
 			return;
 	}
 }
@@ -314,8 +318,8 @@ void recMTC0()
 			else
 			{
 				_deleteEEreg(_Rt_, 1);
-				armLoadEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[0]);
-				armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.CP0.r[9]));
+				const a64::Register rt = _eeGetGPRSourceReg(RWSCRATCH, _Rt_);
+				armAsm->Str(rt, armCpuRegMem(&cpuRegs.CP0.r[9]));
 			}
 			return;
 		}
@@ -346,8 +350,8 @@ void recMTC0()
 			else
 			{
 				_deleteEEreg(_Rt_, 1);
-				armLoadEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[0]);
-				armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.CP0.r[_Rd_]));
+				const a64::Register rt = _eeGetGPRSourceReg(RWSCRATCH, _Rt_);
+				armAsm->Str(rt, armCpuRegMem(&cpuRegs.CP0.r[_Rd_]));
 			}
 			return;
 	}
