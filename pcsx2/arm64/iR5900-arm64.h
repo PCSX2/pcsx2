@@ -381,7 +381,7 @@ static __fi void armMergeEEPinIntoQuad(const vixl::aarch64::VRegister& q, int gp
 		armAsm->Ins(q.V2D(), 0, *pin);
 }
 
-static __fi void armLoadEERegPtr(const vixl::aarch64::CPURegister& reg, const void* field)
+static __fi void armLoadEERegPtrRaw(const vixl::aarch64::CPURegister& reg, const void* field)
 {
 	// Pinned guest GPR: serve the read from the mirror register. Write-through
 	// keeps mirror == memory; lazy-dirty keeps the mirror NEWEST — either way
@@ -412,7 +412,7 @@ static __fi void armLoadEERegPtr(const vixl::aarch64::CPURegister& reg, const vo
 	else
 		armLoadPtr(reg, field);
 }
-static __fi void armStoreEERegPtr(const vixl::aarch64::CPURegister& reg, const void* field)
+static __fi void armStoreEERegPtrRaw(const vixl::aarch64::CPURegister& reg, const void* field)
 {
 	int off;
 	const EEPinnedGPR* pin = armEEPinForPtr(field, &off);
@@ -481,6 +481,39 @@ static __fi void armStoreEERegPtr(const vixl::aarch64::CPURegister& reg, const v
 		// just-written canonical memory.
 		armAsm->Ldr(pin->host, armCpuRegMem(&cpuRegs.GPR.r[pin->gpr].UD[0]));
 	}
+}
+
+#ifdef PCSX2_DEVBUILD
+// GE-M2 coherence tripwire (I3). Fires if `field` is an unpinned guest-GPR
+// lower-64 slot whose reg currently has a DIRTY (MODE_WRITE) allocator or NEON
+// copy — i.e. cpuRegs memory is stale and a raw load/store would desync. Silent
+// on the pre-flip baseline: the memory-based templates flush every reg (free or
+// writeback-clean) before any raw site runs, so nothing is dirty-resident
+// there. Once residency is flipped on (Phases 3/4), a raw guest-GPR site the
+// Phase-1 sweep missed trips this instead of silently corrupting. Dirty-only
+// (not any-residency) so it can NEVER false-fire against a clean read-slot on a
+// user's Devel session; the functional gates (stepdiff/tests/liverun) backstop
+// the rarer raw-write-to-clean-resident corner. Defined in iR5900-arm64.cpp.
+void armAssertRawGPRPtrCoherent(const void* field);
+#endif
+
+// Public guest-GPR memory accessors: the raw canonical load/store plus the
+// Devel coherence tripwire. ALL emitter code uses these; only the register
+// allocator internals (iCore-arm64.cpp writeback/fill/const-flush) may call the
+// *Raw variants directly, since they legitimately operate on resident slots.
+static __fi void armLoadEERegPtr(const vixl::aarch64::CPURegister& reg, const void* field)
+{
+#ifdef PCSX2_DEVBUILD
+	armAssertRawGPRPtrCoherent(field);
+#endif
+	armLoadEERegPtrRaw(reg, field);
+}
+static __fi void armStoreEERegPtr(const vixl::aarch64::CPURegister& reg, const void* field)
+{
+#ifdef PCSX2_DEVBUILD
+	armAssertRawGPRPtrCoherent(field);
+#endif
+	armStoreEERegPtrRaw(reg, field);
 }
 
 // 128-bit guest-GPR store (MMI/NEON writeback, LQ, QMFC2): store the full

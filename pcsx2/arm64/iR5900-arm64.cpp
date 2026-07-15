@@ -1106,6 +1106,32 @@ void _eeStoreGPRDestReg(int gpr, const a64::Register& src)
 	armStoreEERegPtr(src, &cpuRegs.GPR.r[gpr].UD[0]);
 }
 
+#ifdef PCSX2_DEVBUILD
+// GE-M2 coherence tripwire body (see armAssertRawGPRPtrCoherent's header
+// declaration for the full rationale). Reject a raw guest-GPR memory access
+// only when the reg's allocator/NEON copy is DIRTY (memory stale) and the reg
+// is neither $zero nor pinned.
+void armAssertRawGPRPtrCoherent(const void* field)
+{
+	const uptr base = reinterpret_cast<uptr>(&cpuRegs.GPR.r[0]);
+	const uptr f = reinterpret_cast<uptr>(field);
+	if (f < base || f >= base + sizeof(cpuRegs.GPR.r))
+		return; // not a guest-GPR pointer
+
+	const uptr rel = f - base;
+	if ((rel % sizeof(cpuRegs.GPR.r[0])) >= 8)
+		return; // upper 64 bits are never scalar-resident
+
+	const int n = static_cast<int>(rel / sizeof(cpuRegs.GPR.r[0]));
+	if (n == 0 || armEEPinForGPR(n) != nullptr)
+		return; // $zero and pinned regs: the raw path is authoritative
+
+	pxAssertMsg(!_hasArm64GPR(ARM64TYPE_GPR, n, MODE_WRITE) &&
+					!_hasNEONreg(NEONTYPE_GPRREG, n, MODE_WRITE),
+		"GE-M2 I3: raw guest-GPR memory access while its allocator/NEON copy is dirty");
+}
+#endif
+
 // =====================================================================================================
 //  Branch handling
 // =====================================================================================================

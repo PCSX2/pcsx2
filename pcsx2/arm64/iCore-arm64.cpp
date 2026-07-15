@@ -232,12 +232,12 @@ void _writebackArm64GPR(int armreg)
 	{
 		case ARM64TYPE_GPR:
 			RALOG("Writing back ARM64 GPR %d for guest reg %d\n", armreg, arm64gprs[armreg].reg);
-			armStoreEERegPtr(armXRegister(armreg), &cpuRegs.GPR.r[arm64gprs[armreg].reg].UD[0]);
+			armStoreEERegPtrRaw(armXRegister(armreg), &cpuRegs.GPR.r[arm64gprs[armreg].reg].UD[0]);
 			break;
 
 		case ARM64TYPE_FPRC:
 			RALOG("Writing back ARM64 GPR %d for guest FPCR %d\n", armreg, arm64gprs[armreg].reg);
-			armStoreEERegPtr(armWRegister(armreg), &fpuRegs.fprc[arm64gprs[armreg].reg]);
+			armStoreEERegPtrRaw(armWRegister(armreg), &fpuRegs.fprc[arm64gprs[armreg].reg]);
 			break;
 
 		case ARM64TYPE_VIREG:
@@ -423,14 +423,14 @@ int _allocArm64GPR(int type, int reg, int mode)
 				else
 				{
 					RALOG("Loading guest reg %d to GPR %d\n", reg, regnum);
-					armLoadEERegPtr(armXRegister(regnum), &cpuRegs.GPR.r[reg].UD[0]);
+					armLoadEERegPtrRaw(armXRegister(regnum), &cpuRegs.GPR.r[reg].UD[0]);
 				}
 			}
 			break;
 
 			case ARM64TYPE_FPRC:
 				RALOG("Loading guest FPCR %d to GPR %d\n", reg, regnum);
-				armLoadEERegPtr(armWRegister(regnum), &fpuRegs.fprc[reg]);
+				armLoadEERegPtrRaw(armWRegister(regnum), &fpuRegs.fprc[reg]);
 				break;
 
 			case ARM64TYPE_PSX:
@@ -518,7 +518,7 @@ void _flushConstReg(int reg)
 		const vixl::aarch64::Register* pin = armEEPinForGPR(reg);
 		const vixl::aarch64::Register& dst = pin ? *pin : RXSCRATCH;
 		armAsm->Mov(dst, static_cast<s64>(g_cpuConstRegs[reg].SD[0]));
-		armStoreEERegPtr(dst, &cpuRegs.GPR.r[reg].UD[0]);
+		armStoreEERegPtrRaw(dst, &cpuRegs.GPR.r[reg].UD[0]);
 		g_cpuFlushedConstReg |= (1 << reg);
 		if (reg == 0)
 			DevCon.Warning("Flushing r0!");
@@ -537,7 +537,7 @@ void _flushConstRegs(bool delete_const)
 		const vixl::aarch64::Register* pin = armEEPinForGPR(static_cast<int>(i));
 		const vixl::aarch64::Register& dst = pin ? *pin : RXSCRATCH;
 		armAsm->Mov(dst, static_cast<u64>(g_cpuConstRegs[i].UD[0]));
-		armStoreEERegPtr(dst, &cpuRegs.GPR.r[i].UD[0]);
+		armStoreEERegPtrRaw(dst, &cpuRegs.GPR.r[i].UD[0]);
 		g_cpuFlushedConstReg |= 1u << i;
 	}
 
@@ -580,6 +580,16 @@ void _validateRegs()
 
 		if ((gprmode | neonmode) & MODE_WRITE)
 			pxAssertMsg((gprmode & MODE_WRITE) != (neonmode & MODE_WRITE), "only one of GPR/NEON is in write state");
+
+		// I1 (GE-M2): a pinned guest reg's lower 64 bits live in its mirror
+		// register (kEEPinTable), so it must never ALSO get a scalar
+		// ARM64TYPE_GPR home — that would be a second, conflicting lower-64
+		// residence. (A 128-bit NEON quad home IS allowed: the pin mirrors only
+		// the lower 64 and armMergeEEPinIntoQuad / armStoreEEGPRQuad keep lane 0
+		// coherent with it — that is exactly the MMI-quad-on-a-pinned-reg case.)
+		if (armEEPinForGPR(guestreg) != nullptr)
+			pxAssertMsg(gprmode == 0,
+				"GE-M2 I1: pinned guest reg must not be scalar allocator-resident");
 	}
 #endif
 }
@@ -850,7 +860,7 @@ int _allocFPtoNEONreg(int fpreg, int mode)
 
 	if (mode & MODE_READ)
 	{
-		armLoadEERegPtr(armSRegister(neonreg), &fpuRegs.fpr[fpreg].f);
+		armLoadEERegPtrRaw(armSRegister(neonreg), &fpuRegs.fpr[fpreg].f);
 	}
 
 	return neonreg;
@@ -908,7 +918,7 @@ int _allocGPRtoNEONreg(int gprreg, int mode)
 		else if (GPR_IS_CONST1(gprreg))
 		{
 			// Load full 128 bits from memory, replace lower 64 with constant
-			armLoadEERegPtr(armQRegister(neonreg), &cpuRegs.GPR.r[gprreg].UQ);
+			armLoadEERegPtrRaw(armQRegister(neonreg), &cpuRegs.GPR.r[gprreg].UQ);
 			armAsm->Mov(RXSCRATCH, static_cast<s64>(g_cpuConstRegs[gprreg].SD[0]));
 			armAsm->Ins(armQRegister(neonreg).V2D(), 0, RXSCRATCH);
 			arm64neon[neonreg].mode |= MODE_WRITE;
@@ -920,7 +930,7 @@ int _allocGPRtoNEONreg(int gprreg, int mode)
 		else if (hostGPRreg >= 0)
 		{
 			// Load full 128, replace lower if dirty
-			armLoadEERegPtr(armQRegister(neonreg), &cpuRegs.GPR.r[gprreg].UQ);
+			armLoadEERegPtrRaw(armQRegister(neonreg), &cpuRegs.GPR.r[gprreg].UQ);
 			if (arm64gprs[hostGPRreg].mode & MODE_WRITE)
 			{
 				armAsm->Ins(armQRegister(neonreg).V2D(), 0, armXRegister(hostGPRreg));
@@ -930,7 +940,7 @@ int _allocGPRtoNEONreg(int gprreg, int mode)
 		}
 		else
 		{
-			armLoadEERegPtr(armQRegister(neonreg), &cpuRegs.GPR.r[gprreg].UQ);
+			armLoadEERegPtrRaw(armQRegister(neonreg), &cpuRegs.GPR.r[gprreg].UQ);
 			// Lazy-dirty: a dirty pin makes the memory lower half stale.
 			armMergeEEPinIntoQuad(armQRegister(neonreg), gprreg);
 		}
@@ -976,7 +986,7 @@ int _allocFPACCtoNEONreg(int mode)
 
 	if (mode & MODE_READ)
 	{
-		armLoadEERegPtr(armSRegister(neonreg), &fpuRegs.ACC.f);
+		armLoadEERegPtrRaw(armSRegister(neonreg), &fpuRegs.ACC.f);
 	}
 
 	return neonreg;
@@ -1037,13 +1047,13 @@ void _writebackNEONreg(int neonreg)
 
 		case NEONTYPE_FPREG:
 		{
-			armStoreEERegPtr(armSRegister(neonreg), &fpuRegs.fpr[arm64neon[neonreg].reg].f);
+			armStoreEERegPtrRaw(armSRegister(neonreg), &fpuRegs.fpr[arm64neon[neonreg].reg].f);
 		}
 		break;
 
 		case NEONTYPE_FPACC:
 		{
-			armStoreEERegPtr(armSRegister(neonreg), &fpuRegs.ACC.f);
+			armStoreEERegPtrRaw(armSRegister(neonreg), &fpuRegs.ACC.f);
 		}
 		break;
 
