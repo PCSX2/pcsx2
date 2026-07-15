@@ -59,7 +59,15 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 //          the GE-M2 resident-scalar-ALU path safe). Still IOP-allocatable
 //          (IOP codegen has its own RWARG discipline and is left
 //          byte-identical — see IOP_ALLOCATABLE_MASK below).
-// x2-x3:   argument/return registers (caller-saved, allocatable)
+// x2-x3:   RWARG3/RWARG4 — NOT allocatable for EE (same rationale as x0/x1:
+//          they are C-call argument registers AND are used as hardcoded scratch
+//          by hand-emitted EE codegen — e.g. the iCOP2 VU-flag/interlock ops —
+//          which was harmless while nothing was allocator-resident but clobbers
+//          a live GE-M2 resident scalar once the RC0 flip holds sources across
+//          ops. The Arm D tier-2 re-home vacated w4-w7 scratch but NOT w2/w3
+//          (they stayed arg registers), so unlike x4-x7 these can still be
+//          scratch-clobbered — carve them out. Still IOP-allocatable, like
+//          x0/x1 — see IOP_ALLOCATABLE_MASK below.)
 // x4-x7:   caller-saved temporaries (allocatable; vacated by the Arm D
 //          tier-2 re-home — S3's 0f16948ae removed every hardcoded w4-w7
 //          scratch use, so nothing conflicts with allocator residency)
@@ -99,7 +107,7 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 // Bitmask of allocatable aarch64 GPRs for EE-side codegen (EE/VU-macro/
 // temps). Bit `n` set ↔ x_n is in the pool. Cleared bits as documented
 // above:
-//   bits 0-1    — x0/x1 : RWARG1/RWARG2 reserved as pure EE scratch (GE-M2)
+//   bits 0-3    — x0-x3 : RWARG1-4 reserved as pure EE scratch/arg regs (GE-M2)
 //   bit 8       — x8  : RXSCRATCH/RWSCRATCH (value scratch)
 //   bits 9-10   — x9/x10 : load/store address + value scratch
 //   bits 11-13  — x11/x12/x13 : REEPIN_AT/REEPIN_K0/REEPIN_S0 (tier-2
@@ -118,6 +126,7 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 // `if (armreg == N) return false` branches per probe; collapse to one
 // LSR + AND + cbz against this mask.
 static constexpr uint32_t EE_ALLOCATABLE_MASK = ~((3u << 0)
+	| (3u << 2)
 	| (1u << 8)
 	| (1u << 9) | (1u << 10)
 	| (7u << 11)
@@ -140,7 +149,7 @@ static constexpr uint32_t EE_ALLOCATABLE_MASK = ~((3u << 0)
 // Shared TEMP allocations always use the EE mask (restrictive = safe for
 // both CPUs).
 static constexpr uint32_t IOP_ALLOCATABLE_MASK =
-	EE_ALLOCATABLE_MASK | (3u << 0) | (7u << 11) | (1u << 26) | (1u << 27);
+	EE_ALLOCATABLE_MASK | (3u << 0) | (3u << 2) | (7u << 11) | (1u << 26) | (1u << 27);
 
 bool _isAllocatableArm64GPR(int armreg)
 {

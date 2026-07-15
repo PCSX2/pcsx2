@@ -34,8 +34,9 @@ namespace a64 = vixl::aarch64;
 // _eeFlushAllDirty at branch forks, iFlushCall at C calls, the block-tail flush).
 // Dead sources fall through to a memory load inside the leaf helper (matching
 // x86's liveness gate via EEINST_USEDTEST), so a slot is spent only where it can
-// be reused. x0/x1 are carved out of the EE pool (EE_ALLOCATABLE_MASK) so the
-// leaves' RWARG scratch + fallback loads can never alias a resident operand.
+// be reused. x0-x3 (RWARG1-4) are carved out of the EE pool (EE_ALLOCATABLE_MASK)
+// so the leaves' RWARG scratch, C-call arg setup, and the hand-emitted-codegen
+// scratch that reuses those arg regs can never alias a resident operand.
 // Handler bodies are unchanged: the memLoad*/memDestD/memStoreD leaves resolve
 // each guest reg through the central pin/allocator accessors and the allocations
 // set up here.
