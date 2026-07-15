@@ -380,8 +380,8 @@ bool FullscreenUI::HasActiveWindow()
 bool FullscreenUI::AreAnyDialogsOpen()
 {
 	return (s_save_state_selector_open || s_about_window_open || s_cover_downloader_open ||
-			s_input_binding_type != InputBindingInfo::Type::Unknown || ImGuiFullscreen::IsChoiceDialogOpen() ||
-			ImGuiFullscreen::IsFileSelectorOpen());
+			s_achievements_login_open || s_input_binding_type != InputBindingInfo::Type::Unknown ||
+			ImGuiFullscreen::IsChoiceDialogOpen() || ImGuiFullscreen::IsFileSelectorOpen());
 }
 
 void FullscreenUI::CheckForConfigChanges(const Pcsx2Config& old_config)
