@@ -808,19 +808,21 @@ void recCOP2_CFC2()
 
 	if (_Rd_ == REG_R)
 	{
-		// REG_R: mask to 23 bits, write only UL[0]
+		// REG_R: mask to 23 bits, write only UL[0]. This is a PARTIAL lower-64
+		// write (UL[1] untouched), which the full-width dest helper can't model;
+		// it stays a raw pin-aware store, coherence-safe because the entry
+		// iFlushCall(FLUSH_EVERYTHING) freed every rt residency (incl. x28).
 		armAsm->Ldr(RWSCRATCH, armVU0Mem(&VU0.VI[REG_R]));
 		armAsm->And(RWSCRATCH, RWSCRATCH, 0x7FFFFF);
 		armStoreEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[0]);
 	}
 	else
 	{
-		// General VI: load 32-bit, sign-extend to UL[0]+UL[1]
+		// General VI: rt = sign_extend_32_to_64(VI[fs]).
 		armAsm->Ldr(RWSCRATCH, armVU0Mem(&VU0.VI[_Rd_]));
-		armStoreEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[0]);
-		// Sign-extend: UL[1] = (UL[0] & 0x80000000) ? 0xFFFFFFFF : 0
-		armAsm->Asr(RWSCRATCH, RWSCRATCH, 31);
-		armStoreEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[1]);
+		const a64::Register dst = _eeGetGPRDestReg(_Rt_, RXSCRATCH);
+		armAsm->Sxtw(dst, RWSCRATCH);
+		_eeStoreGPRDestReg(_Rt_, dst);
 	}
 }
 
@@ -857,9 +859,9 @@ void recCOP2_CTC2()
 	}
 	else
 	{
-		// armLoadEERegPtr: substitutes a pinned reg's mirror — required under
-		// lazy-dirty, a free Ldr->Mov under write-through.
-		armLoadEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[0]);
+		// Coherent move into RWSCRATCH (pin mirror / resident slot / memory);
+		// the per-fs masking below is RWSCRATCH-based.
+		_eeMoveGPRtoR(RWSCRATCH, _Rt_);
 	}
 
 	if (fs == REG_R)
