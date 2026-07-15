@@ -4349,6 +4349,8 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
 	if (ImGui::BeginPopupModal("RetroAchievements", &s_achievements_login_open, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize))
 	{
+		ResetFocusHere();
+
 		const float content_width = ImGui::GetContentRegionAvail().x;
 
 		ImGui::PushFont(g_large_font.first, g_large_font.second);
@@ -4448,6 +4450,8 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
 			s_achievements_login_username[0] = '\0';
 			s_achievements_login_password[0] = '\0';
+
+			QueueResetFocus(FocusResetType::PopupClosed);
 		};
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(ImGuiFullscreen::LAYOUT_FRAME_ROUNDING));
@@ -4463,7 +4467,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 1.0f, 1.0f));
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.4f, 0.8f, 1.0f));
 
-			if (ImGui::Button(FSUI_CSTR("Dismiss"), ImVec2(button_width, button_height)) && !s_achievements_login_logging_in)
+			if ((ImGui::Button(FSUI_CSTR("Dismiss"), ImVec2(button_width, button_height)) || WantsToCloseMenu()) && !s_achievements_login_logging_in)
 				CloseLoginPopup();
 
 			ImGui::PopStyleColor(3);
@@ -4580,7 +4584,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
 
-		if (ImGui::Button(FSUI_CSTR("Cancel"), ImVec2(button_width, button_height)) && !s_achievements_login_logging_in)
+		if ((ImGui::Button(FSUI_CSTR("Cancel"), ImVec2(button_width, button_height)) || WantsToCloseMenu()) && !s_achievements_login_logging_in)
 		{
 			if (s_achievements_login_reason == Achievements::LoginRequestReason::TokenInvalid)
 			{
@@ -4803,6 +4807,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 				s_achievements_login_reason = Achievements::LoginRequestReason::UserInitiated;
 				s_achievements_login_show_dismiss = false;
 				s_achievements_login_open = true;
+				QueueResetFocus(FocusResetType::PopupOpened);
 			}
 		}
 
