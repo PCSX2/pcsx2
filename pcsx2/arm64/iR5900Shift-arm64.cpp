@@ -33,54 +33,43 @@ REC_FUNC(DSRLV);
 REC_FUNC(DSRAV);
 #else
 
-// Memory load/store helpers. Loads return the register holding the operand:
-// the write-through pin mirror when the guest reg is pinned ($sp/$ra — no
-// load emitted), the scratch otherwise. Callers must treat the returned
-// register as READ-ONLY and put results in scratch (or pass them straight
-// to the store helper).
+// Operand helpers. Loads return the register holding the operand, coherent by
+// construction: a pin mirror when the guest reg is pinned, an allocator-
+// resident slot once residency is flipped on, else the scratch (memory load).
+// Callers must treat the returned register as READ-ONLY and put results in
+// scratch (or pass them straight to the store helper).
 static a64::Register memLoadS32()
 {
-	if (const a64::Register* pin = armEEPinForGPR(_Rs_))
-		return pin->W();
-	armLoadEERegPtr(RWARG1, &cpuRegs.GPR.r[_Rs_].UL[0]);
-	return RWARG1;
+	return _eeGetGPRSourceReg(RWARG1, _Rs_);
 }
 
 static a64::Register memLoadS64()
 {
-	if (const a64::Register* pin = armEEPinForGPR(_Rs_))
-		return *pin;
-	armLoadEERegPtr(RXARG1, &cpuRegs.GPR.r[_Rs_].UD[0]);
-	return RXARG1;
+	return _eeGetGPRSourceReg(RXARG1, _Rs_);
 }
 
 static a64::Register memLoadT32()
 {
-	if (const a64::Register* pin = armEEPinForGPR(_Rt_))
-		return pin->W();
-	armLoadEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[0]);
-	return RWSCRATCH;
+	return _eeGetGPRSourceReg(RWSCRATCH, _Rt_);
 }
 
 static a64::Register memLoadT64()
 {
-	if (const a64::Register* pin = armEEPinForGPR(_Rt_))
-		return *pin;
-	armLoadEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rt_].UD[0]);
-	return RXSCRATCH;
+	return _eeGetGPRSourceReg(RXSCRATCH, _Rt_);
 }
 
 static void memStoreD(const a64::Register& src)
 {
-	armStoreEERegPtr(src, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	_eeStoreGPRDestReg(_Rd_, src);
 }
 
-// Pinned-dest fast path: the FINAL result-producing instruction targets the
-// pin (memStoreD then emits just the canonical STR). See armEEDestForGPR's
-// contract — intermediates stay in scratch.
+// Dest home for the shift result: the FINAL result-producing instruction
+// targets it, then memStoreD deposits (a pin/memory store, or a deferred
+// allocator-slot store under the flip). See _eeGetGPRDestReg's contract —
+// intermediates stay in scratch. alloc_if_used=false keeps Phase-1 behavior.
 static a64::Register memDestD()
 {
-	return armEEDestForGPR(_Rd_, RXSCRATCH);
+	return _eeGetGPRDestReg(_Rd_, RXSCRATCH);
 }
 
 /*********************************************************
