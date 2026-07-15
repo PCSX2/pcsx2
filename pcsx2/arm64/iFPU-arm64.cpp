@@ -102,7 +102,10 @@ void recCFC1()
 		armLoadEERegPtr(RWSCRATCH, &fpuRegs.fprc[0]);
 		armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
 	}
-	armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rt_].UD[0]);
+	// Deposit last, after any FCR31 slot allocation above: the dest home is
+	// resolved at the store so an allocator-resident rt slot can't be evicted
+	// between resolve and use.
+	_eeStoreGPRDestReg(_Rt_, RXSCRATCH);
 }
 
 //------------------------------------------------------------------
@@ -122,14 +125,15 @@ void recCTC1()
 	}
 	else
 	{
+		a64::Register rt = RWSCRATCH;
 		if (GPR_IS_CONST1(_Rt_))
 			armAsm->Mov(RWSCRATCH, g_cpuConstRegs[_Rt_].UL[0]);
 		else
 		{
 			_deleteEEreg(_Rt_, 1);
-			armLoadEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[0]);
+			rt = _eeGetGPRSourceReg(RWSCRATCH, _Rt_);
 		}
-		armStoreEERegPtr(RWSCRATCH, &fpuRegs.fprc[_Fs_]);
+		armStoreEERegPtr(rt, &fpuRegs.fprc[_Fs_]);
 	}
 }
 
@@ -159,7 +163,8 @@ void recMFC1()
 		armLoadEERegPtr(RWSCRATCH, &fpuRegs.fpr[_Fs_].UL);
 	}
 	armAsm->Sxtw(RXSCRATCH, RWSCRATCH);
-	armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rt_].UD[0]);
+	// Deposit last, after the FPR-slot probe above (see recCFC1).
+	_eeStoreGPRDestReg(_Rt_, RXSCRATCH);
 }
 
 //------------------------------------------------------------------
@@ -167,12 +172,13 @@ void recMFC1()
 //------------------------------------------------------------------
 void recMTC1()
 {
+	a64::Register rt = RWSCRATCH;
 	if (GPR_IS_CONST1(_Rt_))
 		armAsm->Mov(RWSCRATCH, g_cpuConstRegs[_Rt_].UL[0]);
 	else
 	{
 		_deleteEEreg(_Rt_, 1);
-		armLoadEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[0]);
+		rt = _eeGetGPRSourceReg(RWSCRATCH, _Rt_);
 	}
 
 	// If fpr[fs] is already resident in NEON, write the new bits straight into
@@ -190,11 +196,11 @@ void recMTC1()
 		fsreg = _allocIfUsedFPUtoNEON(_Fs_, MODE_WRITE);
 	if (fsreg >= 0)
 	{
-		armAsm->Fmov(armSRegister(fsreg), RWSCRATCH);
+		armAsm->Fmov(armSRegister(fsreg), rt);
 	}
 	else
 	{
-		armStoreEERegPtr(RWSCRATCH, &fpuRegs.fpr[_Fs_].UL);
+		armStoreEERegPtr(rt, &fpuRegs.fpr[_Fs_].UL);
 	}
 }
 
