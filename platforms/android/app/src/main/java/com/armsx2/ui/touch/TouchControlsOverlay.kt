@@ -107,7 +107,9 @@ fun TouchControlsOverlay() {
     val context = LocalContext.current
     val gyro = remember {
         com.armsx2.input.AndroidGyroscopeInput(context) { mode, x, y ->
-            val right = mode == 1
+            // Aim mode (1) drives the stick the user chose (Right default; Left for games
+            // that aim with the left stick, e.g. RE4). Steer mode (2) always uses left.
+            val right = mode == 1 && ControllerMappings.gyroAimStick() == ControllerMappings.GYRO_STICK_RIGHT
             val up = if (right) 120 else 110; val rt = if (right) 121 else 111
             val dn = if (right) 122 else 112; val lf = if (right) 123 else 113
             NativeApp.setPadButton(rt, if (x > 0f) (x * 32767).toInt() else 0, x > 0f)

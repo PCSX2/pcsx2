@@ -203,9 +203,13 @@ class PatchManagerViewModel(application: Application) : AndroidViewModel(applica
             val ok = withContext(Dispatchers.IO) {
                 runCatching {
                     val file = File(path)
-                    val original = file.readText()
+                    // The parser builds each cheat's `body` from pnach.lines()+"\n" (always
+                    // LF), so a file saved with CRLF/CR line endings never matched verbatim —
+                    // that's the "unusual formatting" toggle failure. Normalize the file the
+                    // same way before locating the block, then write it back (PCSX2 reads LF).
+                    val original = file.readText().replace("\r\n", "\n").replace("\r", "\n")
                     val updated = original.replaceFirst(target.body, newBody)
-                    if (updated == original) return@runCatching false // body not found verbatim
+                    if (updated == original) return@runCatching false // body genuinely not found
                     file.writeText(updated)
                     true
                 }.getOrDefault(false)

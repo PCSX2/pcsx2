@@ -89,6 +89,29 @@ fun DriverManagerSection() {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionTitle(str("backend.gpuDriver.label"), str("backend.gpuDriver.description"))
 
+        // Eden-style hint: the detected GPU and the best custom-driver source for it. Adreno
+        // maps to a tuned Turnip pack; other vendors (Mali/Xclipse/PowerVR) run the built-in
+        // system driver best. Probes the system GL_RENDERER once (cached).
+        val gpuModel = remember { com.armsx2.GpuInfo.rendererName() }
+        val gpuRec = remember(gpuModel) { com.armsx2.GpuInfo.recommendation(gpuModel) }
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(str("backend.driver.gpuModel"), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(gpuModel ?: str("backend.driver.gpuUnknown"), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(str("backend.driver.recommended"), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(gpuRec?.sourceLabel ?: str("backend.driver.recommendSystem"), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                }
+                gpuRec?.reason?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            }
+        }
+
         DriverRow(
             controllerId = "driver.system",
             title = str("backend.driver.systemVulkan"),

@@ -364,6 +364,11 @@ object ControllerMappings {
     private const val KEY_GYRO_SMOOTH = "pad.gyro.smoothing"
     private const val KEY_GYRO_INVX = "pad.gyro.invertX"
     private const val KEY_GYRO_INVY = "pad.gyro.invertY"
+    // Which analog stick Aim mode drives: 0 = Right (default, most FPS), 1 = Left
+    // (games that aim with the left stick, e.g. Resident Evil 4). No effect in Steer mode.
+    const val GYRO_STICK_RIGHT = 0
+    const val GYRO_STICK_LEFT = 1
+    private const val KEY_GYRO_AIM_STICK = "pad.gyro.aimStick"
 
     // Runtime (per-game aware): read by the sensor lifecycle while a game runs.
     fun gyroMode(): Int = resolveInt(KEY_GYRO_MODE, GYRO_OFF).coerceIn(0, 2)
@@ -371,6 +376,7 @@ object ControllerMappings {
     fun gyroSmoothing(): Int = resolveInt(KEY_GYRO_SMOOTH, 45).coerceIn(0, 90)
     fun gyroInvertX(): Boolean = resolveBoolean(KEY_GYRO_INVX, false)
     fun gyroInvertY(): Boolean = resolveBoolean(KEY_GYRO_INVY, false)
+    fun gyroAimStick(): Int = resolveInt(KEY_GYRO_AIM_STICK, GYRO_STICK_RIGHT).coerceIn(0, 1)
 
     // Scope-explicit (Pad UI): read the global tier (serial=null) or a per-game tier.
     fun gyroModeScope(serial: String?): Int = scopedInt(KEY_GYRO_MODE, serial, GYRO_OFF).coerceIn(0, 2)
@@ -378,6 +384,7 @@ object ControllerMappings {
     fun gyroSmoothingScope(serial: String?): Int = scopedInt(KEY_GYRO_SMOOTH, serial, 45).coerceIn(0, 90)
     fun gyroInvertXScope(serial: String?): Boolean = scopedBoolean(KEY_GYRO_INVX, serial, false)
     fun gyroInvertYScope(serial: String?): Boolean = scopedBoolean(KEY_GYRO_INVY, serial, false)
+    fun gyroAimStickScope(serial: String?): Int = scopedInt(KEY_GYRO_AIM_STICK, serial, GYRO_STICK_RIGHT).coerceIn(0, 1)
 
     fun setGyroMode(value: Int, serial: String? = null) =
         MainActivityRuntime.prefs.edit { putInt(scopedKey(KEY_GYRO_MODE, serial), value) }
@@ -389,6 +396,8 @@ object ControllerMappings {
         MainActivityRuntime.prefs.edit { putBoolean(scopedKey(KEY_GYRO_INVX, serial), on) }
     fun setGyroInvertY(on: Boolean, serial: String? = null) =
         MainActivityRuntime.prefs.edit { putBoolean(scopedKey(KEY_GYRO_INVY, serial), on) }
+    fun setGyroAimStick(value: Int, serial: String? = null) =
+        MainActivityRuntime.prefs.edit { putInt(scopedKey(KEY_GYRO_AIM_STICK, serial), value) }
 
     // ---- Custom per-direction stick→button binding (StickMode.CUSTOM) ----
 

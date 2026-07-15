@@ -754,6 +754,19 @@ internal fun GyroSection(
                 refreshToken.intValue++
             },
         )
+        // Which analog stick Aim mode drives — Right for most FPS, Left for games that
+        // aim with the left stick (e.g. Resident Evil 4). Only shown in Aim mode.
+        if (gyroMode == ControllerMappings.GYRO_AIM) {
+            SegmentedRow(
+                label = str("pad.gyro.aimStick.label"),
+                options = listOf(str("pad.gyro.aimStick.right"), str("pad.gyro.aimStick.left")),
+                selectedIndex = ControllerMappings.gyroAimStickScope(editSerial),
+                onChange = {
+                    ControllerMappings.setGyroAimStick(it, editSerial)
+                    refreshToken.intValue++
+                },
+            )
+        }
         // Warn when the picked mode's sensor is missing on this device (aim needs a
         // gyroscope, steering the game rotation vector). The manifest declares the
         // feature not-required, so such devices still install.
