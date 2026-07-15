@@ -53,7 +53,13 @@ static uint g_arm64checknext = 0;
 _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_REGS];
 
 // ARM64 register allocation policy (EE-SRA 3 Arm D tier-2 re-home):
-// x0-x3:   argument/return registers (caller-saved, allocatable)
+// x0-x1:   RWARG1/RWARG2 — NOT allocatable for EE (reserved as pure scratch
+//          so the scalar-ALU helpers' RWARG temps + fallback loads never
+//          collide with an allocator-resident guest value; this is what makes
+//          the GE-M2 resident-scalar-ALU path safe). Still IOP-allocatable
+//          (IOP codegen has its own RWARG discipline and is left
+//          byte-identical — see IOP_ALLOCATABLE_MASK below).
+// x2-x3:   argument/return registers (caller-saved, allocatable)
 // x4-x7:   caller-saved temporaries (allocatable; vacated by the Arm D
 //          tier-2 re-home — S3's 0f16948ae removed every hardcoded w4-w7
 //          scratch use, so nothing conflicts with allocator residency)
@@ -93,6 +99,7 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 // Bitmask of allocatable aarch64 GPRs for EE-side codegen (EE/VU-macro/
 // temps). Bit `n` set ↔ x_n is in the pool. Cleared bits as documented
 // above:
+//   bits 0-1    — x0/x1 : RWARG1/RWARG2 reserved as pure EE scratch (GE-M2)
 //   bit 8       — x8  : RXSCRATCH/RWSCRATCH (value scratch)
 //   bits 9-10   — x9/x10 : load/store address + value scratch
 //   bits 11-13  — x11/x12/x13 : REEPIN_AT/REEPIN_K0/REEPIN_S0 (tier-2
@@ -110,7 +117,8 @@ _arm64neonregs arm64neon[NUM_ARM_NEON_REGS], s_saveArm64NEONregs[NUM_ARM_NEON_RE
 // Inner allocator loop runs 31× per cache miss and was nine sequential
 // `if (armreg == N) return false` branches per probe; collapse to one
 // LSR + AND + cbz against this mask.
-static constexpr uint32_t EE_ALLOCATABLE_MASK = ~((1u << 8)
+static constexpr uint32_t EE_ALLOCATABLE_MASK = ~((3u << 0)
+	| (1u << 8)
 	| (1u << 9) | (1u << 10)
 	| (7u << 11)
 	| (7u << 16)
@@ -132,7 +140,7 @@ static constexpr uint32_t EE_ALLOCATABLE_MASK = ~((1u << 8)
 // Shared TEMP allocations always use the EE mask (restrictive = safe for
 // both CPUs).
 static constexpr uint32_t IOP_ALLOCATABLE_MASK =
-	EE_ALLOCATABLE_MASK | (7u << 11) | (1u << 26) | (1u << 27);
+	EE_ALLOCATABLE_MASK | (3u << 0) | (7u << 11) | (1u << 26) | (1u << 27);
 
 bool _isAllocatableArm64GPR(int armreg)
 {
@@ -360,19 +368,19 @@ int _allocArm64GPR(int type, int reg, int mode)
 	// EE guest state, VI mirrors, and shared TEMPs — stays inside the EE
 	// mask so it can never land on an EE pin host.
 	//
-	// FPRC (FCR31 residency, GE-12) gets a further-restricted pool: x0/x1
-	// are raw-clobbered as RWARG1/RWARG2 scratch by FPU/MULT emitters with
-	// no allocator free, and x28 doubles as COP2 macro-mode VI-pool
-	// spillover (mVUIsReservedCOP2 is a stub, and the COP2 wrappers' light
-	// iFlushCall only evicts caller-saved homes) plus the sole
-	// MODE_CALLEESAVED candidate for the vtlb unaligned handlers. A flag
+	// FPRC (FCR31 residency, GE-12) gets a further-restricted pool: the base
+	// EE mask already excludes x0/x1 (carved as pure RWARG1/RWARG2 scratch —
+	// GE-M2), so FPRC only needs to additionally drop x28, which doubles as
+	// COP2 macro-mode VI-pool spillover (mVUIsReservedCOP2 is a stub, and the
+	// COP2 wrappers' light iFlushCall only evicts caller-saved homes) plus the
+	// sole MODE_CALLEESAVED candidate for the vtlb unaligned handlers. A flag
 	// register that persists across ops must live where neither habit can
 	// touch it: {x2-x7, x14, x15} — all caller-saved, so every iFlushCall
 	// seam writes it back before C code can observe or mutate fprc[31].
 	const u32 pool = (type == ARM64TYPE_PSX || type == ARM64TYPE_PSX_PCWRITEBACK)
 	                     ? IOP_ALLOCATABLE_MASK
 	                 : (type == ARM64TYPE_FPRC)
-	                     ? (EE_ALLOCATABLE_MASK & ~((1u << 0) | (1u << 1) | (1u << 28)))
+	                     ? (EE_ALLOCATABLE_MASK & ~(1u << 28))
 	                     : EE_ALLOCATABLE_MASK;
 	const int regnum = _getFreeArm64GPR(mode, pool);
 	arm64gprs[regnum].type = type;
