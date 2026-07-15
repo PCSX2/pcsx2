@@ -80,7 +80,7 @@ static void recWritebackRd()
 
 	_deleteEEreg(_Rd_, 0);
 	GPR_DEL_CONST(_Rd_);
-	armStoreEERegPtr(RXSCRATCH, &cpuRegs.GPR.r[_Rd_].UD[0]);
+	_eeStoreGPRDestReg(_Rd_, RXSCRATCH);
 }
 
 //// MULT — signed 32-bit multiply, result in HI:LO, optionally Rd
