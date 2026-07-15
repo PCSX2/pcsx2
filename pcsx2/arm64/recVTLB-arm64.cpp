@@ -390,7 +390,7 @@ static void recStoreLoadResult(const a64::Register& result = a64::x0)
 	{
 		_deleteEEreg(_Rt_, 0);
 		GPR_DEL_CONST(_Rt_);
-		armStoreEERegPtr(result, &cpuRegs.GPR.r[_Rt_].UD[0]);
+		_eeStoreGPRDestReg(_Rt_, result);
 	}
 }
 
@@ -670,14 +670,10 @@ static bool recStoreConstPaddrMMIOShortcut(u32 bits)
 		case 64: szidx = 3; break;
 	}
 
-	// AAPCS64: w0 = paddr, w1/x1 = value. After FLUSH_INTERPRETER (0xfff)
-	// all guest reg state is in memory, so armLoadEERegPtr is correct for
-	// both const and non-const Rt (including Rt == 0).
+	// AAPCS64: w0 = paddr, w1/x1 = value. _eeMoveGPRtoR reads Rt from its
+	// coherent home (const / resident slot / pin / memory), handling Rt == 0.
 	armAsm->Mov(a64::w0, paddr);
-	if (bits <= 32)
-		armLoadEERegPtr(a64::w1, &cpuRegs.GPR.r[_Rt_].UL[0]);
-	else
-		armLoadEERegPtr(a64::x1, &cpuRegs.GPR.r[_Rt_].UD[0]);
+	_eeMoveGPRtoR(bits <= 32 ? a64::w1 : a64::x1, _Rt_);
 
 	// RECCYCLE coherence — same rationale as recLoadConstPaddrMMIOShortcut.
 	armFlushCycleDelta();
@@ -970,7 +966,9 @@ void recSQ()
 	armLoadEERegPtrRaw(a64::q0, &cpuRegs.GPR.r[_Rt_].UQ);
 	armMergeEEResidentIntoQuad(a64::q0, _Rt_); // lazy-dirty / residency merge
 
-	armLoadEERegPtr(a64::w9, &cpuRegs.GPR.r[_Rs_].UL[0]);
+	// Rs address read must hit its resident slot: FLUSH_CONSTANT_REGS does NOT
+	// free the callee-saved x28 pool slot, so a raw memory load could go stale.
+	_eeMoveGPRtoR(a64::w9, _Rs_);
 	if (_Imm_ != 0)
 		armAsm->Add(a64::w9, a64::w9, _Imm_);
 	armAsm->And(a64::w9, a64::w9, (u32)~0xF);
