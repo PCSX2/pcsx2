@@ -1730,6 +1730,18 @@ void MainWindow::requestExit(bool allow_confirm)
 
 void MainWindow::checkForSettingChanges()
 {
+	if (m_settings_window && !m_settings_window->isVisible())
+	{
+		m_settings_window->deleteLater();
+		m_settings_window = nullptr;
+	}
+
+	if (m_controller_settings_window && !m_controller_settings_window->isVisible())
+	{
+		m_controller_settings_window->deleteLater();
+		m_controller_settings_window = nullptr;
+	}
+
 	if (m_display_surface)
 		updateDisplayWidgetCursor();
 
