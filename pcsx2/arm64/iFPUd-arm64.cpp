@@ -208,25 +208,32 @@ static void FPU_ADD_SUB(int idxd, int idxt)
 
 	armAsm->Fmov(RWARG1, sd);  // d bits
 	armAsm->Fmov(RWARG2, st);  // t bits
-	armAsm->Ubfx(RWARG3, RWARG1, 23, 8);    // expd
+	// GE-M2: the exponent-diff and mask temps use the reserved load/store scratch
+	// x9/x10, not the RWARG3/RWARG4 (w2/w3) pool hosts they replaced — w2/w3 are
+	// EE-allocatable, so under the residency flip they can hold a live guest GPR,
+	// and this hand-emitted path never flushes the allocator. This span has no
+	// load/store or C-call, so x9/x10 are free scratch here. (x86 uses GPR temps
+	// too: pcsx2/x86/iFPU.cpp FPU_ADD_SUB; only the register choice is our
+	// scratch-discipline constraint.)
+	armAsm->Ubfx(a64::w9, RWARG1, 23, 8);    // expd
 	armAsm->Ubfx(RWSCRATCH, RWARG2, 23, 8); // expt
-	armAsm->Sub(RWARG3, RWARG3, RWSCRATCH); // diff = expd - expt (signed)
+	armAsm->Sub(a64::w9, a64::w9, RWSCRATCH); // diff = expd - expt (signed)
 
 	a64::Label caseD25, casePos, caseEq, caseDn25, done;
-	armAsm->Cmp(RWARG3, 25);
+	armAsm->Cmp(a64::w9, 25);
 	armAsm->B(&caseD25, a64::ge);
-	armAsm->Cmp(RWARG3, 0);
+	armAsm->Cmp(a64::w9, 0);
 	armAsm->B(&casePos, a64::gt);
 	armAsm->B(&caseEq, a64::eq);
-	armAsm->Cmn(RWARG3, 25);                 // cmp diff, -25
+	armAsm->Cmn(a64::w9, 25);                 // cmp diff, -25
 	armAsm->B(&caseDn25, a64::le);
 
 	// diff in -24..-1 (expd < expt): mask tempd's low (-diff-1) bits.
-	armAsm->Neg(RWSCRATCH, RWARG3);
+	armAsm->Neg(RWSCRATCH, a64::w9);
 	armAsm->Sub(RWSCRATCH, RWSCRATCH, 1);
-	armAsm->Mov(RWARG4, 0xffffffff);
-	armAsm->Lsl(RWARG4, RWARG4, RWSCRATCH);
-	armAsm->And(RWARG1, RWARG1, RWARG4);
+	armAsm->Mov(a64::w10, 0xffffffff);
+	armAsm->Lsl(a64::w10, a64::w10, RWSCRATCH);
+	armAsm->And(RWARG1, RWARG1, a64::w10);
 	armAsm->Fmov(sd, RWARG1);
 	armAsm->B(&done);
 
@@ -238,10 +245,10 @@ static void FPU_ADD_SUB(int idxd, int idxt)
 
 	armAsm->Bind(&casePos);
 	// diff in 1..24 (expt smaller): mask tempt's low (diff-1) bits.
-	armAsm->Sub(RWSCRATCH, RWARG3, 1);
-	armAsm->Mov(RWARG4, 0xffffffff);
-	armAsm->Lsl(RWARG4, RWARG4, RWSCRATCH);
-	armAsm->And(RWARG2, RWARG2, RWARG4);
+	armAsm->Sub(RWSCRATCH, a64::w9, 1);
+	armAsm->Mov(a64::w10, 0xffffffff);
+	armAsm->Lsl(a64::w10, a64::w10, RWSCRATCH);
+	armAsm->And(RWARG2, RWARG2, a64::w10);
 	armAsm->Fmov(st, RWARG2);
 	armAsm->B(&done);
 
@@ -456,9 +463,11 @@ static void recMINMAX(int info, bool ismin)
 	armAsm->Orr(RXSCRATCH, RXSCRATCH, a64::Operand(RXARG1, a64::LSL, 32));
 
 	armAsm->Fmov(RWARG2, armSRegister(EEREC_T)); // x1 = zext(t bits)
-	armAsm->And(RWARG3, RWARG2, 0x80000000);
-	armAsm->Orr(RWARG3, RWARG3, 0x40000000);
-	armAsm->Orr(RXARG2, RXARG2, a64::Operand(RXARG3, a64::LSL, 32));
+	// GE-M2: exp/sign pattern temp in reserved scratch x9 (was RWARG3/w2, an
+	// EE-allocatable pool host — see FPU_ADD_SUB). No load/store or C-call spans it.
+	armAsm->And(a64::w9, RWARG2, 0x80000000);
+	armAsm->Orr(a64::w9, a64::w9, 0x40000000);
+	armAsm->Orr(RXARG2, RXARG2, a64::Operand(a64::x9, a64::LSL, 32));
 
 	armAsm->Fmov(armDRegister(sreg), RXSCRATCH);
 	armAsm->Fmov(armDRegister(treg), RXARG2);

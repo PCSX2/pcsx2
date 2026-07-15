@@ -579,3 +579,53 @@ TEST(EeRecFpuFull, RsqrtDivByZeroSignedMaxFromDividend)
 	EXPECT_EQ(h.GetFprBitsJit(2), 0xff7fffffu);
 	EXPECT_EQ(h.GetGpr64Jit(reg::v0) & 0x00010020u, 0x00010020u) << "D|SD not set";
 }
+
+// GE-M2 residency coherence: FPU-full (DOUBLE-mode) ops hand-emit integer scratch
+// for the guard-bit alignment (FPU_ADD_SUB) and the min/max bit-pattern build
+// (recMINMAX). Those temps were RWARG3/RWARG4 (w2/w3) — EE-allocatable pool
+// hosts; the rehome moved them to the reserved load/store scratch x9/x10, because
+// the FPU path never flushes the EE GPR allocator, so under the residency flip a
+// guest scalar live in x2/x3 would otherwise be clobbered. This keeps a wide band
+// of dirty guest scalars live across an ADD.S (FPU_ADD_SUB) and a MAX.S
+// (recMINMAX) and asserts they survive. FPU-full is JIT-only (the shared interp
+// has no double path), so the bystanders are checked via GetGpr64Jit — their
+// values are ordinary EE ALU results, independent of the double FPR result. Green
+// on the pre-flip baseline (nothing resident); red under the flip if w2/w3
+// scratch ever returned.
+TEST(EeRecFpuFull, DoubleModeScratchPreservesLiveGuestScalars)
+{
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.EnableFpuFullMode();
+	h.SetFprBits(0, FloatBits(2.5f));
+	h.SetFprBits(1, FloatBits(1.25f));
+	// Distinct sentinels across a broad band of unpinned/allocatable guest regs.
+	h.SetGpr64(reg::t0, 0x1010101010101010ull);
+	h.SetGpr64(reg::t1, 0x0000000012340000ull);
+	h.SetGpr64(reg::t2, 0x0000000000005678ull);
+	h.SetGpr64(reg::t3, 0x3030303030303030ull);
+	h.SetGpr64(reg::t5, 0x0000000000000005ull);
+	h.SetGpr64(reg::t6, 0x00000000FFFFFFFBull);
+	h.SetGpr64(reg::s1, 0x0000000000000009ull);
+	h.SetGpr64(reg::s2, 0x0000000000000002ull);
+	h.LoadProgram({
+		// Dirty a broad band right before the FPU ops so several land in the pool
+		// slots (x2-x7/x14/x15) as MODE_WRITE residents under the flip.
+		ADDU (reg::t4, reg::t5, reg::t6),  // t4 = sext32(5 + -5) = 0
+		ADDU (reg::t7, reg::t1, reg::t2),  // t7 = 0x12345678
+		DADDU(reg::t8, reg::s1, reg::s2),  // t8 = 0xB (64-bit)
+		ADDU (reg::t9, reg::t0, reg::t3),  // t9 = sext32(0x10101010 + 0x30303030)
+		ADD_S(2, 0, 1),                    // FPR2 = 3.75; FPU_ADD_SUB guard path (x9/x10)
+		MAX_S(3, 0, 1),                    // recMINMAX (x9)
+	});
+	h.RunJitNoDiff();
+	// The FPU ops must not corrupt any live guest scalar.
+	EXPECT_EQ(h.GetGpr64Jit(reg::t4), 0ull);
+	EXPECT_EQ(h.GetGpr64Jit(reg::t7), 0x0000000012345678ull);
+	EXPECT_EQ(h.GetGpr64Jit(reg::t8), 0x000000000000000Bull);
+	EXPECT_EQ(h.GetGpr64Jit(reg::t9), 0x0000000040404040ull);
+	EXPECT_EQ(h.GetGpr64Jit(reg::t0), 0x1010101010101010ull); // pure source, untouched
+	EXPECT_EQ(h.GetGpr64Jit(reg::t3), 0x3030303030303030ull); // pure source, untouched
+	// Sanity: the double-mode ADD result is still correct (normal-range round-trip).
+	EXPECT_EQ(h.GetFprBitsJit(2), FloatBits(3.75f));
+}
