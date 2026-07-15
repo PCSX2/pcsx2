@@ -725,9 +725,28 @@ extern u32 g_cpuHasConstReg, g_cpuFlushedConstReg;
 // Move guest GPR value to an ARM64 register
 void _eeMoveGPRtoR(const vixl::aarch64::Register& to, int fromgpr, bool allow_preload = true);
 // Returns a register currently holding the guest GPR (pin / MODE_READ
-// allocator slot — zero insns) or materializes into `scratch`. Post-flush
-// contexts only; consume immediately; never write the result. (EE-SRA 2 WS-C)
+// allocator slot — zero insns) or materializes into `scratch` (const → imm,
+// NEON dual-residence → Fmov, else a memory load). Dirty-safe by construction:
+// a resident slot IS the newest value, and pin / GPR-slot / NEON residency are
+// mutually exclusive (invariants I1/I2), so the pin>slot>fallback order never
+// returns a stale home. Consume immediately; never write the returned register.
+// (EE-SRA 2 WS-C; GE-M2)
 vixl::aarch64::Register _eeGetGPRSourceReg(const vixl::aarch64::Register& scratch, int fromgpr);
+
+// WRITE counterparts (GE-M2). _eeGetGPRDestReg resolves gpr's 64-bit write home
+// — pin > existing ARM64TYPE_GPR slot (marked MODE_WRITE) > [alloc_if_used &&
+// EEINST_USEDTEST(gpr): a fresh MODE_WRITE slot] > `scratch` — after first
+// evicting any 128-bit NEON dual-residence copy WITH writeback (a scalar write
+// only touches UD[0]; UD[1] must survive in memory) and clearing the const
+// flag. _eeStoreGPRDestReg deposits `src` into that home: an allocator slot
+// takes a deferred store (Mov-if-different, then mark MODE_READ|MODE_WRITE so
+// _eeGetGPRSourceReg / seam flushers observe the new value); a pin/memory home
+// takes the lazy-dirty / canonical armStoreEERegPtr (a src that IS the pin
+// emits nothing). Same final-instruction emit-ordering contract as
+// armEEDestForGPR. Mirrors the x86 allocator template
+// (pcsx2/x86/ix86-32/iR5900Templates.cpp, _allocX86reg in pcsx2/x86/iCore.cpp).
+vixl::aarch64::Register _eeGetGPRDestReg(int gpr, const vixl::aarch64::Register& scratch, bool alloc_if_used = false);
+void _eeStoreGPRDestReg(int gpr, const vixl::aarch64::Register& src);
 
 void _eeFlushAllDirty();
 void _eeOnWriteReg(int reg, int signext);

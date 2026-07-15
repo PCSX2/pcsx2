@@ -1013,9 +1013,12 @@ void _eeMoveGPRtoR(const a64::Register& to, int fromgpr, bool allow_preload)
 // slot already in MODE_READ — emitting nothing at all in those cases; only
 // the fallback (const / NEON-resident / memory) materializes into `scratch`.
 // Contract:
-//   - call only where allocator-dirty state has been flushed (post
-//     _eeFlushAllDirty / iFlushCall): a dirty NEON dual-residence copy makes
-//     the pin/memory stale until write-through fires.
+//   - dirty-safe by construction: a resident allocator/NEON slot IS the newest
+//     value (a dirty slot is exactly what we want to read), and pin / GPR-slot /
+//     NEON residency are mutually exclusive (invariants I1/I2), so the
+//     pin>slot>fallback order never returns a stale home. (The GE-M2 write
+//     helpers below mark their dest slots MODE_READ after depositing, which is
+//     what keeps a within-block writer→reader chain coherent here.)
 //   - consume the returned register in the immediately following
 //     instruction(s), before anything can mutate pins or allocator slots.
 //   - the returned register may be `scratch` or may not be — never write it.
@@ -1041,6 +1044,66 @@ vixl::aarch64::Register _eeGetGPRSourceReg(const a64::Register& scratch, int fro
 
 	_eeMoveGPRtoR(scratch, fromgpr);
 	return scratch;
+}
+
+// WRITE-side operand substitution (GE-M2 central write API). Resolve a guest
+// GPR's 64-bit write home so that a hand-written op deposits its result into a
+// pinned mirror or an allocator-resident host register when one exists, instead
+// of always storing to cpuRegs memory — the dest counterpart of
+// _eeGetGPRSourceReg. Mirrors PCSX2's x86 allocator-template dest handling
+// (pcsx2/x86/ix86-32/iR5900Templates.cpp + _allocX86reg, pcsx2/x86/iCore.cpp).
+//
+// Returns the X-sized write home (like armEEDestForGPR — the caller writes .W()
+// and sign-/zero-extends into it as the op requires). Before resolving, a scalar
+// write invalidates any live 128-bit dual-residence copy (writeback first so the
+// slot's UD[1] upper half survives in memory — the _deleteEEreg UD[1] rationale)
+// and clears the compile-time-const flag.
+//
+// alloc_if_used == false (the default, used by the Phase-1 coherence sweep) never
+// creates a new slot: it resolves to a pin, an already-resident slot, or the
+// caller's scratch — bit-for-bit today's pin/memory behavior when nothing is
+// resident. alloc_if_used == true lets the op claim a fresh MODE_WRITE slot for a
+// still-live dest (the residency flip, Phases 3/4).
+//
+// Emit-ordering contract (identical to armEEDestForGPR): ONLY the final
+// result-producing instruction may target the returned register, reading its
+// guest sources in that same instruction; follow it with _eeStoreGPRDestReg
+// before anything can observe the reg.
+vixl::aarch64::Register _eeGetGPRDestReg(int gpr, const a64::Register& scratch, bool alloc_if_used)
+{
+	// Scalar write kills any 128-bit copy (writeback preserves UD[1]) and any
+	// known-constant value for this reg.
+	_deleteGPRtoNEONreg(gpr, DELETE_REG_FREE);
+	GPR_DEL_CONST(gpr);
+
+	if (const a64::Register* pin = armEEPinForGPR(gpr))
+		return *pin;
+
+	int r = _checkArm64GPR(ARM64TYPE_GPR, gpr, MODE_WRITE);
+	if (r < 0 && alloc_if_used && EEINST_USEDTEST(gpr))
+		r = _allocArm64GPR(ARM64TYPE_GPR, gpr, MODE_WRITE);
+	if (r >= 0)
+		return armXRegister(r);
+
+	return scratch.X();
+}
+
+// Deposit `src` (the dest home itself, a source register, or xzr) into gpr's
+// resolved home. An allocator-resident dest takes a DEFERRED store: mark the
+// slot MODE_READ so _eeGetGPRSourceReg / branch / COP2 consumers pick the value
+// up before the next seam writes it back, and Mov only when src isn't already
+// the slot's host reg. A pinned or memory-backed dest takes the existing
+// lazy-dirty / canonical helper (a src that IS the pin emits nothing).
+void _eeStoreGPRDestReg(int gpr, const a64::Register& src)
+{
+	const int r = _checkArm64GPR(ARM64TYPE_GPR, gpr, MODE_READ | MODE_WRITE);
+	if (r >= 0)
+	{
+		if (src.GetCode() != static_cast<unsigned>(r))
+			armAsm->Mov(armXRegister(r), src.X());
+		return;
+	}
+	armStoreEERegPtr(src, &cpuRegs.GPR.r[gpr].UD[0]);
 }
 
 // =====================================================================================================
