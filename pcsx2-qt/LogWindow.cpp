@@ -216,7 +216,7 @@ void LogWindow::createUi()
 		m_newline_on_enter = state == Qt::CheckState::Checked;
 	});
 
-	m_input_hbox = new QHBoxLayout(this);
+	m_input_hbox = new QHBoxLayout;
 	m_input_hbox->addWidget(m_line_input, 1);
 	m_input_hbox->addWidget(m_local_echo_checkbox);
 	m_input_hbox->addWidget(m_newline_on_enter_checkbox);
