@@ -222,6 +222,37 @@ fun DriverManagerSection() {
     }
 }
 
+/**
+ * OpenGL "custom driver" picker — the GL analogue of the Vulkan [DriverManagerSection].
+ * The one option is ANGLE (Google's GLES-on-Vulkan translator), which fixes the OpenGL
+ * renderer on devices whose native GL driver is weak or buggy (most non-Adreno GPUs —
+ * Mali / Xclipse / PowerVR). Selecting toggles EmuCore/GS/AndroidUseAngleOpenGL; it
+ * takes effect on the next renderer init (the caller shows an Apply & Restart button).
+ * Shown in place of the Vulkan driver list when the OpenGL renderer is selected, so the
+ * driver picker always matches the chosen graphics API. Presentation only — the caller
+ * wires [useAngle]/[onSelect] to its own settings tier (global or per-game).
+ */
+@Composable
+fun AngleDriverSection(useAngle: Boolean, onSelect: (Boolean) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        SectionTitle(str("backend.glDriver.label"), str("backend.glDriver.description"))
+        DriverRow(
+            controllerId = "gldriver.system",
+            title = str("backend.driver.systemGl"),
+            subtitle = str("renderer.orientation.device"),
+            selected = !useAngle,
+            onClick = { onSelect(false) },
+        )
+        DriverRow(
+            controllerId = "gldriver.angle",
+            title = "ANGLE",
+            subtitle = str("backend.driver.angleSubtitle"),
+            selected = useAngle,
+            onClick = { onSelect(true) },
+        )
+    }
+}
+
 @Composable
 private fun DriverSourceGroup(
     source: String,

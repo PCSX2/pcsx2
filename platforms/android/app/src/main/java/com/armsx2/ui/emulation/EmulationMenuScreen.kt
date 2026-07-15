@@ -568,8 +568,13 @@ private fun GraphicsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVi
     )
     // GPU driver manager (download/import/select) — Vulkan only — plus Apply &
     // Restart, since renderer + driver changes only take effect on renderer init.
+    // For OpenGL the "custom driver" is ANGLE (GLES-on-Vulkan), same picker shape.
     if (settings.renderer == "vulkan") {
         com.armsx2.ui.common.DriverManagerSection()
+    } else if (settings.renderer == "opengl") {
+        com.armsx2.ui.common.AngleDriverSection(settings.useAngleOpenGL) { on ->
+            viewModel.updateSettings { it.copy(useAngleOpenGL = on) }
+        }
     }
     CompactAction(str("backend.applyRestart"), "↻", Modifier.fillMaxWidth(), MainActivityRuntime::restart)
     HorizontalOptions(

@@ -87,6 +87,13 @@ object CustomDriver {
             "https://api.github.com/repos/PojavLauncherTeam/freedreno-builder/releases",
             "freedrenobuilder",
         ),
+        // WearyConcern1165/ExynosTools — driver packs for Samsung Xclipse (Exynos) GPUs.
+        // Same GitHub-releases adrenotools .zip format as the sources above.
+        DriverSource(
+            "WearyConcern1165 · ExynosTools",
+            "https://api.github.com/repos/WearyConcern1165/ExynosTools/releases",
+            "exynostools",
+        ),
     )
 
     /** Sane default for the driver's library soname when meta.json

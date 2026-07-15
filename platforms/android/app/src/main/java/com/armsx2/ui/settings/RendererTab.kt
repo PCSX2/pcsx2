@@ -383,17 +383,8 @@ fun RendererTab(state: MutableState<Settings>) {
                 apply(s.copy(adrenoFbFetch = it))
             }
             SettingsDivider()
-            // ANGLE (GLES-on-Vulkan) for the OpenGL renderer — helps on devices whose
-            // native GLES driver is broken (e.g. some MediaTek Mali). Only bites when the
-            // renderer is OpenGL; applies on game restart. Driven by MainActivityRuntime.applyAngleEnv.
-            ToggleRow(
-                str("renderer.angleOpenGL.label"),
-                s.useAngleOpenGL,
-                description = str("renderer.angleOpenGL.description"),
-            ) {
-                apply(s.copy(useAngleOpenGL = it))
-            }
-            SettingsDivider()
+            // ANGLE for the OpenGL renderer now lives in the graphics-API driver picker
+            // (AngleDriverSection), shown when OpenGL is selected — see RendererBackendSection.
             ToggleRow(
                 str("renderer.accurateAlphaTest.label"),
                 s.hwAccurateAlphaTest,

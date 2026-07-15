@@ -6,6 +6,8 @@ import android.os.ParcelFileDescriptor
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import com.armsx2.BiosInfo
+import com.armsx2.config.ConfigStore
+import com.armsx2.config.SettingsScope
 import com.armsx2.runtime.MainActivityRuntime
 import java.io.File
 import kr.co.iefriends.pcsx2.NativeApp
@@ -26,6 +28,12 @@ data class BiosManagerUiState(
     val items: List<InstalledBios> = emptyList(),
     val busy: Boolean = false,
     val error: String? = null,
+    // Per-game BIOS (mirrors the per-game memory card): the target game's per-game key
+    // (settingsKey — serial for discs, filename stem for serial-less), or null when there's
+    // no game context (which hides the per-game controls), and the BIOS filename it's
+    // currently pinned to — null means it inherits the global BIOS.
+    val gameKey: String? = null,
+    val perGameBios: String? = null,
 )
 
 class BiosManagerViewModel(application: Application) : AndroidViewModel(application) {
@@ -34,10 +42,23 @@ class BiosManagerViewModel(application: Application) : AndroidViewModel(applicat
     var state = androidx.compose.runtime.mutableStateOf(BiosManagerUiState())
         private set
 
+    // Per-game BIOS target: set from the library long-press (that game's settingsKey) so the
+    // picker keys on it WITHOUT the game being loaded. Null = fall back to the loaded game.
+    private var gameContextKey: String? = null
+
+    /** Point the per-game controls at [key] (a game's settingsKey), or null to fall back to the
+     *  currently loaded game. Called by the screen from its optional `game` argument. */
+    fun setGameContext(key: String?) {
+        gameContextKey = key
+        refresh()
+    }
+
     fun refresh() {
         scope.launch {
             state.value = state.value.copy(busy = true, error = null)
             val selectedPath = MainActivityRuntime.bios.value
+            val key = gameContextKey?.takeIf { it.isNotBlank() }
+                ?: MainActivityRuntime.currentGame.value?.settingsKey?.takeIf { it.isNotBlank() }
             val result = withContext(Dispatchers.IO) {
                 MainActivityRuntime.internalBiosDir(getApplication()).apply { mkdirs() }
                     .listFiles()
@@ -46,8 +67,32 @@ class BiosManagerViewModel(application: Application) : AndroidViewModel(applicat
                     .mapNotNull { file -> probe(file)?.let { InstalledBios(file, it, file.absolutePath == selectedPath) } }
                     .sortedWith(compareByDescending<InstalledBios> { it.selected }.thenBy { it.file.name.lowercase() })
             }
-            state.value = state.value.copy(items = result, busy = false)
+            val perGame = key?.let {
+                runCatching { ConfigStore.resolveForGame(it).biosFilename.takeIf { f -> f.isNotBlank() } }.getOrNull()
+            }
+            state.value = state.value.copy(items = result, busy = false, gameKey = key, perGameBios = perGame)
         }
+    }
+
+    /** Pin [item] as THIS game's BIOS (per-game override in the ConfigStore Game tier),
+     *  mirroring the per-game memory card. applyRendererPrefs applies it at the next boot,
+     *  so restart the game to take effect. No-op when no game is loaded. */
+    fun assignToGame(item: InstalledBios) {
+        val key = state.value.gameKey ?: return
+        val resolved = ConfigStore.resolveForGame(key)
+        val ok = runCatching {
+            ConfigStore.save(SettingsScope.Game, key, resolved.copy(biosFilename = item.file.name))
+        }.isSuccess
+        if (!ok) state.value = state.value.copy(error = "Unable to set a per-game BIOS.")
+        refresh()
+    }
+
+    /** Clear this game's per-game BIOS so it falls back to the global selection. */
+    fun clearGameBios() {
+        val key = state.value.gameKey ?: return
+        val resolved = ConfigStore.resolveForGame(key)
+        runCatching { ConfigStore.save(SettingsScope.Game, key, resolved.copy(biosFilename = "")) }
+        refresh()
     }
 
     fun import(uri: Uri) {

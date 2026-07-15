@@ -625,6 +625,12 @@ fun HomeScreen(
                     menuGame = null
                     onOpenGameSettings(game)
                 }
+                // Per-game BIOS: open the BIOS manager scoped to THIS game (no need to load it),
+                // since the BIOS manager isn't reachable from the in-game menu.
+                GameMenuAction("📀", str("bios.perGame.menu")) {
+                    menuGame = null
+                    com.armsx2.navigation.UiNavigator.navigate(com.armsx2.navigation.AppRoute.BiosManager(game))
+                }
                 val hidden = com.armsx2.HiddenGames.isHidden(game)
                 GameMenuAction(if (hidden) "◍" else "🚫", str(if (hidden) "games.unhide" else "games.hide")) {
                     viewModel.setHidden(game, !hidden)

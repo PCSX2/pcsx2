@@ -107,15 +107,13 @@ fun TouchControlsOverlay() {
     val context = LocalContext.current
     val gyro = remember {
         com.armsx2.input.AndroidGyroscopeInput(context) { mode, x, y ->
-            // Aim mode (1) drives the stick the user chose (Right default; Left for games
-            // that aim with the left stick, e.g. RE4). Steer mode (2) always uses left.
-            val right = mode == 1 && ControllerMappings.gyroAimStick() == ControllerMappings.GYRO_STICK_RIGHT
-            val up = if (right) 120 else 110; val rt = if (right) 121 else 111
-            val dn = if (right) 122 else 112; val lf = if (right) 123 else 113
-            NativeApp.setPadButton(rt, if (x > 0f) (x * 32767).toInt() else 0, x > 0f)
-            NativeApp.setPadButton(lf, if (x < 0f) (-x * 32767).toInt() else 0, x < 0f)
-            NativeApp.setPadButton(dn, if (y > 0f) (y * 32767).toInt() else 0, y > 0f)
-            NativeApp.setPadButton(up, if (y < 0f) (-y * 32767).toInt() else 0, y < 0f)
+            // Fold the gyro into the shared analog-merge layer as a SIGNED addend on
+            // the physical stick that shares its axis (aim -> right or the user-chosen
+            // left for RE4-style games; steer -> left) instead of writing the stick
+            // codes raw. That lets coarse stick aim and fine gyro adjustment run at
+            // once — before, whichever moved last clobbered the other. The combine
+            // (and the P1 physical-stick state it sums with) lives in the runtime.
+            MainActivityRuntime.instance?.onGyroAnalog(mode, x, y)
         }
     }
     val gyroMode = ControllerMappings.gyroMode()

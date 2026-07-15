@@ -90,7 +90,7 @@ fun AppNavigation() {
                     onBack = UiNavigator::home,
                     onOpenAbout = { UiNavigator.navigate(AppRoute.About) },
                 )
-                AppRoute.BiosManager -> BiosManagerScreen(onBack = UiNavigator::home)
+                is AppRoute.BiosManager -> BiosManagerScreen(onBack = UiNavigator::home, game = destination.game)
                 AppRoute.MemoryCardManager -> MemoryCardScreen(onBack = UiNavigator::home)
                 AppRoute.SaveManager -> SaveManagerScreen(onBack = UiNavigator::home)
                 AppRoute.ControllerManager -> ControllerManagerScreen(onBack = UiNavigator::home)

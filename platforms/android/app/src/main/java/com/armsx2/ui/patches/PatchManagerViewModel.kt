@@ -89,14 +89,26 @@ class PatchManagerViewModel(application: Application) : AndroidViewModel(applica
     //    tick the ones they want, then assemble + install a .pnach. --
 
     fun fetchOnline(game: GameInfo?) {
-        val serial = game?.serial?.takeIf { it.isNotBlank() }
-            ?: runCatching { NativeApp.getGameSerial() }.getOrNull()?.takeIf { it.isNotBlank() }
-        if (serial == null) {
-            state.value = state.value.copy(error = "No game serial to look up patches for. Open this from a game.")
-            return
-        }
         state.value = state.value.copy(onlineLoading = true, error = null, onlineEntries = emptyList())
         viewModelScope.launch {
+            // Serial priority: the library's (filename-derived) serial, then the running
+            // game's serial, then — for a plainly-named file whose filename yielded no
+            // serial and that isn't running — read it straight off the disc image
+            // (SYSTEM.CNF), the same probe the library scan uses. The last step is why
+            // online patches now work from the library, not only in-game: GameInfo.serial
+            // is often null there, but the disc always carries the real serial.
+            val serial = withContext(Dispatchers.IO) {
+                game?.serial?.takeIf { it.isNotBlank() }
+                    ?: runCatching { NativeApp.getGameSerial() }.getOrNull()?.takeIf { it.isNotBlank() }
+                    ?: game?.uri?.let { probeSerialFromDisc(it) }
+            }
+            if (serial == null) {
+                state.value = state.value.copy(
+                    onlineLoading = false,
+                    error = "No game serial to look up patches for. Open this from a game.",
+                )
+                return@launch
+            }
             val result = withContext(Dispatchers.IO) {
                 val crc = runCatching { NativeApp.getGameCRC() }.getOrNull()?.takeIf { it.length == 8 }
                 if (crc != null) PatchRepo.fetchForGame(serial, crc) else PatchRepo.fetchForSerial(serial)
@@ -112,6 +124,18 @@ class PatchManagerViewModel(application: Application) : AndroidViewModel(applica
             )
         }
     }
+
+    /** Read the PS2 serial straight from the disc image (SYSTEM.CNF) via the same native
+     *  probe the library scan uses — the fallback for a plainly-named file whose filename
+     *  gave no serial and which isn't the running game. getGameSerialFromFd may tag its
+     *  result "platform:serial", so strip any tag back to the bare serial. IO thread. */
+    private fun probeSerialFromDisc(uri: Uri): String? = runCatching {
+        val descriptor = getApplication<Application>().contentResolver.openFileDescriptor(uri, "r")
+            ?: return@runCatching null
+        val raw = NativeApp.getGameSerialFromFd(descriptor.detachFd())?.takeIf { it.isNotBlank() }
+            ?: return@runCatching null
+        raw.substringAfterLast(':').takeIf { it.isNotBlank() }
+    }.getOrNull()
 
     fun toggleOnline(name: String) {
         val selected = state.value.onlineSelected.toMutableSet()

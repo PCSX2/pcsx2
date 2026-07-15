@@ -134,7 +134,7 @@ private fun DrawerContent(selected: AppRoute, onNavigate: (AppRoute) -> Unit, on
         DrawerItem("action.settings", "⚙️", AppRoute.Settings()),
     )
     val managers = listOf(
-        DrawerItem("setup.step.bios.title", "📀", AppRoute.BiosManager),
+        DrawerItem("setup.step.bios.title", "📀", AppRoute.BiosManager()),
         DrawerItem("memcard.title", "💾", AppRoute.MemoryCardManager),
         DrawerItem("savestate.title.loadManage", "📥", AppRoute.SaveManager),
         DrawerItem("tab.controls", "🕹️", AppRoute.ControllerManager),
@@ -233,7 +233,7 @@ private fun DrawerRow(
 private fun sameDestination(current: AppRoute, target: AppRoute): Boolean = when (target) {
     AppRoute.Home -> current is AppRoute.Home
     is AppRoute.Settings -> current is AppRoute.Settings
-    AppRoute.BiosManager -> current is AppRoute.BiosManager
+    is AppRoute.BiosManager -> current is AppRoute.BiosManager
     AppRoute.MemoryCardManager -> current is AppRoute.MemoryCardManager
     AppRoute.SaveManager -> current is AppRoute.SaveManager
     AppRoute.ControllerManager -> current is AppRoute.ControllerManager

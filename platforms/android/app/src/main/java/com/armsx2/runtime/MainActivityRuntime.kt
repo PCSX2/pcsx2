@@ -501,6 +501,18 @@ open class MainActivityRuntime : ComponentActivity() {
                     )
                 }
             }
+            // Per-game BIOS: boot with the game's chosen BIOS if it set one, else fall
+            // back to the global BIOS — so a previous game's per-game pick never sticks.
+            // The file is in the same app-private BIOS dir as the global one, so only the
+            // Filenames/BIOS *filename* changes; commit before the VM's LoadBIOS runs.
+            run {
+                val effectiveBios = resolved.biosFilename.takeIf { it.isNotBlank() }
+                    ?: bios.value?.takeIf { it.isNotEmpty() }?.let { File(it).name }
+                if (!effectiveBios.isNullOrBlank()) {
+                    NativeApp.setSetting("Filenames", "BIOS", "string", effectiveBios)
+                    NativeApp.commitSettings()
+                }
+            }
             upscale.value = resolved.upscaleFloat
             renderer.value = resolved.renderer
             NativeApp.renderUpscalemultiplier(upscale.value)
@@ -3089,6 +3101,21 @@ open class MainActivityRuntime : ComponentActivity() {
     private val analogPrevSent = Array(8) { HashMap<Int, Float>() } // per unified pad slot (multitap)
     val analogKeyHeld = Array(8) { HashMap<Int, Float>() } // written by sendKeyAction; per unified pad slot
 
+    // ---- Gyro <-> physical-stick ADDITIVE combine (P1 / port 0) -----------
+    // The aim/steer gyro drives a PS2 analog stick; so does the physical stick.
+    // They used to clobber (raw setPadButton, last-writer-wins), so moving one
+    // killed the other. Instead the gyro is folded in as a SIGNED addend on top
+    // of the physical stick that shares its axis, then clamped to the unit circle
+    // by accumStickRadial — coarse stick aim + fine gyro adjust AT ONCE. Both the
+    // MotionEvent path and the sensor callback run on the main looper, so these
+    // are read/written without extra locking (volatile documents the sharing).
+    @Volatile private var gyroCombineActive = false   // gyro currently deflected
+    @Volatile private var gyroCombineLeft = false     // gyro drives left(true)/right(false) stick
+    @Volatile private var gyroVecX = 0f               // signed gyro contribution, [-1,1]
+    @Volatile private var gyroVecY = 0f
+    private val lastPhysStickX = floatArrayOf(0f, 0f) // [0]=left [1]=right, P1 physical analog
+    private val lastPhysStickY = floatArrayOf(0f, 0f)
+
     private fun accumAnalog(code: Int, v: Float) {
         if (v <= 0f) return
         val cur = analogAccum[code] ?: 0f
@@ -3146,6 +3173,35 @@ open class MainActivityRuntime : ComponentActivity() {
         if (oy > 0f) accumAnalog(aYPos, oy) else if (oy < 0f) accumAnalog(aYNeg, -oy)
     }
 
+    /** Gyro (aim mode 1 / steer mode 2) as an ADDITIVE stick contributor. Called
+     *  from the sensor callback on the main looper. [gx],[gy] are the signed,
+     *  smoothed gyro vector in [-1,1]; (0,0) on settle/stop releases it. The gyro
+     *  sums with whichever physical stick shares its axis (aim -> right, or the
+     *  user-chosen left for RE4-style games; steer -> left) so coarse stick aim
+     *  and fine gyro adjustment work together instead of clobbering each other. */
+    fun onGyroAnalog(mode: Int, gx: Float, gy: Float) {
+        gyroCombineLeft = mode == 2 ||
+            (mode == 1 && ControllerMappings.gyroAimStick() == ControllerMappings.GYRO_STICK_LEFT)
+        gyroVecX = gx; gyroVecY = gy
+        gyroCombineActive = gx != 0f || gy != 0f
+        emitCombinedSticks()
+    }
+
+    /** Re-drive BOTH P1 sticks from their last physical vector plus the gyro addend
+     *  on the target side, then flush once. Re-contributing the NON-target stick is
+     *  what stops flushAnalogAxes' release pass from dropping it when only the gyro
+     *  moved (single owner of the analog codes = the shared merge layer). flush only
+     *  writes codes whose value changed, so an unchanged stick costs nothing. */
+    private fun emitCombinedSticks() {
+        val gxL = if (gyroCombineLeft) gyroVecX else 0f
+        val gyL = if (gyroCombineLeft) gyroVecY else 0f
+        val gxR = if (gyroCombineLeft) 0f else gyroVecX
+        val gyR = if (gyroCombineLeft) 0f else gyroVecY
+        accumStickRadial(lastPhysStickX[0] + gxL, lastPhysStickY[0] + gyL, true,  111, 113, 112, 110)
+        accumStickRadial(lastPhysStickX[1] + gxR, lastPhysStickY[1] + gyR, false, 121, 123, 122, 120)
+        flushAnalogAxes(0)
+    }
+
     /** Route one physical stick's two axes to the PS2 pad per [mode]: native analog
      *  stick (default), thresholded digital D-pad / face presses, or per-direction
      *  CUSTOM binds. [leftStick] selects which stick's CUSTOM binds to read. */
@@ -3168,7 +3224,17 @@ open class MainActivityRuntime : ComponentActivity() {
             ControllerMappings.StickMode.ANALOG -> {
                 // Radial shaping into the merge layer (flushAnalogAxes writes once
                 // per event, after every contributor has been folded in).
-                accumStickRadial(vx, vy, leftStick, aXPos, aXNeg, aYPos, aYNeg)
+                // P1 (port 0): remember this stick's PHYSICAL vector and, when the
+                // gyro is driving THIS stick, sum the gyro's signed addend on top so
+                // coarse stick aim + fine gyro adjust simultaneously (onGyroAnalog).
+                // Stored value is pre-gyro so the sensor path can add gyro cleanly.
+                var sx = vx; var sy = vy
+                if (port == 0) {
+                    val si = if (leftStick) 0 else 1
+                    lastPhysStickX[si] = vx; lastPhysStickY[si] = vy
+                    if (gyroCombineActive && gyroCombineLeft == leftStick) { sx += gyroVecX; sy += gyroVecY }
+                }
+                accumStickRadial(sx, sy, leftStick, aXPos, aXNeg, aYPos, aYNeg)
                 if (leftStick && ControllerMappings.dpadAsLeftStick()) {
                     // Fold the physical D-pad (HAT) into the left stick so the
                     // D-pad drives analog movement — full deflection, unshaped

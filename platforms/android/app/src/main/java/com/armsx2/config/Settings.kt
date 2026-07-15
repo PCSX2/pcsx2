@@ -309,6 +309,11 @@ data class Settings(
     // ---- MemoryCards ----
     val memoryCardSlot1Enabled: Boolean = true,
     val memoryCardSlot1Filename: String = "mcd001.ps2",
+    // Per-game BIOS override (e.g. an EU disc vs a US disc wanting its region's BIOS).
+    // Empty = use the global BIOS picked in the BIOS manager. Just the filename; the file
+    // lives in the app-private BIOS dir like every installed BIOS. Applied at boot in
+    // MainActivityRuntime.applyRendererPrefs (resolved per-game, with global fallback).
+    val biosFilename: String = "",
     val memoryCardSlot2Enabled: Boolean = true,
     val memoryCardSlot2Filename: String = "mcd002.ps2",
 
@@ -1391,6 +1396,7 @@ data class Settings(
         put("dev9HddFile", dev9HddFile)
         put("memoryCardSlot1Enabled", memoryCardSlot1Enabled)
         put("memoryCardSlot1Filename", memoryCardSlot1Filename)
+        put("biosFilename", biosFilename)
         put("memoryCardSlot2Enabled", memoryCardSlot2Enabled)
         put("memoryCardSlot2Filename", memoryCardSlot2Filename)
         put("usbKeyboard", usbKeyboard)
@@ -1629,6 +1635,7 @@ data class Settings(
                 dev9HddFile = json.optString("dev9HddFile", def.dev9HddFile).ifEmpty { def.dev9HddFile },
                 memoryCardSlot1Enabled = json.optBoolean("memoryCardSlot1Enabled", def.memoryCardSlot1Enabled),
                 memoryCardSlot1Filename = json.optString("memoryCardSlot1Filename", def.memoryCardSlot1Filename).ifEmpty { def.memoryCardSlot1Filename },
+                biosFilename = json.optString("biosFilename", def.biosFilename),
                 memoryCardSlot2Enabled = json.optBoolean("memoryCardSlot2Enabled", def.memoryCardSlot2Enabled),
                 memoryCardSlot2Filename = json.optString("memoryCardSlot2Filename", def.memoryCardSlot2Filename).ifEmpty { def.memoryCardSlot2Filename },
                 usbKeyboard = json.optBoolean("usbKeyboard", def.usbKeyboard),
@@ -1842,6 +1849,7 @@ data class Settings(
             if (current.dev9HddFile         != base.dev9HddFile)         j.put("dev9HddFile", current.dev9HddFile)
             if (current.memoryCardSlot1Enabled != base.memoryCardSlot1Enabled) j.put("memoryCardSlot1Enabled", current.memoryCardSlot1Enabled)
             if (current.memoryCardSlot1Filename != base.memoryCardSlot1Filename) j.put("memoryCardSlot1Filename", current.memoryCardSlot1Filename)
+            if (current.biosFilename != base.biosFilename) j.put("biosFilename", current.biosFilename)
             if (current.memoryCardSlot2Enabled != base.memoryCardSlot2Enabled) j.put("memoryCardSlot2Enabled", current.memoryCardSlot2Enabled)
             if (current.memoryCardSlot2Filename != base.memoryCardSlot2Filename) j.put("memoryCardSlot2Filename", current.memoryCardSlot2Filename)
             if (current.usbKeyboard         != base.usbKeyboard)         j.put("usbKeyboard", current.usbKeyboard)
@@ -2052,6 +2060,7 @@ data class Settings(
             dev9HddFile = if (overrides.has("dev9HddFile")) overrides.getString("dev9HddFile").ifEmpty { base.dev9HddFile } else base.dev9HddFile,
             memoryCardSlot1Enabled = if (overrides.has("memoryCardSlot1Enabled")) overrides.getBoolean("memoryCardSlot1Enabled") else base.memoryCardSlot1Enabled,
             memoryCardSlot1Filename = if (overrides.has("memoryCardSlot1Filename")) overrides.getString("memoryCardSlot1Filename").ifEmpty { base.memoryCardSlot1Filename } else base.memoryCardSlot1Filename,
+            biosFilename = if (overrides.has("biosFilename")) overrides.getString("biosFilename") else base.biosFilename,
             memoryCardSlot2Enabled = if (overrides.has("memoryCardSlot2Enabled")) overrides.getBoolean("memoryCardSlot2Enabled") else base.memoryCardSlot2Enabled,
             memoryCardSlot2Filename = if (overrides.has("memoryCardSlot2Filename")) overrides.getString("memoryCardSlot2Filename").ifEmpty { base.memoryCardSlot2Filename } else base.memoryCardSlot2Filename,
             usbKeyboard = if (overrides.has("usbKeyboard")) overrides.getBoolean("usbKeyboard") else base.usbKeyboard,

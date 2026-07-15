@@ -188,54 +188,44 @@ object ControllerMappings {
     // ---- Per-stick axis correction (invert / swap) ------------------------
     // Fixes pads whose stick reads rotated or mirrored — e.g. a right stick where
     // "down is up and left is right". Applied to the RAW axis values before any
-    // mode dispatch, so it corrects Analog, Face AND Custom modes alike. Per-stick
-    // but GLOBAL (a physical-pad correction, like sensitivity/deadzone above —
-    // not per-player). Swap is applied first, then the inverts.
+    // mode dispatch, so it corrects Analog, Face AND Custom modes alike. Swap is
+    // applied first, then the inverts. Follows the SAME Global/per-game scope as
+    // stick modes and binds (issue #246): the global value is the baseline, and a
+    // per-game override shadows it for that serial only — a user reported inverting
+    // one game's right stick flipped every game because these wrote global outright.
     private const val KEY_LSTICK_INVX = "pad.lstick.invertX"
     private const val KEY_LSTICK_INVY = "pad.lstick.invertY"
     private const val KEY_LSTICK_SWAP = "pad.lstick.swapXY"
     private const val KEY_RSTICK_INVX = "pad.rstick.invertX"
     private const val KEY_RSTICK_INVY = "pad.rstick.invertY"
     private const val KEY_RSTICK_SWAP = "pad.rstick.swapXY"
-    fun stickInvertX(left: Boolean): Boolean =
-        MainActivityRuntime.prefs.getBoolean(if (left) KEY_LSTICK_INVX else KEY_RSTICK_INVX, false)
-    fun stickInvertY(left: Boolean): Boolean =
-        MainActivityRuntime.prefs.getBoolean(if (left) KEY_LSTICK_INVY else KEY_RSTICK_INVY, false)
-    fun stickSwapXY(left: Boolean): Boolean =
-        MainActivityRuntime.prefs.getBoolean(if (left) KEY_LSTICK_SWAP else KEY_RSTICK_SWAP, false)
-    fun setStickInvertX(left: Boolean, on: Boolean) =
-        MainActivityRuntime.prefs.edit {
-            putBoolean(
-                if (left) KEY_LSTICK_INVX else KEY_RSTICK_INVX,
-                on
-            )
-        }
-    fun setStickInvertY(left: Boolean, on: Boolean) =
-        MainActivityRuntime.prefs.edit {
-            putBoolean(
-                if (left) KEY_LSTICK_INVY else KEY_RSTICK_INVY,
-                on
-            )
-        }
-    fun setStickSwapXY(left: Boolean, on: Boolean) =
-        MainActivityRuntime.prefs.edit {
-            putBoolean(
-                if (left) KEY_LSTICK_SWAP else KEY_RSTICK_SWAP,
-                on
-            )
-        }
+    private fun invXKey(left: Boolean) = if (left) KEY_LSTICK_INVX else KEY_RSTICK_INVX
+    private fun invYKey(left: Boolean) = if (left) KEY_LSTICK_INVY else KEY_RSTICK_INVY
+    private fun swapKey(left: Boolean) = if (left) KEY_LSTICK_SWAP else KEY_RSTICK_SWAP
+    // Runtime (per-game aware): read by the input dispatcher / touch overlay.
+    fun stickInvertX(left: Boolean): Boolean = resolveBoolean(invXKey(left), false)
+    fun stickInvertY(left: Boolean): Boolean = resolveBoolean(invYKey(left), false)
+    fun stickSwapXY(left: Boolean): Boolean = resolveBoolean(swapKey(left), false)
+    // Scope-explicit (Pad UI): the override at [serial]'s tier if set, else the global baseline.
+    fun stickInvertXScope(left: Boolean, serial: String?): Boolean = scopedBoolean(invXKey(left), serial, false)
+    fun stickInvertYScope(left: Boolean, serial: String?): Boolean = scopedBoolean(invYKey(left), serial, false)
+    fun stickSwapXYScope(left: Boolean, serial: String?): Boolean = scopedBoolean(swapKey(left), serial, false)
+    fun setStickInvertX(left: Boolean, on: Boolean, serial: String? = null) =
+        MainActivityRuntime.prefs.edit { putBoolean(scopedKey(invXKey(left), serial), on) }
+    fun setStickInvertY(left: Boolean, on: Boolean, serial: String? = null) =
+        MainActivityRuntime.prefs.edit { putBoolean(scopedKey(invYKey(left), serial), on) }
+    fun setStickSwapXY(left: Boolean, on: Boolean, serial: String? = null) =
+        MainActivityRuntime.prefs.edit { putBoolean(scopedKey(swapKey(left), serial), on) }
 
     // Make the physical D-pad drive the LEFT analog stick (full deflection) so it
     // works in games that only read the analog stick. While on, the D-pad no
-    // longer sends digital d-pad presses in-game.
+    // longer sends digital d-pad presses in-game. Same Global/per-game scope as the
+    // axis corrections above (it appears on the same per-game Pad screen).
     private const val KEY_DPAD_AS_LSTICK = "pad.dpadAsLeftStick"
-    fun dpadAsLeftStick(): Boolean = MainActivityRuntime.prefs.getBoolean(KEY_DPAD_AS_LSTICK, false)
-    fun setDpadAsLeftStick(on: Boolean) = MainActivityRuntime.prefs.edit {
-        putBoolean(
-            KEY_DPAD_AS_LSTICK,
-            on
-        )
-    }
+    fun dpadAsLeftStick(): Boolean = resolveBoolean(KEY_DPAD_AS_LSTICK, false) // runtime (per-game aware)
+    fun dpadAsLeftStickScope(serial: String?): Boolean = scopedBoolean(KEY_DPAD_AS_LSTICK, serial, false)
+    fun setDpadAsLeftStick(on: Boolean, serial: String? = null) =
+        MainActivityRuntime.prefs.edit { putBoolean(scopedKey(KEY_DPAD_AS_LSTICK, serial), on) }
 
     // ---- Analog stick response shaping (physical sticks → PS2 analog) ----
     // Sensitivity = a linear output scale. Acceleration = an exponential response

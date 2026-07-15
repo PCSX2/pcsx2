@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.armsx2.GameInfo
 import com.armsx2.i18n.str
 import com.armsx2.ui.common.ArmsBackdrop
 import com.armsx2.ui.common.ArmsTopBar
@@ -51,7 +52,7 @@ import com.armsx2.ui.settings.controllerFocusable
 import com.armsx2.ui.theme.Success
 
 @Composable
-fun BiosManagerScreen(onBack: () -> Unit, viewModel: BiosManagerViewModel = viewModel()) {
+fun BiosManagerScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: BiosManagerViewModel = viewModel()) {
     val state = viewModel.state.value
     var deleteTarget by remember { mutableStateOf<InstalledBios?>(null) }
     var actionsMenuExpanded by remember { mutableStateOf(false) }
@@ -63,7 +64,9 @@ fun BiosManagerScreen(onBack: () -> Unit, viewModel: BiosManagerViewModel = view
     val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         uri?.let(viewModel::importFolder)
     }
-    LaunchedEffect(Unit) { viewModel.refresh() }
+    // Point the per-game controls at the long-pressed game (its settingsKey) when opened from
+    // the library; null (drawer) falls back to the loaded game. setGameContext also refreshes.
+    LaunchedEffect(game?.settingsKey) { viewModel.setGameContext(game?.settingsKey) }
 
     ArmsBackdrop {
         // Column + verticalScroll (not LazyColumn): controller nav registers rows via a SideEffect
@@ -117,7 +120,11 @@ fun BiosManagerScreen(onBack: () -> Unit, viewModel: BiosManagerViewModel = view
                 state.items.forEach { item ->
                     BiosRow(
                         item = item,
+                        showGameAssign = state.gameKey != null,
+                        perGameActive = state.perGameBios?.equals(item.file.name, ignoreCase = true) == true,
                         onSelect = { viewModel.select(item.file) },
+                        onAssignGame = { viewModel.assignToGame(item) },
+                        onClearGame = { viewModel.clearGameBios() },
                         onDelete = { deleteTarget = item },
                     )
                 }
@@ -219,7 +226,15 @@ private fun BiosActionMenuItem(glyph: String, label: String, onClick: () -> Unit
 }
 
 @Composable
-private fun BiosRow(item: InstalledBios, onSelect: () -> Unit, onDelete: () -> Unit) {
+private fun BiosRow(
+    item: InstalledBios,
+    showGameAssign: Boolean,
+    perGameActive: Boolean,
+    onSelect: () -> Unit,
+    onAssignGame: () -> Unit,
+    onClearGame: () -> Unit,
+    onDelete: () -> Unit,
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -241,8 +256,28 @@ private fun BiosRow(item: InstalledBios, onSelect: () -> Unit, onDelete: () -> U
                     )
                 }
                 if (item.selected) StatusChip(str("backend.driver.active"), Success)
+                if (perGameActive) {
+                    Spacer(Modifier.width(6.dp))
+                    StatusChip(str("bios.thisGame.active"), Success)
+                }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                // Per-game BIOS: pin this BIOS to the loaded game, or revert it to global.
+                if (showGameAssign) {
+                    if (perGameActive) {
+                        TextButton(
+                            onClick = onClearGame,
+                            modifier = Modifier.controllerFocusable("bios.clearGame.${item.file.absolutePath}", onConfirm = onClearGame),
+                        ) { Text(str("bios.useGlobal")) }
+                    } else {
+                        OutlinedButton(
+                            onClick = onAssignGame,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.controllerFocusable("bios.thisGame.${item.file.absolutePath}", RoundedCornerShape(12.dp), onConfirm = onAssignGame),
+                        ) { Text(str("bios.thisGame")) }
+                    }
+                    Spacer(Modifier.width(8.dp))
+                }
                 if (!item.selected) OutlinedButton(
                     onClick = onSelect,
                     shape = RoundedCornerShape(12.dp),

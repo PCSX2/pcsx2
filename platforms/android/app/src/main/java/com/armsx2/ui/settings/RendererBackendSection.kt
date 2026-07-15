@@ -46,6 +46,12 @@ fun RendererBackendSection(state: MutableState<Settings>) {
     if (settings.renderer == "vulkan") {
         SettingsDivider()
         com.armsx2.ui.common.DriverManagerSection()
+    } else if (settings.renderer == "opengl") {
+        // OpenGL's "custom driver" is ANGLE — the GL analogue of the Vulkan driver list.
+        SettingsDivider()
+        com.armsx2.ui.common.AngleDriverSection(settings.useAngleOpenGL) { on ->
+            InGameOverlay.saveSettings(settings.copy(useAngleOpenGL = on))
+        }
     }
 
     SettingsDivider()

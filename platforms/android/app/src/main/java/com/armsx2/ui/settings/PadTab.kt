@@ -322,19 +322,19 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                     }
                 }
                 // Axis correction for the LEFT stick — fixes pads that read mirrored/rotated.
-                ToggleRow(str("pad.leftStick.swapXY.label"), ControllerMappings.stickSwapXY(true),
+                ToggleRow(str("pad.leftStick.swapXY.label"), ControllerMappings.stickSwapXYScope(true, editSerial),
                     description = str("pad.leftStick.swapXY.description")) {
-                    ControllerMappings.setStickSwapXY(true, it); refreshToken.intValue++
+                    ControllerMappings.setStickSwapXY(true, it, editSerial); refreshToken.intValue++
                 }
                 SettingsDivider()
-                ToggleRow(str("pad.leftStick.invertX.label"), ControllerMappings.stickInvertX(true),
+                ToggleRow(str("pad.leftStick.invertX.label"), ControllerMappings.stickInvertXScope(true, editSerial),
                     description = str("pad.leftStick.invertX.description")) {
-                    ControllerMappings.setStickInvertX(true, it); refreshToken.intValue++
+                    ControllerMappings.setStickInvertX(true, it, editSerial); refreshToken.intValue++
                 }
                 SettingsDivider()
-                ToggleRow(str("pad.leftStick.invertY.label"), ControllerMappings.stickInvertY(true),
+                ToggleRow(str("pad.leftStick.invertY.label"), ControllerMappings.stickInvertYScope(true, editSerial),
                     description = str("pad.leftStick.invertY.description")) {
-                    ControllerMappings.setStickInvertY(true, it); refreshToken.intValue++
+                    ControllerMappings.setStickInvertY(true, it, editSerial); refreshToken.intValue++
                 }
                 SettingsDivider()
                 SegmentedRow(
@@ -355,27 +355,27 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                     }
                 }
                 // Axis correction for the RIGHT stick — e.g. the tester's "down is up, left is right".
-                ToggleRow(str("pad.rightStick.swapXY.label"), ControllerMappings.stickSwapXY(false),
+                ToggleRow(str("pad.rightStick.swapXY.label"), ControllerMappings.stickSwapXYScope(false, editSerial),
                     description = str("pad.rightStick.swapXY.description")) {
-                    ControllerMappings.setStickSwapXY(false, it); refreshToken.intValue++
+                    ControllerMappings.setStickSwapXY(false, it, editSerial); refreshToken.intValue++
                 }
                 SettingsDivider()
-                ToggleRow(str("pad.rightStick.invertX.label"), ControllerMappings.stickInvertX(false),
+                ToggleRow(str("pad.rightStick.invertX.label"), ControllerMappings.stickInvertXScope(false, editSerial),
                     description = str("pad.rightStick.invertX.description")) {
-                    ControllerMappings.setStickInvertX(false, it); refreshToken.intValue++
+                    ControllerMappings.setStickInvertX(false, it, editSerial); refreshToken.intValue++
                 }
                 SettingsDivider()
-                ToggleRow(str("pad.rightStick.invertY.label"), ControllerMappings.stickInvertY(false),
+                ToggleRow(str("pad.rightStick.invertY.label"), ControllerMappings.stickInvertYScope(false, editSerial),
                     description = str("pad.rightStick.invertY.description")) {
-                    ControllerMappings.setStickInvertY(false, it); refreshToken.intValue++
+                    ControllerMappings.setStickInvertY(false, it, editSerial); refreshToken.intValue++
                 }
                 SettingsDivider()
                 ToggleRow(
                     str("pad.dpadAsLeftStick.label"),
-                    ControllerMappings.dpadAsLeftStick(),
+                    ControllerMappings.dpadAsLeftStickScope(editSerial),
                     description = str("pad.dpadAsLeftStick.description"),
                 ) {
-                    ControllerMappings.setDpadAsLeftStick(it)
+                    ControllerMappings.setDpadAsLeftStick(it, editSerial)
                     refreshToken.intValue++
                 }
                 SettingsDivider()
