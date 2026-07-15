@@ -319,11 +319,13 @@ set(pcsx2DEV9Sources
 	DEV9/net.cpp
 	)
 
-# libpcap is unavailable on Android; DEV9 uses Android/AndroidPcapStubs.cpp (the
-# stub PCAPAdapter) instead, so the real pcap_io.cpp must NOT be compiled there
+# libpcap is unavailable on Android and iOS; DEV9 uses Android/AndroidPcapStubs.cpp
+# (the stub PCAPAdapter) instead, so the real pcap_io.cpp must NOT be compiled there
 # (it references pcap_findalldevs/pcap_open_live/... -> undefined at link, which
 # LTO release builds surface even though a debug build's --gc-sections hides it).
-if(NOT ANDROID)
+# iOS also skips find_package(PCAP) in SearchForStuff.cmake, so PCAP::PCAP doesn't
+# even exist to link against there.
+if(NOT ANDROID AND NOT IOS)
 	list(APPEND pcsx2DEV9Sources DEV9/pcap_io.cpp)
 endif()
 
@@ -1175,7 +1177,10 @@ if(ARMSX2_IOS)
 	list(APPEND pcsx2Sources
 		MacOSStubs.cpp
 		QAProbe.cpp
-		TestHarness.cpp)
+		TestHarness.cpp
+		# iOS has no libpcap, so pcap_io.cpp is excluded above; reuse the (platform-
+		# agnostic) Android stub to supply the PCAPAdapter definitions DEV9 references.
+		Android/AndroidPcapStubs.cpp)
 	list(APPEND pcsx2Headers
 		QAProbe.h
 		TestHarness.h
@@ -1319,9 +1324,12 @@ if(WIN32)
 		dwmapi.lib
 		OneCore.lib
 	)
-elseif(NOT ANDROID)
-	# Android has no system libpcap; DEV9 uses Android/AndroidPcapStubs.cpp instead,
-	# so it must NOT link PCAP::PCAP (a bare else() here caught Android and broke it).
+elseif(NOT ANDROID AND NOT IOS)
+	# Android and iOS have no system libpcap; DEV9 uses Android/AndroidPcapStubs.cpp
+	# instead, so they must NOT link PCAP::PCAP. iOS additionally skips
+	# find_package(PCAP) (SearchForStuff.cmake), so the PCAP::PCAP target doesn't
+	# exist and linking it fails at configure time (a bare else() here caught both
+	# and broke them).
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		PCAP::PCAP
 	)
