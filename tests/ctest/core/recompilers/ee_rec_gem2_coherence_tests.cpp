@@ -169,3 +169,70 @@ TEST(EeRecGeM2Coherence, SqAfterScalarWriteMergesDirtyLowerHalf)
 	EXPECT_EQ(h.ReadU64(kAddr + 0), 0xFFFFFFFFAAAABBBBull); // lower half (dirty-merged)
 	EXPECT_EQ(h.ReadU64(kAddr + 8), 0x1111111122222222ull); // upper half (from memory)
 }
+
+// COP2 macro ops routed through the mVU emitter (the REC_COP2_mVU0_ARM64 set:
+// VMTIR/VMFIR/VILWR/VISWR/...) emit INLINE in the EE block and allocate VU0
+// integer (VI) hosts first-fit from the {x14, x15, x28} pool (microRegAlloc cop2
+// mode; mVUmacroSetupCOP2State reset(true)). x14/x15 are ALSO EE guest-GPR
+// allocatable hosts, so under the residency flip a guest scalar can be live in
+// x14/x15 exactly when the macro op wants them. The no-C-call routed ops emit no
+// unconditional iFlushCall, so mVUmacroEmitPrologue (microVU-arm64.cpp) must
+// itself writeback+free x14/x15/x28 from the EE cache before the mVU emit. This
+// keeps a wide band of dirty guest scalars live across a VMTIR (1 VI -> x14) and
+// a VILWR (2 VIs -> x14+x15); if the flip left a guest reg resident in a host the
+// macro op then reallocated and the prologue dropped its eviction, the clobber
+// surfaces in the Run() auto-diff (EE + VU0) here and at the block-end flush.
+// (x28 is a LATENT case: no current routed op allocates a third VI slot, so
+// first-fit never reaches it. It is held by the same unconditional prologue free
+// plus the epilogue NEON-watermark tripwire, which fires if an emitter ever grows
+// past the evicted window.) Green on the pre-flip baseline: nothing is
+// EE-resident, so the prologue frees empty slots and the macro ops own the pool.
+TEST(EeRecGeM2Coherence, Vu0RoutedMacroOpPreservesLiveScalarBand)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0VfBits(2, 0x11111111u, 0x22222222u, 0x33333333u, 0x44445555u);
+	h.SeedVu0Vi(5, 3); // VILWR address source (reads VUmem[VI[5]*16].x; value auto-diffed)
+	// Distinct 64-bit sentinels across a broad band of unpinned guest regs (the
+	// pins are $sp/$ra/$v0/$v1/$a0/$a1/$k0/$s0/$at — all avoided here).
+	h.SetGpr64(reg::t0, 0x1010101010101010ull);
+	h.SetGpr64(reg::t1, 0x2020202020202020ull);
+	h.SetGpr64(reg::t2, 0x3030303030303030ull);
+	h.SetGpr64(reg::t3, 0x4040404040404040ull);
+	h.SetGpr64(reg::t5, 0x0000000000000005ull);
+	h.SetGpr64(reg::t6, 0x00000000FFFFFFFBull);
+	h.SetGpr64(reg::s1, 0x6161616161616161ull);
+	h.SetGpr64(reg::s2, 0x7272727272727272ull);
+	h.SetGpr64(reg::s4, 0x8484848484848484ull);
+	h.SetGpr64(reg::s5, 0x9595959595959595ull);
+	h.LoadProgram({
+		// Dirty a broad band right before the macro ops so several land in the
+		// {x14,x15} pool slots as MODE_WRITE residents under the flip.
+		ADDU (reg::t4, reg::t5, reg::t6),          // t4 = 0, dirty resident
+		ADDU (reg::t7, reg::t0, reg::t1),          // dirty resident
+		ADDU (reg::t8, reg::t2, reg::t3),          // dirty resident
+		ADDU (reg::t9, reg::s1, reg::s2),          // dirty resident
+		ADDU (reg::a2, reg::s4, reg::s5),          // dirty resident (a2/a3 unpinned)
+		ADDU (reg::a3, reg::t0, reg::t3),          // dirty resident
+		// Routed macro ops that reallocate VI hosts x14 (VMTIR) and x14+x15 (VILWR).
+		VMTIR_C2(/*fsf=x*/0, /*it*/1, /*fs*/2),    // VI[1] = VF[2].x low16 = 0x1111
+		VILWR_C2(/*mask=x*/0x8, /*it*/2, /*is*/5), // VI[2] = VUmem[VI[5]*16].x (2 VI hosts)
+		VMTIR_C2(/*fsf=y*/1, /*it*/3, /*fs*/2),    // VI[3] = VF[2].y low16 = 0x2222
+		// Read the dirtied band back AFTER the macro ops.
+		DADDU(reg::s3, reg::t4, reg::t7),
+		DADDU(reg::s6, reg::t8, reg::t9),
+		DADDU(reg::s7, reg::a2, reg::a3),
+	});
+	h.Run();
+	// VMTIR results are deterministic; the VILWR value is memory-defined but the
+	// exhaustive JIT==interp check is the Run() auto-diff (EE + VU0).
+	EXPECT_EQ(h.GetVu0ViJit(1), 0x1111u);
+	EXPECT_EQ(h.GetVu0ViJit(3), 0x2222u);
+	EXPECT_EQ(h.GetVu0ViJit(1), h.GetVu0ViInterp(1));
+	EXPECT_EQ(h.GetVu0ViJit(2), h.GetVu0ViInterp(2));
+	EXPECT_EQ(h.GetVu0ViJit(3), h.GetVu0ViInterp(3));
+	// Spot-check pure-source bystanders (never a dest -> keep their sentinels).
+	EXPECT_EQ(h.GetGpr64Interp(reg::t0), 0x1010101010101010ull);
+	EXPECT_EQ(h.GetGpr64Interp(reg::s5), 0x9595959595959595ull);
+}
