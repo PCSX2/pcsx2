@@ -6601,15 +6601,25 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			m_pipeline_selector.ds = true;
 		}
 
-		// V3D pays heavily for closing and reopening a tile render pass. When the
-		// attachments are unchanged, retain the feedback layout until either target
-		// changes. This is the legacy tuned behaviour, scoped to Broadcom because
-		// other drivers have shown flicker when feedback state is carried across draws.
+		// Everything EXCEPT Broadcom keeps feedback-loop state draw-local: carrying it over
+		// can leave later draws in the previous feedback render pass/layout and cause
+		// Vulkan-only flicker. That matches sashkinbro/EmuCoreX, which removes the carry
+		// globally. A vendor-scoped carry was tried once before and reverted — do NOT widen
+		// this past Broadcom without re-testing Adreno/Mali.
+		//
+		// Broadcom/V3D (Raspberry Pi, via the Linux arm64 build) is tile-based and pays
+		// heavily to close and reopen a tile render pass. Carrying the flags keeps the
+		// feedback_loop passed to OMSetRenderTargets equal to m_current_framebuffer_feedback_loop,
+		// so the render pass is NOT restarted for an otherwise-identical attachment set.
+		//
+		// Gated PER TARGET, not on the enclosing condition — that only requires ONE of rt/ds
+		// to match, so a draw keeping the RT but swapping the depth target would otherwise
+		// inherit a stale depth feedback layout: precisely the flicker mode described above.
 		if (IsDeviceBroadcom())
 		{
-			if (draw_rt)
+			if (draw_rt && m_current_render_target == draw_rt)
 				pipe.feedback_loop_flags |= m_current_framebuffer_feedback_loop & FeedbackLoopFlag_ReadAndWriteRT;
-			if (draw_ds)
+			if (draw_ds && m_current_depth_target == draw_ds)
 			{
 				pipe.feedback_loop_flags |= (m_current_framebuffer_feedback_loop &
 					(FeedbackLoopFlag_ReadAndWriteDepth | FeedbackLoopFlag_ReadDepth));
