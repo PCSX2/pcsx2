@@ -24,6 +24,14 @@
 
 #include <gtest/gtest.h>
 
+#include <set>
+
+// EE dynamic-allocator pool membership predicate (arm64/iCore-arm64.cpp). Reads
+// EE_ALLOCATABLE_MASK directly, so it is the bulletproof structural pin for the
+// pool carve — see PoolExcludesArgAndScratchRegs below. Forward-declared (global
+// scope, no namespace) to avoid pulling the vixl-heavy iCore-arm64.h into a test.
+bool _isAllocatableArm64GPR(int armreg);
+
 using namespace recompiler_tests;
 using namespace mips;
 using namespace mips::ee;
@@ -235,4 +243,113 @@ TEST(EeRecGeM2Coherence, Vu0RoutedMacroOpPreservesLiveScalarBand)
 	// Spot-check pure-source bystanders (never a dest -> keep their sentinels).
 	EXPECT_EQ(h.GetGpr64Interp(reg::t0), 0x1010101010101010ull);
 	EXPECT_EQ(h.GetGpr64Interp(reg::s5), 0x9595959595959595ull);
+}
+
+// Structural pin for the pool carve (GE-M2 Phase-3 fix b36606dbb). The EE
+// dynamic-allocator pool MUST exclude every host reg that is a C-call argument
+// register (x0-x3 = RWARG1-4) or hardcoded emitter scratch — a resident guest
+// value in such a host is silently clobbered by the raw scratch/arg use (the
+// UYA regression: cop2EmitFlagUpdate raw-writes w2/w3, and pre-fix x2/x3 were
+// still in the pool). x0/x1 were carved in Phase 0a; x2/x3 in the fix. This is
+// the bulletproof guard: it reads EE_ALLOCATABLE_MASK directly and cannot go
+// silently insensitive the way the residency-shape poison test below can. If
+// anyone re-admits x2/x3 (or any arg/scratch reg) to EE_ALLOCATABLE_MASK, this
+// goes red immediately with an exact reg number.
+TEST(EeRecGeM2Coherence, PoolExcludesArgAndScratchRegs)
+{
+	// The complete EE-allocatable set after GE-M2: caller-saved temporaries
+	// x4-x7 and x14/x15 (the latter shared with the mVU macro VI pool, fenced),
+	// plus x28 (the only callee-saved pool member). Everything else is a pin,
+	// reserved scratch, an arg reg, or a platform/framework reservation.
+	const std::set<int> kExpectedAllocatable = {4, 5, 6, 7, 14, 15, 28};
+	for (int reg = 0; reg <= 30; ++reg)
+	{
+		const bool expected = kExpectedAllocatable.count(reg) != 0;
+		EXPECT_EQ(_isAllocatableArm64GPR(reg), expected)
+			<< "x" << reg << " EE-allocatable mismatch (expected "
+			<< (expected ? "allocatable" : "reserved") << ")";
+	}
+	// The regression this whole campaign fixed: the four C-call arg registers
+	// (RWARG1-4 = x0-x3) must never be handed to a resident guest GPR.
+	for (int argReg = 0; argReg <= 3; ++argReg)
+		EXPECT_FALSE(_isAllocatableArm64GPR(argReg))
+			<< "x" << argReg << " (RWARG" << (argReg + 1)
+			<< ") must stay carved out of the EE pool";
+}
+
+// Behavioral reproduction of the exact UYA clobber shape. A hand-emitted COP2
+// FMAC op runs cop2EmitFlagUpdate at the tail of every flag-writing macro op
+// (iCOP2-arm64.cpp), which raw-writes w2/w3 (== x2/x3) as flag scratch WITHOUT
+// booking them in the allocator. Pre-fix, with x2/x3 in the pool, a guest GPR
+// left resident there by a preceding EE ALU op under the Phase-3 flip was
+// silently destroyed — pervasive corruption (grey render + boot hang) that the
+// offline stepdiff gate missed.
+//
+// Sensitivity depends on the second FMAC op NOT flushing the caller-saved band
+// at setup. The shared COP2 analysis (iR5900Analysis COP2MicroFinishPass) tags
+// only the FIRST COP2 op of a sync-free run with EEINST_COP2_FINISH_VU0; that
+// op's setup does the iFlushCall(FLUSH_FREE_XMM|FLUSH_FREE_VU0) that evicts
+// caller-saved x2-x7. The SECOND FMAC op gets no sync/finish tag, so its
+// cop2EmitConditionalSync early-returns with no flush — its cop2EmitFlagUpdate
+// runs while the band re-populated between the two ops is still resident. So:
+//   VADD #1        -> absorbs the FINISH flush (frees x2-x7)
+//   wide ADDU band -> repopulates the low pool regs (x2/x3 first-free pre-fix)
+//   VADD #2        -> no flush; cop2EmitFlagUpdate raw-writes w2/w3
+//   read the band  -> a clobbered x2/x3 member surfaces in the Run() auto-diff
+// Post-fix the band never lands in x2/x3 (carved), so w2/w3 hit dead hosts and
+// the diff stays clean. Verified RED with x2/x3 temporarily re-added to
+// EE_ALLOCATABLE_MASK, GREEN with the b36606dbb carve.
+TEST(EeRecGeM2Coherence, HandEmittedCop2FlagUpdatePreservesResidentBand)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	// Non-zero VF operands so the two FMACs actually compute a MAC/status flag
+	// (the flag path is what drives the w2/w3 scratch writes).
+	h.SeedVu0VfBits(2, 0x3F800000u, 0x40000000u, 0xC0000000u, 0x3F000000u);
+	h.SeedVu0VfBits(3, 0x40400000u, 0xBF800000u, 0x41000000u, 0x00000000u);
+	h.SeedVu0VfBits(5, 0x41200000u, 0x40800000u, 0xC1000000u, 0x3E800000u);
+	h.SeedVu0VfBits(6, 0x40000000u, 0x40A00000u, 0xBF000000u, 0x40C00000u);
+
+	// Distinct 64-bit sentinels across a wide band of unpinned/allocatable guest
+	// regs, dirtied BETWEEN the two FMAC ops so several are resident in the low
+	// pool hosts (x2/x3 first-free pre-fix) exactly when VADD #2 scribbles w2/w3.
+	h.SetGpr64(reg::t0, 0x1010101010101010ull);
+	h.SetGpr64(reg::t1, 0x2020202020202020ull);
+	h.SetGpr64(reg::t2, 0x3030303030303030ull);
+	h.SetGpr64(reg::t3, 0x4040404040404040ull);
+	h.SetGpr64(reg::t5, 0x0000000012340000ull);
+	h.SetGpr64(reg::t6, 0x0000000000005678ull);
+	h.SetGpr64(reg::s2, 0x7272727272727272ull);
+	h.SetGpr64(reg::s3, 0x8383838383838383ull);
+	h.SetGpr64(reg::s4, 0x9494949494949494ull);
+	h.SetGpr64(reg::s5, 0xA5A5A5A5A5A5A5A5ull);
+
+	h.LoadProgram({
+		VADD_C2(0xF, /*fd*/4, /*fs*/2, /*ft*/3), // op1: absorbs the FINISH flush
+		// Wide band dirtied after the flush -> resident in x2/x3/x4/... pre-fix.
+		ADDU (reg::t4, reg::t5, reg::t6),         // first-free host (x2 pre-fix)
+		ADDU (reg::t7, reg::t0, reg::t1),         // (x3 pre-fix)
+		ADDU (reg::t8, reg::t2, reg::t3),
+		ADDU (reg::a2, reg::s2, reg::s3),
+		ADDU (reg::a3, reg::s4, reg::s5),
+		DADDU(reg::t9, reg::s2, reg::s4),
+		VADD_C2(0xF, /*fd*/7, /*fs*/5, /*ft*/6),  // op2: no flush; w2/w3 scribbled
+		// Read the band back so a clobbered resident member propagates (the
+		// block-end flush would surface it too, but explicit reads make the
+		// residency dependency load-bearing).
+		DADDU(reg::s6, reg::t4, reg::t7),
+		DADDU(reg::s7, reg::t8, reg::a2),
+		OR   (reg::v1, reg::a3, reg::t9),         // v1 is pinned; still auto-diffed
+	});
+	h.Run();
+
+	// The exhaustive gate is the Run() auto-diff (every EE + VU0 field
+	// JIT==interp). Spot-check the two prime clobber targets (first two ADDU
+	// dests -> the lowest-numbered free pool hosts) and a derived read.
+	EXPECT_EQ(h.GetGpr64Jit(reg::t4), h.GetGpr64Interp(reg::t4));
+	EXPECT_EQ(h.GetGpr64Jit(reg::t7), h.GetGpr64Interp(reg::t7));
+	EXPECT_EQ(h.GetGpr64Jit(reg::s6), h.GetGpr64Interp(reg::s6));
+	EXPECT_EQ(h.GetGpr64Interp(reg::t4),
+	          0x0000000012340000ull + 0x5678ull); // sext32(t5 + t6)
 }
