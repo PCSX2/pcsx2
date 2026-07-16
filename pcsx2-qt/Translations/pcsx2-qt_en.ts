@@ -24378,12 +24378,12 @@ Rename it to {} to remove this warning.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="442"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="443"/>
         <source>GunCon 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="584"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="585"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="78"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="106"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="938"/>
@@ -24397,7 +24397,7 @@ Rename it to {} to remove this warning.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="585"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="586"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="79"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="107"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="940"/>
@@ -24411,7 +24411,7 @@ Rename it to {} to remove this warning.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="586"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="587"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="80"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="108"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="941"/>
@@ -24425,7 +24425,7 @@ Rename it to {} to remove this warning.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="587"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="588"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="81"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="109"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="939"/>
@@ -24439,22 +24439,22 @@ Rename it to {} to remove this warning.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="589"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="590"/>
         <source>Trigger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="590"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="591"/>
         <source>Shoot Offscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="592"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="593"/>
         <source>Calibration Shot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="594"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="595"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="139"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="363"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="154"/>
@@ -24462,7 +24462,7 @@ Rename it to {} to remove this warning.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="595"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="596"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="140"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="364"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="155"/>
@@ -24470,14 +24470,14 @@ Rename it to {} to remove this warning.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="596"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="597"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-seamic.cpp" line="365"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-train.cpp" line="156"/>
         <source>C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="597"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="598"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="90"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="116"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="936"/>
@@ -24491,7 +24491,7 @@ Rename it to {} to remove this warning.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="598"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="599"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="91"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="117"/>
         <location filename="../../pcsx2/USB/usb-pad/usb-pad.cpp" line="937"/>
@@ -24505,141 +24505,141 @@ Rename it to {} to remove this warning.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="599"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="600"/>
         <source>Relative Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="600"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="601"/>
         <source>Relative Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="601"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="602"/>
         <source>Relative Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="602"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="603"/>
         <source>Relative Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="611"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="612"/>
         <source>Cursor Path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="612"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="613"/>
         <source>Sets the crosshair image that this lightgun will use. Setting a crosshair image will disable the system cursor.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="615"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="616"/>
         <source>Cursor Scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="616"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="617"/>
         <source>Scales the crosshair image set above.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="616"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="617"/>
         <source>%.0f%%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="618"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="619"/>
         <source>Cursor Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="619"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="620"/>
         <source>Applies a color to the chosen crosshair images, can be used for multiple players. Specify in HTML/CSS format (e.g. #aabbcc)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="622"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="623"/>
         <source>Manual Screen Configuration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="623"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="624"/>
         <source>Forces the use of the screen parameters below, instead of automatic parameters if available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="626"/>
-        <source>X Scale (Sensitivity)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="627"/>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="630"/>
-        <source>Scales the position to simulate CRT curvature.</source>
+        <source>X Scale (Sensitivity)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="628"/>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="631"/>
-        <source>%.2f%%</source>
+        <source>Scales the position to simulate CRT curvature.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="629"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="632"/>
+        <source>%.2f%%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="630"/>
         <source>Y Scale (Sensitivity)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="632"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="633"/>
         <source>Center X</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="633"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="634"/>
         <source>Sets the horizontal center position of the simulated screen.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="634"/>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="637"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="635"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="638"/>
         <source>%.0fpx</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="635"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="636"/>
         <source>Center Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="636"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="637"/>
         <source>Sets the vertical center position of the simulated screen.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="638"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="639"/>
         <source>Screen Width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="639"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="640"/>
         <source>Sets the width of the simulated screen.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="639"/>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="642"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="640"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="643"/>
         <source>%dpx</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="641"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="642"/>
         <source>Screen Height</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="642"/>
+        <location filename="../../pcsx2/USB/usb-lightgun/guncon2.cpp" line="643"/>
         <source>Sets the height of the simulated screen.</source>
         <translation type="unfinished"></translation>
     </message>
