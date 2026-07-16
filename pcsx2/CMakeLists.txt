@@ -1139,6 +1139,14 @@ if(LTO_PCSX2_CORE)
 		target_compile_definitions(PCSX2_LTO PRIVATE MULTI_ISA_SHARED_COMPILATION)
 	endif()
 	target_link_libraries(PCSX2_LTO PRIVATE PCSX2_FLAGS)
+	if(USE_VULKAN)
+		# VKLibretro.cpp lives in the GS sources, which move to PCSX2_LTO under
+		# LTO_PCSX2_CORE. The libretro-headers include path is attached to PCSX2
+		# (target_link_libraries above), but PCSX2_LTO is a *dependency* of PCSX2
+		# so that PRIVATE include never reaches it — attach it directly, or
+		# VKLibretro.cpp can't find libretro_vulkan.h under LTO.
+		target_link_libraries(PCSX2_LTO PRIVATE libretro-headers)
+	endif()
 	target_link_libraries(PCSX2 PRIVATE PCSX2_LTO)
 	set_target_properties(PCSX2_LTO PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
 	fixup_file_properties(PCSX2_LTO)
