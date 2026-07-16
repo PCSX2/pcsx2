@@ -26090,6 +26090,8 @@ SLES-54160:
 SLES-54161:
   name: "Super Dragon Ball Z"
   region: "PAL-E"
+  gsHWFixes:
+    texturePreloading: 0 # Fixes visual glitch
 SLES-54162:
   name: "Saint Seiya - The Hades"
   region: "PAL-M4"
@@ -61576,6 +61578,8 @@ SLPS-25642:
   name-en: "Super Dragon Ball Z"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    texturePreloading: 0 # Fixes visual glitch
 SLPS-25643:
   name: "キミキス"
   name-sort: "きみきす"
@@ -72888,6 +72892,8 @@ SLUS-21442:
   name: "Super Dragon Ball Z"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    texturePreloading: 0 # Fixes visual glitch
 SLUS-21443:
   name: "The Da Vinci Code"
   name-sort: "Da Vinci Code, The"
