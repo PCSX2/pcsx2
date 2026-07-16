@@ -662,7 +662,8 @@ struct Pcsx2Config
 		bool
 			fpuOverflow : 1,
 			fpuExtraOverflow : 1,
-			fpuFullMode : 1;
+			fpuFullMode : 1,
+			fpuGuardedAddSub : 1; // EE FPU add/sub guard-bit emulation (single-precision fast path). Off by default; opt-in per-game via GameDB (clampModes.guardedAddSub) or globally via INI. Independent of the clamp tiers — Full mode does its own guard on the DOUBLE path.
 
 		bool
 			EnableEECache : 1;
@@ -1545,6 +1546,7 @@ namespace EmuFolders
 #define CHECK_FPU_EXTRA_OVERFLOW (EmuConfig.Cpu.Recompiler.fpuExtraOverflow) // If enabled, Operands are checked for infinities before being used in the FPU recs
 #define CHECK_FPU_EXTRA_FLAGS 1 // Always enabled now // Sets D/I flags on FPU instructions
 #define CHECK_FPU_FULL (EmuConfig.Cpu.Recompiler.fpuFullMode)
+#define CHECK_FPU_GUARDED (EmuConfig.Cpu.Recompiler.fpuGuardedAddSub) // If enabled, add/sub emulate the PS2 FPU's missing mantissa guard bits (extra accuracy, slower). Off by default.
 
 //------------ EE Recompiler defines - Comment to disable a recompiler ---------------
 

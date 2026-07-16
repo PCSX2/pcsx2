@@ -426,11 +426,12 @@ static a64::VRegister fpuClampInput(const a64::VRegister& src, const a64::VRegis
 // left-shifts the mantissa, the bits that would have lived in those guard
 // positions must read as zero on hardware. This masks the low mantissa bits of
 // the smaller-exponent operand by the exponent difference, then does the single
-// op. It is the arm64 fast-path port of x86 FPU_ADD_SUB (iFPU.cpp:402, applied
-// unconditionally in the fast path if FPU_CORRECT_ADD_SUB=1) and reproduces the
-// masking already present in the DOUBLE path's FPU_ADD_SUB (iFPUd-arm64.cpp:200).
-// The CHECK_FPU_FULL (double) config dispatches to that path instead and never
-// reaches here.
+// op. It is the arm64 fast-path port of x86 FPU_ADD_SUB (iFPU.cpp:402). Both
+// JITs gate this masking on the same off-by-default CHECK_FPU_GUARDED option
+// (x86 FPU_ADD/FPU_SUB, iFPU.cpp) — see the early-out below. It reproduces the
+// masking already present in the DOUBLE path's FPU_ADD_SUB (iFPUd-arm64.cpp:200);
+// the CHECK_FPU_FULL (double) config dispatches to that path instead and never
+// reaches here (Full mode guards unconditionally on both arches).
 //
 // When |expd - expt| <= 1 the mask clears zero bits, so that (common) case skips
 // straight to the plain op. Only |diff| >= 2 masks the smaller-exponent operand;
@@ -454,6 +455,24 @@ static a64::VRegister fpuClampInput(const a64::VRegister& src, const a64::VRegis
 static void fpuEmitGuardedAddSub(const a64::VRegister& dst,
 	const a64::VRegister& s, const a64::VRegister& t, bool issub)
 {
+	// Guard-bit emulation is opt-in via the off-by-default fpuGuardedAddSub
+	// Recompiler option (per-game GameDB clampModes.guardedAddSub, or global
+	// INI). Off = a plain single op, matching AetherSX2 / PCSX2 v1.0 and the
+	// x86 FPU_ADD/FPU_SUB guard-off branch (iFPU.cpp). This is the
+	// default path — the majority of titles never need guard-bit accuracy and
+	// skip the ~13-insn common-path cost. Returns before the NEON-temp alloc and
+	// GPR-scratch use below so nothing is booked on the fast path. (Full clamp
+	// mode is unaffected: it runs the DOUBLE path, which masks guard bits itself
+	// — iFPUd-arm64.cpp.)
+	if (!CHECK_FPU_GUARDED)
+	{
+		if (issub)
+			armAsm->Fsub(dst, s, t);
+		else
+			armAsm->Fadd(dst, s, t);
+		return;
+	}
+
 	// Alloc the NEON temp FIRST, before any raw GPR scratch below goes live.
 	// The alloc can emit a victim eviction whose address materialization uses
 	// scratch (today only x16/x17 via armMoveAddressToReg); keeping w9/w10

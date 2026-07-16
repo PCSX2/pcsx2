@@ -1441,6 +1441,7 @@ TEST(EeRecFpu, CompareSurvivesInterposedGuardedAddCfc1)
 	// design (see CompareThenCfc1SeesFreshConditionBit above).
 	EeRecTestHarness h;
 	h.EnableCop1();
+	h.EnableFpuGuarded();
 	h.SetFpr(1, 2.0f);
 	h.SetFpr(2, 1.0f);
 	h.SetFpr(4, 1.0f);            // exp 127
@@ -1463,6 +1464,7 @@ TEST(EeRecFpu, CompareSurvivesInterposedGuardedAddBc1)
 	// (must-take on C clear) falls through instead.
 	EeRecTestHarness h;
 	h.EnableCop1();
+	h.EnableFpuGuarded();
 	h.SetFpr(1, 2.0f);
 	h.SetFpr(2, 1.0f);
 	h.SetFpr(4, 1.0f);

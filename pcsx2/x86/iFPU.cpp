@@ -62,8 +62,11 @@ namespace DOUBLE
 #define FPUflagSO 0x00000010
 #define FPUflagSU 0x00000008
 
-// Add/Sub opcodes produce the same results as the ps2
-#define FPU_CORRECT_ADD_SUB 1
+// Add/Sub guard-bit emulation (matching the PS2's missing mantissa guard bits)
+// is now gated at runtime on CHECK_FPU_GUARDED (the off-by-default
+// fpuGuardedAddSub Recompiler option) rather than a compile-time constant — so
+// both JITs honor the same setting. The Full-mode DOUBLE path keeps its own
+// unconditional guard (iFPUd.cpp).
 
 alignas(16) static const u32 s_neg[4] = {0x80000000, 0xffffffff, 0xffffffff, 0xffffffff};
 alignas(16) static const u32 s_pos[4] = {0x7fffffff, 0xffffffff, 0xffffffff, 0xffffffff};
@@ -481,7 +484,7 @@ void FPU_ADD_SUB(int regd, int regt, int issub)
 
 void FPU_ADD(int regd, int regt)
 {
-	if (FPU_CORRECT_ADD_SUB)
+	if (CHECK_FPU_GUARDED)
 		FPU_ADD_SUB(regd, regt, 0);
 	else
 		xADD.SS(xRegisterSSE(regd), xRegisterSSE(regt));
@@ -489,7 +492,7 @@ void FPU_ADD(int regd, int regt)
 
 void FPU_SUB(int regd, int regt)
 {
-	if (FPU_CORRECT_ADD_SUB)
+	if (CHECK_FPU_GUARDED)
 		FPU_ADD_SUB(regd, regt, 1);
 	else
 		xSUB.SS(xRegisterSSE(regd), xRegisterSSE(regt));
