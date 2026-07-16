@@ -6601,10 +6601,20 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			m_pipeline_selector.ds = true;
 		}
 
-		// Keep feedback-loop state draw-local. Carrying it over can leave later draws
-		// in the previous feedback render pass/layout and cause Vulkan-only flicker.
-		// Matches sashkinbro/EmuCoreX exactly (the carry is removed globally there — no
-		// vendor-scoping, unlike my earlier reverted attempt).
+		// V3D pays heavily for closing and reopening a tile render pass. When the
+		// attachments are unchanged, retain the feedback layout until either target
+		// changes. This is the legacy tuned behaviour, scoped to Broadcom because
+		// other drivers have shown flicker when feedback state is carried across draws.
+		if (IsDeviceBroadcom())
+		{
+			if (draw_rt)
+				pipe.feedback_loop_flags |= m_current_framebuffer_feedback_loop & FeedbackLoopFlag_ReadAndWriteRT;
+			if (draw_ds)
+			{
+				pipe.feedback_loop_flags |= (m_current_framebuffer_feedback_loop &
+					(FeedbackLoopFlag_ReadAndWriteDepth | FeedbackLoopFlag_ReadDepth));
+			}
+		}
 	}
 
 	if (draw_rt && ((config.require_one_barrier && (config.IsFeedbackLoopRT(config.ps) || config.IsFeedbackLoopRT(config.alpha_second_pass.ps)))) && !m_features.texture_barrier)
