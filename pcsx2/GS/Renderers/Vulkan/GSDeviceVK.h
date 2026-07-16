@@ -83,6 +83,9 @@ public:
 	/// Returns true if running on an AMD GPU.
 	__fi bool IsDeviceAMD() const { return (m_device_properties.vendorID == 0x1002); }
 
+	/// Returns true if running on a Broadcom V3D GPU (vendorID 0x14E4).
+	__fi bool IsDeviceBroadcom() const { return (m_device_properties.vendorID == 0x14E4u); }
+
 	/// Returns true if running on an ARM Mali GPU (vendorID 0x13B5).
 	__fi bool IsDeviceMali() const { return (m_device_properties.vendorID == 0x13B5u); }
 
