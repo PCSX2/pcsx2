@@ -209,6 +209,18 @@ data class Settings(
      * per-primitive barrier fallback. A few proprietary Adreno drivers show stale-ROAA
      * read artifacts — turn this off in the Renderer tab if so. Applies on game restart. */
     val adrenoFbFetch: Boolean = true,
+    /** EmuCore/GS/ForceMaliFramebufferFetch — re-enable the Vulkan framebuffer-fetch
+     * (ROAA) path on MediaTek Mali / Mali-G57, where it is force-disabled because those
+     * drivers return zero/stale destination colour through ROAA (black or missing
+     * textures). Mali exposes no hardware dual-source blend, so with fetch off the HW
+     * renderer SW-blends via a per-primitive texture barrier — very slow in blend-heavy
+     * games (issue #339: Shadow of the Colossus on Dimensity 8350 + Mali-G615). This lets
+     * such a user test whether their driver is actually affected. Default OFF, and kept
+     * deliberately separate from adrenoFbFetch (which is default-ON plus a ConfigStore
+     * migration — keying off it would force fetch on for EVERY MediaTek Mali user, the
+     * exact breakage this works around). Inert on other GPUs/renderers. Applies on game
+     * restart. */
+    val forceMaliFbFetch: Boolean = false,
     /** EmuCore/GS/AndroidUseAngleOpenGL — run the OpenGL renderer through ANGLE's
      *  GLES-on-Vulkan translation (bundled libEGL_angle.so / libGLESv2_angle.so).
      *  Useful on devices with a broken native GLES driver (e.g. some MediaTek Mali).
@@ -406,6 +418,11 @@ data class Settings(
     val shadeBoostGamma: Int = 50,
     /** EmuCore/GS/fxaa — FXAA post-process anti-aliasing. */
     val fxaa: Boolean = false,
+    /** EmuCore/GS/ShaderChainEnabled + /ShaderChainPreset — RetroArch (.slangp) shader
+     *  chain run at present via librashader, after ShadeBoost/FXAA. An empty preset means
+     *  off regardless of the flag, and it's a no-op if this build has no librashader. */
+    val shaderChainEnabled: Boolean = false,
+    val shaderChainPreset: String = "",
     /** EmuCore/GS/CASMode — GSCASMode: 0 Off / 1 Sharpen Only / 2 Sharpen + Resize. */
     val casMode: Int = 0,
     /** EmuCore/GS/CASSharpness — sharpening strength 0..100 (%). */
@@ -923,6 +940,8 @@ data class Settings(
             shadeBoostSaturation = intAt("EmuCore/GS/ShadeBoost_Saturation") ?: this.shadeBoostSaturation,
             shadeBoostGamma = intAt("EmuCore/GS/ShadeBoost_Gamma") ?: this.shadeBoostGamma,
             fxaa = boolAt("EmuCore/GS/fxaa") ?: this.fxaa,
+            shaderChainEnabled = boolAt("EmuCore/GS/ShaderChainEnabled") ?: this.shaderChainEnabled,
+            shaderChainPreset = strAt("EmuCore/GS/ShaderChainPreset") ?: this.shaderChainPreset,
             casMode = intAt("EmuCore/GS/CASMode") ?: this.casMode,
             casSharpness = intAt("EmuCore/GS/CASSharpness") ?: this.casSharpness,
             loadTextureReplacements = boolAt("EmuCore/GS/LoadTextureReplacements") ?: this.loadTextureReplacements,
@@ -956,6 +975,7 @@ data class Settings(
             hwRov = boolAt("EmuCore/GS/HWROV") ?: this.hwRov,
             hwAa1 = boolAt("EmuCore/GS/HWAA1") ?: this.hwAa1,
             adrenoFbFetch = boolAt("EmuCore/GS/EnableAdrenoFramebufferFetch") ?: this.adrenoFbFetch,
+            forceMaliFbFetch = boolAt("EmuCore/GS/ForceMaliFramebufferFetch") ?: this.forceMaliFbFetch,
             useAngleOpenGL = boolAt("EmuCore/GS/AndroidUseAngleOpenGL") ?: this.useAngleOpenGL,
             overrideTextureBarriers = intAt("EmuCore/GS/OverrideTextureBarriers") ?: this.overrideTextureBarriers,
             disableVertexShaderExpand = boolAt("EmuCore/GS/DisableVertexShaderExpand") ?: this.disableVertexShaderExpand,
@@ -1088,6 +1108,8 @@ data class Settings(
         put("EmuCore/GS", "ShadeBoost_Saturation", "int", shadeBoostSaturation.coerceIn(1, 100).toString())
         put("EmuCore/GS", "ShadeBoost_Gamma", "int", shadeBoostGamma.coerceIn(1, 100).toString())
         put("EmuCore/GS", "fxaa", "bool", fxaa.toString())
+        put("EmuCore/GS", "ShaderChainEnabled", "bool", shaderChainEnabled.toString())
+        put("EmuCore/GS", "ShaderChainPreset", "string", shaderChainPreset)
         put("EmuCore/GS", "CASMode", "int", casMode.coerceIn(0, 2).toString())
         put("EmuCore/GS", "CASSharpness", "int", casSharpness.coerceIn(0, 100).toString())
         put("EmuCore/GS", "LoadTextureReplacements", "bool", loadTextureReplacements.toString())
@@ -1121,6 +1143,7 @@ data class Settings(
         put("EmuCore/GS", "HWROV", "bool", hwRov.toString())
         put("EmuCore/GS", "HWAA1", "bool", hwAa1.toString())
         put("EmuCore/GS", "EnableAdrenoFramebufferFetch", "bool", adrenoFbFetch.toString())
+        put("EmuCore/GS", "ForceMaliFramebufferFetch", "bool", forceMaliFbFetch.toString())
         // Parity write (native reads the ARMSX2_ANGLE_EGL_LIBRARY env var set by
         // MainActivityRuntime.applyAngleEnv, not this key) — kept so the config file
         // reflects the toggle.
@@ -1348,6 +1371,7 @@ data class Settings(
         put("hwRov", hwRov)
         put("hwAa1", hwAa1)
         put("adrenoFbFetch", adrenoFbFetch)
+        put("forceMaliFbFetch", forceMaliFbFetch)
         put("useAngleOpenGL", useAngleOpenGL)
         put("overrideTextureBarriers", overrideTextureBarriers)
         put("disableVertexShaderExpand", disableVertexShaderExpand)
@@ -1422,6 +1446,8 @@ data class Settings(
         put("shadeBoostSaturation", shadeBoostSaturation)
         put("shadeBoostGamma", shadeBoostGamma)
         put("fxaa", fxaa)
+        put("shaderChainEnabled", shaderChainEnabled)
+        put("shaderChainPreset", shaderChainPreset)
         put("casMode", casMode)
         put("casSharpness", casSharpness)
         put("loadTextureReplacements", loadTextureReplacements)
@@ -1582,6 +1608,7 @@ data class Settings(
                 hwAa1 = json.optBoolean("hwAa1", def.hwAa1),
                 hwAat = false,
                 adrenoFbFetch = json.optBoolean("adrenoFbFetch", def.adrenoFbFetch),
+                forceMaliFbFetch = json.optBoolean("forceMaliFbFetch", def.forceMaliFbFetch),
                 useAngleOpenGL = json.optBoolean("useAngleOpenGL", def.useAngleOpenGL),
                 overrideTextureBarriers = json.optInt("overrideTextureBarriers", def.overrideTextureBarriers),
                 disableVertexShaderExpand = json.optBoolean("disableVertexShaderExpand", def.disableVertexShaderExpand),
@@ -1665,6 +1692,8 @@ data class Settings(
                 shadeBoostSaturation = json.optInt("shadeBoostSaturation", def.shadeBoostSaturation),
                 shadeBoostGamma = json.optInt("shadeBoostGamma", def.shadeBoostGamma),
                 fxaa = json.optBoolean("fxaa", def.fxaa),
+                shaderChainEnabled = json.optBoolean("shaderChainEnabled", def.shaderChainEnabled),
+                shaderChainPreset = json.optString("shaderChainPreset", def.shaderChainPreset),
                 casMode = json.optInt("casMode", def.casMode),
                 casSharpness = json.optInt("casSharpness", def.casSharpness),
                 loadTextureReplacements = json.optBoolean("loadTextureReplacements", def.loadTextureReplacements),
@@ -1799,6 +1828,7 @@ data class Settings(
             if (current.hwRov != base.hwRov) j.put("hwRov", current.hwRov)
             if (current.hwAa1 != base.hwAa1) j.put("hwAa1", current.hwAa1)
             if (current.adrenoFbFetch != base.adrenoFbFetch) j.put("adrenoFbFetch", current.adrenoFbFetch)
+            if (current.forceMaliFbFetch != base.forceMaliFbFetch) j.put("forceMaliFbFetch", current.forceMaliFbFetch)
             if (current.useAngleOpenGL != base.useAngleOpenGL) j.put("useAngleOpenGL", current.useAngleOpenGL)
             if (current.overrideTextureBarriers != base.overrideTextureBarriers) j.put("overrideTextureBarriers", current.overrideTextureBarriers)
             if (current.disableVertexShaderExpand != base.disableVertexShaderExpand) j.put("disableVertexShaderExpand", current.disableVertexShaderExpand)
@@ -1875,6 +1905,8 @@ data class Settings(
             if (current.shadeBoostSaturation != base.shadeBoostSaturation) j.put("shadeBoostSaturation", current.shadeBoostSaturation)
             if (current.shadeBoostGamma     != base.shadeBoostGamma)     j.put("shadeBoostGamma", current.shadeBoostGamma)
             if (current.fxaa                != base.fxaa)                j.put("fxaa", current.fxaa)
+            if (current.shaderChainEnabled  != base.shaderChainEnabled)  j.put("shaderChainEnabled", current.shaderChainEnabled)
+            if (current.shaderChainPreset   != base.shaderChainPreset)   j.put("shaderChainPreset", current.shaderChainPreset)
             if (current.casMode             != base.casMode)             j.put("casMode", current.casMode)
             if (current.casSharpness        != base.casSharpness)        j.put("casSharpness", current.casSharpness)
             if (current.loadTextureReplacements != base.loadTextureReplacements) j.put("loadTextureReplacements", current.loadTextureReplacements)
@@ -2000,6 +2032,7 @@ data class Settings(
             hwAa1 = if (overrides.has("hwAa1")) overrides.getBoolean("hwAa1") else base.hwAa1,
             hwAat = false,
             adrenoFbFetch = if (overrides.has("adrenoFbFetch")) overrides.getBoolean("adrenoFbFetch") else base.adrenoFbFetch,
+            forceMaliFbFetch = if (overrides.has("forceMaliFbFetch")) overrides.getBoolean("forceMaliFbFetch") else base.forceMaliFbFetch,
             useAngleOpenGL = if (overrides.has("useAngleOpenGL")) overrides.getBoolean("useAngleOpenGL") else base.useAngleOpenGL,
             overrideTextureBarriers = if (overrides.has("overrideTextureBarriers")) overrides.getInt("overrideTextureBarriers") else base.overrideTextureBarriers,
             disableVertexShaderExpand = if (overrides.has("disableVertexShaderExpand")) overrides.getBoolean("disableVertexShaderExpand") else base.disableVertexShaderExpand,
@@ -2090,6 +2123,8 @@ data class Settings(
             shadeBoostSaturation = if (overrides.has("shadeBoostSaturation")) overrides.getInt("shadeBoostSaturation") else base.shadeBoostSaturation,
             shadeBoostGamma = if (overrides.has("shadeBoostGamma")) overrides.getInt("shadeBoostGamma") else base.shadeBoostGamma,
             fxaa = if (overrides.has("fxaa")) overrides.getBoolean("fxaa") else base.fxaa,
+            shaderChainEnabled = if (overrides.has("shaderChainEnabled")) overrides.getBoolean("shaderChainEnabled") else base.shaderChainEnabled,
+            shaderChainPreset = if (overrides.has("shaderChainPreset")) overrides.getString("shaderChainPreset") else base.shaderChainPreset,
             casMode = if (overrides.has("casMode")) overrides.getInt("casMode") else base.casMode,
             casSharpness = if (overrides.has("casSharpness")) overrides.getInt("casSharpness") else base.casSharpness,
             loadTextureReplacements = if (overrides.has("loadTextureReplacements")) overrides.getBoolean("loadTextureReplacements") else base.loadTextureReplacements,

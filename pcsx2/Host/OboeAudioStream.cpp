@@ -285,7 +285,21 @@ void OboeAudioStream::SetPaused(bool paused)
 		// swallow the restart and leave audio dead. Clear it first so the
 		// resume always actually re-issues requestStart().
 		m_playing = false;
-		Start();
+		if (!Start())
+		{
+			// requestStart() failing here means the OS took the device away while we
+			// were parked: Android reclaims an idle low-latency stream after a few
+			// seconds, so just sitting in the in-game menu (issue #333) — or
+			// backgrounding, or a call/BT switch — left audio dead for the rest of
+			// the session. A paused stream never runs its data callback, so onError()
+			// CANNOT fire for this; the resume is the only place that can notice.
+			// Rebuild the stream exactly like the disconnect path does. Open() keeps
+			// the negotiated performance-mode latch, so we don't re-lose the fast path.
+			Console.Error("(Oboe) requestStart() on resume failed; reopening stream...");
+			Close();
+			if (!Open() || !Start())
+				Console.Error("(Oboe) Failed to reopen the stream on resume.");
+		}
 	}
 	m_paused = paused;
 }

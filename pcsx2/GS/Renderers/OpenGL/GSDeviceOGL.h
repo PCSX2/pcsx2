@@ -310,6 +310,22 @@ private:
 	bool CompileFXAAProgram();
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex) override;
 
+	bool DoApplyShaderChain(GSTexture* sTex, GSTexture* dTex) override;
+
+	/// librashader filter chain state. The handle is void* rather than
+	/// libra_gl_filter_chain_t so this header doesn't need librashader.h — that header
+	/// only exists when the Rust toolchain built the lib (ARMSX2_HAS_LIBRASHADER).
+	/// The chain is rebuilt only when the preset path changes: creating it compiles the
+	/// whole slang chain, while the per-frame call is just draw submission.
+	void* m_shader_chain = nullptr;
+	std::string m_shader_chain_preset;
+	bool m_shader_chain_failed = false;
+	size_t m_shader_frame_count = 0;
+	void DestroyShaderChain();
+	/// The chain binds its own program/VAO/FBO/textures and does not put them back, so
+	/// GLState's cache would go stale behind our back. Re-pushes what it clobbers.
+	void RestoreGLStateAfterShaderChain();
+
 	bool CompileShadeBoostProgram();
 	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) override;
 

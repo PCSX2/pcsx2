@@ -638,12 +638,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Usage usage, int width, int height,
 
 	if (!t)
 	{
-#if defined(__ANDROID__)
-		const u32 pool_limit = GSTexture::IsTexture(usage) ? m_mobile_gs_tuning.pooled_textures : m_mobile_gs_tuning.pooled_targets;
-#else
-		const u32 pool_limit = GSTexture::IsTexture(usage) ? MAX_POOLED_TEXTURES : MAX_POOLED_TARGETS;
-#endif
-		if (pool.size() >= pool_limit &&
+		if (pool.size() >= (GSTexture::IsTexture(usage) ? MAX_POOLED_TEXTURES : MAX_POOLED_TARGETS) &&
 			fallback != pool.end())
 		{
 			t = *fallback;
@@ -709,13 +704,8 @@ void GSDevice::Recycle(GSTexture* t)
 	pool.push_front(t);
 	m_pool_memory_usage += t->GetMemUsage();
 
-#if defined(__ANDROID__)
-	const u32 max_size = t->IsTexture() ? m_mobile_gs_tuning.pooled_textures : m_mobile_gs_tuning.pooled_targets;
-	const u32 max_age = t->IsTexture() ? m_mobile_gs_tuning.texture_age : m_mobile_gs_tuning.target_age;
-#else
 	const u32 max_size = t->IsTexture() ? MAX_POOLED_TEXTURES : MAX_POOLED_TARGETS;
 	const u32 max_age = t->IsTexture() ? MAX_TEXTURE_AGE : MAX_TARGET_AGE;
-#endif
 	while (pool.size() > max_size)
 	{
 		// Don't toss when the texture was last used in this frame.
@@ -815,7 +805,7 @@ GSTexture* GSDevice::CreateTexture(int w, int h, int mipmap_levels, GSTexture::F
 {
 	pxAssert(mipmap_levels != 0 && (mipmap_levels < 0 || mipmap_levels <= GetMipmapLevelsForSize(w, h)));
 	const int levels = mipmap_levels < 0 ? GetMipmapLevelsForSize(w, h) : mipmap_levels;
-	return FetchSurface(GSTexture::Texture, w, h, levels, format, false, !m_features.prefer_new_textures || prefer_reuse);
+	return FetchSurface(GSTexture::Texture, w, h, levels, format, false, m_features.prefer_new_textures && prefer_reuse);
 }
 
 GSTexture* GSDevice::CreateTexture(const GSVector2i& size, int mipmap_levels, GSTexture::Format format, bool prefer_reuse)
@@ -1031,6 +1021,24 @@ void GSDevice::FXAA()
 		DoFXAA(m_current, dTex);
 		m_current = dTex;
 	}
+}
+
+void GSDevice::ApplyShaderChain()
+{
+	// Guarded here rather than in the backends so a device that never overrides
+	// DoApplyShaderChain (software, or a build without librashader) costs nothing.
+	if (!GSConfig.ShaderChainEnabled || GSConfig.ShaderChainPreset.empty() || !m_current)
+		return;
+
+	// Same ping-pong as FXAA: the chain reads m_current, so it can't also write it.
+	GSTexture*& dTex = (m_current == m_target_tmp) ? m_merge : m_target_tmp;
+	if (!ResizeRenderTarget(&dTex, m_current->GetWidth(), m_current->GetHeight(), false, false))
+		return;
+
+	// Only swap on success — a failed chain (bad preset, unsupported backend) must leave
+	// m_current pointing at the unshaded frame rather than at a target nothing rendered to.
+	if (DoApplyShaderChain(m_current, dTex))
+		m_current = dTex;
 }
 
 void GSDevice::ShadeBoost()

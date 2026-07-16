@@ -1,5 +1,6 @@
 package com.armsx2.ui.home
 
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -630,6 +631,15 @@ fun HomeScreen(
                 GameMenuAction("📀", str("bios.perGame.menu")) {
                     menuGame = null
                     com.armsx2.navigation.UiNavigator.navigate(com.armsx2.navigation.AppRoute.BiosManager(game))
+                }
+                // Pin to the launcher (issue #242). The action was lost when this menu was
+                // rebuilt, leaving HomeShortcuts with no call site at all (issue #335).
+                // pin() returns false only when the launcher can't pin — surface that.
+                val addToHomeFailed = str("games.addToHome.unsupported")
+                GameMenuAction("📌", str("games.addToHome")) {
+                    menuGame = null
+                    if (!com.armsx2.HomeShortcuts.pin(context, game))
+                        Toast.makeText(context, addToHomeFailed, Toast.LENGTH_LONG).show()
                 }
                 val hidden = com.armsx2.HiddenGames.isHidden(game)
                 GameMenuAction(if (hidden) "◍" else "🚫", str(if (hidden) "games.unhide" else "games.hide")) {

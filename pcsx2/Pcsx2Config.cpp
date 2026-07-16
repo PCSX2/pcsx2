@@ -722,6 +722,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	DisableShaderCache = false;
 	DisableFramebufferFetch = false;
 	DisableVertexShaderExpand = false;	EnableAdrenoFramebufferFetch = false;
+	ForceMaliFramebufferFetch = false;
 	SkipDuplicateFrames = true;
 	OsdMessagesPos = OsdOverlayPos::TopLeft;
 	OsdPerformancePos = OsdOverlayPos::TopRight;
@@ -882,6 +883,9 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(ScreenshotFormat) &&
 		OpEqu(ScreenshotQuality) &&
 
+		OpEqu(ShaderChainEnabled) &&
+		OpEqu(ShaderChainPreset) &&
+
 		OpEqu(CaptureContainer) &&
 		OpEqu(VideoCaptureCodec) &&
 		OpEqu(VideoCaptureFormat) &&
@@ -914,6 +918,7 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		   OpEqu(DisableShaderCache) &&
 		   OpEqu(DisableFramebufferFetch) &&
 		   OpEqu(DisableVertexShaderExpand) &&		   OpEqu(EnableAdrenoFramebufferFetch) &&
+		   OpEqu(ForceMaliFramebufferFetch) &&
 		   OpEqu(OverrideTextureBarriers) &&
 		   OpEqu(DepthFeedbackMode) &&
 		   OpEqu(HWAA1) &&
@@ -962,6 +967,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(DisableShaderCache);
 	SettingsWrapBitBool(DisableFramebufferFetch);
 	SettingsWrapBitBool(DisableVertexShaderExpand);	SettingsWrapBitBool(EnableAdrenoFramebufferFetch);
+	SettingsWrapBitBool(ForceMaliFramebufferFetch);
 	SettingsWrapBitBool(SkipDuplicateFrames);
 	SettingsWrapBitBool(OsdShowSpeed);
 	SettingsWrapBitBool(OsdShowFPS);
@@ -1095,6 +1101,9 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitfieldEx(SaveFrameStart, "SaveFrameStart");
 	SettingsWrapBitfieldEx(SaveFrameCount, "SaveFrameCount");
 	SettingsWrapBitfieldEx(SaveFrameBy, "SaveFrameBy");
+
+	SettingsWrapEntryEx(ShaderChainEnabled, "ShaderChainEnabled");
+	SettingsWrapEntryEx(ShaderChainPreset, "ShaderChainPreset");
 
 	SettingsWrapEntryEx(CaptureContainer, "CaptureContainer");
 	SettingsWrapEntryEx(VideoCaptureCodec, "VideoCaptureCodec");

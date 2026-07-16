@@ -538,6 +538,18 @@ private:
 		ShaderInterlace shader, Filter filter, const InterlaceConstantBuffer& cb) final;
 	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) final;
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex) final;
+	bool DoApplyShaderChain(GSTexture* sTex, GSTexture* dTex) override;
+
+	/// librashader filter chain state. The handle is void* rather than
+	/// libra_vk_filter_chain_t so this header doesn't need librashader.h — that header
+	/// only exists when the Rust toolchain built the lib (ARMSX2_HAS_LIBRASHADER).
+	/// The chain is rebuilt only when the preset path changes: creating it compiles the
+	/// whole slang chain, while the per-frame call is just command recording.
+	void* m_shader_chain = nullptr;
+	std::string m_shader_chain_preset;
+	bool m_shader_chain_failed = false;
+	size_t m_shader_frame_count = 0;
+	void DestroyShaderChain();
 
 	bool DoCAS(
 		GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) final;

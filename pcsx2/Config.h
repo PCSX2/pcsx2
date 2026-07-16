@@ -415,7 +415,7 @@ enum class GSCASMode : u8
 enum class GSUpscaler : u8
 {
 	Off,           ///< Plain bilinear present-time stretch (default).
-	MetalFXSpatial, ///< Apple MetalFX spatial upscaler (Metal backend, macOS 13+ / iOS 16+).
+	MetalFXSpatial, ///< Apple MetalFX spatial upscaler (Metal backend, macOS 13+).
 };
 
 enum class GSHWAutoFlushLevel : u8
@@ -772,6 +772,7 @@ struct Pcsx2Config
 					DisableShaderCache : 1,
 					DisableFramebufferFetch : 1,
 					EnableAdrenoFramebufferFetch : 1,
+					ForceMaliFramebufferFetch : 1,
 					DisableVertexShaderExpand : 1,
 					SkipDuplicateFrames : 1,
 					OsdShowSpeed : 1,
@@ -904,6 +905,12 @@ struct Pcsx2Config
 		TriFiltering TriFilter = DEFAULT_TRILINEAR_FILTERING_MODE;
 		s8 OverrideTextureBarriers = -1;
 		GSDepthFeedbackMode DepthFeedbackMode = GSDepthFeedbackMode::Auto;
+
+		// RetroArch (.slangp) shader chain, applied at present after ShadeBoost/FXAA via
+		// librashader. Disabled or an empty preset skips the chain entirely (zero cost),
+		// and it's a no-op on renderers/builds without a librashader backend.
+		bool ShaderChainEnabled = false;
+		std::string ShaderChainPreset;
 
 		u8 CAS_Sharpness = 50;
 		u8 ShadeBoost_Brightness = DEFAULT_SHADEBOOST_BRIGHTNESS;

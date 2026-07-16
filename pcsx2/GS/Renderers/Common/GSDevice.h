@@ -1513,6 +1513,12 @@ protected:
 	virtual void DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, Filter filter, const InterlaceConstantBuffer& cb) = 0;
 	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) = 0;
 	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) = 0;
+	/// Run the librashader filter chain from sTex into dTex. Returns false when the
+	/// backend has no chain support, the preset failed to load, or the frame was
+	/// skipped — the caller then leaves m_current alone, so an unsupported backend or
+	/// a bad preset degrades to "no shader" instead of a black screen. NOT pure: only
+	/// the Vulkan/OpenGL devices override it, everything else keeps the no-op.
+	virtual bool DoApplyShaderChain(GSTexture* sTex, GSTexture* dTex) { return false; }
 
 	/// Resolves CAS shader includes for the specified source.
 	static bool GetCASShaderSource(std::string* source);
@@ -1737,6 +1743,10 @@ public:
 	void Interlace(const GSVector2i& ds, int field, int mode, float yoffset);
 	void FXAA();
 	void ShadeBoost();
+	/// Runs the configured RetroArch (.slangp) shader chain over m_current, after
+	/// ShadeBoost/FXAA. Shared guard + target selection; the actual chain lives in
+	/// DoApplyShaderChain, which only the librashader-capable backends override.
+	void ApplyShaderChain();
 	void Resize(int width, int height);
 
 	void CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, const GSVector4& draw_rect, bool sharpen_only);

@@ -663,6 +663,13 @@ object ControllerMappings {
         // MainActivityRuntime.dispatchKeyEvent (sets TouchControls.pressureModifierHeld), not as a
         // one-shot action like the others.
         PRESSURE_MOD("pad.pressuremod.keycode", "Pressure Modifier (hold)"),
+        // Gyro on/off (issue #337) — bind any spare button so gyro can be silenced
+        // mid-game without opening settings. TOGGLE flips it and stays; HOLD is the
+        // "only while aiming" binding (gyro live only while the button is held, so the
+        // phone can sit still the rest of the time). Both drive
+        // MainActivityRuntime.gyroActive and are session-only, never persisted.
+        GYRO_TOGGLE("pad.gyrotoggle.keycode", "Gyro On/Off (toggle)"),
+        GYRO_HOLD("pad.gyrohold.keycode", "Gyro (hold to aim)"),
     }
 
     // A hotkey is either a single button or a two-button combo. The main key is

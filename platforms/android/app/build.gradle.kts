@@ -35,7 +35,7 @@ android {
         minSdk = 26
         targetSdk = 37
         versionCode = providers.gradleProperty("armsx2.versionCode").orNull?.toInt() ?: 1088
-        versionName = providers.gradleProperty("armsx2.versionName").orNull ?: "2.6.0"
+        versionName = providers.gradleProperty("armsx2.versionName").orNull ?: "2.6.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk {

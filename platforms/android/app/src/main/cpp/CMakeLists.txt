@@ -62,6 +62,13 @@ add_subdirectory("${ARMSX2_ROOT}/pcsx2"    "${CMAKE_BINARY_DIR}/pcsx2")
 # .so's shipped in the apk's lib/<abi>/.
 add_subdirectory(3rdparty/adrenotools)
 
+# librashader: RetroArch (.slangp) shader chains for the GS post-process path, for BOTH
+# the Vulkan and OpenGL(ES) renderers. Rust-built and fetched at configure time from a
+# pinned commit (see the subdir's CMakeLists for why it can't be vendored). OPTIONAL:
+# with no cargo installed this leaves ARMSX2_HAVE_LIBRASHADER off and the feature simply
+# compiles out, so a missing Rust toolchain can never break the build.
+add_subdirectory(3rdparty/librashader)
+
 set(ARMSX2_EMUCORE_LIBRARY_NAME "emucore_4k" CACHE STRING "Android emucore shared library target/output name")
 
 add_library(${ARMSX2_EMUCORE_LIBRARY_NAME} SHARED
@@ -91,3 +98,22 @@ target_include_directories(${ARMSX2_EMUCORE_LIBRARY_NAME} PRIVATE
 	"${ARMSX2_ROOT}/pcsx2"
 	"${CMAKE_CURRENT_SOURCE_DIR}"
 )
+
+# Only link librashader when the Rust toolchain actually produced it; a cargo-less build
+# leaves the shader chain #ifdef'd out instead of failing to link.
+#
+# The define MUST go on PCSX2_FLAGS, not PCSX2. The shader chain lives in
+# GS/Renderers/*/GSDevice*.cpp, and release builds pass -DLTO_PCSX2_CORE=ON, which compiles
+# those sources into a *separate* PCSX2_LTO target (see pcsx2/CMakeLists.txt); PRIVATE
+# properties on PCSX2 never reach them. PCSX2_FLAGS is the INTERFACE target both PCSX2 and
+# PCSX2_LTO link, so it is the only place the define (and the header's include dir) reaches
+# every core translation unit under either LTO setting.
+#
+# Getting this wrong costs a build to notice: the chain is behind #ifdef ARMSX2_HAS_LIBRASHADER,
+# so a missed define compiles cleanly, links cleanly, and silently ships the feature stubbed
+# out. Verify with `strings` on the built core, never the build log.
+if(ARMSX2_HAVE_LIBRASHADER)
+	target_link_libraries(PCSX2_FLAGS INTERFACE librashader)
+	target_compile_definitions(PCSX2_FLAGS INTERFACE ARMSX2_HAS_LIBRASHADER=1)
+	target_link_libraries(${ARMSX2_EMUCORE_LIBRARY_NAME} PRIVATE librashader)
+endif()

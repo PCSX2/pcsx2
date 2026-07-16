@@ -9,14 +9,18 @@ import androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTre
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -307,6 +311,25 @@ fun RendererTab(state: MutableState<Settings>) {
                     onChange = { apply(s.copy(casSharpness = it)) },
                 )
             }
+            SettingsDivider()
+            // RetroArch (.slangp) chains run last in the post-process order (after
+            // ShadeBoost/FXAA/CAS), so they close out Display Effects. Presentation-only
+            // section — the tier wiring stays here in apply(), like every other row on
+            // this tab, which is what gives it per-game override for free.
+            // Lifted to ui/common so the in-game pause menu renders the SAME toggle +
+            // picker (it passes its own save lambda). Tier wiring stays here in apply(),
+            // like every other row on this tab — that's what gives it per-game override.
+            com.armsx2.ui.common.ShaderChainSection(
+                enabled = s.shaderChainEnabled,
+                preset = s.shaderChainPreset,
+                onEnabledChange = { apply(s.copy(shaderChainEnabled = it)) },
+                onPresetChange = { apply(s.copy(shaderChainPreset = it)) },
+            )
+            SettingsDivider()
+            // Where the presets above come from. Not a setting — it only puts files in
+            // <dataroot>/shaders/, which is the folder ShaderChainSection's picker scans —
+            // so it takes no tier and needs no apply(), same as DriverManagerSection.
+            com.armsx2.ui.common.ShaderManagerSection()
         }
         SettingsDivider()
         CollapsibleSection(str("renderer.section.texturePacks")) {
@@ -381,6 +404,17 @@ fun RendererTab(state: MutableState<Settings>) {
                 description = str("renderer.accurateBlendingFastPath.description"),
             ) {
                 apply(s.copy(adrenoFbFetch = it))
+            }
+            SettingsDivider()
+            // MediaTek Mali / Mali-G57 escape hatch: those drivers are force-excluded from
+            // the fbfetch path natively, which costs a per-primitive texture barrier on a
+            // GPU with no dual-source blend. Default OFF — on is a test, not a fix.
+            ToggleRow(
+                str("renderer.forceMaliFbFetch.label"),
+                s.forceMaliFbFetch,
+                description = str("renderer.forceMaliFbFetch.description"),
+            ) {
+                apply(s.copy(forceMaliFbFetch = it))
             }
             SettingsDivider()
             // ANGLE for the OpenGL renderer now lives in the graphics-API driver picker

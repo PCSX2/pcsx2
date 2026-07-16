@@ -319,6 +319,14 @@ open class MainActivityRuntime : ComponentActivity() {
         // Mutually exclusive with the fast-forward latch; blocked in RA hardcore.
         @Volatile var slowDownToggleActive = false
 
+        // Runtime gyro enable (issue #337), driven by the GYRO_TOGGLE / GYRO_HOLD hotkeys.
+        // Session-only by design — a mid-game silence, not a persisted preference, so it
+        // never contradicts the Gyro Mode setting the user chose. Compose state:
+        // TouchControlsOverlay's DisposableEffect keys on it and starts/stops the sensor.
+        // Stopping emits (0,0), which releases the gyro's contribution to the merged
+        // stick, so the physical stick is left driving on its own.
+        val gyroActive = mutableStateOf(true)
+
         // #254: whether the emulated USB keyboard is attached for the running
         // game (resolved Settings.usbKeyboard, cached at launch in
         // applyRendererPrefs). Read hot in dispatchKeyEvent to decide whether a
@@ -383,6 +391,22 @@ open class MainActivityRuntime : ComponentActivity() {
                 quitAfterStop = false
                 instance?.runOnUiThread { instance?.finishAndRemoveTask() }
             }
+        }
+
+        /** Close the running game the way the user asked for. When the game came from an
+         *  external frontend (ES-DE / Cocoon / Daijishō) and the opt-in is on, finish the
+         *  app so the frontend regains focus instead of dropping the user into the ARMSX2
+         *  library.
+         *
+         *  EVERY close route must come through here. The hotkeys used to inline this check
+         *  while the in-game menu's Close action called stop() directly, so the menu
+         *  silently ignored "Exit to launcher on close" and users had to bind a hotkey to
+         *  work around it. One chokepoint means the two can't drift apart again. */
+        @JvmStatic
+        fun closeGame(saveAutosave: Boolean = false) {
+            if (launchedExternally && prefs.getBoolean("ui.exitToLauncherExternal", true))
+                quitAfterStop = true
+            stop(saveAutosave = saveAutosave)
         }
 
         /** Fully exit the app (the library Exit button and hold-back gesture route
@@ -759,9 +783,11 @@ open class MainActivityRuntime : ComponentActivity() {
 
         fun stop(saveAutosave: Boolean = false, restartAfterStop: Boolean = false) {
             // Drop any latched fast-forward / slow-down toggle; the next game boots
-            // at normal speed.
+            // at normal speed. Same for the gyro hotkey latch — a game left with gyro
+            // toggled off must not silently start the next one with gyro dead.
             fastForwardToggleActive = false
             slowDownToggleActive = false
+            gyroActive.value = true
             val nativeActive = runCatching { NativeApp.hasActiveVM() }.getOrDefault(false)
             val shouldStop = synchronized(vmLifecycleLock) {
                 if (restartAfterStop)
@@ -2307,6 +2333,19 @@ open class MainActivityRuntime : ComponentActivity() {
                     if (down && event.repeatCount == 0) InGameOverlay.toggleOsd()
                     return true
                 }
+                ControllerMappings.SysHotkey.GYRO_TOGGLE -> {
+                    if (down && event.repeatCount == 0) toggleGyro()
+                    return true
+                }
+                ControllerMappings.SysHotkey.GYRO_HOLD -> {
+                    // "Only while aiming": gyro is live only while the button is held.
+                    // Same shape as the FAST_FORWARD hold — act on both edges, ignore
+                    // auto-repeat. No toast: it would fire on every aim.
+                    if (event.action == KeyEvent.ACTION_DOWN || event.action == KeyEvent.ACTION_UP) {
+                        if (event.repeatCount == 0) gyroActive.value = down
+                    }
+                    return true
+                }
                 ControllerMappings.SysHotkey.FAST_FORWARD -> {
                     // Hold to fast-forward (Turbo), release to return to the user's
                     // current limiter mode (Nominal if frame-limit is on, else Unlimited)
@@ -2344,15 +2383,7 @@ open class MainActivityRuntime : ComponentActivity() {
                     return true
                 }
                 ControllerMappings.SysHotkey.CLOSE_GAME -> {
-                    if (down) {
-                        // If this game was launched from a frontend (ES-DE etc.) and the
-                        // user opted in, closing it returns to the frontend instead of
-                        // the ARMSX2 library.
-                        if (launchedExternally &&
-                            prefs.getBoolean("ui.exitToLauncherExternal", true))
-                            quitAfterStop = true
-                        stop()
-                    }
+                    if (down) closeGame()
                     return true
                 }
                 ControllerMappings.SysHotkey.QUIT_APP -> {
@@ -2363,15 +2394,10 @@ open class MainActivityRuntime : ComponentActivity() {
                     return true
                 }
                 ControllerMappings.SysHotkey.SAVE_AND_EXIT -> {
-                    // Write an autosave state, THEN close the game — the frontend
-                    // "exit" case (Cocoon/ES-DE) that returns to the launcher without
-                    // losing progress. Mirrors CLOSE_GAME's exit-to-launcher handling.
-                    if (down) {
-                        if (launchedExternally &&
-                            prefs.getBoolean("ui.exitToLauncherExternal", true))
-                            quitAfterStop = true
-                        stop(saveAutosave = true)
-                    }
+                    // Write an autosave state, THEN close the game — the frontend "exit"
+                    // case (Cocoon/ES-DE) that returns to the launcher without losing
+                    // progress. closeGame() applies the exit-to-launcher opt-in.
+                    if (down) closeGame(saveAutosave = true)
                     return true
                 }
                 ControllerMappings.SysHotkey.RESET_GAME -> {
@@ -2431,6 +2457,15 @@ open class MainActivityRuntime : ComponentActivity() {
      *  hotkey and the on-screen fast-forward touch button (FastForwardWidget). Restores
      *  the user's base limiter mode when turning off so it stays in sync with the
      *  frame-limit toggle. */
+    /** Flip the runtime gyro enable (issue #337). Shared by the GYRO_TOGGLE hotkey and the
+     *  edge-triggered (stick/combo) path. Only silences the sensor for this session — the
+     *  user's Gyro Mode setting is untouched, so re-enabling restores their configured mode. */
+    private fun toggleGyro() {
+        val on = !gyroActive.value
+        gyroActive.value = on
+        hotkeyToast(if (on) "Gyro ON" else "Gyro OFF")
+    }
+
     fun toggleFastForward() {
         fastForwardToggleActive = !fastForwardToggleActive
         val on = fastForwardToggleActive
@@ -3335,23 +3370,18 @@ open class MainActivityRuntime : ComponentActivity() {
                 runCatching { NativeApp.speedhackLimitermode(if (on) 1 else baseLimiterMode()) }
                 hotkeyToast(if (on) "Fast Forward ON" else "Fast Forward OFF")
             }
+            ControllerMappings.SysHotkey.GYRO_TOGGLE -> toggleGyro()
+            // GYRO_HOLD needs key up/down edges, which this edge-triggered path (stick
+            // directions / combos) doesn't provide — behave as a toggle here rather than
+            // latching gyro on with no release.
+            ControllerMappings.SysHotkey.GYRO_HOLD -> toggleGyro()
             ControllerMappings.SysHotkey.RES_UP -> stepResolution(1)
             ControllerMappings.SysHotkey.RES_DOWN -> stepResolution(-1)
             ControllerMappings.SysHotkey.ACHIEVEMENTS -> com.armsx2.ui.emulation.EmulationMenuInputController.open(com.armsx2.ui.emulation.EmulationMenuTab.Options)
-            ControllerMappings.SysHotkey.CLOSE_GAME -> {
-                if (launchedExternally &&
-                    prefs.getBoolean("ui.exitToLauncherExternal", true))
-                    quitAfterStop = true
-                stop()
-            }
+            ControllerMappings.SysHotkey.CLOSE_GAME -> closeGame()
             ControllerMappings.SysHotkey.QUIT_APP -> { quitAfterStop = true; stop()
             }
-            ControllerMappings.SysHotkey.SAVE_AND_EXIT -> {
-                if (launchedExternally &&
-                    prefs.getBoolean("ui.exitToLauncherExternal", true))
-                    quitAfterStop = true
-                stop(saveAutosave = true)
-            }
+            ControllerMappings.SysHotkey.SAVE_AND_EXIT -> closeGame(saveAutosave = true)
             ControllerMappings.SysHotkey.RESET_GAME -> restart()
             ControllerMappings.SysHotkey.SLOW_DOWN -> toggleSlowDown()
             ControllerMappings.SysHotkey.TOGGLE_OSD -> InGameOverlay.toggleOsd()

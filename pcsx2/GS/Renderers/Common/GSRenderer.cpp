@@ -260,6 +260,11 @@ bool GSRenderer::Merge(int field)
 	if (GSConfig.FXAA)
 		g_gs_device->FXAA();
 
+	// RetroArch (.slangp) shader chain runs last in the post-process chain, so it sees
+	// the finished frame the way the user actually sees it (ShadeBoost/FXAA included).
+	// Self-guards on GSConfig.ShaderChainEnabled and no-ops on backends without one.
+	g_gs_device->ApplyShaderChain();
+
 	// Sharpens biinear at lower resolutions, almost nearest but with more uniform pixels.
 	if (GSConfig.LinearPresent == GSPostBilinearMode::BilinearSharp && (g_gs_device->GetWindowWidth() > fs.x || g_gs_device->GetWindowHeight() > fs.y))
 	{

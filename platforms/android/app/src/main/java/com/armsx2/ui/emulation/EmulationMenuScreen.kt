@@ -487,7 +487,7 @@ private fun SessionPane(state: EmulationMenuUiState, viewModel: EmulationMenuVie
             MenuAction(str("memcard.restart"), str("action.reset"), "↻", null, MainActivityRuntime::restart),
             MenuAction(str("action.swapDisc"), str("action.swapDisc.detail"), "⏏", null, MainActivityRuntime::promptSwapDisc),
             MenuAction(str("action.close"), MainActivityRuntime.currentGame.value?.title.orEmpty(), "■", Danger) {
-                MainActivityRuntime.stop(false)
+                MainActivityRuntime.closeGame()
             },
         ),
         selected = state.selectedAction,
@@ -681,6 +681,21 @@ private fun GraphicsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVi
     MenuSwitchRow(str("renderer.precacheTexturePacks.label"), settings.precacheTextureReplacements) {
         viewModel.updateSettings { current -> current.copy(precacheTextureReplacements = it) }
     }
+    // RetroArch shaders, end-to-end in-game: toggle → pick a preset → download more.
+    // Same composables the Settings renderer tab renders (single definition in ui/common);
+    // only the save lambda differs. updateSettings routes through InGameOverlay.saveSettings,
+    // which persists via ConfigStore.save(scope, serial) — honouring the overlay's
+    // Global/Game scope — and live-applies with Settings.applyTo(). Identical to how every
+    // other row in this pane (shadeboost, tvShader, dithering…) saves; both GS keys ride
+    // writeGsToNative(), and the device rebuilds the chain on the next frame, so a preset
+    // change is live with no restart.
+    com.armsx2.ui.common.ShaderChainSection(
+        enabled = settings.shaderChainEnabled,
+        preset = settings.shaderChainPreset,
+        onEnabledChange = { on -> viewModel.updateSettings { it.copy(shaderChainEnabled = on) } },
+        onPresetChange = { path -> viewModel.updateSettings { it.copy(shaderChainPreset = path) } },
+    )
+    com.armsx2.ui.common.ShaderManagerSection()
 }
 
 @Composable
