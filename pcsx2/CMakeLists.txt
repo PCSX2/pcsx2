@@ -1262,7 +1262,10 @@ endif()
 target_sources(PCSX2 PRIVATE ${pcsx2USBSources} ${pcsx2USBHeaders})
 
 if(APPLE OR BSD)
-	if(APPLE)
+	# Disc sources use IOKit, which doesn't exist on iOS.
+	if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+		# No disc support on iOS.
+	elseif(APPLE)
 		target_sources(PCSX2 PRIVATE
 			${pcsx2OSXSources})
 	else()
@@ -1381,22 +1384,24 @@ fixup_file_properties(PCSX2)
 force_include_last(PCSX2_FLAGS "/(usr|local)/include/?$")
 
 if (APPLE)
-	find_library(APPKIT_LIBRARY AppKit)
-	find_library(IOKIT_LIBRARY IOKit)
-	find_library(METAL_LIBRARY Metal)
-	find_library(QUARTZCORE_LIBRARY QuartzCore)
-	find_library(AVFOUNDATION_LIBRARY AVFoundation)
-	find_library(COREMEDIA_LIBRARY CoreMedia)
-	target_link_libraries(PCSX2_FLAGS INTERFACE
-		${APPKIT_LIBRARY}
-		${IOKIT_LIBRARY}
-		${METAL_LIBRARY}
-		${QUARTZCORE_LIBRARY}
-		${AVFOUNDATION_LIBRARY}
-		${COREMEDIA_LIBRARY}
-	)
-	# MetalFX (spatial upscaler) is macOS 13.0+. Weak-link it so the binary still
-	# loads on older systems; every use is guarded with @available(macOS 13, *).
+	if(NOT CMAKE_SYSTEM_NAME STREQUAL "iOS")
+		# AppKit and IOKit are macOS-only; iOS links the rest at the app target.
+		find_library(APPKIT_LIBRARY AppKit)
+		find_library(IOKIT_LIBRARY IOKit)
+		find_library(METAL_LIBRARY Metal)
+		find_library(QUARTZCORE_LIBRARY QuartzCore)
+		find_library(AVFOUNDATION_LIBRARY AVFoundation)
+		find_library(COREMEDIA_LIBRARY CoreMedia)
+		target_link_libraries(PCSX2_FLAGS INTERFACE
+			${APPKIT_LIBRARY}
+			${IOKIT_LIBRARY}
+			${METAL_LIBRARY}
+			${QUARTZCORE_LIBRARY}
+			${AVFOUNDATION_LIBRARY}
+			${COREMEDIA_LIBRARY}
+		)
+	endif()
+	# Weak-link MetalFX so older OS versions still load; each use is @available-guarded.
 	target_link_options(PCSX2_FLAGS INTERFACE "SHELL:-weak_framework MetalFX")
 endif()
 

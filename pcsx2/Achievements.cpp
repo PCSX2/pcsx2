@@ -4219,4 +4219,21 @@ bool Achievements::IsUsingRAIntegration()
 	return false;
 }
 
+// Declared in the header but not yet implemented. Return false (no data) so
+// callers handle the unavailable case; all call sites check the bool result.
+bool Achievements::GetCurrentUserStats(UserStats* stats)
+{
+	return false;
+}
+
+bool Achievements::GetCurrentGameStats(GameStats* stats)
+{
+	return false;
+}
+
+bool Achievements::GetCurrentAchievementList(std::vector<AchievementInfo>* achievements)
+{
+	return false;
+}
+
 #endif // ENABLE_RAINTEGRATION
