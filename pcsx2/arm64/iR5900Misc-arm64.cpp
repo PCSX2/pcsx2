@@ -444,7 +444,7 @@ void recMFSA()
 {
 	if (!_Rd_) return;
 	_deleteEEreg(_Rd_, 0);
-	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH, /*alloc_if_used=*/true);
 	// Ldr of the 32-bit sa zero-extends into the 64-bit dest (GE-04).
 	armLoadEERegPtr(dst.W(), &cpuRegs.sa);
 	_eeStoreGPRDestReg(_Rd_, dst);

@@ -42,7 +42,7 @@ void recLUI()
 	}
 	else
 	{
-		const a64::Register dst = _eeGetGPRDestReg(_Rt_, RXSCRATCH);
+		const a64::Register dst = _eeGetGPRDestReg(_Rt_, RXSCRATCH, /*alloc_if_used=*/true);
 		armAsm->Mov(dst, s64(s32((u32)_ImmU_ << 16)));
 		_eeStoreGPRDestReg(_Rt_, dst);
 	}
@@ -54,7 +54,7 @@ void recMFLO()
 	if (!_Rd_) return;
 
 	_deleteEEreg(_Rd_, 0);
-	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH, /*alloc_if_used=*/true);
 	armLoadEERegPtr(dst, &cpuRegs.LO.UD[0]);
 	_eeStoreGPRDestReg(_Rd_, dst);
 }
@@ -64,7 +64,7 @@ void recMFHI()
 	if (!_Rd_) return;
 
 	_deleteEEreg(_Rd_, 0);
-	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH, /*alloc_if_used=*/true);
 	armLoadEERegPtr(dst, &cpuRegs.HI.UD[0]);
 	_eeStoreGPRDestReg(_Rd_, dst);
 }
@@ -106,7 +106,7 @@ void recMFLO1()
 	if (!_Rd_) return;
 
 	_deleteEEreg(_Rd_, 0);
-	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH, /*alloc_if_used=*/true);
 	armLoadEERegPtr(dst, &cpuRegs.LO.UD[1]);
 	_eeStoreGPRDestReg(_Rd_, dst);
 }
@@ -116,7 +116,7 @@ void recMFHI1()
 	if (!_Rd_) return;
 
 	_deleteEEreg(_Rd_, 0);
-	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH);
+	const a64::Register dst = _eeGetGPRDestReg(_Rd_, RXSCRATCH, /*alloc_if_used=*/true);
 	armLoadEERegPtr(dst, &cpuRegs.HI.UD[1]);
 	_eeStoreGPRDestReg(_Rd_, dst);
 }
