@@ -1717,9 +1717,13 @@ void FullscreenUI::PopulatePatchesAndCheatsList(const std::string_view serial, u
 		std::sort(list.begin(), list.end(), [](const Patch::PatchInfo& lhs, const Patch::PatchInfo& rhs) { return lhs.name < rhs.name; });
 	};
 
-	s_game_patch_list = Patch::GetPatchInfo(serial, crc, false, true, nullptr);
+	SettingsInterface* bsi = GetEditingSettingsInterface();
+	const bool show_all_patches = GetEffectiveBoolSetting(bsi, "EmuCore", "ShowPatchesForAllCRCs", false);
+	const bool show_all_cheats = GetEffectiveBoolSetting(bsi, "EmuCore", "ShowCheatsForAllCRCs", false);
+
+	s_game_patch_list = Patch::GetPatchInfo(serial, crc, false, show_all_patches, nullptr);
 	sort_patches(s_game_patch_list);
-	s_game_cheats_list = Patch::GetPatchInfo(serial, crc, true, true, &s_game_cheat_unlabelled_count);
+	s_game_cheats_list = Patch::GetPatchInfo(serial, crc, true, show_all_cheats, &s_game_cheat_unlabelled_count);
 	sort_patches(s_game_cheats_list);
 
 	pxAssert(s_game_settings_interface);
@@ -2558,6 +2562,19 @@ void FullscreenUI::DrawEmulationSettingsPage()
 		FSUI_NSTR("2 Frames"),
 		FSUI_NSTR("3 Frames"),
 	};
+	// RtcYear is stored as years after 2000, generate labels so the UI shows calendar years.
+	static const char* rtc_year_options[100];
+	static char rtc_year_bufs[100][5];
+	static bool rtc_years_initialized = false;
+	if (!rtc_years_initialized)
+	{
+		for (int i = 0; i < 100; i++)
+		{
+			std::snprintf(rtc_year_bufs[i], sizeof(rtc_year_bufs[i]), "%d", 2000 + i);
+			rtc_year_options[i] = rtc_year_bufs[i];
+		}
+		rtc_years_initialized = true;
+	}
 
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 
@@ -2598,6 +2615,29 @@ void FullscreenUI::DrawEmulationSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Enable CDVD Precaching"), FSUI_CSTR("Loads the disc image into RAM before starting the virtual machine."),
 		"EmuCore", "CdvdPrecache", false);
 
+	if (IsEditingGameSettings(bsi))
+	{
+		MenuHeading(FSUI_CSTR("Real-Time Clock"));
+
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CLOCK, "Manually Set Real-Time Clock"),
+			FSUI_CSTR("Uses a fixed date/time for the virtual PS2 instead of the host clock. Applied on boot only."),
+			"EmuCore", "ManuallySetRealTimeClock", false);
+
+		const bool rtc_enabled = GetEffectiveBoolSetting(bsi, "EmuCore", "ManuallySetRealTimeClock", false);
+
+		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_CALENDAR, "Year"), FSUI_CSTR("Calendar year for the virtual PS2 RTC."),
+			"EmuCore", "RtcYear", 0, rtc_year_options, std::size(rtc_year_options), false, 0, rtc_enabled);
+		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_CALENDAR, "Month"), FSUI_CSTR("Month of the year (1-12)."),
+			"EmuCore", "RtcMonth", 1, 1, 12, "%d", rtc_enabled);
+		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_CALENDAR, "Day"), FSUI_CSTR("Day of the month (1-31)."),
+			"EmuCore", "RtcDay", 1, 1, 31, "%d", rtc_enabled);
+		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_CLOCK, "Hour"), FSUI_CSTR("Hour of the day (0-23)."),
+			"EmuCore", "RtcHour", 0, 0, 23, "%d", rtc_enabled);
+		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_CLOCK, "Minute"), FSUI_CSTR("Minute of the hour (0-59)."),
+			"EmuCore", "RtcMinute", 0, 0, 59, "%d", rtc_enabled);
+		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_CLOCK, "Second"), FSUI_CSTR("Second of the minute (0-59)."),
+			"EmuCore", "RtcSecond", 0, 0, 59, "%d", rtc_enabled);
+	}
 	MenuHeading(FSUI_CSTR("Frame Pacing/Latency Control"));
 
 	bool optimal_frame_pacing = (bsi->GetIntValue("EmuCore/GS", "VsyncQueueSize", DEFAULT_FRAME_LATENCY) == 0);
@@ -3041,6 +3081,9 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			"accurate_blending_unit", static_cast<int>(AccBlendLevel::Basic), s_blending_options, std::size(s_blending_options), true);
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EYE_DROPPER, "Edge AA (AA1)"), FSUI_CSTR("Enables emulation of the GS's edge anti-aliasing (AA1)."),
 			"EmuCore/GS", "HWAA1", false);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_DROPLET, "Accurate Alpha Test"),
+			FSUI_CSTR("Enables accurate alpha testing, which some games require to render correctly. This may require more draw calls and result in a speed penalty."),
+			"EmuCore/GS", "HWAccurateAlphaTest", false);
 		DrawToggleSetting(
 			bsi, FSUI_ICONSTR(ICON_FA_BULLSEYE, "Mipmapping"), FSUI_CSTR("Enables emulation of the GS's texture mipmapping."), "EmuCore/GS", "hw_mipmap", true);
 		if (is_hardware && effective_renderer != GSRendererType::OGL)
@@ -3135,6 +3178,11 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 				FSUI_NSTR("Enabled (Exact Match)"),
 				FSUI_NSTR("Enabled (Check Inside Target)"),
 			};
+			static constexpr const char* s_limit_24bit_depth_options[] = {
+				FSUI_NSTR("Disabled (Default)"),
+				FSUI_NSTR("Prioritize Upper Bits"),
+				FSUI_NSTR("Prioritize Lower Bits"),
+			};
 
 			DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SHAPES, "CPU Sprite Render Size"),
 				FSUI_CSTR("Uses software renderer to draw texture decompression-like sprites."), "EmuCore/GS",
@@ -3187,6 +3235,10 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Draw Buffering"),
 				FSUI_CSTR("Attempts to reduce draw calls in games which do heavy context switching for blending purposes."),
 				"EmuCore/GS", "UserHacks_DrawBuffering", false, manual_hw_fixes);
+			DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Limit Depth to 24 Bits"),
+				FSUI_CSTR("Truncate 32-bit depth values to 24 bits. Helps games struggling with Z-fighting."), "EmuCore/GS",
+				"UserHacks_Limit24BitDepth", static_cast<int>(GSLimit24BitDepth::Disabled), s_limit_24bit_depth_options,
+				std::size(s_limit_24bit_depth_options), true, 0, manual_hw_fixes);
 
 			MenuHeading(FSUI_CSTR("Upscaling Fixes"));
 			DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT, "Half Pixel Offset"), FSUI_CSTR("Adjusts vertices relative to upscaling."), "EmuCore/GS",
@@ -3310,6 +3362,11 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			FSUI_CSTR("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
 					  "Usually results in worse frame pacing."),
 			"EmuCore/GS", "DisableMailboxPresentation", false);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CLONE, "Use Blit Swap Chain"),
+			FSUI_CSTR("Uses a blit presentation model instead of flipping when using the Direct3D 11 "
+					  "graphics API. This usually results in slower performance, but may be required for some "
+					  "streaming applications, or to uncap framerates on some systems."),
+			"EmuCore/GS", "UseBlitSwapChain", false, renderer == GSRendererType::DX11);
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_UP_RIGHT_FROM_SQUARE, "Extended Upscaling Multipliers"),
 			FSUI_CSTR("Displays additional, very high upscaling multipliers dependent on GPU and driver capability."),
 			"EmuCore/GS", "ExtendedUpscalingMultipliers", false, supports_extended_upscales);
@@ -3337,6 +3394,14 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ROAD_BARRIER, "ROV Barriers Vulkan"),
 			FSUI_CSTR("Forces extra barriers when using ROV with Vulkan to fix graphical issues present in some games and hardware configurations."),
 			"EmuCore/GS", "HWROVBarriersVK", false);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MICROCHIP, "Spin CPU During Readbacks"),
+			FSUI_CSTR("Does useless work on the CPU during readbacks to prevent it from going into powersave modes. "
+					  "May improve performance during readbacks but with a significant increase in power usage."),
+			"EmuCore/GS", "HWSpinCPUForReadbacks", false);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MICROCHIP, "Spin GPU During Readbacks"),
+			FSUI_CSTR("Submits useless work to the GPU during readbacks to prevent it from going into powersave modes. "
+					  "May improve performance during readbacks but with a significant increase in power usage."),
+			"EmuCore/GS", "HWSpinGPUForReadbacks", false);
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Texture Preloading"),
 			FSUI_CSTR(
 				"Uploads full textures to the GPU on use, rather than only the utilized regions. Can improve performance in some games."),
@@ -5548,6 +5613,14 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 			FSUI_CSTR("Performs just-in-time binary translation of 32-bit MIPS-I machine code to native code."), "EmuCore/CPU/Recompiler",
 			"EnableIOP", true);
 
+		MenuHeading(FSUI_CSTR("Compatibility"));
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WRENCH, "Enable Game Fixes"),
+			FSUI_CSTR("Automatically loads and applies fixes to known problematic games on game start."), "EmuCore", "EnableGameFixes",
+			true);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BANDAGE, "Enable Compatibility Patches"),
+			FSUI_CSTR("Automatically loads and applies compatibility patches to known problematic games."), "EmuCore", "EnablePatches",
+			true);
+
 		MenuHeading(FSUI_CSTR("Save State Management"));
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_BOX_OPEN, "Compression Method"), FSUI_CSTR("Sets the compression algorithm for savestate."), "EmuCore",
 			"SavestateCompressionType", static_cast<int>(SavestateCompressionMethod::Zstandard), s_savestate_compression_type, std::size(s_savestate_compression_type), true);
@@ -5582,12 +5655,28 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
 
 	BeginMenuButtons();
 
+	MenuHeading(FSUI_CSTR("Settings"));
 	if (cheats)
 	{
-		MenuHeading(FSUI_CSTR("Settings"));
 		DrawToggleSetting(
 			bsi, FSUI_ICONSTR(ICON_FA_WAND_MAGIC_SPARKLES, "Enable Cheats"), FSUI_CSTR("Enables loading cheats from pnach files."), "EmuCore", "EnableCheats", false);
+	}
 
+	const char* all_crcs_key = cheats ? "ShowCheatsForAllCRCs" : "ShowPatchesForAllCRCs";
+	const char* all_crcs_title = cheats ? FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Show Cheats For All CRCs") :
+	                                      FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Show Patches For All CRCs");
+	const char* all_crcs_summary =
+		cheats ? FSUI_CSTR("Toggles scanning cheat files for all CRCs of the game. With this enabled available cheats for the game serial with different CRCs will also be loaded.") :
+				 FSUI_CSTR("Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded.");
+	if (DrawToggleSetting(bsi, all_crcs_title, all_crcs_summary, "EmuCore", all_crcs_key, false) && s_game_settings_entry)
+	{
+		PopulatePatchesAndCheatsList(
+			(s_game_settings_entry->type != GameList::EntryType::ELF) ? std::string_view(s_game_settings_entry->serial) : std::string_view(),
+			s_game_settings_entry->crc);
+	}
+
+	if (cheats)
+	{
 		if (patch_list.empty())
 		{
 			ActiveButton(
