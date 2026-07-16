@@ -184,15 +184,35 @@ object ConfigStore {
      * Scope picks the storage tier; serial may be null (Global is the
      * only valid scope in that case).
      *
-     * Game scope writes the sparse diff vs current global, so a later
-     * global tweak still propagates to the field unless the user
-     * explicitly overrode it for this title.
+     * Game scope stores a SPARSE override: a field the user never touched for this title
+     * is absent, so a later global tweak still reaches it. That inheritance is the point
+     * and is unchanged.
+     *
+     * What IS new: an override is STICKY once it exists. The old rule — store exactly the
+     * fields that differ from global right now — could not tell "the user set this for
+     * this game, and it happens to match global" from "the user never touched it", so it
+     * stored nothing in both cases. Set Cheats on for a game while global also had them
+     * on, later turn global off, and the game silently lost its setting; that's the
+     * reported "global overwrites per-game and vice versa". Now a field is pinned to the
+     * game once it's overridden — by differing from global, by the user changing it here
+     * ([previous]), or by already being pinned — and only [clearOverrides] unpins it.
      */
-    fun save(scope: SettingsScope, serial: String?, updated: Settings) {
+    fun save(scope: SettingsScope, serial: String?, updated: Settings, previous: Settings? = null) {
         if (scope == SettingsScope.Game && serial != null) {
             val global = loadGlobal()
-            val diff = Settings.diff(global, updated)
-            saveOverrides(serial, diff)
+            val overrides = Settings.diff(global, updated)
+            // Every field, so a pinned key can be given its CURRENT value even when that
+            // value equals global's (the diff above necessarily omits it).
+            val full = updated.toJson()
+            val pinned = LinkedHashSet<String>()
+            loadOverrides(serial)?.keys()?.forEach { pinned.add(it) }
+            // What the user just changed, pinned even if it landed on global's value —
+            // otherwise editing a field in Game scope could silently un-pin it.
+            previous?.let { Settings.diff(it, updated).keys().forEach { k -> pinned.add(k) } }
+            pinned.forEach { key ->
+                if (!overrides.has(key) && full.has(key)) overrides.put(key, full.get(key))
+            }
+            saveOverrides(serial, overrides)
         } else {
             saveGlobal(updated)
         }

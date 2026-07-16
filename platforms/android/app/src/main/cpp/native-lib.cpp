@@ -30,6 +30,7 @@
 #include "GameList.h"
 #include "GameDatabase.h"
 #include "GS/GSPerfMon.h"
+#include "GS/Renderers/Common/GSDevice.h" // GSDevice::SetShaderChainParams (shader chain params)
 #include "GS/Renderers/Vulkan/VKShaderCache.h"
 #include "GSDumpReplayer.h"
 #include "ImGui/ImGuiManager.h"
@@ -101,6 +102,14 @@ static void redirect_stdout_to_logcat()
 }
 
 #include <atomic>
+
+// librashader's preset API, used here ONLY to read a preset's tweakable parameters for the
+// UI. No runtime is needed for that, so no LIBRA_RUNTIME_* opt-in: the chain itself lives in
+// GSDeviceVK/GSDeviceOGL. emucore links PCSX2_FLAGS, which carries both the define and the
+// header's include dir, so this compiles out cleanly on a cargo-less build.
+#ifdef ARMSX2_HAS_LIBRASHADER
+#include "librashader.h"
+#endif
 
 // True whenever the CPU thread is parked outside Cpu->Execute() (runVMThread's
 // loop flips it around each Execute() call). Read cross-thread by the savestate
@@ -3926,4 +3935,135 @@ bool Common::PlaySoundAsync(const char* path)
 
     if (attached) s_jvm->DetachCurrentThread();
     return true;
+}
+
+// Reads the tweakable parameters a .slangp preset exposes, as JSON:
+//   [{"name":..,"description":..,"initial":f,"minimum":f,"maximum":f,"step":f}, ...]
+// Returns null when librashader isn't built in or the preset won't load; "[]" for a preset
+// with no parameters.
+//
+// This LOADS ITS OWN preset and frees it. It must not reuse the renderer's: creating a
+// filter chain consumes the preset handle outright, so there is nothing left to enumerate
+// afterwards. Enumeration is also pure file parsing — no VkDevice, no GL context — which is
+// why it lives here rather than on GSDevice, and why it is safe to call from the UI thread
+// with no game running.
+//
+// The author's own name/description/min/max/step come straight from the preset, so the UI
+// renders what the shader declares rather than anything we invent per-shader.
+extern "C" JNIEXPORT jstring JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_shaderPresetParams(JNIEnv* env, jclass, jstring jpath)
+{
+#ifndef ARMSX2_HAS_LIBRASHADER
+	return nullptr;
+#else
+	if (!jpath)
+		return nullptr;
+
+	const char* path = env->GetStringUTFChars(jpath, nullptr);
+	if (!path)
+		return nullptr;
+
+	libra_shader_preset_t preset = nullptr;
+	libra_error_t err = libra_preset_create(path, &preset);
+	env->ReleaseStringUTFChars(jpath, path);
+	if (err)
+	{
+		libra_error_free(&err);
+		return nullptr;
+	}
+
+	libra_preset_param_list_t params = {};
+	err = libra_preset_get_runtime_params(&preset, &params);
+	if (err)
+	{
+		libra_error_free(&err);
+		libra_preset_free(&preset);
+		return nullptr;
+	}
+
+	// Hand-built JSON: escaping only needs to cover what a shader author can put in a name
+	// or description. Everything else is a float we format ourselves.
+	const auto escape = [](const char* s) {
+		std::string out;
+		if (!s)
+			return out;
+		for (const char* p = s; *p; ++p)
+		{
+			switch (*p)
+			{
+				case '"':  out += "\\\""; break;
+				case '\\': out += "\\\\"; break;
+				case '\n': out += "\\n"; break;
+				case '\r': out += "\\r"; break;
+				case '\t': out += "\\t"; break;
+				default:
+					// Control characters would produce invalid JSON; drop them.
+					if (static_cast<unsigned char>(*p) >= 0x20)
+						out += *p;
+					break;
+			}
+		}
+		return out;
+	};
+
+	std::string json("[");
+	for (uint64_t i = 0; i < params.length; i++)
+	{
+		const libra_preset_param_t& p = params.parameters[i];
+		if (i)
+			json += ',';
+		json += StringUtil::StdStringFromFormat(
+			"{\"name\":\"%s\",\"description\":\"%s\",\"initial\":%g,\"minimum\":%g,\"maximum\":%g,\"step\":%g}",
+			escape(p.name).c_str(), escape(p.description).c_str(),
+			p.initial, p.minimum, p.maximum, p.step);
+	}
+	json += ']';
+
+	// free_runtime_params takes the list BY VALUE, and the preset is still ours to free —
+	// unlike filter_chain_create, get_runtime_params does not consume it.
+	libra_preset_free_runtime_params(params);
+	libra_preset_free(&preset);
+
+	return env->NewStringUTF(json.c_str());
+#endif
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_setShaderChainParams(
+    JNIEnv* env, jclass, jstring jpreset, jobjectArray jnames, jfloatArray jvalues)
+{
+    // Deliberately NOT behind ARMSX2_HAS_LIBRASHADER: the store is plain values, and the
+    // consumer end is already stubbed out in a build without librashader. Guarding here
+    // would only add a second way for the feature to vanish silently.
+    const std::vector<std::string> names = jStringArrayToVector(env, jnames);
+
+    std::vector<std::pair<std::string, float>> params;
+    if (jvalues)
+    {
+        // Parallel arrays: trust neither length, take the shorter. A mismatch is a caller
+        // bug, but reading past either end is a crash.
+        const jsize count = std::min(static_cast<jsize>(names.size()), env->GetArrayLength(jvalues));
+        if (jfloat* values = env->GetFloatArrayElements(jvalues, nullptr))
+        {
+            params.reserve(static_cast<size_t>(count));
+            for (jsize i = 0; i < count; i++)
+                params.emplace_back(names[static_cast<size_t>(i)], values[i]);
+
+            // JNI_ABORT: read-only, so don't copy anything back to the Java array.
+            env->ReleaseFloatArrayElements(jvalues, values, JNI_ABORT);
+        }
+    }
+
+    std::string preset;
+    if (jpreset)
+    {
+        if (const char* p = env->GetStringUTFChars(jpreset, nullptr))
+        {
+            preset.assign(p);
+            env->ReleaseStringUTFChars(jpreset, p);
+        }
+    }
+
+    GSDevice::SetShaderChainParams(std::move(preset), std::move(params));
 }

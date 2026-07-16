@@ -56,12 +56,30 @@ fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
     val busy = remember { mutableStateOf(false) }
     val status = remember { mutableStateOf<String?>(null) }
     val skins = remember(refresh.intValue) { ControllerSkinStore.list(ctx) }
-    val activeId = ControllerSkinStore.activeSkinId.value
+
+    // Skin scope. Like the Pad tab, the tier comes from HOW Settings was opened: for a
+    // game (Game scope) or globally. Inside Game scope the user still chooses whether
+    // this game pins its own skin or just follows the global one — that's [perGame],
+    // which is the presence of the per-game override, not a separate preference.
+    val skinSerial = com.armsx2.ui.InGameOverlay.currentSerial.value?.takeIf { it.isNotEmpty() }
+    val gameScope = com.armsx2.ui.InGameOverlay.settingsScope.value ==
+        com.armsx2.config.SettingsScope.Game && skinSerial != null
+    val perGame = remember(refresh.intValue, skinSerial) {
+        gameScope && ControllerSkinStore.hasGameOverride(skinSerial)
+    }
+    // The tier the rows below read AND write. null = global.
+    val editSerial: String? = if (perGame) skinSerial else null
+    // Read the tier straight from prefs rather than the RESOLVED activeSkinId: the hub
+    // can be open for a game that isn't running, where the resolved value is still the
+    // global one and would tick the wrong row.
+    val activeId = remember(refresh.intValue, editSerial, ControllerSkinStore.activeSkinId.value) {
+        ControllerSkinStore.activeForScope(ctx, editSerial)
+    }
 
     fun onImported(id: String?, sourceLabel: String) {
         busy.value = false
         if (id != null) {
-            ControllerSkinStore.setActive(ctx, id)
+            ControllerSkinStore.setActive(ctx, id, editSerial)
             refresh.intValue++
             status.value = I18n.get("skins.status.importedAndSelected")
         } else {
@@ -121,14 +139,41 @@ fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
         }
 
         Spacer(Modifier.height(10.dp))
-        Text(str("skins.activeSkin"), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(bottom = 4.dp))
+        // Only offered with a game in hand — a per-game switch in the global screen
+        // would have no game to be "per".
+        if (gameScope && skinSerial != null) {
+            ToggleRow(
+                str("skins.perGame.label"),
+                perGame,
+                description = str("skins.perGame.description"),
+            ) { on ->
+                if (on) {
+                    // Seed the override with what the game already shows, so turning this
+                    // on changes NOTHING until a row below is picked. Flipping straight to
+                    // the built-in look would be a surprise edit, not a scope change.
+                    ControllerSkinStore.setActive(
+                        ctx,
+                        ControllerSkinStore.activeForScope(ctx, null),
+                        skinSerial,
+                    )
+                } else {
+                    ControllerSkinStore.clearGameOverride(ctx, skinSerial)
+                }
+                refresh.intValue++
+            }
+            SettingsDivider()
+        }
+        Text(
+            if (perGame) str("skins.activeSkin.game") else str("skins.activeSkin"),
+            color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(bottom = 4.dp),
+        )
 
         SkinRow(
             name = str("skins.builtinDefault"),
             selected = activeId == null,
             controllerId = "skin-builtin",
-            onSelect = { ControllerSkinStore.setActive(ctx, null) },
+            onSelect = { ControllerSkinStore.setActive(ctx, null, editSerial); refresh.intValue++ },
             onDelete = null,
         )
         for (b in ControllerSkinStore.BUILTIN) {
@@ -137,7 +182,7 @@ fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                 name = b.name,
                 selected = activeId == b.id,
                 controllerId = "skin-${b.id}",
-                onSelect = { ControllerSkinStore.setActive(ctx, b.id) },
+                onSelect = { ControllerSkinStore.setActive(ctx, b.id, editSerial); refresh.intValue++ },
                 onDelete = null,
             )
         }
@@ -147,7 +192,7 @@ fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                 name = "${s.name}  ·  ${s.imageCount} images",
                 selected = activeId == s.id,
                 controllerId = "skin-${s.id}",
-                onSelect = { ControllerSkinStore.setActive(ctx, s.id) },
+                onSelect = { ControllerSkinStore.setActive(ctx, s.id, editSerial); refresh.intValue++ },
                 onDelete = {
                     ControllerSkinStore.delete(ctx, s.id)
                     refresh.intValue++

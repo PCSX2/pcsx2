@@ -1520,6 +1520,17 @@ protected:
 	/// the Vulkan/OpenGL devices override it, everything else keeps the no-op.
 	virtual bool DoApplyShaderChain(GSTexture* sTex, GSTexture* dTex) { return false; }
 
+	/// Generation of the parameter-override store, bumped on every SetShaderChainParams.
+	/// A backend compares this against its own last-applied generation to decide whether
+	/// there is anything to do — it is an atomic load, so the per-frame check costs no
+	/// lock. Zero means nothing has ever been pushed.
+	static u64 GetShaderChainParamGeneration();
+
+	/// Copies the queued overrides into [out] when they belong to [preset], returning false
+	/// (and leaving [out] alone) when the store holds another preset's values or none at
+	/// all. Takes the lock, so call it only once the generation says something changed.
+	static bool GetShaderChainParams(const std::string& preset, std::vector<std::pair<std::string, float>>* out);
+
 	/// Resolves CAS shader includes for the specified source.
 	static bool GetCASShaderSource(std::string* source);
 
@@ -1562,6 +1573,23 @@ public:
 
 	/// Returns a string representing the specified API.
 	static const char* RenderAPIToString(RenderAPI api);
+
+	/// Queues parameter overrides for the RetroArch shader chain. Set from the UI thread,
+	/// consumed on the GS thread: a librashader chain is single-threaded, so the UI must
+	/// NEVER call libra_*_filter_chain_set_param itself — it leaves the values here and
+	/// DoApplyShaderChain applies them just before the frame call.
+	///
+	/// [params] is a list of "assign this value to this parameter" instructions, NOT a
+	/// complete description of the chain's state. Anything absent keeps whatever the chain
+	/// already has, which for a freshly created chain is the preset's own initial value.
+	/// That is what makes reset work: the UI pushes the initial value explicitly rather
+	/// than dropping the entry, because a live chain has no "unset" for us to ask for.
+	///
+	/// [preset] is the preset the values were read off. It stops a stale push from landing
+	/// on the wrong chain — values queued for preset A are ignored once the device has
+	/// moved on to preset B, which would otherwise silently apply A's values to B's
+	/// same-named parameters.
+	static void SetShaderChainParams(std::string preset, std::vector<std::pair<std::string, float>> params);
 
 	/// Parses the configured fullscreen mode into its components (width * height @ refresh Hz)
 	static bool GetRequestedExclusiveFullscreenMode(u32* width, u32* height, float* refresh_rate);

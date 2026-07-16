@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -27,14 +29,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armsx2.ShaderParam
+import com.armsx2.ShaderParams
 import com.armsx2.ShaderRepo
 import com.armsx2.i18n.str
 import com.armsx2.ui.settings.HelpText
+import com.armsx2.ui.settings.IntSliderRow
 import com.armsx2.ui.settings.SettingsDivider
 import com.armsx2.ui.settings.ToggleRow
 import com.armsx2.ui.settings.controllerFocusable
 import com.armsx2.ui.theme.Success
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
@@ -123,6 +129,15 @@ private val FAMILY_ACRONYMS = setOf(
  *  moment someone installs a pack we have never seen. */
 private val FAMILY_NAME_OVERRIDES = mapOf("koko-aio" to "koko-aio", "uborder" to "uborder")
 
+/** Renders a caption parameter's description as a group heading: "[ --- BLACK TINT --- ]:"
+ *  reads "BLACK TINT". Cosmetic only — a parameter is identified as a caption by the fact
+ *  that it cannot be adjusted ([ShaderParam.isAdjustable]), never by how it's written.
+ *  Reading brackets to decide what a caption IS would hide real controls: the stock pack
+ *  ships working sliders described "[ Adaptive Strobe (≈BFI) Strength: ]" and "[IMG]
+ *  Contrast (squared) [luma]". Shared with the full-screen editor. */
+internal fun captionLabel(description: String): String =
+    description.trim().trim('[', ']', ':', '-', ' ').trim('-', ' ').ifBlank { description.trim() }
+
 /**
  * RetroArch (.slangp) shader-chain rows: a master toggle plus an inline preset picker.
  *
@@ -149,8 +164,10 @@ private val FAMILY_NAME_OVERRIDES = mapOf("koko-aio" to "koko-aio", "uborder" to
 fun ShaderChainSection(
     enabled: Boolean,
     preset: String,
+    params: Map<String, Map<String, Float>>,
     onEnabledChange: (Boolean) -> Unit,
     onPresetChange: (String) -> Unit,
+    onParamsChange: (Map<String, Map<String, Float>>) -> Unit,
 ) {
     ToggleRow(
         str("renderer.shaderChain.label"),
@@ -165,7 +182,102 @@ fun ShaderChainSection(
     if (enabled) {
         SettingsDivider()
         ShaderPresetPicker(preset, onPresetChange)
+        // Same gate one level down: with no preset there is nothing to enumerate, and the
+        // section would be a row that opens onto an empty list.
+        if (preset.isNotBlank()) {
+            SettingsDivider()
+            ShaderParamPicker(preset, params, onParamsChange, onPresetChange)
+        }
     }
+}
+
+/**
+ * The tweakable-parameter list for the selected preset.
+ *
+ * Values are written straight through to the caller's settings tier (same contract as the
+ * preset picker) AND pushed at the running chain here, because those are two different
+ * jobs and only one of them can be left to [com.armsx2.config.Settings.applyTo]:
+ *  - persisting is the caller's, via [onParamsChange];
+ *  - the LIVE apply has to send the effective value of every parameter, not just the
+ *    overrides, so that resetting one restores the author's default on a chain that is
+ *    already running. applyTo can't do that — it has no enumeration to read initials from.
+ */
+@Composable
+private fun ShaderParamPicker(
+    preset: String,
+    allParams: Map<String, Map<String, Float>>,
+    onParamsChange: (Map<String, Map<String, Float>>) -> Unit,
+    onPresetChange: (String) -> Unit,
+) {
+    val overrides = allParams[preset].orEmpty()
+
+    /** Drop the preset's entry entirely once nothing is overridden, so a reset-to-default
+     *  leaves no trace in the config rather than an empty object reading as "tweaked". */
+    fun persist(next: Map<String, Float>) {
+        onParamsChange(if (next.isEmpty()) allParams - preset else allParams + (preset to next))
+    }
+
+    val open: () -> Unit = { ShaderParamsEditor.open(preset, overrides, ::persist, onPresetChange) }
+
+    // Note what this row does NOT do: enumerate. The count of CHANGED parameters is just
+    // the override map's size, and the total only matters once you're looking at the list —
+    // so the (heavy) chain parse happens when the editor opens, not on every visit to this
+    // tab.
+    Surface(
+        onClick = open,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 5.dp)
+            .controllerFocusable(
+                controllerId = "shaderChain:params",
+                shape = RoundedCornerShape(22.dp),
+                onConfirm = open,
+            ),
+        shape = RoundedCornerShape(22.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.46f)),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = 78.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    str("renderer.shaderChain.params.label"),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 18.sp,
+                    lineHeight = 23.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(Modifier.height(3.dp))
+                Text(
+                    if (overrides.isEmpty()) str("renderer.shaderChain.params.description")
+                    else str("renderer.shaderChain.params.countModified").format(overrides.size),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 14.sp,
+                    lineHeight = 19.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            // Opens a screen rather than expanding, so it points forward, not down.
+            Text(
+                "›",
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+    }
+
+    // Reset-all and Save-as live INSIDE the editor, not here. They belong with the list
+    // they act on, and both need input this pane can't give them: the reset wants a
+    // confirmation, and naming a preset wants a keyboard a controller can actually drive.
+    // The editor is a surface that owns the pad, so it can do both.
 }
 
 @Composable
@@ -427,6 +539,10 @@ private fun ShaderGroupRow(
     expanded: Boolean,
     holdsActive: Boolean,
     onToggle: () -> Unit,
+    /** Chip text for [holdsActive]. Defaults to the preset picker's "Active", which is what
+     *  a folder holding the current preset means; the parameter list reuses this row to say
+     *  "Modified" instead. */
+    activeLabel: String = str("backend.driver.active"),
     content: @Composable () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -461,7 +577,7 @@ private fun ShaderGroupRow(
                 // Marks the folder holding the current preset even while collapsed, so the
                 // selection is findable without opening all of them.
                 if (holdsActive) {
-                    StatusChip(str("backend.driver.active"), Success)
+                    StatusChip(activeLabel, Success)
                     Spacer(Modifier.width(8.dp))
                 }
                 Text(

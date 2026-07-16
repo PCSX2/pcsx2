@@ -4,6 +4,7 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,6 +42,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armsx2.config.Settings
@@ -47,6 +51,8 @@ import com.armsx2.input.ControllerMappings
 import com.armsx2.ui.Colors
 import com.armsx2.ui.touch.TouchButtonId
 import com.armsx2.ui.touch.TouchControls
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kr.co.iefriends.pcsx2.NativeApp
 
 @Composable
@@ -468,6 +474,114 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                 )
             }
         }
+        // Named mapping profiles (#186). Sits right under the mapping rows because it
+        // acts on exactly what they show: the CURRENT player and the CURRENT scope.
+        // Save snapshots that map; applying a profile overwrites it. Feel settings
+        // (deadzone/sensitivity/rumble) are deliberately not part of a profile — see
+        // ControllerMappings' profile section for why.
+        CollapsibleSection(str("pad.section.padProfiles"), initiallyExpanded = false) {
+            SettingsDivider()
+            HelpText(str("pad.padProfiles.info"))
+            val newName = remember { mutableStateOf("") }
+            val profiles = remember { mutableStateOf<List<String>>(emptyList()) }
+            // listProfiles() reads the portable inputprofiles/ folder, so it rides an IO
+            // hop rather than landing in composition. Re-runs when a profile is
+            // added/removed (padProfileTick).
+            LaunchedEffect(ControllerMappings.padProfileTick.value) {
+                profiles.value = withContext(Dispatchers.IO) { ControllerMappings.listProfiles() }
+            }
+            if (profiles.value.isEmpty()) {
+                HelpText(str("pad.padProfiles.none"))
+            }
+            profiles.value.forEach { name ->
+                val apply: () -> Unit = {
+                    ControllerMappings.applyProfile(name, editPlayer.intValue, liveEditSerial())
+                    capture.value = null
+                    // The binding rows above read straight from prefs, so they only show
+                    // the applied map once this bumps.
+                    refreshToken.intValue++
+                }
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(rowAura())
+                        .clickable { apply() }
+                        .controllerFocusable(
+                            controllerId = "pad-profile:$name",
+                            onConfirm = apply,
+                        )
+                        .padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        name,
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        str("action.delete"),
+                        color = Color(0xFFFF6B6B),
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .clickable { ControllerMappings.deleteProfile(name) }
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                    )
+                }
+                Spacer(Modifier.height(6.dp))
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(str("pad.padProfiles.saveNewLabel"), color = Color(0xFFAAAAAA), fontSize = 12.sp)
+            Spacer(Modifier.height(6.dp))
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                // Inline field, never a dialog: a Dialog is its own focused window and
+                // swallows the pad keys this whole tab exists to configure.
+                OutlinedTextField(
+                    value = newName.value,
+                    onValueChange = { newName.value = it },
+                    singleLine = true,
+                    placeholder = { Text(str("pad.padProfiles.namePlaceholder"), color = Color(0xFF888888)) },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Colors.pasx2_blue,
+                        unfocusedBorderColor = Color(0xFF444455),
+                    ),
+                    modifier = Modifier.weight(1f),
+                )
+                val save: () -> Unit = {
+                    if (ControllerMappings.saveProfile(newName.value, editPlayer.intValue, liveEditSerial()))
+                        newName.value = ""
+                }
+                Box(
+                    Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Colors.pasx2_blue)
+                        .clickable(enabled = newName.value.isNotBlank()) { save() }
+                        .controllerFocusable(
+                            controllerId = "pad-profile-save",
+                            onConfirm = save,
+                        )
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                ) {
+                    Text(
+                        str("pad.padProfiles.saveAs"),
+                        color = Color.White,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
+        }
         CollapsibleSection(str("pad.section.onScreenControls"), initiallyExpanded = false) {
             // Controller hotkeys now live in their own dedicated "Hotkeys" tab
             // (see HotkeysTab) so they're easier to find than buried under Pad.
@@ -846,8 +960,9 @@ internal fun MacrosSection(
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
         )
         listOf(TouchButtonId.MACRO1, TouchButtonId.MACRO2, TouchButtonId.MACRO3, TouchButtonId.MACRO4).forEach { mid ->
-            val buttons = TouchControls.macroButtons(mid)
-            val summary = if (buttons.isEmpty()) str("pad.macro.notSet") else buttons.joinToString(" + ") { it.label }
+            val buttons = TouchControls.macroCodes(mid)
+            val summary = if (buttons.isEmpty()) str("pad.macro.notSet")
+            else buttons.joinToString(" + ") { TouchControls.macroTargetFor(it)?.label ?: "?" }
             val physCode = TouchControls.macroPhysicalCode(mid)
             val capturingThis = macroCapture?.value == mid
             Row(
@@ -901,6 +1016,27 @@ internal fun MacrosSection(
                 }
                 Text(str("pad.action.edit"), color = Colors.pasx2_blue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
+            // Frequency (turbo). Only once the macro fires something — a rate for a macro
+            // with no buttons is a row that does nothing. Lives HERE rather than in the
+            // edit dialog because a Dialog is its own focused window and swallows the pad;
+            // as a normal row it's reachable with a controller like everything else.
+            if (buttons.isNotEmpty()) {
+                val freq = TouchControls.macroFrequency(mid)
+                // str() is @Composable and valueFormatter is a plain lambda, so resolve
+                // both up-front rather than calling into it from there.
+                val holdLabel = str("pad.macro.frequency.hold")
+                val everyLabel = str("pad.macro.frequency.every")
+                IntSliderRow(
+                    label = str("pad.macro.frequency.label"),
+                    value = freq,
+                    min = 0,
+                    max = TouchControls.MACRO_FREQ_MAX,
+                    description = str("pad.macro.frequency.description"),
+                    valueFormatter = { if (it == 0) holdLabel else everyLabel.format(it) },
+                    onReset = if (freq == 0) null else ({ TouchControls.setMacroFrequency(mid, 0) }),
+                    onChange = { TouchControls.setMacroFrequency(mid, it) },
+                )
+            }
             SettingsDivider()
         }
         macroDialogFor.value?.let { mid ->
@@ -921,7 +1057,7 @@ private fun MacroConfigDialog(
     onDismiss: () -> Unit,
 ) {
     val selected = remember(macroId) {
-        mutableStateListOf<TouchButtonId>().apply { addAll(TouchControls.macroButtons(macroId)) }
+        mutableStateListOf<Int>().apply { addAll(TouchControls.macroCodes(macroId)) }
     }
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -936,13 +1072,13 @@ private fun MacroConfigDialog(
                     color = Color(0xFFBBBBBB), fontSize = 15.sp,
                 )
                 Spacer(Modifier.height(8.dp))
-                TouchControls.macroAssignableButtons.forEach { b ->
-                    val on = b in selected
+                TouchControls.macroAssignableTargets.forEach { t ->
+                    val on = t.code in selected
                     Row(
                         Modifier
                             .fillMaxWidth()
                             .height(52.dp)
-                            .clickable { if (on) selected.remove(b) else selected.add(b) }
+                            .clickable { if (on) selected.remove(t.code) else selected.add(t.code) }
                             .padding(horizontal = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -952,14 +1088,14 @@ private fun MacroConfigDialog(
                             fontSize = 16.sp,
                         )
                         Spacer(Modifier.width(12.dp))
-                        Text(b.label, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
+                        Text(t.label, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
                     }
                 }
             }
         },
         confirmButton = {
             TextButton(onClick = {
-                TouchControls.setMacroButtons(macroId, selected.toList())
+                TouchControls.setMacroCodes(macroId, selected.toList())
                 onSaved()
                 onDismiss()
             }) { Text(str("action.save")) }

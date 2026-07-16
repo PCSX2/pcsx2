@@ -25,10 +25,76 @@ object ControllerSkinStore {
 
     private const val KEY_ACTIVE = "skin.active"
 
-    /** Selected skin id, or null = built-in. Backed state so the overlay recomposes
-     *  when it changes. Lazily hydrated from prefs on first use ([ensureLoaded]). */
+    /** Per-game skin override: `skin.active.game.<serial>`. Mirrors how the touch
+     *  LAYOUT already goes per-serial (see TouchControls.applyForSerial) — the global
+     *  key stays the baseline and a game with an override shadows it for that serial
+     *  only.
+     *
+     *  A per-game entry is present-or-absent, and "present" includes the explicit
+     *  "no skin" choice — which is why the value can be [NONE] rather than the key
+     *  just being removed. Without that, a game could not opt OUT of a global skin
+     *  back to the built-in look. */
+    private const val KEY_ACTIVE_GAME_PREFIX = "skin.active.game."
+    private const val NONE = "__none__"
+
+    /** RESOLVED skin id for what's on screen now, or null = built-in. Backed state so
+     *  the overlay recomposes when it changes.
+     *
+     *  Resolved, not raw: it holds the per-game override while a game with one is
+     *  running, and the global otherwise. [applyForSerial] is what re-resolves it, on
+     *  the same hook the per-game touch layout uses. Read on the draw path via
+     *  [bitmapForKey], so it must never itself touch prefs. */
     val activeSkinId = mutableStateOf<String?>(null)
     @Volatile private var loaded = false
+
+    /** Serial whose override [activeSkinId] currently reflects, or null for global.
+     *  Kept so the Skins tab can tell "this game uses the global skin" from "this game
+     *  is pinned to the same skin the global happens to be". */
+    val activeSerial = mutableStateOf<String?>(null)
+
+    private fun idOrNull(raw: String?): String? = if (raw == null || raw == NONE) null else raw
+
+    /** Re-resolve [activeSkinId] for [serial] (null = library/global). Called from the
+     *  touch overlay on the same LaunchedEffect that applies the per-game layout, so a
+     *  game's skin is up from the first frame rather than after a visit to Settings. */
+    fun applyForSerial(ctx: Context, serial: String?) {
+        ensureLoaded(ctx)
+        val eff = serial?.takeIf { it.isNotEmpty() }
+        val raw = if (eff != null)
+            MainActivityRuntime.prefs.getString(KEY_ACTIVE_GAME_PREFIX + eff, null)
+                ?: MainActivityRuntime.prefs.getString(KEY_ACTIVE, null)
+        else MainActivityRuntime.prefs.getString(KEY_ACTIVE, null)
+        activeSerial.value = eff
+        val resolved = idOrNull(raw)?.takeIf { builtinFor(it) != null || File(root(ctx), it).isDirectory }
+        if (activeSkinId.value != resolved) {
+            activeSkinId.value = resolved
+            clearCache()
+        }
+    }
+
+    /** True if [serial] pins its own skin (including an explicit "none"). */
+    fun hasGameOverride(serial: String?): Boolean {
+        val eff = serial?.takeIf { it.isNotEmpty() } ?: return false
+        return MainActivityRuntime.prefs.contains(KEY_ACTIVE_GAME_PREFIX + eff)
+    }
+
+    /** The skin [serial]'s tier selects, falling back to the global baseline so a fresh
+     *  per-game row shows what it inherits rather than blank. serial=null reads global. */
+    fun activeForScope(ctx: Context, serial: String?): String? {
+        ensureLoaded(ctx)
+        val eff = serial?.takeIf { it.isNotEmpty() }
+        val raw = if (eff != null && hasGameOverride(eff))
+            MainActivityRuntime.prefs.getString(KEY_ACTIVE_GAME_PREFIX + eff, null)
+        else MainActivityRuntime.prefs.getString(KEY_ACTIVE, null)
+        return idOrNull(raw)
+    }
+
+    /** Drop [serial]'s override so it follows the global skin again. */
+    fun clearGameOverride(ctx: Context, serial: String) {
+        if (serial.isEmpty()) return
+        MainActivityRuntime.prefs.edit().remove(KEY_ACTIVE_GAME_PREFIX + serial).apply()
+        applyForSerial(ctx, serial)
+    }
 
     /** Logical button key -> filename inside a skin folder (iOS scheme). The face /
      *  shoulder / system / d-pad buttons use `ic_controller_<key>_button.png`; the
@@ -104,16 +170,38 @@ object ControllerSkinStore {
         }.sortedBy { it.name.lowercase() }
     }
 
-    fun setActive(ctx: Context, id: String?) {
+    /** Select [id] (null = built-in look) at [serial]'s tier — null serial writes the
+     *  global skin, a serial pins that game only.
+     *
+     *  The per-game tier stores [NONE] rather than removing the key for a null id: a
+     *  removed key means "follow the global", which is a different answer from "this
+     *  game shows no skin". Global keeps the original remove-on-null so an untouched
+     *  install writes nothing. */
+    fun setActive(ctx: Context, id: String?, serial: String? = null) {
         ensureLoaded(ctx)
-        activeSkinId.value = id
-        MainActivityRuntime.prefs.edit().apply { if (id == null) remove(KEY_ACTIVE) else putString(KEY_ACTIVE, id) }.apply()
-        clearCache()
+        val eff = serial?.takeIf { it.isNotEmpty() }
+        MainActivityRuntime.prefs.edit().apply {
+            if (eff != null) putString(KEY_ACTIVE_GAME_PREFIX + eff, id ?: NONE)
+            else if (id == null) remove(KEY_ACTIVE)
+            else putString(KEY_ACTIVE, id)
+        }.apply()
+        // Re-resolve rather than assigning id outright: editing the GLOBAL skin while a
+        // game with its own override is running must not change what that game shows.
+        applyForSerial(ctx, activeSerial.value)
     }
 
     fun delete(ctx: Context, id: String) {
         File(root(ctx), id).deleteRecursively()
-        if (activeSkinId.value == id) setActive(ctx, null) else clearCache()
+        // A deleted skin may be pinned by any number of games; drop every reference so
+        // none is left pointing at a folder that no longer exists.
+        MainActivityRuntime.prefs.edit().apply {
+            if (MainActivityRuntime.prefs.getString(KEY_ACTIVE, null) == id) remove(KEY_ACTIVE)
+            MainActivityRuntime.prefs.all.keys
+                .filter { it.startsWith(KEY_ACTIVE_GAME_PREFIX) }
+                .filter { MainActivityRuntime.prefs.getString(it, null) == id }
+                .forEach { remove(it) }
+        }.apply()
+        applyForSerial(ctx, activeSerial.value)
     }
 
     // ---- Runtime image cache (active skin) ----------------------------------

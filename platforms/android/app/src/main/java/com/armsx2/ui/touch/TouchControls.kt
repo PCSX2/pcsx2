@@ -175,26 +175,79 @@ object TouchControls {
     /** Bumped when any macro's button set changes so the config UI + overlay recompose. */
     val macroBindTick = mutableIntStateOf(0)
 
-    /** The discrete pad buttons a macro may fire (face / shoulders / L3 R3 / Start /
-     *  Select). No D-pad/sticks (directional) or pause/macro/fast-forward (not pad
-     *  buttons). Order = the config dialog's display order. */
-    val macroAssignableButtons: List<TouchButtonId> = listOf(
-        TouchButtonId.TRIANGLE, TouchButtonId.CIRCLE, TouchButtonId.CROSS, TouchButtonId.SQUARE,
-        TouchButtonId.L1, TouchButtonId.R1, TouchButtonId.L2, TouchButtonId.R2,
-        TouchButtonId.L3, TouchButtonId.R3, TouchButtonId.START, TouchButtonId.SELECT,
+    /** One input a macro can fire.
+     *
+     *  Keyed by the native [code] the pad path takes, NOT by [TouchButtonId]: the
+     *  directional inputs a macro wants have no TouchButtonId at all. The on-screen
+     *  D-pad is ONE widget (`DPAD`) and each stick is one widget (`L_STICK`/`R_STICK`),
+     *  because that's what you draw — but a macro needs "L-Stick Up" specifically, and
+     *  there is no id for it. The codes exist regardless (the analog dispatcher already
+     *  emits 110-113 / 120-123), so the macro speaks codes and sidesteps the widget
+     *  vocabulary entirely. */
+    data class MacroTarget(val code: Int, val label: String)
+
+    /** Sentinel for the pressure MODIFIER, which is not a button — it's a flag that makes
+     *  the buttons around it send a soft (~50%) press (see [pressureRangeFor]). Negative
+     *  so it can never collide with a real keycode. */
+    const val MACRO_CODE_PRESSURE = -2
+
+    /** Everything a macro may fire, in display order. Mirrors the set other builds offer:
+     *  face / shoulders / clicks / menu, plus the D-pad, the analog toggle, the pressure
+     *  modifier and both sticks' directions. */
+    val macroAssignableTargets: List<MacroTarget> = listOf(
+        MacroTarget(KeyEvent.KEYCODE_BUTTON_Y, "Triangle"),
+        MacroTarget(KeyEvent.KEYCODE_BUTTON_B, "Circle"),
+        MacroTarget(KeyEvent.KEYCODE_BUTTON_A, "Cross"),
+        MacroTarget(KeyEvent.KEYCODE_BUTTON_X, "Square"),
+        MacroTarget(KeyEvent.KEYCODE_BUTTON_L1, "L1"),
+        MacroTarget(KeyEvent.KEYCODE_BUTTON_R1, "R1"),
+        MacroTarget(KeyEvent.KEYCODE_BUTTON_L2, "L2"),
+        MacroTarget(KeyEvent.KEYCODE_BUTTON_R2, "R2"),
+        MacroTarget(KeyEvent.KEYCODE_BUTTON_THUMBL, "L3"),
+        MacroTarget(KeyEvent.KEYCODE_BUTTON_THUMBR, "R3"),
+        MacroTarget(KeyEvent.KEYCODE_BUTTON_START, "Start"),
+        MacroTarget(KeyEvent.KEYCODE_BUTTON_SELECT, "Select"),
+        MacroTarget(KeyEvent.KEYCODE_DPAD_UP, "Up"),
+        MacroTarget(KeyEvent.KEYCODE_DPAD_RIGHT, "Right"),
+        MacroTarget(KeyEvent.KEYCODE_DPAD_DOWN, "Down"),
+        MacroTarget(KeyEvent.KEYCODE_DPAD_LEFT, "Left"),
+        // 200 = PAD_ANALOG in native-lib.cpp's setPadButton (the DualShock2 mode button).
+        MacroTarget(200, "Analog"),
+        MacroTarget(MACRO_CODE_PRESSURE, "Pressure"),
+        // Stick directions, as the analog dispatcher numbers them:
+        // 110 up / 111 right / 112 down / 113 left, and 120-123 for the right stick.
+        MacroTarget(110, "L-Stick Up"),
+        MacroTarget(111, "L-Stick Right"),
+        MacroTarget(112, "L-Stick Down"),
+        MacroTarget(113, "L-Stick Left"),
+        MacroTarget(120, "R-Stick Up"),
+        MacroTarget(121, "R-Stick Right"),
+        MacroTarget(122, "R-Stick Down"),
+        MacroTarget(123, "R-Stick Left"),
     )
 
-    /** Buttons macro [id] fires, in config order (empty if unconfigured). */
-    fun macroButtons(id: TouchButtonId): List<TouchButtonId> {
+    fun macroTargetFor(code: Int): MacroTarget? = macroAssignableTargets.firstOrNull { it.code == code }
+
+    /** Codes macro [id] fires, in display order (empty if unconfigured).
+     *
+     *  Reads BOTH forms: this used to store TouchButtonId names, so an existing macro's
+     *  "CROSS,R1" still resolves — each token is mapped to its keycode. New writes are
+     *  codes, so the migration happens the next time a macro is edited and nothing has to
+     *  be rewritten up front. */
+    fun macroCodes(id: TouchButtonId): List<Int> {
         val raw = MainActivityRuntime.prefs.getString(KEY_MACRO_PREFIX + id.name, "").orEmpty()
         if (raw.isEmpty()) return emptyList()
-        val set = raw.split(",").mapNotNull { runCatching { TouchButtonId.valueOf(it) }.getOrNull() }.toSet()
-        // Keep macroAssignableButtons order, drop anything stale/non-assignable.
-        return macroAssignableButtons.filter { it in set }
+        val codes = raw.split(",").mapNotNull { token ->
+            token.toIntOrNull()
+                ?: runCatching { TouchButtonId.valueOf(token).keycode }.getOrNull()
+        }.toSet()
+        // Display order, and anything unrecognised drops out.
+        return macroAssignableTargets.map { it.code }.filter { it in codes }
     }
 
-    fun setMacroButtons(id: TouchButtonId, buttons: List<TouchButtonId>) {
-        val csv = macroAssignableButtons.filter { it in buttons.toSet() }.joinToString(",") { it.name }
+    fun setMacroCodes(id: TouchButtonId, codes: List<Int>) {
+        val wanted = codes.toSet()
+        val csv = macroAssignableTargets.map { it.code }.filter { it in wanted }.joinToString(",")
         MainActivityRuntime.prefs.edit { putString(KEY_MACRO_PREFIX + id.name, csv) }
         macroBindTick.intValue++
     }
@@ -215,12 +268,94 @@ object TouchControls {
 
     fun clearMacroPhysicalCode(id: TouchButtonId) = setMacroPhysicalCode(id, KeyEvent.KEYCODE_UNKNOWN)
 
+    // ---- Macro frequency (turbo) ----------------------------------------------
+    // Holding a macro can TOGGLE its button set instead of just holding it down —
+    // NetherSX2 calls this Frequency, and it's what stops mash-heavy games (and
+    // fighting-game inputs) from costing you a thumb.
+
+    private const val KEY_MACRO_FREQ_PREFIX = "touch.macro.freq."
+
+    /** Upper bound on the interval. A second between toggles is already past useful, and
+     *  it keeps the slider walkable on a D-pad. */
+    const val MACRO_FREQ_MAX = 60
+
+    /** Frames between toggles while a macro is held. 0 = hold the buttons down, which is
+     *  the original behaviour and stays the default. */
+    fun macroFrequency(id: TouchButtonId): Int =
+        MainActivityRuntime.prefs.getInt(KEY_MACRO_FREQ_PREFIX + id.name, 0).coerceIn(0, MACRO_FREQ_MAX)
+
+    fun setMacroFrequency(id: TouchButtonId, frames: Int) {
+        MainActivityRuntime.prefs.edit {
+            putInt(KEY_MACRO_FREQ_PREFIX + id.name, frames.coerceIn(0, MACRO_FREQ_MAX))
+        }
+        macroBindTick.intValue++
+    }
+
+    /** A frame in ms. The emulated console is the thing being counted, so 60Hz — an NTSC
+     *  frame. This is the one approximation here: a PAL title's frames are 20ms, so its
+     *  toggle runs ~17% fast. Not worth chasing the live refresh rate for a turbo. */
+    private const val MACRO_FRAME_MS = 1000.0 / 60.0
+
+    private val macroHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val macroRunnables = HashMap<String, Runnable>()
+
+    /**
+     * Press ([down]) or release a macro, honouring its [macroFrequency].
+     *
+     * [emit] sends ONE button, so each call site keeps its own routing — the on-screen
+     * buttons go through setPadButton, a physical trigger through sendKeyAction with a
+     * player port. [key] separates those concurrent uses of the same macro (touch and a
+     * pad, or two ports) so one release can't cancel another's turbo.
+     *
+     * Release ALWAYS emits an up for every button, even mid-toggle: a macro let go on the
+     * "on" half of its cycle would otherwise leave the buttons stuck down.
+     */
+    fun fireMacro(id: TouchButtonId, key: String, down: Boolean, emit: (Int, Boolean) -> Unit) {
+        val codes = macroCodes(id)
+        if (codes.isEmpty()) return
+        // Pressure is a modifier, not a button: it makes the OTHER buttons send a soft
+        // press. So it's held for the whole macro rather than emitted — and it is
+        // deliberately NOT toggled by the turbo below, since a modifier that flickers
+        // would just alternate the press strength.
+        val wantsPressure = MACRO_CODE_PRESSURE in codes
+        val buttons = codes.filter { it != MACRO_CODE_PRESSURE }
+        val runKey = "${id.name}:$key"
+        if (!down) {
+            macroRunnables.remove(runKey)?.let { macroHandler.removeCallbacks(it) }
+            buttons.forEach { emit(it, false) }
+            if (wantsPressure) pressureModifierHeld.value = false
+            return
+        }
+        // Set BEFORE the buttons go down — pressureRangeFor is read at emit time, so the
+        // order is what decides whether the press is soft.
+        if (wantsPressure) pressureModifierHeld.value = true
+        if (buttons.isEmpty()) return
+        val frames = macroFrequency(id)
+        if (frames <= 0) {
+            buttons.forEach { emit(it, true) }
+            return
+        }
+        // Key auto-repeat re-delivers DOWN while held; the first one owns the toggle.
+        if (macroRunnables.containsKey(runKey)) return
+        val periodMs = (frames * MACRO_FRAME_MS).toLong().coerceAtLeast(16L)
+        var pressed = false
+        val runnable = object : Runnable {
+            override fun run() {
+                pressed = !pressed
+                buttons.forEach { emit(it, pressed) }
+                macroHandler.postDelayed(this, periodMs)
+            }
+        }
+        macroRunnables[runKey] = runnable
+        macroHandler.post(runnable)
+    }
+
     /** The macro a physical [keycode] triggers — only if it's bound AND has buttons
      *  configured. Checked in the gameplay key path (Main) before normal pad routing. */
     fun macroForPhysicalCode(keycode: Int): TouchButtonId? {
         if (keycode == KeyEvent.KEYCODE_UNKNOWN) return null
         for (id in listOf(TouchButtonId.MACRO1, TouchButtonId.MACRO2, TouchButtonId.MACRO3, TouchButtonId.MACRO4)) {
-            if (macroPhysicalCode(id) == keycode && macroButtons(id).isNotEmpty()) return id
+            if (macroPhysicalCode(id) == keycode && macroCodes(id).isNotEmpty()) return id
         }
         return null
     }
@@ -549,18 +684,9 @@ object TouchControls {
     }
 
     /** `<DataRoot>/inputprofiles/` (native creates it on init). Null when no
-     *  system dir is configured yet. */
-    private fun profilesDir(): File? {
-        // systemDirPosix() is null for the DEFAULT (private app folder) — fall
-        // back to getExternalFilesDir (= Android/data/<pkg>/files), which is
-        // exactly where the native core puts EmuFolders::InputProfiles.
-        val root = MainActivityRuntime.systemDirPosix()
-            ?: MainActivityRuntime.instance?.applicationContext?.getExternalFilesDir(null)?.absolutePath
-            ?: return null
-        val dir = File(root, "inputprofiles")
-        if (!dir.exists()) runCatching { dir.mkdirs() }
-        return if (dir.isDirectory) dir else null
-    }
+     *  system dir is configured yet. Shared with the controller-mapping profiles,
+     *  which mirror into the same folder under a different suffix. */
+    private fun profilesDir(): File? = MainActivityRuntime.inputProfilesDir()
 
     private fun fileNameFor(name: String): String =
         name.replace(Regex("[^A-Za-z0-9 _.-]"), "_") + PROFILE_FILE_SUFFIX

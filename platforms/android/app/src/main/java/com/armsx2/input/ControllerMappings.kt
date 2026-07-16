@@ -4,6 +4,8 @@ import android.view.KeyEvent
 import androidx.compose.runtime.mutableStateOf
 import com.armsx2.runtime.MainActivityRuntime
 import androidx.core.content.edit
+import org.json.JSONObject
+import java.io.File
 
 object ControllerMappings {
     data class Action(
@@ -568,6 +570,158 @@ object ControllerMappings {
                 edit.remove(gameKey(serial, customKey(left, dir, player)))
         edit.apply()
         stickBindTick.value++
+    }
+
+    // ---- Named mapping profiles (#186) ------------------------------------
+    //
+    // "Save my Tomb Raider pad layout and let me pick it again later." A profile is
+    // a named snapshot of the MAPPING layer for one player: button binds, stick
+    // modes, custom stick codes. That's the same boundary the per-game scope draws
+    // (see [clearGameOverrides]) and for the same reason — controller FEEL
+    // (deadzone/sensitivity/accel/invert/rumble) describes the physical pad, not a
+    // game's control scheme, so it belongs to neither.
+    //
+    // Snapshots are COMPLETE, not sparse: every key is written with its effective
+    // value, defaults included. Applying a profile then fully REPLACES the mapping
+    // instead of leaving the previous one showing through the gaps — the same
+    // reasoning as the shader parameter push, and the reason "apply" is predictable.
+    //
+    // Profiles are player-agnostic on disk: a profile captured from P1 applies to
+    // whichever player you apply it to, because the stored keys are unprefixed.
+
+    private const val KEY_PAD_PROFILES = "pad.profiles"
+    private const val PAD_PROFILE_FILE_SUFFIX = ".pad.json"
+
+    /** Every mapping key for [player], WITHOUT the player prefix — the prefix is
+     *  applied on read/write so a profile can move between players. */
+    private fun mappingKeys(): List<String> = buildList {
+        actions.forEach { add(KEY_PREFIX + it.id) }
+        add(KEY_LSTICK)
+        add(KEY_RSTICK)
+        for (left in booleanArrayOf(true, false))
+            for (dir in StickDir.values())
+                add("pad.${if (left) "lstick" else "rstick"}.${dir.id}.code")
+    }
+
+    /** The mapping [player] currently has at [serial]'s tier, as `key -> value`. */
+    fun captureProfile(player: Int, serial: String?): JSONObject {
+        val o = JSONObject()
+        actions.forEach { o.put(KEY_PREFIX + it.id, physicalForScope(it, player, serial)) }
+        o.put(KEY_LSTICK, leftStickModeScope(player, serial).id)
+        o.put(KEY_RSTICK, rightStickModeScope(player, serial).id)
+        for (left in booleanArrayOf(true, false))
+            for (dir in StickDir.values())
+                o.put(
+                    "pad.${if (left) "lstick" else "rstick"}.${dir.id}.code",
+                    customStickCodeScope(left, dir, player, serial),
+                )
+        return o
+    }
+
+    /** Write [values] into [player]'s mapping at [serial]'s tier. Unknown keys are
+     *  ignored, so a profile written by a future build with more actions still
+     *  applies the parts this build understands. */
+    fun applyProfile(values: JSONObject, player: Int, serial: String?) {
+        val pfx = playerPrefix(player)
+        val edit = MainActivityRuntime.prefs.edit()
+        mappingKeys().forEach { base ->
+            if (!values.has(base)) return@forEach
+            val target = scopedKey(pfx + base, serial)
+            when (base) {
+                KEY_LSTICK, KEY_RSTICK -> edit.putString(target, values.optString(base))
+                else -> edit.putInt(target, values.optInt(base))
+            }
+        }
+        edit.apply()
+        stickBindTick.value++
+    }
+
+    private fun readProfiles(): JSONObject =
+        runCatching { JSONObject(MainActivityRuntime.prefs.getString(KEY_PAD_PROFILES, "{}") ?: "{}") }
+            .getOrDefault(JSONObject())
+
+    private fun padFileNameFor(name: String): String =
+        name.replace(Regex("[^A-Za-z0-9 _.-]"), "_") + PAD_PROFILE_FILE_SUFFIX
+
+    /** Mirror prefs to `<DataRoot>/inputprofiles/<name>.pad.json`, dropping orphans.
+     *  Same portable-folder contract as the touch profiles, different suffix, so the
+     *  two kinds coexist in one folder. Best-effort. */
+    private fun syncPadProfileFolder() {
+        val dir = MainActivityRuntime.inputProfilesDir() ?: return
+        runCatching {
+            val store = readProfiles()
+            val want = HashMap<String, JSONObject>()
+            store.keys().forEach { n ->
+                store.optJSONObject(n)?.let { v ->
+                    want[padFileNameFor(n)] = JSONObject().put("name", n).put("values", v)
+                }
+            }
+            for ((fn, body) in want) File(dir, fn).writeText(body.toString())
+            dir.listFiles { f -> f.name.endsWith(PAD_PROFILE_FILE_SUFFIX) }?.forEach { f ->
+                if (f.name !in want) runCatching { f.delete() }
+            }
+        }
+    }
+
+    /** Pull in folder profiles prefs doesn't have yet, so a hand-dropped file or a
+     *  moved data folder shows up. Prefs stays the live source. */
+    private fun importPadProfileFolder(store: JSONObject) {
+        val dir = MainActivityRuntime.inputProfilesDir() ?: return
+        runCatching {
+            dir.listFiles { f -> f.name.endsWith(PAD_PROFILE_FILE_SUFFIX) }
+                ?.sortedBy { it.name }
+                ?.forEach { f ->
+                    runCatching {
+                        val o = JSONObject(f.readText())
+                        val n = o.optString("name")
+                        val v = o.optJSONObject("values")
+                        if (n.isNotEmpty() && v != null && !store.has(n)) store.put(n, v)
+                    }
+                }
+        }
+    }
+
+    /** Bumped on any profile add/delete so the Pad tab's list recomposes. */
+    val padProfileTick = mutableStateOf(0)
+
+    /** Saved profile names, prefs + portable folder merged, A→Z. */
+    fun listProfiles(): List<String> {
+        val store = readProfiles()
+        importPadProfileFolder(store)
+        return store.keys().asSequence().toList().sortedBy { it.lowercase() }
+    }
+
+    /** Snapshot [player]'s mapping at [serial]'s tier under [name], overwriting a
+     *  same-named profile. Returns false if the name is blank — the caller reports
+     *  that rather than silently doing nothing. */
+    fun saveProfile(name: String, player: Int, serial: String?): Boolean {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return false
+        val store = readProfiles()
+        importPadProfileFolder(store)
+        store.put(trimmed, captureProfile(player, serial))
+        MainActivityRuntime.prefs.edit { putString(KEY_PAD_PROFILES, store.toString()) }
+        syncPadProfileFolder()
+        padProfileTick.value++
+        return true
+    }
+
+    /** Apply saved profile [name] to [player] at [serial]'s tier. False if it's gone. */
+    fun applyProfile(name: String, player: Int, serial: String?): Boolean {
+        val store = readProfiles()
+        importPadProfileFolder(store)
+        val values = store.optJSONObject(name) ?: return false
+        applyProfile(values, player, serial)
+        return true
+    }
+
+    fun deleteProfile(name: String) {
+        val store = readProfiles()
+        importPadProfileFolder(store)
+        store.remove(name)
+        MainActivityRuntime.prefs.edit { putString(KEY_PAD_PROFILES, store.toString()) }
+        syncPadProfileFolder()
+        padProfileTick.value++
     }
 
     /** True if [serial] has ANY per-game controller override for [player]. Drives

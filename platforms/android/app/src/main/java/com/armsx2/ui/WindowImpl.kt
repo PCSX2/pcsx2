@@ -25,7 +25,7 @@ import com.armsx2.runtime.MainActivityRuntime
 import kotlinx.coroutines.flow.first
 
 /** A full manager screen shown as an overlay over the paused game (in-game menu). */
-enum class InGameScreen { Settings, Achievements, Memcard, Patches, Controls, SaveState, LoadState }
+enum class InGameScreen { Settings, Achievements, Memcard, Patches, Controls, Skins, SaveState, LoadState }
 
 object WindowImpl {
     val toolbarVisible = mutableStateOf(true)
@@ -47,7 +47,11 @@ object WindowImpl {
         get() = overlayVisible.value ||
             inGameScreen.value != null ||
             showLibrary.value ||
-            com.armsx2.ui.MemoryCardManager.visible.value
+            com.armsx2.ui.MemoryCardManager.visible.value ||
+            // The shader editor can be opened from the pause menu, which CLOSES as it
+            // opens — without this the game would take focus back mid-edit and eat the
+            // D-pad the editor runs on.
+            com.armsx2.ui.common.ShaderParamsEditor.visible
 
     fun openInGameScreen(screen: InGameScreen) {
         overlayVisible.value = false
@@ -120,6 +124,14 @@ object WindowImpl {
                             onBack = dismiss,
                         )
                         InGameScreen.Controls -> com.armsx2.ui.controls.ControllerManagerScreen(onBack = dismiss)
+                        // Straight to the Skins tab of the real settings hub rather than a
+                        // bespoke screen: it already has the scope plumbing, so opening it
+                        // WITH the running game is what surfaces the per-game skin toggle.
+                        InGameScreen.Skins -> com.armsx2.ui.settingshub.SettingsScreen(
+                            initialCategory = com.armsx2.navigation.SettingsCategory.Skins,
+                            game = MainActivityRuntime.currentGame.value,
+                            onBack = dismiss,
+                        )
                         InGameScreen.SaveState -> com.armsx2.ui.saves.SaveStatePickerScreen(
                             mode = com.armsx2.ui.saves.SaveMode.Save, onBack = dismiss,
                         )
@@ -129,6 +141,12 @@ object WindowImpl {
                     }
                 }
             }
+
+            // LAST = topmost. The shader-parameter editor is opened FROM the settings tab
+            // and from the pause menu, so it has to draw over both; hosting it here rather
+            // than inside ShaderChainSection is also what lets it be full-screen instead of
+            // a block inside a scrolling pane.
+            com.armsx2.ui.common.ShaderParamsEditorHost()
         }
     }
 }

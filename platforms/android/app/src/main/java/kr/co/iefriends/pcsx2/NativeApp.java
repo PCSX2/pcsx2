@@ -104,6 +104,21 @@ public class NativeApp {
 	// No-op in normal builds (the native impl is empty without -fprofile-generate).
 	public static native void dumpPgoProfile();
 
+	/** The tweakable parameters a .slangp preset declares, as JSON, or null if it can't be
+	 *  read (no librashader in this build, or an unreadable preset). Pure file parsing — no
+	 *  renderer or running game needed. */
+	public static native String shaderPresetParams(String presetPath);
+
+	/** Queues parameter values for the running shader chain; the GS thread applies them on
+	 *  its next frame. Safe to call from any thread, and safe with no VM or renderer up —
+	 *  the values just sit there until a chain reads them.
+	 *
+	 *  [names]/[values] are parallel arrays of assignments, NOT the chain's full state:
+	 *  a parameter left out keeps what the chain has, so resetting one means sending its
+	 *  initial value rather than omitting it. [presetPath] must be the preset the values
+	 *  were read off, so a stale set can't land on a chain that has moved on. */
+	public static native void setShaderChainParams(String presetPath, String[] names, float[] values);
+
 	// Save a GS dump (.gs of GPU commands) to the snaps folder for diagnosing
 	// rendering bugs. frames <= 0 captures a single frame.
 	public static native void captureGsDump(int frames);

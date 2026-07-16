@@ -99,7 +99,7 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
                 0 -> resume()
                 1 -> MainActivityRuntime.restart()
                 2 -> MainActivityRuntime.promptSwapDisc()
-                3 -> MainActivityRuntime.stop(saveAutosave = false)
+                3 -> MainActivityRuntime.closeGame()
             }
             EmulationMenuTab.Graphics -> when (state.value.selectedAction) {
                 0 -> setRenderer("auto")
@@ -154,6 +154,8 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
     fun openPatches() = com.armsx2.ui.WindowImpl.openInGameScreen(com.armsx2.ui.InGameScreen.Patches)
 
     fun openControlsManager() = com.armsx2.ui.WindowImpl.openInGameScreen(com.armsx2.ui.InGameScreen.Controls)
+
+    fun openSkins() = com.armsx2.ui.WindowImpl.openInGameScreen(com.armsx2.ui.InGameScreen.Skins)
 
     fun saveState() {
         MainActivityRuntime.instance?.saveState()

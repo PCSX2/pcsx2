@@ -322,8 +322,10 @@ fun RendererTab(state: MutableState<Settings>) {
             com.armsx2.ui.common.ShaderChainSection(
                 enabled = s.shaderChainEnabled,
                 preset = s.shaderChainPreset,
+                params = s.shaderChainParams,
                 onEnabledChange = { apply(s.copy(shaderChainEnabled = it)) },
                 onPresetChange = { apply(s.copy(shaderChainPreset = it)) },
+                onParamsChange = { apply(s.copy(shaderChainParams = it)) },
             )
             SettingsDivider()
             // Where the presets above come from. Not a setting — it only puts files in

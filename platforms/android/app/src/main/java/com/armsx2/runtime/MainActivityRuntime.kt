@@ -54,6 +54,7 @@ import androidx.core.view.ViewCompat
 import androidx.lifecycle.lifecycleScope
 import com.armsx2.BuildConfig
 import com.armsx2.EmuState
+import com.armsx2.FilenameParser
 import com.armsx2.GameInfo
 import com.armsx2.PlayTime
 import com.armsx2.events.TestResult
@@ -219,6 +220,25 @@ open class MainActivityRuntime : ComponentActivity() {
             // (e.g. the SD card's Android/data/<pkg>/files). Legacy installs may
             // still hold a SAF tree-URI string; resolve those the old way.
             return if (v.startsWith("content://")) resolveTreeUriToPosix(v) else v
+        }
+
+        /** `<DataRoot>/inputprofiles/` — the portable folder both touch-layout and
+         *  controller-mapping profiles mirror themselves into, so they survive a
+         *  data-folder move and can be shared or hand-dropped. Null when no system
+         *  dir is configured yet; created on demand.
+         *
+         *  Lives here rather than in either profile store because BOTH need it and
+         *  the fallback below is the subtle part: systemDirPosix() is null for the
+         *  DEFAULT (private app folder), so it falls back to getExternalFilesDir,
+         *  which is exactly where the native core puts EmuFolders::InputProfiles.
+         *  Two copies of that reasoning would be one copy too many. */
+        fun inputProfilesDir(): File? {
+            val root = systemDirPosix()
+                ?: instance?.applicationContext?.getExternalFilesDir(null)?.absolutePath
+                ?: return null
+            val dir = File(root, "inputprofiles")
+            if (!dir.exists()) runCatching { dir.mkdirs() }
+            return if (dir.isDirectory) dir else null
         }
 
         /** App-specific data dir on a removable/secondary volume (SD card),
@@ -932,6 +952,53 @@ open class MainActivityRuntime : ComponentActivity() {
             return true
         }
 
+        /**
+         * Give an externally-launched game the same identity a library-launched one has.
+         *
+         * A front-end (Daijisho / Lisi / Cocoon) hands us a bare content:// with no
+         * GameInfo, so [handleExternalLaunchIntent] leaves [currentGame] null. That split
+         * the game's identity in two: the settings hub keys its Global/Game switch off
+         * currentGame, so the switch VANISHED — while the save path resolves the serial
+         * from the running core and happily wrote per-game. Hence the report of settings
+         * "showing as Global but saving as Per Game" only when launched from a front-end.
+         *
+         * The core knows the serial once the disc is read, which is the same key the save
+         * path uses — so build the missing GameInfo from it and the two agree again.
+         */
+        private fun adoptExternalGameIdentity() {
+            if (!launchedExternally || currentGame.value != null) return
+            val path = m_szGamefile.takeIf { it.isNotEmpty() } ?: return
+            val handler = android.os.Handler(android.os.Looper.getMainLooper())
+            handler.post(object : Runnable {
+                var attempts = 0
+                override fun run() {
+                    // A library launch that lands mid-poll wins: it has the real entry.
+                    if (vmStopInProgress || eState.value == EmuState.STOPPED) return
+                    if (currentGame.value != null) return
+                    // "00000000" is the placeholder the core reports before the disc is
+                    // read — the same value TouchControls.coreSerial() rejects.
+                    val serial = runCatching { NativeApp.getGameSerial() }.getOrNull()
+                        ?.trim()?.uppercase()?.takeIf { it.isNotEmpty() && it != "00000000" }
+                    if (serial == null) {
+                        // ~10s of looking. A serial-less boot (ELF/homebrew) just never
+                        // adopts one, and settingsKey's filename fallback still applies.
+                        if (++attempts < 40) handler.postDelayed(this, 250)
+                        return
+                    }
+                    val uri = runCatching { Uri.parse(path) }.getOrNull() ?: return
+                    val name = uri.lastPathSegment?.substringAfterLast('/')?.substringAfterLast(':')
+                        ?: path.substringAfterLast('/')
+                    val (title, _) = FilenameParser.parse(name)
+                    currentGame.value = GameInfo(
+                        uri = uri,
+                        title = title,
+                        serial = serial,
+                        extension = name.substringAfterLast('.', "").uppercase(),
+                    )
+                }
+            })
+        }
+
         /** Fired when the VM reaches RUNNING (from NativeApp.vmSetPaused). If the
          *  user enabled auto-load-on-boot, restore the autosave state once — but only
          *  after the renderer is actually presenting frames (polls getPresentedFrameCount),
@@ -939,6 +1006,7 @@ open class MainActivityRuntime : ComponentActivity() {
          *  Polls every 250ms, giving up after ~15s if the game never starts presenting. */
         @JvmStatic
         fun onVmRunning() {
+            adoptExternalGameIdentity()
             val requestedSlot = pendingSlotLoadOnBoot
             val loadAutosave = pendingAutoLoadOnBoot && requestedSlot == null
             if (requestedSlot == null && !loadAutosave) return
@@ -1822,8 +1890,17 @@ open class MainActivityRuntime : ComponentActivity() {
                                 // macro overrides that button's regular mapping.
                                 val macro = com.armsx2.ui.touch.TouchControls.macroForPhysicalCode(event.key.nativeKeyCode)
                                 if (macro != null) {
-                                    com.armsx2.ui.touch.TouchControls.macroButtons(macro).forEach {
-                                        sendKeyAction(event.type, it.keycode, port)
+                                    // Through fireMacro so a macro with a Frequency set
+                                    // TOGGLES its button set while held (turbo) instead of
+                                    // just holding it. Keyed per port, so P1 and P2 can
+                                    // hold the same macro without cancelling each other.
+                                    com.armsx2.ui.touch.TouchControls.fireMacro(
+                                        macro, "pad$port", event.type == KeyEventType.KeyDown,
+                                    ) { code, pressed ->
+                                        sendKeyAction(
+                                            if (pressed) KeyEventType.KeyDown else KeyEventType.KeyUp,
+                                            code, port,
+                                        )
                                     }
                                     return@onKeyEvent true
                                 }
@@ -2076,6 +2153,34 @@ open class MainActivityRuntime : ComponentActivity() {
                 }
             }
             return true
+        }
+        // Shader-parameter editor. Owns the pad while it's up, ahead of the pause menu it
+        // was opened from — otherwise the menu behind keeps the input and the editor is
+        // read-only (which is exactly what shipped in vc1150). Placed AFTER the keyboard
+        // block above on purpose: naming a preset hands input to LibraryKeyboard, and it
+        // must keep it until it closes.
+        if (com.armsx2.ui.common.ShaderParamsEditor.visible) {
+            val editor = com.armsx2.ui.common.ShaderParamsEditor
+            val down = event.action == KeyEvent.ACTION_DOWN
+            when (kc) {
+                // Repeats allowed on the adjust/move axes: holding a direction should walk
+                // a 900-row list and sweep a 2000-step range, not step once per press.
+                KeyEvent.KEYCODE_DPAD_UP -> { if (down) editor.move(0, -1); return true }
+                KeyEvent.KEYCODE_DPAD_DOWN -> { if (down) editor.move(0, 1); return true }
+                KeyEvent.KEYCODE_DPAD_LEFT -> { if (down) editor.move(-1, 0); return true }
+                KeyEvent.KEYCODE_DPAD_RIGHT -> { if (down) editor.move(1, 0); return true }
+                KeyEvent.KEYCODE_BUTTON_A, KeyEvent.KEYCODE_DPAD_CENTER,
+                KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
+                    if (down && event.repeatCount == 0) editor.confirm()
+                    return true
+                }
+                KeyEvent.KEYCODE_BUTTON_B, KeyEvent.KEYCODE_BACK -> {
+                    if (down && event.repeatCount == 0) editor.back()
+                    return true
+                }
+                // Swallow the rest: nothing behind this screen may act on a stray button.
+                else -> return true
+            }
         }
         // Memory-card dialog (opened from the library). Touch mode blocks Compose
         // D-pad focus, so it's driven by the manual nav model (same as the
@@ -2760,6 +2865,14 @@ open class MainActivityRuntime : ComponentActivity() {
             com.armsx2.ui.settingshub.SettingsSearch.visible.value -> {
                 // Settings-search result browse (keyboard dismissed): vertical list nav.
                 if (dy != 0) com.armsx2.ui.settingshub.SettingsSearch.move(if (dy < 0) -1 else 1)
+            }
+            com.armsx2.ui.common.ShaderParamsEditor.visible -> {
+                // THE path that matters for this editor: on this hardware the D-pad is a
+                // HAT axis, so it arrives here and never as KEYCODE_DPAD_*. Missing this
+                // is why vc1150's editor did nothing while the pause menu behind it moved.
+                // Rides the shared hold-repeat, so a held direction walks the list and
+                // sweeps a value.
+                com.armsx2.ui.common.ShaderParamsEditor.move(dx, dy)
             }
             com.armsx2.ui.MemoryCardManager.visible.value -> {
                 // Memcard dialog: 2D spatial nav (Slot 1 / Slot 2 / Delete across,

@@ -3898,6 +3898,36 @@ void GSDeviceVK::DestroyShaderChain()
 	m_shader_chain_preset.clear();
 	m_shader_chain_failed = false;
 	m_shader_frame_count = 0;
+	m_shader_param_generation = 0;
+}
+
+void GSDeviceVK::ApplyShaderChainParams()
+{
+#ifdef ARMSX2_HAS_LIBRASHADER
+	// Per-frame fast path: one atomic load. The lock and the copy only happen on the
+	// frames where the user actually moved something.
+	const u64 generation = GetShaderChainParamGeneration();
+	if (generation == m_shader_param_generation)
+		return;
+
+	std::vector<std::pair<std::string, float>> params;
+	if (GetShaderChainParams(m_shader_chain_preset, &params))
+	{
+		libra_vk_filter_chain_t chain = static_cast<libra_vk_filter_chain_t>(m_shader_chain);
+		for (const auto& [name, value] : params)
+		{
+			// A preset can be swapped under a stale override set, so an unknown parameter
+			// name is a routine miss, not a fault: report nothing and keep going, since
+			// the remaining names are still valid.
+			if (libra_error_t err = libra_vk_filter_chain_set_param(&chain, name.c_str(), value))
+				libra_error_free(&err);
+		}
+	}
+
+	// Set even when the store held another preset's values or none at all — otherwise this
+	// re-runs the lookup on every frame for as long as the generation stays ahead.
+	m_shader_param_generation = generation;
+#endif
 }
 
 bool GSDeviceVK::DoApplyShaderChain(GSTexture* sTex, GSTexture* dTex)
@@ -3944,8 +3974,14 @@ bool GSDeviceVK::DoApplyShaderChain(GSTexture* sTex, GSTexture* dTex)
 
 		m_shader_chain = chain;
 		m_shader_frame_count = 0;
+		// The new chain sits at the preset's initial values, so whatever we last pushed is
+		// gone with the old one — force ApplyShaderChainParams to feed it again.
+		m_shader_param_generation = 0;
 		Console.WriteLn("(GS) librashader: loaded preset '%s'", m_shader_chain_preset.c_str());
 	}
+
+	// GS thread, chain alive, before the frame call — the only place a set_param is safe.
+	ApplyShaderChainParams();
 
 	GSTextureVK* const src = static_cast<GSTextureVK*>(sTex);
 	GSTextureVK* const dst = static_cast<GSTextureVK*>(dTex);

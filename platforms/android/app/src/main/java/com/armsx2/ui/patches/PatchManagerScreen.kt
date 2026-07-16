@@ -109,7 +109,10 @@ fun PatchManagerScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: Pa
 fun PatchesSettingsTab(game: GameInfo? = null, viewModel: PatchManagerViewModel = viewModel()) {
     val state = viewModel.state.value
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(viewModel::import) }
-    LaunchedEffect(Unit) { viewModel.refresh() }
+    // Keyed on the game, not Unit: the scope switch above hands this tab a different game
+    // (the game, or null for Global), and refresh() is what re-reads the tier. Keyed on
+    // Unit it read once and then showed the wrong tier's values for the rest of the visit.
+    LaunchedEffect(game?.uri) { viewModel.refresh() }
 
     Column(Modifier.fillMaxWidth()) {
         Row(

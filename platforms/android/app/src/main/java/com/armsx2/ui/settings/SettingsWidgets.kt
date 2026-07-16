@@ -603,7 +603,14 @@ fun ToggleRow(
  *  slider below. Replaces Material3's chunky default with a Canvas-drawn
  *  slider that matches the overlay's thin-line aesthetic: 3dp track,
  *  tick dots at each discrete step, 5dp thumb with a soft halo. Drag
- *  and tap-to-position both update the value. */
+ *  and tap-to-position both update the value.
+ *
+ *  [onReset], when non-null, puts a Reset chip on the row and wires the controller's
+ *  confirm button to it. Pass null when the value already IS the default — "is there
+ *  something to reset" is the caller's question to answer, and it's the same question as
+ *  "should the chip show", so the nullability carries both rather than making callers keep
+ *  a separate flag in sync. Confirm is otherwise dead on a slider row (left/right do the
+ *  adjusting), so this costs the controller no extra focus stops. */
 @Composable
 fun IntSliderRow(
     label: String,
@@ -612,6 +619,7 @@ fun IntSliderRow(
     max: Int,
     description: String? = null,
     valueFormatter: (Int) -> String = { it.toString() },
+    onReset: (() -> Unit)? = null,
     onChange: (Int) -> Unit,
 ) {
     // Include the call-site composite-key hash so two sliders that happen to share a
@@ -625,6 +633,7 @@ fun IntSliderRow(
             .padding(vertical = 5.dp)
             .controllerFocusable(
                 controllerId = sliderId,
+                onConfirm = onReset,
                 onLeft = { onChange((value - 1).coerceAtLeast(min)) },
                 onRight = { onChange((value + 1).coerceAtMost(max)) },
             ),
@@ -665,6 +674,25 @@ fun IntSliderRow(
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
                 )
+                if (onReset != null) {
+                    Spacer(Modifier.width(10.dp))
+                    // Its own Surface rather than a registry row: the controller reaches
+                    // this through the slider's confirm, so a second focus stop per
+                    // modified parameter would only pad the D-pad walk.
+                    Surface(
+                        onClick = onReset,
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.16f),
+                    ) {
+                        Text(
+                            str("action.reset"),
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                        )
+                    }
+                }
             }
             Spacer(Modifier.height(8.dp))
             DiscreteSlider(

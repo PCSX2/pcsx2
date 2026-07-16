@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -89,9 +91,15 @@ fun TouchControlsOverlay() {
     // Re-key on eState so it re-applies on the STOPPED->RUNNING transition.
     val gameSerial = MainActivityRuntime.currentGame.value?.serial?.takeIf { it.isNotEmpty() }
         ?: InGameOverlay.currentSerial.value
+    val skinCtx = LocalContext.current
     LaunchedEffect(gameSerial, MainActivityRuntime.eState.value) {
-        if (MainActivityRuntime.eState.value == EmuState.RUNNING || MainActivityRuntime.eState.value == EmuState.PAUSED)
+        if (MainActivityRuntime.eState.value == EmuState.RUNNING || MainActivityRuntime.eState.value == EmuState.PAUSED) {
             TouchControls.applyForSerial(gameSerial)
+            // The SKIN goes per-game on the same hook and for the same reason as the
+            // layout: resolve it here and it's up from the first frame, rather than
+            // whenever the Skins tab happens to be opened.
+            ControllerSkinStore.applyForSerial(skinCtx, gameSerial)
+        }
     }
     // ---- Gyroscope / motion controls -------------------------------------
     // Drive a PS2 analog stick from the device's motion sensors while the game runs.
@@ -117,12 +125,16 @@ fun TouchControlsOverlay() {
         }
     }
     val gyroMode = ControllerMappings.gyroMode()
-    DisposableEffect(MainActivityRuntime.eState.value, gyroMode,
+    // Runtime gyro enable (issue #337) — the GYRO_TOGGLE / GYRO_HOLD hotkeys flip this, so
+    // the effect keys on it: turning it off unregisters the sensor, and stop()'s (0,0)
+    // release clears the gyro addend so the physical stick is left driving on its own.
+    val gyroOn = MainActivityRuntime.gyroActive.value
+    DisposableEffect(MainActivityRuntime.eState.value, gyroMode, gyroOn,
             ControllerMappings.gyroSensitivity(),
             ControllerMappings.gyroSmoothing(),
             ControllerMappings.gyroInvertX(),
             ControllerMappings.gyroInvertY()) {
-        if (MainActivityRuntime.eState.value == EmuState.RUNNING && gyroMode != 0) {
+        if (MainActivityRuntime.eState.value == EmuState.RUNNING && gyroMode != 0 && gyroOn) {
             gyro.start(gyroMode,
                 ControllerMappings.gyroSensitivity(),
                 ControllerMappings.gyroSmoothing(),
@@ -787,21 +799,28 @@ private fun FastForwardWidget(cfg: TouchButtonCfg, edit: Boolean) {
 
 /** Press gesture that fires a SET of pad keycodes at once (down on press, up on
  *  release) — the macro/combo dispatch. Mirrors pressGestures but multi-keycode. */
-private fun Modifier.macroPressGestures(keycodes: List<Int>) =
-    pointerInput(keycodes) {
+private fun Modifier.macroPressGestures(macroId: TouchButtonId) =
+    pointerInput(macroId) {
         awaitPointerEventScope {
             while (true) {
                 val ev = awaitPointerEvent()
                 val change = ev.changes.firstOrNull() ?: continue
                 if (!change.pressed) continue
-                keycodes.forEach { sendDigital(it, true) }
+                // Through fireMacro rather than pressing the buttons here, so the
+                // on-screen macro honours its Frequency (turbo) exactly like a physical
+                // trigger does — one implementation, two call sites.
+                TouchControls.fireMacro(macroId, "touch", true) { code, pressed ->
+                    sendDigital(code, pressed)
+                }
                 TouchControls.noteTouchInteraction()
                 while (true) {
                     val next = awaitPointerEvent()
                     val nc = next.changes.firstOrNull { it.id == change.id }
                     if (nc == null || !nc.pressed) break
                 }
-                keycodes.forEach { sendDigital(it, false) }
+                TouchControls.fireMacro(macroId, "touch", false) { code, pressed ->
+                    sendDigital(code, pressed)
+                }
             }
         }
     }
@@ -822,15 +841,12 @@ private fun MacroWidget(cfg: TouchButtonCfg, edit: Boolean) {
         }
     } else {
         val opacity = TouchControls.opacity.floatValue
-        val keycodes = remember(cfg.id, TouchControls.macroBindTick.intValue) {
-            TouchControls.macroButtons(cfg.id).map { it.keycode }
-        }
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(CircleShape)
                 .background(Color.Black.copy(alpha = 0.30f * opacity))
-                .macroPressGestures(keycodes),
+                .macroPressGestures(cfg.id),
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -1604,18 +1620,27 @@ private fun ProfilePicker(onDismiss: () -> Unit) {
         Modifier
             .fillMaxSize()
             .background(Color(0xCC000000))
-            .clickable(onClick = onDismiss),
+            .clickable(onClick = onDismiss)
+            // Inset so the card can't sit flush against the screen edges once the list
+            // below is long enough to fill it.
+            .padding(vertical = 16.dp),
         contentAlignment = Alignment.Center,
     ) {
         Column(
             modifier = Modifier
                 .width(360.dp)
+                // Scrollable, which also BOUNDS it: a scrolling Column wraps its content
+                // while it fits and stops at the parent's max height once it doesn't.
+                // Unbounded, this ran off the bottom of the screen — a 5th profile saved
+                // fine but was clipped out of view, which reads as "profiles are capped at
+                // 4". Nothing was ever capped; the dialog just couldn't show it.
                 .clip(RoundedCornerShape(8.dp))
                 .background(Color(0xFF1A1A24))
                 // Eat taps inside the dialog so onDismiss only fires on
                 // the backdrop. clickable with no onClick — Compose
                 // requires an onClick lambda — so use an empty lambda.
                 .clickable(enabled = true, onClick = {})
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {

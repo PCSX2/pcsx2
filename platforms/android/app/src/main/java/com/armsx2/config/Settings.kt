@@ -1,5 +1,6 @@
 package com.armsx2.config
 
+import com.armsx2.ShaderParams
 import com.armsx2.config.Settings.Companion.emitSink
 import com.armsx2.config.Settings.Companion.merge
 import kr.co.iefriends.pcsx2.NativeApp
@@ -29,6 +30,37 @@ data class Dev9HostMapping(
     val ip: String = "0.0.0.0",
     val enabled: Boolean = true,
 )
+
+/** `{"<preset path>": {"<parameter name>": value}}` — the wire form of
+ *  [Settings.shaderChainParams]. Spelled once and shared by all four places the map has to
+ *  cross a boundary (the JSON store, the per-game override diff, the override merge and the
+ *  INI seed), because four hand-rolled copies of the same nesting is four chances for one
+ *  of them to drift. */
+private fun shaderChainParamsToJson(value: Map<String, Map<String, Float>>): JSONObject =
+    JSONObject().apply {
+        value.forEach { (preset, params) ->
+            if (preset.isNotEmpty() && params.isNotEmpty()) {
+                put(preset, JSONObject().apply {
+                    params.forEach { (name, v) -> put(name, v.toDouble()) }
+                })
+            }
+        }
+    }
+
+private fun shaderChainParamsFromJson(json: JSONObject?): Map<String, Map<String, Float>> {
+    if (json == null) return emptyMap()
+    return buildMap {
+        json.keys().forEach { preset ->
+            val params = json.optJSONObject(preset) ?: return@forEach
+            val values = buildMap<String, Float> {
+                params.keys().forEach { name -> put(name, params.optDouble(name, 0.0).toFloat()) }
+            }
+            // Drop presets whose overrides all went away rather than persisting an empty
+            // object that would read back as "this preset is tweaked" forever.
+            if (values.isNotEmpty()) put(preset, values)
+        }
+    }
+}
 
 data class Settings(
     // ---- EmuCore/Speedhacks ----
@@ -423,6 +455,17 @@ data class Settings(
      *  off regardless of the flag, and it's a no-op if this build has no librashader. */
     val shaderChainEnabled: Boolean = false,
     val shaderChainPreset: String = "",
+    /** Tweaked shader parameters, as `preset path -> (parameter name -> value)`.
+     *
+     *  Sparse: a parameter the user hasn't touched is simply absent, and the author's own
+     *  initial applies. That is what keeps this from bloating — a preset can declare ~900
+     *  parameters, and storing all of them per game would dwarf the rest of the config.
+     *
+     *  Keyed by preset rather than holding one flat map because parameter names collide
+     *  freely across packs ("gamma" means something different in every one of them), and
+     *  because it lets a user flip between two tweaked presets without losing either set.
+     *  No EmuCore key mirrors this — see applyTo. */
+    val shaderChainParams: Map<String, Map<String, Float>> = emptyMap(),
     /** EmuCore/GS/CASMode — GSCASMode: 0 Off / 1 Sharpen Only / 2 Sharpen + Resize. */
     val casMode: Int = 0,
     /** EmuCore/GS/CASSharpness — sharpening strength 0..100 (%). */
@@ -942,6 +985,11 @@ data class Settings(
             fxaa = boolAt("EmuCore/GS/fxaa") ?: this.fxaa,
             shaderChainEnabled = boolAt("EmuCore/GS/ShaderChainEnabled") ?: this.shaderChainEnabled,
             shaderChainPreset = strAt("EmuCore/GS/ShaderChainPreset") ?: this.shaderChainPreset,
+            shaderChainParams = strAt("EmuCore/GS/ShaderChainParams")?.let { raw ->
+                // Hand-editable file, so a malformed blob is a real possibility: keep the
+                // rest of the recovered settings rather than throwing the lot away.
+                runCatching { shaderChainParamsFromJson(JSONObject(raw)) }.getOrNull()
+            } ?: this.shaderChainParams,
             casMode = intAt("EmuCore/GS/CASMode") ?: this.casMode,
             casSharpness = intAt("EmuCore/GS/CASSharpness") ?: this.casSharpness,
             loadTextureReplacements = boolAt("EmuCore/GS/LoadTextureReplacements") ?: this.loadTextureReplacements,
@@ -1110,6 +1158,20 @@ data class Settings(
         put("EmuCore/GS", "fxaa", "bool", fxaa.toString())
         put("EmuCore/GS", "ShaderChainEnabled", "bool", shaderChainEnabled.toString())
         put("EmuCore/GS", "ShaderChainPreset", "string", shaderChainPreset)
+        // Parameter overrides, as one opaque JSON blob. Nothing in emucore reads this key —
+        // there is no GSConfig field behind it, and the live values reach the renderer via
+        // the push below, not through here. It is written so the map survives the same
+        // round-trips every other field gets: settings export/import, and the reused-folder
+        // recovery that rebuilds prefs from the INI after a fresh install.
+        put("EmuCore/GS", "ShaderChainParams", "string", shaderChainParamsToJson(shaderChainParams).toString())
+        // The actual live apply. Only the CURRENT preset's values are pushed (the rest are
+        // kept for when the user picks those presets again), and only the overrides — a
+        // parameter left out keeps what the chain has, which for the freshly built or
+        // rebuilt chain this runs against is the author's initial. Resets are handled by
+        // the UI's own pushEffective, which sends initials explicitly to a live chain.
+        // Skipped under emitSink: an export has no renderer to push to.
+        if (emitSink == null)
+            ShaderParams.push(shaderChainPreset, shaderChainParams[shaderChainPreset].orEmpty())
         put("EmuCore/GS", "CASMode", "int", casMode.coerceIn(0, 2).toString())
         put("EmuCore/GS", "CASSharpness", "int", casSharpness.coerceIn(0, 100).toString())
         put("EmuCore/GS", "LoadTextureReplacements", "bool", loadTextureReplacements.toString())
@@ -1448,6 +1510,7 @@ data class Settings(
         put("fxaa", fxaa)
         put("shaderChainEnabled", shaderChainEnabled)
         put("shaderChainPreset", shaderChainPreset)
+        put("shaderChainParams", shaderChainParamsToJson(shaderChainParams))
         put("casMode", casMode)
         put("casSharpness", casSharpness)
         put("loadTextureReplacements", loadTextureReplacements)
@@ -1694,6 +1757,8 @@ data class Settings(
                 fxaa = json.optBoolean("fxaa", def.fxaa),
                 shaderChainEnabled = json.optBoolean("shaderChainEnabled", def.shaderChainEnabled),
                 shaderChainPreset = json.optString("shaderChainPreset", def.shaderChainPreset),
+                shaderChainParams = json.optJSONObject("shaderChainParams")
+                    ?.let { shaderChainParamsFromJson(it) } ?: def.shaderChainParams,
                 casMode = json.optInt("casMode", def.casMode),
                 casSharpness = json.optInt("casSharpness", def.casSharpness),
                 loadTextureReplacements = json.optBoolean("loadTextureReplacements", def.loadTextureReplacements),
@@ -1907,6 +1972,7 @@ data class Settings(
             if (current.fxaa                != base.fxaa)                j.put("fxaa", current.fxaa)
             if (current.shaderChainEnabled  != base.shaderChainEnabled)  j.put("shaderChainEnabled", current.shaderChainEnabled)
             if (current.shaderChainPreset   != base.shaderChainPreset)   j.put("shaderChainPreset", current.shaderChainPreset)
+            if (current.shaderChainParams   != base.shaderChainParams)   j.put("shaderChainParams", shaderChainParamsToJson(current.shaderChainParams))
             if (current.casMode             != base.casMode)             j.put("casMode", current.casMode)
             if (current.casSharpness        != base.casSharpness)        j.put("casSharpness", current.casSharpness)
             if (current.loadTextureReplacements != base.loadTextureReplacements) j.put("loadTextureReplacements", current.loadTextureReplacements)
@@ -2125,6 +2191,12 @@ data class Settings(
             fxaa = if (overrides.has("fxaa")) overrides.getBoolean("fxaa") else base.fxaa,
             shaderChainEnabled = if (overrides.has("shaderChainEnabled")) overrides.getBoolean("shaderChainEnabled") else base.shaderChainEnabled,
             shaderChainPreset = if (overrides.has("shaderChainPreset")) overrides.getString("shaderChainPreset") else base.shaderChainPreset,
+            // Replaces the global map wholesale rather than merging per parameter: a
+            // per-game tweak means "this game's chain looks like THIS", and merging would
+            // let a later global edit leak into a game the user had already dialled in.
+            shaderChainParams = if (overrides.has("shaderChainParams")) {
+                shaderChainParamsFromJson(overrides.optJSONObject("shaderChainParams"))
+            } else base.shaderChainParams,
             casMode = if (overrides.has("casMode")) overrides.getInt("casMode") else base.casMode,
             casSharpness = if (overrides.has("casSharpness")) overrides.getInt("casSharpness") else base.casSharpness,
             loadTextureReplacements = if (overrides.has("loadTextureReplacements")) overrides.getBoolean("loadTextureReplacements") else base.loadTextureReplacements,

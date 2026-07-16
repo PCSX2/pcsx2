@@ -692,8 +692,10 @@ private fun GraphicsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVi
     com.armsx2.ui.common.ShaderChainSection(
         enabled = settings.shaderChainEnabled,
         preset = settings.shaderChainPreset,
+        params = settings.shaderChainParams,
         onEnabledChange = { on -> viewModel.updateSettings { it.copy(shaderChainEnabled = on) } },
         onPresetChange = { path -> viewModel.updateSettings { it.copy(shaderChainPreset = path) } },
+        onParamsChange = { next -> viewModel.updateSettings { it.copy(shaderChainParams = next) } },
     )
     com.armsx2.ui.common.ShaderManagerSection()
 }
@@ -858,6 +860,10 @@ private fun ControlsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVi
     CompactAction(str("pad.controllerMapping"), "⌁", Modifier.fillMaxWidth(), viewModel::openControlsManager)
     Spacer(Modifier.height(6.dp))
     CompactAction(str("pad.editTouchLayout"), "✥", Modifier.fillMaxWidth(), viewModel::editTouchControls)
+    Spacer(Modifier.height(6.dp))
+    // Sits with the touch layout because it's the same job: what the on-screen pad LOOKS
+    // like, right after where it's laid out. Full-screen like Controller mapping.
+    CompactAction(str("tab.skins"), "◈", Modifier.fillMaxWidth(), viewModel::openSkins)
     // Motion / gyroscope controls in-game (mode, sensitivity, smoothing, invert). Global scope
     // to match the rumble/multitap toggles above; the per-game scope lives in All Settings › Controls.
     com.armsx2.ui.settings.GyroSection()

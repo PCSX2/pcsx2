@@ -10,6 +10,8 @@ import com.armsx2.PatchRepo
 import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.config.ConfigStore
 import com.armsx2.config.Settings
+import com.armsx2.config.SettingsScope
+import com.armsx2.ui.InGameOverlay
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,17 +43,38 @@ class PatchManagerViewModel(application: Application) : AndroidViewModel(applica
         val files = patchDirectories().flatMap { directory ->
             if (!directory.isDirectory) emptyList() else directory.walkTopDown().filter { it.isFile && it.extension.equals("pnach", true) }.toList()
         }.distinctBy { it.absolutePath }.sortedBy { it.name.lowercase() }
-        state.value = state.value.copy(settings = ConfigStore.loadGlobal(), files = files)
+        state.value = state.value.copy(settings = scopedSettings(), files = files)
         // Reflect every file's on-disk enabled cheats into the native Enable list so
         // labelled cheats apply even for imported/pre-enabled files the user never
         // toggled in-app (see syncAllEnableLists / pushEnableList).
         syncAllEnableLists(files)
     }
 
+    /**
+     * The settings tier this tab is being shown for — per-game when opened for a game,
+     * else global.
+     *
+     * This tab used to `loadGlobal()` here and `saveGlobal()` in [update], hard-wired to
+     * the global tier at BOTH ends. Every other tab routes through
+     * [InGameOverlay.saveSettings], so it was the only one that ignored the Global/Game
+     * switch above it: the switch appeared to do nothing on this page, and a patch setting
+     * meant for one game was written globally (while the pause menu's own patch rows,
+     * which DO honour the scope, wrote per-game — the two then contradicted each other,
+     * which is the reported "individual patch settings overwrite global and vice versa").
+     */
+    private fun scopedSettings(): Settings {
+        val serial = InGameOverlay.currentSerial.value?.takeIf { it.isNotEmpty() }
+        return if (InGameOverlay.settingsScope.value == SettingsScope.Game && serial != null)
+            ConfigStore.resolveForGame(serial)
+        else
+            ConfigStore.loadGlobal()
+    }
+
     fun update(transform: (Settings) -> Settings) {
         val updated = transform(state.value.settings)
-        ConfigStore.saveGlobal(updated)
-        if (MainActivityRuntime.nativeReady.value) runCatching { updated.applyTo() }
+        // The shared entry point: picks the tier from the scope, live-applies, and keeps
+        // settingsState in step so the pause menu and the other tabs see the same values.
+        InGameOverlay.saveSettings(updated)
         state.value = state.value.copy(settings = updated)
     }
 

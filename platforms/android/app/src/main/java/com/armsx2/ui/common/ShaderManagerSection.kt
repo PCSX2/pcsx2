@@ -1,5 +1,7 @@
 package com.armsx2.ui.common
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,6 +39,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
+
+/** Busy latch for an import. Not a source id — the import rows aren't sources, but they
+ *  share the one "something is running" gate so a download and an import can't overlap. */
+private const val IMPORT_BUSY_ID = "__import__"
 
 /**
  * RetroArch shader-pack manager: download a slang-shaders pack, see what's
@@ -77,6 +83,36 @@ fun ShaderManagerSection() {
     val installedOkMsg = str("renderer.shaderPack.installedOk")
     val downloadFailedMsg = str("renderer.shaderPack.downloadFailed")
     val cancelledMsg = str("renderer.shaderPack.cancelled")
+    val importFailedMsg = str("renderer.shaderPack.import.failed")
+
+    /** Shared by both import pickers: an import has no progress to report (SAF gives no
+     *  total up front), so it only needs the busy latch the download rows already use. */
+    fun runImport(block: suspend () -> String?) {
+        busyId = IMPORT_BUSY_ID
+        message = null
+        scope.launch {
+            val id = block()
+            busyId = null
+            if (id != null) {
+                installed.clear()
+                installed.addAll(withContext(Dispatchers.IO) { ShaderRepo.listInstalled(context) })
+                message = installedOkMsg
+            } else {
+                message = importFailedMsg
+            }
+        }
+    }
+
+    val folderLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) runImport { withContext(Dispatchers.IO) { ShaderRepo.importFromTree(context, uri) } }
+    }
+    val zipLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) runImport { withContext(Dispatchers.IO) { ShaderRepo.importFromZip(context, uri) } }
+    }
 
     fun refreshInstalled() {
         // Off the UI thread: listing walks each pack's tree to count presets,
@@ -159,13 +195,63 @@ fun ShaderManagerSection() {
             // releases API to poll: libretro publishes the pack at one stable
             // buildbot URL (the same one RetroArch's own updater pulls), so
             // there's nothing to fetch before showing it.
-            ShaderRepo.sources().forEach { source ->
+            ShaderRepo.baseSources().forEach { source ->
                 RemoteShaderRow(
                     controllerId = "shaderPack.remote.${source.id}",
                     title = source.name,
                     subtitle = source.description,
                     busy = busyId == source.id,
                     enabled = busyId == null,
+                    onDownload = { startDownload(source) },
+                )
+            }
+            // Import, right under the one pack we host — for everything we don't: a fork,
+            // a forum pack, a tree someone built themselves. Same destination folder, so
+            // an imported pack is indistinguishable from a downloaded one afterwards.
+            SectionTitle(
+                str("renderer.shaderPack.import.label"),
+                str("renderer.shaderPack.import.description"),
+            )
+            RemoteShaderRow(
+                controllerId = "shaderPack.import.folder",
+                title = str("renderer.shaderPack.import.folder"),
+                subtitle = str("renderer.shaderPack.import.folder.description"),
+                busy = busyId == IMPORT_BUSY_ID,
+                enabled = busyId == null,
+                onDownload = { folderLauncher.launch(null) },
+                actionLabel = str("renderer.shaderPack.import.browse"),
+            )
+            RemoteShaderRow(
+                controllerId = "shaderPack.import.zip",
+                title = str("renderer.shaderPack.import.zip"),
+                subtitle = str("renderer.shaderPack.import.zip.description"),
+                busy = busyId == IMPORT_BUSY_ID,
+                enabled = busyId == null,
+                onDownload = {
+                    zipLauncher.launch(
+                        arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream")
+                    )
+                },
+                actionLabel = str("renderer.shaderPack.import.browse"),
+            )
+            // Companion preset packs, last: they're an add-on to a pack above, not an
+            // alternative to it. Each gets its own heading because it's a distinct
+            // collection with its own name, and its row disables itself until the pack it
+            // is written against is actually installed.
+            ShaderRepo.companionSources().forEach { source ->
+                // Re-checked when the installed list changes, so it un-greys the moment
+                // the base pack lands rather than on the next visit.
+                val met = remember(installed.size, source.id) {
+                    ShaderRepo.requirementMet(context, source)
+                }
+                SectionTitle(source.name, str("renderer.shaderPack.companion.description"))
+                RemoteShaderRow(
+                    controllerId = "shaderPack.remote.${source.id}",
+                    title = source.name,
+                    subtitle = if (met) source.description
+                    else str("renderer.shaderPack.companion.needsBase"),
+                    busy = busyId == source.id,
+                    enabled = busyId == null && met,
                     onDownload = { startDownload(source) },
                 )
             }
@@ -249,6 +335,9 @@ private fun RemoteShaderRow(
     busy: Boolean,
     enabled: Boolean,
     onDownload: () -> Unit,
+    /** Button text. Defaults to "Get" (a download); the import rows say "Browse", since
+     *  nothing is being fetched. */
+    actionLabel: String? = null,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -271,7 +360,7 @@ private fun RemoteShaderRow(
                     enabled = enabled,
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.controllerFocusable(controllerId, RoundedCornerShape(12.dp), onConfirm = { if (enabled) onDownload() }),
-                ) { Text(str("backend.driver.get")) }
+                ) { Text(actionLabel ?: str("backend.driver.get")) }
             }
         }
     }

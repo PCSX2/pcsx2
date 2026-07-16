@@ -21,6 +21,47 @@
 #include <algorithm>
 #include <ostream>
 #include <fstream>
+#include <atomic>
+#include <mutex>
+
+namespace
+{
+	// Shader-chain parameter overrides, handed from the UI thread to the GS thread. See
+	// GSDevice::SetShaderChainParams for the contract; the generation is what keeps the
+	// per-frame read down to one atomic load on the frame path.
+	std::mutex s_shader_param_mutex;
+	std::string s_shader_param_preset;
+	std::vector<std::pair<std::string, float>> s_shader_params;
+	std::atomic<u64> s_shader_param_generation{0};
+} // namespace
+
+void GSDevice::SetShaderChainParams(std::string preset, std::vector<std::pair<std::string, float>> params)
+{
+	{
+		std::unique_lock lock(s_shader_param_mutex);
+		s_shader_param_preset = std::move(preset);
+		s_shader_params = std::move(params);
+	}
+
+	// Bumped after the store is populated, never before: the GS thread treats a new
+	// generation as "the values are ready to read".
+	s_shader_param_generation.fetch_add(1, std::memory_order_release);
+}
+
+u64 GSDevice::GetShaderChainParamGeneration()
+{
+	return s_shader_param_generation.load(std::memory_order_acquire);
+}
+
+bool GSDevice::GetShaderChainParams(const std::string& preset, std::vector<std::pair<std::string, float>>* out)
+{
+	std::unique_lock lock(s_shader_param_mutex);
+	if (s_shader_param_preset != preset || s_shader_params.empty())
+		return false;
+
+	*out = s_shader_params;
+	return true;
+}
 
 const char* ShaderEntryPoint(ShaderConvert value)
 {

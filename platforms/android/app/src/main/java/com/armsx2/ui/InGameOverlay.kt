@@ -28,7 +28,10 @@ object InGameOverlay {
     fun saveSettings(updated: Settings) {
         val previous = settingsState.value
         settingsState.value = updated
-        ConfigStore.save(settingsScope.value, currentSerial.value, updated)
+        // `previous` matters: it's how ConfigStore tells a field the user just changed in
+        // Game scope from one they never touched, so setting a per-game value that happens
+        // to equal global still pins it instead of vanishing.
+        ConfigStore.save(settingsScope.value, currentSerial.value, updated, previous)
         frameLimitOn.value = updated.frameLimitEnable
 
         if (MainActivityRuntime.nativeReady.value) {

@@ -549,7 +549,12 @@ private:
 	std::string m_shader_chain_preset;
 	bool m_shader_chain_failed = false;
 	size_t m_shader_frame_count = 0;
+	/// Last parameter-override generation pushed into m_shader_chain. Zeroed whenever the
+	/// chain is (re)created, because a new chain starts at the preset's initial values and
+	/// has to be re-fed regardless of whether the store changed.
+	u64 m_shader_param_generation = 0;
 	void DestroyShaderChain();
+	void ApplyShaderChainParams();
 
 	bool DoCAS(
 		GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) final;
