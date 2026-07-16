@@ -2606,6 +2606,11 @@ void FullscreenUI::DrawGameListWindow()
 	{
 		OpenCoverDownloaderWindow();
 	}
+	else if (ImGui::IsKeyPressed(ImGuiKey_GamepadL2, false) || ImGui::IsKeyPressed(ImGuiKey_F5, false))
+	{
+		ShowToast(std::string(), FSUI_STR("Scanning for new games..."), 4.0f);
+		Host::RefreshGameListAsync(false);
+	}
 
 	switch (s_game_list_view)
 	{
@@ -2640,6 +2645,7 @@ void FullscreenUI::DrawGameListWindow()
 			std::make_pair(glyphs.dpad, FSUI_VSTR("Select Game")),
 			std::make_pair(glyphs.select, FSUI_VSTR("Cover Downloader")),
 			std::make_pair(glyphs.start, FSUI_VSTR("Settings")),
+			std::make_pair(ICON_PF_LEFT_TRIGGER_L2, FSUI_VSTR("Refresh List")),
 			std::make_pair(swapNorthWest ? glyphs.west : glyphs.north, FSUI_VSTR("Change View")),
 			std::make_pair(swapNorthWest ? glyphs.north : glyphs.west, FSUI_VSTR("Launch Options")),
 			std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR("Start Game")),
@@ -2654,6 +2660,7 @@ void FullscreenUI::DrawGameListWindow()
 			std::make_pair(ICON_PF_F2, FSUI_VSTR("Settings")),
 			std::make_pair(ICON_PF_F3, FSUI_VSTR("Launch Options")),
 			std::make_pair(ICON_PF_F4, FSUI_VSTR("Cover Downloader")),
+			std::make_pair(ICON_PF_F5, FSUI_VSTR("Refresh List")),
 			std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Start Game")),
 			std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back")),
 		});
