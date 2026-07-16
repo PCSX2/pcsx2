@@ -122,7 +122,9 @@ void eeRecompileCodeRC0_MEM(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5
 	noconstcode(info);
 }
 
-// rt = rs OP imm16 (memory-based)
+// rt = rs OP imm16 (allocator-resident — GE-M2 Phase 4a). Single-source shape
+// of eeRecompileCodeRC0_MEM; cite the x86 eeRecompileCodeRC1 template
+// (pcsx2/x86/ix86-32/iR5900Templates.cpp) for the same allocator design.
 void eeRecompileCodeRC1_MEM(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode, int xmminfo)
 {
 	pxAssert((xmminfo & (XMMINFO_READS | XMMINFO_WRITET)) == (XMMINFO_READS | XMMINFO_WRITET));
@@ -130,27 +132,48 @@ void eeRecompileCodeRC1_MEM(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode, i
 	if (!_Rt_)
 		return;
 
-	// Const: compile-time evaluation
+	// Const source: compile-time evaluation
 	if (GPR_IS_CONST1(_Rs_))
 	{
-		_deleteEEreg(_Rt_, 0);
+		_deleteEEreg(_Rt_, 0);  // discard live homes (NEON writes back UD[1])
 		GPR_SET_CONST(_Rt_);
 		constcode();
 		return;
 	}
 
-	// Flush source to memory
-	_deleteEEreg(_Rs_, 1);
+	// The source _Rs_ gets a pool register only if it is live past this op, or if
+	// the dest _Rt_ aliases it (the dest's WRITE alloc reuses the source's home,
+	// and the leaf consumes rs before depositing the result). A PINNED source is
+	// excluded — its authoritative home is the pin mirror (or a live NEON quad),
+	// never a pool slot. Mirrors eeRecompileCodeRC0_MEM.
+	const bool s_needs_reg = !armEEPinForGPR(_Rs_) &&
+		(EEINST_USEDTEST(_Rs_) || _Rt_ == _Rs_);
 
-	// Discard dest (about to overwrite)
-	_deleteEEreg(_Rt_, 0);
+	// Mark both operands needed first so the dest alloc can't evict a resident
+	// source mid-op.
+	_addNeededGPRtoArm64GPR(_Rs_);
+	_addNeededGPRtoArm64GPR(_Rt_);
+
+	if (s_needs_reg && _checkArm64GPR(ARM64TYPE_GPR, _Rs_, MODE_READ) < 0)
+		_allocArm64GPR(ARM64TYPE_GPR, _Rs_, MODE_READ);
+
+	// Dest _Rt_: free any 128-bit NEON home first (writing back the untouched
+	// upper 64 — scalar MIPS ops only write UD[0]), then take a WRITE slot unless
+	// pinned (a pinned dest keeps its pin home; the memDestT/memStoreT leaves
+	// route through it).
+	_deleteGPRtoNEONreg(_Rt_, DELETE_REG_FREE);
+	if (!armEEPinForGPR(_Rt_))
+		_allocArm64GPR(ARM64TYPE_GPR, _Rt_, MODE_WRITE);
+
 	GPR_DEL_CONST(_Rt_);
 
-	u32 info = 0;
+	u32 info = 0;  // leaves resolve operands via the pin table / allocator
 	noconstcode(info);
 }
 
-// rd = rt OP sa (memory-based)
+// rd = rt OP sa (allocator-resident — GE-M2 Phase 4a). Single-source shape of
+// eeRecompileCodeRC0_MEM; cite the x86 eeRecompileCodeRC2 template
+// (pcsx2/x86/ix86-32/iR5900Templates.cpp) for the same allocator design.
 void eeRecompileCodeRC2_MEM(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode, int xmminfo)
 {
 	pxAssert((xmminfo & (XMMINFO_READT | XMMINFO_WRITED)) == (XMMINFO_READT | XMMINFO_WRITED));
@@ -158,23 +181,41 @@ void eeRecompileCodeRC2_MEM(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode, i
 	if (!_Rd_)
 		return;
 
-	// Const: compile-time evaluation
+	// Const source: compile-time evaluation
 	if (GPR_IS_CONST1(_Rt_))
 	{
-		_deleteEEreg(_Rd_, 0);
+		_deleteEEreg(_Rd_, 0);  // discard live homes (NEON writes back UD[1])
 		GPR_SET_CONST(_Rd_);
 		constcode();
 		return;
 	}
 
-	// Flush source to memory
-	_deleteEEreg(_Rt_, 1);
+	// The source _Rt_ gets a pool register only if it is live past this op, or if
+	// the dest _Rd_ aliases it. A PINNED source is excluded — its authoritative
+	// home is the pin mirror (or a live NEON quad), never a pool slot. Mirrors
+	// eeRecompileCodeRC0_MEM.
+	const bool t_needs_reg = !armEEPinForGPR(_Rt_) &&
+		(EEINST_USEDTEST(_Rt_) || _Rd_ == _Rt_);
 
-	// Discard dest (about to overwrite)
-	_deleteEEreg(_Rd_, 0);
+	// Mark both operands needed first so the dest alloc can't evict a resident
+	// source mid-op.
+	_addNeededGPRtoArm64GPR(_Rt_);
+	_addNeededGPRtoArm64GPR(_Rd_);
+
+	if (t_needs_reg && _checkArm64GPR(ARM64TYPE_GPR, _Rt_, MODE_READ) < 0)
+		_allocArm64GPR(ARM64TYPE_GPR, _Rt_, MODE_READ);
+
+	// Dest _Rd_: free any 128-bit NEON home first (writing back the untouched
+	// upper 64 — scalar MIPS ops only write UD[0]), then take a WRITE slot unless
+	// pinned (a pinned dest keeps its pin home; the memDestD/memStoreD leaves
+	// route through it).
+	_deleteGPRtoNEONreg(_Rd_, DELETE_REG_FREE);
+	if (!armEEPinForGPR(_Rd_))
+		_allocArm64GPR(ARM64TYPE_GPR, _Rd_, MODE_WRITE);
+
 	GPR_DEL_CONST(_Rd_);
 
-	u32 info = 0;
+	u32 info = 0;  // leaves resolve operands via the pin table / allocator
 	noconstcode(info);
 }
 
