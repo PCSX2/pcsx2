@@ -669,6 +669,14 @@ public class NativeApp {
 	 *  the real region (India/China/Korea/HK) a serial prefix alone can't distinguish. */
 	public static native String getRegionForSerial(String serial);
 
+	/** GameDB titles for a serial as "&lt;name&gt;\n&lt;name-sort&gt;\n&lt;name-en&gt;", or "" if the serial
+	 *  isn't in the database. name-sort / name-en may be empty; name is set for any entry.
+	 *
+	 *  One call, one lookup — the library asks for every game it scans. For a Japanese game
+	 *  name is the original title, name-sort its kana reading (sort by this, not the kanji),
+	 *  and name-en the romanised one. */
+	public static native String getTitlesForSerial(String serial);
+
 	public static native boolean saveStateToSlot(int slot);
 	public static native boolean loadStateFromSlot(int slot);
 	public static native String getGamePathSlot(int slot);

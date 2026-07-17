@@ -1188,8 +1188,15 @@ private fun StickWidget(cfg: TouchButtonCfg, edit: Boolean) {
     Box(
         modifier = Modifier.fillMaxSize().then(pressMod),
     ) {
+        // Which stick this is, so a skin can draw the two differently (an "L"/"R" marking
+        // is the usual reason). Fallback chain per image: this side's art -> the pack's
+        // single shared art -> the built-in drawable. That keeps older one-image packs
+        // rendering exactly as before while packs that ship both sides stop showing the
+        // same art under both sticks.
+        val stickSide = if (cfg.id == TouchButtonId.L_STICK) "left" else "right"
         Image(
-            painter = skinPainter("analog_base") ?: painterResource(R.drawable.pad_stick_base),
+            painter = skinPainter("analog_base_$stickSide") ?: skinPainter("analog_base")
+                ?: painterResource(R.drawable.pad_stick_base),
             contentDescription = cfg.id.label + " base",
             contentScale = ContentScale.Fit,
             alpha = opacity,
@@ -1202,7 +1209,8 @@ private fun StickWidget(cfg: TouchButtonCfg, edit: Boolean) {
         )
         val thumbSizeDp = cfg.sizeDp * 0.62f
         Image(
-            painter = skinPainter("analog_stick") ?: painterResource(R.drawable.pad_thumb),
+            painter = skinPainter("analog_stick_$stickSide") ?: skinPainter("analog_stick")
+                ?: painterResource(R.drawable.pad_thumb),
             contentDescription = cfg.id.label + " thumb",
             contentScale = ContentScale.Fit,
             alpha = opacity,

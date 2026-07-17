@@ -141,23 +141,32 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private fun buildState(base: HomeUiState): HomeUiState {
         val recents = repository.recentGames(base.allGames)
         val recentOrder = recents.mapIndexed { index, game -> game.uri.toString() to index }.toMap()
+        val forceEn = com.armsx2.EnglishTitles.enabled.value
         val filtered = base.allGames.filter { game ->
             val query = base.query.trim()
             // Exclude games the user marked hidden (long-press → Hide), unless "Show hidden" is on.
             (com.armsx2.HiddenGames.showHidden.value || !com.armsx2.HiddenGames.isHidden(game)) &&
                 (query.isBlank() ||
+                    // Match BOTH names regardless of which is displayed: someone typing
+                    // "Katakamuna" should find a game listed as 片神名, and vice versa.
                     game.title.contains(query, ignoreCase = true) ||
+                    game.titleEn.contains(query, ignoreCase = true) ||
+                    game.titleSort.contains(query, ignoreCase = true) ||
                     game.serial?.contains(query, ignoreCase = true) == true ||
                     game.extension.contains(query, ignoreCase = true))
         }
+        // sortKey(), not the displayed title: a Japanese title sorts by its kana reading
+        // (GameDB name-sort), because sorting the kanji sorts by codepoint — which is the
+        // "sort by name-sort" half of issue #338.
         val sorted = when (base.sort) {
-            HomeSort.Title -> filtered.sortedBy { it.title.lowercase() }
+            HomeSort.Title -> filtered.sortedBy { it.sortKey(forceEn).lowercase() }
             HomeSort.RecentlyPlayed -> filtered.sortedWith(
                 compareBy<GameInfo> { recentOrder[it.uri.toString()] ?: Int.MAX_VALUE }
-                    .thenBy { it.title.lowercase() },
+                    .thenBy { it.sortKey(forceEn).lowercase() },
             )
             HomeSort.Compatibility -> filtered.sortedWith(
-                compareByDescending<GameInfo> { it.compatibility }.thenBy { it.title.lowercase() },
+                compareByDescending<GameInfo> { it.compatibility }
+                    .thenBy { it.sortKey(forceEn).lowercase() },
             )
         }
         return base.copy(

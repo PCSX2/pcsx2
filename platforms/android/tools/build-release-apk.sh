@@ -69,7 +69,10 @@ BUILT="$ROOT_DIR/app/build/outputs/apk/github/release/app-github-release.apk"
 
 build_core() { # pagesize libname outapk
 	local ps="$1" ln="$2" outapk="$3"
-	echo "=== building core $ln (page=$ps, pgo=optimize) ==="
+	# Print the mode actually used, not a guess: this said "pgo=optimize" unconditionally
+	# even under PGO_MODE=generate, which is a lie in the one log you check when a profile
+	# collection turns up empty.
+	echo "=== building core $ln (page=$ps, pgo=${PGO_MODE:-optimize}) ==="
 	rm -f "$BUILT"
 	"$GRADLE" -p "$ROOT_DIR" :app:assembleGithubRelease \
 		-Parmsx2.hostPageSize="$ps" \

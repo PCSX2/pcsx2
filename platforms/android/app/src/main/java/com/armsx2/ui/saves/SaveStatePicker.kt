@@ -27,6 +27,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -49,6 +50,7 @@ import com.armsx2.ui.common.ArmsBackdrop
 import com.armsx2.ui.common.ArmsTopBar
 import com.armsx2.ui.common.GlassPanel
 import com.armsx2.ui.common.RoundAction
+import com.armsx2.ui.settings.IntSliderRow
 import com.armsx2.ui.settings.controllerFocusable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -135,12 +137,19 @@ fun SaveStatePickerScreen(mode: SaveMode, onBack: () -> Unit) {
     }
 }
 
-/** Auto-save-on-exit + auto-load-last-state-on-boot persistence toggles. */
+/** Auto-save-on-exit + auto-load-last-state-on-boot persistence toggles, and the
+ *  interval autosave that writes the same slot while you play. */
 @Composable
 private fun AutoOptions(modifier: Modifier = Modifier) {
     val prefs = MainActivityRuntime.prefs
     var autoSave by remember { mutableStateOf(prefs.getBoolean("autoSaveOnExit", false)) }
     var autoLoad by remember { mutableStateOf(prefs.getBoolean("autoLoadOnBoot", false)) }
+    var interval by remember {
+        mutableIntStateOf(prefs.getInt(MainActivityRuntime.KEY_AUTOSAVE_INTERVAL_MIN, 0))
+    }
+    // str() is @Composable; valueFormatter is a plain lambda, so resolve up-front.
+    val offLabel = str("savestate.autoSaveInterval.off")
+    val everyLabel = str("savestate.autoSaveInterval.every")
     GlassPanel(modifier = modifier, contentPadding = 12.dp) {
         Column {
             ToggleRow("save.opt.autoSave", str("savestate.autoSaveOnExit"), autoSave) { value ->
@@ -152,9 +161,33 @@ private fun AutoOptions(modifier: Modifier = Modifier) {
                 autoLoad = value
                 prefs.edit().putBoolean("autoLoadOnBoot", value).apply()
             }
+            Spacer(Modifier.height(6.dp))
+            // Writes the SAME autosave slot the two toggles above use, so a crash and a
+            // clean exit leave the state in one predictable place and the numbered slots
+            // stay yours.
+            IntSliderRow(
+                label = str("savestate.autoSaveInterval.label"),
+                value = interval,
+                min = 0,
+                max = AUTOSAVE_INTERVAL_MAX_MIN,
+                description = str("savestate.autoSaveInterval.description"),
+                valueFormatter = { if (it == 0) offLabel else everyLabel.format(it) },
+                onReset = if (interval == 0) null else ({
+                    interval = 0
+                    prefs.edit().putInt(MainActivityRuntime.KEY_AUTOSAVE_INTERVAL_MIN, 0).apply()
+                }),
+                onChange = { value ->
+                    interval = value
+                    prefs.edit().putInt(MainActivityRuntime.KEY_AUTOSAVE_INTERVAL_MIN, value).apply()
+                },
+            )
         }
     }
 }
+
+/** Longest interval offered. Beyond half an hour the feature stops being a safety net and
+ *  the slider stops being walkable on a d-pad. */
+private const val AUTOSAVE_INTERVAL_MAX_MIN = 30
 
 @Composable
 private fun ToggleRow(controllerId: String, label: String, checked: Boolean, onChange: (Boolean) -> Unit) {

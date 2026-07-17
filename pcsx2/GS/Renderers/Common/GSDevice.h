@@ -1724,6 +1724,12 @@ public:
 
 	virtual std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) = 0;
 
+	/// Hints that a synchronous CPU readback of `tex` is being performed. Games that read
+	/// back every frame (e.g. small occlusion-test targets) will typically draw into the
+	/// same texture again shortly before the next readback; backends can use this to
+	/// schedule command submission so that readback has minimal GPU backlog to wait on.
+	virtual void HintReadbackSource(GSTexture* tex);
+
 	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) = 0;
 
 	// StretchRect - all options

@@ -46,6 +46,11 @@ class GameLibraryRepository(private val context: Context) {
                                 item.getString("uri").substringAfterLast('.', "").uppercase()
                             },
                             platform = GamePlatform.fromKey(item.optString("platform").takeIf(String::isNotBlank)),
+                            // Absent in a cache written before #338 — optString gives "",
+                            // which reads as "no separate sort key / not translated", so an
+                            // old cache degrades to the previous behaviour until a rescan.
+                            titleSort = item.optString("titleSort"),
+                            titleEn = item.optString("titleEn"),
                         ),
                     )
                 }
@@ -138,21 +143,44 @@ class GameLibraryRepository(private val context: Context) {
 
     private fun createGame(uri: Uri, name: String, extension: String, rawProbe: String?): GameInfo {
         val (probeSerial, probePlatform) = parseProbe(rawProbe)
-        val (title, fileSerial) = FilenameParser.parse(name)
+        val (fileTitle, fileSerial) = FilenameParser.parse(name)
         val serial = probeSerial ?: fileSerial
         val compatibility = serial
             ?.let { runCatching { NativeApp.getCompatibilityForSerial(it) }.getOrDefault(0) }
             ?.minus(1)
             ?.coerceIn(0, 5)
             ?: 0
+        // GameDB title first, filename only as the fallback — the same order GameList.cpp
+        // uses. The database is the curated name: it drops dump cruft ("(USA) [!] v1.1"),
+        // and for a Japanese game it is the ACTUAL Japanese title, which no filename-derived
+        // guess can produce. Issue #338.
+        val db = serial?.let { dbTitles(it) }
         return GameInfo(
             uri = uri,
-            title = title,
+            title = db?.name?.takeIf { it.isNotEmpty() } ?: fileTitle,
             serial = serial,
             compatibility = compatibility,
             extension = extension.uppercase(),
             platform = probePlatform ?: GamePlatform.PS2,
+            // Only meaningful alongside a DB title; a filename-derived one has no sort key
+            // and is not a translation of anything.
+            titleSort = db?.sort.orEmpty(),
+            titleEn = db?.en.orEmpty(),
         )
+    }
+
+    private data class DbTitles(val name: String, val sort: String, val en: String)
+
+    /** GameDB's three titles for [serial], or null when it isn't in the database. */
+    private fun dbTitles(serial: String): DbTitles? {
+        val raw = runCatching { NativeApp.getTitlesForSerial(serial) }.getOrNull()
+        if (raw.isNullOrEmpty()) return null
+        // "<name>\n<name-sort>\n<name-en>" — split with a limit so a title can't lose a
+        // trailing field, and tolerate a short string from an older core.
+        val parts = raw.split('\n')
+        val name = parts.getOrNull(0).orEmpty()
+        if (name.isEmpty()) return null
+        return DbTitles(name, parts.getOrNull(1).orEmpty(), parts.getOrNull(2).orEmpty())
     }
 
     private fun parseProbe(value: String?): Pair<String?, GamePlatform?> {
@@ -182,6 +210,8 @@ class GameLibraryRepository(private val context: Context) {
                 put("compat", game.compatibility)
                 put("ext", game.extension)
                 put("platform", game.platform.key)
+                put("titleSort", game.titleSort)
+                put("titleEn", game.titleEn)
             })
         }
         MainActivityRuntime.prefs.edit {

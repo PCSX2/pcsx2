@@ -965,6 +965,59 @@ open class MainActivityRuntime : ComponentActivity() {
          * The core knows the serial once the disc is read, which is the same key the save
          * path uses — so build the missing GameInfo from it and the two agree again.
          */
+        /** Minutes between interval autosaves. 0 = off, which is the default: writing a
+         *  savestate costs a visible hitch, so it is never turned on for you. */
+        const val KEY_AUTOSAVE_INTERVAL_MIN = "autoSaveIntervalMin"
+
+        /** How often the job below wakes to check. Well under the shortest interval (1
+         *  minute), so a freshly-lowered setting takes effect promptly without the job
+         *  spinning. */
+        private const val AUTOSAVE_POLL_MS = 15_000L
+
+        private var autosaveIntervalJob: kotlinx.coroutines.Job? = null
+
+        /**
+         * Interval autosave: while a game is actually RUNNING, write the autosave slot
+         * every N minutes so a crash or a flat battery costs at most that much progress.
+         *
+         * Writes the SAME dedicated `.autosave.p2s` that auto-save-on-exit uses, so the
+         * numbered slots 0-9 stay entirely the user's and auto-load-on-boot picks this up
+         * with no extra plumbing.
+         *
+         * Started once and self-gating rather than hooked to VM start/stop: the state it
+         * cares about (running, not covered by a menu, interval > 0) is all readable here,
+         * and a single long-lived job can't be leaked by a boot path that forgets to stop
+         * it. It deliberately does NOT fire while paused or while the pause menu / a
+         * manager screen is up — the game isn't advancing, so a save then costs a hitch
+         * and buys nothing.
+         */
+        private fun startAutosaveIntervalJob() {
+            autosaveIntervalJob?.cancel()
+            autosaveIntervalJob = instance?.lifecycleScope?.launch {
+                var lastSaveAt = 0L
+                while (true) {
+                    kotlinx.coroutines.delay(AUTOSAVE_POLL_MS)
+                    val minutes = runCatching { prefs.getInt(KEY_AUTOSAVE_INTERVAL_MIN, 0) }.getOrDefault(0)
+                    if (minutes <= 0 || eState.value != EmuState.RUNNING || WindowImpl.frontendCovers) {
+                        // Reset the clock while it can't fire, so re-entering a game doesn't
+                        // immediately dump a save from time that accrued in a menu.
+                        lastSaveAt = 0L
+                        continue
+                    }
+                    val now = android.os.SystemClock.elapsedRealtime()
+                    if (lastSaveAt == 0L) {
+                        lastSaveAt = now
+                        continue
+                    }
+                    if (now - lastSaveAt < minutes * 60_000L) continue
+                    runCatching { NativeApp.saveAutosaveState() }
+                    // Stamped AFTER the write: a savestate takes real time, and starting
+                    // the next interval from before it would make saves creep earlier.
+                    lastSaveAt = android.os.SystemClock.elapsedRealtime()
+                }
+            }
+        }
+
         private fun adoptExternalGameIdentity() {
             if (!launchedExternally || currentGame.value != null) return
             val path = m_szGamefile.takeIf { it.isNotEmpty() } ?: return
@@ -1563,6 +1616,7 @@ open class MainActivityRuntime : ComponentActivity() {
         applyEmulationOrientation()
         com.armsx2.CoverArtStyle.load()
         com.armsx2.GridLabels.load()
+        com.armsx2.EnglishTitles.load()
         com.armsx2.HiddenGames.load()
         com.armsx2.LibraryTitles.load()
         com.armsx2.LibraryRecentShelf.load()
@@ -1573,6 +1627,7 @@ open class MainActivityRuntime : ComponentActivity() {
         com.armsx2.ui.theme.ToolbarPositionPreferences.load()
         com.armsx2.ui.theme.LibraryChromePreferences.load()
         com.armsx2.ControllerSkinStore.load(applicationContext)
+        startAutosaveIntervalJob()
         // Restore the saved rumble master toggle into the native gate (NativeApp.onPadRumble).
         NativeApp.sRumbleEnabled = ControllerMappings.rumbleEnabled()
         // Seed the pad-router's multitap gate before any in-game input is dispatched, so

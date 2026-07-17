@@ -658,6 +658,7 @@ public:
 	void Draw(const GSHWDrawConfig& config, int offset, int count);
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
+	void HintReadbackSource(GSTexture* tex) override;
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, u32 destX, u32 destY) override;
 
@@ -817,6 +818,23 @@ private:
 	VkFramebuffer m_current_framebuffer = VK_NULL_HANDLE;
 	VkRenderPass m_current_render_pass = VK_NULL_HANDLE;
 	GSVector4i m_current_render_pass_area = GSVector4i::zero();
+
+	// Mid-frame submission for readback-prone frames: when a game synchronously reads
+	// GS memory back (local->host TRXDIR), the readback fence-waits on everything
+	// recorded before it. Submitting accumulated work at render-pass boundaries lets
+	// the GPU execute concurrently with GS-thread recording, so that wait finds the
+	// work already complete (OutRun 2006 SD865: 3 sun-occlusion readbacks/frame cost
+	// ~8ms/frame stalled without this). Counters in render passes; ~0u = never.
+	u32 m_render_passes_since_submit = 0;
+	u32 m_render_passes_since_readback = ~0u;
+
+	// Textures recently used as synchronous-readback sources (see HintReadbackSource).
+	// A draw INTO one of these is almost certainly the producer of the next readback,
+	// so RenderHW kicks the command buffer first: the queued backlog drains while the
+	// producing pass records, leaving the readback to wait on one small pass + copy
+	// instead of the whole backlog. Compared by pointer only, never dereferenced —
+	// a recycled allocation at worst causes one extra readback-window submit.
+	std::array<GSTexture*, 2> m_recent_readback_sources = {};
 
 	GSVector4i m_scissor = GSVector4i::zero();
 	VkViewport m_viewport = {0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};

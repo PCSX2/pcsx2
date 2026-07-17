@@ -7398,6 +7398,10 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 	if (!PrepareDownloadTexture(drc.z, drc.w, fmt, dltex))
 		return;
 
+	// Per-frame readback patterns (occlusion tests etc.) redraw the same target before
+	// each read; let the backend schedule submissions around the next producing draw.
+	g_gs_device->HintReadbackSource(t->m_texture);
+
 	if (direct_read)
 	{
 		dltex->get()->CopyFromTexture(drc, t->m_texture, r, 0, true);

@@ -81,6 +81,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.armsx2.CoverArtStyle
+import com.armsx2.EnglishTitles
 import com.armsx2.GridLabels
 import com.armsx2.R
 import com.armsx2.ui.theme.ToolbarPositionPreferences
@@ -361,6 +362,7 @@ fun HomeScreen(
                                 selectedSort = state.sort,
                                 use3dCovers = CoverArtStyle.use3d.value,
                                 showGridNames = GridLabels.show.value,
+                                englishTitles = EnglishTitles.enabled.value,
                                 showHidden = com.armsx2.HiddenGames.showHidden.value,
                                 hasCustomBackground = LibraryBackground.uri.value != null,
                                 onDismiss = { overflowMenu = false },
@@ -368,6 +370,7 @@ fun HomeScreen(
                                 onSort = viewModel::setSort,
                                 onToggleCoverStyle = { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
                                 onToggleGridNames = { GridLabels.set(!GridLabels.show.value) },
+                                onToggleEnglishTitles = { EnglishTitles.set(!EnglishTitles.enabled.value) },
                                 onToggleShowHidden = { viewModel.setShowHidden(!com.armsx2.HiddenGames.showHidden.value) },
                                 onChooseBackground = { backgroundPicker.launch(arrayOf("image/*")) },
                                 onClearBackground = LibraryBackground::clear,
@@ -612,7 +615,7 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
-                    game.title,
+                    game.displayTitle(EnglishTitles.enabled.value),
                     style = MaterialTheme.typography.titleLarge,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -677,6 +680,7 @@ private fun LibraryOverflowMenu(
     selectedSort: HomeSort,
     use3dCovers: Boolean,
     showGridNames: Boolean,
+    englishTitles: Boolean,
     showHidden: Boolean,
     hasCustomBackground: Boolean,
     onDismiss: () -> Unit,
@@ -684,6 +688,7 @@ private fun LibraryOverflowMenu(
     onSort: (HomeSort) -> Unit,
     onToggleCoverStyle: () -> Unit,
     onToggleGridNames: () -> Unit,
+    onToggleEnglishTitles: () -> Unit,
     onToggleShowHidden: () -> Unit,
     onChooseBackground: () -> Unit,
     onClearBackground: () -> Unit,
@@ -741,6 +746,13 @@ private fun LibraryOverflowMenu(
             trailing = if (showGridNames) str("common.on") else str("common.off"),
         ) {
             closeThen(onToggleGridNames)
+        }
+        LibraryOverflowItem(
+            glyph = "A/あ",
+            label = str("games.overflow.englishTitles"),
+            trailing = if (englishTitles) str("common.on") else str("common.off"),
+        ) {
+            closeThen(onToggleEnglishTitles)
         }
         LibraryOverflowItem(
             glyph = "◍",
@@ -853,7 +865,7 @@ private fun GameGridCard(
         if (GridLabels.show.value) {
             Spacer(Modifier.height(4.dp))
             Text(
-                game.title,
+                game.displayTitle(EnglishTitles.enabled.value),
                 style = MaterialTheme.typography.labelSmall,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -879,7 +891,7 @@ private fun GameListCard(game: GameInfo, selected: Boolean, onClick: () -> Unit,
             GameCover(game, Modifier.width(54.dp).aspectRatio(0.72f))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(game.title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(game.displayTitle(EnglishTitles.enabled.value), style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.height(5.dp))
                 GameMetadata(game)
             }
@@ -905,7 +917,7 @@ private fun RecentGameCard(game: GameInfo, selected: Boolean = false, onClick: (
             ),
         )
         Spacer(Modifier.height(5.dp))
-        Text(game.title, style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(game.displayTitle(EnglishTitles.enabled.value), style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -949,18 +961,18 @@ private fun GameCover(
     }
     Box(modifier.clip(RoundedCornerShape(cornerRadius))) {
         if (model == null) {
-            CoverPlaceholder(game.title, game.serial, showText = placeholderText)
+            CoverPlaceholder(game.displayTitle(EnglishTitles.enabled.value), game.serial, showText = placeholderText)
         } else {
             // No fill behind the art: 3D box-art PNGs are transparent around the
             // angled case, and any backing shows as a dark/coloured "notch" at the
             // top. Keeping it transparent lets the case sit directly on the shelf.
             SubcomposeAsyncImage(
                 model = request,
-                contentDescription = game.title,
+                contentDescription = game.displayTitle(EnglishTitles.enabled.value),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = contentScale,
-                loading = { CoverPlaceholder(game.title, game.serial, showText = placeholderText) },
-                error = { CoverPlaceholder(game.title, game.serial, showText = placeholderText) },
+                loading = { CoverPlaceholder(game.displayTitle(EnglishTitles.enabled.value), game.serial, showText = placeholderText) },
+                error = { CoverPlaceholder(game.displayTitle(EnglishTitles.enabled.value), game.serial, showText = placeholderText) },
             )
         }
     }
@@ -1334,7 +1346,7 @@ private fun ShelfGameCard(game: GameInfo, width: Dp, reflectionHeight: Dp, selec
         // Title under the cover when "Name on grid" is on — shelf covers honour it too now.
         if (GridLabels.show.value) {
             Text(
-                game.title,
+                game.displayTitle(EnglishTitles.enabled.value),
                 style = MaterialTheme.typography.labelSmall,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

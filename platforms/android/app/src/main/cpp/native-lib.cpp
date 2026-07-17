@@ -3829,6 +3829,38 @@ Java_kr_co_iefriends_pcsx2_NativeApp_getRegionForSerial(JNIEnv* env, jclass, jst
     return env->NewStringUTF(db_entry->region.c_str());
 }
 
+// The GameDB's curated titles for a serial: "<name>\n<name-sort>\n<name-en>", or "" when
+// the serial isn't in the database. Any of the three may be empty — only `name` is
+// guaranteed for an entry that exists.
+//
+// One call rather than three getters because the library asks per game while scanning, and
+// this way each game costs a single findGame() lookup. '\n' separates because a PS2 title
+// can contain very nearly anything else (the DB is full of '~', '-', ':', '[', ',') but
+// never a newline.
+//
+// This is what shows a Japanese game under its Japanese name: for NTSC-J entries `name` is
+// the original title, `name-sort` its kana reading (for sorting), and `name-en` the
+// romanised one. Mirrors GameList.cpp, which fills title/title_sort/title_en the same way
+// and only falls back to the filename when the serial isn't found.
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_getTitlesForSerial(JNIEnv* env, jclass, jstring jSerial)
+{
+    if (!jSerial) return env->NewStringUTF("");
+    const std::string serial = GetJavaString(env, jSerial);
+    if (serial.empty()) return env->NewStringUTF("");
+
+    const GameDatabaseSchema::GameEntry* db_entry = GameDatabase::findGame(serial);
+    if (!db_entry) return env->NewStringUTF("");
+
+    std::string out = db_entry->name;
+    out += '\n';
+    out += db_entry->name_sort;
+    out += '\n';
+    out += db_entry->name_en;
+    return env->NewStringUTF(out.c_str());
+}
+
 // ---------------------------------------------------------------------------
 // BIOS info probe — invoked from the setup wizard while the user is picking
 // a BIOS directory. Takes ownership of `fd` (the caller MUST have detached

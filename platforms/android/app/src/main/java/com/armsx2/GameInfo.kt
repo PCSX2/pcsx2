@@ -23,6 +23,27 @@ object CoverArtStyle {
     }
 }
 
+/**
+ * Show the romanised title for games whose real title isn't English (issue #338).
+ *
+ * Default OFF = show each game under its own name, which for a Japanese release is the
+ * Japanese one. That's the GameDB's curated title and it matches desktop, whose
+ * `GetTitle(force_en = false)` does the same. On, the library reads the `name-en` the
+ * database carries for exactly these games.
+ *
+ * Only affects titles the DATABASE provides — a game that isn't in the DB keeps its
+ * filename-derived name either way, because there's nothing to translate it to.
+ */
+object EnglishTitles {
+    private const val KEY = "library.englishTitles"
+    val enabled = mutableStateOf(false)
+    fun load() { enabled.value = MainActivityRuntime.prefs.getBoolean(KEY, false) }
+    fun set(value: Boolean) {
+        enabled.value = value
+        MainActivityRuntime.prefs.edit().putBoolean(KEY, value).apply()
+    }
+}
+
 /** Show the game title under every cover in the main library grid (the old-UI behaviour),
  *  not only where a name is otherwise shown. Toggled from the library 3-dot overflow menu. */
 object GridLabels {
@@ -169,7 +190,28 @@ data class GameInfo(
     val compatibility: Int = 0,    // 0..5 (TODO: pull from gamedb)
     val extension: String = "",    // upper-case container ext, e.g. "ISO", "CHD"
     val platform: GamePlatform = GamePlatform.PS2,
+    /** GameDB `name-sort` — the title's sort key. For a Japanese game this is the kana
+     *  reading, which is the only way the list sorts the way a Japanese reader expects:
+     *  sorting the kanji sorts by codepoint, which is meaningless. Empty when the DB has
+     *  no separate key (most non-JP games), or when the title came from the filename. */
+    val titleSort: String = "",
+    /** GameDB `name-en` — the romanised title, present only where the original isn't
+     *  English. Its presence is exactly how we know [title] is non-English. */
+    val titleEn: String = "",
 ) {
+    /** The title to show. Mirrors GameList.h's `GetTitle(force_en)`: the original unless
+     *  English is asked for AND a separate English title exists. */
+    fun displayTitle(forceEn: Boolean): String =
+        if (forceEn && titleEn.isNotEmpty()) titleEn else title
+
+    /** The key to sort by. Mirrors GameList.h's `GetTitleSort(force_en)`, including the
+     *  subtlety it documents: when a separate English title exists, [titleSort] is in the
+     *  WRONG language for an English list, so the English title has to sort itself. */
+    fun sortKey(forceEn: Boolean): String = when {
+        forceEn && titleEn.isNotEmpty() -> titleEn
+        titleSort.isNotEmpty() -> titleSort
+        else -> title
+    }
     val coverUrl: String? get() = serial?.let { s ->
         val repo = when (platform) {
             GamePlatform.PS2 -> "ps2-covers"
