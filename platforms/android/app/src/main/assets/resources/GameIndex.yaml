@@ -3408,6 +3408,8 @@ SCED-51405:
 SCED-51406:
   name: "The Mark of Kri"
   region: "PAL-M5"
+  clampModes:
+    eeClampMode: 3 # Fixes textbox.
 SCED-51411:
   name: "Magazine Ufficiale PlayStation 2 Italia 02/03"
   region: "PAL-I"
@@ -5425,6 +5427,8 @@ SCES-51164:
   name: "The Mark of Kri"
   name-sort: "Mark of Kri, The"
   region: "PAL-M5"
+  clampModes:
+    eeClampMode: 3 # Fixes textbox.
 SCES-51176:
   name: "Disney's Treasure Planet"
   region: "PAL-M4"
@@ -11452,6 +11456,8 @@ SCUS-97140:
   name-sort: "Mark of Kri, The"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes textbox.
   patches:
     DBD09DD4:
       content: |-
@@ -11708,6 +11714,8 @@ SCUS-97201:
   name: "The Mark of Kri"
   name-sort: "Mark of Kri, The"
   region: "NTSC-U"
+  clampModes:
+    eeClampMode: 3 # Fixes textbox.
 SCUS-97203:
   name: "Wild ARMs 3"
   region: "NTSC-U"
@@ -11808,6 +11816,8 @@ SCUS-97220:
 SCUS-97222:
   name: "The Mark of Kri [Demo]"
   region: "NTSC-U"
+  clampModes:
+    eeClampMode: 3 # Fixes textbox.
 SCUS-97223:
   name: "NFL GameDay 2003 [Demo]"
   region: "NTSC-U"
@@ -25330,6 +25340,10 @@ SLES-53869:
   name: "Crazy Frog Racer"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    deinterlace: 9 # Game requires AdaptiveBFF de-interlacing.
+    halfPixelOffset: 5 # Aligns shadows.
+    nativeScaling: 1 # Aligns post-processing.
 SLES-53870:
   name: "Devil Kings"
   region: "PAL-M5"
@@ -43398,6 +43412,8 @@ SLPM-65310:
   name-sort: "まーく おぶ くりぃ"
   name-en: "Mark of Kri, The"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes textbox.
 SLPM-65311:
   name: "ヴィオラートのアトリエ ～グラムナートの錬金術士2～"
   name-sort: "ゔぃおらーとのあとりえ ぐらむなーとのれんきんじゅつし2"
