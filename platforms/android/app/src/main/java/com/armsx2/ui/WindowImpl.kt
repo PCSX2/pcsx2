@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
@@ -73,12 +74,27 @@ object WindowImpl {
 
     @Composable
     fun Window(content: @Composable () -> Unit) {
-        Box(Modifier.fillMaxSize().background(Color.Black)) {
-            content()
+        // Interface scaling (On-Screen tab: UI Size / UI Font Size). Applied HERE because
+        // this is the one place every frontend surface passes through — the library, the
+        // pause menu, the in-game manager screens and the shader editor are all inside
+        // this Box. ScaledUi existed but had no call site at all, so both sliders wrote a
+        // pref that nothing ever read: they moved, they persisted, and nothing resized.
+        val baseDensity = LocalDensity.current
+        ScaledUi {
+            Box(Modifier.fillMaxSize().background(Color.Black)) {
+                content()
 
-            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                com.armsx2.ui.touch.TouchControlsOverlay()
-            }
+                // The touch controls keep the REAL density. Their size and position come
+                // from the user's own touch layout, so rescaling them would drag the
+                // buttons out from under the player's thumbs — which is why the setting
+                // says it doesn't touch them. The game surface needs no such guard: it is
+                // fillMaxSize, so density can't move it.
+                CompositionLocalProvider(
+                    LocalDensity provides baseDensity,
+                    LocalLayoutDirection provides LayoutDirection.Ltr,
+                ) {
+                    com.armsx2.ui.touch.TouchControlsOverlay()
+                }
 
             if (showLibrary.value && MainActivityRuntime.eState.value == EmuState.RUNNING && !overlayVisible.value) {
                 Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.56f))) {
@@ -142,11 +158,12 @@ object WindowImpl {
                 }
             }
 
-            // LAST = topmost. The shader-parameter editor is opened FROM the settings tab
-            // and from the pause menu, so it has to draw over both; hosting it here rather
-            // than inside ShaderChainSection is also what lets it be full-screen instead of
-            // a block inside a scrolling pane.
-            com.armsx2.ui.common.ShaderParamsEditorHost()
+                // LAST = topmost. The shader-parameter editor is opened FROM the settings
+                // tab and from the pause menu, so it has to draw over both; hosting it here
+                // rather than inside ShaderChainSection is also what lets it be full-screen
+                // instead of a block inside a scrolling pane.
+                com.armsx2.ui.common.ShaderParamsEditorHost()
+            }
         }
     }
 }
