@@ -20799,7 +20799,7 @@ SLES-52584:
   compat: 5
   memcardFilters: # Used for storage of network information on the memory card.
     - "SLES-52584"
-    - "PSCD-20001"
+    - "BEPSCD-20001sloginBE"
   clampModes:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
@@ -69913,7 +69913,7 @@ SLUS-21050:
   compat: 5
   memcardFilters: # Used for storage of network information on the memory card.
     - "SLUS-21050"
-    - "PSCD-10088"
+    - "PSCD10088slogin"
   clampModes:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
