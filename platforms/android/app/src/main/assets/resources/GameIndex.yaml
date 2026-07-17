@@ -2242,6 +2242,9 @@ SCAJ-20141:
   name-sort: "ぐらんでぃあ3"
   name-en: "Grandia III"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes blackscreen.
+    vu0ClampMode: 3 # VU0 Extra+Sign, paired with EE Full.
 SCAJ-20143:
   name: "Armored Core - Last Raven"
   region: "NTSC-Unk"
@@ -10769,6 +10772,7 @@ SCPS-55010:
   name-en: "Grandia Xtreme"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 1 # Fixes Flickering
     textureInsideRT: 1 # Fixes FMVs.
 SCPS-55011:
   name: "デュアルハーツ"
@@ -42078,6 +42082,7 @@ SLPM-65082:
   name-en: "Grandia Xtreme [Limited Edition]"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 1 # Fixes Flickering
     textureInsideRT: 1 # Fixes FMVs.
 SLPM-65083:
   name: "封神演義2"
@@ -42117,6 +42122,7 @@ SLPM-65089:
   name-en: "Grandia Xtreme"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 1 # Fixes Flickering
     textureInsideRT: 1 # Fixes FMVs.
 SLPM-65090:
   name: "SPY HUNTER"
@@ -47261,12 +47267,18 @@ SLPM-65976:
   name-en: "Grandia III [Disc 1 of 2]"
   region: "NTSC-J"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes blackscreen.
+    vu0ClampMode: 3 # VU0 Extra+Sign, paired with EE Full.
 SLPM-65977:
   name: "グランディアⅢ [ディスク2/2]"
   name-sort: "ぐらんでぃあ3 [でぃすく2/2]"
   name-en: "Grandia III [Disc 2 of 2]"
   region: "NTSC-J"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes blackscreen.
+    vu0ClampMode: 3 # VU0 Extra+Sign, paired with EE Full.
   memcardFilters:
     - "SLPM-65976"
 SLPM-65978:
@@ -66665,6 +66677,7 @@ SLUS-20417:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    halfPixelOffset: 1 # Fixes Flickering
     textureInsideRT: 1 # Fixes FMVs.
 SLUS-20418:
   name: "Wakeboarding Unleashed featuring Shaun Murray"
@@ -72143,6 +72156,9 @@ SLUS-21334:
   name: "Grandia III [Disc 1 of 2]"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes blackscreen.
+    vu0ClampMode: 3 # VU0 Extra+Sign, paired with EE Full.
 SLUS-21335:
   name: "The Hustle - Detroit Streets - Kat's Story"
   name-sort: "Hustle, The - Detroit Streets - Kat's Story"
@@ -72216,6 +72232,9 @@ SLUS-21345:
   name: "Grandia III [Disc 2 of 2]"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes blackscreen.
+    vu0ClampMode: 3 # VU0 Extra+Sign, paired with EE Full.
   memcardFilters:
     - "SLUS-21334"
 SLUS-21346:
