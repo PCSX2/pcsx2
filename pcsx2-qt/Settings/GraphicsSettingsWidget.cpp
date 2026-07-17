@@ -173,7 +173,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_upscaling.textureOffsetY, "EmuCore/GS", "UserHacks_TCOffsetY", 0);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_upscaling.alignSprite, "EmuCore/GS", "UserHacks_align_sprite_X", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_upscaling.mergeSprite, "EmuCore/GS", "UserHacks_merge_pp_sprite", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_upscaling.forceEvenSpritePosition, "EmuCore/GS", "UserHacks_forceEvenSpritePosition", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_upscaling.forceEvenSpritePosition, "EmuCore/GS", "UserHacks_ForceEvenSpritePosition", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_upscaling.nativePaletteDraw, "EmuCore/GS", "UserHacks_NativePaletteDraw", false);
 
 	//////////////////////////////////////////////////////////////////////////
