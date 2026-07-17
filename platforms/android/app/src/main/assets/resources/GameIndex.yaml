@@ -8083,6 +8083,8 @@ SCKA-20088:
 SCKA-20089:
   name: "BioHazard 4" # No listed Korean name on ReDump
   region: "NTSC-K"
+  clampModes:
+    vu1ClampMode: 1 # Uses Normal VU1 clamping for stable game behavior.
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
@@ -13757,6 +13759,8 @@ SLAJ-25073:
   name-sort: "ばいおはざーど4 [Asiaばん]"
   name-en: "BioHazard 4 [Asia Version]"
   region: "NTSC-J"
+  clampModes:
+    vu1ClampMode: 1 # Uses Normal VU1 clamping for stable game behavior.
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
@@ -24762,6 +24766,8 @@ SLES-53702:
   name: "Resident Evil 4"
   region: "PAL-M5"
   compat: 5
+  clampModes:
+    vu1ClampMode: 1 # Uses Normal VU1 clamping for stable game behavior.
   gsHWFixes:
     halfPixelOffset: 5 # Fixes blurriness.
 SLES-53703:
@@ -25006,6 +25012,8 @@ SLES-53755:
 SLES-53756:
   name: "Resident Evil 4"
   region: "PAL-M5"
+  clampModes:
+    vu1ClampMode: 1 # Uses Normal VU1 clamping for stable game behavior.
   gsHWFixes:
     halfPixelOffset: 5 # Fixes blurriness.
 SLES-53758:
@@ -33676,6 +33684,8 @@ SLKA-25410:
   name: "바이오하자드 4 [PlayStation 2 BigHit Series]" # Undumped on ReDump as of 2025-08-28
   name-en: "Biohazard 4 [PlayStation 2 BigHit Series]" # Resident Evil 4
   region: "NTSC-K"
+  clampModes:
+    vu1ClampMode: 1 # Uses Normal VU1 clamping for stable game behavior.
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
@@ -48797,6 +48807,8 @@ SLPM-66213:
   name-en: "BioHazard 4"
   region: "NTSC-J"
   compat: 5
+  clampModes:
+    vu1ClampMode: 1 # Uses Normal VU1 clamping for stable game behavior.
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
@@ -54497,6 +54509,8 @@ SLPM-74229:
   name-sort: "ばいおはざーど4 [PlayStation2 the Best]"
   name-en: "BioHazard 4 [PlayStation2 the Best]"
   region: "NTSC-J"
+  clampModes:
+    vu1ClampMode: 1 # Uses Normal VU1 clamping for stable game behavior.
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
@@ -54794,6 +54808,8 @@ SLPM-74262:
   name-sort: "ばいおはざーど4 [PlayStation2 the Best]"
   name-en: "BioHazard 4 [PlayStation2 the Best]"
   region: "NTSC-J"
+  clampModes:
+    vu1ClampMode: 1 # Uses Normal VU1 clamping for stable game behavior.
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
@@ -54919,6 +54935,8 @@ SLPM-74288:
   name-sort: "ばいおはざーど4 [PlayStation2 the Best]"
   name-en: "BioHazard 4 [PlayStation2 the Best]"
   region: "NTSC-J"
+  clampModes:
+    vu1ClampMode: 1 # Uses Normal VU1 clamping for stable game behavior.
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
@@ -70800,6 +70818,8 @@ SLUS-21134:
   name: "Resident Evil 4"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vu1ClampMode: 1 # Uses Normal VU1 clamping for stable game behavior.
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
@@ -76502,6 +76522,8 @@ SLUS-29168:
 SLUS-29169:
   name: "Resident Evil 4 [Demo]"
   region: "NTSC-U"
+  clampModes:
+    vu1ClampMode: 1 # Uses Normal VU1 clamping for stable game behavior.
   gameFixes:
     - BlitInternalFPSHack # Fixes internal FPS detection.
   gsHWFixes:
