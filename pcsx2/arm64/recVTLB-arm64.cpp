@@ -1580,10 +1580,7 @@ void recLQC2()
 
 	// Store 128-bit result to VU0.VF[rt] (COP2 ft field = rt field)
 	if (_Rt_)
-	{
-		armMoveAddressToReg(RSCRATCHADDR, &VU0.VF[_Rt_].UQ);
-		armAsm->Str(a64::q0, a64::MemOperand(RSCRATCHADDR));
-	}
+		armAsm->Str(a64::q0, armVU0Mem(&VU0.VF[_Rt_]));
 }
 
 void recSQC2()
@@ -1607,7 +1604,7 @@ void recSQC2()
 	// contents while leaving arm64neon[0] still marked dirty. The next
 	// allocator flush would then write back the stomped value (VU0.VF[rt])
 	// to the FPREG's memory slot, corrupting the FPREG.
-	armLoadPtr(a64::q0, &VU0.VF[_Rt_].UQ);
+	armAsm->Ldr(a64::q0, armVU0Mem(&VU0.VF[_Rt_]));
 
 	const bool useFastmem = CHECK_FASTMEM && !vtlb_IsFaultingPC(pc);
 	if (useFastmem)
