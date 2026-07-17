@@ -5353,7 +5353,7 @@ SCES-50987:
   name: "Resident Evil - Outbreak"
   region: "PAL-Unk"
   gsHWFixes:
-    minimumBlendingLevel: 0 # Fixes transparecy effect.
+    recommendedBlendingLevel: 0 # Fixes transparecy effect.
 SCES-51003:
   name: "Network Access Disc"
   region: "PAL-E"
@@ -18578,7 +18578,7 @@ SLES-51589:
   name: "Resident Evil - Outbreak"
   region: "PAL-M5"
   gsHWFixes:
-    minimumBlendingLevel: 0 # Fixes transparecy effect.
+    recommendedBlendingLevel: 0 # Fixes transparecy effect.
   patches:
     47C231CC:
       content: |-
@@ -68568,7 +68568,7 @@ SLUS-20765:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    minimumBlendingLevel: 0 # Fixes transparecy effect.
+    recommendedBlendingLevel: 0 # Fixes transparecy effect.
   patches:
     0245EF6D:
       content: |-
