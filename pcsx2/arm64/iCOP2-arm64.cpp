@@ -164,8 +164,7 @@ static void cop2ApplyDestMaskExplicit(int fdReg, int xyzw)
 
 	cop2LoadVF(RQSCRATCH3, fdReg);
 
-	armMoveAddressToReg(RSCRATCHADDR, &s_cop2DestMasks[xyzw]);
-	armAsm->Ldr(RQSCRATCH2, a64::MemOperand(RSCRATCHADDR));
+	armAsm->Ldr(RQSCRATCH2, armCpuRegMem(&_cpuRegistersPack.cop2Rec.destMasks[xyzw]));
 
 	armAsm->Bsl(RQSCRATCH2.V16B(), RQSCRATCH.V16B(), RQSCRATCH3.V16B());
 	cop2StoreVF(RQSCRATCH2, fdReg);
@@ -201,8 +200,7 @@ static void cop2ApplyDestMaskACCExplicit(const a64::VRegister& result, int xyzw)
 
 	cop2LoadACC(RQSCRATCH3);
 
-	armMoveAddressToReg(RSCRATCHADDR, &s_cop2DestMasks[xyzw]);
-	armAsm->Ldr(RQSCRATCH2, a64::MemOperand(RSCRATCHADDR));
+	armAsm->Ldr(RQSCRATCH2, armCpuRegMem(&_cpuRegistersPack.cop2Rec.destMasks[xyzw]));
 
 	armAsm->Bsl(RQSCRATCH2.V16B(), RQSCRATCH.V16B(), RQSCRATCH3.V16B());
 	cop2StoreACC(RQSCRATCH2);
@@ -237,13 +235,36 @@ alignas(16) static const u32 s_cop2MaxFloat[4] = {0x7f7fffff, 0x7f7fffff, 0x7f7f
 // occupy disjoint bit ranges, so the add never carries between bits).
 alignas(16) static const u32 s_cop2ClipWeightPos[4] = {0x01, 0x04, 0x10, 0x00};
 
+// The COP2 emitters reach the constants above — plus the denormalized
+// status-flag scratch — through _cpuRegistersPack.cop2Rec with single
+// [RSTATE, #imm] accesses (see EeCop2RecState, R5900.h) instead of a 3-insn
+// absolute-address materialization per use. Q-form LDR needs a 16-aligned
+// offset; the whole block must sit inside the 32-bit unsigned-imm12 window.
+static_assert(offsetof(cpuRegistersPack, cop2Rec) % 16 == 0);
+static_assert(offsetof(cpuRegistersPack, cop2Rec) + sizeof(EeCop2RecState) <= 16380,
+	"EeCop2RecState must stay within W-imm12 reach of RSTATE");
+
+// (Re)write the pack copies of the COP2 rec constants. Called from
+// recResetRaw, so the harnesses that reset the rec before compiling are
+// covered too. minFloat is the pre-negated clamp lower bound: the clamp
+// emitters spend a 1-insn load where they used to spend an Fneg.
+void cop2RecWritePackConstants()
+{
+	EeCop2RecState& st = _cpuRegistersPack.cop2Rec;
+	memcpy(st.maxFloat, s_cop2MaxFloat, sizeof(st.maxFloat));
+	for (int i = 0; i < 4; i++)
+		st.minFloat[i] = s_cop2MaxFloat[i] | 0x80000000u;
+	memcpy(st.destMasks, s_cop2DestMasks, sizeof(st.destMasks));
+	memcpy(st.clipWeightPos, s_cop2ClipWeightPos, sizeof(st.clipWeightPos));
+	st.denormStatusFlag = 0;
+}
+
 // Clamp RQSCRATCH to [-FLT_MAX, +FLT_MAX] (removes infinities and NaNs)
 // FMINNM/FMAXNM match x86 MINPS/MAXPS semantics: NaN → non-NaN operand.
 static void cop2ClampResult()
 {
-	armMoveAddressToReg(RSCRATCHADDR, &s_cop2MaxFloat);
-	armAsm->Ldr(RQSCRATCH2, a64::MemOperand(RSCRATCHADDR));
-	armAsm->Fneg(RQSCRATCH3.V4S(), RQSCRATCH2.V4S()); // -FLT_MAX
+	armAsm->Ldr(RQSCRATCH2, armCpuRegMem(&_cpuRegistersPack.cop2Rec.maxFloat));
+	armAsm->Ldr(RQSCRATCH3, armCpuRegMem(&_cpuRegistersPack.cop2Rec.minFloat));
 
 	armAsm->Fminnm(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); // clamp to +FLT_MAX
 	armAsm->Fmaxnm(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH3.V4S()); // clamp to -FLT_MAX
@@ -256,24 +277,21 @@ static void cop2ClampResult()
 static void cop2ClampReg(const a64::VRegister& qreg,
 	const a64::VRegister& tmpHi, const a64::VRegister& tmpLo)
 {
-	armMoveAddressToReg(RSCRATCHADDR, &s_cop2MaxFloat);
-	armAsm->Ldr(tmpHi, a64::MemOperand(RSCRATCHADDR));
-	armAsm->Fneg(tmpLo.V4S(), tmpHi.V4S());
+	armAsm->Ldr(tmpHi, armCpuRegMem(&_cpuRegistersPack.cop2Rec.maxFloat));
+	armAsm->Ldr(tmpLo, armCpuRegMem(&_cpuRegistersPack.cop2Rec.minFloat));
 	armAsm->Fminnm(qreg.V4S(), qreg.V4S(), tmpHi.V4S());
 	armAsm->Fmaxnm(qreg.V4S(), qreg.V4S(), tmpLo.V4S());
 }
 
 // Single-temp variant of cop2ClampReg: clamps `qreg` to [-FLT_MAX, +FLT_MAX]
-// using just one scratch register (it negates the +FLT_MAX bound in place
-// between the two clamps). Needed when pre-clamping a broadcast FMAC operand,
-// where Fs/Ft already occupy two of the three q-scratch regs and only one is
-// free.
+// using just one scratch register (it reloads the bound between the two
+// clamps). Needed when pre-clamping a broadcast FMAC operand, where Fs/Ft
+// already occupy two of the three q-scratch regs and only one is free.
 static void cop2ClampRegOneTmp(const a64::VRegister& qreg, const a64::VRegister& tmp)
 {
-	armMoveAddressToReg(RSCRATCHADDR, &s_cop2MaxFloat);
-	armAsm->Ldr(tmp, a64::MemOperand(RSCRATCHADDR));
+	armAsm->Ldr(tmp, armCpuRegMem(&_cpuRegistersPack.cop2Rec.maxFloat));
 	armAsm->Fminnm(qreg.V4S(), qreg.V4S(), tmp.V4S()); // clamp to +FLT_MAX
-	armAsm->Fneg(tmp.V4S(), tmp.V4S());                // -FLT_MAX
+	armAsm->Ldr(tmp, armCpuRegMem(&_cpuRegistersPack.cop2Rec.minFloat));
 	armAsm->Fmaxnm(qreg.V4S(), qreg.V4S(), tmp.V4S()); // clamp to -FLT_MAX
 }
 
@@ -340,12 +358,11 @@ static void cop2EmitIntegerMin(int fsReg)
 //   Bit 6: ZS (any sticky zero), Bit 7: SS (any sticky sign)
 //   Bits 2-5,8+: D/I/O/U flags
 
-// Runtime storage for denormalized status flag during macro op. Plain static
-// (not thread_local): COP2/VU0 macro mode runs only on the EE thread (VU0 is
-// lockstep with the EE; MTVU offloads VU1 only), and the JIT bakes this address
-// in at emit time — a fixed global address is correct and avoids materializing a
-// thread-local slot that only ever has one instance.
-static u32 s_cop2DenormStatusFlag;
+// Runtime storage for the denormalized status flag during macro ops is
+// _cpuRegistersPack.cop2Rec.denormStatusFlag — in the pack so the emitters
+// reach it with a single [RSTATE, #imm] access. Plain shared slot (not
+// thread_local): COP2/VU0 macro mode runs only on the EE thread (VU0 is
+// lockstep with the EE; MTVU offloads VU1 only), so one instance is correct.
 
 // Status-flag liveness for the hand-rolled COP2 macro path (bc3729c93). With
 // vuFlagHack on, the denormalize (setup) and normalize (teardown) are emitted
@@ -362,7 +379,7 @@ static bool cop2StatusFlagLive()
 }
 
 // Emit code to denormalize status flag from VU0.VI[REG_STATUS_FLAG]
-// into s_cop2DenormStatusFlag (mVUallocSFLAGd).
+// into the cop2Rec.denormStatusFlag scratch (mVUallocSFLAGd).
 // Denormalized = ((norm >> 3) & 0x18) | ((norm << 11) & 0x1800) | ((norm << 14) & 0x3cf0000)
 static void cop2EmitDenormalizeStatusFlag()
 {
@@ -390,17 +407,15 @@ static void cop2EmitDenormalizeStatusFlag()
 	armAsm->Orr(RWSCRATCH, RWSCRATCH, tmp2);
 
 	// Store denormalized flag
-	armMoveAddressToReg(RSCRATCHADDR, &s_cop2DenormStatusFlag);
-	armAsm->Str(RWSCRATCH, a64::MemOperand(RSCRATCHADDR));
+	armAsm->Str(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
 }
 
-// Emit code to normalize status flag from s_cop2DenormStatusFlag
-// back to VU0.VI[REG_STATUS_FLAG] (mVUallocSFLAGc).
+// Emit code to normalize status flag from the cop2Rec.denormStatusFlag
+// scratch back to VU0.VI[REG_STATUS_FLAG] (mVUallocSFLAGc).
 static void cop2EmitNormalizeStatusFlag()
 {
 	// Load denormalized flag
-	armMoveAddressToReg(RSCRATCHADDR, &s_cop2DenormStatusFlag);
-	armAsm->Ldr(RWSCRATCH, a64::MemOperand(RSCRATCHADDR));
+	armAsm->Ldr(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
 
 	const a64::Register result = a64::w1;
 	armAsm->Mov(result, a64::wzr); // result = 0
@@ -494,8 +509,7 @@ static void cop2EmitFlagUpdate(int xyzw)
 
 	// --- Update denormalized status flag ---
 	// Load current denorm flag
-	armMoveAddressToReg(RSCRATCHADDR, &s_cop2DenormStatusFlag);
-	armAsm->Ldr(RWSCRATCH, a64::MemOperand(RSCRATCHADDR));
+	armAsm->Ldr(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
 
 	// Clear current (non-sticky) bits 8-15. w9 scratch: this body emits
 	// inline into EE blocks, where allocatable regs (w4 since Arm D) may
@@ -509,9 +523,8 @@ static void cop2EmitFlagUpdate(int xyzw)
 	// OR (macFlag << 8) into current bits (8-15) — this instruction's result
 	armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::Operand(macFlag, a64::LSL, 8));
 
-	// Store back. RSCRATCHADDR still holds &s_cop2DenormStatusFlag from the load
-	// above (none of the Mov/Bic/Orr between touch it), so no reload is needed.
-	armAsm->Str(RWSCRATCH, a64::MemOperand(RSCRATCHADDR));
+	// Store back
+	armAsm->Str(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
 
 	// Restore result to RQSCRATCH for subsequent cop2ApplyDestMask
 	armAsm->Mov(RQSCRATCH.V16B(), savedResult.V16B());
@@ -536,7 +549,7 @@ void setupMacroOp_arm64(int mode)
 
 	if (mode & 0x10) // Status/MAC flags will be updated
 	{
-		// Denormalize VU0's status flag into s_cop2DenormStatusFlag, but skip it
+		// Denormalize VU0's status flag into cop2Rec.denormStatusFlag, but skip it
 		// when the status output is dead. With vuFlagHack (on by default) the
 		// shared COP2FlagHackPass tags every status write that reaches a CFC2
 		// with EEINST_COP2_STATUS_FLAG — sticky reach included, since the tag is
@@ -545,7 +558,7 @@ void setupMacroOp_arm64(int mode)
 		// the matching normalize in endMacroOp are pure dead emitted code.
 		// Mirrors upstream bc3729c93 and the EEINST_COP2_STATUS_FLAG gate already
 		// used by mVUmacroSetupCOP2State for the mVU-reuse path. arm64 re-seeds
-		// s_cop2DenormStatusFlag from VU0.VI[REG_STATUS_FLAG] every op (no x86
+		// cop2Rec.denormStatusFlag from VU0.VI[REG_STATUS_FLAG] every op (no x86
 		// gprF0 persistence across ops), so EEINST_COP2_DENORMALIZE_STATUS_FLAG —
 		// the x86 "first denormalizer" marker — is intentionally not in the gate.
 		if (cop2StatusFlagLive())
@@ -578,7 +591,7 @@ void endMacroOp_arm64(int mode)
 		// same liveness gate as the setup denormalize (they must skip together —
 		// see cop2StatusFlagLive). When status is dead the whole denormalize ->
 		// update -> normalize chain is elided: the body's cop2EmitFlagUpdate
-		// still scribbles s_cop2DenormStatusFlag, but that value is dead (never
+		// still scribbles cop2Rec.denormStatusFlag, but that value is dead (never
 		// normalized out) and the next live op re-seeds the scratch from
 		// VU0.VI[REG_STATUS_FLAG], so nothing leaks. This is the dead-status
 		// subset of bc3729c93; it needs no cross-op denormalized persistence
@@ -2037,8 +2050,7 @@ void recCOP2_VCLIP()
 	// constant load plus a Shl covers both. +/- per axis are mutually exclusive
 	// and the weights are disjoint bits, so Add+Addv = OR (no carries).
 	a64::VRegister weight = a64::VRegister(27, 128);
-	armMoveAddressToReg(RSCRATCHADDR, &s_cop2ClipWeightPos);
-	armAsm->Ldr(weight, a64::MemOperand(RSCRATCHADDR));     // [1,4,16,0]
+	armAsm->Ldr(weight, armCpuRegMem(&_cpuRegistersPack.cop2Rec.clipWeightPos)); // [1,4,16,0]
 	armAsm->And(posMask.V16B(), posMask.V16B(), weight.V16B());
 	armAsm->And(RQSCRATCH2.V16B(), RQSCRATCH2.V16B(), weight.V16B());
 	armAsm->Shl(RQSCRATCH2.V4S(), RQSCRATCH2.V4S(), 1);     // neg weights = pos << 1

@@ -695,6 +695,11 @@ u32 scaleblockcycles_clear();
 // flags say no sync is needed.
 void cop2EmitConditionalSync(bool interlock, void (*finishFunc)());
 
+// (Re)writes _cpuRegistersPack.cop2Rec — the COP2 macro-mode clamp/mask
+// constants the emitters reach via [RSTATE, #imm] (defined in
+// iCOP2-arm64.cpp). Called from recResetRaw before any block compiles.
+void cop2RecWritePackConstants();
+
 // COP2 macro-mode microVU0 state setup/teardown (defined in microVU-arm64.cpp).
 // Mirrors x86 setupMacroOp/endMacroOp's regAlloc reset, microVU0.cop2 = 1,
 // prog.IRinfo.curPC/info[0] init, code = cpuRegs.code, and flag scaffolding.

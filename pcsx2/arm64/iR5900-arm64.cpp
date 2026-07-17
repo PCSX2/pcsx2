@@ -2292,6 +2292,10 @@ static void recResetRaw()
 	// needs nothing: dead block entries keep resolving via redirect stubs.)
 	eeCallRetResetRing();
 
+	// COP2 macro-mode emitters read their clamp/mask constants from the pack
+	// ([RSTATE, #imm]) — (re)write them before any block compiles.
+	cop2RecWritePackConstants();
+
 	// Full reset regenerates every block and dispatcher, so nothing can
 	// reference old pool content — drop it. Required since FX-03a: the
 	// manual-check snapshot blobs are not dedup'd, so without this the pool

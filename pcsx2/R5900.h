@@ -255,6 +255,20 @@ struct tlbs
 
 #endif
 
+// COP2 macro-mode rec constants + scratch (arm64 EE recompiler; emitters in
+// iCOP2-arm64.cpp). Rec-private, NOT savestate-serialized; the constant
+// entries are (re)written by cop2RecWritePackConstants() at every
+// recResetRaw. denormStatusFlag is block-transient scratch: re-seeded from
+// VU0.VI[REG_STATUS_FLAG] by every flag-updating macro op before it is read.
+struct EeCop2RecState
+{
+	alignas(16) u32 maxFloat[4];      // +FLT_MAX per lane (clamp upper bound)
+	alignas(16) u32 minFloat[4];      // -FLT_MAX per lane (pre-negated lower bound)
+	alignas(16) u32 destMasks[16][4]; // per-XYZW lane-select masks (lane = ~0 if written)
+	alignas(16) u32 clipWeightPos[4]; // VCLIP positive per-lane clip-bit weights
+	u32 denormStatusFlag;             // denormalized status-flag scratch
+};
+
 struct cpuRegistersPack
 {
 	alignas(16) cpuRegisters cpuRegs;
@@ -269,6 +283,13 @@ struct cpuRegistersPack
 	// register. x86 builds carry the 16 bytes and never touch them.
 	alignas(16) u64 eeCallRetBase;
 	u64 eeCallRetOff;
+
+	// COP2 macro-mode constants/scratch — in the pack for the same reason as
+	// the call-ret fields: one [RSTATE, #imm] instruction per access from
+	// emitted code, instead of a 3-insn absolute-address materialization per
+	// use (the JIT cache is too far from the data segment for adrp to reach).
+	// x86 builds carry the bytes and never touch them.
+	alignas(16) EeCop2RecState cop2Rec;
 };
 
 alignas(16) extern cpuRegistersPack _cpuRegistersPack;
