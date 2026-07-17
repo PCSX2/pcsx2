@@ -24972,6 +24972,10 @@ SLES-53869:
   name: "Crazy Frog Racer"
   region: "PAL-M5"
   compat: 5
+  gsHWFixes:
+    deinterlace: 9 # Game requires AdaptiveBFF de-interlacing.
+    halfPixelOffset: 5 # Aligns shadows.
+    nativeScaling: 1 # Aligns post-processing.
 SLES-53870:
   name: "Devil Kings"
   region: "PAL-M5"
