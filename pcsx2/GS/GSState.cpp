@@ -289,55 +289,58 @@ void GSState::ResetDrawBufferIdx()
 {
 	int entry_ptr = 0;
 
-	for (int i = 0; i < m_used_buffers_idx; i++)
+	if (GSConfig.UserHacks_DrawBuffering && m_used_buffers_idx > 1)
 	{
-		// There can be situations like VSync where it won't purge the draws, this is bad for us!
-		if (m_index_buffers[i].tail > 0 || i == m_current_buffer_idx)
+		for (int i = 0; i < m_used_buffers_idx; i++)
 		{
-			if (m_index_buffers[i].tail == 0)
-				m_env_buffers[i].draw_rect = GSVector4i::zero();
-
-			if (entry_ptr == i && (m_index_buffers[i].tail > 0 || i == m_current_buffer_idx))
+			// There can be situations like VSync where it won't purge the draws, this is bad for us!
+			if (m_index_buffers[i].tail > 0 || i == m_current_buffer_idx)
 			{
+				if (m_index_buffers[i].tail == 0)
+					m_env_buffers[i].draw_rect = GSVector4i::zero();
+
+				if (entry_ptr == i && (m_index_buffers[i].tail > 0 || i == m_current_buffer_idx))
+				{
+					entry_ptr++;
+					continue;
+				}
+
+				memcpy(m_vertex_buffers[entry_ptr].buff, m_vertex_buffers[i].buff, sizeof(GSVertex) * m_vertex_buffers[i].tail);
+
+				m_vertex_buffers[entry_ptr].head = m_vertex_buffers[i].head;
+				m_vertex_buffers[entry_ptr].tail = m_vertex_buffers[i].tail;
+				m_vertex_buffers[entry_ptr].next = m_vertex_buffers[i].next;
+
+				memcpy(m_index_buffers[entry_ptr].buff, m_index_buffers[i].buff, sizeof(u16) * m_index_buffers[i].tail);
+				m_index_buffers[entry_ptr].tail = m_index_buffers[i].tail;
+
+				if (m_vertex_buffers[entry_ptr].tail != 0)
+				{
+					memcpy(m_vertex_buffers[entry_ptr].xy, m_vertex_buffers[i].xy, sizeof(m_vertex_buffers[i].xy));
+					m_vertex_buffers[entry_ptr].xyhead = m_vertex_buffers[i].xyhead;
+					m_vertex_buffers[entry_ptr].xy_tail = m_vertex_buffers[i].xy_tail;
+				}
+				else
+				{
+					m_vertex_buffers[entry_ptr].xy_tail = 0;
+				}
+
+				memcpy(&m_env_buffers[entry_ptr], &m_env_buffers[i], sizeof(m_env_buffers[i]));
+
+
+				if (i == m_current_buffer_idx)
+					m_current_buffer_idx = entry_ptr;
+
 				entry_ptr++;
-				continue;
 			}
 
-			memcpy(m_vertex_buffers[entry_ptr].buff, m_vertex_buffers[i].buff, sizeof(GSVertex) * m_vertex_buffers[i].tail);
-
-			m_vertex_buffers[entry_ptr].head = m_vertex_buffers[i].head;
-			m_vertex_buffers[entry_ptr].tail = m_vertex_buffers[i].tail;
-			m_vertex_buffers[entry_ptr].next = m_vertex_buffers[i].next;
-
-			memcpy(m_index_buffers[entry_ptr].buff, m_index_buffers[i].buff, sizeof(u16) * m_index_buffers[i].tail);
-			m_index_buffers[entry_ptr].tail = m_index_buffers[i].tail;
-
-			if (m_vertex_buffers[entry_ptr].tail != 0)
+			if (i != (entry_ptr - 1))
 			{
-				memcpy(m_vertex_buffers[entry_ptr].xy, m_vertex_buffers[i].xy, sizeof(m_vertex_buffers[i].xy));
-				m_vertex_buffers[entry_ptr].xyhead = m_vertex_buffers[i].xyhead;
-				m_vertex_buffers[entry_ptr].xy_tail = m_vertex_buffers[i].xy_tail;
+				m_index_buffers[i].tail = 0;
+				memset(&m_env_buffers[i], 0, sizeof(GSDrawBufferEnv));
+				m_vertex_buffers[i].head = m_vertex_buffers[i].tail = m_vertex_buffers[i].next = 0;
+				m_vertex_buffers[i].xy_tail = 0;
 			}
-			else
-			{
-				m_vertex_buffers[entry_ptr].xy_tail = 0;
-			}
-
-			memcpy(&m_env_buffers[entry_ptr], &m_env_buffers[i], sizeof(m_env_buffers[i]));
-
-
-			if (i == m_current_buffer_idx)
-				m_current_buffer_idx = entry_ptr;
-
-			entry_ptr++;
-		}
-
-		if (i != (entry_ptr - 1))
-		{
-			m_index_buffers[i].tail = 0;
-			memset(&m_env_buffers[i], 0, sizeof(GSDrawBufferEnv));
-			m_vertex_buffers[i].head = m_vertex_buffers[i].tail = m_vertex_buffers[i].next = 0;
-			m_vertex_buffers[i].xy_tail = 0;
 		}
 	}
 		
@@ -392,15 +395,10 @@ void GSState::FlushBuffers(bool flush_base_only, bool use_flush_reason, GSFlushR
 	const int current_idx = m_current_buffer_idx;
 	bool restore_env = false;
 
-	if (m_used_buffers_idx > 0)
+	if (m_used_buffers_idx > 1)
 	{
-		if (m_used_buffers_idx > 1)
-		{
-			restore_env = true;
-			memcpy(&m_temp_env, &m_env, sizeof(m_env));
-		}
-		else if (m_index_buffers[0].tail == 0)
-			return;
+		restore_env = true;
+		memcpy(&m_temp_env, &m_env, sizeof(m_env));
 
 		const int max_flushes = flush_base_only ? 1 : m_used_buffers_idx;
 		for (int i = 0; i < max_flushes; i++)
@@ -440,19 +438,26 @@ void GSState::FlushBuffers(bool flush_base_only, bool use_flush_reason, GSFlushR
 			else
 				FlushDraw(GSFlushReason::CONTEXTCHANGE);
 		}
+
+		// Restore the environment
+		m_current_buffer_idx = current_idx;
+		m_index = &m_index_buffers[m_current_buffer_idx];
+		m_vertex = &m_vertex_buffers[m_current_buffer_idx];
+
+		const int ctx = m_env_buffers[m_current_buffer_idx].m_backed_up_ctx;
+		std::memcpy(&m_prev_env, &m_env_buffers[m_current_buffer_idx].m_env, 88);
+		std::memcpy(&m_prev_env.CTXT[0], &m_env_buffers[m_current_buffer_idx].m_env.CTXT[0], 96);
+		std::memcpy(&m_prev_env.CTXT[1], &m_env_buffers[m_current_buffer_idx].m_env.CTXT[1], 96);
+		std::memcpy(&m_prev_env.CTXT[ctx].offset, &m_env_buffers[m_current_buffer_idx].m_env.CTXT[ctx].offset, sizeof(m_env_buffers[m_current_buffer_idx].m_env.CTXT[ctx].offset));
+		std::memcpy(&m_prev_env.CTXT[ctx].scissor, &m_env_buffers[m_current_buffer_idx].m_env.CTXT[ctx].scissor, sizeof(m_env_buffers[m_current_buffer_idx].m_env.CTXT[ctx].scissor));
 	}
-
-	// Restore the environment
-	m_current_buffer_idx = current_idx;
-	m_index = &m_index_buffers[m_current_buffer_idx];
-	m_vertex = &m_vertex_buffers[m_current_buffer_idx];
-
-	const int ctx = m_env_buffers[m_current_buffer_idx].m_backed_up_ctx;
-	std::memcpy(&m_prev_env, &m_env_buffers[m_current_buffer_idx].m_env, 88);
-	std::memcpy(&m_prev_env.CTXT[0], &m_env_buffers[m_current_buffer_idx].m_env.CTXT[0], 96);
-	std::memcpy(&m_prev_env.CTXT[1], &m_env_buffers[m_current_buffer_idx].m_env.CTXT[1], 96);
-	std::memcpy(&m_prev_env.CTXT[ctx].offset, &m_env_buffers[m_current_buffer_idx].m_env.CTXT[ctx].offset, sizeof(m_env_buffers[m_current_buffer_idx].m_env.CTXT[ctx].offset));
-	std::memcpy(&m_prev_env.CTXT[ctx].scissor, &m_env_buffers[m_current_buffer_idx].m_env.CTXT[ctx].scissor, sizeof(m_env_buffers[m_current_buffer_idx].m_env.CTXT[ctx].scissor));
+	else
+	{
+		if (use_flush_reason || flush_reason == VSYNC)
+			FlushDraw(flush_reason);
+		else
+			FlushDraw(GSFlushReason::CONTEXTCHANGE);
+	}
 }
 
 void GSState::PushBuffer()
@@ -502,6 +507,18 @@ void GSState::PushBuffer()
 		m_used_buffers_idx++;
 		m_recent_buffer_switch = true;
 	}
+}
+
+void GSState::SetDrawBufferEnv()
+{
+	memcpy(&m_env_buffers[m_current_buffer_idx].m_env, &m_env, sizeof(GSDrawingEnvironment));
+	m_env_buffers[m_current_buffer_idx].m_backed_up_ctx = m_backed_up_ctx;
+}
+
+void GSState::SetDrawBuffDirty()
+{
+	m_env_buffers[m_current_buffer_idx].m_dirty_regs = m_dirty_gs_regs;
+	m_env_buffers[m_current_buffer_idx].draw_rect = temp_draw_rect;
 }
 
 bool GSState::CanBufferNewDraw()
@@ -690,18 +707,6 @@ bool GSState::CanBufferNewDraw()
 	PushBuffer();
 
 	return true;
-}
-
-void GSState::SetDrawBufferEnv()
-{
-	memcpy(&m_env_buffers[m_current_buffer_idx].m_env, &m_env, sizeof(GSDrawingEnvironment));
-	m_env_buffers[m_current_buffer_idx].m_backed_up_ctx = m_backed_up_ctx;
-}
-
-void GSState::SetDrawBuffDirty()
-{
-	m_env_buffers[m_current_buffer_idx].m_dirty_regs = m_dirty_gs_regs;
-	m_env_buffers[m_current_buffer_idx].draw_rect = temp_draw_rect;
 }
 
 void GSState::ResetHandlers()
@@ -1673,7 +1678,7 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 	{
 		for (int b = 0; b < m_used_buffers_idx; b++)
 		{
-			GSDrawingEnvironment& buffered_env = m_env_buffers[b].m_env;
+			GSDrawingEnvironment& buffered_env = (m_current_buffer_idx == 0) ? m_prev_env : m_env_buffers[b].m_env;
 			if ((buffered_env.PRIM.TME && (buffered_env.CTXT[buffered_env.PRIM.CTXT].TEX0.PSM & 0x7) >= 3) || (m_mem.m_clut.IsInvalid() & 2))
 				Flush(GSFlushReason::CLUTCHANGE);
 		}
@@ -2730,8 +2735,8 @@ void GSState::CheckWriteOverlap(bool req_write, bool req_read)
 	{
 		GSIndexBuff* cur_index_buff = &m_index_buffers[i];
 		GSVertexBuff* cur_vertex_buff = &m_vertex_buffers[i];
-		const GSDrawingContext& prev_ctx = m_env_buffers[i].m_env.CTXT[m_env_buffers[i].m_backed_up_ctx];
-		const GSDrawingEnvironment& prev_env = m_env_buffers[i].m_env;
+		const GSDrawingContext& prev_ctx = m_used_buffers_idx == 1 ? m_prev_env.CTXT[m_backed_up_ctx] :m_env_buffers[i].m_env.CTXT[m_env_buffers[i].m_backed_up_ctx];
+		const GSDrawingEnvironment& prev_env = m_used_buffers_idx == 1 ? m_prev_env : m_env_buffers[i].m_env;
 		GSVector4i tex_rect = prev_env.PRIM.TME ? GetTEX0Rect(prev_ctx) : GSVector4i::zero();
 
 		if (cur_index_buff->tail > 0)
@@ -5405,7 +5410,7 @@ __forceinline void GSState::CheckCLUTValidity(u32 prim)
 
 	for (int i = 0; i < m_used_buffers_idx; i++)
 	{
-		GSDrawingEnvironment& buffered_env = m_env_buffers[i].m_env;
+		GSDrawingEnvironment& buffered_env = (m_current_buffer_idx == i) ? m_prev_env : m_env_buffers[i].m_env;
 		const GSDrawingContext& ctx = buffered_env.CTXT[buffered_env.PRIM.CTXT];
 		if ((m_index_buffers[i].tail > 0 || (m_vertex_buffers[i].tail == n - 1)) && (GSLocalMemory::m_psm[ctx.TEX0.PSM].pal == 0 || !buffered_env.PRIM.TME))
 		{
@@ -5928,7 +5933,9 @@ __forceinline void GSState::VertexKick(u32 skip)
 		std::memcpy(&m_prev_env.CTXT[ctx].scissor, &m_env.CTXT[ctx].scissor, sizeof(m_env.CTXT[ctx].scissor));
 		m_dirty_gs_regs = 0;
 		m_backed_up_ctx = m_env.PRIM.CTXT;
-		SetDrawBufferEnv();
+
+		if (GSConfig.UserHacks_DrawBuffering)
+			SetDrawBufferEnv();
 	}
 
 	// Skip draws when scissor is out of range (i.e. bottom-right is less than top-left), since everything will get clipped.
