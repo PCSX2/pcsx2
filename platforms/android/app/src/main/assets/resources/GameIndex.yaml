@@ -2118,7 +2118,7 @@ SCAJ-20125:
   region: "NTSC-Unk"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves effect rendering on various levels.
     halfPixelOffset: 4 # Align post.
@@ -2131,7 +2131,7 @@ SCAJ-20126:
   region: "NTSC-Unk"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves effect rendering on various levels.
     halfPixelOffset: 4 # Align post.
@@ -2672,7 +2672,7 @@ SCAJ-20199:
   region: "NTSC-Unk"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves effect rendering on various levels.
     halfPixelOffset: 4 # Align post.
@@ -2978,7 +2978,7 @@ SCED-50041:
   region: "PAL-E"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCED-50065:
@@ -3291,7 +3291,7 @@ SCED-51120:
   region: "PAL-E"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCED-51140:
@@ -4421,7 +4421,7 @@ SCED-53538:
   region: "PAL-M5"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves effect rendering on various levels.
     halfPixelOffset: 4 # Align post.
@@ -4848,7 +4848,7 @@ SCES-50001:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCES-50002:
@@ -5222,7 +5222,7 @@ SCES-50878:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCES-50885:
@@ -6157,7 +6157,7 @@ SCES-53202:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves effect rendering on various levels.
     halfPixelOffset: 4 # Align post.
@@ -7677,7 +7677,7 @@ SCKA-20045:
   region: "NTSC-K"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCKA-20046:
@@ -7732,7 +7732,7 @@ SCKA-20049:
   region: "NTSC-K"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves effect rendering on various levels.
     halfPixelOffset: 4 # Align post.
@@ -8022,7 +8022,7 @@ SCKA-20081:
   region: "NTSC-K"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves effect rendering on various levels.
     halfPixelOffset: 4 # Align post.
@@ -10839,7 +10839,7 @@ SCPS-55017:
   compat: 3
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1
 SCPS-55018:
@@ -11129,7 +11129,7 @@ SCPS-56002:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SCPS-56003:
@@ -11159,7 +11159,7 @@ SCPS-56006:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1
 SCPS-56007:
@@ -55215,7 +55215,7 @@ SLPS-20015:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-20016:
@@ -58326,7 +58326,7 @@ SLPS-25100:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-25101:
@@ -60823,7 +60823,7 @@ SLPS-25510:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves effect rendering on various levels.
     halfPixelOffset: 4 # Align post.
@@ -63818,7 +63818,7 @@ SLPS-71501:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-71502:
@@ -63917,7 +63917,7 @@ SLPS-73104:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-73105:
@@ -64056,7 +64056,7 @@ SLPS-73209:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLPS-73210:
@@ -64175,7 +64175,7 @@ SLPS-73223:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves effect rendering on various levels.
     halfPixelOffset: 4 # Align post.
@@ -64828,7 +64828,7 @@ SLUS-20001:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLUS-20002:
@@ -66236,7 +66236,7 @@ SLUS-20328:
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLUS-20329:
@@ -70381,12 +70381,12 @@ SLUS-21058:
     cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
 SLUS-21059:
-  name: "Tekken 5"
+  name: " 5"
   region: "NTSC-U"
   compat: 5
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves effect rendering on various levels.
     halfPixelOffset: 4 # Align post.
@@ -70963,7 +70963,7 @@ SLUS-21160:
   region: "NTSC-U"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     recommendedBlendingLevel: 3 # Improves effect rendering on various levels.
     halfPixelOffset: 4 # Align post.
@@ -75682,7 +75682,7 @@ SLUS-28012:
   region: "NTSC-U"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLUS-28013:
@@ -75979,7 +75979,7 @@ SLUS-29034:
   region: "NTSC-U"
   clampModes:
     eeClampMode: 3 # Fixes camera and stops constant coin noises on Pirates Cove.
-    vu1ClampMode: 2 # Fixes broken effects.
+    vu0ClampMode: 3 # Fixes VU0 calculations with Extra + Preserve Sign clamping.
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
 SLUS-29035:
