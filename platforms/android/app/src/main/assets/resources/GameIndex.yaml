@@ -21803,6 +21803,9 @@ SLES-52781:
 SLES-52782:
   name: "Call of Duty - Finest Hour"
   region: "PAL-E"
+  clampModes:
+    eeClampMode: 2
+    vu1ClampMode: 1
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
   patches:
@@ -21814,6 +21817,9 @@ SLES-52782:
 SLES-52783:
   name: "Call of Duty - Finest Hour"
   region: "PAL-F-S-I"
+  clampModes:
+    eeClampMode: 2
+    vu1ClampMode: 1
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
   patches:
@@ -21825,6 +21831,9 @@ SLES-52783:
 SLES-52784:
   name: "Call of Duty - Finest Hour"
   region: "PAL-G"
+  clampModes:
+    eeClampMode: 2
+    vu1ClampMode: 1
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
   patches:
@@ -48429,6 +48438,9 @@ SLPM-66159:
   name-sort: "こーる おぶ でゅーてぃー - ふぁいねすと あわー"
   name-en: "Call of Duty - Finest Hour"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 2
+    vu1ClampMode: 1
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
 SLPM-66160:
@@ -68347,6 +68359,9 @@ SLUS-20725:
   name: "Call of Duty - Finest Hour"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 2
+    vu1ClampMode: 1
   gsHWFixes:
     cpuSpriteRenderBW: 1 # Fixes textures.
   patches:
