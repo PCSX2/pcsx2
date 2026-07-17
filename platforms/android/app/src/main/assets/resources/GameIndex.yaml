@@ -10772,6 +10772,7 @@ SCPS-55010:
   name-en: "Grandia Xtreme"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 1 # Fixes Flickering
     textureInsideRT: 1 # Fixes FMVs.
 SCPS-55011:
   name: "デュアルハーツ"
@@ -42081,6 +42082,7 @@ SLPM-65082:
   name-en: "Grandia Xtreme [Limited Edition]"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 1 # Fixes Flickering
     textureInsideRT: 1 # Fixes FMVs.
 SLPM-65083:
   name: "封神演義2"
@@ -42120,6 +42122,7 @@ SLPM-65089:
   name-en: "Grandia Xtreme"
   region: "NTSC-J"
   gsHWFixes:
+    halfPixelOffset: 1 # Fixes Flickering
     textureInsideRT: 1 # Fixes FMVs.
 SLPM-65090:
   name: "SPY HUNTER"
@@ -66674,6 +66677,7 @@ SLUS-20417:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
+    halfPixelOffset: 1 # Fixes Flickering
     textureInsideRT: 1 # Fixes FMVs.
 SLUS-20418:
   name: "Wakeboarding Unleashed featuring Shaun Murray"
