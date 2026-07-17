@@ -4535,7 +4535,68 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.4f, 0.8f, 1.0f));
 
 			if ((ImGui::Button(FSUI_CSTR("Dismiss"), ImVec2(button_width, button_height)) || WantsToCloseMenu()) && !s_achievements_login_logging_in)
+			{
+				const bool prompt_settings = (s_achievements_login_reason == Achievements::LoginRequestReason::UserInitiated);
 				CloseLoginPopup();
+
+				if (prompt_settings)
+				{
+					const auto prompt_hardcore = []() {
+						if (Host::GetBaseBoolSettingValue("Achievements", "ChallengeMode", false))
+							return;
+
+						OpenConfirmMessageDialog(FSUI_STR("Enable Hardcore Mode"),
+							FSUI_STR("Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and "
+									 "participate in game-specific leaderboards.\n\nHowever, hardcore mode also prevents the usage of save "
+									 "states, cheats and slowdown functionality.\n\nDo you want to enable hardcore mode?"),
+							[](bool result) {
+								if (!result)
+									return;
+
+								Host::SetBaseBoolSettingValue("Achievements", "ChallengeMode", true);
+								Host::CommitBaseSettingChanges();
+								VMManager::ApplySettings();
+
+								bool has_active_game;
+								{
+									auto lock = Achievements::GetLock();
+									has_active_game = Achievements::HasActiveGame();
+								}
+
+								if (has_active_game)
+								{
+									OpenConfirmMessageDialog(FSUI_STR("Reset System"),
+										FSUI_STR("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?"),
+										[](bool reset) {
+											if (reset && VMManager::HasValidVM())
+												RequestReset();
+										});
+								}
+							});
+					};
+
+					if (!Host::GetBaseBoolSettingValue("Achievements", "Enabled", false))
+					{
+						OpenConfirmMessageDialog(FSUI_STR("Enable Achievements"),
+							FSUI_STR("Achievement tracking is not currently enabled. Your login will have no effect until "
+									 "after tracking is enabled.\n\nDo you want to enable tracking now?"),
+							[prompt_hardcore](bool result) {
+								if (result)
+								{
+									Host::SetBaseBoolSettingValue("Achievements", "Enabled", true);
+									Host::CommitBaseSettingChanges();
+									VMManager::ApplySettings();
+								}
+
+								prompt_hardcore();
+							});
+					}
+					else
+					{
+						prompt_hardcore();
+					}
+				}
+			}
 
 			ImGui::PopStyleColor(3);
 
@@ -4589,57 +4650,6 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 				}
 
 				s_achievements_login_password[0] = '\0';
-
-				if (s_achievements_login_reason == Achievements::LoginRequestReason::UserInitiated)
-				{
-					if (!Host::GetBaseBoolSettingValue("Achievements", "Enabled", false))
-					{
-						OpenConfirmMessageDialog(FSUI_STR("Enable Achievements"),
-							FSUI_STR("Achievement tracking is not currently enabled. Your login will have no effect until "
-									 "after tracking is enabled.\n\nDo you want to enable tracking now?"),
-							[](bool result) {
-								if (result)
-								{
-									Host::SetBaseBoolSettingValue("Achievements", "Enabled", true);
-									Host::CommitBaseSettingChanges();
-									VMManager::ApplySettings();
-								}
-							});
-					}
-
-					if (!Host::GetBaseBoolSettingValue("Achievements", "ChallengeMode", false))
-					{
-						OpenConfirmMessageDialog(FSUI_STR("Enable Hardcore Mode"),
-							FSUI_STR("Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and "
-									 "participate in game-specific leaderboards.\n\nHowever, hardcore mode also prevents the usage of save "
-									 "states, cheats and slowdown functionality.\n\nDo you want to enable hardcore mode?"),
-							[](bool result) {
-								if (result)
-								{
-									Host::SetBaseBoolSettingValue("Achievements", "ChallengeMode", true);
-									Host::CommitBaseSettingChanges();
-									VMManager::ApplySettings();
-
-									bool has_active_game;
-									{
-										auto lock = Achievements::GetLock();
-										has_active_game = Achievements::HasActiveGame();
-									}
-
-									if (has_active_game)
-									{
-										OpenConfirmMessageDialog(FSUI_STR("Reset System"),
-											FSUI_STR("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?"),
-											[](bool reset) {
-												if (reset && VMManager::HasValidVM())
-													RequestReset();
-											});
-									}
-								}
-							});
-					}
-				}
-
 				s_achievements_login_show_dismiss = true;
 			});
 		}
@@ -4687,8 +4697,94 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 	bool check_challenge_state = false;
+	const bool global_settings = !IsEditingGameSettings(bsi);
 
 	BeginMenuButtons();
+
+	if (global_settings)
+	{
+		MenuHeading(FSUI_CSTR("Account"));
+		SettingsInterface* secrets_si = Host::Internal::GetSecretsSettingsLayer();
+		const TinyString username = bsi->GetTinyStringValue("Achievements", "Username", "");
+		const bool has_token = (secrets_si && secrets_si->ContainsValue("Achievements", "Token"));
+		if (has_token)
+		{
+			const char* display_name = username.empty() ? FSUI_CSTR("Unknown") : username.c_str();
+			std::string badge_path;
+			{
+				const auto lock = Achievements::GetLock();
+				badge_path = Achievements::GetLoggedInUserBadgePath();
+			}
+
+			const SmallString token_summary = SmallString::from_format(FSUI_FSTR("Login token generated on {}"),
+				TimeToPrintableString(static_cast<time_t>(
+					StringUtil::FromChars<u64>(bsi->GetTinyStringValue("Achievements", "LoginTimestamp", "0")).value_or(0))));
+
+			bool open_profile = false;
+			GSTexture* badge_tex = !badge_path.empty() ? GetCachedTextureAsync(badge_path) : nullptr;
+			if (badge_tex)
+			{
+				constexpr float badge_layout_size = LAYOUT_MENU_BUTTON_HEIGHT - LAYOUT_MENU_BUTTON_Y_PADDING;
+				const ImVec2 badge_size = LayoutScale(badge_layout_size, badge_layout_size);
+				open_profile = MenuImageButton(display_name, token_summary.c_str(),
+					reinterpret_cast<ImTextureID>(badge_tex->GetNativeHandle()), badge_size);
+			}
+			else
+			{
+				open_profile = MenuButton(SmallString::from_format(ICON_FA_USER " {}", display_name).c_str(), token_summary.c_str());
+			}
+
+			if (open_profile && !username.empty())
+				ExitFullscreenAndOpenURL(fmt::format("https://retroachievements.org/user/{}", username.view()));
+
+			if (MenuButton(FSUI_ICONSTR(ICON_FA_RIGHT_FROM_BRACKET, "Logout"), FSUI_CSTR("Logs out of RetroAchievements.")))
+			{
+				Host::RunOnCPUThread([]() { Achievements::Logout(); });
+			}
+		}
+		else
+		{
+			MenuButton(FSUI_ICONSTR(ICON_FA_USER, "Not Logged In"), nullptr, false);
+
+			if (MenuButton(FSUI_ICONSTR(ICON_FA_KEY, "Login"), FSUI_CSTR("Logs in to RetroAchievements.")))
+			{
+				s_achievements_login_reason = Achievements::LoginRequestReason::UserInitiated;
+				s_achievements_login_show_dismiss = false;
+				s_achievements_login_open = true;
+				QueueResetFocus(FocusResetType::PopupOpened);
+			}
+		}
+
+		MenuHeading(FSUI_CSTR("Game Info"));
+		if (Achievements::HasActiveGame())
+		{
+			const auto lock = Achievements::GetLock();
+
+			ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
+			ActiveButton(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_BOOKMARK, "Game: {0} ({1})")), Achievements::GetGameID(),
+							 Achievements::GetGameTitle()),
+				false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+
+			const std::string& rich_presence_string = Achievements::GetRichPresenceString();
+			if (!rich_presence_string.empty())
+			{
+				ActiveButton(
+					SmallString::from_format(ICON_FA_MAP "{}", rich_presence_string), false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+			}
+			else
+			{
+				ActiveButton(FSUI_ICONSTR(ICON_FA_MAP, "Rich presence inactive or unsupported."), false, false,
+					LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+			}
+
+			ImGui::PopStyleColor();
+		}
+		else
+		{
+			ActiveButton(FSUI_ICONSTR(ICON_FA_BAN, "Game not loaded or no RetroAchievements available."), false, false,
+				LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+		}
+	}
 
 	MenuHeading(FSUI_CSTR("Settings"));
 	check_challenge_state = DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TROPHY, "Enable Achievements"),
@@ -4700,64 +4796,12 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 		FSUI_CSTR(
 			"\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions."),
 		"Achievements", "ChallengeMode", false, enabled);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BELL, "Show Achievement Notifications"),
-		FSUI_CSTR("Displays popup messages on events such as achievement unlocks and leaderboard submissions."), "Achievements",
-		"Notifications", true, enabled);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST_OL, "Show Leaderboard Notifications"),
-		FSUI_CSTR("Displays popup messages when starting, submitting, or failing a leaderboard challenge."), "Achievements",
-		"LeaderboardNotifications", true, enabled);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_HEADPHONES, "Enable Sound Effects"),
-		FSUI_CSTR("Plays sound effects for events such as achievement unlocks and leaderboard submissions."), "Achievements",
-		"SoundEffects", true, enabled);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_HEARTBEAT_ALT, "Enable In-Game Overlays"),
-		FSUI_CSTR("Shows icons in the screen when a challenge/primed achievement is active."), "Achievements",
-		"Overlays", true, enabled);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_HEARTBEAT_ALT, "Enable In-Game Leaderboard Overlays"),
-		FSUI_CSTR("Shows icons in the screen when leaderboard tracking is active."), "Achievements",
-		"LBOverlays", true, enabled);
-
-	if (enabled)
-	{
-		const char* alignment_options[] = {
-			TRANSLATE_NOOP("FullscreenUI", "Top Left"),
-			TRANSLATE_NOOP("FullscreenUI", "Top Center"),
-			TRANSLATE_NOOP("FullscreenUI", "Top Right"),
-			TRANSLATE_NOOP("FullscreenUI", "Center Left"),
-			TRANSLATE_NOOP("FullscreenUI", "Center"),
-			TRANSLATE_NOOP("FullscreenUI", "Center Right"),
-			TRANSLATE_NOOP("FullscreenUI", "Bottom Left"),
-			TRANSLATE_NOOP("FullscreenUI", "Bottom Center"),
-			TRANSLATE_NOOP("FullscreenUI", "Bottom Right")};
-
-		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_ALIGN_CENTER, "Overlay Position"),
-			FSUI_CSTR("Determines where achievement/leaderboard overlays are positioned on the screen."), "Achievements", "OverlayPosition",
-			8, alignment_options, std::size(alignment_options), true, 0, enabled);
-
-		const bool notifications_enabled = GetEffectiveBoolSetting(bsi, "Achievements", "Notifications", true) ||
-		                                   GetEffectiveBoolSetting(bsi, "Achievements", "LeaderboardNotifications", true);
-		if (notifications_enabled)
-		{
-			DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_BELL, "Notification Position"),
-				FSUI_CSTR("Determines where achievement/leaderboard notification popups are positioned on the screen."), "Achievements", "NotificationPosition",
-				2, alignment_options, std::size(alignment_options), true, 0, enabled);
-
-			const bool achievement_notifications_enabled = enabled && GetEffectiveBoolSetting(bsi, "Achievements", "Notifications", true);
-			DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_CLOCK, "Unlock Notification Duration"),
-				FSUI_CSTR("Determines the display duration for achievement unlock popups."),
-				"Achievements", "NotificationsDuration", 5, 3, 30, "%d seconds", achievement_notifications_enabled);
-
-			const bool leaderboard_notifications_enabled = enabled && GetEffectiveBoolSetting(bsi, "Achievements", "LeaderboardNotifications", true);
-			DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_CLOCK, "Leaderboard Notification Duration"),
-				FSUI_CSTR("Determines the display duration for leaderboard popups."),
-				"Achievements", "LeaderboardsDuration", 10, 3, 30, "%d seconds", leaderboard_notifications_enabled);
-		}
-	}
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LOCK, "Enable Encore Mode"),
-		FSUI_CSTR("When enabled, each session will behave as if no achievements have been unlocked."), "Achievements", "EncoreMode", false,
-		enabled);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EYE, "Enable Spectator Mode"),
 		FSUI_CSTR("When enabled, PCSX2 will assume all achievements are locked and not send any unlock notifications to the server."),
 		"Achievements", "SpectatorMode", false, enabled);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LOCK, "Enable Encore Mode"),
+		FSUI_CSTR("When enabled, each session will behave as if no achievements have been unlocked."), "Achievements", "EncoreMode", false,
+		enabled);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MEDAL, "Test Unofficial Achievements"),
 		FSUI_CSTR("When enabled, PCSX2 will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements."),
 		"Achievements", "UnofficialTestMode", false, enabled);
@@ -4780,7 +4824,54 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 		}
 	}
 
-	if (!IsEditingGameSettings(bsi))
+	const char* alignment_options[] = {
+		TRANSLATE_NOOP("FullscreenUI", "Top Left"),
+		TRANSLATE_NOOP("FullscreenUI", "Top Center"),
+		TRANSLATE_NOOP("FullscreenUI", "Top Right"),
+		TRANSLATE_NOOP("FullscreenUI", "Center Left"),
+		TRANSLATE_NOOP("FullscreenUI", "Center"),
+		TRANSLATE_NOOP("FullscreenUI", "Center Right"),
+		TRANSLATE_NOOP("FullscreenUI", "Bottom Left"),
+		TRANSLATE_NOOP("FullscreenUI", "Bottom Center"),
+		TRANSLATE_NOOP("FullscreenUI", "Bottom Right")};
+
+	MenuHeading(FSUI_CSTR("Notifications"));
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BELL, "Show Achievement Notifications"),
+		FSUI_CSTR("Displays popup messages on events such as achievement unlocks and leaderboard submissions."), "Achievements",
+		"Notifications", true, enabled);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST_OL, "Show Leaderboard Notifications"),
+		FSUI_CSTR("Displays popup messages when starting, submitting, or failing a leaderboard challenge."), "Achievements",
+		"LeaderboardNotifications", true, enabled);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_HEADPHONES, "Enable Sound Effects"),
+		FSUI_CSTR("Plays sound effects for events such as achievement unlocks and leaderboard submissions."), "Achievements",
+		"SoundEffects", true, enabled);
+
+	const bool achievement_notifications_enabled = enabled && GetEffectiveBoolSetting(bsi, "Achievements", "Notifications", true);
+	const bool leaderboard_notifications_enabled = enabled && GetEffectiveBoolSetting(bsi, "Achievements", "LeaderboardNotifications", true);
+	const bool notifications_enabled = achievement_notifications_enabled || leaderboard_notifications_enabled;
+	if (notifications_enabled)
+	{
+		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_BELL, "Notification Position"),
+			FSUI_CSTR("Determines where achievement/leaderboard notification popups are positioned on the screen."), "Achievements",
+			"NotificationPosition", 2, alignment_options, std::size(alignment_options), true, 0, enabled);
+		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_CLOCK, "Unlock Notification Duration"),
+			FSUI_CSTR("Determines the display duration for achievement unlock popups."), "Achievements", "NotificationsDuration", 5, 3, 30,
+			"%d seconds", achievement_notifications_enabled);
+		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_CLOCK, "Leaderboard Notification Duration"),
+			FSUI_CSTR("Determines the display duration for leaderboard popups."), "Achievements", "LeaderboardsDuration", 10, 3, 30,
+			"%d seconds", leaderboard_notifications_enabled);
+	}
+
+	MenuHeading(FSUI_CSTR("Overlay Settings"));
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_HEARTBEAT_ALT, "Enable In-Game Overlays"),
+		FSUI_CSTR("Shows icons in the screen when a challenge/primed achievement is active."), "Achievements", "Overlays", true, enabled);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_HEARTBEAT_ALT, "Enable In-Game Leaderboard Overlays"),
+		FSUI_CSTR("Shows icons in the screen when leaderboard tracking is active."), "Achievements", "LBOverlays", true, enabled);
+	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_ALIGN_CENTER, "Overlay Position"),
+		FSUI_CSTR("Determines where achievement/leaderboard overlays are positioned on the screen."), "Achievements", "OverlayPosition", 8,
+		alignment_options, std::size(alignment_options), true, 0, enabled);
+
+	if (global_settings)
 	{
 		MenuHeading(FSUI_CSTR("Sound Effects"));
 		const auto draw_sound_setting = [bsi](const char* title, const char* key, const char* default_filename, const char* selector_title) {
@@ -4842,70 +4933,6 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 			FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Select Achievement Unlock Sound"));
 		draw_sound_setting(FSUI_ICONSTR(ICON_FA_MUSIC, "Leaderboard Submit Sound"), "LBSubmitSoundName",
 			"sounds/achievements/lbsubmit.wav", FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Select Leaderboard Submit Sound"));
-
-		MenuHeading(FSUI_CSTR("Account"));
-		SettingsInterface* secrets_si = Host::Internal::GetSecretsSettingsLayer();
-		const TinyString username = bsi->GetTinyStringValue("Achievements", "Username", "");
-		const bool has_token = (secrets_si && secrets_si->ContainsValue("Achievements", "Token"));
-		if (has_token)
-		{
-			ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
-			ActiveButton(SmallString::from_format(
-							 fmt::runtime(FSUI_ICONSTR(ICON_FA_USER, "Username: {}")), username.empty() ? "Unknown" : username.view()),
-				false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-			ActiveButton(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_CLOCK, "Login token generated on {}")),
-							 TimeToPrintableString(static_cast<time_t>(
-								 StringUtil::FromChars<u64>(bsi->GetTinyStringValue("Achievements", "LoginTimestamp", "0")).value_or(0)))),
-				false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-			ImGui::PopStyleColor();
-
-			if (MenuButton(FSUI_ICONSTR(ICON_FA_KEY, "Logout"), FSUI_CSTR("Logs out of RetroAchievements.")))
-			{
-				Host::RunOnCPUThread([]() { Achievements::Logout(); });
-			}
-		}
-		else
-		{
-			ActiveButton(FSUI_ICONSTR(ICON_FA_USER, "Not Logged In"), false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-
-			if (MenuButton(FSUI_ICONSTR(ICON_FA_KEY, "Login"), FSUI_CSTR("Logs in to RetroAchievements.")))
-			{
-				s_achievements_login_reason = Achievements::LoginRequestReason::UserInitiated;
-				s_achievements_login_show_dismiss = false;
-				s_achievements_login_open = true;
-				QueueResetFocus(FocusResetType::PopupOpened);
-			}
-		}
-
-		MenuHeading(FSUI_CSTR("Game Info"));
-		if (Achievements::HasActiveGame())
-		{
-			const auto lock = Achievements::GetLock();
-
-			ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
-			ActiveButton(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_BOOKMARK, "Game: {0} ({1})")), Achievements::GetGameID(),
-							 Achievements::GetGameTitle()),
-				false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-
-			const std::string& rich_presence_string = Achievements::GetRichPresenceString();
-			if (!rich_presence_string.empty())
-			{
-				ActiveButton(
-					SmallString::from_format(ICON_FA_MAP "{}", rich_presence_string), false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-			}
-			else
-			{
-				ActiveButton(FSUI_ICONSTR(ICON_FA_MAP, "Rich presence inactive or unsupported."), false, false,
-					LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-			}
-
-			ImGui::PopStyleColor();
-		}
-		else
-		{
-			ActiveButton(FSUI_ICONSTR(ICON_FA_BAN, "Game not loaded or no RetroAchievements available."), false, false,
-				LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-		}
 	}
 
 	EndMenuButtons();
