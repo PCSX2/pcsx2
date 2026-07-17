@@ -1628,6 +1628,7 @@ SCAJ-20052:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 0 # Fixes shadow
     autoFlush: 2
     halfPixelOffset: 4 # Aligns post bloom.
     nativeScaling: 1 # Fixes light blooms.
@@ -9274,6 +9275,7 @@ SCPS-15056:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 0 # Fixes shadows
     autoFlush: 2
     halfPixelOffset: 4 # Aligns post bloom.
     nativeScaling: 1 # Fixes light blooms.
@@ -10240,6 +10242,7 @@ SCPS-19302:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 0 # Fkxes shadow
     autoFlush: 2
     halfPixelOffset: 4 # Aligns post bloom.
     nativeScaling: 1 # Fixes light blooms.
@@ -10399,6 +10402,7 @@ SCPS-19317:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 0 # Fixes shadows
     autoFlush: 2
     halfPixelOffset: 4 # Aligns post bloom.
     nativeScaling: 1 # Fixes light blooms.
@@ -12010,6 +12014,7 @@ SCUS-97268:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 0 # Fixes shadows
     autoFlush: 2
     halfPixelOffset: 4 # Aligns post bloom.
     nativeScaling: 1 # Fixes light blooms.
@@ -12120,6 +12125,7 @@ SCUS-97322:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 0 # Fixes shadows
     autoFlush: 2
     halfPixelOffset: 4 # Aligns post bloom.
     nativeScaling: 1 # Fixes light blooms.
@@ -12129,6 +12135,7 @@ SCUS-97323:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 0 # Fixes shadows
     autoFlush: 2
     halfPixelOffset: 4 # Aligns post bloom.
     nativeScaling: 1 # Fixes light blooms.
@@ -12322,6 +12329,7 @@ SCUS-97374:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 0 # Fixes shadows
     cpuSpriteRenderBW: 4 # Fixes character and water textures.
     cpuSpriteRenderLevel: 2 # Needed for above.
     halfPixelOffset: 4 # Aligns post bloom.
@@ -12350,6 +12358,7 @@ SCUS-97381:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 0 # Fixes shadows
     autoFlush: 2
     halfPixelOffset: 4 # Aligns post bloom.
     nativeScaling: 1 # Fixes light blooms.
@@ -13035,6 +13044,7 @@ SCUS-97513:
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
   gsHWFixes:
+    recommendedBlendingLevel: 0 # Fixes shadows
     autoFlush: 2
     halfPixelOffset: 4 # Aligns post bloom.
     nativeScaling: 1 # Fixes light blooms.
