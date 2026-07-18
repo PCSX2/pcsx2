@@ -108,6 +108,9 @@ struct _arm64gprregs
 	u8 mode;      // MODE_READ / MODE_WRITE
 	u8 needed;    // pinned for current instruction
 	u8 type;      // ARM64TYPE_*
+	u8 looppin;   // SL-1 loop-resident entry: LRU eviction avoids it (preference,
+	              // not a bar — seams and explicit deletes still free it; the
+	              // back-edge reconcile restores the mapping)
 	u16 counter;  // LRU counter
 	u32 extra;    // extra info (e.g., IOP constant regs)
 };

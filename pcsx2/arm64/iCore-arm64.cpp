@@ -198,37 +198,45 @@ int _getFreeArm64GPR(int mode, u32 pool)
 		return reg;
 	}
 
-	// Second pass: evict by LRU, prefer temps first
-	for (int i = 0; i < NUM_ARM_GPR_REGS; i++)
+	// Second pass: evict by LRU, prefer temps first. Loop-pinned entries
+	// (SL-1) are skipped in the first sweep — evicting one costs a reload at
+	// the back-edge reconcile — but remain fair game in the fallback sweep so
+	// allocation can never fail on their account.
+	for (const bool allow_looppin : {false, true})
 	{
-		if (!((pool >> i) & 1u))
-			continue;
-		if ((mode & MODE_CALLEESAVED) && !armIsCalleeSavedRegister(i))
-			continue;
-		if ((mode & MODE_COP2) && mVUIsReservedCOP2(i))
-			continue;
-
-		pxAssert(arm64gprs[i].inuse);
-		if (arm64gprs[i].needed)
-			continue;
-
-		if (arm64gprs[i].type == ARM64TYPE_TEMP)
+		for (int i = 0; i < NUM_ARM_GPR_REGS; i++)
 		{
-			_freeArm64GPR(i);
-			return i;
+			if (!((pool >> i) & 1u))
+				continue;
+			if ((mode & MODE_CALLEESAVED) && !armIsCalleeSavedRegister(i))
+				continue;
+			if ((mode & MODE_COP2) && mVUIsReservedCOP2(i))
+				continue;
+
+			pxAssert(arm64gprs[i].inuse);
+			if (arm64gprs[i].needed)
+				continue;
+			if (arm64gprs[i].looppin && !allow_looppin)
+				continue;
+
+			if (arm64gprs[i].type == ARM64TYPE_TEMP)
+			{
+				_freeArm64GPR(i);
+				return i;
+			}
+
+			if (arm64gprs[i].counter < bestcount)
+			{
+				tempi = i;
+				bestcount = arm64gprs[i].counter;
+			}
 		}
 
-		if (arm64gprs[i].counter < bestcount)
+		if (tempi != -1)
 		{
-			tempi = i;
-			bestcount = arm64gprs[i].counter;
+			_freeArm64GPR(tempi);
+			return tempi;
 		}
-	}
-
-	if (tempi != -1)
-	{
-		_freeArm64GPR(tempi);
-		return tempi;
 	}
 
 	pxFailRel("ARM64 GPR register allocation error");
@@ -285,6 +293,7 @@ void _freeArm64GPR(int armreg)
 
 	arm64gprs[armreg].inuse = 0;
 	arm64gprs[armreg].mode = 0;
+	arm64gprs[armreg].looppin = 0;
 }
 
 void _freeArm64GPRWithoutWriteback(int armreg)
@@ -292,6 +301,7 @@ void _freeArm64GPRWithoutWriteback(int armreg)
 	pxAssert(armreg >= 0 && armreg < NUM_ARM_GPR_REGS);
 	arm64gprs[armreg].inuse = 0;
 	arm64gprs[armreg].mode = 0;
+	arm64gprs[armreg].looppin = 0;
 }
 
 void _freeArm64GPRregs()

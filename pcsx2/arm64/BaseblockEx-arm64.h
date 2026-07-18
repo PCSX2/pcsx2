@@ -174,6 +174,12 @@ public:
 	// erases from the flat sorted array. Does NOT touch the link map —
 	// stale entries there are harmless (they just trigger a re-patch on
 	// the next compile cycle for the same PC).
+	//
+	// SL-1: a resident self-loop's back-edge is an internal B to the loop-top
+	// (past the entry redirect), so it gets its own atomic repoint — to the
+	// block's cold spill stub, which writes back the pinned set, publishes pc,
+	// and exits via DispatcherEvent. Flat-array field reads + PatchAtomic
+	// only, so the signal-safety contract holds.
 	__fi void Remove(int first, int last)
 	{
 		pxAssert(first <= last);
@@ -184,6 +190,10 @@ public:
 			{
 				const uptr site = blocks[i].fnptr;
 				PatchAtomic(site, EncodeB(site, jitcompile));
+
+				if (blocks[i].backedge_site)
+					PatchAtomic(blocks[i].backedge_site,
+						EncodeB(blocks[i].backedge_site, blocks[i].backedge_stub));
 			}
 		}
 
