@@ -180,6 +180,7 @@ bool _hasArm64GPR(int type, int reg, int required_mode = 0);
 void _addNeededArm64GPR(int type, int reg);
 void _clearNeededArm64GPRregs();
 void _freeArm64GPR(int armreg);
+void _reloadArm64GPR(int armreg);
 void _freeArm64GPRWithoutWriteback(int armreg);
 void _freeArm64GPRregs();
 void _flushArm64GPRregs();

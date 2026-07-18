@@ -958,6 +958,60 @@ void vu0SyncRunAheadThin()
 		CpuVU0->Execute(runCycles < 16 ? 16 : runCycles);
 }
 
+// SL-2: seam preparation for the conditional VU0 sync below — the retain
+// variant of iFlushCall(FLUSH_FREE_XMM | FLUSH_FREE_VU0) these sites used to
+// pay. The C call sits behind the runtime VPU_STAT Tbz (VU0 idle in the
+// steady state), so evicting the whole caller-saved allocator on the
+// UNCONDITIONAL path threw away residency the common path never had to lose:
+//
+//  - GPR/FPRC entries (incl. the loop-resident pins and block-resident
+//    FCR31): written back but KEPT mapped (_flushArm64GPRregs writeback-keep)
+//    — memory is current for anything the callee might read, values stay in
+//    registers on the skip path, and the sync path reloads them via
+//    cop2ReloadRetainedAfterSync() inside the conditional. The VU0-sync
+//    callees (vu0SyncThin/RunAheadThin/_vu0FinishMicro → CpuVU0->Execute)
+//    have no path that writes EE GPRs or fprc, so the retained mapping can't
+//    go stale.
+//  - VIREG entries are freed WITH writeback: VU0 execution writes VU0.VI, so
+//    a retained VI mirror would go stale across the call.
+//  - TEMP / PCWRITEBACK entries are freed (transient, no reloadable home).
+//  - NEON: same free policy as FLUSH_FREE_XMM — 128-bit classes can't ride a
+//    C call and the macro body that follows wants the file to itself. The VF
+//    compile cache (q16-q20) dies at any C seam.
+static void cop2FlushForConditionalSync()
+{
+	cop2VfCacheFlush();
+
+	for (int i = 0; i < NUM_ARM_NEON_REGS; i++)
+	{
+		if (arm64neon[i].inuse)
+			_freeNEONreg(i);
+	}
+
+	for (int i = 0; i < NUM_ARM_GPR_REGS; i++)
+	{
+		if (!arm64gprs[i].inuse || armIsCalleeSavedRegister(i))
+			continue;
+		if (arm64gprs[i].type == ARM64TYPE_GPR || arm64gprs[i].type == ARM64TYPE_FPRC)
+			continue; // retained — writeback-keep below
+		_freeArm64GPR(i); // VIREG (writeback) / TEMP / PCWRITEBACK
+	}
+
+	_flushArm64GPRregs(); // writeback-keep the retained entries
+}
+
+// Reload the retained caller-saved entries after the sync C call. Emitted
+// INSIDE the Tbz conditional, after the pin reload — the skip path never
+// clobbered them.
+static void cop2ReloadRetainedAfterSync()
+{
+	for (int i = 0; i < NUM_ARM_GPR_REGS; i++)
+	{
+		if (arm64gprs[i].inuse && !armIsCalleeSavedRegister(i))
+			_reloadArm64GPR(i);
+	}
+}
+
 // Emit conditional VU0 sync: uses EEINST analysis flags when available,
 // falls back to runtime VPU_STAT check otherwise.
 // Implements the COP2_Interlock + mVUSyncVU0/mVUFinishVU0 sync protocol.
@@ -975,10 +1029,9 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 		// Interlock requires sync — check if analysis says VU0 could be running
 		if (g_pCurInstInfo->info & EEINST_COP2_SYNC_VU0)
 		{
-			// Lighter flush than FLUSH_EVERYTHING: FLUSH_FREE_XMM | FLUSH_FREE_VU0
-			// skips callee-saved EE-GPR writebacks (callee-saved survives the C
-			// call) while still evicting caller-saved GPR + all NEON.
-			iFlushCall(FLUSH_FREE_XMM | FLUSH_FREE_VU0);
+			// SL-2 retain seam (was iFlushCall(FLUSH_FREE_XMM|FLUSH_FREE_VU0)):
+			// writeback-keep GPR/FPRC, free NEON/VI/temps — see the helper.
+			cop2FlushForConditionalSync();
 
 			// Apply block cycles to RECCYCLE (the pinned cycle delta).
 			u32 cycles = scaleblockcycles_clear();
@@ -1012,6 +1065,7 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 			// caller-saved pins they clobbered. Inside the conditional — the
 			// skip path never made a call, so its pins are intact.
 			armReloadEEClobberedPins();
+			cop2ReloadRetainedAfterSync();
 
 			armAsm->Bind(&skipSync);
 		}
@@ -1026,8 +1080,8 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 	if (!needsSync && !needsFinish)
 		return; // Analysis says no sync needed
 
-	// Lighter flush — see interlock branch above for rationale.
-	iFlushCall(FLUSH_FREE_XMM | FLUSH_FREE_VU0);
+	// SL-2 retain seam — see the interlock branch above.
+	cop2FlushForConditionalSync();
 
 	u32 cycles = scaleblockcycles_clear();
 	if (cycles != 0)
@@ -1060,6 +1114,7 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)())
 	// See the interlock branch above — same caller-saved pin restore, same
 	// inside-the-conditional placement.
 	armReloadEEClobberedPins();
+	cop2ReloadRetainedAfterSync();
 
 	armAsm->Bind(&skipSync);
 }

@@ -282,6 +282,30 @@ void _writebackArm64GPR(int armreg)
 	}
 }
 
+// Re-emit the load of a resident entry from its canonical memory home —
+// the inverse of _writebackArm64GPR, for seams that keep an entry mapped
+// across a C call and reload it on the path that actually made the call
+// (SL-2: the COP2 conditional-sync seam). Only the persistent-value classes
+// are supported; transient types (TEMP, VIREG, PCWRITEBACK) must be freed
+// at such seams instead.
+void _reloadArm64GPR(int armreg)
+{
+	switch (arm64gprs[armreg].type)
+	{
+		case ARM64TYPE_GPR:
+			armLoadEERegPtrRaw(armXRegister(armreg), &cpuRegs.GPR.r[arm64gprs[armreg].reg].UD[0]);
+			break;
+
+		case ARM64TYPE_FPRC:
+			armLoadEERegPtrRaw(armWRegister(armreg), &fpuRegs.fprc[arm64gprs[armreg].reg]);
+			break;
+
+		default:
+			pxFailRel("_reloadArm64GPR: unsupported entry type at a retain seam");
+			break;
+	}
+}
+
 void _freeArm64GPR(int armreg)
 {
 	pxAssert(armreg >= 0 && armreg < NUM_ARM_GPR_REGS);
