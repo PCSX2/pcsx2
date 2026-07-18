@@ -357,6 +357,10 @@ static void verifyCheckPost(u32 code, u32 instPC)
 
 static const void* DispatcherEvent = nullptr;
 static const void* DispatcherReg = nullptr;
+// SL-11: shared tail for cold side exits (pc in RWSCRATCH, cycles in RWARG2):
+// Str pc / Adds cycles / event-exit / Ret. BL'd from each exit so the per-exit
+// tail shrinks to Mov+Mov+BL+linked-B.
+static const void* SuperblockExitStub = nullptr;
 static const void* JITCompile = nullptr;
 static const void* EnterRecompiledCode = nullptr;
 static const void* DispatchBlockDiscard = nullptr;
@@ -1723,6 +1727,36 @@ static void recEmitSideExitIslands()
 	}
 }
 
+// SL-11: compact cold-exit tail — SetBranchImm's shape with the Str-pc /
+// cycle-update / event-check factored into the shared SuperblockExitStub.
+// Falls back to SetBranchImm for its special-case shapes (resident back-edge,
+// WaitLoop FF), which never apply to a continuation side exit in practice.
+static void recEmitSideExitTail(u32 imm)
+{
+	if ((s_loopResident && !s_loopBackedgeEmitted && imm == s_loopTopPc) ||
+		(EmuConfig.Speedhacks.WaitLoop && s_nBlockFF && imm == s_branchTo))
+	{
+		SetBranchImm(imm);
+		return;
+	}
+
+	const Cop2VfCacheScope vfCacheScope; // fork tail: preserve compile-time cache state
+	g_branch = 1;
+	pxAssert(imm);
+
+	iFlushCall(FLUSH_EVERYTHING);
+
+	armAsm->Mov(RWSCRATCH, imm);
+	armAsm->Mov(RWARG2, scaleblockcycles_clear());
+	armEmitCall(SuperblockExitStub);
+
+	// RET lands here: the linked B (same patch protocol as SetBranchImm).
+	a64::SingleEmissionCheckScope guard(armAsm);
+	u8* patch_site = armGetCurrentCodePointer();
+	armAsm->b(int64_t{0}); // placeholder; recBlocks.Link will overwrite
+	recBlocks.Link(HWADDR(imm), patch_site);
+}
+
 // Island → cold-body patch: same single-word B rewrite + cache maintenance
 // protocol as Arm64BaseBlocks link patching (compile-thread only here).
 static void recPatchIslandB(u8* site, const u8* target)
@@ -1760,7 +1794,7 @@ static void recEmitColdSideExits()
 			pc = x.dsPc;
 			recompileNextInstruction(true, false);
 		}
-		SetBranchImm(x.branchTo);
+		recEmitSideExitTail(x.branchTo);
 		x.label.reset();
 	}
 	pxAssert(armGetCurrentCodePointer() < SysMemory::GetEERecEnd());
@@ -2682,6 +2716,20 @@ static void recResetRaw()
 	armStartBlock();
 	const u8* dispStart = armGetCurrentCodePointer();
 	_DynGen_Dispatchers();
+
+	// SL-11: the shared cold-exit tail. Contract on entry: guest state fully
+	// flushed, RWSCRATCH = target guest pc, RWARG2 (w1) = scaled block cycles
+	// (zero-extended). Adds with a zero register still sets N/Z from RECCYCLE,
+	// matching emitCycleUpdateAndEventCheck's Cmp-on-zero-cycles shape. The
+	// no-event path RETs to the BL site's linked B; the event path discards
+	// the link register (pc is already stored, DispatcherEvent re-enters
+	// through the dispatcher).
+	SuperblockExitStub = armGetCurrentCodePointer();
+	armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.pc));
+	armAsm->Adds(RECCYCLE, RECCYCLE, a64::x1);
+	armEmitCondBranch(a64::ge, DispatcherEvent);
+	armAsm->Ret();
+
 	const u8* dispEnd = armGetCurrentCodePointer();
 	recPtr = armEndBlock();
 
