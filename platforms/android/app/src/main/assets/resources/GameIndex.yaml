@@ -57870,6 +57870,8 @@ SLPS-25026:
   name-en: "DOA 2 - Hardcore"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+    minimumBlendingLevel: 0 # Fixes flickering texture
   patches:
     82C02240:
       content: |-
@@ -64652,6 +64654,8 @@ SLPS-73406:
   name-en: "DOA 2 - Hardcore [PlayStation2 the Best]"
   region: "NTSC-J"
   compat: 5
+  gsHWFixes:
+  minimumBlendingLevel: 0 # Fixes flickering textute
 SLPS-73407:
   name: "サイドワインダーMAX [PlayStation2 the Best]"
   name-sort: "さいどわいんだーMAX [PlayStation2 the Best]"
