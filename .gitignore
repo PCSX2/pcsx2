@@ -129,3 +129,6 @@ CMakeSettings.json
 /ci-artifacts/
 /out/
 /.cache/
+
+# Achievement sounds are shipped assets, not build output — keep them tracked
+!platforms/android/app/src/main/assets/resources/sounds/**/*.wav
