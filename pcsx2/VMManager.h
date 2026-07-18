@@ -69,7 +69,9 @@ using VMBootDoneCallback = std::function<void(VMBootResult result, const Error& 
 namespace VMManager
 {
 	/// The number of usable save state slots.
-	static constexpr s32 NUM_SAVE_STATE_SLOTS = 10;
+	//// TODO: Check available space.
+	static constexpr s32 NUM_SAVE_STATE_SLOTS = 100;
+	
 
 	/// The stack size to use for threads running recompilers
 	static constexpr std::size_t EMU_THREAD_STACK_SIZE = 2 * 1024 * 1024; // µVU likes recursion
