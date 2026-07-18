@@ -242,6 +242,15 @@ void EeRecTestHarness::LoadProgram(std::initializer_list<u32> instructions)
 	LoadProgramImpl(instructions, /*append_term=*/true);
 }
 
+void EeRecTestHarness::LoadProgram(const std::vector<u32>& instructions)
+{
+	program_words_ = instructions;
+	program_words_.push_back(mips::JR(mips::reg::ra));
+	program_words_.push_back(mips::NOP);
+	for (size_t i = 0; i < program_words_.size(); ++i)
+		memWrite32(kProgramPc + static_cast<u32>(i * 4), program_words_[i]);
+}
+
 void EeRecTestHarness::LoadProgramNoTerm(std::initializer_list<u32> instructions)
 {
 	LoadProgramImpl(instructions, /*append_term=*/false);

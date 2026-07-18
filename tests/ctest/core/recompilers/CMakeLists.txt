@@ -37,6 +37,7 @@ add_pcsx2_test(recompiler_tests
 	arm64_baseblocks_link_tests.cpp
 	ee_rec_alu_tests.cpp
 	ee_rec_alu64_tests.cpp
+	ee_rec_fuzz_tests.cpp
 	ee_rec_alu_imm_tests.cpp
 	ee_rec_branch_tests.cpp
 	ee_rec_branch_in_delay_tests.cpp
