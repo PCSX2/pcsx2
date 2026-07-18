@@ -531,6 +531,9 @@ PAPX-90522:
   name-sort: "げんじ [たいけんばん]"
   name-en: "Genji [Trial]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes the VU-stall soft-lock on match load (VU drops to 0% under default Normal clamping; same mac-recompiler class as Ghosthunter / Pro Yakyuu).
+    vu0ClampMode: 3 # VU0 Extra+Sign, paired with EE Full + VU1.
   gsHWFixes:
     nativeScaling: 1 # Aligns background.
 PAPX-90523:
@@ -4475,6 +4478,9 @@ SCED-53684:
 SCED-53733:
   name: "Genji Special Demo"
   region: "PAL-E"
+  clampModes:
+    eeClampMode: 3 # Fixes the VU-stall soft-lock on match load (VU drops to 0% under default Normal clamping; same mac-recompiler class as Ghosthunter / Pro Yakyuu).
+    vu0ClampMode: 3 # VU0 Extra+Sign, paired with EE Full + VU1.
   gsHWFixes:
     nativeScaling: 1 # Aligns background.
 SCED-53792:
@@ -9631,7 +9637,6 @@ SCPS-15095:
   clampModes:
     eeClampMode: 3 # Fixes the VU-stall soft-lock on match load (VU drops to 0% under default Normal clamping; same mac-recompiler class as Ghosthunter / Pro Yakyuu).
     vu0ClampMode: 3 # VU0 Extra+Sign, paired with EE Full + VU1.
-    vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     nativeScaling: 1 # Aligns background.
 SCPS-15096:
@@ -10433,7 +10438,6 @@ SCPS-19318:
   clampModes:
     eeClampMode: 3 # Fixes the VU-stall soft-lock on match load (VU drops to 0% under default Normal clamping; same mac-recompiler class as Ghosthunter / Pro Yakyuu).
     vu0ClampMode: 3 # VU0 Extra+Sign, paired with EE Full + VU1.
-    vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     nativeScaling: 1 # Aligns background.
 SCPS-19319:
@@ -12788,7 +12792,6 @@ SCUS-97471:
   clampModes:
     eeClampMode: 3 # Fixes the VU-stall soft-lock on match load (VU drops to 0% under default Normal clamping; same mac-recompiler class as Ghosthunter / Pro Yakyuu).
     vu0ClampMode: 3 # VU0 Extra+Sign, paired with EE Full + VU1.
-    vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     nativeScaling: 1 # Aligns background.
 SCUS-97472:
@@ -13020,7 +13023,6 @@ SCUS-97504:
   clampModes:
     eeClampMode: 3 # Fixes the VU-stall soft-lock on match load (VU drops to 0% under default Normal clamping; same mac-recompiler class as Ghosthunter / Pro Yakyuu).
     vu0ClampMode: 3 # VU0 Extra+Sign, paired with EE Full + VU1.
-    vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     nativeScaling: 1 # Aligns background.
 SCUS-97505:
