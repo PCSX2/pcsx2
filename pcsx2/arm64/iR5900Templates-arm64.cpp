@@ -100,6 +100,17 @@ void eeRecompileCodeRC0_MEM(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5
 				((xmminfo & XMMINFO_READD) ? MODE_READ : 0);
 			_allocArm64GPR(ARM64TYPE_GPR, _Rd_, moded);
 		}
+		else if ((xmminfo & XMMINFO_READD) && GPR_IS_CONST1(_Rd_))
+		{
+			// A READD leaf (MOVZ/MOVN) reads the OLD dest value, and the leaf's
+			// _eeGetGPRDestReg drops the const flag before that read. For an
+			// unpinned dest the MODE_READ alloc fill above materializes the
+			// constant into the slot; a pinned dest gets no fill, so a pending
+			// const must be materialized into the pin here or the leaf's
+			// condition-false path reads the stale pre-const pin value
+			// (fuzzer seed 194, 2026-07-17).
+			_flushConstReg(_Rd_);
+		}
 	}
 
 	if (xmminfo & XMMINFO_WRITED)

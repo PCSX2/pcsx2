@@ -274,3 +274,57 @@ TEST(EeRecMove, MovzConstRsNonzeroRtRuntimeZeroFires)
 	h.Run();
 	EXPECT_EQ(h.GetGpr64Interp(reg::v0), 0xFFFF'FFFF'ABCD'1234ull);
 }
+
+// ── Const-flagged PINNED dest read by the condition-false path ───────────────
+//
+// Regression tests for the 2026-07-17 fuzzer find (seed 194): a MOVZ/MOVN dest
+// that is (a) pinned and (b) compile-time const was read for its old value
+// AFTER _eeGetGPRDestReg dropped the const flag — but a pinned const dest is
+// never materialized into the pin (no allocator fill runs for pins), so the
+// condition-false path kept the stale pre-const pin value instead of the
+// LUI-produced constant.
+
+TEST(EeRecMove, MovzCondFalseKeepsConstPinnedDest)
+{
+	// rt != 0 → move does NOT fire; rd must keep the const 0x430000.
+	EeRecTestHarness h;
+	h.SetGpr64(reg::v0, 0xDEAD'BEEF'0000'0001ull); // stale pre-const pin value
+	h.SetGpr64(reg::t9, 0x1111'2222'3333'4444ull);
+	h.SetGpr64(reg::s0, 5);                        // condition false
+	h.LoadProgram({
+		LUI (reg::v0, 0x0043),
+		ee::MOVZ(reg::v0, reg::t9, reg::s0),
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v0, 0x0043'0000ull);
+}
+
+TEST(EeRecMove, MovnCondFalseKeepsConstPinnedDest)
+{
+	// rt == 0 → MOVN does NOT fire; rd must keep the const.
+	EeRecTestHarness h;
+	h.SetGpr64(reg::a0, 0xDEAD'BEEF'0000'0002ull);
+	h.SetGpr64(reg::t9, 0x1111'2222'3333'4444ull);
+	h.SetGpr64(reg::s1, 0);                        // condition false
+	h.LoadProgram({
+		LUI (reg::a0, 0x0055),
+		ee::MOVN(reg::a0, reg::t9, reg::s1),
+	});
+	h.Run();
+	h.ExpectGpr64(reg::a0, 0x0055'0000ull);
+}
+
+TEST(EeRecMove, MovzConstRsCondFalseKeepsConstPinnedDest)
+{
+	// consts leaf (rs const) with a const pinned dest and condition false.
+	EeRecTestHarness h;
+	h.SetGpr64(reg::v1, 0xDEAD'BEEF'0000'0003ull);
+	h.SetGpr64(reg::s2, 7);                        // condition false
+	h.LoadProgram({
+		LUI (reg::t8, 0xABCD),
+		LUI (reg::v1, 0x0066),
+		ee::MOVZ(reg::v1, reg::t8, reg::s2),
+	});
+	h.Run();
+	h.ExpectGpr64(reg::v1, 0x0066'0000ull);
+}
