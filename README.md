@@ -22,8 +22,7 @@ The upstream PCSX2 project ships an ARM64 *interpreter* build for ARM, but its h
 - ✅ vtlb fast memory
 - ✅ Native ARM64 binary builds and boots the PS2 BIOS
 - ✅ 2D games are already playable
-- ✅ PS1 games (IOP mode) run at full speed — e.g. *Gran Turismo 2* is fully playable
-- ✅ 3D games run (if crash try disabling MTVU)
+- ✅ 3D games run
 
 ### Why LLMs / AI Were Used
 
