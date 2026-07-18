@@ -506,7 +506,7 @@ public:
 
 	virtual void Move();
 
-	GSVector4i GetTEX0Rect(GSDrawingContext prev_ctx);
+	GSVector4i GetTEX0Rect(const GSDrawingContext& prev_ctx);
 	void CheckWriteOverlap(bool req_write, bool req_read);
 	void Write(const u8* mem, int len);
 	void Read(u8* mem, int len);

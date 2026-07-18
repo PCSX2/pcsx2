@@ -222,7 +222,9 @@ void GSRendererHW::Lines2Sprites()
 
 	// each sprite converted to quad needs twice the space
 
-	while (m_vertex->tail * 2 > m_vertex->maxcount)
+	const int tail = m_vertex->tail * 2;
+	const int max_count = m_vertex->maxcount;
+	while (tail > max_count)
 	{
 		GrowVertexBuffer();
 	}
@@ -298,12 +300,13 @@ void GSRendererHW::Lines2Sprites()
 
 void GSRendererHW::ExpandLineIndices()
 {
-	const u32 process_count = (m_index->tail + 7) / 8 * 8;
+	GSIndexBuff& idx_buff = *m_index;
+	const u32 process_count = (idx_buff.tail + 7) / 8 * 8;
 	constexpr u32 expansion_factor = 3;
-	m_index->tail *= expansion_factor;
-	GSVector4i* end = reinterpret_cast<GSVector4i*>(m_index->buff);
-	GSVector4i* read = reinterpret_cast<GSVector4i*>(m_index->buff + process_count);
-	GSVector4i* write = reinterpret_cast<GSVector4i*>(m_index->buff + process_count * expansion_factor);
+	idx_buff.tail *= expansion_factor;
+	GSVector4i* end = reinterpret_cast<GSVector4i*>(idx_buff.buff);
+	GSVector4i* read = reinterpret_cast<GSVector4i*>(idx_buff.buff + process_count);
+	GSVector4i* write = reinterpret_cast<GSVector4i*>(idx_buff.buff + process_count * expansion_factor);
 
 	constexpr GSVector4i mask0 = GSVector4i::cxpr8(0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 2, 3, 4, 5, 4, 5);
 	constexpr GSVector4i mask1 = GSVector4i::cxpr8(6, 7, 4, 5, 6, 7, 6, 7, 8, 9, 8, 9, 10, 11, 8, 9);
@@ -1428,7 +1431,8 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 				}
 				else
 				{
-					for (u32 i = 2; i < (m_vertex->tail & ~1); i++)
+					const u32 tail = m_vertex->tail & ~1;
+					for (u32 i = 2; i < tail; i++)
 					{
 						bool unique_found = false;
 
@@ -1469,7 +1473,8 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 				}
 				else
 				{
-					for (u32 i = 2; i < (m_vertex->tail & ~1); i++)
+					const u32 tail = m_vertex->tail & ~1;
+					for (u32 i = 2; i < tail; i++)
 					{
 						bool unique_found = false;
 
@@ -2235,16 +2240,16 @@ void GSRendererHW::HandleManualDeswizzle()
 	// Check if it's doing manual deswizzling first (draws are 32x16), if they are, check if the Z is flat, if not,
 	// we're gonna have to get creative and swap around the quandrants, but that's a TODO.
 	GSVertex* v = &m_vertex->buff[0];
-
+	GSIndexBuff& idx_buff = *m_index;
 	// Check for page quadrant and compare it to the quadrant from the verts, if it does match then we need to do correction.
 	const GSVector2i page_quadrant = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs / 2;
 
 	if (PRIM->FST)
 	{
-		for (u32 i = 0; i < m_index->tail; i += 2)
+		for (u32 i = 0; i < idx_buff.tail; i += 2)
 		{
-			const u32 index_first = m_index->buff[i];
-			const u32 index_last = m_index->buff[i + 1];
+			const u32 index_first = idx_buff.buff[i];
+			const u32 index_last = idx_buff.buff[i + 1];
 
 			if ((abs((v[index_last].U) - (v[index_first].U)) >> 4) != page_quadrant.x || (abs((v[index_last].V) - (v[index_first].V)) >> 4) != page_quadrant.y)
 				return;
@@ -2252,10 +2257,10 @@ void GSRendererHW::HandleManualDeswizzle()
 	}
 	else
 	{
-		for (u32 i = 0; i < m_index->tail; i += 2)
+		for (u32 i = 0; i < idx_buff.tail; i += 2)
 		{
-			const u32 index_first = m_index->buff[i];
-			const u32 index_last = m_index->buff[i + 1];
+			const u32 index_first = idx_buff.buff[i];
+			const u32 index_last = idx_buff.buff[i + 1];
 			const u32 x = abs(((v[index_last].ST.S / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TW)) - ((v[index_first].ST.S / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TW)));
 			const u32 y = abs(((v[index_last].ST.T / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TH)) - ((v[index_first].ST.T / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TH)));
 
@@ -2756,7 +2761,8 @@ void GSRendererHW::RoundSpriteOffset()
 void GSRendererHW::Draw()
 {
 	static u32 num_skipped_channel_shuffle_draws = 0;
-
+	GSVertexBuff& vtx_buff = *m_vertex;
+	GSIndexBuff& idx_buff = *m_index;
 	// We mess with this state as an optimization, so take a copy and use that instead.
 	const GSDrawingContext* context = m_context;
 	m_cached_ctx.TEX0 = context->TEX0;
@@ -3183,7 +3189,7 @@ void GSRendererHW::Draw()
 		}
 
 		const u32 vert_index = (m_vt.m_primclass == GS_TRIANGLE_CLASS) ? 2 : 1;
-		u32 const_color = m_vertex->buff[m_index->buff[vert_index]].RGBAQ.U32[0];
+		u32 const_color = vtx_buff.buff[idx_buff.buff[vert_index]].RGBAQ.U32[0];
 		u32 fb_mask = m_cached_ctx.FRAME.FBMSK;
 
 		// If we could just check the colour, it would be great, but Echo Night decided it's going to set the alpha and green to 128, for some reason, and actually be 32bit, so it ruined my day.
@@ -3219,7 +3225,7 @@ void GSRendererHW::Draw()
 			m_cached_ctx.TEXA.TA0 = 0;
 			m_cached_ctx.TEXA.TA1 = 128;
 			m_cached_ctx.FRAME.PSM = (m_cached_ctx.FRAME.PSM & 2) ? m_cached_ctx.FRAME.PSM : PSMCT16;
-			m_vertex->buff[m_index->buff[1]].RGBAQ.U32[0] = const_color;
+			vtx_buff.buff[idx_buff.buff[1]].RGBAQ.U32[0] = const_color;
 			ReplaceVerticesWithSprite(m_r, GSVector2i(m_r.width(), m_r.height()));
 		}
 
@@ -3444,13 +3450,13 @@ void GSRendererHW::Draw()
 		const u32 page_alignment = GSLocalMemory::IsPageAlignedMasked(m_cached_ctx.TEX0.PSM, m_r);
 		const bool page_aligned = (page_alignment & 0xF0F0) != 0; // Make sure Y is page aligned.
 		if (!no_rt && page_aligned && m_cached_ctx.ZBUF.ZMSK && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == 16 && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp <= 16 &&
-			(m_vt.m_primclass == GS_SPRITE_CLASS || (m_vt.m_primclass == GS_TRIANGLE_CLASS && (m_index->tail % 6) == 0 && TrianglesAreQuads(true) && m_index->tail > 6)))
+			(m_vt.m_primclass == GS_SPRITE_CLASS || (m_vt.m_primclass == GS_TRIANGLE_CLASS && (idx_buff.tail % 6) == 0 && TrianglesAreQuads(true) && idx_buff.tail > 6)))
 		{
 			// Tail check is to make sure we have enough strips to go all the way across the page, or if it's using a region clamp could be used to draw strips.
 			if (GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp == 16 &&
-				(m_index->tail >= (m_cached_ctx.TEX0.TBW * 2) || m_cached_ctx.TEX0.TBP0 == m_cached_ctx.FRAME.Block() || m_cached_ctx.CLAMP.WMS > CLAMP_CLAMP || m_cached_ctx.CLAMP.WMT > CLAMP_CLAMP))
+				(idx_buff.tail >= (m_cached_ctx.TEX0.TBW * 2) || m_cached_ctx.TEX0.TBP0 == m_cached_ctx.FRAME.Block() || m_cached_ctx.CLAMP.WMS > CLAMP_CLAMP || m_cached_ctx.CLAMP.WMT > CLAMP_CLAMP))
 			{
-				const GSVertex* v = &m_vertex->buff[0];
+				const GSVertex* v = &vtx_buff.buff[0];
 
 				const int first_x = std::clamp((static_cast<int>(((v[0].XYZ.X - m_context->XYOFFSET.OFX) + 8))) >> 4, 0, 2048);
 				const bool offset_last = PRIM->FST ? (v[1].U > v[0].U) : ((v[1].ST.S / v[1].RGBAQ.Q) > (v[0].ST.S / v[1].RGBAQ.Q));
@@ -3476,11 +3482,11 @@ void GSRendererHW::Draw()
 			{
 				bool shuffle_channel_reads = !m_cached_ctx.FRAME.FBMSK;
 				const u32 increment = (m_vt.m_primclass == GS_TRIANGLE_CLASS) ? 3 : 2;
-				const GSVertex* v = &m_vertex->buff[0];
+				const GSVertex* v = &vtx_buff.buff[0];
 
 				if (shuffle_channel_reads)
 				{
-					for (u32 i = 0; i < m_index->tail; i += increment)
+					for (u32 i = 0; i < idx_buff.tail; i += increment)
 					{
 						const int first_u = (PRIM->FST ? v[i].U : static_cast<int>(v[i].ST.S / v[(increment == 2) ? i + 1 : i].RGBAQ.Q)) >> 4;
 						const int second_u = (PRIM->FST ? v[i + 1].U : static_cast<int>(v[i + 1].ST.S / v[i + 1].RGBAQ.Q)) >> 4;
@@ -3829,9 +3835,10 @@ void GSRendererHW::Draw()
 
 			if (vertical_offset || horizontal_offset)
 			{
-				GSVertex* v = &m_vertex->buff[0];
+				GSVertex* v = &vtx_buff.buff[0];
+				const u32 tail = vtx_buff.tail;
 
-				for (u32 i = 0; i < m_vertex->tail; i++)
+				for (u32 i = 0; i < tail; i++)
 				{
 					v[i].XYZ.X += horizontal_offset << 4;
 					v[i].XYZ.Y += vertical_offset << 4;
@@ -4126,9 +4133,10 @@ void GSRendererHW::Draw()
 
 			if (vertical_offset || horizontal_offset)
 			{
-				GSVertex* v = &m_vertex->buff[0];
+				GSVertex* v = &vtx_buff.buff[0];
+				const u32 tail = vtx_buff.tail;
 
-				for (u32 i = 0; i < m_vertex->tail; i++)
+				for (u32 i = 0; i < tail; i++)
 				{
 					v[i].XYZ.X += horizontal_offset << 4;
 					v[i].XYZ.Y += vertical_offset << 4;
@@ -4587,13 +4595,13 @@ void GSRendererHW::Draw()
 	if (!m_texture_shuffle && !m_channel_shuffle)
 	{
 		// Try to turn blits in to single sprites, saves upscaling problems when striped clears/blits.
-		if (m_vt.m_primclass == GS_SPRITE_CLASS && m_primitive_covers_without_gaps == NoGapsType::FullCover && m_index->tail > 2 && (!PRIM->TME || TextureCoversWithoutGapsNotEqual()) && m_vt.m_eq.rgba == 0xFFFF)
+		if (m_vt.m_primclass == GS_SPRITE_CLASS && m_primitive_covers_without_gaps == NoGapsType::FullCover && idx_buff.tail > 2 && (!PRIM->TME || TextureCoversWithoutGapsNotEqual()) && m_vt.m_eq.rgba == 0xFFFF)
 		{
 			// Full final framebuffer only.
 			const GSVector2i fb_size = PCRTCDisplays.GetFramebufferSize(-1);
 			if (std::abs(fb_size.x - m_r.width()) <= 1 && std::abs(fb_size.y - m_r.height()) <= 1)
 			{
-				GSVertex* v = m_vertex->buff;
+				GSVertex* v = vtx_buff.buff;
 
 				v[0].XYZ.Z = v[1].XYZ.Z;
 				v[0].RGBAQ = v[1].RGBAQ;
@@ -4602,23 +4610,23 @@ void GSRendererHW::Draw()
 				m_vt.m_eq.z = true;
 				m_vt.m_eq.f = true;
 
-				v[1].XYZ.X = v[m_index->tail - 1].XYZ.X;
-				v[1].XYZ.Y = v[m_index->tail - 1].XYZ.Y;
+				v[1].XYZ.X = v[idx_buff.tail - 1].XYZ.X;
+				v[1].XYZ.Y = v[idx_buff.tail - 1].XYZ.Y;
 
 				if (PRIM->FST)
 				{
-					v[1].U = v[m_index->tail - 1].U;
-					v[1].V = v[m_index->tail - 1].V;
+					v[1].U = v[idx_buff.tail - 1].U;
+					v[1].V = v[idx_buff.tail - 1].V;
 				}
 				else
 				{
-					v[1].ST.S = v[m_index->tail - 1].ST.S;
-					v[1].ST.T = v[m_index->tail - 1].ST.T;
-					v[1].RGBAQ.Q = v[m_index->tail - 1].RGBAQ.Q;
+					v[1].ST.S = v[idx_buff.tail - 1].ST.S;
+					v[1].ST.T = v[idx_buff.tail - 1].ST.T;
+					v[1].RGBAQ.Q = v[idx_buff.tail - 1].RGBAQ.Q;
 				}
 
-				m_vertex->head = m_vertex->tail = m_vertex->next = 2;
-				m_index->tail = 2;
+				vtx_buff.head = vtx_buff.tail = vtx_buff.next = 2;
+				idx_buff.tail = 2;
 			}
 		}
 
@@ -5076,8 +5084,8 @@ void GSRendererHW::Draw()
 	// but it still needs to adjust native stuff from memory as it's not been compensated for upscaling (Dragon Quest 8 font for example).
 	if (CanUpscale() && (m_vt.m_primclass == GS_SPRITE_CLASS) && rt && rt->GetScale() > 1.0f)
 	{
-		const u32 count = m_vertex->next;
-		GSVertex* v = &m_vertex->buff[0];
+		const u32 count = vtx_buff.next;
+		GSVertex* v = &vtx_buff.buff[0];
 
 		// Hack to avoid vertical black line in various games (ace combat/tekken)
 		if (GSConfig.UserHacks_AlignSpriteX)
@@ -5304,33 +5312,35 @@ void GSRendererHW::Draw()
 /// Verifies assumptions we expect to hold about indices
 bool GSRendererHW::VerifyIndices()
 {
+	GSIndexBuff& idx_buff = *m_index;
+
 	switch (m_vt.m_primclass)
 	{
 		case GS_SPRITE_CLASS:
-			if (m_index->tail % 2 != 0)
+			if (idx_buff.tail % 2 != 0)
 				return false;
 			[[fallthrough]];
 		case GS_POINT_CLASS:
 			// Expect indices to be flat increasing
-			for (u32 i = 0; i < m_index->tail; i++)
+			for (u32 i = 0; i < idx_buff.tail; i++)
 			{
-				if (m_index->buff[i] != i)
+				if (idx_buff.buff[i] != i)
 					return false;
 			}
 			break;
 		case GS_LINE_CLASS:
-			if (m_index->tail % 2 != 0)
+			if (idx_buff.tail % 2 != 0)
 				return false;
 			// Expect each line to be a pair next to each other
 			// VS expand relies on this!
-			for (u32 i = 0; i < m_index->tail; i += 2)
+			for (u32 i = 0; i < idx_buff.tail; i += 2)
 			{
-				if (m_index->buff[i] + 1 != m_index->buff[i + 1])
+				if (idx_buff.buff[i] + 1 != idx_buff.buff[i + 1])
 					return false;
 			}
 			break;
 		case GS_TRIANGLE_CLASS:
-			if (m_index->tail % 3 != 0)
+			if (idx_buff.tail % 3 != 0)
 				return false;
 			break;
 		case GS_INVALID_CLASS:
@@ -5351,15 +5361,17 @@ void GSRendererHW::HandleFlatShadedVertices()
 	if (!maybe_fix_vertices || dont_fix_vertices)
 		return;
 
-	const int n = GSUtil::GetClassVertexCount(m_vt.m_primclass);
+	const u32 n = GSUtil::GetClassVertexCount(m_vt.m_primclass);
+	GSVertexBuff& vtx_buff = *m_vertex;
+	GSIndexBuff& idx_buff = *m_index;
 
 	// If all vertices of each prim have the same color there is nothing to do.
 	bool prims_flat = true;
-	for (u32 i = 0; i < m_index->tail; i += n)
+	for (u32 i = 0; i < idx_buff.tail; i += n)
 	{
 		for (u32 j = 0; j < n - 1; j++)
 		{
-			if (m_vertex->buff[m_index->buff[i + j]].RGBAQ.U32[0] != m_vertex->buff[m_index->buff[i + n - 1]].RGBAQ.U32[0])
+			if (vtx_buff.buff[idx_buff.buff[i + j]].RGBAQ.U32[0] != vtx_buff.buff[idx_buff.buff[i + n - 1]].RGBAQ.U32[0])
 			{
 				prims_flat = false;
 				break;
@@ -5372,21 +5384,22 @@ void GSRendererHW::HandleFlatShadedVertices()
 		return;
 
 	// De-index the vertices using the copy buffer
-	while (m_vertex->maxcount < m_index->tail)
+	while (vtx_buff.maxcount < idx_buff.tail)
 		GrowVertexBuffer();
-	for (int i = static_cast<int>(m_index->tail) - 1; i >= 0; i--)
+
+	for (int i = static_cast<int>(idx_buff.tail) - 1; i >= 0; i--)
 	{
-		m_vertex->buff_copy[i] = m_vertex->buff[m_index->buff[i]];
-		m_index->buff[i] = static_cast<u16>(i);
+		vtx_buff.buff_copy[i] = vtx_buff.buff[idx_buff.buff[i]];
+		idx_buff.buff[i] = static_cast<u16>(i);
 	}
-	std::swap(m_vertex->buff, m_vertex->buff_copy);
-	m_vertex->head = m_vertex->next = m_vertex->tail = m_index->tail;
+	std::swap(vtx_buff.buff, vtx_buff.buff_copy);
+	vtx_buff.head = vtx_buff.next = vtx_buff.tail = idx_buff.tail;
 
 	// Make all vertices the same color to simplify handling in expand shaders.
-	for (u32 i = 0; i < m_index->tail; i += n)
+	for (u32 i = 0; i < idx_buff.tail; i += n)
 	{
 		for (u32 j = 0; j < n - 1; j++)
-			m_vertex->buff[i + j].RGBAQ.U32[0] = m_vertex->buff[i + n - 1].RGBAQ.U32[0];
+			vtx_buff.buff[i + j].RGBAQ.U32[0] = vtx_buff.buff[i + n - 1].RGBAQ.U32[0];
 	}
 }
 
@@ -9869,11 +9882,13 @@ bool GSRendererHW::DetectStripedDoubleClear(bool& no_rt, bool& no_ds)
 	// and I could cheat and stop when we get a size that matches, but that might be a lucky misdetection, I don't wanna risk it.
 	int vertex_offset = 0;
 	int last_vertex = m_vertex->buff[0].XYZ.X;
+	const u32 tail = m_vertex->tail;
+	GSVertexBuff& vtx_buff = *m_vertex;
 
-	for (u32 i = 1; i < m_vertex->tail; i++)
+	for (u32 i = 1; i < tail; i++)
 	{
-		vertex_offset = std::max(static_cast<int>((m_vertex->buff[i].XYZ.X - last_vertex) >> 4), vertex_offset);
-		last_vertex = m_vertex->buff[i].XYZ.X;
+		vertex_offset = std::max(static_cast<int>((vtx_buff.buff[i].XYZ.X - last_vertex) >> 4), vertex_offset);
+		last_vertex = vtx_buff.buff[i].XYZ.X;
 
 		// Found a gap which is much bigger, no point continuing to scan.
 		if (vertex_offset > strip_size)
@@ -10609,12 +10624,13 @@ bool GSRendererHW::TextureCoversWithoutGapsNotEqual()
 	const int first_dpX = v[1].XYZ.X - v[0].XYZ.X;
 	const int first_dtV = v[1].V - v[0].V;
 	const int first_dtU = v[1].U - v[0].U;
+	const u32 next_count = m_vertex->next;
 
 	// Horizontal Match.
 	if ((first_dpX >> 4) == m_r.z)
 	{
 		// Borrowed from MergeSprite() modified to calculate heights.
-		for (u32 i = 2; i < m_vertex->next; i += 2)
+		for (u32 i = 2; i < next_count; i += 2)
 		{
 			const int last_tV = v[i - 1].V;
 			const int dtV = v[i + 1].V - v[i].V;
@@ -10632,7 +10648,7 @@ bool GSRendererHW::TextureCoversWithoutGapsNotEqual()
 	if ((first_dpY >> 4) == m_r.w)
 	{
 		// Borrowed from MergeSprite().
-		for (u32 i = 2; i < m_vertex->next; i += 2)
+		for (u32 i = 2; i < next_count; i += 2)
 		{
 			const int last_tU = v[i - 1].U;
 			const int this_start_U = v[i].U;
@@ -10888,10 +10904,13 @@ void GSRendererHW::OffsetDraw(s32 fbp_offset, s32 zbp_offset, s32 xoffset, s32 y
 
 	const s32 fp_xoffset = xoffset << 4;
 	const s32 fp_yoffset = yoffset << 4;
-	for (u32 i = 0; i < m_vertex->next; i++)
+
+	GSVertexBuff& vtx_buff = *m_vertex;
+
+	for (u32 i = 0; i < vtx_buff.next; i++)
 	{
-		m_vertex->buff[i].XYZ.X += fp_xoffset;
-		m_vertex->buff[i].XYZ.Y += fp_yoffset;
+		vtx_buff.buff[i].XYZ.X += fp_xoffset;
+		vtx_buff.buff[i].XYZ.Y += fp_yoffset;
 	}
 
 	m_vt.m_min.p.x += static_cast<float>(xoffset);
