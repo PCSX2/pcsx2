@@ -296,9 +296,14 @@ static void recBEQ_process(int process)
 		SaveBranchState();
 		recompileNextInstruction(true, false);
 	}
+	// Both arms charge the full accrual: SetBranchImm's scaleblockcycles_clear
+	// consumes s_nBlockCycles, and the swapped path has no LoadBranchState to
+	// restore it — the fallthrough arm would charge the clamped minimum.
+	const u32 fork_cycles = s_nBlockCycles;
 	SetBranchImm(branchTo);
 
 	recBindBranchLabel();
+	s_nBlockCycles = fork_cycles;
 
 	if (!swap)
 	{
@@ -354,9 +359,14 @@ static void recBNE_process(int process)
 		SaveBranchState();
 		recompileNextInstruction(true, false);
 	}
+	// Both arms charge the full accrual: SetBranchImm's scaleblockcycles_clear
+	// consumes s_nBlockCycles, and the swapped path has no LoadBranchState to
+	// restore it — the fallthrough arm would charge the clamped minimum.
+	const u32 fork_cycles = s_nBlockCycles;
 	SetBranchImm(branchTo);
 
 	recBindBranchLabel();
+	s_nBlockCycles = fork_cycles;
 
 	if (!swap)
 	{
@@ -507,9 +517,14 @@ static void recBranchSingle(a64::Condition skip_cond)
 		SaveBranchState();
 		recompileNextInstruction(true, false);
 	}
+	// Both arms charge the full accrual: SetBranchImm's scaleblockcycles_clear
+	// consumes s_nBlockCycles, and the swapped path has no LoadBranchState to
+	// restore it — the fallthrough arm would charge the clamped minimum.
+	const u32 fork_cycles = s_nBlockCycles;
 	SetBranchImm(branchTo);
 
 	recBindBranchLabel();
+	s_nBlockCycles = fork_cycles;
 
 	if (!swap)
 	{
@@ -629,9 +644,14 @@ static void recBranchLink(bool ltz)
 		SaveBranchState();
 		recompileNextInstruction(true, false);
 	}
+	// Both arms charge the full accrual: SetBranchImm's scaleblockcycles_clear
+	// consumes s_nBlockCycles, and the swapped path has no LoadBranchState to
+	// restore it — the fallthrough arm would charge the clamped minimum.
+	const u32 fork_cycles = s_nBlockCycles;
 	SetBranchImm(branchTo);
 
 	recBindBranchLabel();
+	s_nBlockCycles = fork_cycles;
 
 	if (!swap)
 	{
