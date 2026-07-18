@@ -1134,8 +1134,18 @@ static void recReserveRAM()
 static void recReserve()
 {
 	Console.WriteLn(Color_Green, "IOP: ARM64 Recompiler reserved.");
+
+	// Constant pool at the region tail; code region ends below it minus the
+	// 64KB single-compile overhang slop (same layout hazard as the EE rec —
+	// see recReserve in iR5900-arm64.cpp).
+	const u32 poolSize = 65536;
+	u8* poolBase = SysMemory::GetIOPRecEnd() - poolSize;
+	s_iopConstantPool.Init(poolBase, poolSize);
+
 	recPtr = SysMemory::GetIOPRec();
-	recPtrEnd = SysMemory::GetIOPRecEnd() - _64kb;
+	recPtrEnd = poolBase - _64kb;
+	pxAssertRel(recPtrEnd > recPtr && recPtrEnd + _64kb <= poolBase,
+		"IOP rec code region must not reach the constant pool");
 
 	recReserveRAM();
 
@@ -1144,12 +1154,6 @@ static void recReserve()
 	s_pInstCache = (EEINST*)malloc(sizeof(EEINST) * s_nInstCacheSize);
 	if (!s_pInstCache)
 		pxFailRel("Failed to allocate R3000A InstCache array.");
-
-	// Initialize constant pool
-	// Reserve some space at the end of the IOP rec region for the constant pool
-	const u32 poolSize = 65536;
-	u8* poolBase = SysMemory::GetIOPRecEnd() - poolSize;
-	s_iopConstantPool.Init(poolBase, poolSize);
 }
 
 void recResetIOP()

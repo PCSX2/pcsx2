@@ -2554,16 +2554,6 @@ static void recReserveRAM()
 static void recReserve()
 {
 	Console.WriteLn(Color_Green, "EE: ARM64 Recompiler reserved.");
-	recPtr = SysMemory::GetEERec();
-	recPtrEnd = SysMemory::GetEERecEnd() - _64kb;
-
-	recReserveRAM();
-
-	pxAssertRel(!s_pInstCache, "InstCache not allocated");
-	s_nInstCacheSize = 128;
-	s_pInstCache = (EEINST*)malloc(sizeof(EEINST) * s_nInstCacheSize);
-	if (!s_pInstCache)
-		pxFailRel("Failed to allocate R5900 InstCache array.");
 
 	// 256KB: the FX-03a manual-check snapshots are blobs, not dedup'd
 	// literals — a manual-heavy title banks ~70-80KB of them per rec
@@ -2572,6 +2562,29 @@ static void recReserve()
 	const u32 poolSize = 262144;
 	u8* poolBase = SysMemory::GetEERecEnd() - poolSize;
 	s_eeConstantPool.Init(poolBase, poolSize);
+
+	// Code region: everything below the pool, minus the 64KB slop a single
+	// compile may overhang past recPtrEnd (armSetAsmPtr grants capacity
+	// recPtrEnd - recPtr + 64KB; the cache-full reset triggers on the NEXT
+	// compile). recPtrEnd must sit BELOW poolBase by the slop, or a block
+	// compiled near the full mark overwrites the pool — whose first bytes
+	// are the dispatcher stubs' far-call veneers (bl → mov x16/../br), so
+	// the corruption fires on the next event dispatch, far from the cause.
+	// (Latent since the pool moved to the cache tail; surfaced by SL-03
+	// superblocks growing per-block emission enough for the fuzz soak to
+	// fill the cache into the overlap.)
+	recPtr = SysMemory::GetEERec();
+	recPtrEnd = poolBase - _64kb;
+	pxAssertRel(recPtrEnd > recPtr && recPtrEnd + _64kb <= poolBase,
+		"EE rec code region must not reach the constant pool");
+
+	recReserveRAM();
+
+	pxAssertRel(!s_pInstCache, "InstCache not allocated");
+	s_nInstCacheSize = 128;
+	s_pInstCache = (EEINST*)malloc(sizeof(EEINST) * s_nInstCacheSize);
+	if (!s_pInstCache)
+		pxFailRel("Failed to allocate R5900 InstCache array.");
 }
 
 static void recResetRaw()
