@@ -1358,6 +1358,110 @@ TEST(EeVu0Cop2MacroFlagHack, StatusDeadStandaloneSkipsButKeepsResult)
 }
 
 // =========================================================================
+//  vuFlagHack MAC/status-liveness elision inside cop2EmitFlagUpdate (EP-2a)
+//
+//  The hand-rolled COP2 macro FMAC bodies gate the whole flag-extraction
+//  body (Cmlt/Fcmeq/lane-pack + MAC store + denorm-scratch RMW) on the same
+//  COP2FlagHackPass liveness bits the mVU-reuse path already honors. These
+//  tests pin the three semantic corners: a live reader keeps flags exact, an
+//  elided INTERMEDIATE MAC write is exact by overwrite semantics, and the
+//  last write in a block is always committed live (CommitAllFlags) so the
+//  architectural registers are correct at block exit.
+// =========================================================================
+
+TEST(EeVu0Cop2MacroFlagHack, MacLiveAcrossCfc2NotSkipped)
+{
+	// The CFC2 of REG_MAC_FLAG marks the VADD's MAC write live; the JIT-read
+	// MAC must match the interpreter exactly. Result (-4, 0, 4, 5): lane x
+	// sets a sign bit, lane y a zero bit -> nonzero MAC.
+	EeRecTestHarness h;
+	ScopedFlagHack flagHack(true);
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, -5.0f, 0.0f, 3.0f, 4.0f);
+	h.SeedVu0Vf(2,  1.0f, 0.0f, 1.0f, 1.0f);
+	h.LoadProgram({
+		VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2),
+		CFC2(reg::t0, REG_MAC_FLAG),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Jit(reg::t0), h.GetGpr64Interp(reg::t0));
+	EXPECT_NE(h.GetGpr64Jit(reg::t0), 0u);
+}
+
+TEST(EeVu0Cop2MacroFlagHack, IntermediateDeadMacElisionIsExact)
+{
+	// Two MAC writers, then a CFC2 of MAC: the pass marks only the SECOND
+	// VADD live (MAC is a plain overwrite, the first write is unobservable),
+	// so eliding the first body is exact — full JIT-vs-interp diff must pass
+	// including the CFC2-read value. The dead op's result (2,4,6,8) sets no
+	// flag lanes, so the interp's always-on sticky accumulation stays inert
+	// and the full-state diff isolates MAC-elision exactness (the sticky-loss
+	// divergence is pinned separately below).
+	EeRecTestHarness h;
+	ScopedFlagHack flagHack(true);
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, -5.0f, 0.0f, 3.0f, 4.0f);
+	h.SeedVu0Vf(2,  1.0f, 0.0f, 1.0f, 1.0f);
+	h.SeedVu0Vf(4,  1.0f, 2.0f, 3.0f, 4.0f);
+	h.LoadProgram({
+		VADD_C2(mask_xyzw, /*fd*/5, /*fs*/4, /*ft*/4), // MAC dead (overwritten), no flag lanes
+		VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2), // MAC live (CFC2 reads it)
+		CFC2(reg::t0, REG_MAC_FLAG),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Jit(reg::t0), h.GetGpr64Interp(reg::t0));
+	EXPECT_NE(h.GetGpr64Jit(reg::t0), 0u); // (-4,0,4,5): sign + zero lanes set
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(5, 'w'), 8.0f); // elided-flag op's result intact
+}
+
+TEST(EeVu0Cop2MacroFlagHack, LastWriteInBlockCommitsBothFlags)
+{
+	// A standalone FMAC with no in-block reader is still the block's LAST
+	// MAC/status write, which CommitAllFlags marks live — so the architectural
+	// VI regs must be up to date at block exit for a later block's CFC2. The
+	// full post-state diff (VU0.VI included) against the always-accurate
+	// interpreter is the assertion.
+	EeRecTestHarness h;
+	ScopedFlagHack flagHack(true);
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, -5.0f, 0.0f, 3.0f, 4.0f);
+	h.SeedVu0Vf(2,  1.0f, 0.0f, 1.0f, 1.0f);
+	h.LoadProgram({VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2)});
+	h.Run();
+	EXPECT_NE(h.GetVu0ViJit(REG_MAC_FLAG), 0u);
+	EXPECT_EQ(h.GetVu0ViJit(REG_MAC_FLAG), h.GetVu0ViInterp(REG_MAC_FLAG));
+	EXPECT_EQ(h.GetVu0ViJit(REG_STATUS_FLAG), h.GetVu0ViInterp(REG_STATUS_FLAG));
+}
+
+TEST(EeVu0Cop2MacroFlagHack, IntermediateStickyLossIsTheDocumentedHack)
+{
+	// The accepted vuFlagHack divergence, pinned so it only changes on
+	// purpose: an intermediate status write's STICKY contribution is lost
+	// when elided. Op 1 (result -4,0,4,5) would set S+Z sticky; op 2 (result
+	// 2,4,6,8) sets none. The CFC2 marks op 2 live; op 1 stays dead. The
+	// interpreter accumulates op 1's sticky bits, the JIT does not — assert
+	// the JIT value alone (status reads all-clear), no interp diff.
+	EeRecTestHarness h;
+	ScopedFlagHack flagHack(true);
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, -5.0f, 0.0f, 3.0f, 4.0f);
+	h.SeedVu0Vf(2,  1.0f, 0.0f, 1.0f, 1.0f);
+	h.SeedVu0Vf(4,  1.0f, 2.0f, 3.0f, 4.0f);
+	h.LoadProgram({
+		VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2), // status dead, sticky lost
+		VADD_C2(mask_xyzw, /*fd*/5, /*fs*/4, /*ft*/4), // status live via CFC2
+		CFC2(reg::t0, REG_STATUS_FLAG),
+	});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetGpr64Jit(reg::t0), 0u);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(5, 'w'), 8.0f);
+}
+
+// =========================================================================
 //  Pending-VU0-micro drain on DIV-unit / no-op COP2 macro ops
 // =========================================================================
 //

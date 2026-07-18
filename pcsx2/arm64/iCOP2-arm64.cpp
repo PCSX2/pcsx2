@@ -458,16 +458,34 @@ static void cop2EmitNormalizeStatusFlag()
 	armAsm->Str(RWSCRATCH, armVU0Mem(&VU0.VI[REG_STATUS_FLAG]));
 }
 
+// MAC-flag liveness, same contract as cop2StatusFlagLive(): with vuFlagHack on,
+// COP2FlagHackPass marks only the MAC writes a later CFC2 can observe — the
+// last write before a CFC2 of REG_MAC_FLAG, and the last write in the block
+// (CommitAllFlags). Unlike status, MAC is a plain overwrite (no sticky bits),
+// so skipping an intermediate write is exact: only the surviving write's value
+// is architecturally observable.
+static bool cop2MacFlagLive()
+{
+	return !EmuConfig.Speedhacks.vuFlagHack || !g_pCurInstInfo || (g_pCurInstInfo->info & EEINST_COP2_MAC_FLAG);
+}
+
 // Emit code to update MAC and status flags from the result in RQSCRATCH.
-// Implements mVUupdateFlags behavior.
+// Implements mVUupdateFlags behavior, under the same per-flag liveness gates
+// the mVU-reuse path applies in mVUmacroSetupCOP2State (x86: setupMacroOp,
+// microVU_Macro.inl): with vuFlagHack on, a write with neither MAC nor status
+// consumed emits nothing at all. The status half feeds the
+// cop2Rec.denormStatusFlag scratch, whose live/dead protocol is documented at
+// endMacroOp_arm64 — a dead op may skip the scratch RMW because the next live
+// op re-seeds the scratch from VU0.VI[REG_STATUS_FLAG].
 // xyzw = dest field mask (which lanes were written).
 // Uses RQSCRATCH2, RQSCRATCH3 as temporaries.
 static void cop2EmitFlagUpdate(int xyzw)
 {
-	// Flags are updated unconditionally for correctness; no liveness-based
-	// skip is applied here.
+	const bool statusLive = cop2StatusFlagLive();
+	const bool macLive = cop2MacFlagLive();
 
-	if (xyzw == 0) return;
+	if (xyzw == 0 || (!statusLive && !macLive))
+		return;
 
 	// Save result — flag extraction clobbers NEON scratch registers
 	// Use q28 to preserve the result while extracting flags from it
@@ -505,26 +523,32 @@ static void cop2EmitFlagUpdate(int xyzw)
 	armAsm->Orr(macFlag, macFlag, zeroBits);
 
 	// --- Write MAC flag to VU0.VI[REG_MAC_FLAG] ---
-	armAsm->Str(macFlag, armVU0Mem(&VU0.VI[REG_MAC_FLAG]));
+	if (macLive)
+		armAsm->Str(macFlag, armVU0Mem(&VU0.VI[REG_MAC_FLAG]));
 
 	// --- Update denormalized status flag ---
-	// Load current denorm flag
-	armAsm->Ldr(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
+	// (macFlag is still needed here even when the MAC store was dead — the
+	// status Z/S bits derive from the same lane extraction.)
+	if (statusLive)
+	{
+		// Load current denorm flag
+		armAsm->Ldr(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
 
-	// Clear current (non-sticky) bits 8-15. w9 scratch: this body emits
-	// inline into EE blocks, where allocatable regs (w4 since Arm D) may
-	// hold live allocator values — raw scratch stays on reserved w8/w9/w10.
-	armAsm->Mov(a64::w9, 0xFF00);
-	armAsm->Bic(RWSCRATCH, RWSCRATCH, a64::w9);
+		// Clear current (non-sticky) bits 8-15. w9 scratch: this body emits
+		// inline into EE blocks, where allocatable regs (w4 since Arm D) may
+		// hold live allocator values — raw scratch stays on reserved w8/w9/w10.
+		armAsm->Mov(a64::w9, 0xFF00);
+		armAsm->Bic(RWSCRATCH, RWSCRATCH, a64::w9);
 
-	// OR macFlag into sticky bits (0-7) — accumulates over time
-	armAsm->Orr(RWSCRATCH, RWSCRATCH, macFlag);
+		// OR macFlag into sticky bits (0-7) — accumulates over time
+		armAsm->Orr(RWSCRATCH, RWSCRATCH, macFlag);
 
-	// OR (macFlag << 8) into current bits (8-15) — this instruction's result
-	armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::Operand(macFlag, a64::LSL, 8));
+		// OR (macFlag << 8) into current bits (8-15) — this instruction's result
+		armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::Operand(macFlag, a64::LSL, 8));
 
-	// Store back
-	armAsm->Str(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
+		// Store back
+		armAsm->Str(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
+	}
 
 	// Restore result to RQSCRATCH for subsequent cop2ApplyDestMask
 	armAsm->Mov(RQSCRATCH.V16B(), savedResult.V16B());
@@ -590,9 +614,9 @@ void endMacroOp_arm64(int mode)
 		// Normalize the status flag back to VU0.VI[REG_STATUS_FLAG], under the
 		// same liveness gate as the setup denormalize (they must skip together —
 		// see cop2StatusFlagLive). When status is dead the whole denormalize ->
-		// update -> normalize chain is elided: the body's cop2EmitFlagUpdate
-		// still scribbles cop2Rec.denormStatusFlag, but that value is dead (never
-		// normalized out) and the next live op re-seeds the scratch from
+		// update -> normalize chain is elided: cop2EmitFlagUpdate skips its
+		// denorm-scratch RMW under the same gate (and skips entirely when MAC is
+		// also dead), and the next live op re-seeds the scratch from
 		// VU0.VI[REG_STATUS_FLAG], so nothing leaks. This is the dead-status
 		// subset of bc3729c93; it needs no cross-op denormalized persistence
 		// (which arm64 doesn't implement) because the live path still normalizes
