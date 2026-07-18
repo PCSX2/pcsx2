@@ -208,6 +208,8 @@ static bool recTrySuperblockContinueEQ(bool is_bne)
 
 	if (!swap)
 		recompileNextInstruction(true, false);
+	else
+		g_pCurInstInfo++; // swapped: skip the hoisted slot's EEINST (see Single)
 	return true;
 }
 
@@ -249,6 +251,17 @@ static bool recTrySuperblockContinueSingle(a64::Condition taken_cond)
 
 	if (!swap)
 		recompileNextInstruction(true, false);
+	else
+	{
+		// TrySwapDelaySlot's recompile restores g_pCurInstInfo to the BRANCH's
+		// entry (x86 heritage — fine when the branch ends the block). A
+		// continuation keeps compiling, and the main loop's next
+		// recompileNextInstruction advances by exactly one — so leave the
+		// pointer on the SLOT's entry or every later op in the superblock
+		// reads its predecessor's EEINST (liveness/const/COP2-flag bits — the
+		// UYA fall-through-the-floor bug, SL-07).
+		g_pCurInstInfo++;
+	}
 	return true;
 }
 

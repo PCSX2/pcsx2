@@ -1436,6 +1436,37 @@ TEST(EeVu0Cop2MacroFlagHack, LastWriteInBlockCommitsBothFlags)
 	EXPECT_EQ(h.GetVu0ViJit(REG_STATUS_FLAG), h.GetVu0ViInterp(REG_STATUS_FLAG));
 }
 
+TEST(EeVu0Cop2MacroFlagHack, LastWriteCommitsAfterSwappedDelaySlotContinuation)
+{
+	// SL-07 regression (UYA falls through the floor): at a superblock
+	// continuation site whose delay slot TrySwapDelaySlot HOISTS ahead of the
+	// compare, recompileNextInstruction(swapped_delay_slot=true) restores
+	// g_pCurInstInfo to the branch's entry — correct when the branch ended the
+	// block (the x86 shape it was ported from), but a continuation keeps
+	// compiling, so every later op in the block read its PREDECESSOR's EEINST.
+	// Here that makes the VADD — the block's last MAC/status writer, which
+	// CommitAllFlags marks live — read the delay slot's info instead and elide
+	// its whole flag body under vuFlagHack, leaving the architectural VI regs
+	// stale at block exit.
+	EeRecTestHarness h;
+	ScopedFlagHack flagHack(true);
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, -5.0f, 0.0f, 3.0f, 4.0f);
+	h.SeedVu0Vf(2,  1.0f, 0.0f, 1.0f, 1.0f);
+	h.SetGpr64(reg::t5, 1); // >= 0 → BLTZ falls through (continuation path runs)
+	h.LoadProgram({
+		BLTZ(reg::t5, 3),            // forward conditional → continuation site
+		ORI(reg::t6, reg::t6, 1),    // delay slot: no hazard vs t5 → swap-hoisted
+		VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2), // last MAC/status writer
+	});
+	h.Run();
+	EXPECT_NE(h.GetVu0ViJit(REG_MAC_FLAG), 0u); // (-4,0,4,5): sign + zero lanes
+	EXPECT_EQ(h.GetVu0ViJit(REG_MAC_FLAG), h.GetVu0ViInterp(REG_MAC_FLAG));
+	EXPECT_EQ(h.GetVu0ViJit(REG_STATUS_FLAG), h.GetVu0ViInterp(REG_STATUS_FLAG));
+	EXPECT_EQ(h.GetGpr64Jit(reg::t6), 1u); // hoisted slot executed exactly once
+}
+
 TEST(EeVu0Cop2MacroFlagHack, IntermediateStickyLossIsTheDocumentedHack)
 {
 	// The accepted vuFlagHack divergence, pinned so it only changes on
