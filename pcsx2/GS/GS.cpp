@@ -44,6 +44,7 @@
 
 #include "common/Console.h"
 #include "common/FileSystem.h"
+#include "common/HostSys.h"
 #include "common/Path.h"
 #include "common/SmallString.h"
 #include "common/StringUtil.h"
@@ -1079,10 +1080,6 @@ void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#if defined(__ANDROID__)
-#include <sys/syscall.h>
-#include <android/sharedmem.h>
-#endif
 
 static int s_shm_fd = -1;
 
@@ -1090,29 +1087,22 @@ void* GSAllocateWrappedMemory(size_t size, size_t repeat)
 {
 	pxAssert(s_shm_fd == -1);
 
-	const char* file_name = "/GS.mem";
-#if defined(__ANDROID__)
-	s_shm_fd = static_cast<int>(syscall(__NR_memfd_create, "GS.mem", 0));
-	if (s_shm_fd == -1)
+	// Route fd creation through HostSys::CreateSharedMemory so iOS gets the
+	// file-backed fallback the helper already provides for the rest of the
+	// codebase. The bare shm_open("/GS.mem", ...) the prior implementation
+	// used is rejected by the iOS sandbox, which returned -1 and propagated
+	// nullptr up to GSLocalMemory.
+	const std::string file_name = HostSys::GetFileMappingName("GS.mem");
+	void* const handle = HostSys::CreateSharedMemory(file_name.c_str(), repeat * size);
+	if (!handle)
 	{
-		fprintf(stderr, "Failed to create memfd due to %s\n", strerror(errno));
+		std::fprintf(stderr,
+			"GSAllocateWrappedMemory: HostSys::CreateSharedMemory failed "
+			"(size=%zu repeat=%zu total=%zu)\n",
+			size, repeat, repeat * size);
 		return nullptr;
 	}
-#else
-	s_shm_fd = shm_open(file_name, O_RDWR | O_CREAT | O_EXCL, 0600);
-	if (s_shm_fd != -1)
-	{
-		shm_unlink(file_name); // file is deleted but descriptor is still open
-	}
-	else
-	{
-		fprintf(stderr, "Failed to open %s due to %s\n", file_name, strerror(errno));
-		return nullptr;
-	}
-#endif
-
-	if (ftruncate(s_shm_fd, repeat * size) < 0)
-		fprintf(stderr, "Failed to reserve memory due to %s\n", strerror(errno));
+	s_shm_fd = static_cast<int>(reinterpret_cast<intptr_t>(handle));
 
 	void* fifo = mmap(nullptr, size * repeat, PROT_READ | PROT_WRITE, MAP_SHARED, s_shm_fd, 0);
 
@@ -1136,7 +1126,7 @@ void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 
 	munmap(ptr, size * repeat);
 
-	close(s_shm_fd);
+	HostSys::DestroySharedMemory(reinterpret_cast<void*>(static_cast<intptr_t>(s_shm_fd)));
 	s_shm_fd = -1;
 }
 
