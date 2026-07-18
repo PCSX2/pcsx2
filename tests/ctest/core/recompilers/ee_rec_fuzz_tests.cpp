@@ -488,3 +488,80 @@ TEST(EeFuzz, BackwardLoopResidencyMix)
 		}
 	}
 }
+
+// ── Branch-into-delay-slot loops: a forward exit branch at the loop head
+//    whose DELAY SLOT is the backward branch's re-entry target (the guest
+//    dcache-flush idiom: `beqz exit; addiu ctr,-1; body...; bgtz ctr, <the
+//    addiu>`). This is the shape the other mixes never emit — no generated
+//    branch targets another branch's delay slot — and exactly the blind spot
+//    that let the SL-05 zero-length-block wedge reach live UYA: the head
+//    branch is a superblock continuation site whose delay slot is a
+//    backward-split target, exercising the split clamp's degenerate
+//    (site-at-startpc, loop 0 — the head IS the program entry) and
+//    non-degenerate (later loops) cases, plus block re-entry AT a delay-slot
+//    address. Termination: ctr is outside the focus set and decrements
+//    exactly once per iteration (the delay-slot ADDIU runs on entry and on
+//    every backward re-entry); BGTZ falls through at zero, so both runners
+//    execute the identical full trace. ─────────────────────────────────────
+TEST(EeFuzz, DelaySlotTargetLoopMix)
+{
+	const u32 start = seedStart(), count = seedCount(1000);
+	for (u32 seed = start; seed < start + count; ++seed)
+	{
+		SCOPED_TRACE(::testing::Message() << "seed=" << seed);
+		if (std::getenv("EEFUZZ_TRACE"))
+			std::fprintf(stderr, "EEFUZZ seed=%u\n", seed);
+		Lcg r{seed * 0xD6E8FEB86659FD93ull + 0x5EEDull};
+		const Focus f = makeFocus(r);
+		// Counter: any pool reg not in the focus set (so genOp never writes it).
+		u32 ctr;
+		do
+			ctr = kDestPool[r.range(kDestPoolN)];
+		while ([&] { for (u32 x : f.regs) if (x == ctr) return true; return false; }());
+
+		EeRecTestHarness h;
+		SeedState(h, r);
+
+		std::vector<u32> prog;
+		const u32 nLoops = 1 + r.range(3);
+		for (u32 l = 0; l < nLoops; ++l)
+		{
+			const u32 iters = 2 + r.range(6);
+			if (l == 0)
+			{
+				// Loop 0's head branch IS the program entry — the site sits at
+				// the block's first instruction (the SL-05 degenerate shape).
+				h.SetGpr64(ctr, iters);
+			}
+			else
+			{
+				prog.push_back(ADDIU(ctr, reg::zero, static_cast<s16>(iters)));
+			}
+			const u32 bodyLen = 2 + r.range(12);
+			// Head: exit → past the backward branch's delay slot
+			// (target index = head + 1 + off = head + bodyLen + 4).
+			const s16 exit_off = static_cast<s16>(bodyLen + 3);
+			if (r.range(2))
+				prog.push_back(BEQ(ctr, reg::zero, exit_off));
+			else
+				prog.push_back(BLEZ(ctr, exit_off));
+			prog.push_back(ADDIU(ctr, ctr, -1)); // ds — the backward target
+			for (u32 i = 0; i < bodyLen; ++i)
+				prog.push_back(genOp(r, f));
+			prog.push_back(BGTZ(ctr, static_cast<s16>(-(static_cast<s32>(bodyLen) + 2))));
+			prog.push_back(genOp(r, f)); // bgtz ds (runs every iteration)
+		}
+		for (u32 i = 0; i < 8; ++i)
+			prog.push_back(genOp(r, f)); // post-loop consume traffic
+
+		h.LoadProgram(prog);
+		h.Run();
+		if (::testing::Test::HasFailure())
+		{
+			std::fprintf(stderr, "EEFUZZ FAILING seed=%u prog:\n", seed);
+			for (size_t i = 0; i < prog.size(); ++i)
+				std::fprintf(stderr, "  %3zu: %08x\n", i, prog[i]);
+			return;
+		}
+	}
+}
