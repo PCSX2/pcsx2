@@ -1633,6 +1633,101 @@ void LoadBranchState()
 }
 
 // =====================================================================================================
+//  SL-03: superblocks — conditional-fallthrough continuation
+// =====================================================================================================
+// The scanner records forward conditional branches (BEQ/BNE/BLEZ/BGTZ/BLTZ/
+// BGEZ; non-likely, non-link) as continuation sites and keeps scanning at the
+// fallthrough, so the not-taken path compiles as one straight line: no pc
+// store, no event check, no linked-B, no next-head reload — register/const
+// residency rides through the former boundary. The taken arm becomes a cold
+// side exit outlined after the block tail; it snapshots the compile state at
+// the branch, and its emission restores that snapshot, compiles the taken-path
+// delay slot (unless TrySwapDelaySlot already hoisted it), and ends with the
+// normal SetBranchImm tail. Analysis stays exactly as conservative as today's
+// block ends: the liveness backward pass merges all-live at each site (the
+// taken path leaves the block there), and the COP2 deferred-commit passes run
+// per segment delimited at sites. Event-check coarsening equals today's
+// straight-line blocks (one check per exit, range capped by the 4K page).
+
+static constexpr int kMaxContSites = 8;
+static constexpr u32 kMaxSuperblockInsns = 128;
+
+static u32 s_contSitePcs[kMaxContSites]; // ascending (scan order)
+static int s_numContSites = 0;
+
+struct SuperblockSideExit
+{
+	std::unique_ptr<a64::Label> label;
+	u32 branchTo;
+	u32 dsPc;
+	bool needDs;
+	BranchCompileState state;
+};
+static SuperblockSideExit s_sideExits[kMaxContSites];
+static int s_numSideExits = 0;
+
+bool recSuperblockIsContSite(u32 branch_pc)
+{
+	for (int i = 0; i < s_numContSites; i++)
+		if (s_contSitePcs[i] == branch_pc)
+			return true;
+	return false;
+}
+
+// Snapshot the compile state for the taken path and hand back the label the
+// handler's inverted condition branches to. Call after _eeFlushAllDirty and
+// (for a swapped slot) after the delay-slot emission; the compare itself is a
+// pure post-flush read and may be emitted after the snapshot. pc points at the
+// delay slot here.
+a64::Label* recSuperblockAddSideExit(u32 branch_target, bool need_delay_slot)
+{
+	pxAssert(s_numSideExits < kMaxContSites);
+	SuperblockSideExit& x = s_sideExits[s_numSideExits++];
+	x.label = std::make_unique<a64::Label>();
+	x.branchTo = branch_target;
+	x.dsPc = pc;
+	x.needDs = need_delay_slot;
+	x.state.capture();
+	return x.label.get();
+}
+
+// Emit every pending cold side exit after the block tail. Each restores its
+// branch-point snapshot, so the exit charges exactly the branch-point cycles
+// and SetBranchImm's flush writes back exactly what was live-dirty there.
+// The mainline pc/size/recRAMCopy bookkeeping ran before this — pc is dead.
+static void recEmitPendingSideExits()
+{
+	const int n = s_numSideExits;
+	s_numSideExits = 0;
+	for (int k = 0; k < n; k++)
+	{
+		SuperblockSideExit& x = s_sideExits[k];
+		armAsm->Bind(x.label.get());
+		x.state.restore();
+		g_branch = 0;
+		if (x.needDs)
+		{
+			pc = x.dsPc;
+			recompileNextInstruction(true, false);
+		}
+		SetBranchImm(x.branchTo);
+		x.label.reset();
+	}
+	g_branch = 1;
+}
+
+// Liveness barrier for the backward pass: `addr` is a continuation branch or
+// its delay slot. The taken path leaves the block after the delay slot, so no
+// dead-value assumption may cross either out-state.
+static bool recSuperblockLivenessBarrier(u32 addr)
+{
+	for (int i = 0; i < s_numContSites; i++)
+		if (addr == s_contSitePcs[i] || addr == s_contSitePcs[i] + 4)
+			return true;
+	return false;
+}
+
+// =====================================================================================================
 //  Instruction recompilation
 // =====================================================================================================
 
@@ -2710,6 +2805,15 @@ bool recEeLoopBackedgeInfo(u32 pc_query, uptr* site, uptr* stub)
 	return true;
 }
 
+// SL-03 introspection: guest-insn size of the compiled block starting at
+// pc_query (0 = no block), so tests can assert superblock formation (the
+// range spans past a continuation branch) vs termination (it doesn't).
+u32 recEeBlockGuestSize(u32 pc_query)
+{
+	BASEBLOCKEX* b = recBlocks.Get(HWADDR(pc_query));
+	return b ? b->size : 0;
+}
+
 // Test-harness recLUT coverage introspection: does this guest PC dispatch to
 // a real (compile-on-first-hit) LUT page rather than UnmappedRecLUTPage?
 // The harness can't execute code from ROM regions (it's hardwired to EE
@@ -2849,6 +2953,63 @@ static bool recSkipTimeoutLoop(s32 reg, bool is_timeout_loop)
 // =====================================================================================================
 //  Main Recompilation Loop
 // =====================================================================================================
+
+// Scanner-side decode: is `code` any branch/jump/eret/syscall-class op (a
+// block-ender or continuation candidate)? Used to refuse continuation through
+// a branch whose delay slot is itself a branch (architecturally-UB shape) —
+// those fall back to ending the block, which is today's behavior.
+static bool eeScanInsnIsBranchClass(u32 code)
+{
+	switch (code >> 26)
+	{
+		case 0: // SPECIAL
+		{
+			const u32 funct = code & 0x3f;
+			return funct == 8 || funct == 9 || funct == 12 || funct == 13; // JR/JALR/SYSCALL/BREAK
+		}
+		case 1: // REGIMM
+		{
+			const u32 rt = (code >> 16) & 0x1f;
+			return rt < 4 || (rt >= 16 && rt < 20);
+		}
+		case 2: case 3: // J, JAL
+		case 4: case 5: case 6: case 7: // BEQ, BNE, BLEZ, BGTZ
+		case 20: case 21: case 22: case 23: // likely forms
+			return true;
+		case 16: // COP0: BC0x or ERET
+			return ((code >> 21) & 0x1f) == 8 ||
+				   (((code >> 21) & 0x1f) == 16 && (code & 0x3f) == 24);
+		case 17: case 18: // COP1/COP2: BCx
+			return ((code >> 21) & 0x1f) == 8;
+	}
+	return false;
+}
+
+// Scanner-side continuation gate for a conditional branch at `i` targeting
+// `target`. Forward-only (backward keeps the split/end logic), bounded, and
+// refuses a branch-class delay slot.
+static bool eeScanContinuable(u32 startpc, u32 i, u32 target)
+{
+	return target > i + 4 &&
+		   s_numContSites < kMaxContSites &&
+		   ((i + 8 - startpc) / 4) < kMaxSuperblockInsns &&
+		   !eeScanInsnIsBranchClass(memRead32(i + 4));
+}
+
+// A backward-split target that lands exactly on a continuation site's delay
+// slot would leave that branch as the last insn of the range with its delay
+// slot outside the analyzed block (instinfo overrun, split-pair emission).
+// End the block before the branch instead; the split's purpose — making the
+// target a block start — is preserved (a block starting at the delay-slot
+// address compiles it as a plain instruction, which is the architectural
+// meaning of branching into a delay slot).
+static u32 eeSuperblockClampSplit(u32 target)
+{
+	for (int k = 0; k < s_numContSites; k++)
+		if (target == s_contSitePcs[k] + 4)
+			return s_contSitePcs[k];
+	return target;
+}
 
 static void recRecompile(const u32 startpc)
 {
@@ -3036,6 +3197,7 @@ static void recRecompile(const u32 startpc)
 	s_nEndBlock = 0xffffffff;
 	s_branchTo = -1;
 	s_branchLoopable = false;
+	s_numContSites = 0;
 
 	// Timeout loop detection (matches x86 recSkipTimeoutLoop pattern):
 	//   addiu reg,reg,-N / nop*N / bne reg,zero,loop / nop
@@ -3106,13 +3268,22 @@ static void recRecompile(const u32 startpc)
 				{
 					// rt 16-19 are the AL link variants — call-shaped tails
 					// (SetBranchImmCall), not back-edge candidates.
+					// SL-03: forward BLTZ/BGEZ (rt 0/1) become continuation
+					// sites — scan on at the fallthrough. Likely + AL forms
+					// keep ending the block.
+					if (_Rt_ < 2 && eeScanContinuable(startpc, i, _Imm_ * 4 + i + 4))
+					{
+						s_contSitePcs[s_numContSites++] = i;
+						i += 8; // skip the delay slot word in the scan
+						continue;
+					}
 					s_branchLoopable = _Rt_ < 4;
 					s_branchTo = _Imm_ * 4 + i + 4;
 					// Backward branch into the current block: end the block at the
 					// target so the loop head becomes its own linkable block.
 					// Mirrors x86 iR5900.cpp:2362 and the COP1/COP2 case below.
 					if (s_branchTo > startpc && s_branchTo < i)
-						s_nEndBlock = s_branchTo;
+						s_nEndBlock = eeSuperblockClampSplit(s_branchTo);
 					else
 					{
 						s_nEndBlock = i + 8;
@@ -3128,6 +3299,18 @@ static void recRecompile(const u32 startpc)
 				goto StartRecomp;
 
 			case 4: case 5: case 6: case 7: // BEQ, BNE, BLEZ, BGTZ
+				// SL-03: forward conditionals become continuation sites — scan
+				// on at the fallthrough. BEQ rs==rt is the unconditional-`b`
+				// idiom (always taken: everything after is unreachable on the
+				// fallthrough) and keeps ending the block.
+				if (!((cpuRegs.code >> 26) == 4 && _Rs_ == _Rt_) &&
+					eeScanContinuable(startpc, i, _Imm_ * 4 + i + 4))
+				{
+					s_contSitePcs[s_numContSites++] = i;
+					i += 8; // skip the delay slot word in the scan
+					continue;
+				}
+				[[fallthrough]];
 			case 20: case 21: // BEQL, BNEL
 			case 22: case 23: // BLEZL, BGTZL
 				s_branchLoopable = true;
@@ -3136,7 +3319,7 @@ static void recRecompile(const u32 startpc)
 				// is its own linkable block. Mirrors x86 iR5900.cpp:2387 and
 				// the COP1/COP2 case below.
 				if (s_branchTo > startpc && s_branchTo < i)
-					s_nEndBlock = s_branchTo;
+					s_nEndBlock = eeSuperblockClampSplit(s_branchTo);
 				else
 				{
 					s_nEndBlock = i + 8;
@@ -3159,7 +3342,7 @@ static void recRecompile(const u32 startpc)
 					s_branchLoopable = true;
 					s_branchTo = _Imm_ * 4 + i + 4;
 					if (s_branchTo > startpc && s_branchTo < i)
-						s_nEndBlock = s_branchTo;
+						s_nEndBlock = eeSuperblockClampSplit(s_branchTo);
 					else
 					{
 						s_nEndBlock = i + 8;
@@ -3173,6 +3356,14 @@ static void recRecompile(const u32 startpc)
 	}
 
 StartRecomp:
+
+	// SL-03: a backward-split can truncate s_nEndBlock below already-recorded
+	// continuation sites — drop any site whose branch+delay-slot pair no longer
+	// fits inside [startpc, s_nEndBlock). (Sites are ascending; the compile
+	// loop never reaches a dropped one, but the analysis passes below must not
+	// treat it as an exit boundary either.)
+	while (s_numContSites > 0 && s_contSitePcs[s_numContSites - 1] + 8 > s_nEndBlock)
+		s_numContSites--;
 
 	// Self-modifying code detection: generate inline memory checks for manual blocks.
 	const bool is_manual_block = memory_protect_recompiled_code(startpc, (s_nEndBlock - startpc) >> 2);
@@ -3306,6 +3497,18 @@ StartRecomp:
 		for (i = s_nEndBlock; i > startpc; i -= 4)
 		{
 			cpuRegs.code = memRead32(i - 4);
+			// SL-03: at a continuation site the taken path leaves the block
+			// after the delay slot — merge "everything live" (the block-end
+			// init state) into the out-state of both the branch and its delay
+			// slot so no dead-value assumption crosses the side exit. This is
+			// exactly today's block-end conservatism at the former boundary.
+			if (recSuperblockLivenessBarrier(i - 4))
+			{
+				memset(pcur->regs, EEINST_LIVE, sizeof(pcur->regs));
+				memset(pcur->fpuregs, EEINST_LIVE, sizeof(pcur->fpuregs));
+				memset(pcur->vfregs, EEINST_LIVE, sizeof(pcur->vfregs));
+				memset(pcur->viregs, EEINST_LIVE, sizeof(pcur->viregs));
+			}
 			pcur[-1] = pcur[0];
 			recBackpropBSC(cpuRegs.code, pcur - 1, pcur);
 			pcur--;
@@ -3315,12 +3518,27 @@ StartRecomp:
 
 		// Run COP2 analysis passes — sets EEINST_COP2_SYNC_VU0/FINISH_VU0 flags
 		// for conditional VU0 synchronization in transfer ops.
+		// SL-03: run per segment, delimited at continuation sites. Both passes
+		// defer commits forward (flag-hack elision, micro-finish placement); a
+		// deferral must not cross a side exit that can escape before the
+		// superseding instruction executes. Per-segment == today's per-block
+		// semantics at each former boundary.
 		if (has_cop2_instructions)
 		{
-			R5900::COP2MicroFinishPass().Run(startpc, s_nEndBlock, s_pInstCache + 1);
+			u32 seg_start = startpc;
+			for (int k = 0; k <= s_numContSites; k++)
+			{
+				const u32 seg_end = (k < s_numContSites) ? (s_contSitePcs[k] + 8) : s_nEndBlock;
+				if (seg_end <= seg_start)
+					continue;
+				EEINST* const seg_inst = s_pInstCache + 1 + (seg_start - startpc) / 4;
+				R5900::COP2MicroFinishPass().Run(seg_start, seg_end, seg_inst);
 
-			if (EmuConfig.Speedhacks.vuFlagHack)
-				R5900::COP2FlagHackPass().Run(startpc, s_nEndBlock, s_pInstCache + 1);
+				if (EmuConfig.Speedhacks.vuFlagHack)
+					R5900::COP2FlagHackPass().Run(seg_start, seg_end, seg_inst);
+
+				seg_start = seg_end;
+			}
 		}
 	}
 
@@ -3340,6 +3558,9 @@ StartRecomp:
 		// Sweep any LDL/LDR fusion residue from an aborted prior compile (the
 		// per-pair gate otherwise guarantees same-block consume).
 		g_eeUnalignedFused = false;
+		// SL-03: sweep side-exit residue the same way (recEmitPendingSideExits
+		// drains the list on every completed compile).
+		s_numSideExits = 0;
 
 		// SL-1 candidacy: a resident self-loop is a block whose terminal branch
 		// targets its own startpc. Wait-loop-FF blocks keep the fast-forward
@@ -3504,6 +3725,10 @@ StartRecomp:
 			}
 		}
 	}
+
+	// SL-03: outline the cold taken side exits after the tail (mainline pc is
+	// dead — size and recRAMCopy bookkeeping ran on it above).
+	recEmitPendingSideExits();
 
 	pxAssert(armGetCurrentCodePointer() < SysMemory::GetEERecEnd());
 

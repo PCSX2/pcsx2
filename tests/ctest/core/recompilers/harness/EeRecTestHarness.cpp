@@ -256,6 +256,13 @@ void EeRecTestHarness::LoadProgramNoTerm(std::initializer_list<u32> instructions
 	LoadProgramImpl(instructions, /*append_term=*/false);
 }
 
+void EeRecTestHarness::LoadProgramNoTerm(const std::vector<u32>& instructions)
+{
+	program_words_ = instructions;
+	for (size_t i = 0; i < program_words_.size(); ++i)
+		memWrite32(kProgramPc + static_cast<u32>(i * 4), program_words_[i]);
+}
+
 void EeRecTestHarness::SeedEntryState()
 {
 	cpuRegs.GPR.n.ra.UD[0] = static_cast<s64>(static_cast<s32>(kParkingPc));

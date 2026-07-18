@@ -108,6 +108,7 @@ public:
 	void LoadProgram(std::initializer_list<u32> instructions);
 	void LoadProgram(const std::vector<u32>& instructions);
 	void LoadProgramNoTerm(std::initializer_list<u32> instructions);
+	void LoadProgramNoTerm(const std::vector<u32>& instructions);
 
 	// ---- Execute ----
 

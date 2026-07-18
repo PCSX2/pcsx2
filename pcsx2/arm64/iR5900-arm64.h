@@ -657,6 +657,18 @@ bool TrySwapDelaySlot(u32 rs, u32 rt, u32 rd, bool allow_loadstore);
 void SaveBranchState();
 void LoadBranchState();
 
+// SL-03 superblocks: conditional-fallthrough continuation. The block scanner
+// records forward conditional branches as continuation sites instead of ending
+// the block there. A site's handler queries recSuperblockIsContSite(pc-4) and
+// emits the inverted shape — branch OUT to a cold taken side exit, compile the
+// delay slot inline, and fall through into the rest of the block — instead of
+// the two-arm terminal fork. Side exits snapshot the compile state at the
+// branch and are outlined after the block tail (recEmitPendingSideExits),
+// where each restores its snapshot, compiles the taken-path delay slot, and
+// emits the normal flush + event-check + linked-B tail.
+bool recSuperblockIsContSite(u32 branch_pc);
+vixl::aarch64::Label* recSuperblockAddSideExit(u32 branch_target, bool need_delay_slot);
+
 void recompileNextInstruction(bool delayslot, bool swapped_delay_slot);
 
 // Block-tail transfer for register-indirect targets (recJR/recJALR).
