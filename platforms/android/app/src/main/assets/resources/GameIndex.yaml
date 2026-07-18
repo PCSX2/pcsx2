@@ -9628,6 +9628,10 @@ SCPS-15095:
   name-sort: "げんじ"
   name-en: "Genji - Dawn of the Samurai"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes the VU-stall soft-lock on match load (VU drops to 0% under default Normal clamping; same mac-recompiler class as Ghosthunter / Pro Yakyuu).
+    Vu0ClampMode: 3 # VU0 Extra+Sign, paired with EE Full + VU1.
+    vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     nativeScaling: 1 # Aligns background.
 SCPS-15096:
@@ -10426,6 +10430,10 @@ SCPS-19318:
   name-sort: "げんじ [PlayStation2 the Best]"
   name-en: "Genji - Dawn of the Samurai [PlayStation2 the Best]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes the VU-stall soft-lock on match load (VU drops to 0% under default Normal clamping; same mac-recompiler class as Ghosthunter / Pro Yakyuu).
+    vu0ClampMode: 3 # VU0 Extra+Sign, paired with EE Full + VU1.
+    vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     nativeScaling: 1 # Aligns background.
 SCPS-19319:
@@ -12777,6 +12785,10 @@ SCUS-97471:
   name: "Genji - Dawn of the Samurai"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes the VU-stall soft-lock on match load (VU drops to 0% under default Normal clamping; same mac-recompiler class as Ghosthunter / Pro Yakyuu).
+    vu0ClampMode: 3 # VU0 Extra+Sign, paired with EE Full + VU1.
+    vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     nativeScaling: 1 # Aligns background.
 SCUS-97472:
@@ -13005,6 +13017,10 @@ SCUS-97503:
 SCUS-97504:
   name: "Genji - Dawn of the Samurai [Demo]"
   region: "NTSC-U"
+  clampModes:
+    eeClampMode: 3 # Fixes the VU-stall soft-lock on match load (VU drops to 0% under default Normal clamping; same mac-recompiler class as Ghosthunter / Pro Yakyuu).
+    vu0ClampMode: 3 # VU0 Extra+Sign, paired with EE Full + VU1.
+    vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     nativeScaling: 1 # Aligns background.
 SCUS-97505:
