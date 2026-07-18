@@ -588,6 +588,18 @@ static bool cop2StatusFlagLive()
 	return !EmuConfig.Speedhacks.vuFlagHack || !g_pCurInstInfo || (g_pCurInstInfo->info & EEINST_COP2_STATUS_FLAG);
 }
 
+// Compile-time forwarding token: true when the emitted code just stored the
+// current denormalized status value AND that value is still live in RWSCRATCH
+// (w8), so the next reader may skip its Ldr of cop2Rec.denormStatusFlag. The
+// window it asserts is deliberately tight — set only by cop2EmitFlagUpdate's
+// status RMW, consumed only by cop2EmitNormalizeStatusFlag in the SAME op's
+// endMacroOp. Between the two, op bodies emit only the dest-mask apply
+// (NEON + RSCRATCHADDR/x17, incl. the VF-cache claim/eviction stores), which
+// never touches w8. Anything wider (e.g. denormalize -> flag-RMW across the
+// whole FMAC body) must not use this token without re-auditing every
+// intervening emitter for w8 use.
+static bool s_cop2DenormInScratch = false;
+
 // Emit code to denormalize status flag from VU0.VI[REG_STATUS_FLAG]
 // into the cop2Rec.denormStatusFlag scratch (mVUallocSFLAGd).
 // Denormalized = ((norm >> 3) & 0x18) | ((norm << 11) & 0x1800) | ((norm << 14) & 0x3cf0000)
@@ -624,8 +636,14 @@ static void cop2EmitDenormalizeStatusFlag()
 // scratch back to VU0.VI[REG_STATUS_FLAG] (mVUallocSFLAGc).
 static void cop2EmitNormalizeStatusFlag()
 {
-	// Load denormalized flag
-	armAsm->Ldr(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
+	// Load denormalized flag — unless the flag-update RMW just stored it and
+	// the value still sits in RWSCRATCH (s_cop2DenormInScratch). Skipping the
+	// reload removes a back-to-back str->ldr of the same address whose
+	// store-forwarding stall the whole serially-dependent chain below waits
+	// on (measured ~10% of the EErec cycle bucket on SD865).
+	if (!s_cop2DenormInScratch)
+		armAsm->Ldr(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
+	s_cop2DenormInScratch = false;
 
 	const a64::Register result = a64::w1;
 	armAsm->Mov(result, a64::wzr); // result = 0
@@ -763,8 +781,11 @@ static void cop2EmitFlagUpdate(int xyzw, const a64::VRegister& result = RQSCRATC
 		// OR (macFlag << 8) into current bits (8-15) — this instruction's result
 		armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::Operand(macFlag, a64::LSL, 8));
 
-		// Store back
+		// Store back. The value stays live in RWSCRATCH — let the matching
+		// normalize in this op's endMacroOp skip its reload (see
+		// s_cop2DenormInScratch).
 		armAsm->Str(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
+		s_cop2DenormInScratch = true;
 	}
 
 	// Restore a parked result to RQSCRATCH for subsequent cop2ApplyDestMask
@@ -783,6 +804,10 @@ static void cop2EmitFlagUpdate(int xyzw, const a64::VRegister& result = RQSCRATC
 
 void setupMacroOp_arm64(int mode)
 {
+	// Defensive: the forwarding token never legitimately survives an op
+	// boundary (set + consumed within one flag-update -> normalize pair).
+	s_cop2DenormInScratch = false;
+
 	// VU0 sync is gated on EEINST analysis (EEINST_COP2_SYNC_VU0 / FINISH_VU0).
 	// In the common case where the analysis says no sync is needed, this emits
 	// zero instructions (per-op recXXX gates sync via COP2_Interlock /
@@ -845,6 +870,9 @@ void endMacroOp_arm64(int mode)
 
 	// microVU0 state teardown — flushPartialForCOP2 + cop2=0 + regAlloc reset.
 	mVUmacroEndCOP2State();
+
+	// Defensive: normalize (or its liveness skip) has ended the token's window.
+	s_cop2DenormInScratch = false;
 }
 
 // Macro for COP2 arithmetic ops that go through the setup/teardown pipeline.
