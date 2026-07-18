@@ -25,7 +25,11 @@ BreakpointView::BreakpointView(const DebuggerViewParameters& parameters)
 	m_ui.breakpointList->horizontalHeader()->setSectionsMovable(true);
 	this->resizeColumns();
 
-	connect(g_debugger_window, &DebuggerWindow::onVMActuallyPaused, m_model, &BreakpointModel::refreshData);
+	connect(g_debugger_window, &DebuggerWindow::onVMActuallyPaused, this, [this]() {
+		const bool isEditing = m_ui.breakpointList->viewport()->findChild<QWidget*>(QString(), Qt::FindDirectChildrenOnly) != nullptr;
+		if (!isEditing)
+			m_model->refreshData();
+	});
 
 	connect(m_model, &QAbstractTableModel::modelAboutToBeReset, this, [this]() {
 		const QItemSelectionModel* sel = m_ui.breakpointList->selectionModel();
@@ -55,8 +59,7 @@ BreakpointView::BreakpointView(const DebuggerViewParameters& parameters)
 	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
 		// If focus is on a child of the breakpoint list and not the list itself,
 		// we assume an inline editor is active and we should not refresh.
-		bool isEditing = m_ui.breakpointList->isAncestorOf(QApplication::focusWidget()) 
-			&& QApplication::focusWidget() != m_ui.breakpointList;
+		const bool isEditing = m_ui.breakpointList->viewport()->findChild<QWidget*>(QString(), Qt::FindDirectChildrenOnly) != nullptr;
 
 		if (!QtHost::IsVMPaused() && !isEditing)
 			m_model->refreshData();
