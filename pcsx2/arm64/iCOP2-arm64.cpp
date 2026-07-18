@@ -575,12 +575,9 @@ static void cop2EmitIntegerMin(const a64::VRegister& a, const a64::VRegister& b)
 // lockstep with the EE; MTVU offloads VU1 only), so one instance is correct.
 
 // Status-flag liveness for the hand-rolled COP2 macro path (bc3729c93). With
-// vuFlagHack on, the denormalize (setup) and normalize (teardown) are emitted
-// only when the status output is actually consumed by a later CFC2; with the
-// hack off, or when analysis info is missing, they're always emitted. setup and
-// teardown MUST call this with the same instruction in flight so they skip in
-// lockstep — a denormalize without its matching normalize (or vice versa)
-// corrupts VU0.VI[REG_STATUS_FLAG].
+// vuFlagHack on, the per-op status RMW (cop2EmitFlagUpdate's denorm-scratch
+// update) is emitted only when the status output is actually consumed by a
+// later CFC2; with the hack off, or when analysis info is missing, always.
 static bool cop2StatusFlagLive()
 {
 	// CHECK_VU_FLAGHACK (microVU_Misc-arm64.h) expands to this; inlined here to
@@ -588,16 +585,37 @@ static bool cop2StatusFlagLive()
 	return !EmuConfig.Speedhacks.vuFlagHack || !g_pCurInstInfo || (g_pCurInstInfo->info & EEINST_COP2_STATUS_FLAG);
 }
 
+// EP-4 lazy-normalization chain gates, mirroring x86 setupMacroOp/endMacroOp
+// (microVU_Macro.inl): with vuFlagHack on, COP2FlagHackPass marks the FIRST
+// status-writing op of each chain EEINST_COP2_DENORMALIZE_STATUS_FLAG and the
+// LAST status write before a consumer (CFC2/CTC2 of STATUS, CTC2 of FBRST,
+// VCALLMS, SB/SH/SW, block end — CommitStatusFlag covers all of these)
+// EEINST_COP2_NORMALIZE_STATUS_FLAG. Between the two marks the denormalized
+// value persists in cop2Rec.denormStatusFlag — the memory-slot equivalent of
+// x86's gprF0 persistence — and VU0.VI[REG_STATUS_FLAG] is STALE. With the
+// hack off (or no analysis info) both gates are always-true, which degrades to
+// the per-op denormalize/normalize lockstep.
+static bool cop2StatusDenormAtSetup()
+{
+	return !EmuConfig.Speedhacks.vuFlagHack || !g_pCurInstInfo || (g_pCurInstInfo->info & EEINST_COP2_DENORMALIZE_STATUS_FLAG);
+}
+
+static bool cop2StatusNormAtEnd()
+{
+	return !EmuConfig.Speedhacks.vuFlagHack || !g_pCurInstInfo || (g_pCurInstInfo->info & EEINST_COP2_NORMALIZE_STATUS_FLAG);
+}
+
 // Compile-time forwarding token: true when the emitted code just stored the
 // current denormalized status value AND that value is still live in RWSCRATCH
 // (w8), so the next reader may skip its Ldr of cop2Rec.denormStatusFlag. The
-// window it asserts is deliberately tight — set only by cop2EmitFlagUpdate's
-// status RMW, consumed only by cop2EmitNormalizeStatusFlag in the SAME op's
-// endMacroOp. Between the two, op bodies emit only the dest-mask apply
-// (NEON + RSCRATCHADDR/x17, incl. the VF-cache claim/eviction stores), which
-// never touches w8. Anything wider (e.g. denormalize -> flag-RMW across the
-// whole FMAC body) must not use this token without re-auditing every
-// intervening emitter for w8 use.
+// window it asserts is deliberately tight — set only by the two status-RMW
+// sites (cop2EmitFlagUpdate and cop2EmitSyncFDiv), consumed only by
+// cop2EmitNormalizeStatusFlag in the SAME op (endMacroOp for FMACs; inline
+// and adjacent for the DIV family). Between flag-RMW and endMacroOp, op
+// bodies emit only the dest-mask apply (NEON + RSCRATCHADDR/x17, incl. the
+// VF-cache claim/eviction stores), which never touches w8. Anything wider
+// (e.g. denormalize -> flag-RMW across the whole FMAC body) must not use this
+// token without re-auditing every intervening emitter for w8 use.
 static bool s_cop2DenormInScratch = false;
 
 // Emit code to denormalize status flag from VU0.VI[REG_STATUS_FLAG]
@@ -633,58 +651,66 @@ static void cop2EmitDenormalizeStatusFlag()
 }
 
 // Emit code to normalize status flag from the cop2Rec.denormStatusFlag
-// scratch back to VU0.VI[REG_STATUS_FLAG] (mVUallocSFLAGc).
+// scratch back to VU0.VI[REG_STATUS_FLAG] — a full port of x86
+// mVUallocSFLAGc, and a FULL REPLACE of VI: every normalized field derives
+// from the denormalized value. Current Z/S come from denorm bits 8-15, sticky
+// ZS/SS from denorm bits 0-7 (which the per-op RMWs accumulate into), and the
+// whole D/I/O/U block (norm bits 2-5 current + 8-11 sticky) rides denorm bits
+// 16+ shifted down by 14. Nothing is read from VI: under EP-4 lazy
+// normalization the denorm scratch is the authoritative status between the
+// chain's denormalize and this normalize, and VI is stale — an RMW against it
+// (the pre-EP-4 shape) would resurrect values older than the chain, and would
+// lose an intermediate live op's sticky contribution (pinned by
+// EeVu0Cop2MacroLazyStatus.ChainStickyAccumulatesAcrossLiveOps).
+//
+// Interp-divergence note (EP-4): denorm bits 18-19 (current I/D) survive the
+// FMAC RMW's 0xfffc00ff clear, so a DIV-unit result stays visible in the
+// CURRENT field across later FMACs — matching x86, diverging from the
+// interpreter's SYNCMSFLAGS (which preserves only 0xFC0, clearing current
+// D/I/O/U on every macro FMAC). x86 JIT is the flag oracle per the standing
+// rule; pinned by EeVu0Cop2MacroLazyStatus.DivCurrentDIBitsSurviveFmac.
+// Current U/O (denorm bits 16-17) ARE cleared by every FMAC RMW, so they
+// normalize back to 0 exactly as the interpreter's 0xFC0 preserve implies —
+// cop2EmitFlagUpdate still never COMPUTES U/O (that gap stays latent, as
+// before: no game in the corpus reads U/O after a COP2 macro FMAC).
 static void cop2EmitNormalizeStatusFlag()
 {
 	// Load denormalized flag — unless the flag-update RMW just stored it and
 	// the value still sits in RWSCRATCH (s_cop2DenormInScratch). Skipping the
-	// reload removes a back-to-back str->ldr of the same address whose
-	// store-forwarding stall the whole serially-dependent chain below waits
-	// on (measured ~10% of the EErec cycle bucket on SD865).
+	// reload removes a back-to-back str->ldr of the same address.
 	if (!s_cop2DenormInScratch)
 		armAsm->Ldr(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
 	s_cop2DenormInScratch = false;
 
 	const a64::Register result = a64::w1;
-	armAsm->Mov(result, a64::wzr); // result = 0
 
-	// Z bit (norm bit 0): set if any of denorm bits 8-11
+	// Z bit (norm bit 0): any current zero lane (denorm bits 8-11)
 	armAsm->Tst(RWSCRATCH, 0x0f00);
-	armAsm->Cset(a64::w2, a64::ne);
-	armAsm->Orr(result, result, a64::w2); // bit 0
+	armAsm->Cset(result, a64::ne);
 
-	// S bit (norm bit 1): set if any of denorm bits 12-15
+	// S bit (norm bit 1): any current sign lane (denorm bits 12-15)
 	armAsm->Tst(RWSCRATCH, 0xf000);
 	armAsm->Cset(a64::w2, a64::ne);
-	armAsm->Orr(result, result, a64::Operand(a64::w2, a64::LSL, 1)); // bit 1
+	armAsm->Orr(result, result, a64::Operand(a64::w2, a64::LSL, 1));
 
-	// 'result' now holds the current Z (bit0) / S (bit1). Sticky bits are not
-	// derived from a separate denorm range — they accumulate from the current
-	// Z/S below (preserve old sticky, OR current into both current and sticky
-	// positions), matching the interpreter's statusflag-shift behavior.
-	//
-	//   VI[STATUS] = (VI[STATUS] & 0xFC0) | (Z/S) | ((Z/S) << 6)
-	//
-	// This MUST mirror the interpreter's COP2 macro oracle SYNCMSFLAGS()
-	// (VUops.cpp): preserve 0xFC0 — NOT 0xFF0; the 0xFF0 mask belongs to the
-	// FMAC-pipeline-flush path, not the COP2 macro path — then write the low
-	// nibble into bits 0-3 and shifted into the sticky bits 6-9.
-	//
-	// LIMITATION: cop2EmitFlagUpdate() computes only Z (Fcmeq) and S (Cmlt) here;
-	// it never sets the U (underflow, exp==0) or O (overflow, exp==255) bits that
-	// interp's VU_STAT_UPDATE (VUflags.cpp) can produce. So 'result' only ever
-	// holds bits 0-1, and masking it with 0x3 is exact. DO NOT widen the 0xFC0
-	// preserve to 0xFF0 (or the 0x3 result-mask to 0xF) without first teaching
-	// cop2EmitFlagUpdate to compute U/O — a bare widen keeps stale bits the
-	// interpreter clears and regresses EeVu0Cop2Macro.VaddXyzwSumsLanes. No game
-	// in the corpus reads U/O after a COP2 macro FMAC, so this gap is latent.
-	armAsm->Ldr(RWSCRATCH, armVU0Mem(&VU0.VI[REG_STATUS_FLAG]));
-	armAsm->And(RWSCRATCH, RWSCRATCH, 0xFC0); // preserve existing sticky (bits 6-11)
-	armAsm->And(result, result, 0x3);          // keep only Z/S (bits 0-1)
-	armAsm->Orr(RWSCRATCH, RWSCRATCH, result); // OR in current Z/S
-	armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::Operand(result, a64::LSL, 6)); // OR shifted into sticky
-	armAsm->Str(RWSCRATCH, armVU0Mem(&VU0.VI[REG_STATUS_FLAG]));
+	// ZS bit (norm bit 6): any sticky zero lane (denorm bits 0-3)
+	armAsm->Tst(RWSCRATCH, 0x000f);
+	armAsm->Cset(a64::w2, a64::ne);
+	armAsm->Orr(result, result, a64::Operand(a64::w2, a64::LSL, 6));
+
+	// SS bit (norm bit 7): any sticky sign lane (denorm bits 4-7)
+	armAsm->Tst(RWSCRATCH, 0x00f0);
+	armAsm->Cset(a64::w2, a64::ne);
+	armAsm->Orr(result, result, a64::Operand(a64::w2, a64::LSL, 7));
+
+	// D/I/O/U current + sticky: denorm bits 16-27 -> norm bits 2-13 (the
+	// meaningful ones land in norm 2-5 and 8-11).
+	armAsm->And(a64::w2, RWSCRATCH, 0xffff0000);
+	armAsm->Orr(result, result, a64::Operand(a64::w2, a64::LSR, 14));
+
+	armAsm->Str(result, armVU0Mem(&VU0.VI[REG_STATUS_FLAG]));
 }
+
 
 // MAC-flag liveness, same contract as cop2StatusFlagLive(): with vuFlagHack on,
 // COP2FlagHackPass marks only the MAC writes a later CFC2 can observe — the
@@ -769,11 +795,11 @@ static void cop2EmitFlagUpdate(int xyzw, const a64::VRegister& result = RQSCRATC
 		// Load current denorm flag
 		armAsm->Ldr(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
 
-		// Clear current (non-sticky) bits 8-15. w9 scratch: this body emits
-		// inline into EE blocks, where allocatable regs (w4 since Arm D) may
-		// hold live allocator values — raw scratch stays on reserved w8/w9/w10.
-		armAsm->Mov(a64::w9, 0xFF00);
-		armAsm->Bic(RWSCRATCH, RWSCRATCH, a64::w9);
+		// Clear current Z/S (denorm bits 8-15) AND current U/O (bits 16-17),
+		// preserving current I/D (bits 18-19, owned by the DIV-unit ops) and
+		// every sticky bit — x86 mVUupdateFlags' doNonSticky clear, AND
+		// 0xfffc00ff. Encodable as a logical immediate (one circular zero run).
+		armAsm->And(RWSCRATCH, RWSCRATCH, 0xfffc00ff);
 
 		// OR macFlag into sticky bits (0-7) — accumulates over time
 		armAsm->Orr(RWSCRATCH, RWSCRATCH, macFlag);
@@ -816,19 +842,18 @@ void setupMacroOp_arm64(int mode)
 
 	if (mode & 0x10) // Status/MAC flags will be updated
 	{
-		// Denormalize VU0's status flag into cop2Rec.denormStatusFlag, but skip it
-		// when the status output is dead. With vuFlagHack (on by default) the
-		// shared COP2FlagHackPass tags every status write that reaches a CFC2
-		// with EEINST_COP2_STATUS_FLAG — sticky reach included, since the tag is
-		// applied to all writes before the next CFC2 (apc < m_cfc2_pc). A write
-		// that reaches no CFC2 is dead, so the ~11-instruction denormalize plus
-		// the matching normalize in endMacroOp are pure dead emitted code.
-		// Mirrors upstream bc3729c93 and the EEINST_COP2_STATUS_FLAG gate already
-		// used by mVUmacroSetupCOP2State for the mVU-reuse path. arm64 re-seeds
-		// cop2Rec.denormStatusFlag from VU0.VI[REG_STATUS_FLAG] every op (no x86
-		// gprF0 persistence across ops), so EEINST_COP2_DENORMALIZE_STATUS_FLAG —
-		// the x86 "first denormalizer" marker — is intentionally not in the gate.
-		if (cop2StatusFlagLive())
+		// EP-4 lazy normalization: denormalize VU0's status into the
+		// cop2Rec.denormStatusFlag scratch only at a chain START —
+		// EEINST_COP2_DENORMALIZE_STATUS_FLAG, the x86 "first denormalizer"
+		// marker (setupMacroOp, microVU_Macro.inl). Ops later in the chain
+		// emit NOTHING here: the scratch is a memory slot that persists
+		// across ops (x86 needs a VI-backup store in endMacroOp to park its
+		// gprF0; we get persistence for free), and its dead-op protocol is
+		// unchanged — a status-dead op skips its RMW, which is exact because
+		// the slot simply carries the previous live value forward. The
+		// matching normalize is gated on the chain-END mark in
+		// endMacroOp_arm64; see cop2StatusDenormAtSetup for the seam list.
+		if (cop2StatusDenormAtSetup())
 			cop2EmitDenormalizeStatusFlag();
 	}
 
@@ -854,17 +879,16 @@ void endMacroOp_arm64(int mode)
 
 	if (mode & 0x10) // Status/MAC flags were updated
 	{
-		// Normalize the status flag back to VU0.VI[REG_STATUS_FLAG], under the
-		// same liveness gate as the setup denormalize (they must skip together —
-		// see cop2StatusFlagLive). When status is dead the whole denormalize ->
-		// update -> normalize chain is elided: cop2EmitFlagUpdate skips its
-		// denorm-scratch RMW under the same gate (and skips entirely when MAC is
-		// also dead), and the next live op re-seeds the scratch from
-		// VU0.VI[REG_STATUS_FLAG], so nothing leaks. This is the dead-status
-		// subset of bc3729c93; it needs no cross-op denormalized persistence
-		// (which arm64 doesn't implement) because the live path still normalizes
-		// to the architectural register every time.
-		if (cop2StatusFlagLive())
+		// EP-4 lazy normalization: write VI[REG_STATUS_FLAG] back only at the
+		// chain END — EEINST_COP2_NORMALIZE_STATUS_FLAG, which COP2FlagHackPass
+		// places on the last status write before every consumer seam (CFC2/CTC2
+		// of STATUS, VCALLMS, SB/SH/SW, block end via CommitAllFlags), so VI is
+		// architecturally current whenever anything outside the chain can read
+		// it. Mid-chain ops emit nothing here; VI stays stale and the denorm
+		// scratch is authoritative (see cop2EmitNormalizeStatusFlag). With
+		// vuFlagHack off both gates are always-true — per-op lockstep, the
+		// pre-EP-4 shape.
+		if (cop2StatusNormAtEnd())
 			cop2EmitNormalizeStatusFlag();
 	}
 
@@ -2104,25 +2128,48 @@ void recCOP2_VFTOI15()
 // After computing Q, sync: copy to VI[REG_Q] and update D/I status flags.
 // Complex edge cases (div-by-zero, negative sqrt) are handled with branches.
 
-// Emit SYNCFDIV: copy VU0.q to VU0.VI[REG_Q], update D/I status flags.
-// statusflag = (statusflag & 0x3CF) | (statusflag_DI & 0x30) | ((statusflag_DI & 0x30) << 6)
+// Emit SYNCFDIV: copy VU0.q to VU0.VI[REG_Q] and fold the DIV-unit D/I
+// results (VU0.statusflag bits 4-5) into the status chain.
+//
+// EP-4: the D/I update goes through the DENORMALIZED scratch, not VI — the
+// DIV-family ops are unconditional status writers (COP2FlagHackPass forces
+// their EEINST_COP2_STATUS_FLAG), so they carry the chain's denormalize/
+// normalize marks like any FMAC and this site is the op's "flag update".
+// Denorm-space RMW mirrors x86 mVU_DIV's cop2 path (microVU_Lower.inl:
+// gprF &= ~0xc0000 clears CURRENT I/D only; gprF |= divFlag, where
+// divI/divD = 0x1040000/0x2080000 set current+sticky together). Sticky D/I
+// therefore ACCUMULATE across divides — x86 shape, diverging from interp's
+// SYNCFDIV (0x3CF preserve rebuilds sticky from current alone); pinned by
+// EeVu0Cop2MacroLazyStatus.DivStickyAccumulatesAcrossDivs.
 static void cop2EmitSyncFDiv()
 {
 	// Copy q to VI[REG_Q]
 	armAsm->Ldr(RWSCRATCH, armVU0Mem(&VU0.q));
 	armAsm->Str(RWSCRATCH, armVU0Mem(&VU0.VI[REG_Q]));
 
-	// Update status flag: (old & 0x3CF) | (statusflag & 0x30) | ((statusflag & 0x30) << 6)
-	armAsm->Ldr(a64::w1, armVU0Mem(&VU0.VI[REG_STATUS_FLAG]));
-	armAsm->And(a64::w1, a64::w1, 0x3CF); // clear D/I bits
+	// Chain start on this op: seed the scratch from VI (leaves the value in
+	// RWSCRATCH). Mid-chain: reload the persistent scratch.
+	if (cop2StatusDenormAtSetup())
+		cop2EmitDenormalizeStatusFlag();
+	else
+		armAsm->Ldr(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
 
-	armAsm->Ldr(a64::w2, armVU0Mem(&VU0.statusflag));
-	armAsm->And(a64::w2, a64::w2, 0x30); // D/I current bits
+	// scratch = (scratch & ~0xc0000) | (DI << 14) | (DI << 20)
+	// DI = statusflag & 0x30 (norm-position current D/I): <<14 lands the
+	// current bits at denorm 18-19, <<20 the sticky at denorm 24-25.
+	armAsm->And(RWSCRATCH, RWSCRATCH, ~0xc0000u);
+	armAsm->Ldr(a64::w1, armVU0Mem(&VU0.statusflag));
+	armAsm->And(a64::w1, a64::w1, 0x30);
+	armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::Operand(a64::w1, a64::LSL, 14));
+	armAsm->Orr(RWSCRATCH, RWSCRATCH, a64::Operand(a64::w1, a64::LSL, 20));
+	armAsm->Str(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
+	s_cop2DenormInScratch = true;
 
-	armAsm->Orr(a64::w1, a64::w1, a64::w2);               // current D/I
-	armAsm->Orr(a64::w1, a64::w1, a64::Operand(a64::w2, a64::LSL, 6)); // sticky D/I
-
-	armAsm->Str(a64::w1, armVU0Mem(&VU0.VI[REG_STATUS_FLAG]));
+	// Chain end on this op: write VI back (consumes RWSCRATCH via the token,
+	// so no reload). Mid-chain: VI stays stale, scratch is authoritative.
+	if (cop2StatusNormAtEnd())
+		cop2EmitNormalizeStatusFlag();
+	s_cop2DenormInScratch = false;
 }
 
 // VDIV: Q = VF[fs].fsf / VF[ft].ftf

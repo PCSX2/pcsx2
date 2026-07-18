@@ -1462,6 +1462,127 @@ TEST(EeVu0Cop2MacroFlagHack, IntermediateStickyLossIsTheDocumentedHack)
 }
 
 // =========================================================================
+//  EP-4: lazy cross-op status normalization (x86 setupMacroOp/endMacroOp
+//  parity)
+//
+//  With vuFlagHack on, COP2FlagHackPass marks the FIRST status-writing op of
+//  each chain EEINST_COP2_DENORMALIZE_STATUS_FLAG and the LAST one before a
+//  consumer (CFC2/CTC2 of STATUS, VCALLMS, block end) EEINST_COP2_NORMALIZE_
+//  STATUS_FLAG. The arm64 emitter denormalizes/normalizes only at those
+//  marks; between them cop2Rec.denormStatusFlag is authoritative and
+//  VI[REG_STATUS_FLAG] is stale. These tests pin the chain semantics the
+//  x86 JIT (the oracle) implements via gprF0 persistence.
+// =========================================================================
+
+TEST(EeVu0Cop2MacroLazyStatus, ChainStickyAccumulatesAcrossLiveOps)
+{
+	// A CTC2-of-STATUS ahead of the chain triggers the pass's read-ahead
+	// pairing ("Tekken pattern", m_cfc2_pc), which marks the INTERMEDIATE
+	// status writes live too — the one flaghack case with multiple live
+	// updates per normalize. Pass marks: VADD1 DENORMALIZE+STATUS, VADD2
+	// STATUS+NORMALIZE. Op 1's Z/S must survive into the sticky bits even
+	// though only op 2's normalize writes VI — the normalize derives sticky
+	// from the denorm scratch's bits 0-7, not from the (stale) VI value.
+	// Interp accumulates per-op to the same result -> full diff holds.
+	EeRecTestHarness h;
+	ScopedFlagHack flagHack(true);
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, -5.0f, 0.0f, 3.0f, 4.0f); // -> (-4, 0, 4, 5): S + Z lanes
+	h.SeedVu0Vf(2,  1.0f, 0.0f, 1.0f, 1.0f);
+	h.SeedVu0Vf(4,  1.0f, 2.0f, 3.0f, 4.0f); // -> (2, 4, 6, 8): no flag lanes
+	h.LoadProgram({
+		CTC2(reg::zero, REG_STATUS_FLAG),              // clear + pair with the CFC2
+		VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2), // sticky Z+S from here
+		VADD_C2(mask_xyzw, /*fd*/5, /*fs*/4, /*ft*/4), // current: none
+		CFC2(reg::t0, REG_STATUS_FLAG),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Jit(reg::t0), h.GetGpr64Interp(reg::t0));
+	const u64 status = h.GetGpr64Jit(reg::t0);
+	EXPECT_EQ(status & 0x3u, 0u);     // current Z/S are op 2's (none)
+	EXPECT_EQ(status & 0xC0u, 0xC0u); // sticky ZS+SS from op 1 survived
+}
+
+TEST(EeVu0Cop2MacroLazyStatus, ChainCurrentIsLastOpsContribution)
+{
+	// Reverse order of the test above: the no-flag op first, the S+Z op
+	// last. Current bits must be exactly the LAST op's contribution and
+	// sticky the union — guards against a current/sticky swap in the
+	// normalize's field extraction.
+	EeRecTestHarness h;
+	ScopedFlagHack flagHack(true);
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, -5.0f, 0.0f, 3.0f, 4.0f);
+	h.SeedVu0Vf(2,  1.0f, 0.0f, 1.0f, 1.0f);
+	h.SeedVu0Vf(4,  1.0f, 2.0f, 3.0f, 4.0f);
+	h.LoadProgram({
+		VADD_C2(mask_xyzw, /*fd*/5, /*fs*/4, /*ft*/4), // no flag lanes
+		VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2), // S + Z lanes
+		CFC2(reg::t0, REG_STATUS_FLAG),
+	});
+	h.Run();
+	EXPECT_EQ(h.GetGpr64Jit(reg::t0), h.GetGpr64Interp(reg::t0));
+	const u64 status = h.GetGpr64Jit(reg::t0);
+	EXPECT_EQ(status & 0x3u, 0x3u);   // current Z+S from op 2
+	EXPECT_EQ(status & 0xC0u, 0xC0u); // sticky ZS+SS
+}
+
+TEST(EeVu0Cop2MacroLazyStatus, DivCurrentDIBitsSurviveFmac)
+{
+	// x86-shape pin (JIT-only): the FMAC status update clears current
+	// Z/S/U/O but PRESERVES current I/D (x86 mVUupdateFlags ANDs the denorm
+	// value with 0xfffc00ff, keeping bits 18-19), so a VDIV's div-by-zero
+	// bit is still visible in the CURRENT field after a following FMAC. The
+	// interp clears current I/D on every macro FMAC status sync
+	// (SYNCMSFLAGS preserves only 0xFC0) — accepted JIT-vs-interp
+	// divergence; per the standing rule the x86 JIT is the clamp/flag
+	// oracle, not the interp.
+	EeRecTestHarness h;
+	ScopedFlagHack flagHack(true);
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, 2.0f, 0.0f, 0.0f, 0.0f);
+	h.SeedVu0Vf(2, 0.0f, 0.0f, 0.0f, 0.0f); // ft.x = 0 -> div-by-zero (D)
+	h.SeedVu0Vf(4, 1.0f, 2.0f, 3.0f, 4.0f);
+	h.LoadProgram({
+		VDIV_C2(/*fsf*/0, /*ftf*/0, /*fs*/1, /*ft*/2), // Q = 2/0: D current+sticky
+		VADD_C2(mask_xyzw, /*fd*/5, /*fs*/4, /*ft*/4), // must not clear current D
+		CFC2(reg::t0, REG_STATUS_FLAG),
+	});
+	h.RunJitNoDiff();
+	const u64 status = h.GetGpr64Jit(reg::t0);
+	EXPECT_NE(status & 0x20u, 0u) << "current D lost across FMAC";
+	EXPECT_NE(status & 0x800u, 0u) << "sticky D lost across FMAC";
+}
+
+TEST(EeVu0Cop2MacroLazyStatus, DivStickyAccumulatesAcrossDivs)
+{
+	// x86-shape pin (JIT-only): a clean divide clears the CURRENT I/D bits
+	// but must not clear the STICKY ones an earlier faulting divide set (x86
+	// mVU_DIV: gprF &= ~0xc0000 — current only — then |= divFlag). The
+	// interp's SYNCFDIV rebuilds sticky D/I from current alone (preserves
+	// only 0x3CF), losing the earlier divide's sticky — same accepted
+	// divergence class as above.
+	EeRecTestHarness h;
+	ScopedFlagHack flagHack(true);
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, 2.0f, 0.0f, 0.0f, 0.0f);
+	h.SeedVu0Vf(2, 0.0f, 4.0f, 0.0f, 0.0f); // ft.x = 0 (faults), ft.y = 4 (clean)
+	h.LoadProgram({
+		VDIV_C2(/*fsf*/0, /*ftf*/0, /*fs*/1, /*ft*/2), // 2/0: D current+sticky
+		VDIV_C2(/*fsf*/0, /*ftf*/1, /*fs*/1, /*ft*/2), // 2/4: clean, clears current
+		CFC2(reg::t0, REG_STATUS_FLAG),
+	});
+	h.RunJitNoDiff();
+	const u64 status = h.GetGpr64Jit(reg::t0);
+	EXPECT_EQ(status & 0x20u, 0u) << "current D must be cleared by the clean divide";
+	EXPECT_NE(status & 0x800u, 0u) << "sticky D lost across divides";
+}
+
+// =========================================================================
 //  Pending-VU0-micro drain on DIV-unit / no-op COP2 macro ops
 // =========================================================================
 //
