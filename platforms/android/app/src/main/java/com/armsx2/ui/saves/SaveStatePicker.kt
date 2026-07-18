@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -62,6 +64,9 @@ enum class SaveMode { Save, Load }
 
 private const val SLOTS = 10
 private const val TILE_WIDTH_DP = 200
+// Height for the two-row slot grid: two ~160dp tiles plus the 10dp row gap and 8dp of
+// vertical content padding. Fixed so the tiles never shrink to fit whatever sits above.
+private const val TILE_GRID_HEIGHT_DP = 338
 
 /**
  * In-game save-state slot picker, the rich replacement for the pause menu's
@@ -100,17 +105,30 @@ fun SaveStatePickerScreen(mode: SaveMode, onBack: () -> Unit) {
                 else str("savestate.title.loadManage"),
                 leading = { RoundAction("←", str("action.back"), onBack) },
             )
-            if (mode == SaveMode.Load) {
-                AutoOptions(Modifier.fillMaxWidth().padding(horizontal = 8.dp))
-                Spacer(Modifier.height(10.dp))
-            }
-            LazyHorizontalGrid(
-                rows = GridCells.Fixed(2),
-                modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 8.dp),
-                contentPadding = PaddingValues(vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+            // Scrollable body: the Load screen stacks the auto-save options ABOVE the
+            // slot grid, and the interval-autosave row made that block tall enough to
+            // squeeze a weight(1f) grid — the two rows of tiles shrank to fit and looked
+            // squished (the reported scaling bug). Give the grid a FIXED height so the
+            // tiles are always full-size, and let the column scroll when options + grid
+            // together exceed a short screen. The Save screen has no options block, so it
+            // just shows the same full-size grid as before.
+            Column(
+                Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
             ) {
+                if (mode == SaveMode.Load) {
+                    AutoOptions(Modifier.fillMaxWidth().padding(horizontal = 8.dp))
+                    Spacer(Modifier.height(10.dp))
+                }
+                LazyHorizontalGrid(
+                    rows = GridCells.Fixed(2),
+                    // Two comfortable rows of TILE_WIDTH_DP-wide tiles. Fixed, not
+                    // weight — a bounded height is also required for a horizontal grid
+                    // inside a vertical scroll.
+                    modifier = Modifier.height(TILE_GRID_HEIGHT_DP.dp).fillMaxWidth().padding(horizontal = 8.dp),
+                    contentPadding = PaddingValues(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
                 if (mode == SaveMode.Load && hasAutosave) {
                     item(key = "autosave") {
                         AutosaveTile {
@@ -121,14 +139,15 @@ fun SaveStatePickerScreen(mode: SaveMode, onBack: () -> Unit) {
                         }
                     }
                 }
-                items((0 until SLOTS).toList(), key = { "slot_$it" }) { slot ->
-                    SlotTile(slot, mode) { selected ->
-                        scope.launch(Dispatchers.IO) {
-                            when (mode) {
-                                SaveMode.Save -> NativeApp.saveStateToSlot(selected)
-                                SaveMode.Load -> NativeApp.loadStateFromSlot(selected)
+                    items((0 until SLOTS).toList(), key = { "slot_$it" }) { slot ->
+                        SlotTile(slot, mode) { selected ->
+                            scope.launch(Dispatchers.IO) {
+                                when (mode) {
+                                    SaveMode.Save -> NativeApp.saveStateToSlot(selected)
+                                    SaveMode.Load -> NativeApp.loadStateFromSlot(selected)
+                                }
+                                withContext(Dispatchers.Main) { onBack() }
                             }
-                            withContext(Dispatchers.Main) { onBack() }
                         }
                     }
                 }

@@ -47,6 +47,12 @@ data class AchievementsUiState(
     val overlays: Boolean = true,
     val lbOverlays: Boolean = true,
     val soundEffects: Boolean = true,
+    // Achievement modes (default off). Encore = re-notify already-unlocked achievements;
+    // Spectator = treat all as locked, send nothing to the server; Unofficial = list
+    // unpromoted test sets (unlocks aren't saved). Native rc_client already supports them.
+    val encoreMode: Boolean = false,
+    val spectatorMode: Boolean = false,
+    val unofficialTestMode: Boolean = false,
     // Display name of the user's custom achievement-unlock sound, or null for the default.
     val unlockSoundName: String? = null,
     // Non-null while the hardcore confirm dialog is up; holds the target state.
@@ -128,6 +134,9 @@ class AchievementsViewModel(application: Application) : AndroidViewModel(applica
             "overlays" -> state.value.copy(overlays = enabled)
             "lbOverlays" -> state.value.copy(lbOverlays = enabled)
             "soundEffects" -> state.value.copy(soundEffects = enabled)
+            "encoreMode" -> state.value.copy(encoreMode = enabled)
+            "spectatorMode" -> state.value.copy(spectatorMode = enabled)
+            "unofficialTestMode" -> state.value.copy(unofficialTestMode = enabled)
             else -> state.value
         }
     }
@@ -155,6 +164,9 @@ class AchievementsViewModel(application: Application) : AndroidViewModel(applica
             overlays = root.optBoolean("overlays", true),
             lbOverlays = root.optBoolean("lbOverlays", true),
             soundEffects = root.optBoolean("soundEffects", true),
+            encoreMode = root.optBoolean("encoreMode", false),
+            spectatorMode = root.optBoolean("spectatorMode", false),
+            unofficialTestMode = root.optBoolean("unofficialTestMode", false),
             unlockSoundName = MainActivityRuntime.prefs.getString(UNLOCK_SOUND_PREF, null),
         )
     }

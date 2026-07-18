@@ -75,6 +75,7 @@ import com.armsx2.ui.InGameOverlay
 import com.armsx2.ui.achievements.AchievementItem
 import com.armsx2.ui.common.GameCoverArt
 import com.armsx2.ui.settings.controllerFocusable
+import com.armsx2.ui.touch.TouchControls
 import com.armsx2.ui.theme.Danger
 import com.armsx2.ui.theme.Success
 import kotlinx.coroutines.delay
@@ -497,6 +498,14 @@ private fun SessionPane(state: EmulationMenuUiState, viewModel: EmulationMenuVie
     // toggles live in All Settings. Plus a frame-limit switch so fast-forward is one
     // tap away.
     SectionCard(str("tab.overlay")) {
+        // #357: the pause button replaced the settings cog, so it's front-and-centre here. This is
+        // "tap to reveal", NOT show/hide: on = the glyph stays hidden until you tap its top-right
+        // corner, which surfaces it. Either way that corner always opens this menu, so unlike the
+        // old on/off toggle there's no setting here that can lock you out of it.
+        MenuSwitchRow(str("pad.pauseTapToReveal.label"), TouchControls.pauseTapToReveal.value) {
+            TouchControls.setPauseTapToReveal(it)
+        }
+        Spacer(Modifier.height(6.dp))
         // Full OSD = any verbose stat line (FPS is shared with Simple, so it's excluded
         // from the "full is on" test); Simple OSD = FPS only. Reading the same osdShow*
         // fields two ways keeps the two toggles mutually exclusive.

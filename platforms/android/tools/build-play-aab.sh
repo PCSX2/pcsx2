@@ -70,7 +70,7 @@ rm -f "$JNI/libemucore_16k.so"
 
 echo; echo "================= VERIFY ================="
 echo "-- both cores in AAB (expect 4k AND 16k) --"
-n_cores=$(unzip -l "$OUTPUT_AAB" | grep -cE "libemucore_(4k|16k)\.so" || true)
+n_cores=$(unzip -l "$OUTPUT_AAB" | grep -cE "base/lib/arm64-v8a/libemucore_(4k|16k)\.so$" || true)
 unzip -l "$OUTPUT_AAB" | grep -E "libemucore_(4k|16k)\.so" || { echo "FATAL cores missing" >&2; exit 1; }
 [[ "$n_cores" -eq 2 ]] || { echo "FATAL expected 2 cores, got $n_cores" >&2; exit 1; }
 echo "-- package (must be $PKG) --"

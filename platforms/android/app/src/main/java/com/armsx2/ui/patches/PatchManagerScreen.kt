@@ -33,6 +33,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -56,7 +60,9 @@ import java.io.File
 fun PatchManagerScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: PatchManagerViewModel = viewModel()) {
     val state = viewModel.state.value
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(viewModel::import) }
-    LaunchedEffect(Unit) { viewModel.refresh() }
+    // Keyed on the game (this screen shares one Activity-scoped VM with the settings tab), and
+    // resets the online browser first so a previous game's fetched results don't linger here.
+    LaunchedEffect(game?.uri) { viewModel.resetOnlineForGame(); viewModel.refresh() }
 
     ArmsBackdrop {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
@@ -112,7 +118,9 @@ fun PatchesSettingsTab(game: GameInfo? = null, viewModel: PatchManagerViewModel 
     // Keyed on the game, not Unit: the scope switch above hands this tab a different game
     // (the game, or null for Global), and refresh() is what re-reads the tier. Keyed on
     // Unit it read once and then showed the wrong tier's values for the rest of the visit.
-    LaunchedEffect(game?.uri) { viewModel.refresh() }
+    // resetOnlineForGame() first, so a previous game's fetched cheats/patches don't linger in
+    // this game's browser (the fetch is manual, so nothing else clears them).
+    LaunchedEffect(game?.uri) { viewModel.resetOnlineForGame(); viewModel.refresh() }
 
     Column(Modifier.fillMaxWidth()) {
         Row(
@@ -178,7 +186,10 @@ private fun PatchOptions(state: PatchManagerUiState, viewModel: PatchManagerView
                 ),
             )
             SettingSwitchRow(
-                str("patches.widescreen.label"), str("patches.applyAtBoot"), state.settings.enableWideScreenPatches,
+                // Own description rather than the shared "applies at boot" line: this one silently
+                // auto-applies a patch to every game that has one, which reads nothing like
+                // "enable widescreen patches" and cost a long GT4 rendering hunt to track down.
+                str("patches.widescreen.label"), str("patches.widescreen.description"), state.settings.enableWideScreenPatches,
                 onCheckedChange = { value -> viewModel.update { it.copy(enableWideScreenPatches = value) } },
                 modifier = Modifier.controllerFocusable(
                     "patches.widescreen",
@@ -223,13 +234,18 @@ private fun OnlineBrowser(
     GlassPanel(modifier) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             SectionTitle(str("patches.online.header"), game?.title ?: str("scope.game"))
+            // Hard game guard: online results belong to the game they were fetched for. The whole
+            // patch UI shares one Activity-scoped VM, so a previous game's results must never
+            // render in another game's tab (the reported "GT4 shows GTA:SA's cheats").
+            val forThisGame = state.onlineForGameKey == (game?.uri?.toString() ?: "")
+            val entries = if (forThisGame) state.onlineEntries else emptyList()
             when {
-                state.onlineLoading -> Row(verticalAlignment = Alignment.CenterVertically) {
+                state.onlineLoading && forThisGame -> Row(verticalAlignment = Alignment.CenterVertically) {
                     CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                     Spacer(Modifier.width(10.dp))
                     Text(str("patches.online.loading"))
                 }
-                state.onlineEntries.isEmpty() -> Button(
+                entries.isEmpty() -> Button(
                     onClick = { viewModel.fetchOnline(game) },
                     modifier = Modifier.controllerFocusable("patches.online.fetch", onConfirm = { viewModel.fetchOnline(game) }),
                 ) {
@@ -239,8 +255,26 @@ private fun OnlineBrowser(
                     if (state.onlineTitle.isNotBlank()) {
                         Text(state.onlineTitle, style = MaterialTheme.typography.titleSmall)
                     }
-                    state.onlineEntries.forEach { entry ->
-                        OnlineEntryRow(entry, entry.name in state.onlineSelected) { viewModel.toggleOnline(entry.name) }
+                    // Patches and cheats each get their own collapsible section. Patches (few — the
+                    // whole point of searching) expand by default; cheats (often thousands) collapse
+                    // by default, which kills BOTH the endless scroll AND the lag: a collapsed
+                    // section doesn't compose its rows, and each row otherwise registers a
+                    // controller-nav entry. Expand cheats deliberately when you actually want them.
+                    val patches = entries.filter { it.source == "patches" }
+                    val cheats = entries.filter { it.source != "patches" }
+                    if (patches.isNotEmpty()) {
+                        CollapsibleOnlineSection("${str("patches.section.patches")} (${patches.size})", initiallyExpanded = true) {
+                            patches.forEach { entry ->
+                                OnlineEntryRow(entry, entry.name in state.onlineSelected) { viewModel.toggleOnline(entry.name) }
+                            }
+                        }
+                    }
+                    if (cheats.isNotEmpty()) {
+                        CollapsibleOnlineSection("${str("patches.section.cheats")} (${cheats.size})", initiallyExpanded = false) {
+                            cheats.forEach { entry ->
+                                OnlineEntryRow(entry, entry.name in state.onlineSelected) { viewModel.toggleOnline(entry.name) }
+                            }
+                        }
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                         Button(
@@ -291,6 +325,40 @@ private fun OnlineEntryRow(entry: PatchRepo.Entry, checked: Boolean, onToggle: (
             Spacer(Modifier.width(8.dp))
             StatusChip(entry.source)
         }
+    }
+}
+
+/** A real collapsible section for the online browser (the shared CollapsibleSection widget is
+ *  header-only — it always composes its content). Only composes [content] when expanded, so a
+ *  collapsed cheats list of thousands neither draws nor registers its per-row controller-nav
+ *  entries — that's what makes the giant list cheap until you deliberately open it. */
+@Composable
+private fun CollapsibleOnlineSection(
+    title: String,
+    initiallyExpanded: Boolean,
+    content: @Composable () -> Unit,
+) {
+    var expanded by remember { mutableStateOf(initiallyExpanded) }
+    Surface(
+        onClick = { expanded = !expanded },
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+        modifier = Modifier.fillMaxWidth().controllerFocusable(
+            "patches.online.section.$title", RoundedCornerShape(12.dp), onConfirm = { expanded = !expanded },
+        ),
+    ) {
+        Row(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                if (expanded) "▾" else "▸",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Spacer(Modifier.width(10.dp))
+            Text(title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+        }
+    }
+    if (expanded) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) { content() }
     }
 }
 

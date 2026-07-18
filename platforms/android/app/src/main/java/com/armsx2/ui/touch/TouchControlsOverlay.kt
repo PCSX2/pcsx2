@@ -34,6 +34,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +52,8 @@ import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import android.content.res.Configuration
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -67,8 +70,6 @@ import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.ui.Colors
 import com.armsx2.ui.InGameOverlay
 import com.armsx2.ui.WindowImpl
-import compose.icons.LineAwesomeIcons
-import compose.icons.lineawesomeicons.CogSolid
 import kotlinx.coroutines.delay
 import kr.co.iefriends.pcsx2.NativeApp
 import kotlin.math.abs
@@ -92,7 +93,13 @@ fun TouchControlsOverlay() {
     val gameSerial = MainActivityRuntime.currentGame.value?.serial?.takeIf { it.isNotEmpty() }
         ?: InGameOverlay.currentSerial.value
     val skinCtx = LocalContext.current
-    LaunchedEffect(gameSerial, MainActivityRuntime.eState.value) {
+    // Feed the orientation to TouchControls so it reads/writes the right layout. Set
+    // BEFORE applyForSerial (below), and part of that effect's key list, so rotating the
+    // device re-applies the orientation's own layout — landscape and portrait no longer
+    // share one authoring.
+    val isPortrait = LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
+    TouchControls.portrait.value = isPortrait
+    LaunchedEffect(gameSerial, MainActivityRuntime.eState.value, isPortrait) {
         if (MainActivityRuntime.eState.value == EmuState.RUNNING || MainActivityRuntime.eState.value == EmuState.PAUSED) {
             TouchControls.applyForSerial(gameSerial)
             // The SKIN goes per-game on the same hook and for the same reason as the
@@ -184,45 +191,29 @@ fun TouchControlsOverlay() {
         // trio into one published set.
         var unifiedPressed by remember { mutableStateOf<Set<TouchButtonId>>(emptySet()) }
 
-        // Tap-to-reveal settings cog (top-center). Moved off the top-right corner
-        // so it no longer sits under the R1/R2 on-screen cluster (the "behind R2"
-        // complaint). Kept available even when on-screen controls = Never: it's an
-        // INVISIBLE top-center tap zone (no clutter, doesn't overlap R1), so a
-        // controller user can hide every gameplay button yet still tap the gear to
-        // pause / open settings — no need to map a physical menu button for it.
+        // #357: the tap-to-reveal settings cog is GONE — the top-right pause button is the single
+        // entry point into the menu now. It renders HERE, above the `showPad` early-return below,
+        // for exactly the reason the cog lived here: with on-screen controls = Never (visMode 0,
+        // the RP6 case) or once the auto-hide timer fires, the widget loop never runs, so a pause
+        // button drawn only by that loop would vanish and lock a controller user out of the menu.
+        // Edit mode is excluded so the loop below draws the draggable/resizable copy instead.
         if (!edit) {
-            var showSettingsCog by remember { mutableStateOf(false) }
-            LaunchedEffect(showSettingsCog) {
-                if (showSettingsCog) {
-                    delay(3000)
-                    showSettingsCog = false
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    // Above the full-screen UnifiedTouchLayer (glide/multi-touch), which is
-                    // composed later and would otherwise sit z-ON-TOP of this tap zone and
-                    // swallow the top-center tap. The old per-region touch layers never covered
-                    // the top-center, so the cog was always reachable; zIndex restores that.
-                    .zIndex(1f)
-                    .size(CogTapZoneDp)
-                    .clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() },
-                    ) { showSettingsCog = true },
-            )
-            if (showSettingsCog) {
-                InGameSettingsButton(
+            // Deliberately NOT filtered on cfg.enabled: a disabled pause is treated as
+            // hidden-but-tappable (see PauseWidget), so turning it off can't strand you either.
+            layout.buttons.firstOrNull { it.id == TouchButtonId.PAUSE }?.let { cfg ->
+                val size = cfg.sizeDp.dp
+                Box(
                     modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .zIndex(1f)
-                        .padding(14.dp),
-                    onClick = {
-                        showSettingsCog = false
-                        InGameOverlay.open()
-                    },
-                )
+                        .offset(x = w * cfg.xFrac - size / 2, y = h * cfg.yFrac - size / 2)
+                        .size(size)
+                        // Above the full-screen UnifiedTouchLayer (composed later), which would
+                        // otherwise sit z-ON-TOP and swallow the tap. That layer also carves this
+                        // rect out geometrically — the load-bearing half of the guard, since
+                        // Compose hit-tests overlapping siblings exclusively.
+                        .zIndex(1f),
+                ) {
+                    PauseWidget(cfg, edit = false)
+                }
             }
         }
 
@@ -308,6 +299,10 @@ fun TouchControlsOverlay() {
         }
         for (cfg in layout.buttons) {
             if (!cfg.enabled && !edit) continue
+            // Drawn above during play (outside the auto-hide / "Never" gate) so it can't be
+            // hidden away; skip it here or it would render twice. Edit mode still gets it from
+            // the loop, so it stays draggable/resizable like every other widget.
+            if (cfg.id == TouchButtonId.PAUSE && !edit) continue
             val size = cfg.sizeDp.dp
             val cx = w * cfg.xFrac
             val cy = h * cfg.yFrac
@@ -353,30 +348,6 @@ fun TouchControlsOverlay() {
         if (TouchControls.profileDialogOpen.value) {
             ProfilePicker(onDismiss = { TouchControls.profileDialogOpen.value = false })
         }
-    }
-}
-
-/* -------------------------------------------------------------------- */
-/*  In-game settings shortcut                                            */
-/* -------------------------------------------------------------------- */
-
-@Composable
-private fun InGameSettingsButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Box(
-        modifier = modifier
-            .size(52.dp)
-            .clip(CircleShape)
-            .background(Color(0xFF111111).copy(alpha = 0.55f))
-            .border(1.dp, Color.White.copy(alpha = 0.20f), CircleShape)
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            imageVector = LineAwesomeIcons.CogSolid,
-            contentDescription = str("touch.settingsButton.description"),
-            tint = Color.White.copy(alpha = 0.92f),
-            modifier = Modifier.size(32.dp),
-        )
     }
 }
 
@@ -546,10 +517,9 @@ private fun PressureButtonWidget(cfg: TouchButtonCfg, edit: Boolean) {
     }
 }
 
-/** Size of the invisible top-center tap zone that reveals the settings cog (see
- *  TouchControlsOverlay). Shared so UnifiedTouchLayer can carve the exact same rect out
- *  of its hit region, guaranteeing a top-center tap reaches the cog, not the glide layer. */
-private val CogTapZoneDp = 74.dp
+/** How long the tap-to-reveal pause glyph stays up after a tap surfaces it — matches the
+ *  timing the old settings cog used, so the two-step feels the same. */
+private const val PauseRevealMs = 3000L
 
 @Composable
 private fun UnifiedTouchLayer(
@@ -586,7 +556,6 @@ private fun UnifiedTouchLayer(
         val cy = heightPx * cfg.yFrac
         UnifiedHit(id = cfg.id, cx = cx, cy = cy, radius = sizePx * TouchControls.multiTouchRadius.floatValue)
     }
-    val cogPx = with(density) { CogTapZoneDp.toPx() }
     val foreignBounds = foreignRects.map { cfg ->
         val sizePx = with(density) { cfg.sizeDp.dp.toPx() }
         val cx = widthPx * cfg.xFrac
@@ -597,18 +566,25 @@ private fun UnifiedTouchLayer(
             right = cx + sizePx / 2f,
             bottom = cy + sizePx / 2f,
         )
-    } + UnifiedRect(
-        // Carve out the top-center settings-cog tap zone (align(TopCenter).size(CogTapZoneDp) in
-        // TouchControlsOverlay) so a DOWN there is treated as foreign — the glide layer never owns
-        // or consumes it, so it reaches the cog's clickable. This is the load-bearing guard:
-        // Compose hit-tests overlapping siblings exclusively (they don't share a pointer by
-        // default), so zIndex on the cog only reorders WHICH sibling wins; this geometric carve-out
-        // makes the glide layer stand down regardless of z-order. No glide button sits at
-        // dead-top-center, so it costs nothing.
-        left = widthPx / 2f - cogPx / 2f,
-        top = 0f,
-        right = widthPx / 2f + cogPx / 2f,
-        bottom = cogPx,
+    } + listOfNotNull(
+        // #357: the top-center cog carve-out went away with the cog. PAUSE inherits its job as the
+        // only way into the menu, so its rect must make the glide layer stand down even when the
+        // widget is DISABLED (disabled = hidden-but-tappable, so turning it off can't strand you).
+        // An ENABLED pause is already covered by foreignRects above; this adds the disabled case.
+        // Same load-bearing reason as before: Compose hit-tests overlapping siblings exclusively
+        // (they don't share a pointer by default), so zIndex only reorders WHICH sibling wins —
+        // this geometric carve-out is what makes the glide layer actually stand down.
+        layout.buttons.firstOrNull { it.id == TouchButtonId.PAUSE && !it.enabled }?.let { cfg ->
+            val sizePx = with(density) { cfg.sizeDp.dp.toPx() }
+            val cx = widthPx * cfg.xFrac
+            val cy = heightPx * cfg.yFrac
+            UnifiedRect(
+                left = cx - sizePx / 2f,
+                top = cy - sizePx / 2f,
+                right = cx + sizePx / 2f,
+                bottom = cy + sizePx / 2f,
+            )
+        }
     )
     val dims = widthPx to heightPx
 
@@ -749,15 +725,73 @@ private fun PauseWidget(cfg: TouchButtonCfg, edit: Boolean) {
             )
         }
     } else {
+        val opacity = TouchControls.opacity.floatValue
+        // Drawn unless the user picked tap-to-reveal, or disabled the widget outright — a disabled
+        // pause is treated as hidden-but-tappable rather than gone, so it can't strand you.
+        val alwaysVisible = cfg.enabled && !TouchControls.pauseTapToReveal.value
+        var revealed by remember { mutableStateOf(false) }
+        LaunchedEffect(revealed) {
+            if (revealed) {
+                delay(PauseRevealMs)
+                revealed = false
+            }
+        }
+        val shown = alwaysVisible || revealed
+        // detectTapGestures captures its lambdas once (keyed on Unit so the recogniser isn't torn
+        // down mid-gesture), so read `shown` through a live handle — a captured copy would go
+        // stale the moment a reveal flips it and the second tap would never open the menu.
+        val shownNow = rememberUpdatedState(shown)
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(cfg.id) {
+                .pointerInput(Unit) {
                     detectTapGestures(
+                        // Single TAP opens the pause menu (long-press kept, so the old muscle
+                        // memory still works). In tap-to-reveal mode the first tap only surfaces
+                        // the glyph — the same two-step the old cog used — and long-press stays a
+                        // direct shortcut either way.
+                        onTap = { if (shownNow.value) InGameOverlay.open() else revealed = true },
                         onLongPress = { InGameOverlay.open() },
                     )
                 },
-        )
+            contentAlignment = Alignment.Center,
+        ) {
+            if (shown) PauseGlyph(sizeDp = cfg.sizeDp, opacity = opacity)
+        }
+    }
+}
+
+/** Nether-style ⏸: two rounded bars on a soft dark disc. Everything scales off the widget's own
+ *  size so resizing it in the editor keeps the proportions. Deliberately low-alpha — it shares the
+ *  top-right corner with the performance OSD and shouldn't compete with it. */
+@Composable
+private fun PauseGlyph(sizeDp: Float, opacity: Float) {
+    val a = opacity.coerceIn(0.20f, 1f)
+    val disc = (sizeDp * 0.66f).dp
+    val barW = (sizeDp * 0.095f).dp
+    val barH = (sizeDp * 0.34f).dp
+    // Floors on both alphas: this is a system affordance, not a gameplay button, so it must stay
+    // legible at the low pad opacities people run (0.55 default previously left it ~0.50/0.15 —
+    // "barely noticeable"). It still tracks opacity above the floor for anyone who turns it up.
+    Box(
+        modifier = Modifier
+            .size(disc)
+            .clip(CircleShape)
+            .background(Color.Black.copy(alpha = (0.55f * a).coerceIn(0.32f, 0.60f))),
+        contentAlignment = Alignment.Center,
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(barW)) {
+            repeat(2) {
+                Box(
+                    Modifier
+                        .size(barW, barH)
+                        .background(
+                            Color.White.copy(alpha = (0.95f * a).coerceIn(0.72f, 1.0f)),
+                            RoundedCornerShape(barW / 2),
+                        )
+                )
+            }
+        }
     }
 }
 

@@ -310,6 +310,16 @@ data class Settings(
      *  the GS upscale helper; per-game so each title keeps its own. Seeded from the
      *  legacy global "upscaleFloat" pref on first load. */
     val upscaleFloat: Float = 1.0f,
+    /** Installed custom Vulkan GPU driver id to pin (e.g. a Turnip build). "" = system
+     *  driver. Applied at (re)launch via CustomDriver.applyToNative in
+     *  MainActivityRuntime.applyRendererPrefs; per-game so a title can pin the driver it
+     *  needs. Seeded from the legacy global "customDriverId" pref on first load. */
+    val customDriverId: String = "",
+    /** Android activity screen orientation: 0 Use Device Setting · 1 Landscape · 2 Portrait
+     *  · 3 Auto-Rotate. Applied via MainActivityRuntime.applyEmulationOrientation, resolved
+     *  per-game at game boot (global in the library/menus). Seeded from the legacy global
+     *  "ui.orientation" pref on first load. */
+    val orientation: Int = 0,
     /** EmuCore/GS FramerateNTSC — the emulated PS2 vsync rate for NTSC games
      *  (PCSX2 default 59.94). Lowering it slows the game's target rate; raising it
      *  speeds it up. Mirrors NetherSX2's "Framerate For NTSC". */
@@ -485,8 +495,10 @@ data class Settings(
     // Disabling GPU also stops the GPU timing queries (real perf win).
     /** EmuCore/GS/OsdShowFPS. */
     val osdShowFps: Boolean = false,
-    /** EmuCore/GS/OsdScale — size of on-screen messages/stats, percent (25–500, 100 = normal). */
-    val osdScale: Int = 100,
+    /** EmuCore/GS/OsdScale — size of on-screen messages/stats, percent (25–500, 100 = PCSX2's
+     *  normal). Defaults to 65: at 100 the stats block dominates a handheld screen, and 65 matches
+     *  the size NetherSX2 ships. Saves still on the old 100 default are migrated once (ConfigStore). */
+    val osdScale: Int = 65,
     /** EmuCore/GS/VsyncEnable — sync presentation to the display refresh (less
      *  tearing/smoother, slightly higher latency). Applies on game restart. */
     val vsyncEnable: Boolean = false,
@@ -1394,6 +1406,8 @@ data class Settings(
         put("spu2NeonReverb", spu2NeonReverb)
         put("renderer", renderer)
         put("upscaleFloat", upscaleFloat.toDouble())
+        put("customDriverId", customDriverId)
+        put("orientation", orientation)
         put("framerateNtsc", framerateNtsc.toDouble())
         put("frameratePal", frameratePal.toDouble())
         put("enablePatches", enablePatches)
@@ -1631,6 +1645,8 @@ data class Settings(
                 spu2NeonReverb = json.optBoolean("spu2NeonReverb", def.spu2NeonReverb),
                 renderer = json.optString("renderer", def.renderer),
                 upscaleFloat = json.optDouble("upscaleFloat", def.upscaleFloat.toDouble()).toFloat(),
+                customDriverId = json.optString("customDriverId", def.customDriverId),
+                orientation = json.optInt("orientation", def.orientation),
                 framerateNtsc = json.optDouble("framerateNtsc", def.framerateNtsc.toDouble()).toFloat(),
                 frameratePal = json.optDouble("frameratePal", def.frameratePal.toDouble()).toFloat(),
                 enablePatches = json.optBoolean("enablePatches", def.enablePatches),
@@ -1854,6 +1870,8 @@ data class Settings(
             if (current.spu2NeonReverb != base.spu2NeonReverb) j.put("spu2NeonReverb", current.spu2NeonReverb)
             if (current.renderer != base.renderer) j.put("renderer", current.renderer)
             if (current.upscaleFloat != base.upscaleFloat) j.put("upscaleFloat", current.upscaleFloat.toDouble())
+            if (current.customDriverId != base.customDriverId) j.put("customDriverId", current.customDriverId)
+            if (current.orientation != base.orientation) j.put("orientation", current.orientation)
             if (current.framerateNtsc != base.framerateNtsc) j.put("framerateNtsc", current.framerateNtsc.toDouble())
             if (current.frameratePal != base.frameratePal) j.put("frameratePal", current.frameratePal.toDouble())
             if (current.enablePatches != base.enablePatches) j.put("enablePatches", current.enablePatches)
@@ -2058,6 +2076,8 @@ data class Settings(
             spu2NeonReverb = if (overrides.has("spu2NeonReverb")) overrides.getBoolean("spu2NeonReverb") else base.spu2NeonReverb,
             renderer = if (overrides.has("renderer")) overrides.getString("renderer") else base.renderer,
             upscaleFloat = if (overrides.has("upscaleFloat")) overrides.getDouble("upscaleFloat").toFloat() else base.upscaleFloat,
+            customDriverId = if (overrides.has("customDriverId")) overrides.getString("customDriverId") else base.customDriverId,
+            orientation = if (overrides.has("orientation")) overrides.getInt("orientation") else base.orientation,
             framerateNtsc = if (overrides.has("framerateNtsc")) overrides.getDouble("framerateNtsc").toFloat() else base.framerateNtsc,
             frameratePal = if (overrides.has("frameratePal")) overrides.getDouble("frameratePal").toFloat() else base.frameratePal,
             enablePatches = if (overrides.has("enablePatches")) overrides.getBoolean("enablePatches") else base.enablePatches,

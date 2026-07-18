@@ -53,6 +53,12 @@ static Common::Timer::Value s_last_gpu_reset_time;
 // Screen alignment
 static GSDisplayAlignment s_display_alignment = GSDisplayAlignment::Center;
 
+// Defined further down alongside the present path. Forward-declared because Merge() needs the
+// frame's on-screen rect to size the RetroArch shader chain, and it runs before them.
+static GSVector4i CalculateDrawSrcRect(const GSTexture* src, const GSVector2i real_size);
+static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const GSVector4i& src_rect,
+	const GSVector2i& src_size, GSDisplayAlignment alignment, bool flip_y, bool is_progressive);
+
 GSRenderer::GSRenderer()
 	: m_shader_time_start(Common::Timer::GetCurrentValue())
 {
@@ -260,10 +266,39 @@ bool GSRenderer::Merge(int field)
 	if (GSConfig.FXAA)
 		g_gs_device->FXAA();
 
-	// RetroArch (.slangp) shader chain runs last in the post-process chain, so it sees
-	// the finished frame the way the user actually sees it (ShadeBoost/FXAA included).
-	// Self-guards on GSConfig.ShaderChainEnabled and no-ops on backends without one.
-	g_gs_device->ApplyShaderChain();
+	// RetroArch (.slangp) shader chain runs last in the post-process chain, so it sees the
+	// finished frame the way the user actually sees it (ShadeBoost/FXAA included).
+	//
+	// It renders at the frame's ON-SCREEN size, not the internal one. Shaders that generate
+	// detail per output pixel — CRT scanlines above all — must run at display pixel density:
+	// generated at 640x448 and then upscaled to a 1080p window, one scanline lands on ~2.4
+	// screen pixels, so the presenter's filtering smears them into the uneven, wrong-looking
+	// pattern reported on an AYN Thor. RetroArch itself renders the chain into the viewport
+	// for exactly this reason.
+	//
+	// The target MUST be the aspect-corrected draw rect, not the raw window. librashader maps
+	// the whole input to the whole viewport, so a 16:9 target for a 4:3 frame stretches the
+	// picture — and CalculateDrawDstRect derives its rect from the aspect-ratio SETTING, not
+	// from the texture, so it would then letterbox the already-stretched result instead of
+	// correcting it. Matching the draw rect keeps the final present a 1:1 blit.
+	//
+	// m_real_size is deliberately left alone: in CalculateDrawSrcRect it only scales user Crop
+	// values (with no crop the src rect is the whole texture either way), so holding it at the
+	// internal size keeps crop proportional to the frame rather than to the shaded target.
+	if (GSConfig.ShaderChainEnabled && !GSConfig.ShaderChainPreset.empty())
+	{
+		if (GSTexture* const pre_chain = g_gs_device->GetCurrent())
+		{
+			const GSVector4i pre_src(CalculateDrawSrcRect(pre_chain, m_real_size));
+			const GSVector4 pre_dst(CalculateDrawDstRect(g_gs_device->GetWindowWidth(),
+				g_gs_device->GetWindowHeight(), pre_src, pre_chain->GetSize(), s_display_alignment,
+				g_gs_device->UsesLowerLeftOrigin(), GetVideoMode() == GSVideoMode::SDTV_480P));
+			const GSVector2i on_screen(
+				static_cast<int>(std::floor((pre_dst.z - pre_dst.x) + 0.5f)),
+				static_cast<int>(std::floor((pre_dst.w - pre_dst.y) + 0.5f)));
+			g_gs_device->ApplyShaderChain(on_screen);
+		}
+	}
 
 	// Sharpens biinear at lower resolutions, almost nearest but with more uniform pixels.
 	if (GSConfig.LinearPresent == GSPostBilinearMode::BilinearSharp && (g_gs_device->GetWindowWidth() > fs.x || g_gs_device->GetWindowHeight() > fs.y))

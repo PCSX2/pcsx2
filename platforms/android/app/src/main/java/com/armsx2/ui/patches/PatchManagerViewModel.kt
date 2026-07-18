@@ -28,6 +28,11 @@ data class PatchManagerUiState(
     val onlineSelected: Set<String> = emptySet(),
     val onlineSerial: String = "",
     val onlineCrc: String = "",
+    // Which game these online results were fetched for (its uri, or "" for none). The whole
+    // patch UI shares ONE Activity-scoped ViewModel, so without this a previous game's results
+    // linger into the next game's tab. The browser only renders onlineEntries when this equals
+    // the game currently on screen — a hard guard that survives any missed lifecycle reset.
+    val onlineForGameKey: String = "",
     // Local per-cheat manager: the expanded file's parsed cheats (name/enabled).
     val localExpandedPath: String? = null,
     val localCheats: List<PatchRepo.LocalCheat> = emptyList(),
@@ -111,8 +116,32 @@ class PatchManagerViewModel(application: Application) : AndroidViewModel(applica
     //    the community GitHub repos (all logic already in PatchRepo), let the user
     //    tick the ones they want, then assemble + install a .pnach. --
 
+    /** Drop the online browser's results. The browser is manual-fetch (nothing repopulates
+     *  it until the user taps Search), so on a GAME SWITCH the previous game's fetched
+     *  cheats/patches would otherwise linger in the next game's tab — the reported "GT4 shows
+     *  GTA:SA's cheats". refresh() deliberately doesn't touch these (it's also called after
+     *  import/delete, where wiping a fresh fetch would be wrong), so game-change clearing is
+     *  its own call. Also collapses any expanded local file for the same reason. */
+    fun resetOnlineForGame() {
+        state.value = state.value.copy(
+            onlineLoading = false,
+            onlineTitle = "",
+            onlineEntries = emptyList(),
+            onlineSelected = emptySet(),
+            onlineSerial = "",
+            onlineCrc = "",
+            onlineForGameKey = "",
+            localExpandedPath = null,
+            localCheats = emptyList(),
+            error = null,
+        )
+    }
+
     fun fetchOnline(game: GameInfo?) {
-        state.value = state.value.copy(onlineLoading = true, error = null, onlineEntries = emptyList())
+        val gameKey = game?.uri?.toString() ?: ""
+        state.value = state.value.copy(
+            onlineLoading = true, error = null, onlineEntries = emptyList(), onlineForGameKey = gameKey,
+        )
         viewModelScope.launch {
             // Serial priority: the library's (filename-derived) serial, then the running
             // game's serial, then — for a plainly-named file whose filename yielded no
@@ -133,8 +162,13 @@ class PatchManagerViewModel(application: Application) : AndroidViewModel(applica
                 return@launch
             }
             val result = withContext(Dispatchers.IO) {
+                // The bundled patch DB (offline, complete), so patches resolve without the
+                // rate-limited/truncating GitHub tree — for BOTH the booted (by-CRC) and the
+                // library (by-serial) paths.
+                val bundled = File(MainActivityRuntime.assetCopyRoot(getApplication()), "resources/patches.zip")
                 val crc = runCatching { NativeApp.getGameCRC() }.getOrNull()?.takeIf { it.length == 8 }
-                if (crc != null) PatchRepo.fetchForGame(serial, crc) else PatchRepo.fetchForSerial(serial)
+                if (crc != null) PatchRepo.fetchForGame(serial, crc, bundled)
+                else PatchRepo.fetchForSerial(serial, bundled)
             }
             state.value = state.value.copy(
                 onlineLoading = false,
@@ -143,6 +177,7 @@ class PatchManagerViewModel(application: Application) : AndroidViewModel(applica
                 onlineSelected = emptySet(),
                 onlineSerial = result.serial.ifBlank { serial },
                 onlineCrc = result.crc,
+                onlineForGameKey = gameKey,
                 error = result.error,
             )
         }

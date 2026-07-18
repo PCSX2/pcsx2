@@ -617,6 +617,12 @@ Java_kr_co_iefriends_pcsx2_NativeApp_setAchievementsOption(JNIEnv *env, jclass c
     else if (key == "overlays") ini_key = "Overlays";
     else if (key == "lbOverlays") ini_key = "LBOverlays";
     else if (key == "soundEffects") ini_key = "SoundEffects";
+    // Achievement MODES. The native side already handles these (Achievements.cpp
+    // CreateClient + UpdateSettings call rc_client_set_{encore,spectator,unofficial}_mode);
+    // ApplySettings below reloads the RA session for them with no VM reset needed.
+    else if (key == "encoreMode") ini_key = "EncoreMode";
+    else if (key == "spectatorMode") ini_key = "SpectatorMode";
+    else if (key == "unofficialTestMode") ini_key = "UnofficialTestMode";
     if (!ini_key)
         return;
 

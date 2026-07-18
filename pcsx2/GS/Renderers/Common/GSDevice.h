@@ -1778,9 +1778,14 @@ public:
 	void FXAA();
 	void ShadeBoost();
 	/// Runs the configured RetroArch (.slangp) shader chain over m_current, after
-	/// ShadeBoost/FXAA. Shared guard + target selection; the actual chain lives in
-	/// DoApplyShaderChain, which only the librashader-capable backends override.
-	void ApplyShaderChain();
+	/// ShadeBoost/FXAA, rendering at `output_size` — the frame's ON-SCREEN size, so shaders
+	/// that generate detail per output pixel (CRT scanlines above all) run at display pixel
+	/// density instead of being generated at internal res and smeared by the presenter's
+	/// upscale. Pass the aspect-corrected draw rect, NOT the raw window: librashader maps the
+	/// whole input to the whole viewport, so a mismatched aspect stretches the picture.
+	/// Returns true if the chain ran and m_current now points at the shaded target. The chain
+	/// itself lives in DoApplyShaderChain, which only librashader-capable backends override.
+	bool ApplyShaderChain(const GSVector2i& output_size);
 	void Resize(int width, int height);
 
 	void CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, const GSVector4& draw_rect, bool sharpen_only);

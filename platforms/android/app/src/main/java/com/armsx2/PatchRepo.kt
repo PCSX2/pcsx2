@@ -3,6 +3,7 @@ package com.armsx2
 
 import android.util.Log
 import kr.co.iefriends.pcsx2.HttpClient
+import java.io.File
 
 /**
  * Online patch/cheat fetcher — the patch-side counterpart to [CustomDriver].
@@ -92,14 +93,29 @@ object PatchRepo {
     )
 
     /** Fetch + parse this game's patches (PCSX2 DB) AND cheats (community DB),
-     *  using the exact serial+CRC known while a game is booted. */
-    fun fetchForGame(serial: String?, crc: String): Result {
+     *  using the exact serial+CRC known while a game is booted. [bundledZip] is the
+     *  offline patch DB (resources/patches.zip) — read FIRST so patches resolve even when
+     *  the booted CRC isn't a DB filename or the network is rate-limited; the network below
+     *  only supplements. Without it, the in-game manager showed cheats but no patches. */
+    fun fetchForGame(serial: String?, crc: String, bundledZip: File? = null): Result {
         val c = crc.trim().uppercase()
         if (!CRC_RE.matches(c))
             return Result("", emptyList(), "No game CRC yet — boot the game first.")
 
         var gametitle = ""
         val entries = mutableListOf<Entry>()
+
+        // Patches from the BUNDLED DB first (offline, complete — every <SERIAL>_<CRC>.pnach),
+        // deduped by name; the network lookups below only add anything fresher. This is why a
+        // booted game whose exact CRC differs from the DB's filenames still gets its patches.
+        if (!serial.isNullOrBlank()) {
+            bundledPatchesForSerial(bundledZip, serial.uppercase()).let { (gt, es, _) ->
+                if (es.isNotEmpty()) {
+                    if (gametitle.isEmpty()) gametitle = gt
+                    entries += es
+                }
+            }
+        }
 
         // Patches (widescreen / fixes): prefer <serial>_<crc>, fall back to <crc>.
         val patchCandidates = buildList {
@@ -110,7 +126,8 @@ object PatchRepo {
             val text = get("$RAW_BASE/patches/$name.pnach") ?: continue
             val (gt, es) = parse(text, "patches")
             if (gametitle.isEmpty()) gametitle = gt
-            entries += es
+            val seen = entries.mapTo(HashSet()) { it.name }
+            for (e in es) if (seen.add(e.name)) entries += e
             break // first existing patches file wins
         }
 
@@ -136,9 +153,16 @@ object PatchRepo {
         return Result(gametitle, entries, null, serial?.uppercase().orEmpty(), c)
     }
 
+    // Dedup key for cheats: case- and whitespace-insensitive. The serial fallback below can
+    // match SEVERAL revision files for one game (GTA:SA has 3+), and the same cheat is often
+    // spelled slightly differently across them ("Infinite Health" vs "infinite  health") — an
+    // exact-name set let those through as near-duplicates, so the list "repeated forever".
+    private val WS_RE = Regex("\\s+")
+    private fun cheatKey(name: String) = name.trim().lowercase().replace(WS_RE, " ")
+
     /** Fetch + parse community cheats for a game across all sources. Matches
      *  each repo's tree by CRC (exact) first, then by serial as a fallback;
-     *  dedupes entries by name (earlier sources win). Null if nothing found. */
+     *  dedupes entries by normalized name (earlier sources win). Null if nothing found. */
     private fun fetchCheats(serial: String?, crc: String): Pair<String, List<Entry>>? {
         val c = crc.uppercase()
         val s = serial?.uppercase()
@@ -160,7 +184,7 @@ object PatchRepo {
                 val text = get("${src.raw}/${m.replace(" ", "%20")}") ?: continue
                 val (gt, es) = parse(text, "cheats")
                 if (gametitle.isEmpty()) gametitle = gt
-                for (e in es) if (seenNames.add(e.name)) entries += e
+                for (e in es) if (seenNames.add(cheatKey(e.name))) entries += e
             }
         }
         return if (entries.isEmpty()) null else gametitle to entries
@@ -179,33 +203,52 @@ object PatchRepo {
      *  booted, where we have the serial but not the disc CRC. Looks the game up
      *  in the repo file tree to find its `<serial>_<crc>.pnach`; the CRC comes
      *  back in [Result.crc] so the caller can name the saved file correctly. */
-    fun fetchForSerial(serial: String?): Result {
+    fun fetchForSerial(serial: String?, bundledZip: File? = null): Result {
         val s = serial?.trim()?.uppercase()
         if (s.isNullOrBlank() || !SERIAL_RE.matches(s))
             return Result("", emptyList(), "This game has no serial to search the patch database with.")
-
-        val tree = repoTree()
-        if (tree.isEmpty())
-            return Result("", emptyList(), "Couldn't reach the PCSX2 patch database. Check your connection.")
 
         var gametitle = ""
         var resolvedCrc = ""
         val entries = mutableListOf<Entry>()
 
+        // Patches from the BUNDLED patch DB first (offline, complete). The per-game
+        // settings view has no booted disc, so it can't take the by-CRC raw-URL path the
+        // in-game view uses and instead listed the repo via the GitHub git-tree API — which
+        // is rate-limited (60/hr unauth) AND truncates for a repo this size, so a specific
+        // serial's patch often wasn't in the returned list. Result: cheats (smaller repos)
+        // showed but patches didn't. The app already ships every `<SERIAL>_<CRC>.pnach` in
+        // resources/patches.zip, so read the serial's patches straight from it — no network,
+        // no rate limit, no truncation. The network below then only SUPPLEMENTS (fresher
+        // patches / Gabominated / cheats).
+        bundledPatchesForSerial(bundledZip, s).let { (gt, es, crc) ->
+            if (es.isNotEmpty()) {
+                if (gametitle.isEmpty()) gametitle = gt
+                entries += es
+                if (resolvedCrc.isEmpty()) resolvedCrc = crc
+            }
+        }
+
+        val tree = repoTree()
+
         // Patches: find this serial's file in the PCSX2 tree; its filename also
-        // gives us the CRC, which we then reuse to look up cheats.
+        // gives us the CRC, which we then reuse to look up cheats. Supplements the
+        // bundled patches above (dedup by name), so a truncated/rate-limited tree no
+        // longer wipes the whole result.
         val match = tree.firstOrNull { it.startsWith("patches/${s}_", ignoreCase = true) }
         if (match != null) {
             get("$RAW_BASE/$match")?.let { text ->
                 val (gt, es) = parse(text, "patches")
                 if (gametitle.isEmpty()) gametitle = gt
-                entries += es
+                val seen = entries.mapTo(HashSet()) { it.name }
+                for (e in es) if (seen.add(e.name)) entries += e
             }
-            resolvedCrc = match.substringAfterLast('/')
-                .removeSuffix(".pnach")
-                .substringAfter("${s}_", "")
-                .substringBefore('_')
-                .uppercase()
+            if (resolvedCrc.isEmpty())
+                resolvedCrc = match.substringAfterLast('/')
+                    .removeSuffix(".pnach")
+                    .substringAfter("${s}_", "")
+                    .substringBefore('_')
+                    .uppercase()
         }
 
         // Gabominated improvement patches (matched by serial in its file tree).
@@ -231,6 +274,39 @@ object PatchRepo {
         if (entries.isEmpty())
             return Result("", emptyList(), "No patches or cheats in the database for $s.")
         return Result(gametitle, entries, null, s, resolvedCrc)
+    }
+
+    /** Patches for [serial] read straight from the bundled `resources/patches.zip`
+     *  (entries named `<SERIAL>_<CRC>.pnach` at the zip root). Offline, complete, and
+     *  immune to the GitHub API's rate limit and tree truncation. Returns
+     *  (gametitle, entries, crc); empty when the zip is missing or has no match. */
+    private fun bundledPatchesForSerial(zip: File?, serial: String): Triple<String, List<Entry>, String> {
+        if (zip == null || !zip.isFile) return Triple("", emptyList(), "")
+        return runCatching {
+            java.util.zip.ZipFile(zip).use { zf ->
+                var gametitle = ""
+                var crc = ""
+                val entries = mutableListOf<Entry>()
+                val seen = HashSet<String>()
+                val prefix = "${serial}_"
+                for (e in zf.entries()) {
+                    val base = e.name.substringAfterLast('/')
+                    if (e.isDirectory || !base.startsWith(prefix, ignoreCase = true) ||
+                        !base.endsWith(".pnach", ignoreCase = true)
+                    ) continue
+                    val text = zf.getInputStream(e).use { it.readBytes().toString(Charsets.UTF_8) }
+                    val (gt, es) = parse(text, "patches")
+                    if (gametitle.isEmpty()) gametitle = gt
+                    for (entry in es) if (seen.add(entry.name)) entries += entry
+                    if (crc.isEmpty())
+                        crc = base.removeSuffix(".pnach").substringAfter(prefix, "").substringBefore('_').uppercase()
+                }
+                Triple(gametitle, entries, crc)
+            }
+        }.getOrElse {
+            Log.w(TAG, "bundled patches read failed: ${it.message}")
+            Triple("", emptyList(), "")
+        }
     }
 
     /** File listing of the Gabominated patch fork, cached for the session. */

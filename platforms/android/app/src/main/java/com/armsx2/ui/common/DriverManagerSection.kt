@@ -32,10 +32,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
 import com.armsx2.CustomDriver
 import com.armsx2.i18n.str
 import com.armsx2.runtime.MainActivityRuntime
+import com.armsx2.ui.InGameOverlay
 import com.armsx2.ui.settings.controllerFocusable
 import com.armsx2.ui.theme.Success
 import kotlinx.coroutines.Dispatchers
@@ -116,7 +116,7 @@ fun DriverManagerSection() {
             controllerId = "driver.system",
             title = str("backend.driver.systemVulkan"),
             subtitle = str("renderer.orientation.device"),
-            selected = MainActivityRuntime.customDriverId.value == null,
+            selected = InGameOverlay.settingsState.value.customDriverId.isBlank(),
             onClick = { selectDriver(null) },
         )
         installed.forEach { driver ->
@@ -125,10 +125,10 @@ fun DriverManagerSection() {
                 title = driver.name,
                 subtitle = listOf(driver.vendor, driver.version).filter(String::isNotBlank).joinToString(" · ")
                     .ifBlank { str("backend.driver.installed") },
-                selected = MainActivityRuntime.customDriverId.value == driver.id,
+                selected = InGameOverlay.settingsState.value.customDriverId == driver.id,
                 onClick = { selectDriver(driver.id) },
                 onDelete = {
-                    val wasSelected = MainActivityRuntime.customDriverId.value == driver.id
+                    val wasSelected = InGameOverlay.settingsState.value.customDriverId == driver.id
                     CustomDriver.delete(driver)
                     if (wasSelected) selectDriver(null)
                     refreshInstalled()
@@ -331,6 +331,9 @@ private fun RemoteDriverRow(controllerId: String, title: String, subtitle: Strin
 private fun Spacer8() = androidx.compose.foundation.layout.Spacer(Modifier.width(10.dp))
 
 private fun selectDriver(id: String?) {
+    // UI mirror for the pre-launch baseline; the real driver load happens at the next
+    // renderer (re)start via applyRendererPrefs. Persist scope-aware (per-game when the
+    // settings scope is Game) so a title can pin the driver it needs.
     MainActivityRuntime.customDriverId.value = id
-    MainActivityRuntime.prefs.edit { putString("customDriverId", id.orEmpty()) }
+    InGameOverlay.saveSettings(InGameOverlay.settingsState.value.copy(customDriverId = id ?: ""))
 }

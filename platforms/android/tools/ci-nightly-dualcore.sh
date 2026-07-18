@@ -121,16 +121,17 @@ if [[ -n "${ROTATION_DEBUG_KS:-}"   && -f "${ROTATION_DEBUG_KS:-/nope}"   \
 		--lineage "$ROTATION_LINEAGE" \
 		--in "$ALN" --out "$OUT"
 else
-	echo "WARNING: ROTATION_* signing secrets not set — using a throwaway key." >&2
-	echo "         This nightly will NOT install over existing com.armsx2 builds." >&2
-	KS="${NIGHTLY_KEYSTORE:-$HOME/.android/debug.keystore}"
-	KS_PASS="${NIGHTLY_KS_PASS:-android}"; KS_ALIAS="${NIGHTLY_KEY_ALIAS:-androiddebugkey}"; KEY_PASS="${NIGHTLY_KEY_PASS:-android}"
-	if [[ ! -f "$KS" ]]; then
-		mkdir -p "$(dirname "$KS")"
-		keytool -genkeypair -keystore "$KS" -storepass "$KS_PASS" -keypass "$KEY_PASS" \
-			-alias "$KS_ALIAS" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" >/dev/null 2>&1
-	fi
-	"$APKSIGNER" sign --ks "$KS" --ks-key-alias "$KS_ALIAS" --ks-pass "pass:$KS_PASS" --key-pass "pass:$KEY_PASS" --out "$OUT" "$ALN"
+	# FAIL CLOSED. A throwaway-signed nightly cannot update over any rotation-signed
+	# com.armsx2 build (signature mismatch -> "App not installed"), and once published
+	# it strands every user who installs it — a certificate change can never update in
+	# place. So refuse to build rather than ship a non-updatable APK to a public release.
+	# (This is exactly how the first nightly-20260713 stranded users before the secrets
+	#  were wired up.) Provide the ROTATION_* secrets to sign; do not remove this guard.
+	echo "FATAL: ROTATION_* signing secrets not set — refusing to build a nightly that" >&2
+	echo "       would NOT install over existing com.armsx2 builds. Set ROTATION_DEBUG_KS," >&2
+	echo "       ROTATION_RELEASE_KS, ROTATION_LINEAGE, ROTATION_RELEASE_KEY_ALIAS and" >&2
+	echo "       ROTATION_RELEASE_KS_PASS (see nightly.yml secrets)." >&2
+	exit 1
 fi
 
 echo; echo "================= VERIFY ================="

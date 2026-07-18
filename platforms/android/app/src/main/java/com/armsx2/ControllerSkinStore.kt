@@ -218,6 +218,41 @@ object ControllerSkinStore {
 
     private fun clearCache() = synchronized(cache) { cache.clear() }
 
+    /** Longest edge a decoded skin image is kept at. An on-screen button never draws
+     *  larger than a few hundred px even on a high-DPI tablet, so decoding a pack's
+     *  full-resolution art (packs ship 1024–2048px PNGs) wastes memory AND frame time:
+     *  every button's bitmap is uploaded and sampled each frame, so ~15 full-res images
+     *  turn the menu and pad into a slideshow the moment a heavy skin is picked. Sampling
+     *  down to this on decode is the fix — the on-screen size is unchanged, the per-frame
+     *  cost drops by the square of the ratio. */
+    private const val MAX_DECODE_PX = 640
+
+    /** inSampleSize (a power of two) that brings the larger of [w]/[h] at or under
+     *  [MAX_DECODE_PX]. BitmapFactory only honours powers of two, so this rounds down to
+     *  one — a 2048px source decodes at 512 (sample 4), never above the cap. */
+    private fun sampleSizeFor(w: Int, h: Int): Int {
+        var sample = 1
+        var longest = maxOf(w, h)
+        while (longest / 2 >= MAX_DECODE_PX) {
+            sample *= 2
+            longest /= 2
+        }
+        return sample
+    }
+
+    /** Decode [key]'s image for the active skin, downsampled to [MAX_DECODE_PX]. Two-pass:
+     *  read the bounds (inJustDecodeBounds), then decode with the computed sample size.
+     *  [openBounds]/[openFull] return a fresh stream each — a decode consumes its stream. */
+    private fun decodeDownsampled(openBounds: () -> java.io.InputStream?, openFull: () -> java.io.InputStream?): ImageBitmap? {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        runCatching { openBounds()?.use { BitmapFactory.decodeStream(it, null, bounds) } }
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+        val opts = BitmapFactory.Options().apply { inSampleSize = sampleSizeFor(bounds.outWidth, bounds.outHeight) }
+        return runCatching {
+            openFull()?.use { BitmapFactory.decodeStream(it, null, opts)?.asImageBitmap() }
+        }.getOrNull()
+    }
+
     /** ImageBitmap for [key] from the active skin, or null to use the built-in. */
     fun bitmapForKey(ctx: Context, key: String): ImageBitmap? {
         ensureLoaded(ctx)
@@ -228,15 +263,14 @@ object ControllerSkinStore {
         val builtin = builtinFor(id)
         val bmp = if (builtin != null) {
             // Bundled skin: decode straight from app assets.
-            runCatching {
-                ctx.assets.open("${builtin.assetDir}/$fname").use {
-                    BitmapFactory.decodeStream(it)?.asImageBitmap()
-                }
-            }.getOrNull()
+            decodeDownsampled(
+                { runCatching { ctx.assets.open("${builtin.assetDir}/$fname") }.getOrNull() },
+                { runCatching { ctx.assets.open("${builtin.assetDir}/$fname") }.getOrNull() },
+            )
         } else {
             val f = File(File(root(ctx), id), fname)
             if (f.isFile)
-                runCatching { BitmapFactory.decodeFile(f.absolutePath)?.asImageBitmap() }.getOrNull()
+                decodeDownsampled({ f.inputStream() }, { f.inputStream() })
             else null
         }
         synchronized(cache) { cache[ck] = bmp }

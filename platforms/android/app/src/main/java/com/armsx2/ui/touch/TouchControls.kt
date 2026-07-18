@@ -30,6 +30,27 @@ object TouchControls {
     private const val KEY_PROFILES = "touch.profiles"
     private const val KEY_ACTIVE = "touch.active"
     private const val KEY_OPACITY = "touch.opacity"
+    // #357: pause button is now a visible top-right single-tap button; this toggles its glyph
+    // (off = invisible but still tappable). The migration key one-shot relocates the old
+    // invisible center pause hotspot to the new top-right spot for existing layouts.
+    /** Legacy show/hide pref — only read now, to seed [KEY_PAUSE_TAP_REVEAL] once. */
+    private const val KEY_SHOW_PAUSE = "touch.showPauseButton"
+    private const val KEY_PAUSE_TAP_REVEAL = "touch.pauseTapToReveal"
+    /** Pass 1 missed per-game layouts, pass 2 swept them, pass 3 moves the button inboard of the
+     *  R1/R2 column — the corner spot pass 2 used sat on top of R2. */
+    private const val KEY_PAUSE_TOPRIGHT_MIGRATED_3 = "touch.migrated.pauseTopRight3"
+
+    /** Default on-screen pause position. Inboard of the R1/R2 column rather than in the true
+     *  corner: ARMSX2 parks its shoulders far higher than NetherSX2 does (R2 at y=0.10 vs ~0.39),
+     *  so the corner belongs to R2 — at 56dp it reaches ~789dp of an ~827dp-wide screen, leaving
+     *  less room than the button needs. x=0.83 still reads as top-right, clears R2 by ~23dp, and
+     *  overlaps only the OSD text, which is what Nether's button does too. */
+    const val PAUSE_DEFAULT_X = 0.83f
+    const val PAUSE_DEFAULT_Y = 0.055f
+
+    /** On-screen size of the visible ⏸ glyph, dp. 48 = Android's minimum touch target and a
+     *  close match for the small top-right button NetherSX2 draws. */
+    const val PAUSE_DEFAULT_DP = 48f
     private const val KEY_FACE_MULTI = "touch.faceMulti"
     private const val KEY_TOUCH_GLIDING = "touch.gliding"
     private const val KEY_TOUCH_HAPTICS = "touch.haptics"
@@ -92,8 +113,35 @@ object TouchControls {
      *  profile while editing; "Save" commits it back, "Discard" reloads. */
     val activeLayout = mutableStateOf(TouchLayout.default())
 
+    // ---- Per-orientation layouts --------------------------------------------
+    // Landscape and portrait keep SEPARATE layouts. Button positions are fractions of
+    // the screen, so one set of fractions authored in landscape produces a squished mess
+    // in portrait (and editing either corrupted the other, since they shared a key). The
+    // overlay feeds [portrait] from its live size; every layout key is then suffixed by
+    // orientation. Landscape keeps the UN-suffixed key, so existing saved layouts stay put
+    // and only portrait gets a new key — no migration needed.
+    val portrait = mutableStateOf(false)
+
+    /** [baseKey] for the current orientation. Landscape is the bare key (back-compat);
+     *  portrait appends ".portrait". */
+    private fun orient(baseKey: String) = if (portrait.value) "$baseKey.portrait" else baseKey
+
+    /** Read a game layout for the current orientation: the orientation-specific key first,
+     *  then the landscape key as a SEED — so a game with only a landscape layout still
+     *  shows something in portrait, and the next Save writes the portrait key, leaving
+     *  landscape untouched. */
+    private fun readGameLayoutJson(baseKey: String): String? =
+        MainActivityRuntime.prefs.getString(orient(baseKey), null)
+            ?: MainActivityRuntime.prefs.getString(baseKey, null)
+
     /** Master opacity 0.20..1.00. Persisted. */
     val opacity = mutableFloatStateOf(0.55f)
+
+    /** #357: "tap to reveal" mode for the on-screen pause button. Off (default) = the ⏸ glyph
+     *  is always drawn top-right. On = it stays invisible until you tap its zone, which surfaces
+     *  it for a few seconds (the two-step the old settings cog used) — so hiding the button can
+     *  never lock you out of the pause menu, which a plain show/hide toggle did. Persisted. */
+    val pauseTapToReveal = mutableStateOf(false)
 
     /** When enabled, the face-button diamond has a shared hit layer so a
      *  single thumb can slide/press between Cross/Square/Circle/Triangle and
@@ -405,6 +453,11 @@ object TouchControls {
         floatingStick.value = MainActivityRuntime.prefs.getBoolean(KEY_FLOATING_STICK, false)
         visibilityMode.intValue = MainActivityRuntime.prefs.getInt(KEY_VIS_MODE, 11).coerceIn(0, 11)
         if (visibilityMode.intValue == 0) visible.value = false
+        // #357: show/hide became tap-to-reveal (inverted). Seed the new pref from the old one so
+        // anyone who had the button hidden keeps it hidden — now as tap-to-reveal, which still
+        // opens the menu. Defaults chain to false (glyph visible) for everyone else.
+        pauseTapToReveal.value = MainActivityRuntime.prefs.getBoolean(
+            KEY_PAUSE_TAP_REVEAL, !MainActivityRuntime.prefs.getBoolean(KEY_SHOW_PAUSE, true))
 
         // One-shot 2.4.7 defaults migration: existing users have saved prefs/layouts
         // that predate the new defaults (multi-touch was off, the Pressure button was
@@ -422,7 +475,57 @@ object TouchControls {
             MainActivityRuntime.prefs.edit { putBoolean(KEY_DEFAULTS_MIGRATED_247, true) }
             persist()
         }
+
+        // #357 one-shot (pass 2): the pause hotspot moved from an invisible dead-centre long-press
+        // zone to a visible top-right single-tap button. Pass 1 only rewrote the GLOBAL profiles,
+        // so every per-game / per-CRC / per-orientation layout (touch.layout.game.*, loaded lazily
+        // when a game boots) kept the old centred hotspot — and now that it draws a real glyph it
+        // landed a big ⏸ in the middle of the screen. This pass sweeps every stored layout. A
+        // widget the user deliberately moved keeps its spot; new/reset layouts get default().
+        if (!MainActivityRuntime.prefs.getBoolean(KEY_PAUSE_TOPRIGHT_MIGRATED_3, false)) {
+            for (i in profiles.indices) profiles[i] = profiles[i].copy(layout = relocatePause(profiles[i].layout))
+            activeLayout.value = relocatePause(activeLayout.value)
+
+            val storedLayouts = MainActivityRuntime.prefs.all
+                .filterKeys { it.startsWith(KEY_LAYOUT_GAME_PREFIX) }
+            if (storedLayouts.isNotEmpty()) {
+                MainActivityRuntime.prefs.edit {
+                    for ((key, value) in storedLayouts) {
+                        val raw = value as? String ?: continue
+                        val fixed = runCatching {
+                            relocatePause(TouchLayout.fromJson(JSONObject(raw))).toJson().toString()
+                        }.getOrNull() ?: continue
+                        putString(key, fixed)
+                    }
+                }
+            }
+            MainActivityRuntime.prefs.edit { putBoolean(KEY_PAUSE_TOPRIGHT_MIGRATED_3, true) }
+            persist()
+        }
     }
+
+    /** Move a legacy pause widget off a spot we shipped and out of the old hotspot size. Shared
+     *  by the one-shot migration across global profiles and every per-game layout blob. */
+    private fun relocatePause(layout: TouchLayout): TouchLayout = layout.copy(
+        buttons = layout.buttons.map {
+            if (it.id != TouchButtonId.PAUSE) return@map it
+            // Two positions we shipped and then moved off: the original invisible-hotspot spot
+            // (dead centre, terrible once it draws a real glyph), and the first top-right attempt,
+            // which landed on top of R2. Anywhere else is the user's own placement — left alone.
+            val legacyCentre = kotlin.math.abs(it.xFrac - 0.48f) < 0.10f &&
+                               kotlin.math.abs(it.yFrac - 0.50f) < 0.10f
+            val overlappedR2Corner = kotlin.math.abs(it.xFrac - 0.955f) < 0.04f &&
+                                     kotlin.math.abs(it.yFrac - 0.055f) < 0.04f
+            when {
+                legacyCentre || overlappedR2Corner ->
+                    it.copy(xFrac = PAUSE_DEFAULT_X, yFrac = PAUSE_DEFAULT_Y, sizeDp = PAUSE_DEFAULT_DP)
+                // Sized as an invisible touch target rather than an icon — shrink it to the
+                // visible default wherever the user has since dragged it to.
+                it.sizeDp > 72f -> it.copy(sizeDp = PAUSE_DEFAULT_DP)
+                else -> it
+            }
+        }
+    )
 
     private fun persist() {
         val arr = JSONArray()
@@ -438,6 +541,7 @@ object TouchControls {
                 .putFloat(KEY_DPAD_SPACING, dpadSpacing.floatValue)
                 .putBoolean(KEY_FLOATING_STICK, floatingStick.value)
                 .putInt(KEY_VIS_MODE, visibilityMode.intValue)
+                .putBoolean(KEY_PAUSE_TAP_REVEAL, pauseTapToReveal.value)
         }
         syncFolder()
     }
@@ -478,7 +582,7 @@ object TouchControls {
                 // Never touches any shared profile.
                 MainActivityRuntime.prefs.edit {
                     putString(
-                        KEY_LAYOUT_GAME_PREFIX + serial,
+                        orient(KEY_LAYOUT_GAME_PREFIX + serial),
                         activeLayout.value.toJson().toString(),
                     )
                 }
@@ -491,7 +595,7 @@ object TouchControls {
                 if (crc != null) {
                     MainActivityRuntime.prefs.edit {
                         putString(
-                            KEY_LAYOUT_GAME_PREFIX + "crc." + crc,
+                            orient(KEY_LAYOUT_GAME_PREFIX + "crc." + crc),
                             activeLayout.value.toJson().toString(),
                         )
                     }
@@ -616,7 +720,7 @@ object TouchControls {
             val crc = runCatching { NativeApp.getGameCRC() }.getOrNull()
                 ?.trim()?.uppercase()?.takeIf { it.isNotEmpty() && it != "00000000" }
             if (crc != null) {
-                val rawCrc = MainActivityRuntime.prefs.getString(KEY_LAYOUT_GAME_PREFIX + "crc." + crc, null)
+                val rawCrc = readGameLayoutJson(KEY_LAYOUT_GAME_PREFIX + "crc." + crc)
                 if (rawCrc != null) {
                     runCatching { TouchLayout.fromJson(JSONObject(rawCrc)) }.getOrNull()?.let {
                         activeProfileName.value = "Default"
@@ -628,7 +732,7 @@ object TouchControls {
             return
         }
         // (1) Per-serial custom layout.
-        val rawLayout = MainActivityRuntime.prefs.getString(KEY_LAYOUT_GAME_PREFIX + effSerial, null)
+        val rawLayout = readGameLayoutJson(KEY_LAYOUT_GAME_PREFIX + effSerial)
         if (rawLayout != null) {
             runCatching { TouchLayout.fromJson(JSONObject(rawLayout)) }.getOrNull()?.let {
                 activeProfileName.value = "Default"
@@ -671,7 +775,12 @@ object TouchControls {
      *  active/Default profile on next boot (used by the editor's Reset chip). */
     fun clearGameLayout(serial: String?) {
         if (serial == null) return
-        MainActivityRuntime.prefs.edit {remove(KEY_LAYOUT_GAME_PREFIX + serial) }
+        // Reset clears BOTH orientations for the game — a per-axis reset would be a
+        // surprise ("I reset and the other orientation kept my old layout").
+        MainActivityRuntime.prefs.edit {
+            remove(KEY_LAYOUT_GAME_PREFIX + serial)
+            remove(KEY_LAYOUT_GAME_PREFIX + serial + ".portrait")
+        }
     }
 
     /** Reset chip: only clear the running game's per-serial layout when a VM is
@@ -731,6 +840,11 @@ object TouchControls {
 
     fun setOpacity(o: Float) {
         opacity.floatValue = o.coerceIn(0.20f, 1.0f)
+        persist()
+    }
+
+    fun setPauseTapToReveal(reveal: Boolean) {
+        pauseTapToReveal.value = reveal
         persist()
     }
 
@@ -958,10 +1072,11 @@ data class TouchLayout(val buttons: List<TouchButtonCfg>) {
                 // doesn't accidentally press them).
                 TouchButtonCfg(TouchButtonId.L3,       0.18f, 0.93f, 42f),
                 TouchButtonCfg(TouchButtonId.R3,       0.82f, 0.93f, 42f),
-                // Invisible pause hotspot — dead center between the DPad
-                // (0.10) and the face diamond (0.86), on their shared row,
-                // clear of the sticks (y 0.80) and Start/Select (y 0.92).
-                TouchButtonCfg(TouchButtonId.PAUSE,    0.48f, 0.50f, 120f),
+                // Pause button (#357): visible single-tap ⏸ in the TOP-RIGHT corner, Nether-style.
+                // Small and cornered (clear of every gameplay control) so a stray tap can't hit it
+                // mid-game, and drawn transparent so it rides over the OSD without obscuring it.
+                // "Show pause button" can hide the glyph — the tap zone stays live either way.
+                TouchButtonCfg(TouchButtonId.PAUSE,    TouchControls.PAUSE_DEFAULT_X, TouchControls.PAUSE_DEFAULT_Y, TouchControls.PAUSE_DEFAULT_DP),
                 // Pressure-modifier button — tucked under the D-pad (left side),
                 // clear of the action. Hold it, then press a face/shoulder/d-pad
                 // button for a ~50% (soft) press. Movable in overlay edit mode.

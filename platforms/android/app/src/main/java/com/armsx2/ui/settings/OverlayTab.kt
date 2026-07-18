@@ -50,16 +50,51 @@ fun OverlayTab(state: MutableState<Settings>) {
             modifier = Modifier.padding(bottom = 8.dp),
         )
 
+        // All three size sliders sit together at the top. The first scales the emulator's OSD
+        // (the perf/stat readout drawn over the game); the two below scale the app's own menus.
+        // They used to be split across the tab AND shared one label key, so this slider read as
+        // "UI Size (borders)" while actually driving osdScale — two settings, one name.
         IntSliderRow(
-            label = str("overlay.uiSize.label"),
+            label = str("overlay.osdSize.label"),
             value = s.osdScale,
             min = 50,
             max = 250,
-            description = str("overlay.uiSize.description"),
+            description = str("overlay.osdSize.description"),
             valueFormatter = { "$it%" },
             onChange = { apply(s.copy(osdScale = it)) },
         )
         SettingsDivider()
+
+        // Interface scaling (global, not per-game): resize the library / menu chrome
+        // and text for different screen aspect ratios / handheld sizes. Does NOT
+        // touch the game image or the on-screen touch controls.
+        Text(
+            str("overlay.interfaceScaling.description"),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 14.sp,
+            modifier = Modifier.padding(top = 4.dp, bottom = 6.dp),
+        )
+        IntSliderRow(
+            label = str("overlay.uiSize.label"),
+            value = (UiScale.borderScale.value * 100f).toInt(),
+            min = (UiScale.MIN * 100f).toInt(),
+            max = (UiScale.BORDER_MAX * 100f).toInt(),
+            description = str("overlay.uiSize.description"),
+            valueFormatter = { "$it%" },
+            onChange = { UiScale.setBorderScale(it / 100f) },
+        )
+        SettingsDivider()
+        IntSliderRow(
+            label = str("overlay.uiFontSize.label"),
+            value = (UiScale.fontScale.value * 100f).toInt(),
+            min = (UiScale.MIN * 100f).toInt(),
+            max = (UiScale.MAX * 100f).toInt(),
+            description = str("overlay.uiFontSize.description"),
+            valueFormatter = { "$it%" },
+            onChange = { UiScale.setFontScale(it / 100f) },
+        )
+        SettingsDivider()
+
         ToggleRow(str("overlay.toggle.gpuUsage"), s.osdShowGpu) {
             apply(s.copy(osdShowGpu = it))
         }
@@ -98,35 +133,5 @@ fun OverlayTab(state: MutableState<Settings>) {
             ffToasts.value = it
             com.armsx2.runtime.MainActivityRuntime.prefs.edit { putBoolean("ui.hotkeyToasts", it) }
         }
-        SettingsDivider()
-
-        // Interface scaling (global, not per-game): resize the library / menu chrome
-        // and text for different screen aspect ratios / handheld sizes. Does NOT
-        // touch the game image or the on-screen touch controls.
-        Text(
-            str("overlay.interfaceScaling.description"),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 14.sp,
-            modifier = Modifier.padding(top = 10.dp, bottom = 6.dp),
-        )
-        IntSliderRow(
-            label = str("overlay.uiSize.label"),
-            value = (UiScale.borderScale.value * 100f).toInt(),
-            min = (UiScale.MIN * 100f).toInt(),
-            max = (UiScale.BORDER_MAX * 100f).toInt(),
-            description = str("overlay.uiSize.description"),
-            valueFormatter = { "$it%" },
-            onChange = { UiScale.setBorderScale(it / 100f) },
-        )
-        SettingsDivider()
-        IntSliderRow(
-            label = str("overlay.uiFontSize.label"),
-            value = (UiScale.fontScale.value * 100f).toInt(),
-            min = (UiScale.MIN * 100f).toInt(),
-            max = (UiScale.MAX * 100f).toInt(),
-            description = str("overlay.uiFontSize.description"),
-            valueFormatter = { "$it%" },
-            onChange = { UiScale.setFontScale(it / 100f) },
-        )
     }
 }

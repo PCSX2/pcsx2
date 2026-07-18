@@ -565,8 +565,12 @@ open class MainActivityRuntime : ComponentActivity() {
             // re-open the GS device and run Vulkan::LoadVulkanLibrary. The
             // VK loader reads the pinned path lazily so the order matters.
             val ctx = instance?.applicationContext
+            // Per-game GPU driver: pin THIS title's resolved driver (blank = system). Keep the
+            // session mirror in sync so the picker UI + delete/reselect logic stay correct.
+            val pickedId = resolved.customDriverId.takeIf { it.isNotBlank() }
+            customDriverId.value = pickedId
             val picked: com.armsx2.CustomDriver.InstalledDriver? =
-                if (ctx != null) customDriverId.value?.let { id ->
+                if (ctx != null) pickedId?.let { id ->
                     com.armsx2.CustomDriver.listInstalled(ctx).firstOrNull { it.id == id }
                 } else null
             if (ctx != null) com.armsx2.CustomDriver.applyToNative(ctx, picked)
@@ -577,6 +581,10 @@ open class MainActivityRuntime : ComponentActivity() {
                 else -> NativeApp.renderAuto()
             }
             resolved.applyTo()
+            // Per-game screen orientation: apply THIS title's rotation now that currentGame is
+            // set. requestedOrientation is an Activity property → hop to the UI thread (we're on
+            // the VM launch thread here). Reverts to global on exit-to-library (see stop()).
+            instance?.runOnUiThread { instance?.applyEmulationOrientation() }
             // #254: cache whether this title runs with the emulated USB keyboard so
             // dispatchKeyEvent can forward physical-keyboard keys to it. applyTo()
             // already pushed [USB1] Type + the live attach (usbSetKeyboardEnabled).
@@ -865,6 +873,10 @@ open class MainActivityRuntime : ComponentActivity() {
                         // lingered here and SettingsScreen's scopeContext (game ?: currentGame)
                         // kept surfacing per-game scope for it after returning to the library.
                         currentGame.value = null
+                        // No game running → revert the Activity to the GLOBAL orientation (a
+                        // per-game rotation lock must not linger in the library). currentGame is
+                        // now null so applyEmulationOrientation resolves the global value.
+                        instance?.runOnUiThread { instance?.applyEmulationOrientation() }
                         finishToLauncherIfRequested()
                     }
                 }
@@ -1548,11 +1560,14 @@ open class MainActivityRuntime : ComponentActivity() {
         }
     }
 
-    /** Apply the user's Emulation Screen Orientation choice (global, prefs "ui.orientation").
+    /** Apply the user's Emulation Screen Orientation choice, resolved per-game (∘ global).
      *  0=Use Device Setting, 1=Landscape, 2=Portrait, 3=Auto-Rotate. SENSOR_* variants let
-     *  the device still flip 180° within the locked axis. Called on launch + on change. */
+     *  the device still flip 180° within the locked axis. Called on launch, on change, at
+     *  game boot (applyRendererPrefs) and on exit-to-library — currentGame decides the tier:
+     *  a running game gets its per-game rotation, the library/menus get the global one. */
     fun applyEmulationOrientation() {
-        requestedOrientation = when (prefs.getInt("ui.orientation", 0)) {
+        val resolved = com.armsx2.config.ConfigStore.resolveForGame(currentGame.value?.settingsKey)
+        requestedOrientation = when (resolved.orientation) {
             1 -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             2 -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
             3 -> ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
@@ -1671,8 +1686,12 @@ open class MainActivityRuntime : ComponentActivity() {
         com.armsx2.config.ConfigStore.loadGlobal().let { g0 ->
             renderer.value = g0.renderer
             upscale.value = g0.upscaleFloat
+            // customDriverId/orientation now live in the Settings tier too (ConfigStore
+            // one-time-seeds them from the legacy "customDriverId"/"ui.orientation" prefs).
+            // Seed the pre-launch driver mirror from the global baseline; applyRendererPrefs
+            // re-resolves per-game at boot.
+            customDriverId.value = g0.customDriverId.takeIf { it.isNotBlank() }
         }
-        customDriverId.value = prefs.getString("customDriverId", null)?.takeIf { it.isNotEmpty() }
         surface.value = EmulationSurface(this)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = android.graphics.Color.TRANSPARENT

@@ -857,9 +857,16 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	// never use it there even when present.
 	if (m_use_push_descriptors && properties2.properties.vendorID == 0x13B5u)
 		m_use_push_descriptors = false;
-	// Adreno (Qualcomm, 0x5143): push descriptors stall on the per-draw TFX texture-rebind hot
-	// path (both Eden and Dolphin avoid them on Adreno); the descriptor-set fallback is faster.
-	if (m_use_push_descriptors && properties2.properties.vendorID == 0x5143u)
+	// Adreno (Qualcomm, 0x5143): push descriptors stall on the per-draw TFX texture-rebind
+	// hot path — but that was measured on the MESA/Turnip driver (validated on the RP6, a
+	// mid-range Adreno). On the Qualcomm PROPRIETARY driver (flagship 8-series, e.g. the
+	// Adreno 830 in Snapdragon 8 Elite) push descriptors are fine, and the descriptor-set
+	// fallback's per-draw alloc/update/bind of the 7 TFX textures is instead pure overhead
+	// that scales with draw count — a reported busy-scene regression on 8 Elite. So gate the
+	// disable on the driver: keep it for Turnip and for an UNKNOWN driver (conservative, the
+	// old behaviour), but let the proprietary driver use push descriptors.
+	if (m_use_push_descriptors && properties2.properties.vendorID == 0x5143u &&
+		m_device_driver_properties.driverID != VK_DRIVER_ID_QUALCOMM_PROPRIETARY)
 		m_use_push_descriptors = false;
 	if (!m_use_push_descriptors)
 		Console.Warning("VK: Using non-push-descriptor texture binding fallback.");
@@ -4425,7 +4432,8 @@ VkShaderModule GSDeviceVK::GetUtilityFragmentShader(const std::string& source, c
 
 bool GSDeviceVK::CreateNullTexture()
 {
-	m_null_texture = GSTextureVK::Create(GSTexture::ShaderWriteTarget, GSTexture::Format::Color, 1, 1, 1);
+	GSTexture::Usage null_usage = m_features.rov ? GSTexture::ShaderWriteTarget : GSTexture::FeedbackTarget;
+	m_null_texture = GSTextureVK::Create(null_usage, GSTexture::Format::Color, 1, 1, 1);
 	if (!m_null_texture)
 		return false;
 

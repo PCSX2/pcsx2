@@ -24,7 +24,6 @@ import com.armsx2.ui.InGameOverlay
 import com.armsx2.ui.common.SectionTitle
 import com.armsx2.ui.common.StatusChip
 import com.armsx2.ui.theme.Success
-import androidx.core.content.edit
 import com.armsx2.i18n.str
 
 @Composable
@@ -66,6 +65,8 @@ fun RendererBackendSection(state: MutableState<Settings>) {
 }
 
 private fun selectDriver(id: String?) {
+    // UI mirror; persist scope-aware (per-game when the settings scope is Game). The driver
+    // load itself happens at the next renderer (re)start via applyRendererPrefs.
     MainActivityRuntime.customDriverId.value = id
-    MainActivityRuntime.prefs.edit { putString("customDriverId", id.orEmpty()) }
+    InGameOverlay.saveSettings(InGameOverlay.settingsState.value.copy(customDriverId = id ?: ""))
 }

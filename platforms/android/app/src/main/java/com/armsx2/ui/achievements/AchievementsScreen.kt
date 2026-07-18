@@ -223,6 +223,44 @@ private fun AchievementAccount(
                     onRight = { if (!state.soundEffects) viewModel.setOption("soundEffects", true) },
                 ),
             )
+            // Achievement modes. Toggling reloads the RA session (no VM reset); the native
+            // rc_client setters already exist, so these are plain option toggles.
+            SettingSwitchRow(
+                title = str("ra.options.encoreMode"),
+                description = str("ra.options.encoreMode.desc"),
+                checked = state.encoreMode,
+                onCheckedChange = { viewModel.setOption("encoreMode", it) },
+                modifier = Modifier.controllerFocusable(
+                    "ra.encoreMode",
+                    onConfirm = { viewModel.setOption("encoreMode", !state.encoreMode) },
+                    onLeft = { if (state.encoreMode) viewModel.setOption("encoreMode", false) },
+                    onRight = { if (!state.encoreMode) viewModel.setOption("encoreMode", true) },
+                ),
+            )
+            SettingSwitchRow(
+                title = str("ra.options.spectatorMode"),
+                description = str("ra.options.spectatorMode.desc"),
+                checked = state.spectatorMode,
+                onCheckedChange = { viewModel.setOption("spectatorMode", it) },
+                modifier = Modifier.controllerFocusable(
+                    "ra.spectatorMode",
+                    onConfirm = { viewModel.setOption("spectatorMode", !state.spectatorMode) },
+                    onLeft = { if (state.spectatorMode) viewModel.setOption("spectatorMode", false) },
+                    onRight = { if (!state.spectatorMode) viewModel.setOption("spectatorMode", true) },
+                ),
+            )
+            SettingSwitchRow(
+                title = str("ra.options.unofficialTestMode"),
+                description = str("ra.options.unofficialTestMode.desc"),
+                checked = state.unofficialTestMode,
+                onCheckedChange = { viewModel.setOption("unofficialTestMode", it) },
+                modifier = Modifier.controllerFocusable(
+                    "ra.unofficialTestMode",
+                    onConfirm = { viewModel.setOption("unofficialTestMode", !state.unofficialTestMode) },
+                    onLeft = { if (state.unofficialTestMode) viewModel.setOption("unofficialTestMode", false) },
+                    onRight = { if (!state.unofficialTestMode) viewModel.setOption("unofficialTestMode", true) },
+                ),
+            )
             Surface(
                 onClick = { soundPicker.launch(arrayOf("audio/*")) },
                 modifier = Modifier.fillMaxWidth().controllerFocusable(

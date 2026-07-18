@@ -25,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,7 +50,6 @@ import java.io.BufferedInputStream
 import java.io.File
 import java.util.zip.ZipInputStream
 import kotlin.math.abs
-import androidx.core.content.edit
 
 /**
  * Renderer section of the in-game settings overlay.
@@ -144,9 +142,9 @@ fun RendererTab(state: MutableState<Settings>) {
                 onChange = { apply(s.copy(fmvAspectRatio = it)) },
             )
             SettingsDivider()
-            // Emulation Screen Orientation — global (Android activity orientation), stored
-            // in prefs and applied via Main; not an emucore/per-game setting.
-            val orientation = remember { mutableIntStateOf(MainActivityRuntime.prefs.getInt("ui.orientation", 0)) }
+            // Emulation Screen Orientation — Android activity orientation, now scope-aware
+            // (global ∘ per-game) like the rest of this tab. applyEmulationOrientation resolves
+            // the running game's value at boot and reverts to global on exit-to-library.
             SegmentedRow(
                 label = str("renderer.orientation.label"),
                 options = listOf(
@@ -155,16 +153,10 @@ fun RendererTab(state: MutableState<Settings>) {
                     str("renderer.orientation.portrait"),
                     str("renderer.orientation.autoRotate"),
                 ),
-                selectedIndex = orientation.value.coerceIn(0, 3),
+                selectedIndex = s.orientation.coerceIn(0, 3),
                 description = str("renderer.orientation.description"),
                 onChange = {
-                    orientation.value = it
-                    MainActivityRuntime.prefs.edit {
-                        putInt(
-                            "ui.orientation",
-                            it
-                        )
-                    }
+                    apply(s.copy(orientation = it))
                     MainActivityRuntime.instance?.applyEmulationOrientation()
                 },
             )

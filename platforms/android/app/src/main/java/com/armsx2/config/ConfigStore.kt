@@ -42,10 +42,14 @@ object ConfigStore {
     // One-time seed of the (now per-game) renderer/upscale fields from the legacy
     // global prefs, so updating doesn't reset everyone's backend/resolution.
     private const val KEY_RENDERER_MIGRATED = "config.migrated.rendererUpscale"
+    // One-time seed of the (now per-game) screen orientation + custom Vulkan driver from
+    // their legacy global prefs, so updating doesn't reset a user's rotation lock or GPU driver.
+    private const val KEY_ORIENTATION_DRIVER_MIGRATED = "config.migrated.orientationDriver"
     // One-time flip of existing saves to the new Adreno framebuffer-fetch default-on.
     private const val KEY_ADRENO_FBFETCH_MIGRATED = "config.migrated.adrenoFbFetchOn"
     // One-time flip of existing all-on OSD saves to the new default-off.
     private const val KEY_OSD_OFF_MIGRATED = "config.migrated.osdDefaultOff"
+    private const val KEY_OSD_SCALE_MIGRATED = "config.migrated.osdScale65"
     // One-time reconcile for the fresh-install + reused-data-folder case (people who
     // can't update in place and re-point setup at their old folder). See reconcileReusedFolder.
     private const val KEY_FOLDER_RECONCILE = "config.migrated.folderReconcile"
@@ -88,6 +92,22 @@ object ConfigStore {
             MainActivityRuntime.prefs.edit { putBoolean(KEY_RENDERER_MIGRATED, true) }
         }
 
+        // Same one-time seed for screen orientation + the custom Vulkan driver, which used
+        // to be global-only prefs ("ui.orientation" / "customDriverId"). After this they're
+        // scope-aware (global ∘ per-game) like renderer; the old prefs become vestigial.
+        if (!MainActivityRuntime.prefs.getBoolean(KEY_ORIENTATION_DRIVER_MIGRATED, false)) {
+            val legacyOrient = MainActivityRuntime.prefs.getInt("ui.orientation", 0)
+            if (legacyOrient != parsed.orientation) {
+                parsed = parsed.copy(orientation = legacyOrient)
+                dirty = true
+            }
+            MainActivityRuntime.prefs.getString("customDriverId", null)?.takeIf { it.isNotBlank() }?.let {
+                parsed = parsed.copy(customDriverId = it)
+                dirty = true
+            }
+            MainActivityRuntime.prefs.edit { putBoolean(KEY_ORIENTATION_DRIVER_MIGRATED, true) }
+        }
+
         // Adreno framebuffer-fetch is now default-on. Flip existing global saves that
         // still carry the old default-off ONCE, so updating users get the fast
         // accurate-blending path too (they can turn it back off in the Renderer tab).
@@ -120,6 +140,18 @@ object ConfigStore {
         }
         if (!MainActivityRuntime.prefs.getBoolean(KEY_OSD_OFF_MIGRATED, false)) {
             MainActivityRuntime.prefs.edit { putBoolean(KEY_OSD_OFF_MIGRATED, true) }
+        }
+
+        // OSD text now defaults to 65% (was 100%) to match NetherSX2 — at 100 the stats block eats
+        // a handheld screen. Only saves sitting on the exact old default are moved; anyone who
+        // picked their own size keeps it.
+        if (raw != null && !MainActivityRuntime.prefs.getBoolean(KEY_OSD_SCALE_MIGRATED, false) &&
+            parsed.osdScale == 100) {
+            parsed = parsed.copy(osdScale = 65)
+            dirty = true
+        }
+        if (!MainActivityRuntime.prefs.getBoolean(KEY_OSD_SCALE_MIGRATED, false)) {
+            MainActivityRuntime.prefs.edit { putBoolean(KEY_OSD_SCALE_MIGRATED, true) }
         }
 
         if (dirty) saveGlobal(parsed)

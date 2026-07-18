@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Row
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
@@ -32,9 +34,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import com.armsx2.GameInfo
 import com.armsx2.i18n.str
 import com.armsx2.navigation.SettingsCategory
@@ -213,6 +218,10 @@ fun SettingsScreen(
                 }
             }
         }
+        // Jump-to-top for long pages — a game's giant cheat list especially. Floats over the
+        // content once you're well down the page and taps smooth-scroll home. Touch affordance;
+        // controller users already get the chip-row snap-to-top + D-pad scrolling.
+        SettingsScrollTopButton(screenScroll)
         // Controller-native search overlay (own keyboard + result nav); inside ArmsBackdrop's
         // BoxScope so its keyboard can dock to the bottom edge over everything.
         SettingsSearchOverlay(this, scopeGame != null)
@@ -230,6 +239,27 @@ fun SettingsScreen(
             },
             dismissButton = { TextButton(onClick = { showReset = false }) { Text(str("action.cancel")) } },
         )
+    }
+}
+
+/** Floating "back to top" affordance for long settings pages — a game's giant cheat list is the
+ *  worst case. Reads the scroll position through a derivedStateOf so only THIS button recomposes
+ *  as you scroll (never the already-heavy page below it), and only appears once you're a good way
+ *  down. Touch-only by design: controller users reach the top via the chip-row snap + D-pad. */
+@Composable
+private fun BoxScope.SettingsScrollTopButton(scroll: ScrollState) {
+    val scope = rememberCoroutineScope()
+    // ~1.5 screenfuls down before it shows, so short pages never get a floating button.
+    val show by remember { derivedStateOf { scroll.value > 1500 } }
+    if (show) {
+        Box(Modifier.align(Alignment.BottomEnd).padding(end = 18.dp, bottom = 22.dp)) {
+            RoundAction(
+                glyph = "↑",
+                description = str("action.scrollTop"),
+                onClick = { scope.launch { scroll.animateScrollTo(0) } },
+                buttonSize = 52.dp,
+            )
+        }
     }
 }
 
