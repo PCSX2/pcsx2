@@ -432,7 +432,7 @@ bool VMManager::Internal::CPUThreadInitialize()
 		Console.Warning("Fastmem re-disabled after settings reload (area allocation previously failed)");
 	}
 
-	if (EmuConfig.Achievements.Enabled)
+	if (EmuConfig.Achievements.Enabled && !Achievements::IsActive())
 		Achievements::Initialize();
 
 	ReloadPINE();
