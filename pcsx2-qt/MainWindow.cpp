@@ -3732,8 +3732,6 @@ void MainWindow::doDiscChange(CDVD_SourceType source, const QString& path)
 		reset_system = (message.clickedButton() == reset_button);
 	}
 
-	switchToEmulationView();
-
 	g_emu_thread->changeDisc(source, path);
 	if (reset_system)
 	{
@@ -3743,6 +3741,11 @@ void MainWindow::doDiscChange(CDVD_SourceType source, const QString& path)
 		else
 			g_emu_thread->resetVM();
 	}
+
+	// We have to do this after resetting the VM, otherwise the reset would be
+	// deferred since the VM would be running, and then VMLock::~VMLock would
+	// trample the reset state with its unpause event.
+	switchToEmulationView();
 }
 
 MainWindow::VMLock MainWindow::pauseAndLockVM()
