@@ -472,6 +472,8 @@ void GSState::PushBuffer()
 	{
 		m_index = &m_index_buffers[m_used_buffers_idx];
 		m_vertex = &m_vertex_buffers[m_used_buffers_idx];
+		GSVertexBuff& vtx_buff = *m_vertex;
+		GSIndexBuff& idx_buff = *m_index;
 
 		const u32 base = m_vertex_buffers[m_current_buffer_idx].head;
 		const u32 copy_amt = m_vertex_buffers[m_current_buffer_idx].tail - base;
@@ -479,25 +481,25 @@ void GSState::PushBuffer()
 		m_vertex->tail = 0;
 
 		if (copy_amt)
-			memcpy(m_vertex->buff, &m_vertex_buffers[m_current_buffer_idx].buff[base], sizeof(GSVertex) * copy_amt);
+			memcpy(vtx_buff.buff, &m_vertex_buffers[m_current_buffer_idx].buff[base], sizeof(GSVertex) * copy_amt);
 
-		m_vertex->head = 0;
-		m_vertex->next = 0;
-		m_vertex->tail += copy_amt;
+		vtx_buff.head = 0;
+		vtx_buff.next = 0;
+		vtx_buff.tail += copy_amt;
 
 		if (copy_amt)
 		{
 			for (u32 i = 0; i < copy_amt; i++)
 			{
-				m_vertex->xy[i & 3] = m_vertex_buffers[m_current_buffer_idx].xy[((m_vertex_buffers[m_current_buffer_idx].xy_tail - copy_amt) + i) & 3];
-				m_vertex->xy_tail++;
+				vtx_buff.xy[i & 3] = m_vertex_buffers[m_current_buffer_idx].xy[((m_vertex_buffers[m_current_buffer_idx].xy_tail - copy_amt) + i) & 3];
+				vtx_buff.xy_tail++;
 
 				if (i == 0)
-					m_vertex->xyhead = m_vertex_buffers[m_current_buffer_idx].xyhead;
+					vtx_buff.xyhead = m_vertex_buffers[m_current_buffer_idx].xyhead;
 			}
 		}
 		else
-			m_vertex->xy_tail = 0;
+			vtx_buff.xy_tail = 0;
 
 		m_current_buffer_idx = m_used_buffers_idx;
 		temp_draw_rect = GSVector4i::zero();
@@ -633,21 +635,23 @@ bool GSState::CanBufferNewDraw()
 				// We found a matching draw
 				m_index = &m_index_buffers[i];
 				m_vertex = &m_vertex_buffers[i];
+				GSVertexBuff& vtx_buff = *m_vertex;
+				GSIndexBuff& idx_buff = *m_index;
 
 				const u32 copy_amt = m_vertex_buffers[m_current_buffer_idx].tail - m_vertex_buffers[m_current_buffer_idx].head;
 
-				m_recent_buffer_switch = m_vertex->tail == m_vertex->head;
-				if (m_index->tail)
-					m_vertex->tail = m_index->buff[m_index->tail - 1] + 1;
+				m_recent_buffer_switch = vtx_buff.tail == vtx_buff.head;
+				if (idx_buff.tail)
+					vtx_buff.tail = idx_buff.buff[idx_buff.tail - 1] + 1;
 				else
-					m_vertex->tail = 0;
+					vtx_buff.tail = 0;
 
 				if (copy_amt)
-					memcpy(&m_vertex->buff[m_vertex->tail], &m_vertex_buffers[m_current_buffer_idx].buff[m_vertex_buffers[m_current_buffer_idx].head], sizeof(GSVertex) * copy_amt);
+					memcpy(&vtx_buff.buff[vtx_buff.tail], &m_vertex_buffers[m_current_buffer_idx].buff[m_vertex_buffers[m_current_buffer_idx].head], sizeof(GSVertex) * copy_amt);
 
-				m_vertex->head = m_vertex->tail;
-				m_vertex->next = m_vertex->head;
-				m_vertex->tail += copy_amt;
+				vtx_buff.head = vtx_buff.tail;
+				vtx_buff.next = vtx_buff.head;
+				vtx_buff.tail += copy_amt;
 				m_backed_up_ctx = m_env_buffers[i].m_backed_up_ctx;
 				temp_draw_rect = m_env_buffers[i].draw_rect;
 				m_env_buffers[i].m_dirty_regs = 0;
@@ -663,15 +667,15 @@ bool GSState::CanBufferNewDraw()
 				{
 					for (u32 i = 0; i < copy_amt; i++)
 					{
-						m_vertex->xy[m_vertex->xy_tail & 3] = m_vertex_buffers[m_current_buffer_idx].xy[((m_vertex_buffers[m_current_buffer_idx].xy_tail - copy_amt) + i) & 3];
-						m_vertex->xy_tail++;
+						vtx_buff.xy[vtx_buff.xy_tail & 3] = m_vertex_buffers[m_current_buffer_idx].xy[((m_vertex_buffers[m_current_buffer_idx].xy_tail - copy_amt) + i) & 3];
+						vtx_buff.xy_tail++;
 
 						if (i == 0)
-							m_vertex->xyhead = m_vertex_buffers[m_current_buffer_idx].xyhead;
+							vtx_buff.xyhead = m_vertex_buffers[m_current_buffer_idx].xyhead;
 					}
 				}
 				else
-					m_vertex->xy_tail = 0;
+					vtx_buff.xy_tail = 0;
 
 				m_current_buffer_idx = i;
 
@@ -2512,11 +2516,13 @@ void GSState::FlushPrim()
 		}
 
 		GSVertex buff[2];
+		GSVertexBuff& vtx_buff = *m_vertex;
+		GSIndexBuff& idx_buff = *m_index;
 		s_n++;
 
-		const u32 head = m_vertex->head;
-		const u32 tail = m_vertex->tail;
-		const u32 next = m_vertex->next;
+		const u32 head = vtx_buff.head;
+		const u32 tail = vtx_buff.tail;
+		const u32 next = vtx_buff.next;
 		u32 unused = 0;
 
 		if (tail > head)
@@ -2530,19 +2536,19 @@ void GSState::FlushPrim()
 				case GS_LINESTRIP:
 				case GS_SPRITE:
 					unused = 1;
-					buff[0] = m_vertex->buff[tail - 1];
+					buff[0] = vtx_buff.buff[tail - 1];
 					break;
 				case GS_TRIANGLELIST:
 				case GS_TRIANGLESTRIP:
 					unused = std::min<u32>(tail - head, 2);
-					memcpy(buff, &m_vertex->buff[tail - unused], sizeof(GSVertex) * 2);
+					memcpy(buff, &vtx_buff.buff[tail - unused], sizeof(GSVertex) * 2);
 					break;
 				case GS_TRIANGLEFAN:
-					buff[0] = m_vertex->buff[head];
+					buff[0] = vtx_buff.buff[head];
 					unused = 1;
 					if (tail - 1 > head)
 					{
-						buff[1] = m_vertex->buff[tail - 1];
+						buff[1] = vtx_buff.buff[tail - 1];
 						unused = 2;
 					}
 					break;
@@ -2564,8 +2570,6 @@ void GSState::FlushPrim()
 			Console.Warning("GS: Possible invalid draw, Frame PSM %x ZPSM %x", m_context->FRAME.PSM, m_context->ZBUF.PSM);
 		}
 #endif
-		GSVertexBuff& vtx_buff = *m_vertex;
-		GSIndexBuff& idx_buff = *m_index;
 		// Update scissor, it may have been modified by a previous draw
 		m_env.CTXT[PRIM->CTXT].UpdateScissor();
 		m_vt.Update(vtx_buff.buff, idx_buff.buff, vtx_buff.tail, idx_buff.tail, GSUtil::GetPrimClass(PRIM->PRIM));
@@ -5759,10 +5763,11 @@ __inline bool GSState::CheckOverlapVerts(u32 n)
 
 		if (m_used_buffers_idx > 1)
 		{
-			const GSVertex* v = &vtx_buff.buff[0];
+			const GSVertex* RESTRICT v = &vtx_buff.buff[0];
+			const GSVector2i off_xy = GSVector2i(m_context->XYOFFSET.OFX, m_context->XYOFFSET.OFY);
 			GSVector2i cur_verts[3];
 
-			GSVector4i new_area = GSVector4i(m_v.XYZ.X - m_context->XYOFFSET.OFX, m_v.XYZ.Y - m_context->XYOFFSET.OFY).xyxy();
+			GSVector4i new_area = GSVector4i(m_v.XYZ.X - off_xy.x, m_v.XYZ.Y - off_xy.y).xyxy();
 			cur_verts[0] = GSVector2i(new_area.x, new_area.y);
 
 			for (u32 i = 0; i < (n - 1); i++)
@@ -5771,9 +5776,9 @@ __inline bool GSState::CheckOverlapVerts(u32 n)
 				
 				GSVector2i prev_vert;
 				if (m_env.PRIM.PRIM == GS_TRIANGLEFAN && i == (n - 2))
-					prev_vert = GSVector2i(v[vtx_buff.head].XYZ.X - m_context->XYOFFSET.OFX, v[vtx_buff.head].XYZ.X - m_context->XYOFFSET.OFY);
+					prev_vert = GSVector2i(v[vtx_buff.head].XYZ.X - off_xy.y, v[vtx_buff.head].XYZ.X - off_xy.y);
 				else
-					prev_vert = GSVector2i(v[pos].XYZ.X - m_context->XYOFFSET.OFX, v[pos].XYZ.Y - m_context->XYOFFSET.OFY);
+					prev_vert = GSVector2i(v[pos].XYZ.X - off_xy.x, v[pos].XYZ.Y - off_xy.y);
 
 				cur_verts[i + 1] = prev_vert;
 
@@ -5789,7 +5794,7 @@ __inline bool GSState::CheckOverlapVerts(u32 n)
 				for (u32 i = 0; i < n; i++)
 				{
 					const u32 pos = idx_buff.buff[(idx_buff.tail - n) + i];
-					const GSVector2i prev_vert = GSVector2i(v[pos].XYZ.X - m_context->XYOFFSET.OFX, v[pos].XYZ.Y - m_context->XYOFFSET.OFY);
+					const GSVector2i prev_vert = GSVector2i(v[pos].XYZ.X - off_xy.x, v[pos].XYZ.Y - off_xy.y);
 
 					for (u32 j = 0; j < n; j++)
 					{
@@ -5818,48 +5823,6 @@ __inline bool GSState::CheckOverlapVerts(u32 n)
 					return true;
 			}
 		}
-		
-		/*const GSVertex* v = &vtx_buff.buff[0];
-
-		GSVector4i new_area = GSVector4i(m_v.XYZ.X - m_context->XYOFFSET.OFX, m_v.XYZ.Y - m_context->XYOFFSET.OFY).xyxy();
-		for (u32 i = 0; i < (n - 1); i++)
-		{
-			const int pos = idx_buff.buff[(idx_buff.tail - 1) - i];
-			GSVector2i pre_vert = GSVector2i(v[pos].XYZ.X - m_context->XYOFFSET.OFX, v[pos].XYZ.Y - m_context->XYOFFSET.OFY);
-			new_area.x = std::min(new_area.x, pre_vert.x);
-			new_area.z = std::max(new_area.z, pre_vert.x);
-			new_area.y = std::min(new_area.y, pre_vert.y);
-			new_area.w = std::max(new_area.w, pre_vert.y);
-		}
-		new_area = new_area.sra32<4>();
-
-		if (new_area.rintersect(temp_draw_rect).eq(new_area))
-		{
-			const int end_pos = idx_buff.tail - (n - 1);
-			//Need to check if it's already drawn at this vector with this setup, if it has, it means one of the other draws might be drawing over it, which is a bad time for us, so best check.
-			for (int j = 0; j < end_pos; j+=n)
-			{
-				if (v[idx_buff.buff[j]].XYZ.X == m_v.XYZ.X && v[idx_buff.buff[j]].XYZ.Y == m_v.XYZ.Y)
-				{
-					int min_point = std::max(j - 2, 0);
-					int match = 0;
-
-					for (int k = min_point; k < (min_point + 5); k++)
-					{
-						if (k == j)
-							continue;
-
-						if (v[idx_buff.buff[k]].XYZ.X == v[vtx_buff.tail - 2].XYZ.X && v[idx_buff.buff[k]].XYZ.Y == v[vtx_buff.tail - 2].XYZ.Y)
-							match |= 1;
-						if (v[idx_buff.buff[k]].XYZ.X == v[vtx_buff.tail - 1].XYZ.X && v[idx_buff.buff[k]].XYZ.Y == v[vtx_buff.tail - 1].XYZ.Y)
-							match |= 2;
-					}
-
-					if (match)
-						return true;
-				}
-			}
-		}*/
 	}
 	return false;
 }
