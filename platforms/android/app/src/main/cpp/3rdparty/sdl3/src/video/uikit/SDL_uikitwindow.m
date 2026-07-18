@@ -202,6 +202,13 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
                                 "Initial geometry request failed: %s",
                                 [[error localizedDescription] UTF8String]);
                 }];
+#else
+                // initWithWindowScene: inherits the scene's frame, which iOS
+                // launches in the first plist orientation (portrait). Match
+                // SDL 3.3.0's initWithFrame:screen.bounds behaviour so the
+                // window fills the screen at creation regardless of the
+                // scene's initial orientation.
+                uiwindow.frame = data.uiscreen.bounds;
 #endif
             }
         }
