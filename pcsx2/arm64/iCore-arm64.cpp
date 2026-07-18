@@ -336,6 +336,16 @@ int _allocArm64GPR(int type, int reg, int mode)
 	if (type == ARM64TYPE_GPR || type == ARM64TYPE_PSX)
 		pxAssertMsg(reg >= 0 && reg < 34, "Register index out of bounds.");
 
+	// GE-M2 I1, enforced at the CREATION site: a pinned guest reg's lower 64
+	// bits live in its mirror register, so it must never get a scalar
+	// ARM64TYPE_GPR home — under the resident-ALU templates the slot would
+	// persist while pin-preferring readers (_eeGetGPRSourceReg) keep serving
+	// the stale mirror (the UYA unaligned-load corruption, 2026-07-17).
+	// _validateRegs checks the same invariant but only runs at XMM-template
+	// entry; this catches the offender in its own backtrace.
+	if (type == ARM64TYPE_GPR)
+		pxAssertMsg(!armEEPinForGPR(reg), "allocating scalar slot for pinned guest reg (GE-M2 I1)");
+
 	int hostNEONreg = (type == ARM64TYPE_GPR) ? _checkNEONreg(NEONTYPE_GPRREG, reg, 0) : -1;
 
 	// Check if already allocated

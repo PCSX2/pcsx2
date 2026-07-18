@@ -1059,6 +1059,36 @@ void recSWC1()
 //  (no C call on the fast path), avoiding a full FLUSH_INTERPRETER eviction.
 // =====================================================================================================
 
+// Resolve Rt's 64-bit read-modify-write home for the unaligned-load merges.
+//
+// A pinned Rt must NOT get an allocator slot (GE-M2 I1): under the
+// resident-ALU templates the slot persists past this op, and pin-preferring
+// readers (_eeGetGPRSourceReg — every scalar-template ALU consumer) keep
+// serving the PRE-load mirror value until the next seam writes the slot back
+// through the pin (the UYA unaligned-load corruption, 2026-07-17). Instead the
+// merge targets the pin itself: it already holds the current lower 64 (a live
+// 128-bit home or pending const is reconciled into it first), and under
+// lazy-dirty writing the pin IS the guest write — every seam flushes all pins.
+//
+// Unpinned Rt keeps the allocator slot. MODE_READ|MODE_WRITE (not WRITE-only)
+// for both the fill (the merge's old-value bits) and the prior-dual-residence
+// reconciliation — see the fusion-path comment below (the Black boot hang).
+static vixl::aarch64::Register eeUnalignedRtWriteHome()
+{
+	if (const a64::Register* pin = armEEPinForGPR(_Rt_))
+	{
+		// A live 128-bit home is authoritative over the pin; its writeback
+		// (armStoreEEGPRQuad) refreshes lane 0 into the mirror. A pending
+		// const materializes into the pin via _flushConstReg.
+		_deleteGPRtoNEONreg(_Rt_, DELETE_REG_FREE);
+		if (GPR_IS_CONST1(_Rt_))
+			_flushConstReg(_Rt_);
+		GPR_DEL_CONST(_Rt_);
+		return *pin;
+	}
+	return armXRegister(_allocArm64GPR(ARM64TYPE_GPR, _Rt_, MODE_READ | MODE_WRITE));
+}
+
 // Inline LWL/LWR codegen. Mirrors x86 recLWL/recLWR (ix86-32/iR5900LoadStore.cpp).
 //
 //   addr    = Rs + imm
@@ -1116,14 +1146,14 @@ static void recUnalignedWord(bool is_lwl)
 
 	armAsm->Mov(armWRegister(memTemp), a64::w0);                       // park loaded (x0 unsafe across Rt alloc)
 
-	const int rt = _allocArm64GPR(ARM64TYPE_GPR, _Rt_, MODE_READ | MODE_WRITE);
+	const a64::Register rt = eeUnalignedRtWriteHome();
 
 	if (is_lwl)
 	{
 		// mask = 0xffffff >> shift8
 		armAsm->Mov(RWSCRATCH, 0xffffff);
 		armAsm->Lsr(RWSCRATCH, RWSCRATCH, armWRegister(shift8));
-		armAsm->And(armWRegister(rt), armWRegister(rt), RWSCRATCH);
+		armAsm->And(rt.W(), rt.W(), RWSCRATCH);
 
 		// shifted_loaded = loaded << (24 - shift8); reuse RWSCRATCH as shift amount.
 		armAsm->Mov(RWSCRATCH, 24);
@@ -1131,8 +1161,8 @@ static void recUnalignedWord(bool is_lwl)
 		armAsm->Lsl(armWRegister(memTemp), armWRegister(memTemp), RWSCRATCH);
 
 		// Merge and sign-extend the 32-bit result into the 64-bit guest reg.
-		armAsm->Orr(armWRegister(rt), armWRegister(rt), armWRegister(memTemp));
-		armAsm->Sxtw(armXRegister(rt), armWRegister(rt));
+		armAsm->Orr(rt.W(), rt.W(), armWRegister(memTemp));
+		armAsm->Sxtw(rt, rt.W());
 	}
 	else
 	{
@@ -1144,18 +1174,18 @@ static void recUnalignedWord(bool is_lwl)
 		armAsm->Sub(RWSCRATCH, RWSCRATCH, armWRegister(shift8));
 		armAsm->Mov(RSCRATCHADDR.W(), 0xffffff00u);
 		armAsm->Lsl(RSCRATCHADDR.W(), RSCRATCHADDR.W(), RWSCRATCH);
-		armAsm->And(RWSCRATCH, armWRegister(rt), RSCRATCHADDR.W());
+		armAsm->And(RWSCRATCH, rt.W(), RSCRATCHADDR.W());
 
 		armAsm->Lsr(armWRegister(memTemp), armWRegister(memTemp), armWRegister(shift8));
 		armAsm->Orr(armWRegister(memTemp), armWRegister(memTemp), RWSCRATCH);
 
 		// Per interp: when shift8 != 0, only Rt[31:0] changes; upper 32 preserved.
-		armAsm->Bfi(armXRegister(rt), armXRegister(memTemp), 0, 32);
+		armAsm->Bfi(rt, armXRegister(memTemp), 0, 32);
 		armAsm->B(&done);
 
 		// shift8 == 0 (aligned): straight sign-extend, full 64-bit overwrite.
 		armAsm->Bind(&nomask);
-		armAsm->Sxtw(armXRegister(rt), armWRegister(memTemp));
+		armAsm->Sxtw(rt, armWRegister(memTemp));
 
 		armAsm->Bind(&done);
 	}
@@ -1309,8 +1339,8 @@ static void recUnalignedLoadDouble(bool is_ldl)
 			const int memTemp = _allocArm64GPR(ARM64TYPE_TEMP, 0, 0);
 			vtlbFastmemRead(9, 0, 64, false);                 // mem -> x0
 			armAsm->Mov(armXRegister(memTemp), a64::x0);       // park (x0 unsafe across Rt alloc)
-			const int rt = _allocArm64GPR(ARM64TYPE_GPR, _Rt_, MODE_READ | MODE_WRITE);
-			armAsm->Mov(armXRegister(rt), armXRegister(memTemp));
+			const a64::Register rt = eeUnalignedRtWriteHome();
+			armAsm->Mov(rt, armXRegister(memTemp));
 			_freeArm64GPR(memTemp);
 			g_eeUnalignedFused = true;
 			g_eeUnalignedFuseCount++;
@@ -1345,7 +1375,7 @@ static void recUnalignedLoadDouble(bool is_ldl)
 
 	armAsm->Mov(armXRegister(memTemp), a64::x0);                       // park mem (x0 unsafe across Rt alloc)
 
-	const int rt = _allocArm64GPR(ARM64TYPE_GPR, _Rt_, MODE_READ | MODE_WRITE);
+	const a64::Register rt = eeUnalignedRtWriteHome();
 
 	a64::Label special, done;
 	armAsm->Cmp(armWRegister(sTemp), is_ldl ? 7 : 0);
@@ -1363,7 +1393,7 @@ static void recUnalignedLoadDouble(bool is_ldl)
 		armAsm->Add(RXSCRATCH, RXSCRATCH, 8);                         // shift8 + 8
 		armAsm->Mov(RSCRATCHADDR, UINT64_C(0xFFFFFFFFFFFFFFFF));
 		armAsm->Lsr(RSCRATCHADDR, RSCRATCHADDR, RXSCRATCH);
-		armAsm->And(armXRegister(rt), armXRegister(rt), RSCRATCHADDR);
+		armAsm->And(rt, rt, RSCRATCHADDR);
 	}
 	else
 	{
@@ -1375,14 +1405,14 @@ static void recUnalignedLoadDouble(bool is_ldl)
 		// mask: Rt & (~0 << (64 - shift8))
 		armAsm->Mov(RXSCRATCH, UINT64_C(0xFFFFFFFFFFFFFFFF));
 		armAsm->Lsl(RXSCRATCH, RXSCRATCH, RSCRATCHADDR);
-		armAsm->And(armXRegister(rt), armXRegister(rt), RXSCRATCH);
+		armAsm->And(rt, rt, RXSCRATCH);
 	}
 
-	armAsm->Orr(armXRegister(rt), armXRegister(rt), armXRegister(memTemp));
+	armAsm->Orr(rt, rt, armXRegister(memTemp));
 	armAsm->B(&done);
 
 	armAsm->Bind(&special);
-	armAsm->Mov(armXRegister(rt), armXRegister(memTemp));              // Rt = mem
+	armAsm->Mov(rt, armXRegister(memTemp));                            // Rt = mem
 
 	armAsm->Bind(&done);
 	_freeArm64GPR(memTemp);

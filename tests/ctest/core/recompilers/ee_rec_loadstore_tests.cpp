@@ -483,6 +483,93 @@ TEST(EeRecLoadStore, LdlLdrFusionLdlFirst)
 	EXPECT_GT(g_eeUnalignedFuseCount, before) << "LDL+LDR pair should have fused";
 }
 
+// ── Unaligned loads into PINNED guest regs, consumed in-block ────────────────
+//
+// Regression tests for the 2026-07-17 UYA corruption: the unaligned-load
+// handlers allocated a scalar slot for Rt even when Rt is pinned (GE-M2 I1
+// violation). The merge result then lived in the slot while the pin kept the
+// PRE-load value — and pin-preferring readers (_eeGetGPRSourceReg, i.e. every
+// resident-template ALU op) consumed the stale pin until the next seam
+// reconciled it. The fusion tests above load into $v0 but never consume it
+// in-block, so the tail flush hid the bug; the ALU consume here is what makes
+// the stale window observable.
+
+TEST(EeRecLoadStore, LdrIntoPinnedTier1ThenAluConsume)
+{
+	// Unfused single LDR (shift != 0) into pinned $v0, consumed by DADDU.
+	EeRecTestHarness h;
+	h.WriteU64(kScratch + 0, 0x77665544332211CCull);
+	h.SetGpr64(reg::t3, kScratch);
+	h.SetGpr64(reg::v0, 0xDEADBEEFCAFEBABEull);
+	vtlb_ClearLoadStoreInfo();
+	h.LoadProgram({
+		ee::LDR(reg::v0, 1, reg::t3),
+		ee::DADDU(reg::t0, reg::v0, reg::zero),
+	});
+	h.Run();
+	// LDR @1: Rt = (mem >> 8) | (Rt & (~0 << 56))
+	h.ExpectGpr64(reg::v0, 0xDE77665544332211ull);
+	h.ExpectGpr64(reg::t0, 0xDE77665544332211ull);
+}
+
+TEST(EeRecLoadStore, LdlLdrFusedIntoPinnedTier2ThenAluConsume)
+{
+	// Fused LDL/LDR pair into pinned tier-2 $s0, consumed by ADDU.
+	EeRecTestHarness h;
+	h.WriteU64(kScratch + 0, 0x77665544332211CCull);
+	h.WriteU64(kScratch + 8, 0x00000000FFEEDD88ull);
+	h.SetGpr64(reg::t3, kScratch);
+	h.SetGpr64(reg::s0, 0x0123456789ABCDEFull);
+	vtlb_ClearLoadStoreInfo();
+	const u32 before = g_eeUnalignedFuseCount;
+	h.LoadProgram({
+		ee::LDL(reg::s0, 8, reg::t3),
+		ee::LDR(reg::s0, 1, reg::t3),
+		ee::DADDU(reg::t1, reg::s0, reg::zero),
+	});
+	h.Run();
+	h.ExpectGpr64(reg::s0, 0x8877665544332211ull);
+	h.ExpectGpr64(reg::t1, 0x8877665544332211ull);
+	EXPECT_GT(g_eeUnalignedFuseCount, before) << "LDL+LDR pair should have fused";
+}
+
+TEST(EeRecLoadStore, LwlIntoPinnedThenAluConsume)
+{
+	// LWL (shift 1) into pinned $a0, consumed by ADDU.
+	EeRecTestHarness h;
+	h.WriteU32(kScratch + 0, 0x44332211u);
+	h.SetGpr64(reg::t3, kScratch);
+	h.SetGpr64(reg::a0, 0x00000000000000EEull);
+	vtlb_ClearLoadStoreInfo();
+	h.LoadProgram({
+		LWL(reg::a0, 1, reg::t3),
+		ADDU(reg::t2, reg::a0, reg::zero),
+	});
+	h.Run();
+	// LWL @1: Rt = sext32((Rt & 0x00ffff) | (loaded << 16)) = 0x221100EE
+	h.ExpectGpr64(reg::a0, 0x00000000221100EEull);
+	h.ExpectGpr64(reg::t2, 0x00000000221100EEull);
+}
+
+TEST(EeRecLoadStore, LwrIntoPinnedPreservesUpper32ThenAluConsume)
+{
+	// LWR with shift != 0 preserves Rt[63:32] — the pinned home must keep its
+	// upper half through the partial merge.
+	EeRecTestHarness h;
+	h.WriteU32(kScratch + 0, 0x44332211u);
+	h.SetGpr64(reg::a1, 0xAABBCCDD00000000ull);
+	h.SetGpr64(reg::t3, kScratch);
+	vtlb_ClearLoadStoreInfo();
+	h.LoadProgram({
+		LWR(reg::a1, 1, reg::t3),
+		ee::DADDU(reg::t2, reg::a1, reg::zero),
+	});
+	h.Run();
+	// LWR @1: Rt[31:0] = (Rt & 0xff000000) | (loaded >> 8); upper 32 preserved.
+	h.ExpectGpr64(reg::a1, 0xAABBCCDD00443322ull);
+	h.ExpectGpr64(reg::t2, 0xAABBCCDD00443322ull);
+}
+
 TEST(EeRecLoadStore, LdlLdrNoFusionWhenRtMismatch)
 {
 	// Different Rt on the two halves: not a pair, must NOT fuse. Run()'s auto-diff
