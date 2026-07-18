@@ -700,6 +700,38 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)());
 // iCOP2-arm64.cpp). Called from recResetRaw before any block compiles.
 void cop2RecWritePackConstants();
 
+// EP-2b: compile-time VF/ACC residency cache for hand-rolled COP2 macro ops
+// (defined in iCOP2-arm64.cpp — see the header comment there for the design
+// and the seam policy). The cache lives in q16..q20 for the duration of runs
+// of cache-aware COP2 ops within one block.
+struct Cop2VfCacheState
+{
+	struct
+	{
+		s8 vf;
+		bool dirty;
+		u32 lastUse;
+	} slot[5];
+	u32 tick;
+};
+void cop2VfCacheReset();                              // block start: clear state (no emission)
+void cop2VfCacheFlush();                              // emit dirty writebacks + invalidate
+Cop2VfCacheState cop2VfCacheGetState();               // fork-tail peek support
+void cop2VfCacheSetState(const Cop2VfCacheState&);
+bool cop2OpPreservesVfCache(u32 code);                // classifier for recompileNextInstruction
+
+// RAII: preserve the compile-time cache state across a branch-fork tail
+// (SetBranchImm/SetBranchImmCall/SetBranchReg) whose iFlushCall destructively
+// flushes — the sibling fork must re-emit its own writebacks from the same
+// pre-tail state, since the cached values stay register-resident along every
+// runtime path.
+struct Cop2VfCacheScope
+{
+	Cop2VfCacheState state;
+	Cop2VfCacheScope() : state(cop2VfCacheGetState()) {}
+	~Cop2VfCacheScope() { cop2VfCacheSetState(state); }
+};
+
 // COP2 macro-mode microVU0 state setup/teardown (defined in microVU-arm64.cpp).
 // Mirrors x86 setupMacroOp/endMacroOp's regAlloc reset, microVU0.cop2 = 1,
 // prog.IRinfo.curPC/info[0] init, code = cpuRegs.code, and flag scaffolding.

@@ -524,6 +524,11 @@ constexpr u32 VCLIP_C2  (u32 ft, u32 fs) { return COP2_FMAC(0, 0x07, fs, ft, 0x3
 constexpr u32 VMULAw_C2 (u32 mask_xyzw, u32 fs, u32 ft) { return COP2_FMAC(mask_xyzw, 0x06, fs, ft, 0x3F); }
 constexpr u32 VMULAx_C2 (u32 mask_xyzw, u32 fs, u32 ft) { return COP2_FMAC(mask_xyzw, 0x06, fs, ft, 0x3C); }
 constexpr u32 VMULAy_C2 (u32 mask_xyzw, u32 fs, u32 ft) { return COP2_FMAC(mask_xyzw, 0x06, fs, ft, 0x3D); }
+
+// VMADDAx/y — broadcast multiply-accumulate into ACC (ACC += fs * ft.bc).
+// SPEC2 sub-op 0x02, funct 0x3C/0x3D (SPECIAL2 indices 0x08/0x09).
+constexpr u32 VMADDAx_C2(u32 mask_xyzw, u32 fs, u32 ft) { return COP2_FMAC(mask_xyzw, 0x02, fs, ft, 0x3C); }
+constexpr u32 VMADDAy_C2(u32 mask_xyzw, u32 fs, u32 ft) { return COP2_FMAC(mask_xyzw, 0x02, fs, ft, 0x3D); }
 constexpr u32 VMULAz_C2 (u32 mask_xyzw, u32 fs, u32 ft) { return COP2_FMAC(mask_xyzw, 0x06, fs, ft, 0x3E); }
 
 // COP2-CO SPECIAL2 (LowerOP2 trampolines via SPEC1 funct 0x3C..0x3F).
@@ -554,6 +559,9 @@ constexpr u32 VSQD_C2(u32 mask_xyzw, u32 fs, u32 it) { return COP2_SPEC2(mask_xy
 // VMFIR : VF[ft].mask = sign_extend(VI[is]).
 // VILWR : VI[it]      = Mem[VI[is] * 16].lane (mask picks lane).
 // VISWR : Mem[VI[is] * 16].lane = VI[it] (interp _Is_ = addr base, _It_ = value).
+// VMOVE — SPEC2 group, sa=0x0C, funct=0x3C (SPECIAL2 index 0x30): VF[ft].mask = VF[fs].
+constexpr u32 VMOVE_C2(u32 mask_xyzw, u32 ft, u32 fs) { return COP2_SPEC2(mask_xyzw, ft, fs, 0x0C, 0x3C); }
+
 constexpr u32 VMTIR_C2(u32 fsf,        u32 it, u32 fs) { return COP2_SPEC2(fsf & 0x3,    it, fs, 0x0F, 0x3C); }
 constexpr u32 VMFIR_C2(u32 mask_xyzw,  u32 ft, u32 is) { return COP2_SPEC2(mask_xyzw,    ft, is, 0x0F, 0x3D); }
 constexpr u32 VILWR_C2(u32 mask_xyzw,  u32 it, u32 is) { return COP2_SPEC2(mask_xyzw,    it, is, 0x0F, 0x3E); }

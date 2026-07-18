@@ -1984,4 +1984,200 @@ TEST(EeVu0SyncThin, LargeDeltaPassesThroughBothVariants)
 	}
 }
 
+// =========================================================================
+//  EP-2b: VF/ACC residency cache across consecutive hand-rolled COP2 ops
+//
+//  The hand-rolled macro FMAC bodies keep VF operands and ACC resident in
+//  q16-q20 across runs of cache-aware COP2 ops (iCOP2-arm64.cpp). These
+//  tests pin the coherence corners: dirty forwarding within a chain, ACC
+//  chain coalescing, merge-into-cached-dirty dest masks, invalidation when
+//  a non-whitelisted op writes VF behind the cache's back (QMTC2, VCALLMS
+//  micro), flush-before-read for QMFC2, and per-fork writeback when a COP2
+//  op sits in a branch delay slot. All run the full JIT-vs-interp post-state
+//  diff — the interpreter has no cache, so any missed writeback/invalidate
+//  shows up as a state divergence.
+// =========================================================================
+
+TEST(EeVu0Cop2VfCache, VfReuseAndDirtyForwarding)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, 1.0f, 2.0f, 3.0f, 4.0f);
+	h.SeedVu0Vf(2, 5.0f, 6.0f, 7.0f, 8.0f);
+	h.LoadProgram({
+		VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2), // f3 = (6,8,10,12), dirty
+		VMUL_C2(mask_xyzw, /*fd*/4, /*fs*/3, /*ft*/1), // reads cached-dirty f3
+		VSUB_C2(mask_xyzw, /*fd*/5, /*fs*/4, /*ft*/3), // reads both dirty regs
+	});
+	h.Run();
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(4, 'x'), 6.0f);   // 6*1
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(4, 'w'), 48.0f);  // 12*4
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(5, 'x'), 0.0f);   // 6-6
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(5, 'w'), 36.0f);  // 48-12
+}
+
+TEST(EeVu0Cop2VfCache, AccChainCoalesced)
+{
+	// VMULAx / VMADDAx round-trip ACC through the dedicated cache slot; the
+	// final VMADDx consumes it into a VF. The interp diff catches any lost
+	// intermediate ACC state.
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, 1.0f, 2.0f, 3.0f, 4.0f);
+	h.SeedVu0Vf(2, 10.0f, 0.0f, 0.0f, 0.0f);
+	h.SeedVu0Acc(999.0f, 999.0f, 999.0f, 999.0f); // must be fully overwritten
+	h.LoadProgram({
+		VMULAx_C2(mask_xyzw, /*fs*/1, /*ft*/2),        // ACC = f1*10 = (10,20,30,40)
+		VMADDAx_C2(mask_xyzw, /*fs*/1, /*ft*/2),       // ACC += f1*10 = (20,40,60,80)
+		VMADDx_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2), // f3 = ACC + f1*10 = (30,60,90,120)
+	});
+	h.Run();
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'x'), 30.0f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'w'), 120.0f);
+}
+
+TEST(EeVu0Cop2VfCache, MaskedWriteMergesIntoCachedDirty)
+{
+	// Full write caches f3 dirty; the xy-masked VSUB must merge into the
+	// CACHED value (not stale memory), and the zw lanes must survive.
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, 1.0f, 2.0f, 3.0f, 4.0f);
+	h.SeedVu0Vf(2, 5.0f, 6.0f, 7.0f, 8.0f);
+	h.LoadProgram({
+		VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2),      // f3 = (6,8,10,12)
+		VSUB_C2(0xC /*xy*/, /*fd*/3, /*fs*/2, /*ft*/1),     // f3.xy = (4,4); zw kept
+	});
+	h.Run();
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'x'), 4.0f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'y'), 4.0f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'z'), 10.0f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'w'), 12.0f);
+}
+
+TEST(EeVu0Cop2VfCache, QmfcReadsFlushedDirtyVf)
+{
+	// QMFC2 reads VF memory raw — the classifier flush must write the dirty
+	// cached f3 back before the read.
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, 1.0f, 2.0f, 3.0f, 4.0f);
+	h.SeedVu0Vf(2, 5.0f, 6.0f, 7.0f, 8.0f);
+	h.LoadProgram({
+		VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2), // f3 = (6,8,10,12), dirty
+		QMFC2(reg::t0, /*fs*/3),
+	});
+	h.Run();
+	// t0 low 64 = lanes x,y as raw bits
+	const u64 expect = (u64(0x41000000) << 32) | 0x40C00000; // y=8.0f | x=6.0f
+	EXPECT_EQ(h.GetGpr64Jit(reg::t0), expect);
+}
+
+TEST(EeVu0Cop2VfCache, QmtcInvalidatesCachedVf)
+{
+	// QMTC2 writes VF memory behind the cache's back; the following VADD
+	// must consume the NEW value, not a stale cached copy.
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, 1.0f, 2.0f, 3.0f, 4.0f);
+	h.SeedVu0Vf(2, 5.0f, 6.0f, 7.0f, 8.0f);
+	h.SetGpr128(reg::t0, 0x42C8000042C80000ull, 0x42C8000042C80000ull); // 100.0f x4
+	h.LoadProgram({
+		VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2), // f3 cached dirty
+		QMTC2(reg::t0, /*fs*/3),                       // f3 = (100,100,100,100)
+		VADD_C2(mask_xyzw, /*fd*/4, /*fs*/3, /*ft*/1), // must see 100s
+	});
+	h.Run();
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(4, 'x'), 101.0f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(4, 'w'), 104.0f);
+}
+
+TEST(EeVu0Cop2VfCache, BranchDelaySlotWritebackTakenPath)
+{
+	// A COP2 op in a taken-branch delay slot populates the cache inside the
+	// fork; the fork's tail must emit its own writeback. The interp diff
+	// catches a lost f3.
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, 1.0f, 2.0f, 3.0f, 4.0f);
+	h.SeedVu0Vf(2, 5.0f, 6.0f, 7.0f, 8.0f);
+	h.LoadProgram({
+		BEQ(reg::zero, reg::zero, 2),                  // always taken, skips the ADDIU
+		VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2), // delay slot: f3 dirty in-fork
+		ADDIU(reg::t1, reg::zero, 5),                  // squashed by the taken branch
+		ADDIU(reg::t2, reg::zero, 7),                  // branch target
+	});
+	h.Run();
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'x'), 6.0f);
+	EXPECT_EQ(h.GetGpr64Jit(reg::t1), 0u);
+	EXPECT_EQ(h.GetGpr64Jit(reg::t2), 7u);
+}
+
+TEST(EeVu0Cop2VfCache, BranchDelaySlotWritebackFallthroughPath)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(1, 1.0f, 2.0f, 3.0f, 4.0f);
+	h.SeedVu0Vf(2, 5.0f, 6.0f, 7.0f, 8.0f);
+	h.LoadProgram({
+		BNE(reg::zero, reg::zero, 2),                  // never taken
+		VADD_C2(mask_xyzw, /*fd*/3, /*fs*/1, /*ft*/2), // delay slot: f3 dirty in-fork
+		ADDIU(reg::t1, reg::zero, 5),                  // executed on fall-through
+		ADDIU(reg::t2, reg::zero, 7),
+	});
+	h.Run();
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'w'), 12.0f);
+	EXPECT_EQ(h.GetGpr64Jit(reg::t1), 5u);
+	EXPECT_EQ(h.GetGpr64Jit(reg::t2), 7u);
+}
+
+TEST(EeVu0Cop2VfCache, VmoveSelfMoveIsANoop)
+{
+	// VMOVE fx,fx with fx UNCACHED: the no-fill dest claim must not let the
+	// source lookup hit the just-claimed (uninitialized) slot — f3 must be
+	// bit-exactly preserved.
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(3, 1.5f, -2.5f, 3.5f, -4.5f);
+	h.LoadProgram({
+		VMOVE_C2(mask_xyzw, /*ft*/3, /*fs*/3),
+		VADD_C2(mask_xyzw, /*fd*/4, /*fs*/3, /*ft*/3), // consume f3 through the cache
+	});
+	h.Run();
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'x'), 1.5f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(3, 'w'), -4.5f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(4, 'y'), -5.0f);
+}
+
+TEST(EeVu0Cop2VfCache, VcallmsInvalidatesCachedVfAndDrainSeesFreshValue)
+{
+	// A COP2 op caches vf2 pre-kick; VCALLMS runs a micro that rewrites vf2;
+	// the next COP2 op (carrying the FINISH mark) must drain the micro and
+	// read the FRESH vf2 from memory, never the stale cached copy.
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vi(REG_VPU_STAT, 0);
+	h.SeedVu0Vf(1,  2.0f,  2.0f,  2.0f,  2.0f);
+	h.SeedVu0Vf(2, 32.0f, 32.0f, 32.0f, 32.0f); // stale; micro rewrites to 4.0
+	SeedPendingMicroDoubling(h, /*vf_dst*/2, /*vf_src*/1);
+	h.LoadProgram({
+		VADD_C2(mask_xyzw, /*fd*/9, /*fs*/2, /*ft*/2),  // caches pre-kick vf2: f9 = 64s
+		VCALLMS(0),
+		VADD_C2(mask_xyzw, /*fd*/10, /*fs*/2, /*ft*/2), // drains micro, must see vf2 = 4
+	});
+	h.Run();
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(9, 'x'), 64.0f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(2, 'x'), 4.0f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(10, 'x'), 8.0f);
+}
+
 } // namespace recompiler_tests

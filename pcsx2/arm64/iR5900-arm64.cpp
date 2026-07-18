@@ -641,6 +641,13 @@ static void recError(u32 error)
 
 void iFlushCall(int flushtype)
 {
+	// EP-2b: the COP2 VF residency cache lives in caller-saved q16-q20 and
+	// never survives a C-call seam — write back dirty slots and invalidate
+	// before anything else. Every block tail also funnels through here; the
+	// SetBranch* fork tails restore the compile-time state afterwards
+	// (Cop2VfCacheScope) so each fork emits its own writebacks.
+	cop2VfCacheFlush();
+
 	// Free caller-saved registers
 	for (int i = 0; i < NUM_ARM_GPR_REGS; i++)
 	{
@@ -1228,6 +1235,7 @@ static void emitCycleUpdateAndEventCheck()
 
 void SetBranchReg(EEBranchRegMode mode, u32 call_return_pc)
 {
+	const Cop2VfCacheScope vfCacheScope; // fork tail: preserve compile-time cache state
 	g_branch = 1;
 
 	// Flush all GPR/NEON/constant allocations FIRST, while host registers
@@ -1334,6 +1342,7 @@ void SetBranchReg(EEBranchRegMode mode, u32 call_return_pc)
 
 void SetBranchImm(u32 imm)
 {
+	const Cop2VfCacheScope vfCacheScope; // fork tail: preserve compile-time cache state
 	g_branch = 1;
 	pxAssert(imm);
 
@@ -1387,6 +1396,7 @@ void SetBranchImmCall(u32 imm, u32 return_pc)
 		return;
 	}
 
+	const Cop2VfCacheScope vfCacheScope; // fork tail: preserve compile-time cache state
 	g_branch = 1;
 	pxAssert(imm);
 
@@ -1436,9 +1446,11 @@ static GPR_reg64 s_savedConstRegs[32];
 static u32 s_savedHasConstReg, s_savedFlushedConstReg;
 static u32 s_savedBlockCycles;
 static EEINST* s_savedInstInfo;
+static Cop2VfCacheState s_savedVfCache;
 
 void SaveBranchState()
 {
+	s_savedVfCache = cop2VfCacheGetState();
 	s_savedBlockCycles = s_nBlockCycles;
 	memcpy(s_savedConstRegs, g_cpuConstRegs, sizeof(g_cpuConstRegs));
 	s_savedHasConstReg = g_cpuHasConstReg;
@@ -1450,6 +1462,7 @@ void SaveBranchState()
 
 void LoadBranchState()
 {
+	cop2VfCacheSetState(s_savedVfCache);
 	s_nBlockCycles = s_savedBlockCycles;
 	memcpy(g_cpuConstRegs, s_savedConstRegs, sizeof(g_cpuConstRegs));
 	g_cpuHasConstReg = s_savedHasConstReg;
@@ -1524,6 +1537,14 @@ void recompileNextInstruction(bool delayslot, bool swapped_delay_slot)
 	EEINST* old_inst_info = g_pCurInstInfo;
 
 	cpuRegs.code = memRead32(pc);
+
+	// EP-2b: default-flush seam — any op that is not a cache-aware
+	// hand-rolled COP2 macro op kills the VF residency cache (dirty
+	// writebacks emit here, before the op's own code). Whitelist over
+	// blocklist: an emitter this policy doesn't know about can never
+	// corrupt or be corrupted by the cache.
+	if (!cop2OpPreservesVfCache(cpuRegs.code))
+		cop2VfCacheFlush();
 
 	if (!delayslot)
 	{
@@ -2682,6 +2703,7 @@ static void recRecompile(const u32 startpc)
 		s_pCurBlockEx = recBlocks.New(HWADDR(startpc), block_fnptr);
 
 	g_branch = 0;
+	cop2VfCacheReset();
 
 	s_pCurBlock->SetFnptr(block_fnptr);
 	s_nBlockCycles = 0;

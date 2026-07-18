@@ -74,28 +74,190 @@ alignas(16) static const u32 s_cop2DestMasks[16][4] = {
 //  VF register load/store helpers
 // ========================================================================
 
-// Load VU0.VF[reg] into NEON Q register
-static void cop2LoadVF(const a64::VRegister& qreg, int vfReg)
+// ========================================================================
+//  EP-2b: compile-time VF/ACC residency cache for hand-rolled COP2 macro ops
+// ========================================================================
+// The hand-rolled macro FMAC bodies used to round-trip every operand and
+// result through VU0 memory (2 q-loads + 1-2 q-stores per op). Consecutive
+// COP2 macro ops in a block reuse a small set of VF registers plus ACC, so a
+// tiny compile-time cache keeps them resident in q16..q20 and the op bodies
+// compute 3-operand NEON straight from the cache registers.
+//
+// Register choice: q16-q26 have no fixed user in EE-block emission context
+// (q0-q7 = allocator temp/FPR first-fit + vtlb data + mVU macro window,
+// q8/q9 = pinned FPU clamp constants, q10-q15 = allocator GPR-quad/FPR homes,
+// q27/q28 = VOPMULA/VCLIP + flag-body scratch, q29-q31 = per-op scratch).
+// They are caller-saved and NOT preserved by the fastmem fault thunk (which
+// only saves allocator-tracked regs), so the cache must never survive any op
+// that can reach a C call or a fastmem access — which the seam policy below
+// guarantees. The one structural overlap is the EE allocator's FPR/FPACC/TEMP
+// *fallback* range (first-fit reaches q16+ only when q0-q15 minus q8/q9 are
+// all live): cop2VfCacheClaimSlot() evicts any allocator residency from the
+// claimed host reg before use.
+//
+// Seam policy (who kills the cache):
+//  - recompileNextInstruction flushes the cache for every op that is NOT a
+//    cache-aware hand-rolled COP2 op (cop2OpPreservesVfCache) — covers the
+//    mVU-reuse wrappers, transfers, VDIV-family raw lane reads, VCALLMS,
+//    LQC2/SQC2, MMI/FPU, branches, everything unknown.
+//  - iFlushCall flushes (covers the conditional-VU0-sync C calls inside
+//    whitelisted ops — emitted BEFORE the runtime Tbz, so the writebacks sit
+//    on the unconditional path — and every block tail, which all run
+//    iFlushCall(FLUSH_EVERYTHING)).
+//  - SetBranchImm/SetBranchImmCall/SetBranchReg snapshot the compile-time
+//    state around their body and restore it: each branch fork's tail emits
+//    its own writebacks (the values stay register-resident along both
+//    runtime paths), and the sibling fork re-emits its own.
+//  - SaveBranchState/LoadBranchState snapshot/restore the state so a
+//    per-fork delay-slot COP2 op can't leak residency into the other fork.
+//
+// Dirty values are written back on eviction, flush, and fork tails. VF0 is
+// never written by the dest-mask paths (hardware read-only), so its slot is
+// always clean and the frequent VF0 operand loads become cache hits.
+
+// Cop2VfCacheState is declared in iR5900-arm64.h (branch emitters snapshot it).
+static constexpr int kCop2VfCacheSlots = 5;
+static constexpr int kCop2VfCacheFirstQ = 16; // q16..q20
+static constexpr int kCop2VfCacheACC = 32;    // pseudo VF index for ACC
+static_assert(std::size(Cop2VfCacheState{}.slot) == kCop2VfCacheSlots);
+
+static Cop2VfCacheState s_cop2VfCache;
+
+static a64::VRegister cop2VfSlotReg(int slot)
 {
-	armAsm->Ldr(qreg, armVU0Mem(&VU0.VF[vfReg]));
+	return a64::VRegister(kCop2VfCacheFirstQ + slot, 128);
 }
 
-// Store NEON Q register to VU0.VF[reg]
-static void cop2StoreVF(const a64::VRegister& qreg, int vfReg)
+static a64::MemOperand cop2VfHome(int vf)
 {
-	armAsm->Str(qreg, armVU0Mem(&VU0.VF[vfReg]));
+	return (vf == kCop2VfCacheACC) ? armVU0Mem(&VU0.ACC) : armVU0Mem(&VU0.VF[vf]);
 }
 
-// Load VU0.ACC into NEON Q register
-static void cop2LoadACC(const a64::VRegister& qreg)
+void cop2VfCacheReset()
 {
-	armAsm->Ldr(qreg, armVU0Mem(&VU0.ACC));
+	for (auto& s : s_cop2VfCache.slot)
+	{
+		s.vf = -1;
+		s.dirty = false;
+		s.lastUse = 0;
+	}
+	s_cop2VfCache.tick = 0;
 }
 
-// Store NEON Q register to VU0.ACC
-static void cop2StoreACC(const a64::VRegister& qreg)
+Cop2VfCacheState cop2VfCacheGetState()
 {
-	armAsm->Str(qreg, armVU0Mem(&VU0.ACC));
+	return s_cop2VfCache;
+}
+
+void cop2VfCacheSetState(const Cop2VfCacheState& state)
+{
+	s_cop2VfCache = state;
+}
+
+// Emit writebacks for dirty slots WITHOUT touching compile-time state.
+// Used by flush; fork tails get the same effect via GetState/SetState
+// around the destructive flush inside iFlushCall.
+static void cop2VfCacheEmitWritebacks()
+{
+	for (int i = 0; i < kCop2VfCacheSlots; i++)
+	{
+		if (s_cop2VfCache.slot[i].vf >= 0 && s_cop2VfCache.slot[i].dirty)
+			armAsm->Str(cop2VfSlotReg(i), cop2VfHome(s_cop2VfCache.slot[i].vf));
+	}
+}
+
+void cop2VfCacheFlush()
+{
+	cop2VfCacheEmitWritebacks();
+	for (auto& s : s_cop2VfCache.slot)
+	{
+		s.vf = -1;
+		s.dirty = false;
+	}
+}
+
+static int cop2VfCacheLookup(int vf)
+{
+	for (int i = 0; i < kCop2VfCacheSlots; i++)
+	{
+		if (s_cop2VfCache.slot[i].vf == vf)
+		{
+			s_cop2VfCache.slot[i].lastUse = ++s_cop2VfCache.tick;
+			return i;
+		}
+	}
+	return -1;
+}
+
+// Claim a slot for `vf`: reuse its existing slot, else evict the LRU victim
+// (emitting the victim's writeback if dirty) and detach any EE-allocator
+// residency from the host reg (the FPR/FPACC/TEMP fallback range overlaps —
+// see the header comment). fill=true loads the current memory value into the
+// slot; full-overwrite writers pass fill=false.
+static int cop2VfCacheClaimSlot(int vf, bool fill)
+{
+	int slot = cop2VfCacheLookup(vf);
+	if (slot < 0)
+	{
+		slot = 0;
+		for (int i = 1; i < kCop2VfCacheSlots; i++)
+		{
+			if (s_cop2VfCache.slot[i].vf < 0)
+			{
+				slot = i;
+				break;
+			}
+			if (s_cop2VfCache.slot[slot].vf >= 0 &&
+				s_cop2VfCache.slot[i].lastUse < s_cop2VfCache.slot[slot].lastUse)
+				slot = i;
+		}
+
+		if (s_cop2VfCache.slot[slot].vf >= 0 && s_cop2VfCache.slot[slot].dirty)
+			armAsm->Str(cop2VfSlotReg(slot), cop2VfHome(s_cop2VfCache.slot[slot].vf));
+
+		// Structural guard: evict any allocator residency from the host reg
+		// (writes back a live FPR/temp if the fallback path ever placed one
+		// here; a no-op in practice).
+		_freeNEONreg(kCop2VfCacheFirstQ + slot);
+
+		s_cop2VfCache.slot[slot].vf = static_cast<s8>(vf);
+		s_cop2VfCache.slot[slot].dirty = false;
+		s_cop2VfCache.slot[slot].lastUse = ++s_cop2VfCache.tick;
+		if (fill)
+			armAsm->Ldr(cop2VfSlotReg(slot), cop2VfHome(vf));
+	}
+	return slot;
+}
+
+// Fetch VF[vf] (or ACC via kCop2VfCacheACC) as a READ-ONLY operand register.
+// Cache hit: the resident slot reg, no emission. Miss: allocates a slot and
+// loads it (same 1-insn cost as the old direct Ldr; later uses are free).
+// Callers must NEVER write the returned register — compute 3-operand into
+// scratch instead.
+static a64::VRegister cop2GetVF(int vf)
+{
+	return cop2VfSlotReg(cop2VfCacheClaimSlot(vf, true));
+}
+
+static a64::VRegister cop2GetACC()
+{
+	return cop2GetVF(kCop2VfCacheACC);
+}
+
+// Copy VF[vf] into `qreg` for bodies that must mutate the value in place
+// (saturated FTOI, VMOVE): cache hit costs a Mov instead of a Ldr; a miss
+// loads memory directly WITHOUT claiming a slot, so the cost never exceeds
+// the old direct load.
+static void cop2LoadVFViaCache(const a64::VRegister& qreg, int vf)
+{
+	const int slot = cop2VfCacheLookup(vf);
+	if (slot >= 0)
+	{
+		if (qreg.GetCode() != cop2VfSlotReg(slot).GetCode())
+			armAsm->Mov(qreg.V16B(), cop2VfSlotReg(slot).V16B());
+	}
+	else
+		armAsm->Ldr(qreg, cop2VfHome(vf));
 }
 
 // ========================================================================
@@ -137,37 +299,82 @@ static void cop2StoreSingleLane(const a64::VRegister& result, const void* base, 
 	armAsm->St1(result.V4S(), lane, a64::MemOperand(RSCRATCHADDR));
 }
 
-static void cop2ApplyDestMaskExplicit(int fdReg, int xyzw)
+// Pick the register an op should compute its (to-be-clamped) result into: for
+// a full-mask write to a non-zero fd, that is fd's cache slot itself — claimed
+// no-fill up front so the arithmetic lands in place and the dest-mask step
+// emits NOTHING (a singleton write costs exactly the old direct store, paid at
+// the next seam's writeback). Everything else computes into RQSCRATCH.
+// Invariant: call this AFTER fetching the op's cache operands; the ≤4 distinct
+// claims per op (fs, ft, ACC, fd) never evict each other with 5 slots.
+static a64::VRegister cop2ResultReg(int fdReg, int xyzw)
+{
+	if (xyzw == 0xF && fdReg != 0)
+		return cop2VfSlotReg(cop2VfCacheClaimSlot(fdReg, /*fill=*/false));
+	return RQSCRATCH;
+}
+
+static a64::VRegister cop2ResultRegACC(int xyzw)
 {
 	if (xyzw == 0xF)
+		return cop2VfSlotReg(cop2VfCacheClaimSlot(kCop2VfCacheACC, /*fill=*/false));
+	return RQSCRATCH;
+}
+
+// Write the (clamped) result in `result` into VF[fd] under the dest mask,
+// cache-aware: the value lands in (or merges into) fd's cache slot instead of
+// memory, marked dirty for writeback at the next seam. When `result` came
+// from cop2ResultReg it already IS the slot — the full-mask path then only
+// marks dirty. Single-lane writes to an UNCACHED fd stay write-through —
+// allocating (fill load + Ins) would cost more than today's 1-2 insn lane
+// store.
+static void cop2ApplyDestMaskExplicit(int fdReg, int xyzw,
+	const a64::VRegister& result = RQSCRATCH)
+{
+	if (xyzw == 0 || fdReg == 0)
+		return; // VF0 is hardware read-only; all dest-mask writes drop
+
+	if (xyzw == 0xF)
 	{
-		if (fdReg != 0)
-			cop2StoreVF(RQSCRATCH, fdReg);
+		const int slot = cop2VfCacheClaimSlot(fdReg, /*fill=*/false);
+		if (result.GetCode() != cop2VfSlotReg(slot).GetCode())
+			armAsm->Mov(cop2VfSlotReg(slot).V16B(), result.V16B());
+		s_cop2VfCache.slot[slot].dirty = true;
 		return;
 	}
 
-	if (xyzw == 0)
-		return;
-
-	if (fdReg == 0)
-		return;
-
-	// Single-lane fast path: one 32-bit lane store (1-2 insns) instead of
-	// the ~6-insn load-VF + mask-load + BSL + store merge below. Single-lane
-	// dest masks are common in macro COP2 code.
+	// Single-lane fast path: one lane insert into a cached fd, or the 1-2 insn
+	// direct lane store when uncached.
 	const int lane = cop2SingleLaneFromMask(xyzw);
 	if (lane >= 0)
 	{
-		cop2StoreSingleLane(RQSCRATCH, &VU0.VF[fdReg], lane);
+		const int slot = cop2VfCacheLookup(fdReg);
+		if (slot >= 0)
+		{
+			armAsm->Ins(cop2VfSlotReg(slot).V4S(), lane, result.V4S(), lane);
+			s_cop2VfCache.slot[slot].dirty = true;
+			return;
+		}
+		cop2StoreSingleLane(result, &VU0.VF[fdReg], lane);
 		return;
 	}
 
-	cop2LoadVF(RQSCRATCH3, fdReg);
-
+	// Partial mask: when fd is RESIDENT, merge into the cached value and keep
+	// the merge in the slot (hit: 3 insns vs the old 4, plus dirty
+	// coalescing). When fd is NOT cached, stay write-through — allocating
+	// here costs an extra insn (fill + merge + Mov + deferred store) over the
+	// old load/merge/store shape.
+	const int slot = cop2VfCacheLookup(fdReg);
 	armAsm->Ldr(RQSCRATCH2, armCpuRegMem(&_cpuRegistersPack.cop2Rec.destMasks[xyzw]));
-
-	armAsm->Bsl(RQSCRATCH2.V16B(), RQSCRATCH.V16B(), RQSCRATCH3.V16B());
-	cop2StoreVF(RQSCRATCH2, fdReg);
+	if (slot >= 0)
+	{
+		armAsm->Bsl(RQSCRATCH2.V16B(), result.V16B(), cop2VfSlotReg(slot).V16B());
+		armAsm->Mov(cop2VfSlotReg(slot).V16B(), RQSCRATCH2.V16B());
+		s_cop2VfCache.slot[slot].dirty = true;
+		return;
+	}
+	armAsm->Ldr(RQSCRATCH3, armVU0Mem(&VU0.VF[fdReg]));
+	armAsm->Bsl(RQSCRATCH2.V16B(), result.V16B(), RQSCRATCH3.V16B());
+	armAsm->Str(RQSCRATCH2, armVU0Mem(&VU0.VF[fdReg]));
 }
 
 static void cop2ApplyDestMask(int fdReg)
@@ -177,33 +384,46 @@ static void cop2ApplyDestMask(int fdReg)
 
 static void cop2ApplyDestMaskACCExplicit(const a64::VRegister& result, int xyzw)
 {
-	if (xyzw == 0xF)
-	{
-		cop2StoreACC(result);
-		return;
-	}
-
 	if (xyzw == 0)
 		return;
 
-	// Single-lane fast path — mirrors cop2ApplyDestMaskExplicit; stores
-	// straight from `result`, so the Mov-to-RQSCRATCH below is skipped too.
+	if (xyzw == 0xF)
+	{
+		const int slot = cop2VfCacheClaimSlot(kCop2VfCacheACC, /*fill=*/false);
+		if (result.GetCode() != cop2VfSlotReg(slot).GetCode())
+			armAsm->Mov(cop2VfSlotReg(slot).V16B(), result.V16B());
+		s_cop2VfCache.slot[slot].dirty = true;
+		return;
+	}
+
+	// Single-lane fast path — mirrors cop2ApplyDestMaskExplicit.
 	const int lane = cop2SingleLaneFromMask(xyzw);
 	if (lane >= 0)
 	{
+		const int slot = cop2VfCacheLookup(kCop2VfCacheACC);
+		if (slot >= 0)
+		{
+			armAsm->Ins(cop2VfSlotReg(slot).V4S(), lane, result.V4S(), lane);
+			s_cop2VfCache.slot[slot].dirty = true;
+			return;
+		}
 		cop2StoreSingleLane(result, &VU0.ACC, lane);
 		return;
 	}
 
-	if (result.GetCode() != RQSCRATCH.GetCode())
-		armAsm->Mov(RQSCRATCH.V16B(), result.V16B());
-
-	cop2LoadACC(RQSCRATCH3);
-
+	// Partial mask — same resident-only policy as the VF variant above.
+	const int slot = cop2VfCacheLookup(kCop2VfCacheACC);
 	armAsm->Ldr(RQSCRATCH2, armCpuRegMem(&_cpuRegistersPack.cop2Rec.destMasks[xyzw]));
-
-	armAsm->Bsl(RQSCRATCH2.V16B(), RQSCRATCH.V16B(), RQSCRATCH3.V16B());
-	cop2StoreACC(RQSCRATCH2);
+	if (slot >= 0)
+	{
+		armAsm->Bsl(RQSCRATCH2.V16B(), result.V16B(), cop2VfSlotReg(slot).V16B());
+		armAsm->Mov(cop2VfSlotReg(slot).V16B(), RQSCRATCH2.V16B());
+		s_cop2VfCache.slot[slot].dirty = true;
+		return;
+	}
+	armAsm->Ldr(RQSCRATCH3, armVU0Mem(&VU0.ACC));
+	armAsm->Bsl(RQSCRATCH2.V16B(), result.V16B(), RQSCRATCH3.V16B());
+	armAsm->Str(RQSCRATCH2, armVU0Mem(&VU0.ACC));
 }
 
 static void cop2ApplyDestMaskACC(const a64::VRegister& result)
@@ -259,28 +479,20 @@ void cop2RecWritePackConstants()
 	st.denormStatusFlag = 0;
 }
 
-// Clamp RQSCRATCH to [-FLT_MAX, +FLT_MAX] (removes infinities and NaNs)
-// FMINNM/FMAXNM match x86 MINPS/MAXPS semantics: NaN → non-NaN operand.
-static void cop2ClampResult()
+// Clamp the result register to [-FLT_MAX, +FLT_MAX] (removes infinities and
+// NaNs). FMINNM/FMAXNM match x86 MINPS/MAXPS semantics: NaN → non-NaN operand.
+static void cop2ClampResultReg(const a64::VRegister& result)
 {
 	armAsm->Ldr(RQSCRATCH2, armCpuRegMem(&_cpuRegistersPack.cop2Rec.maxFloat));
 	armAsm->Ldr(RQSCRATCH3, armCpuRegMem(&_cpuRegistersPack.cop2Rec.minFloat));
 
-	armAsm->Fminnm(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); // clamp to +FLT_MAX
-	armAsm->Fmaxnm(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH3.V4S()); // clamp to -FLT_MAX
+	armAsm->Fminnm(result.V4S(), result.V4S(), RQSCRATCH2.V4S()); // clamp to +FLT_MAX
+	armAsm->Fmaxnm(result.V4S(), result.V4S(), RQSCRATCH3.V4S()); // clamp to -FLT_MAX
 }
 
-// Clamp an arbitrary operand register `qreg` to [-FLT_MAX, +FLT_MAX], using
-// tmpHi/tmpLo to hold the ±FLT_MAX bounds. Input-operand variant of
-// cop2ClampResult — used to pre-clamp an FMAC operand before the arithmetic
-// (matching x86 mVU's cFs/cFt operand clamps) rather than clamping the result.
-static void cop2ClampReg(const a64::VRegister& qreg,
-	const a64::VRegister& tmpHi, const a64::VRegister& tmpLo)
+static void cop2ClampResult()
 {
-	armAsm->Ldr(tmpHi, armCpuRegMem(&_cpuRegistersPack.cop2Rec.maxFloat));
-	armAsm->Ldr(tmpLo, armCpuRegMem(&_cpuRegistersPack.cop2Rec.minFloat));
-	armAsm->Fminnm(qreg.V4S(), qreg.V4S(), tmpHi.V4S());
-	armAsm->Fmaxnm(qreg.V4S(), qreg.V4S(), tmpLo.V4S());
+	cop2ClampResultReg(RQSCRATCH);
 }
 
 // Single-temp variant of cop2ClampReg: clamps `qreg` to [-FLT_MAX, +FLT_MAX]
@@ -295,17 +507,16 @@ static void cop2ClampRegOneTmp(const a64::VRegister& qreg, const a64::VRegister&
 	armAsm->Fmaxnm(qreg.V4S(), qreg.V4S(), tmp.V4S()); // clamp to -FLT_MAX
 }
 
-// Pre-clamp the broadcast-MUL operands per mVU_FMACa: (_XYZW_PS)?(cFs|cFt):cFs.
-// cFs (clamp Fs) is applied on every mask; cFt (clamp the broadcast Ft) only
-// when all four lanes are active. Fs is in RQSCRATCH, the already-broadcast Ft
-// in RQSCRATCH2, RQSCRATCH3 is the scratch. This catches operand overflow before
-// it propagates through the multiply (TOTA, Disgaea, Ice Age on VU0), instead of
-// only clamping the product afterward.
-static void cop2EmitMulInputClamp()
+// Non-destructive clamp: dst = clamp(src) without modifying src (which may be
+// a live VF-cache register). Same 4-insn cost as cop2ClampRegOneTmp — the
+// first Fminnm is 3-operand, so preserving src is free.
+static void cop2ClampInto(const a64::VRegister& dst, const a64::VRegister& src,
+	const a64::VRegister& tmp)
 {
-	cop2ClampRegOneTmp(RQSCRATCH, RQSCRATCH3); // cFs (every mask)
-	if (_XYZW_cop2 == 0xf)
-		cop2ClampRegOneTmp(RQSCRATCH2, RQSCRATCH3); // cFt (full mask only)
+	armAsm->Ldr(tmp, armCpuRegMem(&_cpuRegistersPack.cop2Rec.maxFloat));
+	armAsm->Fminnm(dst.V4S(), src.V4S(), tmp.V4S());
+	armAsm->Ldr(tmp, armCpuRegMem(&_cpuRegistersPack.cop2Rec.minFloat));
+	armAsm->Fmaxnm(dst.V4S(), dst.V4S(), tmp.V4S());
 }
 
 // ========================================================================
@@ -316,30 +527,29 @@ static void cop2EmitMulInputClamp()
 //   fp_max(a,b) = both_neg ? min_s32(a,b) : max_s32(a,b)
 // Implemented as: selection = CMGT(a,b) XOR both_neg_mask, then BSL.
 //
-// Expects: RQSCRATCH = a (from VF[fs]), RQSCRATCH2 = b (from VF[ft] or broadcast)
+// Operands `a` and `b` are READ-ONLY (cache regs or scratch copies) and must
+// not alias RQSCRATCH/RQSCRATCH3.
 // Result: RQSCRATCH = fp_max(a, b) or fp_min(a, b)
-// Clobbers: RQSCRATCH, RQSCRATCH2 preserved, RQSCRATCH3 used as scratch.
+// Clobbers: RQSCRATCH, RQSCRATCH3; a and b preserved (which also removes the
+// old reload-of-a before the BSL — the selector no longer destroys it).
 
-static void cop2EmitIntegerMax(int fsReg)
+static void cop2EmitIntegerMax(const a64::VRegister& a, const a64::VRegister& b)
 {
-	// q30=a, q31=b, q29=scratch
-	armAsm->And(RQSCRATCH3.V16B(), RQSCRATCH.V16B(), RQSCRATCH2.V16B()); // both_neg test
+	armAsm->And(RQSCRATCH3.V16B(), a.V16B(), b.V16B());                  // both_neg test
 	armAsm->Sshr(RQSCRATCH3.V4S(), RQSCRATCH3.V4S(), 31);                // broadcast sign → mask
-	armAsm->Cmgt(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S());    // a > b (signed int)
+	armAsm->Cmgt(RQSCRATCH.V4S(), a.V4S(), b.V4S());                     // a > b (signed int)
 	armAsm->Eor(RQSCRATCH.V16B(), RQSCRATCH.V16B(), RQSCRATCH3.V16B());  // selection = CMGT XOR both_neg
-	cop2LoadVF(RQSCRATCH3, fsReg);                                         // reload a into q29
-	armAsm->Bsl(RQSCRATCH.V16B(), RQSCRATCH3.V16B(), RQSCRATCH2.V16B()); // sel ? a : b
+	armAsm->Bsl(RQSCRATCH.V16B(), a.V16B(), b.V16B());                   // sel ? a : b
 }
 
-static void cop2EmitIntegerMin(int fsReg)
+static void cop2EmitIntegerMin(const a64::VRegister& a, const a64::VRegister& b)
 {
 	// Same as max but BSL operands swapped: sel ? b : a
-	armAsm->And(RQSCRATCH3.V16B(), RQSCRATCH.V16B(), RQSCRATCH2.V16B());
+	armAsm->And(RQSCRATCH3.V16B(), a.V16B(), b.V16B());
 	armAsm->Sshr(RQSCRATCH3.V4S(), RQSCRATCH3.V4S(), 31);
-	armAsm->Cmgt(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S());
+	armAsm->Cmgt(RQSCRATCH.V4S(), a.V4S(), b.V4S());
 	armAsm->Eor(RQSCRATCH.V16B(), RQSCRATCH.V16B(), RQSCRATCH3.V16B());
-	cop2LoadVF(RQSCRATCH3, fsReg);
-	armAsm->Bsl(RQSCRATCH.V16B(), RQSCRATCH2.V16B(), RQSCRATCH3.V16B()); // sel ? b : a
+	armAsm->Bsl(RQSCRATCH.V16B(), b.V16B(), a.V16B());                   // sel ? b : a
 }
 
 // ========================================================================
@@ -477,9 +687,12 @@ static bool cop2MacFlagLive()
 // cop2Rec.denormStatusFlag scratch, whose live/dead protocol is documented at
 // endMacroOp_arm64 — a dead op may skip the scratch RMW because the next live
 // op re-seeds the scratch from VU0.VI[REG_STATUS_FLAG].
-// xyzw = dest field mask (which lanes were written).
+// xyzw = dest field mask (which lanes were written); `result` is the register
+// holding the op's result (RQSCRATCH, or a VF-cache slot from cop2ResultReg —
+// slot results skip the q28 save/restore since the extraction never clobbers
+// them).
 // Uses RQSCRATCH2, RQSCRATCH3 as temporaries.
-static void cop2EmitFlagUpdate(int xyzw)
+static void cop2EmitFlagUpdate(int xyzw, const a64::VRegister& result = RQSCRATCH)
 {
 	const bool statusLive = cop2StatusFlagLive();
 	const bool macLive = cop2MacFlagLive();
@@ -487,20 +700,24 @@ static void cop2EmitFlagUpdate(int xyzw)
 	if (xyzw == 0 || (!statusLive && !macLive))
 		return;
 
-	// Save result — flag extraction clobbers NEON scratch registers
-	// Use q28 to preserve the result while extracting flags from it
+	// When the result sits in RQSCRATCH the extraction below would clobber it
+	// (RQSCRATCH doubles as the lane-pack weight scratch) — park it in q28.
+	// A VF-cache-slot result needs no parking: the extraction only READS it.
+	const bool park = (result.GetCode() == RQSCRATCH.GetCode());
 	a64::VRegister savedResult = a64::VRegister(28, 128);
-	armAsm->Mov(savedResult.V16B(), RQSCRATCH.V16B());
+	if (park)
+		armAsm->Mov(savedResult.V16B(), result.V16B());
+	const a64::VRegister& src = park ? savedResult : result;
 
 	// --- Extract sign bits from result ---
 	// CMLT produces all-1s per lane if negative. armEmitPackLaneBits expects
 	// all-1s/0 lanes (no Ushr needed) — AND-with-weights gives back the weight
 	// when the lane is set and 0 otherwise.
-	armAsm->Cmlt(RQSCRATCH2.V4S(), savedResult.V4S(), 0);
+	armAsm->Cmlt(RQSCRATCH2.V4S(), src.V4S(), 0);
 
 	// --- Extract zero bits ---
 	// FCMEQ produces all-1s per lane if == 0.0
-	armAsm->Fcmeq(RQSCRATCH3.V4S(), savedResult.V4S(), 0);
+	armAsm->Fcmeq(RQSCRATCH3.V4S(), src.V4S(), 0);
 
 	// --- Pack 4 lane bits into GPR in PS2 MAC flag order ---
 	// PS2 MAC flag: bit0=W, bit1=Z, bit2=Y, bit3=X (reverse of NEON lane order
@@ -550,8 +767,9 @@ static void cop2EmitFlagUpdate(int xyzw)
 		armAsm->Str(RWSCRATCH, armCpuRegMem(&_cpuRegistersPack.cop2Rec.denormStatusFlag));
 	}
 
-	// Restore result to RQSCRATCH for subsequent cop2ApplyDestMask
-	armAsm->Mov(RQSCRATCH.V16B(), savedResult.V16B());
+	// Restore a parked result to RQSCRATCH for subsequent cop2ApplyDestMask
+	if (park)
+		armAsm->Mov(RQSCRATCH.V16B(), savedResult.V16B());
 }
 
 // ========================================================================
@@ -1049,8 +1267,17 @@ void recCOP2_VMOVE()
 	const int xyzw = _XYZW_cop2;
 	if (xyzw == 0) return;
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
-	cop2ApplyDestMask(_Ft_cop2);
+	// VMOVE fx,fx moves a value onto itself — architecturally a no-op for any
+	// dest mask. It must ALSO bail here for cache correctness: cop2ResultReg
+	// claims ft no-fill, and with fs == ft the ViaCache lookup below would hit
+	// that just-claimed (uninitialized) slot and skip the load.
+	if (_Fs_cop2 == _Ft_cop2) return;
+
+	const a64::VRegister src = cop2GetVF(_Fs_cop2);
+	const a64::VRegister rd = cop2ResultReg(_Ft_cop2, _XYZW_cop2);
+	if (rd.GetCode() != src.GetCode())
+		armAsm->Mov(rd.V16B(), src.V16B());
+	cop2ApplyDestMaskExplicit(_Ft_cop2, _XYZW_cop2, rd);
 }
 
 // VMR32: rotate VF[fs] lanes right by one, store to VF[ft] (masked)
@@ -1063,11 +1290,12 @@ void recCOP2_VMR32()
 	const int xyzw = _XYZW_cop2;
 	if (xyzw == 0) return;
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
+	const a64::VRegister fs = cop2GetVF(_Fs_cop2);
+	const a64::VRegister rd = cop2ResultReg(_Ft_cop2, _XYZW_cop2);
 	// EXT rotates: target lane order is [y,z,w,x] from [x,y,z,w]
 	// That's a left rotation by 1 lane = EXT #4 (4 bytes)
-	armAsm->Ext(RQSCRATCH.V16B(), RQSCRATCH.V16B(), RQSCRATCH.V16B(), 4);
-	cop2ApplyDestMask(_Ft_cop2);
+	armAsm->Ext(rd.V16B(), fs.V16B(), fs.V16B(), 4);
+	cop2ApplyDestMaskExplicit(_Ft_cop2, _XYZW_cop2, rd);
 }
 
 // VNOP: no operation. Still consumes the analysis sync mark: x86 syncs every
@@ -1094,9 +1322,10 @@ void recCOP2_VABS()
 	const int xyzw = _XYZW_cop2;
 	if (xyzw == 0) return;
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
-	armAsm->Fabs(RQSCRATCH.V4S(), RQSCRATCH.V4S());
-	cop2ApplyDestMask(_Ft_cop2);
+	const a64::VRegister src = cop2GetVF(_Fs_cop2);
+	const a64::VRegister rd = cop2ResultReg(_Ft_cop2, _XYZW_cop2);
+	armAsm->Fabs(rd.V4S(), src.V4S());
+	cop2ApplyDestMaskExplicit(_Ft_cop2, _XYZW_cop2, rd);
 }
 
 // ========================================================================
@@ -1109,12 +1338,13 @@ void recCOP2_VADD()
 	if (_Fd_cop2 == 0 && _XYZW_cop2 == 0) return;
 	setupMacroOp_arm64(0x110);
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
-	cop2LoadVF(RQSCRATCH2, _Ft_cop2);
-	armAsm->Fadd(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S());
-	cop2ClampResult();
-	cop2EmitFlagUpdate(_XYZW_cop2);
-	cop2ApplyDestMask(_Fd_cop2);
+	const a64::VRegister fs = cop2GetVF(_Fs_cop2);
+	const a64::VRegister ft = cop2GetVF(_Ft_cop2);
+	const a64::VRegister rd = cop2ResultReg(_Fd_cop2, _XYZW_cop2);
+	armAsm->Fadd(rd.V4S(), fs.V4S(), ft.V4S());
+	cop2ClampResultReg(rd);
+	cop2EmitFlagUpdate(_XYZW_cop2, rd);
+	cop2ApplyDestMaskExplicit(_Fd_cop2, _XYZW_cop2, rd);
 
 	endMacroOp_arm64(0x110);
 }
@@ -1124,12 +1354,13 @@ void recCOP2_VSUB()
 	if (_Fd_cop2 == 0 && _XYZW_cop2 == 0) return;
 	setupMacroOp_arm64(0x110);
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
-	cop2LoadVF(RQSCRATCH2, _Ft_cop2);
-	armAsm->Fsub(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S());
-	cop2ClampResult();
-	cop2EmitFlagUpdate(_XYZW_cop2);
-	cop2ApplyDestMask(_Fd_cop2);
+	const a64::VRegister fs = cop2GetVF(_Fs_cop2);
+	const a64::VRegister ft = cop2GetVF(_Ft_cop2);
+	const a64::VRegister rd = cop2ResultReg(_Fd_cop2, _XYZW_cop2);
+	armAsm->Fsub(rd.V4S(), fs.V4S(), ft.V4S());
+	cop2ClampResultReg(rd);
+	cop2EmitFlagUpdate(_XYZW_cop2, rd);
+	cop2ApplyDestMaskExplicit(_Fd_cop2, _XYZW_cop2, rd);
 
 	endMacroOp_arm64(0x110);
 }
@@ -1139,12 +1370,13 @@ void recCOP2_VMUL()
 	if (_Fd_cop2 == 0 && _XYZW_cop2 == 0) return;
 	setupMacroOp_arm64(0x110);
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
-	cop2LoadVF(RQSCRATCH2, _Ft_cop2);
-	armAsm->Fmul(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S());
-	cop2ClampResult();
-	cop2EmitFlagUpdate(_XYZW_cop2);
-	cop2ApplyDestMask(_Fd_cop2);
+	const a64::VRegister fs = cop2GetVF(_Fs_cop2);
+	const a64::VRegister ft = cop2GetVF(_Ft_cop2);
+	const a64::VRegister rd = cop2ResultReg(_Fd_cop2, _XYZW_cop2);
+	armAsm->Fmul(rd.V4S(), fs.V4S(), ft.V4S());
+	cop2ClampResultReg(rd);
+	cop2EmitFlagUpdate(_XYZW_cop2, rd);
+	cop2ApplyDestMaskExplicit(_Fd_cop2, _XYZW_cop2, rd);
 
 	endMacroOp_arm64(0x110);
 }
@@ -1154,9 +1386,9 @@ void recCOP2_VMAX()
 	cop2EmitConditionalSync(false, _vu0FinishMicro);
 	if (_Fd_cop2 == 0) return;
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
-	cop2LoadVF(RQSCRATCH2, _Ft_cop2);
-	cop2EmitIntegerMax(_Fs_cop2);
+	const a64::VRegister fs = cop2GetVF(_Fs_cop2);
+	const a64::VRegister ft = cop2GetVF(_Ft_cop2);
+	cop2EmitIntegerMax(fs, ft);
 	cop2ApplyDestMask(_Fd_cop2);
 }
 
@@ -1165,9 +1397,9 @@ void recCOP2_VMINI()
 	cop2EmitConditionalSync(false, _vu0FinishMicro);
 	if (_Fd_cop2 == 0) return;
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
-	cop2LoadVF(RQSCRATCH2, _Ft_cop2);
-	cop2EmitIntegerMin(_Fs_cop2);
+	const a64::VRegister fs = cop2GetVF(_Fs_cop2);
+	const a64::VRegister ft = cop2GetVF(_Ft_cop2);
+	cop2EmitIntegerMin(fs, ft);
 	cop2ApplyDestMask(_Fd_cop2);
 }
 
@@ -1178,8 +1410,7 @@ void recCOP2_VMINI()
 // Load VF[ft] and broadcast lane 'bc' (0=x, 1=y, 2=z, 3=w) to all lanes
 static void cop2LoadBroadcast(const a64::VRegister& qreg, int vfReg, int bc)
 {
-	cop2LoadVF(qreg, vfReg);
-	armAsm->Dup(qreg.V4S(), qreg.V4S(), bc);
+	armAsm->Dup(qreg.V4S(), cop2GetVF(vfReg).V4S(), bc);
 }
 
 // ========================================================================
@@ -1195,13 +1426,21 @@ static void cop2LoadBroadcast(const a64::VRegister& qreg, int vfReg, int bc)
 	{ \
 		if (_Fd_cop2 == 0 && _XYZW_cop2 == 0) return; \
 		setupMacroOp_arm64(0x110); \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
 		cop2LoadBroadcast(RQSCRATCH2, _Ft_cop2, bc); \
-		if (mulClamp) cop2EmitMulInputClamp(); \
-		armAsm->neonOp(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); \
-		cop2ClampResult(); \
-		cop2EmitFlagUpdate(_XYZW_cop2); \
-		cop2ApplyDestMask(_Fd_cop2); \
+		a64::VRegister mulA = fs; \
+		if (mulClamp) \
+		{ \
+			cop2ClampInto(RQSCRATCH, fs, RQSCRATCH3); \
+			mulA = RQSCRATCH; \
+			if (_XYZW_cop2 == 0xf) \
+				cop2ClampRegOneTmp(RQSCRATCH2, RQSCRATCH3); \
+		} \
+		const a64::VRegister rd = cop2ResultReg(_Fd_cop2, _XYZW_cop2); \
+		armAsm->neonOp(rd.V4S(), mulA.V4S(), RQSCRATCH2.V4S()); \
+		cop2ClampResultReg(rd); \
+		cop2EmitFlagUpdate(_XYZW_cop2, rd); \
+		cop2ApplyDestMaskExplicit(_Fd_cop2, _XYZW_cop2, rd); \
 		endMacroOp_arm64(0x110); \
 	}
 
@@ -1229,9 +1468,9 @@ COP2_BC_OP(MULw, Fmul, 3, true)
 	{ \
 		cop2EmitConditionalSync(false, _vu0FinishMicro); \
 		if (_Fd_cop2 == 0) return; \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
 		cop2LoadBroadcast(RQSCRATCH2, _Ft_cop2, bc); \
-		cop2EmitIntegerMax(_Fs_cop2); \
+		cop2EmitIntegerMax(fs, RQSCRATCH2); \
 		cop2ApplyDestMask(_Fd_cop2); \
 	}
 
@@ -1241,9 +1480,9 @@ COP2_BC_OP(MULw, Fmul, 3, true)
 	{ \
 		cop2EmitConditionalSync(false, _vu0FinishMicro); \
 		if (_Fd_cop2 == 0) return; \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
 		cop2LoadBroadcast(RQSCRATCH2, _Ft_cop2, bc); \
-		cop2EmitIntegerMin(_Fs_cop2); \
+		cop2EmitIntegerMin(fs, RQSCRATCH2); \
 		cop2ApplyDestMask(_Fd_cop2); \
 	}
 
@@ -1263,9 +1502,9 @@ void recCOP2_VMAXi()
 	cop2EmitConditionalSync(false, _vu0FinishMicro);
 	if (_Fd_cop2 == 0) return;
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
+	const a64::VRegister fs = cop2GetVF(_Fs_cop2);
 	armLd1rVU0(RQSCRATCH2.V4S(), &VU0.VI[REG_I]);
-	cop2EmitIntegerMax(_Fs_cop2);
+	cop2EmitIntegerMax(fs, RQSCRATCH2);
 	cop2ApplyDestMask(_Fd_cop2);
 }
 
@@ -1274,9 +1513,9 @@ void recCOP2_VMINIi()
 	cop2EmitConditionalSync(false, _vu0FinishMicro);
 	if (_Fd_cop2 == 0) return;
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
+	const a64::VRegister fs = cop2GetVF(_Fs_cop2);
 	armLd1rVU0(RQSCRATCH2.V4S(), &VU0.VI[REG_I]);
-	cop2EmitIntegerMin(_Fs_cop2);
+	cop2EmitIntegerMin(fs, RQSCRATCH2);
 	cop2ApplyDestMask(_Fd_cop2);
 }
 
@@ -1289,12 +1528,13 @@ void recCOP2_VMINIi()
 	{ \
 		if (_Fd_cop2 == 0 && _XYZW_cop2 == 0) return; \
 		setupMacroOp_arm64(0x111); \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
 		armLd1rVU0(RQSCRATCH2.V4S(), &VU0.VI[REG_Q]); \
-		armAsm->neonOp(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); \
-		cop2ClampResult(); \
-		cop2EmitFlagUpdate(_XYZW_cop2); \
-		cop2ApplyDestMask(_Fd_cop2); \
+		const a64::VRegister rd = cop2ResultReg(_Fd_cop2, _XYZW_cop2); \
+		armAsm->neonOp(rd.V4S(), fs.V4S(), RQSCRATCH2.V4S()); \
+		cop2ClampResultReg(rd); \
+		cop2EmitFlagUpdate(_XYZW_cop2, rd); \
+		cop2ApplyDestMaskExplicit(_Fd_cop2, _XYZW_cop2, rd); \
 		endMacroOp_arm64(0x111); \
 	}
 
@@ -1308,12 +1548,13 @@ COP2_Q_OP(MULq, Fmul)
 	{ \
 		if (_Fd_cop2 == 0 && _XYZW_cop2 == 0) return; \
 		setupMacroOp_arm64(0x110); \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
 		armLd1rVU0(RQSCRATCH2.V4S(), &VU0.VI[REG_I]); \
-		armAsm->neonOp(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); \
-		cop2ClampResult(); \
-		cop2EmitFlagUpdate(_XYZW_cop2); \
-		cop2ApplyDestMask(_Fd_cop2); \
+		const a64::VRegister rd = cop2ResultReg(_Fd_cop2, _XYZW_cop2); \
+		armAsm->neonOp(rd.V4S(), fs.V4S(), RQSCRATCH2.V4S()); \
+		cop2ClampResultReg(rd); \
+		cop2EmitFlagUpdate(_XYZW_cop2, rd); \
+		cop2ApplyDestMaskExplicit(_Fd_cop2, _XYZW_cop2, rd); \
 		endMacroOp_arm64(0x110); \
 	}
 
@@ -1333,14 +1574,15 @@ void recCOP2_VMADD()
 	if (_Fd_cop2 == 0 && _XYZW_cop2 == 0) return;
 	setupMacroOp_arm64(0x110);
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
-	cop2LoadVF(RQSCRATCH2, _Ft_cop2);
-	armAsm->Fmul(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S());
-	cop2LoadACC(RQSCRATCH3);
-	armAsm->Fadd(RQSCRATCH.V4S(), RQSCRATCH3.V4S(), RQSCRATCH.V4S());
-	cop2ClampResult();
-	cop2EmitFlagUpdate(_XYZW_cop2);
-	cop2ApplyDestMask(_Fd_cop2);
+	const a64::VRegister fs = cop2GetVF(_Fs_cop2);
+	const a64::VRegister ft = cop2GetVF(_Ft_cop2);
+	const a64::VRegister rd = cop2ResultReg(_Fd_cop2, _XYZW_cop2);
+	armAsm->Fmul(rd.V4S(), fs.V4S(), ft.V4S());
+	const a64::VRegister acc = cop2GetACC();
+	armAsm->Fadd(rd.V4S(), acc.V4S(), rd.V4S());
+	cop2ClampResultReg(rd);
+	cop2EmitFlagUpdate(_XYZW_cop2, rd);
+	cop2ApplyDestMaskExplicit(_Fd_cop2, _XYZW_cop2, rd);
 
 	endMacroOp_arm64(0x110);
 }
@@ -1350,14 +1592,15 @@ void recCOP2_VMSUB()
 	if (_Fd_cop2 == 0 && _XYZW_cop2 == 0) return;
 	setupMacroOp_arm64(0x110);
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
-	cop2LoadVF(RQSCRATCH2, _Ft_cop2);
-	armAsm->Fmul(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S());
-	cop2LoadACC(RQSCRATCH3);
-	armAsm->Fsub(RQSCRATCH.V4S(), RQSCRATCH3.V4S(), RQSCRATCH.V4S());
-	cop2ClampResult();
-	cop2EmitFlagUpdate(_XYZW_cop2);
-	cop2ApplyDestMask(_Fd_cop2);
+	const a64::VRegister fs = cop2GetVF(_Fs_cop2);
+	const a64::VRegister ft = cop2GetVF(_Ft_cop2);
+	const a64::VRegister rd = cop2ResultReg(_Fd_cop2, _XYZW_cop2);
+	armAsm->Fmul(rd.V4S(), fs.V4S(), ft.V4S());
+	const a64::VRegister acc = cop2GetACC();
+	armAsm->Fsub(rd.V4S(), acc.V4S(), rd.V4S());
+	cop2ClampResultReg(rd);
+	cop2EmitFlagUpdate(_XYZW_cop2, rd);
+	cop2ApplyDestMaskExplicit(_Fd_cop2, _XYZW_cop2, rd);
 
 	endMacroOp_arm64(0x110);
 }
@@ -1376,16 +1619,21 @@ void recCOP2_VMSUB()
 	{ \
 		if (_Fd_cop2 == 0 && _XYZW_cop2 == 0) return; \
 		setupMacroOp_arm64(0x110); \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
+		a64::VRegister mulA = fs; \
 		if (clampFs) \
-			cop2ClampReg(RQSCRATCH, RQSCRATCH2, RQSCRATCH3); \
+		{ \
+			cop2ClampInto(RQSCRATCH, fs, RQSCRATCH3); \
+			mulA = RQSCRATCH; \
+		} \
 		cop2LoadBroadcast(RQSCRATCH2, _Ft_cop2, bc); \
-		armAsm->Fmul(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); \
-		cop2LoadACC(RQSCRATCH3); \
-		armAsm->addOp(RQSCRATCH.V4S(), RQSCRATCH3.V4S(), RQSCRATCH.V4S()); \
-		cop2ClampResult(); \
-		cop2EmitFlagUpdate(_XYZW_cop2); \
-		cop2ApplyDestMask(_Fd_cop2); \
+		const a64::VRegister rd = cop2ResultReg(_Fd_cop2, _XYZW_cop2); \
+		armAsm->Fmul(rd.V4S(), mulA.V4S(), RQSCRATCH2.V4S()); \
+		const a64::VRegister acc = cop2GetACC(); \
+		armAsm->addOp(rd.V4S(), acc.V4S(), rd.V4S()); \
+		cop2ClampResultReg(rd); \
+		cop2EmitFlagUpdate(_XYZW_cop2, rd); \
+		cop2ApplyDestMaskExplicit(_Fd_cop2, _XYZW_cop2, rd); \
 		endMacroOp_arm64(0x110); \
 	}
 
@@ -1405,14 +1653,15 @@ COP2_MADD_BC(MSUBw, Fsub, 3, false)
 	{ \
 		if (_Fd_cop2 == 0 && _XYZW_cop2 == 0) return; \
 		setupMacroOp_arm64(0x111); \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
 		armLd1rVU0(RQSCRATCH2.V4S(), &VU0.VI[REG_Q]); \
-		armAsm->Fmul(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); \
-		cop2LoadACC(RQSCRATCH3); \
-		armAsm->addOp(RQSCRATCH.V4S(), RQSCRATCH3.V4S(), RQSCRATCH.V4S()); \
-		cop2ClampResult(); \
-		cop2EmitFlagUpdate(_XYZW_cop2); \
-		cop2ApplyDestMask(_Fd_cop2); \
+		const a64::VRegister rd = cop2ResultReg(_Fd_cop2, _XYZW_cop2); \
+		armAsm->Fmul(rd.V4S(), fs.V4S(), RQSCRATCH2.V4S()); \
+		const a64::VRegister acc = cop2GetACC(); \
+		armAsm->addOp(rd.V4S(), acc.V4S(), rd.V4S()); \
+		cop2ClampResultReg(rd); \
+		cop2EmitFlagUpdate(_XYZW_cop2, rd); \
+		cop2ApplyDestMaskExplicit(_Fd_cop2, _XYZW_cop2, rd); \
 		endMacroOp_arm64(0x111); \
 	}
 
@@ -1425,14 +1674,15 @@ COP2_MADD_Q(MSUBq, Fsub)
 	{ \
 		if (_Fd_cop2 == 0 && _XYZW_cop2 == 0) return; \
 		setupMacroOp_arm64(0x110); \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
 		armLd1rVU0(RQSCRATCH2.V4S(), &VU0.VI[REG_I]); \
-		armAsm->Fmul(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); \
-		cop2LoadACC(RQSCRATCH3); \
-		armAsm->addOp(RQSCRATCH.V4S(), RQSCRATCH3.V4S(), RQSCRATCH.V4S()); \
-		cop2ClampResult(); \
-		cop2EmitFlagUpdate(_XYZW_cop2); \
-		cop2ApplyDestMask(_Fd_cop2); \
+		const a64::VRegister rd = cop2ResultReg(_Fd_cop2, _XYZW_cop2); \
+		armAsm->Fmul(rd.V4S(), fs.V4S(), RQSCRATCH2.V4S()); \
+		const a64::VRegister acc = cop2GetACC(); \
+		armAsm->addOp(rd.V4S(), acc.V4S(), rd.V4S()); \
+		cop2ClampResultReg(rd); \
+		cop2EmitFlagUpdate(_XYZW_cop2, rd); \
+		cop2ApplyDestMaskExplicit(_Fd_cop2, _XYZW_cop2, rd); \
 		endMacroOp_arm64(0x110); \
 	}
 
@@ -1446,25 +1696,24 @@ void recCOP2_VOPMSUB()
 	if (_Fd_cop2 == 0) return;
 	setupMacroOp_arm64(0x110);
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);   // fs = [x,y,z,w]
-	cop2LoadVF(RQSCRATCH2, _Ft_cop2);  // ft = [x,y,z,w]
-	cop2LoadACC(RQSCRATCH3);            // ACC
+	const a64::VRegister fs = cop2GetVF(_Fs_cop2);
+	const a64::VRegister ft = cop2GetVF(_Ft_cop2);
+	const a64::VRegister acc = cop2GetACC();
 
 	// Build fs.yzx: EXT #4 gives [y,z,w,x], fix lane 2 (w→x)
 	a64::VRegister fsRot = a64::VRegister(28, 128);
-	armAsm->Ext(fsRot.V16B(), RQSCRATCH.V16B(), RQSCRATCH.V16B(), 4);  // [y,z,w,x]
-	armAsm->Ins(fsRot.V4S(), 2, RQSCRATCH.V4S(), 0);                   // [y,z,x,x]
+	armAsm->Ext(fsRot.V16B(), fs.V16B(), fs.V16B(), 4);  // [y,z,w,x]
+	armAsm->Ins(fsRot.V4S(), 2, fs.V4S(), 0);            // [y,z,x,x]
 
-	// Build ft.zxy: RQSCRATCH2 still holds ft from the load above (the fsRot
-	// construction and ACC load only touch RQSCRATCH/v28/RQSCRATCH3), so reuse it.
+	// Build ft.zxy
 	a64::VRegister ftRot = a64::VRegister(27, 128);
-	armAsm->Ext(ftRot.V16B(), RQSCRATCH2.V16B(), RQSCRATCH2.V16B(), 8); // [z,w,x,y]
-	armAsm->Ins(ftRot.V4S(), 1, RQSCRATCH2.V4S(), 0);                   // [z,x,x,y]
-	armAsm->Ins(ftRot.V4S(), 2, RQSCRATCH2.V4S(), 1);                   // [z,x,y,y]
+	armAsm->Ext(ftRot.V16B(), ft.V16B(), ft.V16B(), 8);  // [z,w,x,y]
+	armAsm->Ins(ftRot.V4S(), 1, ft.V4S(), 0);            // [z,x,x,y]
+	armAsm->Ins(ftRot.V4S(), 2, ft.V4S(), 1);            // [z,x,y,y]
 
 	// ACC - fs.yzx * ft.zxy (separate FMUL+FSUB for PS2 rounding)
 	armAsm->Fmul(RQSCRATCH.V4S(), fsRot.V4S(), ftRot.V4S());
-	armAsm->Fsub(RQSCRATCH.V4S(), RQSCRATCH3.V4S(), RQSCRATCH.V4S());
+	armAsm->Fsub(RQSCRATCH.V4S(), acc.V4S(), RQSCRATCH.V4S());
 	cop2ClampResult();
 	// OPMSUB always updates XYZ flags only (0xE), W MAC flag cleared.
 	// PS2 hardware ignores the W bit of the instruction's dest field —
@@ -1484,12 +1733,13 @@ void recCOP2_VOPMSUB()
 	void recCOP2_V##name() \
 	{ \
 		setupMacroOp_arm64(0x110); \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
-		cop2LoadVF(RQSCRATCH2, _Ft_cop2); \
-		armAsm->neonOp(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); \
-		cop2ClampResult(); \
-		cop2EmitFlagUpdate(_XYZW_cop2); \
-		cop2ApplyDestMaskACC(RQSCRATCH); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
+		const a64::VRegister ft = cop2GetVF(_Ft_cop2); \
+		const a64::VRegister rdA = cop2ResultRegACC(_XYZW_cop2); \
+		armAsm->neonOp(rdA.V4S(), fs.V4S(), ft.V4S()); \
+		cop2ClampResultReg(rdA); \
+		cop2EmitFlagUpdate(_XYZW_cop2, rdA); \
+		cop2ApplyDestMaskACC(rdA); \
 		endMacroOp_arm64(0x110); \
 	}
 
@@ -1504,13 +1754,21 @@ COP2_ACCUM_OP(MULA, Fmul)
 	void recCOP2_V##name() \
 	{ \
 		setupMacroOp_arm64(0x110); \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
 		cop2LoadBroadcast(RQSCRATCH2, _Ft_cop2, bc); \
-		if (mulClamp) cop2EmitMulInputClamp(); \
-		armAsm->neonOp(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); \
-		cop2ClampResult(); \
-		cop2EmitFlagUpdate(_XYZW_cop2); \
-		cop2ApplyDestMaskACC(RQSCRATCH); \
+		a64::VRegister mulA = fs; \
+		if (mulClamp) \
+		{ \
+			cop2ClampInto(RQSCRATCH, fs, RQSCRATCH3); \
+			mulA = RQSCRATCH; \
+			if (_XYZW_cop2 == 0xf) \
+				cop2ClampRegOneTmp(RQSCRATCH2, RQSCRATCH3); \
+		} \
+		const a64::VRegister rdA = cop2ResultRegACC(_XYZW_cop2); \
+		armAsm->neonOp(rdA.V4S(), mulA.V4S(), RQSCRATCH2.V4S()); \
+		cop2ClampResultReg(rdA); \
+		cop2EmitFlagUpdate(_XYZW_cop2, rdA); \
+		cop2ApplyDestMaskACC(rdA); \
 		endMacroOp_arm64(0x110); \
 	}
 
@@ -1541,12 +1799,13 @@ COP2_ACCUM_BC(MULAw, Fmul, 3, true)
 	void recCOP2_V##name() \
 	{ \
 		setupMacroOp_arm64(0x111); \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
 		armLd1rVU0(RQSCRATCH2.V4S(), &VU0.VI[REG_Q]); \
-		armAsm->neonOp(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); \
-		cop2ClampResult(); \
-		cop2EmitFlagUpdate(_XYZW_cop2); \
-		cop2ApplyDestMaskACC(RQSCRATCH); \
+		const a64::VRegister rdA = cop2ResultRegACC(_XYZW_cop2); \
+		armAsm->neonOp(rdA.V4S(), fs.V4S(), RQSCRATCH2.V4S()); \
+		cop2ClampResultReg(rdA); \
+		cop2EmitFlagUpdate(_XYZW_cop2, rdA); \
+		cop2ApplyDestMaskACC(rdA); \
 		endMacroOp_arm64(0x111); \
 	}
 
@@ -1559,12 +1818,13 @@ COP2_ACCUM_Q(MULAq, Fmul)
 	void recCOP2_V##name() \
 	{ \
 		setupMacroOp_arm64(0x110); \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
 		armLd1rVU0(RQSCRATCH2.V4S(), &VU0.VI[REG_I]); \
-		armAsm->neonOp(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); \
-		cop2ClampResult(); \
-		cop2EmitFlagUpdate(_XYZW_cop2); \
-		cop2ApplyDestMaskACC(RQSCRATCH); \
+		const a64::VRegister rdA = cop2ResultRegACC(_XYZW_cop2); \
+		armAsm->neonOp(rdA.V4S(), fs.V4S(), RQSCRATCH2.V4S()); \
+		cop2ClampResultReg(rdA); \
+		cop2EmitFlagUpdate(_XYZW_cop2, rdA); \
+		cop2ApplyDestMaskACC(rdA); \
 		endMacroOp_arm64(0x110); \
 	}
 
@@ -1578,14 +1838,15 @@ COP2_ACCUM_I(MULAi, Fmul)
 	void recCOP2_V##name() \
 	{ \
 		setupMacroOp_arm64(0x110); \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
-		cop2LoadVF(RQSCRATCH2, _Ft_cop2); \
-		armAsm->Fmul(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); \
-		cop2LoadACC(RQSCRATCH3); \
-		armAsm->addOp(RQSCRATCH.V4S(), RQSCRATCH3.V4S(), RQSCRATCH.V4S()); \
-		cop2ClampResult(); \
-		cop2EmitFlagUpdate(_XYZW_cop2); \
-		cop2ApplyDestMaskACC(RQSCRATCH); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
+		const a64::VRegister ft = cop2GetVF(_Ft_cop2); \
+		armAsm->Fmul(RQSCRATCH.V4S(), fs.V4S(), ft.V4S()); \
+		const a64::VRegister acc = cop2GetACC(); \
+		const a64::VRegister rdA = (_XYZW_cop2 == 0xF) ? acc : RQSCRATCH; \
+		armAsm->addOp(rdA.V4S(), acc.V4S(), RQSCRATCH.V4S()); \
+		cop2ClampResultReg(rdA); \
+		cop2EmitFlagUpdate(_XYZW_cop2, rdA); \
+		cop2ApplyDestMaskACC(rdA); \
 		endMacroOp_arm64(0x110); \
 	}
 
@@ -1597,14 +1858,15 @@ COP2_MADDA_OP(MSUBA, Fsub)
 	void recCOP2_V##name() \
 	{ \
 		setupMacroOp_arm64(0x110); \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
 		cop2LoadBroadcast(RQSCRATCH2, _Ft_cop2, bc); \
-		armAsm->Fmul(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); \
-		cop2LoadACC(RQSCRATCH3); \
-		armAsm->addOp(RQSCRATCH.V4S(), RQSCRATCH3.V4S(), RQSCRATCH.V4S()); \
-		cop2ClampResult(); \
-		cop2EmitFlagUpdate(_XYZW_cop2); \
-		cop2ApplyDestMaskACC(RQSCRATCH); \
+		armAsm->Fmul(RQSCRATCH.V4S(), fs.V4S(), RQSCRATCH2.V4S()); \
+		const a64::VRegister acc = cop2GetACC(); \
+		const a64::VRegister rdA = (_XYZW_cop2 == 0xF) ? acc : RQSCRATCH; \
+		armAsm->addOp(rdA.V4S(), acc.V4S(), RQSCRATCH.V4S()); \
+		cop2ClampResultReg(rdA); \
+		cop2EmitFlagUpdate(_XYZW_cop2, rdA); \
+		cop2ApplyDestMaskACC(rdA); \
 		endMacroOp_arm64(0x110); \
 	}
 
@@ -1623,14 +1885,15 @@ COP2_MADDA_BC(MSUBAw, Fsub, 3)
 	void recCOP2_V##name() \
 	{ \
 		setupMacroOp_arm64(0x111); \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
 		armLd1rVU0(RQSCRATCH2.V4S(), &VU0.VI[REG_Q]); \
-		armAsm->Fmul(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); \
-		cop2LoadACC(RQSCRATCH3); \
-		armAsm->addOp(RQSCRATCH.V4S(), RQSCRATCH3.V4S(), RQSCRATCH.V4S()); \
-		cop2ClampResult(); \
-		cop2EmitFlagUpdate(_XYZW_cop2); \
-		cop2ApplyDestMaskACC(RQSCRATCH); \
+		armAsm->Fmul(RQSCRATCH.V4S(), fs.V4S(), RQSCRATCH2.V4S()); \
+		const a64::VRegister acc = cop2GetACC(); \
+		const a64::VRegister rdA = (_XYZW_cop2 == 0xF) ? acc : RQSCRATCH; \
+		armAsm->addOp(rdA.V4S(), acc.V4S(), RQSCRATCH.V4S()); \
+		cop2ClampResultReg(rdA); \
+		cop2EmitFlagUpdate(_XYZW_cop2, rdA); \
+		cop2ApplyDestMaskACC(rdA); \
 		endMacroOp_arm64(0x111); \
 	}
 
@@ -1642,14 +1905,15 @@ COP2_MADDA_Q(MSUBAq, Fsub)
 	void recCOP2_V##name() \
 	{ \
 		setupMacroOp_arm64(0x110); \
-		cop2LoadVF(RQSCRATCH, _Fs_cop2); \
+		const a64::VRegister fs = cop2GetVF(_Fs_cop2); \
 		armLd1rVU0(RQSCRATCH2.V4S(), &VU0.VI[REG_I]); \
-		armAsm->Fmul(RQSCRATCH.V4S(), RQSCRATCH.V4S(), RQSCRATCH2.V4S()); \
-		cop2LoadACC(RQSCRATCH3); \
-		armAsm->addOp(RQSCRATCH.V4S(), RQSCRATCH3.V4S(), RQSCRATCH.V4S()); \
-		cop2ClampResult(); \
-		cop2EmitFlagUpdate(_XYZW_cop2); \
-		cop2ApplyDestMaskACC(RQSCRATCH); \
+		armAsm->Fmul(RQSCRATCH.V4S(), fs.V4S(), RQSCRATCH2.V4S()); \
+		const a64::VRegister acc = cop2GetACC(); \
+		const a64::VRegister rdA = (_XYZW_cop2 == 0xF) ? acc : RQSCRATCH; \
+		armAsm->addOp(rdA.V4S(), acc.V4S(), RQSCRATCH.V4S()); \
+		cop2ClampResultReg(rdA); \
+		cop2EmitFlagUpdate(_XYZW_cop2, rdA); \
+		cop2ApplyDestMaskACC(rdA); \
 		endMacroOp_arm64(0x110); \
 	}
 
@@ -1661,19 +1925,19 @@ COP2_MADDA_I(MSUBAi, Fsub)
 void recCOP2_VOPMULA()
 {
 	setupMacroOp_arm64(0x110);
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);   // fs = [x,y,z,w]
-	cop2LoadVF(RQSCRATCH2, _Ft_cop2);  // ft = [x,y,z,w]
+	const a64::VRegister fs = cop2GetVF(_Fs_cop2);
+	const a64::VRegister ft = cop2GetVF(_Ft_cop2);
 
 	// Build fs.yzx: EXT #4 gives [y,z,w,x], fix lane 2 (w→x)
 	a64::VRegister fsRot = a64::VRegister(28, 128);
-	armAsm->Ext(fsRot.V16B(), RQSCRATCH.V16B(), RQSCRATCH.V16B(), 4);  // [y,z,w,x]
-	armAsm->Ins(fsRot.V4S(), 2, RQSCRATCH.V4S(), 0);                   // [y,z,x,x]
+	armAsm->Ext(fsRot.V16B(), fs.V16B(), fs.V16B(), 4);  // [y,z,w,x]
+	armAsm->Ins(fsRot.V4S(), 2, fs.V4S(), 0);            // [y,z,x,x]
 
 	// Build ft.zxy: EXT #8 gives [z,w,x,y], fix lanes 1,2
 	a64::VRegister ftRot = a64::VRegister(27, 128);
-	armAsm->Ext(ftRot.V16B(), RQSCRATCH2.V16B(), RQSCRATCH2.V16B(), 8); // [z,w,x,y]
-	armAsm->Ins(ftRot.V4S(), 1, RQSCRATCH2.V4S(), 0);                   // [z,x,x,y]
-	armAsm->Ins(ftRot.V4S(), 2, RQSCRATCH2.V4S(), 1);                   // [z,x,y,y]
+	armAsm->Ext(ftRot.V16B(), ft.V16B(), ft.V16B(), 8);  // [z,w,x,y]
+	armAsm->Ins(ftRot.V4S(), 1, ft.V4S(), 0);            // [z,x,x,y]
+	armAsm->Ins(ftRot.V4S(), 2, ft.V4S(), 1);            // [z,x,y,y]
 
 	armAsm->Fmul(RQSCRATCH.V4S(), fsRot.V4S(), ftRot.V4S());
 	cop2ClampResult();
@@ -1694,9 +1958,10 @@ void recCOP2_VITOF0()
 	cop2EmitConditionalSync(false, _vu0FinishMicro);
 	if (_Ft_cop2 == 0) return;
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
-	armAsm->Scvtf(RQSCRATCH.V4S(), RQSCRATCH.V4S());
-	cop2ApplyDestMask(_Ft_cop2);
+	const a64::VRegister src = cop2GetVF(_Fs_cop2);
+	const a64::VRegister rd = cop2ResultReg(_Ft_cop2, _XYZW_cop2);
+	armAsm->Scvtf(rd.V4S(), src.V4S());
+	cop2ApplyDestMaskExplicit(_Ft_cop2, _XYZW_cop2, rd);
 }
 
 void recCOP2_VITOF4()
@@ -1704,9 +1969,10 @@ void recCOP2_VITOF4()
 	cop2EmitConditionalSync(false, _vu0FinishMicro);
 	if (_Ft_cop2 == 0) return;
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
-	armAsm->Scvtf(RQSCRATCH.V4S(), RQSCRATCH.V4S(), 4);
-	cop2ApplyDestMask(_Ft_cop2);
+	const a64::VRegister src = cop2GetVF(_Fs_cop2);
+	const a64::VRegister rd = cop2ResultReg(_Ft_cop2, _XYZW_cop2);
+	armAsm->Scvtf(rd.V4S(), src.V4S(), 4);
+	cop2ApplyDestMaskExplicit(_Ft_cop2, _XYZW_cop2, rd);
 }
 
 void recCOP2_VITOF12()
@@ -1714,9 +1980,10 @@ void recCOP2_VITOF12()
 	cop2EmitConditionalSync(false, _vu0FinishMicro);
 	if (_Ft_cop2 == 0) return;
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
-	armAsm->Scvtf(RQSCRATCH.V4S(), RQSCRATCH.V4S(), 12);
-	cop2ApplyDestMask(_Ft_cop2);
+	const a64::VRegister src = cop2GetVF(_Fs_cop2);
+	const a64::VRegister rd = cop2ResultReg(_Ft_cop2, _XYZW_cop2);
+	armAsm->Scvtf(rd.V4S(), src.V4S(), 12);
+	cop2ApplyDestMaskExplicit(_Ft_cop2, _XYZW_cop2, rd);
 }
 
 void recCOP2_VITOF15()
@@ -1724,9 +1991,10 @@ void recCOP2_VITOF15()
 	cop2EmitConditionalSync(false, _vu0FinishMicro);
 	if (_Ft_cop2 == 0) return;
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
-	armAsm->Scvtf(RQSCRATCH.V4S(), RQSCRATCH.V4S(), 15);
-	cop2ApplyDestMask(_Ft_cop2);
+	const a64::VRegister src = cop2GetVF(_Fs_cop2);
+	const a64::VRegister rd = cop2ResultReg(_Ft_cop2, _XYZW_cop2);
+	armAsm->Scvtf(rd.V4S(), src.V4S(), 15);
+	cop2ApplyDestMaskExplicit(_Ft_cop2, _XYZW_cop2, rd);
 }
 
 // Float→signed-int convert (Fcvtzs) with NaN saturation, for COP2 macro-mode
@@ -1765,7 +2033,7 @@ void recCOP2_VFTOI0()
 	cop2EmitConditionalSync(false, _vu0FinishMicro);
 	if (_Ft_cop2 == 0) return;
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
+	cop2LoadVFViaCache(RQSCRATCH, _Fs_cop2);
 	cop2EmitFtoiSaturated(0);
 	cop2ApplyDestMask(_Ft_cop2);
 }
@@ -1775,7 +2043,7 @@ void recCOP2_VFTOI4()
 	cop2EmitConditionalSync(false, _vu0FinishMicro);
 	if (_Ft_cop2 == 0) return;
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
+	cop2LoadVFViaCache(RQSCRATCH, _Fs_cop2);
 	cop2EmitFtoiSaturated(4);
 	cop2ApplyDestMask(_Ft_cop2);
 }
@@ -1785,7 +2053,7 @@ void recCOP2_VFTOI12()
 	cop2EmitConditionalSync(false, _vu0FinishMicro);
 	if (_Ft_cop2 == 0) return;
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
+	cop2LoadVFViaCache(RQSCRATCH, _Fs_cop2);
 	cop2EmitFtoiSaturated(12);
 	cop2ApplyDestMask(_Ft_cop2);
 }
@@ -1795,7 +2063,7 @@ void recCOP2_VFTOI15()
 	cop2EmitConditionalSync(false, _vu0FinishMicro);
 	if (_Ft_cop2 == 0) return;
 
-	cop2LoadVF(RQSCRATCH, _Fs_cop2);
+	cop2LoadVFViaCache(RQSCRATCH, _Fs_cop2);
 	cop2EmitFtoiSaturated(15);
 	cop2ApplyDestMask(_Ft_cop2);
 }
@@ -2169,4 +2437,51 @@ int cop2flags(u32 code)
 			break;
 	}
 	return 3;
+}
+
+// ========================================================================
+//  EP-2b classifier: which ops preserve the VF residency cache
+// ========================================================================
+// recompileNextInstruction flushes the cache for any op this returns false
+// for — the safe default for every emitter that doesn't know about the
+// cache. TRUE only for the hand-rolled COP2 macro ops above, whose VF/ACC
+// traffic goes through cop2GetVF/cop2ApplyDestMask* (plus the VI-only and
+// no-op members of the same dispatch group). Deliberately FALSE: the
+// transfers (QMFC2/QMTC2/CFC2/CTC2 — raw VF access / micro kick), BC2
+// branches, VCALLMS/VCALLMSR, the mVU-reuse wrappers (LQI/SQI/LQD/SQD/
+// MTIR/MFIR/ILWR/ISWR/R* — VF via microVU0.regAlloc), the DIV family and
+// VCLIP (raw scalar lane reads), and every unknown-op hole. Table layout:
+// recCOP2t / recCOP2SPECIAL1t / recCOP2SPECIAL2t (iR5900Misc-arm64.cpp).
+bool cop2OpPreservesVfCache(u32 code)
+{
+	if ((code >> 26) != 022)
+		return false;
+	if (!((code >> 21) & 0x10))
+		return false; // QMFC2/CFC2/QMTC2/CTC2/BC2/holes
+
+	const u32 funct = code & 0x3F;
+	if (funct < 0x3C)
+	{
+		// SPECIAL1: 0x00-0x2F = FMAC arithmetic incl. VOPMSUB (all
+		// cache-aware); 0x30-0x35 = VI-only ALU (no VF traffic) minus the
+		// 0x33 hole; 0x38/0x39 = VCALLMS/VCALLMSR (run micro).
+		if (funct <= 0x2F)
+			return true;
+		switch (funct)
+		{
+			case 0x30: case 0x31: case 0x32: case 0x34: case 0x35:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	// SPECIAL2: 0x00-0x33 = A-family FMACs, ITOF/FTOI, VABS, VMULA*,
+	// VOPMULA, VNOP, VMOVE, VMR32 — cache-aware — except VCLIP (0x1F, raw
+	// lane reads) and the 0x2B/0x32/0x33 holes. Everything above 0x33 is
+	// mVU-reuse, DIV-family, or holes.
+	const u32 idx = (code & 0x3) | ((code >> 4) & 0x7C);
+	if (idx <= 0x33)
+		return idx != 0x1F && idx != 0x2B && idx != 0x32 && idx != 0x33;
+	return false;
 }
