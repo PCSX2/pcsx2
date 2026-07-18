@@ -84,6 +84,17 @@ static Arm64BaseBlocks recBlocks;
 static u8* recPtr = nullptr;
 static u8* recPtrEnd = nullptr;
 
+// SL-10: cold side-exit arena. Superblock taken arms outline into a separate
+// region carved from the top of the EE cache (below the constant pool) instead
+// of inline after each block's tail — inline placement puts cold bytes between
+// consecutive hot blocks in the compile-order stream, which the S2 device A/B
+// measured as +5.4% EErec icache-miss density. The arena stays inside the EE
+// rec region, so fastmem fault range checks and perf bucketing are unaffected.
+// Bump-allocated; recycled only by the full cache reset, like block memory.
+static u8* s_coldBase = nullptr;
+static u8* s_coldPtr = nullptr;
+static u8* s_coldPtrEnd = nullptr;
+
 static EEINST* s_pInstCache = nullptr;
 static u32 s_nInstCacheSize = 0;
 
@@ -1691,18 +1702,57 @@ a64::Label* recSuperblockAddSideExit(u32 branch_target, bool need_delay_slot)
 	return x.label.get();
 }
 
-// Emit every pending cold side exit after the block tail. Each restores its
-// branch-point snapshot, so the exit charges exactly the branch-point cycles
-// and SetBranchImm's flush writes back exactly what was live-dirty there.
+// SL-10: the in-block footprint of a side exit is one island — a single far B
+// (imm26, ±128MB reaches the cold arena) that the site's short-range
+// conditional (Tbz ±32KB / B.cond ±1MB) can target. Bound after the tail,
+// patched toward the outlined exit body once the cold session has emitted it.
+static u8* s_sideExitIslands[kMaxContSites];
+
+// Emit the per-exit islands after the block tail (still inside the hot
+// emission session — they are part of the block and count in x86size).
 // The mainline pc/size/recRAMCopy bookkeeping ran before this — pc is dead.
-static void recEmitPendingSideExits()
+static void recEmitSideExitIslands()
 {
-	const int n = s_numSideExits;
-	s_numSideExits = 0;
-	for (int k = 0; k < n; k++)
+	for (int k = 0; k < s_numSideExits; k++)
 	{
 		SuperblockSideExit& x = s_sideExits[k];
 		armAsm->Bind(x.label.get());
+		a64::SingleEmissionCheckScope guard(armAsm);
+		s_sideExitIslands[k] = armGetCurrentCodePointer();
+		armAsm->b(int64_t{0}); // placeholder; patched to the cold exit body
+	}
+}
+
+// Island → cold-body patch: same single-word B rewrite + cache maintenance
+// protocol as Arm64BaseBlocks link patching (compile-thread only here).
+static void recPatchIslandB(u8* site, const u8* target)
+{
+	const intptr_t imm26 = (reinterpret_cast<intptr_t>(target) - reinterpret_cast<intptr_t>(site)) >> 2;
+	pxAssertRel(imm26 >= -(1 << 25) && imm26 < (1 << 25), "Cold-exit island out of B imm26 range");
+	*reinterpret_cast<volatile u32*>(site) = 0x14000000u | (static_cast<u32>(imm26) & 0x03FFFFFFu);
+	__builtin___clear_cache(reinterpret_cast<char*>(site), reinterpret_cast<char*>(site) + 4);
+}
+
+// Emit every pending side exit body into the cold arena (a second emission
+// session, after the hot block finalized) and patch the islands to reach
+// them. Each body restores its branch-point snapshot, so the exit charges
+// exactly the branch-point cycles and the flush writes back exactly what was
+// live-dirty there.
+static void recEmitColdSideExits()
+{
+	const int n = s_numSideExits;
+	s_numSideExits = 0;
+	if (n == 0)
+		return;
+
+	const u8* coldStart[kMaxContSites];
+
+	armSetAsmPtr(s_coldPtr, s_coldPtrEnd - s_coldPtr + _64kb, &s_eeConstantPool);
+	armStartBlock();
+	for (int k = 0; k < n; k++)
+	{
+		SuperblockSideExit& x = s_sideExits[k];
+		coldStart[k] = armGetCurrentCodePointer();
 		x.state.restore();
 		g_branch = 0;
 		if (x.needDs)
@@ -1713,6 +1763,14 @@ static void recEmitPendingSideExits()
 		SetBranchImm(x.branchTo);
 		x.label.reset();
 	}
+	pxAssert(armGetCurrentCodePointer() < SysMemory::GetEERecEnd());
+	s_coldPtr = armEndBlock();
+
+	HostSys::BeginCodeWrite();
+	for (int k = 0; k < n; k++)
+		recPatchIslandB(s_sideExitIslands[k], coldStart[k]);
+	HostSys::EndCodeWrite();
+
 	g_branch = 1;
 }
 
@@ -2573,10 +2631,20 @@ static void recReserve()
 	// (Latent since the pool moved to the cache tail; surfaced by SL-03
 	// superblocks growing per-block emission enough for the fuzz soak to
 	// fill the cache into the overlap.)
+	// SL-10: cold side-exit arena between the hot code region and the pool.
+	// Same slop discipline as the hot region: a session's capacity grant is
+	// (end - ptr + 64KB), so each region's ptr-end sits one slop below the
+	// next region's base and an overhanging emission can never cross it.
+	const u32 coldArenaSize = 8 * _1mb;
+	s_coldBase = poolBase - coldArenaSize;
+	s_coldPtr = s_coldBase;
+	s_coldPtrEnd = poolBase - _64kb;
+
 	recPtr = SysMemory::GetEERec();
-	recPtrEnd = poolBase - _64kb;
-	pxAssertRel(recPtrEnd > recPtr && recPtrEnd + _64kb <= poolBase,
-		"EE rec code region must not reach the constant pool");
+	recPtrEnd = s_coldBase - _64kb;
+	pxAssertRel(recPtrEnd > recPtr && recPtrEnd + _64kb <= s_coldBase &&
+		s_coldPtrEnd + _64kb <= poolBase,
+		"EE rec code region and cold arena must not reach the constant pool");
 
 	recReserveRAM();
 
@@ -2616,6 +2684,8 @@ static void recResetRaw()
 	_DynGen_Dispatchers();
 	const u8* dispEnd = armGetCurrentCodePointer();
 	recPtr = armEndBlock();
+
+	s_coldPtr = s_coldBase;
 
 	Console.WriteLn(Color_Green, "EE ARM64: Dispatcher generated at %p (%zu bytes)", dispStart, (size_t)(dispEnd - dispStart));
 
@@ -2700,6 +2770,9 @@ static void recShutdown()
 
 	recPtr = nullptr;
 	recPtrEnd = nullptr;
+	s_coldBase = nullptr;
+	s_coldPtr = nullptr;
+	s_coldPtrEnd = nullptr;
 }
 
 static void recResetEE()
@@ -3069,8 +3142,13 @@ static void recRecompile(const u32 startpc)
 	// but it can legitimately happen during BIOS init (e.g., JR $ra with ra=0).
 	// We allow it since address 0 is properly mapped in recLUT.
 
-	if (recPtr >= recPtrEnd)
+	if (recPtr >= recPtrEnd || s_coldPtr >= s_coldPtrEnd)
+	{
+		Console.WriteLn("EE ARM64: cache-full reset trigger — hot used=%zu/%zu cold used=%zu/%zu",
+			(size_t)(recPtr - SysMemory::GetEERec()), (size_t)(recPtrEnd - SysMemory::GetEERec()),
+			(size_t)(s_coldPtr - s_coldBase), (size_t)(s_coldPtrEnd - s_coldBase));
 		eeRecNeedsReset = true;
+	}
 
 	// Signal that the ELF entry point is now compiling, so VMManager flips
 	// HasBootedELF() and applies the per-game GameDB fixes (both game fixes and
@@ -3782,9 +3860,11 @@ StartRecomp:
 		}
 	}
 
-	// SL-03: outline the cold taken side exits after the tail (mainline pc is
-	// dead — size and recRAMCopy bookkeeping ran on it above).
-	recEmitPendingSideExits();
+	// SL-03/SL-10: the taken side exits' in-block footprint — one far-B island
+	// each after the tail (mainline pc is dead — size and recRAMCopy
+	// bookkeeping ran on it above). The bodies outline into the cold arena
+	// below, after the hot block finalizes.
+	recEmitSideExitIslands();
 
 	pxAssert(armGetCurrentCodePointer() < SysMemory::GetEERecEnd());
 
@@ -3796,6 +3876,12 @@ StartRecomp:
 
 	recPtr = armEndBlock();
 
+	// SL-10: outline the side-exit bodies into the cold arena and patch the
+	// islands. Runs as its own emission session so the bodies land outside
+	// the hot compile-order stream.
+	const u8* coldDumpStart = s_coldPtr;
+	recEmitColdSideExits();
+
 	// Testing-only: YAPS2_EESB_DUMP=<hex guest pc> dumps the emitted host code
 	// (including the literal pool, post-finalize so offsets are patched) of any
 	// block whose guest range covers that pc (offline bisection aid).
@@ -3806,11 +3892,14 @@ StartRecomp:
 		}();
 		if (s_dumpPc && startpc <= s_dumpPc && s_dumpPc < s_nEndBlock)
 		{
-			fprintf(stderr, "EESB_DUMP: block %08x..%08x fnptr=%p size=%u endptr=%p sites=%d\n",
+			fprintf(stderr, "EESB_DUMP: block %08x..%08x fnptr=%p size=%u endptr=%p sites=%d cold=%p+%u\n",
 				startpc, s_nEndBlock, (void*)s_pCurBlockEx->fnptr, s_pCurBlockEx->x86size,
-				(void*)recPtr, s_numContSites);
+				(void*)recPtr, s_numContSites,
+				(void*)coldDumpStart, static_cast<u32>(s_coldPtr - coldDumpStart));
 			armDisassembleAndDumpCode((void*)s_pCurBlockEx->fnptr,
 				static_cast<size_t>((uptr)recPtr - (uptr)s_pCurBlockEx->fnptr));
+			if (s_coldPtr != coldDumpStart)
+				armDisassembleAndDumpCode(coldDumpStart, static_cast<size_t>(s_coldPtr - coldDumpStart));
 		}
 	}
 
