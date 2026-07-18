@@ -1,0 +1,44 @@
+# Software Information
+display_name = "Sony - PlayStation 2 (yaps2)"
+authors = "PCSX2 Team|bmdhacks|WizzardSK"
+supported_extensions = "elf|iso|ciso|chd|cso|zso|bin|mdf|nrg|dump|gz|img|irx|m3u"
+corename = "yaps2"
+categories = "Emulator"
+license = "GPLv3"
+permissions = ""
+display_version = "Git"
+
+# Hardware Information
+manufacturer = "Sony"
+systemname = "Sony PlayStation 2"
+systemid = "playstation2"
+
+# Libretro Features
+database = "Sony - PlayStation 2"
+supports_no_game = "false"
+savestate = "true"
+savestate_features = "basic"
+cheats = "false"
+input_descriptors = "false"
+memory_descriptors = "false"
+libretro_saves = "false"
+core_options = "true"
+core_options_version = "2.0"
+load_subsystem = "false"
+hw_render = "true"
+required_hw_api = "Vulkan >= 1.1"
+needs_fullpath = "true"
+disk_control = "true"
+is_experimental = "true"
+
+# Firmware / BIOS
+firmware_count = 2
+firmware0_desc = "'pcsx2/bios' folder (any valid PS2 BIOS dump, e.g. scph39001.bin)"
+firmware0_path = "pcsx2/bios"
+firmware0_opt = "false"
+firmware1_desc = "'pcsx2/resources' folder (shaders, GameIndex.yaml, fonts)"
+firmware1_path = "pcsx2/resources"
+firmware1_opt = "false"
+notes = "[1] This only checks that the folders exist in the correct location.|[2] The core does not require a specific BIOS filename, so this info file|[^] cannot tell you whether the content of your 'bios' folder is correct.|[3] The 'resources' folder must be copied from a matching yaps2/PCSX2 build;|[^] the core will not boot without it.|[4] The core is Vulkan-only: the frontend's Vulkan context is shared with the|[^] emulator through the hardware-render negotiation interface."
+
+description = "A libretro port of yaps2, a PlayStation 2 emulator forked from PCSX2 and aimed at ARM handhelds (working arm64 recompilers, Adreno fixes). The core renders through the frontend's own Vulkan context -- it takes the VkInstance and VkPhysicalDevice from the hardware-render context-negotiation interface and hands finished frames back through set_image -- so a Vulkan-capable driver is required and no other video driver will work. Place a PS2 BIOS dump in 'system/pcsx2/bios' and a copy of the emulator's 'resources' directory in 'system/pcsx2/resources'. Save states, .m3u disc swapping and the usual renderer/upscale/speedhack core options are implemented. This core is experimental."

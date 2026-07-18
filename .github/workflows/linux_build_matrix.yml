@@ -2,8 +2,9 @@ name: 🐧 Linux Builds (aarch64)
 
 # yaps2 fork: we ship for ARM Linux handhelds only, so CI builds a single
 # platform — native aarch64 — in two flavours:
-#   * yaps2-qt   AppImage + tarball (desktop / dev + Rocknix / Batocera, which run Wayland)
-#   * yaps2-sdl  handheld tarball    (bare-kmsdrm handhelds; VK_KHR_display direct-display)
+#   * yaps2-qt        AppImage + tarball (desktop / dev + Rocknix / Batocera, which run Wayland)
+#   * yaps2-sdl       handheld tarball    (bare-kmsdrm handhelds; VK_KHR_display direct-display)
+#   * yaps2-libretro  core .so            (RetroArch and other libretro frontends)
 
 on:
   push:
@@ -31,4 +32,12 @@ jobs:
     with:
       jobName: "SDL Handheld Build (arm64)"
       artifactPrefixName: "yaps2-linux-arm64-sdl"
+    secrets: inherit
+
+  build_linux_libretro:
+    name: "libretro Core"
+    uses: ./.github/workflows/linux_build_libretro.yml
+    with:
+      jobName: "libretro Core Build (arm64)"
+      artifactPrefixName: "yaps2-linux-arm64-libretro"
     secrets: inherit

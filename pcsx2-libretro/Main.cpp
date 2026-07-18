@@ -872,6 +872,20 @@ static struct retro_core_option_v2_definition kOptionDefinitions[] = {
 		nullptr, "video",
 		{{"Minimum", nullptr}, {"Basic", nullptr}, {"Medium", nullptr}, {"High", nullptr},
 			{"Full", nullptr}, {"Maximum", nullptr}, {nullptr, nullptr}}, "Basic"},
+	{"yaps2_dithering", "Dithering", "Dithering",
+		"Unscaled replicates PS2 dithering; Off can reduce banding artifacts at higher internal resolutions.",
+		nullptr, "video",
+		{{"Unscaled", nullptr}, {"Off", nullptr}, {"Scaled", nullptr}, {nullptr, nullptr}}, "Unscaled"},
+	{"yaps2_trilinear_filtering", "Trilinear Filtering", "Trilinear Filtering",
+		nullptr, nullptr, "video",
+		{{"Automatic", nullptr}, {"Off", nullptr}, {"Trilinear (PS2)", nullptr},
+			{"Trilinear (Forced)", nullptr}, {nullptr, nullptr}}, "Automatic"},
+	{"yaps2_mipmapping", "Hardware Mipmapping", "Hardware Mipmapping",
+		nullptr, nullptr, "video",
+		{{"enabled", nullptr}, {"disabled", nullptr}, {nullptr, nullptr}}, "enabled"},
+	{"yaps2_fxaa", "FXAA", "FXAA",
+		"Cheap post-process anti-aliasing.", nullptr, "video",
+		{{"disabled", nullptr}, {"enabled", nullptr}, {nullptr, nullptr}}, "disabled"},
 	{"yaps2_texture_filtering", "Texture Filtering", "Texture Filtering",
 		"Bilinear (PS2) filters as the game requests. Forced filters everything, which smooths textures "
 		"but can blur 2D elements; the sprite-excluding variant protects UI sprites.",
@@ -947,6 +961,10 @@ static struct retro_variable kCoreVariables[] = {
 	{"yaps2_no_interlacing_patches", "No-interlacing patches (restart); disabled|enabled"},
 	{"yaps2_widescreen_patches", "Widescreen patches (restart); disabled|enabled"},
 	{"yaps2_blending_accuracy", "Blending accuracy; Basic|Minimum|Medium|High|Full|Maximum"},
+	{"yaps2_dithering", "Dithering; Unscaled|Off|Scaled"},
+	{"yaps2_trilinear_filtering", "Trilinear filtering; Automatic|Off|Trilinear (PS2)|Trilinear (Forced)"},
+	{"yaps2_mipmapping", "Hardware mipmapping; enabled|disabled"},
+	{"yaps2_fxaa", "FXAA; disabled|enabled"},
 	{"yaps2_texture_filtering", "Texture filtering; Bilinear (PS2)|Nearest|Bilinear (Forced)|Bilinear (Forced excluding sprites)"},
 	{"yaps2_anisotropic_filtering", "Anisotropic filtering; 0|2|4|8|16"},
 	{"yaps2_sw_threads", "Software renderer threads; 2|0|1|3|4"},
@@ -1096,6 +1114,45 @@ static void ApplyCoreOptions(bool startup)
 				}
 			}
 		}
+
+		var = {"yaps2_dithering", nullptr};
+		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+		{
+			// Values match the Dithering config field: 0=Off, 1=Scaled, 2=Unscaled.
+			static constexpr std::pair<const char*, int> kDither[] = {{"Off", 0}, {"Scaled", 1}, {"Unscaled", 2}};
+			for (const auto& [name, value] : kDither)
+			{
+				if (!std::strcmp(var.value, name))
+				{
+					s_base_settings->SetIntValue("EmuCore/GS", "dithering_ps2", value);
+					break;
+				}
+			}
+		}
+
+		var = {"yaps2_trilinear_filtering", nullptr};
+		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+		{
+			// Values match the TriFiltering enum (Automatic=-1).
+			static constexpr std::pair<const char*, int> kTri[] = {
+				{"Automatic", -1}, {"Off", 0}, {"Trilinear (PS2)", 1}, {"Trilinear (Forced)", 2}};
+			for (const auto& [name, value] : kTri)
+			{
+				if (!std::strcmp(var.value, name))
+				{
+					s_base_settings->SetIntValue("EmuCore/GS", "TriFilter", value);
+					break;
+				}
+			}
+		}
+
+		var = {"yaps2_mipmapping", nullptr};
+		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+			s_base_settings->SetBoolValue("EmuCore/GS", "hw_mipmap", !std::strcmp(var.value, "enabled"));
+
+		var = {"yaps2_fxaa", nullptr};
+		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+			s_base_settings->SetBoolValue("EmuCore/GS", "fxaa", !std::strcmp(var.value, "enabled"));
 
 		var = {"yaps2_ee_cycle_rate", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
