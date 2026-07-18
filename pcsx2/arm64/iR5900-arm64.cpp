@@ -3016,11 +3016,25 @@ static bool eeScanContinuable(u32 startpc, u32 i, u32 target)
 // target a block start — is preserved (a block starting at the delay-slot
 // address compiles it as a plain instruction, which is the architectural
 // meaning of branching into a delay slot).
-static u32 eeSuperblockClampSplit(u32 target)
+//
+// Degenerate case: the site is the block's FIRST instruction (guest loops
+// that re-enter at the head branch's delay slot — e.g. UYA's dcache flush
+// routine: `beqz exit; addiu t2,-1; ...; bgtz t2, <the addiu>`). Clamping
+// there would yield s_nEndBlock == startpc — a zero-length block whose
+// short tail is an unconditional self-linked B with no event check, i.e. a
+// hard wedge. Skipping the split is always correct (the target simply gets
+// its own block when branched to), so fall back to ending at the branch.
+static u32 eeSuperblockClampSplit(u32 startpc, u32 branch_i, u32 target)
 {
 	for (int k = 0; k < s_numContSites; k++)
+	{
 		if (target == s_contSitePcs[k] + 4)
-			return s_contSitePcs[k];
+		{
+			if (s_contSitePcs[k] > startpc)
+				return s_contSitePcs[k];
+			return branch_i + 8; // degenerate: no split, end at the branch
+		}
+	}
 	return target;
 }
 
@@ -3296,7 +3310,7 @@ static void recRecompile(const u32 startpc)
 					// target so the loop head becomes its own linkable block.
 					// Mirrors x86 iR5900.cpp:2362 and the COP1/COP2 case below.
 					if (s_branchTo > startpc && s_branchTo < i)
-						s_nEndBlock = eeSuperblockClampSplit(s_branchTo);
+						s_nEndBlock = eeSuperblockClampSplit(startpc, i, s_branchTo);
 					else
 					{
 						s_nEndBlock = i + 8;
@@ -3332,7 +3346,7 @@ static void recRecompile(const u32 startpc)
 				// is its own linkable block. Mirrors x86 iR5900.cpp:2387 and
 				// the COP1/COP2 case below.
 				if (s_branchTo > startpc && s_branchTo < i)
-					s_nEndBlock = eeSuperblockClampSplit(s_branchTo);
+					s_nEndBlock = eeSuperblockClampSplit(startpc, i, s_branchTo);
 				else
 				{
 					s_nEndBlock = i + 8;
@@ -3355,7 +3369,7 @@ static void recRecompile(const u32 startpc)
 					s_branchLoopable = true;
 					s_branchTo = _Imm_ * 4 + i + 4;
 					if (s_branchTo > startpc && s_branchTo < i)
-						s_nEndBlock = eeSuperblockClampSplit(s_branchTo);
+						s_nEndBlock = eeSuperblockClampSplit(startpc, i, s_branchTo);
 					else
 					{
 						s_nEndBlock = i + 8;
@@ -3377,6 +3391,11 @@ StartRecomp:
 	// treat it as an exit boundary either.)
 	while (s_numContSites > 0 && s_contSitePcs[s_numContSites - 1] + 8 > s_nEndBlock)
 		s_numContSites--;
+
+	// A zero-length block would compile to an unconditional self-linked B
+	// with no event check (hard wedge) — eeSuperblockClampSplit's degenerate
+	// fallback guarantees this can't happen.
+	pxAssert(s_nEndBlock > startpc);
 
 	// Self-modifying code detection: generate inline memory checks for manual blocks.
 	const bool is_manual_block = memory_protect_recompiled_code(startpc, (s_nEndBlock - startpc) >> 2);

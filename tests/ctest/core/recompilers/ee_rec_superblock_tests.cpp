@@ -374,6 +374,38 @@ TEST(EeRecSuperblock, SmcInFusedRegionRecompiles)
 	h.ExpectGpr64(reg::t2, 0x55ull);
 }
 
+// Branch-into-delay-slot loop (UYA's dcache-flush idiom): a forward
+// conditional at the block's FIRST instruction becomes a continuation site,
+// and a later backward branch targets that site's DELAY SLOT. The
+// backward-split clamp must NOT truncate the block to zero length (which
+// compiles to an unconditional self-linked B with no event check — a hard
+// wedge); it falls back to ending at the backward branch. Regression test
+// for the SL-05 live-game hang: on regression this test hangs (CI timeout)
+// rather than failing an assertion.
+TEST(EeRecSuperblock, HeadBranchDelaySlotLoopDoesNotWedge)
+{
+	ResetRecAndPageProtection();
+	EeRecTestHarness h;
+	h.SetGpr64(reg::t0, 0);
+	h.SetGpr64(reg::t2, 3);
+	h.LoadProgramNoTerm({
+		BEQ(reg::t2, reg::zero, 4),  // idx0: exit → idx5 (continuation site at startpc)
+		ADDIU(reg::t2, reg::t2, -1), // idx1: ds — the backward target below
+		ADDIU(reg::t0, reg::t0, 1),  // idx2: body
+		BGTZ(reg::t2, -3),       // idx3: → idx1 (into the delay slot)
+		NOP,                         // idx4: ds
+		ADDIU(reg::v0, reg::zero, 9),// idx5: exit
+		J(kPark), NOP,
+	});
+	h.Run();
+	h.ExpectGpr64(reg::t0, 3ull);
+	h.ExpectGpr64(reg::t2, 0ull);
+	h.ExpectGpr64(reg::v0, 9ull);
+	// Degenerate-clamp fallback: block spans head branch through the backward
+	// branch (+ds) instead of splitting to zero length.
+	EXPECT_EQ(recEeBlockGuestSize(kProgPc), 5u);
+}
+
 // Store/load traffic straddling a continuation site: inline fastmem stores
 // publish before the branch, loads after it read them, both paths.
 TEST(EeRecSuperblock, MemoryTrafficAcrossContinuation)
