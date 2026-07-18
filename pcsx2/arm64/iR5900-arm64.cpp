@@ -3001,8 +3001,31 @@ static bool eeScanInsnIsBranchClass(u32 code)
 // Scanner-side continuation gate for a conditional branch at `i` targeting
 // `target`. Forward-only (backward keeps the split/end logic), bounded, and
 // refuses a branch-class delay slot.
-static bool eeScanContinuable(u32 startpc, u32 i, u32 target)
+static bool eeScanContinuable(u32 startpc, u32 i, u32 target, u32 famBit)
 {
+	// Testing-only kill switch (offline A/B bisection of superblock formation):
+	// YAPS2_EESB is a bitmask of continuation-site families — bit0 BEQ/BNE,
+	// bit1 BLEZ/BGTZ, bit2 REGIMM BLTZ/BGEZ. Unset = all on; 0 = all off
+	// (reverts block formation to the pre-superblock shape without a rebuild).
+	// Not a production knob.
+	static const u32 s_sitesMask = []() -> u32 {
+		const char* e = std::getenv("YAPS2_EESB");
+		return e ? static_cast<u32>(std::atoi(e)) : 0xffu;
+	}();
+	if (!(s_sitesMask & famBit))
+		return false;
+	// Optional guest-pc window (hex), same offline-bisection purpose: only
+	// branches inside [YAPS2_EESB_LO, YAPS2_EESB_HI) become sites.
+	static const u32 s_siteLo = []() -> u32 {
+		const char* e = std::getenv("YAPS2_EESB_LO");
+		return e ? static_cast<u32>(std::strtoul(e, nullptr, 16)) : 0u;
+	}();
+	static const u32 s_siteHi = []() -> u32 {
+		const char* e = std::getenv("YAPS2_EESB_HI");
+		return e ? static_cast<u32>(std::strtoul(e, nullptr, 16)) : 0xffffffffu;
+	}();
+	if (i < s_siteLo || i >= s_siteHi)
+		return false;
 	return target > i + 4 &&
 		   s_numContSites < kMaxContSites &&
 		   ((i + 8 - startpc) / 4) < kMaxSuperblockInsns &&
@@ -3298,7 +3321,7 @@ static void recRecompile(const u32 startpc)
 					// SL-03: forward BLTZ/BGEZ (rt 0/1) become continuation
 					// sites — scan on at the fallthrough. Likely + AL forms
 					// keep ending the block.
-					if (_Rt_ < 2 && eeScanContinuable(startpc, i, _Imm_ * 4 + i + 4))
+					if (_Rt_ < 2 && eeScanContinuable(startpc, i, _Imm_ * 4 + i + 4, 4u))
 					{
 						s_contSitePcs[s_numContSites++] = i;
 						i += 8; // skip the delay slot word in the scan
@@ -3331,7 +3354,8 @@ static void recRecompile(const u32 startpc)
 				// idiom (always taken: everything after is unreachable on the
 				// fallthrough) and keeps ending the block.
 				if (!((cpuRegs.code >> 26) == 4 && _Rs_ == _Rt_) &&
-					eeScanContinuable(startpc, i, _Imm_ * 4 + i + 4))
+					eeScanContinuable(startpc, i, _Imm_ * 4 + i + 4,
+						(cpuRegs.code >> 26) < 6 ? 1u : 2u))
 				{
 					s_contSitePcs[s_numContSites++] = i;
 					i += 8; // skip the delay slot word in the scan
@@ -3771,6 +3795,24 @@ StartRecomp:
 	Perf::ee.RegisterPC((void*)s_pCurBlockEx->fnptr, s_pCurBlockEx->x86size, s_pCurBlockEx->startpc);
 
 	recPtr = armEndBlock();
+
+	// Testing-only: YAPS2_EESB_DUMP=<hex guest pc> dumps the emitted host code
+	// (including the literal pool, post-finalize so offsets are patched) of any
+	// block whose guest range covers that pc (offline bisection aid).
+	{
+		static const u32 s_dumpPc = []() -> u32 {
+			const char* e = std::getenv("YAPS2_EESB_DUMP");
+			return e ? static_cast<u32>(std::strtoul(e, nullptr, 16)) : 0u;
+		}();
+		if (s_dumpPc && startpc <= s_dumpPc && s_dumpPc < s_nEndBlock)
+		{
+			fprintf(stderr, "EESB_DUMP: block %08x..%08x fnptr=%p size=%u endptr=%p sites=%d\n",
+				startpc, s_nEndBlock, (void*)s_pCurBlockEx->fnptr, s_pCurBlockEx->x86size,
+				(void*)recPtr, s_numContSites);
+			armDisassembleAndDumpCode((void*)s_pCurBlockEx->fnptr,
+				static_cast<size_t>((uptr)recPtr - (uptr)s_pCurBlockEx->fnptr));
+		}
+	}
 
 	pxAssert((g_cpuHasConstReg & g_cpuFlushedConstReg) == g_cpuHasConstReg);
 

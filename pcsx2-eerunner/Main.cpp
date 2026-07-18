@@ -1412,7 +1412,7 @@ static void DisasmBlock(u32 pc, u32 maxInsns = 48)
 // pushes its index into classified_out), or empty.
 static std::vector<std::string> ClassifyCycleDerivedLoads(u32 block_pc,
 	const std::vector<int>& divergent_gprs, std::vector<int>* classified_out = nullptr,
-	u32 maxInsns = 48)
+	u32 end_pc = 0, const ee_divtrace::FullSnap* entry_snap = nullptr, u32 maxInsns = 48)
 {
 	std::vector<std::string> out;
 	if (divergent_gprs.empty())
@@ -1423,6 +1423,21 @@ static std::vector<std::string> ClassifyCycleDerivedLoads(u32 block_pc,
 	bool tainted[32] = {false};
 	std::string taint_src[32]; // origin description carried with the taint
 	known[0] = true; // $zero
+	if (entry_snap)
+	{
+		// Seed the const-tracker with the interpreter's ACTUAL register file at
+		// the offending block's entry. Without this, a load whose base address
+		// was materialized in an EARLIER block (lui 0x1000 there, ori 0x800
+		// here) can't be proven to hit a timer COUNT register and under-taints
+		// — the common software-virtual-clock accumulator shape spans blocks.
+		// Every unmodeled GPR-writing op below must clear known[] so a seeded
+		// value can never go stale into an over-taint.
+		for (int i = 1; i < 32; ++i)
+		{
+			regval[i] = static_cast<u32>(entry_snap->cpu.GPR.r[i].UD[0]);
+			known[i] = true;
+		}
+	}
 
 	auto setTaint = [&](u32 d, bool t, const std::string& src) {
 		tainted[d] = t;
@@ -1433,6 +1448,13 @@ static std::vector<std::string> ClassifyCycleDerivedLoads(u32 block_pc,
 	for (u32 i = 0; i < maxInsns; ++i)
 	{
 		const u32 addr = block_pc + i * 4;
+		// The divergence was OBSERVED entering end_pc — the offending block's
+		// body is [block_pc, end_pc). Walking past the observation point (e.g.
+		// through a following block's jr + delay slot when the offending block
+		// ended at an ei) lets an untainted overwrite in code that never ran
+		// erase taint that was live at the observation point.
+		if (end_pc && addr >= end_pc)
+			break;
 		const u32 code = memRead32(addr);
 		const u32 op = code >> 26;
 		const u32 rs = (code >> 21) & 0x1f;
@@ -1447,16 +1469,34 @@ static std::vector<std::string> ClassifyCycleDerivedLoads(u32 block_pc,
 			// 0x800-strided bank). Flag the whole COUNT word.
 			return (a == 0x10000000 || a == 0x10000800 || a == 0x10001000 || a == 0x10001800);
 		};
+		auto isCyclePhaseMmio = [&](u32 a) {
+			// Any EE hardware-register load whose value reflects transfer/counter
+			// PROGRESS is cycle-phase-derived the same way a timer COUNT is: the
+			// JIT and interp accumulate cycles at different granularity, so DMAC
+			// CHCR/MADR/QWC/TADR tag fields, FIFO counts, GS CSR etc. legitimately
+			// read back a different phase. The 0x1000_xxxx bank plus the GS
+			// privileged bank. The ResyncAfter reconvergence gate downstream is
+			// what keeps this broad class from masking a real codegen bug.
+			return isTimerCount(a) || (a >= 0x10000000 && a < 0x10010000) ||
+				   (a >= 0x12000000 && a < 0x12002000);
+		};
 
 		// Word/dword loads — a timer-COUNT load TAINTS rt; any other load gives rt
 		// a fresh untainted value.
 		if (op == 0x23 /*LW*/ || op == 0x27 /*LWU*/ || op == 0x37 /*LD*/ || op == 0x1e /*LQ*/)
 		{
-			if (known[rs] && isTimerCount(regval[rs] + static_cast<u32>(simm)))
+			if (known[rs] && isCyclePhaseMmio(regval[rs] + static_cast<u32>(simm)))
 			{
 				const u32 ea = regval[rs] + static_cast<u32>(simm);
-				const int timer = (ea - 0x10000000) / 0x800;
-				setTaint(rt, true, fmt::format("EE Timer {} COUNT ({:#010x}) read at pc={:#010x}", timer, ea, addr));
+				if (isTimerCount(ea))
+				{
+					const int timer = (ea - 0x10000000) / 0x800;
+					setTaint(rt, true, fmt::format("EE Timer {} COUNT ({:#010x}) read at pc={:#010x}", timer, ea, addr));
+				}
+				else
+				{
+					setTaint(rt, true, fmt::format("cycle-phase MMIO ({:#010x}) read at pc={:#010x}", ea, addr));
+				}
 			}
 			else
 			{
@@ -1519,11 +1559,38 @@ static std::vector<std::string> ClassifyCycleDerivedLoads(u32 block_pc,
 			else
 			{
 				// Unmodeled SPECIAL GPR writer (mfhi/mflo/movz/…): clear rd taint
-				// (under-taint = safe). jr/jalr/sync have rd=0, harmless.
+				// AND const-knowledge (a seeded entry value must not survive an
+				// unmodeled write). jr/jalr/sync have rd=0, harmless.
 				setTaint(rd, false, {});
+				known[rd] = false;
 			}
 		}
-		// (Stores, branches, COP ops write no GPR we model — taint left intact.
+		else if (op == 0x20 || op == 0x21 || op == 0x22 || op == 0x24 || op == 0x25 ||
+				 op == 0x26 || op == 0x1a || op == 0x1b)
+		{
+			// Sub-word / unaligned loads (lb/lh/lwl/lbu/lhu/lwr/ldl/ldr): rt gets
+			// a fresh unmodeled value — clear const-knowledge and taint.
+			setTaint(rt, false, {});
+			known[rt] = false;
+		}
+		else if (op == 0x03 /*JAL*/)
+		{
+			setTaint(31, false, {});
+			known[31] = false;
+		}
+		else if (op == 0x1c /*MMI*/)
+		{
+			setTaint(rd, false, {});
+			known[rd] = false;
+		}
+		else if (op == 0x10 || op == 0x11 || op == 0x12)
+		{
+			// COPx moves (mfc/cfc land here when not the modeled MFC0 Count):
+			// conservatively treat rt as freshly written.
+			setTaint(rt, false, {});
+			known[rt] = false;
+		}
+		// (Stores, branches write no GPR — taint and const-knowledge left intact.
 		// Any other GPR-writing op we don't recognize is an under-taint, which is
 		// the safe direction: the divergence is reported as real, not skipped.)
 
@@ -1825,8 +1892,30 @@ static bool ZoomFromCheckpoint(const std::string& ckpt)
 				jsnap.cpu.GPR.r[i].UD[1] != isnap.cpu.GPR.r[i].UD[1])
 				divergent_gprs.push_back(i);
 
+		// Seed the timer-taint classifier with the interpreter's register file at
+		// the offending block's ENTRY (the last interp sample at prev_pc before
+		// the divergence index) so load addresses materialized in earlier blocks
+		// resolve. Costs one extra frame re-run per data divergence.
+		ee_divtrace::FullSnap esnap{};
+		bool have_esnap = false;
+		if (ar.prev_pc)
+		{
+			for (u32 pi = ar.interp_idx; pi-- > 0;)
+			{
+				if (interp_fine[pi].pc == ar.prev_pc)
+				{
+					if (!reload(false))
+						return true;
+					esnap = RunFineSnapAtFromHere(pi);
+					have_esnap = true;
+					break;
+				}
+			}
+		}
+
 		std::vector<int> classified;
-		const auto timer_notes = ClassifyCycleDerivedLoads(ar.prev_pc, divergent_gprs, &classified);
+		const auto timer_notes = ClassifyCycleDerivedLoads(ar.prev_pc, divergent_gprs, &classified, ar.pc,
+			have_esnap ? &esnap : nullptr);
 
 		const bool fully_benign =
 			!divergent_gprs.empty() &&
