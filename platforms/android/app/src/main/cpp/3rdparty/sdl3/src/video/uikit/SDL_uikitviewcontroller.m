@@ -578,6 +578,15 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 - (void)textFieldTextDidChange:(NSNotification *)notification
 {
+    // The observer above is registered with object:nil, so this fires for every
+    // UITextField in the app. Ignore notifications not from this controller's
+    // own field; otherwise app-level text fields (e.g. SwiftUI-hosted forms)
+    // would trigger SDL_StartTextInput/SDL_StopTextInput and steal first
+    // responder on every keystroke.
+    if (notification.object != textField) {
+        return;
+    }
+
     // When opening a password manager overlay to select a password and have it auto-filled,
     // text input becomes stopped as a result of the keyboard being hidden or the text field losing focus.
     // As a workaround, ensure text input is activated on any changes to the text field.
