@@ -86,6 +86,24 @@ Focus makeFocus(Lcg& r)
 
 u32 baseReg(Lcg& r) { return (r.next() & 1) ? reg::k0 : reg::k1; }
 
+// EEFUZZ_COUNT scales every test's seed count and EEFUZZ_START offsets the
+// seed range (soak runs shard [start, start+count) across fresh processes —
+// per-seed cost grows superlinearly with in-process seed count, so many
+// short-lived processes beat one long one). Defaults: checked-in count, 0.
+u32 seedCount(u32 def)
+{
+	if (const char* c = std::getenv("EEFUZZ_COUNT"))
+		return static_cast<u32>(std::strtoul(c, nullptr, 10));
+	return def;
+}
+
+u32 seedStart()
+{
+	if (const char* c = std::getenv("EEFUZZ_START"))
+		return static_cast<u32>(std::strtoul(c, nullptr, 10));
+	return 0;
+}
+
 s16 fuzzImm(Lcg& r)
 {
 	const u32 v = r.next();
@@ -112,7 +130,7 @@ u32 genOp(Lcg& r, const Focus& f)
 {
 	const u32 d = f.pick(r), a = f.src(r), b = f.src(r);
 	const s16 imm = fuzzImm(r);
-	switch (r.range(58))
+	switch (r.range(73))
 	{
 		// ---- scalar 32-bit ALU ----
 		case 0: return ADDU(d, a, b);
@@ -189,7 +207,7 @@ u32 genOp(Lcg& r, const Focus& f)
 				case 2: return e::LDL(d, memOff(r, 8, 1), baseReg(r));
 				default: return e::LDR(d, memOff(r, 8, 1), baseReg(r));
 			}
-		default:
+		case 57:
 			switch (r.range(4))
 			{
 				case 0: return SWL(a, memOff(r, 4, 1), baseReg(r));
@@ -197,6 +215,102 @@ u32 genOp(Lcg& r, const Focus& f)
 				case 2: return e::SDL(a, memOff(r, 8, 1), baseReg(r));
 				default: return e::SDR(a, memOff(r, 8, 1), baseReg(r));
 			}
+		// ---- sign/zero-extension loads (upper-half staleness class) ----
+		case 58:
+			switch (r.range(3))
+			{
+				case 0: return LB(d, memOff(r, 1, 1), baseReg(r));
+				case 1: return LHU(d, memOff(r, 2, 2), baseReg(r));
+				default: return e::LWU(d, memOff(r, 4, 4), baseReg(r));
+			}
+		// ---- remaining shift shapes ----
+		case 59:
+			switch (r.range(4))
+			{
+				case 0: return SLLV(d, a, b);
+				case 1: return SRAV(d, a, b);
+				case 2: return e::DSLLV(d, a, b);
+				default: return e::DSRL32(d, a, r.range(32));
+			}
+		// ---- unsigned/wide mult + pipe-1 HI/LO ----
+		case 60:
+			switch (r.range(4))
+			{
+				case 0: return MULTU(a, b);
+				case 1: return e::DMULTU(a, b);
+				case 2: return e::MADDU(d, a, b);
+				default: return e::MULTU1(d, a, b);
+			}
+		// ---- MMI parallel mult/mul-acc (native PMADDW/PMSUBW family) ----
+		case 61:
+			switch (r.range(6))
+			{
+				case 0: return e::PMADDW(d, a, b);
+				case 1: return e::PMSUBW(d, a, b);
+				case 2: return e::PMULTW(d, a, b);
+				case 3: return e::PMADDH(d, a, b);
+				case 4: return e::PMULTH(d, a, b);
+				default: return e::PHMADH(d, a, b);
+			}
+		case 62: return (r.next() & 1) ? e::PMADDUW(d, a, b) : e::PMULTUW(d, a, b);
+		// ---- MMI HI/LO 128-bit transfer ----
+		case 63:
+			switch (r.range(4))
+			{
+				case 0: return e::PMFHI(d);
+				case 1: return e::PMFLO(d);
+				case 2: return e::PMTHI(a);
+				default: return e::PMTLO(a);
+			}
+		case 64: return e::PMFHL(d, r.range(5)); // all forms: LW/UW/SLW/LH/SH
+		case 65: return e::PMTHL(a);
+		// ---- MMI saturating / unsigned add-sub ----
+		case 66:
+			switch (r.range(6))
+			{
+				case 0: return e::PADDSW(d, a, b);
+				case 1: return e::PSUBSW(d, a, b);
+				case 2: return e::PADDSH(d, a, b);
+				case 3: return e::PADDSB(d, a, b);
+				case 4: return e::PADDUW(d, a, b);
+				default: return e::PSUBUB(d, a, b);
+			}
+		// ---- MMI compare / min-max / abs ----
+		case 67:
+			switch (r.range(6))
+			{
+				case 0: return e::PCEQW(d, a, b);
+				case 1: return e::PCEQB(d, a, b);
+				case 2: return e::PMAXW(d, a, b);
+				case 3: return e::PMINH(d, a, b);
+				case 4: return e::PABSW(d, a);
+				default: return e::PADSBH(d, a, b);
+			}
+		// ---- MMI pack/unpack/exchange remainder ----
+		case 68:
+			switch (r.range(6))
+			{
+				case 0: return e::PEXTLB(d, a, b);
+				case 1: return e::PEXTUB(d, a, b);
+				case 2: return e::PPACH(d, a, b);
+				case 3: return e::PPACB(d, a, b);
+				case 4: return e::PINTH(d, a, b);
+				default: return e::PINTEH(d, a, b);
+			}
+		case 69:
+			switch (r.range(6))
+			{
+				case 0: return e::PEXEH(d, a);
+				case 1: return e::PREVH(d, a);
+				case 2: return e::PEXEW(d, a);
+				case 3: return e::PROT3W(d, a);
+				case 4: return e::PEXCH(d, a);
+				default: return e::PEXCW(d, a);
+			}
+		case 70: return (r.next() & 1) ? e::PEXT5(d, a) : e::PPAC5(d, a);
+		case 71: return (r.next() & 1) ? e::PNOR(d, a, b) : e::PXOR(d, a, b);
+		default:
+			return e::PSRLH(d, a, r.range(16));
 	}
 }
 
@@ -230,7 +344,8 @@ TEST(EeFuzz, StraightLineResidencyMix)
 	if (const char* keep = std::getenv("EEFUZZ_KEEP"))
 		std::sscanf(keep, "%u-%u", &keep_lo, &keep_hi);
 
-	for (u32 seed = 0; seed < 2000; ++seed)
+	const u32 start = seedStart(), count = seedCount(2000);
+	for (u32 seed = start; seed < start + count; ++seed)
 	{
 		if (only != ~0u && seed != only)
 			continue;
@@ -267,7 +382,8 @@ TEST(EeFuzz, StraightLineResidencyMix)
 //    so every program still runs to the terminator on both runners. ──────────
 TEST(EeFuzz, ForwardBranchResidencyMix)
 {
-	for (u32 seed = 0; seed < 1000; ++seed)
+	const u32 start = seedStart(), count = seedCount(1000);
+	for (u32 seed = start; seed < start + count; ++seed)
 	{
 		SCOPED_TRACE(::testing::Message() << "seed=" << seed);
 		if (std::getenv("EEFUZZ_TRACE"))
@@ -311,5 +427,64 @@ TEST(EeFuzz, ForwardBranchResidencyMix)
 		h.Run();
 		if (::testing::Test::HasFailure())
 			return;
+	}
+}
+
+// ── Backward loops: real block re-entry. A counted loop makes the JIT
+//    re-execute a compiled block body with whatever residency state the
+//    previous iteration left behind — coverage the forward-only tests can
+//    never reach (pins/slots live across the dispatcher round-trip).
+//    Soundness: the counter reg is excluded from the focus set, so no
+//    generated op can write it (genOp dests come only from the focus set);
+//    the loop decrements it to exactly zero, so both runners execute the
+//    identical full trace to the terminator. ───────────────────────────────
+TEST(EeFuzz, BackwardLoopResidencyMix)
+{
+	const u32 start = seedStart(), count = seedCount(1000);
+	for (u32 seed = start; seed < start + count; ++seed)
+	{
+		SCOPED_TRACE(::testing::Message() << "seed=" << seed);
+		if (std::getenv("EEFUZZ_TRACE"))
+			std::fprintf(stderr, "EEFUZZ seed=%u\n", seed);
+		Lcg r{seed * 0xA24BAED4963EE407ull + 0xB5EFull};
+		const Focus f = makeFocus(r);
+		// Counter: any pool reg not in the focus set (so genOp never writes it).
+		u32 ctr;
+		do
+			ctr = kDestPool[r.range(kDestPoolN)];
+		while ([&] { for (u32 x : f.regs) if (x == ctr) return true; return false; }());
+
+		EeRecTestHarness h;
+		SeedState(h, r);
+
+		std::vector<u32> prog;
+		const u32 nLoops = 1 + r.range(3);
+		for (u32 l = 0; l < nLoops; ++l)
+		{
+			const u32 iters = 2 + r.range(6);
+			prog.push_back(ADDIU(ctr, reg::zero, static_cast<s16>(iters)));
+			const u32 bodyLen = 4 + r.range(16);
+			const size_t loopStart = prog.size();
+			for (u32 i = 0; i < bodyLen; ++i)
+				prog.push_back(genOp(r, f));
+			prog.push_back(ADDIU(ctr, ctr, -1));
+			// Branch back to loopStart; offset is relative to the delay slot.
+			const s16 off = static_cast<s16>(
+				static_cast<s32>(loopStart) - static_cast<s32>(prog.size() + 1));
+			prog.push_back(BNE(ctr, reg::zero, off));
+			prog.push_back(genOp(r, f)); // delay slot (runs every iteration)
+		}
+		for (u32 i = 0; i < 8; ++i)
+			prog.push_back(genOp(r, f)); // post-loop consume traffic
+
+		h.LoadProgram(prog);
+		h.Run();
+		if (::testing::Test::HasFailure())
+		{
+			std::fprintf(stderr, "EEFUZZ FAILING seed=%u prog:\n", seed);
+			for (size_t i = 0; i < prog.size(); ++i)
+				std::fprintf(stderr, "  %3zu: %08x\n", i, prog[i]);
+			return;
+		}
 	}
 }
