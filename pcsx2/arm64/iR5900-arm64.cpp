@@ -1582,36 +1582,54 @@ void SetBranchImmCall(u32 imm, u32 return_pc)
 //  Block state save/restore for delay slots
 // =====================================================================================================
 
-static _arm64gprregs s_savedGPRs[NUM_ARM_GPR_REGS];
-static _arm64neonregs s_savedNEON[NUM_ARM_NEON_REGS];
-static GPR_reg64 s_savedConstRegs[32];
-static u32 s_savedHasConstReg, s_savedFlushedConstReg;
-static u32 s_savedBlockCycles;
-static EEINST* s_savedInstInfo;
-static Cop2VfCacheState s_savedVfCache;
+// The full per-fork compile state: everything a branch arm needs restored to
+// re-emit from the fork point. Shared by the delay-slot fork
+// (SaveBranchState/LoadBranchState) and the superblock side-exit snapshots.
+struct BranchCompileState
+{
+	_arm64gprregs gprs[NUM_ARM_GPR_REGS];
+	_arm64neonregs neon[NUM_ARM_NEON_REGS];
+	GPR_reg64 constRegs[32];
+	u32 hasConstReg, flushedConstReg;
+	u32 blockCycles;
+	EEINST* instInfo;
+	Cop2VfCacheState vfCache;
+
+	void capture()
+	{
+		vfCache = cop2VfCacheGetState();
+		blockCycles = s_nBlockCycles;
+		memcpy(constRegs, g_cpuConstRegs, sizeof(g_cpuConstRegs));
+		hasConstReg = g_cpuHasConstReg;
+		flushedConstReg = g_cpuFlushedConstReg;
+		instInfo = g_pCurInstInfo;
+		memcpy(gprs, arm64gprs, sizeof(arm64gprs));
+		memcpy(neon, arm64neon, sizeof(arm64neon));
+	}
+
+	void restore() const
+	{
+		cop2VfCacheSetState(vfCache);
+		s_nBlockCycles = blockCycles;
+		memcpy(g_cpuConstRegs, constRegs, sizeof(g_cpuConstRegs));
+		g_cpuHasConstReg = hasConstReg;
+		g_cpuFlushedConstReg = flushedConstReg;
+		g_pCurInstInfo = instInfo;
+		memcpy(arm64gprs, gprs, sizeof(arm64gprs));
+		memcpy(arm64neon, neon, sizeof(arm64neon));
+	}
+};
+
+static BranchCompileState s_savedBranchState;
 
 void SaveBranchState()
 {
-	s_savedVfCache = cop2VfCacheGetState();
-	s_savedBlockCycles = s_nBlockCycles;
-	memcpy(s_savedConstRegs, g_cpuConstRegs, sizeof(g_cpuConstRegs));
-	s_savedHasConstReg = g_cpuHasConstReg;
-	s_savedFlushedConstReg = g_cpuFlushedConstReg;
-	s_savedInstInfo = g_pCurInstInfo;
-	memcpy(s_savedGPRs, arm64gprs, sizeof(arm64gprs));
-	memcpy(s_savedNEON, arm64neon, sizeof(arm64neon));
+	s_savedBranchState.capture();
 }
 
 void LoadBranchState()
 {
-	cop2VfCacheSetState(s_savedVfCache);
-	s_nBlockCycles = s_savedBlockCycles;
-	memcpy(g_cpuConstRegs, s_savedConstRegs, sizeof(g_cpuConstRegs));
-	g_cpuHasConstReg = s_savedHasConstReg;
-	g_cpuFlushedConstReg = s_savedFlushedConstReg;
-	g_pCurInstInfo = s_savedInstInfo;
-	memcpy(arm64gprs, s_savedGPRs, sizeof(arm64gprs));
-	memcpy(arm64neon, s_savedNEON, sizeof(arm64neon));
+	s_savedBranchState.restore();
 }
 
 // =====================================================================================================
