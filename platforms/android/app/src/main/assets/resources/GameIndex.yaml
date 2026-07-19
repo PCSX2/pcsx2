@@ -1667,7 +1667,7 @@ SCAJ-20059:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCAJ-20060:
   name: "Time Crisis 3"
   region: "NTSC-Unk"
@@ -1903,7 +1903,7 @@ SCAJ-20094:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCAJ-20095:
   name: "Digital Devil Saga - Avatar Tuner"
   region: "NTSC-Unk"
@@ -2622,7 +2622,7 @@ SCAJ-20194:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCAJ-20195:
   name: "Ape Escape 3 [PlayStation2 the Best]"
   region: "NTSC-C"
@@ -4188,6 +4188,7 @@ SCED-52952:
     autoFlush: 2 # Fixes lighting.
     halfPixelOffset: 5 # Aligns post-processing and fixes desert tiles.
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
+    hwDownloadMode: 3 # Fixes Some Effect
 SCED-52969:
   name: "EyeToy - Play 2"
   region: "PAL-M12"
@@ -5969,6 +5970,7 @@ SCES-52460:
     gpuTargetCLUT: 2 # Fixes CLUT-based lighting.
     cpuCLUTRender: 2 # Fixes colour LUT rendering.
     limit24BitDepth: 2 # Prioritise lower 24-bit depth.
+    hwDownloadMode: 3 # Fixes Some Effect
 SCES-52529:
   name: "Sly 2 - Band of Thieves"
   region: "PAL-M11"
@@ -5998,7 +6000,7 @@ SCES-52582:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCES-52586:
   name: "Death by Degrees"
   region: "PAL-E-S"
@@ -7647,6 +7649,7 @@ SCKA-20040:
     gpuTargetCLUT: 2 # Fixes CLUT-based lighting.
     cpuCLUTRender: 2 # Fixes colour LUT rendering.
     limit24BitDepth: 2 # Prioritise lower 24-bit depth.
+    hwDownloadMode: 3 # Fixes Some Effect
 SCKA-20041:
   name: "아이토이 - 플레이 2"
   name-en: "EyeToy - Play 2"
@@ -7809,7 +7812,7 @@ SCKA-20057:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCKA-20058:
   name: "액션 로망 범피 트롯"
   name-en: "Action Romance Bumpy Trot"
@@ -8103,6 +8106,7 @@ SCKA-20090:
   gsHWFixes:
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
+    hwDownloadMode: 3 # Fixes Sun Eefect
 SCKA-20091:
   name: "MLB 07 - The Show" # No listed Korean name on ReDump
   region: "NTSC-K"
@@ -8196,7 +8200,7 @@ SCKA-20105:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering (matches the rest of the Everybody's Golf 4 family).
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCKA-20106:
   name: "완다 와 거상 [PlayStation 2 BigHit Series]" # Undumped on ReDump as of 2025-08-28
   name-en: "Wander and the Colossus [PlayStation 2 BigHit Series]"
@@ -9328,7 +9332,7 @@ SCPS-15059:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCPS-15060:
   name: "幸福操作官"
   name-sort: "こうふくそうさかん"
@@ -10251,7 +10255,7 @@ SCPS-19301:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCPS-19302:
   name: "ラチェット&クランク2 ガガガ！銀河のコマンドーっす [PlayStation2 the Best]"
   name-sort: "らちぇっとあんどくらんく2 ががが！ぎんがのこまんどーっす [PlayStation2 the Best]"
@@ -10451,7 +10455,7 @@ SCPS-19319:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCPS-19320:
   name: "ワンダと巨像 [PlayStation2 the Best]"
   name-sort: "わんだときょぞう [PlayStation2 the Best]"
@@ -11639,6 +11643,7 @@ SCUS-97177:
   gsHWFixes:
     autoFlush: 2 # Fixes speed effect intensity.
     minimumBlendingLevel: 2 # Fixes cloud depth rendering.
+    hwDownloadMode: 3 # Fixes Sun Efffect
 SCUS-97178:
   name: "NFL GameDay 2002"
   region: "NTSC-U"
@@ -12206,6 +12211,7 @@ SCUS-97329:
   gsHWFixes:
     autoFlush: 2 # Fixes speed effect intensity.
     minimumBlendingLevel: 2 # Fixes cloud depth rendering.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SCUS-97330:
   name: "Jak 3"
   region: "NTSC-U"
@@ -12223,6 +12229,7 @@ SCUS-97330:
     gpuTargetCLUT: 2 # Fixes CLUT-based lighting.
     cpuCLUTRender: 2 # Fixes colour LUT rendering.
     limit24BitDepth: 2 # Prioritise lower 24-bit depth.
+    hwDownloadMode: 3 # Fixes Some Effect
 SCUS-97331:
   name: "Official U.S. PlayStation Magazine Demo Disc 078"
   region: "NTSC-U"
@@ -12533,6 +12540,7 @@ SCUS-97412:
     autoFlush: 2 # Fixes lighting.
     halfPixelOffset: 5 # Aligns post-processing and fixes desert tiles.
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
+    hwDownloadMode: 3 # Fixes Some Effect
 SCUS-97413:
   name: "Ratchet & Clank - Up Your Arsenal [Public Beta v1.0]"
   region: "NTSC-U"
@@ -13114,6 +13122,7 @@ SCUS-97516:
     gpuTargetCLUT: 2 # Fixes CLUT-based lighting.
     cpuCLUTRender: 2 # Fixes colour LUT rendering.
     limit24BitDepth: 2 # Prioritise lower 24-bit depth.
+    hwDownloadMode: 3 # Fixes Some Effect
 SCUS-97517:
   name: "Killzone [Greatest Hits]"
   region: "NTSC-U"
@@ -13829,6 +13838,7 @@ SLAJ-25078:
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
+    hwDownloadMode: 3 # Fixes Some Effect
 SLAJ-25079:
   name: "Shin Sangoku Musou 4 - Empires"
   region: "NTSC-Unk"
@@ -14221,6 +14231,7 @@ SLED-52325:
   gsHWFixes:
     autoFlush: 2 # Fixes speed effect intensity.
     minimumBlendingLevel: 2 # Fixes cloud depth rendering.
+    hwDownloadMode: 3 # Fixes Sun Eefect
 SLED-52326:
   name: "007 - Everything or Nothing [Demo]"
   region: "PAL-E"
@@ -15088,11 +15099,13 @@ SLES-50120:
   compat: 5
   gsHWFixes:
     minimumBlendingLevel: 3 # Fixes car shadows.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLES-50121:
   name: "Rumble Racing"
   region: "PAL-Unk"
   gsHWFixes:
     minimumBlendingLevel: 3 # Fixes car shadows.
+    hwDownloadMode: 3 Fixes Sun Effect
 SLES-50126:
   name: "Quake III - Revolution"
   region: "PAL-M3"
@@ -16954,6 +16967,7 @@ SLES-50876:
     cpuSpriteRenderLevel: 2 # Needed for above.
     nativePaletteDraw: 1 # Fixes broken menu graphics.
     nativeScaling: 2 # Fixes sun occlusion around buildings.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLES-50877:
   name: "TimeSplitters 2"
   region: "PAL-M5"
@@ -20086,6 +20100,7 @@ SLES-52153:
     cpuSpriteRenderLevel: 2 # Needed for above.
     nativePaletteDraw: 1 # Fixes broken menu graphics.
     nativeScaling: 2 # Fixes sun occlusion around buildings.
+    hwDownloadMode: 3 # Fixes Sun Effext
 SLES-52155:
   name: "EyeToy - L'Eredita"
   region: "PAL-I"
@@ -20153,6 +20168,7 @@ SLES-52202:
   gsHWFixes:
     autoFlush: 2 # Fixes speed effect intensity.
     minimumBlendingLevel: 2 # Fixes cloud depth rendering.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLES-52203:
   name: "Silent Line - Armored Core"
   region: "PAL-E"
@@ -23892,6 +23908,8 @@ SLES-53483:
   name: "Magna Carta - Tears of Blood"
   region: "PAL-E"
   compat: 5
+  gsHWFixe:
+    minimumBlendingLevel: 0 # Fixes Graphics
 SLES-53484:
   name: "Eagle Eye Golf"
   region: "PAL-M5"
@@ -24082,6 +24100,7 @@ SLES-53524:
   gsHWFixes:
     halfPixelOffset: 5 # Fixes effect alignment.
     autoFlush: 2 # Fixes bloom intensity
+    hwDownloadMode: 3 # Fixes Some Effect
 SLES-53525:
   name: "Mortal Kombat - Shaolin Monks"
   region: "PAL-G"
@@ -24090,6 +24109,7 @@ SLES-53525:
   gsHWFixes:
     halfPixelOffset: 5 # Fixes effect alignment.
     autoFlush: 2 # Fixes bloom intensity
+    hwDownloadMode: 3 # Fixes Some Effect
 SLES-53526:
   name: "The Suffering - Ties That Bind"
   name-sort: "Suffering, The - Ties That Bind"
@@ -25421,6 +25441,7 @@ SLES-53886:
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
+    hwDownloadMode: 3 # Fixes Some Effect
   patches:
     ADDFF505:
       content: |-
@@ -25864,6 +25885,7 @@ SLES-54030:
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
+    hwDownloadMode: 3 # Fixes Some Effect
   patches:
     CAA04879:
       content: |-
@@ -27345,6 +27367,7 @@ SLES-54490:
   gsHWFixes:
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLES-54492:
   name: "Need for Speed - Carbon [Collector's Edition]"
   region: "PAL-E"
@@ -32465,6 +32488,7 @@ SLKA-25196:
     cpuSpriteRenderLevel: 2 # Needed for above.
     nativePaletteDraw: 1 # Fixes broken menu graphics.
     nativeScaling: 2 # Fixes sun occlusion around buildings.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLKA-25198:
   name: "천주 홍" # Undumped on ReDump as of 2025-08-28
   name-en: "Tenchu Kurenai"
@@ -33523,6 +33547,7 @@ SLKA-25372:
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
+    hwDownloadMode: 3 # Fixes Some Effect
 SLKA-25373:
   name: "파이트 나이트 라운드 3"
   name-en: "Fight Night Round 3"
@@ -45914,6 +45939,7 @@ SLPM-65741:
     cpuSpriteRenderLevel: 2 # Needed for above.
     nativePaletteDraw: 1 # Fixes broken menu graphics.
     nativeScaling: 2 # Fixes sun occlusion around buildings.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLPM-65742:
   name: "COOL GIRL [KONAMI The BEST] [ディスク1/2]"
   name-sort: "くーる がーる [KONAMI The BEST] [でぃすく1/2]"
@@ -49772,6 +49798,7 @@ SLPM-66354:
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
+    hwDownloadMode: 3 # Fixes Some Effect
   patches:
     B3A9F9ED:
       content: |-
@@ -50961,6 +50988,7 @@ SLPM-66550:
   gsHWFixes:
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLPM-66551:
   name: "APPLESEED EX"
   name-sort: "あっぷるしーど えくす"
@@ -54626,6 +54654,7 @@ SLPM-74241:
   gsHWFixes:
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLPM-74242:
   name: "Devil May Cry 3 Special Edition [PlayStation2 the Best]"
   name-sort: "でびる めい くらい 3 Special Edition [PlayStation2 the Best]"
@@ -65530,6 +65559,7 @@ SLUS-20174:
   compat: 5
   gsHWFixes:
     minimumBlendingLevel: 3 # Fixes car shadows.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLUS-20175:
   name: "Mobile Suit Gundam - Journey to Jaburo"
   region: "NTSC-U"
@@ -67670,6 +67700,7 @@ SLUS-20587:
     cpuSpriteRenderLevel: 2 # Needed for above.
     nativePaletteDraw: 1 # Fixes broken menu graphics.
     nativeScaling: 2 # Fixes sun occlusion around buildings.
+    hwDownloadMode: 3 # Fixes Sun Eefect
 SLUS-20588:
   name: "Activision Anthology"
   region: "NTSC-U"
@@ -70563,6 +70594,7 @@ SLUS-21087:
   gsHWFixes:
     halfPixelOffset: 5 # Fixes effect alignment.
     autoFlush: 2 # Fixes bloom intensity
+    hwDownloadMode: 3 # Fixes Some Effect
 SLUS-21088:
   name: "Disney's Chicken Little"
   region: "NTSC-U"
@@ -71388,6 +71420,8 @@ SLUS-21221:
   name: "Magna Carta - Tears of Blood"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    minimumBlendingLevel: 0 # Fixes Graphics
 SLUS-21222:
   name: "Top Spin"
   region: "NTSC-U"
@@ -72554,6 +72588,7 @@ SLUS-21376:
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
+    hwDownloadMode: 3 # Fixes Some Effect
   patches:
     5C891FF1:
       content: |-
@@ -73399,6 +73434,7 @@ SLUS-21503:
   gsHWFixes:
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLUS-21536:
   name: "The Sims 2 - Pets"
   name-sort: "Sims 2, The - Pets"
@@ -76813,7 +76849,7 @@ TCES-52582:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 TCES-53033:
   name: "Formula One 05 Beta Trial Code"
   region: "PAL-E"
