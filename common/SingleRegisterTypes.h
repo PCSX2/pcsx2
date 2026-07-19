@@ -106,8 +106,14 @@ using r128 = __m128i;
 
 using r128 = uint32x4_t;
 
-#define RETURNS_R128 r128 __vectorcall
-#define TAKES_R128 __vectorcall
+// No __vectorcall here: it is an x86-ism, and AAPCS64 already passes/returns
+// 128-bit vectors in SIMD registers under the default calling convention. On
+// aarch64-windows, clang-cl folds __vectorcall to an explicit default-CC
+// (`cdecl`) attribute, which then conflicts with the preserve_most annotation
+// on the vtlb r128 dispatchers (vtlb.h) — while changing nothing about how
+// r128 is actually passed. (Elsewhere __vectorcall is #defined empty anyway.)
+#define RETURNS_R128 r128
+#define TAKES_R128
 
 [[maybe_unused]] __fi static void CopyQWC(void* dest, const void* src)
 {
