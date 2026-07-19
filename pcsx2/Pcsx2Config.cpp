@@ -840,6 +840,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(Crop[3]) &&
 
 		OpEqu(OsdScale) &&
+		OpEqu(OsdColor) &&
 		OpEqu(OsdMargin) &&
 		OpEqu(OsdFontPath) &&
 		OpEqu(OsdMessagesPos) &&
@@ -1069,6 +1070,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapIntEnumEx(InterlaceMode, "deinterlace_mode");
 
 	SettingsWrapEntry(OsdScale);
+	SettingsWrapEntry(OsdColor);
 	SettingsWrapEntry(OsdMargin);
 	SettingsWrapEntry(OsdFontPath);
 	SettingsWrapIntEnumEx(OsdMessagesPos, "OsdMessagesPos");

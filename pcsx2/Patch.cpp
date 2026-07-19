@@ -365,8 +365,17 @@ template <typename F>
 void Patch::EnumeratePnachFiles(const std::string_view serial, u32 crc, bool cheats, bool for_ui, const F& f)
 {
 	// Prefer files on disk over the zip.
+	//
+	// Hardcore blocks CHEATS, not fixes. The old condition dropped every on-disk pnach,
+	// which is asymmetric with the fallback below: the bundled patches.zip stays enabled in
+	// hardcore, so a widescreen/no-interlace/bug-fix patch worked when it shipped in our zip
+	// and silently did nothing when the same patch sat on disk. That killed everything the
+	// in-app Patch Manager writes (it only ever writes to disk) the moment a user turned
+	// hardcore on, with no message explaining why. Cheats remain gated here AND in
+	// ReloadEnabledLists (EnableCheats && !IsHardcoreModeActive), so cheat pnach files are
+	// still never enumerated or enabled under hardcore.
 	std::vector<std::string> disk_patch_files;
-	if (for_ui || !Achievements::IsHardcoreModeActive())
+	if (for_ui || !cheats || !Achievements::IsHardcoreModeActive())
 		disk_patch_files = FindPatchFilesOnDisk(serial, crc, cheats, for_ui);
 
 	bool unlabeled_patch_found = false;

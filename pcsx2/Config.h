@@ -901,6 +901,9 @@ struct Pcsx2Config
 		int Crop[4] = {};
 
 		float OsdScale = DEFAULT_OSD_SCALE;
+		/// OSD text colour as 0xRRGGBB. 0 keeps the classic white, so existing installs and
+		/// every non-Android frontend are untouched unless the user picks a colour.
+		u32 OsdColor = 0;
 		float OsdMargin = DEFAULT_OSD_MARGIN;
 		std::string OsdFontPath;
 		OsdOverlayPos OsdMessagesPos = DEFAULT_OSD_MESSAGE_POS;

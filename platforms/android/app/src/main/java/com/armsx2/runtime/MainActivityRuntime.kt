@@ -9,6 +9,7 @@ import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.ParcelFileDescriptor
 import android.os.Process
 import android.os.SystemClock
 import android.view.InputDevice
@@ -330,9 +331,15 @@ open class MainActivityRuntime : ComponentActivity() {
         // to slot 0.
         val currentSaveSlot = androidx.compose.runtime.mutableIntStateOf(0)
 
-        // Latched state for the "Fast Forward (toggle)" hotkey: each press flips
-        // between Turbo and Nominal limiter mode (vs. the hold variant which is
-        // momentary). Reset to false whenever a game starts.
+        // Limiter mode fast-forward engages. Unlimited (3), NOT Turbo (1): Turbo caps at
+        // EmulationSpeed.TurboScalar (2.0x) and reporters consistently saw no speed-up from
+        // it, while "frame limit off" — which is this same mode 3 — visibly fast-forwarded.
+        // Use the path that demonstrably works instead of shipping a second one that doesn't.
+        const val FF_LIMITER_MODE = 3
+
+        // Latched state for the "Fast Forward (toggle)" hotkey: each press flips between
+        // fast-forward and the base limiter mode (vs. the hold variant which is momentary).
+        // Reset to false whenever a game starts.
         @Volatile var fastForwardToggleActive = false
 
         // Latched state for the "Slow Down (toggle)" hotkey (LimiterModeType::Slomo).
@@ -649,7 +656,7 @@ open class MainActivityRuntime : ComponentActivity() {
             // user has to toggle off then on again to resync. Re-assert the latched mode.
             NativeApp.speedhackLimitermode(
                 when {
-                    fastForwardToggleActive -> 1
+                    fastForwardToggleActive -> FF_LIMITER_MODE
                     slowDownToggleActive -> 2
                     else -> if (limit) 0 else 3
                 }
@@ -721,8 +728,50 @@ open class MainActivityRuntime : ComponentActivity() {
             val queued = pendingExternalLaunch.value
             if (queued.isNullOrEmpty()) return
             pendingExternalLaunch.value = null
-            launchGame(queued, null, external = true)
+            // Launching from a frontend (Cocoon/Daijisho/ES-DE) used to pass a null GameInfo,
+            // so settingsKey was null and launchGame resolved GLOBAL settings — per-game
+            // settings, per-game memory cards and per-game orientation all silently ignored,
+            // while the same title launched from our own library applied them correctly.
+            // Build a GameInfo for the incoming URI so the external path keys off the same
+            // settingsKey the library path does (serial for discs, filename stem otherwise).
+            launchGame(queued, externalGameInfo(queued), external = true)
         }
+
+        /**
+         * Minimal [GameInfo] for a URI arriving from outside the app. The serial is probed
+         * off the image the same way the library scan does (SYSTEM.CNF via
+         * NativeApp.getGameSerialFromFd) so per-game settings stored under the serial are
+         * found. A failed probe is fine and expected for ELF/homebrew — settingsKey then
+         * falls back to the filename stem, matching issue #253's behaviour.
+         */
+        private fun externalGameInfo(uriString: String): GameInfo? = runCatching {
+            val uri = uriString.toUri()
+            val name = uri.lastPathSegment?.substringAfterLast('/')?.substringAfterLast(':').orEmpty()
+            val stem = name.substringBeforeLast('.').ifBlank { name }
+            val serial = runCatching {
+                val ctx = instance ?: return@runCatching null
+                // detachFd() hands ownership of the fd to native, which closes it — same
+                // contract GameLibraryRepository.probeDocument/probeRaw use. Do NOT wrap in
+                // use{}: closing an already-detached descriptor is not ours to do.
+                val raw = if (uri.scheme == "content") {
+                    val pfd = ctx.contentResolver.openFileDescriptor(uri, "r") ?: return@runCatching null
+                    NativeApp.getGameSerialFromFd(pfd.detachFd())
+                } else {
+                    val f = java.io.File(uri.path ?: return@runCatching null)
+                    if (!f.isFile) return@runCatching null
+                    val pfd = ParcelFileDescriptor.open(f, ParcelFileDescriptor.MODE_READ_ONLY)
+                    NativeApp.getGameSerialFromFd(pfd.detachFd())
+                }
+                // The probe tags its result "<platform>:<serial>" when SYSTEM.CNF parsed.
+                raw?.takeIf { it.isNotBlank() }?.substringAfterLast(':')?.takeIf { it.isNotBlank() }
+            }.getOrNull()
+            GameInfo(
+                uri = uri,
+                title = stem,
+                serial = serial,
+                extension = name.substringAfterLast('.', "").uppercase(),
+            )
+        }.getOrNull()
 
         /**
          * Boot to BIOS (no game disc). Unlike `start()` this does NOT
@@ -1632,6 +1681,7 @@ open class MainActivityRuntime : ComponentActivity() {
         com.armsx2.CoverArtStyle.load()
         com.armsx2.GridLabels.load()
         com.armsx2.EnglishTitles.load()
+        com.armsx2.CustomNames.load()
         com.armsx2.HiddenGames.load()
         com.armsx2.LibraryTitles.load()
         com.armsx2.LibraryRecentShelf.load()
@@ -1829,6 +1879,18 @@ open class MainActivityRuntime : ComponentActivity() {
                         PlayTime.startSession(currentGame.value?.serial)
                     else
                         PlayTime.endSession()
+                }
+                // Screen orientation follows whichever tier is live: a running game's per-game
+                // rotation, the library's global one. Driven reactively off currentGame rather
+                // than from each site that mutates it — THREE paths clear it (stop-to-library,
+                // startBios, external-launch intent) and only stop-to-library re-applied, so a
+                // per-game landscape lock leaked into the library and left the global setting
+                // looking dead until the app was killed. Keyed on the same settingsKey
+                // applyEmulationOrientation resolves with, so it re-fires exactly when the
+                // resolved tier changes. The explicit calls elsewhere are kept: they fire on
+                // the non-Compose paths (boot, settings edit) without waiting for recomposition.
+                androidx.compose.runtime.LaunchedEffect(currentGame.value?.settingsKey) {
+                    instance?.applyEmulationOrientation()
                 }
                 WindowImpl.Window {
                     if (surface.value != null) {
@@ -2533,7 +2595,7 @@ open class MainActivityRuntime : ComponentActivity() {
                         if (event.repeatCount == 0) {
                             // Holding FF supersedes any latched FF-toggle.
                             if (down) fastForwardToggleActive = false
-                            runCatching { NativeApp.speedhackLimitermode(if (down) 1 else baseLimiterMode()) }
+                            runCatching { NativeApp.speedhackLimitermode(if (down) FF_LIMITER_MODE else baseLimiterMode()) }
                         }
                     }
                     return true
@@ -2650,7 +2712,7 @@ open class MainActivityRuntime : ComponentActivity() {
         val on = fastForwardToggleActive
         // Fast-forward supersedes an active slow-down latch (mutually exclusive).
         if (on) slowDownToggleActive = false
-        runCatching { NativeApp.speedhackLimitermode(if (on) 1 else baseLimiterMode()) }
+        runCatching { NativeApp.speedhackLimitermode(if (on) FF_LIMITER_MODE else baseLimiterMode()) }
         hotkeyToast(if (on) "Fast Forward ON" else "Fast Forward OFF")
     }
 
@@ -3554,7 +3616,7 @@ open class MainActivityRuntime : ComponentActivity() {
             ControllerMappings.SysHotkey.FAST_FORWARD_TOGGLE -> {
                 fastForwardToggleActive = !fastForwardToggleActive
                 val on = fastForwardToggleActive
-                runCatching { NativeApp.speedhackLimitermode(if (on) 1 else baseLimiterMode()) }
+                runCatching { NativeApp.speedhackLimitermode(if (on) FF_LIMITER_MODE else baseLimiterMode()) }
                 hotkeyToast(if (on) "Fast Forward ON" else "Fast Forward OFF")
             }
             ControllerMappings.SysHotkey.GYRO_TOGGLE -> toggleGyro()

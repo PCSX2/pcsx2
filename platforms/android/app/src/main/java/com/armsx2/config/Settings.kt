@@ -3,6 +3,7 @@ package com.armsx2.config
 import com.armsx2.ShaderParams
 import com.armsx2.config.Settings.Companion.emitSink
 import com.armsx2.config.Settings.Companion.merge
+import com.armsx2.runtime.MainActivityRuntime
 import kr.co.iefriends.pcsx2.NativeApp
 import org.json.JSONArray
 import org.json.JSONObject
@@ -282,6 +283,14 @@ data class Settings(
     val spinCpuReadbacks: Boolean = false,
     /** EmuCore/GS/IntegerScaling — integer pixel scaling for the presented image. Default off. */
     val integerScaling: Boolean = false,
+    /** EmuCore/GS/CropLeft|Top|Right|Bottom — overscan crop in native PS2 pixels, trimmed
+     *  from the presented image before aspect/integer scaling. Many PS2 titles render
+     *  garbage or a black band in the overscan area that a TV would have hidden; the core
+     *  has always supported this (GSRenderer.cpp) but Android never exposed it (issue #293). */
+    val cropLeft: Int = 0,
+    val cropTop: Int = 0,
+    val cropRight: Int = 0,
+    val cropBottom: Int = 0,
     /** EmuCore/GS/dithering_ps2 — 0 Off / 1 Scaled / 2 Unscaled / 3 Force 32bit. PCSX2 default Unscaled. */
     val dithering: Int = 2,
     /** EmuCore/GS/VsyncQueueSize — frames the GS thread may queue (0-3). PCSX2 default 2. */
@@ -499,6 +508,8 @@ data class Settings(
      *  normal). Defaults to 65: at 100 the stats block dominates a handheld screen, and 65 matches
      *  the size NetherSX2 ships. Saves still on the old 100 default are migrated once (ConfigStore). */
     val osdScale: Int = 65,
+    /** EmuCore/GS/OsdColor — OSD text colour as 0xRRGGBB. 0 = default white. */
+    val osdColor: Int = 0,
     /** EmuCore/GS/VsyncEnable — sync presentation to the display refresh (less
      *  tearing/smoother, slightly higher latency). Applies on game restart. */
     val vsyncEnable: Boolean = false,
@@ -645,7 +656,22 @@ data class Settings(
         // takes effect immediately. 0 = Nominal (capped at native rate),
         // 3 = Unlimited.
         put("EmuCore/GS", "FrameLimitEnable", "bool", frameLimitEnable.toString())
-        if (emitSink == null) NativeApp.speedhackLimitermode(if (frameLimitEnable) 0 else 3)
+        // Preserve an active fast-forward / slow-down latch, exactly as the in-game overlay's
+        // own frame-limit path does (MainActivityRuntime). Forcing 0/3 unconditionally here
+        // clobbered Turbo on ANY settings apply while fast-forward was engaged — and since
+        // fastForwardToggleActive stayed true, the UI kept reporting "Fast Forward ON" with
+        // the emulator back at nominal speed. Frame-limit-off masked the bug: that path IS
+        // mode 3, so re-asserting it changed nothing, which is why users saw "frame limit off
+        // fast-forwards but fast-forward doesn't".
+        if (emitSink == null) {
+            NativeApp.speedhackLimitermode(
+                when {
+                    MainActivityRuntime.fastForwardToggleActive -> MainActivityRuntime.FF_LIMITER_MODE
+                    MainActivityRuntime.slowDownToggleActive -> 2
+                    else -> if (frameLimitEnable) 0 else 3
+                }
+            )
+        }
         // Framerate/NominalScalar — custom speed / FPS cap as a fraction of
         // native. commitSettings → ApplySettings → CheckForEmulationSpeedConfigChanges
         // → UpdateTargetSpeed picks this up live. Clamp mirrors emucore's
@@ -782,6 +808,7 @@ data class Settings(
         )
         NativeApp.osdShowFPS(osdShowFps)
         NativeApp.osdSetScale(osdScale.toFloat())
+        NativeApp.osdSetColor(osdColor)
         NativeApp.osdShowVPS(osdShowVps)
         NativeApp.osdShowSpeed(osdShowSpeed)
         NativeApp.osdShowCPU(osdShowCpu)
@@ -1011,6 +1038,7 @@ data class Settings(
             osdShowTextureReplacements = boolAt("EmuCore/GS/OsdShowTextureReplacements") ?: this.osdShowTextureReplacements,
             osdShowFps = boolAt("EmuCore/GS/OsdShowFPS") ?: this.osdShowFps,
             osdScale = intAt("EmuCore/GS/OsdScale") ?: this.osdScale,
+            osdColor = intAt("EmuCore/GS/OsdColor") ?: this.osdColor,
             vsyncEnable = boolAt("EmuCore/GS/VsyncEnable") ?: this.vsyncEnable,
             osdShowVps = boolAt("EmuCore/GS/OsdShowVPS") ?: this.osdShowVps,
             osdShowSpeed = boolAt("EmuCore/GS/OsdShowSpeed") ?: this.osdShowSpeed,
@@ -1046,6 +1074,10 @@ data class Settings(
             spinGpuReadbacks = boolAt("EmuCore/GS/HWSpinGPUForReadbacks") ?: this.spinGpuReadbacks,
             spinCpuReadbacks = boolAt("EmuCore/GS/HWSpinCPUForReadbacks") ?: this.spinCpuReadbacks,
             integerScaling = boolAt("EmuCore/GS/IntegerScaling") ?: this.integerScaling,
+            cropLeft = intAt("EmuCore/GS/CropLeft") ?: this.cropLeft,
+            cropTop = intAt("EmuCore/GS/CropTop") ?: this.cropTop,
+            cropRight = intAt("EmuCore/GS/CropRight") ?: this.cropRight,
+            cropBottom = intAt("EmuCore/GS/CropBottom") ?: this.cropBottom,
             dithering = intAt("EmuCore/GS/dithering_ps2") ?: this.dithering,
             vsyncQueueSize = intAt("EmuCore/GS/VsyncQueueSize") ?: this.vsyncQueueSize,
             autoFlushSw = boolAt("EmuCore/GS/autoflush_sw") ?: this.autoFlushSw,
@@ -1193,6 +1225,7 @@ data class Settings(
         put("EmuCore/GS", "OsdShowTextureReplacements", "bool", osdShowTextureReplacements.toString())
         put("EmuCore/GS", "OsdShowFPS", "bool", osdShowFps.toString())
         put("EmuCore/GS", "OsdScale", "int", osdScale.coerceIn(25, 500).toString())
+        put("EmuCore/GS", "OsdColor", "int", (osdColor and 0xFFFFFF).toString())
         put("EmuCore/GS", "VsyncEnable", "bool", vsyncEnable.toString())
         put("EmuCore/GS", "OsdShowVPS", "bool", osdShowVps.toString())
         put("EmuCore/GS", "OsdShowSpeed", "bool", osdShowSpeed.toString())
@@ -1231,6 +1264,10 @@ data class Settings(
         put("EmuCore/GS", "HWSpinGPUForReadbacks", "bool", spinGpuReadbacks.toString())
         put("EmuCore/GS", "HWSpinCPUForReadbacks", "bool", spinCpuReadbacks.toString())
         put("EmuCore/GS", "IntegerScaling", "bool", integerScaling.toString())
+        put("EmuCore/GS", "CropLeft", "int", cropLeft.coerceIn(0, 640).toString())
+        put("EmuCore/GS", "CropTop", "int", cropTop.coerceIn(0, 640).toString())
+        put("EmuCore/GS", "CropRight", "int", cropRight.coerceIn(0, 640).toString())
+        put("EmuCore/GS", "CropBottom", "int", cropBottom.coerceIn(0, 640).toString())
         put("EmuCore/GS", "dithering_ps2", "int", dithering.coerceIn(0, 3).toString())
         put("EmuCore/GS", "VsyncQueueSize", "int", vsyncQueueSize.coerceIn(0, 3).toString())
         put("EmuCore/GS", "autoflush_sw", "bool", autoFlushSw.toString())
@@ -1459,6 +1496,10 @@ data class Settings(
         put("spinGpuReadbacks", spinGpuReadbacks)
         put("spinCpuReadbacks", spinCpuReadbacks)
         put("integerScaling", integerScaling)
+        put("cropLeft", cropLeft)
+        put("cropTop", cropTop)
+        put("cropRight", cropRight)
+        put("cropBottom", cropBottom)
         put("dithering", dithering)
         put("vsyncQueueSize", vsyncQueueSize)
         put("autoFlushSw", autoFlushSw)
@@ -1534,6 +1575,7 @@ data class Settings(
         put("osdShowTextureReplacements", osdShowTextureReplacements)
         put("osdShowFps", osdShowFps)
         put("osdScale", osdScale)
+        put("osdColor", osdColor)
         put("vsyncEnable", vsyncEnable)
         put("osdShowVps", osdShowVps)
         put("osdShowSpeed", osdShowSpeed)
@@ -1702,6 +1744,10 @@ data class Settings(
                 spinGpuReadbacks = json.optBoolean("spinGpuReadbacks", def.spinGpuReadbacks),
                 spinCpuReadbacks = json.optBoolean("spinCpuReadbacks", def.spinCpuReadbacks),
                 integerScaling = json.optBoolean("integerScaling", def.integerScaling),
+                cropLeft = json.optInt("cropLeft", def.cropLeft),
+                cropTop = json.optInt("cropTop", def.cropTop),
+                cropRight = json.optInt("cropRight", def.cropRight),
+                cropBottom = json.optInt("cropBottom", def.cropBottom),
                 dithering = json.optInt("dithering", def.dithering),
                 vsyncQueueSize = json.optInt("vsyncQueueSize", def.vsyncQueueSize),
                 autoFlushSw = json.optBoolean("autoFlushSw", def.autoFlushSw),
@@ -1784,6 +1830,7 @@ data class Settings(
                 osdShowTextureReplacements = json.optBoolean("osdShowTextureReplacements", def.osdShowTextureReplacements),
                 osdShowFps = json.optBoolean("osdShowFps", def.osdShowFps),
                 osdScale = json.optInt("osdScale", def.osdScale),
+                osdColor = json.optInt("osdColor", def.osdColor),
                 vsyncEnable = json.optBoolean("vsyncEnable", def.vsyncEnable),
                 osdShowVps = json.optBoolean("osdShowVps", def.osdShowVps),
                 osdShowSpeed = json.optBoolean("osdShowSpeed", def.osdShowSpeed),
@@ -1923,6 +1970,10 @@ data class Settings(
             if (current.spinGpuReadbacks     != base.spinGpuReadbacks)     j.put("spinGpuReadbacks", current.spinGpuReadbacks)
             if (current.spinCpuReadbacks     != base.spinCpuReadbacks)     j.put("spinCpuReadbacks", current.spinCpuReadbacks)
             if (current.integerScaling       != base.integerScaling)       j.put("integerScaling", current.integerScaling)
+            if (current.cropLeft             != base.cropLeft)             j.put("cropLeft", current.cropLeft)
+            if (current.cropTop              != base.cropTop)              j.put("cropTop", current.cropTop)
+            if (current.cropRight            != base.cropRight)            j.put("cropRight", current.cropRight)
+            if (current.cropBottom           != base.cropBottom)           j.put("cropBottom", current.cropBottom)
             if (current.dithering            != base.dithering)            j.put("dithering", current.dithering)
             if (current.vsyncQueueSize       != base.vsyncQueueSize)       j.put("vsyncQueueSize", current.vsyncQueueSize)
             if (current.autoFlushSw          != base.autoFlushSw)          j.put("autoFlushSw", current.autoFlushSw)
@@ -2000,6 +2051,7 @@ data class Settings(
             if (current.osdShowTextureReplacements != base.osdShowTextureReplacements) j.put("osdShowTextureReplacements", current.osdShowTextureReplacements)
             if (current.osdShowFps != base.osdShowFps) j.put("osdShowFps", current.osdShowFps)
             if (current.osdScale != base.osdScale) j.put("osdScale", current.osdScale)
+            if (current.osdColor != base.osdColor) j.put("osdColor", current.osdColor)
             if (current.vsyncEnable != base.vsyncEnable) j.put("vsyncEnable", current.vsyncEnable)
             if (current.osdShowVps != base.osdShowVps) j.put("osdShowVps", current.osdShowVps)
             if (current.osdShowSpeed != base.osdShowSpeed) j.put("osdShowSpeed", current.osdShowSpeed)
@@ -2134,6 +2186,10 @@ data class Settings(
             spinGpuReadbacks = if (overrides.has("spinGpuReadbacks")) overrides.getBoolean("spinGpuReadbacks") else base.spinGpuReadbacks,
             spinCpuReadbacks = if (overrides.has("spinCpuReadbacks")) overrides.getBoolean("spinCpuReadbacks") else base.spinCpuReadbacks,
             integerScaling = if (overrides.has("integerScaling")) overrides.getBoolean("integerScaling") else base.integerScaling,
+            cropLeft = if (overrides.has("cropLeft")) overrides.getInt("cropLeft") else base.cropLeft,
+            cropTop = if (overrides.has("cropTop")) overrides.getInt("cropTop") else base.cropTop,
+            cropRight = if (overrides.has("cropRight")) overrides.getInt("cropRight") else base.cropRight,
+            cropBottom = if (overrides.has("cropBottom")) overrides.getInt("cropBottom") else base.cropBottom,
             dithering = if (overrides.has("dithering")) overrides.getInt("dithering") else base.dithering,
             vsyncQueueSize = if (overrides.has("vsyncQueueSize")) overrides.getInt("vsyncQueueSize") else base.vsyncQueueSize,
             autoFlushSw = if (overrides.has("autoFlushSw")) overrides.getBoolean("autoFlushSw") else base.autoFlushSw,
@@ -2226,6 +2282,7 @@ data class Settings(
             osdShowTextureReplacements = if (overrides.has("osdShowTextureReplacements")) overrides.getBoolean("osdShowTextureReplacements") else base.osdShowTextureReplacements,
             osdShowFps = if (overrides.has("osdShowFps")) overrides.getBoolean("osdShowFps") else base.osdShowFps,
             osdScale = if (overrides.has("osdScale")) overrides.getInt("osdScale") else base.osdScale,
+            osdColor = if (overrides.has("osdColor")) overrides.getInt("osdColor") else base.osdColor,
             vsyncEnable = if (overrides.has("vsyncEnable")) overrides.getBoolean("vsyncEnable") else base.vsyncEnable,
             osdShowVps = if (overrides.has("osdShowVps")) overrides.getBoolean("osdShowVps") else base.osdShowVps,
             osdShowSpeed = if (overrides.has("osdShowSpeed")) overrides.getBoolean("osdShowSpeed") else base.osdShowSpeed,

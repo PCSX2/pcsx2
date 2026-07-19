@@ -81,6 +81,18 @@ SmallString s_speed_icon;
 
 constexpr ImU32 white_color = IM_COL32(255, 255, 255, 255);
 
+/// The OSD's normal text colour. GSConfig.OsdColor is 0xRRGGBB, and 0 means "unset" — every
+/// frontend but Android leaves it there, so the overlay keeps its classic white by default.
+/// Read per line rather than cached: it's a field load, and caching it would need invalidating
+/// on every settings apply for no measurable gain.
+__fi static ImU32 OsdTextColor()
+{
+	const u32 rgb = GSConfig.OsdColor;
+	if (rgb == 0)
+		return white_color;
+	return IM_COL32((rgb >> 16) & 0xFFu, (rgb >> 8) & 0xFFu, rgb & 0xFFu, 255);
+}
+
 // OSD positioning funcs
 ImVec2 CalculateOSDPosition(OsdOverlayPos position, float margin, const ImVec2& text_size, float window_width, float window_height)
 {
@@ -421,7 +433,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				else if (speed > 105.0f)
 					s_speed_line_color = IM_COL32(100, 255, 100, 255); // green
 				else
-					s_speed_line_color = white_color;
+					s_speed_line_color = OsdTextColor();
 
 				DRAW_LINE(osd_font, font_size, s_speed_line.c_str(), s_speed_line_color);
 			}
@@ -437,10 +449,10 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 					PerformanceMetrics::GetMaximumFrameTime());
 
 				if (!s_gs_stats_line.empty())
-					DRAW_LINE(osd_font, font_size, s_gs_stats_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_gs_stats_line.c_str(), OsdTextColor());
 				if (!s_gs_memory_stats_line.empty())
-					DRAW_LINE(osd_font, font_size, s_gs_memory_stats_line.c_str(), white_color);
-				DRAW_LINE(osd_font, font_size, s_gs_frame_times_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_gs_memory_stats_line.c_str(), OsdTextColor());
+				DRAW_LINE(osd_font, font_size, s_gs_frame_times_line.c_str(), OsdTextColor());
 			}
 
 			if (GSConfig.OsdShowResolution)
@@ -449,7 +461,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				GSgetInternalResolution(&iwidth, &iheight);
 
 				s_resolution_line.format("{}x{} {} {}", iwidth, iheight, ReportVideoMode(), ReportInterlaceMode());
-				DRAW_LINE(osd_font, font_size, s_resolution_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_resolution_line.c_str(), OsdTextColor());
 			}
 
 			if (GSConfig.OsdShowHardwareInfo)
@@ -472,7 +484,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 						s_hardware_info_cpu_line.append_format(" ({}C/{}T)", info.num_big_cores, info.num_threads);
 				}
 
-				DRAW_LINE(osd_font, font_size, s_hardware_info_cpu_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_hardware_info_cpu_line.c_str(), OsdTextColor());
 
 				// GPU
 				const char* gpu_suffix = "";
@@ -488,7 +500,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 					g_gs_device->GetName(),
 					gpu_suffix);
 
-				DRAW_LINE(osd_font, font_size, s_hardware_info_gpu_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_hardware_info_gpu_line.c_str(), OsdTextColor());
 			}
 
 			if (GSConfig.OsdShowCPU)
@@ -499,7 +511,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 					EmuConfig.Cpu.Recompiler.EnableIOP ? "JIT" : "INT",
 					EmuConfig.Cpu.Recompiler.EnableVU0 ? "JIT" : "INT",
 					EmuConfig.Cpu.Recompiler.EnableVU1 ? "JIT" : "INT");
-				DRAW_LINE(osd_font, font_size, s_cpu_jit_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_cpu_jit_line.c_str(), OsdTextColor());
 #endif
 
 				if (EmuConfig.Speedhacks.EECycleRate != 0 || EmuConfig.Speedhacks.EECycleSkip != 0)
@@ -507,17 +519,17 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				else
 					s_cpu_usage_ee_line.assign("EE: ");
 				FormatProcessorStat(s_cpu_usage_ee_line, PerformanceMetrics::GetCPUThreadUsage(), PerformanceMetrics::GetCPUThreadAverageTime());
-				DRAW_LINE(osd_font, font_size, s_cpu_usage_ee_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_cpu_usage_ee_line.c_str(), OsdTextColor());
 
 				s_cpu_usage_gs_line.assign("GS: ");
 				FormatProcessorStat(s_cpu_usage_gs_line, PerformanceMetrics::GetGSThreadUsage(), PerformanceMetrics::GetGSThreadAverageTime());
-				DRAW_LINE(osd_font, font_size, s_cpu_usage_gs_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_cpu_usage_gs_line.c_str(), OsdTextColor());
 
 				if (THREAD_VU1)
 				{
 					s_cpu_usage_vu_line.assign("VU: ");
 					FormatProcessorStat(s_cpu_usage_vu_line, PerformanceMetrics::GetVUThreadUsage(), PerformanceMetrics::GetVUThreadAverageTime());
-					DRAW_LINE(osd_font, font_size, s_cpu_usage_vu_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_cpu_usage_vu_line.c_str(), OsdTextColor());
 				}
 
 				const u32 gs_sw_threads = PerformanceMetrics::GetGSSWThreadCount();
@@ -528,14 +540,14 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 					else
 						s_software_thread_lines.push_back(SmallString("SW-{}: ", thread));
 					FormatProcessorStat(s_software_thread_lines[thread], PerformanceMetrics::GetGSSWThreadUsage(thread), PerformanceMetrics::GetGSSWThreadAverageTime(thread));
-					DRAW_LINE(osd_font, font_size, s_software_thread_lines[thread].c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_software_thread_lines[thread].c_str(), OsdTextColor());
 				}
 
 				if (GSCapture::IsCapturing())
 				{
 					s_capture_line.assign("CAP: ");
 					FormatProcessorStat(s_capture_line, PerformanceMetrics::GetCaptureThreadUsage(), PerformanceMetrics::GetCaptureThreadAverageTime());
-					DRAW_LINE(osd_font, font_size, s_capture_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_capture_line.c_str(), OsdTextColor());
 				}
 			}
 
@@ -543,7 +555,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 			{
 				s_gpu_usage_line.assign("GPU: ");
 				FormatProcessorStat(s_gpu_usage_line, PerformanceMetrics::GetGPUUsage(), PerformanceMetrics::GetGPUAverageTime());
-				DRAW_LINE(osd_font, font_size, s_gpu_usage_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_gpu_usage_line.c_str(), OsdTextColor());
 			}
 
 			if (GSConfig.OsdShowGPUDebug)
@@ -557,7 +569,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 						dev12->GetDescriptorHeapManager().GetAllocatedDescriptors(), dev12->GetDescriptorHeapManager().GetNumDescriptors(),
 						dev12->GetRTVHeapManager().GetAllocatedDescriptors(), dev12->GetRTVHeapManager().GetNumDescriptors(),
 						dev12->GetDSVHeapManager().GetAllocatedDescriptors(), dev12->GetDSVHeapManager().GetNumDescriptors());
-					DRAW_LINE(osd_font, font_size, s_gpu_debug_info_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_gpu_debug_info_line.c_str(), OsdTextColor());
 				}
 #endif
 			}
@@ -577,7 +589,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 				s_gpu_stats_line.format("VSI: {} | PSI: {}",
 					FormatUnits(PerformanceMetrics::GetGPUAverageVSInvocations()),
 					FormatUnits(PerformanceMetrics::GetGPUAveragePSInvocations()));
-				DRAW_LINE(osd_font, font_size, s_gpu_stats_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_gpu_stats_line.c_str(), OsdTextColor());
 			}
 		}
 		// No refresh yet. Display cached lines.
@@ -589,56 +601,56 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 			if (GSConfig.OsdShowGSStats)
 			{
 				if (!s_gs_stats_line.empty())
-					DRAW_LINE(osd_font, font_size, s_gs_stats_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_gs_stats_line.c_str(), OsdTextColor());
 				if (!s_gs_memory_stats_line.empty())
-					DRAW_LINE(osd_font, font_size, s_gs_memory_stats_line.c_str(), white_color);
-				DRAW_LINE(osd_font, font_size, s_gs_frame_times_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_gs_memory_stats_line.c_str(), OsdTextColor());
+				DRAW_LINE(osd_font, font_size, s_gs_frame_times_line.c_str(), OsdTextColor());
 			}
 
 			if (GSConfig.OsdShowResolution)
-				DRAW_LINE(osd_font, font_size, s_resolution_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_resolution_line.c_str(), OsdTextColor());
 
 			if (GSConfig.OsdShowHardwareInfo)
 			{
-				DRAW_LINE(osd_font, font_size, s_hardware_info_cpu_line.c_str(), white_color);
-				DRAW_LINE(osd_font, font_size, s_hardware_info_gpu_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_hardware_info_cpu_line.c_str(), OsdTextColor());
+				DRAW_LINE(osd_font, font_size, s_hardware_info_gpu_line.c_str(), OsdTextColor());
 			}
 
 			if (GSConfig.OsdShowCPU)
 			{
 #if defined(__APPLE__) && !TARGET_OS_IPHONE
 				if (!s_cpu_jit_line.empty())
-					DRAW_LINE(osd_font, font_size, s_cpu_jit_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_cpu_jit_line.c_str(), OsdTextColor());
 #endif
-				DRAW_LINE(osd_font, font_size, s_cpu_usage_ee_line.c_str(), white_color);
-				DRAW_LINE(osd_font, font_size, s_cpu_usage_gs_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_cpu_usage_ee_line.c_str(), OsdTextColor());
+				DRAW_LINE(osd_font, font_size, s_cpu_usage_gs_line.c_str(), OsdTextColor());
 				if (THREAD_VU1)
-					DRAW_LINE(osd_font, font_size, s_cpu_usage_vu_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_cpu_usage_vu_line.c_str(), OsdTextColor());
 
 				const u32 thread_count = std::min(
 					PerformanceMetrics::GetGSSWThreadCount(),
 					static_cast<u32>(s_software_thread_lines.size()));
 				for (u32 thread = 0; thread < thread_count; thread++)
-					DRAW_LINE(osd_font, font_size, s_software_thread_lines[thread].c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_software_thread_lines[thread].c_str(), OsdTextColor());
 
 				if (GSCapture::IsCapturing())
-					DRAW_LINE(osd_font, font_size, s_capture_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_capture_line.c_str(), OsdTextColor());
 			}
 
 			if (GSConfig.OsdShowGPU)
-				DRAW_LINE(osd_font, font_size, s_gpu_usage_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_gpu_usage_line.c_str(), OsdTextColor());
 
 			if (GSConfig.OsdShowGPUDebug)
 			{
 #ifdef _WIN32
 				if (g_gs_device->GetRenderAPI() == RenderAPI::D3D12)
-					DRAW_LINE(osd_font, font_size, s_gpu_debug_info_line.c_str(), white_color);
+					DRAW_LINE(osd_font, font_size, s_gpu_debug_info_line.c_str(), OsdTextColor());
 #endif
 			}
 
 			if (GSConfig.OsdShowGPUStats)
 			{
-				DRAW_LINE(osd_font, font_size, s_gpu_stats_line.c_str(), white_color);
+				DRAW_LINE(osd_font, font_size, s_gpu_stats_line.c_str(), OsdTextColor());
 			}
 		}
 
@@ -849,7 +861,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 						ImVec2(lx + legend_square_size, y + (font_size + legend_square_size) * 0.5f), col);
 					lx += legend_square_size + legend_gap;
 					dl->AddText(osd_font, font_size, ImVec2(lx + shadow_offset, y + shadow_offset), IM_COL32(0, 0, 0, 100), text, nullptr);
-					dl->AddText(osd_font, font_size, ImVec2(lx, y), white_color, text, nullptr);
+					dl->AddText(osd_font, font_size, ImVec2(lx, y), OsdTextColor(), text, nullptr);
 				};
 				draw_legend_entry(IM_COL32(100, 200, 255, 230), frame_part.c_str(), fw, legend_y);
 				draw_legend_entry(IM_COL32(100, 255, 100, 230), vps_part.c_str(), vw, legend_y + font_size + row_gap);
@@ -1365,7 +1377,7 @@ __ri void ImGuiManager::DrawTextureReplacementsOverlay(float& position_y, float 
 	const ImVec2 text_pos(GetWindowWidth() - margin - text_size.x, position_y);
 
 	dl->AddText(osd_font, font_size, ImVec2(text_pos.x + shadow_offset, text_pos.y + shadow_offset), IM_COL32(0, 0, 0, 100), texture_line.c_str());
-	dl->AddText(osd_font, font_size, text_pos, white_color, texture_line.c_str());
+	dl->AddText(osd_font, font_size, text_pos, OsdTextColor(), texture_line.c_str());
 
 	position_y += text_size.y + spacing;
 }
@@ -1412,14 +1424,14 @@ __ri void ImGuiManager::DrawIndicatorsOverlay(float& position_y, float scale, fl
 				else // Unlimited
 					s_speed_icon = ICON_FA_FORWARD;
 
-				DRAW_LINE(osd_font, font_size, s_speed_icon, white_color);
+				DRAW_LINE(osd_font, font_size, s_speed_icon, OsdTextColor());
 			}
 		}
 		else
 		{
 			// Draw Pause indicator
 			const TinyString pause_msg = TinyString::from_format(TRANSLATE_FS("ImGuiOverlays", "{} Paused"), ICON_FA_PAUSE);
-			DRAW_LINE(osd_font, font_size, pause_msg, white_color);
+			DRAW_LINE(osd_font, font_size, pause_msg, OsdTextColor());
 		}
 		#undef DRAW_LINE
 }

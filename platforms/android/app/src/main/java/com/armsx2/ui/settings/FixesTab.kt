@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -118,6 +120,35 @@ fun FixesTab(state: MutableState<Settings>) {
             s.integerScaling,
             description = str("fixes.integerScaling.desc"),
         ) { apply(s.copy(integerScaling = it)) }
+        SettingsDivider()
+        // Overscan crop (issue #293). Trims native PS2 pixels off each edge before aspect
+        // and integer scaling. Plenty of games leave garbage or a black band in the region
+        // a CRT's bezel would have covered; the core has always honoured GSConfig.Crop
+        // (GSRenderer.cpp) but Android never surfaced it. Native pixels, so the value means
+        // the same thing at any upscale multiplier.
+        Text(
+            str("fixes.crop.header"),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+        )
+        IntSliderRow(
+            str("fixes.crop.left"), s.cropLeft, 0, 128,
+            onReset = { apply(s.copy(cropLeft = 0)) },
+        ) { apply(s.copy(cropLeft = it)) }
+        IntSliderRow(
+            str("fixes.crop.top"), s.cropTop, 0, 128,
+            onReset = { apply(s.copy(cropTop = 0)) },
+        ) { apply(s.copy(cropTop = it)) }
+        IntSliderRow(
+            str("fixes.crop.right"), s.cropRight, 0, 128,
+            onReset = { apply(s.copy(cropRight = 0)) },
+        ) { apply(s.copy(cropRight = it)) }
+        IntSliderRow(
+            str("fixes.crop.bottom"), s.cropBottom, 0, 128,
+            description = str("fixes.crop.desc"),
+            onReset = { apply(s.copy(cropBottom = 0)) },
+        ) { apply(s.copy(cropBottom = it)) }
         SettingsDivider()
         SegmentedRow(
             label = str("fixes.dithering.label"),
