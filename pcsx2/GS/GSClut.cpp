@@ -216,12 +216,16 @@ bool GSClut::WriteTest(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 	return m_write.IsDirty(TEX0, TEXCLUT);
 }
 
-void GSClut::Write(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
+void GSClut::WriteDecision(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
 	m_write.TEX0 = TEX0;
 	m_write.TEXCLUT = TEXCLUT;
-	m_read.dirty = true;
 	m_write.dirty = 0;
+}
+
+void GSClut::WriteLoad(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
+{
+	m_read.dirty = true;
 
 	(this->*m_wc[TEX0.CSM][TEX0.CPSM][TEX0.PSM])(TEX0, TEXCLUT);
 }

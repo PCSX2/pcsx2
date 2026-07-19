@@ -50,4 +50,14 @@ namespace GSBackQueue
 		GIFRegTRXREG reg;
 		u64 draw_serial; // consumed once GV7-0d makes serials record-carried
 	};
+
+	// CLUT palette load. The decision chain (WriteTest / CanLoadCLUT /
+	// InvalidateRange dirty tracking) is register/address-only and stays
+	// front-side; this record triggers the back-side palette-byte read from
+	// local memory into the CLUT buffer.
+	struct ClutLoadRecord
+	{
+		GIFRegTEX0 TEX0; // post-CPSM-mask, as installed in m_env.CTXT[i]
+		GIFRegTEXCLUT TEXCLUT;
+	};
 } // namespace GSBackQueue

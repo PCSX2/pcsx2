@@ -621,6 +621,8 @@ public:
 	void ExecTransferRecord(const GSBackQueue::TransferRecord& rec);
 	void SubmitMove();
 	void ExecMoveRecord(const GSBackQueue::MoveRecord& rec);
+	void SubmitClutLoad(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
+	void ExecClutLoadRecord(const GSBackQueue::ClutLoadRecord& rec);
 
 	GSVector4i GetTEX0Rect(GSDrawingContext prev_ctx);
 	void CheckWriteOverlap(bool req_write, bool req_read);

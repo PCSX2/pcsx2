@@ -1804,7 +1804,7 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 			InvalidateLocalMem(BITBLTBUF, r, true);
 		}
 
-		m_mem.m_clut.Write(m_env.CTXT[i].TEX0, m_env.TEXCLUT);
+		SubmitClutLoad(m_env.CTXT[i].TEX0, m_env.TEXCLUT);
 	}
 
 	u64 mask = 0x1fffffffffull; // TBP0 TBW PSM TW TH TCC TFX
@@ -3173,6 +3173,24 @@ void GSState::ExecMoveRecord(const GSBackQueue::MoveRecord& rec)
 	m_env.TRXREG = rec.reg;
 
 	Move();
+}
+
+void GSState::SubmitClutLoad(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
+{
+	// Front side: the decision state (m_write / m_CBP) must be current before
+	// the next WriteTest, so it updates at submit time, not at record execution.
+	m_mem.m_clut.WriteDecision(TEX0, TEXCLUT);
+
+	GSBackQueue::ClutLoadRecord rec;
+	rec.TEX0 = TEX0;
+	rec.TEXCLUT = TEXCLUT;
+
+	ExecClutLoadRecord(rec);
+}
+
+void GSState::ExecClutLoadRecord(const GSBackQueue::ClutLoadRecord& rec)
+{
+	m_mem.m_clut.WriteLoad(rec.TEX0, rec.TEXCLUT);
 }
 
 void GSState::Move()
