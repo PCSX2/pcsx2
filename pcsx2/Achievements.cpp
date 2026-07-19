@@ -507,6 +507,14 @@ std::string Achievements::GetAchievementsAsJSON()
 	out += Host::GetBaseBoolSettingValue("Achievements", "LBOverlays", true) ? "true" : "false";
 	out += ",\"soundEffects\":";
 	out += Host::GetBaseBoolSettingValue("Achievements", "SoundEffects", true) ? "true" : "false";
+	// Achievement MODES (default off) — Encore / Spectator / Unofficial-test. The UI shows
+	// + toggles them like the options above; the native rc_client wiring already exists.
+	out += ",\"encoreMode\":";
+	out += Host::GetBaseBoolSettingValue("Achievements", "EncoreMode", false) ? "true" : "false";
+	out += ",\"spectatorMode\":";
+	out += Host::GetBaseBoolSettingValue("Achievements", "SpectatorMode", false) ? "true" : "false";
+	out += ",\"unofficialTestMode\":";
+	out += Host::GetBaseBoolSettingValue("Achievements", "UnofficialTestMode", false) ? "true" : "false";
 
 	out += ",\"items\":[";
 
