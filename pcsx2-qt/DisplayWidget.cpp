@@ -284,7 +284,7 @@ void DisplaySurface::handleKeyInputEvent(QEvent* event)
 
 void DisplaySurface::onResizeDebounceTimer()
 {
-	emit windowResizedEvent(m_pending_window_width, m_pending_window_height, m_pending_window_scale);
+	emit windowResizedEvent(m_last_window_width, m_last_window_height, m_last_window_scale);
 }
 
 bool DisplaySurface::event(QEvent* event)
@@ -397,10 +397,6 @@ bool DisplaySurface::event(QEvent* event)
 			// avoid spamming resize events for paint events (sent on move on windows)
 			if (m_last_window_width != scaled_width || m_last_window_height != scaled_height || m_last_window_scale != dpr)
 			{
-				m_pending_window_width = scaled_width;
-				m_pending_window_height = scaled_height;
-				m_pending_window_scale = dpr;
-
 				m_last_window_width = scaled_width;
 				m_last_window_height = scaled_height;
 				m_last_window_scale = dpr;
