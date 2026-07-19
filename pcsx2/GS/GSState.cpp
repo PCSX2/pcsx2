@@ -639,7 +639,11 @@ void GSState::StartBackThread()
 	m_back_thread_exit.store(false, std::memory_order_release);
 	m_chan->consumer_running = true;
 	m_back_thread = std::thread(&GSState::BackThreadLoop, this);
-	Console.WriteLn("GS: back thread started (%s).", m_back_lockstep ? "lockstep" : "pipelined");
+	// The drain policy is the PRODUCER's (the front object under the split
+	// runs pipelined while this back object's own flag stays lockstep), so
+	// report the configured mode, not this object's flag.
+	Console.WriteLn("GS: back thread started (%s).",
+		GSConfig.BackThreadMode == GSBackThreadMode::Pipelined ? "pipelined" : "lockstep");
 }
 
 void GSState::StopBackThread()
