@@ -4188,6 +4188,7 @@ SCED-52952:
     autoFlush: 2 # Fixes lighting.
     halfPixelOffset: 5 # Aligns post-processing and fixes desert tiles.
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
+    hwDownloadMode: 3 # Fixes Some Effect
 SCED-52969:
   name: "EyeToy - Play 2"
   region: "PAL-M12"
@@ -5969,6 +5970,7 @@ SCES-52460:
     gpuTargetCLUT: 2 # Fixes CLUT-based lighting.
     cpuCLUTRender: 2 # Fixes colour LUT rendering.
     limit24BitDepth: 2 # Prioritise lower 24-bit depth.
+    hwDownloadMode: 3 # Fixes Some Effect
 SCES-52529:
   name: "Sly 2 - Band of Thieves"
   region: "PAL-M11"
@@ -7647,6 +7649,7 @@ SCKA-20040:
     gpuTargetCLUT: 2 # Fixes CLUT-based lighting.
     cpuCLUTRender: 2 # Fixes colour LUT rendering.
     limit24BitDepth: 2 # Prioritise lower 24-bit depth.
+    hwDownloadMode: 3 # Fixes Some Effect
 SCKA-20041:
   name: "아이토이 - 플레이 2"
   name-en: "EyeToy - Play 2"
@@ -12226,6 +12229,7 @@ SCUS-97330:
     gpuTargetCLUT: 2 # Fixes CLUT-based lighting.
     cpuCLUTRender: 2 # Fixes colour LUT rendering.
     limit24BitDepth: 2 # Prioritise lower 24-bit depth.
+    hwDownloadMode: 3 # Fixes Some Effect
 SCUS-97331:
   name: "Official U.S. PlayStation Magazine Demo Disc 078"
   region: "NTSC-U"
@@ -12536,6 +12540,7 @@ SCUS-97412:
     autoFlush: 2 # Fixes lighting.
     halfPixelOffset: 5 # Aligns post-processing and fixes desert tiles.
     nativeScaling: 2 # Fixes lighting effects due to upscaling.
+    hwDownloadMode: 3 # Fixes Some Effect
 SCUS-97413:
   name: "Ratchet & Clank - Up Your Arsenal [Public Beta v1.0]"
   region: "NTSC-U"
@@ -13117,6 +13122,7 @@ SCUS-97516:
     gpuTargetCLUT: 2 # Fixes CLUT-based lighting.
     cpuCLUTRender: 2 # Fixes colour LUT rendering.
     limit24BitDepth: 2 # Prioritise lower 24-bit depth.
+    hwDownloadMode: 3 # Fixes Some Effect
 SCUS-97517:
   name: "Killzone [Greatest Hits]"
   region: "NTSC-U"
