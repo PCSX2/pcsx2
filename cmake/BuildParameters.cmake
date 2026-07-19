@@ -10,6 +10,9 @@ option(ENABLE_TESTS "Enables building the unit tests" ON)
 option(ENABLE_RECOMPILER_TEST_HOOKS
 	"Compile harness hooks (recEeExecuteBlock, recEeIsBlockLinked, etc.) into the EE recompiler. Required by tests/ctest/core/recompilers; release builds should turn this off."
 	${ENABLE_TESTS})
+option(GS_VERTEX_CROSSCHECK
+	"Run the legacy and optimized GS vertex kernels (GSVertexKick.h) side by side and assert bit-equality per vertex/prim. Devel-only gate for the GV campaign; never enable in shipping builds."
+	OFF)
 option(ENABLE_QT_UI "Enables building the PCSX2 Qt interface." ON)
 option(ENABLE_GSRUNNER "Enables building the GSRunner by default.  It can still be built with `make pcsx2-gsrunner` otherwise." OFF)
 option(ENABLE_VURUNNER "Enables building pcsx2-vurunner (headless VU microprogram replayer for codegen iteration). Requires ENABLE_RECOMPILER_TEST_HOOKS=ON." OFF)

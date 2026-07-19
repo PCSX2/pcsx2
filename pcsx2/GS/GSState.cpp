@@ -6,6 +6,7 @@
 #include "GS/GSGL.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
+#include "GS/GSVertexKick.h"
 
 #include "common/Console.h"
 #include "common/BitUtils.h"
@@ -1481,20 +1482,11 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 
 	while (r < r_end)
 	{
-		const GSVector4i st = GSVector4i::loadl(&r[0].U64[0]);
-		GSVector4i q = GSVector4i::loadl(&r[0].U64[1]);
-		const GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & GSVector4i::x000000ff()).ps32().pu16();
+		GSVector4i m0, m1;
+		GSVertexKernels::ParsePackedSTQRGBAXYZF2(r, m_v.UV, m0, m1);
 
-		q = q.blend8(GSVector4i::cast(GSVector4(FLT_MIN)), q == GSVector4i::zero()); // see GIFPackedRegHandlerSTQ
-
-		m_v.m[0] = st.upl64(rgba.upl32(q)); // TODO: only store the last one
-
-		GSVector4i xy = GSVector4i::loadl(&r[2].U64[0]);
-		GSVector4i zf = GSVector4i::loadl(&r[2].U64[1]);
-		xy = xy.upl16(xy.srl<4>()).upl32(GSVector4i::load((int)m_v.UV));
-		zf = zf.srl32<4>() & GSVector4i::x00ffffff().upl32(GSVector4i::x000000ff());
-
-		m_v.m[1] = xy.upl32(zf); // TODO: only store the last one
+		m_v.m[0] = m0; // TODO: only store the last one
+		m_v.m[1] = m1; // TODO: only store the last one
 
 		VertexKick<prim, auto_flush>(r[2].XYZF2.Skip());
 
@@ -1515,19 +1507,14 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32
 
 	while (r < r_end)
 	{
-		const GSVector4i st = GSVector4i::loadl(&r[0].U64[0]);
-		GSVector4i q = GSVector4i::loadl(&r[0].U64[1]);
-		const GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & GSVector4i::x000000ff()).ps32().pu16();
+		u64 uvfog;
+		std::memcpy(&uvfog, &m_v.UV, sizeof(uvfog));
 
-		q = q.blend8(GSVector4i::cast(GSVector4(FLT_MIN)), q == GSVector4i::zero()); // see GIFPackedRegHandlerSTQ
+		GSVector4i m0, m1;
+		GSVertexKernels::ParsePackedSTQRGBAXYZ2(r, uvfog, m0, m1);
 
-		m_v.m[0] = st.upl64(rgba.upl32(q)); // TODO: only store the last one
-
-		const GSVector4i xy = GSVector4i::loadl(&r[2].U64[0]);
-		const GSVector4i z = GSVector4i::loadl(&r[2].U64[1]);
-		const GSVector4i xyz = xy.upl16(xy.srl<4>()).upl32(z);
-
-		m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV)); // TODO: only store the last one
+		m_v.m[0] = m0; // TODO: only store the last one
+		m_v.m[1] = m1; // TODO: only store the last one
 
 		VertexKick<prim, auto_flush>(r[2].XYZ2.Skip());
 
@@ -5952,59 +5939,11 @@ __forceinline void GSState::VertexKick(u32 skip)
 		const GSVector4i v1 = m_vertex->xy[(xy_tail - 2) & 3];
 		const GSVector4i v2 = (prim == GS_TRIANGLEFAN) ? m_vertex->xyhead : m_vertex->xy[(xy_tail - 3) & 3];
 
-		if constexpr (n == 1)
-		{
-			bbox = v0;
-		}
-		else if constexpr (n == 2)
-		{
-			bbox = v0.runion(v1);
-		}
-		else if constexpr (n == 3)
-		{
-			bbox = v0.runion(v1).runion(v2);
-		}
+		// Note: redundant check for the AA1 flag to avoid calling a function if not needed.
+		constexpr bool rounded_class = (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS);
+		const bool aa1_expand = rounded_class && PRIM->AA1 && IsCoverageAlphaSupported();
 
-		if constexpr (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS)
-		{
-			if (m_nativeres)
-			{
-				// For triangles and sprites at native res take the interior pixel centers.
-				const GSVector4i interior = (bbox + GSVector4i(0xF, 0xF, -1, -1)) & GSVector4i(~0xF);
-				bbox = interior + GSVector4i(0, 0, 1, 1); // +1 to bottom/right so empty test works correctly.
-			}
-			else
-			{
-				// For upscaling, remove bottom/right subtexels.
-				bbox -= ((bbox & GSVector4i(0xF)) == GSVector4i(0)) & GSVector4i(0, 0, 1, 1);
-			}
-
-			// For AA1 triangles and lines, expand the bounds by 1 pixel on all sides.
-			// Note: redundant check for the AA1 flag to avoid calling a function if not needed.
-			if (PRIM->AA1 && IsCoverageAlphaSupported())
-			{
-				bbox += GSVector4i(-0x10, -0x10, 0x10, 0x10);
-			}
-		}
-
-		// Do scissor test.
-		const GSVector4i bbox_ex = bbox + GSVector4i(0, 0, 1, 1); // Exclusive coords for the scissor test.
-		const GSVector4i& scissor = m_context->scissor.cull;
-		u32 test = static_cast<u32>(!bbox_ex.rintersects(scissor));
-
-		// Test for empty bbox.
-		if constexpr (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS)
-		{
-			test |= static_cast<u32>(bbox.rempty());
-		}
-
-		// Test for degenerate triangle.
-		if constexpr (primclass == GS_TRIANGLE_CLASS)
-		{
-			test |= static_cast<u32>(v0.eq(v1)) | static_cast<u32>(v1.eq(v2)) | static_cast<u32>(v0.eq(v2));
-		}
-
-		skip |= test;
+		skip |= GSVertexKernels::CullTest<n, primclass>(v0, v1, v2, m_context->scissor.cull, m_nativeres, aa1_expand, bbox);
 	}
 
 	if (skip != 0)

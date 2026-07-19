@@ -11,6 +11,9 @@ if(ARCH_ARM64)
 	add_subdirectory(recompilers)
 endif()
 
+# GS vertex front-end kernel oracle (arch-neutral).
+add_subdirectory(gs)
+
 set(multi_isa_sources
 	GS/swizzle_test_main.cpp
 )
