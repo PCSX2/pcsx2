@@ -671,6 +671,14 @@ void GSState::BackThreadLoop()
 {
 	Threading::SetNameOfCurrentThread("GS Back");
 
+	// A new thread inherits the spawner's affinity mask, and the spawner here is
+	// the MTGS thread — which EnableThreadPinning may have pinned to a single
+	// core (always the case when the back thread is respawned via GSreopen).
+	// Sharing that one core would time-slice front and back and silently
+	// re-serialize the split, so clear to all cores. VMManager owns any future
+	// explicit pinning policy for this thread.
+	Threading::ThreadHandle::GetForCallingThread().SetAffinity(0);
+
 	for (;;)
 	{
 		m_chan->sema.WaitForWorkWithSpin();
