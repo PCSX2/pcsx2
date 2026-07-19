@@ -13,6 +13,8 @@
 #include "VU.h"
 #include "VUmicro.h"
 
+#include "common/Assertions.h" // pxFailRel (Windows EnterMode stub)
+
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
