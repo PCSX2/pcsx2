@@ -84,6 +84,12 @@ struct DigestSet
 	// All-NOP VI-branch spin loop — pins the VU0 spin-wait fast-forward
 	// head (mVUemitSpinFF, ABI v13). 0 in a pin row = probe absent.
 	u64 spinLoop;
+	// The only VU1 probe (added at ABI v15). Every probe above compiles on VU0, so
+	// VU1 emitter drift was invisible to this backstop - which is exactly how the
+	// ABI-15 change (E-bit flag validity, which applies to both VUs) could alter VU1
+	// codegen without moving a single digest above. Branch whose arms reach a
+	// program end, i.e. the shape that fix touches. 0 in a pin row = probe absent.
+	u64 vu1BranchToEbit;
 };
 
 struct AbiPin
@@ -160,6 +166,18 @@ constexpr AbiPin kPins[] = {
 	// flag, so those four are bit-identical to abi 13. Harvested from the first,
 	// deliberately red, run.
 	{14, {0x5606c91c74538771, 0xf50098b57b42c70c, 0x8022f1986a924c1c, 0xb93a633324c1d588, 0x49548c4995cf112f, 0xe9028a53cd86dcb7}},
+	// abi 15: E-bit flag validity (mVU.needFlagFinalize). A block reaching a program
+	// end used to elide the tail FMACs' flag writes that mVUendProgram then stores
+	// into VI[REG_*_FLAG], so finalisation read a never-written ring instance. Now
+	// the last tail FMAC's writes are emitted, and getLastFlagInst recovers an
+	// unwritten flag from the incoming ring phase. straightLine / branchBothArms /
+	// broadcastChain move (each ends in an E-bit) and the new vu1BranchToEbit pins
+	// the VU1 shape; indirectJump is unchanged (it forces the bits on the JR/JALR
+	// arm, not the E-bit arm), condEvilBranch is unchanged (no E-bit inside its
+	// 4-instruction scan window), and the all-NOP spin loop writes no flag - those
+	// three are bit-identical to abi 14. Harvested from the first, deliberately
+	// red, run.
+	{15, {0x52d7ab0dcf5ff0b0, 0xe306afec81428b0c, 0x8022f1986a924c1c, 0x119ed5c369c1435c, 0x49548c4995cf112f, 0xe9028a53cd86dcb7, 0x383abeec076a40fb}},
 };
 
 u64 CompileAndDigest(std::initializer_list<vu::VuOp> pairs)
@@ -183,6 +201,28 @@ u64 CompileAndDigest(std::initializer_list<vu::VuOp> pairs)
 	u64 digest = 0;
 	EXPECT_TRUE(mVUPersist::TestComputeEmitDigest(0, digest));
 	RecompilerTestEnvironment::ResetVuBlockCache(0);
+
+	EmuConfig.Speedhacks.vuFlagHack = savedFlagHack;
+	return digest;
+}
+
+// Same contract as CompileAndDigest, on VU1. Kept separate rather than
+// parameterised so the VU0 pins above can't shift if this one is edited.
+u64 CompileAndDigestVu1(std::initializer_list<vu::VuOp> pairs)
+{
+	const bool savedFlagHack = EmuConfig.Speedhacks.vuFlagHack;
+	EmuConfig.Speedhacks.vuFlagHack = true;
+
+	VuTestHarness h(1);
+	h.SetVf(1, 1.5f, -2.25f, 3.0f, 0.0625f);
+	h.SetVf(2, 4.0f, 0.5f, -1.0f, 8.0f);
+	h.SetVi(1, 1);
+	h.LoadProgram(pairs);
+	h.Run();
+	h.RunJitPreserveBlockCache();
+	u64 digest = 0;
+	EXPECT_TRUE(mVUPersist::TestComputeEmitDigest(1, digest));
+	RecompilerTestEnvironment::ResetVuBlockCache(1);
 
 	EmuConfig.Speedhacks.vuFlagHack = savedFlagHack;
 	return digest;
@@ -246,6 +286,17 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 		UpperOnly(bits::E | VADD_U(mask::xyzw, vf::vf3, vf::vf1, vf::vf2)),
 	});
 
+	// VU1 counterpart of branchBothArms: both arms reach a program end, which is
+	// the shape the ABI-15 E-bit lookahead forcing touches. Every other probe
+	// here is VU0, so without this one a VU1-only emitter change moves no digest.
+	actual.vu1BranchToEbit = CompileAndDigestVu1({
+		LowerOnly(VIBNE_L(vi::vi1, vi::vi0, 3)),
+		UpperOnly(VADD_U(mask::xyzw, vf::vf4, vf::vf1, vf::vf2)),
+		UpperOnly(bits::E | VSUB_U(mask::xyzw, vf::vf5, vf::vf1, vf::vf2)),
+		NopPair(),
+		UpperOnly(bits::E | VMUL_U(mask::xyzw, vf::vf6, vf::vf1, vf::vf2)),
+	});
+
 	mVUPersist::SetRecordingEnabled(false);
 
 	ASSERT_NE(actual.straightLine, 0u);
@@ -253,6 +304,7 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 	ASSERT_NE(actual.indirectJump, 0u);
 	ASSERT_NE(actual.broadcastChain, 0u);
 	ASSERT_NE(actual.condEvilBranch, 0u);
+	ASSERT_NE(actual.vu1BranchToEbit, 0u);
 
 	const u32 abi = mVUProgCache::GetCompilerAbiVersion();
 	const AbiPin* pin = nullptr;
@@ -269,7 +321,8 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 		<< ", 0x" << actual.indirectJump
 		<< ", 0x" << actual.broadcastChain
 		<< ", 0x" << actual.condEvilBranch
-		<< ", 0x" << actual.spinLoop << "}";
+		<< ", 0x" << actual.spinLoop
+		<< ", 0x" << actual.vu1BranchToEbit << "}";
 
 	const auto explain = [&](const char* which, u64 got, u64 want) {
 		char buf[256];
@@ -300,6 +353,11 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 	{
 		EXPECT_EQ(actual.spinLoop, pin->digests.spinLoop)
 			<< explain("spinLoop", actual.spinLoop, pin->digests.spinLoop);
+	}
+	if (pin->digests.vu1BranchToEbit != 0) // probe added at abi 15; older rows unpinned
+	{
+		EXPECT_EQ(actual.vu1BranchToEbit, pin->digests.vu1BranchToEbit)
+			<< explain("vu1BranchToEbit", actual.vu1BranchToEbit, pin->digests.vu1BranchToEbit);
 	}
 	ASSERT_NE(actual.spinLoop, 0u);
 }

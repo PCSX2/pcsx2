@@ -216,16 +216,29 @@ static __fi void mVUsetFlags(mV, microFlagCycles& mFC)
 	int endPC = iPC;
 	u32 aCount = 0; // Amount of instructions needed to get valid mac flag instances for block linking
 
-	// Ensure last ~4+ instructions update mac/status flags (if next block's first 4 read them)
+	// Ensure last ~4+ instructions update mac/status flags (if next block's first 4
+	// read them), and that the last one does if the program ends here.
+	//
+	// A successor that reads flags can read an older pipeline instance, so __Mac /
+	// __Status must cover the whole ~4-deep tail. Program-end finalisation cannot:
+	// getLastFlagInst(isEbit) is findFlagInst(), which takes the most recent
+	// instance only. So needFlagFinalize forces just the last flag-writing
+	// instruction - forcing all four emitted ~4x the flag writes for nothing.
+	// Walking backwards, the first sFLAG.doFlag seen is the last one in program
+	// order. aCount is left untouched so the FSSET optimisation below is unaffected.
+	const bool finalize = mVU.needFlagFinalize;
+	bool finalized = false;
 	for (int i = mVUcount; i > 0; i--, aCount++)
 	{
 		if (sFLAG.doFlag)
 		{
-			if (__Mac)
+			if (__Mac || (finalize && !finalized))
 				mFLAG.doFlag = true;
 
-			if (__Status)
+			if (__Status || (finalize && !finalized))
 				sFLAG.doNonSticky = true;
+
+			finalized = true;
 
 			if (aCount >= 3)
 				break;
@@ -255,6 +268,12 @@ static __fi void mVUsetFlags(mV, microFlagCycles& mFC)
 
 	if (!(mVUpBlock->pState.needExactMatch & 2))
 	{
+		// Upstream leaves xM at 0 here rather than seeding it from the incoming
+		// phase the way Status/Clip above do. Seeding it would let a block that
+		// writes no MAC still name the live instance - but it also reallocates MAC
+		// ring slots in every non-exact block, which measured as pure codegen churn
+		// for no benefit outside the E-bit case. getLastFlagInst handles that case
+		// directly instead.
 		mFC.xMac[0] = -1;
 		mFC.xMac[1] = -1;
 		mFC.xMac[2] = -1;

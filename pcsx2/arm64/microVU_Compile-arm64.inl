@@ -270,7 +270,17 @@ void mVUsetCycles(mV)
 			break; \
 		} \
 		else /* E-Bit End */ \
+		{ \
+			/* The successor ends the program, and mVUendProgram finalises the */ \
+			/* flags into VI[REG_*_FLAG]. Without this the lookahead reports */ \
+			/* "successor reads no flags" and this block elides the very FMAC */ \
+			/* flag writes the E-bit will store, so the finalisation reads a */ \
+			/* never-written ring instance (findFlagInst's all-(-1) -> slot 0). */ \
+			/* eBitPass1 applies the same rule for an E-bit in the block being */ \
+			/* compiled; the lookahead just never carried it across the edge. */ \
+			mVU.needFlagFinalize = true; \
 			break; \
+		} \
 	}
 
 // Scan instructions at startPC and check if they read any pipeline flags.
@@ -861,6 +871,7 @@ __fi void mVUinitFirstPass(mV, uptr pState, u8* thisPtr)
 	// recorder so the emitted code can be persisted and reloaded across runs.
 	mVUPersist::OnBlockCompiled(mVU, mVUpBlock, thisPtr, mVUstartPC * 4);
 	mVUregs.needExactMatch = (mVUpBlock->pState.blockType) ? 7 : 0;
+	mVU.needFlagFinalize = false; // compile-scoped; see microVU-arm64.h
 	mVUregs.blockType = 0;
 	mVUregs.viBackUp  = 0;
 	mVUregs.flagInfo  = 0; // Must be cleared each compile: mVUsetFlags OR-updates
@@ -953,11 +964,14 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 		if (curI & _Ebit_)
 		{
 			eBitPass1(mVU, branch);
-			// VU0 end of program MAC results can be read by COP2, so best to
-			// make sure the last instance is valid. Needed for State of Emergency 2
-			// and Driving Emotion Type-S (mirrors x86 microVU_Compile.inl:711-717).
-			if (isVU0)
-				mVUregs.needExactMatch |= 7;
+			// End-of-program flags must be valid: mVUendProgram finalises them into
+			// VI[REG_*_FLAG], so an FMAC in this block whose flag write got elided
+			// would be finalised from a stale ring instance. Upstream gates this on
+			// isVU0 (COP2 reads VU0's flags back - State of Emergency 2, Driving
+			// Emotion Type-S; x86 microVU_Compile.inl:711-717), but VU1 needs it
+			// too: mVUdispatcherA reloads the ring from VI[REG_*_FLAG] at program
+			// entry, so a stale instance survives into the next VU1 program.
+			mVU.needFlagFinalize = true;
 		}
 
 		// M-bit: VU0 sync point with EE. If the previous instruction was also

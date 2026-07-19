@@ -9,13 +9,31 @@ extern void* mVUcompile(microVU& mVU, u32 startPC, uptr pState);
 void mVU0clearlpStateJIT() { if (!microVU0.prog.cleared) std::memset(&microVU0.prog.lpState, 0, sizeof(microVU0.prog.lpState)); }
 void mVU1clearlpStateJIT() { if (!microVU1.prog.cleared) std::memset(&microVU1.prog.lpState, 0, sizeof(microVU1.prog.lpState)); }
 
+// The incoming ring phase, as recorded by the predecessor: phase P means the live
+// instance is (P - 1) & 3. Status/Mac/Clip occupy flagInfo bits 2-3 / 4-5 / 6-7.
+__fi int getIncomingFlagInst(microRegInfo& pState, int flagType)
+{
+	return (((pState.flagInfo >> (2 * flagType + 2)) & 3) - 1) & 3;
+}
+
 __fi int getLastFlagInst(microRegInfo& pState, int* xFlag, int flagType, int isEbit)
 {
 	if (isEbit)
-		return findFlagInst(xFlag, 0x7fffffff);
+	{
+		const int inst = findFlagInst(xFlag, 0x7fffffff);
+		// findFlagInst returns 0 when every instance is -1 - i.e. this block wrote
+		// this flag zero times and entered without an exact-match ring (so xFlag was
+		// blanked). Instance 0 is then just the fallback, not a live value: taking
+		// it finalises VI[REG_*_FLAG] from a slot nothing ever wrote. The live value
+		// is the one the predecessor left, which its recorded phase names.
+		// (Status/Clip seed a live entry above, so only Mac normally lands here.)
+		if (xFlag[inst] < 0)
+			return getIncomingFlagInst(pState, flagType);
+		return inst;
+	}
 	if (pState.needExactMatch & (1 << flagType))
 		return 3;
-	return (((pState.flagInfo >> (2 * flagType + 2)) & 3) - 1) & 3;
+	return getIncomingFlagInst(pState, flagType);
 }
 
 //------------------------------------------------------------------
