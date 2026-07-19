@@ -21,9 +21,6 @@
 #include <bit>
 #include <thread>
 
-u64 GSState::s_n = 0;
-u64 GSState::s_last_transfer_draw_n = 0;
-u64 GSState::s_transfer_n = 0;
 
 static __fi bool IsAutoFlushEnabled()
 {
@@ -113,8 +110,10 @@ GSState::GSState(GSBackQueue::Channel* shared_chan)
 		pxAssertRel(m_back_records && shared_chan->consumer_running, "GS front object requires a running back thread");
 		m_chan = shared_chan;
 		m_back_queued = true;
-		// Still lockstep until the pipelined flip (GV7-1d-ii-c).
-		m_back_lockstep = true;
+		// True pipelining: pushes don't drain — the ring and the pool
+		// backpressure bound the runahead, and every seam that reaches back
+		// state drains explicitly first.
+		m_back_lockstep = false;
 		AdoptTransferBuffer();
 	}
 	else if (m_back_records)
@@ -145,10 +144,6 @@ GSState::GSState(GSBackQueue::Channel* shared_chan)
 			}
 		}
 	}
-
-	s_n = 0;
-	s_transfer_n = 0;
-
 
 	memset(&m_v, 0, sizeof(m_v));
 	memset(m_mem.m_vm8, 0, m_mem.m_vmsize);
@@ -235,27 +230,43 @@ bool GSFrontState::IsCoverageAlphaSupported()
 	// The kick cull path evaluates this per AA1 prim. Single-object semantics
 	// are a mixed read: PRIM and the blending ALPHA reg are the LIVE parse
 	// state, while the primclass / cached ctx / alpha min-max come from the
-	// LAST EXECUTED draw. Reproduce exactly: live parts from this (front)
-	// object, last-draw parts from the back — drained here under lockstep.
-	// Under true pipelining the back-side parts become stale heuristic reads;
-	// revisit at the pipelined flip (1dii-DESIGN.md).
-	if (!(PRIM->AA1 && (m_back->m_vt.m_primclass == GS_LINE_CLASS || m_back->m_vt.m_primclass == GS_TRIANGLE_CLASS)))
-		return false; // IsCoverageAlpha(), with the last draw's primclass
-
-	if (GSGetCurrentRenderer() == GSRendererType::Null)
+	// LAST EXECUTED draw — state that under pipelining may not exist yet (and
+	// whose alpha clause can read CLUT bytes, so it isn't front-computable).
+	// Draining first makes the read exact AND deterministic: post-drain back
+	// state is a pure function of the record stream, not of thread timing.
+	// The inputs only change per flushed draw (s_n) or on a live ALPHA write,
+	// so the memo bounds this to at most one drain per AA1 draw.
+	if (!PRIM->AA1)
 		return false;
-	if (!GSIsHardwareRenderer())
-		return true; // SW: IsCoverageAlpha() alone
 
-	return m_back->IsRTWrittenLive(m_context->ALPHA) && g_gs_device->Features().aa1;
+	const u64 alpha = m_context->ALPHA.U64;
+	if (s_n != m_cov_epoch || alpha != m_cov_alpha)
+	{
+		DrainBackQueue();
+		m_cov_epoch = s_n;
+		m_cov_alpha = alpha;
+
+		if (!(m_back->m_vt.m_primclass == GS_LINE_CLASS || m_back->m_vt.m_primclass == GS_TRIANGLE_CLASS))
+			m_cov_answer = false; // IsCoverageAlpha(), with the last draw's primclass
+		else if (GSGetCurrentRenderer() == GSRendererType::Null)
+			m_cov_answer = false;
+		else if (!GSIsHardwareRenderer())
+			m_cov_answer = true; // SW: IsCoverageAlpha() alone
+		else
+			m_cov_answer = m_back->IsRTWrittenLive(m_context->ALPHA) && g_gs_device->Features().aa1;
+	}
+
+	return m_cov_answer;
 }
 
 void GSFrontState::MirrorPostVsyncState()
 {
 	// The vsync executed on the (drained) back object on this thread; Merge
-	// decremented the back's scanmask copy. Re-mirror so next frame's front
-	// PCRTC digestion sees what a single object would have.
+	// decremented the back's scanmask copy and bumped its draw serial. Both
+	// objects are quiesced here — re-mirror so next frame's front parse sees
+	// what a single object would have.
 	m_scanmask_used = m_back->m_scanmask_used;
+	s_n = m_back->s_n;
 }
 
 std::string GSState::GetDrawDumpPath(const char* format, ...)
@@ -2792,10 +2803,10 @@ void GSState::FlushWrite()
 	rec.draw_serial = s_n;
 	rec.first_slice = (m_tr.start == 0);
 
-	// Front side: transfer serials are front-assigned — the front decides
-	// transfer order, and the vsync idle-frame check reads this on the MTGS
-	// thread.
-	s_transfer_n++;
+	// Split front: keep our own copy of the slice count in step (the executor
+	// bumps the back's copy; a single object counts only at execution).
+	if (m_mem_target != this)
+		s_transfer_n++;
 
 	// The record references a slice of the pooled staging buffer; the next
 	// transfer Init rotates it out instead of reusing it.
@@ -2806,10 +2817,15 @@ void GSState::FlushWrite()
 	else
 		ExecTransferRecord(rec);
 
-	// Inline mode: keep the front-side cursor coherent (savestates serialize
-	// m_tr.x/y; the executor owns the live cursor across slices).
-	m_tr.x = m_exec_tr_x;
-	m_tr.y = m_exec_tr_y;
+	// Single object: keep the front-side cursor coherent (savestates serialize
+	// m_tr.x/y; the executor owns the live cursor across slices). On the split
+	// front the executor's cursor lives on the back object and is only read at
+	// drained seams (Freeze).
+	if (m_mem_target == this)
+	{
+		m_tr.x = m_exec_tr_x;
+		m_tr.y = m_exec_tr_y;
+	}
 
 	m_tr.start += len;
 
@@ -2880,6 +2896,10 @@ void GSState::ExecTransferRecord(const GSBackQueue::TransferRecord& rec)
 	wi(m_mem, m_exec_tr_x, m_exec_tr_y, rec.payload, rec.len, blit, pos, reg);
 
 	g_perfmon.Put(GSPerfMon::Swizzle, rec.stat_len);
+	// The executing object counts the same slice stream the submitter did, so
+	// its own copy tracks serial order (the split front bumps its copy at
+	// submit; a single object counts here only).
+	s_transfer_n++;
 }
 
 // This function decides if the context has changed in a way which warrants flushing the draw.
@@ -3134,6 +3154,10 @@ void GSState::ExecDrawRecord(const GSBackQueue::DrawRecord& rec)
 	m_index = rec.index;
 	m_backed_up_ctx = rec.backed_up_ctx;
 	m_dirty_gs_regs = rec.dirty_gs_regs;
+	// Serial install: TC timestamps and the draw heuristics all read s_n, and
+	// under pipelining the front's counter has run ahead — the executing
+	// draw's serial is the record's. Single object: self-assign.
+	s_n = rec.draw_serial;
 	m_state_flush_reason = static_cast<GSFlushReason>(rec.flush_reason);
 	// Split back: OR the front's one-shot abort edge into the back-owned
 	// shuffle state (a level-install would clobber the draw path's own
@@ -3536,16 +3560,21 @@ void GSState::Write(const u8* mem, int len)
 			rec.draw_serial = s_n;
 			rec.first_slice = true;
 
-			// Front-assigned, like the staged path in FlushWrite.
-			s_transfer_n++;
+			// See FlushWrite: split front keeps its own count in step.
+			if (m_mem_target != this)
+				s_transfer_n++;
 
 			if (m_back_queued)
 				PushRecord(GSBackQueue::RecordType::Transfer, rec);
 			else
 				ExecTransferRecord(rec);
 
-			m_tr.x = m_exec_tr_x;
-			m_tr.y = m_exec_tr_y;
+			// See FlushWrite: exec cursor is back-side on the split front.
+			if (m_mem_target == this)
+			{
+				m_tr.x = m_exec_tr_x;
+				m_tr.y = m_exec_tr_y;
+			}
 			m_tr.start = m_tr.end = m_tr.total;
 
 			m_env.TRXDIR.XDIR = 3;
@@ -4243,6 +4272,14 @@ int GSState::Freeze(freezeData* fd, bool sizeonly)
 	// memory bytes are serialized.
 	DrainBackQueue();
 
+	// Split front: the live HOST->LOCAL write cursor is the (drained) back's
+	// executor cursor; adopt it so the serialized m_tr.x/y match serial state.
+	if (m_mem_target != this && m_tr.write && m_tr.total > 0)
+	{
+		m_tr.x = m_mem_target->m_exec_tr_x;
+		m_tr.y = m_mem_target->m_exec_tr_y;
+	}
+
 	if (GSConfig.UserHacks_ReadTCOnClose)
 		m_mem_target->ReadbackTextureCache();
 
@@ -4440,6 +4477,14 @@ int GSState::Defrost(const freezeData* fd)
 	}
 
 	ReadState(m_mem_target->m_mem.m_vm8, data, m_mem_target->m_mem.m_vmsize);
+
+	// Split front: seed the back's executor cursor from the restored m_tr.x/y
+	// so a resumed mid-transfer continues where the savestate left off.
+	if (m_mem_target != this)
+	{
+		m_mem_target->m_exec_tr_x = m_tr.x;
+		m_mem_target->m_exec_tr_y = m_tr.y;
+	}
 
 	for (GIFPath& path : m_path)
 	{

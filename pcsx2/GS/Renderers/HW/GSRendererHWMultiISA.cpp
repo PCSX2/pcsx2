@@ -556,7 +556,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, b
 		uq.blit.DBP = hw.m_cached_ctx.FRAME.Block();
 		uq.blit.DBW = hw.m_cached_ctx.FRAME.FBW;
 		uq.blit.DPSM = hw.m_cached_ctx.FRAME.PSM;
-		uq.draw = GSState::s_n;
+		uq.draw = hw.s_n;
 		uq.rect = bbox;
 		hw.m_draw_transfers.push_back(uq);
 	}

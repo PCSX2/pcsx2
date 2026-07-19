@@ -246,13 +246,21 @@ static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
 
 	// GV7-1d-ii: instantiate the front parser only when the back thread really
 	// engaged (the renderer ctor falls back to inline records on a non-Vulkan
-	// HW device).
+	// HW device). Unsynchronized HW downloads read local memory from the EE
+	// thread with no drain — that session runs single-object (lockstep).
 	if (GSConfig.BackThreadMode == GSBackThreadMode::Pipelined && g_gs_renderer->IsBackThreadRunning())
 	{
-		g_gs_front = std::make_unique<GSFrontState>(g_gs_renderer.get());
-		g_gs_front->SetRegsMem(basemem);
-		g_gs_front->ResetPCRTC();
-		Console.WriteLn("GS: front parser object active (two-object split).");
+		if (GSConfig.HWDownloadMode == GSHardwareDownloadMode::Unsynchronized && GSConfig.UseHardwareRenderer())
+		{
+			Console.Warning("GS: pipelined mode is unsupported with unsynchronized HW downloads — running lockstep.");
+		}
+		else
+		{
+			g_gs_front = std::make_unique<GSFrontState>(g_gs_renderer.get());
+			g_gs_front->SetRegsMem(basemem);
+			g_gs_front->ResetPCRTC();
+			Console.WriteLn("GS: front parser object active (two-object split, pipelined).");
+		}
 	}
 
 	g_perfmon.Reset();
@@ -415,10 +423,12 @@ void GSclose()
 
 void GSreset(bool hardware_reset)
 {
-	// Back first (drains the channel, resets memory/TC), then the front parser.
-	g_gs_renderer->Reset(hardware_reset);
+	// Front first: its Reset flushes pending buffered draws into records; the
+	// back's Reset then drains (executing them, like serial pre-reset draws)
+	// before resetting memory/TC.
 	if (g_gs_front)
 		g_gs_front->Reset(hardware_reset);
+	g_gs_renderer->Reset(hardware_reset);
 
 	// Restart video capture if it's been started.
 	// Otherwise we get a buildup of audio frames from the CPU thread.

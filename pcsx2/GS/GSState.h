@@ -420,9 +420,13 @@ public:
 	GSVector4i m_r = {};
 	GSVector4i m_r_no_scissor = {};
 
-	static u64 s_n;
-	static u64 s_last_transfer_draw_n;
-	static u64 s_transfer_n;
+	// GV7-1d-ii-c: per-object serial counters (were process statics). The
+	// front assigns draw/transfer order and carries serials in records; the
+	// back installs them at execution, so its TC/heuristic reads see the
+	// executing draw's serial, not the front's runahead position.
+	u64 s_n = 0;
+	u64 s_last_transfer_draw_n = 0;
+	u64 s_transfer_n = 0;
 
 	GSPerfMon m_perfmon_frame; // Track stat across a frame.
 	GSPerfMon m_perfmon_draw;  // Track stat across a draw.
@@ -710,9 +714,10 @@ public:
 
 	void Draw() override;
 
-	// Parse-path virtuals must answer exactly as the back renderer would (they
-	// steer kick/flush decisions); the overridden implementations only read
-	// session-constant config/device caps, so cross-object calls are safe.
+	// Kick-time coverage-alpha query. Mixed live/stale semantics (see the
+	// implementation); needs last-flushed-draw state that only exists after
+	// that draw EXECUTED, so it drains the back queue — memoized per
+	// (draw epoch, live ALPHA) so at most one drain per AA1 draw.
 	bool IsCoverageAlphaSupported() override;
 
 	// Once per frame, after the (drained) vsync executed on the back object:
@@ -723,6 +728,11 @@ public:
 
 private:
 	GSState* m_back;
+
+	// IsCoverageAlphaSupported memo (see above).
+	u64 m_cov_epoch = ~0ULL;
+	u64 m_cov_alpha = 0;
+	bool m_cov_answer = false;
 };
 
 extern std::unique_ptr<GSFrontState> g_gs_front;
