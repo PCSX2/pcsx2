@@ -374,46 +374,54 @@ static __fi void mVUsetupFlags(mV, microFlagCycles& mFC)
 	{
 		int bStatus[4];
 		int sortRegs = sortFlag(mFC.xStatus, bStatus, mFC.cycles);
-		// Note: vixl does NOT elide a W-register self-move (kDontDiscardForSameWReg) —
-		// Mov(Wd, Wd) emits a real ORR because it clears bits 63:32 of the X reg. So
-		// in the all-same-instance case each Mov below is emitted (a cheap no-op ORR),
-		// not optimized away.
+		// Skip register self-moves. vixl does NOT elide Mov(Wd, Wd)
+		// (kDontDiscardForSameWReg) — it emits a real ORR because the move
+		// clears bits 63:32 of the X reg. getFlagReg(i) is gprF[i], so
+		// Mov(gprFi, getFlagReg(bStatus[i])) is a no-op exactly when
+		// bStatus[i]==i (identity ring phase / all-same-instance link). The
+		// temp regs (gprT1-3) never alias gprF0-3, so guarding every emit on
+		// dst!=src is correct in all four permutation branches and elides the
+		// dead ORRs the old code emitted per block link.
+		const auto movF = [](const a64::Register& d, const a64::Register& s) {
+			if (d.GetCode() != s.GetCode())
+				armAsm->Mov(d, s);
+		};
 		if (sortRegs == 1)
 		{
-			armAsm->Mov(gprF0, getFlagReg(bStatus[0]));
-			armAsm->Mov(gprF1, getFlagReg(bStatus[1]));
-			armAsm->Mov(gprF2, getFlagReg(bStatus[2]));
-			armAsm->Mov(gprF3, getFlagReg(bStatus[3]));
+			movF(gprF0, getFlagReg(bStatus[0]));
+			movF(gprF1, getFlagReg(bStatus[1]));
+			movF(gprF2, getFlagReg(bStatus[2]));
+			movF(gprF3, getFlagReg(bStatus[3]));
 		}
 		else if (sortRegs == 2)
 		{
-			armAsm->Mov(gprT1, getFlagReg (bStatus[3]));
-			armAsm->Mov(gprF0, getFlagReg (bStatus[0]));
-			armAsm->Mov(gprF1, getFlagReg2(bStatus[1]));
-			armAsm->Mov(gprF2, getFlagReg2(bStatus[2]));
-			armAsm->Mov(gprF3, gprT1);
+			movF(gprT1, getFlagReg (bStatus[3]));
+			movF(gprF0, getFlagReg (bStatus[0]));
+			movF(gprF1, getFlagReg2(bStatus[1]));
+			movF(gprF2, getFlagReg2(bStatus[2]));
+			movF(gprF3, gprT1);
 		}
 		else if (sortRegs == 3)
 		{
 			int gFlag = (bStatus[0] == bStatus[1]) ? bStatus[2] : bStatus[1];
-			armAsm->Mov(gprT1, getFlagReg (gFlag));
-			armAsm->Mov(gprT2, getFlagReg (bStatus[3]));
-			armAsm->Mov(gprF0, getFlagReg (bStatus[0]));
-			armAsm->Mov(gprF1, getFlagReg3(bStatus[1]));
-			armAsm->Mov(gprF2, getFlagReg4(bStatus[2]));
-			armAsm->Mov(gprF3, gprT2);
+			movF(gprT1, getFlagReg (gFlag));
+			movF(gprT2, getFlagReg (bStatus[3]));
+			movF(gprF0, getFlagReg (bStatus[0]));
+			movF(gprF1, getFlagReg3(bStatus[1]));
+			movF(gprF2, getFlagReg4(bStatus[2]));
+			movF(gprF3, gprT2);
 		}
 		else
 		{
 			// All four are distinct — need an extra temp. Use gprT3 (w11) which
 			// is scratch in the ABI (not in VI pool).
-			armAsm->Mov(gprT1, getFlagReg(bStatus[0]));
-			armAsm->Mov(gprT2, getFlagReg(bStatus[1]));
-			armAsm->Mov(gprT3, getFlagReg(bStatus[2]));
-			armAsm->Mov(gprF3, getFlagReg(bStatus[3]));
-			armAsm->Mov(gprF0, gprT1);
-			armAsm->Mov(gprF1, gprT2);
-			armAsm->Mov(gprF2, gprT3);
+			movF(gprT1, getFlagReg(bStatus[0]));
+			movF(gprT2, getFlagReg(bStatus[1]));
+			movF(gprT3, getFlagReg(bStatus[2]));
+			movF(gprF3, getFlagReg(bStatus[3]));
+			movF(gprF0, gprT1);
+			movF(gprF1, gprT2);
+			movF(gprF2, gprT3);
 		}
 	}
 

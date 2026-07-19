@@ -82,7 +82,12 @@
 //       conditional mVU.cycles zeroing ahead of mVUtestCycles) that
 //       consumes the whole remaining grant while the spin holds; spin
 //       blocks change shape.
-static constexpr u32 kMvuCompilerAbiVersion = 13;
+//  14 — mVUsetupFlags omits status-flag register self-moves at block links
+//       (getFlagReg(i) == gprF[i], so an identity ring phase was emitting
+//       up to four no-op ORRs; vixl keeps Mov(Wd,Wd) because the 32-bit
+//       move clears bits 63:32); pre-elision link shapes must not be
+//       rehydrated.
+static constexpr u32 kMvuCompilerAbiVersion = 14;
 
 // Hash/equality functors for XXH128_hash_t — let std::unordered_map<XXH128_hash_t, …>
 // work without a wrapping struct. low64 already carries the well-mixed half of

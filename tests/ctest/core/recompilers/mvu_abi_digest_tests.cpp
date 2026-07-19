@@ -151,6 +151,15 @@ constexpr AbiPin kPins[] = {
 	// bit-identical to abi 11.
 	{12, {0x5606c91c74538771, 0xf50098b57b42c70c, 0x421bbc34e2552655, 0xb93a633324c1d588, 0x29d9172f7ccbd58f}},
 	{13, {0x5606c91c74538771, 0xf50098b57b42c70c, 0x421bbc34e2552655, 0xb93a633324c1d588, 0x29d9172f7ccbd58f, 0xe9028a53cd86dcb7}},
+	// abi 14: mVUsetupFlags no longer emits status-flag register self-moves at
+	// block links (getFlagReg(i) == gprF[i], so an identity ring phase emitted up
+	// to four no-op ORRs; vixl keeps Mov(Wd,Wd) because the 32-bit move clears
+	// bits 63:32). Only the two status-flag-linked probes move (indirectJump and
+	// condEvilBranch); straightLine/branchBothArms/broadcastChain have no
+	// exact-match status link, and the spin loop's all-NOP body writes no status
+	// flag, so those four are bit-identical to abi 13. Harvested from the first,
+	// deliberately red, run.
+	{14, {0x5606c91c74538771, 0xf50098b57b42c70c, 0x8022f1986a924c1c, 0xb93a633324c1d588, 0x49548c4995cf112f, 0xe9028a53cd86dcb7}},
 };
 
 u64 CompileAndDigest(std::initializer_list<vu::VuOp> pairs)
