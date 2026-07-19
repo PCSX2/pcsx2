@@ -16,6 +16,11 @@
 #include "GS/GSVector.h"
 #include "GSAlignedClass.h"
 
+#include "common/Threading.h"
+
+#include <atomic>
+#include <cstring>
+#include <thread>
 #include <vector>
 
 class GSDumpBase;
@@ -573,6 +578,49 @@ public:
 	GSBackQueue::PayloadNode* AcquirePayloadNode();
 	void RotateTransferPayload();
 	void ExecReleasePayloadRecord(const GSBackQueue::ReleasePayloadRecord& rec);
+
+	// GV7-1d: the back thread (modes Lockstep and, for now, Pipelined — true
+	// pipelining needs the front-object split, so Pipelined runs lockstep until
+	// then). Lockstep = drain after every push, which is what makes executing
+	// against the shared single-object state safe. VSYNC records are NOT queued:
+	// present runs on the MTGS thread after a drain, so the back thread never
+	// touches the GSDevice on present paths (and for SW, at all). Queued modes
+	// engage only for Vulkan and SW renderers — a GL device is context-bound to
+	// the MTGS thread and HW draws would issue GL calls from the wrong thread.
+	bool m_back_queued = false;
+	bool m_back_lockstep = false;
+	GSBackQueue::RecordRing m_back_ring;
+	Threading::WorkSema m_back_sema;
+	std::thread m_back_thread;
+	std::atomic<bool> m_back_thread_exit{false};
+
+	void StartBackThread();
+	void StopBackThread();
+	void DrainBackQueue();
+	void BackThreadLoop();
+	void ExecRecordSlot(const GSBackQueue::RecordSlot& slot);
+	virtual void ExecVsyncRecord(const GSBackQueue::VsyncRecord& rec);
+
+	template <typename T>
+	void PushRecord(GSBackQueue::RecordType type, const T& rec)
+	{
+		for (;;)
+		{
+			GSBackQueue::RecordSlot* slot = m_back_ring.BeginPush();
+			if (slot)
+			{
+				slot->type = type;
+				std::memcpy(slot->As<T>(), &rec, sizeof(T));
+				m_back_ring.CommitPush();
+				m_back_sema.NotifyOfWork();
+				break;
+			}
+			std::this_thread::yield(); // ring full — backpressure
+		}
+
+		if (m_back_lockstep)
+			m_back_sema.WaitForEmpty();
+	}
 
 	GSVector4i GetTEX0Rect(GSDrawingContext prev_ctx);
 	void CheckWriteOverlap(bool req_write, bool req_read);

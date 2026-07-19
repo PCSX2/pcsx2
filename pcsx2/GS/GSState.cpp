@@ -113,6 +113,28 @@ GSState::GSState()
 		GSBackQueue::PayloadNode* node = new GSBackQueue::PayloadNode{m_tr.buff};
 		m_payload_arena.push_back(node);
 		m_tr_payload_node = node;
+
+		if (GSConfig.BackThreadMode >= GSBackThreadMode::Lockstep)
+		{
+			// A GL device is context-bound to the MTGS thread; HW draws would
+			// issue GL calls from the back thread. SW never touches the device
+			// off the vsync path (which stays front-side), so it's fine on any
+			// API.
+			const bool device_ok = !GSConfig.UseHardwareRenderer() ||
+			                       (g_gs_device && g_gs_device->GetRenderAPI() == RenderAPI::Vulkan);
+			if (device_ok)
+			{
+				m_back_queued = true;
+				// True pipelining needs the front-object split — Pipelined runs
+				// lockstep until that lands.
+				m_back_lockstep = true;
+				StartBackThread();
+			}
+			else
+			{
+				Console.Warning("GS: back-thread mode requires Vulkan or SW renderer — falling back to inline records.");
+			}
+		}
 	}
 
 	s_n = 0;
@@ -137,6 +159,8 @@ GSState::GSState()
 
 GSState::~GSState()
 {
+	StopBackThread();
+
 	for (int i = 0; i < MAX_DRAW_BUFFERS; i++)
 	{
 		if (m_index_buffers[i].buff)
@@ -187,6 +211,8 @@ std::string GSState::GetDrawDumpPath(const char* format, ...)
 
 void GSState::Reset(bool hardware_reset)
 {
+	DrainBackQueue();
+
 	Flush(GSFlushReason::RESET);
 
 	// FIXME: bios logo not shown cut in half after reset, missing graphics in GoW after first FMV
@@ -509,7 +535,10 @@ void GSState::RotateTransferPayload()
 
 	GSBackQueue::ReleasePayloadRecord rec;
 	rec.node = m_tr_payload_node;
-	ExecReleasePayloadRecord(rec);
+	if (m_back_queued)
+		PushRecord(GSBackQueue::RecordType::ReleasePayload, rec);
+	else
+		ExecReleasePayloadRecord(rec);
 
 	m_tr_payload_node = AcquirePayloadNode();
 	m_tr.buff = m_tr_payload_node->buff;
@@ -523,6 +552,93 @@ void GSState::ExecReleasePayloadRecord(const GSBackQueue::ReleasePayloadRecord& 
 	pxAssert(slot);
 	*slot = rec.node;
 	m_payload_free.CommitPush();
+}
+
+void GSState::StartBackThread()
+{
+	m_back_thread_exit.store(false, std::memory_order_release);
+	m_back_thread = std::thread(&GSState::BackThreadLoop, this);
+	Console.WriteLn("GS: back thread started (%s).", m_back_lockstep ? "lockstep" : "pipelined");
+}
+
+void GSState::StopBackThread()
+{
+	if (!m_back_thread.joinable())
+		return;
+
+	m_back_sema.WaitForEmpty();
+	m_back_thread_exit.store(true, std::memory_order_release);
+	m_back_sema.NotifyOfWork();
+	m_back_thread.join();
+	m_back_queued = false;
+}
+
+void GSState::DrainBackQueue()
+{
+	if (m_back_queued)
+		m_back_sema.WaitForEmpty();
+}
+
+void GSState::BackThreadLoop()
+{
+	Threading::SetNameOfCurrentThread("GS Back");
+
+	for (;;)
+	{
+		m_back_sema.WaitForWorkWithSpin();
+
+		if (m_back_thread_exit.load(std::memory_order_acquire))
+			break;
+
+		while (GSBackQueue::RecordSlot* slot = m_back_ring.Peek())
+		{
+			ExecRecordSlot(*slot);
+			m_back_ring.Pop();
+		}
+	}
+}
+
+void GSState::ExecRecordSlot(const GSBackQueue::RecordSlot& slot)
+{
+	using namespace GSBackQueue;
+
+	switch (slot.type)
+	{
+		case RecordType::Transfer:
+			ExecTransferRecord(*slot.As<TransferRecord>());
+			break;
+		case RecordType::Move:
+			ExecMoveRecord(*slot.As<MoveRecord>());
+			break;
+		case RecordType::ClutLoad:
+			ExecClutLoadRecord(*slot.As<ClutLoadRecord>());
+			break;
+		case RecordType::PcrtcSync:
+			ExecPcrtcSyncRecord(*slot.As<PcrtcSyncRecord>());
+			break;
+		case RecordType::Vsync:
+			ExecVsyncRecord(*slot.As<VsyncRecord>());
+			break;
+		case RecordType::Draw:
+		{
+			const DrawRecord& rec = *slot.As<DrawRecord>();
+			ExecDrawRecord(rec);
+			if (rec.node)
+				ReleaseDrawNode(rec.node);
+			break;
+		}
+		case RecordType::ReleasePayload:
+			ExecReleasePayloadRecord(*slot.As<ReleasePayloadRecord>());
+			break;
+		default:
+			ASSUME(0);
+	}
+}
+
+void GSState::ExecVsyncRecord(const GSBackQueue::VsyncRecord& rec)
+{
+	// Overridden by GSRenderer; a bare GSState never sees VSYNC records.
+	pxFailRel("VSYNC record executed on a non-renderer GSState");
 }
 
 // exclude_current is used if there is a flush for a reason other than the normal context change.
@@ -2607,7 +2723,10 @@ void GSState::FlushWrite()
 	// transfer Init rotates it out instead of reusing it.
 	m_tr_payload_referenced = m_back_records;
 
-	ExecTransferRecord(rec);
+	if (m_back_queued)
+		PushRecord(GSBackQueue::RecordType::Transfer, rec);
+	else
+		ExecTransferRecord(rec);
 
 	// Inline mode: keep the front-side cursor coherent (savestates serialize
 	// m_tr.x/y; the executor owns the live cursor across slices).
@@ -2841,6 +2960,7 @@ void GSState::FlushPrim()
 		rec.draw_rect = temp_draw_rect;
 		rec.vertex = &node->vb;
 		rec.index = &node->ib;
+		rec.node = node;
 		rec.draw_serial = s_n;
 		rec.backed_up_ctx = m_backed_up_ctx;
 		rec.dirty_gs_regs = m_dirty_gs_regs;
@@ -2848,14 +2968,22 @@ void GSState::FlushPrim()
 		rec.channel_shuffle_finish = m_channel_shuffle_finish;
 		rec.packed_uv_hack_flag = m_isPackedUV_HackFlag;
 
-		ExecDrawRecord(rec);
+		if (m_back_queued)
+		{
+			// The consumer releases the node after the tail runs.
+			PushRecord(GSBackQueue::RecordType::Draw, rec);
+		}
+		else
+		{
+			// Inline consume point: the executor is done with the node.
+			ExecDrawRecord(rec);
+			ReleaseDrawNode(node);
+		}
 
-		// Inline consume point: the executor is done with the node. It also
-		// re-aimed m_vertex/m_index at the node's structs — restore them to the
-		// parse slot before the reset below (pipelined moves the release to the
-		// back thread; this re-aim stays, and is what keeps the front parsing
-		// its own buffers).
-		ReleaseDrawNode(node);
+		// The executor re-aimed m_vertex/m_index at the node's structs (in
+		// lockstep the drain inside PushRecord has already happened) — restore
+		// them to the parse slot before the reset below; this re-aim is what
+		// keeps the front parsing its own buffers.
 		m_vertex = &m_vertex_buffers[m_current_buffer_idx];
 		m_index = &m_index_buffers[m_current_buffer_idx];
 	}
@@ -3296,7 +3424,10 @@ void GSState::Write(const u8* mem, int len)
 			rec.draw_serial = s_n;
 			rec.first_slice = true;
 
-			ExecTransferRecord(rec);
+			if (m_back_queued)
+				PushRecord(GSBackQueue::RecordType::Transfer, rec);
+			else
+				ExecTransferRecord(rec);
 
 			m_tr.x = m_exec_tr_x;
 			m_tr.y = m_exec_tr_y;
@@ -3317,6 +3448,8 @@ void GSState::Write(const u8* mem, int len)
 
 void GSState::InitReadFIFO(u8* mem, int len)
 {
+	DrainBackQueue();
+
 	// No size or already a transfer in progress.
 	if (len <= 0 || m_tr.total != 0)
 		return;
@@ -3358,6 +3491,8 @@ void GSState::InitReadFIFO(u8* mem, int len)
 // NOTE: called from outside MTGS
 void GSState::Read(u8* mem, int len)
 {
+	DrainBackQueue();
+
 	if (len <= 0 || m_tr.total == 0)
 		return;
 
@@ -3406,7 +3541,10 @@ void GSState::SubmitMove()
 	rec.reg = m_env.TRXREG;
 	rec.draw_serial = s_n;
 
-	ExecMoveRecord(rec);
+	if (m_back_queued)
+		PushRecord(GSBackQueue::RecordType::Move, rec);
+	else
+		ExecMoveRecord(rec);
 }
 
 void GSState::ExecMoveRecord(const GSBackQueue::MoveRecord& rec)
@@ -3431,7 +3569,10 @@ void GSState::SubmitClutLoad(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLU
 	rec.TEX0 = TEX0;
 	rec.TEXCLUT = TEXCLUT;
 
-	ExecClutLoadRecord(rec);
+	if (m_back_queued)
+		PushRecord(GSBackQueue::RecordType::ClutLoad, rec);
+	else
+		ExecClutLoadRecord(rec);
 }
 
 void GSState::ExecClutLoadRecord(const GSBackQueue::ClutLoadRecord& rec)
@@ -3445,7 +3586,10 @@ void GSState::SubmitPcrtcSync()
 	std::memcpy(&rec.displays, &PCRTCDisplays, sizeof(rec.displays));
 	rec.scanmask_used = m_scanmask_used;
 
-	ExecPcrtcSyncRecord(rec);
+	if (m_back_queued)
+		PushRecord(GSBackQueue::RecordType::PcrtcSync, rec);
+	else
+		ExecPcrtcSyncRecord(rec);
 }
 
 void GSState::ExecPcrtcSyncRecord(const GSBackQueue::PcrtcSyncRecord& rec)
@@ -3677,6 +3821,8 @@ void GSState::Move()
 
 void GSState::SoftReset(u32 mask)
 {
+	DrainBackQueue();
+
 	if (mask & 1)
 	{
 		memset(&m_path[0], 0, sizeof(GIFPath));
@@ -3706,6 +3852,8 @@ void GSState::ReadFIFO(u8* mem, int size)
 
 void GSState::ReadLocalMemoryUnsync(u8* mem, int qwc, GIFRegBITBLTBUF BITBLTBUF, GIFRegTRXPOS TRXPOS, GIFRegTRXREG TRXREG)
 {
+	DrainBackQueue();
+
 	const int w = TRXREG.RRW;
 	const int h = TRXREG.RRH;
 
@@ -3958,6 +4106,8 @@ static void ReadState(T* dst, u8*& src, size_t len = sizeof(T))
 
 int GSState::Freeze(freezeData* fd, bool sizeonly)
 {
+	DrainBackQueue();
+
 	const u32 version = STATE_VERSION;
 	if (sizeonly)
 	{
@@ -4052,6 +4202,8 @@ int GSState::Freeze(freezeData* fd, bool sizeonly)
 
 int GSState::Defrost(const freezeData* fd)
 {
+	DrainBackQueue();
+
 	if (!fd || !fd->data || fd->size == 0)
 		return -1;
 

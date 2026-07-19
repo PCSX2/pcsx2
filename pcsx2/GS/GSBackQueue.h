@@ -237,8 +237,9 @@ namespace GSBackQueue
 		GSDrawingEnvironment next_env;
 		GSVertex next_v;
 		GSVector4i draw_rect; // temp_draw_rect at flush
-		VertexBuff* vertex; // record-owned; pool handles once GV7-1 lands
+		VertexBuff* vertex; // = &node->vb/&node->ib on the record path
 		IndexBuff* index;
+		DrawNode* node; // released by the consumer after the tail runs (null in tests)
 		u64 draw_serial; // front-assigned s_n
 		int backed_up_ctx;
 		u32 dirty_gs_regs;
