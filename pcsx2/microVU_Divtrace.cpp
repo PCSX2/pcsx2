@@ -17,7 +17,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#if defined(__APPLE__)
+#if defined(_WIN32)
+// No ucontext/sigaction on Windows — the SIGTRAP capture machinery below is
+// compiled out entirely (see EnterMode). The shared globals and fingerprint
+// helpers still build, so the interp/JIT consumer sites link unchanged.
+#elif defined(__APPLE__)
 // <ucontext.h> declares the deprecated getcontext/setcontext/... routines and
 // #errors out unless _XOPEN_SOURCE is defined. We only need the ucontext_t
 // type, which <sys/ucontext.h> provides without that guard. (Mirrors
@@ -117,6 +121,7 @@ namespace mvu_divtrace
 		g_interp_op_idx = 0;
 	}
 
+#ifndef _WIN32
 	namespace
 	{
 		struct sigaction s_prev_handler{};
@@ -190,9 +195,19 @@ namespace mvu_divtrace
 #endif
 		}
 	}
+#endif // !_WIN32
 
 	void EnterMode(int vu_index)
 	{
+#ifdef _WIN32
+		// The capture path is SIGTRAP + ucontext (the JIT emits brk, the
+		// handler snapshots and skips it) — there is no Windows port. Only
+		// the offline replay drivers call this, and they don't build on
+		// Windows; fail loudly rather than letting an unhandled brk look
+		// like a JIT crash if that ever changes.
+		(void)vu_index;
+		pxFailRel("mvu_divtrace::EnterMode: SIGTRAP capture is not supported on Windows");
+#else
 		g_vu_index = vu_index;
 		Reset();
 		// Fingerprint streams: large, always recorded — these are what scale
@@ -215,16 +230,19 @@ namespace mvu_divtrace
 			s_installed = true;
 		}
 		g_enabled.store(true, std::memory_order_release);
+#endif
 	}
 
 	void ExitMode()
 	{
 		g_enabled.store(false, std::memory_order_release);
+#ifndef _WIN32
 		if (s_installed)
 		{
 			sigaction(SIGTRAP, &s_prev_handler, nullptr);
 			s_installed = false;
 		}
+#endif
 	}
 } // namespace mvu_divtrace
 

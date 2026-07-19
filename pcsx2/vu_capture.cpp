@@ -26,10 +26,24 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#ifdef _WIN32
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 
 namespace vu_capture
 {
+	// Only used to salt filenames/reports so concurrent processes don't
+	// collide — any process-unique integer will do.
+	static int capture_pid()
+	{
+#ifdef _WIN32
+		return ::_getpid();
+#else
+		return ::getpid();
+#endif
+	}
 	namespace
 	{
 		// Single mutex covers all WriteToFile callers so concurrent VU0/VU1
@@ -285,7 +299,7 @@ namespace vu_capture
 		std::unordered_map<u64, u32> g_count_seen;
 		// Rank-mode: total executions per (vu_index, start_pc).
 		std::unordered_map<u64, u64> g_rank_counts;
-		std::mt19937_64 g_rng{0x5EEDu ^ static_cast<u64>(::getpid())};
+		std::mt19937_64 g_rng{0x5EEDu ^ static_cast<u64>(capture_pid())};
 
 		void DumpRankReportAtExit()
 		{
@@ -303,7 +317,7 @@ namespace vu_capture
 			std::sort(sorted.begin(), sorted.end(),
 				[](const auto& a, const auto& b) { return a.second > b.second; });
 
-			std::fprintf(f, "# vu_capture rank report — pid %d\n", ::getpid());
+			std::fprintf(f, "# vu_capture rank report — pid %d\n", capture_pid());
 			std::fprintf(f, "# %-3s %-10s %16s\n", "vu", "start_pc", "executions");
 			for (const auto& [key, count] : sorted)
 			{
@@ -359,7 +373,7 @@ namespace vu_capture
 					std::fprintf(g_traj_file,
 						"# vu_capture trajectory — pid %d\n"
 						"# seq vu pc budget cpu_cycle vu_cycle state_hash vumem_hash core_hash\n",
-						::getpid());
+						capture_pid());
 					std::atexit(&CloseTrajAtExit);
 				}
 			}
