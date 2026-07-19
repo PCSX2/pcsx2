@@ -2,7 +2,7 @@ add_library(pcsx2-libretro SHARED)
 
 # Libretro cores are named <core>_libretro.so with no "lib" prefix.
 set_target_properties(pcsx2-libretro PROPERTIES
-	OUTPUT_NAME "yaps2_libretro"
+	OUTPUT_NAME "armsx2_libretro"
 	PREFIX ""
 )
 

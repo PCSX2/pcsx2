@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-// pcsx2-libretro — libretro core frontend (yaps2_libretro).
+// pcsx2-libretro — libretro core frontend (armsx2_libretro).
 //
 // Milestone 1 scaffold: the core builds as a shared library, exposes the
 // libretro v1 API, and boots the VM headlessly (GS renderer forced to Null,
@@ -193,7 +193,7 @@ bool LibretroCore::InitializeConfig()
 		}
 	}
 
-	const std::string ini_path = Path::Combine(EmuFolders::Settings, "yaps2-libretro.ini");
+	const std::string ini_path = Path::Combine(EmuFolders::Settings, "armsx2-libretro.ini");
 	const bool ini_exists = FileSystem::FileExists(ini_path.c_str());
 
 	s_base_settings = std::make_unique<INISettingsInterface>(ini_path);
@@ -838,111 +838,111 @@ static struct retro_core_option_v2_category kOptionCategories[] = {
 };
 
 static struct retro_core_option_v2_definition kOptionDefinitions[] = {
-	{"yaps2_renderer", "GS Renderer (restart)", "GS Renderer (restart)",
+	{"armsx2_renderer", "GS Renderer (restart)", "GS Renderer (restart)",
 		"Vulkan renders the GS on the GPU. Software renders on the CPU and presents through the same shared Vulkan context.",
 		nullptr, "video",
 		{{"Vulkan", nullptr}, {"Software", nullptr}, {nullptr, nullptr}}, "Vulkan"},
-	{"yaps2_upscale", "Internal Resolution", "Internal Resolution",
+	{"armsx2_upscale", "Internal Resolution", "Internal Resolution",
 		"Renders the PS2 output at a multiple of native resolution. The output canvas follows this size.",
 		nullptr, "video",
 		{{"1x", "1x (native)"}, {"2x", nullptr}, {"3x", nullptr}, {"4x", nullptr}, {nullptr, nullptr}}, "1x"},
-	{"yaps2_aspect_ratio", "Aspect Ratio", "Aspect Ratio",
+	{"armsx2_aspect_ratio", "Aspect Ratio", "Aspect Ratio",
 		"Display aspect ratio. 16:9 is intended for games with widescreen patches or native widescreen modes.",
 		nullptr, "video",
 		{{"Auto 4:3/3:2", "Auto (4:3 / 3:2 progressive)"}, {"4:3", nullptr}, {"16:9", nullptr},
 			{"Stretch", nullptr}, {nullptr, nullptr}}, "Auto 4:3/3:2"},
-	{"yaps2_deinterlacing", "Deinterlacing", "Deinterlacing",
+	{"armsx2_deinterlacing", "Deinterlacing", "Deinterlacing",
 		"How interlaced (480i/576i) output is turned into a full frame. Automatic picks per game; "
 		"Bob is fast, Adaptive is highest quality; Off shows the raw field.",
 		nullptr, "video",
 		{{"Automatic", nullptr}, {"Off", nullptr}, {"Weave TFF", nullptr}, {"Weave BFF", nullptr},
 			{"Bob TFF", nullptr}, {"Bob BFF", nullptr}, {"Blend TFF", nullptr}, {"Blend BFF", nullptr},
 			{"Adaptive TFF", nullptr}, {"Adaptive BFF", nullptr}, {nullptr, nullptr}}, "Automatic"},
-	{"yaps2_no_interlacing_patches", "No-Interlacing Patches (restart)", "No-Interlacing Patches (restart)",
+	{"armsx2_no_interlacing_patches", "No-Interlacing Patches (restart)", "No-Interlacing Patches (restart)",
 		"Patches supported games to render progressive instead of interlaced — sharper than any deinterlacer.",
 		nullptr, "video",
 		{{"disabled", nullptr}, {"enabled", nullptr}, {nullptr, nullptr}}, "disabled"},
-	{"yaps2_widescreen_patches", "Widescreen Patches (restart)", "Widescreen Patches (restart)",
+	{"armsx2_widescreen_patches", "Widescreen Patches (restart)", "Widescreen Patches (restart)",
 		"Patches supported games to render 16:9. Set Aspect Ratio to 16:9 alongside this.",
 		nullptr, "video",
 		{{"disabled", nullptr}, {"enabled", nullptr}, {nullptr, nullptr}}, "disabled"},
-	{"yaps2_blending_accuracy", "Blending Accuracy", "Blending Accuracy",
+	{"armsx2_blending_accuracy", "Blending Accuracy", "Blending Accuracy",
 		"How accurately PS2 framebuffer blending is emulated on the GPU. Lower levels are faster; "
 		"raise it only for games with visible blending artifacts.",
 		nullptr, "video",
 		{{"Minimum", nullptr}, {"Basic", nullptr}, {"Medium", nullptr}, {"High", nullptr},
 			{"Full", nullptr}, {"Maximum", nullptr}, {nullptr, nullptr}}, "Basic"},
-	{"yaps2_dithering", "Dithering", "Dithering",
+	{"armsx2_dithering", "Dithering", "Dithering",
 		"Unscaled replicates PS2 dithering; Off can reduce banding artifacts at higher internal resolutions.",
 		nullptr, "video",
 		{{"Unscaled", nullptr}, {"Off", nullptr}, {"Scaled", nullptr}, {nullptr, nullptr}}, "Unscaled"},
-	{"yaps2_trilinear_filtering", "Trilinear Filtering", "Trilinear Filtering",
+	{"armsx2_trilinear_filtering", "Trilinear Filtering", "Trilinear Filtering",
 		nullptr, nullptr, "video",
 		{{"Automatic", nullptr}, {"Off", nullptr}, {"Trilinear (PS2)", nullptr},
 			{"Trilinear (Forced)", nullptr}, {nullptr, nullptr}}, "Automatic"},
-	{"yaps2_mipmapping", "Hardware Mipmapping", "Hardware Mipmapping",
+	{"armsx2_mipmapping", "Hardware Mipmapping", "Hardware Mipmapping",
 		nullptr, nullptr, "video",
 		{{"enabled", nullptr}, {"disabled", nullptr}, {nullptr, nullptr}}, "enabled"},
-	{"yaps2_fxaa", "FXAA", "FXAA",
+	{"armsx2_fxaa", "FXAA", "FXAA",
 		"Cheap post-process anti-aliasing.", nullptr, "video",
 		{{"disabled", nullptr}, {"enabled", nullptr}, {nullptr, nullptr}}, "disabled"},
-	{"yaps2_texture_filtering", "Texture Filtering", "Texture Filtering",
+	{"armsx2_texture_filtering", "Texture Filtering", "Texture Filtering",
 		"Bilinear (PS2) filters as the game requests. Forced filters everything, which smooths textures "
 		"but can blur 2D elements; the sprite-excluding variant protects UI sprites.",
 		nullptr, "video",
 		{{"Nearest", nullptr}, {"Bilinear (Forced)", nullptr}, {"Bilinear (PS2)", nullptr},
 			{"Bilinear (Forced excluding sprites)", nullptr}, {nullptr, nullptr}}, "Bilinear (PS2)"},
-	{"yaps2_anisotropic_filtering", "Anisotropic Filtering", "Anisotropic Filtering",
+	{"armsx2_anisotropic_filtering", "Anisotropic Filtering", "Anisotropic Filtering",
 		"Sharpens textures viewed at an angle. Cheap on the GPU, but can cause artifacts in games that "
 		"rely on point sampling.",
 		nullptr, "video",
 		{{"0", "disabled"}, {"2", "2x"}, {"4", "4x"}, {"8", "8x"}, {"16", "16x"}, {nullptr, nullptr}}, "0"},
-	{"yaps2_sw_threads", "Software Renderer Threads", "Software Renderer Threads",
+	{"armsx2_sw_threads", "Software Renderer Threads", "Software Renderer Threads",
 		"Worker threads for the Software renderer (in addition to the GS thread). No effect on Vulkan.",
 		nullptr, "video",
 		{{"0", nullptr}, {"1", nullptr}, {"2", nullptr}, {"3", nullptr}, {"4", nullptr},
 			{nullptr, nullptr}}, "2"},
-	{"yaps2_show_fps", "Show FPS", "Show FPS",
+	{"armsx2_show_fps", "Show FPS", "Show FPS",
 		"Draws the internal framerate on screen.",
 		nullptr, "video",
 		{{"disabled", nullptr}, {"enabled", nullptr}, {nullptr, nullptr}}, "disabled"},
-	{"yaps2_ee_cycle_rate", "EE Cycle Rate", "EE Cycle Rate",
+	{"armsx2_ee_cycle_rate", "EE Cycle Rate", "EE Cycle Rate",
 		"Underclocks or overclocks the emulated Emotion Engine. Below 100% speeds up emulation but can "
 		"cause stutter or breakage; above 100% can smooth out games with internal slowdown.",
 		nullptr, "performance",
 		{{"50%", nullptr}, {"60%", nullptr}, {"75%", nullptr}, {"100%", "100% (default)"},
 			{"130%", nullptr}, {"180%", nullptr}, {"300%", nullptr}, {nullptr, nullptr}}, "100%"},
-	{"yaps2_ee_cycle_skip", "EE Cycle Skip", "EE Cycle Skip",
+	{"armsx2_ee_cycle_skip", "EE Cycle Skip", "EE Cycle Skip",
 		"Makes the emulated EE skip cycles. Helps games with obvious VU-driven slowdown; "
 		"can cause false FPS readings and breakage.",
 		nullptr, "performance",
 		{{"disabled", nullptr}, {"mild", nullptr}, {"moderate", nullptr}, {"maximum", nullptr},
 			{nullptr, nullptr}}, "disabled"},
-	{"yaps2_hw_download_mode", "Hardware Download Mode", "Hardware Download Mode",
+	{"armsx2_hw_download_mode", "Hardware Download Mode", "Hardware Download Mode",
 		"How GS-to-EE readbacks are handled. Accurate is correct but expensive on mobile GPUs; "
 		"Disable Readbacks skips the data copy, Unsynchronized doesn't wait for the GPU, Disabled "
 		"ignores the transfer entirely. Anything but Accurate can break effects that read the framebuffer.",
 		nullptr, "performance",
 		{{"Accurate", nullptr}, {"Disable Readbacks", nullptr}, {"Unsynchronized", nullptr},
 			{"Disabled", nullptr}, {nullptr, nullptr}}, "Accurate"},
-	{"yaps2_mtvu", "MTVU (Multi-Threaded VU1)", "MTVU (Multi-Threaded VU1)",
+	{"armsx2_mtvu", "MTVU (Multi-Threaded VU1)", "MTVU (Multi-Threaded VU1)",
 		"Runs VU1 on its own thread. Large speedup on multi-core CPUs; a small number of games hang with it.",
 		nullptr, "performance",
 		{{"enabled", nullptr}, {"disabled", nullptr}, {nullptr, nullptr}}, "enabled"},
-	{"yaps2_instant_vu1", "Instant VU1", "Instant VU1",
+	{"armsx2_instant_vu1", "Instant VU1", "Instant VU1",
 		"Runs VU1 programs to completion instantly instead of interleaving with the EE. "
 		"Fast and safe for most games.",
 		nullptr, "performance",
 		{{"enabled", nullptr}, {"disabled", nullptr}, {nullptr, nullptr}}, "enabled"},
-	{"yaps2_bios", "BIOS (restart)", "BIOS (restart)",
+	{"armsx2_bios", "BIOS (restart)", "BIOS (restart)",
 		"Which BIOS image from <system>/pcsx2/bios to boot. Auto picks the first valid image.",
 		nullptr, "system",
 		{{"auto", "Auto (first valid image)"}, {nullptr, nullptr}}, "auto"},
-	{"yaps2_fast_boot", "Fast Boot", "Fast Boot",
+	{"armsx2_fast_boot", "Fast Boot", "Fast Boot",
 		"Skips the BIOS boot animation.",
 		nullptr, "system",
 		{{"enabled", nullptr}, {"disabled", nullptr}, {nullptr, nullptr}}, "enabled"},
-	{"yaps2_cheats", "Enable Cheats", "Enable Cheats",
+	{"armsx2_cheats", "Enable Cheats", "Enable Cheats",
 		"Loads .pnach cheat files from <system>/pcsx2/cheats for the running game.",
 		nullptr, "system",
 		{{"disabled", nullptr}, {"enabled", nullptr}, {nullptr, nullptr}}, "disabled"},
@@ -954,29 +954,29 @@ static struct retro_core_options_v2 kOptionsV2 = {kOptionCategories, kOptionDefi
 // Legacy fallback: first value doubles as the default. Non-const so the
 // BIOS entry can be pointed at the scanned list.
 static struct retro_variable kCoreVariables[] = {
-	{"yaps2_renderer", "GS renderer (restart); Vulkan|Software"},
-	{"yaps2_upscale", "Internal resolution; 1x|2x|3x|4x"},
-	{"yaps2_aspect_ratio", "Aspect ratio; Auto 4:3/3:2|4:3|16:9|Stretch"},
-	{"yaps2_deinterlacing", "Deinterlacing; Automatic|Off|Weave TFF|Weave BFF|Bob TFF|Bob BFF|Blend TFF|Blend BFF|Adaptive TFF|Adaptive BFF"},
-	{"yaps2_no_interlacing_patches", "No-interlacing patches (restart); disabled|enabled"},
-	{"yaps2_widescreen_patches", "Widescreen patches (restart); disabled|enabled"},
-	{"yaps2_blending_accuracy", "Blending accuracy; Basic|Minimum|Medium|High|Full|Maximum"},
-	{"yaps2_dithering", "Dithering; Unscaled|Off|Scaled"},
-	{"yaps2_trilinear_filtering", "Trilinear filtering; Automatic|Off|Trilinear (PS2)|Trilinear (Forced)"},
-	{"yaps2_mipmapping", "Hardware mipmapping; enabled|disabled"},
-	{"yaps2_fxaa", "FXAA; disabled|enabled"},
-	{"yaps2_texture_filtering", "Texture filtering; Bilinear (PS2)|Nearest|Bilinear (Forced)|Bilinear (Forced excluding sprites)"},
-	{"yaps2_anisotropic_filtering", "Anisotropic filtering; 0|2|4|8|16"},
-	{"yaps2_sw_threads", "Software renderer threads; 2|0|1|3|4"},
-	{"yaps2_show_fps", "Show FPS on screen; disabled|enabled"},
-	{"yaps2_ee_cycle_rate", "EE cycle rate; 100%|50%|60%|75%|130%|180%|300%"},
-	{"yaps2_ee_cycle_skip", "EE cycle skip; disabled|mild|moderate|maximum"},
-	{"yaps2_hw_download_mode", "Hardware download mode; Accurate|Disable Readbacks|Unsynchronized|Disabled"},
-	{"yaps2_mtvu", "MTVU (multi-threaded VU1); enabled|disabled"},
-	{"yaps2_instant_vu1", "Instant VU1; enabled|disabled"},
-	{"yaps2_bios", "BIOS (restart); auto"},
-	{"yaps2_fast_boot", "Fast boot; enabled|disabled"},
-	{"yaps2_cheats", "Enable cheats; disabled|enabled"},
+	{"armsx2_renderer", "GS renderer (restart); Vulkan|Software"},
+	{"armsx2_upscale", "Internal resolution; 1x|2x|3x|4x"},
+	{"armsx2_aspect_ratio", "Aspect ratio; Auto 4:3/3:2|4:3|16:9|Stretch"},
+	{"armsx2_deinterlacing", "Deinterlacing; Automatic|Off|Weave TFF|Weave BFF|Bob TFF|Bob BFF|Blend TFF|Blend BFF|Adaptive TFF|Adaptive BFF"},
+	{"armsx2_no_interlacing_patches", "No-interlacing patches (restart); disabled|enabled"},
+	{"armsx2_widescreen_patches", "Widescreen patches (restart); disabled|enabled"},
+	{"armsx2_blending_accuracy", "Blending accuracy; Basic|Minimum|Medium|High|Full|Maximum"},
+	{"armsx2_dithering", "Dithering; Unscaled|Off|Scaled"},
+	{"armsx2_trilinear_filtering", "Trilinear filtering; Automatic|Off|Trilinear (PS2)|Trilinear (Forced)"},
+	{"armsx2_mipmapping", "Hardware mipmapping; enabled|disabled"},
+	{"armsx2_fxaa", "FXAA; disabled|enabled"},
+	{"armsx2_texture_filtering", "Texture filtering; Bilinear (PS2)|Nearest|Bilinear (Forced)|Bilinear (Forced excluding sprites)"},
+	{"armsx2_anisotropic_filtering", "Anisotropic filtering; 0|2|4|8|16"},
+	{"armsx2_sw_threads", "Software renderer threads; 2|0|1|3|4"},
+	{"armsx2_show_fps", "Show FPS on screen; disabled|enabled"},
+	{"armsx2_ee_cycle_rate", "EE cycle rate; 100%|50%|60%|75%|130%|180%|300%"},
+	{"armsx2_ee_cycle_skip", "EE cycle skip; disabled|mild|moderate|maximum"},
+	{"armsx2_hw_download_mode", "Hardware download mode; Accurate|Disable Readbacks|Unsynchronized|Disabled"},
+	{"armsx2_mtvu", "MTVU (multi-threaded VU1); enabled|disabled"},
+	{"armsx2_instant_vu1", "Instant VU1; enabled|disabled"},
+	{"armsx2_bios", "BIOS (restart); auto"},
+	{"armsx2_fast_boot", "Fast boot; enabled|disabled"},
+	{"armsx2_cheats", "Enable cheats; disabled|enabled"},
 	{nullptr, nullptr},
 };
 
@@ -1009,7 +1009,7 @@ static void PopulateBiosOptions(retro_environment_t cb)
 	retro_core_option_v2_definition* bios_def = nullptr;
 	for (retro_core_option_v2_definition& def : kOptionDefinitions)
 	{
-		if (def.key && !std::strcmp(def.key, "yaps2_bios"))
+		if (def.key && !std::strcmp(def.key, "armsx2_bios"))
 		{
 			bios_def = &def;
 			break;
@@ -1030,7 +1030,7 @@ static void PopulateBiosOptions(retro_environment_t cb)
 
 	for (retro_variable& var : kCoreVariables)
 	{
-		if (var.key && !std::strcmp(var.key, "yaps2_bios"))
+		if (var.key && !std::strcmp(var.key, "armsx2_bios"))
 		{
 			var.value = s_bios_legacy_values.c_str();
 			break;
@@ -1047,7 +1047,7 @@ static void ApplyCoreOptions(bool startup)
 	{
 		auto lock = Host::GetSettingsLock();
 
-		var = {"yaps2_renderer", nullptr};
+		var = {"armsx2_renderer", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && startup)
 		{
 			// Renderer swaps need the whole context negotiation to rerun;
@@ -1056,31 +1056,31 @@ static void ApplyCoreOptions(bool startup)
 				s_base_settings->SetIntValue("EmuCore/GS", "Renderer", static_cast<int>(GSRendererType::SW));
 		}
 
-		var = {"yaps2_upscale", nullptr};
+		var = {"armsx2_upscale", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 			s_base_settings->SetFloatValue("EmuCore/GS", "upscale_multiplier",
 				static_cast<float>(std::clamp(atoi(var.value), 1, 4)));
 
-		var = {"yaps2_fast_boot", nullptr};
+		var = {"armsx2_fast_boot", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 			s_base_settings->SetBoolValue("EmuCore", "EnableFastBoot", !std::strcmp(var.value, "enabled"));
 
-		var = {"yaps2_widescreen_patches", nullptr};
+		var = {"armsx2_widescreen_patches", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 			s_base_settings->SetBoolValue("EmuCore", "EnableWideScreenPatches", !std::strcmp(var.value, "enabled"));
 
-		var = {"yaps2_show_fps", nullptr};
+		var = {"armsx2_show_fps", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 			s_base_settings->SetBoolValue("EmuCore/GS", "OsdShowFPS", !std::strcmp(var.value, "enabled"));
 
-		var = {"yaps2_aspect_ratio", nullptr};
+		var = {"armsx2_aspect_ratio", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 		{
 			// Option values match Pcsx2Config::GSOptions::AspectRatioNames.
 			s_base_settings->SetStringValue("EmuCore/GS", "AspectRatio", var.value);
 		}
 
-		var = {"yaps2_deinterlacing", nullptr};
+		var = {"armsx2_deinterlacing", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 		{
 			// Indices match the GSInterlaceMode enum.
@@ -1096,11 +1096,11 @@ static void ApplyCoreOptions(bool startup)
 			}
 		}
 
-		var = {"yaps2_no_interlacing_patches", nullptr};
+		var = {"armsx2_no_interlacing_patches", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 			s_base_settings->SetBoolValue("EmuCore", "EnableNoInterlacingPatches", !std::strcmp(var.value, "enabled"));
 
-		var = {"yaps2_blending_accuracy", nullptr};
+		var = {"armsx2_blending_accuracy", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 		{
 			// Indices match the AccBlendLevel enum.
@@ -1115,7 +1115,7 @@ static void ApplyCoreOptions(bool startup)
 			}
 		}
 
-		var = {"yaps2_dithering", nullptr};
+		var = {"armsx2_dithering", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 		{
 			// Values match the Dithering config field: 0=Off, 1=Scaled, 2=Unscaled.
@@ -1130,7 +1130,7 @@ static void ApplyCoreOptions(bool startup)
 			}
 		}
 
-		var = {"yaps2_trilinear_filtering", nullptr};
+		var = {"armsx2_trilinear_filtering", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 		{
 			// Values match the TriFiltering enum (Automatic=-1).
@@ -1146,15 +1146,15 @@ static void ApplyCoreOptions(bool startup)
 			}
 		}
 
-		var = {"yaps2_mipmapping", nullptr};
+		var = {"armsx2_mipmapping", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 			s_base_settings->SetBoolValue("EmuCore/GS", "hw_mipmap", !std::strcmp(var.value, "enabled"));
 
-		var = {"yaps2_fxaa", nullptr};
+		var = {"armsx2_fxaa", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 			s_base_settings->SetBoolValue("EmuCore/GS", "fxaa", !std::strcmp(var.value, "enabled"));
 
-		var = {"yaps2_ee_cycle_rate", nullptr};
+		var = {"armsx2_ee_cycle_rate", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 		{
 			static constexpr std::pair<const char*, int> kRates[] = {{"50%", -3}, {"60%", -2}, {"75%", -1},
@@ -1169,7 +1169,7 @@ static void ApplyCoreOptions(bool startup)
 			}
 		}
 
-		var = {"yaps2_ee_cycle_skip", nullptr};
+		var = {"armsx2_ee_cycle_skip", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 		{
 			static constexpr const char* kSkips[] = {"disabled", "mild", "moderate", "maximum"};
@@ -1183,7 +1183,7 @@ static void ApplyCoreOptions(bool startup)
 			}
 		}
 
-		var = {"yaps2_texture_filtering", nullptr};
+		var = {"armsx2_texture_filtering", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 		{
 			// Indices match the BiFiltering enum.
@@ -1199,15 +1199,15 @@ static void ApplyCoreOptions(bool startup)
 			}
 		}
 
-		var = {"yaps2_anisotropic_filtering", nullptr};
+		var = {"armsx2_anisotropic_filtering", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 			s_base_settings->SetIntValue("EmuCore/GS", "MaxAnisotropy", std::clamp(atoi(var.value), 0, 16));
 
-		var = {"yaps2_sw_threads", nullptr};
+		var = {"armsx2_sw_threads", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 			s_base_settings->SetIntValue("EmuCore/GS", "extrathreads", std::clamp(atoi(var.value), 0, 4));
 
-		var = {"yaps2_hw_download_mode", nullptr};
+		var = {"armsx2_hw_download_mode", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 		{
 			// Explicit values: EnabledForceFull (1) is deliberately not exposed.
@@ -1226,15 +1226,15 @@ static void ApplyCoreOptions(bool startup)
 			}
 		}
 
-		var = {"yaps2_mtvu", nullptr};
+		var = {"armsx2_mtvu", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 			s_base_settings->SetBoolValue("EmuCore/Speedhacks", "vuThread", !std::strcmp(var.value, "enabled"));
 
-		var = {"yaps2_instant_vu1", nullptr};
+		var = {"armsx2_instant_vu1", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 			s_base_settings->SetBoolValue("EmuCore/Speedhacks", "vu1Instant", !std::strcmp(var.value, "enabled"));
 
-		var = {"yaps2_bios", nullptr};
+		var = {"armsx2_bios", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 		{
 			// Empty setting = FindBiosImage() picks the first valid image.
@@ -1242,7 +1242,7 @@ static void ApplyCoreOptions(bool startup)
 				std::strcmp(var.value, "auto") ? var.value : "");
 		}
 
-		var = {"yaps2_cheats", nullptr};
+		var = {"armsx2_cheats", nullptr};
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 			s_base_settings->SetBoolValue("EmuCore", "EnableCheats", !std::strcmp(var.value, "enabled"));
 	}
@@ -1265,9 +1265,9 @@ static void ApplyCoreOptions(bool startup)
 static const VkApplicationInfo* GetVulkanApplicationInfo(void)
 {
 	static VkApplicationInfo app_info{VK_STRUCTURE_TYPE_APPLICATION_INFO};
-	app_info.pApplicationName = "yaps2";
+	app_info.pApplicationName = "ARMSX2";
 	app_info.applicationVersion = VK_MAKE_VERSION(2, 0, 0);
-	app_info.pEngineName = "yaps2";
+	app_info.pEngineName = "ARMSX2";
 	app_info.engineVersion = VK_MAKE_VERSION(2, 0, 0);
 	app_info.apiVersion = VK_API_VERSION_1_1;
 	return &app_info;
@@ -1404,7 +1404,7 @@ RETRO_API void retro_deinit(void)
 RETRO_API void retro_get_system_info(struct retro_system_info* info)
 {
 	std::memset(info, 0, sizeof(*info));
-	info->library_name = "yaps2";
+	info->library_name = "ARMSX2";
 	info->library_version = GIT_REV;
 	info->valid_extensions = "elf|iso|ciso|chd|cso|zso|bin|mdf|nrg|dump|gz|img|irx|m3u";
 	info->need_fullpath = true;

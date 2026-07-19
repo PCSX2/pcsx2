@@ -1,6 +1,6 @@
 name: Linux libretro Core Build Steps
 
-# yaps2 fork: builds the libretro core (yaps2_libretro.so) for RetroArch and
+# ARMSX2: builds the libretro core (armsx2_libretro.so) for RetroArch and
 # other libretro frontends. The core is driven by the frontend's Vulkan
 # context sharing (see pcsx2/GS/Renderers/Vulkan/VKLibretro.cpp), so it links
 # no Qt and needs no X11/Wayland/SDL WSI. Packaged as a self-contained
@@ -128,7 +128,7 @@ jobs:
             -DOVERRIDE_HOST_PAGE_SIZE=4096 \
             -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
 
-      - name: Build yaps2_libretro
+      - name: Build armsx2_libretro
         working-directory: build
         run: |
           ccache -p
@@ -140,8 +140,8 @@ jobs:
         env:
           NAME: ${{ steps.artifact-metadata.outputs.artifact-name }}
         run: |
-          SO=$(find build -name 'yaps2_libretro.so' | head -1)
-          test -n "$SO" || { echo "yaps2_libretro.so not found"; exit 1; }
+          SO=$(find build -name 'armsx2_libretro.so' | head -1)
+          test -n "$SO" || { echo "armsx2_libretro.so not found"; exit 1; }
           # Keep the retro_* dynamic exports (link.T version script), drop the
           # rest — the Devel/RelWithDebInfo .so is ~80 MB unstripped.
           strip --strip-unneeded "$SO"

@@ -1,6 +1,6 @@
 name: Linux SDL Handheld Build Steps
 
-# yaps2 fork: builds the SDL3 frontend (yaps2-sdl) for bare-kmsdrm handhelds.
+# ARMSX2: builds the SDL3 frontend (armsx2-sdl) for bare-kmsdrm handhelds.
 # NOT for Rocknix / Batocera — those run Wayland compositors and use the Qt
 # build. This frontend acquires its surface via Vulkan VK_KHR_display
 # direct-display (see pcsx2-sdl/Main.cpp:BuildWindowInfo), taking over the
@@ -121,7 +121,7 @@ jobs:
             -DOVERRIDE_HOST_PAGE_SIZE=4096 \
             -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
 
-      - name: Build yaps2-sdl
+      - name: Build armsx2-sdl
         working-directory: build
         run: |
           ccache -p
