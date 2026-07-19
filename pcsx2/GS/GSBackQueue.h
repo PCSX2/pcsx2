@@ -11,6 +11,10 @@
 #include "GS/GSVertexKick.h"
 #include "GS/Renderers/Common/GSVertex.h"
 
+#include <atomic>
+#include <memory>
+#include <type_traits>
+
 // GV-7: self-contained records crossing the GS front (GIF parse / vertex kick /
 // draw buffering) → back (local memory, texture cache, draw, present) boundary.
 // Every record carries its register snapshot, so the consumer needs no live
@@ -213,4 +217,109 @@ namespace GSBackQueue
 		bool channel_shuffle_finish;
 		bool packed_uv_hack_flag;
 	};
+
+	// ------------------------------------------------------------------
+	// GV7-1: the front->back SPSC ring.
+	// ------------------------------------------------------------------
+
+	// Discriminator for ring slots.
+	enum class RecordType : u8
+	{
+		Transfer,
+		Move,
+		ClutLoad,
+		PcrtcSync,
+		Vsync,
+		Draw,
+	};
+
+	// Single-producer/single-consumer ring. Producer = the MTGS ("front") thread,
+	// consumer = the GS back thread. Indices are free-running u32s over a
+	// power-of-two slot count; acquire/release only — no RMW, so this is
+	// armv8.0-safe (compiles to plain LDAR/STLR).
+	template <typename SlotT, u32 kCount>
+	class SpscRing
+	{
+		static_assert(kCount != 0 && (kCount & (kCount - 1)) == 0, "slot count must be a power of two");
+
+	public:
+		SpscRing()
+			: m_slots(std::make_unique<SlotT[]>(kCount))
+		{
+		}
+
+		static constexpr u32 Capacity() { return kCount; }
+
+		u32 Size() const { return m_tail.load(std::memory_order_acquire) - m_head.load(std::memory_order_acquire); }
+		bool IsEmpty() const { return Size() == 0; }
+
+		// Producer side. BeginPush returns the slot to fill in place (records are
+		// built directly in the ring — no intermediate copy), or nullptr when the
+		// ring is full (caller applies backpressure). CommitPush publishes the
+		// slot to the consumer.
+		SlotT* BeginPush()
+		{
+			const u32 tail = m_tail.load(std::memory_order_relaxed);
+			if (tail - m_head.load(std::memory_order_acquire) == kCount)
+				return nullptr;
+			return &m_slots[tail & (kCount - 1)];
+		}
+
+		void CommitPush()
+		{
+			m_tail.store(m_tail.load(std::memory_order_relaxed) + 1, std::memory_order_release);
+		}
+
+		// Consumer side. Peek returns the oldest unconsumed slot (nullptr when
+		// empty); Pop retires it, releasing the slot back to the producer.
+		SlotT* Peek()
+		{
+			const u32 head = m_head.load(std::memory_order_relaxed);
+			if (head == m_tail.load(std::memory_order_acquire))
+				return nullptr;
+			return &m_slots[head & (kCount - 1)];
+		}
+
+		void Pop()
+		{
+			m_head.store(m_head.load(std::memory_order_relaxed) + 1, std::memory_order_release);
+		}
+
+	private:
+		std::unique_ptr<SlotT[]> m_slots;
+		alignas(64) std::atomic<u32> m_head{0}; // consumer cursor
+		alignas(64) std::atomic<u32> m_tail{0}; // producer cursor
+	};
+
+	// Tagged slot sized for the largest record (DRAW). All records are trivially
+	// copyable (asserted below), so slots are reused with no destructor
+	// bookkeeping.
+	struct RecordSlot
+	{
+		RecordType type;
+		alignas(alignof(DrawRecord)) u8 data[sizeof(DrawRecord)];
+
+		template <typename T>
+		T* As()
+		{
+			static_assert(std::is_trivially_copyable_v<T> && sizeof(T) <= sizeof(data));
+			return reinterpret_cast<T*>(data);
+		}
+
+		template <typename T>
+		const T* As() const
+		{
+			static_assert(std::is_trivially_copyable_v<T> && sizeof(T) <= sizeof(data));
+			return reinterpret_cast<const T*>(data);
+		}
+	};
+
+	static_assert(std::is_trivially_copyable_v<TransferRecord>);
+	static_assert(std::is_trivially_copyable_v<MoveRecord>);
+	static_assert(std::is_trivially_copyable_v<ClutLoadRecord>);
+	static_assert(std::is_trivially_copyable_v<PcrtcSyncRecord>);
+	static_assert(std::is_trivially_copyable_v<VsyncRecord>);
+	static_assert(std::is_trivially_copyable_v<DrawRecord>);
+
+	using RecordRing = SpscRing<RecordSlot, 512>;
 } // namespace GSBackQueue
