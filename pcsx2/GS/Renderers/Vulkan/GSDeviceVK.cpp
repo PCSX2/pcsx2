@@ -903,24 +903,27 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	// never use it there even when present.
 	if (m_use_push_descriptors && properties2.properties.vendorID == 0x13B5u)
 		m_use_push_descriptors = false;
-	// Adreno (Qualcomm, 0x5143): push descriptors stall on the per-draw TFX texture-rebind
-	// hot path — but that was measured on the MESA/Turnip driver (validated on the RP6, a
-	// mid-range Adreno). On the Qualcomm PROPRIETARY driver (flagship 8-series, e.g. the
-	// Adreno 830 in Snapdragon 8 Elite) push descriptors are fine, and the descriptor-set
-	// fallback's per-draw alloc/update/bind of the 7 TFX textures is instead pure overhead
-	// that scales with draw count — a reported busy-scene regression on 8 Elite. So gate the
-	// disable on the driver: keep it for Turnip and for an UNKNOWN driver (conservative, the
-	// old behaviour), but let the proprietary driver use push descriptors.
+	// Adreno (Qualcomm, 0x5143): the pre-transplant backend measured a per-draw TFX
+	// texture-rebind stall with push descriptors on Turnip (RP6), and a descriptor-set
+	// fallback regression on the proprietary driver (8 Elite), so it allowed only the
+	// proprietary driver. That Turnip measurement was of the OLD backend's binding code;
+	// with this backend the yaps2 line has always shipped push descriptors on Turnip
+	// (Adreno 610/650) and outperforms the fallback there. Allow the two drivers we have
+	// evidence for; keep the conservative disable only for an unknown Adreno driver.
 	if (m_use_push_descriptors && properties2.properties.vendorID == 0x5143u &&
-		m_device_driver_properties.driverID != VK_DRIVER_ID_QUALCOMM_PROPRIETARY)
+		m_device_driver_properties.driverID != VK_DRIVER_ID_QUALCOMM_PROPRIETARY &&
+		m_device_driver_properties.driverID != VK_DRIVER_ID_MESA_TURNIP)
 		m_use_push_descriptors = false;
 	if (!m_use_push_descriptors)
 		Console.Warning("VK: Using non-push-descriptor texture binding fallback.");
 
-	// Adreno mis-selects the provoking vertex with VK_EXT_provoking_vertex (Eden strips it on
-	// Qualcomm); drop it so GSRendererHW's software provoking-vertex-first path runs instead.
-	// A/B on Adreno: if this regresses perf without fixing a visible flat-shading glitch, revert.
-	if (m_optional_extensions.vk_ext_provoking_vertex && properties2.properties.vendorID == 0x5143u)
+	// The Adreno PROPRIETARY driver mis-selects the provoking vertex with
+	// VK_EXT_provoking_vertex (Eden strips it on Qualcomm); drop it there so GSRendererHW's
+	// software provoking-vertex-first path runs instead. Turnip keeps the extension: the
+	// yaps2 line shipped it on Turnip with no flat-shading reports, and the SW fallback
+	// costs GS-thread CPU per flat-shaded batch.
+	if (m_optional_extensions.vk_ext_provoking_vertex && properties2.properties.vendorID == 0x5143u &&
+		m_device_driver_properties.driverID == VK_DRIVER_ID_QUALCOMM_PROPRIETARY)
 		m_optional_extensions.vk_ext_provoking_vertex = false;
 
 	if (m_optional_extensions.vk_ext_line_rasterization && !line_rasterization_feature.bresenhamLines)
