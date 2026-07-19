@@ -139,6 +139,12 @@ jobs:
       - name: Fetch shaderc third-party deps
         run: python3 app/src/main/cpp/3rdparty/shaderc/utils/git-sync-deps
 
+      # librashader is built by cargo for the Android target; the runner's
+      # rustup only ships the host std, so the cargo step dies with
+      # "error[E0463]: can't find crate for `core`" without this.
+      - name: Install Rust Android target
+        run: rustup target add aarch64-linux-android
+
       - name: Build release APK
         run: ./gradlew :app:assembleRelease --stacktrace
 
