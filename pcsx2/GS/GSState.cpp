@@ -316,6 +316,7 @@ void GSState::ResetDrawBufferIdx()
 			if (m_vertex_buffers[entry_ptr].tail != 0)
 			{
 				memcpy(m_vertex_buffers[entry_ptr].xy, m_vertex_buffers[i].xy, sizeof(m_vertex_buffers[i].xy));
+				memcpy(m_vertex_buffers[entry_ptr].kick_ring, m_vertex_buffers[i].kick_ring, sizeof(m_vertex_buffers[i].kick_ring));
 				m_vertex_buffers[entry_ptr].xyhead = m_vertex_buffers[i].xyhead;
 				m_vertex_buffers[entry_ptr].xy_tail = m_vertex_buffers[i].xy_tail;
 			}
@@ -487,7 +488,9 @@ void GSState::PushBuffer()
 		{
 			for (u32 i = 0; i < copy_amt; i++)
 			{
-				m_vertex->xy[i & 3] = m_vertex_buffers[m_current_buffer_idx].xy[((m_vertex_buffers[m_current_buffer_idx].xy_tail - copy_amt) + i) & 3];
+				const u32 src = ((m_vertex_buffers[m_current_buffer_idx].xy_tail - copy_amt) + i) & 3;
+				m_vertex->xy[i & 3] = m_vertex_buffers[m_current_buffer_idx].xy[src];
+				m_vertex->kick_ring[i & 3] = m_vertex_buffers[m_current_buffer_idx].kick_ring[src];
 				m_vertex->xy_tail++;
 
 				if (i == 0)
@@ -649,12 +652,18 @@ bool GSState::CanBufferNewDraw()
 				{
 					for (u32 i = 0; i < copy_amt; i++)
 					{
-						m_vertex->xy[m_vertex->xy_tail & 3] = m_vertex_buffers[m_current_buffer_idx].xy[((m_vertex_buffers[m_current_buffer_idx].xy_tail - copy_amt) + i) & 3];
+						const u32 src = ((m_vertex_buffers[m_current_buffer_idx].xy_tail - copy_amt) + i) & 3;
+						m_vertex->xy[m_vertex->xy_tail & 3] = m_vertex_buffers[m_current_buffer_idx].xy[src];
+						m_vertex->kick_ring[m_vertex->xy_tail & 3] = m_vertex_buffers[m_current_buffer_idx].kick_ring[src];
 						m_vertex->xy_tail++;
 
 						if (i == 0)
 							m_vertex->xyhead = m_vertex_buffers[m_current_buffer_idx].xyhead;
 					}
+
+					// The copied entries' outcodes were computed under the source
+					// buffer's env; this buffer's env was just restored above.
+					RefreshKickMirror();
 				}
 				else
 					m_vertex->xy_tail = 0;
@@ -1515,7 +1524,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 			GSVertexKernels::ParsePackedSTQRGBAXYZF2_Fast(r, uv, m0, m1);
 			ApplyDepthClampMode(depth_clamp, m1.U32[1]);
 
-			VertexKickDirect<prim, auto_flush>(r[2].XYZF2.Skip(), m0, m1, c);
+			VertexKickDirect<prim, auto_flush>(r[2].XYZF2.Skip(), r[2].XYZF2.X, r[2].XYZF2.Y, m0, m1, c);
 
 			r += 3;
 		}
@@ -1573,7 +1582,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32
 			GSVertexKernels::ParsePackedSTQRGBAXYZ2_Fast(r, uvfog, m0, m1);
 			ApplyDepthClampMode(depth_clamp, m1.U32[1]);
 
-			VertexKickDirect<prim, auto_flush>(r[2].XYZ2.Skip(), m0, m1, c);
+			VertexKickDirect<prim, auto_flush>(r[2].XYZ2.Skip(), r[2].XYZ2.X, r[2].XYZ2.Y, m0, m1, c);
 
 			r += 3;
 		}
@@ -2715,6 +2724,9 @@ void GSState::FlushPrim()
 					GSVector4i v = vert_ptr[1];
 					v = v.xxxx().u16to32().sub32(m_xyof);
 					m_vertex->xy[i & 3] = v;
+					const int wx = static_cast<int>(m_vertex->buff[i].XYZ.X) - m_xyof.I32[0];
+					const int wy = static_cast<int>(m_vertex->buff[i].XYZ.Y) - m_xyof.I32[1];
+					m_vertex->kick_ring[i & 3] = GSVertexKernels::MakeCullMirrorEntry<true>(wx, wy, m_cull_bounds_band);
 					m_vertex->xy_tail = unused;
 				}
 			}
@@ -3837,6 +3849,32 @@ void GSState::UpdateScissor()
 {
 	m_xyof = m_context->scissor.xyof;
 	m_scissor_invalid = m_context->scissor.in.rempty();
+
+	m_cull_bounds_band = GSVertexKernels::MakeBandedCullBounds(m_context->scissor.cull);
+	m_cull_bounds_raw = GSVertexKernels::MakeRawCullBounds(m_context->scissor.cull);
+	RefreshKickMirror();
+}
+
+// Re-derive the mirror ring's outcodes from the stored packed positions after a
+// bounds change (scissor write, context switch, draw-buffer env restore). Entries
+// that will actually be read all belong to the current prim's class — ApplyPRIM
+// resets the strip window on a prim change, so a decision only ever sees entries
+// kicked under its own prim.
+void GSState::RefreshKickMirror()
+{
+	if (!m_vertex || !PRIM)
+		return;
+
+	const int primclass = GSUtil::GetPrimClass(PRIM->PRIM);
+	const bool banded = (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS);
+
+	for (GSVertexKernels::CullMirrorEntry& e : m_vertex->kick_ring)
+	{
+		const int wx = static_cast<s32>(static_cast<u32>(e.xyp));
+		const int wy = static_cast<s32>(static_cast<u32>(e.xyp >> 32));
+		e = banded ? GSVertexKernels::MakeCullMirrorEntry<true>(wx, wy, m_cull_bounds_band) :
+		             GSVertexKernels::MakeCullMirrorEntry<false>(wx, wy, m_cull_bounds_raw);
+	}
 }
 
 void GSState::UpdateVertexKick()
@@ -5951,17 +5989,18 @@ __forceinline void GSState::VertexKick(u32 skip)
 
 	VertexKickCursor c;
 	c.Load(*this);
-	VertexKickDirect<prim, auto_flush>(skip, v0, v1, c);
+	VertexKickDirect<prim, auto_flush>(skip, m_v.XYZ.X, m_v.XYZ.Y, v0, v1, c);
 	c.Store();
 }
 
 // Kick one vertex whose value is still in registers. Callers apply ApplyDepthClamp
 // to v1's Z lane themselves, own the cursor (loaded from a state where m_vertex /
-// m_index are current), and store it back after the last kick. auto_flush
-// instantiations must come through the staged VertexKick above — HandleAutoFlush
-// reads the incoming vertex out of m_v.
+// m_index are current), and store it back after the last kick. xraw/yraw are the
+// vertex's raw 12.4 XY (zero-extended u16s) for the scalar cull mirror — they must
+// match v1's low lane. auto_flush instantiations must come through the staged
+// VertexKick above — HandleAutoFlush reads the incoming vertex out of m_v.
 template <u32 prim, bool auto_flush>
-__forceinline void GSState::VertexKickDirect(u32 skip, const GSVector4i& v0, const GSVector4i& v1, VertexKickCursor& c)
+__forceinline void GSState::VertexKickDirect(u32 skip, u32 xraw, u32 yraw, const GSVector4i& v0, const GSVector4i& v1, VertexKickCursor& c)
 {
 	constexpr u32 n = NumIndicesForPrim(prim);
 	constexpr int primclass = GSUtil::GetPrimClass(prim);
@@ -6012,6 +6051,17 @@ __forceinline void GSState::VertexKickDirect(u32 skip, const GSVector4i& v0, con
 	const GSVector4i xy = v1.xxxx().u16to32().sub32(m_xyof);
 	c.vb->xy[xy_tail & 3] = xy;
 
+	// Scalar cull mirror: same window position plus outcode/band metadata,
+	// computed on the scalar side (dual-issues against the NEON parse). The full
+	// 32-bit offset lane is subtracted so the values match xy exactly.
+	{
+		constexpr bool banded = (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS);
+		const int wx = static_cast<int>(xraw) - m_xyof.I32[0];
+		const int wy = static_cast<int>(yraw) - m_xyof.I32[1];
+		c.vb->kick_ring[xy_tail & 3] =
+			GSVertexKernels::MakeCullMirrorEntry<banded>(wx, wy, banded ? m_cull_bounds_band : m_cull_bounds_raw);
+	}
+
 	// Backup head for triangle fans so we can read it later, otherwise it'll get lost after the 4th vertex.
 	if (prim == GS_TRIANGLEFAN && tail == head)
 		c.vb->xyhead = xy;
@@ -6044,15 +6094,52 @@ __forceinline void GSState::VertexKickDirect(u32 skip, const GSVector4i& v0, con
 	GSVector4i bbox;
 	if (skip == 0)
 	{
-		const GSVector4i v0 = c.vb->xy[(xy_tail - 1) & 3];
-		const GSVector4i v1 = c.vb->xy[(xy_tail - 2) & 3];
-		const GSVector4i v2 = (prim == GS_TRIANGLEFAN) ? c.vb->xyhead : c.vb->xy[(xy_tail - 3) & 3];
-
 		// Note: redundant check for the AA1 flag to avoid calling a function if not needed.
 		constexpr bool rounded_class = (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS);
 		const bool aa1_expand = rounded_class && PRIM->AA1 && IsCoverageAlphaSupported();
 
-		skip |= GSVertexKernels::CullTest<n, primclass>(v0, v1, v2, m_context->scissor.cull, m_nativeres, aa1_expand, bbox);
+		// Scalar-outcode decision (see GSVertexKick.h) for the hot shapes:
+		// point/line always, triangle strips/lists and sprites at native res
+		// without AA1 expansion. Rejected prims never touch NEON; accepted prims
+		// compute the bbox exactly as the legacy kernel does. Fans keep the
+		// legacy path (the head vertex sits outside the ring window).
+		constexpr bool fast_class = (prim != GS_TRIANGLEFAN);
+		const bool fast_cull = fast_class && (!rounded_class || (m_nativeres && !aa1_expand));
+		if (fast_cull)
+		{
+			const GSVertexKernels::CullMirrorEntry& e0 = c.vb->kick_ring[(xy_tail - 1) & 3];
+			const GSVertexKernels::CullMirrorEntry& e1 = c.vb->kick_ring[(xy_tail - 2) & 3];
+			const GSVertexKernels::CullMirrorEntry& e2 = c.vb->kick_ring[(xy_tail - 3) & 3];
+
+			const u32 fast_skip = GSVertexKernels::CullTestScalar<n, primclass>(e0, e1, e2);
+
+#ifdef GS_VERTEX_CROSSCHECK
+			{
+				GSVector4i xbbox;
+				const u32 ref = GSVertexKernels::CullTest<n, primclass>(c.vb->xy[(xy_tail - 1) & 3],
+					c.vb->xy[(xy_tail - 2) & 3], c.vb->xy[(xy_tail - 3) & 3], m_context->scissor.cull,
+					m_nativeres, aa1_expand, xbbox);
+				pxAssertRel((ref != 0) == (fast_skip != 0), "GS_VERTEX_CROSSCHECK: scalar cull divergence");
+			}
+#endif
+
+			skip |= fast_skip;
+			if (fast_skip == 0)
+			{
+				const GSVector4i v0 = c.vb->xy[(xy_tail - 1) & 3];
+				const GSVector4i v1 = c.vb->xy[(xy_tail - 2) & 3];
+				const GSVector4i v2 = c.vb->xy[(xy_tail - 3) & 3];
+				bbox = GSVertexKernels::ComputeCullBBox<n, primclass>(v0, v1, v2, m_nativeres, aa1_expand);
+			}
+		}
+		else
+		{
+			const GSVector4i v0 = c.vb->xy[(xy_tail - 1) & 3];
+			const GSVector4i v1 = c.vb->xy[(xy_tail - 2) & 3];
+			const GSVector4i v2 = (prim == GS_TRIANGLEFAN) ? c.vb->xyhead : c.vb->xy[(xy_tail - 3) & 3];
+
+			skip |= GSVertexKernels::CullTest<n, primclass>(v0, v1, v2, m_context->scissor.cull, m_nativeres, aa1_expand, bbox);
+		}
 	}
 
 	if (skip != 0)

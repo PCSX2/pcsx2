@@ -6,6 +6,7 @@
 #include "GS/GS.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSLocalMemory.h"
+#include "GS/GSVertexKick.h"
 #include "GS/GSDrawingContext.h"
 #include "GS/GSDrawingEnvironment.h"
 #include "GS/Renderers/Common/GSVertex.h"
@@ -144,10 +145,13 @@ protected:
 		u32 xy_tail;
 		GSVector4i xy[4];
 		GSVector4i xyhead;
+		// Scalar mirror of xy[] for the outcode cull fast path: written wherever
+		// xy[] is written, outcodes re-derived on scissor change (RefreshKickMirror).
+		GSVertexKernels::CullMirrorEntry kick_ring[4];
 	};
 
 	GSVertexBuff m_vertex_buffers[MAX_DRAW_BUFFERS];
-	GSVertexBuff* m_vertex;
+	GSVertexBuff* m_vertex = nullptr;
 
 	struct GSIndexBuff
 	{
@@ -241,8 +245,16 @@ protected:
 		}
 	};
 
+	// Pre-adjusted scissor bounds for the scalar-outcode cull (GSVertexKick.h),
+	// refreshed with the scissor. band = triangle/sprite native-res space, raw =
+	// point/line 12.4 space.
+	GSVertexKernels::CullBounds m_cull_bounds_band = {};
+	GSVertexKernels::CullBounds m_cull_bounds_raw = {};
+
+	void RefreshKickMirror();
+
 	template <u32 prim, bool auto_flush> void VertexKick(u32 skip);
-	template <u32 prim, bool auto_flush> void VertexKickDirect(u32 skip, const GSVector4i& v0, const GSVector4i& v1, VertexKickCursor& c);
+	template <u32 prim, bool auto_flush> void VertexKickDirect(u32 skip, u32 xraw, u32 yraw, const GSVector4i& v0, const GSVector4i& v1, VertexKickCursor& c);
 
 	// following functions need m_vt to be initialized
 

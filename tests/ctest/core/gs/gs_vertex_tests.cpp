@@ -340,6 +340,85 @@ namespace
 	}
 } // namespace
 
+namespace
+{
+	// Scalar-outcode cull vs the legacy kernel (itself pinned against RefCullTest
+	// above). Production-shaped inputs: scissor cull rects are 16k-8 .. 16k+8 with
+	// SCAX0 <= SCAX1 (empty scissors take the m_scissor_invalid path and never
+	// reach the cull decision), coords are offset-subtracted 12.4. The fast-path
+	// gate is baked in: banded classes run nativeres, no AA1.
+	template <u32 n, int primclass>
+	void RunScalarCullSweep(u64 seed, int iters)
+	{
+		constexpr bool banded = (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS);
+		std::mt19937_64 rng(seed);
+
+		for (int iter = 0; iter < iters; iter++)
+		{
+			// GS-shaped scissor: registers in [0, 2047], min <= max.
+			int sax0 = static_cast<int>(rng() % 2048), sax1 = static_cast<int>(rng() % 2048);
+			int say0 = static_cast<int>(rng() % 2048), say1 = static_cast<int>(rng() % 2048);
+			if (sax0 > sax1)
+				std::swap(sax0, sax1);
+			if (say0 > say1)
+				std::swap(say0, say1);
+			const GSVector4i cull(sax0 * 16 - 8, say0 * 16 - 8, sax1 * 16 + 8, say1 * 16 + 8);
+
+			// Coords: full range / narrow cluster / snapped near a scissor edge so
+			// the band boundaries and the +/-8 cull margin both get exercised.
+			auto coord = [&](int lo16, int hi16) {
+				switch (rng() % 4)
+				{
+					case 0:
+						return static_cast<int>(rng() % 0x20000) - 0x10000;
+					case 1:
+						return static_cast<int>(rng() % 0x40) - 0x20;
+					case 2:
+						return lo16 + static_cast<int>(rng() % 41) - 20;
+					default:
+						return hi16 + static_cast<int>(rng() % 41) - 20;
+				}
+			};
+
+			int x0 = coord(sax0 * 16, sax1 * 16), y0 = coord(say0 * 16, say1 * 16);
+			int x1 = coord(sax0 * 16, sax1 * 16), y1 = coord(say0 * 16, say1 * 16);
+			int x2 = coord(sax0 * 16, sax1 * 16), y2 = coord(say0 * 16, say1 * 16);
+			if ((iter & 7) == 0)
+			{
+				x1 = x0;
+				y1 = y0;
+			}
+			if ((iter & 31) == 0)
+			{
+				x2 = x1;
+				y2 = y1;
+			}
+			if ((iter & 3) == 0)
+			{
+				x0 &= ~0xF;
+				y2 &= ~0xF;
+			}
+
+			GSVector4i bbox;
+			const u32 expected = GSVertexKernels::CullTest<n, primclass>(WindowEntry(x0, y0), WindowEntry(x1, y1),
+				WindowEntry(x2, y2), cull, banded ? true : ((rng() & 1) != 0), false, bbox);
+
+			const GSVertexKernels::CullBounds bounds =
+				banded ? GSVertexKernels::MakeBandedCullBounds(cull) : GSVertexKernels::MakeRawCullBounds(cull);
+			const GSVertexKernels::CullMirrorEntry e0 = GSVertexKernels::MakeCullMirrorEntry<banded>(x0, y0, bounds);
+			const GSVertexKernels::CullMirrorEntry e1 = GSVertexKernels::MakeCullMirrorEntry<banded>(x1, y1, bounds);
+			const GSVertexKernels::CullMirrorEntry e2 = GSVertexKernels::MakeCullMirrorEntry<banded>(x2, y2, bounds);
+
+			const u32 got = GSVertexKernels::CullTestScalar<n, primclass>(e0, e1, e2);
+
+			ASSERT_EQ(expected != 0 ? 1u : 0u, got != 0 ? 1u : 0u)
+				<< "scalar cull divergence at iter " << iter << " n=" << n << " class=" << primclass
+				<< " v0=(" << x0 << "," << y0 << ") v1=(" << x1 << "," << y1 << ") v2=(" << x2 << "," << y2
+				<< ") scissor=(" << sax0 << "," << say0 << "," << sax1 << "," << say1 << ")";
+		}
+	}
+} // namespace
+
 TEST(GsVertexCull, TriangleSweep)
 {
 	RunCullSweep<3, GS_TRIANGLE_CLASS>(0x67763301, 1000000);
@@ -353,6 +432,26 @@ TEST(GsVertexCull, SpriteSweep)
 TEST(GsVertexCull, LineSweep)
 {
 	RunCullSweep<2, GS_LINE_CLASS>(0x67763303, 500000);
+}
+
+TEST(GsVertexCull, ScalarTriangleSweep)
+{
+	RunScalarCullSweep<3, GS_TRIANGLE_CLASS>(0x67763311, 1000000);
+}
+
+TEST(GsVertexCull, ScalarSpriteSweep)
+{
+	RunScalarCullSweep<2, GS_SPRITE_CLASS>(0x67763312, 500000);
+}
+
+TEST(GsVertexCull, ScalarLineSweep)
+{
+	RunScalarCullSweep<2, GS_LINE_CLASS>(0x67763313, 500000);
+}
+
+TEST(GsVertexCull, ScalarPointSweep)
+{
+	RunScalarCullSweep<1, GS_POINT_CLASS>(0x67763314, 500000);
 }
 
 TEST(GsVertexCull, PointSweep)

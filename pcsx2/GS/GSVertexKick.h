@@ -137,17 +137,14 @@ namespace GSVertexKernels
 #endif
 	}
 
-	// Accept/cull test for one completed prim. v0/v1/v2 are the window entries for
-	// the prim's vertices ({x, y, x, y} offset-subtracted 12.4 fixed-point, v0 most
-	// recent), scissor_cull = context scissor in cull form. nativeres selects the
-	// interior-pixel-center rounding; aa1_expand is the caller-evaluated
-	// "PRIM->AA1 && IsCoverageAlphaSupported()" (only for triangle/sprite classes).
-	// Returns nonzero to skip the prim; bbox receives the rounded bounding box the
-	// accepted-prim draw_rect update consumes.
+	// Bounding box of one completed prim's window entries with the class rounding
+	// applied — the bbox half of the legacy CullTest, shared by the scalar-outcode
+	// fast path (which only needs it for accepted prims).
 	template <u32 n, int primclass>
-	__forceinline_odr u32 CullTest(const GSVector4i& v0, const GSVector4i& v1, const GSVector4i& v2,
-		const GSVector4i& scissor_cull, bool nativeres, bool aa1_expand, GSVector4i& bbox)
+	__forceinline_odr GSVector4i ComputeCullBBox(const GSVector4i& v0, const GSVector4i& v1, const GSVector4i& v2,
+		bool nativeres, bool aa1_expand)
 	{
+		GSVector4i bbox;
 		if constexpr (n == 1)
 		{
 			bbox = v0;
@@ -183,6 +180,22 @@ namespace GSVertexKernels
 			}
 		}
 
+		return bbox;
+	}
+
+	// Accept/cull test for one completed prim. v0/v1/v2 are the window entries for
+	// the prim's vertices ({x, y, x, y} offset-subtracted 12.4 fixed-point, v0 most
+	// recent), scissor_cull = context scissor in cull form. nativeres selects the
+	// interior-pixel-center rounding; aa1_expand is the caller-evaluated
+	// "PRIM->AA1 && IsCoverageAlphaSupported()" (only for triangle/sprite classes).
+	// Returns nonzero to skip the prim; bbox receives the rounded bounding box the
+	// accepted-prim draw_rect update consumes.
+	template <u32 n, int primclass>
+	__forceinline_odr u32 CullTest(const GSVector4i& v0, const GSVector4i& v1, const GSVector4i& v2,
+		const GSVector4i& scissor_cull, bool nativeres, bool aa1_expand, GSVector4i& bbox)
+	{
+		bbox = ComputeCullBBox<n, primclass>(v0, v1, v2, nativeres, aa1_expand);
+
 		// Do scissor test.
 		const GSVector4i bbox_ex = bbox + GSVector4i(0, 0, 1, 1); // Exclusive coords for the scissor test.
 		u32 test = static_cast<u32>(!bbox_ex.rintersects(scissor_cull));
@@ -200,5 +213,127 @@ namespace GSVertexKernels
 		}
 
 		return test;
+	}
+
+	// ------------------------------------------------------------------------
+	// Scalar-outcode cull: exact scalar reformulation of CullTest for the cases
+	// the fused handlers hit hottest (point/line always; triangle strips/lists
+	// and sprites at native res without AA1 expansion). The NEON formulation
+	// pays 3x umaxv + 2x uminp + 5x NEON->GPR moves of exposed latency per prim
+	// on in-order cores; this one is a handful of ALU ops on per-vertex
+	// precomputed metadata.
+	//
+	// Derivation (bit-exact, pinned by gs_vertex_tests):
+	// - The prim bbox is the min/max of the vertices, so "bbox beyond scissor
+	//   edge" == "every vertex beyond that edge": an AND of per-vertex 4-bit
+	//   outcodes replaces the bbox build + saturate + empty chain.
+	// - For triangle/sprite at native res, the ceil16/floor16 interior rounding
+	//   and the cull rect's +/-8 fold into pixel-band bounds: with band(v) =
+	//   (v-1)>>4, reject-left <=> all band(x) < (cull.x+14)>>4, reject-right <=>
+	//   all band(x) >= (cull.z-1)>>4 (same for y). Point/line compare raw 12.4
+	//   coords against cull directly (no rounding, no empty test).
+	// - Interior-empty: since (v+15)>>4 == ((v-1)>>4)+1 identically,
+	//   ceil16(min) > floor16strict(max) <=> all vertices share one band on
+	//   that axis — a pure equality test on the packed bands.
+	// - Degenerate triangle: the legacy 128-bit eq on {x,y,x,y} entries is xy
+	//   equality — one u64 compare on the packed position.
+	//
+	// Window coords are offset-subtracted s32 (the offset subtract uses the full
+	// 32-bit XYOFFSET lane, pad bits included, to match the NEON ring exactly), so
+	// bands are stored as 28-bit fields — exact for any s32 coord, no truncation
+	// aliasing.
+	// ------------------------------------------------------------------------
+
+	constexpr u64 kCullMetaBandXMask = 0xFFFFFFFull;
+	constexpr u64 kCullMetaBandYMask = 0xFFFFFFFull << 28;
+	constexpr u64 kCullMetaOutcodeMask = 0xFull << 56;
+
+	// One mirror-ring slot: packed window position + derived cull metadata.
+	// xyp = (u64)(u32)wy << 32 | (u32)wx; meta = bandx:28 | bandy:28 | outcode:4.
+	struct CullMirrorEntry
+	{
+		u64 xyp;
+		u64 meta;
+	};
+
+	// Pre-adjusted per-class scissor bounds, derived from scissor.cull whenever the
+	// scissor changes. Outcode bits: 1 = out-left (< l), 2 = out-right (>= r),
+	// 4 = out-top (< t), 8 = out-bottom (>= b).
+	struct CullBounds
+	{
+		int l, t, r, b;
+	};
+
+	// Band-space bounds for triangle/sprite at native res (rounding folded in).
+	__forceinline_odr CullBounds MakeBandedCullBounds(const GSVector4i& cull)
+	{
+		return {(cull.x + 14) >> 4, (cull.y + 14) >> 4, (cull.z - 1) >> 4, (cull.w - 1) >> 4};
+	}
+
+	// Raw 12.4 bounds for point/line (no rounding, exclusive bbox test folded in).
+	__forceinline_odr CullBounds MakeRawCullBounds(const GSVector4i& cull)
+	{
+		return {cull.x, cull.y, cull.z, cull.w};
+	}
+
+	// Build one mirror entry from a vertex's window position. banded selects which
+	// coordinate space the outcode compares in (bands for triangle/sprite native
+	// res, raw 12.4 for point/line); bands are packed regardless so the entry
+	// shape is uniform.
+	template <bool banded>
+	__forceinline_odr CullMirrorEntry MakeCullMirrorEntry(int wx, int wy, const CullBounds& bounds)
+	{
+		const int bx = (wx - 1) >> 4;
+		const int by = (wy - 1) >> 4;
+		const int cx = banded ? bx : wx;
+		const int cy = banded ? by : wy;
+
+		u32 oc = 0;
+		oc |= (cx < bounds.l) ? 1u : 0u;
+		oc |= (cx >= bounds.r) ? 2u : 0u;
+		oc |= (cy < bounds.t) ? 4u : 0u;
+		oc |= (cy >= bounds.b) ? 8u : 0u;
+
+		CullMirrorEntry e;
+		e.xyp = static_cast<u64>(static_cast<u32>(wx)) | (static_cast<u64>(static_cast<u32>(wy)) << 32);
+		e.meta = (static_cast<u64>(static_cast<u32>(bx)) & kCullMetaBandXMask) |
+		         ((static_cast<u64>(static_cast<u32>(by)) << 28) & kCullMetaBandYMask) |
+		         (static_cast<u64>(oc) << 56);
+		return e;
+	}
+
+	// The scalar decision. e0 is the most recent vertex. Unused entries (n < 3)
+	// may alias e0. Bit-equivalent to CullTest's return under the fast-path gate
+	// (point/line always; triangle non-fan / sprite when nativeres && !aa1).
+	template <u32 n, int primclass>
+	__forceinline_odr u32 CullTestScalar(const CullMirrorEntry& e0, const CullMirrorEntry& e1, const CullMirrorEntry& e2)
+	{
+		u64 all_out = e0.meta;
+		if constexpr (n >= 2)
+			all_out &= e1.meta;
+		if constexpr (n == 3)
+			all_out &= e2.meta;
+
+		if ((all_out & kCullMetaOutcodeMask) != 0)
+			return 1;
+
+		if constexpr (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS)
+		{
+			// Interior-empty: all vertices in one pixel band on either axis.
+			u64 diff = e0.meta ^ e1.meta;
+			if constexpr (n == 3)
+				diff |= e0.meta ^ e2.meta;
+
+			if ((diff & kCullMetaBandXMask) == 0 || (diff & kCullMetaBandYMask) == 0)
+				return 1;
+		}
+
+		if constexpr (primclass == GS_TRIANGLE_CLASS)
+		{
+			if (e0.xyp == e1.xyp || e1.xyp == e2.xyp || e0.xyp == e2.xyp)
+				return 1;
+		}
+
+		return 0;
 	}
 } // namespace GSVertexKernels
