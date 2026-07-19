@@ -113,6 +113,23 @@ namespace GSBackQueue
 		IndexBuff ib;
 	};
 
+	// GV7-1c: pooled transfer staging buffer (4MB, the GSTransferBuffer size).
+	// In record modes m_tr.buff aliases the current node's buffer: the front
+	// stages into it and TRANSFER records reference slices of it (disjoint
+	// ranges, so front-appends and back-reads never overlap). At the next
+	// transfer Init after any slice referenced the buffer, the front rotates to
+	// a fresh node and emits a RELEASE_PAYLOAD record behind the slices — FIFO
+	// guarantees they were consumed by the time the release executes.
+	struct PayloadNode
+	{
+		u8* buff;
+	};
+
+	struct ReleasePayloadRecord
+	{
+		PayloadNode* node;
+	};
+
 	// PCRTC digest state — hoisted from GSState (GSvsync writes it once per
 	// frame from the privileged registers; the Draw() heuristics and the Merge
 	// circuit read it back-side, so it ships whole in PCRTC_SYNC records).
@@ -243,6 +260,7 @@ namespace GSBackQueue
 		PcrtcSync,
 		Vsync,
 		Draw,
+		ReleasePayload,
 	};
 
 	// Single-producer/single-consumer ring. Producer = the MTGS ("front") thread,
@@ -332,6 +350,7 @@ namespace GSBackQueue
 	static_assert(std::is_trivially_copyable_v<PcrtcSyncRecord>);
 	static_assert(std::is_trivially_copyable_v<VsyncRecord>);
 	static_assert(std::is_trivially_copyable_v<DrawRecord>);
+	static_assert(std::is_trivially_copyable_v<ReleasePayloadRecord>);
 
 	using RecordRing = SpscRing<RecordSlot, 512>;
 } // namespace GSBackQueue

@@ -105,7 +105,15 @@ GSState::GSState()
 	m_mipmap = GSConfig.Mipmap;
 	m_back_records = GSConfig.BackThreadMode != GSBackThreadMode::Off;
 	if (m_back_records)
+	{
 		Console.WriteLn("GS: back-thread mode %d (record path active).", static_cast<int>(GSConfig.BackThreadMode));
+
+		// Adopt m_tr's staging buffer as payload node 0 — from here on
+		// m_tr.buff always aliases the current node's buffer.
+		GSBackQueue::PayloadNode* node = new GSBackQueue::PayloadNode{m_tr.buff};
+		m_payload_arena.push_back(node);
+		m_tr_payload_node = node;
+	}
 
 	s_n = 0;
 	s_transfer_n = 0;
@@ -153,6 +161,16 @@ GSState::~GSState()
 			_aligned_free(node->vb.buff_copy);
 		if (node->ib.buff)
 			_aligned_free(node->ib.buff);
+		delete node;
+	}
+
+	// m_tr.buff aliases a payload node in record modes; the arena owns it, and
+	// ~GSTransferBuffer must not free it a second time.
+	if (m_back_records)
+		m_tr.buff = nullptr;
+	for (GSBackQueue::PayloadNode* node : m_payload_arena)
+	{
+		_aligned_free(node->buff);
 		delete node;
 	}
 }
@@ -453,6 +471,58 @@ void GSState::ReleaseDrawNode(GSBackQueue::DrawNode* node)
 	pxAssert(slot);
 	*slot = node;
 	m_draw_node_free.CommitPush();
+}
+
+GSBackQueue::PayloadNode* GSState::AcquirePayloadNode()
+{
+	for (;;)
+	{
+		if (GSBackQueue::PayloadNode** slot = m_payload_free.Peek())
+		{
+			GSBackQueue::PayloadNode* node = *slot;
+			m_payload_free.Pop();
+			return node;
+		}
+
+		if (m_payload_arena.size() < MAX_PAYLOAD_NODES)
+			break;
+
+		std::this_thread::yield();
+	}
+
+	constexpr size_t alloc_size = 1024 * 1024 * 4; // = GSTransferBuffer's buffer
+	GSBackQueue::PayloadNode* node = new GSBackQueue::PayloadNode{
+		static_cast<u8*>(_aligned_malloc(alloc_size, 32))};
+	if (!node->buff)
+		pxFailRel("GS: payload pool allocation failed");
+	m_payload_arena.push_back(node);
+	return node;
+}
+
+void GSState::RotateTransferPayload()
+{
+	// Front side, at transfer Init. No-op until a record referenced the current
+	// buffer; then hand it to the record stream and stage into a fresh one —
+	// the pending TRANSFER records keep reading the old node.
+	if (!m_back_records || !m_tr_payload_referenced)
+		return;
+
+	GSBackQueue::ReleasePayloadRecord rec;
+	rec.node = m_tr_payload_node;
+	ExecReleasePayloadRecord(rec);
+
+	m_tr_payload_node = AcquirePayloadNode();
+	m_tr.buff = m_tr_payload_node->buff;
+	m_tr_payload_referenced = false;
+}
+
+void GSState::ExecReleasePayloadRecord(const GSBackQueue::ReleasePayloadRecord& rec)
+{
+	// Cannot fail: the free ring's capacity equals the arena cap.
+	GSBackQueue::PayloadNode** slot = m_payload_free.BeginPush();
+	pxAssert(slot);
+	*slot = rec.node;
+	m_payload_free.CommitPush();
 }
 
 // exclude_current is used if there is a flush for a reason other than the normal context change.
@@ -2408,9 +2478,13 @@ void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 	switch (m_env.TRXDIR.XDIR)
 	{
 		case 0: // host -> local
+			RotateTransferPayload();
 			m_tr.Init(m_env.TRXPOS, m_env.TRXREG, m_env.BITBLTBUF, true);
 			break;
 		case 1: // local -> host
+			// Readbacks also stage through m_tr.buff (ReadImageX writes it), so
+			// they must not land in a buffer pending records still reference.
+			RotateTransferPayload();
 			m_tr.Init(m_env.TRXPOS, m_env.TRXREG, m_env.BITBLTBUF, false);
 			break;
 		case 2: // local -> local
@@ -2528,6 +2602,10 @@ void GSState::FlushWrite()
 	rec.init_y = m_tr.y;
 	rec.draw_serial = s_n;
 	rec.first_slice = (m_tr.start == 0);
+
+	// The record references a slice of the pooled staging buffer; the next
+	// transfer Init rotates it out instead of reusing it.
+	m_tr_payload_referenced = m_back_records;
 
 	ExecTransferRecord(rec);
 
@@ -3194,7 +3272,21 @@ void GSState::Write(const u8* mem, int len)
 			rec.pos = m_tr.m_pos;
 			rec.reg = m_tr.m_reg;
 			rec.rect = m_tr.rect;
-			rec.payload = mem;
+			if (m_back_records)
+			{
+				// The incoming GIF packet memory is transient — a queued
+				// consumer would read freed data. Stage through the pooled
+				// buffer instead (fresh at this point: Init just ran, so any
+				// referenced buffer was rotated out). The plan accepts this
+				// fast path degrading to a staged copy in record modes.
+				memcpy(m_tr.buff, mem, m_tr.total);
+				rec.payload = m_tr.buff;
+				m_tr_payload_referenced = true;
+			}
+			else
+			{
+				rec.payload = mem;
+			}
 			rec.len = m_tr.total;
 			rec.stat_len = len;
 			rec.end = m_tr.total;

@@ -559,6 +559,21 @@ public:
 	GSBackQueue::DrawNode* AcquireDrawNode();
 	void ReleaseDrawNode(GSBackQueue::DrawNode* node);
 
+	// GV7-1c: transfer payload pool (record modes only; mode 0 keeps
+	// GSTransferBuffer's own allocation untouched). m_tr.buff aliases the
+	// current node's 4MB buffer; RotateTransferPayload runs at transfer Init and
+	// swaps to a fresh node once records reference the current one. The ctor
+	// adopts m_tr's original buffer as node 0 (the dtor nulls m_tr.buff before
+	// the arena walk so it isn't freed twice).
+	static constexpr u32 MAX_PAYLOAD_NODES = 8;
+	std::vector<GSBackQueue::PayloadNode*> m_payload_arena;
+	GSBackQueue::SpscRing<GSBackQueue::PayloadNode*, MAX_PAYLOAD_NODES> m_payload_free;
+	GSBackQueue::PayloadNode* m_tr_payload_node = nullptr;
+	bool m_tr_payload_referenced = false;
+	GSBackQueue::PayloadNode* AcquirePayloadNode();
+	void RotateTransferPayload();
+	void ExecReleasePayloadRecord(const GSBackQueue::ReleasePayloadRecord& rec);
+
 	GSVector4i GetTEX0Rect(GSDrawingContext prev_ctx);
 	void CheckWriteOverlap(bool req_write, bool req_read);
 	void Write(const u8* mem, int len);
