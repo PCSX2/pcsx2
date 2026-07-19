@@ -184,8 +184,11 @@ bool ImGuiManager::Initialize()
 	g.ConfigNavWindowingKeyPrev = ImGuiKey_None;
 	g.ConfigNavWindowingWithGamepad = false;
 
-	s_window_width = static_cast<float>(g_gs_device->GetWindowWidth());
-	s_window_height = static_cast<float>(g_gs_device->GetWindowHeight());
+	{
+		const GSVector2i pres = g_gs_device->GetPresentationSize();
+		s_window_width = static_cast<float>(pres.x);
+		s_window_height = static_cast<float>(pres.y);
+	}
 	io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
 	io.DisplaySize = ImVec2(s_window_width, s_window_height);
 
@@ -259,11 +262,12 @@ float ImGuiManager::GetWindowHeight()
 
 void ImGuiManager::WindowResized()
 {
-	const u32 new_width = g_gs_device ? g_gs_device->GetWindowWidth() : 0;
-	const u32 new_height = g_gs_device ? g_gs_device->GetWindowHeight() : 0;
+	GSVector2i new_size{};
+	if (g_gs_device)
+		new_size = g_gs_device->GetPresentationSize();
 
-	s_window_width = static_cast<float>(new_width);
-	s_window_height = static_cast<float>(new_height);
+	s_window_width = static_cast<float>(new_size.x);
+	s_window_height = static_cast<float>(new_size.y);
 	ImGui::GetIO().DisplaySize = ImVec2(s_window_width, s_window_height);
 
 	// Scale might have changed as a result of window resize.

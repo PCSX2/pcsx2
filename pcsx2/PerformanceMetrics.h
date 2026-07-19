@@ -23,6 +23,10 @@ namespace PerformanceMetrics
 	void Update(bool gs_register_write, bool fb_blit, bool is_skipping_present);
 	void OnGPUPresent(float gpu_time, u64 vs_invocations, u64 ps_invocations);
 
+	/// Logs the whole-session average framerate (frames since Clear() over
+	/// wall time). Called at VM shutdown so every -logfile run records it.
+	void LogSessionSummary();
+
 	/// Sets the EE thread for CPU usage calculations.
 	void SetCPUThread(Threading::ThreadHandle thread);
 

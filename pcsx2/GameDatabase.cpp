@@ -199,6 +199,12 @@ void GameDatabase::populateEntry(GameDatabaseSchema::GameEntry& gameEntry, const
 			node["clampModes"]["vu1ClampMode"] >> vuVal;
 			gameEntry.vu1ClampMode = static_cast<GameDatabaseSchema::ClampMode>(vuVal);
 		}
+		if (node["clampModes"].has_child("guardedAddSub"))
+		{
+			bool guardVal = false;
+			node["clampModes"]["guardedAddSub"] >> guardVal;
+			gameEntry.guardedAddSub = guardVal;
+		}
 	}
 
 	// Validate game fixes, invalid ones will be dropped!
@@ -552,6 +558,17 @@ void GameDatabaseSchema::GameEntry::applyGameFixes(Pcsx2Config& config, bool app
 		}
 		else
 			Console.Warning("GameDB: Skipping changing EE/FPU clamp mode [mode=%d]", clampMode);
+	}
+
+	if (guardedAddSub.has_value())
+	{
+		if (applyAuto)
+		{
+			Console.WriteLn("GameDB: Changing EE/FPU add/sub guard-bit emulation [enabled=%d]", static_cast<int>(*guardedAddSub));
+			config.Cpu.Recompiler.fpuGuardedAddSub = *guardedAddSub;
+		}
+		else
+			Console.Warning("GameDB: Skipping changing EE/FPU add/sub guard-bit emulation [enabled=%d]", static_cast<int>(*guardedAddSub));
 	}
 
 	if (vu0ClampMode != GameDatabaseSchema::ClampMode::Undefined)

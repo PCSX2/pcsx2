@@ -104,6 +104,7 @@ namespace GameDatabaseSchema
 		ClampMode eeClampMode = ClampMode::Undefined;
 		ClampMode vu0ClampMode = ClampMode::Undefined;
 		ClampMode vu1ClampMode = ClampMode::Undefined;
+		std::optional<bool> guardedAddSub; // EE FPU add/sub guard-bit emulation override (unset = leave global default).
 		std::vector<GamefixId> gameFixes;
 		std::vector<std::pair<SpeedHack, int>> speedHacks;
 		std::vector<std::pair<GSHWFixId, s32>> gsHWFixes;

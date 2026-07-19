@@ -6,6 +6,7 @@
 #include "GS/GS.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSLocalMemory.h"
+#include "GS/GSVertexKick.h"
 #include "GS/GSDrawingContext.h"
 #include "GS/GSDrawingEnvironment.h"
 #include "GS/Renderers/Common/GSVertex.h"
@@ -18,6 +19,10 @@ class GSDumpBase;
 
 class GSState : public GSAlignedClass<32>
 {
+	// GSVertexTrace::Update consumes the per-buffer fused FindMinMax accumulator
+	// (m_vertex->fmm_*) directly.
+	friend class GSVertexTrace;
+
 public:
 	GSState();
 	virtual ~GSState();
@@ -144,10 +149,22 @@ protected:
 		u32 xy_tail;
 		GSVector4i xy[4];
 		GSVector4i xyhead;
+		// Scalar mirror of xy[] for the outcode cull fast path: written wherever
+		// xy[] is written, outcodes re-derived on scissor change (RefreshKickMirror).
+		GSVertexKernels::CullMirrorEntry kick_ring[4];
+		// Fused vertex-trace bounds (aarch64 only): FindMinMax min/max accumulated
+		// at index emission over this buffer's referenced vertices. fmm_watermark is
+		// the first vertex position not yet folded in (clamped on rewinds/compaction
+		// so re-referenced positions re-accumulate); fmm_valid means the accumulator
+		// covers every emitted index of the pending draw. Reset lazily at the first
+		// emission of a draw (itail == n).
+		GSVertexKernels::FmmAcc fmm_acc;
+		u32 fmm_watermark;
+		bool fmm_valid;
 	};
 
 	GSVertexBuff m_vertex_buffers[MAX_DRAW_BUFFERS];
-	GSVertexBuff* m_vertex;
+	GSVertexBuff* m_vertex = nullptr;
 
 	struct GSIndexBuff
 	{
@@ -189,8 +206,93 @@ protected:
 	bool EarlyDetectShuffle(u32 prim);
 	void CheckCLUTValidity(u32 prim);
 	bool CheckOverlapVerts(u32 n);
+	bool CheckOverlapVertsSlow(u32 n);
+
+	void ApplyDepthClamp(u32& z);
+	GSLimit24BitDepth GetDepthClampMode() const;
+
+	static __fi void ApplyDepthClampMode(GSLimit24BitDepth mode, u32& z)
+	{
+		if (mode == GSLimit24BitDepth::PrioritizeUpper)
+			z = ((z >> 8) & ~0xFF) | (z & 0xFF);
+		else if (mode == GSLimit24BitDepth::PrioritizeLower)
+			z &= 0x00FFFFFF;
+	}
+
+	// Batch cursor: caches the hot vertex/index buffer fields in locals so they live
+	// in registers across a fused packed-handler batch instead of round-tripping
+	// through m_vertex/m_index per vertex. Store() must run before ANY call that can
+	// flush, grow or switch draw buffers (Flush, GrowVertexBuffer,
+	// CheckOverlapVertsSlow, HandleAutoFlush — GrowVertexBuffer reads tail for the
+	// preserved-copy size), and Load() again after. buff/maxcount are only ever
+	// changed by those callees, so Store() never writes them back.
+	struct VertexKickCursor
+	{
+		GSVertexBuff* vb;
+		GSIndexBuff* ib;
+		GSVertex* vbuff;
+		u16* ibuff;
+		u32 head, tail, next, xy_tail, maxcount, itail;
+
+		// Deferred draw_rect accumulation: accepted prims union their (already
+		// subpixel-shifted, exclusive) rects here; Store() folds the result into
+		// temp_draw_rect with one scissor clamp. Exact because rintersect is
+		// monotone and idempotent, so clamping once over the union equals the
+		// per-prim clamp-then-union chain, and because a draw's first prim (which
+		// replaces temp_draw_rect instead of unioning) can only be the first
+		// accumulated after a seam — the index buffer only empties behind
+		// flush seams.
+		GSVector4i acc_rect;
+		u32 acc_state; // 0 = empty, 1 = union into temp_draw_rect, 2 = replace it
+		GSVector4i* temp_rect;
+		const GSVector4i* scissor_in;
+
+		__fi void Load(GSState& s)
+		{
+			vb = s.m_vertex;
+			ib = s.m_index;
+			vbuff = vb->buff;
+			ibuff = ib->buff;
+			head = vb->head;
+			tail = vb->tail;
+			next = vb->next;
+			xy_tail = vb->xy_tail;
+			maxcount = vb->maxcount;
+			itail = ib->tail;
+			acc_state = 0;
+			temp_rect = &s.temp_draw_rect;
+			scissor_in = &s.m_context->scissor.in;
+		}
+
+		__fi void Store() const
+		{
+			vb->head = head;
+			vb->tail = tail;
+			vb->next = next;
+			vb->xy_tail = xy_tail;
+			ib->tail = itail;
+
+			if (acc_state != 0)
+			{
+				const GSVector4i merged = (acc_state == 2) ? acc_rect : temp_rect->runion(acc_rect);
+				*temp_rect = merged.rintersect(*scissor_in);
+			}
+		}
+	};
+
+	// Pre-adjusted scissor bounds for the scalar-outcode cull (GSVertexKick.h),
+	// re-derived when the cull rect changes. band = triangle/sprite native-res
+	// space, raw = point/line 12.4 space. m_cull_bounds_src is the cull rect the
+	// bounds were derived from (poison-initialized so the first update always
+	// refreshes).
+	GSVector4i m_cull_bounds_src = GSVector4i::cxpr(-2, -2, -2, -2);
+	GSVertexKernels::CullBounds m_cull_bounds_band = {};
+	GSVertexKernels::CullBounds m_cull_bounds_raw = {};
+
+	void RefreshKickMirror();
 
 	template <u32 prim, bool auto_flush> void VertexKick(u32 skip);
+	template <u32 prim, bool auto_flush> void VertexKickDirect(u32 skip, u32 xraw, u32 yraw, const GSVector4i& v0, const GSVector4i& v1, VertexKickCursor& c);
 
 	// following functions need m_vt to be initialized
 

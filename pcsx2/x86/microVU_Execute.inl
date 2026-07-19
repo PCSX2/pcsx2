@@ -6,6 +6,10 @@
 #include "Config.h"
 #include "GS/MultiISA.h"
 
+#ifdef PCSX2_RECOMPILER_TESTS
+#include "vu_capture.h"
+#endif
+
 //------------------------------------------------------------------
 // Dispatcher Functions
 //------------------------------------------------------------------
@@ -327,6 +331,15 @@ _mVUt void* mVUexecute(u32 startPC, u32 cycles)
 
 	mVU.cycles = cycles;
 	mVU.totalCycles = cycles;
+
+#ifdef PCSX2_RECOMPILER_TESTS
+	// Records the microprogram plus the entry register/memory state at dispatch
+	// so the captured program can be replayed offline by the capture test tooling.
+	vu_capture::MaybeCapture(static_cast<int>(vuIndex), startPC & vuLimit, cycles,
+		mVU.regs().Micro, mVU.microMemSize,
+		mVU.regs().Mem, mVU.microMemSize,
+		mVU.regs());
+#endif
 
 	xSetTextPtr(mVU.textPtr());
 	xSetPtr(mVU.prog.x86ptr); // Set x86ptr to where last program left off

@@ -91,13 +91,27 @@ extern bool vtlb_IsFaultingPC(u32 guest_pc);
 
 //Memory functions
 
-template< typename DataType >
-extern DataType vtlb_memRead(u32 mem);
-extern RETURNS_R128 vtlb_memRead128(u32 mem);
+// On arm64, the EE JIT keeps guest values live in caller-saved host
+// registers across its vtlb slow paths (the EE-SRA x12/x13 pins; see
+// iR5900-arm64.h). preserve_most makes these dispatchers preserve x9-x15,
+// so the fastmem backpatch thunk and inline softmem slow paths need no
+// pin spill/reload around their calls. Cost lands inside the callee
+// (a prologue/epilogue x9-x15 save) — MMIO-dispatch-only, never on the
+// direct-RAM fast path. Return/argument registers are unaffected, so
+// C++ callers (interpreter memory ops) behave identically.
+#ifdef ARCH_ARM64
+#define VTLB_PRESERVE_MOST __attribute__((preserve_most))
+#else
+#define VTLB_PRESERVE_MOST
+#endif
 
 template< typename DataType >
-extern void vtlb_memWrite(u32 mem, DataType value);
-extern void TAKES_R128 vtlb_memWrite128(u32 mem, r128 value);
+extern DataType VTLB_PRESERVE_MOST vtlb_memRead(u32 mem);
+extern RETURNS_R128 VTLB_PRESERVE_MOST vtlb_memRead128(u32 mem);
+
+template< typename DataType >
+extern void VTLB_PRESERVE_MOST vtlb_memWrite(u32 mem, DataType value);
+extern void TAKES_R128 VTLB_PRESERVE_MOST vtlb_memWrite128(u32 mem, r128 value);
 
 // "Safe" variants of vtlb, designed for external tools.
 // These routines only access the various RAM, and will not call handlers
@@ -129,7 +143,10 @@ namespace vtlb_private
 	static const uint VTLB_PAGE_MASK = 4095;
 	static const uint VTLB_PAGE_SIZE = 4096;
 
-	static const uint VTLB_PMAP_SZ		= _1mb * 512;
+	// Physical map covers 1GB to include RAM mirrors at 0x20000000 (uncached)
+	// and 0x30000000 (uncached & accelerated) used by BIOS InitRDRAM.
+	// 1GB is sufficient for all known PS2 mappings.
+	static const uint VTLB_PMAP_SZ		= _1mb * 1024;
 	static const uint VTLB_PMAP_ITEMS	= VTLB_PMAP_SZ / VTLB_PAGE_SIZE;
 	static const uint VTLB_VMAP_ITEMS	= _4gb / VTLB_PAGE_SIZE;
 
@@ -197,7 +214,7 @@ namespace vtlb_private
 		// third indexer -- 128 possible handlers!
 		void* RWFT[5][2][VTLB_HANDLER_ITEMS];
 
-		VTLBPhysical pmap[VTLB_PMAP_ITEMS]; //512KB // PS2 physical to x86 physical
+		VTLBPhysical pmap[VTLB_PMAP_ITEMS]; //2MB (VTLB_PMAP_ITEMS * sizeof(VTLBPhysical)) // PS2 physical to host physical
 
 		VTLBVirtual* vmap;                //4MB (allocated by vtlb_init) // PS2 virtual to x86 physical
 

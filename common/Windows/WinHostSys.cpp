@@ -143,9 +143,14 @@ SharedMemoryMappingArea::PlaceholderMap::iterator SharedMemoryMappingArea::FindP
 		return m_placeholder_ranges.end();
 }
 
-std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t size, bool jit)
+std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t size, bool jit, uptr fixed_base_hint)
 {
 	pxAssertRel(Common::IsAlignedPow2(size, __pagesize), "Size is page aligned");
+
+	// Deterministic fixed-base placement is not implemented on Windows; kernel-chosen
+	// placement is used and the program cache simply incurs a miss if the arena base
+	// differs across runs.
+	(void)fixed_base_hint;
 
 	void* alloc = VirtualAlloc2(GetCurrentProcess(), nullptr, size, MEM_RESERVE | MEM_RESERVE_PLACEHOLDER, PAGE_NOACCESS, nullptr, 0);
 	if (!alloc)

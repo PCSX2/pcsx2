@@ -415,6 +415,9 @@ void Pcsx2Config::SpeedhackOptions::LoadSave(SettingsWrapper& wrap)
 Pcsx2Config::ProfilerOptions::ProfilerOptions()
 	: bitset(0xfffffffe)
 {
+	// Default OFF: perf jitdump is opt-in to avoid GB-scale dumps every play
+	// session on USE_PERF_JITDUMP builds.
+	EnablePerfDump = false;
 }
 
 void Pcsx2Config::ProfilerOptions::LoadSave(SettingsWrapper& wrap)
@@ -426,6 +429,7 @@ void Pcsx2Config::ProfilerOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(RecBlocks_IOP);
 	SettingsWrapBitBool(RecBlocks_VU0);
 	SettingsWrapBitBool(RecBlocks_VU1);
+	SettingsWrapBitBool(EnablePerfDump);
 }
 
 bool Pcsx2Config::ProfilerOptions::operator!=(const ProfilerOptions& right) const
@@ -454,6 +458,7 @@ Pcsx2Config::RecompilerOptions::RecompilerOptions()
 	EnableVU1 = true;
 	EnableFastmem = true;
 	PauseOnTLBMiss = false;
+	EnableVUProgramCache = false; // default off; opt-in until the on-disk cache is validated on the target hardware
 
 	// vu and fpu clamping default to standard overflow.
 	vu0Overflow = true;
@@ -468,6 +473,7 @@ Pcsx2Config::RecompilerOptions::RecompilerOptions()
 	fpuOverflow = true;
 	//fpuExtraOverflow = false;
 	//fpuFullMode = false;
+	//fpuGuardedAddSub = false; // add/sub guard-bit emulation is opt-in (perf); games needing it enable it via GameDB clampModes.guardedAddSub.
 }
 
 void Pcsx2Config::RecompilerOptions::ApplySanityCheck()
@@ -532,6 +538,7 @@ void Pcsx2Config::RecompilerOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(EnableVU1);
 	SettingsWrapBitBool(EnableFastmem);
 	SettingsWrapBitBool(PauseOnTLBMiss);
+	SettingsWrapBitBool(EnableVUProgramCache);
 
 	SettingsWrapBitBool(vu0Overflow);
 	SettingsWrapBitBool(vu0ExtraOverflow);
@@ -545,6 +552,7 @@ void Pcsx2Config::RecompilerOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(fpuOverflow);
 	SettingsWrapBitBool(fpuExtraOverflow);
 	SettingsWrapBitBool(fpuFullMode);
+	SettingsWrapBitBool(fpuGuardedAddSub);
 }
 
 u32 Pcsx2Config::RecompilerOptions::GetEEClampMode() const
@@ -652,6 +660,13 @@ const char* Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames[(size_t)FMVAspectR
 	"10:7",
 	nullptr};
 
+const char* Pcsx2Config::GSOptions::DisplayRotationNames[(size_t)DisplayRotation::MaxCount + 1] = {
+	"0",
+	"90",
+	"180",
+	"270",
+	nullptr};
+
 const char* Pcsx2Config::GSOptions::BlendingLevelNames[] = {
 	"Minimum",
 	"Basic",
@@ -721,7 +736,9 @@ Pcsx2Config::GSOptions::GSOptions()
 	UseBlitSwapChain = false;
 	DisableShaderCache = false;
 	DisableFramebufferFetch = false;
-	DisableVertexShaderExpand = false;	EnableAdrenoFramebufferFetch = false;
+	DisablePS2DepthQuantization = false;
+	DisableVertexShaderExpand = false;
+	EnableAdrenoFramebufferFetch = false;
 	ForceMaliFramebufferFetch = false;
 	SkipDuplicateFrames = true;
 	OsdMessagesPos = OsdOverlayPos::TopLeft;
@@ -802,6 +819,7 @@ bool Pcsx2Config::GSOptions::operator==(const GSOptions& right) const
 
 		OpEqu(AspectRatio) &&
 		OpEqu(FMVAspectRatioSwitch) &&
+		OpEqu(Rotation) &&
 
 		OptionsAreEqual(right));
 }
@@ -917,7 +935,9 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		   OpEqu(UseBlitSwapChain) &&
 		   OpEqu(DisableShaderCache) &&
 		   OpEqu(DisableFramebufferFetch) &&
-		   OpEqu(DisableVertexShaderExpand) &&		   OpEqu(EnableAdrenoFramebufferFetch) &&
+		   OpEqu(DisablePS2DepthQuantization) &&
+		   OpEqu(DisableVertexShaderExpand) &&
+		   OpEqu(EnableAdrenoFramebufferFetch) &&
 		   OpEqu(ForceMaliFramebufferFetch) &&
 		   OpEqu(OverrideTextureBarriers) &&
 		   OpEqu(DepthFeedbackMode) &&
@@ -944,6 +964,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 
 	SettingsWrapEnumEx(AspectRatio, "AspectRatio", AspectRatioNames);
 	SettingsWrapEnumEx(FMVAspectRatioSwitch, "FMVAspectRatioSwitch", FMVAspectRatioSwitchNames);
+	SettingsWrapEnumEx(Rotation, "DisplayRotation", DisplayRotationNames);
 	SettingsWrapIntEnumEx(ScreenshotSize, "ScreenshotSize");
 	SettingsWrapIntEnumEx(ScreenshotFormat, "ScreenshotFormat");
 	SettingsWrapEntry(ScreenshotQuality);
@@ -966,7 +987,9 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(UseBlitSwapChain);
 	SettingsWrapBitBool(DisableShaderCache);
 	SettingsWrapBitBool(DisableFramebufferFetch);
-	SettingsWrapBitBool(DisableVertexShaderExpand);	SettingsWrapBitBool(EnableAdrenoFramebufferFetch);
+	SettingsWrapBitBool(DisablePS2DepthQuantization);
+	SettingsWrapBitBool(DisableVertexShaderExpand);
+	SettingsWrapBitBool(EnableAdrenoFramebufferFetch);
 	SettingsWrapBitBool(ForceMaliFramebufferFetch);
 	SettingsWrapBitBool(SkipDuplicateFrames);
 	SettingsWrapBitBool(OsdShowSpeed);
@@ -2231,7 +2254,7 @@ bool EmuFolders::SetDataDirectory(Error* error)
 		if (EmuConfig.CustomDataPath.empty())
 		{
 #if defined(_WIN32)
-			// On Windows, use My Documents\PCSX2 to match old installs.
+			// On Windows, use My Documents\ARMSX2.
 			PWSTR documents_directory;
 			if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
 			{
@@ -2240,7 +2263,7 @@ bool EmuFolders::SetDataDirectory(Error* error)
 				CoTaskMemFree(documents_directory);
 			}
 #elif defined(__linux__) || defined(__FreeBSD__)
-			// Use $XDG_CONFIG_HOME/PCSX2 if it exists.
+			// Use $XDG_CONFIG_HOME/ARMSX2 if it exists.
 			const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
 			if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
 			{
@@ -2248,7 +2271,7 @@ bool EmuFolders::SetDataDirectory(Error* error)
 			}
 			else
 			{
-				// Use ~/PCSX2 for non-XDG, and ~/.config/PCSX2 for XDG.
+				// Use ~/ARMSX2 for non-XDG, and ~/.config/ARMSX2 for XDG.
 				const char* home_dir = getenv("HOME");
 				if (home_dir)
 				{

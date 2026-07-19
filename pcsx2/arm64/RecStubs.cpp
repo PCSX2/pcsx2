@@ -1,119 +1,372 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
-// SPDX-FileCopyrightText: 2026 isztld <https://isztld.com/>
+// SPDX-FileCopyrightText: 2026 yaps2 Dev Team
 // SPDX-License-Identifier: GPL-3.0
 
+#include "arm64/AsmHelpers.h"
+#include "arm64/iR5900-arm64.h"
 #include "common/Console.h"
+#include "common/HostSys.h"
+#include "Memory.h"
 #include "MTVU.h"
 #include "SaveState.h"
 #include "vtlb.h"
-
-#include "arm64/AsmHelpers.h"
-#include "arm64/aR5900.h"
 
 #include "common/Assertions.h"
 
 namespace a64 = vixl::aarch64;
 
-// Host-MMU fastmem backpatch (FASTMEM F2). Called from the shared vtlb_BackpatchLoadStore
-// (vtlb.cpp) when a single fastmem Ldr/Str at `code_address` faults on a handler/MMIO/
-// unmapped page. We carve a thunk that redoes the access via the slow vtlb_mem* helper
-// (using the recorded address/data registers), resumes at the instruction after the fault,
-// then overwrite the faulting Ldr/Str with a branch to the thunk so subsequent executions
-// skip straight to the slow path (no re-fault). Our cycle model is memory-based, so — unlike
-// the x86 stock thunk — there is no cycle flush/reload.
-//
-// address_register / data_register are ARM64 register codes; they can be EE guest-GPR cache
-// regs (x20/x22-x27), not just scratch, so the moves below preserve them where needed.
-// RESTATEPTR(x19)/REVTLBPTR(x21)/RFASTMEMBASE(x28) are callee-saved and survive the C call.
-// is_fpr is always false here: LWC1/SWC1 stage the FP value through a GPR, so their memory
-// access is a plain 32-bit integer access. size_in_bits==128 is the LQ/SQ vector path.
-void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, u32 guest_addr, u32 gpr_bitmask, u32 fpr_bitmask, u8 address_register, u8 data_register, u8 size_in_bits, bool is_signed, bool is_load, bool is_fpr)
-{
-	u8* const thunk = recBeginThunk();
+using namespace vtlb_private;
 
+void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, u32 guest_addr,
+	u32 gpr_bitmask, u32 fpr_bitmask, u8 address_register, u8 data_register,
+	u8 size_in_bits, bool is_signed, bool is_load, bool is_fpr)
+{
+	u8* thunk = recBeginThunk();
+
+	// Collect caller-saved GPRs that need saving.
+	// Callee-saved (x19+) are preserved by the C call and don't need saving.
+	// For loads into a GPR, skip the data register (result goes there).
+	static constexpr u32 MAX_SAVE_GPRS = 16;
+	u8 gprs_to_save[MAX_SAVE_GPRS];
+	u32 num_gprs = 0;
+
+	for (u32 i = 0; i < 19; i++)
+	{
+		if (!(gpr_bitmask & (1u << i)))
+			continue;
+		// Skip scratch/reserved: x8 (RWSCRATCH), x16 (VIXL), x17 (RSCRATCHADDR), x18 (platform)
+		if (i == 8 || i >= 16)
+			continue;
+		// For loads into GPR, skip the data register
+		if (is_load && !is_fpr && i == data_register)
+			continue;
+		pxAssert(num_gprs < MAX_SAVE_GPRS);
+		gprs_to_save[num_gprs++] = static_cast<u8>(i);
+	}
+
+	// Collect NEON regs that need saving.
+	// q8-q15 lower 64 bits are callee-saved, but the JIT uses full 128-bit, so save all live ones.
+	static constexpr u32 MAX_SAVE_FPRS = 32;
+	u8 fprs_to_save[MAX_SAVE_FPRS];
+	u32 num_fprs = 0;
+
+	for (u32 i = 0; i < 32; i++)
+	{
+		if (!(fpr_bitmask & (1u << i)))
+			continue;
+		// For loads into FPR, skip the data register
+		if (is_load && is_fpr && i == data_register)
+			continue;
+		pxAssert(num_fprs < MAX_SAVE_FPRS);
+		fprs_to_save[num_fprs++] = static_cast<u8>(i);
+	}
+
+	// Calculate stack size (must be 16-byte aligned)
+	const u32 gpr_save_bytes = num_gprs * 8;
+	const u32 fpr_save_bytes = num_fprs * 16;
+	const u32 stack_size = (gpr_save_bytes + fpr_save_bytes + 15u) & ~15u;
+
+	if (stack_size > 0)
+		armAsm->Sub(a64::sp, a64::sp, stack_size);
+
+	// Save GPRs to stack
+	u32 offset = 0;
+	for (u32 i = 0; i < num_gprs; i++)
+	{
+		armAsm->Str(a64::XRegister(gprs_to_save[i]), a64::MemOperand(a64::sp, offset));
+		offset += 8;
+	}
+
+	// Save NEON regs to stack
+	for (u32 i = 0; i < num_fprs; i++)
+	{
+		armAsm->Str(a64::QRegister(fprs_to_save[i]), a64::MemOperand(a64::sp, offset));
+		offset += 16;
+	}
+
+	// At this point, all host registers still have their original JIT values
+	// (STR only reads, doesn't modify the source register).
+
+	// Flush cpuRegs.pc and cpuRegs.code for exception handling.
+	// The fastmem path skips iFlushCall, so these may be stale.
+	// If the vtlb handler triggers a TLB miss or other exception,
+	// cpuTlbMiss reads cpuRegs.pc to set EPC.
+	armAsm->Mov(RWSCRATCH, guest_pc);
+	armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.pc));
+
+	armAsm->Mov(RWSCRATCH, *(u32*)PSM(guest_pc));
+	armAsm->Str(RWSCRATCH, armCpuRegMem(&cpuRegs.code));
+
+	// Set up arguments for the vtlb handler call.
+
+	// 128-bit fastmem path. data_register is the q register the inline
+	// Ldr/Str targeted: q0 for the legacy temp shape (LQC2/SQC2, LQ-to-r0 —
+	// emitted post-iFlushCall so q0 is allocator-detached), or an allocated
+	// NEONTYPE_GPRREG slot (GE-14 LQ/SQ). vtlb_memRead128 returns r128 in q0
+	// per AAPCS64 and vtlb_memWrite128 takes the value in q0, so a non-q0
+	// data_register needs a Mov on each side of the slow-path call; q0
+	// itself is save/restored by the mask machinery when live (store case —
+	// the load case skips the dest from the save set, and the result-landing
+	// Mov below runs before the restores).
 	if (size_in_bits == 128)
 	{
-		// 128-bit quad via vtlb_memRead128/vtlb_memWrite128 (r128 value in q0 = RQRET). data
-		// is a V-register (banked separately from the GPR address), so no addr/data aliasing.
+		pxAssertRel(is_fpr, "128-bit fastmem backpatch must target a q register");
+
+		if (address_register != 9)
+			armAsm->Mov(a64::w9, armWRegister(address_register));
+
+		armAsm->Lsr(a64::w8, a64::w9, VTLB_PAGE_BITS);
+		armMoveAddressToReg(RSCRATCHADDR, vtlb_private::vtlbdata.vmap);
+		armAsm->Ldr(a64::x8, a64::MemOperand(RSCRATCHADDR, a64::x8, a64::LSL, 3));
+		armAsm->Add(a64::x0, a64::x8, a64::Operand(a64::w9, a64::UXTW));
+
+		a64::Label slow_path, done;
+		armAsm->Tbnz(a64::x0, 63, &slow_path);
+
+		if (is_load)
+			armAsm->Ldr(a64::QRegister(data_register), a64::MemOperand(a64::x0));
+		else
+			armAsm->Str(a64::QRegister(data_register), a64::MemOperand(a64::x0));
+		armAsm->B(&done);
+
+		armAsm->Bind(&slow_path);
+		if (!is_load && data_register != 0)
+			armAsm->Mov(a64::q0.V16B(), a64::QRegister(data_register).V16B());
+		armAsm->Mov(a64::w0, a64::w9);
+		// Spill/reload RECCYCLE around the vtlb handler call — the slow path
+		// dispatches to MMIO handlers (hwRead*/hwWrite*) which read/write
+		// cpuRegs.cycle (timer regs, IntCHackCheck, etc.). Without this,
+		// the handler sees a stale cycle value, which can mis-schedule
+		// events and cause cascading mid-block timing bugs. Matches the
+		// pattern at recVTLB-arm64.cpp:112+120.
+		armFlushCycleDelta();
+		armFlushEEPinsBeforePreserveMostCall(); // emits nothing for the current table
 		if (is_load)
 		{
-			if (address_register != RWARG1.GetCode())
-				armAsm->Mov(RWARG1, armWRegister(address_register));
-			armEmitCall(reinterpret_cast<const void*>(&vtlb_memRead128));
-			if (data_register != RQRET.GetCode())
-				armAsm->Mov(armQRegister(data_register).V16B(), RQRET.V16B());
+			armEmitCall((void*)vtlb_memRead128);
 		}
 		else
 		{
-			if (data_register != RQRET.GetCode())
-				armAsm->Mov(RQRET.V16B(), armQRegister(data_register).V16B());
-			if (address_register != RWARG1.GetCode())
-				armAsm->Mov(RWARG1, armWRegister(address_register));
-			armEmitCall(reinterpret_cast<const void*>(&vtlb_memWrite128));
+			armEmitCall((void*)vtlb_memWrite128);
 		}
+		armReloadCycleDelta();
+		// vtlb_memRead/Write128 are preserve_most: x9-x15 covers every
+		// caller-saved pin (tier-2 x11/x12/x13), so this emits nothing (pins
+		// are not allocator state, so the gpr_bitmask save/restore never
+		// covers them either; q0 untouched).
+		armReloadEEPinsAfterPreserveMostCall();
+		// Land the read result in the resident dest slot (excluded from the
+		// save set above, so the restores below can't clobber it).
+		if (is_load && data_register != 0)
+			armAsm->Mov(a64::QRegister(data_register).V16B(), a64::q0.V16B());
+
+		armAsm->Bind(&done);
 	}
 	else if (is_load)
 	{
-		// addr -> w0 (RWARG1). vtlb_memRead<T>(u32 addr) -> value in w0/x0.
-		if (address_register != RWARG1.GetCode())
-			armAsm->Mov(RWARG1, armWRegister(address_register));
+		// Load backpatch: emit inline VTLB read code (same as vtlbSoftmemRead).
+		if (address_register != 9)
+			armAsm->Mov(a64::w9, armWRegister(address_register));
 
+		// Inline VTLB lookup
+		armAsm->Lsr(a64::w8, a64::w9, VTLB_PAGE_BITS);
+		armMoveAddressToReg(RSCRATCHADDR, vtlb_private::vtlbdata.vmap);
+		armAsm->Ldr(a64::x8, a64::MemOperand(RSCRATCHADDR, a64::x8, a64::LSL, 3));
+		armAsm->Add(a64::x0, a64::x8, a64::Operand(a64::w9, a64::UXTW));
+
+		a64::Label slow_path, done;
+		armAsm->Tbnz(a64::x0, 63, &slow_path);
+
+		// Fast path: direct memory read via resolved host pointer
 		switch (size_in_bits)
 		{
-			case 8:  armEmitCall(reinterpret_cast<const void*>(&vtlb_memRead<mem8_t>));  break;
-			case 16: armEmitCall(reinterpret_cast<const void*>(&vtlb_memRead<mem16_t>)); break;
-			case 32: armEmitCall(reinterpret_cast<const void*>(&vtlb_memRead<mem32_t>)); break;
-			case 64: armEmitCall(reinterpret_cast<const void*>(&vtlb_memRead<mem64_t>)); break;
+			case 8:
+				if (is_signed)
+					armAsm->Ldrsb(a64::x0, a64::MemOperand(a64::x0));
+				else
+					armAsm->Ldrb(a64::w0, a64::MemOperand(a64::x0));
+				break;
+			case 16:
+				if (is_signed)
+					armAsm->Ldrsh(a64::x0, a64::MemOperand(a64::x0));
+				else
+					armAsm->Ldrh(a64::w0, a64::MemOperand(a64::x0));
+				break;
+			case 32:
+				if (is_signed)
+					armAsm->Ldrsw(a64::x0, a64::MemOperand(a64::x0));
+				else
+					armAsm->Ldr(a64::w0, a64::MemOperand(a64::x0));
+				break;
+			case 64:
+				armAsm->Ldr(a64::x0, a64::MemOperand(a64::x0));
+				break;
+			default: pxFailRel("Unsupported load size in backpatch"); break;
 		}
+		armAsm->B(&done);
 
-		// Extend the sub-word return into the FULL x0 (the C ABI leaves the high bits of a
-		// sub-word return undefined) so the X-move below carries the correct 64-bit value —
-		// matching the interpreter's load semantics and the direct fastmem load's extension.
+		// Slow path: call vtlb_memRead handler
+		armAsm->Bind(&slow_path);
+		armAsm->Mov(a64::w0, a64::w9);
+		// Spill/reload RECCYCLE — see 128-bit slow_path above for rationale.
+		armFlushCycleDelta();
+		armFlushEEPinsBeforePreserveMostCall(); // emits nothing for the current table
 		switch (size_in_bits)
 		{
-			case 8:  is_signed ? armAsm->Sxtb(RXRET, RWRET) : armAsm->Uxtb(RWRET, RWRET); break;
-			case 16: is_signed ? armAsm->Sxth(RXRET, RWRET) : armAsm->Uxth(RWRET, RWRET); break;
-			case 32: is_signed ? armAsm->Sxtw(RXRET, RWRET) : armAsm->Mov(RWRET, RWRET);  break; // W-move zeroes high 32
-			case 64: break;
+			case 8:  armEmitCall((void*)vtlb_memRead<mem8_t>);  break;
+			case 16: armEmitCall((void*)vtlb_memRead<mem16_t>); break;
+			case 32: armEmitCall((void*)vtlb_memRead<mem32_t>); break;
+			case 64: armEmitCall((void*)vtlb_memRead<mem64_t>); break;
+			default: break;
 		}
-		if (data_register != RXRET.GetCode())
-			armAsm->Mov(armXRegister(data_register), RXRET);
-	}
-	else
-	{
-		// vtlb_memWrite<T>(u32 addr -> w0, T value -> x1/w1). Resolve the aliasing case
-		// where addr sits in x1 and data in x0 (moving one would clobber the other).
-		if (address_register == RXARG2.GetCode() && data_register == RXARG1.GetCode())
+		armReloadCycleDelta();
+		// preserve_most seam — emits nothing; see the 128-bit slow path above.
+		// When data_register below is itself a pin (WS-C4 pinned dest), it
+		// rides the call spared and the Mov lands the fresh result (x0
+		// untouched here).
+		armReloadEEPinsAfterPreserveMostCall();
+		// Extend the handler return into x0 for the 64-bit cpuRegs.GPR store.
+		// AAPCS64 leaves the upper bits of x0 unspecified for sub-word returns,
+		// so UNSIGNED sub-64-bit loads must Uxtw too — otherwise the garbage
+		// upper 32 bits leak into the 64-bit EE GPR (LWU/LBU/LHU faulting to an
+		// MMIO/handler page). The fast inline path zero-extends via Ldrb/Ldrh/
+		// Ldr w0; this mirrors that, and the const-paddr shortcut in
+		// recVTLB-arm64.cpp which handles the identical hazard.
+		if (size_in_bits < 64)
 		{
-			armAsm->Mov(RXVIXLSCRATCH, armXRegister(address_register)); // x16 = addr
-			armAsm->Mov(RXARG2, armXRegister(data_register));           // x1  = value
-			armAsm->Mov(RWARG1, RWVIXLSCRATCH);                         // x0  = addr (low 32)
+			if (is_signed)
+			{
+				if (size_in_bits == 8)
+					armAsm->Sxtb(a64::x0, a64::w0);
+				else if (size_in_bits == 16)
+					armAsm->Sxth(a64::x0, a64::w0);
+				else if (size_in_bits == 32)
+					armAsm->Sxtw(a64::x0, a64::w0);
+			}
+			else
+			{
+				armAsm->Uxtw(a64::x0, a64::w0);
+			}
+		}
+
+		armAsm->Bind(&done);
+
+		// Move result to data register
+		if (!is_fpr)
+		{
+			if (data_register != 0)
+				armAsm->Mov(armXRegister(data_register), a64::x0);
 		}
 		else
 		{
-			if (data_register != RXARG2.GetCode())
-				armAsm->Mov(RXARG2, armXRegister(data_register));
-			if (address_register != RWARG1.GetCode())
-				armAsm->Mov(RWARG1, armWRegister(address_register));
-		}
-
-		switch (size_in_bits)
-		{
-			case 8:  armEmitCall(reinterpret_cast<const void*>(&vtlb_memWrite<mem8_t>));  break;
-			case 16: armEmitCall(reinterpret_cast<const void*>(&vtlb_memWrite<mem16_t>)); break;
-			case 32: armEmitCall(reinterpret_cast<const void*>(&vtlb_memWrite<mem32_t>)); break;
-			case 64: armEmitCall(reinterpret_cast<const void*>(&vtlb_memWrite<mem64_t>)); break;
+			armAsm->Fmov(a64::SRegister(data_register), a64::w0);
 		}
 	}
+	else
+	{
+		// Store backpatch: emit inline VTLB write code (same as vtlbSoftmemWrite),
+		// emitting the inline VTLB lookup + store rather than calling vtlb_memWrite.
+		// Move address to w9, value to w10 (standard scratch for inline VTLB).
+		if (address_register != 9)
+			armAsm->Mov(a64::w9, armWRegister(address_register));
+		if (data_register != 10)
+		{
+			if (size_in_bits <= 32)
+				armAsm->Mov(a64::w10, armWRegister(data_register));
+			else
+				armAsm->Mov(a64::x10, armXRegister(data_register));
+		}
 
-	// No cycle reload (memory-based cycle model). Resume at the instruction after the fault.
-	armEmitJmp(reinterpret_cast<const void*>(code_address + code_size));
-	recEndThunk();
+		// Inline VTLB lookup: vmap[addr >> PAGE_BITS] → ppf
+		armAsm->Lsr(a64::w8, a64::w9, VTLB_PAGE_BITS);
+		armMoveAddressToReg(RSCRATCHADDR, vtlb_private::vtlbdata.vmap);
+		armAsm->Ldr(a64::x8, a64::MemOperand(RSCRATCHADDR, a64::x8, a64::LSL, 3));
+		armAsm->Add(a64::x0, a64::x8, a64::Operand(a64::w9, a64::UXTW));
 
-	// Redirect the faulting single fastmem instr to the thunk (one 4-byte B in place).
-	armEmitJmpPtr(reinterpret_cast<void*>(code_address), thunk, true);
+		a64::Label slow_path, done;
+		armAsm->Tbnz(a64::x0, 63, &slow_path);
+
+		// Fast path: direct memory write via resolved host pointer
+		switch (size_in_bits)
+		{
+			case 8:  armAsm->Strb(a64::w10, a64::MemOperand(a64::x0)); break;
+			case 16: armAsm->Strh(a64::w10, a64::MemOperand(a64::x0)); break;
+			case 32: armAsm->Str(a64::w10, a64::MemOperand(a64::x0)); break;
+			case 64: armAsm->Str(a64::x10, a64::MemOperand(a64::x0)); break;
+			default: pxFailRel("Unsupported store size in backpatch"); break;
+		}
+		armAsm->B(&done);
+
+		// Slow path: call vtlb_memWrite handler
+		armAsm->Bind(&slow_path);
+		armAsm->Mov(a64::w0, a64::w9);
+		if (size_in_bits <= 32)
+			armAsm->Mov(a64::w1, a64::w10);
+		else
+			armAsm->Mov(a64::x1, a64::x10);
+
+		// Spill/reload RECCYCLE — see 128-bit slow_path above for rationale.
+		armFlushCycleDelta();
+		armFlushEEPinsBeforePreserveMostCall(); // emits nothing for the current table
+		switch (size_in_bits)
+		{
+			case 8:  armEmitCall((void*)vtlb_memWrite<mem8_t>);  break;
+			case 16: armEmitCall((void*)vtlb_memWrite<mem16_t>); break;
+			case 32: armEmitCall((void*)vtlb_memWrite<mem32_t>); break;
+			case 64: armEmitCall((void*)vtlb_memWrite<mem64_t>); break;
+			default: pxFailRel("Unsupported store size in backpatch"); break;
+		}
+		armReloadCycleDelta();
+		// preserve_most seam — emits nothing; see the 128-bit slow path above.
+		armReloadEEPinsAfterPreserveMostCall();
+
+		armAsm->Bind(&done);
+	}
+
+	// Restore GPRs from stack
+	offset = 0;
+	for (u32 i = 0; i < num_gprs; i++)
+	{
+		armAsm->Ldr(a64::XRegister(gprs_to_save[i]), a64::MemOperand(a64::sp, offset));
+		offset += 8;
+	}
+
+	// Restore NEON regs from stack
+	for (u32 i = 0; i < num_fprs; i++)
+	{
+		armAsm->Ldr(a64::QRegister(fprs_to_save[i]), a64::MemOperand(a64::sp, offset));
+		offset += 16;
+	}
+
+	if (stack_size > 0)
+		armAsm->Add(a64::sp, a64::sp, stack_size);
+
+	// Branch back to the instruction after the faulting load/store
+	armEmitJmp((void*)(code_address + code_size));
+
+	u8* thunk_end = recEndThunk();
+
+	// Flush instruction cache for the ENTIRE thunk.
+	// ARM64 icache is not coherent with dcache — without this, the CPU may
+	// execute stale instructions from previously compiled code at the thunk's
+	// address, causing SIGILL or corruption.
+	HostSys::FlushInstructionCache(thunk, static_cast<u32>(thunk_end - thunk));
+
+	// Patch the faulting instruction with a B (branch) to the thunk.
+	// ARM64 B instruction: 0x14000000 | imm26, where imm26 = byte_offset / 4
+	const s64 branch_offset = static_cast<s64>(thunk - reinterpret_cast<u8*>(code_address));
+	pxAssert((branch_offset & 3) == 0);
+	const s64 branch_imm26 = branch_offset >> 2;
+	pxAssertRel(branch_imm26 >= -0x2000000 && branch_imm26 <= 0x1FFFFFF,
+		"Backpatch thunk too far from faulting instruction for B instruction");
+
+	HostSys::BeginCodeWrite();
+	u32* patch_ptr = reinterpret_cast<u32*>(code_address);
+	*patch_ptr = 0x14000000u | (static_cast<u32>(branch_imm26) & 0x03FFFFFFu);
+	HostSys::EndCodeWrite();
+
+	// Flush icache at the patch point too.
+	HostSys::FlushInstructionCache(reinterpret_cast<void*>(code_address), 4);
 }
 
-// SaveStateBase::vuJITFreeze() now lives in arm64/aVU.cpp (Phase 7.2c), where it
-// freezes the real microVU0/1 pipeline state (mVU.prog.lpState) instead of the
-// 96-byte placeholder that used to be stubbed here.
+// vuJITFreeze() is defined in microVU-arm64.cpp

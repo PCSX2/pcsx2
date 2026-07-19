@@ -47,6 +47,7 @@
 #include "common/Error.h"
 #include "common/FileSystem.h"
 #include "common/FPControl.h"
+#include "common/Perf.h"
 #include "common/ScopedGuard.h"
 #include "common/SettingsWrapper.h"
 #include "common/SmallString.h"
@@ -583,6 +584,11 @@ void VMManager::Internal::LoadStartupSettings()
 	EmuFolders::LoadConfig(*bsi);
 	EmuFolders::EnsureFoldersExist();
 
+	// Redirect perf jitdump (Linux ProfileWithPerfJitDump builds) out of /tmp
+	// into the cache dir; the dump can be hundreds of MB and tmpfs /tmp on
+	// embedded targets fills up. No-op on non-jitdump builds.
+	Perf::SetJitDumpDir(EmuFolders::Cache);
+
 	// We need to create the console window early, otherwise it appears behind the main window.
 	UpdateLoggingSettings(*bsi);
 
@@ -641,6 +647,10 @@ void VMManager::LoadSettings()
 	InputManager::ReloadSources(*si, lock);
 	LoadInputBindings(*si, lock);
 	UpdateLoggingSettings(*si);
+
+	// Apply runtime perf-dump gate from Profiler config (no-op on
+	// non-USE_PERF_JITDUMP builds).
+	Perf::SetJitDumpEnabled(EmuConfig.Profiler.EnablePerfDump);
 
 	if (HasValidOrInitializingVM())
 	{
@@ -1691,6 +1701,8 @@ void VMManager::Shutdown(bool save_resume_state)
 	// but just in case, so any of the stuff we call here knows we don't have a valid VM.
 	s_state.store(VMState::Stopping, std::memory_order_release);
 
+	PerformanceMetrics::LogSessionSummary();
+
 	SetTimerResolutionIncreased(false);
 
 	// sync everything
@@ -2712,23 +2724,14 @@ void VMManager::LogCPUCapabilities()
 
 void VMManager::InitializeCPUProviders()
 {
-#ifdef _M_X86 // TODO(Stenzek): Remove me once EE/VU/IOP recs are added.
+#if defined(_M_X86) || defined(ARCH_ARM64)
 	recCpu.Reserve();
 	psxRec.Reserve();
 
 	CpuMicroVU0.Reserve();
 	CpuMicroVU1.Reserve();
 #else
-	// ARM64 (Phase 1.5): reserve the EE recompiler so its code cache + constant pool
-	// are set up. (Phase 6) the IOP recompiler is now ported, so reserve it too.
-	// (Phase 7.8) the VU recompilers (microVU0/1) are now ported — reserve them as well.
-	// recMicroVU1::Reserve() opens vu1Thread for us (mirrors x86 microVU.cpp), so we no
-	// longer open it explicitly here.
-	recCpu.Reserve();
-	psxRec.Reserve();
-
-	CpuMicroVU0.Reserve();
-	CpuMicroVU1.Reserve();
+	vu1Thread.Open();
 #endif
 
 	VifUnpackSSE_Init();
@@ -2742,20 +2745,15 @@ void VMManager::ShutdownCPUProviders()
 		dVifRelease(0);
 	}
 
-#ifdef _M_X86 // TODO(Stenzek): Remove me once EE/VU/IOP recs are added.
+#if defined(_M_X86) || defined(ARCH_ARM64)
 	CpuMicroVU1.Shutdown();
 	CpuMicroVU0.Shutdown();
 
 	psxRec.Shutdown();
 	recCpu.Shutdown();
 #else
-	// ARM64 (Phase 1.5 / Phase 6 / Phase 7.8): tear down the VU + IOP + EE recompilers
-	// reserved above. recMicroVU1::Shutdown() waits on / closes vu1Thread for us.
-	CpuMicroVU1.Shutdown();
-	CpuMicroVU0.Shutdown();
-
-	psxRec.Shutdown();
-	recCpu.Shutdown();
+	if (vu1Thread.IsOpen())
+		vu1Thread.WaitVU();
 #endif
 }
 
@@ -2770,7 +2768,7 @@ void VMManager::UpdateCPUImplementations()
 		return;
 	}
 
-#ifdef _M_X86 // TODO(Stenzek): Remove me once EE/VU/IOP recs are added.
+#if defined(_M_X86) || defined(ARCH_ARM64)
 	Cpu = CHECK_EEREC ? &recCpu : &intCpu;
 	psxCpu = CHECK_IOPREC ? &psxRec : &psxInt;
 
@@ -2795,7 +2793,7 @@ void VMManager::Internal::ClearCPUExecutionCaches()
 	Cpu->Reset();
 	psxCpu->Reset();
 
-#ifdef _M_X86 // TODO(Stenzek): Remove me once EE/VU/IOP recs are added.
+#if defined(_M_X86) || defined(ARCH_ARM64)
 	// mVU's VU0 needs to be properly initialized for macro mode even if it's not used for micro mode!
 	if (CHECK_EEREC && !EmuConfig.Cpu.Recompiler.EnableVU0)
 		CpuMicroVU0.Reset();
@@ -3032,6 +3030,11 @@ void VMManager::CheckForCPUConfigChanges(const Pcsx2Config& old_config)
 
 	Console.WriteLn("Updating CPU configuration...");
 	FPControlRegister::SetCurrent(EmuConfig.Cpu.FPUFPCR);
+
+	// The VU program cache toggle (EnableVUProgramCache) is picked up by the
+	// mVUreset that ClearCPUExecutionCaches triggers below — recording and the
+	// disk cache are re-synced there from the live config, so no explicit sync
+	// is needed here.
 	Internal::ClearCPUExecutionCaches();
 	memBindConditionalHandlers();
 
@@ -3689,6 +3692,19 @@ void VMManager::SetHardwareDependentDefaultSettings(SettingsInterface& si)
 	const int extra_threads = (core_count > 3) ? 3 : 2;
 	Console.WriteLn(fmt::format("  Setting Extra Software Rendering Threads to {}.", extra_threads));
 	si.SetIntValue("EmuCore/GS", "extrathreads", extra_threads);
+
+	// Enable thread pinning by default on heterogeneous CPUs (big.LITTLE).
+	// Without it, the kernel may migrate the EE / VU / GS threads to E-cores
+	// mid-frame — even one such migration is enough to miss the 60fps deadline
+	// on Apple Silicon under Asahi and Intel Alder Lake-class hybrid systems.
+	// SetEmuThreadAffinities already sorts processors by frequency, so pinning
+	// to indices 0..2 lands on the fastest cores.
+	if (cpuinfo_get_clusters_count() > 1 && core_count >= 3)
+	{
+		Console.WriteLn(fmt::format("  Heterogeneous CPU detected ({} clusters); enabling thread pinning.",
+			cpuinfo_get_clusters_count()));
+		si.SetBoolValue("EmuCore", "EnableThreadPinning", true);
+	}
 }
 
 #elif defined(__APPLE__)

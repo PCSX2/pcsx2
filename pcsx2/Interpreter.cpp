@@ -6,6 +6,7 @@
 #include "VMManager.h"
 #include "Elfheader.h"
 #include "Cache.h"
+#include "ee_divtrace.h"
 
 #include "DebugTools/Breakpoints.h"
 
@@ -25,6 +26,18 @@ static fastjmp_buf intJmpBuf;
 static u32 intLastBranchTo;
 
 void intEventTest();
+
+// Charge raw block cycles for a syscall handler the interpreter
+// SKIPPED (FlushCache/iFlushCache under g_skip_flushcache_syscall), mirroring the
+// JIT's recSYSCALL `s_nBlockCycles += 5650`. cpuBlockCycles is the same 3-bit
+// fixed-point accumulator as the JIT's s_nBlockCycles with identical scaling
+// (intUpdateCPUCycles == scaleblockcycles_calculation), so adding the same raw
+// constant keeps the cycle-derived hardware (EE timers) in lockstep across the
+// skip. Gated entirely by the caller; no effect in production.
+void intChargeSkippedHandlerCycles(u32 raw_block_cycles)
+{
+	cpuBlockCycles += raw_block_cycles;
+}
 
 void intUpdateCPUCycles()
 {
@@ -214,6 +227,17 @@ static void execI()
 	cpuBlockCycles += opcode.cycles * (2 - ((cpuRegs.CP0.n.Config >> 18) & 0x1));
 
 	opcode.interpret();
+
+#ifdef PCSX2_RECOMPILER_TESTS
+	// One sample per retired instruction (including branch delay slots, which also
+	// flow through execI). cpuRegs.pc now points at the next instruction to execute,
+	// so a sample with pc=X is "architectural state just before executing X" — the
+	// same point the JIT block hook captures for block entry X. Off unless
+	// ee_divtrace::g_enabled was set for this frame (single relaxed load otherwise).
+	// Test-hook only — release builds drop the per-instruction probe entirely.
+	if (ee_divtrace::g_enabled.load(std::memory_order_relaxed))
+		ee_divtrace::RecordSample(cpuRegs.pc);
+#endif
 }
 
 static __fi void _doBranch_shared(u32 tar)
@@ -691,6 +715,14 @@ static void intExecute()
 
 static void intStep()
 {
+	// Arm the cancel target: intCancelInstruction (TLB miss / vtlb_Miss path)
+	// longjmps to intJmpBuf, which only intExecute used to arm — a cancel
+	// during a single Step (debugger stepping, recompiler_tests interp
+	// oracle) jumped through an unarmed buffer straight to PC=0. A cancelled
+	// instruction has already vectored via cpuException, so returning here
+	// with pc on the exception vector is exactly one completed "step".
+	if (fastjmp_set(&intJmpBuf) != 0)
+		return;
 	execI();
 }
 

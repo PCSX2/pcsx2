@@ -43,17 +43,18 @@ public:
 		bool vk_ext_line_rasterization : 1;
 		bool vk_swapchain_maintenance1 : 1;
 		bool vk_swapchain_maintenance1_is_khr : 1;
+		bool vk_khr_push_descriptor : 1;
 		bool vk_khr_driver_properties : 1;
 		bool vk_khr_shader_non_semantic_info : 1;
 		bool vk_ext_attachment_feedback_loop_layout : 1;
 		bool vk_ext_fragment_shader_interlock : 1;
-		bool vk_khr_push_descriptor : 1;
 	};
 
 	// Global state accessors
 	__fi VkInstance GetVulkanInstance() const { return m_instance; }
 	__fi VkPhysicalDevice GetPhysicalDevice() const { return m_physical_device; }
 	__fi VkDevice GetDevice() const { return m_device; }
+	__fi VkQueue GetGraphicsQueue() const { return m_graphics_queue; }
 	__fi VmaAllocator GetAllocator() const { return m_allocator; }
 	__fi u32 GetGraphicsQueueFamilyIndex() const { return m_graphics_queue_family_index; }
 	__fi u32 GetPresentQueueFamilyIndex() const { return m_present_queue_family_index; }
@@ -127,6 +128,10 @@ public:
 	/// Allocates a descriptor set from the pool reserved for the current frame.
 	VkDescriptorSet AllocatePersistentDescriptorSet(VkDescriptorSetLayout set_layout);
 
+	/// Allocates a descriptor set from the current frame's per-frame pool (push descriptor fallback).
+	/// Returns VK_NULL_HANDLE on pool exhaustion after flushing the command buffer.
+	VkDescriptorSet AllocateDescriptorSetFromFramePool(VkDescriptorSetLayout set_layout);
+
 	/// Frees a descriptor set allocated from the global pool.
 	void FreePersistentDescriptorSet(VkDescriptorSet set);
 
@@ -136,7 +141,6 @@ public:
 	__fi bool UsePushDescriptors() const { return m_use_push_descriptors; }
 
 	/// Allocates a descriptor set from the current frame's reset-per-frame pool (non-push path only).
-	VkDescriptorSet AllocateFrameDescriptorSet(VkDescriptorSetLayout set_layout);
 
 	// Gets the fence that will be signaled when the currently executing command buffer is
 	// queued and executed. Do not wait for this fence before the buffer is executed.
@@ -347,6 +351,7 @@ private:
 	VkPhysicalDeviceProperties m_device_properties = {};
 	VkPhysicalDeviceDriverPropertiesKHR m_device_driver_properties = {};
 	OptionalExtensions m_optional_extensions = {};
+	bool m_colorclip_fallback_to_hdr = false;
 
 	u32 m_max_framebuffer_width = 0;
 	u32 m_max_framebuffer_height = 0;
@@ -642,6 +647,9 @@ public:
 
 	bool SetGPUPipelineStatisticsEnabled(bool enabled) override;
 	GPUPipelineStatistics GetAndResetAccumulatedGPUPipelineStatistics() override;
+
+	void EnableExtendedStats(bool enabled) override;
+	std::vector<std::string> GetExtendedStats() const override;
 
 	void PushDebugGroup(const char* fmt, ...) override;
 	void PopDebugGroup() override;

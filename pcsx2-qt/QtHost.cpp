@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "AutoUpdaterDialog.h"
+#ifdef ENABLE_QT_DEBUGGER
 #include "Debugger/DebuggerWindow.h"
+#endif
+#include "DebugTools/DebugInterface.h"
 #include "DisplayWidget.h"
 #include "GameList/GameListWidget.h"
 #include "LogWindow.h"
@@ -2547,10 +2550,16 @@ int main(int argc, char* argv[])
 	if (s_start_big_picture_mode || Host::GetBaseBoolSettingValue("UI", "StartBigPictureMode", false))
 		g_emu_thread->startFullscreenUI(s_start_fullscreen || Host::GetBaseBoolSettingValue("UI", "StartFullscreen", false));
 
-	if (s_boot_and_debug || DebuggerWindow::shouldShowOnStartup())
+	if (s_boot_and_debug
+#ifdef ENABLE_QT_DEBUGGER
+		|| DebuggerWindow::shouldShowOnStartup()
+#endif
+	)
 	{
 		DebugInterface::setPauseOnEntry(s_boot_and_debug);
+#ifdef ENABLE_QT_DEBUGGER
 		g_main_window->openDebugger();
+#endif
 	}
 
 	// Skip the update check if we're booting a game directly.

@@ -958,6 +958,41 @@ __fi u32 rcntRcount(int index)
 
 	ret = counters[index].count;
 
+	// Never expose a boundary crossing (wrap or target-reset) to the guest
+	// before the corresponding interrupt has actually been DELIVERED. On
+	// hardware the boundary and the interrupt are the same edge, and with
+	// interrupts enabled the handler preempts before any later read can
+	// execute — a wrapped count paired with the pre-overflow ISR state is an
+	// impossible observation. Under the JITs that window is real and spans
+	// two phases:
+	//   1. The count (derived from the live cpuRegs.cycle) has crossed the
+	//      boundary but the scheduled rcntUpdate event hasn't run yet.
+	//   2. rcntUpdate has processed the crossing (count wrapped, OVFF/EQUF
+	//      set, INTC raised) but the exception is still waiting for the next
+	//      event test to be dispatched, so the guest's ISR hasn't run.
+	// NFL 2K5's lock-free 64-bit clock (overflow-ISR-maintained wrap
+	// accumulator + T0_COUNT) reads time going backwards in that window and
+	// hangs in a runaway divide at the boot logo. Clamp the read to
+	// just-before-the-boundary until delivery. The deliverability guard makes
+	// this exact: with interrupts blocked (DI/EXL — including inside the
+	// handler itself) or the INTC source masked, the guest legitimately
+	// observes the wrapped count, as on hardware.
+	const u32 target = counters[index].target & 0xffff;
+	const bool intc_pending_delivery =
+		(psHu32(INTC_STAT) & psHu32(INTC_MASK) & (1u << counters[index].interrupt)) &&
+		(cpuRegs.CP0.n.Status.val & 0x400) &&
+		cpuRegs.CP0.n.Status.b.EIE && cpuRegs.CP0.n.Status.b.IE &&
+		!cpuRegs.CP0.n.Status.b.EXL && !cpuRegs.CP0.n.Status.b.ERL;
+	if (counters[index].mode.ZeroReturn)
+	{
+		if (target != 0 && (ret >= target || (counters[index].mode.TargetReached && intc_pending_delivery)))
+			ret = target - 1;
+	}
+	else if (ret > 0xffff || (counters[index].mode.OverflowReached && intc_pending_delivery))
+	{
+		ret = 0xffff;
+	}
+
 	// Spams the Console.
 	EECNT_LOG("EE Counter[%d] readCount32 = %x", index, ret);
 	return (u16)ret;

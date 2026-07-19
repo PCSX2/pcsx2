@@ -1,0 +1,144 @@
+name: Linux SDL Handheld Build Steps
+
+# yaps2 fork: builds the SDL3 frontend (yaps2-sdl) for bare-kmsdrm handhelds.
+# NOT for Rocknix / Batocera — those run Wayland compositors and use the Qt
+# build. This frontend acquires its surface via Vulkan VK_KHR_display
+# direct-display (see pcsx2-sdl/Main.cpp:BuildWindowInfo), taking over the
+# display with no compositor, so it links no Qt and needs no X11/Wayland WSI.
+# Packaged as a self-contained .tar.zst rather than an AppImage (no FUSE /
+# desktop stack needed). Native aarch64 build on a GitHub arm64 runner.
+
+on:
+  workflow_call:
+    inputs:
+      jobName:
+        required: true
+        type: string
+      artifactPrefixName:
+        required: true
+        type: string
+      os:
+        required: false
+        type: string
+        default: ubuntu-22.04-arm
+      platform:
+        required: false
+        type: string
+        default: arm64
+      fetchTags:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build_sdl:
+    name: ${{ inputs.jobName }}
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 90
+    env:
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_COMPRESS: true
+      CCACHE_COMPRESSLEVEL: 9
+      CCACHE_MAXSIZE: 100M
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Fetch Tags
+        if: ${{ inputs.fetchTags }}
+        run: git fetch --tags --no-recurse-submodules
+
+      - name: Prepare Artifact Metadata
+        id: artifact-metadata
+        shell: bash
+        env:
+          PREFIX: ${{ inputs.artifactPrefixName }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
+        run: ./.github/workflows/scripts/common/name-artifacts.sh
+
+      - name: Prepare ccache timestamp
+        id: ccache_cache_timestamp
+        run: echo "timestamp=$(date -u "+%Y-%m-%d-%H;%M;%S")" >> $GITHUB_OUTPUT
+
+      - name: ccache cache files
+        uses: actions/cache@v6
+        with:
+          path: .ccache
+          key: ${{ inputs.os }} ${{ inputs.platform }} sdl ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: ${{ inputs.os }} ${{ inputs.platform }} sdl ccache
+
+      - name: Install Packages
+        run: |
+          tools/retry.sh wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+          sudo tools/retry.sh apt-add-repository -n 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main'
+          sudo tools/retry.sh apt-get update
+          sudo tools/retry.sh apt-get -y install \
+            build-essential ccache clang-17 cmake curl git lld-17 llvm-17 ninja-build nasm patchelf pkg-config zstd zlib1g-dev \
+            libasound2-dev libaio-dev libcurl4-openssl-dev libdbus-1-dev libdrm-dev libegl-dev libevdev-dev libgbm-dev \
+            libgudev-1.0-dev libinput-dev libopengl-dev libpcap-dev libpipewire-0.3-dev libpulse-dev libssl-dev libudev-dev \
+            libwayland-dev libx11-dev
+
+      - name: Cache Dependencies
+        id: cache-deps
+        uses: actions/cache@v6
+        with:
+          path: ~/deps
+          key: ${{ inputs.os }} ${{ inputs.platform }} sdl-deps ${{ hashFiles('.github/workflows/scripts/linux/build-dependencies-runner.sh', '.github/workflows/scripts/common/*.patch') }}
+
+      - name: Build Dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: .github/workflows/scripts/linux/build-dependencies-runner.sh "$HOME/deps"
+
+      - name: Generate CMake
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+            -DCMAKE_PREFIX_PATH="$HOME/deps" \
+            -DCMAKE_C_COMPILER=clang-17 \
+            -DCMAKE_CXX_COMPILER=clang++-17 \
+            -DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" \
+            -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -DENABLE_QT_UI=OFF \
+            -DENABLE_SDL_FRONTEND=ON \
+            -DENABLE_GSRUNNER=ON \
+            -DENABLE_TESTS=OFF \
+            -DENABLE_RECOMPILER_TEST_HOOKS=OFF \
+            -DENABLE_SETCAP=OFF \
+            -DUSE_BACKTRACE=OFF \
+            -DX11_API=OFF \
+            -DWAYLAND_API=OFF \
+            -DDISABLE_ADVANCE_SIMD=TRUE \
+            -DOVERRIDE_HOST_PAGE_SIZE=4096 \
+            -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+
+      - name: Build yaps2-sdl
+        working-directory: build
+        run: |
+          ccache -p
+          ccache -z
+          ninja pcsx2-sdl pcsx2-gsrunner
+          ccache -s
+
+      - name: Package SDL Handheld Tarball
+        env:
+          NAME: ${{ steps.artifact-metadata.outputs.artifact-name }}
+        run: |
+          .github/workflows/scripts/linux/package-sdl.sh "$(realpath .)" "$(realpath ./build)" "$HOME/deps" "$NAME"
+          mkdir -p "$GITHUB_WORKSPACE"/ci-artifacts/
+          mv "${NAME}.tar.zst" "$GITHUB_WORKSPACE"/ci-artifacts/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.artifact-metadata.outputs.artifact-name }}
+          path: ci-artifacts

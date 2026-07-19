@@ -241,6 +241,19 @@ enum class FMVAspectRatioSwitchType : u8
 	MaxCount
 };
 
+// Display rotation applied at present time. Useful for handhelds whose panel
+// is mounted in one orientation but the user wants the game in another.
+// Rotation is applied to the *final* swapchain blit only; internal GS
+// coordinates and aspect-ratio math run in the unrotated frame.
+enum class DisplayRotation : u8
+{
+	Rot0,
+	Rot90,
+	Rot180,
+	Rot270,
+	MaxCount
+};
+
 enum class MemoryCardType
 {
 	Empty,
@@ -618,7 +631,8 @@ struct Pcsx2Config
 			RecBlocks_EE : 1, // Enables per-block profiling for the EE recompiler [unimplemented]
 			RecBlocks_IOP : 1, // Enables per-block profiling for the IOP recompiler [unimplemented]
 			RecBlocks_VU0 : 1, // Enables per-block profiling for the VU0 recompiler [unimplemented]
-			RecBlocks_VU1 : 1; // Enables per-block profiling for the VU1 recompiler [unimplemented]
+			RecBlocks_VU1 : 1, // Enables per-block profiling for the VU1 recompiler [unimplemented]
+			EnablePerfDump : 1; // Linux: write JIT blocks to perf jitdump (USE_PERF_JITDUMP build only).
 		BITFIELD_END
 
 		// Default is Disabled, with all recs enabled underneath.
@@ -654,7 +668,8 @@ struct Pcsx2Config
 		bool
 			fpuOverflow : 1,
 			fpuExtraOverflow : 1,
-			fpuFullMode : 1;
+			fpuFullMode : 1,
+			fpuGuardedAddSub : 1; // EE FPU add/sub guard-bit emulation (single-precision fast path). Off by default; opt-in per-game via GameDB (clampModes.guardedAddSub) or globally via INI. Independent of the clamp tiers — Full mode does its own guard on the DOUBLE path.
 
 		bool
 			EnableEECache : 1;
@@ -662,6 +677,12 @@ struct Pcsx2Config
 			EnableFastmem : 1;
 		bool
 			PauseOnTLBMiss : 1;
+
+		// Cache compiled VU micro-programs to disk and reload them across
+		// sessions to cut recompilation stutter on later runs. arm64-only;
+		// no-op on x86.
+		bool
+			EnableVUProgramCache : 1;
 		BITFIELD_END
 
 		RecompilerOptions();
@@ -708,6 +729,7 @@ struct Pcsx2Config
 	{
 		static const char* AspectRatioNames[];
 		static const char* FMVAspectRatioSwitchNames[];
+		static const char* DisplayRotationNames[];
 		static const char* BlendingLevelNames[];
 		static const char* CaptureContainers[];
 
@@ -773,6 +795,7 @@ struct Pcsx2Config
 					DisableFramebufferFetch : 1,
 					EnableAdrenoFramebufferFetch : 1,
 					ForceMaliFramebufferFetch : 1,
+					DisablePS2DepthQuantization : 1,
 					DisableVertexShaderExpand : 1,
 					SkipDuplicateFrames : 1,
 					OsdShowSpeed : 1,
@@ -858,6 +881,7 @@ struct Pcsx2Config
 
 		AspectRatioType AspectRatio = DEFAULT_ASPECT_RATIO;
 		FMVAspectRatioSwitchType FMVAspectRatioSwitch = DEFAULT_FMV_ASPECT_RATIO;
+		DisplayRotation Rotation = DisplayRotation::Rot0;
 		GSInterlaceMode InterlaceMode = DEFAULT_INTERLACE_MODE;
 		GSPostBilinearMode LinearPresent = DEFAULT_BILINEAR_FILTERING_MODE;
 
@@ -1548,6 +1572,7 @@ namespace EmuFolders
 #define CHECK_FPU_EXTRA_OVERFLOW (EmuConfig.Cpu.Recompiler.fpuExtraOverflow) // If enabled, Operands are checked for infinities before being used in the FPU recs
 #define CHECK_FPU_EXTRA_FLAGS 1 // Always enabled now // Sets D/I flags on FPU instructions
 #define CHECK_FPU_FULL (EmuConfig.Cpu.Recompiler.fpuFullMode)
+#define CHECK_FPU_GUARDED (EmuConfig.Cpu.Recompiler.fpuGuardedAddSub) // If enabled, add/sub emulate the PS2 FPU's missing mantissa guard bits (extra accuracy, slower). Off by default.
 
 //------------ EE Recompiler defines - Comment to disable a recompiler ---------------
 

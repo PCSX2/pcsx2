@@ -308,7 +308,7 @@ namespace
 				 MyFileInStream* fis = Z7_CONTAINER_FROM_VTBL(p, MyFileInStream, vt);
 				 const size_t size_to_read = *size;
 				 const auto bytes_read = std::fread(buf, 1, size_to_read, fis->fp);
-				 *size = (bytes_read >= 0) ? bytes_read : 0;
+				 *size = bytes_read;
 				 return (bytes_read == size_to_read) ? SZ_OK : SZ_ERROR_READ;
 			 },
 				.Seek = [](const ISeekInStream* p, Int64* pos, ESzSeek origin) -> SRes {

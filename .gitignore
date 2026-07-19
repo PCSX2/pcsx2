@@ -42,6 +42,21 @@ install_log.txt
 bad_shader_*
 crash-*.txt
 
+# Ad-hoc dev logs (produced by instrumentation / testing)
+crash.txt
+emulog.txt
+vu0_ops_*.log
+vu1_ops_*.log
+vu0_rec.log
+vu1_rec.log
+vu1_interp.log
+vu1_xgkick_*.log
+vkinfo_*.txt
+
+# Python bytecode
+__pycache__/
+*.pyc
+
 Debug
 Release
 Devel

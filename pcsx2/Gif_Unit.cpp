@@ -9,6 +9,14 @@
 
 Gif_Unit gifUnit;
 
+#ifdef PCSX2_RECOMPILER_TESTS
+namespace gif_test_hooks
+{
+	std::vector<u8>* g_path1_sink = nullptr;
+	bool g_force_path1_busy = false;
+}
+#endif
+
 // Returns true on stalling SIGNAL
 bool Gif_HandlerAD(u8* pMem)
 {

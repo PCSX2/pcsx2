@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?> 
+
+<!--
+Very good intro:
+@see https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects?view=vs-2017
+@see https://code.msdn.microsoft.com/windowsdesktop/Writing-type-visualizers-2eae77a2
+See also:
+@see http://blogs.msdn.com/b/vcblog/archive/2013/06/28/using-visual-studio-2013-to-write-maintainable-native-visualizations-natvis.aspx?PageIndex=2
+@see http://blogs.msdn.com/b/vcblog/archive/2015/09/28/debug-visualizers-in-visual-c-2015.aspx
+@see http://stackoverflow.com/questions/36883414/limit-display-of-char-in-natvis-file-to-specific-length
+-->
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <Type Name="c4::yml::NodeScalar">
+    <DisplayString Condition="(tag.len == 0) &amp;&amp; (anchor.len == 0)">{scalar.str,[scalar.len]}</DisplayString>
+    <DisplayString Condition="(tag.len >  0) &amp;&amp; (anchor.len == 0)">{scalar.str,[scalar.len]} [T]</DisplayString>
+    <DisplayString Condition="(tag.len == 0) &amp;&amp; (anchor.len >  0)">{scalar.str,[scalar.len]} [A]</DisplayString>
+    <DisplayString Condition="(tag.len >  0) &amp;&amp; (anchor.len >  0)">{scalar.str,[scalar.len]} [T][A]</DisplayString>
+    <Expand>
+      <Item Name="scalar">scalar</Item>
+      <Item Name="tag">tag</Item>
+      <Item Name="anchor">anchor</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="c4::yml::NodeType">
+    <DisplayString Condition="((type &amp; c4::yml::KEY  ) == c4::yml::KEY) &amp;&amp; ((type &amp; c4::yml::VAL) == c4::yml::VAL)">[KEYVAL]</DisplayString>
+    <DisplayString Condition="((type &amp; c4::yml::KEY  ) == c4::yml::KEY) &amp;&amp; ((type &amp; c4::yml::SEQ) == c4::yml::SEQ)">[KEYSEQ]</DisplayString>
+    <DisplayString Condition="((type &amp; c4::yml::KEY  ) == c4::yml::KEY) &amp;&amp; ((type &amp; c4::yml::MAP) == c4::yml::MAP)">[KEYMAP]</DisplayString>
+    <DisplayString Condition="((type &amp; c4::yml::DOC  ) == c4::yml::DOC) &amp;&amp; ((type &amp; c4::yml::VAL) == c4::yml::VAL)">[DOCVAL]</DisplayString>
+    <DisplayString Condition="((type &amp; c4::yml::DOC  ) == c4::yml::DOC) &amp;&amp; ((type &amp; c4::yml::SEQ) == c4::yml::SEQ)">[DOCSEQ]</DisplayString>
+    <DisplayString Condition="((type &amp; c4::yml::DOC  ) == c4::yml::DOC) &amp;&amp; ((type &amp; c4::yml::MAP) == c4::yml::MAP)">[DOCMAP]</DisplayString>
+    <DisplayString Condition="(type &amp; c4::yml::VAL   ) == c4::yml::VAL"   >[VAL]</DisplayString>
+    <DisplayString Condition="(type &amp; c4::yml::KEY   ) == c4::yml::KEY"   >[KEY]</DisplayString>
+    <DisplayString Condition="(type &amp; c4::yml::SEQ   ) == c4::yml::SEQ"   >[SEQ]</DisplayString>
+    <DisplayString Condition="(type &amp; c4::yml::MAP   ) == c4::yml::MAP"   >[MAP]</DisplayString>
+    <DisplayString Condition="(type &amp; c4::yml::DOC   ) == c4::yml::DOC"   >[DOC]</DisplayString>
+    <DisplayString Condition="(type &amp; c4::yml::STREAM) == c4::yml::STREAM">[STREAM]</DisplayString>
+    <DisplayString Condition="(type &amp; c4::yml::NOTYPE) == c4::yml::NOTYPE">[NOTYPE]</DisplayString>
+    <Expand>
+      <Synthetic Name="[type bits]">
+        <Expand>
+          <Item Name="[0]" Condition="(type &amp; c4::yml::KEY) != 0">c4::yml::KEY</Item>
+          <Item Name="[1]" Condition="(type &amp; c4::yml::VAL) != 0">c4::yml::VAL</Item>
+          <Item Name="[2]" Condition="(type &amp; c4::yml::MAP) != 0">c4::yml::MAP</Item>
+          <Item Name="[3]" Condition="(type &amp; c4::yml::SEQ) != 0">c4::yml::SEQ</Item>
+          <Item Name="[4]" Condition="(type &amp; c4::yml::DOC) != 0">c4::yml::DOC</Item>
+          <Item Name="[5]" Condition="(type &amp; c4::yml::STREAM) != 0">c4::yml::STREAM</Item>
+          <Item Name="[6]" Condition="(type &amp; c4::yml::KEYREF) != 0">c4::yml::KEYREF</Item>
+          <Item Name="[7]" Condition="(type &amp; c4::yml::VALREF) != 0">c4::yml::VALREF</Item>
+          <Item Name="[8]" Condition="(type &amp; c4::yml::KEYANCH) != 0">c4::yml::KEYANCH</Item>
+          <Item Name="[9]" Condition="(type &amp; c4::yml::VALANCH) != 0">c4::yml::VALANCH</Item>
+          <Item Name="[10]" Condition="(type &amp; c4::yml::KEYTAG) != 0">c4::yml::KEYTAG</Item>
+          <Item Name="[11]" Condition="(type &amp; c4::yml::VALTAG) != 0">c4::yml::VALTAG</Item>
+        </Expand>
+      </Synthetic>
+      <Synthetic Name="[style bits]">
+        <Expand>
+          <Item Name="[0]" Condition="(type &amp; c4::yml::_WIP_KEY_UNFILT) != 0">c4::yml::_WIP_KEY_UNFILT</Item>
+          <Item Name="[1]" Condition="(type &amp; c4::yml::_WIP_VAL_UNFILT) != 0">c4::yml::_WIP_VAL_UNFILT</Item>
+          <Item Name="[2]" Condition="(type &amp; c4::yml::_WIP_STYLE_FLOW_SL) != 0">c4::yml::_WIP_STYLE_FLOW</Item>
+          <Item Name="[3]" Condition="(type &amp; c4::yml::_WIP_STYLE_FLOW_ML) != 0">c4::yml::_WIP_STYLE_FLOW</Item>
+          <Item Name="[4]" Condition="(type &amp; c4::yml::_WIP_STYLE_BLOCK) != 0">c4::yml::_WIP_STYLE_BLOCK</Item>
+          <Item Name="[5]" Condition="(type &amp; c4::yml::_WIP_KEY_LITERAL) != 0">c4::yml::_WIP_KEY_LITERAL</Item>
+          <Item Name="[6]" Condition="(type &amp; c4::yml::_WIP_VAL_LITERAL) != 0">c4::yml::_WIP_VAL_LITERAL</Item>
+          <Item Name="[7]" Condition="(type &amp; c4::yml::_WIP_KEY_FOLDED) != 0">c4::yml::_WIP_KEY_FOLDED</Item>
+          <Item Name="[8]" Condition="(type &amp; c4::yml::_WIP_VAL_FOLDED) != 0">c4::yml::_WIP_VAL_FOLDED</Item>
+          <Item Name="[9]" Condition="(type &amp; c4::yml::_WIP_KEY_SQUO) != 0">c4::yml::_WIP_KEY_SQUO</Item>
+          <Item Name="[10]" Condition="(type &amp; c4::yml::_WIP_VAL_SQUO) != 0">c4::yml::_WIP_VAL_SQUO</Item>
+          <Item Name="[11]" Condition="(type &amp; c4::yml::_WIP_KEY_DQUO) != 0">c4::yml::_WIP_KEY_DQUO</Item>
+          <Item Name="[12]" Condition="(type &amp; c4::yml::_WIP_VAL_DQUO) != 0">c4::yml::_WIP_VAL_DQUO</Item>
+          <Item Name="[13]" Condition="(type &amp; c4::yml::_WIP_KEY_PLAIN) != 0">c4::yml::_WIP_KEY_PLAIN</Item>
+          <Item Name="[14]" Condition="(type &amp; c4::yml::_WIP_VAL_PLAIN) != 0">c4::yml::_WIP_VAL_PLAIN</Item>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="c4::yml::NodeData">
+    <DisplayString Condition="((m_type.type &amp; c4::yml::KEY  ) == c4::yml::KEY) &amp;&amp; ((m_type.type &amp; c4::yml::VAL) == c4::yml::VAL)">[KEYVAL] {m_key.scalar.str,[m_key.scalar.len]}: {m_val.scalar.str,[m_val.scalar.len]}</DisplayString>
+    <DisplayString Condition="((m_type.type &amp; c4::yml::KEY  ) == c4::yml::KEY) &amp;&amp; ((m_type.type &amp; c4::yml::SEQ) == c4::yml::SEQ)">[KEYSEQ] {m_key.scalar.str,[m_key.scalar.len]}</DisplayString>
+    <DisplayString Condition="((m_type.type &amp; c4::yml::KEY  ) == c4::yml::KEY) &amp;&amp; ((m_type.type &amp; c4::yml::MAP) == c4::yml::MAP)">[KEYMAP] {m_key.scalar.str,[m_key.scalar.len]}</DisplayString>
+    <DisplayString Condition="((m_type.type &amp; c4::yml::DOC  ) == c4::yml::DOC) &amp;&amp; ((m_type.type &amp; c4::yml::SEQ) == c4::yml::SEQ)">[DOCSEQ]</DisplayString>
+    <DisplayString Condition="((m_type.type &amp; c4::yml::DOC  ) == c4::yml::DOC) &amp;&amp; ((m_type.type &amp; c4::yml::MAP) == c4::yml::MAP)">[DOCMAP]</DisplayString>
+    <DisplayString Condition="(m_type.type &amp; c4::yml::VAL   ) == c4::yml::VAL"   >[VAL] {m_val.scalar.str,[m_val.scalar.len]}</DisplayString>
+    <DisplayString Condition="(m_type.type &amp; c4::yml::KEY   ) == c4::yml::KEY"   >[KEY] {m_key.scalar.str,[m_key.scalar.len]}</DisplayString>
+    <DisplayString Condition="(m_type.type &amp; c4::yml::SEQ   ) == c4::yml::SEQ"   >[SEQ]</DisplayString>
+    <DisplayString Condition="(m_type.type &amp; c4::yml::MAP   ) == c4::yml::MAP"   >[MAP]</DisplayString>
+    <DisplayString Condition="(m_type.type &amp; c4::yml::DOC   ) == c4::yml::DOC"   >[DOC]</DisplayString>
+    <DisplayString Condition="(m_type.type &amp; c4::yml::STREAM) == c4::yml::STREAM">[STREAM]</DisplayString>
+    <DisplayString Condition="(m_type.type &amp; c4::yml::NOTYPE) == c4::yml::NOTYPE">[NOTYPE]</DisplayString>
+    <Expand>
+      <Item Name="type">m_type</Item>
+      <Item Name="key" Condition="(m_type.type &amp; c4::yml::KEY) != 0">m_key</Item>
+      <Item Name="val" Condition="(m_type.type &amp; c4::yml::VAL) != 0">m_val</Item>
+      <Item Name="key quoted" Condition="((m_type.type &amp; c4::yml::KEY) != 0) &amp;&amp; ((m_type.type &amp; c4::yml::KEYQUO) != 0)">c4::yml::KEYQUO</Item>
+      <Item Name="val quoted" Condition="((m_type.type &amp; c4::yml::VAL) != 0) &amp;&amp; ((m_type.type &amp; c4::yml::VALQUO) != 0)">c4::yml::VALQUO</Item>
+      <Item Name="key ref" Condition="(m_type.type &amp; c4::yml::KEYREF) != 0">m_key.anchor</Item>
+      <Item Name="val ref" Condition="(m_type.type &amp; c4::yml::VALREF) != 0">m_val.anchor</Item>
+      <Item Name="key anchor" Condition="(m_type.type &amp; c4::yml::KEYANCH) != 0">m_key.anchor</Item>
+      <Item Name="val anchor" Condition="(m_type.type &amp; c4::yml::VALANCH) != 0">m_val.anchor</Item>
+      <Item Name="parent" Condition="m_parent == c4::yml::NONE">NONE</Item>
+      <Item Name="parent" Condition="m_parent != c4::yml::NONE">m_parent</Item>
+      <Item Name="first child"  Condition="m_first_child != c4::yml::NONE">m_first_child</Item>
+      <Item Name="last child"   Condition="m_last_child != c4::yml::NONE">m_last_child</Item>
+      <Item Name="prev sibling" Condition="m_prev_sibling != c4::yml::NONE">m_prev_sibling</Item>
+      <Item Name="next sibling" Condition="m_next_sibling != c4::yml::NONE">m_next_sibling</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="c4::yml::Tree">
+    <DisplayString>sz={m_size}, cap={m_cap}</DisplayString>
+    <Expand>
+      <Item Name="[size]">m_size</Item>
+      <Item Name="[capacity]">m_cap</Item>
+      <Synthetic Name="[buffer]">
+        <Expand>
+          <ArrayItems>
+            <Size>m_cap</Size>
+            <ValuePointer>m_buf</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+      <Item Name="free head">m_free_head</Item>
+      <Item Name="arena">m_arena</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="c4::yml::Tree::_lookup_path_token">
+    <DisplayString>{value} ({type})</DisplayString>
+    <Expand>
+      <Item Name="value">value</Item>
+      <Item Name="type">type</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="c4::yml::Tree::lookup_result">
+    <DisplayString>{path} -- target={target} closest={closest}</DisplayString>
+    <Expand>
+      <Item Name="target">target</Item>
+      <Item Name="closest">closest</Item>
+      <Item Name="path_pos">path_pos</Item>
+      <Item Name="path">path</Item>
+      <Synthetic Name="[resolved]">
+        <DisplayString>{path.str,[path_pos]}</DisplayString>
+      </Synthetic>
+      <Synthetic Name="[unresolved]">
+        <DisplayString>{path.str+path_pos,[path.len-path_pos]}</DisplayString>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="c4::yml::NodeRef">
+    <DisplayString Condition="(m_id == c4::yml::NONE)">(void)</DisplayString>
+    <DisplayString Condition="(m_seed.len != c4::yml::NONE) &amp;&amp; (m_seed.str == nullptr)">[INDEX SEED for] {*(m_tree->m_buf + m_id)}</DisplayString>
+    <DisplayString Condition="(m_seed.len != c4::yml::NONE) &amp;&amp; (m_seed.str != nullptr)">[NAMED SEED for] {*(m_tree->m_buf + m_id)}</DisplayString>
+    <DisplayString>{*(m_tree->m_buf + m_id)}</DisplayString>
+    <Expand>
+      <Item Name="id">m_id</Item>
+      <Item Name="element">*(m_tree->m_buf + m_id)</Item>
+      <Item Name="tree">m_tree</Item>
+      <Synthetic Name="[children]" Condition="(m_id != c4::yml::NONE) &amp;&amp; (((m_tree->m_buf + m_id)->m_type.type &amp; (c4::yml::MAP|c4::yml::SEQ)) != 0)">
+        <Expand>
+          <CustomListItems>
+            <Variable Name="tree" InitialValue="m_tree"/>
+            <Variable Name="buf" InitialValue="m_tree->m_buf"/>
+            <Variable Name="curr" InitialValue="(m_tree->m_buf + m_id)->m_first_child"/>
+            <Loop>
+              <Item>buf + curr</Item>
+              <Exec>curr = (buf + curr)->m_next_sibling</Exec>
+              <Break Condition="curr == c4::yml::NONE"/>
+            </Loop>
+          </CustomListItems>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="c4::yml::ConstNodeRef">
+    <DisplayString Condition="(m_id == c4::yml::NONE)">(void)</DisplayString>
+    <DisplayString>{*(m_tree->m_buf + m_id)}</DisplayString>
+    <Expand>
+      <Item Name="id">m_id</Item>
+      <Item Name="element">*(m_tree->m_buf + m_id)</Item>
+      <Item Name="tree">m_tree</Item>
+      <Synthetic Name="[children]" Condition="(m_id != c4::yml::NONE) &amp;&amp; (((m_tree->m_buf + m_id)->m_type.type &amp; (c4::yml::MAP|c4::yml::SEQ)) != 0)">
+        <Expand>
+          <CustomListItems>
+            <Variable Name="tree" InitialValue="m_tree"/>
+            <Variable Name="buf" InitialValue="m_tree->m_buf"/>
+            <Variable Name="curr" InitialValue="(m_tree->m_buf + m_id)->m_first_child"/>
+            <Loop>
+              <Item>buf + curr</Item>
+              <Exec>curr = (buf + curr)->m_next_sibling</Exec>
+              <Break Condition="curr == c4::yml::NONE"/>
+            </Loop>
+          </CustomListItems>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="c4::yml::detail::ReferenceResolver">
+    <DisplayString>#refs={refs.m_size} #nodes={t->m_size}</DisplayString>
+    <Expand>
+      <Synthetic Name="[ref_nodes]">
+        <Expand>
+          <CustomListItems>
+            <Variable Name="curr" InitialValue="0"/>
+            <Loop>
+              <Item>t->m_buf + (refs.m_stack + curr)->node</Item>
+              <Exec>curr = curr+1</Exec>
+              <Break Condition="curr >= refs.m_size"/>
+            </Loop>
+          </CustomListItems>
+        </Expand>
+      </Synthetic>
+      <Synthetic Name="[refs]">
+        <Expand>
+          <ArrayItems>
+            <Size>refs.m_size</Size>
+            <ValuePointer>refs.m_stack</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+      <Item Name="[tree]">t</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="c4::yml::detail::stack&lt;*,*&gt;">
+    <DisplayString>sz={m_size} cap={m_capacity}</DisplayString>
+    <Expand>
+      <Item Name="[size]">m_size</Item>
+      <Item Name="[capacity]">m_capacity</Item>
+      <Item Name="[is small]">m_buf == m_stack</Item>
+      <Synthetic Name="[items]">
+        <Expand>
+          <ArrayItems>
+            <Size>m_size</Size>
+            <ValuePointer>m_stack</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="c4::yml::detail::FilterProcessorSrcDst">
+    <DisplayString>src={src.str,[rpos]} dst={dst.str,[wpos]}</DisplayString>
+    <Expand>
+      <Item Name="[src]">src</Item>
+      <Item Name="[dst]">dst</Item>
+      <Item Name="[rpos]">rpos</Item>
+      <Item Name="[wpos]">wpos</Item>
+      <Synthetic Name="[read]">
+        <StringView>src.str,[rpos]</StringView>
+        <Expand>
+          <ArrayItems>
+            <Size>rpos</Size>
+            <ValuePointer>src.str</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="c4::yml::detail::FilterProcessorInplace">
+    <DisplayString>src={src.str,[rpos]} dst={src.str,[wpos]}</DisplayString>
+    <Expand>
+      <Item Name="[rpos]">rpos</Item>
+      <Item Name="[wpos]">wpos</Item>
+      <Item Name="[wcap]">wcap</Item>
+      <Synthetic Name="[buf]">
+        <StringView>src.str,[wcap]</StringView>
+        <Expand>
+          <ArrayItems>
+            <Size>wcap</Size>
+            <ValuePointer>src.str</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+      <Item Name="[src]">src</Item>
+      <Synthetic Name="[to be read]">
+        <StringView>src.str+rpos,[src.len-rpos]</StringView>
+        <Expand>
+          <ArrayItems><Size>src.len-rpos</Size><ValuePointer>src.str+rpos</ValuePointer></ArrayItems>
+        </Expand>
+      </Synthetic>
+      <Synthetic Name="[read]">
+        <StringView>src.str,[rpos]</StringView>
+        <Expand>
+          <ArrayItems><Size>rpos</Size><ValuePointer>src.str</ValuePointer></ArrayItems>
+        </Expand>
+      </Synthetic>
+      <Synthetic Name="[written]">
+        <StringView>src.str,[wpos]</StringView>
+        <Expand>
+          <ArrayItems><Size>wpos</Size><ValuePointer>src.str</ValuePointer></ArrayItems>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+
+</AutoVisualizer>

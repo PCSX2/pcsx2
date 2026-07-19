@@ -17,6 +17,7 @@
 #include "Input/InputManager.h"
 #include "MTGS.h"
 #include "pcsx2/GS.h"
+#include "GS/Renderers/Null/GSDeviceNone.h"
 #include "GS/Renderers/Null/GSRendererNull.h"
 #include "GS/Renderers/HW/GSRendererHW.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
@@ -84,6 +85,11 @@ static RenderAPI GetAPIForRenderer(GSRendererType renderer)
 {
 	switch (renderer)
 	{
+		// Null renderer pairs with the deviceless None host device — headless runs
+		// (eerunner A/B, CI) must not require a working Vulkan/GL context.
+		case GSRendererType::Null:
+			return RenderAPI::None;
+
 		case GSRendererType::OGL:
 			return RenderAPI::OpenGL;
 
@@ -115,6 +121,10 @@ static bool OpenGSDevice(GSRendererType renderer, bool clear_state_on_fail, bool
 	const RenderAPI new_api = GetAPIForRenderer(renderer);
 	switch (new_api)
 	{
+		case RenderAPI::None:
+			g_gs_device = std::make_unique<GSDeviceNone>();
+			break;
+
 #ifdef _WIN32
 		case RenderAPI::D3D11:
 			g_gs_device = std::make_unique<GSDevice11>();

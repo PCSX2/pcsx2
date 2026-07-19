@@ -6,6 +6,7 @@
 #include "GS/GSGL.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
+#include "GS/GSVertexKick.h"
 
 #include "common/Console.h"
 #include "common/BitUtils.h"
@@ -315,6 +316,10 @@ void GSState::ResetDrawBufferIdx()
 			if (m_vertex_buffers[entry_ptr].tail != 0)
 			{
 				memcpy(m_vertex_buffers[entry_ptr].xy, m_vertex_buffers[i].xy, sizeof(m_vertex_buffers[i].xy));
+				memcpy(m_vertex_buffers[entry_ptr].kick_ring, m_vertex_buffers[i].kick_ring, sizeof(m_vertex_buffers[i].kick_ring));
+				m_vertex_buffers[entry_ptr].fmm_acc = m_vertex_buffers[i].fmm_acc;
+				m_vertex_buffers[entry_ptr].fmm_watermark = m_vertex_buffers[i].fmm_watermark;
+				m_vertex_buffers[entry_ptr].fmm_valid = m_vertex_buffers[i].fmm_valid;
 				m_vertex_buffers[entry_ptr].xyhead = m_vertex_buffers[i].xyhead;
 				m_vertex_buffers[entry_ptr].xy_tail = m_vertex_buffers[i].xy_tail;
 			}
@@ -338,6 +343,8 @@ void GSState::ResetDrawBufferIdx()
 			memset(&m_env_buffers[i], 0, sizeof(GSDrawBufferEnv));
 			m_vertex_buffers[i].head = m_vertex_buffers[i].tail = m_vertex_buffers[i].next = 0;
 			m_vertex_buffers[i].xy_tail = 0;
+			m_vertex_buffers[i].fmm_watermark = 0;
+			m_vertex_buffers[i].fmm_valid = false;
 		}
 	}
 		
@@ -486,7 +493,9 @@ void GSState::PushBuffer()
 		{
 			for (u32 i = 0; i < copy_amt; i++)
 			{
-				m_vertex->xy[i & 3] = m_vertex_buffers[m_current_buffer_idx].xy[((m_vertex_buffers[m_current_buffer_idx].xy_tail - copy_amt) + i) & 3];
+				const u32 src = ((m_vertex_buffers[m_current_buffer_idx].xy_tail - copy_amt) + i) & 3;
+				m_vertex->xy[i & 3] = m_vertex_buffers[m_current_buffer_idx].xy[src];
+				m_vertex->kick_ring[i & 3] = m_vertex_buffers[m_current_buffer_idx].kick_ring[src];
 				m_vertex->xy_tail++;
 
 				if (i == 0)
@@ -495,6 +504,9 @@ void GSState::PushBuffer()
 		}
 		else
 			m_vertex->xy_tail = 0;
+
+		m_vertex->fmm_watermark = 0;
+		m_vertex->fmm_valid = false;
 
 		m_current_buffer_idx = m_used_buffers_idx;
 		temp_draw_rect = GSVector4i::zero();
@@ -648,12 +660,18 @@ bool GSState::CanBufferNewDraw()
 				{
 					for (u32 i = 0; i < copy_amt; i++)
 					{
-						m_vertex->xy[m_vertex->xy_tail & 3] = m_vertex_buffers[m_current_buffer_idx].xy[((m_vertex_buffers[m_current_buffer_idx].xy_tail - copy_amt) + i) & 3];
+						const u32 src = ((m_vertex_buffers[m_current_buffer_idx].xy_tail - copy_amt) + i) & 3;
+						m_vertex->xy[m_vertex->xy_tail & 3] = m_vertex_buffers[m_current_buffer_idx].xy[src];
+						m_vertex->kick_ring[m_vertex->xy_tail & 3] = m_vertex_buffers[m_current_buffer_idx].kick_ring[src];
 						m_vertex->xy_tail++;
 
 						if (i == 0)
 							m_vertex->xyhead = m_vertex_buffers[m_current_buffer_idx].xyhead;
 					}
+
+					// The copied entries' outcodes were computed under the source
+					// buffer's env; this buffer's env was just restored above.
+					RefreshKickMirror();
 				}
 				else
 					m_vertex->xy_tail = 0;
@@ -1479,26 +1497,49 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 
 	const GIFPackedReg* RESTRICT r_end = r + size;
 
-	while (r < r_end)
+	if constexpr (auto_flush)
 	{
-		const GSVector4i st = GSVector4i::loadl(&r[0].U64[0]);
-		GSVector4i q = GSVector4i::loadl(&r[0].U64[1]);
-		const GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & GSVector4i::x000000ff()).ps32().pu16();
+		// HandleAutoFlush reads the incoming vertex out of m_v, so the autoflush
+		// instantiations keep the staged-m_v path.
+		while (r < r_end)
+		{
+			GSVector4i m0, m1;
+			GSVertexKernels::ParsePackedSTQRGBAXYZF2_Fast(r, m_v.UV, m0, m1);
 
-		q = q.blend8(GSVector4i::cast(GSVector4(FLT_MIN)), q == GSVector4i::zero()); // see GIFPackedRegHandlerSTQ
+			m_v.m[0] = m0;
+			m_v.m[1] = m1;
 
-		m_v.m[0] = st.upl64(rgba.upl32(q)); // TODO: only store the last one
+			VertexKick<prim, auto_flush>(r[2].XYZF2.Skip());
 
-		GSVector4i xy = GSVector4i::loadl(&r[2].U64[0]);
-		GSVector4i zf = GSVector4i::loadl(&r[2].U64[1]);
-		xy = xy.upl16(xy.srl<4>()).upl32(GSVector4i::load((int)m_v.UV));
-		zf = zf.srl32<4>() & GSVector4i::x00ffffff().upl32(GSVector4i::x000000ff());
+			r += 3;
+		}
+	}
+	else
+	{
+		// Direct path: parsed vertices go straight to the buffer with the values
+		// still in registers; m_v is written once at batch exit so piecemeal
+		// handlers and the next tag see identical state. The buffer cursor lives
+		// in registers across the batch the same way.
+		const u32 uv = m_v.UV; // loop-invariant: packed XYZF2 never writes UV
+		const GSLimit24BitDepth depth_clamp = GetDepthClampMode(); // batch-invariant
 
-		m_v.m[1] = xy.upl32(zf); // TODO: only store the last one
+		VertexKickCursor c;
+		c.Load(*this);
 
-		VertexKick<prim, auto_flush>(r[2].XYZF2.Skip());
+		GSVector4i m0, m1;
+		while (r < r_end)
+		{
+			GSVertexKernels::ParsePackedSTQRGBAXYZF2_Fast(r, uv, m0, m1);
+			ApplyDepthClampMode(depth_clamp, m1.U32[1]);
 
-		r += 3;
+			VertexKickDirect<prim, auto_flush>(r[2].XYZF2.Skip(), r[2].XYZF2.X, r[2].XYZF2.Y, m0, m1, c);
+
+			r += 3;
+		}
+
+		c.Store();
+		m_v.m[0] = m0;
+		m_v.m[1] = m1;
 	}
 
 	m_q = r[-3].STQ.Q; // remember the last one, STQ outputs this to the temp Q each time
@@ -1513,25 +1554,50 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32
 
 	const GIFPackedReg* RESTRICT r_end = r + size;
 
-	while (r < r_end)
+	if constexpr (auto_flush)
 	{
-		const GSVector4i st = GSVector4i::loadl(&r[0].U64[0]);
-		GSVector4i q = GSVector4i::loadl(&r[0].U64[1]);
-		const GSVector4i rgba = (GSVector4i::load<false>(&r[1]) & GSVector4i::x000000ff()).ps32().pu16();
+		// See GIFPackedRegHandlerSTQRGBAXYZF2: autoflush keeps the staged-m_v path.
+		while (r < r_end)
+		{
+			u64 uvfog;
+			std::memcpy(&uvfog, &m_v.UV, sizeof(uvfog));
 
-		q = q.blend8(GSVector4i::cast(GSVector4(FLT_MIN)), q == GSVector4i::zero()); // see GIFPackedRegHandlerSTQ
+			GSVector4i m0, m1;
+			GSVertexKernels::ParsePackedSTQRGBAXYZ2_Fast(r, uvfog, m0, m1);
 
-		m_v.m[0] = st.upl64(rgba.upl32(q)); // TODO: only store the last one
+			m_v.m[0] = m0;
+			m_v.m[1] = m1;
 
-		const GSVector4i xy = GSVector4i::loadl(&r[2].U64[0]);
-		const GSVector4i z = GSVector4i::loadl(&r[2].U64[1]);
-		const GSVector4i xyz = xy.upl16(xy.srl<4>()).upl32(z);
+			VertexKick<prim, auto_flush>(r[2].XYZ2.Skip());
 
-		m_v.m[1] = xyz.upl64(GSVector4i::loadl(&m_v.UV)); // TODO: only store the last one
+			r += 3;
+		}
+	}
+	else
+	{
+		// Loop-invariant: packed XYZ2 writes neither UV nor FOG, and the parse
+		// copies both through unchanged.
+		u64 uvfog;
+		std::memcpy(&uvfog, &m_v.UV, sizeof(uvfog));
+		const GSLimit24BitDepth depth_clamp = GetDepthClampMode(); // batch-invariant
 
-		VertexKick<prim, auto_flush>(r[2].XYZ2.Skip());
+		VertexKickCursor c;
+		c.Load(*this);
 
-		r += 3;
+		GSVector4i m0, m1;
+		while (r < r_end)
+		{
+			GSVertexKernels::ParsePackedSTQRGBAXYZ2_Fast(r, uvfog, m0, m1);
+			ApplyDepthClampMode(depth_clamp, m1.U32[1]);
+
+			VertexKickDirect<prim, auto_flush>(r[2].XYZ2.Skip(), r[2].XYZ2.X, r[2].XYZ2.Y, m0, m1, c);
+
+			r += 3;
+		}
+
+		c.Store();
+		m_v.m[0] = m0;
+		m_v.m[1] = m1;
 	}
 
 	m_q = r[-3].STQ.Q; // remember the last one, STQ outputs this to the temp Q each time
@@ -1569,6 +1635,12 @@ __forceinline void GSState::ApplyPRIM(u32 prim)
 		m_vertex->next = 0;
 
 	m_vertex->head = m_vertex->tail = m_vertex->next; // remove unused vertices from the end of the vertex buffer
+
+#ifdef ARCH_ARM64
+	// Tail rewind: subsequent kicks rewrite positions from next upward, which must
+	// re-accumulate into the fused-FMM state if referenced by an emitted prim.
+	m_vertex->fmm_watermark = std::min(m_vertex->fmm_watermark, m_vertex->next);
+#endif
 }
 
 void GSState::GIFRegHandlerPRIM(const GIFReg* RESTRICT r)
@@ -2666,6 +2738,9 @@ void GSState::FlushPrim()
 					GSVector4i v = vert_ptr[1];
 					v = v.xxxx().u16to32().sub32(m_xyof);
 					m_vertex->xy[i & 3] = v;
+					const int wx = static_cast<int>(m_vertex->buff[i].XYZ.X) - m_xyof.I32[0];
+					const int wy = static_cast<int>(m_vertex->buff[i].XYZ.Y) - m_xyof.I32[1];
+					m_vertex->kick_ring[i & 3] = GSVertexKernels::MakeCullMirrorEntry<true>(wx, wy, m_cull_bounds_band);
 					m_vertex->xy_tail = unused;
 				}
 			}
@@ -3788,6 +3863,40 @@ void GSState::UpdateScissor()
 {
 	m_xyof = m_context->scissor.xyof;
 	m_scissor_invalid = m_context->scissor.in.rempty();
+
+	// UpdateScissor runs on every context switch, which is far more frequent than
+	// actual cull-rect changes — only re-derive the bounds and mirror outcodes
+	// when the cull rect really moved (RefreshKickMirror showed up at ~2% of the
+	// GS thread unconditionally).
+	if (!m_context->scissor.cull.eq(m_cull_bounds_src))
+	{
+		m_cull_bounds_src = m_context->scissor.cull;
+		m_cull_bounds_band = GSVertexKernels::MakeBandedCullBounds(m_context->scissor.cull);
+		m_cull_bounds_raw = GSVertexKernels::MakeRawCullBounds(m_context->scissor.cull);
+		RefreshKickMirror();
+	}
+}
+
+// Re-derive the mirror ring's outcodes from the stored packed positions after a
+// bounds change (scissor write, context switch, draw-buffer env restore). Entries
+// that will actually be read all belong to the current prim's class — ApplyPRIM
+// resets the strip window on a prim change, so a decision only ever sees entries
+// kicked under its own prim.
+void GSState::RefreshKickMirror()
+{
+	if (!m_vertex || !PRIM)
+		return;
+
+	const int primclass = GSUtil::GetPrimClass(PRIM->PRIM);
+	const bool banded = (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS);
+
+	for (GSVertexKernels::CullMirrorEntry& e : m_vertex->kick_ring)
+	{
+		const int wx = static_cast<s32>(static_cast<u32>(e.xyp));
+		const int wy = static_cast<s32>(static_cast<u32>(e.xyp >> 32));
+		e = banded ? GSVertexKernels::MakeCullMirrorEntry<true>(wx, wy, m_cull_bounds_band) :
+		             GSVertexKernels::MakeCullMirrorEntry<false>(wx, wy, m_cull_bounds_raw);
+	}
 }
 
 void GSState::UpdateVertexKick()
@@ -5740,12 +5849,20 @@ __forceinline void GSState::HandleAutoFlush()
 	}
 }
 
-bool GSState::CheckOverlapVerts(u32 n)
+// Called once per vertex kick, so the common case (no recent buffer switch, or draw
+// buffering off) must stay inline — an out-of-line call here costs caller-saved spills
+// in every GIF vertex handler loop on top of the call itself.
+__fi bool GSState::CheckOverlapVerts(u32 n)
 {
-	if (!GSConfig.UserHacks_DrawBuffering)
+	if (!m_recent_buffer_switch || !GSConfig.UserHacks_DrawBuffering)
 		return false;
 
-	if (m_recent_buffer_switch && ((m_vertex->tail + 1) - m_vertex->head) == n)
+	return CheckOverlapVertsSlow(n);
+}
+
+__noinline bool GSState::CheckOverlapVertsSlow(u32 n)
+{
+	if (((m_vertex->tail + 1) - m_vertex->head) == n)
 	{
 		m_recent_buffer_switch = false;
 
@@ -5856,70 +5973,137 @@ bool GSState::CheckOverlapVerts(u32 n)
 	return false;
 }
 
+// The depth-clamp hack rewrites the incoming vertex's Z in place per kick. The whole
+// decision — config, renderer kind, ZBUF bpp — is invariant across a fused handler
+// batch (nothing inside a vertex batch rewrites GSConfig, switches renderers, or
+// changes m_context/ZBUF), so the fused handlers evaluate GetDepthClampMode() once
+// and apply the resolved mode per vertex. Config test first: with the hack disabled
+// (the default) this skips the GSIsHardwareRenderer() call and psm-table walk.
+__forceinline GSLimit24BitDepth GSState::GetDepthClampMode() const
+{
+	if (GSConfig.UserHacks_Limit24BitDepth != GSLimit24BitDepth::Disabled &&
+		GSIsHardwareRenderer() && GSLocalMemory::m_psm[m_context->ZBUF.PSM].bpp == 32)
+	{
+		return GSConfig.UserHacks_Limit24BitDepth;
+	}
+
+	return GSLimit24BitDepth::Disabled;
+}
+
+__forceinline void GSState::ApplyDepthClamp(u32& z)
+{
+	ApplyDepthClampMode(GetDepthClampMode(), z);
+}
+
+// Staged-m_v entry point: piecemeal reg handlers build the vertex in m_v and kick
+// from there. The fused packed handlers use VertexKickDirect with the parsed vertex
+// still in registers instead. The depth clamp is applied here (persisting into m_v
+// exactly as before); hoisting it ahead of the overlap/autoflush checks inside
+// VertexKickDirect is behavior-neutral — neither reads XYZ.Z.
 template <u32 prim, bool auto_flush>
 __forceinline void GSState::VertexKick(u32 skip)
+{
+	if constexpr (prim != GS_INVALID)
+		ApplyDepthClamp(m_v.XYZ.Z);
+
+	const GSVector4i v0(m_v.m[0]);
+	const GSVector4i v1(m_v.m[1]);
+
+	VertexKickCursor c;
+	c.Load(*this);
+	VertexKickDirect<prim, auto_flush>(skip, m_v.XYZ.X, m_v.XYZ.Y, v0, v1, c);
+	c.Store();
+}
+
+// Kick one vertex whose value is still in registers. Callers apply ApplyDepthClamp
+// to v1's Z lane themselves, own the cursor (loaded from a state where m_vertex /
+// m_index are current), and store it back after the last kick. xraw/yraw are the
+// vertex's raw 12.4 XY (zero-extended u16s) for the scalar cull mirror — they must
+// match v1's low lane. auto_flush instantiations must come through the staged
+// VertexKick above — HandleAutoFlush reads the incoming vertex out of m_v.
+template <u32 prim, bool auto_flush>
+__forceinline void GSState::VertexKickDirect(u32 skip, u32 xraw, u32 yraw, const GSVector4i& v0, const GSVector4i& v1, VertexKickCursor& c)
 {
 	constexpr u32 n = NumIndicesForPrim(prim);
 	constexpr int primclass = GSUtil::GetPrimClass(prim);
 	static_assert(n > 0);
 
-	pxAssert(m_vertex->tail < m_vertex->maxcount + 3);
+	pxAssert(c.tail < c.maxcount + 3);
 
 	if constexpr (prim == GS_INVALID)
 	{
-		m_vertex->tail = m_vertex->head;
+		c.tail = c.head;
+#ifdef ARCH_ARM64
+		// Tail rewind: positions at/above the new tail may be rewritten and must
+		// re-accumulate into the fused-FMM state if referenced again.
+		c.vb->fmm_watermark = std::min(c.vb->fmm_watermark, c.head);
+#endif
 		return;
 	}
 
-	if (CheckOverlapVerts(n))
-		Flush(CONTEXTCHANGE);
-	
-	if (auto_flush && skip == 0 && m_index->tail > 0 && ((m_vertex->tail + 1) - m_vertex->head) >= n)
+	// Overlap check (draw buffering): the slow path reads the incoming vertex's XY
+	// out of m_v, which the fused direct path no longer maintains per vertex — sync
+	// it on this rare path only. It also reads the buffer state, and Flush can
+	// switch draw buffers, so the cursor round-trips through memory here.
+	if (m_recent_buffer_switch && GSConfig.UserHacks_DrawBuffering)
 	{
+		m_v.m[0] = v0;
+		m_v.m[1] = v1;
+
+		c.Store();
+		if (CheckOverlapVertsSlow(n))
+			Flush(CONTEXTCHANGE);
+		c.Load(*this);
+	}
+
+	if (auto_flush && skip == 0 && c.itail > 0 && ((c.tail + 1) - c.head) >= n)
+	{
+		c.Store();
 		HandleAutoFlush<prim>();
+		c.Load(*this);
 	}
 
-	u32 head = m_vertex->head;
-	u32 tail = m_vertex->tail;
-	u32 next = m_vertex->next;
-	u32 xy_tail = m_vertex->xy_tail;
+	u32 head = c.head;
+	u32 tail = c.tail;
+	u32 next = c.next;
+	u32 xy_tail = c.xy_tail;
 
-	if (GSIsHardwareRenderer() && GSLocalMemory::m_psm[m_context->ZBUF.PSM].bpp == 32)
-	{
-		if (GSConfig.UserHacks_Limit24BitDepth == GSLimit24BitDepth::PrioritizeUpper)
-			m_v.XYZ.Z = ((m_v.XYZ.Z >> 8) & ~0xFF) | (m_v.XYZ.Z & 0xFF);
-		else if (GSConfig.UserHacks_Limit24BitDepth == GSLimit24BitDepth::PrioritizeLower)
-			m_v.XYZ.Z &= 0x00FFFFFF;
-	}
+	GSVector4i* RESTRICT tailptr = (GSVector4i*)&c.vbuff[tail];
 
-	// callers should write XYZUVF to m_v.m[1] in one piece to have this load store-forwarded, either by the cpu or the compiler when this function is inlined
-
-	const GSVector4i new_v0(m_v.m[0]);
-	const GSVector4i new_v1(m_v.m[1]);
-
-	GSVector4i* RESTRICT tailptr = (GSVector4i*)&m_vertex->buff[tail];
-
-	tailptr[0] = new_v0;
-	tailptr[1] = new_v1;
+	tailptr[0] = v0;
+	tailptr[1] = v1;
 
 	// We maintain the X/Y coordinates for the last 4 vertices, as well as the head for triangle fans, so we can compute
 	// the min/max, and cull degenerate triangles, which saves draws in some cases. Why 4? Mod 4 is cheaper than Mod 3.
-	const GSVector4i xy = new_v1.xxxx().u16to32().sub32(m_xyof);
-	m_vertex->xy[xy_tail & 3] = xy;
+	const GSVector4i xy = v1.xxxx().u16to32().sub32(m_xyof);
+	c.vb->xy[xy_tail & 3] = xy;
+
+	// Scalar cull mirror: same window position plus outcode/band metadata,
+	// computed on the scalar side (dual-issues against the NEON parse). The full
+	// 32-bit offset lane is subtracted so the values match xy exactly.
+	{
+		constexpr bool banded = (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS);
+		const int wx = static_cast<int>(xraw) - m_xyof.I32[0];
+		const int wy = static_cast<int>(yraw) - m_xyof.I32[1];
+		c.vb->kick_ring[xy_tail & 3] =
+			GSVertexKernels::MakeCullMirrorEntry<banded>(wx, wy, banded ? m_cull_bounds_band : m_cull_bounds_raw);
+	}
 
 	// Backup head for triangle fans so we can read it later, otherwise it'll get lost after the 4th vertex.
 	if (prim == GS_TRIANGLEFAN && tail == head)
-		m_vertex->xyhead = xy;
+		c.vb->xyhead = xy;
 
-	m_vertex->tail = ++tail;
-	m_vertex->xy_tail = ++xy_tail;
+	c.tail = ++tail;
+	c.xy_tail = ++xy_tail;
 
 	const u32 m = tail - head;
 
 	if (m < n)
 		return;
 
-	if (m_index->tail == 0/* && ((m_backed_up_ctx != m_env.PRIM.CTXT) || m_dirty_gs_regs)*/)
+	// Neither the memcpys nor SetDrawBufferEnv touch the vertex/index buffer state,
+	// so the cursor rides through this block untouched.
+	if (c.itail == 0/* && ((m_backed_up_ctx != m_env.PRIM.CTXT) || m_dirty_gs_regs)*/)
 	{
 		const int ctx = m_env.PRIM.CTXT;
 		std::memcpy(&m_prev_env, &m_env, 88);
@@ -5937,63 +6121,52 @@ __forceinline void GSState::VertexKick(u32 skip)
 	GSVector4i bbox;
 	if (skip == 0)
 	{
-		const GSVector4i v0 = m_vertex->xy[(xy_tail - 1) & 3];
-		const GSVector4i v1 = m_vertex->xy[(xy_tail - 2) & 3];
-		const GSVector4i v2 = (prim == GS_TRIANGLEFAN) ? m_vertex->xyhead : m_vertex->xy[(xy_tail - 3) & 3];
+		// Note: redundant check for the AA1 flag to avoid calling a function if not needed.
+		constexpr bool rounded_class = (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS);
+		const bool aa1_expand = rounded_class && PRIM->AA1 && IsCoverageAlphaSupported();
 
-		if constexpr (n == 1)
+		// Scalar-outcode decision (see GSVertexKick.h) for the hot shapes:
+		// point/line always, triangle strips/lists and sprites at native res
+		// without AA1 expansion. Rejected prims never touch NEON; accepted prims
+		// compute the bbox exactly as the legacy kernel does. Fans keep the
+		// legacy path (the head vertex sits outside the ring window).
+		constexpr bool fast_class = (prim != GS_TRIANGLEFAN);
+		const bool fast_cull = fast_class && (!rounded_class || (m_nativeres && !aa1_expand));
+		if (fast_cull)
 		{
-			bbox = v0;
-		}
-		else if constexpr (n == 2)
-		{
-			bbox = v0.runion(v1);
-		}
-		else if constexpr (n == 3)
-		{
-			bbox = v0.runion(v1).runion(v2);
-		}
+			const GSVertexKernels::CullMirrorEntry& e0 = c.vb->kick_ring[(xy_tail - 1) & 3];
+			const GSVertexKernels::CullMirrorEntry& e1 = c.vb->kick_ring[(xy_tail - 2) & 3];
+			const GSVertexKernels::CullMirrorEntry& e2 = c.vb->kick_ring[(xy_tail - 3) & 3];
 
-		if constexpr (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS)
-		{
-			if (m_nativeres)
+			const u32 fast_skip = GSVertexKernels::CullTestScalar<n, primclass>(e0, e1, e2);
+
+#ifdef GS_VERTEX_CROSSCHECK
 			{
-				// For triangles and sprites at native res take the interior pixel centers.
-				const GSVector4i interior = (bbox + GSVector4i(0xF, 0xF, -1, -1)) & GSVector4i(~0xF);
-				bbox = interior + GSVector4i(0, 0, 1, 1); // +1 to bottom/right so empty test works correctly.
+				GSVector4i xbbox;
+				const u32 ref = GSVertexKernels::CullTest<n, primclass>(c.vb->xy[(xy_tail - 1) & 3],
+					c.vb->xy[(xy_tail - 2) & 3], c.vb->xy[(xy_tail - 3) & 3], m_context->scissor.cull,
+					m_nativeres, aa1_expand, xbbox);
+				pxAssertRel((ref != 0) == (fast_skip != 0), "GS_VERTEX_CROSSCHECK: scalar cull divergence");
 			}
-			else
+#endif
+
+			skip |= fast_skip;
+			if (fast_skip == 0)
 			{
-				// For upscaling, remove bottom/right subtexels.
-				bbox -= ((bbox & GSVector4i(0xF)) == GSVector4i(0)) & GSVector4i(0, 0, 1, 1);
-			}
-
-			// For AA1 triangles and lines, expand the bounds by 1 pixel on all sides.
-			// Note: redundant check for the AA1 flag to avoid calling a function if not needed.
-			if (PRIM->AA1 && IsCoverageAlphaSupported())
-			{
-				bbox += GSVector4i(-0x10, -0x10, 0x10, 0x10);
+				const GSVector4i v0 = c.vb->xy[(xy_tail - 1) & 3];
+				const GSVector4i v1 = c.vb->xy[(xy_tail - 2) & 3];
+				const GSVector4i v2 = c.vb->xy[(xy_tail - 3) & 3];
+				bbox = GSVertexKernels::ComputeCullBBox<n, primclass>(v0, v1, v2, m_nativeres, aa1_expand);
 			}
 		}
-
-		// Do scissor test.
-		const GSVector4i bbox_ex = bbox + GSVector4i(0, 0, 1, 1); // Exclusive coords for the scissor test.
-		const GSVector4i& scissor = m_context->scissor.cull;
-		u32 test = static_cast<u32>(!bbox_ex.rintersects(scissor));
-
-		// Test for empty bbox.
-		if constexpr (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS)
+		else
 		{
-			test |= static_cast<u32>(bbox.rempty());
-		}
+			const GSVector4i v0 = c.vb->xy[(xy_tail - 1) & 3];
+			const GSVector4i v1 = c.vb->xy[(xy_tail - 2) & 3];
+			const GSVector4i v2 = (prim == GS_TRIANGLEFAN) ? c.vb->xyhead : c.vb->xy[(xy_tail - 3) & 3];
 
-		// Test for degenerate triangle.
-		if constexpr (primclass == GS_TRIANGLE_CLASS)
-		{
-			test |= static_cast<u32>(v0.eq(v1)) | static_cast<u32>(v1.eq(v2)) | static_cast<u32>(v0.eq(v2));
+			skip |= GSVertexKernels::CullTest<n, primclass>(v0, v1, v2, m_context->scissor.cull, m_nativeres, aa1_expand, bbox);
 		}
-
-		skip |= test;
 	}
 
 	if (skip != 0)
@@ -6004,15 +6177,21 @@ __forceinline void GSState::VertexKick(u32 skip)
 			case GS_LINELIST:
 			case GS_TRIANGLELIST:
 			case GS_SPRITE:
-				m_vertex->tail = head; // no need to check or grow the buffer length
+				c.tail = head; // no need to check or grow the buffer length
 				break;
 			case GS_LINESTRIP:
 			case GS_TRIANGLESTRIP:
-				m_vertex->head = head + 1;
+				c.head = head + 1;
 				[[fallthrough]];
 			case GS_TRIANGLEFAN:
-				if (tail >= m_vertex->maxcount)
+				if (tail >= c.maxcount)
+				{
+					// GrowVertexBuffer reads tail/itail for the preserved-copy
+					// sizes and reallocates buff — full cursor round-trip.
+					c.Store();
 					GrowVertexBuffer(); // in case too many vertices were skipped
+					c.Load(*this);
+				}
 				break;
 			default:
 				ASSUME(0);
@@ -6021,71 +6200,84 @@ __forceinline void GSState::VertexKick(u32 skip)
 		return;
 	}
 
-	if (tail >= m_vertex->maxcount)
+	if (tail >= c.maxcount)
+	{
+		c.Store();
 		GrowVertexBuffer();
+		c.Load(*this);
+	}
 
-	u16* RESTRICT buff = &m_index->buff[m_index->tail];
+	u16* RESTRICT buff = &c.ibuff[c.itail];
 
 	switch (prim)
 	{
 		case GS_POINTLIST:
 			buff[0] = static_cast<u16>(head + 0);
-			m_vertex->head = head + 1;
-			m_vertex->next = head + 1;
-			m_index->tail += 1;
+			c.head = head + 1;
+			c.next = head + 1;
+			c.itail += 1;
 			break;
 		case GS_LINELIST:
 			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(head + 1);
-			m_vertex->head = head + 2;
-			m_vertex->next = head + 2;
-			m_index->tail += 2;
+			c.head = head + 2;
+			c.next = head + 2;
+			c.itail += 2;
 			break;
 		case GS_LINESTRIP:
 			if (next < head)
 			{
-				m_vertex->buff[next + 0] = m_vertex->buff[head + 0];
-				m_vertex->buff[next + 1] = m_vertex->buff[head + 1];
+				c.vbuff[next + 0] = c.vbuff[head + 0];
+				c.vbuff[next + 1] = c.vbuff[head + 1];
 				head = next;
-				m_vertex->tail = next + 2;
+				c.tail = next + 2;
+#ifdef ARCH_ARM64
+				// Line class doesn't accumulate fused-FMM state today, but keep the
+				// watermark invariant uniform: moved vertices must re-accumulate.
+				c.vb->fmm_watermark = std::min(c.vb->fmm_watermark, next);
+#endif
 			}
 			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(head + 1);
-			m_vertex->head = head + 1;
-			m_vertex->next = head + 2;
-			m_index->tail += 2;
+			c.head = head + 1;
+			c.next = head + 2;
+			c.itail += 2;
 			break;
 		case GS_TRIANGLELIST:
 			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(head + 1);
 			buff[2] = static_cast<u16>(head + 2);
-			m_vertex->head = head + 3;
-			m_vertex->next = head + 3;
-			m_index->tail += 3;
+			c.head = head + 3;
+			c.next = head + 3;
+			c.itail += 3;
 			break;
 		case GS_TRIANGLESTRIP:
 			if (next < head)
 			{
-				m_vertex->buff[next + 0] = m_vertex->buff[head + 0];
-				m_vertex->buff[next + 1] = m_vertex->buff[head + 1];
-				m_vertex->buff[next + 2] = m_vertex->buff[head + 2];
+				c.vbuff[next + 0] = c.vbuff[head + 0];
+				c.vbuff[next + 1] = c.vbuff[head + 1];
+				c.vbuff[next + 2] = c.vbuff[head + 2];
 				head = next;
-				m_vertex->tail = next + 3;
+				c.tail = next + 3;
+#ifdef ARCH_ARM64
+				// Vertices moved below the fused-FMM watermark must re-accumulate.
+				c.vb->fmm_watermark = std::min(c.vb->fmm_watermark, next);
+#endif
 			}
 			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(head + 1);
 			buff[2] = static_cast<u16>(head + 2);
-			m_vertex->head = head + 1;
-			m_vertex->next = head + 3;
-			m_index->tail += 3;
+			c.head = head + 1;
+			c.next = head + 3;
+			c.itail += 3;
 			break;
 		case GS_TRIANGLEFAN:
 			// TODO: remove gaps, next == head && head < tail - 3 || next > head && next < tail - 2 (very rare)
 			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(tail - 2);
 			buff[2] = static_cast<u16>(tail - 1);
-			m_vertex->next = tail;
-			m_index->tail += 3;
+			c.next = tail;
+			c.itail += 3;
 			break;
 		case GS_SPRITE:
 			buff[0] = static_cast<u16>(head + 0);
@@ -6093,27 +6285,83 @@ __forceinline void GSState::VertexKick(u32 skip)
 
 			// Update the first vert's Q for ease of doing Autoflush
 			if (!m_env.PRIM.FST)
-				m_vertex->buff[buff[0]].RGBAQ.Q = m_vertex->buff[buff[1]].RGBAQ.Q;
+				c.vbuff[buff[0]].RGBAQ.Q = c.vbuff[buff[1]].RGBAQ.Q;
 
-			m_vertex->head = head + 2;
-			m_vertex->next = head + 2;
-			m_index->tail += 2;
+			c.head = head + 2;
+			c.next = head + 2;
+			c.itail += 2;
 			break;
 		default:
 			ASSUME(0);
 	}
 
-	// Update rectangle for the current draw. Needs exclusive endpoints.
+#ifdef ARCH_ARM64
+	// Fused vertex-trace bounds (see GSVertexKick.h): fold this prim's
+	// newly-referenced vertices into the per-buffer FindMinMax accumulator so
+	// FlushPrim doesn't re-walk the index list. The current vertex (v0/v1) is
+	// register-resident and, past strip warmup, the only one below the
+	// watermark; older references only occur right after a seam or compaction
+	// and load from the (L1-hot) buffer — which also picks up any bytes the
+	// texel-rounding pass mutated in carried-over vertices. TME/FST/IIP are
+	// stable across a draw's emissions: any draw-affecting PRIM change flushes
+	// or buffer-switches first (TestDrawChanged).
+	if constexpr (prim == GS_TRIANGLEFAN)
+	{
+		// Fans are triangle-class but reference {head, tail-2, tail-1} — the fan
+		// head doesn't fit the watermark model, and FlushPrim may rebuild fan
+		// indices entirely. Any fan emission sends the draw to the legacy walk.
+		c.vb->fmm_valid = false;
+	}
+	else if constexpr (primclass == GS_TRIANGLE_CLASS)
+	{
+		const u32 last = c.tail - 1; // last emitted index == the prim's provoking vertex
+		const bool tme = PRIM->TME != 0;
+		const bool fst = PRIM->FST != 0;
+		const bool iip = PRIM->IIP != 0;
+		GSVertexBuff* RESTRICT vb = c.vb;
+
+		if (c.itail == n)
+		{
+			GSVertexKernels::FmmAccReset(vb->fmm_acc, tme, fst);
+			vb->fmm_valid = true;
+			vb->fmm_watermark = last - 2;
+		}
+
+		if (vb->fmm_valid)
+		{
+			for (u32 j = std::max(vb->fmm_watermark, last - 2); j < last; j++)
+			{
+				const GSVector4i jm0(c.vbuff[j].m[0]);
+				const GSVector4i jm1(c.vbuff[j].m[1]);
+				GSVertexKernels::FmmAccumVertex(vb->fmm_acc, jm0, jm1, tme, fst, iip);
+			}
+			GSVertexKernels::FmmAccumVertex(vb->fmm_acc, v0, v1, tme, fst, true);
+			vb->fmm_watermark = last + 1;
+		}
+	}
+#endif
+
+	// Update rectangle for the current draw (accumulated in the cursor, folded
+	// into temp_draw_rect with one scissor clamp at every seam). Needs exclusive
+	// endpoints.
 	const GSVector4i draw_rect = bbox.sra32<4>() + GSVector4i(0, 0, 1, 1);
-	if (m_index->tail != n)
-		temp_draw_rect = temp_draw_rect.runion(draw_rect);
+	if (c.acc_state != 0)
+	{
+		c.acc_rect = c.acc_rect.runion(draw_rect);
+	}
 	else
-		temp_draw_rect = draw_rect;
-	temp_draw_rect = temp_draw_rect.rintersect(m_context->scissor.in);
+	{
+		c.acc_rect = draw_rect;
+		c.acc_state = (c.itail == n) ? 2 : 1;
+	}
 
 	constexpr u32 max_vertices = MaxVerticesForPrim(prim);
-	if (max_vertices != 0 && m_vertex->tail >= max_vertices)
+	if (max_vertices != 0 && c.tail >= max_vertices)
+	{
+		c.Store();
 		Flush(VERTEXCOUNT);
+		c.Load(*this);
+	}
 }
 
 /// Checks if region repeat is used (applying it does something to at least one of the values in min...max)

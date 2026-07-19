@@ -70,6 +70,45 @@ else()
 	add_subdirectory(pcsx2-gsrunner EXCLUDE_FROM_ALL)
 endif()
 
+# eerunner — headless EE (R5900) JIT-vs-interpreter divergence localizer.
+# Built on demand (`--target pcsx2-eerunner`); EXCLUDE_FROM_ALL otherwise.
+if(ENABLE_EERUNNER)
+	add_subdirectory(pcsx2-eerunner)
+else()
+	add_subdirectory(pcsx2-eerunner EXCLUDE_FROM_ALL)
+endif()
+
+# vurunner — headless VU microprogram replayer for codegen iteration. Needs
+# the recompiler test hooks since it shares the harness's plumbing.
+if(ENABLE_VURUNNER)
+	if(NOT ENABLE_RECOMPILER_TEST_HOOKS)
+		message(FATAL_ERROR "ENABLE_VURUNNER requires ENABLE_RECOMPILER_TEST_HOOKS=ON.")
+	endif()
+	add_subdirectory(pcsx2-vurunner)
+else()
+	add_subdirectory(pcsx2-vurunner EXCLUDE_FROM_ALL)
+endif()
+
+# SDL3 / kmsdrm frontend (handheld target)
+if(UNIX AND NOT APPLE)
+	if(ENABLE_SDL_FRONTEND)
+		add_subdirectory(pcsx2-sdl)
+	else()
+		add_subdirectory(pcsx2-sdl EXCLUDE_FROM_ALL)
+	endif()
+endif()
+
+# libretro core (yaps2_libretro.so) — opt-in only. When ENABLE_LIBRETRO is OFF
+# (the default) the subdirectory is not added at all, so neither the target nor
+# its install(TARGETS) rule exist. Adding it EXCLUDE_FROM_ALL instead keeps the
+# target out of the default `all`, but its unconditional install() rule still
+# drags the core into install-driven builds (ninja/make install, packaging) and
+# "build all targets" flows (IDEs) — which is how a plain yaps2-sdl build ended
+# up compiling libretro. Build it with -DENABLE_LIBRETRO=ON.
+if(UNIX AND NOT APPLE AND ENABLE_LIBRETRO)
+	add_subdirectory(pcsx2-libretro)
+endif()
+
 #-------------------------------------------------------------------------------
 if(NOT IS_SUPPORTED_COMPILER)
 	message(WARNING "
@@ -82,11 +121,5 @@ No support will be provided, continue at your own risk.
 endif()
 
 if(ARCH_ARM64)
-	message(STATUS "
-*************** ARMSX2 — APPLE SILICON ***************
-Initial Apple Silicon (ARM64) support in ARMSX2.
-This build adds the EE/VU/IOP recompilers that were
-previously missing on Apple Silicon. It is an early
-release — expect rough edges. Contributions welcome.
-*****************************************************")
+	message(STATUS "ARM64 build: EE, IOP, and VU0/VU1 recompilers are all available.")
 endif()

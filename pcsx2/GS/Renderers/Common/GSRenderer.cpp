@@ -10,6 +10,9 @@
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
 #include "GSDumpReplayer.h"
+#ifdef ENABLE_VULKAN
+#include "GS/Renderers/Vulkan/VKLibretro.h"
+#endif
 #include "Host.h"
 #include "PerformanceMetrics.h"
 #include "pcsx2/Config.h"
@@ -708,9 +711,40 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		GSTexture* current = g_gs_device->GetCurrent();
 		if (current && !blank_frame)
 		{
+#ifdef ENABLE_VULKAN
+			// Libretro: the output canvas is a backbuffer this side sizes, not
+			// a real window, so track the merged frame — expanded to the target
+			// aspect ratio (the internal-resolution screenshot rule) and
+			// clamped to the geometry advertised to the frontend — so internal
+			// upscale survives the present pass. Resize before the draw rect
+			// below is computed so the whole frame stays consistent.
+			if (VKLibretro::Active)
+			{
+				const float aspect = GetCurrentAspectRatioFloat(GetVideoMode() == GSVideoMode::SDTV_480P);
+				float fwidth = static_cast<float>(current->GetWidth());
+				float fheight = static_cast<float>(current->GetHeight());
+				if (fwidth / fheight >= aspect)
+					fheight = fwidth / aspect;
+				else
+					fwidth = fheight * aspect;
+				const float clamp_scale = std::min({1.0f,
+					static_cast<float>(VKLibretro::kMaxCanvasWidth) / fwidth,
+					static_cast<float>(VKLibretro::kMaxCanvasHeight) / fheight});
+				const u32 canvas_width = std::max(1, static_cast<int>(std::lround(fwidth * clamp_scale)));
+				const u32 canvas_height = std::max(1, static_cast<int>(std::lround(fheight * clamp_scale)));
+				if (canvas_width != static_cast<u32>(g_gs_device->GetWindowWidth()) ||
+					canvas_height != static_cast<u32>(g_gs_device->GetWindowHeight()))
+				{
+					g_gs_device->ResizeWindow(canvas_width, canvas_height, g_gs_device->GetWindowScale());
+					ImGuiManager::WindowResized();
+				}
+			}
+#endif
+
 			src_rect = CalculateDrawSrcRect(current, m_real_size);
 			src_uv = GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy();
-			draw_rect = CalculateDrawDstRect(g_gs_device->GetWindowWidth(), g_gs_device->GetWindowHeight(),
+			const GSVector2i pres_size = g_gs_device->GetPresentationSize();
+			draw_rect = CalculateDrawDstRect(pres_size.x, pres_size.y,
 				src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
 				GetVideoMode() == GSVideoMode::SDTV_480P);
 			s_last_draw_rect = draw_rect;
@@ -1034,7 +1068,8 @@ void GSRenderer::PresentCurrentFrame()
 		{
 			const GSVector4i src_rect(CalculateDrawSrcRect(current, m_real_size));
 			const GSVector4 src_uv(GSVector4(src_rect) / GSVector4(current->GetSize()).xyxy());
-			const GSVector4 draw_rect(CalculateDrawDstRect(g_gs_device->GetWindowWidth(), g_gs_device->GetWindowHeight(),
+			const GSVector2i pres_size = g_gs_device->GetPresentationSize();
+			const GSVector4 draw_rect(CalculateDrawDstRect(pres_size.x, pres_size.y,
 				src_rect, current->GetSize(), s_display_alignment, g_gs_device->UsesLowerLeftOrigin(),
 				GetVideoMode() == GSVideoMode::SDTV_480P));
 			s_last_draw_rect = draw_rect;

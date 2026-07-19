@@ -39,6 +39,9 @@ BIOS
 #include "common/Error.h"
 
 #include <cstdio>
+#ifdef __linux__
+#include <sys/mman.h>
+#endif
 
 #ifdef ENABLECACHE
 #include "Cache.h"
@@ -103,8 +106,23 @@ bool SysMemory::AllocateMemoryMap()
 		return false;
 	}
 
+	// Constant-VA placement for the on-disk VU program cache: on arm64 the
+	// data + code reservations must sit at the same VAs every run so cached
+	// JIT code reloads without repatching its baked addresses. 4GB clears the
+	// ASLR brk window (non-PIE image at 0x400000 + brk randomization < 2GB) and
+	// sits far below the mmap_base / PIE-load regions, so the slot-0 candidate
+	// succeeds deterministically; Create() walks 256MB-stride fallback slots and
+	// finally kernel placement (program-cache misses, never corruption). Other
+	// arches pass 0 and take kernel-chosen placement. The code area is hinted
+	// directly after the data area, reproducing a contiguous arena when both land.
+#if defined(__aarch64__) || defined(_M_ARM64)
+	constexpr uptr kArenaBase = 0x100000000ull; // 4GB
+#else
+	constexpr uptr kArenaBase = 0;
+#endif
+
 	Console.WriteLn("@@MAC_MEMMAP@@ data_area_begin size=%zu", static_cast<size_t>(HostMemoryMap::MainSize));
-	if (!(s_memory_mapping_area = SharedMemoryMappingArea::Create(HostMemoryMap::MainSize, false)))
+	if (!(s_memory_mapping_area = SharedMemoryMappingArea::Create(HostMemoryMap::MainSize, false, kArenaBase)))
 	{
 		Host::ReportErrorAsync("Error", "Failed to map main memory.");
 		ReleaseMemoryMap();
@@ -149,7 +167,7 @@ bool SysMemory::AllocateMemoryMap()
 		s_code_memory = nullptr;
 	}
 #else
-	if (!(s_code_mapping_area = SharedMemoryMappingArea::Create(HostMemoryMap::CodeSize, true)))
+	if (!(s_code_mapping_area = SharedMemoryMappingArea::Create(HostMemoryMap::CodeSize, true, kArenaBase ? kArenaBase + HostMemoryMap::MainSize : 0)))
 	{
 		Host::ReportErrorAsync("Error", "Failed to map code memory.");
 		ReleaseMemoryMap();
@@ -162,6 +180,23 @@ bool SysMemory::AllocateMemoryMap()
 		ReleaseMemoryMap();
 		return false;
 	}
+#endif
+
+#ifdef __linux__
+	// FX-15 (design credit FEX-Emu): back the hot JIT code caches with
+	// transparent hugepages to cut iTLB pressure. madvise is what the
+	// Rocknix default THP mode ("madvise") honors, and the code half is a
+	// private anonymous mapping, which is what THP backs. Scoped to the
+	// EE+IOP and mVU0+mVU1 rec caches — each pair contiguous in the map —
+	// leaving the VIF/SW-renderer tail alone. A/B off-arm: launch under
+	// prctl(PR_SET_THP_DISABLE) (see tools/perf/fx15_thp_ab.sh) — it
+	// survives execve, so no in-tree gate is needed.
+	static_assert(HostMemoryMap::IOPrecOffset == HostMemoryMap::EErecOffset + HostMemoryMap::EErecSize);
+	static_assert(HostMemoryMap::mVU1recOffset == HostMemoryMap::mVU0recOffset + HostMemoryMap::mVU0recSize);
+	madvise(s_code_memory + HostMemoryMap::EErecOffset,
+		HostMemoryMap::EErecSize + HostMemoryMap::IOPrecSize, MADV_HUGEPAGE);
+	madvise(s_code_memory + HostMemoryMap::mVU0recOffset,
+		HostMemoryMap::mVU0recSize + HostMemoryMap::mVU1recSize, MADV_HUGEPAGE);
 #endif
 
 	HostMemoryMap::EEmem = (uptr)(s_data_memory + HostMemoryMap::EEmemOffset);
@@ -232,11 +267,19 @@ void SysMemory::ReleaseMemoryMap()
 	}
 }
 
+void SysMemory::ReserveMemory()
+{
+	// Claim the host memory map (and the arm64 constant-VA arena) up front, so
+	// the fixed-base placement isn't lost to an intervening heap/mmap. Idempotent.
+	if (!s_data_memory_file_handle)
+		AllocateMemoryMap();
+}
+
 bool SysMemory::Allocate()
 {
 	DevCon.WriteLn(Color_StrongBlue, "Allocating host memory for virtual systems...");
 
-	if (!AllocateMemoryMap())
+	if (!s_data_memory_file_handle && !AllocateMemoryMap())
 		return false;
 
 	memAllocate();
@@ -478,6 +521,16 @@ void memMapPhy()
 
 	// High memory, uninstalled on the configuration we emulate
 	vtlb_MapHandler(null_handler, Ps2MemSize::ExposedRam, 0x10000000 - Ps2MemSize::ExposedRam);
+
+	// Physical RAM mirrors used by BIOS InitRDRAM for RDRAM device configuration.
+	// On real PS2 hardware:
+	//   0x20000000-0x21FFFFFF = uncached mirror of main RAM
+	//   0x30000000-0x31FFFFFF = uncached & accelerated mirror of main RAM
+	// These mirrors must be present in the physical map; without them, BIOS writes
+	// to RDRAM device registers hit UnmappedPhyHandler (bus error).
+	// Requires VTLB_PMAP_SZ >= 1GB to cover these addresses.
+	vtlb_MapBlock(eeMem->Main, 0x20000000, Ps2MemSize::ExposedRam);
+	vtlb_MapBlock(eeMem->Main, 0x30000000, Ps2MemSize::ExposedRam);
 
 	// Various ROMs (all read-only)
 	vtlb_MapBlock(eeMem->ROM,	0x1fc00000, Ps2MemSize::Rom);

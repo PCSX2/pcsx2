@@ -9,6 +9,32 @@
 #include "GS/Renderers/Vulkan/VKBuilders.h"
 #include "GS/Renderers/Vulkan/VKShaderCache.h"
 #include "GS/Renderers/Vulkan/VKSwapChain.h"
+#include "GS/Renderers/Vulkan/VKLibretro.h"
+
+// Libretro presentation backbuffers: the frontend samples the published
+// VkImageView asynchronously (including cached-frame replays long after the
+// present), so it must never point at a pooled texture that GSDeviceVK can
+// recycle. Frames are copied into this small ring of dedicated textures that
+// live until device teardown.
+namespace
+{
+	constexpr int kLibretroBackbuffers = 3;
+	std::unique_ptr<GSTextureVK> s_libretro_bb[kLibretroBackbuffers];
+	int s_libretro_bb_idx = 0;
+	// Monotonic count of libretro presents; used to age out retired backbuffers.
+	u64 s_libretro_present_count = 0;
+	// A backbuffer displaced by a resolution change: the frontend may still be
+	// replaying its image for a few frames (cached/duped frames up to its
+	// swapchain depth), so it can't be freed immediately -- but leaving it here
+	// forever leaks a full-resolution render target on every interlace<->
+	// progressive switch (frequent in FMV-heavy games). Each is tagged with the
+	// present count at retirement and reclaimed once enough presents have gone
+	// by that the frontend can no longer reference it.
+	struct RetiredBackbuffer { std::unique_ptr<GSTextureVK> tex; u64 retired_at; };
+	std::vector<RetiredBackbuffer> s_libretro_bb_retired;
+	// Comfortably beyond any libretro frontend's swapchain depth (2-3).
+	constexpr u64 kLibretroRetireFrames = 6;
+} // namespace
 #include "GS/Renderers/Common/GSDevice.h"
 
 #include "BuildVersion.h"
@@ -21,6 +47,7 @@
 #include "common/HostSys.h"
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
+#include "common/Timer.h"
 
 #include "imgui.h"
 
@@ -44,7 +71,12 @@ enum : u32
 	MAX_COMBINED_IMAGE_SAMPLER_DESCRIPTORS_PER_FRAME = 2 * MAX_DRAW_CALLS_PER_FRAME,
 	MAX_SAMPLED_IMAGE_DESCRIPTORS_PER_FRAME =
 		MAX_DRAW_CALLS_PER_FRAME, // assume at least half our draws aren't going to be shuffle/blending
-	MAX_STORAGE_IMAGE_DESCRIPTORS_PER_FRAME = 4, // Currently used by CAS only
+	// CAS uses one storage image per frame, but the TFX texture set also carries the
+	// two ROV storage-image bindings (TFX_TEXTURE_RT_ROV / _DEPTH_ROV), and every
+	// vkAllocateDescriptorSets of that layout reserves both whether written or not.
+	// On the ROV-without-push-descriptor path that is two per TFX draw, so
+	// size to match the draw budget rather than the old CAS-only value of 4.
+	MAX_STORAGE_IMAGE_DESCRIPTORS_PER_FRAME = 2 * MAX_DRAW_CALLS_PER_FRAME,
 	MAX_INPUT_ATTACHMENT_IMAGE_DESCRIPTORS_PER_FRAME = MAX_DRAW_CALLS_PER_FRAME,
 	MAX_DESCRIPTOR_SETS_PER_FRAME = MAX_DRAW_CALLS_PER_FRAME * 2,
 
@@ -215,6 +247,16 @@ bool GSDeviceVK::SelectInstanceExtensions(ExtensionList* extension_list, const W
 		return false;
 #endif
 
+	// VK_KHR_display direct-to-monitor surface (kmsdrm handhelds).
+	// VK_KHR_get_display_properties2 is optional but lets us read HDR / extended
+	// display info on ICDs that support it.
+	if (wi.type == WindowInfo::Type::VulkanDirect)
+	{
+		if (!SupportsExtension(VK_KHR_DISPLAY_EXTENSION_NAME, true))
+			return false;
+		SupportsExtension(VK_KHR_GET_DISPLAY_PROPERTIES_2_EXTENSION_NAME, false);
+	}
+
 	// VK_EXT_debug_utils
 	if (enable_debug_utils && !SupportsExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false))
 		Console.Warning("VK: Debug report requested, but extension is not available.");
@@ -352,7 +394,10 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs()
 	}
 	else
 	{
-		if (Vulkan::LoadVulkanLibrary(nullptr))
+		// The library may already be loaded by the host (libretro preloads it
+		// for the context negotiation) — use it, and don't unload it after.
+		const bool library_was_loaded = Vulkan::IsVulkanLibraryLoaded();
+		if (library_was_loaded || Vulkan::LoadVulkanLibrary(nullptr))
 		{
 			OptionalExtensions oe = {};
 			const VkInstance instance = CreateVulkanInstance(WindowInfo(), &oe, false, false);
@@ -364,7 +409,8 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs()
 				vkDestroyInstance(instance, nullptr);
 			}
 
-			Vulkan::UnloadVulkanLibrary();
+			if (!library_was_loaded)
+				Vulkan::UnloadVulkanLibrary();
 		}
 	}
 
@@ -1053,8 +1099,8 @@ bool GSDeviceVK::CreateCommandBuffers()
 
 		// Non-push-descriptor path (Mali): per-frame pool for texture descriptor sets, reset wholesale
 		// in ActivateCommandBuffer when the frame is recycled. Sized generously for a heavy frame; if a
-		// frame ever exceeds this, AllocateFrameDescriptorSet logs and the bind is skipped (visual only,
-		// no crash) - this is the tuning knob if a Mali tester reports missing textures.
+		// frame ever exceeds this, the caller flushes to reset the pool and restarts the render pass (see
+		// AllocateDescriptorSetFromFramePool callers) - tune here if that ever thrashes.
 		if (!m_use_push_descriptors)
 		{
 			static constexpr u32 MAX_FRAME_TEXTURE_SETS = 8192;
@@ -1228,23 +1274,26 @@ void GSDeviceVK::FreePersistentDescriptorSet(VkDescriptorSet set)
 	vkFreeDescriptorSets(m_device, m_global_descriptor_pool, 1, &set);
 }
 
-VkDescriptorSet GSDeviceVK::AllocateFrameDescriptorSet(VkDescriptorSetLayout set_layout)
+VkDescriptorSet GSDeviceVK::AllocateDescriptorSetFromFramePool(VkDescriptorSetLayout set_layout)
 {
-	// Non-push-descriptor path only. The pool is reset wholesale each frame, so no per-set free.
-	const VkDescriptorPool pool = m_frame_resources[m_current_frame].descriptor_pool;
-	const VkDescriptorSetAllocateInfo allocate_info = {
+	VkDescriptorPool pool = m_frame_resources[m_current_frame].descriptor_pool;
+	pxAssert(pool != VK_NULL_HANDLE);
+
+	VkDescriptorSetAllocateInfo allocate_info = {
 		VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO, nullptr, pool, 1, &set_layout};
 
 	VkDescriptorSet descriptor_set;
 	VkResult res = vkAllocateDescriptorSets(m_device, &allocate_info, &descriptor_set);
-	if (res != VK_SUCCESS)
-	{
-		// Pool exhausted for this frame - skip the bind rather than crash (see pool sizing note).
-		LOG_VULKAN_ERROR(res, "vkAllocateDescriptorSets (frame) failed: ");
-		return VK_NULL_HANDLE;
-	}
+	if (res == VK_SUCCESS)
+		return descriptor_set;
 
-	return descriptor_set;
+	// Pool exhausted. Recovery (flush the command buffer to reset the frame pool,
+	// then restart the render pass and re-apply state) must be driven by the caller:
+	// callers capture their command buffer and emit binding state before calling us,
+	// so flushing here would leave them writing to a submitted command buffer with no
+	// active render pass. Signal exhaustion with a null set and let the caller flush,
+	// restart, and re-enter (mirroring the uniform-buffer overflow paths).
+	return VK_NULL_HANDLE;
 }
 
 void GSDeviceVK::WaitForFenceCounter(u64 fence_counter)
@@ -1295,6 +1344,55 @@ bool GSDeviceVK::SetGPUPipelineStatisticsEnabled(bool enabled)
 {
 	m_gpu_pipeline_statistics_enabled = enabled && m_gpu_pipeline_statistics_supported;
 	return true;
+}
+
+void GSDeviceVK::EnableExtendedStats(bool enabled)
+{
+	VKSwapChain::SetPresentStatsEnabled(enabled);
+}
+
+std::vector<std::string> GSDeviceVK::GetExtendedStats() const
+{
+	std::vector<std::string> lines;
+	if (m_swap_chain)
+	{
+		const WindowInfo& wi = m_swap_chain->GetWindowInfo();
+		const char* wsi_name = "?";
+		switch (wi.type)
+		{
+			case WindowInfo::Type::Surfaceless: wsi_name = "Surfaceless"; break;
+			case WindowInfo::Type::Win32:       wsi_name = "Win32"; break;
+			case WindowInfo::Type::X11:         wsi_name = "X11"; break;
+			case WindowInfo::Type::Wayland:     wsi_name = "Wayland"; break;
+			case WindowInfo::Type::MacOS:       wsi_name = "MacOS"; break;
+			case WindowInfo::Type::VulkanDirect: wsi_name = "VulkanDirect"; break;
+		}
+		const char* present_name = "?";
+		switch (m_swap_chain->GetPresentMode())
+		{
+			case VK_PRESENT_MODE_IMMEDIATE_KHR:    present_name = "IMMEDIATE"; break;
+			case VK_PRESENT_MODE_MAILBOX_KHR:      present_name = "MAILBOX"; break;
+			case VK_PRESENT_MODE_FIFO_KHR:         present_name = "FIFO"; break;
+			case VK_PRESENT_MODE_FIFO_RELAXED_KHR: present_name = "FIFO_RELAXED"; break;
+			default: break;
+		}
+		lines.push_back(fmt::format(
+			"Swapchain: {}x{} (scale {:.2f}) fmt={} present={} images={} wsi={}",
+			m_swap_chain->GetWidth(), m_swap_chain->GetHeight(), wi.surface_scale,
+			static_cast<unsigned>(m_swap_chain->GetTextureFormat()),
+			present_name, m_swap_chain->GetImageCount(), wsi_name));
+	}
+
+	const VKSwapChain::PresentStats ps = VKSwapChain::GetPresentStats();
+	const double acquire_avg_ms = ps.acquire_count ? (ps.acquire_total_ms / ps.acquire_count) : 0.0;
+	const double present_avg_ms = ps.present_count ? (ps.present_total_ms / ps.present_count) : 0.0;
+	lines.push_back(fmt::format(
+		"vkAcquireNextImage: avg {:.3f} ms, max {:.3f} ms, n={}", acquire_avg_ms, ps.acquire_max_ms, ps.acquire_count));
+	lines.push_back(fmt::format(
+		"vkQueuePresent:     avg {:.3f} ms, max {:.3f} ms, n={}", present_avg_ms, ps.present_max_ms, ps.present_count));
+	lines.push_back(fmt::format(
+		"Suboptimal: {}, OutOfDate: {}", ps.suboptimal_count, ps.out_of_date_count));
+	return lines;
 }
 
 void GSDeviceVK::ScanForCommandBufferCompletion()
@@ -1481,7 +1579,15 @@ void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 
 		present_swap_chain->ResetImageAcquireResult();
 
+		const bool stats = VKSwapChain::IsPresentStatsEnabled();
+		const Common::Timer::Value t_present_start = stats ? Common::Timer::GetCurrentValue() : 0;
 		res = vkQueuePresentKHR(m_present_queue, &present_info);
+		if (stats)
+		{
+			const double present_elapsed_ms =
+				Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue() - t_present_start);
+			VKSwapChain::NotePresent(present_elapsed_ms, res);
+		}
 		if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
 		{
 			// VK_ERROR_OUT_OF_DATE_KHR is not fatal, just means we need to recreate our swap chain.
@@ -2402,6 +2508,18 @@ bool GSDeviceVK::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 void GSDeviceVK::Destroy()
 {
+	// Free the libretro backbuffers while the device is still alive; the
+	// frontend stopped sampling at context_destroy.
+	if (VKLibretro::Active)
+	{
+		WaitForGPUIdle();
+		for (std::unique_ptr<GSTextureVK>& bb : s_libretro_bb)
+			bb.reset();
+		s_libretro_bb_retired.clear();
+		s_libretro_bb_idx = 0;
+		s_libretro_present_count = 0;
+	}
+
 	std::unique_lock lock(s_instance_mutex);
 
 	GSDevice::Destroy();
@@ -2424,14 +2542,19 @@ void GSDeviceVK::Destroy()
 
 	VKShaderCache::Destroy();
 
+	// The negotiated device belongs to the libretro frontend (it made the
+	// vkCreateDevice call) and it destroys it after context_destroy —
+	// destroying it here would leave the frontend tearing down a dead device.
 	if (m_device != VK_NULL_HANDLE)
-		vkDestroyDevice(m_device, nullptr);
+		if (!(VKLibretro::Active && VKLibretro::Init.device == m_device))
+			vkDestroyDevice(m_device, nullptr);
 
 	if (m_debug_messenger_callback != VK_NULL_HANDLE)
 		DisableDebugUtils();
 
 	if (m_instance != VK_NULL_HANDLE)
-		vkDestroyInstance(m_instance, nullptr);
+		if (!(VKLibretro::Active && VKLibretro::Init.instance == m_instance))
+			vkDestroyInstance(m_instance, nullptr);
 
 	Vulkan::UnloadVulkanLibrary();
 }
@@ -2490,8 +2613,18 @@ void GSDeviceVK::ResizeWindow(u32 new_window_width, u32 new_window_height, float
 {
 	m_resize_requested = false;
 
-	if (!m_swap_chain || (m_swap_chain->GetWidth() == new_window_width &&
-							 m_swap_chain->GetHeight() == new_window_height))
+	if (!m_swap_chain)
+	{
+		// Surfaceless (libretro): the "window" is the backbuffer rendered for
+		// the frontend, so just adopt the new size — BeginPresent recreates
+		// the backbuffer to match on the next frame.
+		m_window_info.surface_width = new_window_width;
+		m_window_info.surface_height = new_window_height;
+		m_window_info.surface_scale = new_window_scale;
+		return;
+	}
+
+	if (m_swap_chain->GetWidth() == new_window_width && m_swap_chain->GetHeight() == new_window_height)
 	{
 		// skip unnecessary resizes
 		m_window_info.surface_scale = new_window_scale;
@@ -2593,6 +2726,61 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 	// If we're running surfaceless, kick the command buffer so we don't run out of descriptors.
 	if (!m_swap_chain)
 	{
+		// Libretro: run a REAL present targeting a dedicated backbuffer, so
+		// the whole normal path (PresentRect aspect-correct draw, TV shaders,
+		// FullscreenUI, ImGui OSD in EndPresent) works unchanged; EndPresent
+		// then hands the finished image to the frontend. The backbuffers are
+		// owned outside the texture pool because the frontend keeps sampling
+		// the published view for cached-frame replays.
+		if (VKLibretro::Active)
+		{
+			// Reclaim backbuffers retired long enough ago that the frontend's
+			// replay window has moved past them (see kLibretroRetireFrames).
+			const u64 now = ++s_libretro_present_count;
+			std::erase_if(s_libretro_bb_retired, [now](const RetiredBackbuffer& r) {
+				return now - r.retired_at >= kLibretroRetireFrames;
+			});
+
+			const GSVector2i pres = GetPresentationSize();
+			std::unique_ptr<GSTextureVK>& bb = s_libretro_bb[s_libretro_bb_idx];
+			if (!bb || bb->GetWidth() != pres.x || bb->GetHeight() != pres.y)
+			{
+				// The frontend may still replay the displaced image for a few
+				// frames -- retire (freed later above), don't destroy now.
+				if (bb)
+					s_libretro_bb_retired.push_back({std::move(bb), now});
+				bb = GSTextureVK::Create(GSTexture::RenderTarget, GSTexture::Format::Color,
+					pres.x, pres.y, 1);
+			}
+			if (bb)
+			{
+				VkCommandBuffer cmdbuffer = GetCurrentCommandBuffer();
+				if (!frame_skip && m_current)
+					static_cast<GSTextureVK*>(m_current)->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
+				bb->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::ColorAttachment);
+
+				const VkFramebuffer fb = bb->GetFramebuffer(false);
+				if (fb != VK_NULL_HANDLE)
+				{
+					const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr,
+						GetRenderPass(bb->GetVkFormat(), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_CLEAR,
+							VK_ATTACHMENT_STORE_OP_STORE),
+						fb, {{0, 0}, {static_cast<u32>(bb->GetWidth()), static_cast<u32>(bb->GetHeight())}},
+						1u, &s_present_clear_color};
+					vkCmdBeginRenderPass(cmdbuffer, &rp, VK_SUBPASS_CONTENTS_INLINE);
+
+					const VkViewport vp{0.0f, 0.0f, static_cast<float>(bb->GetWidth()),
+						static_cast<float>(bb->GetHeight()), 0.0f, 1.0f};
+					const VkRect2D scissor{
+						{0, 0}, {static_cast<u32>(bb->GetWidth()), static_cast<u32>(bb->GetHeight())}};
+					vkCmdSetViewport(cmdbuffer, 0, 1, &vp);
+					vkCmdSetScissor(cmdbuffer, 0, 1, &scissor);
+					m_is_presenting = true;
+					return PresentResult::OK;
+				}
+			}
+		}
+
 		ExecuteCommandBuffer(false);
 		return PresentResult::FrameSkipped;
 	}
@@ -2695,6 +2883,30 @@ void GSDeviceVK::EndPresent()
 	VkCommandBuffer cmdbuffer = GetCurrentCommandBuffer();
 	vkCmdEndRenderPass(cmdbuffer);
 	m_is_presenting = false;
+
+	if (VKLibretro::Active && !m_swap_chain)
+	{
+		// Libretro: finish the backbuffer, submit without any swapchain
+		// semantics, and hand the image to the frontend.
+		GSTextureVK* bb = s_libretro_bb[s_libretro_bb_idx].get();
+		bb->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::ShaderReadOnly);
+		g_perfmon.Put(GSPerfMon::RenderPasses, 1);
+
+		SubmitCommandBuffer(static_cast<VKSwapChain*>(nullptr));
+		MoveToNextCommandBuffer();
+		InvalidateCachedState();
+
+		VKLibretro::Frame frame;
+		frame.image = bb->GetImage();
+		frame.view = bb->GetView();
+		frame.format = bb->GetVkFormat();
+		frame.width = static_cast<u32>(bb->GetWidth());
+		frame.height = static_cast<u32>(bb->GetHeight());
+		s_libretro_bb_idx = (s_libretro_bb_idx + 1) % kLibretroBackbuffers;
+		VKLibretro::PublishFrame(frame);
+		return;
+	}
+
 	m_swap_chain->GetCurrentTexture()->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::PresentSrc);
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
@@ -2793,7 +3005,9 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	bool enable_validation_layer = GSConfig.UseDebugDevice;
 
 	Error error;
-	if (!Vulkan::LoadVulkanLibrary(&error))
+	// The libretro frontend loads the library (and installs the negotiation
+	// wraps) before GS opens; loading twice trips the loader's assert.
+	if (!Vulkan::IsVulkanLibraryLoaded() && !Vulkan::LoadVulkanLibrary(&error))
 	{
 		Error::AddPrefix(&error, "Failed to load Vulkan library. Does your GPU and/or driver support Vulkan?\nThe error was:\n");
 		Host::ReportErrorAsync("Error", error.GetDescription());
@@ -2803,7 +3017,13 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	if (!AcquireWindow(true))
 		return false;
 
-	m_instance = CreateVulkanInstance(m_window_info, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
+	// Libretro context sharing: the VkInstance comes from the frontend's
+	// negotiation interface. Function loading still goes through the wrapped
+	// vkGetInstanceProcAddr so vkCreateDevice/vkQueueSubmit get intercepted.
+	if (VKLibretro::Active && VKLibretro::Init.instance != VK_NULL_HANDLE)
+		m_instance = VKLibretro::Init.instance;
+	else
+		m_instance = CreateVulkanInstance(m_window_info, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
 	if (m_instance == VK_NULL_HANDLE)
 	{
 		if (enable_debug_utils || enable_validation_layer)
@@ -2835,6 +3055,15 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 		return false;
 	}
 
+	if (VKLibretro::Active && VKLibretro::Init.gpu != VK_NULL_HANDLE)
+	{
+		// Frontend picked the physical device during negotiation.
+		m_physical_device = VKLibretro::Init.gpu;
+		vkGetPhysicalDeviceProperties(m_physical_device, &m_device_properties);
+		m_name = m_device_properties.deviceName;
+	}
+	else
+	{
 	const bool is_default_gpu = GSConfig.Adapter == GetDefaultAdapter();
 	if (!(GSConfig.Adapter.empty() || is_default_gpu))
 	{
@@ -2866,6 +3095,7 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 
 	// Stores the GPU name
 	m_name = m_device_properties.deviceName;
+	} // !VKLibretro gpu adoption
 
 	// We need this to be at least 32 byte aligned for AVX2 stores.
 	m_device_properties.limits.minUniformBufferOffsetAlignment =
@@ -2984,6 +3214,7 @@ bool GSDeviceVK::CheckFeatures()
 	// a toggle to ship dark and be A/B-verified per device+driver. Gated on ROAA presence, so
 	// it is a no-op on any device that does not expose the extension.
 	const bool is_mali_vk = (m_device_properties.vendorID == 0x13B5u);
+	const bool is_adreno = IsDeviceAdreno();
 	// Turnip/Mesa is the open Adreno driver and does NOT exhibit the proprietary
 	// blob's stale-ROAA reads (the reason Adreno fbfetch shipped opt-in), so default
 	// it ON there — the fast blend path on a tiler that drops the per-primitive
@@ -3031,6 +3262,18 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.framebuffer_fetch = vendor_allows_fbfetch &&
 		m_optional_extensions.vk_ext_rasterization_order_attachment_access && !GSConfig.DisableFramebufferFetch;
 	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
+	// Qualcomm Adreno (turnip/freedreno) only reads the render target correctly through the coherent
+	// rasterization-order subpassLoad input-attachment path. The feedback-loop-layout sampler drops
+	// content (objects vanish) and the RT-copy fallback miscolours 16-bit fbmask draws, so force the
+	// subpassLoad path on regardless of INI: enable framebuffer fetch (requires the rasterization-order
+	// extension) and texture barriers, and disable the feedback-loop layout so the RT is bound as an
+	// input attachment. See GSTextureVK::Create for the matching image usage.
+	if (is_adreno)
+	{
+		m_optional_extensions.vk_ext_attachment_feedback_loop_layout = false;
+		m_features.framebuffer_fetch = m_optional_extensions.vk_ext_rasterization_order_attachment_access;
+		m_features.texture_barrier = true;
+	}
 	m_features.multidraw_fb_copy = false;
 	m_features.broken_point_sampler = false;
 
@@ -3065,10 +3308,11 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.broken_mad_deinterlace = is_mali_g57;
 
 	// Concurrent depth test + depth-as-texture rides the same feedback-sync path as texture_barrier;
-	// a driver with broken barriers has no chance doing GENERAL-layout depth feedback either. Ours
-	// used to force this true unconditionally, which diverged from upstream/EmuCoreX and could enable
-	// an unsupported depth-feedback read (stale depth) on mobile. Tie it to texture_barrier like his.
-	m_features.test_and_sample_depth = m_features.texture_barrier;
+	// a driver with broken barriers has no chance doing GENERAL-layout depth feedback either.
+	// Additionally, Adreno/turnip hangs the tiler sampling the live depth buffer while it is also the
+	// depth attachment (tex == ds) — force it off there so tex == ds takes a depth copy instead of an
+	// in-pass self-read.
+	m_features.test_and_sample_depth = m_features.texture_barrier && !is_adreno;
 
 	// Use D32F depth instead of D32S8 when we have framebuffer fetch.
 	m_features.stencil_buffer &= !m_features.framebuffer_fetch;
@@ -3107,6 +3351,17 @@ bool GSDeviceVK::CheckFeatures()
 		Console.WriteLn("VK: Adreno colorWriteMask-with-depthtest workaround active (deviceID=0x%08X driver=0x%08X)",
 			m_device_properties.deviceID, m_device_properties.driverVersion);
 
+	// Adreno/turnip hangs the GPU (A6xx hangcheck) on any stencil-bearing D32S8 depth buffer. Force
+	// stencil off so depth is created as plain D32_SFLOAT and no stencil attachment or stencil DATE
+	// pre-pass is emitted; DATE falls back to the stencil-free paths (PrimID tracking, then Full, then Off).
+	if (is_adreno)
+		m_features.stencil_buffer = false;
+
+	// On tiler GPUs, declaring gl_FragDepth (for PS2 32-bit Z quantization) emits
+	// SPIR-V ExecutionMode DepthReplacing, which disables early-ZS for the entire
+	// pipeline. Default-on for Mali; opt-out via INI for Z-precision-sensitive titles.
+	m_features.no_ps2_z_quantization = GSConfig.DisablePS2DepthQuantization || IsDeviceMali();
+
 	// whether we can do point/line expand depends on the range of the device
 	const float f_upscale = static_cast<float>(GSConfig.UpscaleMultiplier);
 	m_features.point_expand = (m_device_features.largePoints && limits.pointSizeRange[0] <= f_upscale &&
@@ -3126,9 +3381,10 @@ bool GSDeviceVK::CheckFeatures()
 #endif
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
 
-	DevCon.WriteLn("Optional features:%s%s%s%s%s", m_features.primitive_id ? " primitive_id" : "",
+	DevCon.WriteLn("Optional features:%s%s%s%s%s%s", m_features.primitive_id ? " primitive_id" : "",
 		m_features.texture_barrier ? " texture_barrier" : "", m_features.framebuffer_fetch ? " framebuffer_fetch" : "",
-		m_features.provoking_vertex_last ? " provoking_vertex_last" : "", m_features.vs_expand ? " vs_expand" : "");
+		m_features.provoking_vertex_last ? " provoking_vertex_last" : "", m_features.vs_expand ? " vs_expand" : "",
+		m_features.no_ps2_z_quantization ? " no_ps2_z_quantization" : "");
 
 	DevCon.WriteLn("Using %s for point expansion and %s for line expansion.",
 		m_features.point_expand ? "hardware" : "vertex expanding",
@@ -3151,6 +3407,16 @@ bool GSDeviceVK::CheckFeatures()
 		vkGetPhysicalDeviceFormatProperties(m_physical_device, vkfmt, &props);
 		if ((props.optimalTilingFeatures & bits) != bits)
 		{
+			// ColorClip (R16G16B16A16_UNORM) may not be supported as a render target on some GPUs
+			// (e.g. Broadcom V3D). Fall back to ColorHDR (R16G16B16A16_SFLOAT) which provides
+			// equivalent precision for color clamping emulation.
+			if (static_cast<GSTexture::Format>(fmt) == GSTexture::Format::ColorClip)
+			{
+				Console.Warning("VK: ColorClip format (R16G16B16A16_UNORM) not supported as render target, falling back to ColorHDR (R16G16B16A16_SFLOAT).");
+				m_colorclip_fallback_to_hdr = true;
+				continue;
+			}
+
 			Host::ReportFormattedErrorAsync("VK: Renderer Unavailable",
 				"Required format %u is missing bits, you may need to update your driver. (vk:%u, has:0x%x, needs:0x%x)",
 				fmt, static_cast<unsigned>(vkfmt), props.optimalTilingFeatures, bits);
@@ -3179,7 +3445,9 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.rov = m_optional_extensions.vk_ext_fragment_shader_interlock &&
 	                 m_device_features.fragmentStoresAndAtomics &&
 	                 has_rov_storage_flags &&
-	                 !m_features.framebuffer_fetch;
+	                 !m_features.framebuffer_fetch &&
+	                 // Adreno/turnip hangs the GPU on pixel_interlock_ordered draws (A6xx hangcheck).
+	                 !is_adreno;
 
 	return true;
 }
@@ -3257,6 +3525,9 @@ VkFormat GSDeviceVK::LookupNativeFormat(GSTexture::Format format) const
 		VK_FORMAT_BC3_UNORM_BLOCK, // BC3
 		VK_FORMAT_BC7_UNORM_BLOCK, // BC7
 	}};
+
+	if (format == GSTexture::Format::ColorClip && m_colorclip_fallback_to_hdr)
+		return VK_FORMAT_R16G16B16A16_SFLOAT;
 
 	return (format != GSTexture::Format::DepthStencil || m_features.stencil_buffer) ?
 		s_format_mapping[static_cast<int>(format)] :
@@ -3392,7 +3663,7 @@ void GSDeviceVK::PresentRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 {
 	DisplayConstantBuffer cb;
 	cb.SetSource(sRect, sTex->GetSize());
-	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GSVector2i(GetWindowWidth(), GetWindowHeight()));
+	cb.SetTarget(dRect, dTex ? dTex->GetSize() : GetPresentationSize());
 	cb.SetTime(shaderTime);
 	SetUtilityPushConstants(&cb, sizeof(cb));
 
@@ -3574,7 +3845,7 @@ void GSDeviceVK::DoStretchRect(GSTextureVK* sTex, const GSVector4& sRect, GSText
 
 	const bool is_present = (!dTex);
 	const bool depth = (dTex && dTex->IsDepthStencil());
-	const GSVector2i size(is_present ? GSVector2i(GetWindowWidth(), GetWindowHeight()) : dTex->GetSize());
+	const GSVector2i size(is_present ? GetPresentationSize() : dTex->GetSize());
 	const GSVector4i dtex_rc(0, 0, size.x, size.y);
 	const GSVector4i dst_rc(GSVector4i(dRect).rintersect(dtex_rc));
 
@@ -3597,6 +3868,43 @@ void GSDeviceVK::DoStretchRect(GSTextureVK* sTex, const GSVector4& sRect, GSText
 	DrawStretchRect(sRect, dRect, size);
 }
 
+// Rotate a logical-NDC point (x, y) into physical-NDC by GSConfig.Rotation.
+// Used by the present pass to map a quad laid out for a logically-rotated
+// window onto the unrotated swapchain viewport.
+//   Rot0:   (x,  y)
+//   Rot90:  (y, -x)   (image rotates 90° CW on the panel)
+//   Rot180: (-x,-y)
+//   Rot270: (-y, x)   (image rotates 90° CCW on the panel)
+static void RotateNDCForPresent(float& x, float& y)
+{
+	switch (GSConfig.Rotation)
+	{
+		case DisplayRotation::Rot90:
+		{
+			const float nx = y;
+			const float ny = -x;
+			x = nx;
+			y = ny;
+			break;
+		}
+		case DisplayRotation::Rot180:
+			x = -x;
+			y = -y;
+			break;
+		case DisplayRotation::Rot270:
+		{
+			const float nx = -y;
+			const float ny = x;
+			x = nx;
+			y = ny;
+			break;
+		}
+		case DisplayRotation::Rot0:
+		default:
+			break;
+	}
+}
+
 void GSDeviceVK::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds)
 {
 	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
@@ -3605,18 +3913,43 @@ void GSDeviceVK::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect,
 	const float inv_x = 2.0f / ds.x;
 	const float inv_y = 2.0f / ds.y;
 
-	const float left = dRect.x * inv_x - 1.0f;
-	const float right = dRect.z * inv_x - 1.0f;
-	const float top = 1.0f - dRect.y * inv_y;
-	const float bottom = 1.0f - dRect.w * inv_y;
+	float left = dRect.x * inv_x - 1.0f;
+	float right = dRect.z * inv_x - 1.0f;
+	float top = 1.0f - dRect.y * inv_y;
+	float bottom = 1.0f - dRect.w * inv_y;
 
-	const GSVertexPT1 vertices[] = {
-		{GSVector4(left, top, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)},
-		{GSVector4(right, top, 0.5f, 1.0f), GSVector2(sRect.z, sRect.y)},
-		{GSVector4(left, bottom, 0.5f, 1.0f), GSVector2(sRect.x, sRect.w)},
-		{GSVector4(right, bottom, 0.5f, 1.0f), GSVector2(sRect.z, sRect.w)},
-	};
-	IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
+	// Present pass: map logical-NDC (computed against the rotated window) onto
+	// the unrotated physical swapchain viewport. Non-present passes pass the
+	// real dst-texture size in `ds` and must not rotate.
+	if (m_is_presenting && GSConfig.Rotation != DisplayRotation::Rot0)
+	{
+		float tlx = left, tly = top;
+		float trx = right, try_ = top;
+		float blx = left, bly = bottom;
+		float brx = right, bry = bottom;
+		RotateNDCForPresent(tlx, tly);
+		RotateNDCForPresent(trx, try_);
+		RotateNDCForPresent(blx, bly);
+		RotateNDCForPresent(brx, bry);
+
+		const GSVertexPT1 vertices[] = {
+			{GSVector4(tlx, tly, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)},
+			{GSVector4(trx, try_, 0.5f, 1.0f), GSVector2(sRect.z, sRect.y)},
+			{GSVector4(blx, bly, 0.5f, 1.0f), GSVector2(sRect.x, sRect.w)},
+			{GSVector4(brx, bry, 0.5f, 1.0f), GSVector2(sRect.z, sRect.w)},
+		};
+		IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
+	}
+	else
+	{
+		const GSVertexPT1 vertices[] = {
+			{GSVector4(left, top, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)},
+			{GSVector4(right, top, 0.5f, 1.0f), GSVector2(sRect.z, sRect.y)},
+			{GSVector4(left, bottom, 0.5f, 1.0f), GSVector2(sRect.x, sRect.w)},
+			{GSVector4(right, bottom, 0.5f, 1.0f), GSVector2(sRect.z, sRect.w)},
+		};
+		IASetVertexBuffer(vertices, sizeof(vertices[0]), std::size(vertices));
+	}
 
 	if (ApplyUtilityState())
 		DrawPrimitive();
@@ -4238,8 +4571,13 @@ void GSDeviceVK::OMSetRenderTargets(
 			{
 				// NVIDIA drivers appear to return random garbage when sampling the RT via a feedback loop, if the load op for
 				// the render pass is CLEAR. Using vkCmdClearAttachments() doesn't work, so we have to clear the image instead.
-				if (vkRt->GetState() == GSTexture::State::Cleared && IsDeviceNVIDIA())
+				// Adreno/turnip has the same garbage-on-CLEAR feedback read.
+				if (vkRt->GetState() == GSTexture::State::Cleared && (IsDeviceNVIDIA() || IsDeviceAdreno()))
 					vkRt->CommitClear();
+				// Adreno/turnip: a feedback-read RT with a DONT_CARE load op (Invalidated state) reads undefined
+				// tile memory. Mark it Dirty so the load op becomes LOAD and the read sees real content.
+				else if (vkRt->GetState() == GSTexture::State::Invalidated && IsDeviceAdreno())
+					vkRt->SetState(GSTexture::State::Dirty);
 
 				if (vkRt->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
 				{
@@ -4263,7 +4601,8 @@ void GSDeviceVK::OMSetRenderTargets(
 				// NVIDIA drivers appear to return random garbage when sampling the RT via a feedback loop, if the load op for
 				// the render pass is CLEAR. Using vkCmdClearAttachments() doesn't work, so we have to clear the image instead.
 				// Note: DS feedback loop was added later - we will assume that the same issue is relevant.
-				if (vkDs->GetState() == GSTexture::State::Cleared && IsDeviceNVIDIA())
+				// Adreno/turnip has the same garbage-on-CLEAR feedback read.
+				if (vkDs->GetState() == GSTexture::State::Cleared && (IsDeviceNVIDIA() || IsDeviceAdreno()))
 					vkDs->CommitClear();
 
 				if (vkDs->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
@@ -4765,6 +5104,13 @@ bool GSDeviceVK::CompileConvertPipelines()
 					gpb.SetRenderPass(GetTFXRenderPass(true, ds != 0, is_setup, false, fbl != 0, false,
 						VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 						0);
+					// The feedback-loop (fbl) render pass carries the RASTERIZATION_ORDER_ATTACHMENT subpass flag
+					// when framebuffer fetch is available; the pipeline bound in it must declare the matching
+					// color-blend rasterization-order flag or the coherent self-read is undefined. Set (overwrite,
+					// not OR, so fbl=0 stays unflagged).
+					gpb.SetBlendFlags((fbl != 0 && m_features.framebuffer_fetch)
+							? VK_PIPELINE_COLOR_BLEND_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_BIT_EXT
+							: 0);
 					arr[ds][fbl] = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true), false);
 					if (!arr[ds][fbl])
 						return false;
@@ -4773,6 +5119,9 @@ bool GSDeviceVK::CompileConvertPipelines()
 						is_setup ? "setup" : "finish", i, ds, fbl);
 				}
 			}
+			// gpb is reused for subsequent convert shaders; clear the rasterization-order flag we set above so it
+			// does not leak onto non-feedback convert pipelines (invalid on a non-RASTER_ORDER render pass).
+			gpb.SetBlendFlags(0);
 		}
 	}
 
@@ -5176,11 +5525,15 @@ void GSDeviceVK::RenderImGui()
 
 	UpdateImGuiTextures();
 
-	const GSVector4 uniforms(
-		2.0f / static_cast<float>(m_window_info.surface_width),
-		2.0f / static_cast<float>(m_window_info.surface_height),
-		-1.0f,
-		-1.0f);
+	// ImGui's vertex Position and ClipRect both come in *logical* pixel coords
+	// (against io.DisplaySize, which we set to the rotated presentation size).
+	// uScale/uTranslate map pixel coords directly to NDC. Rotation transforms
+	// logical pixels into the physical pixel space of the swapchain viewport,
+	// so uScale must always be in physical units (not logical) for both the
+	// rotated and unrotated paths.
+	const float phys_w = static_cast<float>(m_window_info.surface_width);
+	const float phys_h = static_cast<float>(m_window_info.surface_height);
+	const GSVector4 uniforms(2.0f / phys_w, 2.0f / phys_h, -1.0f, -1.0f);
 
 	SetUtilityPushConstants(&uniforms, sizeof(uniforms));
 	SetPipeline(m_imgui_pipeline);
@@ -5193,6 +5546,40 @@ void GSDeviceVK::RenderImGui()
 
 	// this is for presenting, we don't want to screw with the viewport/scissor set by display
 	m_dirty_flags &= ~(DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR);
+
+	// Logical/physical coords differ for Rot90/Rot270; the rotation transform
+	// maps a logical pixel (lx, ly) on a (lw, lh) logical surface to a
+	// physical pixel on the (phys_w, phys_h) swapchain. Rotation is around
+	// the geometric centre of each surface.
+	const bool rotate = (GSConfig.Rotation != DisplayRotation::Rot0);
+	const GSVector2i pres = GetPresentationSize();
+	const float lw = static_cast<float>(pres.x);
+	const float lh = static_cast<float>(pres.y);
+	const auto rotate_pixel = [&](float lx, float ly, float& px, float& py) {
+		const float lcx = lx - lw * 0.5f;
+		const float lcy = ly - lh * 0.5f;
+		float pcx = lcx;
+		float pcy = lcy;
+		switch (GSConfig.Rotation)
+		{
+			case DisplayRotation::Rot90:
+				pcx = lcy;
+				pcy = -lcx;
+				break;
+			case DisplayRotation::Rot180:
+				pcx = -lcx;
+				pcy = -lcy;
+				break;
+			case DisplayRotation::Rot270:
+				pcx = -lcy;
+				pcy = lcx;
+				break;
+			default:
+				break;
+		}
+		px = pcx + phys_w * 0.5f;
+		py = pcy + phys_h * 0.5f;
+	};
 
 	for (int n = 0; n < draw_data->CmdListsCount; n++)
 	{
@@ -5208,7 +5595,22 @@ void GSDeviceVK::RenderImGui()
 			}
 
 			vertex_offset = m_vertex_stream_buffer.GetCurrentOffset() / sizeof(ImDrawVert);
-			std::memcpy(m_vertex_stream_buffer.GetCurrentHostPointer(), cmd_list->VtxBuffer.Data, size);
+			if (!rotate)
+			{
+				std::memcpy(m_vertex_stream_buffer.GetCurrentHostPointer(),
+					cmd_list->VtxBuffer.Data, size);
+			}
+			else
+			{
+				ImDrawVert* dst = reinterpret_cast<ImDrawVert*>(
+					m_vertex_stream_buffer.GetCurrentHostPointer());
+				const ImDrawVert* src = cmd_list->VtxBuffer.Data;
+				for (int i = 0; i < cmd_list->VtxBuffer.Size; i++)
+				{
+					dst[i] = src[i];
+					rotate_pixel(src[i].pos.x, src[i].pos.y, dst[i].pos.x, dst[i].pos.y);
+				}
+			}
 			m_vertex_stream_buffer.CommitMemory(size);
 		}
 
@@ -5220,9 +5622,27 @@ void GSDeviceVK::RenderImGui()
 			const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
 			pxAssert(!pcmd->UserCallback);
 
-			const GSVector4 clip = GSVector4::load<false>(&pcmd->ClipRect);
+			GSVector4 clip = GSVector4::load<false>(&pcmd->ClipRect);
 			if ((clip.zwzw() <= clip.xyxy()).mask() != 0)
 				continue;
+
+			if (rotate)
+			{
+				// Rotate the four corners of the logical clip rect into
+				// physical space, then take their axis-aligned bounding box.
+				// (90/270 rotations preserve axis-alignment.)
+				float x0 = clip.x, y0 = clip.y, x1 = clip.z, y1 = clip.w;
+				float c0x, c0y, c1x, c1y, c2x, c2y, c3x, c3y;
+				rotate_pixel(x0, y0, c0x, c0y);
+				rotate_pixel(x1, y0, c1x, c1y);
+				rotate_pixel(x0, y1, c2x, c2y);
+				rotate_pixel(x1, y1, c3x, c3y);
+				const float xmin = std::min(std::min(c0x, c1x), std::min(c2x, c3x));
+				const float xmax = std::max(std::max(c0x, c1x), std::max(c2x, c3x));
+				const float ymin = std::min(std::min(c0y, c1y), std::min(c2y, c3y));
+				const float ymax = std::max(std::max(c0y, c1y), std::max(c2y, c3y));
+				clip = GSVector4(xmin, ymin, xmax, ymax);
+			}
 
 			SetScissor(GSVector4i(clip).max_i32(GSVector4i::zero()));
 
@@ -5280,21 +5700,21 @@ bool GSDeviceVK::DoCAS(
 
 	// only happening once a frame, so the update isn't a huge deal.
 	Vulkan::DescriptorSetUpdateBuilder dsub;
-	dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, 0, sTexVK->GetView(), sTexVK->GetVkLayout());
-	dsub.AddStorageImageDescriptorWrite(VK_NULL_HANDLE, 1, dTexVK->GetView(), dTexVK->GetVkLayout());
 	if (m_use_push_descriptors)
 	{
+		dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, 0, sTexVK->GetView(), sTexVK->GetVkLayout());
+		dsub.AddStorageImageDescriptorWrite(VK_NULL_HANDLE, 1, dTexVK->GetView(), dTexVK->GetVkLayout());
 		dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_COMPUTE, m_cas_pipeline_layout, 0, false);
 	}
 	else
 	{
-		const VkDescriptorSet ds = AllocateFrameDescriptorSet(m_cas_ds_layout);
-		if (ds != VK_NULL_HANDLE)
-		{
-			dsub.SetDestinationSet(ds);
-			dsub.Update(m_device, false);
-			vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_COMPUTE, m_cas_pipeline_layout, 0, 1, &ds, 0, nullptr);
-		}
+		VkDescriptorSet ds = AllocateDescriptorSetFromFramePool(m_cas_ds_layout);
+		if (ds == VK_NULL_HANDLE) [[unlikely]]
+			return false; // single alloc per frame after EndRenderPass — exhaustion implausible; skip the sharpen pass
+		dsub.AddImageDescriptorWrite(ds, 0, sTexVK->GetView(), sTexVK->GetVkLayout());
+		dsub.AddStorageImageDescriptorWrite(ds, 1, dTexVK->GetView(), dTexVK->GetVkLayout());
+		dsub.Update(m_device);
+		vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_COMPUTE, m_cas_pipeline_layout, 0, 1, &ds, 0, nullptr);
 	}
 
 	// the actual meat and potatoes! only four commands.
@@ -5430,6 +5850,8 @@ void GSDeviceVK::DestroyResources()
 			vkFreeCommandBuffers(m_device, resources.command_pool, static_cast<u32>(resources.command_buffers.size()),
 				resources.command_buffers.data());
 		}
+		if (resources.descriptor_pool != VK_NULL_HANDLE)
+			vkDestroyDescriptorPool(m_device, resources.descriptor_pool, nullptr);
 		if (resources.command_pool != VK_NULL_HANDLE)
 			vkDestroyCommandPool(m_device, resources.command_pool, nullptr);
 		if (resources.descriptor_pool != VK_NULL_HANDLE)
@@ -6364,22 +6786,40 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 
 	if (flags & DIRTY_FLAG_TFX_TEXTURES)
 	{
-		// Non-push path allocates a fresh (empty) descriptor set every time, so every binding the
-		// shader may read must be written - not just the dirty ones (push descriptors persist the rest
-		// in command-buffer state; allocated sets do not). Force all texture sub-flags on. All
-		// m_tfx_textures[] slots are always valid (null slots hold m_null_texture), so this is safe.
+		VkDescriptorSet ds = VK_NULL_HANDLE;
+		// Non-push path allocates a fresh (empty) descriptor set, so every binding the
+		// shader may read must be written — not just the dirty ones (push descriptors
+		// persist the rest in command-buffer state; allocated sets do not). Force all
+		// texture sub-flags on; all m_tfx_textures[] slots are always valid (null slots
+		// hold m_null_texture), so this is safe.
 		if (!m_use_push_descriptors)
+		{
 			flags |= DIRTY_FLAG_TFX_TEXTURES;
+			ds = AllocateDescriptorSetFromFramePool(m_tfx_texture_ds_layout);
+			if (ds == VK_NULL_HANDLE) [[unlikely]]
+			{
+				if (already_execed)
+				{
+					Console.Error("VK: Failed to allocate TFX texture descriptor set");
+					return false;
+				}
+
+				// Frame descriptor pool exhausted — flush to reset it, then restart
+				// the render pass and re-apply all state on the fresh command buffer.
+				ExecuteCommandBufferAndRestartRenderPass(false, "Out of TFX texture descriptors");
+				return ApplyTFXState(true);
+			}
+		}
 
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_TEX)
 		{
-			dsub.AddCombinedImageSamplerDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_TEXTURE,
+			dsub.AddCombinedImageSamplerDescriptorWrite(ds, TFX_TEXTURE_TEXTURE,
 				m_tfx_textures[TFX_TEXTURE_TEXTURE]->GetView(), m_tfx_sampler,
 				m_tfx_textures[TFX_TEXTURE_TEXTURE]->GetVkLayout());
 		}
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_PALETTE)
 		{
-			dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_PALETTE,
+			dsub.AddImageDescriptorWrite(ds, TFX_TEXTURE_PALETTE,
 				m_tfx_textures[TFX_TEXTURE_PALETTE]->GetView(), m_tfx_textures[TFX_TEXTURE_PALETTE]->GetVkLayout());
 		}
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_RT)
@@ -6387,17 +6827,17 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			if (m_features.texture_barrier && !UseFeedbackLoopLayout() && m_device_properties.vendorID == 0x13B5u)
 			{
 				dsub.AddInputAttachmentDescriptorWrite(
-					VK_NULL_HANDLE, TFX_TEXTURE_RT, m_tfx_textures[TFX_TEXTURE_RT]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
+					ds, TFX_TEXTURE_RT, m_tfx_textures[TFX_TEXTURE_RT]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
 			}
 			else
 			{
-				dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_RT, m_tfx_textures[TFX_TEXTURE_RT]->GetView(),
+				dsub.AddImageDescriptorWrite(ds, TFX_TEXTURE_RT, m_tfx_textures[TFX_TEXTURE_RT]->GetView(),
 					m_tfx_textures[TFX_TEXTURE_RT]->GetVkLayout());
 			}
 		}
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_PRIMID)
 		{
-			dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_PRIMID,
+			dsub.AddImageDescriptorWrite(ds, TFX_TEXTURE_PRIMID,
 				m_tfx_textures[TFX_TEXTURE_PRIMID]->GetView(), m_tfx_textures[TFX_TEXTURE_PRIMID]->GetVkLayout());
 		}
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_DEPTH)
@@ -6405,22 +6845,22 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			if (m_features.texture_barrier && !UseFeedbackLoopLayout() && m_device_properties.vendorID == 0x13B5u)
 			{
 				dsub.AddInputAttachmentDescriptorWrite(
-					VK_NULL_HANDLE, TFX_TEXTURE_DEPTH, m_tfx_textures[TFX_TEXTURE_DEPTH]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
+					ds, TFX_TEXTURE_DEPTH, m_tfx_textures[TFX_TEXTURE_DEPTH]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
 			}
 			else
 			{
-				dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_DEPTH, m_tfx_textures[TFX_TEXTURE_DEPTH]->GetView(),
+				dsub.AddImageDescriptorWrite(ds, TFX_TEXTURE_DEPTH, m_tfx_textures[TFX_TEXTURE_DEPTH]->GetView(),
 					m_tfx_textures[TFX_TEXTURE_DEPTH]->GetVkLayout());
 			}
 		}
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_RT_ROV)
 		{
-			dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_RT_ROV, m_tfx_textures[TFX_TEXTURE_RT_ROV]->GetView(),
+			dsub.AddImageDescriptorWrite(ds, TFX_TEXTURE_RT_ROV, m_tfx_textures[TFX_TEXTURE_RT_ROV]->GetView(),
 				m_tfx_textures[TFX_TEXTURE_RT_ROV]->GetVkLayout(), true);
 		}
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_DEPTH_ROV)
 		{
-			dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_DEPTH_ROV, m_tfx_textures[TFX_TEXTURE_DEPTH_ROV]->GetView(),
+			dsub.AddImageDescriptorWrite(ds, TFX_TEXTURE_DEPTH_ROV, m_tfx_textures[TFX_TEXTURE_DEPTH_ROV]->GetView(),
 				m_tfx_textures[TFX_TEXTURE_DEPTH_ROV]->GetVkLayout(), true);
 		}
 
@@ -6430,18 +6870,9 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		}
 		else
 		{
-			const VkDescriptorSet ds = AllocateFrameDescriptorSet(m_tfx_texture_ds_layout);
-			if (ds != VK_NULL_HANDLE)
-			{
-				dsub.SetDestinationSet(ds);
-				dsub.Update(m_device);
-				vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_tfx_pipeline_layout,
-					TFX_DESCRIPTOR_SET_TEXTURES, 1, &ds, 0, nullptr);
-			}
-			else
-			{
-				dsub.Clear();
-			}
+			dsub.Update(m_device);
+			vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_tfx_pipeline_layout,
+				TFX_DESCRIPTOR_SET_TEXTURES, 1, &ds, 0, nullptr);
 		}
 	}
 
@@ -6463,21 +6894,32 @@ bool GSDeviceVK::ApplyUtilityState(bool already_execed)
 		m_current_pipeline_layout = PipelineLayout::Utility;
 
 		Vulkan::DescriptorSetUpdateBuilder dsub;
-		dsub.AddCombinedImageSamplerDescriptorWrite(
-			VK_NULL_HANDLE, 0, m_utility_texture->GetView(), m_utility_sampler, m_utility_texture->GetVkLayout());
 		if (m_use_push_descriptors)
 		{
+			dsub.AddCombinedImageSamplerDescriptorWrite(
+				VK_NULL_HANDLE, 0, m_utility_texture->GetView(), m_utility_sampler, m_utility_texture->GetVkLayout());
 			dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_utility_pipeline_layout, 0, false);
 		}
 		else
 		{
-			const VkDescriptorSet ds = AllocateFrameDescriptorSet(m_utility_ds_layout);
-			if (ds != VK_NULL_HANDLE)
+			VkDescriptorSet ds = AllocateDescriptorSetFromFramePool(m_utility_ds_layout);
+			if (ds == VK_NULL_HANDLE) [[unlikely]]
 			{
-				dsub.SetDestinationSet(ds);
-				dsub.Update(m_device, false);
-				vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_utility_pipeline_layout, 0, 1, &ds, 0, nullptr);
+				if (already_execed)
+				{
+					Console.Error("VK: Failed to allocate utility descriptor set");
+					return false;
+				}
+
+				// Frame descriptor pool exhausted — flush to reset it, then restart
+				// the render pass and re-apply all state on the fresh command buffer.
+				ExecuteCommandBufferAndRestartRenderPass(false, "Out of utility descriptors");
+				return ApplyUtilityState(true);
 			}
+			dsub.AddCombinedImageSamplerDescriptorWrite(
+				ds, 0, m_utility_texture->GetView(), m_utility_sampler, m_utility_texture->GetVkLayout());
+			dsub.Update(m_device);
+			vkCmdBindDescriptorSets(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_utility_pipeline_layout, 0, 1, &ds, 0, nullptr);
 		}
 	}
 
@@ -6981,8 +7423,15 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	// Begin render pass if new target or out of the area.
 	if (!InRenderPass())
 	{
-		const VkAttachmentLoadOp rt_op = GetLoadOpForTexture(draw_rt);
-		const VkAttachmentLoadOp ds_op = GetLoadOpForTexture(draw_ds);
+		VkAttachmentLoadOp rt_op = GetLoadOpForTexture(draw_rt);
+		VkAttachmentLoadOp ds_op = GetLoadOpForTexture(draw_ds);
+		// A feedback-loop draw reads the attachment via subpassLoad; a DONT_CARE load op leaves it
+		// uninitialized, so the coherent read returns undefined (tile) memory. Force LOAD so the read
+		// sees real content - you cannot coherently read what you did not load.
+		if (pipe.IsRTFeedbackLoop() && rt_op == VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+			rt_op = VK_ATTACHMENT_LOAD_OP_LOAD;
+		if (pipe.IsDepthFeedbackLoop() && ds_op == VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+			ds_op = VK_ATTACHMENT_LOAD_OP_LOAD;
 		const VkRenderPass rp = GetTFXRenderPass(pipe.rt, pipe.ds, pipe.ps.colclip_hw,
 			config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil, pipe.IsRTFeedbackLoop(),
 			pipe.IsTestingAndSamplingDepth(), rt_op, ds_op);
@@ -7020,7 +7469,9 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne)
+	// Guard on stencil_buffer: devices without a stencil attachment (e.g. Adreno, forced D32F) have no
+	// stencil aspect to clear.
+	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && m_features.stencil_buffer)
 	{
 		const VkClearAttachment ca = {VK_IMAGE_ASPECT_STENCIL_BIT, 0u, {.depthStencil = {0.0f, 1u}}};
 		const VkClearRect rc = {{{config.drawarea.left, config.drawarea.top},
@@ -7172,6 +7623,15 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelect
 		if (config.IsFeedbackLoopDepth(config.ps))
 			pipe.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteDepth;
 	}
+	// With framebuffer fetch, an RT-reading shader (IsFeedbackLoopRT: tex_is_fb / fbmask / date >= 5 /
+	// sw_blend) reads the render target via subpassLoad, which requires it bound as an input attachment -
+	// i.e. an RT feedback loop. DetermineBarriers clears the barrier flags for framebuffer fetch (the read
+	// is coherent), so the barrier-gated block above skips these draws and the input attachment is never
+	// bound. Wire the RT feedback loop here so IsRTFeedbackLoop() drives the input-attachment binding,
+	// feedback render pass and rasterization-order blend flag. Only the subpassLoad path needs this; the
+	// feedback-loop-layout path samples a texture and is handled elsewhere.
+	if (m_features.framebuffer_fetch && !UseFeedbackLoopLayout() && config.IsFeedbackLoopRT(config.ps))
+		pipe.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteRT;
 	if (pipe.ds && !(pipe.feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteDepth))
 	{
 		pipe.feedback_loop_flags |= (config.tex && config.tex == config.ds) ? FeedbackLoopFlag_ReadDepth : FeedbackLoopFlag_None;

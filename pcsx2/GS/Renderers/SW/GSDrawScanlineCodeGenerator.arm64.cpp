@@ -2281,7 +2281,11 @@ void GSDrawScanlineCodeGenerator::ReadTexelImplLoadTexLOD(const Register& addr, 
 {
 	pxAssert(addr.IsX());
 	pxAssert(m_sel.mmin);
-	armAsm->Ldr(addr.W(), m_sel.lcm ? _global(lod.i.U32[lod]) : _local(temp.lod.i.U32[lod]));
+	// Runtime-indexed U32 lane: hand-compute the offset since `lod` isn't constexpr.
+	const size_t lod_lane = static_cast<size_t>(lod) * sizeof(u32);
+	armAsm->Ldr(addr.W(), m_sel.lcm
+		? MemOperand(_globals, offsetof(GSScanlineGlobalData, lod.i.U32) + lod_lane)
+		: MemOperand(_locals, offsetof(GSScanlineLocalData, temp.lod.i.U32) + lod_lane));
 	if (mip_offset != 0)
 		armAsm->Add(addr.W(), addr.W(), mip_offset);
 	armAsm->Ldr(addr.X(), MemOperand(_global_tex0, addr, LSL, 3));

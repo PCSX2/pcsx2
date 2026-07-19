@@ -9,9 +9,11 @@
 #include "common/Assertions.h"
 #include "common/CocoaTools.h"
 #include "common/Console.h"
+#include "common/Timer.h"
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cmath>
 
 #if defined(VK_USE_PLATFORM_XLIB_KHR)
@@ -27,6 +29,34 @@
 #endif
 
 static_assert(VKSwapChain::NUM_SEMAPHORES == (GSDeviceVK::NUM_COMMAND_BUFFERS + 1));
+
+namespace
+{
+	// Diagnostic counters for present/acquire stalls (esp. on tiler-class drivers).
+	// Atomics so MTGS-thread acquire/present writes are race-free under reads from any thread.
+	std::atomic<bool> s_stats_enabled{false};
+	std::atomic<u64> s_acquire_count{0};
+	std::atomic<u64> s_acquire_total_ns{0};
+	std::atomic<u64> s_acquire_max_ns{0};
+	std::atomic<u64> s_present_count{0};
+	std::atomic<u64> s_present_total_ns{0};
+	std::atomic<u64> s_present_max_ns{0};
+	// Aggregate counts of SUBOPTIMAL / OUT_OF_DATE results across BOTH the
+	// acquire and the present path (NoteAcquire + NotePresent both tick these).
+	// A persistently-stale swapchain can therefore tick up to twice per frame —
+	// these are "results observed", not "frames affected". Intentional: it keeps
+	// both event sources visible in the overlay without a 4-counter schema.
+	std::atomic<u64> s_suboptimal_count{0};
+	std::atomic<u64> s_out_of_date_count{0};
+
+	void UpdateMax(std::atomic<u64>& dst, u64 sample)
+	{
+		u64 prev = dst.load(std::memory_order_relaxed);
+		while (sample > prev && !dst.compare_exchange_weak(prev, sample, std::memory_order_relaxed))
+		{
+		}
+	}
+} // namespace
 
 VKSwapChain::VKSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR present_mode,
 	std::optional<bool> exclusive_fullscreen_control)
@@ -150,6 +180,144 @@ VkSurfaceKHR VKSwapChain::CreateVulkanSurface(VkInstance instance, VkPhysicalDev
 	}
 #endif
 
+	// VK_KHR_display direct-to-monitor (kmsdrm handhelds). No compositor,
+	// no GBM, no native window handle from the frontend — the renderer
+	// enumerates displays itself.
+	if (wi->type == WindowInfo::Type::VulkanDirect)
+	{
+		u32 display_count = 0;
+		VkResult res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device, &display_count, nullptr);
+		if (res != VK_SUCCESS || display_count == 0)
+		{
+			LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPropertiesKHR (count) failed: ");
+			Console.Error("VK_KHR_display: no displays reported by ICD.");
+			return VK_NULL_HANDLE;
+		}
+
+		std::vector<VkDisplayPropertiesKHR> displays(display_count);
+		res = vkGetPhysicalDeviceDisplayPropertiesKHR(physical_device, &display_count, displays.data());
+		if (res != VK_SUCCESS)
+		{
+			LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPropertiesKHR (data) failed: ");
+			return VK_NULL_HANDLE;
+		}
+
+		// Pick the first display. Multi-monitor handhelds are vanishingly
+		// rare; revisit if needed.
+		const VkDisplayKHR display = displays[0].display;
+		INFO_LOG("VK_KHR_display: using display '{}', physical {}x{} mm",
+			displays[0].displayName ? displays[0].displayName : "<unnamed>",
+			displays[0].physicalDimensions.width, displays[0].physicalDimensions.height);
+
+		u32 mode_count = 0;
+		res = vkGetDisplayModePropertiesKHR(physical_device, display, &mode_count, nullptr);
+		if (res != VK_SUCCESS || mode_count == 0)
+		{
+			LOG_VULKAN_ERROR(res, "vkGetDisplayModePropertiesKHR (count) failed: ");
+			return VK_NULL_HANDLE;
+		}
+
+		std::vector<VkDisplayModePropertiesKHR> modes(mode_count);
+		res = vkGetDisplayModePropertiesKHR(physical_device, display, &mode_count, modes.data());
+		if (res != VK_SUCCESS)
+		{
+			LOG_VULKAN_ERROR(res, "vkGetDisplayModePropertiesKHR (data) failed: ");
+			return VK_NULL_HANDLE;
+		}
+
+		// Index 0 is the display's preferred (native) mode per spec.
+		// If the caller asked for a specific resolution, try to match it.
+		u32 best_mode_idx = 0;
+		if (wi->surface_width != 0 && wi->surface_height != 0)
+		{
+			for (u32 i = 0; i < mode_count; i++)
+			{
+				if (modes[i].parameters.visibleRegion.width == wi->surface_width &&
+					modes[i].parameters.visibleRegion.height == wi->surface_height)
+				{
+					best_mode_idx = i;
+					break;
+				}
+			}
+		}
+		const VkDisplayModeKHR mode = modes[best_mode_idx].displayMode;
+		const VkExtent2D mode_extent = modes[best_mode_idx].parameters.visibleRegion;
+		INFO_LOG("VK_KHR_display: selected mode {}x{}@{}.{:03} Hz",
+			mode_extent.width, mode_extent.height,
+			modes[best_mode_idx].parameters.refreshRate / 1000,
+			modes[best_mode_idx].parameters.refreshRate % 1000);
+
+		u32 plane_count = 0;
+		res = vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physical_device, &plane_count, nullptr);
+		if (res != VK_SUCCESS || plane_count == 0)
+		{
+			LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR (count) failed: ");
+			return VK_NULL_HANDLE;
+		}
+
+		std::vector<VkDisplayPlanePropertiesKHR> planes(plane_count);
+		res = vkGetPhysicalDeviceDisplayPlanePropertiesKHR(physical_device, &plane_count, planes.data());
+		if (res != VK_SUCCESS)
+		{
+			LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR (data) failed: ");
+			return VK_NULL_HANDLE;
+		}
+
+		u32 selected_plane = UINT32_MAX;
+		for (u32 i = 0; i < plane_count; i++)
+		{
+			// Skip planes already bound to a different display.
+			if (planes[i].currentDisplay != VK_NULL_HANDLE && planes[i].currentDisplay != display)
+				continue;
+
+			u32 supported_count = 0;
+			if (vkGetDisplayPlaneSupportedDisplaysKHR(physical_device, i, &supported_count, nullptr) != VK_SUCCESS ||
+				supported_count == 0)
+				continue;
+
+			std::vector<VkDisplayKHR> supported(supported_count);
+			vkGetDisplayPlaneSupportedDisplaysKHR(physical_device, i, &supported_count, supported.data());
+			if (std::find(supported.begin(), supported.end(), display) != supported.end())
+			{
+				selected_plane = i;
+				break;
+			}
+		}
+
+		if (selected_plane == UINT32_MAX)
+		{
+			Console.Error("VK_KHR_display: no compatible plane found for selected display.");
+			return VK_NULL_HANDLE;
+		}
+
+		VkDisplaySurfaceCreateInfoKHR surface_create_info = {};
+		surface_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR;
+		surface_create_info.displayMode = mode;
+		surface_create_info.planeIndex = selected_plane;
+		surface_create_info.planeStackIndex = planes[selected_plane].currentStackIndex;
+		surface_create_info.transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+		surface_create_info.globalAlpha = 1.0f;
+		surface_create_info.alphaMode = VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR;
+		surface_create_info.imageExtent = mode_extent;
+
+		VkSurfaceKHR surface;
+		res = vkCreateDisplayPlaneSurfaceKHR(instance, &surface_create_info, nullptr, &surface);
+		if (res != VK_SUCCESS)
+		{
+			LOG_VULKAN_ERROR(res, "vkCreateDisplayPlaneSurfaceKHR failed: ");
+			return VK_NULL_HANDLE;
+		}
+
+		// Reflect the actual selected mode back to the caller so the
+		// swapchain sizes correctly even when 0x0 was passed in.
+		wi->surface_width = mode_extent.width;
+		wi->surface_height = mode_extent.height;
+		wi->surface_refresh_rate =
+			static_cast<float>(modes[best_mode_idx].parameters.refreshRate) / 1000.0f;
+
+		return surface;
+	}
+
 	return VK_NULL_HANDLE;
 }
 
@@ -226,6 +394,72 @@ std::optional<VkSurfaceFormatKHR> VKSwapChain::SelectSurfaceFormat(VkSurfaceKHR 
 
 	Console.Error("Failed to find a suitable format for swap chain buffers.");
 	return std::nullopt;
+}
+
+VKSwapChain::PresentStats VKSwapChain::GetPresentStats()
+{
+	const u64 acquire_n = s_acquire_count.load(std::memory_order_relaxed);
+	const u64 present_n = s_present_count.load(std::memory_order_relaxed);
+	return PresentStats{
+		acquire_n,
+		static_cast<double>(s_acquire_total_ns.load(std::memory_order_relaxed)) / 1'000'000.0,
+		static_cast<double>(s_acquire_max_ns.load(std::memory_order_relaxed)) / 1'000'000.0,
+		present_n,
+		static_cast<double>(s_present_total_ns.load(std::memory_order_relaxed)) / 1'000'000.0,
+		static_cast<double>(s_present_max_ns.load(std::memory_order_relaxed)) / 1'000'000.0,
+		s_suboptimal_count.load(std::memory_order_relaxed),
+		s_out_of_date_count.load(std::memory_order_relaxed),
+	};
+}
+
+void VKSwapChain::ResetPresentStats()
+{
+	s_acquire_count.store(0, std::memory_order_relaxed);
+	s_acquire_total_ns.store(0, std::memory_order_relaxed);
+	s_acquire_max_ns.store(0, std::memory_order_relaxed);
+	s_present_count.store(0, std::memory_order_relaxed);
+	s_present_total_ns.store(0, std::memory_order_relaxed);
+	s_present_max_ns.store(0, std::memory_order_relaxed);
+	s_suboptimal_count.store(0, std::memory_order_relaxed);
+	s_out_of_date_count.store(0, std::memory_order_relaxed);
+}
+
+void VKSwapChain::SetPresentStatsEnabled(bool enabled)
+{
+	s_stats_enabled.store(enabled, std::memory_order_relaxed);
+}
+
+bool VKSwapChain::IsPresentStatsEnabled()
+{
+	return s_stats_enabled.load(std::memory_order_relaxed);
+}
+
+void VKSwapChain::NoteAcquire(double ms, VkResult res)
+{
+	if (!s_stats_enabled.load(std::memory_order_relaxed))
+		return;
+	const u64 ns = static_cast<u64>(ms * 1'000'000.0);
+	s_acquire_count.fetch_add(1, std::memory_order_relaxed);
+	s_acquire_total_ns.fetch_add(ns, std::memory_order_relaxed);
+	UpdateMax(s_acquire_max_ns, ns);
+	if (res == VK_SUBOPTIMAL_KHR)
+		s_suboptimal_count.fetch_add(1, std::memory_order_relaxed);
+	else if (res == VK_ERROR_OUT_OF_DATE_KHR)
+		s_out_of_date_count.fetch_add(1, std::memory_order_relaxed);
+}
+
+void VKSwapChain::NotePresent(double ms, VkResult res)
+{
+	if (!s_stats_enabled.load(std::memory_order_relaxed))
+		return;
+	const u64 ns = static_cast<u64>(ms * 1'000'000.0);
+	s_present_count.fetch_add(1, std::memory_order_relaxed);
+	s_present_total_ns.fetch_add(ns, std::memory_order_relaxed);
+	UpdateMax(s_present_max_ns, ns);
+	if (res == VK_SUBOPTIMAL_KHR)
+		s_suboptimal_count.fetch_add(1, std::memory_order_relaxed);
+	else if (res == VK_ERROR_OUT_OF_DATE_KHR)
+		s_out_of_date_count.fetch_add(1, std::memory_order_relaxed);
 }
 
 static const char* PresentModeToString(VkPresentModeKHR mode)
@@ -362,8 +596,18 @@ bool VKSwapChain::CreateSwapChain()
 
 	// Select number of images in swap chain, we prefer one buffer in the background to work on in triple-buffered mode.
 	// maxImageCount can be zero, in which case there isn't an upper limit on the number of buffers.
+	// VK_KHR_display (VulkanDirect) + FIFO + 2 images stalls vkAcquireNextImageKHR
+	// for ~1.5 vsync intervals per frame waiting for the display engine to release
+	// the previously-presented image (measured on some tiler-class drivers). A third
+	// image lets the GPU work on N+2 while N is on-screen and N+1 is queued, recovering
+	// ~33% throughput. Default to 3 images for VulkanDirect, and for MAILBOX
+	// present mode regardless of WSI.
+	const bool use_triple =
+		(m_window_info.type == WindowInfo::Type::VulkanDirect) ||
+		(m_present_mode == VK_PRESENT_MODE_MAILBOX_KHR);
+	const u32 desired_image_count = use_triple ? 3 : 2;
 	u32 image_count = std::clamp<u32>(
-		(m_present_mode == VK_PRESENT_MODE_MAILBOX_KHR) ? 3 : 2, surface_capabilities.minImageCount,
+		desired_image_count, surface_capabilities.minImageCount,
 		(surface_capabilities.maxImageCount == 0) ? std::numeric_limits<u32>::max() : surface_capabilities.maxImageCount);
 	DEV_LOG("Creating a swap chain with {} images in present mode {}", image_count, PresentModeToString(m_present_mode));
 
@@ -390,6 +634,28 @@ bool VKSwapChain::CreateSwapChain()
 		(size.width & ~31u) >= surface_capabilities.minImageExtent.width)
 	{
 		size.width &= ~31u;
+	}
+
+	// One-shot log of the resolved swapchain config — useful for WSI-path diagnosis
+	// (e.g. comparing VK_KHR_display vs a Wayland surface on the same device).
+	{
+		const char* wsi_name = "?";
+		switch (m_window_info.type)
+		{
+			case WindowInfo::Type::Surfaceless: wsi_name = "Surfaceless"; break;
+			case WindowInfo::Type::Win32:       wsi_name = "Win32"; break;
+			case WindowInfo::Type::X11:         wsi_name = "X11"; break;
+			case WindowInfo::Type::Wayland:     wsi_name = "Wayland"; break;
+			case WindowInfo::Type::MacOS:       wsi_name = "MacOS"; break;
+			case WindowInfo::Type::VulkanDirect: wsi_name = "VulkanDirect"; break;
+		}
+		Console.WriteLnFmt(
+			"Vulkan: Swapchain {}x{} fmt={} colorspace={} present={} images={} (desired={} min={} max={}) wsi={}",
+			size.width, size.height, static_cast<unsigned>(surface_format->format),
+			static_cast<unsigned>(surface_format->colorSpace),
+			PresentModeToString(m_present_mode), image_count,
+			desired_image_count, surface_capabilities.minImageCount, surface_capabilities.maxImageCount,
+			wsi_name);
 	}
 
 	// Prefer identity transform if possible
@@ -431,9 +697,18 @@ bool VKSwapChain::CreateSwapChain()
 	// VK_EXT_swapchain_maintenance1 types/enums are aliases of VK_KHR_swapchain_maintenance1 types/enums.
 	const VkSwapchainPresentModesCreateInfoKHR modes_info{VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_KHR, nullptr, 1u, &m_present_mode};
 
+	// Some ARM Mali Vulkan drivers advertise VK_EXT_swapchain_maintenance1 but
+	// vkCreateSwapchainKHR errors VK_ERROR_INITIALIZATION_FAILED whenever this pNext is
+	// attached, regardless of present mode. Keep the extension enabled — the rest of its
+	// surface (present-fence-info, release-swapchain-images) works fine — and just skip
+	// the create-time pNext on ARM Mali.
+	const bool use_present_modes_pnext =
+		GSDeviceVK::GetInstance()->GetOptionalExtensions().vk_swapchain_maintenance1 &&
+		!GSDeviceVK::GetInstance()->IsDeviceMali();
+
 	// Now we can actually create the swap chain
-	VkSwapchainCreateInfoKHR swap_chain_info = {VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR, 
-		GSDeviceVK::GetInstance()->GetOptionalExtensions().vk_swapchain_maintenance1 ? &modes_info : nullptr, 0, m_surface,
+	VkSwapchainCreateInfoKHR swap_chain_info = {VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+		use_present_modes_pnext ? &modes_info : nullptr, 0, m_surface,
 		image_count, surface_format->format, surface_format->colorSpace, size, 1u, image_usage,
 		VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, transform, alpha, m_present_mode, VK_TRUE, old_swap_chain};
 	std::array<uint32_t, 2> indices = {{
@@ -600,8 +875,16 @@ VkResult VKSwapChain::AcquireNextImage()
 	// Use a different semaphore for each image.
 	m_current_semaphore = (m_current_semaphore + 1) % static_cast<u32>(m_semaphores.size());
 
+	const bool stats = s_stats_enabled.load(std::memory_order_relaxed);
+	const Common::Timer::Value t_start = stats ? Common::Timer::GetCurrentValue() : 0;
 	const VkResult res = vkAcquireNextImageKHR(GSDeviceVK::GetInstance()->GetDevice(), m_swap_chain, UINT64_MAX,
 		m_semaphores[m_current_semaphore].available_semaphore, VK_NULL_HANDLE, &m_current_image);
+	if (stats)
+	{
+		const double elapsed_ms =
+			Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue() - t_start);
+		NoteAcquire(elapsed_ms, res);
+	}
 	m_image_acquire_result = res;
 	return res;
 }

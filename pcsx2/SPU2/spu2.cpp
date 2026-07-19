@@ -105,6 +105,11 @@ void SPU2writeDMA7Mem(u16* pMem, u32 size)
 	Cores[1].DoDMAwrite(pMem, size);
 }
 
+AudioStream* SPU2::GetOutputStream()
+{
+	return s_output_stream.get();
+}
+
 void SPU2::CreateOutputStream()
 {
 	// Initialize volume and mute settings on new session.

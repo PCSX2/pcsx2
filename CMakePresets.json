@@ -53,7 +53,36 @@
             "inherits": "clang-base",
             "cacheVariables": {
                 "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "ON",
-                "CMAKE_BUILD_TYPE": "Release"
+                "CMAKE_BUILD_TYPE": "Release",
+                "ENABLE_RECOMPILER_TEST_HOOKS": "OFF"
+            }
+        },
+        {
+            "name": "clang-perf",
+            "displayName": "Clang Devel + perf jitdump",
+            "description": "Devel build with USE_PERF_JITDUMP=ON; emits /tmp/pcsx2-perf-<pid>/jit-<pid>.dump for `perf inject --jit`.",
+            "inherits": "clang-devel",
+            "binaryDir": "${sourceDir}/build-perf",
+            "cacheVariables": {
+                "USE_PERF_JITDUMP": "ON"
+            }
+        },
+        {
+            "name": "clang-handheld",
+            "displayName": "Clang Handheld (SDL3 / kmsdrm)",
+            "description": "RelWithDebInfo build of the SDL3 frontend for kmsdrm-only handhelds. No Qt. GSRunner builds with a VulkanDirect platform backend (no X11/Wayland).",
+            "inherits": "clang-base",
+            "binaryDir": "${sourceDir}/build-handheld",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "ENABLE_QT_UI": "OFF",
+                "ENABLE_GSRUNNER": "ON",
+                "ENABLE_SDL_FRONTEND": "ON",
+                "ENABLE_TESTS": "OFF",
+                "ENABLE_RECOMPILER_TEST_HOOKS": "OFF",
+                "USE_BACKTRACE": "OFF",
+                "X11_API": "OFF",
+                "WAYLAND_API": "OFF"
             }
         }
     ]

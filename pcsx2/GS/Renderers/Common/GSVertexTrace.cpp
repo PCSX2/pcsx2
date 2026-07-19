@@ -25,7 +25,52 @@ void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, in
 	const u32 fst = m_state->PRIM->FST;
 	const u32 color = !(m_state->PRIM->TME && m_state->m_context->TEX0.TFX == TFX_DECAL && m_state->m_context->TEX0.TCC);
 
-	m_fmm[color][fst][tme][iip][primclass](*this, vertex, index, i_count);
+	bool fused = false;
+#ifdef ARCH_ARM64
+	// Fused vertex-trace bounds (see GSVertexKick.h): triangle-class draws
+	// accumulate their min/max at index-emission time; consume the accumulator
+	// instead of re-walking the index list when the finish step can reproduce
+	// the legacy tail bit-exactly (it declines on STQ hazards).
+	if (primclass == GS_TRIANGLE_CLASS && m_state->m_vertex->fmm_valid)
+	{
+		GSVertexKernels::FmmResult r;
+		if (GSVertexKernels::FmmFinish(m_state->m_vertex->fmm_acc, tme != 0, fst != 0, color != 0,
+				m_state->m_context->XYOFFSET, m_state->m_context->TEX0.TW, m_state->m_context->TEX0.TH, r))
+		{
+			m_min.p = r.min_p;
+			m_max.p = r.max_p;
+			m_min.t = r.min_t;
+			m_max.t = r.max_t;
+			m_min.c = r.min_c;
+			m_max.c = r.max_c;
+			if (r.write_nan)
+				nan.value = r.nan_value;
+			fused = true;
+		}
+	}
+#endif
+
+	if (!fused)
+	{
+		m_fmm[color][fst][tme][iip][primclass](*this, vertex, index, i_count);
+	}
+#if defined(ARCH_ARM64) && defined(GS_VERTEX_CROSSCHECK)
+	else
+	{
+		const GSVector4 xp_min = m_min.p, xp_max = m_max.p, xt_min = m_min.t, xt_max = m_max.t;
+		const GSVector4i xc_min = m_min.c, xc_max = m_max.c;
+		const u32 x_nan = nan.value;
+
+		m_fmm[color][fst][tme][iip][primclass](*this, vertex, index, i_count);
+
+		pxAssertRel(GSVector4i::cast(xp_min).eq(GSVector4i::cast(m_min.p)) &&
+						GSVector4i::cast(xp_max).eq(GSVector4i::cast(m_max.p)) &&
+						GSVector4i::cast(xt_min).eq(GSVector4i::cast(m_min.t)) &&
+						GSVector4i::cast(xt_max).eq(GSVector4i::cast(m_max.t)) &&
+						xc_min.eq(m_min.c) && xc_max.eq(m_max.c) && x_nan == nan.value,
+			"GS_VERTEX_CROSSCHECK: fused FindMinMax divergence");
+	}
+#endif
 
 	// Potential float overflow detected. Better uses the slower division instead
 	// Note: If Q is too big, 1/Q will end up as 0. 1e30 is a random number

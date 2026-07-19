@@ -71,6 +71,11 @@ public:
 
 	u32 GetBufferedFramesRelaxed() const;
 
+	// libretro: pull up to num_frames decoded frames out of the ring; the
+	// frontend drives audio timing instead of a backend device thread.
+	// Returns the number of frames actually written to samples.
+	u32 PullFrames(SampleType* samples, u32 num_frames);
+
 	/// Temporarily pauses the stream, preventing it from requesting data.
 	virtual void SetPaused(bool paused);
 

@@ -241,7 +241,7 @@ SharedMemoryMappingArea::~SharedMemoryMappingArea()
 }
 
 
-std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t size, bool jit)
+std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t size, bool jit, uptr fixed_base_hint)
 {
 	pxAssertRel(Common::IsAlignedPow2(size, __pagesize), "Size is page aligned");
 
@@ -258,7 +258,34 @@ std::unique_ptr<SharedMemoryMappingArea> SharedMemoryMappingArea::Create(size_t 
 #endif
 	}
 #endif
-	void* alloc = mmap(nullptr, size, prot, flags, -1, 0);
+
+	void* alloc = MAP_FAILED;
+
+	// Deterministic VA placement for the on-disk VU program cache: when a
+	// fixed base hint is given, try it (plus 256MB-stride fallback slots) with a
+	// hint-and-verify mmap (no MAP_FIXED, so we never clobber an existing
+	// mapping). If none of the slots land exactly, fall through to kernel
+	// placement — the program cache records the arena base and simply misses on
+	// a mismatch, so this trades determinism for booting, never correctness.
+	if (fixed_base_hint != 0)
+	{
+		for (int slot = 0; slot <= 10; slot++)
+		{
+			void* const want = reinterpret_cast<void*>(fixed_base_hint + (static_cast<uptr>(slot) << 28));
+			void* const got = mmap(want, size, prot, flags, -1, 0);
+			if (got == MAP_FAILED)
+				continue;
+			if (got == want)
+			{
+				alloc = got;
+				break;
+			}
+			munmap(got, size);
+		}
+	}
+
+	if (alloc == MAP_FAILED)
+		alloc = mmap(nullptr, size, prot, flags, -1, 0);
 	if (alloc == MAP_FAILED)
 	{
 		const int err = errno;

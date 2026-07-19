@@ -4,10 +4,14 @@
 #include "Common.h"
 
 #include "VUmicro.h"
+#include "VU1Trace.h"
 #include "GS.h"
 #include "Gif_Unit.h"
 #include "MTVU.h"
+#include "microVU_Divtrace.h"
+#include "vu_capture.h"
 
+#include <atomic>
 #include <cfenv>
 
 extern void _vuFlushAll(VURegs* VU);
@@ -47,11 +51,7 @@ static void _vu1Exec(VURegs* VU)
 		if (VU0.VI[REG_FBRST].UL & 0x400)
 		{
 			VU0.VI[REG_VPU_STAT].UL |= 0x200;
-#ifdef ARCH_ARM64
-			extern bool g_mvuShadowRun; // MVU_DIFF shadow: don't raise a real INTC
-			if (!g_mvuShadowRun)
-#endif
-				hwIntcIrq(INTC_VU1);
+			hwIntcIrq(INTC_VU1);
 			VU->ebit = 1;
 		}
 	}
@@ -60,11 +60,7 @@ static void _vu1Exec(VURegs* VU)
 		if (VU0.VI[REG_FBRST].UL & 0x800)
 		{
 			VU0.VI[REG_VPU_STAT].UL |= 0x400;
-#ifdef ARCH_ARM64
-			extern bool g_mvuShadowRun; // MVU_DIFF shadow: don't raise a real INTC
-			if (!g_mvuShadowRun)
-#endif
-				hwIntcIrq(INTC_VU1);
+			hwIntcIrq(INTC_VU1);
 			VU->ebit = 1;
 		}
 	}
@@ -269,6 +265,24 @@ void InterpVU1::Execute(u32 cycles)
 	const FPControlRegisterBackup fpcr_backup(EmuConfig.Cpu.VU1FPCR);
 
 	VU1.VI[REG_TPC].UL <<= 3;
+#ifdef PCSX2_RECOMPILER_TESTS
+	vu1_trace::Entry* trace = vu1_trace::g_enabled.load(std::memory_order_relaxed)
+		? vu1_trace::begin('i', VU1.VI[REG_TPC].UL, cycles)
+		: nullptr;
+#endif
+
+#ifdef PCSX2_RECOMPILER_TESTS
+	// Live-game capture probe — mirror of the mVU JIT-side probe in
+	// mVUexecute (microVU-arm64.cpp). Lets a full-interpreter boot still dump
+	// VU programs from games that crash under JIT before reaching VU-heavy
+	// code, so the captures can be replayed through pcsx2-vurunner --diff.
+	// No-op unless PCSX2_VU_CAPTURE_DIR / PCSX2_VU_RANK_OUT is set. REG_TPC is
+	// already byte-PC here (shifted at function entry above); mask to match the JIT key.
+	vu_capture::MaybeCapture(1, VU1.VI[REG_TPC].UL & 0x3ff8, cycles,
+		(const u8*)VU1.Micro, VU1_PROGSIZE,
+		(const u8*)VU1.Mem, VU1_MEMSIZE, VU1);
+#endif
+
 	u64 startcycles = VU1.cycle;
 
 	while ((VU1.cycle - startcycles) < cycles)
@@ -282,8 +296,40 @@ void InterpVU1::Execute(u32 cycles)
 			}
 			break;
 		}
+#ifdef PCSX2_RECOMPILER_TESTS
+		// Capture xPC of the op we're ABOUT to execute, for divtrace alignment.
+		// REG_TPC was shifted to byte-PC at function entry,
+		// so it already holds the byte address — do NOT shift again.
+		const u32 dt_pre_xPC = VU1.VI[REG_TPC].UL;
+#endif
 		Step();
+
+#ifdef PCSX2_RECOMPILER_TESTS
+		// vudivtrace: snapshot VU1 architectural state after each interp op
+		// so the driver can compare against the JIT's per-op snapshot stream.
+		// Test-hook-only; release builds drop the per-op probe entirely.
+		if (mvu_divtrace::g_enabled.load(std::memory_order_relaxed)
+			&& mvu_divtrace::g_vu_index == 1
+			&& mvu_divtrace::g_interp_op_idx < mvu_divtrace::g_interp_fps.size())
+		{
+			const u32 idx = mvu_divtrace::g_interp_op_idx;
+			mvu_divtrace::g_interp_fps[idx] = mvu_divtrace::FingerprintRegs(vuRegs[1]);
+			mvu_divtrace::g_interp_xpc[idx] = dt_pre_xPC;
+			if (idx >= mvu_divtrace::g_full_lo && idx < mvu_divtrace::g_full_hi)
+			{
+				auto& snap = mvu_divtrace::g_interp_snaps[idx - mvu_divtrace::g_full_lo];
+				std::memcpy(&snap.regs, &vuRegs[1], sizeof(VURegs));
+				snap.meta_idx = 0xFFFF;
+				snap.pre_xPC  = dt_pre_xPC;
+			}
+			++mvu_divtrace::g_interp_op_idx;
+		}
+#endif
 	}
 	VU1.VI[REG_TPC].UL >>= 3;
 	VU1.nextBlockCycles = (VU1.cycle - cpuRegs.cycle) + 1;
+
+#ifdef PCSX2_RECOMPILER_TESTS
+	vu1_trace::finish(trace);
+#endif
 }

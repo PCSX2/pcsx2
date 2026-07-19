@@ -27,6 +27,15 @@ struct BASEBLOCKEX
 	u32 size;    // The size in dwords (equivalent to the number of instructions)
 	u32 x86size; // The size in byte of the translated x86 instructions
 
+	// arm64 SL-1 loop residency (unused by the x86 rec, zeroed by insert()):
+	// the resident back-edge B is an INTERNAL branch to the block's loop-top
+	// label, so the entry redirect stub Remove() writes cannot catch it. When
+	// set, Remove() atomically repoints backedge_site to backedge_stub (the
+	// cold spill stub → DispatcherEvent) so a cleared self-loop exits its
+	// stale code at the next back-edge instead of the next event.
+	uptr backedge_site;
+	uptr backedge_stub;
+
 #ifdef PCSX2_DEVBUILD
 	// Could be useful to instrument the block
 	//u32 visited; // number of times called

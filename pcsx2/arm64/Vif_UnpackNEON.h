@@ -9,6 +9,10 @@
 #include "Vif_Dynarec.h"
 #include "arm64/AsmHelpers.h"
 
+// Shared with microVU — single definition in arm64/microVU_Misc-arm64.inl
+// (mirrors x86, where newVif.h declares the helper defined in microVU_Misc.inl).
+extern void mVUmergeRegs(const vixl::aarch64::VRegister& dest, const vixl::aarch64::VRegister& src, int xyzw, bool modXYZW = false);
+
 #define xmmCol0 vixl::aarch64::q2
 #define xmmCol1 vixl::aarch64::q3
 #define xmmCol2 vixl::aarch64::q4

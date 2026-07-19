@@ -336,7 +336,13 @@ RETURNS_R128 _hwRead128(u32 mem)
 {
 	pxAssume( (mem & 0x0f) == 0 );
 
-	alignas(16) mem128_t result;
+	// Zero-init: several page/address combinations (e.g. a 128-bit read of a
+	// page-0x0F register such as INTC_STAT that is neither the SBUS_PS1 range
+	// nor 0x1000f300) break out of the switch below WITHOUT writing `result`,
+	// then fall through to `return r128_load(&result)`. Leaving it
+	// uninitialized returns whatever was on the stack — a nondeterministic,
+	// layout-dependent value. Fully-writing paths (the FIFOs) overwrite this.
+	alignas(16) mem128_t result = {};
 
 	// FIFOs are the only "legal" 128 bit registers, so we Handle them first.
 	// All other registers fall back on the 64-bit handler (and from there

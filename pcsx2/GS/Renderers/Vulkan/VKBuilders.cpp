@@ -505,6 +505,11 @@ void Vulkan::GraphicsPipelineBuilder::AddBlendFlags(u32 flags)
 	m_blend_state.flags |= flags;
 }
 
+void Vulkan::GraphicsPipelineBuilder::SetBlendFlags(u32 flags)
+{
+	m_blend_state.flags = flags;
+}
+
 void Vulkan::GraphicsPipelineBuilder::ClearBlendAttachments()
 {
 	m_blend_attachments = {};

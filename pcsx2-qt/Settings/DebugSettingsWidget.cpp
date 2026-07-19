@@ -5,7 +5,9 @@
 
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
+#ifdef ENABLE_QT_DEBUGGER
 #include "Debugger/DebuggerWindow.h"
+#endif
 #include "Settings/DebugAnalysisSettingsWidget.h"
 #include "Settings/SettingsWindow.h"
 
@@ -38,8 +40,10 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 		SettingWidgetBinder::BindWidgetToIntSetting(
 			sif, m_user_interface.refreshInterval, "Debugger/UserInterface", "RefreshInterval", 1000);
 		connect(m_user_interface.refreshInterval, &QSpinBox::valueChanged, this, []() {
+#ifdef ENABLE_QT_DEBUGGER
 			if (g_debugger_window)
 				g_debugger_window->updateFromSettings();
+#endif
 		});
 		dialog()->registerWidgetHelp(
 			m_user_interface.refreshInterval, tr("Refresh Interval"), tr("1000ms"),

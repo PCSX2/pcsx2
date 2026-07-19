@@ -4,6 +4,7 @@
 #include "HostSys.h"
 #include "Console.h"
 #include "VectorIntrin.h"
+#include "fmt/format.h"
 
 #ifndef __APPLE__
 #include "cpuinfo.h"
@@ -146,6 +147,82 @@ void AbortWithMessage(const char* msg)
 
 #ifndef __APPLE__
 // MacOS version is in DarwinMisc
+
+#ifdef __aarch64__
+// cpuinfo library often returns empty/unknown names on ARM Linux.
+// Fall back to reading MIDR fields from /proc/cpuinfo.
+static std::string DetectArmCPUName()
+{
+	FILE* f = fopen("/proc/cpuinfo", "r");
+	if (!f)
+		return {};
+
+	u32 implementer = 0, part = 0;
+	char line[256];
+	while (fgets(line, sizeof(line), f))
+	{
+		if (sscanf(line, "CPU implementer : %x", &implementer) == 1)
+			continue;
+		if (sscanf(line, "CPU part : %x", &part) == 1)
+			break; // got both from first core
+	}
+	fclose(f);
+
+	// Map common implementer+part to names
+	if (implementer == 0x41) // ARM Ltd
+	{
+		switch (part)
+		{
+			case 0xd03: return "ARM Cortex-A53";
+			case 0xd04: return "ARM Cortex-A35";
+			case 0xd05: return "ARM Cortex-A55";
+			case 0xd07: return "ARM Cortex-A57";
+			case 0xd08: return "ARM Cortex-A72";
+			case 0xd09: return "ARM Cortex-A73";
+			case 0xd0a: return "ARM Cortex-A75";
+			case 0xd0b: return "ARM Cortex-A76";
+			case 0xd0c: return "ARM Neoverse N1";
+			case 0xd0d: return "ARM Cortex-A77";
+			case 0xd40: return "ARM Neoverse V1";
+			case 0xd41: return "ARM Cortex-A78";
+			case 0xd44: return "ARM Cortex-X1";
+			case 0xd46: return "ARM Cortex-A510";
+			case 0xd47: return "ARM Cortex-A710";
+			case 0xd48: return "ARM Cortex-X2";
+			case 0xd4d: return "ARM Cortex-A715";
+			case 0xd4e: return "ARM Cortex-X3";
+			case 0xd80: return "ARM Cortex-A520";
+			case 0xd81: return "ARM Cortex-A720";
+			case 0xd82: return "ARM Cortex-X4";
+		}
+	}
+	else if (implementer == 0x51) // Qualcomm
+	{
+		switch (part)
+		{
+			case 0x802: return "Qualcomm Kryo 385 Gold";
+			case 0x803: return "Qualcomm Kryo 385 Silver";
+			case 0xc00: return "Qualcomm Falkor";
+			case 0x001: return "Qualcomm Oryon";
+		}
+	}
+	else if (implementer == 0x61) // Apple
+	{
+		switch (part)
+		{
+			case 0x022: return "Apple M1 Icestorm";
+			case 0x023: return "Apple M1 Firestorm";
+			case 0x032: return "Apple M2 Blizzard";
+			case 0x033: return "Apple M2 Avalanche";
+		}
+	}
+
+	if (implementer != 0 && part != 0)
+		return fmt::format("ARM (impl 0x{:02X} part 0x{:03X})", implementer, part);
+	return {};
+}
+#endif
+
 static CPUInfo CalcCPUInfo()
 {
 	CPUInfo out;
@@ -168,6 +245,17 @@ static CPUInfo CalcCPUInfo()
 			out.name = manuf;
 	}
 #endif
+
+#ifdef __aarch64__
+	// cpuinfo often returns empty/unknown on ARM Linux — use MIDR fallback
+	if (out.name.empty() || out.name.find("Unknown") != std::string::npos || out.name == "unknown")
+	{
+		std::string arm_name = DetectArmCPUName();
+		if (!arm_name.empty())
+			out.name = std::move(arm_name);
+	}
+#endif
+
 
 	out.num_threads = cpuinfo_get_processors_count();
 	out.num_clusters = cpuinfo_get_clusters_count();

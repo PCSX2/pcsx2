@@ -1820,15 +1820,6 @@ void _vuXGKICKTransfer(s32 cycles, bool flush)
 	if (!VU1.xgkickenable)
 		return;
 
-#ifdef ARCH_ARM64
-	// MVU_DIFF shadow run (aVU.cpp): the interpreter is being re-run only to compare
-	// against microVU, which already performed the real GS transfer — suppress this
-	// duplicate one so the shadow leaves no side effect on the GS.
-	extern bool g_mvuShadowRun;
-	if (g_mvuShadowRun)
-		return;
-#endif
-
 	VU1.xgkickcyclecount += cycles;
 	VU1.xgkicklastcycle += cycles;
 

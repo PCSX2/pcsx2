@@ -91,6 +91,7 @@ const char* GSTexture::GetFormatName(Format format)
 	{
 		default:
 			pxFailRel("Invalid texture format");
+			[[fallthrough]];
 		case Format::Invalid:      return "Invalid";
 		case Format::Color:        return "Color";
 		case Format::ColorHQ:      return "ColorHQ";
@@ -134,6 +135,7 @@ u32 GSTexture::GetCompressedBytesPerBlock(Format format)
 	{
 		default:
 			pxFailRel("Invalid texture format");
+			[[fallthrough]];
 		case Format::Invalid:      return 1;  // Invalid
 		case Format::Color:        return 4;  // Color/RGBA8
 		case Format::ColorHQ:      return 4;  // ColorHQ/RGB10A2
