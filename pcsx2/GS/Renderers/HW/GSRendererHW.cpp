@@ -7545,26 +7545,7 @@ void GSRendererHW::DetermineROVUsage(GSTextureCache::Target* rt, GSTextureCache:
 	const bool color_write = rt && m_conf.colormask.wrgba != 0;
 	const bool depth_write = ds && m_cached_ctx.DepthWrite();
 
-	const u32 colormask = GSUtil::GetChannelMask(m_cached_ctx.FRAME.PSM) & m_conf.colormask.wrgba;
-	const bool colormask_needs_rt = colormask != 0xF;
-
-	const u32 ate = m_cached_ctx.TEST.ATE;
-	const u32 atst = m_cached_ctx.TEST.ATST;
-	const u32 afail = m_cached_ctx.TEST.AFAIL;
-
-	const bool afail_needs_rt = ate && ((afail == AFAIL_ZB_ONLY) || (afail == AFAIL_RGB_ONLY));
-	const bool afail_needs_depth = ate && ((afail == AFAIL_FB_ONLY) || (afail == AFAIL_RGB_ONLY));
-
-	const bool blend = m_conf.IsBlending();
-	const bool blend_needs_rt = blend &&
-		(m_optimized_blend.A == ALPHA_ABD_CD || m_optimized_blend.B == ALPHA_ABD_CD ||
-			m_optimized_blend.C == ALPHA_C_AD || m_optimized_blend.D == ALPHA_ABD_CD);
-
 	const bool two_pass_alpha = GSHWDrawConfig::HasAlphaTestSecondPass(m_conf.alpha_test);
-
-	const bool date = m_conf.destination_alpha != GSHWDrawConfig::DestinationAlphaMode::Off;
-
-	const bool ztst = m_cached_ctx.DepthRead();
 
 	const bool full_barrier = m_conf.require_full_barrier;
 
@@ -7824,7 +7805,8 @@ void GSRendererHW::ConvertDepthFormatROV(GSTextureCache::Target* ds)
 	GSTexture* ds_tex_new = nullptr;
 
 	// Convert depth to depth color or vice versa if needed.
-	bool depth_to_color;
+	// (Only consumed by GL_PUSH, which compiles out of non-debug builds.)
+	[[maybe_unused]] bool depth_to_color;
 	if (m_conf.ps.HasDepthROV() && !ds_tex_old->IsDepthColor())
 	{
 		depth_to_color = true;
