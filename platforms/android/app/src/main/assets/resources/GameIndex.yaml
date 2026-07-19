@@ -1667,7 +1667,7 @@ SCAJ-20059:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCAJ-20060:
   name: "Time Crisis 3"
   region: "NTSC-Unk"
@@ -1903,7 +1903,7 @@ SCAJ-20094:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCAJ-20095:
   name: "Digital Devil Saga - Avatar Tuner"
   region: "NTSC-Unk"
@@ -2622,7 +2622,7 @@ SCAJ-20194:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCAJ-20195:
   name: "Ape Escape 3 [PlayStation2 the Best]"
   region: "NTSC-C"
@@ -5998,7 +5998,7 @@ SCES-52582:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCES-52586:
   name: "Death by Degrees"
   region: "PAL-E-S"
@@ -7809,7 +7809,7 @@ SCKA-20057:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCKA-20058:
   name: "액션 로망 범피 트롯"
   name-en: "Action Romance Bumpy Trot"
@@ -8196,7 +8196,7 @@ SCKA-20105:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering (matches the rest of the Everybody's Golf 4 family).
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCKA-20106:
   name: "완다 와 거상 [PlayStation 2 BigHit Series]" # Undumped on ReDump as of 2025-08-28
   name-en: "Wander and the Colossus [PlayStation 2 BigHit Series]"
@@ -9328,7 +9328,7 @@ SCPS-15059:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCPS-15060:
   name: "幸福操作官"
   name-sort: "こうふくそうさかん"
@@ -10251,7 +10251,7 @@ SCPS-19301:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCPS-19302:
   name: "ラチェット&クランク2 ガガガ！銀河のコマンドーっす [PlayStation2 the Best]"
   name-sort: "らちぇっとあんどくらんく2 ががが！ぎんがのこまんどーっす [PlayStation2 the Best]"
@@ -10451,7 +10451,7 @@ SCPS-19319:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 SCPS-19320:
   name: "ワンダと巨像 [PlayStation2 the Best]"
   name-sort: "わんだときょぞう [PlayStation2 the Best]"
@@ -76813,7 +76813,7 @@ TCES-52582:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 2 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
 TCES-53033:
   name: "Formula One 05 Beta Trial Code"
   region: "PAL-E"
