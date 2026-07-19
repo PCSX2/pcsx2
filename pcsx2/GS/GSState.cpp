@@ -1501,20 +1501,26 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 	{
 		// Direct path: parsed vertices go straight to the buffer with the values
 		// still in registers; m_v is written once at batch exit so piecemeal
-		// handlers and the next tag see identical state.
+		// handlers and the next tag see identical state. The buffer cursor lives
+		// in registers across the batch the same way.
 		const u32 uv = m_v.UV; // loop-invariant: packed XYZF2 never writes UV
+		const GSLimit24BitDepth depth_clamp = GetDepthClampMode(); // batch-invariant
+
+		VertexKickCursor c;
+		c.Load(*this);
 
 		GSVector4i m0, m1;
 		while (r < r_end)
 		{
 			GSVertexKernels::ParsePackedSTQRGBAXYZF2_Fast(r, uv, m0, m1);
-			ApplyDepthClamp(m1.U32[1]);
+			ApplyDepthClampMode(depth_clamp, m1.U32[1]);
 
-			VertexKickDirect<prim, auto_flush>(r[2].XYZF2.Skip(), m0, m1);
+			VertexKickDirect<prim, auto_flush>(r[2].XYZF2.Skip(), m0, m1, c);
 
 			r += 3;
 		}
 
+		c.Store();
 		m_v.m[0] = m0;
 		m_v.m[1] = m1;
 	}
@@ -1556,18 +1562,23 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32
 		// copies both through unchanged.
 		u64 uvfog;
 		std::memcpy(&uvfog, &m_v.UV, sizeof(uvfog));
+		const GSLimit24BitDepth depth_clamp = GetDepthClampMode(); // batch-invariant
+
+		VertexKickCursor c;
+		c.Load(*this);
 
 		GSVector4i m0, m1;
 		while (r < r_end)
 		{
 			GSVertexKernels::ParsePackedSTQRGBAXYZ2_Fast(r, uvfog, m0, m1);
-			ApplyDepthClamp(m1.U32[1]);
+			ApplyDepthClampMode(depth_clamp, m1.U32[1]);
 
-			VertexKickDirect<prim, auto_flush>(r[2].XYZ2.Skip(), m0, m1);
+			VertexKickDirect<prim, auto_flush>(r[2].XYZ2.Skip(), m0, m1, c);
 
 			r += 3;
 		}
 
+		c.Store();
 		m_v.m[0] = m0;
 		m_v.m[1] = m1;
 	}
@@ -5902,19 +5913,26 @@ __noinline bool GSState::CheckOverlapVertsSlow(u32 n)
 	return false;
 }
 
-// The depth-clamp hack historically rewrites the incoming vertex's Z in place per
-// kick. Config test first: with the hack disabled (the default) the reorder skips
-// the GSIsHardwareRenderer() call and psm-table walk.
-__forceinline void GSState::ApplyDepthClamp(u32& z)
+// The depth-clamp hack rewrites the incoming vertex's Z in place per kick. The whole
+// decision — config, renderer kind, ZBUF bpp — is invariant across a fused handler
+// batch (nothing inside a vertex batch rewrites GSConfig, switches renderers, or
+// changes m_context/ZBUF), so the fused handlers evaluate GetDepthClampMode() once
+// and apply the resolved mode per vertex. Config test first: with the hack disabled
+// (the default) this skips the GSIsHardwareRenderer() call and psm-table walk.
+__forceinline GSLimit24BitDepth GSState::GetDepthClampMode() const
 {
 	if (GSConfig.UserHacks_Limit24BitDepth != GSLimit24BitDepth::Disabled &&
 		GSIsHardwareRenderer() && GSLocalMemory::m_psm[m_context->ZBUF.PSM].bpp == 32)
 	{
-		if (GSConfig.UserHacks_Limit24BitDepth == GSLimit24BitDepth::PrioritizeUpper)
-			z = ((z >> 8) & ~0xFF) | (z & 0xFF);
-		else if (GSConfig.UserHacks_Limit24BitDepth == GSLimit24BitDepth::PrioritizeLower)
-			z &= 0x00FFFFFF;
+		return GSConfig.UserHacks_Limit24BitDepth;
 	}
+
+	return GSLimit24BitDepth::Disabled;
+}
+
+__forceinline void GSState::ApplyDepthClamp(u32& z)
+{
+	ApplyDepthClampMode(GetDepthClampMode(), z);
 }
 
 // Staged-m_v entry point: piecemeal reg handlers build the vertex in m_v and kick
@@ -5930,50 +5948,61 @@ __forceinline void GSState::VertexKick(u32 skip)
 
 	const GSVector4i v0(m_v.m[0]);
 	const GSVector4i v1(m_v.m[1]);
-	VertexKickDirect<prim, auto_flush>(skip, v0, v1);
+
+	VertexKickCursor c;
+	c.Load(*this);
+	VertexKickDirect<prim, auto_flush>(skip, v0, v1, c);
+	c.Store();
 }
 
 // Kick one vertex whose value is still in registers. Callers apply ApplyDepthClamp
-// to v1's Z lane themselves. auto_flush instantiations must come through the staged
-// VertexKick above — HandleAutoFlush reads the incoming vertex out of m_v.
+// to v1's Z lane themselves, own the cursor (loaded from a state where m_vertex /
+// m_index are current), and store it back after the last kick. auto_flush
+// instantiations must come through the staged VertexKick above — HandleAutoFlush
+// reads the incoming vertex out of m_v.
 template <u32 prim, bool auto_flush>
-__forceinline void GSState::VertexKickDirect(u32 skip, const GSVector4i& v0, const GSVector4i& v1)
+__forceinline void GSState::VertexKickDirect(u32 skip, const GSVector4i& v0, const GSVector4i& v1, VertexKickCursor& c)
 {
 	constexpr u32 n = NumIndicesForPrim(prim);
 	constexpr int primclass = GSUtil::GetPrimClass(prim);
 	static_assert(n > 0);
 
-	pxAssert(m_vertex->tail < m_vertex->maxcount + 3);
+	pxAssert(c.tail < c.maxcount + 3);
 
 	if constexpr (prim == GS_INVALID)
 	{
-		m_vertex->tail = m_vertex->head;
+		c.tail = c.head;
 		return;
 	}
 
 	// Overlap check (draw buffering): the slow path reads the incoming vertex's XY
 	// out of m_v, which the fused direct path no longer maintains per vertex — sync
-	// it on this rare path only.
+	// it on this rare path only. It also reads the buffer state, and Flush can
+	// switch draw buffers, so the cursor round-trips through memory here.
 	if (m_recent_buffer_switch && GSConfig.UserHacks_DrawBuffering)
 	{
 		m_v.m[0] = v0;
 		m_v.m[1] = v1;
 
+		c.Store();
 		if (CheckOverlapVertsSlow(n))
 			Flush(CONTEXTCHANGE);
+		c.Load(*this);
 	}
 
-	if (auto_flush && skip == 0 && m_index->tail > 0 && ((m_vertex->tail + 1) - m_vertex->head) >= n)
+	if (auto_flush && skip == 0 && c.itail > 0 && ((c.tail + 1) - c.head) >= n)
 	{
+		c.Store();
 		HandleAutoFlush<prim>();
+		c.Load(*this);
 	}
 
-	u32 head = m_vertex->head;
-	u32 tail = m_vertex->tail;
-	u32 next = m_vertex->next;
-	u32 xy_tail = m_vertex->xy_tail;
+	u32 head = c.head;
+	u32 tail = c.tail;
+	u32 next = c.next;
+	u32 xy_tail = c.xy_tail;
 
-	GSVector4i* RESTRICT tailptr = (GSVector4i*)&m_vertex->buff[tail];
+	GSVector4i* RESTRICT tailptr = (GSVector4i*)&c.vbuff[tail];
 
 	tailptr[0] = v0;
 	tailptr[1] = v1;
@@ -5981,21 +6010,23 @@ __forceinline void GSState::VertexKickDirect(u32 skip, const GSVector4i& v0, con
 	// We maintain the X/Y coordinates for the last 4 vertices, as well as the head for triangle fans, so we can compute
 	// the min/max, and cull degenerate triangles, which saves draws in some cases. Why 4? Mod 4 is cheaper than Mod 3.
 	const GSVector4i xy = v1.xxxx().u16to32().sub32(m_xyof);
-	m_vertex->xy[xy_tail & 3] = xy;
+	c.vb->xy[xy_tail & 3] = xy;
 
 	// Backup head for triangle fans so we can read it later, otherwise it'll get lost after the 4th vertex.
 	if (prim == GS_TRIANGLEFAN && tail == head)
-		m_vertex->xyhead = xy;
+		c.vb->xyhead = xy;
 
-	m_vertex->tail = ++tail;
-	m_vertex->xy_tail = ++xy_tail;
+	c.tail = ++tail;
+	c.xy_tail = ++xy_tail;
 
 	const u32 m = tail - head;
 
 	if (m < n)
 		return;
 
-	if (m_index->tail == 0/* && ((m_backed_up_ctx != m_env.PRIM.CTXT) || m_dirty_gs_regs)*/)
+	// Neither the memcpys nor SetDrawBufferEnv touch the vertex/index buffer state,
+	// so the cursor rides through this block untouched.
+	if (c.itail == 0/* && ((m_backed_up_ctx != m_env.PRIM.CTXT) || m_dirty_gs_regs)*/)
 	{
 		const int ctx = m_env.PRIM.CTXT;
 		std::memcpy(&m_prev_env, &m_env, 88);
@@ -6013,9 +6044,9 @@ __forceinline void GSState::VertexKickDirect(u32 skip, const GSVector4i& v0, con
 	GSVector4i bbox;
 	if (skip == 0)
 	{
-		const GSVector4i v0 = m_vertex->xy[(xy_tail - 1) & 3];
-		const GSVector4i v1 = m_vertex->xy[(xy_tail - 2) & 3];
-		const GSVector4i v2 = (prim == GS_TRIANGLEFAN) ? m_vertex->xyhead : m_vertex->xy[(xy_tail - 3) & 3];
+		const GSVector4i v0 = c.vb->xy[(xy_tail - 1) & 3];
+		const GSVector4i v1 = c.vb->xy[(xy_tail - 2) & 3];
+		const GSVector4i v2 = (prim == GS_TRIANGLEFAN) ? c.vb->xyhead : c.vb->xy[(xy_tail - 3) & 3];
 
 		// Note: redundant check for the AA1 flag to avoid calling a function if not needed.
 		constexpr bool rounded_class = (primclass == GS_TRIANGLE_CLASS || primclass == GS_SPRITE_CLASS);
@@ -6032,15 +6063,21 @@ __forceinline void GSState::VertexKickDirect(u32 skip, const GSVector4i& v0, con
 			case GS_LINELIST:
 			case GS_TRIANGLELIST:
 			case GS_SPRITE:
-				m_vertex->tail = head; // no need to check or grow the buffer length
+				c.tail = head; // no need to check or grow the buffer length
 				break;
 			case GS_LINESTRIP:
 			case GS_TRIANGLESTRIP:
-				m_vertex->head = head + 1;
+				c.head = head + 1;
 				[[fallthrough]];
 			case GS_TRIANGLEFAN:
-				if (tail >= m_vertex->maxcount)
+				if (tail >= c.maxcount)
+				{
+					// GrowVertexBuffer reads tail/itail for the preserved-copy
+					// sizes and reallocates buff — full cursor round-trip.
+					c.Store();
 					GrowVertexBuffer(); // in case too many vertices were skipped
+					c.Load(*this);
+				}
 				break;
 			default:
 				ASSUME(0);
@@ -6049,71 +6086,75 @@ __forceinline void GSState::VertexKickDirect(u32 skip, const GSVector4i& v0, con
 		return;
 	}
 
-	if (tail >= m_vertex->maxcount)
+	if (tail >= c.maxcount)
+	{
+		c.Store();
 		GrowVertexBuffer();
+		c.Load(*this);
+	}
 
-	u16* RESTRICT buff = &m_index->buff[m_index->tail];
+	u16* RESTRICT buff = &c.ibuff[c.itail];
 
 	switch (prim)
 	{
 		case GS_POINTLIST:
 			buff[0] = static_cast<u16>(head + 0);
-			m_vertex->head = head + 1;
-			m_vertex->next = head + 1;
-			m_index->tail += 1;
+			c.head = head + 1;
+			c.next = head + 1;
+			c.itail += 1;
 			break;
 		case GS_LINELIST:
 			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(head + 1);
-			m_vertex->head = head + 2;
-			m_vertex->next = head + 2;
-			m_index->tail += 2;
+			c.head = head + 2;
+			c.next = head + 2;
+			c.itail += 2;
 			break;
 		case GS_LINESTRIP:
 			if (next < head)
 			{
-				m_vertex->buff[next + 0] = m_vertex->buff[head + 0];
-				m_vertex->buff[next + 1] = m_vertex->buff[head + 1];
+				c.vbuff[next + 0] = c.vbuff[head + 0];
+				c.vbuff[next + 1] = c.vbuff[head + 1];
 				head = next;
-				m_vertex->tail = next + 2;
+				c.tail = next + 2;
 			}
 			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(head + 1);
-			m_vertex->head = head + 1;
-			m_vertex->next = head + 2;
-			m_index->tail += 2;
+			c.head = head + 1;
+			c.next = head + 2;
+			c.itail += 2;
 			break;
 		case GS_TRIANGLELIST:
 			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(head + 1);
 			buff[2] = static_cast<u16>(head + 2);
-			m_vertex->head = head + 3;
-			m_vertex->next = head + 3;
-			m_index->tail += 3;
+			c.head = head + 3;
+			c.next = head + 3;
+			c.itail += 3;
 			break;
 		case GS_TRIANGLESTRIP:
 			if (next < head)
 			{
-				m_vertex->buff[next + 0] = m_vertex->buff[head + 0];
-				m_vertex->buff[next + 1] = m_vertex->buff[head + 1];
-				m_vertex->buff[next + 2] = m_vertex->buff[head + 2];
+				c.vbuff[next + 0] = c.vbuff[head + 0];
+				c.vbuff[next + 1] = c.vbuff[head + 1];
+				c.vbuff[next + 2] = c.vbuff[head + 2];
 				head = next;
-				m_vertex->tail = next + 3;
+				c.tail = next + 3;
 			}
 			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(head + 1);
 			buff[2] = static_cast<u16>(head + 2);
-			m_vertex->head = head + 1;
-			m_vertex->next = head + 3;
-			m_index->tail += 3;
+			c.head = head + 1;
+			c.next = head + 3;
+			c.itail += 3;
 			break;
 		case GS_TRIANGLEFAN:
 			// TODO: remove gaps, next == head && head < tail - 3 || next > head && next < tail - 2 (very rare)
 			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(tail - 2);
 			buff[2] = static_cast<u16>(tail - 1);
-			m_vertex->next = tail;
-			m_index->tail += 3;
+			c.next = tail;
+			c.itail += 3;
 			break;
 		case GS_SPRITE:
 			buff[0] = static_cast<u16>(head + 0);
@@ -6121,11 +6162,11 @@ __forceinline void GSState::VertexKickDirect(u32 skip, const GSVector4i& v0, con
 
 			// Update the first vert's Q for ease of doing Autoflush
 			if (!m_env.PRIM.FST)
-				m_vertex->buff[buff[0]].RGBAQ.Q = m_vertex->buff[buff[1]].RGBAQ.Q;
+				c.vbuff[buff[0]].RGBAQ.Q = c.vbuff[buff[1]].RGBAQ.Q;
 
-			m_vertex->head = head + 2;
-			m_vertex->next = head + 2;
-			m_index->tail += 2;
+			c.head = head + 2;
+			c.next = head + 2;
+			c.itail += 2;
 			break;
 		default:
 			ASSUME(0);
@@ -6133,15 +6174,19 @@ __forceinline void GSState::VertexKickDirect(u32 skip, const GSVector4i& v0, con
 
 	// Update rectangle for the current draw. Needs exclusive endpoints.
 	const GSVector4i draw_rect = bbox.sra32<4>() + GSVector4i(0, 0, 1, 1);
-	if (m_index->tail != n)
+	if (c.itail != n)
 		temp_draw_rect = temp_draw_rect.runion(draw_rect);
 	else
 		temp_draw_rect = draw_rect;
 	temp_draw_rect = temp_draw_rect.rintersect(m_context->scissor.in);
 
 	constexpr u32 max_vertices = MaxVerticesForPrim(prim);
-	if (max_vertices != 0 && m_vertex->tail >= max_vertices)
+	if (max_vertices != 0 && c.tail >= max_vertices)
+	{
+		c.Store();
 		Flush(VERTEXCOUNT);
+		c.Load(*this);
+	}
 }
 
 /// Checks if region repeat is used (applying it does something to at least one of the values in min...max)

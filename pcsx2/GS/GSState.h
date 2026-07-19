@@ -192,8 +192,57 @@ protected:
 	bool CheckOverlapVertsSlow(u32 n);
 
 	void ApplyDepthClamp(u32& z);
+	GSLimit24BitDepth GetDepthClampMode() const;
+
+	static __fi void ApplyDepthClampMode(GSLimit24BitDepth mode, u32& z)
+	{
+		if (mode == GSLimit24BitDepth::PrioritizeUpper)
+			z = ((z >> 8) & ~0xFF) | (z & 0xFF);
+		else if (mode == GSLimit24BitDepth::PrioritizeLower)
+			z &= 0x00FFFFFF;
+	}
+
+	// Batch cursor: caches the hot vertex/index buffer fields in locals so they live
+	// in registers across a fused packed-handler batch instead of round-tripping
+	// through m_vertex/m_index per vertex. Store() must run before ANY call that can
+	// flush, grow or switch draw buffers (Flush, GrowVertexBuffer,
+	// CheckOverlapVertsSlow, HandleAutoFlush — GrowVertexBuffer reads tail for the
+	// preserved-copy size), and Load() again after. buff/maxcount are only ever
+	// changed by those callees, so Store() never writes them back.
+	struct VertexKickCursor
+	{
+		GSVertexBuff* vb;
+		GSIndexBuff* ib;
+		GSVertex* vbuff;
+		u16* ibuff;
+		u32 head, tail, next, xy_tail, maxcount, itail;
+
+		__fi void Load(GSState& s)
+		{
+			vb = s.m_vertex;
+			ib = s.m_index;
+			vbuff = vb->buff;
+			ibuff = ib->buff;
+			head = vb->head;
+			tail = vb->tail;
+			next = vb->next;
+			xy_tail = vb->xy_tail;
+			maxcount = vb->maxcount;
+			itail = ib->tail;
+		}
+
+		__fi void Store() const
+		{
+			vb->head = head;
+			vb->tail = tail;
+			vb->next = next;
+			vb->xy_tail = xy_tail;
+			ib->tail = itail;
+		}
+	};
+
 	template <u32 prim, bool auto_flush> void VertexKick(u32 skip);
-	template <u32 prim, bool auto_flush> void VertexKickDirect(u32 skip, const GSVector4i& v0, const GSVector4i& v1);
+	template <u32 prim, bool auto_flush> void VertexKickDirect(u32 skip, const GSVector4i& v0, const GSVector4i& v1, VertexKickCursor& c);
 
 	// following functions need m_vt to be initialized
 
