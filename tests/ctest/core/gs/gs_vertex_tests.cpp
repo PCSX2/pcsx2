@@ -6,9 +6,10 @@
 // Each kernel is checked against an independent scalar model of the documented
 // GIF/GS semantics, over directed edge cases plus large randomized sweeps. The
 // scalar models are deliberately written in plain integer C — no GSVector — so
-// the vector kernels and the models can only agree by both being right. When
-// GV-1/GV-3 land optimized kernel implementations, they are held to the same
-// model (and to the legacy kernels via GS_VERTEX_CROSSCHECK replay builds).
+// the vector kernels and the models can only agree by both being right. (During
+// the GV campaign the optimized kernels were also held to the legacy ones over
+// live replays via GS_VERTEX_CROSSCHECK builds — stripped at GV-CLOSE, recover
+// from git history if needed.)
 
 #include <gtest/gtest.h>
 
@@ -468,9 +469,8 @@ TEST(GsVertexCull, PointSweep)
 // {m0, m1} vector pairs — the property under test is that the fused
 // reformulation reproduces the legacy walk bit-exactly whenever FmmFinish
 // accepts, and that it accepts on the benign (real-game) configurations.
-// End-to-end integration is separately pinned by GS_VERTEX_CROSSCHECK replay.
-// aarch64-only: the fused path's NaN detection relies on FMIN/FMAX NaN
-// propagation, which SSE min/max does not provide.
+// (End-to-end integration was additionally verified during the campaign by
+// GS_VERTEX_CROSSCHECK replay over the full dump corpus.)
 // ---------------------------------------------------------------------------
 
 namespace

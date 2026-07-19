@@ -10,9 +10,11 @@
 
 // Pure kernels backing the fused GIF packed vertex handlers and the per-prim
 // accept/cull decision in GSState::VertexKick. Factored out of GSState.cpp so the
-// gs_vertex_tests oracle suite can drive them standalone, and so optimized
-// implementations can be crosschecked against the legacy ones per vertex/prim
-// (GS_VERTEX_CROSSCHECK builds) without touching the surrounding state machine.
+// gs_vertex_tests oracle suite can drive them standalone. (During the GV campaign
+// the optimized kernels were additionally crosschecked against the legacy ones
+// per vertex/prim over live replays — that plumbing is gone; recover the
+// GS_VERTEX_CROSSCHECK machinery from git history if a divergence hunt ever
+// needs it again.)
 //
 // Anything here must stay a pure function of its arguments: no GSState members,
 // no config reads. Behavioral contract for the legacy kernels is pinned by
@@ -65,7 +67,7 @@ namespace GSVertexKernels
 	// gathers each qword (the legacy path spends ~11 NEON ops on the RGBA
 	// pack chain alone). Out-of-range TBL indices read as zero, which provides the
 	// 24-bit Z and 8-bit F masks for free. Bit-identical to the legacy kernels —
-	// pinned by gs_vertex_tests and by GS_VERTEX_CROSSCHECK replay builds.
+	// pinned by gs_vertex_tests.
 	__forceinline_odr void ParsePackedSTQRGBAXYZF2_Neon(const GIFPackedReg* RESTRICT r, u32 uv, GSVector4i& m0, GSVector4i& m1)
 	{
 		// m0 = {S, T, RGBA, Q}: S/T = r0 bytes 0-7, RGBA = r1 bytes 0/4/8/12, Q = r0 bytes 8-11.
@@ -107,17 +109,12 @@ namespace GSVertexKernels
 	}
 #endif // ARCH_ARM64
 
-	// Dispatchers the fused handlers call: aarch64 takes the TBL kernels (optionally
-	// crosschecked against the legacy ones per vertex), x86 keeps the legacy path.
+	// Dispatchers the fused handlers call: aarch64 takes the TBL kernels, x86
+	// keeps the legacy path.
 	__forceinline_odr void ParsePackedSTQRGBAXYZF2_Fast(const GIFPackedReg* RESTRICT r, u32 uv, GSVector4i& m0, GSVector4i& m1)
 	{
 #ifdef ARCH_ARM64
 		ParsePackedSTQRGBAXYZF2_Neon(r, uv, m0, m1);
-#ifdef GS_VERTEX_CROSSCHECK
-		GSVector4i c0, c1;
-		ParsePackedSTQRGBAXYZF2(r, uv, c0, c1);
-		pxAssertRel(c0.eq(m0) && c1.eq(m1), "GS_VERTEX_CROSSCHECK: packed XYZF2 parse divergence");
-#endif
 #else
 		ParsePackedSTQRGBAXYZF2(r, uv, m0, m1);
 #endif
@@ -127,11 +124,6 @@ namespace GSVertexKernels
 	{
 #ifdef ARCH_ARM64
 		ParsePackedSTQRGBAXYZ2_Neon(r, uvfog, m0, m1);
-#ifdef GS_VERTEX_CROSSCHECK
-		GSVector4i c0, c1;
-		ParsePackedSTQRGBAXYZ2(r, uvfog, c0, c1);
-		pxAssertRel(c0.eq(m0) && c1.eq(m1), "GS_VERTEX_CROSSCHECK: packed XYZ2 parse divergence");
-#endif
 #else
 		ParsePackedSTQRGBAXYZ2(r, uvfog, m0, m1);
 #endif
@@ -346,7 +338,7 @@ namespace GSVertexKernels
 	// reproduces the legacy tail bit-exactly or declines (caller then runs the
 	// legacy FindMinMax).
 	//
-	// Exactness notes (pinned by gs_vertex_tests + GS_VERTEX_CROSSCHECK):
+	// Exactness notes (pinned by gs_vertex_tests):
 	// - Each accumulate step performs the exact per-vertex op sequence the
 	//   legacy walk performs for that vertex (same lane values through the same
 	//   IEEE ops — the legacy pairs two vertices per 4-lane op, but per-lane

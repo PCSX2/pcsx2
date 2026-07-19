@@ -52,23 +52,6 @@ void GSVertexTrace::Update(const void* vertex, const u16* index, int v_count, in
 	{
 		m_fmm[color][fst][tme][iip][primclass](*this, vertex, index, i_count);
 	}
-#if defined(ARCH_ARM64) && defined(GS_VERTEX_CROSSCHECK)
-	else
-	{
-		const GSVector4 xp_min = m_min.p, xp_max = m_max.p, xt_min = m_min.t, xt_max = m_max.t;
-		const GSVector4i xc_min = m_min.c, xc_max = m_max.c;
-		const u32 x_nan = nan.value;
-
-		m_fmm[color][fst][tme][iip][primclass](*this, vertex, index, i_count);
-
-		pxAssertRel(GSVector4i::cast(xp_min).eq(GSVector4i::cast(m_min.p)) &&
-						GSVector4i::cast(xp_max).eq(GSVector4i::cast(m_max.p)) &&
-						GSVector4i::cast(xt_min).eq(GSVector4i::cast(m_min.t)) &&
-						GSVector4i::cast(xt_max).eq(GSVector4i::cast(m_max.t)) &&
-						xc_min.eq(m_min.c) && xc_max.eq(m_max.c) && x_nan == nan.value,
-			"GS_VERTEX_CROSSCHECK: fused FindMinMax divergence");
-	}
-#endif
 
 	// Potential float overflow detected. Better uses the slower division instead
 	// Note: If Q is too big, 1/Q will end up as 0. 1e30 is a random number
