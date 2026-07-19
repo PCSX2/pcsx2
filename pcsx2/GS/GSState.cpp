@@ -108,11 +108,7 @@ GSState::GSState()
 	{
 		Console.WriteLn("GS: back-thread mode %d (record path active).", static_cast<int>(GSConfig.BackThreadMode));
 
-		// Adopt m_tr's staging buffer as payload node 0 — from here on
-		// m_tr.buff always aliases the current node's buffer.
-		GSBackQueue::PayloadNode* node = new GSBackQueue::PayloadNode{m_tr.buff};
-		m_payload_arena.push_back(node);
-		m_tr_payload_node = node;
+		AdoptTransferBuffer();
 
 		if (GSConfig.BackThreadMode >= GSBackThreadMode::Lockstep)
 		{
@@ -176,8 +172,10 @@ GSState::~GSState()
 		_aligned_free(m_draw_index.buff);
 
 	// GV7-1c: every mode drains before teardown, so all pool nodes hold their
-	// own arrays here (records in flight would alias them otherwise).
-	for (GSBackQueue::DrawNode* node : m_draw_node_arena)
+	// own arrays here (records in flight would alias them otherwise). Only this
+	// object's own channel storage is freed — a front object pointing at the
+	// back's channel has empty arenas of its own.
+	for (GSBackQueue::DrawNode* node : m_chan_storage.draw_arena)
 	{
 		if (node->vb.buff)
 			_aligned_free(node->vb.buff);
@@ -192,7 +190,7 @@ GSState::~GSState()
 	// ~GSTransferBuffer must not free it a second time.
 	if (m_back_records)
 		m_tr.buff = nullptr;
-	for (GSBackQueue::PayloadNode* node : m_payload_arena)
+	for (GSBackQueue::PayloadNode* node : m_chan_storage.payload_arena)
 	{
 		_aligned_free(node->buff);
 		delete node;
@@ -462,14 +460,14 @@ GSBackQueue::DrawNode* GSState::AcquireDrawNode()
 	// the back thread.
 	for (;;)
 	{
-		if (GSBackQueue::DrawNode** slot = m_draw_node_free.Peek())
+		if (GSBackQueue::DrawNode** slot = m_chan->draw_free.Peek())
 		{
 			GSBackQueue::DrawNode* node = *slot;
-			m_draw_node_free.Pop();
+			m_chan->draw_free.Pop();
 			return node;
 		}
 
-		if (m_draw_node_arena.size() < MAX_DRAW_NODES)
+		if (m_chan->draw_arena.size() < GSBackQueue::Channel::kMaxDrawNodes)
 			break;
 
 		std::this_thread::yield();
@@ -486,31 +484,41 @@ GSBackQueue::DrawNode* GSState::AcquireDrawNode()
 	if (!node->vb.buff || !node->vb.buff_copy || !node->ib.buff)
 		pxFailRel("GS: draw-node pool allocation failed");
 	node->vb.maxcount = m_vertex->maxcount;
-	m_draw_node_arena.push_back(node);
+	m_chan->draw_arena.push_back(node);
 	return node;
 }
 
 void GSState::ReleaseDrawNode(GSBackQueue::DrawNode* node)
 {
 	// Cannot fail: the free ring's capacity equals the arena cap.
-	GSBackQueue::DrawNode** slot = m_draw_node_free.BeginPush();
+	GSBackQueue::DrawNode** slot = m_chan->draw_free.BeginPush();
 	pxAssert(slot);
 	*slot = node;
-	m_draw_node_free.CommitPush();
+	m_chan->draw_free.CommitPush();
+}
+
+void GSState::AdoptTransferBuffer()
+{
+	// Run by the staging object at construction: m_tr's original heap buffer
+	// becomes payload node 0, and from here on m_tr.buff always aliases the
+	// current node's buffer. The channel's storage owner frees it.
+	GSBackQueue::PayloadNode* node = new GSBackQueue::PayloadNode{m_tr.buff};
+	m_chan->payload_arena.push_back(node);
+	m_tr_payload_node = node;
 }
 
 GSBackQueue::PayloadNode* GSState::AcquirePayloadNode()
 {
 	for (;;)
 	{
-		if (GSBackQueue::PayloadNode** slot = m_payload_free.Peek())
+		if (GSBackQueue::PayloadNode** slot = m_chan->payload_free.Peek())
 		{
 			GSBackQueue::PayloadNode* node = *slot;
-			m_payload_free.Pop();
+			m_chan->payload_free.Pop();
 			return node;
 		}
 
-		if (m_payload_arena.size() < MAX_PAYLOAD_NODES)
+		if (m_chan->payload_arena.size() < GSBackQueue::Channel::kMaxPayloadNodes)
 			break;
 
 		std::this_thread::yield();
@@ -521,7 +529,7 @@ GSBackQueue::PayloadNode* GSState::AcquirePayloadNode()
 		static_cast<u8*>(_aligned_malloc(alloc_size, 32))};
 	if (!node->buff)
 		pxFailRel("GS: payload pool allocation failed");
-	m_payload_arena.push_back(node);
+	m_chan->payload_arena.push_back(node);
 	return node;
 }
 
@@ -548,15 +556,16 @@ void GSState::RotateTransferPayload()
 void GSState::ExecReleasePayloadRecord(const GSBackQueue::ReleasePayloadRecord& rec)
 {
 	// Cannot fail: the free ring's capacity equals the arena cap.
-	GSBackQueue::PayloadNode** slot = m_payload_free.BeginPush();
+	GSBackQueue::PayloadNode** slot = m_chan->payload_free.BeginPush();
 	pxAssert(slot);
 	*slot = rec.node;
-	m_payload_free.CommitPush();
+	m_chan->payload_free.CommitPush();
 }
 
 void GSState::StartBackThread()
 {
 	m_back_thread_exit.store(false, std::memory_order_release);
+	m_chan->consumer_running = true;
 	m_back_thread = std::thread(&GSState::BackThreadLoop, this);
 	Console.WriteLn("GS: back thread started (%s).", m_back_lockstep ? "lockstep" : "pipelined");
 }
@@ -566,17 +575,20 @@ void GSState::StopBackThread()
 	if (!m_back_thread.joinable())
 		return;
 
-	m_back_sema.WaitForEmpty();
+	m_chan->sema.WaitForEmpty();
 	m_back_thread_exit.store(true, std::memory_order_release);
-	m_back_sema.NotifyOfWork();
+	m_chan->sema.NotifyOfWork();
 	m_back_thread.join();
+	m_chan->consumer_running = false;
 	m_back_queued = false;
 }
 
 void GSState::DrainBackQueue()
 {
-	if (m_back_queued)
-		m_back_sema.WaitForEmpty();
+	// Keyed on the channel, not this object's producer flag, so drains work
+	// from either side of the two-object split.
+	if (m_chan->consumer_running)
+		m_chan->sema.WaitForEmpty();
 }
 
 void GSState::BackThreadLoop()
@@ -585,15 +597,15 @@ void GSState::BackThreadLoop()
 
 	for (;;)
 	{
-		m_back_sema.WaitForWorkWithSpin();
+		m_chan->sema.WaitForWorkWithSpin();
 
 		if (m_back_thread_exit.load(std::memory_order_acquire))
 			break;
 
-		while (GSBackQueue::RecordSlot* slot = m_back_ring.Peek())
+		while (GSBackQueue::RecordSlot* slot = m_chan->ring.Peek())
 		{
 			ExecRecordSlot(*slot);
-			m_back_ring.Pop();
+			m_chan->ring.Pop();
 		}
 	}
 }

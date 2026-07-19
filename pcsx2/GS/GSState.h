@@ -553,28 +553,32 @@ public:
 	// executor tails against live state; any other mode builds records.
 	bool m_back_records = false;
 
+	// GV7-1d-ii: the front<->back channel (record ring + wake semaphore + pool
+	// arenas/free rings, GSBackQueue.h). Single-object modes use this object's
+	// own storage; the two-object pipelined split points the front parser
+	// object's m_chan at the back object's channel. The destructor frees
+	// m_chan_storage's pooled arrays — only ever this object's own storage, so
+	// a front pointing elsewhere frees nothing it doesn't own.
+	GSBackQueue::Channel m_chan_storage;
+	GSBackQueue::Channel* m_chan = &m_chan_storage;
+
 	// GV7-1c: draw-node pool. Acquire is front-side (free ring first, then arena
 	// growth up to the ring capacity, then backpressure); Release is the consume
 	// site (inline modes: FlushPrim right after the executor returns; pipelined:
-	// the back thread after DrawRecordTail). Arena entries are front-owned and
-	// freed in the destructor — safe because every mode drains before teardown.
-	static constexpr u32 MAX_DRAW_NODES = 64;
-	std::vector<GSBackQueue::DrawNode*> m_draw_node_arena;
-	GSBackQueue::SpscRing<GSBackQueue::DrawNode*, MAX_DRAW_NODES> m_draw_node_free;
+	// the back thread after DrawRecordTail).
 	GSBackQueue::DrawNode* AcquireDrawNode();
 	void ReleaseDrawNode(GSBackQueue::DrawNode* node);
 
 	// GV7-1c: transfer payload pool (record modes only; mode 0 keeps
 	// GSTransferBuffer's own allocation untouched). m_tr.buff aliases the
 	// current node's 4MB buffer; RotateTransferPayload runs at transfer Init and
-	// swaps to a fresh node once records reference the current one. The ctor
-	// adopts m_tr's original buffer as node 0 (the dtor nulls m_tr.buff before
-	// the arena walk so it isn't freed twice).
-	static constexpr u32 MAX_PAYLOAD_NODES = 8;
-	std::vector<GSBackQueue::PayloadNode*> m_payload_arena;
-	GSBackQueue::SpscRing<GSBackQueue::PayloadNode*, MAX_PAYLOAD_NODES> m_payload_free;
+	// swaps to a fresh node once records reference the current one.
+	// AdoptTransferBuffer (run by the staging object at construction) hands
+	// m_tr's original buffer to the channel as node 0 (the dtor nulls m_tr.buff
+	// before the arena walk so it isn't freed twice).
 	GSBackQueue::PayloadNode* m_tr_payload_node = nullptr;
 	bool m_tr_payload_referenced = false;
+	void AdoptTransferBuffer();
 	GSBackQueue::PayloadNode* AcquirePayloadNode();
 	void RotateTransferPayload();
 	void ExecReleasePayloadRecord(const GSBackQueue::ReleasePayloadRecord& rec);
@@ -589,8 +593,6 @@ public:
 	// the MTGS thread and HW draws would issue GL calls from the wrong thread.
 	bool m_back_queued = false;
 	bool m_back_lockstep = false;
-	GSBackQueue::RecordRing m_back_ring;
-	Threading::WorkSema m_back_sema;
 	std::thread m_back_thread;
 	std::atomic<bool> m_back_thread_exit{false};
 
@@ -606,13 +608,13 @@ public:
 	{
 		for (;;)
 		{
-			GSBackQueue::RecordSlot* slot = m_back_ring.BeginPush();
+			GSBackQueue::RecordSlot* slot = m_chan->ring.BeginPush();
 			if (slot)
 			{
 				slot->type = type;
 				std::memcpy(slot->As<T>(), &rec, sizeof(T));
-				m_back_ring.CommitPush();
-				m_back_sema.NotifyOfWork();
+				m_chan->ring.CommitPush();
+				m_chan->sema.NotifyOfWork();
 				break;
 			}
 			std::this_thread::yield(); // ring full — backpressure
@@ -624,7 +626,7 @@ public:
 		// fps on MQ65 with plain WaitForEmpty) — it's the bisect rung, not a
 		// shipping mode.
 		if (m_back_lockstep)
-			m_back_sema.WaitForEmptyWithSpin();
+			m_chan->sema.WaitForEmptyWithSpin();
 	}
 
 	GSVector4i GetTEX0Rect(GSDrawingContext prev_ctx);

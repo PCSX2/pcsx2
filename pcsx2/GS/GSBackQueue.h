@@ -11,9 +11,12 @@
 #include "GS/GSVertexKick.h"
 #include "GS/Renderers/Common/GSVertex.h"
 
+#include "common/Threading.h"
+
 #include <atomic>
 #include <memory>
 #include <type_traits>
+#include <vector>
 
 // GV-7: self-contained records crossing the GS front (GIF parse / vertex kick /
 // draw buffering) → back (local memory, texture cache, draw, present) boundary.
@@ -354,4 +357,35 @@ namespace GSBackQueue
 	static_assert(std::is_trivially_copyable_v<ReleasePayloadRecord>);
 
 	using RecordRing = SpscRing<RecordSlot, 512>;
+
+	// GV7-1d-ii: everything shared between the producing (front) and consuming
+	// (back) sides of the split. In single-object modes the GSState uses its own
+	// channel; under the two-object pipelined split the front parser object
+	// points at the back object's channel, so records, pool nodes, and drain
+	// waits all target one shared instance. The channel's storage owner (the
+	// back object) frees the pooled arrays in its destructor; the producer must
+	// be destroyed or drained first.
+	struct Channel
+	{
+		RecordRing ring;
+		Threading::WorkSema sema;
+
+		// Set while the back thread is running. Read/written only on the MTGS
+		// thread (start/stop/drain all happen there), so a plain bool is enough.
+		bool consumer_running = false;
+
+		// Draw-node pool: the producer acquires (free ring first, then arena
+		// growth up to the cap, then backpressure), the consumer releases after
+		// the draw executes. Free-ring capacity == arena cap, so Release can
+		// never fail.
+		static constexpr u32 kMaxDrawNodes = 64;
+		std::vector<DrawNode*> draw_arena;
+		SpscRing<DrawNode*, kMaxDrawNodes> draw_free;
+
+		// Transfer payload pool: the producer stages into the current node, the
+		// consumer releases rotated-out nodes via RELEASE_PAYLOAD records.
+		static constexpr u32 kMaxPayloadNodes = 8;
+		std::vector<PayloadNode*> payload_arena;
+		SpscRing<PayloadNode*, kMaxPayloadNodes> payload_free;
+	};
 } // namespace GSBackQueue
