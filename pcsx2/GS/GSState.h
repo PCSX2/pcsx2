@@ -618,8 +618,13 @@ public:
 			std::this_thread::yield(); // ring full — backpressure
 		}
 
+		// Spin-then-sleep: records usually execute in microseconds, so the spin
+		// catches nearly every drain without the futex round-trip. Lockstep is
+		// still per-record synchronization and inherently slow (measured 30->6
+		// fps on MQ65 with plain WaitForEmpty) — it's the bisect rung, not a
+		// shipping mode.
 		if (m_back_lockstep)
-			m_back_sema.WaitForEmpty();
+			m_back_sema.WaitForEmptyWithSpin();
 	}
 
 	GSVector4i GetTEX0Rect(GSDrawingContext prev_ctx);
