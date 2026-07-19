@@ -531,6 +531,7 @@ set(pcsx2GSSources
 set(pcsx2GSHeaders
 	GS/GSAlignedClass.h
 	GS/GSBlock.h
+	GS/GSBackQueue.h
 	GS/GSCapture.h
 	GS/GSClut.h
 	GS/GSDrawingContext.h

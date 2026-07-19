@@ -7,6 +7,7 @@
 #include "GS/GSPerfMon.h"
 #include "GS/GSLocalMemory.h"
 #include "GS/GSVertexKick.h"
+#include "GS/GSBackQueue.h"
 #include "GS/GSDrawingContext.h"
 #include "GS/GSDrawingEnvironment.h"
 #include "GS/Renderers/Common/GSVertex.h"
@@ -131,6 +132,11 @@ private:
 	} m_tr;
 
 protected:
+	// Executor-owned HOST->LOCAL write cursor (advanced by wi() across transfer
+	// slices; mirrored back into m_tr.x/y inline for savestate coherence).
+	int m_exec_tr_x = 0;
+	int m_exec_tr_y = 0;
+
 	static constexpr int INVALID_ALPHA_MINMAX = 500;
 	static constexpr int MAX_DRAW_BUFFERS = 3;
 
@@ -607,6 +613,14 @@ public:
 	virtual void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false) {}
 
 	virtual void Move();
+
+	// GV-7 front/back seam (SEAM-AUDIT.md): the front builds a self-contained
+	// record, the Exec*Record executor consumes it — inline today, on the back
+	// thread once GV7-1 lands. The executor owns the HOST->LOCAL write cursor
+	// across transfer slices.
+	void ExecTransferRecord(const GSBackQueue::TransferRecord& rec);
+	void SubmitMove();
+	void ExecMoveRecord(const GSBackQueue::MoveRecord& rec);
 
 	GSVector4i GetTEX0Rect(GSDrawingContext prev_ctx);
 	void CheckWriteOverlap(bool req_write, bool req_read);

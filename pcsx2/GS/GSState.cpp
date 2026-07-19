@@ -2353,7 +2353,7 @@ void GSState::GIFRegHandlerTRXDIR(const GIFReg* RESTRICT r)
 			break;
 		case 2: // local -> local
 			CheckWriteOverlap(true, true);
-			Move();
+			SubmitMove();
 			break;
 		default: // 3 deactivated as stated by manual. Tested on hardware and no transfers happen.
 			break;
@@ -2451,46 +2451,99 @@ void GSState::FlushWrite()
 	if (len <= 0)
 		return;
 
-	GSVector4i r;
+	GSBackQueue::TransferRecord rec;
+	rec.blit = m_tr.m_blit;
+	rec.env_blit = m_env.BITBLTBUF;
+	rec.pos = m_tr.m_pos;
+	rec.reg = m_tr.m_reg;
+	rec.rect = m_tr.rect;
+	rec.payload = &m_tr.buff[m_tr.start];
+	rec.len = len;
+	rec.stat_len = len;
+	rec.end = m_tr.end;
+	rec.total = m_tr.total;
+	rec.init_x = m_tr.x;
+	rec.init_y = m_tr.y;
+	rec.draw_serial = s_n;
+	rec.first_slice = (m_tr.start == 0);
 
-	r = m_tr.rect;
+	ExecTransferRecord(rec);
+
+	// Inline mode: keep the front-side cursor coherent (savestates serialize
+	// m_tr.x/y; the executor owns the live cursor across slices).
+	m_tr.x = m_exec_tr_x;
+	m_tr.y = m_exec_tr_y;
+
+	m_tr.start += len;
+
+	if (m_tr.start >= m_tr.total)
+		m_env.TRXDIR.XDIR = 3;
+}
+
+void GSState::ExecTransferRecord(const GSBackQueue::TransferRecord& rec)
+{
+	if (rec.first_slice)
+	{
+		m_exec_tr_x = rec.init_x;
+		m_exec_tr_y = rec.init_y;
+
+		s_last_transfer_draw_n = rec.draw_serial;
+
+		// Store the transfer for preloading new RT's.
+		if ((m_draw_transfers.size() > 0 && rec.blit.DBP == m_draw_transfers.back().blit.DBP && m_draw_transfers.back().transfer_type == EEGS_TransferType::EE_to_GS))
+		{
+			// Same BP, let's update the rect.
+			GSUploadQueue transfer = m_draw_transfers.back();
+			m_draw_transfers.pop_back();
+			transfer.rect = transfer.rect.runion(rec.rect);
+			transfer.draw = rec.draw_serial;
+			m_draw_transfers.push_back(transfer);
+		}
+		else
+		{
+			const GSUploadQueue new_transfer = {rec.blit, rec.draw_serial, rec.rect, EEGS_TransferType::EE_to_GS};
+			m_draw_transfers.push_back(new_transfer);
+		}
+	}
+
+	GSVector4i r = rec.rect;
 
 	// If the end isn't where it said it would be, we need to calculate the end point.
 	// Star Wars - The Clone Wars just sets the rect to 16x4095 then YOLO's about half a page, then kills the transfer.
 	// If we just nuke the whole lot, even though nothing has been transferred, we risk killing data we don't mean to.
-	if (m_tr.end < m_tr.total && GSIsHardwareRenderer())
+	if (rec.end < rec.total && GSIsHardwareRenderer())
 	{
-		const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[m_tr.m_blit.DPSM];
+		const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[rec.blit.DPSM];
 		// Convert to nibbles then back to bytes after, in case trbpp is 4.
-		const u32 in_data_pixel_count = (((len * 2) + ((psm_s.trbpp / 4) - 1)) / (psm_s.trbpp / 4));
+		const u32 in_data_pixel_count = (((rec.len * 2) + ((psm_s.trbpp / 4) - 1)) / (psm_s.trbpp / 4));
 		const u32 rect_pixel_count = r.width() * r.height();
 
 		if (rect_pixel_count > in_data_pixel_count)
 		{
 			const int calculated_height = ((in_data_pixel_count + (r.width() - 1)) / r.width());
-			
+
 			// Just setting the height should be okay...
 			r.w = std::max(r.y + calculated_height, psm_s.bs.y);
 
-			if (m_draw_transfers.size() > 0 && m_tr.m_blit.DBP == m_draw_transfers.back().blit.DBP)
+			if (m_draw_transfers.size() > 0 && rec.blit.DBP == m_draw_transfers.back().blit.DBP)
 			{
 				m_draw_transfers.back().rect = m_draw_transfers.back().rect.runion(r);
 			}
 		}
 	}
 
-	InvalidateVideoMem(m_env.BITBLTBUF, r);
+	InvalidateVideoMem(rec.env_blit, r);
 
-	const GSLocalMemory::writeImage wi = GSLocalMemory::m_psm[m_env.BITBLTBUF.DPSM].wi;
+	const GSLocalMemory::writeImage wi = GSLocalMemory::m_psm[rec.env_blit.DPSM].wi;
 
-	wi(m_mem, m_tr.x, m_tr.y, &m_tr.buff[m_tr.start], len, m_tr.m_blit, m_tr.m_pos, m_tr.m_reg);
+	// wi advances the cursor and takes mutable register refs.
+	GIFRegBITBLTBUF blit = rec.blit;
+	GIFRegTRXPOS pos = rec.pos;
+	GIFRegTRXREG reg = rec.reg;
+	wi(m_mem, m_exec_tr_x, m_exec_tr_y, rec.payload, rec.len, blit, pos, reg);
 
-	m_tr.start += len;
-
-	g_perfmon.Put(GSPerfMon::Swizzle, len);
+	g_perfmon.Put(GSPerfMon::Swizzle, rec.stat_len);
 	s_transfer_n++;
-	if (m_tr.start >= m_tr.total)
-		m_env.TRXDIR.XDIR = 3;
 }
 
 // This function decides if the context has changed in a way which warrants flushing the draw.
@@ -2968,31 +3021,9 @@ void GSState::Write(const u8* mem, int len)
 	}
 
 	GIFRegBITBLTBUF& blit = m_tr.m_blit;
-	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[blit.DPSM];
 
 	if (m_tr.end == 0)
 	{
-		GSVector4i r;
-
-		r = m_tr.rect;
-
-		s_last_transfer_draw_n = s_n;
-		// Store the transfer for preloading new RT's.
-		if ((m_draw_transfers.size() > 0 && blit.DBP == m_draw_transfers.back().blit.DBP && m_draw_transfers.back().transfer_type == EEGS_TransferType::EE_to_GS))
-		{
-			// Same BP, let's update the rect.
-			GSUploadQueue transfer = m_draw_transfers.back();
-			m_draw_transfers.pop_back();
-			transfer.rect = transfer.rect.runion(r);
-			transfer.draw = s_n;
-			m_draw_transfers.push_back(transfer);
-		}
-		else
-		{
-			const GSUploadQueue new_transfer = {blit, s_n, r, EEGS_TransferType::EE_to_GS};
-			m_draw_transfers.push_back(new_transfer);
-		}
-
 		GL_CACHE("Write! %u ...  => 0x%x W:%d F:%s (DIR %d%d), dPos(%d %d) size(%d %d) draw %lld", s_transfer_n,
 				blit.DBP, blit.DBW, GSUtil::GetPSMName(blit.DPSM),
 				m_tr.m_pos.DIRX, m_tr.m_pos.DIRY,
@@ -3001,14 +3032,30 @@ void GSState::Write(const u8* mem, int len)
 		if (len >= m_tr.total)
 		{
 			// received all data in one piece, no need to buffer it
-			InvalidateVideoMem(blit, r);
+			GSBackQueue::TransferRecord rec;
+			rec.blit = blit;
+			// The fast path invalidates and selects wi via m_tr.m_blit (the
+			// staged path uses the live m_env.BITBLTBUF) — preserved exactly.
+			rec.env_blit = blit;
+			rec.pos = m_tr.m_pos;
+			rec.reg = m_tr.m_reg;
+			rec.rect = m_tr.rect;
+			rec.payload = mem;
+			rec.len = m_tr.total;
+			rec.stat_len = len;
+			rec.end = m_tr.total;
+			rec.total = m_tr.total;
+			rec.init_x = m_tr.x;
+			rec.init_y = m_tr.y;
+			rec.draw_serial = s_n;
+			rec.first_slice = true;
 
-			psm.wi(m_mem, m_tr.x, m_tr.y, mem, m_tr.total, blit, m_tr.m_pos, m_tr.m_reg);
+			ExecTransferRecord(rec);
 
+			m_tr.x = m_exec_tr_x;
+			m_tr.y = m_exec_tr_y;
 			m_tr.start = m_tr.end = m_tr.total;
 
-			g_perfmon.Put(GSPerfMon::Swizzle, len);
-			s_transfer_n++;
 			m_env.TRXDIR.XDIR = 3;
 			return;
 		}
@@ -3103,6 +3150,29 @@ void GSState::Read(u8* mem, int len)
 
 	if(m_tr.end >= m_tr.total)
 		m_env.TRXDIR.XDIR = 3;
+}
+
+void GSState::SubmitMove()
+{
+	GSBackQueue::MoveRecord rec;
+	rec.blit = m_env.BITBLTBUF;
+	rec.pos = m_env.TRXPOS;
+	rec.reg = m_env.TRXREG;
+	rec.draw_serial = s_n;
+
+	ExecMoveRecord(rec);
+}
+
+void GSState::ExecMoveRecord(const GSBackQueue::MoveRecord& rec)
+{
+	// Install the record's registers and run the virtual Move chain (HW hack ->
+	// TC move -> software blit) unchanged. Inline this is a self-assignment; on
+	// the back object (GV7-1) it is the real record install.
+	m_env.BITBLTBUF = rec.blit;
+	m_env.TRXPOS = rec.pos;
+	m_env.TRXREG = rec.reg;
+
+	Move();
 }
 
 void GSState::Move()
