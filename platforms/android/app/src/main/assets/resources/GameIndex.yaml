@@ -11639,6 +11639,7 @@ SCUS-97177:
   gsHWFixes:
     autoFlush: 2 # Fixes speed effect intensity.
     minimumBlendingLevel: 2 # Fixes cloud depth rendering.
+    hwDownloadMode: 3 # Fixes Sun Efffect
 SCUS-97178:
   name: "NFL GameDay 2002"
   region: "NTSC-U"
@@ -12206,6 +12207,7 @@ SCUS-97329:
   gsHWFixes:
     autoFlush: 2 # Fixes speed effect intensity.
     minimumBlendingLevel: 2 # Fixes cloud depth rendering.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SCUS-97330:
   name: "Jak 3"
   region: "NTSC-U"
@@ -14221,6 +14223,7 @@ SLED-52325:
   gsHWFixes:
     autoFlush: 2 # Fixes speed effect intensity.
     minimumBlendingLevel: 2 # Fixes cloud depth rendering.
+    hwDownloadMode: 3 # Fixes Sun Eefect
 SLED-52326:
   name: "007 - Everything or Nothing [Demo]"
   region: "PAL-E"
@@ -15088,11 +15091,13 @@ SLES-50120:
   compat: 5
   gsHWFixes:
     minimumBlendingLevel: 3 # Fixes car shadows.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLES-50121:
   name: "Rumble Racing"
   region: "PAL-Unk"
   gsHWFixes:
     minimumBlendingLevel: 3 # Fixes car shadows.
+    hwDownloadMode: 3 Fixes Sun Effect
 SLES-50126:
   name: "Quake III - Revolution"
   region: "PAL-M3"
@@ -20153,6 +20158,7 @@ SLES-52202:
   gsHWFixes:
     autoFlush: 2 # Fixes speed effect intensity.
     minimumBlendingLevel: 2 # Fixes cloud depth rendering.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLES-52203:
   name: "Silent Line - Armored Core"
   region: "PAL-E"
@@ -65530,6 +65536,7 @@ SLUS-20174:
   compat: 5
   gsHWFixes:
     minimumBlendingLevel: 3 # Fixes car shadows.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLUS-20175:
   name: "Mobile Suit Gundam - Journey to Jaburo"
   region: "NTSC-U"
