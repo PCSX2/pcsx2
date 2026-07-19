@@ -536,8 +536,15 @@ public:
 	void SubmitClutLoad(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	void ExecClutLoadRecord(const GSBackQueue::ClutLoadRecord& rec);
 	void ExecDrawRecord(const GSBackQueue::DrawRecord& rec);
+	void DrawRecordTail(u64 draw_serial);
 	void SubmitPcrtcSync();
 	void ExecPcrtcSyncRecord(const GSBackQueue::PcrtcSyncRecord& rec);
+
+	// GV7-1: sampled from GSConfig.BackThreadMode at construction (the option is
+	// restart-required, so it can't change under a live GSState). Off = the
+	// front-side seam functions skip the record round-trip entirely and call the
+	// executor tails against live state; any other mode builds records.
+	bool m_back_records = false;
 
 	GSVector4i GetTEX0Rect(GSDrawingContext prev_ctx);
 	void CheckWriteOverlap(bool req_write, bool req_read);

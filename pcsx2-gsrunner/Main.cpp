@@ -508,6 +508,7 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "  -loop <count>: Loops dump playback N times. Defaults to 1. 0 will loop infinitely.\n");
 	std::fprintf(stderr, "  -renderer <renderer>: Sets the graphics renderer. Defaults to Auto.\n");
 	std::fprintf(stderr, "  -swthreads <threads>: Sets the number of threads for the software renderer.\n");
+	std::fprintf(stderr, "  -backthread <mode>: GS back-thread mode (0=off, 1=inline-records, 2=lockstep, 3=pipelined). Defaults to 0.\n");
 	std::fprintf(stderr, "  -window: Forces a window to be displayed.\n");
 	std::fprintf(stderr, "  -surfaceless: Disables showing a window.\n");
 	std::fprintf(stderr, "  -logfile <filename>: Writes emu log to filename.\n");
@@ -704,6 +705,19 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 
 				Console.WriteLn("Using %s renderer.", Pcsx2Config::GSOptions::GetRendererName(type));
 				s_settings_interface.SetIntValue("EmuCore/GS", "Renderer", static_cast<int>(type));
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-backthread"))
+			{
+				const int mode = StringUtil::FromChars<int>(argv[++i]).value_or(-1);
+				if (mode < 0 || mode > 3)
+				{
+					Console.Error("Invalid GS back-thread mode (0=off, 1=inline-records, 2=lockstep, 3=pipelined)");
+					return false;
+				}
+
+				Console.WriteLn("Setting GS back-thread mode to %d.", mode);
+				s_settings_interface.SetIntValue("EmuCore/GS", "GSBackThreadMode", mode);
 				continue;
 			}
 			else if (CHECK_ARG_PARAM("-swthreads"))

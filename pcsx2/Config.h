@@ -490,6 +490,18 @@ enum class GSDepthFeedbackMode : u8
 	DepthAsRT = 3,
 };
 
+// GV-7 GS front/back split. Off = today's single-threaded path with no record
+// round-trip; InlineRecords = build + execute every record on the calling
+// thread (the GV7-0 shape — validation / bisect rung); Lockstep = back thread
+// runs but the front drains after every record; Pipelined = the real thing.
+enum class GSBackThreadMode : u8
+{
+	Off           = 0,
+	InlineRecords = 1,
+	Lockstep      = 2,
+	Pipelined     = 3,
+};
+
 enum class AchievementOverlayPosition : u8
 {
 	TopLeft,
@@ -918,6 +930,7 @@ struct Pcsx2Config
 		TriFiltering TriFilter = DEFAULT_TRILINEAR_FILTERING_MODE;
 		s8 OverrideTextureBarriers = -1;
 		GSDepthFeedbackMode DepthFeedbackMode = GSDepthFeedbackMode::Auto;
+		GSBackThreadMode BackThreadMode = GSBackThreadMode::Off;
 
 		u8 CAS_Sharpness = 50;
 		u8 ShadeBoost_Brightness = DEFAULT_SHADEBOOST_BRIGHTNESS;

@@ -102,6 +102,9 @@ GSState::GSState()
 	// Let's keep it disabled to ease debug.
 	m_nativeres = GSConfig.UpscaleMultiplier == 1.0f;
 	m_mipmap = GSConfig.Mipmap;
+	m_back_records = GSConfig.BackThreadMode != GSBackThreadMode::Off;
+	if (m_back_records)
+		Console.WriteLn("GS: back-thread mode %d (record path active).", static_cast<int>(GSConfig.BackThreadMode));
 
 	s_n = 0;
 	s_transfer_n = 0;
@@ -2673,21 +2676,31 @@ void GSState::FlushPrim()
 	// Front side: draw serials are front-assigned — the front decides draw order.
 	s_n++;
 
-	GSBackQueue::DrawRecord rec;
-	std::memcpy(&rec.draw_env, &m_prev_env, sizeof(rec.draw_env));
-	std::memcpy(&rec.next_env, &m_env, sizeof(rec.next_env));
-	rec.next_v = m_v;
-	rec.draw_rect = temp_draw_rect;
-	rec.vertex = m_vertex;
-	rec.index = m_index;
-	rec.draw_serial = s_n;
-	rec.backed_up_ctx = m_backed_up_ctx;
-	rec.dirty_gs_regs = m_dirty_gs_regs;
-	rec.flush_reason = m_state_flush_reason;
-	rec.channel_shuffle_finish = m_channel_shuffle_finish;
-	rec.packed_uv_hack_flag = m_isPackedUV_HackFlag;
+	if (m_back_records)
+	{
+		GSBackQueue::DrawRecord rec;
+		std::memcpy(&rec.draw_env, &m_prev_env, sizeof(rec.draw_env));
+		std::memcpy(&rec.next_env, &m_env, sizeof(rec.next_env));
+		rec.next_v = m_v;
+		rec.draw_rect = temp_draw_rect;
+		rec.vertex = m_vertex;
+		rec.index = m_index;
+		rec.draw_serial = s_n;
+		rec.backed_up_ctx = m_backed_up_ctx;
+		rec.dirty_gs_regs = m_dirty_gs_regs;
+		rec.flush_reason = m_state_flush_reason;
+		rec.channel_shuffle_finish = m_channel_shuffle_finish;
+		rec.packed_uv_hack_flag = m_isPackedUV_HackFlag;
 
-	ExecDrawRecord(rec);
+		ExecDrawRecord(rec);
+	}
+	else
+	{
+		// Off path: every field the record would carry is captured from live
+		// state and installed back over the same live state, so the round-trip
+		// is an identity — skip it and run the tail directly.
+		DrawRecordTail(s_n);
+	}
 
 	// Front side: reset the buffer and rebuild the carry-over window. Inline this
 	// must run after the executor (Draw reads the buffer); with the pool handoff
@@ -2745,6 +2758,13 @@ void GSState::ExecDrawRecord(const GSBackQueue::DrawRecord& rec)
 	m_channel_shuffle_finish = rec.channel_shuffle_finish;
 	m_isPackedUV_HackFlag = rec.packed_uv_hack_flag;
 
+	DrawRecordTail(rec.draw_serial);
+}
+
+// The draw executor's tail: everything from vertex trace to Draw() + perfmon,
+// running against installed (or, on the record-off path, live) state.
+void GSState::DrawRecordTail(u64 draw_serial)
+{
 	GL_REG("FlushPrim ctxt %d", PRIM->CTXT);
 
 	// internal frame rate detection based on sprite blits to the display framebuffer
@@ -2821,7 +2841,7 @@ void GSState::ExecDrawRecord(const GSBackQueue::DrawRecord& rec)
 	m_drawlist.clear();
 	m_drawlist_bbox.clear();
 
-	if (GSConfig.ShouldDump(rec.draw_serial, g_perfmon.GetFrame()))
+	if (GSConfig.ShouldDump(draw_serial, g_perfmon.GetFrame()))
 	{
 		if (GSConfig.SaveInfo)
 		{
@@ -2841,12 +2861,12 @@ void GSState::ExecDrawRecord(const GSBackQueue::DrawRecord& rec)
 	g_perfmon.Put(GSPerfMon::Draw, 1);
 	g_perfmon.Put(GSPerfMon::Prim, m_index->tail / GSUtil::GetVertexCount(PRIM->PRIM));
 
-	if (GSConfig.ShouldDump(rec.draw_serial, g_perfmon.GetFrame()))
+	if (GSConfig.ShouldDump(draw_serial, g_perfmon.GetFrame()))
 	{
 		if (GSConfig.SaveDrawStats)
 		{
 			m_perfmon_draw = g_perfmon - m_perfmon_draw;
-			m_perfmon_draw.Dump(GetDrawDumpPath("%05lld_draw_stats.txt", rec.draw_serial), GSIsHardwareRenderer());
+			m_perfmon_draw.Dump(GetDrawDumpPath("%05lld_draw_stats.txt", draw_serial), GSIsHardwareRenderer());
 			m_perfmon_draw = g_perfmon;
 		}
 	}
