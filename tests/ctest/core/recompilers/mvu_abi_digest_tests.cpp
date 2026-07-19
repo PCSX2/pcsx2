@@ -81,6 +81,9 @@ struct DigestSet
 	// Conditional branch in a branch delay slot — pins the condEvilBranch
 	// target-select emission (ported at ABI v7; MGS2 VU0 solver hang).
 	u64 condEvilBranch;
+	// All-NOP VI-branch spin loop — pins the VU0 spin-wait fast-forward
+	// head (mVUemitSpinFF, ABI v13). 0 in a pin row = probe absent.
+	u64 spinLoop;
 };
 
 struct AbiPin
@@ -147,6 +150,7 @@ constexpr AbiPin kPins[] = {
 	// straight-line, branch-both-arms, and broadcast probes are
 	// bit-identical to abi 11.
 	{12, {0x5606c91c74538771, 0xf50098b57b42c70c, 0x421bbc34e2552655, 0xb93a633324c1d588, 0x29d9172f7ccbd58f}},
+	{13, {0x5606c91c74538771, 0xf50098b57b42c70c, 0x421bbc34e2552655, 0xb93a633324c1d588, 0x29d9172f7ccbd58f, 0xe9028a53cd86dcb7}},
 };
 
 u64 CompileAndDigest(std::initializer_list<vu::VuOp> pairs)
@@ -221,6 +225,18 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 		UpperOnly(bits::E | VADD_U(mask::xyzw, vf::vf6, vf::vf1, vf::vf2)), // pair 5: #2 target
 	});
 
+	// The UYA-shape spin loop (all-NOP body, exact NOP encodings). IBNE with
+	// the harness's vi1=1 exits immediately at runtime (deterministic Run)
+	// while the compile still emits the FF head — the shape being pinned.
+	actual.spinLoop = CompileAndDigest({
+		VuOp{VIBNE_L(vi::vi1, vi::vi0, 3), 0x000002FFu},  // exit → pair 4
+		VuOp{0x8000033Cu, 0x000002FFu},                   // ds NOP
+		VuOp{VB_L(-3), 0x000002FFu},                      // back to head
+		VuOp{0x8000033Cu, 0x000002FFu},                   // ds NOP
+		LowerOnly(VIADDIU_L(vi::vi3, vi::vi0, 42)),
+		UpperOnly(bits::E | VADD_U(mask::xyzw, vf::vf3, vf::vf1, vf::vf2)),
+	});
+
 	mVUPersist::SetRecordingEnabled(false);
 
 	ASSERT_NE(actual.straightLine, 0u);
@@ -243,7 +259,8 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 		<< ", 0x" << actual.branchBothArms
 		<< ", 0x" << actual.indirectJump
 		<< ", 0x" << actual.broadcastChain
-		<< ", 0x" << actual.condEvilBranch << "}";
+		<< ", 0x" << actual.condEvilBranch
+		<< ", 0x" << actual.spinLoop << "}";
 
 	const auto explain = [&](const char* which, u64 got, u64 want) {
 		char buf[256];
@@ -270,6 +287,12 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 		EXPECT_EQ(actual.condEvilBranch, pin->digests.condEvilBranch)
 			<< explain("condEvilBranch", actual.condEvilBranch, pin->digests.condEvilBranch);
 	}
+	if (pin->digests.spinLoop != 0) // probe added at abi 13; older rows unpinned
+	{
+		EXPECT_EQ(actual.spinLoop, pin->digests.spinLoop)
+			<< explain("spinLoop", actual.spinLoop, pin->digests.spinLoop);
+	}
+	ASSERT_NE(actual.spinLoop, 0u);
 }
 
 // A program's emitted shape must depend ONLY on the program — never on what

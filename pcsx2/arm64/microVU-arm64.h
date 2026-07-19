@@ -77,7 +77,12 @@
 //       badBranch null jumpAddr) now emit a 5-insn inline flag backup
 //       before jumping to exitFunct; blocks carrying those guards change
 //       shape.
-static constexpr u32 kMvuCompilerAbiVersion = 12;
+//  13 — VU0 spin-wait fast-forward (mVUemitSpinFF): blocks matching the
+//       all-NOP VI-branch spin shapes gain a head sequence (VI compare +
+//       conditional mVU.cycles zeroing ahead of mVUtestCycles) that
+//       consumes the whole remaining grant while the spin holds; spin
+//       blocks change shape.
+static constexpr u32 kMvuCompilerAbiVersion = 13;
 
 // Hash/equality functors for XXH128_hash_t — let std::unordered_map<XXH128_hash_t, …>
 // work without a wrapping struct. low64 already carries the well-mixed half of

@@ -394,6 +394,92 @@ void mVUsetFlagInfo(mV)
 }
 
 //------------------------------------------------------------------
+// VU0 spin-wait fast-forward
+//------------------------------------------------------------------
+
+// EE-handshake busy-wait loops — a conditional VI branch whose entire loop
+// body is architectural NOPs — dominate VU0 execution in macro-handshake
+// titles (UYA gameplay: 89% of all VU0 micro cycles are three such loops).
+// While the spin condition holds, every iteration is bit-identical AND
+// nothing can change the condition mid-grant (the EE thread is stalled
+// inside Execute; only CTC2/interp writes the VI), so the whole remaining
+// cycle grant can be consumed in one step: zero mVU.cycles and let
+// mVUtestCycles' budget-exhaust path bank VU0.cycle += grant and park the
+// VE-07 resume at this very block. The next grant re-enters the 3-insn
+// condition check directly.
+//
+// Two recognized shapes (all non-branch slots must be exact NOP encodings,
+// so no flags/Q/P/regs/XGKICK/E/M/D/T/I side effects exist by construction):
+//   4-pair: {IBEQ/IBNE viA,viB,+N | NOP; NOP|NOP; B ->head |NOP; NOP|NOP}
+//           (spins on fallthrough; branch-taken = loop exit)
+//   2-pair: {IBEQ/IBNE viA,viB,->self | NOP; NOP|NOP}
+//           (spins while taken; fallthrough = loop exit)
+struct mVUSpinLoop
+{
+	bool found;
+	bool exitOnEq; // loop-exit condition: VI[viA] == VI[viB] (else !=)
+	u32 viA, viB;
+};
+
+static mVUSpinLoop mVUdetectSpinLoop(mV, u32 startPC)
+{
+	mVUSpinLoop r = {};
+	if (!isVU0 || startPC + 32 > mVU.microMemSize)
+		return r;
+	const u32* mem = (const u32*)(mVU.regs().Micro + startPC);
+	constexpr u32 upNOP = 0x000002FF, loNOP = 0x8000033C;
+	if (mem[1] != upNOP || mem[2] != loNOP || mem[3] != upNOP)
+		return r; // branch upper + delay-slot pair must be exact NOPs
+	const u32 lo0 = mem[0];
+	const u32 op = lo0 >> 25;
+	const bool ibeq = (op == 0x28), ibne = (op == 0x29);
+	if (!ibeq && !ibne)
+		return r;
+	r.viA = (lo0 >> 16) & 0x1F;
+	r.viB = (lo0 >> 11) & 0x1F;
+	const s32 imm11 = (s32)(lo0 << 21) >> 21;
+	if (startPC + 8 + imm11 * 8 == (s32)startPC)
+	{
+		// 2-pair self-loop: spins while taken; exit on the opposite sense.
+		r.found = true;
+		r.exitOnEq = ibne;
+		return r;
+	}
+	// 4-pair shape: fallthrough pair2 must be `B ->head` with NOP upper,
+	// pair3 (its delay slot) all-NOP.
+	const u32 lo2 = mem[4];
+	if (mem[5] != upNOP || mem[6] != loNOP || mem[7] != upNOP)
+		return r;
+	if ((lo2 >> 25) != 0x20) // B
+		return r;
+	const s32 imm2 = (s32)(lo2 << 21) >> 21;
+	if (startPC + 16 + 8 + imm2 * 8 != (s32)startPC)
+		return r;
+	r.found = true;
+	r.exitOnEq = ibeq; // spins on fallthrough; taken (the branch sense) exits
+	return r;
+}
+
+// Emitted at the very top of a spin block, ahead of mVUtestCycles: if the
+// spin condition still holds, zero the cycle budget so mVUtestCycles takes
+// its existing budget-exhaust exit (grant fully consumed, resume parked).
+static void mVUemitSpinFF(mV, const mVUSpinLoop& spin)
+{
+	a64::Label noSpin;
+	armAsm->Ldrh(a64::w9, mVUstateMem(offsetof(VURegs, VI) + spin.viA * sizeof(REG_VI)));
+	if (spin.viB == 0)
+		armAsm->Cmp(a64::w9, 0);
+	else
+	{
+		armAsm->Ldrh(a64::w10, mVUstateMem(offsetof(VURegs, VI) + spin.viB * sizeof(REG_VI)));
+		armAsm->Cmp(a64::w9, a64::w10);
+	}
+	armAsm->B(&noSpin, spin.exitOnEq ? a64::eq : a64::ne);
+	armAsm->Str(a64::wzr, mVUfieldMem(mVU, &mVU.cycles));
+	armAsm->Bind(&noSpin);
+}
+
+//------------------------------------------------------------------
 // Cycle Test (emits code to check remaining cycles)
 //------------------------------------------------------------------
 
@@ -1000,6 +1086,11 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 	mVUregs.vi15v = 0;
 	mVUsetFlags(mVU, mFC);
 	mVUoptimizePipeState(mVU);
+	{
+		const mVUSpinLoop spin = mVUdetectSpinLoop(mVU, startPC);
+		if (spin.found)
+			mVUemitSpinFF(mVU, spin);
+	}
 	mVUtestCycles(mVU, mFC);
 
 	// === Second Pass (Codegen) ===
