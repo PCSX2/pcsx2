@@ -55,6 +55,13 @@ write_svnrev_h()
 # relative to this cpp dir's vendored 3rdparty/. Root 3rdparty/ has no aggregate
 # CMakeLists, so add_subdirectory'ing it would FATAL; do not re-add it here.
 add_subdirectory("${ARMSX2_ROOT}/common"   "${CMAKE_BINARY_DIR}/common")
+# Header-only libretro API definitions (INTERFACE target `libretro-headers`,
+# not vendored under this dir's 3rdparty/): pcsx2's Vulkan GS source list
+# includes VKLibretro.cpp unconditionally (runtime-gated outside the libretro
+# frontend), and it needs libretro_vulkan.h. Must exist before pcsx2 below —
+# CMake silently treats an unknown target name in target_link_libraries as a
+# raw linker flag, so a missing definition surfaces only as a compile error.
+add_subdirectory("${ARMSX2_ROOT}/3rdparty/libretro" "${CMAKE_BINARY_DIR}/3rdparty/libretro")
 add_subdirectory("${ARMSX2_ROOT}/pcsx2"    "${CMAKE_BINARY_DIR}/pcsx2")
 
 # Android-only 3rdparty: libadrenotools (custom Vulkan ICD loading for Adreno).
