@@ -864,6 +864,12 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	if (!g_gs_renderer)
 		return;
 
+	// GV7-2: everything below mutates renderer/device state the back thread may
+	// be reading mid-draw (settings, ImGui font textures, TC purges). The front
+	// only parses on this (MTGS) thread, so a single drain up front quiesces the
+	// back thread for the whole apply.
+	g_gs_renderer->DrainBackQueue();
+
 	// Handle OSD scale changes by pushing a window resize through.
 	if (new_config.OsdScale != old_config.OsdScale)
 		ImGuiManager::RequestScaleUpdate();

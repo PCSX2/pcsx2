@@ -47,6 +47,11 @@ public:
 	GSBackQueue::Channel* GetBackChannel() { return m_chan; }
 	bool IsBackThreadRunning() const { return m_chan->consumer_running; }
 
+	// GV7-2: external sync points (settings apply, screenshot-to-memory) that
+	// touch renderer/device state from the MTGS thread must drain queued records
+	// first — the back thread may otherwise be mid-draw on the same GSDevice.
+	void DrainBackQueue();
+
 	static constexpr int GetSaveStateSize(int version);
 
 private:
@@ -631,7 +636,6 @@ public:
 
 	void StartBackThread();
 	void StopBackThread();
-	void DrainBackQueue();
 	void BackThreadLoop();
 	void ExecRecordSlot(const GSBackQueue::RecordSlot& slot);
 	virtual void ExecVsyncRecord(const GSBackQueue::VsyncRecord& rec);

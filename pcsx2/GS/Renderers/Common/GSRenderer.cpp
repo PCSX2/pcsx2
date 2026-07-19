@@ -1056,6 +1056,9 @@ void GSSetDisplayAlignment(GSDisplayAlignment alignment)
 
 bool GSRenderer::BeginCapture(std::string filename, const GSVector2i& size)
 {
+	// GV7-2: capture start/stop can run mid-frame on the MTGS thread; teardown
+	// frees download textures on the device the back thread may be drawing on.
+	DrainBackQueue();
 	const GSVector2i capture_resolution = (size.x != 0 && size.y != 0) ?
 											  size :
 											  (GSConfig.VideoCaptureAutoResolution ?
@@ -1069,6 +1072,7 @@ bool GSRenderer::BeginCapture(std::string filename, const GSVector2i& size)
 
 void GSRenderer::EndCapture()
 {
+	DrainBackQueue(); // see BeginCapture
 	GSCapture::EndCapture();
 }
 
@@ -1085,6 +1089,11 @@ bool GSRenderer::IsIdleFrame() const
 bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
 	u32* width, u32* height, std::vector<u32>* pixels)
 {
+	// GV7-2: mid-frame screenshot issues device calls (CreateRenderTarget /
+	// StretchRect) on the MTGS thread; the back thread may be mid-draw on the
+	// same device. The vsync-path callers are already post-drain (no-op there).
+	DrainBackQueue();
+
 	GSTexture* const current = g_gs_device->GetCurrent();
 	if (!current)
 	{
