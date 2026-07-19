@@ -15,6 +15,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,12 +26,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.armsx2.CustomCovers
+import com.armsx2.CustomNames
 import com.armsx2.GameInfo
 import com.armsx2.config.ConfigStore
 import com.armsx2.i18n.str
 import com.armsx2.ui.common.EmptyState
 import com.armsx2.ui.common.GlassPanel
 import com.armsx2.ui.common.SectionTitle
+import com.armsx2.ui.home.LibraryKeyboard
 import kr.co.iefriends.pcsx2.NativeApp
 import org.json.JSONObject
 
@@ -89,6 +93,19 @@ fun InfoTab(game: GameInfo?) {
         if (uri != null) CustomCovers.set(context, game, uri)
     }
 
+    // Custom display name. Text entry hands off to LibraryKeyboard rather than a Compose
+    // AlertDialog: a modal Dialog owns its own focused window and swallows gamepad keys, so a
+    // pad user could open the rename box and then not be able to type in it. The keyboard has
+    // no "committed" callback — its closing IS the done signal, same as the shader-preset save.
+    val renaming = remember { mutableStateOf(false) }
+    LaunchedEffect(LibraryKeyboard.visible.value) {
+        if (renaming.value && !LibraryKeyboard.visible.value) {
+            renaming.value = false
+            // Blank clears the override and restores the parsed title.
+            CustomNames.setName(game.settingsKey, LibraryKeyboard.text.value)
+        }
+    }
+
     GlassPanel(Modifier.fillMaxWidth()) {
         Column {
             SectionTitle(game.title, str("scope.game"))
@@ -104,16 +121,68 @@ fun InfoTab(game: GameInfo?) {
             if (serial != null) {
                 Spacer(Modifier.height(14.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = { exporter.launch("$serial-settings.json") }) { Text(str("info.exportSettings")) }
-                    OutlinedButton(onClick = { importer.launch(arrayOf("application/json", "*/*")) }) { Text(str("info.importSettings")) }
+                    val doExport = { exporter.launch("$serial-settings.json") }
+                    val doImport = { importer.launch(arrayOf("application/json", "*/*")) }
+                    OutlinedButton(
+                        onClick = doExport,
+                        modifier = Modifier.controllerFocusable("info.exportSettings", onConfirm = doExport),
+                    ) { Text(str("info.exportSettings")) }
+                    OutlinedButton(
+                        onClick = doImport,
+                        modifier = Modifier.controllerFocusable("info.importSettings", onConfirm = doImport),
+                    ) { Text(str("info.importSettings")) }
                 }
             }
+            // Modded discs report a garbage internal title ("UN6 A35" for a Naruto mod) that the
+            // GameDB can't correct, because the serial still belongs to the base game.
+            Spacer(Modifier.height(14.dp))
+            Text(str("info.customName.label"), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(6.dp))
+            // Read version so a rename repaints these buttons; the name itself lives in prefs.
+            CustomNames.version.intValue
+            val storedName = CustomNames.stored(game.settingsKey)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                val openRename = {
+                    renaming.value = true
+                    LibraryKeyboard.open(
+                        storedName ?: game.title,
+                        onChange = {},
+                        placeholder = com.armsx2.i18n.I18n.get("info.customName.placeholder"),
+                    )
+                }
+                OutlinedButton(
+                    onClick = openRename,
+                    // Every control on this tab needs a controller id or a pad user can't reach
+                    // it at all — the registry only knows what registers itself.
+                    modifier = Modifier.controllerFocusable("info.customName", onConfirm = openRename),
+                ) { Text(str(if (storedName != null) "info.customName.change" else "info.customName.set")) }
+                if (storedName != null) {
+                    val clearName = { CustomNames.setName(game.settingsKey, null) }
+                    OutlinedButton(
+                        onClick = clearName,
+                        modifier = Modifier.controllerFocusable("info.customName.clear", onConfirm = clearName),
+                    ) { Text(str("info.customName.clear")) }
+                }
+            }
+
             Spacer(Modifier.height(14.dp))
             Text(str("info.cover.label"), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { coverPicker.launch(arrayOf("image/*")) }) { Text(str(if (hasCover) "info.changeCover" else "info.setCover")) }
-                if (hasCover) OutlinedButton(onClick = { CustomCovers.remove(context, game) }) { Text(str("info.removeCover")) }
+                val pickCover = { coverPicker.launch(arrayOf("image/*")) }
+                OutlinedButton(
+                    onClick = pickCover,
+                    modifier = Modifier.controllerFocusable("info.cover", onConfirm = pickCover),
+                ) { Text(str(if (hasCover) "info.changeCover" else "info.setCover")) }
+                if (hasCover) {
+                    // Explicit Unit: CustomCovers.remove returns Boolean, so an inferred lambda
+                    // is () -> Boolean and won't fit onClick/onConfirm.
+                    val dropCover: () -> Unit = { CustomCovers.remove(context, game) }
+                    OutlinedButton(
+                        onClick = dropCover,
+                        modifier = Modifier.controllerFocusable("info.removeCover", onConfirm = dropCover),
+                    ) { Text(str("info.removeCover")) }
+                }
             }
         }
     }

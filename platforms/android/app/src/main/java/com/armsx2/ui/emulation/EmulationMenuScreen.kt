@@ -190,7 +190,7 @@ fun EmulationMenuScreen(viewModel: EmulationMenuViewModel = viewModel()) {
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
                         shadowElevation = 18.dp,
                     ) {
-                        MenuRail(state.tab, viewModel::selectTab, viewModel::openFullSettings)
+                        MenuRail(state.tab, viewModel::selectTab)
                     }
                 }
             }
@@ -277,7 +277,6 @@ private fun CompactMenuTabs(selected: EmulationMenuTab, onSelect: (EmulationMenu
 private fun MenuRail(
     selected: EmulationMenuTab,
     onSelect: (EmulationMenuTab) -> Unit,
-    onAllSettings: () -> Unit,
 ) {
     Column(
         Modifier
@@ -285,37 +284,15 @@ private fun MenuRail(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 8.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+        // Centred, not top-aligned: the rail fills the full height, so with the tabs pinned
+        // to the top the column left a block of dead space at the bottom once the duplicate
+        // All Settings shortcut was removed from under them. Centring keeps the group
+        // balanced regardless of how many tabs there are, and still scrolls if it ever
+        // outgrows the rail.
+        verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
     ) {
         EmulationMenuTab.entries.forEach { tab ->
             MenuRailTab(tab, tab == selected, onSelect)
-        }
-        // Always-visible shortcut to the full settings screen — otherwise only reachable via the
-        // Options tab. Sits at the bottom of the rail, set apart from the tab buttons.
-        HorizontalDivider(
-            modifier = Modifier.padding(vertical = 2.dp).width(40.dp),
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.34f),
-        )
-        MenuRailAction("⤢", str("action.allSettings"), onAllSettings)
-    }
-}
-
-@Composable
-private fun MenuRailAction(glyph: String, label: String, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        modifier = Modifier.size(56.dp).semantics { contentDescription = label },
-        shape = RoundedCornerShape(18.dp),
-        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(
-                text = glyph,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-            )
         }
     }
 }
@@ -520,6 +497,21 @@ private fun SessionPane(state: EmulationMenuUiState, viewModel: EmulationMenuVie
         Spacer(Modifier.height(6.dp))
         MenuSwitchRow(str("perf.frameLimit.label"), state.settings.frameLimitEnable) { value ->
             viewModel.updateSettings { it.copy(frameLimitEnable = value) }
+        }
+        Spacer(Modifier.height(6.dp))
+        // OSD colour, cycled in place. Shares the palette with the All Settings picker rather
+        // than carrying its own copy. Safe to add here: this card's rows are plain switches with
+        // their own callbacks — SessionPane's selectedAction indexes the action GRID above, not
+        // these, so inserting a row can't shift the controller dispatch.
+        val osdColorIndex = com.armsx2.ui.settings.OSD_COLORS
+            .indexOf(state.settings.osdColor).coerceAtLeast(0)
+        MenuCycleRow(
+            title = str("overlay.osdColor.label"),
+            valueLabel = str(com.armsx2.ui.settings.OSD_COLOR_LABEL_KEYS[osdColorIndex]),
+        ) { step ->
+            val size = com.armsx2.ui.settings.OSD_COLORS.size
+            val next = ((osdColorIndex + step) % size + size) % size
+            viewModel.updateSettings { it.copy(osdColor = com.armsx2.ui.settings.OSD_COLORS[next]) }
         }
     }
     SectionCard(str("savestate.title.loadManage")) {
@@ -895,6 +887,14 @@ private fun OptionsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVie
         CompactAction(str("patches.dialog.patchesAndCheats"), "✦", Modifier.weight(1f), viewModel::openPatches)
     }
     Spacer(Modifier.height(6.dp))
+    // Texture packs belong here too: the pack folder has to match the RUNNING game's serial,
+    // so the screen only tells you anything useful with a game loaded — and buried in
+    // All Settings -> Renderer it was effectively unreachable mid-session.
+    // Glyph must be one already proven to render in the shipped font — "▩" (U+25A9) and
+    // "⏻" (U+23FB) come out as tofu boxes on device. "▣" is used by the BIOS/onboarding
+    // screens, so it is known good.
+    CompactAction(str("renderer.section.texturePacks"), "▣", Modifier.fillMaxWidth(), viewModel::openTextures)
+    Spacer(Modifier.height(6.dp))
     MenuSwitchRow(str("patches.enablePatches.label"), settings.enablePatches) {
         viewModel.updateSettings { current -> current.copy(enablePatches = it) }
     }
@@ -1209,6 +1209,50 @@ private fun MenuSwitchRow(
             )
             Spacer(Modifier.width(10.dp))
             Switch(checked = checked, onCheckedChange = if (enabled) onCheckedChange else null)
+        }
+    }
+}
+
+/** Label + current value, cycled in place: tap/confirm and Right advance, Left steps back.
+ *  The compact menu has no picker of its own and a segmented control doesn't fit its width,
+ *  so multi-option settings cycle rather than expand. */
+@Composable
+private fun MenuCycleRow(
+    title: String,
+    valueLabel: String,
+    onStep: (Int) -> Unit,
+) {
+    Surface(
+        onClick = { onStep(1) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .controllerFocusable(
+                "pause.cycle.$title",
+                onConfirm = { onStep(1) },
+                onLeft = { onStep(-1) },
+                onRight = { onStep(1) },
+            ),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.34f)),
+    ) {
+        Row(
+            Modifier.padding(horizontal = 13.dp, vertical = 9.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                title,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+            )
+            Spacer(Modifier.width(10.dp))
+            Text(
+                valueLabel,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
     }
 }

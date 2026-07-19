@@ -155,6 +155,8 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
 
     fun openControlsManager() = com.armsx2.ui.WindowImpl.openInGameScreen(com.armsx2.ui.InGameScreen.Controls)
 
+    fun openTextures() = com.armsx2.ui.WindowImpl.openInGameScreen(com.armsx2.ui.InGameScreen.Textures)
+
     fun openSkins() = com.armsx2.ui.WindowImpl.openInGameScreen(com.armsx2.ui.InGameScreen.Skins)
 
     fun saveState() {

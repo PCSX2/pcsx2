@@ -362,6 +362,7 @@ fun HomeScreen(
                                 selectedSort = state.sort,
                                 use3dCovers = CoverArtStyle.use3d.value,
                                 showGridNames = GridLabels.show.value,
+                                customNames = com.armsx2.CustomNames.enabled.value,
                                 englishTitles = EnglishTitles.enabled.value,
                                 showHidden = com.armsx2.HiddenGames.showHidden.value,
                                 hasCustomBackground = LibraryBackground.uri.value != null,
@@ -370,6 +371,7 @@ fun HomeScreen(
                                 onSort = viewModel::setSort,
                                 onToggleCoverStyle = { CoverArtStyle.set(!CoverArtStyle.use3d.value) },
                                 onToggleGridNames = { GridLabels.set(!GridLabels.show.value) },
+                                onToggleCustomNames = { com.armsx2.CustomNames.set(!com.armsx2.CustomNames.enabled.value) },
                                 onToggleEnglishTitles = { EnglishTitles.set(!EnglishTitles.enabled.value) },
                                 onToggleShowHidden = { viewModel.setShowHidden(!com.armsx2.HiddenGames.showHidden.value) },
                                 onChooseBackground = { backgroundPicker.launch(arrayOf("image/*")) },
@@ -602,9 +604,9 @@ fun HomeScreen(
                 }
             }
         }
-        // Controller on-screen keyboard for search — drawn over the library, above the
-        // nav inset (it's inside the inset-padded content Box).
-        LibraryKeyboard.Overlay(this)
+        // The keyboard is hosted once in WindowImpl, above every surface — hosting it here as
+        // well would draw it twice, and a per-screen host is what made it invisible from
+        // Settings (a nav destination that unmounts this screen).
     }
     }
 
@@ -680,6 +682,7 @@ private fun LibraryOverflowMenu(
     selectedSort: HomeSort,
     use3dCovers: Boolean,
     showGridNames: Boolean,
+    customNames: Boolean,
     englishTitles: Boolean,
     showHidden: Boolean,
     hasCustomBackground: Boolean,
@@ -688,6 +691,7 @@ private fun LibraryOverflowMenu(
     onSort: (HomeSort) -> Unit,
     onToggleCoverStyle: () -> Unit,
     onToggleGridNames: () -> Unit,
+    onToggleCustomNames: () -> Unit,
     onToggleEnglishTitles: () -> Unit,
     onToggleShowHidden: () -> Unit,
     onChooseBackground: () -> Unit,
@@ -746,6 +750,13 @@ private fun LibraryOverflowMenu(
             trailing = if (showGridNames) str("common.on") else str("common.off"),
         ) {
             closeThen(onToggleGridNames)
+        }
+        LibraryOverflowItem(
+            glyph = "Aa",
+            label = str("games.overflow.customNames"),
+            trailing = if (customNames) str("common.on") else str("common.off"),
+        ) {
+            closeThen(onToggleCustomNames)
         }
         LibraryOverflowItem(
             glyph = "A/あ",

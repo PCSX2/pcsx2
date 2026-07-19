@@ -218,11 +218,21 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_kr_co_iefriends_pcsx2_NativeApp_setEeDiffVerify(JNIEnv*, jclass, jboolean enabled) {
     eeDiffSetEnabled(enabled == JNI_TRUE);
+    Console.WriteLnFmt("EE diff verify {}", enabled == JNI_TRUE ? "ENABLED" : "disabled");
     // Reset the EE recompiler so every block recompiles with the new hook state. Cpu is
     // the active R5900 provider (the mac ARM64 rec on Android); Reset -> recResetEE, which
     // defers safely to the dispatcher if a block is currently executing.
     if (Cpu)
         Cpu->Reset();
+}
+
+// Read the real flag so the UI can reflect it. The toggle previously kept its
+// state in a Compose `remember`, so navigating away reset the switch to off while the native
+// flag stayed on — the switch was lying about whether the diagnostic was armed.
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_isEeDiffVerify(JNIEnv*, jclass) {
+    return eeDiffGetEnabled() ? JNI_TRUE : JNI_FALSE;
 }
 
 extern "C"
@@ -3163,6 +3173,7 @@ static void applyOsdSetting()
     GSConfig.OsdShowInputs = EmuConfig.GS.OsdShowInputs;
     GSConfig.OsdMessagesPos = EmuConfig.GS.OsdMessagesPos;
     GSConfig.OsdScale = EmuConfig.GS.OsdScale;
+    GSConfig.OsdColor = EmuConfig.GS.OsdColor;
     // Record the user's authoritative OSD choice for the overlay renderer. This snapshot
     // is immune to VMManager::ApplySettings (which re-derives EmuConfig.GS from the layered
     // settings and could otherwise resurrect an OSD the user just turned off). Every OSD
@@ -3242,6 +3253,15 @@ Java_kr_co_iefriends_pcsx2_NativeApp_osdShowInputs(JNIEnv*, jclass, jboolean ena
 extern "C" JNIEXPORT void JNICALL
 Java_kr_co_iefriends_pcsx2_NativeApp_osdSetScale(JNIEnv*, jclass, jfloat scale) {
     EmuConfig.GS.OsdScale = scale;
+    applyOsdSetting();
+}
+
+// OSD text colour as 0xRRGGBB; 0 restores the default white. Rides applyOsdSetting()'s
+// reload-immune snapshot like every other OSD setter, so VMManager::ApplySettings
+// re-deriving EmuConfig.GS can't revert it mid-session.
+extern "C" JNIEXPORT void JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_osdSetColor(JNIEnv*, jclass, jint rgb) {
+    EmuConfig.GS.OsdColor = static_cast<u32>(rgb) & 0x00FFFFFFu;
     applyOsdSetting();
 }
 

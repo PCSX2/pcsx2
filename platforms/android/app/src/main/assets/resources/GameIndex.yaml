@@ -1667,7 +1667,7 @@ SCAJ-20059:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # Unsynchronized: the per-frame GS downloads still happen, so effects that read them keep working, but they no longer stall the GS thread.
 SCAJ-20060:
   name: "Time Crisis 3"
   region: "NTSC-Unk"
@@ -1903,7 +1903,7 @@ SCAJ-20094:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # Unsynchronized: the per-frame GS downloads still happen, so effects that read them keep working, but they no longer stall the GS thread.
 SCAJ-20095:
   name: "Digital Devil Saga - Avatar Tuner"
   region: "NTSC-Unk"
@@ -2622,7 +2622,7 @@ SCAJ-20194:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # Unsynchronized: the per-frame GS downloads still happen, so effects that read them keep working, but they no longer stall the GS thread.
 SCAJ-20195:
   name: "Ape Escape 3 [PlayStation2 the Best]"
   region: "NTSC-C"
@@ -6000,7 +6000,7 @@ SCES-52582:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # Unsynchronized: the per-frame GS downloads still happen, so effects that read them keep working, but they no longer stall the GS thread.
 SCES-52586:
   name: "Death by Degrees"
   region: "PAL-E-S"
@@ -6197,6 +6197,7 @@ SCES-53285:
   compat: 5
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
+    - FullVU0SyncHack # ARMSX2: VU0<->EE handshake (invisible/stuck player + freeze) - enables the mac-rec COP2 sync/routing fix.
   gsHWFixes:
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     halfPixelOffset: 4 # Aligns post bloom.
@@ -7812,7 +7813,7 @@ SCKA-20057:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # Unsynchronized: the per-frame GS downloads still happen, so effects that read them keep working, but they no longer stall the GS thread.
 SCKA-20058:
   name: "액션 로망 범피 트롯"
   name-en: "Action Romance Bumpy Trot"
@@ -8106,7 +8107,7 @@ SCKA-20090:
   gsHWFixes:
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
-    hwDownloadMode: 3 # Fixes Sun Eefect
+    hwDownloadMode: 3 # Fixes Sun Effect
 SCKA-20091:
   name: "MLB 07 - The Show" # No listed Korean name on ReDump
   region: "NTSC-K"
@@ -8200,7 +8201,7 @@ SCKA-20105:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering (matches the rest of the Everybody's Golf 4 family).
-    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # Unsynchronized: the per-frame GS downloads still happen, so effects that read them keep working, but they no longer stall the GS thread.
 SCKA-20106:
   name: "완다 와 거상 [PlayStation 2 BigHit Series]" # Undumped on ReDump as of 2025-08-28
   name-en: "Wander and the Colossus [PlayStation 2 BigHit Series]"
@@ -9332,7 +9333,7 @@ SCPS-15059:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # Unsynchronized: the per-frame GS downloads still happen, so effects that read them keep working, but they no longer stall the GS thread.
 SCPS-15060:
   name: "幸福操作官"
   name-sort: "こうふくそうさかん"
@@ -10255,7 +10256,7 @@ SCPS-19301:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # Unsynchronized: the per-frame GS downloads still happen, so effects that read them keep working, but they no longer stall the GS thread.
 SCPS-19302:
   name: "ラチェット&クランク2 ガガガ！銀河のコマンドーっす [PlayStation2 the Best]"
   name-sort: "らちぇっとあんどくらんく2 ががが！ぎんがのこまんどーっす [PlayStation2 the Best]"
@@ -10455,7 +10456,7 @@ SCPS-19319:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # Unsynchronized: the per-frame GS downloads still happen, so effects that read them keep working, but they no longer stall the GS thread.
 SCPS-19320:
   name: "ワンダと巨像 [PlayStation2 the Best]"
   name-sort: "わんだときょぞう [PlayStation2 the Best]"
@@ -11643,7 +11644,7 @@ SCUS-97177:
   gsHWFixes:
     autoFlush: 2 # Fixes speed effect intensity.
     minimumBlendingLevel: 2 # Fixes cloud depth rendering.
-    hwDownloadMode: 3 # Fixes Sun Efffect
+    hwDownloadMode: 3 # Fixes Sun Effect
 SCUS-97178:
   name: "NFL GameDay 2002"
   region: "NTSC-U"
@@ -12905,6 +12906,7 @@ SCUS-97485:
   region: "NTSC-U"
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
+    - FullVU0SyncHack # ARMSX2: VU0<->EE handshake (invisible/stuck player + freeze) - enables the mac-rec COP2 sync/routing fix.
   gsHWFixes:
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     halfPixelOffset: 2 # Fixes misaligned bloom.
@@ -12926,6 +12928,7 @@ SCUS-97487:
   region: "NTSC-U"
   gameFixes:
     - EETimingHack # Fixes SPR errors while going in-game.
+    - FullVU0SyncHack # ARMSX2: VU0<->EE handshake (invisible/stuck player + freeze) - enables the mac-rec COP2 sync/routing fix.
   gsHWFixes:
     disablePartialInvalidation: 1 # Prevents world geometry and some models from vanishing when pausing or opening vendor.
     halfPixelOffset: 4 # Aligns post bloom.
@@ -14231,7 +14234,7 @@ SLED-52325:
   gsHWFixes:
     autoFlush: 2 # Fixes speed effect intensity.
     minimumBlendingLevel: 2 # Fixes cloud depth rendering.
-    hwDownloadMode: 3 # Fixes Sun Eefect
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLED-52326:
   name: "007 - Everything or Nothing [Demo]"
   region: "PAL-E"
@@ -15105,7 +15108,7 @@ SLES-50121:
   region: "PAL-Unk"
   gsHWFixes:
     minimumBlendingLevel: 3 # Fixes car shadows.
-    hwDownloadMode: 3 Fixes Sun Effect
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLES-50126:
   name: "Quake III - Revolution"
   region: "PAL-M3"
@@ -20100,7 +20103,7 @@ SLES-52153:
     cpuSpriteRenderLevel: 2 # Needed for above.
     nativePaletteDraw: 1 # Fixes broken menu graphics.
     nativeScaling: 2 # Fixes sun occlusion around buildings.
-    hwDownloadMode: 3 # Fixes Sun Effext
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLES-52155:
   name: "EyeToy - L'Eredita"
   region: "PAL-I"
@@ -23908,7 +23911,7 @@ SLES-53483:
   name: "Magna Carta - Tears of Blood"
   region: "PAL-E"
   compat: 5
-  gsHWFixe:
+  gsHWFixes:
     minimumBlendingLevel: 0 # Fixes Graphics
 SLES-53484:
   name: "Eagle Eye Golf"
@@ -67700,7 +67703,7 @@ SLUS-20587:
     cpuSpriteRenderLevel: 2 # Needed for above.
     nativePaletteDraw: 1 # Fixes broken menu graphics.
     nativeScaling: 2 # Fixes sun occlusion around buildings.
-    hwDownloadMode: 3 # Fixes Sun Eefect
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLUS-20588:
   name: "Activision Anthology"
   region: "NTSC-U"
@@ -76849,7 +76852,7 @@ TCES-52582:
     vu1ClampMode: 3 # VU1 Extra+Sign, paired with EE Full + VU0.
   gsHWFixes:
     accurateAlphaTest: 1 # Fixes broken face and UI rendering.
-    hwDownloadMode: 3 # No Readbacks: the per-frame GS downloads aren't used visually but stall the GS thread; skipping them restores full speed on mobile.
+    hwDownloadMode: 3 # Unsynchronized: the per-frame GS downloads still happen, so effects that read them keep working, but they no longer stall the GS thread.
 TCES-53033:
   name: "Formula One 05 Beta Trial Code"
   region: "PAL-E"

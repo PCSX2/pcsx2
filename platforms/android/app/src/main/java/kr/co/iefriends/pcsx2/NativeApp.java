@@ -129,6 +129,9 @@ public class NativeApp {
 	// Off by default = zero overhead / normal speed. Debug tool only — heavy slowdown when on.
 	public static native void setEeDiffVerify(boolean enabled);
 
+	/** Real state of the diagnostic flag (the UI toggle must not keep its own copy). */
+	public static native boolean isEeDiffVerify();
+
 	/**
 	 * Push one EmuCore setting into the base settings layer. Mirrors
 	 * pcsx2-qt's Settings save flow — Host::SetBase*SettingValue sticks
@@ -276,6 +279,9 @@ public class NativeApp {
 	public static native void osdShowInputs(boolean enabled);
 	/** OSD size (percentage; 25–500, 100 = normal). Applies live via MTGS. */
 	public static native void osdSetScale(float scale);
+
+	/** OSD text colour as 0xRRGGBB; 0 = default white. */
+	public static native void osdSetColor(int rgb);
 
 	/** Per-game settings export — writes only the keys that differ from global
 	 *  into gamesettings/<serial>_<CRC>.ini for the running game (sparse, like

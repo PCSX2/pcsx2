@@ -47,7 +47,12 @@ fun RecompilerTab(state: MutableState<Settings>) {
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
         )
-        var eeDiff by remember { mutableStateOf(false) }
+        // Seed from the REAL native flag. This was a plain `remember { false }`, so leaving the
+        // screen destroyed the state and the switch came back showing OFF while the native flag
+        // was still on — the toggle was reporting fiction.
+        var eeDiff by remember {
+            mutableStateOf(runCatching { NativeApp.isEeDiffVerify() }.getOrDefault(false))
+        }
         ToggleRow(
             label = str("jit.eeDiffVerify.label"),
             value = eeDiff,

@@ -356,8 +356,8 @@ fun ShaderParamsEditorHost() {
         }
 
         ShaderParamsEditor.confirmReset.value?.let { at -> ResetConfirmCard(at) }
-        // Its own copy: the only other host is the library screen, which isn't up here.
-        LibraryKeyboard.Overlay(this)
+        // No local host: WindowImpl hosts the keyboard once, immediately after this editor, so
+        // it already draws above us. A copy here would render it twice.
     }
 }
 

@@ -26,7 +26,7 @@ import com.armsx2.runtime.MainActivityRuntime
 import kotlinx.coroutines.flow.first
 
 /** A full manager screen shown as an overlay over the paused game (in-game menu). */
-enum class InGameScreen { Settings, Achievements, Memcard, Patches, Controls, Skins, SaveState, LoadState }
+enum class InGameScreen { Settings, Achievements, Memcard, Patches, Controls, Skins, Textures, SaveState, LoadState }
 
 object WindowImpl {
     val toolbarVisible = mutableStateOf(true)
@@ -148,6 +148,11 @@ object WindowImpl {
                             game = MainActivityRuntime.currentGame.value,
                             onBack = dismiss,
                         )
+                        // Texture packs were only reachable via All Settings -> Renderer,
+                        // which is the worst place for them: the pack folder must match the
+                        // RUNNING game's serial, so the screen is only meaningful with a game
+                        // loaded. Open it directly over the paused game like the other managers.
+                        InGameScreen.Textures -> com.armsx2.ui.textures.TextureManagerScreen(onBack = dismiss)
                         InGameScreen.SaveState -> com.armsx2.ui.saves.SaveStatePickerScreen(
                             mode = com.armsx2.ui.saves.SaveMode.Save, onBack = dismiss,
                         )
@@ -163,6 +168,21 @@ object WindowImpl {
                 // rather than inside ShaderChainSection is also what lets it be full-screen
                 // instead of a block inside a scrolling pane.
                 com.armsx2.ui.common.ShaderParamsEditorHost()
+
+                // THE on-screen keyboard host — exactly one, here, above everything.
+                //
+                // It used to be hosted per-screen (library + shader editor). That breaks the
+                // moment a caller isn't one of those: Settings is a NAVIGATION DESTINATION
+                // (AppNavigation: AppRoute.Settings), a sibling of AppRoute.Home, so opening it
+                // unmounts HomeScreen and takes its host with it. A keyboard opened from the
+                // per-game Info tab therefore had nothing rendering it, and only appeared once
+                // the user backed out to Home and remounted the host — which is exactly how the
+                // bug read: "the keyboard shows when I exit the settings menu".
+                //
+                // Hosting it once at the top of the Box every surface passes through makes it
+                // reachable from any screen, and placing it AFTER the shader editor keeps it
+                // above the one other full-screen layer that opens it.
+                com.armsx2.ui.home.LibraryKeyboard.Overlay(this)
             }
         }
     }
