@@ -70,9 +70,5 @@ private:
 	float m_last_window_scale = 1.0f;
 
 	QTimer* m_resize_debounce_timer = nullptr;
-	u32 m_pending_window_width = 0;
-	u32 m_pending_window_height = 0;
-	float m_pending_window_scale = 1.0f;
-
 	QWidget* m_container = nullptr;
 };
