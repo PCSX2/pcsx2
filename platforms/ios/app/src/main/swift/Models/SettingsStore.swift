@@ -1506,6 +1506,17 @@ final class SettingsStore {
     }}
 
     // ── Library Background ──
+    var dynamicBackgroundsEnabled: Bool = true {
+        didSet {
+            UserDefaults.standard.set(
+                dynamicBackgroundsEnabled,
+                forKey: "ARMSX2iOSDynamicBackgroundsEnabled"
+            )
+        }
+    }
+    var dynamicAppearancePreferences: DynamicAppearancePreferences = .standard {
+        didSet { dynamicAppearancePreferences.save() }
+    }
     var backgroundPrimaryAsset: BackgroundAsset? {
         didSet {
             if let asset = backgroundPrimaryAsset {
@@ -1733,12 +1744,16 @@ final class SettingsStore {
         dev9DNS2Mode = ARMSX2Bridge.getINIString("DEV9/Eth", key: "ModeDNS2", defaultValue: "Auto")
         dev9DNS2 = ARMSX2Bridge.getINIString("DEV9/Eth", key: "DNS2", defaultValue: "0.0.0.0")
         BackgroundStorage.migrateLegacyBackgroundsIfNeeded()
+        dynamicBackgroundsEnabled = UserDefaults.standard.object(
+            forKey: "ARMSX2iOSDynamicBackgroundsEnabled"
+        ) as? Bool ?? true
+        dynamicAppearancePreferences = DynamicAppearancePreferences.load() ?? .standard
         backgroundPrimaryAsset = Self.loadBackgroundAsset(forKey: "ARMSX2iOSBackgroundPrimaryAsset")
         backgroundLandscapeAsset = Self.loadBackgroundAsset(forKey: "ARMSX2iOSBackgroundLandscapeAsset")
         backgroundFitMode = BackgroundFitMode(rawValue: UserDefaults.standard.string(forKey: "ARMSX2iOSBackgroundFitMode") ?? "") ?? .fill
         backgroundLandscapeFitMode = BackgroundFitMode(rawValue: UserDefaults.standard.string(forKey: "ARMSX2iOSBackgroundLandscapeFitMode") ?? "") ?? .fill
         backgroundVideoMuted = UserDefaults.standard.object(forKey: "ARMSX2iOSBackgroundVideoMuted") as? Bool ?? true
-        backgroundDim = Self.clampedBackgroundDim(UserDefaults.standard.object(forKey: "ARMSX2iOSBackgroundDim") as? Double ?? 0.35)
+        backgroundDim = Self.clampedBackgroundDim(UserDefaults.standard.object(forKey: "ARMSX2iOSBackgroundDim") as? Double ?? 0.0)
         normalizeDEV9Settings()
         VPadSkinLibraryStore.shared.adoptLegacySelection(virtualPadSkin)
         ARMSX2Bridge.setINIString("EmuCore/GS", key: "AspectRatio", value: Self.aspectRatioName(for: aspectRatio))
@@ -1931,12 +1946,16 @@ final class SettingsStore {
         dev9DNS1 = ARMSX2Bridge.getINIString("DEV9/Eth", key: "DNS1", defaultValue: "0.0.0.0")
         dev9DNS2Mode = ARMSX2Bridge.getINIString("DEV9/Eth", key: "ModeDNS2", defaultValue: "Auto")
         dev9DNS2 = ARMSX2Bridge.getINIString("DEV9/Eth", key: "DNS2", defaultValue: "0.0.0.0")
+        dynamicBackgroundsEnabled = UserDefaults.standard.object(
+            forKey: "ARMSX2iOSDynamicBackgroundsEnabled"
+        ) as? Bool ?? true
+        dynamicAppearancePreferences = DynamicAppearancePreferences.load() ?? .standard
         backgroundPrimaryAsset = Self.loadBackgroundAsset(forKey: "ARMSX2iOSBackgroundPrimaryAsset")
         backgroundLandscapeAsset = Self.loadBackgroundAsset(forKey: "ARMSX2iOSBackgroundLandscapeAsset")
         backgroundFitMode = BackgroundFitMode(rawValue: UserDefaults.standard.string(forKey: "ARMSX2iOSBackgroundFitMode") ?? "") ?? .fill
         backgroundLandscapeFitMode = BackgroundFitMode(rawValue: UserDefaults.standard.string(forKey: "ARMSX2iOSBackgroundLandscapeFitMode") ?? "") ?? .fill
         backgroundVideoMuted = UserDefaults.standard.object(forKey: "ARMSX2iOSBackgroundVideoMuted") as? Bool ?? true
-        backgroundDim = Self.clampedBackgroundDim(UserDefaults.standard.object(forKey: "ARMSX2iOSBackgroundDim") as? Double ?? 0.35)
+        backgroundDim = Self.clampedBackgroundDim(UserDefaults.standard.object(forKey: "ARMSX2iOSBackgroundDim") as? Double ?? 0.0)
         normalizeDEV9Settings()
         VPadSkinLibraryStore.shared.adoptLegacySelection(virtualPadSkin)
     }
@@ -1969,7 +1988,7 @@ final class SettingsStore {
     }
 
     private static func clampedBackgroundDim(_ value: Double) -> Double {
-        guard value.isFinite else { return 0.35 }
+        guard value.isFinite else { return 0.0 }
         return min(max(value, 0.0), 1.0)
     }
 

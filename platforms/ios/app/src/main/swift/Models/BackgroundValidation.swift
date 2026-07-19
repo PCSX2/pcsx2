@@ -9,6 +9,7 @@ enum BackgroundValidation {
         testKindInference()
         testAssetCoding()
         testFitModeRoundTrip()
+        testDynamicAppearanceCoding()
     }
 
     private static func testKindInference() {
@@ -27,6 +28,20 @@ enum BackgroundValidation {
     private static func testFitModeRoundTrip() {
         for mode in BackgroundFitMode.allCases {
             assert(BackgroundFitMode(rawValue: mode.rawValue) == mode)
+        }
+    }
+
+    private static func testDynamicAppearanceCoding() {
+        for style in DynamicBackgroundStyle.allCases {
+            var preferences = DynamicAppearancePreferences.standard
+            preferences.dynamicBackground = style
+
+            let data = DynamicBackgroundCoding.encode(preferences)
+            let decoded = data.flatMap {
+                DynamicBackgroundCoding.decode(DynamicAppearancePreferences.self, from: $0)
+            }
+
+            assert(decoded == preferences)
         }
     }
 }

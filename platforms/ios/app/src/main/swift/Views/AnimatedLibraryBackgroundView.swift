@@ -30,9 +30,14 @@ struct AnimatedLibraryBackgroundView: View {
             guard frames.isEmpty, !loadFailed else { return }
             // Decode off the MainActor so a large multi-frame image cannot
             // stall the UI while the library is presented.
-            let loaded = await Task.detached(priority: .utility) {
+			let loader = Task.detached(priority: .utility) {
                 AnimatedBackgroundLoader.loadFrames(from: url)
-            }.value
+			}
+			let loaded = await withTaskCancellationHandler {
+				await loader.value
+			} onCancel: {
+				loader.cancel()
+			}
             // `.task(id:)` cancels this task when url changes; drop the result.
             guard !Task.isCancelled else { return }
             if loaded.isEmpty {
@@ -78,7 +83,7 @@ private struct AnimatedFramePlayer: UIViewRepresentable {
     static func dismantleUIView(_ uiView: AnimatedBackgroundImageView, coordinator: ()) {
         // UIKit calls this on the main thread; assume MainActor to call the
         // UIView's MainActor-isolated cleanup.
-        MainActor.assumeIsolated { uiView.stop() }
+        MainActor.assumeIsolated { uiView.teardown() }
     }
 }
 
@@ -90,6 +95,7 @@ private final class AnimatedBackgroundImageView: UIView {
     private var displayLink: CADisplayLink?
     private var accumulated: CFTimeInterval = 0
     private var lastTimestamp: CFTimeInterval = 0
+    private var releasedForGameplay = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -100,8 +106,14 @@ private final class AnimatedBackgroundImageView: UIView {
             self, selector: #selector(pause),
             name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(
+            self, selector: #selector(pause),
+            name: UIScene.willDeactivateNotification, object: nil)
+        NotificationCenter.default.addObserver(
             self, selector: #selector(resumeIfReady),
-            name: UIApplication.willEnterForegroundNotification, object: nil)
+            name: UIScene.didActivateNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(releaseResourcesForGameplay),
+            name: AppState.releaseMenuBackgroundResourcesNotification, object: nil)
     }
 
     @available(*, unavailable)
@@ -111,12 +123,12 @@ private final class AnimatedBackgroundImageView: UIView {
         // UIKit tears down views on the main thread; assert it so the
         // MainActor-isolated stop() can be called.
         MainActor.assumeIsolated {
-            stop()
-            NotificationCenter.default.removeObserver(self)
+            teardown()
         }
     }
 
     func configure(with frames: [AnimatedBackgroundLoader.Frame], fitMode: BackgroundFitMode) {
+        guard !releasedForGameplay else { return }
         imageView.contentMode = uiContentMode(for: fitMode)
         guard frames != self.frames, !frames.isEmpty else { return }
         stop()
@@ -133,6 +145,13 @@ private final class AnimatedBackgroundImageView: UIView {
         lastTimestamp = 0
     }
 
+    func teardown() {
+        stop()
+        frames.removeAll(keepingCapacity: false)
+        imageView.image = nil
+        NotificationCenter.default.removeObserver(self)
+    }
+
     @objc private func pause() {
         displayLink?.invalidate()
         displayLink = nil
@@ -140,11 +159,16 @@ private final class AnimatedBackgroundImageView: UIView {
     }
 
     @objc private func resumeIfReady() {
-        guard displayLink == nil, !frames.isEmpty,
+        guard !releasedForGameplay, displayLink == nil, !frames.isEmpty,
               UIApplication.shared.applicationState != .background else { return }
         let link = CADisplayLink(target: self, selector: #selector(tick))
         link.add(to: .main, forMode: .common)
         displayLink = link
+    }
+
+    @objc private func releaseResourcesForGameplay() {
+        releasedForGameplay = true
+        teardown()
     }
 
     @objc private func tick(link: CADisplayLink) {
@@ -209,6 +233,7 @@ enum AnimatedBackgroundLoader {
         var frames: [Frame] = []
         frames.reserveCapacity(count)
         for i in 0..<count {
+			guard !Task.isCancelled else { return [] }
             guard let cgImage = CGImageSourceCreateImageAtIndex(source, i, nil) else { continue }
             // Skip oversized frames to avoid memory spikes; treat as static.
             if CGFloat(cgImage.width) > maxFrameDimension || CGFloat(cgImage.height) > maxFrameDimension {

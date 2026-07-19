@@ -7,6 +7,7 @@ import SwiftUI
 final class AppState: @unchecked Sendable {
     static let shared = AppState()
     static let systemChromeNeedsUpdateNotification = Notification.Name("ARMSX2iOSSystemChromeNeedsUpdate")
+    static let releaseMenuBackgroundResourcesNotification = Notification.Name("ARMSX2iOSReleaseMenuBackgroundResources")
 
     enum Screen {
         case menu
@@ -56,12 +57,14 @@ final class AppState: @unchecked Sendable {
             forName: NSNotification.Name("ARMSX2iOSAutoBootDidStart"),
             object: nil, queue: .main
         ) { [weak self] _ in
+            self?.releaseMenuBackgroundResourcesForGameplay()
             self?.runningGameName = "AutoBoot"
             self?.currentScreen = .playing
         }
     }
 
     func bootGame(isoName: String) {
+        releaseMenuBackgroundResourcesForGameplay()
         Task { @MainActor in
             StikDebugLauncher.autoOpenIfNeeded(reason: "game boot")
         }
@@ -75,6 +78,7 @@ final class AppState: @unchecked Sendable {
     }
 
     func bootBIOSOnly() {
+        releaseMenuBackgroundResourcesForGameplay()
         Task { @MainActor in
             StikDebugLauncher.autoOpenIfNeeded(reason: "BIOS boot")
         }
@@ -98,6 +102,7 @@ final class AppState: @unchecked Sendable {
 
     func returnToGame() {
         if runningGameName != nil {
+            releaseMenuBackgroundResourcesForGameplay()
             // [P44-2] Clear background so Metal surface shows through
             NotificationCenter.default.post(name: NSNotification.Name("ARMSX2iOSEnterGameScreen"), object: nil)
             currentScreen = .playing
@@ -127,5 +132,12 @@ final class AppState: @unchecked Sendable {
         } else {
             shutdownAndBoot(isoName: runningGameName)
         }
+    }
+
+    private func releaseMenuBackgroundResourcesForGameplay() {
+        NotificationCenter.default.post(
+            name: Self.releaseMenuBackgroundResourcesNotification,
+            object: nil
+        )
     }
 }

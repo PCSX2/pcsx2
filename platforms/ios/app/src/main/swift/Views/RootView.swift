@@ -4,6 +4,17 @@
 import SwiftUI
 import UIKit
 
+private struct MenuTabIsActiveEnvironmentKey: EnvironmentKey {
+    static let defaultValue = true
+}
+
+extension EnvironmentValues {
+    var menuTabIsActive: Bool {
+        get { self[MenuTabIsActiveEnvironmentKey.self] }
+        set { self[MenuTabIsActiveEnvironmentKey.self] = newValue }
+    }
+}
+
 struct RootView: View {
     @State private var appState = AppState.shared
     @State private var settings = SettingsStore.shared
@@ -84,6 +95,7 @@ struct MenuTabView: View {
             // inside its NavigationStack ZStack, which must not be clipped by the
             // safe-area padding that the other tabs use.
             GameListView()
+                .environment(\.menuTabIsActive, selectedTab == 0)
                 .tabItem {
                     Label(settings.localized("Games"), systemImage: "gamecontroller")
                 }
@@ -92,6 +104,7 @@ struct MenuTabView: View {
             SafeAreaProtectedMenuTabContent {
                 BIOSListView()
             }
+                .environment(\.menuTabIsActive, selectedTab == 1)
                 .tabItem {
                     Label(settings.localized("BIOS"), systemImage: "cpu")
                 }
@@ -100,6 +113,7 @@ struct MenuTabView: View {
             SafeAreaProtectedMenuTabContent {
                 HelpView()
             }
+                .environment(\.menuTabIsActive, selectedTab == 2)
                 .tabItem {
                     Label(settings.localized("Help"), systemImage: "questionmark.circle")
                 }
@@ -110,6 +124,7 @@ struct MenuTabView: View {
                     SettingsRootView()
                 }
             }
+            .environment(\.menuTabIsActive, selectedTab == 3)
             .tabItem {
                 Label(settings.localized("Settings"), systemImage: "gearshape")
             }

@@ -112,7 +112,7 @@ enum BackgroundStorage {
 
         let primaryPath = defaults.string(forKey: "ARMSX2iOSLibraryBackgroundPath") ?? ""
         let landscapePath = defaults.string(forKey: "ARMSX2iOSLibraryLandscapeBackgroundPath") ?? ""
-        let dim = defaults.object(forKey: "ARMSX2iOSLibraryBackgroundDim") as? Double ?? 0.35
+        let dim = defaults.object(forKey: "ARMSX2iOSLibraryBackgroundDim") as? Double ?? 0.0
 
         var primaryAsset: BackgroundAsset?
         var landscapeAsset: BackgroundAsset?

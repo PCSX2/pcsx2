@@ -114,6 +114,11 @@ private final class GameLibrarySnapshot {
 		entriesByID = Dictionary(entries.map { ($0.id, $0) }, uniquingKeysWith: { current, _ in current })
 	}
 
+	func releaseEntriesForGameplay() {
+		orderedEntries.removeAll(keepingCapacity: false)
+		entriesByID.removeAll(keepingCapacity: false)
+	}
+
 	/// Returns cached metadata when the file is unchanged: a matching modification
 	/// time, or a matching size when the modification time is unavailable (some
 	/// external folders report no stable date).
@@ -161,15 +166,12 @@ struct GameListView: View {
 	@State private var coverStore = CoverStore.shared
 	@State private var externalLibrary = ExternalGameLibrary.shared
 	@State private var externalCoverAutoDownloadAttemptedIDs = Set<String>()
+	@State private var coverWorkTask: Task<Void, Never>?
 	@State private var showGameImporter = false
 	@State private var isLoadingGames = false
 	@State private var showCoverImporter = false
     @State private var showCoverPhotoPicker = false
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-
-    private var cardMaterial: Material {
-        reduceTransparency ? .regularMaterial : .thinMaterial
-    }
+    @Environment(\.menuTabIsActive) private var menuTabIsActive
     @State private var showRestartAlert = false
     @State private var showStopAlert = false
     @State private var showCoverTemplateEditor = false
@@ -197,7 +199,13 @@ struct GameListView: View {
 #endif
     // Background state is now kept in SettingsStore and rendered by BackgroundContainerView.
     private var hasCustomBackground: Bool {
-        settings.backgroundPrimaryAsset != nil || settings.backgroundLandscapeAsset != nil
+        settings.dynamicBackgroundsEnabled
+            || settings.backgroundPrimaryAsset != nil
+            || settings.backgroundLandscapeAsset != nil
+    }
+
+    private var shouldRenderLibraryBackground: Bool {
+		menuTabIsActive
     }
 
     private struct CoverFlowMetrics {
@@ -243,12 +251,13 @@ struct GameListView: View {
         }
         .ignoresSafeArea()
         .accessibilityHidden(true)
+		.allowsHitTesting(false)
     }
 
     var body: some View {
         NavigationStack {
             ZStack {
-                if hasCustomBackground {
+                if hasCustomBackground && shouldRenderLibraryBackground {
                     libraryBackgroundLayer
                 }
 
@@ -549,8 +558,9 @@ struct GameListView: View {
                     .presentationDetents([.large])
                     .presentationDragIndicator(.visible)
             }
-        }
+		}
 		.onAppear {
+			CoverThumbnailCache.shared.activateForMenu()
 			externalLibrary.reload()
 			restoreCachedGamesIfNeeded()
 			loadGames(autoDownloadExternalCovers: true)
@@ -570,6 +580,10 @@ struct GameListView: View {
 		.onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ARMSX2iOSReturnToMenu"))) { _ in
 			restoreCachedGamesIfNeeded()
 			loadGames(autoDownloadExternalCovers: false)
+		}
+		.onDisappear {
+			guard case .playing = appState.currentScreen else { return }
+			releaseLibraryResourcesForGameplay()
 		}
     }
 
@@ -739,11 +753,12 @@ struct GameListView: View {
     }
 
     private func gameRow(_ game: ISOEntry) -> some View {
-        Button {
+		let running = isRunning(game)
+		return Button {
             open(game)
         } label: {
             HStack(spacing: 12) {
-                coverThumbnail(for: game)
+				coverThumbnail(for: game, running: running)
 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
@@ -751,7 +766,7 @@ struct GameListView: View {
                             .font(.body)
                             .fontWeight(.medium)
                             .foregroundStyle(.primary)
-						if isRunning(game) {
+						if running {
 							Image(systemName: "circle.fill")
 								.font(.system(size: 8))
 								.foregroundStyle(.green)
@@ -783,8 +798,8 @@ struct GameListView: View {
 				.buttonStyle(.plain)
 				.accessibilityLabel(game.isFavorite ? settings.localized("Remove from favorites") : settings.localized("Add to favorites"))
 
-				Image(systemName: isRunning(game) ? "play.fill" : "chevron.right")
-					.foregroundStyle(isRunning(game) ? .green : .secondary)
+				Image(systemName: running ? "play.fill" : "chevron.right")
+					.foregroundStyle(running ? .green : .secondary)
 					.font(.caption)
 					.accessibilityHidden(true)
 			}
@@ -796,27 +811,28 @@ struct GameListView: View {
     }
 
     private func gameGridCard(_ game: ISOEntry) -> some View {
-        Button {
-            open(game)
-        } label: {
+		let running = isRunning(game)
+		return Button {
+			open(game)
+		} label: {
             VStack(alignment: .center, spacing: 10) {
-                ZStack(alignment: .topTrailing) {
-                    coverThumbnail(for: game, width: 126, height: 189)
-                        .frame(maxWidth: .infinity)
+				ZStack(alignment: .topTrailing) {
+					coverThumbnail(for: game, width: 126, height: 189, running: running)
+						.frame(maxWidth: .infinity)
 
 					Button {
 						toggleFavorite(game)
 					} label: {
 						Image(systemName: game.isFavorite ? "star.fill" : "star")
-                            .font(.callout.weight(.semibold))
-                            .foregroundStyle(game.isFavorite ? .yellow : .white.opacity(0.86))
-                            .padding(6)
-                            .background(.black.opacity(0.36), in: Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .padding(6)
-                    .accessibilityLabel(game.isFavorite ? settings.localized("Remove from favorites") : settings.localized("Add to favorites"))
-                }
+							.font(.callout.weight(.semibold))
+							.foregroundStyle(game.isFavorite ? .yellow : .white.opacity(0.86))
+							.padding(6)
+							.background(.black.opacity(0.36), in: Circle())
+					}
+					.buttonStyle(.plain)
+					.padding(6)
+					.accessibilityLabel(game.isFavorite ? settings.localized("Remove from favorites") : settings.localized("Add to favorites"))
+				}
 
                 VStack(alignment: .center, spacing: 4) {
                     HStack(alignment: .firstTextBaseline, spacing: 5) {
@@ -826,7 +842,7 @@ struct GameListView: View {
                             .lineLimit(2)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity, alignment: .center)
-                        if isRunning(game) {
+						if running {
                             Image(systemName: "circle.fill")
                                 .font(.system(size: 7))
                                 .foregroundStyle(.green)
@@ -857,40 +873,42 @@ struct GameListView: View {
             }
             .padding(12)
             .frame(maxWidth: .infinity, minHeight: 268, alignment: .top)
-            .background(cardMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-				.overlay {
-					RoundedRectangle(cornerRadius: 18, style: .continuous)
-						.strokeBorder(isRunning(game) ? .green.opacity(0.6) : .white.opacity(0.08), lineWidth: 1)
-				}
+			.glassSurface(clear: true, cornerRadius: 18)
         }
-        .buttonStyle(.plain)
-        .contextMenu {
-            gameContextMenu(for: game)
-        }
+		.buttonStyle(.plain)
+		.contextMenu {
+			gameContextMenu(for: game)
+		}
     }
 
     private func coverFlowCard(_ game: ISOEntry, metrics: CoverFlowMetrics) -> some View {
-        Button {
-            open(game)
-        } label: {
+		let running = isRunning(game)
+		return Button {
+			open(game)
+		} label: {
             VStack(spacing: metrics.cardSpacing) {
-                ZStack(alignment: .topTrailing) {
-                    coverThumbnail(for: game, width: metrics.coverWidth, height: metrics.coverHeight)
-                        .shadow(color: .black.opacity(0.28), radius: 18, y: 10)
+				ZStack(alignment: .topTrailing) {
+					coverThumbnail(
+						for: game,
+						width: metrics.coverWidth,
+						height: metrics.coverHeight,
+						running: running
+					)
+					.shadow(color: running ? .clear : .black.opacity(0.28), radius: 18, y: 10)
 
 					Button {
 						toggleFavorite(game)
 					} label: {
-                        Image(systemName: game.isFavorite ? "star.fill" : "star")
-                            .font((metrics.isCompact ? Font.subheadline : Font.headline).weight(.semibold))
-                            .foregroundStyle(game.isFavorite ? .yellow : .white.opacity(0.88))
-                            .padding(metrics.favoritePadding)
-                            .background(.black.opacity(0.48), in: Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .padding(metrics.favoriteInset)
-                    .accessibilityLabel(game.isFavorite ? settings.localized("Remove from favorites") : settings.localized("Add to favorites"))
-                }
+						Image(systemName: game.isFavorite ? "star.fill" : "star")
+							.font((metrics.isCompact ? Font.subheadline : Font.headline).weight(.semibold))
+							.foregroundStyle(game.isFavorite ? .yellow : .white.opacity(0.88))
+							.padding(metrics.favoritePadding)
+							.background(.black.opacity(0.48), in: Circle())
+					}
+					.buttonStyle(.plain)
+					.padding(metrics.favoriteInset)
+					.accessibilityLabel(game.isFavorite ? settings.localized("Remove from favorites") : settings.localized("Add to favorites"))
+				}
 
                 VStack(spacing: 4) {
                     Text(coverStore.displayName(forGameName: game.name))
@@ -912,26 +930,32 @@ struct GameListView: View {
                 .frame(width: metrics.textWidth)
             }
             .padding(metrics.cardPadding)
-            .background(cardMaterial, in: RoundedRectangle(cornerRadius: metrics.cornerRadius, style: .continuous))
-			.overlay {
-				RoundedRectangle(cornerRadius: metrics.cornerRadius, style: .continuous)
-					.strokeBorder(isRunning(game) ? .green.opacity(0.7) : .white.opacity(0.12), lineWidth: 1)
-			}
+			.glassSurface(clear: true, cornerRadius: metrics.cornerRadius)
         }
-        .buttonStyle(.plain)
-        .contextMenu {
-            gameContextMenu(for: game)
-        }
+		.buttonStyle(.plain)
+		.contextMenu {
+			gameContextMenu(for: game)
+		}
     }
 
-    private func coverThumbnail(for game: ISOEntry, width: CGFloat = 58, height: CGFloat = 87) -> some View {
-        CoverThumbnailView(
+	private func coverThumbnail(
+		for game: ISOEntry,
+		width: CGFloat = 58,
+		height: CGFloat = 87,
+		running: Bool
+	) -> some View {
+		CoverThumbnailView(
             gameName: game.name,
             coverURL: game.coverURL,
             coverSignature: game.coverSignature,
             width: width,
             height: height
         )
+		.shadow(
+			color: running ? .green.opacity(0.7) : .clear,
+			radius: running ? 12 : 0,
+			y: running ? 4 : 0
+		)
     }
 
     private func vmStatusCard(gameName: String) -> some View {
@@ -961,7 +985,7 @@ struct GameListView: View {
             .buttonStyle(.bordered)
         }
         .padding()
-        .background(cardMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+		.glassSurface(clear: true, cornerRadius: 18)
         .alert(settings.localized("Stop Emulation?"), isPresented: $showStopAlert) {
             Button(settings.localized("Cancel"), role: .cancel) { }
             Button(settings.localized("Stop"), role: .destructive) {
@@ -1001,7 +1025,7 @@ struct GameListView: View {
         }
         .frame(width: metrics.statusWidth, height: metrics.statusHeight)
         .padding(metrics.cardPadding)
-        .background(cardMaterial, in: RoundedRectangle(cornerRadius: metrics.cornerRadius, style: .continuous))
+		.glassSurface(clear: true, cornerRadius: metrics.cornerRadius)
         .alert(settings.localized("Stop Emulation?"), isPresented: $showStopAlert) {
             Button(settings.localized("Cancel"), role: .cancel) { }
             Button(settings.localized("Stop"), role: .destructive) {
@@ -1232,6 +1256,12 @@ struct GameListView: View {
 			} else if !allowFullMetadata {
 				if let existing = existingGames[entryID] {
 					metadata = existing.metadata
+				} else if let cached = GameLibrarySnapshot.shared.cachedMetadata(
+					for: entryID,
+					modificationDate: modificationDate,
+					size: size
+				) {
+					metadata = cached
 				} else {
 					metadata = ["fileTitle": (name as NSString).deletingPathExtension]
 				}
@@ -1291,8 +1321,10 @@ struct GameListView: View {
 
     private func downloadMissingCovers() {
         let targets = games.map(\.coverInfo)
-        Task { @MainActor in
+        coverWorkTask?.cancel()
+        coverWorkTask = Task { @MainActor in
             _ = await coverStore.downloadMissingCovers(for: targets)
+			guard !Task.isCancelled else { return }
             loadGames()
         }
     }
@@ -1325,8 +1357,10 @@ struct GameListView: View {
     }
 
     private func downloadCover(for game: ISOEntry) {
-        Task { @MainActor in
+        coverWorkTask?.cancel()
+        coverWorkTask = Task { @MainActor in
             _ = await coverStore.downloadMissingCovers(for: [game.coverInfo])
+			guard !Task.isCancelled else { return }
             loadGames()
         }
     }
@@ -1357,8 +1391,10 @@ struct GameListView: View {
 			return CoverGameInfo(name: game.name, fileURL: game.fileURL, metadata: metadata, hasCover: existingCover != nil)
 		}
 
-		Task { @MainActor in
+		coverWorkTask?.cancel()
+		coverWorkTask = Task { @MainActor in
 			let summary = await coverStore.downloadMissingCovers(for: targets, showResult: false)
+			guard !Task.isCancelled else { return }
 			if summary.downloaded > 0 {
 				loadGames()
 			}
@@ -1382,13 +1418,24 @@ struct GameListView: View {
 		let coverTargets = targets.map(\.coverInfo)
 		let serials = coverTargets.map { $0.metadata["serial"] ?? "" }.filter { !$0.isEmpty }.joined(separator: ",")
 		NSLog("[ARMSX2 iOS Covers] auto-download external missing covers count=%d serials=%@", targets.count, serials)
-		Task { @MainActor in
+		coverWorkTask?.cancel()
+		coverWorkTask = Task { @MainActor in
 			let summary = await coverStore.downloadMissingCovers(for: coverTargets, showResult: false)
+			guard !Task.isCancelled else { return }
 			if summary.downloaded > 0 {
 				loadGames()
 			}
 		}
 	}
+
+	private func releaseLibraryResourcesForGameplay() {
+		coverWorkTask?.cancel()
+		coverWorkTask = nil
+		games.removeAll(keepingCapacity: false)
+		externalCoverAutoDownloadAttemptedIDs.removeAll(keepingCapacity: false)
+		GameLibrarySnapshot.shared.releaseEntriesForGameplay()
+			CoverThumbnailCache.shared.releaseForGameplay()
+		}
 
 	private func toggleFavorite(_ game: ISOEntry) {
 		let key = game.bootName
@@ -1428,11 +1475,24 @@ struct GameListView: View {
 			return false
 		}
 
-		if runningGameName == game.bootName || runningGameName == game.name {
+		return Self.gameIdentifiersMatch(runningGameName, game.bootName)
+			|| Self.gameIdentifiersMatch(runningGameName, game.name)
+			|| game.fileURL.map { Self.gameIdentifiersMatch(runningGameName, $0.path) } == true
+	}
+
+	private static func gameIdentifiersMatch(_ first: String, _ second: String) -> Bool {
+		let normalizedFirst = (first.removingPercentEncoding ?? first)
+			.replacingOccurrences(of: "\\", with: "/")
+		let normalizedSecond = (second.removingPercentEncoding ?? second)
+			.replacingOccurrences(of: "\\", with: "/")
+		if normalizedFirst.caseInsensitiveCompare(normalizedSecond) == .orderedSame {
 			return true
 		}
 
-		return (runningGameName as NSString).lastPathComponent == game.name
+		let firstFileName = (normalizedFirst as NSString).lastPathComponent
+		let secondFileName = (normalizedSecond as NSString).lastPathComponent
+		return !firstFileName.isEmpty
+			&& firstFileName.caseInsensitiveCompare(secondFileName) == .orderedSame
 	}
 
 	/// Region flag emoji for a game's metadata, or nil when unknown so the

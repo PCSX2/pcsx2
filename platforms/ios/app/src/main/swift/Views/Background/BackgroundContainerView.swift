@@ -11,6 +11,7 @@ struct BackgroundContainerView: View {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
     @State private var videoPoster: UIImage?
+    @State private var isRenderingEnabled = true
 
     private var activeAsset: BackgroundAsset? {
         if size.width > size.height, let landscape = settings.backgroundLandscapeAsset { return landscape }
@@ -29,23 +30,31 @@ struct BackgroundContainerView: View {
 
     var body: some View {
         ZStack {
-            if let asset = activeAsset {
-                let url = BackgroundStorage.fileURL(for: asset)
-                switch asset.kind {
-                case .image:
-                    backgroundImage(UIImage(contentsOfFile: url.path))
-                case .animatedImage:
-                    if reduceMotion {
+            if isRenderingEnabled {
+                if settings.dynamicBackgroundsEnabled {
+                    DynamicBackgroundRendererView(
+                        preferences: settings.dynamicAppearancePreferences
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .clipped()
+                } else if let asset = activeAsset {
+                    let url = BackgroundStorage.fileURL(for: asset)
+                    switch asset.kind {
+                    case .image:
                         backgroundImage(UIImage(contentsOfFile: url.path))
-                    } else {
-                        animated(url)
-                    }
-                case .video:
-                    if reduceMotion {
-                        backgroundImage(videoPoster)
-                            .task(id: url.path) { await generateVideoPoster(from: url) }
-                    } else {
-                        video(url)
+                    case .animatedImage:
+                        if reduceMotion {
+                            backgroundImage(UIImage(contentsOfFile: url.path))
+                        } else {
+                            animated(url)
+                        }
+                    case .video:
+                        if reduceMotion {
+                            backgroundImage(videoPoster)
+                                .task(id: url.path) { await generateVideoPoster(from: url) }
+                        } else {
+                            video(url)
+                        }
                     }
                 }
             }
@@ -53,6 +62,20 @@ struct BackgroundContainerView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea()
+        .onAppear {
+            isRenderingEnabled = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIScene.willDeactivateNotification)) { _ in
+            isRenderingEnabled = false
+            videoPoster = nil
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIScene.didActivateNotification)) { _ in
+            isRenderingEnabled = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: AppState.releaseMenuBackgroundResourcesNotification)) { _ in
+            isRenderingEnabled = false
+            videoPoster = nil
+        }
     }
 
     private func animated(_ url: URL) -> some View {

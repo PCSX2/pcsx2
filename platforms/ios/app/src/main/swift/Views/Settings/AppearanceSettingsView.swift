@@ -4,12 +4,30 @@
 import SwiftUI
 
 struct AppearanceSettingsView: View {
+    private enum PresentedEditor: String, Identifiable {
+        case colours
+
+        var id: String { rawValue }
+    }
+
     @State private var settings = SettingsStore.shared
+    @State private var dynamicPreferences = SettingsStore.shared.dynamicAppearancePreferences
+    @State private var paletteTarget: ThemePaletteTarget = .shared
+    @State private var presentedEditor: PresentedEditor?
+    @State private var isShowingBackgroundOnly = false
     @State private var showPrimaryPicker = false
     @State private var showLandscapePicker = false
+    @State private var isAppearanceVisible = false
+    @Environment(\.menuTabIsActive) private var menuTabIsActive
 
     var body: some View {
         Form {
+            DynamicBackgroundAppearanceSections(
+                preferences: $dynamicPreferences,
+                isPreviewActive: shouldRenderDynamicPreview,
+                showPaletteEditor: { presentedEditor = .colours }
+            )
+
             Section {
                 BackgroundAssetRow(
                     title: settings.localized("Primary Background"),
@@ -22,7 +40,7 @@ struct AppearanceSettingsView: View {
                 BackgroundAssetRow(
                     title: settings.localized("Landscape Background"),
                     asset: settings.backgroundLandscapeAsset,
-                    glyph: "rectangle.landscape",
+                    glyph: "rectangle",
                     caption: settings.localized("Optional. Used only when the device is held in landscape.")
                 ) { showLandscapePicker = true }
                 .modifier(BackgroundSourcePicker(isPresented: $showLandscapePicker, role: .landscape, existingAsset: { settings.backgroundLandscapeAsset }) { updateLandscape($0) })
@@ -51,7 +69,7 @@ struct AppearanceSettingsView: View {
                         Text(label(for: mode)).tag(mode)
                     }
                 } label: {
-                    Label(settings.localized("Landscape Fit Mode"), systemImage: "rectangle.landscape")
+                    Label(settings.localized("Landscape Fit Mode"), systemImage: "rectangle")
                 }
                 .onChange(of: settings.backgroundLandscapeFitMode) { _, _ in
                     UISelectionFeedbackGenerator().selectionChanged()
@@ -86,6 +104,29 @@ struct AppearanceSettingsView: View {
             }
         }
         .navigationTitle(settings.localized("Appearance"))
+        .sheet(item: $presentedEditor, onDismiss: paletteEditorDidDismiss) { _ in
+            ThemePaletteEditor(
+                target: $paletteTarget,
+                preferences: $dynamicPreferences,
+                isShowingBackgroundOnly: $isShowingBackgroundOnly,
+                dynamicBackground: dynamicPreferences.dynamicBackground,
+                onSaveAppearance: saveDynamicAppearance
+            )
+            .presentationDetents([.large])
+        }
+        .onAppear {
+            isAppearanceVisible = true
+            dynamicPreferences = settings.dynamicAppearancePreferences
+        }
+        .onDisappear {
+            isAppearanceVisible = false
+        }
+    }
+
+    private var shouldRenderDynamicPreview: Bool {
+        isAppearanceVisible
+            && menuTabIsActive
+            && presentedEditor == nil
     }
 
     @ViewBuilder
@@ -118,6 +159,15 @@ struct AppearanceSettingsView: View {
         case .fit: return settings.localized("Fit")
         case .stretch: return settings.localized("Stretch")
         }
+    }
+
+    private func saveDynamicAppearance() {
+        settings.dynamicAppearancePreferences = dynamicPreferences
+    }
+
+    private func paletteEditorDidDismiss() {
+        isShowingBackgroundOnly = false
+        dynamicPreferences = settings.dynamicAppearancePreferences
     }
 
     private func updatePrimary(_ asset: BackgroundAsset?) {

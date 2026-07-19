@@ -34,6 +34,7 @@ private let licenses: [LicenseEntry] = [
     LicenseEntry(name: "plutosvg", license: "MIT", copyright: "© plutosvg contributors"),
     LicenseEntry(name: "rcheevos", license: "MIT", copyright: "© RetroAchievements contributors"),
     LicenseEntry(name: "discord-rpc", license: "MIT", copyright: "© Discord Inc."),
+    LicenseEntry(name: "PlayStation 3 XMB Waves Recreation", license: "MIT", copyright: "© 2025 Mart"),
 ]
 
 struct LicenseView: View {

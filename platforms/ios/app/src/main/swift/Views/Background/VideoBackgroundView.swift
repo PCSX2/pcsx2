@@ -19,6 +19,10 @@ private struct VideoBackgroundPlayer: UIViewRepresentable {
 
     func makeUIView(context: Context) -> LoopingVideoView { LoopingVideoView() }
     func updateUIView(_ uiView: LoopingVideoView, context: Context) { uiView.configure(url: url, muted: muted, fitMode: fitMode) }
+
+	static func dismantleUIView(_ uiView: LoopingVideoView, coordinator: ()) {
+		MainActor.assumeIsolated { uiView.teardown() }
+	}
 }
 
 private final class LoopingVideoView: UIView {
@@ -26,11 +30,11 @@ private final class LoopingVideoView: UIView {
     private var playerLooper: AVPlayerLooper?
     private var player: AVQueuePlayer?
     private var currentURL: URL?
+    private var releasedForGameplay = false
 
     deinit {
         MainActor.assumeIsolated {
-            pause()
-            NotificationCenter.default.removeObserver(self)
+			teardown()
         }
     }
 
@@ -45,13 +49,14 @@ private final class LoopingVideoView: UIView {
     }
 
     func configure(url: URL, muted: Bool, fitMode: BackgroundFitMode) {
+        guard !releasedForGameplay else { return }
         let gravity = videoGravity(for: fitMode)
 
         // Rebuild the player when the source changes so swapping the background
         // (portrait ↔ landscape, or replacing a video) actually takes effect.
         // The early-return-on-existing-player meant a second video was silently ignored.
         if player != nil, currentURL != url {
-            teardownPlayer()
+			teardown()
         }
 
         if player != nil {
@@ -77,19 +82,21 @@ private final class LoopingVideoView: UIView {
         layoutIfNeeded()
 
         NotificationCenter.default.addObserver(self, selector: #selector(pause), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(resumeIfReady), name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(pause), name: UIScene.willDeactivateNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(resumeIfReady), name: UIScene.didActivateNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(releaseResourcesForGameplay), name: AppState.releaseMenuBackgroundResourcesNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(adaptToPowerState), name: .NSProcessInfoPowerStateDidChange, object: nil)
         adaptToPowerState()
     }
 
-    private func teardownPlayer() {
+	func teardown() {
         player?.pause()
         NotificationCenter.default.removeObserver(self)
         playerLayer?.removeFromSuperlayer()
         player = nil
         playerLooper = nil
         playerLayer = nil
+		currentURL = nil
     }
 
     @objc private func pause() { player?.pause() }
@@ -98,6 +105,11 @@ private final class LoopingVideoView: UIView {
         guard UIApplication.shared.applicationState != .background, !ProcessInfo.processInfo.isLowPowerModeEnabled else { return }
         player?.seek(to: .zero)
         player?.play()
+    }
+
+    @objc private func releaseResourcesForGameplay() {
+        releasedForGameplay = true
+        teardown()
     }
 
     @objc private func adaptToPowerState() {

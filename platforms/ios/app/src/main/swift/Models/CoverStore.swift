@@ -112,6 +112,7 @@ final class CoverStore: @unchecked Sendable {
         var attempted = Set<String>()
 
         for game in games {
+			guard !Task.isCancelled else { break }
             if game.hasCover || coverURL(forGameName: game.name, gamePath: game.fileURL, metadata: game.metadata) != nil {
                 skipped += 1
                 continue
@@ -125,6 +126,7 @@ final class CoverStore: @unchecked Sendable {
 
             var didDownload = false
             for url in candidates where attempted.insert(url.absoluteString).inserted {
+				guard !Task.isCancelled else { break }
                 if await downloadCover(from: url, forGameName: game.name, metadata: game.metadata) {
                     downloaded += 1
                     didDownload = true
