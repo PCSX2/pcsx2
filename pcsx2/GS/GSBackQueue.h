@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "GS/GS.h"
 #include "GS/GSRegs.h"
 #include "GS/GSVector.h"
 #include "GS/GSDrawingContext.h"
@@ -94,6 +95,97 @@ namespace GSBackQueue
 	{
 		u16* buff;
 		u32 tail;
+	};
+
+	// PCRTC digest state — hoisted from GSState (GSvsync writes it once per
+	// frame from the privileged registers; the Draw() heuristics and the Merge
+	// circuit read it back-side, so it ships whole in PCRTC_SYNC records).
+	struct GSPCRTCRegs
+	{
+		struct PCRTCDisplay
+		{
+			bool enabled;
+			int FBP;
+			int FBW;
+			int PSM;
+			int DBY;
+			int DBX;
+			GSRegDISPFB prevFramebufferReg;
+			GSVector2i prevDisplayOffset;
+			GSVector2i displayOffset;
+			GSVector4i displayRect;
+			GSVector2i magnification;
+			GSVector2i prevFramebufferOffsets;
+			GSVector2i framebufferOffsets;
+			GSVector4i framebufferRect;
+
+			__fi int Block() const { return FBP << 5; }
+		};
+
+		int videomode = 0;
+		int interlaced = 0;
+		int FFMD = 0;
+		bool PCRTCSameSrc = false;
+		bool toggling_field = false;
+		PCRTCDisplay PCRTCDisplays[2] = {};
+
+		bool IsAnalogue();
+
+		// Calculates which display is closest to matching zero offsets in either direction.
+		GSVector2i NearestToZeroOffset();
+
+		void SetVideoMode(GSVideoMode videoModeIn);
+
+		// Enable each of the displays.
+		void EnableDisplays(GSRegPMODE pmode, GSRegSMODE2 smode2, bool smodetoggle);
+
+		void CheckSameSource();
+
+		bool FrameWrap();
+
+		// If the start point of both frames match, we can do a single read
+		bool FrameRectMatch();
+
+		GSVector2i GetResolution();
+
+		GSVector4i GetFramebufferRect(int display);
+
+		int GetFramebufferBitDepth();
+
+		GSVector2i GetFramebufferSize(int display);
+
+		// Sets up the rectangles for both the framebuffer read and the displays for the merge circuit.
+		void SetRects(int display, GSRegDISPLAY displayReg, GSRegDISPFB framebufferReg);
+
+		// Calculate framebuffer read offsets, should be considered if only one circuit is enabled, or difference is more than 1 line.
+		// Only considered if "Anti-blur" is enabled.
+		void CalculateFramebufferOffset(bool scanmask, GSRegDISPFB framebuffer0Reg, GSRegDISPFB framebuffer1Reg);
+
+		// Used in software mode to align the buffer when reading. Offset is accounted for (block aligned) by GetOutput.
+		void RemoveFramebufferOffset(int display);
+
+		// If the two displays are offset from each other, move them to the correct offsets.
+		// If using screen offsets, calculate the positions here.
+		void CalculateDisplayOffset(bool scanmask);
+	};
+
+	// Once-per-frame PCRTC digest, shipped BEFORE the vsync-flushed draw
+	// records so those draws see the fresh display state, exactly like today
+	// (GSvsync digests, then flushes). Mid-frame draws keep seeing the previous
+	// frame's digest, also like today.
+	struct PcrtcSyncRecord
+	{
+		GSPCRTCRegs displays;
+		u8 scanmask_used; // pre-decrement value; Merge's decrement stays back-side
+	};
+
+	// End of frame: the whole VSync() body (Merge -> present -> capture ->
+	// perfmon frame tick) runs back-side.
+	struct VsyncRecord
+	{
+		u32 field;
+		bool registers_written;
+		bool idle_frame;
 	};
 
 	// One flushed draw (today's FlushPrim tail: vertex trace -> texel rounding ->

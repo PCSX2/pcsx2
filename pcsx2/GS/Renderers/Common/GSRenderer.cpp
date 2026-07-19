@@ -580,6 +580,21 @@ void GSRenderer::EndPresentFrame()
 	ImGuiManager::NewFrame();
 }
 
+void GSRenderer::SubmitVsync(u32 field, bool registers_written)
+{
+	GSBackQueue::VsyncRecord rec;
+	rec.field = field;
+	rec.registers_written = registers_written;
+	rec.idle_frame = IsIdleFrame(); // front-computable: compares serials against the last frame's
+
+	ExecVsyncRecord(rec);
+}
+
+void GSRenderer::ExecVsyncRecord(const GSBackQueue::VsyncRecord& rec)
+{
+	VSync(rec.field, rec.registers_written, rec.idle_frame);
+}
+
 void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 {
 	if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))

@@ -455,10 +455,14 @@ void GSvsync(u32 field, bool registers_written)
 	g_gs_renderer->PCRTCDisplays.CalculateDisplayOffset(g_gs_renderer->m_scanmask_used);
 	g_gs_renderer->PCRTCDisplays.CalculateFramebufferOffset(g_gs_renderer->m_scanmask_used, g_gs_renderer->m_regs->DISP[0].DISPFB, g_gs_renderer->m_regs->DISP[1].DISPFB);
 
+	// The PCRTC record must precede the vsync-flushed draw records — those draws
+	// see the fresh display state, mid-frame draws saw the previous frame's.
+	g_gs_renderer->SubmitPcrtcSync();
+
 	// Do not move the flush into the VSync() method. It's here because EE transfers
 	// get cleared in HW VSync, and may be needed for a buffered draw (FFX FMVs).
 	g_gs_renderer->Flush(GSState::VSYNC);
-	g_gs_renderer->VSync(field, registers_written, g_gs_renderer->IsIdleFrame());
+	g_gs_renderer->SubmitVsync(field, registers_written);
 }
 
 int GSfreeze(FreezeAction mode, freezeData* data)

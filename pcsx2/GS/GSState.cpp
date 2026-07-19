@@ -3240,6 +3240,25 @@ void GSState::ExecClutLoadRecord(const GSBackQueue::ClutLoadRecord& rec)
 	m_mem.m_clut.WriteLoad(rec.TEX0, rec.TEXCLUT);
 }
 
+void GSState::SubmitPcrtcSync()
+{
+	GSBackQueue::PcrtcSyncRecord rec;
+	std::memcpy(&rec.displays, &PCRTCDisplays, sizeof(rec.displays));
+	rec.scanmask_used = m_scanmask_used;
+
+	ExecPcrtcSyncRecord(rec);
+}
+
+void GSState::ExecPcrtcSyncRecord(const GSBackQueue::PcrtcSyncRecord& rec)
+{
+	// Inline this re-writes the digest it was captured from; on the back object
+	// (GV7-1) it refreshes the copy read by the Draw() heuristics and the Merge
+	// circuit. Merge's scanmask decrement stays back-side; the front mirrors it
+	// at enqueue once the copies are distinct.
+	std::memcpy(&PCRTCDisplays, &rec.displays, sizeof(PCRTCDisplays));
+	m_scanmask_used = rec.scanmask_used;
+}
+
 void GSState::Move()
 {
 	// ffxii uses this to move the top/bottom of the scrolling menus offscreen and then blends them back over the text to create a shading effect
