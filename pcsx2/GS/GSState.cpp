@@ -2616,195 +2616,242 @@ u32 GSState::CalcMask(int exp, int max_exp)
 
 void GSState::FlushPrim()
 {
-	if (m_index->tail > 0)
+	if (m_index->tail == 0)
+		return;
+
+	// Front side: clear texture cache flushed flag, since we're reading from it.
+	// Front-computable (PRIM is the draw env's) and read by the front-side
+	// autoflush/overlap checks — never crosses in the record.
+	m_texflush_flag = PRIM->TME ? false : m_texflush_flag;
+
+	// Front side: capture the carry-over window before the executor's texel
+	// rounding and Draw() mutate the vertex buffer in place — carried vertices
+	// stay pre-rounding, same as today.
+	GSVertex buff[2];
+	u32 unused = 0;
+
+	const u32 head = m_vertex->head;
+	const u32 tail = m_vertex->tail;
+	const u32 next = m_vertex->next;
+
+	if (tail > head)
 	{
-		GL_REG("FlushPrim ctxt %d", PRIM->CTXT);
-
-		// clear texture cache flushed flag, since we're reading from it
-		m_texflush_flag = PRIM->TME ? false : m_texflush_flag;
-
-		// internal frame rate detection based on sprite blits to the display framebuffer
+		switch (PRIM->PRIM)
 		{
-			const u32 FRAME_FBP = m_context->FRAME.FBP;
-			if ((m_regs->DISP[0].DISPFB.FBP == FRAME_FBP && m_regs->PMODE.EN1) ||
-				(m_regs->DISP[1].DISPFB.FBP == FRAME_FBP && m_regs->PMODE.EN2))
-			{
-				g_perfmon.AddDisplayFramebufferSpriteBlit();
-			}
+			case GS_POINTLIST:
+				pxAssert(0);
+				break;
+			case GS_LINELIST:
+			case GS_LINESTRIP:
+			case GS_SPRITE:
+				unused = 1;
+				buff[0] = m_vertex->buff[tail - 1];
+				break;
+			case GS_TRIANGLELIST:
+			case GS_TRIANGLESTRIP:
+				unused = std::min<u32>(tail - head, 2);
+				memcpy(buff, &m_vertex->buff[tail - unused], sizeof(GSVertex) * 2);
+				break;
+			case GS_TRIANGLEFAN:
+				buff[0] = m_vertex->buff[head];
+				unused = 1;
+				if (tail - 1 > head)
+				{
+					buff[1] = m_vertex->buff[tail - 1];
+					unused = 2;
+				}
+				break;
+			case GS_INVALID:
+				break;
+			default:
+				ASSUME(0);
 		}
 
-		GSVertex buff[2];
-		s_n++;
+		pxAssert((int)unused < GSUtil::GetVertexCount(PRIM->PRIM));
+	}
 
-		const u32 head = m_vertex->head;
-		const u32 tail = m_vertex->tail;
-		const u32 next = m_vertex->next;
-		u32 unused = 0;
+	// Front side: draw serials are front-assigned — the front decides draw order.
+	s_n++;
 
-		if (tail > head)
+	GSBackQueue::DrawRecord rec;
+	std::memcpy(&rec.draw_env, &m_prev_env, sizeof(rec.draw_env));
+	std::memcpy(&rec.next_env, &m_env, sizeof(rec.next_env));
+	rec.next_v = m_v;
+	rec.draw_rect = temp_draw_rect;
+	rec.vertex = m_vertex;
+	rec.index = m_index;
+	rec.draw_serial = s_n;
+	rec.backed_up_ctx = m_backed_up_ctx;
+	rec.dirty_gs_regs = m_dirty_gs_regs;
+	rec.flush_reason = m_state_flush_reason;
+	rec.channel_shuffle_finish = m_channel_shuffle_finish;
+	rec.packed_uv_hack_flag = m_isPackedUV_HackFlag;
+
+	ExecDrawRecord(rec);
+
+	// Front side: reset the buffer and rebuild the carry-over window. Inline this
+	// must run after the executor (Draw reads the buffer); with the pool handoff
+	// (GV7-1) it targets the fresh front buffer instead.
+	m_index->tail = 0;
+	m_vertex->head = 0;
+
+	if (unused > 0)
+	{
+		memcpy(m_vertex->buff, buff, sizeof(GSVertex) * unused);
+
+		m_vertex->tail = unused;
+		m_vertex->next = next > head ? next - head : 0;
+
+		// If it's a Triangle fan the XY buffer needs to be updated to point to the correct head vert
+		// Jak 3 shadows get spikey (with autoflush) if you don't.
+		if (PRIM->PRIM == GS_TRIANGLEFAN)
 		{
-			switch (PRIM->PRIM)
+			for (u32 i = 0; i < unused; i++)
 			{
-				case GS_POINTLIST:
-					pxAssert(0);
-					break;
-				case GS_LINELIST:
-				case GS_LINESTRIP:
-				case GS_SPRITE:
-					unused = 1;
-					buff[0] = m_vertex->buff[tail - 1];
-					break;
-				case GS_TRIANGLELIST:
-				case GS_TRIANGLESTRIP:
-					unused = std::min<u32>(tail - head, 2);
-					memcpy(buff, &m_vertex->buff[tail - unused], sizeof(GSVertex) * 2);
-					break;
-				case GS_TRIANGLEFAN:
-					buff[0] = m_vertex->buff[head];
-					unused = 1;
-					if (tail - 1 > head)
-					{
-						buff[1] = m_vertex->buff[tail - 1];
-						unused = 2;
-					}
-					break;
-				case GS_INVALID:
-					break;
-				default:
-					ASSUME(0);
+				GSVector4i* RESTRICT vert_ptr = (GSVector4i*)&m_vertex->buff[i];
+				GSVector4i v = vert_ptr[1];
+				v = v.xxxx().u16to32().sub32(m_xyof);
+				m_vertex->xy[i & 3] = v;
+				const int wx = static_cast<int>(m_vertex->buff[i].XYZ.X) - m_xyof.I32[0];
+				const int wy = static_cast<int>(m_vertex->buff[i].XYZ.Y) - m_xyof.I32[1];
+				m_vertex->kick_ring[i & 3] = GSVertexKernels::MakeCullMirrorEntry<true>(wx, wy, m_cull_bounds_band);
+				m_vertex->xy_tail = unused;
 			}
-
-			pxAssert((int)unused < GSUtil::GetVertexCount(PRIM->PRIM));
 		}
+	}
+	else
+	{
+		m_vertex->tail = 0;
+		m_vertex->next = 0;
+	}
+}
 
-		// If the PSM format of Z is invalid, but it is masked (no write) and ZTST is set to ALWAYS pass (no test, just allow)
-		// we can ignore the Z format, since it won't be used in the draw (Star Ocean 3 transitions)
+void GSState::ExecDrawRecord(const GSBackQueue::DrawRecord& rec)
+{
+	// Install the record's state. Inline this re-writes exactly what FlushPrim
+	// captured moments ago (and FlushDraw keeps PRIM/m_draw_env/m_context aimed
+	// at m_prev_env around this call, so no re-aim is needed); on the back
+	// object (GV7-1) this becomes the real staging install, which also aims the
+	// draw pointers the way FlushDraw does today.
+	std::memcpy(&m_prev_env, &rec.draw_env, sizeof(m_prev_env));
+	std::memcpy(&m_env, &rec.next_env, sizeof(m_env));
+	m_v = rec.next_v;
+	temp_draw_rect = rec.draw_rect;
+	m_vertex = rec.vertex;
+	m_index = rec.index;
+	m_backed_up_ctx = rec.backed_up_ctx;
+	m_dirty_gs_regs = rec.dirty_gs_regs;
+	m_state_flush_reason = static_cast<GSFlushReason>(rec.flush_reason);
+	m_channel_shuffle_finish = rec.channel_shuffle_finish;
+	m_isPackedUV_HackFlag = rec.packed_uv_hack_flag;
+
+	GL_REG("FlushPrim ctxt %d", PRIM->CTXT);
+
+	// internal frame rate detection based on sprite blits to the display framebuffer
+	{
+		const u32 FRAME_FBP = m_context->FRAME.FBP;
+		if ((m_regs->DISP[0].DISPFB.FBP == FRAME_FBP && m_regs->PMODE.EN1) ||
+			(m_regs->DISP[1].DISPFB.FBP == FRAME_FBP && m_regs->PMODE.EN2))
+		{
+			g_perfmon.AddDisplayFramebufferSpriteBlit();
+		}
+	}
+
+	// If the PSM format of Z is invalid, but it is masked (no write) and ZTST is set to ALWAYS pass (no test, just allow)
+	// we can ignore the Z format, since it won't be used in the draw (Star Ocean 3 transitions)
 #ifdef PCSX2_DEVBUILD
-		const bool ignoreZ = m_context->ZBUF.ZMSK && m_context->TEST.ZTST == 1;
-		if (GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt >= 3 || (GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt >= 3 && !ignoreZ))
-		{
-			Console.Warning("GS: Possible invalid draw, Frame PSM %x ZPSM %x", m_context->FRAME.PSM, m_context->ZBUF.PSM);
-		}
+	const bool ignoreZ = m_context->ZBUF.ZMSK && m_context->TEST.ZTST == 1;
+	if (GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt >= 3 || (GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt >= 3 && !ignoreZ))
+	{
+		Console.Warning("GS: Possible invalid draw, Frame PSM %x ZPSM %x", m_context->FRAME.PSM, m_context->ZBUF.PSM);
+	}
 #endif
-		// Update scissor, it may have been modified by a previous draw
-		m_env.CTXT[PRIM->CTXT].UpdateScissor();
-		m_vt.Update(m_vertex->buff, m_index->buff, m_vertex->tail, m_index->tail, GSUtil::GetPrimClass(PRIM->PRIM));
+	// Update scissor, it may have been modified by a previous draw
+	m_env.CTXT[PRIM->CTXT].UpdateScissor();
+	m_vt.Update(m_vertex->buff, m_index->buff, m_vertex->tail, m_index->tail, GSUtil::GetPrimClass(PRIM->PRIM));
 
-		// Texel coordinate rounding
-		// Helps Manhunt (lights shining through objects).
-		// Can help with some alignment issues when upscaling too, and is for both Software and Hardware renderers.
-		// Sometimes hardware doesn't get affected, likely due to the difference in how GPU's handle textures (Persona minimap).
-		if (PRIM->TME && (GSUtil::GetPrimClass(PRIM->PRIM) == GS_PRIM_CLASS::GS_SPRITE_CLASS || m_vt.m_eq.z))
+	// Texel coordinate rounding
+	// Helps Manhunt (lights shining through objects).
+	// Can help with some alignment issues when upscaling too, and is for both Software and Hardware renderers.
+	// Sometimes hardware doesn't get affected, likely due to the difference in how GPU's handle textures (Persona minimap).
+	if (PRIM->TME && (GSUtil::GetPrimClass(PRIM->PRIM) == GS_PRIM_CLASS::GS_SPRITE_CLASS || m_vt.m_eq.z))
+	{
+		if (!PRIM->FST) // STQ's
 		{
-			if (!PRIM->FST) // STQ's
+			const bool is_sprite = GSUtil::GetPrimClass(PRIM->PRIM) == GS_PRIM_CLASS::GS_SPRITE_CLASS;
+			// ST's have the lowest 9 bits (or greater depending on exponent difference) rounding down (from hardware tests).
+			for (int i = m_index->tail - 1; i >= 0; i--)
 			{
-				const bool is_sprite = GSUtil::GetPrimClass(PRIM->PRIM) == GS_PRIM_CLASS::GS_SPRITE_CLASS;
-				// ST's have the lowest 9 bits (or greater depending on exponent difference) rounding down (from hardware tests).
-				for (int i = m_index->tail - 1; i >= 0; i--)
-				{
-					GSVertex* v = &m_vertex->buff[m_index->buff[i]];
+				GSVertex* v = &m_vertex->buff[m_index->buff[i]];
 
-					// Only Q on the second vertex is valid
-					if (!(i & 1) && is_sprite)
-						v->RGBAQ.Q = m_vertex->buff[m_index->buff[i + 1]].RGBAQ.Q;
+				// Only Q on the second vertex is valid
+				if (!(i & 1) && is_sprite)
+					v->RGBAQ.Q = m_vertex->buff[m_index->buff[i + 1]].RGBAQ.Q;
 
-					int T = std::bit_cast<int>(v->ST.T);
-					int Q = std::bit_cast<int>(v->RGBAQ.Q);
-					int S = std::bit_cast<int>(v->ST.S);
-					const int expS = (S >> 23) & 0xff;
-					const int expT = (T >> 23) & 0xff;
-					const int expQ = (Q >> 23) & 0xff;
-					int max_exp = std::max(expS, expQ);
+				int T = std::bit_cast<int>(v->ST.T);
+				int Q = std::bit_cast<int>(v->RGBAQ.Q);
+				int S = std::bit_cast<int>(v->ST.S);
+				const int expS = (S >> 23) & 0xff;
+				const int expT = (T >> 23) & 0xff;
+				const int expQ = (Q >> 23) & 0xff;
+				int max_exp = std::max(expS, expQ);
 
-					u32 mask = CalcMask(expS, max_exp);
-					S &= ~mask;
-					v->ST.S = std::bit_cast<float>(S);
-					max_exp = std::max(expT, expQ);
-					mask = CalcMask(expT, max_exp);
-					T &= ~mask;
-					v->ST.T = std::bit_cast<float>(T);
-					Q &= ~0xff;
+				u32 mask = CalcMask(expS, max_exp);
+				S &= ~mask;
+				v->ST.S = std::bit_cast<float>(S);
+				max_exp = std::max(expT, expQ);
+				mask = CalcMask(expT, max_exp);
+				T &= ~mask;
+				v->ST.T = std::bit_cast<float>(T);
+				Q &= ~0xff;
 
-					if (!is_sprite || (i & 1))
-						v->RGBAQ.Q = std::bit_cast<float>(Q);
+				if (!is_sprite || (i & 1))
+					v->RGBAQ.Q = std::bit_cast<float>(Q);
 
-					m_vt.m_min.t.x = std::min(m_vt.m_min.t.x, (v->ST.S / v->RGBAQ.Q) * (1 << m_context->TEX0.TW));
-					m_vt.m_min.t.y = std::min(m_vt.m_min.t.y, (v->ST.T / v->RGBAQ.Q) * (1 << m_context->TEX0.TH));
-				}
+				m_vt.m_min.t.x = std::min(m_vt.m_min.t.x, (v->ST.S / v->RGBAQ.Q) * (1 << m_context->TEX0.TW));
+				m_vt.m_min.t.y = std::min(m_vt.m_min.t.y, (v->ST.T / v->RGBAQ.Q) * (1 << m_context->TEX0.TH));
 			}
 		}
+	}
 
-		// Skip draw if Z test is enabled, but set to fail all pixels.
-		const bool skip_draw = (m_context->TEST.ZTE && m_context->TEST.ZTST == ZTST_NEVER);
-		m_quad_check_valid = false;
-		m_quad_check_valid_shuffle = false;
-		m_drawlist.clear();
-		m_drawlist_bbox.clear();
+	// Skip draw if Z test is enabled, but set to fail all pixels.
+	const bool skip_draw = (m_context->TEST.ZTE && m_context->TEST.ZTST == ZTST_NEVER);
+	m_quad_check_valid = false;
+	m_quad_check_valid_shuffle = false;
+	m_drawlist.clear();
+	m_drawlist_bbox.clear();
 
-		if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
+	if (GSConfig.ShouldDump(rec.draw_serial, g_perfmon.GetFrame()))
+	{
+		if (GSConfig.SaveInfo)
 		{
-			if (GSConfig.SaveInfo)
-			{
-				// Only dump registers/vertices if we are drawing.
-				// Always dump the transfers since these are relevant for debugging regardless of
-				// whether the draw is skipped or not.
-				DumpDrawInfo(!skip_draw, !skip_draw, true);
-			}
-
-			if (GSConfig.SaveTransferImages)
-				DumpTransferImages();
+			// Only dump registers/vertices if we are drawing.
+			// Always dump the transfers since these are relevant for debugging regardless of
+			// whether the draw is skipped or not.
+			DumpDrawInfo(!skip_draw, !skip_draw, true);
 		}
 
-		if (!skip_draw)
-			Draw();
+		if (GSConfig.SaveTransferImages)
+			DumpTransferImages();
+	}
 
-		g_perfmon.Put(GSPerfMon::Draw, 1);
-		g_perfmon.Put(GSPerfMon::Prim, m_index->tail / GSUtil::GetVertexCount(PRIM->PRIM));
+	if (!skip_draw)
+		Draw();
 
-		if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
+	g_perfmon.Put(GSPerfMon::Draw, 1);
+	g_perfmon.Put(GSPerfMon::Prim, m_index->tail / GSUtil::GetVertexCount(PRIM->PRIM));
+
+	if (GSConfig.ShouldDump(rec.draw_serial, g_perfmon.GetFrame()))
+	{
+		if (GSConfig.SaveDrawStats)
 		{
-			if (GSConfig.SaveDrawStats)
-			{
-				m_perfmon_draw = g_perfmon - m_perfmon_draw;
-				m_perfmon_draw.Dump(GetDrawDumpPath("%05lld_draw_stats.txt", s_n), GSIsHardwareRenderer());
-				m_perfmon_draw = g_perfmon;
-			}
-		}
-
-		m_index->tail = 0;
-		m_vertex->head = 0;
-
-		if (unused > 0)
-		{
-			memcpy(m_vertex->buff, buff, sizeof(GSVertex) * unused);
-
-			m_vertex->tail = unused;
-			m_vertex->next = next > head ? next - head : 0;
-
-			// If it's a Triangle fan the XY buffer needs to be updated to point to the correct head vert
-			// Jak 3 shadows get spikey (with autoflush) if you don't.
-			if (PRIM->PRIM == GS_TRIANGLEFAN)
-			{
-				for (u32 i = 0; i < unused; i++)
-				{
-					GSVector4i* RESTRICT vert_ptr = (GSVector4i*)&m_vertex->buff[i];
-					GSVector4i v = vert_ptr[1];
-					v = v.xxxx().u16to32().sub32(m_xyof);
-					m_vertex->xy[i & 3] = v;
-					const int wx = static_cast<int>(m_vertex->buff[i].XYZ.X) - m_xyof.I32[0];
-					const int wy = static_cast<int>(m_vertex->buff[i].XYZ.Y) - m_xyof.I32[1];
-					m_vertex->kick_ring[i & 3] = GSVertexKernels::MakeCullMirrorEntry<true>(wx, wy, m_cull_bounds_band);
-					m_vertex->xy_tail = unused;
-				}
-			}
-		}
-		else
-		{
-			m_vertex->tail = 0;
-			m_vertex->next = 0;
+			m_perfmon_draw = g_perfmon - m_perfmon_draw;
+			m_perfmon_draw.Dump(GetDrawDumpPath("%05lld_draw_stats.txt", rec.draw_serial), GSIsHardwareRenderer());
+			m_perfmon_draw = g_perfmon;
 		}
 	}
 }
+
 GSVector4i GSState::GetTEX0Rect(GSDrawingContext prev_ctx)
 {
 	GSVector4i ret = GSVector4i::zero();

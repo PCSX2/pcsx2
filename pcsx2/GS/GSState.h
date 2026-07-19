@@ -147,36 +147,12 @@ protected:
 	int m_current_buffer_idx = 0;
 	bool m_recent_buffer_switch = false;
 
-	struct GSVertexBuff
-	{
-		GSVertex* buff;
-		GSVertex* buff_copy; // same size buffer to copy/modify the original buffer
-		u32 head, tail, next, maxcount; // head: first vertex, tail: last vertex + 1, next: last indexed + 1
-		u32 xy_tail;
-		GSVector4i xy[4];
-		GSVector4i xyhead;
-		// Scalar mirror of xy[] for the outcode cull fast path: written wherever
-		// xy[] is written, outcodes re-derived on scissor change (RefreshKickMirror).
-		GSVertexKernels::CullMirrorEntry kick_ring[4];
-		// Fused vertex-trace bounds (aarch64 only): FindMinMax min/max accumulated
-		// at index emission over this buffer's referenced vertices. fmm_watermark is
-		// the first vertex position not yet folded in (clamped on rewinds/compaction
-		// so re-referenced positions re-accumulate); fmm_valid means the accumulator
-		// covers every emitted index of the pending draw. Reset lazily at the first
-		// emission of a draw (itail == n).
-		GSVertexKernels::FmmAcc fmm_acc;
-		u32 fmm_watermark;
-		bool fmm_valid;
-	};
+	// Definitions hoisted to GSBackQueue.h (DRAW record payload types).
+	using GSVertexBuff = GSBackQueue::VertexBuff;
+	using GSIndexBuff = GSBackQueue::IndexBuff;
 
 	GSVertexBuff m_vertex_buffers[MAX_DRAW_BUFFERS];
 	GSVertexBuff* m_vertex = nullptr;
-
-	struct GSIndexBuff
-	{
-		u16* buff;
-		u32 tail;
-	};
 
 	GSIndexBuff m_index_buffers[MAX_DRAW_BUFFERS];
 
@@ -623,6 +599,7 @@ public:
 	void ExecMoveRecord(const GSBackQueue::MoveRecord& rec);
 	void SubmitClutLoad(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	void ExecClutLoadRecord(const GSBackQueue::ClutLoadRecord& rec);
+	void ExecDrawRecord(const GSBackQueue::DrawRecord& rec);
 
 	GSVector4i GetTEX0Rect(GSDrawingContext prev_ctx);
 	void CheckWriteOverlap(bool req_write, bool req_read);
