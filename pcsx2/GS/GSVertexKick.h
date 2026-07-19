@@ -60,6 +60,83 @@ namespace GSVertexKernels
 		m1 = xyz.upl64(GSVector4i::loadl(&uvfog));
 	}
 
+#ifdef ARCH_ARM64
+	// aarch64-native parse: the whole vertex build is byte movement, so one TBL
+	// gathers each qword (the legacy path spends ~11 NEON ops on the RGBA
+	// pack chain alone). Out-of-range TBL indices read as zero, which provides the
+	// 24-bit Z and 8-bit F masks for free. Bit-identical to the legacy kernels —
+	// pinned by gs_vertex_tests and by GS_VERTEX_CROSSCHECK replay builds.
+	__forceinline_odr void ParsePackedSTQRGBAXYZF2_Neon(const GIFPackedReg* RESTRICT r, u32 uv, GSVector4i& m0, GSVector4i& m1)
+	{
+		// m0 = {S, T, RGBA, Q}: S/T = r0 bytes 0-7, RGBA = r1 bytes 0/4/8/12, Q = r0 bytes 8-11.
+		alignas(16) static constexpr u8 pat_m0[16] = {0, 1, 2, 3, 4, 5, 6, 7, 16, 20, 24, 28, 8, 9, 10, 11};
+		// m1 = {X|Y<<16, Z, UV, F}: X/Y = r2 bytes 0-1/4-5, Z = (r2>>4) bytes 8-10, F = (r2>>4) byte 12.
+		alignas(16) static constexpr u8 pat_m1[16] = {0, 1, 4, 5, 24, 25, 26, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 28, 0xFF, 0xFF, 0xFF};
+		// Q == +0.0 (integer compare) rewrites to FLT_MIN; other lanes OR with 0.
+		alignas(16) static constexpr u32 q_fixup[4] = {0, 0, 0, 0x00800000};
+
+		const uint8x16x2_t st_rgba = {vld1q_u8(reinterpret_cast<const u8*>(r + 0)), vld1q_u8(reinterpret_cast<const u8*>(r + 1))};
+		uint32x4_t v0 = vreinterpretq_u32_u8(vqtbl2q_u8(st_rgba, vld1q_u8(pat_m0)));
+		v0 = vorrq_u32(v0, vandq_u32(vceqzq_u32(v0), vld1q_u32(q_fixup)));
+
+		const uint8x16_t xyzf = vld1q_u8(reinterpret_cast<const u8*>(r + 2));
+		const uint8x16x2_t xyzf_pair = {xyzf, vreinterpretq_u8_u32(vshrq_n_u32(vreinterpretq_u32_u8(xyzf), 4))};
+		uint32x4_t v1 = vreinterpretq_u32_u8(vqtbl2q_u8(xyzf_pair, vld1q_u8(pat_m1)));
+		v1 = vsetq_lane_u32(uv, v1, 2);
+
+		m0 = GSVector4i(vreinterpretq_s32_u32(v0));
+		m1 = GSVector4i(vreinterpretq_s32_u32(v1));
+	}
+
+	__forceinline_odr void ParsePackedSTQRGBAXYZ2_Neon(const GIFPackedReg* RESTRICT r, u64 uvfog, GSVector4i& m0, GSVector4i& m1)
+	{
+		alignas(16) static constexpr u8 pat_m0[16] = {0, 1, 2, 3, 4, 5, 6, 7, 16, 20, 24, 28, 8, 9, 10, 11};
+		// m1 low half = {X|Y<<16, Z32} straight out of r2; high half = {UV, FOG} verbatim.
+		alignas(16) static constexpr u8 pat_xyz[16] = {0, 1, 4, 5, 8, 9, 10, 11, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+		alignas(16) static constexpr u32 q_fixup[4] = {0, 0, 0, 0x00800000};
+
+		const uint8x16x2_t st_rgba = {vld1q_u8(reinterpret_cast<const u8*>(r + 0)), vld1q_u8(reinterpret_cast<const u8*>(r + 1))};
+		uint32x4_t v0 = vreinterpretq_u32_u8(vqtbl2q_u8(st_rgba, vld1q_u8(pat_m0)));
+		v0 = vorrq_u32(v0, vandq_u32(vceqzq_u32(v0), vld1q_u32(q_fixup)));
+
+		const uint8x16_t xyz = vqtbl1q_u8(vld1q_u8(reinterpret_cast<const u8*>(r + 2)), vld1q_u8(pat_xyz));
+		const uint64x2_t v1 = vsetq_lane_u64(uvfog, vreinterpretq_u64_u8(xyz), 1);
+
+		m0 = GSVector4i(vreinterpretq_s32_u32(v0));
+		m1 = GSVector4i(vreinterpretq_s32_u64(v1));
+	}
+#endif // ARCH_ARM64
+
+	// Dispatchers the fused handlers call: aarch64 takes the TBL kernels (optionally
+	// crosschecked against the legacy ones per vertex), x86 keeps the legacy path.
+	__forceinline_odr void ParsePackedSTQRGBAXYZF2_Fast(const GIFPackedReg* RESTRICT r, u32 uv, GSVector4i& m0, GSVector4i& m1)
+	{
+#ifdef ARCH_ARM64
+		ParsePackedSTQRGBAXYZF2_Neon(r, uv, m0, m1);
+#ifdef GS_VERTEX_CROSSCHECK
+		GSVector4i c0, c1;
+		ParsePackedSTQRGBAXYZF2(r, uv, c0, c1);
+		pxAssertRel(c0.eq(m0) && c1.eq(m1), "GS_VERTEX_CROSSCHECK: packed XYZF2 parse divergence");
+#endif
+#else
+		ParsePackedSTQRGBAXYZF2(r, uv, m0, m1);
+#endif
+	}
+
+	__forceinline_odr void ParsePackedSTQRGBAXYZ2_Fast(const GIFPackedReg* RESTRICT r, u64 uvfog, GSVector4i& m0, GSVector4i& m1)
+	{
+#ifdef ARCH_ARM64
+		ParsePackedSTQRGBAXYZ2_Neon(r, uvfog, m0, m1);
+#ifdef GS_VERTEX_CROSSCHECK
+		GSVector4i c0, c1;
+		ParsePackedSTQRGBAXYZ2(r, uvfog, c0, c1);
+		pxAssertRel(c0.eq(m0) && c1.eq(m1), "GS_VERTEX_CROSSCHECK: packed XYZ2 parse divergence");
+#endif
+#else
+		ParsePackedSTQRGBAXYZ2(r, uvfog, m0, m1);
+#endif
+	}
+
 	// Accept/cull test for one completed prim. v0/v1/v2 are the window entries for
 	// the prim's vertices ({x, y, x, y} offset-subtracted 12.4 fixed-point, v0 most
 	// recent), scissor_cull = context scissor in cull form. nativeres selects the

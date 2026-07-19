@@ -1487,7 +1487,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 		while (r < r_end)
 		{
 			GSVector4i m0, m1;
-			GSVertexKernels::ParsePackedSTQRGBAXYZF2(r, m_v.UV, m0, m1);
+			GSVertexKernels::ParsePackedSTQRGBAXYZF2_Fast(r, m_v.UV, m0, m1);
 
 			m_v.m[0] = m0;
 			m_v.m[1] = m1;
@@ -1507,7 +1507,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 		GSVector4i m0, m1;
 		while (r < r_end)
 		{
-			GSVertexKernels::ParsePackedSTQRGBAXYZF2(r, uv, m0, m1);
+			GSVertexKernels::ParsePackedSTQRGBAXYZF2_Fast(r, uv, m0, m1);
 			ApplyDepthClamp(m1.U32[1]);
 
 			VertexKickDirect<prim, auto_flush>(r[2].XYZF2.Skip(), m0, m1);
@@ -1540,7 +1540,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32
 			std::memcpy(&uvfog, &m_v.UV, sizeof(uvfog));
 
 			GSVector4i m0, m1;
-			GSVertexKernels::ParsePackedSTQRGBAXYZ2(r, uvfog, m0, m1);
+			GSVertexKernels::ParsePackedSTQRGBAXYZ2_Fast(r, uvfog, m0, m1);
 
 			m_v.m[0] = m0;
 			m_v.m[1] = m1;
@@ -1560,7 +1560,7 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32
 		GSVector4i m0, m1;
 		while (r < r_end)
 		{
-			GSVertexKernels::ParsePackedSTQRGBAXYZ2(r, uvfog, m0, m1);
+			GSVertexKernels::ParsePackedSTQRGBAXYZ2_Fast(r, uvfog, m0, m1);
 			ApplyDepthClamp(m1.U32[1]);
 
 			VertexKickDirect<prim, auto_flush>(r[2].XYZ2.Skip(), m0, m1);

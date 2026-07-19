@@ -221,6 +221,60 @@ TEST(GsVertexParse, Xyz2RandomSweep)
 	}
 }
 
+#ifdef ARCH_ARM64
+TEST(GsVertexParse, Xyzf2NeonRandomSweep)
+{
+	std::mt19937_64 rng(0x67766f33);
+	alignas(16) u8 rec[48];
+
+	for (int iter = 0; iter < 1000000; iter++)
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			const u64 v = rng();
+			std::memcpy(rec + i * 8, &v, 8);
+		}
+		if ((iter & 15) == 0)
+			std::memset(rec + 8, 0, 4);
+
+		const u32 uv = static_cast<u32>(rng());
+		const RefVertex ref = RefParseXYZF2(rec, uv);
+
+		GSVector4i m0, m1;
+		GSVertexKernels::ParsePackedSTQRGBAXYZF2_Neon(reinterpret_cast<const GIFPackedReg*>(rec), uv, m0, m1);
+
+		ASSERT_TRUE(std::memcmp(ref.m0, &m0, 16) == 0 && std::memcmp(ref.m1, &m1, 16) == 0)
+			<< "NEON XYZF2 divergence at iter " << iter;
+	}
+}
+
+TEST(GsVertexParse, Xyz2NeonRandomSweep)
+{
+	std::mt19937_64 rng(0x67766f34);
+	alignas(16) u8 rec[48];
+
+	for (int iter = 0; iter < 1000000; iter++)
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			const u64 v = rng();
+			std::memcpy(rec + i * 8, &v, 8);
+		}
+		if ((iter & 15) == 0)
+			std::memset(rec + 8, 0, 4);
+
+		const u64 uvfog = rng();
+		const RefVertex ref = RefParseXYZ2(rec, uvfog);
+
+		GSVector4i m0, m1;
+		GSVertexKernels::ParsePackedSTQRGBAXYZ2_Neon(reinterpret_cast<const GIFPackedReg*>(rec), uvfog, m0, m1);
+
+		ASSERT_TRUE(std::memcmp(ref.m0, &m0, 16) == 0 && std::memcmp(ref.m1, &m1, 16) == 0)
+			<< "NEON XYZ2 divergence at iter " << iter;
+	}
+}
+#endif // ARCH_ARM64
+
 namespace
 {
 	template <u32 n, int primclass>
