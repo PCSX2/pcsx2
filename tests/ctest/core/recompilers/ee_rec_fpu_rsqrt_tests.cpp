@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 yaps2
+// SPDX-FileCopyrightText: 2026 yaps2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 //
 // Native RSQRT.S coverage. Fd = Fs / sqrt(|Ft|).
