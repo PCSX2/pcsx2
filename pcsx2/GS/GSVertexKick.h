@@ -6,6 +6,7 @@
 #include "GS/GSRegs.h"
 #include "GS/GSVector.h"
 
+#include <bit>
 #include <cfloat>
 
 // Pure kernels backing the fused GIF packed vertex handlers and the per-prim
@@ -335,5 +336,204 @@ namespace GSVertexKernels
 		}
 
 		return 0;
+	}
+
+	// ------------------------------------------------------------------------
+	// Fused vertex-trace bounds: accumulate GSVertexTraceFMM::FindMinMax's
+	// min/max at index-emission time over each newly-referenced vertex (the data
+	// is register/L1-hot in the kick), so the flush doesn't re-walk the index
+	// list (strip vertices up to 3x redundant) with a non-pipelined FDIV per
+	// vertex pair. The raw material is accumulated env-blind; the finish step
+	// reproduces the legacy tail bit-exactly or declines (caller then runs the
+	// legacy FindMinMax).
+	//
+	// Exactness notes (pinned by gs_vertex_tests + GS_VERTEX_CROSSCHECK):
+	// - min/max are idempotent and assoc/comm, so accumulating the referenced
+	//   vertex SET (dedup'd by the caller's watermark) equals the legacy walk
+	//   over the index list — provided no NaN is involved (see below).
+	// - STQ (!FST) folds min(s_i/q) into min(s_i)/q, exact by weak monotonicity
+	//   of IEEE division in the numerator when q is one constant, normal,
+	//   nonzero value (negative q swaps min/max; the minimum is attained, so
+	//   weak monotonicity gives equality). The FLT_MAX sentinels the legacy
+	//   min/max chains start from are folded at the quotient level, matching
+	//   legacy when a quotient overflows to +/-inf. Inf/NaN S or T inputs (and
+	//   any non-normal or non-constant q) make the fold decline: legacy masks
+	//   NaN quotients per lane and reports them in vt.nan, which a min/max
+	//   summary can't reproduce.
+	// - NaN DETECTION relies on AArch64 FMIN/FMAX propagating NaN into the raw
+	//   accumulator (sticky). SSE MINPS keeps the second operand, which can
+	//   drop a NaN again — so the fused path is aarch64-only; x86 keeps the
+	//   legacy FindMinMax everywhere.
+	// ------------------------------------------------------------------------
+
+	struct FmmAcc
+	{
+		GSVector4i pmin, pmax; // u32 min/max of {x, y, z, fog-word} (the legacy p vectors)
+		GSVector4i tmin, tmax; // FST: u16 min/max of raw m[1] (elements 4/5 = U/V).
+		                       // !FST: float min/max of raw m[0] {S, T, rgba-bits, Q}.
+		GSVector4i cmin, cmax; // u8 min/max of m[0] (bytes 8-11 = RGBA); flat shading
+		                       // accumulates provoking vertices only.
+	};
+
+	// {x, y, z, fog-word} exactly as the legacy kernel builds its p vectors.
+	__forceinline_odr GSVector4i FmmPos(const GSVector4i& m1)
+	{
+		return m1.upl16().blend32<0xc>(m1.ywyw());
+	}
+
+	__forceinline_odr void FmmAccReset(FmmAcc& a, bool tme, bool fst)
+	{
+		a.pmin = GSVector4i::xffffffff();
+		a.pmax = GSVector4i::zero();
+		if (tme && !fst)
+		{
+			a.tmin = GSVector4i::cast(GSVector4(FLT_MAX));
+			a.tmax = GSVector4i::cast(GSVector4(-FLT_MAX));
+		}
+		else
+		{
+			a.tmin = GSVector4i::xffffffff();
+			a.tmax = GSVector4i::zero();
+		}
+		a.cmin = GSVector4i::xffffffff();
+		a.cmax = GSVector4i::zero();
+	}
+
+	// accumulate_color = iip || provoking, evaluated by the caller (flat shading
+	// only takes the provoking vertex's color; the provoking vertex is always the
+	// last-emitted index of the prim).
+	__forceinline_odr void FmmAccumVertex(FmmAcc& a, const GSVector4i& m0, const GSVector4i& m1,
+		bool tme, bool fst, bool accumulate_color)
+	{
+		const GSVector4i p = FmmPos(m1);
+		a.pmin = a.pmin.min_u32(p);
+		a.pmax = a.pmax.max_u32(p);
+
+		if (tme)
+		{
+			if (fst)
+			{
+				a.tmin = a.tmin.min_u16(m1);
+				a.tmax = a.tmax.max_u16(m1);
+			}
+			else
+			{
+				a.tmin = GSVector4i::cast(GSVector4::cast(a.tmin).min(GSVector4::cast(m0)));
+				a.tmax = GSVector4i::cast(GSVector4::cast(a.tmax).max(GSVector4::cast(m0)));
+			}
+		}
+
+		if (accumulate_color)
+		{
+			a.cmin = a.cmin.min_u8(m0);
+			a.cmax = a.cmax.max_u8(m0);
+		}
+	}
+
+	struct FmmResult
+	{
+		GSVector4 min_p, max_p, min_t, max_t;
+		GSVector4i min_c, max_c;
+		u32 nan_value;  // only meaningful when write_nan
+		bool write_nan; // legacy leaves vt.nan untouched for TME && FST draws
+	};
+
+	// Reproduce the legacy FindMinMax tail from the accumulators. Returns false
+	// when that can't be done bit-exactly — the caller must run the legacy
+	// FindMinMax instead. tw/th are the draw context's TEX0.TW/TH.
+	__forceinline_odr bool FmmFinish(const FmmAcc& a, bool tme, bool fst, bool color,
+		const GIFRegXYOFFSET& ofs, u32 tw, u32 th, FmmResult& out)
+	{
+		out.write_nan = !(tme && fst);
+		out.nan_value = 0;
+
+		if (tme && !fst)
+		{
+			// One constant, normal, nonzero Q across the draw; no inf/NaN S or T
+			// (checked on the accumulator extremes: +/-inf and NaN always reach
+			// them — max surfaces +inf, min surfaces -inf, NaN is sticky).
+			const u32 qmin_bits = static_cast<u32>(a.tmin.U32[3]);
+			const u32 qmax_bits = static_cast<u32>(a.tmax.U32[3]);
+			if (qmin_bits != qmax_bits)
+				return false;
+
+			const u32 qexp = (qmin_bits >> 23) & 0xFF;
+			if (qexp == 0 || qexp == 0xFF)
+				return false;
+
+			const u32 st_lanes[4] = {static_cast<u32>(a.tmin.U32[0]), static_cast<u32>(a.tmin.U32[1]),
+				static_cast<u32>(a.tmax.U32[0]), static_cast<u32>(a.tmax.U32[1])};
+			for (const u32 bits : st_lanes)
+			{
+				if (((bits >> 23) & 0xFF) == 0xFF)
+					return false;
+			}
+		}
+
+		const GSVector4 o(ofs);
+		const GSVector4 s(1.0f / 16, 1.0f / 16, 2.0f, 1.0f);
+
+		out.min_p = (GSVector4(a.pmin) - o) * s;
+		out.max_p = (GSVector4(a.pmax) - o) * s;
+
+		// Fix signed int conversion of the Z lane, as the legacy tail does.
+		out.min_p = out.min_p.insert32<0, 2>(GSVector4::load(static_cast<float>(static_cast<u32>(a.pmin.extract32<2>()))));
+		out.max_p = out.max_p.insert32<0, 2>(GSVector4::load(static_cast<float>(static_cast<u32>(a.pmax.extract32<2>()))));
+
+		if (tme)
+		{
+			if (fst)
+			{
+				// Legacy converts each vertex's {U, V} u16s to float and min/maxes
+				// against FLT_MAX sentinels; u16 -> float is monotone and exact and
+				// the sentinels never survive, so min-in-u16-then-convert matches.
+				const GSVector4i uvmin(a.tmin.U16[4], a.tmin.U16[5], a.tmin.U16[4], a.tmin.U16[5]);
+				const GSVector4i uvmax(a.tmax.U16[4], a.tmax.U16[5], a.tmax.U16[4], a.tmax.U16[5]);
+				const GSVector4 sc = GSVector4(1.0f / 16, 1.0f).xxyy();
+				out.min_t = GSVector4(uvmin) * sc;
+				out.max_t = GSVector4(uvmax) * sc;
+			}
+			else
+			{
+				const u32 q_bits = static_cast<u32>(a.tmin.U32[3]);
+				const GSVector4 fmin_v = GSVector4::cast(a.tmin);
+				const GSVector4 fmax_v = GSVector4::cast(a.tmax);
+				const GSVector4 qv(std::bit_cast<float>(q_bits));
+				const GSVector4 lo = fmin_v / qv;
+				const GSVector4 hi = fmax_v / qv;
+
+				const bool qneg = (q_bits >> 31) != 0;
+				const GSVector4 amin = qneg ? hi : lo;
+				const GSVector4 amax = qneg ? lo : hi;
+
+				// Rebuild the legacy lane shape {S/q, T/q, q, q} and fold the
+				// FLT_MAX sentinels the legacy min/max chains start from (a
+				// quotient that overflows to +/-inf is clamped by them).
+				const GSVector4 tl = amin.xyww(qv).min(GSVector4(FLT_MAX));
+				const GSVector4 tu = amax.xyww(qv).max(GSVector4(-FLT_MAX));
+
+				const GSVector4 sc = GSVector4(1 << static_cast<int>(tw), 1 << static_cast<int>(th), 1, 1);
+				out.min_t = tl * sc;
+				out.max_t = tu * sc;
+			}
+		}
+		else
+		{
+			out.min_t = GSVector4::zero();
+			out.max_t = GSVector4::zero();
+		}
+
+		if (color)
+		{
+			out.min_c = a.cmin.zzzz().u8to32();
+			out.max_c = a.cmax.zzzz().u8to32();
+		}
+		else
+		{
+			out.min_c = GSVector4i::zero();
+			out.max_c = GSVector4i::zero();
+		}
+
+		return true;
 	}
 } // namespace GSVertexKernels

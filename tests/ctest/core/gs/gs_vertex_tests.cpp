@@ -458,3 +458,348 @@ TEST(GsVertexCull, PointSweep)
 {
 	RunCullSweep<1, GS_POINT_CLASS>(0x67763304, 500000);
 }
+
+#ifdef ARCH_ARM64
+
+// ---------------------------------------------------------------------------
+// Fused vertex-trace bounds (FmmAcc/FmmAccumVertex/FmmFinish vs the legacy
+// FindMinMax walk). The oracle here is a faithful transcription of
+// GSVertexTraceFMM::FindMinMax<GS_TRIANGLE_CLASS> (GSVertexTraceFMM.cpp) over
+// {m0, m1} vector pairs — the property under test is that the fused
+// reformulation reproduces the legacy walk bit-exactly whenever FmmFinish
+// accepts, and that it accepts on the benign (real-game) configurations.
+// End-to-end integration is separately pinned by GS_VERTEX_CROSSCHECK replay.
+// aarch64-only: the fused path's NaN detection relies on FMIN/FMAX NaN
+// propagation, which SSE min/max does not provide.
+// ---------------------------------------------------------------------------
+
+namespace
+{
+	struct FmmRefOut
+	{
+		GSVector4 min_p, max_p, min_t, max_t;
+		GSVector4i min_c, max_c;
+		u32 nan_value;
+		bool wrote_nan;
+	};
+
+	// Transcription of FindMinMax<GS_TRIANGLE_CLASS, iip, tme, fst, color> plus
+	// its GetFMM argument fixups (real_fst = tme ? fst : false; real_iip = iip).
+	void RefFindMinMaxTriangle(const GSVector4i* m0s, const GSVector4i* m1s, const u16* index, int count,
+		bool iip, bool tme, bool fst_in, bool color, const GIFRegXYOFFSET& ofs, u32 tw, u32 th, FmmRefOut& out)
+	{
+		const bool fst = tme ? fst_in : false;
+
+		const GSVector4 s_minmax = GSVector4(FLT_MAX, -FLT_MAX, 0.f, 0.f);
+		GSVector4 tmin = s_minmax.xxxx();
+		GSVector4 tmax = s_minmax.yyyy();
+		GSVector4i tnan = GSVector4i::zero();
+		GSVector4i cmin = GSVector4i::xffffffff();
+		GSVector4i cmax = GSVector4i::zero();
+		GSVector4i pmin = GSVector4i::xffffffff();
+		GSVector4i pmax = GSVector4i::zero();
+
+		const auto processVertices = [&](int i0, int i1, bool finalVertex)
+		{
+			if (color)
+			{
+				const GSVector4i c0 = GSVector4i::load(static_cast<int>(static_cast<u32>(m0s[i0].U32[2])));
+				const GSVector4i c1 = GSVector4i::load(static_cast<int>(static_cast<u32>(m0s[i1].U32[2])));
+				if (iip || finalVertex)
+				{
+					cmin = cmin.min_u8(c0.min_u8(c1));
+					cmax = cmax.max_u8(c0.max_u8(c1));
+				}
+				// (n == 2 branch: line class only, not transcribed)
+			}
+
+			if (tme)
+			{
+				if (!fst)
+				{
+					GSVector4 stq0 = GSVector4::cast(m0s[i0]);
+					GSVector4 stq1 = GSVector4::cast(m0s[i1]);
+
+					const GSVector4 q = stq0.wwww(stq1);
+					const GSVector4 st = stq0.xyxy(stq1) / q;
+
+					stq0 = st.xyww(stq0);
+					stq1 = st.zwww(stq1);
+
+					const GSVector4i nan0 = GSVector4i::cast(stq0 != stq0);
+					const GSVector4i nan1 = GSVector4i::cast(stq1 != stq1);
+
+					tmin = tmin.blend32(tmin.min(stq0), GSVector4::cast(~nan0));
+					tmin = tmin.blend32(tmin.min(stq1), GSVector4::cast(~nan1));
+					tmax = tmax.blend32(tmax.max(stq0), GSVector4::cast(~nan0));
+					tmax = tmax.blend32(tmax.max(stq1), GSVector4::cast(~nan1));
+
+					tnan |= nan0 | nan1;
+				}
+				else
+				{
+					const GSVector4 st0 = GSVector4(m1s[i0].uph16()).xyxy();
+					const GSVector4 st1 = GSVector4(m1s[i1].uph16()).xyxy();
+
+					tmin = tmin.min(st0.min(st1));
+					tmax = tmax.max(st0.max(st1));
+				}
+			}
+
+			const GSVector4i xyzf0 = m1s[i0];
+			const GSVector4i xyzf1 = m1s[i1];
+
+			const GSVector4i xy0 = xyzf0.upl16();
+			const GSVector4i zf0 = xyzf0.ywyw();
+			const GSVector4i xy1 = xyzf1.upl16();
+			const GSVector4i zf1 = xyzf1.ywyw();
+
+			const GSVector4i p0 = xy0.blend32<0xc>(zf0);
+			const GSVector4i p1 = xy1.blend32<0xc>(zf1);
+
+			pmin = pmin.min_u32(p0.min_u32(p1));
+			pmax = pmax.max_u32(p0.max_u32(p1));
+		};
+
+		int i = 0;
+		if (iip)
+		{
+			for (; i < (count - 1); i += 2)
+				processVertices(index[i + 0], index[i + 1], true);
+			if (count & 1)
+				processVertices(index[i], index[i], true);
+		}
+		else
+		{
+			for (; i < (count - 3); i += 6)
+			{
+				processVertices(index[i + 0], index[i + 3], false);
+				processVertices(index[i + 1], index[i + 4], false);
+				processVertices(index[i + 2], index[i + 5], true);
+			}
+			if (count & 1)
+			{
+				processVertices(index[i + 0], index[i + 1], false);
+				processVertices(index[i + 2], index[i + 2], true);
+			}
+		}
+
+		const GSVector4 o(ofs);
+		const GSVector4 s(1.0f / 16, 1.0f / 16, 2.0f, 1.0f);
+
+		out.min_p = (GSVector4(pmin) - o) * s;
+		out.max_p = (GSVector4(pmax) - o) * s;
+		out.min_p = out.min_p.insert32<0, 2>(GSVector4::load(static_cast<float>(static_cast<u32>(pmin.extract32<2>()))));
+		out.max_p = out.max_p.insert32<0, 2>(GSVector4::load(static_cast<float>(static_cast<u32>(pmax.extract32<2>()))));
+
+		out.wrote_nan = true;
+		out.nan_value = 0;
+		if (tme)
+		{
+			GSVector4 sc;
+			if (fst)
+			{
+				sc = GSVector4(1.0f / 16, 1.0f).xxyy();
+				out.wrote_nan = false;
+			}
+			else
+			{
+				sc = GSVector4(1 << static_cast<int>(tw), 1 << static_cast<int>(th), 1, 1);
+				out.nan_value = static_cast<u32>(tnan.mask()) & ~4u;
+			}
+			out.min_t = tmin * sc;
+			out.max_t = tmax * sc;
+		}
+		else
+		{
+			out.min_t = GSVector4::zero();
+			out.max_t = GSVector4::zero();
+		}
+
+		if (color)
+		{
+			out.min_c = cmin.u8to32();
+			out.max_c = cmax.u8to32();
+		}
+		else
+		{
+			out.min_c = GSVector4i::zero();
+			out.max_c = GSVector4i::zero();
+		}
+	}
+
+	enum class FmmQMode
+	{
+		ConstantNormal,  // one random normal q for the whole draw (either sign)
+		ConstantSpecial, // one q from {+-0, denormal, inf, nan} — fused must decline
+		Varying,         // random normal q per vertex — fused must decline
+	};
+
+	u32 RandomNormalFloatBits(std::mt19937& rng)
+	{
+		const u32 exp = 1 + (rng() % 254);
+		return (rng() & 0x807FFFFFu) | (exp << 23);
+	}
+
+	u32 RandomSpecialFloatBits(std::mt19937& rng)
+	{
+		switch (rng() % 5)
+		{
+			case 0: return 0x00000000u;                       // +0
+			case 1: return 0x80000000u;                       // -0
+			case 2: return (rng() & 0x807FFFFFu);             // denormal (or +-0)
+			case 3: return 0x7F800000u | (rng() & 0x80000000u); // +-inf
+			default: return 0x7FC00000u | (rng() & 0x8007FFFFu); // NaN
+		}
+	}
+
+	// One randomized draw: build vertices, emit a subset of prims (mirroring the
+	// GSState watermark/provoking accumulation), and compare FmmFinish against
+	// the legacy-walk oracle whenever it accepts.
+	// Returns true if the fused path accepted the draw.
+	bool RunFmmCase(std::mt19937& rng, bool iip, bool tme, bool fst, bool color, FmmQMode qmode, bool special_st,
+		bool strip_shaped)
+	{
+		const int prim_count = 1 + (rng() % 8);
+		const int vertex_count = strip_shaped ? (prim_count + 2) : (prim_count * 3);
+
+		GSVector4i m0s[26];
+		GSVector4i m1s[26];
+
+		const u32 const_q = (qmode == FmmQMode::ConstantSpecial) ? RandomSpecialFloatBits(rng) : RandomNormalFloatBits(rng);
+
+		for (int i = 0; i < vertex_count; i++)
+		{
+			const u32 s_bits = special_st && (rng() % 4 == 0) ? RandomSpecialFloatBits(rng) : RandomNormalFloatBits(rng);
+			const u32 t_bits = special_st && (rng() % 4 == 0) ? RandomSpecialFloatBits(rng) : RandomNormalFloatBits(rng);
+			const u32 q_bits = (qmode == FmmQMode::Varying) ? RandomNormalFloatBits(rng) : const_q;
+
+			m0s[i] = GSVector4i(static_cast<int>(s_bits), static_cast<int>(t_bits), static_cast<int>(rng()),
+				static_cast<int>(q_bits));
+			m1s[i] = GSVector4i(static_cast<int>((rng() & 0xFFFF) | (rng() << 16)), static_cast<int>(rng()),
+				static_cast<int>(rng()), static_cast<int>(rng()));
+		}
+
+		// Emit prims, skipping some (culled — excluded from both sides).
+		u16 index[24 * 3];
+		int icount = 0;
+		u32 watermark = 0;
+
+		GSVertexKernels::FmmAcc acc;
+		GSVertexKernels::FmmAccReset(acc, tme, fst);
+
+		for (int p = 0; p < prim_count; p++)
+		{
+			const u16 i0 = static_cast<u16>(strip_shaped ? p + 0 : p * 3 + 0);
+			const u16 i1 = static_cast<u16>(strip_shaped ? p + 1 : p * 3 + 1);
+			const u16 i2 = static_cast<u16>(strip_shaped ? p + 2 : p * 3 + 2);
+
+			// Culled prims are excluded from both sides; an accepted prim after a
+			// culled run still accumulates the culled prims' shared vertices (they
+			// sit at/above the watermark), mirroring VertexKickDirect.
+			if (rng() % 3 == 0)
+				continue;
+
+			index[icount++] = i0;
+			index[icount++] = i1;
+			index[icount++] = i2;
+
+			// Mirror VertexKickDirect: buffer-accumulate referenced vertices at or
+			// above the watermark (color only under iip), then the provoking vertex
+			// with color always.
+			for (u32 j = std::max<u32>(watermark, i2 >= 2 ? i2 - 2 : 0); j < i2; j++)
+				GSVertexKernels::FmmAccumVertex(acc, m0s[j], m1s[j], tme, fst, iip);
+			GSVertexKernels::FmmAccumVertex(acc, m0s[i2], m1s[i2], tme, fst, true);
+			watermark = static_cast<u32>(i2) + 1;
+		}
+
+		if (icount == 0)
+			return false;
+
+		GIFRegXYOFFSET ofs;
+		ofs.U64 = 0;
+		ofs.OFX = rng() & 0xFFFF;
+		ofs.OFY = rng() & 0xFFFF;
+		const u32 tw = rng() % 11;
+		const u32 th = rng() % 11;
+
+		GSVertexKernels::FmmResult r;
+		if (!GSVertexKernels::FmmFinish(acc, tme, fst, color, ofs, tw, th, r))
+			return false;
+
+		FmmRefOut ref;
+		RefFindMinMaxTriangle(m0s, m1s, index, icount, iip, tme, fst, color, ofs, tw, th, ref);
+
+		EXPECT_TRUE(GSVector4i::cast(r.min_p).eq(GSVector4i::cast(ref.min_p))) << "min_p divergence";
+		EXPECT_TRUE(GSVector4i::cast(r.max_p).eq(GSVector4i::cast(ref.max_p))) << "max_p divergence";
+		EXPECT_TRUE(GSVector4i::cast(r.min_t).eq(GSVector4i::cast(ref.min_t))) << "min_t divergence";
+		EXPECT_TRUE(GSVector4i::cast(r.max_t).eq(GSVector4i::cast(ref.max_t))) << "max_t divergence";
+		EXPECT_TRUE(r.min_c.eq(ref.min_c)) << "min_c divergence";
+		EXPECT_TRUE(r.max_c.eq(ref.max_c)) << "max_c divergence";
+		EXPECT_EQ(r.write_nan, ref.wrote_nan) << "write_nan policy divergence";
+		if (r.write_nan)
+			EXPECT_EQ(r.nan_value, ref.nan_value) << "nan divergence";
+		return true;
+	}
+
+	void RunFmmSweep(u32 seed, int iters, FmmQMode qmode, bool special_st, bool expect_accept)
+	{
+		std::mt19937 rng(seed);
+		int accepted = 0;
+		int attempted = 0;
+
+		for (int i = 0; i < iters; i++)
+		{
+			const bool iip = rng() & 1;
+			const bool tme = rng() & 1;
+			const bool fst = rng() & 1;
+			const bool color = (rng() % 4) != 0;
+			const bool strip = rng() & 1;
+
+			attempted++;
+			if (RunFmmCase(rng, iip, tme, fst, color, qmode, special_st, strip))
+				accepted++;
+
+			if (::testing::Test::HasFailure())
+			{
+				ADD_FAILURE() << "seed " << seed << " iter " << i;
+				return;
+			}
+		}
+
+		if (expect_accept)
+		{
+			// The benign configurations must ride the fused path (this is the
+			// perf guarantee, not just correctness).
+			EXPECT_GT(accepted, attempted / 2) << "fused acceptance collapsed";
+		}
+	}
+} // namespace
+
+TEST(GsVertexFmm, BenignSweep)
+{
+	// Constant normal Q, finite S/T: every draw must fuse and match bit-exactly.
+	RunFmmSweep(0x67763320, 150000, FmmQMode::ConstantNormal, false, true);
+}
+
+TEST(GsVertexFmm, SpecialStSweep)
+{
+	// Inf/NaN S/T mixed in: fused may decline (legacy masks per lane); when it
+	// accepts, it must match.
+	RunFmmSweep(0x67763321, 150000, FmmQMode::ConstantNormal, true, false);
+}
+
+TEST(GsVertexFmm, SpecialQSweep)
+{
+	// Zero/denormal/inf/NaN Q: fused must decline the STQ path (and still match
+	// on FST/no-TME draws, where Q doesn't matter).
+	RunFmmSweep(0x67763322, 150000, FmmQMode::ConstantSpecial, false, false);
+}
+
+TEST(GsVertexFmm, VaryingQSweep)
+{
+	// Per-vertex Q: fused must decline the STQ path.
+	RunFmmSweep(0x67763323, 150000, FmmQMode::Varying, false, false);
+}
+
+#endif // ARCH_ARM64

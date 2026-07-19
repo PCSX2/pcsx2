@@ -317,6 +317,9 @@ void GSState::ResetDrawBufferIdx()
 			{
 				memcpy(m_vertex_buffers[entry_ptr].xy, m_vertex_buffers[i].xy, sizeof(m_vertex_buffers[i].xy));
 				memcpy(m_vertex_buffers[entry_ptr].kick_ring, m_vertex_buffers[i].kick_ring, sizeof(m_vertex_buffers[i].kick_ring));
+				m_vertex_buffers[entry_ptr].fmm_acc = m_vertex_buffers[i].fmm_acc;
+				m_vertex_buffers[entry_ptr].fmm_watermark = m_vertex_buffers[i].fmm_watermark;
+				m_vertex_buffers[entry_ptr].fmm_valid = m_vertex_buffers[i].fmm_valid;
 				m_vertex_buffers[entry_ptr].xyhead = m_vertex_buffers[i].xyhead;
 				m_vertex_buffers[entry_ptr].xy_tail = m_vertex_buffers[i].xy_tail;
 			}
@@ -340,6 +343,8 @@ void GSState::ResetDrawBufferIdx()
 			memset(&m_env_buffers[i], 0, sizeof(GSDrawBufferEnv));
 			m_vertex_buffers[i].head = m_vertex_buffers[i].tail = m_vertex_buffers[i].next = 0;
 			m_vertex_buffers[i].xy_tail = 0;
+			m_vertex_buffers[i].fmm_watermark = 0;
+			m_vertex_buffers[i].fmm_valid = false;
 		}
 	}
 		
@@ -499,6 +504,9 @@ void GSState::PushBuffer()
 		}
 		else
 			m_vertex->xy_tail = 0;
+
+		m_vertex->fmm_watermark = 0;
+		m_vertex->fmm_valid = false;
 
 		m_current_buffer_idx = m_used_buffers_idx;
 		temp_draw_rect = GSVector4i::zero();
@@ -1627,6 +1635,12 @@ __forceinline void GSState::ApplyPRIM(u32 prim)
 		m_vertex->next = 0;
 
 	m_vertex->head = m_vertex->tail = m_vertex->next; // remove unused vertices from the end of the vertex buffer
+
+#ifdef ARCH_ARM64
+	// Tail rewind: subsequent kicks rewrite positions from next upward, which must
+	// re-accumulate into the fused-FMM state if referenced by an emitted prim.
+	m_vertex->fmm_watermark = std::min(m_vertex->fmm_watermark, m_vertex->next);
+#endif
 }
 
 void GSState::GIFRegHandlerPRIM(const GIFReg* RESTRICT r)
@@ -6019,6 +6033,11 @@ __forceinline void GSState::VertexKickDirect(u32 skip, u32 xraw, u32 yraw, const
 	if constexpr (prim == GS_INVALID)
 	{
 		c.tail = c.head;
+#ifdef ARCH_ARM64
+		// Tail rewind: positions at/above the new tail may be rewritten and must
+		// re-accumulate into the fused-FMM state if referenced again.
+		c.vb->fmm_watermark = std::min(c.vb->fmm_watermark, c.head);
+#endif
 		return;
 	}
 
@@ -6212,6 +6231,11 @@ __forceinline void GSState::VertexKickDirect(u32 skip, u32 xraw, u32 yraw, const
 				c.vbuff[next + 1] = c.vbuff[head + 1];
 				head = next;
 				c.tail = next + 2;
+#ifdef ARCH_ARM64
+				// Line class doesn't accumulate fused-FMM state today, but keep the
+				// watermark invariant uniform: moved vertices must re-accumulate.
+				c.vb->fmm_watermark = std::min(c.vb->fmm_watermark, next);
+#endif
 			}
 			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(head + 1);
@@ -6235,6 +6259,10 @@ __forceinline void GSState::VertexKickDirect(u32 skip, u32 xraw, u32 yraw, const
 				c.vbuff[next + 2] = c.vbuff[head + 2];
 				head = next;
 				c.tail = next + 3;
+#ifdef ARCH_ARM64
+				// Vertices moved below the fused-FMM watermark must re-accumulate.
+				c.vb->fmm_watermark = std::min(c.vb->fmm_watermark, next);
+#endif
 			}
 			buff[0] = static_cast<u16>(head + 0);
 			buff[1] = static_cast<u16>(head + 1);
@@ -6266,6 +6294,52 @@ __forceinline void GSState::VertexKickDirect(u32 skip, u32 xraw, u32 yraw, const
 		default:
 			ASSUME(0);
 	}
+
+#ifdef ARCH_ARM64
+	// Fused vertex-trace bounds (see GSVertexKick.h): fold this prim's
+	// newly-referenced vertices into the per-buffer FindMinMax accumulator so
+	// FlushPrim doesn't re-walk the index list. The current vertex (v0/v1) is
+	// register-resident and, past strip warmup, the only one below the
+	// watermark; older references only occur right after a seam or compaction
+	// and load from the (L1-hot) buffer — which also picks up any bytes the
+	// texel-rounding pass mutated in carried-over vertices. TME/FST/IIP are
+	// stable across a draw's emissions: any draw-affecting PRIM change flushes
+	// or buffer-switches first (TestDrawChanged).
+	if constexpr (prim == GS_TRIANGLEFAN)
+	{
+		// Fans are triangle-class but reference {head, tail-2, tail-1} — the fan
+		// head doesn't fit the watermark model, and FlushPrim may rebuild fan
+		// indices entirely. Any fan emission sends the draw to the legacy walk.
+		c.vb->fmm_valid = false;
+	}
+	else if constexpr (primclass == GS_TRIANGLE_CLASS)
+	{
+		const u32 last = c.tail - 1; // last emitted index == the prim's provoking vertex
+		const bool tme = PRIM->TME != 0;
+		const bool fst = PRIM->FST != 0;
+		const bool iip = PRIM->IIP != 0;
+		GSVertexBuff* RESTRICT vb = c.vb;
+
+		if (c.itail == n)
+		{
+			GSVertexKernels::FmmAccReset(vb->fmm_acc, tme, fst);
+			vb->fmm_valid = true;
+			vb->fmm_watermark = last - 2;
+		}
+
+		if (vb->fmm_valid)
+		{
+			for (u32 j = std::max(vb->fmm_watermark, last - 2); j < last; j++)
+			{
+				const GSVector4i jm0(c.vbuff[j].m[0]);
+				const GSVector4i jm1(c.vbuff[j].m[1]);
+				GSVertexKernels::FmmAccumVertex(vb->fmm_acc, jm0, jm1, tme, fst, iip);
+			}
+			GSVertexKernels::FmmAccumVertex(vb->fmm_acc, v0, v1, tme, fst, true);
+			vb->fmm_watermark = last + 1;
+		}
+	}
+#endif
 
 	// Update rectangle for the current draw (accumulated in the cursor, folded
 	// into temp_draw_rect with one scissor clamp at every seam). Needs exclusive

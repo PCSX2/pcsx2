@@ -19,6 +19,10 @@ class GSDumpBase;
 
 class GSState : public GSAlignedClass<32>
 {
+	// GSVertexTrace::Update consumes the per-buffer fused FindMinMax accumulator
+	// (m_vertex->fmm_*) directly.
+	friend class GSVertexTrace;
+
 public:
 	GSState();
 	virtual ~GSState();
@@ -148,6 +152,15 @@ protected:
 		// Scalar mirror of xy[] for the outcode cull fast path: written wherever
 		// xy[] is written, outcodes re-derived on scissor change (RefreshKickMirror).
 		GSVertexKernels::CullMirrorEntry kick_ring[4];
+		// Fused vertex-trace bounds (aarch64 only): FindMinMax min/max accumulated
+		// at index emission over this buffer's referenced vertices. fmm_watermark is
+		// the first vertex position not yet folded in (clamped on rewinds/compaction
+		// so re-referenced positions re-accumulate); fmm_valid means the accumulator
+		// covers every emitted index of the pending draw. Reset lazily at the first
+		// emission of a draw (itail == n).
+		GSVertexKernels::FmmAcc fmm_acc;
+		u32 fmm_watermark;
+		bool fmm_valid;
 	};
 
 	GSVertexBuff m_vertex_buffers[MAX_DRAW_BUFFERS];
