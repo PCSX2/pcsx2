@@ -10,15 +10,12 @@ option(ENABLE_TESTS "Enables building the unit tests" ON)
 option(ENABLE_RECOMPILER_TEST_HOOKS
 	"Compile harness hooks (recEeExecuteBlock, recEeIsBlockLinked, etc.) into the EE recompiler. Required by tests/ctest/core/recompilers; release builds should turn this off."
 	${ENABLE_TESTS})
-option(GS_VERTEX_CROSSCHECK
-	"Run the legacy and optimized GS vertex kernels (GSVertexKick.h) side by side and assert bit-equality per vertex/prim. Devel-only gate for the GV campaign; never enable in shipping builds."
-	OFF)
 option(ENABLE_QT_UI "Enables building the PCSX2 Qt interface." ON)
 option(ENABLE_GSRUNNER "Enables building the GSRunner by default.  It can still be built with `make pcsx2-gsrunner` otherwise." OFF)
 option(ENABLE_VURUNNER "Enables building pcsx2-vurunner (headless VU microprogram replayer for codegen iteration). Requires ENABLE_RECOMPILER_TEST_HOOKS=ON." OFF)
 option(ENABLE_EERUNNER "Enables building pcsx2-eerunner (headless EE JIT-vs-interpreter divergence localizer) by default.  It can still be built with `make pcsx2-eerunner` otherwise." OFF)
 option(ENABLE_SDL_FRONTEND "Enables building the SDL3 / kmsdrm frontend (pcsx2-sdl) by default.  It can still be built with `make pcsx2-sdl` otherwise." OFF)
-option(ENABLE_LIBRETRO "Build the libretro core (pcsx2-libretro / yaps2_libretro.so). Opt-in: when OFF the subdirectory is not added at all, so it never gets built or installed alongside the Qt/SDL frontends. Reconfigure with -DENABLE_LIBRETRO=ON to build it." OFF)
+option(ENABLE_LIBRETRO "Build the libretro core (pcsx2-libretro / armsx2_libretro.so). Opt-in: when OFF the subdirectory is not added at all, so it never gets built or installed alongside the Qt/SDL frontends. Reconfigure with -DENABLE_LIBRETRO=ON to build it." OFF)
 option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
 option(USE_PERF_JITDUMP "Emit Linux perf jitdump (jit-<pid>.dump) for recompiled JIT blocks; use with perf record/inject." OFF)

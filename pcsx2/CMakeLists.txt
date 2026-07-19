@@ -17,10 +17,6 @@ if(ENABLE_RECOMPILER_TEST_HOOKS)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE PCSX2_RECOMPILER_TESTS)
 endif()
 
-if(GS_VERTEX_CROSSCHECK)
-	target_compile_definitions(PCSX2_FLAGS INTERFACE GS_VERTEX_CROSSCHECK)
-endif()
-
 # Check that people use the good file
 if(NOT TOP_CMAKE_WAS_SOURCED)
 	message(FATAL_ERROR "

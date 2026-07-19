@@ -6,9 +6,10 @@
 // Each kernel is checked against an independent scalar model of the documented
 // GIF/GS semantics, over directed edge cases plus large randomized sweeps. The
 // scalar models are deliberately written in plain integer C — no GSVector — so
-// the vector kernels and the models can only agree by both being right. When
-// GV-1/GV-3 land optimized kernel implementations, they are held to the same
-// model (and to the legacy kernels via GS_VERTEX_CROSSCHECK replay builds).
+// the vector kernels and the models can only agree by both being right. (During
+// the GV campaign the optimized kernels were also held to the legacy ones over
+// live replays via GS_VERTEX_CROSSCHECK builds — stripped at GV-CLOSE, recover
+// from git history if needed.)
 
 #include <gtest/gtest.h>
 
@@ -468,9 +469,8 @@ TEST(GsVertexCull, PointSweep)
 // {m0, m1} vector pairs — the property under test is that the fused
 // reformulation reproduces the legacy walk bit-exactly whenever FmmFinish
 // accepts, and that it accepts on the benign (real-game) configurations.
-// End-to-end integration is separately pinned by GS_VERTEX_CROSSCHECK replay.
-// aarch64-only: the fused path's NaN detection relies on FMIN/FMAX NaN
-// propagation, which SSE min/max does not provide.
+// (End-to-end integration was additionally verified during the campaign by
+// GS_VERTEX_CROSSCHECK replay over the full dump corpus.)
 // ---------------------------------------------------------------------------
 
 namespace
@@ -655,8 +655,7 @@ namespace
 
 	// One randomized draw: build vertices, emit a subset of prims (mirroring the
 	// GSState watermark/provoking accumulation), and compare FmmFinish against
-	// the legacy-walk oracle whenever it accepts.
-	// Returns true if the fused path accepted the draw.
+	// the legacy-walk oracle bit-exactly. Returns false when no prim was emitted.
 	bool RunFmmCase(std::mt19937& rng, bool iip, bool tme, bool fst, bool color, FmmQMode qmode, bool special_st,
 		bool strip_shaped)
 	{
@@ -724,8 +723,7 @@ namespace
 		const u32 th = rng() % 11;
 
 		GSVertexKernels::FmmResult r;
-		if (!GSVertexKernels::FmmFinish(acc, tme, fst, color, ofs, tw, th, r))
-			return false;
+		GSVertexKernels::FmmFinish(acc, tme, fst, color, ofs, tw, th, r);
 
 		FmmRefOut ref;
 		RefFindMinMaxTriangle(m0s, m1s, index, icount, iip, tme, fst, color, ofs, tw, th, ref);
@@ -742,11 +740,9 @@ namespace
 		return true;
 	}
 
-	void RunFmmSweep(u32 seed, int iters, FmmQMode qmode, bool special_st, bool expect_accept)
+	void RunFmmSweep(u32 seed, int iters, FmmQMode qmode, bool special_st)
 	{
 		std::mt19937 rng(seed);
-		int accepted = 0;
-		int attempted = 0;
 
 		for (int i = 0; i < iters; i++)
 		{
@@ -756,9 +752,7 @@ namespace
 			const bool color = (rng() % 4) != 0;
 			const bool strip = rng() & 1;
 
-			attempted++;
-			if (RunFmmCase(rng, iip, tme, fst, color, qmode, special_st, strip))
-				accepted++;
+			RunFmmCase(rng, iip, tme, fst, color, qmode, special_st, strip);
 
 			if (::testing::Test::HasFailure())
 			{
@@ -766,40 +760,33 @@ namespace
 				return;
 			}
 		}
-
-		if (expect_accept)
-		{
-			// The benign configurations must ride the fused path (this is the
-			// perf guarantee, not just correctness).
-			EXPECT_GT(accepted, attempted / 2) << "fused acceptance collapsed";
-		}
 	}
 } // namespace
 
-TEST(GsVertexFmm, BenignSweep)
+TEST(GsVertexFmm, ConstantQSweep)
 {
-	// Constant normal Q, finite S/T: every draw must fuse and match bit-exactly.
-	RunFmmSweep(0x67763320, 150000, FmmQMode::ConstantNormal, false, true);
+	// Constant normal Q, finite S/T: must match the legacy walk bit-exactly.
+	RunFmmSweep(0x67763320, 150000, FmmQMode::ConstantNormal, false);
 }
 
 TEST(GsVertexFmm, SpecialStSweep)
 {
-	// Inf/NaN S/T mixed in: fused may decline (legacy masks per lane); when it
-	// accepts, it must match.
-	RunFmmSweep(0x67763321, 150000, FmmQMode::ConstantNormal, true, false);
+	// Inf/NaN S/T mixed in: the per-vertex NaN masking and tnan reporting must
+	// match the legacy walk bit-exactly.
+	RunFmmSweep(0x67763321, 150000, FmmQMode::ConstantNormal, true);
 }
 
 TEST(GsVertexFmm, SpecialQSweep)
 {
-	// Zero/denormal/inf/NaN Q: fused must decline the STQ path (and still match
-	// on FST/no-TME draws, where Q doesn't matter).
-	RunFmmSweep(0x67763322, 150000, FmmQMode::ConstantSpecial, false, false);
+	// Zero/denormal/inf/NaN Q: NaN quotients mask per lane exactly as legacy.
+	RunFmmSweep(0x67763322, 150000, FmmQMode::ConstantSpecial, false);
 }
 
 TEST(GsVertexFmm, VaryingQSweep)
 {
-	// Per-vertex Q: fused must decline the STQ path.
-	RunFmmSweep(0x67763323, 150000, FmmQMode::Varying, false, false);
+	// Per-vertex Q (the perspective-projection common case): one divide per
+	// unique vertex must reproduce the legacy per-pair divide walk bit-exactly.
+	RunFmmSweep(0x67763323, 150000, FmmQMode::Varying, false);
 }
 
 #endif // ARCH_ARM64

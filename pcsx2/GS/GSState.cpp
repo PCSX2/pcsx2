@@ -6140,16 +6140,6 @@ __forceinline void GSState::VertexKickDirect(u32 skip, u32 xraw, u32 yraw, const
 
 			const u32 fast_skip = GSVertexKernels::CullTestScalar<n, primclass>(e0, e1, e2);
 
-#ifdef GS_VERTEX_CROSSCHECK
-			{
-				GSVector4i xbbox;
-				const u32 ref = GSVertexKernels::CullTest<n, primclass>(c.vb->xy[(xy_tail - 1) & 3],
-					c.vb->xy[(xy_tail - 2) & 3], c.vb->xy[(xy_tail - 3) & 3], m_context->scissor.cull,
-					m_nativeres, aa1_expand, xbbox);
-				pxAssertRel((ref != 0) == (fast_skip != 0), "GS_VERTEX_CROSSCHECK: scalar cull divergence");
-			}
-#endif
-
 			skip |= fast_skip;
 			if (fast_skip == 0)
 			{
