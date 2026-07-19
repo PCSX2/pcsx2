@@ -390,7 +390,13 @@ void GSTextureReplacements::ReloadReplacementMap()
 
 	// can't replace bios textures.
 	if (s_current_serial.empty() || !GSConfig.LoadTextureReplacements)
+	{
+		// Say why, rather than returning silently — "off" and "no serial yet" are the two
+		// most common reasons a pack appears to do nothing (see the summary log below).
+		if (!s_current_serial.empty() && !GSConfig.LoadTextureReplacements)
+			Console.WriteLnFmt("Texture replacements: disabled (LoadTextureReplacements off) for {}", s_current_serial);
 		return;
+	}
 
 	const std::string texture_dir = GetGameTextureDirectory();
 	const std::string replacement_dir(Path::Combine(texture_dir, TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME));
@@ -436,6 +442,15 @@ void GSTextureReplacements::ReloadReplacementMap()
 		name->CLUTHash = 0;
 		s_replacement_textures_without_clut_hash.insert(name.value());
 	}
+
+	// "indexed", not "loaded": this count only proves filename discovery + name parsing.
+	// It says nothing about whether any texture was looked up, decoded, or uploaded — those
+	// are separate stages that fail independently and silently. Every quiet path out of this
+	// function looks identical from outside (feature off, wrong serial, empty folder,
+	// unparseable names), so print the count AND the exact directory scanned: a zero here
+	// with a path that doesn't match the user's pack folder is the whole diagnosis.
+	Console.WriteLnFmt("Texture replacements: {} indexed for '{}' (scanned {})",
+		s_replacement_texture_filenames.size(), s_current_serial, replacement_dir);
 
 	if (!s_replacement_texture_filenames.empty())
 	{

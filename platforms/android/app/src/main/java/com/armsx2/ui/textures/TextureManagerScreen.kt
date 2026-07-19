@@ -21,8 +21,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.armsx2.ui.Colors
+import com.armsx2.runtime.MainActivityRuntime
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -65,7 +70,7 @@ fun TextureManagerScreen(onBack: () -> Unit, viewModel: TextureManagerViewModel 
                     Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
                         TextureOptions(state, viewModel, Modifier.fillMaxWidth())
                         Spacer(Modifier.padding(top = 10.dp))
-                        TexturePacks(state, viewModel, Modifier.fillMaxWidth())
+                        TexturePacks(state, viewModel, Modifier.fillMaxWidth(), onBack)
                     }
                 } else {
                     Row(
@@ -73,7 +78,7 @@ fun TextureManagerScreen(onBack: () -> Unit, viewModel: TextureManagerViewModel 
                         horizontalArrangement = Arrangement.spacedBy(14.dp),
                     ) {
                         TextureOptions(state, viewModel, Modifier.width(310.dp))
-                        TexturePacks(state, viewModel, Modifier.weight(1f))
+                        TexturePacks(state, viewModel, Modifier.weight(1f), onBack)
                     }
                 }
             }
@@ -138,10 +143,39 @@ private fun TextureOptions(state: TextureManagerUiState, viewModel: TextureManag
 }
 
 @Composable
-private fun TexturePacks(state: TextureManagerUiState, viewModel: TextureManagerViewModel, modifier: Modifier) {
+private fun TexturePacks(state: TextureManagerUiState, viewModel: TextureManagerViewModel, modifier: Modifier, onBack: () -> Unit) {
     Column(modifier) {
         SectionTitle(str("renderer.section.texturePacks"), state.packs.size.toString())
-        if (state.busy) CircularProgressIndicator()
+        // A pack is thousands of files over SAF, so show the running count next to the
+        // spinner — a bare spinner on a multi-minute copy is indistinguishable from a hang.
+        if (state.busy) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                CircularProgressIndicator()
+                if (state.progress > 0) Text(str("renderer.texturePacks.copying").format(state.progress))
+            }
+        }
+        // Name the folder the CORE will actually scan. A pack only applies if its folder
+        // matches this exactly, and for a raw .ELF boot that is the ELF's filename rather
+        // than the disc serial — a mismatch that is otherwise completely invisible and
+        // looks identical to "texture packs are broken".
+        state.activeSerial?.takeIf(String::isNotBlank)?.let { serial ->
+            val matched = state.packs.any { it.serial.equals(serial, ignoreCase = true) }
+            Text(
+                str("renderer.texturePacks.activeSerial").format(serial),
+                color = if (matched) MaterialTheme.colorScheme.onSurfaceVariant else Colors.pasx2_blue,
+                fontSize = 13.sp,
+                modifier = Modifier.padding(top = 4.dp, bottom = 2.dp),
+            )
+            if (!matched && state.packs.isNotEmpty()) {
+                Text(
+                    str("renderer.texturePacks.serialMismatch").format(serial),
+                    color = Colors.pasx2_blue,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 4.dp),
+                )
+            }
+        }
         if (state.packs.isEmpty()) {
             EmptyState(
                 str("renderer.section.texturePacks"),
@@ -152,6 +186,26 @@ private fun TexturePacks(state: TextureManagerUiState, viewModel: TextureManager
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 state.packs.forEach { pack -> TexturePackRow(pack) { viewModel.delete(pack) } }
             }
+        }
+        // The replacement map is only built in GSTextureReplacements::Initialize / GameChanged
+        // — i.e. at boot. Importing a pack or toggling Load Texture Packs mid-session changes
+        // nothing on screen until the game restarts, which reads as "texture packs are
+        // broken". Spelled-out row rather than another circular-arrow glyph next to Refresh:
+        // the earlier icon was both indistinguishable from it and rendered as tofu.
+        if (MainActivityRuntime.eState.value != com.armsx2.EmuState.STOPPED) {
+            Spacer(Modifier.height(10.dp))
+            Text(
+                str("renderer.texturePacks.restartHint"),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 13.sp,
+                modifier = Modifier.padding(bottom = 6.dp),
+            )
+            Button(
+                // Dismiss FIRST: restart() alone reboots the VM behind this screen, so the
+                // user sees nothing change and concludes the button is dead.
+                onClick = { onBack(); MainActivityRuntime.restart() },
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text(str("renderer.texturePacks.restartNow")) }
         }
     }
 }

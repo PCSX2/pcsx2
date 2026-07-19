@@ -7,10 +7,13 @@
 #include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/ScopedGuard.h"
+#include "common/TextureDecompress.h" // CPU BC1/2/3/BC7 decode when the GPU lacks BC support
 
 #include "GS/Renderers/HW/GSTextureReplacements.h"
 
+#include <algorithm>
 #include <csetjmp>
+#include <cstring>
 #include <png.h>
 
 struct LoaderDefinition
@@ -396,6 +399,14 @@ struct DDSLoadInfo
 	u32 base_image_size = 0;
 	u32 base_image_pitch = 0;
 
+	// Set when the file is block-compressed but the GPU cannot sample that format, so the
+	// blocks are decoded to RGBA8 on the CPU at load time instead of the whole texture
+	// being rejected. `format` is then Color (the uploaded format) while `decompress_format`
+	// keeps the on-disk format the block reader has to decode. Sizes/pitches below stay in
+	// COMPRESSED units, because they describe how much to read out of the file.
+	bool decompress = false;
+	GSTexture::Format decompress_format = GSTexture::Format::Color;
+
 	std::function<void(u32 width, u32 height, std::vector<u8>& data, u32& pitch)> conversion_function;
 };
 
@@ -463,37 +474,51 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 		}
 
 		const GSDevice::FeatureSupport features(g_gs_device->Features());
+		// Mobile GPUs frequently expose no BC/BPTC support at all (Vulkan
+		// textureCompressionBC false: Adreno 650 / Snapdragon 865, and Mesa Turnip on any
+		// Adreno). Rejecting the file there silently drops the ENTIRE pack — and for packs
+		// that also ship game-side data the result is worse than "no upscale": the P3P Slim
+		// Font mod pairs new FONT0.FNT glyph metrics with BC7 replacement glyphs, so with
+		// the textures dropped the game indexes the new narrow metrics into the old wide
+		// atlas and renders letters sliced in half. Decode on the CPU instead; the decoders
+		// are already built (common/TextureDecompress.cpp, used below for alpha min/max).
+		const auto set_bc = [&info](GSTexture::Format fmt, u32 bytes_per_block, bool gpu_supported) {
+			info->block_size = 4;
+			info->bytes_per_block = bytes_per_block;
+			if (gpu_supported)
+			{
+				info->format = fmt;
+			}
+			else
+			{
+				info->decompress = true;
+				info->decompress_format = fmt;
+				info->format = GSTexture::Format::Color;
+				static bool logged_once = false;
+				if (!logged_once)
+				{
+					logged_once = true;
+					Console.WriteLn("Texture replacements: GPU cannot sample this block-compressed "
+									"format, decoding to RGBA8 on the CPU (uses ~4x more memory per texture).");
+				}
+			}
+		};
+
 		if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '1') || dxt10_format == 71 /*DXGI_FORMAT_BC1_UNORM*/)
 		{
-			info->format = GSTexture::Format::BC1;
-			info->block_size = 4;
-			info->bytes_per_block = 8;
-			if (!features.dxt_textures)
-				return false;
+			set_bc(GSTexture::Format::BC1, 8, features.dxt_textures);
 		}
 		else if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '2') || header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '3') || dxt10_format == 74 /*DXGI_FORMAT_BC2_UNORM*/)
 		{
-			info->format = GSTexture::Format::BC2;
-			info->block_size = 4;
-			info->bytes_per_block = 16;
-			if (!features.dxt_textures)
-				return false;
+			set_bc(GSTexture::Format::BC2, 16, features.dxt_textures);
 		}
 		else if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '4') || header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '5') || dxt10_format == 77 /*DXGI_FORMAT_BC3_UNORM*/)
 		{
-			info->format = GSTexture::Format::BC3;
-			info->block_size = 4;
-			info->bytes_per_block = 16;
-			if (!features.dxt_textures)
-				return false;
+			set_bc(GSTexture::Format::BC3, 16, features.dxt_textures);
 		}
 		else if (dxt10_format == 98 /*DXGI_FORMAT_BC7_UNORM*/)
 		{
-			info->format = GSTexture::Format::BC7;
-			info->block_size = 4;
-			info->bytes_per_block = 16;
-			if (!features.bptc_textures)
-				return false;
+			set_bc(GSTexture::Format::BC7, 16, features.bptc_textures);
 		}
 		else
 		{
@@ -586,6 +611,64 @@ static bool ReadDDSMipLevel(std::FILE* fp, const std::string& filename, u32 mip_
 	if (std::fread(data.data(), size, 1, fp) != 1)
 		return false;
 
+	// CPU-side block decode when the GPU can't sample this compressed format (see the
+	// set_bc comment in ParseDDSHeader). Decode into a separate RGBA8 buffer and hand that
+	// back as the level's data, adjusting pitch to match. Levels smaller than one 4x4 block
+	// are stored padded, so decode a whole block grid and only keep the valid region.
+	if (info.decompress)
+	{
+		constexpr u32 BLOCK = 4;
+		const u32 blocks_wide = GetBlockCount(width, BLOCK);
+		const u32 blocks_high = GetBlockCount(height, BLOCK);
+		// Source stride is this level's COMPRESSED pitch as passed in — not a recomputed
+		// blocks_wide*bytes_per_block, because the base level may carry an explicit
+		// dwPitchOrLinearSize from the header.
+		const u32 src_pitch = pitch;
+		const u32 out_pitch = width * sizeof(u32);
+
+		std::vector<u8> rgba(static_cast<size_t>(out_pitch) * height);
+		alignas(16) u8 block_pixels[BLOCK * BLOCK * sizeof(u32)];
+
+		for (u32 by = 0; by < blocks_high; by++)
+		{
+			const u8* block_in = data.data() + (static_cast<size_t>(by) * src_pitch);
+			for (u32 bx = 0; bx < blocks_wide; bx++, block_in += info.bytes_per_block)
+			{
+				switch (info.decompress_format)
+				{
+					case GSTexture::Format::BC1:
+						DecompressBlockBC1(0, 0, sizeof(u32) * BLOCK, block_in, block_pixels);
+						break;
+					case GSTexture::Format::BC2:
+						DecompressBlockBC2(0, 0, sizeof(u32) * BLOCK, block_in, block_pixels);
+						break;
+					case GSTexture::Format::BC3:
+						DecompressBlockBC3(0, 0, sizeof(u32) * BLOCK, block_in, block_pixels);
+						break;
+					case GSTexture::Format::BC7:
+						bc7decomp::unpack_bc7(block_in, reinterpret_cast<bc7decomp::color_rgba*>(block_pixels));
+						break;
+					default:
+						return false;
+				}
+
+				// Copy the block's valid rows/columns into the destination image.
+				const u32 copy_w = std::min<u32>(BLOCK, width - (bx * BLOCK));
+				const u32 copy_h = std::min<u32>(BLOCK, height - (by * BLOCK));
+				for (u32 row = 0; row < copy_h; row++)
+				{
+					std::memcpy(rgba.data() + (static_cast<size_t>(by * BLOCK + row) * out_pitch) + (static_cast<size_t>(bx) * BLOCK * sizeof(u32)),
+						block_pixels + (static_cast<size_t>(row) * BLOCK * sizeof(u32)),
+						copy_w * sizeof(u32));
+				}
+			}
+		}
+
+		data = std::move(rgba);
+		pitch = out_pitch;
+		return true;
+	}
+
 	// Apply conversion function for uncompressed textures.
 	if (info.conversion_function)
 		info.conversion_function(width, height, data, pitch);
@@ -617,7 +700,24 @@ bool DDSLoader(const std::string& filename, GSTextureReplacements::ReplacementTe
 	// Read in any remaining mip levels in the file.
 	if (!only_base_image)
 	{
-		for (u32 level = 1; level <= info.mip_count; level++)
+		// info.mip_count is the DDS dwMipMapCount, which INCLUDES the base image
+		// (loaded above as level 0), so there are at most (mip_count - 1) EXTRA
+		// mip levels here. The old `level <= info.mip_count` bound loaded one
+		// level too many: many packs leave trailing padding after the last real
+		// mip (or over-declare dwMipMapCount), so that extra read succeeds and
+		// the texture is then created with mips.size()+1 levels — more than the
+		// dimensions allow — which trips GSDevice::CreateTexture's assert and
+		// aborts the GS thread (SIGABRT) in debug, or in a release build (assert
+		// compiled out) ships a garbage trailing mip that shows as corrupted
+		// graphics on minification. The whole DDS pack breaks even though BC
+		// support and the textures themselves are fine (works on NetherSX2, broken
+		// on us). Cap the level count at what the size can actually hold (the same
+		// bound the assert uses). Regressed when da04d9ef2 reverted the GS subsystem
+		// to canonical; restored here.
+		const u32 max_levels = static_cast<u32>(
+			GSDevice::GetMipmapLevelsForSize(static_cast<int>(info.width), static_cast<int>(info.height)));
+		const u32 mip_levels = std::min(info.mip_count, max_levels);
+		for (u32 level = 1; level < mip_levels; level++)
 		{
 			GSTextureReplacements::ReplacementTexture::MipData md;
 			u32 mip_size;
