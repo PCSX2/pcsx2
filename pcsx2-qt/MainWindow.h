@@ -36,6 +36,8 @@ namespace Achievements
 	enum class LoginRequestReason;
 }
 
+#include "QtMetaTypes.h"
+
 namespace GameList
 {
 	struct Entry;

@@ -307,38 +307,6 @@ void intDoBranch(u32 target)
 	}
 }
 
-// Interpret exactly one guest instruction at cpuRegs.pc using the interpreter,
-// then return. This is the recompiler's per-instruction fallback: the ARM64 EE
-// rec dispatcher calls it for opcodes it cannot yet compile (likely branches,
-// coprocessor ops, syscalls, traps, ...). It mirrors execI; for branch opcodes
-// the interpreter's own branch functions handle the delay slot and PC redirect.
-// We must flush the accrued cycle count here for EVERY op, branches included:
-// intDoBranch/_doBranch_shared gate their flush on Cpu == &intCpu, so in rec
-// context a taken branch flushes nothing — a guest poll loop made of just a
-// branch (e.g. Burnout's `BC0F .; nop` CPCOND0 wait) would freeze cpuRegs.cycle
-// and the pending event (DMAC completion) would never come due.
-// It must NOT do the interpreter's fastjmp exit (intJmpBuf is not
-// set up in rec context); the rec drives exits through its own event test.
-void intExecuteOneInst()
-{
-	const u32 thispc = cpuRegs.pc;
-	// Pre-increment PC: exception handlers and branch target math expect cpuRegs.pc
-	// to already point at the delay slot (matches execI).
-	cpuRegs.pc += 4;
-	cpuRegs.code = memRead32(thispc);
-
-	const OPCODE& opcode = GetCurrentInstruction();
-	cpuBlockCycles += opcode.cycles * (2 - ((cpuRegs.CP0.n.Config >> 18) & 0x1));
-
-	opcode.interpret();
-
-	// Unconditional: in rec context the interpreter's branch helpers skip their
-	// flush (intDoBranch is gated on Cpu == &intCpu), so this is the only place
-	// the accrued cycles reach cpuRegs.cycle. Always advances cycle by >= 1,
-	// guaranteeing forward progress for branch-only guest wait loops.
-	intUpdateCPUCycles();
-}
-
 void intSetBranch()
 {
 	branch2 = /*cpuRegs.branch =*/ 1;

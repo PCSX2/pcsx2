@@ -1183,7 +1183,6 @@ if(ANDROID)
 	list(APPEND pcsx2Headers
 		VU1Fingerprint.h
 		EEDiffVerify.h
-		AndroidEEOpHist.h
 		AndroidPerfBuckets.h
 		PS1DrvTrace.h)
 	# Oboe is the Android audio backend consumed by Host/OboeAudioStream.cpp.

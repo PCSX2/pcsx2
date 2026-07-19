@@ -38,6 +38,7 @@ target_sources(pcsx2-qt PRIVATE
 	Translations.cpp
 	QtHost.cpp
 	QtHost.h
+	QtMetaTypes.h
 	QtKeyCodes.cpp
 	QtProgressCallback.cpp
 	QtProgressCallback.h

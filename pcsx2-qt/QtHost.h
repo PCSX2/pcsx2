@@ -38,12 +38,7 @@ namespace Achievements
 	enum class LoginRequestReason;
 }
 
-Q_DECLARE_METATYPE(std::shared_ptr<VMBootParameters>);
-Q_DECLARE_METATYPE(std::optional<bool>);
-Q_DECLARE_METATYPE(GSRendererType);
-Q_DECLARE_METATYPE(InputBindingKey);
-Q_DECLARE_METATYPE(CDVD_SourceType);
-Q_DECLARE_METATYPE(Achievements::LoginRequestReason);
+#include "QtMetaTypes.h"
 
 class EmuThread : public QThread
 {
