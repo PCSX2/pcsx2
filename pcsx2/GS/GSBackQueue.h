@@ -101,6 +101,18 @@ namespace GSBackQueue
 		u32 tail;
 	};
 
+	// GV7-1c: one pooled vertex+index buffer set. On the record path, FlushPrim
+	// hands the live heap arrays to a node (struct copy + array exchange: the
+	// parse slot takes the node's recycled arrays as its fresh buffers), so the
+	// DRAW record's payload stays valid until consumed while the front keeps
+	// parsing into the same GSState buffer slots it always did. The consumer
+	// releases the node after the draw executes.
+	struct DrawNode
+	{
+		VertexBuff vb;
+		IndexBuff ib;
+	};
+
 	// PCRTC digest state — hoisted from GSState (GSvsync writes it once per
 	// frame from the privileged registers; the Draw() heuristics and the Merge
 	// circuit read it back-side, so it ships whole in PCRTC_SYNC records).

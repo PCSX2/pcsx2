@@ -19,6 +19,7 @@
 #include <sstream>
 #include <iomanip>
 #include <bit>
+#include <thread>
 
 u64 GSState::s_n = 0;
 u64 GSState::s_last_transfer_draw_n = 0;
@@ -141,6 +142,19 @@ GSState::~GSState()
 		_aligned_free(m_draw_vertex.buff);
 	if (m_draw_index.buff)
 		_aligned_free(m_draw_index.buff);
+
+	// GV7-1c: every mode drains before teardown, so all pool nodes hold their
+	// own arrays here (records in flight would alias them otherwise).
+	for (GSBackQueue::DrawNode* node : m_draw_node_arena)
+	{
+		if (node->vb.buff)
+			_aligned_free(node->vb.buff);
+		if (node->vb.buff_copy)
+			_aligned_free(node->vb.buff_copy);
+		if (node->ib.buff)
+			_aligned_free(node->ib.buff);
+		delete node;
+	}
 }
 
 std::string GSState::GetDrawDumpPath(const char* format, ...)
@@ -394,6 +408,51 @@ void GSState::ResetDrawBuffers()
 	}
 
 	ResetDrawBufferIdx();
+}
+
+GSBackQueue::DrawNode* GSState::AcquireDrawNode()
+{
+	// Recycle first; grow the arena while under the cap; past the cap the ring
+	// IS the backpressure (wait for the consumer to release one). Inline modes
+	// release synchronously, so the wait can only engage once draws execute on
+	// the back thread.
+	for (;;)
+	{
+		if (GSBackQueue::DrawNode** slot = m_draw_node_free.Peek())
+		{
+			GSBackQueue::DrawNode* node = *slot;
+			m_draw_node_free.Pop();
+			return node;
+		}
+
+		if (m_draw_node_arena.size() < MAX_DRAW_NODES)
+			break;
+
+		std::this_thread::yield();
+	}
+
+	// Fresh node, arrays sized like the buffer they're about to replace
+	// (GrowVertexBuffer's maxcount is alloc-3).
+	GSBackQueue::DrawNode* node = new GSBackQueue::DrawNode();
+	const u32 alloc_maxcount = m_vertex->maxcount + 3;
+	std::memset(node, 0, sizeof(*node));
+	node->vb.buff = static_cast<GSVertex*>(_aligned_malloc(sizeof(GSVertex) * alloc_maxcount, 32));
+	node->vb.buff_copy = static_cast<GSVertex*>(_aligned_malloc(sizeof(GSVertex) * alloc_maxcount, 32));
+	node->ib.buff = static_cast<u16*>(_aligned_malloc(sizeof(u16) * alloc_maxcount * 6, 32));
+	if (!node->vb.buff || !node->vb.buff_copy || !node->ib.buff)
+		pxFailRel("GS: draw-node pool allocation failed");
+	node->vb.maxcount = m_vertex->maxcount;
+	m_draw_node_arena.push_back(node);
+	return node;
+}
+
+void GSState::ReleaseDrawNode(GSBackQueue::DrawNode* node)
+{
+	// Cannot fail: the free ring's capacity equals the arena cap.
+	GSBackQueue::DrawNode** slot = m_draw_node_free.BeginPush();
+	pxAssert(slot);
+	*slot = node;
+	m_draw_node_free.CommitPush();
 }
 
 // exclude_current is used if there is a flush for a reason other than the normal context change.
@@ -2678,13 +2737,32 @@ void GSState::FlushPrim()
 
 	if (m_back_records)
 	{
+		// Hand the live buffers to a pool node: snapshot the buffer structs into
+		// the node, then exchange heap arrays — the node keeps the draw's data
+		// for the consumer, the parse slot takes the node's recycled arrays as
+		// its fresh buffers. Everything else about the slot (xy ring, counters)
+		// is untouched, and the reset below re-initializes it exactly as today.
+		GSBackQueue::DrawNode* node = AcquireDrawNode();
+		GSVertex* fresh_vbuff = node->vb.buff;
+		GSVertex* fresh_vcopy = node->vb.buff_copy;
+		const u32 fresh_maxcount = node->vb.maxcount;
+		u16* fresh_ibuff = node->ib.buff;
+
+		node->vb = *m_vertex;
+		node->ib = *m_index;
+
+		m_vertex->buff = fresh_vbuff;
+		m_vertex->buff_copy = fresh_vcopy;
+		m_vertex->maxcount = fresh_maxcount;
+		m_index->buff = fresh_ibuff;
+
 		GSBackQueue::DrawRecord rec;
 		std::memcpy(&rec.draw_env, &m_prev_env, sizeof(rec.draw_env));
 		std::memcpy(&rec.next_env, &m_env, sizeof(rec.next_env));
 		rec.next_v = m_v;
 		rec.draw_rect = temp_draw_rect;
-		rec.vertex = m_vertex;
-		rec.index = m_index;
+		rec.vertex = &node->vb;
+		rec.index = &node->ib;
 		rec.draw_serial = s_n;
 		rec.backed_up_ctx = m_backed_up_ctx;
 		rec.dirty_gs_regs = m_dirty_gs_regs;
@@ -2693,6 +2771,15 @@ void GSState::FlushPrim()
 		rec.packed_uv_hack_flag = m_isPackedUV_HackFlag;
 
 		ExecDrawRecord(rec);
+
+		// Inline consume point: the executor is done with the node. It also
+		// re-aimed m_vertex/m_index at the node's structs — restore them to the
+		// parse slot before the reset below (pipelined moves the release to the
+		// back thread; this re-aim stays, and is what keeps the front parsing
+		// its own buffers).
+		ReleaseDrawNode(node);
+		m_vertex = &m_vertex_buffers[m_current_buffer_idx];
+		m_index = &m_index_buffers[m_current_buffer_idx];
 	}
 	else
 	{

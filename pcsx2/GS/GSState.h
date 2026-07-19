@@ -16,6 +16,8 @@
 #include "GS/GSVector.h"
 #include "GSAlignedClass.h"
 
+#include <vector>
+
 class GSDumpBase;
 
 class GSState : public GSAlignedClass<32>
@@ -545,6 +547,17 @@ public:
 	// front-side seam functions skip the record round-trip entirely and call the
 	// executor tails against live state; any other mode builds records.
 	bool m_back_records = false;
+
+	// GV7-1c: draw-node pool. Acquire is front-side (free ring first, then arena
+	// growth up to the ring capacity, then backpressure); Release is the consume
+	// site (inline modes: FlushPrim right after the executor returns; pipelined:
+	// the back thread after DrawRecordTail). Arena entries are front-owned and
+	// freed in the destructor — safe because every mode drains before teardown.
+	static constexpr u32 MAX_DRAW_NODES = 64;
+	std::vector<GSBackQueue::DrawNode*> m_draw_node_arena;
+	GSBackQueue::SpscRing<GSBackQueue::DrawNode*, MAX_DRAW_NODES> m_draw_node_free;
+	GSBackQueue::DrawNode* AcquireDrawNode();
+	void ReleaseDrawNode(GSBackQueue::DrawNode* node);
 
 	GSVector4i GetTEX0Rect(GSDrawingContext prev_ctx);
 	void CheckWriteOverlap(bool req_write, bool req_read);
