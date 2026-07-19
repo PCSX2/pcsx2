@@ -1480,17 +1480,43 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZF2(const GIFPackedReg* RESTRICT r, u3
 
 	const GIFPackedReg* RESTRICT r_end = r + size;
 
-	while (r < r_end)
+	if constexpr (auto_flush)
 	{
+		// HandleAutoFlush reads the incoming vertex out of m_v, so the autoflush
+		// instantiations keep the staged-m_v path.
+		while (r < r_end)
+		{
+			GSVector4i m0, m1;
+			GSVertexKernels::ParsePackedSTQRGBAXYZF2(r, m_v.UV, m0, m1);
+
+			m_v.m[0] = m0;
+			m_v.m[1] = m1;
+
+			VertexKick<prim, auto_flush>(r[2].XYZF2.Skip());
+
+			r += 3;
+		}
+	}
+	else
+	{
+		// Direct path: parsed vertices go straight to the buffer with the values
+		// still in registers; m_v is written once at batch exit so piecemeal
+		// handlers and the next tag see identical state.
+		const u32 uv = m_v.UV; // loop-invariant: packed XYZF2 never writes UV
+
 		GSVector4i m0, m1;
-		GSVertexKernels::ParsePackedSTQRGBAXYZF2(r, m_v.UV, m0, m1);
+		while (r < r_end)
+		{
+			GSVertexKernels::ParsePackedSTQRGBAXYZF2(r, uv, m0, m1);
+			ApplyDepthClamp(m1.U32[1]);
 
-		m_v.m[0] = m0; // TODO: only store the last one
-		m_v.m[1] = m1; // TODO: only store the last one
+			VertexKickDirect<prim, auto_flush>(r[2].XYZF2.Skip(), m0, m1);
 
-		VertexKick<prim, auto_flush>(r[2].XYZF2.Skip());
+			r += 3;
+		}
 
-		r += 3;
+		m_v.m[0] = m0;
+		m_v.m[1] = m1;
 	}
 
 	m_q = r[-3].STQ.Q; // remember the last one, STQ outputs this to the temp Q each time
@@ -1505,20 +1531,45 @@ void GSState::GIFPackedRegHandlerSTQRGBAXYZ2(const GIFPackedReg* RESTRICT r, u32
 
 	const GIFPackedReg* RESTRICT r_end = r + size;
 
-	while (r < r_end)
+	if constexpr (auto_flush)
 	{
+		// See GIFPackedRegHandlerSTQRGBAXYZF2: autoflush keeps the staged-m_v path.
+		while (r < r_end)
+		{
+			u64 uvfog;
+			std::memcpy(&uvfog, &m_v.UV, sizeof(uvfog));
+
+			GSVector4i m0, m1;
+			GSVertexKernels::ParsePackedSTQRGBAXYZ2(r, uvfog, m0, m1);
+
+			m_v.m[0] = m0;
+			m_v.m[1] = m1;
+
+			VertexKick<prim, auto_flush>(r[2].XYZ2.Skip());
+
+			r += 3;
+		}
+	}
+	else
+	{
+		// Loop-invariant: packed XYZ2 writes neither UV nor FOG, and the parse
+		// copies both through unchanged.
 		u64 uvfog;
 		std::memcpy(&uvfog, &m_v.UV, sizeof(uvfog));
 
 		GSVector4i m0, m1;
-		GSVertexKernels::ParsePackedSTQRGBAXYZ2(r, uvfog, m0, m1);
+		while (r < r_end)
+		{
+			GSVertexKernels::ParsePackedSTQRGBAXYZ2(r, uvfog, m0, m1);
+			ApplyDepthClamp(m1.U32[1]);
 
-		m_v.m[0] = m0; // TODO: only store the last one
-		m_v.m[1] = m1; // TODO: only store the last one
+			VertexKickDirect<prim, auto_flush>(r[2].XYZ2.Skip(), m0, m1);
 
-		VertexKick<prim, auto_flush>(r[2].XYZ2.Skip());
+			r += 3;
+		}
 
-		r += 3;
+		m_v.m[0] = m0;
+		m_v.m[1] = m1;
 	}
 
 	m_q = r[-3].STQ.Q; // remember the last one, STQ outputs this to the temp Q each time
@@ -5851,8 +5902,42 @@ __noinline bool GSState::CheckOverlapVertsSlow(u32 n)
 	return false;
 }
 
+// The depth-clamp hack historically rewrites the incoming vertex's Z in place per
+// kick. Config test first: with the hack disabled (the default) the reorder skips
+// the GSIsHardwareRenderer() call and psm-table walk.
+__forceinline void GSState::ApplyDepthClamp(u32& z)
+{
+	if (GSConfig.UserHacks_Limit24BitDepth != GSLimit24BitDepth::Disabled &&
+		GSIsHardwareRenderer() && GSLocalMemory::m_psm[m_context->ZBUF.PSM].bpp == 32)
+	{
+		if (GSConfig.UserHacks_Limit24BitDepth == GSLimit24BitDepth::PrioritizeUpper)
+			z = ((z >> 8) & ~0xFF) | (z & 0xFF);
+		else if (GSConfig.UserHacks_Limit24BitDepth == GSLimit24BitDepth::PrioritizeLower)
+			z &= 0x00FFFFFF;
+	}
+}
+
+// Staged-m_v entry point: piecemeal reg handlers build the vertex in m_v and kick
+// from there. The fused packed handlers use VertexKickDirect with the parsed vertex
+// still in registers instead. The depth clamp is applied here (persisting into m_v
+// exactly as before); hoisting it ahead of the overlap/autoflush checks inside
+// VertexKickDirect is behavior-neutral — neither reads XYZ.Z.
 template <u32 prim, bool auto_flush>
 __forceinline void GSState::VertexKick(u32 skip)
+{
+	if constexpr (prim != GS_INVALID)
+		ApplyDepthClamp(m_v.XYZ.Z);
+
+	const GSVector4i v0(m_v.m[0]);
+	const GSVector4i v1(m_v.m[1]);
+	VertexKickDirect<prim, auto_flush>(skip, v0, v1);
+}
+
+// Kick one vertex whose value is still in registers. Callers apply ApplyDepthClamp
+// to v1's Z lane themselves. auto_flush instantiations must come through the staged
+// VertexKick above — HandleAutoFlush reads the incoming vertex out of m_v.
+template <u32 prim, bool auto_flush>
+__forceinline void GSState::VertexKickDirect(u32 skip, const GSVector4i& v0, const GSVector4i& v1)
 {
 	constexpr u32 n = NumIndicesForPrim(prim);
 	constexpr int primclass = GSUtil::GetPrimClass(prim);
@@ -5866,9 +5951,18 @@ __forceinline void GSState::VertexKick(u32 skip)
 		return;
 	}
 
-	if (CheckOverlapVerts(n))
-		Flush(CONTEXTCHANGE);
-	
+	// Overlap check (draw buffering): the slow path reads the incoming vertex's XY
+	// out of m_v, which the fused direct path no longer maintains per vertex — sync
+	// it on this rare path only.
+	if (m_recent_buffer_switch && GSConfig.UserHacks_DrawBuffering)
+	{
+		m_v.m[0] = v0;
+		m_v.m[1] = v1;
+
+		if (CheckOverlapVertsSlow(n))
+			Flush(CONTEXTCHANGE);
+	}
+
 	if (auto_flush && skip == 0 && m_index->tail > 0 && ((m_vertex->tail + 1) - m_vertex->head) >= n)
 	{
 		HandleAutoFlush<prim>();
@@ -5879,30 +5973,14 @@ __forceinline void GSState::VertexKick(u32 skip)
 	u32 next = m_vertex->next;
 	u32 xy_tail = m_vertex->xy_tail;
 
-	// Config test first: this runs per vertex kick, and with the hack disabled (the
-	// default) the reorder skips the GSIsHardwareRenderer() call and psm-table walk.
-	if (GSConfig.UserHacks_Limit24BitDepth != GSLimit24BitDepth::Disabled &&
-		GSIsHardwareRenderer() && GSLocalMemory::m_psm[m_context->ZBUF.PSM].bpp == 32)
-	{
-		if (GSConfig.UserHacks_Limit24BitDepth == GSLimit24BitDepth::PrioritizeUpper)
-			m_v.XYZ.Z = ((m_v.XYZ.Z >> 8) & ~0xFF) | (m_v.XYZ.Z & 0xFF);
-		else if (GSConfig.UserHacks_Limit24BitDepth == GSLimit24BitDepth::PrioritizeLower)
-			m_v.XYZ.Z &= 0x00FFFFFF;
-	}
-
-	// callers should write XYZUVF to m_v.m[1] in one piece to have this load store-forwarded, either by the cpu or the compiler when this function is inlined
-
-	const GSVector4i new_v0(m_v.m[0]);
-	const GSVector4i new_v1(m_v.m[1]);
-
 	GSVector4i* RESTRICT tailptr = (GSVector4i*)&m_vertex->buff[tail];
 
-	tailptr[0] = new_v0;
-	tailptr[1] = new_v1;
+	tailptr[0] = v0;
+	tailptr[1] = v1;
 
 	// We maintain the X/Y coordinates for the last 4 vertices, as well as the head for triangle fans, so we can compute
 	// the min/max, and cull degenerate triangles, which saves draws in some cases. Why 4? Mod 4 is cheaper than Mod 3.
-	const GSVector4i xy = new_v1.xxxx().u16to32().sub32(m_xyof);
+	const GSVector4i xy = v1.xxxx().u16to32().sub32(m_xyof);
 	m_vertex->xy[xy_tail & 3] = xy;
 
 	// Backup head for triangle fans so we can read it later, otherwise it'll get lost after the 4th vertex.

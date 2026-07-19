@@ -191,7 +191,9 @@ protected:
 	bool CheckOverlapVerts(u32 n);
 	bool CheckOverlapVertsSlow(u32 n);
 
+	void ApplyDepthClamp(u32& z);
 	template <u32 prim, bool auto_flush> void VertexKick(u32 skip);
+	template <u32 prim, bool auto_flush> void VertexKickDirect(u32 skip, const GSVector4i& v0, const GSVector4i& v1);
 
 	// following functions need m_vt to be initialized
 
