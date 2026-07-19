@@ -23908,6 +23908,8 @@ SLES-53483:
   name: "Magna Carta - Tears of Blood"
   region: "PAL-E"
   compat: 5
+  gsHWFixe:
+    minimumBlendingLevel: 0 # Fixes Graphics
 SLES-53484:
   name: "Eagle Eye Golf"
   region: "PAL-M5"
@@ -71418,6 +71420,8 @@ SLUS-21221:
   name: "Magna Carta - Tears of Blood"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    minimumBlendingLevel: 0 # Fixes Graphics
 SLUS-21222:
   name: "Top Spin"
   region: "NTSC-U"
