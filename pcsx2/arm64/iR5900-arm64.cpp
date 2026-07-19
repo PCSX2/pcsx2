@@ -1764,7 +1764,7 @@ static void recPatchIslandB(u8* site, const u8* target)
 	const intptr_t imm26 = (reinterpret_cast<intptr_t>(target) - reinterpret_cast<intptr_t>(site)) >> 2;
 	pxAssertRel(imm26 >= -(1 << 25) && imm26 < (1 << 25), "Cold-exit island out of B imm26 range");
 	*reinterpret_cast<volatile u32*>(site) = 0x14000000u | (static_cast<u32>(imm26) & 0x03FFFFFFu);
-	__builtin___clear_cache(reinterpret_cast<char*>(site), reinterpret_cast<char*>(site) + 4);
+	HostSys::FlushInstructionCache(site, 4);
 }
 
 // Emit every pending side exit body into the cold arena (a second emission

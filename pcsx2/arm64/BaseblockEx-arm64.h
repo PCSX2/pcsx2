@@ -32,6 +32,7 @@
 
 #include <map>
 
+#include "common/HostSys.h"
 #include "x86/BaseblockEx.h"  // BASEBLOCK, BASEBLOCKEX, BaseBlockArray, recLUT_SetPage
 
 class Arm64BaseBlocks
@@ -66,8 +67,10 @@ protected:
 		// 4-byte aligned word stores are atomic on AArch64.
 		*reinterpret_cast<volatile u32*>(site) = instr;
 		// Then make sure cores fetching instructions see the new word.
-		__builtin___clear_cache(reinterpret_cast<char*>(site),
-			reinterpret_cast<char*>(site) + 4);
+		// (HostSys::FlushInstructionCache, not the raw builtin: on Darwin the
+		// builtin lowers to a compiler-rt ___clear_cache call that the iOS
+		// link doesn't provide; the wrapper uses sys_icache_invalidate there.)
+		HostSys::FlushInstructionCache(reinterpret_cast<void*>(site), 4);
 		// Signal-safe (counter-only) — Remove() can call this from the
 		// SIGSEGV fastmem handler.
 	}

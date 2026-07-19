@@ -208,7 +208,7 @@ void armEmitJmpPtr(void* code_address, const void* target, bool flush_icache)
 	pxAssertRel(imm26 >= -(1 << 25) && imm26 < (1 << 25), "armEmitJmpPtr: branch offset out of B imm26 range");
 	*reinterpret_cast<volatile u32*>(code_address) = 0x14000000u | (static_cast<u32>(imm26) & 0x03FFFFFFu);
 	if (flush_icache)
-		__builtin___clear_cache(static_cast<char*>(code_address), static_cast<char*>(code_address) + 4);
+		HostSys::FlushInstructionCache(code_address, 4);
 }
 
 void armEmitCall(const void* ptr, bool force_inline)
