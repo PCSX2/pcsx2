@@ -8103,6 +8103,7 @@ SCKA-20090:
   gsHWFixes:
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
+    hwDownloadMode: 3 # Fixes Sun Eefect
 SCKA-20091:
   name: "MLB 07 - The Show" # No listed Korean name on ReDump
   region: "NTSC-K"
@@ -13831,6 +13832,7 @@ SLAJ-25078:
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
+    hwDownloadMode: 3 # Fixes Some Effect
 SLAJ-25079:
   name: "Shin Sangoku Musou 4 - Empires"
   region: "NTSC-Unk"
@@ -16959,6 +16961,7 @@ SLES-50876:
     cpuSpriteRenderLevel: 2 # Needed for above.
     nativePaletteDraw: 1 # Fixes broken menu graphics.
     nativeScaling: 2 # Fixes sun occlusion around buildings.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLES-50877:
   name: "TimeSplitters 2"
   region: "PAL-M5"
@@ -20091,6 +20094,7 @@ SLES-52153:
     cpuSpriteRenderLevel: 2 # Needed for above.
     nativePaletteDraw: 1 # Fixes broken menu graphics.
     nativeScaling: 2 # Fixes sun occlusion around buildings.
+    hwDownloadMode: 3 # Fixes Sun Effext
 SLES-52155:
   name: "EyeToy - L'Eredita"
   region: "PAL-I"
@@ -24088,6 +24092,7 @@ SLES-53524:
   gsHWFixes:
     halfPixelOffset: 5 # Fixes effect alignment.
     autoFlush: 2 # Fixes bloom intensity
+    hwDownloadMode: 3 # Fixes Some Effect
 SLES-53525:
   name: "Mortal Kombat - Shaolin Monks"
   region: "PAL-G"
@@ -24096,6 +24101,7 @@ SLES-53525:
   gsHWFixes:
     halfPixelOffset: 5 # Fixes effect alignment.
     autoFlush: 2 # Fixes bloom intensity
+    hwDownloadMode: 3 # Fixes Some Effect
 SLES-53526:
   name: "The Suffering - Ties That Bind"
   name-sort: "Suffering, The - Ties That Bind"
@@ -25427,6 +25433,7 @@ SLES-53886:
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
+    hwDownloadMode: 3 # Fixes Some Effect
   patches:
     ADDFF505:
       content: |-
@@ -25870,6 +25877,7 @@ SLES-54030:
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
+    hwDownloadMode: 3 # Fixes Some Effect
   patches:
     CAA04879:
       content: |-
@@ -27351,6 +27359,7 @@ SLES-54490:
   gsHWFixes:
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLES-54492:
   name: "Need for Speed - Carbon [Collector's Edition]"
   region: "PAL-E"
@@ -32471,6 +32480,7 @@ SLKA-25196:
     cpuSpriteRenderLevel: 2 # Needed for above.
     nativePaletteDraw: 1 # Fixes broken menu graphics.
     nativeScaling: 2 # Fixes sun occlusion around buildings.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLKA-25198:
   name: "천주 홍" # Undumped on ReDump as of 2025-08-28
   name-en: "Tenchu Kurenai"
@@ -33529,6 +33539,7 @@ SLKA-25372:
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
+    hwDownloadMode: 3 # Fixes Some Effect
 SLKA-25373:
   name: "파이트 나이트 라운드 3"
   name-en: "Fight Night Round 3"
@@ -45920,6 +45931,7 @@ SLPM-65741:
     cpuSpriteRenderLevel: 2 # Needed for above.
     nativePaletteDraw: 1 # Fixes broken menu graphics.
     nativeScaling: 2 # Fixes sun occlusion around buildings.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLPM-65742:
   name: "COOL GIRL [KONAMI The BEST] [ディスク1/2]"
   name-sort: "くーる がーる [KONAMI The BEST] [でぃすく1/2]"
@@ -49778,6 +49790,7 @@ SLPM-66354:
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
+    hwDownloadMode: 3 # Fixes Some Effect
   patches:
     B3A9F9ED:
       content: |-
@@ -50967,6 +50980,7 @@ SLPM-66550:
   gsHWFixes:
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLPM-66551:
   name: "APPLESEED EX"
   name-sort: "あっぷるしーど えくす"
@@ -54632,6 +54646,7 @@ SLPM-74241:
   gsHWFixes:
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLPM-74242:
   name: "Devil May Cry 3 Special Edition [PlayStation2 the Best]"
   name-sort: "でびる めい くらい 3 Special Edition [PlayStation2 the Best]"
@@ -67677,6 +67692,7 @@ SLUS-20587:
     cpuSpriteRenderLevel: 2 # Needed for above.
     nativePaletteDraw: 1 # Fixes broken menu graphics.
     nativeScaling: 2 # Fixes sun occlusion around buildings.
+    hwDownloadMode: 3 # Fixes Sun Eefect
 SLUS-20588:
   name: "Activision Anthology"
   region: "NTSC-U"
@@ -70570,6 +70586,7 @@ SLUS-21087:
   gsHWFixes:
     halfPixelOffset: 5 # Fixes effect alignment.
     autoFlush: 2 # Fixes bloom intensity
+    hwDownloadMode: 3 # Fixes Some Effect
 SLUS-21088:
   name: "Disney's Chicken Little"
   region: "NTSC-U"
@@ -72561,6 +72578,7 @@ SLUS-21376:
     nativeScaling: 2 # Improves post-processing smoothness.
     getSkipCount: "GSC_BlackAndBurnoutSky"
     beforeDraw: "OI_BurnoutGames"
+    hwDownloadMode: 3 # Fixes Some Effect
   patches:
     5C891FF1:
       content: |-
@@ -73406,6 +73424,7 @@ SLUS-21503:
   gsHWFixes:
     halfPixelOffset: 2 # Depth of field effect aligned properly + Shifts buildings correctly.
     nativeScaling: 2 # Fixes post effects.
+    hwDownloadMode: 3 # Fixes Sun Effect
 SLUS-21536:
   name: "The Sims 2 - Pets"
   name-sort: "Sims 2, The - Pets"
