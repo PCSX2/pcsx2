@@ -12,10 +12,16 @@
 #ifdef __linux__
 #include <unistd.h>
 #endif
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#include <mach-o/loader.h>
+#endif
 
+#include <algorithm>
 #include <cinttypes>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <unordered_map>
 
 namespace mVUPersist
@@ -173,6 +179,45 @@ namespace mVUPersist
 		std::fclose(maps);
 
 		if (!begin || end <= begin)
+			return false;
+		out_begin = begin;
+		out_end = end;
+		return true;
+#elif defined(__APPLE__)
+		// Union of the main image's mapped segments (index 0 = the main
+		// executable), slid by ASLR. Unlike Linux non-PIE these addresses vary
+		// per run, so a payload recorded here never survives to another
+		// process — the hydration-side imageAnchor check rejects it and the
+		// program just recompiles. In-process recording (ABI digest, unit-test
+		// round-trips, and eventually the iOS in-session cache) works fully.
+		const mach_header_64* hdr =
+			reinterpret_cast<const mach_header_64*>(_dyld_get_image_header(0));
+		if (!hdr || hdr->magic != MH_MAGIC_64)
+			return false;
+		const intptr_t slide = _dyld_get_image_vmaddr_slide(0);
+
+		uptr begin = ~static_cast<uptr>(0), end = 0;
+		const load_command* lc = reinterpret_cast<const load_command*>(hdr + 1);
+		for (u32 i = 0; i < hdr->ncmds; i++)
+		{
+			if (lc->cmd == LC_SEGMENT_64)
+			{
+				const segment_command_64* seg = reinterpret_cast<const segment_command_64*>(lc);
+				// __PAGEZERO is the unmapped 4 GB null-deref guard at vmaddr 0;
+				// absorbing it would classify most of the address space as
+				// image. Everything else (__TEXT, __DATA, __DATA_CONST,
+				// __common bss inside __DATA, ...) is genuinely the image.
+				if (seg->vmsize && std::strcmp(seg->segname, SEG_PAGEZERO) != 0)
+				{
+					begin = std::min(begin, static_cast<uptr>(seg->vmaddr) + slide);
+					end = std::max(end, static_cast<uptr>(seg->vmaddr + seg->vmsize) + slide);
+				}
+			}
+			lc = reinterpret_cast<const load_command*>(
+				reinterpret_cast<const u8*>(lc) + lc->cmdsize);
+		}
+
+		if (!end || end <= begin)
 			return false;
 		out_begin = begin;
 		out_end = end;
