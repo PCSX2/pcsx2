@@ -76,6 +76,11 @@
   #pragma GCC diagnostic ignored "-Wreserved-identifier"
 #endif
 
+#if __clang_major__ >= 22
+// for "StdAfx.h" and "Precomp.h"
+#pragma GCC diagnostic ignored "-Wshadow-header"
+#endif
+
 #endif // __clang__
 
 #if defined(__clang__) && __clang_major__ >= 16
