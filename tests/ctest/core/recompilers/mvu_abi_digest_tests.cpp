@@ -306,6 +306,20 @@ TEST(MvuAbiDigest, EmittedShapePinnedPerAbiVersion)
 	ASSERT_NE(actual.condEvilBranch, 0u);
 	ASSERT_NE(actual.vu1BranchToEbit, 0u);
 
+#if !(defined(__linux__) && !defined(__ANDROID__) && defined(__GLIBCXX__))
+	// The pinned values embed guest-state field offsets baked into the emitted
+	// code, and those offsets shift with the C++ standard library's struct
+	// layout (libc++ containers are smaller than libstdc++'s — every kPins row
+	// drifts wholesale on macOS, first seen on the macOS CI leg 2026-07-19).
+	// Pins are harvested on desktop Linux/libstdc++ where development happens;
+	// on other platform ABIs the digest machinery is still exercised above and
+	// by EmittedShapeIndependentOfPriorCompile, but the values can't be
+	// compared against the Linux table.
+	GTEST_SKIP() << "digest pins are harvested on Linux/libstdc++; this "
+					"platform's std-library struct layout shifts the emitted "
+					"field offsets, so the pinned values do not apply";
+#endif
+
 	const u32 abi = mVUProgCache::GetCompilerAbiVersion();
 	const AbiPin* pin = nullptr;
 	for (const AbiPin& p : kPins)
