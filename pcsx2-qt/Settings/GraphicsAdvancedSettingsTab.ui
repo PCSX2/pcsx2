@@ -198,6 +198,40 @@
         </property>
        </widget>
       </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="gsBackThreadModeLabel">
+        <property name="text">
+         <string>GS Back Thread:</string>
+        </property>
+        <property name="buddy">
+         <cstring>gsBackThreadMode</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QComboBox" name="gsBackThreadMode">
+        <item>
+         <property name="text">
+          <string>Disabled (Default)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Inline Records (Debug)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Lockstep (Debug)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Pipelined (Second GS Thread)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -365,6 +399,7 @@
   <tabstop>gsDumpCompression</tabstop>
   <tabstop>texturePreloading</tabstop>
   <tabstop>exclusiveFullscreenControl</tabstop>
+  <tabstop>gsBackThreadMode</tabstop>
   <tabstop>extendedUpscales</tabstop>
   <tabstop>spinGPUDuringReadbacks</tabstop>
   <tabstop>spinCPUDuringReadbacks</tabstop>

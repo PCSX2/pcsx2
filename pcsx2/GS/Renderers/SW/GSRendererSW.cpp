@@ -1669,7 +1669,7 @@ void GSRendererSW::SharedData::UpdateSource()
 		}
 	}
 
-	if (GSConfig.SaveTexture && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
+	if (GSConfig.SaveTexture && GSConfig.ShouldDump(g_gs_renderer->s_n, g_perfmon.GetFrame()))
 	{
 		const u64 frame = g_perfmon.GetFrame();
 

@@ -629,6 +629,25 @@ void GSRenderer::EndPresentFrame()
 	ImGuiManager::NewFrame();
 }
 
+void GSRenderer::SubmitVsync(u32 field, bool registers_written)
+{
+	GSBackQueue::VsyncRecord rec;
+	rec.field = field;
+	rec.registers_written = registers_written;
+	rec.idle_frame = IsIdleFrame(); // front-computable: compares serials against the last frame's
+
+	// VSYNC is never queued: present runs on the MTGS thread behind a drain, so
+	// the back thread stays off the GSDevice on present paths entirely (which
+	// is also what keeps SW + GL-present devices legal in queued modes).
+	DrainBackQueue();
+	ExecVsyncRecord(rec);
+}
+
+void GSRenderer::ExecVsyncRecord(const GSBackQueue::VsyncRecord& rec)
+{
+	VSync(rec.field, rec.registers_written, rec.idle_frame);
+}
+
 void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 {
 	if (GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
@@ -1109,6 +1128,9 @@ void GSSetDisplayAlignment(GSDisplayAlignment alignment)
 
 bool GSRenderer::BeginCapture(std::string filename, const GSVector2i& size)
 {
+	// GV7-2: capture start/stop can run mid-frame on the MTGS thread; teardown
+	// frees download textures on the device the back thread may be drawing on.
+	DrainBackQueue();
 	const GSVector2i capture_resolution = (size.x != 0 && size.y != 0) ?
 											  size :
 											  (GSConfig.VideoCaptureAutoResolution ?
@@ -1122,6 +1144,7 @@ bool GSRenderer::BeginCapture(std::string filename, const GSVector2i& size)
 
 void GSRenderer::EndCapture()
 {
+	DrainBackQueue(); // see BeginCapture
 	GSCapture::EndCapture();
 }
 
@@ -1138,6 +1161,11 @@ bool GSRenderer::IsIdleFrame() const
 bool GSRenderer::SaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspect, bool crop_borders,
 	u32* width, u32* height, std::vector<u32>* pixels)
 {
+	// GV7-2: mid-frame screenshot issues device calls (CreateRenderTarget /
+	// StretchRect) on the MTGS thread; the back thread may be mid-draw on the
+	// same device. The vsync-path callers are already post-drain (no-op there).
+	DrainBackQueue();
+
 	GSTexture* const current = g_gs_device->GetCurrent();
 	if (!current)
 	{

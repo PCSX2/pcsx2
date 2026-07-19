@@ -244,6 +244,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.disableShaderCache, "EmuCore/GS", "DisableShaderCache", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.disableVertexShaderExpand, "EmuCore/GS", "DisableVertexShaderExpand", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.gsDownloadMode, "EmuCore/GS", "HWDownloadMode", static_cast<int>(GSHardwareDownloadMode::Enabled));
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.gsBackThreadMode, "EmuCore/GS", "GSBackThreadMode", static_cast<int>(GSBackThreadMode::Off));
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_advanced.ntscFrameRate, "EmuCore/GS", "FrameRateNTSC", 59.94f);
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_advanced.palFrameRate, "EmuCore/GS", "FrameRatePAL", 50.00f);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.spinCPUDuringReadbacks, "EmuCore/GS", "HWSpinCPUForReadbacks", false);
@@ -796,6 +797,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Skips synchronizing with the GS thread and host GPU for GS downloads. "
 			   "Can result in a large speed boost on slower systems, at the cost of many broken graphical effects. "
 			   "If games are broken and you have this option enabled, please disable it first."));
+
+		dialog()->registerWidgetHelp(m_advanced.gsBackThreadMode, tr("GS Back Thread"), tr("Disabled"),
+			tr("Pipelined splits GS emulation across two threads: one parses GIF data and builds vertices while the other runs draws, "
+			   "the texture cache, and the GPU device. Can significantly reduce GS thread time on multi-core systems with spare cores, "
+			   "but competes for cores with the EE/VU threads. The Inline Records and Lockstep modes are debugging tools and much "
+			   "slower — do not use them for play."));
 
 		dialog()->registerWidgetHelp(m_advanced.ntscFrameRate, tr("NTSC Frame Rate"), tr("59.94 Hz"),
 			tr("Determines what frame rate NTSC games run at."));

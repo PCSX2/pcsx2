@@ -1,0 +1,391 @@
+// SPDX-FileCopyrightText: 2026 yaps2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
+
+#pragma once
+
+#include "GS/GS.h"
+#include "GS/GSRegs.h"
+#include "GS/GSVector.h"
+#include "GS/GSDrawingContext.h"
+#include "GS/GSDrawingEnvironment.h"
+#include "GS/GSVertexKick.h"
+#include "GS/Renderers/Common/GSVertex.h"
+
+#include "common/Threading.h"
+
+#include <atomic>
+#include <memory>
+#include <type_traits>
+#include <vector>
+
+// GV-7: self-contained records crossing the GS front (GIF parse / vertex kick /
+// draw buffering) → back (local memory, texture cache, draw, present) boundary.
+// Every record carries its register snapshot, so the consumer needs no live
+// register state machine. Records are built by the front-side seam functions
+// (FlushWrite / Move / ...) and consumed by GSState::Exec*Record — executed
+// inline today, and on the back thread once the GV7-1 queue lands.
+// Seam classification: scratchpad/gv7-2026-07/SEAM-AUDIT.md.
+
+namespace GSBackQueue
+{
+	// One slice of a HOST->LOCAL transfer (today's FlushWrite body, or the
+	// whole-packet fast path in GSState::Write). A logical transfer is one
+	// first_slice record followed by zero or more continuation slices; the
+	// executor owns the write cursor across slices.
+	struct TransferRecord
+	{
+		GIFRegBITBLTBUF blit; // m_tr.m_blit: wi() blit argument + partial-end fixup
+		GIFRegBITBLTBUF env_blit; // invalidate rect + wi selection: m_env.BITBLTBUF in
+		                          // FlushWrite, m_tr.m_blit on the Write fast path —
+		                          // they diverge if BITBLTBUF is rewritten mid-transfer
+		GIFRegTRXPOS pos;
+		GIFRegTRXREG reg;
+		GSVector4i rect; // m_tr.rect
+		const u8* payload;
+		int len; // bytes handed to wi()
+		int stat_len; // bytes counted for the Swizzle perfmon stat (the Write
+		              // fast path counts the raw packet length, which can
+		              // exceed the transfer total — preserved exactly)
+		int end; // m_tr.end as of this slice (partial-end fixup input)
+		int total; // m_tr.total
+		int init_x, init_y; // write-cursor init, consumed when first_slice
+		u64 draw_serial; // s_n at build time (upload-queue entry stamping)
+		bool first_slice; // initialises the cursor + pushes the upload-queue entry
+	};
+
+	// LOCAL->LOCAL blit. The executor installs these registers and runs the
+	// virtual Move chain (HW hack -> TC move -> software blit) unchanged.
+	struct MoveRecord
+	{
+		GIFRegBITBLTBUF blit;
+		GIFRegTRXPOS pos;
+		GIFRegTRXREG reg;
+		u64 draw_serial; // consumed once GV7-0d makes serials record-carried
+	};
+
+	// CLUT palette load. The decision chain (WriteTest / CanLoadCLUT /
+	// InvalidateRange dirty tracking) is register/address-only and stays
+	// front-side; this record triggers the back-side palette-byte read from
+	// local memory into the CLUT buffer.
+	struct ClutLoadRecord
+	{
+		GIFRegTEX0 TEX0; // post-CPSM-mask, as installed in m_env.CTXT[i]
+		GIFRegTEXCLUT TEXCLUT;
+	};
+
+	// Vertex/index buffer sets — the DRAW record payload. Hoisted from GSState
+	// (front fills them at kick time, the draw executor consumes and mutates
+	// them in place); the GV7-1 pool hands ownership across the boundary.
+	struct VertexBuff
+	{
+		GSVertex* buff;
+		GSVertex* buff_copy; // same size buffer to copy/modify the original buffer
+		u32 head, tail, next, maxcount; // head: first vertex, tail: last vertex + 1, next: last indexed + 1
+		u32 xy_tail;
+		GSVector4i xy[4];
+		GSVector4i xyhead;
+		// Scalar mirror of xy[] for the outcode cull fast path: written wherever
+		// xy[] is written, outcodes re-derived on scissor change (RefreshKickMirror).
+		GSVertexKernels::CullMirrorEntry kick_ring[4];
+		// Fused vertex-trace bounds (aarch64 only): FindMinMax min/max accumulated
+		// at index emission over this buffer's referenced vertices. fmm_watermark is
+		// the first vertex position not yet folded in (clamped on rewinds/compaction
+		// so re-referenced positions re-accumulate); fmm_valid means the accumulator
+		// covers every emitted index of the pending draw. Reset lazily at the first
+		// emission of a draw (itail == n).
+		GSVertexKernels::FmmAcc fmm_acc;
+		u32 fmm_watermark;
+		bool fmm_valid;
+	};
+
+	struct IndexBuff
+	{
+		u16* buff;
+		u32 tail;
+	};
+
+	// GV7-1c: one pooled vertex+index buffer set. On the record path, FlushPrim
+	// hands the live heap arrays to a node (struct copy + array exchange: the
+	// parse slot takes the node's recycled arrays as its fresh buffers), so the
+	// DRAW record's payload stays valid until consumed while the front keeps
+	// parsing into the same GSState buffer slots it always did. The consumer
+	// releases the node after the draw executes.
+	struct DrawNode
+	{
+		VertexBuff vb;
+		IndexBuff ib;
+	};
+
+	// GV7-1c: pooled transfer staging buffer (4MB, the GSTransferBuffer size).
+	// In record modes m_tr.buff aliases the current node's buffer: the front
+	// stages into it and TRANSFER records reference slices of it (disjoint
+	// ranges, so front-appends and back-reads never overlap). At the next
+	// transfer Init after any slice referenced the buffer, the front rotates to
+	// a fresh node and emits a RELEASE_PAYLOAD record behind the slices — FIFO
+	// guarantees they were consumed by the time the release executes.
+	struct PayloadNode
+	{
+		u8* buff;
+	};
+
+	struct ReleasePayloadRecord
+	{
+		PayloadNode* node;
+	};
+
+	// PCRTC digest state — hoisted from GSState (GSvsync writes it once per
+	// frame from the privileged registers; the Draw() heuristics and the Merge
+	// circuit read it back-side, so it ships whole in PCRTC_SYNC records).
+	struct GSPCRTCRegs
+	{
+		struct PCRTCDisplay
+		{
+			bool enabled;
+			int FBP;
+			int FBW;
+			int PSM;
+			int DBY;
+			int DBX;
+			GSRegDISPFB prevFramebufferReg;
+			GSVector2i prevDisplayOffset;
+			GSVector2i displayOffset;
+			GSVector4i displayRect;
+			GSVector2i magnification;
+			GSVector2i prevFramebufferOffsets;
+			GSVector2i framebufferOffsets;
+			GSVector4i framebufferRect;
+
+			__fi int Block() const { return FBP << 5; }
+		};
+
+		int videomode = 0;
+		int interlaced = 0;
+		int FFMD = 0;
+		bool PCRTCSameSrc = false;
+		bool toggling_field = false;
+		PCRTCDisplay PCRTCDisplays[2] = {};
+
+		bool IsAnalogue();
+
+		// Calculates which display is closest to matching zero offsets in either direction.
+		GSVector2i NearestToZeroOffset();
+
+		void SetVideoMode(GSVideoMode videoModeIn);
+
+		// Enable each of the displays.
+		void EnableDisplays(GSRegPMODE pmode, GSRegSMODE2 smode2, bool smodetoggle);
+
+		void CheckSameSource();
+
+		bool FrameWrap();
+
+		// If the start point of both frames match, we can do a single read
+		bool FrameRectMatch();
+
+		GSVector2i GetResolution();
+
+		GSVector4i GetFramebufferRect(int display);
+
+		int GetFramebufferBitDepth();
+
+		GSVector2i GetFramebufferSize(int display);
+
+		// Sets up the rectangles for both the framebuffer read and the displays for the merge circuit.
+		void SetRects(int display, GSRegDISPLAY displayReg, GSRegDISPFB framebufferReg);
+
+		// Calculate framebuffer read offsets, should be considered if only one circuit is enabled, or difference is more than 1 line.
+		// Only considered if "Anti-blur" is enabled.
+		void CalculateFramebufferOffset(bool scanmask, GSRegDISPFB framebuffer0Reg, GSRegDISPFB framebuffer1Reg);
+
+		// Used in software mode to align the buffer when reading. Offset is accounted for (block aligned) by GetOutput.
+		void RemoveFramebufferOffset(int display);
+
+		// If the two displays are offset from each other, move them to the correct offsets.
+		// If using screen offsets, calculate the positions here.
+		void CalculateDisplayOffset(bool scanmask);
+	};
+
+	// Once-per-frame PCRTC digest, shipped BEFORE the vsync-flushed draw
+	// records so those draws see the fresh display state, exactly like today
+	// (GSvsync digests, then flushes). Mid-frame draws keep seeing the previous
+	// frame's digest, also like today.
+	struct PcrtcSyncRecord
+	{
+		GSPCRTCRegs displays;
+		u8 scanmask_used; // pre-decrement value; Merge's decrement stays back-side
+	};
+
+	// End of frame: the whole VSync() body (Merge -> present -> capture ->
+	// perfmon frame tick) runs back-side.
+	struct VsyncRecord
+	{
+		u32 field;
+		bool registers_written;
+		bool idle_frame;
+	};
+
+	// One flushed draw (today's FlushPrim tail: vertex trace -> texel rounding ->
+	// Draw() -> perfmon). Self-contained: the executor installs the env snapshots
+	// and scalars, then runs the tail against the referenced buffers, which it
+	// owns and may mutate in place (texel rounding, HW draw rewrites). The
+	// carry-over window is captured front-side before the record is built.
+	struct DrawRecord
+	{
+		// Installed into the consumer's m_prev_env: the draw's own environment,
+		// exactly as FlushBuffers staged it before the flush.
+		GSDrawingEnvironment draw_env;
+		// Next-draw peek for the HW look-ahead heuristics: the live m_env/m_v at
+		// build time — bit-exact with today because FlushBuffers installs buffer
+		// i+1's env into m_env before flushing buffer i.
+		GSDrawingEnvironment next_env;
+		GSVertex next_v;
+		GSVector4i draw_rect; // temp_draw_rect at flush
+		VertexBuff* vertex; // = &node->vb/&node->ib on the record path
+		IndexBuff* index;
+		DrawNode* node; // released by the consumer after the tail runs (null in tests)
+		u64 draw_serial; // front-assigned s_n
+		int backed_up_ctx;
+		u32 dirty_gs_regs;
+		int flush_reason; // GSState::GSFlushReason (class-scoped enum, stored widened)
+		bool channel_shuffle_finish;
+		bool packed_uv_hack_flag;
+	};
+
+	// ------------------------------------------------------------------
+	// GV7-1: the front->back SPSC ring.
+	// ------------------------------------------------------------------
+
+	// Discriminator for ring slots.
+	enum class RecordType : u8
+	{
+		Transfer,
+		Move,
+		ClutLoad,
+		PcrtcSync,
+		Vsync,
+		Draw,
+		ReleasePayload,
+	};
+
+	// Single-producer/single-consumer ring. Producer = the MTGS ("front") thread,
+	// consumer = the GS back thread. Indices are free-running u32s over a
+	// power-of-two slot count; acquire/release only — no RMW, so this is
+	// armv8.0-safe (compiles to plain LDAR/STLR).
+	template <typename SlotT, u32 kCount>
+	class SpscRing
+	{
+		static_assert(kCount != 0 && (kCount & (kCount - 1)) == 0, "slot count must be a power of two");
+
+	public:
+		SpscRing()
+			: m_slots(std::make_unique<SlotT[]>(kCount))
+		{
+		}
+
+		static constexpr u32 Capacity() { return kCount; }
+
+		u32 Size() const { return m_tail.load(std::memory_order_acquire) - m_head.load(std::memory_order_acquire); }
+		bool IsEmpty() const { return Size() == 0; }
+
+		// Producer side. BeginPush returns the slot to fill in place (records are
+		// built directly in the ring — no intermediate copy), or nullptr when the
+		// ring is full (caller applies backpressure). CommitPush publishes the
+		// slot to the consumer.
+		SlotT* BeginPush()
+		{
+			const u32 tail = m_tail.load(std::memory_order_relaxed);
+			if (tail - m_head.load(std::memory_order_acquire) == kCount)
+				return nullptr;
+			return &m_slots[tail & (kCount - 1)];
+		}
+
+		void CommitPush()
+		{
+			m_tail.store(m_tail.load(std::memory_order_relaxed) + 1, std::memory_order_release);
+		}
+
+		// Consumer side. Peek returns the oldest unconsumed slot (nullptr when
+		// empty); Pop retires it, releasing the slot back to the producer.
+		SlotT* Peek()
+		{
+			const u32 head = m_head.load(std::memory_order_relaxed);
+			if (head == m_tail.load(std::memory_order_acquire))
+				return nullptr;
+			return &m_slots[head & (kCount - 1)];
+		}
+
+		void Pop()
+		{
+			m_head.store(m_head.load(std::memory_order_relaxed) + 1, std::memory_order_release);
+		}
+
+	private:
+		std::unique_ptr<SlotT[]> m_slots;
+		alignas(64) std::atomic<u32> m_head{0}; // consumer cursor
+		alignas(64) std::atomic<u32> m_tail{0}; // producer cursor
+	};
+
+	// Tagged slot sized for the largest record (DRAW). All records are trivially
+	// copyable (asserted below), so slots are reused with no destructor
+	// bookkeeping.
+	struct RecordSlot
+	{
+		RecordType type;
+		alignas(alignof(DrawRecord)) u8 data[sizeof(DrawRecord)];
+
+		template <typename T>
+		T* As()
+		{
+			static_assert(std::is_trivially_copyable_v<T> && sizeof(T) <= sizeof(data));
+			return reinterpret_cast<T*>(data);
+		}
+
+		template <typename T>
+		const T* As() const
+		{
+			static_assert(std::is_trivially_copyable_v<T> && sizeof(T) <= sizeof(data));
+			return reinterpret_cast<const T*>(data);
+		}
+	};
+
+	static_assert(std::is_trivially_copyable_v<TransferRecord>);
+	static_assert(std::is_trivially_copyable_v<MoveRecord>);
+	static_assert(std::is_trivially_copyable_v<ClutLoadRecord>);
+	static_assert(std::is_trivially_copyable_v<PcrtcSyncRecord>);
+	static_assert(std::is_trivially_copyable_v<VsyncRecord>);
+	static_assert(std::is_trivially_copyable_v<DrawRecord>);
+	static_assert(std::is_trivially_copyable_v<ReleasePayloadRecord>);
+
+	using RecordRing = SpscRing<RecordSlot, 512>;
+
+	// GV7-1d-ii: everything shared between the producing (front) and consuming
+	// (back) sides of the split. In single-object modes the GSState uses its own
+	// channel; under the two-object pipelined split the front parser object
+	// points at the back object's channel, so records, pool nodes, and drain
+	// waits all target one shared instance. The channel's storage owner (the
+	// back object) frees the pooled arrays in its destructor; the producer must
+	// be destroyed or drained first.
+	struct Channel
+	{
+		RecordRing ring;
+		Threading::WorkSema sema;
+
+		// Set while the back thread is running. Read/written only on the MTGS
+		// thread (start/stop/drain all happen there), so a plain bool is enough.
+		bool consumer_running = false;
+
+		// Draw-node pool: the producer acquires (free ring first, then arena
+		// growth up to the cap, then backpressure), the consumer releases after
+		// the draw executes. Free-ring capacity == arena cap, so Release can
+		// never fail.
+		static constexpr u32 kMaxDrawNodes = 64;
+		std::vector<DrawNode*> draw_arena;
+		SpscRing<DrawNode*, kMaxDrawNodes> draw_free;
+
+		// Transfer payload pool: the producer stages into the current node, the
+		// consumer releases rotated-out nodes via RELEASE_PAYLOAD records.
+		static constexpr u32 kMaxPayloadNodes = 8;
+		std::vector<PayloadNode*> payload_arena;
+		SpscRing<PayloadNode*, kMaxPayloadNodes> payload_free;
+	};
+} // namespace GSBackQueue

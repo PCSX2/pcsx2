@@ -6,6 +6,7 @@
 #include "GS/Renderers/OpenGL/GLState.h"
 #include "GS/Renderers/Common/GSGPUProfile.h"
 #include "GS/GSState.h"
+#include "GS/Renderers/Common/GSRenderer.h"
 #include "GS/GSGL.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
@@ -4004,7 +4005,7 @@ void GSDeviceOGL::DebugMessageCallback(GLenum gl_source, GLenum gl_type, GLuint 
 	// Don't spam noisy information on the terminal
 	if (gl_severity != GL_DEBUG_SEVERITY_NOTIFICATION && gl_source != GL_DEBUG_SOURCE_APPLICATION)
 	{
-		Console.Error("T:%s\tID:%d\tS:%s\t=> %s", type.c_str(), GSState::s_n, severity.c_str(), message.c_str());
+		Console.Error("T:%s\tID:%d\tS:%s\t=> %s", type.c_str(), g_gs_renderer ? g_gs_renderer->s_n : 0, severity.c_str(), message.c_str());
 	}
 }
 
