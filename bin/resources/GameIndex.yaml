@@ -20799,7 +20799,7 @@ SLES-52584:
   compat: 5
   memcardFilters: # Used for storage of network information on the memory card.
     - "SLES-52584"
-    - "BEPSCD-20001sloginBE"
+    - "PSCD-20001"
   clampModes:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
@@ -20816,7 +20816,7 @@ SLES-52585:
   region: "PAL-F-G-I"
   memcardFilters: # Used for storage of network information on the memory card.
     - "SLES-52585"
-    - "BEPSCD-20001sloginBE"
+    - "PSCD-20001"
   clampModes:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
@@ -32131,7 +32131,7 @@ SLKA-25206:
   region: "NTSC-K"
   memcardFilters: # Used for storage of network information on the memory card.
     - "SLKA-25206"
-    - "BKPSCD-30001sloginBK"
+    - "PSCD-30001"
   clampModes:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
@@ -45368,7 +45368,7 @@ SLPM-65719:
   region: "NTSC-J"
   memcardFilters: # Used for storage of network information on the memory card.
     - "SLPM-65719"
-    - "BIPSCD-00004sloginBI"
+    - "PSCD-00004"
   clampModes:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
@@ -69922,7 +69922,7 @@ SLUS-21050:
   compat: 5
   memcardFilters: # Used for storage of network information on the memory card.
     - "SLUS-21050"
-    - "PSCD10088slogin"
+    - "PSCD10088"
   clampModes:
     vuClampMode: 3 # Fixes buggy lighting in the garage.
   gsHWFixes:
