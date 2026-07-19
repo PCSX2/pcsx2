@@ -221,6 +221,19 @@ protected:
 		u16* ibuff;
 		u32 head, tail, next, xy_tail, maxcount, itail;
 
+		// Deferred draw_rect accumulation: accepted prims union their (already
+		// subpixel-shifted, exclusive) rects here; Store() folds the result into
+		// temp_draw_rect with one scissor clamp. Exact because rintersect is
+		// monotone and idempotent, so clamping once over the union equals the
+		// per-prim clamp-then-union chain, and because a draw's first prim (which
+		// replaces temp_draw_rect instead of unioning) can only be the first
+		// accumulated after a seam — the index buffer only empties behind
+		// flush seams.
+		GSVector4i acc_rect;
+		u32 acc_state; // 0 = empty, 1 = union into temp_draw_rect, 2 = replace it
+		GSVector4i* temp_rect;
+		const GSVector4i* scissor_in;
+
 		__fi void Load(GSState& s)
 		{
 			vb = s.m_vertex;
@@ -233,6 +246,9 @@ protected:
 			xy_tail = vb->xy_tail;
 			maxcount = vb->maxcount;
 			itail = ib->tail;
+			acc_state = 0;
+			temp_rect = &s.temp_draw_rect;
+			scissor_in = &s.m_context->scissor.in;
 		}
 
 		__fi void Store() const
@@ -242,6 +258,12 @@ protected:
 			vb->next = next;
 			vb->xy_tail = xy_tail;
 			ib->tail = itail;
+
+			if (acc_state != 0)
+			{
+				const GSVector4i merged = (acc_state == 2) ? acc_rect : temp_rect->runion(acc_rect);
+				*temp_rect = merged.rintersect(*scissor_in);
+			}
 		}
 	};
 

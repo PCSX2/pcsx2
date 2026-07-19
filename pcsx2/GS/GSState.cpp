@@ -6259,13 +6259,19 @@ __forceinline void GSState::VertexKickDirect(u32 skip, u32 xraw, u32 yraw, const
 			ASSUME(0);
 	}
 
-	// Update rectangle for the current draw. Needs exclusive endpoints.
+	// Update rectangle for the current draw (accumulated in the cursor, folded
+	// into temp_draw_rect with one scissor clamp at every seam). Needs exclusive
+	// endpoints.
 	const GSVector4i draw_rect = bbox.sra32<4>() + GSVector4i(0, 0, 1, 1);
-	if (c.itail != n)
-		temp_draw_rect = temp_draw_rect.runion(draw_rect);
+	if (c.acc_state != 0)
+	{
+		c.acc_rect = c.acc_rect.runion(draw_rect);
+	}
 	else
-		temp_draw_rect = draw_rect;
-	temp_draw_rect = temp_draw_rect.rintersect(m_context->scissor.in);
+	{
+		c.acc_rect = draw_rect;
+		c.acc_state = (c.itail == n) ? 2 : 1;
+	}
 
 	constexpr u32 max_vertices = MaxVerticesForPrim(prim);
 	if (max_vertices != 0 && c.tail >= max_vertices)
