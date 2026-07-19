@@ -30,10 +30,22 @@ class GSState : public GSAlignedClass<32>
 	// GSVertexTrace::Update consumes the per-buffer fused FindMinMax accumulator
 	// (m_vertex->fmm_*) directly.
 	friend class GSVertexTrace;
+	// GV7-1d-ii: the front parser object delegates protected queries/seams to
+	// the back renderer through a GSState*.
+	friend class GSFrontState;
 
 public:
-	GSState();
+	// GV7-1d-ii: shared_chan aims this object at another GSState's channel — the
+	// front parser object of the two-object split passes the back object's
+	// channel so its records land in the consumed ring. Default (nullptr) uses
+	// this object's own channel storage, exactly as before.
+	GSState(GSBackQueue::Channel* shared_chan = nullptr);
 	virtual ~GSState();
+
+	// GV7-1d-ii: channel/back-thread visibility for the front-object lifecycle
+	// in GS.cpp (create the front only when the back thread actually engaged).
+	GSBackQueue::Channel* GetBackChannel() { return m_chan; }
+	bool IsBackThreadRunning() const { return m_chan->consumer_running; }
 
 	static constexpr int GetSaveStateSize(int version);
 
@@ -315,6 +327,10 @@ protected:
 	bool IsCoverageAlpha();
 	bool IsCoverageAlphaFixedOne();
 	virtual bool IsCoverageAlphaSupported();
+	// GV7-1d-ii: back-half of the split front's kick-time coverage-alpha query
+	// (HW only): cached-ctx/alpha-minmax from this object's last executed draw,
+	// the caller's live ALPHA passed in.
+	virtual bool IsRTWrittenLive(const GIFRegALPHA& ALPHA);
 	void CalcAlphaMinMax(const int tex_min, const int tex_max);
 	void CorrectATEAlphaMinMax(const u32 atst, const int aref);
 
@@ -562,6 +578,19 @@ public:
 	GSBackQueue::Channel m_chan_storage;
 	GSBackQueue::Channel* m_chan = &m_chan_storage;
 
+	// GV7-1d-ii: the object owning local memory, the CLUT palette, and the
+	// texture cache for this session. Single-object modes: this. On the front
+	// parser object it points at the back renderer, so the drained seams
+	// (readbacks, savestates) reach the authoritative m_mem/TC while every
+	// register decision stays front-side. Only ever dereferenced after a drain.
+	GSState* m_mem_target = this;
+
+	// GV7-1d-ii: set on the back renderer when a front parser object exists.
+	// The draw executor then aims m_draw_env/PRIM/m_context around the tail
+	// itself (on a single object FlushDraw owns that aiming, and the front's
+	// carry-over rebuild depends on FlushDraw's restore happening after).
+	bool m_split_back = false;
+
 	// GV7-1c: draw-node pool. Acquire is front-side (free ring first, then arena
 	// growth up to the ring capacity, then backpressure); Release is the consume
 	// site (inline modes: FlushPrim right after the executor returns; pipelined:
@@ -664,6 +693,39 @@ public:
 	void CalculatePrimitiveCoversWithoutGaps();
 	GIFRegTEX0 GetTex0Layer(u32 lod);
 };
+
+// GV7-1d-ii: the front parser object of the two-object pipelined split
+// (SEAM-AUDIT.md §7). Owns all parse state (env, vertex kick, draw buffering,
+// transfer staging, CLUT decision) and emits records into the back renderer's
+// channel; the back object executes them on the back thread, installing record
+// state into its own members. The front never draws, and reaches the
+// authoritative local memory / texture cache only through m_mem_target after a
+// drain. Created by GS.cpp only when the back thread engaged under
+// GSBackThreadMode::Pipelined.
+class GSFrontState final : public GSState
+{
+public:
+	GSFrontState(GSState* back);
+	~GSFrontState() override;
+
+	void Draw() override;
+
+	// Parse-path virtuals must answer exactly as the back renderer would (they
+	// steer kick/flush decisions); the overridden implementations only read
+	// session-constant config/device caps, so cross-object calls are safe.
+	bool IsCoverageAlphaSupported() override;
+
+	// Once per frame, after the (drained) vsync executed on the back object:
+	// re-mirror present-side state the back mutated (Merge's scanmask
+	// decrement) so next frame's front digestion sees what a single object
+	// would have.
+	void MirrorPostVsyncState();
+
+private:
+	GSState* m_back;
+};
+
+extern std::unique_ptr<GSFrontState> g_gs_front;
 
 // We put this in the header because of Multi-ISA.
 inline void GSState::ExpandDIMX(GSVector4i* dimx, const GIFRegDIMX DIMX)

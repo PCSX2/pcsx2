@@ -292,6 +292,7 @@ private:
 
 	bool NeedsBlending();
 	bool IsRTWritten();
+	bool IsRTWrittenLive(const GIFRegALPHA& ALPHA) override;
 	bool IsDepthAlwaysPassing();
 	bool IsUsingCsInBlend();
 	bool IsUsingAsInBlend();

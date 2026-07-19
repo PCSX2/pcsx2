@@ -96,7 +96,7 @@ constexpr int GSState::GetSaveStateSize(int version)
 	return size;
 }
 
-GSState::GSState()
+GSState::GSState(GSBackQueue::Channel* shared_chan)
 	: m_vt(this)
 {
 	// m_nativeres seems to be a hack. Unfortunately it impacts draw call number which make debug painful in the replayer.
@@ -104,7 +104,20 @@ GSState::GSState()
 	m_nativeres = GSConfig.UpscaleMultiplier == 1.0f;
 	m_mipmap = GSConfig.Mipmap;
 	m_back_records = GSConfig.BackThreadMode != GSBackThreadMode::Off;
-	if (m_back_records)
+	if (shared_chan)
+	{
+		// Front parser object of the two-object split: records go to the back
+		// object's channel, whose thread is already running (GS.cpp only
+		// creates a front once the back engaged). The back object owns the
+		// thread and the pooled arrays; this object only stages and pushes.
+		pxAssertRel(m_back_records && shared_chan->consumer_running, "GS front object requires a running back thread");
+		m_chan = shared_chan;
+		m_back_queued = true;
+		// Still lockstep until the pipelined flip (GV7-1d-ii-c).
+		m_back_lockstep = true;
+		AdoptTransferBuffer();
+	}
+	else if (m_back_records)
 	{
 		Console.WriteLn("GS: back-thread mode %d (record path active).", static_cast<int>(GSConfig.BackThreadMode));
 
@@ -195,6 +208,54 @@ GSState::~GSState()
 		_aligned_free(node->buff);
 		delete node;
 	}
+}
+
+GSFrontState::GSFrontState(GSState* back)
+	: GSState(back->GetBackChannel())
+	, m_back(back)
+{
+	m_mem_target = back;
+	back->m_split_back = true;
+}
+
+GSFrontState::~GSFrontState()
+{
+	// Pool nodes referenced by in-flight records belong to the back's channel
+	// and outlive us, but drain anyway so teardown never depends on ordering.
+	DrainBackQueue();
+}
+
+void GSFrontState::Draw()
+{
+	pxFailRel("Draw() called on the GS front parser object");
+}
+
+bool GSFrontState::IsCoverageAlphaSupported()
+{
+	// The kick cull path evaluates this per AA1 prim. Single-object semantics
+	// are a mixed read: PRIM and the blending ALPHA reg are the LIVE parse
+	// state, while the primclass / cached ctx / alpha min-max come from the
+	// LAST EXECUTED draw. Reproduce exactly: live parts from this (front)
+	// object, last-draw parts from the back — drained here under lockstep.
+	// Under true pipelining the back-side parts become stale heuristic reads;
+	// revisit at the pipelined flip (1dii-DESIGN.md).
+	if (!(PRIM->AA1 && (m_back->m_vt.m_primclass == GS_LINE_CLASS || m_back->m_vt.m_primclass == GS_TRIANGLE_CLASS)))
+		return false; // IsCoverageAlpha(), with the last draw's primclass
+
+	if (GSGetCurrentRenderer() == GSRendererType::Null)
+		return false;
+	if (!GSIsHardwareRenderer())
+		return true; // SW: IsCoverageAlpha() alone
+
+	return m_back->IsRTWrittenLive(m_context->ALPHA) && g_gs_device->Features().aa1;
+}
+
+void GSFrontState::MirrorPostVsyncState()
+{
+	// The vsync executed on the (drained) back object on this thread; Merge
+	// decremented the back's scanmask copy. Re-mirror so next frame's front
+	// PCRTC digestion sees what a single object would have.
+	m_scanmask_used = m_back->m_scanmask_used;
 }
 
 std::string GSState::GetDrawDumpPath(const char* format, ...)
@@ -2731,6 +2792,11 @@ void GSState::FlushWrite()
 	rec.draw_serial = s_n;
 	rec.first_slice = (m_tr.start == 0);
 
+	// Front side: transfer serials are front-assigned — the front decides
+	// transfer order, and the vsync idle-frame check reads this on the MTGS
+	// thread.
+	s_transfer_n++;
+
 	// The record references a slice of the pooled staging buffer; the next
 	// transfer Init rotates it out instead of reusing it.
 	m_tr_payload_referenced = m_back_records;
@@ -2814,7 +2880,6 @@ void GSState::ExecTransferRecord(const GSBackQueue::TransferRecord& rec)
 	wi(m_mem, m_exec_tr_x, m_exec_tr_y, rec.payload, rec.len, blit, pos, reg);
 
 	g_perfmon.Put(GSPerfMon::Swizzle, rec.stat_len);
-	s_transfer_n++;
 }
 
 // This function decides if the context has changed in a way which warrants flushing the draw.
@@ -2980,6 +3045,16 @@ void GSState::FlushPrim()
 		rec.channel_shuffle_finish = m_channel_shuffle_finish;
 		rec.packed_uv_hack_flag = m_isPackedUV_HackFlag;
 
+		// m_channel_shuffle_finish is written on BOTH sides: the front's
+		// ApplyTEX0 sets it as a one-shot "abort shuffle skip" message, while
+		// the draw path sets AND clears it as back-persistent shuffle state.
+		// On the split front the capture above delivers the message, so clear
+		// our copy (edge semantics) — the executor ORs it into the back's
+		// authoritative copy instead of level-installing. On a single object
+		// the member IS the authoritative copy: leave it alone.
+		if (m_mem_target != this)
+			m_channel_shuffle_finish = false;
+
 		if (m_back_queued)
 		{
 			// The consumer releases the node after the tail runs.
@@ -3060,10 +3135,35 @@ void GSState::ExecDrawRecord(const GSBackQueue::DrawRecord& rec)
 	m_backed_up_ctx = rec.backed_up_ctx;
 	m_dirty_gs_regs = rec.dirty_gs_regs;
 	m_state_flush_reason = static_cast<GSFlushReason>(rec.flush_reason);
-	m_channel_shuffle_finish = rec.channel_shuffle_finish;
+	// Split back: OR the front's one-shot abort edge into the back-owned
+	// shuffle state (a level-install would clobber the draw path's own
+	// sets/clears). Single object: identity re-install of the live value.
+	if (m_split_back)
+		m_channel_shuffle_finish |= rec.channel_shuffle_finish;
+	else
+		m_channel_shuffle_finish = rec.channel_shuffle_finish;
 	m_isPackedUV_HackFlag = rec.packed_uv_hack_flag;
 
+	// On a split back object nobody ran FlushDraw here — aim the draw pointers
+	// at the installed draw env exactly as FlushDraw does on the front, and
+	// restore after, so non-draw records execute with pointers at m_env like
+	// serial execution between draws. On a single object FlushDraw owns both
+	// (its restore must stay AFTER FlushPrim's carry-over rebuild).
+	if (m_split_back)
+	{
+		m_draw_env = &m_prev_env;
+		PRIM = &m_prev_env.PRIM;
+		UpdateContext();
+	}
+
 	DrawRecordTail(rec.draw_serial);
+
+	if (m_split_back)
+	{
+		m_draw_env = &m_env;
+		PRIM = &m_env.PRIM;
+		UpdateContext();
+	}
 }
 
 // The draw executor's tail: everything from vertex trace to Draw() + perfmon,
@@ -3436,6 +3536,9 @@ void GSState::Write(const u8* mem, int len)
 			rec.draw_serial = s_n;
 			rec.first_slice = true;
 
+			// Front-assigned, like the staged path in FlushWrite.
+			s_transfer_n++;
+
 			if (m_back_queued)
 				PushRecord(GSBackQueue::RecordType::Transfer, rec);
 			else
@@ -3483,11 +3586,15 @@ void GSState::InitReadFIFO(u8* mem, int len)
 	const int sy = m_env.TRXPOS.SSAY;
 	const GSVector4i r(sx, sy, sx + w, sy + h);
 
+	// CheckWriteOverlap above may have flushed pending draws into records;
+	// they must land in local memory before the TC readback and image read.
+	DrainBackQueue();
+
 	if (m_tr.x == sx && m_tr.y == sy)
-		InvalidateLocalMem(m_env.BITBLTBUF, r);
+		m_mem_target->InvalidateLocalMem(m_env.BITBLTBUF, r);
 
 	// Read the image all in one go.
-	m_mem.ReadImageX(m_tr.x, m_tr.y, m_tr.buff, m_tr.total, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
+	m_mem_target->m_mem.ReadImageX(m_tr.x, m_tr.y, m_tr.buff, m_tr.total, m_env.BITBLTBUF, m_env.TRXPOS, m_env.TRXREG);
 
 	if (GSConfig.SaveRT && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()))
 	{
@@ -3496,7 +3603,7 @@ void GSState::InitReadFIFO(u8* mem, int len)
 			s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, GSUtil::GetPSMName(m_env.BITBLTBUF.SPSM),
 			r.left, r.top, r.right, r.bottom));
 
-		m_mem.SaveBMP(s, m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM, r.right, r.bottom);
+		m_mem_target->m_mem.SaveBMP(s, m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM, r.right, r.bottom);
 	}
 }
 
@@ -3882,7 +3989,7 @@ void GSState::ReadLocalMemoryUnsync(u8* mem, int qwc, GIFRegBITBLTBUF BITBLTBUF,
 
 	if (m_tr.start == 0)
 	{
-		m_mem.ReadImageX(tb.x, tb.y, m_tr.buff, m_tr.total, BITBLTBUF, TRXPOS, TRXREG);
+		m_mem_target->m_mem.ReadImageX(tb.x, tb.y, m_tr.buff, m_tr.total, BITBLTBUF, TRXPOS, TRXREG);
 		m_tr.start += m_tr.total;
 	}
 
@@ -4132,8 +4239,12 @@ int GSState::Freeze(freezeData* fd, bool sizeonly)
 
 	Flush(GSFlushReason::SAVESTATE);
 
+	// The flush may have pushed draw records; they must land before the local
+	// memory bytes are serialized.
+	DrainBackQueue();
+
 	if (GSConfig.UserHacks_ReadTCOnClose)
-		ReadbackTextureCache();
+		m_mem_target->ReadbackTextureCache();
 
 	u8* data = fd->data;
 
@@ -4190,7 +4301,7 @@ int GSState::Freeze(freezeData* fd, bool sizeonly)
 	WriteState(data, &m_tr.end);
 	WriteState(data, &m_tr.write);
 	// End of version 9 changes.
-	WriteState(data, m_mem.m_vm8, m_mem.m_vmsize);
+	WriteState(data, m_mem_target->m_mem.m_vm8, m_mem_target->m_mem.m_vmsize);
 
 	for (GIFPath& path : m_path)
 	{
@@ -4236,7 +4347,14 @@ int GSState::Defrost(const freezeData* fd)
 
 	Flush(GSFlushReason::LOADSTATE);
 
+	DrainBackQueue();
+
 	Reset(true);
+
+	// Two-object split: the back renderer's local memory / TC / persistent draw
+	// state must reset too before its m_vm8 is refilled below.
+	if (m_mem_target != this)
+		m_mem_target->Reset(true);
 
 	ReadState(&m_env.PRIM, data);
 
@@ -4321,7 +4439,7 @@ int GSState::Defrost(const freezeData* fd)
 		m_tr.write = true;
 	}
 
-	ReadState(m_mem.m_vm8, data, m_mem.m_vmsize);
+	ReadState(m_mem_target->m_mem.m_vm8, data, m_mem_target->m_mem.m_vmsize);
 
 	for (GIFPath& path : m_path)
 	{
@@ -4353,11 +4471,18 @@ int GSState::Defrost(const freezeData* fd)
 
 	// Force CLUT to be reloaded.
 	m_mem.m_clut.Reset();
+	if (m_mem_target != this)
+		m_mem_target->m_mem.m_clut.Reset();
 	(PRIM->CTXT == 0) ? ApplyTEX0<0>(m_context->TEX0) : ApplyTEX0<1>(m_context->TEX0);
 
 	g_perfmon.SetFrame(0);
 
 	ResetPCRTC();
+
+	// Two-object split: refresh the back's PCRTC copy now instead of leaving it
+	// stale until the next vsync (draw heuristics read it per draw).
+	if (m_mem_target != this)
+		SubmitPcrtcSync();
 
 	return 0;
 }
@@ -7560,6 +7685,12 @@ bool GSState::IsCoverageAlphaFixedOne()
 }
 
 bool GSState::IsCoverageAlphaSupported()
+{
+	pxFailRel("Not implemented");
+	return false;
+}
+
+bool GSState::IsRTWrittenLive(const GIFRegALPHA& ALPHA)
 {
 	pxFailRel("Not implemented");
 	return false;

@@ -208,6 +208,17 @@ static void GSClampUpscaleMultiplier(Pcsx2Config::GSOptions& config)
 	config.UpscaleMultiplier = static_cast<float>(max_upscale_multiplier);
 }
 
+// GV7-1d-ii: the front parser object of the two-object split (GSState.h).
+// Non-null only when GSBackThreadMode::Pipelined engaged; all GIF-parse entry
+// points below route to it, while draw/present/TC stay on g_gs_renderer.
+std::unique_ptr<GSFrontState> g_gs_front;
+
+// The object GIF data, parse-side resets, readbacks, and savestates route to.
+static __fi GSState* GSParseTarget()
+{
+	return g_gs_front ? static_cast<GSState*>(g_gs_front.get()) : static_cast<GSState*>(g_gs_renderer.get());
+}
+
 static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
 {
 	// Must be done first, initialization routines in GSState use GSIsHardwareRenderer().
@@ -232,6 +243,18 @@ static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
 	g_gs_renderer->SetRegsMem(basemem);
 	g_gs_renderer->ResetPCRTC();
 	g_gs_renderer->UpdateRenderFixes();
+
+	// GV7-1d-ii: instantiate the front parser only when the back thread really
+	// engaged (the renderer ctor falls back to inline records on a non-Vulkan
+	// HW device).
+	if (GSConfig.BackThreadMode == GSBackThreadMode::Pipelined && g_gs_renderer->IsBackThreadRunning())
+	{
+		g_gs_front = std::make_unique<GSFrontState>(g_gs_renderer.get());
+		g_gs_front->SetRegsMem(basemem);
+		g_gs_front->ResetPCRTC();
+		Console.WriteLn("GS: front parser object active (two-object split).");
+	}
+
 	g_perfmon.Reset();
 	return true;
 }
@@ -239,6 +262,10 @@ static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
 static void CloseGSRenderer()
 {
 	GSTextureReplacements::Shutdown();
+
+	// The front must go first: its destructor drains the shared channel, and
+	// the back object owns that channel and the pooled arrays.
+	g_gs_front.reset();
 
 	if (g_gs_renderer)
 	{
@@ -252,7 +279,7 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, GSRendererType new_r
 {
 	Console.WriteLn("Reopening GS with %s device", recreate_device ? "new" : "existing");
 
-	g_gs_renderer->Flush(GSState::GSFlushReason::GSREOPEN);
+	GSParseTarget()->Flush(GSState::GSFlushReason::GSREOPEN);
 
 	if (recreate_device && !recreate_renderer)
 	{
@@ -282,7 +309,7 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, GSRendererType new_r
 	std::unique_ptr<u8[]> fd_data;
 	if (recreate_renderer)
 	{
-		if (g_gs_renderer->Freeze(&fd, true) != 0)
+		if (GSParseTarget()->Freeze(&fd, true) != 0)
 		{
 			Console.Error("(GSreopen) Failed to get GS freeze size");
 			return false;
@@ -290,7 +317,7 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, GSRendererType new_r
 
 		fd_data = std::make_unique<u8[]>(fd.size);
 		fd.data = fd_data.get();
-		if (g_gs_renderer->Freeze(&fd, false) != 0)
+		if (GSParseTarget()->Freeze(&fd, false) != 0)
 		{
 			Console.Error("(GSreopen) Failed to freeze GS");
 			return false;
@@ -335,7 +362,7 @@ bool GSreopen(bool recreate_device, bool recreate_renderer, GSRendererType new_r
 			return false;
 		}
 
-		if (g_gs_renderer->Defrost(&fd) != 0)
+		if (GSParseTarget()->Defrost(&fd) != 0)
 		{
 			Console.Error("(GSreopen) Failed to defrost");
 			return false;
@@ -388,7 +415,10 @@ void GSclose()
 
 void GSreset(bool hardware_reset)
 {
+	// Back first (drains the channel, resets memory/TC), then the front parser.
 	g_gs_renderer->Reset(hardware_reset);
+	if (g_gs_front)
+		g_gs_front->Reset(hardware_reset);
 
 	// Restart video capture if it's been started.
 	// Otherwise we get a buildup of audio frames from the CPU thread.
@@ -404,76 +434,79 @@ void GSreset(bool hardware_reset)
 
 void GSgifSoftReset(u32 mask)
 {
-	g_gs_renderer->SoftReset(mask);
+	GSParseTarget()->SoftReset(mask);
 }
 
 void GSwriteCSR(u32 csr)
 {
-	g_gs_renderer->WriteCSR(csr);
+	GSParseTarget()->WriteCSR(csr);
 }
 
 void GSInitAndReadFIFO(u8* mem, u32 size)
 {
 	GL_PERF("Init and read FIFO %u qwc", size);
-	g_gs_renderer->InitReadFIFO(mem, size);
-	g_gs_renderer->ReadFIFO(mem, size);
+	GSParseTarget()->InitReadFIFO(mem, size);
+	GSParseTarget()->ReadFIFO(mem, size);
 }
 
 void GSReadLocalMemoryUnsync(u8* mem, u32 qwc, u64 BITBLITBUF, u64 TRXPOS, u64 TRXREG)
 {
-	g_gs_renderer->ReadLocalMemoryUnsync(mem, qwc, GIFRegBITBLTBUF{BITBLITBUF}, GIFRegTRXPOS{TRXPOS}, GIFRegTRXREG{TRXREG});
+	GSParseTarget()->ReadLocalMemoryUnsync(mem, qwc, GIFRegBITBLTBUF{BITBLITBUF}, GIFRegTRXPOS{TRXPOS}, GIFRegTRXREG{TRXREG});
 }
 
 void GSgifTransfer(const u8* mem, u32 size)
 {
-	g_gs_renderer->Transfer<3>(mem, size);
+	GSParseTarget()->Transfer<3>(mem, size);
 }
 
 void GSgifTransfer1(u8* mem, u32 addr)
 {
-	g_gs_renderer->Transfer<0>(const_cast<u8*>(mem) + addr, (0x4000 - addr) / 16);
+	GSParseTarget()->Transfer<0>(const_cast<u8*>(mem) + addr, (0x4000 - addr) / 16);
 }
 
 void GSgifTransfer2(u8* mem, u32 size)
 {
-	g_gs_renderer->Transfer<1>(const_cast<u8*>(mem), size);
+	GSParseTarget()->Transfer<1>(const_cast<u8*>(mem), size);
 }
 
 void GSgifTransfer3(u8* mem, u32 size)
 {
-	g_gs_renderer->Transfer<2>(const_cast<u8*>(mem), size);
+	GSParseTarget()->Transfer<2>(const_cast<u8*>(mem), size);
 }
 
 void GSvsync(u32 field, bool registers_written)
 {
 	// Update this here because we need to check if the pending draw affects the current frame, so our regs need to be updated.
-	g_gs_renderer->PCRTCDisplays.SetVideoMode(g_gs_renderer->GetVideoMode());
-	g_gs_renderer->PCRTCDisplays.EnableDisplays(g_gs_renderer->m_regs->PMODE, g_gs_renderer->m_regs->SMODE2, g_gs_renderer->isReallyInterlaced());
-	g_gs_renderer->PCRTCDisplays.SetRects(0, g_gs_renderer->m_regs->DISP[0].DISPLAY, g_gs_renderer->m_regs->DISP[0].DISPFB);
-	g_gs_renderer->PCRTCDisplays.SetRects(1, g_gs_renderer->m_regs->DISP[1].DISPLAY, g_gs_renderer->m_regs->DISP[1].DISPFB);
-	g_gs_renderer->PCRTCDisplays.CheckSameSource();
-	g_gs_renderer->PCRTCDisplays.CalculateDisplayOffset(g_gs_renderer->m_scanmask_used);
-	g_gs_renderer->PCRTCDisplays.CalculateFramebufferOffset(g_gs_renderer->m_scanmask_used, g_gs_renderer->m_regs->DISP[0].DISPFB, g_gs_renderer->m_regs->DISP[1].DISPFB);
+	GSState* const front = GSParseTarget();
+	front->PCRTCDisplays.SetVideoMode(front->GetVideoMode());
+	front->PCRTCDisplays.EnableDisplays(front->m_regs->PMODE, front->m_regs->SMODE2, front->isReallyInterlaced());
+	front->PCRTCDisplays.SetRects(0, front->m_regs->DISP[0].DISPLAY, front->m_regs->DISP[0].DISPFB);
+	front->PCRTCDisplays.SetRects(1, front->m_regs->DISP[1].DISPLAY, front->m_regs->DISP[1].DISPFB);
+	front->PCRTCDisplays.CheckSameSource();
+	front->PCRTCDisplays.CalculateDisplayOffset(front->m_scanmask_used);
+	front->PCRTCDisplays.CalculateFramebufferOffset(front->m_scanmask_used, front->m_regs->DISP[0].DISPFB, front->m_regs->DISP[1].DISPFB);
 
 	// The PCRTC record must precede the vsync-flushed draw records — those draws
 	// see the fresh display state, mid-frame draws saw the previous frame's.
-	g_gs_renderer->SubmitPcrtcSync();
+	front->SubmitPcrtcSync();
 
 	// Do not move the flush into the VSync() method. It's here because EE transfers
 	// get cleared in HW VSync, and may be needed for a buffered draw (FFX FMVs).
-	g_gs_renderer->Flush(GSState::VSYNC);
+	front->Flush(GSState::VSYNC);
 	g_gs_renderer->SubmitVsync(field, registers_written);
+	if (g_gs_front)
+		g_gs_front->MirrorPostVsyncState();
 }
 
 int GSfreeze(FreezeAction mode, freezeData* data)
 {
 	if (mode == FreezeAction::Save)
 	{
-		return g_gs_renderer->Freeze(data, false);
+		return GSParseTarget()->Freeze(data, false);
 	}
 	else if (mode == FreezeAction::Size)
 	{
-		return g_gs_renderer->Freeze(data, true);
+		return GSParseTarget()->Freeze(data, true);
 	}
 	else // if (mode == FreezeAction::Load)
 	{
@@ -487,12 +520,18 @@ int GSfreeze(FreezeAction mode, freezeData* data)
 		if (GSCapture::IsCapturing())
 			GSCapture::Flush();
 
-		return g_gs_renderer->Defrost(data);
+		return GSParseTarget()->Defrost(data);
 	}
 }
 
 void GSQueueSnapshot(const std::string& path, u32 gsdump_frames)
 {
+	// GV7-1d-ii known gap: the GSDump transfer hook sits on the parse path, so
+	// under the two-object split the front's transfers would be missing from
+	// the dump (GV7-2 item). Warn rather than write a corrupt dump silently.
+	if (g_gs_front)
+		Console.Warning("GS: dump recording under GSBackThreadMode=Pipelined is not yet supported; expect an incomplete dump.");
+
 	if (g_gs_renderer)
 		g_gs_renderer->QueueSnapshot(path, gsdump_frames);
 }
@@ -854,6 +893,8 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 
 	// renderer-specific options (e.g. auto flush, TC offset)
 	g_gs_renderer->UpdateSettings(old_config);
+	if (g_gs_front)
+		g_gs_front->UpdateSettings(old_config);
 
 	// reload texture cache when trilinear filtering or TC options change
 	if (
@@ -929,14 +970,13 @@ bool GSSaveSnapshotToMemory(u32 window_width, u32 window_height, bool apply_aspe
 
 #ifdef _WIN32
 
-static HANDLE s_fh = NULL;
-
 void* GSAllocateWrappedMemory(size_t size, size_t repeat)
 {
-	pxAssertRel(!s_fh, "Has no file mapping");
-
-	s_fh = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, size, nullptr);
-	if (s_fh == NULL)
+	// No static handle: the mapped views keep the section alive, so the handle
+	// closes before returning and multiple wrapped allocations can coexist
+	// (the GV7 two-object split runs two GSStates, each with a wrapped vm).
+	const HANDLE fh = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, size, nullptr);
+	if (fh == NULL)
 	{
 		Console.Error("Failed to create file mapping of size %zu. WIN API ERROR:%u", size, GetLastError());
 		return nullptr;
@@ -955,7 +995,7 @@ void* GSAllocateWrappedMemory(size_t size, size_t repeat)
 			// Everything except the last needs the placeholders split to map over them. Then map the same file over the region.
 			u8* addr = base + i * size;
 			if ((i != (repeat - 1) && !VirtualFreeEx(GetCurrentProcess(), addr, size, MEM_RELEASE | MEM_PRESERVE_PLACEHOLDER)) ||
-				!MapViewOfFile3(s_fh, GetCurrentProcess(), addr, 0, size, MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0))
+				!MapViewOfFile3(fh, GetCurrentProcess(), addr, 0, size, MEM_REPLACE_PLACEHOLDER, PAGE_READWRITE, nullptr, 0))
 			{
 				Console.Error("Failed to map repeat %zu of size %zu.", i, size);
 				okay = false;
@@ -968,6 +1008,7 @@ void* GSAllocateWrappedMemory(size_t size, size_t repeat)
 		if (okay)
 		{
 			DbgCon.WriteLn("fifo_alloc(): Mapped %zu repeats of %zu bytes at %p.", repeat, size, base);
+			CloseHandle(fh);
 			return base;
 		}
 
@@ -975,15 +1016,12 @@ void* GSAllocateWrappedMemory(size_t size, size_t repeat)
 	}
 
 	Console.Error("Failed to reserve VA space of size %zu. WIN API ERROR:%u", size, GetLastError());
-	CloseHandle(s_fh);
-	s_fh = NULL;
+	CloseHandle(fh);
 	return nullptr;
 }
 
 void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 {
-	pxAssertRel(s_fh, "Has a file mapping");
-
 	for (size_t i = 0; i < repeat; i++)
 	{
 		u8* addr = (u8*)ptr + i * size;
@@ -991,7 +1029,6 @@ void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 	}
 
 	VirtualFreeEx(GetCurrentProcess(), ptr, 0, MEM_RELEASE);
-	s_fh = NULL;
 }
 
 #else
@@ -1001,15 +1038,14 @@ void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 #include <fcntl.h>
 #include <unistd.h>
 
-static int s_shm_fd = -1;
-
 void* GSAllocateWrappedMemory(size_t size, size_t repeat)
 {
-	pxAssert(s_shm_fd == -1);
-
+	// No static fd: the mappings keep the shm object alive, so the descriptor
+	// closes before returning and multiple wrapped allocations can coexist
+	// (the GV7 two-object split runs two GSStates, each with a wrapped vm).
 	const char* file_name = "/GS.mem";
-	s_shm_fd = shm_open(file_name, O_RDWR | O_CREAT | O_EXCL, 0600);
-	if (s_shm_fd != -1)
+	const int fd = shm_open(file_name, O_RDWR | O_CREAT | O_EXCL, 0600);
+	if (fd != -1)
 	{
 		shm_unlink(file_name); // file is deleted but descriptor is still open
 	}
@@ -1019,33 +1055,27 @@ void* GSAllocateWrappedMemory(size_t size, size_t repeat)
 		return nullptr;
 	}
 
-	if (ftruncate(s_shm_fd, repeat * size) < 0)
+	if (ftruncate(fd, repeat * size) < 0)
 		fprintf(stderr, "Failed to reserve memory due to %s\n", strerror(errno));
 
-	void* fifo = mmap(nullptr, size * repeat, PROT_READ | PROT_WRITE, MAP_SHARED, s_shm_fd, 0);
+	void* fifo = mmap(nullptr, size * repeat, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
 	for (size_t i = 1; i < repeat; i++)
 	{
 		void* base = (u8*)fifo + size * i;
-		u8* next = (u8*)mmap(base, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, s_shm_fd, 0);
+		u8* next = (u8*)mmap(base, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, fd, 0);
 		if (next != base)
 			fprintf(stderr, "Fail to mmap contiguous segment\n");
 	}
+
+	close(fd);
 
 	return fifo;
 }
 
 void GSFreeWrappedMemory(void* ptr, size_t size, size_t repeat)
 {
-	pxAssert(s_shm_fd >= 0);
-
-	if (s_shm_fd < 0)
-		return;
-
 	munmap(ptr, size * repeat);
-
-	close(s_shm_fd);
-	s_shm_fd = -1;
 }
 
 #endif

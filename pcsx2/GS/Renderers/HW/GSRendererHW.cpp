@@ -54,11 +54,14 @@ void GSRendererHW::Destroy()
 
 void GSRendererHW::PurgeTextureCache(bool sources, bool targets, bool hash_cache)
 {
+	// Queued draw records reach the TC; retire them before mutating it.
+	DrainBackQueue();
 	g_texture_cache->RemoveAll(sources, targets, hash_cache);
 }
 
 void GSRendererHW::ReadbackTextureCache()
 {
+	DrainBackQueue();
 	g_texture_cache->ReadbackAll();
 }
 
@@ -2149,13 +2152,21 @@ bool GSRendererHW::NeedsBlending()
 
 bool GSRendererHW::IsRTWritten()
 {
+	return IsRTWrittenLive(m_context->ALPHA);
+}
+
+// GV7-1d-ii: ALPHA is a parameter so the split front object can evaluate the
+// kick-time coverage-alpha query with ITS live blending regs while the cached
+// ctx / alpha min-max stay this (the back) object's last-executed-draw state —
+// exactly the mixed live/stale read a single object performs.
+bool GSRendererHW::IsRTWrittenLive(const GIFRegALPHA& ALPHA)
+{
 	const GIFRegTEST TEST = m_cached_ctx.TEST;
 	const bool only_z_written = (TEST.ATE && TEST.ATST == ATST_NEVER && TEST.AFAIL == AFAIL_ZB_ONLY);
 	if (only_z_written)
 		return false;
 
 	const u32 written_bits = (~m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk);
-	const GIFRegALPHA ALPHA = m_context->ALPHA;
 	return (
 	        // A not masked
 	        (written_bits & 0xFF000000u) != 0) ||
