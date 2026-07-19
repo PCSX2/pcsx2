@@ -5850,8 +5850,6 @@ void GSDeviceVK::DestroyResources()
 			vkFreeCommandBuffers(m_device, resources.command_pool, static_cast<u32>(resources.command_buffers.size()),
 				resources.command_buffers.data());
 		}
-		if (resources.descriptor_pool != VK_NULL_HANDLE)
-			vkDestroyDescriptorPool(m_device, resources.descriptor_pool, nullptr);
 		if (resources.command_pool != VK_NULL_HANDLE)
 			vkDestroyCommandPool(m_device, resources.command_pool, nullptr);
 		if (resources.descriptor_pool != VK_NULL_HANDLE)
