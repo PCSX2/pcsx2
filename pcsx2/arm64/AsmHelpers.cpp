@@ -196,6 +196,21 @@ void armEmitJmp(const void* ptr, bool force_inline)
 	}
 }
 
+void armEmitJmpPtr(void* code_address, const void* target, bool flush_icache)
+{
+	// Same single-word B rewrite + cache maintenance protocol as
+	// Arm64BaseBlocks::PatchAtomic / recPatchIslandB: a 4-byte aligned word
+	// store is atomic on AArch64, so concurrent execution of the old branch
+	// is safe.
+	const intptr_t off = reinterpret_cast<intptr_t>(target) - reinterpret_cast<intptr_t>(code_address);
+	pxAssertRel((off & 3) == 0, "armEmitJmpPtr: branch offset not 4-byte aligned");
+	const intptr_t imm26 = off >> 2;
+	pxAssertRel(imm26 >= -(1 << 25) && imm26 < (1 << 25), "armEmitJmpPtr: branch offset out of B imm26 range");
+	*reinterpret_cast<volatile u32*>(code_address) = 0x14000000u | (static_cast<u32>(imm26) & 0x03FFFFFFu);
+	if (flush_icache)
+		__builtin___clear_cache(static_cast<char*>(code_address), static_cast<char*>(code_address) + 4);
+}
+
 void armEmitCall(const void* ptr, bool force_inline)
 {
 	s64 displacement = GetPCDisplacement(armGetCurrentCodePointer(), ptr);
