@@ -100,7 +100,19 @@ extern bool vtlb_IsFaultingPC(u32 guest_pc);
 // direct-RAM fast path. Return/argument registers are unaffected, so
 // C++ callers (interpreter memory ops) behave identically.
 #ifdef ARCH_ARM64
+#if defined(__has_attribute) && __has_attribute(preserve_most)
 #define VTLB_PRESERVE_MOST __attribute__((preserve_most))
+#else
+// Hard requirement, not an optimization: the arm64 recompiler emits calls to
+// these dispatchers assuming the preserve_most contract (x9-x15 spared) and
+// skips pin spill/reload around them (recVTLB-arm64.cpp, RecStubs.cpp). A
+// compiler that drops the attribute (GCC warns and ignores unknown
+// attributes; MSVC has no equivalent) would build a binary whose emitted
+// code silently corrupts the EE pin registers at every MMIO slow path.
+// Build arm64 targets with clang (works for linux, windows-msvc, android,
+// and apple targets) until a no-preserve_most emitter fallback exists.
+#error "ARCH_ARM64 requires a compiler with __attribute__((preserve_most)) - build with clang"
+#endif
 #else
 #define VTLB_PRESERVE_MOST
 #endif
