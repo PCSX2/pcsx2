@@ -8,6 +8,15 @@ name: Windows Build Steps - Qt (arm64)
 # so no x64 host deps or QT_HOST_PATH are required. PCSX2 is then configured
 # natively against deps-arm64/. ffmpeg is loaded dynamically at runtime, so it is
 # intentionally absent from deps-arm64.
+#
+# The emulator itself compiles with clang-cl, NOT cl: the arm64 recompiler
+# requires __attribute__((preserve_most)) on the vtlb dispatchers (hard #error
+# in pcsx2/vtlb.h otherwise — MSVC has no equivalent, and emitted JIT code
+# depends on the register-preservation contract, so a silent fallback would be
+# a miscompile, not a slowdown). clang-cl uses the MSVC ABI, so the deps stage
+# stays on MSVC unchanged (and keeps its cache). The runner image ships a
+# native arm64 LLVM; vcvars still provides the Windows SDK, armasm64, and
+# link.exe environment.
 
 on:
   workflow_call:
@@ -82,6 +91,18 @@ jobs:
             for /f "usebackq tokens=*" %%i in (`call vswhere -latest -property installationPath`) do set "VSINSTPATH=%%i"
             echo VCVARSPATH=%VSINSTPATH%\VC\Auxiliary\Build\vcvarsarm64.bat>>%GITHUB_ENV%
 
+      # See the header comment: pcsx2 must compile with clang-cl (preserve_most).
+      # The --version print also puts the host/target triple in the log so a
+      # wrong-arch LLVM install fails loudly here, not mysteriously at link.
+      - name: Locate clang-cl
+        shell: pwsh
+        run: |
+          $clang = (Get-Command clang-cl -ErrorAction SilentlyContinue).Source
+          if (-not $clang) { $clang = 'C:\Program Files\LLVM\bin\clang-cl.exe' }
+          if (-not (Test-Path $clang)) { throw 'clang-cl not found on runner' }
+          & $clang --version
+          "CLANGCL=$clang" >> $env:GITHUB_ENV
+
       - name: Download patches
         shell: cmd
         run: |
@@ -107,6 +128,8 @@ jobs:
         run: |
           call "%VCVARSPATH%" || exit /b
           cmake . -B build ^
+            "-DCMAKE_C_COMPILER=%CLANGCL:\=/%" ^
+            "-DCMAKE_CXX_COMPILER=%CLANGCL:\=/%" ^
             "-DCMAKE_PREFIX_PATH=%cd%\deps-arm64" ^
             -DQT_BUILD=ON ^
             -DCMAKE_BUILD_TYPE=${{ inputs.configuration }} ^
