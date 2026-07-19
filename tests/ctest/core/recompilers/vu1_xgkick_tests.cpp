@@ -274,4 +274,47 @@ TEST(Vu1Xgkick, DivOneOverThreeFmacChainPreservesXgkickAddr)
 	EXPECT_EQ(h.Path1PacketBytesInterp().size(), 16u);
 }
 
+// An overflow-clamped FMAC AFTER an XGKICK must match the interpreter. The
+// XGKICK is a mid-block C call (mVU_XGKICK_DELAY) sitting between the block
+// prologue and a clamp emitter, so it is the one place a clamp reads state that
+// a call has had the chance to disturb — whatever mVUclamp1 sources its bounds
+// from must survive the call. Nothing else in the suite pairs the two.
+//
+// vu1Overflow ON puts the trailing VMUL on the micro-mode mVUclamp1 path, and
+// vf2^2 overflows FLT_MAX so the clamp genuinely engages (both engines land on
+// +MAX_FLOAT — asserted below, so the test cannot pass by never clamping).
+TEST(Vu1Xgkick, ClampAfterXgkickMatchesInterp)
+{
+	const bool prevOv = EmuConfig.Cpu.Recompiler.vu1Overflow;
+	const bool prevEx = EmuConfig.Cpu.Recompiler.vu1ExtraOverflow;
+	EmuConfig.Cpu.Recompiler.vu1Overflow = true;
+	EmuConfig.Cpu.Recompiler.vu1ExtraOverflow = false;
+
+	VuTestHarness h(1);
+	h.SetDiffMode(VuDiffMode::XgkickPacketEquivalent);
+	WriteEopOnlyTagToVu1(h, 0);
+	h.SetVi(vi::vi5, 0);
+	// ~8.5e37 in every lane; squaring overflows FLT_MAX -> clamp to +MAX_FLOAT.
+	h.SetVfBits(vf::vf2, 0x7E800000u, 0x7E800000u, 0x7E800000u, 0x7E800000u);
+	h.LoadProgram({
+		LowerOnly(VXGKICK_L(vi::vi5)),                              // fires mVU_XGKICK_DELAY (C call)
+		BareNopPair(), BareNopPair(), BareNopPair(), BareNopPair(),
+		IBit(VuOp{VLitZero(), VMUL_U(mask::xyzw, vf::vf1, vf::vf2, vf::vf2)}), // overflow -> clamp
+		EBitNopPair(),
+	});
+	h.Run();
+
+	EmuConfig.Cpu.Recompiler.vu1Overflow = prevOv;
+	EmuConfig.Cpu.Recompiler.vu1ExtraOverflow = prevEx;
+
+	EXPECT_EQ(h.GetVfBitsJit(vf::vf1, 'x'), h.GetVfBitsInterp(vf::vf1, 'x'))
+		<< "clamp after XGKICK diverged — the mVU_XGKICK_DELAY C call disturbed "
+		   "what mVUclamp1 clamps against";
+	EXPECT_EQ(h.GetVfBitsJit(vf::vf1, 'y'), h.GetVfBitsInterp(vf::vf1, 'y'));
+	EXPECT_EQ(h.GetVfBitsJit(vf::vf1, 'z'), h.GetVfBitsInterp(vf::vf1, 'z'));
+	EXPECT_EQ(h.GetVfBitsJit(vf::vf1, 'w'), h.GetVfBitsInterp(vf::vf1, 'w'));
+	// Proves the clamp actually engaged (both engines reach +MAX_FLOAT).
+	EXPECT_EQ(h.GetVfBitsInterp(vf::vf1, 'x'), 0x7F7FFFFFu);
+}
+
 } // namespace recompiler_tests
