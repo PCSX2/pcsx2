@@ -60,6 +60,19 @@ class MemoryCardViewModel(application: Application) : AndroidViewModel(applicati
     fun import(uri: Uri) {
         val context = getApplication<Application>()
         val name = DocumentFile.fromSingleUri(context, uri)?.name?.ifBlank { null } ?: "Imported.ps2"
+
+        // A FOLDER memory card is a directory of save folders plus a "_pcsx2_superblock"
+        // marker, so it cannot travel as a single file — people share them zipped. The old
+        // path appended ".ps2" to whatever was picked and copied the bytes verbatim, so a
+        // zip landed as "card.zip.ps2" full of zip data: the core read it as an unformatted
+        // file card, and formatting it then failed too. Unpack instead, into a real folder
+        // card. (Directory picking is handled by importFolder below — OpenDocument() can
+        // only return files.)
+        if (name.endsWith(".zip", true)) {
+            importZip(uri, name)
+            return
+        }
+
         val requested = if (name.endsWith(".ps2", true)) name else "$name.ps2"
         val target = uniqueFile(cardDirectory(), requested)
         val success = runCatching {
@@ -70,6 +83,89 @@ class MemoryCardViewModel(application: Application) : AndroidViewModel(applicati
         if (!success) target.delete()
         state.value = if (success) state.value.copy(message = "Imported ${target.name}.") else state.value.copy(error = "Memory card import failed.")
         refresh()
+    }
+
+    /** Unpack a zipped folder memory card into cards/<name>/. Tolerates the two common
+     *  shapes: entries at the archive root, or nested under a single top-level directory. */
+    private fun importZip(uri: Uri, zipName: String) {
+        val context = getApplication<Application>()
+        val target = uniqueFile(cardDirectory(), zipName.substringBeforeLast('.'))
+        val ok = runCatching {
+            target.mkdirs()
+            context.contentResolver.openInputStream(uri)?.use { raw ->
+                java.util.zip.ZipInputStream(raw.buffered()).use { zin ->
+                    var entry = zin.nextEntry
+                    while (entry != null) {
+                        // Strip a single wrapping directory so "Mcd001/_pcsx2_superblock"
+                        // and "_pcsx2_superblock" both land correctly.
+                        val rel = entry.name.replace('\\', '/').trimStart('/')
+                        val stripped = if (rel.count { it == '/' } > 0 && !rel.startsWith("_pcsx2_"))
+                            rel.substringAfter('/') else rel
+                        if (stripped.isNotBlank()) {
+                            val out = File(target, stripped)
+                            // Zip-slip guard: never write outside the card directory.
+                            if (out.canonicalPath.startsWith(target.canonicalPath + File.separator) ||
+                                out.canonicalPath == target.canonicalPath) {
+                                if (entry.isDirectory) {
+                                    out.mkdirs()
+                                } else {
+                                    out.parentFile?.mkdirs()
+                                    out.outputStream().use { zin.copyTo(it) }
+                                }
+                            }
+                        }
+                        zin.closeEntry()
+                        entry = zin.nextEntry
+                    }
+                }
+            } ?: error("Unable to read the selected file.")
+            // A folder card is only valid with its superblock; without it the core would
+            // report "unformatted" exactly as before, so fail loudly here instead.
+            File(target, "_pcsx2_superblock").isFile
+        }.getOrDefault(false)
+        if (!ok) target.deleteRecursively()
+        state.value = if (ok) {
+            state.value.copy(message = "Imported folder card ${target.name}.")
+        } else {
+            state.value.copy(error = "That zip isn't a folder memory card (no _pcsx2_superblock inside).")
+        }
+        refresh()
+    }
+
+    /** Import a folder memory card straight from a directory the user picks. */
+    fun importFolder(uri: Uri) {
+        val context = getApplication<Application>()
+        val source = DocumentFile.fromTreeUri(context, uri)
+        if (source == null || !source.isDirectory) {
+            state.value = state.value.copy(error = "Unable to open the selected folder.")
+            return
+        }
+        val target = uniqueFile(cardDirectory(), source.name?.ifBlank { null } ?: "Imported")
+        val ok = runCatching {
+            target.mkdirs()
+            copyTree(source, target)
+            File(target, "_pcsx2_superblock").isFile
+        }.getOrDefault(false)
+        if (!ok) target.deleteRecursively()
+        state.value = if (ok) {
+            state.value.copy(message = "Imported folder card ${target.name}.")
+        } else {
+            state.value.copy(error = "That folder isn't a memory card (no _pcsx2_superblock inside).")
+        }
+        refresh()
+    }
+
+    private fun copyTree(source: DocumentFile, destination: File) {
+        source.listFiles().forEach { child ->
+            val childName = child.name ?: return@forEach
+            if (child.isDirectory) {
+                copyTree(child, File(destination, childName).apply { mkdirs() })
+            } else if (child.isFile) {
+                getApplication<Application>().contentResolver.openInputStream(child.uri)?.use { input ->
+                    File(destination, childName).outputStream().use(input::copyTo)
+                }
+            }
+        }
     }
 
     fun assign(slot: Int, item: MemoryCardItem) {

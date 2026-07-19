@@ -55,6 +55,10 @@ fun MemoryCardScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: Memo
     var createDialog by remember { mutableStateOf(false) }
     var deleteTarget by remember { mutableStateOf<MemoryCardItem?>(null) }
     val importer = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(viewModel::import) }
+    // Folder memory cards are directories, which OpenDocument() cannot return — without
+    // this there was no way to import one at all, and zipping it produced a "card.zip.ps2"
+    // that read as unformatted.
+    val folderImporter = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri -> uri?.let(viewModel::importFolder) }
     LaunchedEffect(Unit) { viewModel.refresh() }
 
     ArmsBackdrop {
@@ -70,6 +74,7 @@ fun MemoryCardScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: Memo
                     actions = {
                         RoundAction("＋", str("memcard.newCard"), { createDialog = true })
                         RoundAction("⇩", str("action.import"), { importer.launch(arrayOf("application/octet-stream", "*/*")) })
+                        RoundAction("▣", str("memcard.importFolder"), { folderImporter.launch(null) })
                         RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
                     },
                     horizontalPadding = 0.dp,

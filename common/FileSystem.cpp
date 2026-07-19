@@ -2507,6 +2507,21 @@ bool FileSystem::CreateDirectoryPath(const char* path, bool recursive, Error* er
 			return true;
 	}
 
+#ifdef __ANDROID__
+	// libc mkdir() is DENIED on the FUSE-backed emulated storage Android hands out for a
+	// user-chosen data folder, while the Java File.mkdirs() path on the same directory
+	// succeeds — the syscall and the SAF/MediaProvider layer disagree about permission.
+	// Folder memory cards are the visible casualty: every save-data creation goes through
+	// here, so "Format failed" / crash-on-first-save reproduced ONLY with a custom data
+	// folder and never with internal app storage. The bridge below already existed and was
+	// implemented in the JNI, but nothing called it after the monorepo migration.
+	if (lastError == EPERM || lastError == EACCES)
+	{
+		if (CreateDirectoryViaJava(path))
+			return true;
+	}
+#endif
+
 	if (!recursive)
 	{
 		Error::SetErrno(error, "mkdir() failed: ", lastError);
@@ -2530,6 +2545,14 @@ bool FileSystem::CreateDirectoryPath(const char* path, bool recursive, Error* er
 					lastError = errno;
 					if (lastError != EEXIST) // fine, continue to next path segment
 					{
+#ifdef __ANDROID__
+						// Same FUSE mkdir denial as above, per path segment.
+						if ((lastError == EPERM || lastError == EACCES) &&
+							CreateDirectoryViaJava(tempPath.c_str()))
+						{
+							continue;
+						}
+#endif
 						Error::SetErrno(error, "mkdir() failed: ", lastError);
 						return false;
 					}
