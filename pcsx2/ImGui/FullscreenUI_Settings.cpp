@@ -3319,6 +3319,15 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 				"EmuCore/GS", "HWDownloadMode", static_cast<int>(GSHardwareDownloadMode::Enabled), s_hw_download, std::size(s_hw_download),
 				true);
 		}
+		static constexpr const char* s_back_thread_modes[] = {
+			FSUI_NSTR("Disabled (Default)"),
+			FSUI_NSTR("Inline Records (Debug)"),
+			FSUI_NSTR("Lockstep (Debug)"),
+			FSUI_NSTR("Pipelined (Second GS Thread)"),
+		};
+		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_MICROCHIP, "GS Back Thread"),
+			FSUI_CSTR("Pipelined splits GS emulation across two threads on multi-core systems. The debug modes are much slower — do not use them for play."),
+			"EmuCore/GS", "GSBackThreadMode", static_cast<int>(GSBackThreadMode::Off), s_back_thread_modes, std::size(s_back_thread_modes), true);
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_EXPAND, "Allow Exclusive Fullscreen"),
 			FSUI_CSTR("Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout."), "EmuCore/GS",
 			"ExclusiveFullscreenControl", -1, s_generic_options, std::size(s_generic_options), true, -1,
