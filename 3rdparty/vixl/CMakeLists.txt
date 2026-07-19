@@ -68,6 +68,17 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 	target_compile_options(vixl PUBLIC -Wno-deprecated-enum-enum-conversion)
 endif()
 
+# Under the MSVC ABI (clang-cl), enums without a fixed underlying type keep
+# `int` for MSVC compatibility, so vixl's >=0x80000000 instruction-encoding
+# enumerators wrap negative; using them as case labels against the unsigned
+# `Instr` type is then a C++11 narrowing error, which clang enforces but MSVC
+# itself silently accepts. The 32-bit patterns are identical either way, so
+# downgrading the diagnostic is behavior-correct. PUBLIC because the same
+# enum-vs-Instr switches appear in TUs that include vixl headers.
+if(MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	target_compile_options(vixl PUBLIC -Wno-c++11-narrowing)
+endif()
+
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	message("Enabling vixl debug assertions")
 	target_compile_definitions(vixl PUBLIC VIXL_DEBUG)
