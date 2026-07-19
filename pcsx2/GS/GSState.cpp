@@ -3850,9 +3850,17 @@ void GSState::UpdateScissor()
 	m_xyof = m_context->scissor.xyof;
 	m_scissor_invalid = m_context->scissor.in.rempty();
 
-	m_cull_bounds_band = GSVertexKernels::MakeBandedCullBounds(m_context->scissor.cull);
-	m_cull_bounds_raw = GSVertexKernels::MakeRawCullBounds(m_context->scissor.cull);
-	RefreshKickMirror();
+	// UpdateScissor runs on every context switch, which is far more frequent than
+	// actual cull-rect changes — only re-derive the bounds and mirror outcodes
+	// when the cull rect really moved (RefreshKickMirror showed up at ~2% of the
+	// GS thread unconditionally).
+	if (!m_context->scissor.cull.eq(m_cull_bounds_src))
+	{
+		m_cull_bounds_src = m_context->scissor.cull;
+		m_cull_bounds_band = GSVertexKernels::MakeBandedCullBounds(m_context->scissor.cull);
+		m_cull_bounds_raw = GSVertexKernels::MakeRawCullBounds(m_context->scissor.cull);
+		RefreshKickMirror();
+	}
 }
 
 // Re-derive the mirror ring's outcodes from the stored packed positions after a

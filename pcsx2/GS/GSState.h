@@ -268,8 +268,11 @@ protected:
 	};
 
 	// Pre-adjusted scissor bounds for the scalar-outcode cull (GSVertexKick.h),
-	// refreshed with the scissor. band = triangle/sprite native-res space, raw =
-	// point/line 12.4 space.
+	// re-derived when the cull rect changes. band = triangle/sprite native-res
+	// space, raw = point/line 12.4 space. m_cull_bounds_src is the cull rect the
+	// bounds were derived from (poison-initialized so the first update always
+	// refreshes).
+	GSVector4i m_cull_bounds_src = GSVector4i::cxpr(-2, -2, -2, -2);
 	GSVertexKernels::CullBounds m_cull_bounds_band = {};
 	GSVertexKernels::CullBounds m_cull_bounds_raw = {};
 
