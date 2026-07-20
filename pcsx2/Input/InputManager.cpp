@@ -108,7 +108,7 @@ namespace InputManager
 	static float ApplySingleBindingScale(float sensitivity, float deadzone, float value);
 
 	static void AddHotkeyBindings(SettingsInterface& si, bool is_profile);
-	static void AddPadBindings(SettingsInterface& si, u32 pad, bool is_profile);
+	static void AddPadBindings(SettingsInterface& si, u32 pad, bool is_profile, SettingsInterface* nav_si);
 	static void AddUSBBindings(SettingsInterface& si, u32 port, bool is_profile);
 	static void UpdateContinuedVibration();
 	static void GenerateRelativeMouseEvents();
@@ -874,7 +874,7 @@ void InputManager::AddHotkeyBindings(SettingsInterface& si, bool is_profile)
 	}
 }
 
-void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, bool is_profile)
+void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, bool is_profile, SettingsInterface* nav_si)
 {
 	const Pad::ControllerType type = EmuConfig.Pad.Ports[pad_index].Type;
 
@@ -913,30 +913,30 @@ void InputManager::AddPadBindings(SettingsInterface& si, u32 pad_index, bool is_
 							Pad::SetControllerState(pad_index, bind_index, ApplySingleBindingScale(sensitivity, deadzone, value));
 						}},
 						bi.bind_type, si, section.c_str(), bi.name, is_profile);
+				}
 
-					// Build reverse maps for controller navigation; user bindings take priority over static defaults.
-					if (bi.generic_mapping != GenericInputBinding::Unknown)
+				// So per-game bindings never affect FullscreenUI navigation.
+				if (nav_si && bi.generic_mapping != GenericInputBinding::Unknown)
+				{
+					for (const std::string& binding_str : nav_si->GetStringList(section.c_str(), bi.name))
 					{
-						for (const std::string& binding_str : bindings)
-						{
-							InputBindingKey bkey;
-							InputSource* bsrc;
-							if (!ParseBindingAndGetSource(binding_str, &bkey, &bsrc))
-								continue;
+						InputBindingKey bkey;
+						InputSource* bsrc;
+						if (!ParseBindingAndGetSource(binding_str, &bkey, &bsrc))
+							continue;
 
-							if (bkey.source_subtype == InputSubclass::ControllerButton)
-							{
-								s_controller_button_generic_map.emplace(bkey.MaskDirection(), bi.generic_mapping);
-							}
-							else if (bkey.source_subtype == InputSubclass::ControllerAxis)
-							{
-								auto& entry = s_controller_axis_generic_map[bkey.MaskDirection()];
-								// Negate modifier = negative half of axis (e.g. "-Axis0" → LeftStickLeft)
-								if (bkey.modifier == InputModifier::Negate)
-									entry[0] = bi.generic_mapping;
-								else
-									entry[1] = bi.generic_mapping;
-							}
+						if (bkey.source_subtype == InputSubclass::ControllerButton)
+						{
+							s_controller_button_generic_map.emplace(bkey.MaskDirection(), bi.generic_mapping);
+						}
+						else if (bkey.source_subtype == InputSubclass::ControllerAxis)
+						{
+							auto& entry = s_controller_axis_generic_map[bkey.MaskDirection()];
+							// Negate modifier = negative half of axis (e.g. "-Axis0" → LeftStickLeft)
+							if (bkey.modifier == InputModifier::Negate)
+								entry[0] = bi.generic_mapping;
+							else
+								entry[1] = bi.generic_mapping;
 						}
 					}
 				}
@@ -1312,9 +1312,14 @@ bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInpu
 	}
 	else if (key.source_subtype == InputSubclass::ControllerButton)
 	{
-		// User binding takes priority; fall back to the generic_key passed by the source (static table).
-		const auto it = s_controller_button_generic_map.find(key.MaskDirection());
-		const GenericInputBinding resolved = (it != s_controller_button_generic_map.end()) ? it->second : generic_key;
+		// Static table takes priority; falls back to the Shared/global map only if the source has none (e.g. DInput).
+		GenericInputBinding resolved = generic_key;
+		if (resolved == GenericInputBinding::Unknown)
+		{
+			const auto it = s_controller_button_generic_map.find(key.MaskDirection());
+			if (it != s_controller_button_generic_map.end())
+				resolved = it->second;
+		}
 		if (resolved != GenericInputBinding::Unknown)
 		{
 			const u32 controller_id = (static_cast<u32>(key.source_type) << 8) | key.source_index;
@@ -1325,10 +1330,20 @@ bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInpu
 	}
 	else if (key.source_subtype == InputSubclass::ControllerAxis)
 	{
-		// User binding takes priority; fall back to the neg/pos keys passed by the source (static table).
-		const auto it = s_controller_axis_generic_map.find(key.MaskDirection());
-		const GenericInputBinding neg = (it != s_controller_axis_generic_map.end()) ? it->second[0] : axis_neg_key;
-		const GenericInputBinding pos = (it != s_controller_axis_generic_map.end()) ? it->second[1] : axis_pos_key;
+		// Same priority as above; map only fills in directions the source couldn't resolve.
+		GenericInputBinding neg = axis_neg_key;
+		GenericInputBinding pos = axis_pos_key;
+		if (neg == GenericInputBinding::Unknown || pos == GenericInputBinding::Unknown)
+		{
+			const auto it = s_controller_axis_generic_map.find(key.MaskDirection());
+			if (it != s_controller_axis_generic_map.end())
+			{
+				if (neg == GenericInputBinding::Unknown)
+					neg = it->second[0];
+				if (pos == GenericInputBinding::Unknown)
+					pos = it->second[1];
+			}
+		}
 		if (neg != GenericInputBinding::Unknown || pos != GenericInputBinding::Unknown)
 		{
 			const u32 controller_id = (static_cast<u32>(key.source_type) << 8) | key.source_index;
@@ -1619,10 +1634,11 @@ void InputManager::ReloadBindings(SettingsInterface& si, SettingsInterface& bind
 	// Hotkeys use the base configuration, except if the custom hotkeys option is enabled.
 	AddHotkeyBindings(hotkey_binding_si, is_hotkey_profile);
 
-	// If there's an input profile, we load pad bindings from it alone, rather than
-	// falling back to the base configuration.
+	// nav_si is always the base config, so per-game profiles can't affect UI navigation.
+	const LayeredSettingsInterface& lsi = static_cast<LayeredSettingsInterface&>(si);
+	SettingsInterface* base_si = lsi.GetLayer(LayeredSettingsInterface::LAYER_BASE);
 	for (u32 pad = 0; pad < Pad::NUM_CONTROLLER_PORTS; pad++)
-		AddPadBindings(binding_si, pad, is_binding_profile);
+		AddPadBindings(binding_si, pad, is_binding_profile, base_si);
 
 	constexpr float ui_ctrl_range = 100.0f;
 	constexpr float pointer_sensitivity = 0.05f;
