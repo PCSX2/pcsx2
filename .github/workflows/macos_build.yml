@@ -169,7 +169,21 @@ jobs:
         run: |
           TESTBIN="$(find . -name recompiler_tests -type f -perm +111 | head -n1)"
           if [ -z "$TESTBIN" ]; then echo "recompiler_tests binary not found"; exit 1; fi
-          ARMSX2_FORCE_DUAL_MAP=1 "$TESTBIN"
+          if ! ARMSX2_FORCE_DUAL_MAP=1 "$TESTBIN"; then
+            echo "=== forced dual-map run failed; macOS crash report (.ips): ==="
+            sleep 10
+            for f in "$HOME"/Library/Logs/DiagnosticReports/recompiler_tests*.ips; do
+              [ -f "$f" ] && head -c 20000 "$f" && echo
+            done
+            echo "=== rerun under lldb for a live backtrace: ==="
+            ARMSX2_FORCE_DUAL_MAP=1 lldb --batch \
+              -o run \
+              -k 'thread backtrace all' \
+              -k 'register read' \
+              -k 'quit' \
+              "$TESTBIN" || true
+            exit 1
+          fi
 
       - name: Prepare Build Artifacts
         run: |
