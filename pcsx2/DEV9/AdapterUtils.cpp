@@ -242,25 +242,28 @@ bool AdapterUtils::GetAdapterAuto(Adapter* adapter, AdapterBuffer* buffer)
 			// Gateway.
 
 			bool hasIPv4 = false;
-#if !defined(__APPLE__) || !TARGET_OS_IPHONE
+#if (!defined(__APPLE__) || !TARGET_OS_IPHONE) && !defined(__ANDROID__)
 			bool hasGateway = false;
 #endif
 
 			if (GetAdapterIP(pAdapter).has_value())
 				hasIPv4 = true;
 
-#if !defined(__APPLE__) || !TARGET_OS_IPHONE
+#if (!defined(__APPLE__) || !TARGET_OS_IPHONE) && !defined(__ANDROID__)
 			if (GetGateways(pAdapter).size() > 0)
 				hasGateway = true;
 #endif
 
-#if defined(__APPLE__) && TARGET_OS_IPHONE
-			// iOS does not expose the desktop/macOS route sysctl path used by
-			// GetGateways(), but sockets mode only needs a usable IPv4
-			// interface here. The internal DHCP gateway is injected later.
+#if (defined(__APPLE__) && TARGET_OS_IPHONE) || defined(__ANDROID__)
+			// iOS and Android sandboxes cannot read the host route table
+			// (getifaddrs exposes no gateway; /proc/net/route is blocked on
+			// Android's scoped network on recent target SDKs). Sockets mode only
+			// needs a usable IPv4 interface; the internal DHCP gateway is injected
+			// later. Without this, Auto selection fails and net.cpp force-disables
+			// DEV9 ("connection device not found") even when wlan0 is up.
 			if (hasIPv4)
 			{
-				Console.WriteLn("DEV9: Socket: iOS Auto selected adapter '%s' without gateway probe", pAdapter->ifa_name);
+				Console.WriteLn("DEV9: Socket: Auto selected adapter '%s' without gateway probe", pAdapter->ifa_name);
 				*adapter = *pAdapter;
 				buffer->swap(adapterInfo);
 				return true;
@@ -599,10 +602,10 @@ std::vector<IP_Address> AdapterUtils::GetDNS(const Adapter* adapter)
 	if (servers.fail())
 	{
 		servers.close();
-#if defined(__APPLE__) && TARGET_OS_IPHONE
-		// iOS app sandbox has no /etc/resolv.conf; fall back to public resolvers so the
-		// emulated PS2 gets a working DNS list. Overrideable via Network settings.
-		Console.WriteLn("DEV9: no /etc/resolv.conf on iOS; using public DNS fallback 1.1.1.1 / 8.8.8.8");
+#if (defined(__APPLE__) && TARGET_OS_IPHONE) || defined(__ANDROID__)
+		// iOS/Android sandboxes have no /etc/resolv.conf; fall back to public resolvers
+		// so the emulated PS2 gets a working DNS list. Overrideable via Network settings.
+		Console.WriteLn("DEV9: no /etc/resolv.conf; using public DNS fallback 1.1.1.1 / 8.8.8.8");
 		collection.push_back(IP_Address{{{1, 1, 1, 1}}});
 		collection.push_back(IP_Address{{{8, 8, 8, 8}}});
 		return collection;
