@@ -1138,8 +1138,12 @@ void mVUreset(microVU& mVU, bool resetReserve)
 		namespace a64 = vixl::aarch64;
 		const size_t blockCacheCapacity =
 			static_cast<size_t>(mVU.prog.x86end - mVU.prog.x86start) + (mVUcacheSafeZone * _1mb);
+		// iOS dual-map W^X: the MA's buffer is the WRITABLE alias of x86start.
+		// mVUopenCodeCache keeps armAsmPtr = x86start (RX), so cursor math,
+		// recorded block entries, and icache flushes all stay in execute
+		// space — only the byte stores land in the alias. Identity elsewhere.
 		mVU.jitAsm = std::make_unique<a64::MacroAssembler>(
-			static_cast<vixl::byte*>(mVU.prog.x86start), blockCacheCapacity);
+			static_cast<vixl::byte*>(armGetWritableCodePtr(mVU.prog.x86start)), blockCacheCapacity);
 		mVU.jitAsm->GetScratchVRegisterList()->Remove(31);
 		mVU.jitAsm->GetScratchRegisterList()->Remove(RSCRATCHADDR.GetCode());
 	}

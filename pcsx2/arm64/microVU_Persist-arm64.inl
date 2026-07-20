@@ -1026,7 +1026,10 @@ namespace mVUPersist
 			for (const PersistFixup& f : chunks[i].fixups)
 			{
 				u8* at = chunk_base[i] + f.codeOffset;
-				u32* insn = reinterpret_cast<u32*>(at);
+				// iOS dual-map W^X: `at` is the RX address the fixup math
+				// (Rel26/ADRP page deltas) must use; the store itself goes
+				// through the RW alias. Identity on every other platform.
+				u32* insn = reinterpret_cast<u32*>(armGetWritableCodePtr(at));
 				bool ok = false;
 				switch (f.kind)
 				{

@@ -15,6 +15,9 @@
 #include "arm64/iR5900Analysis.h"
 #include "arm64/AsmHelpers.h"
 #include "common/HostSys.h"
+#ifdef __APPLE__
+#include "common/Darwin/DarwinMisc.h"
+#endif
 #include "Host.h"
 #include "R3000A.h"
 #include "R5900.h"
@@ -1763,7 +1766,8 @@ static void recPatchIslandB(u8* site, const u8* target)
 {
 	const intptr_t imm26 = (reinterpret_cast<intptr_t>(target) - reinterpret_cast<intptr_t>(site)) >> 2;
 	pxAssertRel(imm26 >= -(1 << 25) && imm26 < (1 << 25), "Cold-exit island out of B imm26 range");
-	*reinterpret_cast<volatile u32*>(site) = 0x14000000u | (static_cast<u32>(imm26) & 0x03FFFFFFu);
+	// iOS dual-map W^X: store via the RW alias; displacement/flush stay on RX.
+	*reinterpret_cast<volatile u32*>(armGetWritableCodePtr(site)) = 0x14000000u | (static_cast<u32>(imm26) & 0x03FFFFFFu);
 	HostSys::FlushInstructionCache(site, 4);
 }
 
@@ -2878,6 +2882,15 @@ static void recExecute()
 		eeRecNeedsReset = false;
 		recResetRaw();
 	}
+
+#ifdef __APPLE__
+	// [iOS] Ensure the JIT region is executable before dispatching. Under the
+	// Legacy (mprotect-toggle) W^X mode the region can be left RW by code
+	// emission, and the OS can revoke the JIT grant between boots;
+	// LegacyEnsureExecutable re-arms the RX protection. No-op on macOS and on
+	// the dual-map modes. (Ported from ARMSX2 master's aR5900 recExecute.)
+	DarwinMisc::LegacyEnsureExecutable();
+#endif
 
 	Console.WriteLn(Color_Green, "EE ARM64: Entering recompiled code (pc=0x%08X)", cpuRegs.pc);
 

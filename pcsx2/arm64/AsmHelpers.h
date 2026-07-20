@@ -133,6 +133,11 @@ __fi static u8* armGetAsmPtr()
 
 void armSetAsmPtr(void* ptr, size_t capacity, ArmConstantPool* pool);
 void armAlignAsmPtr();
+// iOS dual-map W^X: RX pointer -> writable alias (rx + g_code_rw_offset).
+// Identity everywhere else (and on Apple platforms where the offset is 0).
+// EVERY store into the code region that bypasses armAsm's buffer must route
+// its write pointer through this; displacements/flushes stay on the RX ptr.
+u8* armGetWritableCodePtr(u8* rx_ptr);
 u8* armStartBlock();
 u8* armEndBlock();
 

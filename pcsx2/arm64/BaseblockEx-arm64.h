@@ -33,6 +33,7 @@
 #include <map>
 
 #include "common/HostSys.h"
+#include "arm64/AsmHelpers.h" // armGetWritableCodePtr (iOS dual-map W^X)
 #include "x86/BaseblockEx.h"  // BASEBLOCK, BASEBLOCKEX, BaseBlockArray, recLUT_SetPage
 
 class Arm64BaseBlocks
@@ -64,8 +65,12 @@ protected:
 
 	static void PatchAtomic(uptr site, u32 instr)
 	{
-		// 4-byte aligned word stores are atomic on AArch64.
-		*reinterpret_cast<volatile u32*>(site) = instr;
+		// 4-byte aligned word stores are atomic on AArch64. `site` is the RX
+		// address; under iOS dual-map W^X the store goes through the RW alias
+		// (identity elsewhere). Callers hold an open Begin/EndCodeWrite scope
+		// for the toggle modes; on Darwin the "signal handler" caller is
+		// really the Mach exception-handler thread, so that scope is safe.
+		*reinterpret_cast<volatile u32*>(armGetWritableCodePtr(reinterpret_cast<u8*>(site))) = instr;
 		// Then make sure cores fetching instructions see the new word.
 		// (HostSys::FlushInstructionCache, not the raw builtin: on Darwin the
 		// builtin lowers to a compiler-rt ___clear_cache call that the iOS

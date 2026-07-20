@@ -39,6 +39,7 @@ BIOS
 #include "common/Error.h"
 
 #include <cstdio>
+#include <cstdlib>
 #ifdef __linux__
 #include <sys/mman.h>
 #endif
@@ -167,18 +168,38 @@ bool SysMemory::AllocateMemoryMap()
 		s_code_memory = nullptr;
 	}
 #else
-	if (!(s_code_mapping_area = SharedMemoryMappingArea::Create(HostMemoryMap::CodeSize, true, kArenaBase ? kArenaBase + HostMemoryMap::MainSize : 0)))
+#ifdef __APPLE__
+	// [jit-transplant] CI-only test hook: ARMSX2_FORCE_DUAL_MAP=1 routes macOS
+	// through the iOS dual-map allocator (vm_remap RW alias, g_code_rw_offset
+	// != 0) so the recompiler test suite exercises every RW-alias write path
+	// without an iOS device. Production macOS takes the SharedMemoryMappingArea
+	// MAP_JIT path below, unchanged.
+	const char* const force_dual_map = std::getenv("ARMSX2_FORCE_DUAL_MAP");
+	if (force_dual_map && std::atoi(force_dual_map) == 1)
 	{
-		Host::ReportErrorAsync("Error", "Failed to map code memory.");
-		ReleaseMemoryMap();
-		return false;
+		if ((s_code_memory = static_cast<u8*>(DarwinMisc::MmapCodeDualMap(HostMemoryMap::CodeSize))) == nullptr)
+		{
+			Host::ReportErrorAsync("Error", "Failed to allocate forced dual-map code memory.");
+			ReleaseMemoryMap();
+			return false;
+		}
 	}
-
-	if ((s_code_memory = s_code_mapping_area->Map(nullptr, 0, s_code_mapping_area->BasePointer(), HostMemoryMap::CodeSize, PageAccess_Any())) == nullptr)
+	else
+#endif
 	{
-		Host::ReportErrorAsync("Error", "Failed to allocate code memory.");
-		ReleaseMemoryMap();
-		return false;
+		if (!(s_code_mapping_area = SharedMemoryMappingArea::Create(HostMemoryMap::CodeSize, true, kArenaBase ? kArenaBase + HostMemoryMap::MainSize : 0)))
+		{
+			Host::ReportErrorAsync("Error", "Failed to map code memory.");
+			ReleaseMemoryMap();
+			return false;
+		}
+
+		if ((s_code_memory = s_code_mapping_area->Map(nullptr, 0, s_code_mapping_area->BasePointer(), HostMemoryMap::CodeSize, PageAccess_Any())) == nullptr)
+		{
+			Host::ReportErrorAsync("Error", "Failed to allocate code memory.");
+			ReleaseMemoryMap();
+			return false;
+		}
 	}
 #endif
 
@@ -246,6 +267,11 @@ void SysMemory::ReleaseMemoryMap()
 #else
 		if (s_code_mapping_area)
 			s_code_mapping_area->Unmap(s_code_memory, HostMemoryMap::CodeSize, false);
+#ifdef __APPLE__
+		else
+			// macOS ARMSX2_FORCE_DUAL_MAP test hook allocated via MmapCodeDualMap.
+			DarwinMisc::MunmapCodeDualMap(s_code_memory, HostMemoryMap::CodeSize);
+#endif
 #endif
 		s_code_memory = nullptr;
 	}

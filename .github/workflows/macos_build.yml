@@ -159,6 +159,18 @@ jobs:
         working-directory: build
         run: make -j$(getconf _NPROCESSORS_ONLN) unittests
 
+      # iOS dual-map W^X validation without an iOS device: rerun the
+      # recompiler suite with the vm_remap RW-alias forced on macOS
+      # (ARMSX2_FORCE_DUAL_MAP=1, see DarwinMisc::MmapCodeDualMap). Every JIT
+      # code write must go through the RW alias for this to pass, which is
+      # exactly what the iOS 26 LuckTXM/LuckNoTXM modes require.
+      - name: Run Recompiler Tests (forced dual-map W^X)
+        working-directory: build
+        run: |
+          TESTBIN="$(find . -name recompiler_tests -type f -perm +111 | head -n1)"
+          if [ -z "$TESTBIN" ]; then echo "recompiler_tests binary not found"; exit 1; fi
+          ARMSX2_FORCE_DUAL_MAP=1 "$TESTBIN"
+
       - name: Prepare Build Artifacts
         run: |
           mv build/pcsx2*/ARMSX2.app ARMSX2.app

@@ -9,6 +9,10 @@
 #include "common/HostSys.h"
 #include "common/Timer.h"
 
+#ifdef __APPLE__
+#include "common/Darwin/DarwinMisc.h"
+#endif
+
 const vixl::aarch64::Register& armWRegister(int n)
 {
 	using namespace vixl::aarch64;
@@ -109,14 +113,48 @@ void armAlignAsmPtr()
 // buffer safe. (AX-10)
 alignas(vixl::aarch64::MacroAssembler) static thread_local u8 s_armAsmStorage[sizeof(vixl::aarch64::MacroAssembler)];
 
+// iOS W^X (ported from ARMSX2 master's aR* recompilers): under the iOS 26
+// dual-map JIT modes (DarwinMisc::JitMode::LuckTXM / LuckNoTXM) the code
+// region is mapped twice — RX at the address we execute and hand out, RW at
+// rx + g_code_rw_offset. Every byte written into the region must go through
+// the RW alias; all displacement math, recorded pointers, and icache flushes
+// stay in RX space. On Legacy-mode iOS and on macOS/Simulator the offset is 0
+// and this is an identity (writability there comes from the mprotect toggle /
+// pthread_jit_write_protect_np inside Begin/EndCodeWrite[Range]). Gated on
+// __APPLE__ rather than TARGET_OS_IPHONE so a forced dual-map on macOS
+// (ARMSX2_FORCE_DUAL_MAP=1, CI-only) exercises the alias paths; production
+// macOS always has offset 0, so behavior there is unchanged.
+u8* armGetWritableCodePtr(u8* rx_ptr)
+{
+#ifdef __APPLE__
+	return rx_ptr + DarwinMisc::g_code_rw_offset;
+#else
+	return rx_ptr;
+#endif
+}
+
+// Write-window bookkeeping for iOS Legacy mode (mprotect-toggle W^X):
+// BeginCodeWriteRange flips only [start, start+size) to RW so the rest of the
+// region — including the JIT frames we will return into — stays executable.
+// A no-op on every other platform/mode. Window size mirrors ARMSX2 master.
+static thread_local u8* s_arm_block_start = nullptr;
+static thread_local size_t s_arm_block_write_size = 0;
+static constexpr size_t ARM64_CODE_WRITE_WINDOW = 1024 * 1024;
+
 u8* armStartBlock()
 {
 	armAlignAsmPtr();
 
-	HostSys::BeginCodeWrite();
+	s_arm_block_start = armAsmPtr;
+	s_arm_block_write_size = (armAsmCapacity < ARM64_CODE_WRITE_WINDOW) ? armAsmCapacity : ARM64_CODE_WRITE_WINDOW;
+	HostSys::BeginCodeWriteRange(s_arm_block_start, s_arm_block_write_size);
 
 	pxAssert(!armAsm);
-	armAsm = new (s_armAsmStorage) vixl::aarch64::MacroAssembler(static_cast<vixl::byte*>(armAsmPtr), armAsmCapacity);
+	// The MacroAssembler's buffer is the WRITABLE alias; armAsmPtr stays the
+	// RX address, so armGetCurrentCodePointer() (= armAsmPtr + cursor) and
+	// every displacement computed from it remain in execute space.
+	armAsm = new (s_armAsmStorage) vixl::aarch64::MacroAssembler(
+		static_cast<vixl::byte*>(armGetWritableCodePtr(armAsmPtr)), armAsmCapacity);
 	armAsm->GetScratchVRegisterList()->Remove(31);
 	armAsm->GetScratchRegisterList()->Remove(RSCRATCHADDR.GetCode());
 	return armAsmPtr;
@@ -134,10 +172,12 @@ u8* armEndBlock()
 	armAsm->~MacroAssembler();
 	armAsm = nullptr;
 
-	HostSys::EndCodeWrite();
+	HostSys::EndCodeWriteRange(s_arm_block_start, s_arm_block_write_size);
 
 	HostSys::FlushInstructionCache(armAsmPtr, size);
 
+	s_arm_block_start = nullptr;
+	s_arm_block_write_size = 0;
 	armAsmPtr = armAsmPtr + size;
 	armAsmCapacity -= size;
 	return armAsmPtr;
@@ -206,7 +246,13 @@ void armEmitJmpPtr(void* code_address, const void* target, bool flush_icache)
 	pxAssertRel((off & 3) == 0, "armEmitJmpPtr: branch offset not 4-byte aligned");
 	const intptr_t imm26 = off >> 2;
 	pxAssertRel(imm26 >= -(1 << 25) && imm26 < (1 << 25), "armEmitJmpPtr: branch offset out of B imm26 range");
-	*reinterpret_cast<volatile u32*>(code_address) = 0x14000000u | (static_cast<u32>(imm26) & 0x03FFFFFFu);
+	// code_address is the RX alias; under iOS dual-mapping the store must go
+	// through the RW mirror. Begin/EndCodeWrite covers the toggle modes
+	// (refcounted, so it nests inside an open emit scope).
+	HostSys::BeginCodeWrite();
+	*reinterpret_cast<volatile u32*>(armGetWritableCodePtr(static_cast<u8*>(code_address))) =
+		0x14000000u | (static_cast<u32>(imm26) & 0x03FFFFFFu);
+	HostSys::EndCodeWrite();
 	if (flush_icache)
 		HostSys::FlushInstructionCache(code_address, 4);
 }
@@ -496,7 +542,11 @@ u8* ArmConstantPool::GetJumpTrampoline(const void* target)
 		return nullptr;
 	}
 
-	a64::MacroAssembler masm(static_cast<vixl::byte*>(m_base_ptr + offset), m_capacity - offset);
+	u8* const trampoline_ptr = m_base_ptr + offset;
+	static constexpr size_t TRAMPOLINE_WRITE_WINDOW = 64;
+	HostSys::BeginCodeWriteRange(trampoline_ptr, TRAMPOLINE_WRITE_WINDOW);
+	// Emit into the RW alias; trampoline_ptr (RX) is what callers branch to.
+	a64::MacroAssembler masm(static_cast<vixl::byte*>(armGetWritableCodePtr(trampoline_ptr)), m_capacity - offset);
 	masm.Mov(RXVIXLSCRATCH, reinterpret_cast<intptr_t>(target));
 	masm.Br(RXVIXLSCRATCH);
 	masm.FinalizeCode();
@@ -505,9 +555,10 @@ u8* ArmConstantPool::GetJumpTrampoline(const void* target)
 	m_jump_targets.emplace(target, offset);
 	m_used = offset + static_cast<u32>(masm.GetSizeOfCodeGenerated());
 
-	HostSys::FlushInstructionCache(reinterpret_cast<void*>(m_base_ptr + offset), m_used - offset);
+	HostSys::EndCodeWriteRange(trampoline_ptr, m_used - offset);
+	HostSys::FlushInstructionCache(reinterpret_cast<void*>(trampoline_ptr), m_used - offset);
 
-	return m_base_ptr + offset;
+	return trampoline_ptr;
 }
 
 u8* ArmConstantPool::GetLiteral(u64 value)
@@ -525,9 +576,12 @@ u8* ArmConstantPool::GetLiteral(const u128& value)
 		return nullptr;
 
 	const u32 offset = Common::AlignUpPow2(m_used, 16);
-	std::memcpy(&m_base_ptr[offset], &value, sizeof(value));
+	u8* const literal_ptr = &m_base_ptr[offset];
+	HostSys::BeginCodeWriteRange(literal_ptr, sizeof(value));
+	std::memcpy(armGetWritableCodePtr(literal_ptr), &value, sizeof(value));
+	HostSys::EndCodeWriteRange(literal_ptr, sizeof(value));
 	m_used = offset + sizeof(value);
-	return m_base_ptr + offset;
+	return literal_ptr;
 }
 
 u8* ArmConstantPool::GetLiteral(const u8* bytes, size_t len)
