@@ -85,9 +85,10 @@ alignas(16) static const u32 s_cop2DestMasks[16][4] = {
 // tiny compile-time cache keeps them resident in q16..q20 and the op bodies
 // compute 3-operand NEON straight from the cache registers.
 //
-// Register choice: q16-q26 have no fixed user in EE-block emission context
+// Register choice: q16-q24 have no fixed user in EE-block emission context
 // (q0-q7 = allocator temp/FPR first-fit + vtlb data + mVU macro window,
 // q8/q9 = pinned FPU clamp constants, q10-q15 = allocator GPR-quad/FPR homes,
+// q25/q26 = SL-13 clamp-constant broadcasts (cop2EnsureClampConsts below),
 // q27/q28 = VOPMULA/VCLIP + flag-body scratch, q29-q31 = per-op scratch).
 // They are caller-saved and NOT preserved by the fastmem fault thunk (which
 // only saves allocator-tracked regs), so the cache must never survive any op
@@ -468,8 +469,12 @@ static_assert(offsetof(cpuRegistersPack, cop2Rec) + sizeof(EeCop2RecState) <= 16
 
 // (Re)write the pack copies of the COP2 rec constants. Called from
 // recResetRaw, so the harnesses that reset the rec before compiling are
-// covered too. minFloat is the pre-negated clamp lower bound: the clamp
-// emitters spend a 1-insn load where they used to spend an Fneg.
+// covered too. minFloat is the pre-negated clamp lower bound. Since SL-13
+// the clamp emitters no longer LOAD maxFloat/minFloat (the bounds live
+// broadcast in q25/q26, re-materialized from s8/s9 — see
+// cop2EnsureClampConsts below); the pack fields stay as the documented
+// canonical values (minFloat[i] == maxFloat[i] | 0x80000000 == -FLT_MAX is
+// the identity the s9 Dup relies on) and for any future dest-mask work.
 void cop2RecWritePackConstants()
 {
 	EeCop2RecState& st = _cpuRegistersPack.cop2Rec;
@@ -481,15 +486,80 @@ void cop2RecWritePackConstants()
 	st.denormStatusFlag = 0;
 }
 
+// =========================================================================
+//  SL-13: clamp-constant broadcast residency (q25/q26)
+// =========================================================================
+// The clamp bounds live register-resident: q25 = maxFloat.4S (+FLT_MAX per
+// lane), q26 = minFloat.4S (-FLT_MAX per lane). Both are excluded from the
+// EE NEON allocator pool (NEON_RESERVED_COP2_CLAMPMAX/MIN, iCore-arm64.cpp)
+// and from the COP2 macro-mode mVU pool (microRegAlloc::reset(cop2mode)), so
+// no EE-block emission can clobber them. Re-materialization is 2 Dups from
+// the pinned s8 = +FLT_MAX / s9 = -FLT_MAX callee-saved scalars
+// (_DynGen_EnterRecompiledCode) — no memory access, and the sources survive
+// every C call by AAPCS64. minFloat[i] == maxFloat[i] | 0x80000000 ==
+// -FLT_MAX exactly (see cop2RecWritePackConstants), so s9 is the exact
+// broadcast source.
+//
+// Compile-time validity discipline (s_cop2ClampConstsValid):
+//  - false at block start; the first clamp site emits the 2 Dups.
+//  - iFlushCall (ANY flushtype — every real C-call seam) invalidates: the
+//    callee may clobber caller-saved q25/q26. The next clamp site re-Dups.
+//  - The VPU_STAT-conditional sync seams do NOT invalidate: the shared sync
+//    stubs re-Dup unconditionally on their taken path after the C calls
+//    (always sound — q25/q26 can hold nothing else), and their fast path
+//    touches no NEON.
+//  - Fastmem sites do NOT invalidate: vtlbGetLiveRegisterMasks ORs q25/q26
+//    into the recorded fpr_bitmask while valid, so a backpatched slowmem
+//    thunk save/restores them around its C call like any live register.
+//  - The mVU-reuse macro wrappers do NOT invalidate: their pool excludes
+//    q25/q26 under cop2mode and they emit no C calls.
+//  - Branch forks and superblock side exits snapshot/restore the flag via
+//    BranchCompileState (iR5900-arm64.cpp).
+// Establishment must stay on unconditionally-executed emission paths — never
+// emit the Dups inside a runtime-conditional arm (a post-merge site compiled
+// valid would be wrong on the arm that skipped them). All current clamp
+// sites are straight-line within their op bodies.
+
+static bool s_cop2ClampConstsValid = false;
+
+#ifdef PCSX2_RECOMPILER_TESTS
+u32 g_cop2ClampConstEstablishCount = 0;
+#endif
+
+bool cop2ClampConstsValid()
+{
+	return s_cop2ClampConstsValid;
+}
+
+void cop2ClampConstsSetValid(bool valid)
+{
+	s_cop2ClampConstsValid = valid;
+}
+
+void cop2ClampConstsInvalidate()
+{
+	s_cop2ClampConstsValid = false;
+}
+
+static void cop2EnsureClampConsts()
+{
+	if (s_cop2ClampConstsValid)
+		return;
+	armAsm->Dup(a64::v25.V4S(), a64::v8.V4S(), 0); // +FLT_MAX broadcast
+	armAsm->Dup(a64::v26.V4S(), a64::v9.V4S(), 0); // -FLT_MAX broadcast
+	s_cop2ClampConstsValid = true;
+#ifdef PCSX2_RECOMPILER_TESTS
+	g_cop2ClampConstEstablishCount++;
+#endif
+}
+
 // Clamp the result register to [-FLT_MAX, +FLT_MAX] (removes infinities and
 // NaNs). FMINNM/FMAXNM match x86 MINPS/MAXPS semantics: NaN → non-NaN operand.
 static void cop2ClampResultReg(const a64::VRegister& result)
 {
-	armAsm->Ldr(RQSCRATCH2, armCpuRegMem(&_cpuRegistersPack.cop2Rec.maxFloat));
-	armAsm->Ldr(RQSCRATCH3, armCpuRegMem(&_cpuRegistersPack.cop2Rec.minFloat));
-
-	armAsm->Fminnm(result.V4S(), result.V4S(), RQSCRATCH2.V4S()); // clamp to +FLT_MAX
-	armAsm->Fmaxnm(result.V4S(), result.V4S(), RQSCRATCH3.V4S()); // clamp to -FLT_MAX
+	cop2EnsureClampConsts();
+	armAsm->Fminnm(result.V4S(), result.V4S(), a64::v25.V4S()); // clamp to +FLT_MAX
+	armAsm->Fmaxnm(result.V4S(), result.V4S(), a64::v26.V4S()); // clamp to -FLT_MAX
 }
 
 static void cop2ClampResult()
@@ -497,28 +567,14 @@ static void cop2ClampResult()
 	cop2ClampResultReg(RQSCRATCH);
 }
 
-// Single-temp variant of cop2ClampReg: clamps `qreg` to [-FLT_MAX, +FLT_MAX]
-// using just one scratch register (it reloads the bound between the two
-// clamps). Needed when pre-clamping a broadcast FMAC operand, where Fs/Ft
-// already occupy two of the three q-scratch regs and only one is free.
-static void cop2ClampRegOneTmp(const a64::VRegister& qreg, const a64::VRegister& tmp)
-{
-	armAsm->Ldr(tmp, armCpuRegMem(&_cpuRegistersPack.cop2Rec.maxFloat));
-	armAsm->Fminnm(qreg.V4S(), qreg.V4S(), tmp.V4S()); // clamp to +FLT_MAX
-	armAsm->Ldr(tmp, armCpuRegMem(&_cpuRegistersPack.cop2Rec.minFloat));
-	armAsm->Fmaxnm(qreg.V4S(), qreg.V4S(), tmp.V4S()); // clamp to -FLT_MAX
-}
-
 // Non-destructive clamp: dst = clamp(src) without modifying src (which may be
-// a live VF-cache register). Same 4-insn cost as cop2ClampRegOneTmp — the
-// first Fminnm is 3-operand, so preserving src is free.
-static void cop2ClampInto(const a64::VRegister& dst, const a64::VRegister& src,
-	const a64::VRegister& tmp)
+// a live VF-cache register) — the first Fminnm is 3-operand, so preserving
+// src is free.
+static void cop2ClampInto(const a64::VRegister& dst, const a64::VRegister& src)
 {
-	armAsm->Ldr(tmp, armCpuRegMem(&_cpuRegistersPack.cop2Rec.maxFloat));
-	armAsm->Fminnm(dst.V4S(), src.V4S(), tmp.V4S());
-	armAsm->Ldr(tmp, armCpuRegMem(&_cpuRegistersPack.cop2Rec.minFloat));
-	armAsm->Fmaxnm(dst.V4S(), dst.V4S(), tmp.V4S());
+	cop2EnsureClampConsts();
+	armAsm->Fminnm(dst.V4S(), src.V4S(), a64::v25.V4S());
+	armAsm->Fmaxnm(dst.V4S(), dst.V4S(), a64::v26.V4S());
 }
 
 // ========================================================================
@@ -1066,6 +1122,16 @@ static const u8* cop2DynGenOneSyncStub(void (*syncFn)(), void (*finishFn)())
 	armReloadCycleDelta();
 	armReloadEEClobberedPins();
 
+	// SL-13: the callees (and any VU0 micro they ran) clobber caller-saved
+	// q25/q26 — re-materialize the clamp-constant broadcasts so sites whose
+	// compile-time validity rides through this seam stay correct. Always
+	// sound: q25/q26 are pool-reserved and can hold nothing else, and the
+	// s8/s9 sources are callee-saved (low 64 bits). The fast path above
+	// touches no NEON, so validity rides it untouched. Pinned by
+	// EeVu0Cop2ClampResidency.SyncStubsReDupClampConsts.
+	armAsm->Dup(a64::v25.V4S(), a64::v8.V4S(), 0);
+	armAsm->Dup(a64::v26.V4S(), a64::v9.V4S(), 0);
+
 	armAsm->Ldr(a64::x30, a64::MemOperand(a64::sp, 48));
 	armAsm->Ldp(a64::x14, a64::x15, a64::MemOperand(a64::sp, 32));
 	armAsm->Ldp(a64::x6, a64::x7, a64::MemOperand(a64::sp, 16));
@@ -1083,6 +1149,24 @@ void cop2DynGenSyncStubs()
 	s_cop2SyncStubs[kCop2SyncStubSyncRunAhead] = cop2DynGenOneSyncStub(vu0SyncRunAheadThin, nullptr);
 	s_cop2SyncStubs[kCop2SyncStubFinish] = cop2DynGenOneSyncStub(nullptr, _vu0FinishMicro);
 }
+
+#ifdef PCSX2_RECOMPILER_TESTS
+// SL-13 pin surface: emitted sync-stub code ranges, so tests can assert the
+// taken path re-materializes the q25/q26 clamp broadcasts (the seam-survival
+// invariant is emission-level — end-to-end runs only catch it when the C
+// path happens to clobber q25/q26). Kind indexes follow emission order; the
+// end of stub k is the start of stub k+1 (contiguous emission), and the last
+// stub is bounded by the dispatcher's Perf-registered range — tests scan to
+// the final Ret instead.
+int cop2TestGetSyncStubCount()
+{
+	return kCop2SyncStubCount;
+}
+const u8* cop2TestGetSyncStub(int kind)
+{
+	return (kind >= 0 && kind < kCop2SyncStubCount) ? s_cop2SyncStubs[kind] : nullptr;
+}
+#endif
 
 // Emit conditional VU0 sync: uses EEINST analysis flags when available,
 // falls back to runtime VPU_STAT check otherwise.
@@ -1642,10 +1726,10 @@ static void cop2LoadBroadcast(const a64::VRegister& qreg, int vfReg, int bc)
 		a64::VRegister mulA = fs; \
 		if (mulClamp) \
 		{ \
-			cop2ClampInto(RQSCRATCH, fs, RQSCRATCH3); \
+			cop2ClampInto(RQSCRATCH, fs); \
 			mulA = RQSCRATCH; \
 			if (_XYZW_cop2 == 0xf) \
-				cop2ClampRegOneTmp(RQSCRATCH2, RQSCRATCH3); \
+				cop2ClampResultReg(RQSCRATCH2); /* in-place operand clamp */ \
 		} \
 		const a64::VRegister rd = cop2ResultReg(_Fd_cop2, _XYZW_cop2); \
 		armAsm->neonOp(rd.V4S(), mulA.V4S(), RQSCRATCH2.V4S()); \
@@ -1823,8 +1907,7 @@ void recCOP2_VMSUB()
 // a zero broadcast Ft must become FLT_MAX*0 = 0 rather than Inf*0 = NaN folded
 // to +/-FLT_MAX by the result clamp. MSUBx/y/z/w use mVU_FMACd (clampType=0,
 // no cFs) — that Fs divergence is shared/by-design, so MSUB keeps clampFs=false.
-// The MADDw extras (cACC|cFt) are a separate concern. RQSCRATCH2/RQSCRATCH3 are
-// free as the ±FLT_MAX bounds here (Ft/ACC are loaded after the clamp).
+// The MADDw extras (cACC|cFt) are a separate concern.
 #define COP2_MADD_BC(name, addOp, bc, clampFs) \
 	void recCOP2_V##name() \
 	{ \
@@ -1834,7 +1917,7 @@ void recCOP2_VMSUB()
 		a64::VRegister mulA = fs; \
 		if (clampFs) \
 		{ \
-			cop2ClampInto(RQSCRATCH, fs, RQSCRATCH3); \
+			cop2ClampInto(RQSCRATCH, fs); \
 			mulA = RQSCRATCH; \
 		} \
 		cop2LoadBroadcast(RQSCRATCH2, _Ft_cop2, bc); \
@@ -1970,10 +2053,10 @@ COP2_ACCUM_OP(MULA, Fmul)
 		a64::VRegister mulA = fs; \
 		if (mulClamp) \
 		{ \
-			cop2ClampInto(RQSCRATCH, fs, RQSCRATCH3); \
+			cop2ClampInto(RQSCRATCH, fs); \
 			mulA = RQSCRATCH; \
 			if (_XYZW_cop2 == 0xf) \
-				cop2ClampRegOneTmp(RQSCRATCH2, RQSCRATCH3); \
+				cop2ClampResultReg(RQSCRATCH2); /* in-place operand clamp */ \
 		} \
 		const a64::VRegister rdA = cop2ResultRegACC(_XYZW_cop2); \
 		armAsm->neonOp(rdA.V4S(), mulA.V4S(), RQSCRATCH2.V4S()); \

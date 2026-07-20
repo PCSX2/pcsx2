@@ -227,6 +227,13 @@ static void vtlbGetLiveRegisterMasks(u32& gpr_bitmask, u32& fpr_bitmask)
 		if (arm64neon[i].inuse)
 			fpr_bitmask |= (1u << i);
 	}
+
+	// SL-13: the q25/q26 clamp-constant broadcasts are not allocator state,
+	// but when compile-time valid they must survive a backpatched slowmem
+	// thunk's C call like any live register — clamp sites after this access
+	// were compiled without re-materialization.
+	if (cop2ClampConstsValid())
+		fpr_bitmask |= (1u << NEON_RESERVED_COP2_CLAMPMAX) | (1u << NEON_RESERVED_COP2_CLAMPMIN);
 }
 
 // Emit a single fastmem load instruction and register backpatch info.

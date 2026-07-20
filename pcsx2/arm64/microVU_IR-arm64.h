@@ -60,6 +60,7 @@ protected:
 	int counter;
 	int neonWatermark; // see getNeonWatermark()
 	int index; // VU0 or VU1
+	bool neonCop2Mode; // SL-13: macro mode — q25/q26 unallocatable (EE clamp consts)
 
 	VURegs& regs() const { return ::vuRegs[index]; }
 
@@ -88,11 +89,19 @@ protected:
 			armAsm->Dup(reg.V4S(), reg.V4S(), 0); // Broadcast to all lanes
 	}
 
+	// SL-13: NEON pool gate — cop2mode excludes q25/q26 (see reset()).
+	__ri bool neonUsable(int i) const
+	{
+		return !neonCop2Mode || (i != 25 && i != 26);
+	}
+
 	// Find least-recently-used NEON reg (recursive, for eviction)
 	int findFreeNeonRec(int startIdx)
 	{
 		for (int i = startIdx; i < neonAllocTotal; i++)
 		{
+			if (!neonUsable(i))
+				continue;
 			if (!neonMap[i].isNeeded)
 			{
 				int x = findFreeNeonRec(i + 1);
@@ -109,6 +118,8 @@ protected:
 		// Prefer unoccupied temp regs
 		for (int i = 0; i < neonAllocTotal; i++)
 		{
+			if (!neonUsable(i))
+				continue;
 			if (!neonMap[i].isNeeded && neonMap[i].VFreg < 0)
 			{
 				neonWatermark = std::max(neonWatermark, i + 1);
@@ -256,6 +267,15 @@ public:
 	// EeVu0Cop2Macro.MacroModeVIPoolExcludesEEPinHosts. (x86's cop2mode
 	// meaning — fastmem-base/text-pointer usability — doesn't apply here;
 	// those bases are pinned outside the allocatable set.)
+	//
+	// SL-13: cop2mode likewise gates the q25/q26 NEON slots — in EE-block
+	// context they hold the COP2 clamp-constant broadcasts (see
+	// NEON_RESERVED_COP2_CLAMPMAX/MIN, iCore-arm64.h), and the clamp validity
+	// flag deliberately RIDES THROUGH the mVU-reuse macro wrappers (they emit
+	// no C call), so an mVU allocation landing there would silently corrupt
+	// the constants for every later clamp site in the block. Micro mode keeps
+	// both (micro programs run under the dispatcher; EE re-materializes on
+	// every path back). Pinned by EeVu0Cop2ClampResidency.MacroModeNeonPool*.
 	void reset(bool cop2mode = false)
 	{
 		// Clear x26/x27 unconditionally so no VI binding survives a
@@ -265,6 +285,7 @@ public:
 		clearGPR(27);
 		gprMap[26].usable = !cop2mode;
 		gprMap[27].usable = !cop2mode;
+		neonCop2Mode = cop2mode;
 		for (int i = 0; i < neonAllocTotal; i++)
 			clearNeon(i);
 		for (int i = 0; i < gprAllocCount; i++)
@@ -872,6 +893,13 @@ public:
 	bool isUsableGPR(int i) const
 	{
 		return i >= 0 && i < gprAllocCount && gprMap[i].usable;
+	}
+
+	// NEON twin of isUsableGPR (SL-13 q25/q26 clamp-const isolation) — see
+	// mVUTestProbe_NeonPoolUsable.
+	bool isUsableNeon(int i) const
+	{
+		return i >= 0 && i < neonAllocTotal && neonUsable(i);
 	}
 
 	// Move VI value into a specific GPR (for address computation etc.)

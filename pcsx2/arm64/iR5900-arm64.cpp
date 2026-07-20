@@ -669,6 +669,12 @@ void iFlushCall(int flushtype)
 	// (Cop2VfCacheScope) so each fork emits its own writebacks.
 	cop2VfCacheFlush();
 
+	// SL-13: the callee may clobber the caller-saved q25/q26 clamp-constant
+	// broadcasts — pure compile-time invalidation (constants are clean by
+	// definition; the next clamp site re-materializes with 2 Dups).
+	// Unconditional on flushtype: ANY C call can clobber them.
+	cop2ClampConstsInvalidate();
+
 	// Free caller-saved registers
 	for (int i = 0; i < NUM_ARM_GPR_REGS; i++)
 	{
@@ -1610,10 +1616,12 @@ struct BranchCompileState
 	u32 blockCycles;
 	EEINST* instInfo;
 	Cop2VfCacheState vfCache;
+	bool clampConstsValid; // SL-13: q25/q26 broadcast validity at the fork point
 
 	void capture()
 	{
 		vfCache = cop2VfCacheGetState();
+		clampConstsValid = cop2ClampConstsValid();
 		blockCycles = s_nBlockCycles;
 		memcpy(constRegs, g_cpuConstRegs, sizeof(g_cpuConstRegs));
 		hasConstReg = g_cpuHasConstReg;
@@ -1626,6 +1634,7 @@ struct BranchCompileState
 	void restore() const
 	{
 		cop2VfCacheSetState(vfCache);
+		cop2ClampConstsSetValid(clampConstsValid);
 		s_nBlockCycles = blockCycles;
 		memcpy(g_cpuConstRegs, constRegs, sizeof(g_cpuConstRegs));
 		g_cpuHasConstReg = hasConstReg;
@@ -3233,6 +3242,7 @@ static void recRecompile(const u32 startpc)
 
 	g_branch = 0;
 	cop2VfCacheReset();
+	cop2ClampConstsInvalidate(); // SL-13: q25/q26 state unknown at block entry
 
 	s_pCurBlock->SetFnptr(block_fnptr);
 	s_nBlockCycles = 0;
