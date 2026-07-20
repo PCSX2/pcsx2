@@ -37,6 +37,26 @@ struct FpuExtraOverflowGuard
 	~FpuExtraOverflowGuard() { EmuConfig.Cpu.Recompiler.fpuExtraOverflow = saved; }
 };
 
+// Scoped eeClampMode selector. Sets the two Recompiler bits SetEEClampMode
+// derives from the mode: fpuOverflow (== CHECK_FPU_OVERFLOW, mode >= 1) gates
+// the result clamp and the MAX/MIN operand clamp; fpuExtraOverflow (mode >= 2)
+// gates the arithmetic operand clamp. Restores both on scope exit.
+struct FpuClampModeGuard
+{
+	bool savedO = EmuConfig.Cpu.Recompiler.fpuOverflow;
+	bool savedX = EmuConfig.Cpu.Recompiler.fpuExtraOverflow;
+	explicit FpuClampModeGuard(int mode)
+	{
+		EmuConfig.Cpu.Recompiler.fpuOverflow = (mode >= 1);
+		EmuConfig.Cpu.Recompiler.fpuExtraOverflow = (mode >= 2);
+	}
+	~FpuClampModeGuard()
+	{
+		EmuConfig.Cpu.Recompiler.fpuOverflow = savedO;
+		EmuConfig.Cpu.Recompiler.fpuExtraOverflow = savedX;
+	}
+};
+
 u32 FloatBits(float f)
 {
 	u32 bits;
@@ -858,6 +878,93 @@ TEST(EeRecFpu, SqrtSNegativeArgumentReturnsAbsRoot)
 	h.LoadProgram({ee::SQRT_S(3, 2)});
 	h.Run();
 	h.ExpectFpr(3, FloatBits(5.0f));
+}
+
+// ----- MAX.S / MIN.S operand clamp (eeClampMode >= 1) ----------------------
+//
+// x86 recCommutativeOp clamps MAX/MIN operands (sign-preserving inf/NaN ->
+// ±fMax via fpuFloat2) whenever CHECK_FPU_OVERFLOW — the op>=2 argument makes
+// the gate always fire, so mode >= 1, a strictly LOWER threshold than ADD/SUB's
+// mode >= 2 operand clamp. AetherSX2's shipped arm64 rec gates the identical
+// clamp on fpuOverflow (options bit 8), confirmed by disassembly. Our port
+// emitted bare Fmaxnm/Fminnm with no operand clamp, so a raw Inf/NaN FPR
+// (reachable via MOV.S/LWC1/MTC1) survived as the wrong finite value — Fmaxnm/
+// Fminnm are NaN-eating and return the *other* operand — which is the True
+// Crime: New York City rainbow (a min(max(uv,0),size) UV-clamp idiom feeding a
+// corrupt palette index). These pin the x86/AetherSX2 behavior.
+//
+// The interpreter's fp_max/fp_min run on raw bits with NO operand clamp, so the
+// (correct) JIT legitimately diverges from interp here — interp is not the
+// FPU-clamp oracle, the x86 JIT is. Hence RunJitNoDiff + GetFprBitsJit rather
+// than the auto-diffing Run()/ExpectFpr.
+TEST(EeRecFpu, MaxSClampsInfOperandAtClampMode2)
+{
+	FpuClampModeGuard guard(2);
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFprBits(1, 0x7F800000u); // +Inf raw bits (poisoned fpr)
+	h.SetFpr(2, 3.0f);
+	h.LoadProgram({ee::MAX_S(3, 1, 2)});
+	h.RunJitNoDiff();
+	// clamp(+Inf) = +fMax, MAX(+fMax, 3) = +fMax. Bare Fmaxnm gives +Inf.
+	EXPECT_EQ(h.GetFprBitsJit(3), 0x7F7FFFFFu);
+}
+
+TEST(EeRecFpu, MaxSClampsNanOperandToPosFmax)
+{
+	FpuClampModeGuard guard(2);
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFprBits(1, 0x7FC00000u); // +NaN raw bits
+	h.SetFpr(2, -5.0f);
+	h.LoadProgram({ee::MAX_S(3, 1, 2)});
+	h.RunJitNoDiff();
+	// clamp(+NaN) = +fMax, MAX(+fMax, -5) = +fMax. Bare Fmaxnm NaN-eats -> -5.0.
+	EXPECT_EQ(h.GetFprBitsJit(3), 0x7F7FFFFFu);
+}
+
+TEST(EeRecFpu, MinSClampsNegNanOperandToNegFmax)
+{
+	FpuClampModeGuard guard(2);
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFprBits(1, 0xFFC00000u); // -NaN raw bits
+	h.SetFpr(2, 5.0f);
+	h.LoadProgram({ee::MIN_S(3, 1, 2)});
+	h.RunJitNoDiff();
+	// clamp(-NaN) = -fMax, MIN(-fMax, 5) = -fMax. Bare Fminnm NaN-eats -> 5.0.
+	EXPECT_EQ(h.GetFprBitsJit(3), 0xFF7FFFFFu);
+}
+
+// The gate is fpuOverflow (mode >= 1), NOT fpuExtraOverflow (mode >= 2): the
+// clamp must still fire at mode 1. A "fix" that reused fpuClampInput (which is
+// gated on mode >= 2) would pass the mode-2 tests above but fail this one.
+TEST(EeRecFpu, MaxSClampsInfOperandAtClampMode1)
+{
+	FpuClampModeGuard guard(1);
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFprBits(1, 0x7F800000u); // +Inf
+	h.SetFpr(2, 3.0f);
+	h.LoadProgram({ee::MAX_S(3, 1, 2)});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetFprBitsJit(3), 0x7F7FFFFFu);
+}
+
+// Lower bound: at mode 0 x86 skips the operand clamp (fpuFloat2 is a no-op when
+// !CHECK_FPU_OVERFLOW), so +Inf passes through unclamped. Guards against the fix
+// over-clamping (making the clamp unconditional). +Inf, not NaN, is used here:
+// mode-0 MAXSS-vs-Fmaxnm NaN handling is a separate pre-existing divergence.
+TEST(EeRecFpu, MaxSDoesNotClampAtClampMode0)
+{
+	FpuClampModeGuard guard(0);
+	EeRecTestHarness h;
+	h.EnableCop1();
+	h.SetFprBits(1, 0x7F800000u); // +Inf
+	h.SetFpr(2, 3.0f);
+	h.LoadProgram({ee::MAX_S(3, 1, 2)});
+	h.RunJitNoDiff();
+	EXPECT_EQ(h.GetFprBitsJit(3), 0x7F800000u); // +Inf, unclamped
 }
 
 // ===========================================================================

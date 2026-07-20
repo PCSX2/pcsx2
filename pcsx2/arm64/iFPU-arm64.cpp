@@ -419,6 +419,26 @@ static a64::VRegister fpuClampInput(const a64::VRegister& src, const a64::VRegis
 	return scratch;
 }
 
+// Source-operand clamp for MAX.S / MIN.S. Identical sign-preserving inf/NaN ->
+// ±fMax to fpuClampInput, but gated on CHECK_FPU_OVERFLOW (eeClampMode >= 1)
+// instead of CHECK_FPU_EXTRA_OVERFLOW (>= 2). x86 routes MAX/MIN through
+// recCommutativeOp with op>=2, whose gate `CHECK_FPU_EXTRA_OVERFLOW || (op>=2)`
+// is always true, so it fpuFloat2-clamps both operands whenever CHECK_FPU_OVERFLOW
+// — a strictly lower threshold than the arithmetic ops. AetherSX2's shipped arm64
+// rec gates the same MAX/MIN clamp on fpuOverflow (options bit 8) vs ADD/SUB's
+// bit 8+9 (verified by disassembly of the 3606 build). Without it a raw Inf/NaN
+// operand (via MOV.S/LWC1/MTC1) survives the NaN-eating Fmaxnm/Fminnm as the
+// wrong finite value — the True Crime: New York City rainbow. Off (mode 0)
+// returns the source reg and emits nothing.
+static a64::VRegister fpuClampMinMaxOperand(const a64::VRegister& src, const a64::VRegister& scratch)
+{
+	if (!CHECK_FPU_OVERFLOW)
+		return src;
+	armAsm->Fmov(scratch, src);
+	fpuClampCompareOperand(scratch);
+	return scratch;
+}
+
 // PS2 add/sub guard-bit emulation for the single-precision fast path.
 //
 // A compliant IEEE FPU keeps "guard" bits to the right of the mantissa during
@@ -1080,12 +1100,18 @@ void recRSQRT_S()
 		XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 }
 
-// PS2 FPU has no NaN concept — match x86 MAXSS/MINSS NaN-eating semantics
-// with Fmaxnm/Fminnm (Fmax/Fmin IEEE-propagate NaN, same trap as mVUclamp1).
-// No clamp needed: MAX/MIN cannot widen finite inputs.
+// PS2 FPU has no NaN concept. At eeClampMode >= 1 the operands are first
+// clamped to ±fMax (sign-preserving, via fpuClampMinMaxOperand — matching x86
+// recCommutativeOp's always-firing op>=2 clamp and AetherSX2's arm64 rec), so a
+// raw Inf/NaN operand cannot reach the max/min. The result never needs clamping
+// (max/min of two finite ±fMax-bounded inputs stays in range). Fmaxnm/Fminnm
+// (not Fmax/Fmin, which IEEE-propagate NaN) give MAXSS/MINSS NaN-eating for the
+// unclamped mode-0 case.
 static void recMAX_S_xmm(int info)
 {
-	armAsm->Fmaxnm(armSRegister(EEREC_D), armSRegister(EEREC_S), armSRegister(EEREC_T));
+	const a64::VRegister s = fpuClampMinMaxOperand(armSRegister(EEREC_S), RSSCRATCH);
+	const a64::VRegister t = fpuClampMinMaxOperand(armSRegister(EEREC_T), RSSCRATCH2);
+	armAsm->Fmaxnm(armSRegister(EEREC_D), s, t);
 }
 
 void recMAX_S()
@@ -1096,7 +1122,9 @@ void recMAX_S()
 
 static void recMIN_S_xmm(int info)
 {
-	armAsm->Fminnm(armSRegister(EEREC_D), armSRegister(EEREC_S), armSRegister(EEREC_T));
+	const a64::VRegister s = fpuClampMinMaxOperand(armSRegister(EEREC_S), RSSCRATCH);
+	const a64::VRegister t = fpuClampMinMaxOperand(armSRegister(EEREC_T), RSSCRATCH2);
+	armAsm->Fminnm(armSRegister(EEREC_D), s, t);
 }
 
 void recMIN_S()
