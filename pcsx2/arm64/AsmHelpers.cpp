@@ -606,9 +606,12 @@ u8* ArmConstantPool::GetBlob(const u8* bytes, size_t len)
 	if (offset + len > m_capacity)
 		return nullptr;
 
-	std::memcpy(&m_base_ptr[offset], bytes, len);
+	u8* const blob_ptr = &m_base_ptr[offset];
+	HostSys::BeginCodeWriteRange(blob_ptr, len);
+	std::memcpy(armGetWritableCodePtr(blob_ptr), bytes, len);
+	HostSys::EndCodeWriteRange(blob_ptr, len);
 	m_used = offset + static_cast<u32>(len);
-	return m_base_ptr + offset;
+	return blob_ptr;
 }
 
 void ArmConstantPool::EmitLoadLiteral(const vixl::aarch64::CPURegister& reg, const u8* literal) const
