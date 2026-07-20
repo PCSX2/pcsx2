@@ -47,7 +47,19 @@ object InGameOverlay {
                     NativeApp.renderUpscalemultiplier(updated.upscaleFloat.coerceIn(0.25f, 8.0f))
                     MainActivityRuntime.upscale.value = updated.upscaleFloat.coerceIn(0.25f, 8.0f)
                 }
-                if (MainActivityRuntime.eState.value != EmuState.STOPPED) updated.applyTo()
+                if (MainActivityRuntime.eState.value != EmuState.STOPPED) {
+                    updated.applyTo()
+                    // Regenerate the native per-game INI (gamesettings/<serial>_<CRC>.ini) from the
+                    // resolved settings so a stale key there can't shadow the base layer. Without this a
+                    // legacy per-game key — e.g. TVShader=3 from a reused data folder — survives every
+                    // "Off": VMManager::ApplySettings reloads EmuConfig.GS from base∘game each commit/boot
+                    // and the game layer wins. gameIniBeginWrite uses a fresh (no-Load) interface, so keys
+                    // the user no longer overrides (TVShader once it equals global) are dropped and the
+                    // file is deleted when empty. No-op when no VM (gameIniBeginWrite early-returns).
+                    currentSerial.value?.takeIf { it.isNotBlank() }?.let { serial ->
+                        ConfigStore.resolveForGame(serial).writeGameSettingsIni(ConfigStore.loadGlobal())
+                    }
+                }
             }
         }
     }

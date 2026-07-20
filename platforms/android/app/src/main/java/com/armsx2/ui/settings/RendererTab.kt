@@ -176,6 +176,17 @@ fun RendererTab(state: MutableState<Settings>) {
                 },
             )
             SettingsDivider()
+            // GitHub #375: where the render sits in a PORTRAIT window. Top (default) frees the
+            // bottom half for touch controls; Center keeps the old vertical-centered behavior.
+            // Live via NativeApp.setPortraitRenderTop (through applyTo); only affects portrait.
+            SegmentedRow(
+                label = str("renderer.portraitPosition.label"),
+                options = listOf(str("renderer.portraitPosition.top"), str("renderer.portraitPosition.center")),
+                selectedIndex = if (s.portraitRenderTop) 0 else 1,
+                description = str("renderer.portraitPosition.description"),
+                onChange = { apply(s.copy(portraitRenderTop = it == 0)) },
+            )
+            SettingsDivider()
             SegmentedGridRow(
                 label = str("renderer.deinterlacing.label"),
                 options = listOf(

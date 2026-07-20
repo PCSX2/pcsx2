@@ -35,14 +35,32 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         uiState.value = uiState.value.copy(category = category)
     }
 
-    fun resetCurrentScope() {
-        val game = uiState.value.game
-        val serial = game?.settingsKey
+    /**
+     * Reset ONLY the tab currently being shown.
+     *
+     * This used to reset the entire scope — `Settings()` globally, or clearing the whole
+     * per-game override blob — so pressing Reset on the Renderer page also wiped Audio,
+     * Network, Performance and Fixes. (Controller settings survived only because they live
+     * in ControllerMappings, not because Reset was scoped.) Categories that own no Settings
+     * fields are a no-op; Controls keeps its own reset row for binds/tunables.
+     */
+    fun resetCurrentScope(category: SettingsCategory) {
+        // Takes the category the SCREEN is showing, not uiState.category: the screen remaps
+        // General -> Performance under a game scope, so reading it here would reset the wrong
+        // (or no) tab.
+        if (!categoryHasResettableSettings(category)) return
+        val serial = uiState.value.game?.settingsKey
         if (serial != null) {
-            ConfigStore.clearOverrides(serial)
+            // Per-game: drop just this tab's override keys, so those settings fall back to
+            // global while every other per-game tweak the user made is preserved.
+            ConfigStore.loadOverrides(serial)?.let { overrides ->
+                val pruned = pruneOverrides(overrides, categoryOverrideKeys(category))
+                if (pruned == null) ConfigStore.clearOverrides(serial)
+                else ConfigStore.saveOverrides(serial, pruned)
+            }
             settings.value = ConfigStore.resolveForGame(serial)
         } else {
-            settings.value = Settings()
+            settings.value = settings.value.resetCategory(category)
             ConfigStore.saveGlobal(settings.value)
         }
     }

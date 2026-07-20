@@ -238,8 +238,11 @@ fun PerformanceTab(state: MutableState<Settings>) {
                 min = 20,
                 max = 75,
                 description = str("perf.ntscFramerate.description"),
-                valueFormatter = { "$it Hz" },
-                onChange = { apply(s.copy(framerateNtsc = it.toFloat())) },
+                // The true PS2 NTSC rate is 59.94 Hz, which rounds to the "60" stop.
+                // Label that stop honestly and snap it to the exact default, so the
+                // canonical rate stays recoverable (an integer slider can't dial 59.94).
+                valueFormatter = { if (it == 60) "59.94 Hz" else "$it Hz" },
+                onChange = { apply(s.copy(framerateNtsc = if (it == 60) 59.94f else it.toFloat())) },
             )
             SettingsDivider()
             IntSliderRow(

@@ -1117,28 +1117,38 @@ private fun <T> HorizontalOptions(
     }
 }
 
-// Free-choice framerate cap (30–120 Hz) instead of a couple of fixed chips. The
-// default (59.94 / 50) is kept exactly until the user drags; dragging snaps to
-// whole Hz so common targets (50/60/72/90/120) are easy to hit.
+// Free-choice framerate slider (20–120 Hz) instead of a couple of fixed chips.
+// The default (59.94 / 50) is kept exactly, and the 60/50 stops snap back to
+// those exact PS2 rates (canonicalFramerate) so the true default is always
+// recoverable; every other stop is whole Hz for easy targets (72/90/120).
 @Composable
 private fun FramerateSlider(title: String, value: Float, onValue: (Float) -> Unit) {
     SectionCard(title) {
         Column(
             Modifier.fillMaxWidth().controllerFocusable(
                 "pause.framerate.$title",
-                onLeft = { onValue((value - 1f).coerceAtLeast(20f)) },
-                onRight = { onValue((value + 1f).coerceAtMost(120f)) },
+                onLeft = { onValue(canonicalFramerate((Math.round(value) - 1).coerceAtLeast(20))) },
+                onRight = { onValue(canonicalFramerate((Math.round(value) + 1).coerceAtMost(120))) },
             ),
         ) {
             val label = if (value % 1f == 0f) "${value.toInt()} Hz" else "%.2f Hz".format(value)
             Text(label, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
             Slider(
                 value = value.coerceIn(20f, 120f),
-                onValueChange = { onValue(Math.round(it).toFloat()) },
+                onValueChange = { onValue(canonicalFramerate(Math.round(it))) },
                 valueRange = 20f..120f,
             )
         }
     }
+}
+
+// The PS2's true NTSC/PAL rates are 59.94/50.00 Hz; the integer slider stops at
+// 60/50 map back to those exact defaults so the canonical rate stays recoverable
+// (dragging otherwise snaps to whole Hz and loses 59.94 forever).
+private fun canonicalFramerate(hz: Int): Float = when (hz) {
+    60 -> 59.94f
+    50 -> 50.00f
+    else -> hz.toFloat()
 }
 
 @Composable

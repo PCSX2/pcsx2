@@ -3,13 +3,16 @@ package com.armsx2.ui.settings
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -79,31 +82,33 @@ fun AppTab() {
             }
         }
 
-        SegmentedRow(
-            label = str("app.theme"),
-            options = listOf(
-                str("app.theme.system"), str("app.theme.light"), str("app.theme.dark"),
-                str("app.theme.black"), str("app.theme.oled"),
-            ),
-            selectedIndex = when (ThemePreferences.mode.value) {
-                ThemeMode.System -> 0
-                ThemeMode.Light -> 1
-                ThemeMode.Dark -> 2
-                ThemeMode.Black -> 3
-                ThemeMode.Oled -> 4
-            },
-            onChange = { index ->
-                ThemePreferences.set(
-                    when (index) {
-                        1 -> ThemeMode.Light
-                        2 -> ThemeMode.Dark
-                        3 -> ThemeMode.Black
-                        4 -> ThemeMode.Oled
-                        else -> ThemeMode.System
-                    },
-                )
-            },
-        )
+        // Theme picker. NOT a SegmentedRow: that's a fixed-width Box, so eleven options would
+        // squeeze into unreadable slivers — this wraps instead. Driven straight off the enum so
+        // adding a colour needs no index bookkeeping; the old version mapped index<->mode by hand
+        // in two separate places, which is precisely how such pairs drift out of sync.
+        Column(Modifier.fillMaxWidth().padding(vertical = 5.dp)) {
+            Text(str("app.theme"), style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                verticalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                ThemeMode.entries.forEach { theme ->
+                    val apply = { ThemePreferences.set(theme) }
+                    FilterChip(
+                        selected = ThemePreferences.mode.value == theme,
+                        onClick = apply,
+                        label = { Text(str("app.theme.${theme.name.lowercase()}")) },
+                        shape = RoundedCornerShape(11.dp),
+                        modifier = Modifier.controllerFocusable(
+                            "app.theme.${theme.name}",
+                            RoundedCornerShape(11.dp),
+                            onConfirm = apply,
+                        ),
+                    )
+                }
+            }
+        }
 
         ToggleRow(
             label = str("app.bootLogo"),

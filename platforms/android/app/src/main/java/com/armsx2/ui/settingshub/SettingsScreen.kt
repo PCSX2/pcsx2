@@ -32,7 +32,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -71,6 +74,21 @@ import com.armsx2.ui.settings.SkinsTab
 import com.armsx2.ui.settings.LocalSettingsScrollState
 
 private data class SettingsSection(val category: SettingsCategory, val titleKey: String, val glyph: String)
+
+/**
+ * Lets L1/R1 flick between settings tabs, the way the old Refresh UI did.
+ *
+ * The callback is registered by [SettingsScreen] while it is composed and cleared on dispose,
+ * so in-game shoulder presses still reach the pad untouched. It lives here rather than in
+ * Compose focus handling because a shoulder button never reaches a Composable — the overlay
+ * nav in MainActivityRuntime.dispatchKeyEvent consumes gamepad keys first, which is the same
+ * reason hotkey and pad-bind capture are handled there.
+ */
+object SettingsCategoryNav {
+    /** -1 = previous tab, +1 = next. Null whenever the settings screen isn't showing. */
+    @Volatile
+    var cycle: ((Int) -> Unit)? = null
+}
 
 /** Retains the settings page's scroll offset across close/reopen. The selected category already
  *  persists in the view-model, so restoring this one offset returns you to where you were (esp.
@@ -148,6 +166,26 @@ fun SettingsScreen(
         ui.category
     }
 
+    // L1/R1 tab cycling — registered only while this screen is composed. The visible-tab
+    // filter has to match SettingsCategoryBar's, or the shoulders would land on a tab the
+    // chip row doesn't show. About is always skipped: it navigates to another screen, which
+    // is not what flicking a shoulder button should do.
+    val gameSpecific = scopeGame != null
+    DisposableEffect(displayedCategory, gameSpecific) {
+        SettingsCategoryNav.cycle = { direction ->
+            val tabs = settingsSections().map { it.category }.filterNot {
+                it == SettingsCategory.About ||
+                    (gameSpecific && it == SettingsCategory.General) ||
+                    (!gameSpecific && it == SettingsCategory.Info)
+            }
+            val current = tabs.indexOf(displayedCategory)
+            if (current >= 0 && tabs.isNotEmpty()) {
+                viewModel.selectCategory(tabs[(current + direction + tabs.size) % tabs.size])
+            }
+        }
+        onDispose { SettingsCategoryNav.cycle = null }
+    }
+
     ArmsBackdrop {
         CompositionLocalProvider(LocalSettingsScrollState provides screenScroll) {
             Column(
@@ -180,8 +218,13 @@ fun SettingsScreen(
                         Box(Modifier.controllerFocusable("settings.action.search", CircleShape, onConfirm = openSearch)) {
                             RoundAction("⌕", str("action.search"), openSearch)
                         }
-                        Box(Modifier.controllerFocusable("settings.action.reset", CircleShape, onConfirm = { showReset = true })) {
-                            RoundAction("↺", str("action.reset"), { showReset = true })
+                        // Only offer Reset where the tab actually owns settings. Controls,
+                        // Hotkeys and Skins keep their state elsewhere (ControllerMappings et
+                        // al) and have their own reset rows, so a button here would no-op.
+                        if (categoryHasResettableSettings(displayedCategory)) {
+                            Box(Modifier.controllerFocusable("settings.action.reset", CircleShape, onConfirm = { showReset = true })) {
+                                RoundAction("↺", str("action.reset"), { showReset = true })
+                            }
                         }
                     },
                 )
@@ -231,9 +274,16 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showReset = false },
             title = { Text(str("action.reset")) },
-            text = { Text(if (scopeGame == null) str("scope.global") else str("scope.game")) },
+            // Name the TAB being reset. The old dialog said only "Global"/"Game", so users
+            // reasonably assumed Reset applied to the page they were on — and it didn't.
+            text = {
+                Text(
+                    categoryTitle(displayedCategory) + " · " +
+                        (if (scopeGame == null) str("scope.global") else str("scope.game")),
+                )
+            },
             confirmButton = {
-                TextButton(onClick = { viewModel.resetCurrentScope(); showReset = false }) {
+                TextButton(onClick = { viewModel.resetCurrentScope(displayedCategory); showReset = false }) {
                     Text(str("action.reset"), color = MaterialTheme.colorScheme.error)
                 }
             },
@@ -309,8 +359,18 @@ private fun SettingsCategoryBar(
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 sections.forEach { section ->
                     val active = section.category == selected
+                    // Keep the SELECTED chip on-screen. controllerFocusable's bringIntoView
+                    // fires on FOCUS, but L1/R1 changes the selection without moving focus —
+                    // so past roughly Network the active tab scrolled off the right edge and
+                    // you were flicking blind. Requesting it whenever selection lands here
+                    // covers both the shoulder path and a touch tap.
+                    val bringIntoView = remember { BringIntoViewRequester() }
+                    LaunchedEffect(active) {
+                        if (active) runCatching { bringIntoView.bringIntoView() }
+                    }
                     FilterChip(
                         modifier = Modifier.height(36.dp)
+                            .bringIntoViewRequester(bringIntoView)
                             .controllerFocusable(
                                 "settings.chip.${section.category.name}",
                                 RoundedCornerShape(11.dp),

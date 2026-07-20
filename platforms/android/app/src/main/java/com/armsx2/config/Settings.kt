@@ -333,6 +333,10 @@ data class Settings(
      *  per-game at game boot (global in the library/menus). Seeded from the legacy global
      *  "ui.orientation" pref on first load. */
     val orientation: Int = 0,
+    /** GitHub #375: in PORTRAIT, top-align the render (true, default) instead of vertical-
+     *  centering (false), so the bottom is free for touch controls. Applied live via
+     *  NativeApp.setPortraitRenderTop; only affects a portrait window. */
+    val portraitRenderTop: Boolean = true,
     /** EmuCore/GS FramerateNTSC — the emulated PS2 vsync rate for NTSC games
      *  (PCSX2 default 59.94). Lowering it slows the game's target rate; raising it
      *  speeds it up. Mirrors NetherSX2's "Framerate For NTSC". */
@@ -692,6 +696,7 @@ data class Settings(
         // Manual frameskip (0..5) — present 1 of every (N+1) frames. Held as a
         // GS-thread global, applied live; no persisted EmuCore key needed.
         if (emitSink == null) NativeApp.setFrameSkip(frameSkip.coerceIn(0, 5))
+        if (emitSink == null) NativeApp.setPortraitRenderTop(portraitRenderTop)
         // Audio (SPU2). Volume/mute are live native setters; the rest are written
         // to the base layer and applied on commit (SPU2 stream reconfigure).
         if (emitSink == null) NativeApp.setAudioVolume(audioVolume.coerceIn(0, 200))
@@ -1451,6 +1456,7 @@ data class Settings(
         put("upscaleFloat", upscaleFloat.toDouble())
         put("customDriverId", customDriverId)
         put("orientation", orientation)
+        put("portraitRenderTop", portraitRenderTop)
         put("framerateNtsc", framerateNtsc.toDouble())
         put("frameratePal", frameratePal.toDouble())
         put("enablePatches", enablePatches)
@@ -1696,6 +1702,7 @@ data class Settings(
                 upscaleFloat = json.optDouble("upscaleFloat", def.upscaleFloat.toDouble()).toFloat(),
                 customDriverId = json.optString("customDriverId", def.customDriverId),
                 orientation = json.optInt("orientation", def.orientation),
+                portraitRenderTop = json.optBoolean("portraitRenderTop", def.portraitRenderTop),
                 framerateNtsc = json.optDouble("framerateNtsc", def.framerateNtsc.toDouble()).toFloat(),
                 frameratePal = json.optDouble("frameratePal", def.frameratePal.toDouble()).toFloat(),
                 enablePatches = json.optBoolean("enablePatches", def.enablePatches),
@@ -1927,6 +1934,7 @@ data class Settings(
             if (current.upscaleFloat != base.upscaleFloat) j.put("upscaleFloat", current.upscaleFloat.toDouble())
             if (current.customDriverId != base.customDriverId) j.put("customDriverId", current.customDriverId)
             if (current.orientation != base.orientation) j.put("orientation", current.orientation)
+            if (current.portraitRenderTop != base.portraitRenderTop) j.put("portraitRenderTop", current.portraitRenderTop)
             if (current.framerateNtsc != base.framerateNtsc) j.put("framerateNtsc", current.framerateNtsc.toDouble())
             if (current.frameratePal != base.frameratePal) j.put("frameratePal", current.frameratePal.toDouble())
             if (current.enablePatches != base.enablePatches) j.put("enablePatches", current.enablePatches)
@@ -2139,6 +2147,7 @@ data class Settings(
             upscaleFloat = if (overrides.has("upscaleFloat")) overrides.getDouble("upscaleFloat").toFloat() else base.upscaleFloat,
             customDriverId = if (overrides.has("customDriverId")) overrides.getString("customDriverId") else base.customDriverId,
             orientation = if (overrides.has("orientation")) overrides.getInt("orientation") else base.orientation,
+            portraitRenderTop = if (overrides.has("portraitRenderTop")) overrides.getBoolean("portraitRenderTop") else base.portraitRenderTop,
             framerateNtsc = if (overrides.has("framerateNtsc")) overrides.getDouble("framerateNtsc").toFloat() else base.framerateNtsc,
             frameratePal = if (overrides.has("frameratePal")) overrides.getDouble("frameratePal").toFloat() else base.frameratePal,
             enablePatches = if (overrides.has("enablePatches")) overrides.getBoolean("enablePatches") else base.enablePatches,

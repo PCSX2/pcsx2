@@ -10,7 +10,13 @@ import androidx.compose.ui.graphics.Color
 import com.armsx2.runtime.MainActivityRuntime
 import androidx.core.content.edit
 
-enum class ThemeMode { System, Dark, Light, Black, Oled }
+/**
+ * "Dark" was renamed to [Blue] because that is what it always was — a blue-tinted dark theme —
+ * which made it a confusing sibling once other hues existed. The stored preference is the enum
+ * NAME, so an existing user's saved "Dark" no longer matches any entry and falls through to the
+ * [Blue] default in [ThemePreferences.load]: same colours, no migration step, nothing to reset.
+ */
+enum class ThemeMode { System, Light, Blue, Purple, Pink, Red, Orange, Green, Teal, Black, Oled }
 
 object ThemePreferences {
     private const val PreferenceKey = "ui.theme.mode"
@@ -18,13 +24,11 @@ object ThemePreferences {
     val mode = mutableStateOf(ThemeMode.System)
 
     fun load() {
-        mode.value = when (MainActivityRuntime.prefs.getString(PreferenceKey, ThemeMode.System.name)) {
-            ThemeMode.System.name -> ThemeMode.System
-            ThemeMode.Light.name -> ThemeMode.Light
-            ThemeMode.Black.name -> ThemeMode.Black
-            ThemeMode.Oled.name -> ThemeMode.Oled
-            else -> ThemeMode.Dark
-        }
+        // Name-matched rather than hand-enumerated, so adding a colour needs no change here.
+        // Anything unrecognised — including the legacy "Dark" — resolves to Blue, which is
+        // exactly what "Dark" used to render as.
+        val stored = MainActivityRuntime.prefs.getString(PreferenceKey, ThemeMode.System.name)
+        mode.value = ThemeMode.entries.firstOrNull { it.name == stored } ?: ThemeMode.Blue
     }
 
     fun set(value: ThemeMode) {
@@ -167,14 +171,84 @@ private val OledScheme = NightScheme.copy(
     outlineVariant = Color(0xFF161616),
 )
 
+/**
+ * A hue-tinted dark scheme, built from Night the same way Black/Oled are.
+ *
+ * Night IS the blue theme, so a colour variant is "Night with a different hue": the accent
+ * changes AND the surfaces carry the same gentle tint of that hue, rather than leaving blue
+ * chrome under a pink accent. Only colour-bearing roles are overridden — text, error and scrim
+ * stay inherited so contrast behaviour is identical across every hue.
+ */
+private fun tintedDark(
+    accent: Color,
+    accentContainer: Color,
+    onAccentContainer: Color,
+    background: Color,
+    surface: Color,
+    surfaceRaised: Color,
+    outline: Color,
+) = NightScheme.copy(
+    primary = accent,
+    onPrimary = Color(0xFF0B0B12),
+    primaryContainer = accentContainer,
+    onPrimaryContainer = onAccentContainer,
+    secondary = accent,
+    onSecondary = Color(0xFF0B0B12),
+    secondaryContainer = accentContainer,
+    onSecondaryContainer = onAccentContainer,
+    tertiary = accent,
+    background = background,
+    surface = surface,
+    surfaceVariant = surfaceRaised,
+    outline = outline,
+    outlineVariant = outline,
+)
+
+private val PurpleScheme = tintedDark(
+    accent = Color(0xFFC7A6FF), accentContainer = Color(0xFF3A2A63), onAccentContainer = Color(0xFFEADDFF),
+    background = Color(0xFF120E1B), surface = Color(0xFF171223), surfaceRaised = Color(0xFF221A33),
+    outline = Color(0xFF3A3050),
+)
+private val PinkScheme = tintedDark(
+    accent = Color(0xFFFFA6D2), accentContainer = Color(0xFF63284A), onAccentContainer = Color(0xFFFFD9E9),
+    background = Color(0xFF1A0F16), surface = Color(0xFF22141D), surfaceRaised = Color(0xFF301C29),
+    outline = Color(0xFF4E3241),
+)
+private val RedScheme = tintedDark(
+    accent = Color(0xFFFF9A90), accentContainer = Color(0xFF6B2B26), onAccentContainer = Color(0xFFFFDAD5),
+    background = Color(0xFF190F0E), surface = Color(0xFF211513), surfaceRaised = Color(0xFF2F1E1B),
+    outline = Color(0xFF503533),
+)
+private val OrangeScheme = tintedDark(
+    accent = Color(0xFFFFB77C), accentContainer = Color(0xFF6A3A15), onAccentContainer = Color(0xFFFFDCC2),
+    background = Color(0xFF17110A), surface = Color(0xFF1F1710), surfaceRaised = Color(0xFF2D2117),
+    outline = Color(0xFF4E3A27),
+)
+private val GreenScheme = tintedDark(
+    accent = Color(0xFF8FD98F), accentContainer = Color(0xFF22512A), onAccentContainer = Color(0xFFCDEFCB),
+    background = Color(0xFF0D150F), surface = Color(0xFF121C15), surfaceRaised = Color(0xFF1B291F),
+    outline = Color(0xFF2E4634),
+)
+private val TealScheme = tintedDark(
+    accent = Color(0xFF7ED8D0), accentContainer = Color(0xFF174E4A), onAccentContainer = Color(0xFFC2F1EC),
+    background = Color(0xFF0A1514), surface = Color(0xFF0F1D1C), surfaceRaised = Color(0xFF172A28),
+    outline = Color(0xFF2A4644),
+)
+
 @Composable
 fun Armsx2Theme(content: @Composable () -> Unit) {
     val scheme = when (ThemePreferences.mode.value) {
         ThemeMode.System -> if (isSystemInDarkTheme()) NightScheme else DayScheme
-        ThemeMode.Dark -> NightScheme
+        ThemeMode.Blue -> NightScheme
         ThemeMode.Light -> DayScheme
         ThemeMode.Black -> BlackScheme
         ThemeMode.Oled -> OledScheme
+        ThemeMode.Purple -> PurpleScheme
+        ThemeMode.Pink -> PinkScheme
+        ThemeMode.Red -> RedScheme
+        ThemeMode.Orange -> OrangeScheme
+        ThemeMode.Green -> GreenScheme
+        ThemeMode.Teal -> TealScheme
     }
     MaterialTheme(
         colorScheme = scheme,
