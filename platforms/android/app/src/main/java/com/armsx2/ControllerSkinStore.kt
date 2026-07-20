@@ -310,11 +310,25 @@ object ControllerSkinStore {
     fun importFromZip(ctx: Context, zipUri: Uri): String? {
         val raw = DocumentFile.fromSingleUri(ctx, zipUri)?.name
             ?.removeSuffix(".zip")?.removeSuffix(".ZIP") ?: "skin"
-        val id = newId(ctx, raw)
+        return importZip(ctx, raw) { ctx.contentResolver.openInputStream(zipUri) }
+    }
+
+    /** Import a .zip already on local disk under an explicit [displayName] — the
+     *  download path ([com.armsx2.SkinRepo]).
+     *
+     *  Separate from [importFromZip] because that one resolves its name through
+     *  DocumentFile.fromSingleUri, which expects a `content://` URI and yields null
+     *  for the `file://` of a downloaded temp — every downloaded skin would land as
+     *  "skin", "skin_1", "skin_2". The repo already knows the real name, so pass it. */
+    fun importFromZipFile(ctx: Context, zip: File, displayName: String): String? =
+        importZip(ctx, displayName) { zip.inputStream() }
+
+    private fun importZip(ctx: Context, rawName: String, open: () -> java.io.InputStream?): String? {
+        val id = newId(ctx, rawName)
         val tmp = File(root(ctx), "$id.tmp").apply { deleteRecursively(); mkdirs() }
         var count = 0
         runCatching {
-            ctx.contentResolver.openInputStream(zipUri)?.use { stream ->
+            open()?.use { stream ->
                 ZipInputStream(stream).use { zin ->
                     while (true) {
                         val e = zin.nextEntry ?: break

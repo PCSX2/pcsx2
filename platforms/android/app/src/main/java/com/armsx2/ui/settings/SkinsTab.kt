@@ -31,7 +31,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.graphics.BitmapFactory
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import com.armsx2.ControllerSkinStore
+import com.armsx2.SkinRepo
 import com.armsx2.config.Settings
 import com.armsx2.i18n.I18n
 import com.armsx2.i18n.str
@@ -56,6 +61,31 @@ fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
     val busy = remember { mutableStateOf(false) }
     val status = remember { mutableStateOf<String?>(null) }
     val skins = remember(refresh.intValue) { ControllerSkinStore.list(ctx) }
+
+    // Downloadable skins (SkinRepo). `remote` stays null until the section is first
+    // opened, which is what distinguishes "not fetched yet" from "fetched, empty".
+    val browseOpen = remember { mutableStateOf(false) }
+    val loadingRemote = remember { mutableStateOf(false) }
+    val remote = remember { mutableStateOf<List<SkinRepo.RemoteSkin>?>(null) }
+    val installing = remember { mutableStateOf<String?>(null) }
+    val previews = remember { mutableStateMapOf<String, ImageBitmap>() }
+
+    // Previews load one at a time after the list arrives, keyed on the list identity so
+    // this doesn't re-run on every recomposition. Sequential rather than parallel: it's
+    // ~14 small PNGs and firing them all at once on a phone connection just makes the
+    // first one land later. SkinRepo caches to disk, so this is a no-op on reopen.
+    androidx.compose.runtime.LaunchedEffect(remote.value) {
+        val list = remote.value ?: return@LaunchedEffect
+        for (r in list) {
+            if (previews.containsKey(r.filePath)) continue
+            val bmp = withContext(Dispatchers.IO) {
+                SkinRepo.preview(ctx, r)?.let { f ->
+                    runCatching { BitmapFactory.decodeFile(f.absolutePath)?.asImageBitmap() }.getOrNull()
+                }
+            }
+            if (bmp != null) previews[r.filePath] = bmp
+        }
+    }
 
     // Skin scope. Like the Pad tab, the tier comes from HOW Settings was opened: for a
     // game (Game scope) or globally. Inside Game scope the user still chooses whether
@@ -128,6 +158,68 @@ fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
             )
         }
         SettingsDivider()
+        ActionRow(
+            if (browseOpen.value) str("skins.browse.hide") else str("skins.browse"),
+            "skins-browse",
+        ) {
+            browseOpen.value = !browseOpen.value
+            // Fetch once, on first open — not at tab composition. The list is a network
+            // round trip nobody who only wants to switch skins should pay for.
+            if (browseOpen.value && remote.value == null && !loadingRemote.value) {
+                loadingRemote.value = true
+                scope.launch {
+                    val list = withContext(Dispatchers.IO) { SkinRepo.fetch() }
+                    remote.value = list
+                    loadingRemote.value = false
+                    if (list.isEmpty()) status.value = I18n.get("skins.browse.failed")
+                }
+            }
+        }
+        if (browseOpen.value) {
+            if (loadingRemote.value) {
+                Text(
+                    str("skins.browse.loading"), color = Color(0xFFAACCFF), fontSize = 15.sp,
+                    modifier = Modifier.padding(vertical = 6.dp),
+                )
+            }
+            val list = remote.value.orEmpty()
+            if (list.isNotEmpty()) {
+                // Packs are authored on iPad and carry an iOS layout Android can't read,
+                // so a downloaded skin keeps the CURRENT button positions and only swaps
+                // the art. Said up front because otherwise it reads as a broken download.
+                Text(
+                    str("skins.browse.layoutNote"),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp,
+                    modifier = Modifier.padding(bottom = 6.dp),
+                )
+            }
+            for (r in list) {
+                SettingsDivider()
+                RemoteSkinRow(
+                    skin = r,
+                    preview = previews[r.filePath],
+                    installing = installing.value == r.filePath,
+                    onInstall = {
+                        if (installing.value == null) {
+                            installing.value = r.filePath
+                            status.value = null
+                            scope.launch {
+                                val id = withContext(Dispatchers.IO) { SkinRepo.install(ctx, r) }
+                                installing.value = null
+                                if (id != null) {
+                                    ControllerSkinStore.setActive(ctx, id, editSerial)
+                                    refresh.intValue++
+                                    status.value = I18n.get("skins.status.importedAndSelected")
+                                } else {
+                                    status.value = I18n.get("skins.browse.installFailed")
+                                }
+                            }
+                        }
+                    },
+                )
+            }
+        }
+        SettingsDivider()
 
         if (busy.value) {
             Text(str("skins.importing"), color = Color(0xFFAACCFF), fontSize = 15.sp,
@@ -197,6 +289,80 @@ fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                     ControllerSkinStore.delete(ctx, s.id)
                     refresh.intValue++
                 },
+            )
+        }
+    }
+}
+
+/** One downloadable skin: preview thumbnail, name + metadata, and a Get button. */
+@Composable
+private fun RemoteSkinRow(
+    skin: SkinRepo.RemoteSkin,
+    preview: ImageBitmap?,
+    installing: Boolean,
+    onInstall: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(84.dp)
+            .clickable(enabled = !installing) { onInstall() }
+            .controllerFocusable(
+                controllerId = "skin-dl-${skin.filePath}",
+                onConfirm = { if (!installing) onInstall() },
+            )
+            .padding(horizontal = 6.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier
+                .width(128.dp)
+                .height(64.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color(0x22FFFFFF)),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (preview != null) {
+                androidx.compose.foundation.Image(
+                    bitmap = preview,
+                    contentDescription = skin.name,
+                    modifier = Modifier.fillMaxWidth(),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                )
+            }
+        }
+        Spacer(Modifier.width(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                skin.name,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+            )
+            val mb = skin.sizeBytes / 1024.0 / 1024.0
+            val meta = buildString {
+                if (skin.buttons > 0) append("${skin.buttons} images")
+                if (skin.sizeBytes > 0) {
+                    if (isNotEmpty()) append("  ·  ")
+                    append(String.format(java.util.Locale.US, "%.1f MB", mb))
+                }
+            }
+            if (meta.isNotEmpty()) {
+                Text(meta, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
+            }
+        }
+        Spacer(Modifier.width(8.dp))
+        Box(
+            Modifier
+                .height(44.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(if (installing) Color(0x22FFFFFF) else Color(0x3355AAFF))
+                .padding(horizontal = 14.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                str(if (installing) "skins.browse.installing" else "skins.browse.get"),
+                color = if (installing) MaterialTheme.colorScheme.onSurfaceVariant else Colors.pasx2_blue,
+                fontSize = 14.sp, fontWeight = FontWeight.Bold,
             )
         }
     }
