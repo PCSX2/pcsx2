@@ -1543,7 +1543,14 @@ void recCOP2_VSUB()
 	if (_Fd_cop2 == 0 && _XYZW_cop2 == 0) return;
 	setupMacroOp_arm64(0x110);
 
-	const a64::VRegister rd = cop2ResultReg(_Fd_cop2, _XYZW_cop2);
+	// NB: claim the operand slots (cop2GetVF) BEFORE the result slot
+	// (cop2ResultReg). A full-mask cop2ResultReg claims _Fd's VF-cache slot
+	// with fill=false — resident but unloaded; if it runs first and _Fd
+	// aliases _Fs/_Ft, the subsequent cop2GetVF finds that empty slot and
+	// hands back garbage instead of the operand (OutRun 2006 cars-through-
+	// floor, 2026-07-20). VADD/VMUL already load operands first; keep VSUB
+	// in the same order, per-branch.
+	a64::VRegister rd;
 	if (_Fs_cop2 == _Ft_cop2)
 	{
 		// PS2 x - x is exactly +0 in every lane: VU floats have no inf/NaN,
@@ -1552,12 +1559,14 @@ void recCOP2_VSUB()
 		// that into +FLT_MAX (True Crime NYC black-world, 2026-07-20).
 		// Mirrors microVU_Upper's (_Ft_ == _Fs_) opCase1 short-circuit —
 		// non-broadcast only, matching x86 ("Don't do this with BC's!").
+		rd = cop2ResultReg(_Fd_cop2, _XYZW_cop2);
 		armAsm->Movi(rd.V4S(), 0);
 	}
 	else
 	{
 		const a64::VRegister fs = cop2GetVF(_Fs_cop2);
 		const a64::VRegister ft = cop2GetVF(_Ft_cop2);
+		rd = cop2ResultReg(_Fd_cop2, _XYZW_cop2);
 		armAsm->Fsub(rd.V4S(), fs.V4S(), ft.V4S());
 		cop2ClampResultReg(rd);
 	}

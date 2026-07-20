@@ -142,6 +142,45 @@ TEST(EeVu0Cop2Macro, VsubSameRegNanPatternIsExactZeroFullMask)
 	}
 }
 
+// OutRun 2006 cars-through-floor regression (2026-07-20): the True Crime VSUB
+// fix hoisted `rd = cop2ResultReg(_Fd)` above the operand loads. For a full
+// mask, cop2ResultReg claims _Fd's VF-cache slot with fill=false (resident but
+// UNLOADED); if _Fd aliases _Fs/_Ft (the ubiquitous `vsub vfd,vfd,vft`), the
+// following cop2GetVF finds that empty slot and returns garbage instead of the
+// operand. VADD/VMUL load operands before claiming rd — VSUB must too. Trigger
+// needs _Fd non-resident (fresh cache), which a single op guarantees.
+TEST(EeVu0Cop2Macro, VsubFullMaskFdAliasesFsReadsRealOperand)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(5, 100.0f, 200.0f, 300.0f, 400.0f);
+	h.SeedVu0Vf(6, 10.0f, 20.0f, 30.0f, 40.0f);
+	h.LoadProgram({VSUB_C2(mask_xyzw, /*fd*/5, /*fs*/5, /*ft*/6)});
+	h.Run();
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(5, 'x'), 90.0f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(5, 'y'), 180.0f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(5, 'z'), 270.0f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(5, 'w'), 360.0f);
+	for (char l : {'x', 'y', 'z', 'w'})
+		EXPECT_EQ(h.GetVu0VfBitsJit(5, l), h.GetVu0VfBitsInterp(5, l));
+}
+
+TEST(EeVu0Cop2Macro, VsubFullMaskFdAliasesFtReadsRealOperand)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vf(5, 10.0f, 20.0f, 30.0f, 40.0f);
+	h.SeedVu0Vf(6, 100.0f, 200.0f, 300.0f, 400.0f);
+	h.LoadProgram({VSUB_C2(mask_xyzw, /*fd*/5, /*fs*/6, /*ft*/5)});
+	h.Run();
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(5, 'x'), 90.0f);
+	EXPECT_FLOAT_EQ(h.GetVu0VfJit(5, 'w'), 360.0f);
+	for (char l : {'x', 'y', 'z', 'w'})
+		EXPECT_EQ(h.GetVu0VfBitsJit(5, l), h.GetVu0VfBitsInterp(5, l));
+}
+
 TEST(EeVu0Cop2Macro, VaddMaskedYZOnlyTouchesYZ)
 {
 	EeRecTestHarness h;
