@@ -45,8 +45,29 @@ class PatchManagerViewModel(application: Application) : AndroidViewModel(applica
         private set
 
     fun refresh() {
+        // Scope the list to the running game. Every .pnach on disk used to be listed under
+        // EVERY game — and worse, syncAllEnableLists below then pushed all of their cheat
+        // names into the enable list — which is why e.g. Rule of Rose cheats appeared inside
+        // FFX. Mirrors the core's own lookup (Patch::GetPnachTemplate): <serial>_<crc>*.pnach
+        // or <crc>*.pnach. With no game running (library context) keep the unfiltered list,
+        // since there's nothing to scope to.
+        // FAIL OPEN. currentSerial is a settingsKey: the serial for discs, but a FILENAME STEM
+        // otherwise (and it can be stale from a previously-run game). Scoping on a stem hides
+        // every installed file — they're named <SERIAL>_<CRC>.pnach — which showed up as
+        // "Installed patches & cheats: 0" right after a successful install. Only scope when we
+        // genuinely have a PS2 serial to scope by; otherwise show everything, because hiding a
+        // file the user just installed is far worse than listing a few extras.
+        val serial = InGameOverlay.currentSerial.value
+            ?.trim()?.uppercase()
+            ?.takeIf { Regex("^[A-Z]{4}-\\d{5}$").matches(it) }
+        val crc = runCatching { NativeApp.getGameCRC() }.getOrNull()?.takeIf { it.length == 8 }?.uppercase()
         val files = patchDirectories().flatMap { directory ->
             if (!directory.isDirectory) emptyList() else directory.walkTopDown().filter { it.isFile && it.extension.equals("pnach", true) }.toList()
+        }.filter { f ->
+            if (serial == null) true else {
+                val n = f.nameWithoutExtension.uppercase()
+                n.startsWith("${serial}_") || (crc != null && n.startsWith(crc))
+            }
         }.distinctBy { it.absolutePath }.sortedBy { it.name.lowercase() }
         state.value = state.value.copy(settings = scopedSettings(), files = files)
         // Reflect every file's on-disk enabled cheats into the native Enable list so
@@ -208,28 +229,69 @@ class PatchManagerViewModel(application: Application) : AndroidViewModel(applica
             state.value = snapshot.copy(error = "Select at least one patch or cheat first.")
             return
         }
+        // Route each selected entry by its declared source. "patches" (widescreen / 60fps /
+        // game-fix) → the patches/ folder + [Patches] Enable list, which Patch.cpp applies
+        // UNCONDITIONALLY. Everything else → cheats/ + [Cheats], which only applies when
+        // Enable Cheats is on (and never under RA hardcore). Writing a patch into cheats/ was
+        // the bug: 60fps patches (e.g. KH2FM) silently stopped applying. dirs: [0]=cheats [1]=patches.
+        val patchEntries = chosen.filter { it.source == "patches" }
+        val cheatEntries = chosen.filter { it.source != "patches" }
+        // At LOAD time the core only matches <serial>_<CRC>*.pnach or <CRC>*.pnach
+        // (Patch::GetPnachTemplate — the bare <serial>_* wildcard is UI-enumeration only,
+        // since FindPatchFilesOnDisk passes all_crcs=for_ui). A serial-only filename
+        // therefore matches NOTHING: the install appeared to succeed and the cheats could
+        // never apply. Fall back to the running game's CRC, and refuse outright rather than
+        // write a file the core can never load.
+        val crcForName = snapshot.onlineCrc.takeIf { it.isNotBlank() }
+            ?: runCatching { NativeApp.getGameCRC() }.getOrNull()?.takeIf { it.length == 8 }
+        if (crcForName == null) {
+            runCatching {
+                NativeApp.emulog(
+                    "@@ANDROID_PNACH_INSTALL@@ REFUSED serial=${snapshot.onlineSerial} " +
+                        "onlineCrc='${snapshot.onlineCrc}' (no CRC; cannot name a loadable pnach)",
+                )
+            }
+            state.value = state.value.copy(
+                error = "Can't install for ${snapshot.onlineSerial}: no disc CRC known. " +
+                    "Launch the game once, then install — the core only loads <serial>_<CRC>.pnach.",
+            )
+            return
+        }
+        val fileName = "${snapshot.onlineSerial}_${crcForName}.pnach"
         viewModelScope.launch {
+            val dirs = patchDirectories()
             val ok = withContext(Dispatchers.IO) {
                 runCatching {
-                    val pnach = PatchRepo.buildPnach(snapshot.onlineTitle, chosen)
-                    val dir = patchDirectories().first().apply { mkdirs() }
-                    val fileName = if (snapshot.onlineCrc.isNotBlank()) {
-                        "${snapshot.onlineSerial}_${snapshot.onlineCrc}.pnach"
-                    } else {
-                        "${snapshot.onlineSerial}.pnach"
+                    if (patchEntries.isNotEmpty()) {
+                        File(dirs[1].apply { mkdirs() }, fileName)
+                            .writeText(PatchRepo.buildPnach(snapshot.onlineTitle, patchEntries))
                     }
-                    File(dir, fileName).writeText(pnach)
+                    if (cheatEntries.isNotEmpty()) {
+                        File(dirs[0].apply { mkdirs() }, fileName)
+                            .writeText(PatchRepo.buildPnach(snapshot.onlineTitle, cheatEntries))
+                    }
                     true
                 }.getOrDefault(false)
             }
+            // Decisive install trace: the filename actually written, where, and whether it
+            // stuck. "I installed it but the list shows 0" must be answerable from an emulog.
+            runCatching {
+                NativeApp.emulog(
+                    "@@ANDROID_PNACH_INSTALL@@ ok=$ok file=$fileName patches=${patchEntries.size} " +
+                        "cheats=${cheatEntries.size} patchDir=${dirs[1].absolutePath} cheatDir=${dirs[0].absolutePath}",
+                )
+            }
             if (ok) {
-                update { it.copy(enableCheats = true) }
-                // Freshly-installed cheats are written as labelled groups; add their names
-                // to the [Cheats] Enable list or EnablePatches skips them despite
-                // EnableCheats being on (see pushEnableList / toggleLocalCheat). Installed
-                // into the cheats folder, so the Cheats section.
-                val names = chosen.mapNotNull { it.name.takeIf(String::isNotBlank) }.distinct().toTypedArray()
-                if (names.isNotEmpty()) runCatching { NativeApp.setEnabledPatches(true, names, names) }
+                // Labelled groups only apply when their name is in the matching Enable list.
+                if (patchEntries.isNotEmpty()) {
+                    val pn = patchEntries.mapNotNull { it.name.takeIf(String::isNotBlank) }.distinct().toTypedArray()
+                    if (pn.isNotEmpty()) runCatching { NativeApp.setEnabledPatches(false, pn, pn) } // [Patches]
+                }
+                if (cheatEntries.isNotEmpty()) {
+                    update { it.copy(enableCheats = true) } // only cheats are gated on Enable Cheats
+                    val cn = cheatEntries.mapNotNull { it.name.takeIf(String::isNotBlank) }.distinct().toTypedArray()
+                    if (cn.isNotEmpty()) runCatching { NativeApp.setEnabledPatches(true, cn, cn) } // [Cheats]
+                }
                 reloadCore()
                 state.value = state.value.copy(
                     message = "Installed ${chosen.size} item(s) for ${snapshot.onlineSerial}. Restart the game if it's running.",

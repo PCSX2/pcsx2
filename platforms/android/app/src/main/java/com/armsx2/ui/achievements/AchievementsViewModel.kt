@@ -23,6 +23,8 @@ data class AchievementItem(
     // Which RA subset this achievement belongs to (0 = base/shared set). Used to split
     // base-game vs bonus-subset achievements into tabs.
     val subsetId: Int = 0,
+    // ACTIVE CHALLENGE (RA "primed") — a can-do-right-now challenge; sorted to the top.
+    val primed: Boolean = false,
 )
 
 /** An RA subset (base set or a bonus subset) for the achievements tab selector. */
@@ -248,13 +250,15 @@ fun parseAchievementItems(json: String): List<AchievementItem> {
                     progress = item.optString("measuredProgress"),
                     iconUrl = item.optString("iconUrl", item.optString("badgeUrl")),
                     subsetId = item.optInt("subsetId"),
+                    primed = item.optBoolean("primed"),
                 ),
             )
         }
-    }
-    // Keep RetroAchievements' native list order (its display/progression order = the
-    // story/unlock sequence). We used to re-sort unlocked-first then alphabetically by
-    // title, which made it impossible to see what to unlock next; restore progression.
+    }.sortedBy { if (it.primed) 0 else 1 }
+    // Float ACTIVE-CHALLENGE (primed) achievements to the top for quick identification.
+    // sortedBy is stable, so every non-primed item keeps RetroAchievements' native list
+    // order (its display/progression order = the story/unlock sequence); we used to
+    // re-sort unlocked-first then alphabetically, which hid what to unlock next.
 }
 
 /** Parse the top-level "subsets" array (base + bonus subsets) emitted by the native side. */

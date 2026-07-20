@@ -84,13 +84,23 @@ fun MemoryCardScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: Memo
                 item { EmptyState(str("memcard.empty"), str("memcard.size.hint"), str("memcard.create"), { createDialog = true }, Modifier.fillMaxWidth().height(280.dp).controllerFocusable("memcard.empty.create", onConfirm = { createDialog = true })) }
             } else {
                 items(state.cards, key = { it.file.absolutePath }) { item ->
+                    // Scope-aware: with a game in context the slot buttons write a PER-GAME
+                    // override; from the library they set the global default. Previously BOTH
+                    // slot buttons were always global and the separate "This game" button was
+                    // hardcoded to slot 1 — so "MC2 in slot 2 for this game" was impossible to
+                    // express, and every game just kept whatever card was assigned globally last.
+                    val gameSlot1 = serial?.let { viewModel.perGameCard(it, 1) }
+                    val gameSlot2 = serial?.let { viewModel.perGameCard(it, 2) }
                     MemoryCardRow(
                         item = item,
-                        onSlot1 = { viewModel.assign(1, item) },
-                        onSlot2 = { viewModel.assign(2, item) },
+                        perGame = serial != null,
+                        slot1Active = if (serial != null) gameSlot1.equals(item.file.name, true) else item.slot1,
+                        slot2Active = if (serial != null) gameSlot2.equals(item.file.name, true) else item.slot2,
+                        onSlot1 = { if (serial != null) viewModel.assignToGame(serial, 1, item) else viewModel.assign(1, item) },
+                        onSlot2 = { if (serial != null) viewModel.assignToGame(serial, 2, item) else viewModel.assign(2, item) },
+                        onClearSlot1 = serial?.let { s -> { viewModel.clearGameCard(s, 1) } },
+                        onClearSlot2 = serial?.let { s -> { viewModel.clearGameCard(s, 2) } },
                         onDelete = { deleteTarget = item },
-                        perGameActive = serial != null && viewModel.perGameCard(serial, 1)?.equals(item.file.name, true) == true,
-                        onAssignGame = serial?.let { { viewModel.assignToGame(it, 1, item) } },
                     )
                 }
             }
@@ -101,7 +111,7 @@ fun MemoryCardScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: Memo
     if (createDialog) {
         CreateCardDialog(
             onDismiss = { createDialog = false },
-            onCreate = { name, size -> viewModel.create(name, size); createDialog = false },
+            onCreate = { name, type, size -> viewModel.create(name, type, size); createDialog = false },
         )
     }
     deleteTarget?.let { item ->
@@ -126,11 +136,14 @@ fun MemoryCardScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: Memo
 @Composable
 private fun MemoryCardRow(
     item: MemoryCardItem,
+    perGame: Boolean,
+    slot1Active: Boolean,
+    slot2Active: Boolean,
     onSlot1: () -> Unit,
     onSlot2: () -> Unit,
+    onClearSlot1: (() -> Unit)?,
+    onClearSlot2: (() -> Unit)?,
     onDelete: () -> Unit,
-    perGameActive: Boolean = false,
-    onAssignGame: (() -> Unit)? = null,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -140,11 +153,11 @@ private fun MemoryCardRow(
     ) {
         Column(Modifier.padding(13.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("▤", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.headlineMedium)
+                Text(if (item.file.isDirectory) "🗀" else "▤", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.headlineMedium)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(item.file.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(humanSize(item.size), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(if (item.file.isDirectory) "Folder" else humanSize(item.size), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             Row(
@@ -152,17 +165,20 @@ private fun MemoryCardRow(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (onAssignGame != null) {
-                    if (perGameActive) {
-                        StatusChip(str("memcard.thisGame.active"), Success)
-                    } else {
-                        OutlinedButton(onClick = onAssignGame, modifier = Modifier.controllerFocusable("memcard.${item.file.name}.thisGame", onConfirm = onAssignGame)) { Text(str("memcard.thisGame")) }
-                    }
+                // The slot buttons ARE the per-game control when a game is in context, so the
+                // old slot-1-only "This game" button is gone. "Use global" undoes a per-game
+                // pick — previously there was no way to undo one at all.
+                if (slot1Active) StatusChip(str("memcard.slot1.active"), Success) else OutlinedButton(onClick = onSlot1, modifier = Modifier.controllerFocusable("memcard.${item.file.name}.slot1", onConfirm = onSlot1)) { Text(str("memcard.slot1")) }
+                if (perGame && slot1Active && onClearSlot1 != null) {
                     Spacer(Modifier.width(7.dp))
+                    TextButton(onClick = onClearSlot1, modifier = Modifier.controllerFocusable("memcard.${item.file.name}.slot1.global", onConfirm = onClearSlot1)) { Text(str("memcard.useGlobal")) }
                 }
-                if (item.slot1) StatusChip(str("memcard.slot1.active"), Success) else OutlinedButton(onClick = onSlot1, modifier = Modifier.controllerFocusable("memcard.${item.file.name}.slot1", onConfirm = onSlot1)) { Text(str("memcard.slot1")) }
                 Spacer(Modifier.width(7.dp))
-                if (item.slot2) StatusChip(str("memcard.slot2.active"), Success) else OutlinedButton(onClick = onSlot2, modifier = Modifier.controllerFocusable("memcard.${item.file.name}.slot2", onConfirm = onSlot2)) { Text(str("memcard.slot2")) }
+                if (slot2Active) StatusChip(str("memcard.slot2.active"), Success) else OutlinedButton(onClick = onSlot2, modifier = Modifier.controllerFocusable("memcard.${item.file.name}.slot2", onConfirm = onSlot2)) { Text(str("memcard.slot2")) }
+                if (perGame && slot2Active && onClearSlot2 != null) {
+                    Spacer(Modifier.width(7.dp))
+                    TextButton(onClick = onClearSlot2, modifier = Modifier.controllerFocusable("memcard.${item.file.name}.slot2.global", onConfirm = onClearSlot2)) { Text(str("memcard.useGlobal")) }
+                }
                 Spacer(Modifier.width(7.dp))
                 TextButton(onClick = onDelete, enabled = !item.slot1 && !item.slot2, modifier = Modifier.controllerFocusable("memcard.${item.file.name}.delete", onConfirm = onDelete)) { Text(str("action.delete")) }
             }
@@ -171,9 +187,10 @@ private fun MemoryCardRow(
 }
 
 @Composable
-private fun CreateCardDialog(onDismiss: () -> Unit, onCreate: (String, Int) -> Unit) {
+private fun CreateCardDialog(onDismiss: () -> Unit, onCreate: (String, Int, Int) -> Unit) {
     var name by remember { mutableStateOf("MemoryCard") }
     var size by remember { mutableIntStateOf(1) }
+    var type by remember { mutableIntStateOf(1) } // 1 = File, 2 = Folder
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(str("memcard.newCard.title")) },
@@ -181,16 +198,27 @@ private fun CreateCardDialog(onDismiss: () -> Unit, onCreate: (String, Int) -> U
             Column {
                 OutlinedTextField(name, { name = it }, label = { Text(str("memcard.cardName.label")) }, singleLine = true)
                 Spacer(Modifier.height(12.dp))
+                Text(str("memcard.type.label"))
                 Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                    listOf(1 to "8 MB", 2 to "16 MB", 3 to "32 MB", 4 to "64 MB").forEach { (id, label) ->
-                        Surface(onClick = { size = id }, modifier = Modifier.controllerFocusable("memcard.create.size$id", RoundedCornerShape(10.dp), onConfirm = { size = id }), shape = RoundedCornerShape(10.dp), color = if (size == id) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant) {
+                    listOf(1 to str("memcard.type.file"), 2 to str("memcard.type.folder")).forEach { (id, label) ->
+                        Surface(onClick = { type = id }, modifier = Modifier.controllerFocusable("memcard.create.type$id", RoundedCornerShape(10.dp), onConfirm = { type = id }), shape = RoundedCornerShape(10.dp), color = if (type == id) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant) {
                             Text(label, Modifier.padding(horizontal = 10.dp, vertical = 8.dp))
+                        }
+                    }
+                }
+                if (type == 1) {
+                    Spacer(Modifier.height(12.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                        listOf(1 to "8 MB", 2 to "16 MB", 3 to "32 MB", 4 to "64 MB").forEach { (id, label) ->
+                            Surface(onClick = { size = id }, modifier = Modifier.controllerFocusable("memcard.create.size$id", RoundedCornerShape(10.dp), onConfirm = { size = id }), shape = RoundedCornerShape(10.dp), color = if (size == id) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant) {
+                                Text(label, Modifier.padding(horizontal = 10.dp, vertical = 8.dp))
+                            }
                         }
                     }
                 }
             }
         },
-        confirmButton = { Button(onClick = { onCreate(name, size) }, modifier = Modifier.controllerFocusable("memcard.create", onConfirm = { onCreate(name, size) })) { Text(str("memcard.create")) } },
+        confirmButton = { Button(onClick = { onCreate(name, type, size) }, modifier = Modifier.controllerFocusable("memcard.create", onConfirm = { onCreate(name, type, size) })) { Text(str("memcard.create")) } },
         dismissButton = { TextButton(onClick = onDismiss, modifier = Modifier.controllerFocusable("memcard.create.cancel", onConfirm = onDismiss)) { Text(str("action.cancel")) } },
     )
 }

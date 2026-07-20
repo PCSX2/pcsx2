@@ -45,15 +45,32 @@ class MemoryCardViewModel(application: Application) : AndroidViewModel(applicati
         state.value = state.value.copy(cards = cards)
     }
 
-    fun create(name: String, sizeType: Int) {
+    fun create(name: String, type: Int, sizeType: Int) {
         if (!MainActivityRuntime.nativeReady.value) {
             state.value = state.value.copy(error = "The emulator core is still starting.")
             return
         }
         val safe = name.trim().replace(Regex("[\\/:*?\"<>|]"), "_").ifBlank { "MemoryCard" }
-        val fileName = if (safe.endsWith(".ps2", true)) safe else "$safe.ps2"
-        val success = runCatching { NativeApp.createMemoryCard(fileName, 1, sizeType.coerceIn(1, 4)) }.getOrDefault(false)
-        state.value = if (success) state.value.copy(message = "Created $fileName.") else state.value.copy(error = "Unable to create $fileName.")
+        val cardName: String
+        val success = if (type == 2) {
+            // FOLDER card = a directory holding an empty `_pcsx2_superblock` marker (the core
+            // identifies a folder card by that marker). Build it with the JAVA file API, NOT
+            // the native path: the libc fopen the core's FileMcd_CreateNewCard uses to write
+            // the superblock is DENIED on the FUSE-backed memcard storage (the same denial the
+            // folder mkdir hit — and only CreateDirectoryPath got a Java fallback, file writes
+            // didn't), so the native path leaves an empty, invalid 0-byte folder. Java file ops
+            // work here. No .ps2 suffix; size is ignored for folder cards.
+            cardName = safe
+            runCatching {
+                val dir = File(cardDirectory(), safe).apply { mkdirs() }
+                File(dir, "_pcsx2_superblock").createNewFile()
+                dir.isDirectory
+            }.getOrDefault(false)
+        } else {
+            cardName = if (safe.endsWith(".ps2", true)) safe else "$safe.ps2"
+            runCatching { NativeApp.createMemoryCard(cardName, 1, sizeType.coerceIn(1, 4)) }.getOrDefault(false)
+        }
+        state.value = if (success) state.value.copy(message = "Created $cardName.") else state.value.copy(error = "Unable to create $cardName.")
         refresh()
     }
 
@@ -207,6 +224,36 @@ class MemoryCardViewModel(application: Application) : AndroidViewModel(applicati
             state.value.copy(message = "${item.file.name} set for this game (slot $slot). Restart the game to apply.")
         } else {
             state.value.copy(error = "Unable to set a per-game card.")
+        }
+        refresh()
+    }
+
+    /**
+     * Drop this game's per-game card for [slot] so it falls back to the global choice.
+     *
+     * There was previously no way to undo a per-game assignment at all. ConfigStore.save
+     * stores a DIFF against global, so writing the global value back makes the key vanish
+     * from the override blob rather than pinning it to the same value.
+     */
+    fun clearGameCard(serial: String, slot: Int) {
+        val global = ConfigStore.loadGlobal()
+        val resolved = ConfigStore.resolveForGame(serial)
+        val updated = if (slot == 1) {
+            resolved.copy(
+                memoryCardSlot1Enabled = global.memoryCardSlot1Enabled,
+                memoryCardSlot1Filename = global.memoryCardSlot1Filename,
+            )
+        } else {
+            resolved.copy(
+                memoryCardSlot2Enabled = global.memoryCardSlot2Enabled,
+                memoryCardSlot2Filename = global.memoryCardSlot2Filename,
+            )
+        }
+        val ok = runCatching { ConfigStore.save(SettingsScope.Game, serial, updated) }.isSuccess
+        state.value = if (ok) {
+            state.value.copy(message = "Slot $slot follows the global card again. Restart the game to apply.")
+        } else {
+            state.value.copy(error = "Unable to clear the per-game card.")
         }
         refresh()
     }

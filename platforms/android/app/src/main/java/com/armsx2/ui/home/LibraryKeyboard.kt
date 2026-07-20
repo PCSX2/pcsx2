@@ -42,6 +42,9 @@ object LibraryKeyboard {
     val row = mutableIntStateOf(0)
     val col = mutableIntStateOf(0)
 
+    /** Caps-lock toggle: letter keys emit + render uppercase while true. Sticky until toggled off. */
+    val shifted = mutableStateOf(false)
+
     /** Live buffer, seeded from the current query on open; every edit pushes to onChange. */
     val text = mutableStateOf("")
     private var onChange: (String) -> Unit = {}
@@ -53,12 +56,13 @@ object LibraryKeyboard {
     const val BACKSPACE = "⌫"
     const val CLEAR = "clear"
     const val DONE = "done"
+    const val SHIFT = "shift"
 
     val rows: List<List<String>> = listOf(
         listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0"),
         listOf("q", "w", "e", "r", "t", "y", "u", "i", "o", "p"),
         listOf("a", "s", "d", "f", "g", "h", "j", "k", "l"),
-        listOf("z", "x", "c", "v", "b", "n", "m"),
+        listOf(SHIFT, "z", "x", "c", "v", "b", "n", "m"),
         listOf(SPACE, BACKSPACE, CLEAR, DONE),
     )
 
@@ -68,6 +72,7 @@ object LibraryKeyboard {
         this.placeholder.value = placeholder
         row.intValue = 0
         col.intValue = 0
+        shifted.value = false
         visible.value = true
     }
 
@@ -88,12 +93,13 @@ object LibraryKeyboard {
     }
 
     fun pressKey(key: String) {
+        if (key == SHIFT) { shifted.value = !shifted.value; return }
         val next = when (key) {
             SPACE -> text.value + " "
             BACKSPACE -> text.value.dropLast(1)
             CLEAR -> ""
             DONE -> { close(); return }
-            else -> text.value + key
+            else -> text.value + (if (shifted.value) key.uppercase() else key)
         }
         text.value = next
         onChange(next)
@@ -105,7 +111,7 @@ object LibraryKeyboard {
     private fun weightOf(key: String): Float = when (key) {
         SPACE -> 4f
         DONE -> 2f
-        BACKSPACE, CLEAR -> 1.6f
+        BACKSPACE, CLEAR, SHIFT -> 1.6f
         else -> 1f
     }
 
@@ -114,7 +120,8 @@ object LibraryKeyboard {
         BACKSPACE -> "⌫"
         CLEAR -> "Clear"
         DONE -> "Done"
-        else -> key
+        SHIFT -> "⇧"
+        else -> if (shifted.value) key.uppercase() else key
     }
 
     @Composable
@@ -153,7 +160,8 @@ object LibraryKeyboard {
                         keys.forEachIndexed { c, key ->
                             KeyCap(
                                 label = glyphOf(key),
-                                selected = row.intValue == r && col.intValue == c,
+                                selected = (row.intValue == r && col.intValue == c) ||
+                                    (key == SHIFT && shifted.value),
                                 weight = weightOf(key),
                                 onClick = {
                                     row.intValue = r

@@ -255,6 +255,25 @@ private fun OnlineBrowser(
                     if (state.onlineTitle.isNotBlank()) {
                         Text(state.onlineTitle, style = MaterialTheme.typography.titleSmall)
                     }
+                    // Install/Refresh sit ABOVE the lists. They used to render after both sections,
+                    // so with a large cheat list (54 for GoW2, often far more) the Install button
+                    // was pushed off the bottom of the screen: users ticked a patch, found no way
+                    // to apply it, and backed out — and the tick is only a transient selection, so
+                    // nothing was ever installed and the tick was gone on return. Pinned above the
+                    // lists, the action stays reachable no matter how long they get.
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Button(
+                            onClick = viewModel::installSelected,
+                            enabled = state.onlineSelected.isNotEmpty(),
+                            modifier = Modifier.controllerFocusable("patches.online.install", onConfirm = { if (state.onlineSelected.isNotEmpty()) viewModel.installSelected() }),
+                        ) {
+                            Text("${str("patches.online.install")} (${state.onlineSelected.size})")
+                        }
+                        TextButton(
+                            onClick = { viewModel.fetchOnline(game) },
+                            modifier = Modifier.controllerFocusable("patches.online.refresh", onConfirm = { viewModel.fetchOnline(game) }),
+                        ) { Text(str("games.card.refresh")) }
+                    }
                     // Patches and cheats each get their own collapsible section. Patches (few — the
                     // whole point of searching) expand by default; cheats (often thousands) collapse
                     // by default, which kills BOTH the endless scroll AND the lag: a collapsed
@@ -275,19 +294,6 @@ private fun OnlineBrowser(
                                 OnlineEntryRow(entry, entry.name in state.onlineSelected) { viewModel.toggleOnline(entry.name) }
                             }
                         }
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Button(
-                            onClick = viewModel::installSelected,
-                            enabled = state.onlineSelected.isNotEmpty(),
-                            modifier = Modifier.controllerFocusable("patches.online.install", onConfirm = { if (state.onlineSelected.isNotEmpty()) viewModel.installSelected() }),
-                        ) {
-                            Text("${str("patches.online.install")} (${state.onlineSelected.size})")
-                        }
-                        TextButton(
-                            onClick = { viewModel.fetchOnline(game) },
-                            modifier = Modifier.controllerFocusable("patches.online.refresh", onConfirm = { viewModel.fetchOnline(game) }),
-                        ) { Text(str("games.card.refresh")) }
                     }
                 }
             }
