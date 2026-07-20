@@ -236,4 +236,92 @@ TEST(EeVu0LqSqRoundTrip, SqThenLqReturnsOriginalVf)
 	EXPECT_EQ(h.GetVu0VfBitsJit(11, 'w'), 0xCAFE0004u);
 }
 
+// =========================================================================
+//  S4-3: LQC2/SQC2 fastmem seam contracts. The fastmem shape must not
+//  disturb surrounding residency: dirty caller-saved scalar allocations,
+//  const-folded base addresses, resident 128-bit MMI quads, and a dirty
+//  COP2 VF compile cache must all produce correct values across the op.
+//  (Pre-S4-3 these held because the op paid a full iFlushCall; post-S4-3
+//  they must hold with the allocator riding through.)
+// =========================================================================
+
+TEST(EeVu0Lqc2, RidesDirtyScalarsAndConstFoldedBase)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.WriteU32(0x00100500, 0x00C0FFEE);
+	h.WriteU32(0x00100504, 0x00C0FFEF);
+	h.WriteU32(0x00100508, 0x00C0FFF0);
+	h.WriteU32(0x0010050C, 0x00C0FFF1);
+	h.SetGpr64(10, 0x1111);
+	h.SetGpr64(11, 0x2222);
+	h.LoadProgram({
+		LUI(r_t0, 0x0010),          // base built in-block: const-fold path
+		ORI(r_t0, r_t0, 0x0500),
+		DADDU(12, 10, 11),          // dirty caller-saved scalar allocs...
+		DADDU(13, 12, 10),
+		LQC2(/*ft*/6, /*base*/r_t0, /*offset*/0),
+		DADDU(14, 12, 13),          // ...consumed after the op
+	});
+	h.Run();
+	EXPECT_EQ(h.GetVu0VfBitsJit(6, 'x'), 0x00C0FFEEu);
+	EXPECT_EQ(h.GetVu0VfBitsJit(6, 'w'), 0x00C0FFF1u);
+	h.ExpectGpr64(12, 0x3333);
+	h.ExpectGpr64(13, 0x4444);
+	h.ExpectGpr64(14, 0x7777);
+}
+
+TEST(EeVu0Sqc2, StoresMacroResultWhileVfCacheDirty)
+{
+	// VADD leaves vf3 dirty in the COP2 VF compile cache; the SQC2 that
+	// follows must observe the written-back value, not stale memory.
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.TrackMemWindow(0x00100600, 16);
+	h.SeedVu0Vf(1, 1.5f, 2.5f, 3.5f, 4.5f);
+	h.SeedVu0Vf(2, 0.5f, 1.0f, 1.5f, 2.0f);
+	h.SetGpr64(r_t0, 0x00100600);
+	h.LoadProgram({
+		VADD_C2(0xF, /*fd*/3, /*fs*/1, /*ft*/2),
+		SQC2(/*ft*/3, /*base*/r_t0, 0),
+	});
+	h.Run();
+	EXPECT_EQ(h.ReadU32(0x00100600), FloatBits(2.0f));
+	EXPECT_EQ(h.ReadU32(0x00100604), FloatBits(3.5f));
+	EXPECT_EQ(h.ReadU32(0x00100608), FloatBits(5.0f));
+	EXPECT_EQ(h.ReadU32(0x0010060C), FloatBits(6.5f));
+}
+
+TEST(EeVu0Lqc2, RidesResidentDirtyMmiQuad)
+{
+	// A dirty NEON-resident 128-bit quad (PADDW result) must survive an
+	// interleaved LQC2 + SQC2 pair and be consumable afterwards.
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.WriteU32(0x00100700, 0x01020304);
+	h.WriteU32(0x00100704, 0x05060708);
+	h.WriteU32(0x00100708, 0x090A0B0C);
+	h.WriteU32(0x0010070C, 0x0D0E0F10);
+	h.TrackMemWindow(0x00100710, 16);
+	h.SeedVu0VfBits(12, 0x51515151, 0x52525252, 0x53535353, 0x54545454);
+	h.SetGpr128(10, 0x0000000200000001ull, 0x0000000400000003ull);
+	h.SetGpr64(r_t0, 0x00100700);
+	h.LoadProgram({
+		PADDW(11, 10, 10),          // dirty NEON quad in the allocator
+		LQC2(/*ft*/7, /*base*/r_t0, 0),
+		SQC2(/*ft*/12, /*base*/r_t0, 0x10),
+		PADDW(13, 11, 10),          // consume the quad after both ops
+	});
+	h.Run();
+	EXPECT_EQ(h.GetVu0VfBitsJit(7, 'x'), 0x01020304u);
+	EXPECT_EQ(h.GetVu0VfBitsJit(7, 'w'), 0x0D0E0F10u);
+	EXPECT_EQ(h.ReadU32(0x00100710), 0x51515151u);
+	EXPECT_EQ(h.ReadU32(0x0010071C), 0x54545454u);
+	h.ExpectGpr128(11, 0x0000000400000002ull, 0x0000000800000006ull);
+	h.ExpectGpr128(13, 0x0000000600000003ull, 0x0000000C00000009ull);
+}
+
 } // namespace recompiler_tests
