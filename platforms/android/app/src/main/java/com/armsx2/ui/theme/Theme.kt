@@ -1,12 +1,25 @@
 package com.armsx2.ui.theme
 
+import android.os.Build
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import com.armsx2.runtime.MainActivityRuntime
 import androidx.core.content.edit
 
@@ -16,7 +29,18 @@ import androidx.core.content.edit
  * NAME, so an existing user's saved "Dark" no longer matches any entry and falls through to the
  * [Blue] default in [ThemePreferences.load]: same colours, no migration step, nothing to reset.
  */
-enum class ThemeMode { System, Light, Blue, Purple, Pink, Red, Orange, Green, Teal, Cyan, Black, Oled }
+enum class ThemeMode { System, MaterialYou, Rgb, Custom, Light, Blue, Purple, Pink, Red, Orange, Green, Teal, Cyan, Black, Oled;
+
+    /** Wallpaper-derived dynamic colour. Needs Android 12; the picker hides it below that. */
+    val requiresDynamicColor: Boolean get() = this == MaterialYou
+
+    /**
+     * True when this theme leaves light/dark to the OS instead of committing to one. Both
+     * System and MaterialYou do — Material You follows the system setting as well as the
+     * wallpaper — which is what the system-bar contrast logic keys off.
+     */
+    val followsSystemDarkMode: Boolean get() = this == System || this == MaterialYou
+}
 
 object ThemePreferences {
     private const val PreferenceKey = "ui.theme.mode"
@@ -29,11 +53,25 @@ object ThemePreferences {
         // exactly what "Dark" used to render as.
         val stored = MainActivityRuntime.prefs.getString(PreferenceKey, ThemeMode.System.name)
         mode.value = ThemeMode.entries.firstOrNull { it.name == stored } ?: ThemeMode.Blue
+        loadCustomColor()
     }
 
     fun set(value: ThemeMode) {
         mode.value = value
         MainActivityRuntime.prefs.edit { putString(PreferenceKey, value.name) }
+    }
+
+    /** Accent for [ThemeMode.Custom], as packed ARGB. Defaults to the Cyan accent. */
+    private const val CustomColorKey = "ui.theme.customColor"
+    val customColor = mutableStateOf(DefaultCustomColor)
+
+    fun loadCustomColor() {
+        customColor.value = MainActivityRuntime.prefs.getInt(CustomColorKey, DefaultCustomColor)
+    }
+
+    fun setCustomColor(argb: Int) {
+        customColor.value = argb
+        MainActivityRuntime.prefs.edit { putInt(CustomColorKey, argb) }
     }
 
 }
@@ -242,10 +280,68 @@ private val CyanScheme = tintedDark(
     outline = Color(0xFF26454F),
 )
 
+/** Default accent for [ThemeMode.Custom] — the Cyan accent, so it starts somewhere sane. */
+private const val DefaultCustomColor: Int = 0xFF6FE3F5.toInt()
+
+/**
+ * Scheme derived from a user-picked colour.
+ *
+ * Using the raw RGB as the accent is the obvious implementation and the wrong one: pick a dark
+ * navy, a muddy brown or near-black and you get unreadable text on unreadable chips, which comes
+ * back later as a bug report rather than as "I chose a bad colour". So the picked HUE is kept
+ * exactly, while saturation and brightness are clamped into a band that stays legible on dark
+ * surfaces. The colour you chose is still clearly the colour you get; the illegible corners of
+ * the space are simply unreachable.
+ *
+ * The surfaces take the same hue at low saturation, matching how the hand-tuned palettes are
+ * built — otherwise you get a pink accent sitting on blue chrome.
+ */
+private fun hueScheme(hue: Float, sat: Float, value: Float): ColorScheme {
+    fun shade(s: Float, v: Float) =
+        Color(android.graphics.Color.HSVToColor(floatArrayOf(hue, s.coerceIn(0f, 1f), v.coerceIn(0f, 1f))))
+    return tintedDark(
+        accent = shade(sat.coerceAtMost(0.72f), value),
+        accentContainer = shade(sat * 0.75f, 0.34f),
+        onAccentContainer = shade(sat * 0.30f, 0.94f),
+        background = shade(sat * 0.35f, 0.085f),
+        surface = shade(sat * 0.32f, 0.115f),
+        surfaceRaised = shade(sat * 0.30f, 0.17f),
+        outline = shade(sat * 0.30f, 0.32f),
+    )
+}
+
+private fun customScheme(argb: Int): ColorScheme {
+    val hsv = FloatArray(3)
+    android.graphics.Color.colorToHSV(argb, hsv)
+    return hueScheme(hsv[0], hsv[1].coerceIn(0.35f, 0.95f), hsv[2].coerceIn(0.78f, 1f))
+}
+
+/**
+ * RGB peripheral-style rainbow: the accent cycles the hue wheel continuously, the way gaming
+ * keyboards and cases do. The surfaces cycle with it, so the whole UI drifts through the
+ * spectrum rather than a lone coloured button sitting on static chrome.
+ *
+ * The hue is QUANTISED before building the scheme. Rebuilding a ColorScheme re-runs
+ * MaterialTheme and recomposes the entire tree, so animating it per frame would repaint every
+ * screen at display rate for a decorative effect. Stepping the hue keeps the cycle smooth to
+ * the eye while cutting rebuilds to a few per second.
+ */
+private const val RgbCycleMillis = 14_000
+private const val RgbHueStep = 4f
+
 @Composable
 fun Armsx2Theme(content: @Composable () -> Unit) {
+    val context = LocalContext.current
     val scheme = when (ThemePreferences.mode.value) {
         ThemeMode.System -> if (isSystemInDarkTheme()) NightScheme else DayScheme
+        // Wallpaper-derived palette. Falls back rather than crashing if the preference somehow
+        // arrives on a pre-Android-12 device (restored backup, sideloaded prefs) — the picker
+        // hides the option there, so this is belt-and-braces.
+        ThemeMode.MaterialYou -> when {
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.S -> NightScheme
+            isSystemInDarkTheme() -> dynamicDarkColorScheme(context)
+            else -> dynamicLightColorScheme(context)
+        }
         ThemeMode.Blue -> NightScheme
         ThemeMode.Light -> DayScheme
         ThemeMode.Black -> BlackScheme
@@ -257,6 +353,22 @@ fun Armsx2Theme(content: @Composable () -> Unit) {
         ThemeMode.Green -> GreenScheme
         ThemeMode.Teal -> TealScheme
         ThemeMode.Cyan -> CyanScheme
+        ThemeMode.Custom -> customScheme(ThemePreferences.customColor.value)
+        ThemeMode.Rgb -> {
+            val cycle = rememberInfiniteTransition(label = "rgb")
+            val hue by cycle.animateFloat(
+                initialValue = 0f,
+                targetValue = 360f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(RgbCycleMillis, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart,
+                ),
+                label = "rgbHue",
+            )
+            // Only rebuild when the STEPPED hue changes - see RgbHueStep.
+            val step = (hue / RgbHueStep).toInt()
+            remember(step) { hueScheme(step * RgbHueStep, 0.62f, 0.92f) }
+        }
     }
     MaterialTheme(
         colorScheme = scheme,

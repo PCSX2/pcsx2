@@ -1,6 +1,7 @@
 package com.armsx2.ui.settings
 
 import androidx.compose.foundation.BorderStroke
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -93,7 +95,11 @@ fun AppTab() {
                 horizontalArrangement = Arrangement.spacedBy(7.dp),
                 verticalArrangement = Arrangement.spacedBy(7.dp),
             ) {
-                ThemeMode.entries.forEach { theme ->
+                // Material You needs Android 12. Hide it below that rather than letting it fall
+                // back silently — picking a theme and getting a different one reads as a bug.
+                ThemeMode.entries.filter {
+                    !it.requiresDynamicColor || Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                }.forEach { theme ->
                     val apply = { ThemePreferences.set(theme) }
                     FilterChip(
                         selected = ThemePreferences.mode.value == theme,
@@ -105,6 +111,46 @@ fun AppTab() {
                             RoundedCornerShape(11.dp),
                             onConfirm = apply,
                         ),
+                    )
+                }
+            }
+
+            // RGB picker, only while Custom is the active theme. The scheme is derived from
+            // this colour's hue with saturation/brightness clamped (see customScheme), so the
+            // accent stays recognisably what was picked without any channel combination being
+            // able to produce unreadable chrome.
+            if (ThemePreferences.mode.value == ThemeMode.Custom) {
+                val argb = ThemePreferences.customColor.value
+                Spacer(Modifier.height(10.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        modifier = Modifier.size(34.dp),
+                        shape = RoundedCornerShape(9.dp),
+                        color = Color(argb),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    ) {}
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        String.format("#%06X", 0xFFFFFF and argb),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                listOf(
+                    Triple("app.theme.custom.r", 16, android.graphics.Color.red(argb)),
+                    Triple("app.theme.custom.g", 8, android.graphics.Color.green(argb)),
+                    Triple("app.theme.custom.b", 0, android.graphics.Color.blue(argb)),
+                ).forEach { (labelKey, shift, value) ->
+                    IntSliderRow(
+                        label = str(labelKey),
+                        value = value,
+                        min = 0,
+                        max = 255,
+                        onChange = { channel ->
+                            // Replace just this channel, keeping alpha opaque.
+                            val cleared = argb and (0xFF shl shift).inv()
+                            ThemePreferences.setCustomColor(cleared or (channel shl shift) or (0xFF shl 24))
+                        },
                     )
                 }
             }

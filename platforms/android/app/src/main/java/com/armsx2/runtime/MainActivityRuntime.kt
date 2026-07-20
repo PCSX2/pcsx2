@@ -1789,11 +1789,12 @@ open class MainActivityRuntime : ComponentActivity() {
         // Written as an else rather than one branch per mode so adding a hue can't silently
         // give it the wrong system-bar contrast.
         val startupTheme = com.armsx2.ui.theme.ThemePreferences.mode.value
-        val initialLightSystemBars = when (startupTheme) {
-            com.armsx2.ui.theme.ThemeMode.System ->
+        val initialLightSystemBars = when {
+            // System AND Material You both defer light/dark to the OS, so the bars follow it too.
+            startupTheme.followsSystemDarkMode ->
                 resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK !=
                     Configuration.UI_MODE_NIGHT_YES
-            com.armsx2.ui.theme.ThemeMode.Light -> true
+            startupTheme == com.armsx2.ui.theme.ThemeMode.Light -> true
             else -> false
         }
         WindowInsetsControllerCompat(window, window.decorView).let { controller ->
@@ -1861,9 +1862,10 @@ open class MainActivityRuntime : ComponentActivity() {
                 setupEditorVisible.value ||
                 eState.value == EmuState.RENDER_UNSUPPORTED ||
                 eState.value == EmuState.EMULATOR_UNSUPPORTED
-            val darkTheme = when (com.armsx2.ui.theme.ThemePreferences.mode.value) {
-                com.armsx2.ui.theme.ThemeMode.System -> androidx.compose.foundation.isSystemInDarkTheme()
-                com.armsx2.ui.theme.ThemeMode.Light -> false
+            val themeMode = com.armsx2.ui.theme.ThemePreferences.mode.value
+            val darkTheme = when {
+                themeMode.followsSystemDarkMode -> androidx.compose.foundation.isSystemInDarkTheme()
+                themeMode == com.armsx2.ui.theme.ThemeMode.Light -> false
                 else -> true // every colour theme is a dark theme
             }
             androidx.compose.runtime.SideEffect {

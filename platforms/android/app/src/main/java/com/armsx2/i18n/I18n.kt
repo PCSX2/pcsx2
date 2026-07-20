@@ -210,6 +210,8 @@ val EN: Map<String, String> = mapOf(
     "info.container" to "Container",
     "info.platform" to "Platform",
     "info.compatibility" to "Compatibility",
+    "info.playTime" to "Play time",
+    "info.lastPlayed" to "Last played",
     "info.path" to "Path",
     "tab.performance" to "Performance",
     "tab.renderer" to "Renderer",
@@ -238,6 +240,12 @@ val EN: Map<String, String> = mapOf(
     "app.clearCache.empty" to "Cache is already empty.",
     "app.theme" to "Theme",
     "app.theme.system" to "System",
+    "app.theme.materialyou" to "Material You",
+    "app.theme.rgb" to "RGB",
+    "app.theme.custom" to "Custom",
+    "app.theme.custom.r" to "Red",
+    "app.theme.custom.g" to "Green",
+    "app.theme.custom.b" to "Blue",
     "app.theme.light" to "Light",
     // "Dark" renamed to "Blue" — it was always the blue-tinted dark theme, which only became
     // confusing once the other hues existed. Keys are the lowercased ThemeMode names.
