@@ -843,6 +843,13 @@ object ControllerMappings {
         // MainActivityRuntime.gyroActive and are session-only, never persisted.
         GYRO_TOGGLE("pad.gyrotoggle.keycode", "Gyro On/Off (toggle)"),
         GYRO_HOLD("pad.gyrohold.keycode", "Gyro (hold to aim)"),
+        // Raises/drops the Android IME over the running game and routes what it types to the
+        // emulated USB keyboard (com.armsx2.input.SoftKeyboard). A hotkey rather than a setting
+        // because the point is to type WITHOUT pausing — anything reachable only from the menu
+        // would mean pausing to open chat. Only meaningful with Emulate USB Keyboard on.
+        // Appended last on purpose: hotkeys are persisted by ordinal (hotkeyForStickCode's
+        // index lookup), so inserting mid-enum would re-point everyone's existing bindings.
+        TOGGLE_KEYBOARD("pad.togglekeyboard.keycode", "On-Screen Keyboard (toggle)"),
     }
 
     // A hotkey is either a single button or a two-button combo. The main key is

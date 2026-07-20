@@ -60,6 +60,7 @@ import com.armsx2.GameInfo
 import com.armsx2.PlayTime
 import com.armsx2.events.TestResult
 import com.armsx2.input.ControllerMappings
+import com.armsx2.input.SoftKeyboard
 import com.armsx2.runtime.MainActivityRuntime.Companion.internalBiosDir
 import com.armsx2.runtime.MainActivityRuntime.Companion.romsDirs
 import com.armsx2.ui.Colors
@@ -361,6 +362,28 @@ open class MainActivityRuntime : ComponentActivity() {
         // instead of driving the pad / frontend. Cheap flag so the per-event
         // path doesn't touch ConfigStore.
         @Volatile var usbKeyboardActive = false
+
+        /** TOGGLE_KEYBOARD hotkey: raise or drop the Android IME that feeds the emulated USB
+         *  keyboard. Bound to a spare pad button so chat can be opened mid-game without
+         *  pausing — which is the whole point, and why this isn't a settings toggle.
+         *
+         *  Reports instead of silently doing nothing when the USB keyboard isn't attached:
+         *  the keystrokes would go nowhere and the user would have no way to tell why. */
+        fun toggleSoftKeyboard() {
+            val act = instance ?: return
+            if (eState.value == EmuState.STOPPED) return
+            if (!usbKeyboardActive) {
+                act.runOnUiThread {
+                    android.widget.Toast.makeText(
+                        act,
+                        "Turn on Emulate USB Keyboard (Network settings) first",
+                        android.widget.Toast.LENGTH_SHORT,
+                    ).show()
+                }
+                return
+            }
+            act.runOnUiThread { SoftKeyboard.toggle(act) }
+        }
 
         // Cached metadata for the currently-running game. Populated when
         // The library opens a card (so we have title, serial, compatibility,
@@ -1921,6 +1944,14 @@ open class MainActivityRuntime : ComponentActivity() {
                     else
                         PlayTime.endSession()
                 }
+                // Drop the emulated-keyboard IME when the VM stops. Reactive off eState for the
+                // same reason as the orientation effect below: three separate paths set STOPPED,
+                // and a sink view left holding focus would keep the keyboard over the library.
+                androidx.compose.runtime.LaunchedEffect(eState.value) {
+                    if (eState.value == EmuState.STOPPED) {
+                        SoftKeyboard.release(this@MainActivityRuntime)
+                    }
+                }
                 // Screen orientation follows whichever tier is live: a running game's per-game
                 // rotation, the library's global one. Driven reactively off currentGame rather
                 // than from each site that mutates it — THREE paths clear it (stop-to-library,
@@ -2635,6 +2666,10 @@ open class MainActivityRuntime : ComponentActivity() {
                 }
                 ControllerMappings.SysHotkey.GYRO_TOGGLE -> {
                     if (down && event.repeatCount == 0) toggleGyro()
+                    return true
+                }
+                ControllerMappings.SysHotkey.TOGGLE_KEYBOARD -> {
+                    if (down && event.repeatCount == 0) toggleSoftKeyboard()
                     return true
                 }
                 ControllerMappings.SysHotkey.GYRO_HOLD -> {
@@ -3814,6 +3849,7 @@ open class MainActivityRuntime : ComponentActivity() {
             ControllerMappings.SysHotkey.RESET_GAME -> restart()
             ControllerMappings.SysHotkey.SLOW_DOWN -> toggleSlowDown()
             ControllerMappings.SysHotkey.TOGGLE_OSD -> InGameOverlay.toggleOsd()
+            ControllerMappings.SysHotkey.TOGGLE_KEYBOARD -> toggleSoftKeyboard()
             // Hold-type hotkeys have no one-shot stick-edge meaning.
             ControllerMappings.SysHotkey.FAST_FORWARD,
             ControllerMappings.SysHotkey.PRESSURE_MOD -> {}
