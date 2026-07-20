@@ -72,6 +72,7 @@
 #include "pcsx2/R5900.h"
 #include "pcsx2/SIO/Pad/Pad.h"
 #include "pcsx2/VMManager.h"
+#include "pcsx2/VUmicro.h"
 
 #include "pcsx2/ee_divtrace.h"
 
@@ -777,6 +778,16 @@ void EERunner::SettingsOverride()
 	// converges the benign mul/add 1-ULP so the lockstep differ walks past it to the
 	// next (non-precision) divergence. Applied to ALL modes (set before VMManager
 	// init). recDIV_S stays single even in FULL, so div divergences still surface.
+	// EERUNNER_VU0FP=1 adds VU0 macro-visible state (VF00-31 + ACC + the
+	// STATUS/MAC/CLIP flag VIs) to the divtrace fingerprint + snapshot diff, so
+	// --stepdiff's zoom breaks at the EE block whose COP2 macro emission first
+	// produced divergent VU0 state (default fingerprint only sees GPR/FPR/CP0,
+	// which surfaces macro bugs downstream — e.g. the Jak 3 fMax vertex flood
+	// showed up at an unrelated memcpy block). Opt-in because mVU-vs-interp has
+	// by-design NaN/clamp corners the benign filters were not tuned for.
+	if (const char* e = std::getenv("EERUNNER_VU0FP"))
+		ee_divtrace::g_vu0_include = (e[0] != '0');
+
 	if (const char* e = std::getenv("EERUNNER_FPUFULL"))
 		s_settings_interface.SetBoolValue("EmuCore/CPU/Recompiler", "fpuFullMode", e[0] != '0');
 
@@ -863,6 +874,12 @@ static ee_divtrace::FullSnap CaptureFullSnap()
 	ee_divtrace::FullSnap fs;
 	std::memcpy(&fs.cpu, &cpuRegs, sizeof(cpuRegisters));
 	std::memcpy(&fs.fpu, &fpuRegs, sizeof(fpuRegisters));
+	std::memcpy(fs.vu0_vf, VU0.VF, 32 * 16);
+	std::memcpy(fs.vu0_vf + 32 * 16, &VU0.ACC, 16);
+	fs.vu0_vi_status = VU0.VI[REG_STATUS_FLAG].UL;
+	fs.vu0_vi_mac    = VU0.VI[REG_MAC_FLAG].UL;
+	fs.vu0_vi_clip   = VU0.VI[REG_CLIP_FLAG].UL;
+	fs._pad0 = 0;
 	fs.cycle = cpuRegs.cycle;
 	fs.pc = cpuRegs.pc;
 	fs._pad = 0;
@@ -930,7 +947,7 @@ struct MemDiffCount
 // Returns the total differing page/byte counts (used by --speedhack-diff to size
 // a divergence against the baseline determinism floor). verbose=false suppresses
 // the per-page detail + summary line (for the many quiet trajectory samples).
-static MemDiffCount ReportMemDiff(const std::vector<u8>& a, const std::vector<u8>& b, bool verbose = true)
+static MemDiffCount ReportMemDiff(const std::vector<u8>& a, const std::vector<u8>& b, bool verbose = true, size_t max_show = 8)
 {
 	if (a.size() != b.size() || a.empty())
 	{
@@ -955,7 +972,7 @@ static MemDiffCount ReportMemDiff(const std::vector<u8>& a, const std::vector<u8
 			continue;
 		++diffPages;
 		diffBytes += pageDiffBytes;
-		if (verbose && shown < 8)
+		if (verbose && shown < max_show)
 		{
 			++shown;
 			const char* region = (firstDiff < Ps2MemSize::MainRam) ? "Main" : "Scratch";
@@ -1336,6 +1353,25 @@ static std::vector<std::string> DiffFullSnaps(const ee_divtrace::FullSnap& jit,
 		for (int i = 0; i < 32; ++i)
 			d32(fmt::format("fpr[{}]", i), jit.fpu.fpr[i].UL, interp.fpu.fpr[i].UL);
 		d32("ACC", jit.fpu.ACC.UL, interp.fpu.ACC.UL);
+	}
+	// VU0 macro state — reported only when it participates in alignment
+	// (EERUNNER_VU0FP), so the default report set stays what the benign-class
+	// filters were tuned on.
+	if (ee_divtrace::g_vu0_include)
+	{
+		static const char lanes[4] = {'x', 'y', 'z', 'w'};
+		for (int i = 0; i < 33; ++i)
+		{
+			u32 a[4], b[4];
+			std::memcpy(a, jit.vu0_vf + i * 16, 16);
+			std::memcpy(b, interp.vu0_vf + i * 16, 16);
+			const std::string name = (i == 32) ? std::string("vu0.ACC") : fmt::format("vu0.vf{:02}", i);
+			for (int l = 0; l < 4; ++l)
+				d32(fmt::format("{}.{}", name, lanes[l]), a[l], b[l]);
+		}
+		d32("vu0.vi.STATUS", jit.vu0_vi_status, interp.vu0_vi_status);
+		d32("vu0.vi.MAC", jit.vu0_vi_mac, interp.vu0_vi_mac);
+		d32("vu0.vi.CLIP", jit.vu0_vi_clip, interp.vu0_vi_clip);
 	}
 	d32("sa", jit.cpu.sa, interp.cpu.sa);
 	return out;
@@ -1752,6 +1788,18 @@ static bool ZoomFromCheckpoint(const std::string& ckpt)
 	int timer_skipped = 0;
 	int selfloop_skipped = 0;
 	int interrupt_skipped = 0;
+	// EERUNNER_CENSUS=1: instead of stopping at the first non-benign data
+	// divergence, report it compactly, resync unconditionally, and keep
+	// walking. Transient divergences (DMA-phase staging buffers, double-
+	// buffered comm regions that reconverge within the frame) get logged and
+	// skipped; the walk stops at the first PERSISTENT divergence — the one
+	// whose effects never wash out of the register/VU0 fingerprint. Built for
+	// the Jak 3 hunt, where the first-stop site was a shared-benign DMA-phase
+	// memcpy and the real (arm64-only) VU0-macro corruption came later.
+	const char* census_env = std::getenv("EERUNNER_CENSUS");
+	const bool census = census_env && census_env[0] != '0';
+	int census_sites = 0;
+	const int kCensusCap = 64;
 	const int kTimerCap = 32;
 	const int kSelfLoopCap = 4096;
 	const int kInterruptCap = 4096; // stream-only resync, like self-loops
@@ -1801,6 +1849,84 @@ static bool ZoomFromCheckpoint(const std::string& ckpt)
 					"iteration at the vsync cutoff (benign, JIT ran off the end of interp's stream). Continuing the hunt.",
 					ar.pc, ar.prev_pc));
 				return false; // benign phase — caller keeps scanning later frames
+			}
+			// Census mode: a control-flow split that RECONVERGES (JIT re-joins
+			// interp's pc+fp stream) is a poll-phase artifact — e.g. a DMA-busy
+			// flag poll the JIT entered because it reached the check at a
+			// different cycle phase (Jak 3: the CHCR.STR-style wait at
+			// 0x10df40). Log it and keep walking; a genuine wrong-target branch
+			// perturbs state and will not reconverge.
+			if (census && census_sites < kCensusCap)
+			{
+				const ResyncResult rs = ResyncAfter(interp_fine, jit_fine, ar.jit_idx, ar.interp_idx);
+				if (rs.reconverged)
+				{
+					Console.WriteLn(fmt::format(
+						"CENSUS site {}: CONTROL-FLOW split at pc={:#010x} (from block {:#010x}, JIT entry #{}) — "
+						"TRANSIENT, reconverged after a {}-entry blind window (poll-phase class); continuing.",
+						census_sites, ar.pc, ar.prev_pc, ar.jit_idx, rs.blind));
+					++census_sites;
+					k = rs.k;
+					ii = rs.ii;
+					prev_pc = rs.prev_pc;
+					continue;
+				}
+				Console.WriteLn(fmt::format(
+					"CENSUS site {}: CONTROL-FLOW split at pc={:#010x} — PERSISTENT (never reconverged, blind={}, "
+					"ran_off={}). Full report follows.",
+					census_sites, ar.pc, rs.blind, rs.ran_off));
+				++census_sites;
+				// Snapshot the JIT side at the split entry so the guest register
+				// operands of the diverging test are visible (e.g. the busy-flag
+				// address a poll loop is spinning on), plus both sides' view of
+				// the polled word when it resolves to RAM.
+				if (reload(true))
+				{
+					const auto csnap = RunFineSnapAtFromHere(ar.jit_idx);
+					static const char* const gprn[32] = {
+						"zero", "at", "v0", "v1", "a0", "a1", "a2", "a3",
+						"t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7",
+						"s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7",
+						"t8", "t9", "k0", "k1", "gp", "sp", "s8", "ra"};
+					std::string regs;
+					for (int gi : {2, 4, 5, 6, 16, 17, 18})
+						regs += fmt::format("{}={:#x} ", gprn[gi], csnap.cpu.GPR.r[gi].UD[0]);
+					Console.WriteLn(fmt::format("CENSUS split-entry JIT regs: {}", regs));
+					const u32 s0addr = static_cast<u32>(csnap.cpu.GPR.r[16].UD[0]);
+					if ((s0addr & 0xF0000000u) == 0 && (s0addr & 0x0FFFFFFFu) < Ps2MemSize::MainRam)
+					{
+						const u32 flagjit = *reinterpret_cast<const u32*>(
+							reinterpret_cast<const u8*>(eeMem->Main) + (s0addr & 0x1ffffffu));
+						Console.WriteLn(fmt::format(
+							"CENSUS split: [s0={:#010x}] (RAM) = {:#010x} on the JIT side at entry.", s0addr, flagjit));
+					}
+					else
+					{
+						Console.WriteLn(fmt::format(
+							"CENSUS split: s0={:#010x} is not a plain RAM address (HW/scratch/kseg) — poll target is MMIO.",
+							s0addr));
+					}
+					// The re-run left the VM at END of the JIT frame — dump the SPR
+					// DMA channel state (both directions) so a wedged channel's
+					// CHCR/MADR/QWC/TADR are visible on the JIT side...
+					Console.WriteLn(fmt::format(
+						"CENSUS split JIT frame-end SPR1(toSPR): chcr={:#010x} madr={:#010x} qwc={:#x} tadr={:#010x} sadr={:#010x}",
+						psHu32(0xD400), psHu32(0xD410), psHu32(0xD420), psHu32(0xD430), psHu32(0xD480)));
+					Console.WriteLn(fmt::format(
+						"CENSUS split JIT frame-end SPR0(fromSPR): chcr={:#010x} madr={:#010x} qwc={:#x} sadr={:#010x}",
+						psHu32(0xD000), psHu32(0xD010), psHu32(0xD020), psHu32(0xD080)));
+					// ...and the same after a fresh interp frame for comparison.
+					if (reload(false))
+					{
+						AdvanceFrames(1);
+						Console.WriteLn(fmt::format(
+							"CENSUS split INTERP frame-end SPR1(toSPR): chcr={:#010x} madr={:#010x} qwc={:#x} tadr={:#010x} sadr={:#010x}",
+							psHu32(0xD400), psHu32(0xD410), psHu32(0xD420), psHu32(0xD430), psHu32(0xD480)));
+						Console.WriteLn(fmt::format(
+							"CENSUS split INTERP frame-end SPR0(fromSPR): chcr={:#010x} madr={:#010x} qwc={:#x} sadr={:#010x}",
+							psHu32(0xD000), psHu32(0xD010), psHu32(0xD020), psHu32(0xD080)));
+					}
+				}
 			}
 			Console.WriteLn(fmt::format(
 				"STEPDIFF zoom: CONTROL-FLOW divergence — JIT dispatched to block pc={:#010x} the interpreter "
@@ -1954,6 +2080,38 @@ static bool ZoomFromCheckpoint(const std::string& ckpt)
 			ii = rs.ii;
 			prev_pc = rs.prev_pc;
 			continue;
+		}
+
+		// Census mode: log the site, resync unconditionally, continue while the
+		// divergence proves transient. Falls through to the full report (stop)
+		// on the first site that never reconverges, or at the cap.
+		if (census && census_sites < kCensusCap)
+		{
+			const auto cdiffs = DiffFullSnaps(jsnap, isnap);
+			Console.WriteLn(fmt::format(
+				"CENSUS site {}: entering pc={:#010x} (offending block {:#010x}, JIT entry #{}), {} divergent field(s):",
+				census_sites, ar.pc, ar.prev_pc, ar.jit_idx, cdiffs.size()));
+			for (size_t di = 0; di < cdiffs.size() && di < 10; ++di)
+				Console.WriteLn(fmt::format("    {}", cdiffs[di]));
+			if (cdiffs.size() > 10)
+				Console.WriteLn(fmt::format("    ... (+{} more)", cdiffs.size() - 10));
+			const ResyncResult rs = ResyncAfter(interp_fine, jit_fine, ar.jit_idx, ar.interp_idx);
+			if (rs.reconverged)
+			{
+				Console.WriteLn(fmt::format(
+					"CENSUS site {}: TRANSIENT — reconverged after a {}-entry blind window; continuing.",
+					census_sites, rs.blind));
+				++census_sites;
+				k = rs.k;
+				ii = rs.ii;
+				prev_pc = rs.prev_pc;
+				continue;
+			}
+			Console.WriteLn(fmt::format(
+				"CENSUS site {}: PERSISTENT — never reconverged (blind={}, ran_off={}). Full report follows.",
+				census_sites, rs.blind, rs.ran_off));
+			++census_sites;
+			// fall through to the full report + stop
 		}
 
 		// REAL divergence (or benign-cap reached): full report + stop.
@@ -2528,6 +2686,29 @@ static int RunStepDiff()
 				// all to benign cycle-derived timer reads / spin phase, keep scanning
 				// later frames; otherwise it's a real lead and we stop here.
 				Console.Error("  => candidate REAL EE JIT divergence (clean interp control, MEMORY differs) — zooming to classify...");
+				// Byte-level store localization first: re-run this frame once per
+				// mode from the same checkpoint capturing EE RAM+scratch, and report
+				// the differing regions. Single-frame from an identical checkpoint
+				// with a clean interp control, so every differing byte is a real JIT
+				// store difference (no cross-frame accumulation, no async jitter).
+				{
+					auto runOneMem = [&](bool jit_mode, std::vector<u8>& mem) -> bool {
+						if (!loadCkpt())
+							return false;
+						SetEeMode(jit_mode);
+						AdvanceFrames(1);
+						mem.resize(Ps2MemSize::MainRam + Ps2MemSize::Scratch);
+						std::memcpy(mem.data(), eeMem->Main, Ps2MemSize::MainRam);
+						std::memcpy(mem.data() + Ps2MemSize::MainRam, eeMem->Scratch, Ps2MemSize::Scratch);
+						return true;
+					};
+					std::vector<u8> mi, mj;
+					if (runOneMem(false, mi) && runOneMem(true, mj))
+					{
+						Console.Error("  frame-local EE-RAM diff (A=interp, B=JIT):");
+						ReportMemDiff(mi, mj, /*verbose=*/true, /*max_show=*/64);
+					}
+				}
 				const bool stop = ZoomFromCheckpoint(ckpt);
 				if (stop)
 				{
