@@ -3348,7 +3348,11 @@ bool GSDeviceVK::CheckFeatures()
 	// depth test is active, so masked RGBA channels get written. PS2 FBMASK relies on the
 	// write mask; we emulate the one case Vulkan blend can express (RGB fully masked, alpha
 	// independent) in CreateTFXPipeline. No user toggle; excludes Adreno 6xx/7xx/8xx.
-	m_broken_colormask_with_depth = IsDeviceAdreno() &&
+	// The 0x801EA000 threshold is in the PROPRIETARY blob's driverVersion encoding; Turnip
+	// reports Mesa's version (e.g. Mesa 26.1.2 -> 0x06801002), which is always below it and
+	// made the workaround misfire on every Turnip device. The blob bug does not exist in
+	// Mesa, so exclude Turnip outright.
+	m_broken_colormask_with_depth = IsDeviceAdreno() && !is_turnip &&
 		(m_device_properties.deviceID < 0x06000000u || m_device_properties.driverVersion < 0x801EA000u);
 	if (m_broken_colormask_with_depth)
 		Console.WriteLn("VK: Adreno colorWriteMask-with-depthtest workaround active (deviceID=0x%08X driver=0x%08X)",
