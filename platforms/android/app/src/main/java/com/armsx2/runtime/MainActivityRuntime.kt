@@ -518,14 +518,22 @@ open class MainActivityRuntime : ComponentActivity() {
          *  local co-op — 2+ pads → connect Player 2's controller at VM init. */
         private fun connectedGamepadCount(): Int {
             var n = 0
+            var sawJoyCon = false
             for (id in InputDevice.getDeviceIds()) {
                 val dev = InputDevice.getDevice(id) ?: continue
                 if (dev.isVirtual) continue
                 val s = dev.sources
-                if ((s and InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD ||
-                    (s and InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK) n++
+                val isPad = (s and InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD ||
+                    (s and InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK
+                if (!isPad) continue
+                // Nintendo Joy-Cons (vendor 0x057E) enumerate as two InputDevices per pair
+                // but are combined onto ONE PS2 port (see PadRouter.portForDevice), so count
+                // ALL Nintendo pads as a SINGLE logical controller — a lone pair must not
+                // auto-enable PS2 port 2. Every other vendor is still counted per device.
+                if (dev.vendorId == 0x057E) { sawJoyCon = true; continue }
+                n++
             }
-            return n
+            return n + (if (sawJoyCon) 1 else 0)
         }
 
         private fun applyRendererPrefs() {
@@ -680,6 +688,8 @@ open class MainActivityRuntime : ComponentActivity() {
                 println("@@ANDROID_LAUNCH_REJECT@@ reason=blank_uri title=${info?.title ?: ""}")
                 return
             }
+            // Remember the game for a post-exit re-launch from the Save Manager (#374).
+            if (info != null) lastLaunchedGame = info
             println(
                 "@@ANDROID_LAUNCH_GAME@@ title=${info?.title ?: "<direct>"} " +
                     "uri=${uri.take(240)} state=${eState.value} runLoop=$vmRunLoopActive " +
@@ -976,18 +986,41 @@ open class MainActivityRuntime : ComponentActivity() {
             val libDir = context.applicationInfo.nativeLibraryDir
             val egl = File(libDir, "libEGL_angle.so")
             val gles = File(libDir, "libGLESv2_angle.so")
+            // gsBackThread rides on every line: GV7's back thread is the OTHER ANGLE suspect
+            // (ANGLE binds an EGL context to a single thread far more strictly than the native
+            // GLES drivers do), so the log has to say whether it was engaged.
+            val ctx = "renderer=${settings?.renderer} useAngle=${settings?.useAngleOpenGL} gsBackThread=${settings?.gsBackThreadMode}"
             try {
                 if (eligible && egl.exists() && gles.exists()) {
                     android.system.Os.setenv("ARMSX2_ANGLE_EGL_LIBRARY", egl.absolutePath, true)
                     android.system.Os.setenv("ARMSX2_ANGLE_GLES_LIBRARY", gles.absolutePath, true)
                     android.util.Log.i("ARMSX2", "ANGLE OpenGL enabled: ${egl.absolutePath}")
+                    angleEmit("enabled $ctx egl=${egl.absolutePath}")
                 } else {
                     runCatching { android.system.Os.unsetenv("ARMSX2_ANGLE_EGL_LIBRARY") }
                     runCatching { android.system.Os.unsetenv("ARMSX2_ANGLE_GLES_LIBRARY") }
+                    // Distinguish "user never picked ANGLE" from "user picked ANGLE but the
+                    // bundled .so isn't in the APK". The latter silently fell back to the system
+                    // GLES driver, which reads to the user as "ANGLE is broken" — that silence
+                    // is exactly why the 2.6.3 ANGLE report couldn't be diagnosed from a log.
+                    if (eligible) {
+                        android.util.Log.e("ARMSX2", "ANGLE selected but libs missing in $libDir")
+                        angleEmit("MISSING_LIBS $ctx dir=$libDir egl=${egl.exists()} gles=${gles.exists()} -> fell back to system GLES")
+                    } else {
+                        angleEmit("off $ctx")
+                    }
                 }
             } catch (e: Exception) {
                 android.util.Log.e("ARMSX2", "applyAngleEnv failed: ${e.message}")
+                angleEmit("error $ctx ${e.javaClass.simpleName}: ${e.message}")
             }
+        }
+
+        /** Mirrors the @@JOYCON@@ diagnostic: logcat AND emulog, so a tester's emulog file
+         *  alone answers "did ANGLE actually load?" without needing a live adb logcat. */
+        private fun angleEmit(msg: String) {
+            android.util.Log.i("ARMSX2", "@@ANGLE@@ $msg")
+            runCatching { NativeApp.emulog("@@ANGLE@@ $msg") }
         }
 
         // Armed per-launch in launchGame when "Auto-load last state on boot" is on;
@@ -999,8 +1032,14 @@ open class MainActivityRuntime : ComponentActivity() {
         @Volatile
         private var pendingSlotLoadOnBoot: Int? = null
 
+        // The last game we booted, retained across exit-to-library so the Save Manager can
+        // re-launch + load a save AFTER the game was exited. Kept SEPARATE from currentGame
+        // (which stop() nulls for settings-scope) so it can't resurrect per-game scope in the
+        // library. GitHub #374 — "exit, press Load → nothing boots" because currentGame was null.
+        private var lastLaunchedGame: GameInfo? = null
+
         fun launchCurrentGameFromSaveSlot(slot: Int): Boolean {
-            val game = currentGame.value ?: return false
+            val game = currentGame.value ?: lastLaunchedGame ?: return false
             val launchPath = if (game.uri.scheme == "file") {
                 game.uri.path ?: game.uri.toString()
             } else {
@@ -1746,14 +1785,16 @@ open class MainActivityRuntime : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = android.graphics.Color.TRANSPARENT
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
-        val initialLightSystemBars = when (com.armsx2.ui.theme.ThemePreferences.mode.value) {
+        // Light is the only light theme; System follows the OS and every colour theme is dark.
+        // Written as an else rather than one branch per mode so adding a hue can't silently
+        // give it the wrong system-bar contrast.
+        val startupTheme = com.armsx2.ui.theme.ThemePreferences.mode.value
+        val initialLightSystemBars = when (startupTheme) {
             com.armsx2.ui.theme.ThemeMode.System ->
                 resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK !=
                     Configuration.UI_MODE_NIGHT_YES
             com.armsx2.ui.theme.ThemeMode.Light -> true
-            com.armsx2.ui.theme.ThemeMode.Dark,
-            com.armsx2.ui.theme.ThemeMode.Black,
-            com.armsx2.ui.theme.ThemeMode.Oled -> false
+            else -> false
         }
         WindowInsetsControllerCompat(window, window.decorView).let { controller ->
             controller.show(WindowInsetsCompat.Type.systemBars())
@@ -1823,9 +1864,7 @@ open class MainActivityRuntime : ComponentActivity() {
             val darkTheme = when (com.armsx2.ui.theme.ThemePreferences.mode.value) {
                 com.armsx2.ui.theme.ThemeMode.System -> androidx.compose.foundation.isSystemInDarkTheme()
                 com.armsx2.ui.theme.ThemeMode.Light -> false
-                com.armsx2.ui.theme.ThemeMode.Dark,
-                com.armsx2.ui.theme.ThemeMode.Black,
-                com.armsx2.ui.theme.ThemeMode.Oled -> true
+                else -> true // every colour theme is a dark theme
             }
             androidx.compose.runtime.SideEffect {
                 applySystemBarTheme(darkTheme = darkTheme, showSystemBars = showSystemBars)
@@ -2115,6 +2154,9 @@ open class MainActivityRuntime : ComponentActivity() {
             event.isFromSource(InputDevice.SOURCE_JOYSTICK)) {
             NativeApp.sRumbleDeviceId = event.deviceId
         }
+        // Controller-input diagnostic (ARMSX2_JOYCON): dump the device once + this key.
+        logControllerDeviceOnce(event.deviceId)
+        logControllerKey(event)
         // #254 Emulated USB keyboard. When a game runs with the USB HID keyboard
         // attached (Settings.usbKeyboard, e.g. EQOA / Konami-keyboard titles),
         // forward physical/Bluetooth keyboard key events to it. Gated so it only
@@ -2180,6 +2222,21 @@ open class MainActivityRuntime : ComponentActivity() {
         // the binder. Normal nav resumes the moment capture ends.
         if (ControllerMappings.padCapturing.value) {
             return super.dispatchKeyEvent(event)
+        }
+        // L1/R1 flick between settings tabs (as the old Refresh UI did). Handled here, not in
+        // Compose, because a shoulder button never reaches a Composable — the overlay nav
+        // further down consumes gamepad keys first (same reason the capture handlers above
+        // live here). The hook is non-null ONLY while the settings screen is composed, so
+        // in-game L1/R1 still goes to the pad untouched. Placed after the capture blocks so
+        // binding a shoulder button still works.
+        if (kc == KeyEvent.KEYCODE_BUTTON_L1 || kc == KeyEvent.KEYCODE_BUTTON_R1) {
+            val cycleTab = com.armsx2.ui.settingshub.SettingsCategoryNav.cycle
+            if (cycleTab != null) {
+                if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0)
+                    cycleTab(if (kc == KeyEvent.KEYCODE_BUTTON_L1) -1 else 1)
+                // Swallow the UP too, so a stray shoulder release can't leak to the pad.
+                return true
+            }
         }
         // Hold the hardware/software BACK button to exit the app (Dolphin-style).
         // Scoped to IN-GAME with no overlay/menu up — where a short BACK press does
@@ -2791,6 +2848,11 @@ open class MainActivityRuntime : ComponentActivity() {
     }
 
     override fun dispatchGenericMotionEvent(ev: MotionEvent): Boolean {
+        // Controller-input diagnostic (ARMSX2_JOYCON): logged before ANY gate so it
+        // captures the raw axes even mid-(re)bind and for SOURCE_DPAD-only events the
+        // gameplay path would drop. Pure logging — no behaviour change.
+        logControllerDeviceOnce(ev.deviceId)
+        logControllerMotion(ev)
         // While (re)binding a pad button or a hotkey, the physical D-pad on many
         // handhelds (AYN Odin 3, RP6, etc.) arrives HERE as a HAT *axis*, never as
         // a key in dispatchKeyEvent — so the capture (which only listens for key
@@ -2890,8 +2952,9 @@ open class MainActivityRuntime : ComponentActivity() {
     private fun dispatchStickDirBindings(ev: MotionEvent, port: Int) {
         for (left in booleanArrayOf(true, false)) {
             // Same axis correction the main dispatch applies (swap, then inverts).
-            var vx = ev.getAxisValue(if (left) MotionEvent.AXIS_X else MotionEvent.AXIS_Z)
-            var vy = ev.getAxisValue(if (left) MotionEvent.AXIS_Y else MotionEvent.AXIS_RZ)
+            val (rightX, rightY) = rightStickAxes(ev.deviceId)
+            var vx = ev.getAxisValue(if (left) MotionEvent.AXIS_X else rightX)
+            var vy = ev.getAxisValue(if (left) MotionEvent.AXIS_Y else rightY)
             if (ControllerMappings.stickSwapXY(left)) { val t = vx; vx = vy; vy = t }
             if (ControllerMappings.stickInvertX(left)) vx = -vx
             if (ControllerMappings.stickInvertY(left)) vy = -vy
@@ -2923,6 +2986,30 @@ open class MainActivityRuntime : ComponentActivity() {
     // camera moves only in a cross pattern on Android). OFF unless the tester sets
     // prefs boolean "debug.stickLog" true. Shows the raw axes, the corrected pair
     // and the shaped radial output in logcat + the exportable emulog.
+    // Right-stick axis pair, resolved per device and cached.
+    //
+    // Standard Android pads put the right stick on AXIS_Z/AXIS_RZ, but some controllers —
+    // Nintendo Joy-Cons notably — report it on AXIS_RX/AXIS_RY. Every right-stick path here
+    // read Z/RZ unconditionally, so on those pads the right stick's DIRECTIONS were simply
+    // invisible: they couldn't be bound, folded onto the D-pad, or fire a stick hotkey — while
+    // R3 bound fine, because R3 is a KEYCODE and not an axis. That asymmetry is exactly what
+    // was reported. InputDevice.getDevice() is a binder call and motion events arrive far too
+    // often to query per event, hence the cache.
+    private val rightStickAxisCache = HashMap<Int, Pair<Int, Int>>()
+    private fun rightStickAxes(deviceId: Int): Pair<Int, Int> = rightStickAxisCache.getOrPut(deviceId) {
+        val dev = runCatching { InputDevice.getDevice(deviceId) }.getOrNull()
+        fun has(axis: Int) = dev?.getMotionRange(axis) != null
+        val hasRxRy = has(MotionEvent.AXIS_RX) || has(MotionEvent.AXIS_RY)
+        when {
+            // Joy-Cons expose RX/RY for the right stick; prefer it even if Z/RZ also exist.
+            dev?.vendorId == 0x057E && hasRxRy -> MotionEvent.AXIS_RX to MotionEvent.AXIS_RY
+            // Any pad with no Z/RZ at all but with RX/RY: that IS its right stick.
+            !has(MotionEvent.AXIS_Z) && !has(MotionEvent.AXIS_RZ) && hasRxRy ->
+                MotionEvent.AXIS_RX to MotionEvent.AXIS_RY
+            else -> MotionEvent.AXIS_Z to MotionEvent.AXIS_RZ
+        }
+    }
+
     private var lastStickProbeMs = 0L
     private fun debugStickProbe(ev: MotionEvent) {
         if (!prefs.getBoolean("debug.stickLog", false)) return
@@ -2936,6 +3023,82 @@ open class MainActivityRuntime : ComponentActivity() {
         val mag = kotlin.math.hypot(z, rz)
         println("@@STICKPROBE@@ dev=${ev.deviceId} Z=%.3f RZ=%.3f RX=%.3f RY=%.3f mag=%.3f shaped=%.3f".format(
             z, rz, rx, ry, mag, shapeStickMag(mag.coerceAtMost(1f), false)))
+    }
+
+    // ---- Joy-Con / controller input diagnostic (tag: ARMSX2_JOYCON) --------
+    // Dumps EXACTLY what a physical controller emits so a reporter can capture
+    // (adb logcat -s ARMSX2_JOYCON) what e.g. a Nintendo Joy-Con d-pad actually
+    // sends on their Android build — the unknown that blocks the real remap fix.
+    // Pure logging, zero behaviour change. Default-ON for this diagnostic build;
+    // silence with prefs "debug.joyconLog"=false (no UI needed). Full device info
+    // is logged once per deviceId; the per-event axis dump is throttled + non-zero.
+    private val joyconLoggedDevices = HashSet<Int>()
+    private var lastJoyconMotionLogMs = 0L
+    private fun joyconLogEnabled(): Boolean = prefs.getBoolean("debug.joyconLog", true)
+
+    /** Emit a diagnostic line to BOTH logcat (adb `-s ARMSX2_JOYCON`) AND the emulog (in-app
+     *  Save Log — so a handheld tester with no PC can capture it). NativeApp.emulog no-ops
+     *  safely when the native console isn't open yet (e.g. pre-boot). */
+    private fun joyconEmit(msg: String) {
+        android.util.Log.d("ARMSX2_JOYCON", msg)
+        runCatching { NativeApp.emulog("@@JOYCON@@ $msg") }
+    }
+
+    /** One-time full dump of a controller: ids, name, sources, and every motion axis
+     *  (id + name + range/flat/fuzz). Fires the first time a gamepad deviceId is seen. */
+    private fun logControllerDeviceOnce(deviceId: Int) {
+        if (!joyconLogEnabled() || deviceId < 0) return
+        if (!joyconLoggedDevices.add(deviceId)) return
+        val dev = InputDevice.getDevice(deviceId) ?: return
+        val src = dev.sources
+        val isPad = (src and InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD ||
+            (src and InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK
+        if (!isPad) return
+        joyconEmit(
+            "DEVICE id=%d vendor=0x%04x product=0x%04x sources=0x%08x name=\"%s\"".format(
+                deviceId, dev.vendorId, dev.productId, src, dev.name ?: "?"))
+        for (r in dev.motionRanges) {
+            joyconEmit(
+                "  axis=%d (%s) src=0x%08x min=%.3f max=%.3f flat=%.3f fuzz=%.3f".format(
+                    r.axis, MotionEvent.axisToString(r.axis), r.source, r.min, r.max, r.flat, r.fuzz))
+        }
+    }
+
+    /** Throttled dump of every NON-ZERO axis on a controller motion event, so a reporter
+     *  can see which axis (HAT? stick? something else?) the Joy-Con d-pad actually drives.
+     *  Accepts DPAD-sourced events too — those are exactly the ones we're hunting. */
+    private fun logControllerMotion(ev: MotionEvent) {
+        if (!joyconLogEnabled()) return
+        if (!ev.isFromSource(InputDevice.SOURCE_JOYSTICK) &&
+            !ev.isFromSource(InputDevice.SOURCE_GAMEPAD) &&
+            !ev.isFromSource(InputDevice.SOURCE_DPAD)) return
+        val now = SystemClock.uptimeMillis()
+        if (now - lastJoyconMotionLogMs < 80) return
+        val ranges = ev.device?.motionRanges ?: return
+        val sb = StringBuilder()
+        for (r in ranges) {
+            val v = ev.getAxisValue(r.axis)
+            if (kotlin.math.abs(v) > 0.001f) sb.append(" %s=%.3f".format(MotionEvent.axisToString(r.axis), v))
+        }
+        if (sb.isEmpty()) return
+        lastJoyconMotionLogMs = now
+        joyconEmit(
+            "MOTION id=%d vendor=0x%04x src=0x%08x%s".format(
+                ev.deviceId, ev.device?.vendorId ?: -1, ev.source, sb))
+    }
+
+    /** Log a controller key event (code + name + action). Low frequency, so no throttle. */
+    private fun logControllerKey(event: KeyEvent) {
+        if (!joyconLogEnabled()) return
+        if (!event.isFromSource(InputDevice.SOURCE_GAMEPAD) &&
+            !event.isFromSource(InputDevice.SOURCE_JOYSTICK)) return
+        val a = when (event.action) {
+            KeyEvent.ACTION_DOWN -> "DOWN"; KeyEvent.ACTION_UP -> "UP"; else -> "?"
+        }
+        joyconEmit(
+            "KEY id=%d vendor=0x%04x code=%d (%s) %s repeat=%d".format(
+                event.deviceId, InputDevice.getDevice(event.deviceId)?.vendorId ?: -1,
+                event.keyCode, KeyEvent.keyCodeToString(event.keyCode), a, event.repeatCount))
     }
 
     // True whenever a Compose frontend surface is drawn over (or instead of) the
@@ -3237,7 +3400,10 @@ open class MainActivityRuntime : ComponentActivity() {
         if (dx != 0) want.add(if (dx > 0) KeyEvent.KEYCODE_DPAD_RIGHT else KeyEvent.KEYCODE_DPAD_LEFT)
         if (dy != 0) want.add(if (dy > 0) KeyEvent.KEYCODE_DPAD_DOWN else KeyEvent.KEYCODE_DPAD_UP)
         captureStickCode(ev, MotionEvent.AXIS_X, MotionEvent.AXIS_Y, true).takeIf { it != 0 }?.let { want.add(it) }
-        captureStickCode(ev, MotionEvent.AXIS_Z, MotionEvent.AXIS_RZ, false).takeIf { it != 0 }?.let { want.add(it) }
+        // Right stick via the per-device pair — on a Joy-Con this is RX/RY, and reading Z/RZ
+        // here is why its directions could never be bound.
+        val (capRightX, capRightY) = rightStickAxes(ev.deviceId)
+        captureStickCode(ev, capRightX, capRightY, false).takeIf { it != 0 }?.let { want.add(it) }
         captureHatX = dx
         captureHatY = dy
         val now = SystemClock.uptimeMillis()
@@ -3356,8 +3522,11 @@ open class MainActivityRuntime : ComponentActivity() {
         val hi = (1f - outer).coerceAtLeast(dz + 0.01f) // upper edge; guard hi > dz
         val t = ((m - dz) / (hi - dz)).coerceIn(0f, 1f)
         val accel = ControllerMappings.stickAcceleration(left)
+        // Acceleration + the response-curve preset compose into one exponent (both reshape
+        // magnitude; exp==1 = linear = unchanged).
+        val exp = 1f + accel + ControllerMappings.stickCurveGamma(left)
         val curved =
-            if (accel > 0f) Math.pow(t.toDouble(), (1f + accel).toDouble()).toFloat()
+            if (exp != 1f) Math.pow(t.toDouble(), exp.toDouble()).toFloat()
             else t
         val out = (curved * ControllerMappings.stickSensitivity(left)).coerceIn(0f, 1f)
         // Anti-deadzone (output floor): lift ANY non-zero output up to start at the floor,
@@ -3534,6 +3703,14 @@ open class MainActivityRuntime : ComponentActivity() {
                 sendAxisDigital(vx, posCode = 97, negCode = 99, port = port)  // Circle / Square (right/left)
                 sendAxisDigital(vy, posCode = 96, negCode = 100, port = port) // Cross / Triangle (down/up)
             }
+            ControllerMappings.StickMode.DPAD -> {
+                // "Stick as D-pad" preset (opt-in; the nightly's default for Joy-Cons).
+                // The bit-writes happen in dispatchDpadCombined — the single, change-
+                // tracked d-pad owner, keyed off stickModeFor(...)==DPAD — so a DPAD
+                // stick and the physical HAT can never release each other. The swap/
+                // invert correction above still applied; dispatchDpadCombined re-reads
+                // the raw axes for the fold. Nothing to emit here by design.
+            }
             ControllerMappings.StickMode.CUSTOM -> {
                 // Each direction is bound to any PS2 button (per-player). D-pad targets
                 // (19-22) are owned by dispatchDpadCombined() (avoids the release race);
@@ -3561,7 +3738,8 @@ open class MainActivityRuntime : ComponentActivity() {
      *  collide with the Custom-mode 300+ codes also tracked there. */
     private fun fireStickHotkeys(ev: MotionEvent, port: Int) {
         fireStickHotkeyAxis(ev, MotionEvent.AXIS_X, MotionEvent.AXIS_Y, true, port)
-        fireStickHotkeyAxis(ev, MotionEvent.AXIS_Z, MotionEvent.AXIS_RZ, false, port)
+        val (hkRightX, hkRightY) = rightStickAxes(ev.deviceId)
+        fireStickHotkeyAxis(ev, hkRightX, hkRightY, false, port)
     }
     private fun fireStickHotkeyAxis(ev: MotionEvent, axisX: Int, axisY: Int, left: Boolean, port: Int) {
         val x = ev.getAxisValue(axisX)
@@ -3707,12 +3885,14 @@ open class MainActivityRuntime : ComponentActivity() {
         val hatX = if (dpadAsStick) 0f else ev.getAxisValue(MotionEvent.AXIS_HAT_X)
         val hatY = if (dpadAsStick) 0f else ev.getAxisValue(MotionEvent.AXIS_HAT_Y)
         val hatActive = hatX != 0f || hatY != 0f
-        // DPAD-mode sticks are now written directly in dispatchStick (self-healing,
-        // like FACE). Do NOT fold them here, or the combined owner's change-tracked
-        // release would fight the direct writer. The combined owner still handles
+        // "Stick as D-pad" preset (StickMode.DPAD, opt-in): a stick in DPAD mode drives
+        // the PS2 d-pad through THIS single change-tracked owner (folded via foldStick
+        // below) so it can never release — or be released by — the physical HAT. Left
+        // stick = AXIS_X/Y, right = AXIS_Z/RZ. dispatchStick's DPAD branch is a no-op by
+        // design so there is exactly one writer. The combined owner also still handles
         // the physical HAT and CUSTOM directions bound to a d-pad code.
-        val leftDpad = false
-        val rightDpad = false
+        val leftDpad = ControllerMappings.stickModeFor(true, port) == ControllerMappings.StickMode.DPAD
+        val rightDpad = ControllerMappings.stickModeFor(false, port) == ControllerMappings.StickMode.DPAD
         // Nothing we own could be active → release what we hold and bail, so we
         // never touch the D-pad bits a KeyEvent-style physical D-pad drives.
         if (!hatActive && !leftDpad && !rightDpad && !customTargetsDpad(port)) {
@@ -3744,8 +3924,9 @@ open class MainActivityRuntime : ComponentActivity() {
             down = down || y > STICK_DIGITAL_THRESHOLD
             up = up || y < -STICK_DIGITAL_THRESHOLD
         }
+        val (foldRightX, foldRightY) = rightStickAxes(ev.deviceId)
         if (leftDpad) foldStick(MotionEvent.AXIS_X, MotionEvent.AXIS_Y)
-        if (rightDpad) foldStick(MotionEvent.AXIS_Z, MotionEvent.AXIS_RZ)
+        if (rightDpad) foldStick(foldRightX, foldRightY)
 
         // Fold CUSTOM directions that target a D-pad code so they share this owner.
         fun foldCustom(isLeft: Boolean, axisX: Int, axisY: Int) {
@@ -3767,7 +3948,7 @@ open class MainActivityRuntime : ComponentActivity() {
             mark(ControllerMappings.StickDir.UP, y < -STICK_DIGITAL_THRESHOLD)
         }
         foldCustom(true, MotionEvent.AXIS_X, MotionEvent.AXIS_Y)
-        foldCustom(false, MotionEvent.AXIS_Z, MotionEvent.AXIS_RZ)
+        foldCustom(false, foldRightX, foldRightY)
 
         // Write only on change so a resting stick's motion stream can't re-release
         // a direction the physical D-pad is also holding.
@@ -3851,12 +4032,63 @@ open class MainActivityRuntime : ComponentActivity() {
     }
 
     private fun handleExternalLaunchIntent(intent: Intent?) {
-        val uri = extractLaunchUri(intent) ?: return
-        persistReadGrant(intent, uri)
+        val raw = extractLaunchUri(intent) ?: return
+        persistReadGrant(intent, raw)
+        // Frontends (Cocoon/Daijisho/ES-DE) list the .cue, since that's the canonical disc
+        // descriptor for a cue+bin rip — but the core has no cue parser and .cue isn't in its
+        // disc whitelist (VMManager::IsDiscFileName), so booting one fails outright. Resolve
+        // the cue's first FILE "<name>" BINARY entry to its sibling track and launch that.
+        // Falls back to the original URI whenever anything fails, so a launch that already
+        // worked (.iso/.bin/.chd) can never be made worse by this.
+        val uri = resolveCueToTrack(raw) ?: raw
         currentGame.value = null
         pendingExternalLaunch.value = uri.toString()
         launchPendingExternalGameIfReady()
     }
+
+    /** Maps a `.cue` sheet to the track file it points at. Returns null for anything that
+     *  isn't a resolvable cue, so the caller keeps the original URI. */
+    private fun resolveCueToTrack(cue: Uri): Uri? = runCatching {
+        val label = (cue.lastPathSegment ?: cue.path).orEmpty()
+        if (!label.endsWith(".cue", ignoreCase = true)) return null
+        val text = readBounded(cue) ?: return null
+        // FILE "Game.bin" BINARY  — the name may also be unquoted. Strip any directory part;
+        // a cue always references tracks sitting beside it.
+        val m = Regex("""(?im)^\s*FILE\s+(?:"([^"]+)"|(\S+))""").find(text) ?: return null
+        val track = (m.groupValues[1].takeIf(String::isNotBlank) ?: m.groupValues[2])
+            .trim().substringAfterLast('/').substringAfterLast('\\')
+        if (track.isBlank()) return null
+        siblingOf(cue, track)
+    }.getOrNull()
+
+    /** Bounded read — cue sheets are a few hundred bytes, so never slurp an arbitrary file. */
+    private fun readBounded(uri: Uri, limit: Int = 65536): String? = runCatching {
+        val stream = if (uri.scheme == "content") contentResolver.openInputStream(uri)
+        else uri.path?.let { java.io.File(it).takeIf(java.io.File::isFile)?.inputStream() }
+        stream?.use { s ->
+            val buf = ByteArray(limit)
+            var n = 0
+            while (n < limit) {
+                val r = s.read(buf, n, limit - n)
+                if (r <= 0) break
+                n += r
+            }
+            String(buf, 0, n)
+        }
+    }.getOrNull()
+
+    /** Sibling file alongside [origin]. Raw/file paths resolve directly (we hold all-files
+     *  access on the sideload build); a content:// URI only resolves when it carries a parent
+     *  — a single-document grant from a frontend does not, so we return null and fall back. */
+    private fun siblingOf(origin: Uri, fileName: String): Uri? = runCatching {
+        if (origin.scheme == null || origin.scheme == "file") {
+            val parent = origin.path?.let { java.io.File(it).parentFile } ?: return null
+            java.io.File(parent, fileName).takeIf { it.isFile }?.absolutePath?.toUri()
+        } else {
+            androidx.documentfile.provider.DocumentFile.fromSingleUri(this, origin)
+                ?.parentFile?.findFile(fileName)?.takeIf { it.isFile }?.uri
+        }
+    }.getOrNull()
 
     private fun extractLaunchUri(intent: Intent?): Uri? {
         if (intent == null)

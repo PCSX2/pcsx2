@@ -612,7 +612,7 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                 value = (TouchControls.multiTouchRadius.value * 100f).toInt(),
                 min = 50,
                 max = 95,
-                description = str("pad.onScreenControls.description"),
+                description = str("pad.multiTouch.description"),
                 valueFormatter = { "${it}%" },
                 onChange = { TouchControls.setMultiTouchRadius(it / 100f) },
             )
@@ -638,6 +638,17 @@ private fun StickFeelSliders(left: Boolean, title: String, refreshToken: Mutable
     @Suppress("UNUSED_EXPRESSION")
     refreshToken.value
     CollapsibleSection(title, initiallyExpanded = false) {
+        SegmentedRow(
+            label = str("pad.stickFeel.responseCurve.label"),
+            options = listOf(
+                str("pad.stickFeel.curve.linear"), str("pad.stickFeel.curve.light"),
+                str("pad.stickFeel.curve.medium"), str("pad.stickFeel.curve.strong"),
+            ),
+            selectedIndex = ControllerMappings.stickResponseCurve(left),
+            description = str("pad.stickFeel.responseCurve.description"),
+            onChange = { ControllerMappings.setStickResponseCurve(left, it); refreshToken.value++ },
+        )
+        SettingsDivider()
         IntSliderRow(
             label = str("pad.stickFeel.deadzone.label"),
             value = (ControllerMappings.stickDeadzone(left) * 100f).toInt(), // 0.0..0.4 -> 0..40
