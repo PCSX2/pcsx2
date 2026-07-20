@@ -2332,4 +2332,152 @@ TEST(EeVu0Cop2VfCache, VcallmsInvalidatesCachedVfAndDrainSeesFreshValue)
 	EXPECT_FLOAT_EQ(h.GetVu0VfJit(10, 'x'), 8.0f);
 }
 
+// =========================================================================
+//  Jak 3 camera-basis kernel replay (guest 0x0061b44c, SCUS-97330)
+// =========================================================================
+//
+// Faithful straight-line replay of the Naughty Dog VU0-macro camera kernel
+// that produces the fMax-flooded vertex pages in the Jak 3 EE-JIT-vs-interp
+// stepdiff (2026-07-19): quaternion -> basis via VOPMULA/VOPMSUB cross
+// products, +1.0 diagonal via VADDw-broadcast, scale via VMULx/y/z broadcast,
+// then a 4x4 matrix transform via the VMULAx/VMADDAy/VMADDAz/VMADDw ACC
+// chain, stored with SQC2. All encodings verified bit-exact against the game
+// words (e.g. vmulax.xyzw ACC,vf07,vf02x = 0x4be239bc).
+//
+// The game routine's two div.s (1/w perspective feeders) are omitted: they
+// are dead in the fall-through (no-perspective) path replayed here, and EE
+// FPU DIV.S JIT-vs-interp rounding (FPUDiv Nearest vs ambient chop) is a
+// known benign divergence that would false-positive the harness auto-diff.
+//
+// For finite inputs the VU0 interpreter computes the same single-precision
+// float ops as the NEON macro emitters must, so bitwise JIT==interp is the
+// correct expectation on every lane.
+
+namespace
+{
+	// Broadcast VADD/VSUB (upper funct 0x00-0x03 / 0x04-0x07; bc x=0,y=1,z=2,w=3).
+	constexpr u32 VADDbc_C2(u32 mask_xyzw, u32 fd, u32 fs, u32 ft, u32 bc)
+	{
+		return COP2_FMAC(mask_xyzw, fd, fs, ft, 0x00 + bc);
+	}
+	constexpr u32 VSUBbc_C2(u32 mask_xyzw, u32 fd, u32 fs, u32 ft, u32 bc)
+	{
+		return COP2_FMAC(mask_xyzw, fd, fs, ft, 0x04 + bc);
+	}
+	// VMADDAz — SPECIAL2 ACC broadcast MADD, z lane (fd-slot 0x02, funct 0x3E).
+	constexpr u32 VMADDAz_C2_(u32 mask_xyzw, u32 fs, u32 ft)
+	{
+		return COP2_FMAC(mask_xyzw, 0x02, fs, ft, 0x3E);
+	}
+
+	constexpr u32 kBcX = 0, kBcY = 1, kBcZ = 2, kBcW = 3;
+} // namespace
+
+TEST(EeVu0Cop2Macro, Jak3CameraBasisKernelChainMatchesInterp)
+{
+	constexpr u32 kIn  = RecompilerTestEnvironment::kScratchAddr + 0x000; // vf15 / vf05 / vf01
+	constexpr u32 kMtx = RecompilerTestEnvironment::kScratchAddr + 0x100; // vf07..vf10 + floats
+	constexpr u32 kOut = RecompilerTestEnvironment::kScratchAddr + 0x200; // vf11..vf14
+
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+
+	auto wf = [&](u32 addr, float v) {
+		u32 bits;
+		std::memcpy(&bits, &v, sizeof(bits));
+		h.WriteU32(addr, bits);
+	};
+	auto wq = [&](u32 addr, float x, float y, float z, float w) {
+		wf(addr + 0x0, x); wf(addr + 0x4, y); wf(addr + 0x8, z); wf(addr + 0xC, w);
+	};
+
+	// Input block: position, unit quaternion, per-axis scale.
+	wq(kIn + 0x00, 1234.5f, -678.25f, 4321.75f, 1.0f);                        // -> vf15
+	wq(kIn + 0x10, 0.18257419f, 0.36514837f, 0.54772256f, 0.73029674f);       // -> vf05
+	wq(kIn + 0x20, 1.5f, 0.75f, 1.25f, 1.0f);                                 // -> vf01
+	// Camera matrix rows + trailing floats, as the game lays them out.
+	wq(kMtx + 0x00, 1.2f, 0.1f, -0.3f, 0.05f);                                // -> vf07
+	wq(kMtx + 0x10, -0.2f, 1.5f, 0.4f, -0.1f);                                // -> vf08
+	wq(kMtx + 0x20, 0.3f, -0.25f, 1.1f, 0.2f);                                // -> vf09
+	wq(kMtx + 0x30, 12345.0f, -6789.0f, 23456.0f, 1.0f);                      // -> vf10
+	wf(kMtx + 0x40, 2.5f);  // f01
+	wf(kMtx + 0x44, 3.25f); // f02
+	wf(kMtx + 0x48, 1.75f); // f03
+	h.WriteU32(kMtx + 0x4C, 0); // fall-through flag
+
+	h.SetGpr64(reg::a1, kIn);
+	h.SetGpr64(reg::t0, kMtx);
+	h.SetGpr64(reg::a2, kOut);
+	h.TrackMemWindow(kOut, 0x40);
+
+	h.LoadProgram({
+		LUI(reg::v1, 0x3F80),
+		LQC2(5, reg::a1, 0x10),
+		MTC1(reg::v1, 0), // f00 = 1.0f
+		LQC2(15, reg::a1, 0x00),
+		LQC2(1, reg::a1, 0x20),
+		LQC2(7, reg::t0, 0x00),
+		LQC2(8, reg::t0, 0x10),
+		LQC2(9, reg::t0, 0x20),
+		LQC2(10, reg::t0, 0x30),
+		LWC1(1, 0x40, reg::t0),
+		LWC1(2, 0x44, reg::t0),
+		LWC1(3, 0x48, reg::t0),
+		VADD_C2(0xF, /*fd*/6, /*fs*/5, /*ft*/5),                 // vf06 = 2q
+		VADDbc_C2(0x8, /*fd*/2, /*fs*/0, /*ft*/5, kBcW),         // vf02.x = +q.w
+		VADDbc_C2(0x4, 2, 0, 5, kBcZ),                           // vf02.y = +q.z
+		VSUBbc_C2(0x2, 2, 0, 5, kBcY),                           // vf02.z = -q.y
+		VSUBbc_C2(0x1, 2, 0, 0, kBcW),                           // vf02.w = 0
+		VSUBbc_C2(0x8, 3, 0, 5, kBcZ),                           // vf03.x = -q.z
+		VADDbc_C2(0x4, 3, 0, 5, kBcW),                           // vf03.y = +q.w
+		VADDbc_C2(0x2, 3, 0, 5, kBcX),                           // vf03.z = +q.x
+		VSUBbc_C2(0x1, 3, 0, 0, kBcW),                           // vf03.w = 0
+		VADDbc_C2(0x8, 4, 0, 5, kBcY),                           // vf04.x = +q.y
+		VSUBbc_C2(0x4, 4, 0, 5, kBcX),                           // vf04.y = -q.x
+		VADDbc_C2(0x2, 4, 0, 5, kBcW),                           // vf04.z = +q.w
+		VSUBbc_C2(0x1, 4, 0, 0, kBcW),                           // vf04.w = 0
+		VOPMULA_C2(0xE, /*fs*/6, /*ft*/2),                       // ACC = 2q x c0 terms
+		VOPMSUB_C2(0xE, /*fd*/2, /*fs*/2, /*ft*/6),              // vf02 = ACC - c0 x 2q
+		VOPMULA_C2(0xE, 6, 3),
+		VOPMSUB_C2(0xE, 3, 3, 6),
+		VOPMULA_C2(0xE, 6, 4),
+		VOPMSUB_C2(0xE, 4, 4, 6),
+		VADDbc_C2(0x8, 2, 2, 0, kBcW),                           // vf02.x += 1.0
+		VADDbc_C2(0x4, 3, 3, 0, kBcW),                           // vf03.y += 1.0
+		VADDbc_C2(0x2, 4, 4, 0, kBcW),                           // vf04.z += 1.0
+		VMULx_C2(0xF, 2, 2, 1),                                  // vf02 *= scale.x
+		VMULy_C2(0xF, 3, 3, 1),                                  // vf03 *= scale.y
+		VMULz_C2(0xF, 4, 4, 1),                                  // vf04 *= scale.z
+		VMULAx_C2 (0xF, /*fs*/7, /*ft*/2),                       // ACC  = M0*b0.x
+		VMADDAy_C2(0xF, 8, 2),                                   // ACC += M1*b0.y
+		VMADDAz_C2_(0xF, 9, 2),                                  // ACC += M2*b0.z
+		VMADDw_C2(0xF, /*fd*/11, /*fs*/10, /*ft*/2),             // vf11 = ACC + M3*b0.w
+		VMULAx_C2 (0xF, 7, 3),
+		VMADDAy_C2(0xF, 8, 3),
+		VMADDAz_C2_(0xF, 9, 3),
+		VMADDw_C2(0xF, 12, 10, 3),
+		VMULAx_C2 (0xF, 7, 4),
+		VMADDAy_C2(0xF, 8, 4),
+		VMADDAz_C2_(0xF, 9, 4),
+		VMADDw_C2(0xF, 13, 10, 4),
+		VMULAx_C2 (0xF, 7, 15),
+		VMADDAy_C2(0xF, 8, 15),
+		VMADDAz_C2_(0xF, 9, 15),
+		VMADDw_C2(0xF, 14, 10, 0),                               // vf14 = ACC + M3*1.0
+		SQC2(11, reg::a2, 0x00),
+		SQC2(12, reg::a2, 0x10),
+		SQC2(13, reg::a2, 0x20),
+		SQC2(14, reg::a2, 0x30),
+	});
+	h.Run();
+
+	// The harness auto-diff compares full state; pin the transform outputs
+	// explicitly so a divergence names the lane.
+	for (u32 vf : {2u, 3u, 4u, 6u, 11u, 12u, 13u, 14u})
+		for (char l : {'x', 'y', 'z', 'w'})
+			EXPECT_EQ(h.GetVu0VfBitsJit(vf, l), h.GetVu0VfBitsInterp(vf, l))
+				<< "vf" << vf << "." << l;
+}
+
 } // namespace recompiler_tests
