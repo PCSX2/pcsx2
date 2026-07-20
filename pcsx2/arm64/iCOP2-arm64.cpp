@@ -1033,17 +1033,28 @@ void vu0SyncRunAheadThin()
 //  - VIREG entries are freed WITH writeback: VU0 execution writes VU0.VI, so
 //    a retained VI mirror would go stale across the call.
 //  - TEMP / PCWRITEBACK entries are freed (transient, no reloadable home).
-//  - NEON: same free policy as FLUSH_FREE_XMM — 128-bit classes can't ride a
-//    C call and the macro body that follows wants the file to itself. The VF
-//    compile cache (q16-q20) dies at any C seam.
+//  - NEON (SL-14, the S4-2 policy extended to the NEON file): GPRREG quads /
+//    FPREG / FPACC are KEPT mapped with no writeback — the stub blind-saves
+//    the pool NEON registers around the C calls (q0-q7, q10-q24, q27/q28;
+//    q8/q9 scalar consts are callee-saved low-64, q25/q26 re-Dup'd), so full
+//    128-bit values survive both paths in-register. Same observability
+//    argument as the GPR retention: the callees never touch EE GPR memory or
+//    fpr/fprc. NEONTYPE_VFREG is freed WITH writeback — VU0 execution on the
+//    taken path writes VF, so a retained VF mirror would go stale (same
+//    reason the VI mirrors free, and why the EP-2b VF compile cache flush
+//    stays). TEMPs are freed (transient).
 static void cop2FlushForConditionalSync()
 {
 	cop2VfCacheFlush();
 
 	for (int i = 0; i < NUM_ARM_NEON_REGS; i++)
 	{
-		if (arm64neon[i].inuse)
-			_freeNEONreg(i);
+		if (!arm64neon[i].inuse)
+			continue;
+		const u8 type = arm64neon[i].type;
+		if (type == NEONTYPE_GPRREG || type == NEONTYPE_FPREG || type == NEONTYPE_FPACC)
+			continue; // retained — the sync stub blind-preserves the NEON file
+		_freeNEONreg(i); // VFREG (writeback — the micro writes VF) / TEMP
 	}
 
 	for (int i = 0; i < NUM_ARM_GPR_REGS; i++)
@@ -1055,6 +1066,44 @@ static void cop2FlushForConditionalSync()
 		_freeArm64GPR(i); // VIREG (writeback) / TEMP / PCWRITEBACK
 	}
 }
+
+#ifdef PCSX2_RECOMPILER_TESTS
+// SL-14 pin surface: populate a synthetic allocator state (one CLEAN entry
+// per NEON class — clean so the filter's frees emit no writeback code), run
+// the seam-preparation filter, and report which classes survived. Returns a
+// bitmask: bit0=GPRREG bit1=FPREG bit2=FPACC bit3=VFREG bit4=TEMP. The
+// retention contract is 0b00111 (GPRREG/FPREG/FPACC ride, VFREG/TEMP free).
+u32 cop2TestSeamRetentionFilter()
+{
+	_initArm64NEONregs();
+	const auto set = [](int idx, int type, int reg) {
+		arm64neon[idx].inuse = 1;
+		arm64neon[idx].type = static_cast<u8>(type);
+		arm64neon[idx].reg = static_cast<s8>(reg);
+		arm64neon[idx].mode = MODE_READ;
+		arm64neon[idx].needed = 0;
+	};
+	set(3, NEONTYPE_GPRREG, 5);
+	set(4, NEONTYPE_FPREG, 2);
+	set(5, NEONTYPE_FPACC, NEONFPU_ACC);
+	set(6, NEONTYPE_VFREG, 2);
+	set(7, NEONTYPE_TEMP, -1);
+	cop2FlushForConditionalSync();
+	u32 mask = 0;
+	if (arm64neon[3].inuse)
+		mask |= 1u << 0;
+	if (arm64neon[4].inuse)
+		mask |= 1u << 1;
+	if (arm64neon[5].inuse)
+		mask |= 1u << 2;
+	if (arm64neon[6].inuse)
+		mask |= 1u << 3;
+	if (arm64neon[7].inuse)
+		mask |= 1u << 4;
+	_initArm64NEONregs();
+	return mask;
+}
+#endif
 
 // =========================================================================
 //  S4-2: shared DynGen VU0-sync stubs
@@ -1074,9 +1123,15 @@ static void cop2FlushForConditionalSync()
 //
 // Fast path (VPU_STAT bit 0 clear — VU0 idle): Ldr + Tbnz + Ret.
 // Sync path: raw-save LR + the caller-saved EE int-allocator pool regs
-// (x4-x7/x14/x15 — where retained GPR/FPRC values live), publish the
-// absolute cycle, flush the lazy-dirty caller-saved pins, run the sync
-// callee(s), re-derive the cycle delta, reload pins, restore, Ret.
+// (x4-x7/x14/x15 — where retained GPR/FPRC values live) + the pool NEON
+// file (SL-14: q0-q7/q10-q24/q27/q28, full 128 bits — where retained
+// GPRREG-quad/FPREG/FPACC values live; q8/q9 need only their callee-saved
+// low 64, q25/q26 are re-Dup'd from s8/s9 instead), publish the absolute
+// cycle, flush the lazy-dirty caller-saved pins, run the sync callee(s),
+// re-derive the cycle delta, reload pins, restore, Ret. The blind NEON
+// save is state-agnostic — the shared stub needs no per-site knowledge —
+// and its 400 B of stack traffic sits on the rarely-taken path that is
+// about to run a whole VU0 microprogram anyway.
 
 enum : int
 {
@@ -1099,10 +1154,27 @@ static const u8* cop2DynGenOneSyncStub(void (*syncFn)(), void (*finishFn)())
 	armAsm->Ret();
 
 	armAsm->Bind(&doSync);
-	armAsm->Stp(a64::x4, a64::x5, a64::MemOperand(a64::sp, -64, a64::PreIndex));
+	armAsm->Stp(a64::x4, a64::x5, a64::MemOperand(a64::sp, -464, a64::PreIndex));
 	armAsm->Stp(a64::x6, a64::x7, a64::MemOperand(a64::sp, 16));
 	armAsm->Stp(a64::x14, a64::x15, a64::MemOperand(a64::sp, 32));
 	armAsm->Str(a64::x30, a64::MemOperand(a64::sp, 48));
+
+	// SL-14: blind-save the pool NEON file (25 quads, [sp,#64..#448]) so
+	// retained 128-bit allocator values (GPRREG quads / FPREG / FPACC —
+	// cop2FlushForConditionalSync keeps them mapped) survive the C calls.
+	armAsm->Stp(a64::q0, a64::q1, a64::MemOperand(a64::sp, 64));
+	armAsm->Stp(a64::q2, a64::q3, a64::MemOperand(a64::sp, 96));
+	armAsm->Stp(a64::q4, a64::q5, a64::MemOperand(a64::sp, 128));
+	armAsm->Stp(a64::q6, a64::q7, a64::MemOperand(a64::sp, 160));
+	armAsm->Stp(a64::q10, a64::q11, a64::MemOperand(a64::sp, 192));
+	armAsm->Stp(a64::q12, a64::q13, a64::MemOperand(a64::sp, 224));
+	armAsm->Stp(a64::q14, a64::q15, a64::MemOperand(a64::sp, 256));
+	armAsm->Stp(a64::q16, a64::q17, a64::MemOperand(a64::sp, 288));
+	armAsm->Stp(a64::q18, a64::q19, a64::MemOperand(a64::sp, 320));
+	armAsm->Stp(a64::q20, a64::q21, a64::MemOperand(a64::sp, 352));
+	armAsm->Stp(a64::q22, a64::q23, a64::MemOperand(a64::sp, 384));
+	armAsm->Stp(a64::q24, a64::q27, a64::MemOperand(a64::sp, 416));
+	armAsm->Str(a64::q28, a64::MemOperand(a64::sp, 448));
 
 	// Publish the absolute cycle before the sync — the callees read
 	// cpuRegs.cycle to determine how many VU0 micro cycles to run — and
@@ -1132,10 +1204,25 @@ static const u8* cop2DynGenOneSyncStub(void (*syncFn)(), void (*finishFn)())
 	armAsm->Dup(a64::v25.V4S(), a64::v8.V4S(), 0);
 	armAsm->Dup(a64::v26.V4S(), a64::v9.V4S(), 0);
 
+	// SL-14: restore the blind-saved NEON file (mirror of the saves above).
+	armAsm->Ldr(a64::q28, a64::MemOperand(a64::sp, 448));
+	armAsm->Ldp(a64::q24, a64::q27, a64::MemOperand(a64::sp, 416));
+	armAsm->Ldp(a64::q22, a64::q23, a64::MemOperand(a64::sp, 384));
+	armAsm->Ldp(a64::q20, a64::q21, a64::MemOperand(a64::sp, 352));
+	armAsm->Ldp(a64::q18, a64::q19, a64::MemOperand(a64::sp, 320));
+	armAsm->Ldp(a64::q16, a64::q17, a64::MemOperand(a64::sp, 288));
+	armAsm->Ldp(a64::q14, a64::q15, a64::MemOperand(a64::sp, 256));
+	armAsm->Ldp(a64::q12, a64::q13, a64::MemOperand(a64::sp, 224));
+	armAsm->Ldp(a64::q10, a64::q11, a64::MemOperand(a64::sp, 192));
+	armAsm->Ldp(a64::q6, a64::q7, a64::MemOperand(a64::sp, 160));
+	armAsm->Ldp(a64::q4, a64::q5, a64::MemOperand(a64::sp, 128));
+	armAsm->Ldp(a64::q2, a64::q3, a64::MemOperand(a64::sp, 96));
+	armAsm->Ldp(a64::q0, a64::q1, a64::MemOperand(a64::sp, 64));
+
 	armAsm->Ldr(a64::x30, a64::MemOperand(a64::sp, 48));
 	armAsm->Ldp(a64::x14, a64::x15, a64::MemOperand(a64::sp, 32));
 	armAsm->Ldp(a64::x6, a64::x7, a64::MemOperand(a64::sp, 16));
-	armAsm->Ldp(a64::x4, a64::x5, a64::MemOperand(a64::sp, 64, a64::PostIndex));
+	armAsm->Ldp(a64::x4, a64::x5, a64::MemOperand(a64::sp, 464, a64::PostIndex));
 	armAsm->Ret();
 
 	return start;
