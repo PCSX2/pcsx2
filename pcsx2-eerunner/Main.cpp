@@ -54,6 +54,7 @@
 #include "common/Path.h"
 #include "common/Perf.h"
 #include "common/ProgressCallback.h"
+#include "common/SettingsWrapper.h"
 #include "common/StringUtil.h"
 
 #include "pcsx2/PrecompiledHeader.h"
@@ -72,6 +73,7 @@
 #include "pcsx2/R5900.h"
 #include "pcsx2/SIO/Pad/Pad.h"
 #include "pcsx2/VMManager.h"
+#include "pcsx2/VUmicro.h"
 
 #include "pcsx2/ee_divtrace.h"
 
@@ -97,6 +99,10 @@ enum class RunMode
 	SpeedhackDiff,
 	LiveRun,
 	Disasm,
+	TwinDump,
+	TwinCompare,
+	DumpConfig,
+	MkState,
 };
 
 static MemorySettingsInterface s_settings_interface;
@@ -112,6 +118,21 @@ static GSRendererType s_renderer = GSRendererType::Null; // --renderer (Null def
 static bool s_renderer_explicit = false; // user passed --renderer (an explicit null is honored in liverun)
 static std::string s_memdump_prefix; // --memdump <prefix>: write <prefix>.{interp,jit}.bin at the last frame
 static bool s_perf_jitdump = false; // --perf-jitdump: emit Linux perf jitdump for `perf inject --jit` (profiling)
+
+// twindiff (cross-BUILD divergence finder) state — see the big comment above
+// RunTwinDump. The same byte-identical runner is built in two trees (working
+// vs broken); one dumps a trace, the other compares against it.
+static std::string s_twin_prefix;          // --twindump <prefix>: trace + ram-dump output prefix
+static std::string s_twin_other;           // --twincompare <file>: the other build's .twin trace
+static std::string s_twin_label = "local"; // --twin-label <name>: stamped into the trace header
+static int s_twin_ram_at = -1;             // --twin-ram-at <frame>: raw EE RAM+scratch dump at this frame
+static std::string s_dumpcfg_path;         // --dump-config <path>: effective-EmuConfig INI dump
+static std::string s_mkstate_path;         // --mkstate <out.p2s>: write a savestate after --frames
+struct SetOverride
+{
+	std::string section, key, value;
+};
+static std::vector<SetOverride> s_set_overrides; // --set Section/Key=Value (repeatable)
 
 bool EERunner::InitializeConfig()
 {
@@ -512,6 +533,23 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "  --perf-jitdump: Emit a Linux perf jitdump (under EmuFolders::Cache) so `perf inject --jit`\n");
 	std::fprintf(stderr, "               resolves EE_/VU0_/VU1_/IOP_/VIF_ JIT block symbols. Profiling only; with --liverun it\n");
 	std::fprintf(stderr, "               also honors an explicit --renderer null. Requires a USE_PERF_JITDUMP build.\n");
+	std::fprintf(stderr, "  --twindump <prefix>: twindiff golden side. Runs full-interp x2 (determinism control) + full-JIT\n");
+	std::fprintf(stderr, "               free-running passes from the savestate, recording per-frame memhash/regfp/cycle to\n");
+	std::fprintf(stderr, "               <prefix>.twin for a DIFFERENT build of this runner to compare against.\n");
+	std::fprintf(stderr, "  --twincompare <file.twin>: twindiff test side. Runs the same three passes locally and diffs them\n");
+	std::fprintf(stderr, "               against the other build's trace: cross-interp = shared-C++ drift; jit-vs-interp per\n");
+	std::fprintf(stderr, "               tree; jit-vs-jit = end-to-end working-vs-broken. Exit 2 on real divergence.\n");
+	std::fprintf(stderr, "  --twin-label <name>: label stamped into the .twin header (e.g. armsx2-master / jit-transplant).\n");
+	std::fprintf(stderr, "  --twin-ram-at <frame>: also dump raw EE RAM+scratch at that frame (interp + jit passes) to\n");
+	std::fprintf(stderr, "               <prefix>.f<N>.{interp,jit}.bin, for offline page/region diffing across builds.\n");
+	std::fprintf(stderr, "  --dump-config <path>: boot far enough for GameDB to apply, write the EFFECTIVE EmuConfig INI,\n");
+	std::fprintf(stderr, "               and exit. Diff the two trees' dumps FIRST - config drift is the cheapest bug class.\n");
+	std::fprintf(stderr, "  --mkstate <out.p2s>: run --frames under the production JIT (from --savestate if given, else a\n");
+	std::fprintf(stderr, "               cold disc boot) and write a savestate. Bootstrap twindiff states on the WORKING\n");
+	std::fprintf(stderr, "               binary, positioned BEFORE the corrupting computation (e.g. before a level load).\n");
+	std::fprintf(stderr, "  --set Section/Key=Value: base-layer settings override, applied after the harness pinning\n");
+	std::fprintf(stderr, "               (repeatable). E.g. --set EmuCore/CPU/Recompiler/fpuFullMode=true. GameDB\n");
+	std::fprintf(stderr, "               per-game keys still win; the twin passes own the EnableEE/VU0/VU1/IOP toggles.\n");
 	std::fprintf(stderr, "  -help: Displays this information and exits.\n");
 	std::fprintf(stderr, "  -version: Displays version information and exits.\n");
 	std::fprintf(stderr, "\n");
@@ -612,6 +650,62 @@ bool EERunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 				s_memdump_prefix = StringUtil::StripWhitespace(argv[++i]);
 				continue;
 			}
+			else if (CHECK_ARG_PARAM("--twindump"))
+			{
+				// Standalone = golden-dump mode; alongside --twincompare it only
+				// names the local trace/ram-dump prefix.
+				if (s_mode != RunMode::TwinCompare)
+					s_mode = RunMode::TwinDump;
+				s_twin_prefix = StringUtil::StripWhitespace(argv[++i]);
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("--twincompare"))
+			{
+				s_mode = RunMode::TwinCompare;
+				s_twin_other = StringUtil::StripWhitespace(argv[++i]);
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("--twin-label"))
+			{
+				s_twin_label = StringUtil::StripWhitespace(argv[++i]);
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("--twin-ram-at"))
+			{
+				const auto v = StringUtil::FromChars<uint32_t>(argv[++i]);
+				if (!v.has_value())
+				{
+					Console.Error("Invalid --twin-ram-at value.");
+					return false;
+				}
+				s_twin_ram_at = static_cast<int>(v.value());
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("--dump-config"))
+			{
+				s_mode = RunMode::DumpConfig;
+				s_dumpcfg_path = StringUtil::StripWhitespace(argv[++i]);
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("--mkstate"))
+			{
+				s_mode = RunMode::MkState;
+				s_mkstate_path = StringUtil::StripWhitespace(argv[++i]);
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("--set"))
+			{
+				const std::string kv(StringUtil::StripWhitespace(argv[++i]));
+				const size_t eq = kv.find('=');
+				const size_t slash = (eq == std::string::npos) ? std::string::npos : kv.rfind('/', eq);
+				if (eq == std::string::npos || slash == std::string::npos || slash == 0 || slash + 1 >= eq)
+				{
+					Console.Error("--set expects Section/Key=Value (e.g. EmuCore/CPU/Recompiler/fpuFullMode=true).");
+					return false;
+				}
+				s_set_overrides.push_back({kv.substr(0, slash), kv.substr(slash + 1, eq - slash - 1), kv.substr(eq + 1)});
+				continue;
+			}
 			else if (CHECK_ARG_PARAM("--renderer"))
 			{
 				const std::string_view r = StringUtil::StripWhitespace(argv[++i]);
@@ -675,16 +769,22 @@ bool EERunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 
 	if (s_mode == RunMode::None)
 	{
-		Console.Error("No mode specified (use --stepdiff, --contmem, --speedhack-diff, --liverun, --vu0diff, --selfcheck, --localize, or --repro).");
+		Console.Error("No mode specified (use --stepdiff, --contmem, --speedhack-diff, --liverun, --vu0diff, --selfcheck, --localize, --repro, --twindump, --twincompare, or --dump-config).");
 		return false;
 	}
 
 	if (s_savestate_path.empty())
 	{
-		Console.Error("No savestate provided (use --savestate <file>).");
-		return false;
+		// --dump-config only needs the disc mounted: GameDB keys off the serial,
+		// which is known right after Initialize. --mkstate can cold-boot the
+		// disc to CREATE the first state. Every other mode replays state.
+		if (s_mode != RunMode::DumpConfig && s_mode != RunMode::MkState)
+		{
+			Console.Error("No savestate provided (use --savestate <file>).");
+			return false;
+		}
 	}
-	if (!FileSystem::FileExists(s_savestate_path.c_str()))
+	else if (!FileSystem::FileExists(s_savestate_path.c_str()))
 	{
 		Console.ErrorFmt("Savestate '{}' does not exist.", s_savestate_path);
 		return false;
@@ -777,6 +877,16 @@ void EERunner::SettingsOverride()
 	// converges the benign mul/add 1-ULP so the lockstep differ walks past it to the
 	// next (non-precision) divergence. Applied to ALL modes (set before VMManager
 	// init). recDIV_S stays single even in FULL, so div divergences still surface.
+	// EERUNNER_VU0FP=1 adds VU0 macro-visible state (VF00-31 + ACC + the
+	// STATUS/MAC/CLIP flag VIs) to the divtrace fingerprint + snapshot diff, so
+	// --stepdiff's zoom breaks at the EE block whose COP2 macro emission first
+	// produced divergent VU0 state (default fingerprint only sees GPR/FPR/CP0,
+	// which surfaces macro bugs downstream — e.g. the Jak 3 fMax vertex flood
+	// showed up at an unrelated memcpy block). Opt-in because mVU-vs-interp has
+	// by-design NaN/clamp corners the benign filters were not tuned for.
+	if (const char* e = std::getenv("EERUNNER_VU0FP"))
+		ee_divtrace::g_vu0_include = (e[0] != '0');
+
 	if (const char* e = std::getenv("EERUNNER_FPUFULL"))
 		s_settings_interface.SetBoolValue("EmuCore/CPU/Recompiler", "fpuFullMode", e[0] != '0');
 
@@ -854,6 +964,17 @@ void EERunner::SettingsOverride()
 		s_settings_interface.SetBoolValue("MemoryCards", fmt::format("Slot{}_Enable", i + 1).c_str(), false);
 		s_settings_interface.SetStringValue("MemoryCards", fmt::format("Slot{}_Filename", i + 1).c_str(), "");
 	}
+
+	// --set Section/Key=Value overrides, applied LAST so they win over the
+	// harness pinning above. Base-layer only: a GameDB per-game override of the
+	// same key still wins (that's the production layering — useful for testing
+	// a pending GameDB fix). The twin passes own the CPU-provider toggles
+	// (EnableEE/VU0/VU1/IOP); a --set of those is clobbered per pass.
+	for (const SetOverride& so : s_set_overrides)
+	{
+		s_settings_interface.SetStringValue(so.section.c_str(), so.key.c_str(), so.value.c_str());
+		Console.WriteLn(fmt::format("SettingsOverride: --set [{}] {} = {}", so.section, so.key, so.value));
+	}
 }
 
 // Snapshot live cpuRegs/fpuRegs into a FullSnap (frame-boundary capture; pc/cycle
@@ -863,6 +984,12 @@ static ee_divtrace::FullSnap CaptureFullSnap()
 	ee_divtrace::FullSnap fs;
 	std::memcpy(&fs.cpu, &cpuRegs, sizeof(cpuRegisters));
 	std::memcpy(&fs.fpu, &fpuRegs, sizeof(fpuRegisters));
+	std::memcpy(fs.vu0_vf, VU0.VF, 32 * 16);
+	std::memcpy(fs.vu0_vf + 32 * 16, &VU0.ACC, 16);
+	fs.vu0_vi_status = VU0.VI[REG_STATUS_FLAG].UL;
+	fs.vu0_vi_mac    = VU0.VI[REG_MAC_FLAG].UL;
+	fs.vu0_vi_clip   = VU0.VI[REG_CLIP_FLAG].UL;
+	fs._pad0 = 0;
 	fs.cycle = cpuRegs.cycle;
 	fs.pc = cpuRegs.pc;
 	fs._pad = 0;
@@ -930,7 +1057,7 @@ struct MemDiffCount
 // Returns the total differing page/byte counts (used by --speedhack-diff to size
 // a divergence against the baseline determinism floor). verbose=false suppresses
 // the per-page detail + summary line (for the many quiet trajectory samples).
-static MemDiffCount ReportMemDiff(const std::vector<u8>& a, const std::vector<u8>& b, bool verbose = true)
+static MemDiffCount ReportMemDiff(const std::vector<u8>& a, const std::vector<u8>& b, bool verbose = true, size_t max_show = 8)
 {
 	if (a.size() != b.size() || a.empty())
 	{
@@ -955,7 +1082,7 @@ static MemDiffCount ReportMemDiff(const std::vector<u8>& a, const std::vector<u8
 			continue;
 		++diffPages;
 		diffBytes += pageDiffBytes;
-		if (verbose && shown < 8)
+		if (verbose && shown < max_show)
 		{
 			++shown;
 			const char* region = (firstDiff < Ps2MemSize::MainRam) ? "Main" : "Scratch";
@@ -1336,6 +1463,25 @@ static std::vector<std::string> DiffFullSnaps(const ee_divtrace::FullSnap& jit,
 		for (int i = 0; i < 32; ++i)
 			d32(fmt::format("fpr[{}]", i), jit.fpu.fpr[i].UL, interp.fpu.fpr[i].UL);
 		d32("ACC", jit.fpu.ACC.UL, interp.fpu.ACC.UL);
+	}
+	// VU0 macro state — reported only when it participates in alignment
+	// (EERUNNER_VU0FP), so the default report set stays what the benign-class
+	// filters were tuned on.
+	if (ee_divtrace::g_vu0_include)
+	{
+		static const char lanes[4] = {'x', 'y', 'z', 'w'};
+		for (int i = 0; i < 33; ++i)
+		{
+			u32 a[4], b[4];
+			std::memcpy(a, jit.vu0_vf + i * 16, 16);
+			std::memcpy(b, interp.vu0_vf + i * 16, 16);
+			const std::string name = (i == 32) ? std::string("vu0.ACC") : fmt::format("vu0.vf{:02}", i);
+			for (int l = 0; l < 4; ++l)
+				d32(fmt::format("{}.{}", name, lanes[l]), a[l], b[l]);
+		}
+		d32("vu0.vi.STATUS", jit.vu0_vi_status, interp.vu0_vi_status);
+		d32("vu0.vi.MAC", jit.vu0_vi_mac, interp.vu0_vi_mac);
+		d32("vu0.vi.CLIP", jit.vu0_vi_clip, interp.vu0_vi_clip);
 	}
 	d32("sa", jit.cpu.sa, interp.cpu.sa);
 	return out;
@@ -1752,6 +1898,18 @@ static bool ZoomFromCheckpoint(const std::string& ckpt)
 	int timer_skipped = 0;
 	int selfloop_skipped = 0;
 	int interrupt_skipped = 0;
+	// EERUNNER_CENSUS=1: instead of stopping at the first non-benign data
+	// divergence, report it compactly, resync unconditionally, and keep
+	// walking. Transient divergences (DMA-phase staging buffers, double-
+	// buffered comm regions that reconverge within the frame) get logged and
+	// skipped; the walk stops at the first PERSISTENT divergence — the one
+	// whose effects never wash out of the register/VU0 fingerprint. Built for
+	// the Jak 3 hunt, where the first-stop site was a shared-benign DMA-phase
+	// memcpy and the real (arm64-only) VU0-macro corruption came later.
+	const char* census_env = std::getenv("EERUNNER_CENSUS");
+	const bool census = census_env && census_env[0] != '0';
+	int census_sites = 0;
+	const int kCensusCap = 64;
 	const int kTimerCap = 32;
 	const int kSelfLoopCap = 4096;
 	const int kInterruptCap = 4096; // stream-only resync, like self-loops
@@ -1801,6 +1959,84 @@ static bool ZoomFromCheckpoint(const std::string& ckpt)
 					"iteration at the vsync cutoff (benign, JIT ran off the end of interp's stream). Continuing the hunt.",
 					ar.pc, ar.prev_pc));
 				return false; // benign phase — caller keeps scanning later frames
+			}
+			// Census mode: a control-flow split that RECONVERGES (JIT re-joins
+			// interp's pc+fp stream) is a poll-phase artifact — e.g. a DMA-busy
+			// flag poll the JIT entered because it reached the check at a
+			// different cycle phase (Jak 3: the CHCR.STR-style wait at
+			// 0x10df40). Log it and keep walking; a genuine wrong-target branch
+			// perturbs state and will not reconverge.
+			if (census && census_sites < kCensusCap)
+			{
+				const ResyncResult rs = ResyncAfter(interp_fine, jit_fine, ar.jit_idx, ar.interp_idx);
+				if (rs.reconverged)
+				{
+					Console.WriteLn(fmt::format(
+						"CENSUS site {}: CONTROL-FLOW split at pc={:#010x} (from block {:#010x}, JIT entry #{}) — "
+						"TRANSIENT, reconverged after a {}-entry blind window (poll-phase class); continuing.",
+						census_sites, ar.pc, ar.prev_pc, ar.jit_idx, rs.blind));
+					++census_sites;
+					k = rs.k;
+					ii = rs.ii;
+					prev_pc = rs.prev_pc;
+					continue;
+				}
+				Console.WriteLn(fmt::format(
+					"CENSUS site {}: CONTROL-FLOW split at pc={:#010x} — PERSISTENT (never reconverged, blind={}, "
+					"ran_off={}). Full report follows.",
+					census_sites, ar.pc, rs.blind, rs.ran_off));
+				++census_sites;
+				// Snapshot the JIT side at the split entry so the guest register
+				// operands of the diverging test are visible (e.g. the busy-flag
+				// address a poll loop is spinning on), plus both sides' view of
+				// the polled word when it resolves to RAM.
+				if (reload(true))
+				{
+					const auto csnap = RunFineSnapAtFromHere(ar.jit_idx);
+					static const char* const gprn[32] = {
+						"zero", "at", "v0", "v1", "a0", "a1", "a2", "a3",
+						"t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7",
+						"s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7",
+						"t8", "t9", "k0", "k1", "gp", "sp", "s8", "ra"};
+					std::string regs;
+					for (int gi : {2, 4, 5, 6, 16, 17, 18})
+						regs += fmt::format("{}={:#x} ", gprn[gi], csnap.cpu.GPR.r[gi].UD[0]);
+					Console.WriteLn(fmt::format("CENSUS split-entry JIT regs: {}", regs));
+					const u32 s0addr = static_cast<u32>(csnap.cpu.GPR.r[16].UD[0]);
+					if ((s0addr & 0xF0000000u) == 0 && (s0addr & 0x0FFFFFFFu) < Ps2MemSize::MainRam)
+					{
+						const u32 flagjit = *reinterpret_cast<const u32*>(
+							reinterpret_cast<const u8*>(eeMem->Main) + (s0addr & 0x1ffffffu));
+						Console.WriteLn(fmt::format(
+							"CENSUS split: [s0={:#010x}] (RAM) = {:#010x} on the JIT side at entry.", s0addr, flagjit));
+					}
+					else
+					{
+						Console.WriteLn(fmt::format(
+							"CENSUS split: s0={:#010x} is not a plain RAM address (HW/scratch/kseg) — poll target is MMIO.",
+							s0addr));
+					}
+					// The re-run left the VM at END of the JIT frame — dump the SPR
+					// DMA channel state (both directions) so a wedged channel's
+					// CHCR/MADR/QWC/TADR are visible on the JIT side...
+					Console.WriteLn(fmt::format(
+						"CENSUS split JIT frame-end SPR1(toSPR): chcr={:#010x} madr={:#010x} qwc={:#x} tadr={:#010x} sadr={:#010x}",
+						psHu32(0xD400), psHu32(0xD410), psHu32(0xD420), psHu32(0xD430), psHu32(0xD480)));
+					Console.WriteLn(fmt::format(
+						"CENSUS split JIT frame-end SPR0(fromSPR): chcr={:#010x} madr={:#010x} qwc={:#x} sadr={:#010x}",
+						psHu32(0xD000), psHu32(0xD010), psHu32(0xD020), psHu32(0xD080)));
+					// ...and the same after a fresh interp frame for comparison.
+					if (reload(false))
+					{
+						AdvanceFrames(1);
+						Console.WriteLn(fmt::format(
+							"CENSUS split INTERP frame-end SPR1(toSPR): chcr={:#010x} madr={:#010x} qwc={:#x} tadr={:#010x} sadr={:#010x}",
+							psHu32(0xD400), psHu32(0xD410), psHu32(0xD420), psHu32(0xD430), psHu32(0xD480)));
+						Console.WriteLn(fmt::format(
+							"CENSUS split INTERP frame-end SPR0(fromSPR): chcr={:#010x} madr={:#010x} qwc={:#x} sadr={:#010x}",
+							psHu32(0xD000), psHu32(0xD010), psHu32(0xD020), psHu32(0xD080)));
+					}
+				}
 			}
 			Console.WriteLn(fmt::format(
 				"STEPDIFF zoom: CONTROL-FLOW divergence — JIT dispatched to block pc={:#010x} the interpreter "
@@ -1954,6 +2190,38 @@ static bool ZoomFromCheckpoint(const std::string& ckpt)
 			ii = rs.ii;
 			prev_pc = rs.prev_pc;
 			continue;
+		}
+
+		// Census mode: log the site, resync unconditionally, continue while the
+		// divergence proves transient. Falls through to the full report (stop)
+		// on the first site that never reconverges, or at the cap.
+		if (census && census_sites < kCensusCap)
+		{
+			const auto cdiffs = DiffFullSnaps(jsnap, isnap);
+			Console.WriteLn(fmt::format(
+				"CENSUS site {}: entering pc={:#010x} (offending block {:#010x}, JIT entry #{}), {} divergent field(s):",
+				census_sites, ar.pc, ar.prev_pc, ar.jit_idx, cdiffs.size()));
+			for (size_t di = 0; di < cdiffs.size() && di < 10; ++di)
+				Console.WriteLn(fmt::format("    {}", cdiffs[di]));
+			if (cdiffs.size() > 10)
+				Console.WriteLn(fmt::format("    ... (+{} more)", cdiffs.size() - 10));
+			const ResyncResult rs = ResyncAfter(interp_fine, jit_fine, ar.jit_idx, ar.interp_idx);
+			if (rs.reconverged)
+			{
+				Console.WriteLn(fmt::format(
+					"CENSUS site {}: TRANSIENT — reconverged after a {}-entry blind window; continuing.",
+					census_sites, rs.blind));
+				++census_sites;
+				k = rs.k;
+				ii = rs.ii;
+				prev_pc = rs.prev_pc;
+				continue;
+			}
+			Console.WriteLn(fmt::format(
+				"CENSUS site {}: PERSISTENT — never reconverged (blind={}, ran_off={}). Full report follows.",
+				census_sites, rs.blind, rs.ran_off));
+			++census_sites;
+			// fall through to the full report + stop
 		}
 
 		// REAL divergence (or benign-cap reached): full report + stop.
@@ -2172,6 +2440,437 @@ static int RunContinuousMemTrajectory()
 		dump(false, "interp");
 		dump(true, "jit");
 	}
+	return EXIT_SUCCESS;
+}
+
+// ---------------------------------------------------------------------------
+// --twindump / --twincompare : cross-BUILD divergence finder ("twindiff").
+//
+// Motivation: a JIT transplant regressed games the pre-transplant tree (its
+// own independent JIT stack) runs correctly. The in-tree oracles compare a
+// JIT against ITS OWN interpreter, so they are structurally blind to two
+// classes: (a) shared-C++ semantic drift between the trees (both engines in
+// one tree agree with each other AND with the bug), and (b) behavior the
+// WORKING tree's JIT has that the interpreter also lacks (True Crime
+// guard-bit adds: interp never masked, so jit-vs-interp reads "clean" while
+// the game needs the masking).
+//
+// Design: the same byte-identical runner is built in BOTH trees. From one
+// shared savestate each binary makes three free-running passes over --frames:
+//   i1, i2  full interpreter (EE+VU0+VU1+IOP interp); i2 is the determinism
+//           control. The interp cells are pure shared-C++.
+//   j       the full production JIT stack of that tree.
+// recording per frame: xxh3 of EE RAM+scratch (HashMemory), the architectural
+// register fingerprint (FingerprintCpu), and cpuRegs.cycle. --twindump writes
+// <prefix>.twin; --twincompare re-runs the passes locally and diffs:
+//
+//   pair XI  other.i1 vs local.i1  -> shared-C++ semantic drift (sharp: both
+//                                     sides claim identical semantics AND
+//                                     identical cycle accounting)
+//   pair TJ  other.j  vs other.i1  -> the other tree's JIT-vs-interp envelope
+//   pair OJ  local.j  vs local.i1  -> local JIT bug (hand to --stepdiff)
+//   pair EE  other.j  vs local.j   -> end-to-end working-vs-broken headline
+//
+// TJ/OJ/EE carry benign divergence by construction: interp and each JIT use
+// different cycle accounting, so timer-derived values land in RAM and drift
+// the memhash. Adjudicate those with the RAM page-diff character (scattered
+// small deltas = timing noise; structured buffers = value bug) and config A/B
+// (--set). The guard-bit signature: XI clean + OJ clean-ish + TJ divergent +
+// EE divergent. Memhash is primary; regfp is advisory (frame-pause register
+// sampling jitters ~10 cycles). Free-running passes accumulate divergence, so
+// keep --frames modest and the savestate near the symptom — the i1-vs-i2
+// control reports where each tree's own determinism floor breaks.
+// ---------------------------------------------------------------------------
+
+namespace
+{
+	struct TwinRec
+	{
+		u64 mem;
+		u64 reg;
+		u64 cyc;
+	};
+
+	struct TwinTrace
+	{
+		std::string label;
+		std::string serial;
+		uint32_t frames = 0;
+		int vu0fp = 0;
+		int nofp = 0;
+		std::vector<TwinRec> i1, i2, j;
+	};
+} // namespace
+
+// Force the WHOLE CPU stack (EE, VU0, VU1, IOP) to interp or to this tree's
+// JITs. The twin interp cells must be pure shared-C++: with only EnableEE
+// toggled (what SetEeMode does for the in-tree modes), the two trees'
+// DIFFERENT VU/IOP JITs would leak into the "interpreter" comparison and
+// conflate divergence classes.
+static void SetAllCpuMode(bool jit)
+{
+	s_settings_interface.SetBoolValue("EmuCore/CPU/Recompiler", "EnableEE", jit);
+	s_settings_interface.SetBoolValue("EmuCore/CPU/Recompiler", "EnableVU0", jit);
+	s_settings_interface.SetBoolValue("EmuCore/CPU/Recompiler", "EnableVU1", jit);
+	s_settings_interface.SetBoolValue("EmuCore/CPU/Recompiler", "EnableIOP", jit);
+	VMManager::ApplySettings();
+}
+
+// One free-running pass from the start savestate. Optionally dumps raw EE
+// RAM+scratch at --twin-ram-at to <prefix>.f<N>.{interp,jit}.bin (skipped for
+// the i2 control twin).
+static bool TwinRunPass(bool jit, const char* cell, std::vector<TwinRec>& out)
+{
+	Error error;
+	out.clear();
+	if (!VMManager::LoadState(s_savestate_path.c_str(), &error))
+	{
+		Console.ErrorFmt("twin: load failed: {}", error.GetDescription());
+		return false;
+	}
+	SetAllCpuMode(jit);
+	out.reserve(s_frames);
+	for (uint32_t f = 0; f < s_frames && VMManager::GetState() != VMState::Shutdown; ++f)
+	{
+		VMManager::FrameAdvance(1);
+		VMManager::Execute();
+		TwinRec r;
+		r.mem = ee_divtrace::HashMemory();
+		r.reg = ee_divtrace::FingerprintCpu();
+		r.cyc = cpuRegs.cycle;
+		out.push_back(r);
+		if (s_twin_ram_at >= 0 && f == static_cast<uint32_t>(s_twin_ram_at) &&
+			std::strcmp(cell, "i2") != 0 && !s_twin_prefix.empty())
+		{
+			const std::string path = fmt::format("{}.f{}.{}.bin", s_twin_prefix, f, jit ? "jit" : "interp");
+			std::ofstream bf(path, std::ios::binary | std::ios::trunc);
+			if (bf)
+			{
+				bf.write(reinterpret_cast<const char*>(eeMem->Main), Ps2MemSize::MainRam);
+				bf.write(reinterpret_cast<const char*>(eeMem->Scratch), Ps2MemSize::Scratch);
+				Console.WriteLn(fmt::format("twin: wrote {} ({} bytes).", path,
+					static_cast<size_t>(Ps2MemSize::MainRam) + Ps2MemSize::Scratch));
+			}
+			else
+				Console.ErrorFmt("twin: failed to open {}", path);
+		}
+	}
+	Console.WriteLn(fmt::format("twin: pass {} done ({} frames).", cell, out.size()));
+	return true;
+}
+
+static bool TwinRunAll(TwinTrace& t)
+{
+	t.label = s_twin_label;
+	t.serial = VMManager::GetDiscSerial();
+	t.frames = s_frames;
+	t.vu0fp = ee_divtrace::g_vu0_include ? 1 : 0;
+	t.nofp = ee_divtrace::g_fp_exclude ? 1 : 0;
+	return TwinRunPass(false, "i1", t.i1) &&
+		   TwinRunPass(false, "i2", t.i2) &&
+		   TwinRunPass(true, "j", t.j);
+}
+
+static bool WriteTwinTrace(const TwinTrace& t, const std::string& path)
+{
+	std::ofstream f(path, std::ios::trunc);
+	if (!f)
+	{
+		Console.ErrorFmt("twin: failed to open {}", path);
+		return false;
+	}
+	f << "# twindiff trace v1\n";
+	f << fmt::format("meta label={} serial={} frames={} vu0fp={} nofp={} savestate={}\n",
+		t.label, t.serial.empty() ? "?" : t.serial, t.frames, t.vu0fp, t.nofp,
+		Path::GetFileName(s_savestate_path));
+	const auto cell = [&f](const char* name, const std::vector<TwinRec>& v) {
+		for (size_t i = 0; i < v.size(); ++i)
+			f << fmt::format("rec {} {} {:016x} {:016x} {}\n", i, name, v[i].mem, v[i].reg, v[i].cyc);
+	};
+	cell("i1", t.i1);
+	cell("i2", t.i2);
+	cell("j", t.j);
+	Console.WriteLn(fmt::format("twin: wrote {} ({} frames x 3 cells).", path, t.frames));
+	return true;
+}
+
+static bool LoadTwinTrace(TwinTrace& t, const std::string& path)
+{
+	std::ifstream f(path);
+	if (!f)
+	{
+		Console.ErrorFmt("twin: failed to open {}", path);
+		return false;
+	}
+	std::string line;
+	while (std::getline(f, line))
+	{
+		if (line.empty() || line[0] == '#')
+			continue;
+		std::istringstream ss(line);
+		std::string tok;
+		ss >> tok;
+		if (tok == "meta")
+		{
+			std::string kv;
+			while (ss >> kv)
+			{
+				const size_t eq = kv.find('=');
+				if (eq == std::string::npos)
+					continue;
+				const std::string k = kv.substr(0, eq), v = kv.substr(eq + 1);
+				if (k == "label")
+					t.label = v;
+				else if (k == "serial")
+					t.serial = v;
+				else if (k == "frames")
+					t.frames = static_cast<uint32_t>(std::strtoul(v.c_str(), nullptr, 10));
+				else if (k == "vu0fp")
+					t.vu0fp = (v == "1");
+				else if (k == "nofp")
+					t.nofp = (v == "1");
+			}
+		}
+		else if (tok == "rec")
+		{
+			size_t idx = 0;
+			std::string cell, memh, regh;
+			u64 cyc = 0;
+			ss >> idx >> cell >> memh >> regh >> cyc;
+			if (ss.fail() || (cell != "i1" && cell != "i2" && cell != "j"))
+			{
+				Console.ErrorFmt("twin: malformed rec line in {}: '{}'", path, line);
+				return false;
+			}
+			TwinRec r;
+			r.mem = std::strtoull(memh.c_str(), nullptr, 16);
+			r.reg = std::strtoull(regh.c_str(), nullptr, 16);
+			r.cyc = cyc;
+			auto& v = (cell == "i1") ? t.i1 : (cell == "i2") ? t.i2 : t.j;
+			if (idx != v.size())
+			{
+				Console.ErrorFmt("twin: out-of-order rec index in {} (cell {} idx {}).", path, cell, idx);
+				return false;
+			}
+			v.push_back(r);
+		}
+	}
+	Console.WriteLn(fmt::format("twin: loaded {} (label={} serial={} i1/i2/j = {}/{}/{} frames).",
+		path, t.label, t.serial, t.i1.size(), t.i2.size(), t.j.size()));
+	return !t.i1.empty() && !t.i2.empty() && !t.j.empty();
+}
+
+// First frame index where the two cells' memhash (or regfp) differ; -1 = none.
+static int TwinFirstDiff(const std::vector<TwinRec>& a, const std::vector<TwinRec>& b, bool reg)
+{
+	const size_t n = std::min(a.size(), b.size());
+	for (size_t f = 0; f < n; ++f)
+	{
+		if (reg ? (a[f].reg != b[f].reg) : (a[f].mem != b[f].mem))
+			return static_cast<int>(f);
+	}
+	return -1;
+}
+
+static s64 TwinMaxCycDrift(const std::vector<TwinRec>& a, const std::vector<TwinRec>& b, int* at)
+{
+	const size_t n = std::min(a.size(), b.size());
+	s64 maxd = 0;
+	*at = -1;
+	for (size_t f = 0; f < n; ++f)
+	{
+		// cycle is a u32 counter widened at capture; diff as s64 of the u32s
+		// (wrap artifacts only matter across ~14s spans, far beyond a window).
+		const s64 d = static_cast<s64>(a[f].cyc) - static_cast<s64>(b[f].cyc);
+		if (std::llabs(d) > std::llabs(maxd))
+		{
+			maxd = d;
+			*at = static_cast<int>(f);
+		}
+	}
+	return maxd;
+}
+
+static int RunTwinDump()
+{
+	if (s_twin_prefix.empty())
+	{
+		Console.Error("twin: --twindump needs a <prefix>.");
+		return EXIT_FAILURE;
+	}
+	TwinTrace t;
+	if (!TwinRunAll(t))
+		return EXIT_FAILURE;
+	if (!WriteTwinTrace(t, s_twin_prefix + ".twin"))
+		return EXIT_FAILURE;
+
+	// Local quick summary so a lone dump is already informative.
+	const int ctrl = TwinFirstDiff(t.i1, t.i2, false);
+	const int jvi = TwinFirstDiff(t.j, t.i1, false);
+	int at = -1;
+	const s64 drift = TwinMaxCycDrift(t.j, t.i1, &at);
+	Console.WriteLn(fmt::format(
+		"TWINDUMP SUMMARY [{}]: interp determinism floor breaks at frame {}; local jit-vs-interp mem first differs at frame {} (cycle-model noise expected); max |jit-interp cycle drift| = {:+d} @ frame {}.",
+		t.label, ctrl, jvi, drift, at));
+	return EXIT_SUCCESS;
+}
+
+static int RunTwinCompare()
+{
+	// Default the local prefix BEFORE the passes (the ram-at dumps use it).
+	if (s_twin_prefix.empty())
+		s_twin_prefix = s_twin_other + ".local";
+
+	TwinTrace other;
+	if (!LoadTwinTrace(other, s_twin_other))
+		return EXIT_FAILURE;
+
+	TwinTrace local;
+	if (!TwinRunAll(local))
+		return EXIT_FAILURE;
+	WriteTwinTrace(local, s_twin_prefix + ".twin");
+
+	if (other.vu0fp != local.vu0fp || other.nofp != local.nofp)
+	{
+		Console.ErrorFmt(
+			"twin: fingerprint config mismatch (other vu0fp={} nofp={}, local vu0fp={} nofp={}) — set matching EERUNNER_VU0FP / EERUNNER_NOFP on both sides.",
+			other.vu0fp, other.nofp, local.vu0fp, local.nofp);
+		return EXIT_FAILURE;
+	}
+	if (!other.serial.empty() && other.serial != "?" && !local.serial.empty() && other.serial != local.serial)
+		Console.ErrorFmt("twin: WARNING serial mismatch (other={} local={}) — comparing different games?", other.serial, local.serial);
+
+	const size_t n = std::min({other.i1.size(), other.i2.size(), other.j.size(),
+		local.i1.size(), local.i2.size(), local.j.size()});
+	if (n == 0)
+	{
+		Console.Error("twin: no overlapping frames.");
+		return EXIT_FAILURE;
+	}
+
+	// Determinism floors (per tree, interp-vs-interp).
+	const int oc = TwinFirstDiff(other.i1, other.i2, false);
+	const int lc = TwinFirstDiff(local.i1, local.i2, false);
+
+	struct Pair
+	{
+		const char* tag;
+		std::string desc;
+		const std::vector<TwinRec>* a;
+		const std::vector<TwinRec>* b;
+	};
+	const Pair pairs[] = {
+		{"XI", fmt::format("cross-tree interp-vs-interp ({} vs {}) [SHARP]", other.label, local.label), &other.i1, &local.i1},
+		{"TJ", fmt::format("{} jit-vs-interp envelope [cycle-model noisy]", other.label), &other.j, &other.i1},
+		{"OJ", fmt::format("{} jit-vs-interp envelope [cycle-model noisy]", local.label), &local.j, &local.i1},
+		{"EE", fmt::format("end-to-end jit-vs-jit ({} vs {}) [cycle-model noisy]", other.label, local.label), &other.j, &local.j},
+	};
+
+	Console.WriteLn(fmt::format(
+		"TWINDIFF: other='{}' local='{}' frames={}; determinism floors: other frame {}, local frame {} (-1 = never broke).",
+		other.label, local.label, n, oc, lc));
+
+	int first_mem[4], first_reg[4], drift_at[4];
+	s64 drift[4];
+	for (int p = 0; p < 4; ++p)
+	{
+		first_mem[p] = TwinFirstDiff(*pairs[p].a, *pairs[p].b, false);
+		first_reg[p] = TwinFirstDiff(*pairs[p].a, *pairs[p].b, true);
+		drift[p] = TwinMaxCycDrift(*pairs[p].a, *pairs[p].b, &drift_at[p]);
+		Console.WriteLn(fmt::format("  {}  {}: first mem-div frame {}, first regfp-div frame {} (advisory), max |cycle drift| {:+d} @ frame {}.",
+			pairs[p].tag, pairs[p].desc, first_mem[p], first_reg[p], drift[p], drift_at[p]));
+	}
+
+	// XI is real only while BOTH trees' own determinism floors are still clean.
+	const int xi = first_mem[0];
+	const bool xi_real = xi >= 0 && (oc < 0 || xi < oc) && (lc < 0 || xi < lc);
+	const int ee = first_mem[3];
+
+	Console.WriteLn("TWINDIFF VERDICT:");
+	if (xi_real)
+	{
+		Console.WriteLn(fmt::format(
+			"  SHARED-C++ DRIFT: the two trees' full interpreters diverge at frame {} (identical cycle model on both sides — semantic merge delta, not JIT). Re-run both sides with --twin-ram-at {} and page-diff the .interp.bin pair; suspects = the shared pcsx2/ files changed between the trees.",
+			xi, xi));
+		if (drift[0] != 0 && drift_at[0] <= xi)
+			Console.WriteLn("  (interp cycle trajectories also drift cross-tree — event-scheduling change, e.g. Counters — inspect that before trusting value-level diffs.)");
+	}
+	else if (xi >= 0)
+	{
+		Console.WriteLn(fmt::format(
+			"  cross-tree interp divergence at frame {} is AT/BEYOND a determinism floor (other {}, local {}) — inconclusive; move the savestate closer or shorten --frames.",
+			xi, oc, lc));
+	}
+	else
+	{
+		Console.WriteLn(fmt::format("  cross-tree interp timelines IDENTICAL for {} frames — shared C++ is clean here.", n));
+	}
+	if (ee >= 0)
+	{
+		Console.WriteLn(fmt::format(
+			"  end-to-end jit-vs-jit mem first differs at frame {}. The jit pairs carry benign cycle-model divergence (timer-derived values land in RAM): adjudicate with the RAM page-diff character at that frame (--twin-ram-at {} on both sides; scattered small deltas = timing noise, structured buffers = value bug) and with config A/B (--set).",
+			ee, ee));
+		if (first_mem[1] >= 0 && first_mem[2] < 0)
+			Console.WriteLn(fmt::format(
+				"  SIGNATURE: {} JIT diverges from shared interp (frame {}) while {} JIT tracks interp — if the game is broken here, it likely DEPENDS on the other JIT's semantics (guard-bit class).",
+				other.label, first_mem[1], local.label));
+	}
+	else
+	{
+		Console.WriteLn("  no end-to-end jit-vs-jit divergence in the window — CPU-state clean here; suspect GS-side or config (diff --dump-config outputs), or move the savestate closer to the symptom.");
+	}
+
+	return (xi_real || ee >= 0) ? 2 : EXIT_SUCCESS;
+}
+
+// --mkstate <out.p2s> : bootstrap a shared savestate for twindiff. Boots the
+// disc (or continues from --savestate), runs --frames under the production
+// JIT stack, writes a savestate, exits. Make twindiff states on the WORKING
+// (gold) binary: a state taken from a broken run can already carry the
+// corruption baked into RAM — True Crime's paletted textures are computed
+// once at level load, so a mid-scene state from a broken build shows no
+// guard-bit delta at all; the window has to CROSS the corrupting computation.
+static int RunMkState()
+{
+	Error error;
+	if (!s_savestate_path.empty())
+	{
+		if (!VMManager::LoadState(s_savestate_path.c_str(), &error))
+		{
+			Console.ErrorFmt("mkstate: load failed: {}", error.GetDescription());
+			return EXIT_FAILURE;
+		}
+	}
+	AdvanceFrames(s_frames);
+	bool ok = true;
+	VMManager::SaveState(s_mkstate_path.c_str(), /*zip_on_thread=*/false, /*backup_old_state=*/false,
+		[&](const std::string& e) { ok = false; Console.ErrorFmt("mkstate: save failed: {}", e); });
+	VMManager::WaitForSaveStateFlush();
+	Console.WriteLn(fmt::format("MKSTATE: {} after {} frames -> {}",
+		ok ? "wrote state" : "FAILED", s_frames, s_mkstate_path));
+	return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+// --dump-config <path> : boot the VM far enough for GameDB to apply, then
+// serialize the EFFECTIVE EmuConfig to an INI. The twindiff driver diffs the
+// two trees' dumps FIRST — config/GameDB drift (True Crime: guard-bit emulation
+// default-off at the time + three divergent GameIndex copies) explains a broken
+// game far more cheaply than any trace. Savestate optional: config keys off the disc
+// serial, known right after Initialize.
+static int RunDumpConfig()
+{
+	INISettingsInterface ini(s_dumpcfg_path);
+	{
+		SettingsSaveWrapper wrap(ini);
+		EmuConfig.LoadSave(wrap);
+	}
+	if (!ini.Save())
+	{
+		Console.ErrorFmt("dump-config: failed to write {}", s_dumpcfg_path);
+		return EXIT_FAILURE;
+	}
+	Console.WriteLn(fmt::format("DUMPCONFIG: serial={} crc={:08x} -> {}",
+		VMManager::GetDiscSerial(), VMManager::GetDiscCRC(), s_dumpcfg_path));
 	return EXIT_SUCCESS;
 }
 
@@ -2528,6 +3227,29 @@ static int RunStepDiff()
 				// all to benign cycle-derived timer reads / spin phase, keep scanning
 				// later frames; otherwise it's a real lead and we stop here.
 				Console.Error("  => candidate REAL EE JIT divergence (clean interp control, MEMORY differs) — zooming to classify...");
+				// Byte-level store localization first: re-run this frame once per
+				// mode from the same checkpoint capturing EE RAM+scratch, and report
+				// the differing regions. Single-frame from an identical checkpoint
+				// with a clean interp control, so every differing byte is a real JIT
+				// store difference (no cross-frame accumulation, no async jitter).
+				{
+					auto runOneMem = [&](bool jit_mode, std::vector<u8>& mem) -> bool {
+						if (!loadCkpt())
+							return false;
+						SetEeMode(jit_mode);
+						AdvanceFrames(1);
+						mem.resize(Ps2MemSize::MainRam + Ps2MemSize::Scratch);
+						std::memcpy(mem.data(), eeMem->Main, Ps2MemSize::MainRam);
+						std::memcpy(mem.data() + Ps2MemSize::MainRam, eeMem->Scratch, Ps2MemSize::Scratch);
+						return true;
+					};
+					std::vector<u8> mi, mj;
+					if (runOneMem(false, mi) && runOneMem(true, mj))
+					{
+						Console.Error("  frame-local EE-RAM diff (A=interp, B=JIT):");
+						ReportMemDiff(mi, mj, /*verbose=*/true, /*max_show=*/64);
+					}
+				}
 				const bool stop = ZoomFromCheckpoint(ckpt);
 				if (stop)
 				{
@@ -3181,8 +3903,13 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 		// harness config) — ApplySettings() below calls LoadSettings() which re-applies
 		// Perf::SetJitDumpEnabled(EnablePerfDump), so a manual enable here would just get
 		// reset to the config default (false). No-op on non-jitdump builds.
+		// EERUNNER_LEGACY_CORE: building against a pre-yaps2 emu core (ARMSX2
+		// master) whose common/Perf.h has no SetJitDumpDir — the dump lands in
+		// the default dir there, which is fine for the twin golden side.
+#ifndef EERUNNER_LEGACY_CORE
 		if (s_perf_jitdump)
 			Perf::SetJitDumpDir(EmuFolders::Cache);
+#endif
 
 		// apply new settings (e.g. pick up renderer change)
 		VMManager::ApplySettings();
@@ -3220,6 +3947,22 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 
 				case RunMode::ContMem:
 					code = RunContinuousMemTrajectory();
+					break;
+
+				case RunMode::TwinDump:
+					code = RunTwinDump();
+					break;
+
+				case RunMode::TwinCompare:
+					code = RunTwinCompare();
+					break;
+
+				case RunMode::DumpConfig:
+					code = RunDumpConfig();
+					break;
+
+				case RunMode::MkState:
+					code = RunMkState();
 					break;
 
 				case RunMode::SpeedhackDiff:
@@ -3268,7 +4011,12 @@ int main(int argc, char* argv[])
 	if (!EERunner::ParseCommandLineArgs(argc, argv, params))
 		return EXIT_FAILURE;
 
+	// EERUNNER_LEGACY_CORE: pre-yaps2 cores allocate VM memory inside
+	// VMManager::Internal::CPUThreadInitialize (SysMemory::Allocate) instead of
+	// exposing a frontend-driven reservation.
+#ifndef EERUNNER_LEGACY_CORE
 	SysMemory::ReserveMemory();
+#endif
 
 	// --selfcheck and --vu0diff force the EE interpreter. Must be set BEFORE
 	// VMManager::Initialize. (--vu0diff toggles only VU0; the EE stays interp in

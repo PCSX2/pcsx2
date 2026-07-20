@@ -47,10 +47,18 @@ namespace ee_divtrace
 	};
 
 	// Full architectural snapshot — stored only inside the detail window.
+	// vu0_vf holds VF00..VF31 then ACC (33 quads); the three flag VIs follow.
+	// Captured unconditionally (cheap memcpy); only the FINGERPRINT inclusion
+	// is gated on g_vu0_include so alignment behavior is opt-in.
 	struct FullSnap
 	{
 		cpuRegisters cpu;
 		fpuRegisters fpu;
+		alignas(16) u8 vu0_vf[33 * 16];
+		u32          vu0_vi_status;
+		u32          vu0_vi_mac;
+		u32          vu0_vi_clip;
+		u32          _pad0;
 		u64          cycle;
 		u32          pc;
 		u32          _pad;
@@ -83,6 +91,20 @@ namespace ee_divtrace
 	// pervasive 1-ULP div.s noise just masks it). The eerunner sets this from
 	// EERUNNER_NOFP; the Main.cpp diff helpers honor it too for consistent reports.
 	extern bool                    g_fp_exclude;
+
+	// When set, FingerprintCpu() ALSO mixes VU0 macro-visible state (VF00-31,
+	// ACC, and the STATUS/MAC/CLIP flag VIs) into the hash, so the alignment
+	// walk breaks at the first EE block whose COP2 macro emission produced
+	// divergent VU0 state — instead of only when that state later lands in a
+	// GPR or memory (the Jak 3 blindness: the funnel surfaced a downstream
+	// memcpy of fMax-flooded vertex data, not the VU0-macro producer). VF is
+	// memory-resident at every block boundary (the COP2 VF cache seam policy
+	// flushes at block tails), so the JIT block-prologue sample site reads
+	// consistent state. Off by default: the benign-divergence filters were
+	// tuned without VU0 fields, and mVU-vs-interp has its own by-design NaN /
+	// clamp corners that could add noise classes. eerunner sets this from
+	// EERUNNER_VU0FP.
+	extern bool                    g_vu0_include;
 
 	// When set, the interpreter's SYSCALL handler skips FlushCache (0x64) /
 	// iFlushCache (0x68) — returning without raising the syscall exception —

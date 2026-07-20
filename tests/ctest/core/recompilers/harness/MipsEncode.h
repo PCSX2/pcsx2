@@ -437,6 +437,14 @@ constexpr u32 MTC2 (u32 rt, u32 fs) { return COP2(0x04, rt, fs, 0, 0); }
 constexpr u32 QMFC2(u32 rt, u32 fs) { return COP2(0x01, rt, fs, 0, 0); }
 constexpr u32 QMTC2(u32 rt, u32 fs) { return COP2(0x05, rt, fs, 0, 0); }
 
+// Interlocked (.I) forms — funct bit 0 set. The recompiler routes these
+// through the COP2_Interlock sync protocol (exact VU0 catch-up + wait/finish)
+// instead of the non-interlock run-ahead gating.
+constexpr u32 CFC2_I (u32 rt, u32 fs) { return COP2(0x02, rt, fs, 0, 1); }
+constexpr u32 CTC2_I (u32 rt, u32 fs) { return COP2(0x06, rt, fs, 0, 1); }
+constexpr u32 QMFC2_I(u32 rt, u32 fs) { return COP2(0x01, rt, fs, 0, 1); }
+constexpr u32 QMTC2_I(u32 rt, u32 fs) { return COP2(0x05, rt, fs, 0, 1); }
+
 // COP2 condition branches — rs=0x08 (BC2), rt selects the variant; imm16 is the
 // signed branch offset (NOT the CO-op rd/sa/funct layout). CP2COND = bit 8 of
 // VU0.VI[REG_VPU_STAT]: BC2F taken when clear, BC2T taken when set; FL/TL are

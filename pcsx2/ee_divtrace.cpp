@@ -5,6 +5,7 @@
 
 #include "Memory.h"
 #include "MemoryTypes.h"
+#include "VUmicro.h"
 
 #include <cstring>
 
@@ -20,6 +21,7 @@ namespace ee_divtrace
 	std::atomic<bool>       g_enabled{false};
 	bool                    g_emit_block_hook = false;
 	bool                    g_fp_exclude = false;
+	bool                    g_vu0_include = false;
 	bool                    g_skip_flushcache_syscall = false;
 	std::vector<Sample>     g_stream;
 	std::vector<FullSnap>   g_snaps;
@@ -83,6 +85,21 @@ namespace ee_divtrace
 				h = hash_mix(h, fpuRegs.fpr[i].UL);
 			h = hash_mix(h, fpuRegs.ACC.UL);
 		}
+		// VU0 macro-visible state — opt-in (EERUNNER_VU0FP): catches COP2 macro
+		// divergence at the producing block instead of downstream in GPRs/memory.
+		if (g_vu0_include)
+		{
+			for (int i = 0; i < 32; ++i)
+			{
+				h = hash_mix64(h, VU0.VF[i].UD[0]);
+				h = hash_mix64(h, VU0.VF[i].UD[1]);
+			}
+			h = hash_mix64(h, VU0.ACC.UD[0]);
+			h = hash_mix64(h, VU0.ACC.UD[1]);
+			h = hash_mix(h, VU0.VI[REG_STATUS_FLAG].UL);
+			h = hash_mix(h, VU0.VI[REG_MAC_FLAG].UL);
+			h = hash_mix(h, VU0.VI[REG_CLIP_FLAG].UL);
+		}
 		h = hash_mix(h, cpuRegs.pc);
 		h = hash_mix(h, cpuRegs.sa);
 		return h;
@@ -103,6 +120,12 @@ namespace ee_divtrace
 			FullSnap& fs = g_snaps[idx - g_full_lo];
 			std::memcpy(&fs.cpu, &cpuRegs, sizeof(cpuRegisters));
 			std::memcpy(&fs.fpu, &fpuRegs, sizeof(fpuRegisters));
+			std::memcpy(fs.vu0_vf, VU0.VF, 32 * 16);
+			std::memcpy(fs.vu0_vf + 32 * 16, &VU0.ACC, 16);
+			fs.vu0_vi_status = VU0.VI[REG_STATUS_FLAG].UL;
+			fs.vu0_vi_mac    = VU0.VI[REG_MAC_FLAG].UL;
+			fs.vu0_vi_clip   = VU0.VI[REG_CLIP_FLAG].UL;
+			fs._pad0 = 0;
 			fs.cycle = cpuRegs.cycle;
 			fs.pc    = pc;
 			fs._pad  = 0;
