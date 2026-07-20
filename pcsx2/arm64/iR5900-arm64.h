@@ -707,6 +707,11 @@ u32 scaleblockcycles_clear();
 // flags say no sync is needed.
 void cop2EmitConditionalSync(bool interlock, void (*finishFunc)());
 
+// S4-2: emits the shared VU0-sync stubs cop2EmitConditionalSync BLs into
+// (defined in iCOP2-arm64.cpp). Must run during dispatcher generation,
+// before any block compiles — called from _DynGen_Dispatchers.
+void cop2DynGenSyncStubs();
+
 // (Re)writes _cpuRegistersPack.cop2Rec — the COP2 macro-mode clamp/mask
 // constants the emitters reach via [RSTATE, #imm] (defined in
 // iCOP2-arm64.cpp). Called from recResetRaw before any block compiles.

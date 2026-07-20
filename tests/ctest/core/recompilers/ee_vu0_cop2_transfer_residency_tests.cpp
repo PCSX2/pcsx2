@@ -46,6 +46,10 @@ constexpr u32 r_t0 = 8; // unpinned
 constexpr u32 r_t1 = 9;
 constexpr u32 r_t2 = 10;
 constexpr u32 r_t3 = 11;
+constexpr u32 r_s1 = 17; // unpinned
+constexpr u32 r_s2 = 18; // unpinned
+constexpr u32 r_at = 1;  // tier-2 pin (caller-saved host reg, lazy-dirty)
+constexpr u32 r_k0 = 26; // tier-2 pin (caller-saved host reg, lazy-dirty)
 
 // Micro at PC 0: 32 NOP pairs (outlasts the 16-cycle kickstart window), then
 // vf_dst = vf_src + vf_src, then E-bit. Same recipe as the PendingMicroSync
@@ -473,6 +477,139 @@ TEST(EeVu0Cop2TransferResidency, Qmtc2SyncSeamReloadsResidentSource)
 	h.ExpectGpr128(r_t3, 0x0000001100000022ull, 0x0000003300000044ull);
 
 	// Park the mid-flight micro — see Qmfc2SyncSeamPreservesResidency.
+	vuRegs[0].VI[REG_VPU_STAT].UL = 0;
+}
+
+// S4-2 seam contracts: the sync's C-call envelope (however it is emitted —
+// inline or via a shared stub) must preserve every retained residency class
+// on the TAKEN path specifically. The two classes with distinct machinery:
+//
+//   - dirty scalar slots in CALLER-saved allocator regs (writeback-keep +
+//     reload, or raw save/restore — either way the post-seam consumer and
+//     the block-end flush must see the pre-seam values);
+//   - dirty tier-2 lazy pins (caller-saved host regs whose canonical memory
+//     is STALE at the seam — the envelope must flush before the call and
+//     reload after, or the in-register writes are silently lost).
+
+TEST(EeVu0Cop2TransferResidency, TakenSyncPreservesDirtyCallerSavedScalars)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vi(REG_VPU_STAT, 0);
+	h.SeedVu0Vf(1, 2.0f, 2.0f, 2.0f, 2.0f);
+	h.SeedVu0Vf(2, 32.0f, 32.0f, 32.0f, 32.0f);
+	SeedPendingMicroDoubling(h, /*vf_dst*/2, /*vf_src*/1);
+
+	constexpr u64 kT0 = 0x1111000022220000ull;
+	constexpr u64 kT1 = 0x0000333300004444ull;
+	constexpr u64 kT3 = kT0 + kT1;
+	constexpr u64 kS1 = kT0 + kT3;
+	constexpr u64 kS2 = kT1 + kT3;
+	h.SetGpr64(r_t0, kT0);
+	h.SetGpr64(r_t1, kT1);
+	h.SetGpr128(r_t2, 0x0102030405060708ull, 0x090A0B0C0D0E0F00ull);
+	h.LoadProgram({
+		VCALLMS(0),
+		DADDU(r_t3, r_t0, r_t1), // dirty scalar #1 across the taken seam
+		DADDU(r_s1, r_t0, r_t3), // dirty scalar #2
+		DADDU(r_s2, r_t1, r_t3), // dirty scalar #3 — spread across pool regs
+		QMTC2(r_t2, 5),          // sync fires here (VPU_STAT set at runtime)
+		DADDU(r_t0, r_t3, r_s1), // consumers: post-seam residency must be the
+		DADDU(r_t1, r_s2, r_t3), // pre-seam values, not garbage or stale memory
+	});
+	h.Run();
+	h.ExpectGpr64(r_t3, kT3);
+	h.ExpectGpr64(r_s1, kS1);
+	h.ExpectGpr64(r_s2, kS2);
+	h.ExpectGpr64(r_t0, kT3 + kS1);
+	h.ExpectGpr64(r_t1, kS2 + kT3);
+	EXPECT_EQ(h.GetVu0VfBitsJit(5, 'x'), 0x05060708u);
+	EXPECT_EQ(h.GetVu0VfBitsJit(5, 'w'), 0x090A0B0Cu);
+	for (char l : {'x', 'y', 'z', 'w'})
+		EXPECT_EQ(h.GetVu0VfBitsJit(5, l), h.GetVu0VfBitsInterp(5, l));
+
+	// Park the mid-flight micro — see Qmfc2SyncSeamPreservesResidency.
+	vuRegs[0].VI[REG_VPU_STAT].UL = 0;
+}
+
+TEST(EeVu0Cop2TransferResidency, TakenSyncFlushesAndReloadsDirtyLazyPins)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vi(REG_VPU_STAT, 0);
+	// TPC drain-depth divergence is benign — see Qmfc2SyncSeamPreservesResidency.
+	h.IgnoreVu0Vi(REG_TPC);
+	h.SeedVu0Vf(1, 2.0f, 2.0f, 2.0f, 2.0f);
+	h.SeedVu0Vf(2, 32.0f, 32.0f, 32.0f, 32.0f);
+	SeedPendingMicroDoubling(h, /*vf_dst*/2, /*vf_src*/1);
+
+	constexpr u64 kA = 0x00000000DEADBEEFull;
+	constexpr u64 kB = 0x0000CAFE00000001ull;
+	h.SetGpr64(r_t1, kA);
+	h.SetGpr64(r_t2, kB);
+	h.LoadProgram({
+		VCALLMS(0),
+		DADDU(r_at, r_t1, r_t2), // dirty lazy pin #1 (memory stale at the seam)
+		DADDU(r_k0, r_at, r_t2), // dirty lazy pin #2, reads pin #1
+		QMFC2(r_t0, 2),          // sync fires here (VPU_STAT set at runtime)
+		DADDU(r_t3, r_at, r_k0), // consume both pins post-seam
+	});
+	h.Run();
+	h.ExpectGpr64(r_at, kA + kB);
+	h.ExpectGpr64(r_k0, kA + 2 * kB);
+	h.ExpectGpr64(r_t3, 2 * kA + 3 * kB);
+	// Whatever VF2 value the partially drained micro exposes, both engines
+	// must agree on what QMFC2 read.
+	EXPECT_EQ(h.GetGpr64Jit(r_t0), h.GetGpr64Interp(r_t0));
+
+	// Park the mid-flight micro — see Qmfc2SyncSeamPreservesResidency.
+	vuRegs[0].VI[REG_VPU_STAT].UL = 0;
+}
+
+TEST(EeVu0Cop2TransferResidency, TakenInterlockedSyncPreservesResidency)
+{
+	// The interlocked (.I) transfer forms use the exact-catch-up sync +
+	// wait/finish protocol — a different seam envelope than the run-ahead
+	// path the other taken-sync tests exercise (QMTC2.I pairs the sync with
+	// _vu0WaitMicro, QMFC2.I with _vu0FinishMicro). Same residency contract:
+	// dirty scalars and dirty lazy pins must ride the taken seam.
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0Vi(REG_VPU_STAT, 0);
+	h.IgnoreVu0Vi(REG_TPC); // benign drain-depth divergence — see above
+	h.SeedVu0Vf(1, 2.0f, 2.0f, 2.0f, 2.0f);
+	h.SeedVu0Vf(2, 32.0f, 32.0f, 32.0f, 32.0f);
+	SeedPendingMicroDoubling(h, /*vf_dst*/2, /*vf_src*/1);
+
+	constexpr u64 kA = 0x0123456789ABCDEFull;
+	constexpr u64 kB = 0x00000000FEDCBA98ull;
+	h.SetGpr64(r_t1, kA);
+	h.SetGpr64(r_t2, kB);
+	h.SetGpr128(r_s1, 0x1111222233334444ull, 0x5555666677778888ull);
+	h.LoadProgram({
+		VCALLMS(0),
+		DADDU(r_t3, r_t1, r_t2), // dirty scalar across the interlocked seam
+		DADDU(r_at, r_t2, r_t1), // dirty lazy pin across the interlocked seam
+		QMTC2_I(r_s1, 5),        // interlocked: exact sync + wait
+		QMFC2_I(r_t0, 2),        // interlocked: exact sync + finish
+		DADDU(r_k0, r_t3, r_at), // consume both post-seam
+	});
+	h.Run();
+	h.ExpectGpr64(r_t3, kA + kB);
+	h.ExpectGpr64(r_at, kA + kB);
+	h.ExpectGpr64(r_k0, 2 * (kA + kB));
+	EXPECT_EQ(h.GetVu0VfBitsJit(5, 'x'), 0x33334444u);
+	EXPECT_EQ(h.GetVu0VfBitsJit(5, 'w'), 0x55556666u);
+	for (char l : {'x', 'y', 'z', 'w'})
+		EXPECT_EQ(h.GetVu0VfBitsJit(5, l), h.GetVu0VfBitsInterp(5, l));
+	// Post-interlock QMFC2 read must agree across engines (the finish drains
+	// the micro to completion on both).
+	EXPECT_EQ(h.GetGpr64Jit(r_t0), h.GetGpr64Interp(r_t0));
+
+	// Park the (by now likely finished, but don't assume) micro.
 	vuRegs[0].VI[REG_VPU_STAT].UL = 0;
 }
 
