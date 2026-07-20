@@ -1124,63 +1124,112 @@ namespace Dynarec {
 namespace OpcodeImpl {
 
 // QMFC2: cpuRegs.GPR[rt] = VU0.VF[fs] (128-bit copy, VF → EE GPR)
+//
+// S4-1: allocator-routed, no block-wide flush (x86 recQMFC2 / AetherSX2
+// recQMFC2 shape — aether's transfer ops emit no flush at all in the
+// no-sync path; the only remaining flush point is the analysis-gated sync
+// seam inside cop2EmitConditionalSync). The old unconditional
+// iFlushCall(FLUSH_EVERYTHING) here was ~half the emitted bytes of every
+// COP2-heavy physics block (S4b: 23% of the #1 UYA block was q-class
+// GPR<->memory round-trips these seams forced).
 void recCOP2_QMFC2()
 {
-	iFlushCall(FLUSH_EVERYTHING);
 	cop2EmitConditionalSync(cpuRegs.code & 1, _vu0FinishMicro);
 
 	if (_Rt_ == 0) return;
-	GPR_DEL_CONST(_Rt_);
 
-	// 128-bit copy: VU0.VF[fs] → cpuRegs.GPR.r[rt]
-	armAsm->Ldr(RQSCRATCH, armVU0Mem(&VU0.VF[_Rd_]));
-	armStoreEEGPRQuad(RQSCRATCH, _Rt_);
+	if (EEINST_USEDTEST(_Rt_))
+	{
+		// rt is read again later: claim a NEON quad MODE_WRITE (frees any
+		// scalar slot / const without a pointless writeback — the full 128
+		// bits are overwritten) and load VF straight into it. The value
+		// stays q-resident for following MMI/QMTC2 consumers.
+		const int qd = _allocGPRtoNEONreg(_Rt_, MODE_WRITE);
+		armAsm->Ldr(armQRegister(qd), armVU0Mem(&VU0.VF[_Rd_]));
+	}
+	else
+	{
+		// Dead-after dest: store straight to the canonical image instead of
+		// occupying a quad slot (mirrors x86 _allocIfUsedGPRtoXMM's miss path).
+		_deleteEEreg128(_Rt_);
+		armAsm->Ldr(RQSCRATCH, armVU0Mem(&VU0.VF[_Rd_]));
+		armStoreEEGPRQuad(RQSCRATCH, _Rt_);
+	}
 }
 
 // QMTC2: VU0.VF[fs] = cpuRegs.GPR[rt] (128-bit copy, EE GPR → VF)
+//
+// S4-1: no block-wide flush (see recCOP2_QMFC2). Source policy mirrors x86
+// recQMTC2: force a quad FILL only when the newest rt lives where a raw
+// memory read can't see it (dirty const / dirty scalar slot — the fill path
+// materializes the const or Ins-merges the slot); otherwise serve from an
+// already-resident quad (an MMI result costs zero extra loads), and on a
+// clean miss read memory + merge the lazy pin WITHOUT claiming a slot —
+// a fresh alloc for a once-read source costs more (deferred writeback +
+// eviction pressure in q10-q15) than the 2-3-insn memory shape. Measured:
+// unconditional alloc grew several UYA physics blocks up to +120 B.
 void recCOP2_QMTC2()
 {
-	iFlushCall(FLUSH_EVERYTHING);
 	cop2EmitConditionalSync(cpuRegs.code & 1, _vu0WaitMicro);
 
 	if (_Rd_ == 0) return; // VF[0] is read-only
 
-	// 128-bit copy: cpuRegs.GPR.r[rt] → VU0.VF[fs]
-	if (GPR_IS_CONST1(_Rt_))
+	int qs;
+	if (GPR_IS_DIRTY_CONST(_Rt_) || _hasArm64GPR(ARM64TYPE_GPR, _Rt_, MODE_WRITE))
+		qs = _allocGPRtoNEONreg(_Rt_, MODE_READ);
+	else
+		qs = _checkNEONreg(NEONTYPE_GPRREG, _Rt_, MODE_READ);
+	if (qs >= 0)
 	{
-		armMoveAddressToReg(RSCRATCHADDR, &g_cpuConstRegs[_Rt_]);
-		armAsm->Ldr(RQSCRATCH, a64::MemOperand(RSCRATCHADDR));
+		armAsm->Str(armQRegister(qs), armVU0Mem(&VU0.VF[_Rd_]));
+		return;
+	}
+
+	if (_Rt_ == 0)
+	{
+		armAsm->Movi(RQSCRATCH.V2D(), 0);
 	}
 	else
 	{
+		// Covers the clean-const case too: a non-dirty const is by definition
+		// already flushed, so canonical memory is current for the lower 64
+		// (and the upper 64 only ever live in memory).
 		armAsm->Ldr(RQSCRATCH, armCpuRegMem(&cpuRegs.GPR.r[_Rt_]));
-		armMergeEEResidentIntoQuad(RQSCRATCH, _Rt_); // lazy-dirty / residency merge
+		armMergeEEResidentIntoQuad(RQSCRATCH, _Rt_); // lazy-dirty pin merge
 	}
 	armAsm->Str(RQSCRATCH, armVU0Mem(&VU0.VF[_Rd_]));
 }
 
 // CFC2: cpuRegs.GPR[rt] = sign_extend_32_to_64(VU0.VI[fs])
+//
+// S4-1: no block-wide flush (see recCOP2_QMFC2). The general path was
+// already allocator-coherent via the dest helpers; only the REG_R partial
+// write needs an explicit per-register flush.
 void recCOP2_CFC2()
 {
-	iFlushCall(FLUSH_EVERYTHING);
 	cop2EmitConditionalSync(cpuRegs.code & 1, _vu0FinishMicro);
 
 	if (_Rt_ == 0) return;
-	GPR_DEL_CONST(_Rt_);
 
 	if (_Rd_ == REG_R)
 	{
 		// REG_R: mask to 23 bits, write only UL[0]. This is a PARTIAL lower-64
-		// write (UL[1] untouched), which the full-width dest helper can't model;
-		// it stays a raw pin-aware store, coherence-safe because the entry
-		// iFlushCall(FLUSH_EVERYTHING) freed every rt residency (incl. x28).
+		// write (UL[1] untouched), which the full-width dest helper can't
+		// model; flush rt's residency with writeback (the untouched UL[1] /
+		// UD[1] bytes must be current in memory) so the raw pin-aware store
+		// merges into current bytes. NOTE: preserving UL[1] is the interp
+		// contract our tests pin — x86 recCFC2 zero-extends the full 64 bits
+		// here instead, a known upstream divergence we deliberately don't copy.
+		_deleteEEreg(_Rt_, 1);
 		armAsm->Ldr(RWSCRATCH, armVU0Mem(&VU0.VI[REG_R]));
 		armAsm->And(RWSCRATCH, RWSCRATCH, 0x7FFFFF);
 		armStoreEERegPtr(RWSCRATCH, &cpuRegs.GPR.r[_Rt_].UL[0]);
 	}
 	else
 	{
-		// General VI: rt = sign_extend_32_to_64(VI[fs]).
+		// General VI: rt = sign_extend_32_to_64(VI[fs]). _eeGetGPRDestReg
+		// kills const/NEON residency (NEON with writeback, so UD[1] stays
+		// current) and resolves pin/resident-slot/memory.
 		armAsm->Ldr(RWSCRATCH, armVU0Mem(&VU0.VI[_Rd_]));
 		const a64::Register dst = _eeGetGPRDestReg(_Rt_, RXSCRATCH);
 		armAsm->Sxtw(dst, RWSCRATCH);
@@ -1210,8 +1259,10 @@ void recCOP2_CTC2()
 		return;
 	}
 
-	// For all other cases: flush + conditional sync, then inline write
-	iFlushCall(FLUSH_EVERYTHING);
+	// For all other cases: conditional sync, then inline write. S4-1: no
+	// block-wide flush — the body reads rt coherently via _eeMoveGPRtoR
+	// (const/scalar/quad/pin aware) and writes only VU0 state; its raw w1/w2/
+	// w3/w9 scratch is outside the EE allocator pool by the GE-M2 carve-out.
 	cop2EmitConditionalSync(cpuRegs.code & 1, _vu0WaitMicro);
 
 	// Load source value from cpuRegs.GPR[rt].UL[0]
