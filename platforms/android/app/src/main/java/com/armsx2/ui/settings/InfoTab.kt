@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.armsx2.CustomCovers
 import com.armsx2.CustomNames
 import com.armsx2.GameInfo
+import com.armsx2.PlayTime
 import com.armsx2.config.ConfigStore
 import com.armsx2.i18n.str
 import com.armsx2.ui.common.EmptyState
@@ -117,6 +118,19 @@ fun InfoTab(game: GameInfo?) {
             InfoRow(str("info.container"), game.extension.takeIf { it.isNotBlank() } ?: "—", clipboard)
             InfoRow(str("info.platform"), game.platform.name, clipboard)
             InfoRow(str("info.compatibility"), if (game.compatibility > 0) "${game.compatibility} / 5" else "—", clipboard)
+            // Play time has been recorded per serial all along (PlayTime.startSession /
+            // endSession around the running VM) - only the display was lost in the interface
+            // rebuild, so existing users already have totals waiting here.
+            InfoRow(
+                str("info.playTime"),
+                PlayTime.formatPlayed(PlayTime.playedSeconds(serial)).ifEmpty { "—" },
+                clipboard,
+            )
+            InfoRow(
+                str("info.lastPlayed"),
+                PlayTime.formatLastPlayed(PlayTime.lastPlayedMillis(serial)).ifEmpty { "—" },
+                clipboard,
+            )
             InfoRow(str("info.path"), game.uri.toString(), clipboard)
             if (serial != null) {
                 Spacer(Modifier.height(14.dp))
