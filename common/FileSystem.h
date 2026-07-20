@@ -132,6 +132,12 @@ namespace FileSystem
 	/// (user-picked custom data folders) despite all-files access. Returns true if
 	/// the directory exists afterwards.
 	bool CreateDirectoryViaJava(const char* path);
+	/// Create an empty file via the Java File API (NativeApp.createFilePath).
+	/// Fallback for when libc fopen(O_CREAT) is denied on FUSE-emulated external
+	/// storage (user-picked custom data folders) despite all-files access; once the
+	/// file exists the native truncating write that follows succeeds. Makes NEW
+	/// folder-card saves work on a custom data folder. Returns true if it exists after.
+	bool CreateFileViaJava(const char* path);
 #endif
 
 	/// Sharing modes for OpenSharedCFile().

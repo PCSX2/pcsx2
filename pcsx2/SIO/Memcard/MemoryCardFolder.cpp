@@ -57,6 +57,15 @@ static std::optional<ryml::Tree> loadYamlFile(const char* filePath)
 static void SaveYAMLToFile(const char* filename, const ryml::NodeRef& node)
 {
 	auto file = FileSystem::OpenCFile(filename, "w");
+	if (!file)
+	{
+		// FUSE-backed shared storage (a user-chosen data folder) denies libc file
+		// CREATION even though mkdir is routed through Java; opening a not-yet-existing
+		// _pcsx2_index here returns null, and emit_yaml()/fclose() on it segfaults on the
+		// first save to a folder card. Bail like WriteToFile() does instead of crashing.
+		Console.Error("(SaveYAMLToFile) Failed to open '%s'.", filename);
+		return;
+	}
 	ryml::emit_yaml(node, file);
 	std::fflush(file);
 	std::fclose(file);

@@ -154,6 +154,10 @@ public class NativeApp {
 	 */
 	public static native void commitSettings();
 
+	/** Diagnostic: write a line to the native emulog (Console) so it shows in the in-app
+	 *  Save Log export. Used by the Joy-Con input diagnostic; no-ops if the console isn't open. */
+	public static native void emulog(String msg);
+
 	/**
 	 * Live GS-only reconfigure for a running VM. Reloads the whole EmuCore/GS
 	 * section from the base settings layer and pushes it to the GS thread via
@@ -571,6 +575,9 @@ public class NativeApp {
 	/** Frame skip: present 1 frame, skip the next N (0 = off). Display-only
 	 *  throttle; applies live. */
 	public static native void setFrameSkip(int skip);
+
+	/** GitHub #375: top-align the render in portrait (true) vs vertical-center (false). */
+	public static native void setPortraitRenderTop(boolean top);
 	/** SPU2 output volume, percent (0..200). Applies live + persists. */
 	public static native void setAudioVolume(int volume);
 	/** Mute/unmute SPU2 output. Applies live + persists. */
@@ -761,6 +768,26 @@ public class NativeApp {
 			if (dir.isDirectory()) return true;
 			dir.mkdirs();
 			return dir.isDirectory();
+		} catch (Throwable t) {
+			return false;
+		}
+	}
+
+	// Fallback file creation for native FileSystem::OpenCFile. On Android 11+
+	// FUSE-emulated external storage a raw libc fopen(O_CREAT) can be denied
+	// (EACCES/EPERM) even though the Java File API succeeds — the same split that
+	// forced createDirectoryPath above. Creating the empty file here lets the
+	// native truncating write ("w"/"wb") that follows open the now-existing file,
+	// which FUSE permits — which is what makes NEW folder-card saves work on a
+	// custom data folder instead of crashing. Returns true if the file exists after.
+	public static boolean createFilePath(String path) {
+		if (path == null || path.isEmpty()) return false;
+		try {
+			java.io.File file = new java.io.File(path);
+			if (file.isFile()) return true;
+			java.io.File parent = file.getParentFile();
+			if (parent != null && !parent.isDirectory()) parent.mkdirs();
+			return file.createNewFile() || file.isFile();
 		} catch (Throwable t) {
 			return false;
 		}

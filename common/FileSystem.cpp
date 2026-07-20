@@ -1020,6 +1020,18 @@ std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* 
 	#endif
 
 	std::FILE* fp = std::fopen(filename, mode);
+	#if defined(__ANDROID__)
+	// libc fopen(O_CREAT) is denied on the FUSE-emulated external storage Android
+	// hands out for a user-chosen data folder — the same split that forces
+	// CreateDirectoryViaJava for mkdir(). Pre-create the empty file via the Java
+	// File API and retry: opening the now-existing file for a truncating write
+	// ("w"/"wb") IS permitted on FUSE (which is why writing EXISTING folder-card
+	// saves already works), so the FIRST save to a folder card on a custom data
+	// folder can now create its _pcsx2_index / save-data files instead of failing.
+	// Write/create modes only — never "r"/"r+b" (those must fail on a missing file).
+	if (!fp && (errno == EACCES || errno == EPERM) && mode[0] != 'r' && CreateFileViaJava(filename))
+		fp = std::fopen(filename, mode);
+	#endif
 	if (!fp)
 		Error::SetErrno(error, errno);
 	return fp;
