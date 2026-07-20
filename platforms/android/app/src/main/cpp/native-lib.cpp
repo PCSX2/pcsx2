@@ -1334,6 +1334,7 @@ Java_kr_co_iefriends_pcsx2_NativeApp_applyGSSettingsLive(JNIEnv *env, jclass cla
     const auto saved_no_vs_expand    = EmuConfig.GS.DisableVertexShaderExpand;
     const auto saved_tex_barriers    = EmuConfig.GS.OverrideTextureBarriers;
     const auto saved_depth_feedback  = EmuConfig.GS.DepthFeedbackMode;
+    const auto saved_back_thread     = EmuConfig.GS.BackThreadMode;
     const auto saved_hwaa1           = EmuConfig.GS.HWAA1;
     const auto saved_exclusive_fs    = EmuConfig.GS.ExclusiveFullscreenControl;
     const auto saved_sw_threads      = EmuConfig.GS.SWExtraThreads;
@@ -1361,6 +1362,7 @@ Java_kr_co_iefriends_pcsx2_NativeApp_applyGSSettingsLive(JNIEnv *env, jclass cla
     EmuConfig.GS.DisableVertexShaderExpand  = saved_no_vs_expand;
     EmuConfig.GS.OverrideTextureBarriers    = saved_tex_barriers;
     EmuConfig.GS.DepthFeedbackMode          = saved_depth_feedback;
+    EmuConfig.GS.BackThreadMode             = saved_back_thread;
     EmuConfig.GS.HWAA1                       = saved_hwaa1;
     EmuConfig.GS.ExclusiveFullscreenControl = saved_exclusive_fs;
     EmuConfig.GS.SWExtraThreads             = saved_sw_threads;

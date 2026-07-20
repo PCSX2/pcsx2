@@ -67,6 +67,7 @@ internal val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry("perf.advancedSpeedhacks.title", true, SettingsCategory.Performance),
     SettingsSearchEntry("VSync", false, SettingsCategory.Graphics),
     SettingsSearchEntry("renderer.shadeboost.label", true, SettingsCategory.Graphics),
+    SettingsSearchEntry("renderer.gsBackThread.label", true, SettingsCategory.Graphics),
     SettingsSearchEntry("renderer.fxaa.label", true, SettingsCategory.Graphics),
     SettingsSearchEntry("renderer.shaderChain.label", true, SettingsCategory.Graphics),
     SettingsSearchEntry("renderer.shaderChain.preset.label", true, SettingsCategory.Graphics),

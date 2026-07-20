@@ -577,6 +577,18 @@ private fun GraphicsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVi
             viewModel.updateSettings { it.copy(useAngleOpenGL = on) }
         }
     }
+    // GS Multi-threading (GV7 front/back split). Restart-required like the renderer /
+    // driver above, so it lives in the same group — hit Apply & Restart below to apply.
+    // Off = single-threaded; On = GS on a dedicated back thread (Pipelined, enum 3).
+    // The Inline/Lockstep dev rungs are not exposed. Description shown inline so users
+    // who never open full settings still understand what it does.
+    MenuSwitchRow(
+        str("renderer.gsBackThread.label"),
+        settings.gsBackThreadMode >= 3,
+        description = str("renderer.gsBackThread.description"),
+    ) { on ->
+        viewModel.updateSettings { it.copy(gsBackThreadMode = if (on) 3 else 0) }
+    }
     CompactAction(str("backend.applyRestart"), "↻", Modifier.fillMaxWidth(), MainActivityRuntime::restart)
     HorizontalOptions(
         title = str("renderer.upscale.label"),
@@ -1179,6 +1191,7 @@ private fun MenuSwitchRow(
     title: String,
     checked: Boolean,
     enabled: Boolean = true,
+    description: String? = null,
     onCheckedChange: (Boolean) -> Unit,
 ) {
     Surface(
@@ -1200,13 +1213,22 @@ private fun MenuSwitchRow(
             Modifier.padding(horizontal = 13.dp, vertical = 9.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                title,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.titleSmall,
-                color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-            )
+            Column(Modifier.weight(1f)) {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                )
+                if (description != null) {
+                    Text(
+                        description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 3,
+                    )
+                }
+            }
             Spacer(Modifier.width(10.dp))
             Switch(checked = checked, onCheckedChange = if (enabled) onCheckedChange else null)
         }

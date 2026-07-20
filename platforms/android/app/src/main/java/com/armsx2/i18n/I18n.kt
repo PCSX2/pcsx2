@@ -992,6 +992,8 @@ val EN: Map<String, String> = mapOf(
     "renderer.gamma.label" to "Gamma",
     "renderer.gpuProfile.description" to "Overrides Android GPU workaround selection. Auto is recommended.",
     "renderer.gpuProfile.label" to "GPU Profile",
+    "renderer.gsBackThread.label" to "GS Multi-threading",
+    "renderer.gsBackThread.description" to "Off by default. Runs GS rendering on a second thread so you can push 2x/3x internal resolution without the frame dips. If a game shows graphics glitches, turn it back off (can be set per-game). Restart the game to apply.",
     "renderer.gsDump.description" to "Saves one frame of GPU commands (.gs) to the snaps folder — replayable in desktop PCSX2 to diagnose rendering bugs.",
     "renderer.gsDump.label" to "Capture GS Dump (bug report)",
     "renderer.gsDump.queued" to "GS dump queued — close this menu so it captures the frame. Saved to the snaps folder.",

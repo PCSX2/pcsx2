@@ -263,6 +263,10 @@ data class Settings(
     val useAngleOpenGL: Boolean = false,
     /** EmuCore/GS/OverrideTextureBarriers — -1 Auto / 0 Off / 1 On. */
     val overrideTextureBarriers: Int = -1,
+    /** EmuCore/GS/GSBackThreadMode — GV7 GS front/back thread split.
+     * 0 Off (single-threaded), 1 Inline, 2 Lockstep, 3 Pipelined (fastest).
+     * Defaults to Off (opt-in); a per-game override can raise it. Restart-required. */
+    val gsBackThreadMode: Int = 0,
     /** EmuCore/GS/DisableVertexShaderExpand — force CPU vertex expansion. Renderer-init; restart to apply. */
     val disableVertexShaderExpand: Boolean = false,
     /** EmuCore/GS/UseBlitSwapChain — blit present model instead of flip. Renderer-init; restart to apply. */
@@ -1066,6 +1070,7 @@ data class Settings(
             forceMaliFbFetch = boolAt("EmuCore/GS/ForceMaliFramebufferFetch") ?: this.forceMaliFbFetch,
             useAngleOpenGL = boolAt("EmuCore/GS/AndroidUseAngleOpenGL") ?: this.useAngleOpenGL,
             overrideTextureBarriers = intAt("EmuCore/GS/OverrideTextureBarriers") ?: this.overrideTextureBarriers,
+            gsBackThreadMode = intAt("EmuCore/GS/GSBackThreadMode") ?: this.gsBackThreadMode,
             disableVertexShaderExpand = boolAt("EmuCore/GS/DisableVertexShaderExpand") ?: this.disableVertexShaderExpand,
             useBlitSwapChain = boolAt("EmuCore/GS/UseBlitSwapChain") ?: this.useBlitSwapChain,
             disableShaderCache = boolAt("EmuCore/GS/DisableShaderCache") ?: this.disableShaderCache,
@@ -1256,6 +1261,7 @@ data class Settings(
         // reflects the toggle.
         put("EmuCore/GS", "AndroidUseAngleOpenGL", "bool", useAngleOpenGL.toString())
         put("EmuCore/GS", "OverrideTextureBarriers", "int", overrideTextureBarriers.coerceIn(-1, 1).toString())
+        put("EmuCore/GS", "GSBackThreadMode", "int", gsBackThreadMode.coerceIn(0, 3).toString())
         put("EmuCore/GS", "DisableVertexShaderExpand", "bool", disableVertexShaderExpand.toString())
         put("EmuCore/GS", "UseBlitSwapChain", "bool", useBlitSwapChain.toString())
         put("EmuCore/GS", "DisableShaderCache", "bool", disableShaderCache.toString())
@@ -1487,6 +1493,7 @@ data class Settings(
         put("forceMaliFbFetch", forceMaliFbFetch)
         put("useAngleOpenGL", useAngleOpenGL)
         put("overrideTextureBarriers", overrideTextureBarriers)
+        put("gsBackThreadMode", gsBackThreadMode)
         put("disableVertexShaderExpand", disableVertexShaderExpand)
         put("useBlitSwapChain", useBlitSwapChain)
         put("disableShaderCache", disableShaderCache)
@@ -1732,6 +1739,7 @@ data class Settings(
                 forceMaliFbFetch = json.optBoolean("forceMaliFbFetch", def.forceMaliFbFetch),
                 useAngleOpenGL = json.optBoolean("useAngleOpenGL", def.useAngleOpenGL),
                 overrideTextureBarriers = json.optInt("overrideTextureBarriers", def.overrideTextureBarriers),
+                gsBackThreadMode = json.optInt("gsBackThreadMode", def.gsBackThreadMode),
                 disableVertexShaderExpand = json.optBoolean("disableVertexShaderExpand", def.disableVertexShaderExpand),
                 useBlitSwapChain = json.optBoolean("useBlitSwapChain", def.useBlitSwapChain),
                 disableShaderCache = json.optBoolean("disableShaderCache", def.disableShaderCache),
@@ -1961,6 +1969,7 @@ data class Settings(
             if (current.forceMaliFbFetch != base.forceMaliFbFetch) j.put("forceMaliFbFetch", current.forceMaliFbFetch)
             if (current.useAngleOpenGL != base.useAngleOpenGL) j.put("useAngleOpenGL", current.useAngleOpenGL)
             if (current.overrideTextureBarriers != base.overrideTextureBarriers) j.put("overrideTextureBarriers", current.overrideTextureBarriers)
+            if (current.gsBackThreadMode != base.gsBackThreadMode) j.put("gsBackThreadMode", current.gsBackThreadMode)
             if (current.disableVertexShaderExpand != base.disableVertexShaderExpand) j.put("disableVertexShaderExpand", current.disableVertexShaderExpand)
             if (current.useBlitSwapChain     != base.useBlitSwapChain)     j.put("useBlitSwapChain", current.useBlitSwapChain)
             if (current.disableShaderCache   != base.disableShaderCache)   j.put("disableShaderCache", current.disableShaderCache)
@@ -2173,6 +2182,7 @@ data class Settings(
             forceMaliFbFetch = if (overrides.has("forceMaliFbFetch")) overrides.getBoolean("forceMaliFbFetch") else base.forceMaliFbFetch,
             useAngleOpenGL = if (overrides.has("useAngleOpenGL")) overrides.getBoolean("useAngleOpenGL") else base.useAngleOpenGL,
             overrideTextureBarriers = if (overrides.has("overrideTextureBarriers")) overrides.getInt("overrideTextureBarriers") else base.overrideTextureBarriers,
+            gsBackThreadMode = if (overrides.has("gsBackThreadMode")) overrides.getInt("gsBackThreadMode") else base.gsBackThreadMode,
             disableVertexShaderExpand = if (overrides.has("disableVertexShaderExpand")) overrides.getBoolean("disableVertexShaderExpand") else base.disableVertexShaderExpand,
             useBlitSwapChain = if (overrides.has("useBlitSwapChain")) overrides.getBoolean("useBlitSwapChain") else base.useBlitSwapChain,
             disableShaderCache = if (overrides.has("disableShaderCache")) overrides.getBoolean("disableShaderCache") else base.disableShaderCache,

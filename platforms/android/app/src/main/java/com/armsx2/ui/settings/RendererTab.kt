@@ -107,6 +107,21 @@ fun RendererTab(state: MutableState<Settings>) {
             // from the removed first-run setup renderer page into settings.
             RendererBackendSection(state)
             SettingsDivider()
+            // GS Multi-threading (GV7 front/back split), placed right under the
+            // renderer/driver picker. Off = today's single-threaded path (the
+            // default — opt-in); On = the GS runs on a dedicated back thread
+            // (Pipelined, enum value 3). The enum's Inline/Lockstep rungs (1/2)
+            // are dev-only and deliberately not exposed. Restart-required (in
+            // RestartOptionsAreEqual); native-lib snapshots the field across a
+            // live apply, so it only takes effect on the next game boot.
+            ToggleRow(
+                str("renderer.gsBackThread.label"),
+                s.gsBackThreadMode >= 3,
+                description = str("renderer.gsBackThread.description"),
+            ) {
+                apply(s.copy(gsBackThreadMode = if (it) 3 else 0))
+            }
+            SettingsDivider()
             val upscaleIndex = UPSCALE_OPTIONS
                 .indexOfFirst { abs(it.value - s.upscaleFloat) < 0.01f }
                 .takeIf { it >= 0 } ?: 0
