@@ -102,6 +102,46 @@ TEST(EeVu0Cop2Macro, VmulXyzwProductsLanes)
 		EXPECT_EQ(h.GetVu0VfBitsJit(3, l), h.GetVu0VfBitsInterp(3, l));
 }
 
+// True Crime NYC black-world regression (2026-07-20): the game zeroes W with
+// `vsub.w vf1,vf1,vf1` after a QMTC2 left exp-FF bit patterns in the upper
+// lanes. PS2 VU floats have no inf/NaN — exp-FF is a valid huge number and
+// x - x is exactly +0 in every lane. A raw host Fsub gives NaN - NaN = NaN,
+// and the result clamp then manufactures +FLT_MAX (0x7f7fffff) where the
+// architecture demands 0 — blowing up the camera/bbox kernel. Mirrors
+// microVU_Upper's (_Ft_ == _Fs_) opCase1 zero short-circuit (non-broadcast
+// only); the micro-mode arm64 port has it, the hand-rolled macro op dropped
+// it.
+TEST(EeVu0Cop2Macro, VsubSameRegNanPatternIsExactZeroMaskedW)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0VfBits(1, 0x3f800000u, 0x40000000u, 0xff800000u, 0xffffffffu);
+	h.LoadProgram({VSUB_C2(/*mask w*/ 0x1, /*fd*/1, /*fs*/1, /*ft*/1)});
+	h.Run();
+	EXPECT_EQ(h.GetVu0VfBitsJit(1, 'w'), 0u);
+	// Unmasked lanes keep their original bit patterns.
+	EXPECT_EQ(h.GetVu0VfBitsJit(1, 'x'), 0x3f800000u);
+	EXPECT_EQ(h.GetVu0VfBitsJit(1, 'z'), 0xff800000u);
+	for (char l : {'x', 'y', 'z', 'w'})
+		EXPECT_EQ(h.GetVu0VfBitsJit(1, l), h.GetVu0VfBitsInterp(1, l));
+}
+
+TEST(EeVu0Cop2Macro, VsubSameRegNanPatternIsExactZeroFullMask)
+{
+	EeRecTestHarness h;
+	h.EnableVu0Capture();
+	h.EnableCop1();
+	h.SeedVu0VfBits(2, 0xffffffffu, 0x7fffffffu, 0xff800000u, 0x7f800000u);
+	h.LoadProgram({VSUB_C2(mask_xyzw, /*fd*/3, /*fs*/2, /*ft*/2)});
+	h.Run();
+	for (char l : {'x', 'y', 'z', 'w'})
+	{
+		EXPECT_EQ(h.GetVu0VfBitsJit(3, l), 0u);
+		EXPECT_EQ(h.GetVu0VfBitsJit(3, l), h.GetVu0VfBitsInterp(3, l));
+	}
+}
+
 TEST(EeVu0Cop2Macro, VaddMaskedYZOnlyTouchesYZ)
 {
 	EeRecTestHarness h;
