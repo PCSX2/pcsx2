@@ -248,6 +248,7 @@ val EN: Map<String, String> = mapOf(
     "app.theme.orange" to "Orange",
     "app.theme.green" to "Green",
     "app.theme.teal" to "Teal",
+    "app.theme.cyan" to "Cyan",
     "app.theme.black" to "Black",
     "app.theme.oled" to "OLED",
     "app.bootLogo" to "Boot animation",

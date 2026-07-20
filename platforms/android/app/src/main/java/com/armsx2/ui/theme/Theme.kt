@@ -16,7 +16,7 @@ import androidx.core.content.edit
  * NAME, so an existing user's saved "Dark" no longer matches any entry and falls through to the
  * [Blue] default in [ThemePreferences.load]: same colours, no migration step, nothing to reset.
  */
-enum class ThemeMode { System, Light, Blue, Purple, Pink, Red, Orange, Green, Teal, Black, Oled }
+enum class ThemeMode { System, Light, Blue, Purple, Pink, Red, Orange, Green, Teal, Cyan, Black, Oled }
 
 object ThemePreferences {
     private const val PreferenceKey = "ui.theme.mode"
@@ -234,6 +234,13 @@ private val TealScheme = tintedDark(
     background = Color(0xFF0A1514), surface = Color(0xFF0F1D1C), surfaceRaised = Color(0xFF172A28),
     outline = Color(0xFF2A4644),
 )
+// Deliberately bluer and brighter than Teal above, which leans green — sat next to each other
+// in the picker they need to be tellable apart at a glance.
+private val CyanScheme = tintedDark(
+    accent = Color(0xFF6FE3F5), accentContainer = Color(0xFF104A57), onAccentContainer = Color(0xFFBEF1FA),
+    background = Color(0xFF08151A), surface = Color(0xFF0D1D23), surfaceRaised = Color(0xFF152A32),
+    outline = Color(0xFF26454F),
+)
 
 @Composable
 fun Armsx2Theme(content: @Composable () -> Unit) {
@@ -249,6 +256,7 @@ fun Armsx2Theme(content: @Composable () -> Unit) {
         ThemeMode.Orange -> OrangeScheme
         ThemeMode.Green -> GreenScheme
         ThemeMode.Teal -> TealScheme
+        ThemeMode.Cyan -> CyanScheme
     }
     MaterialTheme(
         colorScheme = scheme,
