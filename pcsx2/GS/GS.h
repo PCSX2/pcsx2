@@ -96,6 +96,7 @@ void GSPresentCurrentFrame();
 void GSThrottlePresentation();
 void GSGameChanged();
 void GSSetDisplayAlignment(GSDisplayAlignment alignment);
+void GSSetPortraitRenderTopAlign(bool enabled);
 bool GSHasDisplayWindow();
 void GSResizeDisplayWindow(u32 width, u32 height, float scale);
 void GSUpdateDisplayWindow();

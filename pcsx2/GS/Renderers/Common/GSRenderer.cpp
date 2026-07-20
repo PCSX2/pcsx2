@@ -55,6 +55,10 @@ static Common::Timer::Value s_last_gpu_reset_time;
 
 // Screen alignment
 static GSDisplayAlignment s_display_alignment = GSDisplayAlignment::Center;
+// Android portrait (GitHub #375): top-align the render instead of vertically centering it,
+// so the bottom of a tall screen is free for touch controls. Applied only when the window
+// is portrait (height > width); read live per-present. Default on; user can switch to Center.
+static bool s_portrait_render_top = true;
 
 // Defined further down alongside the present path. Forward-declared because Merge() needs the
 // frame's on-screen rect to size the RetroArch shader chain, and it runs before them.
@@ -467,7 +471,12 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 	}
 	else
 	{
-		switch (alignment)
+		// Android #375: top-align the render in a PORTRAIT window (bottom stays free for
+		// touch controls). Vertical only — horizontal alignment (target_x) is unchanged.
+		GSDisplayAlignment v_align = alignment;
+		if (s_portrait_render_top && window_height > window_width)
+			v_align = GSDisplayAlignment::LeftOrTop;
+		switch (v_align)
 		{
 			case GSDisplayAlignment::Center:
 				target_y = (f_height - target_height) * 0.5f;
@@ -1124,6 +1133,11 @@ void GSTranslateWindowToDisplayCoordinates(float window_x, float window_y, float
 void GSSetDisplayAlignment(GSDisplayAlignment alignment)
 {
 	s_display_alignment = alignment;
+}
+
+void GSSetPortraitRenderTopAlign(bool enabled)
+{
+	s_portrait_render_top = enabled;
 }
 
 bool GSRenderer::BeginCapture(std::string filename, const GSVector2i& size)
