@@ -619,6 +619,7 @@ static void _DynGen_Dispatchers()
 	g_fpuGuardMaskStub = _DynGen_FpuGuardMaskStub();
 #endif
 	cop2DynGenSyncStubs();
+	cop2DynGenTailStubs();
 
 	JITCompile = _DynGen_JITCompile();
 	EnterRecompiledCode = _DynGen_EnterRecompiledCode();

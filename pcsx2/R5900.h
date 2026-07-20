@@ -267,6 +267,10 @@ struct EeCop2RecState
 	alignas(16) u32 destMasks[16][4]; // per-XYZW lane-select masks (lane = ~0 if written)
 	alignas(16) u32 clipWeightPos[4]; // VCLIP positive per-lane clip-bit weights
 	u32 denormStatusFlag;             // denormalized status-flag scratch
+
+	// MAC-flag lane-pack weights {8,4,2,1}: PS2 MAC bit order is bit0=W..bit3=X,
+	// the reverse of NEON lane order. Loaded once per FMAC-tail stub run.
+	alignas(16) u32 macPackWeightsRev[4];
 };
 
 struct cpuRegistersPack
