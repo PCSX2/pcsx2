@@ -69,12 +69,6 @@ public:
 	void EnableFpuFullMode();
 	void EnableFpuMulHack();
 
-	// Enables the off-by-default fpuGuardedAddSub Recompiler option so the JIT
-	// emits the PS2 FPU add/sub guard-bit masking (single-precision fast path).
-	// Off by default in production, so any test that asserts a masked add/sub
-	// result must opt in. Restored to its previous value in the dtor.
-	void EnableFpuGuarded();
-
 	// ---- Memory ----
 
 	void WriteU8 (u32 addr, u8  value);
@@ -349,8 +343,6 @@ private:
 	bool prev_fpu_full_mode_ = false;
 	bool fpu_mul_hack_changed_ = false;
 	bool prev_fpu_mul_hack_ = false;
-	bool fpu_guarded_changed_ = false;
-	bool prev_fpu_guarded_ = false;
 };
 
 } // namespace recompiler_tests

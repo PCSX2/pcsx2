@@ -548,7 +548,7 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "               cold disc boot) and write a savestate. Bootstrap twindiff states on the WORKING\n");
 	std::fprintf(stderr, "               binary, positioned BEFORE the corrupting computation (e.g. before a level load).\n");
 	std::fprintf(stderr, "  --set Section/Key=Value: base-layer settings override, applied after the harness pinning\n");
-	std::fprintf(stderr, "               (repeatable). E.g. --set EmuCore/CPU/Recompiler/fpuGuardedAddSub=true. GameDB\n");
+	std::fprintf(stderr, "               (repeatable). E.g. --set EmuCore/CPU/Recompiler/fpuFullMode=true. GameDB\n");
 	std::fprintf(stderr, "               per-game keys still win; the twin passes own the EnableEE/VU0/VU1/IOP toggles.\n");
 	std::fprintf(stderr, "  -help: Displays this information and exits.\n");
 	std::fprintf(stderr, "  -version: Displays version information and exits.\n");
@@ -700,7 +700,7 @@ bool EERunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 				const size_t slash = (eq == std::string::npos) ? std::string::npos : kv.rfind('/', eq);
 				if (eq == std::string::npos || slash == std::string::npos || slash == 0 || slash + 1 >= eq)
 				{
-					Console.Error("--set expects Section/Key=Value (e.g. EmuCore/CPU/Recompiler/fpuGuardedAddSub=true).");
+					Console.Error("--set expects Section/Key=Value (e.g. EmuCore/CPU/Recompiler/fpuFullMode=true).");
 					return false;
 				}
 				s_set_overrides.push_back({kv.substr(0, slash), kv.substr(slash + 1, eq - slash - 1), kv.substr(eq + 1)});
@@ -2853,9 +2853,9 @@ static int RunMkState()
 
 // --dump-config <path> : boot the VM far enough for GameDB to apply, then
 // serialize the EFFECTIVE EmuConfig to an INI. The twindiff driver diffs the
-// two trees' dumps FIRST — config/GameDB drift (True Crime: fpuGuardedAddSub
-// default-off + three divergent GameIndex copies) explains a broken game far
-// more cheaply than any trace. Savestate optional: config keys off the disc
+// two trees' dumps FIRST — config/GameDB drift (True Crime: guard-bit emulation
+// default-off at the time + three divergent GameIndex copies) explains a broken
+// game far more cheaply than any trace. Savestate optional: config keys off the disc
 // serial, known right after Initialize.
 static int RunDumpConfig()
 {
