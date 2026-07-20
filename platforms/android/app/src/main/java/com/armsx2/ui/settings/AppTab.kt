@@ -45,6 +45,7 @@ import java.io.File
 @Composable
 fun AppTab() {
     val currentLanguage = I18n.languages.firstOrNull { it.code == I18n.current }
+    val appContext = LocalContext.current
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -161,6 +162,13 @@ fun AppTab() {
             value = BootLogoPreferences.enabled.value,
             description = str("app.bootLogo.desc"),
             onChange = { BootLogoPreferences.set(it) },
+        )
+
+        ToggleRow(
+            label = str("app.libraryMusic"),
+            value = com.armsx2.LibraryMusic.enabled.value,
+            description = str("app.libraryMusic.desc"),
+            onChange = { com.armsx2.LibraryMusic.set(appContext, it) },
         )
 
         SegmentedRow(

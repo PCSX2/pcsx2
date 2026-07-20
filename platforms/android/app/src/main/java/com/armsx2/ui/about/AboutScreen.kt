@@ -142,6 +142,14 @@ fun AboutScreen(onBack: () -> Unit, viewModel: AboutViewModel = viewModel()) {
                             )
                         }
                     }
+                    // The library music is CC0, so no attribution is legally required — the
+                    // author asks for credit and it costs nothing to give it.
+                    Text(
+                        str("app.credits.music"),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                    )
                 }
             }
         }

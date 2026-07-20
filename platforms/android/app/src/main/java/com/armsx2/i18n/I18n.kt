@@ -225,6 +225,9 @@ val EN: Map<String, String> = mapOf(
     "tab.recompiler" to "Recompiler",
     "tab.skins" to "Skins",
     // --- App tab / language ---
+    "app.libraryMusic" to "Library Music",
+    "app.libraryMusic.desc" to "Play ambient music on the game library screen, like a console dashboard. Stops automatically when a game starts, and stays quiet if something else is already playing audio.",
+    "app.credits.music" to "Music: \"Calm Ambient 1 (Synthwave 4k)\" — The Cynic Project / cynicmusic.com / pixelsphere.org (CC0)",
     "app.language" to "Language",
     "app.language.desc" to "Choose the app language. Applies instantly.",
     "app.language.system" to "System language",

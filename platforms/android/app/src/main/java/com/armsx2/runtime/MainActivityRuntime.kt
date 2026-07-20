@@ -1753,6 +1753,7 @@ open class MainActivityRuntime : ComponentActivity() {
         com.armsx2.ui.theme.BootLogoPreferences.load()
         com.armsx2.ui.theme.ToolbarPositionPreferences.load()
         com.armsx2.ui.theme.LibraryChromePreferences.load()
+        com.armsx2.LibraryMusic.load()
         com.armsx2.ControllerSkinStore.load(applicationContext)
         startAutosaveIntervalJob()
         // Restore the saved rumble master toggle into the native gate (NativeApp.onPadRumble).
@@ -1950,6 +1951,31 @@ open class MainActivityRuntime : ComponentActivity() {
                 androidx.compose.runtime.LaunchedEffect(eState.value) {
                     if (eState.value == EmuState.STOPPED) {
                         SoftKeyboard.release(this@MainActivityRuntime)
+                    }
+                }
+                // Library music follows the same signal from the other side: it plays only
+                // with no VM up, and a booting game silences it. Driven off eState rather
+                // than from the launch/stop call sites for the same reason as the effects
+                // around it — several paths reach each state and one of them always gets
+                // forgotten.
+                androidx.compose.runtime.LaunchedEffect(eState.value, com.armsx2.LibraryMusic.enabled.value) {
+                    if (eState.value == EmuState.STOPPED) {
+                        // RETRY, don't fire once. LibraryMusic defers to whatever is already
+                        // playing, and on a cold boot that is OUR OWN splash: boot_intro.mp4
+                        // carries an audio track and MainActivity is launched from the video's
+                        // completion callback, so the stream is still tearing down when this
+                        // first runs. A single attempt loses that race and never retries —
+                        // eState stays STOPPED — which made music work only after a game had
+                        // been launched and exited. Retrying rides out the handover while
+                        // still leaving a genuinely-playing app (Spotify, a podcast) alone
+                        // once the attempts run out.
+                        repeat(6) {
+                            com.armsx2.LibraryMusic.start(this@MainActivityRuntime)
+                            if (com.armsx2.LibraryMusic.isPlaying()) return@LaunchedEffect
+                            kotlinx.coroutines.delay(700)
+                        }
+                    } else {
+                        com.armsx2.LibraryMusic.stop(this@MainActivityRuntime)
                     }
                 }
                 // Screen orientation follows whichever tier is live: a running game's per-game
@@ -4044,7 +4070,18 @@ open class MainActivityRuntime : ComponentActivity() {
         // PGO instrument build: flush profile counters so a profiling run survives
         // an Android process kill. No-op in normal builds.
         runCatching { NativeApp.dumpPgoProfile() }
+        // Library music must not keep playing out of a backgrounded app — it would sound
+        // like the emulator ignoring the home button. Paused, not stopped, so returning
+        // to the library picks it back up.
+        com.armsx2.LibraryMusic.pause()
         super.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Only resumes if the setting is on and no VM is running — LibraryMusic gates
+        // both itself, so this stays a plain "we're visible again" signal.
+        com.armsx2.LibraryMusic.resume()
     }
 
     override fun onNewIntent(intent: Intent) {
