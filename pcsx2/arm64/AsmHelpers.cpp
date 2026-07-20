@@ -127,7 +127,15 @@ alignas(vixl::aarch64::MacroAssembler) static thread_local u8 s_armAsmStorage[si
 u8* armGetWritableCodePtr(u8* rx_ptr)
 {
 #ifdef __APPLE__
-	return rx_ptr + DarwinMisc::g_code_rw_offset;
+	// The alias translation applies only to addresses inside the dual-mapped
+	// JIT region (SetJitRange = the MmapCodeDualMap arena). Anything else —
+	// the Arm64BaseBlocks link tests patch static buffers, for instance —
+	// writes untranslated. GetJitBase() is 0 when no region exists, which
+	// makes the range test fail and this an identity.
+	const uintptr_t p = reinterpret_cast<uintptr_t>(rx_ptr);
+	if (DarwinMisc::g_code_rw_offset != 0 && p >= DarwinMisc::GetJitBase() && p < DarwinMisc::GetJitEnd())
+		return rx_ptr + DarwinMisc::g_code_rw_offset;
+	return rx_ptr;
 #else
 	return rx_ptr;
 #endif
