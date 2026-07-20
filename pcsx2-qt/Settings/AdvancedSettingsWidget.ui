@@ -180,6 +180,13 @@
           </property>
          </widget>
         </item>
+        <item row="3" column="1">
+         <widget class="QCheckBox" name="eeFpuGuardedAddSub">
+          <property name="text">
+           <string>FPU Add/Sub Guard Bits</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>
@@ -555,6 +562,7 @@
   <tabstop>eeFastmem</tabstop>
   <tabstop>pauseOnTLBMiss</tabstop>
   <tabstop>extraMemory</tabstop>
+  <tabstop>eeFpuGuardedAddSub</tabstop>
   <tabstop>vu0RoundingMode</tabstop>
   <tabstop>vu0ClampMode</tabstop>
   <tabstop>vu1RoundingMode</tabstop>

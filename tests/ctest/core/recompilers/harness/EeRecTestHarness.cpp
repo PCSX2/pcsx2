@@ -61,6 +61,9 @@ EeRecTestHarness::~EeRecTestHarness()
 
 	if (fpu_mul_hack_changed_)
 		EmuConfig.Gamefixes.FpuMulHack = prev_fpu_mul_hack_;
+
+	if (fpu_guarded_changed_)
+		EmuConfig.Cpu.Recompiler.fpuGuardedAddSub = prev_fpu_guarded_;
 }
 
 void EeRecTestHarness::SetGpr64(u32 reg_idx, u64 value)
@@ -113,6 +116,16 @@ void EeRecTestHarness::EnableFpuMulHack()
 		fpu_mul_hack_changed_ = true;
 	}
 	EmuConfig.Gamefixes.FpuMulHack = true;
+}
+
+void EeRecTestHarness::DisableFpuGuarded()
+{
+	if (!fpu_guarded_changed_)
+	{
+		prev_fpu_guarded_ = EmuConfig.Cpu.Recompiler.fpuGuardedAddSub;
+		fpu_guarded_changed_ = true;
+	}
+	EmuConfig.Cpu.Recompiler.fpuGuardedAddSub = false;
 }
 
 void EeRecTestHarness::SetStatusBits(u32 mask) { cpuRegs.CP0.n.Status.val |= mask; }

@@ -473,6 +473,7 @@ Pcsx2Config::RecompilerOptions::RecompilerOptions()
 	fpuOverflow = true;
 	//fpuExtraOverflow = false;
 	//fpuFullMode = false;
+	fpuGuardedAddSub = true; // PS2-accurate add/sub guard-bit emulation; opt-out for perf on titles verified not to need it.
 }
 
 void Pcsx2Config::RecompilerOptions::ApplySanityCheck()
@@ -551,6 +552,7 @@ void Pcsx2Config::RecompilerOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(fpuOverflow);
 	SettingsWrapBitBool(fpuExtraOverflow);
 	SettingsWrapBitBool(fpuFullMode);
+	SettingsWrapBitBool(fpuGuardedAddSub);
 }
 
 u32 Pcsx2Config::RecompilerOptions::GetEEClampMode() const

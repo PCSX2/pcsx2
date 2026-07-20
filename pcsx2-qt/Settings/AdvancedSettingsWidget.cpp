@@ -23,6 +23,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeFastmem, "EmuCore/CPU/Recompiler", "EnableFastmem", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnTLBMiss, "EmuCore/CPU/Recompiler", "PauseOnTLBMiss", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.extraMemory, "EmuCore/CPU", "ExtraMemory", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.eeFpuGuardedAddSub, "EmuCore/CPU/Recompiler", "fpuGuardedAddSub", true);
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu0Recompiler, "EmuCore/CPU/Recompiler", "EnableVU0", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.vu1Recompiler, "EmuCore/CPU/Recompiler", "EnableVU1", true);
@@ -98,6 +99,11 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* settings_dialog, 
 
 	dialog()->registerWidgetHelp(m_ui.extraMemory, tr("Enable Extended RAM (Dev Console)"), tr("Unchecked"),
 		tr("Exposes additional memory to the virtual machine, expanding the EE and IOP memory to 128MB and 8MB respectively."));
+
+	dialog()->registerWidgetHelp(m_ui.eeFpuGuardedAddSub, tr("FPU Add/Sub Guard Bits"), tr("Checked"),
+		//: "Guard bits" = extra low mantissa bits a standards-compliant FPU keeps during add/sub; the PS2's EE FPU does not, so the recompiler masks them to match.
+		tr("Emulates the EE FPU's missing add/sub mantissa guard bits for hardware-accurate results. Leave checked; a few games (e.g. True Crime, Jak 3) misrender without it. "
+		   "Unchecking is a minor speedup for EE-FPU-heavy games verified to render correctly without it. Has no effect when the EE Clamping Mode is set to Full."));
 
 	dialog()->registerWidgetHelp(m_ui.vu0RoundingMode, tr("VU0 Rounding Mode"), tr("Chop/Zero (Default)"), tr("Changes how PCSX2 handles rounding while emulating the Emotion Engine's Vector Unit 0 (EE VU0). "
 																											  "The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem will cause stability issues and/or crashes.</b>"));
