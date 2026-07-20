@@ -102,6 +102,7 @@ enum class RunMode
 	TwinDump,
 	TwinCompare,
 	DumpConfig,
+	MkState,
 };
 
 static MemorySettingsInterface s_settings_interface;
@@ -126,6 +127,7 @@ static std::string s_twin_other;           // --twincompare <file>: the other bu
 static std::string s_twin_label = "local"; // --twin-label <name>: stamped into the trace header
 static int s_twin_ram_at = -1;             // --twin-ram-at <frame>: raw EE RAM+scratch dump at this frame
 static std::string s_dumpcfg_path;         // --dump-config <path>: effective-EmuConfig INI dump
+static std::string s_mkstate_path;         // --mkstate <out.p2s>: write a savestate after --frames
 struct SetOverride
 {
 	std::string section, key, value;
@@ -542,6 +544,9 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "               <prefix>.f<N>.{interp,jit}.bin, for offline page/region diffing across builds.\n");
 	std::fprintf(stderr, "  --dump-config <path>: boot far enough for GameDB to apply, write the EFFECTIVE EmuConfig INI,\n");
 	std::fprintf(stderr, "               and exit. Diff the two trees' dumps FIRST - config drift is the cheapest bug class.\n");
+	std::fprintf(stderr, "  --mkstate <out.p2s>: run --frames under the production JIT (from --savestate if given, else a\n");
+	std::fprintf(stderr, "               cold disc boot) and write a savestate. Bootstrap twindiff states on the WORKING\n");
+	std::fprintf(stderr, "               binary, positioned BEFORE the corrupting computation (e.g. before a level load).\n");
 	std::fprintf(stderr, "  --set Section/Key=Value: base-layer settings override, applied after the harness pinning\n");
 	std::fprintf(stderr, "               (repeatable). E.g. --set EmuCore/CPU/Recompiler/fpuGuardedAddSub=true. GameDB\n");
 	std::fprintf(stderr, "               per-game keys still win; the twin passes own the EnableEE/VU0/VU1/IOP toggles.\n");
@@ -682,6 +687,12 @@ bool EERunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 				s_dumpcfg_path = StringUtil::StripWhitespace(argv[++i]);
 				continue;
 			}
+			else if (CHECK_ARG_PARAM("--mkstate"))
+			{
+				s_mode = RunMode::MkState;
+				s_mkstate_path = StringUtil::StripWhitespace(argv[++i]);
+				continue;
+			}
 			else if (CHECK_ARG_PARAM("--set"))
 			{
 				const std::string kv(StringUtil::StripWhitespace(argv[++i]));
@@ -765,8 +776,9 @@ bool EERunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 	if (s_savestate_path.empty())
 	{
 		// --dump-config only needs the disc mounted: GameDB keys off the serial,
-		// which is known right after Initialize. Every other mode replays state.
-		if (s_mode != RunMode::DumpConfig)
+		// which is known right after Initialize. --mkstate can cold-boot the
+		// disc to CREATE the first state. Every other mode replays state.
+		if (s_mode != RunMode::DumpConfig && s_mode != RunMode::MkState)
 		{
 			Console.Error("No savestate provided (use --savestate <file>).");
 			return false;
@@ -2811,6 +2823,34 @@ static int RunTwinCompare()
 	return (xi_real || ee >= 0) ? 2 : EXIT_SUCCESS;
 }
 
+// --mkstate <out.p2s> : bootstrap a shared savestate for twindiff. Boots the
+// disc (or continues from --savestate), runs --frames under the production
+// JIT stack, writes a savestate, exits. Make twindiff states on the WORKING
+// (gold) binary: a state taken from a broken run can already carry the
+// corruption baked into RAM — True Crime's paletted textures are computed
+// once at level load, so a mid-scene state from a broken build shows no
+// guard-bit delta at all; the window has to CROSS the corrupting computation.
+static int RunMkState()
+{
+	Error error;
+	if (!s_savestate_path.empty())
+	{
+		if (!VMManager::LoadState(s_savestate_path.c_str(), &error))
+		{
+			Console.ErrorFmt("mkstate: load failed: {}", error.GetDescription());
+			return EXIT_FAILURE;
+		}
+	}
+	AdvanceFrames(s_frames);
+	bool ok = true;
+	VMManager::SaveState(s_mkstate_path.c_str(), /*zip_on_thread=*/false, /*backup_old_state=*/false,
+		[&](const std::string& e) { ok = false; Console.ErrorFmt("mkstate: save failed: {}", e); });
+	VMManager::WaitForSaveStateFlush();
+	Console.WriteLn(fmt::format("MKSTATE: {} after {} frames -> {}",
+		ok ? "wrote state" : "FAILED", s_frames, s_mkstate_path));
+	return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 // --dump-config <path> : boot the VM far enough for GameDB to apply, then
 // serialize the EFFECTIVE EmuConfig to an INI. The twindiff driver diffs the
 // two trees' dumps FIRST — config/GameDB drift (True Crime: fpuGuardedAddSub
@@ -3919,6 +3959,10 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 
 				case RunMode::DumpConfig:
 					code = RunDumpConfig();
+					break;
+
+				case RunMode::MkState:
+					code = RunMkState();
 					break;
 
 				case RunMode::SpeedhackDiff:
