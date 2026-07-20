@@ -126,12 +126,8 @@ struct _arm64gprregs
 // the pinned FPU clamp constants and are excluded from the pool entirely).
 // AAPCS64 preserves only the LOWER 64 bits of v8-v15 across C calls, so
 // full-128-bit classes (NEONTYPE_GPRREG quads, VFREG) can never be retained
-// across a PLAIN C seam — but 32-bit FPR-class slots (FPREG/FPACC, lane 0
-// only) can (GE-15; iFlushCall's retention loop keys off this range). The
-// one exception is the VPU_STAT-conditional COP2 sync seam (SL-14): its
-// shared stubs blind-save the full pool NEON file around the C calls on the
-// taken path, so cop2FlushForConditionalSync retains GPRREG/FPREG/FPACC in
-// ANY pool register there (VFREG still frees — the VU0 micro writes VF).
+// across a seam — but 32-bit FPR-class slots (FPREG/FPACC, lane 0 only) can
+// (GE-15; iFlushCall's retention loop keys off this range).
 static constexpr u32 NEON_CALLEE_SAVED_START = 10;
 static constexpr u32 NEON_CALLEE_SAVED_END = 16; // exclusive
 

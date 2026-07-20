@@ -33,12 +33,11 @@
 
 #include <gtest/gtest.h>
 
-// SL-13/SL-14 test hooks (PCSX2_RECOMPILER_TESTS builds). Global scope —
-// defined outside namespaces in the arm64 sources.
+// SL-13 test hooks (PCSX2_RECOMPILER_TESTS builds). Global scope — defined
+// outside namespaces in the arm64 sources.
 extern u32 g_cop2ClampConstEstablishCount; // iCOP2-arm64.cpp
 int cop2TestGetSyncStubCount();            // iCOP2-arm64.cpp
 const u8* cop2TestGetSyncStub(int kind);   // iCOP2-arm64.cpp
-u32 cop2TestSeamRetentionFilter();         // iCOP2-arm64.cpp (SL-14)
 bool mVUTestProbe_NeonPoolUsable(int hostreg, bool cop2mode); // microVU-arm64.cpp
 bool eeTestNeonRegIsReserved(int hostreg); // iCore-arm64.cpp
 
@@ -275,71 +274,6 @@ TEST(EeVu0Cop2ClampResidency, MacroModeNeonPoolExcludesClampRegs)
 	EXPECT_TRUE(mVUTestProbe_NeonPoolUsable(0, /*cop2mode*/ true));
 	EXPECT_TRUE(mVUTestProbe_NeonPoolUsable(24, /*cop2mode*/ true));
 	EXPECT_TRUE(mVUTestProbe_NeonPoolUsable(27, /*cop2mode*/ true));
-}
-
-// =========================================================================
-//  SL-14 — sync-seam NEON survival
-// =========================================================================
-// cop2FlushForConditionalSync retains EE-class NEON entries (GPRREG quads /
-// FPREG / FPACC) through the VPU_STAT-conditional sync seam; the shared
-// stubs blind-save the pool NEON file around their C calls on the taken
-// path. VFREG mirrors and TEMPs still free (the VU0 micro writes VF).
-
-// The retention filter itself, pinned deterministically on a synthetic
-// allocator state: bit0=GPRREG bit1=FPREG bit2=FPACC bit3=VFREG bit4=TEMP.
-TEST(EeVu0Cop2SeamSurvival, RetentionFilterPolicy)
-{
-	EXPECT_EQ(cop2TestSeamRetentionFilter(), 0b00111u)
-		<< "GPRREG/FPREG/FPACC must ride the seam; VFREG/TEMP must free";
-}
-
-// A dirty 128-bit MMI quad created AFTER the VCALLMS kick must survive the
-// following FMAC's TAKEN sync seam in-register and produce correct results
-// in a post-seam consumer and at block-end writeback.
-TEST(EeVu0Cop2SeamSurvival, DirtyQuadRidesTakenSeam)
-{
-	EeRecTestHarness h;
-	h.EnableVu0Capture();
-	h.EnableCop1();
-	h.SeedVu0Vi(REG_VPU_STAT, 0);
-	SeedOverflowOperands(h, 1, 2);
-	SeedLongNopMicro(h);
-	h.SetMmiPair(reg::t2, 0x1111111122222222ull, 0x3333333344444444ull);
-	h.SetMmiPair(reg::t3, 0x0000000100000001ull, 0x0000000100000001ull);
-	h.LoadProgram({
-		VCALLMS(0),                        // kick — VPU_STAT busy
-		PADDW(reg::t1, reg::t2, reg::t3),  // dirty NEON quad, post-kick
-		VMUL_C2(mask_xyzw, 3, 1, 2),       // FINISH seam TAKEN — quad must ride
-		PADDW(reg::t0, reg::t1, reg::t3),  // consume the retained quad
-	});
-	h.Run();
-	h.ExpectGpr128(reg::t1, 0x1111111222222223ull, 0x3333333444444445ull);
-	h.ExpectGpr128(reg::t0, 0x1111111322222224ull, 0x3333333544444446ull);
-	ExpectClampedToFltMax(h, 3);
-}
-
-// A dirty 32-bit FPU register (FPREG class) rides the same taken seam.
-TEST(EeVu0Cop2SeamSurvival, FprRidesTakenSeam)
-{
-	EeRecTestHarness h;
-	h.EnableVu0Capture();
-	h.EnableCop1();
-	h.SeedVu0Vi(REG_VPU_STAT, 0);
-	SeedOverflowOperands(h, 1, 2);
-	SeedLongNopMicro(h);
-	h.SetFpr(2, 1.5f);
-	h.SetFpr(3, 2.25f);
-	h.LoadProgram({
-		VCALLMS(0),
-		ADD_S(1, 2, 3),              // f1 = 3.75, dirty FPREG
-		VMUL_C2(mask_xyzw, 3, 1, 2), // taken seam — FPREG must ride
-		ADD_S(4, 1, 1),              // f4 = 7.5 from the retained value
-	});
-	h.Run();
-	EXPECT_EQ(h.GetFprBitsJit(1), h.GetFprBitsInterp(1));
-	EXPECT_EQ(h.GetFprBitsJit(4), h.GetFprBitsInterp(4));
-	EXPECT_EQ(h.GetFprBitsJit(4), 0x40F00000u); // 7.5f
-	ExpectClampedToFltMax(h, 3);
 }
 
 // The mVU-reuse wrappers must not disturb validity: FMAC → VMFIR (mVU-reuse
