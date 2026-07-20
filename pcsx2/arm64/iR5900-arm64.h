@@ -712,12 +712,6 @@ void cop2EmitConditionalSync(bool interlock, void (*finishFunc)());
 // before any block compiles — called from _DynGen_Dispatchers.
 void cop2DynGenSyncStubs();
 
-// S4-4: emits the shared COP2 FMAC-tail stubs (±FLT_MAX clamp, MAC/status
-// flag update, status-chain denormalize/normalize) the hand-rolled macro
-// arithmetic ops BL into (defined in iCOP2-arm64.cpp). Same lifecycle as
-// cop2DynGenSyncStubs — called from _DynGen_Dispatchers.
-void cop2DynGenTailStubs();
-
 // (Re)writes _cpuRegistersPack.cop2Rec — the COP2 macro-mode clamp/mask
 // constants the emitters reach via [RSTATE, #imm] (defined in
 // iCOP2-arm64.cpp). Called from recResetRaw before any block compiles.
