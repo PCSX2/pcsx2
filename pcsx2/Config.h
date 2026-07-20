@@ -491,6 +491,13 @@ enum class AchievementOverlayPosition : u8
 	MaxCount
 };
 
+enum class GSShaderSpriteAlignMode : u8
+{
+	Off,
+	Align,
+	AlignClamp,
+};
+
 // --------------------------------------------------------------------------------------
 //  TraceLogsEE
 // --------------------------------------------------------------------------------------
@@ -880,6 +887,7 @@ struct Pcsx2Config
 		int SkipDrawStart = 0;
 		int SkipDrawEnd = 0;
 
+		GSShaderSpriteAlignMode ShaderSpriteAlign = GSShaderSpriteAlignMode::Off;
 		GSHWAutoFlushLevel UserHacks_AutoFlush = GSHWAutoFlushLevel::Disabled;
 		GSHalfPixelOffset UserHacks_HalfPixelOffset = GSHalfPixelOffset::Off;
 		s8 UserHacks_RoundSprite = 0;
@@ -943,6 +951,9 @@ struct Pcsx2Config
 
 		/// Sets user hack values to defaults when upscaling is not enabled.
 		void MaskUpscalingHacks();
+
+		/// Disables upscaling hacking when shader based upscaling alignment is used.
+		void MaskCPUUpscalingHacks();
 
 		/// Returns true if any of the hardware renderers are selected.
 		bool UseHardwareRenderer() const;

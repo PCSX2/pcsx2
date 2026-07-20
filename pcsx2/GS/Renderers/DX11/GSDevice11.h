@@ -287,7 +287,7 @@ private:
 
 	// Shaders...
 
-	std::unordered_map<u32, GSVertexShader11> m_vs;
+	std::unordered_map<u64, GSVertexShader11> m_vs;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_vs_cb;
 	wil::com_ptr_nothrow<ID3D11Buffer> m_vs_pc;
 	std::unordered_map<u32, wil::com_ptr_nothrow<ID3D11GeometryShader>> m_gs;

@@ -661,7 +661,7 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_gpu_pipeline_statistics_supported = (GLAD_GL_ARB_pipeline_statistics_query != 0);
 
 	// Basic to ensure structures are correctly packed
-	static_assert(sizeof(VSSelector) == 1, "Wrong VSSelector size");
+	static_assert(sizeof(VSSelector) == 8, "Wrong VSSelector size");
 	static_assert(sizeof(PSSelector) == 16, "Wrong PSSelector size");
 	static_assert(sizeof(PSSamplerSelector) == 1, "Wrong PSSamplerSelector size");
 	static_assert(sizeof(OMDepthStencilSelector) == 1, "Wrong OMDepthStencilSelector size");
@@ -1607,6 +1607,7 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
 	header += "#define ROUND_UV_THRESHOLD " + fmt::format("{}", static_cast<float>(ROUND_UV_THRESHOLD)) + "\n";
 	header += "#define ROUND_UV_UP " + fmt::format("{}", static_cast<int>(ROUND_UV_UP)) + "\n";
 	header += "#define ROUND_UV_DOWN " + fmt::format("{}", static_cast<int>(ROUND_UV_DOWN)) + "\n";
+	header += "#define ROUND_UV_PER_PIXEL " + fmt::format("{}", static_cast<int>(ROUND_UV_PER_PIXEL)) + "\n";
 	header += "#define ROUND_UV_SWAP " + fmt::format("{}", static_cast<int>(ROUND_UV_SWAP)) + "\n";
 
 	// Allow to puts several shader in 1 files
@@ -1647,6 +1648,8 @@ std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 		+ fmt::format("#define VS_IIP {}\n", static_cast<u32>(sel.iip))
 		+ fmt::format("#define VS_POINT_SIZE {}\n", static_cast<u32>(sel.point_size))
 		+ fmt::format("#define VS_ROUND_UV {}\n", static_cast<int>(sel.round_uv))
+		+ fmt::format("#define VS_ALIGN_UV {}\n", static_cast<int>(sel.align_uv))
+		+ fmt::format("#define VS_CLAMP_UV {}\n", static_cast<int>(sel.clamp_uv))
 		+ fmt::format("#define VS_EXPAND {}\n", static_cast<int>(sel.expand));
 
 	std::string src = GenGlslHeader("vs_main", GL_VERTEX_SHADER, macro);
@@ -1721,7 +1724,9 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_ROV_COLOR {}\n", 0)
 		+ fmt::format("#define PS_ROV_DEPTH {}\n", 0)
 		+ fmt::format("#define PS_ROUND_UV {}\n", static_cast<u32>(sel.round_uv))
-	;
+		+ fmt::format("#define PS_CLAMP_UV {}\n", static_cast<u32>(sel.clamp_uv))
+		+ fmt::format("#define PS_ALIGN_UV {}\n", static_cast<u32>(sel.align_uv))
+		;
 
 	std::string src = GenGlslHeader("ps_main", GL_FRAGMENT_SHADER, macro);
 	src += m_shader_tfx_fs;
