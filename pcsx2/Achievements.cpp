@@ -566,6 +566,12 @@ std::string Achievements::GetAchievementsAsJSON()
 						out += std::to_string(ach->points);
 						out += ",\"unlocked\":";
 						out += (ach->state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED) ? "true" : "false";
+						// ACTIVE CHALLENGE = RA "primed" (a can-do-right-now challenge = the
+						// on-screen challenge indicator). Per-achievement ach->bucket is refreshed
+						// every rebuild regardless of list grouping; the outer bucket.bucket_type
+						// can't carry it under LOCK_STATE grouping. The UI floats these to the top.
+						out += ",\"primed\":";
+						out += (ach->bucket == RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE) ? "true" : "false";
 						out += ",\"bucket\":";
 						out += std::to_string(static_cast<int>(bucket.bucket_type));
 						// Subset this achievement belongs to (0 = base/shared set). Lets the
