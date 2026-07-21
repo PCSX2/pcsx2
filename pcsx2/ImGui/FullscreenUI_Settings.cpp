@@ -174,7 +174,7 @@ namespace FullscreenUI
 
 		if (sizeInGB < min_size || sizeInGB > max_size)
 		{
-			ShowToast(std::string(), fmt::format("Invalid HDD size. Size must be between {} and {} GB.", min_size, max_size).c_str());
+			ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, fmt::format("Invalid HDD size. Size must be between {} and {} GB.", min_size, max_size));
 			return false;
 		}
 
@@ -1553,7 +1553,7 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
 		MTGS::RunOnGSThread([port, devices = std::move(devices)]() {
 			if (devices.empty())
 			{
-				ShowToast({}, FSUI_STR("Automatic binding failed, no devices are available."));
+				ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, FSUI_STR("Automatic binding failed, no devices are available."));
 				return;
 			}
 
@@ -1584,8 +1584,9 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
 
 						// and the toast needs to happen on the UI thread.
 						MTGS::RunOnGSThread([result, name = std::move(name)]() {
-							ShowToast({}, result ? fmt::format(FSUI_FSTR("Automatic mapping completed for {}."), name) :
-												   fmt::format(FSUI_FSTR("Automatic mapping failed for {}."), name));
+							ShowToast(result ? ICON_FA_CIRCLE_CHECK : ICON_FA_TRIANGLE_EXCLAMATION,
+								result ? fmt::format(FSUI_FSTR("Automatic mapping completed for {}."), name) :
+										 fmt::format(FSUI_FSTR("Automatic mapping failed for {}."), name));
 						});
 					});
 					CloseChoiceDialog();
@@ -1741,7 +1742,7 @@ void FullscreenUI::DoCopyGameSettings()
 
 	SetSettingsChanged(s_game_settings_interface.get());
 
-	ShowToast(std::string(), fmt::format(FSUI_FSTR("Game settings initialized with global settings for '{}'."),
+	ShowToast(ICON_FA_CIRCLE_CHECK, fmt::format(FSUI_FSTR("Game settings initialized with global settings for '{}'."),
 								 Path::GetFileTitle(s_game_settings_interface->GetFileName())));
 }
 
@@ -1754,7 +1755,7 @@ void FullscreenUI::DoClearGameSettings()
 
 	SetSettingsChanged(s_game_settings_interface.get());
 
-	ShowToast(std::string(),
+	ShowToast(ICON_FA_TRASH,
 		fmt::format(FSUI_FSTR("Game settings have been cleared for '{}'."), Path::GetFileTitle(s_game_settings_interface->GetFileName())));
 }
 
@@ -3638,14 +3639,14 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
 
 		if (card1.empty() || card2.empty())
 		{
-			ShowToast(std::string(), FSUI_STR("Both slots must have a card selected to swap."));
+			ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, FSUI_STR("Both slots must have a card selected to swap."));
 		}
 		else
 		{
 			ebsi->SetStringValue("MemoryCards", "Slot1_Filename", card2.c_str());
 			ebsi->SetStringValue("MemoryCards", "Slot2_Filename", card1.c_str());
 			SetSettingsChanged(ebsi);
-			ShowToast(std::string(), FSUI_STR("Swapped Slot 1 and Slot 2 memory cards."));
+			ShowToast(ICON_FA_ARROWS_ROTATE, FSUI_STR("Swapped Slot 1 and Slot 2 memory cards."));
 		}
 	}
 
@@ -4133,7 +4134,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 							SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
 							bsi->SetStringValue("DEV9/Hdd", "HddFile", path.c_str());
 							SetSettingsChanged(bsi);
-							ShowToast(std::string(), fmt::format(FSUI_FSTR("Selected HDD image: {}"), Path::GetFileName(path))); }, {"*.raw", "*"}, EmuFolders::DataRoot);
+							ShowToast(ICON_FA_HARD_DRIVE, fmt::format(FSUI_FSTR("Selected HDD image: {}"), Path::GetFileName(path))); }, {"*.raw", "*"}, EmuFolders::DataRoot);
 				}
 				else if (values[index] == "__create__")
 				{
@@ -4175,14 +4176,14 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 										std::optional<int> custom_size_opt = StringUtil::FromChars<int>(input);
 										if (!custom_size_opt.has_value())
 										{
-											ShowToast(std::string(), FSUI_STR("Invalid size. Please enter a number between 40 and 2000."));
+											ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, FSUI_STR("Invalid size. Please enter a number between 40 and 2000."));
 											return;
 										}
 										int custom_size_gb = custom_size_opt.value();
 
 										if (custom_size_gb < 40 || custom_size_gb > 2000)
 										{
-											ShowToast(std::string(), FSUI_STR("HDD size must be between 40 GB and 2000 GB."));
+											ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, FSUI_STR("HDD size must be between 40 GB and 2000 GB."));
 											return;
 										}
 
@@ -4279,7 +4280,7 @@ void FullscreenUI::OpenMemoryCardCreateDialog()
 			name.erase(std::remove(name.begin(), name.end(), '.'), name.end());
 			if (name.empty())
 			{
-				ShowToast(std::string(), FSUI_STR("Memory card name cannot be empty."));
+				ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, FSUI_STR("Memory card name cannot be empty."));
 				return;
 			}
 
@@ -4372,21 +4373,21 @@ void FullscreenUI::DoCreateMemoryCard(std::string name, MemoryCardType type, Mem
 	// check the filename
 	if (!Path::IsValidFileName(name_str, false))
 	{
-		ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to create the Memory Card, because the name '{}' contains one or more invalid characters."), name));
+		ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, fmt::format(FSUI_FSTR("Failed to create the Memory Card, because the name '{}' contains one or more invalid characters."), name));
 		return;
 	}
 
 	// Check if a memory card with this name already exists
 	if (FileMcd_GetCardInfo(name_str).has_value())
 	{
-		ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to create the Memory Card, because another card with the name '{}' already exists."), name));
+		ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, fmt::format(FSUI_FSTR("Failed to create the Memory Card, because another card with the name '{}' already exists."), name));
 		return;
 	}
 
 	// Create the memory card
 	if (!FileMcd_CreateNewCard(name_str, type, file_type))
 	{
-		ShowToast(std::string(), FSUI_STR("Failed to create the Memory Card, the log may contain more information."));
+		ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, FSUI_STR("Failed to create the Memory Card, the log may contain more information."));
 		return;
 	}
 
@@ -4398,7 +4399,7 @@ void FullscreenUI::DoCreateMemoryCard(std::string name, MemoryCardType type, Mem
 	}
 #endif
 
-	ShowToast(std::string(), fmt::format(FSUI_FSTR("Memory Card '{}' created."), name));
+	ShowToast(ICON_FA_CIRCLE_CHECK, fmt::format(FSUI_FSTR("Memory Card '{}' created."), name));
 }
 
 void FullscreenUI::DrawAchievementsLoginWindow()
@@ -4644,7 +4645,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
 				if (!result)
 				{
-					ShowToast(std::string(), fmt::format(FSUI_FSTR("Login failed.\nError: {}\n\nPlease check your username and password, and try again."),
+					ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, fmt::format(FSUI_FSTR("Login failed.\nError: {}\n\nPlease check your username and password, and try again."),
 												 error.GetDescription()));
 					return;
 				}
@@ -4905,7 +4906,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 						const TinyString preview_path = bsi->GetTinyStringValue("Achievements", key.c_str(), default_path.c_str());
 						if (!Common::PlaySoundAsync(preview_path.c_str()))
 						{
-							ShowToast(std::string(),
+							ShowToast(ICON_FA_TRIANGLE_EXCLAMATION,
 								fmt::format(FSUI_FSTR("Failed to preview sound:\n{}"),
 									preview_path.empty() ? FSUI_STR("No file selected.") : preview_path.c_str()));
 						}
@@ -4916,11 +4917,11 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 						{
 							bsi->DeleteValue("Achievements", key.c_str());
 							SetSettingsChanged(bsi);
-							ShowToast(std::string(), FSUI_STR("Sound reset to default."));
+							ShowToast(ICON_FA_CIRCLE_CHECK, FSUI_STR("Sound reset to default."));
 						}
 						else
 						{
-							ShowToast(std::string(), FSUI_STR("Sound is already using default."));
+							ShowToast(ICON_FA_CIRCLE_INFO, FSUI_STR("Sound is already using default."));
 						}
 					}
 					CloseChoiceDialog();
@@ -4952,7 +4953,7 @@ void FullscreenUI::ResetControllerSettings()
 				Pad::SetDefaultControllerConfig(*dsi);
 				Pad::SetDefaultHotkeyConfig(*dsi);
 				USB::SetDefaultConfiguration(dsi);
-				ShowToast(std::string(), FSUI_STR("Controller settings reset to default."));
+				ShowToast(ICON_FA_CIRCLE_CHECK, FSUI_STR("Controller settings reset to default."));
 			}
 		});
 }
@@ -4962,7 +4963,7 @@ void FullscreenUI::DoLoadInputProfile()
 	std::vector<std::string> profiles = Pad::GetInputProfileNames();
 	if (profiles.empty())
 	{
-		ShowToast(std::string(), FSUI_STR("No input profiles available."));
+		ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, FSUI_STR("No input profiles available."));
 		return;
 	}
 
@@ -4978,7 +4979,7 @@ void FullscreenUI::DoLoadInputProfile()
 			INISettingsInterface ssi(VMManager::GetInputProfilePath(title));
 			if (!ssi.Load())
 			{
-				ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to load '{}'."), title));
+				ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, fmt::format(FSUI_FSTR("Failed to load '{}'."), title));
 				CloseChoiceDialog();
 				return;
 			}
@@ -4988,7 +4989,7 @@ void FullscreenUI::DoLoadInputProfile()
 			Pad::CopyConfiguration(dsi, ssi, true, true, IsEditingGameSettings(dsi));
 			USB::CopyConfiguration(dsi, ssi, true, true);
 			SetSettingsChanged(dsi);
-			ShowToast(std::string(), fmt::format(FSUI_FSTR("Input profile '{}' loaded."), title));
+			ShowToast(ICON_FA_CIRCLE_CHECK, fmt::format(FSUI_FSTR("Input profile '{}' loaded."), title));
 			CloseChoiceDialog();
 		});
 }
@@ -5002,9 +5003,9 @@ void FullscreenUI::DoSaveInputProfile(const std::string& name)
 	Pad::CopyConfiguration(&dsi, *ssi, true, true, IsEditingGameSettings(ssi));
 	USB::CopyConfiguration(&dsi, *ssi, true, true);
 	if (dsi.Save())
-		ShowToast(std::string(), fmt::format(FSUI_FSTR("Input profile '{}' saved."), name));
+		ShowToast(ICON_FA_CIRCLE_CHECK, fmt::format(FSUI_FSTR("Input profile '{}' saved."), name));
 	else
-		ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to save input profile '{}'."), name));
+		ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, fmt::format(FSUI_FSTR("Failed to save input profile '{}'."), name));
 }
 
 void FullscreenUI::DoSaveInputProfile()
@@ -5049,7 +5050,7 @@ void FullscreenUI::DoResetSettings()
 			if (result)
 			{
 				Host::RunOnCPUThread([]() { Host::RequestResetSettings(false, true, false, false, false); });
-				ShowToast(std::string(), FSUI_STR("Settings reset to defaults."));
+				ShowToast(ICON_FA_CIRCLE_CHECK, FSUI_STR("Settings reset to defaults."));
 			}
 		});
 }
