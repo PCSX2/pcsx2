@@ -201,9 +201,9 @@ size_t GSTextureReplacements::GetReplacementCacheBudget()
 	// phones that actually need protecting. NOTE 3 GB is also the largest round value that
 	// cannot overflow a 32-bit size_t (4 GB would wrap to 0 and evict everything).
 	constexpr size_t MIN_BUDGET = static_cast<size_t>(192) * 1024 * 1024;
-	constexpr size_t MAX_BUDGET = static_cast<size_t>(3072) * 1024 * 1024;
+	constexpr size_t MAX_BUDGET = static_cast<size_t>(6144) * 1024 * 1024; // 6 GB (arm64: 64-bit size_t, no wrap)
 	const u64 physical = GetPhysicalMemory();
-	size_t budget = (physical != 0) ? static_cast<size_t>(physical / 4) : MIN_BUDGET;
+	size_t budget = (physical != 0) ? static_cast<size_t>(physical / 2) : MIN_BUDGET; // RAM/2 (was /4): hold real packs whole
 	if (budget < MIN_BUDGET)
 		budget = MIN_BUDGET;
 	if (budget > MAX_BUDGET)
