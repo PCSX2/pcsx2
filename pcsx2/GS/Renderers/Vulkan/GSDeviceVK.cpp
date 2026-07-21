@@ -2826,6 +2826,16 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 			if (!m_swap_chain->RecreateSurface(m_window_info))
 			{
 				Console.Error("VK: Failed to recreate surface after loss");
+				// Do NOT keep the half-dead swap chain and retry the inline recreate:
+				// after a surface loss the native window can still be held by the old
+				// surface (stock Qualcomm Adreno returns NATIVE_WINDOW_IN_USE from
+				// vkCreateSwapchainKHR on the same ANativeWindow), so RecreateSurface
+				// fails again every frame and the game relaunch stays black forever
+				// (#380 / #374; Turnip tolerates it and recovers, stock Adreno does
+				// not). Drop the swap chain entirely so the next onNativeSurfaceChanged
+				// -> MTGS::UpdateDisplayWindow -> UpdateWindow rebuilds from the genuinely
+				// fresh surface instead of hammering the in-use one.
+				DestroySurface();
 				ExecuteCommandBuffer(false);
 				return PresentResult::FrameSkipped;
 			}
