@@ -97,3 +97,32 @@ TEST(Arm64BaseBlocksLink, RemoveRedirectStubIsPlainBAndRelinkKeepsBl)
 	EXPECT_EQ(DecodeImm26Bytes(*site_bl),
 		reinterpret_cast<intptr_t>(new_entry) - reinterpret_cast<intptr_t>(site_bl));
 }
+
+TEST(Arm64BaseBlocksLink, NewRebindsAnExistingBlockToItsNewCode)
+{
+	alignas(64) static u32 code[64];
+	std::memset(code, 0, sizeof(code));
+
+	Arm64BaseBlocks bb;
+	bb.SetJITCompile(&code[0]);
+
+	constexpr u32 kPc = 0x1000;
+	u32* const first = &code[16];
+	u32* const second = &code[24];
+	u32* const site = &code[8];
+
+	bb.Link(kPc, site);
+	bb.New(kPc, reinterpret_cast<uptr>(first));
+	ASSERT_EQ(bb.Get(kPc)->fnptr, reinterpret_cast<uptr>(first));
+
+	// Recompiling a startpc whose BASEBLOCKEX survived a straddled recClear
+	// must retarget the entry rather than leave it aimed at the superseded
+	// compile — and must not produce a second entry for the same pc.
+	bb.New(kPc, reinterpret_cast<uptr>(second));
+	EXPECT_EQ(bb.Get(kPc)->fnptr, reinterpret_cast<uptr>(second));
+	EXPECT_EQ(bb.Index(kPc), 0);
+	// Callers follow the block to its new code instead of branching into the
+	// dead first compile.
+	EXPECT_EQ(DecodeImm26Bytes(*site),
+		reinterpret_cast<intptr_t>(second) - reinterpret_cast<intptr_t>(site));
+}

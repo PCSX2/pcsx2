@@ -102,8 +102,29 @@ public:
 		links.insert({pc, reinterpret_cast<uptr>(patch_site) | (call ? kLinkSiteCallBit : 0)});
 	}
 
+	// Begin compiling the block at `startpc`, whose code starts at `fnptr`.
+	// Returns its BASEBLOCKEX, creating one if this startpc has no live block.
+	//
+	// A startpc can be recompiled while its BASEBLOCKEX is still in the array:
+	// recClear resets BLOCK->fnptr across the whole extent of the blocks it
+	// removes, but deliberately spares the in-progress block's entry, so the
+	// next dispatch recompiles a pc that still has a live entry.
+	// BaseBlockArray::insert() has no dedup, so that case has to reuse the
+	// existing entry — and it has to retarget it, otherwise fnptr keeps
+	// pointing at the superseded compile and every consumer of it is wrong:
+	// x86size is measured from a dead base, Remove() writes its redirect stub
+	// over dead code instead of the live entry, and the pending links below
+	// are never repointed, so callers keep branching into stale code.
 	BASEBLOCKEX* New(u32 startpc, uptr fnptr)
 	{
+		const int idx = Index(startpc);
+		BASEBLOCKEX* block = (idx >= 0 && blocks[idx].startpc == startpc)
+			? &blocks[idx] : nullptr;
+		if (block)
+			block->fnptr = fnptr;
+		else
+			block = blocks.insert(startpc, fnptr);
+
 		// Patch any pending links waiting for a block at this PC. After
 		// patching they go directly to fnptr instead of routing through
 		// JITCompile.
@@ -114,7 +135,7 @@ public:
 			PatchAtomic(site, EncodeB(site, fnptr, (it->second & kLinkSiteCallBit) != 0));
 		}
 
-		return blocks.insert(startpc, fnptr);
+		return block;
 	}
 
 	int LastIndex(u32 startpc) const

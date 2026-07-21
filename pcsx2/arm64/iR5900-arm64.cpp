@@ -3236,9 +3236,10 @@ static void recRecompile(const u32 startpc)
 	// and triggers SIGILL.
 	const uptr block_fnptr = (uptr)armGetCurrentCodePointer();
 
-	s_pCurBlockEx = recBlocks.Get(HWADDR(startpc));
-	if (!s_pCurBlockEx || s_pCurBlockEx->startpc != HWADDR(startpc))
-		s_pCurBlockEx = recBlocks.New(HWADDR(startpc), block_fnptr);
+	// New() both creates and re-binds: a startpc whose BASEBLOCKEX survived a
+	// straddled recClear is retargeted at the new code rather than left with a
+	// stale fnptr.
+	s_pCurBlockEx = recBlocks.New(HWADDR(startpc), block_fnptr);
 
 	g_branch = 0;
 	cop2VfCacheReset();
