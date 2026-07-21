@@ -88,6 +88,7 @@ import com.armsx2.ui.theme.ToolbarPositionPreferences
 import com.armsx2.ui.theme.LibraryChromePreferences
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalContext
@@ -170,14 +171,19 @@ fun HomeScreen(
         backgroundLayer = {
             val libraryBg = LibraryBackground.uri.value
             if (libraryBg == null) {
-                // Default: the bundled PS3 XMB-wave STILL. It used to be a looping MP4,
-                // but the continuous video decode cost in-library performance (sbro
-                // review), so it's a static image now.
+                // Default: the live PS3-XMB wave (XmbGlView — a GLES3 port of linkev's
+                // grid-displacement mesh, matching iOS). The bundled still sits behind it as a
+                // fallback for the rare case GL init fails. Custom backgrounds below override
+                // both, and clearing one returns here.
                 Image(
                     painter = painterResource(R.drawable.library_bg_xmb),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
+                )
+                AndroidView(
+                    factory = { XmbGlView(it) },
+                    modifier = Modifier.fillMaxSize(),
                 )
             } else {
                 // User-picked still image / GIF (Coil handles both).
@@ -188,13 +194,19 @@ fun HomeScreen(
                     contentScale = ContentScale.Crop,
                 )
             }
-            // Scrim so covers and text stay readable over the backdrop.
+            // Scrim so covers and text stay readable over the backdrop. A user-picked image can
+            // be any brightness, so it gets the full dark scrim. The XMB is our own controlled
+            // backdrop (dark at the top where the content sits) and a heavy scrim just muddied
+            // its blue into navy — so it gets only a whisper of dimming, letting the vivid blue
+            // read through.
+            val scrimTop = if (libraryBg == null) 0.06f else 0.55f
+            val scrimBottom = if (libraryBg == null) 0.20f else 0.80f
             Box(
                 Modifier.fillMaxSize().background(
                     Brush.verticalGradient(
                         listOf(
-                            MaterialTheme.colorScheme.background.copy(alpha = 0.55f),
-                            MaterialTheme.colorScheme.background.copy(alpha = 0.80f),
+                            MaterialTheme.colorScheme.background.copy(alpha = scrimTop),
+                            MaterialTheme.colorScheme.background.copy(alpha = scrimBottom),
                         ),
                     ),
                 ),
