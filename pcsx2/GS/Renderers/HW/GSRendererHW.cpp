@@ -7690,25 +7690,16 @@ void GSRendererHW::ConfigureROV(bool color_rov, bool depth_rov)
 	if (color_rov)
 	{
 		// FbMask setup
-		if (m_conf.colormask.wrgba != 0)
+		if (m_conf.colormask.wrgba != 0 && m_conf.colormask.wrgba != 0xF)
 		{
+			if (!m_conf.ps.fbmask)
+				m_conf.cb_ps.FbMask = GSVector4i::zero();
 			const GSVector4i fbmask = GSVector4i(m_conf.colormask.wr ? 0 : 0xFF, m_conf.colormask.wg ? 0 : 0xFF,
 			                                     m_conf.colormask.wb ? 0 : 0xFF, m_conf.colormask.wa ? 0 : 0xFF);
-			if (!m_conf.ps.fbmask)
-			{
-				// Don't enable FB mask emulation, just use the mask for ROV.
-				m_conf.cb_ps.FbMask = fbmask;
-			}
-			else
-			{
-				m_conf.cb_ps.FbMask |= fbmask;
-			}
+			m_conf.ps.fbmask = true;
+			m_conf.cb_ps.FbMask |= fbmask;
 			GL_INS("ROV: FbMask={R=%x, G=%x, B=%x, A=%x}",
 				m_conf.cb_ps.FbMask.r, m_conf.cb_ps.FbMask.g, m_conf.cb_ps.FbMask.b, m_conf.cb_ps.FbMask.a);
-		}
-		else
-		{
-			m_conf.ps.no_color = true;
 		}
 
 		// Blend setup
