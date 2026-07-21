@@ -3237,8 +3237,9 @@ static void recRecompile(const u32 startpc)
 	const uptr block_fnptr = (uptr)armGetCurrentCodePointer();
 
 	// New() both creates and re-binds: a startpc whose BASEBLOCKEX survived a
-	// straddled recClear is retargeted at the new code rather than left with a
-	// stale fnptr.
+	// straddled recClear is retargeted at the new code rather than left with
+	// a stale fnptr. It also publishes the block as the owner of every link
+	// site the emission below registers.
 	s_pCurBlockEx = recBlocks.New(HWADDR(startpc), block_fnptr);
 
 	g_branch = 0;
