@@ -602,14 +602,23 @@ std::vector<IP_Address> AdapterUtils::GetDNS(const Adapter* adapter)
 	if (servers.fail())
 	{
 		servers.close();
-#if (defined(__APPLE__) && TARGET_OS_IPHONE) || defined(__ANDROID__)
-		// iOS/Android sandboxes have no /etc/resolv.conf; fall back to public resolvers
-		// so the emulated PS2 gets a working DNS list. Overrideable via Network settings.
-		Console.WriteLn("DEV9: no /etc/resolv.conf; using public DNS fallback 1.1.1.1 / 8.8.8.8");
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+		// iOS app sandbox has no /etc/resolv.conf; fall back to public resolvers so the
+		// emulated PS2 gets a working DNS list. Overrideable via Network settings.
+		Console.WriteLn("DEV9: no /etc/resolv.conf on iOS; using public DNS fallback 1.1.1.1 / 8.8.8.8");
 		collection.push_back(IP_Address{{{1, 1, 1, 1}}});
 		collection.push_back(IP_Address{{{8, 8, 8, 8}}});
 		return collection;
 #else
+		// Android is DELIBERATELY not in the fallback above. Advertising real public
+		// resolvers makes the PS2 send DNS queries out through the sockets UDP forward
+		// path, whose session timing is wall-clock (steady_clock); under fast-forward the
+		// emulated retransmit/timeout cadence outruns the real round-trip and DNS fails
+		// (#379, worked on 2.6.3 which returned an empty list here). Leaving it empty
+		// restores 2.6.3 behaviour. A user who needs name resolution can set DNS to
+		// Internal in Network settings, which resolves host-side via getaddrinfo and is
+		// fast-forward-safe. The GetAdapterAuto gateway-probe skip (the actual "adapter
+		// not found" fix) is a separate hunk and stays.
 		Console.Error("DEV9: Failed to open /etc/resolv.conf");
 		return collection;
 #endif
