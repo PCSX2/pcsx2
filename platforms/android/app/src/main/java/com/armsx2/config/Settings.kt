@@ -295,6 +295,12 @@ data class Settings(
     val cropTop: Int = 0,
     val cropRight: Int = 0,
     val cropBottom: Int = 0,
+    /** Display zoom, 100-150% (#383). An AetherSX2-style single "zoom" slider: rather than the
+     *  four fiddly per-edge crops (which distort when set unevenly), this trims all four edges by
+     *  the SAME fraction, so the image scales up into the frame without changing aspect. App-side
+     *  only (no native key) — it's converted to symmetric CropLeft/Top/Right/Bottom in writeIni,
+     *  overriding the manual crops while > 100. */
+    val displayZoom: Int = 100,
     /** EmuCore/GS/dithering_ps2 — 0 Off / 1 Scaled / 2 Unscaled / 3 Force 32bit. PCSX2 default Unscaled. */
     val dithering: Int = 2,
     /** EmuCore/GS/VsyncQueueSize — frames the GS thread may queue (0-3). PCSX2 default 2. */
@@ -1275,10 +1281,21 @@ data class Settings(
         put("EmuCore/GS", "HWSpinGPUForReadbacks", "bool", spinGpuReadbacks.toString())
         put("EmuCore/GS", "HWSpinCPUForReadbacks", "bool", spinCpuReadbacks.toString())
         put("EmuCore/GS", "IntegerScaling", "bool", integerScaling.toString())
-        put("EmuCore/GS", "CropLeft", "int", cropLeft.coerceIn(0, 640).toString())
-        put("EmuCore/GS", "CropTop", "int", cropTop.coerceIn(0, 640).toString())
-        put("EmuCore/GS", "CropRight", "int", cropRight.coerceIn(0, 640).toString())
-        put("EmuCore/GS", "CropBottom", "int", cropBottom.coerceIn(0, 640).toString())
+        // Display zoom (#383) overrides the manual crops while active: trim every edge by the
+        // same fraction so the picture scales up without distortion. Nominal 640x448 native
+        // frame; the zoom factor is what matters visually, so an approximate frame size is fine.
+        // (1 - 100/Z)/2 is the per-edge fraction that leaves 1/Z of the image visible, centred.
+        val zoom = displayZoom.coerceIn(100, 150)
+        val zCropX = if (zoom > 100) ((640.0 * (1.0 - 100.0 / zoom)) / 2.0).toInt() else -1
+        val zCropY = if (zoom > 100) ((448.0 * (1.0 - 100.0 / zoom)) / 2.0).toInt() else -1
+        val effLeft = if (zCropX >= 0) zCropX else cropLeft
+        val effRight = if (zCropX >= 0) zCropX else cropRight
+        val effTop = if (zCropY >= 0) zCropY else cropTop
+        val effBottom = if (zCropY >= 0) zCropY else cropBottom
+        put("EmuCore/GS", "CropLeft", "int", effLeft.coerceIn(0, 640).toString())
+        put("EmuCore/GS", "CropTop", "int", effTop.coerceIn(0, 640).toString())
+        put("EmuCore/GS", "CropRight", "int", effRight.coerceIn(0, 640).toString())
+        put("EmuCore/GS", "CropBottom", "int", effBottom.coerceIn(0, 640).toString())
         put("EmuCore/GS", "dithering_ps2", "int", dithering.coerceIn(0, 3).toString())
         put("EmuCore/GS", "VsyncQueueSize", "int", vsyncQueueSize.coerceIn(0, 3).toString())
         put("EmuCore/GS", "autoflush_sw", "bool", autoFlushSw.toString())
@@ -1510,6 +1527,7 @@ data class Settings(
         put("spinCpuReadbacks", spinCpuReadbacks)
         put("integerScaling", integerScaling)
         put("cropLeft", cropLeft)
+        put("displayZoom", displayZoom)
         put("cropTop", cropTop)
         put("cropRight", cropRight)
         put("cropBottom", cropBottom)
@@ -1760,6 +1778,7 @@ data class Settings(
                 spinCpuReadbacks = json.optBoolean("spinCpuReadbacks", def.spinCpuReadbacks),
                 integerScaling = json.optBoolean("integerScaling", def.integerScaling),
                 cropLeft = json.optInt("cropLeft", def.cropLeft),
+                displayZoom = json.optInt("displayZoom", def.displayZoom),
                 cropTop = json.optInt("cropTop", def.cropTop),
                 cropRight = json.optInt("cropRight", def.cropRight),
                 cropBottom = json.optInt("cropBottom", def.cropBottom),
@@ -1988,6 +2007,7 @@ data class Settings(
             if (current.spinCpuReadbacks     != base.spinCpuReadbacks)     j.put("spinCpuReadbacks", current.spinCpuReadbacks)
             if (current.integerScaling       != base.integerScaling)       j.put("integerScaling", current.integerScaling)
             if (current.cropLeft             != base.cropLeft)             j.put("cropLeft", current.cropLeft)
+            if (current.displayZoom          != base.displayZoom)          j.put("displayZoom", current.displayZoom)
             if (current.cropTop              != base.cropTop)              j.put("cropTop", current.cropTop)
             if (current.cropRight            != base.cropRight)            j.put("cropRight", current.cropRight)
             if (current.cropBottom           != base.cropBottom)           j.put("cropBottom", current.cropBottom)
@@ -2206,6 +2226,7 @@ data class Settings(
             spinCpuReadbacks = if (overrides.has("spinCpuReadbacks")) overrides.getBoolean("spinCpuReadbacks") else base.spinCpuReadbacks,
             integerScaling = if (overrides.has("integerScaling")) overrides.getBoolean("integerScaling") else base.integerScaling,
             cropLeft = if (overrides.has("cropLeft")) overrides.getInt("cropLeft") else base.cropLeft,
+            displayZoom = if (overrides.has("displayZoom")) overrides.getInt("displayZoom") else base.displayZoom,
             cropTop = if (overrides.has("cropTop")) overrides.getInt("cropTop") else base.cropTop,
             cropRight = if (overrides.has("cropRight")) overrides.getInt("cropRight") else base.cropRight,
             cropBottom = if (overrides.has("cropBottom")) overrides.getInt("cropBottom") else base.cropBottom,

@@ -619,6 +619,10 @@ open class MainActivityRuntime : ComponentActivity() {
                 else -> NativeApp.renderAuto()
             }
             resolved.applyTo()
+            // applyTo() pushed the per-stat OSD flags (= "Custom"); re-assert the stored OSD
+            // mode on top so a Full / Min / Off choice from the menu or hotkey survives a
+            // relaunch instead of snapping back to the per-stat selection every boot.
+            InGameOverlay.applyStoredOsdMode()
             // Per-game screen orientation: apply THIS title's rotation now that currentGame is
             // set. requestedOrientation is an Activity property → hop to the UI thread (we're on
             // the VM launch thread here). Reverts to global on exit-to-library (see stop()).
@@ -2687,7 +2691,7 @@ open class MainActivityRuntime : ComponentActivity() {
                     return true
                 }
                 ControllerMappings.SysHotkey.TOGGLE_OSD -> {
-                    if (down && event.repeatCount == 0) InGameOverlay.toggleOsd()
+                    if (down && event.repeatCount == 0) hotkeyToast(InGameOverlay.cycleOsd())
                     return true
                 }
                 ControllerMappings.SysHotkey.GYRO_TOGGLE -> {
@@ -3874,7 +3878,7 @@ open class MainActivityRuntime : ComponentActivity() {
             ControllerMappings.SysHotkey.SAVE_AND_EXIT -> closeGame(saveAutosave = true)
             ControllerMappings.SysHotkey.RESET_GAME -> restart()
             ControllerMappings.SysHotkey.SLOW_DOWN -> toggleSlowDown()
-            ControllerMappings.SysHotkey.TOGGLE_OSD -> InGameOverlay.toggleOsd()
+            ControllerMappings.SysHotkey.TOGGLE_OSD -> hotkeyToast(InGameOverlay.cycleOsd())
             ControllerMappings.SysHotkey.TOGGLE_KEYBOARD -> toggleSoftKeyboard()
             // Hold-type hotkeys have no one-shot stick-edge meaning.
             ControllerMappings.SysHotkey.FAST_FORWARD,

@@ -183,16 +183,6 @@ fun SkinsTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                 )
             }
             val list = remote.value.orEmpty()
-            if (list.isNotEmpty()) {
-                // Packs are authored on iPad and carry an iOS layout Android can't read,
-                // so a downloaded skin keeps the CURRENT button positions and only swaps
-                // the art. Said up front because otherwise it reads as a broken download.
-                Text(
-                    str("skins.browse.layoutNote"),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp,
-                    modifier = Modifier.padding(bottom = 6.dp),
-                )
-            }
             for (r in list) {
                 SettingsDivider()
                 RemoteSkinRow(

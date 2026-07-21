@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.edit
 import com.armsx2.runtime.MainActivityRuntime
+import java.io.File
 
 /**
  * Ambient background music for the game library — the "console dashboard" feel.
@@ -28,10 +29,29 @@ object LibraryMusic {
     private const val TAG = "LibraryMusic"
     private const val EnabledKey = "ui.libraryMusic"
 
-    /** Background music should sit under the UI, not command it. */
-    private const val VOLUME = 0.55f
+    /** Default of 15% — the shipped 55% was reported as far too loud. Background
+     *  music should sit well under the UI, not command it. User-adjustable via the
+     *  slider in App settings; 0 = silent (the toggle is the real off switch). */
+    private const val VolumeKey = "ui.libraryMusic.volume"
+    private const val CustomNameKey = "ui.libraryMusic.customName"
+    private const val DefaultVolumePercent = 15
 
     val enabled = mutableStateOf(true)
+
+    /** 0..100, backs the App-settings slider. Applied live to the running player. */
+    val volumePercent = mutableStateOf(DefaultVolumePercent)
+
+    private fun gain(): Float = (volumePercent.value.coerceIn(0, 100)) / 100f
+
+    /** Display name of the user's own track, or null when playing the bundled default.
+     *  The app never ships or redistributes user tracks — this only plays a file the user
+     *  chose from their own device, the same as importing a texture pack or a skin. */
+    val customName = mutableStateOf<String?>(null)
+
+    /** The imported track is copied here (extension-less; MediaPlayer sniffs the format), so
+     *  playback doesn't depend on holding a SAF permission or the source file staying put. */
+    private fun customFile(context: Context): File =
+        File(File(context.filesDir, "librarymusic").apply { mkdirs() }, "track")
 
     private var player: MediaPlayer? = null
     private var focusRequest: AudioFocusRequest? = null
@@ -41,6 +61,54 @@ object LibraryMusic {
 
     fun load() {
         enabled.value = MainActivityRuntime.prefs.getBoolean(EnabledKey, true)
+        volumePercent.value = MainActivityRuntime.prefs.getInt(VolumeKey, DefaultVolumePercent)
+        customName.value = MainActivityRuntime.prefs.getString(CustomNameKey, null)
+    }
+
+    /** Import a user-picked audio file as the library track, replacing the default. Copies it
+     *  into app-private storage and restarts playback so the change is heard immediately.
+     *  Returns true on success. */
+    fun setCustomTrack(context: Context, uri: android.net.Uri, displayName: String): Boolean {
+        val ok = runCatching {
+            context.contentResolver.openInputStream(uri)?.use { ins ->
+                customFile(context).outputStream().use { ins.copyTo(it) }
+            } != null
+        }.getOrDefault(false)
+        if (!ok || customFile(context).length() == 0L) {
+            customFile(context).delete()
+            return false
+        }
+        customName.value = displayName
+        MainActivityRuntime.prefs.edit { putString(CustomNameKey, displayName) }
+        restart(context)
+        return true
+    }
+
+    /** Drop the user track and go back to the bundled default. */
+    fun clearCustomTrack(context: Context) {
+        customFile(context).delete()
+        customName.value = null
+        MainActivityRuntime.prefs.edit { remove(CustomNameKey) }
+        restart(context)
+    }
+
+    /** Stop and re-start so a track/volume change is heard now (only replays in the library).
+     *  Forces past the "is another app playing?" guard: we just stopped our OWN stream, which
+     *  AudioManager can still briefly report as active, and this is a user-initiated change
+     *  (picking or resetting the track) so we always want it heard — without force, Reset went
+     *  silent until a game boot/exit cleared the transient (KamFretoZ). */
+    private fun restart(context: Context) {
+        stop(context)
+        start(context, force = true)
+    }
+
+    /** Set the music volume (0..100) and apply it live to a playing track. */
+    fun setVolume(percent: Int) {
+        val p = percent.coerceIn(0, 100)
+        volumePercent.value = p
+        MainActivityRuntime.prefs.edit { putInt(VolumeKey, p) }
+        val g = p / 100f
+        runCatching { player?.setVolume(g, g) }
     }
 
     /** True while the track is actually audible — drives the cold-start retry below. */
@@ -64,12 +132,14 @@ object LibraryMusic {
      * stream on top of theirs. Deferring to whoever is already playing costs us nothing
      * — the user can still toggle it on explicitly.
      */
-    fun start(context: Context) {
+    fun start(context: Context, force: Boolean = false) {
         if (!enabled.value) return
         if (MainActivityRuntime.eState.value != EmuState.STOPPED) return
         if (player != null) { resume(); return }
         val am = audioManager(context)
-        if (am?.isMusicActive == true) {
+        // Skip the "someone else is playing" deference when forced — a user-initiated track
+        // change is an explicit request to hear our music now (see restart()).
+        if (!force && am?.isMusicActive == true) {
             Log.i(TAG, "another app is playing audio; not starting library music")
             return
         }
@@ -88,12 +158,17 @@ object LibraryMusic {
                         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                         .build()
                 )
-                setDataSource(
-                    context,
-                    android.net.Uri.parse("android.resource://${context.packageName}/${R.raw.library_music}"),
-                )
+                val custom = customFile(context)
+                if (customName.value != null && custom.length() > 0L) {
+                    setDataSource(custom.absolutePath)
+                } else {
+                    setDataSource(
+                        context,
+                        android.net.Uri.parse("android.resource://${context.packageName}/${R.raw.library_music}"),
+                    )
+                }
                 isLooping = true
-                setVolume(VOLUME, VOLUME)
+                setVolume(gain(), gain())
                 prepare()
                 start()
                 player = this

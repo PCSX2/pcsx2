@@ -816,7 +816,7 @@ object ControllerMappings {
         TEXTURE_DUMP("pad.texdump.keycode", "Toggle Texture Dumping"),
         // Toggles the whole on-screen performance overlay (FPS/CPU/GPU/etc.) via
         // the same path as the on-screen OSD button, so the two stay in sync.
-        TOGGLE_OSD("pad.toggleosd.keycode", "Toggle Perf Stats (OSD)"),
+        TOGGLE_OSD("pad.toggleosd.keycode", "Cycle Perf Stats (OSD)"),
         FAST_FORWARD("pad.fastforward.keycode", "Fast Forward (hold)"),
         FAST_FORWARD_TOGGLE("pad.fastforwardtoggle.keycode", "Fast Forward (toggle)"),
         // Slow motion toggle (50% speed, native LimiterModeType::Slomo). DISABLED

@@ -67,7 +67,7 @@ internal val SETTINGS_CATEGORY_FIELDS: Map<SettingsCategory, List<String>> = map
     SettingsCategory.Advanced to listOf(
         "alignSprite", "antiBlur", "autoFlush", "autoFlushSw", "bilinearUpscale", "cpuClutRender",
         "cpuFramebufferConversion", "cpuSpriteRenderBw", "cpuSpriteRenderLevel", "cropBottom",
-        "cropLeft", "cropRight", "cropTop", "disableDepthEmulation", "disableFramebufferFetch",
+        "cropLeft", "cropRight", "cropTop", "displayZoom", "disableDepthEmulation", "disableFramebufferFetch",
         "disableInterlaceOffset", "disablePartialInvalidation", "disableRenderFixes",
         "disableSafeFeatures", "disableShaderCache", "disableVertexShaderExpand", "dithering",
         "drawBuffering", "estimateTextureRegion", "forceEvenSpritePosition",

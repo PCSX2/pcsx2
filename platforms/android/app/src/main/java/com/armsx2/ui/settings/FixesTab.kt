@@ -121,11 +121,22 @@ fun FixesTab(state: MutableState<Settings>) {
             description = str("fixes.integerScaling.desc"),
         ) { apply(s.copy(integerScaling = it)) }
         SettingsDivider()
+        // Display zoom (#383) — one AetherSX2-style slider that zooms into the picture, trimming
+        // every edge by the same amount so it fills more of the screen without distorting. At
+        // 100% it's off and the manual per-edge crops below apply instead; above 100% it takes
+        // over. Nicer than juggling the four crops for the common "just zoom in a bit" case.
+        IntSliderRow(
+            str("fixes.zoom.label"), s.displayZoom, 100, 150,
+            description = str("fixes.zoom.desc"),
+            valueFormatter = { "$it%" },
+            onReset = { apply(s.copy(displayZoom = 100)) },
+        ) { apply(s.copy(displayZoom = it)) }
+        SettingsDivider()
         // Overscan crop (issue #293). Trims native PS2 pixels off each edge before aspect
         // and integer scaling. Plenty of games leave garbage or a black band in the region
         // a CRT's bezel would have covered; the core has always honoured GSConfig.Crop
         // (GSRenderer.cpp) but Android never surfaced it. Native pixels, so the value means
-        // the same thing at any upscale multiplier.
+        // the same thing at any upscale multiplier. Ignored while Display Zoom is above 100%.
         Text(
             str("fixes.crop.header"),
             color = MaterialTheme.colorScheme.onSurfaceVariant,

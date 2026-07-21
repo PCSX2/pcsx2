@@ -15,10 +15,46 @@ object InGameOverlay {
     val hardcoreOn = mutableStateOf(false)
     val frameLimitOn = mutableStateOf(true)
 
-    /** Master OSD visibility for the on/off hotkey. A transient, in-game-only hide that does NOT
-     *  touch the user's per-stat Settings selection — so toggling it back on restores exactly the
-     *  stats they had chosen (not "everything"). Resets to visible each game boot. */
-    val osdHidden = mutableStateOf(false)
+    /** OSD hotkey mode. The hotkey now CYCLES rather than plain on/off (Cotcho): Full (every
+     *  stat) → Min (fps + CPU/EE/VU line) → Custom (the user's saved per-stat selection) → Off →
+     *  Full. Transient and in-game only; never mutates the saved Settings selection, so Custom
+     *  always reflects exactly what the user chose. Starts at Custom so a fresh boot shows their
+     *  stats and the first press advances to Off, matching the old "first press hides". */
+    enum class OsdMode { Full, Min, Custom, Off }
+    val osdMode = mutableStateOf(OsdMode.Custom)
+    private val osdCycle = listOf(OsdMode.Full, OsdMode.Min, OsdMode.Custom, OsdMode.Off)
+    private const val OsdModeKey = "ui.osdMode"
+    private var osdLoaded = false
+
+    private fun ensureOsdLoaded() {
+        if (osdLoaded) return
+        osdLoaded = true
+        val name = runCatching { MainActivityRuntime.prefs.getString(OsdModeKey, null) }.getOrNull()
+        osdMode.value = OsdMode.entries.firstOrNull { it.name == name } ?: OsdMode.Custom
+    }
+
+    /** Set the OSD mode (from the in-game menu selector or the hotkey), apply it live, and
+     *  persist it so it survives a relaunch — matching the old per-stat toggles' persistence. */
+    fun setOsdMode(mode: OsdMode) {
+        ensureOsdLoaded()
+        applyOsdMode(mode)
+        runCatching { MainActivityRuntime.prefs.edit().putString(OsdModeKey, mode.name).apply() }
+    }
+
+    /** Re-assert the stored OSD mode after a game's settings apply on boot, so a non-Custom
+     *  choice (Full / Min / Off) isn't reset to the per-stat selection every launch. */
+    fun applyStoredOsdMode() {
+        ensureOsdLoaded()
+        applyOsdMode(osdMode.value)
+    }
+
+    /** Short label for [mode], shown by the hotkey toast and the menu selector. */
+    fun osdModeLabel(mode: OsdMode): String = when (mode) {
+        OsdMode.Full -> "Full"
+        OsdMode.Min -> "Minimal"
+        OsdMode.Custom -> "Custom"
+        OsdMode.Off -> "Off"
+    }
 
     /** Per-tab scroll offset (px) of the in-game pause menu, retained across menu open/close so
      *  reopening a tab — especially the long Fixes list — returns to where you were instead of
@@ -81,23 +117,43 @@ object InGameOverlay {
         if (WindowImpl.overlayVisible.value) closeAndResume() else open()
     }
 
-    fun toggleOsd() {
-        // Toggle OSD *visibility* only. Previously this overwrote every per-stat flag in Settings
-        // with the master on/off value, so turning the OSD off then on lost the user's chosen
-        // subset (it came back as "all stats on"). Now we flip a transient master flag and apply
-        // live-only: on hide, push all-off; on show, push the user's saved selection back — the
-        // saved Settings/store are never mutated, so the selection is preserved.
-        val hide = !osdHidden.value
-        osdHidden.value = hide
-        if (hide) {
-            NativeApp.osdApplyFlags(false, false, false, false, false, false, false, false, false, false, false, false)
-        } else {
-            val s = settingsState.value
-            NativeApp.osdApplyFlags(
-                s.osdShowFps, s.osdShowVps, s.osdShowSpeed, s.osdShowCpu, s.osdShowGpu,
-                s.osdShowResolution, s.osdShowGsStats, s.osdShowFrameTimes, s.osdShowHardwareInfo,
-                s.osdShowVersion, s.osdShowSettings, s.osdShowInputs,
-            )
+    /** Advance the OSD cycle one step, apply it live, and return a short label for the
+     *  on-screen note. Applies live-only — the saved per-stat Settings are never mutated. */
+    fun cycleOsd(): String {
+        ensureOsdLoaded()
+        val next = osdCycle[(osdCycle.indexOf(osdMode.value) + 1) % osdCycle.size]
+        setOsdMode(next)
+        return "OSD: " + osdModeLabel(next)
+    }
+
+    private fun applyOsdMode(mode: OsdMode) {
+        osdMode.value = mode
+        // Every mode also drives the GPU pipeline-stats line (VSI/PSI) explicitly: it has its
+        // own setter outside osdApplyFlags' 12 flags, so leaving it out is what let it survive
+        // the old "off" toggle and stay on screen (Cotcho).
+        when (mode) {
+            OsdMode.Full -> {
+                NativeApp.osdApplyFlags(true, true, true, true, true, true, true, true, true, true, true, true)
+                NativeApp.osdShowGpuStats(true)
+            }
+            OsdMode.Min -> {
+                // fps + the CPU line (EE/VU/GS breakdown) — the at-a-glance set Cotcho described.
+                NativeApp.osdApplyFlags(true, false, false, true, false, false, false, false, false, false, false, false)
+                NativeApp.osdShowGpuStats(false)
+            }
+            OsdMode.Custom -> {
+                val s = settingsState.value
+                NativeApp.osdApplyFlags(
+                    s.osdShowFps, s.osdShowVps, s.osdShowSpeed, s.osdShowCpu, s.osdShowGpu,
+                    s.osdShowResolution, s.osdShowGsStats, s.osdShowFrameTimes, s.osdShowHardwareInfo,
+                    s.osdShowVersion, s.osdShowSettings, s.osdShowInputs,
+                )
+                NativeApp.osdShowGpuStats(s.osdShowGpuStats)
+            }
+            OsdMode.Off -> {
+                NativeApp.osdApplyFlags(false, false, false, false, false, false, false, false, false, false, false, false)
+                NativeApp.osdShowGpuStats(false)
+            }
         }
     }
 

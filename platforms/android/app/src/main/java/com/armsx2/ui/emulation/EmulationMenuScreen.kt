@@ -483,17 +483,19 @@ private fun SessionPane(state: EmulationMenuUiState, viewModel: EmulationMenuVie
             TouchControls.setPauseTapToReveal(it)
         }
         Spacer(Modifier.height(6.dp))
-        // Full OSD = any verbose stat line (FPS is shared with Simple, so it's excluded
-        // from the "full is on" test); Simple OSD = FPS only. Reading the same osdShow*
-        // fields two ways keeps the two toggles mutually exclusive.
-        val osdFullOn = with(state.settings) {
-            osdShowVps || osdShowSpeed || osdShowCpu || osdShowGpu || osdShowResolution ||
-                osdShowGsStats || osdShowFrameTimes || osdShowHardwareInfo || osdShowGpuStats || osdShowVersion
+        // OSD mode selector — one control (Full / Minimal / Custom / Off) in place of the old
+        // master + simple toggles, cycled here and by the "Cycle Perf Stats (OSD)" hotkey. Custom
+        // = the detailed per-stat selection from All Settings > On-Screen.
+        val osdModes = com.armsx2.ui.InGameOverlay.OsdMode.entries
+        val osdModeIndex = osdModes.indexOf(com.armsx2.ui.InGameOverlay.osdMode.value).coerceAtLeast(0)
+        MenuCycleRow(
+            title = str("overlay.master.label"),
+            valueLabel = com.armsx2.ui.InGameOverlay.osdModeLabel(osdModes[osdModeIndex]),
+        ) { step ->
+            val size = osdModes.size
+            val next = ((osdModeIndex + step) % size + size) % size
+            com.armsx2.ui.InGameOverlay.setOsdMode(osdModes[next])
         }
-        val osdSimpleOn = state.settings.osdShowFps && !osdFullOn
-        MenuSwitchRow(str("overlay.master.label"), osdFullOn) { viewModel.setOsdMaster(it) }
-        Spacer(Modifier.height(6.dp))
-        MenuSwitchRow(str("overlay.simple.label"), osdSimpleOn) { viewModel.setOsdSimple(it) }
         Spacer(Modifier.height(6.dp))
         MenuSwitchRow(str("perf.frameLimit.label"), state.settings.frameLimitEnable) { value ->
             viewModel.updateSettings { it.copy(frameLimitEnable = value) }
