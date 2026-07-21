@@ -893,8 +893,8 @@ void FullscreenUI::DoStartDisc()
 	std::vector<std::string> devices(GetOpticalDriveList());
 	if (devices.empty())
 	{
-		ShowToast(std::string(), FSUI_STR("Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient "
-										  "permissions to access it."));
+		ShowToast(ICON_FA_COMPACT_DISC, FSUI_STR("Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient "
+												 "permissions to access it."));
 		return;
 	}
 
@@ -978,7 +978,7 @@ void FullscreenUI::DoChangeDiscFromFile()
 		{
 			if (!VMManager::IsDiscFileName(path))
 			{
-				ShowToast({}, fmt::format(FSUI_FSTR("{} is not a valid disc image."), Path::GetFileName(path)));
+				ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, fmt::format(FSUI_FSTR("{} is not a valid disc image."), Path::GetFileName(path)));
 			}
 			else
 			{
@@ -1949,7 +1949,7 @@ bool FullscreenUI::OpenLoadStateSelectorForGame(const std::string& game_path)
 		}
 	}
 
-	ShowToast({}, FSUI_STR("No save states found."), 5.0f);
+	ShowToast(ICON_FA_FLOPPY_DISK, FSUI_STR("No save states found."), 5.0f);
 	return false;
 }
 
@@ -1964,7 +1964,7 @@ bool FullscreenUI::OpenSaveStateSelector(bool is_loading)
 		return true;
 	}
 
-	ShowToast({}, FSUI_STR("No save states found."), 5.0f);
+	ShowToast(ICON_FA_FLOPPY_DISK, FSUI_STR("No save states found."), 5.0f);
 	return false;
 }
 
@@ -2120,12 +2120,12 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 					{
 						if (!FileSystem::FileExists(entry.path.c_str()))
 						{
-							ShowToast({}, fmt::format(FSUI_FSTR("{} does not exist."), ImGuiFullscreen::RemoveHash(entry.title)));
+							ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, fmt::format(FSUI_FSTR("{} does not exist."), ImGuiFullscreen::RemoveHash(entry.title)));
 							is_open = true;
 						}
 						else if (FileSystem::DeleteFilePath(entry.path.c_str()))
 						{
-							ShowToast({}, fmt::format(FSUI_FSTR("{} deleted."), ImGuiFullscreen::RemoveHash(entry.title)));
+							ShowToast(ICON_FA_TRASH, fmt::format(FSUI_FSTR("{} deleted."), ImGuiFullscreen::RemoveHash(entry.title)));
 							if (s_save_state_selector_loading)
 								s_save_state_selector_slots.erase(s_save_state_selector_slots.begin() + i);
 							else
@@ -2145,7 +2145,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 						}
 						else
 						{
-							ShowToast({}, fmt::format(FSUI_FSTR("Failed to delete {}."), ImGuiFullscreen::RemoveHash(entry.title)));
+							ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, fmt::format(FSUI_FSTR("Failed to delete {}."), ImGuiFullscreen::RemoveHash(entry.title)));
 							is_open = false;
 						}
 					}
@@ -2372,7 +2372,7 @@ void FullscreenUI::DrawResumeStateSelector()
 			}
 			else
 			{
-				ShowToast(std::string(), FSUI_STR("Failed to delete save state."));
+				ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, FSUI_STR("Failed to delete save state."));
 			}
 		}
 
@@ -3388,9 +3388,9 @@ void FullscreenUI::ExitFullscreenAndOpenURL(const std::string_view url)
 void FullscreenUI::CopyTextToClipboard(std::string title, const std::string_view text)
 {
 	if (Host::CopyTextToClipboard(text))
-		ShowToast(std::string(), std::move(title));
+		ShowToast(ICON_FA_CLIPBOARD, std::move(title));
 	else
-		ShowToast(std::string(), FSUI_STR("Failed to copy text to clipboard."));
+		ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, FSUI_STR("Failed to copy text to clipboard."));
 }
 
 void FullscreenUI::OpenAboutWindow()
@@ -3863,7 +3863,7 @@ void FullscreenUI::SwitchToAchievementsWindow()
 
 	if (!Achievements::HasAchievements())
 	{
-		ShowToast(std::string(), FSUI_STR("This game has no achievements."));
+		ShowToast(ICON_FA_TROPHY, FSUI_STR("This game has no achievements."));
 		return;
 	}
 
@@ -3907,7 +3907,7 @@ void FullscreenUI::SwitchToLeaderboardsWindow()
 
 	if (!Achievements::HasLeaderboards())
 	{
-		ShowToast(std::string(), FSUI_STR("This game has no leaderboards."));
+		ShowToast(ICON_FA_TROPHY, FSUI_STR("This game has no leaderboards."));
 		return;
 	}
 
