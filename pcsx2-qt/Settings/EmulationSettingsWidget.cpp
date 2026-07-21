@@ -262,20 +262,14 @@ void EmulationSettingsWidget::onOptimalFramePacingChanged()
 	const QSignalBlocker sb(m_ui.maxFrameLatency);
 
 	std::optional<int> value;
-	bool optimal = false;
 	if (m_ui.optimalFramePacing->checkState() != Qt::PartiallyChecked)
-	{
-		optimal = m_ui.optimalFramePacing->isChecked();
-		value = optimal ? 0 : DEFAULT_FRAME_LATENCY;
-	}
-	else
-	{
-		value = dialog()->getEffectiveIntValue("EmuCore/GS", "VsyncQueueSize", DEFAULT_FRAME_LATENCY);
-		optimal = (value == 0);
-	}
+		value = m_ui.optimalFramePacing->isChecked() ? 0 : DEFAULT_FRAME_LATENCY;
+
+	const int latency = value.value_or(Host::GetBaseIntSettingValue("EmuCore/GS", "VsyncQueueSize", DEFAULT_FRAME_LATENCY));
+	const bool optimal = (latency == 0);
 
 	m_ui.maxFrameLatency->setMinimum(optimal ? 0 : 1);
-	m_ui.maxFrameLatency->setValue(optimal ? 0 : DEFAULT_FRAME_LATENCY);
+	m_ui.maxFrameLatency->setValue(latency);
 	m_ui.maxFrameLatency->setEnabled(!dialog()->isPerGameSettings() && !m_ui.optimalFramePacing->isChecked());
 
 	dialog()->setIntSettingValue("EmuCore/GS", "VsyncQueueSize", value);
@@ -300,7 +294,7 @@ void EmulationSettingsWidget::updateOptimalFramePacing()
 	}
 
 	m_ui.maxFrameLatency->setMinimum(optimal ? 0 : 1);
-	m_ui.maxFrameLatency->setValue(optimal ? 0 : value);
+	m_ui.maxFrameLatency->setValue(value);
 }
 
 void EmulationSettingsWidget::updateUseVSyncForTimingEnabled()
