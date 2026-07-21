@@ -1,0 +1,92 @@
+# DESCRIPTION: GitLab CI/CD for libRetro (NOT FOR GitLab-proper)
+#
+# Builds yaps2_libretro.so on the libretro buildbot (git.libretro.com mirror)
+# for Linux x86_64 and aarch64. Inert on GitHub — the GitHub Actions
+# workflows under .github/workflows/ are the project's own CI.
+#
+# The buildbot containers ship no Clang and none of the pinned third-party
+# libraries, so before_script installs clang-17 from apt.llvm.org and reuses
+# .github/workflows/scripts/linux/build-dependencies-runner.sh to build the
+# same dependency set the GitHub nightly uses (shaderc, SDL3, zstd, lz4, ...).
+
+##############################################################################
+################################# BOILERPLATE ################################
+##############################################################################
+
+# Core definitions
+.core-defs:
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+    CORENAME: yaps2
+    # The core is emitted in the pcsx2-libretro/ subdirectory of the build
+    # tree; the ci-templates pick it up from $BUILD_DIR/$EXTRA_PATH/.
+    EXTRA_PATH: pcsx2-libretro
+    CORE_ARGS: >-
+      -DCMAKE_C_COMPILER=clang-17
+      -DCMAKE_CXX_COMPILER=clang++-17
+      -DCMAKE_EXE_LINKER_FLAGS_INIT=-fuse-ld=lld-17
+      -DCMAKE_MODULE_LINKER_FLAGS_INIT=-fuse-ld=lld-17
+      -DCMAKE_SHARED_LINKER_FLAGS_INIT=-fuse-ld=lld-17
+      -DCMAKE_PREFIX_PATH=$CI_PROJECT_DIR/.deps
+      -DENABLE_LIBRETRO=ON
+      -DENABLE_QT_UI=OFF
+      -DENABLE_SDL_FRONTEND=OFF
+      -DENABLE_GSRUNNER=OFF
+      -DENABLE_TESTS=OFF
+      -DENABLE_RECOMPILER_TEST_HOOKS=OFF
+      -DENABLE_SETCAP=OFF
+      -DUSE_BACKTRACE=OFF
+      -DX11_API=OFF
+      -DWAYLAND_API=OFF
+      -DDISABLE_ADVANCE_SIMD=TRUE
+      -DOVERRIDE_HOST_PAGE_SIZE=4096
+      -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+
+.core-defs-linux:
+  extends: .core-defs
+  before_script:
+    # The ci-template's script builds with `-j $NUMPROC`; its before_script
+    # (which normally sets it) is replaced by this one.
+    - export NUMPROC=$(($(nproc) / 2)); [ "$NUMPROC" -lt 1 ] && export NUMPROC=1
+    - apt-get update
+    - >-
+      DEBIAN_FRONTEND=noninteractive apt-get -y install
+      build-essential cmake curl git ninja-build nasm pkg-config wget
+      gnupg lsb-release software-properties-common
+      zlib1g-dev libaio-dev libasound2-dev libcurl4-openssl-dev
+      libdbus-1-dev libdrm-dev libegl-dev libevdev-dev libgbm-dev
+      libgudev-1.0-dev libopengl-dev libpcap-dev libssl-dev libudev-dev
+    - wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
+    - chmod +x /tmp/llvm.sh
+    - /tmp/llvm.sh 17
+    - DEBIAN_FRONTEND=noninteractive apt-get -y install lld-17
+    - ./.github/workflows/scripts/linux/build-dependencies-runner.sh "$CI_PROJECT_DIR/.deps"
+
+# Inclusion templates, required for the build to work
+include:
+  # Linux
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/linux-cmake.yml'
+
+# Stages for building
+stages:
+  - build-prepare
+  - build-shared
+
+##############################################################################
+#################################### STAGES ##################################
+##############################################################################
+#
+################################### DESKTOPS #################################
+# Linux 64-bit
+libretro-build-linux-x64:
+  extends:
+    - .libretro-linux-cmake-x86_64
+    - .core-defs-linux
+  image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-amd64-ubuntu:backports
+
+# Linux 64-bit (ARM)
+libretro-build-linux-aarch64:
+  extends:
+    - .libretro-linux-cmake-aarch64
+    - .core-defs-linux

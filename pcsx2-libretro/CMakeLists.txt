@@ -40,3 +40,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	set_target_properties(pcsx2-libretro PROPERTIES
 		LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/link.T")
 endif()
+
+# The libretro buildbot's ci-templates build the target named
+# <CORENAME>_libretro (see .gitlab-ci.yml).
+add_custom_target(yaps2_libretro)
+add_dependencies(yaps2_libretro pcsx2-libretro)
