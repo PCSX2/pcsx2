@@ -91,7 +91,10 @@ FPU_BASE, FPU_END = 1168, 1600
 
 CATS = [
     "ldr_gpr_pinned(reload)", "ldr_gpr_pinned(MISSED)", "ldr_gpr_unpinned",
-    "str_gpr_pinned(wthru)", "str_gpr_unpinned", "ldrstr_hilo",
+    "str_gpr_pinned(wthru)", "str_gpr_unpinned",
+    "neon_gpr_ld(q@GPR)", "neon_gpr_st(q@GPR)",       # 128-bit MMI residency churn
+    "cop2_vf_ldst(@VU0)", "cop2_vu0_other",           # x24-based VU0 macro traffic
+    "ldrstr_hilo",
     "state_branch", "state_pc", "state_cycle", "state_fpu", "state_other",
     "mov_from_pin", "mov_to_pin", "pin_maint(sxtw/bfi/lsr)", "pin_as_operand",
     "bl_call", "other",
@@ -136,6 +139,14 @@ def classify_block(code, pin_gpr, pins):
     for k in range(n):
         (i,) = struct.unpack_from("<I", code, k * 4)
         rd, rn, rm = i & 31, (i >> 5) & 31, (i >> 16) & 31
+        if rn == 24:
+            # x24 = &VU0 pinned base in EE blocks — COP2 macro-mode VF/VI traffic.
+            m = MEM_TOPS.get(i & 0xFFC00000)
+            if m:
+                ld, w = m
+                off = ((i >> 10) & 0xFFF) * w
+                c["cop2_vf_ldst(@VU0)" if off < 512 else "cop2_vu0_other"] += 1
+                continue
         if rn == RSTATE:
             m = MEM_TOPS.get(i & 0xFFC00000)
             if m:
@@ -144,7 +155,14 @@ def classify_block(code, pin_gpr, pins):
                 if off < 512:
                     g = off // 16
                     lane0 = (off % 16) == 0
-                    if ld:
+                    if w == 16:
+                        # 128-bit GPR home traffic (MMI NEON residency churn);
+                        # kept out of the scalar pin categories — rd is a
+                        # v-reg number there, pin comparisons are meaningless.
+                        if ld:
+                            per_gpr_ld[g] += 1
+                        c["neon_gpr_ld(q@GPR)" if ld else "neon_gpr_st(q@GPR)"] += 1
+                    elif ld:
                         per_gpr_ld[g] += 1
                         if g in pin_gpr and lane0:
                             c["ldr_gpr_pinned(reload)" if rd == pin_gpr[g] else "ldr_gpr_pinned(MISSED)"] += 1
