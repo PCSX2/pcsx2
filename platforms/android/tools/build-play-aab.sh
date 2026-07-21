@@ -15,6 +15,10 @@
 #
 # Usage:  VC=<versionCode> VN=<versionName> tools/build-play-aab.sh [output.aab]
 # Env:    PROF (default ~/Downloads/armsx2.profdata), PKG (default come.nanodata.armsx2)
+#         PGO_MODE (default optimize; none|generate|optimize) — matches the sibling
+#         build-release-apk.sh. This was hardcoded to "optimize", so a caller asking
+#         for a profile-free build got one silently built against the profile anyway,
+#         and only the core .so size gave it away.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # platforms/android
@@ -46,7 +50,7 @@ rm -f "$APK16"
 "$GRADLE" -p "$ROOT_DIR" :app:assemblePlayRelease \
 	-Parmsx2.applicationId="$PKG" \
 	-Parmsx2.hostPageSize=0x4000 -Parmsx2.nativeLibName=emucore_16k \
-	-Parmsx2.pgo=optimize -Parmsx2.pgoProfile="$PROF" \
+	-Parmsx2.pgo="${PGO_MODE:-optimize}" -Parmsx2.pgoProfile="$PROF" \
 	-Parmsx2.versionCode="$VC" -Parmsx2.versionName="$VN"
 [[ -f "$APK16" ]] || { echo "FATAL no 16k play apk" >&2; exit 1; }
 mkdir -p "$JNI"
@@ -60,7 +64,7 @@ rm -f "$AAB"
 "$GRADLE" -p "$ROOT_DIR" :app:bundlePlayRelease \
 	-Parmsx2.applicationId="$PKG" \
 	-Parmsx2.hostPageSize=0x1000 -Parmsx2.nativeLibName=emucore_4k \
-	-Parmsx2.pgo=optimize -Parmsx2.pgoProfile="$PROF" \
+	-Parmsx2.pgo="${PGO_MODE:-optimize}" -Parmsx2.pgoProfile="$PROF" \
 	-Parmsx2.versionCode="$VC" -Parmsx2.versionName="$VN"
 [[ -f "$AAB" ]] || { echo "FATAL bundlePlayRelease produced no AAB" >&2; exit 1; }
 cp -f "$AAB" "$OUTPUT_AAB"
