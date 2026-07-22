@@ -39,6 +39,9 @@ data class AchievementsUiState(
     val userName: String = "",
     val hardcore: Boolean = false,
     val score: Long = 0,
+    val softcoreScore: Long = 0,
+    // RA UserPic URL (empty if not logged in / unknown). Loaded via Coil.
+    val avatarUrl: String = "",
     val items: List<AchievementItem> = emptyList(),
     // RA subsets (base + any bonus subsets). >1 entry → the UI shows subset tabs.
     val subsets: List<Subset> = emptyList(),
@@ -161,6 +164,8 @@ class AchievementsViewModel(application: Application) : AndroidViewModel(applica
             // enable it. isHardcorePersisted() is valid with or without a running game.
             hardcore = runCatching { NativeApp.isHardcorePersisted() }.getOrDefault(root.optBoolean("hardcore")),
             score = root.optLong("score").coerceAtLeast(0),
+            softcoreScore = root.optLong("softcoreScore").coerceAtLeast(0),
+            avatarUrl = root.optString("avatarUrl"),
             items = parseAchievementItems(json),
             subsets = parseSubsets(json),
             notifications = root.optBoolean("notifications", true),

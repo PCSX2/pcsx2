@@ -33,6 +33,11 @@ data class EmulationMenuUiState(
     // Non-null while the hardcore confirm dialog is up; holds the target state.
     val pendingHardcore: Boolean? = null,
     val achievementSummary: String = I18n.get("ra.status.noAchievements.title"),
+    // RA account line for the pause-menu panel (empty / 0 when not logged in).
+    val raUserName: String = "",
+    val raScore: Long = 0,
+    val raSoftcoreScore: Long = 0,
+    val raAvatarUrl: String = "",
     val achievements: List<AchievementItem> = emptyList(),
     // RetroAchievements rich-presence line ("what you're doing right now"); shown in the
     // pause-menu header when a set is loaded. Empty when RA is off / no set.
@@ -50,7 +55,9 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
         // The native JSON emits the unlock list under "items"; count from that rather
         // than the non-existent "unlocked"/"total" keys the old code read (which always
         // fell through to rich presence). Fall back to rich presence when no set loaded.
-        val items = runCatching { parseAchievementItems(NativeApp.getAchievementsJSON().orEmpty()) }.getOrDefault(emptyList())
+        val raJson = runCatching { NativeApp.getAchievementsJSON().orEmpty() }.getOrDefault("")
+        val items = runCatching { parseAchievementItems(raJson) }.getOrDefault(emptyList())
+        val raRoot = runCatching { org.json.JSONObject(raJson) }.getOrNull()
         val richPresence = runCatching { NativeApp.getRichPresence().orEmpty() }.getOrDefault("")
         val summary = if (items.isNotEmpty()) {
             "${items.count { it.unlocked }} / ${items.size}"
@@ -67,6 +74,10 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
             multitapEnabled = ControllerMappings.multitapEnabled(),
             hardcore = runCatching { NativeApp.isHardcoreMode() }.getOrDefault(false),
             achievementSummary = summary,
+            raUserName = raRoot?.optString("userName").orEmpty(),
+            raScore = (raRoot?.optLong("score") ?: 0L).coerceAtLeast(0),
+            raSoftcoreScore = (raRoot?.optLong("softcoreScore") ?: 0L).coerceAtLeast(0),
+            raAvatarUrl = raRoot?.optString("avatarUrl").orEmpty(),
             achievements = items,
             richPresence = richPresence,
         )

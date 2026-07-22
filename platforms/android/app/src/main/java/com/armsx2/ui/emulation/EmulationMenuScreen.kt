@@ -37,6 +37,7 @@ import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -868,6 +869,19 @@ private fun ControlsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVi
         checked = state.rumbleEnabled,
         onCheckedChange = viewModel::setRumble,
     )
+    // Vibration Strength — the same global 0-200% haptic multiplier as All Settings ›
+    // Controls, reachable here in-game. Local state drives the live update since it's a
+    // plain pref (not part of EmulationMenuUiState).
+    var haptic by remember { mutableStateOf(com.armsx2.input.ControllerMappings.hapticIntensity()) }
+    com.armsx2.ui.settings.IntSliderRow(
+        label = str("pad.hapticStrength.label"),
+        value = haptic,
+        min = 0,
+        max = 200,
+        description = str("pad.hapticStrength.description"),
+        valueFormatter = { if (it == 0) "Off" else "${it}%" },
+        onChange = { haptic = it; com.armsx2.input.ControllerMappings.setHapticIntensity(it) },
+    )
     MenuSwitchRow(str("pad.multitap.label"), state.multitapEnabled, onCheckedChange = viewModel::setMultitap)
     MenuSwitchRow(str("network.emulateUsbKeyboard"), state.settings.usbKeyboard) {
         viewModel.updateSettings { current -> current.copy(usbKeyboard = it) }
@@ -960,6 +974,40 @@ private fun AchievementsPane(state: EmulationMenuUiState, viewModel: EmulationMe
     CompactAction(str("ra.viewAchievements"), "★", Modifier.fillMaxWidth(), viewModel::openAchievements)
     Spacer(Modifier.height(4.dp))
     SectionCard("RetroAchievements") {
+        // Signed-in account: avatar + name + both point totals (hardcore / softcore).
+        if (state.raUserName.isNotBlank()) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (state.raAvatarUrl.isNotBlank()) {
+                    AsyncImage(
+                        state.raAvatarUrl,
+                        state.raUserName,
+                        Modifier.size(46.dp).clip(CircleShape),
+                        contentScale = ContentScale.Crop,
+                    )
+                    Spacer(Modifier.width(12.dp))
+                }
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        state.raUserName,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "${state.raScore} HC",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = com.armsx2.ui.theme.Danger,
+                        )
+                        Text(
+                            "  ·  ${state.raSoftcoreScore} SC",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(12.dp))
+        }
         Text(
             state.achievementSummary,
             style = MaterialTheme.typography.bodyMedium,

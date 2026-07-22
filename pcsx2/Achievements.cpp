@@ -500,6 +500,25 @@ std::string Achievements::GetAchievementsAsJSON()
 	out += ",\"softcoreScore\":";
 	out += std::to_string(score_sc_val);
 
+	// User avatar (RA UserPic). Prefer the client's canonical URL when a live user is
+	// present; otherwise reconstruct it from the saved account username so the library
+	// RA menu (logged in, no game loaded yet) can still show the picture.
+	std::string avatar_url;
+	if (user)
+	{
+		char url_buf[512];
+		if (rc_client_user_get_image_url(user, url_buf, std::size(url_buf)) == RC_OK)
+			avatar_url = url_buf;
+	}
+	if (avatar_url.empty())
+	{
+		const std::string uname = Host::GetBaseStringSettingValue("Achievements", "Username", "");
+		if (!uname.empty())
+			avatar_url = "https://media.retroachievements.org/UserPic/" + uname + ".png";
+	}
+	out += ",\"avatarUrl\":";
+	append_json_string(out, avatar_url.c_str());
+
 	// RA presentation options (global [Achievements] settings) so the panel
 	// can show + toggle them without a second JNI poll. Defaults mirror
 	// Pcsx2Config::AchievementsOptions() (all on).

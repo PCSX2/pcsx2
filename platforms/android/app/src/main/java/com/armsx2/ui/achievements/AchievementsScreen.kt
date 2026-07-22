@@ -25,6 +25,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -61,6 +62,7 @@ import com.armsx2.ui.common.SectionTitle
 import com.armsx2.ui.common.SettingSwitchRow
 import com.armsx2.ui.common.StatusChip
 import com.armsx2.ui.settings.controllerFocusable
+import com.armsx2.ui.theme.Danger
 import com.armsx2.ui.theme.Success
 import kotlinx.coroutines.delay
 
@@ -81,7 +83,17 @@ fun AchievementsScreen(onBack: () -> Unit, viewModel: AchievementsViewModel = vi
                 leading = { RoundAction("←", str("action.back"), onBack) },
                 actions = {
                     if (state.loggedIn) {
-                        StatusChip("${state.score} pts", Success)
+                        if (state.avatarUrl.isNotBlank()) {
+                            AsyncImage(
+                                state.avatarUrl,
+                                state.userName,
+                                Modifier.size(34.dp).clip(CircleShape),
+                                contentScale = ContentScale.Crop,
+                            )
+                        }
+                        // Both totals: hardcore points (red) and softcore points (blue).
+                        StatusChip("${state.score} HC", Danger)
+                        StatusChip("${state.softcoreScore} SC")
                         RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
                     }
                 },
