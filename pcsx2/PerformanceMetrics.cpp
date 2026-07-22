@@ -77,6 +77,7 @@ struct GSSWThreadStats
 std::vector<GSSWThreadStats> s_gs_sw_threads;
 
 static float s_average_gpu_time = 0.0f;
+static float s_last_gpu_time = 0.0f;
 static float s_accumulated_gpu_time = 0.0f;
 static float s_gpu_usage = 0.0f;
 static u32 s_presents_since_last_update = 0;
@@ -106,6 +107,7 @@ void PerformanceMetrics::Clear()
 	s_capture_thread_time = 0.0f;
 
 	s_average_gpu_time = 0.0f;
+	s_last_gpu_time = 0.0f;
 	s_gpu_usage = 0.0f;
 
 	s_frame_number = 0;
@@ -275,6 +277,7 @@ void PerformanceMetrics::Update(bool gs_register_write, bool fb_blit, bool is_sk
 
 void PerformanceMetrics::OnGPUPresent(float gpu_time, u64 vs_invocations, u64 ps_invocations)
 {
+	s_last_gpu_time = gpu_time;
 	s_accumulated_gpu_time += gpu_time;
 	s_accumulated_gpu_vs_invocations += vs_invocations;
 	s_accumulated_gpu_ps_invocations += ps_invocations;
@@ -407,6 +410,11 @@ float PerformanceMetrics::GetGPUUsage()
 float PerformanceMetrics::GetGPUAverageTime()
 {
 	return s_average_gpu_time;
+}
+
+float PerformanceMetrics::GetLastGPUTime()
+{
+	return s_last_gpu_time;
 }
 
 double PerformanceMetrics::GetGPUAverageVSInvocations()

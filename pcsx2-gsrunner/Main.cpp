@@ -25,6 +25,7 @@
 #include "common/ProgressCallback.h"
 #include "common/SettingsWrapper.h"
 #include "common/StringUtil.h"
+#include "common/Timer.h"
 
 #include "pcsx2/PrecompiledHeader.h"
 
@@ -107,6 +108,52 @@ static u64 s_total_barriers_rov = 0;
 static u32 s_total_frames = 0;
 static u32 s_total_drawn_frames = 0;
 static std::vector<std::string> s_extended_stats_snapshot;
+
+// Per-frame statistics series. Run-aggregate min/avg/max cannot locate a spike, so
+// every presented frame is recorded and written out as JSON at the end of the run.
+// Counters are exact per-frame deltas; frame_ms is measured here rather than taken
+// from PerformanceMetrics, whose values are window averages.
+struct FrameSample
+{
+	u32 frame;
+	bool idle;
+	float frame_ms;
+	float gpu_ms;
+	u64 prims;
+	u64 draws; // PS2-level (GSPerfMon::Draw)
+	u64 draw_calls;
+	u64 render_passes;
+	u64 barriers;
+	u64 copies;
+	u64 uploads;
+	u64 readbacks;
+	u64 copies_rov;
+	u64 draw_calls_rov;
+	u64 barriers_rov;
+	u64 tc_source_hit;
+	u64 tc_source_miss;
+	u64 tc_target_hit;
+	u64 tc_target_miss;
+	u64 hash_cache_hit;
+	u64 hash_cache_miss;
+};
+static std::string s_stats_json_path;
+static std::vector<FrameSample> s_frame_samples;
+static u64 s_frame_timer_last = 0;
+static double s_last_prims = 0;
+static double s_last_tc_source_hit = 0;
+static double s_last_tc_source_miss = 0;
+static double s_last_tc_target_hit = 0;
+static double s_last_tc_target_miss = 0;
+static double s_last_hash_cache_hit = 0;
+static double s_last_hash_cache_miss = 0;
+static u64 s_total_prims = 0;
+static u64 s_total_tc_source_hit = 0;
+static u64 s_total_tc_source_miss = 0;
+static u64 s_total_tc_target_hit = 0;
+static u64 s_total_tc_target_miss = 0;
+static u64 s_total_hash_cache_hit = 0;
+static u64 s_total_hash_cache_miss = 0;
 
 static bool s_perf_enable = false;
 static bool s_force_vsync = false;
@@ -286,23 +333,36 @@ void Host::BeginPresentFrame()
 		const u32 last_draws = s_total_internal_draws;
 		const u32 last_uploads = s_total_uploads;
 
-		static constexpr auto update_stat = [](GSPerfMon::counter_t counter, u64& dst, double& last) {
-			// perfmon resets every 30 frames to zero
+		// Returns this frame's delta as well as accumulating it, so the per-frame
+		// series and the run totals stay derived from one source.
+		static constexpr auto update_stat = [](GSPerfMon::counter_t counter, u64& dst, double& last) -> u64 {
+			// perfmon resets every 32 frames to zero
 			const double val = g_perfmon.GetCounter(counter);
-			dst += static_cast<u64>((val < last) ? val : (val - last));
+			const u64 delta = static_cast<u64>((val < last) ? val : (val - last));
+			dst += delta;
 			last = val;
+			return delta;
 		};
 
-		update_stat(GSPerfMon::Draw, s_total_internal_draws, s_last_internal_draws);
-		update_stat(GSPerfMon::DrawCalls, s_total_draws, s_last_draws);
-		update_stat(GSPerfMon::RenderPasses, s_total_render_passes, s_last_render_passes);
-		update_stat(GSPerfMon::Barriers, s_total_barriers, s_last_barriers);
-		update_stat(GSPerfMon::TextureCopies, s_total_copies, s_last_copies);
-		update_stat(GSPerfMon::TextureUploads, s_total_uploads, s_last_uploads);
-		update_stat(GSPerfMon::Readbacks, s_total_readbacks, s_last_readbacks);
-		update_stat(GSPerfMon::TextureCopiesROV, s_total_copies_rov, s_last_depth_copies_rov);
-		update_stat(GSPerfMon::DrawCallsROV, s_total_draws_rov, s_last_draws_rov);
-		update_stat(GSPerfMon::BarriersROV, s_total_barriers_rov, s_last_barriers_rov);
+		FrameSample sample = {};
+		sample.frame = s_total_frames;
+		sample.prims = update_stat(GSPerfMon::Prim, s_total_prims, s_last_prims);
+		sample.draws = update_stat(GSPerfMon::Draw, s_total_internal_draws, s_last_internal_draws);
+		sample.draw_calls = update_stat(GSPerfMon::DrawCalls, s_total_draws, s_last_draws);
+		sample.render_passes = update_stat(GSPerfMon::RenderPasses, s_total_render_passes, s_last_render_passes);
+		sample.barriers = update_stat(GSPerfMon::Barriers, s_total_barriers, s_last_barriers);
+		sample.copies = update_stat(GSPerfMon::TextureCopies, s_total_copies, s_last_copies);
+		sample.uploads = update_stat(GSPerfMon::TextureUploads, s_total_uploads, s_last_uploads);
+		sample.readbacks = update_stat(GSPerfMon::Readbacks, s_total_readbacks, s_last_readbacks);
+		sample.copies_rov = update_stat(GSPerfMon::TextureCopiesROV, s_total_copies_rov, s_last_depth_copies_rov);
+		sample.draw_calls_rov = update_stat(GSPerfMon::DrawCallsROV, s_total_draws_rov, s_last_draws_rov);
+		sample.barriers_rov = update_stat(GSPerfMon::BarriersROV, s_total_barriers_rov, s_last_barriers_rov);
+		sample.tc_source_hit = update_stat(GSPerfMon::TCSourceHit, s_total_tc_source_hit, s_last_tc_source_hit);
+		sample.tc_source_miss = update_stat(GSPerfMon::TCSourceMiss, s_total_tc_source_miss, s_last_tc_source_miss);
+		sample.tc_target_hit = update_stat(GSPerfMon::TCTargetHit, s_total_tc_target_hit, s_last_tc_target_hit);
+		sample.tc_target_miss = update_stat(GSPerfMon::TCTargetMiss, s_total_tc_target_miss, s_last_tc_target_miss);
+		sample.hash_cache_hit = update_stat(GSPerfMon::HashCacheHit, s_total_hash_cache_hit, s_last_hash_cache_hit);
+		sample.hash_cache_miss = update_stat(GSPerfMon::HashCacheMiss, s_total_hash_cache_miss, s_last_hash_cache_miss);
 
 		const bool idle_frame = s_total_frames && (last_draws == s_total_internal_draws && last_uploads == s_total_uploads);
 
@@ -310,6 +370,19 @@ void Host::BeginPresentFrame()
 			s_total_drawn_frames++;
 
 		s_total_frames++;
+
+		if (!s_stats_json_path.empty())
+		{
+			const u64 now = Common::Timer::GetCurrentValue();
+			sample.idle = idle_frame;
+			// First frame has no predecessor to measure against.
+			sample.frame_ms = s_frame_timer_last ?
+			                      static_cast<float>(Common::Timer::ConvertValueToMilliseconds(now - s_frame_timer_last)) :
+			                      0.0f;
+			s_frame_timer_last = now;
+			sample.gpu_ms = PerformanceMetrics::GetLastGPUTime();
+			s_frame_samples.push_back(sample);
+		}
 
 		std::atomic_thread_fence(std::memory_order_release);
 	}
@@ -514,6 +587,10 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "  -logfile <filename>: Writes emu log to filename.\n");
 	std::fprintf(stderr, "  -noshadercache: Disables the shader cache (useful for parallel runs).\n");
 	std::fprintf(stderr, "  -perf: Enable frame timing performance stats.\n");
+	std::fprintf(stderr, "  -stats-json <path>: Write per-frame and run-summary statistics as JSON. Combine with -perf "
+						 "for frame/GPU timing.\n");
+	std::fprintf(stderr, "  -set <Section/Key>=<value>: Override any setting, e.g. -set EmuCore/GS/AccurateBlendingUnit=3. "
+						 "Repeatable.\n");
 	std::fprintf(stderr, "  -vsync: Force vsync on (FIFO present mode). Workaround for libmali Wayland WSI which "
 						 "advertises MAILBOX support but errors VK_ERROR_INITIALIZATION_FAILED on swapchain create.\n");
 	std::fprintf(stderr, "  -no-fb-fetch: Disable Vulkan framebuffer fetch (VK_EXT_rasterization_order_attachment_access). "
@@ -829,6 +906,40 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 				s_perf_enable = true;
 				continue;
 			}
+			else if (CHECK_ARG_PARAM("-stats-json"))
+			{
+				s_stats_json_path = argv[++i];
+				Console.WriteLn(fmt::format("Writing per-frame stats to {}", s_stats_json_path));
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-set"))
+			{
+				// Generic settings override: -set <Section/Key>=<value>. Retires the need
+				// for a bespoke flag per experiment and makes a sweep driver trivial.
+				const std::string_view arg(argv[++i]);
+				const std::string_view::size_type eq = arg.find('=');
+				const std::string_view::size_type slash = arg.rfind('/', eq);
+				if (eq == std::string_view::npos || slash == std::string_view::npos || slash == 0)
+				{
+					Console.Error(fmt::format("Malformed -set '{}', expected <Section/Key>=<value>", arg));
+					return false;
+				}
+
+				const std::string section(arg.substr(0, slash));
+				const std::string key(arg.substr(slash + 1, eq - slash - 1));
+				const std::string value(arg.substr(eq + 1));
+				if (key.empty())
+				{
+					Console.Error(fmt::format("Malformed -set '{}', empty key", arg));
+					return false;
+				}
+
+				// Stored as a string; SettingsWrapper coerces on read, so this works for
+				// bool/int/float keys alike.
+				s_settings_interface.SetStringValue(section.c_str(), key.c_str(), value.c_str());
+				Console.WriteLn(fmt::format("Override: [{}] {} = {}", section, key, value));
+				continue;
+			}
 			else if (CHECK_ARG("-vsync"))
 			{
 				Console.WriteLn("Forcing vsync on (FIFO present mode). Use on libmali Wayland where MAILBOX errors VK_ERROR_INITIALIZATION_FAILED.");
@@ -973,10 +1084,108 @@ void GSRunner::SettingsOverride()
 	}
 }
 
+static double Ratio(u64 num, u64 den)
+{
+	return den ? (100.0 * static_cast<double>(num) / static_cast<double>(den)) : 0.0;
+}
+
+// Nearest-rank percentile over an already-sorted vector.
+static float Percentile(const std::vector<float>& sorted, double p)
+{
+	if (sorted.empty())
+		return 0.0f;
+
+	const size_t idx = std::min(sorted.size() - 1,
+		static_cast<size_t>(std::ceil(p * static_cast<double>(sorted.size())) - 1.0));
+	return sorted[idx];
+}
+
+// Writes the per-frame series plus a run summary. Emitted by hand rather than via a
+// JSON library because gsrunner links none, and the schema is fixed.
+static void WriteStatsJson(const std::string& path)
+{
+	auto fp = FileSystem::OpenManagedCFile(path.c_str(), "wb");
+	if (!fp)
+	{
+		Console.Error(fmt::format("Failed to open '{}' for writing stats", path));
+		return;
+	}
+
+	// Percentiles are computed over drawn frames only; idle frames are present-only
+	// and would drag the distribution toward zero.
+	std::vector<float> frame_times;
+	frame_times.reserve(s_frame_samples.size());
+	for (const FrameSample& s : s_frame_samples)
+	{
+		if (!s.idle && s.frame_ms > 0.0f)
+			frame_times.push_back(s.frame_ms);
+	}
+	std::sort(frame_times.begin(), frame_times.end());
+
+	u32 worst_frame = 0;
+	float worst_ms = 0.0f;
+	for (const FrameSample& s : s_frame_samples)
+	{
+		if (!s.idle && s.frame_ms > worst_ms)
+		{
+			worst_ms = s.frame_ms;
+			worst_frame = s.frame;
+		}
+	}
+
+	std::fprintf(fp.get(), "{\n  \"run\": {\n");
+	std::fprintf(fp.get(), "    \"frames\": %u,\n    \"drawn_frames\": %u,\n", s_total_frames, s_total_drawn_frames);
+	std::fprintf(fp.get(), "    \"prims\": %" PRIu64 ",\n    \"draws\": %" PRIu64 ",\n    \"draw_calls\": %" PRIu64 ",\n",
+		s_total_prims, s_total_internal_draws, s_total_draws);
+	std::fprintf(fp.get(), "    \"render_passes\": %" PRIu64 ",\n    \"barriers\": %" PRIu64 ",\n", s_total_render_passes, s_total_barriers);
+	std::fprintf(fp.get(), "    \"copies\": %" PRIu64 ",\n    \"uploads\": %" PRIu64 ",\n    \"readbacks\": %" PRIu64 ",\n",
+		s_total_copies, s_total_uploads, s_total_readbacks);
+	std::fprintf(fp.get(), "    \"copies_rov\": %" PRIu64 ",\n    \"draw_calls_rov\": %" PRIu64 ",\n    \"barriers_rov\": %" PRIu64 ",\n",
+		s_total_copies_rov, s_total_draws_rov, s_total_barriers_rov);
+	std::fprintf(fp.get(), "    \"tc_source_hit\": %" PRIu64 ",\n    \"tc_source_miss\": %" PRIu64 ",\n",
+		s_total_tc_source_hit, s_total_tc_source_miss);
+	std::fprintf(fp.get(), "    \"tc_target_hit\": %" PRIu64 ",\n    \"tc_target_miss\": %" PRIu64 ",\n",
+		s_total_tc_target_hit, s_total_tc_target_miss);
+	std::fprintf(fp.get(), "    \"hash_cache_hit\": %" PRIu64 ",\n    \"hash_cache_miss\": %" PRIu64 ",\n",
+		s_total_hash_cache_hit, s_total_hash_cache_miss);
+	std::fprintf(fp.get(), "    \"frame_ms_p50\": %.3f,\n    \"frame_ms_p95\": %.3f,\n    \"frame_ms_p99\": %.3f,\n",
+		Percentile(frame_times, 0.50), Percentile(frame_times, 0.95), Percentile(frame_times, 0.99));
+	std::fprintf(fp.get(), "    \"frame_ms_worst\": %.3f,\n    \"frame_worst_index\": %u\n  },\n", worst_ms, worst_frame);
+
+	std::fprintf(fp.get(), "  \"frames\": [\n");
+	for (size_t i = 0; i < s_frame_samples.size(); i++)
+	{
+		const FrameSample& s = s_frame_samples[i];
+		std::fprintf(fp.get(),
+			"    {\"frame\":%u,\"idle\":%s,\"frame_ms\":%.3f,\"gpu_ms\":%.3f,"
+			"\"prims\":%" PRIu64 ",\"draws\":%" PRIu64 ",\"draw_calls\":%" PRIu64 ","
+			"\"render_passes\":%" PRIu64 ",\"barriers\":%" PRIu64 ",\"copies\":%" PRIu64 ","
+			"\"uploads\":%" PRIu64 ",\"readbacks\":%" PRIu64 ","
+			"\"copies_rov\":%" PRIu64 ",\"draw_calls_rov\":%" PRIu64 ",\"barriers_rov\":%" PRIu64 ","
+			"\"tc_source_hit\":%" PRIu64 ",\"tc_source_miss\":%" PRIu64 ","
+			"\"tc_target_hit\":%" PRIu64 ",\"tc_target_miss\":%" PRIu64 ","
+			"\"hash_cache_hit\":%" PRIu64 ",\"hash_cache_miss\":%" PRIu64 "}%s\n",
+			s.frame, s.idle ? "true" : "false", s.frame_ms, s.gpu_ms,
+			s.prims, s.draws, s.draw_calls,
+			s.render_passes, s.barriers, s.copies,
+			s.uploads, s.readbacks,
+			s.copies_rov, s.draw_calls_rov, s.barriers_rov,
+			s.tc_source_hit, s.tc_source_miss,
+			s.tc_target_hit, s.tc_target_miss,
+			s.hash_cache_hit, s.hash_cache_miss,
+			(i + 1 < s_frame_samples.size()) ? "," : "");
+	}
+	std::fprintf(fp.get(), "  ]\n}\n");
+
+	Console.WriteLn(fmt::format("Wrote {} frame samples to {}", s_frame_samples.size(), path));
+}
+
 void GSRunner::DumpStats()
 {
 	std::atomic_thread_fence(std::memory_order_acquire);
 	Console.WriteLn(fmt::format("======= HW STATISTICS FOR {} ({}) FRAMES ========", s_total_frames, s_total_drawn_frames));
+	Console.WriteLn(fmt::format("@HWSTAT@ Prims: {} (avg {})", s_total_prims, static_cast<u64>(std::ceil(s_total_prims / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ Draws: {} (avg {})", s_total_internal_draws, static_cast<u64>(std::ceil(s_total_internal_draws / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn(fmt::format("@HWSTAT@ Draw Calls: {} (avg {})", s_total_draws, static_cast<u64>(std::ceil(s_total_draws / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn(fmt::format("@HWSTAT@ Render Passes: {} (avg {})", s_total_render_passes, static_cast<u64>(std::ceil(s_total_render_passes / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn(fmt::format("@HWSTAT@ Barriers: {} (avg {})", s_total_barriers, static_cast<u64>(std::ceil(s_total_barriers / static_cast<double>(s_total_drawn_frames)))));
@@ -986,6 +1195,12 @@ void GSRunner::DumpStats()
 	Console.WriteLn(fmt::format("@HWSTAT@ Copies (ROV): {} (avg {})", s_total_copies_rov, static_cast<u64>(std::ceil(s_total_copies_rov / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn(fmt::format("@HWSTAT@ Draws Calls (ROV): {} (avg {})", s_total_draws_rov, static_cast<u64>(std::ceil(s_total_draws_rov / static_cast<double>(s_total_drawn_frames)))));
 	Console.WriteLn(fmt::format("@HWSTAT@ Barriers (ROV): {} (avg {})", s_total_barriers_rov, static_cast<u64>(std::ceil(s_total_barriers_rov / static_cast<double>(s_total_drawn_frames)))));
+	Console.WriteLn(fmt::format("@HWSTAT@ TC Source Hit/Miss: {}/{} ({:.1f}% hit)", s_total_tc_source_hit, s_total_tc_source_miss,
+		Ratio(s_total_tc_source_hit, s_total_tc_source_hit + s_total_tc_source_miss)));
+	Console.WriteLn(fmt::format("@HWSTAT@ TC Target Hit/Miss: {}/{} ({:.1f}% hit)", s_total_tc_target_hit, s_total_tc_target_miss,
+		Ratio(s_total_tc_target_hit, s_total_tc_target_hit + s_total_tc_target_miss)));
+	Console.WriteLn(fmt::format("@HWSTAT@ Hash Cache Hit/Miss: {}/{} ({:.1f}% hit)", s_total_hash_cache_hit, s_total_hash_cache_miss,
+		Ratio(s_total_hash_cache_hit, s_total_hash_cache_hit + s_total_hash_cache_miss)));
 	if (s_perf_enable)
 	{
 		Console.WriteLn(fmt::format("@HWSTAT@ Minimum Frame Time: {:.3f} ms ({:.3f} FPS)", PerformanceMetrics::GetMinimumFrameTime(), 1000.0f / PerformanceMetrics::GetMinimumFrameTime()));
@@ -998,9 +1213,28 @@ void GSRunner::DumpStats()
 		Console.WriteLn(fmt::format("@HWSTAT@ Average GS Thread Time: {:.3f} ms", s_perf_sum_gs_thread_time / s_perf_updates));
 		Console.WriteLn(fmt::format("@HWSTAT@ Average GPU Time: {:.3f} ms", s_perf_sum_gpu_time / s_perf_updates));
 	}
+	if (!s_stats_json_path.empty())
+	{
+		// Percentiles come from the measured per-frame series, which only exists when
+		// -stats-json is active. Run-aggregate min/avg/max cannot locate a spike.
+		std::vector<float> frame_times;
+		frame_times.reserve(s_frame_samples.size());
+		for (const FrameSample& s : s_frame_samples)
+		{
+			if (!s.idle && s.frame_ms > 0.0f)
+				frame_times.push_back(s.frame_ms);
+		}
+		std::sort(frame_times.begin(), frame_times.end());
+
+		Console.WriteLn(fmt::format("@HWSTAT@ Frame Time p50/p95/p99: {:.3f} / {:.3f} / {:.3f} ms",
+			Percentile(frame_times, 0.50), Percentile(frame_times, 0.95), Percentile(frame_times, 0.99)));
+	}
 	for (const std::string& line : s_extended_stats_snapshot)
 		Console.WriteLn(fmt::format("@HWSTAT@ {}", line));
 	Console.WriteLn("============================================");
+
+	if (!s_stats_json_path.empty())
+		WriteStatsJson(s_stats_json_path);
 }
 
 #ifdef _WIN32

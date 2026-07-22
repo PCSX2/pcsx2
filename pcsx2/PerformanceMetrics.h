@@ -61,6 +61,9 @@ namespace PerformanceMetrics
 
 	float GetGPUUsage();
 	float GetGPUAverageTime();
+	/// GPU time for the most recent present only, not a window average. Used by the
+	/// per-frame stats series, where an averaged value would hide the spike.
+	float GetLastGPUTime();
 	double GetGPUAverageVSInvocations();
 	double GetGPUAveragePSInvocations();
 
