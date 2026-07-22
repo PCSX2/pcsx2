@@ -26,6 +26,16 @@ public:
 		TextureCopiesROV, // Overlaps with regular texture copies.
 		DrawCallsROV, // Overlaps with regular draw calls.
 		BarriersROV, // Overlaps with regular barriers.
+
+		// Texture cache lookup outcomes (HW only). Appended last so the aliased
+		// slots below keep their existing indices.
+		TCTargetHit,
+		TCTargetMiss,
+		TCSourceHit,
+		TCSourceMiss,
+		HashCacheHit,
+		HashCacheMiss,
+
 		CounterLast,
 
 		// Reused counters for HW.

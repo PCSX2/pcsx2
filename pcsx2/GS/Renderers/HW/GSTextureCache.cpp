@@ -2150,6 +2150,10 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 
 	if (!src)
 	{
+		// A Source has to be built: upload + swizzle. This is the expensive outcome.
+		g_perfmon.Put(GSPerfMon::TCSourceMiss, 1);
+		g_perfmon.Put(dst ? GSPerfMon::TCTargetHit : GSPerfMon::TCTargetMiss, 1);
+
 #ifdef ENABLE_OGL_DEBUG
 		if (dst)
 		{
@@ -2225,6 +2229,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 	}
 	else
 	{
+		g_perfmon.Put(GSPerfMon::TCSourceHit, 1);
+
 		GL_CACHE("TC: src hit: (0x%x, 0x%x, %s)",
 			TEX0.TBP0, psm_s.pal > 0 ? TEX0.CBP : 0,
 			GSUtil::GetPSMName(TEX0.PSM));
@@ -7036,6 +7042,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 	if (it != m_hash_cache.end())
 	{
 		// super easy, cache hit. remove paltex if it's a replacement texture.
+		g_perfmon.Put(GSPerfMon::HashCacheHit, 1);
 		GL_CACHE("TC: HC Hit: %" PRIx64 " %" PRIx64 " R-%ux%u", key.TEX0Hash, key.CLUTHash, key.region_width, key.region_height);
 		HashCacheEntry* entry = &it->second;
 		paltex &= (entry->texture->GetFormat() == GSTexture::Format::UNorm8);
@@ -7044,6 +7051,7 @@ GSTextureCache::HashCacheEntry* GSTextureCache::LookupHashCache(const GIFRegTEX0
 	}
 
 	// cache miss.
+	g_perfmon.Put(GSPerfMon::HashCacheMiss, 1);
 	GL_CACHE("TC: HC Miss: %" PRIx64 " %" PRIx64 " R-%ux%u", key.TEX0Hash, key.CLUTHash, key.region_width, key.region_height);
 
 	// check for a replacement texture with the full clut key

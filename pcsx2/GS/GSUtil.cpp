@@ -190,7 +190,16 @@ const char* GSUtil::GetPerfMonCounterName(GSPerfMon::counter_t counter, bool hw)
 			"TextureCopies",
 			"TextureUploads",
 			"Barriers",
-			"RenderPasses"
+			"RenderPasses",
+			"TextureCopiesROV",
+			"DrawCallsROV",
+			"BarriersROV",
+			"TCTargetHit",
+			"TCTargetMiss",
+			"TCSourceHit",
+			"TCSourceMiss",
+			"HashCacheHit",
+			"HashCacheMiss"
 		};
 		return counter < std::size(names_hw) ? names_hw[counter] : "";
 	}
