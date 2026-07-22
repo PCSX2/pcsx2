@@ -146,6 +146,11 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/MemoryCardCreateDialog.cpp
 	Settings/MemoryCardCreateDialog.h
 	Settings/MemoryCardCreateDialog.ui
+	Settings/MemoryCardBackupModel.cpp
+	Settings/MemoryCardBackupModel.h
+	Settings/MemoryCardBackupWidget.cpp
+	Settings/MemoryCardBackupWidget.h
+	Settings/MemoryCardBackupWidget.ui
 	Settings/MemoryCardSettingsWidget.cpp
 	Settings/MemoryCardSettingsWidget.h
 	Settings/MemoryCardSettingsWidget.ui
