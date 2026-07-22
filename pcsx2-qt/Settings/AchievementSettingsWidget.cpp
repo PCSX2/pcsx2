@@ -52,7 +52,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* settings_di
 	SettingWidgetBinder::BindWidgetToAudioFileSetting(sif, m_ui.lbSoundPath, m_ui.lbSoundBrowse, m_ui.lbSoundOpen, m_ui.lbSoundReset, "Achievements", "LBSubmitSoundName", Path::Combine(EmuFolders::Resources, DEFAULT_LBSUBMIT_SOUND_NAME), qApp->translate("AchievementSettingsWidget", AUDIO_FILE_FILTER), true, false);
 
 	dialog()->registerWidgetHelp(m_ui.enable, tr("Enable Achievements"), tr("Unchecked"), tr("When enabled and logged in, PCSX2 will scan for achievements on startup."));
-	dialog()->registerWidgetHelp(m_ui.hardcoreMode, tr("Enable Hardcore Mode"), tr("Unavailable"), tr("Hardcore mode is unavailable in yaps2, which reports as an unregistered RetroAchievements client and is therefore softcore-only. Achievements still unlock and sync to your account (and carry over to registered clients like ARMSX2)."));
+	dialog()->registerWidgetHelp(m_ui.hardcoreMode, tr("Enable Hardcore Mode"), tr("Unchecked"), tr("\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions."));
 	dialog()->registerWidgetHelp(m_ui.achievementNotifications, tr("Show Achievement Notifications"), tr("Checked"), tr("Displays popup messages on events such as achievement unlocks and game completion."));
 	dialog()->registerWidgetHelp(m_ui.leaderboardNotifications, tr("Show Leaderboard Notifications"), tr("Checked"), tr("Displays popup messages when starting, submitting, or failing a leaderboard challenge."));
 	dialog()->registerWidgetHelp(m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"), tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
@@ -119,9 +119,7 @@ void AchievementSettingsWidget::updateEnableState()
 	const bool unlock = enabled && sound && dialog()->getEffectiveBoolValue("Achievements", "UnlockSound", true);
 	const bool lbsound = enabled && sound && dialog()->getEffectiveBoolValue("Achievements", "LBSubmitSound", true);
 
-	// yaps2 is softcore-only (see Achievements::SetHardcoreMode); hardcore can never be enabled,
-	// so keep the toggle greyed out to avoid implying it does anything.
-	m_ui.hardcoreMode->setEnabled(false);
+	m_ui.hardcoreMode->setEnabled(enabled);
 	m_ui.achievementNotifications->setEnabled(enabled);
 	m_ui.leaderboardNotifications->setEnabled(enabled);
 	m_ui.achievementNotificationsDuration->setEnabled(notifications);
