@@ -387,7 +387,7 @@ TinyString XInputSource::ConvertKeyToIcon(InputBindingKey key)
 {
 	TinyString ret;
 
-	if (key.source_type == InputSourceType::SDL)
+	if (key.source_type == InputSourceType::XInput)
 	{
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
