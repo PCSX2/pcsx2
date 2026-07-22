@@ -1323,7 +1323,7 @@ bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInpu
 		if (resolved != GenericInputBinding::Unknown)
 		{
 			const u32 controller_id = (static_cast<u32>(key.source_type) << 8) | key.source_index;
-			const InputLayout layout = s_input_sources[static_cast<u32>(InputSourceType::SDL)]->GetControllerLayout(key.source_index);
+			const InputLayout layout = s_input_sources[static_cast<u32>(key.source_type)]->GetControllerLayout(key.source_index);
 			if (ImGuiManager::ProcessGenericInputEvent(resolved, layout, value, controller_id) && value != 0.0f)
 				return true;
 		}
@@ -1347,7 +1347,7 @@ bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInpu
 		if (neg != GenericInputBinding::Unknown || pos != GenericInputBinding::Unknown)
 		{
 			const u32 controller_id = (static_cast<u32>(key.source_type) << 8) | key.source_index;
-			const InputLayout layout = s_input_sources[static_cast<u32>(InputSourceType::SDL)]->GetControllerLayout(key.source_index);
+			const InputLayout layout = s_input_sources[static_cast<u32>(key.source_type)]->GetControllerLayout(key.source_index);
 			ImGuiManager::ProcessGenericAxisEvent(neg, pos, layout, value, controller_id);
 		}
 	}
