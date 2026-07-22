@@ -1,6 +1,6 @@
 # DESCRIPTION: GitLab CI/CD for libRetro (NOT FOR GitLab-proper)
 #
-# Builds yaps2_libretro.so on the libretro buildbot (git.libretro.com mirror)
+# Builds armsx2_libretro.so on the libretro buildbot (git.libretro.com mirror)
 # for Linux x86_64 and aarch64. Inert on GitHub — the GitHub Actions
 # workflows under .github/workflows/ are the project's own CI.
 #
@@ -17,7 +17,7 @@
 .core-defs:
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
-    CORENAME: yaps2
+    CORENAME: armsx2
     # The core is emitted in the pcsx2-libretro/ subdirectory of the build
     # tree; the ci-templates pick it up from $BUILD_DIR/$EXTRA_PATH/.
     EXTRA_PATH: pcsx2-libretro
