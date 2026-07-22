@@ -319,6 +319,23 @@ static constexpr const char* s_sdl_button_icons[] = {
 	ICON_PF_XBOX_DPAD_LEFT, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
 	ICON_PF_XBOX_DPAD_RIGHT, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
 };
+static constexpr const char* s_sdl_button_xbox_icons[] = {
+	ICON_PF_BUTTON_A, // SDL_GAMEPAD_BUTTON_SOUTH
+	ICON_PF_BUTTON_B, // SDL_GAMEPAD_BUTTON_EAST
+	ICON_PF_BUTTON_X, // SDL_GAMEPAD_BUTTON_WEST
+	ICON_PF_BUTTON_Y, // SDL_GAMEPAD_BUTTON_NORTH
+	ICON_PF_SHARE_CAPTURE, // SDL_GAMEPAD_BUTTON_BACK
+	ICON_PF_XBOX, // SDL_GAMEPAD_BUTTON_GUIDE
+	ICON_PF_BURGER_MENU, // SDL_GAMEPAD_BUTTON_START
+	ICON_PF_LEFT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_LEFT_STICK
+	ICON_PF_RIGHT_ANALOG_CLICK, // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+	ICON_PF_LEFT_SHOULDER_LB, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+	ICON_PF_RIGHT_SHOULDER_RB, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER
+	ICON_PF_XBOX_DPAD_UP, // SDL_GAMEPAD_BUTTON_DPAD_UP
+	ICON_PF_XBOX_DPAD_DOWN, // SDL_GAMEPAD_BUTTON_DPAD_DOWN
+	ICON_PF_XBOX_DPAD_LEFT, // SDL_GAMEPAD_BUTTON_DPAD_LEFT
+	ICON_PF_XBOX_DPAD_RIGHT, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT
+};
 static constexpr const char* s_sdl_button_ps3_icons[] = {
 	ICON_PF_BUTTON_CROSS, // SDL_GAMEPAD_BUTTON_SOUTH
 	ICON_PF_BUTTON_CIRCLE, // SDL_GAMEPAD_BUTTON_EAST
@@ -403,8 +420,8 @@ static constexpr const char* s_sdl_button_nintendo_icons[] = {
 static constexpr const char* const* s_sdl_button_icons_list[] = {
 	s_sdl_button_icons, // SDL_GAMEPAD_TYPE_UNKNOWN
 	s_sdl_button_icons, // SDL_GAMEPAD_TYPE_STANDARD
-	s_sdl_button_icons, // SDL_GAMEPAD_TYPE_XBOX360
-	s_sdl_button_icons, // SDL_GAMEPAD_TYPE_XBOXONE
+	s_sdl_button_xbox_icons, // SDL_GAMEPAD_TYPE_XBOX360
+	s_sdl_button_xbox_icons, // SDL_GAMEPAD_TYPE_XBOXONE
 	s_sdl_button_ps3_icons, // SDL_GAMEPAD_TYPE_PS3
 	s_sdl_button_ps4_icons, // SDL_GAMEPAD_TYPE_PS4
 	s_sdl_button_ps5_icons, // SDL_GAMEPAD_TYPE_PS5
@@ -413,8 +430,8 @@ static constexpr const char* const* s_sdl_button_icons_list[] = {
 static constexpr size_t s_sdl_button_iconsize_list[] = {
 	std::size(s_sdl_button_icons), // SDL_GAMEPAD_TYPE_UNKNOWN
 	std::size(s_sdl_button_icons), // SDL_GAMEPAD_TYPE_STANDARD
-	std::size(s_sdl_button_icons), // SDL_GAMEPAD_TYPE_XBOX360
-	std::size(s_sdl_button_icons), // SDL_GAMEPAD_TYPE_XBOXONE
+	std::size(s_sdl_button_xbox_icons), // SDL_GAMEPAD_TYPE_XBOX360
+	std::size(s_sdl_button_xbox_icons), // SDL_GAMEPAD_TYPE_XBOXONE
 	std::size(s_sdl_button_ps3_icons), // SDL_GAMEPAD_TYPE_PS3
 	std::size(s_sdl_button_ps4_icons), // SDL_GAMEPAD_TYPE_PS4
 	std::size(s_sdl_button_ps5_icons), // SDL_GAMEPAD_TYPE_PS5
