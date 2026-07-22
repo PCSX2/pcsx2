@@ -208,14 +208,12 @@ bool LibretroCore::InitializeConfig()
 	if (FileSystem::FileExists(secrets_path.c_str()))
 		s_secrets_settings->Load();
 
-	// Libretro-core overrides. Default is the shared-context Vulkan renderer
-	// (M2); YAPS2_NULL_GS=1 falls back to the headless Null renderer (the M1
-	// smoke-test mode). SDL input/audio will be replaced by the libretro
-	// paths in M3.
+	// Libretro-core overrides: the shared-context Vulkan renderer, and SDL
+	// input/audio replaced by the libretro paths.
 	{
 		auto lock = Host::GetSettingsLock();
 		s_base_settings->SetIntValue("EmuCore/GS", "Renderer",
-			static_cast<int>(getenv("YAPS2_NULL_GS") ? GSRendererType::Null : GSRendererType::VK));
+			static_cast<int>(GSRendererType::VK));
 		s_base_settings->SetBoolValue("InputSources", "SDL", false);
 		// Audio goes out through retro_run pulling the stream ring; the Null
 		// backend keeps SPU2 mixing into the ring with no device thread.
@@ -1483,10 +1481,10 @@ RETRO_API bool retro_load_game(const struct retro_game_info* game)
 
 	s_shutdown_requested.store(false, std::memory_order_release);
 
-	// Vulkan HW render (unless the Null fallback is forced). The negotiation
-	// interface must be registered inside retro_load_game; the frontend
-	// invokes it while creating its Vulkan context, after this returns.
-	LibretroCore::s_hw_render_vulkan = !getenv("YAPS2_NULL_GS");
+	// Vulkan HW render. The negotiation interface must be registered inside
+	// retro_load_game; the frontend invokes it while creating its Vulkan
+	// context, after this returns.
+	LibretroCore::s_hw_render_vulkan = true;
 	if (LibretroCore::s_hw_render_vulkan)
 	{
 		static struct retro_hw_render_callback hw_render = {};
@@ -1583,11 +1581,6 @@ RETRO_API void retro_run(void)
 	bool options_updated = false;
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &options_updated) && options_updated)
 		ApplyCoreOptions(false);
-
-	// TEMP (M2 bring-up): pace headless harness runs so the free-running VM
-	// gets wall-clock time to boot.
-	if (getenv("YAPS2_RUN_SLEEP"))
-		std::this_thread::sleep_for(std::chrono::milliseconds(16));
 
 	// M3 input: forward the libretro joypad straight into the DualShock2
 	// bind slots (bypasses InputManager entirely).
@@ -1707,15 +1700,6 @@ RETRO_API void retro_run(void)
 			av.timing.fps = fps;
 			environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &av);
 		}
-	}
-
-	// Bring-up diagnostics (YAPS2_PERF_LOG=1): internal speed probe.
-	if (getenv("YAPS2_PERF_LOG"))
-	{
-		static u32 run_count = 0;
-		if ((++run_count % 600) == 0)
-			std::fprintf(stderr, "[libretro] perf: fps=%.1f speed=%.0f%%\n",
-				PerformanceMetrics::GetFPS(), PerformanceMetrics::GetSpeed());
 	}
 
 	// M3 audio: drain whatever SPU2 mixed since the last retro_run out of the
