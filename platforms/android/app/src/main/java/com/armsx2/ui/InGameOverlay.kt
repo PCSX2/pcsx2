@@ -196,7 +196,14 @@ object InGameOverlay {
 
     private fun closeAndResume() {
         WindowImpl.overlayVisible.value = false
-        if (MainActivityRuntime.eState.value == EmuState.PAUSED && !WindowImpl.showLibrary.value &&
+        // Resume on PAUSED *or* RUNNING. Opening the menu queues the pause asynchronously —
+        // eState only flips to PAUSED once Host::OnVMPaused fires on the CPU thread — so a quick
+        // open→close can reach here with eState still RUNNING, and gating on == PAUSED skipped
+        // the resume, leaving the game stuck paused once the queued pause landed. resume() is safe
+        // in both cases: it's ordered after the pending pause (FIFO on the CPU thread), and it's a
+        // no-op when the VM is genuinely still running.
+        val st = MainActivityRuntime.eState.value
+        if ((st == EmuState.PAUSED || st == EmuState.RUNNING) && !WindowImpl.showLibrary.value &&
             !com.armsx2.ui.touch.TouchControls.editMode.value
         ) {
             MainActivityRuntime.resume()

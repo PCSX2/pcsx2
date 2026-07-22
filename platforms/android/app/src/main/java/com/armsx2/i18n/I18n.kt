@@ -707,6 +707,8 @@ val EN: Map<String, String> = mapOf(
     "pad.editTouchLayout" to "Edit On-Screen Touch Layout",
     "pad.controllerMapping" to "Controller mapping",
     "perf.frameLimit.label" to "Frame limit",
+    "perf.ffSpeed.label" to "Fast-Forward Speed",
+    "common.unlimited" to "Unlimited",
     "pad.editing.description" to "Configure Player 1 or Player 2's button mapping. Player 2 = the 2nd controller that joins in-game.",
     "pad.editing.label" to "Editing",
     "pad.gyro.section" to "Motion / Gyroscope",

@@ -691,7 +691,7 @@ data class Settings(
         if (emitSink == null) {
             NativeApp.speedhackLimitermode(
                 when {
-                    MainActivityRuntime.fastForwardToggleActive -> MainActivityRuntime.FF_LIMITER_MODE
+                    MainActivityRuntime.fastForwardToggleActive -> MainActivityRuntime.ffLimiterMode()
                     MainActivityRuntime.slowDownToggleActive -> 2
                     else -> if (frameLimitEnable) 0 else 3
                 }

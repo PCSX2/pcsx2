@@ -931,6 +931,17 @@ Java_kr_co_iefriends_pcsx2_NativeApp_speedhackLimitermode(JNIEnv *env, jclass cl
 }
 
 extern "C"
+JNIEXPORT void JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_setTurboScalar(JNIEnv *env, jclass clazz, jfloat p_scalar) {
+    // Fast-forward speed multiplier for Turbo mode. The in-game FF-speed slider sets this just
+    // before engaging Turbo (speedhackLimitermode(1)); at the slider's top the UI uses Unlimited
+    // (mode 3) instead. Clamp mirrors EmulationSpeedOptions::ClampSpeed (0.05-10.0). SetLimiterMode
+    // reads TurboScalar when it recomputes the target speed, so setting this then re-issuing Turbo
+    // applies the new speed live.
+    EmuConfig.EmulationSpeed.TurboScalar = std::clamp(static_cast<float>(p_scalar), 0.05f, 10.0f);
+}
+
+extern "C"
 JNIEXPORT jboolean JNICALL
 Java_kr_co_iefriends_pcsx2_NativeApp_toggleTextureDumping(JNIEnv *env, jclass clazz) {
     // Runtime toggle of texture dumping — mirrors PCSX2's built-in
@@ -2320,13 +2331,6 @@ Java_kr_co_iefriends_pcsx2_NativeApp_pause(JNIEnv *env, jclass clazz) {
 extern "C"
 JNIEXPORT void JNICALL
 Java_kr_co_iefriends_pcsx2_NativeApp_resume(JNIEnv *env, jclass clazz) {
-    // Always drop the audio-keep-alive suppression a menu/overlay pause may have set
-    // (see setOutputPauseSuppressed). Clearing it on EVERY resume — overlay close and
-    // lifecycle onResume alike — means it can never get stuck on and starve a later
-    // background/quit of a real audio pause. The stream was never paused while
-    // suppressed, so this doesn't itself touch the device.
-    SPU2::SetOutputPauseSuppressed(false);
-
     if (!VMManager::HasValidVM())
         return;
 

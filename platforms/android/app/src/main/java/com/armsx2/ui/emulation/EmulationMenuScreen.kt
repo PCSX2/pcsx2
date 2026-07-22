@@ -502,6 +502,24 @@ private fun SessionPane(state: EmulationMenuUiState, viewModel: EmulationMenuVie
             viewModel.updateSettings { it.copy(frameLimitEnable = value) }
         }
         Spacer(Modifier.height(6.dp))
+        // Fast-forward SPEED — how fast the FF hotkey/button runs: 2..10x, or Unlimited (the
+        // default, uncapped) at the top. Global pref; re-applied live if FF is currently engaged.
+        var ffSpeed by remember { mutableStateOf(MainActivityRuntime.fastForwardSpeed()) }
+        val ffUnlimitedLabel = str("common.unlimited") // hoisted: str() is @Composable, can't run in the formatter lambda
+        com.armsx2.ui.settings.IntSliderRow(
+            label = str("perf.ffSpeed.label"),
+            value = ffSpeed,
+            min = 2,
+            max = MainActivityRuntime.FF_SPEED_UNLIMITED,
+            valueFormatter = { if (it >= MainActivityRuntime.FF_SPEED_UNLIMITED) ffUnlimitedLabel else "${it}×" },
+            onChange = { v ->
+                ffSpeed = v
+                MainActivityRuntime.setFastForwardSpeed(v)
+                if (MainActivityRuntime.fastForwardToggleActive)
+                    runCatching { kr.co.iefriends.pcsx2.NativeApp.speedhackLimitermode(MainActivityRuntime.ffLimiterMode()) }
+            },
+        )
+        Spacer(Modifier.height(6.dp))
         // OSD colour, cycled in place. Shares the palette with the All Settings picker rather
         // than carrying its own copy. Safe to add here: this card's rows are plain switches with
         // their own callbacks — SessionPane's selectedAction indexes the action GRID above, not

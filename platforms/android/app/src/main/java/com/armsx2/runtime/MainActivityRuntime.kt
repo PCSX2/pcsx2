@@ -338,6 +338,30 @@ open class MainActivityRuntime : ComponentActivity() {
         // Use the path that demonstrably works instead of shipping a second one that doesn't.
         const val FF_LIMITER_MODE = 3
 
+        // Fast-forward SPEED slider (in-game pause menu, under Frame Limit). Stored as an integer
+        // multiplier 2..10 (×); FF_SPEED_UNLIMITED = no cap, which reuses the mode-3 uncapped path
+        // above and is the default (unchanged behaviour). Below the top, ffLimiterMode() pushes the
+        // Turbo scalar to native and engages Turbo (mode 1) so fast-forward runs at the chosen speed.
+        const val FF_SPEED_UNLIMITED = 11
+        private const val KEY_FF_SPEED = "ff.speed"
+        fun fastForwardSpeed(): Int =
+            runCatching { prefs.getInt(KEY_FF_SPEED, FF_SPEED_UNLIMITED) }
+                .getOrDefault(FF_SPEED_UNLIMITED).coerceIn(2, FF_SPEED_UNLIMITED)
+
+        fun setFastForwardSpeed(v: Int) {
+            runCatching { prefs.edit().putInt(KEY_FF_SPEED, v.coerceIn(2, FF_SPEED_UNLIMITED)).apply() }
+        }
+
+        /** Limiter mode for engaging fast-forward, honouring the FF-speed slider. Unlimited at the
+         *  top (mode 3); otherwise push the Turbo scalar and return Turbo (mode 1). Call only when
+         *  actually engaging FF — it has the side effect of setting the scalar. */
+        fun ffLimiterMode(): Int {
+            val s = fastForwardSpeed()
+            if (s >= FF_SPEED_UNLIMITED) return FF_LIMITER_MODE
+            runCatching { NativeApp.setTurboScalar(s.toFloat()) }
+            return 1 // Turbo, at the scalar just pushed
+        }
+
         // Latched state for the "Fast Forward (toggle)" hotkey: each press flips between
         // fast-forward and the base limiter mode (vs. the hold variant which is momentary).
         // Reset to false whenever a game starts.
@@ -691,7 +715,7 @@ open class MainActivityRuntime : ComponentActivity() {
             // user has to toggle off then on again to resync. Re-assert the latched mode.
             NativeApp.speedhackLimitermode(
                 when {
-                    fastForwardToggleActive -> FF_LIMITER_MODE
+                    fastForwardToggleActive -> ffLimiterMode()
                     slowDownToggleActive -> 2
                     else -> if (limit) 0 else 3
                 }
@@ -883,11 +907,6 @@ open class MainActivityRuntime : ComponentActivity() {
         fun pauseForOverlay() {
             if (vmStopInProgress)
                 return
-            // Keep the audio device alive across this brief in-game menu pause so Android
-            // doesn't reclaim the idle low-latency stream and force a ~1s rebuild on resume
-            // (the fast-forward-from-menu hitch, and audio dying after a paused menu).
-            // resume() clears the suppression; background/quit still pause audio normally.
-            NativeApp.setOutputPauseSuppressed(true)
             NativeApp.pause()
         }
 
@@ -2745,7 +2764,7 @@ open class MainActivityRuntime : ComponentActivity() {
                         if (event.repeatCount == 0) {
                             // Holding FF supersedes any latched FF-toggle.
                             if (down) fastForwardToggleActive = false
-                            runCatching { NativeApp.speedhackLimitermode(if (down) FF_LIMITER_MODE else baseLimiterMode()) }
+                            runCatching { NativeApp.speedhackLimitermode(if (down) ffLimiterMode() else baseLimiterMode()) }
                         }
                     }
                     return true
@@ -2862,7 +2881,7 @@ open class MainActivityRuntime : ComponentActivity() {
         val on = fastForwardToggleActive
         // Fast-forward supersedes an active slow-down latch (mutually exclusive).
         if (on) slowDownToggleActive = false
-        runCatching { NativeApp.speedhackLimitermode(if (on) FF_LIMITER_MODE else baseLimiterMode()) }
+        runCatching { NativeApp.speedhackLimitermode(if (on) ffLimiterMode() else baseLimiterMode()) }
         hotkeyToast(if (on) "Fast Forward ON" else "Fast Forward OFF")
     }
 
@@ -3887,7 +3906,7 @@ open class MainActivityRuntime : ComponentActivity() {
             ControllerMappings.SysHotkey.FAST_FORWARD_TOGGLE -> {
                 fastForwardToggleActive = !fastForwardToggleActive
                 val on = fastForwardToggleActive
-                runCatching { NativeApp.speedhackLimitermode(if (on) FF_LIMITER_MODE else baseLimiterMode()) }
+                runCatching { NativeApp.speedhackLimitermode(if (on) ffLimiterMode() else baseLimiterMode()) }
                 hotkeyToast(if (on) "Fast Forward ON" else "Fast Forward OFF")
             }
             ControllerMappings.SysHotkey.GYRO_TOGGLE -> toggleGyro()
