@@ -148,6 +148,8 @@ static std::deque<std::function<void()>> s_cpu_thread_tasks;
 static std::string s_stats_json_path;
 static std::string s_drawlog_path;
 static std::vector<FrameSample> s_frame_samples;
+static std::string s_device_name;
+static std::string s_driver_info;
 static u64 s_frame_timer_last = 0;
 static double s_last_prims = 0;
 static double s_last_tc_source_hit = 0;
@@ -339,6 +341,15 @@ void Host::BeginPresentFrame()
 
 	if (GSIsHardwareRenderer())
 	{
+		// Captured here rather than at shutdown: this runs on the GS thread with the
+		// device definitely live, and it is the axis that decides whether a settings
+		// A/B was even applied (several GS features are force-overridden per-driver).
+		if (s_device_name.empty() && g_gs_device)
+		{
+			s_device_name = g_gs_device->GetName();
+			s_driver_info = g_gs_device->GetDriverInfo();
+		}
+
 		const u32 last_draws = s_total_internal_draws;
 		const u32 last_uploads = s_total_uploads;
 
@@ -1161,7 +1172,25 @@ static void WriteStatsJson(const std::string& path)
 		}
 	}
 
+	// GetDriverInfo() is multi-line on Vulkan, and neither string is JSON-safe as-is.
+	const auto json_escape = [](const std::string& in) {
+		std::string out;
+		out.reserve(in.size());
+		for (const char c : in)
+		{
+			if (c == '\n' || c == '\r' || c == '\t')
+				out.push_back(' ');
+			else if (c == '"' || c == '\\')
+				out.push_back('\'');
+			else
+				out.push_back(c);
+		}
+		return out;
+	};
+
 	std::fprintf(fp.get(), "{\n  \"run\": {\n");
+	std::fprintf(fp.get(), "    \"device_name\": \"%s\",\n    \"driver_info\": \"%s\",\n",
+		json_escape(s_device_name).c_str(), json_escape(s_driver_info).c_str());
 	std::fprintf(fp.get(), "    \"frames\": %u,\n    \"drawn_frames\": %u,\n", s_total_frames, s_total_drawn_frames);
 	std::fprintf(fp.get(), "    \"prims\": %" PRIu64 ",\n    \"draws\": %" PRIu64 ",\n    \"draw_calls\": %" PRIu64 ",\n",
 		s_total_prims, s_total_internal_draws, s_total_draws);

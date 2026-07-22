@@ -7,6 +7,7 @@
 #include "Elfheader.h"
 #include "GS.h"
 #include "GS/GSPerfMon.h"
+#include "GS/Renderers/Common/GSDevice.h"
 #include "MTGS.h"
 #include "PerformanceMetrics.h"
 #include "SaveState.h"
@@ -306,11 +307,35 @@ namespace PINEServer
 	static std::string BuildStatsJson()
 	{
 		SmallString gs_memory;
+		// Device identity is the axis nearly every mobile GPU bug turns on, so a stats
+		// blob without it is not attributable to a driver. Adreno tiers run drivers
+		// (Mesa Turnip vs Qualcomm proprietary) that behave oppositely for fbfetch and
+		// push descriptors, so the driver string matters more than the device name.
+		std::string device_name, driver_info;
 		if (MTGS::IsOpen())
 		{
-			MTGS::RunOnGSThread([&gs_memory]() { GSgetMemoryStats(gs_memory); });
+			MTGS::RunOnGSThread([&gs_memory, &device_name, &driver_info]() {
+				GSgetMemoryStats(gs_memory);
+				if (g_gs_device)
+				{
+					device_name = g_gs_device->GetName();
+					driver_info = g_gs_device->GetDriverInfo();
+				}
+			});
 			MTGS::WaitGS(false);
 		}
+		// Newlines and quotes would break the JSON; GetDriverInfo() is multi-line on Vulkan.
+		const auto sanitize = [](std::string& s) {
+			for (char& c : s)
+			{
+				if (c == '\n' || c == '\r' || c == '\t')
+					c = ' ';
+				else if (c == '"' || c == '\\')
+					c = '\'';
+			}
+		};
+		sanitize(device_name);
+		sanitize(driver_info);
 
 		const auto counter = [](GSPerfMon::counter_t c) { return g_perfmon.Get(c); };
 
@@ -330,7 +355,8 @@ namespace PINEServer
 			"\"tc_source_hit\":{:.1f},\"tc_source_miss\":{:.1f},"
 			"\"tc_target_hit\":{:.1f},\"tc_target_miss\":{:.1f},"
 			"\"hash_cache_hit\":{:.1f},\"hash_cache_miss\":{:.1f},"
-			"\"gs_memory\":\"{}\",\"frame_number\":{}"
+			"\"gs_memory\":\"{}\",\"frame_number\":{},"
+			"\"renderer\":\"{}\",\"device_name\":\"{}\",\"driver_info\":\"{}\""
 			"}}",
 			PerformanceMetrics::GetFPS(), PerformanceMetrics::GetInternalFPS(), PerformanceMetrics::GetSpeed(),
 			PerformanceMetrics::GetAverageFrameTime(), PerformanceMetrics::GetMinimumFrameTime(),
@@ -348,7 +374,8 @@ namespace PINEServer
 			counter(GSPerfMon::TCSourceHit), counter(GSPerfMon::TCSourceMiss),
 			counter(GSPerfMon::TCTargetHit), counter(GSPerfMon::TCTargetMiss),
 			counter(GSPerfMon::HashCacheHit), counter(GSPerfMon::HashCacheMiss),
-			gs_memory.view(), PerformanceMetrics::GetFrameNumber());
+			gs_memory.view(), PerformanceMetrics::GetFrameNumber(),
+			Pcsx2Config::GSOptions::GetRendererName(EmuConfig.GS.Renderer), device_name, driver_info);
 	}
 } // namespace PINEServer
 
